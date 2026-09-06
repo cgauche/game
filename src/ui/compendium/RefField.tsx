@@ -46,6 +46,10 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   // dataset `characteristics` (mesuré : 10/10 valeurs distinctes résolues par `id`, 0/10 par `abr` ou
   // `label`), donc valeur d'option = `id` (défaut). `abr` y est vide sur 7 des 19 entrées.
   'skills.characteristic': { ds: 'characteristics', single: true },
+  // Décor posé sur chaque case d'un terrain (#1690) : le champ porte un id de `props.json`
+  // (`idDe('prop')` au schéma) — SÉLECTEUR dans le catalogue, jamais un champ texte où une faute de
+  // frappe ne se verrait qu'au refus de parse. Facultatif : `nullable` ouvre le choix vide.
+  'terrains.overlayProp': { ds: 'props', single: true },
   // ── vocab (valeurs distinctes d'un champ) ───────────────────────────────────
   // refChar/refCareer n'existent QUE sur les espèces → repli global par nom (la catégorie Codex
   // d'`species.json` est `races`, pas `species` ; un nom de champ unique évite de la coder en dur).

@@ -1,7 +1,7 @@
 /** QC corps entier : coiffures longues sur un personnage (vérifie que cheveux longs tombent bien). */
 import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
 import type { Appearance } from '../src/gameIso/rig/appearance';
@@ -29,6 +29,6 @@ cases.forEach((c, r) => {
   });
 });
 const W = LBLW + views.length * CW, H = 24 + cases.length * CH;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${cells.join('')}</svg>`;
 writeFileSync('public/qc/hair-body.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: W * 2 } }).render().asPng());
 console.log('OK hair-body.png');

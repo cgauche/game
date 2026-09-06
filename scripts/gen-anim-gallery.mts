@@ -8,7 +8,7 @@ import type { Pose } from '../src/gameIso/rig/poses';
 import { writeFileSync } from 'node:fs';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { addPose } from '../src/gameIso/rig/poses';
 import { weaponRest, weaponAttackClip, weaponParryClip } from '../src/gameIso/rig/anim/weaponClips';
 import { sampleClip, clipDuration, type Clip } from '../src/gameIso/rig/anim/clips';
@@ -34,7 +34,7 @@ const wep = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ lab
 function svgTile(inner: string, label: string, css = '', bg = '#1d2230') {
   if (css) styles.push(css);
   return `<figure style="margin:0;text-align:center">
-    <svg viewBox="0 0 120 150" width="92" height="115"><defs>${DEFS}</defs><rect width="120" height="150" fill="${bg}"/>${inner}</svg>
+    <svg viewBox="0 0 120 150" width="92" height="115"><defs>${defsGlobaux()}</defs><rect width="120" height="150" fill="${bg}"/>${inner}</svg>
     <figcaption style="color:#bcd;font:10px sans-serif">${label}</figcaption></figure>`;
 }
 /** Tuile STATIQUE (pose figée). */

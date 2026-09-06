@@ -4,7 +4,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import { assertWardrobeId } from './_lib-wardrobe';
@@ -27,7 +27,7 @@ const cells = CASES.map((c, i) => {
   const col = i % 3, row = Math.floor(i / 3);
   return `<g transform="translate(${col * 128},${row * 168})"><rect width="120" height="150" fill="#1d2230"/>${svg}<text x="60" y="164" text-anchor="middle" font-size="10" fill="#cdd">${c.label}</text></g>`;
 });
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${3 * 128} ${2 * 168}"><defs>${DEFS}</defs>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${3 * 128} ${2 * 168}"><defs>${defsGlobaux()}</defs>${cells.join('')}</svg>`;
 const r = new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: 3 * 256 } });
 writeFileSync('public/qc/colors.png', r.render().asPng());
 console.log('OK → public/qc/colors.png');

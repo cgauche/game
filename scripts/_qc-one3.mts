@@ -1,7 +1,7 @@
 /** QC une espèce, 3 vues en TRÈS grand (étude détaillée). Usage: npx tsx scripts/_qc-one3.mts Loup */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveQuad } from '../src/gameIso/rig/quadruped/composeQuad';
 
@@ -16,6 +16,6 @@ const cells = VIEWS.map((view, ci) =>
 ).join('');
 mkdirSync('public/qc', { recursive: true });
 const W = VIEWS.length * CW, H = CH;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${cells}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${cells}</svg>`;
 writeFileSync('public/qc/one3.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: W * 4 } }).render().asPng());
 console.log('OK', sp);

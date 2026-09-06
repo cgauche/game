@@ -36,7 +36,7 @@ import type { QuadBoneId, QuadProps } from '../../src/gameIso/rig/quadruped/quad
 import { bonesToSvg } from '../../src/gameIso/rig/renderBones';
 import type { ResolvedBone } from '../../src/gameIso/rig/composeRig';
 import type { View } from '../../src/gameIso/rig/facing';
-import { DEFS } from '../../src/gameIso/sprites';
+import { defsGlobaux } from '../../src/gameIso/sprites';
 
 const VIEWS: View[] = ['profile', 'front', 'back'];
 // Boîte d'AUTHORING 120×150, mesurée dans un viewBox ÉLARGI (marge 60×75) pour voir les débords.
@@ -54,7 +54,7 @@ function maskOf(bones: ResolvedBone[], clip = false): Mask {
   const w = clip ? BOX_W : VB_W, h = clip ? BOX_H : VB_H;
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" ` +
-    `width="${w}" height="${h}"><defs>${DEFS}</defs>${bonesToSvg(bones)}</svg>`;
+    `width="${w}" height="${h}"><defs>${defsGlobaux()}</defs>${bonesToSvg(bones)}</svg>`;
   const r = new Resvg(svg, { fitTo: { mode: 'width', value: clip ? RENDER_W / 2 : RENDER_W } }).render();
   const px = r.pixels;
   const m = new Uint8Array(r.width * r.height);

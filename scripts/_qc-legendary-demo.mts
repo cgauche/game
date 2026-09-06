@@ -8,7 +8,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import { recomputeLoadout } from '../src/engine/items';
 import type { Combatant, ItemInstance } from '../src/engine/types';
@@ -47,6 +47,6 @@ const CELLS: Array<{ label: string; skin?: Record<string, string> }> = [
 mkdirSync('public/qc', { recursive: true });
 const CW = 124, CH = 172;
 const tiles = CELLS.map((c, i) => `<g transform="translate(${i * CW},0)">${cell(c.label, c.skin)}</g>`);
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CELLS.length * CW} ${CH}"><defs>${DEFS}</defs>${tiles.join('')}</svg>`;
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CELLS.length * CW} ${CH}"><defs>${defsGlobaux()}</defs>${tiles.join('')}</svg>`;
 writeFileSync('public/qc/legendary-demo.png', new Resvg(svg, { background: '#11141c', fitTo: { mode: 'width', value: CELLS.length * CW * 2.4 } }).render().asPng());
 console.log('OK → public/qc/legendary-demo.png');

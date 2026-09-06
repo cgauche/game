@@ -273,7 +273,7 @@ src/gameIso/                Rendu du monde. Le moteur est le monde VOLUMIQUE thr
   iso.ts                    dérivés MÉTRIQUES de la projection (WALL_H_M, isoPxToM — besoin du monde,
                             via state/relief) ; la projection elle-même (Dims, tileCenter, diamondPath,
                             screenToTile, stageSize…) vit dans `src/geometry/iso.ts` (#161)
-  sprites.ts                décor (props/villageois/terrain en relief) + DEFS (gradients) — PLUS de sprite créature
+  sprites.ts                décor (props/villageois/terrain en relief) + defsGlobaux() (gradients) — PLUS de sprite créature
   rig/                      gabarits corporels (bipède + quadrupède/ailé/serpentin/…) — rend TOUT le bestiaire
                             AJOUTER une créature : suivre docs/creer-une-creature.md (registre defs/,
                             corps nu ≠ tenue, illustration art-ref obligatoire, pièges codifiés)

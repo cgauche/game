@@ -5,7 +5,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { weaponPart } from '../src/gameIso/rig/parts/equipment';
 import type { Weapon } from '../src/engine/types';
 
@@ -27,6 +27,6 @@ const tiles = NAMES.map(([name, type], i) => {
     `<g transform="translate(${CW / 2},${CH - 22})">${svg}</g>` +
     `<text x="${CW / 2}" y="${CH - 4}" text-anchor="middle" font-size="6.5" fill="#cdd">${name}</text></g>`;
 });
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${NAMES.length * CW} ${CH}"><defs>${DEFS}</defs>${tiles.join('')}</svg>`;
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${NAMES.length * CW} ${CH}"><defs>${defsGlobaux()}</defs>${tiles.join('')}</svg>`;
 writeFileSync(`public/qc/wcolor-${tag}.png`, new Resvg(svg, { background: '#11141c', fitTo: { mode: 'width', value: NAMES.length * CW * 3 } }).render().asPng());
 console.log(`OK → public/qc/wcolor-${tag}.png`);

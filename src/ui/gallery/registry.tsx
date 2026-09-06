@@ -102,7 +102,7 @@ function TokenSwatches() {
     <div className="gallery-swatches">
       {TOKEN_SWATCHES.map((s) => (
         <div className="gallery-swatch" key={s.label}>
-          <div className="gallery-swatch-color" style={{ background: s.token }} />
+          <div className="swatch" style={{ background: s.token }} aria-hidden="true" />
           <div className="gallery-swatch-meta"><b>{s.label}</b>{s.role}</div>
         </div>
       ))}

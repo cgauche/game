@@ -20,7 +20,7 @@ import {
   SYMPTOM_SEVERITIES, SYMPTOM_SEVERITY_LABELS,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, shipStations, NAVAL_TRAITS, findCreatureById, findVehicleById, findTrappingById, structures, regles,
   CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
-  conditionLabel, traitProjectingManeuver, materials,
+  conditionLabel, traitProjectingManeuver, materials, terrains, props,
 } from '../../data';
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
@@ -84,6 +84,9 @@ import { reverseGroups, bookContents } from './relations';
 import { formatManeuverMeasure } from './maneuverMeasure';
 import { metaPourFichier, chargeDiscriminee } from '../../data/schemas/validate';
 import { libelleDuChamp } from './editFields';
+// Ordre des arrêts d'une rampe de terrain : SOURCE UNIQUE partagée avec les émetteurs SVG — la fiche
+// Codex lit la rampe dans l'ordre où le rendu la peint, jamais dans l'ordre des clés du Record.
+import { terrainStopsOrdonnes } from '../../gameIso/catalog/terrain';
 import { slugId } from '../../data/slug';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde' | 'Tables';
@@ -135,6 +138,10 @@ export type CodexRow =
   /** Bloc REPLIABLE (`<details class="fold">`) : `summary` visible, `text` (Markdown) dévoilé au clic.
    *  Porte la forme TECHNIQUE d'atelier (« Détail technique ») sous la phrase humaine — cf. `describe`. */
   | { t: 'fold'; summary: string; text: string }
+  /** COULEUR d'une valeur de rendu (teinte d'aperçu, arrêt de rampe) : la pastille PEINTE + le code
+   *  `#rrggbb` en texte — le hex reste lisible et copiable, la couleur cesse d'être à deviner.
+   *  `v` est la couleur telle que la donnée l'écrit (`#rrggbb`), jamais un nom inventé. */
+  | { t: 'couleur'; k: string; v: string }
   /** Note d'atelier NON cliquable, en fin de section (« se tranchent à l'étape 5 ») — jamais un lien,
    *  jamais une règle inventée : un simple repère de parcours (#393 P2, verdict juge vision P1 item 8). */
   | { t: 'nb'; text: string };
@@ -165,6 +172,10 @@ export interface CodexItem {
   tabs?: CodexTab[];
   /** Corps prose en **Markdown** (verbatim de la source), rendu par `<Prose>` (auto-liage des règles). */
   desc?: string;
+  /** Arbitrage MAISON de l'entrée (clé d'enveloppe `maison`, `grammaire/document.ts`) : la raison, en
+   *  clair, d'une valeur qu'aucun folio n'imprime. Projetée par `depuisEnveloppe` et rendue UNE fois
+   *  par `CodexEntry` — c'est la provenance des documents SANS livre (CLAUDE.md règle 7). */
+  maison?: string;
   /** Exergue Markdown VERBATIM (extrait de la desc, jamais reformulé) : citation/tract mis en tête de
    *  fiche sur `ParchmentCard` (bande parchemin). Optionnel — item sans exergue = fiche telle quelle. */
   exergue?: string;
@@ -210,18 +221,19 @@ const src = (s: { book?: string; page?: number } | null | undefined): CodexSourc
  *
  * `source` passe TOUJOURS par `src()` : `d.source` brut porte l'**id** du livre, et l'imprimer
  * afficherait `livre-de-base` au lieu de l'abréviation `LDB` (cf. `CodexSource` ci-dessus).
- * `desc` ET `source` ne sont posées que si la donnée les porte : un champ absent reste ABSENT
+ * `desc`, `maison` ET `source` ne sont posées que si la donnée les porte : un champ absent reste ABSENT
  * (ni `undefined`, ni `null`) — la clé même est l'observable, gelée par `registry-enveloppe.test.ts`.
  * `extras` est fusionné APRÈS le défaut — un `label`/`desc` fourni par la spec l'emporte.
  */
 export function depuisEnveloppe<E extends Partial<CodexItem>>(
-  d: Pick<EnveloppeDocument, 'id' | 'label' | 'desc' | 'source'>,
+  d: Pick<EnveloppeDocument, 'id' | 'label' | 'desc' | 'source' | 'maison'>,
   extras?: E,
 ): CodexItem & E {
   const base: CodexItem = { id: d.id, label: d.label };
   const s = src(d.source);
   if (s) base.source = s;
   if (d.desc !== undefined) base.desc = d.desc;
+  if (d.maison !== undefined) base.maison = d.maison;
   return { ...base, ...extras } as CodexItem & E;
 }
 
@@ -271,6 +283,11 @@ const priceLabel = (p: Money | 'ND' | null | undefined): string | null => {
  *  `weaponStatParts` pour les armes EN MAIN (Sac/popover/fiche personnage). */
 const damageFact = (t: { damage: import('../../engine/types').WeaponDamageSpec | null; qualities: { id: string; value?: number }[]; onHitEffects?: import('../../engine/flowCore').TriggeredEffect[] }): string | undefined =>
   join(t.damage ? damageString(t.damage) : null, conditionalDamageNote(t));
+
+/** Nom d'auteur d'un décor de `props.json` (le catalogue n'a pas de catégorie Codex : il s'édite à la
+ *  palette de l'éditeur de carte, `defs/props.ts`) — lecture VIVE du dataset ; l'id nu tient lieu de
+ *  nom pour une référence hors catalogue, que le parse refuse nominativement (`idDe('prop')`). */
+const propLabel = (id: string): string => props.find((p) => p.id === id)?.label ?? id;
 
 /** Famille d'une race/variante : « Humains (Reiklander) » → « Humains ». */
 const family = (label: string): string => label.split(' (')[0].trim();
@@ -1501,8 +1518,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'axes', label: 'Axes de forces', group: 'Compétences',
-    build: () => allAxes.map((a) => ({
-      id: a.id, label: a.label, desc: a.desc,
+    build: () => allAxes.map((a) => depuisEnveloppe(a, {
       meta: facts(fact('Portée', a.core ? 'Socle de base' : 'Axe de scénario')),
       sections: sections(
         a.skills?.length ? { title: 'Compétences', layout: 'chips', rows: a.skills.map((r) => idRefRow('skills', r.id, r.spec)) } : null,
@@ -2023,6 +2039,41 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     },
   },
   {
+    // Sols de la grille (#1690) : UNE forme sans discriminant — chaque entrée porte les mêmes clés de
+    // RÈGLE (franchissabilité, précédence de raccord, blocage de la vue, surface bâtie, hauteur du bloc
+    // plein) et les mêmes clés de RENDU (teinte, rampe, décor posé). Aucune table de libellés ici : les
+    // noms FR viennent de la méta du def (`libelleDuChamp`), l'ordre des arrêts de rampe de la source
+    // unique `terrainStopsOrdonnes`, et le nom du décor posé de l'entrée `props.json` qu'il référence.
+    key: 'terrains', label: 'Terrains', group: 'Monde',
+    build: () => {
+      const meta = metaPourFichier('terrains.json');
+      const nom = (cle: string) => libelleDuChamp(cle, { meta });
+      return terrains.map((t) => depuisEnveloppe(t, {
+        meta: facts(
+          // `walkable` se dit dans les DEUX sens : un sol infranchissable est le fait le plus lourd de
+          // la fiche, et `valeurDeCharge` (qui tait un booléen faux) l'effacerait.
+          { label: nom('walkable'), value: t.walkable ? 'oui' : 'non' },
+          fact(nom('priority'), t.priority),
+          fact(nom('opaque'), t.opaque ? 'oui' : null),
+          fact(nom('built'), t.built ? 'oui' : null),
+          fact(nom('solidHeightM'), t.solidHeightM != null ? `${t.solidHeightM} m` : null),
+          fact(nom('overlayProp'), t.overlayProp ? propLabel(t.overlayProp) : null),
+        ),
+        // Les DEUX porteurs de couleur du terrain (teinte d'aperçu + arrêts de la rampe) tiennent la
+        // MÊME section : ce sont des couleurs, rendues par la même rangée `couleur` (pastille peinte +
+        // hex). Le titre est écrit ici : la méta d'un def nomme des CHAMPS, aucune section.
+        sections: sections({
+          title: 'Rendu', layout: 'list',
+          rows: [
+            { t: 'couleur', k: nom('swatch'), v: t.swatch } as CodexRow,
+            { t: 'sub', label: nom('stops') } as CodexRow,
+            ...terrainStopsOrdonnes(t.stops).map(([offset, couleur]) => ({ t: 'couleur', k: offset, v: couleur } as CodexRow)),
+          ],
+        }),
+      }));
+    },
+  },
+  {
     key: 'vehicles', label: 'Véhicules', group: 'Monde',
     build: () => vehicles.map((v) => depuisEnveloppe(v, {
       meta: facts(
@@ -2464,7 +2515,6 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         fact('Valeurs', r.options?.join(' · ') ?? null),
         fact('Bornes', r.kind === 'param' && r.min != null && r.max != null ? `de ${r.min} à ${r.max}${r.step ? ` (pas de ${r.step})` : ''}` : null),
         fact('Action attachée', r.action ? `${r.action.label} (si ${ruleValueLabel(r.action.when)})` : null),
-        fact('Valeur maison', r.maison ?? null),
       ),
     })),
   },

@@ -5,7 +5,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import { assertWardrobeId } from './_lib-wardrobe';
@@ -20,7 +20,7 @@ const app: Appearance = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.
 mkdirSync('public/qc/tenue-new', { recursive: true });
 for (const career of CAREERS) {
   const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: app, equip: { weapons: [], armour: [] }, career }));
-  const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150"><defs>${DEFS}</defs>${inner}</svg>`;
+  const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150"><defs>${defsGlobaux()}</defs>${inner}</svg>`;
   writeFileSync(`public/qc/tenue-new/${career}.png`, new Resvg(full, { background: '#2b3142', fitTo: { mode: 'width', value: 320 } }).render().asPng());
 }
 // Montage côte à côte : original (rendu pré-tokenisation, à gauche) n'est pas réimportable ici

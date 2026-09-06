@@ -1,7 +1,7 @@
 /** QC des nouveaux ailés sortis du monolithique (Manticore, Varghulf) vs Griffon. */
 import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveWing, WINGED_SPECIES } from '../src/gameIso/rig/winged/composeWing';
 import type { View } from '../src/gameIso/rig/facing';
@@ -20,6 +20,6 @@ NAMES.forEach((name, r) => {
   });
 });
 const W = 120 + 2 * CW, H = 30 + NAMES.length * CH;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${cells.join('')}</svg>`;
 writeFileSync('public/qc/_qc-newwinged.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: Math.min(1900, W) } }).render().asPng());
 console.log('OK _qc-newwinged.png');

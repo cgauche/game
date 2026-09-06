@@ -8,9 +8,11 @@ import { books } from '../../data';
 /**
  * Gel de FORME du Codex + cliquet de PROVENANCE (#1467 L1b V-CODEX).
  *
- * Le registre projette 125 catégories. À V-CODEX, l'adoption du défaut d'enveloppe (`depuisEnveloppe`)
- * ne changeait RIEN à l'écran ; à T3 (#1472) elle SURFACE ce que la donnée portait déjà, chaque delta
- * étant déclaré au compte dans `T3_DELTAS`. Cinq mesures, aucune n'étant un dump des 4385 items :
+ * Le registre projette une catégorie par entrée des tables ci-dessous (`CLES` les gèle une à une —
+ * un compte recopié dans cette prose se périme au premier lot, il l'était déjà). À V-CODEX,
+ * l'adoption du défaut d'enveloppe (`depuisEnveloppe`) ne changeait RIEN à l'écran ; à T3 (#1472)
+ * elle SURFACE ce que la donnée portait déjà, chaque delta étant déclaré au compte dans `T3_DELTAS`.
+ * Cinq mesures, aucune n'étant un dump des items :
  *
  *  1. CLÉS — le gel STRICT : pour chaque catégorie, le hash de `<id>|<clés triées>` ITEM PAR ITEM.
  *     Aucune valeur n'est filtrée : une clé posée à `undefined`/`null` compte comme présente. C'est
@@ -35,7 +37,19 @@ import { books } from '../../data';
 
 const DATA_DIR = fileURLToPath(new URL('../../data/', import.meta.url));
 
-/** sha256 (16 hex) de `<id>|<clés triées>` par item, jointes par \n — gel STRICT clé par clé. */
+/**
+ * sha256 (16 hex) de `<id>|<clés triées>` par item, jointes par \n — gel STRICT clé par clé.
+ *
+ * #1690 (correctifs du lot 3) : `depuisEnveloppe` projette désormais `maison` — l'arbitrage d'une
+ * entrée qu'aucun folio n'imprime, jusque-là présent en donnée et muet à l'écran. 15 catégories
+ * gagnent la clé sur 102 items (talents 9, axes 9, trappings 2, etats 1, symptoms 1, creatures 1,
+ * traits 3, activities 8, structures 2, terrains 25, crewRoles 7, navalTraits 3, traumas 2,
+ * criticalsJambe 1, reglesOptionnelles 28) : empreintes CLES et FORME recalées à la MESURE ; après le
+ * rebase sur a6c963419 (train #1612 du tronc : Mendier), `effectTables` porte à son tour un `maison`
+ * de premier rang → 16 catégories, empreintes de `activities`/`reglesOptionnelles`/`effectTables` mesurées.
+ * `axes` y entre par une correction : sa projection était écrite à la main (`{ id, label, desc }`)
+ * et court-circuitait le défaut d'enveloppe — l'invariant du bas de fichier l'a dénoncée.
+ */
 const CLES: Record<string, string> = {
   "arcanePhenomena": '68318e5ed9e81981',
   "advancementCosts": '3fca5e9752e2dfab',
@@ -59,15 +73,15 @@ const CLES: Record<string, string> = {
   "classes": '67fd1dcccf18c04c',
   "stars": '4603d87c66f77bb2',
   "skills": '7938829857c61067',
-  "talents": '99ee192563fac692',
-  "axes": 'f86bc9340cdd5451',
-  "trappings": '0419f4973f937162',
+  "talents": 'ea025260f80f752b',
+  "axes": '30e5605961af8d47',
+  "trappings": '711648dd06d431df',
   "siegeEngines": 'a7d8202fa83a7827',
   "weaponGroups": 'cf4eb9c47b2e73f0',
   "qualities": '61b2f19869aadceb',
-  "etats": 'eb017cace5b342cc',
+  "etats": '7e64eca6c569f24e',
   "maladies": '25e48bb168ea15e0',
-  "symptoms": '2b4e9356d95c9ecd',
+  "symptoms": 'f903df541e9b7ff5',
   "mutations": 'a507855641eff14a',
   // #1686 lot 3a-2 : la catégorie « Matières » ouvre (16 items, 3 groupes titrés par le libellé de
   // valeur du discriminant `domain`) — elle QUITTE du même geste la liste des orphelins ci-dessous.
@@ -75,7 +89,7 @@ const CLES: Record<string, string> = {
   "mutationTables": '0d6e17a2d2e12dca',
   // #1612 : la table MAISON `mendier-ennuis` entre au dataset, et sa rangée de gardes porte l'AMENDE
   // (op `money` à `Formula`, rendue par `opRows` comme toute autre op de rangée).
-  "effectTables": '7b5a7770ccd55d94',
+  "effectTables": 'd20de6db72702b5d',
   "maneuvers": '30d7e463b2575792',
   "psychologie": '2287ac1af26a59cb',
   "domains": '4e7ed40a32f916d6',
@@ -83,8 +97,8 @@ const CLES: Record<string, string> = {
   "gods": 'd49beaef5ebba230',
   "ventsTourbillonnants": '9a979156867c5f47',
   // +1 : Chien de trait, EDOC 07 folio 22, #673.
-  "creatures": '1dc9a6d997fc8f50',
-  "traits": 'de5aed639fdc746f',
+  "creatures": '55ac5c9b9846e8ec',
+  "traits": '8931be750818442f',
   "locations": '53ca311b61c2a3f1',
   "books": 'be0011b301362125',
   "careerLevels": '6f86fed09e1f4a98',
@@ -104,7 +118,7 @@ const CLES: Record<string, string> = {
   // #1612 : l'Activité Mendier entre au dataset, et la section « Issues par Degrés de Réussite » REND
   // désormais les ops de chaque bande (primitive `opRows` — chips codex-liées + `rollTable` expansé)
   // là où elle n'en imprimait que le COMPTE (« N op(s) sur le Personnage »).
-  "activities": '17739e557dc6cf2b',
+  "activities": 'a872f5a4c467d4d7',
   "massBattlePowerEstimate": '82674e9e4786f386',
   "massBattleMightModifiers": '8b5e85f5fa1f537a',
   "massBattleWarMachines": 'b77e9b7bc67a8d5b',
@@ -112,24 +126,25 @@ const CLES: Record<string, string> = {
   "massBattleHazards": 'e58c05b6a89d14d1',
   "details": '1d94d0c95e00ff48',
   "names": '8ab7649e0daf9e50',
-  "structures": 'c527dfa510a76d42',
+  "structures": '16630200f1f162ea',
+  "terrains": 'e542c259ce8b1e79',
   "vehicles": 'dcc320ad1f8760a1',
   "celestialHouses": '0507cb49e07e8336',
   "groups": '72ed4fd1de352fae',
   "psychologies": 'a85f35c0a34172ef',
   "seaShanties": '2bf96225710afb8c',
-  "crewRoles": 'b15bfe7c81f93951',
+  "crewRoles": '3d3b869cae4ba90e',
   "crewTestTypes": '9ecd7be284174851',
   // Empreinte recalculée (#1657 B3-2b-a) : le Trait naval `cale` entre au catalogue (MSRC 07 l.94
   // gate le Critique de Superstructure dessus ; MSRC 10 l.90 le dit du navire marchand).
-  "navalTraits": '23e240c3323a150b',
+  "navalTraits": '895d6c4f58df9a3e',
   // NEUF (#1657 B3-2b-a) : catalogue FERMÉ des 5 présences à bord que les livres nomment.
   "shipStations": '4fd49982faa44987',
-  "traumas": '1b9923aa47dbaa69',
+  "traumas": '3c0c6175299715b2',
   "criticalsTete": '2f3e4405abc1be31',
   "criticalsBras": '2888f3a0f39b49c1',
   "criticalsCorps": 'cf02a7f4d323f141',
-  "criticalsJambe": '1098de960887cee0',
+  "criticalsJambe": '21835c6fa04f0a56',
   "aaCriticalsTete": '18319705d4737a23',
   "aaCriticalsBras": '59d82c2f7781002b',
   "aaCriticalsCorps": '2ac41e2426b49db6',
@@ -167,7 +182,7 @@ const CLES: Record<string, string> = {
   // #1599 : +`maladie-conscience-determination-minutes` (LDB 20 l.170, durée maison).
   // #1612 : +5 règles `param` de l'Activité Mendier (heures par journée, discours, apparence, chance
   // d'être surpris, amende des gardes) — LDB 09 l.97/l.99 n'en chiffre aucune.
-  "reglesOptionnelles": 'dfda9e83b89676c9',
+  "reglesOptionnelles": '80f7173eecab7256',
   "surincantation": '561218369ab9cdfd',
   "structureCriticals": '84e0df29c1ae4e21',
   "artilleryMisfire": 'aa3ad3238b5356f8',
@@ -205,27 +220,27 @@ const FORME: Record<string, string> = {
   "classes": 'desc id label sections source',
   "stars": 'desc id label meta sections source sub',
   "skills": 'desc id label meta sections source sub',
-  "talents": 'desc id label meta sections source',
-  "axes": 'desc id label meta sections',
-  "trappings": 'desc id label meta sections source sub',
+  "talents": 'desc id label maison meta sections source',
+  "axes": 'desc id label maison meta sections',
+  "trappings": 'desc id label maison meta sections source sub',
   "siegeEngines": 'appearance desc id label meta previewRef sections source sub',
   "weaponGroups": 'id label sections source sub',
   "qualities": 'desc id label sections source sub',
-  "etats": 'desc id label sections source',
+  "etats": 'desc id label maison sections source',
   "maladies": 'desc id label meta sections source sub',
-  "symptoms": 'desc id label sections source',
+  "symptoms": 'desc id label maison sections source',
   "mutations": 'appearance desc group id label sections source sub',
   "materials": 'group id label meta sub',
   "mutationTables": 'id label sections source sub',
-  "effectTables": 'id label sections source sub',
+  "effectTables": 'id label maison sections source sub',
   "maneuvers": 'desc id label meta sections source sub',
   "psychologie": 'appearance desc group id label meta sections source sub',
   "domains": 'desc id label meta sections source',
   "spells": 'desc id label meta sections source sub',
   "gods": 'desc id label sections source sub',
   "ventsTourbillonnants": 'id label meta sub',
-  "creatures": 'appearance desc group id label meta previewRef sections source statblock sub',
-  "traits": 'appearance desc id label meta sections source sub',
+  "creatures": 'appearance desc group id label maison meta previewRef sections source statblock sub',
+  "traits": 'appearance desc id label maison meta sections source sub',
   "locations": 'desc group id label sections source sub',
   "books": 'desc group id label sections sub',
   "careerLevels": 'group id label sections source sub',
@@ -242,7 +257,7 @@ const FORME: Record<string, string> = {
   "oups": 'id label meta source sub',
   "interludeEvents": 'desc id label source sub',
   "peripeties": 'desc id label source sub',
-  "activities": 'desc id label meta sections source sub',
+  "activities": 'desc id label maison meta sections source sub',
   "massBattlePowerEstimate": 'desc id label meta source',
   "massBattleMightModifiers": 'desc id label meta source',
   "massBattleWarMachines": 'id label meta source',
@@ -250,21 +265,22 @@ const FORME: Record<string, string> = {
   "massBattleHazards": 'desc id label source sub',
   "details": 'id label sections',
   "names": 'id label sections sub',
-  "structures": 'desc id label meta sections source sub',
+  "structures": 'desc id label maison meta sections source sub',
+  "terrains": 'id label maison meta sections',
   "vehicles": 'desc id label meta source',
   "celestialHouses": 'desc id label source sub',
   "groups": 'id label',
   "psychologies": 'desc id label sections source',
   "seaShanties": 'desc id label meta sections source',
-  "crewRoles": 'desc id label sections source',
+  "crewRoles": 'desc id label maison sections source',
   "crewTestTypes": 'id label meta sections source',
-  "navalTraits": 'desc id label sections source sub',
+  "navalTraits": 'desc id label maison sections source sub',
   "shipStations": 'desc id label meta source',
-  "traumas": 'desc id label sections source sub',
+  "traumas": 'desc id label maison sections source sub',
   "criticalsTete": 'desc id label meta sections source sub',
   "criticalsBras": 'desc id label meta sections source sub',
   "criticalsCorps": 'desc id label meta sections source sub',
-  "criticalsJambe": 'desc id label meta sections source sub',
+  "criticalsJambe": 'desc id label maison meta sections source sub',
   "aaCriticalsTete": 'desc id label meta sections source sub',
   "aaCriticalsBras": 'desc id label meta sections source sub',
   "aaCriticalsCorps": 'desc id label meta sections source sub',
@@ -299,7 +315,7 @@ const FORME: Record<string, string> = {
   "montures": 'id label meta sections',
   "tavernGames": 'desc id label meta source',
   "obsessions": 'id label sub',
-  "reglesOptionnelles": 'desc id label meta source sub',
+  "reglesOptionnelles": 'desc id label maison meta source sub',
   "surincantation": 'id label meta source sub',
   "structureCriticals": 'desc id label meta sub',
   "artilleryMisfire": 'desc id label meta sub',
@@ -398,9 +414,6 @@ const PARTIELS: string[] = [
   "sea-weather.json#3 (6)",
   "structureAppearance.json#0 (18)",
   "systemes.manifest.json#0 (16)",
-  // Les 25 sols (#1690) : chaque entrée porte sa provenance `maison`, aucune ne porte de `desc`.
-  // L'exposition Codex du dataset est portée par son def en DETTE ticketée (`defs/terrains.ts`).
-  "terrains.json#0 (25)",
   "water-exposure.json#0 (12)",
 ];
 
@@ -529,7 +542,8 @@ describe('Codex — défaut d’enveloppe (#1467 L1b)', () => {
     expect(orphelins).toEqual(ORPHELINS);
     // 107 → 108 : la catégorie `shipStations` apparie son dataset (#1657 B3-2b-a).
     // 108 → 109 : la catégorie `materials` apparie `materials.json` (#1686 lot 3a-2).
-    expect(apparies.length).toBe(109);
+    // 109 → 110 : la catégorie `terrains` apparie `terrains.json` — les 25 sols quittent `PARTIELS` (#1690 lot 3).
+    expect(apparies.length).toBe(110);
   });
 });
 
@@ -547,5 +561,31 @@ describe('depuisEnveloppe — le défaut lui-même', () => {
   it('desc ET source absentes restent ABSENTES — ni chaîne vide, ni null', () => {
     const item = depuisEnveloppe({ id: 'x', label: 'X' });
     expect(Object.keys(item)).toEqual(['id', 'label']);
+  });
+
+  it('`maison` est projetée telle quelle quand la donnée la porte, et sa CLÉ reste absente sinon', () => {
+    const raison = 'aucun folio n’imprime de catalogue de sols';
+    expect(depuisEnveloppe({ ...enveloppe, maison: raison }).maison).toBe(raison);
+    expect(Object.keys(depuisEnveloppe({ id: 'x', label: 'X' }))).not.toContain('maison');
+  });
+
+  it('la donnée RÉELLE arrive à l’item : toute entrée de `src/data/*.json` portant `maison` le porte au Codex', () => {
+    // INVARIANT, pas un cardinal : le défaut d’enveloppe ne prouve rien seul — c’est le PASSAGE par
+    // les catégories qui compte. Même déduction du mapping que le test de PROVENANCE ci-dessus
+    // (inclusion des ids), donc aucune table à tenir ; une catégorie qui perdrait la projection se
+    // dénoncerait ici avec le NOM de l’entrée muette.
+    const muets: string[] = [];
+    for (const f of readdirSync(DATA_DIR).filter((x) => x.endsWith('.json'))) {
+      for (const arr of tableauxIdentifies(JSON.parse(readFileSync(DATA_DIR + f, 'utf8')))) {
+        const porteuses = arr.filter((e) => typeof e.maison === 'string' && e.maison.length > 0);
+        if (!porteuses.length) continue;
+        for (const c of CODEX) {
+          const byId = new Map(c.items.map((i) => [i.id, i]));
+          if (arr.some((e) => !byId.has(e.id as string))) continue; // couverture PARTIELLE : hors mapping
+          for (const e of porteuses) if (byId.get(e.id as string)!.maison !== e.maison) muets.push(`${c.key}/${e.id}`);
+        }
+      }
+    }
+    expect(muets).toEqual([]);
   });
 });

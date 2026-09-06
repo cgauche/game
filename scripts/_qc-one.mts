@@ -1,7 +1,7 @@
 /** QC focalisé : une ou plusieurs carrières (argv), grandes vues face/profil/dos côte à côte. */
 import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
 import type { Appearance } from '../src/gameIso/rig/appearance';
@@ -32,6 +32,6 @@ careers.forEach((career, r) => {
   });
 });
 const W = LBLW + views.length * CW, H = 30 + careers.length * CH;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${cells.join('')}</svg>`;
 writeFileSync('public/qc/one.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: W } }).render().asPng());
 console.log('OK one.png : ' + careers.join(', '));

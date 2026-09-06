@@ -7,7 +7,7 @@
  *  Usage : npx tsx scripts/_qc-creature-fidelity.mts */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { planById } from '../src/gameIso/rig/bodyPlan';
 import { CREATURES, defId } from '../src/gameIso/rig/creatures';
@@ -25,7 +25,7 @@ for (const c of targets) {
   const id = defId(c);
   const plan = planById(c.plan);
   const body = bonesToSvg(plan.resolve(id, 'profile', plan.restPose(), {}));
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs>` +
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs>` +
     `<rect width="${W}" height="${H}" fill="${BG}"/>${body}</svg>`;
   const png = new Resvg(svg, { background: BG, fitTo: { mode: 'width', value: 480 } }).render().asPng();
   const path = `${OUT_DIR}/${id}.png`;

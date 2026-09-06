@@ -4,7 +4,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import { tenueLabel } from '../src/gameIso/rig/parts/career';
 import { assertWardrobeId } from './_lib-wardrobe';
@@ -24,7 +24,7 @@ CASES.forEach((cse, r) => {
     cells.push(`<g transform="translate(${c * 124},${r * 168})"><rect width="120" height="150" fill="#1d2230"/>${svg}<text x="60" y="164" text-anchor="middle" font-size="10" fill="#cdd">${cse.label} / ${view}</text></g>`);
   });
 });
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${3 * 124} ${2 * 168}"><defs>${DEFS}</defs>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${3 * 124} ${2 * 168}"><defs>${defsGlobaux()}</defs>${cells.join('')}</svg>`;
 // Gros zoom sur le bas (pieds) en plus.
 const r = new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: 3 * 300 } });
 writeFileSync('public/qc/feet.png', r.render().asPng());

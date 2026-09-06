@@ -9,7 +9,7 @@ import { planById } from '../src/gameIso/rig/bodyPlan';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import type { View } from '../src/gameIso/rig/facing';
 import { ENGIN_ARTS } from '../src/gameIso/rig/engin/_registry.generated';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 
 const VIEWS: View[] = ['front', 'profile', 'back'];
 const ids = ENGIN_ARTS.map((a) => a.id).slice().sort((a, b) => a.localeCompare(b, 'fr'));
@@ -18,7 +18,7 @@ function cell(id: string, view: View) {
   const plan = planById('engin');
   const svg = bonesToSvg(plan.resolve(id, view, plan.restPose(), {}));
   return `<figure style="margin:0;text-align:center">` +
-    `<div><svg viewBox="0 0 120 150" width="92" height="115"><defs>${DEFS}</defs>` +
+    `<div><svg viewBox="0 0 120 150" width="92" height="115"><defs>${defsGlobaux()}</defs>` +
     `<rect width="120" height="150" fill="${view === 'back' ? '#241a1a' : '#1b1f2b'}"/>${svg}</svg></div>` +
     `<figcaption style="color:#bcd;font:10px sans-serif">${view}</figcaption></figure>`;
 }

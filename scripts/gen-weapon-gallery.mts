@@ -8,7 +8,7 @@ import { writeFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { weaponFamily } from '../src/gameIso/rig/parts/equipment';
 import trappings from '../src/data/trappings.json';
 import { weaponGroups } from '../src/data';
@@ -38,7 +38,7 @@ function fig(w: Weapon, shield = false) {
     : { weapons: [w], armour: [] };
   const svg = renderToStaticMarkup(
     React.createElement('svg', { viewBox: '0 0 120 150', width: 92, height: 115 },
-      React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
+      React.createElement('defs', { dangerouslySetInnerHTML: { __html: defsGlobaux() } }),
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#1d2230' }),
       React.createElement(RigSprite, { appearance: { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 4 }, equip, career: MANNEQUIN }),
     ),

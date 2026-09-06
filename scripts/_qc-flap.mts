@@ -1,7 +1,7 @@
 /** Vérif du battement : ailes au repos vs levées (pose aileD/aileG). */
 import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveWing, WINGED_SPECIES } from '../src/gameIso/rig/winged/composeWing';
 import type { View } from '../src/gameIso/rig/facing';
@@ -24,6 +24,6 @@ rows.forEach((r, i) => {
   cells.push(`<g transform="translate(${ox},${oy})"><rect width="${CW - 8}" height="${CH - 10}" fill="#2b3142"/><g transform="translate(${cx - 60 * SC},${FEET - 150 * SC}) scale(${SC})">${inner}</g><text x="${cx}" y="${CH - 16}" text-anchor="middle" font-size="13" fill="#cdd" font-family="sans-serif">${r.name} ${r.view} ${Object.keys(r.pose).length ? 'AILES LEVÉES' : 'repos'}</text></g>`);
 });
 const W = 10 + 3 * CW, H = 10 + 2 * CH;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${cells.join('')}</svg>`;
 writeFileSync('public/qc/_qc-flap.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: W } }).render().asPng());
 console.log('OK _qc-flap.png');

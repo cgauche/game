@@ -1,4 +1,4 @@
-import { DEFS } from '../gameIso/sprites';
+import { defsGlobaux } from '../gameIso/sprites';
 
 /** Injection UNIQUE des <defs> partagés (dégradés terrain + rig/FX) pour tout le document :
  *  les références SVG url(#id) se résolvent au niveau du DOCUMENT, donc un seul hôte monté
@@ -8,7 +8,7 @@ import { DEFS } from '../gameIso/sprites';
 export function GlobalSvgDefs() {
   return (
     <svg width={0} height={0} style={{ position: 'absolute' }} aria-hidden focusable="false">
-      <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
+      <defs dangerouslySetInnerHTML={{ __html: defsGlobaux() }} />
     </svg>
   );
 }

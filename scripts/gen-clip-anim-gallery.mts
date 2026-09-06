@@ -7,7 +7,7 @@
 import type { Pose } from '../src/gameIso/rig/poses';
 import { writeFileSync } from 'node:fs';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { addPose } from '../src/gameIso/rig/poses';
 import { CLIPS, sampleClip, clipDuration, type Clip } from '../src/gameIso/rig/anim/clips';
 import { spellCastClip } from '../src/gameIso/rig/anim/spellClips';
@@ -39,7 +39,7 @@ function tile(label: string, clip: Clip, app: Appearance, equip: EquipCtx, caree
   const { css, svg } = animatedRig(samples, dur, uid);
   styles.push(css);
   return `<figure style="margin:0;text-align:center">
-    <svg viewBox="0 0 120 150" width="104" height="130"><defs>${DEFS}</defs><rect width="120" height="150" fill="${bg}"/>${svg}</svg>
+    <svg viewBox="0 0 120 150" width="104" height="130"><defs>${defsGlobaux()}</defs><rect width="120" height="150" fill="${bg}"/>${svg}</svg>
     <figcaption style="color:#bcd;font:11px sans-serif">${label}</figcaption></figure>`;
 }
 
@@ -85,7 +85,7 @@ function mountedTile(label: string, weapon: Weapon | undefined, clip: Clip) {
   const { css, svg } = animatedRig(samples, dur, uid);
   styles.push(css);
   return `<figure style="margin:0;text-align:center">
-    <svg viewBox="0 0 120 150" width="140" height="175"><defs>${DEFS}</defs><rect width="120" height="150" fill="#1d2230"/>${svg}</svg>
+    <svg viewBox="0 0 120 150" width="140" height="175"><defs>${defsGlobaux()}</defs><rect width="120" height="150" fill="#1d2230"/>${svg}</svg>
     <figcaption style="color:#bcd;font:11px sans-serif">${label}</figcaption></figure>`;
 }
 const wm = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ label: name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);

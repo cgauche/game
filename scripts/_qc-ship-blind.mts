@@ -5,7 +5,7 @@
  *  Usage : npx tsx scripts/_qc-ship-blind.mts */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { planById } from '../src/gameIso/rig/bodyPlan';
 import { SHIP_ARTS } from '../src/gameIso/rig/ship/_registry.generated';
@@ -19,7 +19,7 @@ const BG = '#243040';
 const out: Record<string, string> = {};
 for (const { id } of SHIP_ARTS) {
   const body = bonesToSvg(plan.resolve(id, 'profile', plan.restPose(), {}));
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs>` +
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs>` +
     `<rect width="${W}" height="${H}" fill="${BG}"/>${body}</svg>`;
   const png = new Resvg(svg, { background: BG, fitTo: { mode: 'width', value: 480 } }).render().asPng();
   const path = `public/qc/ships-blind/${id}.png`;

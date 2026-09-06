@@ -1,7 +1,7 @@
 /** QC AVEUGLE des ailés — sans label (n° seulement). → public/qc/_winged-blind.png */
 import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveWing, WINGED_SPECIES } from '../src/gameIso/rig/winged/composeWing';
 import type { View } from '../src/gameIso/rig/facing';
@@ -24,6 +24,6 @@ TRUTH.forEach((name, idx) => {
   });
 });
 const W = 10 + 2 * CW, H = 30 + 2 * CH;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#171b24"/><text x="10" y="20" font-size="14" fill="#9fb0c8" font-family="sans-serif">Identifie chaque creature ailee (profil + face)</text>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#171b24"/><text x="10" y="20" font-size="14" fill="#9fb0c8" font-family="sans-serif">Identifie chaque creature ailee (profil + face)</text>${cells.join('')}</svg>`;
 writeFileSync('public/qc/_winged-blind.png', new Resvg(full, { background: '#171b24', fitTo: { mode: 'width', value: W * 2 } }).render().asPng());
 console.log('OK _winged-blind.png');

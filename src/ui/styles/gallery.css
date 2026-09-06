@@ -115,8 +115,15 @@
   overflow: hidden;
   background: var(--bg2);
 }
-.gallery-swatch-color {
-  height: 34px;
+/* Bande de jeton : la primitive `.swatch` (components.css) à la taille de la carte — la carte porte
+   déjà bordure et coins, la bande ne les redouble pas. */
+.gallery-swatch > .swatch {
+  --swatch-display: block;
+  --swatch-w: 100%;
+  --swatch-h: 34px;
+  --swatch-gap: 0;
+  --swatch-border: 0;
+  --swatch-radius: 0;
 }
 .gallery-swatch-meta {
   padding: 5px 8px 7px;

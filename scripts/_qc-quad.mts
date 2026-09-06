@@ -3,7 +3,7 @@
  *  → public/qc/quad.png. Lancer : npx tsx scripts/_qc-quad.mts */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveQuad } from '../src/gameIso/rig/quadruped/composeQuad';
 import { quadWalkPose, quadBitePose, QUAD_DEATH } from '../src/gameIso/rig/quadruped/quadPose';
@@ -43,6 +43,6 @@ species.forEach((sp, r) => {
 
 mkdirSync('public/qc', { recursive: true });
 const W = 92 + COLS.length * CW, H = 30 + species.length * CH;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/><text x="12" y="20" font-size="15" fill="#d8a93b" font-family="sans-serif">Gabarit QUADRUPÈDE (prod) — ${species.length} espèces × ${COLS.length} vues (pipeline ResolvedBone[])</text>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#11141c"/><text x="12" y="20" font-size="15" fill="#d8a93b" font-family="sans-serif">Gabarit QUADRUPÈDE (prod) — ${species.length} espèces × ${COLS.length} vues (pipeline ResolvedBone[])</text>${cells.join('')}</svg>`;
 writeFileSync('public/qc/quad.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: Math.min(2400, W * 2) } }).render().asPng());
 console.log(`OK → public/qc/quad.png (${species.length} espèces × ${COLS.length} vues)`);

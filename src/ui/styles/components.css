@@ -267,6 +267,20 @@
   min-width: 0;
 }
 
+/* ── PASTILLE PEINTE (`.swatch`) ── Carré/bande peint à une couleur de DONNÉE (posée en style inline
+   par l'appelant) : rangée `couleur` d'une fiche du Codex, bande de jeton de la galerie. Toujours
+   DÉCORATIVE (`aria-hidden`) — le hex ou le nom du jeton est écrit à côté. La FORME se règle par
+   variables au contexte, jamais par une classe de plus. */
+.swatch {
+  display: var(--swatch-display, inline-block);
+  width: var(--swatch-w, 11px);
+  height: var(--swatch-h, 11px);
+  margin-right: var(--swatch-gap, 4px);
+  vertical-align: -1px;
+  border: var(--swatch-border, 1px solid var(--border));
+  border-radius: var(--swatch-radius, 3px);
+}
+
 /* ── CHIP / badge ── (.tag reste un alias historique) */
 .chip {
   display: inline-flex;

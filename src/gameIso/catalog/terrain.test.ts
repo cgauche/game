@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { terrainDef, terrainGradient, terrainGradientId, terrainStopsOrdonnes, MISSING_GRADIENT } from './terrain';
 import { tousLesTerrains, type TerrainDef } from '../../state/terrain';
-import { DEFS, degradesDeTerrains } from '../sprites';
+import { defsGlobaux, degradesDeTerrains } from '../sprites';
 import { MISSING_ID, MISSING_TONE } from './missing';
 
 describe('présentation des terrains (dégradé/aperçu dérivés du dataset)', () => {
@@ -20,20 +20,20 @@ describe('présentation des terrains (dégradé/aperçu dérivés du dataset)', 
     expect(tousLesTerrains().map((t) => terrainGradientId(t.id))).not.toContain(MISSING_GRADIENT);
   });
 
-  it('DEFS émet le dégradé d’alarme du repli, prêt à peindre la case fautive', () => {
-    expect(DEFS).toContain(`<linearGradient id="${MISSING_GRADIENT}"`);
-    expect(DEFS).toContain(`stop-color="${MISSING_TONE}"`);
+  it('defsGlobaux() émet le dégradé d’alarme du repli, prêt à peindre la case fautive', () => {
+    expect(defsGlobaux()).toContain(`<linearGradient id="${MISSING_GRADIENT}"`);
+    expect(defsGlobaux()).toContain(`stop-color="${MISSING_TONE}"`);
   });
 
-  it('DEFS n’émet AUCUN id de dégradé en double — terrains, alarme et rig/FX cohabitent sans s’éteindre', () => {
-    const ids = idsDeDegrade(DEFS);
+  it('defsGlobaux() n’émet AUCUN id de dégradé en double — terrains, alarme et rig/FX cohabitent sans s’éteindre', () => {
+    const ids = idsDeDegrade(defsGlobaux());
     const doubles = [...new Set(ids.filter((id, i) => ids.indexOf(id) !== i))];
     expect(
       doubles,
-      `DEFS émet deux fois le(s) dégradé(s) ${doubles.join(', ')} : SVG ne garde que la DERNIÈRE définition, ` +
+      `defsGlobaux() émet deux fois le(s) dégradé(s) ${doubles.join(', ')} : SVG ne garde que la DERNIÈRE définition, ` +
         'et son porteur se peint aux couleurs de l’autre (le partage de rampe de #1690, réarmé).',
     ).toEqual([]);
-    // Sans ce plancher, un `DEFS` vide rendrait le contrat vert sans rien mesurer.
+    // Sans ce plancher, un `defsGlobaux()` vide rendrait le contrat vert sans rien mesurer.
     expect(ids.length).toBeGreaterThan(tousLesTerrains().length);
     for (const t of tousLesTerrains()) expect(ids, t.id).toContain(terrainGradientId(t.id));
   });
@@ -66,9 +66,9 @@ describe('rampe d’un terrain — l’ordre des arrêts est celui de l’ÉMISS
     expect(offsetsDuDegrade(emis, terrainGradientId(renverse.id))).toEqual([0, 45, 100]);
   });
 
-  it('DEFS compose CET émetteur sur le dataset — chaque terrain y porte ses arrêts croissants', () => {
+  it('defsGlobaux() compose CET émetteur sur le dataset — chaque terrain y porte ses arrêts croissants', () => {
     for (const t of tousLesTerrains()) {
-      const offsets = offsetsDuDegrade(DEFS, terrainGradientId(t.id));
+      const offsets = offsetsDuDegrade(defsGlobaux(), terrainGradientId(t.id));
       expect(offsets, t.id).toEqual(terrainStopsOrdonnes(t.stops).map(([off]) => Number.parseInt(off, 10)));
       expect(offsets, t.id).toEqual([...offsets].sort((a, b) => a - b));
     }

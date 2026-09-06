@@ -5,7 +5,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { propSvg } from '../src/gameIso/catalog/decor';
 
 // Ordre MÉLANGÉ (coffre près de caisse pour tester la confusion). Nouveaux = lettre/coffre/cle/bourse/etagere.
@@ -19,6 +19,6 @@ const tiles = slugs.map((id, i) => {
     `<text x="8" y="18" font-size="12" fill="#ffffff" opacity="0.5">${i + 1}</text></g>`;
 });
 const W = slugs.length * CW;
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${CH}"><defs>${DEFS}</defs>${tiles.join('')}</svg>`;
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${CH}"><defs>${defsGlobaux()}</defs>${tiles.join('')}</svg>`;
 writeFileSync('public/qc/sp2-decor.png', new Resvg(svg, { background: '#2a3320', fitTo: { mode: 'width', value: W * 3 } }).render().asPng());
 console.log('wrote public/qc/sp2-decor.png — order:', slugs.join(', '));

@@ -2,7 +2,7 @@
  *  inter-vues et repérer celles à doter d'un art directionnel dédié. */
 import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
 import type { Appearance } from '../src/gameIso/rig/appearance';
@@ -35,6 +35,6 @@ const rows = CAREERS.map((career, r) => {
   return `<g transform="translate(6,${30 + r * ROWH})"><text x="0" y="${ROWH / 2}" font-size="10" fill="#d8a93b" font-family="sans-serif">${tenueLabel(career)}</text>${cells}</g>`;
 });
 const W = 6 + LBLW + VIEWS.length * (SUB + GAP), H = 30 + CAREERS.length * ROWH;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/><text x="6" y="18" font-size="11" fill="#cdd" font-family="sans-serif">Carrières — face / profil / dos (cohérence inter-vues)</text>${rows.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#11141c"/><text x="6" y="18" font-size="11" fill="#cdd" font-family="sans-serif">Carrières — face / profil / dos (cohérence inter-vues)</text>${rows.join('')}</svg>`;
 writeFileSync('public/qc/careers-views.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: W * 2 } }).render().asPng());
 console.log('OK careers-views.png —', CAREERS.join(', '));

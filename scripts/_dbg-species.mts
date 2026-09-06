@@ -2,7 +2,7 @@ import { writeFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { Weapon } from '../src/engine/types';
@@ -19,7 +19,7 @@ const wep = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ lab
 function cell(label: string, app: Appearance, w?: Weapon) {
   const svg = renderToStaticMarkup(
     React.createElement('svg', { viewBox: '0 0 120 150', width: 130, height: 162 },
-      React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
+      React.createElement('defs', { dangerouslySetInnerHTML: { __html: defsGlobaux() } }),
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#1b1f2b' }),
       React.createElement('line', { x1: 0, y1: 150, x2: 120, y2: 150, stroke: '#2ecc71', strokeWidth: 1, strokeDasharray: '3 3' }),
       React.createElement('line', { x1: 0, y1: 0, x2: 120, y2: 0, stroke: '#e74c3c', strokeWidth: 1 }),

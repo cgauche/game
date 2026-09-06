@@ -100,7 +100,7 @@ la vue, jamais en allongeant la liste.**
   le **repère LOCAL de son os** : **origine (0,0) au pivot (l'articulation)**.
 - **Sens des axes** : +x = droite, **+y = vers le bas de l'écran** (SVG standard). Pour les
   membres, +y va du joint vers l'**extrémité distale** (épaule→main, hanche→pied).
-- **Gradients partagés** (définis une fois dans `DEFS`, cf. sprites.ts) : `g_steel`, `g_steelD`,
+- **Gradients partagés** (définis une fois dans `defsGlobaux()`, cf. sprites.ts) : `g_steel`, `g_steelD`,
   `g_flesh`, `g_cloak`, `g_robe`, `g_coat`, `g_axe`, `g_glow`, `g_eye`, `g_crest`, `g_hVest`.
   Sinon couleurs hex — MAIS **jamais pour la CHAIR** (voir ci-dessous). Matériaux d'armure : cuir
   `#6a4a2a`, maille `url(#g_steelD)`, plaque `url(#g_steel)`, rembourré `#9a8a6a`.

@@ -8,7 +8,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { propSvg } from '../../src/gameIso/catalog/decor';
 import { PROPS } from '../../src/gameIso/catalog/decor';
-import { DEFS } from '../../src/gameIso/sprites';
+import { defsGlobaux } from '../../src/gameIso/sprites';
 
 const NEW = ['chaise', 'tabouret', 'armoire', 'bureau', 'etabli', 'lit', 'miroir', 'table'];
 
@@ -32,7 +32,7 @@ const cells = NEW.map((id, i) => {
   );
 });
 
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#1b1f29"/>${cells.join('')}</svg>`;
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#1b1f29"/>${cells.join('')}</svg>`;
 const png = new Resvg(svg, { fitTo: { mode: 'width', value: W * 2 }, font: { loadSystemFonts: true } }).render().asPng();
 mkdirSync('public/qc', { recursive: true });
 writeFileSync('public/qc/furniture.png', png);

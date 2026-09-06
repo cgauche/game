@@ -1,6 +1,6 @@
 /**
  * QC one-off : planche-contact de TOUS les décors (props) — chaque prop rendu dans sa boîte 120×150,
- * sur fond sombre, avec les dégradés (DEFS) + les classes d'ambiance (anim.css). Sert à relire d'un
+ * sur fond sombre, avec les dégradés (`defsGlobaux`) + les classes d'ambiance (anim.css). Sert à relire d'un
  * coup d'œil les nouveaux assets. Sortie : public/qc-decor.html (servi par Vite : /qc-decor.html).
  * Lancer : npx tsx scripts/_qc-decor-sheet.mts [--new=id1,id2] (met en avant ces props et n'affiche qu'eux)
  */
@@ -8,7 +8,7 @@ import { writeFileSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PROPS, propSvg, propViewSvg } from '../src/gameIso/catalog/decor/index';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import type { View } from '../src/gameIso/rig/facing';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -23,7 +23,7 @@ const all = Object.keys(PROPS).sort((a, b) => (HIGHLIGHT.has(b) ? 1 : 0) - (HIGH
 const ids = onlyNew ? all.filter((id) => HIGHLIGHT.has(id)) : all;
 const W = onlyNew ? 168 : 120, H = onlyNew ? 210 : 150;
 const svgBox = (svg: string) =>
-  `<svg viewBox="0 0 120 150" width="${W}" height="${H}"><defs>${DEFS}</defs>${svg}</svg>`;
+  `<svg viewBox="0 0 120 150" width="${W}" height="${H}"><defs>${defsGlobaux()}</defs>${svg}</svg>`;
 
 const cells = ids.map((id) => {
   let svg: string;

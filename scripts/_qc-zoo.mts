@@ -7,7 +7,7 @@ import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { creatures } from '../src/data';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import type { View } from '../src/gameIso/rig/facing';
 
 const SEED = 7;
@@ -36,7 +36,7 @@ const rows = ids.map((id, ri) => {
     `<text x="${2 * CW + 8}" y="58" font-size="10" fill="#8ab" font-family="sans-serif">${res.kind}/${res.plan}/${res.species}</text></g>`;
 });
 const W = 2 * CW + 280, H = ids.length * CH;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${rows.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${rows.join('')}</svg>`;
 mkdirSync('public/qc', { recursive: true });
 writeFileSync('public/qc/zoo.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: W * 2 } }).render().asPng());
 console.log(`OK -> public/qc/zoo.png (${ids.length})`);

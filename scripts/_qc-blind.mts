@@ -3,7 +3,7 @@
  *  que les agents ne voient pas). → public/qc/_blind-sheet.png + public/qc/_blind-truth.json */
 import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
 import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
@@ -45,7 +45,7 @@ TRUTH.forEach(([name, weapon], idx) => {
   });
 });
 const W = 10 + COLS * CW, H = 36 + Math.ceil(TRUTH.length / COLS) * CH + 10;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#171b24"/><text x="10" y="22" font-size="15" fill="#9fb0c8" font-family="sans-serif">Identifie chaque creature (face + profil par case)</text>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#171b24"/><text x="10" y="22" font-size="15" fill="#9fb0c8" font-family="sans-serif">Identifie chaque creature (face + profil par case)</text>${cells.join('')}</svg>`;
 writeFileSync('public/qc/_blind-sheet.png', new Resvg(full, { background: '#171b24', fitTo: { mode: 'width', value: W * 2 } }).render().asPng());
 writeFileSync('public/qc/_blind-truth.json', JSON.stringify(TRUTH.map(([n], i) => ({ cell: i + 1, truth: n })), null, 2));
 console.log('OK _blind-sheet.png (' + TRUTH.length + ' cases)');

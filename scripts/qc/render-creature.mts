@@ -9,7 +9,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { bonesToSvg } from '../../src/gameIso/rig/renderBones';
-import { DEFS } from '../../src/gameIso/sprites';
+import { defsGlobaux } from '../../src/gameIso/sprites';
 import { planById } from '../../src/gameIso/rig/bodyPlan';
 import { CREATURES } from '../../src/gameIso/rig/creatures';
 import { norm } from '../../src/lib/normalize';
@@ -40,7 +40,7 @@ if (typeof plan.speciesNames === 'function' && !plan.speciesNames().includes(def
 
 for (const view of ['profile', 'front'] as View[]) {
   const bones = plan.resolve(def.id, view, plan.restPose(), {});
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150" width="120" height="150"><defs>${DEFS}</defs><rect width="120" height="150" fill="#1d2230"/>${bonesToSvg(bones)}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150" width="120" height="150"><defs>${defsGlobaux()}</defs><rect width="120" height="150" fill="#1d2230"/>${bonesToSvg(bones)}</svg>`;
   const png = new Resvg(svg, { fitTo: { mode: 'width', value: 620 }, font: { loadSystemFonts: true } }).render().asPng();
   const f = `${outDir}/${prefix}-${view}.png`;
   writeFileSync(f, png);

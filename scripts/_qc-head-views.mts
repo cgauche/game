@@ -2,7 +2,7 @@
  *  Isole le défaut « tête abominable » de profil/dos. Plusieurs espèces × sexes. */
 import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
 import type { Appearance } from '../src/gameIso/rig/appearance';
@@ -44,6 +44,6 @@ ROWS.forEach((row, r) => {
   });
 });
 const W = 10 + VIEWS.length * CW, H = 30 + ROWS.length * CH;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/><text x="12" y="18" font-size="12" fill="#d8a93b" font-family="sans-serif">Têtes — visage + cheveux par vue (diagnostic profil/dos)</text>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#11141c"/><text x="12" y="18" font-size="12" fill="#d8a93b" font-family="sans-serif">Têtes — visage + cheveux par vue (diagnostic profil/dos)</text>${cells.join('')}</svg>`;
 writeFileSync('public/qc/head-views.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: W * 2 } }).render().asPng());
 console.log('OK head-views.png');

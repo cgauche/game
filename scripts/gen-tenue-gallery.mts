@@ -1,10 +1,10 @@
 /** Galerie des tenues SPÉCIFIQUES (rig, art tokenisé + palette par défaut), GRANDES vignettes.
- *  Inline SVG self-contained (DEFS par vignette). Lancer : npx tsx scripts/gen-tenue-gallery.mts → public/tenue-gallery.html */
+ *  Inline SVG self-contained (`defsGlobaux` par vignette). Lancer : npx tsx scripts/gen-tenue-gallery.mts → public/tenue-gallery.html */
 import { writeFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { SPECIFIC_TENUES } from '../src/gameIso/rig/parts/tenues';
 import { assertTenueCatalogId } from './_lib-wardrobe';
 import type { Appearance } from '../src/gameIso/rig/appearance';
@@ -26,7 +26,7 @@ const cells = tenues
   .map(({ id, label }) => {
     const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: app, equip: { weapons: [], armour: [] }, career: id }));
     return (
-      `<figure class="cell"><svg viewBox="0 0 ${CW} ${CH}" width="${CW}" height="${CH}"><defs>${DEFS}</defs>` +
+      `<figure class="cell"><svg viewBox="0 0 ${CW} ${CH}" width="${CW}" height="${CH}"><defs>${defsGlobaux()}</defs>` +
       `<ellipse cx="${CW / 2}" cy="${CH - 14}" rx="${Math.round(30 * SC)}" ry="${Math.round(8 * SC)}" fill="#000" opacity="0.35"/>` +
       `<g transform="translate(${CW / 2 - 60 * SC},6) scale(${SC})">${inner}</g>` +
       `</svg><figcaption>${label}</figcaption></figure>`

@@ -40,7 +40,7 @@ import { faceDepthOf } from './faceRelief';
 import { BB_W, BB_H } from '../../pov/billboardCore';
 import { povDepth } from '../../pov/camera';
 import { type BillboardKind } from './billboardMath';
-import { DEFS } from '../../sprites';
+import { defsGlobaux } from '../../sprites';
 import { tousLesTerrains } from '../../../state/terrain';
 import { propSvg } from '../../catalog/decor';
 import { AMBIANCE, METEO_SANS_EFFET, type WeatherLight } from '../../catalog/ambiance';
@@ -816,7 +816,7 @@ export function wholeSceneBillboardEls(scene: Scene): SceneBillboardEls {
  *  le builder qui garantit qu'une entité enrôlée n'est pas dessinée deux fois. */
 export function collectBillboards(scene: Scene, mpt: number, els: SceneBillboardEls): BillboardSubject[] {
   const out: BillboardSubject[] = [];
-  const defs = `<defs>${DEFS}</defs>`;
+  const defs = `<defs>${defsGlobaux()}</defs>`;
   for (const tk of els.tokens) {
     if (tk.subject.kind !== 'figurant') continue;
     const { ent, enrolled, seat } = tk.subject;
@@ -1295,7 +1295,7 @@ function tiltFracAtFrame(k: number, n: number): number {
  *  TERRE, et la pose d'os seule ne le couche pas — un rig sous `CORPSE_POSE` sans rotation reste
  *  DEBOUT, membres écartés (mesuré à l'écran : un Gobelin mis hors de combat restait planté). */
 export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt: number): BillboardSubject[] {
-  const defs = `<defs>${DEFS}</defs>`;
+  const defs = `<defs>${defsGlobaux()}</defs>`;
   const out: BillboardSubject[] = [];
   for (const { c, x, y, z, facing, rider, heroIndex, seat } of actors) {
     if (isStructure(c)) continue;

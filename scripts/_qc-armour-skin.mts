@@ -4,7 +4,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { armourPart } from '../src/gameIso/rig/parts/equipment';
 import { pickView } from '../src/gameIso/rig/parts/types';
 import type { ItemInstance } from '../src/engine/types';
@@ -33,6 +33,6 @@ SKINS.forEach(([tag, skin], row) => {
   });
 });
 const W = COLS * CW, H = SKINS.length * CH;
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs>${tiles.join('')}</svg>`;
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs>${tiles.join('')}</svg>`;
 writeFileSync('public/qc/armour-skin.png', new Resvg(svg, { background: '#11141c', fitTo: { mode: 'width', value: W * 3 } }).render().asPng());
 console.log('OK → public/qc/armour-skin.png');

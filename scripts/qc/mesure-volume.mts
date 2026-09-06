@@ -74,7 +74,7 @@ import { toSvg } from '../../src/gameIso/rig/kinematics';
 import { SLOT_BONES, type BoneId, type Slot } from '../../src/gameIso/rig/bones';
 import { buildTokenMap, lum, SLOTS } from '../../src/gameIso/rig/palette';
 import type { PartArt } from '../../src/gameIso/rig/parts/types';
-import { DEFS } from '../../src/gameIso/sprites';
+import { defsGlobaux } from '../../src/gameIso/sprites';
 import { TENUE_BY_ID, TENUE_PALETTE_BY_ID, SPECIFIC_TENUES, CLASS_TENUE_BY_ID } from '../../src/gameIso/rig/parts/tenues';
 import { slugId } from '../../src/data/slug';
 import type { Appearance } from '../../src/gameIso/rig/appearance';
@@ -199,7 +199,7 @@ function renderPng(bones: ResolvedBone[], keep: (id: string) => boolean): Img {
     .filter((b) => b.parts.length > 0)
     .map(boneGroup)
     .join('');
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${VB_W} ${VB_H}" width="${VB_W}" height="${VB_H}"><defs>${DEFS}</defs>${body}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${VB_W} ${VB_H}" width="${VB_W}" height="${VB_H}"><defs>${defsGlobaux()}</defs>${body}</svg>`;
   return decodePng(Buffer.from(new Resvg(svg, { fitTo: { mode: 'width', value: RENDER_W }, font: { loadSystemFonts: true } }).render().asPng()));
 }
 

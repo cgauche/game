@@ -8,7 +8,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { propSvg } from '../../src/gameIso/catalog/decor';
-import { DEFS } from '../../src/gameIso/sprites';
+import { defsGlobaux } from '../../src/gameIso/sprites';
 
 const ROTS = [0, 1, 2, 3] as const;
 const LABELS = ['rot 0 (dos, regarde N)', 'rot 1', 'rot 2 (face)', 'rot 3'];
@@ -27,7 +27,7 @@ const cells = ROTS.map((rot, i) => {
   );
 });
 
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#1b1f29"/>${cells.join('')}</svg>`;
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#1b1f29"/>${cells.join('')}</svg>`;
 const png = new Resvg(svg, { fitTo: { mode: 'width', value: W * 2 }, font: { loadSystemFonts: true } }).render().asPng();
 mkdirSync('public/qc', { recursive: true });
 writeFileSync('public/qc/siege.png', png);

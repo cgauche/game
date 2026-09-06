@@ -257,7 +257,7 @@ const blaireau = (over: Partial<Combatant> = {}): Combatant => ({
 
 /** Le CORPS du fragment, rendu de face — sans les `<defs>` que `actorBillboards` préfixe : la palette
  *  partagée y porte le dégradé d'alarme du repli visible, présent sur TOUT fragment (il ne dit donc
- *  rien du corps rendu, cf. `sprites.DEFS`). */
+ *  rien du corps rendu, cf. `sprites.defsGlobaux()`). */
 const corps = (mount: Combatant, avecCavalier = true): string =>
   actorBillboards([{ c: mount, ...(avecCavalier ? { rider: cavalier() } : {}), x: 1, y: 1, z: 0 }], scene, mpt)[0]
     .svg('front', false, 0)

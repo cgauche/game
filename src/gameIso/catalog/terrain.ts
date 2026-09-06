@@ -21,13 +21,13 @@ export const terrainStopsOrdonnes = (stops: TerrainStops): [string, string][] =>
  */
 export const terrainGradientId = (id: string): string => `g_${id}`;
 
-/** Dégradé de REPLI VISIBLE (#877) : id du `<linearGradient>` d'alarme émis par `DEFS` (`gameIso/sprites`)
+/** Dégradé de REPLI VISIBLE (#877) : id du `<linearGradient>` d'alarme émis par `defsGlobaux()` (`gameIso/sprites`)
  *  à côté des dégradés de terrain — un id de terrain absent du dataset peint la case en magenta criard,
  *  jamais l'herbe (ni aucun autre terrain réel). */
 export const MISSING_GRADIENT = 'g_terrain_manquant';
 
 /** Entrée de REPLI VISIBLE (#877) : un terrain au ton d'alarme, jamais l'apparence d'un autre terrain.
- *  `stops` VIDE : le dégradé peint du repli est `MISSING_GRADIENT`, émis par `DEFS` — une rampe recopiée
+ *  `stops` VIDE : le dégradé peint du repli est `MISSING_GRADIENT`, émis par `defsGlobaux()` — une rampe recopiée
  *  ici en serait une seconde définition. Infranchissable et de priorité nulle : le repli ne déborde sur
  *  aucun voisin et n'ouvre aucun passage que la donnée n'a pas authorisé. */
 const MANQUANT: TerrainDef = {

@@ -9,7 +9,7 @@
 import { writeFileSync } from 'node:fs';
 import { resolveRig, type ResolvedBone } from '../src/gameIso/rig/composeRig';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
 import { planById, resolveById, resolveSpecies, planOptsForRecord, type BodyPlanId, type RenderResolution } from '../src/gameIso/rig/bodyPlan';
 import { sizeTokenScale } from '../src/gameIso/sizeScale';
@@ -78,7 +78,7 @@ const sections = CATS.map((cat) => {
 
 const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Toise — échelles en jeu</title></head>
 <body style="background:#11141c;padding:18px;margin:0">
-<svg width="0" height="0"><defs>${DEFS}</defs></svg>
+<svg width="0" height="0"><defs>${defsGlobaux()}</defs></svg>
 <a href="galeries.html" style="color:#8fb6ff;text-decoration:none;font:13px sans-serif">← Galeries</a>
 <h1 style="color:#eee;font:18px sans-serif;margin:10px 0 2px">Toise — échelle FINALE en jeu (art × Taille), pieds au sol</h1>
 <p style="color:#9ab;font:12px sans-serif;margin:0 0 6px">Chaque cellule : la créature à son échelle de rendu réelle, l'humain de référence (×1) en filigrane. Les cellules sont à l'échelle ENTRE elles.</p>

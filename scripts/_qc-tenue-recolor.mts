@@ -4,7 +4,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { Palette } from '../src/gameIso/rig/palette';
@@ -30,6 +30,6 @@ const cells = CASES.map((c, i) => {
     `<text x="62" y="170" text-anchor="middle" font-size="9" fill="#cdd" font-family="sans-serif">${c.label}</text></g>`;
 });
 mkdirSync('public/qc', { recursive: true });
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${3 * 130} ${2 * 175}"><defs>${DEFS}</defs>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${3 * 130} ${2 * 175}"><defs>${defsGlobaux()}</defs>${cells.join('')}</svg>`;
 writeFileSync('public/qc/tenue-recolor.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: 780 } }).render().asPng());
 console.log('OK → public/qc/tenue-recolor.png');

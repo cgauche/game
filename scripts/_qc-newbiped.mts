@@ -1,7 +1,7 @@
 /** QC des nouveaux bipèdes sortis du monolithique : Liche, Démonette, Fimir. */
 import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
 import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
@@ -22,6 +22,6 @@ NAMES.forEach(([name, weapon], r) => {
   });
 });
 const W = 110 + 3 * CW, H = 30 + NAMES.length * CH;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${cells.join('')}</svg>`;
 writeFileSync('public/qc/_qc-newbiped.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: Math.min(1900, W) } }).render().asPng());
 console.log('OK _qc-newbiped.png');

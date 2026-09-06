@@ -5,7 +5,7 @@ import { isConsumable } from '../engine/consumables';
 import { weaponPart, armourPart, shieldPart, isShield } from '../gameIso/rig/parts/equipment';
 import { pickView } from '../gameIso/rig/parts/types';
 import type { Slot } from '../gameIso/rig/bones';
-import { DEFS } from '../gameIso/sprites';
+import { defsGlobaux } from '../gameIso/sprites';
 import { Icon } from './Icon';
 import type { IconId } from './icons';
 
@@ -115,7 +115,7 @@ function ArtIcon({ art, geom, px }: { art: string; geom: Geom; px: number }) {
   return (
     <svg className={`item-icon item-icon-${geom}`} viewBox={vb} width={px} height={px}
       style={{ background: '#222831', borderRadius: 4, flex: '0 0 auto' }} aria-hidden>
-      {needsDefs && <defs dangerouslySetInnerHTML={{ __html: DEFS }} />}
+      {needsDefs && <defs dangerouslySetInnerHTML={{ __html: defsGlobaux() }} />}
       <g ref={gRef}>
         <g transform={rotate ? `rotate(${ROTATE})` : undefined} dangerouslySetInnerHTML={{ __html: art }} />
       </g>

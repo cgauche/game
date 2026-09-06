@@ -9,7 +9,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import type { Palette } from '../src/gameIso/rig/palette';
 import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import { assertWardrobeId } from './_lib-wardrobe';
@@ -37,6 +37,6 @@ const tiles = ROWS.map((r, i) => {
   return `<g transform="translate(${(i % 3) * CW},${Math.floor(i / 3) * CH})"><rect width="120" height="150" fill="#1d2230"/>${body}${txt}</g>`;
 });
 const W = 3 * CW, H = 2 * CH;
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs>${tiles.join('')}</svg>`;
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs>${tiles.join('')}</svg>`;
 writeFileSync('public/qc/archetype-tenue.png', new Resvg(svg, { background: '#11141c', fitTo: { mode: 'width', value: W * 2.4 } }).render().asPng());
 console.log('OK → public/qc/archetype-tenue.png');

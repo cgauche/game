@@ -11,7 +11,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { addPose, type Pose } from '../src/gameIso/rig/poses';
 import { weaponRest, weaponAttackClip } from '../src/gameIso/rig/anim/weaponClips';
 import { clipDuration, sampleClip } from '../src/gameIso/rig/anim/clips';
@@ -60,7 +60,7 @@ const draw = (w: Weapon, pose: Pose, view: 'front' | 'profile') =>
   )}`;
 
 const png = (svgInner: string, w: number, h: number, scale = 2) =>
-  new Resvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}"><defs>${DEFS}</defs>${svgInner}</svg>`,
+  new Resvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}"><defs>${defsGlobaux()}</defs>${svgInner}</svg>`,
     { background: '#11141c', fitTo: { mode: 'width', value: w * scale } }).render().asPng();
 
 // PNG 2×2 par classe : (idle/attaque) × (front/profil)

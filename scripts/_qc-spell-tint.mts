@@ -5,7 +5,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { spellFx, type SpellSchool } from '../src/gameIso/rig/anim/spellClips';
 
 const SCHOOLS: Array<[SpellSchool, string]> = [
@@ -34,6 +34,6 @@ const rows = SCHOOLS.map(([school, label], r) => {
 });
 mkdirSync('public/qc', { recursive: true });
 const H = SCHOOLS.length * CH;
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CW} ${H}"><defs>${DEFS}</defs><rect width="${CW}" height="${H}" fill="#0c0e14"/>${rows.join('')}</svg>`;
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CW} ${H}"><defs>${defsGlobaux()}</defs><rect width="${CW}" height="${H}" fill="#0c0e14"/>${rows.join('')}</svg>`;
 writeFileSync('public/qc/spell-tint.png', new Resvg(svg, { background: '#0c0e14', fitTo: { mode: 'width', value: CW * 3 } }).render().asPng());
 console.log('OK → public/qc/spell-tint.png');

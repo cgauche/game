@@ -28,7 +28,7 @@ import { affineScales, rotYaw } from '../../../src/gameIso/backends/webgl/camera
 import { projectStep, rotOffset, stepOf, type ProjKind, type Rot } from '../../../src/geometry/iso';
 import { propSvg } from '../../../src/gameIso/catalog/decor';
 import { findPropById, props } from '../../../src/data';
-import { DEFS } from '../../../src/gameIso/sprites';
+import { defsGlobaux } from '../../../src/gameIso/sprites';
 import type { Face, GP } from '../../../src/gameIso/builders/types';
 import { CAP_IDENTITE_PROP } from '../../../src/data/props.types';
 
@@ -180,7 +180,7 @@ export function construireHtml(): { html: string; vides: string[] } {
       return `<td><div class="vue"><svg viewBox="${-VB_W / 2} ${VB_Y} ${VB_W} ${VB_H}" width="${CELL_W}" height="${CELL_H}">${svg}</svg>` +
         `<span class="meta">${titre} — ${peintes} faces</span></div></td>`;
     }).join('');
-    const vignette = `<td><div class="vue vignette"><svg viewBox="0 0 120 150" width="120" height="150"><defs>${DEFS}</defs>${propSvg(id, CAP_IDENTITE_PROP, 0)}</svg>` +
+    const vignette = `<td><div class="vue vignette"><svg viewBox="0 0 120 150" width="120" height="150"><defs>${defsGlobaux()}</defs>${propSvg(id, CAP_IDENTITE_PROP, 0)}</svg>` +
       `<span class="meta">vignette palette</span></div></td>`;
     return `<tr><th>${id}<br><small>${prop.volume.primitives.length} primitives · ${prop.seatSlots?.length ?? 0} place(s)</small></th>${cellules}${vignette}</tr>`;
   }).join('\n');

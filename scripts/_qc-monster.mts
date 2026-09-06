@@ -4,7 +4,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
@@ -37,7 +37,7 @@ const cells = CASES.map((cse, i) => {
   const col = i % 4, row = Math.floor(i / 4);
   return `<g transform="translate(${col * 128},${row * 176})"><rect width="120" height="150" fill="#241d22"/>${svg}<text x="60" y="166" text-anchor="middle" font-size="10" fill="#e9c">${cse.label}</text></g>`;
 });
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${4 * 128} ${2 * 176}"><defs>${DEFS}</defs>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${4 * 128} ${2 * 176}"><defs>${defsGlobaux()}</defs>${cells.join('')}</svg>`;
 const r = new Resvg(full, { background: '#15111a', fitTo: { mode: 'width', value: 4 * 256 } });
 writeFileSync('public/qc/monster.png', r.render().asPng());
 console.log('OK → public/qc/monster.png');

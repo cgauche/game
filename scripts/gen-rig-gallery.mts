@@ -6,7 +6,7 @@ import { writeFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { EquipCtx } from '../src/gameIso/rig/parts/equipment';
@@ -32,7 +32,7 @@ const helm: ItemInstance = { uid: '2', label: 'Heaume', kind: 'armor', qualities
 function cell(label: string, app: Appearance, equip: EquipCtx, career: string, view: 'front' | 'back' | 'profile' = 'front') {
   const svg = renderToStaticMarkup(
     React.createElement('svg', { viewBox: '0 0 120 150', width: 110, height: 138 },
-      React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
+      React.createElement('defs', { dangerouslySetInnerHTML: { __html: defsGlobaux() } }),
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#1d2230' }),
       React.createElement(RigSprite, { appearance: app, equip, career, view }),
     ),
@@ -81,7 +81,7 @@ function enemyCell(name: string, view: 'front' | 'back' | 'profile' = 'front') {
   if (!p) return cell(`${name} (sprite)`, { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5 }, { weapons: [], armour: [] }, 'soldat', view);
   const svg = renderToStaticMarkup(
     React.createElement('svg', { viewBox: '0 0 120 150', width: 110, height: 138 },
-      React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
+      React.createElement('defs', { dangerouslySetInnerHTML: { __html: defsGlobaux() } }),
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#2a1d22' }),
       React.createElement(RigSprite, { appearance: p.appearance, equip: p.equip, career: p.tenue, overlays: [], view }),
     ),
@@ -103,7 +103,7 @@ function ambientCell(name: string, animKey: string, label: string) {
   const pose = AMBIENT_CLIPS[animKey].steps[0].pose;
   const svg = renderToStaticMarkup(
     React.createElement('svg', { viewBox: '0 0 120 150', width: 110, height: 138 },
-      React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
+      React.createElement('defs', { dangerouslySetInnerHTML: { __html: defsGlobaux() } }),
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#22291d' }),
       React.createElement(RigSprite, { appearance: p.appearance, equip: p.equip, career: p.tenue, overlays: [], pose }),
     ),
@@ -126,7 +126,7 @@ writeFileSync('public/rig-gallery.html', html);
 function standalone(app: Appearance, equip: EquipCtx, career: string) {
   return renderToStaticMarkup(
     React.createElement('svg', { xmlns: 'http://www.w3.org/2000/svg', viewBox: '0 0 120 150', width: 240, height: 300 },
-      React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
+      React.createElement('defs', { dangerouslySetInnerHTML: { __html: defsGlobaux() } }),
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#2a3142' }),
       React.createElement(RigSprite, { appearance: app, equip, career }),
     ),

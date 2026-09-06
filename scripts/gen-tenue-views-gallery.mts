@@ -7,7 +7,7 @@ import { writeFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { SPECIFIC_TENUES } from '../src/gameIso/rig/parts/tenues';
 import { assertTenueCatalogId } from './_lib-wardrobe';
 import type { Appearance } from '../src/gameIso/rig/appearance';
@@ -24,7 +24,7 @@ for (const t of tenues)
 function cell(career: string, view: 'front' | 'profile' | 'back') {
   const svg = renderToStaticMarkup(
     React.createElement('svg', { viewBox: '0 0 120 150', width: 92, height: 115 },
-      React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
+      React.createElement('defs', { dangerouslySetInnerHTML: { __html: defsGlobaux() } }),
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: view === 'back' ? '#241a1a' : '#1b1f2b' }),
       React.createElement(RigSprite, { appearance: app, equip: { weapons: [], armour: [] }, career, view }),
     ),

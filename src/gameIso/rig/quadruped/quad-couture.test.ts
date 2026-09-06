@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Resvg } from '@resvg/resvg-js';
 import { QUAD_SPECIES, WINGED_SPECIES } from '../creatures';
-import { DEFS } from '../../sprites';
+import { defsGlobaux } from '../../sprites';
 import { toSvg, worldTransformsG, type Matrix } from '../kinematics';
 import type { ResolvedBone } from '../composeRig';
 import { resolveQuadFromProps, quadBoneScale } from './composeQuad';
@@ -202,7 +202,7 @@ const boneGroup = (b: ResolvedBone) =>
 /** Masque SOLO d'un os : ses seuls calques rendus, pixels à alpha ≥ 200 (pixels RGBA bruts). */
 function masqueSolo(bones: ResolvedBone[], os: QuadBoneId): Uint8Array {
   const body = bones.filter((b) => b.id === os).map(boneGroup).join('');
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${VB_W} ${VB_H}" width="${VB_W}" height="${VB_H}"><defs>${DEFS}</defs>${body}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${VB_W} ${VB_H}" width="${VB_W}" height="${VB_H}"><defs>${defsGlobaux()}</defs>${body}</svg>`;
   // Le rendu se fait SANS polices système : ce contrat le vérifie sur chaque SVG mesuré.
   expect(svg, `SVG de rig porteur de texte (${os}) : le masque exige des polices`).not.toMatch(/<text[\s>]|font-family/);
   const px = new Resvg(svg, { fitTo: { mode: 'width', value: RENDER_W }, font: { loadSystemFonts: false } }).render().pixels;

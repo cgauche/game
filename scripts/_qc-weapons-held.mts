@@ -8,7 +8,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { WEAPON_FORMS, SHIELD_FORMS } from '../src/gameIso/rig/parts/weaponForms';
 import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import type { Weapon } from '../src/engine/types';
@@ -38,7 +38,7 @@ const cells: Cell[] = [
 
 // PNG individuels (pour l'audit sur-modèle)
 for (const c of cells) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150"><defs>${DEFS}</defs><rect width="120" height="150" fill="#1d2230"/>${c.svg}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150"><defs>${defsGlobaux()}</defs><rect width="120" height="150" fill="#1d2230"/>${c.svg}</svg>`;
   writeFileSync(`public/qc/held-${c.slug}.png`, new Resvg(svg, { background: '#11141c', fitTo: { mode: 'width', value: 240 } }).render().asPng());
 }
 
@@ -49,6 +49,6 @@ const tiles = cells.map((c, i) => {
   return `<g transform="translate(${col * 124},${row * 168})"><rect width="120" height="150" fill="#1d2230"/>${c.svg}<text x="60" y="164" text-anchor="middle" font-size="10" fill="#cdd">${c.label}</text></g>`;
 });
 const rows = Math.ceil(cells.length / COLS);
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COLS * 124} ${rows * 168}"><defs>${DEFS}</defs>${tiles.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COLS * 124} ${rows * 168}"><defs>${defsGlobaux()}</defs>${tiles.join('')}</svg>`;
 writeFileSync('public/qc/weapons-held.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: COLS * 248 } }).render().asPng());
 console.log(`OK → ${cells.length} held-*.png + public/qc/weapons-held.png`);

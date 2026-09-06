@@ -65,11 +65,11 @@ export function classifySpellByLabel(label: string): { school: SpellSchool; miss
 /**
  * FEEDBACK VISUEL d'incantation par école — SOURCE DE VÉRITÉ UNIQUE (couleur du
  * projectile/halo/aura de canalisation). Le rendu (`fx/FxLayer`) lit ces tokens ; ajouter
- * une école (Chaos, etc.) = une entrée ici + un gradient `g_<école>` dans `DEFS`,
+ * une école (Chaos, etc.) = une entrée ici + un gradient `g_<école>` dans `defsGlobaux()`,
  * sans toucher au rendu. `gradient` réfère un <radialGradient> de `sprites.ts`.
  */
 export interface SpellFx {
-  /** id du <radialGradient> (cf. DEFS) pour le halo/projectile diffus. */
+  /** id du <radialGradient> (cf. `defsGlobaux()`) pour le halo/projectile diffus. */
   gradient: string;
   /** couleur du cœur dense (étincelle centrale). */
   core: string;

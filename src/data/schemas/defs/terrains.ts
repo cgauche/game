@@ -78,14 +78,8 @@ const doc = document(
     },
   },
   {
-    codex: {
-      exempt: {
-        kind: 'dette',
-        raison: 'onglet Codex « Terrains » non ouvert — le dataset naît au lot 2, son exposition est le lot 3',
-        ticket: '#1690',
-      },
-    },
-    edit: { none: 'aucune catégorie Codex ne l’expose encore, donc aucun formulaire d’atelier ne l’édite' },
+    codex: { keys: ['terrains'] },
+    edit: { dataset: 'terrains' },
   },
   {
     exiges: ['maison'],

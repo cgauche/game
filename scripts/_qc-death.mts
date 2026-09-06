@@ -4,7 +4,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { Pose } from '../src/gameIso/rig/poses';
@@ -34,7 +34,7 @@ const cells = [
     `${c.inner}<text x="85" y="186" text-anchor="middle" font-size="9" fill="#cdd" font-family="sans-serif">${c.label}</text></g>`;
 });
 mkdirSync('public/qc', { recursive: true });
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 195"><defs>${DEFS}</defs>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 195"><defs>${defsGlobaux()}</defs>${cells.join('')}</svg>`;
 const r = new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: 1275 } });
 writeFileSync('public/qc/death.png', r.render().asPng());
 console.log('OK → public/qc/death.png');

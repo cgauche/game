@@ -18,7 +18,7 @@ import { LAND_ARTS } from '../src/gameIso/rig/land/_registry.generated';
 import { enginArtOf } from '../src/gameIso/rig/engin/composeEngin';
 import { ENGIN_ARTS } from '../src/gameIso/rig/engin/_registry.generated';
 import { PROPS, propSvg, propViewSvg } from '../src/gameIso/catalog/decor/index';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import type { Dir8 } from '../src/state/dir8';
 import type { Rot } from '../src/geometry/iso';
 
@@ -27,7 +27,7 @@ const ROTS: Rot[] = [0, 1, 2, 3];
 const ORIENTS: Dir8[] = ['E', 'SE']; // cardinal (front/back net) + diagonale (profil + miroir)
 
 const box = (svg: string, bg = '#243040') =>
-  `<svg viewBox="0 0 120 150" width="96" height="120"><defs>${DEFS}</defs>` +
+  `<svg viewBox="0 0 120 150" width="96" height="120"><defs>${defsGlobaux()}</defs>` +
   `<rect width="120" height="150" fill="${bg}"/>${svg}</svg>`;
 
 /** Un objet du système de PLANS (navire/engin/terrestre) : rendu (view, mirror). */

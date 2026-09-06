@@ -8,6 +8,7 @@ import { TabbedEntry, type EntryTab } from '../TabbedEntry';
 import { OrnateFrame } from '../Ornaments';
 import { ParchmentCard } from '../ParchmentCard';
 import { Prose } from '../Prose';
+import { libelleDuChamp } from './editFields';
 import { uniqueSlugId } from '../../data/slug';
 
 export function CodexSourceBadge({ source }: { source: CodexItem['source'] }) {
@@ -28,6 +29,19 @@ function CodexRowView({ row }: { row: CodexRow }) {
         <div className="codex-kv">
           <span className="ck-k">{row.kref ? <CodexRef category={row.kref.category} id={row.kref.id} label={row.kref.label}>{row.k}</CodexRef> : row.k}</span>
           <span className="ck-v">{row.v}</span>
+        </div>
+      );
+    case 'couleur':
+      // La couleur se VOIT : pastille peinte à la valeur de la donnée + le code hex en texte, qui
+      // reste lisible et copiable. Même gabarit que `kv`. La pastille est DÉCORATIVE (`aria-hidden`) :
+      // le hex adjacent porte déjà l'annonce, la nommer la doublerait au lecteur d'écran.
+      return (
+        <div className="codex-kv">
+          <span className="ck-k">{row.k}</span>
+          <span className="ck-v">
+            <span className="swatch" style={{ background: row.v }} aria-hidden="true" />
+            {row.v}
+          </span>
         </div>
       );
     case 'text':
@@ -168,6 +182,14 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
           </div>
         )}
       />
+      {item.maison && (
+        // PROVENANCE d'un document sans folio : l'arbitrage maison se LIT sur la fiche, comme la réf
+        // de livre d'une entrée sourcée (`CodexSourceBadge`). Rendu UNE fois ici, jamais par catégorie.
+        <section className="codex-sec">
+          <h3 className="codex-sec-title section-label">{libelleDuChamp('maison')}</h3>
+          <div className="codex-sec-body codex-body"><Prose md={item.maison} /></div>
+        </section>
+      )}
     </article>
   );
 }

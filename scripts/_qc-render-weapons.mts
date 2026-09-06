@@ -5,7 +5,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { weaponPart, shieldPart } from '../src/gameIso/rig/parts/equipment';
 import { pickView } from '../src/gameIso/rig/parts/types';
 import { WEAPON_FORMS, SHIELD_FORMS } from '../src/gameIso/rig/parts/weaponForms';
@@ -14,7 +14,7 @@ import type { Weapon } from '../src/engine/types';
 mkdirSync('public/qc', { recursive: true });
 const manifest: { id: string; slug: string; label: string; kind: string; path: string }[] = [];
 const raster = (frag: string, path: string) => {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -56 40 72"><defs>${DEFS}</defs><rect x="-20" y="-56" width="40" height="72" fill="#222831"/>${frag}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -56 40 72"><defs>${defsGlobaux()}</defs><rect x="-20" y="-56" width="40" height="72" fill="#222831"/>${frag}</svg>`;
   writeFileSync(path, new Resvg(svg, { background: '#222831', fitTo: { mode: 'width', value: 180 } }).render().asPng());
 };
 

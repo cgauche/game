@@ -6,7 +6,7 @@
  * traits. Lancer : npx tsx scripts/gen-creature-attacks-gallery.mts → public/creature-attacks.html
  */
 import { writeFileSync } from 'node:fs';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { planById, bodyPlanById, resolveById, planOptsForRecord, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
 import { mul, translate, type Matrix } from '../src/gameIso/rig/kinematics';
 import type { ResolvedBone } from '../src/gameIso/rig/composeRig';
@@ -46,7 +46,7 @@ function cell(id: string, kind: AttackKind, label: string): string {
   const { css, svg } = animatedRig(f.samples, ATTACK_MS, uid);
   styles.push(css);
   return `<figure style="margin:0;text-align:center">
-    <svg viewBox="0 0 120 150" width="116" height="145"><defs>${DEFS}</defs><rect width="120" height="150" fill="#221a1a"/>${svg}</svg>
+    <svg viewBox="0 0 120 150" width="116" height="145"><defs>${defsGlobaux()}</defs><rect width="120" height="150" fill="#221a1a"/>${svg}</svg>
     <figcaption style="color:#e9b;font:10px sans-serif">${ATTACK_LABEL[kind]}<br><span style="color:#9a8">${label.replace(ATTACK_LABEL[kind], '').trim() || ''}</span></figcaption></figure>`;
 }
 

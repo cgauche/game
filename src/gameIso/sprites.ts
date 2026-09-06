@@ -1,7 +1,7 @@
 /**
  * Bibliothèque de sprites SVG (style validé) pour le rendu iso du jeu.
  * Chaque sprite est dessiné dans une boîte locale 120×150, pieds en (60,150).
- * entitySprite()/propSprite() résolvent l'art d'un décor depuis le registre. DEFS regroupe tous les dégradés.
+ * entitySprite()/propSprite() résolvent l'art d'un décor depuis le registre. `defsGlobaux()` regroupe tous les dégradés.
  */
 import type { Rot } from '../geometry/iso';
 import { propSvg } from './catalog/decor';
@@ -13,7 +13,7 @@ import { rigFxGradients } from './rig/fxGradients';
 
 // Le DÉCOR en billboard (arbre du terrain `bois`, tonneaux…) passe par `propSvg` (catalogue), et le
 // MUR PLEIN par le relief data-driven de `buildFloors` (`TerrainDef.solidHeightM`) — aucun overlay codé
-// en dur ici. Ce module ne fournit que les sprites de props/décor et les DEFS de dégradés.
+// en dur ici. Ce module ne fournit que les sprites de props/décor et les `<defs>` de dégradés.
 // (Le jeton de groupe affiche le RIG réel du meneur, jamais un sprite « villageois » générique.)
 
 /** Vue minimale d'une entité pour le rendu (type structurel : pas d'import scene). */
@@ -52,7 +52,7 @@ export function propSprite(ref?: string, facing?: Dir8, camRot: Rot = 0): string
 /** Émetteur PUR des dégradés de TERRAIN (`TerrainDef.stops`) — UN dégradé par terrain, son id DÉRIVÉ
  *  de l'id du terrain (`terrainGradientId`), donc aucun partage possible ; arrêts émis dans l'ordre
  *  croissant (`terrainStopsOrdonnes`, source unique). Tous verticaux (x1=0 y1=0 x2=0 y2=1).
- *  `DEFS` le compose sur le dataset `src/data/terrains.json` via `tousLesTerrains()`. */
+ *  `defsGlobaux()` le compose sur le dataset `src/data/terrains.json` via `tousLesTerrains()`. */
 export const degradesDeTerrains = (terrains: readonly TerrainDef[]): string =>
   terrains
     .map((t) => {
@@ -68,5 +68,23 @@ const degradeAlarme =
   `\n  <linearGradient id="${MISSING_GRADIENT}" x1="0" y1="0" x2="0" y2="1">`
   + `<stop offset="0%" stop-color="${MISSING_TONE}"/><stop offset="100%" stop-color="${MISSING_TONE_DARK}"/></linearGradient>`;
 
-/** DEFS globaux = dégradés de TERRAIN (données) + dégradés RIG/FX (`rig/fxGradients`, verbatim). */
-export const DEFS = degradesDeTerrains(tousLesTerrains()) + degradeAlarme + rigFxGradients;
+/**
+ * Les `<defs>` globaux = dégradés de TERRAIN (données) + dégradé d'alarme + dégradés RIG/FX
+ * (`rig/fxGradients`, verbatim). FONCTION, jamais une constante de module : les rampes de terrain
+ * viennent d'un dataset ÉDITABLE au Codex (`terrains.json`, #1690) — assemblées une fois à
+ * l'import, une édition des `stops` ne repeindrait ni la vue plan ni l'éditeur sans rechargement.
+ *
+ * Mémoïsée par TÉMOIN DE CONTENU du dataset, patron d'`indexDesTerrains` (`state/terrain/index.ts`) :
+ * `setDataset` splice le tableau EN PLACE (son identité ne change jamais), et l'atelier remplace
+ * l'entrée éditée par un objet NEUF — ce sont donc les références d'entrée, position par position,
+ * qui disent qu'une rampe a bougé. Les dégradés RIG/FX sont des littéraux : ils ne se re-lisent pas.
+ */
+let memoDefs: { temoin: readonly TerrainDef[]; svg: string } | null = null;
+export function defsGlobaux(): string {
+  const terrains = tousLesTerrains();
+  const m = memoDefs;
+  if (m && m.temoin.length === terrains.length && m.temoin.every((t, i) => t === terrains[i])) return m.svg;
+  const svg = degradesDeTerrains(terrains) + degradeAlarme + rigFxGradients;
+  memoDefs = { temoin: [...terrains], svg };
+  return svg;
+}

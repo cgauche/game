@@ -2,7 +2,7 @@
  *  L'échelle d'espèce (sl) est appliquée au scale de cellule → le dragon est géant. */
 import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveWing, WINGED_SPECIES } from '../src/gameIso/rig/winged/composeWing';
 import type { View } from '../src/gameIso/rig/facing';
@@ -23,6 +23,6 @@ NAMES.forEach((name, r) => {
   });
 });
 const W = 140 + 3 * CW, H = 30 + NAMES.length * CH;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/><text x="8" y="20" font-size="14" fill="#d8a93b" font-family="sans-serif">QC gabarit AILÉ (quadrupède + ailes ; dragon = ailé géant via sl)</text>${cells.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#11141c"/><text x="8" y="20" font-size="14" fill="#d8a93b" font-family="sans-serif">QC gabarit AILÉ (quadrupède + ailes ; dragon = ailé géant via sl)</text>${cells.join('')}</svg>`;
 writeFileSync('public/qc/_qc-winged.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: W } }).render().asPng());
 console.log('OK _qc-winged.png');

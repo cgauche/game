@@ -1,7 +1,7 @@
 /** QC du gabarit serpentin : vues + poses (repos/sway/lunge/mort) + recolor. */
 import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { serpentSvg, SERPENT_DEFAULT, serpentStrike } from '../src/gameIso/rig/serpentine/composeSerpent';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveSerpentFromProps } from '../src/gameIso/rig/serpentine/composeSerpent';
@@ -25,6 +25,6 @@ const out = cells.map((c, i) => {
   return `<g transform="translate(${ox},${oy})"><rect width="${CW - 8}" height="${CH - 10}" fill="#2b3142"/><g transform="translate(${cx - 60 * SC},${FEET - 150 * SC}) scale(${SC})">${c.svg}</g><text x="${cx}" y="${CH - 16}" text-anchor="middle" font-size="14" fill="#cdd" font-family="sans-serif">${c.label}</text></g>`;
 });
 const W = 10 + COLS * CW, H = 10 + Math.ceil(cells.length / COLS) * CH;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${out.join('')}</svg>`;
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${defsGlobaux()}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${out.join('')}</svg>`;
 writeFileSync('public/qc/_qc-serpent.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: W } }).render().asPng());
 console.log('OK public/qc/_qc-serpent.png');

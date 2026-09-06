@@ -8,7 +8,7 @@
  */
 import { writeFileSync } from 'node:fs';
 import { resolveRig, type ResolvedBone } from '../src/gameIso/rig/composeRig';
-import { DEFS } from '../src/gameIso/sprites';
+import { defsGlobaux } from '../src/gameIso/sprites';
 import { addPose } from '../src/gameIso/rig/poses';
 import { CLIPS, sampleClip, clipDuration } from '../src/gameIso/rig/anim/clips';
 import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
@@ -66,7 +66,7 @@ function cell(c: { id: string; label: string }): string {
   const { css, svg } = animatedRig(samples, dur, uid);
   styles.push(css);
   return `<figure style="margin:0;text-align:center">
-    <svg viewBox="0 0 120 150" width="116" height="145"><defs>${DEFS}</defs><rect width="120" height="150" fill="#171b26"/>${svg}</svg>
+    <svg viewBox="0 0 120 150" width="116" height="145"><defs>${defsGlobaux()}</defs><rect width="120" height="150" fill="#171b26"/>${svg}</svg>
     <figcaption style="color:#cdd;font:11px sans-serif">${c.label}</figcaption></figure>`;
 }
 

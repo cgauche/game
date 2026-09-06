@@ -2,7 +2,7 @@
  * Dégradés RIG / FX (acier, lames, tenues, halos arcaniques/divins, chair, sang, yeux…) — domaine
  * RIG, HORS de la refonte du rendu d'environnement. Leurs couleurs sont l'identité visuelle du
  * bestiaire et de l'équipement (dessinés « à la main »), pas des matériaux de décor : ceux-là vivent
- * en donnée (`src/data/*.json`) + `shade.ts`. Assemblés dans `DEFS` (`sprites.ts`) et montés une
+ * en donnée (`src/data/*.json`) + `shade.ts`. Assemblés dans `defsGlobaux()` (`sprites.ts`) et montés une
  * seule fois au niveau App (`GlobalSvgDefs`). Verbatim — ne pas migrer en palette (ce n'est pas du décor).
  *
  * Contient aussi les clipPaths `rigCutBras*` (#633 D1, scission du bras au coude par `splitBrasSvg`)
