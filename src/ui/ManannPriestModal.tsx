@@ -31,9 +31,10 @@ export function ManannBody({ embedded = false }: { embedded?: boolean } = {}) {
         de Manann chuter de 4d10.
       </p>
       <ChoiceButtons
+        idPrefix="manann"
         options={[
-          { key: 'payer', label: <><Icon id="resource/gold-purse" size="sm" /> Payer (<Coins money={p.cost} />)</>, primary: true, disabled: isGuest || !affordable, onSelect: () => resolve(true), title: isGuest ? 'L\'hôte décide.' : affordable ? 'Payer la bénédiction' : 'La bourse ne suit pas' },
-          { key: 'refuser', label: <><Icon id="faith/trident" size="sm" /> Refuser (−4d10 Humeur de Manann)</>, disabled: isGuest, onSelect: () => resolve(false), title: isGuest ? 'L\'hôte décide.' : 'Refuser la bénédiction — Manann reste courroucé' },
+          { key: 'payer', label: <><Icon id="resource/gold-purse" size="sm" /> Payer (<Coins money={p.cost} />)</>, primary: true, refus: isGuest ? 'L\'hôte décide.' : !affordable ? 'La bourse ne suit pas.' : undefined, onSelect: () => resolve(true), title: isGuest || !affordable ? undefined : 'Payer la bénédiction' },
+          { key: 'refuser', label: <><Icon id="faith/trident" size="sm" /> Refuser (−4d10 Humeur de Manann)</>, refus: isGuest ? 'L\'hôte décide.' : undefined, onSelect: () => resolve(false), title: isGuest ? undefined : 'Refuser la bénédiction — Manann reste courroucé' },
         ]}
       />
     </>

@@ -1,6 +1,22 @@
 import type { ReactNode, Ref } from 'react';
 import { CodexRef, nodeText } from './compendium/CodexRef';
 
+/** Les trois branches de raison de `GatedAction`, sous forme de props à répandre. */
+export type PropsDeRaison =
+  | { reason: string; reasonId?: never }
+  | { reasonId: string; reason?: never }
+  | { reason?: never; reasonId?: never };
+
+/** Raison OPTIONNELLE : rend la branche `reason` quand la cause EXISTE, et la 3ᵉ branche (aucune
+ *  raison) sinon — jamais une chaîne VIDE, qui laisserait un contrôle refusé sans rien à faire lire.
+ *  L'action reste atteignable dans les deux cas (`aria-disabled`) : c'est le TEXTE qui manquerait. */
+export const raisonSi = (raison: string | undefined | null): PropsDeRaison =>
+  (raison ? { reason: raison } : {});
+
+/** Liaison OPTIONNELLE à une raison DÉJÀ rendue à l'écran (bannière, rappel) — même règle. */
+export const lieeA = (id: string | undefined | null): PropsDeRaison =>
+  (id ? { reasonId: id } : {});
+
 /**
  * Action GATÉE — bouton d'engagement dont l'indisponibilité porte sa RAISON, lue AU SURVOL et AU FOCUS
  * (souris, clavier, manette) dans l'unique infobulle du jeu (`CodexRef refus`), et liée par
@@ -28,6 +44,8 @@ export function GatedAction({
   id,
   label,
   ariaLabel,
+  ariaPressed,
+  descOfferte,
   enabled,
   reason,
   reasonId,
@@ -47,6 +65,14 @@ export function GatedAction({
   /** Nom ACCESSIBLE du bouton, obligatoire dès que `label` n'est pas du texte lisible (glyphe `↺`,
    *  icône) : posé en `aria-label` ET en `title`. Absent = le nom vient du contenu du bouton. */
   ariaLabel?: string;
+  /** État PRESSÉ d'un contrôle à bascule (chip d'option, option retenue d'une grille) : l'action
+   *  gatée est parfois un TOGGLE, et son état doit rester lisible à l'arbre a11y même quand elle est
+   *  fermée. Simple report de l'attribut ARIA du site — aucune règle ne s'y décide. */
+  ariaPressed?: boolean;
+  /** Description de l'action à l'état OFFERT, portée en `title` (passe-plat du `title` natif que le
+   *  site portait avant de composer la primitive : le coût d'une réparation, l'assiette d'une
+   *  surcharge…). N'apparaît JAMAIS sur une action fermée — là, seule la raison parle. */
+  descOfferte?: string;
   enabled: boolean;
   onClick: () => void;
   /** Style primaire (dégradé sang) — défaut. `false` = bouton neutre (action rétrogradée). */
@@ -95,10 +121,22 @@ export function GatedAction({
       reason?: never;
       className?: never;
     }
+  | {
+      /** NI l'un NI l'autre : action JAMAIS refusable — le refus n'est pas un état de ce contrôle (il
+       *  compose la primitive pour sa matière et son a11y, pas pour une raison). À préférer à un
+       *  `reason=""` : le contrôle resterait refusé et atteignable, mais sans rien à faire lire — le
+       *  type dit alors que le refus n'est pas un état de ce contrôle, au lieu de le taire. */
+      reason?: never;
+      reasonId?: never;
+      className?: string;
+    }
 )) {
   // `aria-describedby` ne pointe QUE sur un texte qui existe : sans `reasonId` ni `reason`, l'attribut
   // désignerait un `<p>` vide — une description fantôme qu'un lecteur d'écran annonce comme un silence.
-  const describedBy = enabled ? undefined : (reasonId ?? (reason ? `${id}-reason` : undefined));
+  // Corollaire : une raison VIDE (`reason=""`/`reasonId=""`) est une erreur d'appel, jamais une
+  // permission — le contrôle reste refusé et atteignable, il n'a simplement rien à faire lire. D'où le
+  // `||` et non `??` : une chaîne vide n'est pas une cible, elle rendrait `aria-describedby=""`.
+  const describedBy = enabled ? undefined : (reasonId || (reason ? `${id}-reason` : undefined));
   // La raison vit dans l'INFOBULLE de CE contrôle quand il la porte lui-même (`reason`) et que
   // l'appelant ne l'a pas demandée en clair. Les autres formes (`reasonId`) la tiennent ailleurs :
   // infobulle de l'appelant, ou récapitulatif déjà à l'écran.
@@ -116,7 +154,8 @@ export function GatedAction({
       className={`btn ${primary ? 'btn-primary' : ''}${bare ? ' btn-nu' : ''}${tactile ? ' btn-tactile' : ''}${btnClassName ? ` ${btnClassName}` : ''}`}
       aria-disabled={!enabled || undefined}
       aria-label={ariaLabel}
-      title={ariaLabel}
+      aria-pressed={ariaPressed}
+      title={enabled && descOfferte ? descOfferte : ariaLabel}
       aria-describedby={describedBy}
       onPointerDown={arret}
       onPointerUp={arret}

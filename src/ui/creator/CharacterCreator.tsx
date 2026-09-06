@@ -164,6 +164,7 @@ import {
 } from './draft';
 import { XP_CAREER_FIRST, XP_CAREER_TOP3, XP_STAR_ROLLED, parseStatus, speciesAllowed } from '../../engine/creation';
 import { PARTY_MAX } from '../../state/combatants';
+import { GatedAction } from '../GatedAction';
 
 /** Métadonnées d'étape : libellé FR + ÉCRAN de plein rendu. Les HUIT pas passent par la MÊME porte —
  *  un pas pose ses propres hooks puis compose `CreatorStepFrame` (seule Présentation garde un
@@ -793,20 +794,17 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
             déjà le changement côté draft ; l'UI le reflète en désactivant la chip, anti-exploit
             relance gratuite, #393 P2 correctif utilisateur). */}
         {coastalSwapAvailable(d) && (
-          <button
-            type="button"
-            className="chip"
-            aria-pressed={d.coastalSwap}
-            disabled={d.careerRolls.length > 0}
-            title={
-              d.careerRolls.length > 0
-                ? 'Se choisit avant de lancer les dés (verrouillé après jet)'
-                : 'Bascule avant le jet (variante Côtiers à la place des Riverains)'
-            }
+          <GatedAction
+            id="creator-coastal-swap"
+            label="Côtiers à la place des Riverains"
+            ariaPressed={d.coastalSwap}
+            enabled={d.careerRolls.length === 0}
+            reason="Se choisit avant de lancer les dés — verrouillé depuis le premier jet de Carrière."
             onClick={() => setD(withCoastalSwap(d, !d.coastalSwap))}
-          >
-            Côtiers à la place des Riverains
-          </button>
+            primary={false}
+            bare
+            btnClassName="chip"
+          />
         )}
         <span className="creator-pick-count">{sectionsAll.length} classes — {accessible.length} carrières</span>
       </div>

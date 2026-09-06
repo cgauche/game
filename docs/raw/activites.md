@@ -205,7 +205,7 @@ Apprendre un Talent **en dehors de sa Carrière**, avec un tuteur. Nécessite un
 - Échec → peut réessayer à une future Activité ; gagne **+10 par tentative ratée**.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.5, l.59-250) → `FavorLevel`, `ReverseButton`, `Duration`, `favorLevelSchema`, `resetInterruptedFavorProgress`, `tokenReverseAvailable`, `useTestJetProps`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `FavorRow`, +45 — `src/data/activities.json`, `src/data/gods.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/activities.ts`, `src/engine/duration.ts`, +20 fichiers
+- `LDB 23` (l.5, l.59-250) → `FavorLevel`, `ReverseButton`, `Duration`, `favorLevelSchema`, `resetInterruptedFavorProgress`, `tokenReverseAvailable`, `useTestJetProps`, `useDefenseJetProps`, `FAVOR_LEVEL_LABELS`, `FavorRow`, +45 — `src/data/activities.json`, `src/data/gods.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/activities.ts`, `src/engine/duration.ts`, +20 fichiers
 
 ---
 

@@ -24,6 +24,7 @@ import { ev } from '../state/combatLog';
 import { testBreakdown, testPending, soutienMod, opposedLines } from './breakdown';
 import { Icon } from './Icon';
 import { resultLine, freeCons } from '../state/rollSeam';
+import { GatedAction } from './GatedAction';
 
 /** Marque du pluriel FR, accordée sur la VALEUR (patron `plural(n)` des modales de navire) : le
  *  raccourci « (s) » du code laissait l'écran écrire « 1 pas … RESTANT(S) ». */
@@ -342,9 +343,9 @@ export function CastModal() {
                         {a === 'targets' && cap > 0 ? ` +${cap}` : ''}
                         {a === 'damage' && dmgBonus > 0 ? ` +${dmgBonus}` : ''}
                       </span>
-                      <button className="btn small" disabled={oc[a] <= 0} onClick={() => allocOvercast(a, -1)} title="Rendre ce pas">−</button>
+                      <GatedAction id={`overcast-minus-${a}`} label="−" ariaLabel={`Rendre un pas de ${META[a][1]}`} enabled={oc[a] > 0} reason={`Aucun pas de ${META[a][1]} à rendre.`} onClick={() => allocOvercast(a, -1)} primary={false} btnClassName="small" />
                       <strong className="rm-stepper-val">{oc[a]}</strong>
-                      <button className="btn small" disabled={left <= 0} onClick={() => allocOvercast(a, 1)} title={`Allouer un pas (+${stepCost} DR)`}>+</button>
+                      <GatedAction id={`overcast-plus-${a}`} label="+" ariaLabel={`Allouer un pas de ${META[a][1]} (+${stepCost} DR)`} enabled={left > 0} reason="Plus aucun DR excédentaire à allouer." onClick={() => allocOvercast(a, 1)} primary={false} btnClassName="small" />
                     </div>
                   ))}
                 </div>
@@ -367,9 +368,9 @@ export function CastModal() {
                   <div className="rm-stepper-list">
                     <div className="rm-stepper">
                       <span className="rm-stepper-label"><Icon id="nav/dice" size="sm" /> Jets sur le Tableau</span>
-                      <button className="btn small" disabled={(pc.chosenTableRolls ?? oc.duration) <= 0} onClick={() => setChosenTableRolls((pc.chosenTableRolls ?? oc.duration) - 1)} title="Décliner un jet sur le Tableau (la durée se prolonge quand même)">−</button>
+                      <GatedAction id="overcast-table-minus" label="−" ariaLabel="Décliner un jet sur le Tableau" enabled={(pc.chosenTableRolls ?? oc.duration) > 0} reason="Aucun jet sur le Tableau à décliner." onClick={() => setChosenTableRolls((pc.chosenTableRolls ?? oc.duration) - 1)} primary={false} btnClassName="small" />
                       <strong className="rm-stepper-val">{pc.chosenTableRolls ?? oc.duration}</strong>
-                      <button className="btn small" disabled={(pc.chosenTableRolls ?? oc.duration) >= oc.duration} onClick={() => setChosenTableRolls((pc.chosenTableRolls ?? oc.duration) + 1)} title="Refaire un jet sur le Tableau">+</button>
+                      <GatedAction id="overcast-table-plus" label="+" ariaLabel="Refaire un jet sur le Tableau" enabled={(pc.chosenTableRolls ?? oc.duration) < oc.duration} reason="Tous les pas de Durée alloués font déjà l’objet d’un jet." onClick={() => setChosenTableRolls((pc.chosenTableRolls ?? oc.duration) + 1)} primary={false} btnClassName="small" />
                     </div>
                   </div>
                 )}

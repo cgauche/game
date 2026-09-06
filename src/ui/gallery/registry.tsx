@@ -508,7 +508,7 @@ function GatedActionDemo() {
       <GatedAction id="gal-gated" label="Entrer" enabled={false} reason="Bourse insuffisante." onClick={() => {}} />
       {/* Variante DENSE : la même action dans une COLONNE étroite (pied de la frise d'initiative). */}
       <div style={{ width: 84 }}>
-        <GatedAction id="gal-gated-dense" label="Pause au prochain Round" enabled reason="" dense onClick={() => {}} />
+        <GatedAction id="gal-gated-dense" label="Pause au prochain Round" enabled dense onClick={() => {}} />
       </div>
     </div>
   );
@@ -634,7 +634,7 @@ function TradeTableDemo() {
 
 function ActivityPaneDemo() {
   return (
-    <ActivityPane icon="nav/activity" title="Exemple d'Activité" desc="*Description verbatim* — rendue via `Prose`." cost="6 sc" actions={<button type="button" className="btn btn-primary">Entreprendre</button>} />
+    <ActivityPane id="pane-gallery-demo" icon="nav/activity" title="Exemple d'Activité" desc="*Description verbatim* — rendue via `Prose`." cost="6 sc" actions={<button type="button" className="btn btn-primary">Entreprendre</button>} />
   );
 }
 

@@ -7,7 +7,7 @@ import { rule } from '../engine/policy';
 import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
 import { Icon } from './Icon';
-import { GatedAction } from './GatedAction';
+import { GatedAction, raisonSi } from './GatedAction';
 
 /** LDB 13 l.40. */
 function initiativeTitle(c: Combatant): string {
@@ -147,7 +147,7 @@ export function InitiativeStrip(p: InitiativeStripProps) {
             label={p.hand.label}
             ariaLabel={p.hand.ariaLabel}
             enabled={!p.hand.reason}
-            reason={p.hand.reason ?? ''}
+            {...raisonSi(p.hand.reason)}
             primary={p.hand.raised}
             dense
             onClick={p.hand.onToggle}

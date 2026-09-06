@@ -455,7 +455,14 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               : `le groupe est aux portes de ${resumeDest.label}.`}
           </p>
           <div className="modal-actions">
-            <button type="button" className="btn btn-primary" disabled={isGuest} title={isGuest ? 'L’hôte décide des départs.' : undefined} onClick={resumeTravel}>▶ Reprendre le voyage</button>
+            <GatedAction
+              id="worldmap-resume"
+              label="▶ Reprendre le voyage"
+              ariaLabel="Reprendre le voyage"
+              enabled={!isGuest}
+              reason="L’hôte décide des départs."
+              onClick={resumeTravel}
+            />
           </div>
         </div>
       )}
@@ -608,17 +615,21 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
           {stationsTraits && <ShipStationsPanel traits={stationsTraits} />}
           <div className="modal-actions">
             <button type="button" className="btn" onClick={() => setSelId(null)}>Annuler</button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              disabled={(mode === 'mer' ? !vessel || seaM <= 0 || (seaOverload != null && !seaOverload.canSail) : kmh <= 0 || !affordable) || isGuest}
-              title={isGuest ? 'L’hôte décide des départs.'
+            {/* Les provisions insuffisantes n'entrent PAS dans le refus : le départ reste PERMIS, et
+                c'est le LIBELLÉ qui porte l'alerte (« Appareiller quand même »). `GatedAction` ne rend
+                sa raison que sur une action FERMÉE (#1689 T2). */}
+            <GatedAction
+              id="worldmap-depart"
+              label={<><Icon id="scenario/travel" size="sm" /> {mode === 'mer' && provisions && !provisions.suffisant ? 'Appareiller quand même' : 'Partir'}</>}
+              ariaLabel={mode === 'mer' && provisions && !provisions.suffisant ? 'Appareiller quand même' : 'Partir'}
+              enabled={!isGuest && (mode === 'mer'
+                ? !!vessel && seaM > 0 && !(seaOverload != null && !seaOverload.canSail)
+                : kmh > 0 && affordable)}
+              reason={isGuest ? 'L’hôte décide des départs.'
                 : mode === 'mer' && (!vessel || seaM <= 0) ? 'Aucun navire de campagne en état de prendre la mer.'
-                : mode === 'mer' && seaOverload != null && !seaOverload.canSail ? `Cale surchargée à ${seaOverload.ratioPct} % — impossible de prendre la mer. Allégez la cale.`
-                : mode === 'mer' && provisions && !provisions.suffisant ? 'Le navire appareille sans provisions suffisantes.'
-                : mode !== 'mer' && kmh <= 0 ? 'Le groupe est trop chargé pour avancer — allégez les sacs.'
-                : mode !== 'mer' && !affordable ? `Bourse insuffisante (${cost ? formatMoney(cost) : ''})`
-                : undefined}
+                : mode === 'mer' ? `Cale surchargée à ${seaOverload?.ratioPct ?? 0} % — impossible de prendre la mer. Allégez la cale.`
+                : kmh <= 0 ? 'Le groupe est trop chargé pour avancer — allégez les sacs.'
+                : `Bourse insuffisante (${cost ? formatMoney(cost) : ''}).`}
               onClick={() => startTravel(selRoute.id, mode, {
                 classeId: classeId || undefined,
                 hoursPerDay: forced ? (mode === 'pied' ? maxH : mode === 'monture' ? 12 : undefined) : undefined,
@@ -627,9 +638,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                 fast: mode === 'mer' && seaFast ? true : undefined,
                 cadence: mode === 'mer' && !seaFast ? seaCadence : undefined,
               })}
-            >
-              <Icon id="scenario/travel" size="sm" /> {mode === 'mer' && provisions && !provisions.suffisant ? 'Appareiller quand même' : 'Partir'}
-            </button>
+            />
           </div>
         </div>
       )}

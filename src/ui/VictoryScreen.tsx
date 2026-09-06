@@ -8,6 +8,7 @@ import { GearAssignList } from './GearAssignList';
 import { RuleDivider } from './Ornaments';
 import { Icon } from './Icon';
 import { useModalA11y } from './Modal';
+import { GatedAction } from './GatedAction';
 
 /** Beat de lisibilité avant l'écran plein écran : on laisse voir le COUP FATAL et la chute du dernier
  *  ennemi (le champ de bataille reste rendu sous l'overlay) avant de recouvrir la scène — sinon la victoire
@@ -113,19 +114,22 @@ export function VictoryScreen() {
                 const canHarvest = !!harvestProfileFor(d.creatureId) && net.mode !== 'guest';
                 const done = (pv?.harvested ?? []).includes(d.creatureId ?? '');
                 return (
-                  <span key={d.label} className="victory-foe">
+                  <div key={d.label} className="victory-foe row-flex">
                     {d.label}{d.count > 1 ? ` ×${d.count}` : ''}
                     {canHarvest && (
-                      <button
-                        className="btn btn-ghost victory-harvest"
-                        disabled={done}
+                      <GatedAction
+                        id={`victory-harvest-${d.creatureId}`}
+                        label={done ? '✓ récolté' : <><Icon id="medical/scalpel" size="sm" /> Récolter</>}
+                        ariaLabel={`Récolter ${d.label}`}
+                        enabled={!done}
+                        reason="Ces pièces ont déjà été récoltées."
+                        descOfferte="Récolter les pièces de monstre (Test de Savoir (Bêtes))"
                         onClick={() => harvest(d.creatureId!)}
-                        title="Récolter les pièces de monstre (Test de Savoir (Bêtes))"
-                      >
-                        {done ? '✓ récolté' : <><Icon id="medical/scalpel" size="sm" /> Récolter</>}
-                      </button>
+                        primary={false}
+                        btnClassName="btn-ghost victory-harvest"
+                      />
                     )}
-                  </span>
+                  </div>
                 );
               })}
             </div>

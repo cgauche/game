@@ -49,6 +49,16 @@ function monte(n: GameState['net']) {
 
 const reponses = () => Array.from(container.querySelectorAll<HTMLButtonElement>('button.dlg-choice'));
 const chip = () => container.querySelector('.spectator-chip');
+/** Une réponse FERMÉE est INERTE mais ATTEIGNABLE (#1689 T2, `GatedAction`) : `aria-disabled` et clic
+ *  sans effet, jamais `disabled` — qui la sortirait du clavier, de la manette et du tap, donc de la
+ *  raison qu'elle doit pouvoir dire. */
+const inerte = (b: HTMLButtonElement) => b.getAttribute('aria-disabled') === 'true' && !b.disabled;
+/** Le clic d'un siège non meneur ne fait RIEN avancer : le nœud du dialogue ne bouge pas. */
+function clicSansEffet() {
+  const avant = useGame.getState().dialogue?.nodeId;
+  act(() => { reponses()[0].click(); });
+  return useGame.getState().dialogue?.nodeId === avant;
+}
 
 afterEach(() => {
   act(() => { root.unmount(); });
@@ -73,7 +83,8 @@ describe('#1262 — les réponses d’un dialogue ne sont servies qu’au siège
   it('COOP invité : réponses DÉSACTIVÉES et le meneur est NOMMÉ', () => {
     monte(net({ mode: 'guest', mySeat: 1 }));
     expect(reponses()).toHaveLength(2);
-    expect(reponses().every((b) => b.disabled), 'un clic d’invité est écrasé au snapshot : aucune réponse cliquable').toBe(true);
+    expect(reponses().every(inerte), 'un clic d’invité est écrasé au snapshot : la réponse doit être INERTE (aria-disabled), et rester atteignable pour dire pourquoi').toBe(true);
+    expect(clicSansEffet(), 'le clic d’un siège non meneur ne doit RIEN avancer').toBe(true);
     expect(chip()?.textContent).toContain('Hôte');
   });
 
@@ -84,7 +95,8 @@ describe('#1262 — les réponses d’un dialogue ne sont servies qu’au siège
     act(() => { root.unmount(); });
     container.remove();
     monte(net({ mode: 'host', mySeat: 0, gmSeat: 1 }));
-    expect(reponses().every((b) => b.disabled)).toBe(true);
+    expect(reponses().every(inerte)).toBe(true);
+    expect(clicSansEffet()).toBe(true);
     expect(chip()?.textContent).toContain('Antoine');
   });
 });

@@ -11,7 +11,16 @@ import { StakeNote } from './StakeNote';
  * Slots GÉNÉRIQUES `ReactNode` : composé par `InterludeScreen` (volets d'Activité) et
  * `CityHubScreen` (détail de service) — aucun métier de l'un ou l'autre ne vit ici.
  */
-export function ActivityPane({ icon, title, lead, desc, blocked, prejet, cost, note, actions, children }: {
+/**
+ * Id de la BANNIÈRE de blocage d'un volet — cible d'`aria-describedby` pour les actions du pied. Une
+ * raison se dit UNE fois : quand le volet l'affiche en tête (raison STRUCTURANTE de l'écran), ses
+ * boutons s'y LIENT (`GatedAction` forme `reasonId`) au lieu d'ouvrir une bulle qui la répèterait.
+ */
+export const idBlocage = (paneId: string) => `${paneId}-blocked`;
+
+export function ActivityPane({ id, icon, title, lead, desc, blocked, prejet, cost, note, actions, children }: {
+  /** Id STABLE du volet — ancre de la bannière de blocage (cf. `idBlocage`). */
+  id: string;
   icon: string;
   title: ReactNode;
   /** Bandeau d'ouverture du corps, AVANT la description (ex. `SpeakerBanner` de l'hôte du service). */
@@ -37,7 +46,7 @@ export function ActivityPane({ icon, title, lead, desc, blocked, prejet, cost, n
       <div className="activity-pane-body">
         {lead}
         {desc && <div className="activity-pane-desc"><Prose md={desc} /></div>}
-        {blocked && <p className="activity-pane-blocked">{blocked}</p>}
+        {blocked && <p className="activity-pane-blocked" id={idBlocage(id)}>{blocked}</p>}
         {children}
       </div>
       {hasFoot && (

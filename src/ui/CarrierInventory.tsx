@@ -28,7 +28,11 @@ import { QualityChips } from './EntityChip';
 import { resolveQualities } from '../engine/qualities/dispatch';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { prefixOf } from './PossessionsRegistry';
+import { GatedAction } from './GatedAction';
 import type { Palette } from '../gameIso/rig/palette';
+
+/** Raison UNIQUE du verrou d'équipement pendant un combat, partagée par les actions de sac. */
+const VERROU_COMBAT = 'Équipement verrouillé en combat (seul le changement de set d’armes est permis).';
 
 /** Emplacements de couleur d'un SKIN d'OBJET légendaire (`metal/cuir/accent` = slots de palette). */
 const WEAPON_SKIN_SLOTS: [label: string, slot: keyof Palette][] = [
@@ -177,14 +181,16 @@ export function CarrierInventory({
           <div className="inv-actionbar">
             {rowExtra?.(it, { inBattleNow, handLabel })}
             {equipable ? (
-              <button
-                className={`btn small ${it.equipped ? 'btn-primary' : ''}`}
-                disabled={inBattleNow}
-                title={inBattleNow ? 'Équipement verrouillé en combat (seul le changement de set d’armes est permis)' : isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant)' : isCape ? 'Porter la cape (cosmétique — visible dans le dos du héros)' : it.kind === 'misc' ? 'Porter (−1 Enc)' : undefined}
+              <GatedAction
+                id={`inv-equip-${it.uid}`}
+                label={it.kind === 'armor' ? (it.equipped ? 'Équipé' : 'Équiper') : it.equipped ? 'Portée' : 'Porter'}
+                enabled={!inBattleNow}
+                reason={VERROU_COMBAT}
+                descOfferte={isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant)' : isCape ? 'Porter la cape (cosmétique — visible dans le dos du héros)' : it.kind === 'misc' ? 'Porter (−1 Enc)' : undefined}
                 onClick={() => toggleEquip(carrierId, it.uid)}
-              >
-                {it.kind === 'armor' ? (it.equipped ? 'Équipé' : 'Équiper') : it.equipped ? 'Portée' : 'Porter'}
-              </button>
+                primary={!!it.equipped}
+                btnClassName="small"
+              />
             ) : null}
             {isSkinnable && (
               <button
@@ -226,7 +232,16 @@ export function CarrierInventory({
               />
             )}
             {it.inside && (
-              <button className="btn small" disabled={inBattleNow} title="Sortir du contenant" onClick={() => stowItem(carrierId, it.uid, null)}>Sortir</button>
+              <GatedAction
+                id={`inv-unstow-${it.uid}`}
+                label="Sortir"
+                enabled={!inBattleNow}
+                reason={VERROU_COMBAT}
+                descOfferte="Sortir du contenant"
+                onClick={() => stowItem(carrierId, it.uid, null)}
+                primary={false}
+                btnClassName="small"
+              />
             )}
           </div>
         )}

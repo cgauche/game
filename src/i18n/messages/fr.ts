@@ -115,6 +115,7 @@ export const fr = {
   'party.slot.invite': 'Un siège à pourvoir',
   'party.slot.waiting': 'En attente de {name}…',
   'party.recruit.full': 'Groupe complet — retirez un aventurier pour en recruter un autre.',
+  'party.recruit.already': 'Ce héros est déjà dans le groupe.',
   'party.seat.create': 'Créer',
   'party.seat.choose': 'Choisir',
   'party.select.title': 'Choisir un aventurier',

@@ -142,6 +142,7 @@ export function CityHubScreen({
     if (svc.category === 'auberge') {
       return (
         <ActivityPane
+          id={`pane-svc-${svc.id}`}
           icon={serviceIcon(svc)}
           title={svc.label}
           lead={<SpeakerBanner label="L’aubergiste" variant="boniment">{svc.hostLine}</SpeakerBanner>}
@@ -183,6 +184,7 @@ export function CityHubScreen({
     if (svc.category === 'port' && svc.port) {
       return (
         <ActivityPane
+          id={`pane-svc-${svc.id}`}
           icon={serviceIcon(svc)}
           title={svc.label}
           actions={
@@ -202,6 +204,7 @@ export function CityHubScreen({
     if (svc.category === 'marche' && svc.market) {
       return (
         <ActivityPane
+          id={`pane-svc-${svc.id}`}
           icon={serviceIcon(svc)}
           title={svc.label}
           actions={<button type="button" className="btn btn-primary" onClick={() => enter(openLandMarket)}>Entrer au marché</button>}
@@ -214,6 +217,7 @@ export function CityHubScreen({
     if (svc.merchantArchetype) {
       return (
         <ActivityPane
+          id={`pane-svc-${svc.id}`}
           icon={serviceIcon(svc)}
           title={svc.label}
           desc={svc.desc}
@@ -235,6 +239,7 @@ export function CityHubScreen({
     if (route) {
       return (
         <ActivityPane
+          id={`pane-svc-${svc.id}`}
           icon={serviceIcon(svc)}
           title={svc.label}
           desc={svc.desc}
@@ -253,7 +258,7 @@ export function CityHubScreen({
     // Service de catalogue sans écran dédié (temple/guilde) : desc si le catalogue la porte (état HONNÊTE,
     // pas de promesse ni de roadmap-speak, #375), sinon un constat FACTUEL (règle 1/7).
     return (
-      <ActivityPane icon={serviceIcon(svc)} title={svc.label} desc={svc.desc}>
+      <ActivityPane id={`pane-svc-${svc.id}`} icon={serviceIcon(svc)} title={svc.label} desc={svc.desc}>
         {!svc.desc && <p className="city-hub-empty">Ce service n’a pas encore d’écran dédié.</p>}
       </ActivityPane>
     );
@@ -301,6 +306,7 @@ export function CityHubScreen({
   } else if (poiSel.sceneId) {
     poiDetail = (
       <ActivityPane
+        id={`pane-poi-${poiSel.id}`}
         icon={poiIcon(poiSel, services)}
         title={poiSel.label}
         desc="Ce point mène à un autre endroit."

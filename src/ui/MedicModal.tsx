@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { flowStakeRef, hasFlowStake, skillRefLabel } from '../data';
 import { stakeRuleOf } from './StakeNote';
@@ -21,6 +21,7 @@ import type { Combatant } from '../engine/types';
 import { Icon } from './Icon';
 import { VsHeader } from './VsHeader';
 import { HEAL_ACT } from './healSubtitle';
+import { GatedAction } from './GatedAction';
 
 const ACT_META: Record<HealMode, { icon: ReactNode; label: string }> = {
   wounds: { icon: <Icon id="journal/heal" size="sm" />, label: 'Soigner les Blessures' },
@@ -243,36 +244,54 @@ export function MedicModal() {
                 : a === 'ammo' ? lodgedAmmoCount(patient) : 0;
               // L'acte est SA propre porte de règle (#1078) : le bouton s'englobe dans `CodexRef wrap`,
               // dont la cible est le FOYER de l'enjeu de CE jet (`heal/<mode>`, flow-stakes) et l'`instance`
-              // le nom de l'acte. Les actes SANS enjeu authoré (la rééducation) n'en reçoivent aucune —
-              // jamais une porte morte.
+              // le nom de l'acte. Un acte SANS enjeu authoré (la rééducation) n'a pas de cible au Codex :
+              // le même `CodexRef` reste monté, `category`/`id` absents, et ne s'ouvre que s'il a quelque
+              // chose à dire — la raison d'un refus (`refus`), sinon rien.
               const stake = hasFlowStake('heal', a) ? flowStakeRef('heal', a) : undefined;
               const rule = stake ? stakeRuleOf(stake) : undefined;
+              // La raison d'un refus ne peut PAS naître d'un second `CodexRef` imbriqué dans celui de
+              // la porte de règle (une seule infobulle par ancrage) : elle passe par `refus` de CE
+              // popover, et l'action prend la forme `reasonId` — sans conteneur ni doublon.
+              const raison = reason ?? (!npc && !healer ? 'Aucun soigneur (Compétence Guérison) dans le groupe.' : undefined);
+              const rid = `medic-act-${a}`;
               const bouton = (
-                <button
-                  key={a}
-                  className="btn medic-act"
-                  disabled={!!reason || (!npc && !healer)}
+                <GatedAction
+                  id={rid}
+                  reasonId={rid}
+                  label={<>
+                    {meta.icon} {meta.label}
+                    {(a === 'bleed' || a === 'ammo') && stacks > 0 ? ` ×${stacks}` : ''}
+                    {cost && <span className="medic-price"><Coins money={toMoney(cost)} /></span>}
+                    {healer && <TeamPortrait combatant={healer} size={20} />}
+                  </>}
+                  ariaLabel={meta.label}
+                  descOfferte={npc ? `${npc.label} (${skillRefLabel(npc.skill)})` : healer ? `Soigné par ${healer.label}` : undefined}
+                  enabled={!raison}
                   onClick={() => act(a)}
-                  title={reason ?? (npc ? `${npc.label} (${skillRefLabel(npc.skill)})` : healer ? `Soigné par ${healer.label}` : 'Aucun soigneur (Compétence Guérison) dans le groupe')}
-                >
-                  {meta.icon} {meta.label}
-                  {(a === 'bleed' || a === 'ammo') && stacks > 0 ? ` ×${stacks}` : ''}
-                  {cost && <span className="medic-price"><Coins money={toMoney(cost)} /></span>}
-                  {healer && <TeamPortrait combatant={healer} size={20} />}
-                </button>
+                  primary={false}
+                  btnClassName="medic-act"
+                />
               );
-              return rule
-                ? <CodexRef key={a} category={rule.category} id={rule.id} label={meta.label} instance={meta.label} wrap>{bouton}</CodexRef>
-                : bouton;
+              return (
+                <Fragment key={a}>
+                  <CodexRef category={rule?.category} id={rule?.id} label={meta.label} instance={meta.label} refus={raison} wrap>{bouton}</CodexRef>
+                  {raison && <p className="hors-ecran" id={rid}>{raison}</p>}
+                </Fragment>
+              );
             })}
           </div>
         </div>
       )}
 
       <div className="modal-actions">
-        <button className="btn" disabled={busy} onClick={close} title={busy ? 'Résolvez le jet / arrêtez l’opération d’abord' : undefined}>
-          Terminer
-        </button>
+        <GatedAction
+          id="medic-done"
+          label="Terminer"
+          enabled={!busy}
+          reason="Résolvez le jet, ou arrêtez l’opération, avant de fermer."
+          onClick={close}
+          primary={false}
+        />
       </div>
     </Modal>
   );

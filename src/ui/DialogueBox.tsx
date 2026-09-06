@@ -10,6 +10,7 @@ import { SpeakerBanner } from './SpeakerBanner';
 import { SpectatorChip } from './SpectatorChip';
 import { useOwnsGroupDecision, groupDecisionSeat } from './ownership';
 import { useDismissLayer } from './useDismissLayer';
+import { GatedAction } from './GatedAction';
 
 export function DialogueBox() {
   const dialogue = useGame((s) => s.dialogue);
@@ -49,17 +50,21 @@ export function DialogueBox() {
         const cost = c.cost && toMoney(c.cost);
         const affordable = !cost || canAfford(money, cost);
         return (
-          <button
+          <GatedAction
             key={i}
-            className="btn dlg-choice"
-            disabled={!owns || !affordable}
-            title={!owns ? `${meneur} répond pour le groupe` : !affordable ? 'Pas assez d’argent' : undefined}
+            id={`dlg-choice-${i}`}
+            label={<>
+              {c.icon && <Icon id={c.icon as IconIdInput} size="sm" />}
+              <span className="dlg-choice-text">{c.label}</span>
+              {cost && <span className="dlg-choice-cost"><Coins money={cost} /></span>}
+            </>}
+            ariaLabel={c.label}
+            enabled={owns && affordable}
+            reason={!owns ? `${meneur} répond pour le groupe` : 'Pas assez d’argent'}
             onClick={() => choose(i)}
-          >
-            {c.icon && <Icon id={c.icon as IconIdInput} size="sm" />}
-            <span className="dlg-choice-text">{c.label}</span>
-            {cost && <span className="dlg-choice-cost"><Coins money={cost} /></span>}
-          </button>
+            primary={false}
+            btnClassName="dlg-choice"
+          />
         );
       })}
       {!owns && <SpectatorChip label={meneur} action="répond pour le groupe…" inline />}

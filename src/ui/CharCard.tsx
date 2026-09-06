@@ -13,6 +13,7 @@ import { EntityRef } from './EntityChip';
 import { speciesSingular, findSpeciesById, careerLabelFor, skillInstanceLabel, talentConcrete, allAxes, levelsForCareer, CORE_AXIS_IDS, type AxisData } from '../data';
 import { dominantAxes, axesProfile } from '../engine/axes';
 import { t } from '../i18n';
+import { GatedAction } from './GatedAction';
 
 /** Sous-titre d'ARCHÉTYPE : « Carrière — Espèce » (la CARRIÈRE en tête, c'est le concept du personnage
  *  en WFRP ; l'espèce suit, atténuée — arbitrage user 2026-07-13). Sans « (niv. N) » (bruit : tous
@@ -194,14 +195,14 @@ export function CandidateCard({
         <span className="candidate-wealth hint">{t('picker.hero.purse')} <Coins money={wealth} /></span>
       )}
       <div className="candidate-actions row-flex">
-        <button
-          className="btn btn-primary small"
-          disabled={variant === 'modal' ? recruited : blocked}
-          title={variant !== 'modal' && blocked ? t('party.recruit.full') : undefined}
-          onClick={onRecruit}
-        >
-          {variant === 'modal' ? (recruited ? t('picker.hero.inParty') : t('picker.hero.choose')) : t('party.hero.recruit')}
-        </button>
+        <GatedAction
+          id={`char-recruit-${hero.id}`}
+          label={variant === 'modal' ? (recruited ? t('picker.hero.inParty') : t('picker.hero.choose')) : t('party.hero.recruit')}
+          enabled={variant === 'modal' ? !recruited : !blocked}
+          reason={variant === 'modal' ? t('party.recruit.already') : t('party.recruit.full')}
+          onClick={() => onRecruit?.()}
+          btnClassName="small"
+        />
         {(onExport || onDelete) && (
           <span className="candidate-tools">
             {onExport && (

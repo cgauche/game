@@ -31,9 +31,13 @@ export function RenounceModal() {
         refuser la mutation. Les Points de Corruption restent — la menace reviendra.
       </p>
       <ChoiceButtons
+        idPrefix="renounce"
         options={[
           { key: 'subir', label: <><Icon id="nav/dice" size="sm" /> Subir la mutation</>, onSelect: () => resolve(false), title: 'Laisser la mutation se développer (tirage sur le Tableau des Corruptions)' },
-          { key: 'renier', label: <><Icon id="resource/resolve" size="sm" /> Je te renie ! (−1 Résilience)</>, primary: true, disabled: resilience <= 0, onSelect: () => resolve(true), title: 'Refuser la mutation — 1 Point de Résilience' },
+          { key: 'renier', label: <><Icon id="resource/resolve" size="sm" /> Je te renie ! (−1 Résilience)</>, primary: true, onSelect: () => resolve(true),
+            ...(resilience <= 0
+              ? { refus: 'Plus aucun Point de Résilience à sacrifier.' }
+              : { title: 'Refuser la mutation — 1 Point de Résilience' }) },
         ]}
       />
     </Modal>

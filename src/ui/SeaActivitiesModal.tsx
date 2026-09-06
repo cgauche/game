@@ -64,8 +64,7 @@ export function SeaActivitiesModal() {
                       key: def.id,
                       label: def.label,
                       primary: chosen === def.id,
-                      disabled: !!blocked,
-                      title: blocked ?? def.label,
+                      ...(blocked ? { refus: blocked } : { title: def.label }),
                       onSelect: () => set(h.id, { activityId: def.id }),
                     };
                   }),

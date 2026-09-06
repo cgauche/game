@@ -1437,10 +1437,220 @@ function widthBreakpoints(css: string): string[] {
   );
 }
 
+// ── (xix) RAISON D'UN REFUS : un `<button disabled … title=…>` est une raison MUETTE (#1689 T2) —
+//    `disabled` retire le bouton de l'ordre de tabulation et lui coupe tout événement de pointeur, et
+//    un `title` natif n'atteint ni le lecteur d'écran, ni la manette, ni le doigt. L'unique porteur
+//    d'une raison de refus est `GatedAction` (`aria-disabled` + `CodexRef refus` + copie
+//    `aria-describedby`), et pour une option de grille/barre d'actions, `OptionChooser` prop `refus`.
+//    Baseline JOUEUR = 0 (les 53 sites appelants migrés) ; l'ATELIER reste gelé à son stock, dont la
+//    migration est un lot à part (les outils d'édition n'ont pas la même contrainte manette/tactile).
+//    EXEMPTIONS AU SITE (`fichier:ligne`, jamais au FICHIER — un fichier blanchi cache le site NEUF
+//    qu'on y ajouterait) : un MODÈLE DE PROPS de socle n'est PAS un site de refus — le composant
+//    expose `disabled`/`title` dans son API, et c'est l'APPELANT qui déciderait d'une raison. Chaque
+//    ligne porte sa raison ; une ligne périmée (le site a bougé ou a été migré) échoue aussi.
+const REFUS_MUET_EXEMPT_SITES = new Map<string, string>([
+  ['GatedAction.tsx:151', 'la primitive elle-même : `title={ariaLabel}` y est le NOM accessible, pas une raison'],
+  ['OptionChooser.tsx:91', '`seg` : matière propre, aucune `.btn` à habiller (type `RollOptionSansRefus`)'],
+  ['OptionChooser.tsx:138', '`OptionBouton` : la composition partagée, dont la branche gatée compose déjà `GatedAction`'],
+  ['RollShell.tsx:299', 'modèle de props de la coquille de jet — passage à `GatedAction` = train T9'],
+  ['MenuCard.tsx:130', 'modèle de props du menu — train T9'],
+  ['MediaSelect.tsx:59', 'modèle de props du sélecteur média — train T9'],
+  ['QtyStepper.tsx:36', 'modèle de props du stepper (décrément) — train T9'],
+  ['QtyStepper.tsx:40', 'modèle de props du stepper (incrément) — train T9'],
+  // Options d'un `seg` : `refus` y est refusé AU TYPE (`RollOptionSansRefus`) — le segmenté a sa
+  // matière propre, aucune `.btn` que `GatedAction` puisse habiller (design jugé #1689 T2). Ces trois
+  // options portent donc encore leur raison en `title` ; leur migration EST le train T4 (le segmenté).
+  ['CastModal.tsx:552', '`seg` du contre-sort : « Exige un autre dissipateur du même Domaine » — train T4'],
+  ['CharacterSheet.tsx:520', '`seg` de la main qui tient l’arme : deux causes d’inéligibilité — train T4'],
+  ['ShantyModal.tsx:71', '`seg` des chansons : `disabled` d’intégrité de donnée (chanson introuvable) — train T4'],
+  ['jetProps/useDefenseJetProps.tsx:178', '`seg` Porte-Bouclier (Dégâts) : coût en Avantages dit en `title` — train T4'],
+  ['jetProps/useDefenseJetProps.tsx:179', '`seg` Porte-Bouclier (Repousser) : coût en Avantages dit en `title` — train T4'],
+]);
+const REFUS_MUET_BASELINE: Record<string, number> = {
+  'editor/Editor.tsx': 1,
+  'editor/EditorToolbar.tsx': 3,
+  'editor/EffectList.tsx': 2,
+  'editor/FlowEditor.tsx': 2,
+  'editor/GameOpEditor.tsx': 4,
+  'editor/Inspector.tsx': 2,
+  'editor/NarratifEditor.tsx': 3,
+  'editor/Palette.tsx': 1,
+  'editor/StatblockEditor.tsx': 2,
+  'editor/WorldMapEditor.tsx': 1,
+};
+
+/** Balises ouvrantes d'un fichier, avec leur LIGNE — l'exemption se pose au site, pas au fichier. */
+function tagsAvecLigne(src: string, tag: string): { tag: string; ligne: number }[] {
+  const propre = src
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
+    .replace(/(^|[^:])\/\/.*$/gm, (_m, p) => p);
+  const out: { tag: string; ligne: number }[] = [];
+  for (const t of openTags(propre, tag)) {
+    const at = propre.indexOf(t);
+    out.push({ tag: t, ligne: propre.slice(0, at).split('\n').length });
+  }
+  return out;
+}
+
+/** Un littéral d'OPTION qui route un refus par PROP (`{ disabled: …, title: … }` d'un `RollOption`) :
+ *  le refus n'y est pas dans une balise, il y est en DONNÉE — et finit rendu en `disabled` + `title`
+ *  par le layout. Le contrat est `refus`/`refusId` (`OptionChooser`), d'où sa mesure ici. Forme
+ *  DÉTERMINISTE : un objet littéral portant les deux clés à la fois, sur la même accolade. */
+function optionsRefusMuet(src: string): number[] {
+  const lignes: number[] = [];
+  // APPARIEMENT d'accolades, pas `[^{}]*` : une option porte des valeurs à accolades (template
+  // literal `${…}`, `onSelect` à corps, `content` JSX). Le motif plat perdait tous ces littéraux —
+  // et donc les refus qu'ils routent.
+  for (let i = 0; i < src.length; i++) {
+    if (src[i] !== '{') continue;
+    let prof = 0;
+    let fin = -1;
+    for (let j = i; j < src.length; j++) {
+      if (src[j] === '{') prof++;
+      else if (src[j] === '}') { prof--; if (prof === 0) { fin = j; break; } }
+    }
+    if (fin === -1) continue;
+    const bloc = src.slice(i, fin + 1);
+    // Clés du PREMIER niveau seulement : un objet imbriqué ne prête pas ses clés à son parent.
+    const niveau1 = (cle: string) => {
+      let p = 0;
+      for (let k = 0; k < bloc.length; k++) {
+        if (bloc[k] === '{') p++;
+        else if (bloc[k] === '}') p--;
+        else if (p === 1 && bloc.startsWith(cle, k) && /[\s,{]/.test(bloc[k - 1] ?? '{') && /^\s*:/.test(bloc.slice(k + cle.length))) return true;
+      }
+      return false;
+    };
+    if (!niveau1('disabled') || !niveau1('title')) continue;
+    if (!niveau1('key') && !niveau1('onSelect')) continue; // c'est bien une OPTION, pas un objet quelconque
+    // ÉCHAPPATOIRE : une option qui porte DÉJÀ `refus`/`refusId` n'est PAS un refus muet — sa raison
+    // passe par la primitive, son `disabled` résiduel sert au comptage de l'appelant et son `title`
+    // décrit l'état OFFERT (grille de table de `CascadeModal`). Cherchée dans TOUT le bloc, pas au
+    // seul premier niveau : ces deux clés arrivent souvent par un SPREAD conditionnel
+    // (`...(x ? { refusId } : {})`). Le déclencheur, lui, reste strict au premier niveau : une
+    // échappatoire permissive ne crée aucun faux négatif de refus MUET.
+    if (/\brefusId?\s*:/.test(bloc)) continue;
+    lignes.push(src.slice(0, i).split('\n').length);
+    i = fin; // pas de double comptage d'un littéral imbriqué
+  }
+  return lignes;
+}
+
+/** Un REFUS MUET : `<button>` portant À LA FOIS `disabled` et `title` (la raison qu'aucun lecteur
+ *  d'écran, aucune manette et aucun doigt n'atteint), OU un `title` de refus posé sur un élément
+ *  `aria-hidden` — forme PIRE encore, l'arbre a11y ne voit même plus le porteur —, OU un refus routé
+ *  en PROP d'option (`{disabled, title}`), qui échappait au scan de balises. Les trois se mesurent
+ *  sur la FORME, jamais sur un nom de variable. */
+function sitesRefusMuet(f: string): { cle: string; ligne: number }[] {
+  const r = rel(f);
+  const src = readFileSync(f, 'utf8');
+  const out: { cle: string; ligne: number }[] = [];
+  for (const tag of ['button', 'span', 'div', 'a'] as const) {
+    for (const { tag: t, ligne } of tagsAvecLigne(src, tag)) {
+      if (!/\btitle\s*=/.test(t)) continue;
+      const muet = tag === 'button' ? /\bdisabled\b/.test(t) : /\baria-hidden\b/.test(t);
+      if (muet) out.push({ cle: `${r}:${ligne}`, ligne });
+    }
+  }
+  const propre = src
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
+    .replace(/(^|[^:])\/\/.*$/gm, (_m, p) => p);
+  for (const ligne of optionsRefusMuet(propre)) out.push({ cle: `${r}:${ligne}`, ligne });
+  return out;
+}
+
+function scanRefusMuet(files: string[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const f of files) {
+    const r = rel(f);
+    for (const s of sitesRefusMuet(f)) {
+      if (REFUS_MUET_EXEMPT_SITES.has(s.cle)) continue;
+      counts[r] = (counts[r] ?? 0) + 1;
+    }
+  }
+  return counts;
+}
+
 describe('#1318 V5 — cliquets d’hygiène UI (champ nombre, breakpoints)', () => {
   it('(xvii) <input type="number"> à la main : aucune hausse par fichier (composer NumberField)', () => {
     const files = walk(UI, (f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx'));
     assertRatchet(scanNumberInputs(files), NUMBER_INPUT_BASELINE, '`<input type="number">` (primitive `NumberField`)');
+  });
+
+  it('(xix) raison de refus MUETTE (`<button disabled title=…>`) : aucune hausse, zéro côté joueur', () => {
+    const files = walk(UI, (f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx'));
+    assertRatchet(scanRefusMuet(files), REFUS_MUET_BASELINE, '`<button disabled title=…>` (primitive `GatedAction`)');
+  });
+
+  it('(xix) le stock restant est ENTIÈREMENT dans l’atelier — aucun écran joueur ne porte de refus muet', () => {
+    const files = walk(UI, (f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx'));
+    const joueur = Object.entries(scanRefusMuet(files))
+      .filter(([f]) => !/^(editor|compendium|gallery)\//.test(f))
+      .map(([f, n]) => `${f} : ${n}`);
+    expect(joueur, `Refus MUET sur un écran JOUEUR — composer \`GatedAction\` (ou \`OptionChooser\` prop \`refus\`) :\n${joueur.join('\n')}`).toEqual([]);
+  });
+
+  it('(xix) chaque exemption est un SITE encore RÉEL — une ligne périmée se retire', () => {
+    const reels = new Set(
+      walk(UI, (f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx')).flatMap((f) => sitesRefusMuet(f).map((s) => s.cle)),
+    );
+    const perimees = [...REFUS_MUET_EXEMPT_SITES.keys()].filter((k) => !reels.has(k));
+    expect(perimees, `Exemption(s) PÉRIMÉE(S) — le site a bougé ou a été migré, retirer la ligne :\n${perimees.join('\n')}`).toEqual([]);
+  });
+
+  it('(xix) un site NEUF dans un fichier déjà exempté rougit — l’exemption est au SITE, pas au fichier', () => {
+    // `GatedAction.tsx` porte une exemption (sa propre balise) : un SECOND refus muet dans ce
+    // fichier ne doit PAS en hériter. On l'éprouve sur la source réelle du fichier exempté.
+    const src = readFileSync(join(UI, 'GatedAction.tsx'), 'utf8');
+    const dejaExempt = [...REFUS_MUET_EXEMPT_SITES.keys()].filter((k) => k.startsWith('GatedAction.tsx:'));
+    expect(dejaExempt).toHaveLength(1);
+    const neuf = `${src}\nexport const Faux = () => <button disabled title="raison muette">x</button>;\n`;
+    const sites = tagsAvecLigne(neuf, 'button')
+      .filter(({ tag }) => /\bdisabled\b/.test(tag) && /\btitle\s*=/.test(tag))
+      .map(({ ligne }) => `GatedAction.tsx:${ligne}`)
+      .filter((cle) => !REFUS_MUET_EXEMPT_SITES.has(cle));
+    expect(sites, 'le site NEUF doit rester compté malgré l’exemption du site voisin').toHaveLength(1);
+  });
+
+  it('(xix) le détecteur voit un refus muet, et ne confond pas `disabled` seul ni `title` seul', () => {
+    // Le scan travaille sur des BALISES ouvrantes : on l'éprouve sur une source en mémoire plutôt que
+    // sur un fichier fantôme — `openTags` est la seule dépendance de forme.
+    const tags = (src: string) => openTags(src, 'button').filter((t) => /\bdisabled\b/.test(t) && /\btitle\s*=/.test(t));
+    expect(tags('<button disabled={x} title="pourquoi">a</button>')).toHaveLength(1);
+    expect(tags('<button disabled={x}>a</button>')).toHaveLength(0);
+    expect(tags('<button title="nom accessible">a</button>')).toHaveLength(0);
+    // Un `title` DANS une accolade d'attribut (ternaire) ne coupe pas la balise trop tôt.
+    expect(tags('<button disabled={a ? b : c} title={a ? "x > y" : undefined}>a</button>')).toHaveLength(1);
+  });
+
+  it('(xix) le détecteur voit les DEUX autres formes : `title` sur `aria-hidden`, et refus en PROP d’option', () => {
+    // Bras `aria-hidden` : un refus écrit dans un `title` posé sur un élément retiré de l'arbre a11y.
+    const cache = (src: string) => openTags(src, 'span').filter((t) => /\btitle\s*=/.test(t) && /\baria-hidden\b/.test(t));
+    expect(cache('<span className="x" aria-hidden title="verrouillé">·</span>')).toHaveLength(1);
+    expect(cache('<span className="x" title="nom">·</span>')).toHaveLength(0);
+    expect(cache('<span className="x" aria-hidden>·</span>')).toHaveLength(0);
+    // Bras PROP d'option : le refus routé en donnée, que le layout rend en `disabled` + `title`.
+    expect(optionsRefusMuet("const o = { key: 'a', label: 'A', disabled: !ok, title: 'Bourse insuffisante' };")).toHaveLength(1);
+    expect(optionsRefusMuet("const o = { key: 'a', label: 'A', refus: 'Bourse insuffisante.' };")).toHaveLength(0);
+    expect(optionsRefusMuet("const o = { key: 'a', label: 'A', disabled: !ok };")).toHaveLength(0);
+    expect(optionsRefusMuet("const o = { key: 'a', label: 'A', title: 'description' };")).toHaveLength(0);
+    // Un objet quelconque qui porte les deux clés sans être une option ne compte pas.
+    expect(optionsRefusMuet("const cfg = { disabled: true, title: 'x' };")).toHaveLength(0);
+  });
+
+  it('(xix) le bras PROP ne perd pas une option à valeurs ACCOLADÉES (le motif plat en ratait 16 sur 19)', () => {
+    // 1. `title` en TEMPLATE LITERAL : `${…}` ouvre une accolade DANS la valeur.
+    expect(optionsRefusMuet('const o = { key: \'a\', label: \'A\', disabled: !ok, title: `Coût ${n} Av.` };')).toHaveLength(1);
+    // 2. `onSelect` à CORPS : le corps de flèche ouvre une accolade.
+    expect(optionsRefusMuet("const o = { key: 'a', disabled: !ok, title: 'x', onSelect: () => { go(); } };")).toHaveLength(1);
+    // 3. `content` JSX imbriquant une expression accoladée.
+    expect(optionsRefusMuet("const o = { key: 'a', disabled: !ok, title: 'x', content: <span>{n}</span> };")).toHaveLength(1);
+    // 4. Clés d'un objet IMBRIQUÉ : elles ne comptent pas pour le parent (pas de faux positif).
+    expect(optionsRefusMuet("const o = { key: 'a', label: 'A', meta: { disabled: true, title: 'x' } };")).toHaveLength(0);
+    // 5. `refus` déjà posé : la raison passe par la primitive, l'option n'est PAS muette.
+    expect(optionsRefusMuet("const o = { key: 'a', disabled: !ok, title: 'desc', refusId: 'cause' };")).toHaveLength(0);
+    // 6. … y compris arrivé par SPREAD conditionnel (la forme réelle de `CascadeModal`).
+    expect(optionsRefusMuet("const o = { key: 'a', disabled: !ok, title: 'desc', ...(x ? { refusId: 'c' } : {}) };")).toHaveLength(0);
   });
 
   it('(xviii) aucun breakpoint hors canon dans TOUT src/ui (900/700/560 bas, 561/701/901/1440 haut)', () => {

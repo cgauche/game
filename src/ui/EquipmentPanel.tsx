@@ -10,7 +10,11 @@ import { qualityRefLabel } from '../data';
 import { weaponStatParts } from './weaponStats';
 import { Icon } from './Icon';
 import { Band } from './Band';
+import { GatedAction } from './GatedAction';
 import { resolveQualities } from '../engine/qualities/dispatch';
+
+/** Raison UNIQUE du verrou des SETS d'armes pendant un combat. */
+const VERROU_SETS = 'Équipement verrouillé en combat (changez de set depuis la barre d’action).';
 
 /**
  * Écran d'EMPLACEMENTS d'équipement (onglet Possessions de la fiche) — façon jeu vidéo : colonne
@@ -83,40 +87,76 @@ function weaponStatsBody(it: ItemInstance, strBonus: number): string {
 /**
  * Cellule-emplacement. Survol de l'icône → POPOVER : le Codex de l'objet (catalogue) ou, à défaut
  * (arme invoquée/enchantée), un `fallback` (stats + qualités) — toujours un popover, jamais de title
- * natif, et jamais d'ouverture de fiche au clic. Le CLIC ouvre le picker changer/retirer (sauf
- * `disabled` : arme invoquée / combat → cellule statique). Vide : « + » (picker) ou « · » muet.
+ * natif, et jamais d'ouverture de fiche au clic. Le CLIC ouvre le picker changer/retirer.
+ * Une cellule FERMÉE (`refus`) compose `GatedAction` comme toute action refusée du jeu : elle DIT
+ * pourquoi, au survol comme au focus, et reste atteignable (`aria-disabled`, jamais `disabled`). Sur
+ * une cellule PLEINE la raison rejoint le popover DÉJÀ posé sur l'objet (`refus` de ce `CodexRef`) :
+ * une seule infobulle par ancrage, d'où la forme `reasonId` et sa copie hors écran.
  */
-function SlotCell({ item, pa, fallback, options, value, onSelect, disabled, emptyTitle }: {
+function SlotCell({ id, nom, item, pa, fallback, options, value, onSelect, refus, desc }: {
+  /** Id STABLE de la cellule — ancre de la copie accessible de sa raison. */
+  id: string;
+  /** Nom de l'emplacement (Corps, Cape, Main principale…) : nom accessible de la cellule. */
+  nom: string;
   item?: ItemInstance;
   pa?: number;
   fallback?: { sub?: string; body?: string };
   options: MediaOption[];
   value: string;
   onSelect: (v: string) => void;
-  disabled?: boolean;
-  emptyTitle?: string;
+  /** RAISON de la fermeture de la cellule (verrou de combat, arme à deux mains…). Absente = ouverte. */
+  refus?: string;
+  /** Description de la cellule OUVERTE, portée en `title` du picker. */
+  desc?: string;
 }) {
+  const rienAPorter = !options.some((o) => o.key);
+  // Une cellule vide SANS candidat est fermée elle aussi — et le dit, plutôt que de rester muette.
+  const refusCellule = refus ?? (!item && rienAPorter ? `Rien à porter à cet emplacement (${nom}).` : undefined);
   if (!item) {
-    const pickable = !disabled && options.some((o) => o.key);
-    if (!pickable) return <span className="eq-slot disabled" aria-hidden title={emptyTitle}>·</span>;
+    if (refusCellule) {
+      return (
+        <GatedAction
+          id={id}
+          label={<span className="eq-slot-plus" aria-hidden>·</span>}
+          ariaLabel={`${nom} — emplacement vide`}
+          enabled={false}
+          reason={refusCellule}
+          onClick={() => {}}
+          primary={false}
+          bare
+          btnClassName="eq-slot disabled"
+        />
+      );
+    }
     return (
       <MediaSelect
-        options={options} value={value} onSelect={onSelect} title={emptyTitle}
+        options={options} value={value} onSelect={onSelect} title={desc}
         trigger={<span className="eq-slot-plus" aria-hidden>+</span>} triggerClassName="eq-slot empty"
       />
     );
   }
   const trigger = (
     <>
-      <CodexRef category="trappings" id={item.trappingId} label={itemLabel(item)} className="eq-slot-icon" tooltipOnly fallback={fallback}>
+      <CodexRef category="trappings" id={item.trappingId} label={itemLabel(item)} className="eq-slot-icon" tooltipOnly fallback={fallback} refus={refusCellule}>
         <ItemIcon item={item} size="md" />
       </CodexRef>
       {pa != null && <span className="eq-slot-pa">{pa}</span>}
       {item.enchants?.length ? <span className="eq-slot-ench" title="Arme enchantée (effets actifs)">✦</span> : null}
     </>
   );
-  // Verrouillée (invoquée / combat) : cellule STATIQUE — le survol garde le popover, pas de picker.
-  if (disabled) return <span className="eq-slot filled locked">{trigger}</span>;
+  // Verrouillée (arme invoquée / combat) : le popover de l'objet porte AUSSI la raison ; la cellule
+  // reste atteignable et sa raison a sa copie hors écran.
+  if (refusCellule) {
+    return (
+      <>
+        <GatedAction
+          id={id} reasonId={id} label={trigger} ariaLabel={`${nom} — ${itemLabel(item)}`}
+          enabled={false} onClick={() => {}} primary={false} bare btnClassName="eq-slot filled locked"
+        />
+        <p className="hors-ecran" id={id}>{refusCellule}</p>
+      </>
+    );
+  }
   return (
     <MediaSelect
       options={options} value={value} onSelect={onSelect} title="Changer / retirer"
@@ -132,7 +172,6 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
   const createLoadout = useGame((s) => s.createLoadout);
   const deleteLoadout = useGame((s) => s.deleteLoadout);
   const inBattle = useGame((s) => !!s.battle);
-  const lockTitle = inBattle ? 'Équipement verrouillé en combat (changez de set depuis la barre d’action)' : undefined;
 
   const items = hero.items ?? [];
   const armours = items.filter((i) => i.kind === 'armor' && (i.locs?.length ?? 0) > 0);
@@ -175,11 +214,13 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                 return (
                   <SlotCell
                     key={layer.key}
+                    id={`eq-slot-${layer.key}`}
+                    nom={layer.label}
                     item={worn}
                     pa={netPa}
                     value={worn?.uid ?? ''}
-                    disabled={inBattle}
-                    emptyTitle={lockTitle ?? (candidates.length ? `${layer.label} — équiper` : `${layer.label} — rien à porter`)}
+                    refus={inBattle ? VERROU_SETS : undefined}
+                    desc={`${layer.label} — équiper`}
                     options={[{ key: '', label: '— retirer —', disabled: !worn }, ...candidates.map(armourOpt)]}
                     onSelect={(v) => toggleEquip(hero.id, v || worn!.uid)}
                   />
@@ -196,10 +237,12 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
             <span className="eq-loc-pa" title="Purement cosmétique — aucun effet de règles"><Icon id="action/cast" size="sm" /></span>
           </span>
           <SlotCell
+            id="eq-slot-cape"
+            nom="Cape"
             item={wornCape}
             value={wornCape?.uid ?? ''}
-            disabled={inBattle}
-            emptyTitle={lockTitle ?? (capes.length ? 'Équiper une cape' : 'Aucune cape dans le sac')}
+            refus={inBattle ? VERROU_SETS : undefined}
+            desc="Équiper une cape"
             options={[{ key: '', label: '— retirer —', disabled: !wornCape }, ...capes.filter((c) => !c.equipped).map(capeOpt)]}
             onSelect={(v) => toggleEquip(hero.id, v || wornCape!.uid)}
           />
@@ -216,7 +259,6 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
           const mainItem = weapons.find((w) => w.uid === lo.main);
           const offItem = weapons.find((w) => w.uid === lo.off);
           const mainTwoHanded = mainItem ? weaponHands(mainItem) === 2 : false;
-          const editable = !conjured && !inBattle; // arme invoquée = lecture seule (auto-gérée)
           const canDelete = !conjured && (hero.loadouts?.length ?? 0) > 1; // garder ≥1 set
           return (
             <div key={lo.id} className={`set-card ${setActive ? 'active' : ''} ${conjured ? 'conjured' : ''}`}>
@@ -228,11 +270,13 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                 <div className="set-card-slots">
                   <div className="set-slot">
                     <SlotCell
+                      id={`eq-slot-${lo.id}-main`}
+                      nom="Main principale"
                       item={mainItem}
                       fallback={weaponFallback(mainItem, conjured)}
-                      disabled={!editable}
+                      refus={conjured ? 'Arme invoquée — le sort la gère, elle ne se change pas à la main.' : inBattle ? VERROU_SETS : undefined}
                       value={lo.main ?? ''}
-                      emptyTitle={lockTitle ?? 'Main principale — choisir une arme'}
+                      desc="Main principale — choisir une arme"
                       options={[{ key: '', label: '— mains nues —' }, ...weapons.map(weaponOpt)]}
                       onSelect={(v) => setLoadoutSlot(hero.id, lo.id, 'main', v || null)}
                     />
@@ -240,11 +284,13 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                   </div>
                   <div className="set-slot">
                     <SlotCell
+                      id={`eq-slot-${lo.id}-off`}
+                      nom="Seconde main"
                       item={offItem}
                       fallback={weaponFallback(offItem, conjured)}
-                      disabled={!editable || mainTwoHanded}
+                      refus={mainTwoHanded ? 'Arme à deux mains — pas de seconde main.' : conjured ? 'Arme invoquée — le sort la gère, elle ne se change pas à la main.' : inBattle ? VERROU_SETS : undefined}
                       value={lo.off ?? ''}
-                      emptyTitle={mainTwoHanded ? 'Arme à deux mains — pas de seconde main' : (lockTitle ?? '2nde — arme de mêlée à une main, bouclier ou pistolet')}
+                      desc="2nde — arme de mêlée à une main, bouclier ou pistolet"
                       options={[{ key: '', label: mainTwoHanded ? '— (2 mains) —' : '— vide —' }, ...offHandWeapons.filter((w) => w.uid !== lo.main).map(weaponOpt)]}
                       onSelect={(v) => setLoadoutSlot(hero.id, lo.id, 'off', v || null)}
                     />
@@ -259,17 +305,27 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                       <Icon id="ui/done" size="sm" /> Actif
                     </span>
                   ) : (
-                    <button
-                      className="btn small"
-                      disabled={inBattle}
-                      title={lockTitle ?? 'Rendre ce set actif (armes en main)'}
+                    <GatedAction
+                      id={`loadout-activate-${lo.id}`}
+                      label="Activer"
+                      enabled={!inBattle}
+                      reason={VERROU_SETS}
                       onClick={() => setActiveLoadout(hero.id, lo.id)}
-                    >
-                      Activer
-                    </button>
+                      primary={false}
+                      btnClassName="small"
+                    />
                   )}
                   {canDelete && (
-                    <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Supprimer ce set'} onClick={() => deleteLoadout(hero.id, lo.id)}><Icon id="ui/delete" size="sm" /></button>
+                    <GatedAction
+                      id={`loadout-delete-${lo.id}`}
+                      label={<Icon id="ui/delete" size="sm" />}
+                      ariaLabel="Supprimer ce set"
+                      enabled={!inBattle}
+                      reason={VERROU_SETS}
+                      onClick={() => deleteLoadout(hero.id, lo.id)}
+                      primary={false}
+                      btnClassName="small"
+                    />
                   )}
                 </span>
               </div>
@@ -277,9 +333,15 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
           );
         })}
         {(hero.loadouts?.length ?? 0) < 3 && (
-          <button className="btn small set-add" disabled={inBattle} title={lockTitle ?? 'Ajouter un set d’armes (vide, devient actif)'} onClick={() => createLoadout(hero.id)}>
-            + Set d’armes
-          </button>
+          <GatedAction
+            id="loadout-add"
+            label="+ Set d’armes"
+            enabled={!inBattle}
+            reason={VERROU_SETS}
+            onClick={() => createLoadout(hero.id)}
+            primary={false}
+            btnClassName="small set-add"
+          />
         )}
 
         {/* Récap des armes EN MAIN du set actif (Dégâts effectifs, qualités/effets, munitions) */}

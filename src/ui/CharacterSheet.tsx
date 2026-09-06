@@ -15,7 +15,7 @@ import { hasHealSkill, isHealable } from '../engine/healing';
 import { isConsumable } from '../engine/consumables';
 import { isMagicMissile, isArcaneSpell, castBlockedBy, castInfoIsPrayer } from '../engine/magic';
 import { effectiveSpellOf } from '../state/combatFlow';
-import { GatedAction } from './GatedAction';
+import { GatedAction, raisonSi } from './GatedAction';
 import { actorHasSkill } from '../engine/skills';
 import { nextProsthesisTier } from '../engine/trauma';
 import { dispellableSpellsOn } from '../engine/dispel';
@@ -354,14 +354,14 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                   en combat
                 </span>
               ) : (
-                <span className="spell-actions">
+                <div className="spell-actions row-flex">
                   {isArcaneSpell(sp) && (
                     <>
                       <GatedAction
                         id={`sheet-focus-${hero.id}-${sp.id}`}
                         label={<><Icon id="flag/focus" size="sm" /> Focaliser</>}
                         enabled={!castBlockedBy(hero, 'focalisation')}
-                        reason={castBlockedBy(hero, 'focalisation') ?? ''}
+                        {...raisonSi(castBlockedBy(hero, 'focalisation'))}
                         primary={false}
                         btnClassName="small"
                         onClick={() => oocFocusSpell(hero.id, sp.id)}
@@ -373,12 +373,12 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                     id={`sheet-cast-${hero.id}-${sp.id}`}
                     label={<><Icon id="nav/dice" size="sm" /> Lancer</>}
                     enabled={!castBlocked}
-                    reason={castBlocked ?? ''}
+                    {...raisonSi(castBlocked)}
                     primary={false}
                     btnClassName="small"
                     onClick={() => oocCastSpell(hero.id, sp.id, targetId)}
                   />
-                </span>
+                </div>
               )}
             </div>
           );
@@ -392,17 +392,17 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
             {isMagicMissile(sp) ? (
               <span className="muted">en combat</span>
             ) : (
-              <span className="spell-actions">
+              <div className="spell-actions row-flex">
                 <GatedAction
                   id={`sheet-cast-grimoire-${hero.id}-${sp.id}`}
                   label={<><Icon id="nav/compendium" size="sm" /> Lancer (grimoire)</>}
                   enabled={!castBlockedBy(hero, castInfoIsPrayer(sp) ? 'priere' : 'langue')}
-                  reason={castBlockedBy(hero, castInfoIsPrayer(sp) ? 'priere' : 'langue') ?? ''}
+                  {...raisonSi(castBlockedBy(hero, castInfoIsPrayer(sp) ? 'priere' : 'langue'))}
                   primary={false}
                   btnClassName="small"
                   onClick={() => oocCastSpell(hero.id, sp.id, targetId, true)}
                 />
-              </span>
+              </div>
             )}
           </div>
         ))}
@@ -428,11 +428,11 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                     <span className="spell-name">
                       {d.label} · NI {d.ni} ({prog}/{d.ni})
                     </span>
-                    <span className="spell-actions">
+                    <div className="spell-actions row-flex">
                       <button className="btn small" onClick={() => oocDispelSpell(hero.id, d.spellId, d.casterId)}>
                         <Icon id="action/dispel" size="sm" /> Dissiper
                       </button>
-                    </span>
+                    </div>
                   </div>
                 );
               })}
@@ -464,21 +464,23 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                       <CodexRef category="spells" id={sp.id} label={sp.label}>{sp.label}</CodexRef>
                       {n > 0 ? <span className="muted"> · ×{n}</span> : null}
                     </span>
-                    <span className="spell-actions">
+                    <div className="spell-actions row-flex">
                       {n > 0 && (
                         <button className="btn small" title="Jeter un composant (pas de remboursement)" onClick={() => removeSpellComponent(hero.id, sp.id)}>
                           −
                         </button>
                       )}
-                      <button
-                        className="btn small"
-                        disabled={!afford}
-                        title={afford ? `Acheter un composant pour ${sp.label} (${formatMoney(cost)})` : `Bourse insuffisante (${formatMoney(cost)})`}
+                      <GatedAction
+                        id={`spell-comp-buy-${sp.id}`}
+                        label={<>+ <Coins money={cost} /></>}
+                        ariaLabel={`Acheter un composant pour ${sp.label}`}
+                        enabled={afford}
+                        reason={`Bourse insuffisante (${formatMoney(cost)}).`}
                         onClick={() => buySpellComponent(hero.id, sp.id)}
-                      >
-                        + <Coins money={cost} />
-                      </button>
-                    </span>
+                        primary={false}
+                        btnClassName="small"
+                      />
+                    </div>
                   </div>
                 );
               })}
@@ -617,14 +619,15 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
                   )
                 )}
                 {consumable && (
-                  <button
-                    className="btn small"
-                    title={locked ? 'En combat, utilisez l’objet depuis la barre d’action (coûte l’Action).' : 'Utiliser ce consommable (bandages, potion)'}
-                    disabled={locked}
+                  <GatedAction
+                    id={`sheet-use-${it.uid}`}
+                    label="Utiliser"
+                    enabled={!locked}
+                    reason="En combat, utilisez l’objet depuis la barre d’action (coûte l’Action)."
                     onClick={() => usePartyItem(hero.id, it.uid)}
-                  >
-                    Utiliser
-                  </button>
+                    primary={false}
+                    btnClassName="small"
+                  />
                 )}
               </>
             );
@@ -877,16 +880,16 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
           <span className={`career-status ${v.completed ? 'done' : ''}`}>{v.completed ? '✓ niveau complété' : 'niveau en cours'}</span>
         </div>
         {v.targets.map((t) => (
-          <button
+          <GatedAction
             key={t.level}
-            className="btn small"
-            disabled={!t.ok || !afford(t.cost)}
-            title={t.reason}
+            id={`career-target-${t.level}`}
+            label={`${t.level > v.careerLevel ? 'Monter' : 'Redescendre'} : ${t.label} (niv. ${t.level}) · ${t.cost} PX`}
+            enabled={t.ok && afford(t.cost)}
+            reason={!t.ok ? (t.reason ?? 'Ce changement de Carrière n’est pas ouvert.') : `PX insuffisants — ${t.cost} PX requis.`}
             onClick={() => changeCareer(hero.id, t.career, t.level)}
-          >
-            {t.level > v.careerLevel ? 'Monter' : 'Redescendre'} : {t.label} (niv. {t.level}) · {t.cost} PX
-            {!t.ok && t.reason ? ` — ${t.reason}` : ''}
-          </button>
+            primary={false}
+            btnClassName="small"
+          />
         ))}
         <div className="adv-change">
           <select value={target} onChange={(e) => setTarget(e.target.value)}>

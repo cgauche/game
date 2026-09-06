@@ -143,6 +143,8 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
     openTable(60);
     render();
     const basse = rowButton('Ligne basse')!;
+    // ÉTEINTE mais ATTEIGNABLE : `aria-disabled` + clic inerte, jamais le `disabled` HTML — qui la
+    // sortirait du clavier, de la manette et du tap, donc de la raison qu'elle DOIT pouvoir dire.
     expect(basse.getAttribute('aria-disabled'), 'la ligne éteinte n’est pas marquée refusée').toBe('true');
     expect(basse.disabled, '`disabled` HTML : la ligne sort du clavier et de la manette').toBe(false);
     // La raison ne vit plus dans un `title` natif (invisible à l'arbre a11y, inatteignable au doigt) :
@@ -152,7 +154,7 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
     expect(basse.title, 'plus de raison en infobulle native').toBe('');
     const raison = host.querySelector(`#${basse.getAttribute('aria-describedby')}`);
     expect(raison?.textContent, 'la raison est à l’écran, et le bouton la DÉSIGNE').toContain("hors d'atteinte");
-    expect(rowButton('51-100')!.getAttribute('aria-disabled')).toBeNull();
+    expect(rowButton('51-100')!.getAttribute('aria-disabled'), 'une ligne OFFERTE n’est pas éteinte').toBeNull();
     expect(rowButton('51-100')!.getAttribute('aria-describedby'), 'une ligne atteignable ne désigne aucun refus').toBeNull();
     act(() => { basse.click(); });
     expect(result(), 'une ligne inatteignable ne pose aucun dé').toBeUndefined();
@@ -346,7 +348,7 @@ describe('Mode table — le dé montré est celui qui RÉSOUT (table à modifica
     // reste atteignable au clavier/à la manette/au doigt pour que sa raison soit lisible.
     const off = rowButtons().filter((b) => b.getAttribute('aria-disabled') === 'true');
     expect(off.length, 'aucune ligne grisée : le cas n’est pas exercé').toBeGreaterThan(0);
-    expect(rowButtons().filter((b) => b.disabled), 'une ligne éteinte porte `disabled` (muette au clavier)').toEqual([]);
+    expect(off.every((b) => !b.disabled), 'une ligne grisée ne porte jamais le `disabled` HTML').toBe(true);
     expect(host.textContent).toContain('grisée');
     expect(host.textContent).toContain('hors d’atteinte'.replace('’', "'"));
     const noteId = off[0].getAttribute('aria-describedby');

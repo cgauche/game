@@ -14,6 +14,7 @@ import {
 } from '../state/massBattleFlow';
 import { BATTLE_HAZARDS } from '../engine/massBattle';
 import type { Combatant } from '../engine/types';
+import { GatedAction } from './GatedAction';
 
 /**
  * Écran de Combat de masse / Puissance de Bataille (ADE II 08). Il ne gère QUE les Rounds ('round') et
@@ -224,14 +225,17 @@ function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Sta
         />
       )}
       <div className="bar mb-actions">
-        <button
-          className="btn small btn-primary"
-          disabled={disabled}
+        <GatedAction
+          id={`mb-scene-${sceneId}`}
+          label={resolved ? 'Scène résolue' : isCombat ? 'Engager le combat' : 'Résoudre'}
+          enabled={!disabled}
+          reason={resolved ? 'Cette Scène est déjà résolue.'
+            : mb.awaitingNext ? 'Résolvez le Round en cours avant d’engager une Scène.'
+            : !isCombat && remaining === 0 ? 'Plus aucun Personnage libre ce Round.'
+            : 'La position est perdue — cette Scène ne se tient plus.'}
           onClick={() => chooseScene(sceneId)}
-          title={sc.sceneKind === 'test' ? 'Test de Compétence' : sc.sceneKind === 'hold' ? 'Test opposé — tenez la position (Point de rupture)' : 'Combat tactique — la victoire modifie la Puissance'}
-        >
-          {resolved ? 'Scène résolue' : isCombat ? 'Engager le combat' : 'Résoudre'}
-        </button>
+          btnClassName="small"
+        />
       </div>
     </div>
   );

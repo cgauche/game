@@ -28,9 +28,10 @@ export function ShoreLeaveBody({ embedded = false }: { embedded?: boolean } = {}
         offrir.
       </p>
       <ChoiceButtons
+        idPrefix="shore"
         options={[
-          { key: 'accorder', label: <><Icon id="travel/anchor" size="sm" /> Accorder la relâche</>, primary: true, disabled: isGuest, onSelect: () => resolve(true), title: isGuest ? 'L\'hôte décide de la relâche.' : 'Autoriser l\'équipage à faire relâche à terre' },
-          { key: 'refuser', label: <><Icon id="travel/anchor" size="sm" /> Refuser la relâche</>, disabled: isGuest, onSelect: () => resolve(false), title: isGuest ? 'L\'hôte décide de la relâche.' : 'Garder l\'équipage à bord — l\'Embrigadement n\'aura pas lieu' },
+          { key: 'accorder', label: <><Icon id="travel/anchor" size="sm" /> Accorder la relâche</>, primary: true, refus: isGuest ? 'L\'hôte décide de la relâche.' : undefined, onSelect: () => resolve(true), title: isGuest ? undefined : 'Autoriser l\'équipage à faire relâche à terre' },
+          { key: 'refuser', label: <><Icon id="travel/anchor" size="sm" /> Refuser la relâche</>, refus: isGuest ? 'L\'hôte décide de la relâche.' : undefined, onSelect: () => resolve(false), title: isGuest ? undefined : 'Garder l\'équipage à bord — l\'Embrigadement n\'aura pas lieu' },
         ]}
       />
     </>

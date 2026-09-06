@@ -12,6 +12,10 @@ import { ScreenShell } from './ScreenShell';
 import { SpeakerBanner } from './SpeakerBanner';
 import { CargoTransferPanel } from './CargoTransferPanel';
 import { TradeTable, type TradeGroup } from './TradeTable';
+import { GatedAction } from './GatedAction';
+
+/** Raison UNIQUE du refus des gestes de marché à un invité : l'hôte seul engage la bourse du groupe. */
+const REFUS_INVITE = 'L’hôte seul engage les dépenses du groupe.';
 
 /**
  * ÉCRAN MARCHÉ TERRESTRE (Mort sur le Reik Compagnon ch.11 « Règles du commerce ») — commerce de cargaison à
@@ -95,11 +99,18 @@ export function LandMarketView() {
                 groups={offerGroups}
                 rowKey={(o) => o.cargoId}
                 label={(o) => (
-                  <span className="trade-offer-name">
+                  <span className="trade-offer-name row-flex">
+                    {/* `row-flex` : l'action « Évaluer » compose `GatedAction`, dont la boîte est un
+                        BLOC dès qu'une raison l'accompagne. */}
                     {o.label}
                     {o.wine && (o.wineTier
                       ? <span className="port-hint"> — {o.wineTier}{o.wineEvalOk ? '' : ' (?)'}</span>
-                      : <> <button type="button" className="btn small ghost" disabled={isGuest} title="Test d’Évaluation pour révéler la qualité secrète du vin (MSRC 13 l.95)" onClick={() => evalWine(o.cargoId)}>Évaluer</button></>)}
+                      : <> <GatedAction
+                          id={`market-eval-${o.cargoId}`} label="Évaluer" ariaLabel={`Évaluer ${o.label}`}
+                          enabled={!isGuest} reason={REFUS_INVITE}
+                          descOfferte="Test d’Évaluation pour révéler la qualité secrète du vin (MSRC 13 l.95)"
+                          onClick={() => evalWine(o.cargoId)} primary={false} btnClassName="small ghost"
+                        /></>)}
                   </span>
                 )}
                 enc={(o) => o.enc}
@@ -129,15 +140,16 @@ export function LandMarketView() {
                         onChange={(n) => setBuyEnc((s) => ({ ...s, [o.cargoId]: n }))}
                       />
                       <span className="market-offer-total">≈ <Coins money={estCost} /></span>
-                      <button
-                        type="button"
-                        className="btn small"
-                        disabled={isGuest || !affordable || !target || !fits}
-                        title={!target ? 'Aucun porteur' : !fits ? `Contenance dépassée (libre ${free} Enc)` : affordable ? 'Estimation avant Marchandage (+10 % si lot partiel, l.131)' : 'Bourse insuffisante'}
+                      <GatedAction
+                        id={`market-buy-${o.cargoId}`}
+                        label="Acheter"
+                        enabled={!isGuest && affordable && !!target && fits}
+                        reason={isGuest ? REFUS_INVITE : !target ? 'Aucun porteur pour recevoir ce lot.' : !fits ? `Contenance dépassée (libre ${free} Enc).` : 'Bourse insuffisante.'}
+                        descOfferte="Estimation avant Marchandage (+10 % si lot partiel, l.131)"
                         onClick={() => buy(o.cargoId, want)}
-                      >
-                        Acheter
-                      </button>
+                        primary={false}
+                        btnClassName="small"
+                      />
                     </div>
                   );
                 }}
@@ -157,8 +169,16 @@ export function LandMarketView() {
                 price={(r) => toMoney({ gold: r.lot.basePriceGold })}
                 action={(r) => (
                   <div className="port-sell-actions">
-                    <button type="button" className="btn small" disabled={isGuest} title="Trouver un acheteur puis marchander (MSRC 13 l.133-160)" onClick={() => sell(r.carrierId, r.index)}>Vendre</button>
-                    <button type="button" className="btn small ghost" disabled={isGuest} title="Brader à la moitié du prix de base (MSRC 13 l.160)" onClick={() => dump(r.carrierId, r.index)}>Brader</button>
+                    <GatedAction
+                      id={`market-sell-${r.carrierId}-${r.index}`} label="Vendre" enabled={!isGuest} reason={REFUS_INVITE}
+                      descOfferte="Trouver un acheteur puis marchander (MSRC 13 l.133-160)"
+                      onClick={() => sell(r.carrierId, r.index)} primary={false} btnClassName="small"
+                    />
+                    <GatedAction
+                      id={`market-dump-${r.carrierId}-${r.index}`} label="Brader" enabled={!isGuest} reason={REFUS_INVITE}
+                      descOfferte="Brader à la moitié du prix de base (MSRC 13 l.160)"
+                      onClick={() => dump(r.carrierId, r.index)} primary={false} btnClassName="small ghost"
+                    />
                   </div>
                 )}
               />

@@ -308,7 +308,15 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
   const renderCart = () => (
     <div className="merch-tab">
       <div className="cart-head">
-        <button className="btn small" disabled={sealed} title={sealed ? 'Marché négocié : réglez ou refusez le marché' : undefined} onClick={() => setBuyView('browse')}>← Continuer les achats</button>
+        <GatedAction
+          id="merch-cart-back"
+          label="← Continuer les achats"
+          enabled={!sealed}
+          reason="Marché négocié : réglez ou refusez le marché."
+          onClick={() => setBuyView('browse')}
+          primary={false}
+          btnClassName="small"
+        />
         <strong><Icon id="merchant/cart" size="sm" /> Panier</strong>
       </div>
       {!cart.length ? (
@@ -352,7 +360,14 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
             {sealed
               ? <button className="btn small danger" onClick={() => { onRefuse('buy'); setBuyView('browse'); }}>Refuser le marché</button>
               : <button className="btn small" onClick={onClearCart}>Vider le panier</button>}
-            <button className="btn btn-primary" disabled={!affordCart} title={affordCart ? undefined : 'Bourse insuffisante'} onClick={onPay}>Payer <Coins money={cartTotal} /></button>
+            <GatedAction
+              id="merch-cart-pay"
+              label={<>Payer <Coins money={cartTotal} /></>}
+              ariaLabel="Payer le panier"
+              enabled={affordCart}
+              reason="Bourse insuffisante."
+              onClick={onPay}
+            />
           </div>
           {!affordCart && <p className="cart-warn">Bourse insuffisante (<Coins money={money} />).</p>}
         </>
@@ -454,7 +469,16 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
                         incLabel="Un de plus"
                       />
                     ) : (
-                      <button className="btn small" disabled={sealed || !canAffordOne} title={sealed ? 'Marché conclu — panier figé' : canAffordOne ? 'Ajouter au panier' : 'Bourse insuffisante'} onClick={() => onAddToCart(l.id)}>+ Ajouter</button>
+                      <GatedAction
+                        id={`merch-add-${l.id}`}
+                        label="+ Ajouter"
+                        ariaLabel={`Ajouter ${labelOf(l.id)} au panier`}
+                        enabled={!sealed && canAffordOne}
+                        reason={sealed ? 'Marché conclu — panier figé.' : 'Bourse insuffisante.'}
+                        onClick={() => onAddToCart(l.id)}
+                        primary={false}
+                        btnClassName="small"
+                      />
                     );
                   }}
                 />

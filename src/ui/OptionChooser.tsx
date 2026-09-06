@@ -27,8 +27,8 @@ export interface RollOption {
 }
 
 /**
- * Option d'une GRILLE — la seule qui puisse porter sa RAISON DE REFUS. Les deux formes sont celles de
- * `GatedAction` (l'unique porteur d'une raison de refus du jeu), et il n'y en a pas d'autre :
+ * Option qui peut porter sa RAISON DE REFUS. Les deux formes sont celles de `GatedAction` (l'unique
+ * porteur d'une raison de refus du jeu), et il n'y en a pas d'autre :
  *  - `refus`   : la cause est PROPRE à l'option — rendue au survol/focus/tap, jamais en texte inline
  *                sous le libellé (arbitrage user 2026-08-24) ;
  *  - `refusId` : N options éteintes par la MÊME cause, que l'appelant a déjà rendue UNE fois à
@@ -36,19 +36,69 @@ export interface RollOption {
  * Dans les deux cas le bouton garde `aria-disabled` (jamais `disabled`) et un clic inerte : une
  * option dont la raison est à ATTEINDRE doit rester focalisable au clavier, à la manette et au doigt.
  * Une option simplement `disabled` reste MUETTE ; une option `hidden` disparaît sans rien dire.
- *
- * Ces deux champs n'existent QUE sur ce type : `seg` et `actions` ne les acceptent pas (le type les
- * refuse), plutôt que de les avaler en silence.
  */
 export interface RollGridOption extends RollOption {
   refus?: string;
   refusId?: string;
 }
 
-/** Option d'un `seg`/`actions` : la raison de refus y est REFUSÉE PAR LE TYPE (`never`) plutôt
- *  qu'avalée en silence — ces deux layouts ne bâtissent pas de `.btn` que `GatedAction` puisse
- *  habiller (le `seg` a sa propre matière), donc la prop n'y aurait aucun porteur. */
+/** Option d'une barre d'ACTIONS : MÊME contrat de refus que la grille, parce que c'est le même
+ *  bouton — `actions` bâtit le `.btn` que `GatedAction` rend, et les deux layouts passent par la
+ *  MÊME composition (`OptionBouton` ci-dessous). */
+export type RollActionOption = RollGridOption;
+
+/** Option d'un `seg` : la raison de refus y est REFUSÉE PAR LE TYPE (`never`) plutôt qu'avalée en
+ *  silence — le segmenté a sa propre matière (bouton nu d'un `.seg`, aucune `.btn`), donc la prop
+ *  n'y aurait aucun porteur à habiller. Une option de `seg` fermée reste muette jusqu'à ce que la
+ *  matière du segmenté sache porter un refus. */
 export type RollOptionSansRefus = RollOption & { refus?: never; refusId?: never };
+
+/**
+ * Composition UNIQUE d'une option-bouton, partagée par `grid` et `actions` : l'option qui porte une
+ * raison compose `GatedAction`, l'option muette reste un `<button>`. Une seule fonction pour les deux
+ * layouts — la forme du refus ne se décline pas par layout.
+ */
+function OptionBouton({
+  o,
+  id,
+  primary,
+  btnClassName,
+  ariaPressed,
+  children,
+}: {
+  o: RollGridOption;
+  id: string;
+  primary: boolean;
+  btnClassName?: string;
+  ariaPressed?: boolean;
+  children: ReactNode;
+}) {
+  if (o.refus || o.refusId) {
+    return (
+      <GatedAction
+        id={id}
+        label={children}
+        enabled={false}
+        {...(o.refusId ? { reasonId: o.refusId } : { reason: o.refus! })}
+        onClick={() => {}}
+        primary={primary}
+        btnClassName={btnClassName}
+        ariaPressed={ariaPressed}
+      />
+    );
+  }
+  return (
+    <button
+      className={`btn${primary ? ' btn-primary' : ''}${btnClassName ? ` ${btnClassName}` : ''}`}
+      aria-pressed={ariaPressed}
+      disabled={o.disabled}
+      onClick={o.onSelect}
+      title={o.title}
+    >
+      {children}
+    </button>
+  );
+}
 
 /**
  * Sélecteur d'« options de jet » PARTAGÉ — source unique du choix Parade/Esquive (Défense),
@@ -74,7 +124,8 @@ export function OptionChooser({
   idPrefix?: string;
 } & (
   | { layout: 'grid'; options: RollGridOption[] }
-  | { layout: 'seg' | 'actions'; options: RollOptionSansRefus[] }
+  | { layout: 'actions'; options: RollActionOption[] }
+  | { layout: 'seg'; options: RollOptionSansRefus[] }
 )) {
   const shown = options.filter((o) => !o.hidden);
 
@@ -101,28 +152,17 @@ export function OptionChooser({
   if (layout === 'grid') {
     return (
       <div className="rm-loc-grid">
-        {(shown as RollGridOption[]).map((o) => (o.refus || o.refusId ? (
-          <GatedAction
+        {(shown as RollGridOption[]).map((o) => (
+          <OptionBouton
             key={o.key}
+            o={o}
             id={`${idPrefix}-${o.key}`}
-            label={o.content ?? o.label}
-            enabled={false}
-            {...(o.refusId ? { reasonId: o.refusId } : { reason: o.refus! })}
-            onClick={() => {}}
-            primary={false}
-            btnClassName={`small${o.selected ? ' on' : ''}`}
-          />
-        ) : (
-          <button
-            key={o.key}
             /* `selected` = l'option RETENUE (état, `aria-pressed` + classe `on` — même sémantique
                qu'en `seg`) ; `primary` reste la mise en avant VISUELLE. Une grille qui n'exprime que
                `primary` ne ferre rien : le choix posé ne se distingue pas d'un bouton d'action. */
-            className={`btn small${o.primary ? ' btn-primary' : ''}${o.selected ? ' on' : ''}`}
-            aria-pressed={o.selected != null ? !!o.selected : undefined}
-            disabled={o.disabled}
-            onClick={o.onSelect}
-            title={o.title}
+            primary={!!o.primary}
+            btnClassName={`small${o.selected ? ' on' : ''}`}
+            ariaPressed={o.selected != null ? !!o.selected : undefined}
           >
             {o.content ?? (
               <>
@@ -130,8 +170,8 @@ export function OptionChooser({
                 {o.value != null ? <> ({o.value})</> : null}
               </>
             )}
-          </button>
-        )))}
+          </OptionBouton>
+        ))}
       </div>
     );
   }
@@ -139,16 +179,16 @@ export function OptionChooser({
   // layout === 'actions'
   return (
     <div className="modal-actions">
-      {shown.map((o) => (
-        <button
+      {(shown as RollActionOption[]).map((o) => (
+        <OptionBouton
           key={o.key}
-          className={`btn${o.primary ? ' btn-primary' : ''}${o.ghost ? ' btn-ghost' : ''}`}
-          disabled={o.disabled}
-          onClick={o.onSelect}
-          title={o.title}
+          o={o}
+          id={`${idPrefix}-${o.key}`}
+          primary={!!o.primary}
+          btnClassName={o.ghost ? 'btn-ghost' : undefined}
         >
           {o.content ?? o.label}
-        </button>
+        </OptionBouton>
       ))}
     </div>
   );
@@ -159,6 +199,6 @@ export function OptionChooser({
  * `OptionChooser` en barre d'actions. Source UNIQUE des paires de boutons de choix, jusqu'ici
  * réécrites à la main (`.modal-actions` copié-collé).
  */
-export function ChoiceButtons({ options }: { options: RollOption[] }) {
-  return <OptionChooser options={options} layout="actions" />;
+export function ChoiceButtons({ options, idPrefix }: { options: RollActionOption[]; idPrefix?: string }) {
+  return <OptionChooser options={options} layout="actions" idPrefix={idPrefix} />;
 }

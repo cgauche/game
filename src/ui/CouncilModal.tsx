@@ -55,9 +55,8 @@ export function CouncilModal() {
     return {
       key: factorId,
       label: f?.label ?? factorId,
-      disabled: !affordable,
       primary: !!f?.recommendedPay && affordable,
-      title: affordable ? undefined : 'Bourse insuffisante',
+      ...(affordable ? {} : { refus: 'Bourse insuffisante.' }),
       content: (
         <>
           <span className="council-opt-label">{f?.label ?? factorId}</span>

@@ -21,6 +21,10 @@ import { Tabs } from './Tabs';
 import { TradeTable, type TradeGroup } from './TradeTable';
 import { ShoreLeaveBody } from './ShoreLeaveModal';
 import { ManannBody } from './ManannPriestModal';
+import { GatedAction } from './GatedAction';
+
+/** Raison UNIQUE du refus des gestes de port à un invité : l'hôte seul engage la bourse du groupe. */
+const REFUS_INVITE = 'L’hôte seul engage les dépenses du groupe.';
 
 /** Libellé d'une entrée de la colonne Production de l'Index — marchandise ou marqueur, même catalogue. */
 const cargoLabel = (id: string): string => findCargoEntryById(id)?.label ?? id;
@@ -78,8 +82,17 @@ export function EscaleTab({ vessel, isGuest, pendingShoreLeave, pendingManannPri
                   <span className="port-hint"><Coins money={priceToMoney(role.wage!.weekly)} />/sem.</span>
                 </div>
                 <div className="port-crew-actions">
-                  <button type="button" className="btn small" disabled={isGuest} title={`Embaucher un ${role.label}`} onClick={() => onHire(role.id)}>Embaucher</button>
-                  <button type="button" className="btn small ghost" disabled={isGuest || n <= 0} title={`Débarquer un ${role.label}`} onClick={() => onDismiss(role.id)}>Débarquer</button>
+                  <GatedAction
+                    id={`port-hire-${role.id}`} label="Embaucher" ariaLabel={`Embaucher un ${role.label}`}
+                    enabled={!isGuest} reason={REFUS_INVITE}
+                    onClick={() => onHire(role.id)} primary={false} btnClassName="small"
+                  />
+                  <GatedAction
+                    id={`port-dismiss-${role.id}`} label="Débarquer" ariaLabel={`Débarquer un ${role.label}`}
+                    enabled={!isGuest && n > 0}
+                    reason={isGuest ? REFUS_INVITE : `Aucun ${role.label} à bord.`}
+                    onClick={() => onDismiss(role.id)} primary={false} btnClassName="small ghost"
+                  />
                 </div>
               </div>
             );
@@ -169,15 +182,16 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
             <section className="panel port-section">
               <h3>Coque &amp; entretien</h3>
               <p>Blessures : <b>{woundsCur}/{woundsMax}</b>{vessel.criticals?.length ? ` · ${vessel.criticals.length} Critique(s) noté(s)` : ''}</p>
-              <button
-                type="button"
-                className="btn"
-                disabled={isGuest || (missing <= 0 && !(vessel.criticals?.length))}
-                title={missing <= 0 && !(vessel.criticals?.length) ? 'La coque est intacte.' : `1 CO par Blessure restaurée${lissage ? ' · +50 % coque lissée' : ''}`}
+              <GatedAction
+                id="port-repair"
+                label={<><Icon id="travel/repair" size="sm" /> Réparer{missing > 0 ? <> — {missing} Blessure(s), <Coins money={toMoney({ gold: repairCost })} /></> : null}</>}
+                ariaLabel="Réparer la coque"
+                enabled={!isGuest && (missing > 0 || !!vessel.criticals?.length)}
+                reason={isGuest ? REFUS_INVITE : 'La coque est intacte.'}
+                descOfferte={`1 CO par Blessure restaurée${lissage ? ' · +50 % coque lissée' : ''}`}
                 onClick={repair}
-              >
-                <Icon id="travel/repair" size="sm" /> Réparer{missing > 0 ? <> — {missing} Blessure(s), <Coins money={toMoney({ gold: repairCost })} /></> : null}
-              </button>
+                primary={false}
+              />
               <NotchGauge
                 label="Moral"
                 value={vessel.morale.score}
@@ -188,15 +202,16 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
               />
               <ShipCrewWages vessel={vessel} />
               <p className="port-hint">Salissures : niveau <b>{foulLevel}</b>{vessel.crabs ? ' · crabes boxeurs' : ''}{foulLevel > 0 ? ` — ${foulingEffects(foulLevel).desc}` : ''}</p>
-              <button
-                type="button"
-                className="btn"
-                disabled={isGuest || (foulLevel <= 0 && !vessel.crabs)}
-                title={foulLevel <= 0 && !vessel.crabs ? 'La coque est propre.' : `Cale sèche — ${careenPct} % du coût de base`}
+              <GatedAction
+                id="port-careen"
+                label={<><Icon id="travel/careen" size="sm" /> Caréner{careenCost > 0 ? <> — <Coins money={toMoney({ gold: careenCost })} /></> : null}</>}
+                ariaLabel="Caréner la coque"
+                enabled={!isGuest && (foulLevel > 0 || !!vessel.crabs)}
+                reason={isGuest ? REFUS_INVITE : 'La coque est propre.'}
+                descOfferte={`Cale sèche — ${careenPct} % du coût de base`}
                 onClick={careen}
-              >
-                <Icon id="travel/careen" size="sm" /> Caréner{careenCost > 0 ? <> — <Coins money={toMoney({ gold: careenCost })} /></> : null}
-              </button>
+                primary={false}
+              />
             </section>
             <section className="panel port-section">
               <h3>Améliorations</h3>
@@ -206,15 +221,16 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                   <div key={def.id} className="port-upgrade">
                     <div className="port-upgrade-head">
                       <b>{def.label}</b>
-                      <button
-                        type="button"
-                        className="btn small"
-                        disabled={isGuest || !canAfford(money, toMoney({ gold: cost.gold ?? 0 }))}
-                        title={`${formatMoney(toMoney({ gold: cost.gold ?? 0 }))}${cost.enc ? ` · ${cost.enc} Enc` : ''}`}
+                      <GatedAction
+                        id={`port-upgrade-${def.id}`}
+                        label={<>Installer — <Coins money={toMoney({ gold: cost.gold ?? 0 })} /></>}
+                        ariaLabel={`Installer ${def.label}`}
+                        enabled={!isGuest && canAfford(money, toMoney({ gold: cost.gold ?? 0 }))}
+                        reason={isGuest ? REFUS_INVITE : `Bourse insuffisante (${formatMoney(toMoney({ gold: cost.gold ?? 0 }))}).`}
                         onClick={() => install(def.id, 1)}
-                      >
-                        Installer — <Coins money={toMoney({ gold: cost.gold ?? 0 })} />
-                      </button>
+                        primary={false}
+                        btnClassName="small"
+                      />
                     </div>
                     <Prose md={def.desc} />
                   </div>
@@ -259,15 +275,16 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                           onChange={(n) => setBuyEnc((s) => ({ ...s, [o.cargoId]: n }))}
                         />
                         <span className="market-offer-total">≈ <Coins money={estCost} /></span>
-                        <button
-                          type="button"
-                          className="btn small"
-                          disabled={isGuest || port.maxLoadEnc <= 0 || !affordable}
-                          title={!affordable ? 'Bourse insuffisante' : wouldOverload ? 'Embarquer en surcharge (pénalités d’assiette)' : 'Estimation avant Marchandage'}
+                        <GatedAction
+                          id={`port-buy-${o.cargoId}`}
+                          label={wouldOverload ? 'Surcharger' : 'Acheter'}
+                          enabled={!isGuest && port.maxLoadEnc > 0 && affordable}
+                          reason={isGuest ? REFUS_INVITE : port.maxLoadEnc <= 0 ? 'La cale ne peut plus rien recevoir.' : 'Bourse insuffisante.'}
+                          descOfferte={wouldOverload ? 'Embarquer en surcharge (pénalités d’assiette)' : 'Estimation avant Marchandage'}
                           onClick={() => buy(o.cargoId, want)}
-                        >
-                          {wouldOverload ? 'Surcharger' : 'Acheter'}
-                        </button>
+                          primary={false}
+                          btnClassName="small"
+                        />
                       </div>
                     );
                   }}
@@ -287,8 +304,16 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                   price={(r) => toMoney({ gold: r.lot.basePriceGold })}
                   action={(r) => (
                     <div className="port-sell-actions">
-                      <button type="button" className="btn small" disabled={isGuest} title="Trouver un acheteur puis marchander" onClick={() => sell(r.i)}>Vendre</button>
-                      <button type="button" className="btn small ghost" disabled={isGuest} title="Brader à ¼ du prix de base" onClick={() => dump(r.i)}>Brader</button>
+                      <GatedAction
+                        id={`port-sell-${r.i}`} label="Vendre" enabled={!isGuest} reason={REFUS_INVITE}
+                        descOfferte="Trouver un acheteur puis marchander"
+                        onClick={() => sell(r.i)} primary={false} btnClassName="small"
+                      />
+                      <GatedAction
+                        id={`port-dump-${r.i}`} label="Brader" enabled={!isGuest} reason={REFUS_INVITE}
+                        descOfferte="Brader à ¼ du prix de base"
+                        onClick={() => dump(r.i)} primary={false} btnClassName="small ghost"
+                      />
                     </div>
                   )}
                 />

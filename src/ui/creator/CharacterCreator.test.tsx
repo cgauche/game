@@ -28,6 +28,12 @@ const SP = allSpecies.find((s) => s.source.book === 'livre-de-base')!;
 const CAREER = careersForSpecies(SP.refCareer)[0]!;
 const ready = () => withCareer(withSpecies(newDraft(7), SP.id), CAREER.id);
 
+/** L'option `label` d'une grille est-elle MISE EN AVANT (`btn-primary`) ? Le contrat est la présence
+ *  de la classe, jamais l'ORDRE des classes — `OptionChooser` compose `grid` et `actions` par la même
+ *  fonction depuis #1689 T2, et l'ordre y a changé sans que rien de visible ne bouge. */
+const estPrimary = (html: string, label: string) =>
+  (html.match(new RegExp(`<button class="([^"]*)"[^>]*>${label}`))?.[1] ?? '').split(' ').includes('btn-primary');
+
 describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () => {
   it('étape 1 (Race, #393 P1) : ossature 2 ZONES « Atelier du scribe » (CreatorStepFrame) ; aucune race pré-tirée', () => {
     const html = renderToStaticMarkup(<CharacterCreator />);
@@ -416,13 +422,13 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     expect(withoutChoice).toContain('DR à un Test raté');
     expect(withoutChoice).toContain('Robuste');
     // Raffiné (défaut du résolveur) pré-sélectionné sans que rien ne soit stocké.
-    expect(withoutChoice).toMatch(/<button class="btn small btn-primary"[^>]*>Raffiné/);
-    expect(withoutChoice).not.toMatch(/<button class="btn small btn-primary"[^>]*>Solide/);
+    expect(estPrimary(withoutChoice, 'Raffiné')).toBe(true);
+    expect(estPrimary(withoutChoice, 'Solide')).toBe(false);
 
     const key = trappingRefLabel(slot);
     const withChoice = renderToStaticMarkup(<TrappingChoiceSlot slot={slot} choices={{ [key]: 'solide' }} onChoicesChange={() => {}} />);
-    expect(withChoice).toMatch(/<button class="btn small btn-primary"[^>]*>Solide/);
-    expect(withChoice).not.toMatch(/<button class="btn small btn-primary"[^>]*>Raffiné/);
+    expect(estPrimary(withChoice, 'Solide')).toBe(true);
+    expect(estPrimary(withChoice, 'Raffiné')).toBe(false);
   });
 
   it('TrappingChoiceSlot `{choice}` imbriquant un `{id, qualityChoice}` : le picker d\'Atout se déroule SOUS la branche choisie', () => {
@@ -438,7 +444,7 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
       <TrappingChoiceSlot slot={slot} choices={{ [outerKey]: branchKey, [branchKey]: 'solide' }} onChoicesChange={() => {}} />,
     );
     expect(afterBranch).toContain('Robuste'); // picker imbriqué déroulé
-    expect(afterBranch).toMatch(/<button class="btn small btn-primary"[^>]*>Solide/);
+    expect(estPrimary(afterBranch, 'Solide')).toBe(true);
   });
 
   it('étape Détails (#393 P5, étalon = planche ratifiée du créateur, écran Détails) — gabarit DEUX ZONES, identité + motivation + apparence dans le panneau', () => {

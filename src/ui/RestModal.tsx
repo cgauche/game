@@ -17,6 +17,7 @@ import { quorumAtteint } from '../state/netOwnership';
 import { Icon } from './Icon';
 import type { IconIdInput } from './icons';
 import type { Combatant } from '../engine/types';
+import { GatedAction } from './GatedAction';
 
 const LODGING_META: Record<RestLodging, { icon: IconIdInput; label: string }> = {
   privee: { icon: 'rest/bed', label: 'Privée' },
@@ -191,9 +192,14 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
           <button className="btn" onClick={() => restReady(net.mySeat)}><Icon id="action/attack" size="sm" /> Prêt</button>
         )}
         {(!online || net.mode === 'host') && (
-          <button className="btn btn-primary" disabled={!canPay || !allReady} onClick={() => restSleep()} title={!canPay ? 'Pas assez d’argent — choisissez des couchages plus modestes' : undefined}>
-            <Icon id="time/night" size="sm" /> Dormir jusqu’à l’aube
-          </button>
+          <GatedAction
+            id="rest-sleep"
+            label={<><Icon id="time/night" size="sm" /> Dormir jusqu’à l’aube</>}
+            ariaLabel="Dormir jusqu’à l’aube"
+            enabled={canPay && allReady}
+            reason={!canPay ? 'Pas assez d’argent — choisissez des couchages plus modestes.' : 'Tous les sièges ne se sont pas déclarés prêts.'}
+            onClick={() => restSleep()}
+          />
         )}
       </div>
     </>

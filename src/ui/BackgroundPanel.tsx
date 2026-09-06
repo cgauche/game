@@ -5,6 +5,7 @@ import { findStarById } from '../data';
 import { BackgroundFields } from './BackgroundFields';
 import { Icon } from './Icon';
 import { ChoiceButtons } from './OptionChooser';
+import { GatedAction } from './GatedAction';
 import { favorRequiredActivities, type Favor, type FavorLevel } from '../engine/favor';
 
 const FAVOR_LEVEL_LABELS: Record<FavorLevel, string> = {
@@ -78,6 +79,8 @@ export function BackgroundPanel({ hero }: { hero: Combatant }) {
   );
 }
 
+const COMBAT_REFUS = 'Impossible de rompre une Faveur en plein combat.';
+
 /** Une Faveur due : Niveau + créancier + progression d'acquittement, et la rupture explicite
  *  (confirmation à deux temps — `ChoiceButtons`, cf. primitives partagées) — « votre Niveau est
  *  toujours réduit de 1 […] si la rumeur de la perfidie se répand » (LDB 23 l.141). */
@@ -96,22 +99,24 @@ function FavorRow({ favor, disabled, onBreak }: { favor: Favor; disabled: boolea
           : `Ne peut pas être acquittée par une Activité — jouée comme une aventure complète`}
       </span>
       {confirming ? (
-        <ChoiceButtons options={[
+        <ChoiceButtons idPrefix={`favor-${favor.id}`} options={[
           { key: 'cancel', label: 'Annuler', ghost: true, onSelect: () => setConfirming(false) },
           {
-            key: 'confirm', label: 'Confirmer la rupture', primary: true, disabled,
+            key: 'confirm', label: 'Confirmer la rupture', primary: true, refus: disabled ? COMBAT_REFUS : undefined,
             onSelect: () => { onBreak(); setConfirming(false); },
           },
         ]} />
       ) : (
-        <button
-          className="btn small btn-ghost"
-          disabled={disabled}
-          title="Refuser la Faveur : le Niveau de Carrière peut en pâtir si la rumeur se répand"
+        <GatedAction
+          id={`favor-break-${favor.id}`}
+          label="Rompre la Faveur"
+          enabled={!disabled}
+          reason={COMBAT_REFUS}
+          descOfferte="Refuser la Faveur : Niveau de Carrière réduit de 1, minimum 0, si la rumeur se répand"
           onClick={() => setConfirming(true)}
-        >
-          Rompre la Faveur
-        </button>
+          primary={false}
+          btnClassName="small btn-ghost"
+        />
       )}
     </div>
   );
