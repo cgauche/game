@@ -1,6 +1,6 @@
 ---
 name: feedback-ne-pas-faire-arbitrer-un-fait
-description: "User 2026-07-26 : ne JAMAIS demander à l'utilisateur de trancher une question de FAIT (que dit le RAW, que fait le code) — ça se mesure au Source ou au code ; il n'arbitre que le produit et le goût."
+description: "User 2026-07-26 + 2026-09-05 : ne JAMAIS demander à l'utilisateur de trancher une question de FAIT (ça se mesure) NI une question que la DOCTRINE tranche déjà (ça se déduit, on le dit, on avance) ; il n'arbitre que le produit et le goût, là où les principes connus ne suffisent pas."
 metadata: 
   node_type: memory
   type: feedback
@@ -57,3 +57,15 @@ Lié : [[feedback-arbitrage-agent-source-en-main]], [[feedback-questions-stop-lo
 [[feedback-deleguer-grounding-pas-que-code]], [[game-preference-vs-regle-optionnelle]],
 [[feedback-invariant-cite-verbatim-jamais-depuis-un-rendu-de-juge]],
 [[user-doctrine-forme-canonique-unique-jets]].
+
+**Corollaire 3 (2026-09-05, #1686 lot 3)** : une question dont CHAQUE option est déjà tranchée par une
+doctrine connue n'est pas une question. J'avais posé quatre AskUserQuestion (recalcul des ids en mémoire
+ou `gen` d'abord ; libellés de valeurs en socle + migration des ~20 Records ou Record UI ; pastille de
+catégorie ou 8ᵉ onglet ; purge d'un champ mort ou lui inventer un consommateur) — chacune se déduisait de
+« rien en dur, tout éditable », « jamais de demi-migration », « primitives existantes avant socle neuf »,
+« zéro code mort ». User (verbatim) : « Je ne fais pas vraiment de choix, j'ai juste cliqué sur
+"Recommander", tu connais les grands principes de l application ». Ces quatre réponses sont donc des
+DÉCISIONS D'INGÉNIERIE (révisables, consignées comme telles — jamais en fiche `user-*` ni en verbatim
+d'arbitrage). Test avant de poser une question : « si je retire le bouton Recommandé, l'utilisateur
+peut-il répondre autrement sans contredire une doctrine écrite ? » — non → on décide, on écrit
+l'hypothèse dans le rendu, on continue. Oui (goût, produit, risque assumé, RAW silencieux) → on demande.

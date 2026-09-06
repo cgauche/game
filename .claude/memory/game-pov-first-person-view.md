@@ -12,7 +12,7 @@ Vue **première personne** (POV) en mode exploration, à côté de l'iso. Commit
 
 - **Renderer** `src/gameIso/pov/` : `camera.ts` (maths pures : projection perspective, clipNear,
   world quads — testé), `geometry.ts` (heightfield SOLIDE : sols par colonne visible + FACES VERTICALES
-  de relief `riser` aux marches → plus de « voir à travers » ; murs depuis la def partagée), `PovStage.tsx`
+  de relief aux marches (l’entrée `riser` de `reliefMaterials.json` est MORTE — aucun site ne l’assignait, purgée le 2026-09-05, #1540) → plus de « voir à travers » ; murs depuis la def partagée), `PovStage.tsx`
   (React, lit le store), `billboards.tsx` (PNJ = sprites rig via `povView`, `personnage` seulement — pas
   encore les `prop` ni les gabarits non-bipèdes). Ciel dégradé dehors / plafond+brume dedans.
 - **État/déplacement** : `store.povActive` + `togglePov`/`pivotParty(±1=45°)`/`stepPartyRelative` ;
