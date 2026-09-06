@@ -4,7 +4,7 @@
 
 **Périmètre mesuré / angles morts** — sont DÉRIVÉS à chaque génération : les 10 membres de
 `PassiveKind` (`src/engine/ops.ts`) et leur commentaire de queue, la table `PASSIVE_CANCELLERS`
-(`src/engine/trauma.ts:879`), le mode de combinaison (le seul kind ADDITIF reconnu par
+(`src/engine/trauma.ts:881`), le mode de combinaison (le seul kind ADDITIF reconnu par
 `isAdditiveKind` est `intrinseque`), les 14 branches d'émission du collecteur
 `passiveMods` avec leur ligne, les 6 producteurs nommés qu'il appelle, et les
 9 documents qui déclarent un champ de passif (def zod + population réelle du `.json`).
@@ -39,14 +39,14 @@ pour l'affichage d'une composante de jet, et ne sont jamais lus par le calcul.
 | `mobilite` | pénalité de mobilité (séquelle de jambe) : idem + prothèse 'movement' | `determination`, `painless`, `prosthesis-move` | pool non-cumul (meilleur bonus + pire malus) |
 | `structurel` | membre perdu : prothèse 'all' SEULE (ni Détermination ni Insensible) | `prosthesis-all` | pool non-cumul (meilleur bonus + pire malus) |
 | `sensoriel` | organe perdu : rien | rien | pool non-cumul (meilleur bonus + pire malus) |
-| `maladie` | symptôme de maladie : Détermination SEULE (pas Insensible) | `determination` | pool non-cumul (meilleur bonus + pire malus) |
+| `maladie` | symptôme de maladie : Détermination SEULE (pas Insensible) | LDB 17 l.59-61 n'ouvre la Détermination QUE sur Psychologie / modificateurs de Critique / retrait d'UN État — la fenêtre de conscience de LDB 20 l.170 suspend la SOURCE qui porte l'État (`suspendSource`), pas le canal | pool non-cumul (meilleur bonus + pire malus) |
 | `faim` | pénalité de Faim : « Plus besoin de manger » | annulé par `noHunger` (flag de sort) — géré à la source Faim (P2), pas par une prothèse de séquelle | pool non-cumul (meilleur bonus + pire malus) |
 | `magique` | effet de SORT actif (ActiveEffect) : inconditionnel mais combiné en POOL non-cumul ; expire seul | sort actif : rien ne l'annule (il expire), mais il se combine en POOL non-cumul (≠ `intrinseque` additif) | pool non-cumul (meilleur bonus + pire malus) |
 | `etat` | pénalité/effet d'un État (LDB 16) : pool NON-CUMUL, le pire seul (l.20) ; Exténué ×stacks | État (LDB 16) : annulé NON PAS ici mais par le flag de combat `ignoreStatePenalties` (au consommateur) ; pool non-cumul | pool non-cumul (meilleur bonus + pire malus) |
 | `ivresse` | pénalité d'Ivresse (LDB 09 l.475) : pool non-cumul ; ignorée 1 Round par la Détermination (flag `drunkIgnore`) | Ivresse (LDB 09) : gaté à la SOURCE par le flag `drunkIgnore` (Détermination, 1 Round) ; pool non-cumul | pool non-cumul (meilleur bonus + pire malus) |
 | `intrinseque` | trait/mutation/qualité : inconditionnel ET ADDITIF (Σ dans la base — corps/équipement permanent) | rien | Σ dans la BASE (additif) |
 
-Table des annulateurs : `PASSIVE_CANCELLERS` (`src/engine/trauma.ts:879`) — elle doit rester
+Table des annulateurs : `PASSIVE_CANCELLERS` (`src/engine/trauma.ts:881`) — elle doit rester
 TOTALE sur l'union (ce générateur échoue si un kind n'y figure plus). Seul `intrinseque` se somme
 dans la base ; tout le reste se combine en pool NON-CUMUL.
 
@@ -55,35 +55,35 @@ Pour une SÉQUELLE, le `kind` n'est pas stocké : il est dérivé du type d'op p
 
 ## 3. Le collecteur — `passiveMods(c)`
 
-`passiveMods` (`src/engine/trauma.ts:958`) est le **point de
+`passiveMods` (`src/engine/trauma.ts:972`) est le **point de
 lecture UNIQUE**. Ses 14 branches d'émission, dans l'ordre du code :
 
 | Ligne | `kind` émis | Producteur | Ce que la branche collecte (commentaire du code) |
 |---|---|---|---|
-| `src/engine/trauma.ts:960` | — | `traumaPassiveMods` | — |
-| `src/engine/trauma.ts:966` | — | `diseasePassiveOps` | Maladies (kind `maladie`, annulée par Détermination ; passifs des symptômes via `diseasePassiveOps`) + Faim (kind `faim`, non annulée : `noHunger` purge l'état à l'entretien, pas ici). |
-| `src/engine/trauma.ts:969` | `faim` | inline | — |
-| `src/engine/trauma.ts:972` | `faim` | inline | — |
-| `src/engine/trauma.ts:977` | `ivresse` | inline | Ivresse (LDB 09 l.475) : −10/échec aux CC/CT/Ag/Dex/Int (pool non-cumul, kind `ivresse`). |
-| `src/engine/trauma.ts:987` | `etat` | inline | États (LDB 16) : leur `passive: GameOp[]` (pénalité de Test → `testMod`, bonus à l'attaquant → `incomingAttackMod`, échelle de Mouvement…) émis kind `etat` (pool NON-CUMUL, le pire seul, l.20). |
-| `src/engine/trauma.ts:992` | `etat` | inline | États PSYCHOLOGIQUES (LDB 21, `psychology.json`) : leur `passive` (Frénésie → `sbBonus +1`) émis dans le MÊME pool `etat` que les États — MÊME folding générique, zéro chemin parallèle. |
-| `src/engine/trauma.ts:1000` | `intrinseque` | inline | Mutations de Corruption (LDB 19) : modifs PERMANENTES du corps → leur `passive: GameOp[]` (vocab unifié, `mutations.json`) émis tel quel en kind `intrinseque`, COMME les traits. |
-| `src/engine/trauma.ts:1003` | — | `wornSocialMods` | Qualités d'objet équipées (LDB 60), producteurs sans cycle (wearPenalty est une feuille) : objet Laid → −Soc aux Tests sociaux (testMod char-qualifié) ; port d'armure → −N% par compétence (skillMod, intrinsèque). |
-| `src/engine/trauma.ts:1004` | — | `qualityWearMods` | — |
-| `src/engine/trauma.ts:1011` | `intrinseque` | inline | Objets PORTÉS (equipped) ou TENUS (arme du loadout actif `c.weapons`) : leur `passive: GameOp[]` (skillMod des Bésicles…) émis kind 'intrinseque' — comme les mutations. |
-| `src/engine/trauma.ts:1017` | — | `traitPassiveMods` | Traits à modificateur de PROFIL appliqués en DIRECT (LDB 85 : Élite/Coriace/Brutal/Rapide… facultatifs, statbloc d'éditeur, traits accordés) — leurs `PassiveMod` (vocab GameOp unifié, `TraitData.passive`) émis TELS QUELS. |
-| `src/engine/trauma.ts:1020` | — | `talentPassiveMods` | Talents POSSÉDÉS (LDB 10) : leur `passive: GameOp[]` (Coup puissant, Dur à cuire… ou Frénésie → grantFreeAttack) émis kind `intrinseque`, par niveau — comme les traits. |
-| `src/engine/trauma.ts:1025` | `magique` | inline | — |
+| `src/engine/trauma.ts:974` | — | `traumaPassiveMods` | — |
+| `src/engine/trauma.ts:980` | — | `diseasePassiveOps` | Maladies (kind `maladie`, annulée par Détermination ; passifs des symptômes via `diseasePassiveOps`) + Faim (kind `faim`, non annulée : `noHunger` purge l'état à l'entretien, pas ici). |
+| `src/engine/trauma.ts:983` | `faim` | inline | — |
+| `src/engine/trauma.ts:986` | `faim` | inline | — |
+| `src/engine/trauma.ts:991` | `ivresse` | inline | Ivresse (LDB 09 l.475) : −10/échec aux CC/CT/Ag/Dex/Int (pool non-cumul, kind `ivresse`). |
+| `src/engine/trauma.ts:1001` | `etat` | inline | États (LDB 16) : leur `passive: GameOp[]` (pénalité de Test → `testMod`, bonus à l'attaquant → `incomingAttackMod`, échelle de Mouvement…) émis kind `etat` (pool NON-CUMUL, le pire seul, l.20). |
+| `src/engine/trauma.ts:1006` | `etat` | inline | États PSYCHOLOGIQUES (LDB 21, `psychology.json`) : leur `passive` (Frénésie → `sbBonus +1`) émis dans le MÊME pool `etat` que les États — MÊME folding générique, zéro chemin parallèle. |
+| `src/engine/trauma.ts:1014` | `intrinseque` | inline | Mutations de Corruption (LDB 19) : modifs PERMANENTES du corps → leur `passive: GameOp[]` (vocab unifié, `mutations.json`) émis tel quel en kind `intrinseque`, COMME les traits. |
+| `src/engine/trauma.ts:1017` | — | `wornSocialMods` | Qualités d'objet équipées (LDB 60), producteurs sans cycle (wearPenalty est une feuille) : objet Laid → −Soc aux Tests sociaux (testMod char-qualifié) ; port d'armure → −N% par compétence (skillMod, intrinsèque). |
+| `src/engine/trauma.ts:1018` | — | `qualityWearMods` | — |
+| `src/engine/trauma.ts:1025` | `intrinseque` | inline | Objets PORTÉS (equipped) ou TENUS (arme du loadout actif `c.weapons`) : leur `passive: GameOp[]` (skillMod des Bésicles…) émis kind 'intrinseque' — comme les mutations. |
+| `src/engine/trauma.ts:1031` | — | `traitPassiveMods` | Traits à modificateur de PROFIL appliqués en DIRECT (LDB 85 : Élite/Coriace/Brutal/Rapide… facultatifs, statbloc d'éditeur, traits accordés) — leurs `PassiveMod` (vocab GameOp unifié, `TraitData.passive`) émis TELS QUELS. |
+| `src/engine/trauma.ts:1034` | — | `talentPassiveMods` | Talents POSSÉDÉS (LDB 10) : leur `passive: GameOp[]` (Coup puissant, Dur à cuire… ou Frénésie → grantFreeAttack) émis kind `intrinseque`, par niveau — comme les traits. |
+| `src/engine/trauma.ts:1039` | `magique` | inline | — |
 
 Producteurs nommés, avec leur site réel :
 
 | Producteur | Site | Rôle (JSDoc) |
 |---|---|---|
-| `diseasePassiveOps` | `src/engine/disease.ts:271` | Passifs de TOUTES les maladies ACTIVES (collecte unifiée, reprise telle quelle par `passiveMods`). |
+| `diseasePassiveOps` | `src/engine/disease.ts:299` | Passifs de TOUTES les maladies ACTIVES (collecte unifiée, reprise telle quelle par `passiveMods`). |
 | `qualityWearMods` | `src/engine/wearPenalty.ts:45` | Pénalités de port → ops `skillMod` skill-qualifiées (kind `intrinseque`, Σ) pour le collecteur passif unifié, chacune ATTRIBUÉE à la pièce qui la porte (`src`) pour que le détail de jet la NOMME. |
 | `talentPassiveMods` | `src/engine/talentEffects.ts:255` | Modificateurs PASSIFS continus des talents POSSÉDÉS (`TalentData.passive` : Coup puissant, Dur à cuire…, ou Frénésie → `grantFreeAttack`) en `GameOp[]`, émis kind `intrinseque` et RÉPÉTÉS par niveau (`t.times`). |
 | `traitPassiveMods` | `src/engine/traits/dispatch.ts:203` | PassiveMod[] de PROFIL des traits — la DONNÉE éditable `TraitData.passive` (vocab GameOp unifié, éditée par GameOpEditor comme un sort). |
-| `traumaPassiveMods` | `src/engine/trauma.ts:945` | Ops PASSIVES des SÉQUELLES seules (`c.traumas`), `kind` résolu (surcharge de fiche > `traumaOpKind`) et gating `modSurvives` appliqué. |
+| `traumaPassiveMods` | `src/engine/trauma.ts:959` | Ops PASSIVES des SÉQUELLES seules (`c.traumas`), `kind` résolu (surcharge de fiche > `traumaOpKind`) et gating `modSurvives` appliqué. |
 | `wornSocialMods` | `src/engine/wearPenalty.ts:52` | Modificateurs de Sociabilité (≤ 0) des objets ÉQUIPÉS de `c` (objet Laid −10, LDB 60 l.54), UN PAR QUALITÉ émettrice : le `src` porte la qualité, donc le détail de jet la NOMME (« −10 Laid ») au lieu d'un total anonyme. |
 
 **Ajouter une source de passif = ajouter une branche ICI**, jamais un second collecteur ni une
@@ -111,7 +111,7 @@ population qui l'exerce vraiment aujourd'hui.
 | `src/data/naval-traits.json` | `passive` | `src/data/schemas/defs/naval-traits.ts` | 9 / 27 |
 | `src/data/psychology.json` | `passive` | `src/data/schemas/defs/psychology.ts` | 1 / 9 |
 | `src/data/qualities.json` | `passive` | `src/data/schemas/defs/qualities.ts` | 17 / 59 |
-| `src/data/symptoms.json` | `passive`, `severePassive`, `visiblePassive` | `src/data/schemas/defs/symptoms.ts` | 9 / 18 |
+| `src/data/symptoms.json` | `passive`, `passiveBySeverity`, `visiblePassive` | `src/data/schemas/defs/symptoms.ts` | 10 / 18 |
 | `src/data/talents.json` | `passive` | `src/data/schemas/defs/talents.ts` | 21 / 187 |
 | `src/data/traits.json` | `passive` | `src/data/schemas/defs/traits.ts` | 26 / 132 |
 | `src/data/trappings.json` | `passive` | `src/data/schemas/defs/trappings.ts` | 15 / 441 |
@@ -163,4 +163,4 @@ Tout passe par le Compendium in-app (écran Codex) :
   champ à part (§7).
 - **Ajouter une table de Corruption** (un dieu du Chaos) : Codex → Tables de Corruption → une entrée
   dont les plages référencent des mutations EXISTANTES par id.
-<!-- sources-empreinte: 15708d5e18766ab4c00711d2f56cb636629f1d2b (140 fichiers, 1 dossiers) corps: c22df7e7df1142ec6f06cc616885c5231ee95694 -->
+<!-- sources-empreinte: 4a23ad55cd317d2f14eefe61c8e533d015ec9952 (140 fichiers, 1 dossiers) corps: 38ff8f73cd29c79013f1afb069c374e655b64c5a -->

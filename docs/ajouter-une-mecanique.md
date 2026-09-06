@@ -3,7 +3,7 @@
 > ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-mecanique.mjs` (`npm run docs:mecanique`) — NE PAS ÉDITER À LA MAIN.
 
 **Périmètre mesuré / angles morts** — sont DÉRIVÉS à chaque génération : le SITE réel du lecteur de
-chaque canal (`src/engine/trauma.ts:958`, `src/state/triggeredEffects.ts:463`, `src/engine/capabilities.ts:45`), les
+chaque canal (`src/engine/trauma.ts:972`, `src/state/triggeredEffects.ts:463`, `src/engine/capabilities.ts:45`), les
 20 membres d'`EffectTrigger` et les 6 formes d'`EffectTargeting`
 (`src/engine/flowCore.ts`), les 7 champs de `TriggeredEffect`, les 8 kinds
 de source réunis par `effectSourcesOf`, les 4 interfaces de capacités et leur nombre de
@@ -23,7 +23,7 @@ Toute mécanique — trait de créature, talent, atout d'arme/armure, mutation, 
 
 | Canal | Ce qu’il porte | Lu par |
 |---|---|---|
-| `passive: GameOp[]` | modificateur CONTINU, sans déclencheur | `passiveMods` (`src/engine/trauma.ts:958`) |
+| `passive: GameOp[]` | modificateur CONTINU, sans déclencheur | `passiveMods` (`src/engine/trauma.ts:972`) |
 | `effects: TriggeredEffect[]` | effet sur ÉVÉNEMENT (à la touche, en fin de Round…) | `fireTriggers` (`src/state/triggeredEffects.ts:463`) |
 | `capabilities` | drapeau IRRÉDUCTIBLE que le moteur INTERROGE (aucune valeur numérique ni formule) | `hasCapability` (`src/engine/capabilities.ts:45`) |
 
@@ -53,7 +53,7 @@ signal qu'il faut étendre le vocabulaire.
 ## 2. Canal `passive` — le continu
 
 Le même vocabulaire d'ops que les sorts. Le collecteur UNIQUE est `passiveMods`
-(`src/engine/trauma.ts:958`) ; **ne jamais lire un champ typé d'origine** dans un consommateur — toujours
+(`src/engine/trauma.ts:972`) ; **ne jamais lire un champ typé d'origine** dans un consommateur — toujours
 passer par ses helpers d'extraction. Détail complet (profils d'annulation, combinaison, branches du
 collecteur) : `docs/systeme-passifs.md`.
 
@@ -67,10 +67,11 @@ Documents porteurs :
 | `src/data/naval-traits.json` | `passive` | `src/data/schemas/defs/naval-traits.ts` | 9 / 27 |
 | `src/data/psychology.json` | `passive` | `src/data/schemas/defs/psychology.ts` | 1 / 9 |
 | `src/data/qualities.json` | `passive` | `src/data/schemas/defs/qualities.ts` | 17 / 59 |
-| `src/data/symptoms.json` | `passive`, `severePassive`, `visiblePassive` | `src/data/schemas/defs/symptoms.ts` | 9 / 18 |
+| `src/data/symptoms.json` | `passive`, `passiveBySeverity`, `visiblePassive` | `src/data/schemas/defs/symptoms.ts` | 10 / 18 |
 | `src/data/talents.json` | `passive` | `src/data/schemas/defs/talents.ts` | 21 / 187 |
 | `src/data/traits.json` | `passive` | `src/data/schemas/defs/traits.ts` | 26 / 132 |
 | `src/data/trappings.json` | `passive` | `src/data/schemas/defs/trappings.ts` | 15 / 441 |
+| `src/data/traumas.json` | `passiveKind` | `src/data/schemas/defs/traumas.ts` | 0 / 29 |
 
 ## 3. Canal `effects` — le déclenché
 
@@ -135,10 +136,10 @@ un chiffre qui s'additionne.
 
 | Interface | Site | Drapeaux déclarés |
 |---|---|---|
-| `TraitCapabilities` | `src/data/index.ts:1635` | 43 |
-| `QualityCapabilities` | `src/data/index.ts:1833` | 26 |
+| `TraitCapabilities` | `src/data/index.ts:1640` | 43 |
+| `QualityCapabilities` | `src/data/index.ts:1838` | 26 |
 | `ItemCapabilities` | `src/data/index.ts:1089` | 12 |
-| `SymptomCapabilities` | `src/data/index.ts:1900` | 7 |
+| `SymptomCapabilities` | `src/data/index.ts:1905` | 6 |
 
 Lecture — un seul point d'entrée par portée, chaque canal restant disjoint par nom de capacité :
 
@@ -174,7 +175,7 @@ Documents porteurs :
 | Document | Champ(s) | Def | Entrées porteuses |
 |---|---|---|---|
 | `src/data/qualities.json` | `capabilities` | `src/data/schemas/defs/qualities.ts` | 31 / 59 |
-| `src/data/symptoms.json` | `capabilities` | `src/data/schemas/defs/symptoms.ts` | 7 / 18 |
+| `src/data/symptoms.json` | `capabilities` | `src/data/schemas/defs/symptoms.ts` | 6 / 18 |
 | `src/data/traits.json` | `capabilities` | `src/data/schemas/defs/traits.ts` | 51 / 132 |
 | `src/data/trappings.json` | `capabilities` | `src/data/schemas/defs/trappings.ts` | 20 / 441 |
 
@@ -219,4 +220,4 @@ primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autr
 | `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
 | `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
 | `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |
-<!-- sources-empreinte: 85d97ddfec0271e0ecf81110ff9c8d911b3cf462 (153 fichiers, 1 dossiers) corps: fd35b187540f0350f329ef952d91522ad8eb5dfe -->
+<!-- sources-empreinte: 3a37c974b46877bbb80e0b17412a793e25cd3f74 (154 fichiers, 1 dossiers) corps: be95b15f2e996cdd624f4d3259728217b103d5ec -->

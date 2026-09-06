@@ -265,7 +265,7 @@ Le JSDoc est rapporté en ENTIER : le contrat d'une couture relationnelle tient 
 | `tokenizeLinks` | function | `src/ui/compendium/relations.ts:502` | Tokenise une prose en alternant texte brut et mentions d'entité à LIER (auto-liage du Codex, façon `dev.html`). PUR & locale-scoped (matcher dérivé des libellés de la locale active, jamais une chaîne FR en dur → multilingue de principe). Écarte les liens vers SOI et les libellés inconnus/courts — la comparaison est 100 % id-based (`selfId` si l'appelant le connaît, sinon résolu depuis `selfLabel` via `idByLabelCached`, repli des appelants non encore migrés). `selfCategory` (catégorie de la fiche affichante) tranche les homonymes en priorité — cf. `resolveLink`/`PRIORITY_CAT_ORDER`. Seul le vocabulaire de RÈGLES est lié. |
 
 `bookContents` est projeté DANS le `build` (paresseux) de la catégorie Livres
-(`src/ui/compendium/registry.ts:1791`) : il ne lit que l'identité STATIQUE des catégories, jamais leurs
+(`src/ui/compendium/registry.ts:1792`) : il ne lit que l'identité STATIQUE des catégories, jamais leurs
 items — aucun cycle de projection.
 
 ## Barre de catégories — sous-groupes repliables (`cluster`)
@@ -303,7 +303,7 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
   `livre-de-base`, `archives-de-l-empire-2`, `archives-de-l-empire-1`, `middenheim`, `aux-armes`, `mer-des-griffes`, `vents-de-la-magie`). Aucun champ JSON ajouté : extraction
   structurelle depuis la desc verbatim.
 - **Riders / effets / formules de sort en clair** : les sections rendent d'abord la phrase JOUEUR
-  (`src/ui/compendium/humanize.ts` — switchs EXHAUSTIFS, zéro id brut : `humanizeFormula`, `humanizeCondition`, `humanizePerSL`, `coutAvantageTexte`, `flowMuet`, `replieCausesPersistantes`, `humanizeOp`, `humanizeFlow`, `humanizeFlowSentence`, `humanizeCastBonus`),
+  (`src/ui/compendium/humanize.ts` — switchs EXHAUSTIFS, zéro id brut : `humanizeFormula`, `humanizeCondition`, `humanizePerSL`, `coutAvantageTexte`, `flowMuet`, `replieCausesPersistantes`, `humanizeResolveWindow`, `humanizeOp`, `humanizeFlow`, `humanizeFlowSentence`, `humanizeCastBonus`),
   la forme technique d'atelier restant dépliée dans un bloc « Détail technique » (primitive `.fold`).
 - **Édition** : tout reste éditable au Compendium (DEV) ; les VIEWS ne sont pas éditables
   (`isEditableCategory=false`) — éditer la source.
@@ -315,4 +315,4 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
 - `npx vitest run src/ui/compendium/humanize.test.ts`
 - `npx vitest run src/data/schemas/exposition-contrats.test.ts`
 - `npx vitest run src/data/serialize.test.ts`
-<!-- sources-empreinte: e707b5c86316971d2409baeffdcf0aec6f2ed1cc (437 fichiers, 0 dossiers) corps: be9d3ceeae59be3355e6242617cb74666fd0167a -->
+<!-- sources-empreinte: 13e46979c83626f0da750ef28ac2159640e4c09b (439 fichiers, 0 dossiers) corps: cf1b32ebda93d2926dd441eab42f035332f5b20c -->

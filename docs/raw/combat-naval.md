@@ -265,7 +265,7 @@ peut aussi considérer un résultat de 0 comme un succès en fonction des circon
 · [Dégâts aux navires](#infliger-des-degats-aux-navires) · [L'équipage comme ressource](#lequipage-comme-ressource--le-round-naval).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.656) → `VolleyShot`, `RepairTick`, `sea-navigation`, `isOutOfAction`, `voie-d-eau` — `src/data/etats.json`, `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`
+- `MDG 13` (l.656) → `VolleyShot`, `RepairTick`, `sea-navigation`, `voie-d-eau`, `isOutOfAction` — `src/data/etats.json`, `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`
 - `MDG 14` (l.13, l.126-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `resolveVolley`, +73 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +18 fichiers
 
 **État du code.** ✅ **(1)(2)(3)(4-Dégâts)(5)** après refonte : Test d'équipage multi (Artilleur ★) → DR partagé →

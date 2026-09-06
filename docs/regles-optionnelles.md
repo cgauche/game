@@ -3,7 +3,7 @@
 > ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-regles-optionnelles.mjs`
 > (`npm run docs:regles-optionnelles`) — NE PAS ÉDITER À LA MAIN.
 
-**Périmètre mesuré / angles morts** — sont LUES aux fichiers réels : les 81 entrées de
+**Périmètre mesuré / angles morts** — sont LUES aux fichiers réels : les 82 entrées de
 `src/data/reglesOptionnelles.json` (id, libellé, groupe, forme, défaut, options/bornes, référence RAW, folio, présence de
 `maison` et d'`action`, `hint` verbatim), les clés déclarées par `src/data/schemas/defs/reglesOptionnelles.ts`, le seuil d'onglet
 `OWN_TAB_MIN` et le libellé du fourre-tout de `src/ui/houseRuleTabs.ts`, la clé de persistance de `src/state/houseRules.ts`.
@@ -49,7 +49,7 @@ structurelle — et une règle nouvellement gatante n'est signalée par aucune g
 | `kind` | Entrées | Contrôle rendu | Forme de la valeur |
 |---|---|---|---|
 | `flag` | 46 | interrupteur | booléen |
-| `param` | 23 | champ chiffré | nombre borné (`min`/`max`, `step` optionnel) |
+| `param` | 24 | champ chiffré | nombre borné (`min`/`max`, `step` optionnel) |
 | `mode` | 12 | choix segmenté | chaîne prise dans `options` |
 
 ## Groupes et onglets
@@ -72,13 +72,13 @@ intertitre (`src/ui/houseRuleTabs.ts`).
 | Prières | 3 | Divers |
 | Corruption | 1 | Divers |
 | Psychologie | 1 | Divers |
-| Maladies | 1 | Divers |
+| Maladies | 2 | Divers |
 | Voyage | 23 | propre |
 | Possessions | 1 | Divers |
 
 ## Provenance
 
-27 règles sur 81 portent un champ `maison` : le RAW ne chiffre pas la
+28 règles sur 82 portent un champ `maison` : le RAW ne chiffre pas la
 valeur, l'arbitrage est explicite (CLAUDE.md règle 7). 54 portent une ancre
 `source: {book, page}` au folio imprimé. 1 portent une `action` rendue sous la
 rangée quand la règle atteint sa valeur de déclenchement.
@@ -225,13 +225,14 @@ Panneau : onglet « Divers », intertitre « Psychologie ».
 |---|---|---|---|---|---|---|
 | `psych-acquisition-optional` | Acquisition de Traits psychologiques | `flag` | `false` | `false` · `true` | ADE II 09 l.3 (archives-de-l-empire-2 f.92) | Règles facultatives ADE II (Annexe I) pour gagner de nouveaux Traits psychologiques en cours de partie : Phobie du noir (États Brisé de Terreur cumulés ≥ Bonus de FM → Phobie), Animosité & Haine (dépenser le Destin pour survivre → Test de Calme ; échec → Animosité, doublon → Haine), Trauma (Ambition rendue impossible → Test de Calme ; échec → Trauma). Désactivé par défaut. |
 
-### Maladies — 1 règle
+### Maladies — 2 règles
 
 Panneau : onglet « Divers », intertitre « Maladies ».
 
 | id | Libellé | Forme | Défaut | Valeurs | Référence | Ce que la règle change (`hint` verbatim) |
 |---|---|---|---|---|---|---|
 | `disease-mode` | Utilisation des maladies | `mode` | `full` | **`full`** · `situational` · `off` | LDB 20 l.35 (livre-de-base f.186) | full = toutes les expositions (RAW) ; situational = pas d’Infection Mineure post-critique, mais Infecté/Maladie conservés (Skavens/Nurgle) ; off = aucune maladie (ni contraction, ni progression, ni contagion). |
+| `maladie-conscience-determination-minutes` | Maladie : fenêtre de conscience par Détermination (minutes) | `param` | `5` | 1 → 60, pas 1 | LDB 20 l.170 · **maison** | Durée pendant laquelle le SYMPTÔME dépensé est ignoré après la dépense (LDB 20 l.170) — l’État qu’il portait (Inconscient d’une Fièvre Grave) revient à l’échéance ; les autres symptômes de la maladie ne sont pas touchés. |
 
 ### Voyage — 23 règles
 
@@ -270,4 +271,4 @@ Panneau : onglet « Divers », intertitre « Possessions ».
 | id | Libellé | Forme | Défaut | Valeurs | Référence | Ce que la règle change (`hint` verbatim) |
 |---|---|---|---|---|---|---|
 | `possession-random-chars-on-acquire` | Caractéristiques aléatoires à l’acquisition (bêtes/serviteurs) | `flag` | `true` | `false` · `true` | LDB 77 l.108 · **maison** | À l’acquisition d’une bête ou d’un serviteur (achat, dotation, don), tire une fois ses caractéristiques (−10 + 2d10, ou 1d10 si la Caractéristique vaut 5) — le tirage se FIGE dans `Possession.charsRolled`, seedé sur son uid : jamais relancé (« Elles seront relancées à chaque combat ? Pas fou. »). Désactivé : la possession garde le profil imprimé du catalogue. |
-<!-- sources-empreinte: cd4151b5306fef8cc4be4ebee8e7d1a5aa475e2a (10 fichiers, 0 dossiers) corps: 0483d01274d7b3294116b8f56d81a7e9c4e9800e -->
+<!-- sources-empreinte: 16242fd64c44b7b6c1cd0e938e26ab736d9dcdd4 (10 fichiers, 0 dossiers) corps: 257c16a6a0baa25dd62514d9c1124a333ed95b99 -->

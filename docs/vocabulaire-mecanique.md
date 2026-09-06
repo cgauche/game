@@ -59,7 +59,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Invocation, créatures, bestiaire, reconstitution | `grantTrait`, `removeTrait`, `grantWeapon`, `summon`, `scheduleRespawn`, `polymorph`, `transform`, `offTerrainMod` |
 | Lumière, vision, brouillard de guerre | `light` |
 | Magie, incantation, prière, miracle, contrecoup | `ap`, `gainResource`, `castPenalty`, `grantTrait`, `augmentWeapon`, `freeReroll`, `critTwice`, `suppressPsych`, `castWard`, `domeWard`, `attackWardFM`, `noHunger`, `weatherWard`, `grantWeapon`, `interruptFocus`, `perRound`, `charDamage`, `zone`, `transform`, `incomingSpellDRMod`, `attackKeyword`, `mitigateIncoming` |
-| Maladies : exposer, contracter, guérir, symptômes | `cureDisease`, `reduceDiseaseDays`, `preventInfection`, `exposeDisease`, `contractDisease`, `diseaseTestMod`, `suppressSymptom`, `aggravateSymptom`, `grantSymptom` |
+| Maladies : exposer, contracter, guérir, symptômes | `cureDisease`, `reduceDiseaseDays`, `preventInfection`, `exposeDisease`, `contractDisease`, `diseaseTestMod`, `suppressSymptom`, `aggravateSymptom`, `attenuateSymptom`, `grantSymptom` |
 | Mort, retrait du jeu, bannissement | `kill`, `banish`, `suffocate` |
 | Mouvement, allonge, terrain | `moveScale`, `moveMod`, `offTerrainMod`, `attrMod`, `loseTurn`, `actGate` |
 | Narratif, arbitrage non modélisé | `banish`, `narrative` |
@@ -77,7 +77,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Traits de créature : octroyer, retirer | `grantTrait`, `removeTrait`, `grantPsychTrait`, `removePsychTrait`, `suppressPsych`, `polymorph`, `endTransform`, `incomingSpellDRMod`, `moveMod` |
 | Transformation, métamorphose, forme alternative | `polymorph`, `transform`, `endTransform` |
 
-## GameOp — les 108 opérations
+## GameOp — les 109 opérations
 
 | Op | Champs | Résolution | Résolveurs | Donnée | Rôle |
 |---|---|---|---|---|---|
@@ -89,6 +89,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `arrowWard` | `radius` | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 1 — `spells.json:bouclier-anti-fleches` | Bouclier anti-flèches (LDB 47 — L11) : « les projectiles constitués de matière organique sont automatiquement détruits s'ils entrent dans la Zone d'Effet ». |
 | `attackKeyword` | `keyword` | **hors switch** | — | 3 — `traits.json:demoniaque`, `traits.json:fabrique` … | L'attaque du porteur porte un MOT-CLÉ (Magique/Démoniaque/Fabriqué → 'magic', LDB 85). |
 | `attackWardFM` | — | exécutée | `state/aiSpellValue.ts`, `state/combatFlow.ts`, `state/targetingModes.ts` | 1 — `spells.json:benediction-de-protection` | Bénédiction de Protection (LDB 41 — L13) : « Les ennemis doivent effectuer un Test de FM Accessible (+20) pour attaquer votre cible ». |
+| `attenuateSymptom` | `disease`, `symptomId`, `otherwise?` | exécutée | — | **0** | ATTÉNUE d'un échelon un symptôme déjà porté (LDB 20 l.159 : « transformant Grave en Modéré et Modéré en convulsions normales ») — MIROIR d'`aggravateSymptom`. |
 | `attrMod` | `attr`, `mod` | exécutée | `engine/talentEffects.ts` | 4 — `talents.json:chanceux`, `talents.json:dur-a-cuire` … | Modificateur d'un ATTRIBUT SECONDAIRE À MAXIMUM (≠ CharKey, ≠ Mouvement) : Blessures (Dur à cuire +BE), Chance (Chanceux), Détermination (Obstiné). |
 | `augmentWeapon` | `addQualities?`, `damageBonus?`, `bypass?`, `requiresWeapon?`, `removeQualities?`, `removeType?`, `suppressEnchants?`, `passive?`, `onHitEffects?` | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 11 — `spells.json:benediction-de-droiture`, `spells.json:serres-d-ambre` … | ALTÉRATION d'ARME temporisée — enchantement OU dégradation, une seule primitive (Jalon 2.6 — Bénédiction de Droiture : Magique ; Marteau ardent : Magique +BSoc + En flammes/À Terre à la touche ; Épée ardente : +6 + Percutante + En flammes ; VDM 05 — Arme enchantée « ajouter 1 Atout ou retirer 1 Défaut », Défaut « Tous les Atouts de l'arme disparaissent […] −1 DR à tous les Tests pour attaquer avec elle », enchantements de l'arme neutralisés). |
 | `banish` | `narration?`, `onlyGroups?` | exécutée | `state/aiSpellValue.ts` | 5 — `spells.json:fauche-demon`, `spells.json:le-labyrinthe-de-cristal` … | RETRAIT DU JEU : la cible est destituée, sa forme se dissipe — la force qui la soutenait cède. |
@@ -100,7 +101,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `charDamage` | `char`, `amount` | exécutée | — | 6 — `spells.json:poids-des-annees`, `spells.json:poids-des-annees` … | Perte PERMANENTE de Caractéristique (Vers de carie « −1d10 Initiative… », MSRC 16 l.94-97) : décrémente la Caractéristique de BASE (`c.characteristics`), jamais sous 0 — irréversible « sauf par des moyens magiques ou miraculeux » (l.103). |
 | `charDRBonus` | `char`, `bonus` | exécutée | — | 17 — `sea-shanties.json:camarades-d-equipage-rassemblez-vous`, `tables.json:vdm-marques-arcaniques-lumiere` … | +N DR aux Tests d'une CARACTÉRISTIQUE (chanson « Camarades d'équipage » : +1 DR sur tout Test de Sociabilité, MDG 09 l.236) — variante par carac de `skillDRBonus`. |
 | `charMod` | `char`, `mod`, `durationRounds?`, `durationMinutes?`, `durationHours?` | exécutée | `engine/polymorph.ts`, `engine/talentEffects.ts`, `engine/traits/dispatch.ts` +2 | 238 — `criticals.json:bleus-aux-cotes`, `criticals.json:orteil-contusionne` … | Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus + pire pénalité sans cumul, LDB l.168). |
-| `condition` | `id`, `value?`, `durationRounds?`, `perRound?`, `valuePerSL?`, `onlyGroups?`, `onlyIfCondition?`, `unlessCondition?`, `escapeStrength?`, `escapeThreshold?`, `entangleOnFail?`, `struggleDamage?`, `lockedUntil?`, `unlockBy?`, `grapple?`, `durationMinutes?`, `durationHours?` | exécutée | `engine/critical.ts`, `engine/disease.ts`, `engine/miscast.ts` +10 | 437 — `activities.json:extenue`, `criticals.json:hemorragique` … | Ajout d'un État nommé (LDB 16). |
+| `condition` | `id`, `value?`, `durationRounds?`, `perRound?`, `valuePerSL?`, `onlyGroups?`, `onlyIfCondition?`, `unlessCondition?`, `escapeStrength?`, `escapeThreshold?`, `entangleOnFail?`, `struggleDamage?`, `lockedUntil?`, `resolveWindow?`, `unlockBy?`, `grapple?`, `durationMinutes?`, `durationHours?` | exécutée | `engine/conditions.ts`, `engine/critical.ts`, `engine/disease.ts` +11 | 439 — `activities.json:extenue`, `criticals.json:hemorragique` … | Ajout d'un État nommé (LDB 16). |
 | `contractDisease` | `disease` | exécutée | `engine/disease.ts`, `state/aiSpellValue.ts` | 10 — `criticals.json:blessure-au-ventre`, `criticals.json:hemorragie-interne` … | CONTRACTE instantanément une Maladie (`disease` = id) — incubation 0, durée tirée. |
 | `corruption` | `amount`, `perSL?`, `align?` | exécutée | `engine/miscast.ts`, `state/aiSpellValue.ts`, `state/targetingModes.ts` | 15 — `miscast.json:mineure-murmures-mortels`, `miscast.json:mineure-malediction-de-corruption` … | Points de Corruption (LDB 19). |
 | `corruptionExposure` | `level?`, `skill?`, `easeSteps?` | exécutée | — | 9 — `activities.json:tester-objets-magiques`, `spells.json:bouclier-en-acier-dore` … | EXPOSITION à une Influence corruptrice (LDB 19 l.23-75) : Test différé par MODALE (pendingCorruption) — op IMPURE résolue par la couche state via `ctx.onCorruptionExposure` (même patron que `ctx.onCorruption`) ; sans contexte (moteur pur), journalisée sans jet. |
@@ -190,11 +191,12 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `wounds` | `amount`, `perSL?`, `onlyGroups?`, `ignoreTB?`, `ignoreAP?`, `bypassArmour?`, `apFrom?`, `min?`, `extraAP?`, `weaponHit?` | exécutée | `engine/critical.ts`, `engine/disease.ts`, `engine/miscast.ts` +9 | 225 — `criticals.json:blessure-spectaculaire`, `criticals.json:coupure-mineure` … | Blessures subies DIRECTEMENT. |
 | `zone` | `shape`, `radiusMeters?`, `lengthMeters?`, `lengthPerSL?`, `blocksLoS?`, `onCross?`, `perRound?`, `crossTest?`, `barrier?`, `gate?`, `noCorruption?` | **inerte au switch** | `engine/overcast.ts`, `state/combatFlow.ts`, `state/zones.ts` | 13 — `spells.json:vol-du-destin`, `spells.json:grands-feux-d-u-zhul` … | ZONE PERSISTANTE posée par le sort (Mur de feu, Grands feux d'U'Zhul, Vol du Destin). |
 
-_108 ops (109 membres d'union avant fusion des formes) — 85 exécutées par `applyOps`, 15 inertes au switch, 8 hors switch (impures ou passives — cf. « Résolveurs »)._
+_109 ops (110 membres d'union avant fusion des formes) — 86 exécutées par `applyOps`, 15 inertes au switch, 8 hors switch (impures ou passives — cf. « Résolveurs »)._
 
-### Ops à ZÉRO usage en donnée (7)
+### Ops à ZÉRO usage en donnée (8)
 
 - `amputer`
+- `attenuateSymptom`
 - `beginPsych`
 - `breakBlade`
 - `interruptFocus`
@@ -306,4 +308,4 @@ Valeurs du champ `on` d'un `TriggeredEffect`.
 | `{ pick … }` | `sizeAtMost?`, `max` | — |
 
 _6 entrées — dérivées de `src/engine/flowCore.ts`._
-<!-- sources-empreinte: 5d2dadcab2823703a210a27793221658ae4c6f51 (668 fichiers, 17 dossiers) corps: d5e766123b0b33ddd59020f9aca573b4ba22219c -->
+<!-- sources-empreinte: 954bae499c94e35bb9047dff8975e92db156cacd (670 fichiers, 17 dossiers) corps: 5d70910430c65f52954e303093cc527a6556ec4f -->
