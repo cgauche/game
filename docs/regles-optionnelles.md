@@ -3,7 +3,7 @@
 > ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-regles-optionnelles.mjs`
 > (`npm run docs:regles-optionnelles`) — NE PAS ÉDITER À LA MAIN.
 
-**Périmètre mesuré / angles morts** — sont LUES aux fichiers réels : les 82 entrées de
+**Périmètre mesuré / angles morts** — sont LUES aux fichiers réels : les 87 entrées de
 `src/data/reglesOptionnelles.json` (id, libellé, groupe, forme, défaut, options/bornes, référence RAW, folio, présence de
 `maison` et d'`action`, `hint` verbatim), les clés déclarées par `src/data/schemas/defs/reglesOptionnelles.ts`, le seuil d'onglet
 `OWN_TAB_MIN` et le libellé du fourre-tout de `src/ui/houseRuleTabs.ts`, la clé de persistance de `src/state/houseRules.ts`.
@@ -49,7 +49,7 @@ structurelle — et une règle nouvellement gatante n'est signalée par aucune g
 | `kind` | Entrées | Contrôle rendu | Forme de la valeur |
 |---|---|---|---|
 | `flag` | 46 | interrupteur | booléen |
-| `param` | 24 | champ chiffré | nombre borné (`min`/`max`, `step` optionnel) |
+| `param` | 29 | champ chiffré | nombre borné (`min`/`max`, `step` optionnel) |
 | `mode` | 12 | choix segmenté | chaîne prise dans `options` |
 
 ## Groupes et onglets
@@ -63,7 +63,7 @@ intertitre (`src/ui/houseRuleTabs.ts`).
 | Tests | 8 | propre |
 | Destin & Résistance | 1 | Divers |
 | Combat | 19 | propre |
-| Social | 3 | Divers |
+| Social | 8 | propre |
 | Création | 2 | Divers |
 | Marché | 4 | propre |
 | Activités | 7 | propre |
@@ -78,7 +78,7 @@ intertitre (`src/ui/houseRuleTabs.ts`).
 
 ## Provenance
 
-28 règles sur 82 portent un champ `maison` : le RAW ne chiffre pas la
+33 règles sur 87 portent un champ `maison` : le RAW ne chiffre pas la
 valeur, l'arbitrage est explicite (CLAUDE.md règle 7). 54 portent une ancre
 `source: {book, page}` au folio imprimé. 1 portent une `action` rendue sous la
 rangée quand la règle atteint sa valeur de déclenchement.
@@ -134,15 +134,20 @@ Panneau : onglet propre « Combat ».
 | `combat-voice-range-m` | Portée de voix (commandement) | `param` | `50` | 2 → 200, pas 2 | AA 13 l.35 / LDB 09 l.128 · **maison** | Distance en MÈTRES à laquelle un ordre crié porte : « aider une équipe qui utilise une arme possédant le Défaut Arme d’équipe à portée de voix » (AA 13 l.35) — le canon ne chiffre jamais cette portée. Défaut 50 m (≈ 25 cases à 2 m/case). |
 | `siege-engine-push-speed` | Vitesse de poussée d’un engin de siège | `param` | `2` | 1 → 6 | ADE II 8 l.258 · **maison** | « [le bélier/la baliste sont] dotés de roues pour se déplacer sur le champ de bataille » (ADE II 8 l.256/258) sans chiffrer de vitesse : plafond MAISON (en cases) d’une poussée d’équipage — mouvement SIMPLE, aucun Test. |
 
-### Social — 3 règles
+### Social — 8 règles
 
-Panneau : onglet « Divers », intertitre « Social ».
+Panneau : onglet propre « Social ».
 
 | id | Libellé | Forme | Défaut | Valeurs | Référence | Ce que la règle change (`hint` verbatim) |
 |---|---|---|---|---|---|---|
 | `social-status-reaction-roll` | Réaction au Statut (1d10) | `flag` | `false` | `false` · `true` | LDB 08 l.40/59 (livre-de-base f.50) | Au-delà de la norme sociale : avant un Test social ciblant un PNJ, 1d10 → 1-2 « Braver le Statut » (annule les mods de Statut) ; 3-8 réactions classiques (mods normaux) ; 9-10 « Opinions extrêmes » (mods inversés). |
 | `social-begging-bonus` | Mendicité et Statut | `flag` | `false` | `false` · `true` | LDB 08 l.63 (livre-de-base f.51) | La mendicité est plus efficace juste au-dessus de soi : un personnage Bronze qui mendie auprès d’un Échelon Argent obtient +10 au lieu de −10 (Bronze → Argent uniquement). |
 | `social-charm-intra-tier` | Statut au sein d’un même Échelon | `flag` | `false` | `false` · `true` | LDB 08 l.57 (livre-de-base f.51) | Le MJ applique aussi le ±10 de Statut entre deux personnes du MÊME Échelon mais de Standing différent (Standing supérieur +10 / inférieur −10). |
+| `mendier-heures-par-jour` | Mendier : heures par journée | `param` | `4` | 1 → 12, pas 1 | LDB 09 l.97 · **maison** | Nombre d’heures passées à mendier en une Activité — le gain horaire (Bonus de Sociabilité × DR) est multiplié par ce nombre. |
+| `mendier-discours` | Mendier : modificateur de discours | `param` | `0` | -30 → 30, pas 10 | LDB 09 l.97 · **maison** | Modificateur appliqué au Test de Charme selon le discours tenu pour mendier. |
+| `mendier-apparence-bonus` | Mendier : apparence qui suscite la sympathie | `param` | `10` | -30 → 30, pas 10 | LDB 09 l.97 · **maison** | Modificateur accordé au Test quand le mendiant porte une atteinte visible (lésion apparente d’une maladie active). |
+| `mendier-surpris-pct` | Mendier : chance d’être surpris par ses pairs | `param` | `10` | 0 → 100, pas 5 | LDB 09 l.99 · **maison** | Chance, après une Activité Mendier, d’être vu par ses pairs — auquel cas le Standing baisse de 1 pour la prochaine aventure. Les Carrières sans ressources (Statut d’entrée Bronze 0) en sont exemptées. |
+| `mendier-amende-sous` | Mendier : amende des gardes locaux | `param` | `12` | 0 → 240, pas 6 | LDB 09 l.97 · **maison** | Sous de cuivre retirés de la bourse du mendiant délogé par les gardes locaux. La bourse ne descend jamais sous zéro. |
 
 ### Création — 2 règles
 
@@ -271,4 +276,4 @@ Panneau : onglet « Divers », intertitre « Possessions ».
 | id | Libellé | Forme | Défaut | Valeurs | Référence | Ce que la règle change (`hint` verbatim) |
 |---|---|---|---|---|---|---|
 | `possession-random-chars-on-acquire` | Caractéristiques aléatoires à l’acquisition (bêtes/serviteurs) | `flag` | `true` | `false` · `true` | LDB 77 l.108 · **maison** | À l’acquisition d’une bête ou d’un serviteur (achat, dotation, don), tire une fois ses caractéristiques (−10 + 2d10, ou 1d10 si la Caractéristique vaut 5) — le tirage se FIGE dans `Possession.charsRolled`, seedé sur son uid : jamais relancé (« Elles seront relancées à chaque combat ? Pas fou. »). Désactivé : la possession garde le profil imprimé du catalogue. |
-<!-- sources-empreinte: 16242fd64c44b7b6c1cd0e938e26ab736d9dcdd4 (10 fichiers, 0 dossiers) corps: 257c16a6a0baa25dd62514d9c1124a333ed95b99 -->
+<!-- sources-empreinte: 4220aa9dad9512db83eb2a5d79e8212c9901d313 (10 fichiers, 0 dossiers) corps: ccb0c10308596e42d5d547da385232f3d45dc1ca -->

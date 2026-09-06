@@ -76,7 +76,8 @@ const TYPES = {
  */
 const CARDINAUX = {
   'actions.json': 55,
-  'activities.json': 62,
+  // 62→63 : +1 : Mendier, LDB 09 l.97 (folio 119), #1612.
+  'activities.json': 63,
   // 490→492 : Mouton + Cochon, EDOC 07 (folio 24), #673.
   // 492→493 : +1 : Chien de trait, EDOC 07 folio 22, #673.
   'creatures.json': 493,
@@ -96,7 +97,8 @@ const CARDINAUX = {
 // catalogues de matières fusionnent en `materials.json` (#1686 lot 2), dont l'enveloppe est posée par sa
 // propre migration et tenue au PRÉSENT, sur tout `src/data`, par la partition EXHAUSTIVE de
 // `src/data/migrations-type-enveloppe.test.ts`.
-const TOTAL_ATTENDU = 1730;
+// 1730→1731 : +1 : Mendier, LDB 09 l.97 (folio 119), #1612 — le seul bump ci-dessus.
+const TOTAL_ATTENDU = 1731;
 
 /** Le SEUL porteur de `desc: ""` que cette vague purge — `<fichier>` → `<id>` (cf. en-tête). */
 const DESC_VIDE_PURGEE = { 'species.json': 'humains-tileens' };

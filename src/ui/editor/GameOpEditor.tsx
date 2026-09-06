@@ -79,6 +79,7 @@ export const OP_LABEL: Record<GameOp['op'], string> = {
   sinMod: 'Points de Péché (±)',
   corruptionExposure: 'Exposition corruptrice (Test différé)',
   castPenalty: 'Contrecoup d’incantation',
+  money: 'Bourse personnelle (sous de cuivre, ±)',
   statusMod: 'Standing temporaire (prochaine aventure)',
   grantReverseToken: 'Jeton d’inversion (prochaine aventure)',
   castWard: 'Aura anti-Sort (−20 Langue)',
@@ -171,7 +172,7 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
   mitigateIncoming: 'mechanic/ward', ignoreStatePenalties: 'ui/done', freeReroll: 'resource/fortune',
   critTwice: 'journal/critical', gainResource: 'resource/fortune', gainAdvantage: 'flag/focus',
   attrMod: 'resource/fortune', corruption: 'nav/mutation', sinMod: 'ui/balance', corruptionExposure: 'nav/mutation',
-  castPenalty: 'mechanic/ward', statusMod: 'ui/balance', grantReverseToken: 'resource/fortune', castWard: 'mechanic/ward', arrowWard: 'mechanic/ward', domeWard: 'mechanic/ward',
+  castPenalty: 'mechanic/ward', money: 'resource/gold-purse', statusMod: 'ui/balance', grantReverseToken: 'resource/fortune', castWard: 'mechanic/ward', arrowWard: 'mechanic/ward', domeWard: 'mechanic/ward',
   attackWardFM: 'mechanic/ward', grantWeapon: 'mechanic/invoke', grantNaturalWeapon: 'mechanic/invoke',
   grantFreeAttack: 'action/free-attack', interruptFocus: 'mechanic/mind', breakBlade: 'item/weapon',
   push: 'mechanic/chain', teleport: 'mechanic/chain', chain: 'mechanic/chain',
@@ -228,9 +229,9 @@ const OP_MENU_GROUPS: TypeMenuGroup[] = OP_GROUPS.map(([g, keys]) => ({
  *  (une règle-interrupteur ou un mode n'a pas de valeur à résoudre). Dérivée du registre, jamais listée. */
 const PARAMS_DE_REGLE = OPTIONAL_RULES.filter((r) => r.kind === 'param');
 
-export type FormulaShape = 'lit' | 'bonus' | 'char' | 'dice' | 'rolled' | 'times' | 'regle';
+export type FormulaShape = 'lit' | 'bonus' | 'char' | 'dice' | 'rolled' | 'times' | 'regle' | 'dr';
 export const shapeOf = (f: Formula | undefined): FormulaShape =>
-  typeof f === 'number' || f == null ? 'lit' : 'bonusOf' in f ? 'bonus' : 'charOf' in f ? 'char' : 'rolled' in f ? 'rolled' : 'times' in f ? 'times' : 'rule' in f ? 'regle' : 'dice';
+  typeof f === 'number' || f == null ? 'lit' : 'bonusOf' in f ? 'bonus' : 'charOf' in f ? 'char' : 'rolled' in f ? 'rolled' : 'times' in f ? 'times' : 'rule' in f ? 'regle' : 'sl' in f ? 'dr' : 'dice';
 
 /** Formule par défaut d'une forme — utilisée au CHANGEMENT de forme. Préserve le littéral courant
  *  quand on bascule vers « Nombre » ; ne touche JAMAIS une formule dont la forme est déjà la bonne. */
@@ -242,6 +243,7 @@ export function formulaForShape(s: FormulaShape, current: Formula | undefined): 
   if (s === 'rolled') return { rolled: true };
   if (s === 'times') return { times: { of: { dice: { n: 1, sides: 10 } }, factor: 10 } }; // « 1d10 × 10 » (LDB 71)
   if (s === 'regle') return { rule: PARAMS_DE_REGLE[0]?.id ?? '' };
+  if (s === 'dr') return { sl: true };
   return { dice: { n: 1, sides: 10 } };
 }
 
@@ -260,6 +262,7 @@ export function formulaSummary(f: Formula | undefined): string {
   if ('stacks' in f) return 'pions';
   if ('engagedAdvantageGap' in f) return 'écart d’Avantage';
   if ('woundsDealt' in f) return 'PB infligés';
+  if ('sl' in f) return 'DR';
   if ('rule' in f) return ruleDef(f.rule)?.label ?? f.rule;
   if ('sum' in f) return f.sum.map(formulaSummary).join(' + ');
   if ('times' in f) return `${formulaSummary(f.times.of)} × ${formulaSummary(f.times.factor)}`;
@@ -289,6 +292,7 @@ export function FormulaField({ label, value, onChange, min }: {
           <option value="times">Dés × facteur</option>
           <option value="rolled">Dé du jet (paliers)</option>
           <option value="regle">Règle optionnelle</option>
+          <option value="dr">DR du Test</option>
         </select>
         {shape === 'regle' && (
           <select aria-label="Règle optionnelle" value={typeof value === 'object' && value != null && 'rule' in value ? value.rule : ''}
@@ -395,6 +399,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'sinMod': return { op: 'sinMod', amount: 1 };
     case 'corruptionExposure': return { op: 'corruptionExposure', level: 'mineure' };
     case 'castPenalty': return { op: 'castPenalty', mod: -10 };
+    case 'money': return { op: 'money', montant: { brass: 1 } };
     case 'statusMod': return { op: 'statusMod', amount: 1 };
     case 'grantReverseToken': return { op: 'grantReverseToken' };
     case 'castWard': return { op: 'castWard', radius: 5 };
@@ -588,6 +593,7 @@ export function opSummary(o: GameOp): string {
     case 'sinMod': return `${o.amount >= 0 ? '+' : ''}${o.amount}`;
     case 'corruptionExposure': return o.easeSteps != null ? `abri : −${o.easeSteps} cran(s) d’Influence` : `${EXPOSURE_LABELS[o.level as ExposureLevel] ?? o.level}${o.skill ? ` (${refLabel('skills', o.skill)})` : ''}`;
     case 'castPenalty': return `${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill ? refLabel('skills', o.skill) : 'toute magie'}`}`;
+    case 'money': return `bourse ${typeof o.montant.brass === 'number' && o.montant.brass < 0 ? '' : '+'}${formulaSummary(o.montant.brass)} sc`;
     case 'statusMod': return `Standing ${formulaSummary(o.amount)} (prochaine aventure)`;
     case 'grantReverseToken': return `inverser ${o.skill ? refLabel('skills', o.skill) : 'un Test (cible)'}`;
     case 'castWard': return `−20 Langue, rayon ${formulaSummary(o.radius)} m`;

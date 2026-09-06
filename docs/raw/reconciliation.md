@@ -68,8 +68,8 @@ _Aucune._
 
 ### MSRC 10 — 4 réf(s) code, 0 dans l'Atlas
 - `src/data/naval-traits.json:12` (l.90) — "maison": "MSRC 07 l.94 gate le Critique de Superstructure sur « si le bateau dispose d'une cale » sans imprimer de Trait naval ; la cale rejoint le catalogue d
-- `src/data/schemas/grammaire/formes-partagees.test.ts:400` (l.90) — // de Superstructure sur « si le bateau dispose d'une cale », MSRC 10 l.90 la dit du navire marchand).
-- `src/ui/compendium/registry-enveloppe.test.ts:119` (l.90) — // gate le Critique de Superstructure dessus ; MSRC 10 l.90 le dit du navire marchand).
+- `src/data/schemas/grammaire/formes-partagees.test.ts:406` (l.90) — // de Superstructure sur « si le bateau dispose d'une cale », MSRC 10 l.90 la dit du navire marchand).
+- `src/ui/compendium/registry-enveloppe.test.ts:124` (l.90) — // gate le Critique de Superstructure dessus ; MSRC 10 l.90 le dit du navire marchand).
 - `src/ui/ship-stations-panel.test.tsx:120` (l.90) — it('5. « Cale » sur la BARGE commerciale (MSRC 10 l.90) : ouverte, épinglable', () => {
 
 ### NADJ 4 — 7 réf(s) code, 0 dans l'Atlas
@@ -80,7 +80,7 @@ _Aucune._
 
 ### NADJ 14 — 5 réf(s) code, 0 dans l'Atlas
 - `src/data/index.ts:828` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
-- `src/data/reglesOptionnelles.json:472` (l.5) — "ref": "NADJ 14 l.5",
+- `src/data/reglesOptionnelles.json:542` (l.5) — "ref": "NADJ 14 l.5",
 - `src/data/schemas/defs/species.ts:57` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
 - `src/engine/creation.test.ts:127` (l.5) — describe('Gnome jouable — règle optionnelle (NADJ 14 l.5)', () => {
 
@@ -179,4 +179,4 @@ LDB 38
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, EDO, EDOC, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: 882da0bbd4d966fb19fa002c43ca102d8cc313b3 (4037 fichiers, 153 dossiers) corps: 7e3fcdde4ca462175c40976c7b1fee047eee1082 -->
+<!-- sources-empreinte: df974636a51aed2cf2b1298cc7b00f17cb7162d0 (4041 fichiers, 153 dossiers) corps: fa8fd97f57c5d520617d039ee0d670c441ae6d15 -->

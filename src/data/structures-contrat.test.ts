@@ -293,7 +293,26 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // paletteVar,stagger`, `courses | blockWM,hM,joint,jointW,paletteVar,stagger`, `speckle | colors,perM2,rM`,
 // `tufts | colors,hM,perM2`) que plus aucun autre document ne porte à l'identique depuis la purge de
 // `structureAppearance.material` (#1686). Aucune graphie neuve : toutes sont la forme CIBLE du lexique.
-const PLAFOND_HORS_STRATE = 1156;
+// 1148 → 1166 (#1612, 2026-09-06) : dix-huit signatures NEUVES, toutes MESURÉES, toutes portées par
+// l'Activité Mendier (`LDB 09 l.97/l.99`) et sa table MAISON. Aucune n'est une graphie neuve : ce sont
+// les nœuds DÉCLARÉS de `formulaSchema`/`conditionSchema`/`gameOpSchema`, que la mesure voit à une
+// profondeur inédite dans ces deux datasets. Quatorze côté `activities.json` :
+//   `| brass | times` · `| times | factor,of` · `| of | times` · `| of | bonusOf` · `| factor | sl` —
+//   la formule RAW « Bonus de Sociabilité x DR par heure », terme par terme ;
+//   `| ops | montant,op` et `| montant | brass` — l'op `money`, qui porte sa charge sous `montant`
+//   comme `giveMoney` depuis L-monnaie-3 (la garde `monnaie-forme-unique`, sonde A, l'EXIGE) ;
+//   `| outcomes | minSL,on,ops` et `| outcomes | maxSL,on,ops` — les deux bandes de réussite, les
+//   bandes d'`activities.json` n'ayant jusqu'ici jamais porté d'`ops` NUES (elles portaient `note`,
+//   `payoutPct` ou `resolver`) ;
+//   `| testMods | label,mod` et `| testMods | label,mod,when` — les deux modificateurs de situation ;
+//   `| when | kind,who` et `| unless | kind,of` · `| of | atLeast,kind,who` — les Conditions du gate
+//   d'apparence et de l'exemption de Statut.
+// Quatre côté `tables.json`, où l'amende des gardes locaux (`mendier-ennuis.maison`) pose une op
+// `money` à `Formula` : `| ops | montant,op`, `| montant | brass`, `| brass | times` et
+// `| times | factor,of` — signatures déjà connues d'`activities.json`, neuves dans CE dataset.
+// L'op `wounds` de la rangée « autres mendiants », elle, n'ajoute AUCUNE ligne : ses deux mitigations
+// déclarées la rangent sous la signature commune de `tables.json` (5 → 6 occurrences).
+const PLAFOND_HORS_STRATE = 1174;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -1000,7 +1019,14 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // Point de Détermination y fait (fenêtre d'horloge de la Fièvre (Grave), `LDB 20 l.170` ; refus du
       // Malaise, `l.188`), là où deux drapeaux de SYMPTÔME le disaient. Les 2 occurrences quittent
       // `condition {id,op}` (6 → 4) : mêmes op, une ligne de plus, ZÉRO drapeau de porteur en moins.
-      'L1c #1468': 394,
+      // #1612 (2026-09-06) : 394 → 398 — QUATRE signatures d'op NEUVES, posées par Mendier et sa table
+      // MAISON, toutes à la forme DÉCLARÉE du moteur : `money {montant, op}` côté `activities.json` (le
+      // gain et le sou de consolation) ET côté `tables.json` (l'amende des gardes locaux — `LDB 09 l.97`
+      // nomme l'ennui sans le chiffrer, le montant vit en règle optionnelle), `statusMod {amount, op}`
+      // (« surpris à mendier », `l.99`) et `condition {id, op}` dans `tables.json`. Les deux autres ops du
+      // train rejoignent des signatures DÉJÀ stockées (`rollTable` 12 → 13 ; `wounds` à mitigations
+      // déclarées 5 → 6). Cf. `STRUCTURES_OPS` ci-dessus.
+      'L1c #1468': 398,
       // L1d #1469 : 62 → 61 (#1552) — « La Diligence » CITE désormais son folio à la racine
       // (`ennemi-dans-l-ombre` 12, la référence que son bloc narratif portait déjà en profondeur) ;
       // sa ligne « source | clé absente » est SOLDÉE.
@@ -1098,7 +1124,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 377 → 378 (#1690, 2026-09-06) : UNE ligne NEUVE, qui n'est pas une dérive de graphie —
       // `terrains.json › overlayProp` (l'id de décor posé sur chaque tuile, forme CIBLE refinée par
       // `idDe('prop')`) entre au dénominateur avec son document.
-      'L3 #1463': 378,
+      // #1612 (2026-09-06) : 377 → 382 — CINQ lignes de référence NEUVES, posées par Mendier et sa table
+      // MAISON : les QUATRE porteurs du terme `{rule}` d'une `Formula` (`cible`/`factor`/`mod` côté
+      // `activities.json`, le `times.of` de l'amende des gardes côté `tables.json`) et l'op `condition`
+      // de la table MAISON, qui désigne l'État de sa rangée. MÊME graphie que leurs sœurs déjà stockées
+      // ici : elles s'éteindront avec elles, d'un seul geste.
+      'L3 #1463': 383,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en
@@ -1756,7 +1787,13 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     // qui cessent d'être des drapeaux nommés dans le moteur. Le palier S'AJOUTANT à `passive` au lieu de
     // le remplacer, aucune pénalité n'est recopiée : les 6 charMod de `severePassive` se DÉPLACENT vers
     // `passiveBySeverity.moderee`, le total ne les compte pas deux fois.
-    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2272);
+    // #1612 (2026-09-06) : 2272 → 2279 — +7 objets à `op`, tous posés par Mendier et sa table MAISON.
+    // Côté `activities.json` : 2 `money` (le gain horaire, le sou de consolation), 1 `rollTable` (la
+    // bande d'Échec Stupéfiant renvoie aux ennuis), 1 `statusMod` (« surpris à mendier », `l.99`).
+    // Côté `tables.json` : 1 `money` (l'AMENDE des gardes locaux — `LDB 09 l.97` nomme l'ennui sans le
+    // chiffrer, le montant vit en règle optionnelle `mendier-amende-sous`), 1 `condition` et 1 `wounds`
+    // (la rançon des autres mendiants).
+    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2279);
     // #684 L4+solde : +2 Conditions sans `op` — le MÊME drapeau de révélation d'Altdorf porté par ses
     // deux axes sur la carte du chapitre 1 : le `when` du LIEU et le `when` de la ROUTE.
     // #717 : +1 Condition sans `op` — le `when` de la CLÔTURE du chapitre 1 (`narratif.cloture`), le
@@ -1765,7 +1802,10 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     // #684+#717 sur « La Barge du Sel » : +3 Conditions sans `op` — les MÊMES trois porteurs, un
     // chapitre plus loin (le `when` du LIEU de l'îlot et celui de sa ROUTE, sur le drapeau du cap ;
     // le `when` de la CLÔTURE, sur le drapeau d'accostage).
-    expect(scan.totalConditionsSansOp, 'des Conditions sans `op` n’ont jamais été comptées en op : elles ne se « retirent » pas.').toBe(191);
+    // #1612 (2026-09-06) : +3 Conditions sans `op` — celles de l'Activité Mendier : le `when`
+    // `visiblePassive` de son modificateur d'apparence, et les DEUX nœuds de l'exemption de son dé de
+    // monde (`not` + le `status` qu'il enveloppe, `LDB 09 l.99`).
+    expect(scan.totalConditionsSansOp, 'des Conditions sans `op` n’ont jamais été comptées en op : elles ne se « retirent » pas.').toBe(194);
   });
 });
 

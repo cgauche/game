@@ -3,7 +3,7 @@
 > ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-mecanique.mjs` (`npm run docs:mecanique`) — NE PAS ÉDITER À LA MAIN.
 
 **Périmètre mesuré / angles morts** — sont DÉRIVÉS à chaque génération : le SITE réel du lecteur de
-chaque canal (`src/engine/trauma.ts:972`, `src/state/triggeredEffects.ts:463`, `src/engine/capabilities.ts:45`), les
+chaque canal (`src/engine/trauma.ts:980`, `src/state/triggeredEffects.ts:463`, `src/engine/capabilities.ts:45`), les
 20 membres d'`EffectTrigger` et les 6 formes d'`EffectTargeting`
 (`src/engine/flowCore.ts`), les 7 champs de `TriggeredEffect`, les 8 kinds
 de source réunis par `effectSourcesOf`, les 4 interfaces de capacités et leur nombre de
@@ -23,7 +23,7 @@ Toute mécanique — trait de créature, talent, atout d'arme/armure, mutation, 
 
 | Canal | Ce qu’il porte | Lu par |
 |---|---|---|
-| `passive: GameOp[]` | modificateur CONTINU, sans déclencheur | `passiveMods` (`src/engine/trauma.ts:972`) |
+| `passive: GameOp[]` | modificateur CONTINU, sans déclencheur | `passiveMods` (`src/engine/trauma.ts:980`) |
 | `effects: TriggeredEffect[]` | effet sur ÉVÉNEMENT (à la touche, en fin de Round…) | `fireTriggers` (`src/state/triggeredEffects.ts:463`) |
 | `capabilities` | drapeau IRRÉDUCTIBLE que le moteur INTERROGE (aucune valeur numérique ni formule) | `hasCapability` (`src/engine/capabilities.ts:45`) |
 
@@ -53,7 +53,7 @@ signal qu'il faut étendre le vocabulaire.
 ## 2. Canal `passive` — le continu
 
 Le même vocabulaire d'ops que les sorts. Le collecteur UNIQUE est `passiveMods`
-(`src/engine/trauma.ts:972`) ; **ne jamais lire un champ typé d'origine** dans un consommateur — toujours
+(`src/engine/trauma.ts:980`) ; **ne jamais lire un champ typé d'origine** dans un consommateur — toujours
 passer par ses helpers d'extraction. Détail complet (profils d'annulation, combinaison, branches du
 collecteur) : `docs/systeme-passifs.md`.
 
@@ -75,7 +75,7 @@ Documents porteurs :
 
 ## 3. Canal `effects` — le déclenché
 
-Un `TriggeredEffect` (`src/engine/flowCore.ts:559`) est un Flow d'ops appliqué à `on` quand `trigger` se
+Un `TriggeredEffect` (`src/engine/flowCore.ts:567`) est un Flow d'ops appliqué à `on` quand `trigger` se
 produit — le MÊME Flow que les sorts, jamais un handler en dur par nom d'entité.
 
 | Champ | Type | Rôle (JSDoc) |
@@ -88,12 +88,12 @@ produit — le MÊME Flow que les sorts, jamais un handler en dur par nom d'enti
 | `optional?` | `boolean` | Effet OPT-IN (RAW « Vous pouvez… » — Contrôle de la Frénésie, LDB 10 l.251-255) : le porteur CHOISIT de le déclencher. |
 | `source?` | `EffectSource` | ENTITÉ SOURCE — JAMAIS authorée : posée à l'ÉNUMÉRATION par `effectSourcesOf` (`src/state/triggeredEffects.ts`), qui seule sait de quelle entité l'effet est tiré. |
 
-### Les 20 déclencheurs (`EffectTrigger`, `src/engine/flowCore.ts:530`)
+### Les 20 déclencheurs (`EffectTrigger`, `src/engine/flowCore.ts:538`)
 
 `onHit` · `onCrit` · `onWoundLoss` · `onSlain` · `onRoundStart` · `onStartled` · `onKill` · `onCharged` · `onGainCondition` · `onCombatStart` · `onCombatEnd` · `onRoundEnd` · `onTurnStart` · `onTurnEnd` · `onDayStart` · `onWake` · `onAttackResolved` · `onCastResolved` · `onMiscast` · `onOwnTestFailed`
 
 
-### Les 6 formes de ciblage (`EffectTargeting`, `src/engine/flowCore.ts:556`)
+### Les 6 formes de ciblage (`EffectTargeting`, `src/engine/flowCore.ts:564`)
 
 - `'self'`
 - `'victim'`
@@ -220,4 +220,4 @@ primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autr
 | `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
 | `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
 | `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |
-<!-- sources-empreinte: 3a9db27d07a78f200e80a4cb4de238ac6a32d152 (155 fichiers, 1 dossiers) corps: 54d18af5c2594b7266f64aef943e9d9ab00bac17 -->
+<!-- sources-empreinte: fd87f0e43128f9a4daa1cba6c21ab1bbbe7b8a31 (155 fichiers, 1 dossiers) corps: 83851d33e16160c480557f2459053e5234a0c9a4 -->

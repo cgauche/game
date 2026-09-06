@@ -57,6 +57,7 @@ const CONCEPTS = [
   ['Magie, incantation, prière, miracle, contrecoup', /incantation|magi|\bsorts?\b|pri[èe]re|focalisation|imparfaite|mirac|b[ée]n[ée]diction|aethyr|sorci[èe]re/i],
   ['Maladies : exposer, contracter, guérir, symptômes', /maladies?\b|sympt[ôo]me|infect/i],
   ['Mort, retrait du jeu, bannissement', /\bmort\b|mourr|banni|retrait du jeu|[àa] la mort/i],
+  ['Monnaie, bourse, argent', /monnaie|bourse|sous? de cuivre|pistole|couronne d'or/i],
   ['Mouvement, allonge, terrain', /mouvement|\bterrain\b/i],
   ['Narratif, arbitrage non modélisé', /narrati|arbitrage mj|non mod[ée]lis/i],
   ['Navire, coque, équipage, poste d\'artillerie', /navire|coque|[ée]quipage|pi[èe]ce d'artillerie|commandant d'[ée]quipe|\bposte\b/i],

@@ -227,7 +227,8 @@ describe('vague 12b — la donnée porte son `type` et RIEN d’autre n’a boug
   // 1734 → 1730, 12 → 11 datasets : `roofMaterials.json` n'existe plus comme DOCUMENT (#1686 lot 2,
   // les trois catalogues de matières fusionnent en `materials.json`). L'enveloppe de ses 4 entrées est
   // tenue au PRÉSENT, avec les 12 autres matières, par la partition EXHAUSTIVE en fin de fichier.
-  const TOTAL_ATTENDU = 1730;
+  // 1730 → 1731 : +1 : Mendier, LDB 09 l.97 (folio 119), #1612.
+  const TOTAL_ATTENDU = 1731;
 
   const lu = (f: string) => JSON.parse(readFileSync(join(RACINE, 'src', 'data', f), 'utf8')) as Record<string, unknown>[];
 

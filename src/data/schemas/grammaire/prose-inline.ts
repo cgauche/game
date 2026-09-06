@@ -62,7 +62,10 @@ export const PROSE_INLINE_TOLEREE: Readonly<Record<string, LigneProseInline>> = 
   regles: { entrees: 85, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` d’entrée, à adresser au Lot C' },
   'arcane-phenomena': { entrees: 77, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` de rangée (`phenomena[]`, `phenomena[].testMods[]`) — refus au parse à la migration de la famille, Lot C' },
   'sea-events': { entrees: 63, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` de rangée (`boardEvents[]`, `portEvents[]`) — refus au parse à la migration de la famille, Lot C' },
-  activities: { entrees: 61, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` d’entrée, à adresser au Lot C' },
+  // 61 → 62 (#1612, 2026-09-06) : l'Activité Mendier entre au dataset avec sa `desc` VERBATIM du LDB
+  // (règle stricte 5 — le texte doit pouvoir se recoller au Source). Elle se solde comme ses 61 sœurs,
+  // par la MÊME migration vers l'adresse (`descRef`), jamais séparément.
+  activities: { entrees: 62, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` d’entrée, à adresser au Lot C' },
   qualities: { entrees: 59, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` d’entrée, à adresser au Lot C' },
   locations: { entrees: 55, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` d’entrée, à adresser au Lot C' },
   skills: { entrees: 48, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` d’entrée, à adresser au Lot C' },

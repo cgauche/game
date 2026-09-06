@@ -40,12 +40,14 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "actions.json", champ: "rule", occurrences: 32, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "activities.json", champ: "chains", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "activities.json", champ: "classes", occurrences: 12, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "activities.json", champ: "ops", occurrences: 16, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "activities.json", champ: "cible", occurrences: 1, lot: "L2/L3 #1473", date: "2026-09-06" },
+  { dataset: "activities.json", champ: "factor", occurrences: 1, lot: "L2/L3 #1473", date: "2026-09-06" },
+  { dataset: "activities.json", champ: "mod", occurrences: 2, lot: "L2/L3 #1473", date: "2026-09-06" },
+  { dataset: "activities.json", champ: "ops", occurrences: 17, lot: "L2/L3 #1473", date: "2026-08-26" },
   // `rule` : la RÈGLE que l’Activité applique (`augure` → `tableau-augure`) ; `skills` 61 → 63 — les 2 voies
   // à Difficulté PROPRE rejoignent leurs 61 sœurs. Les deux étaient classées `test` par le seul `difficulty`
   // (#1657 geste A) : même donnée, mesurée sous le concept qui la nomme.
-  { dataset: "activities.json", champ: "rule", occurrences: 1, lot: "L2/L3 #1473", date: "2026-09-01" },
-  { dataset: "activities.json", champ: "skills", occurrences: 63, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "activities.json", champ: "skills", occurrences: 64, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "activities.json", champ: "where", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arcane-phenomena.json", champ: "cancelsTraitId", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arcane-phenomena.json", champ: "domainId", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -356,7 +358,8 @@ export const SLOTS_SANS_DECLARATION = [
   // solde pas par l'adoption, elle attend `typedRef` (L2 #1473) comme ses 2 sœurs.
   { dataset: "symptoms.json", champ: "skill", occurrences: 2, lot: "L2/L3 #1473", date: "2026-09-03" },
   { dataset: "symptoms.json", champ: "visiblePassive", occurrences: 1, lot: "L1b #1467", date: "2026-08-28" },
-  { dataset: "tables.json", champ: "ops", occurrences: 78, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "tables.json", champ: "of", occurrences: 1, lot: "L2/L3 #1473", date: "2026-09-06" }, // #1612 : le terme `{rule}` de l'amende des gardes (`mendier-ennuis`), porté par `times.of` d'une `Formula`. MÊME angle mort que ses sœurs `activities.json | cible/factor/mod` — `formulaSchema` EST une union, et `valeursAuPath` ne descend pas dans une branche d'union.
+  { dataset: "tables.json", champ: "ops", occurrences: 79, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "tables.json", champ: "skill", occurrences: 15, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "talents.json", champ: "effects", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "talents.json", champ: "gate", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },

@@ -2241,5 +2241,122 @@
       "ticket": "#890",
       "raison": "Un objet générique `parchemin-de-sort` existe (trappings.json) mais sans liaison à un Sort précis : `ItemCapabilities` (src/data/schemas/defs/trappings.ts) n'a pas de canal reliant un parchemin au Sort mémorisé qu'il inscrirait. Cible de DR cumulée du Test étendu : #864."
     }
+  },
+  {
+    "id": "mendier",
+    "type": "activities",
+    "label": "Mendier",
+    "icon": "resource/gold-purse",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "livre-de-base",
+      "page": 119,
+      "note": "LDB 09 l.97"
+    },
+    "skills": [
+      {
+        "id": "charme"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "testMods": [
+      {
+        "mod": {
+          "rule": "mendier-discours"
+        },
+        "label": "Discours"
+      },
+      {
+        "when": {
+          "kind": "visiblePassive",
+          "who": "target"
+        },
+        "mod": {
+          "rule": "mendier-apparence-bonus"
+        },
+        "label": "Apparence"
+      }
+    ],
+    "desc": "La Compétence de Charme peut être utilisée pour mendier dans les rues. Un Test réussi vous vaudra un nombre de sous de cuivre égal à votre Bonus de Sociabilité x DR par heure de la part des passants, dont la Difficulté est modifiée par le discours choisi pour mendier et à quel point votre apparence peut susciter la sympathie. Si vous n'obtenez pas de DR, mais que vous réussissez quand même le Test, vous ne réussissez à glaner qu'un sou. Un Échec Stupéfiant (-6) signifie que vous vous êtes peut-être attiré des ennuis avec les gardes locaux, ou avec d'autres mendiants du coin, ou que vous avez essuyé d'importants échecs.\n\n**Remarque :** les Personnages surpris à mendier par leurs pairs ou associés perdront probablement leur Statut, à moins qu'ils n'aient déjà une Carrière de Mendiant, ou une autre Carrière sans ressources.",
+    "maison": "Le livre donne un gain PAR HEURE sans dire combien d'heures dure une journée de mendicité, ne chiffre ni le modificateur de discours ni celui d'apparence, ne détaille pas les trois « ennuis » d'un Échec Stupéfiant, ne chiffre ni la chance d'être surpris par ses pairs ni l'amende des gardes : cinq règles optionnelles éditables (groupe Social) et la table `mendier-ennuis` portent ces valeurs, aucune n'est figée au moteur. La DIFFICULTÉ de base est elle aussi maison — `intermediaire` : LDB 09 l.97 ne chiffre que la MODIFICATION de la Difficulté (discours, apparence), jamais son socle. Enfin, AUCUN gate de lieu : le livre situe l'Activité « dans les rues », ce qu'aucun champ de `MapPlace` (`data/schemas/defs-scenes/worldmap.ts`) n'exprime aujourd'hui — l'indice de Taille de communauté (1 Hameau … 4 Grande ville) n'existe que NICHÉ dans `port` et `market`, jamais sur le lieu ; gater l'Activité sur une offre de marché reviendrait à lire « au marché » là où le livre dit « dans les rues », et la fermerait sur les 10 lieux des 4 campagnes livrées (mesuré 2026-09-06 : 0 lieu porte `market`).",
+    "outcomes": [
+      {
+        "on": "success",
+        "minSL": 1,
+        "ops": [
+          {
+            "op": "money",
+            "montant": {
+              "brass": {
+                "times": {
+                  "of": {
+                    "times": {
+                      "of": {
+                        "bonusOf": "sociabilite"
+                      },
+                      "factor": {
+                        "sl": true
+                      }
+                    }
+                  },
+                  "factor": {
+                    "rule": "mendier-heures-par-jour"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "on": "success",
+        "maxSL": 0,
+        "ops": [
+          {
+            "op": "money",
+            "montant": {
+              "brass": 1
+            }
+          }
+        ]
+      },
+      {
+        "on": "failure",
+        "maxSL": -6,
+        "ops": [
+          {
+            "op": "rollTable",
+            "tableId": "mendier-ennuis"
+          }
+        ]
+      }
+    ],
+    "worldRolls": [
+      {
+        "id": "surpris",
+        "label": "Surpris à mendier par ses pairs",
+        "cible": {
+          "rule": "mendier-surpris-pct"
+        },
+        "ops": [
+          {
+            "op": "statusMod",
+            "amount": -1
+          }
+        ],
+        "unless": {
+          "kind": "not",
+          "of": {
+            "kind": "status",
+            "atLeast": "Bronze 1",
+            "who": "any"
+          }
+        }
+      }
+    ],
+    "stake": "+1 DR ou mieux : (Bonus de Sociabilité × DR) sous de cuivre par heure mendiée. Réussite sans DR : un seul sou. Échec Stupéfiant (−6) : les ennuis. Après coup, être vu par ses pairs coûte 1 de Standing pour la prochaine aventure. Ce que vous glanez suit « Argent à gaspiller » : ce qui reste en bourse à la fin de l'interlude est perdu, sauf ce qui part en Opérations bancaires (LDB 23 l.166).",
+    "stakeForm": "descripteur"
   }
 ]

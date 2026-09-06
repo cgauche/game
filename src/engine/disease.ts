@@ -305,7 +305,7 @@ export function diseasePassiveOps(c: Combatant): PassiveMod[] {
       for (const op of symptomPassive(inst, severiteEffective(c, dz.id, inst))) out.push({ op, kind: 'maladie', src });
       const sd = findSymptomById(inst.symptomId);
       if (sd?.visiblePassive?.length && dz.blisterLocation && (sd.visibleLocations ?? []).includes(dz.blisterLocation)) {
-        for (const op of sd.visiblePassive) out.push({ op, kind: 'maladie', src });
+        for (const op of sd.visiblePassive) out.push({ op, kind: 'maladie', src, visible: true });
       }
     }
   }

@@ -136,7 +136,7 @@ Lancer **1d100** par Personnage. Certains événements n'affectent que le Person
 L'argent non sécurisé (voir *Opérations Bancaires*) disparaît avant la prochaine aventure. Les Revenus sont crédités **après** le gaspillage (LDB 23 l.191 : « seulement une fois que vous avez disposé de l'argent de votre dernière aventure »).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.14-19, l.191) → `MassBattleState`, `revenus`, `ActivityDef`, `heroBudget`, `everBelongedClasses`, `consumeActivity`, `openCatalogActivity`, `confirmActivity`, `Combatant`, `dernieres-nouvelles`, +2 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/engine/activities.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`, `src/state/massBattleFlow.ts`
+- `LDB 23` (l.14-19, l.191) → `MassBattleState`, `revenus`, `heroBudget`, `consumeActivity`, `ActivityDef`, `everBelongedClasses`, `openCatalogActivity`, `confirmActivity`, `Combatant`, `dernieres-nouvelles`, +2 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/engine/activities.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`, `src/state/massBattleFlow.ts`
 
 ---
 
@@ -404,7 +404,7 @@ Test de Compétence de Carrière :
 Les Personnages aux Niveaux 3-4 qui entreprennent *Revenus* **maintiennent automatiquement leur Statut** (voir *Avec le pouvoir*).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 8` (l.106-122) → `statusOf`, `incomeSkillOf`, `statusIncomeMax`, `social-begging-bonus`, `social-charm-intra-tier`, `RevenusPane`, `openCatalogActivity`, `runActivityResolver`, `statut`, `statusIncome` — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/activities.ts`, `src/engine/social.ts`, `src/state/interludeFlow.ts`, `src/ui/InterludeScreen.tsx`
+- `LDB 8` (l.106-122) → `statusOf`, `incomeSkillOf`, `social-begging-bonus`, `social-charm-intra-tier`, `statusIncomeMax`, `RevenusPane`, `openCatalogActivity`, `runActivityResolver`, `statut`, `statusIncome` — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/activities.ts`, `src/engine/social.ts`, `src/state/interludeFlow.ts`, `src/ui/InterludeScreen.tsx`
 - `LDB 23` (l.187-193) → `revenus`, `ActivityDef`, `everBelongedClasses`, `openCatalogActivity`, `Combatant`, `dernieres-nouvelles`, `entrainement-au-combat`, `observer-une-cible` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
@@ -442,7 +442,7 @@ S'entraîner avec les armes connues. Test **Compétence (Corps à corps ou Proje
 Peut être entrepris plusieurs fois (une inversion par Activité réussie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.206-209) → `ReverseButton`, `Duration`, `tokenReverseAvailable`, `useTestJetProps`, `useDefenseJetProps`, `purgeAdventureEffects`, `useAttackJetProps`, `startInterlude`, `RollFlowSpec`, `ActivityDef`, +15 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, `src/engine/types.ts`, +8 fichiers
+- `LDB 23` (l.206-209) → `ReverseButton`, `Duration`, `tokenReverseAvailable`, `useTestJetProps`, `useDefenseJetProps`, `purgeAdventureEffects`, `useAttackJetProps`, `startInterlude`, `RollFlowSpec`, `PendingActivityFields`, +15 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, `src/engine/types.ts`, +8 fichiers
 
 ---
 
@@ -492,7 +492,7 @@ Dépenser de l'argent pour augmenter son Standing de +1 pour la prochaine aventu
 - Échec Stupéfiant (−6) → Standing −1 pour la prochaine aventure entière.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.229-234) → `Duration`, `InterludeHeroState`, `purgeAdventureEffects`, `ActivityDef`, `PendingActivityFields`, `heroStatus`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, +5 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`, +1 fichiers
+- `LDB 23` (l.229-234) → `Duration`, `InterludeHeroState`, `purgeAdventureEffects`, `PendingActivityFields`, `heroStatus`, `ActivityDef`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, +5 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`, +1 fichiers
 
 ---
 
@@ -517,7 +517,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 - Échec → pas de révolte ; Échec de plusieurs DR → la cible apprend vos actions.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.237-249) → `Duration`, `InterludeHeroState`, `purgeAdventureEffects`, `handrich`, `ActivityDef`, `PendingActivityFields`, `heroStatus`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, +6 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +2 fichiers
+- `LDB 23` (l.237-249) → `Duration`, `InterludeHeroState`, `purgeAdventureEffects`, `handrich`, `PendingActivityFields`, `heroStatus`, `ActivityDef`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, +6 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 
@@ -537,7 +537,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 | **Remaniement du Contremaître** | Ragot (+0) pour localiser, puis Corps à Corps **ou** Projectiles Complexe (−10) | Reçoit l'objet désiré + Critique sur localisation aléatoire (gravité variable selon résultat) |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 12` (l.5-144) → `skillRefSchema`, `ActivitySkill`, `artilleur`, `changeCareer`, `ActivityDef`, `PendingActivityFields`, `battement`, `everBelongedClasses`, `team-command`, `bestActivitySkill`, +16 — `src/data/activities.json`, `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/activities.ts`, `src/data/tables.json`, `src/data/talents.json`, +4 fichiers
+- `AA 12` (l.5-144) → `skillRefSchema`, `ActivitySkill`, `artilleur`, `changeCareer`, `PendingActivityFields`, `battement`, `ActivityDef`, `team-command`, `everBelongedClasses`, `bestActivitySkill`, +16 — `src/data/activities.json`, `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/activities.ts`, `src/data/tables.json`, `src/data/talents.json`, +4 fichiers
 
 ---
 
@@ -831,7 +831,7 @@ Table des résultats (`ACE 12 l.31-42`) :
 **Voir aussi** : [Corruption & mutation](corruption.md) (Exposition mineure).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.23-42) → `InterludeHeroState`, `BankDeposit`, `OutcomeBand`, `matchOutcomes`, `combatSkillPick`, `weaponUnmastered`, `weaponGroupSkillMode`, `itemFromTrappingById`, `ActivityDef`, `penitence`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
+- `ACE 12` (l.23-42) → `InterludeHeroState`, `BankDeposit`, `OutcomeBand`, `matchOutcomes`, `combatSkillPick`, `weaponUnmastered`, `weaponGroupSkillMode`, `itemFromTrappingById`, `penitence`, `PendingActivityFields`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 
@@ -857,7 +857,7 @@ Table des résultats (`ACE 12 l.57-65`) :
 **Voir aussi** : [Opérations Bancaires](#opérations-bancaires) (ch.23, dépôt invest/planque).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.45-49, l.57-65) → `BankDeposit`, `OutcomeBand`, `ActivityDef`, `penitence`, `PendingActivityFields`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `mecenat`, `buySpell`, `recherche-universitaire`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
+- `ACE 12` (l.45-49, l.57-65) → `BankDeposit`, `OutcomeBand`, `penitence`, `PendingActivityFields`, `ActivityDef`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `mecenat`, `buySpell`, `recherche-universitaire`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
 
 ---
 
@@ -876,5 +876,5 @@ Consultation des bibliothèques/laboratoires d'un Collège de Magie à Altdorf p
 - Achat du sort **immédiat**, sinon la remise est perdue.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.51-55, l.67) → `BankDeposit`, `OutcomeBand`, `ActivityDef`, `penitence`, `PendingActivityFields`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `mecenat`, `buySpell`, `recherche-universitaire`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
+- `ACE 12` (l.51-55, l.67) → `BankDeposit`, `OutcomeBand`, `penitence`, `PendingActivityFields`, `ActivityDef`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `mecenat`, `buySpell`, `recherche-universitaire`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import {
   humanizeFlowSentence, humanizeCondition, humanizeOp, humanizeFormula, humanizeCastBonus,
 } from './humanize';
@@ -6,6 +6,7 @@ import {
   domains, spells, etats, talents, traits, groups, maladies, symptoms, skills, creatures,
 } from '../../data';
 import { CHAR_KEYS } from '../../engine/types';
+import { OPTIONAL_RULES, setRule, resetRule } from '../../engine/policy';
 import { walkFlow, type Flow, type Condition, type EffectOp } from '../../state/flow';
 import type { GameOp } from '../../engine/ops';
 
@@ -163,5 +164,45 @@ describe('humanize — GARDE structurelle (toutes les données réelles)', () =>
         expect(firstKebab(str), `${s.id} op ${o.op} « ${str} »`).toBeUndefined();
       }
     }
+  });
+});
+
+/**
+ * Une règle optionnelle NUMÉRIQUE (`kind: 'param'`) est une QUANTITÉ pour le joueur : la phrase porte
+ * sa valeur courante, la règle nommée entre parenthèses. Le rendu suit la règle quand elle change.
+ *
+ * MUTATION : rendre au terme `{rule}` d'`humanizeFormula` sa forme « la règle « X » » — la valeur
+ * disparaît de la phrase et les `expect` de montant tombent.
+ */
+describe('terme `{rule}` d’une Formula — la VALEUR au joueur, la règle nommée (#1612)', () => {
+  const AMENDE: GameOp = {
+    op: 'money',
+    montant: { brass: { times: { of: { rule: 'mendier-amende-sous' }, factor: -1 } } },
+  };
+  afterEach(() => resetRule('mendier-amende-sous'));
+
+  it('l’op `money` d’un DÉBIT réglé dit « perd <valeur> … » et nomme la règle', () => {
+    setRule('mendier-amende-sous', 12);
+    const dit = humanizeOp(AMENDE);
+    expect(dit).toContain('perd');
+    expect(dit).toContain('12');
+    expect(dit).toContain('sou(s) de cuivre');
+    expect(dit).toContain('règle « Mendier : amende des gardes locaux »');
+    expect(dit, 'un id brut a fui à l’écran').not.toContain('mendier-amende-sous');
+    expect(dit, 'le signe se DIT, il ne s’imprime pas').not.toContain('× -1');
+  });
+
+  it('la phrase SUIT la règle éditée, et un CRÉDIT se dit « gagne »', () => {
+    setRule('mendier-amende-sous', 30);
+    expect(humanizeOp(AMENDE)).toContain('30');
+    const credit: GameOp = { op: 'money', montant: { brass: { rule: 'mendier-amende-sous' } } };
+    expect(humanizeOp(credit)).toBe(
+      'gagne 30 sou(s) de cuivre dans sa bourse (règle « Mendier : amende des gardes locaux »)',
+    );
+  });
+
+  it('une règle NON numérique (`flag`/`mode`) se NOMME — il n’y a pas de quantité à montrer', () => {
+    const nonParam = OPTIONAL_RULES.find((r) => r.kind !== 'param')!;
+    expect(humanizeFormula({ rule: nonParam.id })).toBe(`la règle « ${nonParam.label} »`);
   });
 });

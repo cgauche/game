@@ -76,6 +76,12 @@ describe('monnaie — forme UNIQUE dans la donnée authorée (#1463)', () => {
       gold: 27, // mise minimale du Mécénat + 1 coût de choix d'arène + 25 `giveMoney.montant`
       silver: 23, // 7 coûts de choix d'arène + 16 `giveMoney.montant`
       'gold,silver': 3, // 3 `giveMoney.montant` à deux dénominations
+      // ENTRÉE NEUVE (#1612, 2026-09-06) : les 3 `money.montant` de l'op de bourse PERSONNELLE — 2 gains
+      // de Mendier (`activities.json`, la `Formula` du gain et le sou glané sans DR) + 1 amende des
+      // gardes (`tables.json`). MÊME geste que L-monnaie-3 sur `giveMoney` : l'op cesse d'ÉTALER `brass`
+      // parmi ses clés et porte sa charge sous `montant` (`OP_DEFS.money`, grammaire/mecanique.ts). La
+      // valeur y est une `Formula`, pas un nombre — la sonde recense la SIGNATURE, pas le type.
+      brass: 3,
     });
 
     // AUCUN objet-ACTION n'étale de dénomination parmi ses propres clés : toute charge porte un NOM

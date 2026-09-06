@@ -82,7 +82,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Détermination (`destin.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.19-21) → `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `FREE_ATTACK_LABEL`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `ModFamille`, `GameOp`, +7 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +2 fichiers
+- `LDB 16` (l.19-21) → `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `FREE_ATTACK_LABEL`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `ModFamille`, `AttackOptions`, +7 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 
@@ -105,7 +105,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Aveuglé (état analogue pour la vue)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.29) → `PRONE_POSE`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `GameOp`, `AttackOptions`, `SkillData`, `GameState`, `createCombatSlice`, `maybeOpenDefense` — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/groundPose.ts`, `src/state/combatFlow.ts`, +2 fichiers
+- `LDB 16` (l.29) → `PRONE_POSE`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `AttackOptions`, `GameOp`, `SkillData`, `GameState`, `createCombatSlice`, `maybeOpenDefense` — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/groundPose.ts`, `src/state/combatFlow.ts`, +2 fichiers
 
 ---
 
@@ -129,7 +129,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Inconscient
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.33-39) → `PRONE_POSE`, `collectHeroRoundEndUpkeep`, `findAwaitingExtension`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `GameOp`, `AttackOptions`, `SkillData`, `GameState`, +2 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/groundPose.ts`, `src/state/combat/roundHooks.ts`, +3 fichiers
+- `LDB 16` (l.33-39) → `PRONE_POSE`, `collectHeroRoundEndUpkeep`, `findAwaitingExtension`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `AttackOptions`, `GameOp`, `SkillData`, `GameState`, +2 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/groundPose.ts`, `src/state/combat/roundHooks.ts`, +3 fichiers
 - `LDB 18` (l.15) → `followsCharacterRules`, `isHealable`, `outOfCombatUpkeep`, `HealWoundsOptions`, `needsRecoveryRoll`, `applyHealWounds`, `critSeverityReduction`, `aaBleedUnconsciousApply`, `OptionsCritique`, `TableRollLine`, +16 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/rest.ts`, +9 fichiers
 
 ---
@@ -226,7 +226,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Exténué, Drogues et poisons (`LDB 71`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.68-78) → `combat-fatigue`, `doc`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `addCondition`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `describeStateRecovery`, +22 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +15 fichiers
+- `LDB 16` (l.68-78) → `combat-fatigue`, `doc`, `StateRecoveryModal`, `EnemyAction`, `addCondition`, `Formula`, `brise`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, +22 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +15 fichiers
 
 ---
 
@@ -249,7 +249,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Traumatisme (`traumatisme.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.80-84) → `combat-fatigue`, `doc`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `describeStateRecovery`, `empetre`, `empoisonne`, `GameOp`, +10 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +9 fichiers
+- `LDB 16` (l.80-84) → `combat-fatigue`, `doc`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `describeStateRecovery`, `empetre`, `empoisonne`, `collectHeroRoundEndUpkeep`, +10 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +9 fichiers
 
 ---
 

@@ -115,6 +115,9 @@ export interface ActorView {
   /** Domaine du Chaos de l'acteur (`chaosDomainOf` — spec du Talent Magie du Chaos, EDOC 13) — lu par la
    *  Condition `casterChaosDomain`. Absent = non porteur du Talent Magie du Chaos. */
   chaosDomain?: string;
+  /** L'acteur porte-t-il un passif VISIBLE (`aPassifVisible` — lésion apparente d'une maladie active) ?
+   *  Lu par la Condition `visiblePassive`. */
+  visiblePassive?: boolean;
 }
 
 export type Condition =
@@ -210,6 +213,10 @@ export type Condition =
    *  Indivisible). Lanceur sans Domaine résolu → toutes les branches sont fausses (bug de données côté
    *  authoring : un Sort d'Arcanes du Chaos exige le Talent Magie du Chaos). */
   | { kind: 'casterChaosDomain'; is: string }
+  /** L'acteur (`who`) montre-t-il un passif VISIBLE (`ActorView.visiblePassive` — une lésion apparente,
+   *  émise `visible` par sa source) ? Gate d'apparence : « à quel point votre apparence peut susciter la
+   *  sympathie » (LDB 09 l.97). Acteur absent = false. */
+  | { kind: 'visiblePassive'; who: ActorRef }
   | { kind: 'all'; of: Condition[] }
   | { kind: 'any'; of: Condition[] }
   | { kind: 'not'; of: Condition };
@@ -345,6 +352,7 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
       return a.traits.includes(cond.value);
     }
     case 'casterChaosDomain': return ctx.caster?.chaosDomain === cond.is;
+    case 'visiblePassive': return (cond.who === 'caster' ? ctx.caster : ctx.target)?.visiblePassive === true;
     case 'skill':
       return matchParty(ctx, cond.who ?? 'any', (m) => (m.skills ?? []).some((s) =>
         s.id === cond.id && (cond.spec ? s.spec === cond.spec : true) && (s.advances ?? 0) >= (cond.advances ?? 0)));

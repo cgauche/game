@@ -1603,7 +1603,7 @@ La **Fuite** consiste à faire demi-tour et à utiliser son Mouvement pour fuir.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 15` (l.18-31, l.45-49, l.61-68) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `planJump`, `RunModal`, `fall-choice`, `reachTiles`, `hasMeaningfulOption`, `DisengageModal`, `planClimb`, +82 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs-scenes/scene.ts`, +36 fichiers
-- `LDB 21` (l.54) → `nightmare`, `terreur`, `calme-d-approche`, `endEncounterPsych`, `resolvePsychRow`, `humanizePerSL`, `resolvePsychAI`, `amour`, `camaraderie`, `phobie`, +7 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, +4 fichiers
+- `LDB 21` (l.54) → `nightmare`, `terreur`, `calme-d-approche`, `endEncounterPsych`, `resolvePsychRow`, `resolvePsychAI`, `amour`, `camaraderie`, `humanizePerSL`, `phobie`, +7 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, +4 fichiers
 
 ---
 
@@ -1828,7 +1828,7 @@ Les États **Exténué** dus à l'Encombrement sont **accumulés à la fin d'une
 **Voir aussi** : Fatigue du voyage et marche forcée ; États (Exténué) ; Armures (pénalités d'Armure cumulables) ; Fabrication (qualités Léger −1 / Volumineux +1) ; Bêtes de Somme et véhicules.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 61` (l.5, l.7-14, l.16-17, l.20-21, l.24-25, l.28-29, l.32-41, l.43-44, l.47-48) → `encombrement`, `tier-0`, `tier-1`, `tier-2`, `tier-3`, `itemsEncumbrance`, `isWearable`, `ItemInstance` — `src/data/encumbranceTiers.json`, `src/data/regles.json`, `src/engine/items.ts`, `src/engine/types.ts`, `src/state/bourseFlow.ts`
+- `LDB 61` (l.5, l.7-14, l.16-17, l.20-21, l.24-25, l.28-29, l.32-41, l.43-44, l.47-48) → `encombrement`, `tier-0`, `tier-1`, `tier-2`, `tier-3`, `itemsEncumbrance`, `isWearable`, `ItemInstance` — `src/data/encumbranceTiers.json`, `src/data/regles.json`, `src/engine/bourse.ts`, `src/engine/items.ts`, `src/engine/types.ts`, `src/state/bourseFlow.ts`
 
 ---
 
@@ -2505,7 +2505,7 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 - `LDB 62` (l.217-307, l.309-335) → `a-enroulement`, `woundsFromHit`, `a-poudre-noire`, `TraceRow`, `CrewedReloadStep`, `isShieldItem`, `combatOrder`, `InitiativeStripProps`, `a-repetition`, `crewedReloadStep`, +138 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +49 fichiers
 - `ADE II 2` (l.608-658) → `attackModifiers`, `massue-ogre`, `poing-de-fer`, `grande-massue-ogre`, `lance-harpon`, `piege-a-chaines`, `grande-lance`, `canon-crache-plomb`, `pistolet-ogre`, `harpon`, +3 — `src/data/trappings.json`, `src/engine/combat.ts`
 - `ADE II 4` (l.212, l.214, l.215, l.216, l.218-253) → `deroutante` — `src/data/qualities.json`
-- `AA 8` (l.67-76, l.77, l.79-95, l.98-108) → `qualityRefSchema`, `doc`, `withArg`, `coutAvantageTexte`, `QualityInstance`, `cimeterre`, `INDICE_TEMPLATE`, `dague-ballock`, `destabilisante`, `taillade`, +10 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/schemas/defs/qualities.ts`, `src/data/schemas/grammaire/reference.ts`, `src/data/trappings.json`, `src/engine/flowCore.ts`, +4 fichiers
+- `AA 8` (l.67-76, l.77, l.79-95, l.98-108) → `qualityRefSchema`, `doc`, `withArg`, `coutAvantageTexte`, `QualityInstance`, `cimeterre`, `dague-ballock`, `INDICE_TEMPLATE`, `destabilisante`, `taillade`, +10 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/schemas/defs/qualities.ts`, `src/data/schemas/grammaire/reference.ts`, `src/data/trappings.json`, `src/engine/flowCore.ts`, +4 fichiers
 - `ZI 13` (l.759-844) → `dague-funeste`, `armure-de-plates-du-leviathan`, `lame-a-poignee-en-bois-de-cerf`, `trempe-au-sang-de-dragon`, `surin-de-l-aigle`, `seve-de-tregara`, `empennage-de-griffon`, `pointes-barbelees` — `src/data/trappings.json`
 - sans code : `ADE II 4` (l.278, l.280-287), `NADJ 8` (l.170-171)
 
@@ -3152,7 +3152,7 @@ L'aventure de départ **Aventures à Übersreik** rassemble les Traits d'un mons
 **Voir aussi** : Souffle (Indice)(Type) ; Regard pétrifiant ; Étreinte glaciale ; Hurlement fantomatique ; Vomissement ; Trait Taille (Piétinement, multiplicateur de Dégâts) ; États Empêtré / Empoisonné / À Terre ; Empoignade ; Charge et Avantage.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.60-66, l.68-74) → `combat-fatigue`, `doc`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `addCondition`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `describeStateRecovery`, +26 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +16 fichiers
+- `LDB 16` (l.60-66, l.68-74) → `combat-fatigue`, `doc`, `StateRecoveryModal`, `EnemyAction`, `addCondition`, `Formula`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `describeStateRecovery`, +26 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +16 fichiers
 - `LDB 85` (l.9, l.33-35, l.43, l.45-47, l.73-75, l.81-83, l.209-213, l.235-237, l.405, l.417, l.421, l.423-425) → `a-distance`, `arme`, `a-sang-froid`, `morsure`, `affame`, `creatureWeapon`, `amphibie`, `caudale`, `weaponFromTrait`, `cornes`, +71 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, +7 fichiers
 - sans code : `AU1 4` (l.9, l.12)
 
@@ -4205,7 +4205,7 @@ Le **Tableau des Armes de Base** d'*Aux Armes* utilise ces nouveaux Atouts. Extr
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `AA 7` (l.4-10, l.31) → `CritEntry`, `healDifficulty`, `aaCriticalOffset`, `aaBleedUnconsciousDue`, `aaBleedUnconsciousApply`, `OptionsCritique`, `resolveCritique`, `collectHeroRoundEndUpkeep`, `tickDeath`, `createCombatSlice` — `src/data/combat-stakes.json`, `src/data/criticals.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, +3 fichiers
-- `AA 8` (l.67-76, l.79-81, l.83-85, l.87, l.89-95, l.98-108, l.131-147) → `splitIndice`, `qualityRefSchema`, `doc`, `withArg`, `coutAvantageTexte`, `QualityInstance`, `cimeterre`, `INDICE_TEMPLATE`, `dague-ballock`, `massue`, +15 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/schemas/defs/qualities.ts`, `src/data/schemas/grammaire/reference.ts`, `src/data/trappings.json`, `src/engine/flowCore.ts`, +5 fichiers
+- `AA 8` (l.67-76, l.79-81, l.83-85, l.87, l.89-95, l.98-108, l.131-147) → `splitIndice`, `qualityRefSchema`, `doc`, `withArg`, `coutAvantageTexte`, `QualityInstance`, `cimeterre`, `dague-ballock`, `INDICE_TEMPLATE`, `massue`, +15 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/schemas/defs/qualities.ts`, `src/data/schemas/grammaire/reference.ts`, `src/data/trappings.json`, `src/engine/flowCore.ts`, +5 fichiers
 
 ---
 
@@ -5468,7 +5468,7 @@ Listée dans la même annexe (le Personnage raconte ses aventures à un imprimeu
 **Voir aussi** : Talent Coude-à-coude · Talent Exaltant · Atouts d'armes (*Perforante* / *Dévastatrice* / *Percutante*) · Tableau des Critiques & Localisations · Degrés de Réussite (DR) · Interlude & Activités (Engagements LDB).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 12` (l.3-5, l.8-18, l.21-32, l.36-44, l.46-49, l.52-145) → `skillRefSchema`, `ActivitySkill`, `artilleur`, `changeCareer`, `ActivityDef`, `PendingActivityFields`, `battement`, `everBelongedClasses`, `team-command`, `bestActivitySkill`, +16 — `src/data/activities.json`, `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/activities.ts`, `src/data/tables.json`, `src/data/talents.json`, +4 fichiers
+- `AA 12` (l.3-5, l.8-18, l.21-32, l.36-44, l.46-49, l.52-145) → `skillRefSchema`, `ActivitySkill`, `artilleur`, `changeCareer`, `PendingActivityFields`, `battement`, `ActivityDef`, `team-command`, `everBelongedClasses`, `bestActivitySkill`, +16 — `src/data/activities.json`, `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/activities.ts`, `src/data/tables.json`, `src/data/talents.json`, +4 fichiers
 
 ---
 

@@ -48,8 +48,27 @@ const REL_PLAYER: Record<Relation | Camp, string> = {
 // Formule
 // ---------------------------------------------------------------------------
 
-/** Quantité (`Formula`) en toutes lettres — « le Bonus de Force Mentale », « 1d10+2 », « le résultat du dé ». */
+/** Quantité (`Formula`) en toutes lettres — « le Bonus de Force Mentale », « 1d10+2 », « le résultat du dé ».
+ *  Une règle optionnelle NUMÉRIQUE (`kind: 'param'`) s'y lit à sa VALEUR courante, la règle nommée :
+ *  le joueur lit une quantité, pas une indirection. */
 export function humanizeFormula(f: Formula): string {
+  return formuleEnMots(f, null);
+}
+
+/** La MÊME quantité, mais la note de règle SORTIE du nombre — pour les phrases où une UNITÉ suit le
+ *  nombre (« 12 sou(s) de cuivre », « 5 minute(s) ») : la note se pose APRÈS l'unité, jamais entre. */
+export function humanizeQuantite(f: Formula): { valeur: string; note: string } {
+  const regles: string[] = [];
+  const valeur = formuleEnMots(f, regles);
+  const note = regles.length
+    ? ` (règle${regles.length > 1 ? 's' : ''} ${regles.map((r) => `« ${r} »`).join(', ')})`
+    : '';
+  return { valeur, note };
+}
+
+/** Traversal UNIQUE des deux rendus. `regles` non nul = les règles numériques rencontrées y sont
+ *  COLLECTÉES (le nombre s'imprime nu) ; nul = chacune se nomme sur place. PURE. */
+function formuleEnMots(f: Formula, regles: string[] | null): string {
   if (typeof f === 'number') return String(f);
   // Placeholder RUNTIME baké ('$indice' — Redoutable ZI, substitué à l'attache) qui peut atteindre
   // l'affichage : jamais un objet Formula, donc gardé AVANT les `in` (mirroir de `resolveFormula`).
@@ -62,10 +81,45 @@ export function humanizeFormula(f: Formula): string {
   if ('stacks' in f) return "le nombre de pions de l'État";
   if ('engagedAdvantageGap' in f) return "l'écart d'Avantage avec les ennemis engagés";
   if ('woundsDealt' in f) return 'les Blessures infligées';
-  if ('rule' in f) return `la règle « ${ruleDef(f.rule)?.label ?? f.rule} »`;
-  if ('sum' in f) return f.sum.map(humanizeFormula).join(' + ');
-  if ('times' in f) return `${humanizeFormula(f.times.of)} × ${f.times.factor}`;
+  if ('sl' in f) return 'les DR du Test';
+  // Les formes NON numériques (`flag`/`mode`, ou une règle inconnue) n'ont pas de nombre à montrer :
+  // elles se nomment, quel que soit le rendu demandé.
+  if ('rule' in f) {
+    const def = ruleDef(f.rule);
+    const valeur = rule(f.rule);
+    if (def?.kind !== 'param' || typeof valeur !== 'number') return `la règle « ${def?.label ?? f.rule} »`;
+    if (regles) {
+      if (!regles.includes(def.label)) regles.push(def.label);
+      return String(valeur);
+    }
+    return `${valeur} (règle « ${def.label} »)`;
+  }
+  if ('sum' in f) return f.sum.map((t) => formuleEnMots(t, regles)).join(' + ');
+  // Le FACTEUR est une `Formula` comme le multiplicande (`formulaSchema`, grammaire/valeurs.ts) :
+  // il s'humanise, il ne s'interpole pas — sans quoi « × {sl:true} » s'imprime « × [object Object] ».
+  if ('times' in f) return `${formuleEnMots(f.times.of, regles)} × ${formuleEnMots(f.times.factor, regles)}`;
   return assertNever(f);
+}
+
+/** La quantité est-elle un DÉBIT ? Un littéral négatif, ou un produit dont le nombre de facteurs
+ *  négatifs est impair. Sert aux ops à DOUBLE SENS (`money`) : le sens se DIT (« perd »), il ne
+ *  s'imprime pas en « × -1 » à l'écran. PURE. */
+function estDebit(f: Formula): boolean {
+  if (typeof f === 'number') return f < 0;
+  if (typeof f !== 'object' || f === null) return false;
+  if ('times' in f) return estDebit(f.times.of) !== estDebit(f.times.factor);
+  return false;
+}
+
+/** La MÊME quantité, privée de son signe et de ses facteurs unitaires — ce qu'on imprime une fois le
+ *  sens dit par ailleurs (« perd LA RÈGLE … », jamais « perd LA RÈGLE … × -1 »). PURE. */
+function sansSigne(f: Formula): Formula {
+  if (typeof f === 'number') return Math.abs(f);
+  if (typeof f !== 'object' || f === null || !('times' in f)) return f;
+  const { of, factor } = f.times;
+  if (typeof factor === 'number' && Math.abs(factor) === 1) return sansSigne(of);
+  if (typeof of === 'number' && Math.abs(of) === 1) return sansSigne(factor);
+  return { times: { of: sansSigne(of), factor: sansSigne(factor) } };
 }
 
 // ---------------------------------------------------------------------------
@@ -171,6 +225,7 @@ export function humanizeCondition(c: Condition, neg = false): string {
       return `${who(c.who)} ${neg ? "n'appartient pas" : 'appartient'} au Groupe ${groupLabel(c.value)}`;
     }
     case 'casterChaosDomain': return `le Domaine du Chaos du lanceur ${neg ? "n'est pas" : 'est'} ${refLabel('gods', { id: c.is })}`;
+    case 'visiblePassive': return `${who(c.who)} ${neg ? 'ne porte aucune' : 'porte une'} atteinte VISIBLE`;
     case 'skill': {
       const subj = c.who === 'all' ? 'tout le groupe' : 'un héros';
       return `${subj} ${neg ? 'ne possède pas' : 'possède'} la Compétence ${refLabel('skills', { id: c.id, spec: c.spec })}${c.advances ? ` (≥${c.advances})` : ''}`;
@@ -276,12 +331,8 @@ export function humanizeResolveWindow(w: ResolveWindow | undefined): string | un
       ? 'la Détermination le suspend jusqu’à la fin du Round'
       : `la Détermination le suspend ${humanizeFormula(w.left)} Round(s)`;
   }
-  const m = w.minutes;
-  if (typeof m === 'object' && m !== null && 'rule' in m) {
-    const v = rule(m.rule);
-    return `la Détermination le suspend ${typeof v === 'number' ? v : '?'} minute(s) (règle « ${ruleDef(m.rule)?.label ?? m.rule} »)`;
-  }
-  return `la Détermination le suspend ${humanizeFormula(m)} minute(s)`;
+  const { valeur, note } = humanizeQuantite(w.minutes);
+  return `la Détermination le suspend ${valeur} minute(s)${note}`;
 }
 
 export function humanizeOp(o: GameOp): string {
@@ -308,6 +359,13 @@ export function humanizeOp(o: GameOp): string {
     case 'gainResource': return `${o.amount >= 0 ? 'gagne' : 'perd'} ${Math.abs(o.amount)} point(s) de ${RESOURCE_LABEL[o.resource]}${o.temporary ? ' (temporaire)' : ''}`;
     case 'gainAdvantage': return `voit son Avantage porté à au moins ${humanizeFormula(o.amount)}`;
     case 'castPenalty': return o.blocked ? "ne peut plus lancer de magie" : o.maxZeroDR ? 'ne peut plus obtenir de DR en Prière' : `subit ${o.mod ?? 0} aux Tests de magie`;
+    case 'money': {
+      const debit = estDebit(o.montant.brass);
+      const { valeur, note } = humanizeQuantite(debit ? sansSigne(o.montant.brass) : o.montant.brass);
+      return debit
+        ? `perd ${valeur} sou(s) de cuivre de sa bourse${note}`
+        : `gagne ${valeur} sou(s) de cuivre dans sa bourse${note}`;
+    }
     case 'statusMod': return `${typeof o.amount === 'number' && o.amount < 0 ? 'perd' : 'gagne'} ${humanizeFormula(o.amount)} Standing pour la prochaine aventure`;
     case 'grantReverseToken': return `peut inverser ${o.skill ? refLabel('skills', o.skill) : 'un Test concernant sa cible'} une fois pendant sa prochaine aventure`;
     case 'grantTrait': return `gagne le Trait ${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${humanizeFormula(o.indice)}` : ''}${o.durationRounds ? ` pendant ${humanizeFormula(o.durationRounds)} Round(s)` : ''}`;

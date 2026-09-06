@@ -60,6 +60,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Lumière, vision, brouillard de guerre | `light` |
 | Magie, incantation, prière, miracle, contrecoup | `ap`, `gainResource`, `castPenalty`, `grantTrait`, `augmentWeapon`, `freeReroll`, `critTwice`, `suppressPsych`, `castWard`, `domeWard`, `attackWardFM`, `noHunger`, `weatherWard`, `grantWeapon`, `interruptFocus`, `perRound`, `charDamage`, `zone`, `transform`, `incomingSpellDRMod`, `attackKeyword`, `mitigateIncoming` |
 | Maladies : exposer, contracter, guérir, symptômes | `cureDisease`, `reduceDiseaseDays`, `preventInfection`, `exposeDisease`, `contractDisease`, `diseaseTestMod`, `suppressSymptom`, `aggravateSymptom`, `attenuateSymptom`, `grantSymptom` |
+| Monnaie, bourse, argent | `money` |
 | Mort, retrait du jeu, bannissement | `kill`, `banish`, `suffocate` |
 | Mouvement, allonge, terrain | `moveScale`, `moveMod`, `offTerrainMod`, `attrMod`, `loseTurn`, `actGate` |
 | Narratif, arbitrage non modélisé | `banish`, `narrative` |
@@ -77,7 +78,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Traits de créature : octroyer, retirer | `grantTrait`, `removeTrait`, `grantPsychTrait`, `removePsychTrait`, `suppressPsych`, `polymorph`, `endTransform`, `incomingSpellDRMod`, `moveMod` |
 | Transformation, métamorphose, forme alternative | `polymorph`, `transform`, `endTransform` |
 
-## GameOp — les 109 opérations
+## GameOp — les 110 opérations
 
 | Op | Champs | Résolution | Résolveurs | Donnée | Rôle |
 |---|---|---|---|---|---|
@@ -101,7 +102,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `charDamage` | `char`, `amount` | exécutée | — | 6 — `spells.json:poids-des-annees`, `spells.json:poids-des-annees` … | Perte PERMANENTE de Caractéristique (Vers de carie « −1d10 Initiative… », MSRC 16 l.94-97) : décrémente la Caractéristique de BASE (`c.characteristics`), jamais sous 0 — irréversible « sauf par des moyens magiques ou miraculeux » (l.103). |
 | `charDRBonus` | `char`, `bonus` | exécutée | — | 17 — `sea-shanties.json:camarades-d-equipage-rassemblez-vous`, `tables.json:vdm-marques-arcaniques-lumiere` … | +N DR aux Tests d'une CARACTÉRISTIQUE (chanson « Camarades d'équipage » : +1 DR sur tout Test de Sociabilité, MDG 09 l.236) — variante par carac de `skillDRBonus`. |
 | `charMod` | `char`, `mod`, `durationRounds?`, `durationMinutes?`, `durationHours?` | exécutée | `engine/polymorph.ts`, `engine/talentEffects.ts`, `engine/traits/dispatch.ts` +2 | 238 — `criticals.json:bleus-aux-cotes`, `criticals.json:orteil-contusionne` … | Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus + pire pénalité sans cumul, LDB l.168). |
-| `condition` | `id`, `value?`, `durationRounds?`, `perRound?`, `valuePerSL?`, `onlyGroups?`, `onlyIfCondition?`, `unlessCondition?`, `escapeStrength?`, `escapeThreshold?`, `entangleOnFail?`, `struggleDamage?`, `lockedUntil?`, `resolveWindow?`, `unlockBy?`, `grapple?`, `durationMinutes?`, `durationHours?` | exécutée | `engine/conditions.ts`, `engine/critical.ts`, `engine/disease.ts` +11 | 439 — `activities.json:extenue`, `criticals.json:hemorragique` … | Ajout d'un État nommé (LDB 16). |
+| `condition` | `id`, `value?`, `durationRounds?`, `perRound?`, `valuePerSL?`, `onlyGroups?`, `onlyIfCondition?`, `unlessCondition?`, `escapeStrength?`, `escapeThreshold?`, `entangleOnFail?`, `struggleDamage?`, `lockedUntil?`, `resolveWindow?`, `unlockBy?`, `grapple?`, `durationMinutes?`, `durationHours?` | exécutée | `engine/conditions.ts`, `engine/critical.ts`, `engine/disease.ts` +11 | 440 — `activities.json:extenue`, `criticals.json:hemorragique` … | Ajout d'un État nommé (LDB 16). |
 | `contractDisease` | `disease` | exécutée | `engine/disease.ts`, `state/aiSpellValue.ts` | 10 — `criticals.json:blessure-au-ventre`, `criticals.json:hemorragie-interne` … | CONTRACTE instantanément une Maladie (`disease` = id) — incubation 0, durée tirée. |
 | `corruption` | `amount`, `perSL?`, `align?` | exécutée | `engine/miscast.ts`, `state/aiSpellValue.ts`, `state/targetingModes.ts` | 15 — `miscast.json:mineure-murmures-mortels`, `miscast.json:mineure-malediction-de-corruption` … | Points de Corruption (LDB 19). |
 | `corruptionExposure` | `level?`, `skill?`, `easeSteps?` | exécutée | — | 9 — `activities.json:tester-objets-magiques`, `spells.json:bouclier-en-acier-dore` … | EXPOSITION à une Influence corruptrice (LDB 19 l.23-75) : Test différé par MODALE (pendingCorruption) — op IMPURE résolue par la couche state via `ctx.onCorruptionExposure` (même patron que `ctx.onCorruption`) ; sans contexte (moteur pur), journalisée sans jet. |
@@ -150,6 +151,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `martyr` | — | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 1 — `spells.json:martyr` | Martyr (LDB 43 l.107) : « Vous recevez tous les Dégâts subis en principe par vos cibles. |
 | `maxWeaponHands` | `hands`, `durationRounds?` | exécutée | `engine/trauma.ts` | 9 — `criticals.json:choc-violent-au-bras`, `criticals.json:clef-de-bras` … | Plafond de mains d'arme maniables — GÉNÉRALISE `noTwoHanded` (hands:1 = pas d'arme à deux mains). |
 | `mitigateIncoming` | `mode`, `unlessKeyword?` | **hors switch** | `state/targetingModes.ts` | 1 — `traits.json:ethere` | MITIGE les Dégâts ENTRANTS du porteur (Éthéré : nullifie sauf attaque 'magic', LDB 85 p.339). |
+| `money` | `montant` | exécutée | `engine/flowCore.ts` | 3 — `activities.json:mendier`, `activities.json:mendier` … | Crédite (positif) ou débite (négatif) la bourse PERSONNELLE de la cible, en SOUS DE CUIVRE (`brass` — unité de compte unique, `engine/money.ts`). |
 | `moveMod` | `mod` | exécutée | `engine/navalTraits.ts`, `engine/traits/dispatch.ts`, `engine/trauma.ts` | 19 — `maneuvers.json:forme-hybride-ulric`, `mutations.json:pattes-d-animaux` … | Modificateur ADDITIF de Mouvement (trait Brutal −1 / Rapide +1, mutation ±1, encombrement) — distinct de `moveScale` (multiplicatif). |
 | `moveScale` | `num`, `den`, `durationRounds?` | exécutée | `engine/navalTraits.ts`, `engine/trauma.ts` | 17 — `criticals.json:souffle-coupe`, `criticals.json:genou-demis` … | Échelle MULTIPLICATIVE du Mouvement — GÉNÉRALISE le drapeau `movementHalved` (= 1/2). |
 | `narrative` | `text` | exécutée | `engine/polymorph.ts`, `engine/spellspec.ts` | 507 — `spells.json:benediction-de-conscience`, `spells.json:alerte` … | Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). |
@@ -167,7 +169,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `removeShipPoste` | — | exécutée | — | 1 — `ship-criticals.json:canon-perdu` | Retire une pièce d'artillerie d'une COQUE (« Canon perdu », MDG 13 l.765 : la pièce passe par-dessus bord) : `target.postes` perd UN poste au hasard (`ctx.rng`) ; si son chef de pièce (`crewIds[0]`, résolu dans `ctx.crew`) la servait, il est démancipé (`mannedPoste` + arme dérivée retirés). |
 | `removeTrait` | `traitId` | exécutée | — | 1 — `mutations.json:haine-sporadique` | RETRAIT d'un Trait de créature porté (`c.traits`) — l'INVERSE de `grantTrait`, même vocabulaire : retire ce que LA SOURCE COURANTE (`ctx.source`) a accordé, instances retrouvées par le registre `TraitInstance.src`. |
 | `rollMutation` | `table`, `duration?` | exécutée | — | 4 — `tables.json:allure-demoniaque-nurgle`, `tables.json:allure-demoniaque-slaanesh` … | Tirage d'une MUTATION sur une table de Corruption (`mutationTables.json`, par id `table`) — réutilise `rollMutation()` + `attachMutation()` (`corruption.ts`/`mutations.ts`). |
-| `rollTable` | `die`, `mod?`, `addNegativeSL?`, `extraRollsPerStep?`, `rows` \| `die?`, `mod?`, `addNegativeSL?`, `extraRollsPerStep?`, `tableId` | exécutée | `engine/miscast.ts`, `engine/overcast.ts` | 26 — `activities.json:brasser-une-potion`, `activities.json:alchimie-ordinaire` … | Tirage sur TABLE (`die` = d10/d100) : lookup par fourchette `[min,max]` (`findTableEntry`, source unique), les `ops` de la rangée touchée sont appliquées avec le MÊME ctx. |
+| `rollTable` | `die`, `mod?`, `addNegativeSL?`, `extraRollsPerStep?`, `rows` \| `die?`, `mod?`, `addNegativeSL?`, `extraRollsPerStep?`, `tableId` | exécutée | `engine/miscast.ts`, `engine/overcast.ts` | 27 — `activities.json:brasser-une-potion`, `activities.json:alchimie-ordinaire` … | Tirage sur TABLE (`die` = d10/d100) : lookup par fourchette `[min,max]` (`findTableEntry`, source unique), les `ops` de la rangée touchée sont appliquées avec le MÊME ctx. |
 | `rollThreshold` | `sides`, `thresholds` | exécutée | — | 2 — `traits.json:regeneration`, `traits.json:regeneration` | Jet à PALIERS (Régénération : un d10 → soin = le dé ; sur 10, soigne aussi un Critique) : roule 1d`sides` UNE fois, applique les `ops` de CHAQUE palier dont `atLeast` est atteint (cumulatif). |
 | `sbBonus` | `amount` | **hors switch** | `engine/trauma.ts` | 1 — `psychology.json:frenesie` | +N au Bonus de Force employé aux DÉGÂTS (Frénésie : +1 « grâce à votre férocité », LDB 21 l.33). |
 | `scheduleRespawn` | `ref`, `delayDays`, `count?`, `allyOfCaster?`, `cancelFlag?` | **inerte au switch** | `state/combatFlow.ts` | 1 — `traits.json:gardien-eternel` | RECONSTITUTION DIFFÉRÉE (Gardien éternel, Middenheim — « se reconstitue au bout de d10 jours »). |
@@ -176,7 +178,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `skillDRBonus` | `skill?`, `bonus`, `testType?` | exécutée | `engine/navalTraits.ts`, `state/targetingModes.ts` | 60 — `naval-traits.json:peu-maniable`, `naval-traits.json:peu-maniable` … | +N DR à un Test de Compétence nommé (Furtif : +Bonus d'Agilité au DR de Discrétion, LDB 85 p.339 ; chanson « Jacques Bret » : +1 DR sur tout Test de Corps à corps réussi, MDG 09 l.228). |
 | `skillMod` | `skill`, `mod`, `sense?` | exécutée | `engine/skills.ts`, `engine/trauma.ts`, `engine/wearPenalty.ts` +1 | 26 — `drunkenness.json:bravoure-marienburgher`, `mutations.json:langue-pendante` … | Modificateur (pénalité/bonus) à UNE Compétence nommée — GÉNÉRALISE les pénalités de séquelle `skillPenalty` (Langue −100 « auto-échec parole ») ET `dodgePenalty` (Esquive −20, mobilité). |
 | `spendAdvantage` | `amount` | exécutée | — | **0** | Dépense `amount` Points d'Avantage du RÉFÉRENT (Déstabilisante : coût d'un Test de renversement). |
-| `statusMod` | `amount` | exécutée | `state/interludeFlow.ts` | **0** | Modificateur TEMPORAIRE de Standing (LDB 23 l.228-234 « Réputation » : +1 sur succès, +2 sur Succès Stupéfiant, −1 sur Échec Stupéfiant) — durée `{scale:'adventure'}` (« pour la prochaine aventure »), composé par `heroStatus` (interludeFlow.ts), purgé à l'interlude SUIVANT (`purgeAdventureEffects`). |
+| `statusMod` | `amount` | exécutée | `state/interludeFlow.ts` | 1 — `activities.json:surpris` | Modificateur TEMPORAIRE de Standing (LDB 23 l.228-234 « Réputation » : +1 sur succès, +2 sur Succès Stupéfiant, −1 sur Échec Stupéfiant) — durée `{scale:'adventure'}` (« pour la prochaine aventure »), composé par `heroStatus` (interludeFlow.ts), purgé à l'interlude SUIVANT (`purgeAdventureEffects`). |
 | `suffocate` | — | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 8 — `spells.json:transmutation-de-chamon`, `spells.json:ombres-etrangleuses` … | « Soumis aux règles de la Suffocation » (LDB 18 l.345-346 — Ombres étrangleuses, Transmutation de Chamon) : −1 PB/Round, 0 PB → Inconscient, mort après BE Rounds. |
 | `summon` | `ref`, `count`, `countPerSL?`, `addTraits?`, `size?`, `allyOfCaster?`, `despawnIfCasterDown?` | **inerte au switch** | `state/aiSpellValue.ts`, `state/combatFlow.ts`, `state/summonFlow.ts` | 16 — `spells.json:destrier-d-ombre`, `spells.json:menace-rampante` … | INVOCATION de créature(s) (Nécromancie « Réanimation/Relever les morts », Ulric « Hurlement du loup », Démonologie « Manifestation », Taal « Roi de la Nature »…). |
 | `suppressPsych` | — | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 2 — `spells.json:clarte-d-esprit`, `spells.json:baume-pour-un-esprit-blesse` | Baume pour un esprit blessé (LDB 42) : « Tous les Traits Psychologiques sont retirés pour la durée du Miracle » — Traits psy SUSPENDUS (portés par l'effet), restitués à l'expiration. |
@@ -188,12 +190,12 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `weaponDamageMod` | `mode?`, `plusUnits?`, `negateAtouts?`, `chargeGated?` | **inerte au switch** | `engine/qualities/dispatch.ts` | 5 — `qualities.json:devastatrice`, `qualities.json:percutante` … | PASSIF d'ARME : modificateur de DÉGÂTS (LDB 62-63) — Dévastatrice (DR = max(DR, dé des unités), `mode:'maxUnits'`), Percutante (+ dé des unités, `plusUnits`), Inoffensive (annule les Atouts de Dégâts, `negateAtouts`), Épuisante (`chargeGated` : Percutante/Dévastatrice de l'arme inertes hors Charge). |
 | `weaponRollMod` | `phase`, `drMod?`, `flatMod?` | **inerte au switch** | `engine/qualities/dispatch.ts` | 10 — `qualities.json:a-enroulement`, `qualities.json:defensive` … | PASSIF d'ARME (Atout/Défaut, LDB 62-63) : modificateur de DR/plat à une PHASE de jet de combat — Précise (+10 `flatMod` en attaque), Imprécise (−1 DR en attaque), Pointue (+1 DR au Test d'attaque RÉUSSI, `phase:'attackSuccess'`, LDB 62 l.288), Défensive (+1 DR parade du défenseur), À Enroulement (−1 DR parade adverse), Lente (+1 DR à TOUTE défense adverse), Pratique/Peu Fiable (±1 DR à un Test raté). |
 | `weatherWard` | — | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 3 — `spells.json:protection-contre-la-pluie`, `spells.json:peau-de-loup-d-hiver` … | Immunité à l'EXPOSITION météo (froid/pluie/neige/tempête) tant que le Sort dure — Peau de loup d'hiver (Ulric), Protection contre la pluie. |
-| `wounds` | `amount`, `perSL?`, `onlyGroups?`, `ignoreTB?`, `ignoreAP?`, `bypassArmour?`, `apFrom?`, `min?`, `extraAP?`, `weaponHit?` | exécutée | `engine/critical.ts`, `engine/disease.ts`, `engine/miscast.ts` +9 | 225 — `criticals.json:blessure-spectaculaire`, `criticals.json:coupure-mineure` … | Blessures subies DIRECTEMENT. |
+| `wounds` | `amount`, `perSL?`, `onlyGroups?`, `ignoreTB?`, `ignoreAP?`, `bypassArmour?`, `apFrom?`, `min?`, `extraAP?`, `weaponHit?` | exécutée | `engine/critical.ts`, `engine/disease.ts`, `engine/miscast.ts` +9 | 226 — `criticals.json:blessure-spectaculaire`, `criticals.json:coupure-mineure` … | Blessures subies DIRECTEMENT. |
 | `zone` | `shape`, `radiusMeters?`, `lengthMeters?`, `lengthPerSL?`, `blocksLoS?`, `onCross?`, `perRound?`, `crossTest?`, `barrier?`, `gate?`, `noCorruption?` | **inerte au switch** | `engine/overcast.ts`, `state/combatFlow.ts`, `state/zones.ts` | 13 — `spells.json:vol-du-destin`, `spells.json:grands-feux-d-u-zhul` … | ZONE PERSISTANTE posée par le sort (Mur de feu, Grands feux d'U'Zhul, Vol du Destin). |
 
-_109 ops (110 membres d'union avant fusion des formes) — 86 exécutées par `applyOps`, 15 inertes au switch, 8 hors switch (impures ou passives — cf. « Résolveurs »)._
+_110 ops (111 membres d'union avant fusion des formes) — 87 exécutées par `applyOps`, 15 inertes au switch, 8 hors switch (impures ou passives — cf. « Résolveurs »)._
 
-### Ops à ZÉRO usage en donnée (8)
+### Ops à ZÉRO usage en donnée (7)
 
 - `amputer`
 - `attenuateSymptom`
@@ -201,7 +203,6 @@ _109 ops (110 membres d'union avant fusion des formes) — 86 exécutées par `a
 - `breakBlade`
 - `interruptFocus`
 - `spendAdvantage`
-- `statusMod`
 - `teamCommander`
 
 À instruire : soit du vocabulaire posé d'avance (l'op attend sa donnée), soit du code mort. Croiser avec la
@@ -241,11 +242,12 @@ effet déclenché. Composables par `all`/`any`/`not`.
 | `relation` | `who`, `is` | Camp / RELATION d'un acteur (`who`) — gate « seulement les ennemis / les alliés / les neutres » (riders de domaine offensifs : `who:'target', is:'opponent'`). |
 | `has` | `who`, `what`, `value`, `spec?` | L'acteur (`who`) POSSÈDE un élément : appartenance à un **Groupe** (faction, via `groupMatch`), un **Talent** (par id, `spec` éventuel — « Magie des Arcanes (Feu) »), un **Trait** (par id), ou un **état psychologique** actif (par type — `psych`, ex. 'frenesie' : gate du Contrôle de la Frénésie, LDB 10). |
 | `casterChaosDomain` | `is` | Le Domaine du Chaos du LANCEUR (`ctx.caster.chaosDomain`, `chaosDomainOf`) est-il `is` ? Gate GÉNÉRIQUE de tout Sort d'Arcanes du Chaos « se manifestant selon le Domaine spécifique » (EDOC 13 l.264-266) — la branche du Flow sélectionne sa colonne (Allure démoniaque : Nurgle/Slaanesh/Tzeentch/ Indivisible). |
+| `visiblePassive` | `who` | L'acteur (`who`) montre-t-il un passif VISIBLE (`ActorView.visiblePassive` — une lésion apparente, émise `visible` par sa source) ? Gate d'apparence : « à quel point votre apparence peut susciter la sympathie » (LDB 09 l.97). |
 | `all` | `of` | — |
 | `any` | `of` | — |
 | `not` | `of` | — |
 
-_30 entrées — dérivées de `src/engine/flowCore.ts`._
+_31 entrées — dérivées de `src/engine/flowCore.ts`._
 
 ## Flow — les nœuds de flux authorés
 
@@ -308,4 +310,4 @@ Valeurs du champ `on` d'un `TriggeredEffect`.
 | `{ pick … }` | `sizeAtMost?`, `max` | — |
 
 _6 entrées — dérivées de `src/engine/flowCore.ts`._
-<!-- sources-empreinte: f67eebc433a50f84a0278149df84be1734853a6b (646 fichiers, 16 dossiers) corps: 5d70910430c65f52954e303093cc527a6556ec4f -->
+<!-- sources-empreinte: a0be2e9c232cc783f00d330321d16b7a3636c7a3 (648 fichiers, 16 dossiers) corps: 0d080ea7a0f6ac9fd07d0de2ae2978016f1faca0 -->

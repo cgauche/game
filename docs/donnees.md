@@ -81,10 +81,10 @@ un def qui change d'exposition change cette colonne au prochain `npm run docs:do
 | `maneuvers.json` | Manœuvres (attaques spéciales : morsure, souffle…) (20 entrée(s)) | `maneuvers` — dataset `maneuvers` |
 | `criticals.json` | Blessures critiques par localisation — 8 documents-tables, un par jeu × Localisation (base · variante *Aux Armes*) (8 entrée(s)) | `criticalsTete` · `criticalsBras` · `criticalsCorps` · `criticalsJambe` · `aaCriticalsTete` · `aaCriticalsBras` · `aaCriticalsCorps` · `aaCriticalsJambe` — niché (`criticalsTete` · `criticalsBras` · `criticalsCorps` · `criticalsJambe` · `aaCriticalsTete` · `aaCriticalsBras` · `aaCriticalsCorps` · `aaCriticalsJambe`) |
 | `localisation.json` | Tables de localisation d100 (`personnage`/`navire`/`navire-fluvial`) (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
-| `tables.json` | Tables d'effets `[min,max] → GameOp[]` référencées par l'op `rollTable` (`tableId`) — Tableau des aspects démoniaques (Allure démoniaque, EDOC 13) par Domaine du Chaos (20 entrée(s)) | `effectTables` — aucune (exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier) |
+| `tables.json` | Tables d'effets `[min,max] → GameOp[]` référencées par l'op `rollTable` (`tableId`) — Tableau des aspects démoniaques (Allure démoniaque, EDOC 13) par Domaine du Chaos (21 entrée(s)) | `effectTables` — aucune (exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier) |
 | `grapple.json` | Lutte / empoignade (objet à sous-catalogues) | `grapple` — objet single |
 | `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) (85 entrée(s)) | `regles` — aucune (exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier) |
-| `reglesOptionnelles.json` | Registre des RÈGLES OPTIONNELLES (« règles maison ») : id STABLE (clé de surcharge, de persistance et de `variants[].when.rule`), libellé/aide/groupe d'affichage, forme du contrôle auto-rendu (`flag`/`param`/`mode`), défaut et bornes, action de jeu attachée — lu par `src/engine/policy.ts` (`rule(id)`), rendu par le panneau in-game (82 entrée(s)) | `reglesOptionnelles` — dataset `reglesOptionnelles` |
+| `reglesOptionnelles.json` | Registre des RÈGLES OPTIONNELLES (« règles maison ») : id STABLE (clé de surcharge, de persistance et de `variants[].when.rule`), libellé/aide/groupe d'affichage, forme du contrôle auto-rendu (`flag`/`param`/`mode`), défaut et bornes, action de jeu attachée — lu par `src/engine/policy.ts` (`rule(id)`), rendu par le panneau in-game (87 entrée(s)) | `reglesOptionnelles` — dataset `reglesOptionnelles` |
 | `damage-types.json` | Types de dégâts (poison, feu, électrique) (4 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 | `sizes.json` · `encumbranceTiers.json` | Barèmes par Taille (modif. au tir · Enc à bord · côté d'empreinte) · paliers d'Encombrement (objet à sous-catalogues · 4 entrée(s)) | `sizes` — objet single ; `encumbranceTiers` — dataset `encumbranceTiers` |
 | `etats.json` | États / Conditions (À terre, Aveuglé…) (21 entrée(s)) | `etats` — dataset `etats` |
@@ -150,7 +150,7 @@ un def qui change d'exposition change cette colonne au prochain `npm run docs:do
 ### Contenu de campagne / interlude / rencontres
 | Fichier | Contient | Exposition (Codex — édition) |
 |---|---|---|
-| `activities.json` | Activités d'interlude / entre-aventures (62 entrée(s)) | `activities` — dataset `activities` |
+| `activities.json` | Activités d'interlude / entre-aventures (63 entrée(s)) | `activities` — dataset `activities` |
 | `interludeEvents.json` | Événements d'interlude (fourchettes d100) (31 entrée(s)) | `interludeEvents` — dataset `interludeEvents` |
 | `rencontres-edoc.json` | Rencontres EDOC (tables) (objet à sous-catalogues) | `rencontresPositives` · `rencontresFortuites` · `rencontresDangereuses` — niché (`rencontresPositives` · `rencontresFortuites` · `rencontresDangereuses`) |
 | `peripeties.json` · `oups.json` | Péripéties de voyage · « Oups ! » (fourchettes) (10 entrée(s) · 8 entrée(s)) | `peripeties` — dataset `peripeties` ; `oups` — dataset `oups` |
@@ -258,7 +258,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
   `src/data/variants-integrity.test.ts`) — `talents.json` résout quatre champs, UNE CITATION PAR LIGNE,
   chacune à côté du SYMBOLE qu'elle porte (lignes MESURÉES à la génération, `citeLigne`) :
 
-  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:1488`
+  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:1490`
   - `test` — `talentTestSLBonus`, `src/engine/magic.ts:359`
   - `max` — `talentMaxById`, `src/engine/careerSlots.ts:326`
   - `combat` — `featuresOf`, `src/engine/combatFeatures/dispatch.ts:52`
@@ -266,7 +266,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
 
   `traits.json` ne résout, lui, que deux champs :
 
-  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:570`
+  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:572`
 
   `passive` et `effects` en sont EXCLUS — le moteur les lit sur
   l'entrée brute (`src/engine/talentEffects.ts`, `src/engine/traits/dispatch.ts`) ; un champ n'entre
@@ -488,4 +488,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: e25786396918f9686bd4d62d4f5ef0566bdb0f5a (356 fichiers, 2 dossiers) corps: ee589449e96698658688b8a32f469c6d5a2fd9a8 -->
+<!-- sources-empreinte: 8260e364172631edbe0eae1c17fb69c45d1d85fc (358 fichiers, 2 dossiers) corps: 268855e2fb3f7486247d2f7ad85a6bf4e4007418 -->

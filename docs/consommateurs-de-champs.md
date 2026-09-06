@@ -17,7 +17,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 62 | `src/engine/actorView.ts:26` |
+| `id` | 62 | `src/engine/actorView.ts:28` |
 | `value` | 14 | `src/engine/creatureAttacks.ts:97` |
 | `arg` | 17 | `src/engine/creatureAttacks.ts:94` |
 | `count` | 4 | `src/engine/creatureAttacks.ts:102` |
@@ -137,7 +137,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `stake` | 10 | `src/engine/flowCore.ts:833` |
+| `stake` | 10 | `src/engine/flowCore.ts:841` |
 | `skill` | 30 | `src/engine/disease.ts:371` |
 | `sense` | 2 | `src/state/combatEffects.ts:923` |
 | `characteristic` | 24 | `src/engine/disease.ts:371` |
@@ -154,10 +154,10 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `unlessImmune` | 1 | `src/state/combat/flowEval.ts:137` |
 | `onlyGroups` | 1 | `src/state/combat/flowEval.ts:138` |
 | `exceptGroups` | 1 | `src/state/combat/flowEval.ts:139` |
-| `gate` | 1 | `src/engine/flowCore.ts:376` |
+| `gate` | 1 | `src/engine/flowCore.ts:384` |
 | `noSupport` | 4 | `src/state/combat/triggeredTest.ts:812` |
 | `menace` | 7 | `src/state/combat/triggeredTest.ts:242` |
-| `difficultyBy` | 1 | `src/engine/flowCore.ts:370` |
+| `difficultyBy` | 1 | `src/engine/flowCore.ts:378` |
 | `opposed` | 5 | `src/state/combat/triggeredTest.ts:301` |
 
 ### `TravelTableEntry` (src/engine/travelTables.ts)
@@ -165,7 +165,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | Champ | Lecteurs | Exemple |
 |---|---|---|
 | `min` | 2 | `src/state/travelFlow.ts:1146` |
-| `max` | 1 | `src/ui/compendium/registry.ts:755` |
+| `max` | 1 | `src/ui/compendium/registry.ts:757` |
 | `id` | 8 | `src/engine/mountTravel.ts:214` |
 | `label` | 8 | `src/engine/mountTravel.ts:198` |
 | `desc` | 1 | `src/state/travelPostes.ts:362` |
@@ -186,8 +186,8 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `min` | 1 | `src/ui/compendium/registry.ts:778` |
-| `max` | 1 | `src/ui/compendium/registry.ts:778` |
+| `min` | 1 | `src/ui/compendium/registry.ts:780` |
+| `max` | 1 | `src/ui/compendium/registry.ts:780` |
 | `id` | 3 | `src/data/index.ts:480` |
 | `label` | 2 | `src/engine/shipCritical.ts:107` |
 | `ops` | 3 | `src/engine/riverNavigation.ts:213` |
@@ -299,4 +299,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: fb4adbba61ddc9e780da066871eef792baea3eb6 (2073 fichiers, 172 dossiers) corps: 5af3c5d17f8bb232a98911c4be3addc1465f445c -->
+<!-- sources-empreinte: 8cdfcea336038d0b265eba10cdc132a8564f4ed4 (2075 fichiers, 172 dossiers) corps: 9338e4f9b4d95111dae616f4502f0bba1ce483ff -->

@@ -13,7 +13,8 @@ import { makeRNG } from '../engine/dice';
 import { fromBrass } from '../engine/money';
 import { partyMoneyTotal, distributeCredit } from '../state/bourseFlow';
 import { testScene } from '../scenes/test-fixture';
-import { interludeCatalog } from '../state/interludeFlow';
+import { interludeCatalog, bestActivitySkill } from '../state/interludeFlow';
+import { setRule, resetRule } from '../engine/policy';
 import { interludeEventFor } from '../data/interludeEvents';
 import { InterludeScreen, type InterludeSeam } from './InterludeScreen';
 import { ACTIVITIES } from '../engine/activities';
@@ -143,6 +144,38 @@ describe('InterludeScreen — refonte LOT 6', () => {
     expect(html).toContain('Calme'); // la compétence du Test (chip Codex)
     expect(html).toContain('Très difficile'); // la Difficulté, sur la LIGNE du pré-jet (#1072)
     expect(html).toContain('Entreprendre');
+  });
+
+  /**
+   * Recette 2026-09-06, trouvaille n°3 — MENSONGE D'AFFORDANCE : le pré-jet du catalogue annonçait la
+   * cible NUE, sans les `testMods` de situation que le flux applique ensuite (`openCatalogActivity`,
+   * `state/interludeFlow.ts`) — le joueur engageait son Activité sur un chiffre faux. Les DEUX surfaces
+   * composent désormais les mêmes sources : `activityTestMod` → `activityModLines`.
+   *
+   * MUTATION : retirer `modsSituation` du `testPending` d'`InterludeScreen.tsx` — le libellé
+   * « Discours » disparaît du markup et la cible remonte à la valeur nue : les deux `expect` tombent.
+   */
+  it('pré-jet du catalogue = la CIBLE RÉELLE : les `testMods` de situation y sont (Mendier, LDB 09 l.97)', () => {
+    const seam = buildSeam();
+    useGame.setState({ worldMap: null });
+    const catalog = interludeCatalog(useGame.getState());
+    const hero = seam.party[0];
+    const def = ACTIVITIES.find((a) => a.id === 'mendier')!;
+    const base = bestActivitySkill(hero, def)!.value;
+    const voir = () => renderToStaticMarkup(
+      <InterludeScreen seam={{ ...seam, phase: 'activities', catalog, openPane: { heroId: hero.id, pane: 'mendier' } }} />,
+    );
+
+    // TÉMOIN : discours neutre (défaut 0) — aucune ligne de mod à l'écran.
+    const neutre = voir();
+    expect(neutre).toContain('rm-roll pending');
+    expect(neutre).not.toContain('Discours');
+
+    setRule('mendier-discours', -20);
+    const html = voir();
+    expect(html, 'le terme de discours est NOMMÉ au catalogue').toContain('Discours');
+    expect(mdToPlain(html), `cible réelle = ${base} − 20`).toContain(String(base - 20));
+    resetRule('mendier-discours');
   });
 
   it('activité SANS jet (Banque) : formule/coût dans le même pied, sans ligne de pré-jet', () => {

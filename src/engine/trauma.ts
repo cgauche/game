@@ -969,6 +969,14 @@ export function traumaPassiveMods(c: Combatant): PassiveMod[] {
   return out;
 }
 
+/** Le porteur montre-t-il AU MOINS un passif VISIBLE (`PassiveMod.visible`, posé au site d'émission) ?
+ *  DÉRIVÉ du collecteur `passiveMods` — jamais un second balayage des maladies/séquelles : toute source
+ *  qui se met à émettre du visible entre ici sans une ligne de plus. Lu par la Condition `visiblePassive`
+ *  (apparence qui suscite la sympathie, LDB 09 l.97). PUR. */
+export function aPassifVisible(c: Combatant): boolean {
+  return passiveMods(c).some((m) => m.visible === true);
+}
+
 export function passiveMods(c: Combatant): PassiveMod[] {
   const out: PassiveMod[] = [];
   out.push(...traumaPassiveMods(c));

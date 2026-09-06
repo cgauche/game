@@ -68,6 +68,7 @@ const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['crewTest', 'Au sein d’un Test d’équipage (à bord)'],
   ['nearestFoe', 'Distance à l’ennemi le plus proche'],
   ['capability', 'Capacité de combat'],
+  ['visiblePassive', 'Atteinte VISIBLE (apparence)'],
   ['relation', 'Camp / relation'],
   ['has', 'Possède (Groupe/Talent/Trait)'],
   ['casterChaosDomain', 'Domaine du Chaos du lanceur'],
@@ -108,6 +109,7 @@ export function condSummary(c: Condition | undefined): string {
     case 'engagedAdvantageGap': return `écart d’Avantage ${c.op} ${c.value}`;
     case 'engagedAdvantageLead': return `avance d’Avantage ${c.op} ${c.value}`;
     case 'foeInLoS': return 'ennemi en Ligne de Vue';
+    case 'visiblePassive': return `${c.who === 'caster' ? 'lanceur' : 'cible'} : atteinte visible`;
     case 'hiddenFromFoes': return 'caché (hors de vue de l’ennemi)';
     case 'engaged': return 'engagé avec un ennemi';
     case 'crewTest': return 'au sein d’un Test d’équipage';
@@ -144,6 +146,7 @@ export function recast(cond: Condition, kind: Condition['kind']): Condition {
     case 'engagedAdvantageGap': return cond.kind === 'engagedAdvantageGap' ? cond : { kind: 'engagedAdvantageGap', op: '>', value: 0 };
     case 'engagedAdvantageLead': return cond.kind === 'engagedAdvantageLead' ? cond : { kind: 'engagedAdvantageLead', op: '>', value: 0 };
     case 'foeInLoS': return { kind: 'foeInLoS' };
+    case 'visiblePassive': return cond.kind === 'visiblePassive' ? cond : { kind: 'visiblePassive', who: 'target' };
     case 'hiddenFromFoes': return { kind: 'hiddenFromFoes' };
     case 'engaged': return { kind: 'engaged' };
     case 'crewTest': return { kind: 'crewTest' };
@@ -329,6 +332,15 @@ export function ConditionEditor({ cond, onChange, kinds }: {
             {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
           <NumberField variant="nu" label="Avance d’Avantage" value={cond.value} onChange={(value) => onChange({ ...cond, value })} />
+        </span>
+      )}
+      {cond.kind === 'visiblePassive' && (
+        <span className="cond-time">
+          <select className="cond-kind" aria-label="Porteur de l’atteinte visible" value={cond.who}
+            onChange={(e) => onChange({ ...cond, who: e.target.value as ActorRef })}>
+            {(Object.keys(WHO_LABEL) as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
+          </select>
+          porte une atteinte visible
         </span>
       )}
       {cond.kind === 'relation' && (

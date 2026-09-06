@@ -1,5 +1,67 @@
 [
   {
+    "id": "mendier-ennuis",
+    "type": "tables",
+    "label": "Mendier — Échec Stupéfiant : les ennuis",
+    "maison": "LDB 09 l.97 nomme TROIS issues d'un Échec Stupéfiant à Mendier — « des ennuis avec les gardes locaux, ou avec d'autres mendiants du coin, ou […] d'importants échecs » — sans en chiffrer aucune ni les répartir. Table MAISON éditable (arbitrage utilisateur 2026-09-06) : trois volets d10, un par issue nommée par le livre, aucun autre. Le volet des gardes avait DEUX branches à l'arbitrage — verbatim de l'option retenue : « gardes (les sous du jour confisqués + 1 État, ou une amende) » —, EXCLUSIVES l'une de l'autre (« ou ») : le volet en porte UNE. La branche retenue est l'AMENDE, seule à mordre : cette table n'est tirée que par la bande « échec à −6 DR » (`activities.json › mendier.outcomes`), où aucune op `money` n'a crédité quoi que ce soit — confisquer les sous du jour retirerait zéro, et l'État qui l'accompagne appartient à cette branche-là. Montant éditable : règle `mendier-amende-sous`.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 119,
+      "note": "LDB 09 l.97"
+    },
+    "die": "d10",
+    "rows": [
+      {
+        "min": 1,
+        "max": 3,
+        "label": "Les gardes locaux vous délogent",
+        "ops": [
+          {
+            "op": "money",
+            "montant": {
+              "brass": {
+                "times": {
+                  "of": {
+                    "rule": "mendier-amende-sous"
+                  },
+                  "factor": -1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 7,
+        "label": "Les autres mendiants du coin défendent leur place",
+        "ops": [
+          {
+            "op": "wounds",
+            "amount": {
+              "dice": {
+                "n": 1,
+                "sides": 5
+              }
+            },
+            "ignoreTB": false,
+            "ignoreAP": false
+          },
+          {
+            "op": "condition",
+            "id": "sonne"
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 10,
+        "label": "D’importants échecs : la journée n’aura rien rapporté",
+        "ops": []
+      }
+    ]
+  },
+  {
     "id": "allure-demoniaque-nurgle",
     "type": "tables",
     "label": "Allure démoniaque — Nurgle (EDOC)",

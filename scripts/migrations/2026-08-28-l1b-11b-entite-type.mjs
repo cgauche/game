@@ -80,11 +80,13 @@ const CARDINAUX = {
   'regles.json': 85, // +1 `critiques-de-bateau` (#1657 B3-2)
   'stars.json': 23,
   'systemes.manifest.json': 16,
-  'tables.json': 20,
+  // 20→21 : la table MAISON `mendier-ennuis` (Échec Stupéfiant à Mendier, LDB 09 l.97), #1612.
+  'tables.json': 21,
   'voyage-stakes.json': 42, // −1 `river-splinter-dodge` (#1657 B3-2)
   'weaponGroups.json': 38,
 };
-const TOTAL_ATTENDU = 801;
+// Puis 801→802 : +1 table d'effets `mendier-ennuis` (#1612).
+const TOTAL_ATTENDU = 802;
 
 const echecs = [];
 const rapport = [];

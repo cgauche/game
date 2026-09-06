@@ -61,7 +61,7 @@ seam (`ROLL_SEAM_CORE`) sont hors périmètre — leur pending EST le foyer.
 | `src/state/combatEffects.ts` | 1 | canonique | 959 | canonique : le corps d'`openSkillTest` (combatEffects.ts:326) — LA fabrique du `pendingTest` de la famille Flow authorée, le pending y est monté UNE fois pour tous ses appelants. |
 | `src/state/combatFlow.ts` | 2 | mixte | 3252, 7610 | 1 gate de main (`pendingHandGate`, `openAttackCascade`) monté à la main -> #1064 ; 1 `PendingReload` d'ennemi construit APRÈS un `rollSansPilote` déjà scellé — canonique : objet de RENDU (journal/popin), aucun jet à ouvrir. |
 | `src/state/combatSlice.ts` | 5 | dette | 2018, 2064, 2173, 2623, 3032 | 2 `pendingReload` (pièce servie / poste de navire), 1 `pendingStateRecovery`, 1 `pendingHandGate` (2ᵉ main), 1 `pendingHeal` -> #1064 (le lot d'affichage les re-route ; 6 -> 5 : le `pendingTest` de `battleGainAdvantage` passe par `openSkillTest`). |
-| `src/state/interludeFlow.ts` | 1 | dette | 743 | `pendingActivity` du catalogue d'Activités (`openCatalogActivity`) — fabrique UNIQUE de toutes les Activités à jet d'interlude -> #1064. |
+| `src/state/interludeFlow.ts` | 1 | dette | 748 | `pendingActivity` du catalogue d'Activités (`openCatalogActivity`) — fabrique UNIQUE de toutes les Activités à jet d'interlude -> #1064. |
 | `src/state/massBattleFlow.ts` | 1 | dette | 348 | `openBattleActivity` — fabrique PARTAGÉE, atteinte par 6 call-sites (prep ×3/round ×2/resistance) -> #1067 (surfaçage massBattle). |
 | `src/state/medicFlow.ts` | 2 | dette | 176, 202 | `pendingHeal` et `pendingSurgery` du soigneur PNJ hors combat -> #1064. |
 | `src/state/merchantFlow.ts` | 1 | dette | 878 | `pendingAppraise` (Évaluation / Intuition de détection) -> #1064. |
@@ -136,6 +136,7 @@ Périmètre : hors `src/engine/**` et hors `ROLL_SEAM_CORE`.
 | `src/data/mutations.ts` | 1 | dette | `deMonde` | mesuré : deMonde×1. A (`deMonde` de la table de mutation) -> #1508 T4. |
 | `src/data/obsessions.ts` | 1 | dette | `rollExpr` | mesuré : rollExpr×1. C (`rollExpr` d'une magnitude authorée) -> #1508 T5. |
 | `src/data/pregens.ts` | 1 | dette | `rollInitialWealth` | mesuré : rollInitialWealth×1. C (fortune de départ) -> #1508 T5. |
+| `src/state/activityWorldRolls.ts` | 1 | dette | `applyOps` | mesuré : applyOps×1 — celui de l'APPLIER des issues (`registerCascadeApplier(ACTIVITY_WORLD_ROLL_KIND)`), qui applique `wr.ops` une fois le seuil tombé. Le dé de MONDE lui-même passe par la porte (`worldStep`, évaluation `seuil`) et sa CIBLE se LIT sans rng (`formulaExpectation`) : AUCUN dé ne se tire ici aujourd'hui — la seule issue authorée est `statusMod` (`activities.json › mendier.worldRolls`), sans magnitude. L'entrée reste au stock parce que le détecteur compte `applyOps` comme SURFACE de dé, pas parce qu'un dé y roule. B (magnitudes d'`applyOps`) -> #1508 T2. |
 | `src/state/aiSpellValue.ts` | 1 | dette | `applyOps` | mesuré : applyOps×1. B (`applyOps` en ÉVALUATION d'IA) -> #1508 T2. |
 | `src/state/combat/hitModifiers.ts` | 2 | dette | `d10` | mesuré : d10×2. D (sauvegardes d'un HÉROS roulées en silence : Démoniaque/Protection, Dôme) -> #1508 T3. |
 | `src/state/combat/roundHooks.ts` | 3 | dette | `bleedDeathRoll`, `rollTest`, `rollWindsOfMagic` | mesuré : bleedDeathRoll×1, rollTest×1, rollWindsOfMagic×1. B + Hémorragie mortelle roulée en fin de ronde -> #1508 T2/T3. |
@@ -179,7 +180,7 @@ Périmètre : hors `src/engine/**` et hors `ROLL_SEAM_CORE`.
 | `src/ui/creator/CharacterCreator.tsx` | 2 | dette | `generateName`, `rng.int` | mesuré : generateName×1, rng.int×1. cérémonie du créateur — pose sous « Dés fixés » à instruire -> #1508 T6. |
 | `src/ui/creator/draft.ts` | 13 | dette | `rng.int`, `rollAge`, `rollCareer`, `rollEyes`, `rollHair`, `rollHeight`, `rollInitialWealth`, `rollSpecies`, `rollStar` | mesuré : rollCareer×4, rollStar×2, rng.int×1, rollAge×1, rollEyes×1, rollHair×1, rollHeight×1, rollInitialWealth×1, rollSpecies×1. cérémonie du créateur (`CreatorDice`) — la pose sous « Dés fixés » reste à instruire -> #1508 T6. |
 
-_303 dés mesurés dans 45 fichiers, pour 118 exports de `src/engine` derrière lesquels un dé tombe sans franchir d'autre frontière exportée — par nature : 303 dette._
+_304 dés mesurés dans 46 fichiers, pour 118 exports de `src/engine` derrière lesquels un dé tombe sans franchir d'autre frontière exportée — par nature : 304 dette._
 
 ## Population AUTHORÉE (donnée, pas code)
 
@@ -249,4 +250,4 @@ reste `ROLL_SEAM_PHASE2_STOCK`. 29 sites dans 14 fichiers.
 | `src/state/travelPostes.ts` | 1 |
 | `src/state/triggeredEffects.ts` | 1 |
 
-<!-- sources-empreinte: acf247f7e67e78ffb466efd001f3e000299dbf84 (2076 fichiers, 137 dossiers) corps: c96ef543423ea7de82e874014604f93fd4fcbe2f -->
+<!-- sources-empreinte: 8a0543e91419515eb76db27253c34b4a264f61ec (2078 fichiers, 137 dossiers) corps: ff4097f311be8630b704ae389ca20ea4ef39a9ad -->

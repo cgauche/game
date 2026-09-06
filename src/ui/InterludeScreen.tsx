@@ -9,7 +9,7 @@ import { favorRequiredActivities, type Favor, type FavorLevel } from '../engine/
 import { armyMight, battleActivityDifficulty, battlePrepEntries, type MassBattleState } from '../state/massBattleFlow';
 import {
   craftCatalog, craftTarget, learnableTalents, orderCatalog, metierOf, bankPayout, entrainementOptions,
-  classGatedDifficulty,
+  classGatedDifficulty, activityTestMod, activityModLines,
   type ActivityDef, type ActivityResolver, type CraftOption, type LearnOption, type EntrainementOption,
 } from '../engine/activities';
 import type { GameOp } from '../engine/ops';
@@ -1104,13 +1104,18 @@ function CatalogPane({ hero, def, refus }: { hero: Combatant; def: ActivityDef; 
   // Pré-jet dérivé de la DONNÉE — même dérivation que le flux (`openCatalogActivity`) :
   // `masterWeapon` impose la compétence de l'arme visée ; sinon `bestActivitySkill` (SOURCE UNIQUE
   // partagée avec le flux — voies à Difficulté hétérogène comme Punchausen comprises).
+  // Les `testMods` de SITUATION entrent ICI par les DEUX mêmes sources que le flux
+  // (`activityTestMod` → `activityModLines`, `interludeFlow.ts` `openCatalogActivity`) : la cible
+  // annoncée au catalogue est celle que le jet emploiera.
+  const situation = activityTestMod(def, hero);
+  const modsSituation = activityModLines(situation.mod, situation.label);
   let prejet: PendingRoll | undefined;
   if (def.resolver === 'masterWeapon') {
     const item = weapons.find((i) => i.uid === uid);
     if (item) {
       const kind = item.kind === 'ranged' ? ('ranged' as const) : ('melee' as const);
       const base = combatValue(hero, kind, buildWeapon({ label: item.label, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
-      prejet = withStake(testPending(<SkillChip skillId={kind === 'melee' ? 'corps-a-corps' : 'projectiles'} />, base, undefined, diff), def.id);
+      prejet = withStake(testPending(<SkillChip skillId={kind === 'melee' ? 'corps-a-corps' : 'projectiles'} />, base, undefined, diff, modsSituation), def.id);
     }
   } else if (def.skills?.length) {
     const best = bestActivitySkill(hero, def);
@@ -1122,7 +1127,7 @@ function CatalogPane({ hero, def, refus }: { hero: Combatant; def: ActivityDef; 
     ));
     if (best) {
       const bestDiff = classGatedDifficulty({ difficulty: best.difficulty, classGate: def.classGate }, hero);
-      prejet = withStake(testPending(<>{chips}</>, best.value, undefined, bestDiff), def.id);
+      prejet = withStake(testPending(<>{chips}</>, best.value, undefined, bestDiff, modsSituation), def.id);
     }
   }
   return (

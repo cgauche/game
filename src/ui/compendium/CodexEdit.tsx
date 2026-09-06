@@ -373,6 +373,10 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   // `outcomes` (OutcomeBand[]) → éditeurs dédiés ; `onSuccess` couvert par opsFieldsOf ci-dessus.
   // `resolver` (#1318 V6) : vocabulaire FERMÉ → sélecteur dédié, jamais le champ texte générique.
   if (categoryKey === 'activities') add('contexts', 'skills', 'char', 'difficulty', 'outcomes', 'resolver');
+  // #1612 : `testMods` (modificateurs de situation) et `worldRolls` (dés de MONDE après le Test) sont des
+  // tableaux top-level d'objets HOMOGÈNES → éditeur GÉNÉRIQUE commun (`GenericArrayField`), MEME patron
+  // que la rubrique de Vent et les options de jeu de taverne — jamais le repli JSON.
+  if (categoryKey === 'activities') add('testMods', 'worldRolls');
   // #851 : Magie environnementale (`arcanePhenomena`, mode 'single', patron `waterExposure`) — ses 4
   // tableaux top-level → éditeur GÉNÉRIQUE commun (`GenericArrayField`).
   if (categoryKey === 'arcanePhenomena') add('saturationLevels', 'windSaturationEffects', 'phenomena', 'tables');
@@ -826,6 +830,8 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
         {isActivity && <ActivityTestField entry={entry} edit={edit} />}
         {isActivity && <ActivityResolverField entry={entry} edit={edit} />}
         {isActivity && <OutcomeBandsField value={entry.outcomes as OutcomeBand[] | undefined} onChange={(v) => edit('outcomes', v.length ? v : undefined)} />}
+        {isActivity && <GenericArrayField label="testMods (modificateurs de situation du Test)" value={entry.testMods as Record<string, unknown>[] | undefined} onChange={(v) => edit('testMods', v.length ? v : undefined)} />}
+        {isActivity && <GenericArrayField label="worldRolls (tirages d’environnement après le Test)" value={entry.worldRolls as Record<string, unknown>[] | undefined} onChange={(v) => edit('worldRolls', v.length ? v : undefined)} />}
         {opsFields.map((fieldKey) => (
           <div className="ed-field" key={fieldKey}>
             <span>{fieldKey} — effet (GameOp[], même éditeur que les modificateurs passifs)</span>

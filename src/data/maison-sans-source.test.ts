@@ -55,10 +55,16 @@ const BASELINES: Record<string, number> = {
   // 27→28 (#1599, 2026-09-05) : la fenêtre de conscience par Détermination — LDB 20 l.170 dit
   // « pendant quelques minutes » et ne chiffre RIEN. Un arbitrage n'y a remplacé aucun folio : le
   // folio existe (LDB 189) et ne porte pas de durée.
-  'reglesOptionnelles.json': 28,
+  // 28 → 33 (#1612, 2026-09-06) : les CINQ réglages de l'Activité Mendier. Aucun folio n'est remplacé
+  // par un arbitrage — `LDB 09 l.97/l.99` décrit la mendicité sans chiffrer la durée du créneau, le
+  // discours, l'apparence, la chance d'être surpris ni la sanction des gardes. Leur `ref` porte la
+  // ligne du passage arbitré ; `maison` est leur régime définitif, comme les 28 précédentes.
+  'reglesOptionnelles.json': 33,
 };
 
-const TOTAL_GELE = 45;
+// 45 → 50 (#1612, 2026-09-06) : les 5 réglages MAISON de l'Activité Mendier, cf. la baseline
+// `reglesOptionnelles.json` ci-dessus.
+const TOTAL_GELE = 50;
 
 /**
  * Entrées `maison` sans `source` des datasets EXEMPTÉS — gelé au 2026-08-27 (migration 4b), ÉTENDU le

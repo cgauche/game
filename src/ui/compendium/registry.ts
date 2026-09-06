@@ -436,7 +436,9 @@ function outcomeBandsSection(bands?: OutcomeBand[]): CodexSection | null {
     if (b.note) rows.push({ t: 'text', text: b.note });
     if (b.resolver) rows.push({ t: 'kv', k: 'Résolveur', v: b.resolver });
     if (b.payoutPct != null) rows.push({ t: 'kv', k: 'Rendu', v: `${b.payoutPct} %` });
-    if (b.ops?.length) rows.push({ t: 'kv', k: 'Effet', v: `${b.ops.length} op(s) sur le Personnage` });
+    // Les ops de la bande se RENDENT (primitive `opRows` — chips codex-liées, phrase humanisée, et un
+    // `rollTable` expansé en ses rangées), jamais un compte. Même projection que « Tables d'effets ».
+    if (b.ops?.length) rows.push(...opRows(b.ops));
     for (const o of b.battle ?? [])
       rows.push({ t: 'kv', k: 'Bataille', v: `${BATTLE_TARGET_LABEL[o.target]} ${BATTLE_SCALE_LABEL[o.scale]} ${o.amount >= 0 ? '+' : ''}${o.amount}${o.side ? ` (${BATTLE_SIDE_LABEL[o.side]})` : ''}` });
     if (b.chains?.length) rows.push({ t: 'kv', k: 'Enchaîne', v: b.chains.join(', ') });

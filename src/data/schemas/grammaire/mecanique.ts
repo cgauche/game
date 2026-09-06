@@ -73,6 +73,11 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
  *  dataset à elles, elles vivent DANS le jeu de Critiques qui les imprime. */
   fall: z.strictObject({ op: z.literal('fall'), hauteur: z.strictObject({ table: z.strictObject({ id: z.string() }) }) }),
   heal: z.strictObject({ op: z.literal('heal'), amount: formulaSchema, perSL: perSLSchema.optional() }),
+  /** `money` — mouvement de la bourse PERSONNELLE de la cible. La charge porte son NOM (`montant`),
+   *  comme toute autre action du vocabulaire (`giveMoney.montant`, `giveXp.amount`) : elle n'est jamais
+   *  étalée parmi les clés de l'op (garde `src/data/monnaie-forme-unique.test.ts`, sonde A). La seule
+   *  dénomination chiffrable est `brass`, l'unité de compte de `engine/money.ts`. */
+  money: z.strictObject({ op: z.literal('money'), montant: z.strictObject({ brass: formulaSchema }) }),
   healCaster: z.strictObject({ op: z.literal('healCaster'), amount: formulaSchema }),
   kill: z.strictObject({ op: z.literal('kill') }),
   loseTurn: z.strictObject({ op: z.literal('loseTurn'), what: z.enum(['action', 'movement']).optional() }),
@@ -132,7 +137,7 @@ function refusLoose(v: Record<string, unknown>, ctx: z.RefinementCtx): void {
 /** Familles de `Condition` qu'un contexte de VERROU d'État GARANTIT — elles ne lisent que la vue
  *  d'acteur (`buildActorView`). Tout le reste (drapeaux de scène, horloge, bourse, inventaire de
  *  groupe, contexte de résolution d'une touche) est absent de ce contexte. */
-const SUJETS_DE_VERROU = new Set(['always', 'compare', 'capability', 'has', 'relation', 'casterChaosDomain']);
+const SUJETS_DE_VERROU = new Set(['always', 'compare', 'capability', 'has', 'relation', 'casterChaosDomain', 'visiblePassive']);
 
 /** Les `kind` d'une Condition de verrou que le contexte ne garantit pas (récursif sur `all`/`any`/`not`). */
 function sujetsNonGarantis(cond: unknown): string[] {
@@ -244,6 +249,7 @@ export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
     z.strictObject({ kind: z.literal('relation'), who: actorRefSchema, is: relationOrCampSchema }),
     z.strictObject({ kind: z.literal('has'), who: actorRefSchema, what: z.enum(['group', 'talent', 'trait', 'psych']), value: z.string(), spec: z.string().optional() }),
     z.strictObject({ kind: z.literal('casterChaosDomain'), is: z.string() }),
+    z.strictObject({ kind: z.literal('visiblePassive'), who: actorRefSchema }),
     z.strictObject({ kind: z.literal('all'), of: z.array(conditionSchema) }),
     z.strictObject({ kind: z.literal('any'), of: z.array(conditionSchema) }),
     z.strictObject({ kind: z.literal('not'), of: conditionSchema }),

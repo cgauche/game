@@ -32,8 +32,11 @@ describe('cliquet — une Activité à JET dit son ENJEU (#1117 L3)', () => {
   const jouables = aJet.filter((a) => !a.blocked);
 
   it('le stock mesuré est celui attendu (le prédicat de jet ne dérive pas en silence)', () => {
-    expect(aJet.length).toBe(53);
-    expect(jouables.length).toBe(46);
+    // 53 → 54 et 46 → 47 (#1612, 2026-09-06) : l'Activité Mendier (`LDB 09 l.97`) entre au catalogue.
+    // Elle LANCE (Test de Charme) et n'est pas `blocked` : elle porte donc son `stake`, comme ses 46
+    // sœurs jouables. Le compte des Activités SANS jet ne bouge pas.
+    expect(aJet.length).toBe(54);
+    expect(jouables.length).toBe(47);
     expect(ACTIVITIES.filter((a) => !activityRolls(a)).length).toBe(9);
   });
 

@@ -338,10 +338,16 @@ describe('bornesSchema — les deux bornes d’un réglage vont par paire', () =
     const regles = reglesOptionnelles as ReadonlyArray<Record<string, unknown>>;
     expect(validateDataset('reglesOptionnelles.json', regles)).toBeNull();
     const bornees = regles.filter((r) => typeof r.min === 'number' && typeof r.max === 'number');
-    expect(bornees.length, 'plus aucun réglage borné : la sonde ne mesure rien.').toBe(24); // 23→24 (#1599) : la fenêtre de conscience par Détermination (LDB 20 l.170)
+    // 23→24 (#1599) : la fenêtre de conscience par Détermination (LDB 20 l.170).
+    // 24→29 (#1612, 2026-09-06) : les CINQ réglages `param` de l'Activité Mendier, tous bornés —
+    // `mendier-heures-par-jour` (1..12), `mendier-discours` (−30..30), `mendier-apparence-bonus`
+    // (−30..30), `mendier-surpris-pct` (0..100) et `mendier-amende-sous` (0..240). LDB 09 l.97/l.99 ne
+    // chiffre AUCUN d'entre eux (durée du créneau, discours, apparence, chance d'être surpris, sanction
+    // des gardes) : cinq valeurs maison éditables, aucune figée au moteur.
+    expect(bornees.length, 'plus aucun réglage borné : la sonde ne mesure rien.').toBe(29);
     expect(
       bornees.filter((r) => r.kind !== 'param').map((r) => r.id),
-      'un réglage borné n’est pas un paramètre chiffré : la co-présence mesurée 24/24 ne porte plus sur la même population.',
+      'un réglage borné n’est pas un paramètre chiffré : la co-présence mesurée 29/29 ne porte plus sur la même population.',
     ).toEqual([]);
     const i = regles.indexOf(bornees[0]);
     const { max: _absente, ...ampute } = bornees[0];

@@ -272,7 +272,7 @@ Verbatim depuis `LDB 07 l.152-159` (tableau « Coût des Changements de Carrièr
 **Sources RAW** : `LDB 07 l.152-159`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.152-159) → `AdvancementView`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `advancement-career-jump`, `changeCareer`, `sorcellerie` — `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/engine/advancement.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`
+- `LDB 7` (l.152-159) → `AdvancementView`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `changeCareer`, `advancement-career-jump`, `sorcellerie` — `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/engine/advancement.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`
 
 ---
 

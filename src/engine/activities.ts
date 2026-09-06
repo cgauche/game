@@ -20,7 +20,9 @@
 import { RNG, defaultRNG, roll as rollDice } from './dice';
 import { Money, fromBrass, toBrass, priceToMoney, PA_PER_SC, PA_PER_CO } from './money';
 import type { Combatant, Difficulty, SkillInstance, Availability, StakeForm } from './types';
-import type { GameOp } from './ops';
+import { resolveFormula, type Formula, type GameOp } from './ops';
+import { evalCondition, type Condition, type ConditionCtx } from './flowCore';
+import { buildActorView } from './actorView';
 import type { ModLine } from './combat';
 import { resolveSkillBest, bestSkilledOption, testValue, type SkillRef, type TestSpec } from './skills';
 import { DIFFICULTY_MODIFIERS } from './types';
@@ -249,6 +251,63 @@ export function matchBattleOutcomes(def: ActivityDef, r: BattleResolution): Outc
   return matchOutcomes(def, r).filter((b) => battleCondMet(b.when, r));
 }
 
+/** UN modificateur de situation d'un Test d'Activité : une quantité (`Formula`) éventuellement GATÉE
+ *  par une `Condition` évaluée sur l'ACTEUR du Test (`when` absent = toujours). `label` nomme la ligne
+ *  quand plusieurs termes se cumulent ; à défaut, l'appelant nomme la ligne unique. */
+export interface ActivityTestMod {
+  when?: Condition;
+  mod: Formula;
+  label?: string;
+}
+
+/** UN dé de MONDE attaché à une Activité : un pourcentage d'auteur (`cible`, une `Formula` — donc un
+ *  `{rule}` éditable), les `ops` appliquées à l'acteur quand le dé PASSE sous la cible, et une
+ *  `unless` qui EXEMPTE l'acteur du tirage (« à moins qu'ils n'aient déjà une Carrière de Mendiant, ou
+ *  une autre Carrière sans ressources », LDB 09 l.99 — exprimée par un prédicat GÉNÉRAL sur le Statut,
+ *  jamais par un id de carrière). Le dé passe par la PORTE (`worldStep`), comme tout dé de monde. */
+export interface ActivityWorldRoll {
+  id: string;
+  label: string;
+  cible: Formula;
+  ops: GameOp[];
+  unless?: Condition;
+}
+
+/**
+ * CONTEXTE d'évaluation des `Condition` d'une Activité (gates `testMods.when`, `worldRolls.unless`) :
+ * l'acteur du Test, vu DEUX fois par la MÊME projection — comme acteur de Flow (`buildActorView`, pour
+ * `compare`/`has`/`visiblePassive`) ET comme groupe d'UN pour les Conditions party-level
+ * (`status`/`career`/`species`/`skill`).
+ *
+ * Le membre de groupe est présenté au NIVEAU 1 de sa carrière : ce que le RAW qualifie est la CARRIÈRE
+ * (« à moins qu'ils n'aient déjà une Carrière de Mendiant, ou une autre Carrière sans ressources »,
+ * LDB 09 l.99), pas l'avancement du personnage — le Statut d'ENTRÉE est la propriété de la carrière.
+ * PURE.
+ */
+export function activityConditionCtx(actor: Combatant): ConditionCtx {
+  const vue = buildActorView(actor);
+  return {
+    flags: {}, gameTime: 0, target: vue, caster: vue,
+    party: [{ career: actor.career, species: actor.species, careerLevel: 1, skills: actor.skills }],
+  };
+}
+
+/** TOTAL des `testMods` d'une Activité pour un acteur donné, et le LIBELLÉ de la ligne : les termes
+ *  gatés sont évalués contre la vue d'acteur (`buildActorView`, la MÊME que les Flows et les verrous
+ *  d'État — aucune 2ᵉ projection). PURE. Sans `testMods`, ou tous les gates faux : `mod` 0. */
+export function activityTestMod(def: Pick<ActivityDef, 'testMods'>, actor: Combatant): { mod: number; label?: string } {
+  const ctx = activityConditionCtx(actor);
+  let mod = 0;
+  const labels: string[] = [];
+  for (const m of def.testMods ?? []) {
+    if (m.when != null && !evalCondition(m.when, ctx)) continue;
+    const valeur = resolveFormula(m.mod, actor);
+    mod += valeur;
+    if (m.label && valeur !== 0) labels.push(m.label);
+  }
+  return { mod, ...(labels.length ? { label: labels.join(' + ') } : {}) };
+}
+
 /** Gate GÉOGRAPHIQUE : l'Activité est-elle proposable au lieu courant (`MapPlace.id`, null = hors carte) ?
  *  Sans `where`, partout ; avec, il faut ÊTRE au lieu (les Activités d'ACE Annexe I sont « à Altdorf »). */
 export function activityAvailableAt(def: ActivityDef, placeId: string | null): boolean {
@@ -279,6 +338,13 @@ export interface ActivityDef extends TestSpec {
   extended?: { drPerStage: number };
   /** RAW EDOC 8 l.133 : échouer le Test d'une Activité octroie un État Exténué. */
   failExtenue?: boolean;
+  /** Modificateurs de SITUATION du Test de cette Activité, en DONNÉE — chaque entrée est une `Formula`
+   *  (donc un `{rule}` éditable pour ce que le livre ne chiffre pas) éventuellement GATÉE par une
+   *  `Condition` évaluée sur l'acteur (`activityTestMod`). Mendier (LDB 09 l.97) : « la Difficulté est
+   *  modifiée par le discours choisi pour mendier et à quel point votre apparence peut susciter la
+   *  sympathie » — un terme inconditionnel (le discours) et un terme gaté (`visiblePassive`). Absent =
+   *  aucun modificateur ; le TOTAL forme UNE seule ligne de mod à l'écran (`activityModLines`). */
+  testMods?: ActivityTestMod[];
   /** Modificateur météo PAR météo (id de `Weather`) au Test de l'Activité — DONNÉE (fini le `def.id ===`
    *  en dur) : Plein air « -10 par degré de temps éloigné de Beau temps » (EDOC 8 l.141), Approvisionnement
    *  « -10 par temps sec » (l.56). Absent/météo non listée = 0. */
@@ -289,6 +355,10 @@ export interface ActivityDef extends TestSpec {
   onSuccess?: GameOp[];
   /** Description VERBATIM (Markdown) de la source — rendue par `<Prose>` (règle 5, jamais de paraphrase). */
   desc?: string;
+  /** DÉS de MONDE déclenchés APRÈS la résolution du Test de l'Activité — forme GÉNÉRALE en donnée
+   *  (« être surpris à mendier par ses pairs », LDB 09 l.99) : le pourcentage vit dans une règle
+   *  optionnelle, l'issue en `GameOp`, et l'exemption en `Condition` sur l'acteur. */
+  worldRolls?: ActivityWorldRoll[];
   /** Table d'issues par bande de DR (« RÉSULTATS DU TEST DE… », ACE Annexe I) — prime sur `onSuccess`. */
   outcomes?: OutcomeBand[];
   /** Gate GÉOGRAPHIQUE : ids de lieux de la carte du monde (`MapPlace.id`) où l'Activité est proposable

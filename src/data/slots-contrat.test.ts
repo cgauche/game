@@ -147,7 +147,18 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // Cliquet RECALÉ 334 → 336 après rebase sur 6a30233aa (#1690, 2026-09-06) : la mesure d'avant rebase valait
 // 334 (les 4 `tiles` adoptent `idDe('terrain')`) ; le tronc a ajouté entre-temps 2 entrées de stock
 // (`scripts/guards/lib/slotsStock.mjs`, train #1599 — États portés par un passif). La valeur suit la MESURE.
-const DETTE_ADOPTION_MAX = 336;
+// Cliquet 336 → 339 (#1612, 2026-09-06, après le rebase sur #1690 — entrées réelles 336 → 339, plafond recalé au réel) : QUATRE champs ENTRENT au dénominateur — `cible`
+// (1), `factor` (1) et `mod` (2) côté `activities.json`, `of` (1) côté `tables.json`, les quatre
+// porteurs du terme `{rule}` d'une `Formula` posés par l'Activité Mendier et sa table MAISON (le
+// montant de l'amende des gardes vit en règle optionnelle). Ils ONT leur fabrique (`formulaSchema` compose
+// `idDe('regleOptionnelle')`, `grammaire/valeurs.ts`) : ce que le déclaré n'atteint pas ici est
+// l'ANGLE MORT déjà nommé par ce volet — « `valeursAuPath` ne descend PAS dans une branche d'union
+// (`|N`) », et `formulaSchema` EST une union. Même dette, même solde que les autres porteurs de
+// `{rule}` : elle se retire quand le marcheur de slots saura descendre une union.
+// Dans le MÊME geste, `activities.json | rule` (1) SORT du dénominateur : le slot déclaré par
+// `formulaSchema` projette sur la clé `rule`, et cette projection couvre désormais le champ `rule`
+// de l'Activité elle-même. Plafond au réel mesuré (339) : le cliquet ne laisse aucun mou.
+const DETTE_ADOPTION_MAX = 339;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {

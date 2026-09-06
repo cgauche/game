@@ -5,34 +5,17 @@
  * une ALLOCATION sur une ou plusieurs bourses — la bande peut se cotiser (`payWithAllocation`), le
  * bénéficiaire d'un achat est INDÉPENDANT des payeurs. Miroir de `creditPartyMoney`/`merchantFlow`.
  */
-import type { Combatant, ItemInstance } from '../engine/types';
-import { itemFromTrappingById } from '../engine/items';
+import type { Combatant } from '../engine/types';
 import { add as moneyAdd, subtract as moneySub, canAfford, toBrass, fromBrass, type Money } from '../engine/money';
+import { bourseInstanceOf, bourseOf, ensureBourse, withBourseMoney } from '../engine/bourse';
 import { conditionCtx, type ConditionCtx } from '../engine/flowCore';
 import type { Get, Set } from './flowTypes';
 
 const ZERO_MONEY: Money = { gold: 0, silver: 0, brass: 0 };
 
-/** Instance `ItemInstance` de la Bourse d'un héros (trapping `bourse`), ou `undefined` s'il n'en a pas. */
-export function bourseInstanceOf(hero: Combatant): ItemInstance | undefined {
-  return hero.items?.find((i) => i.trappingId === 'bourse');
-}
-
-/** Garantit une instance Bourse SUR UN CLONE du héros (patron `addItemToHero`, engine/items.ts) —
- *  no-op (retourne `hero` tel quel) si déjà présente. Money initialisée à 0. */
-export function ensureBourse(hero: Combatant): Combatant {
-  if (bourseInstanceOf(hero)) return hero;
-  const it = itemFromTrappingById('bourse');
-  if (!it) return hero;
-  const clone: Combatant = structuredClone(hero);
-  clone.items = [...(clone.items ?? []), { ...it, money: { ...ZERO_MONEY } }];
-  return clone;
-}
-
-/** Montant porté par la Bourse d'un héros — `0` s'il n'en a pas (encore). */
-export function bourseOf(hero: Combatant): Money {
-  return bourseInstanceOf(hero)?.money ?? ZERO_MONEY;
-}
+// Parts PURES de la Bourse : `src/engine/bourse.ts` (voisin de `money.ts`) — le state les COMPOSE et
+// les ré-expose à ses appelants historiques, l'op `money` du moteur lit les mêmes.
+export { bourseInstanceOf, bourseOf, ensureBourse };
 
 /** Somme des bourses des héros — SEULE source d'un affichage d'argent agrégé (il n'y a pas de bourse
  *  de groupe : l'argent vit sur les héros). */
@@ -46,15 +29,6 @@ export function partyMoneyTotal(get: Get): Money {
  *  l'état de scène (triggers, `if`, choix de dialogue) route DESSUS. */
 export function condCtx(get: Get): ConditionCtx {
   return conditionCtx({ flags: get().flags, gameTime: get().gameTime, party: get().party, money: partyMoneyTotal(get) });
-}
-
-/** Pose un montant FIGÉ sur la Bourse d'un héros, en garantissant l'instance au passage — clone pur. */
-function withBourseMoney(hero: Combatant, money: Money): Combatant {
-  const ensured = ensureBourse(hero);
-  const clone: Combatant = ensured === hero ? structuredClone(hero) : ensured;
-  const it = bourseInstanceOf(clone)!;
-  it.money = money;
-  return clone;
 }
 
 /** Crédite la Bourse d'UN héros (atomique, jamais refusée — créditer ne peut pas échouer). */

@@ -91,7 +91,8 @@ const CARDINAUX = {
   // pas d'entrée reçoivent la leur ; garde `src/data/props-label-parite.test.ts`).
   'props.json': 123,
   // 81→82 : la fenêtre de conscience par Détermination (LDB 20 l.170, durée maison), #1599.
-  'reglesOptionnelles.json': 82,
+  // 82→87 : les cinq règles `param` de l'Activité Mendier (heures/jour, discours, apparence, surpris, amende — LDB 09 l.97/l.99, valeurs maison), #1612.
+  'reglesOptionnelles.json': 87,
   'skills.json': 48,
   'steam-breakdown.json': 6,
   'structures.json': 24,
@@ -107,7 +108,8 @@ const CARDINAUX = {
 // Puis 1338→1340 : +2 enjeux de `combat-stakes.json` (#1657 B3-1, B3-2).
 // Puis 1340→1341 : +1 Trait naval `cale` (#1657 B3-2b-a, MSRC 07 l.94 / MSRC 10 l.90).
 // Puis 1341→1342 : +1 règle optionnelle `maladie-conscience-determination-minutes` (#1599, LDB 20 l.170).
-const TOTAL_ATTENDU = 1342;
+// Puis 1342→1347 : +5 règles optionnelles `mendier-*` (#1612, LDB 09 l.97/l.99).
+const TOTAL_ATTENDU = 1347;
 
 /**
  * PROMOTION DÉCLARÉE de `id` — `<fichier>` → rang qu'y occupait `id` AVANT la vague. L'enveloppe veut

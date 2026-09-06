@@ -29,11 +29,12 @@ import { confirmBattleActivity, massBattleBegin, battlePrepEntries } from './mas
 import {
   craftTarget, craftSpecOf, orderBlockOf, metierOf, statusIncome, statusIncomeMax, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost,
   entrainementOptions, entrainementTutorCost,
-  ACTIVITIES, activitiesFor, activityById, matchOutcomes, activityAvailableAt, classGatedDifficulty,
+  ACTIVITIES, activitiesFor, activityById, matchOutcomes, activityAvailableAt, activityTestMod, classGatedDifficulty,
   RESOLVER_OWNER,
   type PriceTier, type ActivityDef, type ActivityResolver, type ResolverOf,
 } from '../engine/activities';
 import { outOfTradeReason } from '../engine/disponibilite';
+import { buildActivityWorldRollSteps } from './activityWorldRolls';
 import { applyOps, type GameOp } from '../engine/ops';
 import { isFumble } from '../engine/oups';
 import { combatValue } from '../engine/combat';
@@ -739,11 +740,16 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
   // Gate de Classe GÉNÉRIQUE (LDB 23 l.197 / AA 12 l.5) — appliquée EN DERNIER, sur la Difficulté
   // effectivement retenue (celle du résolveur si elle en a dérivé une, sinon celle de la donnée).
   const gatedDifficulty = classGatedDifficulty({ difficulty: extra.difficulty ?? def.difficulty, classGate: def.classGate }, h);
+  // Modificateurs de SITUATION en DONNÉE (`testMods`) — UNE seule ligne de mod à l'écran, fondue dans
+  // `pa.mod`/`modLabel` comme la Menace ou le bonus de Planification (LDB 09 l.97 : discours + apparence).
+  const situation = activityTestMod(def, h);
+  const ligneDeMod = situation.mod ? { mod: situation.mod, ...(situation.label ? { modLabel: situation.label } : {}) } : {};
   set({
     pendingActivity: {
       heroId, kind: 'catalog', activityId, label: def.label,
       skillLabel, skillValue,
       roll: null, target: 0, sl: 0, success: false,
+      ...ligneDeMod,
       ...(opts.itemUid ? { itemUid: opts.itemUid } : {}),
       ...(opts.spellId ? { spellId: opts.spellId } : {}),
       ...(opts.depositIndex != null ? { depositIndex: opts.depositIndex } : {}),
@@ -1266,6 +1272,11 @@ export function confirmActivity(get: Get, set: Set): void {
   };
   set({ interlude: { ...itl }, party: [...get().party] });
   for (const l of lines) get().log(l);
+  // DÉS DE MONDE de l'Activité (`worldRolls`) — APRÈS l'écriture : ce que l'environnement roule sur
+  // l'acteur une fois son Test résolu (« surpris à mendier par ses pairs », LDB 09 l.99). Bâtis par la
+  // PORTE (`worldStep`), donc fixables ; un acteur exempté n'a aucune étape (rien ne se tire).
+  const worldSteps = buildActivityWorldRollSteps(def, h);
+  if (worldSteps.length) startCascade(get, set, { title: def.label, icon: def.icon, purpose: 'interlude', steps: worldSteps });
 }
 
 /** Opérations bancaires (ch.23 l.154-165) — dépôt (1 Activité). Invest : Statut Or/Argent.

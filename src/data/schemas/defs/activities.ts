@@ -7,8 +7,8 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema, moneyPartialSchema, stakeFormSchema } from '../grammaire/valeurs';
-import { gameOpSchema, stageOutcomeSchema } from '../grammaire/mecanique';
+import { difficultySchema, formulaSchema, moneyPartialSchema, stakeFormSchema } from '../grammaire/valeurs';
+import { conditionSchema, gameOpSchema, stageOutcomeSchema } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'activities.json';
@@ -17,6 +17,30 @@ export const famille = 'entite';
 // `difficulty?` = Difficulté PROPRE à cette voie quand le RAW en attache une différente par
 // Compétence (Punchausen, AA 12 l.45-49) — absente, la voie retombe sur `difficulty` de l'Activité.
 const skillRefSchema = refOuSpec('skill', { difficulty: difficultySchema.optional() });
+
+/** Termes de `Formula` dont la valeur ne se connaît QU'AU jet. Un modificateur de Test d'Activité est
+ *  affiché AVANT l'engagement (`activityTestMod` → volet d'Activité, ligne de pré-jet) : la valeur
+ *  montrée est celle qui s'applique. Le parse les REFUSE sur `testMods[].mod`, nominativement — `sl`
+ *  (les DR du Test COURANT) n'est pas davantage connu avant l'engagement. */
+const TERMES_ALEATOIRES = ['dice', 'rolled', 'sl'] as const;
+
+/** Premier terme aléatoire rencontré dans une `Formula` (les seules imbrications du dialecte :
+ *  `sum[]`, `times.of`, `times.factor`), ou `null`. PURE. */
+const termeAleatoire = (f: unknown): string | null => {
+  if (f == null || typeof f !== 'object') return null;
+  const o = f as Record<string, unknown>;
+  const direct = TERMES_ALEATOIRES.find((t) => t in o);
+  if (direct) return direct;
+  if (Array.isArray(o.sum)) {
+    for (const terme of o.sum) {
+      const trouve = termeAleatoire(terme);
+      if (trouve) return trouve;
+    }
+  }
+  const times = o.times as { of?: unknown; factor?: unknown } | undefined;
+  if (times) return termeAleatoire(times.of) ?? termeAleatoire(times.factor);
+  return null;
+};
 
 const activityContextSchema = z.enum(['interlude', 'voyage', 'mer', 'bataille', 'bataille-round', 'auberge']);
 
@@ -75,6 +99,21 @@ const doc = document(
     freeSkill: z.boolean().optional(),
     extended: z.strictObject({ drPerStage: z.number() }).optional(),
     failExtenue: z.boolean().optional(),
+    /** Modificateurs de SITUATION du Test (miroir de `ActivityDef.testMods`) : quantité `Formula` — donc
+     *  un `{rule}` éditable — éventuellement gatée par une `Condition` sur l'acteur. */
+    testMods: z.array(z.strictObject({
+      when: conditionSchema.optional(),
+      mod: formulaSchema,
+      label: z.string().optional(),
+    })).optional(),
+    /** Dés de MONDE après le Test (miroir de `ActivityDef.worldRolls`). */
+    worldRolls: z.array(z.strictObject({
+      id: z.string().min(1),
+      label: z.string().min(1),
+      cible: formulaSchema,
+      ops: z.array(gameOpSchema),
+      unless: conditionSchema.optional(),
+    })).optional(),
     weatherMod: z.record(z.string(), z.number()).optional(),
     resolver: activityResolverSchema.optional(),
     onSuccess: z.array(gameOpSchema).optional(),
@@ -157,6 +196,14 @@ const doc = document(
       label: 'Lieux requis',
       hint: 'Lieux de la carte du monde où l’Activité est proposable ; absent = partout',
     },
+    testMods: {
+      label: 'Modificateurs du Test',
+      hint: 'Modificateurs de situation, chacun éventuellement conditionné à l’état de l’acteur',
+    },
+    worldRolls: {
+      label: 'Tirages d’environnement',
+      hint: 'Pourcentages roulés après le Test ; une condition d’exemption peut en dispenser l’acteur',
+    },
     minInvest: { label: 'Mise minimale', hint: 'Montant minimal engagé (dépôt bancaire…)' },
     stageOutcome: { label: 'Issue par Étape', hint: 'Effet de portée Étape, pour les Activités de voyage' },
     unavailableIfExtenue: { label: 'Indisponible si Exténué' },
@@ -222,6 +269,16 @@ const doc = document(
         }
         if (a.rule && !a.ruleCategory) {
           ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : rule sans ruleCategory` });
+        }
+        for (const m of (v as { testMods?: { mod?: unknown; label?: string }[] }).testMods ?? []) {
+          const terme = termeAleatoire(m.mod);
+          if (terme) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ['testMods'],
+              message: `${a.id} : testMods${m.label ? ` « ${m.label} »` : ''} — le terme \`{${terme}}\` est tiré au jet, or un modificateur de Test est AFFICHÉ avant l'engagement. Emploie un littéral ou un \`{rule}\` éditable.`,
+            });
+          }
         }
       }),
   },

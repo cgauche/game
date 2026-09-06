@@ -86,6 +86,7 @@ export const FILE_CONCEPTS = new Map([
   ['src/engine/menace.ts', 'Menace (psychologie)'],
   ['src/engine/miscast.ts', 'Incantation ratée (Fiasco)'],
   ['src/engine/money.ts', 'Argent, monnaie'],
+  ['src/engine/bourse.ts', 'Argent, monnaie'],
   ['src/engine/mountTravel.ts', 'Voyage monté'],
   ['src/engine/movement.ts', 'Mouvement, terrain'],
   ['src/engine/names.ts', 'Génération de noms'],

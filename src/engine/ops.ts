@@ -40,6 +40,8 @@ import { applyHealWounds } from './healing';
 import { fateSaveOrDie } from './fortune';
 import { talentMaxReached } from './careerSlots';
 import { damageLeatherArmour, itemFromTrappingById, itemFromGive, giveTrappingLabel, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout, damageString, autoStowNewItem } from './items';
+import { bourseBrass, setBourseBrass } from './bourse';
+import { formatMoney, fromBrass } from './money';
 import { weaponMatchesFamily } from './weaponDamage';
 import { itemCapability } from './capabilities';
 import { suppressPsychTraits, type PsychType } from './psychology';
@@ -103,6 +105,12 @@ export type Formula =
    *  Condition `woundsDealt`. Absorption « Toute attaque qui touche la créature inflige une quantité ÉGALE
    *  de Dégâts à la victime absorbée » (EDO 11 p.147) : `wounds { amount: { woundsDealt: true } }`. 0 hors contexte. */
   | { woundsDealt: true }
+  /** DR (Degrés de Réussite) du Test COURANT (`ctx.sl`) — le terme qui manquait pour authorer une
+   *  quantité ÉCHELONNÉE par la marge sans passer par `perSL` (qui n'exprime qu'un pas linéaire ajouté à
+   *  un socle). Mendier : « un nombre de sous de cuivre égal à votre Bonus de Sociabilité x DR par heure »
+   *  (LDB 09 l.97) s'écrit `{times:{of:{times:{of:{bonusOf:'sociabilite'},factor:{sl:true}}},factor:{rule:…}}}`.
+   *  Hors contexte de Test (aucun `ctx.sl`) : 0, jamais NaN. */
+  | { sl: true }
   /** SOMME de termes (composition) — « 1d10 + (pions − 1) » des Dégâts d'En Flammes (LDB 16 l.84). Permet
    *  d'authorer une formule composée sans coder en dur l'addition au moteur. Récursif. */
   | { sum: Formula[] }
@@ -120,7 +128,7 @@ export type Formula =
 /** Résout une formule contre son référent (`ref`) — RNG seedable pour les dés. `rolled` = valeur du
  *  jet courant d'un `rollThreshold` (injectée par l'op ; 0 hors de ce contexte) ; `indice` = Indice
  *  de l'attaque naturelle d'une manœuvre (`{indiceOf}`, 0 hors contexte). */
-export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG, rolled?: number, indice?: number, stacks?: number, gap?: number, woundsDealt?: number): number {
+export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG, rolled?: number, indice?: number, stacks?: number, gap?: number, woundsDealt?: number, sl?: number): number {
   if (typeof f === 'number') return f;
   if (typeof f !== 'object' || f === null) return 0; // formule malformée (donnée invalide) → 0, jamais un crash en plein combat
   if ('bonusOf' in f) return bonus(effectiveChar(ref, f.bonusOf));
@@ -130,16 +138,17 @@ export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG
   if ('stacks' in f) return stacks ?? 0;
   if ('engagedAdvantageGap' in f) return gap ?? 0;
   if ('woundsDealt' in f) return woundsDealt ?? 0;
+  if ('sl' in f) return sl ?? 0;
   if ('rule' in f) { const v = rule(f.rule); return typeof v === 'number' && Number.isFinite(v) ? v : 0; }
-  if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + resolveFormula(term, ref, rng, rolled, indice, stacks, gap, woundsDealt), 0);
-  if ('times' in f) return resolveFormula(f.times.of, ref, rng, rolled, indice, stacks, gap, woundsDealt) * resolveFormula(f.times.factor, ref, rng, rolled, indice, stacks, gap, woundsDealt);
+  if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + resolveFormula(term, ref, rng, rolled, indice, stacks, gap, woundsDealt, sl), 0);
+  if ('times' in f) return resolveFormula(f.times.of, ref, rng, rolled, indice, stacks, gap, woundsDealt, sl) * resolveFormula(f.times.factor, ref, rng, rolled, indice, stacks, gap, woundsDealt, sl);
   return rollDice(f.dice, rng);
 }
 
 /** Clés reconnues d'une `Formula` OBJET — SOURCE UNIQUE, alignée sur l'union `Formula` et sur les
  *  branches de `resolveFormula`. Réutilisée par le garde-fou d'intégrité des données
  *  (`src/data/data-wellformed.test.ts`) pour valider les champs Formula des `GameOp` sans re-coder la liste. */
-export const FORMULA_OBJECT_KEYS = ['bonusOf', 'charOf', 'dice', 'rolled', 'indiceOf', 'stacks', 'engagedAdvantageGap', 'woundsDealt', 'rule', 'sum', 'times'] as const;
+export const FORMULA_OBJECT_KEYS = ['bonusOf', 'charOf', 'dice', 'rolled', 'indiceOf', 'stacks', 'engagedAdvantageGap', 'woundsDealt', 'sl', 'rule', 'sum', 'times'] as const;
 
 /** Une valeur est-elle une `Formula` VALIDE — résoluble par `resolveFormula` sans planter ? `number` FINI,
  *  ou objet portant exactement une clé connue (`sum` récursif). PUR. Rejette une string (un `'$indice'`
@@ -215,7 +224,7 @@ export function formulaExpectation(f: Formula, ref: Combatant): number {
   if ('rule' in f) { const v = rule(f.rule); return typeof v === 'number' && Number.isFinite(v) ? v : 0; }
   if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + formulaExpectation(term, ref), 0);
   if ('times' in f) return formulaExpectation(f.times.of, ref) * formulaExpectation(f.times.factor, ref);
-  return 0; // indiceOf / stacks / engagedAdvantageGap / woundsDealt : hors contexte au planning
+  return 0; // indiceOf / stacks / engagedAdvantageGap / woundsDealt / sl : hors contexte au planning
 }
 
 /** Somme des bonus de DR à une Compétence (`skillId`) conférés au porteur — op `skillDRBonus` PASSIVE
@@ -733,6 +742,15 @@ export type GameOp =
    *  Alimente tout sort qui DONNE du matériel : Rations (Générosité de Manann, Récolte de Rhya →
    *  système de provisions/Faim), etc. `count`/`perSL` : « +1 par +2 DR ». */
   | { op: 'giveTrapping'; trappingId?: string; custom?: string; count?: number; perSL?: PerSL }
+  /** Crédite (positif) ou débite (négatif) la bourse PERSONNELLE de la cible, en SOUS DE CUIVRE
+   *  (`brass` — unité de compte unique, `engine/money.ts`). La Bourse est un trapping (doctrine
+   *  utilisateur 2026-07-16 : « Pour la bourse, c'est personnel et par défaut ça doit être dans… la
+   *  bourse du personnage. Oui c'est un trapping. ») : l'instance est CRÉÉE si la cible n'en porte pas,
+   *  et le solde ne descend jamais sous 0. FRONTIÈRE avec l'Effet de scène `giveMoney`
+   *  (`data/schemas/defs-scenes/effets.ts`) : celui-ci est un mouvement de GROUPE (réparti/drainé sur
+   *  toutes les bourses par `distributeCredit`/`drainGroup`) ; `money` vise UN porteur, celui que
+   *  `applyOps` traite. Les deux composent les MÊMES parts (`engine/bourse.ts`) — aucune 2ᵉ arithmétique. */
+  | { op: 'money'; montant: { brass: Formula } }
   /** Invoque une arme MAGIQUE temporaire (Arme aethyrique : Dégâts = BFM ; Faux de Shyish : Arme
    *  d'hast, BFM+3 ; Épée ardente de Rhuin : Dégâts +6, Percutante). `damage` (résolue vs lanceur)
    *  + `damagePlus` (offset constant) donnent la composante chiffrée ; `plusBF` y ajoute le Bonus de
@@ -1144,6 +1162,11 @@ export interface PassiveMod {
    *  maison) : il n'y a aucune fiche à ouvrir, mais la composante doit rester NOMMÉE — jamais repliée
    *  sur sa famille (« Passif »). Lu par `passivePartLine` quand `src` manque ou ne résout pas. */
   label?: string;
+  /** Le passif se VOIT sur le porteur (lésion apparente : Vers du Reik au visage/aux mains) — posé à
+   *  l'ÉMISSION, jamais deviné au rendu. Ce que la doctrine appelle « visible » est une propriété de la
+   *  part émise, pas du porteur : elle s'agrège par `aPassifVisible` (engine/trauma) et se lit en
+   *  Condition `visiblePassive` — une apparence qui suscite la sympathie du passant (LDB 09 l.97). */
+  visible?: true;
 }
 
 export interface OpsCtx {
@@ -2331,6 +2354,21 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           autoStowNewItem(target, it); // #204 : rangement par défaut
         }
         lines.push(t('op.giveTrapping', { name: target.label, count: n > 1 ? `${n}× ` : '', item: giveTrappingLabel(o), src: ctx.label ?? 'sort' }));
+        break;
+      }
+      case 'money': {
+        const n = Math.round(resolveFormula(o.montant.brass, ref, rng, ctx.rolled, ctx.indice, ctx.stacks, ctx.engagedAdvantageGap, ctx.woundsDealt, ctx.sl));
+        if (n === 0) break;
+        const avant = bourseBrass(target);
+        const apres = setBourseBrass(target, avant + n); // plancher 0 : on ne doit jamais d'argent
+        const delta = apres - avant;
+        if (delta === 0) break;
+        lines.push(t('op.money', {
+          name: target.label,
+          sens: delta > 0 ? t('op.money.gagne') : t('op.money.perd'),
+          montant: formatMoney(fromBrass(Math.abs(delta))),
+          src: ctx.label ?? t('op.srcFallback'),
+        }));
         break;
       }
       case 'perRound': {

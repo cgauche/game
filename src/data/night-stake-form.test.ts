@@ -151,7 +151,10 @@ describe('activities — la FORME de chaque enjeu d’Activité est déclarée e
 
   it('le stock DESCRIPTEUR est celui mesuré, et chaque descripteur porte SA porte', () => {
     const descripteurs = avecEnjeu.filter((a) => a.stakeForm === 'descripteur');
-    expect(descripteurs.length).toBe(46);
+    // 46 → 47 (#1612, 2026-09-06) : l'enjeu de Mendier est un DESCRIPTEUR — il résume trois bandes de
+    // DR, le dé de monde qui suit et la clause d'« Argent à gaspiller », ce qu'aucun bloc contigu du
+    // livre n'imprime d'un tenant.
+    expect(descripteurs.length).toBe(47);
     expect(avecEnjeu.filter((a) => a.stakeForm === 'verbatim').length).toBe(0);
     // Porte = le foyer déclaré, ou l'Activité elle-même (qui doit alors porter sa `desc` verbatim —
     // vérifié nominativement par `activity-stake-ratchet`).

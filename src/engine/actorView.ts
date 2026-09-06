@@ -14,13 +14,15 @@ import { effectiveChar } from './characteristics';
 import { SIZE_ORDER, effectiveSize } from './size';
 import { campOf } from './relations';
 import { aggregateCapabilities, chaosDomainOf } from './combatFeatures/dispatch';
+import { aPassifVisible } from './trauma';
 import type { ActorView, ConditionCtx } from './flowCore';
 
 /** Vue d'un combattant pour les Conditions d'acteur (`compare`/`relation`/`has`/`capability`) : PB +
  *  Taille/Avantage + camp + appartenances (Groupes/Talents/Traits) + valeur d'États par nom + niveau des
  *  Capacités de combat agrégées. */
 export function buildActorView(c: Combatant | undefined): ActorView | undefined {
-  return c ? {
+  if (!c) return undefined;
+  const vue: ActorView = {
     id: c.id, woundsCurrent: c.wounds.current, woundsMax: c.wounds.max, size: SIZE_ORDER[effectiveSize(c.size)],
     advantage: c.advantage ?? 0, camp: campOf(c),
     groups: c.groups ?? [], talents: (c.talents ?? []).map((t) => ({ id: t.talentId, spec: t.spec })), traits: (c.traits ?? []).map((t) => t.id),
@@ -29,7 +31,18 @@ export function buildActorView(c: Combatant | undefined): ActorView | undefined 
     // États psy ACTIFS (un trait ciblé RÉSISTÉ — `active:false` — ne compte pas comme « possédé »).
     psych: (c.psychState ?? []).filter((p) => p.active !== false).map((p) => p.type),
     chars: Object.fromEntries(CHAR_KEYS.map((k) => [k, effectiveChar(c, k)])) as Record<CharKey, number>,
-  } : undefined;
+  };
+  // `visiblePassive` est PARESSEUX : `aPassifVisible` rebalaie tout le collecteur `passiveMods`
+  // (séquelles, maladies, faim/soif, ivresse…), et une seule famille de `Condition` le lit. La vue se
+  // rebâtit à CHAQUE évaluation de Condition — l'accesseur ne balaie qu'au premier accès, et mémoïse
+  // pour les suivants. `enumerable` : la vue reste copiable à plat (`{...vue}`) sans perdre le champ.
+  let visible: boolean | undefined;
+  Object.defineProperty(vue, 'visiblePassive', {
+    get: () => (visible ??= aPassifVisible(c)),
+    enumerable: true,
+    configurable: true,
+  });
+  return vue;
 }
 
 /**

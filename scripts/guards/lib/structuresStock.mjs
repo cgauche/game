@@ -158,7 +158,20 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "actions.json", champ: "mode", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "actions.json", champ: "rule", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 32, lot: "L3 #1463", date: "2026-08-30", motif: "référence de RÈGLE" },
   { concept: "reference", dataset: "activities.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "activities.json", champ: "ops", signature: "tableId+…", statut: "divergente", strate: "Référence", occurrences: 15, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "activities.json", champ: "ops", signature: "tableId+…", statut: "divergente", strate: "Référence", occurrences: 16, lot: "L3 #1463", date: "2026-08-23" },
+  // #1612 (2026-09-06) — les trois porteurs du terme `{rule}` d'une `Formula` posés par Mendier :
+  // `testMods[].mod` (2), le `factor` de la formule de gain, et la `cible` de son dé de monde. Même
+  // forme, même solde que tout autre `{rule}` (`formulaSchema`, `grammaire/valeurs.ts`).
+  // #1612 (2026-09-06) — l'op `condition` de la table MAISON `mendier-ennuis` (LDB 09 l.97) : elle
+  // désigne l'État posé par la rangée « autres mendiants », même forme que toute autre op `condition`
+  // en donnée.
+  { concept: "reference", dataset: "tables.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "activities.json", champ: "cible", signature: "rule", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "activities.json", champ: "factor", signature: "rule", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "activities.json", champ: "mod", signature: "rule", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
+  // #1612 (2026-09-06) — 4ᵉ porteur du même terme `{rule}` : le `times.of` de l'amende des gardes
+  // (`mendier-ennuis`), dont le montant vit en règle optionnelle. Même forme, même solde que ses sœurs.
+  { concept: "reference", dataset: "tables.json", champ: "of", signature: "rule", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   // Les 2 voies de Compétence d’une Activité qui portent leur Difficulté PROPRE (`skillRefSchema`,
   // `defs/activities.ts:19`) : une RÉFÉRENCE à charge utile, mesurée comme telle depuis que le
   // concept `test` cède les objets qui DÉSIGNENT (#1657 geste A).
@@ -1068,6 +1081,16 @@ export const STRUCTURES_OPS = [
   { op: "condition", signature: "id,onlyGroups,op,value", dataset: "spells.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,onlyGroups,op,value", dataset: "trappings.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op", dataset: "activities.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
+  // #1612 (2026-09-06) — Mendier (LDB 09 l.97/l.99) : l'op `money` (bourse personnelle) de ses deux
+  // bandes de réussite ET de l'amende des gardes de sa table MAISON, le `statusMod` de son dé de monde,
+  // et l'État de la rangée « autres mendiants ». Toutes à la forme déclarée du moteur. `money` porte
+  // sa charge sous `montant`, comme `giveMoney` depuis L-monnaie-3 : c'est la garde
+  // `monnaie-forme-unique` (sonde A) qui l'exige, une action ne l'étale pas à plat.
+  { op: "condition", signature: "id,op", dataset: "tables.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "money", signature: "montant,op", dataset: "activities.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
+  // L'amende des gardes locaux (rangée 1-3 de `mendier-ennuis`) : même op, même graphie, autre dataset.
+  { op: "money", signature: "montant,op", dataset: "tables.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "statusMod", signature: "amount,op", dataset: "activities.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op", dataset: "miscast.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op", dataset: "psychology.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op", dataset: "talents.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
@@ -1263,7 +1286,7 @@ export const STRUCTURES_OPS = [
   { op: "removePsychTrait", signature: "op", dataset: "activities.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "removeShipPoste", signature: "op", dataset: "ship-criticals.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "rollMutation", signature: "op,table", dataset: "tables.json", occurrences: 4, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "rollTable", signature: "op,tableId", dataset: "activities.json", occurrences: 12, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "rollTable", signature: "op,tableId", dataset: "activities.json", occurrences: 13, lot: "L1c #1468", date: "2026-08-23" },
   { op: "rollTable", signature: "extraRollsPerStep,op,tableId", dataset: "spells.json", occurrences: 4, lot: "L1c #1468", date: "2026-08-23" },
   { op: "rollTable", signature: "die,op,rows", dataset: "spells.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
   { op: "rollTable", signature: "addNegativeSL,op,tableId", dataset: "activities.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
@@ -1332,7 +1355,9 @@ export const STRUCTURES_OPS = [
   { op: "wounds", signature: "amount,ignoreAP,ignoreTB,op", dataset: "maneuvers.json", occurrences: 9, lot: "L1c #1468", date: "2026-08-23" },
   { op: "wounds", signature: "amount,ignoreAP,ignoreTB,op", dataset: "miscast.json", occurrences: 8, lot: "L1c #1468", date: "2026-08-23" },
   { op: "wounds", signature: "amount,ignoreAP,ignoreTB,op,perSL", dataset: "spells.json", occurrences: 6, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "wounds", signature: "amount,ignoreAP,ignoreTB,op", dataset: "tables.json", occurrences: 5, lot: "L1c #1468", date: "2026-08-23" },
+  // 5 → 6 (#1612) : la rangée « autres mendiants » de `mendier-ennuis` DÉCLARE ses deux mitigations
+  // (`wounds-mitigation-declaree.test.ts` les exige explicites) et rejoint la signature COMMUNE.
+  { op: "wounds", signature: "amount,ignoreAP,ignoreTB,op", dataset: "tables.json", occurrences: 6, lot: "L1c #1468", date: "2026-08-23" },
   { op: "wounds", signature: "amount,ignoreAP,ignoreTB,op", dataset: "traits.json", occurrences: 5, lot: "L1c #1468", date: "2026-08-23" },
   { op: "wounds", signature: "amount,ignoreAP,ignoreTB,op", dataset: "river-criticals.json", occurrences: 4, lot: "L1c #1468", date: "2026-08-23" },
   { op: "wounds", signature: "amount,ignoreAP,ignoreTB,op", dataset: "trappings.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },

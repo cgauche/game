@@ -551,6 +551,9 @@ export const formulaSchema: z.ZodType<unknown> = z.lazy(() =>
     z.strictObject({ stacks: z.literal('self') }),
     z.strictObject({ engagedAdvantageGap: z.literal(true) }),
     z.strictObject({ woundsDealt: z.literal(true) }),
+    // DR du Test COURANT (`ctx.sl`) — échelle MULTIPLICATIVE de la marge (LDB 09 l.97 : « Bonus de
+    // Sociabilité x DR »), là où `perSL` n'exprime qu'un pas linéaire ajouté à un socle.
+    z.strictObject({ sl: z.literal(true) }),
     // Valeur d'une RÈGLE OPTIONNELLE du registre : référence de la grammaire (`idDe`), donc résolue AU
     // PARSE. Sa forme NUMÉRIQUE (`kind: 'param'`) est gardée sur la donnée par `data-wellformed.test`.
     z.strictObject({ rule: refRegleOptionnelle }),

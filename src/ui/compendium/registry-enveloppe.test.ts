@@ -73,7 +73,9 @@ const CLES: Record<string, string> = {
   // valeur du discriminant `domain`) — elle QUITTE du même geste la liste des orphelins ci-dessous.
   "materials": '904ac73056ba299a',
   "mutationTables": '0d6e17a2d2e12dca',
-  "effectTables": '9ae6a346268fcff3',
+  // #1612 : la table MAISON `mendier-ennuis` entre au dataset, et sa rangée de gardes porte l'AMENDE
+  // (op `money` à `Formula`, rendue par `opRows` comme toute autre op de rangée).
+  "effectTables": '7b5a7770ccd55d94',
   "maneuvers": '30d7e463b2575792',
   "psychologie": '2287ac1af26a59cb',
   "domains": '4e7ed40a32f916d6',
@@ -99,7 +101,10 @@ const CLES: Record<string, string> = {
   "oups": 'ad42edcb2ed4c50f',
   "interludeEvents": '8c753b6a35cf9665',
   "peripeties": 'baa2fbf2541f7bd8',
-  "activities": '84e0d0a9f7ae31a5',
+  // #1612 : l'Activité Mendier entre au dataset, et la section « Issues par Degrés de Réussite » REND
+  // désormais les ops de chaque bande (primitive `opRows` — chips codex-liées + `rollTable` expansé)
+  // là où elle n'en imprimait que le COMPTE (« N op(s) sur le Personnage »).
+  "activities": '17739e557dc6cf2b',
   "massBattlePowerEstimate": '82674e9e4786f386',
   "massBattleMightModifiers": '8b5e85f5fa1f537a',
   "massBattleWarMachines": 'b77e9b7bc67a8d5b',
@@ -159,7 +164,10 @@ const CLES: Record<string, string> = {
   "montures": '753bb5df6cb62fd3',
   "tavernGames": '8abef4f4ee68acfc',
   "obsessions": '335a5d95e4a39469',
-  "reglesOptionnelles": '164d4f1ca324c10d', // #1599 : +`maladie-conscience-determination-minutes` (LDB 20 l.170, durée maison)
+  // #1599 : +`maladie-conscience-determination-minutes` (LDB 20 l.170, durée maison).
+  // #1612 : +5 règles `param` de l'Activité Mendier (heures par journée, discours, apparence, chance
+  // d'être surpris, amende des gardes) — LDB 09 l.97/l.99 n'en chiffre aucune.
+  "reglesOptionnelles": 'dfda9e83b89676c9',
   "surincantation": '561218369ab9cdfd',
   "structureCriticals": '84e0df29c1ae4e21',
   "artilleryMisfire": 'aa3ad3238b5356f8',
@@ -345,7 +353,11 @@ const T3_DELTAS: Record<string, Record<string, number>> = {
   "seaManannFactors": { source: 26 }, // 26 items — T3 : source +26
   "seaBoardEvents": { desc: 40, source: 40 }, // 40 items — T3 : source +40
   "seaPortEvents": { desc: 18, source: 18 }, // 18 items — T3 : source +18
-  "reglesOptionnelles": { desc: 82, source: 54 }, // 82 items (81 + la fenêtre de conscience par Détermination, #1599) — T3 : source +54
+  // 82 items (81 + la fenêtre de conscience par Détermination, #1599) — T3 : source +54.
+  // #1612 : 82 → 87 items, `source` INCHANGÉ à 54 — les 5 règles `param` de l'Activité Mendier sont
+  // MAISON : `LDB 09 l.97/l.99` ne chiffre aucune de leurs valeurs (partition XOR de
+  // `regles-optionnelles-partition.test.ts`), leur folio se lit dans `ref` et n'ancre rien.
+  "reglesOptionnelles": { desc: 87, source: 54 },
   "landCargo": { source: 7 }, // 7 items — T3 : source +7
   "seaCargo": { source: 11 }, // 11 items — T3 : source +11
   "riverPerils": { source: 4 }, // 4 items — T3 : source +4

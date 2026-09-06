@@ -35,7 +35,11 @@ const REGLES = reglesOptionnelles as Regle[];
 /** Partition mesurée au 2026-08-27 : 81 = 54 sourcées + 27 maison, 0 des deux, 0 d'aucune.
  *  Puis 82 = 54 + 28 (#1599, 2026-09-05) : `maladie-conscience-determination-minutes` — LDB 20 l.170
  *  ne chiffre pas « quelques minutes », la durée est donc MAISON, jamais sourcée. */
-const PARTITION = { total: 82, source: 54, maison: 28 };
+/** Puis 87 = 54 + 33 (#1612, 2026-09-06) : les CINQ réglages de l'Activité Mendier tombent du côté
+ *  MAISON — `LDB 09 l.97/l.99` décrit la mendicité mais ne chiffre ni la durée du créneau, ni le
+ *  discours, ni l'apparence, ni la chance d'être surpris, ni la sanction des gardes. Le folio se lit
+ *  dans leur `ref` : il localise le passage arbitré, il n'ancre aucune de ces valeurs. */
+const PARTITION = { total: 87, source: 54, maison: 33 };
 
 /**
  * COEXISTENCE `source` + `maison` (chaîne non vide) sur les entrées de PREMIER niveau de `src/data`,
@@ -45,7 +49,9 @@ const PARTITION = { total: 82, source: 54, maison: 28 };
  */
 const COEXISTENCE: Record<string, number> = {
   'actions.json': 1,
-  'activities.json': 8,
+  // 8 → 9 (#1612) : l'Activité `mendier` cite son folio (LDB 119) ET porte en clair les cinq points
+  // que le livre laisse ouverts (durée, discours, apparence, ennuis, gate de lieu).
+  'activities.json': 9,
   'creatures.json': 1,
   'etats.json': 1,
   // 1 → 2 (#1657 B3-2b-a) : le Trait `cale` porte MSRC 10 p.53 (le livre DIT la cale du navire
@@ -55,6 +61,9 @@ const COEXISTENCE: Record<string, number> = {
   // +1 (#1599) : le symptôme `convulsions` cite son folio (LDB 188) ET porte en clair l'arbitrage de
   // son palier Grave — LDB 20 l.157 chiffre −10 (base) et −20 (Modéré) sans jamais rechiffrer Grave.
   'symptoms.json': 1,
+  // +1 (#1612) : la table MAISON `mendier-ennuis` cite le folio où le livre NOMME les trois ennuis
+  // (LDB 119) ET dit en clair qu'il n'en chiffre ni ne répartit aucun.
+  'tables.json': 1,
   'talents.json': 9,
   'traits.json': 3,
   'trappings.json': 2,
