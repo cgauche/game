@@ -25,9 +25,13 @@ export interface SourceDIdsVivants {
 
 let source: SourceDIdsVivants | undefined;
 
-/** Pose la source vivante — appelée UNE fois par la couche donnée au chargement de ses bindings. */
-export function poserSourceDIdsVivants(s: SourceDIdsVivants): void {
+/** Pose la source vivante — appelée UNE fois par la couche donnée au chargement de ses bindings — et
+ *  REND la source précédente (`undefined` = aucune) : c'est la couture par laquelle un test repose
+ *  celle qu'il a trouvée au lieu de muter le registre généré. */
+export function poserSourceDIdsVivants(s: SourceDIdsVivants | undefined): SourceDIdsVivants | undefined {
+  const precedente = source;
   source = s;
+  return precedente;
 }
 
 /** Ids d'un document tels que la MÉMOIRE les porte — `undefined` si aucune source n'est posée ou si

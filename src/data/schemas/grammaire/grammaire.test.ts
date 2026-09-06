@@ -24,6 +24,7 @@ import { slotsDe } from './slots';
 import { SANS_LIVRE } from './sans-livre';
 import { SCHEMA_DEFS } from '../_registry.generated';
 import { IDS_PAR_DATASET } from '../_ids.generated';
+import { poserSourceDIdsVivants } from './idsVivants';
 
 type EntreeASpecs = { id: string; specs?: { id: string }[]; specsSource?: string };
 const UNE_COMPETENCE = skillsJson[0] as { id: string };
@@ -1030,22 +1031,28 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
   });
 
   /**
-   * DEUX RÉGIMES, UN SEUL NŒUD (`_ids.generated.ts`) : le fichier généré figé au commit, et le
-   * RECALCUL en mémoire de l'éditeur, qui REMPLACE l'entrée du dataset. Un schéma se construit une
-   * fois au chargement du module, la donnée se valide après ; la liste admise doit donc se lire à la
-   * VALIDATION. Sans quoi une entité créée au Compendium rendrait rouge toute donnée qui la référence.
+   * DEUX RÉGIMES, UN SEUL NŒUD (`_ids.generated.ts`) : le fichier généré figé au commit, et les ids
+   * VIVANTS que `ref.ts` lit d'abord (`idsVivants(dataset) ?? IDS_PAR_DATASET[dataset]`, `ref.ts:77`),
+   * posés par la couche donnée. Un schéma se construit une fois au chargement du module, la donnée se
+   * valide après ; la liste admise doit donc se lire à la VALIDATION. Sans quoi une entité créée au
+   * Compendium rendrait rouge toute donnée qui la référence.
+   * Le test POSE une source vivante synthétique et repose la précédente : il ne mute aucun registre
+   * partagé, et vaut que la couche donnée ait déjà posé la sienne dans ce worker ou non.
    */
   it('un schéma construit AVANT une mise à jour du registre voit la NOUVELLE liste', () => {
-    const registre = IDS_PAR_DATASET as unknown as Record<string, readonly string[]>;
-    const avant = registre['etats.json'];
+    const avant = (IDS_PAR_DATASET as unknown as Record<string, readonly string[]>)['etats.json'];
     const noeud = idDe('etat'); // construit AVANT la mise à jour
     expect(noeud.safeParse('etat-cree-au-compendium').success).toBe(false);
+    const precedente = poserSourceDIdsVivants({
+      entrees: (f) =>
+        f === 'etats.json' ? [...avant.map((id) => ({ id })), { id: 'etat-cree-au-compendium' }] : precedente?.entrees(f),
+      discriminantDe: (f) => precedente?.discriminantDe(f),
+    });
     try {
-      registre['etats.json'] = [...avant, 'etat-cree-au-compendium']; // ce que fait le recalcul
       expect(noeud.safeParse('etat-cree-au-compendium').success).toBe(true);
       expect(idDe('etat').safeParse('etat-cree-au-compendium').success).toBe(true);
     } finally {
-      registre['etats.json'] = avant;
+      poserSourceDIdsVivants(precedente);
     }
     expect(noeud.safeParse('etat-cree-au-compendium').success).toBe(false);
   });
