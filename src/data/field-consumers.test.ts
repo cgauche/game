@@ -189,7 +189,6 @@ const ZEROS = [
   'CastingNumberMod.desc',
   'CastingNumberMod.maison',
   'CastingNumberMod.source',
-  'PropData.label',
   'PropData.type',
   'SourceRef.note',
 ];

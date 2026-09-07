@@ -2051,8 +2051,9 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       return terrains.map((t) => depuisEnveloppe(t, {
         meta: facts(
           // `walkable` se dit dans les DEUX sens : un sol infranchissable est le fait le plus lourd de
-          // la fiche, et `valeurDeCharge` (qui tait un booléen faux) l'effacerait.
-          { label: nom('walkable'), value: t.walkable ? 'oui' : 'non' },
+          // la fiche, d'où la valeur écrite ici ('oui'/'non') plutôt que `valeurDeCharge`, qui tait un
+          // booléen faux.
+          fact(nom('walkable'), t.walkable ? 'oui' : 'non'),
           fact(nom('priority'), t.priority),
           fact(nom('opaque'), t.opaque ? 'oui' : null),
           fact(nom('built'), t.built ? 'oui' : null),
