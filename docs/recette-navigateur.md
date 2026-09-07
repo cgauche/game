@@ -40,8 +40,8 @@ de figer le script sans message.
 
 **Quel process sert un port ?** `Get-NetTCPConnection -LocalPort <port>` → colonne `OwningProcess` = le
 PID RÉEL. Ne pas s'en remettre à `ps -W` seul : il rend le WINPID du wrapper npm, pas celui du serveur
-Vite. L'arrêt par PID passe par un script `.mjs` (`process.kill(pid)`) — `taskkill`/`Stop-Process` sont
-bloqués par l'allowlist shell.
+Vite. L'arrêt passe par `node scripts/recette/arreter-dev.mjs <port>`, qui tue l'ARBRE de l'écoutant
+(`taskkill /T`) : `taskkill`/`Stop-Process` sont bloqués dans le SHELL de l'agent, pas dans un script.
 
 ## Preuve headless (agents)
 
@@ -135,17 +135,24 @@ sinon elle est déclarée aveugle (exit 1). Exit ≠ 0 avec la liste des défaut
 
 | Fonction | Rôle |
 |---|---|
-| `openApp` | vérifie le serveur (fetch), lance Chrome headless, navigue, attend que `__wfrp.screen` soit prêt (chargement async, cf. `src/main.tsx`) |
+| `openApp` | vérifie le serveur (fetch), lance Chrome headless, navigue, attend que `__wfrp.screen` soit prêt (chargement async, cf. `src/main.tsx`). `timeoutMs` (45 s par défaut) borne l'amorçage COMPLET — l'URL CDP de Chrome (`launchSession`) puis l'attente de `__wfrp.screen` : un premier chargement à froid a été mesuré à 21 s sur un worktree neuf ; le refus DISTINGUE « `__wfrp` absent » (mauvaise URL, build cassé, serveur non-DEV) de « app trop lente à s'installer » |
 | `gotoScreen` | navigue vers un écran via `__wfrp.screen` |
-| `shot` | capture PNG nommée dans un dossier donné (créé si absent) |
+| `shot` | capture PNG nommée dans un dossier donné (créé si absent) ; `{ancre}` fait DÉFILER un sélecteur en vue avant la capture — à 360 px les écrans s'empilent et le sujet passe sous le pli ; NEUTRALISE par défaut ce qui signe une capture — `Escape` si le focus est sur un `<select>` (son popup est NATIF et restait ouvert), puis `blur`. `{neutraliser:false}` pour photographier un contrôle focalisé |
 | `consoleGuard` | collecte erreurs/warnings/exceptions, filtrés sur LA session courante (piège du buffer partagé, § « Pièges vécus » ci-dessous) |
 | `freezeTimeout` / `unfreezeTimeout` | monkey-patch `setTimeout` pour figer/dégeler une durée d'animation avant capture |
 | `emulateReducedMotion` | force `prefers-reduced-motion: reduce` (CDP `Emulation.setEmulatedMedia`) |
 | `setViewport` / `setMobileViewport` | viewport explicite / mobile canon 360×740 (charte-ui.md — testable dès 360px) |
-| `clickButtonByText` | trouve un `<button>`/`[role="button"]` par son TEXTE (`session, texte, {exact?}`), `scrollIntoView`, PUIS lit son rect et clique via un VRAI clic CDP (`Input.dispatchMouseEvent` pressed+released) — SCROLL-AWARE : lire le rect AVANT le scroll fait rater le clic SILENCIEUSEMENT (aucune erreur, aucun effet) |
+| `clickButtonByText` | trouve un `<button>`/`[role="button"]` par son TEXTE (`session, texte, {exact?}`), `scrollIntoView`, PUIS lit son rect et clique via un VRAI clic CDP (`Input.dispatchMouseEvent` pressed+released) — SCROLL-AWARE : lire le rect AVANT le scroll fait rater le clic SILENCIEUSEMENT (aucune erreur, aucun effet). `{exact:true}` compare le texte ENTIER (obligatoire dès qu'un libellé en préfixe un autre) ; `{dans}` = sélecteur RACINE où chercher, quand le même libellé vit dans deux zones de l'écran ; si PLUSIEURS boutons matchent, le premier est cliqué et l'ambiguïté est AVERTIE sur `stderr` avec les textes concurrents |
 | `realKey` | frappe RÉELLE (`session, key`, `Input.dispatchKeyEvent` : `rawKeyDown`/`char`/`keyUp`) — traverse les MÊMES handlers que le clavier physique (`keybindings.ts`), contrairement à un `KeyboardEvent` JS synthétique souvent ignoré |
 | `typeInField` | SAISIE réelle dans un champ (`session, selecteur, texte, {clear?}`) : focus par VRAI clic CDP, puis `Input.insertText` — l'insertion passe par le pipeline d'édition, donc le `onChange` React s'exécute (mesuré : `ab12cd` frappé dans `.coop-code-input` se lit `AB12CD`, la casse venant du handler React). Rend la valeur relue APRÈS la frappe. C'est la sortie du piège « Champ CONTRÔLÉ React » ci-dessous |
+| `selectOption` | CHOISIT une option d'un `<select>` AU GESTE (`session, selecteur, valeur`) : focus par VRAI clic CDP, `value` posée par le SETTER NATIF puis `input`+`change` dispatchés — un `<select>` ne s'ouvre pas en headless (popup natif, hors DOM), le geste rejouable est celui du clavier. Refus explicites : liste absente, ou valeur hors des options (les options offertes sont remontées). Rend `{valeur, libelle}` RELUS après le geste |
+| `champParLibelle` | SÉLECTEUR CSS d'un champ visé par son LIBELLÉ VISIBLE (`session, 'dernier bloc'`) : il pose un `data-recette` inerte sur le champ trouvé et rend `[data-recette=…]`. Nécessaire parce que les `id` de `NumberField`/`useId` (`:r5:`, `:ra:`) ne sont PAS des sélecteurs CSS valides — `querySelector('#:r5:')` jette |
+| `verdictDebordement` | MESURE de la règle stricte 4 à la largeur courante : `{ vw, docSW, debordants:[{tag, aria, droite}] }`. `docSW > vw` = la page pousse latéralement ; `debordants` nomme les contrôles clippés. Un débordement ne se voit pas sur une capture, il se mesure |
+| `survoler` | SURVOL RÉEL (`session, sélecteur|texte de bouton`, `Input.dispatchMouseEvent mouseMoved`) — le geste par lequel une raison de refus se lit (arbitrage user 2026-08-24 : survol/focus/tap, jamais inline). SCROLL-AWARE comme `clickButtonByText` ; `{attenteMs}` laisse l'infobulle naître |
+| `infobulleDe` | l'infobulle ouverte et sa POSITION relative à la cible : `{ texte, dx, dy }` (écarts entre les deux boîtes, 0 quand elles se touchent). `texte: null` = aucune bulle. Un `dx`/`dy` énorme signe un rect mesuré à 0×0 (vécu : `display: contents` sur l'enveloppe → bulle à (8, 6) pour un contrôle à (1050, 258)) |
 | `evaluate` / `waitFor` | eval JS dans la page (attend les promesses) / poll jusqu'à condition vraie |
+| `evaluerFn` | ÉVALUE UNE FONCTION dans la page (`session, fn, ...args`) : le corps est sérialisé tel qu'ÉCRIT et les arguments par `JSON.stringify`. C'est la sortie du DOUBLE ÉCHAPPEMENT (voir ci-dessous). La fonction ne capture RIEN de la portée du script |
+| `attendreSelecteur` | attend qu'un sélecteur soit PRÉSENT, et REFUSE en le nommant sinon — au lieu d'un `sleep` gonflé « au cas où » qui cache la cause |
 | `checkServer` / `launchSession` | briques bas niveau d'`openApp` (séparément utilisables) — `launchSession` porte le défaut **1600×900** (§ « L'étalon se juge à 1600 » ci-dessus) |
 
 **Capturer un écran** :
@@ -158,6 +165,42 @@ await shot(session, 'compendium-01', 'mon-dossier');
 console.log(guard.errors());
 await session.close();
 ```
+
+**Ouvrir sur un port DÉRIVÉ (worktree lié) et piloter un formulaire aux gestes** — `openApp` appelé sans
+argument vise `DEFAULT_URL` (le port de l'ARBRE PRINCIPAL, 5173) : en worktree, `npm run dev` imprime
+son port dérivé (`scripts/port-dev.mjs`) et il faut le passer EXPLICITEMENT, sinon la recette juge
+l'autre arbre :
+```js
+import { openApp, gotoScreen, selectOption, clickButtonByText, shot } from './scripts/recette/lib.mjs';
+// URL explicite du port dérivé imprimé par `npm run dev` dans CE worktree ; `opts` = ceux de
+// `launchSession` (`{ width, height, mobile, chromePath, port }`).
+const session = await openApp('http://localhost:5182/', { width: 1600, height: 900 });
+await gotoScreen(session, 'compendium');
+await selectOption(session, 'select[aria-label="Chapitre du passage"]', '21');
+await clickButtonByText(session, '+ Fragment', { exact: true });
+await shot(session, 'adresse-01', 'mon-dossier');
+await session.close();
+```
+
+**Éteindre son serveur de dev à la fin** — par le PORT, jamais par le PID du job du shell :
+```
+node scripts/recette/arreter-dev.mjs 5233
+```
+`npm run dev` monte une CHAÎNE (npm → node → vite) : le PID relevé au lancement est celui du wrapper,
+et `process.kill` dessus laisse l'écoutant vivant — le port reste pris. Le script lit l'ÉCOUTANT sur
+la table TCP du système puis tue son ARBRE (`taskkill /T` sous Windows, seul geste fiable ; `taskkill`
+lancé par un script `.mjs` n'est pas soumis à l'allowlist du shell de l'agent).
+
+> **Toute expression passée à `evaluate` EN CHAÎNE s'écrit en `String.raw`** — ou passe par `evaluerFn`.
+> Le template literal de Node consomme les antislashs AVANT que la page ne voie l'expression : `/\s+/`
+> écrit dans un backtick arrive `/s+/` dans le navigateur, et la recette mesure autre chose sans une
+> erreur (vécu : 4 appels perdus). Passer la fonction à `evaluerFn` supprime la question.
+
+> **Une infobulle `title` NATIVE n'est pas une preuve.** Elle est peinte par le système, hors du DOM :
+> elle n'apparaît sur AUCUNE capture, et un lecteur d'écran ne la lit pas toujours. La preuve qu'un
+> refus « porte sa raison au survol » est donc l'ATTRIBUT et le DOM — `aria-disabled="true"`,
+> `aria-describedby` pointant une copie hors écran, et l'infobulle partagée `CodexRef` (prop `refus`),
+> qui est du DOM et se photographie. Un `title` seul est un défaut, pas une raison atteignable.
 
 **Figer une animation le temps d'une capture** :
 ```js
@@ -1189,3 +1232,9 @@ fichier de données. Chemins vérifiés au registre (`src/ui/compendium/registry
 
 Les deux niches éditent le MÊME fichier (`src/data/weather.json`) sous deux catégories Codex : une
 recette qui vérifie l'édition d'une météo doit dire LAQUELLE des deux elle a ouverte.
+
+**Éditer une fiche du Codex commence par la bascule « Atelier »** (`CompendiumScreen.tsx:164-171`,
+bouton `.btn small` à `aria-pressed` dans l'en-tête — pas un onglet). Tant qu'elle est éteinte, les
+boutons « Éditer » et « Nouveau » du volet de détail ne sont PAS RENDUS (`:258`), et une recette qui
+les cherche conclut à tort qu'un champ d'édition n'existe pas. La désactiver referme toute édition en
+cours. Elle n'apparaît que sur une catégorie éditable (`isEditableCategory`).

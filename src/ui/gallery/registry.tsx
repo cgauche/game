@@ -18,6 +18,8 @@ import { ParchmentCard } from '../ParchmentCard';
 import { QtyStepper } from '../QtyStepper';
 import { PanneauParametre } from '../PanneauParametre';
 import { NumberField } from '../NumberField';
+import { DescRefField } from '../compendium/DescRefField';
+import type { DescRef } from '../../data/source/decoupe';
 import { GatedAction } from '../GatedAction';
 import { ReadyRow } from '../ReadyRow';
 import { PortraitTile } from '../PortraitTile';
@@ -164,6 +166,10 @@ function OptionChooserDemo() {
         options={[
           { key: 'parry', label: 'Parade', selected: choice === 'parry', onSelect: () => setChoice('parry') },
           { key: 'dodge', label: 'Esquive', selected: choice === 'dodge', onSelect: () => setChoice('dodge') },
+          // Segment REFUSÉ : la matière du refus (contrôle éteint, raison au survol/focus/tap) se voit
+          // ICI une fois pour TOUS les sites qui la composent — fiche (main secondaire), Porte-Bouclier,
+          // Contre-sort, adresse de prose. La raison ne s'écrit JAMAIS sous l'option (2026-08-24).
+          { key: 'shield', label: 'Bouclier', selected: false, refus: 'Aucun bouclier équipé dans le set actif.' },
         ]}
       />
       <OptionChooser
@@ -236,6 +242,17 @@ function NumberFieldDemo() {
       </label>
     </>
   );
+}
+
+function DescRefFieldDemo() {
+  // Adresse RÉELLE : LDB 21 § terreur-indice, premier bloc. Le chapitre arrive par son adresse-URL
+  // (assets émis par `wfrp:prose-source`) — hors serveur, le champ affiche son erreur nommée.
+  const [adresse, setAdresse] = useState<DescRef | undefined>({
+    book: 'livre-de-base',
+    ch: '21',
+    parts: [{ kind: 'blocs', sec: 'terreur-indice', secOcc: 1, b0: 0, b1: 0, sum: 'a919b4ef91a1dd3c' }],
+  });
+  return <DescRefField label="Adresse de la prose" value={adresse} onChange={setAdresse} />;
 }
 
 function GroupedPickGridDemo() {
@@ -804,6 +821,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { label: 'ParchmentCard', file: 'src/ui/ParchmentCard.tsx', category: 'Négoce & activités', render: ParchmentCardDemo },
   { label: 'Prose', file: 'src/ui/Prose.tsx', category: 'Texte', render: ProseDemo },
   { label: 'GameOpEditor', file: 'src/ui/editor/GameOpEditor.tsx', category: 'Éditeur', render: GameOpEditorDemo },
+  { label: 'DescRefField', file: 'src/ui/compendium/DescRefField.tsx', category: 'Éditeur', render: DescRefFieldDemo },
   { label: 'GameOpChips', file: 'src/ui/GameOpChips.tsx', category: 'Texte', render: GameOpChipsDemo },
   { label: 'MetalStatus', file: 'src/ui/MetalStatus.tsx', category: 'Atelier du scribe', render: MetalStatusDemo },
   { label: 'WaxSeal / SealedPlaque', file: 'src/ui/WaxSeal.tsx', category: 'Atelier du scribe', render: WaxSealDemo },

@@ -518,7 +518,12 @@
   overflow: hidden;
   width: fit-content;
 }
-.seg button {
+/* La MATIÈRE du segment, y compris quand il compose `GatedAction bare` : `.btn.btn-nu` (deux classes)
+   l'emporterait sur `.seg button` (une classe + un type) et lui retirerait sa boîte — le segment
+   refusé perdait alors ses 12 px de rembourrage vertical et se rendait 17 px au lieu de 29. Le
+   sélecteur reprend donc la main SANS dupliquer les déclarations. */
+.seg button,
+.seg .btn.btn-nu {
   background: var(--panel2);
   border: none;
   border-right: 1px solid var(--border);
@@ -528,10 +533,39 @@
   color: var(--text);
   cursor: pointer;
 }
-.seg button:last-child {
+/* Le dernier segment n'a pas de bordure droite — y compris quand il est porté par le conteneur
+   `.gated-action` de son refus (le bouton n'y est plus l'enfant direct du `.seg`). */
+.seg button:last-child,
+.seg > :last-child button,
+.seg > :last-child .btn.btn-nu {
   border-right: none;
 }
-.seg button.on {
+/* Un segment REFUSÉ compose `GatedAction bare` : son conteneur ne doit apporter AUCUNE boîte, le
+   `.seg` portant déjà la géométrie de la barre. `display: flex` (et non `contents`) : l'infobulle
+   `CodexRef` mesure le rect de son enveloppe pour se placer — sous `display: contents` ce rect vaut
+   0×0 et la boîte se pose au coin haut-gauche de l'écran (mesuré en recette : (8, 6) pour un segment
+   à (1050, 258)). */
+.seg > .gated-action,
+.seg > .gated-action > .codex-ref {
+  display: flex;
+  align-items: stretch;
+  margin: 0;
+  padding: 0;
+}
+.seg > .gated-action button { flex: 1; }
+/* Un segment REFUSÉ porte une raison à ATTEINDRE : il garde `aria-disabled` (jamais `disabled`) et
+   l'apparence d'un contrôle mort — les MÊMES déclarations que `.btn[aria-disabled='true']`
+   (`base.css`), pas une seconde grammaire. `disabled` reste possible pour un segment MUET. */
+.seg button:disabled,
+.seg button[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+/* `.seg .btn.btn-nu` (0,3,0) l'emporterait sur `.seg button.on` (0,2,1) : un segment RETENU mais
+   refusé perdait son dégradé et sa graisse (mesuré : `background-image: none`, `font-weight: 400`).
+   Le sélecteur du RETENU reprend donc la main sur les deux écritures. */
+.seg button.on,
+.seg .btn.btn-nu.on {
   background: linear-gradient(180deg, var(--accent2), var(--accent));
   font-weight: 600;
 }

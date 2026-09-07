@@ -1,10 +1,32 @@
-import { describe, it, expect } from 'vitest';
+// @vitest-environment jsdom
+import { describe, it, expect, afterEach } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { OptionChooser, ChoiceButtons, type RollOption } from './OptionChooser';
+import { OptionChooser, ChoiceButtons, type RollOption, type RollSegOption } from './OptionChooser';
 import { optionValue, optionPending } from './breakdown';
 
+/** Pose la cascade RÉELLE de l'app, dans SON ordre (`src/ui/styles.css` : `base.css` puis
+ *  `sheet.css`) — mesurer un style calculé sans elle mesurerait le vide. */
+function poserFeuilles(): void {
+  for (const f of ['./styles/base.css', './styles/sheet.css']) {
+    const style = document.createElement('style');
+    style.dataset.recette = 'feuille';
+    style.textContent = readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');
+    document.head.appendChild(style);
+  }
+}
+
+/** Le document est PARTAGÉ par tous les cas du fichier (`isolate: false`) : ce que le cas de style
+ *  calculé pose doit partir MÊME S'IL ÉCHOUE. Sans ce nettoyage, un rouge sur l'assertion de matière
+ *  laissait ses feuilles et sa boîte en place, et huit cas suivants tombaient par pollution — le vrai
+ *  défaut devenait illisible sous ses propres retombées (mesuré à la mutation, tour quinquies). */
+afterEach(() => {
+  for (const n of document.querySelectorAll('style[data-recette="feuille"], body > div')) n.remove();
+});
+
 describe('OptionChooser — sélecteur d’options de jet partagé', () => {
-  const seg: RollOption[] = [
+  const seg: RollSegOption[] = [
     { key: 'parade', label: 'Parade', value: 55, selected: true, title: 'Parer' },
     { key: 'esquive', label: 'Esquive', value: 48, title: 'Esquiver' },
   ];
@@ -20,6 +42,87 @@ describe('OptionChooser — sélecteur d’options de jet partagé', () => {
     // L'option sélectionnée porte la classe `on`, pas l'autre.
     expect(html).toMatch(/class="on"[^>]*>\s*Parade/);
     expect(html).not.toMatch(/class="on"[^>]*>\s*Esquive/);
+  });
+
+  it('layout seg : une option qui porte sa RAISON COMPOSE `GatedAction` (bare), sans rien réécrire', () => {
+    // UNE implémentation du refus : le segment refusé est un `GatedAction` en variante `bare` (le
+    // `.seg` porte déjà la géométrie). Sa signature — conteneur `.gated-action`, `.btn.btn-nu`,
+    // `aria-disabled` sans `disabled`, copie `hors-ecran` liée par `aria-describedby` — vient donc de
+    // la primitive, jamais d'un troisième rendu local.
+    const html = renderToStaticMarkup(
+      <OptionChooser layout="seg" idPrefix="frag" options={[
+        { key: 'blocs', label: 'blocs', selected: true },
+        { key: 'cellule', label: 'cellule', selected: false, refus: 'Cette section ne contient aucune table.' },
+      ]} />,
+    );
+    expect(html).toContain('gated-action');
+    expect(html).toContain('btn-nu');
+    expect(html).toContain('aria-disabled="true"');
+    expect(html).not.toMatch(/<button[^>]*\sdisabled/);
+    expect(html).toContain('aria-describedby="frag-');
+    expect(html).toContain('hors-ecran');
+    expect(html).toContain('Cette section ne contient aucune table.');
+    // Le segment reste un CHOIX : son état pressé est annoncé (`aria-pressed`), refusé ou non.
+    expect(html).toMatch(/aria-pressed="false"[^>]*>\s*cellule|cellule[\s\S]{0,80}aria-pressed="false"/);
+  });
+
+  it('layout seg : le segment RETENU garde sa classe `on` même refusé', () => {
+    const html = renderToStaticMarkup(
+      <OptionChooser layout="seg" options={[{ key: 'a', label: 'A', selected: true, refus: 'Plus disponible.' }]} />,
+    );
+    expect(html).toMatch(/class="btn[^"]*btn-nu[^"]*on"/);
+  });
+
+  it('layout seg : le refus garde la MATIÈRE du segment — mesurée sur le style CALCULÉ, pas sur la classe', () => {
+    // Une classe rendue ne prouve rien : c'est la CASCADE qui décide. `.btn.btn-nu` (0,3,0) l'emporte
+    // sur `.seg button` (0,1,1) et sur `.seg button.on` (0,2,1) — sans les sélecteurs qui reprennent
+    // la main (`sheet.css`), le segment refusé perd sa boîte (padding 0) et le retenu son relief.
+    poserFeuilles();
+    const boite = document.createElement('div');
+    boite.innerHTML = renderToStaticMarkup(
+      <OptionChooser layout="seg" options={[
+        { key: 'a', label: 'A', selected: true, refus: 'Plus disponible.' },
+        { key: 'b', label: 'B' },
+      ]} />,
+    );
+    document.body.appendChild(boite);
+    const refuse = boite.querySelector('.btn.btn-nu') as HTMLElement;
+    const offert = [...boite.querySelectorAll('.seg button')].find((b) => !b.classList.contains('btn-nu')) as HTMLElement;
+    const style = getComputedStyle(refuse);
+
+    expect(style.paddingTop, 'le segment refusé n’a plus la boîte d’un segment').toBe(getComputedStyle(offert).paddingTop);
+    expect(style.paddingTop).toBe('6px');
+    expect(style.paddingLeft).toBe('14px');
+    expect(style.fontWeight, 'le segment RETENU mais refusé a perdu son relief').toBe('600');
+    expect(style.opacity, 'un contrôle refusé se voit refusé').toBe('0.4');
+    boite.remove();
+  });
+
+  it('layout seg : un segment REFUSÉ lit comme un segment offert — sa valeur effective comprise', () => {
+    const html = renderToStaticMarkup(
+      <OptionChooser layout="seg" options={[
+        { key: 'parade', label: 'Parade', value: 55, refus: 'Arme brisée.' },
+        { key: 'esquive', label: 'Esquive', value: 48 },
+      ]} />,
+    );
+    // Le refus change ce qu'on PEUT faire, jamais ce qu'on LIT : sans la valeur, l'auteur du geste
+    // ne peut plus comparer les deux options — c'est précisément ce qu'il regarde.
+    expect(html).toContain('Parade');
+    expect(html).toContain('55');
+  });
+
+  it('DEUX sélecteurs d’un même écran ne partagent pas leurs ids — `aria-describedby` désigne SA raison', () => {
+    const opts = [{ key: 'a', label: 'A', refus: 'Indisponible.' }];
+    const html = renderToStaticMarkup(
+      <>
+        <OptionChooser layout="grid" idPrefix="loc" options={opts} />
+        <OptionChooser layout="grid" idPrefix="loc" options={opts} />
+        <OptionChooser layout="seg" idPrefix="loc" options={opts} />
+      </>,
+    );
+    const ids = [...html.matchAll(/aria-describedby="([^"]+)"/g)].map((m) => m[1]);
+    expect(ids, 'trois raisons rendues').toHaveLength(3);
+    expect(new Set(ids).size, 'deux contrôles partagent un id : la raison lue n’est pas la leur').toBe(3);
   });
 
   it('layout grid : `.rm-loc-grid` de `.btn small`, primary, valeur entre parenthèses, masquage et désactivation', () => {

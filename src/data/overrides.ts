@@ -465,6 +465,14 @@ export function datasetSerializeRoot(key: DatasetKey): unknown {
   return versDisque(NESTED_ARRAY_ROOT[key]?.root() ?? datasetArray(key));
 }
 
+/** Racine à SÉRIALISER au save d'un dataset-OBJET (fiches de règle, `details`…), en FORME DISQUE —
+ *  la porte SYMÉTRIQUE de `datasetSerializeRoot` pour l'autre branche de sauvegarde de `CodexEdit`.
+ *  `datasetObject` sert la lecture RUNTIME (même référence que la façade) : la sortie disque passe
+ *  par ici, sinon un `desc` matérialisé repartirait dans la donnée et le schéma refuserait le save. */
+export function datasetObjectSerializeRoot(key: ObjectDatasetKey): unknown {
+  return versDisque(datasetObject(key));
+}
+
 const isPlainObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
 /** Fusion EN PLACE RÉCURSIVE : les sous-objets et sous-tableaux gardent leur identité (mutés par

@@ -68,9 +68,15 @@ export function ShantyModal() {
           groupLabel="Chanson"
           options={knownShanties(singer).map((id) => {
             const s = findSeaShantyById(id);
+            // Une chanson connue du marin mais ABSENTE du catalogue est une anomalie de donnée :
+            // elle se dit au survol/focus/tap, jamais par un segment muet.
             return {
-              key: s?.id ?? id, label: s?.label ?? id, title: s?.desc, disabled: !s,
-              selected: !!s && s.id === p.shantyId, onSelect: s ? () => setSong(s.id) : undefined,
+              key: s?.id ?? id,
+              label: s?.label ?? id,
+              title: s?.desc,
+              refus: s ? undefined : 'Cette chanson n’est pas au catalogue des chansons de bord.',
+              selected: !!s && s.id === p.shantyId,
+              onSelect: s ? () => setSong(s.id) : undefined,
             };
           })}
         />

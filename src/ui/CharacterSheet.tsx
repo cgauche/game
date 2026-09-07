@@ -521,9 +521,11 @@ function HandPicker({ hero, it }: { hero: Combatant; it: ItemInstance }) {
           key: 'off',
           label: <>2nde <em className="off-malus">−20</em></>,
           selected: isOff,
-          disabled: !offOk,
-          title: offOk
-            ? 'Main secondaire : −20 aux attaques de cette main'
+          // La RAISON du refus se lit au survol/focus/tap dans l'infobulle partagée (`refus`), jamais
+          // par un `disabled` muet ; le `title` ne reste que pour l'option OFFERTE.
+          title: offOk ? 'Main secondaire : −20 aux attaques de cette main' : undefined,
+          refus: offOk
+            ? undefined
             : mainTwoH
               ? 'Main principale à deux mains — pas de seconde main'
               : 'Inéligible : seules une arme de mêlée à une main ou un pistolet vont en seconde main',

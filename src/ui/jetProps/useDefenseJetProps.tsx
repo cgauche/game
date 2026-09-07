@@ -89,6 +89,18 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   const reactionCost = pd.mode === 'parade' ? shieldReactionCost(defender, chosenParry) : 0;
   const canReact = reactionCost > 0 && !defender.usedShieldReactionRound && (defender.advantage ?? 0) >= reactionCost && !rolled;
   const toggleReaction = (kind: 'damage' | 'push') => setShieldReaction(pd.shieldReaction === kind ? null : kind);
+  /** La CAUSE du refus d'une réaction, dans l'ordre où `canReact` la décide — une phrase par cause, pas
+   *  la description de l'option (qui reste en `title` quand elle est offerte). */
+  const refusReaction = (kind: 'damage' | 'push'): string | undefined => {
+    if (canReact || pd.shieldReaction === kind) return undefined;
+    // Le volet n'existe que sous `reactionCost > 0` (plus bas) et `canReact` est FAUX ici : des quatre
+    // conditions de `canReact` (:90), le coût est vrai, donc l'une des TROIS autres est fausse. Elles
+    // sont énumérées dans l'ordre où `canReact` les décide, et la dernière est le reste — aucun repli
+    // à écrire, il ne serait jamais lu.
+    if (defender.usedShieldReactionRound) return 'Réaction de Porte-Bouclier déjà utilisée ce Round.';
+    if ((defender.advantage ?? 0) < reactionCost) return `Il faut ${reactionCost} Avantages : ${defender.label} en a ${defender.advantage ?? 0}.`;
+    return 'Le jet est lancé : la réaction se déclare avant.';
+  };
 
   // Attaque et défense sont les DEUX lignes d'un même Test opposé : la Difficulté est déclarée UNE
   // fois à la fabrique (LDB 12 l.166 ; jet de Combat, LDB 13 l.118).
@@ -175,8 +187,10 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
               layout="seg"
               groupLabel={`Porte-Bouclier (${reactionCost} Av.)`}
               options={[
-                { key: 'damage', label: 'Dégâts', selected: pd.shieldReaction === 'damage', disabled: !canReact && pd.shieldReaction !== 'damage', title: `Dépenser ${reactionCost} Avantages pour causer des Dégâts comme s’il s’agissait de votre Action (AA — 1×/Round)`, onSelect: () => toggleReaction('damage') },
-                { key: 'push', label: 'Repousser', selected: pd.shieldReaction === 'push', disabled: !canReact && pd.shieldReaction !== 'push', title: `Dépenser ${reactionCost} Avantages pour repousser l’attaquant de 2 m et vous désengager (AA — 1×/Round)`, onSelect: () => toggleReaction('push') },
+                // Une réaction hors de portée porte sa CAUSE au survol/focus/tap (`refus`) — pas la
+                // description de l'option, qui reste en `title` quand elle est offerte.
+                { key: 'damage', label: 'Dégâts', selected: pd.shieldReaction === 'damage', refus: refusReaction('damage'), title: refusReaction('damage') ? undefined : `Dépenser ${reactionCost} Avantages pour causer des Dégâts comme s’il s’agissait de votre Action (AA — 1×/Round)`, onSelect: () => toggleReaction('damage') },
+                { key: 'push', label: 'Repousser', selected: pd.shieldReaction === 'push', refus: refusReaction('push'), title: refusReaction('push') ? undefined : `Dépenser ${reactionCost} Avantages pour repousser l’attaquant de 2 m et vous désengager (AA — 1×/Round)`, onSelect: () => toggleReaction('push') },
               ]}
             />
           )}

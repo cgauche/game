@@ -6,7 +6,7 @@
 import { LIBELLES_ENVELOPPE, type CleEnveloppe } from '../../data/schemas/grammaire/document';
 import { valeursDuChamp, type MetaChamp } from '../../data/schemas/grammaire/meta';
 
-export type FieldKind = 'text' | 'textarea' | 'number' | 'checkbox' | 'stringList' | 'numberList' | 'source' | 'recordNumber' | 'recordText' | 'object' | 'json' | 'select';
+export type FieldKind = 'text' | 'textarea' | 'number' | 'checkbox' | 'stringList' | 'numberList' | 'source' | 'descRef' | 'recordNumber' | 'recordText' | 'object' | 'json' | 'select';
 
 export interface FieldDesc {
   key: string;
@@ -27,6 +27,9 @@ function kindOf(key: string, v: unknown): FieldKind {
   // (chaîne courte) plutôt que le widget livre/page (qui écraserait la valeur par un objet au 1er edit).
   if (key === 'source' && v != null && typeof v === 'object') return 'source';
   if (key === 'desc') return 'textarea';
+  // `descRef` = ADRESSE d'un passage du `Source/` (#1389) : livre/chapitre/section/fragments, avec une
+  // empreinte que l'auteur ne saisit JAMAIS. L'inférence générique en ferait un sous-formulaire d'objet.
+  if (key === 'descRef') return 'descRef';
   if (typeof v === 'string') return v.length > 80 ? 'textarea' : 'text';
   if (typeof v === 'number') return 'number';
   if (typeof v === 'boolean') return 'checkbox';
@@ -52,8 +55,11 @@ function kindOf(key: string, v: unknown): FieldKind {
 /**
  * RÉGIME de libellé d'un champ : à quel étage du document il vit, et quelle méta d'édition le nomme.
  * L'enveloppe (`id`/`desc`/`source`…) n'existe qu'au PREMIER NIVEAU : un `maison` de bande de coût
- * (`naval-traits.json install.installation.bands[]`) ou un `id` d'op (`activities.json outcomes[].ops[]`) n'est
- * PAS le champ d'enveloppe du même nom — lui poser « Arbitrage maison » / « Identifiant » mentirait.
+ * (`naval-traits.json install.installation.bands[]`) ou un `id` d'op (`activities.json outcomes[].ops[]`)
+ * PARTAGE la clé d'un champ d'enveloppe sans en être un. `LIBELLES_ENVELOPPE` est indexée par
+ * `CleEnveloppe` (`grammaire/document.ts`), et ces clés ne décrivent que le premier niveau —
+ * `document()` refuse d'ailleurs une méta dessus. Y appliquer le nom d'enveloppe nommerait un champ
+ * qui n'existe pas à cet étage.
  */
 export interface RegimeDeLibelle {
   /** Méta d'édition du document, par le canal registre (`SchemaDef.meta`) — champs de premier niveau. */

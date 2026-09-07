@@ -33,7 +33,11 @@ src/data/                   NOTRE base APP-OWNED (JSON commité, éditable dans 
                               forme disque » : un script Node lit une entrée adressée SANS `desc` — les
                               consommateurs Node de prose sont inventoriés par
                               `scripts/source/inventaire-consommateurs-prose.mjs` et câblés sur
-                              `materialiser` (`scripts/source/resoudre.mjs`) à la migration de leur famille
+                              `materialiser` (`scripts/source/resoudre.mjs`) à la migration de leur famille.
+                              Le même plugin émet les chapitres en assets à nom stable
+                              (`source/<livre>/<NN>.md` + `source/manifest.json`) et les sert en dev :
+                              l'adresse EST l'URL, et `chapitres.ts` les charge dans le navigateur pour le
+                              SEUL éditeur d'adresse (`src/ui/compendium/DescRefField.tsx`)
   hash.ts                     Hachage déterministe partagé (`hash32` FNV-1a, `seedStream`) : empreinte
                               de découpe ET seeds du rendu (`src/gameIso`)
 scripts/migrations/         Migrations de donnée REJOUABLES (une par lot, datée) : rejouées sur l'arbre

@@ -88,15 +88,25 @@ export type CodeErreur =
   | 'colonne-inconnue'
   | 'fragment-trop-court'
   | 'fragment-ambigu'
+  | 'fragments-chevauchants'
   | 'montage-hors-plafond';
 
-export interface ErreurResolution { error: CodeErreur; detail: string }
+export interface ErreurResolution {
+  error: CodeErreur;
+  detail: string;
+  /** Indice 0-based du fragment FAUTIF, quand l'erreur en désigne un — pour un chevauchement, le
+   *  SECOND des deux (`chevauchementDe` : c'est celui que le geste vient d'ajouter ou de déplacer).
+   *  Absent pour une erreur qui porte sur l'adresse entière (`montage-hors-plafond`).
+   *  C'est ce qui permet à un éditeur d'afficher le refus DANS la rangée concernée. */
+  fragment?: number;
+}
 
 export interface Resolu { md: string; folios: number[] }
 
 export const estErreur = (r: Resolu | ErreurResolution): r is ErreurResolution => 'error' in r;
 
-/** Longueur normalisée minimale d'un fragment de montage (en deçà, l'adresse n'est pas discriminante). */
+/** Longueur normalisée minimale d'un fragment de BLOCS en montage (en deçà, l'adresse n'est pas
+ *  discriminante). Une `cellule` n'y est pas soumise — voir la règle D, `resoudreAdresse`. */
 const MIN_FRAGMENT = 40;
 /** Nombre maximal de fragments d'une adresse. */
 const MAX_FRAGMENTS = 3;
@@ -493,11 +503,82 @@ function occurrences(chapitre: ChapitreParse, frag: Fragment, texteNorm: string)
 }
 
 /**
+ * Indices des BLOCS d'une section que ce fragment couvre — prédicat de couverture UNIQUE, partagé par
+ * le verrou de chevauchement et par tout ce qui doit savoir ce qui est déjà cité (l'éditeur d'adresse,
+ * pour offrir un fragment neuf sur un passage LIBRE). Un fragment de CELLULE couvre UN seul bloc :
+ * celui de SA table, c'est-à-dire celui où la clé de ligne la résout SANS AMBIGUÏTÉ — la même
+ * condition que `celluleBrute`. Deux tables d'une même section qui partagent une clé de ligne ne
+ * résolvent pas (`ligne-ambigue`) : la couverture est alors VIDE, pas double.
+ * Rend un ensemble VIDE quand la section ou la table n'existe pas — l'erreur est dite ailleurs.
+ */
+export function blocsCouverts(chapitre: ChapitreParse, frag: Fragment): Set<number> {
+  const out = new Set<number>();
+  const section = sectionDe(chapitre, frag);
+  if (!section) return out;
+  if (frag.kind === 'blocs') {
+    for (let i = Math.max(0, frag.b0); i <= Math.min(frag.b1, section.blocks.length - 1); i++) out.add(i);
+    return out;
+  }
+  const hits = rowsMatching(section, normText(String(frag.row ?? '')));
+  if (hits.length !== 1) return out;
+  const idx = section.blocks.indexOf(hits[0].block);
+  if (idx >= 0) out.add(idx);
+  return out;
+}
+
+/**
+ * Deux fragments d'un MONTAGE se recouvrent-ils ? Un montage cite des passages DISTINCTS : deux
+ * fragments d'une MÊME section dont les blocs couverts se croisent (le cas dégénéré étant le fragment
+ * répété, et le cas mixte la table entière PUIS une de ses cellules) rendraient le même texte deux
+ * fois, et l'adresse dirait plus que le livre. Verrou STRUCTUREL, au même étage que le plafond de
+ * trois fragments : ni l'éditeur ni une migration ne peuvent le contourner.
+ *
+ * L'erreur DÉSIGNE LE SECOND des deux (`fragment: j`) : c'est celui qu'on vient d'ajouter ou de
+ * déplacer dans la quasi-totalité des gestes d'édition, donc celui à corriger ; son détail nomme le
+ * premier, pour que l'auteur sache LEQUEL il redit.
+ *
+ * CE QUE LE VERROU NE COUVRE PAS : deux fragments de SECTIONS DIFFÉRENTES qui citent le même texte.
+ * `fragment-ambigu` ne les attrape pas non plus quand chacun est unique DANS SON CHAPITRE au sens du
+ * balayage de runs — un livre qui répète un encadré mot pour mot sous deux titres reste adressable
+ * deux fois dans un même montage. Le juger demanderait de comparer les TEXTES résolus, pas les
+ * positions : c'est une autre question, et elle n'a pas de cas mesuré.
+ */
+function chevauchementDe(chapitre: ChapitreParse, ref: DescRef): ErreurResolution | null {
+  const memeSection = (a: Fragment, b: Fragment) => a.sec === b.sec && a.secOcc === b.secOcc;
+  for (let i = 0; i < ref.parts.length; i++) {
+    for (let j = i + 1; j < ref.parts.length; j++) {
+      const a = ref.parts[i];
+      const b = ref.parts[j];
+      if (!memeSection(a, b)) continue;
+      const couvertsA = blocsCouverts(chapitre, a);
+      const memeCellule = a.kind === 'cellule' && b.kind === 'cellule' && a.row === b.row && a.col === b.col;
+      const croise = memeCellule || [...blocsCouverts(chapitre, b)].some((k) => couvertsA.has(k));
+      // Deux CELLULES du même bloc-table qui ne désignent PAS la même case citent bien deux textes.
+      if (croise && !(a.kind === 'cellule' && b.kind === 'cellule' && !memeCellule)) {
+        return {
+          error: 'fragments-chevauchants',
+          fragment: j,
+          detail: `${ref.book} ch.${ref.ch} : ${ouDe(b)} cite le même passage que le fragment ${i + 1} (${ouDe(a)})`,
+        };
+      }
+    }
+  }
+  return null;
+}
+
+/**
  * Résout une adresse complète : chaque fragment, joints par une ligne vide, folios en union
- * ordonnée. Un montage (2 fragments et plus) plafonne à trois fragments, et chacun doit être assez
- * long ET unique dans son chapitre — 769 des 5 397 blocs du livre de base portent un texte qui
- * apparaît ailleurs (mesure 2026-09-05), une adresse posée sur l'un d'eux rendrait un autre texte
- * à la première ré-extraction.
+ * ordonnée. Un montage (2 fragments et plus) plafonne à trois fragments.
+ *
+ * RÈGLE D — le plancher de longueur et l'unicité ne valent que pour un fragment `blocs`. Un fragment
+ * de blocs désigne son texte PAR CE TEXTE : trop court ou répété ailleurs, il retomberait sur un
+ * autre passage à la première ré-extraction (769 des 5 397 blocs du livre de base portent un texte
+ * qui apparaît ailleurs, mesure 2026-09-05). Une `cellule` ne désigne rien par son texte : elle est
+ * adressée EXACTEMENT par (section, clé de ligne, en-tête de colonne), et l'ambiguïté d'une clé a
+ * déjà son refus propre (`ligne-ambigue`, `resoudreFragment`). Lui appliquer le plancher rendait un
+ * remède IMPOSSIBLE à l'écran — « étendez les bornes de blocs » sur un fragment qui n'a pas de
+ * bornes (mesuré en recette : « Humain » d'une table de races, valide seul, refusé dès le 2ᵉ
+ * fragment).
  */
 export function resoudreAdresse(chapitre: ChapitreParse, ref: DescRef): Resolu | ErreurResolution {
   if (ref.parts.length > MAX_FRAGMENTS) {
@@ -506,23 +587,27 @@ export function resoudreAdresse(chapitre: ChapitreParse, ref: DescRef): Resolu |
       detail: `${ref.book} ch.${ref.ch} : ${ref.parts.length} fragments (plafond ${MAX_FRAGMENTS})`,
     };
   }
+  const chevauchement = chevauchementDe(chapitre, ref);
+  if (chevauchement) return chevauchement;
   const morceaux: string[] = [];
   const folios: number[] = [];
-  for (const frag of ref.parts) {
+  for (let i = 0; i < ref.parts.length; i++) {
+    const frag = ref.parts[i];
     const res = resoudreFragment(chapitre, frag);
-    if (estErreur(res)) return res;
-    if (ref.parts.length > 1) {
+    if (estErreur(res)) return { ...res, fragment: i };
+    if (ref.parts.length > 1 && frag.kind === 'blocs') {
       const n = normText(res.md);
       const ou = `${ref.book} ch.${ref.ch} §${frag.sec}#${frag.secOcc}`;
       if (n.length < MIN_FRAGMENT) {
         return {
           error: 'fragment-trop-court',
+          fragment: i,
           detail: `${ou} : ${n.length} caractères normalisés (minimum ${MIN_FRAGMENT})`,
         };
       }
       const vus = occurrences(chapitre, frag, n);
       if (vus !== 1) {
-        return { error: 'fragment-ambigu', detail: `${ou} : ce texte apparaît ${vus} fois dans le chapitre` };
+        return { error: 'fragment-ambigu', fragment: i, detail: `${ou} : ce texte apparaît ${vus} fois dans le chapitre` };
       }
     }
     morceaux.push(res.md);

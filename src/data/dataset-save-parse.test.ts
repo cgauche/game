@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DATASET_KEYS, datasetEditable, datasetFile, datasetSerializeRoot, resetData } from './overrides';
+import { DATASET_KEYS, datasetEditable, datasetFile, datasetObject, datasetObjectSerializeRoot, datasetSerializeRoot, resetData } from './overrides';
 import { validateDataset } from './schemas/validate';
 import { serializeDataset } from './serialize';
 import { versDisque } from './schemas/grammaire/prose';
@@ -115,6 +115,24 @@ describe('sauvegarde éditeur — chaque clé de dataset résout un fichier REGI
     // MORDANT : sans ce passage, c'est la forme RUNTIME qui partirait au disque — et le schéma la refuse.
     expect(validateDataset('psychology.json', disque)).toBeNull();
     expect(validateDataset('psychology.json', runtime)).toMatch(/un texte, un porteur/);
+  });
+
+  it('branche dataset-OBJET : la seconde porte de sauvegarde rend la FORME DISQUE, pas la racine vivante', () => {
+    // `CodexEdit.save` a DEUX branches : le dataset-TABLEAU (`datasetSerializeRoot`) et le
+    // dataset-OBJET (fiches de règle, `details`). La seconde lisait la racine RUNTIME telle quelle ;
+    // une entrée adressée y aurait écrit `desc` ET `descRef` sur le disque. Une seule forme disque,
+    // deux portes SYMÉTRIQUES.
+    //
+    // CE QUE CE TEST PROUVE, exactement : la porte rend une COPIE (jamais la racine vivante) dont le
+    // contenu est `versDisque` de cette racine. Il ne prouve PAS l'amputation d'un `desc` matérialisé :
+    // aucune entrée de `details` n'est encore adressée, et le magasin vivant n'est jamais écrit par un
+    // test. L'amputation est prouvée juste au-dessus sur une racine SYNTHÉTIQUE, et elle mordra sur
+    // donnée réelle au pilote (psychology adressée) — même statut que le no-op à l'octet qui tient la
+    // porte TABLEAU en lecture.
+    const runtime = datasetObject('details');
+    const disque = datasetObjectSerializeRoot('details');
+    expect(disque, 'la porte rend la racine RUNTIME elle-même — un `desc` matérialisé partirait au disque').not.toBe(runtime);
+    expect(disque).toEqual(versDisque(runtime));
   });
 
   it('fail-closed : une racine délibérément fausse est REFUSÉE (l’instrument mord)', () => {

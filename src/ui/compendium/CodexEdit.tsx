@@ -6,7 +6,7 @@
  * System Access (`fsPersist`) + preview mémoire (`setDataset`).
  */
 import { useEffect, useMemo, useState } from 'react';
-import { datasetArray, setDataset, datasetObject, setObjectDataset, datasetFile, datasetSerializeRoot, datasetObjectFile, type DatasetKey, type ObjectDatasetKey } from '../../data/overrides';
+import { datasetArray, setDataset, datasetObject, datasetObjectSerializeRoot, setObjectDataset, datasetFile, datasetSerializeRoot, datasetObjectFile, type DatasetKey, type ObjectDatasetKey } from '../../data/overrides';
 import { CATEGORY_DATASET_DERIVE, OBJECT_CATEGORY_DERIVE } from '../../data/schemas/exposition-derivee';
 import type { SkillRef } from '../../engine/skills';
 import type { SteamBreakdownEntry } from '../../engine/shipBuild';
@@ -21,6 +21,8 @@ import type { ActivityContext, OutcomeBand, BattleOutcome, BattleSide, BattleOut
 import { weatherCondition } from '../../engine/travelStages';
 import { weatherIdSchema } from '../../data/schemas/defs/weather';
 import { RefField, refFieldCfg } from './RefField';
+import { DescRefField } from './DescRefField';
+import type { DescRef } from '../../data/source/decoupe';
 import { Icon } from '../Icon';
 import { NumberField } from '../NumberField';
 import { PlageField, type PlageValue } from '../PlageField';
@@ -592,7 +594,9 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
     const avant: unknown = obj ? structuredClone(datasetObject(obj.ds)) : (datasetArray(dsKey!) as unknown[]).slice();
     src.persist(entry); // preview mémoire (live) — mutation en place (tableau ou objet)
     // Le texte écrit = la SOURCE entière (tableau ou objet-dataset), re-sérialisée byte-fidèle.
-    const root = obj ? datasetObject(obj.ds) : datasetSerializeRoot(dsKey!);
+    // Les DEUX portes de SÉRIALISATION, jamais la lecture runtime : elles seules rendent la FORME
+    // DISQUE (`versDisque` — le `desc` matérialisé d'une entrée adressée n'y repart pas).
+    const root = obj ? datasetObjectSerializeRoot(obj.ds) : datasetSerializeRoot(dsKey!);
     const schemaErr = validateDataset(src.file, root);
     if (schemaErr) {
       if (obj) setObjectDataset(obj.ds, avant as never);
@@ -1816,6 +1820,9 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
   if (kind === 'source') {
     const s = (value as { book?: string; page?: number }) ?? {};
     return <div className="ed-field"><span>{label}</span><div className="de-source"><input placeholder="livre" value={s.book ?? ''} onChange={(e) => onChange({ ...s, book: e.target.value })} /><NumberField variant="nu" label={`${label} — page`} placeholder="page" vide value={s.page} onChange={(n) => onChange({ ...s, page: n ?? 0 })} /></div></div>;
+  }
+  if (kind === 'descRef') {
+    return <DescRefField label={label} value={value as DescRef | undefined} onChange={onChange as (v: DescRef | undefined) => void} />;
   }
   if (kind === 'recordNumber') {
     const rec = (value as Record<string, number | null>) ?? {};

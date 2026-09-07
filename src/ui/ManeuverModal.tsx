@@ -5,7 +5,7 @@ import { MANEUVER_ICON } from '../state/combatFlow';
 import { RollShell, type RollAction } from './RollShell';
 import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { Icon } from './Icon';
-import { OptionChooser, type RollOption } from './OptionChooser';
+import { OptionChooser, type RollSegOption } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 
 /**
@@ -40,7 +40,7 @@ export function ManeuverModal() {
   const difficulty = pm.kind === 'vomi' ? 'facile' : 'intermediaire'; // Vomi : +40 à courte distance (l.376)
   // Regard (Avantage variable, l.238) : sélecteur PRÉ-JET 1..Avantage → +N DR sur la marge.
   const variable = a.advantageMode === 'variable';
-  const avOptions: RollOption[] = variable
+  const avOptions: RollSegOption[] = variable
     ? Array.from({ length: Math.max(1, attacker.advantage) }, (_, i) => i + 1).map((n) => ({
         key: String(n), label: `+${n} DR`, selected: pm.avantageSpent === n, onSelect: () => setAvantage(n),
       }))

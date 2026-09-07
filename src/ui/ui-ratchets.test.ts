@@ -69,7 +69,10 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   // `.sheet-main` (motif `.bar` non composable ici, c'est un slot droit de `Band`, pas un bandeau).
   'styles/band.css': 1,
   'styles/base.css': 4,
-  'styles/codex-edit.css': 1,
+  // +1 (#1388 C4) : `.de-reflrow` (rangée dense de réfs de l'atelier Codex) s'enroule dès 360 px —
+  // motif `.bar` non composable ici (c'est une rangée de CHAMPS d'un formulaire d'édition, pas un
+  // bandeau d'écran) ; le `flex-wrap` seul ne suffisait pas, il va de pair avec `min-width: 0`.
+  'styles/codex-edit.css': 2,
   // -1 (#492 lot POSSESSIONS B) : mort de l'ancienne `.inv-row { flex-wrap: wrap }` (registre
   // `Band`/`PlaqueRow` désormais, `.inv-actionbar` reprend le motif dans sheet.css, en regard).
   // +2 (chartrage du bloc « dé fixé », juge vision) : `.prow-act` (zone d'actions d'une rangée de jet)
@@ -681,7 +684,13 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Finition B1 : +1 (107 → 108) — `.rm-await` (zone d'ATTENTE d'un verdict suspendu à une fenêtre
   // qui va s'interposer, #1004) : rôle distinct de l'issue, donc classe propre aux mêmes tokens de
   // bloc, jamais la note de pied `.rm-log`.
-  'styles/sheet.css': 108,
+  // +3 (#1388 C4) : la métrique compte des NOMS DE CLASSE (`classNamesDefined`), et le segment qui
+  // compose `GatedAction bare` en nomme trois qui n'existaient pas dans ce module — `btn-nu`,
+  // `gated-action`, `codex-ref`. Ce ne sont PAS des classes neuves du domaine : elles appartiennent
+  // aux primitives (`base.css`, `components.css`), et `sheet.css` ne fait que reprendre la main de
+  // SPÉCIFICITÉ dessus (`.seg .btn.btn-nu` bat `.seg button`), sans dupliquer une déclaration. Le
+  // sélecteur d'attribut `[aria-disabled='true']` ne pèse rien dans cette métrique.
+  'styles/sheet.css': 111,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
@@ -1439,9 +1448,10 @@ function widthBreakpoints(css: string): string[] {
 
 // ── (xix) RAISON D'UN REFUS : un `<button disabled … title=…>` est une raison MUETTE (#1689 T2) —
 //    `disabled` retire le bouton de l'ordre de tabulation et lui coupe tout événement de pointeur, et
-//    un `title` natif n'atteint ni le lecteur d'écran, ni la manette, ni le doigt. L'unique porteur
-//    d'une raison de refus est `GatedAction` (`aria-disabled` + `CodexRef refus` + copie
-//    `aria-describedby`), et pour une option de grille/barre d'actions, `OptionChooser` prop `refus`.
+//    un `title` natif n'atteint ni le lecteur d'écran, ni la manette, ni le doigt. Le bouton
+//    d'engagement unique qui porte une raison est `GatedAction` (`aria-disabled` + `CodexRef refus` +
+//    copie `aria-describedby`), et pour une option des TROIS layouts d'`OptionChooser` (grille, barre
+//    d'actions, segment — tous composés par `OptionBouton`), la prop `refus`/`refusId`.
 //    Baseline JOUEUR = 0 (les 53 sites appelants migrés) ; l'ATELIER reste gelé à son stock, dont la
 //    migration est un lot à part (les outils d'édition n'ont pas la même contrainte manette/tactile).
 //    EXEMPTIONS AU SITE (`fichier:ligne`, jamais au FICHIER — un fichier blanchi cache le site NEUF
@@ -1450,21 +1460,12 @@ function widthBreakpoints(css: string): string[] {
 //    ligne porte sa raison ; une ligne périmée (le site a bougé ou a été migré) échoue aussi.
 const REFUS_MUET_EXEMPT_SITES = new Map<string, string>([
   ['GatedAction.tsx:151', 'la primitive elle-même : `title={ariaLabel}` y est le NOM accessible, pas une raison'],
-  ['OptionChooser.tsx:91', '`seg` : matière propre, aucune `.btn` à habiller (type `RollOptionSansRefus`)'],
-  ['OptionChooser.tsx:138', '`OptionBouton` : la composition partagée, dont la branche gatée compose déjà `GatedAction`'],
+  ['OptionChooser.tsx:104', '`OptionBouton` : la composition partagée des trois layouts, dont la branche gatée compose déjà `GatedAction`'],
   ['RollShell.tsx:299', 'modèle de props de la coquille de jet — passage à `GatedAction` = train T9'],
   ['MenuCard.tsx:130', 'modèle de props du menu — train T9'],
   ['MediaSelect.tsx:59', 'modèle de props du sélecteur média — train T9'],
   ['QtyStepper.tsx:36', 'modèle de props du stepper (décrément) — train T9'],
   ['QtyStepper.tsx:40', 'modèle de props du stepper (incrément) — train T9'],
-  // Options d'un `seg` : `refus` y est refusé AU TYPE (`RollOptionSansRefus`) — le segmenté a sa
-  // matière propre, aucune `.btn` que `GatedAction` puisse habiller (design jugé #1689 T2). Ces trois
-  // options portent donc encore leur raison en `title` ; leur migration EST le train T4 (le segmenté).
-  ['CastModal.tsx:552', '`seg` du contre-sort : « Exige un autre dissipateur du même Domaine » — train T4'],
-  ['CharacterSheet.tsx:520', '`seg` de la main qui tient l’arme : deux causes d’inéligibilité — train T4'],
-  ['ShantyModal.tsx:71', '`seg` des chansons : `disabled` d’intégrité de donnée (chanson introuvable) — train T4'],
-  ['jetProps/useDefenseJetProps.tsx:178', '`seg` Porte-Bouclier (Dégâts) : coût en Avantages dit en `title` — train T4'],
-  ['jetProps/useDefenseJetProps.tsx:179', '`seg` Porte-Bouclier (Repousser) : coût en Avantages dit en `title` — train T4'],
 ]);
 const REFUS_MUET_BASELINE: Record<string, number> = {
   'editor/Editor.tsx': 1,

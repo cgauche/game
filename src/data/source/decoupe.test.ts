@@ -1,7 +1,9 @@
 // Tests de la bibliothèque de DÉCOUPE (`decoupe.ts`) : recollage des paragraphes coupés par un
 // saut de folio, folio COURANT, occurrences de titres dupliqués, adresse de CELLULE de table,
 // contrôle d'empreinte, montage d'adresse et chargement SOUS NODE NU. Ces tests lisent le VRAI
-// `Source/` (aucune fixture inventée) — les cas de recette sont cités par `fichier:ligne`.
+// `Source/` — les cas de recette sont cités par `fichier:ligne`. UNE exception, nommée à son site :
+// le prédicat de couverture d'une CELLULE se verrouille sur une fixture, faute d'une section à deux
+// tables dans le corpus extrait — un verrou ne s'écrit pas après le dégât.
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -9,8 +11,8 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import {
   type ChapitreParse, type Fragment, type FragmentBlocs, type FragmentCellule, type Resolu,
-  blocsPlats, empreinteDe, estErreur, findCells, normText, parseChapitre, resoudreAdresse,
-  resoudreFragment, sumOf,
+  blocsCouverts, blocsPlats, empreinteDe, estErreur, findCells, normText, parseChapitre,
+  resoudreAdresse, resoudreFragment, sumOf,
 } from './decoupe.ts';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
@@ -283,6 +285,49 @@ describe('resoudreAdresse — montage de fragments', () => {
     });
     expect((res as { error: string }).error).toBe('fragment-ambigu');
     expect((res as { detail: string }).detail).toMatch(/2 fois/);
+  });
+});
+
+describe('blocsCouverts — ce qu’un fragment CITE DÉJÀ (prédicat unique du chevauchement)', () => {
+  // Une CELLULE couvre le bloc de SA table. Une section à DEUX tables est le cas qui distingue le
+  // prédicat juste d'une recherche de lignes à travers la section : aucun livre extrait n'en porte
+  // aujourd'hui (balayage de tous les chapitres, 2026-09-05), d'où la fixture — le jour où un
+  // chapitre en portera une, la règle sera déjà posée.
+  const CHAPITRE = parseChapitre([
+    '### Blessures',
+    '',
+    'Un paragraphe d’ouverture assez long pour être adressable sans ambiguïté dans ce chapitre.',
+    '',
+    '| Localisation | Effet |',
+    '| --- | --- |',
+    '| Tete | Assommé jusqu’à la fin du Round suivant, sans autre effet notable. |',
+    '',
+    'Un second paragraphe, distinct du premier, qui sépare les deux tables de cette section.',
+    '',
+    '| Localisation | Séquelle |',
+    '| --- | --- |',
+    '| Bras | Fracture ouverte qui empêche toute action de la main concernée. |',
+    '',
+  ].join('\n'));
+  const section = CHAPITRE.sections.find((s) => s.slug === 'blessures')!;
+  const cellule = (row: string, col: string) =>
+    estampille<FragmentCellule>(CHAPITRE, { kind: 'cellule', sec: 'blessures', secOcc: 1, row, col });
+  const bloc = (i: number) =>
+    estampille<FragmentBlocs>(CHAPITRE, { kind: 'blocs', sec: 'blessures', secOcc: 1, b0: i, b1: i });
+  const monte = (...parts: Fragment[]) => resoudreAdresse(CHAPITRE, { book: LDB, ch: '00', parts });
+
+  it('la cellule couvre le bloc de SA table, jamais celui de la table voisine', () => {
+    // La fixture porte bien DEUX tables : les deux cellules résolvent, chacune dans la sienne.
+    expect(section.blocks.filter((b) => b.md.startsWith('|')), 'la fixture doit porter DEUX tables').toHaveLength(2);
+    expect((resoudreFragment(CHAPITRE, cellule('Tete', 'Effet')) as Resolu).md).toContain('Assommé');
+    expect((resoudreFragment(CHAPITRE, cellule('Bras', 'Séquelle')) as Resolu).md).toContain('Fracture');
+    expect([...blocsCouverts(CHAPITRE, cellule('Bras', 'Séquelle'))]).toEqual([3]);
+    expect([...blocsCouverts(CHAPITRE, cellule('Tete', 'Effet'))]).toEqual([1]);
+  });
+
+  it('la table VOISINE et une cellule se montent ; SA table et elle se recouvrent', () => {
+    expect(estErreur(monte(bloc(1), cellule('Bras', 'Séquelle'))), 'deux passages distincts refusés').toBe(false);
+    expect((monte(bloc(3), cellule('Bras', 'Séquelle')) as { error: string }).error).toBe('fragments-chevauchants');
   });
 });
 

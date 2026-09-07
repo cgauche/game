@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { GatedAction } from './GatedAction';
 
 /**
@@ -27,8 +27,10 @@ export interface RollOption {
 }
 
 /**
- * Option qui peut porter sa RAISON DE REFUS. Les deux formes sont celles de `GatedAction` (l'unique
- * porteur d'une raison de refus du jeu), et il n'y en a pas d'autre :
+ * Option porteuse d'une RAISON DE REFUS — MÊME forme pour les trois layouts (`grid`, `seg`,
+ * `actions`), parce que c'est le même bouton : `GatedAction`, le bouton d'engagement unique du jeu,
+ * qui compose lui-même l'infobulle unique (`CodexRef refus`, que d'autres sites portent directement).
+ * Deux formes, selon qui tient le texte :
  *  - `refus`   : la cause est PROPRE à l'option — rendue au survol/focus/tap, jamais en texte inline
  *                sous le libellé (arbitrage user 2026-08-24) ;
  *  - `refusId` : N options éteintes par la MÊME cause, que l'appelant a déjà rendue UNE fois à
@@ -47,16 +49,21 @@ export interface RollGridOption extends RollOption {
  *  MÊME composition (`OptionBouton` ci-dessous). */
 export type RollActionOption = RollGridOption;
 
-/** Option d'un `seg` : la raison de refus y est REFUSÉE PAR LE TYPE (`never`) plutôt qu'avalée en
- *  silence — le segmenté a sa propre matière (bouton nu d'un `.seg`, aucune `.btn`), donc la prop
- *  n'y aurait aucun porteur à habiller. Une option de `seg` fermée reste muette jusqu'à ce que la
- *  matière du segmenté sache porter un refus. */
-export type RollOptionSansRefus = RollOption & { refus?: never; refusId?: never };
+/**
+ * Option d'un SEGMENT : même contrat de refus ENCORE — le `seg` compose le même `OptionBouton`, en
+ * variante NUE (`GatedAction bare` : aucune boîte apportée, la géométrie reste au `.seg`), donc la
+ * raison y a exactement la forme des deux autres layouts. Ce qu'elle ne peut PAS être, c'est
+ * simplement `disabled` : un segment est un CHOIX posé sous les yeux de l'utilisateur — l'éteindre
+ * sans dire pourquoi est le défaut que l'arbitrage du 2026-08-24 vise. Le régime muet n'a plus de
+ * consommateur après la migration des sites (`CharacterSheet`, `useDefenseJetProps`, `CastModal`,
+ * `ShantyModal`, `TavernGameModal`) : il se refuse PAR LE TYPE plutôt que par une convention.
+ */
+export type RollSegOption = RollGridOption & { disabled?: never };
 
 /**
- * Composition UNIQUE d'une option-bouton, partagée par `grid` et `actions` : l'option qui porte une
- * raison compose `GatedAction`, l'option muette reste un `<button>`. Une seule fonction pour les deux
- * layouts — la forme du refus ne se décline pas par layout.
+ * Composition UNIQUE d'une option-bouton, partagée par les TROIS layouts : l'option qui porte une
+ * raison compose `GatedAction`, l'option muette reste un `<button>`. Une seule fonction pour tous les
+ * layouts — la forme du refus ne se décline pas par layout, seule la MATIÈRE change (`bare`).
  */
 function OptionBouton({
   o,
@@ -64,6 +71,7 @@ function OptionBouton({
   primary,
   btnClassName,
   ariaPressed,
+  bare = false,
   children,
 }: {
   o: RollGridOption;
@@ -71,6 +79,10 @@ function OptionBouton({
   primary: boolean;
   btnClassName?: string;
   ariaPressed?: boolean;
+  /** Variante NUE du `seg` : le bouton n'apporte AUCUNE boîte — ni `.btn` sur l'option muette, ni
+   *  padding/hauteur sur l'option refusée (`GatedAction`, prop `bare` → `.btn-nu`). La géométrie
+   *  reste au conteneur `.seg`. */
+  bare?: boolean;
   children: ReactNode;
 }) {
   if (o.refus || o.refusId) {
@@ -82,6 +94,7 @@ function OptionBouton({
         {...(o.refusId ? { reasonId: o.refusId } : { reason: o.refus! })}
         onClick={() => {}}
         primary={primary}
+        bare={bare}
         btnClassName={btnClassName}
         ariaPressed={ariaPressed}
       />
@@ -89,7 +102,7 @@ function OptionBouton({
   }
   return (
     <button
-      className={`btn${primary ? ' btn-primary' : ''}${btnClassName ? ` ${btnClassName}` : ''}`}
+      className={bare ? (btnClassName ?? '') : `btn${primary ? ' btn-primary' : ''}${btnClassName ? ` ${btnClassName}` : ''}`}
       aria-pressed={ariaPressed}
       disabled={o.disabled}
       onClick={o.onSelect}
@@ -109,6 +122,9 @@ function OptionBouton({
  * - `seg`     → segmented control (`.rm-loc-inline` + `.seg`) ; option active = classe `on`, valeur affichée.
  * - `grid`    → grille de boutons (`.rm-loc-grid` de `.btn small`) — menus dans le corps de la modale.
  * - `actions` → barre d'actions (`.modal-actions` de `.btn`) — choix binaires (cf. `<ChoiceButtons>`).
+ *
+ * Les trois passent par `OptionBouton` : une option refusée y porte sa raison SOUS LA MÊME FORME,
+ * seule la matière change (le `seg` compose en variante nue, sans `.btn`).
  */
 export function OptionChooser({
   options,
@@ -118,31 +134,47 @@ export function OptionChooser({
 }: {
   /** Mini-titre du groupe (surtout layout `seg`) — ex. « Réaction ». */
   groupLabel?: ReactNode;
-  /** Préfixe des ids que la grille ÉMET (la copie accessible d'une raison de refus) : deux grilles
-   *  sur le même document servent souvent les MÊMES clés d'option — sans préfixe propre, elles
-   *  collent le même id deux fois. */
+  /** Préfixe des ids QUE CE COMPOSANT ÉMET (la copie accessible d'une raison de refus) : deux
+   *  châssis sur le même document servent souvent les MÊMES clés d'option — sans préfixe propre,
+   *  ils collent le même id deux fois. Le `useId` de React s'y ajoute (`${idPrefix}-${uid}-${key}`)
+   *  pour que deux INSTANCES du même appelant, qui partagent forcément le même préfixe, restent
+   *  distinctes. */
   idPrefix?: string;
 } & (
   | { layout: 'grid'; options: RollGridOption[] }
   | { layout: 'actions'; options: RollActionOption[] }
-  | { layout: 'seg'; options: RollOptionSansRefus[] }
+  | { layout: 'seg'; options: RollSegOption[] }
 )) {
   const shown = options.filter((o) => !o.hidden);
+  const uid = useId();
 
   if (layout === 'seg') {
     return (
       <div className="rm-loc-inline">
         {groupLabel != null && <span className="mini-title">{groupLabel}</span>}
         <div className="seg">
-          {shown.map((o) => (
-            <button key={o.key} className={o.selected ? 'on' : ''} aria-pressed={!!o.selected} disabled={o.disabled} onClick={o.onSelect} title={o.title}>
+          {(shown as RollSegOption[]).map((o) => (
+            <OptionBouton
+              key={o.key}
+              o={o}
+              id={`${idPrefix}-${uid}-${o.key}`}
+              primary={false}
+              /* Le segment passe par la MÊME composition que la grille et la barre d'actions, en
+                 variante NUE : le refus y prend sa forme unique (`aria-disabled`, clic inerte,
+                 infobulle `CodexRef` et copie hors écran liée par `aria-describedby`, tous portés par
+                 `GatedAction`) sans que le `.seg` perde sa géométrie. Le CONTENU est celui d'un
+                 segment offert — valeur effective comprise : un refus ne change pas ce qu'on lit. */
+              bare
+              btnClassName={o.selected ? 'on' : ''}
+              ariaPressed={!!o.selected}
+            >
               {o.content ?? (
                 <>
                   {o.label}
                   {o.value != null ? <> {o.value}</> : null}
                 </>
               )}
-            </button>
+            </OptionBouton>
           ))}
         </div>
       </div>
@@ -156,7 +188,7 @@ export function OptionChooser({
           <OptionBouton
             key={o.key}
             o={o}
-            id={`${idPrefix}-${o.key}`}
+            id={`${idPrefix}-${uid}-${o.key}`}
             /* `selected` = l'option RETENUE (état, `aria-pressed` + classe `on` — même sémantique
                qu'en `seg`) ; `primary` reste la mise en avant VISUELLE. Une grille qui n'exprime que
                `primary` ne ferre rien : le choix posé ne se distingue pas d'un bouton d'action. */
@@ -183,7 +215,7 @@ export function OptionChooser({
         <OptionBouton
           key={o.key}
           o={o}
-          id={`${idPrefix}-${o.key}`}
+          id={`${idPrefix}-${uid}-${o.key}`}
           primary={!!o.primary}
           btnClassName={o.ghost ? 'btn-ghost' : undefined}
         >

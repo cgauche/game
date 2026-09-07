@@ -39,9 +39,13 @@ describe('#412 — galerie design system : rendu réel (jsdom), zéro throw', ()
   });
 
   for (const spec of GALLERY_SPECIMENS) {
-    it(`spécimen « ${spec.label} » (${spec.file}) se monte sans exception`, () => {
+    it(`spécimen « ${spec.label} » (${spec.file}) se monte sans exception`, async () => {
       const Render = spec.render;
       expect(() => mount(<Render />)).not.toThrow();
+      // Un spécimen peut charger sa matière par PROMESSE (`DescRefField` : un chapitre du `Source/` par
+      // son adresse-URL). Sans ce vidage, sa pose d'état retombe HORS `act` et la sentinelle du harnais
+      // (`act hors act`) la compte, sur ce spécimen comme sur tout spécimen asynchrone à venir.
+      await act(async () => {});
     });
   }
 });

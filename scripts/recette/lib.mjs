@@ -459,15 +459,31 @@ export async function withReloadRetry(session, fn, { tries = 3, resettle, onRetr
  * `installDevtools` le RÉASSIGNE en bloc peu après (chargement async, DEV uniquement) — attendre
  * `screen` (helper de navigation) plutôt que la seule présence de `__wfrp` sous peine de courir
  * après un objet encore partiel (`errors`/`exportErrors` seuls).
+ *
+ * `url` est EXPLICITE dès qu'on juge un worktree lié : le défaut vise le port de l'arbre principal,
+ * et une recette qui l'oublie juge l'AUTRE arbre sans le dire.
+ * `timeoutMs` (45 s) borne cette attente ET celle de l'URL CDP (`launchSession`) — un seul réglage
+ * pour l'amorçage complet : un premier chargement à froid a été mesuré à 21 s sur un
+ * worktree neuf (Vite compile la totalité du graphe à la première requête), là où le plafond de 10 s
+ * d'origine rendait un refus qui accusait l'app. Le message DISTINGUE les deux causes : page qui n'a
+ * pas répondu du tout (`__wfrp` absent — build cassé, mauvaise URL) et app trop lente à s'installer.
  */
-export async function openApp(url = DEFAULT_URL, opts = {}) {
+export async function openApp(url = DEFAULT_URL, { timeoutMs = 45000, ...opts } = {}) {
   await checkServer(url);
-  const session = await launchSession(opts);
+  const session = await launchSession({ ...opts, timeoutMs });
   try {
     await session.rpc('Page.navigate', { url });
-    // Délai d'AMORÇAGE réglable (`timeoutMs`, défaut inchangé) : une machine chargée met plus de 10 s à
-    // peindre le premier écran, et trois passes de recette ont été perdues sur ce seul plafond.
-    await waitFor(session, APP_READY, { timeoutMs: opts.timeoutMs ?? 10000 });
+    try {
+      await waitFor(session, APP_READY, { timeoutMs });
+    } catch (e) {
+      const presence = await evaluate(session, 'typeof window.__wfrp').catch(() => 'inconnu');
+      throw new Error(
+        presence === 'object'
+          ? `openApp : « ${url} » a répondu mais l'app n'a pas fini de s'installer en ${timeoutMs} ms (\`__wfrp.screen\` toujours absent) — relever \`timeoutMs\` si le premier chargement est à froid.`
+          : `openApp : « ${url} » n'expose AUCUN \`window.__wfrp\` (typeof = ${presence}) — URL d'un autre arbre, build cassé, ou serveur non-DEV.`,
+        { cause: e },
+      );
+    }
     // ÉTAT PERSISTANT (#1679 L1c) : la recette joue — elle crée des héros, sauvegarde, change des
     // réglages. L'instantané pris ici est remis à la fermeture, pour qu'elle ne laisse rien derrière.
     session.stockageInitial = await instantanerStockage(session);
@@ -489,8 +505,33 @@ export async function gotoScreen(session, name, { settleMs = 600 } = {}) {
   await sleep(settleMs);
 }
 
-/** Capture un PNG nommé dans `dir` (créé si absent) — retourne le chemin écrit. */
-export async function shot(session, name, dir = process.cwd()) {
+/**
+ * Capture un PNG nommé dans `dir` (créé si absent) — retourne le chemin écrit.
+ * `ancre` (sélecteur) fait DÉFILER l'élément en vue avant la capture : à 360 px les écrans s'empilent
+ * et le sujet d'une recette se retrouve sous le pli — une capture le montrerait absent alors qu'il est
+ * seulement plus bas.
+ *
+ * NEUTRALISATION avant capture (`neutraliser`, par défaut) : le popup d'un `<select>` est NATIF (hors
+ * DOM) et restait ouvert au-dessus de la page sur les captures qui suivaient un `selectOption`. On
+ * ferme donc ce popup — `Escape` UNIQUEMENT quand le focus est sur un `<select>`, jamais à l'aveugle :
+ * une recette qui capture une modale la verrait se fermer sous elle (`intentions-portee.mjs:200`
+ * photographie un jet ouvert) — puis on retire le focus, dont l'anneau signe la capture.
+ */
+export async function shot(session, name, dir = process.cwd(), { ancre, neutraliser = true } = {}) {
+  if (neutraliser) {
+    const surSelect = await evaluate(session, `!!document.activeElement && document.activeElement.tagName === 'SELECT'`);
+    if (surSelect) await realKey(session, 'Escape');
+    await evaluate(session, `(() => { const a = document.activeElement; if (a && a.blur) a.blur(); return true; })()`);
+    await sleep(80);
+  }
+  if (ancre) {
+    await evaluate(session, `(() => {
+      const el = document.querySelector(${JSON.stringify(ancre)});
+      if (el) el.scrollIntoView({ block: 'center', inline: 'center' });
+      return !!el;
+    })()`);
+    await sleep(120);
+  }
   mkdirSync(dir, { recursive: true });
   const r = await session.rpc('Page.captureScreenshot', { format: 'png' });
   const path = join(dir, name.endsWith('.png') ? name : `${name}.png`);
@@ -578,23 +619,233 @@ export async function setMobileViewport(session) {
  * (typographique U+2019 ou droite U+0027) — les deux formes sont normalisées vers une seule avant
  * comparaison, texte cherché ET texte DOM (piège vécu, écrans « Tenter un Test d'Athlétisme » vs
  * « Dormir jusqu'à l'aube »).
+ *
+ * `{ exact: true }` compare le texte ENTIER du bouton au lieu d'y chercher une sous-chaîne : c'est ce
+ * qu'il faut dès qu'un libellé court en préfixe un autre (« Fermer » / « Fermer la fiche »,
+ * « blocs » / « blocs et cellules ») — sans lui, `find` prend le PREMIER du DOM, qui n'est pas
+ * forcément celui que la recette vise.
+ * Quand PLUSIEURS boutons matchent, le premier est cliqué (comportement inchangé) mais l'ambiguïté
+ * est AVERTIE sur `stderr` avec les textes concurrents : une recette qui vise le mauvais bouton
+ * échoue plus loin, sur un symptôme qui ne désigne plus sa cause. Avertissement, jamais exception —
+ * l'appelant peut légitimement viser le premier.
+ *
+ * `dans` = sélecteur RACINE où chercher (même patron que `{ racine }` de `cliquerAction`) : c'est la
+ * sortie propre quand le même libellé vit dans deux zones de l'écran (un « Fermer » de modale et
+ * celui du bandeau), là où `exact` ne départage pas.
  */
-export async function clickButtonByText(session, texte, { exact = false } = {}) {
+export async function clickButtonByText(session, texte, { exact = false, dans } = {}) {
   const rect = await evaluate(session, `(() => {
     const norm = (s) => (s || '').replace(/\\s+/g, ' ').replace(/[\\u2019']/g, "'").trim();
     const target = norm(${JSON.stringify(texte)});
-    const els = Array.from(document.querySelectorAll('button, [role="button"]'));
-    const el = els.find((b) => ${exact} ? norm(b.textContent) === target : norm(b.textContent).includes(target));
+    const racine = ${dans ? `document.querySelector(${JSON.stringify(dans)})` : 'document'};
+    if (!racine) return null;
+    const els = Array.from(racine.querySelectorAll('button, [role="button"]'));
+    const matches = els.filter((b) => ${exact} ? norm(b.textContent) === target : norm(b.textContent).includes(target));
+    const el = matches[0];
+    if (!el) return null;
+    el.scrollIntoView({ block: 'center', inline: 'center' });
+    const r = el.getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2, textes: matches.slice(0, 5).map((b) => norm(b.textContent)) };
+  })()`);
+  if (!rect) throw new Error(`clickButtonByText : aucun bouton ne matche « ${texte} »${dans ? ` dans « ${dans} »` : ''}`);
+  if (rect.textes && rect.textes.length > 1) {
+    console.warn(`clickButtonByText « ${texte} » : ${rect.textes.length} boutons matchent (${rect.textes.join(' | ')}) — le PREMIER est cliqué. Préciser avec { exact: true } si ce n'est pas celui-là.`);
+  }
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseMoved', x: rect.x, y: rect.y });
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mousePressed', x: rect.x, y: rect.y, button: 'left', clickCount: 1 });
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseReleased', x: rect.x, y: rect.y, button: 'left', clickCount: 1 });
+  return rect;
+}
+
+/**
+ * SURVOL RÉEL (CDP `Input.dispatchMouseEvent mouseMoved`) d'un contrôle désigné par un SÉLECTEUR ou
+ * par son TEXTE exact de bouton — le geste par lequel une raison de refus se lit (arbitrage user
+ * 2026-08-24 : au survol/focus/tap, jamais inline). SCROLL-AWARE comme `clickButtonByText` : le rect
+ * est lu APRÈS `scrollIntoView`, sinon la souris se pose sur ce qui n'est pas là.
+ *
+ * `attenteMs` laisse l'infobulle s'ouvrir (elle naît sur `pointerenter`, pas au rendu suivant).
+ * Rend le point survolé `{ x, y }` ; lève si la cible est absente.
+ */
+export async function survoler(session, cible, { attenteMs = 500 } = {}) {
+  const point = await evaluate(session, `(() => {
+    const norm = (s) => (s || '').replace(/\\s+/g, ' ').replace(/[\\u2019']/g, "'").trim();
+    const cible = ${JSON.stringify(cible)};
+    let el = null;
+    try { el = document.querySelector(cible); } catch { el = null; }
+    if (!el) el = Array.from(document.querySelectorAll('button, [role="button"]')).find((b) => norm(b.textContent) === norm(cible)) || null;
+    if (!el) return null;
+    el.scrollIntoView({ block: 'center', inline: 'center' });
+    const r = el.getBoundingClientRect();
+    return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) };
+  })()`);
+  if (!point) throw new Error(`survoler : aucune cible « ${cible} » (sélecteur ni texte de bouton)`);
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseMoved', x: point.x, y: point.y, buttons: 0 });
+  await sleep(attenteMs);
+  return point;
+}
+
+/**
+ * L'INFOBULLE ouverte et sa position RELATIVE à la cible : `{ texte, dx, dy }` — `dx`/`dy` sont les
+ * écarts entre les deux boîtes (0 quand elles se touchent ou se recouvrent sur cet axe). Une bulle
+ * posée loin de sa cible est le symptôme d'un rect mesuré à 0×0 (piège vécu : `display: contents`
+ * sur l'enveloppe → bulle au coin haut-gauche, (8, 6) pour un contrôle à (1050, 258)).
+ * `{ texte: null }` = aucune infobulle ouverte — un refus muet, pas une erreur de recette.
+ */
+export async function infobulleDe(session, cible) {
+  const r = await evaluate(session, `(() => {
+    const norm = (s) => (s || '').replace(/\\s+/g, ' ').replace(/[\\u2019']/g, "'").trim();
+    const cible = ${JSON.stringify(cible)};
+    let el = null;
+    try { el = document.querySelector(cible); } catch { el = null; }
+    if (!el) el = Array.from(document.querySelectorAll('button, [role="button"]')).find((b) => norm(b.textContent) === norm(cible)) || null;
+    if (!el) return null;
+    const bulle = document.querySelector('[role="tooltip"]');
+    const b = el.getBoundingClientRect();
+    if (!bulle) return { texte: null, cible: { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) } };
+    const p = bulle.getBoundingClientRect();
+    return {
+      texte: norm(bulle.textContent),
+      dx: Math.round(Math.max(0, b.left - p.right, p.left - b.right)),
+      dy: Math.round(Math.max(0, b.top - p.bottom, p.top - b.bottom)),
+      cible: { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) },
+      bulle: { x: Math.round(p.x), y: Math.round(p.y), w: Math.round(p.width), h: Math.round(p.height) },
+    };
+  })()`);
+  if (!r) throw new Error(`infobulleDe : aucune cible « ${cible} » (sélecteur ni texte de bouton)`);
+  return r;
+}
+
+/**
+ * CHOISIT une option d'un `<select>` AU GESTE (`session, selecteur, valeur`) — le pendant « liste
+ * déroulante » de `clickButtonByText`/`typeInField`.
+ *
+ * Un `<select>` ne s'ouvre pas en headless (le popup est natif, hors DOM) : le geste réel qu'on peut
+ * rejouer est celui du CLAVIER — focaliser la liste, poser `selectedIndex`, puis laisser partir les
+ * événements `input` et `change` que le navigateur émet à la validation. Trois étages, tous DOM :
+ *  1. FOCUS par un vrai clic CDP (comme `typeInField`) — la liste reçoit le geste, pas le `<body>` ;
+ *  2. `selectedIndex` posé par le SETTER NATIF (`HTMLSelectElement.prototype.value`), jamais par un
+ *     `setState` React : c'est ce qui fait voir la nouvelle valeur au `onChange` d'un champ CONTRÔLÉ
+ *     (même piège que `.value = …` documenté dans `docs/recette-navigateur.md`) ;
+ *  3. `input` puis `change` dispatchés `{ bubbles: true }` — React écoute `change` sur la racine.
+ *
+ * Refus EXPLICITES : liste absente, ou valeur absente des options (les valeurs offertes sont
+ * remontées dans le message). Rend `{ valeur, libelle }` LUS après le geste — un `onChange` qui
+ * refuse la valeur se voit donc au retour, jamais en silence.
+ */
+export async function selectOption(session, selecteur, valeur) {
+  const rect = await evaluate(session, `(() => {
+    const el = document.querySelector(${JSON.stringify(selecteur)});
     if (!el) return null;
     el.scrollIntoView({ block: 'center', inline: 'center' });
     const r = el.getBoundingClientRect();
     return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
   })()`);
-  if (!rect) throw new Error(`clickButtonByText : aucun bouton ne matche « ${texte} »`);
+  if (!rect) throw new Error(`selectOption : aucune liste ne matche « ${selecteur} »`);
   await session.rpc('Input.dispatchMouseEvent', { type: 'mouseMoved', x: rect.x, y: rect.y });
   await session.rpc('Input.dispatchMouseEvent', { type: 'mousePressed', x: rect.x, y: rect.y, button: 'left', clickCount: 1 });
   await session.rpc('Input.dispatchMouseEvent', { type: 'mouseReleased', x: rect.x, y: rect.y, button: 'left', clickCount: 1 });
-  return rect;
+  const res = await evaluate(session, `(() => {
+    const el = document.querySelector(${JSON.stringify(selecteur)});
+    const cible = ${JSON.stringify(String(valeur))};
+    const options = Array.from(el.options).map((o) => o.value);
+    const i = options.indexOf(cible);
+    if (i < 0) return { absente: true, options };
+    el.focus();
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+    setter.call(el, cible);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    return { valeur: el.value, libelle: (el.selectedOptions[0] || {}).textContent || '' };
+  })()`);
+  if (res && res.absente) {
+    throw new Error(`selectOption « ${selecteur} » : aucune option ne vaut « ${valeur} » — offertes : ${res.options.join(' | ')}`);
+  }
+  return res;
+}
+
+/**
+ * SÉLECTEUR CSS d'un champ désigné par son LIBELLÉ VISIBLE (`champParLibelle(session, 'dernier bloc')`).
+ *
+ * Pourquoi ce détour : `NumberField variant="champ"` (et tout l'éditeur qui le compose) rend
+ * `label.field > span + input`, et l'`id` qui les lie vient de `useId` — `:r5:`, `:ra:` : ce n'est PAS
+ * un sélecteur CSS valide (`document.querySelector('#:r5:')` JETTE). La recette ne peut donc pas viser
+ * le champ par son id ; elle le vise par le TEXTE de son libellé, comme un humain.
+ *
+ * Rend un sélecteur utilisable par `typeInField`/`evaluate` (un `data-recette` posé à la volée sur le
+ * champ trouvé), ou `null` si aucun libellé ne matche. Le marqueur est INERTE (attribut de données) :
+ * il ne change ni le style ni le comportement. Il PERSISTE en revanche jusqu'au démontage du nœud —
+ * React ne retire pas un attribut qu'il n'a pas posé ; chaque appel tire donc une marque NEUVE, et
+ * une recette qui vise le même champ deux fois doit reprendre le sélecteur que l'appel vient de rendre.
+ */
+export async function champParLibelle(session, libelle, { exact = true } = {}) {
+  const marque = `recette-champ-${Math.random().toString(36).slice(2, 8)}`
+  const trouve = await evaluate(session, `(() => {
+    const norm = (s) => (s || '').replace(/\\s+/g, ' ').replace(/[\\u2019']/g, "'").trim();
+    const target = norm(${JSON.stringify(libelle)});
+    const champs = Array.from(document.querySelectorAll('input, select, textarea'));
+    const el = champs.find((c) => {
+      const nom = norm((c.labels && c.labels[0] ? c.labels[0].textContent : '') || c.getAttribute('aria-label') || '');
+      return ${exact} ? nom === target : nom.includes(target);
+    });
+    if (!el) return null;
+    el.setAttribute('data-recette', ${JSON.stringify(marque)});
+    return true;
+  })()`)
+  return trouve ? `[data-recette="${marque}"]` : null
+}
+
+/**
+ * VERDICT DE DÉBORDEMENT à la largeur courante — le contrôle le plus fréquent de la règle stricte 4
+ * (« utilisable à 360 px ») : un écran qui déborde ne se voit pas sur une capture, il se MESURE.
+ * Rend `{ vw, docSW, debordants }` : largeur du viewport, largeur du document (elles doivent être
+ * ÉGALES — un `scrollWidth` plus grand = la page pousse latéralement), et les éléments dont le bord
+ * droit dépasse le viewport, avec leur balise, leur nom accessible et leur bord droit.
+ */
+export async function verdictDebordement(session, { racine = 'body', marge = 1 } = {}) {
+  return evaluate(session, `(() => {
+    const vw = document.documentElement.clientWidth;
+    const hote = document.querySelector(${JSON.stringify(racine)});
+    const debordants = [];
+    for (const el of (hote ? hote.querySelectorAll('*') : [])) {
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 && r.height === 0) continue;
+      if (r.right > vw + ${marge}) {
+        debordants.push({
+          tag: el.tagName.toLowerCase(),
+          aria: el.getAttribute('aria-label') || (el.labels && el.labels[0] ? el.labels[0].textContent : '') || (el.className || '').toString().slice(0, 40),
+          droite: Math.round(r.right),
+        });
+      }
+    }
+    return { vw, docSW: document.documentElement.scrollWidth, debordants: debordants.slice(0, 20) };
+  })()`)
+}
+
+/**
+ * ÉVALUE UNE FONCTION dans la page (`evaluerFn(session, (a, b) => …, a, b)`) — la sortie du piège du
+ * DOUBLE ÉCHAPPEMENT : une expression passée à `evaluate` sous forme de chaîne traverse d'abord le
+ * template literal de Node, où `\s` devient `s` (mesuré : `/\s+/` arrivé `/s+/` dans la page, 4 appels
+ * perdus). Ici, le corps de la fonction est sérialisé tel qu'il est ÉCRIT (`fn.toString()`) et les
+ * arguments passent par `JSON.stringify` : rien à ré-échapper.
+ *
+ * La fonction s'exécute DANS la page : elle ne capture RIEN de la portée du script (pas de closure) —
+ * tout ce dont elle a besoin arrive par `args`, et son résultat doit être sérialisable en JSON.
+ */
+export async function evaluerFn(session, fn, ...args) {
+  const appel = `(${fn.toString()}).apply(null, ${JSON.stringify(args)})`
+  return evaluate(session, appel)
+}
+
+/**
+ * Attend qu'un sélecteur soit PRÉSENT dans le DOM, et REFUSE en le nommant sinon — un `sleep` gonflé
+ * « au cas où » cache la cause quand l'élément n'arrive jamais. Rend le sélecteur au succès.
+ */
+export async function attendreSelecteur(session, selecteur, { timeoutMs = 8000 } = {}) {
+  const vu = await waitFor(session, `!!document.querySelector(${JSON.stringify(selecteur)})`, { timeoutMs })
+    .then(() => true)
+    .catch(() => false)
+  if (!vu) throw new Error(`attendreSelecteur : « ${selecteur} » absent du DOM après ${timeoutMs} ms`)
+  return selecteur
 }
 
 /** Table des touches courantes non imprimables (`key` DOM → code virtuel Windows CDP). */

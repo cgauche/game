@@ -549,7 +549,8 @@ export function CastModal() {
                         onChoose: (k) => cspDeclare(part.id, k as CounterDeclaration),
                         options: [
                           { key: 'solo', label: 'Contrer seul' },
-                          { key: 'soutenu', label: 'S’unir', disabled: !counterspellJoinable(st, csp, part.id), title: 'Exige un autre dissipateur du même Domaine' },
+                          // La raison du refus se lit au survol/focus/tap, jamais par un segment muet.
+                          { key: 'soutenu', label: 'S’unir', refus: counterspellJoinable(st, csp, part.id) ? undefined : 'Exige un autre dissipateur du même Domaine' },
                           { key: 'pass', label: 'Passer' },
                         ],
                         hint: situation,

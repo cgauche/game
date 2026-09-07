@@ -94,6 +94,15 @@
 }
 .gallery-spec-stage {
   gap: 12px;
+  max-width: 100%;
+}
+/* La PISTE contraint ses spécimens comme un écran réel le ferait : sans ce plancher levé, un enfant
+   qui refuse de rétrécir (un `<select>` à longues options) s'étire au-delà de la piste et la galerie
+   MENT sur la tenue de la primitive (mesuré à 360 px : `.ed-field` à 607 px dans une piste de 292 px,
+   alors que l'écran Codex réel tenait). Le geste est ici, chez l'HÔTE, jamais chez le spécimen. */
+.gallery-spec-stage > * {
+  min-width: 0;
+  max-width: 100%;
 }
 .gallery-swatches {
   display: grid;

@@ -64,7 +64,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `InfluenceRow` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
 | `VsHeader` |  | U |  |  | U |  | U |  | U | U |  |  |  |  |  |  |
 | `PortraitTile/CharFrame` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
-| `SearchFilterField` |  |  |  |  |  |  |  |  |  | U |  |  |  |  | U |  |
+| `SearchFilterField` |  |  |  |  |  |  |  |  |  | U |  |  |  |  | U | U |
 | `findTableEntry` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `baseTestMods` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `actorIn/inBattleId` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
@@ -112,4 +112,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: b947b9fb838d418e0a58aaf3c56361e76af01616 (1803 fichiers, 2 dossiers) corps: 8109ad59d4a036e33cbd27321f92205892d06787 -->
+<!-- sources-empreinte: c3968b5b162a51e335e4c96d7d8b67c5acdccb5a (1807 fichiers, 2 dossiers) corps: 53811cafe4a71d62e2d254813cce00088d58c633 -->

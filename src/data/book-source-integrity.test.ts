@@ -9,21 +9,28 @@
  * déclaré ; l'encadrement `data-folio` de l'occurrence réfute alors le folio qui ment. Mécanique
  * dans `scripts/guards/lib/folioIntegrity.mjs`, stock gelé dans `folioRatchetStock.mjs`.
  *
- * PÉRIMÈTRE MESURÉ ET ANGLE MORT au 2026-09-01 (après B2/B3) : `src/data/*.json` porte 4500 entrées
- * à `source:{book,page}` ; 1206 citent aussi une ligne et `folio-line-align.test.ts` n'en juge que
- * 312 (894 écartées : 888 hors-forme, 6 queue-trouée), soit 6,9 % des folios vérifiés machine par
+ * PÉRIMÈTRE MESURÉ ET ANGLE MORT au 2026-09-06 (#1389 C4) : `src/data/*.json` porte 4516 entrées
+ * à `source:{book,page}` ; 1223 citent aussi une ligne et `folio-line-align.test.ts` n'en juge que
+ * 321 (902 écartées : 896 hors-forme, 6 queue-trouée), soit 7,1 % des folios vérifiés machine par
  * cette voie. Ces deux chiffres ne sont plus qu'écrits ici : `folio-line-align.test.ts` les CLIQUÈTE
  * (`SCANNED_MIN` croissant, `SANS_CITATION_MAX` décroissant).
- * Cette garde-ci scanne 2716 entrées et en laisse 1252 hors de tout verdict d'encadrement
- * (878 descs introuvables, 140 trop courtes, 92 en chapitre sans marqueur, 142 en livre hors Atlas) ;
- * `noteAuthored` est empruntée 1 fois (`maladies.json:infection-du-sang` p.186).
+ * Cette garde-ci scanne les entrées à `desc` citable et en laisse une part hors de tout verdict
+ * d'encadrement. Ces populations VIVENT avec le corpus : le PLAFOND (`folioRatchetStock.mjs`) fait
+ * foi, pas un chiffre écrit ici, et `node scripts/data/audit-folios.mjs` les re-mesure à la demande.
+ * Diagnostic DATÉ du 2026-09-06 : 2723 scannées, 1254 hors verdict (880 descs introuvables, 140 trop
+ * courtes, 92 en chapitre sans marqueur, 142 en livre hors Atlas) ; `noteAuthored` empruntée 1 fois
+ * (`maladies.json:infection-du-sang` p.186). À re-mesurer avant de le citer — le tronc bouge.
+ *
+ * Volet 3 (#1389, épique #1388) — PROSE ADRESSÉE : une entrée qui porte `descRef` entre au même
+ * dénominateur avec le texte que son adresse RÉSOUT (`citedEntriesOf`). L'invariance est prouvée
+ * ci-dessous : inline et adressée rendent le MÊME `desc`, donc le MÊME verdict de folio.
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { books } from './index';
-import { auditFolios } from '../../scripts/guards/lib/folioIntegrity.mjs';
+import { auditFolio, auditFolios, citedEntriesOf } from '../../scripts/guards/lib/folioIntegrity.mjs';
 import { FOLIO_RATCHET } from '../../scripts/guards/lib/folioRatchetStock.mjs';
 import { FOLIO_TITLE_RATCHET } from '../../scripts/guards/lib/folioTitleRatchetStock.mjs';
 
@@ -183,6 +190,51 @@ describe('intégrité du folio — voie TITRE de section, et skip BRUYANT de ce 
           .join('\n'),
     );
     expect(unresolved.length).toBeLessThanOrEqual(UNRESOLVED_MAX);
+  });
+});
+
+/**
+ * INVARIANCE de la preuve de folio sous ADRESSAGE (#1389 C4) : `citedEntriesOf` est l'HÔTE UNIQUE de
+ * la question « qui entre au dénominateur, et avec quel texte ? ». Une entrée qui migre de `desc`
+ * inline vers `descRef` doit y entrer AVEC LE MÊME TEXTE, donc recevoir le MÊME verdict — sans quoi
+ * l'adressage déplacerait des entrées hors de l'audit en silence (l'évasion que #536 ferme).
+ *
+ * Fixture SYNTHÉTIQUE (aucune donnée du dépôt n'est lue ni mutée) : le MÊME passage du `Source/`,
+ * une fois recopié et une fois adressé.
+ */
+const PASSAGE_TERREUR =
+  "Certaines créatures sont si profondément perturbantes qu'elles parviennent à provoquer une terreur " +
+  'glaçante auprès de leurs adversaires. Lorsque vous rencontrez pour la première fois une créature qui ' +
+  'inspire la *Terreur*, effectuez un Test de Psychologie. Sur un succès, vous ne subissez aucun effet ' +
+  "supplémentaire à cause de la *Terreur*. Sur un échec, vous gagnez autant d'États *Brisé* que l'*Indice* " +
+  'de *Terreur* de la créature, auquel vous rajoutez les DR inférieurs à 0.';
+
+/** L'adresse de ce même passage : LDB 21 § terreur-indice, premier bloc. */
+const ADRESSE_TERREUR = {
+  book: 'livre-de-base',
+  ch: '21',
+  parts: [{ kind: 'blocs', sec: 'terreur-indice', secOcc: 1, b0: 0, b1: 0, sum: 'a919b4ef91a1dd3c' }],
+};
+
+const SOURCE_TERREUR = { book: 'livre-de-base', page: 191 };
+
+describe('preuve de folio sur la prose ADRESSÉE — même hôte, même verdict (#1389)', () => {
+  it('une entrée adressée entre au dénominateur avec le texte que son adresse RÉSOUT', () => {
+    const inline = citedEntriesOf([{ id: 'sonde-terreur', label: 'Terreur', desc: PASSAGE_TERREUR, source: SOURCE_TERREUR }]);
+    const adressee = citedEntriesOf([{ id: 'sonde-terreur', label: 'Terreur', descRef: ADRESSE_TERREUR, source: SOURCE_TERREUR }]);
+    expect(adressee, "l'entrée adressée sort du dénominateur — la preuve de folio ne la voit plus").toHaveLength(1);
+    expect(adressee[0].desc).toBe(inline[0].desc);
+    expect(auditFolio(adressee[0]).verdict).toBe(auditFolio(inline[0]).verdict);
+    expect(auditFolio(adressee[0]).verdict).toBe('folio-ok');
+  });
+
+  it('FAIL-CLOSED : une adresse dont l’empreinte diverge LÈVE, elle ne disparaît pas de l’audit', () => {
+    const faux = {
+      id: 'sonde-terreur',
+      descRef: { ...ADRESSE_TERREUR, parts: [{ ...ADRESSE_TERREUR.parts[0], sum: '0'.repeat(16) }] },
+      source: SOURCE_TERREUR,
+    };
+    expect(() => citedEntriesOf([faux])).toThrow(/empreinte-divergente/);
   });
 });
 

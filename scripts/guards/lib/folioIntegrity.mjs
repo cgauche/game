@@ -37,14 +37,19 @@
 // reste DANS les bornes du livre, n'est réfutée par AUCUNE des deux voies. La voie A ne ferme que
 // l'évasion « page hors du livre ».
 //
-// PÉRIMÈTRE ET ANGLE MORT, EN CHIFFRES — mesure du 2026-09-01 (`node scripts/data/audit-folios.mjs`
+// PÉRIMÈTRE ET ANGLE MORT, EN CHIFFRES — mesure du 2026-09-06 (`node scripts/data/audit-folios.mjs`
 // pour cette voie, `folioLineAlign.auditDataDir` pour l'autre) :
-//   • `src/data/*.json` porte 4500 entrées à `source:{book,page}`. 1206 d'entre elles citent AUSSI
-//     une ligne ; `folio-line-align` n'en juge que 312 (894 écartées : 888 hors-forme, 6 queue-trouée),
-//     soit 312/4500 = 6,9 % des folios vérifiés machine par cette voie-là. Chiffres CLIQUETÉS par
+//   • `src/data/*.json` porte 4516 entrées à `source:{book,page}`. 1223 d'entre elles citent AUSSI
+//     une ligne ; `folio-line-align` n'en juge que 321 (902 écartées : 896 hors-forme, 6 queue-trouée),
+//     soit 321/4516 = 7,1 % des folios vérifiés machine par cette voie-là. Chiffres CLIQUETÉS par
 //     `src/data/folio-line-align.test.ts` (`SCANNED_MIN` / `SANS_CITATION_MAX`), plus seulement écrits.
-//   • ce module scanne 2716 entrées et en laisse 1252 hors de tout verdict d'encadrement : 878 descs
-//     introuvables, 140 trop courtes, 92 en chapitre sans marqueur, 142 en livre hors Atlas.
+//   • ce module scanne les entrées à `desc` citable et en laisse une part hors de tout verdict
+//     d'encadrement (desc introuvable, trop courte, chapitre sans marqueur, livre hors Atlas). Ces
+//     deux populations VIVENT avec le corpus : le PLAFOND fait foi, jamais un chiffre écrit ici —
+//     c'est `folioRatchetStock.mjs` qui les tient, et `node scripts/data/audit-folios.mjs` qui les
+//     mesure. Diagnostic DATÉ du 2026-09-06 : 2723 scannées, 1254 hors verdict (880 descs
+//     introuvables, 140 trop courtes, 92 en chapitre sans marqueur, 142 en livre hors Atlas) —
+//     re-mesure avant de citer, le tronc a déjà fait bouger le premier de ces deux nombres.
 //   • `noteAuthored` — la sortie par note d'auteur, jamais cliquetée — est empruntée 1 fois
 //     (`maladies.json:infection-du-sang` p.186).
 
@@ -53,6 +58,7 @@ import { parUnitesDeCode, listerDossier } from './lister.mjs'
 import { join, dirname, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS } from '../../raw/_lib.mjs'
+import { resoudreProse } from '../../source/resoudre.mjs'
 import booksData from '../../../src/data/books.json' with { type: 'json' }
 
 
@@ -413,6 +419,11 @@ export function auditFolioByTitle({ book, page, label }) {
  *  des 16 entrées anonymes — jamais un libellé (doctrine 2026-07-09).
  *  Le `label` accompagne l'entrée (localisateur de secours, voie C) — jamais une clé de logique, et
  *  la `note` authored de `source` (l'auteur y a déjà dit ce qu'il savait de l'emplacement).
+ *
+ *  PROSE ADRESSÉE (#1389, épique #1388) : une entrée qui porte `descRef` au lieu de `desc` entre au
+ *  MÊME dénominateur, avec le texte que son adresse RÉSOUT — la preuve de folio se fait sur le texte
+ *  résolu, `auditFolio` ne voit aucune différence. `resoudreProse` est FAIL-CLOSED : une adresse morte
+ *  ou une empreinte divergente LÈVE ici aussi, plutôt que de retirer l'entrée de l'audit en silence.
  *  @param {unknown} data @returns {{ id: string, book: string, page: number, desc: string, label: string | undefined, note: string | undefined }[]} */
 export function citedEntriesOf(data) {
   /** @type {{ id: string, book: string, page: number, desc: string, label: string | undefined, note: string | undefined }[]} */
@@ -428,12 +439,20 @@ export function citedEntriesOf(data) {
     const src = rec.source
     if (src && typeof src === 'object' && !Array.isArray(src)) {
       const s = /** @type {Record<string, unknown>} */ (src)
-      if (typeof s.book === 'string' && typeof s.page === 'number' && typeof rec.desc === 'string') {
+      const cite = typeof s.book === 'string' && typeof s.page === 'number'
+      const prose = !cite
+        ? null
+        : typeof rec.desc === 'string'
+          ? rec.desc
+          : rec.descRef !== undefined
+            ? resoudreProse(rec).md
+            : null
+      if (cite && prose !== null) {
         out.push({
           id: typeof rec.id === 'string' ? rec.id : path || '?',
           book: s.book,
           page: s.page,
-          desc: rec.desc,
+          desc: prose,
           label: typeof rec.label === 'string' ? rec.label : undefined,
           note: typeof s.note === 'string' ? s.note : undefined,
         })

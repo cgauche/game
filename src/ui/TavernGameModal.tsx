@@ -17,6 +17,10 @@ import { t } from '../i18n';
 import { SceneBackdrop } from './SceneBackdrop';
 import { NumberField } from './NumberField';
 
+/** Un sport d'ÉQUIPE n'oppose pas deux personnes : le camp d'en face est tenu par la salle. Raison
+ *  UNIQUE, portée par les deux adversaires individuels qu'elle ferme. */
+const REFUS_EQUIPE = 'Sport d’équipe : tout le groupe joue dans le même camp — le camp d’en face est tenu par la salle.';
+
 /**
  * Jeux de taverne (Nuits agitées & dures journées, ch.16) — modale UNIQUE : choisir un jeu, un
  * challenger et un adversaire (compagnon OU valeur abstraite fixée par la table), puis résoudre EN
@@ -218,8 +222,10 @@ export function TavernGameModal() {
             <OptionChooser
               layout="seg"
               options={[
-                { key: 'hero', label: 'Un compagnon', selected: oppKind === 'hero', disabled: equipe || oppCandidates.length === 0, onSelect: () => setOppMode('hero') },
-                { key: 'npc', label: 'Un joueur de la salle', selected: oppKind === 'npc', disabled: equipe || npcs.length === 0, onSelect: () => setOppMode('npc') },
+                // Chaque adversaire indisponible PORTE sa cause au survol/focus/tap : « équipe » et
+                // « personne à opposer » sont deux refus différents, et un segment muet les confondait.
+                { key: 'hero', label: 'Un compagnon', selected: oppKind === 'hero', refus: equipe ? REFUS_EQUIPE : oppCandidates.length === 0 ? 'Aucun compagnon disponible pour ce jeu.' : undefined, onSelect: () => setOppMode('hero') },
+                { key: 'npc', label: 'Un joueur de la salle', selected: oppKind === 'npc', refus: equipe ? REFUS_EQUIPE : npcs.length === 0 ? 'Personne dans la salle ne joue à ce jeu.' : undefined, onSelect: () => setOppMode('npc') },
                 { key: 'abstract', label: equipe ? 'L’équipe adverse' : 'Un habitué (MJ)', selected: oppKind === 'abstract', onSelect: () => setOppMode('abstract') },
               ]}
             />

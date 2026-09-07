@@ -44,13 +44,15 @@ const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
 /** Plafond du stock, même lecture que `FOLIO_RATCHET_MAX` : il ne monte jamais. */
 const RATCHET_MAX = 41;
 
-/** Couverture MESURÉE le 2026-09-01 (après #1457 B2/B3) : `src/data/*.json` porte 4500 entrées à
- *  `source:{book,page}`, dont 1206 citent AUSSI une ligne — 312 jugées ici, 894 écartées (888
- *  hors-forme, 6 queue-trouée). Ces chiffres ne vivaient qu'en commentaire d'en-tête (ici,
- *  `book-source-integrity.test.ts`, `folioIntegrity.mjs`) : ils dérivaient sans un mot. Les deux
- *  bornes ci-dessous les rendent OPPOSABLES, chacune dans son sens. */
+/** Couverture MESURÉE le 2026-09-06 (#1389 C4, même mesure que `book-source-integrity.test.ts` et
+ *  `folioIntegrity.mjs`) : `src/data/*.json` porte 4516 entrées à `source:{book,page}`, dont 1223
+ *  citent AUSSI une ligne — 321 jugées ici, 902 écartées (896 hors-forme, 6 queue-trouée), soit 7,1 %
+ *  des folios vérifiés machine par cette voie. Ces chiffres ne vivaient qu'en commentaire d'en-tête :
+ *  ils dérivaient sans un mot. Les deux bornes ci-dessous les rendent OPPOSABLES, chacune dans son
+ *  sens — et la marge de la seconde est d'UNE unité : 4516 − 1223 = 3293 pour un plafond de 3294.
+ *  La prochaine entrée sourcée SANS citer sa ligne fait rouge. */
 const SCANNED_MIN = 312;
-const SANS_CITATION_MAX = 3294; // 4500 sourcées − 1206 citées ; INCHANGÉ par #1657 B3-2b-a — les 5
+const SANS_CITATION_MAX = 3294; // 4500 sourcées − 1206 citées au relevé de pose ; INCHANGÉ par #1657 B3-2b-a — les 5
 // stations de `ship-stations.json` et le Trait naval `cale` citent toutes leur LIGNE en `source.note`
 // (MDG 13 l.730/714/751, MDG 12 l.303, MSRC 07 l.94), donc entrent au numérateur des CITÉES.
 

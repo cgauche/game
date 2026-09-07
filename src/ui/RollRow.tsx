@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
 import { RollPanel, type PanelRowData } from './RollPanel';
 import { InfluenceRow } from './InfluenceRow';
-import { OptionChooser, type RollOption } from './OptionChooser';
+import { OptionChooser, type RollSegOption } from './OptionChooser';
 import { GatedAction } from './GatedAction';
 import { ResilienceButton } from './ResilienceButton';
 import { ResistButton } from './ResistButton';
@@ -253,13 +253,13 @@ export interface RollRowProps {
    *  dé renversé + DR/succès — rend l'issue LISIBLE avant le clic. */
   reverse?: { onReverse: () => void; preview?: { roll: number; sl: number; success: boolean } | null };
   /** DÉCLARATION de CETTE rangée (phase 1 d'une fenêtre à composition — Contre-sort : contrer seul /
-   *  s'unir au Test Soutenu, LDB 46 l.162 / LDB 12 l.189 / passer). Les options sont des `RollOption`
+   *  s'unir au Test Soutenu, LDB 46 l.162 / LDB 12 l.189 / passer). Les options sont des `RollSegOption`
    *  de la primitive de choix (`OptionChooser`) : le site fournit clés, libellés et indisponibilités.
    *  `hint` dit la situation résultante (« soutient X (+10) ») ; une rangée qui ne lance pas ne reçoit
    *  PAS de `onRoll` — le site décide, la primitive rend. */
   declare?: {
     value?: string;
-    options: RollOption[];
+    options: RollSegOption[];
     onChoose: (key: string) => void;
     groupLabel?: ReactNode;
     hint?: ReactNode;
