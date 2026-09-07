@@ -136,8 +136,8 @@ export function cheminJustificatifs({ cwd = process.cwd(), fs = FS } = {}) {
 }
 
 /** Segment de nom de fichier d'une gate. `:` sépare un flux de données alternatif sous NTFS :
- *  `docs:check.json` y est un nom ILLÉGAL (EINVAL au renommage, mesuré), et 18 des 22 gates en
- *  portent un. */
+ *  `docs:check.json` y est un nom ILLÉGAL (EINVAL au renommage, mesuré), et des gates de `ci.yml`
+ *  en portent un — `justificatif.test.mjs` re-mesure qu'aucun segment rendu ne garde de `:`. */
 export const segmentDeGate = (gate) => encodeURIComponent(gate)
 
 /** Nom de fichier d'un justificatif : le NOM porte la gate, la valeur de la clé GOUVERNANTE et la

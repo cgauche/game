@@ -3,8 +3,9 @@
  *
  *  1. LE CORPUS RÉEL. Tout objet à clé `type` posé dans un contexte d'effet des DEUX racines
  *     authorées (`src/scenes`, `src/data`) parse contre `effectSchema`. Même patron de scan que
- *     `compare-reel.test.ts` (T3-a) : compte EXACT asserté, zéro KO. Un Effect réel qui ne parse
- *     pas accuse le schéma — sauf invalide manifeste, qui se traite en donnée et se liste au ticket.
+ *     `compare-reel.test.ts` (T3-a) : scan confronté à une SECONDE lecture indépendante, zéro KO. Un
+ *     Effect réel qui ne parse pas accuse le schéma — sauf invalide manifeste, qui se traite en
+ *     donnée et se liste au ticket.
  *  2. L'ARBITRAGE `setTime`. Les deux variantes de même discriminant sont FUSIONNÉES en une entrée
  *     `{phase?, hour?, minute?}` gardée par un XOR STRICT — aucun loosening : ce test tient les
  *     quatre coins (phase seule, heure seule/avec minute, les deux, aucun).
@@ -38,8 +39,11 @@ const ROOT = join(__dirname, '../../../..');
 /** Clés dont la VALEUR est un effet (ou en contient) — établies par mesure sur les deux racines. */
 const CONTEXTES_D_EFFET = ['effect', 'effects', 'onEnter', 'onExit', 'reward', 'interact'];
 
-/** Tous les objets à clé `type` posés SOUS une clé de contexte d'effet, dans les deux racines. */
-function effetsPoses(): { chemin: string; noeud: unknown }[] {
+/** Les deux racines authorées, racine par racine — le scan doit voir chacune d'elles. */
+const RACINES = ['src/scenes', 'src/data'];
+
+/** Tous les `.json` des deux racines authorées. */
+function fichiersJson(): string[] {
   const fichiers: string[] = [];
   const marche = (d: string) => {
     for (const e of readdirSync(d, { withFileTypes: true })) {
@@ -48,11 +52,14 @@ function effetsPoses(): { chemin: string; noeud: unknown }[] {
       else if (e.name.endsWith('.json')) fichiers.push(p);
     }
   };
-  marche(join(ROOT, 'src/scenes'));
-  marche(join(ROOT, 'src/data'));
+  for (const racine of RACINES) marche(join(ROOT, racine));
+  return fichiers;
+}
 
+/** Tous les objets à clé `type` posés SOUS une clé de contexte d'effet, dans les deux racines. */
+function effetsPoses(): { chemin: string; noeud: unknown }[] {
   const out: { chemin: string; noeud: unknown }[] = [];
-  for (const f of fichiers) {
+  for (const f of fichiersJson()) {
     const rel = f.slice(ROOT.length + 1).replace(/\\/g, '/');
     const walk = (n: unknown, chemin: string, sousEffet: boolean) => {
       if (Array.isArray(n)) return n.forEach((x, i) => walk(x, `${chemin}[${i}]`, sousEffet));
@@ -66,37 +73,53 @@ function effetsPoses(): { chemin: string; noeud: unknown }[] {
   return out;
 }
 
+/** Un nœud est SOUS un contexte d'effet si son chemin s'y termine, à travers les seuls indices de
+ *  tableau — filtre par CHEMIN, là où `effetsPoses` propage un drapeau au fil de la descente. La
+ *  liste est RÉÉCRITE ici, jamais partagée : une clé oubliée d'un côté fait diverger les ensembles. */
+const SOUS_CONTEXTE = /\.(?:effect|effects|onEnter|onExit|reward|interact)(?:\[\d+\])*$/;
+
+/** SECONDE lecture du même corpus, par une autre route : elle doit voir le MÊME ensemble. */
+function cheminsParFiltreDeChemin(): string[] {
+  const out: string[] = [];
+  for (const f of fichiersJson()) {
+    const rel = f.slice(ROOT.length + 1).replace(/\\/g, '/');
+    const walk = (n: unknown, chemin: string) => {
+      if (Array.isArray(n)) return n.forEach((x, i) => walk(x, `${chemin}[${i}]`));
+      if (!n || typeof n !== 'object') return;
+      const o = n as Record<string, unknown>;
+      if (typeof o.type === 'string' && SOUS_CONTEXTE.test(chemin)) out.push(`${rel}:${chemin}`);
+      for (const [k, v] of Object.entries(o)) walk(v, `${chemin}.${k}`);
+    };
+    walk(JSON.parse(readFileSync(f, 'utf8')), '');
+  }
+  return out;
+}
+
 describe('effectSchema — le corpus RÉELLEMENT posé dans les deux racines authorées', () => {
   const poses = effetsPoses();
 
   it('le scan VOIT le corpus qu’il prétend mesurer (sinon un vert vide passerait)', () => {
-    // +2 (#862) : les effets d'horloge authorés — le re-ciblage `onDayStart` de Haine sporadique
-    // (`mutations.json`) et l'État Exténué du réveil du Désespoir (`traits.json`, VDM 09 l.280).
-    // +3 (#684) : les effets du cap et de l'accostage de la Barge du Sel — `setFlag sel-cap-donne`
-    // + `journal` du trigger du quai, et `setFlag sel-ilot-accoste` de l'arrivée sur l'îlot.
-    // +39 (#1657 B2a) : les 39 nœuds `test` des Blessures critiques (`criticals.json`) ont désormais
-    // une branche `fail` en FEUILLE `{type:'ops'}` — là où la graphie propriétaire `resist.onFail`
-    // portait une liste d'ops nue, invisible à ce scan. Les 39 branches `success` sont des `seq`
-    // vides : elles ne posent aucune feuille, et ne comptent donc pas.
-    // +4 (#1657 B2b) : les 4 nœuds `test` du cycle des maladies (`symptoms.json` 3, `maladies.json` 1)
-    // portent leur conséquence dans une branche `fail` en FEUILLE `{type:'ops'}`, là où la graphie
-    // propriétaire `onTick.onFail`/`dailyTest.onFail` portait une liste d'ops nue. Le cycle SANS jet
-    // (Vers du Reik) garde ses ops nues sous `onTick.ops` : aucune feuille, il ne compte pas ici.
-    // +3 (#1657 B2c) : les 3 nœuds `test` du coup à l'équipage d'un Critique de coque
-    // (`river-criticals.json` 2, `ship-criticals.json` 1) portent leur conséquence en FEUILLE
-    // `{type:'ops'}`, là où `crewTest.onFail` portait une liste nue. Le coup SANS jet (Rames
-    // fluviales, MSRC 07 l.82) garde ses ops nues sous `crewHit.ops` : il ne compte pas ici.
-    // 1113 → 1118 (#1657 B3-2b-c) : les 5 rangées du gréement (MDG 13 l.711/714/715/717/718) posent
-    // l'op `fall` de leur échec — « sous peine de tomber », hauteur au livre (l.684).
-    // 1107 → 1113 (#1657 B3-2b-a) : les 6 rangées MDG dont le Test ne vivait qu'en prose `note`
-    // (MDG 13 l.730/734/736/738/751/756) posent chacune la feuille `{type:'ops', on:'target'}` de leur
-    // branche d'ÉCHEC — l'État À Terre que le livre y inflige.
-    // 1118 → 1119 (#1661) : la branche `yes` du `choice` de Taillade pose la feuille `{type:'ops',
-    // on:'target'}` du 2ᵉ État Hémorragique acheté en Avantages (`AA 08 l.87`). Le `no` « renoncer »
-    // n'existe plus en donnée (un `seq` vide ne pose aucune feuille et ne comptait déjà pas).
-    expect(poses.length).toBe(1119);
+    expect(poses.length).toBeGreaterThan(0);
+    for (const racine of RACINES) {
+      const vus = poses.filter((p) => p.chemin.startsWith(`${racine}/`));
+      expect(vus.length, `aucun effet lu sous ${racine}/ : le scan y est aveugle`).toBeGreaterThan(0);
+    }
+    // Les deux routes de lecture voient le MÊME ensemble : un chemin vu par une seule accuse le scan.
+    const manques = (a: string[], b: string[]) => a.filter((x) => !b.includes(x));
+    const parDrapeau = poses.map((p) => p.chemin).sort();
+    const parChemin = cheminsParFiltreDeChemin().sort();
+    expect(
+      [manques(parChemin, parDrapeau), manques(parDrapeau, parChemin)],
+      'les deux lectures du corpus divergent (vu par le filtre de chemin seul, puis par le drapeau seul)',
+    ).toEqual([[], []]);
+    // Chaque `type` posé est un DISCRIMINANT DÉCLARÉ par l'union : un discriminant inconnu fait
+    // porter à `effectSchema` une issue sur `type` lui-même, là où un champ manquant la porte ailleurs.
     const parType = new Set(poses.map((p) => (p.noeud as { type: string }).type));
-    expect(parType.size).toBe(30); // 29 variantes authorées + la feuille `ops`
+    const inconnus = [...parType].filter((t) => {
+      const r = effectSchema.safeParse({ type: t });
+      return !r.success && r.error.issues.some((i) => i.path.length === 1 && i.path[0] === 'type');
+    });
+    expect(inconnus, 'type(s) posé(s) qu’aucune variante de l’union ne discrimine').toEqual([]);
     expect(parType.has('ops')).toBe(true);
     expect(parType.has('startCombat')).toBe(true);
   });

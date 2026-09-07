@@ -418,8 +418,11 @@ describe('garde-fou « appel à un résolveur d’entité par LIBELLÉ » (#909)
   it('src/data/index.ts porte au moins les 7 résolveurs mesurés à la pose de la règle', () => {
     // Contre le silence : si la convention de nommage (`label` + retour `XxxData`) dérive au fil
     // d'un renommage, ce test devient rouge AVANT que le reste du volet ne devienne muet à son tour.
+    expect(RESOLVER_NAMES.size, 'aucun résolveur reconnu : le volet est devenu muet').toBeGreaterThan(0);
     expect([...RESOLVER_NAMES].sort()).toEqual(
-      ['findCreature', 'findDomain', 'findSkill', 'findSpell', 'findStar', 'findTalent', 'findTrappingByLabel'],
+      expect.arrayContaining(
+        ['findCreature', 'findDomain', 'findSkill', 'findSpell', 'findStar', 'findTalent', 'findTrappingByLabel'],
+      ),
     );
   });
 

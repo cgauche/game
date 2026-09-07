@@ -196,7 +196,7 @@ describe('migration de l’empreinte : du legacy d’instance au catalogue de ty
  * juge la SOURCE, en appelant les fabriques de scène du générateur.
  */
 describe('générateur de l’Arène — aucune fabrique ne pose d’empreinte d’instance', () => {
-  it('les 18 scènes produites par les fabriques ne portent AUCUN `foot` d’entité', async () => {
+  it('les scènes produites par les fabriques ne portent AUCUN `foot` d’entité', async () => {
     const [hub, zones1a7, zones8a13, expeditions] = await Promise.all([
       import('../../scripts/arene/hub.mjs'),
       import('../../scripts/arene/zones1-7.mjs'),
@@ -205,7 +205,19 @@ describe('générateur de l’Arène — aucune fabrique ne pose d’empreinte d
     ]);
     const fabriques: [string, AreneSceneFactory][] = [hub, zones1a7, zones8a13, expeditions]
       .flatMap((m) => Object.entries(m).filter(([nom]) => nom.startsWith('make')) as [string, AreneSceneFactory][]);
-    expect(fabriques).toHaveLength(18); // 1 hub + 13 zones + 4 expéditions = les 18 scènes du projet
+    // Le verrou ne juge que ce qu'il monte : CHAQUE module de fabriques du générateur doit en avoir
+    // fourni au moins une, sans quoi une famille entière de scènes sortirait du champ en silence.
+    const familles = [
+      ['hub', hub],
+      ['zones1-7', zones1a7],
+      ['zones8-13', zones8a13],
+      ['expéditions', expeditions],
+    ] as const;
+    for (const [famille, module] of familles) {
+      const noms = Object.keys(module).filter((n) => n.startsWith('make'));
+      expect(noms.length, `${famille} : aucune fabrique montée`).toBeGreaterThan(0);
+      expect(fabriques.map(([n]) => n)).toEqual(expect.arrayContaining(noms));
+    }
     const porteuses: string[] = [];
     for (const [nom, fabrique] of fabriques) {
       for (const e of fabrique().entities ?? []) if ('foot' in e) porteuses.push(`${nom}/${e.id}`);

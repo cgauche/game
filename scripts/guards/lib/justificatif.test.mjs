@@ -415,16 +415,17 @@ function magasinAncienneGraphie(racine, gates) {
 test('MIGRATION : sur un magasin SYNTHÉTIQUE en ancienne graphie, aucune preuve n’est perdue', () => {
   const racine = depot()
   try {
-    const gates = gatesRequises({ cwd: REPO }).map((g) => g.nom)
+    // Gates SYNTHÉTIQUES : la migration d'un magasin ne dépend pas de la liste de ci.yml, et deux
+    // noms à « : » y éprouvent l'encodage du segment de part et d'autre du renommage.
+    const gates = ['alpha', 'beta:gamma', 'delta', 'epsilon:zeta', 'omega']
     const { magasin, cles } = magasinAncienneGraphie(racine, gates)
-    const parDossier = 22 + 3 // les gates de ci.yml, plus rouge + sale + illisible
-    assert.equal(gates.length, 22, 'la fixture décrit les 22 gates de ci.yml')
+    const parDossier = gates.length + 3 // les gates de la fixture, plus rouge + sale + illisible
 
     const avant = propresParDossier(magasin, { graphie: 'toutes' })
     const completsAvant = [...avant.values()].filter((g) => gates.every((n) => g.has(n))).length
     const jsonAvant = compterJson(magasin)
     assert.equal(jsonAvant, cles.length * parDossier)
-    assert.equal(completsAvant, cles.length, 'chaque dossier porte les 22 gates au vert AVANT')
+    assert.equal(completsAvant, cles.length, 'chaque dossier porte toutes les gates de la fixture au vert AVANT')
     const derogations = join(magasin, 'derogations.log')
     const journalAvant = readFileSync(derogations)
 
@@ -441,7 +442,11 @@ test('MIGRATION : sur un magasin SYNTHÉTIQUE en ancienne graphie, aucune preuve
 
     const apres = propresParDossier(magasin, { graphie: 'courante' })
     const completsApres = [...apres.values()].filter((g) => gates.every((n) => g.has(n))).length
-    assert.equal(completsApres, completsAvant, `dossiers 22/22 : ${completsAvant} avant, ${completsApres} après`)
+    assert.equal(
+      completsApres,
+      completsAvant,
+      `dossiers complets (${gates.length} gates) : ${completsAvant} avant, ${completsApres} après`,
+    )
     for (const [dossierCle, g] of avant)
       assert.deepEqual([...g].sort(), [...(apres.get(dossierCle) ?? new Set())].sort(), `dossier ${dossierCle}`)
 
@@ -507,12 +512,42 @@ test('les gates exigées sont les steps RÉELS de ci.yml, le job `migrations` EX
   assert.match(JOBS_HORS_JUSTIFICATIF.fermetures, /scripts\/ops\/fermer-depuis-main\.mjs/)
 })
 
-test('CARDINAL : les gates de ci.yml, et la part d’entre elles dont le nom porte un « : »', () => {
-  // `segmentDeGate` encode le nom parce que `:` ouvre un flux de données alternatif sous NTFS —
-  // le chiffre cité par son JSDoc se re-mesure ici, il ne se recopie pas.
+test('les gates exigées SONT les steps de ci.yml, et aucun nom ne reste un flux ADS', () => {
+  // La liste ne se recopie pas : elle se re-mesure par une SECONDE lecture du fichier, par une autre
+  // route (les lignes `run:` telles quelles, là où `stepsCi` assemble les steps clé par clé).
   const noms = gatesRequises({ cwd: REPO }).map((g) => g.nom)
-  assert.equal(noms.length, 22, `gates exigées : ${noms.join(', ')}`)
-  assert.equal(noms.filter((n) => n.includes(':')).length, 18)
+  const lignes = readFileSync(join(REPO, '.github', 'workflows', 'ci.yml'), 'utf8').split(/\r?\n/)
+  const relus = []
+  let job = null
+  for (let i = 0; i < lignes.length; i += 1) {
+    const entete = /^ {2}([A-Za-z0-9_-]+):\s*$/.exec(lignes[i])
+    if (entete) {
+      job = entete[1]
+      continue
+    }
+    const run = /^(\s*)-?\s*run:\s*(.*?)\s*$/.exec(lignes[i])
+    if (!run) continue
+    let commande = run[2]
+    if (/^[|>]/.test(commande)) {
+      // Scalaire de BLOC : ses lignes plus indentées font la commande, jointes comme le fait `stepsCi`.
+      const corps = []
+      for (let j = i + 1; j < lignes.length; j += 1) {
+        if (lignes[j].trim() === '') continue
+        if (/^\s*/.exec(lignes[j])[0].length <= run[1].length) break
+        corps.push(lignes[j].trim())
+        i = j
+      }
+      commande = corps.join(' ; ')
+    }
+    const npm = /^npm (?:(test)|run ([A-Za-z0-9:_.-]+))$/.exec(commande)
+    if (!npm || job in JOBS_HORS_JUSTIFICATIF) continue
+    const nom = npm[1] ?? npm[2]
+    if (!relus.includes(nom)) relus.push(nom)
+  }
+  assert.ok(noms.length > 0, 'aucune gate lue : la porte ne mesurerait rien')
+  assert.deepEqual(noms, relus, 'les deux lectures de ci.yml divergent')
+  // `segmentDeGate` encode le nom parce que `:` ouvre un flux de données alternatif sous NTFS.
+  assert.ok(noms.some((n) => n.includes(':')), 'aucun nom à « : » : l’encodage ne serait plus éprouvé')
   for (const nom of noms)
     assert.ok(!segmentDeGate(nom).includes(':'), `${nom} : « : » est un flux ADS sous NTFS`)
 })

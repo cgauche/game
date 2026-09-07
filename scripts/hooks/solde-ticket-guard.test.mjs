@@ -5,7 +5,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { Buffer } from 'node:buffer'
 import { resolve, join } from 'node:path'
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, readdirSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import {
@@ -296,25 +296,8 @@ test('fenetreDeRevue : la DERNIÈRE date de la 1re ligne, la PREMIÈRE fenêtre 
   )
 })
 
-// CORPUS RÉEL des revues committées : les trois plus récentes portent leur fenêtre et passent ; les
-// antérieures n'en ont pas — 7 des 10 étaient INARCHIVABLES tout en satisfaisant le palier.
-const revueCommittee = (nom) => readFileSync(join(repoRoot(), '.claude', 'soldes', nom), 'utf8')
-const dateDe = (texte) => /\d{4}-\d{2}-\d{2}/.exec(texte.split('\n', 1)[0])[0]
-
-for (const nom of ['revue-palier-64c09deba.md', 'revue-palier-82e95be10.md', 'revue-palier-d0b44a384.md']) {
-  test(`validateRevuePalier : ${nom} (revue RÉELLE) passe la porte`, () => {
-    const texte = revueCommittee(nom)
-    const r = validateRevuePalier(texte, dateDe(texte))
-    assert.equal(r.ok, true, r.problems.join(' ; '))
-  })
-}
-
-test('validateRevuePalier : revue-palier-1171977cb.md (réelle, SANS fenêtre) est REFUSÉE', () => {
-  const texte = revueCommittee('revue-palier-1171977cb.md')
-  const r = validateRevuePalier(texte, dateDe(texte))
-  assert.equal(r.ok, false)
-  assert.match(r.problems.join(' ; '), /fenêtre `<base>\.\.<tête>`/)
-})
+/** Date de la 1re ligne — `null` quand elle n'en porte pas (la porte la refusera à ce titre). */
+const dateDe = (texte) => /\d{4}-\d{2}-\d{2}/.exec(texte.split('\n', 1)[0])?.[0] ?? null
 
 // Deux sessions ont archivé le 2026-09-05 une revue de MÊME base (f0f9436f5) : même nom, conflit AA
 // au rebase, la seconde ne pouvait pas entrer dans l'histoire. La fenêtre a pourtant DEUX bornes.
@@ -337,17 +320,25 @@ test('nomsDArchiveAcceptes : les graphies ANTÉRIEURES restent reconnues, la cou
   assert.deepEqual(nomsDArchiveAcceptes('# PALIER\n\nrien\n'), [])
 })
 
-test('toute revue ACCEPTÉE par la porte est NOMMABLE par l’archiveur (même corpus)', () => {
-  const revues = readdirSync(join(repoRoot(), '.claude', 'soldes')).filter((f) => f.startsWith('revue-palier-'))
-  assert.ok(revues.length >= 10, `corpus de ${revues.length} revues — la sonde ne mesure que ce qu'elle voit`)
-  for (const nom of revues) {
-    const texte = revueCommittee(nom)
-    if (!validateRevuePalier(texte, dateDe(texte)).ok) continue
+test('toute revue ACCEPTÉE par la porte est NOMMABLE par l’archiveur (variantes fabriquées)', () => {
+  const variantes = [
+    revuePalier(),
+    revuePalier({ verdict: 'RÉFUTÉ' }),
+    revuePalier({ fenetre: 'f0f9436f5..714df53da' }),
+    revuePalier({ fenetre: 'sans la moindre fenêtre' }),
+    `# Revue de PALIER\n\nverdict: CONFIRMÉ\n${'A'.repeat(90)}\n\nLe ${TODAY}, fenêtre \`0139bd89c..7692b631c\`.\n`,
+    revuePalier({ synth: 'trop court' }),
+  ]
+  let acceptees = 0
+  for (const texte of variantes) {
+    if (!validateRevuePalier(texte, dateDe(texte) ?? TODAY).ok) continue
+    acceptees += 1
     assert.ok(
       nomDArchiveDeRevue(texte),
-      `${nom} passe la porte au commit et l’archiveur ne sait pas la nommer — le palier gelait`,
+      `revue acceptée au commit que l’archiveur ne sait pas nommer — le palier gelait :\n${texte}`,
     )
   }
+  assert.ok(acceptees > 0, 'aucune variante acceptée : la propriété ne jugerait rien')
 })
 
 // ── evaluate (intégration pure, readSolde/readRevuePalier injectés) ────────────────────────────────

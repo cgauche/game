@@ -62,8 +62,8 @@ describe('night-stakes — la FORME de chaque enjeu est déclarée et tenue (#11
     expect(sans, 'descripteur sans renvoi vers une fiche existante').toEqual([]);
   });
 
-  it('les 15 entrées sont couvertes par l’un des deux régimes (aucune zone grise)', () => {
-    expect(NIGHT_STAKES).toHaveLength(15);
+  it('toute entrée est couverte par l’un des deux régimes (aucune zone grise)', () => {
+    expect(NIGHT_STAKES.length, 'catalogue vide : la couverture ne dirait rien').toBeGreaterThan(0);
     const inconnus = NIGHT_STAKES.filter((e) => e.form != null && !STAKE_FORMS.includes(e.form as StakeForm));
     expect(inconnus).toEqual([]);
     // Le stock d'assemblages est NOMMÉ et borné : chaque `descripteur` est un choix motivé, pas un repli.
