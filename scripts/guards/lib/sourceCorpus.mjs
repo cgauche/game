@@ -26,6 +26,17 @@
 // d'AST de `canonUnique.mjs`), d'un fichier de test à l'autre du même worker.
 // Les FILTRES de périmètre (exclusions nominatives, dossiers de whitelist) restent chez l'appelant :
 // ils font partie de ce que la garde MESURE.
+//
+// REFUS DU VIDE : une BASE qui rend 0 fichier LÈVE, en la nommant (dossier POSIX, extensions,
+// `tests`). PAR BASE et non sur le total : les clés multi-dossiers sont la norme (`STRICT_DIRS` /
+// `RATCHET_DIRS` de `labelLogic.mjs`, `['src','scripts']`) — sur un total agrégé, une moitié de
+// corpus qui s'évapore reste MUETTE derrière l'autre. Un corpus vide rend toute garde de corpus
+// verte par vacuité — son assertion `offenders == []` est satisfaite sans que rien n'ait été lu, et
+// le rouge est MUET. `listerArbre` lève déjà sur un dossier ABSENT (`lister.mjs:41-48`) ; ce refus
+// ferme l'autre moitié : dossier présent, zéro fichier pour les extensions demandées.
+// Aucune exemption : les clés de TOUS les appelants ont été journalisées avec leur cardinal
+// (2026-09-07, #1709 C3s), aucune ne rend 0 — un appelant qui lit un dossier temporaire qu'il
+// fabrique y écrit AVANT de lire.
 import { readFileSync } from 'node:fs';
 import { isAbsolute, join, relative } from 'node:path';
 import { listerArbre } from './lister.mjs';
@@ -55,6 +66,7 @@ const CORPUS = new Map();
  *   (défaut `.ts`/`.tsx`) ; `tests` = garder les `*.test.*` (défaut : non).
  * @returns {ReadonlyArray<Readonly<{ abs: string, rel: string, text: string }>>} gelé, `rel` =
  *   chemin POSIX depuis la racine.
+ * @throws {Error} si l'une des bases rend 0 fichier (voir REFUS DU VIDE, en-tête).
  */
 export function readCorpus(dirs, { exts = ['.ts', '.tsx'], tests = false } = {}) {
   const bases = dirs.map((d) => (isAbsolute(d) ? d : join(ROOT, d)));
@@ -62,9 +74,19 @@ export function readCorpus(dirs, { exts = ['.ts', '.tsx'], tests = false } = {})
   const memo = CORPUS.get(cle);
   if (memo) return memo;
   const garde = (nom) => exts.some((e) => nom.endsWith(e)) && (tests || !EST_TEST.test(nom));
+  const parBase = bases.map((base) => listerArbre(base, { filtre: garde }));
+  const vide = parBase.findIndex((noms) => noms.length === 0);
+  if (vide >= 0) {
+    throw new Error(
+      `readCorpus : CORPUS VIDE — 0 fichier sous [${posixDepuisRacine(bases[vide])}] ` +
+        `pour les extensions [${exts.join(', ')}] (tests: ${tests}) ` +
+        `— clé demandée [${bases.map(posixDepuisRacine).join(', ')}]. ` +
+        `Un corpus vide rendrait toute garde verte par vacuité.`,
+    );
+  }
   const lu = Object.freeze(
-    bases.flatMap((base) =>
-      listerArbre(base, { filtre: garde }).map((rel) => {
+    bases.flatMap((base, i) =>
+      parBase[i].map((rel) => {
         const p = join(base, rel);
         return Object.freeze({ abs: p, rel: posixDepuisRacine(p), text: readFileSync(p, 'utf8') });
       }),
@@ -77,7 +99,11 @@ export function readCorpus(dirs, { exts = ['.ts', '.tsx'], tests = false } = {})
 /** Relâche tous les corpus mémoïsés : la lecture suivante retourne au disque. C'est la PORTE de la
  *  condition de licéité du mémo (voir l'en-tête) — un appelant qui ÉCRIT dans un dossier scanné
  *  entre deux lectures la franchit. Aucune garde ne l'appelle : `genAll()` écrit avant les workers,
- *  les gates écrivantes tournent avant les lanes. Les tests de cette lib l'appellent. */
+ *  les gates écrivantes tournent avant les lanes. Les tests de cette lib l'appellent.
+ *  PRIX : le relâchement est TOTAL (toutes les clés du worker, pas la sienne) et l'IDENTITÉ des
+ *  tableaux et des entrées est perdue — les mémos par identité des appelants (`canonUnique.mjs`)
+ *  repartent de zéro, et les corpus réels se relisent au disque. Une fixture `mkdtemp` supprimée ne
+ *  la justifie pas : sa clé est unique à chaque run, elle ne peut répondre pour aucun corpus réel. */
 export function viderCorpus() {
   CORPUS.clear();
 }

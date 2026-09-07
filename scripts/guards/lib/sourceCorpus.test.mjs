@@ -16,6 +16,14 @@
 //      de la primitive : ses appelants ont chacun troqué leur propre marche contre elle (#1709 C2),
 //      aucun ne peut donc plus servir de témoin — une exclusion de trop ou de moins ici rendrait
 //      toutes les gardes de corpus vertes sur un corpus amputé, sans qu'aucune ne le dise.
+//  (g) REFUS DU VIDE : une clé qui rend 0 fichier LÈVE, en nommant les dossiers et les extensions
+//      demandés. `listerArbre` lève déjà sur un dossier ABSENT ; ici le dossier EXISTE et ne porte
+//      aucun fichier des extensions demandées — ce `[]` muet rendrait toute garde de corpus verte
+//      par vacuité.
+//  (h) VACUITÉ PAR BASE : le refus se mesure BASE PAR BASE, jamais sur le total agrégé. Les clés
+//      multi-dossiers sont la norme (`STRICT_DIRS`/`RATCHET_DIRS` de `labelLogic.mjs`,
+//      `['src','scripts']`) : sur un total, une base évaporée resterait muette derrière une base
+//      peuplée — la moitié perdue du corpus ne dirait rien.
 import test from 'node:test'
 import assert from 'node:assert/strict'
 // eslint-disable-next-line no-restricted-imports -- ORACLE du cas (f) : marche naïve TÉMOIN, indépendante de `listerArbre` par construction (sinon le test ne prouverait rien) ; son rendu est trié par unités de code avant comparaison, l’ordre du système de fichiers n’en sort jamais.
@@ -190,6 +198,71 @@ test('`viderCorpus()` fait VOIR un fichier AJOUTÉ entre deux lectures', () => {
     assert.notEqual(relu, premier, 'après la porte, le tableau rendu est NEUF')
     assert.deepEqual([...relu.map((f) => f.text)].sort(), ['deux', 'neuf', 'un'])
   } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('REFUS DU VIDE : dossier PRÉSENT sans fichier des extensions demandées → refus NOMMÉ', () => {
+  const { racine, a } = frais()
+  const nom = racine.split(sep).pop()
+  try {
+    assert.deepEqual(readCorpus([a]).map((f) => f.text), ['deux', 'un'], 'le dossier peuplé se lit normalement')
+
+    assert.throws(
+      () => readCorpus([a], { exts: ['.css'] }),
+      (err) => {
+        assert.match(err.message, new RegExp(`${nom}/a`), 'le refus nomme le dossier demandé')
+        assert.match(err.message, /\.css/, 'le refus nomme les extensions demandées')
+        assert.match(err.message, /vacuité/, 'le refus dit POURQUOI un corpus vide est refusé')
+        return true
+      },
+    )
+
+    // Le dossier existe et ne porte AUCUN fichier : `listerArbre` ne lève pas (il ne lève que sur
+    // l'ABSENT), c'est ce refus-ci qui parle.
+    const vide = join(racine, 'vide')
+    mkdirSync(vide)
+    assert.throws(() => readCorpus([vide]), /CORPUS VIDE/)
+
+    // Un `tests: false` qui vide la population est refusé comme le reste : le corpus RENDU est vide.
+    const quTests = join(racine, 'qu-tests')
+    mkdirSync(quTests)
+    writeFileSync(join(quTests, 'seul.test.ts'), 'seul')
+    assert.throws(() => readCorpus([quTests]), /CORPUS VIDE/)
+    assert.deepEqual(readCorpus([quTests], { tests: true }).map((f) => f.text), ['seul'])
+  } finally {
+    viderCorpus()
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('REFUS DU VIDE : la vacuité se mesure PAR BASE — une base vide ne se cache pas derrière une base peuplée', () => {
+  const { racine, a } = frais()
+  const nom = racine.split(sep).pop()
+  try {
+    const vide = join(racine, 'vide')
+    mkdirSync(vide)
+    // La clé multi-dossiers est la norme (`STRICT_DIRS`/`RATCHET_DIRS`, `['src','scripts']`) : sur un
+    // total agrégé, `a` (peuplé) couvrirait `vide`, et la moitié évaporée du corpus resterait muette.
+    // La base fautive est nommée entre crochets, en chemin POSIX depuis la racine du dépôt.
+    const nomme = `${nom}/vide] pour les extensions`
+    assert.throws(
+      () => readCorpus([a, vide]),
+      (err) => {
+        assert.ok(err.message.includes(nomme), `le refus doit nommer la BASE fautive — reçu : ${err.message}`)
+        return true
+      },
+    )
+    assert.throws(
+      () => readCorpus([vide, a]),
+      (err) => {
+        assert.ok(err.message.includes(nomme), 'quel que soit son rang dans la clé')
+        return true
+      },
+    )
+    assert.deepEqual(readCorpus([a]).map((f) => f.text), ['deux', 'un'], 'la base peuplée seule se lit toujours')
+  } finally {
+    viderCorpus()
     rmSync(racine, { recursive: true, force: true })
   }
 })
