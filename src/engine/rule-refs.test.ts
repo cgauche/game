@@ -24,9 +24,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import ts from 'typescript';
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { RULE_REF, type RuleId } from './ruleRefs';
 import { weatherRef } from './travelStages';
 import { weatherIdSchema } from '../data/schemas/defs/weather';
@@ -72,30 +70,6 @@ describe('RULE_REF — la référence pointe une fiche Codex réelle', () => {
     expect(windsModLine(null)).toBeNull();
   });
 });
-
-const SRC = fileURLToPath(new URL('..', import.meta.url));
-
-function tsFiles(dir: string): string[] {
-  const out: string[] = [];
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
-    const p = join(dir, e.name);
-    if (e.isDirectory()) out.push(...tsFiles(p));
-    else if (/\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) out.push(p);
-  }
-  return out;
-}
-
-/**
- * Lecture TOLÉRANTE d'un fichier LISTÉ à l'étape précédente : entre le listage et la lecture, un
- * fichier peut avoir disparu — un autre worker de la suite écrit puis supprime des fichiers de
- * travail sous `src/` (pipeline d'atelier). Un ENOENT y désigne donc un fichier TRANSITOIRE, sauté
- * en silence. ANGLE MORT ASSUMÉ : une suppression concurrente d'un fichier RÉEL du dépôt serait
- * sautée pareillement — le scan mesurerait un corpus incomplet sans le dire.
- */
-function lireSiPresent(f: string): string | null {
-  try { return readFileSync(f, 'utf8'); }
-  catch (e) { if ((e as NodeJS.ErrnoException).code === 'ENOENT') return null; throw e; }
-}
 
 /** Les clés de `ModLine` (`engine/types.ts`) — un littéral qui en porte une autre est d'une autre
  *  forme. CLIQUET : ce jeu suit le TYPE clé pour clé. Une clé oubliée ici ferait sortir du scan tout
@@ -190,11 +164,8 @@ function modLineSites(): ModSite[] {
 
 function scanModLineSites(): ModSite[] {
   const out: ModSite[] = [];
-  for (const f of tsFiles(SRC)) {
-    const rel = 'src/' + f.slice(SRC.length).replace(/\\/g, '/');
-    const raw = lireSiPresent(f);
-    if (raw === null) continue;
-    for (const m of modLineLiterals(f, raw)) {
+  for (const { abs, rel, text } of readCorpus(['src'])) {
+    for (const m of modLineLiterals(abs, text)) {
       out.push({ at: `${rel} · ${m.label}`, where: `${rel}:${m.line} · ${m.label}`, hasRef: m.hasRef, famille: m.famille, ruleKey: m.ruleKey });
     }
   }

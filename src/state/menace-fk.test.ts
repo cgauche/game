@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, globSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { menaceIds, isMenaceId } from '../engine/menace';
 
 /**
@@ -16,25 +14,23 @@ import { menaceIds, isMenaceId } from '../engine/menace';
  * a survécu au voyage terrestre, et `menace: 'Poursuite'` à un test). Cette garde rend la perte
  * BRUYANTE et NOMINATIVE : chaque littéral posé en position de tag est nommé `fichier:ligne`.
  */
-const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const SELF = 'src/state/menace-fk.test.ts';
 
 /** `menace: '<littéral>'` (ou `"…"`) en position de VALEUR — pas les déclarations de type
  *  (`menace?: string`), pas les lectures (`p.menace`), pas les affectations par variable. */
 const TAG_RX = /\bmenace:\s*(['"])([^'"\n]*)\1/g;
 
-/** Les tags littéraux de `src/**` : `{ site: 'chemin:ligne', valeur }`. Les COMMENTAIRES sont écartés
- *  (une ligne de prose qui cite `menace: 'Poison'` n'est pas un site). */
+/** Les tags littéraux de `src/**` — TESTS COMPRIS, corpus rendu par la primitive de marche
+ *  `readCorpus` : `{ site: 'chemin:ligne', valeur }`. Les COMMENTAIRES sont écartés (une ligne de
+ *  prose qui cite `menace: 'Poison'` n'est pas un site). */
 function tagsLitteraux(): { site: string; valeur: string }[] {
   const out: { site: string; valeur: string }[] = [];
-  for (const rel of globSync('src/**/*.{ts,tsx}', { cwd: ROOT })) {
-    const chemin = relative(ROOT, join(ROOT, rel)).split('\\').join('/');
-    if (chemin === SELF) continue;
-    const lignes = readFileSync(join(ROOT, rel), 'utf8').split(/\r?\n/);
-    lignes.forEach((ligne, i) => {
+  for (const { rel, text } of readCorpus(['src'], { tests: true })) {
+    if (rel === SELF) continue;
+    text.split(/\r?\n/).forEach((ligne, i) => {
       const nu = ligne.trim();
       if (nu.startsWith('//') || nu.startsWith('*') || nu.startsWith('/*')) return;
-      for (const m of ligne.matchAll(TAG_RX)) out.push({ site: `${chemin}:${i + 1}`, valeur: m[2] });
+      for (const m of ligne.matchAll(TAG_RX)) out.push({ site: `${rel}:${i + 1}`, valeur: m[2] });
     });
   }
   return out;

@@ -31,13 +31,9 @@
  */
 import { describe, it, expect } from 'vitest';
 import ts from 'typescript';
-import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { codexLookupById } from './compendium/registry';
 import { ACTIONS } from '../data/index';
-
-const UI = fileURLToPath(new URL('.', import.meta.url)); // ce fichier vit dans src/ui/
 
 export interface CodexRefLiteral {
   line: number;
@@ -126,38 +122,16 @@ export function codexRefLiterals(file: string, src: string): { statiques: CodexR
   return { statiques, dynamiques };
 }
 
-/** Les sources d'UI (hors tests) : `.tsx` ET `.ts` — une ref littérale vit aussi bien dans un
- *  projecteur (`compendium/opRows.ts`) que dans un composant. */
-function uiSources(dir: string): string[] {
-  const out: string[] = [];
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
-    const p = join(dir, e.name);
-    if (e.isDirectory()) out.push(...uiSources(p));
-    else if (/\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) out.push(p);
-  }
-  return out;
-}
-
-/**
- * Lecture TOLÉRANTE d'un fichier LISTÉ à l'étape précédente : entre le listage et la lecture, un
- * fichier peut avoir disparu (pipeline d'atelier d'un autre worker). ANGLE MORT ASSUMÉ : une
- * suppression concurrente d'un fichier RÉEL du dépôt serait sautée pareillement.
- */
-function lireSiPresent(f: string): string | null {
-  try { return readFileSync(f, 'utf8'); }
-  catch (e) { if ((e as NodeJS.ErrnoException).code === 'ENOENT') return null; throw e; }
-}
-
 interface Site extends CodexRefLiteral { rel: string }
 
+/** Les sources d'UI (`src/ui/**` hors tests : `.tsx` ET `.ts` — une ref littérale vit aussi bien dans
+ *  un projecteur `compendium/opRows.ts` que dans un composant), rendues par la primitive de marche
+ *  `readCorpus`. */
 function corpus(): { sites: Site[]; dynamiques: number } {
   const sites: Site[] = [];
   let dynamiques = 0;
-  for (const f of uiSources(UI)) {
-    const rel = 'src/ui/' + f.slice(UI.length).replace(/\\/g, '/');
-    const raw = lireSiPresent(f);
-    if (raw === null) continue;
-    const r = codexRefLiterals(rel, raw);
+  for (const { rel, text } of readCorpus(['src/ui'])) {
+    const r = codexRefLiterals(rel, text);
     for (const s of r.statiques) sites.push({ rel, ...s });
     dynamiques += r.dynamiques;
   }

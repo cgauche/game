@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { scanPregenByLabel } from '../../scripts/guards/lib/pregenByLabel.mjs';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import pregens from './pregens.json';
 
 /**
@@ -15,29 +13,31 @@ import pregens from './pregens.json';
  * 1 scénario) ; tout nouveau site réintroduit régresse.
  */
 
-const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/data/ → ../../ = racine du projet
 const NAMES = (pregens as { label: string }[]).map((p) => p.label);
 
-function scanFiles(): string[] {
-  const files: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      if (e === 'node_modules') continue;
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e)) files.push(p);
-    }
-  };
-  walk(join(ROOT, 'src'));
-  return files;
-}
+/** Les `.ts(x)` de `src/**`, TESTS COMPRIS (la garde vise justement les tests), rendus par la
+ *  primitive de marche `readCorpus` : chemin POSIX relatif à la racine + texte. */
+const corpus = () => readCorpus(['src'], { tests: true });
 
 describe('garde-fou « prégénéré par label » (#322)', () => {
+  /** Le verdict de cette garde est une LISTE VIDE d'offenseurs : un corpus vide, ou un corpus qui
+   *  aurait perdu les tests, la rendrait verte sans rien mesurer. Le peuplement est donc asserté,
+   *  jamais supposé — et par une PROPRIÉTÉ (des tests sont vus, des labels existent), jamais par un
+   *  cardinal, qui périmerait au fichier suivant. */
+  it('PEUPLEMENT : le corpus mesuré n’est pas vide et porte des `*.test.ts(x)` — le périmètre VISE les tests', () => {
+    const lu = corpus();
+    expect(lu.length, 'corpus vide : la garde serait verte sans rien scanner').toBeGreaterThan(0);
+    expect(
+      lu.some((f) => /\.test\.tsx?$/.test(f.rel)),
+      'aucun fichier de test dans le corpus — or c’est EXACTEMENT ce que cette garde surveille',
+    ).toBe(true);
+    expect(NAMES.length, 'aucun label de prégénéré : le détecteur ne chercherait rien').toBeGreaterThan(0);
+  });
+
   it('aucun test ne recherche un prégénéré via .name/.label === <libellé> — utiliser pregen(PREGEN.x)/pregenParty(...)', () => {
     const offenders: string[] = [];
-    for (const f of scanFiles()) {
-      const rel = relative(ROOT, f).split('\\').join('/');
-      const findings = scanPregenByLabel(rel, readFileSync(f, 'utf8'), NAMES);
+    for (const { rel, text } of corpus()) {
+      const findings = scanPregenByLabel(rel, text, NAMES);
       for (const fi of findings) offenders.push(`${rel}:${fi.line} : ${fi.detail}`);
     }
     expect(

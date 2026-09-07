@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { scanSceneMutation } from '../../scripts/guards/lib/sceneMutation.mjs';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Garde-fou « immutabilité de la scène du store » — `src/state/vision.ts` et
@@ -29,33 +27,16 @@ import { scanSceneMutation } from '../../scripts/guards/lib/sceneMutation.mjs';
  * cette exclusion devenait un cimetière (plus aucune mutation réelle dedans), le test le signale.
  */
 
-const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ → ../../ = racine du projet
-const SCAN_DIR = join(ROOT, 'src');
 /** Authoring-time (voir JSDoc ci-dessus) — jamais un porteur de la scène DU STORE. */
 const AUTHORING_EXCLUDED = (rel: string) => rel.startsWith('src/scenes/test-scenarios/');
 
-function scanFiles(): string[] {
-  const files: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) files.push(p);
-    }
-  };
-  walk(SCAN_DIR);
-  return files;
-}
-
 /** Corpus SCANNÉ une fois pour les deux assertions (l'invariant et la réalité de son exclusion) :
- *  chaque fichier de `src/**` avec ses sites de mutation, chemin RELATIF POSIX. Mémoïsation
- *  PARESSEUSE — la collecte Vitest ne paie rien, le premier `it` qui mesure paie le scan. */
+ *  les `.ts(x)` de `src/**` hors tests, rendus par la primitive de marche `readCorpus`, avec leurs
+ *  sites de mutation, chemin RELATIF POSIX. Mémoïsation PARESSEUSE — la collecte Vitest ne paie
+ *  rien, le premier `it` qui mesure paie le scan. */
 let _sites: { rel: string; findings: { line: number; detail: string }[] }[] | null = null;
 const sites = () =>
-  (_sites ??= scanFiles().map((f) => {
-    const rel = relative(ROOT, f).split('\\').join('/');
-    return { rel, findings: scanSceneMutation(rel, readFileSync(f, 'utf8')) };
-  }));
+  (_sites ??= readCorpus(['src']).map(({ rel, text }) => ({ rel, findings: scanSceneMutation(rel, text) })));
 
 describe('garde-fou « immutabilité de la scène du store » (AST, tolérance zéro)', () => {
   it('aucun code de src/** (hors authoring de test-scenarios) ne mute un champ d’un porteur de `scene` en place', () => {

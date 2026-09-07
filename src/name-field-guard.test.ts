@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import ts from 'typescript';
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * GARDE — aucune NOUVELLE déclaration de champ `name` dans src/** (doctrine utilisateur 2026-07-19,
@@ -31,31 +29,6 @@ import { fileURLToPath } from 'node:url';
  * aucun angle mort de ce type — `src/ui/gallery/registry.tsx` (3 sites, dont l'interface locale
  * `GallerySpecimen` que l'ancienne version à pile ratait) est désormais couvert.
  */
-
-const SRC = fileURLToPath(new URL('.', import.meta.url));
-const SELF = 'name-field-guard.test.ts';
-
-function tsFiles(dir: string): string[] {
-  const out: string[] = [];
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
-    const p = join(dir, e.name);
-    if (e.isDirectory()) out.push(...tsFiles(p));
-    else if (/\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name) && e.name !== SELF) out.push(p);
-  }
-  return out;
-}
-
-/**
- * Lecture TOLÉRANTE d'un fichier LISTÉ à l'étape précédente : entre le listage et la lecture, un
- * fichier peut avoir disparu — un autre worker de la suite écrit puis supprime des fichiers de
- * travail sous `src/` (pipeline d'atelier). Un ENOENT y désigne donc un fichier TRANSITOIRE, sauté
- * en silence. ANGLE MORT ASSUMÉ : une suppression concurrente d'un fichier RÉEL du dépôt serait
- * sautée pareillement — le scan mesurerait un corpus incomplet sans le dire.
- */
-function lireSiPresent(f: string): string | null {
-  try { return readFileSync(f, 'utf8'); }
-  catch (e) { if ((e as NodeJS.ErrnoException).code === 'ENOENT') return null; throw e; }
-}
 
 /** La valeur d'un `PropertyAssignment` désigne-t-elle un appel de schéma zod (`z.string()`,
  *  `z.string().optional()`, `z.object({...})`…) — en remontant la chaîne d'appels/accès jusqu'à
@@ -123,11 +96,8 @@ function nameFieldSites(): string[] {
 
 function scanNameFieldSites(): string[] {
   const out: string[] = [];
-  for (const f of tsFiles(SRC)) {
-    const rel = 'src/' + f.slice(SRC.length).replace(/\\/g, '/');
-    const raw = lireSiPresent(f);
-    if (raw === null) continue;
-    for (const line of nameFieldLines(f, raw)) out.push(`${rel}:${line}`);
+  for (const { abs, rel, text } of readCorpus(['src'])) {
+    for (const line of nameFieldLines(abs, text)) out.push(`${rel}:${line}`);
   }
   return out;
 }
@@ -207,6 +177,21 @@ function Inner() {
       nouveaux,
       `Nouvelle(s) déclaration(s) de champ \`name\` — renommer en \`label\` (affichage) ou \`id\` '
         + '(logique), jamais \`name\` :\n${nouveaux.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  /** Les deux `it` de cliquet rendent une LISTE VIDE quand tout va bien — et aussi quand le scan ne
+   *  voit RIEN : `BASELINE` est vide, un corpus vide les laisserait tous deux verts. Le peuplement est
+   *  donc asserté par l'ALLOWLIST elle-même, qui doit être VUE site par site : c'est à la fois la
+   *  preuve que le corpus est là et le contrôle de péremption qui manquait à ces exemptions. */
+  it('PEUPLEMENT : chaque site de l\'ALLOWLIST est RÉELLEMENT vu par le scan (sinon exemption périmée)', () => {
+    const vus = nameFieldSites();
+    expect(vus.length, 'corpus vide : les deux cliquets seraient verts sans rien scanner').toBeGreaterThan(0);
+    const absents = ALLOWLIST.filter((at) => !vus.includes(at));
+    expect(
+      absents,
+      'ces sites exemptés ne portent plus (ou plus au même endroit) de champ `name` : ôter d’ALLOWLIST'
+        + ` — ou le scan a cessé de voir le corpus :\n${absents.join('\n')}`,
     ).toEqual([]);
   });
 

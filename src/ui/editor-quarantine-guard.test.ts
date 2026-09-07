@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Garde-fou #495 — l'ATELIER (`src/ui/editor/GameOpEditor.tsx` : `opSummary`/`formulaSummary` ;
@@ -17,27 +15,10 @@ import { fileURLToPath } from 'node:url';
  * `*.test.*` et hors `src/ui/editor/**` (l'atelier peut s'auto-référencer).
  */
 
-const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const SRC = join(ROOT, 'src');
-const EDITOR_DIR = join(SRC, 'ui', 'editor');
-
-function scanFiles(): string[] {
-  const files: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      const st = statSync(p);
-      if (st.isDirectory()) {
-        if (p === EDITOR_DIR) continue; // l'atelier peut s'auto-référencer
-        walk(p);
-      } else if (/\.(ts|tsx)$/.test(e) && !/\.test\.(ts|tsx)$/.test(e) && !e.endsWith('.d.ts')) {
-        files.push(p);
-      }
-    }
-  };
-  walk(SRC);
-  return files;
-}
+/** Les `.ts(x)` de `src/**` hors tests (corpus rendu par la primitive de marche `readCorpus`), moins
+ *  `src/ui/editor/**` — l'atelier peut s'auto-référencer — et moins les déclarations `.d.ts`. */
+const scanFiles = () =>
+  readCorpus(['src']).filter((f) => !f.rel.startsWith('src/ui/editor/') && !f.rel.endsWith('.d.ts'));
 
 /** Import nommant `opSummary`/`formulaSummary`/`condSummary` DEPUIS `editor/GameOpEditor`/
  *  `editor/ConditionEditor` — ZÉRO exemption. */
@@ -77,9 +58,8 @@ describe('garde-fou quarantaine éditeur — opSummary/formulaSummary/condSummar
     const otherOffenders: string[] = [];
     const allowHits = new Map<string, number>();
 
-    for (const f of files) {
-      const rel = relative(ROOT, f).split('\\').join('/');
-      const lines = foldMultilineImports(readFileSync(f, 'utf8')).split('\n');
+    for (const { rel, text } of files) {
+      const lines = foldMultilineImports(text).split('\n');
       lines.forEach((line, i) => {
         if (BANNED_NAMED_IMPORT_RX.test(line)) {
           bannedOffenders.push(`${rel}:${i + 1} ${line.trim()}`);

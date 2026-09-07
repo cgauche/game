@@ -20,8 +20,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import ts from 'typescript';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, sep } from 'node:path';
+import { readCorpus, type CorpusFile } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 const SRC = join(process.cwd(), 'src');
 const STATE = join(SRC, 'state');
@@ -32,19 +32,10 @@ export const MONTEURS_SANS_JET = ['choiceStep', 'quantityStep', 'displayStep'] a
 export const MONTEURS_DE_RANGEE = ['rollStep', 'figurantRow', 'equipierRow', 'tavernRow'] as const;
 const TOUS = [...MONTEURS_LANCANTS, ...MONTEURS_SANS_JET, ...MONTEURS_DE_RANGEE] as string[];
 
-function sourceFiles(dir: string): string[] {
-  const out: string[] = [];
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) { out.push(...sourceFiles(p)); continue; }
-    if (e.endsWith('.ts') && !e.includes('.test.')) out.push(p);
-  }
-  return out;
-}
-
-/** Les FAMILLES de séquence : les fichiers qui enregistrent une définition auprès du socle. */
-export function fichiersDeSequence(): string[] {
-  return sourceFiles(STATE).filter((f) => /\bregisterSequence\s*[<(]/.test(readFileSync(f, 'utf8')));
+/** Les FAMILLES de séquence : les `.ts` de `src/state` (hors tests, corpus rendu par la primitive de
+ *  marche `readCorpus`) qui enregistrent une définition auprès du socle. */
+export function fichiersDeSequence(): CorpusFile[] {
+  return readCorpus([STATE], { exts: ['.ts'] }).filter((f) => /\bregisterSequence\s*[<(]/.test(f.text));
 }
 
 const keyOf = (f: string) => f.slice(SRC.length + 1).split(sep).join('/');
@@ -85,7 +76,7 @@ export function appelsDeMonteur(src: string, nom = 'sonde.ts'): AppelDeMonteur[]
 }
 
 describe('cliquet AST — une étape de SÉQUENCE qui lance dit son enjeu (#1279)', () => {
-  const mesure = fichiersDeSequence().map((f) => ({ f, appels: appelsDeMonteur(readFileSync(f, 'utf8'), f) }));
+  const mesure = fichiersDeSequence().map(({ abs, text }) => ({ f: abs, appels: appelsDeMonteur(text, abs) }));
 
   it('la COUVERTURE est peuplée : les familles de séquence sont bien vues', () => {
     expect(mesure.length, 'aucun fichier n’enregistre de séquence — le scan mesurerait le vide').toBeGreaterThan(0);

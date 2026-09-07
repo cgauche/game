@@ -11,9 +11,15 @@
 //      un relatif).
 //  (e) PORTE     : `viderCorpus()` est la sortie de la condition de licéité — après elle, un fichier
 //      AJOUTÉ entre deux lectures est vu, et le tableau rendu est NEUF.
+//  (f) PÉRIMÈTRE : sur l'arbre RÉEL de `src/**`, l'ensemble rendu est EXACTEMENT celui d'une marche
+//      naïve écrite dans ce test comme ORACLE. C'est le seul filet contre une régression de périmètre
+//      de la primitive : ses appelants ont chacun troqué leur propre marche contre elle (#1709 C2),
+//      aucun ne peut donc plus servir de témoin — une exclusion de trop ou de moins ici rendrait
+//      toutes les gardes de corpus vertes sur un corpus amputé, sans qu'aucune ne le dise.
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+// eslint-disable-next-line no-restricted-imports -- ORACLE du cas (f) : marche naïve TÉMOIN, indépendante de `listerArbre` par construction (sinon le test ne prouverait rien) ; son rendu est trié par unités de code avant comparaison, l’ordre du système de fichiers n’en sort jamais.
+import { mkdtempSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -123,6 +129,54 @@ test('la clé est NORMALISÉE : absolu ≡ relatif ≡ séparateur final', () =>
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
+})
+
+/**
+ * ORACLE de périmètre : la marche la plus bête qui puisse répondre à la même question — descente
+ * récursive de `readdirSync`, filtre d'extension sur le nom, regex de test. Écrite ICI et nulle part
+ * ailleurs : c'est le témoin indépendant de `listerArbre` + `readCorpus`. Aucun cardinal n'est
+ * attendu — l'oracle est la MARCHE, jamais un nombre, qui périmerait au fichier suivant.
+ * @param {string} dir @param {string[]} exts @param {boolean} tests
+ * @returns {string[]} chemins POSIX depuis la racine du dépôt, triés.
+ */
+function marcheNaive(dir, exts, tests) {
+  const out = []
+  const descendre = (d) => {
+    for (const nom of readdirSync(d, { withFileTypes: true })) {
+      const p = join(d, nom.name)
+      if (nom.isDirectory()) { descendre(p); continue }
+      if (!exts.some((e) => nom.name.endsWith(e))) continue
+      if (!tests && /\.test\./.test(nom.name)) continue
+      out.push(relative(ROOT, p).split('\\').join('/'))
+    }
+  }
+  descendre(dir)
+  return out.sort()
+}
+
+test('PÉRIMÈTRE sur l’arbre RÉEL : `readCorpus([\'src\'])` rend EXACTEMENT la marche naïve, tests exclus puis inclus', () => {
+  viderCorpus()
+  const SRC = join(ROOT, 'src')
+  for (const tests of [false, true]) {
+    const attendu = marcheNaive(SRC, ['.ts', '.tsx'], tests)
+    const rendu = readCorpus(['src'], { tests }).map((f) => f.rel)
+    assert.ok(attendu.length > 0, 'l’oracle lui-même ne voit rien : la comparaison ne prouverait rien')
+    const trie = [...rendu].sort()
+    const oracle = new Set(attendu)
+    const vus = new Set(trie)
+    const enTrop = trie.filter((x) => !oracle.has(x))
+    const manquants = attendu.filter((x) => !vus.has(x))
+    assert.deepEqual(enTrop, [], `tests:${tests} — fichiers VUS que l’oracle ne voit pas`)
+    assert.deepEqual(manquants, [], `tests:${tests} — fichiers de l’oracle PERDUS par readCorpus`)
+    assert.deepEqual(trie, rendu, 'le corpus est rendu en ORDRE TOTAL : il est déjà trié')
+  }
+  const horsTests = readCorpus(['src']).map((f) => f.rel)
+  const avecTests = readCorpus(['src'], { tests: true }).map((f) => f.rel)
+  assert.ok(avecTests.length > horsTests.length, '`tests: true` doit ÉLARGIR le corpus')
+  assert.ok(
+    avecTests.some((r) => /\.test\.tsx?$/.test(r)) && horsTests.every((r) => !/\.test\./.test(r)),
+    'le filtre `tests` ne discrimine plus les fichiers de test',
+  )
 })
 
 test('`viderCorpus()` fait VOIR un fichier AJOUTÉ entre deux lectures', () => {

@@ -1,11 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import {
   scanNamedImport,
   RAW_SYMBOL, RAW_ALLOWED, CHANNEL_SYMBOL, CHANNEL_ALLOWED,
 } from '../../scripts/guards/lib/weatherTestModQuarantine.mjs';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * QUARANTAINE du CANAL météo « Tests physiques » (EDOC 8 l.82, #341). Le calcul brut
@@ -17,34 +15,38 @@ import {
  * aurait attrapé le trou de la DÉFENSE avant l'audit. Whitelist FIXE, zéro violation tolérée.
  */
 
-const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const SRC = join(ROOT, 'src');
-
-/** Fichiers `.ts(x)` de `src/` (hors tests) : chemin ABSOLU + POSIX relatif à la racine repo. */
-function srcFiles(): { abs: string; rel: string }[] {
-  const out: { abs: string; rel: string }[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir, { withFileTypes: true })) {
-      const p = join(dir, e.name);
-      if (e.isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) out.push({ abs: p, rel: relative(ROOT, p).split('\\').join('/') });
-    }
-  };
-  walk(SRC);
-  return out;
-}
-
+/** Les `.ts(x)` de `src/` (hors tests) rendus par la primitive de marche `readCorpus` : chemin POSIX
+ *  relatif à la racine repo + texte. */
 function offendersFor(symbol: string, allowed: string[]): string[] {
   const out: string[] = [];
-  for (const { abs, rel } of srcFiles()) {
+  for (const { rel, text } of readCorpus(['src'])) {
     if (allowed.includes(rel)) continue;
-    const found = scanNamedImport(readFileSync(abs, 'utf8'), symbol);
+    const found = scanNamedImport(text, symbol);
     for (const f of found) out.push(`${rel}:${f.line} importe '${symbol}' de '${f.source}'`);
   }
   return out;
 }
 
 describe('quarantaine d’import — canal météo « Tests physiques » (#341)', () => {
+  /** Le verdict de cette garde est une LISTE VIDE d'offenseurs : un corpus vide la rendrait verte
+   *  sans rien mesurer. Le peuplement est asserté par les surfaces AUTORISÉES elles-mêmes — chacune
+   *  est dans le corpus ET le scanner y VOIT l'import qu'elle a le droit de faire. Une whitelist
+   *  dont plus aucune entrée ne porte l'import serait un cimetière, et le dirait ici. */
+  it('PEUPLEMENT : chaque surface AUTORISÉE est dans le corpus, et le scanner y voit son import', () => {
+    const parRel = new Map(readCorpus(['src']).map((f) => [f.rel, f.text]));
+    expect(parRel.size, 'corpus vide : la garde serait verte sans rien scanner').toBeGreaterThan(0);
+    for (const [symbol, allowed] of [[RAW_SYMBOL, RAW_ALLOWED], [CHANNEL_SYMBOL, CHANNEL_ALLOWED]] as const) {
+      for (const rel of allowed) {
+        const text = parRel.get(rel);
+        expect(text, `${rel} absent du corpus — le scan ne couvre plus la surface qu’il autorise`).toBeDefined();
+        expect(
+          scanNamedImport(text!, symbol),
+          `${rel} n’importe plus '${symbol}' : exemption périmée, ou scanner muet`,
+        ).not.toHaveLength(0);
+      }
+    }
+  });
+
   it(`'${RAW_SYMBOL}' n’est importé QUE par le lecteur canonique (${RAW_ALLOWED.join(', ')})`, () => {
     expect(
       offendersFor(RAW_SYMBOL, RAW_ALLOWED),

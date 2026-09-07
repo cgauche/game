@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
-import { join, relative, isAbsolute } from 'node:path';
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { fileURLToPath } from 'node:url';
 import { scanRegistryIdBranch, scanRawIdEqualities, isRegistryIdBranchExcluded, SCAN_DIRS, SCAN_EXTS, OP_VOCABULARY, VOCABULARY_TYPES } from '../../scripts/guards/lib/registryIdBranch.mjs';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Garde-fou « branchement par IDENTITÉ dans du code GÉNÉRIQUE » (#842).
@@ -25,8 +25,6 @@ import { scanRegistryIdBranch, scanRawIdEqualities, isRegistryIdBranchExcluded, 
  * zéro, lot de correction après lot de correction — ce n'est pas une liste d'exceptions permanentes.
  * Le test échoue dans les DEUX sens : un site de plus, ou un site de moins sans abaisser le plafond.
  */
-const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/ui/ → ../../ = racine du projet
-
 /**
  * Compte de sites par fichier, mesuré au 2026-07-26 sur `SCAN_DIRS` (élargi ce jour-là à `src/gameIso`,
  * `src/data` et `scripts`, et à l'identité nommée `ref`/`xxxRef`). Chaque entrée est un site à TRAITER
@@ -243,41 +241,12 @@ const RAW_KNOWN: Record<string, number> = {
 /** Plafond BRUT global du jour (= somme de `RAW_KNOWN`). */
 const RAW_CEILING = Object.values(RAW_KNOWN).reduce((s, n) => s + n, 0);
 
-/**
- * Lecture TOLÉRANTE d'un fichier LISTÉ à l'étape précédente : entre le listage et la lecture, un
- * fichier peut avoir disparu — un autre worker de la suite écrit puis supprime des fichiers de
- * travail sous `src/` (pipeline d'atelier). Un ENOENT y désigne donc un fichier TRANSITOIRE, sauté
- * en silence (`statSync` du walker compris). ANGLE MORT ASSUMÉ : une suppression concurrente d'un
- * fichier RÉEL du dépôt serait sautée pareillement — le scan mesurerait un corpus incomplet sans
- * le dire.
- */
-const TRANSITOIRE = (e: unknown): boolean => (e as NodeJS.ErrnoException)?.code === 'ENOENT';
-function lireSiPresent(f: string): string | null {
-  try { return readFileSync(f, 'utf8'); }
-  catch (e) { if (TRANSITOIRE(e)) return null; throw e; }
-}
-
-function scanFiles(dirs: string[]): string[] {
-  const files: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      if (e === 'node_modules') continue;
-      const p = join(dir, e);
-      let dossier: boolean;
-      try { dossier = statSync(p).isDirectory(); }
-      catch (err) { if (TRANSITOIRE(err)) continue; throw err; }
-      if (dossier) walk(p);
-      else if (SCAN_EXTS.some((x: string) => e.endsWith(x))) files.push(p);
-    }
-  };
-  for (const d of dirs) walk(isAbsolute(d) ? d : join(ROOT, d));
-  return files;
-}
-
 /** Les DEUX détecteurs passent sur le MÊME corpus, fichier par fichier et l'un après l'autre : un
- *  seul parcours de dossiers, une seule lecture, et l'arbre syntaxique d'un fichier sert aux deux
- *  scans (cache de taille un, `registryIdBranch.mjs`). Mémoïsation PARESSEUSE par jeu de dossiers —
- *  le corpus est marché au 1ᵉʳ `it` qui le demande, jamais à la collecte des tests. */
+ *  seul parcours de dossiers (`readCorpus`, primitive unique de marche de corpus source — les tests
+ *  sont pris puis écartés par `isRegistryIdBranchExcluded`, qui porte AUSSI l'exclusion des
+ *  migrations), une seule lecture, et l'arbre syntaxique d'un fichier sert aux deux scans (cache de
+ *  taille un, `registryIdBranch.mjs`). Mémoïsation PARESSEUSE par jeu de dossiers — le corpus est
+ *  marché au 1ᵉʳ `it` qui le demande, jamais à la collecte des tests. */
 const _analyses = new Map<string, {
   principal: { rel: string; line: number; detail: string; rule: string }[];
   brut: { rel: string; line: number; detail: string }[];
@@ -288,13 +257,10 @@ function analyse(dirs: string[]) {
   let a = _analyses.get(cle);
   if (!a) {
     a = { principal: [], brut: [] };
-    for (const f of scanFiles(dirs)) {
-      const rel = relative(ROOT, f).split('\\').join('/');
+    for (const { rel, text } of readCorpus(dirs, { exts: SCAN_EXTS, tests: true })) {
       if (isRegistryIdBranchExcluded(rel)) continue;
-      const raw = lireSiPresent(f);
-      if (raw === null) continue;
-      for (const fd of scanRegistryIdBranch(rel, raw)) a.principal.push({ rel, ...fd });
-      for (const fd of scanRawIdEqualities(rel, raw)) a.brut.push({ rel, ...fd });
+      for (const fd of scanRegistryIdBranch(rel, text)) a.principal.push({ rel, ...fd });
+      for (const fd of scanRawIdEqualities(rel, text)) a.brut.push({ rel, ...fd });
     }
     _analyses.set(cle, a);
   }
