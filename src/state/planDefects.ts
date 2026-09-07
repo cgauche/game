@@ -8,7 +8,7 @@ import { heightAt, isDescriptiveZone, type Scene, type SceneEffectZone } from '.
 import { sceneZoneTiles } from './zones';
 import { tousLesTerrains } from './terrain';
 import { gradeBetween, METRES_PER_LEVEL } from './relief';
-import { memoByRef } from './sceneMemo';
+import { memoByRef, memoByRefDeps } from './sceneMemo';
 import type { CellSide } from './scene';
 
 /** Terrains BÂTIS : ceux dont l'entrée porte `built` (`TerrainDef.built`) — surface construite qui PORTE
@@ -67,7 +67,7 @@ export type PlanDefectFamily =
   | 'facade-decalee' | 'mur-manquant' | 'etage-sur-exterior'
   | 'case-sans-zone' | 'etage-sans-appui'
   | 'zone-hors-bati' | 'zone-debordante'
-  | 'enceinte-au-bord' | 'mur-arrete-au-bord';
+  | 'enceinte-au-bord' | 'mur-arrete-au-bord' | 'porte-orpheline';
 
 /** OÙ se corrige le défaut — l'éditeur en fait une sélection, le CLI une coordonnée. */
 export type PlanDefectAt =
@@ -114,11 +114,12 @@ export const PLAN_DEFECT_FAMILIES: readonly PlanDefectFamilyDef[] = [
   { id: 'zone-debordante', title: 'Zone débordant hors des murs', scope: 'zone' },
   { id: 'enceinte-au-bord', title: 'Enceinte collée au bord de la carte', scope: 'floor' },
   { id: 'mur-arrete-au-bord', title: 'Mur arrêté sur le bord de la carte', scope: 'floor' },
+  { id: 'porte-orpheline', title: 'Porte posée sur une arête isolée', scope: 'floor' },
 ];
 
 /** Familles scannées par PAIRE d'étages (`floorPairs`) — les familles de zone et celles de grille de
  *  murs en sont exclues : une scène de plain-pied a des zones et des murs, donc un sujet. */
-export type FloorPairFamily = Exclude<PlanDefectFamily, 'zone-hors-bati' | 'zone-debordante' | 'enceinte-au-bord' | 'mur-arrete-au-bord'>;
+export type FloorPairFamily = Exclude<PlanDefectFamily, 'zone-hors-bati' | 'zone-debordante' | 'enceinte-au-bord' | 'mur-arrete-au-bord' | 'porte-orpheline'>;
 
 export interface Defect {
   family: FloorPairFamily;
@@ -659,6 +660,33 @@ export function auditWallDeadEndsAtBorder(scene: Scene, z: number): PlanDefect[]
   return out;
 }
 
+/** Famille 10 — porte posée sur une arête ISOLÉE : à son étage, aucun autre segment de mur ne partage
+ *  l'un de ses deux coins de trame (`wallVertices`). Une porte n'est pas un objet posé sur le sol : c'est
+ *  le segment de mur lui-même, percé. Isolée, elle n'ouvre sur rien — elle se contourne par les deux
+ *  côtés, ne ferme aucune pièce, et le rendu lui dresse un chambranle en plein air. Seules les arêtes
+ *  CARDINALES comptent (une diagonale ne s'accroche à aucun coin de la trame, cf. `cardinalWalls`).
+ *  Le critère vient du détecteur nominatif de `scenes/diligence/diligence-projet.test.ts`, qui ne juge
+ *  que la Diligence : il balaie tous les murs, mais ses coins portent déjà leur `z` dans la clé, donc
+ *  aucun mur d'un autre étage n'y rattache une porte — la partition PAR ÉTAGE faite ici rend le MÊME
+ *  verdict, elle ne fait que le dire au socle. Mesuré : 0 porte orpheline sur les 4 paquets livrés. */
+export function auditOrphanDoors(scene: Scene, z: number): PlanDefect[] {
+  const degree = new Map<string, number>();
+  for (const seg of cardinalWalls(scene, z)) for (const v of wallVertices(seg)) degree.set(v, (degree.get(v) ?? 0) + 1);
+  const out: PlanDefect[] = [];
+  for (const wall of scene.walls ?? []) {
+    if (!wall.door || (wall.z ?? 0) !== z || (wall.side !== 'N' && wall.side !== 'E')) continue;
+    const seg = { x: wall.x, y: wall.y, side: wall.side };
+    if (wallVertices(seg).some((v) => (degree.get(v) ?? 0) > 1)) continue;
+    out.push({
+      family: 'porte-orpheline',
+      at: { kind: 'edge', x: seg.x, y: seg.y, side: seg.side, z },
+      grid: 'walled',
+      message: `Porte posée sur une arête isolée — la porte ${seg.side} de (${seg.x},${seg.y}) à l'étage ${z} ne touche aucun autre mur par ses coins : elle n'ouvre sur rien, se contourne des deux côtés et se dresse seule au rendu. Rattache-la au mur qu'elle devait percer, ou retire-la.`,
+    });
+  }
+  return out;
+}
+
 /** Position d'un défaut d'étage, dans le vocabulaire partagé `PlanDefectAt`. */
 function defectAt(d: Defect | ZoneDefect): PlanDefectAt {
   return 'side' in d && d.side
@@ -666,8 +694,20 @@ function defectAt(d: Defect | ZoneDefect): PlanDefectAt {
     : { kind: 'cell', x: d.x, y: d.y, z: d.z };
 }
 
+/** Mémo du POINT D'ENTRÉE : clé = identité de la Scène (toute mutation d'état rend une NOUVELLE réf,
+ *  cf. `memoByRef`), dépendance = le TÉMOIN du dataset des terrains. Les audits lisent `groundTerrains()`
+ *  À L'APPEL pour qu'une entrée retouchée à l'atelier change le verdict sans rechargement : le témoin est
+ *  une COPIE du tableau (le binding de `data/index` est muté EN PLACE par `setDataset`, son identité ne
+ *  bouge jamais), comparée entrée par entrée — le même témoin que `indexDesTerrains` (`state/terrain`).
+ *  Le tableau rendu est PARTAGÉ entre appels : ses consommateurs le lisent, ils ne le mutent pas. */
+const planDefectsMemo = memoByRefDeps<Scene, PlanDefect[]>();
+
 /** POINT D'ENTRÉE UNIQUE — toutes les familles, tous les étages. PUR. */
 export function scenePlanDefects(scene: Scene): PlanDefect[] {
+  return planDefectsMemo(scene, [...tousLesTerrains()], () => buildPlanDefects(scene));
+}
+
+function buildPlanDefects(scene: Scene): PlanDefect[] {
   const zoneIndex = descriptiveZoneIndex(scene);
   const out: PlanDefect[] = [];
   for (const [aboveZ, belowZ] of floorPairs(scene)) {
@@ -680,6 +720,6 @@ export function scenePlanDefects(scene: Scene): PlanDefect[] {
     for (const d of perFloor) out.push({ family: d.family, at: defectAt(d), grid: d.grid, message: d.message });
   }
   out.push(...auditZoneFootprint(scene));
-  for (const z of scenesZ(scene)) out.push(...auditEnclosureAtBorder(scene, z), ...auditWallDeadEndsAtBorder(scene, z));
+  for (const z of scenesZ(scene)) out.push(...auditEnclosureAtBorder(scene, z), ...auditWallDeadEndsAtBorder(scene, z), ...auditOrphanDoors(scene, z));
   return out;
 }

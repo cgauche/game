@@ -365,6 +365,15 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
   };
 }
 
+/** La réf d'une entité de scène désigne-t-elle quelque chose de SPAWNABLE ? Créature du bestiaire, coque
+ *  de véhicule (`vehicles.json` facette `hull`), affût d'engin de siège (`trappings.json` `siegeRig`).
+ *  SEULE expression du faisceau : `spawnEnemy` la CONSOMME pour décider de son repli BRUYANT (#223,
+ *  mannequin `RÉF ?` à l'écran) et `validateScene` pour le dire à l'auteur AVANT le jeu — une branche
+ *  ajoutée ici les suit tous les deux, aucun des deux ne peut dériver de l'autre. */
+export function refEntiteResolue(ref: string): boolean {
+  return !!(findCreatureById(ref) || findVehicleById(ref)?.hull || findTrappingById(ref)?.siegeRig);
+}
+
 export function spawnEnemy(
   ref: string | undefined,
   statblock: CustomStatblock | undefined,
@@ -377,32 +386,34 @@ export function spawnEnemy(
   // par le call-site (`resolvePresetCreature`, couche campagne) — `spawn.ts` n'importe PAS `campaignData`.
   if (opts?.presetCreature) c = creatureToCombatant(opts.presetCreature, id, pos, opts);
   else if (statblock) c = statblockToCombatant(statblock, id, pos, opts?.appearance);
-  else if (ref && findCreatureById(ref)) c = creatureToCombatant(findCreatureById(ref)!, id, pos, opts);
-  else if (ref && findVehicleById(ref)?.hull) {
+  else if (!ref) {
+    // ref ABSENTE (ni statbloc) : PNJ scénique générique légitime (apparence authorée par l'entité, rendu
+    // marche) — repli SILENCIEUX (comportement historique d'avant #223 : le repli bruyant ne visait que la
+    // réf. FOURNIE-mais-fausse, jamais l'absence de réf.).
+    c = statblockToCombatant({ type: 'statblock', label: 'Ennemi', char: { B: 10 } }, id, pos);
+  } else if (!refEntiteResolue(ref)) {
+    // Repli BRUYANT (#223) : réf. FOURNIE mais irrésoluble — le VERDICT est celui de `refEntiteResolue`,
+    // le même que lit `validateScene` → console.error + mannequin PORTANT le marqueur au nom (affiché tel
+    // quel au token/frise).
+    console.error(`[spawn] réf. irrésoluble « ${ref} » (entité « ${id} ») — mannequin de repli visible (#223)`);
+    c = statblockToCombatant({ type: 'statblock', label: `RÉF ? « ${ref} »`, char: { B: 10 } }, id, pos);
+  } else if (findCreatureById(ref)) c = creatureToCombatant(findCreatureById(ref)!, id, pos, opts);
+  else if (findVehicleById(ref)?.hull) {
     // Coque/navire (`vehicles.json` → facette `hull`) comme Combattant à PV (MDG 13). 'enemy' pour être
     // une cible ; inerte (pas d'arme/Mouvement, Psychologie ignorée) — sa destruction passe par ses Blessures.
     c = vehicleCombatant(findVehicleById(ref)!, id)!;
     c.kind = 'enemy';
     c.pos = { ...pos };
-  } else if (ref && findTrappingById(ref)?.siegeRig) {
+  } else {
     // Engin de siège (AA 10 p.122-123) : affût INERTE non-destructible (RAW : pas de Blessures), servi par son
     // équipage. Neutralisé en tuant l'équipage, pas en le détruisant. Son espèce de rendu est DÉRIVÉE de la
     // `ref` (l'art d'affût `siegeRig` du trapping) → plus aucun `appearance.species` forcé à l'authoring.
+    // Dernière branche du faisceau : `refEntiteResolue` a déjà écarté créature et coque au-dessus.
     const t = findTrappingById(ref)!;
     c = inanimateCombatant({ id, label: t.label, refId: ref, bodyShape: 'engin', inert: true, footprint: t.siegeFootprint });
     c.kind = 'enemy';
     c.pos = { ...pos };
     c.species = t.siegeRig; // espèce DÉRIVÉE de la ref → rig engin au combat (parité avec l'explo/éditeur)
-  } else if (!ref) {
-    // ref ABSENTE (ni statbloc) : PNJ scénique générique légitime (apparence authorée par l'entité, rendu
-    // marche) — repli SILENCIEUX (comportement historique d'avant #223 : le repli bruyant ne visait que la
-    // réf. FOURNIE-mais-fausse, jamais l'absence de réf.).
-    c = statblockToCombatant({ type: 'statblock', label: 'Ennemi', char: { B: 10 } }, id, pos);
-  } else {
-    // Repli BRUYANT (#223) : réf. FOURNIE mais irrésoluble (créature ∪ véhicule ∪ engin de siège tous en
-    // échec) → console.error + mannequin PORTANT le marqueur au nom (affiché tel quel au token/frise).
-    console.error(`[spawn] réf. irrésoluble « ${ref} » (entité « ${id} ») — mannequin de repli visible (#223)`);
-    c = statblockToCombatant({ type: 'statblock', label: `RÉF ? « ${ref} »`, char: { B: 10 } }, id, pos);
   }
   if (opts?.crewIds) c.crewIds = opts.crewIds;
   if (opts?.postes) c.postes = opts.postes.map(hydratePoste); // #222 — réf catalogue → base HYDRATÉE (couture unique)

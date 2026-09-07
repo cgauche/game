@@ -1,4 +1,7 @@
-import { heightAt, type Scene, type Effect } from './scene';
+import { heightAt, isMerScene, isWalkable, type Scene, type Effect } from './scene';
+import { startOf, unreachableDescriptiveZones } from './mapQC';
+import { footprintTiles, sizeFootprint } from './footprint';
+import { entitySize, refEntiteResolue } from './spawn';
 import { METRES_PER_LEVEL } from './relief';
 import { CHAR_KEYS } from '../engine/types';
 import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, carriedFlows, EMPTY_FLOW } from './flow';
@@ -81,6 +84,25 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
           addWm(r.id, `Route « ${r.id} » → rencontre d'embuscade inexistante « ${amb.encounter} » dans « ${amb.scene} »`);
       }
     }
+    // DÉPART DU GROUPE d'une scène-DESTINATION. Le runtime replie toujours (`store.ts` : `startScene`
+    // prend `findFreeTile` à défaut de `heroStart` ; `transitionTo` prend `pos`, puis le point d'arrivée
+    // NOMMÉ, puis `heroStart`, puis `findFreeTile`) — d'où un `warn`, jamais une erreur. Ne sont
+    // concernées que les scènes où l'on débarque SANS point d'arrivée nommé : un lieu qui déclare son
+    // `entry` (`MapPlace.entry`) désigne déjà sa case, un POI de plan n'en porte aucun.
+    const portesSansEntree = new Map<string, string>();
+    for (const p of worldMap.places) {
+      if (!p.entry) portesSansEntree.set(p.scene, `le lieu « ${p.label} »`);
+      for (const poi of p.poi ?? [])
+        if (poi.sceneId) portesSansEntree.set(poi.sceneId, `le point d'intérêt « ${poi.label} » du lieu « ${p.label} »`);
+    }
+    for (const [sceneId, porte] of portesSansEntree) {
+      const cible = project.find((s) => s.id === sceneId);
+      if (!cible || startOf(cible)) continue;
+      out.push({
+        level: 'warn', sceneId, scope: 'scene', refId: sceneId,
+        message: `Aucun départ du groupe (heroStart) dans « ${cible.label} », où mène ${porte} sans point d'arrivée nommé — le jeu posera le groupe sur la première case libre venue. Pose un départ, ou nomme un point d'arrivée sur la porte.`,
+      });
+    }
   }
   const musicIds = new Set(allMusicDefs().map((d) => d.id));
   for (const s of project) {
@@ -139,6 +161,11 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       // L'émetteur unique (`gameIso/builders/props.ts`) le refuse en dur — c'est ici que l'auteur l'apprend.
       if (e.kind === 'prop' && !capDecorAdmis(refEstVolumique(e.ref), e.facing))
         add('error', 'entity', e.id, `${e.label ?? e.id} : décor volumique « ${e.ref ?? REF_DECOR_DEFAUT} » au cap ${e.facing} — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)`);
+      // RÉF de personnage : la résolution est CELLE du spawn (`refEntiteResolue`, `state/spawn`) —
+      // un statbloc ou un preset de PNJ prime sur la réf et la rend sans objet, comme au runtime. Une réf
+      // fournie mais irrésoluble pose un mannequin `RÉF ?` à l'écran (#223) : l'auteur l'apprend ici.
+      if (e.kind === 'personnage' && e.ref && !e.statblock && !e.presetId && !refEntiteResolue(e.ref))
+        add('error', 'entity', e.id, `${e.label ?? e.id} → créature inexistante « ${e.ref} »`);
       if (e.statblock?.char)
         for (const k of Object.keys(e.statblock.char))
           if (!VALID_STATBLOCK_CHAR_KEYS.has(k)) add('error', 'entity', e.id, `${e.label ?? e.id} : statblock.char porte une clé étrangère « ${k} » (format canonique = CharKey slug plein, cf. #311)`);
@@ -146,6 +173,25 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
     // ASSISE AUTHORÉE (`Scene.seatAssignments`) : les règles vivent dans `state/seating`, source
     // unique partagée avec le compilateur d'authoring (`mapSpec.buildScene`, fail-fast).
     for (const defect of seatAssignmentDefects(s)) add('error', 'entity', defect.at, defect.message);
+    // Les familles qui MARCHENT (départ, connectivité, empreinte au sol) n'ont de sujet qu'à l'échelle du
+    // PAS : à l'échelle MER (`isMerScene`, source unique — case ≥ 4 m, navire-unité), la grille est de l'eau
+    // de bout en bout et tout le monde y flotte à bord. Mesuré sur les paquets livrés : les 3 scènes
+    // d'abordage (10 m/case, 336 cases d'`eau`) rendaient 31 avertissements « non marchable », tous faux.
+    const echelleDuPas = !isMerScene(s);
+    // CONNECTIVITÉ À PIED depuis le départ du groupe (`state/mapQC`, harnais #778 : la même marche que
+    // `walkNeighbors` au jeu). Une pièce nommée qu'aucun chemin ne rejoint est du contenu écrit pour rien.
+    const start = startOf(s);
+    const startEntity = s.entities.find((e) => e.kind === 'heroStart');
+    if (start && startEntity && echelleDuPas) {
+      if (!isWalkable(s, start.x, start.y, start.z)) {
+        add('warn', 'entity', startEntity.id, `Départ du groupe en (${start.x},${start.y}) à l'étage ${start.z} : la case n'est pas marchable — pose-le sur un sol praticable, sinon le groupe apparaît dans le décor.`);
+      } else {
+        // Zones évaluées SEULEMENT depuis un départ praticable : depuis une case murée, la marche ne
+        // rejoint rien et TOUTES les pièces se signaleraient — un seul défaut, pas N faux.
+        for (const zone of unreachableDescriptiveZones(s, start))
+          add('warn', 'scene', zone.id, `Pièce « ${zone.label ?? zone.id} » inatteignable à pied depuis le départ du groupe (${start.x},${start.y}, étage ${start.z}) — perce une porte, ou relie-la par un escalier ou une rampe.`);
+      }
+    }
     const validRect = (rect: { x: number; y: number; w: number; h: number }) =>
       Number.isInteger(rect.x) && Number.isInteger(rect.y) && Number.isInteger(rect.w) && Number.isInteger(rect.h)
       && rect.w > 0 && rect.h > 0 && within(rect.x, rect.y) && within(rect.x + rect.w - 1, rect.y + rect.h - 1);
@@ -328,7 +374,7 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
           if (c.flow) checkFlow(c.flow, d.id, 'dialogue');
         }
     }
-    const entIds = new Set(s.entities.map((e) => e.id));
+    const entById = new Map(s.entities.map((e) => [e.id, e] as const));
     for (const e of s.encounters) {
       checkFlow(e.onVictory ?? EMPTY_FLOW, e.id, 'encounter'); // onVictory est déjà un Flow (delayedEffect.flow récursé)
       // onVictory est APPLIQUÉ À PLAT à la victoire (finishVictory → flattenFlow), pour préserver la
@@ -336,8 +382,23 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       // l'interdit ici (les `if` conditionnels restent permis, eux, car flattenFlow les évalue).
       if (e.onVictory && flowHasTest(e.onVictory)) add('error', 'encounter', e.id, `Rencontre « ${e.id} » : onVictory ne peut pas contenir de jet interactif (Test/Choix) — il est appliqué à plat à la victoire`);
       for (const m of e.members ?? []) {
-        if (!entIds.has(m.entityId)) add('error', 'encounter', e.id, `Rencontre « ${e.id} » → membre inexistant « ${m.entityId} »`);
-        if (m.ridesEntityId && !entIds.has(m.ridesEntityId)) add('error', 'encounter', e.id, `Rencontre « ${e.id} » → monture inexistante « ${m.ridesEntityId} »`);
+        const membre = entById.get(m.entityId);
+        if (!membre) add('error', 'encounter', e.id, `Rencontre « ${e.id} » → membre inexistant « ${m.entityId} »`);
+        if (m.ridesEntityId && !entById.has(m.ridesEntityId)) add('error', 'encounter', e.id, `Rencontre « ${e.id} » → monture inexistante « ${m.ridesEntityId} »`);
+        if (!membre) continue;
+        // EMPREINTE du combattant (`state/footprint`, la même géométrie qu'au spawn) : une Grande 2×2 posée
+        // au ras d'un mur déborde sur des cases qui ne l'accueillent pas — le placement se corrige à
+        // l'authoring, pas au jeu. L'ancre seule ne suffit donc pas à juger la pose.
+        const n = sizeFootprint(entitySize(membre));
+        const z = membre.z ?? 0;
+        const tuiles = footprintTiles(membre.pos, n);
+        const nom = membre.label ?? membre.ref ?? membre.id;
+        const dehors = tuiles.filter((t) => !within(t.x, t.y));
+        if (dehors.length)
+          add('warn', 'entity', membre.id, `${nom} : empreinte ${n}×${n} débordant hors de la carte — ${dehors.map((t) => `(${t.x},${t.y})`).join(' ')}.`);
+        const barrees = echelleDuPas ? tuiles.filter((t) => within(t.x, t.y) && !isWalkable(s, t.x, t.y, z)) : [];
+        if (barrees.length)
+          add('warn', 'entity', membre.id, `${nom} : empreinte ${n}×${n} posée sur ${barrees.length} case(s) non marchable(s) (mur, eau ou décor) — ${barrees.map((t) => `(${t.x},${t.y})`).join(' ')} à l'étage ${z}.`);
       }
     }
     // Défauts de PLAN (`state/planDefects`, la MÊME détection que `npm run map:check`) : l'auteur les

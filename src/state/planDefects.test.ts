@@ -184,8 +184,15 @@ function sceneEnceinteAuRas(): Scene {
   return makeScene(w, h, [{ z: 0, tiles: new Array(w * h).fill('plancher') }], [], perimeterWallSegs([{ x: 0, y: 0, w, h }]));
 }
 
+/** Plain-pied 8×8 entier de plancher dont le SEUL segment de mur est une porte, plantée loin de tout :
+ *  ni enceinte, ni extrémité sur le bord — le plan n'a que ce défaut-là à rendre. */
+function scenePorteOrpheline(): Scene {
+  const w = 8, h = 8;
+  return makeScene(w, h, [{ z: 0, tiles: new Array(w * h).fill('plancher') }], [], [{ x: 5, y: 5, side: 'N', door: true }]);
+}
+
 describe('validateScene — AUCUNE famille ne peut cesser d’atteindre l’éditeur', () => {
-  const warnings = [scenePerFamily(), sceneEnceinteAuRas()]
+  const warnings = [scenePerFamily(), sceneEnceinteAuRas(), scenePorteOrpheline()]
     .flatMap((scene) => validateScene([scene]))
     .filter((wa) => wa.scope === 'plan');
 
@@ -541,5 +548,43 @@ describe('BORD DE LA CARTE — le dehors s’amorce PAR le bord, et un plan qui 
 
   it('un plan SANS aucun mur ne se signale pas : ces familles jugent une grille de murs, jamais une absence de murs', () => {
     expect(scenePlanDefects(grille([]))).toEqual([]);
+  });
+
+  it('une PORTE plantée seule, sans mur à ses coins, se dit — nommée par son arête', () => {
+    const defects = scenePlanDefects(scenePorteOrpheline()).filter((d) => d.family === 'porte-orpheline');
+    expect(defects).toHaveLength(1);
+    expect(defects[0].at).toEqual({ kind: 'edge', x: 5, y: 5, side: 'N', z: 0 });
+    expect(defects[0].message).toContain('la porte N de (5,5)');
+  });
+
+  it('CONTRE-ÉPREUVE : la MÊME porte PERCÉE dans le périmètre d’une pièce se tait — c’est la jonction aux coins qui tranche, jamais la porte elle-même', () => {
+    const perimetre = perimeterWallSegs([{ x: 1, y: 1, w: 3, h: 3 }]);
+    const percee = perimetre.map((seg, i) => (i === 0 ? { ...seg, door: true } : seg));
+    expect(percee.some((seg) => seg.door)).toBe(true);
+    expect(scenePlanDefects(grille(percee))).toEqual([]);
+  });
+
+  it('une porte posée sur une DIAGONALE n’est pas jugée ici : une diagonale ne s’accroche à aucun coin de la trame', () => {
+    const scene = grille([{ x: 5, y: 5, side: '\\', door: true } as WallSeg]);
+    expect(scenePlanDefects(scene).filter((d) => d.family === 'porte-orpheline')).toEqual([]);
+  });
+
+  describe('le POINT D’ENTRÉE se mémoïse par identité de Scène — l’éditeur revalide à chaque frappe', () => {
+    it('deux appels sur la MÊME réf rendent le MÊME tableau ; une réf neuve le recalcule, à l’identique', () => {
+      const scene = scenePorteOrpheline();
+      const premier = scenePlanDefects(scene);
+      expect(scenePlanDefects(scene)).toBe(premier);
+      const copie: Scene = { ...scene };
+      const recalcule = scenePlanDefects(copie);
+      expect(recalcule).not.toBe(premier);
+      expect(recalcule).toEqual(premier);
+    });
+
+    it('une scène ÉDITÉE (nouvelle réf, comme toute mutation d’état) rend le verdict de sa NOUVELLE forme', () => {
+      const avec = scenePorteOrpheline();
+      expect(scenePlanDefects(avec).filter((d) => d.family === 'porte-orpheline')).toHaveLength(1);
+      const corrigee: Scene = { ...avec, walls: [] };
+      expect(scenePlanDefects(corrigee)).toEqual([]);
+    });
   });
 });
