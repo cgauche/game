@@ -20,12 +20,16 @@
  * `new URL('../../')` y résolve — sur des fixtures GELÉES ici (aucun `git show` : un test qui en
  * dépend casse en clone superficiel).
  *
- * Quatre cas par script :
+ * Trois cas par script :
  *  A. donnée HISTORIQUE, dont le `type` porte encore la valeur métier → migrée, valeur conservée ;
- *  B. donnée ACTUELLE (`type` d'enveloppe + clé neuve) → NO-OP, fichier byte-identique ;
- *  C. COLLISION forcée : un `type` hors vocabulaire, que rien ne permet de trancher → fail-fast
+ *  B. COLLISION forcée : un `type` hors vocabulaire, que rien ne permet de trancher → fail-fast
  *     BRUYANT, exit 1, rien d'écrit ;
- *  D. ARBITRAGE « porte À LA FOIS » : `type` métier ET clé neuve sur la même entrée → mord toujours.
+ *  C. ARBITRAGE « porte À LA FOIS » : `type` métier ET clé neuve sur la même entrée → mord toujours.
+ *
+ * Le NO-OP sur l'état courant de l'arbre est mesuré sur la donnée RÉELLE par le rejeu
+ * (`scripts/migrations/replay.mjs`, job CI `migrations` et pre-push) ; ce qui est tenu ICI, c'est ce
+ * dont ce rejeu dépend : la donnée committée est à l'ÉTAT D'ARRIVÉE (`type` d'enveloppe + clé neuve
+ * sur chaque entrée), sans quoi le rejeu emprunterait une autre branche que celle qu'il croit.
  */
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
@@ -39,8 +43,6 @@ const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 interface Cas {
   readonly script: string;
   readonly fichier: string;
-  /** Nom du document posé par `document()` — le `type` d'ENVELOPPE. */
-  readonly typeEnveloppe: string;
   /** Clé NEUVE que la migration a introduite (`polarite`/`nature`). */
   readonly cleNeuve: string;
   /** Cardinal EXIGÉ par le script (constante `ATTENDU`). */
@@ -60,7 +62,6 @@ const CAS: readonly Cas[] = [
   {
     script: '2026-08-28-l1b-6a-qualities-polarite.mjs',
     fichier: 'qualities.json',
-    typeEnveloppe: 'qualities',
     cleNeuve: 'polarite',
     cardinal: 59,
     valeurs: ['atout', 'defaut'],
@@ -68,7 +69,6 @@ const CAS: readonly Cas[] = [
   {
     script: '2026-08-28-l1b-6c-characteristics-nature.mjs',
     fichier: 'characteristics.json',
-    typeEnveloppe: 'characteristics',
     cleNeuve: 'nature',
     cardinal: 19,
     valeurs: ['roll', 'wounds', 'extra', 'mv', 'points', 'compteur'],
@@ -76,7 +76,6 @@ const CAS: readonly Cas[] = [
   {
     script: '2026-08-28-l1b-6b-skills-acces.mjs',
     fichier: 'skills.json',
-    typeEnveloppe: 'skills',
     cleNeuve: 'acces',
     cardinal: 48,
     // La graphie accentuée `avancée` que 6b NORMALISE est absente d'ici à dessein : le cas A compare
@@ -87,7 +86,6 @@ const CAS: readonly Cas[] = [
   {
     script: '2026-08-28-l1b-6d-trappings-categorie.mjs',
     fichier: 'trappings.json',
-    typeEnveloppe: 'trappings',
     cleNeuve: 'categorie',
     cardinal: 441,
     valeurs: ['melee', 'ranged', 'ammunition', 'armor', 'trapping'],
@@ -99,7 +97,6 @@ const CAS: readonly Cas[] = [
   {
     script: '2026-08-28-l1b-6e-spells-ecole.mjs',
     fichier: 'spells.json',
-    typeEnveloppe: 'spells',
     cleNeuve: 'ecole',
     cardinal: 576,
     // `6e` n'a PAS de vocabulaire fermé (l'école est un libellé hérité, 18 valeurs) : il exige une
@@ -152,15 +149,6 @@ function joue(cas: Cas, entrees: Record<string, unknown>[]): { code: number; apr
 const historique = (cas: Cas) =>
   Array.from({ length: cas.cardinal }, (_, i) => ({ id: `e-${i}`, type: cas.valeurs[i % cas.valeurs.length], label: `E${i}` }));
 
-/** Fixture ACTUELLE : l'enveloppe `type` + la clé neuve — l'état de l'arbre après 11b. */
-const actuelle = (cas: Cas) =>
-  Array.from({ length: cas.cardinal }, (_, i) => ({
-    id: `e-${i}`,
-    type: cas.typeEnveloppe,
-    label: `E${i}`,
-    [cas.cleNeuve]: cas.valeurs[i % cas.valeurs.length],
-  }));
-
 describe.each(CAS)('migration $script — retouchée pour le `type` d’ENVELOPPE', (cas) => {
   it('A. donnée HISTORIQUE : le renommage joue, et la valeur est CONSERVÉE entrée par entrée', () => {
     const entrees = historique(cas);
@@ -170,13 +158,7 @@ describe.each(CAS)('migration $script — retouchée pour le `type` d’ENVELOPP
     expect(apres).toBe(canonique(attendu));
   });
 
-  it('B. donnée ACTUELLE (`type` d’enveloppe + clé neuve) : NO-OP, fichier byte-identique', () => {
-    const { code, apres, avant } = joue(cas, actuelle(cas));
-    expect(code, 'l’état actuel de l’arbre doit être reconnu « déjà migré »').toBe(0);
-    expect(apres).toBe(avant);
-  });
-
-  it('C. COLLISION : une entrée dont le `type` n’est NI l’enveloppe NI une valeur connue → fail-fast, rien d’écrit', () => {
+  it('B. COLLISION : une entrée dont le `type` n’est NI l’enveloppe NI une valeur connue → fail-fast, rien d’écrit', () => {
     const entrees = historique(cas);
     entrees[0] = { id: 'e-0', type: collisionne(cas), label: 'E0' };
     const { code, apres, avant } = joue(cas, entrees);
@@ -184,12 +166,29 @@ describe.each(CAS)('migration $script — retouchée pour le `type` d’ENVELOPP
     expect(apres, 'aucune écriture avant arbitrage').toBe(avant);
   });
 
-  it('D. ARBITRAGE : ancien `type` ET clé neuve sur la même entrée → mord toujours, rien d’écrit', () => {
+  it('C. ARBITRAGE : ancien `type` ET clé neuve sur la même entrée → mord toujours, rien d’écrit', () => {
     const entrees = historique(cas);
     entrees[0] = { id: 'e-0', type: cas.valeurs[0], label: 'E0', [cas.cleNeuve]: cas.valeurs[0] };
     const { code, apres, avant } = joue(cas, entrees);
     expect(code, 'la double graphie reste un arbitrage, jamais un choix silencieux').toBe(1);
     expect(apres, 'aucune écriture avant arbitrage').toBe(avant);
+  });
+
+  /**
+   * ÉTAT D'ARRIVÉE de la donnée RÉELLE, sans quoi le rejeu CI n'exercerait pas ce qu'il croit
+   * exercer : c'est parce que le fichier committé porte le `type` d'ENVELOPPE et la clé neuve sur
+   * CHAQUE entrée que le no-op mesuré par `scripts/migrations/replay.mjs` passe par la branche
+   * « déjà migré ». Le `type` d'enveloppe se DÉRIVE du nom de fichier, comme la partition en fin de
+   * fichier — aucune valeur recopiée, aucun cardinal : la donnée grandit, le contrat ne bouge pas.
+   */
+  it('la donnée RÉELLE est à l’état d’arrivée : `type` d’enveloppe et clé neuve sur CHAQUE entrée', () => {
+    const enveloppe = cas.fichier.replace(/\.json$/, '');
+    const entrees = JSON.parse(readFileSync(join(RACINE, 'src', 'data', cas.fichier), 'utf8')) as Record<string, unknown>[];
+    expect(entrees.length, `${cas.fichier} est vide : le rejeu n’exercerait plus rien`).toBeGreaterThan(0);
+    const horsEnveloppe = entrees.filter((e) => e.type !== enveloppe).map((e) => `${cas.fichier} ${String(e.id)} : type ${JSON.stringify(e.type)}`);
+    expect(horsEnveloppe, `entrée(s) au \`type\` ≠ ${JSON.stringify(enveloppe)} :\n${horsEnveloppe.slice(0, 10).join('\n')}`).toEqual([]);
+    const sansCleNeuve = entrees.filter((e) => !(cas.cleNeuve in e)).map((e) => `${cas.fichier} ${String(e.id)}`);
+    expect(sansCleNeuve, `entrée(s) sans \`${cas.cleNeuve}\` :\n${sansCleNeuve.slice(0, 10).join('\n')}`).toEqual([]);
   });
 });
 

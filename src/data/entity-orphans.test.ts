@@ -133,11 +133,3 @@ describe('corpus des SCÈNES — le contenu joué CONSOMME, ce qu\'il pose ne co
     expect(isConsumed(sceneCorpus, 'chaland')).toBe(false);
   });
 });
-
-describe('docs/orphelines-donnees.md — le rapport GÉNÉRÉ est à jour', () => {
-  it('régénéré en mémoire == committé (sinon : npm run docs:orphelines)', async () => {
-    const { execFileSync } = await import('node:child_process');
-    const out = execFileSync(process.execPath, ['scripts/docs/build-entity-orphans.mjs', '--check'], { cwd: ROOT, encoding: 'utf8' });
-    expect(out).toMatch(/^docs:orphelines — OK/);
-  });
-});

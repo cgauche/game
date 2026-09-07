@@ -240,5 +240,47 @@ export function deltaSourcesLues(avant, apres) {
   return deltas
 }
 
+/** Largeur maximale d'un côté rendu dans l'aperçu : au-delà, la ligne est coupée et suffixée « … ». */
+const LARGEUR = 240
+
+/** Un côté d'une ligne dans l'aperçu : rendu JSON borné, `<absente>` quand ce côté n'a pas la ligne. */
+const cote = (ligne) => (ligne === undefined ? '<absente>' : JSON.stringify(ligne.length > LARGEUR ? `${ligne.slice(0, LARGEUR)}…` : ligne))
+
+/** La première divergence, NOMMÉE : ligne présente des deux côtés, ou d'un seul (manque / en trop). */
+function premiereDivergence(k, regeneree, committee) {
+  if (committee === undefined) return `ligne ${k + 1} MANQUE au committé : ${cote(regeneree)}`
+  if (regeneree === undefined) return `ligne ${k + 1} EN TROP au committé : ${cote(committee)}`
+  return `ligne ${k + 1} — committé : ${cote(committee)} / régénéré : ${cote(regeneree)}`
+}
+
+/**
+ * L'écart entre un corps RÉGÉNÉRÉ et le corps COMMITTÉ, en clair : la première divergence NOMMÉE,
+ * puis l'aperçu des `max` premières lignes divergentes des DEUX côtés, puis le compte du reste.
+ * Vide = les deux corps sont identiques ; `committe` à `null` = le doc n'est pas sur le disque.
+ * Sœur de `deltaSourcesLues` pour l'autre moitié du rouge de fraîcheur — les SOURCES d'un côté, le
+ * CORPS de l'autre, quand un générateur compare son rendu au fichier (`emitOrCheck`, jsdocUnion.mjs).
+ */
+export function apercuDivergences(regenere, committe, max = 10) {
+  if (committe === null) return 'le doc committé est ABSENT du dépôt'
+  const attendues = regenere.split('\n')
+  const lues = committe.split('\n')
+  const total = Math.max(attendues.length, lues.length)
+  const blocs = []
+  let premiere = null
+  let restantes = 0
+  for (let k = 0; k < total; k++) {
+    if (attendues[k] === lues[k]) continue
+    if (premiere === null) premiere = premiereDivergence(k, attendues[k], lues[k])
+    if (blocs.length >= max) {
+      restantes++
+      continue
+    }
+    blocs.push(`l.${k + 1}\n  committé : ${cote(lues[k])}\n  régénéré : ${cote(attendues[k])}`)
+  }
+  if (premiere === null) return ''
+  if (restantes > 0) blocs.push(`… et ${restantes} autre(s) ligne(s) divergente(s)`)
+  return [premiere, ...blocs].join('\n')
+}
+
 /** Le doc EXISTE-t-il sur le disque (une cible en glob peut ne rien viser). */
 export const existeFichier = (p) => { try { return statSync(p).isFile() } catch { return false } }

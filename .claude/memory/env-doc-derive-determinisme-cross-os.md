@@ -14,7 +14,7 @@ metadata:
 
 **How to apply** :
 - Tout générateur de doc/stock pose un ORDRE TOTAL explicite (tri en unités de code sur chemin normalisé `/`, jamais `localeCompare` ; lignes comparées NUMÉRIQUEMENT ; « premier site » = minimum, jamais le premier rencontré) et le prouve par une MORSURE d'invariance committée (rapport bâti sur l'ordre INVERSE ⇒ byte-identique).
-- Un test de fraîcheur imprime ses lignes divergentes (`apercuEcart`, patron `src/data/field-consumers.test.ts`) — un rouge NOMME sa cause.
+- Un verdict de fraîcheur imprime ses lignes divergentes : `apercuDivergences` (`scripts/docs/lib/empreinte-sources.mjs`) rend la première divergence nommée puis les 10 premières lignes divergentes des DEUX côtés, et `emitOrCheck` (`scripts/docs/lib/jsdocUnion.mjs`) l'imprime pour tous les générateurs qui passent par lui — un rouge NOMME sa cause.
 - Après un push qui touche un générateur ou son doc : VÉRIFIER la CI sur le sha (`gh run list --branch main`) AVANT d'annoncer « POSÉ » — le vert local n'est pas le vert CI.
 - Inventaire cross-OS à dérouler (11 points, #1620 lot 2) : readdirSync, getSourceFiles, Set/Map de parcours, `[0]`, casse, `sep`, cwd/chemins absolus, CRLF (`.gitattributes` `eol=lf`), corpus (`git ls-files` = walk), date/locale.
 Liens : [[env-coordination-arbre-partage-sessions]], [[feedback-jamais-de-constat-silencieux]], [[game-doc-derivee-jamais-ecrite-a-la-main]].

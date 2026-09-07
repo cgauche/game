@@ -6,7 +6,7 @@
 // `Condition`/`Flow`/`EffectTrigger`/`EffectTargeting` de src/engine/flowCore.ts).
 import ts from 'typescript'
 import { readFileSync, existsSync } from 'node:fs'
-import { ecrireDoc, retirerPied } from './empreinte-sources.mjs'
+import { apercuDivergences, ecrireDoc, retirerPied } from './empreinte-sources.mjs'
 
 /** Abréviations FR à ne PAS prendre pour une fin de phrase (« ex. », « l. », « p. »… — sinon un
  *  « (ex. » tronque le rôle en pleine parenthèse ouverte). */
@@ -170,6 +170,8 @@ export function renderFields(fieldGroups) {
  * Écrit le .md — ou, en mode `--check` (chaîné dans `npm run docs:check`), régénère en mémoire,
  * compare au committé et sort en erreur ACTIONNABLE. Jamais d'écriture en mode `--check`.
  * C'est la garde d'exhaustivité : une entrée ajoutée à l'union sans régénération = CI rouge.
+ * Le rouge NOMME sa cause : `apercuDivergences` imprime la première divergence et l'aperçu borné
+ * des suivantes, des deux côtés — un « PÉRIMÉ » seul se diagnostique de mémoire.
  */
 export function emitOrCheck({ out, path, check, staleMsg, rerunMsg, okMsg, writeMsg }) {
   if (check) {
@@ -178,6 +180,7 @@ export function emitOrCheck({ out, path, check, staleMsg, rerunMsg, okMsg, write
     const current = existsSync(path) ? retirerPied(readFileSync(path, 'utf8')) : null
     if (current !== out) {
       console.error(staleMsg)
+      console.error(apercuDivergences(out, current))
       console.error(rerunMsg)
       process.exit(1)
     }

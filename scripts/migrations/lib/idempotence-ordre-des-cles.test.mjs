@@ -136,13 +136,20 @@ const renverse = (doc) => {
  * Ce que le dépôt jetable doit porter pour qu'une migration échoue sur son CONTRAT et jamais sur une
  * absence de dépôt. Mesuré en retirant chaque poste : sans `Source/`, quatre migrations sortent 1 sur
  * une extraction introuvable — une raison de dépôt, pas de contrat. COPIE PURE : aucun lien.
+ *
+ * Ce que les migrations lisent de `Source/`, ce sont les extractions `.md` ; les `.pdf` (4,7 Go,
+ * gitignorés) sont écartés de la copie par leur EXTENSION — jamais par le nom de leur dossier.
  */
 const CORPUS = ['src/data', 'src/scenes', 'scripts', 'src/gameIso/catalog', 'docs/raw', 'Source'];
 
 test('les migrations DATÉES sont NO-OP sur `src/data` ENTIER aux clés renversées', (t) => {
   const racine = fs.mkdtempSync(path.join(os.tmpdir(), 'migr-corpus-'));
   t.after(() => efface(racine));
-  for (const rel of CORPUS) fs.cpSync(path.join(RACINE, rel), path.join(racine, rel), { recursive: true });
+  for (const rel of CORPUS)
+    fs.cpSync(path.join(RACINE, rel), path.join(racine, rel), {
+      recursive: true,
+      filter: (src) => path.extname(src).toLowerCase() !== '.pdf',
+    });
 
   const data = path.join(racine, 'src/data');
   const jsons = fs.readdirSync(data).filter((f) => f.endsWith('.json'));

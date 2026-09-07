@@ -1,12 +1,13 @@
 // Test du garde `check-code-refs` (node --test) : une réf plantée hors borne du chapitre résolu OU
 // vers un chapitre introuvable est détectée dans le CODE, une réf valide reste silencieuse, et le
-// cliquet par fichier tient. Le VRAI src/ du repo reste aligné sur sa baseline. Lancé par `npm run test:raw`.
+// cliquet par fichier tient. L'alignement du VRAI src/ sur ses baselines est mesuré par la gate
+// `npm run raw:check-code-refs` (`main()` de check-code-refs.mjs). Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, rmSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { scanDeadCodeRefs, scanEmptyLineCodeRefs, countsByFile, assertAgainstBaseline, isExcludedSrc, readBaseline, BASELINE_PATH, EMPTY_LINE_BASELINE_PATH } from './check-code-refs.mjs'
+import { scanDeadCodeRefs, scanEmptyLineCodeRefs, countsByFile, assertAgainstBaseline, isExcludedSrc, readBaseline, BASELINE_PATH } from './check-code-refs.mjs'
 
 // LDB 06 (Source/…/06 - Classes.md) fait 6 lignes (split('\n').length) — chapitre réel, court, stable :
 // sert d'ancrage pour planter une réf hors borne sans toucher au vrai src/.
@@ -134,18 +135,6 @@ test('plage l.X-Y : vide seulement si TOUTE la plage est blanche', () => {
   })
 })
 
-test('non-régression : le VRAI src/ du repo est aligné sur la baseline des réfs sur ligne vide (cliquet DÉCROISSANT)', () => {
-  const counts = countsByFile(scanEmptyLineCodeRefs())
-  const { over, stale } = assertAgainstBaseline(counts, readBaseline(EMPTY_LINE_BASELINE_PATH))
-  assert.deepEqual(over, [], `réf(s) de code tombée(s) sur une ligne VIDE en hausse :\n${over.join('\n')}`)
-  assert.deepEqual(stale, [], `baseline(s) périmée(s) à ABAISSER dans empty-line-code-refs-baseline.json :\n${stale.join('\n')}`)
-})
-
-test('non-régression : le VRAI src/ du repo est aligné sur le régime ZÉRO-TOLÉRANCE (#583 : baseline soldée)', () => {
-  // Solde #583 : dead-code-refs-baseline.json est ABSENT en régime nominal — toute réf morte échoue.
+test('régime ZÉRO-TOLÉRANCE (#583) : dead-code-refs-baseline.json reste ABSENT', () => {
   assert.equal(existsSync(BASELINE_PATH), false, 'dead-code-refs-baseline.json doit rester ABSENT (zéro-tolérance) — sa réapparition doit porter un diagnostic de résidu irréductible')
-  const counts = countsByFile(scanDeadCodeRefs())
-  const { over, stale } = assertAgainstBaseline(counts, readBaseline())
-  assert.deepEqual(over, [], `réfs de code mortes détectées (tolérance zéro) :\n${over.join('\n')}`)
-  assert.deepEqual(stale, [], `baseline(s) périmée(s) à abaisser :\n${stale.join('\n')}`)
 })

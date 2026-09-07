@@ -104,8 +104,9 @@ export const ECRIT_LU = {
       'scripts/hooks/new-src-file-guard.mjs:42) et le test en écrit une COPIE sous os.tmpdir() ; ' +
       'le reste des fixtures vit sous os.tmpdir() ; LIT docs/ et src/ parce que `enregistreur-lectures.test.mjs` ' +
       'joue de VRAIS générateurs en `--check` (build-index-moteur, build-donnees, build-structures), qui comparent ' +
-      'sans écrire ; LIT Source/ parce que `idempotence-ordre-des-cles.test.mjs` copie le corpus ENTIER (Source/ compris : ' +
-      'sans lui quatre migrations sortent 1 faute de livres) sous os.tmpdir() avant de rejouer les 89 migrations',
+      'sans écrire ; LIT Source/ parce que `idempotence-ordre-des-cles.test.mjs` copie le corpus (Source/ moins les ' +
+      '`.pdf`, écartés par extension : sans les extractions quatre migrations sortent 1 faute de livres) sous ' +
+      'os.tmpdir() avant de rejouer les 89 migrations',
   },
   'test:ops': {
     ecrit: [],

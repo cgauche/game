@@ -1,41 +1,42 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildFieldConsumersMd } from '../../scripts/docs/build-field-consumers.mjs';
 import { TARGETS, fieldsOf } from '../../scripts/guards/lib/fieldConsumerTargets.mjs';
 import { listProdFiles, scanFieldReads, fieldOwnership, groupByField } from '../../scripts/guards/lib/fieldConsumers.mjs';
 import { virtualProgram, VIRTUAL_ROOT } from '../../scripts/guards/lib/tsProgram.mjs';
-import { retirerPied } from '../../scripts/docs/lib/empreinte-sources.mjs';
 
 /**
  * Garde du rapport « consommateurs par champ » (#903 — `scripts/docs/build-field-consumers.mts`,
- * `docs/consommateurs-de-champs.md`), en cinq blocs : la fraîcheur du doc généré ; le cas FONDATEUR
- * (`TrappingRef.spec`, #903) en CONTRAT POSITIF `fichier:ligne` sur le dépôt RÉEL ; le CONTRAT
- * POSITIF des champs dont le détecteur au `TypeChecker` (#1620) a recouvré les lecteurs, chacun
- * nommé avec son site ; le CLIQUET NOMINATIF des « 0 lecteur », liste écrite champ par champ et
- * comparée à l'identique (un zéro apparu comme un zéro disparu est rouge, et une ligne ne se retire
- * qu'avec le lecteur qui l'annule) ; et la MORSURE du détecteur sur des fixtures en mémoire
+ * `docs/consommateurs-de-champs.md`), en six blocs : la MORSURE du diagnostic d'écart (`ecartDoc`,
+ * qui nomme la divergence dont vit le bloc DÉTERMINISME) ; le PÉRIMÈTRE de `TARGETS`, où aucune
+ * cible ne rend zéro champ ; le cas FONDATEUR (`TrappingRef.spec`, #903) en CONTRAT POSITIF
+ * `fichier:ligne` sur le dépôt RÉEL ; le DÉTERMINISME cross-OS (ordre total de la liste des racines,
+ * et `.md` byte-identique sur le corpus inversé) ; le CONTRAT POSITIF des champs dont le détecteur
+ * au `TypeChecker` (#1620) a recouvré les lecteurs, chacun nommé avec son site, avec le CLIQUET
+ * NOMINATIF des « 0 lecteur » (un zéro apparu comme un zéro disparu est rouge, et une ligne ne se
+ * retire qu'avec le lecteur qui l'annule) ; et la MORSURE du détecteur sur des fixtures en mémoire
  * (dernier `describe`), où chaque verdict REFUSÉ est asserté autant que chaque verdict accordé.
  */
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
-/** Le rapport, régénéré EN PROCESSUS et mémoïsé : un SEUL scan du corpus nourrit les deux
- *  assertions — fraîcheur du `.md` et cas fondateur. Il coûte ~17 s et ~1,3 Go (Program du dépôt,
- *  1 952 fichiers) : d'où le timeout explicite posé sur le `it` qui le paie. PARESSEUX : payé au
- *  1ᵉʳ `it` qui le demande, jamais à la collecte de vitest. */
+/** Le rapport, régénéré EN PROCESSUS et mémoïsé : un SEUL scan du corpus nourrit toutes les
+ *  assertions qui le lisent (cas fondateur, déterminisme, champs recouvrés, cliquet des « 0 lecteur »).
+ *  Il coûte ~17 s et ~1,3 Go (Program du dépôt, 1 952 fichiers) : d'où les timeouts explicites posés
+ *  sur les `it` qui le paient. PARESSEUX : payé au 1ᵉʳ `it` qui le demande, jamais à la collecte de
+ *  vitest. */
 let _rapport: ReturnType<typeof buildFieldConsumersMd> | null = null;
 const rapport = () => (_rapport ??= buildFieldConsumersMd());
 
 /**
- * L'ÉCART entre le rapport régénéré et le fichier committé, en une phrase — vide = à jour. Quatre
- * cas NOMMÉS, mordus ci-dessous sur des textes forgés : fichier ABSENT ; première ligne qui DIVERGE
- * (cherchée sur le PRÉFIXE COMMUN seul — un `findIndex` sur tout le régénéré rendrait « committé :
- * undefined » dès qu'un texte est plus court que l'autre) ; et, quand un texte est le préfixe de
- * l'autre, la première ligne en SURPLUS avec son côté.
+ * L'ÉCART entre DEUX rendus du rapport, en une phrase — vide = identiques. Trois cas NOMMÉS, mordus
+ * ci-dessous sur des textes forgés : première ligne qui DIVERGE (cherchée sur le PRÉFIXE COMMUN seul
+ * — un `findIndex` sur tout le régénéré rendrait « committé : undefined » dès qu'un texte est plus
+ * court que l'autre) ; et, quand un texte est le préfixe de l'autre, la première ligne en SURPLUS
+ * avec son côté. Les deux textes sont produits EN MÉMOIRE par l'unique appelant (le bloc
+ * DÉTERMINISME) : aucun n'est lu du disque, aucun ne peut manquer.
  */
-export function ecartDoc(regenere: string, committe: string | null): string {
-  if (committe === null) return 'docs/consommateurs-de-champs.md est ABSENT du dépôt';
+export function ecartDoc(regenere: string, committe: string): string {
   const attendues = regenere.split('\n');
   const lues = committe.split('\n');
   const commun = Math.min(attendues.length, lues.length);
@@ -50,63 +51,8 @@ export function ecartDoc(regenere: string, committe: string | null): string {
     : `ligne ${attendues.length + 1} EN TROP au committé : ${JSON.stringify(lues[attendues.length])}`;
 }
 
-/**
- * APERÇU des divergences, borné : jusqu'à `max` lignes qui diffèrent, chacune des DEUX côtés et
- * tronquée à `LARGEUR` — le rapport porte des paragraphes de plusieurs milliers de caractères, et un
- * message d'échec illisible ne nomme rien. Une ligne présente d'un seul côté se dit `<absente>`.
- */
-const LARGEUR = 240;
-const borne = (s: string | undefined) =>
-  s === undefined ? '<absente>' : JSON.stringify(s.length > LARGEUR ? `${s.slice(0, LARGEUR)}…` : s);
-
-export function apercuEcart(regenere: string, committe: string | null, max = 10): string {
-  if (committe === null) return '';
-  const attendues = regenere.split('\n');
-  const lues = committe.split('\n');
-  const total = Math.max(attendues.length, lues.length);
-  const blocs: string[] = [];
-  let restantes = 0;
-  for (let k = 0; k < total; k++) {
-    if (attendues[k] === lues[k]) continue;
-    if (blocs.length >= max) {
-      restantes++;
-      continue;
-    }
-    blocs.push(`l.${k + 1}\n  committé : ${borne(lues[k])}\n  régénéré : ${borne(attendues[k])}`);
-  }
-  if (restantes > 0) blocs.push(`… et ${restantes} autre(s) ligne(s) divergente(s)`);
-  return blocs.join('\n');
-}
-
-describe('docs/consommateurs-de-champs.md — le rapport GÉNÉRÉ est à jour', () => {
-  it('régénéré en mémoire == committé (sinon : npm run docs:field-consumers)', () => {
-    const chemin = join(ROOT, 'docs/consommateurs-de-champs.md');
-    // Le pied « sources-empreinte » est posé APRÈS coup par build-all.mjs (#1679 L1b) : la fraîcheur
-    // se juge sur le CORPS, que le générateur est seul à produire.
-    const committe = existsSync(chemin) ? retirerPied(readFileSync(chemin, 'utf8')) : null;
-    const ecart = ecartDoc(rapport().md, committe);
-    // Un rouge doit NOMMER sa cause : le rapporteur tronque la chaîne comparée par un `toBe`, donc
-    // le MESSAGE porte lui-même la première divergence et l'aperçu borné des suivantes — constat CI
-    // du 2026-09-01 (run 33523707492), où le rouge ne désigne aucune ligne.
-    if (ecart !== '') {
-      expect.fail(
-        'docs/consommateurs-de-champs.md est PÉRIMÉ/ABSENT (les schémas/le code source ont changé)\n' +
-          '  → régénérer via `npm run docs:field-consumers` et committer le résultat.\n' +
-          `${ecart}\n${apercuEcart(rapport().md, committe)}`,
-      );
-    }
-    // 150 s : le corps est SYNCHRONE (vitest ne pourrait pas l'interrompre — il PASSERAIT sous le
-    // `testTimeout` global de 15 s de `vite.config.ts` sans rien dire), et il paie le Program du
-    // dépôt : 15,8 à 26,8 s mesurées le 2026-09-01. Marge ≥ 5× la plus lente — le runner CI Linux
-    // est plus lent que cette machine. Le chiffre se RÉVISE quand la mesure bouge.
-  }, 150_000);
-});
-
-describe('MORSURE du diagnostic de fraîcheur — chaque écart se dit en clair', () => {
+describe('MORSURE du diagnostic d’écart — chaque écart se dit en clair', () => {
   const A = 'a\nb\nc';
-  it('fichier ABSENT', () => {
-    expect(ecartDoc(A, null)).toBe('docs/consommateurs-de-champs.md est ABSENT du dépôt');
-  });
   it('textes IDENTIQUES : aucun écart', () => {
     expect(ecartDoc(A, A)).toBe('');
   });
@@ -118,16 +64,6 @@ describe('MORSURE du diagnostic de fraîcheur — chaque écart se dit en clair'
   });
   it('régénéré PRÉFIXE du committé : la première ligne EN TROP, jamais « ligne 0 »', () => {
     expect(ecartDoc('a\nb', A)).toBe('ligne 3 EN TROP au committé : "c"');
-  });
-
-  it('APERÇU : les DEUX côtés de chaque ligne divergente, les manquantes dites, le reste compté', () => {
-    expect(apercuEcart('a\nb\nc', 'a\nX\nY')).toBe('l.2\n  committé : "X"\n  régénéré : "b"\nl.3\n  committé : "Y"\n  régénéré : "c"');
-    expect(apercuEcart('a\nb', 'a')).toBe('l.2\n  committé : <absente>\n  régénéré : "b"');
-    expect(apercuEcart('x\nx\nx', 'y\ny\ny', 2)).toBe(
-      'l.1\n  committé : "y"\n  régénéré : "x"\nl.2\n  committé : "y"\n  régénéré : "x"\n… et 1 autre(s) ligne(s) divergente(s)',
-    );
-    expect(apercuEcart(`${'z'.repeat(300)}`, 'a')).toContain(`${'z'.repeat(240)}…`);
-    expect(apercuEcart('a', 'a')).toBe('');
   });
 });
 
@@ -182,8 +118,8 @@ describe('cas fondateur #903 — qui lit TrappingRef.spec ?', () => {
       specReaders.some((s: string) => s.includes('data/index.ts')),
       'un lecteur de spec dans `data/index.ts` = une seconde définition du rendu « base (spec) », qui appartient à `refConcrete`',
     ).toBe(false);
-    // Même Program du dépôt que la fraîcheur ci-dessus (mémoïsé) — mais ce `it` le paie SEUL si on
-    // le lance à part (`-t`) : même mesure, donc même marge.
+    // Program du dépôt, mémoïsé entre les `it` — mais celui-ci le paie SEUL s'il est lancé à part
+    // (`-t`) : même mesure, donc même marge.
   }, 150_000);
 });
 
