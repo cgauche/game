@@ -511,3 +511,101 @@ test('portée — une entrée écrite en GABARIT à substitution est vue par l�
   assert.deepEqual(parImage.map((c) => [c.fichier, c.net]), [[f, 2]])
   assert.deepEqual(parImage.map((c) => c.net), parRepli.map((c) => c.net), 'l’image ne voit pas MOINS que le repli')
 })
+
+// ── ARGUMENT D'APPEL : un paramètre n'est pas un stock (#1709 D1) ─────────────────────────────────
+// Trois trains de gates perdus (2026-09-07) sur la même classe : la migration des marches d'arbre
+// vers `readCorpus` écrit `readCorpus(['src/ui'])`, et l'IMAGE y lisait « +1 entrée de stock » —
+// le repli de ligne, lui, n'y voyait rien. Les cliquets payés (`6382c792d`, `cc71eb45c`) NIENT tous
+// leur propre croissance. Le discriminant n'est PAS la position d'argument seule (elle s'obtient
+// en UNE ligne d'enveloppe) : c'est qu'un tel argument ne nomme aucun FICHIER — ce sont des
+// RACINES de scan que l'appelé consomme.
+
+const CORPUS = 'scripts/guards/lib/xCorpus.mjs'
+const entreesA = (lignes) => lignesDe(`${lignes.join('\n')}\n`, CORPUS)
+
+test('argument — le stock RÉEL d’un `const` de module reste compté (contre-preuve)', () => {
+  assert.deepEqual(
+    entreesA(['const X = [', "  'src/a.ts',", "  'src/b.ts',", ']']), [2, 3],
+    'la correction d’argument ne doit rien coûter au cas que la porte existe pour voir',
+  )
+  assert.deepEqual(
+    entreesA(['const X = new Set([', "  'src/a.ts',", "  'src/b.ts',", '])']), [2, 3],
+    '`new Set([ … ])` PREND le littéral pour contenu : c’est un porteur',
+  )
+  assert.deepEqual(
+    entreesA(['export const X = Object.freeze([', "  'src/a.ts',", '])']), [2],
+    '`Object.freeze` est transparent : la liaison porte bien le littéral',
+  )
+})
+
+// L'ASYMÉTRIE, écrite ici pour qu'elle ne se découvre pas : la MÊME liste de racines compte
+// au module et ne compte pas en argument. C'est la ligne « un stock de DOSSIERS passé en ARGUMENT est
+// hors de vue » de l'en-tête de `stocksNominatifs.mjs`.
+test('argument — la même liste de RACINES : comptée au module, exempte en argument', () => {
+  const R = ["  'src/ui',", "  'src/state',"]
+  assert.deepEqual(entreesA(['const R = [', ...R, ']']), [2, 3], 'au module, une racine est une entrée')
+  assert.deepEqual(entreesA(['const R = registre([', ...R, '])']), [], 'en argument, elle ne l’est plus')
+})
+
+test('argument — une liste de RACINES passée à un APPEL n’est une entrée à aucun niveau', () => {
+  for (const [nom, lignes] of Object.entries({
+    'appel nu': ["readCorpus(['src/ui'])"],
+    'appel lié à un const de module': ["const SHEETS = readCorpus(['src/ui/styles'], { exts: ['.css'] })"],
+    'appel imbriqué': ["const X = f(g(['src/ui', 'src/gameIso']))"],
+    'argument multiligne': ['const X = readCorpus([', "  'src/ui',", "  'src/gameIso',", '])'],
+  })) {
+    assert.deepEqual(entreesA(lignes), [], nom)
+  }
+})
+
+// SONDE DU JUGE DE DIFF (2026-09-07), promue en contrat : exempter TOUT argument ouvrait un
+// contournement d'UNE ligne — la classe que `lignesLocales` refuse nommément (« un stock reste un
+// stock, quelle que soit la façade qui le sert »). Dès qu'un FICHIER est nommé, la façade ne protège
+// rien. Le repli de ligne compte 2 sur chacune de ces formes : l'image ne doit pas voir moins.
+test('argument — sept FAÇADES d’une ligne ne cachent pas un stock qui NOMME des fichiers', () => {
+  const E = ["  'src/a.ts',", "  'src/b.ts',"]
+  for (const [nom, lignes] of Object.entries({
+    'défaut exporté': ['export default defineStock([', ...E, '])'],
+    'fabrique': ['export const X = registre([', ...E, '])'],
+    'Array.from': ['export const X = Array.from([', ...E, '])'],
+    'concat': ['export const X = [].concat([', ...E, '])'],
+    'identité': ['export const X = id([', ...E, '])'],
+    'gel d’une fabrique': ['export const X = Object.freeze(registre([', ...E, ']))'],
+    'objet en argument': ['export const X = table({', "  'src/a.ts': 1,", "  'src/b.ts': 2,", '})'],
+  })) {
+    assert.deepEqual(entreesA(lignes), [2, 3], nom)
+  }
+})
+
+// FRONTIÈRE mesurée : un ÉLÉMENT de stock qui nomme son fichier À TRAVERS un appel reste une
+// entrée — `scripts/test/run.test.mjs:69` (`node: [abs('src/i18n/labels.test.ts'), …]`) et
+// `scripts/hooks/settings-guard-canaux.test.mjs:27` (`[join(REPO, '.claude', 'settings.json'), …]`)
+// sont des stocks nominatifs à part entière. La règle porte sur le PORTEUR en position d'argument :
+// il n'est exempt que s'il ne nomme AUCUN fichier — un élément qui en nomme un le rend porteur.
+test('argument — un ÉLÉMENT de stock qui nomme son fichier via un appel reste une entrée', () => {
+  assert.deepEqual(
+    entreesA(['const X = [', "  abs('src/a.test.ts'),", "  join(R, '.claude', 'settings.json'),", ']']),
+    [2, 3],
+  )
+})
+
+test('argument — une flèche à corps CONCIS qui APPELLE ne compte rien, mais son littéral NU compte', () => {
+  assert.deepEqual(
+    entreesA(["const ecranFiles = () => readCorpus(['src/ui', 'src/gameIso']);"]), [],
+    'le littéral est l’argument de `readCorpus`, pas le stock que la flèche rend',
+  )
+  assert.deepEqual(
+    entreesA(['export const stock = () => [', "  'src/a.ts',", ']']), [2],
+    'la flèche qui rend le littéral LUI-MÊME reste de portée module (enveloppe d’une ligne, 2026-09-04)',
+  )
+})
+
+test('argument — la forme VÉCUE, dans un `describe` comme au module, ne compte rien', () => {
+  const boucle = "for (const { rel, text } of readCorpus(['src/ui'])) {"
+  assert.deepEqual(entreesA([boucle, '  void rel; void text;', '}']), [], 'au niveau du module')
+  assert.deepEqual(
+    entreesA(["describe('x', () => {", `  ${boucle}`, '    void rel; void text;', '  }', '})']), [],
+    'dans un corps de `describe`',
+  )
+  assert.equal(estEntreeDeStock(boucle), false, 'le repli de ligne ne l’a jamais vue : c’est l’IMAGE qui la voyait')
+})

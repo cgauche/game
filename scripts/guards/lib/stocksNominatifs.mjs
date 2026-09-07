@@ -15,6 +15,11 @@
 //
 // DÉFINITION. Un PORTEUR est un littéral de TABLEAU ou d'OBJET atteignable depuis une liaison de
 // MODULE — `export const X = …`, `const X = …` de module, IIFE, fonction déclarée puis exportée.
+// Un ARGUMENT qui ne nomme AUCUN FICHIER est un PARAMÈTRE, pas un porteur : c'est une liste de
+// RACINES que l'appelé consomme (`readCorpus(['src/ui', 'src/gameIso'])`). Dès qu'un fichier y est
+// nommé (extension, ou `fichier:ligne`), le littéral RESTE un porteur quelle que soit la façade —
+// `defineStock([ … ])`, `registre([ … ])`, `Array.from([ … ])`, `Object.freeze([ … ])`,
+// `new Set([ … ])` : même refus qu’en TÊTE de `lignesLocales`, un stock reste un stock.
 // Une ENTRÉE vit à la ligne de son PREMIER caractère, et se lit ainsi :
 //   · un ÉLÉMENT de tableau est une entrée si son sous-arbre nomme un fichier — un objet élément
 //     compris —, et l'on n'y descend jamais ;
@@ -54,6 +59,19 @@
 //     `hors-modal-intent-path.test.ts`) compte comme un stock : la condition de porteur est un
 //     CHEMIN, et une ligne de mapping de plus dans une lib de garde se DÉCLARE par `CLIQUET:` comme
 //     toute autre croissance ;
+//   · un stock de DOSSIERS passé en ARGUMENT est HORS DE VUE, et c'est le prix payé pour cesser de
+//     compter une marche d'arbre migrée : `registre(['src/ui', 'src/state'])` écrit au module ne
+//     rend aucune entrée, là où `const R = ['src/ui', 'src/state']` en rend deux. Le REPLI de ligne,
+//     lui, ne les voit dans aucun des deux cas. Ce qui a fait la frontière : la ligne
+//     `for (const { rel, text } of readCorpus(['src/ui']))` de `6382c792d` et les quatre
+//     `readCorpus([ … ])` de `cc71eb45c` ont coûté trois runs de gates et cinq cliquets qui NIENT
+//     leur propre croissance (« aucun stock ne grandit ») ;
+//   · un ARGUMENT qui NOMME un fichier reste compté : les sept façades d'une ligne de la sonde du
+//     juge (2026-09-07) — `defineStock`, `registre`, `Array.from`, `[].concat`, identité,
+//     `Object.freeze(registre([ … ]))`, `table({ 'src/a.ts': 1 })` — rendent chacune leurs entrées ;
+//   · une flèche à corps CONCIS reste de portée MODULE (`export const stock = () => [ … ]`) : c'est
+//     l'une des trois enveloppes d'une ligne mesurées le 2026-09-04, et la traiter en corps de
+//     fonction rouvrirait ce contournement ;
 //   · les porteurs en `.mts` sont hors périmètre — aucun n'en porte aujourd'hui (mesuré : les 65
 //     `.mts` de `scripts/guards/lib/` sont tous des `.d.mts` générés, et aucun `.mts` de `scripts/`
 //     ne porte 3 entrées littérales) ; le jour où il en naît un, cette liste l'accueille.
@@ -81,6 +99,13 @@ const NOM_NU = String.raw`[\w.-]+\.(?:ts|tsx|mjs|mts|json|md|css)`;
 const JETON = String.raw`['"\`](?:${CHEMIN}|${NOM_NU})(?::[\w.|:-]+)?(?:\s+\/\/\s*[^'"\`]*)?['"\`]`;
 /** Le MÊME jeton, sur le TEXTE d'un littéral de chaîne déjà déquoté par l'AST. */
 const NOMME = new RegExp(String.raw`^(?:${CHEMIN}|${NOM_NU})(?::[\w.|:-]+)?(?:\s+\/\/\s*[^'"\`]*)?$`);
+
+/** Le même jeton, resserré sur ce qui nomme un FICHIER : un chemin qui porte une EXTENSION (suivie
+ *  au besoin de `:ligne`/`:symbole`), ou un nom de fichier nu. `'src/ui'`, `'src/ui/styles'`,
+ *  `'scripts/migrations'` n'en sont pas : ce sont des RACINES de scan. Ce motif ne sert QU'À décider
+ *  si un littéral en position d'ARGUMENT reste un porteur — partout ailleurs, `NOMME` fait foi. */
+const CHEMIN_FICHIER = String.raw`(?:src|scripts|docs)\/[^'"\`\s]*\.(?:ts|tsx|mjs|mts|json|md|css)`;
+const NOMME_FICHIER = new RegExp(String.raw`^(?:${CHEMIN_FICHIER}|${NOM_NU})(?::[\w.|:-]+)?(?:\s+\/\/\s*[^'"\`]*)?$`);
 
 /**
  * Une ENTRÉE littérale de stock, DEUX formes — la ligne entière fait foi dans les deux cas :
@@ -172,19 +197,19 @@ export function porteeDeModule(source, chemin) {
 
 /** Le sous-arbre porte-t-il un littéral de chaîne qui NOMME un fichier ? La CLÉ d'une propriété en
  *  fait partie : c'est elle que porte le registre `AUTO_RESOLUS` (`'criticals.json': …`). */
-function nommeUnFichier(ts, node) {
+function nommeUnFichier(ts, node, motif = NOMME) {
   let vu = false;
   const visiter = (n) => {
     if (vu) return;
     if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) {
-      if (NOMME.test(n.text)) vu = true;
+      if (motif.test(n.text)) vu = true;
       return;
     }
     // Gabarit à SUBSTITUTION (`` `src/${n}.test.ts` ``) : sa tête suffit à le nommer. La ligne, elle,
     // est bien vue par le REPLI — ne juger que les littéraux nus rendait l'image AVEUGLE là où la
     // lecture de secours voyait (mesuré : 2 entrées comptées par le repli, 0 par l'image).
     if (ts.isTemplateExpression(n)) {
-      if (NOMME.test(n.head.text) || NOMME.test(texteDeGabarit(ts, n))) vu = true;
+      if (motif.test(n.head.text) || motif.test(texteDeGabarit(ts, n))) vu = true;
       return;
     }
     ts.forEachChild(n, visiter);
@@ -197,6 +222,25 @@ function nommeUnFichier(ts, node) {
  *  qui reste est ce que l'auteur a écrit en dur, et c'est là que vit le chemin. */
 function texteDeGabarit(ts, node) {
   return [node.head.text, ...node.templateSpans.map((s) => s.literal.text)].join('');
+}
+
+/**
+ * Le littéral est-il un PARAMÈTRE d'appel ? — un argument qui ne nomme AUCUN fichier. Alors ce n'est
+ * pas un porteur : c'est une liste de RACINES que l'appelé consomme (`readCorpus(['src/ui'])`), et
+ * la compter faisait payer un cliquet à une marche d'arbre migrée.
+ *
+ * La position d'argument NE SUFFIT PAS à exempter : sinon `defineStock(['src/a.ts', 'src/b.ts'])`,
+ * `registre([ … ])`, `Array.from([ … ])`, `[].concat([ … ])`, `table({ 'src/a.ts': 1 })` cachaient un
+ * stock derrière UNE ligne — la classe que la règle refuse déjà nommément (« un stock reste un stock,
+ * quelle que soit la façade qui le sert », `lignesLocales` ci-dessus ; sonde du juge de diff,
+ * 2026-09-07 : sept façades à zéro entrée). Dès qu'un FICHIER est nommé dans l'argument, il reste
+ * porteur, quelle que soit la façade — gel, construction, identité ou n'importe quel appelé.
+ */
+function estParametreDAppel(ts, node) {
+  const parent = node.parent;
+  if (!parent || !ts.isCallExpression(parent)) return false;
+  if (!(parent.arguments ?? []).some((a) => a === node)) return false;
+  return !nommeUnFichier(ts, node, NOMME_FICHIER);
 }
 
 /** La CLÉ d'une propriété, telle qu'écrite, ou `null` si elle est calculée. */
@@ -223,7 +267,7 @@ export function entreesDeStock(source, chemin) {
   const lignes = new Set();
   const litteral = (n) => n && (ts.isArrayLiteralExpression(n) || ts.isObjectLiteralExpression(n));
   const parcourir = (node) => {
-    if (!litteral(node) || locales.has(ligneDe(node))) {
+    if (!litteral(node) || locales.has(ligneDe(node)) || estParametreDAppel(ts, node)) {
       ts.forEachChild(node, parcourir);
       return;
     }

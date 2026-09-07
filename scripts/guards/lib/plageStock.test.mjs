@@ -148,3 +148,74 @@ test('un lecteur injecté qui rend `null` (objet absent) ne lève AUCUNE indispo
   assert.equal(vu.indisponible, null)
   assert.match(vu.notes.join(' '), /plage `aaaaaaa\.\.bbbbbbb` illisible/)
 })
+
+// #1709 D1 — la classe qui a coûté TROIS runs de gates (2026-09-07) : la migration des marches
+// d'arbre vers `readCorpus` (`6382c792d`, `cc71eb45c`) écrit un tableau de RACINES en ARGUMENT
+// d'appel, et la plage le refusait comme « STOCK NOMINATIF qui GRANDIT ». Un argument est un
+// paramètre. Le témoin de non-cécité est dans le même test : le stock RÉEL, lui, refuse toujours.
+test('C : un tableau de RACINES passé en ARGUMENT ne fait grandir aucun stock, un vrai stock si', () => {
+  const marche = [
+    "import { readCorpus } from '../guards/lib/sourceCorpus.mjs'",
+    "const SHEETS = readCorpus(['src/ui/styles'], { exts: ['.css'] })",
+    "for (const { rel } of readCorpus(['src/ui'])) { void rel }",
+  ].join('\n')
+  const { repo, shas } = depotJetable([
+    { contenu: '// socle\n', message: 'socle' },
+    { contenu: `// socle\n${marche}\n`, message: 'marche migrée, SANS cliquet' },
+    { contenu: `// socle\n${marche}\n${sourceStock([A, B])}`, message: 'deux exemptions, SANS cliquet' },
+  ])
+  try {
+    assert.deepEqual(
+      croissancesDeLaPlage({ cwd: repo, avant: shas[0], apres: shas[1] }).refus, [],
+      'trois arguments d’appel : aucune entrée de stock',
+    )
+    const { refus } = croissancesDeLaPlage({ cwd: repo, avant: shas[1], apres: shas[2] })
+    assert.deepEqual(
+      refus.map((r) => [r.sha, r.fichier, r.net]), [[shas[2], PORTEUR, 2]],
+      'le stock RÉEL reste vu — sans quoi la correction serait une cécité',
+    )
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+// ÉQUIVALENCE DES DEUX VOIES. Le garde de solde (au commit, images de l'arbre de travail) et la
+// porte de plage (au push, images `git show <sha>:<f>`) doivent rendre le MÊME compte sur le MÊME
+// contenu : c'est leur divergence APPARENTE qui a fait payer des cliquets mensongers.
+test('équivalence — solde au commit et plage au push comptent la même chose', async (t) => {
+  const { diffDuCommit, evaluateStocksQuiGrandissent } = await import('../../hooks/solde-ticket-guard.mjs')
+  const porteur = PORTEUR
+  const cas = {
+    'argument d’appel': ["const S = readCorpus(['src/ui'])"],
+    'stock de module': ['const S = [', "  'src/a.ts',", "  'src/b.ts',", ']'],
+  }
+  for (const [nom, ajout] of Object.entries(cas)) {
+    const { racine } = instanceDeDepot({ fichiers: { [porteur]: '// socle\n' }, message: 'socle' })
+    const gitDe = (...args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    try {
+      writeFileSync(join(racine, porteur), `// socle\n${ajout.join('\n')}\n`, 'utf8')
+      gitDe('add', '-A')
+      const commande = 'git commit -m "test: sans cliquet"'
+      const lectures = diffDuCommit(commande, racine)
+      const auCommit = evaluateStocksQuiGrandissent({
+        command: commande,
+        diff: lectures.fichier(porteur),
+        images: { lirePostImage: lectures.contenu, lirePreImage: lectures.avant },
+      })
+      const base = gitDe('rev-parse', 'HEAD').trim()
+      gitDe('commit', '-q', '--no-verify', '-m', 'test: sans cliquet')
+      const auPush = croissancesDeLaPlage({ cwd: racine, avant: base, apres: gitDe('rev-parse', 'HEAD').trim() })
+      assert.equal(auPush.indisponible, null, `${nom} : plage illisible`)
+      assert.equal(
+        auCommit === null, auPush.refus.length === 0,
+        `${nom} : les deux voies divergent — commit ${auCommit ? 'refuse' : 'passe'}, push ${auPush.refus.length ? 'refuse' : 'passe'}`,
+      )
+      const attenduRefus = nom === 'stock de module'
+      assert.equal(auPush.refus.length > 0, attenduRefus, `${nom} : verdict de plage`)
+      if (attenduRefus) assert.equal(auPush.refus[0].net, 2, `${nom} : compte de plage`)
+    } finally {
+      rmSync(racine, { recursive: true, force: true })
+    }
+  }
+  t.diagnostic('deux voies, deux cas, même verdict')
+})
