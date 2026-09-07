@@ -8,9 +8,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
-import { tmpdir } from 'node:os'
+import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { fraicheurDesGenerateurs, motifRejeuComplet, SOURCES_LUES } from './build-all.mjs'
@@ -60,18 +60,17 @@ function signer(racine, script) {
 
 /** Dépôt jetable : deux sources, deux docs signés, un manuscrit, et le dérivé des sources mesurées. */
 function depot() {
-  const racine = mkdtempSync(path.join(tmpdir(), 'check-cible-'))
+  const { racine } = instanceDeDepot({
+    commit: false,
+    fichiers: {
+      'src/a.ts': 'export const a = 1\n',
+      'src/b.ts': 'export const b = 1\n',
+      [DOC_A]: '# a\n',
+      [DOC_B]: '# b\n',
+      'MANUSCRIT.md': '# manuscrit\n',
+    },
+  })
   const git = (...args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8' })
-  git('init', '-q')
-  git('config', 'user.email', 'test@local')
-  git('config', 'user.name', 'test')
-  mkdirSync(path.join(racine, 'docs'))
-  mkdirSync(path.join(racine, 'src'))
-  writeFileSync(path.join(racine, 'src', 'a.ts'), 'export const a = 1\n')
-  writeFileSync(path.join(racine, 'src', 'b.ts'), 'export const b = 1\n')
-  writeFileSync(path.join(racine, 'docs', 'a.md'), '# a\n')
-  writeFileSync(path.join(racine, 'docs', 'b.md'), '# b\n')
-  writeFileSync(path.join(racine, 'MANUSCRIT.md'), '# manuscrit\n')
   signer(racine, 'g/a.mjs')
   signer(racine, 'g/b.mjs')
   writeFileSync(

@@ -4,13 +4,13 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   fermeturesDeLaPlage, decisionPour, marqueDe, commitsDeLaPlage, soldeDuCommit,
   avertissementRapportee, motifDePlageIllisible,
 } from './fermer-depuis-main.mjs'
+import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 
 test('un ticket cité par plusieurs commits est rattaché au PREMIER qui le cite', () => {
   const r = fermeturesDeLaPlage([
@@ -45,16 +45,9 @@ test('une issue déjà fermée ailleurs s’AVERTIT : le job ne rougit pas sur u
 })
 
 test('plage dont la BASE est inatteignable : erreur NOMMÉE, jamais une exception brute de git', () => {
-  const depot = mkdtempSync(join(tmpdir(), 'wfrp-plage-'))
+  const { racine: depot, sha: base } = instanceDeDepot({ fichiers: { 'a.txt': 'a' }, message: 'base' })
   try {
     const git = (...args) => execFileSync('git', args, { cwd: depot, encoding: 'utf8' })
-    git('init', '-q', '-b', 'main')
-    git('config', 'user.email', 'test@example.invalid')
-    git('config', 'user.name', 'test')
-    git('config', 'core.hooksPath', 'hooks-absents')
-    writeFileSync(join(depot, 'a.txt'), 'a')
-    git('add', '-A'); git('commit', '-q', '-m', 'base')
-    const base = git('rev-parse', 'HEAD').trim()
     writeFileSync(join(depot, 'a.txt'), 'b')
     git('add', '-A'); git('commit', '-q', '-m', 'suite')
     const tete = git('rev-parse', 'HEAD').trim()
@@ -68,16 +61,9 @@ test('plage dont la BASE est inatteignable : erreur NOMMÉE, jamais une exceptio
 })
 
 test('la plage se lit dans l’histoire, et le solde est celui que le COMMIT emporte', () => {
-  const depot = mkdtempSync(join(tmpdir(), 'wfrp-fermer-'))
+  const { racine: depot, sha: base } = instanceDeDepot({ fichiers: { 'a.txt': 'a' }, message: 'base' })
   try {
     const git = (...args) => execFileSync('git', args, { cwd: depot, encoding: 'utf8' })
-    git('init', '-q', '-b', 'main')
-    git('config', 'user.email', 'test@example.invalid')
-    git('config', 'user.name', 'test')
-    git('config', 'core.hooksPath', 'hooks-absents')
-    writeFileSync(join(depot, 'a.txt'), 'a')
-    git('add', '-A'); git('commit', '-q', '-m', 'base')
-    const base = git('rev-parse', 'HEAD').trim()
     mkdirSync(join(depot, '.claude', 'soldes'), { recursive: true })
     writeFileSync(join(depot, '.claude', 'soldes', '42.md'), 'VERIFIE: le solde emporté\n')
     writeFileSync(join(depot, 'a.txt'), 'b')

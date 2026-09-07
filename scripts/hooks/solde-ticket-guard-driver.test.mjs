@@ -11,6 +11,7 @@ import { spawnSync, execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const GUARD = join(REPO, 'scripts', 'hooks', 'solde-ticket-guard.mjs')
@@ -66,17 +67,9 @@ test('DRIVER : un -F introuvable est fail-CLOSED (jamais un silence)', () => {
 // se juge contre l'HISTOIRE GIT du répertoire où le commit s'exécute. On monte un dépôt réel, on y
 // pose un commit qui touche UN fichier, et on fait citer par le solde un fichier qu'il ne touche pas.
 test('DRIVER : « corrigé par <sha> » est confronté à l\'histoire git RÉELLE du dépôt cible', () => {
-  const repo = mkdtempSync(join(tmpdir(), 'solde-histoire-'))
+  const { racine: repo } = instanceDeDepot({ fichiers: { 'src/touche.ts': 'export const a = 1\n' }, message: 'socle' })
   try {
     const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
-    git('init', '-q')
-    git('config', 'user.email', 'sonde@test')
-    git('config', 'user.name', 'sonde')
-    git('config', 'commit.gpgsign', 'false')
-    mkdirSync(join(repo, 'src'), { recursive: true })
-    writeFileSync(join(repo, 'src', 'touche.ts'), 'export const a = 1\n', 'utf8')
-    git('add', 'src/touche.ts')
-    git('commit', '-q', '--no-verify', '-m', 'socle')
     const sha = git('rev-parse', '--short=8', 'HEAD').trim()
 
     const aujourdhui = new Date()
@@ -113,18 +106,10 @@ test('DRIVER : « corrigé par <sha> » est confronté à l\'histoire git RÉELL
 // Stock nominatif qui grandit : la règle vit dans `scripts/guards/lib/stocksNominatifs.mjs`, mais
 // c'est le DRIVER qui lui apporte l'index du dépôt cible et le message — ce câblage-là se teste ici.
 test('DRIVER : un stock nominatif qui GRANDIT dans l\'index est refusé, sauf CLIQUET au message', () => {
-  const repo = mkdtempSync(join(tmpdir(), 'solde-stock-'))
+  const { racine: repo } = instanceDeDepot({ fichiers: { 'src/state/exemptions.test.ts': 'export const STOCK = [\n]\n' }, message: 'socle' })
   try {
     const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
-    git('init', '-q')
-    git('config', 'user.email', 'sonde@test')
-    git('config', 'user.name', 'sonde')
-    git('config', 'commit.gpgsign', 'false')
-    mkdirSync(join(repo, 'src', 'state'), { recursive: true })
     const stock = join(repo, 'src', 'state', 'exemptions.test.ts')
-    writeFileSync(stock, 'export const STOCK = [\n]\n', 'utf8')
-    git('add', 'src/state/exemptions.test.ts')
-    git('commit', '-q', '--no-verify', '-m', 'socle')
 
     writeFileSync(stock, ["export const STOCK = [", "  'src/state/combatFlow.ts',", "  'src/ui/RollShell.tsx',", ']', ''].join('\n'), 'utf8')
     git('add', 'src/state/exemptions.test.ts')
@@ -151,19 +136,11 @@ test('DRIVER : un stock nominatif qui GRANDIT dans l\'index est refusé, sauf CL
 // modifié suivi : sans `git add`, le garde ne lisait qu'un index VIDE et se taisait. C'est par là
 // que la croissance de stock de `429b9a1a2` est passée (cause prouvée par sonde le 2026-09-03).
 test('DRIVER : les TROIS formes de commit sont jugées sur ce qu\'elles emportent, sans `git add`', () => {
-  const repo = mkdtempSync(join(tmpdir(), 'solde-forme-'))
+  const chemin = 'scripts/guards/lib/xStock.mjs'
+  const { racine: repo } = instanceDeDepot({ fichiers: { [chemin]: 'export const STOCK = [\n]\n' }, message: 'socle' })
   try {
     const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
-    git('init', '-q')
-    git('config', 'user.email', 'sonde@test')
-    git('config', 'user.name', 'sonde')
-    git('config', 'commit.gpgsign', 'false')
-    mkdirSync(join(repo, 'scripts', 'guards', 'lib'), { recursive: true })
-    const chemin = 'scripts/guards/lib/xStock.mjs'
     const stock = join(repo, chemin)
-    writeFileSync(stock, 'export const STOCK = [\n]\n', 'utf8')
-    git('add', chemin)
-    git('commit', '-q', '--no-verify', '-m', 'socle')
 
     // La croissance vit dans l'ARBRE DE TRAVAIL et NULLE PART dans l'index.
     writeFileSync(stock, ["export const STOCK = [", "  'src/state/combatFlow.ts',", "  'src/ui/RollShell.tsx',", ']', ''].join('\n'), 'utf8')
@@ -191,19 +168,11 @@ test('DRIVER : les TROIS formes de commit sont jugées sur ce qu\'elles emporten
 
 /** Dépôt jetable portant un stock VIDE commité, et de quoi le faire grandir. */
 function depotAStock() {
-  const repo = mkdtempSync(join(tmpdir(), 'solde-forme-'))
-  const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
-  git('init', '-q')
-  git('config', 'user.email', 'sonde@test')
-  git('config', 'user.name', 'sonde')
-  git('config', 'commit.gpgsign', 'false')
-  mkdirSync(join(repo, 'scripts', 'guards', 'lib'), { recursive: true })
   const chemin = 'scripts/guards/lib/xStock.mjs'
   const vide = 'export const STOCK = [\n]\n'
   const plein = ["export const STOCK = [", "  'src/state/combatFlow.ts',", "  'src/ui/RollShell.tsx',", ']', ''].join('\n')
-  writeFileSync(join(repo, chemin), vide, 'utf8')
-  git('add', chemin)
-  git('commit', '-q', '--no-verify', '-m', 'socle')
+  const { racine: repo } = instanceDeDepot({ fichiers: { [chemin]: vide }, message: 'socle' })
+  const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
   return { repo, git, chemin, vide, plein }
 }
 
@@ -245,18 +214,10 @@ test('DRIVER : `-m"ajoute…"` collé ne se lit pas comme un `-a` — l\'index s
 // Le SOLDE lu doit être celui que le commit EMPORTE : sous un commit par pathspec, un solde stagé
 // hors pathspec ne part PAS (git y prend HEAD). Lire l'index validait une preuve absente du commit.
 test('DRIVER : un solde stagé HORS pathspec ne vaut pas preuve — le refus dit pourquoi', () => {
-  const repo = mkdtempSync(join(tmpdir(), 'solde-emporte-'))
+  const { racine: repo } = instanceDeDepot({ fichiers: { 'src/x.ts': 'export const a = 1\n' }, message: 'socle' })
   try {
     const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
-    git('init', '-q')
-    git('config', 'user.email', 'sonde@test')
-    git('config', 'user.name', 'sonde')
-    git('config', 'commit.gpgsign', 'false')
     mkdirSync(join(repo, '.claude', 'soldes'), { recursive: true })
-    mkdirSync(join(repo, 'src'), { recursive: true })
-    writeFileSync(join(repo, 'src', 'x.ts'), 'export const a = 1\n', 'utf8')
-    git('add', '-A')
-    git('commit', '-q', '--no-verify', '-m', 'socle')
     writeFileSync(
       join(repo, '.claude', 'soldes', '4242.md'),
       ['# solde #4242', 'VERIFIE: la sonde a rejoué le geste et lu la sortie du garde de bout en bout',
@@ -283,18 +244,9 @@ test('DRIVER : un solde stagé HORS pathspec ne vaut pas preuve — le refus dit
 
 // Volet ANCÊTRE de la même disposition : un sha qui n'est dans AUCUNE histoire de ce dépôt.
 test('DRIVER : « corrigé par <sha> » dont le commit n\'existe pas dans le dépôt cible → refus', () => {
-  const repo = mkdtempSync(join(tmpdir(), 'solde-ancetre-'))
+  const { racine: repo } = instanceDeDepot({ fichiers: { 'src/touche.ts': 'export const a = 1\n' }, message: 'socle' })
   try {
     const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
-    git('init', '-q')
-    git('config', 'user.email', 'sonde@test')
-    git('config', 'user.name', 'sonde')
-    git('config', 'commit.gpgsign', 'false')
-    mkdirSync(join(repo, 'src'), { recursive: true })
-    writeFileSync(join(repo, 'src', 'touche.ts'), 'export const a = 1\n', 'utf8')
-    git('add', 'src/touche.ts')
-    git('commit', '-q', '--no-verify', '-m', 'socle')
-
     const d = new Date()
     const jour = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
     mkdirSync(join(repo, '.claude', 'soldes'), { recursive: true })

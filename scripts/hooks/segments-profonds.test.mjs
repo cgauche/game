@@ -13,11 +13,12 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { Buffer } from 'node:buffer'
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, posix, resolve, win32 } from 'node:path'
+import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import {
   segmentsProfonds,
   pipelinesProfonds,
@@ -255,21 +256,15 @@ test('extractTargetDir : `git -C` prime sur `cd`, et sans ni l\'un ni l\'autre l
   assert.equal(extractTargetDir('git commit -m x', base, 'linux'), base)
 })
 
-/** Dépôt jetable avec un worktree : le driver s'y joue comme dans un arbre réel. */
+/** Dépôt jetable avec un worktree LIÉ, posé DANS l'instance : le driver s'y joue comme dans un arbre
+ *  réel — `.gitignore` compris, qui y tient le rôle de l'entrée `.wt-` du dépôt (.gitignore:57) et
+ *  garde l'arbre principal PROPRE. */
 function depotAvecWorktree() {
-  const base = mkdtempSync(join(tmpdir(), 'palier-'))
-  const principal = join(base, 'principal')
-  const worktree = join(base, 'wt')
-  mkdirSync(principal)
+  const { racine: principal } = instanceDeDepot({ fichiers: { 'a.txt': 'a', '.gitignore': '/wt/\n' }, message: 'racine' })
+  const worktree = join(principal, 'wt')
   const git = (cwd, ...args) => execFileSync('git', args, { cwd, stdio: ['ignore', 'pipe', 'ignore'] })
-  git(principal, 'init', '-q')
-  git(principal, 'config', 'user.email', 'test@test')
-  git(principal, 'config', 'user.name', 'test')
-  writeFileSync(join(principal, 'a.txt'), 'a')
-  git(principal, 'add', 'a.txt')
-  git(principal, 'commit', '-q', '-m', 'racine')
   git(principal, 'worktree', 'add', '-q', worktree)
-  return { base, principal, worktree }
+  return { base: principal, principal, worktree }
 }
 
 // ── Driver : le JSON rendu au hook ────────────────────────────────────────────────────────────────

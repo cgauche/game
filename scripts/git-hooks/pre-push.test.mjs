@@ -7,10 +7,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import {
   cheminJustificatifs,
   clesDeContenu,
@@ -38,27 +38,18 @@ function ecrire(racine, rel, texte) {
 }
 
 /** Dépôt jetable : deux gates au `ci.yml` (`npm test`, `npm run typecheck`), un origin conforme. */
-function depot() {
-  const racine = mkdtempSync(join(tmpdir(), 'pre-push-'))
-  const g = git(racine)
-  g(['init', '--initial-branch=main'])
-  g(['config', 'user.email', 'mesure@example.invalid'])
-  g(['config', 'user.name', 'mesure'])
-  g(['remote', 'add', 'origin', 'https://github.com/cgauche/game.git'])
-  ecrire(
-    racine,
-    '.github/workflows/ci.yml',
-    ['jobs:', '  build:', '    steps:', '      - run: npm ci', '      - run: npm test', '      - run: npm run typecheck', ''].join('\n'),
-  )
-  ecrire(racine, 'src/a.ts', 'export const a = 1\n')
-  ecrire(racine, DOC_A, 'doc\n')
-  g(['add', '-A'])
-  g(['commit', '-m', 'fondation'])
-  // `origin/main` : la RÉFÉRENCE de fraîcheur de la porte. Sans elle, la CI est « non consultable »
-  // — ce qui est le verdict juste, mais pas celui que ces cas-là mesurent.
-  g(['update-ref', 'refs/remotes/origin/main', g(['rev-parse', 'HEAD'])])
-  return racine
-}
+const depot = () =>
+  instanceDeDepot({
+    fichiers: {
+      '.github/workflows/ci.yml': ['jobs:', '  build:', '    steps:', '      - run: npm ci', '      - run: npm test', '      - run: npm run typecheck', ''].join('\n'),
+      'src/a.ts': 'export const a = 1\n',
+      [DOC_A]: 'doc\n',
+    },
+    origin: 'https://github.com/cgauche/game.git',
+    // `origin/main` : la RÉFÉRENCE de fraîcheur de la porte. Sans elle, la CI est « non consultable »
+    // — ce qui est le verdict juste, mais pas celui que ces cas-là mesurent.
+    refs: { 'refs/remotes/origin/main': 'HEAD' },
+  }).racine
 
 const jeter = (racine) => rmSync(racine, { recursive: true, force: true })
 
@@ -542,24 +533,17 @@ test('l’URL d’origine acceptée : https et ssh du dépôt du projet, rien d�
 // un commit qui change ces entrées (classe de l'incident 17926d5de) ; une gate qui ne les lit pas,
 // si. Le `ci.yml` de ce dépôt-là joue les deux familles.
 test('une gate qui lit docs/ n’est PAS réutilisée après un commit docs/ ; les autres le sont', () => {
-  const racine = mkdtempSync(join(tmpdir(), 'trou-cle-'))
+  const { racine, sha: shaA } = instanceDeDepot({
+    fichiers: {
+      '.github/workflows/ci.yml': ['jobs:', '  build:', '    steps:', '      - run: npm run docs:check', '      - run: npm run lint', ''].join('\n'),
+      'src/a.ts': 'export const a = 1\n',
+      [['docs', 'raw', 'combat.md'].join('/')]: 'Atlas v1\n',
+    },
+    origin: 'https://github.com/cgauche/game.git',
+    refs: { 'refs/remotes/origin/main': 'HEAD' },
+  })
   const g = git(racine)
   try {
-    g(['init', '--initial-branch=main'])
-    g(['config', 'user.email', 'mesure@example.invalid'])
-    g(['config', 'user.name', 'mesure'])
-    g(['remote', 'add', 'origin', 'https://github.com/cgauche/game.git'])
-    ecrire(
-      racine,
-      '.github/workflows/ci.yml',
-      ['jobs:', '  build:', '    steps:', '      - run: npm run docs:check', '      - run: npm run lint', ''].join('\n'),
-    )
-    ecrire(racine, 'src/a.ts', 'export const a = 1\n')
-    ecrire(racine, ['docs', 'raw', 'combat.md'].join('/'), 'Atlas v1\n')
-    g(['add', '-A'])
-    g(['commit', '-m', 'fondation'])
-    const shaA = g(['rev-parse', 'HEAD'])
-    g(['update-ref', 'refs/remotes/origin/main', shaA])
     for (const gate of ['docs:check', 'lint']) ecrireJustificatif({ cwd: racine, gate, sha: shaA })
 
     ecrire(racine, ['docs', 'raw', 'combat.md'].join('/'), 'Atlas CASSÉ — référence morte vers src/inexistant.ts\n')

@@ -4,6 +4,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { renameSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { instanceDeDepot } from './depotGabarit.mjs'
 import { listerDossier } from './lister.mjs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -42,19 +43,14 @@ const DOC_A = ['docs', 'a.md'].join('/')
 const git = (cwd) => (args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim()
 
 /** Dépôt jetable : `src/`, `docs/` et `.claude/` peuplés, un premier commit. */
-function depot() {
-  const racine = mkdtempSync(join(tmpdir(), 'justificatif-'))
-  const g = git(racine)
-  g(['init', '--initial-branch=main'])
-  g(['config', 'user.email', 'mesure@example.invalid'])
-  g(['config', 'user.name', 'mesure'])
-  ecrire(racine, 'src/a.ts', 'export const a = 1\n')
-  ecrire(racine, DOC_A, 'doc\n')
-  ecrire(racine, '.claude/memory/a.md', 'fiche\n')
-  g(['add', '-A'])
-  g(['commit', '-m', 'fondation'])
-  return racine
-}
+const depot = () =>
+  instanceDeDepot({
+    fichiers: {
+      'src/a.ts': 'export const a = 1\n',
+      [DOC_A]: 'doc\n',
+      '.claude/memory/a.md': 'fiche\n',
+    },
+  }).racine
 
 function ecrire(racine, rel, texte) {
   mkdirSync(join(racine, dirname(rel)), { recursive: true })

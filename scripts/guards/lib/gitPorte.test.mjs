@@ -10,20 +10,15 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { STATUS_DLL_INIT_FAILED } from './spawnResilient.mjs'
 import { classer, commitsDe, estAncetre, fetchOrigin, lireGit, raisonCourte, sortieOuNull } from './gitPorte.mjs'
+import { instanceDeDepot } from './depotGabarit.mjs'
 
 const ZERO = '0'.repeat(40)
 
 /** Dépôt jetable de DEUX commits : le second AJOUTE `neuf.txt` — la pre-image de ce fichier est le
  *  cas normal de la porte de stock, et c'est un ABSENT, pas une panne. */
 function depot() {
-  const racine = mkdtempSync(join(tmpdir(), 'git-porte-'))
+  const { racine, sha: premier } = instanceDeDepot({ fichiers: { 'a.txt': 'a\n' }, message: 'un' })
   const g = (...a) => execFileSync('git', a, { cwd: racine, encoding: 'utf8' })
-  g('init', '-q', '-b', 'main')
-  g('config', 'user.email', 'sonde@local')
-  g('config', 'user.name', 'Sonde')
-  writeFileSync(join(racine, 'a.txt'), 'a\n')
-  g('add', '-A'); g('commit', '-q', '-m', 'un')
-  const premier = g('rev-parse', 'HEAD').trim()
   writeFileSync(join(racine, 'neuf.txt'), 'n\n')
   g('add', '-A'); g('commit', '-q', '-m', 'deux')
   return { racine, premier, second: g('rev-parse', 'HEAD').trim(), g }

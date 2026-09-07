@@ -11,6 +11,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { evaluate } from './git-destructive-guard.mjs'
+import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 
 const asks = (cmd) => evaluate(cmd) !== null
 const silent = (cmd) => evaluate(cmd) === null
@@ -185,21 +186,15 @@ test('PÉRIMÈTRE DIT : une cible venue de stdin ou d\'un autre programme n\'est
 // n'atteint pas le WIP de l'arbre principal (index privé), et `git clean -fdx` retire le point de
 // reparse d'une jonction `node_modules` sans suivre la jonction.
 
-/** Un dépôt PRINCIPAL (`.git` dossier) et son worktree LIÉ (`.git` fichier), sous `os.tmpdir()`. */
+/** Un dépôt PRINCIPAL (`.git` dossier) et son worktree LIÉ (`.git` fichier) posé dans `<principal>/wt`,
+ *  sous `os.tmpdir()`. Le `.gitignore` y tient le rôle de l'entrée `.wt-` du dépôt (.gitignore:57) :
+ *  un arbre principal qui héberge un worktree reste PROPRE. */
 function deuxArbres() {
-  const base = mkdtempSync(join(tmpdir(), 'destructif-'))
-  const principal = join(base, 'principal')
-  const lie = join(base, 'wt')
+  const { racine: principal } = instanceDeDepot({ fichiers: { 'a.txt': 'v1\n', '.gitignore': '/wt/\n' }, message: 'socle' })
+  const lie = join(principal, 'wt')
   const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
-  execFileSync('git', ['init', '-q', '-b', 'main', principal], { cwd: base, stdio: 'ignore' })
-  git(principal, 'config', 'user.email', 'sonde@test')
-  git(principal, 'config', 'user.name', 'sonde')
-  git(principal, 'config', 'commit.gpgsign', 'false')
-  writeFileSync(join(principal, 'a.txt'), 'v1\n')
-  git(principal, 'add', '-A')
-  git(principal, 'commit', '-q', '--no-verify', '-m', 'socle')
   git(principal, 'worktree', 'add', '-q', lie, '-b', 'chantier')
-  return { base, principal, lie }
+  return { base: principal, principal, lie }
 }
 
 test('D : dans un WORKTREE prouvé par la commande, checkout/restore/reset/clean passent en SILENCE', () => {
@@ -268,15 +263,16 @@ test('D : le canal ctx_shell PROUVE le répertoire par tool_input.cwd', () => {
 })
 
 test('D : `stash` reste ASK dans un worktree — sa pile est PARTAGÉE par tous les arbres', () => {
-  const { base, lie } = deuxArbres()
+  const { base, principal, lie } = deuxArbres()
   try {
-    const commun = execFileSync('git', ['-C', lie, 'rev-parse', '--git-path', 'refs/stash'], { encoding: 'utf8' })
-    const autre = execFileSync('git', ['-C', join(base, 'principal'), 'rev-parse', '--git-path', 'refs/stash'], {
+    // Le dossier git COMMUN est ce qui porte `refs/stash` : deux arbres qui le partagent partagent
+    // la pile. Comparé en ABSOLU des deux côtés — un worktree délié rendrait le sien.
+    const communDe = (cwd) => execFileSync('git', ['-C', cwd, 'rev-parse', '--path-format=absolute', '--git-common-dir'], {
       encoding: 'utf8', cwd: base,
-    })
+    }).trim().replace(/\\/g, '/')
     assert.equal(
-      commun.trim().replace(/\\/g, '/').split('/').slice(-2).join('/'),
-      autre.trim().replace(/\\/g, '/').split('/').slice(-2).join('/'),
+      communDe(lie),
+      communDe(principal),
       'la pile de stash devrait être partagée : sans cela, le `ask` de stash n’aurait plus de raison',
     )
     for (const geste of ['stash pop', 'stash drop', 'stash clear', 'stash apply', 'stash push -m wip']) {
@@ -298,8 +294,11 @@ test('D : FONDEMENT — un `reset --hard` en worktree n’atteint pas le WIP de 
     writeFileSync(join(lie, 'a.txt'), 'WIP-WORKTREE\n')
     execFileSync('git', ['-C', lie, 'reset', '--hard'], { stdio: 'ignore' })
     assert.equal(readFileSync(join(principal, 'a.txt'), 'utf8'), 'WIP-PRINCIPAL\n', 'le WIP du principal a bougé')
-    assert.match(
-      execFileSync('git', ['-C', principal, 'status', '--porcelain'], { encoding: 'utf8' }), /M a\.txt/,
+    assert.deepEqual(
+      execFileSync('git', ['-C', principal, 'status', '--porcelain'], { encoding: 'utf8' })
+        .split('\n').map((l) => l.trim()).filter(Boolean),
+      ['M a.txt'],
+      'l’arbre principal ne porte que SA modification : le worktree hébergé y est ignoré',
     )
   } finally {
     rmSync(base, { recursive: true, force: true })

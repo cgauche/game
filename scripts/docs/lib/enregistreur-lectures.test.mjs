@@ -11,6 +11,7 @@ import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { listerDossier } from '../../guards/lib/lister.mjs'
+import { instanceDeDepot } from '../../guards/lib/depotGabarit.mjs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -105,21 +106,17 @@ test('un fichier AJOUTÉ à un dossier lu change l\'empreinte, sans qu\'aucun co
 
 /** Dépôt jetable : une source, un doc dérivé signé, un `docs/.sources-lues.json`. */
 function depotFixture() {
-  const racine = mkdtempSync(path.join(tmpdir(), 'depot-'))
+  const { racine } = instanceDeDepot({
+    commit: false,
+    fichiers: {
+      'src/source.ts': 'export const x = 1\n',
+      'docs/reprise-apres-pause.md': '# doc\n',
+      'docs/.sources-lues.json': serialiserSourcesLues({
+        'scripts/docs/build-reprise.mjs': { cibles: ['docs/reprise-apres-pause.md'], fichiers: ['src/source.ts'], dossiers: ['src'] },
+      }),
+    },
+  })
   const git = (...args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8' })
-  git('init', '-q')
-  git('config', 'user.email', 'test@local')
-  git('config', 'user.name', 'test')
-  mkdirSync(path.join(racine, 'docs'))
-  mkdirSync(path.join(racine, 'src'))
-  writeFileSync(path.join(racine, 'src', 'source.ts'), 'export const x = 1\n')
-  writeFileSync(path.join(racine, 'docs', 'reprise-apres-pause.md'), '# doc\n')
-  writeFileSync(
-    path.join(racine, 'docs', '.sources-lues.json'),
-    serialiserSourcesLues({
-      'scripts/docs/build-reprise.mjs': { cibles: ['docs/reprise-apres-pause.md'], fichiers: ['src/source.ts'], dossiers: ['src'] },
-    }),
-  )
   return { racine, git }
 }
 

@@ -10,6 +10,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import {
   ATTENTE_VERROU,
   AVANT_LES_LANES,
@@ -280,7 +281,9 @@ test('le coût estimé d’une gate sautée vient du dernier run, ou se dit inco
  * résumé sans payer les vraies gates.
  */
 function depotDeGates(gatesFactices) {
-  const racine = mkdtempSync(join(tmpdir(), 'gates-e2e-'))
+  // Le gabarit est VIDE (donc partagé par tous les cas : les gates factices diffèrent à chaque
+  // appel) ; les fichiers du cas entrent dans le MÊME et unique commit `jetable`.
+  const { racine } = instanceDeDepot({ commit: false })
   const git = (...args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8' })
   mkdirSync(join(racine, '.github', 'workflows'), { recursive: true })
   writeFileSync(
@@ -296,9 +299,6 @@ function depotDeGates(gatesFactices) {
     writeFileSync(join(racine, fichier), g.corps)
   }
   writeFileSync(join(racine, 'package.json'), `${JSON.stringify({ name: 'jetable', version: '0.0.0', scripts }, null, 2)}\n`)
-  git('init', '-q')
-  git('config', 'user.email', 'test@local')
-  git('config', 'user.name', 'test')
   git('add', '-A')
   git('commit', '-qm', 'jetable')
   return { racine, git }

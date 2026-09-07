@@ -4,10 +4,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { soldesSuivis } from './fermetures-non-citees.mjs';
+import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs';
 import {
   CHAMP,
   ENREGISTREMENT,
@@ -163,8 +163,7 @@ test('coursesParCommit : une liste absente ne fait pas tomber la mesure', () => 
 });
 
 test('soldesSuivis lit l’ARBRE qu’on lui donne (un objet de faits ne mélange pas deux arbres)', () => {
-  const depot = mkdtempSync(join(tmpdir(), 'wfrp-soldes-'));
-  execFileSync('git', ['init', '--quiet'], { cwd: depot, stdio: ['ignore', 'ignore', 'ignore'] });
+  const { racine: depot } = instanceDeDepot({ commit: false });
   mkdirSync(join(depot, '.claude', 'soldes'), { recursive: true });
   writeFileSync(join(depot, '.claude', 'soldes', '4242.md'), 'solde de banc\n');
   writeFileSync(join(depot, '.claude', 'soldes', '4243.md'), 'jamais ajouté à l’index\n');

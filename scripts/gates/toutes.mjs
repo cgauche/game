@@ -112,7 +112,7 @@ export const ECRIT_LU = {
     ecrit: [],
     lit: ['src/', 'scripts/ops/', 'scripts/guards/lib/', 'scripts/hooks/', '.claude/workflows/', '.github/workflows/', 'knip-exports-baseline.json'],
     raison:
-      'six modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
+      'sept modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
       '`knip-exports-ratchet.mjs` (`main()` gardé par `import.meta.url === argv[1]`, l.121 ; seul `--sync` ' +
       'écrirait la baseline, l.94-96), `ruleset-evaluate.mjs` (le corps du ruleset part par un fichier de ' +
       'os.tmpdir(), l.90-97), `fermer-depuis-main.test.mjs` (dépôts jetables de os.tmpdir()) et ' +
@@ -123,7 +123,9 @@ export const ECRIT_LU = {
       'workflows RÉELS, et scripts/guards/lib/ par le stock de `fermetures-non-citees.mjs` ; depuis ' +
       '2026-09-04, `faits-de-palier.mjs` écrit le JSON des faits à `--sortie`, sous `os.tmpdir()` par ' +
       'défaut (`sortieParDefaut`), et crée `<git-common-dir>/wfrp-justificatifs/` par `cheminJustificatifs` ' +
-      '— `.git/`, hors de l’arbre ; `faits-de-palier.test.mjs` fabrique un dépôt jetable sous os.tmpdir() ; ' +
+      '— `.git/`, hors de l’arbre ; depuis 2026-09-07 (#1709 B1), `depotGabarit.mjs` fabrique les dépôts ' +
+      'jetables de `fermer-depuis-main.test.mjs` et `faits-de-palier.test.mjs` : ses seules écritures ' +
+      '(`mkdtempSync`, `cpSync`, `rmSync` — depotGabarit.mjs:62,82,99-100) visent `os.tmpdir()` ; ' +
       'LIT .claude/workflows/ (`workflows.test.mjs` les parse, `workflows-joues.test.mjs` les joue) ' +
       'et scripts/hooks/ (`validateRevuePalier` de solde-ticket-guard.mjs), sans rien y écrire',
   },
@@ -134,8 +136,11 @@ export const ECRIT_LU = {
   },
   'test:docs': {
     ecrit: [],
-    lit: ['docs/', '.claude/memory/', 'scripts/docs/'],
-    raison: 'fixtures sous os.tmpdir() ; lit les docs et la mémoire réels (RAISON_CLE_COMPLETE, justificatif.mjs:90)',
+    lit: ['docs/', '.claude/memory/', 'scripts/docs/', 'scripts/guards/lib/'],
+    raison:
+      'fixtures sous os.tmpdir() ; lit les docs et la mémoire réels (RAISON_CLE_COMPLETE, justificatif.mjs:90) ' +
+      'et scripts/guards/lib/ (`check-plans-anchors.test.mjs` lit le code de `lister.mjs` et importe ' +
+      '`depotGabarit.mjs`), sans rien y écrire',
   },
   'deps:unused': {
     ecrit: [],
@@ -277,7 +282,7 @@ export const LANES = [
       'exécution complète (2026-09-04) : typecheck 130 s + lint 74 s + deps 15 s ; avec `build` (105 s) en plus ' +
       'cette lane faisait le mur (342 s contre 192 s pour la suite), d’où son passage dans `docs`. ' +
       '`test:hooks` la rejoint : il ne fait plus AUCUNE écriture d’arbre (registre d’écrans injectable), ' +
-      'et ses 50,5 s mesurées (2026-09-04) portent la somme des gates mesurées de cette lane à 269,5 s — ' +
+      'et ses 36,2 s mesurées (2026-09-07) portent la somme des gates mesurées de cette lane à 255,2 s — ' +
       'sous le mur de la suite (275,1 s)',
   },
   {

@@ -18,6 +18,7 @@ import { fileURLToPath } from 'node:url'
 import { blobsDe, comparer, empreinteDe, fichiersDe, rapportDEcart } from './empreinteRejeu.mjs'
 import { PERIMETRE, mesurerParGit } from '../replay.mjs'
 import { RACINE_DES_EXPORTS, effacerExport, exportsDuProcessus, rejeuSurExport } from '../replay-head.mjs'
+import { instanceDeDepot } from '../../guards/lib/depotGabarit.mjs'
 
 const ICI = dirname(fileURLToPath(import.meta.url))
 
@@ -69,16 +70,9 @@ fs.writeFileSync(f, fs.readFileSync(f));
 
 /** Dépôt jetable : un document du PÉRIMÈTRE, et les migrations demandées. */
 function depot(migrations = {}) {
-  const racine = mkdtempSync(join(tmpdir(), 'rejeu-'))
-  const g = git(racine)
-  g(['init', '--initial-branch=main'])
-  g(['config', 'user.email', 'mesure@example.invalid'])
-  g(['config', 'user.name', 'mesure'])
-  ecrire(racine, 'src/data/props.json', `${JSON.stringify({ props: [] }, null, 2)}\n`)
-  for (const [nom, corps] of Object.entries(migrations)) ecrire(racine, `scripts/migrations/${nom}`, corps)
-  g(['add', '-A'])
-  g(['commit', '-m', 'fondation'])
-  return racine
+  const fichiers = { 'src/data/props.json': `${JSON.stringify({ props: [] }, null, 2)}\n` }
+  for (const [nom, corps] of Object.entries(migrations)) fichiers[`scripts/migrations/${nom}`] = corps
+  return instanceDeDepot({ fichiers, message: 'fondation' }).racine
 }
 
 const jeter = (racine) => rmSync(racine, { recursive: true, force: true })

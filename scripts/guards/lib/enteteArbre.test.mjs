@@ -7,20 +7,17 @@ import { execFileSync } from 'node:child_process'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { instanceDeDepot } from './depotGabarit.mjs'
 import { enteteArbre } from './enteteArbre.mjs'
 
 /** Dépôt jetable d'un commit, propre. */
 function depot() {
-  const racine = mkdtempSync(join(tmpdir(), 'entete-arbre-'))
-  const git = (...a) => execFileSync('git', a, { cwd: racine, encoding: 'utf8' })
-  git('init', '-q', '-b', 'principale')
-  git('config', 'user.email', 'sonde@local')
-  git('config', 'user.name', 'Sonde')
-  git('config', 'commit.gpgsign', 'false')
-  writeFileSync(join(racine, 'a.txt'), 'a\n')
-  git('add', 'a.txt')
-  git('commit', '-q', '-m', 'sujet du dernier commit')
-  return { racine, git }
+  const { racine } = instanceDeDepot({
+    fichiers: { 'a.txt': 'a\n' },
+    branche: 'principale',
+    message: 'sujet du dernier commit',
+  })
+  return { racine, git: (...a) => execFileSync('git', a, { cwd: racine, encoding: 'utf8' }) }
 }
 
 test('arbre PROPRE : sha court, sujet du dernier commit, zéro fichier non committé', () => {

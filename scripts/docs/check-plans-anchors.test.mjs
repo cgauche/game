@@ -9,16 +9,21 @@
 // Lancé par `npm run test:docs`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, writeFileSync, copyFileSync, rmSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
-import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 
 const ICI = dirname(fileURLToPath(import.meta.url))
 const GARDE = join(ICI, 'check-plans-anchors.mjs')
 /** Libs que la garde importe en RELATIF : le dépôt jetable doit les porter au même chemin. */
 const LIBS = [['scripts', 'guards', 'lib', 'lister.mjs']]
+/** La garde et ses libs, LUES : le dépôt jetable les porte aux mêmes chemins relatifs. */
+const CODE_DE_LA_GARDE = {
+  'scripts/docs/check-plans-anchors.mjs': readFileSync(GARDE, 'utf8'),
+  ...Object.fromEntries(LIBS.map((parts) => [parts.join('/'), readFileSync(join(ICI, '..', ...parts.slice(1)), 'utf8')])),
+}
 
 const git = (base, ...args) => {
   const r = spawnSync('git', args, { cwd: base, encoding: 'utf8' })
@@ -34,17 +39,9 @@ const ecrire = (base, rel, texte) => {
 /** Dépôt jetable : la garde y est COPIÉE (elle se résout par `git rev-parse --show-toplevel`, donc
  *  elle juge le dépôt courant, pas celui d'où elle vient). */
 function depot(fichiers = {}) {
-  const base = mkdtempSync(join(tmpdir(), 'plans-anchors-'))
-  git(base, 'init', '-q')
-  git(base, 'config', 'user.email', 'garde@test')
-  git(base, 'config', 'user.name', 'Garde')
-  git(base, 'config', 'commit.gpgsign', 'false')
-  mkdirSync(join(base, 'scripts', 'docs'), { recursive: true })
-  copyFileSync(GARDE, join(base, 'scripts', 'docs', 'check-plans-anchors.mjs'))
-  for (const parts of LIBS) {
-    mkdirSync(join(base, ...parts.slice(0, -1)), { recursive: true })
-    copyFileSync(join(ICI, '..', ...parts.slice(1)), join(base, ...parts))
-  }
+  // Le gabarit ne porte que le code de la garde (INVARIANT, donc partagé par tous les cas) ; les
+  // fichiers du cas entrent dans le MÊME et unique commit `socle` que l'histoire jugée attend.
+  const { racine: base } = instanceDeDepot({ fichiers: CODE_DE_LA_GARDE, commit: false })
   for (const [rel, texte] of Object.entries(fichiers)) ecrire(base, rel, texte)
   git(base, 'add', '-A')
   git(base, 'commit', '-q', '-m', 'socle')

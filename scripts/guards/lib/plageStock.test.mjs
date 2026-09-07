@@ -5,10 +5,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { refusDeLaPlage, raisonDeRefusDePlage, croissancesDeLaPlage, SHA_NUL } from './plageStock.mjs'
+import { instanceDeDepot } from './depotGabarit.mjs'
 
 const PORTEUR = 'scripts/x.test.mjs'
 
@@ -68,15 +69,12 @@ test('C : un commit du MILIEU sans cliquet est refusé, et le refus le NOMME', (
 
 /** Dépôt jetable où chaque élément de `commits` pose une version du porteur et son message. */
 function depotJetable(commits) {
-  const repo = mkdtempSync(join(tmpdir(), 'plage-'))
+  const [fondation, ...suite] = commits
+  assert.ok(fondation, 'depotJetable : le premier commit FONDE le dépôt — `commits` ne peut pas être vide')
+  const { racine: repo, sha } = instanceDeDepot({ fichiers: { [PORTEUR]: fondation.contenu }, message: fondation.message })
   const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
-  git('init', '-q', '-b', 'main')
-  git('config', 'user.email', 'sonde@test')
-  git('config', 'user.name', 'sonde')
-  git('config', 'commit.gpgsign', 'false')
-  mkdirSync(join(repo, 'scripts'), { recursive: true })
-  const shas = []
-  for (const { contenu, message } of commits) {
+  const shas = [sha]
+  for (const { contenu, message } of suite) {
     writeFileSync(join(repo, PORTEUR), contenu, 'utf8')
     git('add', '-A')
     git('commit', '-q', '--no-verify', '-m', message)

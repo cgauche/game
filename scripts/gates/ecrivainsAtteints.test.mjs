@@ -40,6 +40,11 @@ const ATTENDU = {
     // courses CI écrivent leurs fixtures (dépôts jetables, fichiers de stub) sous `os.tmpdir()` —
     // l'arbre n'est jamais touché.
     'scripts/guards/lib/coursesCi.test.mjs',
+    // +2 le 2026-09-07 (#1709 B1) : la fixture de dépôt jetable est devenue une source unique ; le
+    // gabarit et ses instances vivent sous `os.tmpdir()` (`mkdtempSync` + `cpSync`), l'arbre n'est
+    // jamais écrit — même mesure que les fixtures qu'elle remplace.
+    'scripts/guards/lib/depotGabarit.mjs',
+    'scripts/guards/lib/depotGabarit.test.mjs',
     'scripts/guards/lib/enteteArbre.test.mjs',
     'scripts/guards/lib/gitPorte.test.mjs',
     'scripts/guards/lib/importGraph.test.mjs',
@@ -79,6 +84,9 @@ const ATTENDU = {
   'test:ops': [
     // +1 le 2026-09-04 : `pushes-justifies.mjs` LIT les justificatifs de gate, donc atteint le module
     // qui les écrit ; ses écritures visent `<git-common-dir>/wfrp-justificatifs/`, hors de l'arbre.
+    // +1 le 2026-09-07 (#1709 B1) : `fermer-depuis-main.test.mjs` et `faits-de-palier.test.mjs`
+    // prennent leurs dépôts jetables à la fixture partagée, qui n'écrit que sous `os.tmpdir()`.
+    'scripts/guards/lib/depotGabarit.mjs',
     'scripts/guards/lib/justificatif.mjs',
     // +2 le 2026-09-04 (#1679 L2bis) : `faits-de-palier.mjs` écrit le JSON des faits (`--sortie`,
     // défaut sous os.tmpdir()) pour qu'un workflow n'ait pas à le recopier dans chaque prompt, et son
@@ -100,6 +108,9 @@ const ATTENDU = {
     'scripts/docs/build-all.mjs',
     'scripts/docs/check-plans-anchors.test.mjs',
     'scripts/docs/lib/empreinte-sources.mjs',
+    // +1 le 2026-09-07 (#1709 B1) : `build-all-check.test.mjs` et `check-plans-anchors.test.mjs`
+    // prennent leurs dépôts jetables à la fixture partagée, qui n'écrit que sous `os.tmpdir()`.
+    'scripts/guards/lib/depotGabarit.mjs',
   ],
   'deps:unused': [],
   'test:recette': ['scripts/recette/lib.mjs'],

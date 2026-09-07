@@ -56,6 +56,7 @@ import {
   archivesDe, derniereRevueArchivee, fenetreDeRevue, mesureDuPalier, nomDArchiveDeRevue, nomsDArchiveAcceptes,
   revuesNeuves,
 } from '../guards/lib/revuePalier.mjs'
+import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 
 const TODAY = '2026-07-14'
 const VERIFIE_OK = 'VERIFIE: relu le diff complet, lancé npm test et vérifié les 3 fichiers touchés à la main.'
@@ -540,12 +541,8 @@ test('evaluate : palier INMESURABLE -> deny nomme, jamais un silence qui laisse 
 // -- La MESURE, sur un depot JETABLE ---------------------------------------------------------------
 /** Depot jetable : la revue s'y ecrit DIRECTEMENT sous son nom d'archive, comme dans le dispositif. */
 function depotAvecRevues() {
-  const depot = mkdtempSync(join(tmpdir(), 'palier-mesure-'))
+  const { racine: depot, sha: racine } = instanceDeDepot({ fichiers: { 'scripts/racine.txt': 'racine' }, message: 'racine' })
   const git = (...args) => execFileSync('git', args, { cwd: depot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
-  git('init', '-q', '-b', 'main')
-  git('config', 'user.email', 'test@example.invalid')
-  git('config', 'user.name', 'test')
-  git('config', 'core.hooksPath', 'hooks-absents')
   mkdirSync(join(depot, '.claude', 'soldes'), { recursive: true })
   const commit = (marque, dossier = 'scripts') => {
     mkdirSync(join(depot, dossier), { recursive: true })
@@ -554,7 +551,6 @@ function depotAvecRevues() {
     git('commit', '-q', '-m', marque)
     return git('rev-parse', 'HEAD').trim()
   }
-  const racine = commit('racine')
   /** Ecrit la revue sous SON nom d'archive (elle nait archivee) et rend son chemin relatif. */
   const poser = (base, tete) => {
     const contenu = `# PALIER (${TODAY})\n\nverdict: CONFIRMÉ\n${'A'.repeat(90)}\n\n\`${base}..${tete}\`\n`
@@ -822,17 +818,8 @@ test('analyzeDiffDuCommit : lit le numstat TEL QUEL, sans second filtrage de che
 })
 
 test('analyzeDiffDuCommit : `git commit -- .` — le lot borné par git est vu ENTIER', () => {
-  const repo = mkdtempSync(join(tmpdir(), 'point-'))
+  const { racine: repo } = instanceDeDepot({ fichiers: { 'src/a.ts': 'export const a = 1\n' }, message: 'socle' })
   try {
-    const git = (...args) => execFileSync('git', args, { cwd: repo, stdio: ['ignore', 'pipe', 'ignore'] })
-    git('init', '-q')
-    git('config', 'user.email', 'sonde@test')
-    git('config', 'user.name', 'sonde')
-    git('config', 'commit.gpgsign', 'false')
-    mkdirSync(join(repo, 'src'), { recursive: true })
-    writeFileSync(join(repo, 'src', 'a.ts'), 'export const a = 1\n', 'utf8')
-    git('add', '-A')
-    git('commit', '-q', '--no-verify', '-m', 'socle')
     writeFileSync(join(repo, 'src', 'a.ts'), 'export const a = 2\n', 'utf8')
     for (const ps of ['.', './', 'src', ':/']) {
       const r = analyzeDiffDuCommit(diffDuCommit(`git commit -m "x" -- ${ps}`, repo).numstat())
@@ -1589,18 +1576,10 @@ test('evaluate : ni index ni disque → "fichier absent" (jamais le message de s
 // stagé est emporté par un commit d'index, PAS par un commit qui nomme d'autres chemins (git y prend
 // HEAD). Lire l'index dans tous les cas validait une preuve qui ne partait pas (sonde 2026-09-04).
 test('diffDuCommit.contenu : le solde EMPORTÉ suit la forme — index oui, hors pathspec non', () => {
-  const repo = mkdtempSync(join(tmpdir(), 'solde-guard-index-'))
+  const { racine: repo } = instanceDeDepot({ fichiers: { 'src/x.ts': 'export const a = 1\n' }, message: 'socle' })
   try {
     const git = (...args) => execFileSync('git', args, { cwd: repo, stdio: ['ignore', 'pipe', 'ignore'] })
-    git('init', '-q')
-    git('config', 'user.email', 'sonde@test')
-    git('config', 'user.name', 'sonde')
-    git('config', 'commit.gpgsign', 'false')
     mkdirSync(join(repo, '.claude', 'soldes'), { recursive: true })
-    mkdirSync(join(repo, 'src'), { recursive: true })
-    writeFileSync(join(repo, 'src', 'x.ts'), 'export const a = 1\n', 'utf8')
-    git('add', '-A')
-    git('commit', '-q', '--no-verify', '-m', 'socle')
     writeFileSync(join(repo, '.claude', 'soldes', '77.md'), 'solde-77-stage', 'utf8')
     writeFileSync(join(repo, '.claude', 'soldes', '78.md'), 'solde-78-disque', 'utf8')
     git('add', '--force', '.claude/soldes/77.md')
@@ -2080,17 +2059,9 @@ test('fichiersDuCommitGit : un RENOMMAGE rend les deux chemins NUS, jamais « {a
   // Mesuré sur 26be12347 : `.claude/soldes/revue-palier.md` renommée en `revue-palier-2205fde51.md`.
   // Sans `--no-renames`, `git show --numstat` rend UNE ligne agrégée qu'aucun chemin cité n'égale —
   // un solde JUSTE était refusé.
-  const repo = mkdtempSync(join(tmpdir(), 'solde-renommage-'))
+  const { racine: repo } = instanceDeDepot({ fichiers: { 'src/ancien.ts': 'export const a = 1\n'.repeat(20) }, message: 'socle' })
   try {
     const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
-    git('init', '-q')
-    git('config', 'user.email', 'sonde@test')
-    git('config', 'user.name', 'sonde')
-    git('config', 'commit.gpgsign', 'false')
-    mkdirSync(join(repo, 'src'), { recursive: true })
-    writeFileSync(join(repo, 'src', 'ancien.ts'), 'export const a = 1\n'.repeat(20), 'utf8')
-    git('add', '-A')
-    git('commit', '-q', '--no-verify', '-m', 'socle')
     execFileSync('git', ['mv', 'src/ancien.ts', 'src/nouveau.ts'], { cwd: repo, stdio: 'ignore' })
     git('commit', '-q', '--no-verify', '-am', 'renomme')
     const sha = git('rev-parse', 'HEAD').trim()
