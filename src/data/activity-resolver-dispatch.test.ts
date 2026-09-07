@@ -13,13 +13,9 @@
  * elle ne peut pas manquer un vrai zéro, elle peut être trop indulgente. C'est le sens utile ici.
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { ACTIVITY_RESOLVERS, RESOLVER_OWNER, type ActivityResolver } from '../engine/activities';
-
-const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/data/ → ../../ = racine
 
 /** Fichiers qui DÉFINISSENT le vocabulaire (l'y citer n'est pas le consommer). */
 const DEFINITION_FILES = new Set([
@@ -30,19 +26,6 @@ const DEFINITION_FILES = new Set([
 /** Mot HORS vocabulaire, forgé au runtime pour les fixtures de MORSURE — jamais un membre réel, dont
  *  le zéro consommateur serait un vrai défaut. */
 const MOT_FORGE = 'resolveurQuiNExistePas' as ActivityResolver;
-
-function sourceFiles(): string[] {
-  const out: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(p) && !/\.test\.[tj]sx?$/.test(p)) out.push(p);
-    }
-  };
-  walk(join(ROOT, 'src'));
-  return out;
-}
 
 /** Littéraux de chaîne d'un source (nœuds AST — ni commentaires, ni prose de gabarit). */
 export function stringLiteralsOf(relPath: string, contenu: string): Set<string> {
@@ -85,10 +68,7 @@ export function consumersByResolver(
 let consumersMemo: Map<ActivityResolver, string[]> | undefined;
 function consommateursReels(): Map<ActivityResolver, string[]> {
   return (consumersMemo ??= consumersByResolver(
-    sourceFiles().map((f) => ({
-      rel: relative(ROOT, f).split('\\').join('/'),
-      contenu: readFileSync(f, 'utf8'),
-    })),
+    readCorpus(['src']).map(({ rel, text }) => ({ rel, contenu: text })),
     ACTIVITY_RESOLVERS,
   ));
 }

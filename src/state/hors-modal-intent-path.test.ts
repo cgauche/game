@@ -16,8 +16,9 @@
  * qu'une route porte de nouveau sur un verbe que personne n'émet.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { useGame, type BattleState } from './store';
 import { initialFields } from './stateFields';
 import { intentAllowedFor, withActingSeat, seatOwns, ROUTES } from './netOwnership';
@@ -321,19 +322,7 @@ const EMISSION: Record<string, { parUI: true } | { interne: string; dans: string
 };
 
 /** Sources d'ÉCRAN (hors fichiers de test) : `src/ui` + `src/gameIso`. */
-function ecranSources(): string[] {
-  const out: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir, { withFileTypes: true })) {
-      const p = join(dir, e.name);
-      if (e.isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) out.push(readFileSync(p, 'utf8'));
-    }
-  };
-  walk(join(process.cwd(), 'src', 'ui'));
-  walk(join(process.cwd(), 'src', 'gameIso'));
-  return out;
-}
+const ecranSources = (): string[] => readCorpus(['src/ui', 'src/gameIso']).map(({ text }) => text);
 
 /** Surfaces VIVANTES d'une entrée du registre : une case de console (site d'appel `cellFor('<id>')`
  *  ou `data-action="<id>"`), le bandeau d'interlude que la console rend depuis le registre, ou une

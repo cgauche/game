@@ -1,30 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Garde STRUCTURELLE (#1117) — une classe `rm-*` posée dans le markup DOIT avoir une règle CSS.
  * Une classe sans règle ne fait rien : soit le style manque (le rendu ment sur son intention),
  * soit le `className` est mort. Les deux se corrigent, aucun ne se tolère.
  */
-function walk(dir: string, acc: string[] = []): string[] {
-  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    const p = path.join(dir, e.name);
-    if (e.isDirectory()) walk(p, acc);
-    else acc.push(p);
-  }
-  return acc;
-}
-
-const files = walk(path.join(process.cwd(), 'src'));
-const css = files.filter((f) => f.endsWith('.css')).map((f) => fs.readFileSync(f, 'utf8')).join('\n');
+const css = readCorpus(['src'], { exts: ['.css'], tests: true }).map(({ text }) => text).join('\n');
 
 describe('classes rm-* — aucune classe fantôme', () => {
   const used = new Map<string, string>();
-  for (const f of files.filter((f) => /\.tsx?$/.test(f) && !/\.test\./.test(f))) {
-    const t = fs.readFileSync(f, 'utf8');
-    for (const m of t.matchAll(/className="([^"{}]+)"/g))
-      for (const c of m[1].split(/\s+/)) if (c.startsWith('rm-') && !used.has(c)) used.set(c, path.relative(process.cwd(), f));
+  for (const { rel, text } of readCorpus(['src'])) {
+    for (const m of text.matchAll(/className="([^"{}]+)"/g))
+      for (const c of m[1].split(/\s+/)) if (c.startsWith('rm-') && !used.has(c)) used.set(c, rel);
   }
 
   it('mesure un stock non vide (la garde ne peut pas être vide par accident)', () => {

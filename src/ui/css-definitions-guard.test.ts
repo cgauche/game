@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Garde STRUCTURELLE — ce qu'une feuille CONSOMME doit être DÉFINI quelque part dans l'arbre.
@@ -9,15 +8,6 @@ import path from 'node:path';
  * nulle part (la propriété tombe à sa valeur non résolue). Aucune des deux ne casse un build, aucune
  * ne se voit en test unitaire de composant : elles se voient ICI, ou à l'œil, des mois plus tard.
  */
-function walk(dir: string, acc: string[] = []): string[] {
-  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    const p = path.join(dir, e.name);
-    if (e.isDirectory()) walk(p, acc);
-    else acc.push(p);
-  }
-  return acc;
-}
-
 /**
  * Retire les commentaires d'un source TS avant le scan des `--x` POSÉS par le code : une mention en
  * PROSE (`// la gouttière lit --af-pulse`) ne pose aucune variable et ne doit blanchir personne.
@@ -27,13 +17,8 @@ function stripCodeComments(src: string): string {
   return src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
 }
 
-const root = process.cwd();
-const files = walk(path.join(root, 'src'));
-const cssFiles = files.filter((f) => f.endsWith('.css'));
-const cssTexts = cssFiles.map((f) => [path.relative(root, f), fs.readFileSync(f, 'utf8')] as const);
-const codeTexts = files
-  .filter((f) => /\.tsx?$/.test(f) && !/\.test\./.test(f))
-  .map((f) => stripCodeComments(fs.readFileSync(f, 'utf8')));
+const cssTexts = readCorpus(['src'], { exts: ['.css'], tests: true }).map(({ rel, text }) => [rel, text] as const);
+const codeTexts = readCorpus(['src']).map(({ text }) => stripCodeComments(text));
 
 /** Retire commentaires puis appels de fonction (`cubic-bezier(…)`, `steps(…)`) d'une valeur. */
 function strip(value: string): string {
@@ -109,7 +94,7 @@ describe('CSS — toute consommation a sa définition', () => {
   it('le scan VOIT un cas RÉEL de chaque famille (non-vacuité nominative)', () => {
     // Témoin d'ANIMATION et témoin de VARIABLE, tous deux dans la même feuille : le scan les nomme,
     // donc il regarde bien les deux consommations.
-    expect(animUsed.get('reveal-timer-drain')).toBe(path.join('src', 'ui', 'styles', 'combat-ui.css'));
-    expect(varsUsed.get('--chip-malus-bg')).toBe(path.join('src', 'ui', 'styles', 'combat-ui.css'));
+    expect(animUsed.get('reveal-timer-drain')).toBe('src/ui/styles/combat-ui.css');
+    expect(varsUsed.get('--chip-malus-bg')).toBe('src/ui/styles/combat-ui.css');
   });
 });

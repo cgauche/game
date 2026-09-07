@@ -18,21 +18,7 @@
  * NOMMÉS, pas une preuve d'absence ailleurs.
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { join, relative } from 'node:path';
-
-const RACINE = fileURLToPath(new URL('../', import.meta.url));
-
-/** Fichiers de PRODUCTION de `src` — ni test, ni golden. */
-function fichiersProd(dir: string, out: string[] = []): string[] {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) { if (e !== '__snapshots__') fichiersProd(p, out); }
-    else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) out.push(p);
-  }
-  return out;
-}
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /** Le source SANS ses commentaires : une réf ou une explication n'est pas un site de conversion. */
 const sansCommentaire = (s: string): string =>
@@ -83,11 +69,10 @@ const SITES: readonly { fichier: string; texte: string; role: string }[] = [
 describe('échelle de la scène — les sites de traduction mètres ⇄ cases sont NOMMÉS', () => {
   const mesures = (): { fichier: string; texte: string }[] => {
     const out: { fichier: string; texte: string }[] = [];
-    for (const f of fichiersProd(RACINE)) {
-      const lignes = sansCommentaire(readFileSync(f, 'utf8')).split('\n');
-      for (const l of lignes) {
+    for (const { rel, text } of readCorpus(['src'])) {
+      for (const l of sansCommentaire(text).split('\n')) {
         if (!DIVISION.test(l) && !RECOPIE.test(l)) continue;
-        out.push({ fichier: relative(RACINE, f).split('\\').join('/'), texte: l.trim() });
+        out.push({ fichier: rel.slice('src/'.length), texte: l.trim() });
       }
     }
     return out;

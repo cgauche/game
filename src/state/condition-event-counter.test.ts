@@ -11,11 +11,7 @@
  * aucun site nouveau ne peut apparaître (fichier absent de la liste = 0 toléré).
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const ROOT = fileURLToPath(new URL('../../', import.meta.url));
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /** Stock RESTANT par fichier. Aucun de ces sites n'a d'id d'État sous la main : ils déversent des
  *  `string[]` fabriqués ailleurs (sinks de hooks/triggers, files différées). Leur migration attend que
@@ -34,24 +30,14 @@ const REMAINING: Record<string, number> = {
   'src/gameIso/combatNarration.test.ts': 1,
 };
 
-function walk(dir: string, out: string[] = []): string[] {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) walk(p, out);
-    else if (/\.tsx?$/.test(p)) out.push(p);
-  }
-  return out;
-}
-
 /** Le recensement s'EXCLUT lui-même : sa prose cite la forme qu'il traque (elle se compterait). */
 const SELF = 'src/state/condition-event-counter.test.ts';
 
 function census(): Record<string, number> {
   const found: Record<string, number> = {};
-  for (const p of walk(join(ROOT, 'src'))) {
-    const rel = relative(ROOT, p).replace(/\\/g, '/');
+  for (const { rel, text } of readCorpus(['src'], { tests: true })) {
     if (rel === SELF) continue;
-    const n = (readFileSync(p, 'utf8').match(/ev\('condition'/g) ?? []).length;
+    const n = (text.match(/ev\('condition'/g) ?? []).length;
     if (n > 0) found[rel] = n;
   }
   return found;

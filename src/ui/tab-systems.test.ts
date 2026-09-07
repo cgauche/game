@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Cliquet de COMPTE #288/#314 : les 5 systèmes d'onglets CSS historiques (`.port-tabs`, `.zone-tabs`,
@@ -12,17 +10,11 @@ import { fileURLToPath } from 'node:url';
  * d'onglets se compose avec la primitive telle quelle, jamais un CSS à part ni une variante réintroduite.
  */
 
-const UI = fileURLToPath(new URL('.', import.meta.url)); // src/ui/
-
-function walk(dir: string, test: (f: string) => boolean, acc: string[] = []): string[] {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) walk(p, test, acc);
-    else if (test(e)) acc.push(p);
-  }
-  return acc;
-}
-const rel = (abs: string) => abs.slice(UI.length).split('\\').join('/');
+/** Tout `src/ui`, tests compris — une CLÉ de corpus pour les deux volets, filtrée par extension
+ *  au site qui mesure. */
+const FICHIERS_UI = () => readCorpus(['src/ui'], { exts: ['.css', '.tsx'], tests: true });
+const rel = (r: string) => r.slice('src/ui/'.length);
+const nom = (r: string) => r.slice(r.lastIndexOf('/') + 1);
 
 /** Sélecteurs de classe `.xxxtabs`/`.xxx-tabs` (SUFFIXE littéral `tabs`) définis dans un fichier CSS —
  *  le nom de la primitive canonique `.tabs` ne matche PAS ce motif (trop court : voir cliquet ci-dessous). */
@@ -37,11 +29,10 @@ function tabsSuffixSelectors(src: string): string[] {
 
 describe('#288/#314 — cliquet DÉCROISSANT des systèmes d’onglets CSS (baseline zéro)', () => {
   it('aucune classe `.xxx-tabs` (les 5 anciens systèmes sont morts, fusionnés dans <Tabs>)', () => {
-    const files = walk(UI, (e) => e.endsWith('.css'));
     const offenders: string[] = [];
-    for (const f of files) {
-      const src = readFileSync(f, 'utf8');
-      for (const cls of new Set(tabsSuffixSelectors(src))) offenders.push(`${rel(f)} → .${cls}`);
+    for (const { rel: r, text } of FICHIERS_UI()) {
+      if (!r.endsWith('.css')) continue;
+      for (const cls of new Set(tabsSuffixSelectors(text))) offenders.push(`${rel(r)} → .${cls}`);
     }
     expect(
       offenders,
@@ -50,11 +41,10 @@ describe('#288/#314 — cliquet DÉCROISSANT des systèmes d’onglets CSS (base
   });
 
   it('`role="tablist"` : SEUL `Tabs.tsx` en pose un (pas de tablist hand-roulé parallèle)', () => {
-    const files = walk(UI, (e) => e.endsWith('.tsx') && e !== 'Tabs.tsx');
     const offenders: string[] = [];
-    for (const f of files) {
-      const src = readFileSync(f, 'utf8');
-      if (/role=["']tablist["']/.test(src)) offenders.push(rel(f));
+    for (const { rel: r, text } of FICHIERS_UI()) {
+      if (!r.endsWith('.tsx') || nom(r) === 'Tabs.tsx') continue;
+      if (/role=["']tablist["']/.test(text)) offenders.push(rel(r));
     }
     expect(offenders, 'role="tablist" hors de la primitive <Tabs> — composer <Tabs> au lieu de recoder un tablist :\n' + offenders.join('\n')).toEqual([]);
   });

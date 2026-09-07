@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { skills } from '../data';
 import { CHAR_LABELS } from '../engine/types';
 import { fr } from '../i18n/messages/fr';
@@ -22,8 +20,6 @@ import { fr } from '../i18n/messages/fr';
  * libellés à tiret d'`activities.json` (`semer-dissension-*`) sont de contexte `interlude`, qui
  * n'atteint pas ce slot.
  */
-
-const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 
 /** Les deux signes RÉSERVÉS du libellé composé : parenthèse (compétence dérivée) et tiret long
  *  (séparateur acteur/action). La ponctuation restante n'est PAS traquée ici — un nom de règle cité
@@ -60,21 +56,11 @@ const ACTION_LABEL_STOCK: { file: string; text: string }[] = [
   { file: 'src/state/seaVoyageFlow.ts', text: 'Dégagement — ${label}' },
 ];
 
-function walk(dir: string, acc: string[] = []): string[] {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) walk(p, acc);
-    else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) acc.push(p);
-  }
-  return acc;
-}
-
 describe('CLIQUET — le libellé d’ACTION d’un jet ne porte ni parenthèse ni tiret long (#1078)', () => {
   it('aucun libellé d’action hors stock ne porte un signe réservé', () => {
     const offenders: string[] = [];
-    for (const f of walk(join(ROOT, 'src'))) {
-      const rel = relative(ROOT, f).split('\\').join('/');
-      for (const h of scanActionLabels(readFileSync(f, 'utf8'))) {
+    for (const { rel, text } of readCorpus(['src'])) {
+      for (const h of scanActionLabels(text)) {
         if (ACTION_LABEL_STOCK.some((s) => s.file === rel && s.text === h.text)) continue;
         offenders.push(`${rel}:${h.line} — « ${h.text} »`);
       }
@@ -173,9 +159,8 @@ const ROLL_LABEL_SITUATION_PLAFOND = 2;
 describe('CLIQUET — un `rollLabel` nomme la COMPÉTENCE, pas la situation (#1109)', () => {
   const situationSites = (): string[] => {
     const out: string[] = [];
-    for (const f of walk(join(ROOT, 'src', 'state'))) {
-      const rel = relative(ROOT, f).split('\\').join('/');
-      for (const h of scanRollLabels(readFileSync(f, 'utf8'))) out.push(`${rel}:${h.line} — « ${h.text} »`);
+    for (const { rel, text } of readCorpus(['src/state'])) {
+      for (const h of scanRollLabels(text)) out.push(`${rel}:${h.line} — « ${h.text} »`);
     }
     return out;
   };
@@ -257,13 +242,12 @@ describe('CLIQUET — le libellé d’une LIGNE de jet nomme la Compétence lanc
   // PÉRIMÈTRE ÉTENDU (#1117) : le FABRICANT de rangées-participants vit dans `src/ui`
   // (`buildParticipantRows`) et dérivait son libellé d'un `part.label` CALCULÉ — il échappait donc au
   // scan des littéraux de `src/state`. Le trou est celui-là : on scanne les deux couches.
-  const files = () => [...walk(join(ROOT, 'src', 'state')), ...walk(join(ROOT, 'src', 'ui'))];
+  const files = () => readCorpus(['src/state', 'src/ui']);
 
   it('aucun libellé de ligne LITTÉRAL qui ne soit une Compétence/Caractéristique du catalogue', () => {
     const bad: string[] = [];
-    for (const f of files()) {
-      const rel = relative(ROOT, f).split(sep).join('/');
-      for (const h of scanRollLineLabels(readFileSync(f, 'utf8'))) {
+    for (const { rel, text } of files()) {
+      for (const h of scanRollLineLabels(text)) {
         if (h.computed || isCompetenceLabel(h.text)) continue;
         bad.push(`${rel}:${h.line} — « ${h.text} »`);
       }
@@ -273,9 +257,8 @@ describe('CLIQUET — le libellé d’une LIGNE de jet nomme la Compétence lanc
 
   it('aucun libellé de ligne RÉSOLU depuis le catalogue des rôles d’équipage (crew-roles)', () => {
     const bad: string[] = [];
-    for (const f of files()) {
-      const rel = relative(ROOT, f).split(sep).join('/');
-      for (const h of scanRollLineLabels(readFileSync(f, 'utf8'))) {
+    for (const { rel, text } of files()) {
+      for (const h of scanRollLineLabels(text)) {
         if (!h.computed || !CREW_CATALOGUE_RX.test(h.text)) continue;
         bad.push(`${rel}:${h.line} — ${h.text}`);
       }

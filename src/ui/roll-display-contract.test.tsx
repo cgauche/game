@@ -5,9 +5,7 @@
  * la sous-ligne d'une rangée a un canal UNIQUE (`PanelRowData.note` → `.rr-note`).
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
@@ -130,25 +128,14 @@ describe('RollShell — l’issue est une DONNÉE, rendue par LA coquille (#1078
  * les fichiers de test aussi (ce cliquet porte lui-même le motif).
  */
 describe('CLIQUET — `.rm-journal` n’est écrit QUE par la coquille', () => {
-  const SRC = fileURLToPath(new URL('..', import.meta.url));
   const OWNER = 'ui/RollShell.tsx';
-
-  function walk(dir: string, acc: string[] = []): string[] {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p, acc);
-      else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) acc.push(p);
-    }
-    return acc;
-  }
 
   it('aucun module de `src` (hors RollShell) ne pose la classe `rm-journal`', () => {
     const offenders: string[] = [];
-    for (const f of walk(SRC)) {
-      const name = f.slice(SRC.length).split('\\').join('/');
+    for (const { rel, text } of readCorpus(['src'])) {
+      const name = rel.slice('src/'.length);
       if (name === OWNER) continue;
-      const src = readFileSync(f, 'utf8');
-      src.split('\n').forEach((l, i) => {
+      text.split('\n').forEach((l, i) => {
         if (l.includes('rm-journal')) offenders.push(`${name}:${i + 1}`);
       });
     }
@@ -169,17 +156,7 @@ describe('CLIQUET — `.rm-journal` n’est écrit QUE par la coquille', () => {
  * concaténation, gabarit) : c'est la sous-chaîne dans du CODE qui compte, pas un nom d'identifiant.
  */
 describe('CLIQUET — `.rm-vs` n’est écrit QUE par `VsHeader`', () => {
-  const SRC = fileURLToPath(new URL('..', import.meta.url));
   const OWNER = 'ui/VsHeader.tsx';
-
-  function walkSrc(dir: string, acc: string[] = []): string[] {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walkSrc(p, acc);
-      else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) acc.push(p);
-    }
-    return acc;
-  }
 
   /** Retire les commentaires (bloc et ligne) en gardant les sauts de ligne — les numéros de ligne
    *  rapportés restent ceux du fichier. */
@@ -190,10 +167,10 @@ describe('CLIQUET — `.rm-vs` n’est écrit QUE par `VsHeader`', () => {
 
   it('aucun module de `src` (hors VsHeader) ne pose la classe `rm-vs`', () => {
     const offenders: string[] = [];
-    for (const f of walkSrc(SRC)) {
-      const name = f.slice(SRC.length).split('\\').join('/');
+    for (const { rel, text } of readCorpus(['src'])) {
+      const name = rel.slice('src/'.length);
       if (name === OWNER) continue;
-      stripComments(readFileSync(f, 'utf8')).split('\n').forEach((l, i) => {
+      stripComments(text).split('\n').forEach((l, i) => {
         if (l.includes('rm-vs')) offenders.push(`${name}:${i + 1}`);
       });
     }

@@ -18,8 +18,7 @@ import type { MapRoute } from './worldMap';
 import { WORLD_STEP_OWNER, seatOwns, canFixDie } from './netOwnership';
 import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
 import { setCadence, resetCadence } from '../engine/cadence';
-import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { seedBattleRng, battleRng } from './battleRng';
 import { landSellCargo, openLandMarket } from './landMarketFlow';
 import { persistCarriersCargo } from './carriers';
@@ -839,17 +838,6 @@ const etapeAffichage = (id: string, kind = 'sonde-affichage'): CascadeStep =>
 
 // ── LES PORTES DU CURSEUR : une seule, et elle tient la charge ───────────────────────────────
 
-/** Tous les modules de PRODUCTION sous `racine` (récursif) : `.ts`/`.tsx`, tests exclus. */
-function fichiersSource(racine: string): string[] {
-  const out: string[] = [];
-  for (const e of readdirSync(racine, { withFileTypes: true })) {
-    const p = join(racine, e.name);
-    if (e.isDirectory()) out.push(...fichiersSource(p));
-    else if (/\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) out.push(p);
-  }
-  return out;
-}
-
 /** Le LITTÉRAL objet qui suit la position `depuis` (accolades équilibrées), ou `undefined` si la
  *  valeur n'en est pas un (appel de la porte, variable, `null`). */
 function litteralApres(src: string, depuis: number): string | undefined {
@@ -865,16 +853,15 @@ function litteralApres(src: string, depuis: number): string | undefined {
 }
 
 /** Les sites `fichier:ligne` qui publient un `pendingCascade` LITTÉRAL portant son propre `cursor:`. */
-function sitesCurseurALaMain(racine: string): string[] {
-  const pilote = join('src', 'state', 'cascade.ts');
+function sitesCurseurALaMain(): string[] {
+  const pilote = 'src/state/cascade.ts';
   const fautifs: string[] = [];
-  for (const f of fichiersSource(racine)) {
-    if (relative(process.cwd(), f) === pilote) continue;
-    const src = readFileSync(f, 'utf8');
+  for (const { rel, text } of readCorpus(['src'])) {
+    if (rel === pilote) continue;
     const re = /pendingCascade\s*:/g;
-    for (let m = re.exec(src); m; m = re.exec(src)) {
-      const bloc = litteralApres(src, m.index + m[0].length);
-      if (bloc && /\bcursor\s*:/.test(bloc)) fautifs.push(`${relative(process.cwd(), f)}:${src.slice(0, m.index).split('\n').length}`);
+    for (let m = re.exec(text); m; m = re.exec(text)) {
+      const bloc = litteralApres(text, m.index + m[0].length);
+      if (bloc && /\bcursor\s*:/.test(bloc)) fautifs.push(`${rel}:${text.slice(0, m.index).split('\n').length}`);
     }
   }
   return fautifs;
@@ -923,7 +910,7 @@ describe('#1426 — les portes du curseur', () => {
    * cursor: i }; set({ pendingCascade: suite })`) n'est pas vu — seule la forme littérale l'est.
    */
   it('GARDE STRUCTURELLE — aucun site de `src/**` n’écrit `cursor:` dans un littéral `pendingCascade` hors du pilote', () => {
-    const fautifs = sitesCurseurALaMain(join(process.cwd(), 'src'));
+    const fautifs = sitesCurseurALaMain();
     expect(fautifs, 'poser le curseur passe par `cascade.poserCurseurCascade`/`curseurPose` — sinon le seam du pilote est court-circuité').toEqual([]);
   });
 

@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ESLint } from 'eslint';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Cliquet du composeur d'affichage (#295, verrou 2) — le canal `journal:` d'un `CascadeApplier` a
@@ -184,18 +185,10 @@ function jetEchoCount(src: string): number {
 
 function contentCounts(): Record<string, number> {
   const counts: Record<string, number> = {};
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e) && !/\.test\.[tj]sx?$/.test(e)) {
-        const rel = relative(ROOT, p).split('\\').join('/');
-        const n = jetEchoCount(readFileSync(p, 'utf8'));
-        if (n > 0) counts[rel] = n;
-      }
-    }
-  };
-  for (const d of CONTENT_DIRS) walk(join(ROOT, d));
+  for (const { rel, text } of readCorpus(CONTENT_DIRS)) {
+    const n = jetEchoCount(text);
+    if (n > 0) counts[rel] = n;
+  }
   return counts;
 }
 

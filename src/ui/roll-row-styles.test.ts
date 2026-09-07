@@ -10,24 +10,12 @@
  * DÉCLARATION source, la preuve de rendu vit en recette navigateur).
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const STYLES = fileURLToPath(new URL('./styles/', import.meta.url));
-
-function cssFiles(dir: string, acc: string[] = []): string[] {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) cssFiles(p, acc);
-    else if (e.endsWith('.css')) acc.push(p);
-  }
-  return acc;
-}
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 // Commentaires NEUTRALISÉS (même précaution que `ui-ratchets`) : un commentaire qui NOMME la classe
 // n'est pas une règle — sans ça, la sonde reste verte alors que la déclaration a disparu (mesuré).
-const SHEETS = cssFiles(STYLES).map((f) => ({ file: f, css: readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '') }));
+const SHEETS = readCorpus(['src/ui/styles'], { exts: ['.css'], tests: true })
+  .map(({ rel, text }) => ({ file: rel, css: text.replace(/\/\*[\s\S]*?\*\//g, '') }));
 
 /** Blocs `{…}` dont le SÉLECTEUR contient la classe, et dont le corps porte au moins une déclaration.
  *  Frontière `(?![\w-])` et non `\b` : `\b` fait passer `.prow-act` pour une règle de `.prow`. */

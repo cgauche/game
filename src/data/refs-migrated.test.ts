@@ -34,7 +34,9 @@ import { rigSpeciesVocab } from '../gameIso/rig/appearance';
 import { wardrobeKeyResolves } from '../gameIso/rig/parts/career';
 import { CHAR_KEYS } from '../engine/types';
 import { fileURLToPath } from 'node:url';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
+import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import {
   GAMEOP_FIELD_TARGETS, auditFieldCoverage, collectJsonFiles, scanGameOpRefs, slackRatchets, formatOffender,
 } from '../../scripts/guards/lib/gameOpRefFk.mjs';
@@ -1055,18 +1057,14 @@ describe('appearance.species — id stable (species.json ∪ defs rig ∪ raceAp
 // validant `asRigSpeciesId`, cf. src/gameIso/rig/appearance.ts).
 describe('appearance(.Override).species — TOUTE la donnée authorée des deux racines ⊆ rigSpeciesVocab()', () => {
   const RACINES = ['data', 'scenes'].map((d) => fileURLToPath(new URL(`../${d}`, import.meta.url)));
-  function jsonFiles(dir: string, out: string[]): void {
-    for (const e of readdirSync(dir, { withFileTypes: true })) {
-      const p = `${dir}/${e.name}`;
-      if (e.isDirectory()) jsonFiles(p, out);
-      else if (e.name.endsWith('.json')) out.push(p);
-    }
-  }
+  /** Les `.json` d'une racine de données, à toute profondeur et en ORDRE TOTAL — la marche vient de
+   *  `listerArbre` (`scripts/guards/lib/lister.mjs`), pas d'une récursion locale. */
+  const jsonFiles = (dir: string): string[] =>
+    listerArbre(dir, { filtre: (rel) => rel.endsWith('.json') }).map((rel) => `${dir}/${rel}`);
 
   it('tout species authoré dans src/data + src/scenes est un id du vocabulaire rig', () => {
     const VOCAB = rigSpeciesVocab();
-    const files: string[] = [];
-    for (const r of RACINES) jsonFiles(r, files);
+    const files = RACINES.flatMap(jsonFiles);
     const bad: string[] = [];
     let sites = 0;
     const scan = (node: unknown, fichier: string, chemin: string): void => {
@@ -1422,7 +1420,6 @@ describe('careerLevels — Schéma de Progression : cardinalité 3/1/1/1 et disj
 });
 
 describe('schémas de defs/ — une réf de code cite un FICHIER et un SYMBOLE, jamais un numéro de ligne', () => {
-  const DEFS_DIR = fileURLToPath(new URL('./schemas/defs', import.meta.url));
   const LINE_REF = /[\w./-]*\.ts:\d+(?:-\d+)?/g;
 
   /** Intervalles [début, fin) des commentaires (bloc et ligne) — les chaînes en sont exclues. */
@@ -1445,12 +1442,11 @@ describe('schémas de defs/ — une réf de code cite un FICHIER et un SYMBOLE, 
 
   it('aucun commentaire de src/data/schemas/defs/**.ts ne porte de réf `fichier.ts:N` (tolérance ZÉRO)', () => {
     const offenders: string[] = [];
-    for (const f of readdirSync(DEFS_DIR).filter((n) => n.endsWith('.ts'))) {
-      const src = readFileSync(`${DEFS_DIR}/${f}`, 'utf8');
-      const ranges = commentRanges(src);
-      for (const m of src.matchAll(LINE_REF)) {
+    for (const { rel, text } of readCorpus(['src/data/schemas/defs'], { exts: ['.ts'], tests: true })) {
+      const ranges = commentRanges(text);
+      for (const m of text.matchAll(LINE_REF)) {
         if (!ranges.some(([a, b]) => m.index >= a && m.index < b)) continue;
-        offenders.push(`src/data/schemas/defs/${f}:${src.slice(0, m.index).split('\n').length} → ${m[0]}`);
+        offenders.push(`${rel}:${text.slice(0, m.index).split('\n').length} → ${m[0]}`);
       }
     }
     expect(

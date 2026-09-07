@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Cliquets d'hygiène UI (#236) — même patron que `combat-hardcode-guard`/`no-emoji-affordance` : une
@@ -12,15 +13,19 @@ import { fileURLToPath } from 'node:url';
 
 const UI = fileURLToPath(new URL('.', import.meta.url)); // src/ui/
 
-function walk(dir: string, test: (f: string) => boolean, acc: string[] = []): string[] {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) walk(p, test, acc);
-    else if (test(e)) acc.push(p);
-  }
-  return acc;
-}
-const rel = (abs: string) => abs.slice(UI.length).split('\\').join('/');
+/** Un fichier du corpus tel que `readCorpus` le rend : chemin POSIX depuis la racine + texte. */
+type Fichier = { rel: string; text: string };
+
+/** Tout `src/ui`, tests compris — UNE clé de corpus pour les seize mesures de ce fichier ; chacune
+ *  applique ENSUITE son propre périmètre (extension, exemption nominative), qui fait partie de ce
+ *  qu'elle mesure. */
+const FICHIERS_UI = (): readonly Fichier[] => readCorpus(['src/ui'], { exts: ['.css', '.ts', '.tsx'], tests: true });
+/** Chemin depuis `src/ui/` — la clé des baselines et des exemptions. */
+const rel = (f: Fichier) => f.rel.slice('src/ui/'.length);
+const nomDe = (f: Fichier) => f.rel.slice(f.rel.lastIndexOf('/') + 1);
+const estTest = (f: Fichier) => /\.test\./.test(f.rel);
+const estCss = (f: Fichier) => f.rel.endsWith('.css');
+const estTsx = (f: Fichier) => f.rel.endsWith('.tsx');
 
 function assertRatchet(counts: Record<string, number>, baseline: Record<string, number>, what: string) {
   const over: string[] = [];
@@ -874,9 +879,7 @@ function catalogueClasses(): Set<string> {
  *  gabarit, ternaire — on collecte les tokens des sous-chaînes quotées de l'attribut). */
 function classUsageByModule(): Map<string, Set<string>> {
   const uses = new Map<string, Set<string>>();
-  const files = walk(fileURLToPath(new URL('../', import.meta.url)), (e) => /\.tsx$/.test(e) && !/\.test\./.test(e));
-  for (const f of files) {
-    const raw = readFileSync(f, 'utf8');
+  for (const { rel: f, text: raw } of readCorpus(['src'], { exts: ['.tsx'] })) {
     const re = /className\s*=\s*(\{[\s\S]*?\}|"[^"]*"|'[^']*'|`[^`]*`)/g;
     let m: RegExpExecArray | null;
     while ((m = re.exec(raw))) {
@@ -911,11 +914,11 @@ function classNamesDefined(css: string): Set<string> {
   return names;
 }
 
-function scanBareButtons(files: string[]) {
+function scanBareButtons(files: readonly Fichier[]) {
   const bare: Record<string, number> = {};
   const opaque: Record<string, number> = {};
   for (const f of files) {
-    const raw = readFileSync(f, 'utf8');
+    const raw = f.text;
     // Neutralise les commentaires bloc `/* ... */` (dont JSDoc/`{/* JSX */}`) et ligne `//…` avant le
     // scan — un `<button>` cité en prose ne doit pas polluer le compte.
     const src = raw
@@ -1025,10 +1028,10 @@ function enclosingPorteCall(src: string, idx: number): string | null {
   return null;
 }
 
-function scanFrozenValueRows(files: string[]): Record<string, number> {
+function scanFrozenValueRows(files: readonly Fichier[]): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const f of files) {
-    const src = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    const src = f.text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
     // Deux ÉCRITURES d'une rangée témoin, une seule population : le champ posé à la main
     // (`interactive:false`) et le constructeur `witnessRow(` de la porte (#1262), qui le pose pour
     // le site. Sans la seconde, la migration d'un site vers la porte VIDERAIT ce cliquet sans que
@@ -1051,11 +1054,10 @@ function scanFrozenValueRows(files: string[]): Record<string, number> {
 
 describe('#236 — cliquets d’hygiène UI', () => {
   it('(iv) hex hors tokens : aucune hausse par module CSS (base.css exclu)', () => {
-    const files = walk(UI, (e) => e.endsWith('.css') && e !== 'base.css');
     const counts: Record<string, number> = {};
-    for (const f of files) {
+    for (const f of FICHIERS_UI().filter((f) => estCss(f) && nomDe(f) !== 'base.css')) {
       // Commentaires exclus du scan : un « #304 » de réf de ticket n'est pas une couleur.
-      const css = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+      const css = f.text.replace(/\/\*[\s\S]*?\*\//g, '');
       const n = (css.match(/#[0-9a-fA-F]{3,8}\b/g) || []).length;
       if (n > 0) counts[rel(f)] = n;
     }
@@ -1063,42 +1065,40 @@ describe('#236 — cliquets d’hygiène UI', () => {
   });
 
   it('(v) prix ⇒ <Coins> : aucune composition manuelle de monnaie (fail-closed, exemptions PA nominatives)', () => {
-    const files = walk(UI, (e) => /\.tsx$/.test(e) && !/\.test\./.test(e))
-      .filter((f) => !f.endsWith('Coins.tsx'))
+    const files = FICHIERS_UI()
+      .filter((f) => estTsx(f) && !estTest(f))
+      .filter((f) => nomDe(f) !== 'Coins.tsx')
       .filter((f) => !PRICE_PA_ARMOR_EXEMPT.has(rel(f)));
     const counts: Record<string, number> = {};
     for (const f of files) {
-      const n = (readFileSync(f, 'utf8').match(/\}[^<>{}]{0,4} (?:CO|PA|CA)\b/g) || []).length;
+      const n = (f.text.match(/\}[^<>{}]{0,4} (?:CO|PA|CA)\b/g) || []).length;
       if (n > 0) counts[rel(f)] = n;
     }
     assertRatchet(counts, PRICE_BASELINE, 'prix sans <Coins>');
   });
 
   it('(vii) flex-wrap: wrap hors components.css : aucune hausse par module CSS', () => {
-    const files = walk(UI, (e) => e.endsWith('.css') && e !== 'components.css');
     const counts: Record<string, number> = {};
-    for (const f of files) {
-      const n = (readFileSync(f, 'utf8').match(/flex-wrap:\s*wrap/g) || []).length;
+    for (const f of FICHIERS_UI().filter((f) => estCss(f) && nomDe(f) !== 'components.css')) {
+      const n = (f.text.match(/flex-wrap:\s*wrap/g) || []).length;
       if (n > 0) counts[rel(f)] = n;
     }
     assertRatchet(counts, FLEX_WRAP_BASELINE, 'flex-wrap hors components.css');
   });
 
   it('(viii) fill/stroke littéraux hors token var(--…) : aucune hausse par fichier .tsx', () => {
-    const files = walk(UI, (e) => /\.tsx$/.test(e) && !/\.test\./.test(e));
     const counts: Record<string, number> = {};
-    for (const f of files) {
-      const n = (readFileSync(f, 'utf8').match(/(?:fill|stroke)=("|')(?:#|rgb|hsl)/g) || []).length;
+    for (const f of FICHIERS_UI().filter((f) => estTsx(f) && !estTest(f))) {
+      const n = (f.text.match(/(?:fill|stroke)=("|')(?:#|rgb|hsl)/g) || []).length;
       if (n > 0) counts[rel(f)] = n;
     }
     assertRatchet(counts, FILL_LITERAL_BASELINE, 'fill/stroke littéral hors token');
   });
 
   it('(ix) .panel non redéfini hors components.css (#306)', () => {
-    const files = walk(UI, (e) => e.endsWith('.css') && e !== 'components.css');
     const counts: Record<string, number> = {};
-    for (const f of files) {
-      const css = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    for (const f of FICHIERS_UI().filter((f) => estCss(f) && nomDe(f) !== 'components.css')) {
+      const css = f.text.replace(/\/\*[\s\S]*?\*\//g, '');
       // `.panel` porté par le MÊME élément : soit en TÊTE de sélecteur (`^\s*\.panel`, capture aussi les
       // redéfinitions indentées d'un `@media` — le piège #306), soit COMPOSÉ à une autre classe (`X.panel`,
       // ex. `.interlude-hero.panel` — l'angle mort de l'ancre seule). Les modificateurs du même élément
@@ -1111,9 +1111,7 @@ describe('#236 — cliquets d’hygiène UI', () => {
   });
 
   it('(x) <button> nu : aucune hausse par fichier .tsx (composer .btn/.chip ou une primitive — feedback user 2026-07-12, #373)', () => {
-    const files = walk(UI, (e) => /\.tsx$/.test(e) && !/\.test\./.test(e)).filter(
-      (f) => !BARE_BUTTON_EXEMPT_FILES.has(rel(f)),
-    );
+    const files = FICHIERS_UI().filter((f) => estTsx(f) && !estTest(f) && !BARE_BUTTON_EXEMPT_FILES.has(rel(f)));
     const { bare, opaque } = scanBareButtons(files);
     assertRatchet(bare, BARE_BUTTON_BASELINE, '<button> nu — composer .btn/.chip ou une primitive (feedback user 2026-07-12, #373)');
     assertRatchet(opaque, BARE_BUTTON_OPAQUE_BASELINE, '<button> className opaque — exposer un littéral btn/chip/seg ou passer par une primitive (feedback user 2026-07-12, #373)');
@@ -1122,9 +1120,8 @@ describe('#236 — cliquets d’hygiène UI', () => {
   it('(xii) sélecteurs de classe DÉFINIS par module CSS de domaine : gelé et décroissant (doctrine user 2026-07-12, #373)', () => {
     const counts: Record<string, number> = {};
     for (const mod of DOMAIN_CSS_MODULES) {
-      const f = join(UI, 'styles', `${mod}.css`);
-      const css = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
-      counts[rel(f)] = classNamesDefined(css).size;
+      const css = readFileSync(join(UI, 'styles', `${mod}.css`), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+      counts[`styles/${mod}.css`] = classNamesDefined(css).size;
     }
     assertRatchet(counts, CLASS_SELECTOR_BASELINE, 'sélecteurs de classe définis (stock de classes de domaine, #373)');
   });
@@ -1154,14 +1151,14 @@ describe('#236 — cliquets d’hygiène UI', () => {
   //    soit à `SHARED_CSS_FILES` (xiii). Ajouter un module CSS force donc à le classer et à poser sa
   //    baseline — plus de fichier hors radar.
   it('(xiv) exhaustivité : chaque .css de src/ui est couvert par xii (domaine) OU xiii (partagé)', () => {
-    const all = walk(UI, (e) => e.endsWith('.css')).map(rel);
+    const all = FICHIERS_UI().filter(estCss).map(rel);
     const accounted = new Set<string>([...DOMAIN_CSS_MODULES.map((m) => `styles/${m}.css`), ...SHARED_CSS_FILES]);
     const orphans = all.filter((f) => !accounted.has(f)).sort();
     expect(orphans, `CSS hors radar (ni cliquet de domaine xii, ni garde partagée xiii) — l’ajouter à DOMAIN_CSS_MODULES ou SHARED_CSS_FILES :\n${orphans.join('\n')}`).toEqual([]);
   });
 
   it('(xv) rangée TÉMOIN porteuse de valeur hors `opposedFrozen.ts` : gelée et décroissante (#990)', () => {
-    const files = walk(UI, (e) => /\.tsx?$/.test(e) && !/\.test\./.test(e)).filter((f) => rel(f) !== 'opposedFrozen.ts');
+    const files = FICHIERS_UI().filter((f) => /\.tsx?$/.test(f.rel) && !estTest(f) && rel(f) !== 'opposedFrozen.ts');
     assertRatchet(scanFrozenValueRows(files), FROZEN_WITNESS_BASELINE, 'rangée témoin à valeur figée hors du calendrier de découverte `frozenOpposedRow` (#990)');
   });
 
@@ -1178,8 +1175,8 @@ describe('#236 — cliquets d’hygiène UI', () => {
     expect(standard, '`.modal` ne pose plus `width: min(<n>px, …)` dans components.css : le standard de largeur a bougé, cette garde le lit.').toBeTruthy();
     const standardPx = Number(standard![1]);
     const offenders: string[] = [];
-    for (const f of walk(UI, (e) => e.endsWith('.css'))) {
-      const css = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    for (const f of FICHIERS_UI().filter(estCss)) {
+      const css = f.text.replace(/\/\*[\s\S]*?\*\//g, '');
       for (const m of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
         const sel = m[1].trim().replace(/\s+/g, ' ');
         if (!/\.[a-z0-9-]*modal\b/i.test(sel)) continue;
@@ -1408,12 +1405,12 @@ function openTags(src: string, tag: string): string[] {
   return out;
 }
 
-function scanNumberInputs(files: string[]): Record<string, number> {
+function scanNumberInputs(files: readonly Fichier[]): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const f of files) {
     const r = rel(f);
     if (NUMBER_INPUT_EXEMPT_FILES.has(r)) continue;
-    const src = readFileSync(f, 'utf8')
+    const src = f.text
       .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
       .replace(/(^|[^:])\/\/.*$/gm, (_m, p) => p);
     for (const tag of openTags(src, 'input')) {
@@ -1542,9 +1539,9 @@ function optionsRefusMuet(src: string): number[] {
  *  `aria-hidden` — forme PIRE encore, l'arbre a11y ne voit même plus le porteur —, OU un refus routé
  *  en PROP d'option (`{disabled, title}`), qui échappait au scan de balises. Les trois se mesurent
  *  sur la FORME, jamais sur un nom de variable. */
-function sitesRefusMuet(f: string): { cle: string; ligne: number }[] {
+function sitesRefusMuet(f: Fichier): { cle: string; ligne: number }[] {
   const r = rel(f);
-  const src = readFileSync(f, 'utf8');
+  const src = f.text;
   const out: { cle: string; ligne: number }[] = [];
   for (const tag of ['button', 'span', 'div', 'a'] as const) {
     for (const { tag: t, ligne } of tagsAvecLigne(src, tag)) {
@@ -1560,7 +1557,7 @@ function sitesRefusMuet(f: string): { cle: string; ligne: number }[] {
   return out;
 }
 
-function scanRefusMuet(files: string[]): Record<string, number> {
+function scanRefusMuet(files: readonly Fichier[]): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const f of files) {
     const r = rel(f);
@@ -1574,17 +1571,17 @@ function scanRefusMuet(files: string[]): Record<string, number> {
 
 describe('#1318 V5 — cliquets d’hygiène UI (champ nombre, breakpoints)', () => {
   it('(xvii) <input type="number"> à la main : aucune hausse par fichier (composer NumberField)', () => {
-    const files = walk(UI, (f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx'));
+    const files = FICHIERS_UI().filter((f) => estTsx(f) && !f.rel.endsWith('.test.tsx'));
     assertRatchet(scanNumberInputs(files), NUMBER_INPUT_BASELINE, '`<input type="number">` (primitive `NumberField`)');
   });
 
   it('(xix) raison de refus MUETTE (`<button disabled title=…>`) : aucune hausse, zéro côté joueur', () => {
-    const files = walk(UI, (f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx'));
+    const files = FICHIERS_UI().filter((f) => estTsx(f) && !f.rel.endsWith('.test.tsx'));
     assertRatchet(scanRefusMuet(files), REFUS_MUET_BASELINE, '`<button disabled title=…>` (primitive `GatedAction`)');
   });
 
   it('(xix) le stock restant est ENTIÈREMENT dans l’atelier — aucun écran joueur ne porte de refus muet', () => {
-    const files = walk(UI, (f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx'));
+    const files = FICHIERS_UI().filter((f) => estTsx(f) && !f.rel.endsWith('.test.tsx'));
     const joueur = Object.entries(scanRefusMuet(files))
       .filter(([f]) => !/^(editor|compendium|gallery)\//.test(f))
       .map(([f, n]) => `${f} : ${n}`);
@@ -1593,7 +1590,7 @@ describe('#1318 V5 — cliquets d’hygiène UI (champ nombre, breakpoints)', ()
 
   it('(xix) chaque exemption est un SITE encore RÉEL — une ligne périmée se retire', () => {
     const reels = new Set(
-      walk(UI, (f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx')).flatMap((f) => sitesRefusMuet(f).map((s) => s.cle)),
+      FICHIERS_UI().filter((f) => estTsx(f) && !f.rel.endsWith('.test.tsx')).flatMap((f) => sitesRefusMuet(f).map((s) => s.cle)),
     );
     const perimees = [...REFUS_MUET_EXEMPT_SITES.keys()].filter((k) => !reels.has(k));
     expect(perimees, `Exemption(s) PÉRIMÉE(S) — le site a bougé ou a été migré, retirer la ligne :\n${perimees.join('\n')}`).toEqual([]);
@@ -1656,10 +1653,10 @@ describe('#1318 V5 — cliquets d’hygiène UI (champ nombre, breakpoints)', ()
 
   it('(xviii) aucun breakpoint hors canon dans TOUT src/ui (900/700/560 bas, 561/701/901/1440 haut)', () => {
     const hors: string[] = [];
-    for (const f of walk(UI, (n) => n.endsWith('.css'))) {
+    for (const f of FICHIERS_UI().filter(estCss)) {
       const r = rel(f);
       const exempt = BREAKPOINT_EXEMPT.get(r) ?? [];
-      for (const bp of new Set(widthBreakpoints(readFileSync(f, 'utf8')))) {
+      for (const bp of new Set(widthBreakpoints(f.text))) {
         if (exempt.includes(bp)) continue;
         const [sens, px] = bp.split(':');
         const canon = sens === 'max' ? WIDTH_CANON_MAX : WIDTH_CANON_MIN;

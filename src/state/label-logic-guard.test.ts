@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
-import { join, relative, isAbsolute } from 'node:path';
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import {
@@ -54,19 +54,6 @@ const EXCLUDED = (rel: string) =>
 // (`scripts/git-hooks/pre-commit.mjs`) — la composition « map globale de déclarations id-param +
 // résolution du shadowing » (`collectIdParamFnsAcrossDirs`/`effectiveIdParamFns`, #142 LOT 6bis) est
 // EXPORTÉE par la lib, consommée à l'identique par ce test ET par le hook, sans copie.
-
-function scanFiles(dirs: string[]): string[] {
-  const files: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e)) files.push(p);
-    }
-  };
-  for (const d of dirs) walk(isAbsolute(d) ? d : join(ROOT, d));
-  return files;
-}
 
 const ALL_DIRS = [...STRICT_DIRS, ...RATCHET_DIRS];
 
@@ -511,9 +498,8 @@ describe('garde-fou « appel à un résolveur d’entité par LIBELLÉ » (#909)
     try {
       writeFileSync(join(tmp, 'probe.ts'), "export const x = findCreature('Orc');\n");
       const counts = new Map<string, number>();
-      for (const f of scanFiles([tmp])) {
-        const rel = relative(ROOT, f).split('\\').join('/');
-        counts.set(rel, scanLabelResolverCalls(rel, readFileSync(f, 'utf8'), RESOLVER_NAMES).length);
+      for (const { rel, text } of readCorpus([tmp], { tests: true })) {
+        counts.set(rel, scanLabelResolverCalls(rel, text, RESOLVER_NAMES).length);
       }
       expect([...counts.values()]).toContain(1);
     } finally {

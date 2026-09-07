@@ -69,32 +69,22 @@ describe('#1262 L1 — le lint refuse le prédicat d’état importé dans une f
  *    et n'a rien à en dire).
  * Aucune exemption par FICHIER : la population visée est vide, la garde est fail-closed.
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
-const UI = fileURLToPath(new URL('.', import.meta.url));
 /** Le prédicat recopié : le siège d'attribution d'un combattant, comparé au siège local. */
 const RECOPIE = /ownership\s*\[[^\]]*\][^;\n]*===\s*[\w.]*\bmySeat\b|\bmySeat\b\s*===[^;\n]*ownership\s*\[/;
 
-function fichiers(dir: string, acc: string[] = []): string[] {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) fichiers(p, acc);
-    // PRODUCTION seule : un test CITE le motif pour éprouver le détecteur (celui-ci le fait).
-    else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e) && e !== 'ownership.ts') acc.push(p);
-  }
-  return acc;
-}
+/** Modules de PRODUCTION de `src/ui` — la PORTE elle-même est hors mesure (elle DOIT porter le
+ *  prédicat), et les tests le CITENT pour éprouver le détecteur (celui-ci le fait). */
+const fichiers = () => readCorpus(['src/ui']).filter(({ rel }) => rel !== 'src/ui/ownership.ts');
 
 describe('#1262 L1 — la garde de FORME : aucune recopie du prédicat sous `src/ui`', () => {
   it('le prédicat de possession ne se réécrit pas à la main (site NOMMÉ en cas de rechute)', () => {
     const sites: string[] = [];
-    for (const f of fichiers(UI)) {
-      const lignes = readFileSync(f, 'utf8').split('\n');
-      lignes.forEach((l, i) => {
+    for (const { rel, text } of fichiers()) {
+      text.split('\n').forEach((l, i) => {
         if (/^\s*(\/\/|\*)/.test(l)) return; // commentaires : le motif s'y CITE (ce test compris)
-        if (RECOPIE.test(l)) sites.push(`${f.slice(UI.length).split('\\').join('/')}:${i + 1} — ${l.trim()}`);
+        if (RECOPIE.test(l)) sites.push(`${rel.slice('src/ui/'.length)}:${i + 1} — ${l.trim()}`);
       });
     }
     expect(sites, `Possession RECOPIÉE (#1262) — passer par \`ui/ownership.ts\` (\`ownsLocal\`/\`useOwns\`/\`ownsLocalNet\`) :\n${sites.join('\n')}`).toEqual([]);

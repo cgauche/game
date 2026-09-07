@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
-import { join, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { applyCrewHit, rollShipCritical } from './shipCritical';
 import { applyOps, type GameOp } from './ops';
 import { applyFall } from './movement';
@@ -244,20 +242,15 @@ describe('« 3 × mètres + 1d10 » n’a qu’UN foyer dans `src/**`', () => {
   const FORMULE = { test: (l: string) => TROIS_PAR_METRE.test(l) && D10.test(l) };
 
   it('AUCUN site hors `engine/movement.ts` ne réécrit la formule', () => {
-    const racine = fileURLToPath(new URL('..', import.meta.url));
     const fautifs: string[] = [];
-    const marcher = (dir: string) => {
-      for (const e of readdirSync(dir, { withFileTypes: true })) {
-        const p = join(dir, e.name);
-        if (e.isDirectory()) { marcher(p); continue; }
-        if (!/\.tsx?$/.test(e.name) || e.name.endsWith('chute-du-greement.test.ts')) continue;
-        const rel = p.slice(racine.length).split(sep).join('/');
-        readFileSync(p, 'utf8').split('\n').forEach((l, i) => {
-          if (FORMULE.test(l) && rel !== 'engine/movement.ts') fautifs.push(`${rel}:${i + 1}`);
-        });
-      }
-    };
-    marcher(racine);
+    // Le recensement s'EXCLUT lui-même : ses fixtures de morsure ÉCRIVENT la formule qu'il traque.
+    for (const { rel, text } of readCorpus(['src'], { tests: true })) {
+      if (rel.endsWith('chute-du-greement.test.ts')) continue;
+      const nom = rel.slice('src/'.length);
+      text.split('\n').forEach((l, i) => {
+        if (FORMULE.test(l) && nom !== 'engine/movement.ts') fautifs.push(`${nom}:${i + 1}`);
+      });
+    }
     expect(fautifs, 'site(s) recalculant les Dégâts de chute : passer par `applyFall` (engine/movement.ts, LDB 15 l.80)').toEqual([]);
   });
 

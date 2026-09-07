@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { unionKinds, scanRevealProducers } from '../../scripts/guards/lib/revealKindEmission.mjs';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Garde-fou « kind de RevealEntry ↔ site d'émission » (#942, L0 puis L8). L'union `RevealEntry['kind']`
@@ -14,27 +15,12 @@ import { unionKinds, scanRevealProducers } from '../../scripts/guards/lib/reveal
  */
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ → ../../ = racine du projet
-const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
 
-function sourceFiles(): string[] {
-  const files: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e)) files.push(p);
-    }
-  };
-  walk(join(ROOT, 'src'));
-  return files;
-}
-
+/** Sites producteurs de `src/**` hors tests — la marche et la lecture viennent de `readCorpus`. */
 function producers(): { kind: string; site: string }[] {
   const out: { kind: string; site: string }[] = [];
-  for (const f of sourceFiles()) {
-    const rel = relative(ROOT, f).split('\\').join('/');
-    if (EXCLUDED(rel)) continue;
-    for (const p of scanRevealProducers(rel, readFileSync(f, 'utf8'))) {
+  for (const { rel, text } of readCorpus(['src'])) {
+    for (const p of scanRevealProducers(rel, text)) {
       out.push({ kind: p.kind, site: `${rel}:${p.line} (forme ${p.forme})` });
     }
   }

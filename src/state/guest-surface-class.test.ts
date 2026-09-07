@@ -21,8 +21,9 @@
  * navigateur ; et une action appelée autrement (dans une closure déjà déstructurée) lui échappe.
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { useGame } from './store';
 import { ROUTES } from './netOwnership';
 import { GUEST_INTENTS } from '../net/intents';
@@ -233,19 +234,7 @@ function storeDeclaredActions(): Set<string> {
 }
 
 /** Fichiers d'écran (hors tests) : `src/ui` + `src/gameIso`. */
-function ecranFiles(): string[] {
-  const out: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) out.push(p);
-    }
-  };
-  walk(join(process.cwd(), 'src', 'ui'));
-  walk(join(process.cwd(), 'src', 'gameIso'));
-  return out;
-}
+const ecranFiles = () => readCorpus(['src/ui', 'src/gameIso']);
 
 const ident = (s: string, i: number): string => {
   let j = i;
@@ -279,10 +268,7 @@ export function emissionsDe(
 
 const emissions = (): Map<string, string> => {
   const declarees = storeDeclaredActions();
-  const fichiers = ecranFiles().map((p) => ({
-    rel: p.split('\\').join('/').split('/src/')[1] ?? p,
-    texte: readFileSync(p, 'utf8'),
-  }));
+  const fichiers = ecranFiles().map(({ rel, text }) => ({ rel: rel.slice('src/'.length), texte: text }));
   return emissionsDe(fichiers, declarees);
 };
 
