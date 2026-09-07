@@ -331,6 +331,8 @@ src/net/                    Coop en ligne (relay WebSocket) : relay.ts (RelayCli
                             RoomHost = un Transport virtuel par siège, RoomGuest), session.ts (hôte-
                             autoritaire : intents allowlist + snapshots), protocol.ts, compress.ts,
                             intents.ts — codes de room 6 chars, reconnexion auto par token (grace 2 min)
+                            Reprise du lien invité ou retour de l'hôte (host-up) : GuestSession.rejoin
+                            relance le handshake, puis reçoit campagne et snapshot autoritaire frais.
 server/                     Worker Cloudflare du relay coop (Durable Object « Room », hibernation WS,
                             TTL 30 min) — npm run relay:dev / relay:deploy
 art-ref/                    Illustrations extraites des PDFs + mapping.json (GITIGNORÉ — droits Cubicle 7)

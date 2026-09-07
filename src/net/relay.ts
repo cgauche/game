@@ -319,6 +319,7 @@ export class RoomGuest implements Transport {
     }
     if (env.evt === 'host-up') {
       this.onHostAway?.(false);
+      this.onReconnected?.();
       return;
     }
     this.recvChain = this.recvChain.then(async () => {

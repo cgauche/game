@@ -1,12 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RelayClient, RoomGuest, RoomHost, type SocketLike } from './relay';
 import { inflateB64 } from './compress';
+import { GuestSession, HostSession } from './session';
+import type { NetMessage } from './protocol';
 
 class FakeSocket implements SocketLike {
   static last: FakeSocket | null = null;
   sent: string[] = [];
   closedWith: { code?: number } | null = null;
   bufferedAmount = 0;
+  onSend: ((data: string) => void) | null = null;
   onopen: (() => void) | null = null;
   onmessage: ((e: { data: unknown }) => void) | null = null;
   onclose: ((e: { code: number; reason: string }) => void) | null = null;
@@ -16,6 +19,7 @@ class FakeSocket implements SocketLike {
   }
   send(d: string): void {
     this.sent.push(d);
+    this.onSend?.(d);
   }
   close(code?: number, reason?: string): void {
     this.closedWith = { code };
@@ -34,6 +38,85 @@ class FakeSocket implements SocketLike {
 }
 
 const makeSocket = (url: string) => new FakeSocket(url);
+
+function resumedHostSession() {
+  let hostSocket: FakeSocket;
+  let hostOnline = true;
+  const roomHost = new RoomHost('ABC234', 'T', (url) => {
+    hostSocket = new FakeSocket(url);
+    hostSocket.onSend = (raw) => {
+      const env = JSON.parse(raw) as Record<string, unknown>;
+      if (env.to === 1) guestSocket.receive(JSON.stringify({ data: env.data, z: env.z }));
+    };
+    return hostSocket;
+  });
+  const roomGuest = new RoomGuest('ABC234', 'Anna', makeSocket);
+  const guestSocket = FakeSocket.last!;
+  guestSocket.onSend = (raw) => {
+    const env = JSON.parse(raw) as Record<string, unknown>;
+    if (hostOnline && (env.data != null || env.z != null)) {
+      hostSocket.receive(JSON.stringify({ from: 1, data: env.data, z: env.z }));
+    }
+  };
+  const snapshot = { gameTime: 7 };
+  const campaign: Extract<NetMessage, { kind: 'campaign' }> = {
+    kind: 'campaign', label: 'Campagne', scenes: [], startSceneId: 'depart', worldMap: null,
+  };
+  const received: string[] = [];
+  const applySnapshot = vi.fn(() => { received.push('snapshot'); });
+  const onCampaign = vi.fn(() => { received.push('campaign'); });
+  const applyIntent = vi.fn();
+  const host = new HostSession({
+    build: 'test', allow: new Set(['battleEndTurn']), applyIntent,
+    getSnapshot: () => ({ ...snapshot }), extraJoinMessages: () => [campaign],
+  });
+  const guest = new GuestSession({ build: 'test', label: 'Anna', applySnapshot, onCampaign });
+  roomHost.onJoin = (seat) => host.addGuest(roomHost.seatTransport(seat), seat);
+  roomHost.onResume = (seat) => {
+    if (!host.seats[seat]) host.addGuest(roomHost.seatTransport(seat), seat);
+  };
+  roomGuest.onSeated = () => guest.connect(roomGuest);
+  roomGuest.onReconnected = () => guest.rejoin();
+  const onHostAway = vi.fn();
+  roomGuest.onHostAway = onHostAway;
+  hostSocket!.open();
+  guestSocket.open();
+
+  async function idle(): Promise<void> {
+    await roomGuest.idle();
+    await roomHost.idle();
+    await roomHost.idle();
+    await roomGuest.idle();
+  }
+
+  return {
+    guest, host, snapshot, campaign, received, applySnapshot, onCampaign, applyIntent, onHostAway,
+    idle,
+    seatGuest() {
+      guestSocket.receive(JSON.stringify({ evt: 'seated', seat: 1, token: 'TOK1' }));
+      if (hostOnline) hostSocket.receive(JSON.stringify({ evt: 'join', seat: 1, name: 'Anna' }));
+      else guestSocket.receive(JSON.stringify({ evt: 'host-down' }));
+    },
+    disconnectHost() {
+      hostOnline = false;
+      hostSocket.dropFromServer();
+      guestSocket.receive(JSON.stringify({ evt: 'host-down' }));
+    },
+    resumeHost() {
+      vi.advanceTimersByTime(1000);
+      hostOnline = true;
+      hostSocket.open();
+      guestSocket.receive(JSON.stringify({ evt: 'host-up' }));
+      hostSocket.receive(JSON.stringify({ evt: 'resume', seat: 1, name: 'Anna' }));
+    },
+    async close() {
+      guest.close();
+      await idle();
+      host.close();
+      roomHost.close();
+    },
+  };
+}
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
@@ -112,6 +195,56 @@ describe('RoomHost (démultiplexage par siège)', () => {
 });
 
 describe('RoomGuest (Transport + reprise)', () => {
+  it('invité assis pendant la coupure hôte : host-up rétablit campagne, snapshot et intents', async () => {
+    const session = resumedHostSession();
+    try {
+      session.disconnectHost();
+      session.seatGuest();
+      await session.idle();
+      expect(session.guest.joined).toBe(false);
+      expect(session.applySnapshot).not.toHaveBeenCalled();
+      expect(session.host.seats[1]).toBeUndefined();
+
+      session.resumeHost();
+      await session.idle();
+      expect(session.applySnapshot).toHaveBeenCalledTimes(1);
+      expect(session.applySnapshot).toHaveBeenCalledWith({ gameTime: 7 });
+      expect(session.guest.joined).toBe(true);
+      expect(session.onCampaign).toHaveBeenCalledTimes(1);
+      expect(session.onCampaign).toHaveBeenCalledWith(session.campaign);
+      expect(session.received).toEqual(['campaign', 'snapshot']);
+      expect(session.onHostAway).toHaveBeenLastCalledWith(false);
+      session.guest.sendIntent('battleEndTurn', []);
+      await session.idle();
+      expect(session.applyIntent).toHaveBeenCalledTimes(1);
+      expect(session.applyIntent).toHaveBeenCalledWith('battleEndTurn', [], 1);
+    } finally {
+      await session.close();
+    }
+  });
+
+  it('invité déjà joint : host-up reçoit spontanément l’état modifié pendant la coupure', async () => {
+    const session = resumedHostSession();
+    try {
+      session.seatGuest();
+      await session.idle();
+      expect(session.applySnapshot).toHaveBeenCalledTimes(1);
+      expect(session.applySnapshot).toHaveBeenCalledWith({ gameTime: 7 });
+
+      session.disconnectHost();
+      session.snapshot.gameTime = 9;
+      session.resumeHost();
+      await session.idle();
+      expect(session.applySnapshot).toHaveBeenCalledTimes(2);
+      expect(session.applySnapshot).toHaveBeenLastCalledWith({ gameTime: 9 });
+      expect(session.onCampaign).toHaveBeenCalledTimes(2);
+      expect(session.received).toEqual(['campaign', 'snapshot', 'campaign', 'snapshot']);
+      expect(session.applyIntent).not.toHaveBeenCalled();
+    } finally {
+      await session.close();
+    }
+  });
+
   it('seated capture siège+token ; reconnexion → URL avec token + onReconnected', () => {
     const rg = new RoomGuest('ABC234', 'Anna', makeSocket);
     const first = FakeSocket.last!;
