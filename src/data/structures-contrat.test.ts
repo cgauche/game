@@ -343,7 +343,13 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // données HEAD et 870 / 1177 sur les siennes (le −1 restant vient de la donnée). Le reclassement est
 // JUSTE (un discriminant déclaré n'est pas une clé étrangère), et il ne migre rien : ces 4 objets
 // changent de dénominateur, cf. `STRUCTURES_FORMES` 394 → 391 pour le lot L3 #1463.
-const PLAFOND_HORS_STRATE = 1177;
+// 1177 → 1176 (#1508 T3, 2026-09-07) : la signature `spells.json | ops | op,radius` MEURT — les auras
+// de garde (Dôme, Bouclier anti-flèches) lisent leur zone dans la ligne « Cible » de leur sort
+// (`OpsCtx.sourceSpell.zde` ; une ZdE est un DIAMÈTRE, `LDB 47 l.28`, `l.356`, `l.408`) ; `arrowWard`
+// porte la signature `ops | op`, `domeWard` est TYPÉE (`ops | indice,op,traitId`).
+// `spells.json | radius | bonusOf` reste VIVANTE : c'est celle de `castWard`, dont le sort porteur n'a
+// pas de ZdE (`target.kind === 'special'`).
+const PLAFOND_HORS_STRATE = 1176;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 

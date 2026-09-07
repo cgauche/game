@@ -96,6 +96,17 @@ describe('__wfrp — autres commandes de recette', () => {
     expect(useGame.getState().party[0].xp).toBe(xpBefore + 150);
   });
 
+  it('spell : mémorise un sort au grimoire par l’EFFET MOTEUR (jamais une écriture parallèle)', () => {
+    const hero = useGame.getState().party[0];
+    useGame.setState({ party: [{ ...hero, spells: [] }] });
+    const out = buildApi().spell(hero.id, 'sommeil');
+    expect(out, 'la commande DIT ce qu’elle a fait').toContain('✓');
+    expect(useGame.getState().party[0].spells, 'le grimoire porte l’ID du sort').toContain('sommeil');
+    // Sort INCONNU : l'effet moteur ne pose rien, et la commande le DIT au lieu de mentir.
+    expect(buildApi().spell(hero.id, 'sort-qui-nexiste-pas')).toContain('✗');
+    expect(useGame.getState().party[0].spells, 'rien n’a été écrit').toEqual(['sommeil']);
+  });
+
   it('flag/flags : force et relit un drapeau de scénario', () => {
     buildApi().flag('zone3_clear');
     expect(buildApi().flags().zone3_clear).toBe(true);

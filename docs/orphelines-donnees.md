@@ -13,7 +13,7 @@
 
 | Catalogue | Entités | Orphelines BRUTES (id seul) | Taux |
 |---|---|---|---|
-| `spells` | 576 | 278 | 48 % |
+| `spells` | 576 | 276 | 48 % |
 | `trappings` | 441 | 207 | 47 % |
 
 Chacun échappe à la détection par id pour une raison PROPRE : un Sort ne se cite pas par id en
@@ -421,4 +421,4 @@ mesure du canal label (qui n'est PAS la cause) : en-tête de `scripts/docs/build
 - `p-tarix-celui-qui-ecrit` — P'tarix, Celui qui écrit
 - `xirat-p-celui-qui-lit` — Xirat'p, Celui qui lit
 
-<!-- sources-empreinte: 654683f040318e10c3ed724c59e224a85841d87f (2078 fichiers, 134 dossiers) corps: 71d7456ce20c42e985c07158394d3f2c7c0f6fac -->
+<!-- sources-empreinte: 028007b43b8d6e40acc9feb9c4fe964eed5dd45a (2079 fichiers, 134 dossiers) corps: a8ef7ace89c49c3c1ac36d0fcd1e20e9ed51c4d5 -->

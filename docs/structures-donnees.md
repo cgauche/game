@@ -1152,7 +1152,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **872** (cible 401 · declaree 6 · historique 127 · divergente 338). Objets JSON parcourus : **49452**, dont **32323** portent une forme
+Lignes concept × dataset × champ × forme : **872** (cible 401 · declaree 6 · historique 127 · divergente 338). Objets JSON parcourus : **49450**, dont **32324** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **90**.
 
 Entrées de racine sans concept de valeur : **4067** sur **4154** —
@@ -1161,7 +1161,7 @@ Dont, NOMMÉES, celles qu’un concept de valeur revendiquerait sans la clause `
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-488 ligne(s), 24779 occurrence(s).
+488 ligne(s), 24780 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1528,7 +1528,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `ops` | `tableId+…` | divergente | `spells.json` | 4 | — | `tables.json` |  |
 | entité | `ops` | `talentId+…` | divergente | `spells.json` | 15 | — | `talents.json` `traits.json` |  |
 | entité | `ops` | `tone+…` | divergente | `spells.json` | 2 | — | `damage-types.json` `lightTones.json` `qualities.json` `traits.json` |  |
-| entité | `ops` | `traitId+…` | divergente | `spells.json` | 34 | — | `activities.json` `damage-types.json` `lightTones.json` `mass-battle.json` `psychology.json` `qualities.json` … |  |
+| entité | `ops` | `traitId+…` | divergente | `spells.json` | 35 | — | `activities.json` `damage-types.json` `lightTones.json` `mass-battle.json` `psychology.json` `qualities.json` … |  |
 | entité | `ops` | `trappingId+…` | divergente | `spells.json` | 3 | — | `trappings.json` |  |
 | entité | `perRound` | `id+…` | divergente | `spells.json` | 3 | — | `etats.json` |  |
 | entité | `perRound` | `id,unlessCondition+…` | divergente | `spells.json` | 1 | — | `etats.json` |  |
@@ -2518,14 +2518,14 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13205** objets sur **49452** ne sont portés par AUCUNE
+Au-delà des orphelines, **13202** objets sur **49450** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
 (`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`
 ou d’une `Formula` (`{kind,steps}`, `{bonusOf}`) et les objets à `op`, dont la grammaire est mesurée en §5.
 Ils ne sont pas au stock — ils se lisent ici, EN ENTIER : les
-**1177** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
+**1176** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
 table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 `src/data/structures-contrat.test.ts` (plafond sur le COMPTE, liste de référence = cette table).
 
@@ -2586,9 +2586,9 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `spells.json` | `steps` | `fail,kind,success,test` | 39 |
 | `spells.json` | `range` | `kind,text` | 37 |
 | `arene-projet.json` | `effect` | `montant,type` | 36 |
+| `spells.json` | `ops` | `op` | 33 |
 | `arcane-phenomena.json` | `effects` | `label,tier` | 32 |
 | `spells.json` | `ops` | `char,mod,op` | 32 |
-| `spells.json` | `ops` | `op` | 32 |
 | `spells.json` | `success` | `kind,steps` | 32 |
 | `careers.json` | `rand` | `elfe-sylvain,gnome,halfling,haut-elfe,humain,middenheim,middenland,nain,nordland,norse,ogre` | 31 |
 | `maneuvers.json` | `effect` | `on,ops,type` | 31 |
@@ -2911,7 +2911,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `ship-criticals.json` | `hauteurs` | `greement,nid-de-pie` | 3 |
 | `ship-criticals.json` | `greement` | `dice` | 3 |
 | `spells.json` | `skin` | `accent,accentH,accentO,cuir,cuirH,cuirO,metal,metalH,metalO` | 3 |
-| `spells.json` | `radius` | `bonusOf` | 3 |
 | `spells.json` | `cond` | `kind,of` | 3 |
 | `spells.json` | `perRound` | `amount,ignoreAP,ignoreTB,op` | 3 |
 | `spells.json` | `of` | `is,kind,who` | 3 |
@@ -3074,7 +3073,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `sea-weather.json` | `lateral` | `pctSail,virement` | 2 |
 | `skills.json` | `combatSubstitute` | `gate,role` | 2 |
 | `spells.json` | `damage` | `bonusOf` | 2 |
-| `spells.json` | `ops` | `op,radius` | 2 |
 | `spells.json` | `indicePerSL` | `amount,every` | 2 |
 | `spells.json` | `metersFormula` | `bonusOf` | 2 |
 | `spells.json` | `ops` | `damage,label,op` | 2 |
@@ -3499,6 +3497,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `spells.json` | `cond` | `is,kind` | 1 |
 | `spells.json` | `ops` | `amount,op,perSL,resource` | 1 |
 | `spells.json` | `ops` | `op,perSL,radius` | 1 |
+| `spells.json` | `radius` | `bonusOf` | 1 |
 | `spells.json` | `perSL` | `every,radiusFormula` | 1 |
 | `spells.json` | `radiusFormula` | `bonusOf` | 1 |
 | `spells.json` | `target` | `kind,lengthMeters,widthMeters` | 1 |
@@ -3861,7 +3860,7 @@ union discriminée générée d’`OP_DEFS`, à refs EMBOÎTÉES (`skill: {id, s
 | `ap` | `amount,op` | `mutations.json` | 2 | — |
 | `ap` | `amount,atHitLocation,op` | `spells.json` | 1 | — |
 | `armourPierce` | `amount,bypass,op` | `qualities.json` | 1 | — |
-| `arrowWard` | `op,radius` | `spells.json` | 1 | — |
+| `arrowWard` | `op` | `spells.json` | 1 | — |
 | `attackKeyword` | `keyword,op` | `traits.json` | 3 | — |
 | `attackWardFM` | `op` | `spells.json` | 1 | — |
 | `attrMod` | `attr,mod,op` | `talents.json` | 3 | — |
@@ -3998,7 +3997,7 @@ union discriminée générée d’`OP_DEFS`, à refs EMBOÎTÉES (`skill: {id, s
 | `disarm` | `op` | `criticals.json` | 17 | — |
 | `diseaseTestMod` | `amount,diseases,op` | `trappings.json` | 5 | — |
 | `diseaseTestMod` | `amount,op` | `maladies.json` | 1 | — |
-| `domeWard` | `op,radius` | `spells.json` | 1 | — |
+| `domeWard` | `indice,op,traitId` | `spells.json` | 1 | `traitId` |
 | `endPsych` | `op,type` | `psychology.json` | 1 | — |
 | `endPsych` | `op,type` | `talents.json` | 1 | — |
 | `endTransform` | `op,tag` | `maneuvers.json` | 1 | — |
@@ -4915,7 +4914,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `spells.json` | `of` | 8 |
 | `spells.json` | `onCross` | 4 |
 | `spells.json` | `onlyGroups` | 7 |
-| `spells.json` | `ops` | 205 |
+| `spells.json` | `ops` | 206 |
 | `spells.json` | `perRound` | 6 |
 | `spells.json` | `qualities` | 5 |
 | `spells.json` | `skill` | 50 |
@@ -5002,4 +5001,4 @@ pèse **2950** slots sur 3314.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: 247f9c4de3d7d000092c5c76b2b362e47ad47478 (374 fichiers, 10 dossiers) corps: f83247689d9499170e0d0ecb695f7b7e8fec555e -->
+<!-- sources-empreinte: d91fd2ede7d5b2fbdae1161453664c917e0ec2bb (374 fichiers, 10 dossiers) corps: 7766f10b2c1f2349c1182bfecb0951b6eff0b9f9 -->

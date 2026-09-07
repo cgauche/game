@@ -59,6 +59,22 @@ describe('GameOpEditor — création au CLIC : aucune valeur pré-semée, raison
     await h.teardown();
   });
 
+  it('« Dôme protecteur » : le formulaire porte TOUT ce que l’op porte — Trait et Indice, et RIEN de plus', async () => {
+    // Une op qui entre dans `DEDICATED` perd sa trappe JSON : son formulaire doit alors rendre TOUT ce
+    // que l'op porte, sinon un champ devient inéditable sans que rien ne rougisse (vécu : le rayon).
+    // La ZONE, elle, n'est PAS de l'op : elle vit dans la ligne « Cible » du sort (ZdE), un seul endroit.
+    const h = mount();
+    await h.mount();
+    await h.click(OP_LABEL.domeWard);
+
+    const op = h.opsOf()[0] as Extract<GameOp, { op: 'domeWard' }>;
+    expect(Object.keys(op).sort(), 'la graine porte exactement ce que l’op déclare').toEqual(['indice', 'op', 'traitId']);
+    expect(h.container.textContent ?? '', 'l’Indice de la sauvegarde s’édite').toContain('Indice');
+    expect(h.container.innerHTML, 'le Trait s’élit dans le registre').toContain('(choisir dans traits)');
+    expect(h.container.querySelectorAll('textarea').length, 'plus de trappe JSON quand le formulaire est complet').toBe(0);
+    await h.teardown();
+  });
+
   it('TOUTE op créable depuis la palette naît sans réf élue', async () => {
     for (const [k, fields] of Object.entries(OP_REF_FIELDS) as [GameOp['op'], typeof OP_REF_FIELDS[GameOp['op']]][]) {
       const h = mount();

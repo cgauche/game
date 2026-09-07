@@ -19,7 +19,7 @@ import { findFallTable, fallTables } from '../../data/shipCriticals';
 import { RefField } from '../compendium/RefField';
 import type { DatasetKey } from '../../data/overrides';
 import { giveTrappingLabel } from '../../engine/items';
-import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
+import { parseTraitInstance, formatTrait, formatWardSave } from '../../engine/traits/dispatch';
 import { traumaLabelOf } from '../../engine/trauma';
 import { AddMenu, TypeMenu, pickable, type TypeMenuGroup } from './AddMenu';
 import { JsonField } from './JsonField';
@@ -405,8 +405,11 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'statusMod': return { op: 'statusMod', amount: 1 };
     case 'grantReverseToken': return { op: 'grantReverseToken' };
     case 'castWard': return { op: 'castWard', radius: 5 };
-    case 'arrowWard': return { op: 'arrowWard', radius: 5 };
-    case 'domeWard': return { op: 'domeWard', radius: 5 };
+    case 'arrowWard': return { op: 'arrowWard' };
+    // L'Indice naît à 1 : le 6 du Dôme est la valeur RAW de CE sort (`LDB 47 l.410`), pas un défaut de
+    // l'op — et le Trait `protection` déclare son Indice sans valeur (`traits.json`, `indice.label`).
+    // Aucune zone : elle vient de la ligne « Cible » du sort (ZdE), pas de l'op.
+    case 'domeWard': return { op: 'domeWard', traitId: '', indice: 1 };
     case 'attackWardFM': return { op: 'attackWardFM' };
     case 'grantWeapon': return { op: 'grantWeapon', label: '', damage: { bonusOf: 'force-mentale' } };
     case 'grantNaturalWeapon': return { op: 'grantNaturalWeapon', label: '', damage: 3 };
@@ -519,6 +522,7 @@ export const OP_REF_FIELDS: Partial<Record<GameOp['op'], readonly OpRefField[]>>
   removePsychTrait: [{ field: 'psychType', ds: 'psychologies', label: 'Trait psychologique', required: false }],
   grantTrait: [{ field: 'traitId', ds: 'traits', label: 'Trait', required: true }],
   removeTrait: [{ field: 'traitId', ds: 'traits', label: 'Trait', required: true }],
+  domeWard: [{ field: 'traitId', ds: 'traits', label: 'Trait', required: true }],
   grantTalent: [{ field: 'talentId', ds: 'talents', label: 'Talent', required: true }],
   grantCareerTalent: [{ field: 'talentId', ds: 'talents', label: 'Talent', required: true }],
   grantCareerSkill: [{ field: 'skill.id', ds: 'skills', label: 'Compétence', required: true }],
@@ -599,8 +603,8 @@ export function opSummary(o: GameOp): string {
     case 'statusMod': return `Standing ${formulaSummary(o.amount)} (prochaine aventure)`;
     case 'grantReverseToken': return `inverser ${o.skill ? refLabel('skills', o.skill) : 'un Test (cible)'}`;
     case 'castWard': return `−20 Langue, rayon ${formulaSummary(o.radius)} m`;
-    case 'arrowWard': return `rayon ${formulaSummary(o.radius)} m`;
-    case 'domeWard': return `rayon ${formulaSummary(o.radius)} m`;
+    case 'arrowWard': return 'projectiles organiques détruits (ZdE du sort)';
+    case 'domeWard': return `${formatWardSave(o.traitId, formulaSummary(o.indice))} (ZdE du sort)`;
     case 'attackWardFM': return 'l’attaquer exige un Test de FM';
     case 'grantWeapon': return `${o.label} (Dégâts ${o.plusBF ? 'BF+' : ''}${formulaSummary(o.damage)})`;
     case 'grantNaturalWeapon': return `${o.label} (${o.plusBF !== false ? 'BF+' : ''}${formulaSummary(o.damage)})`;
@@ -670,7 +674,7 @@ const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'ap', 'testMod',
   'corruption', 'sinMod', 'corruptionExposure', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
   'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain', 'rollTable', 'rollMutation', 'armourPierce', 'light',
-  'fall',
+  'fall', 'domeWard',
 ]);
 
 /** Rangées d'une op `rollTable` (Vers de carie, MSRC 16 l.90) : `[min,max]` (source unique de fourchette,
@@ -875,6 +879,13 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
             <input placeholder="argument (ex. Skavens)" value={o.arg ?? ''} onChange={(e) => upd({ arg: e.target.value || undefined })} />
             <label className="dr"><input type="checkbox" checked={o.indice != null} onChange={(e) => upd({ indice: e.target.checked ? 1 : undefined })} /> Indice</label>
             {o.indice != null && <FormulaField label="Valeur" value={o.indice} min={0} onChange={(indice) => upd({ indice })} />}
+          </>
+        )}
+        {op.op === 'domeWard' && (
+          <>
+            {/* AUCUN champ de zone : la ZdE du Dôme se règle dans la CIBLE du sort (un seul endroit). */}
+            <RefField cfg={{ ds: 'traits', single: true }} fieldKey="Trait" value={o.traitId ?? ''} onChange={(v) => upd({ traitId: (v as string) ?? '' })} />
+            <FormulaField label="Indice" value={o.indice ?? 1} min={1} onChange={(indice) => upd({ indice })} />
           </>
         )}
         {op.op === 'grantTalent' && (

@@ -1246,6 +1246,17 @@ export function buildApi() {
       return v ? '✓ siège MJ posé (siège 0)' : '✓ siège MJ retiré (IA)';
     },
 
+    /** RECETTE : MÉMORISE un sort au grimoire d'un héros (par id) — jumeau de `talent()` pour la magie.
+     *  Passe par l'EFFET MOTEUR `learnSpell` (`state/combatEffects`, trouvaille de campagne, sans PX),
+     *  jamais par une écriture parallèle de `c.spells` : ce que la console pose est ce que le jeu pose. */
+    spell: (heroId: string, spellId: string) => {
+      nePeutPasDifferer(applyEffects(() => useGame.getState(), useGame.setState, [{ type: 'learnSpell', spell: spellId, heroId }]), 'devtools.spell');
+      const who = actorIn(useGame.getState(), heroId);
+      return who && (who.spells ?? []).includes(spellId)
+        ? `✓ ${who.label} mémorise « ${spellId} »`
+        : `✗ sort « ${spellId} » non mémorisé (héros ou sort inconnu)`;
+    },
+
     /** RECETTE : octroie un Talent à un combattant (par id) — ex. Mâchoires d'acier pour tester son trigger.
      *  Dernier paramètre : `times` (défaut 1, comportement historique) OU `{ spec?, times? }` pour les talents
      *  `specsSource` dont la mécanique se lit PAR la spec (ex. Magie du Chaos — `chaosDomainOf`,

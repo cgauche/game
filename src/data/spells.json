@@ -2299,10 +2299,7 @@
             "on": "target",
             "ops": [
               {
-                "op": "arrowWard",
-                "radius": {
-                  "bonusOf": "force-mentale"
-                }
+                "op": "arrowWard"
               }
             ]
           }
@@ -2537,9 +2534,8 @@
             "ops": [
               {
                 "op": "domeWard",
-                "radius": {
-                  "bonusOf": "force-mentale"
-                }
+                "traitId": "protection",
+                "indice": 6
               }
             ]
           }

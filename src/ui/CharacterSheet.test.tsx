@@ -96,6 +96,22 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
   };
   afterEach(demonterRacines);
 
+  it('Magie & Foi : le bouton « Lancer » est GATÉ pendant un combat, avec sa raison (jamais un clic sans effet)', () => {
+    // Les verbes `ooc*` sont des lanceurs HORS combat : en combat, le clic ne produisait RIEN (aucune
+    // modale, aucune Action consommée) — une affordance morte. Le geste existe, il vit dans la console.
+    const lanceur = { ...hero(), spells: ['sommeil'], talents: [{ talentId: 'magie-mineure', times: 1 }] } as unknown as Combatant;
+    useGame.setState({ party: [lanceur], battle: null, sheetId: lanceur.id, sheetTab: 'magie' });
+    const horsCombat = mount(<CharacterSheet heroId={lanceur.id} onClose={() => {}} />);
+    expect(horsCombat, 'hors combat, le lanceur de la fiche reste offert').not.toContain('En combat, les sorts se lancent depuis la console.');
+
+    demonterRacines();
+    useGame.setState({ battle: { combatants: [lanceur], order: [lanceur.id], log: [] } as never });
+    const enCombat = mount(<CharacterSheet heroId={lanceur.id} onClose={() => {}} />);
+    expect(enCombat, 'en combat, la raison est PORTÉE (survol/focus), pas le silence').toContain('En combat, les sorts se lancent depuis la console.');
+    expect(enCombat, 'gaté par `aria-disabled`, jamais par `disabled` natif : le bouton reste atteignable').toContain('aria-disabled="true"');
+    useGame.setState({ battle: null });
+  });
+
   it('la colonne rend la figurine en pied + Blessures, sans compagnie/caracs/ressources', () => {
     const h = hero();
     useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });

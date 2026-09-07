@@ -508,7 +508,9 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "spells.json", champ: "ops", signature: "tableId+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "spells.json", champ: "ops", signature: "talentId+…", statut: "divergente", strate: "Référence", occurrences: 15, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "spells.json", champ: "ops", signature: "tone+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "spells.json", champ: "ops", signature: "traitId+…", statut: "divergente", strate: "Référence", occurrences: 34, lot: "L3 #1463", date: "2026-08-23" },
+  // 34 -> 35 (#1508 T3, 2026-09-07) : l'op `domeWard` du sort Dôme NOMME désormais le Trait qu'elle
+  // octroie (`traitId`, `LDB 47 l.410`) au lieu de le taire ; même graphie, une occurrence de plus.
+  { concept: "reference", dataset: "spells.json", champ: "ops", signature: "traitId+…", statut: "divergente", strate: "Référence", occurrences: 35, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "spells.json", champ: "ops", signature: "trappingId+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "spells.json", champ: "perRound", signature: "id,unlessCondition+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "spells.json", champ: "perRound", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
@@ -1024,7 +1026,10 @@ export const STRUCTURES_OPS = [
   { op: "ap", signature: "amount,op", dataset: "mutations.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
   { op: "ap", signature: "amount,atHitLocation,op", dataset: "spells.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "armourPierce", signature: "amount,bypass,op", dataset: "qualities.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "arrowWard", signature: "op,radius", dataset: "spells.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
+  // signature `op,radius` -> `op` (#1508 T3, 2026-09-07) : le Bouclier anti-flèches cesse de re-déclarer
+  // sa zone. Elle est écrite par la ligne « Cible » de son sort (`LDB 47 l.356`, ZdE en DIAMÈTRE — l.28)
+  // et l'op la LIT (`OpsCtx.sourceSpell.zde`) ; le `radius = BFM` qu'elle portait valait DEUX fois la zone.
+  { op: "arrowWard", signature: "op", dataset: "spells.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "attackKeyword", signature: "keyword,op", dataset: "traits.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
   { op: "attackWardFM", signature: "op", dataset: "spells.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "attrMod", signature: "attr,mod,op", dataset: "talents.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
@@ -1175,7 +1180,11 @@ export const STRUCTURES_OPS = [
   { op: "aggravateSymptom", signature: "disease,op,otherwise,severity,symptomId", dataset: "maladies.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" }, // EDOC 08 l.104-108 (#674)
   { op: "diseaseTestMod", signature: "amount,op", dataset: "maladies.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantSymptom", signature: "disease,op,symptomId", dataset: "maladies.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" }, // EDOC 08 l.106-108 (#674)
-  { op: "domeWard", signature: "op,radius", dataset: "spells.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
+  // signature `op,radius` -> `indice,op,traitId` (#1508 T3, 2026-09-07) : l'op est TYPÉE
+  // (`OP_DEFS.domeWard`) et porte le Trait qu'elle octroie ; elle a quitté `OPS_NON_TYPEES`. Sa ZONE
+  // DISPARAÎT du payload : elle est déjà écrite par la ligne « Cible » du sort (ZdE, LDB 47 l.28) et
+  // l'op la LIT (`OpsCtx.sourceSpell.zde`) — une zone, une déclaration.
+  { op: "domeWard", signature: "indice,op,traitId", dataset: "spells.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "endPsych", signature: "op,type", dataset: "psychology.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "endPsych", signature: "op,type", dataset: "talents.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "endTransform", signature: "op,tag", dataset: "maneuvers.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },

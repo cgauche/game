@@ -154,7 +154,7 @@ import { loadRegister, weaponLoaded, reloadProgressOf } from '../engine/weaponLo
 import { recomputeLoadout, weaponWithAmmo, loadedAmmo, loadWeapon, unloadWeapon, setReloadProgress, spendChamberedRound, consumeAmmo, ammoFamily, ammoFamilyLabel, damageArmour, deviatableArmourAt, buildWeapon, isUnarmed } from '../engine/items';
 import { hasCapability, itemCapability } from '../engine/capabilities';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, incomingMeleeAdvantage, removeActiveEffects, effectRef, COND } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, incomingMeleeAdvantage, removeActiveEffects, effectRef, COND } from '../engine/conditions';
 import { creatureAttacks, selfManeuversOf, selfManeuverApplicable, type CreatureAttack } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 
@@ -262,7 +262,7 @@ export * from './combat/triggeredTest'; // baril : enregistre l'applier de casca
 import { runCombatFlow, routeTriggeredTest, bandeTriggeredTest, rollFrozenOpposedAttacker, frozenOpposedBatchStep, simpleBatchTestStep } from './combat/triggeredTest'; // usage interne (applyCast : exécuteur de Flow de sort EN COMBAT, after-aware → canal de journal unique ; Surprise : opposition figée + bande de guetteurs)
 export { aiMaybeFrenzy, resolvePsychAI, fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // baril : enregistre les hooks de début de tour ennemi (effet de bord) + ré-export pour frenzy*.test / psych*.test + effets de bord de tour + gate d'action
 // Sauvegardes post-touche en registre `HitModifier` ordonné (state/combat/hitModifiers, module FEUILLE).
-import { runHitModifiers, martyrGuardOf, wardedAgainst } from './combat/hitModifiers'; // usage interne (applyAttackResult + applyCast)
+import { runHitModifiers } from './combat/hitModifiers'; // usage interne (applyAttackResult + applyCast : SITE UNIQUE des sauvegardes de touche)
 export { runHitModifiers, registerHitModifier, martyrGuardOf, wardedAgainst, organicProjectile } from './combat/hitModifiers'; // baril : enregistre les modifiers (effet de bord) + ré-export pour applyCast / les tests (l11-sorts-zones, etc.)
 import {
   trampleTarget, bestDefenseMode,
@@ -2240,12 +2240,19 @@ export function applyAttackResult(
   // l'État jusqu'à la fin du Round (sinon la 2ᵉ attaque gratuite rouvrirait une défense en plein milieu).
   if (deviated === undefined && hasCondition(target, COND.surpris)) removeCondition(target, COND.surpris, 1);
   // Sauvegardes SYNCHRONES « après la touche » en registre ordonné (state/combat/hitModifiers) :
-  // Démoniaque/Protection (`wardSaves`, RNG) → Bouclier anti-flèches → Dôme (RNG) → Martyr → Perturbante.
-  // Chaque modifier RE-TESTE l'état courant de `res` et le TRANSFORME — ordre RAW encodé par `order`,
-  // figé byte-pour-byte par `hitSaves.golden.test`. AUCUN ne SUSPEND (pas de pending) ; autoKill et
-  // l'offre de Déviation Critique restent INLINE ci-dessous. Les saves posent leur ligne dans `res.log`
-  // (journalisé par l'`ev(evKind, res.log, …)` final) → `sink` no-op ici.
-  res = runHitModifiers({ get, set, attacker, target, weapon, res, sink: () => {} });
+  // 5 réveil d'un dormeur → 8 Bouclier anti-flèches → 10 sauvegarde « 1d10 ≥ Indice », UNIQUE (traits
+  // propres ET Trait octroyé par un Dôme, RNG) → 40 Martyr → 50 Perturbante.
+  // Chaque modifier RE-TESTE l'état courant de `res` et le TRANSFORME — ordre encodé par `order`.
+  // AUCUN ne SUSPEND (pas de pending) ; autoKill et l'offre de Déviation Critique restent INLINE
+  // ci-dessous. Les saves posent leur ligne dans `res.log` (journalisé par l'`ev(evKind, res.log, …)`
+  // final) → `sink` no-op ici. `encaisse` : ce qu'un TIERS a pris (Martyr) — l'interruption de
+  // Focalisation du prêtre vit ici, le registre n'important rien de ce module.
+  const tiersLog: string[] = [];
+  res = runHitModifiers({
+    get, set, attacker, target, weapon, res, sink: () => {},
+    attaque: weapon.type === 'melee' ? 'melee' : 'ranged',
+    encaisse: (c) => { tiersLog.push(...checkFocusInterruption(get, set, c)); },
+  });
   // Empoignade (LDB 14 l.159) : « Au lieu d'infliger des Dégâts ». Sur une touche, on NEUTRALISE Dégâts,
   // Critique et mort-auto de CE coup (les branches Surpris/Engagé/Avantage/journal restent intactes) ; la
   // pose de l'Empoignade + de l'État *Empêtré* se fait après l'Engagement, plus bas.
@@ -2364,7 +2371,7 @@ export function applyAttackResult(
 
   if (weapon.type === 'melee' && !isInanimate(target)) engage(attacker, target); // Engagé symétrique sur toute attaque de mêlée (LDB 13 l.169-171) — jamais avec un objet INANIMÉ
   if (!isInanimate(target)) markAttacked(attacker, target); // trace orientée du Round (LDB 85 l.383, `agressifEnvers`) — tir compris
-  const critLog: string[] = [];
+  const critLog: string[] = [...tiersLog];
   // Avantage de l'attaquant (LDB 13 l.123, étape « 1 : Lancer pour Toucher ») — crédité AVANT le bloc
   // Critique (LDB 13 l.177, après les étapes 2 et 3) : un déclencheur `onCrit` lit ainsi la MÊME réserve
   // que `onHit`, et l'offre à X Avantages qu'il pose (Taillade, AA 08 l.87) est abordable comme le store
@@ -5215,7 +5222,16 @@ export function applyCast(
   // DISSIPATION (LDB 46 l.158-160) : identité du Sort source, marquée sur ses ActiveEffect DURABLES (via
   // `OpsCtx.sourceSpell` → `applyOps`) pour autoriser un Test étendu de Langue (Magick) jusqu'au NI. Sorts
   // seulement (les Prières ne se dissipent pas par Contre-sort). Sort instantané → aucun effet → rien à marquer.
-  const sourceSpell = isSort ? { spellId: spell.id, ni: spell.cn ?? 0, casterId: caster.id, label: spell.label } : undefined;
+  // La ZdE RÉSOLUE voyage avec le sort source : une aura de garde (Dôme, Bouclier anti-flèches) LIT sa
+  // zone au lieu de la re-déclarer — elle est écrite à UN endroit, la ligne « Cible » du sort. Les deux
+  // lectures viennent de leurs sites uniques (`zdeDiameterMeters`, `zoneRadiusMeters` pour le ÷ 2).
+  const zdeDiam = zdeDiameterMeters(spell.target, caster);
+  const sourceSpell = isSort
+    ? {
+      spellId: spell.id, ni: spell.cn ?? 0, casterId: caster.id, label: spell.label,
+      ...(zdeDiam != null ? { zde: { diametreM: zdeDiam, rayonM: zoneRadiusMeters(spell, caster)! } } : {}),
+    }
+    : undefined;
   // IDENTITÉ du sort (Unicité RAW / anti-spam IA) : posée sur TOUT effet durable de ce lancement — Prières
   // COMPRISES (≠ `sourceSpell`, réservé à la dissipation arcanique). Une bénédiction durable est ainsi
   // reconnue par `isSpellActive`/`buildAiInput` pour ne pas la re-lancer en boucle (LDB 46 l.116-121).
@@ -5316,29 +5332,24 @@ export function applyCast(
         }
         mres = evaluateMissile(caster, t, spell, { ...mres, zoneSpellDRMod: zoneMod(t) }, mres.location, 0, overcastDamageSteps);
       }
-      // Dôme (LDB 47 — L11) : Protection (6+) contre une Attaque MAGIQUE venant de l'extérieur.
-      if (mres.hit && mres.woundsLost && battle && wardedAgainst(battle.combatants, caster, t, 'domeWard', sceneMetresPerTile(get().scene))) {
-        const d = d10(battleRng());
-        if (d >= 6) {
-          logLines.push(tr('cf.domeSaved', { name: t.label, d }));
-          return;
-        }
-      }
-      // Martyr (LDB 43 l.107) : les Dégâts du Projectile vont au prêtre (BE doublé pour ces Dégâts).
-      if (mres.hit && mres.woundsLost && battle) {
-        const priest = martyrGuardOf(battle, t);
-        if (priest) {
-          const raw = mres.damage ?? mres.woundsLost;
-          const taken = Math.max(0, raw - 2 * bonus(effectiveChar(priest, 'endurance')) - Math.max(0, priest.armour[mres.location ?? 'corps'] ?? 0));
-          if (taken > 0) {
-            loseWounds(priest, taken);
-            if (priest.wounds.current <= 0) applyZeroWounds(priest);
-          }
-          logLines.push(tr('cf.martyrTakes', { priest: priest.label, name: t.label, taken: taken > 0 ? tr('cf.fragMartyrTaken', { taken }) : tr('cf.fragMartyrNoDmg') }));
-          logLines.push(...checkFocusInterruption(get, set, priest));
-          return;
-        }
-      }
+      // Sauvegardes « après la touche » — MÊME registre ordonné que le coup physique
+      // (`state/combat/hitModifiers`), et c'est SON site unique : Démoniaque/Protection (LDB 85 l.98),
+      // Dôme (LDB 47 l.410, qui nomme les attaques magiques), Martyr.
+      // La touche est exprimée dans le vocabulaire partagé des touches (`AttackResult`) ; l'attaque
+      // est MAGIQUE, elle n'a pas d'arme.
+      const touche: AttackResult = {
+        hit: !!mres.hit, attackerRoll: mres.roll ?? 0, netSL: 0, critical: false,
+        advantageTo: null, defenderDefeated: false, log: '',
+        ...(mres.location ? { location: mres.location } : {}),
+        ...(mres.damage != null ? { damage: mres.damage } : {}),
+        ...(mres.woundsLost != null ? { woundsLost: mres.woundsLost } : {}),
+      };
+      const apresSaves = runHitModifiers({
+        get, set, attacker: caster, target: t, res: touche, attaque: 'magique', sink: () => {},
+        encaisse: (c) => { logLines.push(...checkFocusInterruption(get, set, c)); },
+      });
+      if (apresSaves.log) logLines.push(apresSaves.log);
+      mres = { ...mres, woundsLost: apresSaves.woundsLost, damage: apresSaves.damage };
       if (!mres.hit || !mres.woundsLost) return;
       const currentBefore = t.wounds.current;
       const overkill = mres.woundsLost - currentBefore;

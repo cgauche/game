@@ -253,6 +253,13 @@ export function markMutationsAtSpawn(traits: TraitList | undefined): NonNullable
 }
 
 // ── Mathématique de combat ────────────────────────────────────────────────────────────────────────
+/** NOTATION RAW d'une sauvegarde « 1d10 ≥ Indice » — `LDB 47 l.410` écrit « Protection (6+) ».
+ *  GRAPHIE UNIQUE du seuil, partout où il s'affiche (journal de combat, Codex, atelier d'op) : le nom du
+ *  Trait, son Indice, le « + ». L'Indice peut être une `Formula` déjà résumée (atelier). */
+export function formatWardSave(traitId: string, indice: number | string): string {
+  return `${traitLabelById(traitId)} (${indice}+)`;
+}
+
 /** Sauvegardes « 1d10 ≥ Indice → coup ignoré » (Démoniaque 8+, Protection N). Liste des seuils. */
 export function wardSaves(traits: TraitList | undefined): number[] {
   return (traits ?? []).filter((t) => findTraitById(t.id)?.capabilities?.wardSave && t.value != null).map((t) => t.value!);

@@ -31,8 +31,8 @@ describe('sceneSchema — les scènes CONSTRUITES par les scénarios de test', (
   const scenes = SCENARIOS.flatMap(scenesDe);
 
   it('le contrat VOIT le corpus qu’il prétend mesurer', () => {
-    expect(SCENARIOS.length).toBe(38);
-    expect(scenes.length).toBe(87);
+    expect(SCENARIOS.length).toBe(39); // 38 -> 39 (#1508 T3 : « Dôme », la sauvegarde octroyée par une zone)
+    expect(scenes.length).toBe(88); // 87 -> 88 (#1508 T3 : la scène du scénario « Dôme »)
     expect(new Set(SCENARIOS.map((s) => s.id)).size).toBe(SCENARIOS.length);
   });
 

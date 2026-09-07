@@ -97,6 +97,7 @@ export const GAMEOP_FIELD_TARGETS = {
   // ── Traits / Talents / Compétences ──
   'grantTrait.traitId': { registry: 'traits' },
   'removeTrait.traitId': { registry: 'traits' },
+  'domeWard.traitId': { registry: 'traits' },
   'grantTalent.talentId': { registry: 'talents' },
   'grantCareerTalent.talentId': { registry: 'talents' },
   // `skill` d'op = RÉFÉRENCE EMBOÎTÉE `{ id, spec? }` — hors de portée de ce filet (aveugle aux réfs

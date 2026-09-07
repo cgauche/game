@@ -305,7 +305,7 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
   `livre-de-base`, `archives-de-l-empire-2`, `archives-de-l-empire-1`, `middenheim`, `aux-armes`, `mer-des-griffes`, `vents-de-la-magie`). Aucun champ JSON ajouté : extraction
   structurelle depuis la desc verbatim.
 - **Riders / effets / formules de sort en clair** : les sections rendent d'abord la phrase JOUEUR
-  (`src/ui/compendium/humanize.ts` — switchs EXHAUSTIFS, zéro id brut : `humanizeFormula`, `humanizeQuantite`, `humanizeCondition`, `humanizePerSL`, `coutAvantageTexte`, `flowMuet`, `replieCausesPersistantes`, `humanizeResolveWindow`, `humanizeOp`, `humanizeFlow`, `humanizeFlowSentence`, `humanizeCastBonus`),
+  (`src/ui/compendium/humanize.ts` — switchs EXHAUSTIFS, zéro id brut : `humanizeFormula`, `deFormule`, `humanizeQuantite`, `humanizeCondition`, `humanizePerSL`, `coutAvantageTexte`, `flowMuet`, `replieCausesPersistantes`, `humanizeResolveWindow`, `humanizeOp`, `humanizeFlow`, `humanizeFlowSentence`, `humanizeCastBonus`),
   la forme technique d'atelier restant dépliée dans un bloc « Détail technique » (primitive `.fold`).
 - **Édition** : tout reste éditable au Compendium (DEV) ; les VIEWS ne sont pas éditables
   (`isEditableCategory=false`) — éditer la source.
@@ -317,4 +317,4 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
 - `npx vitest run src/ui/compendium/humanize.test.ts`
 - `npx vitest run src/data/schemas/exposition-contrats.test.ts`
 - `npx vitest run src/data/serialize.test.ts`
-<!-- sources-empreinte: 2f6d9b3544f9440cdc261fd2af36265acb149ba2 (533 fichiers, 0 dossiers) corps: 1dd2141f45ef0265d44dd734d7ac7a14833f7adb -->
+<!-- sources-empreinte: 1be53327c600f3bdb65ce3e303d6525fd12c2c77 (533 fichiers, 0 dossiers) corps: 075d1740885278e8904e918b4bfd803f2bad9b29 -->

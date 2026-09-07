@@ -20,7 +20,7 @@ import { INDICE_TEMPLATE, type ActorRef, type CompareOp, type CompareSubject } f
 import { estCausePersistante, type GameOp, type Formula, type ResolveWindow } from '../../engine/ops';
 import type { Camp, Relation } from '../../engine/relations';
 import { CHAR_LABELS, HIT_LOCATION_LABELS, type CharKey, type ArmourBypass } from '../../engine/types';
-import { formatTrait, traitLabelById } from '../../engine/traits/dispatch';
+import { formatTrait, formatWardSave, traitLabelById } from '../../engine/traits/dispatch';
 import { giveTrappingLabel } from '../../engine/items';
 import { traumaLabelOf } from '../../engine/trauma';
 import { formatMoney } from '../../engine/money';
@@ -55,6 +55,17 @@ const REL_PLAYER: Record<Relation | Camp, string> = {
  *  le joueur lit une quantité, pas une indirection. */
 export function humanizeFormula(f: Formula): string {
   return formuleEnMots(f, null);
+}
+
+/** « de » + une formule humanisée, AVEC la contraction française : `de le` → `du`, `de les` → `des`
+ *  (`de la`/`de l'` restent). Une formule se NOMME (« le Bonus de Force Mentale », « la Sociabilité ») :
+ *  la coller derrière un « de » nu rendait « dans un rayon de le Bonus… ». SITE UNIQUE de cette
+ *  contraction — toute phrase qui pose une quantité derrière « de » passe par ici. PURE. */
+export function deFormule(f: Formula): string {
+  const mots = humanizeFormula(f);
+  if (mots.startsWith('le ')) return `du ${mots.slice(3)}`;
+  if (mots.startsWith('les ')) return `des ${mots.slice(4)}`;
+  return `de ${mots}`;
 }
 
 /** La MÊME quantité, mais la note de règle SORTIE du nombre — pour les phrases où une UNITÉ suit le
@@ -398,10 +409,10 @@ export function humanizeOp(o: GameOp): string {
     case 'critTwice': return `lance deux fois ses Blessures critiques et garde le meilleur`;
     case 'damageArmour': return `voit une pièce d'armure en cuir perdre 1 PA`;
     case 'suppressPsych': return `voit tous ses Traits psychologiques apaisés`;
-    case 'castWard': return `impose −20 aux Tests de magie dans un rayon de ${humanizeFormula(o.radius)} m`;
+    case 'castWard': return `impose −20 aux Tests de magie dans un rayon ${deFormule(o.radius)} m`;
     case 'suffocate': return `est soumis aux règles de la Suffocation`;
-    case 'arrowWard': return `détruit les projectiles organiques dans un rayon de ${humanizeFormula(o.radius)} m`;
-    case 'domeWard': return `érige un dôme protecteur de ${humanizeFormula(o.radius)} m`;
+    case 'arrowWard': return "détruit les projectiles organiques qui entrent dans la Zone d'Effet";
+    case 'domeWard': return `érige un dôme sur la Zone d'Effet : elle octroie le Trait ${formatWardSave(o.traitId, humanizeFormula(o.indice))} contre les attaques magiques ou à distance venant de l'extérieur`;
     case 'attackWardFM': return `ne peut être attaqué qu'après un Test de Force Mentale réussi`;
     case 'martyr': return `reçoit à leur place les Dégâts subis par ses protégés`;
     case 'noBreath': return `n'a plus besoin de respirer`;
@@ -415,7 +426,7 @@ export function humanizeOp(o: GameOp): string {
     case 'grantFreeAttack': return `peut porter une attaque gratuite`;
     case 'interruptFocus': return `voit sa Focalisation interrompue`;
     case 'breakBlade': return `voit l'arme adverse arrachée`;
-    case 'push': return `est repoussé de ${humanizeFormula(o.meters)} m`;
+    case 'push': return `est repoussé ${deFormule(o.meters)} m`;
     case 'teleport': return `se téléporte jusqu'à ${humanizeFormula(o.meters)} m`;
     case 'chain': return `rebondit sur ${humanizeFormula(o.maxBounces)} ennemi(s) à ${humanizeFormula(o.hopMeters)} m`;
     case 'perRound': return `déclenche à chaque Round : ${o.ops.map(humanizeOp).join(' ; ')}`;
@@ -425,7 +436,7 @@ export function humanizeOp(o: GameOp): string {
     case 'charDamage': return `perd ${humanizeFormula(o.amount)} en ${CHAR_LABELS[o.char]} (définitivement)`;
     case 'summon': return `invoque ${humanizeFormula(o.count)}× ${creatureLabel(o.ref)}${o.allyOfCaster === false ? ' (hostile)' : ''}`;
     case 'scheduleRespawn': return `se reconstitue (${creatureLabel(o.ref)}) après ${humanizeFormula(o.delayDays)} jour(s)`;
-    case 'zone': return `pose ${o.shape === 'wall' ? `un mur de ${humanizeFormula(o.lengthMeters ?? 2)} m` : `un disque de ${humanizeFormula(o.radiusMeters ?? 2)} m`}`;
+    case 'zone': return `pose ${o.shape === 'wall' ? `un mur ${deFormule(o.lengthMeters ?? 2)} m` : `un disque ${deFormule(o.radiusMeters ?? 2)} m`}`;
     case 'polymorph': return `se métamorphose en ${creatureLabel(o.ref)}`;
     case 'transform': return `se transforme (${creatureLabel(o.morphRef ?? o.tag)})`;
     case 'endTransform': return `retrouve sa forme initiale`;
@@ -441,7 +452,7 @@ export function humanizeOp(o: GameOp): string {
     // affiché est l'incrément PAR POINT — l'échelle par rang/Indice n'est pas résolue ici.
     case 'incomingSpellDRMod': return typeof o.amount === 'number' && o.amount < 0
       ? `réduit de ${-o.amount} par point le DR des Sorts qui l'affectent`
-      : `modifie de ${humanizeFormula(o.amount)} par point le DR des Sorts qui l'affectent`;
+      : `modifie ${deFormule(o.amount)} par point le DR des Sorts qui l'affectent`;
     case 'sbBonus': return `gagne +${o.amount} au Bonus de Force pour ses Dégâts`;
     case 'attackKeyword': return `voit ses attaques comptées comme magiques`;
     case 'mitigateIncoming': return `annule les Dégâts qu'il subit${o.unlessKeyword === 'magic' ? ' (sauf attaques magiques)' : ''}`;

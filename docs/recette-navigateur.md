@@ -557,6 +557,44 @@ Depuis le **nid-de-pie**, la hauteur est entière (25 m) : une seule étape.
 Coque nommée explicitement : `__wfrp.shipCrit('greement', { hullId: 'cogue-pirate' })`.
 Changer de poste sans passer par la fiche : `__wfrp.station('vigie', 'greement')`.
 
+## Dôme — les 3 gestes (#1508 T3)
+
+Scénario d'id **`dome`** (« Dôme — la sauvegarde octroyée par une zone (LDB 47 l.410) », section
+**Magie**). Combat direct : Ilyanwe (Haute Sorcière à l'arsenal COURT — 4 sorts posés par la scène, pour
+que le Dôme tienne dans les 12 alvéoles de la console) et Berta côte à côte ; un **tireur gobelin** au
+loin, ARMÉ d'un arc par la scène (hors du dôme, c'est la condition « provenant de l'extérieur ») et un
+**orc** qui vient au contact (sous la voûte, donc hors couverture).
+
+```js
+__wfrp.scenario('dome', 11)              // lancement (combat direct)
+// 1. Ilyanwe a un arsenal COURT (4 sorts, en donnée de la scène) : chaque sort est SA PROPRE alvéole
+//    de la console (`sort-<id>`, libellé = le nom du sort) — il n'existe aucune entrée « Sorts ».
+//    Cliquer l'alvéole « Dôme », puis se cibler soi-même (Portée « Vous »).
+//    Grimoire manquant ? __wfrp.spell('sorciere', 'dome') MÉMORISE le sort (il ne le lance pas).
+// 2. l'aura se pose ; la ZONE se dit UNE fois, sur la ligne du lanceur — « Ilyanwe érige un dôme sur
+//    N m de diamètre : il octroie Protection (6+) contre les attaques magiques ou à distance venant de
+//    l'extérieur » ; chaque autre couvert n'a qu'une ligne courte (« Berta est sous le dôme : … »).
+//    L'Indice vient de la DONNÉE de l'op ; la ZdE, de la ligne « Cible » du sort (un seul endroit).
+// 3. laisser le TIREUR gobelin tirer sur Berta : CHAQUE coup reçu écrit sa sauvegarde, réussie —
+//    « Berta ignore le coup — sauvegarde 1d10 : 7 ≥ Protection (6+) du Dôme. » — ou RATÉE —
+//    « Berta n'ignore pas le coup — sauvegarde 1d10 : 3 < Protection (6+) du Dôme. » Jamais rien.
+//    Puis laisser l'ORC frapper au contact : AUCUNE ligne de sauvegarde (le dôme ne couvre pas la mêlée).
+```
+
+Ce qui se lit à l'écran : le Trait qui a **réellement** sauvé est nommé (jamais un
+« Démoniaque/Protection » à deviner). **Deux graphies RAW cohabitent, et c'est le livre qui les
+sépare** : le STATBLOC écrit `Protection 6+` (`LDB 84 l.28` — puce de Trait du Codex, `grantTrait`,
+`formatTrait`), la PROSE d'un sort écrit `Protection (6+)` (`LDB 47 l.410` — journal de sauvegarde,
+`op.domeWard`, humanize, résumé d'op, `formatWardSave`). Ne pas « uniformiser » l'une sur l'autre.
+
+Rejeu MOTEUR (headless) de ces trois gestes : `src/scenes/test-scenarios/22-dome.test.ts` — l'aura est
+posée par le VRAI lancer (`applyCast`), le tireur TIRE dès son premier tour, chaque coup reçu écrit sa
+sauvegarde (réussie OU ratée), la mêlée n'en ouvre aucune.
+
+Hors combat, la fiche (**Magie & Foi**) garde ses boutons « Lancer » / « Focaliser » ; **pendant** un
+combat ils sont gatés, avec leur raison au survol (« En combat, les sorts se lancent depuis la
+console. ») — les verbes `ooc*` sont des lanceurs HORS combat et ne produisaient rien au clic.
+
 ## Pièges vécus (corrections d'expérience)
 
 - **Compendium/Atelier : ouvrir le `<summary>` du groupe AVANT de cliquer la sous-catégorie** (vécu

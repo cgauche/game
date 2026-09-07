@@ -945,9 +945,10 @@ export interface ActiveEffect {
   /** Bouclier anti-flèches (LDB 47 — L11) : les projectiles ORGANIQUES (flèches, carreaux,
    *  javelots) entrant dans la zone de `radiusMeters` autour du porteur sont détruits. */
   arrowWard?: { radiusMeters: number };
-  /** Dôme (LDB 47 — L11) : quiconque dans la zone gagne Protection (6+) contre les attaques
-   *  magiques ou à distance provenant de l'EXTÉRIEUR du dôme. */
-  domeWard?: { radiusMeters: number };
+  /** Dôme (LDB 47 l.410) : quiconque dans la zone gagne le TRAIT `ward` contre les attaques magiques
+   *  ou à distance provenant de l'EXTÉRIEUR du dôme. Le Trait et son Indice viennent de la DONNÉE du
+   *  sort (op `domeWard`) — aucun seuil n'est écrit dans le code. */
+  domeWard?: { radiusMeters: number; ward: import('./statEntry').TraitInstance };
   /** Bénédiction de Protection (LDB 41 — L13) : « Les ennemis doivent effectuer un Test de FM
    *  Accessible (+20) pour attaquer votre cible. Sur un échec, ils doivent choisir une cible ou
    *  une Action différente. » — Test joué à la DÉCLARATION d'attaque (rien n'est consommé). */

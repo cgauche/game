@@ -71,7 +71,7 @@ import {
   type ReachValue,
   type ConditionEmit,
 } from './types';
-import { formatTrait } from './traits/dispatch';
+import { formatTrait, formatWardSave } from './traits/dispatch';
 import { woundsFromHit } from './woundsCalc';
 import type { TraitInstance } from './statEntry';
 import type { ChaosAlign, ExposureLevel } from './corruption';
@@ -703,10 +703,12 @@ export type GameOp =
   | { op: 'suffocate' }
   /** Bouclier anti-flèches (LDB 47 — L11) : « les projectiles constitués de matière organique
    *  sont automatiquement détruits s'ils entrent dans la Zone d'Effet ». Aura sur la cible. */
-  | { op: 'arrowWard'; radius: Formula }
-  /** Dôme (LDB 47 — L11) : « Quiconque dans la ZdE gagne Protection (6+) contre les Attaques
-   *  magiques ou à distance provenant de l'extérieur du dôme ». Aura sur la cible. */
-  | { op: 'domeWard'; radius: Formula }
+  | { op: 'arrowWard' }
+  /** Dôme (LDB 47 l.410) — aura sur la cible, qui OCTROIE `traitId` (Indice) à ceux qu'elle couvre :
+   *  MÊME graphie d'octroi que `grantTrait`, et REQUISE ici (un dôme sans Indice serait une protection
+   *  qui ne sauve de rien). AUCUNE zone ne s'authore ici : elle est DÉJÀ déclarée par la ligne « Cible »
+   *  du sort (`SpellTarget`, ZdE en DIAMÈTRE — LDB 47 l.28), lue par `zdeDiameterMeters`. */
+  | { op: 'domeWard'; traitId: string; indice: Formula }
   /** Bénédiction de Protection (LDB 41 — L13) : « Les ennemis doivent effectuer un Test de FM
    *  Accessible (+20) pour attaquer votre cible ». Drapeau lu à la déclaration d'attaque. */
   | { op: 'attackWardFM' }
@@ -1183,7 +1185,15 @@ export interface OpsCtx {
   hull?: Combatant;
   /** SORT SOURCE en cours d'incantation : tout `ActiveEffect` POSÉ par cet `applyOps` en est marqué
    *  (`ActiveEffect.spell`), pour la DISSIPATION (LDB 46 l.158-162). Posé par `applyCast` (Sorts durables). */
-  sourceSpell?: { spellId: string; ni: number; casterId: string; label: string };
+  sourceSpell?: {
+    spellId: string; ni: number; casterId: string; label: string;
+    /** ZONE D'EFFET du sort, DÉJÀ RÉSOLUE par ses lecteurs uniques (`magic.zdeDiameterMeters` pour le
+     *  diamètre — la géométrie qu'une ZdE a dans le livre, LDB 47 l.28 ; `combatFlow.zoneRadiusMeters`
+     *  pour le rayon, seul site du passage diamètre→rayon). Les auras de garde (Dôme, Bouclier
+     *  anti-flèches) la LISENT ici au lieu de la re-déclarer : la zone d'un sort s'authore à UN endroit,
+     *  sa ligne « Cible ». Absente = le sort n'a pas de ZdE chiffrable. */
+    zde?: { diametreM: number; rayonM: number };
+  };
   /** id STABLE du sort/prière en cours d'incantation — posé sur TOUT `ActiveEffect` durable de ce lancement
    *  (`ActiveEffect.sourceSpellId`), Prières COMPRISES (≠ `sourceSpell`, arcane-only dissipation). Sert
    *  l'IDENTITÉ du sort pour l'anti-spam de buff de l'IA. Posé par `applyCast` à CHAQUE lancement. */
@@ -1481,6 +1491,26 @@ const DES_DUNE_OP: { [K in keyof ChampsDOp]: (o: Extract<GameOp, { op: K }>, tar
  */
 export function opDemandeUnDe(op: GameOp): boolean {
   return op.op in DES_DUNE_OP;
+}
+
+/**
+ * ZONE d'une AURA DE GARDE (Dôme, Bouclier anti-flèches) — elle n'est PAS un paramètre de l'op : elle
+ * est déclarée UNE fois, par la ligne « Cible » du sort qui la pose (ZdE en DIAMÈTRE, LDB 47 l.28), et
+ * arrive ici DÉJÀ RÉSOLUE (`OpsCtx.sourceSpell.zde`). Aucune arithmétique de zone dans l'op.
+ *
+ * `porteur` : la cible de CET `applyOps` est le lanceur, donc celui qui ÉRIGE la zone — les autres n'y
+ * sont que couverts, et leur ligne de journal le dit courtément (au lieu de répéter la zone à chacun).
+ *
+ * FAIL-FAST : une aura posée hors d'un sort à ZdE n'a AUCUNE zone où se mesurer ; la deviner (un rayon
+ * par défaut) rendrait une protection que personne n'a déclarée.
+ */
+function zoneDeGarde(ctx: OpsCtx, cible: Combatant, op: string): { rayonM: number; diametreM: number; porteur: boolean } {
+  const zde = ctx.sourceSpell?.zde;
+  if (!zde) {
+    throw new Error(`op « ${op} » : aucune Zone d'Effet à lire — la zone d'une aura de garde vient de la `
+      + "ligne « Cible » du sort qui la pose (LDB 47 l.28), et ce contexte n'en porte pas.");
+  }
+  return { ...zde, porteur: ctx.caster?.id === cible.id };
 }
 
 /** Les dés DÉCLARÉS par une op à son rang — lecture unique du registre, vue ANONYME (l'énumération n'a
@@ -2510,25 +2540,28 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'arrowWard': {
-        const radius = Math.max(0, resolveFormula(o.radius, ref, rng));
+        const zone = zoneDeGarde(ctx, target, 'arrowWard');
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
           duration: durationFromCtx(ctx),
-          arrowWard: { radiusMeters: radius },
+          arrowWard: { radiusMeters: zone.rayonM },
         });
-        lines.push(t('op.arrowWard', { name: target.label, radius, src: ctx.label ?? 'sort' }));
+        lines.push(t(zone.porteur ? 'op.arrowWard' : 'op.arrowWardCouvert', { name: target.label, diametre: zone.diametreM, src: ctx.label ?? 'sort' }));
         break;
       }
       case 'domeWard': {
-        const radius = Math.max(0, resolveFormula(o.radius, ref, rng));
+        const zone = zoneDeGarde(ctx, target, 'domeWard');
+        const ward = { id: o.traitId, value: resolveFormula(o.indice, ref, rng) };
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
           duration: durationFromCtx(ctx),
-          domeWard: { radiusMeters: radius },
+          domeWard: { radiusMeters: zone.rayonM, ward },
         });
-        lines.push(t('op.domeWard', { name: target.label, radius, src: ctx.label ?? 'sort' }));
+        lines.push(t(zone.porteur ? 'op.domeWard' : 'op.domeWardCouvert', {
+          name: target.label, diametre: zone.diametreM, trait: formatWardSave(ward.id, ward.value), src: ctx.label ?? 'sort',
+        }));
         break;
       }
       case 'attackWardFM': {

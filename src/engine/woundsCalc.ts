@@ -27,18 +27,18 @@ import type { SizeCategory } from './size';
  * (`structureEnduranceMult`, `AA 10 l.98`). REQUIS (jamais omis à l'appel) : `undefined` est une valeur
  * qui se PASSE, et `effectiveSize` la rabat alors sur Moyenne (`LDB 14 l.128`), le standard jouable.
  */
-export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation | undefined, totalDamage: number, extraAP = 0, minWounds = 1, attackerSize: SizeCategory | undefined): number {
+export function woundsFromHit(weapon: Weapon | undefined, target: Combatant, location: HitLocation | undefined, totalDamage: number, extraAP = 0, minWounds = 1, attackerSize: SizeCategory | undefined): number {
   // Engin de siège INERTE (AA 10 p.122-123) : le RAW ne lui donne aucune Blessure → NON-DESTRUCTIBLE (immune).
   // On le neutralise en tuant son équipage, jamais en le frappant. (≠ structure/véhicule, qui NE sont PAS `inert`.)
   if (target.inert) return 0;
   if (isStructure(target)) {
-    if (structureImmune(weapon, target)) return 0;
-    totalDamage *= siegeMultiplier(weapon, target);
+    if (weapon && structureImmune(weapon, target)) return 0;
+    if (weapon) totalDamage *= siegeMultiplier(weapon, target);
     minWounds = 0;
   }
   // Inoffensive (LDB 62 l.327) : « Tous les PA sont doublés contre les armes Inoffensives. De plus, vous
   // n'infligez pas automatiquement le minimum de 1 Blessure sur une touche réussie en combat. »
-  const inoffensive = hasQuality(weapon, 'inoffensive');
+  const inoffensive = !!weapon && hasQuality(weapon, 'inoffensive');
   if (inoffensive) minWounds = 0;
   // Robuste (LDB 10) : « Vous réduisez tous les Dégâts subis de 1 par niveau […] toujours un minimum de 1 Blessure ».
   totalDamage -= talentDamageReduction(target);
@@ -52,8 +52,8 @@ export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLo
   // ORDRE (LDB 62 l.270) : bypass (`weapon.bypass` — Épée de justice → 'all', etc. — et les bypass de
   // qualité, ex. Perforante) sur le reliquat AVANT le retrait plat (`armourReduction`) — jamais l'inverse.
   let ap = rawAP;
-  if (location) for (const b of [weapon.bypass, ...qualityArmourBypasses(weapon)]) ap = Math.max(0, ap - bypassedAP(target, location, b, ap));
-  ap = Math.max(0, ap - qualitySum(weapon, 'armourReduction'));
+  if (location && weapon) for (const b of [weapon.bypass, ...qualityArmourBypasses(weapon)]) ap = Math.max(0, ap - bypassedAP(target, location, b, ap));
+  if (weapon) ap = Math.max(0, ap - qualitySum(weapon, 'armourReduction'));
   const effAP = inoffensive ? ap * 2 : ap; // LDB 62 l.327 — PA doublés contre cette arme
   return Math.max(minWounds, totalDamage - (tb + effAP));
 }

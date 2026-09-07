@@ -354,7 +354,12 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "spells.json", champ: "of", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "spells.json", champ: "onCross", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "spells.json", champ: "onlyGroups", occurrences: 7, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "spells.json", champ: "ops", occurrences: 205, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // 205 -> 206 (#1508 T3, 2026-09-07) : le Dôme gagne l'op TYPÉE `domeWard` (`traitId` + `indice`,
+  // graphie canonique d'un octroi) — le Trait qu'il octroie était un `6` en dur dans le moteur. La
+  // fabrique EST adoptée (`OP_DEFS.domeWard`, `idDe('trait')`) ; ce qui inscrit la ligne ici est
+  // l'angle mort déjà nommé par ce volet, le même que `removeTrait.traitId` : le scan mesure l'objet-op
+  // au CHAMP PORTEUR (`ops`), le slot se projette sur le dernier segment (`traitId`).
+  { dataset: "spells.json", champ: "ops", occurrences: 206, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "spells.json", champ: "perRound", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "spells.json", champ: "qualities", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "spells.json", champ: "subject", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },

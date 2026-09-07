@@ -68,8 +68,12 @@ describe('L11 — zones persistantes posées par les sorts', () => {
     applyCast(useGame.getState, useGame.setState, caster, caster, findSpell('Bouclier anti-flèches')!, ok, false, false);
     applyCast(useGame.getState, useGame.setState, caster, caster, findSpell('Dôme')!, ok, false, false);
     const effects = caster.activeEffects ?? [];
-    expect(effects.some((e) => e.arrowWard?.radiusMeters === 4)).toBe(true); // BFM 4 m
-    expect(effects.some((e) => e.domeWard?.radiusMeters === 4)).toBe(true);
+    // Les DEUX auras déclarent leur zone par la ligne « Cible » de leur sort (`LDB 47 l.356` pour le
+    // Bouclier anti-flèches, `l.408` pour le Dôme). Une ZdE est un DIAMÈTRE (`LDB 47 l.28`) : à BFM 4,
+    // c'est 4 m de diamètre, donc 2 m de RAYON. Ce test
+    // figeait 4 m de rayon pour les deux — une zone DEUX fois trop large, recapturée ici depuis le RAW.
+    expect(effects.some((e) => e.arrowWard?.radiusMeters === 2)).toBe(true);
+    expect(effects.some((e) => e.domeWard?.radiusMeters === 2)).toBe(true);
     // Géométrie : héros adjacent au porteur = couvert vs un tireur lointain…
     const ally = { ...caster, id: 'ally', activeEffects: [], pos: { x: 6, y: 10 } } as Combatant;
     const combatants = [caster, ally, T];
@@ -78,14 +82,16 @@ describe('L11 — zones persistantes posées par les sorts', () => {
     // …mais un attaquant DANS la zone n'est pas gêné (le projectile n'« entre » pas).
     const inside = { ...T, id: 'in', pos: { x: 5, y: 11 } } as Combatant;
     expect(wardedAgainst([caster, ally, inside], inside, ally, 'arrowWard', mptTerre)).toBe(false);
-    // ÉCHELLE DE LA SCÈNE (#1507) : l'aura est chiffrée en MÈTRES (4 m). À 2 m/case elle couvre
-    // 2 cases ; à 10 m/case, une seule (4 m tiennent dans la maille). Un allié à DEUX cases du porteur
-    // est donc couvert à terre et découvert en mer — avant ce lot, le littéral `2` le couvrait dans
-    // les deux, soit une aura de 4 m qui protégeait sur 20.
+    // ÉCHELLE DE LA SCÈNE (#1507) : l'aura reste chiffrée en MÈTRES, et sa conversion en cases est la
+    // primitive partagée (`porteeEnCases`, plancher d'UNE case — formule verrouillée par
+    // `echelle-de-scene.test.ts`). Avec la ZdE du RAW (4 m de DIAMÈTRE → 2 m de rayon), ce rayon tient
+    // dans UNE case à toute échelle : un allié à DEUX cases n'est couvert ni à terre ni en mer. Le
+    // contraste « couvert à terre, découvert en mer » que ces lignes montraient tenait à un rayon de
+    // 4 m — la zone DOUBLÉE que ce lot corrige (LDB 47 l.28 : une ZdE est un diamètre).
     const loin = { ...caster, id: 'loin', activeEffects: [], pos: { x: 7, y: 10 } } as Combatant;
-    expect(wardedAgainst([caster, loin, T], T, loin, 'arrowWard', mptTerre)).toBe(true);
+    expect(wardedAgainst([caster, loin, T], T, loin, 'arrowWard', mptTerre)).toBe(false);
     expect(wardedAgainst([caster, loin, T], T, loin, 'arrowWard', 10)).toBe(false);
-    // …et la case du PORTEUR reste couverte à toute échelle (plancher d'UNE case de `porteeEnCases`).
+    // …et la case ADJACENTE au porteur reste couverte à toute échelle (plancher d'UNE case).
     expect(wardedAgainst(combatants, T, ally, 'arrowWard', 10)).toBe(true);
   });
 

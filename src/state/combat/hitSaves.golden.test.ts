@@ -46,6 +46,10 @@ function setBattle(combatants: Combatant[]): BattleState {
   return battle;
 }
 
+/** Aura de Bouclier anti-flèches portée par un allié, rayon 4 m. */
+const arrowWard = (): Combatant['activeEffects'] =>
+  ([{ label: 'Bouclier', bonus: 0, arrowWard: { radiusMeters: 4 } }] as unknown as Combatant['activeEffects']);
+
 const meleeHit = (): AttackResult => ({
   hit: true, attackerRoll: 30, netSL: 3, location: 'corps', damage: 6, woundsLost: 4,
   critical: false, advantageTo: null, defenderDefeated: false, log: 'Hardi touche le Démon.',
@@ -71,7 +75,7 @@ describe('GOLDEN — sauvegardes post-touche (applyAttackResult)', () => {
       {
         "before": 20,
         "lines": [
-          "attack:Démon ignore le coup — sauvegarde 8 ≥ 8 (Démoniaque/Protection).",
+          "attack:Démon ignore le coup — sauvegarde 1d10 : 8 ≥ Démoniaque (8+).",
         ],
         "rngProbe": 33,
         "suspended": false,
@@ -83,7 +87,7 @@ describe('GOLDEN — sauvegardes post-touche (applyAttackResult)', () => {
   it('Dôme (domeWard) : tir de l’extérieur, 1d10 ≥ 6 dévie — état + RNG figés', () => {
     seedBattleRng(1); // graine où le 1d10 du Dôme ≥ 6 (le tir est dévié)
     // Porteur du Dôme (rayon 4 m → 2 cases) ; cible adjacente DEDANS ; tireur HORS de la zone.
-    const warden = hero({ id: 'w', label: 'Mage', pos: { x: 5, y: 5 }, activeEffects: [{ domeWard: { radiusMeters: 4 } }] as unknown as Combatant['activeEffects'] });
+    const warden = hero({ id: 'w', label: 'Mage', pos: { x: 5, y: 5 }, activeEffects: [{ domeWard: { radiusMeters: 4, ward: { id: 'protection', value: 6 } } }] as unknown as Combatant['activeEffects'] });
     const target = hero({ id: 'h1', label: 'Couvert', pos: { x: 6, y: 5 }, wounds: { current: 15, max: 15 } });
     const shooter = enemy({ id: 'e1', label: 'Tireur', pos: { x: 20, y: 5 } });
     const bow: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 7 }, range: 30, qualities: [] } as Weapon;
@@ -98,12 +102,36 @@ describe('GOLDEN — sauvegardes post-touche (applyAttackResult)', () => {
       {
         "before": 15,
         "lines": [
-          "shoot:Couvert est couvert par le Dôme — sauvegarde 7 ≥ 6, le tir est dévié.",
+          "shoot:Couvert ignore le coup — sauvegarde 1d10 : 7 ≥ Protection (6+) du Dôme.",
         ],
         "rngProbe": 1,
         "suspended": false,
         "woundsAfter": 15,
       }
     `);
+  });
+
+  it('Bouclier anti-flèches : le projectile est détruit EN VOL — aucun dé de sauvegarde n’est jeté', () => {
+    // Le projectile organique est détruit avant l'impact (LDB 47 l.358) : ce n'est donc pas un coup
+    // reçu (LDB 85 l.98), et la sauvegarde de la cible n'a rien à sauver. Le nombre de dés
+    // jetés se LIT sur l'avance du RNG : avec ou sans le Trait, le flux d'aléa doit être le MÊME.
+    const tirer = (avecTrait: boolean): { pb: number; rng: number } => {
+      seedBattleRng(3);
+      const warden = hero({ id: 'w', label: 'Mage', pos: { x: 5, y: 5 }, activeEffects: arrowWard() });
+      const target = hero({
+        id: 'h1', label: 'Couvert', pos: { x: 6, y: 5 }, wounds: { current: 15, max: 15 },
+        ...(avecTrait ? { traits: [{ id: 'protection', value: 1 }] } : {}),
+      } as Partial<Combatant>);
+      const shooter = enemy({ id: 'e1', label: 'Tireur', pos: { x: 20, y: 5 } });
+      const arc: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 7 }, range: 30, qualities: [], organicProjectile: true } as unknown as Weapon;
+      setBattle([warden, target, shooter]);
+      applyAttackResult(useGame.getState, useGame.setState, shooter, target, arc, meleeHit());
+      return { pb: useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!.wounds.current, rng: battleRng().int(1, 1_000_000) };
+    };
+    const sans = tirer(false);
+    const avec = tirer(true);
+    expect(sans.pb, 'le projectile organique est détruit : la cible est indemne').toBe(15);
+    expect(avec.pb, 'idem avec le Trait — il n’a rien eu à sauver').toBe(15);
+    expect(avec.rng, 'un Trait de sauvegarde qui roulerait quand même ferait avancer le RNG').toBe(sans.rng);
   });
 });

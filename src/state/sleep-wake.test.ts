@@ -20,7 +20,7 @@ const mk = (over: Partial<Combatant> = {}): Combatant => ({
 const wakeMod = hitModifiers().find((m) => m.id === 'wake-sleeper')!;
 const run = (attacker: Combatant, target: Combatant, autoKill = true): AttackResult =>
   wakeMod.apply({
-    attacker, target, weapon: { type: 'melee', name: 'Épée' } as never,
+    attacker, target, weapon: { type: 'melee', name: 'Épée' } as never, attaque: 'melee',
     res: { hit: true, autoKill } as unknown as AttackResult,
     get: (() => ({ battle: { combatants: [] } })) as never, set: (() => {}) as never, sink: () => {},
   });

@@ -290,8 +290,15 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
 
 /** Grimoire/livre de prières — incantation HORS COMBAT (couture D). Un héros lanceur cible self/allié.
  *  Les Projectiles magiques (offensifs) sont marqués « en combat » : ils exigent une cible ennemie. */
+/** Raison UNIQUE du refus des lanceurs de la fiche pendant un combat — le geste existe, il vit ailleurs. */
+const RAISON_HORS_COMBAT = 'En combat, les sorts se lancent depuis la console.';
+
 function SpellbookSection({ hero }: { hero: Combatant }) {
   const party = useGame((s) => s.party);
+  // Les verbes `ooc*` sont des lanceurs HORS COMBAT : pendant un combat, le lancement passe par la
+  // console (le sort y consomme l'Action, ouvre son Test et sa cible). La fiche cesse donc d'offrir
+  // un bouton qui ne ferait RIEN, et dit pourquoi au survol plutôt que de disparaître.
+  const enCombat = useGame((s) => !!s.battle);
   const oocCastSpell = useGame((s) => s.oocCastSpell);
   const oocFocusSpell = useGame((s) => s.oocFocusSpell);
   const oocDispelSpell = useGame((s) => s.oocDispelSpell);
@@ -341,7 +348,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
         {spells.map((sp) => {
           const offensive = isMagicMissile(sp);
           const support = spellSupport(spellEffectOps(sp.effects), sp, offensive);
-          const castBlocked = castBlockedBy(hero, castInfoIsPrayer(sp) ? 'priere' : 'langue');
+          const castBlocked = enCombat ? RAISON_HORS_COMBAT : castBlockedBy(hero, castInfoIsPrayer(sp) ? 'priere' : 'langue');
           return (
             <div className="spell-row" key={sp.label} title={support !== 'mecanique' ? 'Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé (cf. docs/sorts-implementation.md).' : undefined}>
               <span className="spell-name">
@@ -351,7 +358,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
               </span>
               {offensive ? (
                 <span className="muted" title="Projectile magique : nécessite une cible ennemie (en combat)">
-                  en combat
+                  {' '}en combat
                 </span>
               ) : (
                 <div className="spell-actions row-flex">
@@ -360,8 +367,8 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                       <GatedAction
                         id={`sheet-focus-${hero.id}-${sp.id}`}
                         label={<><Icon id="flag/focus" size="sm" /> Focaliser</>}
-                        enabled={!castBlockedBy(hero, 'focalisation')}
-                        {...raisonSi(castBlockedBy(hero, 'focalisation'))}
+                        enabled={!(enCombat ? RAISON_HORS_COMBAT : castBlockedBy(hero, 'focalisation'))}
+                        {...raisonSi(enCombat ? RAISON_HORS_COMBAT : castBlockedBy(hero, 'focalisation'))}
                         primary={false}
                         btnClassName="small"
                         onClick={() => oocFocusSpell(hero.id, sp.id)}
@@ -390,14 +397,14 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
               {sp.cn != null && grimoireCn != null ? ` · NI ${sp.cn}→${grimoireCn}` : ''}
             </span>
             {isMagicMissile(sp) ? (
-              <span className="muted">en combat</span>
+              <span className="muted">{' '}en combat</span>
             ) : (
               <div className="spell-actions row-flex">
                 <GatedAction
                   id={`sheet-cast-grimoire-${hero.id}-${sp.id}`}
                   label={<><Icon id="nav/compendium" size="sm" /> Lancer (grimoire)</>}
-                  enabled={!castBlockedBy(hero, castInfoIsPrayer(sp) ? 'priere' : 'langue')}
-                  {...raisonSi(castBlockedBy(hero, castInfoIsPrayer(sp) ? 'priere' : 'langue'))}
+                  enabled={!(enCombat ? RAISON_HORS_COMBAT : castBlockedBy(hero, castInfoIsPrayer(sp) ? 'priere' : 'langue'))}
+                  {...raisonSi(enCombat ? RAISON_HORS_COMBAT : castBlockedBy(hero, castInfoIsPrayer(sp) ? 'priere' : 'langue'))}
                   primary={false}
                   btnClassName="small"
                   onClick={() => oocCastSpell(hero.id, sp.id, targetId, true)}

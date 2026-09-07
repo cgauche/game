@@ -84,6 +84,10 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
   noBreath: z.strictObject({ op: z.literal('noBreath') }),
   noHunger: z.strictObject({ op: z.literal('noHunger') }),
   removeTrait: z.strictObject({ op: z.literal('removeTrait'), traitId: idDe('trait') }),
+  /** `domeWard` — le dôme OCTROIE un Trait à ceux qu'il couvre (`LDB 47 l.410`) : le Trait se nomme
+   *  par la MÊME graphie que partout ailleurs (`traitId`), son Indice est une `Formula`. AUCUNE zone :
+   *  elle est déjà écrite par la ligne « Cible » du sort (ZdE, `LDB 47 l.28`) — l'op la LIT. */
+  domeWard: z.strictObject({ op: z.literal('domeWard'), traitId: idDe('trait'), indice: formulaSchema }),
   suffocate: z.strictObject({ op: z.literal('suffocate') }),
 };
 
@@ -99,7 +103,7 @@ export const OPS_NON_TYPEES: readonly string[] = [
   'actGate', 'ap', 'armourPierce', 'arrowWard', 'attackKeyword', 'attackWardFM', 'attrMod', 'augmentWeapon',
   'beginPsych', 'breakBlade', 'castPenalty', 'castWard', 'chain', 'charDRBonus', 'charDamage', 'charMod',
   'condition', 'contractDisease', 'crewTestMod', 'critOnRoll', 'critTwice', 'cureCriticalWound', 'cureDisease',
-  'damageArmour', 'delayed', 'disarm', 'diseaseTestMod', 'domeWard', 'endPsych', 'endTransform', 'exposeDisease',
+  'damageArmour', 'delayed', 'disarm', 'diseaseTestMod', 'endPsych', 'endTransform', 'exposeDisease',
   'freeReroll', 'gainAdvantage', 'gainResource', 'giveTrapping', 'grantCareerSkill', 'grantCareerTalent',
   'grantFreeAttack', 'grantNaturalWeapon', 'grantPsychTrait', 'grantReverseToken', 'grantTalent', 'grantTrait',
   'grantWeapon', 'handGate', 'ignoreAnimosity', 'ignoreStatePenalties', 'incomingAdvantage', 'incomingAttackMod',
