@@ -23,6 +23,9 @@ const sceneMinimale = (over: Jouet = {}): Jouet => ({
   label: 'Une salle',
   desc: 'Scène minimale de fixture.',
   dimensions: { w: 4, h: 4 },
+  // EXIGÉ (#1691) : la matière de chaque partie de relief vient de la scène, le rendu n'en devine
+  // aucune — une scène qui n'en porte pas est refusée ici même.
+  reliefDefaults: { cliff: 'terre', ramp: 'terre', deck: 'pierre', pilier: 'pilier' },
   ...over,
 });
 

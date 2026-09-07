@@ -50,6 +50,10 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   // (`idDe('prop')` au schéma) — SÉLECTEUR dans le catalogue, jamais un champ texte où une faute de
   // frappe ne se verrait qu'au refus de parse. Facultatif : `nullable` ouvre le choix vide.
   'terrains.overlayProp': { ds: 'props', single: true },
+  // Matière des flancs d'un terrain à BLOC PLEIN (#1691) : le champ porte un id de `materials.json`
+  // du domaine `relief` (`idDe('material', 'relief')` au schéma) — le sélecteur n'offre donc QUE ce
+  // domaine, une couverture de toit ou une matière de décor n'ayant rien à faire sur une falaise.
+  'terrains.matiere': { ds: 'materials', single: true, filter: (e) => e.domain === 'relief' },
   // ── vocab (valeurs distinctes d'un champ) ───────────────────────────────────
   // refChar/refCareer n'existent QUE sur les espèces → repli global par nom (la catégorie Codex
   // d'`species.json` est `races`, pas `species` ; un nom de champ unique évite de la coder en dur).

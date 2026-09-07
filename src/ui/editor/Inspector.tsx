@@ -9,8 +9,9 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'rea
 import {
   Scene, SceneEntity, Trigger, SceneEffectZone, WallSeg,
   type ArchitecturePart, type ArchitectureStorey, type FacadeSection, type BuildingMass, type RoofDefaults,
-  type ArchitectureRect, type SceneStationAnchor, isDescriptiveZone, sceneMetresPerTile,
+  type ArchitectureRect, type SceneStationAnchor, type ReliefDefaults, isDescriptiveZone, sceneMetresPerTile,
 } from '../../state/scene';
+import { PARTS_RELIEF } from '../../data/materials.types';
 import { NumberField } from '../NumberField';
 import { sceneZoneTiles, zoneAreaTiles } from '../../state/zones';
 import type { WorldMap } from '../../state/worldMap';
@@ -26,7 +27,7 @@ import { FACADE_APPEARANCE_IDS } from '../../gameIso/catalog/facades';
 import { MERCHANTS } from '../../state/merchants/index';
 import { TAVERN_GAMES } from '../../engine/tavernGame';
 import { allMusicDefs } from '../../audio/music';
-import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, matieresCouvrantes, structureAppearances, refEstVolumique } from '../../data';
+import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, matieresCouvrantes, matieresDe, structureAppearances, refEstVolumique } from '../../data';
 import { DEFAULT_ROOF_DEFAULTS, rederiveRoofMasses } from '../../state/sceneEdit';
 import { activitiesFor } from '../../engine/activities';
 
@@ -1802,6 +1803,14 @@ function sceneContent(scene: Scene): ContentRow[] {
   return rows;
 }
 
+/** Nom d'AFFICHAGE de chaque partie de relief (#1691) — la logique, elle, ne connaît que les ids. */
+const LIBELLE_DE_PARTIE: Record<keyof ReliefDefaults, string> = {
+  cliff: 'Falaise (dénivelé infranchissable)',
+  ramp: 'Rampe (dénivelé franchissable)',
+  deck: 'Dalle de tablier (bord sur le vide)',
+  pilier: 'Pilier de tablier',
+};
+
 /** Propriétés de la SCÈNE (rien de sélectionné) + inventaire filtrable du plan. */
 function SceneProps({
   scene,
@@ -1961,6 +1970,23 @@ function SceneProps({
           Message d'introduction
           <textarea value={scene.startMessage ?? ''} onChange={(e) => setScene({ ...scene, startMessage: e.target.value || undefined })} />
         </label>
+      </Fold>
+      <Fold title="Matières de relief">
+        <p className="hint">
+          Matière peinte sur chaque partie de relief que le plan dessine. Un terrain à bloc plein (mur)
+          garde celle de son terrain.
+        </p>
+        {PARTS_RELIEF.map((part) => (
+          <label key={part} className="ed-field">
+            {LIBELLE_DE_PARTIE[part]}
+            <select
+              value={scene.reliefDefaults[part]}
+              onChange={(e) => setScene({ ...scene, reliefDefaults: { ...scene.reliefDefaults, [part]: e.target.value } })}
+            >
+              {matieresDe('relief').map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+            </select>
+          </label>
+        ))}
       </Fold>
       <Fold title="Repos sur place">
         <p className="hint">Offre du bouton <Icon id="time/night" size="sm" /> d'exploration, pour TOUT le plan. Affinable par ZONE : outil <Icon id="map-tool/zone" size="sm" /> → Zone de repos, dessinée sur la carte et listée dans le contenu du plan.</p>

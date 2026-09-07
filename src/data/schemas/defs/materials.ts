@@ -1,7 +1,7 @@
 /**
  * Schéma de `materials.json` — LE dataset des matières du monde (#1686 lot 2), consommé comme
- * `MaterialEntry[]` (`src/data/materials.types.ts`). 16 entrées : 8 matières de décor volumique,
- * 4 de toiture (3 couvertures + le « plan » vu du dessus), 4 de relief.
+ * `MaterialEntry[]` (`src/data/materials.types.ts`). 15 entrées : 8 matières de décor volumique,
+ * 4 de toiture (3 couvertures + le « plan » vu du dessus, marqué `vueDeDessus`), 3 de relief.
  *
  * Le champ de charge `domain` porte l'identité : ses valeurs sont celles de `MaterialRef.domain`
  * (`src/gameIso/builders/types.ts`), servies par `DOMAINES_MATIERE`, qui les tient sous `satisfies`.
@@ -51,7 +51,7 @@ const CHARGE_PAR_DOMAINE = {
   prop: { cles: ['color', 'roughness', 'metalness'], requises: ['color', 'roughness', 'metalness'] },
   roof: {
     cles: [
-      'couverture', 'detail', 'N', 'E', 'S', 'O', 'line',
+      'couverture', 'vueDeDessus', 'detail', 'N', 'E', 'S', 'O', 'line',
       'planBody', 'planEdge', 'planInner', 'planText',
       'eaveOverhangM', 'soffite', 'fasciaDropM', 'fasciaThickM', 'fascia', 'ridgeCap',
     ],
@@ -84,6 +84,7 @@ const doc = document(
     metalness: z.number().min(0).max(1).optional(),
     // ── domaine `roof`
     couverture: z.literal(true).optional(),
+    vueDeDessus: z.literal(true).optional(),
     N: z.string().optional(),
     E: z.string().optional(),
     S: z.string().optional(),
@@ -120,6 +121,10 @@ const doc = document(
     couverture: {
       label: 'Couvre un pan',
       hint: 'Matériau POSABLE sur une masse de toit — absent : entrée de rendu qui ne couvre rien (vue de dessus)',
+    },
+    vueDeDessus: {
+      label: 'Plan vu du dessus',
+      hint: 'Entrée de rendu du PLAN vu du dessus (vue carrée) — elle ne couvre aucun pan ; le dataset en porte exactement une',
     },
     N: { label: 'Couleur face nord' },
     E: { label: 'Couleur face est' },
@@ -175,6 +180,28 @@ const doc = document(
             message: `materials : la clé « ${cle} » n’appartient pas au domaine « ${domaine} » (${String(e.id)}).`,
           });
         }
+        // Une matière de toiture COUVRE un pan, ou elle EST le plan vu du dessus (#1691) — jamais les
+        // deux : le plan n'a ni pente ni égout, la couverture n'est pas une convention de plan.
+        if (e.couverture !== undefined && e.vueDeDessus !== undefined)
+          ctx.addIssue({
+            code: 'custom',
+            path: ['vueDeDessus'],
+            message: `materials : « ${String(e.id)} » ne peut pas être à la fois une couverture de pan et le plan vu du dessus.`,
+          });
+      }),
+    // Le PLAN vu du dessus est une entrée NOMMÉE par sa donnée, pas par un id littéral au call-site
+    // (`gameIso/authoring/roofsSvg.ts` la lit via `matierePlan()`) : le dataset en porte EXACTEMENT une.
+    affinerDataset: (dataset) =>
+      dataset.superRefine((v, ctx) => {
+        const plans = (v as { id: string; vueDeDessus?: true }[]).filter((e) => e.vueDeDessus);
+        if (plans.length === 1) return;
+        ctx.addIssue({
+          code: 'custom',
+          path: ['vueDeDessus'],
+          message:
+            `materials.json : ${plans.length} entrée(s) marquée(s) « plan vu du dessus » ` +
+            `(${plans.map((e) => e.id).join(', ') || 'aucune'}) — il en faut EXACTEMENT une, celle que le rendu du plan résout.`,
+        });
       }),
   },
 );

@@ -2436,6 +2436,15 @@ export const matieresDe = <D extends MaterialDomain>(domain: D): MatiereDe<D>[] 
  *  s'importer l'une l'autre. Lecture VIVE, comme `matieresDe`. */
 export const matieresCouvrantes = (): RoofMaterialDef[] => matieresDe('roof').filter((m) => m.couverture);
 
+/** L'entrée du PLAN vu du dessus — celle que la DONNÉE marque `vueDeDessus` (#1691), jamais un id
+ *  littéral au call-site. Le schéma en garantit l'unicité (`schemas/defs/materials.ts`,
+ *  `affinerDataset`) ; le premier marqué est donc LE plan. Lecture VIVE, comme `matieresCouvrantes`. */
+export const matierePlan = (): RoofMaterialDef => {
+  const plan = matieresDe('roof').find((m) => m.vueDeDessus);
+  if (!plan) throw new Error('matierePlan() : aucune entrée `roof` ne porte `vueDeDessus` — materials.json');
+  return plan;
+};
+
 /** AMBIANCE de rendu partagée iso ⇄ POV (ciel/brumes/vignette/voile chaud/filtre d'étage) — donnée pure. */
 export const ambiance = ambianceJson as import('../gameIso/catalog/ambiance').AmbianceDef;
 

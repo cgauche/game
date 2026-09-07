@@ -77,6 +77,7 @@ const MUTATIONS: Record<Exclude<keyof Scene, 'type'>, (s: Scene) => Scene> = {
     effectZones: [...(s.effectZones ?? []), { id: 'zone-neuve', label: 'Zone neuve', presentation: 'interior', area: { kind: 'rect', x: 2, y: 2, w: 2, h: 2 } }],
   }),
   music: (s) => ({ ...s, music: { ambient: null } }),
+  reliefDefaults: (s) => ({ ...s, reliefDefaults: { ...s.reliefDefaults, cliff: 'pierre' } }),
   layers: (s) => ({ ...s, layers: cloneLayers(s) }),
   walls: (s) => ({ ...s, walls: [...(s.walls ?? [])] }),
   entities: (s) => ({ ...s, entities: [...s.entities] }),
@@ -92,7 +93,7 @@ const MUTATIONS: Record<Exclude<keyof Scene, 'type'>, (s: Scene) => Scene> = {
 };
 
 /** Le read-set DÉCLARÉ, champ par champ — la liste que la garde confronte à la réalité. */
-const DANS_LE_READ_SET = new Set<keyof Scene>(['dimensions', 'metresPerTile', 'layers', 'walls', 'architecture']);
+const DANS_LE_READ_SET = new Set<keyof Scene>(['dimensions', 'metresPerTile', 'layers', 'walls', 'architecture', 'reliefDefaults']);
 
 const memesDeps = (a: readonly unknown[], b: readonly unknown[]) => a.length === b.length && a.every((d, i) => d === b[i]);
 

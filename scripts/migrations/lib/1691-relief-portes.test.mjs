@@ -1,0 +1,258 @@
+/**
+ * MORSURE des PORTES des deux migrations #1691 — la matière de relief passe en DONNÉE.
+ *
+ *  - `2026-09-07-1691-relief-en-donnee.mjs` (racine `src/data`) : pose la matière des flancs des
+ *    terrains à BLOC PLEIN, déclare le plan vu du dessus.
+ *  - `2026-09-07-1691-relief-defaults-scenes.mjs` (racine `src/scenes`) : pose `reliefDefaults` sur
+ *    chaque Scène embarquée.
+ *
+ * Une déclaration n'est pas une porte tant qu'on ne l'a pas vue MORDRE : ce banc joue les migrations
+ * sur un dépôt JETABLE (`os.tmpdir()`), une fois par scénario, et exige la sortie attendue, un
+ * message NOMINATIF, et — pour les rouges d'avant-écriture — ZÉRO fichier touché (octet ET
+ * horodatage antidaté).
+ *
+ * L'état d'AVANT n'existe plus dans l'arbre et AUCUNE révision ne sert de fixture : il est
+ * reconstruit par projection INVERSE des documents VIVANTS (matière retirée, marqueur de plan
+ * retiré, `reliefDefaults` retiré). Les cardinaux se LISENT sur les documents,
+ * jamais récités ici.
+ *
+ * Ce banc vit sous `lib/` : `replay.mjs` scanne le dossier des migrations à PLAT et n'y admet que
+ * des `.mjs` à préfixe DATÉ.
+ */
+import { strict as assert } from 'node:assert';
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+
+const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
+const MIGRATION_DATA = '2026-09-07-1691-relief-en-donnee.mjs';
+const MIGRATION_SCENES = '2026-09-07-1691-relief-defaults-scenes.mjs';
+const TERRAINS = 'src/data/terrains.json';
+const MATERIALS = 'src/data/materials.json';
+
+const lire = (rel) => fs.readFileSync(path.join(RACINE, rel), 'utf8');
+/** Formatage canonique de `src/data/*.json`. */
+const serialiseData = (doc) => JSON.stringify(doc, null, 2);
+/** Formatage canonique d'un document de projet de scène. */
+const serialiseScene = (doc) => `${JSON.stringify(doc, null, 1)}\n`;
+
+const TEXTE_TERRAINS = lire(TERRAINS);
+const TEXTE_MATERIALS = lire(MATERIALS);
+const TERRAINS_DOC = JSON.parse(TEXTE_TERRAINS);
+const MATERIALS_DOC = JSON.parse(TEXTE_MATERIALS);
+
+/** Cardinaux LUS sur les documents migrés — jamais récités. */
+const BLOCS = TERRAINS_DOC.filter((e) => e.solidHeightM !== undefined);
+assert.ok(BLOCS.length > 0, 'aucun terrain à bloc plein — la fixture ne mesure rien');
+assert.ok(BLOCS.every((e) => typeof e.matiere === 'string'), 'un bloc plein sans `matiere` : l’arbre n’est pas migré');
+assert.equal(MATERIALS_DOC.filter((e) => e.vueDeDessus === true).length, 1, 'le plan vu du dessus n’est pas déclaré');
+
+/** PROJECTION INVERSE de `terrains.json` : la matière des flancs retirée. */
+const terrainsAvant = () => TERRAINS_DOC.map(({ matiere: _pose, ...reste }) => reste);
+/** PROJECTION INVERSE de `materials.json` : marqueur de plan retiré. */
+const materialsAvant = () => MATERIALS_DOC.map(({ vueDeDessus: _pose, ...reste }) => reste);
+
+const ANTIDATE = new Date('2000-01-01T00:00:00Z');
+
+/** Dépôt jetable portant EXACTEMENT les fichiers demandés, plus la migration nommée. */
+function depot(migration, fichiers) {
+  const racine = fs.mkdtempSync(path.join(os.tmpdir(), 'migr-1691-'));
+  const avant = new Map();
+  for (const [rel, texte] of Object.entries(fichiers)) {
+    const cible = path.join(racine, rel);
+    fs.mkdirSync(path.dirname(cible), { recursive: true });
+    fs.writeFileSync(cible, texte, 'utf8');
+    fs.utimesSync(cible, ANTIDATE, ANTIDATE);
+    avant.set(rel, texte);
+  }
+  fs.mkdirSync(path.join(racine, 'scripts/migrations'), { recursive: true });
+  fs.copyFileSync(path.join(RACINE, 'scripts/migrations', migration), path.join(racine, 'scripts/migrations', migration));
+  return { racine, avant, migration };
+}
+
+const efface = (racine) => fs.rmSync(racine, { recursive: true, force: true });
+
+function joue({ racine, migration }) {
+  const r = spawnSync(process.execPath, [path.join(racine, 'scripts/migrations', migration)], { encoding: 'utf8' });
+  return { code: r.status, sortie: `${r.stdout ?? ''}${r.stderr ?? ''}` };
+}
+
+/** Les fichiers posés sont INTACTS (octet + horodatage). */
+function rienTouche(racine, avant) {
+  const fautes = [];
+  for (const [rel, texte] of avant) {
+    const cible = path.join(racine, rel);
+    if (!fs.existsSync(cible)) { fautes.push(`${rel} : SUPPRIMÉ`); continue; }
+    if (fs.readFileSync(cible, 'utf8') !== texte) fautes.push(`${rel} : octet DIVERGENT`);
+    if (fs.statSync(cible).mtimeMs !== ANTIDATE.getTime()) fautes.push(`${rel} : horodatage remonté (écriture)`);
+  }
+  return fautes;
+}
+
+// ── Volet `src/data` ────────────────────────────────────────────────────────────────────────────
+
+const depotData = (terrains, materials) =>
+  depot(MIGRATION_DATA, { [TERRAINS]: terrains, [MATERIALS]: materials });
+
+test('(a) ALLER-RETOUR data : l’état d’avant projeté → terrains.json ET materials.json BYTE-IDENTIQUES à l’arbre', (t) => {
+  const d = depotData(serialiseData(terrainsAvant()), serialiseData(materialsAvant()));
+  t.after(() => efface(d.racine));
+
+  const { code, sortie } = joue(d);
+  assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 800)}`);
+  assert.ok(sortie.includes(`${BLOCS.length} terrain(s) à bloc plein reçoivent leur matière`), `la pose ne DIT pas son compte : ${sortie.slice(0, 800)}`);
+  assert.ok(
+    sortie.includes(`relief ${MATERIALS_DOC.filter((e) => e.domain === 'relief').length} intact`),
+    `la migration ne DIT pas que le domaine relief est intact : ${sortie.slice(0, 800)}`,
+  );
+  assert.match(sortie, /plan vu du dessus déclaré/, `le marqueur de plan ne se DIT pas : ${sortie.slice(0, 800)}`);
+  assert.equal(fs.readFileSync(path.join(d.racine, TERRAINS), 'utf8'), TEXTE_TERRAINS, 'terrains.json produit ≠ arbre');
+  assert.equal(fs.readFileSync(path.join(d.racine, MATERIALS), 'utf8'), TEXTE_MATERIALS, 'materials.json produit ≠ arbre');
+});
+
+test('(b) REJEU data sur arbre migré : sortie 0, rien d’écrit', (t) => {
+  const d = depotData(TEXTE_TERRAINS, TEXTE_MATERIALS);
+  t.after(() => efface(d.racine));
+
+  const { code, sortie } = joue(d);
+  assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 800)}`);
+  assert.match(sortie, /déjà migrée/, `le no-op ne se DIT pas : ${sortie.slice(0, 800)}`);
+  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'le rejeu a écrit');
+});
+
+test('(c) BLOC PLEIN inconnu de la table des matières → sortie 1 NOMMANT le terrain, rien d’écrit', (t) => {
+  // Le bloc est RENOMMÉ (cardinal du dataset intact) : c'est bien la table des matières de bloc que
+  // la porte mesure, pas le compte d'entrées.
+  const renomme = terrainsAvant().map((e) => (e.solidHeightM !== undefined ? { ...e, id: 'palissade' } : e));
+  const d = depotData(serialiseData(renomme), serialiseData(materialsAvant()));
+  t.after(() => efface(d.racine));
+
+  const { code, sortie } = joue(d);
+  assert.equal(code, 1, `sortie ${code} — un bloc sans matière déclarée doit ARRÊTER : ${sortie.slice(0, 800)}`);
+  assert.match(sortie, /aucune matière déclarée pour le\(s\) bloc\(s\) palissade/, `arrêt sans NOMMER le terrain : ${sortie.slice(0, 800)}`);
+  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
+});
+
+test('(c bis) `matiere` SANS bloc plein → sortie 1 NOMMANT le terrain, rien d’écrit', (t) => {
+  const orphelin = terrainsAvant().map((e, i) => (i === 0 ? { ...e, matiere: 'terre' } : e));
+  const d = depotData(serialiseData(orphelin), serialiseData(materialsAvant()));
+  t.after(() => efface(d.racine));
+
+  const { code, sortie } = joue(d);
+  assert.equal(code, 1, `sortie ${code} — une matière sans bloc doit ARRÊTER : ${sortie.slice(0, 800)}`);
+  assert.ok(sortie.includes(TERRAINS_DOC[0].id), `arrêt sans NOMMER le terrain : ${sortie.slice(0, 800)}`);
+  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
+});
+
+test('(d) DEUX entrées `roof` sans couverture → sortie 1 : le plan ne se désigne plus par sa donnée', (t) => {
+  // Une couverture EXISTANTE est dépouillée de son marqueur (cardinal du dataset intact) : deux
+  // entrées `roof` deviennent candidates au rôle de plan, et plus rien ne les départage.
+  assert.ok(MATERIALS_DOC.some((e) => e.domain === 'roof' && e.couverture === true), 'aucune couverture de toit — la fixture ne mesure rien');
+  let depouillee = false;
+  const deuxPlans = materialsAvant().map((e) => {
+    if (depouillee || e.domain !== 'roof' || e.couverture !== true) return e;
+    depouillee = true;
+    const { couverture: _sans, ...reste } = e;
+    return reste;
+  });
+  const d = depotData(serialiseData(terrainsAvant()), serialiseData(deuxPlans));
+  t.after(() => efface(d.racine));
+
+  const { code, sortie } = joue(d);
+  assert.equal(code, 1, `sortie ${code} — deux plans candidats doivent ARRÊTER : ${sortie.slice(0, 800)}`);
+  assert.match(sortie, /2 entrée\(s\) `roof` sans `couverture`/, `arrêt sans CHIFFRER l’écart : ${sortie.slice(0, 800)}`);
+  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
+});
+
+test('(e) FORMATAGE data non canonique (indentation 4) → sortie 1 NOMINATIVE, rien d’écrit', (t) => {
+  const d = depotData(JSON.stringify(terrainsAvant(), null, 4), serialiseData(materialsAvant()));
+  t.after(() => efface(d.racine));
+
+  const { code, sortie } = joue(d);
+  assert.equal(code, 1, `sortie ${code} : ${sortie.slice(0, 800)}`);
+  assert.match(sortie, /formatage non canonique/, `arrêt sans NOMMER la faute : ${sortie.slice(0, 800)}`);
+  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
+});
+
+// ── Volet `src/scenes` ──────────────────────────────────────────────────────────────────────────
+
+/** Les projets de scène de l'arbre, avec leur texte. */
+const PROJETS = fs
+  .readdirSync(path.join(RACINE, 'src/scenes'), { withFileTypes: true })
+  .filter((d) => d.isDirectory())
+  .map((d) => `src/scenes/${d.name}/${d.name}-projet.json`)
+  .filter((rel) => fs.existsSync(path.join(RACINE, rel)));
+assert.ok(PROJETS.length > 0, 'aucun projet de scène — la fixture ne mesure rien');
+
+const SCENES_PAR_PROJET = Object.fromEntries(PROJETS.map((rel) => [rel, JSON.parse(lire(rel)).scenes.length]));
+for (const rel of PROJETS)
+  assert.ok(
+    JSON.parse(lire(rel)).scenes.every((s) => s.reliefDefaults),
+    `${rel} : une Scène sans \`reliefDefaults\` — l’arbre n’est pas migré`,
+  );
+
+/** PROJECTION INVERSE d'un projet : `reliefDefaults` retiré de chaque Scène. */
+function projetAvant(rel) {
+  const doc = JSON.parse(lire(rel));
+  return { ...doc, scenes: doc.scenes.map(({ reliefDefaults: _pose, ...reste }) => reste) };
+}
+
+const depotScenes = (fabrique) =>
+  depot(MIGRATION_SCENES, Object.fromEntries(PROJETS.map((rel) => [rel, fabrique(rel)])));
+
+test('(f) ALLER-RETOUR scènes : l’état d’avant projeté → chaque projet BYTE-IDENTIQUE à l’arbre', (t) => {
+  const d = depotScenes((rel) => serialiseScene(projetAvant(rel)));
+  t.after(() => efface(d.racine));
+
+  const { code, sortie } = joue(d);
+  assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 1200)}`);
+  for (const rel of PROJETS) {
+    assert.ok(sortie.includes(`${rel} — reliefDefaults posés : ${SCENES_PAR_PROJET[rel]}`), `${rel} : la pose ne DIT pas son compte : ${sortie.slice(0, 1200)}`);
+    assert.equal(fs.readFileSync(path.join(d.racine, rel), 'utf8'), lire(rel), `${rel} produit ≠ arbre`);
+  }
+});
+
+test('(g) REJEU scènes sur arbre migré : sortie 0, rien d’écrit', (t) => {
+  const d = depotScenes((rel) => lire(rel));
+  t.after(() => efface(d.racine));
+
+  const { code, sortie } = joue(d);
+  assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 1200)}`);
+  assert.match(sortie, /reliefDefaults posés : 0/, `le no-op ne se DIT pas : ${sortie.slice(0, 1200)}`);
+  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'le rejeu a écrit');
+});
+
+test('(h) `reliefDefaults` INCOMPLET (une partie manquante) → sortie 1 NOMMANT la partie, rien d’écrit', (t) => {
+  const d = depotScenes((rel) => {
+    const doc = JSON.parse(lire(rel));
+    const scenes = doc.scenes.map((s, i) => {
+      if (i > 0) return s;
+      const { cliff: _absent, ...reste } = s.reliefDefaults;
+      return { ...s, reliefDefaults: reste };
+    });
+    return serialiseScene({ ...doc, scenes });
+  });
+  t.after(() => efface(d.racine));
+
+  const { code, sortie } = joue(d);
+  assert.equal(code, 1, `sortie ${code} — un \`reliefDefaults\` incomplet doit ARRÊTER : ${sortie.slice(0, 1200)}`);
+  assert.match(sortie, /`reliefDefaults` sans cliff/, `arrêt sans NOMMER la partie manquante : ${sortie.slice(0, 1200)}`);
+  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
+});
+
+test('(i) CARDINAL des Scènes cassé (une Scène retirée) → sortie 1 CHIFFRANT l’écart, rien d’écrit', (t) => {
+  const total = Object.values(SCENES_PAR_PROJET).reduce((n, v) => n + v, 0);
+  const d = depotScenes((rel) => {
+    const doc = projetAvant(rel);
+    return serialiseScene(rel === PROJETS[0] ? { ...doc, scenes: doc.scenes.slice(1) } : doc);
+  });
+  t.after(() => efface(d.racine));
+
+  const { code, sortie } = joue(d);
+  assert.equal(code, 1, `sortie ${code} — un cardinal inattendu doit ARRÊTER : ${sortie.slice(0, 1200)}`);
+  assert.ok(sortie.includes(`${total - 1} Scène(s) embarquée(s) ≠ ${total}`), `arrêt sans CHIFFRER l’écart : ${sortie.slice(0, 1200)}`);
+  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
+});

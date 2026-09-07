@@ -34,7 +34,7 @@ import type {
   architectureBodySchema, architectureEdgeRefSchema, architecturePartSchema, architectureRectSchema,
   architectureStoreySchema, buildingMassSchema, dialogueChoiceSchema, dialogueNodeSchema,
   dialogueSchema, encounterDefSchema, encounterMemberSchema, entityKindSchema, facadeFeatureSchema,
-  facadeSectionSchema, layerSchema, roofDefaultsSchema, sceneStationAnchorSchema, triggerSchema,
+  facadeSectionSchema, layerSchema, reliefDefaultsSchema, roofDefaultsSchema, sceneStationAnchorSchema, triggerSchema,
   victoryConditionSchema, wallClimbSchema, wallSegSchema, zoneAreaSchema,
 } from '../data/schemas/defs-scenes/scene';
 import type { wallSideSchema } from '../data/schemas/defs-scenes/communs';
@@ -165,6 +165,8 @@ export type FacadeFeature = z.infer<typeof facadeFeatureSchema>;
 export type FacadeSection = z.infer<typeof facadeSectionSchema>;
 export type BuildingMass = z.infer<typeof buildingMassSchema>;
 export type RoofDefaults = z.infer<typeof roofDefaultsSchema>;
+/** `Scene.reliefDefaults` — la matière de chaque PARTIE de relief (#1691), clés = `PARTS_RELIEF`. */
+export type ReliefDefaults = z.infer<typeof reliefDefaultsSchema>;
 export type ArchitectureBody = z.infer<typeof architectureBodySchema>;
 
 /** Effet PROGRAMMÉ (Lot 0, étendu #668) — l'une des DEUX variantes dont le corps reste manuscrit :
@@ -387,6 +389,11 @@ export interface Scene {
    *  = AUTOMATIQUE (intérieur/extérieur pour l'ambiance, piste de combat générique en combat) ;
    *  `null` = SILENCE forcé. Éditable dans l'éditeur (onglet Scène). */
   music?: { ambient?: string | null; combat?: string | null };
+  /** MATIÈRE de chaque PARTIE de relief que le builder de sols émet (#1691) : falaise, rampe, dalle de
+   *  tablier, pilier. REQUISE — `gameIso/builders/floors.ts` la LIT, il ne choisit plus rien ; le schema
+   *  refuse au parse une scène qui n'en porte pas, et `emptyScene` la pose à la création. La face d'un
+   *  terrain à BLOC PLEIN (mur) tient sa matière de son TERRAIN (`terrains.json › matiere`), pas d'ici. */
+  reliefDefaults: ReliefDefaults;
   /** Couches d'empilement de la scène. Au moins une ; `z:0` = couche de base. Chaque couche a sa propre
    *  grille aplatie w×h + ses hauteurs métriques (`Layer.height`). Les couches z>0 sont des surfaces
    *  superposées (ponts, passerelles, étages) : on marche DESSUS et DESSOUS. Le franchissement vertical
@@ -689,6 +696,17 @@ export function parapetTilesAbove(scene: Scene, seg: { x: number; y: number; sid
     .map((c) => ({ x: c.x, y: c.y, z }));
 }
 
+/**
+ * Matières de relief d'une scène NEUVE (#1691) — le défaut d'AUTHORING, pas une règle : un talus et une
+ * rampe de sol nu en terre, la dalle d'un tablier et son pilier en ouvrage. Chaque scène porte ensuite
+ * SES valeurs (panneau de scène de l'inspecteur) ; le builder ne connaît que celles de la scène.
+ * Il vit ICI, avec `emptyScene` qui le pose, et non auprès de `DEFAULT_ROOF_DEFAULTS` (`sceneEdit.ts`,
+ * qui importe ce module) : ce défaut-ci est celui de la SCÈNE, matérialisé à sa création.
+ */
+export const DEFAULT_RELIEF_DEFAULTS = {
+  cliff: 'terre', ramp: 'terre', deck: 'pierre', pilier: 'pilier',
+} as const satisfies ReliefDefaults;
+
 /** Scène neuve — pose les défauts EXPLICITES au lieu de laisser `undefined` : le contrôle d'inspecteur
  *  affiche alors la valeur RÉELLEMENT effective (2 m, horloge) au lieu d'un simple placeholder vide qui
  *  laisserait l'auteur deviner (#841 FU-A). `environment` reste absent : « non spécifié » (aucun bonus de
@@ -702,6 +720,7 @@ export function emptyScene(w = 20, h = 15): Scene {
     ambiance: 'exterieur',
     metresPerTile: 2,
     ambientLight: 'auto',
+    reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS },
     layers: [{ z: 0, tiles: new Array(w * h).fill('herbe') }],
     entities: [],
     dialogues: [],

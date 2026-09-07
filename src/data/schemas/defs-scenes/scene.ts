@@ -28,6 +28,7 @@ import { sceneFlowSchema } from './effets';
 import { PROPS_VOLUMIQUES } from '../_ids.generated';
 import { idDe } from '../grammaire/ref';
 import { capDecorAdmis, REF_DECOR_DEFAUT } from '../../props.types';
+import { PARTS_RELIEF, type PartRelief } from '../../materials.types';
 import type { AuthoredShipPoste } from '../../../engine/types';
 import type { OptionalEntry } from '../../../engine/statEntry';
 
@@ -188,6 +189,25 @@ export const eaveSideSchema = z.enum(['N', 'E', 'S', 'O']);
  * `state/validateScene.ts` : le domaine `roof` porte aussi le « plan » vu du dessus.
  */
 const couvertureSchema: z.ZodType<string, string> = idDe('material', 'roof');
+/** Matière de RELIEF — même porte que `couvertureSchema`, sur la sous-liste `relief` de
+ *  `materials.json` : une couverture de toit ou une matière de décor posée sur une falaise n'entre pas. */
+const matiereReliefSchema: z.ZodType<string, string> = idDe('material', 'relief');
+/**
+ * MATIÈRES DE RELIEF de la scène, UNE par PARTIE émise (#1691) : falaise, rampe, dalle de tablier,
+ * pilier. Les clés sont EXACTEMENT le vocabulaire `PARTS_RELIEF` de la couche donnée — celui que
+ * `gameIso/builders/floors.ts` pose en `MaterialRef.part`, jamais une traduction.
+ *
+ * Le champ est EXIGÉ sur la scène : le builder n'a plus AUCUN choix de matière à faire, donc aucun
+ * repli à offrir — une scène qui n'en porte pas est refusée AU PARSE, nommément, plutôt que rendue
+ * avec une valeur devinée. La face d'un terrain à BLOC PLEIN, elle, tient sa matière du TERRAIN
+ * (`terrains.json › matiere`) : ce record ne couvre que le relief du sol lui-même.
+ */
+export const reliefDefaultsSchema = z.strictObject(
+  Object.fromEntries(PARTS_RELIEF.map((part) => [part, matiereReliefSchema])) as Record<
+    PartRelief,
+    typeof matiereReliefSchema
+  >,
+);
 /** MASSE de bâtiment (#823, remplace `RoofSection` authoré à la main) : l'INTENTION, jamais la
  *  géométrie du toit — `gameIso/builders/roofs.ts` DÉRIVE pans/faîte/noues/croupes par une formule
  *  UNIQUE (`hauteur(case) = hauteurÉgout + distance(case, bord de la masse) × métresParCase ×
@@ -612,6 +632,8 @@ export const sceneSchema = z.strictObject({
   effectZones: z.array(sceneEffectZoneSchema).optional(),
   /** Ids de pistes du registre audio ; `null` = SILENCE forcé, absent = AUTOMATIQUE. */
   music: z.strictObject({ ambient: z.string().nullable().optional(), combat: z.string().nullable().optional() }).optional(),
+  /** Matière de chaque PARTIE de relief (#1691) — EXIGÉE : c'est la donnée que le builder LIT. */
+  reliefDefaults: reliefDefaultsSchema,
   layers: z.array(layerSchema).optional(),
   /** Cloisons sur arête — au plus UNE par clé `x,y,side,z` (`refuseAretesDupliquees`). */
   walls: z.array(wallSegSchema).superRefine(refuseAretesDupliquees).optional(),

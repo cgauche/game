@@ -78,9 +78,11 @@ describe('atelier du Codex — charge du CAS d’un document discriminé (#1686)
     const presentes = champsPresentes();
     expect(presentes, 'la charge du domaine n’est pas montée — le formulaire ne mesure rien').toContain('Couleur');
     const etrangers = libellesEtrangers('prop');
-    // 22 = les 25 clés de charge DÉCLARÉES du document moins les 3 du domaine `prop` (la sonde du juge
+    // 23 = les 26 clés de charge DÉCLARÉES du document moins les 3 du domaine `prop` (la sonde du juge
     // en comptait 21 : elle mesurait l'union OBSERVÉE des entrées, où `couverture` n'apparaît pas).
-    expect(etrangers.length, 'le témoin d’étrangers est vide — la mesure ne prouverait rien').toBe(22);
+    // 22 → 23 (#1691) : `vueDeDessus` entre à la charge du domaine `roof` — le plan vu du dessus se
+    // DÉCLARE en donnée au lieu d'être atteint par son id littéral au call-site.
+    expect(etrangers.length, 'le témoin d’étrangers est vide — la mesure ne prouverait rien').toBe(23);
     expect(presentes.filter((l) => etrangers.includes(l))).toEqual([]);
   });
 
@@ -163,6 +165,13 @@ describe('cliquet — champs ÉTRANGERS présentés par les catégories éditabl
     oups: 2, // Incident de Tir : `min`/`max`, les bornes d100 d'une bande de table (defs/oups.ts)
     reglesOptionnelles: 2, // règle à BANDES : `min`/`max` d'une autre forme de valeur par défaut
     structures: 1, // `porte` : `occulte`, drapeau d'un mur
+    // ENTRÉE #1691 : `terrains` rejoint la même famille — le bloc plein et la matière de ses flancs
+    // vont par PAIRE (`solidHeightM` ⟺ `matiere`, `defs/terrains.ts`), si bien qu'un sol nu à qui
+    // l'atelier offre l'un des deux se verrait refuser au save. La partition est portée par la
+    // PRÉSENCE d'un champ, pas par la valeur d'un discriminant : `chargeParDiscriminant` ne sait pas
+    // l'exprimer aujourd'hui, et c'est ce qui soldera cette ligne. Le refine, lui, ne se relâche pas :
+    // un bloc muet rendrait au builder de sols le choix de matière que ce lot lui retire.
+    terrains: 2,
   };
 
   it('le stock des catégories qui présentent un champ étranger est celui déclaré, et il DÉCROÎT', () => {

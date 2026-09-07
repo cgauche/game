@@ -50,6 +50,7 @@ const doc = document(
     detail: detailRecipeSchema.optional(),
     overlayProp: idDe('prop').optional(),
     solidHeightM: z.number().positive().optional(),
+    matiere: idDe('material', 'relief').optional(),
   },
   {
     walkable: { label: 'Franchissable', hint: 'Le terrain se traverse à pied' },
@@ -76,6 +77,10 @@ const doc = document(
       label: 'Hauteur du bloc plein',
       hint: 'Le terrain se rend comme un bloc plein de cette hauteur en mètres ; celle d’un mur vaut la constante de hauteur de mur du rendu (`src/gameIso/iso.ts`)',
     },
+    matiere: {
+      label: 'Matière des flancs du bloc',
+      hint: 'Matière de relief (`materials.json`) peinte sur les faces verticales du bloc plein — à renseigner si et seulement si le terrain porte une hauteur de bloc plein',
+    },
   },
   {
     codex: { keys: ['terrains'] },
@@ -89,7 +94,22 @@ const doc = document(
     // (`terrainStopsOrdonnes`, `src/gameIso/catalog/terrain.ts`).
     affinerEntree: (entree) =>
       entree.superRefine((v, ctx) => {
-        const e = v as { id?: unknown; stops?: unknown };
+        const e = v as { id?: unknown; stops?: unknown; solidHeightM?: unknown; matiere?: unknown };
+        // La MATIÈRE des flancs (#1691) n'existe que là où il y a des flancs : `solidHeightM` ⇔
+        // `matiere`. Sans cette équivalence, un bloc muet reviendrait à laisser le builder choisir.
+        const nom = typeof e.id === 'string' ? e.id : '?';
+        if (e.solidHeightM !== undefined && e.matiere === undefined)
+          ctx.addIssue({
+            code: 'custom',
+            path: ['matiere'],
+            message: `terrain « ${nom} » : un terrain à BLOC PLEIN (\`solidHeightM\`) EXIGE la matière de ses flancs (\`matiere\`) — le rendu ne la choisit plus`,
+          });
+        if (e.solidHeightM === undefined && e.matiere !== undefined)
+          ctx.addIssue({
+            code: 'custom',
+            path: ['matiere'],
+            message: `terrain « ${nom} » : \`matiere\` peint les flancs d'un BLOC PLEIN — sans \`solidHeightM\`, ce terrain n'en a aucun`,
+          });
         const offsets = Object.keys((e.stops ?? {}) as object);
         const paliers = offsets.map((o) => Number.parseInt(o, 10));
         if (paliers.every((n, i) => i === 0 || n > paliers[i - 1])) return;

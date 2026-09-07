@@ -57,4 +57,8 @@ export interface TerrainDef extends TerrainMeta {
    *  2 backends. N'entre QUE dans le rendu — `heightAt` (vérité combat) reste inchangé. Le bloc
    *  s'AJOUTE à la hauteur propre de la tuile (opéra : mur à un étage). */
   solidHeightM?: number;
+  /** MATIÈRE des faces verticales du bloc plein (id de `materials.json` domaine `relief`, #1691) — le
+   *  builder de sols la LIT au lieu de choisir. EXIGÉE dès que `solidHeightM` est posée, INTERDITE
+   *  sinon (un terrain sans bloc n'a pas de flanc à peindre) : le schéma le refine, nommément. */
+  matiere?: string;
 }

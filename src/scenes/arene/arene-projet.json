@@ -24,6 +24,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -713,6 +719,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -6279,6 +6291,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -7276,6 +7294,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -8212,6 +8236,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -9229,6 +9259,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -10091,6 +10127,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -11302,6 +11344,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -12421,6 +12469,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -13360,6 +13414,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -14464,6 +14524,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -15829,6 +15895,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -17015,6 +17087,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -18078,6 +18156,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -19673,6 +19757,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -21373,6 +21463,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -22693,6 +22789,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -24578,6 +24680,12 @@
    "ambiance": "exterieur",
    "metresPerTile": 2,
    "ambientLight": "auto",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,

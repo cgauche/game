@@ -99,6 +99,12 @@
     "h": 38
    },
    "ambiance": "exterieur",
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,
@@ -16696,6 +16702,12 @@
    "ambiance": "exterieur",
    "environment": "urbain",
    "metresPerTile": 2,
+   "reliefDefaults": {
+    "cliff": "terre",
+    "ramp": "terre",
+    "deck": "pierre",
+    "pilier": "pilier"
+   },
    "layers": [
     {
      "z": 0,

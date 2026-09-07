@@ -91,7 +91,7 @@ La vérité de VUE (estompe d'occlusion, révélation, assombrissement d'un éta
 
 | Builder | Sortie | Site | Rôle (JSDoc) |
 |---|---|---|---|
-| `buildFloors` | `FloorEl[]` | `src/gameIso/builders/floors.ts:315` | Éléments `floor` de la scène. |
+| `buildFloors` | `FloorEl[]` | `src/gameIso/builders/floors.ts:318` | Éléments `floor` de la scène. |
 | `buildHighlights` | `HighlightEl[]` | `src/gameIso/builders/highlights.ts:64` | — |
 | `buildPropVolumes` | `Face[]` | `src/gameIso/builders/propVolumes.ts:52` | Les faces MONDE d'un décor volumique : recette locale × cap × ancre, posées sur `baseHeightM`. |
 | `buildProps` | `PropEl[]` | `src/gameIso/builders/props.ts:125` | Éléments `prop` de la scène. |
@@ -174,4 +174,4 @@ relancer, comparer : une migration donnée-neutre doit rester identique.
 - **un TYPE d'élément** (au-delà des 5 membres de `SceneEl`) : ajouter le variant au pivot,
   son builder, sa cuisson dans le monde volumique, et — s'il doit se voir à l'authoring — son peintre
   SVG avec sa profondeur de tri.
-<!-- sources-empreinte: 2fbfa0e120da2ede4c1de6af63c5fddbb954e5d6 (23 fichiers, 10 dossiers) corps: 5f62395a1f93f594a28bfe3a357237181f3b7f62 -->
+<!-- sources-empreinte: c5206508647d542565a279ad4a2a4b062b0822c0 (23 fichiers, 10 dossiers) corps: cf881c1e20344b641d5bb6411cd40cc5020551b7 -->

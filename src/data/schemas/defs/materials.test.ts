@@ -59,9 +59,28 @@ describe('materials.json — un document, trois domaines, une disjonction gardé
     expect(schema.safeParse(doc).success).toBe(false);
   });
 
-  it('`couverture: true` reste accepté sur une entrée de toit qui ne la portait pas', () => {
+  // Que `couverture: true` PARSE est tenu par `m0` : les trois couvertures du document réel le
+  // portent. Ce qui se mesure ici est le contrat #1691 — l'entrée qui EST le plan vu du dessus ne
+  // peut pas, en plus, couvrir un pan.
+  it('une entrée de toit ne peut pas être à la fois COUVERTURE et PLAN vu du dessus (#1691)', () => {
     const doc = clone();
-    doc.find((e) => e.domain === 'roof' && e.couverture === undefined)!.couverture = true;
-    expect(schema.safeParse(doc).success).toBe(true);
+    const plan = doc.find((e) => e.vueDeDessus === true)!;
+    expect(plan, 'aucune entrée marquée `vueDeDessus` — la fixture ne mesure rien').toBeDefined();
+    plan.couverture = true;
+    expect(refus(doc).join(' ')).toMatch(/à la fois une couverture de pan et le plan vu du dessus/);
+  });
+
+  it('le PLAN vu du dessus est UNIQUE dans le dataset : zéro marqueur est refusé, en le chiffrant', () => {
+    const doc = clone();
+    delete doc.find((e) => e.vueDeDessus === true)!.vueDeDessus;
+    expect(refus(doc).join(' ')).toMatch(/0 entrée\(s\) marquée\(s\) « plan vu du dessus »/);
+  });
+
+  it('…et DEUX marqueurs le sont aussi, en les NOMMANT', () => {
+    const doc = clone();
+    const couvrante = doc.find((e) => e.domain === 'roof' && e.couverture === true)!;
+    delete couvrante.couverture;
+    couvrante.vueDeDessus = true;
+    expect(refus(doc).join(' ')).toMatch(new RegExp(`2 entrée\\(s\\) marquée\\(s\\) « plan vu du dessus ».*${couvrante.id}`));
   });
 });

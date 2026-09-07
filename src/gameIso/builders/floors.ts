@@ -7,7 +7,8 @@
  */
 import { Scene, tileAt, heightAt, isWalkable } from '../../state/scene';
 import { gradeBetween } from '../../state/relief';
-import { terrainPriority, terrainSolidHeightM } from '../../state/terrain';
+import { terrainMatiere, terrainPriority, terrainSolidHeightM } from '../../state/terrain';
+import type { PartRelief } from '../../data/materials.types';
 import type { CellSide, Face, FloorEl } from './types';
 import { viewedBuilder, type Viewed } from './viewTruth';
 
@@ -162,7 +163,7 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
         faces.push({
           poly: [{ ...c, h: topH }, { ...c, h: lowerH }],
           side,
-          material: { domain: 'relief', id: 'pilier', part: 'pilier' },
+          material: { domain: 'relief', id: scene.reliefDefaults.pilier, part: 'pilier' },
           oriented: false, // MONTANT : deux points, aucun dehors à porter
         });
       }
@@ -188,14 +189,16 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
     const deck = overhang && tileAt(scene, x + dx, y + dy, z) === 'vide';
     const loH = deck ? self - DECK_THICKNESS_M : nb;
     const [A, B] = edgeCorners(x, y, side);
+    const part: PartRelief = deck ? 'deck' : grade;
     faces.push({
       // Quad haut-gauche → haut-droit → bas-droit → bas-gauche (l'ordre attendu par les renderers).
       poly: [{ ...A, h: self }, { ...B, h: self }, { ...B, h: loH }, { ...A, h: loH }],
       side,
-      // Ton : PIERRE (flanc d'un BLOC PLEIN — mur —, d'une couche surélevée, ou dalle de tablier ; le
-      // matériau `pierre` porte sa propre recette d'assises → paroi maçonnée, pas un cube de terre) /
-      // terre (talus/fosse de la base).
-      material: { domain: 'relief', id: deck || z > 0 || solidBlock ? 'pierre' : 'terre', part: deck ? 'deck' : grade },
+      // La matière vient de la DONNÉE (#1691) : le flanc d'un BLOC PLEIN est celui de SON terrain
+      // (`terrains.json › matiere`, exigée dès qu'un terrain porte un bloc), toute autre paroi de
+      // relief prend la matière que la SCÈNE pose pour cette partie. Aucun repli : les deux sources
+      // sont exigées au parse.
+      material: { domain: 'relief', id: solidBlock ? terrainMatiere(terrain)! : scene.reliefDefaults[part], part },
       oriented: false, // paroi OUVERTE : le relief ne ferme aucun volume
     });
   }

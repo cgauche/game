@@ -738,7 +738,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // est SOLDÉE — la colonne d'entrée du tableau du Prix d'offre ÉTAIT un seuil (une borne basse
       // seule, relue à l'envers) ; c'est une FOURCHETTE `{min, max}` que `findTableEntry` lit, la
       // dernière bande gardant sa borne haute OUVERTE (« 4 ou plus », MDG 15 l.383). Le cliquet SUIT.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 461],
+      // Cliquet REMONTÉ 461 → 462 (#1691, 2026-09-07) : la matière de RELIEF quitte le code pour la
+      // donnée — CINQ lignes NEUVES au dénominateur (`terrains.json › matiere`, id nu comme son voisin
+      // `overlayProp` ; `reliefDefaults` sur les 4 projets de scène). Le stock mesuré passe de 457 à
+      // 462, au-delà des 4 places que les lots précédents avaient laissées sous le plafond. Ce ne sont
+      // pas des graphies neuves : ce sont les références que `gameIso/builders/floors.ts` portait EN DUR
+      // et qui deviennent mesurables, à la forme CIBLE (`idDe('material', 'relief')` les refine au parse).
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 462],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -1129,7 +1135,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // `activities.json`, le `times.of` de l'amende des gardes côté `tables.json`) et l'op `condition`
       // de la table MAISON, qui désigne l'État de sa rangée. MÊME graphie que leurs sœurs déjà stockées
       // ici : elles s'éteindront avec elles, d'un seul geste.
-      'L3 #1463': 383,
+      // #1691 (2026-09-07) : 383 → 388 — CINQ lignes de référence NEUVES, posant en DONNÉE la matière
+      // que `gameIso/builders/floors.ts` choisissait en dur : `terrains.json › matiere` (les flancs d'un
+      // terrain à bloc plein, id nu comme son voisin `overlayProp`) et `<projet> › reliefDefaults` sur
+      // les quatre projets de scène (l'enveloppe des quatre parties émises). MÊME graphie que leurs
+      // sœurs déjà stockées ici : elles s'éteindront avec elles, d'un seul geste.
+      'L3 #1463': 388,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en

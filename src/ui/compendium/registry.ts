@@ -289,6 +289,10 @@ const damageFact = (t: { damage: import('../../engine/types').WeaponDamageSpec |
  *  nom pour une référence hors catalogue, que le parse refuse nominativement (`idDe('prop')`). */
 const propLabel = (id: string): string => props.find((p) => p.id === id)?.label ?? id;
 
+/** Nom d'auteur d'une matière de RELIEF de `materials.json` (domaine filtré comme le picker,
+ *  `REF_FIELD['terrains.matiere']`) — lecture VIVE, l'id nu tenant lieu de nom hors catalogue. */
+const matiereLabel = (id: string): string => materials.find((m) => m.id === id && m.domain === 'relief')?.label ?? id;
+
 /** Famille d'une race/variante : « Humains (Reiklander) » → « Humains ». */
 const family = (label: string): string => label.split(' (')[0].trim();
 
@@ -2058,6 +2062,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
           fact(nom('opaque'), t.opaque ? 'oui' : null),
           fact(nom('built'), t.built ? 'oui' : null),
           fact(nom('solidHeightM'), t.solidHeightM != null ? `${t.solidHeightM} m` : null),
+          fact(nom('matiere'), t.matiere ? matiereLabel(t.matiere) : null),
           fact(nom('overlayProp'), t.overlayProp ? propLabel(t.overlayProp) : null),
         ),
         // Les DEUX porteurs de couleur du terrain (teinte d'aperçu + arrêts de la rampe) tiennent la

@@ -332,7 +332,7 @@ export function shadeSousSoleil(shade: number, fade: number): number {
  * besoin la résout sur SA scène vive, par la clé stable de l'élément (`roomZonesByElKey`).
  */
 export function worldBakeDeps(scene: Scene, mpt: number): readonly unknown[] {
-  return [scene.layers, scene.dimensions, scene.walls, scene.architecture, scene.metresPerTile, mpt,
+  return [scene.layers, scene.dimensions, scene.walls, scene.architecture, scene.reliefDefaults, scene.metresPerTile, mpt,
     propVolumeSignature(scene), ...propRecipeDeps(scene), ...matiereDeps(scene), ...terrainDeps()];
 }
 
@@ -371,11 +371,11 @@ function propRecipeDeps(scene: Scene): readonly unknown[] {
  *    `roofDefaults` dont les masses DÉRIVÉES héritent — `deriveArchitectureMasses`, `state/sceneEdit.ts`).
  *    Résolues par le MÊME accès que la cuisson (`roofMaterial`, `builders/roofs.ts`). Une couverture
  *    qu'aucun corps ne pose ne recuit donc rien.
- *  - RELIEF : le domaine ENTIER. Les ids que le sol émet sont écrits DANS le builder
- *    (`builders/floors.ts` : `pilier`, `pierre`, `terre`) — les recopier ici en ferait une seconde
- *    vérité, muette le jour où le builder en nomme un quatrième. Le domaine, lui, est DÉRIVÉ du
- *    document : il ne peut pas rater une matière lue. Prix de l'exhaustivité, dit : éditer `plafond`
- *    (plafond POV, hors cuisson du monde) recuit une fois pour rien.
+ *  - RELIEF : le domaine ENTIER. Les ids que le sol émet viennent de la SCÈNE (`reliefDefaults`, dep
+ *    propre de `worldBakeDeps`) et des TERRAINS à bloc plein (`terrainDeps`) — filtrer le domaine sur
+ *    ces deux sources en ferait une troisième vérité. Le domaine, lui, est DÉRIVÉ du document : il ne
+ *    peut pas rater une matière lue. Prix de l'exhaustivité, dit : éditer une matière de relief
+ *    qu'aucune scène ne pose recuit une fois pour rien.
  */
 function matiereDeps(scene: Scene): readonly unknown[] {
   const out: unknown[] = [];

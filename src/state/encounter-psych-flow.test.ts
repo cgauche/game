@@ -8,7 +8,7 @@ import { stacks } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import type { Scene, SceneEntity, CustomStatblock } from './scene';
+import { DEFAULT_RELIEF_DEFAULTS, type Scene, type SceneEntity, type CustomStatblock } from './scene';
 import { emptyNarratif } from './campaignNarratif';
 
 /**
@@ -28,7 +28,7 @@ function ent(over: Partial<SceneEntity> & Pick<SceneEntity, 'id'>): SceneEntity 
 
 function scene(entities: SceneEntity[]): Scene {
   return {
-    type: 'scene', id: 's', label: 'S', dimensions: { w: 4, h: 4 },
+    type: 'scene', id: 's', label: 'S', dimensions: { w: 4, h: 4 }, reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS },
     layers: [{ z: 0, tiles: Array(16).fill('herbe') }], entities,
     dialogues: [], triggers: [], encounters: [], flags: {},
   };

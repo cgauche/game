@@ -13,6 +13,25 @@
  */
 import type { DetailRecipe } from '../gameIso/detail/types';
 import type { MaterialRef } from '../gameIso/builders/types';
+import type { Grade } from '../state/relief';
+
+/**
+ * PARTIES de relief — le vocabulaire des `MaterialRef.part` que le builder de sols ÉMET pour une face
+ * de domaine `relief` (`src/gameIso/builders/floors.ts`), et RIEN d'autre : les deux liens verticaux
+ * franchissables/infranchissables du relief (`Grade` moins `flat`, qui ne dessine aucune paroi), la
+ * dalle fine d'un tablier de surplomb (`deck`) et le montant qui la porte (`pilier`).
+ *
+ * Il vit ICI, dans la couche donnée, parce que DEUX couches en dépendent et qu'aucune ne peut
+ * importer l'autre : le schéma de scène en fait les CLÉS de `Scene.reliefDefaults` (matière posée par
+ * partie), l'émetteur en type ses faces. Une partie de plus se déclare une fois, et la scène doit
+ * alors la matérialiser — le builder n'a aucun repli à offrir.
+ */
+export const PARTS_RELIEF = ['cliff', 'ramp', 'deck', 'pilier'] as const satisfies readonly (
+  | Exclude<Grade, 'flat'>
+  | 'deck'
+  | 'pilier'
+)[];
+export type PartRelief = (typeof PARTS_RELIEF)[number];
 
 /**
  * Domaines de matière que CE dataset porte — SOUS-ENSEMBLE des domaines de `MaterialRef`
@@ -52,6 +71,10 @@ export interface RoofMaterialDef extends MatiereBase {
    *  dessus n'a ni pente ni égout. UNE seule graphie : le champ vaut `true` ou il est ABSENT — le
    *  schéma refuse `false` (`src/data/schemas/defs/materials.ts`). */
   couverture?: true;
+  /** Cette entrée EST le plan vu du dessus (#1691) : le rendu de la vue carrée la résout par ce
+   *  marqueur (`matierePlan`, `src/data/index.ts`), plus par un id littéral. Le dataset en porte
+   *  EXACTEMENT une (`schemas/defs/materials.ts`), et elle ne couvre aucun pan. */
+  vueDeDessus?: true;
   /** Recette de détail de COUVERTURE (matériaux v2) : `courses` = les rangs (le pas `hM` fixe leur
    *  espacement — source unique builder/backend — `joint` leur couleur ; `blockWM`+`stagger`+
    *  `paletteVar` = bardeaux décalés nuancés ; `edgeWobble` seul = rangs organiques type chaume) ;
@@ -90,7 +113,7 @@ export interface RoofMaterialDef extends MatiereBase {
   ridgeCap?: string;
 }
 
-/** Apparence de RENDU du relief d'environnement (falaise/rampe/tablier/pilier iso, plafond POV) :
+/** Apparence de RENDU du relief d'environnement (falaise/rampe/tablier/pilier, iso et POV) :
  *  le renderer ne porte aucun littéral de couleur — l'identité du matériau vient d'ici, la
  *  lumière/l'ombrage vient de `shade.ts`. */
 export interface ReliefMaterialDef extends MatiereBase {

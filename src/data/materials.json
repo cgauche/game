@@ -175,7 +175,8 @@
     "planBody": "#6e4f3a",
     "planEdge": "#241a12",
     "planInner": "#8a6a4a",
-    "planText": "#f2e6cc"
+    "planText": "#f2e6cc",
+    "vueDeDessus": true
   },
   {
     "id": "terre",

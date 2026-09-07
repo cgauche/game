@@ -216,6 +216,11 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "arene-projet.json", champ: "optionals", signature: "arg,id", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-30", motif: "paramètre d’ENTITÉ (trait, talent)" },
   { concept: "reference", dataset: "arene-projet.json", champ: "optionals", signature: "id,value", statut: "historique", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "ref", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 406, lot: "L3 #1463", date: "2026-08-30", motif: "référence de PION de scène" }, // 293→406 : +113 OCCURRENCES — 24 ids de décor sont posés dans cette scène, 23 n'y résolvaient rien faute d'entrée `props.json` (#1680 ligne 14) ; `toile` ×4 résolvait déjà, par le Trait homonyme
+  // #1691 : `<scène> › reliefDefaults` — la matière de chaque PARTIE de relief que le builder de sols
+  // émet (`cliff`/`ramp`/`deck`/`pilier`). Quatre ids NUS sous une enveloppe par PARTIE, forme CIBLE de la
+  // grammaire (`idDe('material', 'relief')` les refine au parse) ; la mesure classe l'enveloppe d'ids nus
+  // en référence divergente, la ligne entre donc au dénominateur du lot L3 comme les autres.
+  { concept: "reference", dataset: "arene-projet.json", champ: "reliefDefaults", signature: "cliff,deck,pilier,ramp", statut: "divergente", strate: "Référence", occurrences: 18, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "scene", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "start", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 9, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "style", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
@@ -237,6 +242,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "barge-du-sel-projet.json", champ: "postes", signature: "trappingId+…", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "barge-du-sel-projet.json", champ: "qualities", signature: "id,value", statut: "historique", strate: "Référence", occurrences: 8, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "barge-du-sel-projet.json", champ: "ref", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-30", motif: "référence de PION de scène" },
+  { concept: "reference", dataset: "barge-du-sel-projet.json", champ: "reliefDefaults", signature: "cliff,deck,pilier,ramp", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "barge-du-sel-projet.json", champ: "scene", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "barge-du-sel-projet.json", champ: "victoryCondition", signature: "targetId,type+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "careerLevels.json", champ: "career", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 432, lot: "L3 #1463", date: "2026-08-30", motif: "référence de CARRIÈRE" },
@@ -310,6 +316,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "diligence-projet.json", champ: "a", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-31" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "b", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-31" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "ref", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 20, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "diligence-projet.json", champ: "reliefDefaults", signature: "cliff,deck,pilier,ramp", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "scene", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-31" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "walls", signature: "appearance,structure+…", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "walls", signature: "structure+…", statut: "divergente", strate: "Référence", occurrences: 662, lot: "L3 #1463", date: "2026-08-23" },
@@ -359,6 +366,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "loup-et-saumure-projet.json", champ: "postes", signature: "trappingId+…", statut: "divergente", strate: "Référence", occurrences: 12, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "loup-et-saumure-projet.json", champ: "qualities", signature: "id,value", statut: "historique", strate: "Référence", occurrences: 16, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "loup-et-saumure-projet.json", champ: "ref", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 10, lot: "L3 #1463", date: "2026-08-30", motif: "référence de PION de scène" },
+  { concept: "reference", dataset: "loup-et-saumure-projet.json", champ: "reliefDefaults", signature: "cliff,deck,pilier,ramp", statut: "divergente", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "loup-et-saumure-projet.json", champ: "scene", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "loup-et-saumure-projet.json", champ: "serviceKind", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 8, lot: "L3 #1463", date: "2026-08-30", motif: "référence de SERVICE de lieu" },
   { concept: "reference", dataset: "loup-et-saumure-projet.json", champ: "services", signature: "kind", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-08-30", motif: "référence de SERVICE de lieu" },
@@ -559,6 +567,9 @@ export const STRUCTURES_FORMES = [
   // CIBLE de la grammaire (`idDe('prop')` le refine au parse) ; la mesure classe tout id nu en
   // « historique », la ligne entre donc au dénominateur du lot L3 comme les autres réfs nues.
   { concept: "reference", dataset: "terrains.json", champ: "overlayProp", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  // #1691 : `terrains.json › matiere` — la matière des flancs d'un terrain à BLOC PLEIN. Id NU, forme
+  // CIBLE de la grammaire (`idDe('material', 'relief')` le refine au parse) ; même sort que `overlayProp`.
+  { concept: "reference", dataset: "terrains.json", champ: "matiere", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "cond", signature: "value+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "defaultAmmo", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 9, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "derivedWeapon", signature: "subType,type+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },

@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest';
 import { auditFacade, auditUnsupportedFloor, auditZoneCoverage, floorPairs, groundTerrains, PLAN_DEFECT_FAMILIES, type Defect, type PlanDefectFamilyDef } from '../../src/state/planDefects';
 import { locateGrid } from './locate';
 import { findMap, findMaps } from './registry';
-import type { Scene, SceneEffectZone, WallSeg } from '../../src/state/scene';
+import { DEFAULT_RELIEF_DEFAULTS, type Scene, type SceneEffectZone, type WallSeg } from '../../src/state/scene';
 
 /** « La Diligence » — paquet ÉDITEUR (`src/scenes/diligence/diligence-projet.json`) : la Scène y est
  *  déjà compilée, `findMaps` la relit par `parseProject` sans rien rebâtir. */
@@ -40,6 +40,7 @@ const RUBRIQUES_PLAIN_PIED = rubriques((scope) => scope !== 'floorPair');
 function makeScene(w: number, h: number, z0: string[], z1: string[], walls: WallSeg[], zones: SceneEffectZone[]): Scene {
   return {
     type: 'scene',
+    reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS },
     id: 'fixture',
     label: 'Fixture de test',
     dimensions: { w, h },
@@ -205,6 +206,7 @@ describe('mode PROJET — une carte authorée dans l\'éditeur se contrôle sans
       scenes: [{
         id: 'appentis', nom: 'Appentis sur cour', desc: 'Appentis sur cour — fixture.',
         dimensions: { w, h },
+        reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS },
         layers: [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }],
         walls: [],
         effectZones: [{ id: 'salle', label: 'Salle commune', presentation: 'interior', area: { kind: 'rect', x: 0, y: 0, w, h }, z: 0 }],
@@ -291,6 +293,7 @@ describe('RAPPORT — ce qui n\'a pas été mesuré ne se totalise pas', () => {
       scenes: [{
         id: 'quai', nom: 'Quai de plain-pied', desc: 'Quai de plain-pied — fixture.',
         dimensions: { w, h },
+        reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS },
         layers: [{ z: 0, tiles: new Array(w * h).fill('plancher') }],
         walls: [{ x: 0, y: 0, side: 'N' }],
         effectZones: [{ id: 'quai-z', label: 'Quai', presentation: 'exterior', area: { kind: 'rect', x: 0, y: 0, w, h }, z: 0 }],
@@ -314,6 +317,7 @@ describe('RAPPORT — ce qui n\'a pas été mesuré ne se totalise pas', () => {
       scenes: [{
         id: 'quai', nom: 'Quai avec étage', desc: 'Quai avec étage — fixture.',
         dimensions: { w, h },
+        reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS },
         layers: [
           { z: 0, tiles: new Array(w * h).fill('plancher') },
           { z: 1, tiles: Array.from({ length: w * h }, (_, i) => (i % w <= 1 ? 'plancher' : 'vide')) },

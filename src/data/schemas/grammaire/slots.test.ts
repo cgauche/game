@@ -148,6 +148,11 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       "idDe('material', 'prop')",
       "idDe('material', 'prop')",
       "idDe('material', 'prop')",
+      // DEUX instances de RELIEF (#1691), une par PORTEUR de la matière que le builder de sols lit :
+      // `defs-scenes/scene.ts › matiereReliefSchema` (les quatre parties de `Scene.reliefDefaults`,
+      // une fabrique partagée = une marque) et `defs/terrains.ts › matiere` (les flancs d'un bloc plein).
+      "idDe('material', 'relief')",
+      "idDe('material', 'relief')",
       "idDe('material', 'roof')",
       // 1 → 2 (#1657 B3-2b-a) : `defs/ship-stations.ts › requiresTrait` porte EN DONNÉE le gate d'une
       // station (`cale` — MSRC 07 l.94 ; `nid-de-pie` — MDG 12 l.299), à côté de `defs/vehicles.ts ›

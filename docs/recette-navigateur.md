@@ -1219,6 +1219,23 @@ l'outillage Playwright MCP du reste de ce document :
 sous-échantillonnée. Les deux sont vraies, chacune pour SON outil : avant de convertir, savoir lequel
 on pilote. Appliquer la conversion de l'un à l'autre double l'erreur au lieu de la corriger.
 
+## Piège de l'`alert()` natif qui GÈLE le pilotage CDP (« ▶ Tester » de l'éditeur)
+
+Mesuré 2026-09-07 (recette #1691). « ▶ Tester » ouvre un `alert()` natif quand le groupe est vide
+(`src/ui/editor/Editor.tsx:599-603`, garde `party.length === 0`) : la boîte modale du navigateur bloque
+alors tout `Runtime.evaluate` suivant, qui reste EN ATTENTE sans erreur ni message — la recette a l'air
+figée sur un geste qui a « réussi ». Peupler le groupe AVANT d'ouvrir l'éditeur (charger un scénario par
+l'écran `test`, `gotoScreen`) : la boîte ne s'ouvre plus, et le pilotage reste rendu à la page.
+
+## Piège du suffixe collé au texte d'un bouton (compteur, puce d'état)
+
+Mesuré 2026-09-07 (recette #1691). Comme les chips du Codex plus haut, des boutons d'écran portent un
+suffixe DANS leur `textContent` : le compteur de la palette (`Terrains25`) ou la puce d'état de
+sauvegarde (`Enregistrer •`). `clickButtonByText` en `{ exact: true }`
+(`scripts/recette/lib.mjs:636`) compare le texte ENTIER et n'y matche donc rien. Sur ces boutons, viser
+en sous-chaîne (`exact: false`, le défaut) ou par préfixe, et lever l'ambiguïté par `dans` plutôt que
+par `exact`.
+
 ## Chemins canoniques du Codex (niches ouvertes récemment)
 
 Une recette ne doit pas redécouvrir l'arborescence du Compendium à l'aveugle : les niches nichées sous

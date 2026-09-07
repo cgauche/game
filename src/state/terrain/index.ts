@@ -74,6 +74,13 @@ export function terrainOverlayProp(id: string): string | undefined {
 export function terrainSolidHeightM(id: string): number {
   return indexDesTerrains()[id]?.solidHeightM ?? 0;
 }
+/** MATIÈRE des faces verticales du BLOC PLEIN d'un terrain (#1691) — id de `materials.json` domaine
+ *  `relief`, lu par `gameIso/builders/floors.ts`. `undefined` sur un terrain sans bloc plein : le
+ *  schéma exige le champ si et seulement si `solidHeightM` est posée, l'appelant n'a donc à le
+ *  demander que pour un bloc. */
+export function terrainMatiere(id: string): string | undefined {
+  return indexDesTerrains()[id]?.matiere;
+}
 /** Recette de détail d'un terrain, RESTREINTE aux sections d'ACCENT (touffes, mouchetis) — `null`
  *  quand l'entrée n'en porte aucune. Deux consommateurs la lisent : l'affine (`authoring/floorsSvg.ts`)
  *  et le volumique (`groundAccents.ts`) ; le POV lit la recette NON restreinte en direct monde

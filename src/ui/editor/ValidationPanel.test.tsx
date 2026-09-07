@@ -14,7 +14,7 @@ import { ValidationPanel } from './ValidationPanel';
 import { validateScene, type Warning } from '../../state/validateScene';
 import { parseProject } from '../../state/worldMap';
 import { PLAN_DEFECT_FAMILIES } from '../../state/planDefects';
-import type { Scene } from '../../state/scene';
+import { DEFAULT_RELIEF_DEFAULTS, type Scene } from '../../state/scene';
 import diligenceProjet from '../../scenes/diligence/diligence-projet.json';
 
 beforeAll(() => {
@@ -61,6 +61,7 @@ function scenePlanFautive(): Scene {
   const w = 4, h = 2;
   return {
     type: 'scene',
+    reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS },
     id: 'sc-fautive',
     label: 'Cour prise pour une salle',
     dimensions: { w, h },

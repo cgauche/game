@@ -3,7 +3,7 @@
  * SYNTHÉTIQUES : jamais les comptes d'une scène réelle, qui bougent dès que l'auteur corrige sa carte.
  */
 import { describe, expect, it } from 'vitest';
-import type { Scene, SceneEffectZone, WallSeg } from './scene';
+import { DEFAULT_RELIEF_DEFAULTS, type Scene, type SceneEffectZone, type WallSeg } from './scene';
 import { auditFacade, auditStairwells, auditUnsupportedFloor, auditZoneCoverage, groundTerrains, interiorCells, outdoorCells, PLAN_DEFECT_FAMILIES, scenePlanDefects, stairFlightCells, supportedFloorCells, zoneOutsideBuildingTiles, type PlanDefectFamily } from './planDefects';
 import { perimeterWallSegs } from './sceneEdit.testkit';
 import { validateScene } from './validateScene';
@@ -11,6 +11,7 @@ import { validateScene } from './validateScene';
 function makeScene(w: number, h: number, layers: { z: number; tiles: string[]; height?: number[] }[], zones: SceneEffectZone[], walls: WallSeg[] = []): Scene {
   return {
     type: 'scene',
+    reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS },
     id: 'fixture',
     label: 'Fixture de plan',
     dimensions: { w, h },

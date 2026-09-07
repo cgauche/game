@@ -3,6 +3,7 @@ import { buildFloors, edgeBlends, isOverhang, capsSolid, capsSolidDirect, fogFlo
 import type { Face, FloorEl } from './types';
 import { emptyScene, heightAt, type Scene } from '../../state/scene';
 import { gradeBetween, STEP_MAX_M } from '../../state/relief';
+import { terrainMatiere } from '../../state/terrain';
 
 /**
  * Builder de sols du PIVOT : le franchissement vertical S'AUTO-DÉRIVE du delta de hauteur MÉTRIQUE
@@ -149,6 +150,63 @@ describe('buildFloors — bloc PLEIN d’un terrain (solidHeightM, ex. mur) : RE
     s.layers[0].height[1 * 3 + 1] = 4; // étage surélevé de 4 m SOUS le mur
     const base = buildFloors(s).find((e) => e.key === 'floor:1,1,0')!.faces.find(isBaseFace)!;
     expect(base.poly[0].h).toBeGreaterThan(4 + STEP_MAX_M); // dessus = 4 m (étage) + solidHeightM (bloc)
+  });
+});
+
+/**
+ * #1691 — la MATIÈRE d'une face de relief vient de la DONNÉE, jamais du builder. Deux sources, deux
+ * contrats : la SCÈNE pour les parois de relief (`reliefDefaults`, une par partie émise), le TERRAIN
+ * pour le flanc d'un bloc plein (`terrains.json › matiere`). Chaque cas pose une valeur DIFFÉRENTE du
+ * défaut : un id réécrit en dur dans `floors.ts` rendrait ces cas rouges.
+ */
+describe('buildFloors — la matière de relief est LUE dans la donnée (#1691)', () => {
+  it('falaise : la matière est celle que la SCÈNE pose pour `cliff`', () => {
+    const s = withHeight();
+    s.reliefDefaults = { ...s.reliefDefaults, cliff: 'pierre' }; // ≠ le défaut `terre` d'une scène neuve
+    setH(s, 1, 1, 4);
+    const faces = reliefParts(elAt(buildFloors(s), 1, 1));
+    expect(faces.length).toBeGreaterThan(0);
+    expect(faces.every((f) => f.material.part === 'cliff')).toBe(true);
+    expect(faces.every((f) => f.material.id === s.reliefDefaults.cliff)).toBe(true);
+  });
+
+  it('rampe : la matière est celle que la SCÈNE pose pour `ramp`', () => {
+    const s = withHeight();
+    s.reliefDefaults = { ...s.reliefDefaults, ramp: 'pierre' };
+    setH(s, 1, 1, 0.5);
+    const faces = reliefParts(elAt(buildFloors(s), 1, 1));
+    expect(faces.length).toBeGreaterThan(0);
+    expect(faces.every((f) => f.material.part === 'ramp')).toBe(true);
+    expect(faces.every((f) => f.material.id === s.reliefDefaults.ramp)).toBe(true);
+  });
+
+  it('dalle de tablier et pilier : les matières que la SCÈNE pose pour `deck` et `pilier`', () => {
+    const s = emptyScene(4, 4);
+    s.layers[0].tiles = new Array(16).fill('plancher');
+    s.layers[0].height = new Array(16).fill(0);
+    s.layers.push({ z: 1, tiles: new Array(16).fill('vide'), height: new Array(16).fill(0) });
+    s.layers[1].tiles[1 * 4 + 1] = 'planches';
+    s.layers[1].height![1 * 4 + 1] = 4;
+    s.reliefDefaults = { ...s.reliefDefaults, deck: 'terre', pilier: 'terre' }; // ≠ défauts `pierre`/`pilier`
+    const el = elAt(buildFloors(s, undefined, { activeZ: 1 }), 1, 1, 1)!;
+    const decks = el.faces.filter((f) => f.material.part === 'deck');
+    const piliers = el.faces.filter((f) => f.material.part === 'pilier');
+    expect(decks.length).toBeGreaterThan(0);
+    expect(piliers.length).toBeGreaterThan(0);
+    expect(decks.every((f) => f.material.id === s.reliefDefaults.deck)).toBe(true);
+    expect(piliers.every((f) => f.material.id === s.reliefDefaults.pilier)).toBe(true);
+  });
+
+  it('flanc d’un BLOC PLEIN : la matière est celle de son TERRAIN, pas celle de la scène', () => {
+    const s = emptyScene(3, 3);
+    s.layers[0].height = new Array(9).fill(0);
+    s.layers[0].tiles[1 * 3 + 1] = 'mur';
+    const attendue = terrainMatiere('mur');
+    expect(attendue, '`mur` n’est plus un terrain à bloc plein porté par sa matière').toBeDefined();
+    expect(s.reliefDefaults.cliff).not.toBe(attendue); // la scène dit AUTRE CHOSE : le terrain gagne
+    const faces = reliefParts(elAt(buildFloors(s), 1, 1));
+    expect(faces.length).toBeGreaterThan(0);
+    expect(faces.every((f) => f.material.id === attendue)).toBe(true);
   });
 });
 

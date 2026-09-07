@@ -1,4 +1,4 @@
-import { Scene, Terrain } from '../state/scene';
+import { DEFAULT_RELIEF_DEFAULTS, Scene, Terrain } from '../state/scene';
 import { buildEncounter } from '../state/encounterAuthoring';
 
 /**
@@ -22,6 +22,7 @@ const enc = buildEncounter({
 
 export const testScene: Scene = {
   type: 'scene',
+  reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS },
   id: 'test-fixture',
   label: 'Terrain de test',
   desc: 'Scène neutre pour les tests de combat.',

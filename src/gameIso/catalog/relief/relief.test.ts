@@ -12,16 +12,18 @@ function hexDist(a: string, b: string): number {
 }
 
 describe('apparence de relief (JSON pur iso/POV)', () => {
-  it('les 4 matériaux sont présents', () => {
-    const ids = matieresDe('relief').map((m) => m.id).sort();
-    expect(ids).toEqual(['pierre', 'pilier', 'plafond', 'terre']);
-  });
-
-  it('résolution par id + valeurs de face', () => {
-    expect(reliefMaterial('pierre').face).toBe('#6b6f76');
-    expect(reliefMaterial('terre').face).toBe('#5a4a33');
-    expect(reliefMaterial('pilier').face).toBe('#565a61');
-    expect(reliefMaterial('plafond').face).toBe('#2c2a26');
+  // CONTRAT POSITIF, une entrée = un cas : chaque matière que la donnée POSE se résout et rend sa
+  // face. Aucun cardinal du magasin partagé n'est asserté ici — une matière de plus est un ajout
+  // légitime d'auteur, pas une régression, et son absence se dirait sur SON cas.
+  it.each([
+    ['pierre', '#6b6f76'],
+    ['terre', '#5a4a33'],
+    ['pilier', '#565a61'],
+    ['plafond', '#2c2a26'],
+  ])('« %s » est au registre et se résout sur sa face', (id, face) => {
+    expect(matieresDe('relief').map((m) => m.id)).toContain(id);
+    expect(reliefMaterial(id).id).toBe(id);
+    expect(reliefMaterial(id).face).toBe(face);
   });
 
   it('id absent du registre → entrée de REPLI VISIBLE au ton d’alarme (#877)', () => {

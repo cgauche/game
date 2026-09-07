@@ -30,6 +30,7 @@ import {
   type DetailOpts,
 } from './detailSvg';
 import { hash32, seedStream } from '../../data/hash';
+import { matierePlan } from '../../data';
 import { ACCENT_FRAC, BLOCK_INSET_M, BLOCK_SHADE_K } from '../detail/expand';
 import { shade, mix } from '../shade';
 import type { DetailRecipe } from '../detail/types';
@@ -295,7 +296,7 @@ function pansSvg(el: RoofEl, dims: Dims, opts?: DetailOpts): string {
 
 /** Vue du DESSUS : l'extrusion iso n'a pas de sens → cellules exactes, couleurs de la def 'plan'. */
 function planBoxSvg(el: RoofEl, dims: Dims): string {
-  const plan = roofMaterial('plan');
+  const plan = matierePlan();
   return el.cells
     .map((cell) => `<path d="${diamondPath(cell.x, cell.y, dims, roofLift(el))}" fill="${plan.planBody!}" stroke="${plan.planEdge!}" stroke-width="1"/>`)
     .join('');
@@ -308,7 +309,7 @@ function planBoxSvg(el: RoofEl, dims: Dims): string {
  *  Le `label` est une ENTRÉE de rendu fournie par l'appelant : sans lui, aucun texte n'est peint. */
 function planCellsSvg(el: RoofEl, dims: Dims, label?: string): string {
   const sh = roofMaterial(el.material);
-  const plan = roofMaterial('plan');
+  const plan = matierePlan();
   let svg = '';
   for (const cell of el.cells)
     svg += `<path d="${diamondPath(cell.x, cell.y, dims, roofLift(el))}" fill="${sh.O ?? plan.planBody!}" opacity="0.7" stroke="${plan.planEdge!}" stroke-width="0.5"/>`;
