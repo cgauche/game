@@ -5,7 +5,7 @@
 **Périmètre mesuré / angles morts** — sont LUS aux fichiers réels : les 34 appels
 `addReverse(...)` de `src/ui/compendium/relations.ts` (catégorie référante, catégorie cible, titre FR de section,
 `fichier:ligne`), l'API publique du même module (AST + 1re phrase de JSDoc), le littéral
-`CODEX_SPECS` de `src/ui/compendium/registry.ts` (127 catégories, leurs groupes et sous-groupes
+`CODEX_SPECS` de `src/ui/compendium/registry.ts` (128 catégories, leurs groupes et sous-groupes
 `cluster`), et l'`exposition` DÉCLARÉE par les 121 defs de `src/data/schemas/defs/`
 (dumpée par `scripts/docs/lib/dump-exposition.mts`), les cas NOMMÉS par `src/data/schemas/exposition-contrats.test.ts`, les fonctions
 exportées de `src/ui/compendium/describe.ts` et `src/ui/compendium/humanize.ts`, et le compte d'épigraphes de Carrière dumpé par
@@ -70,14 +70,14 @@ par `src/data/schemas/exposition-contrats.test.ts`, dont voici les cas, tels que
 Un document neuf se pose donc en DEUX endroits du MÊME commit : son `exposition` au def, sa
 catégorie dans `CODEX_SPECS`.
 
-Sur 121 defs, 25 sont EXEMPTS d'exposition Codex :
+Sur 121 defs, 24 sont EXEMPTS d'exposition Codex :
 
-- `dette` — 3 fichier(s)
+- `dette` — 2 fichier(s)
 - `vocabulaire-app-interne` — 22 fichier(s)
 
 ### Index INVERSE — catégorie Codex → document qui la déclare
 
-127 clés de catégorie sont déclarées par les defs. La colonne « Route d'édition »
+128 clés de catégorie sont déclarées par les defs. La colonne « Route d'édition »
 est celle du document porteur, telle que `document()` la déclare.
 
 | Clé de catégorie | Libellé (`CODEX_SPECS`) | Déclarée par | Route d'édition |
@@ -199,6 +199,7 @@ est celle du document porteur, telle que `document()` la déclare.
 | `symptoms` | Symptômes | `src/data/symptoms.json` | dataset `symptoms` |
 | `talents` | Talents | `src/data/talents.json` | dataset `talents` |
 | `tavernGames` | Jeux de taverne | `src/data/tavernGames.json` | dataset `tavernGames` |
+| `terrains` | Terrains | `src/data/terrains.json` | dataset `terrains` |
 | `traits` | Traits | `src/data/traits.json` | dataset `traits` |
 | `trappings` | Possessions | `src/data/trappings.json` | dataset `trappings` |
 | `traumas` | Traumatismes (séquelles) | `src/data/traumas.json` | dataset `traumas` |
@@ -265,7 +266,7 @@ Le JSDoc est rapporté en ENTIER : le contrat d'une couture relationnelle tient 
 | `tokenizeLinks` | function | `src/ui/compendium/relations.ts:502` | Tokenise une prose en alternant texte brut et mentions d'entité à LIER (auto-liage du Codex, façon `dev.html`). PUR & locale-scoped (matcher dérivé des libellés de la locale active, jamais une chaîne FR en dur → multilingue de principe). Écarte les liens vers SOI et les libellés inconnus/courts — la comparaison est 100 % id-based (`selfId` si l'appelant le connaît, sinon résolu depuis `selfLabel` via `idByLabelCached`, repli des appelants non encore migrés). `selfCategory` (catégorie de la fiche affichante) tranche les homonymes en priorité — cf. `resolveLink`/`PRIORITY_CAT_ORDER`. Seul le vocabulaire de RÈGLES est lié. |
 
 `bookContents` est projeté DANS le `build` (paresseux) de la catégorie Livres
-(`src/ui/compendium/registry.ts:1794`) : il ne lit que l'identité STATIQUE des catégories, jamais leurs
+(`src/ui/compendium/registry.ts:1810`) : il ne lit que l'identité STATIQUE des catégories, jamais leurs
 items — aucun cycle de projection.
 
 ## Barre de catégories — sous-groupes repliables (`cluster`)
@@ -284,7 +285,7 @@ automatiquement si la catégorie active y vit. Les pastilles restent des `<butto
 | Équipement | 8 | 5 | *Mer & rivière* (3) |
 | Effets | 30 | 12 | *Blessures critiques* (8), *Critiques de navire* (5), *Critiques fluviaux* (5) |
 | Magie | 8 | 8 | — |
-| Monde | 19 | 19 | — |
+| Monde | 20 | 20 | — |
 | Tables | 53 | 16 | *Création de personnage* (7), *Voyage terrestre* (6), *Mer & rivière* (9), *Calendrier* (4), *Bataille de masse* (5), *Rencontres* (3), *Équipage & navire* (3) |
 
 Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_SPECS`, rien d'autre.
@@ -315,4 +316,4 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
 - `npx vitest run src/ui/compendium/humanize.test.ts`
 - `npx vitest run src/data/schemas/exposition-contrats.test.ts`
 - `npx vitest run src/data/serialize.test.ts`
-<!-- sources-empreinte: 008025c9e94a4dea3fbbd5a5ac1c6878a5e557b3 (416 fichiers, 0 dossiers) corps: 3ac24b892e1abe12ffe5e0a84243d624cd5ff4db -->
+<!-- sources-empreinte: c5be5449bd9349377cc1ed1c9e51ee0c9cae1468 (419 fichiers, 0 dossiers) corps: d7b6267dfd987bafce9aaf49064105d31062e63b -->

@@ -9,7 +9,7 @@
 
 Schémas NOMMÉS candidats : `src/data/schemas/grammaire/` (formes partagées entre documents) + les `src/data/schemas/defs/` dont les sous-schémas sont nommés (`criticals.ts`, `props.ts`) ; **23 retenus** (voir en-tête du générateur pour les raisons d'exclusion). Les catalogues `src/data/schemas/defs/*.ts` à schéma d'entrée ANONYME restent HORS PÉRIMÈTRE — non par absence de nom TS : l'alias existe pour la plupart (41 interfaces `XData` dans `src/data/index.ts`, mesure 2026-09-01 — ex. `TrappingData` `index.ts:1113`, annotée par `src/engine/items.ts:20` et `src/engine/activities.ts:28`) et les champs d'une entrée anonyme sont dérivables (`scripts/docs/lib/zod-introspect.mts#introspecterDefs`) —, mais parce que la DÉRIVATION de `TARGETS` (jointure `type`↔`XData`) est un geste distinct, encore à faire (#1620) ; à l'unité, le geste d'auteur reste ouvert (nommer son schéma d'entrée dans SON def — ou en `grammaire/` si la forme est réellement partagée — puis l'ajouter à `TARGETS`), fait pour `props.json` → `PropData`.
 
-Détection au VÉRIFICATEUR DE TYPES (`ts.Program`/`TypeChecker`) : un lecteur est un accès dont le SYMBOLE de propriété est celui déclaré par le type cible, la propriété devant lui être PROPRE ou son porteur être DÉCLARÉ de ce type — aucune annotation littérale n'est cherchée, et un type anonyme de même forme ne crédite rien. Quatre états sont mesurés, dont deux ne sont pas des mesures de lecture (hérité, absent du type TS) ; ceux qui ont des membres ici : **144 lus** ; **6 « 0 — JAMAIS LU »** (`SourceRef.note`, `CastingNumberMod.maison`, `CastingNumberMod.source`, `CastingNumberMod.desc`, `PropData.type`, `PropData.label`) — champ PROPRE au type, aucun lecteur ; **8 absents du type TS** (`AdvancementRef.table`, `PropData.labelF`, `PropData.desc`, `PropData.descRef`, `PropData.source`, `PropData.alsoIn`, `PropData.maison`, `PropData.icon`) — le champ du schéma n'existe pas sur le type : divergence schéma↔type, listée en fin de rapport, sur 158 champs de 23 types.
+Détection au VÉRIFICATEUR DE TYPES (`ts.Program`/`TypeChecker`) : un lecteur est un accès dont le SYMBOLE de propriété est celui déclaré par le type cible, la propriété devant lui être PROPRE ou son porteur être DÉCLARÉ de ce type — aucune annotation littérale n'est cherchée, et un type anonyme de même forme ne crédite rien. Quatre états sont mesurés, dont deux ne sont pas des mesures de lecture (hérité, absent du type TS) ; ceux qui ont des membres ici : **145 lus** ; **5 « 0 — JAMAIS LU »** (`SourceRef.note`, `CastingNumberMod.maison`, `CastingNumberMod.source`, `CastingNumberMod.desc`, `PropData.type`) — champ PROPRE au type, aucun lecteur ; **8 absents du type TS** (`AdvancementRef.table`, `PropData.labelF`, `PropData.desc`, `PropData.descRef`, `PropData.source`, `PropData.alsoIn`, `PropData.maison`, `PropData.icon`) — le champ du schéma n'existe pas sur le type : divergence schéma↔type, listée en fin de rapport, sur 158 champs de 23 types.
 
 Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendait 41 champs « 0 lecteur » sur ces mêmes 158. Des 16 « 0 lecteur » de la première version de ce rapport (échantillon COMPLET), 12 ont un lecteur mesuré — dont `argDifficulty` et `stageOutcome`, qu'une vérification à la main manque comme le scan syntaxique, `spec` d'une `QualityRef` (champ PROPRE : `qualityRefSchema` porte son propre shape) et `hidden` d'un `TraitInstance` (`hiddenGroupsOf` annote `TraitInstance[]`) ; les 4 autres sont de vrais zéros. Coût : ~17 s et ~1,3 Go pour un rapport complet, contre 1,8 s au scan syntaxique. Angles morts (redéclaration structurelle, spread, clé dynamique, champ absent du type) : en-tête de `fieldConsumers.mjs`.
 
@@ -165,7 +165,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | Champ | Lecteurs | Exemple |
 |---|---|---|
 | `min` | 2 | `src/state/travelFlow.ts:1146` |
-| `max` | 1 | `src/ui/compendium/registry.ts:757` |
+| `max` | 1 | `src/ui/compendium/registry.ts:774` |
 | `id` | 8 | `src/engine/mountTravel.ts:214` |
 | `label` | 8 | `src/engine/mountTravel.ts:198` |
 | `desc` | 1 | `src/state/travelPostes.ts:362` |
@@ -186,8 +186,8 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `min` | 1 | `src/ui/compendium/registry.ts:780` |
-| `max` | 1 | `src/ui/compendium/registry.ts:780` |
+| `min` | 1 | `src/ui/compendium/registry.ts:797` |
+| `max` | 1 | `src/ui/compendium/registry.ts:797` |
 | `id` | 3 | `src/data/index.ts:480` |
 | `label` | 2 | `src/engine/shipCritical.ts:107` |
 | `ops` | 3 | `src/engine/riverNavigation.ts:213` |
@@ -200,9 +200,9 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 11 | `src/data/index.ts:2705` |
+| `id` | 12 | `src/data/index.ts:2705` |
 | `type` | **0 — JAMAIS LU** | — |
-| `label` | **0 — JAMAIS LU** | — |
+| `label` | 1 | `src/ui/compendium/registry.ts:290` |
 | `labelF` | — | *absent du type TS* |
 | `desc` | — | *absent du type TS* |
 | `descRef` | — | *absent du type TS* |
@@ -292,11 +292,11 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 ## Synthèse
 
-23 types, 158 champs mesurés : 144 lus, **6 avec « 0 lecteur » mesuré** au `TypeChecker`, 0 hérité, 8 absents du type TS. Ces « 0 lecteur » sont sous CLIQUET NOMINATIF (`src/data/field-consumers.test.ts`) : la liste attendue y est écrite champ par champ — un zéro apparu comme un zéro disparu est rouge, et la ligne ne se retire qu'avec le lecteur qui l'annule.
+23 types, 158 champs mesurés : 145 lus, **5 avec « 0 lecteur » mesuré** au `TypeChecker`, 0 hérité, 8 absents du type TS. Ces « 0 lecteur » sont sous CLIQUET NOMINATIF (`src/data/field-consumers.test.ts`) : la liste attendue y est écrite champ par champ — un zéro apparu comme un zéro disparu est rouge, et la ligne ne se retire qu'avec le lecteur qui l'annule.
 
 ## Cas fondateur
 
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: 1c10975a1ef3fa6088148cf98099d80496aabf40 (2077 fichiers, 172 dossiers) corps: 9338e4f9b4d95111dae616f4502f0bba1ce483ff -->
+<!-- sources-empreinte: 39b3d98a2da68b052e0973b922972f6553df7f72 (2077 fichiers, 172 dossiers) corps: d5197b98219fb6a4baa81cbb4727569e8e9e03d0 -->
