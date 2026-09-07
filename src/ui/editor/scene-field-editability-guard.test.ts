@@ -32,7 +32,7 @@ import { virtualProgram, VIRTUAL_ROOT } from '../../../scripts/guards/lib/tsProg
  * anonyme, l'inclusion par IDENTITÉ et la coupe aux nœuds-frontière, pas la POSITION réelle du
  * symbole rendu par `z.infer` (`zod/v4/core/util.d.cts`) : ce chemin-là n'est couvert que par la
  * mesure sur le programme RÉEL (cliquet de compte + les mesures du gate `@fossile`, qui bâtissent
- * le programme du dépôt avec un module modifié EN MÉMOIRE).
+ * le programme du DOCUMENT avec un module modifié EN MÉMOIRE).
  */
 const ROOT = path.resolve(__dirname, '..', '..', '..');
 
@@ -328,24 +328,20 @@ export interface Scene { id: string; walls: (typeof murSchema)['sortie'][]; voc:
   // ── Gate `@fossile`, BIDIRECTIONNEL, mesuré sur le programme RÉEL ─────────────────────────
   // Un tag lu SANS liste nominative est un canal d'évasion : un champ NEUF tagué sortirait du
   // périmètre sans qu'aucun rouge ne sorte (ni orphelin, ni cliquet — mesure du juge, sonde j10).
-  // Les programmes ci-dessous sont ceux du DÉPÔT, un module servi MODIFIÉ EN MÉMOIRE : aucune
-  // écriture disque, et la mesure porte sur les vraies déclarations, pas sur une réplique.
+  // Le programme ci-dessous est celui du DOCUMENT — ses deux fichiers en racines, la fermeture
+  // d'imports étant tirée par TypeScript —, un module servi MODIFIÉ EN MÉMOIRE : aucune écriture
+  // disque, et la mesure porte sur les vraies déclarations, pas sur une réplique. `src/ui/**` n'y
+  // entre pas : l'audit `@fossile` et le SEAM lisent les DÉCLARATIONS du document, jamais les
+  // écrivains d'interface — ceux-là se mesurent sur `programmeMemoise(ROOT)`, qui porte l'interface,
+  // le pont et le pipeline.
   const programAvec = (patch: Record<string, string>) => {
     const cfgPath = ts.findConfigFile(ROOT, ts.sys.fileExists, 'tsconfig.json')!;
     const cfg = ts.readConfigFile(cfgPath, ts.sys.readFile);
     const parsed = ts.parseJsonConfigFileContent(cfg.config, ts.sys, path.dirname(cfgPath));
-    const rootNames = parsed.fileNames.filter((f) => {
-      const rel = path.relative(ROOT, f).split(path.sep).join('/');
-      return (
-        !/\.test\.(ts|tsx|mts|mjs)$/.test(rel) &&
-        (rel.startsWith('src/ui/') ||
-          rel === 'src/state/sceneEdit.ts' ||
-          rel === 'src/state/mapSpec.ts' ||
-          rel.startsWith('src/scenes/') ||
-          rel === 'src/state/scene.ts' ||
-          rel === 'src/data/schemas/defs-scenes/scene.ts')
-      );
-    });
+    const DOCUMENT = ['src/state/scene.ts', 'src/data/schemas/defs-scenes/scene.ts'];
+    const rootNames = parsed.fileNames.filter((f) =>
+      DOCUMENT.includes(path.relative(ROOT, f).split(path.sep).join('/'))
+    );
     const patche = new Map(Object.entries(patch).map(([rel, texte]) => [path.resolve(ROOT, rel), texte]));
     const host = ts.createCompilerHost({ ...parsed.options, noEmit: true });
     const getSource = host.getSourceFile.bind(host);
@@ -393,6 +389,10 @@ export interface Scene { id: string; walls: (typeof murSchema)['sortie'][]; voc:
   });
 
   it('gate @fossile : une ENTRÉE du registre que plus aucun tag ne porte est ROUGE (le registre ne survit pas à son shim)', () => {
+    // TÉMOIN de non-vacuité : le contrôle NON patché est MUET. Un programme privé de ses racines
+    // rendrait déjà `entreesSansTag` peuplé — le rouge ci-dessous viendrait alors du vide, pas du
+    // tag absent que le patch mesure.
+    expect(fossileAudit(programAvec({}), ROOT)).toEqual({ taguesHorsListe: [], entreesSansTag: [] });
     const audit = fossileAudit(
       programAvec(modifie('src/data/schemas/defs-scenes/scene.ts', ANCRE_FOOT, '   */\n')),
       ROOT

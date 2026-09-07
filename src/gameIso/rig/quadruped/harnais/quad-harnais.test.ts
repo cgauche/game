@@ -149,10 +149,12 @@ describe('compilation d\'un dessin de SET (gabarit lu du suffixe @espèce)', () 
       expect(rouge.status, '--check sur un compilé désynchronisé').toBe(1);
       expect(rouge.stderr).toContain('sortie(s) divergentes du dessin');
 
-      // Remise en état PAR LE GÉNÉRATEUR (jamais une restauration à la main) → empreinte retrouvée.
-      expect(compilateur(SET).status).toBe(0);
-      expect(md5(COMPILE)).toBe(empreinte);
-      expect(compilateur('--check', SET).status).toBe(0);
+      // Remise en état PAR LE GÉNÉRATEUR (jamais une restauration à la main). L'écriture de
+      // `scripts/rig/compile-dessin-quad.mts:189` est CONDITIONNELLE (`actuel !== texte`) :
+      // l'idempotence ci-dessus prend la branche « inchangé », ce passage-ci est le seul qui
+      // prend la branche qui ÉCRIT sur une destination existante.
+      expect(compilateur(SET).status, 'régénération après désynchro').toBe(0);
+      expect(md5(COMPILE), 'empreinte retrouvée').toBe(empreinte);
     } finally {
       rmSync(BAC, { recursive: true, force: true });
     }

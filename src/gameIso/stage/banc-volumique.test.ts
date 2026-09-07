@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -55,8 +55,16 @@ const HARNAIS = join(GAME_ISO, 'stage', 'banc-volumique.ts');
 
 const EST_TEST = /\.test\.(ts|tsx)$/;
 
-/** Tous les fichiers TypeScript sous `dir`, hors `node_modules`. */
-function sources(dir: string): string[] {
+/**
+ * Tous les fichiers TypeScript sous `dir`, hors `node_modules`. Le disque est marché UNE fois par
+ * racine : les faits scannent les deux mêmes racines (`src/`, `src/gameIso/`) dans une passe où
+ * l'arbre ne bouge pas, et aucun appelant ne mute la liste rendue — elle est GELÉE pour que ça se
+ * vérifie à l'exécution et non à la relecture.
+ */
+const MEMO_SOURCES = new Map<string, readonly string[]>();
+function sources(dir: string): readonly string[] {
+  const connu = MEMO_SOURCES.get(dir);
+  if (connu) return connu;
   const out: string[] = [];
   const walk = (d: string): void => {
     let entries: string[];
@@ -68,7 +76,20 @@ function sources(dir: string): string[] {
     }
   };
   walk(dir);
-  return out;
+  const gele = Object.freeze(out);
+  MEMO_SOURCES.set(dir, gele);
+  return gele;
+}
+
+/** Le contenu d'une source, lu UNE fois par fichier : les faits relisent le même `src/`. */
+const MEMO_TEXTE = new Map<string, string>();
+function texte(chemin: string): string {
+  let contenu = MEMO_TEXTE.get(chemin);
+  if (contenu === undefined) {
+    contenu = readFileSync(chemin, 'utf8');
+    MEMO_TEXTE.set(chemin, contenu);
+  }
+  return contenu;
 }
 
 /** Les fichiers de PRODUCTION (non-`.test.`) d'une racine, le harnais lui-même exclu. */
@@ -154,11 +175,14 @@ export const monteLEcranVolumique = (source: string): boolean =>
 function bancs(): { chemin: string; source: string }[] {
   return sources(SRC)
     .filter((p) => EST_TEST.test(p) && p !== join(GAME_ISO, 'stage', 'banc-volumique.test.ts'))
-    .map((p) => ({ chemin: relative(ROOT, p).replace(/\\/g, '/'), source: readFileSync(p, 'utf8') }))
+    .map((p) => ({ chemin: relative(ROOT, p).replace(/\\/g, '/'), source: texte(p) }))
     .filter(({ chemin, source }) => importeurs(source, chemin, SPEC_HARNAIS).length > 0);
 }
 
 describe('le harnais de banc volumique reste dans les bancs (#1401)', () => {
+  // Sous `isolate: false` les mémos survivraient au fichier : 62,4 Mo de tas retenus pour rien.
+  afterAll(() => { MEMO_SOURCES.clear(); MEMO_TEXTE.clear(); });
+
   it('cas planté : un import du harnais depuis un fichier de production est détecté (preuve TDD)', () => {
     const planté = ['const x = 1;', "import { BancRenderer } from './banc-volumique';"].join('\n');
     expect(importeurs(planté, 'planté.ts', SPEC_HARNAIS)).toEqual([
@@ -176,7 +200,7 @@ describe('le harnais de banc volumique reste dans les bancs (#1401)', () => {
   });
 
   it('le harnais existe bien, et il importe `vitest` — sans quoi les deux faits seraient vrais du vide', () => {
-    const source = readFileSync(HARNAIS, 'utf8');
+    const source = texte(HARNAIS);
     expect(importeurs(source, 'banc-volumique.ts', SPEC_VITEST).length,
       'le harnais n’importe plus `vitest` : cette garde ne garde plus rien').toBeGreaterThan(0);
   });
@@ -184,7 +208,7 @@ describe('le harnais de banc volumique reste dans les bancs (#1401)', () => {
   it('AUCUN fichier de production de `src/` n’importe le harnais', () => {
     const fautifs: string[] = [];
     for (const p of production(SRC)) {
-      fautifs.push(...importeurs(readFileSync(p, 'utf8'), relative(ROOT, p).replace(/\\/g, '/'), SPEC_HARNAIS));
+      fautifs.push(...importeurs(texte(p), relative(ROOT, p).replace(/\\/g, '/'), SPEC_HARNAIS));
     }
     expect(fautifs, 'un harnais de banc embarqué dans le bundle de jeu').toEqual([]);
   });
@@ -192,7 +216,7 @@ describe('le harnais de banc volumique reste dans les bancs (#1401)', () => {
   it('aucun non-`.test.` de `src/gameIso/**` hors le harnais n’importe `vitest`', () => {
     const fautifs: string[] = [];
     for (const p of production(GAME_ISO)) {
-      fautifs.push(...importeurs(readFileSync(p, 'utf8'), relative(ROOT, p).replace(/\\/g, '/'), SPEC_VITEST));
+      fautifs.push(...importeurs(texte(p), relative(ROOT, p).replace(/\\/g, '/'), SPEC_VITEST));
     }
     expect(fautifs, 'du code de test dans un fichier de production de `gameIso`').toEqual([]);
   });
@@ -210,7 +234,7 @@ describe('le harnais de banc volumique reste dans les bancs (#1401)', () => {
   it('`implements StageRenderer` n’apparaît qu’UNE fois dans tout `src/`, `.test.` compris', () => {
     const trouvés: string[] = [];
     for (const p of sources(SRC)) {
-      trouvés.push(...renderersDeBanc(readFileSync(p, 'utf8'), relative(ROOT, p).replace(/\\/g, '/')));
+      trouvés.push(...renderersDeBanc(texte(p), relative(ROOT, p).replace(/\\/g, '/')));
     }
     expect(trouvés.length, `un renderer de banc a essaimé :\n${trouvés.join('\n')}`).toBe(1);
     expect(trouvés[0]).toContain('src/gameIso/stage/banc-volumique.ts:');
@@ -242,7 +266,7 @@ describe('le harnais de banc volumique reste dans les bancs (#1401)', () => {
   it('tout `.test.` qui MONTE l’écran volumique APPELLE `brancherArdoise`', () => {
     const monteurs = sources(SRC)
       .filter((p) => EST_TEST.test(p) && p !== join(GAME_ISO, 'stage', 'banc-volumique.test.ts'))
-      .map((p) => ({ chemin: relative(ROOT, p).replace(/\\/g, '/'), source: readFileSync(p, 'utf8') }))
+      .map((p) => ({ chemin: relative(ROOT, p).replace(/\\/g, '/'), source: texte(p) }))
       .filter(({ source }) => monteLEcranVolumique(source));
     expect(monteurs.length, 'plus aucun banc ne monte l’écran volumique : ce fait serait vrai du vide').toBeGreaterThan(30);
     const sansArdoise = monteurs.filter(({ source }) => !brancheLArdoise(source)).map(({ chemin }) => chemin);
@@ -271,7 +295,7 @@ describe('le harnais de banc volumique reste dans les bancs (#1401)', () => {
   it('AUCUN `.test.` de `src/**` ne pose une horloge d’images en `beforeAll`', () => {
     const testsDuDepot = sources(SRC)
       .filter((p) => EST_TEST.test(p) && p !== join(GAME_ISO, 'stage', 'banc-volumique.test.ts'))
-      .map((p) => ({ chemin: relative(ROOT, p).replace(/\\/g, '/'), source: readFileSync(p, 'utf8') }));
+      .map((p) => ({ chemin: relative(ROOT, p).replace(/\\/g, '/'), source: texte(p) }));
     expect(testsDuDepot.length, 'plus aucun test à scanner : ce fait serait vrai du vide').toBeGreaterThan(500);
     const fautifs: string[] = [];
     for (const { chemin, source } of testsDuDepot) fautifs.push(...horlogesEnBeforeAll(source, chemin));
@@ -282,7 +306,7 @@ describe('le harnais de banc volumique reste dans les bancs (#1401)', () => {
   });
 
   it('la forme canonique EXISTE et SERT — sans quoi le fait 6 n’offrirait aucune issue', () => {
-    expect(/export function brancherImagesPilotees\b/.test(readFileSync(HARNAIS, 'utf8')),
+    expect(/export function brancherImagesPilotees\b/.test(texte(HARNAIS)),
       'la primitive d’images pilotées a disparu du harnais').toBe(true);
     const clients = bancs().filter(({ source }) => /\bbrancherImagesPilotees\s*\(/.test(source)).map(({ chemin }) => chemin);
     expect(clients.sort()).toEqual([
