@@ -257,7 +257,7 @@ test('extractTargetDir : `git -C` prime sur `cd`, et sans ni l\'un ni l\'autre l
 })
 
 /** Dépôt jetable avec un worktree LIÉ, posé DANS l'instance : le driver s'y joue comme dans un arbre
- *  réel — `.gitignore` compris, qui y tient le rôle de l'entrée `.wt-` du dépôt (.gitignore:57) et
+ *  réel — `.gitignore` compris, qui y tient le rôle de l'entrée `.wt-` du dépôt (.gitignore:54) et
  *  garde l'arbre principal PROPRE. */
 function depotAvecWorktree() {
   const { racine: principal } = instanceDeDepot({ fichiers: { 'a.txt': 'a', '.gitignore': '/wt/\n' }, message: 'racine' })

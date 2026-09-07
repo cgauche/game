@@ -187,7 +187,7 @@ test('PÉRIMÈTRE DIT : une cible venue de stdin ou d\'un autre programme n\'est
 // reparse d'une jonction `node_modules` sans suivre la jonction.
 
 /** Un dépôt PRINCIPAL (`.git` dossier) et son worktree LIÉ (`.git` fichier) posé dans `<principal>/wt`,
- *  sous `os.tmpdir()`. Le `.gitignore` y tient le rôle de l'entrée `.wt-` du dépôt (.gitignore:57) :
+ *  sous `os.tmpdir()`. Le `.gitignore` y tient le rôle de l'entrée `.wt-` du dépôt (.gitignore:54) :
  *  un arbre principal qui héberge un worktree reste PROPRE. */
 function deuxArbres() {
   const { racine: principal } = instanceDeDepot({ fichiers: { 'a.txt': 'v1\n', '.gitignore': '/wt/\n' }, message: 'socle' })

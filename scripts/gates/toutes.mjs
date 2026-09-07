@@ -182,9 +182,12 @@ export const ECRIT_LU = {
     },
     lit: ['src/', 'scripts/', 'Source/', 'tsconfig.json', 'vite.config.ts'],
     raison:
-      '`gen && tsc -b && vite build` : `tsc -b` sur un projet `noEmit` (tsconfig.json:12) ne produit rien, et ' +
-      '`dist/` n’est lu par aucune gate ; LIT Source/ parce que le plugin `wfrp:prose-source` ' +
-      '(scripts/source/prose-source-plugin.mjs) y résout la prose que les entrées ADRESSENT',
+      '`gen && vite build` : le typage est jugé par la gate `typecheck` (ci.yml:52, avant `build`), ' +
+      '`build` juge que le bundle se construit, et `dist/` n’est lu par aucune gate ; LIT tsconfig.json ' +
+      'parce que l’esbuild de Vite y relit `target`/`jsx`/`useDefineForClassFields` pour transformer ' +
+      'chaque module TS (les `meaningfulFields` que Vite 5.4 recopie dans `tsconfigRaw`) — `paths`, lui, ' +
+      'n’en vient pas : l’alias `@` est déclaré dans vite.config.ts:47 ; LIT Source/ parce que le plugin ' +
+      '`wfrp:prose-source` (scripts/source/prose-source-plugin.mjs) y résout la prose que les entrées ADRESSENT',
   },
   'docs:check': {
     ecrit: [],
@@ -278,12 +281,12 @@ export const LANES = [
       'test:runner', 'test:recette', 'test:hooks',
     ],
     raison:
-      'lectures du même graphe TypeScript et gates courtes, aucune écriture d’arbre — mesuré à la première ' +
-      'exécution complète (2026-09-04) : typecheck 130 s + lint 74 s + deps 15 s ; avec `build` (105 s) en plus ' +
-      'cette lane faisait le mur (342 s contre 192 s pour la suite), d’où son passage dans `docs`. ' +
-      '`test:hooks` la rejoint : il ne fait plus AUCUNE écriture d’arbre (registre d’écrans injectable), ' +
-      'et ses 36,2 s mesurées (2026-09-07) portent la somme des gates mesurées de cette lane à 255,2 s — ' +
-      'sous le mur de la suite (275,1 s)',
+      'lectures du même graphe TypeScript et gates courtes, aucune écriture d’arbre. Somme mesurée en ' +
+      'SÉRIE (`gates --serie`, chaque gate seule, 2026-09-07) : typecheck 77,8 + lint 63,4 + deps:unused 23,1 + ' +
+      'test:hooks 27,5 + test:recette 5,7 + test:ops 3,5 + test:runner 2,3 + server:typecheck 2,0 = 205,3 s — ' +
+      'sous le mur de la suite bornée (275,1 s). `test:hooks` y est admis parce qu’il ne fait AUCUNE écriture ' +
+      'd’arbre (registre d’écrans injectable). C’est aussi la lane la plus CHÈRE : rien ne s’y ajoute sans ' +
+      'la remesurer contre ce mur',
   },
   {
     nom: 'docs',
@@ -293,8 +296,10 @@ export const LANES = [
     ],
     raison:
       'tous les LECTEURS de docs/ et docs/raw/ — leurs trois écrivains ont déjà tourné, en série, avant que ' +
-      'cette lane ne commence ; `build` la rejoint en queue (146 s mesurées sans lui) : il n’a jamais été rouge ' +
-      'en 29 runs de CI (sonde q5) et n’écrit que les registres déjà régénérés par `gen` en phase préalable',
+      'cette lane ne commence. `build` y tient parce que c’est la gate la moins chère (18-21 s mesurées, ' +
+      '2026-09-07 : il ne joue plus que `gen && vite build`) et que cette lane est la plus courte — 68,7 s ' +
+      'sans lui, ≈ 88,7 s avec (série du 2026-09-07), très loin du mur de la suite ; il n’écrit d’ailleurs que ' +
+      'les registres déjà régénérés par `gen` en phase préalable',
   },
 ]
 
@@ -302,9 +307,9 @@ export const LANES = [
  * Plafond de durée par gate, en SECONDES : ×3 de la pire durée observée, jamais moins. Sans plafond,
  * une gate bloquée tient sa lane pour toujours — vécu : `server:typecheck` a rendu 0xC0000142 après
  * 33 434 s (9 h 17). Une gate EXPIRÉE est un ROUGE nommé, pas un silence.
- * Mesures de référence (série complète du 2026-09-04) : pire gate hors `test` et `docs:check` =
- * `build` 158,8 s (×3 = 477) ; `test` 275,1 s et il RALENTIT sous bornage (×3 = 825) ; `docs:check`
- * vaut 209,4 s quand il rejoue tout (×3 = 629).
+ * Mesures de référence : pire gate hors `test` et `docs:check` = `typecheck` 77,8 s (série du
+ * 2026-09-07 ; ×3 = 233, largement sous les 600) ; `test` 275,1 s et il RALENTIT sous bornage
+ * (×3 = 825) ; `docs:check` vaut 209,4 s quand il rejoue tout (×3 = 629).
  */
 export const TIMEOUTS = { defaut: 600, test: 900, 'docs:check': 900 }
 

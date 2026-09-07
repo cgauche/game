@@ -14,7 +14,7 @@
     "migrations:replay": "node scripts/migrations/replay.mjs",
     "migrations:replay:head": "node scripts/migrations/replay-head.mjs",
     "dev": "node scripts/lancer-local.mjs vite -- vite",
-    "build": "npm run gen && node scripts/lancer-local.mjs typescript -- tsc -b && node scripts/lancer-local.mjs vite -- vite build",
+    "build": "npm run gen && node scripts/lancer-local.mjs vite -- vite build",
     "preview": "node scripts/lancer-local.mjs vite -- vite preview",
     "test": "node scripts/test/run.mjs",
     "test:runner": "node --test scripts/test/run.test.mjs scripts/test/run-capture.test.mjs scripts/test/run-isolation.test.mjs scripts/lancer-local.test.mjs",
