@@ -13,11 +13,13 @@
  *
  * ENTRÉES : les 4 `src/scenes/<campagne>/<campagne>-projet.json`.
  *
- * IDEMPOTENT : un document en `schema: 7` est reconnu migré ; rejouée, la migration n'écrit rien.
- * La borne haute est CLOSE, et c'est le point : DERNIÈRE de la chaîne dans l'ordre lexical, cette
- * migration est la SEULE à savoir ce qui existe après elle — les amont ont toutes une borne ouverte
- * (`≥ N = déjà migré`) qui avale un `schema` FUTUR en silence. Le prochain bump élargira celle-ci et
- * fermera la sienne. FAIL-FAST : `schema` ∉ {6, 7} (absent, non numérique ou futur), `type` racine déjà posé sur
+ * IDEMPOTENT : un document en `schema` ≥ 7 est reconnu migré ; rejouée, la migration n'écrit rien. La
+ * borne haute était CLOSE tant que cette migration était la DERNIÈRE de la chaîne ; #1691 a porté le
+ * même document à 8 (`2026-09-07-1691-relief-defaults-scenes.mjs`), donc elle s'élargit — sans quoi le
+ * rejeu sur l'arbre courant sortirait ROUGE (même retouche que `…-15b-…` en son temps). Le trou ainsi
+ * ouvert (un `schema` FUTUR avalé en silence) est rattrapé, comme toujours, par la DERNIÈRE migration
+ * de la chaîne, seule à savoir ce qui existe après elle et dont la borne haute est CLOSE.
+ * FAIL-FAST : `schema` ∉ {6, ≥ 7} (absent ou non numérique), `type` racine déjà posé sur
  * un document en `schema: 6`, provenance déjà présente, ou campagne absente de la table de
  * provenance → sortie 1, AUCUNE écriture.
  * FORMATAGE PRÉSERVÉ : sérialiseur des scènes `JSON.stringify(doc, null, 1) + '\n'`, vérifié AVANT
@@ -89,8 +91,8 @@ for (const d of fs.readdirSync(RACINE, { withFileTypes: true })) {
   const brut = fs.readFileSync(abs, 'utf8');
   const doc = JSON.parse(brut);
   if (canonique(doc) !== brut) { echecs.push(`${rel} : FORME NON CANONIQUE`); continue; }
-  if (doc.schema === 7) { ecritures.push({ rel, abs, brut, out: brut, deja: true }); continue; }
-  if (doc.schema !== 6) { echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (6 ou 7 attendus)`); continue; }
+  if (typeof doc.schema === 'number' && doc.schema >= 7) { ecritures.push({ rel, abs, brut, out: brut, deja: true }); continue; }
+  if (doc.schema !== 6) { echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (6 ou ≥ 7 attendus)`); continue; }
   if ('type' in doc) { echecs.push(`${rel} : \`schema: 6\` mais la racine porte DÉJÀ un \`type\` — forme hybride`); continue; }
   if ('source' in doc || 'maison' in doc) { echecs.push(`${rel} : \`schema: 6\` mais la racine porte DÉJÀ une provenance — forme hybride`); continue; }
   if (!Array.isArray(doc.scenes)) { echecs.push(`${rel} : \`scenes\` absent ou non-tableau`); continue; }
@@ -119,7 +121,7 @@ for (const e of ecritures) {
   if (e.deja) {
     // Rejeu sur l'état final : rien n'a été écrit. La PREUVE est que la forme est celle d'arrivée.
     const scenesMuettes = apres.scenes.filter((s) => s.type !== 'scene').length;
-    if (apres.schema !== 7 || apres.type !== 'projet' || scenesMuettes > 0 || (apres.source === undefined && apres.maison === undefined)) {
+    if (!(apres.schema >= 7) || apres.type !== 'projet' || scenesMuettes > 0 || (apres.source === undefined && apres.maison === undefined)) {
       console.error(`VÉRIFICATION ROUGE — ${e.rel} : reconnu « déjà migré » mais schema=${apres.schema}, type=${JSON.stringify(apres.type)}, ${scenesMuettes} scène(s) sans \`type\`, provenance ${apres.source ?? apres.maison ? 'présente' : 'ABSENTE'}`);
       process.exit(1);
     }

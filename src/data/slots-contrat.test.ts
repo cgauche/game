@@ -158,7 +158,16 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // Dans le MÊME geste, `activities.json | rule` (1) SORT du dénominateur : le slot déclaré par
 // `formulaSchema` projette sur la clé `rule`, et cette projection couvre désormais le champ `rule`
 // de l'Activité elle-même. Plafond au réel mesuré (339) : le cliquet ne laisse aucun mou.
-const DETTE_ADOPTION_MAX = 339;
+// CRAN À LA HAUSSE (339 → 343, #1691, 2026-09-07) : les QUATRE `<projet>.json | reliefDefaults`
+// entrent au dénominateur — la matière de chaque partie de relief passe en donnée, et le record que
+// chaque scène porte est vu par le scan comme UN nœud de référence (champ porteur `reliefDefaults`,
+// signature `cliff,deck,pilier,ramp`). MESURÉ : le slot EST déclaré et il RÉSOUT
+// (`defs-scenes/scene.ts › reliefDefaultsSchema`, `idDe('material','relief')` sur chaque partie,
+// 28/28 valeurs posées résolues au volet RÉSOLUTION) ; ce qui laisse la ligne au stock est l'angle
+// mort DÉCLARÉ ci-dessus — `scenes[].reliefDefaults.cliff` projette sur `cliff`, jamais sur le champ
+// porteur. Même forme que `props.json | light` : ces lignes meurent avec le dériveur d'un niveau
+// (L3 #1473), pas par une adoption au champ.
+const DETTE_ADOPTION_MAX = 343;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {

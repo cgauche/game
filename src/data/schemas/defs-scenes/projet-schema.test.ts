@@ -32,7 +32,7 @@ const sceneMinimale = (over: Jouet = {}): Jouet => ({
 /** Projet-JOUET au format COURANT : l'enveloppe exige le `type`, l'identité et la provenance. */
 const projet = (over: Jouet = {}): Jouet => ({
   type: 'projet',
-  schema: 7,
+  schema: 8,
   id: 'projet-jouet',
   label: 'Projet jouet',
   versionContenu: 1,
@@ -280,7 +280,7 @@ describe('projetSchema — le document RÉEL, ses FK et son enveloppe (sondes du
     expect(ok(reel())).toBe(true);
     expect(projetDoc.type).toBe('projet');
     expect(projetDoc.famille).toBe('config');
-    expect(SCHEMA_PROJET).toBe(7);
+    expect(SCHEMA_PROJET).toBe(8);
   });
 
   it('FK `activeAxes` → axes.json : ids RÉELS acceptés (et la liste vide/absente aussi), inconnu REFUSÉ au CHEMIN', () => {
@@ -327,7 +327,7 @@ describe('projetSchema — le document RÉEL, ses FK et son enveloppe (sondes du
   });
 
   it('SCEAU sur la donnée réelle : `schema` non courant, clé inconnue et scène muette sont refusés', () => {
-    expect(fautes({ ...reel(), schema: 6 })).toEqual(['schema :: Invalid input: expected 7']);
+    expect(fautes({ ...reel(), schema: 6 })).toEqual(['schema :: Invalid input: expected 8']);
     // Chemin VIDE : la clé inconnue est rapportée à la RACINE du document.
     expect(fautes({ ...reel(), champInconnu: 1 })).toEqual([' :: Unrecognized key: "champInconnu"']);
     const d = reel();

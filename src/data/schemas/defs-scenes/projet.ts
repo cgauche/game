@@ -1,6 +1,6 @@
 /**
  * Schéma zod d'un PROJET DE SCÈNE (`ProjectDoc`, `src/state/worldMap.ts`) — le paquet de campagne
- * auto-suffisant `{ type: 'projet', schema: 7, id, label, versionContenu, narratif, scenes,
+ * auto-suffisant `{ type: 'projet', schema: 8, id, label, versionContenu, narratif, scenes,
  * worldMap?, activeAxes? }`.
  *
  * C'est la porte UNIQUE du seam `parseProject`. Le document ADOPTE la fabrique `document()`
@@ -31,7 +31,7 @@ import { narratifSchema } from './narratif';
 const idsDAxes = (): readonly string[] => IDS_PAR_DATASET['axes.json'] ?? [];
 
 /** Version de FORME du document de projet — reprise par `CURRENT_PROJECT_SCHEMA` (`worldMap.ts`). */
-export const SCHEMA_PROJET = 7;
+export const SCHEMA_PROJET = 8;
 
 /** Handle du document de projet : `schema` sert `parseProject`, `meta`/`exposition` le registre. */
 export const projetDoc = document(

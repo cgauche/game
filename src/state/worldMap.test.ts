@@ -1,5 +1,5 @@
 /**
- * parseProject — validation de FORME du document de projet (courant : `{ type: 'projet', schema: 7,
+ * parseProject — validation de FORME du document de projet (courant : `{ type: 'projet', schema: 8,
  * Garde-fou robustesse : un document corrompu / d'un autre schéma doit LEVER proprement (capté en
  * amont : l'éditeur affiche « JSON invalide », pas un crash), jamais être parsé en silence.
  */

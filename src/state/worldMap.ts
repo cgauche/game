@@ -11,7 +11,7 @@
  * marche forcée au niveau carte.
  */
 import type { Effect, Scene } from './scene';
-import { normalizeScene } from './scene';
+import { normalizeScene, DEFAULT_RELIEF_DEFAULTS } from './scene';
 import type { TravelMode } from '../engine/travel';
 import type { PortProfile } from '../engine/seaVoyage';
 import type { LandMarketProfile } from '../engine/landCargo';
@@ -462,13 +462,13 @@ export function declutterPositions(
 }
 
 // ── Format de PROJET (export/import éditeur) ────────────────────────────────────────────────
-// Format courant : `{ type: 'projet', schema: 7, id, label, versionContenu, scenes, worldMap?, narratif }`
+// Format courant : `{ type: 'projet', schema: 8, id, label, versionContenu, scenes, worldMap?, narratif }`
 // (paquet de campagne auto-suffisant, #765 ; enveloppe PLATE depuis #1467 L1b, posée par la
 // fabrique `document()` depuis #1552). Chaîné par la primitive générique `migrateDoc` (même mécanique
 // que les saves, `saves.ts`) — `schema` joue le rôle de `version` ; la migration 2→3 injecte un
 // `narratif` vide, la 4→5 aplatit la poche `meta`, la 5→6 donne au libellé de scène et de carte sa
 // graphie `label` et fait s'annoncer les statblocs embarqués, la 6→7 fait s'annoncer le document
-// LUI-MÊME et ses scènes et pose la provenance.
+// LUI-MÊME et ses scènes et pose la provenance, la 7→8 pose les matières de relief de chaque scène.
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { type NarratifBlock, emptyNarratif } from './campaignNarratif';
 import { validateDocument } from '../data/schemas/validate';
@@ -679,6 +679,40 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
       ...provenance,
       version: 7,
       schema: 7,
+    };
+  },
+  /**
+   * `7` pose les MATIÈRES DE RELIEF de chaque scène (#1691) : `reliefDefaults`, EXIGÉ par
+   * `sceneSchema` depuis que `gameIso/builders/floors.ts` ne choisit plus aucune matière. Les valeurs
+   * posées sont `DEFAULT_RELIEF_DEFAULTS` — exactement ce que le builder choisissait en dur avant le
+   * lot, donc un projet de bibliothèque utilisateur se rend à l'identique après migration. La clé va
+   * à la POSITION que la création lui donne (`emptyScene`) : juste avant `layers`. Une scène qui en
+   * porte déjà un traverse INTACTE (un document hybride n'est pas réécrit par cette migration ; c'est
+   * le schéma qui juge sa forme).
+   * Pendant applicatif du script de dépôt `scripts/migrations/2026-09-07-1691-relief-defaults-scenes.mjs`
+   * (parité mesurée par `projet-migration-7-vers-8.test.ts`).
+   */
+  7: (doc) => {
+    const scenes = Array.isArray(doc.scenes)
+      ? doc.scenes.map((s) => {
+        if (!s || typeof s !== 'object' || 'reliefDefaults' in s) return s;
+        const sc = s as Record<string, unknown>;
+        const cles = Object.keys(sc);
+        const rang = cles.indexOf('layers');
+        const pose: [string, unknown] = ['reliefDefaults', { ...DEFAULT_RELIEF_DEFAULTS }];
+        if (rang < 0) return Object.fromEntries([...cles.map((k) => [k, sc[k]] as [string, unknown]), pose]);
+        return Object.fromEntries([
+          ...cles.slice(0, rang).map((k) => [k, sc[k]] as [string, unknown]),
+          pose,
+          ...cles.slice(rang).map((k) => [k, sc[k]] as [string, unknown]),
+        ]);
+      })
+      : doc.scenes;
+    return {
+      ...doc,
+      ...(doc.scenes !== undefined ? { scenes } : {}),
+      version: 8,
+      schema: 8,
     };
   },
 };

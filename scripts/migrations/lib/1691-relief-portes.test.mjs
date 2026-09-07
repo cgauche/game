@@ -194,10 +194,16 @@ for (const rel of PROJETS)
     `${rel} : une Scène sans \`reliefDefaults\` — l’arbre n’est pas migré`,
   );
 
-/** PROJECTION INVERSE d'un projet : `reliefDefaults` retiré de chaque Scène. */
+/** Forme du document avant et après le bump porté par la migration des scènes. */
+const SCHEMA_AVANT = 7;
+const SCHEMA_APRES = 8;
+for (const rel of PROJETS)
+  assert.equal(JSON.parse(lire(rel)).schema, SCHEMA_APRES, `${rel} : \`schema\` ≠ ${SCHEMA_APRES} — l’arbre n’est pas migré`);
+
+/** PROJECTION INVERSE d'un projet : `reliefDefaults` retiré de chaque Scène, `schema` rendu à 7. */
 function projetAvant(rel) {
   const doc = JSON.parse(lire(rel));
-  return { ...doc, scenes: doc.scenes.map(({ reliefDefaults: _pose, ...reste }) => reste) };
+  return { ...doc, schema: SCHEMA_AVANT, scenes: doc.scenes.map(({ reliefDefaults: _pose, ...reste }) => reste) };
 }
 
 const depotScenes = (fabrique) =>
@@ -210,7 +216,10 @@ test('(f) ALLER-RETOUR scènes : l’état d’avant projeté → chaque projet 
   const { code, sortie } = joue(d);
   assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 1200)}`);
   for (const rel of PROJETS) {
-    assert.ok(sortie.includes(`${rel} — reliefDefaults posés : ${SCENES_PAR_PROJET[rel]}`), `${rel} : la pose ne DIT pas son compte : ${sortie.slice(0, 1200)}`);
+    assert.ok(
+      sortie.includes(`${rel} — schema ${SCHEMA_AVANT} → ${SCHEMA_APRES}, reliefDefaults posés : ${SCENES_PAR_PROJET[rel]}`),
+      `${rel} : le bump ou la pose ne DIT pas son compte : ${sortie.slice(0, 1200)}`,
+    );
     assert.equal(fs.readFileSync(path.join(d.racine, rel), 'utf8'), lire(rel), `${rel} produit ≠ arbre`);
   }
 });
@@ -255,4 +264,49 @@ test('(i) CARDINAL des Scènes cassé (une Scène retirée) → sortie 1 CHIFFRA
   assert.equal(code, 1, `sortie ${code} — un cardinal inattendu doit ARRÊTER : ${sortie.slice(0, 1200)}`);
   assert.ok(sortie.includes(`${total - 1} Scène(s) embarquée(s) ≠ ${total}`), `arrêt sans CHIFFRER l’écart : ${sortie.slice(0, 1200)}`);
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
+});
+
+test('(j) `schema` FUTUR → sortie 1 NOMMANT le numéro : la borne haute de la DERNIÈRE de la chaîne est CLOSE', (t) => {
+  // Les migrations amont ont toutes une borne ouverte (`≥ N = déjà migré`) et avalent l'inconnu ;
+  // celle-ci, dernière dans l'ordre lexical, est la seule à savoir ce qui existe après elle.
+  const futur = SCHEMA_APRES + 1;
+  const d = depotScenes((rel) => serialiseScene({ ...JSON.parse(lire(rel)), schema: futur }));
+  t.after(() => efface(d.racine));
+
+  const { code, sortie } = joue(d);
+  assert.equal(code, 1, `sortie ${code} — un schema futur doit ARRÊTER : ${sortie.slice(0, 1200)}`);
+  assert.ok(
+    sortie.includes(`\`schema\` inattendu ${futur} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`),
+    `arrêt sans NOMMER le numéro : ${sortie.slice(0, 1200)}`,
+  );
+  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
+});
+
+/** Les parties de relief que porte `Scene.reliefDefaults` (`src/state/scene.ts` ›
+ *  `DEFAULT_RELIEF_DEFAULTS`, `src/data/schemas/defs-scenes/scene.ts` › `reliefDefaultsSchema`). */
+const PARTS_RELIEF = ['cliff', 'ramp', 'deck', 'pilier'];
+
+test('(k) PARITÉ au RÉEL : sur les projets LIVRÉS, chaque Scène porte `reliefDefaults` complet, à la position d’`emptyScene`', () => {
+  // Les tests (f)–(j) mesurent la migration sur un dépôt jetable ; celui-ci mesure L'ARBRE. La
+  // POSITION est porteuse : une Scène écrite à la main (ou par un outil) place la clé où elle veut,
+  // et le fichier cesse d'être byte-identique à ce que `emptyScene` produit (scene.ts:723 —
+  // `reliefDefaults` puis `layers`), donc à ce que la migration reposerait au rejeu.
+  const fautes = [];
+  for (const rel of PROJETS) {
+    const scenes = JSON.parse(lire(rel)).scenes;
+    assert.ok(scenes.length > 0, `${rel} : aucune Scène — la parité ne mesure rien`);
+    for (const s of scenes) {
+      const k = Object.keys(s);
+      const i = k.indexOf('reliefDefaults');
+      const l = k.indexOf('layers');
+      if (i < 0) { fautes.push(`${rel} › ${s.id} : AUCUN \`reliefDefaults\``); continue; }
+      if (l < 0) { fautes.push(`${rel} › ${s.id} : AUCUN \`layers\``); continue; }
+      if (i + 1 !== l) fautes.push(`${rel} › ${s.id} : \`reliefDefaults\` en position ${i}, \`layers\` en ${l} — non ADJACENTS`);
+      const manquantes = PARTS_RELIEF.filter((p) => typeof s.reliefDefaults[p] !== 'string');
+      if (manquantes.length) fautes.push(`${rel} › ${s.id} : \`reliefDefaults\` sans ${manquantes.join(', ')}`);
+      const enTrop = Object.keys(s.reliefDefaults).filter((p) => !PARTS_RELIEF.includes(p));
+      if (enTrop.length) fautes.push(`${rel} › ${s.id} : \`reliefDefaults\` porte ${enTrop.join(', ')} — hors vocabulaire`);
+    }
+  }
+  assert.deepEqual(fautes, [], `Scène(s) divergente(s) de la forme d’arrivée :\n${fautes.join('\n')}`);
 });

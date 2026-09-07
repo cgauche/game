@@ -72,6 +72,16 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "arene-projet.json", champ: "optionals", occurrences: 13, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "qualities", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "ref", occurrences: 406, lot: "L2/L3 #1473", date: "2026-08-26" }, // 293→406 : +113 OCCURRENCES — 24 ids de décor sont posés dans cette scène, 23 n'y résolvaient rien faute d'entrée `props.json` (#1680 ligne 14) ; `toile` ×4 résolvait déjà, par le Trait homonyme
+  // #1691 : `<scène> › reliefDefaults` — la matière de chaque PARTIE de relief (falaise, rampe,
+  // tablier, pilier), lue par `gameIso/builders/floors.ts`. Le SLOT EST DÉCLARÉ et il RÉSOUT :
+  // `defs-scenes/scene.ts › reliefDefaultsSchema` pose `idDe('material','relief')` sur chacune des
+  // quatre parties, mesuré 28/28 par partie au volet RÉSOLUTION. Ce qui laisse ces quatre lignes au
+  // stock est l'ANGLE MORT déclaré en tête : le path `scenes[].reliefDefaults.cliff` se projette sur
+  // `cliff`, jamais sur le champ PORTEUR `reliefDefaults` que le scan observe (le record entier y est
+  // un nœud de référence à graphie divergente, stock L3 #1463 `structuresStock.mjs`). Même forme et
+  // même solde que `props.json | light` (`light.tone` déclaré, `light` observé) : la ligne meurt avec
+  // le dériveur d'un niveau, pas par une adoption au champ.
+  { dataset: "arene-projet.json", champ: "reliefDefaults", occurrences: 18, lot: "L2/L3 #1473", date: "2026-09-07" },
   { dataset: "arene-projet.json", champ: "roomZoneIds", occurrences: 12, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "scene", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "spells", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -95,6 +105,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "barge-du-sel-projet.json", champ: "postes", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "qualities", occurrences: 15, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "ref", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "barge-du-sel-projet.json", champ: "reliefDefaults", occurrences: 3, lot: "L2/L3 #1473", date: "2026-09-07" },
   { dataset: "barge-du-sel-projet.json", champ: "scene", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "skills", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "victoryCondition", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -159,6 +170,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "diligence-projet.json", champ: "b", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "diligence-projet.json", champ: "modes", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "diligence-projet.json", champ: "ref", occurrences: 20, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "diligence-projet.json", champ: "reliefDefaults", occurrences: 2, lot: "L2/L3 #1473", date: "2026-09-07" },
   { dataset: "diligence-projet.json", champ: "roomZoneIds", occurrences: 38, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "diligence-projet.json", champ: "scene", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "diligence-projet.json", champ: "walls", occurrences: 668, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -218,6 +230,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "loup-et-saumure-projet.json", champ: "postes", occurrences: 12, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "qualities", occurrences: 30, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "ref", occurrences: 10, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "loup-et-saumure-projet.json", champ: "reliefDefaults", occurrences: 5, lot: "L2/L3 #1473", date: "2026-09-07" },
   { dataset: "loup-et-saumure-projet.json", champ: "scene", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "serviceKind", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "services", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },

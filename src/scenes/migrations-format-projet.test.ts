@@ -7,7 +7,7 @@
  * superficiel). L'autre fichier tient la famille `type`→<clé métier> sur `src/data` ; celui-ci tient
  * la famille « bump de FORME » sur `src/scenes/<c>/<c>-projet.json`.
  *
- * QUATRE scripts sont tenus ici :
+ * CINQ scripts sont tenus ici :
  *  - `…-3i-projet-schema-4.mjs`, RETOUCHÉ par la vague 13 (il fail-fastait sur tout `schema` ∉ {3,4} ;
  *    lexicalement il précède la 13, donc sur l'arbre migré en `schema: 5` le rejeu sortait ROUGE) ;
  *  - `…-13-projet-forme.mjs`, NEUF et sans témoin committé ;
@@ -16,12 +16,17 @@
  *    format 5 ici : l'arbre étant désormais en 7, plus aucun document committé ne la porterait.
  *    Elle a été RETOUCHÉE par #1552 (borne haute ouverte à « ≥ 6 »), pour la même raison que la 3i ;
  *  - `…-1552-projet-sannonce.mjs`, le bump 6 → 7 : le document et ses scènes S'ANNONCENT, et la
- *    campagne dit sa PROVENANCE. C'est elle, désormais, la DERNIÈRE de la chaîne.
+ *    campagne dit sa PROVENANCE. Elle a été RETOUCHÉE par #1691 (borne haute ouverte à « ≥ 7 »), pour
+ *    la même raison que la 3i et la 15b ;
+ *  - `…-1691-relief-defaults-scenes.mjs`, le bump 7 → 8 : chaque scène porte ses MATIÈRES DE RELIEF,
+ *    que le builder de sols ne choisit plus. C'est elle, désormais, la DERNIÈRE de la chaîne — c'est À
+ *    CE TITRE qu'elle est tenue ici (cas `t6`) ; ses PORTES propres vivent dans son banc de morsure
+ *    `scripts/migrations/lib/1691-relief-portes.test.mjs`, qui joue les 4 projets du dépôt.
  *
  * RETOUCHER UN SCRIPT DÉJÀ JOUÉ est le geste le plus risqué du lot. Chaque élargissement en
  * « ≥ N = déjà migré » fait AVALER EN SILENCE un `schema` FUTUR inconnu ; ce qui rattrape ce trou est
  * TOUJOURS la DERNIÈRE migration de la chaîne, seule à savoir ce qui existe après elle (aujourd'hui la
- * 1552, qui refuse tout `schema` ∉ {6,7}). Cet invariant se DÉPLACE à chaque bump et n'était gardé par
+ * 1691, qui refuse tout `schema` ∉ {7,8}). Cet invariant se DÉPLACE à chaque bump et n'était gardé par
  * RIEN : il l'est ici (cas `t6`), et le déplacement lui-même l'est — le cas mesure la BORNE COURANTE,
  * pas un numéro gelé.
  */
@@ -37,8 +42,9 @@ const SCRIPT_3I = '2026-08-27-l1b-3i-projet-schema-4.mjs';
 const SCRIPT_13 = '2026-08-28-l1b-13-projet-forme.mjs';
 const SCRIPT_15B = '2026-08-29-l1b-15b-projet-forme-6.mjs';
 const SCRIPT_1552 = '2026-08-31-1552-projet-sannonce.mjs';
+const SCRIPT_1691 = '2026-09-07-1691-relief-defaults-scenes.mjs';
 /** La DERNIÈRE de la chaîne dans l'ordre lexical — celle qui NOMME un `schema` inconnu. */
-const DERNIERE = SCRIPT_1552;
+const DERNIERE = SCRIPT_1691;
 
 /** Sérialiseur des documents de SCÈNE (indentation 1) — les deux scripts l'exigent avant de lire. */
 const canonique = (doc: unknown) => `${JSON.stringify(doc, null, 1)}\n`;
@@ -119,20 +125,27 @@ describe(`${SCRIPT_13} — le bump de forme 4 → 5 (aplatissement de la poche \
     expect(apres).toBe(avant);
   });
 
-  it('t6. RATTRAPAGE : un `schema` FUTUR (8), avalé par TOUTES les amont, est REFUSÉ par la DERNIÈRE de la chaîne', () => {
-    const futur = { schema: 8, narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] }, scenes: [] };
+  it('t6. RATTRAPAGE : un `schema` FUTUR (9), avalé par TOUTES les amont, est REFUSÉ par la DERNIÈRE de la chaîne', () => {
+    // Le document est à la forme d'ARRIVÉE de chaque amont (annoncé, provenance posée) : sans quoi
+    // leur vérification de rejeu sortirait rouge pour une autre raison que le numéro de forme.
+    const futur = {
+      type: 'projet', schema: 9, id: 'camp', label: 'C', versionContenu: 3, maison: 'fixture',
+      narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
+      scenes: [{ type: 'scene', id: 's1', label: 'Une salle', dimensions: { w: 1, h: 1 } }],
+    };
     // Les migrations AMONT ont une borne ouverte vers le haut : chacune a été élargie quand la vague
     // suivante a bumpé le même document. Elles avalent donc l'inconnu — c'est le trou.
-    for (const amont of [SCRIPT_3I, SCRIPT_13, SCRIPT_15B]) {
+    for (const amont of [SCRIPT_3I, SCRIPT_13, SCRIPT_15B, SCRIPT_1552]) {
       expect(joue(amont, futur).code, `${amont} avale le futur en silence`).toBe(0);
     }
     // La DERNIÈRE dans l'ordre lexical le NOMME : le rejeu sort rouge, pas muet. C'est l'invariant
-    // de la chaîne — il se DÉPLACE à chaque bump (15b hier, 1552 aujourd'hui), il ne disparaît jamais.
-    const { code, avant, apres } = joue(DERNIERE, futur);
+    // de la chaîne — il se DÉPLACE à chaque bump (15b hier, 1552 puis 1691), il ne disparaît jamais.
+    const { code, err, avant, apres } = joue(DERNIERE, futur);
     expect(code, 'la dernière migration doit refuser un schema futur').toBe(1);
+    expect(err, 'le refus doit NOMMER le `schema` inattendu').toMatch(/`schema` inattendu 9/);
     expect(apres).toBe(avant);
     // ET c'est bien la dernière du TRI : sans cette assertion, « dernière » resterait une intention.
-    const tri = [SCRIPT_3I, SCRIPT_13, SCRIPT_15B, DERNIERE].slice().sort();
+    const tri = [SCRIPT_3I, SCRIPT_13, SCRIPT_15B, SCRIPT_1552, DERNIERE].slice().sort();
     expect(tri[tri.length - 1]).toBe(DERNIERE);
   });
 });
@@ -316,9 +329,20 @@ describe(`${SCRIPT_1552} — le bump 6 → 7 (le document et ses scènes S'ANNON
     expect(apres).toBe(avant);
   });
 
-  it('t2. schema 7 (état de l’arbre) : NO-OP, fichier byte-identique', () => {
-    const deja = { type: 'projet', schema: 7, id: 'camp', label: 'C', versionContenu: 3, maison: 'fixture', narratif, scenes: [{ type: 'scene', id: 's1', label: 'Une salle', dimensions: { w: 1, h: 1 } }] };
-    const { code, avant, apres } = joue(SCRIPT_1552, deja);
+  /** Forme d'ARRIVÉE de la 1552, telle qu'elle sort du bump — le `schema` reste paramétrable pour
+   *  mesurer la borne OUVERTE (`≥ 7`) sur l'état RÉEL de l'arbre, qui a bumpé depuis. */
+  const projetMigre = (schema: number) => ({ type: 'projet', schema, id: 'camp', label: 'C', versionContenu: 3, maison: 'fixture', narratif, scenes: [{ type: 'scene', id: 's1', label: 'Une salle', dimensions: { w: 1, h: 1 } }] });
+
+  it('t2. schema 7 (forme d’arrivée de la 1552) : NO-OP, fichier byte-identique', () => {
+    const { code, avant, apres } = joue(SCRIPT_1552, projetMigre(7));
+    expect(code).toBe(0);
+    expect(apres).toBe(avant);
+  });
+
+  it('t2 bis. schema 8 (état RÉEL de l’arbre) : NO-OP, fichier byte-identique — la borne est OUVERTE (≥ 7)', () => {
+    // Sans ce cas, la borne ouverte du script ne serait mesurée qu'au numéro qu'il POSE : un rejeu
+    // sur l'arbre courant (bumpé depuis par la 1691) ne serait couvert par AUCUN test.
+    const { code, avant, apres } = joue(SCRIPT_1552, projetMigre(8));
     expect(code).toBe(0);
     expect(apres).toBe(avant);
   });

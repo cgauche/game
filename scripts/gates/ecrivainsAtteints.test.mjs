@@ -79,6 +79,9 @@ const ATTENDU = {
     'scripts/migrations/lib/1686-ardoise-portes.test.mjs',
     'scripts/migrations/lib/1686-materials-portes.test.mjs',
     'scripts/migrations/lib/1686-structure-material-portes.test.mjs',
+    // +1 le 2026-09-07 (#1691 lot 2) : morsure des portes des deux migrations #1691 (relief) ; son
+    // dépôt jetable vit sous `os.tmpdir()`, l'arbre n'est jamais écrit.
+    'scripts/migrations/lib/1691-relief-portes.test.mjs',
     'scripts/migrations/lib/empreinteRejeu.test.mjs',
     'scripts/migrations/lib/idempotence-ordre-des-cles.test.mjs',
     'scripts/migrations/replay-head.mjs',

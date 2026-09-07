@@ -1,6 +1,10 @@
 /**
  * Migration #1691 — la matière de RELIEF passe en DONNÉE, volet `src/scenes`.
  *
+ * DEUX gestes, un seul passage : chaque Scène reçoit `reliefDefaults`, et le document passe en
+ * `schema: 8` — le champ étant EXIGÉ, la FORME du document change, et un projet antérieur se rattrape au
+ * chargement par `PROJECT_MIGRATIONS[7]` (`src/state/worldMap.ts`), pendant applicatif de ce script.
+ *
  * Chaque Scène des projets livrés reçoit `reliefDefaults` : la matière de CHAQUE partie de relief que
  * le builder de sols émet (falaise, rampe, dalle de tablier, pilier). Le champ est EXIGÉ par le schéma
  * de Scène — un document qui n'en porte pas est refusé au parse, le rendu n'ayant plus aucune valeur à
@@ -19,7 +23,12 @@
  * vérifiée AVANT toute écriture : non canonique = sortie 1, jamais un reflow silencieux.
  * IDEMPOTENT : une Scène portant déjà `reliefDefaults` est reconnue migrée ; rejouée sur l'état final,
  * la migration n'écrit rien et sort 0.
- * FAIL-FAST : `reliefDefaults` présent mais incomplet ou de forme inattendue → rien n'est écrit, sortie 1.
+ * BORNE HAUTE CLOSE (`schema` ∈ {7, 8}, jamais « ≥ 7 ») : DERNIÈRE de la chaîne dans l'ordre lexical,
+ * elle est la seule à savoir ce qui existe après elle et NOMME un `schema` futur, là où les amont
+ * l'avalent par leur borne ouverte. `2026-08-31-1552-projet-sannonce.mjs` a fermé la sienne jusqu'ici ;
+ * ce bump l'élargit à « ≥ 7 » et ferme celle-ci.
+ * FAIL-FAST : `reliefDefaults` présent mais incomplet ou de forme inattendue, `schema` absent, non
+ * numérique ou ∉ {7, 8} → rien n'est écrit, sortie 1.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -34,6 +43,9 @@ const POSE = { cliff: 'terre', ramp: 'terre', deck: 'pierre', pilier: 'pilier' }
 const PARTIES = Object.keys(POSE);
 /** Cardinaux mesurés (2026-09-07) — portes d'identité du périmètre. */
 const ATTENDU = { projets: 4, scenes: 28 };
+/** Forme du document AVANT et APRÈS ce bump — la borne haute est CLOSE (cf. en-tête). */
+const SCHEMA_AVANT = 7;
+const SCHEMA_APRES = 8;
 
 /** Forme canonique d'un document de projet de scène. */
 const canonique = (doc) => `${JSON.stringify(doc, null, 1)}\n`;
@@ -72,6 +84,10 @@ for (const abs of cibles) {
   const doc = JSON.parse(brut);
 
   if (canonique(doc) !== brut) { echecs.push(`${rel} : FORME NON CANONIQUE`); continue; }
+  if (doc.schema !== SCHEMA_AVANT && doc.schema !== SCHEMA_APRES) {
+    echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`);
+    continue;
+  }
   if (!Array.isArray(doc.scenes)) { echecs.push(`${rel} : \`scenes\` absent ou non-tableau`); continue; }
 
   let migres = 0;
@@ -99,16 +115,18 @@ if (echecs.length) {
 }
 
 for (const r of rapports) {
-  const sortie = Object.fromEntries(Object.entries(r.doc).map(([k, v]) => (k === 'scenes' ? [k, r.scenes] : [k, v])));
+  const sortie = Object.fromEntries(
+    Object.entries(r.doc).map(([k, v]) => (k === 'scenes' ? [k, r.scenes] : k === 'schema' ? [k, SCHEMA_APRES] : [k, v])),
+  );
   const out = canonique(sortie);
   if (out !== r.brut) fs.writeFileSync(r.abs, out, 'utf8');
 
   // PREUVE post-écriture : chaque Scène porte les QUATRE parties, avec les valeurs posées.
   const apres = JSON.parse(out);
   const muettes = apres.scenes.filter((s) => PARTIES.some((p) => s.reliefDefaults?.[p] !== POSE[p])).map((s) => s.id);
-  if (muettes.length) {
-    console.error(`[${NOM}] VÉRIFICATION POST-ÉCRITURE ROUGE — ${r.rel} : ${muettes.join(', ')}`);
+  if (muettes.length || apres.schema !== SCHEMA_APRES) {
+    console.error(`[${NOM}] VÉRIFICATION POST-ÉCRITURE ROUGE — ${r.rel} : schema=${apres.schema}, ${muettes.join(', ')}`);
     process.exit(1);
   }
-  console.log(`[${NOM}] ${r.rel} — reliefDefaults posés : ${r.migres} (déjà migrées : ${r.deja}, scènes : ${apres.scenes.length}) — fichier ${out !== r.brut ? 'réécrit' : 'INCHANGÉ'}`);
+  console.log(`[${NOM}] ${r.rel} — schema ${r.doc.schema} → ${apres.schema}, reliefDefaults posés : ${r.migres} (déjà migrées : ${r.deja}, scènes : ${apres.scenes.length}) — fichier ${out !== r.brut ? 'réécrit' : 'INCHANGÉ'}`);
 }
