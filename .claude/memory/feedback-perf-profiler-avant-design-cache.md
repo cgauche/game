@@ -30,7 +30,14 @@ alterné (la machine dérive de +15 % sur 4 runs) avant d'être promis.
 **How to apply :** (1) mesurer la suite en JSON (`vitest run --reporter=json`), trier par fichier ;
 (2) sur chaque fichier lourd, sonde par étape AVANT de nommer la cause ; (3) toute hypothèse de
 cause s'écrit « à réfuter » dans le brief du codeur, avec sa sonde discriminante ; (4) un cache
-partagé inter-gardes exige une clé `(fileName, texte, options)` et deux pools (AST syntaxique vs
-SourceFiles d'un Program) — sinon préférer la mémoïsation INTRA-fichier, paresseuse (jamais
-top-level : payée à la collecte vitest). Lié : [[feedback-preuve-mesuree-sur-le-chemin-reel]],
+partagé inter-gardes d'ASTs exige une clé `(fileName, texte, options)` et deux pools (AST syntaxique
+vs SourceFiles d'un Program). Pour le CORPUS SOURCE (le texte, pas l'AST) lu par plusieurs fichiers
+d'un même worker (`isolate: false`), la mémoïsation vit dans la PRIMITIVE : `readCorpus`
+(`scripts/guards/lib/sourceCorpus.mjs`, #1709 C1, 2026-09-07) keye sur le CONTENU des paramètres et
+rend un tableau GELÉ — c'est l'identité de ses entrées qui porte les mémos par identité des appelants
+(`WeakMap` d'AST de `canonUnique.mjs`). Deux conditions à établir AVANT d'y recourir : l'arbre scanné
+est STATIQUE pendant le run (nommer l'unique écrivain — sous vitest, `genAll()` du plugin
+`registryGen`, qui écrit avant les workers), et le prix de RÉTENTION par worker est CHIFFRÉ (mesuré
+2026-09-07 : 132,1 Mo de texte pour les 8 clés des appelants co-résidentes). Hors de ce cas :
+mémoïsation INTRA-fichier, paresseuse (jamais top-level : payée à la collecte vitest). Lié : [[feedback-preuve-mesuree-sur-le-chemin-reel]],
 [[feedback-mes-propres-sondes-se-remesurent]], [[env-charge-machine-un-seul-agent-lourd]].

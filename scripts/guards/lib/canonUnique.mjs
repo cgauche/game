@@ -7,13 +7,15 @@
 //    déjà (sélection zod `.extract` sur un schéma du canon, table `Record<UnionNommée, …>` annotée) ;
 //  - `scanChebyshevFormula` : la FORMULE de la distance de Chebyshev, quel que soit le nom qu'on lui
 //    donne (`cheb`, `dist`, ou aucun — inline dans un `filter`).
-// La lecture du corpus n'est PAS ici : elle vit dans `sourceCorpus.mjs` (`readCorpus`), sa
-// mémoïsation chez l'appelant. Ce module reçoit des fichiers `{ rel, text }` et rend des `Finding`.
+// La lecture du corpus n'est PAS ici : elle vit dans `sourceCorpus.mjs` (`readCorpus`), qui la
+// mémoïse par clé. Ce module reçoit des fichiers `{ rel, text }` et rend des `Finding`.
 import ts from 'typescript';
 import { scriptKindDe } from './dialecte.mjs';
 
-/** AST par FICHIER, keyé sur l'IDENTITÉ de l'objet : un appelant qui mémoïse son corpus ne paie le
- *  parse qu'une fois pour tous ses scans. Rien ne fuit — la carte lâche avec le corpus. */
+/** AST par FICHIER, keyé sur l'IDENTITÉ de l'objet d'entrée. `readCorpus` rend le MÊME objet pour
+ *  une même clé de corpus (tableau et entrées gelés) : le parse est donc payé une fois pour tous les
+ *  scans du worker, par garantie de la primitive et non par discipline d'appelant. Rien ne fuit — la
+ *  carte lâche avec le corpus. */
 const AST = new WeakMap();
 
 /** @param {{ rel: string, text: string }} file @returns {ts.SourceFile} */

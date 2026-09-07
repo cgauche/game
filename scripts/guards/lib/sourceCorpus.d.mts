@@ -1,9 +1,10 @@
+/** Entrée de corpus, GELÉE : le corpus est mémoïsé et partagé entre appelants. */
 export interface CorpusFile {
   /** Chemin ABSOLU du fichier. */
-  abs: string;
+  readonly abs: string;
   /** Chemin POSIX relatif à la racine du dépôt. */
-  rel: string;
-  text: string;
+  readonly rel: string;
+  readonly text: string;
 }
 
 export interface ReadCorpusOptions {
@@ -13,4 +14,10 @@ export interface ReadCorpusOptions {
   tests?: boolean;
 }
 
-export function readCorpus(dirs: string[], opts?: ReadCorpusOptions): CorpusFile[];
+/** Corpus MÉMOÏSÉ par clé (dossiers + extensions + `tests`) : même clé = même tableau, gelé. Les
+ *  dossiers entrent dans la clé en chemin POSIX depuis la racine — absolu, relatif et séparateur
+ *  final désignent le MÊME corpus. Licéité et prix : en-tête de `sourceCorpus.mjs`. */
+export function readCorpus(dirs: string[], opts?: ReadCorpusOptions): readonly CorpusFile[];
+
+/** Relâche tous les corpus mémoïsés : la lecture suivante retourne au disque. */
+export function viderCorpus(): void;

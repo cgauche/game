@@ -28,18 +28,12 @@ import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 const SRC = join(process.cwd(), 'src');
 const SCAN_ROOTS = [join(SRC, 'state'), join(SRC, 'scenes')];
 
-/** Corpus RÉEL d'un jeu de racines (marche + lecture : `scripts/guards/lib/sourceCorpus.mjs`), pris
- *  UNE fois puis mémoïsé — PARESSEUX : payé au 1ᵉʳ `it` qui le demande, jamais à la collecte des
- *  tests. Le PÉRIMÈTRE reste ici : `.ts` seuls (aucun `.tsx` sous `state/`+`scenes/`), hors tests. */
-const _corpus = new Map<string, { file: string; src: string }[]>();
+/** Corpus RÉEL d'un jeu de racines : marche, lecture et mémoïsation par clé dans
+ *  `scripts/guards/lib/sourceCorpus.mjs` — PARESSEUX, payé au 1ᵉʳ `it` qui le demande, jamais à la
+ *  collecte des tests. Le PÉRIMÈTRE reste ici : `.ts` seuls (aucun `.tsx` sous `state/`+`scenes/`),
+ *  hors tests. */
 function corpus(roots: string[]): { file: string; src: string }[] {
-  const cle = roots.join('|');
-  let v = _corpus.get(cle);
-  if (!v) {
-    v = readCorpus(roots, { exts: ['.ts'] }).map(({ abs, text }) => ({ file: abs, src: text }));
-    _corpus.set(cle, v);
-  }
-  return v;
+  return readCorpus(roots, { exts: ['.ts'] }).map(({ abs, text }) => ({ file: abs, src: text }));
 }
 
 /** Tous les fichiers scannés, tous dossiers de couverture confondus. */

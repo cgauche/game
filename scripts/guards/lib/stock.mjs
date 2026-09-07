@@ -19,8 +19,11 @@
 //     servi depuis la lib se relèverait dans le même geste que l'append qu'il doit rendre visible.
 //   - jamais le VERDICT : aucun `expect`, aucun `throw`, aucun exit.
 //   - jamais le DISQUE : aucune lecture, aucun chemin — l'appelant apporte l'observé.
-//   - jamais de MÉMOÏSATION : un cache posé ici survivrait au worker (même raison qu'en tête de
-//     `sourceCorpus.mjs` ; la durée de vie utile n'est connue que de l'appelant).
+//   - jamais de MÉMOÏSATION : il n'y a rien de stable à keyer. L'observé et le stock arrivent en
+//     `Iterable` (souvent un générateur, consommé une seule fois), et le SENS d'un appel tient à la
+//     fonction `cle` fournie par l'appelant — une closure, jamais comparable à une autre. Un mémo
+//     ici servirait l'écart d'un AUTRE appel. Ce qui se mémoïse, c'est la LECTURE du disque, et elle
+//     vit dans `sourceCorpus.mjs` (`readCorpus`, clé de contenu).
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 

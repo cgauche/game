@@ -38,14 +38,11 @@ const SCAN_DIRS = ['src'];
 const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rollSeamExcluded(rel);
 
 /** Corpus SOURCE de tous les scans de ce fichier : `src/**` en `.ts(x)`, TESTS COMPRIS (les vues
- *  `prodFiles`/`EXCLUDED` filtrent ensuite), chemin RELATIF POSIX + texte, LU UNE FOIS. Marche et
- *  lecture par `scripts/guards/lib/sourceCorpus.mjs`. Mémoïsation PARESSEUSE : la collecte Vitest ne
- *  paie rien, et les 13 assertions de corpus de ce fichier partagent une seule lecture. */
-let _corpus: { rel: string; text: string }[] | null = null;
-function corpus(): { rel: string; text: string }[] {
-  if (_corpus) return _corpus;
-  return (_corpus = readCorpus(SCAN_DIRS, { tests: true }).map(({ rel, text }) => ({ rel, text })));
-}
+ *  `prodFiles`/`EXCLUDED` filtrent ensuite), chemin RELATIF POSIX + texte. Marche, lecture et
+ *  MÉMOÏSATION par clé dans `scripts/guards/lib/sourceCorpus.mjs` : les 13 assertions de corpus de
+ *  ce fichier — et les autres fichiers de test du même worker — partagent une seule lecture, payée
+ *  au 1ᵉʳ appel (jamais à la collecte Vitest). */
+const corpus = () => readCorpus(SCAN_DIRS, { tests: true });
 
 /** Sites de roulage brut du corpus entier, mode `includeExcluded` — SUR-ENSEMBLE dont la forme NUE du
  *  garde est le sous-ensemble sans `excludedBy` (rollSeamExclusivity.mjs, `opts.includeExcluded`) :

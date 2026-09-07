@@ -61,6 +61,10 @@ const ATTENDU = {
     // pose et efface ses fichiers sous `os.tmpdir()`. Ni l'une ni l'autre ne touche l'arbre versionné.
     'scripts/guards/lib/purgerPerimes.mjs',
     'scripts/guards/lib/purgerPerimes.test.mjs',
+    // +1 le 2026-09-07 (#1709 C1) : la porte de rôle du corpus source pose ses fixtures
+    // (`mkdtempSync` + `writeFileSync`, puis `rmSync`) sous `os.tmpdir()` — l'arbre versionné n'est
+    // jamais écrit, et la lib mesurée (`sourceCorpus.mjs`) ne fait que LIRE.
+    'scripts/guards/lib/sourceCorpus.test.mjs',
     'scripts/hooks/git-destructive-guard.test.mjs',
     'scripts/hooks/inject-project-credo.test.mjs',
     'scripts/hooks/new-src-file-guard.mjs',

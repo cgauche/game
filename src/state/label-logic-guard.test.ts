@@ -70,20 +70,12 @@ function scanFiles(dirs: string[]): string[] {
 
 const ALL_DIRS = [...STRICT_DIRS, ...RATCHET_DIRS];
 
-/** Fichiers SCANNABLES d'un jeu de dossiers (chemin relatif POSIX + texte), LUS UNE FOIS par jeu
- *  — marche et lecture par `scripts/guards/lib/sourceCorpus.mjs`, le PÉRIMÈTRE (`EXCLUDED`) reste ici.
- *  Les dossiers de fixtures des tests de CÂBLAGE sont des `mkdtemp` uniques à chaque run — leur clé
- *  ne peut donc pas répondre pour un corpus réel. */
-const _corpus = new Map<string, { rel: string; text: string }[]>();
+/** Fichiers SCANNABLES d'un jeu de dossiers (chemin relatif POSIX + texte) — marche, lecture et
+ *  mémoïsation par clé dans `scripts/guards/lib/sourceCorpus.mjs`, le PÉRIMÈTRE (`EXCLUDED`) reste
+ *  ici. Les dossiers de fixtures des tests de CÂBLAGE sont des `mkdtemp` uniques à chaque run — leur
+ *  clé ne peut donc pas répondre pour un corpus réel. */
 function corpus(dirs: string[]): { rel: string; text: string }[] {
-  const cle = dirs.join('|');
-  const cached = _corpus.get(cle);
-  if (cached) return cached;
-  const out = readCorpus(dirs, { tests: true })
-    .map(({ rel, text }) => ({ rel, text }))
-    .filter(({ rel }) => !EXCLUDED(rel));
-  _corpus.set(cle, out);
-  return out;
+  return readCorpus(dirs, { tests: true }).filter(({ rel }) => !EXCLUDED(rel));
 }
 
 // Fonctions à paramètre `id` (5ᵉ forme, LOT 5) — collecte GLOBALE sur src/engine+state+gameIso+ui

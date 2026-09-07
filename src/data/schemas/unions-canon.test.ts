@@ -45,10 +45,10 @@ const CANONS = [
  *  fixtures SONT des recopies, c'est leur métier). `grammaire/valeurs.ts` n'y figure pas : il DÉRIVE
  *  (`z.enum(AVAILABILITIES)`), il ne tape rien. */
 const FOYERS = ['src/engine/types.ts', 'src/data/schemas/unions-canon.test.ts'];
-/** Corpus MÉMOÏSÉ pour tout le fichier : la lecture disque (~3 s, 3300 fichiers) et les AST (keyés
- *  sur l'identité des objets par `canonUnique`) sont payés UNE fois, pas une fois par `it`. */
-let cacheCorpus: { rel: string; text: string }[] | null = null;
-const corpus = () => (cacheCorpus ??= readCorpus(['src'], { tests: true }).filter(({ rel }) => !FOYERS.includes(rel)));
+/** Corpus de `src/**`, tests compris, hors foyers. `readCorpus` le mémoïse par clé pour le worker
+ *  entier : la lecture disque et les AST (keyés sur l'identité des entrées par `canonUnique`) sont
+ *  payés une fois pour tous les fichiers de test qui demandent le même corpus. */
+const corpus = () => readCorpus(['src'], { tests: true }).filter(({ rel }) => !FOYERS.includes(rel));
 /** Fixture de scan : un fichier de corpus fabriqué à la main. */
 const fixture = (text: string) => ({ rel: 'fixture.ts', text });
 

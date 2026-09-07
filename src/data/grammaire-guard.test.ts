@@ -147,7 +147,7 @@ const ALIAS = ['skillId', 'talentId', 'trappingId', 'traitId', 'skill', 'ref', '
 function trouvailles(): { cle: string; ligne: number }[] {
   const regles = { signatures: signaturesDeLaGrammaire(), alias: ALIAS };
   const out: { cle: string; ligne: number }[] = [];
-  const relever = (fichiers: { rel: string; text: string }[], sansRedeclaration: boolean) => {
+  const relever = (fichiers: readonly { rel: string; text: string }[], sansRedeclaration: boolean) => {
     for (const f of fichiers)
       for (const t of scan(f.rel, f.text, { ...regles, sansRedeclaration }))
         out.push({ cle: `${f.rel}:${t.symbole}${t.champ ? '.' + t.champ : ''}|${t.motif}|${t.detail}`, ligne: t.ligne });
