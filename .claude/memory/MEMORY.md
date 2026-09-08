@@ -47,6 +47,7 @@
 - [Tenues de carrières](game-tenues-carrieres-arbitrage-2026-07-14.md) · [talents « ou » chips](game-charte-talents-ou-chips-codex-lisibles.md) · [CORPS vs OBJET](game-corps-vs-objet-peau-nest-pas-une-armure.md).
 - [CAMÉRA = BOUCLE, jamais React](game-doctrine-camera-boucle-jamais-react.md) — dette redessin #1371.
 - Chantiers 2026-07, collisions de livres, rig, migrations id/label, jets/combat/hors-combat (LIVRÉS) : [index systèmes livrés](index-systemes-livres.md).
+- **[#1692 LIVRÉ 2026-09-08 : index VIFS](project-1692-index-vif-livre-2026-09-08.md)** — seam de version, registre de tables VIF par familles, gardes ; mémo à effet de bord ≠ registre ; rouge de recette = sonde d'abord.
 - **[#1691 LIVRÉ 2026-09-07 : relief en donnée](project-1691-relief-en-donnee-livre-2026-09-07.md)** — champ EXIGÉ au schéma de scène = bump de projet + migration ; entrée affirmée par cardinal dans une migration datée ne meurt pas ; créneau ferme sur #1679 avant les gates. Suite sous #1686 : #1692 → #1694 → #1693.
 - **[SOCLE VOLUMIQUE #1680 : état 2026-09-05](project-1680-socle-volumique-etat-2026-09-03.md)** — 15-A/15-B/perf IA/IA siège POSÉS ; restent #1644/#1686/#1687/#1688.
 - **[MATIÈRES #1686 : état 2026-09-05](project-1686-materiaux-etat-2026-09-05.md)** — lots 1, 2, 3a-1, 3a-2 POUSSÉS (materials.json, Codex Matières, ids vivants) ; ticket OUVERT jusqu'à #1690 (fan-out ≤ 1) ; leçons de portes.
