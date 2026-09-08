@@ -7,7 +7,7 @@ import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
 import {
   seasonOfMonth, isColdSeason,
-  weatherFromRoll, rollStageWeather, WEATHER_TABLE,
+  weatherFromRoll, rollStageWeather, weatherRanges,
   stageCount, stageExposureDifficulty, forageYield,
   weatherRangedMod, weatherRangedUseless, weatherPowderUseless, weatherVisibiliteM,
   weatherMovementWalkOnly, weatherResistanceTest, weatherPhysicalTestMod, weatherLightningNervous,
@@ -60,7 +60,7 @@ describe('table de Météo VERBATIM (EDOC 8 l.50-59)', () => {
     expect(weatherFromRoll(95, 'ete')).toBe('pluie');
     expect(weatherFromRoll(96, 'ete')).toBe('pluie-diluvienne');
     expect(weatherFromRoll(100, 'ete')).toBe('pluie-diluvienne');
-    const weathers = WEATHER_TABLE.ete.map((r) => r.weather);
+    const weathers = weatherRanges('ete').map((r) => r.weather);
     expect(weathers).not.toContain('neige');
     expect(weathers).not.toContain('blizzard');
   });
@@ -79,7 +79,7 @@ describe('table de Météo VERBATIM (EDOC 8 l.50-59)', () => {
     expect(weatherFromRoll(90, 'hiver')).toBe('neige');
     expect(weatherFromRoll(91, 'hiver')).toBe('blizzard');
     expect(weatherFromRoll(100, 'hiver')).toBe('blizzard');
-    expect(WEATHER_TABLE.hiver.map((r) => r.weather)).not.toContain('sec');
+    expect(weatherRanges('hiver').map((r) => r.weather)).not.toContain('sec');
   });
   it('édition LIVE au Codex : éditer la météo (setDataset) change le tirage', () => {
     const orig = weather.map((s) => ({ ...s, ranges: s.ranges.map((r) => ({ ...r })) }));
@@ -109,7 +109,7 @@ describe('table de Météo VERBATIM (EDOC 8 l.50-59)', () => {
     // mesure ici est la partition : chaque jet de 1 à 100 appartient à UNE fourchette et une seule.
     const seasons: Season[] = ['printemps', 'ete', 'automne', 'hiver'];
     for (const s of seasons) {
-      const ranges = WEATHER_TABLE[s];
+      const ranges = weatherRanges(s);
       const fautifs = Array.from({ length: 100 }, (_, i) => i + 1)
         .map((jet) => ({ jet, couvert: ranges.filter((r) => jet >= r.min && jet <= r.max).length }))
         .filter((c) => c.couvert !== 1);

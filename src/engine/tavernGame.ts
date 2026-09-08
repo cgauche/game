@@ -23,6 +23,7 @@ import type {
   SequenceCombinedRules, SequenceThrowerPenalty,
 } from './sequenceVocab';
 import tavernGamesJson from '../data/tavernGames.json';
+import { indexParId } from '../data/versionDataset';
 import { t } from '../i18n';
 
 export interface TavernGame {
@@ -122,7 +123,7 @@ export interface TavernGame {
 }
 
 export const TAVERN_GAMES = tavernGamesJson as TavernGame[];
-const BY_ID = new Map<string, TavernGame>(TAVERN_GAMES.map((g) => [g.id, g]));
+const jeuParId = indexParId('tavernGames', TAVERN_GAMES);
 
 /** Id de la règle optionnelle du RÉGIME RAPIDE (`engine/policy.ts`) — DISTINCTE de `tavern-games`,
  *  qui ouvre la fonctionnalité : le régime ne se déduit pas de l'ouverture. */
@@ -167,12 +168,12 @@ export function fastTavernGame(g: TavernGame): TavernGame {
 
 /**
  * Un jeu de taverne par son `id`, TEL QU'IL SE JOUE sous le régime en vigueur — SEUL accessseur
- * exporté du catalogue par id : le catalogue brut (`BY_ID`) reste privé, de sorte qu'aucune surface
+ * exporté du catalogue par id : le catalogue brut (`jeuParId`) reste privé, de sorte qu'aucune surface
  * (flux, modale) ne puisse lire un jeu « hors régime » et jouer les deux à la fois. Les deux régimes
  * du RAW coexistent donc sans qu'aucun site ne les arbitre : ils sont servis à la source.
  */
 export function findTavernGameById(id: string): TavernGame | undefined {
-  const g = BY_ID.get(id);
+  const g = jeuParId(id);
   return g && tavernFastRegime() ? fastTavernGame(g) : g;
 }
 

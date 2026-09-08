@@ -17,7 +17,7 @@ import type { PortProfile } from '../engine/seaVoyage';
 import type { LandMarketProfile } from '../engine/landCargo';
 import type { RestPlaces } from './restFlow';
 import { evalCondition, type Condition, type ConditionCtx } from '../engine/flowCore';
-import { findNavalPortById, findLieuServiceById, CORE_AXIS_IDS } from '../data';
+import { findNavalPortById, findLieuServiceById, coreAxisIds } from '../data';
 
 /** Lieu posé sur la carte. Être dans `scene` = être à ce lieu ; y arriver → transition vers elle. */
 export interface MapPlace {
@@ -500,7 +500,7 @@ export interface ProjectDoc extends ProjectIdentite {
   scenes: Scene[];
   worldMap?: WorldMap;
   /** Axes de forces/faiblesses ACTIFS de la campagne (#409, ids de `src/data/axes.json`) — un
-   *  scénario marchand active `negoce`, un siège `ingenierie`. Absent = socle de base (`CORE_AXIS_IDS`,
+   *  scénario marchand active `negoce`, un siège `ingenierie`. Absent = socle de base (`coreAxisIds`,
    *  cf. `resolveActiveAxes`). Placement en jeu (rail de composition, mini-radar) hors périmètre de
    *  ce lot (#417). */
   activeAxes?: string[];
@@ -512,7 +512,7 @@ export interface ProjectDoc extends ProjectIdentite {
 /** Axes RÉELLEMENT actifs d'un projet — `activeAxes` déclaré (validé) sinon le socle de base. SOURCE
  *  UNIQUE de ce défaut (jamais un `?? []` dispersé côté consommateur, cf. #417). */
 export function resolveActiveAxes(doc: { activeAxes?: string[] }): string[] {
-  return doc.activeAxes && doc.activeAxes.length > 0 ? doc.activeAxes : CORE_AXIS_IDS;
+  return doc.activeAxes && doc.activeAxes.length > 0 ? doc.activeAxes : coreAxisIds();
 }
 
 /** Version de FORME courante — DÉCLARÉE au document (`defs-scenes/projet.ts`), jamais re-tapée ici :

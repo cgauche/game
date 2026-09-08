@@ -7,9 +7,12 @@
  */
 import type { TraitDef } from './types';
 import { traits } from '../../data';
+import { memoParVersion } from '../../data/versionDataset';
 
 export type { TraitDef } from './types';
 
 /** Table des traits. Clé = `id` STABLE (slug du libellé canonique) — indépendant de la langue.
  *  Le `key`/libellé reste pour l'affichage. Dérivée 1:1 de `traits.json`. */
-export const TRAITS: Record<string, TraitDef> = Object.fromEntries(traits.map((t) => [t.id, { key: t.label }]));
+export const TRAITS: () => Record<string, TraitDef> = memoParVersion('traits', () =>
+  Object.fromEntries(traits.map((t) => [t.id, { key: t.label }])),
+);

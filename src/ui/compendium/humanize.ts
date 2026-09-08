@@ -10,7 +10,7 @@
  * default — un kind futur force une phrase humaine à la compilation, jamais de repli silencieux vers
  * l'atelier). Zéro id brut à l'écran : toute réf (État, Talent, Trait, Groupe, Caractéristique, Maladie,
  * arme…) est résolue en libellé via les résolveurs canoniques (`conditionLabel`/`refLabel`/`CHAR_LABELS`/
- * `CHAR_ABR`/`traitLabelById`/`groupLabel`/`psychologyLabel`/`symptomLabel`/`creatureLabel`), jamais une
+ * `charAbr`/`traitLabelById`/`groupLabel`/`psychologyLabel`/`symptomLabel`/`creatureLabel`), jamais une
  * table id→label parallèle. PUR (structure → string) — testable sans DOM.
  */
 import type { Flow, Condition, EffectOp } from '../../state/flow';

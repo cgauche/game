@@ -910,7 +910,7 @@ export interface ActiveEffect {
   testModHand?: 'main' | 'off';
   /** RESTREINT `testMod`/`testModChar` aux Tests classés « déplacement » (op `testMod.movementOnly`,
    *  #193 — Genou démis « Tests impliquant cette jambe », LDB 18/AA) — MÊME catégorie `SkillData.movement`
-   *  que l'État À Terre/Empêtré (engine/conditions `MOVEMENT_SKILL`). Lu par `testValue`/`defenseValue`
+   *  que l'État À Terre/Empêtré (engine/conditions `isMovementSkill`). Lu par `testValue`/`defenseValue`
    *  (Esquive). Absent = tous les Tests de la carac visée. */
   testModMovementOnly?: boolean;
   /** Modif. d'ATTRIBUT SECONDAIRE posé par l'op `attrMod` exécutée (Bonnet de fou « +4 Blessures »,

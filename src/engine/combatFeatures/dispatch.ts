@@ -6,7 +6,7 @@
 import type { Combatant, Weapon } from '../types';
 import { groupMatch } from '../groups';
 import { isShieldItem } from '../equipCompare';
-import { findTalentById, traitById } from '../../data';
+import { findTalentById, findTraitById } from '../../data';
 import { canStrikeFirst } from '../qualities/dispatch';
 import { effectiveEntry } from '../variants';
 import { weaponLoaded } from '../weaponLoad';
@@ -211,7 +211,7 @@ export function shieldReactionCost(c: Combatant, parryWeapon: Weapon | undefined
 export function canCounterOnDefenseWin(c: Combatant, parryWeapon: Weapon | undefined): boolean {
   const fast = canStrikeFirst(parryWeapon ? [parryWeapon] : []);
   for (const t of c.traits ?? []) {
-    const cap = traitById.get(t.id)?.capabilities;
+    const cap = findTraitById(t.id)?.capabilities;
     if (cap?.counterOnDefenseWin && (!cap.counterRequiresFastParry || fast)) return true;
   }
   for (const { def } of featuresOf(c)) {
@@ -370,7 +370,7 @@ export function maxEncumbranceFactor(capabilities: { encumbranceFactor?: number 
  *  Bonus d'Endurance), porté par le Trait RACIAL (`capabilities.encumbranceFactor`, Ogre) — composé par
  *  `items.maxEncumbrance`. 1 = aucune capacité de ce type (aucun effet sur `maxEncumbrance`). */
 export function traitEncumbranceFactor(c: Combatant): number {
-  return maxEncumbranceFactor((c.traits ?? []).map((t) => ({ encumbranceFactor: traitById.get(t.id)?.capabilities?.encumbranceFactor })));
+  return maxEncumbranceFactor((c.traits ?? []).map((t) => ({ encumbranceFactor: findTraitById(t.id)?.capabilities?.encumbranceFactor })));
 }
 
 /** Âme pure (LDB 10) : seuil de Corruption relevé de niveau. Remplace le check `talentId === 'ame-pure'`. */

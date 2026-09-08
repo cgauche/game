@@ -1,19 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import { parseQuality, splitIndice } from './normalize';
 
-describe('normalize — parseQuality (canonicalisation + Indice)', () => {
-  it('label exact → clé canonique', () => {
-    expect(parseQuality('Précise')).toEqual({ key: 'Précise' });
-    expect(parseQuality('Perforante')).toEqual({ key: 'Perforante' });
+describe('normalize — parseQuality (résolution en id STABLE + Indice)', () => {
+  it('label exact → `id` du catalogue', () => {
+    expect(parseQuality('Précise')).toEqual({ id: 'precise' });
+    expect(parseQuality('Perforante')).toEqual({ id: 'perforante' });
   });
-  it('casse ignorée → clé canonique', () => {
-    expect(parseQuality('précise')?.key).toBe('Précise');
-    expect(parseQuality('À ENROULEMENT')?.key).toBe('À Enroulement');
+  it('casse ignorée → même `id`', () => {
+    expect(parseQuality('précise')?.id).toBe('precise');
+    expect(parseQuality('À ENROULEMENT')?.id).toBe('a-enroulement');
   });
-  it('Indice « X N » et « X (N) » extrait, clé canonique', () => {
-    expect(parseQuality('Solide 3')).toEqual({ key: 'Solide', indice: 3 });
-    expect(parseQuality('Solide (2)')).toEqual({ key: 'Solide', indice: 2 });
-    expect(parseQuality('solide 5')).toEqual({ key: 'Solide', indice: 5 });
+  it('Indice « X N » et « X (N) » extrait, `id` résolu', () => {
+    expect(parseQuality('Solide 3')).toEqual({ id: 'solide', indice: 3 });
+    expect(parseQuality('Solide (2)')).toEqual({ id: 'solide', indice: 2 });
+    expect(parseQuality('solide 5')).toEqual({ id: 'solide', indice: 5 });
   });
   it('qualité inconnue du registre → null', () => {
     expect(parseQuality('Tournoyante')).toBeNull();

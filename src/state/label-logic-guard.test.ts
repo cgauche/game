@@ -8,6 +8,7 @@ import {
   scanLabelLiteralCompare, labelLiteralStockDrift, LABEL_LITERAL_STOCK,
   STRICT_DIRS, RATCHET_DIRS, RATCHET_EXCEPTIONS,
   collectLabelEntityResolvers, labelEntityResolverNames, scanLabelResolverCalls,
+  scanLabelKeyedIndex, LABEL_KEYED_INDEX_STOCK,
 } from '../../scripts/guards/lib/labelLogic.mjs';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { LABEL_RESOLVER_CALL_STOCK } from '../../scripts/guards/lib/labelResolverCallStock.mjs';
@@ -397,9 +398,62 @@ describe('garde-fou « logique par LIBELLÉ hors du champ label » (#142 LOT 7)'
 });
 
 /**
+ * Volet CONSTRUCTION (#909) : les volets ci-dessus jugent l'INTERROGATION d'une collection par un
+ * libellé — la REMPLIR depuis du texte y est tolérée, la conversion label→id étant licite mais à UN
+ * endroit (`src/data/index.ts`, CLAUDE.md). Dans `src/engine`/`src/state`, cette CONSTRUCTION est la
+ * faute, et elle était MUETTE : `QUALITY_DESC` (`engine/qualities/describe.ts`) y a vécu comme
+ * `Record` keyé par LIBELLÉ, bâti par `fromEntries(… [q.label, q.desc])` et lu par une VARIABLE.
+ */
+describe('garde-fou « index keyé par un LIBELLÉ, construit dans le moteur » (#909)', () => {
+  it('scanLabelKeyedIndex : échoue sur la faute QUALITY_DESC reconstituée, et sur ses deux variantes', () => {
+    const src = [
+      'const DATA_DESC = Object.fromEntries(qualitiesJson.filter((q) => q.desc).map((q) => [q.label, q.desc!]));',
+      'idx.exact.set(it.label, it);',
+      'NAME_TO_GROUP[norm(t.label)] = t.subType;',
+    ].join('\n');
+    const findings = scanLabelKeyedIndex('fixture.ts', src);
+    expect(findings.map((f) => f.line)).toEqual([1, 2, 3]);
+    expect(findings.map((f) => f.rule)).toEqual(['label-keyed-index', 'label-keyed-index', 'label-keyed-index']);
+  });
+
+  it('CONTRE-ÉPREUVES : libellé en VALEUR, index par id, lecture d’un libellé', () => {
+    const src = [
+      '...Object.fromEntries(TRAVEL_VEHICLES.map((v) => [v.id, v.label])),', // le libellé est la VALEUR
+      'byId.set(e.id, e);',
+      'return DISEASE_BY_ID.get(id)?.label ?? id;',
+      'const noms = [a.label, b.label].join(\', \');', // tableau d'AFFICHAGE, pas une paire clé/valeur
+    ].join('\n');
+    expect(scanLabelKeyedIndex('fixture.ts', src)).toEqual([]);
+  });
+
+  it('CLIQUET : aucun index par libellé NEUF dans src/engine + src/state, aucune dette soldée non retirée', () => {
+    const counts = new Map<string, number>();
+    for (const { rel, text } of corpus(STRICT_DIRS)) {
+      const n = scanLabelKeyedIndex(rel, text).length;
+      if (n > 0 || rel in LABEL_KEYED_INDEX_STOCK) counts.set(rel, n);
+    }
+    const ecarts = ecartsDeStock({
+      observe: [...counts].filter(([, n]) => n > 0).map(([rel, n]) => ({ rel, n })),
+      stock: Object.entries(LABEL_KEYED_INDEX_STOCK).map(([rel, n]) => ({ rel, n: Number(n) })),
+      cle: (e: { rel: string; n: number }) => `${e.rel} | ${e.n}`,
+      remede: {
+        neuve: (_cle, e) =>
+          `${e.rel} : ${e.n} index keyé(s) par un LIBELLÉ — la conversion label→id vit dans ` +
+          '`src/data/index.ts` (résolveur d’id), le moteur ne manipule que des ids.',
+        perimee: (cle) =>
+          `${cle} : ce compte n'est plus mesuré — la ligne se retire (dette SOLDÉE) ou se met à jour, ` +
+          'dans le MÊME geste, au stock LABEL_KEYED_INDEX_STOCK.',
+      },
+    });
+    const drift = [...ecarts.neuves, ...ecarts.perimees];
+    expect(drift, drift.join('\n')).toEqual([]);
+  });
+});
+
+/**
  * Troisième volet (#909) : la comparaison `.label === label` d'un résolveur (`findCreature`,
  * `findSpell`…) vit DANS `src/data/index.ts`, seul fichier où la doctrine la tolère — les deux
- * volets ci-dessus ne voient QUE cette comparaison textuelle, pas le fait d'INVOQUER un tel
+ * premiers volets ne voient QUE cette comparaison textuelle, pas le fait d'INVOQUER un tel
  * résolveur depuis `src/engine`/`src/state`. Reconnaissance et stock : voir l'en-tête de
  * `scanLabelResolverCalls` (`labelLogic.mjs`) et de `labelResolverCallStock.mjs`.
  */

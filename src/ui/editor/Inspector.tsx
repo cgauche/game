@@ -27,7 +27,7 @@ import { FACADE_APPEARANCE_IDS } from '../../gameIso/catalog/facades';
 import { MERCHANTS } from '../../state/merchants/index';
 import { TAVERN_GAMES } from '../../engine/tavernGame';
 import { allMusicDefs } from '../../audio/music';
-import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, matieresCouvrantes, matieresDe, structureAppearances, refEstVolumique } from '../../data';
+import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, matieresCouvrantes, matieresDe, structureAppearances, refEstVolumique, siegeEngines } from '../../data';
 import { DEFAULT_ROOF_DEFAULTS, rederiveRoofMasses } from '../../state/sceneEdit';
 import { activitiesFor } from '../../engine/activities';
 
@@ -52,7 +52,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { SeatAssignmentsField } from './SeatAssignmentsField';
-import { KIND_LABEL, Sel, type Tool, changePropRef, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffectCount, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, editEntity, editEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setNorthDeg, setEnvironment, setSceneFlags } from './editorState';
+import { KIND_LABEL, Sel, type Tool, changePropRef, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffectCount, setPosteCrew, setPosteSide, setPosteEngine, editEntity, editEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setNorthDeg, setEnvironment, setSceneFlags } from './editorState';
 import { scrollElementIntoPort } from './useEditorView';
 import type { FireArc, StructureData, NavalTraitRef } from '../../engine/types';
 import { DIFFICULTY_LABELS } from '../../engine/types';
@@ -1570,7 +1570,7 @@ function EmplacementFold({ ent, scene, setScene }: { ent: SceneEntity; scene: Sc
           <label className="ed-field">
             Engin
             <select value={poste.trappingId ?? poste.item?.trappingId ?? ''} onChange={(e) => setScene(setPosteEngine(scene, ent.id, e.target.value))}>
-              {SIEGE_ENGINES.map((t) => (
+              {siegeEngines().map((t) => (
                 <option key={t.id} value={t.id}>{t.label}</option>
               ))}
             </select>

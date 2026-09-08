@@ -11,6 +11,7 @@ import { rollTest, evaluateTest, extendedTestStep } from './tests';
 import { rule } from './policy';
 import { bonus, effectiveChar } from './characteristics';
 import { findPsychologyById, psychologies, psychologyLabel } from '../data';
+import { indexParId } from '../data/versionDataset';
 import { SizeCategory, sizeGap } from './size';
 import { isOutOfAction } from './conditions';
 import { groupMatch, hiddenGroupsOf } from './groups';
@@ -66,14 +67,16 @@ export interface PsychAffliction {
 
 /** Types de Traits psy CIBLÉS (résolution binaire de Calme, pilotés par un Groupe-Cible, LDB 21) —
  *  DÉRIVÉ de `psychology.json` (`targeted:true`), jamais un Set codé en dur. */
-export const CIBLE_TYPES = new Set<PsychType>(psychologies.filter((p) => p.targeted).map((p) => p.id as PsychType));
+const psychologieParId = indexParId('psychologies', psychologies);
+export const estCibleType = (type: string): boolean => !!psychologieParId(type)?.targeted;
 
 /** Libellés (icône + nom) des Traits psy ciblés — DÉRIVÉS de `psychology.json` (SOURCE UNIQUE, comme
  *  `etats.json` pour les États — même champ `icon` du registre `<Icon>`, id `famille/nom`). Partagé
  *  par les modales psy (combat + rencontre) et la narration. */
-export const CIBLE_LABEL: Record<string, { icon: string; label: string }> = Object.fromEntries(
-  psychologies.filter((p) => p.targeted).map((p) => [p.id, { icon: p.icon ?? '', label: p.label }]),
-);
+export const cibleLabel = (type: string): { icon: string; label: string } | undefined => {
+  const p = psychologieParId(type);
+  return p?.targeted ? { icon: p.icon ?? '', label: p.label } : undefined;
+};
 
 /** « Si la créature est considérée comme AGRESSIVE » (LDB 85 l.383) : porte de la Peur/Terreur de
  *  TAILLE, lue ENVERS `cible`. Deux ADVERSAIRES DÉCLARÉS (camps opposés dont aucun n'est neutre) le
@@ -133,7 +136,7 @@ export function psychResolution(kind: PsychType): { mode?: 'extended' | 'terreur
 /** Une affliction psy est-elle ACTIVE ? Ciblé (Animosité/Haine/…) : drapeau `active` ; Peur/Terreur : DR
  *  cumulé encore sous l'Indice (sujet à la Peur). Frénésie/trauma ne sont pas des afflictions surmontables. */
 export function isAfflictionActive(p: PsychAffliction): boolean {
-  if (CIBLE_TYPES.has(p.type)) return p.active === true;
+  if (estCibleType(p.type)) return p.active === true;
   if (p.type === 'peur' || p.type === 'terreur') return (p.indice ?? 0) > 0 && (p.calmeDR ?? 0) < (p.indice ?? 0);
   return false;
 }
@@ -554,7 +557,7 @@ export function psychBranchOps(
     if (res.becomes) ops.push({ op: 'beginPsych', type: res.becomes, indice: stake.indice, calmeDR: 0, ...anchor });
     return ops;
   }
-  if (CIBLE_TYPES.has(stake.kind)) {
+  if (estCibleType(stake.kind)) {
     return [{
       op: 'beginPsych', type: stake.kind, active: !outcome.success, fromTest: true,
       ...(stake.cible != null ? { cible: stake.cible } : {}), ...anchor,

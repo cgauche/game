@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { emitCombatEvent } from './combatEvents';
 import { applyOpposedCritical } from './combatFlow';
 import './combatFlow'; // effet de bord : routeur de Test + appliers
-import { traitById } from '../data';
+import { traits } from '../data';
+import { setDataset } from '../data/overrides';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 
@@ -35,7 +36,7 @@ const empetre = (c: Combatant) => c.conditions.find((x) => x.id === 'empetre');
 
 /** Enregistre un trait synthétique (`effects` sur `trigger`) et le pose sur un combattant nu. */
 function withSyntheticTrait(id: string, effects: TriggeredEffect[]): Combatant {
-  traitById.set(id, { id, label: id, effects } as never);
+  setDataset('traits', [...traits, { id, label: id, effects } as never]);
   return bare({ traits: [{ id }] } as Partial<Combatant>);
 }
 const SELF_EMPETRE: TriggeredEffect = {
@@ -43,10 +44,10 @@ const SELF_EMPETRE: TriggeredEffect = {
   flow: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: 'empetre', value: 1 }] } },
 };
 
-const SYNTH_IDS = ['synth-onattackresolved', 'synth-oncastresolved', 'synth-onmiscast', 'synth-oncharged', 'synth-oncharged-mixed'];
+const TRAITS_LIVRES = [...traits];
 
 describe('#316 — triggers orphelins câblés au bus (émission + déclenchement de donnée)', () => {
-  afterEach(() => { for (const id of SYNTH_IDS) traitById.delete(id); });
+  afterEach(() => { setDataset('traits', TRAITS_LIVRES); });
 
   it.each<[EffectTrigger, string]>([
     ['onAttackResolved', 'synth-onattackresolved'],

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { CHAR_ABR } from '../data';
+import { characteristics } from '../data';
+import { setDataset } from '../data/overrides';
 import { CharValue } from './CharValue';
 
 describe('CharValue — caractéristique isolée', () => {
@@ -17,15 +18,15 @@ describe('CharValue — caractéristique isolée', () => {
     expect(html).toContain('B3');
   });
 
-  it('le libellé court suit la DONNÉE (CHAR_ABR), jamais la clé littérale — altère le dataset réel', () => {
-    const original = CHAR_ABR['capacite-de-combat'];
+  it('le libellé court suit la DONNÉE (charAbr), jamais la clé littérale — altère le dataset réel', () => {
+    const livrees = [...characteristics];
     try {
-      CHAR_ABR['capacite-de-combat'] = 'ZZ';
+      setDataset('characteristics', characteristics.map((c) => (c.id === 'capacite-de-combat' ? { ...c, abr: 'ZZ' } : c)));
       const html = renderToStaticMarkup(<CharValue charKey="capacite-de-combat" value={45} />);
       expect(html).toContain('ZZ');
       expect(html).not.toContain('>CC<');
     } finally {
-      CHAR_ABR['capacite-de-combat'] = original;
+      setDataset('characteristics', livrees);
     }
   });
 });

@@ -6,7 +6,8 @@ import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { terrainLabel } from '../../state/terrain';
 import { Icon } from '../Icon';
 import type { Layers, Pt, Tool } from './editorState';
-import { KIND_LABEL, SIEGE_ENGINES } from './editorState';
+import { KIND_LABEL } from './editorState';
+import { siegeEngines } from '../../data';
 import { layerLabel } from './LayerField';
 import { PROPS } from '../../gameIso/catalog/decor';
 
@@ -35,7 +36,7 @@ export function toolLabel(tool: Tool): ReactNode {
     case 'zoneTiles': return <><Icon id="map-tool/zone" size="sm" /> Emprise · {tool.paint === 'add' ? 'ajouter' : 'retirer'}</>;
     case 'entry': return <><Icon id="nav/entry-point" size="sm" /> Point d’entrée</>;
     case 'encounter': return <><Icon id="action/attack" size="sm" /> Placer des ennemis</>;
-    case 'emplacement': return <><Icon id="scenario/siege" size="sm" /> {SIEGE_ENGINES.find((t) => t.id === tool.trappingId)?.label ?? 'Emplacement'}</>;
+    case 'emplacement': return <><Icon id="scenario/siege" size="sm" /> {siegeEngines().find((t) => t.id === tool.trappingId)?.label ?? 'Emplacement'}</>;
     case 'wall': return tool.paint === 'door' ? <><Icon id="map-tool/door" size="sm" /> Porte</> : tool.paint === 'diagBack' || tool.paint === 'diagFwd' ? <><Icon id="map-tool/wall" size="sm" /> Diagonale</> : <><Icon id="map-tool/wall" size="sm" /> Cloison</>;
     case 'height': return <><Icon id="map-tool/height" size="sm" /> Hauteur {tool.metres} m</>;
     case 'stair': return <>↗ Volée → {layerLabel(tool.toZ)}</>;

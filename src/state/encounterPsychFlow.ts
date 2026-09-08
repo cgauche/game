@@ -20,7 +20,7 @@ import type { CascadeStep, BatchParticipant, CascadeRoll } from './pendings';
 import { spawnEnemy } from './spawn';
 import { resolvePresetCreature } from './campaignData';
 import { encounterPsych } from '../engine/encounterPsych';
-import { CIBLE_TYPES, CIBLE_LABEL, PsychType, failConditionAmount, psychResolution, psychBranchOps, psychBranchFlow, supersededLines, isPsychImmune, refreshAllDefendedPsych, endEncounterPsych } from '../engine/psychology';
+import { estCibleType, cibleLabel, PsychType, failConditionAmount, psychResolution, psychBranchOps, psychBranchFlow, supersededLines, isPsychImmune, refreshAllDefendedPsych, endEncounterPsych } from '../engine/psychology';
 import { skillBaseValue } from '../engine/skills';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { refLabel, findPsychologyById, combatStakeRef } from '../data';
@@ -133,7 +133,7 @@ export function openEncounterPsych(get: Get, set: Set): void {
     const trig = encounterPsych(hero, npcs);
     if (!trig) continue;
     const src = npcs.find((n) => n.id === trig.sourceId);
-    const cl = CIBLE_TYPES.has(trig.kind) ? CIBLE_LABEL[trig.kind] : null;
+    const cl = estCibleType(trig.kind) ? cibleLabel(trig.kind) : null;
     dues.push({
       hero,
       decl: { kind: trig.kind, sourceId: trig.sourceId, sourceName: src?.label ?? '?', indice: trig.indice, cible: trig.cible },

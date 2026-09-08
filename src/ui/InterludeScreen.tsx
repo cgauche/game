@@ -1,6 +1,7 @@
 import { Fragment, useMemo, useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { interludeEventFor } from '../data/interludeEvents';
+import { memoParVersion } from '../data/versionDataset';
 import { formatMoney, fromBrass, toBrass, toMoney, add as moneyAdd, PA_PER_SC, type Money } from '../engine/money';
 import { bourseOf } from '../state/bourseFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
@@ -66,8 +67,8 @@ const refusDuVolet = (paneId: string, banniere: ReactNode, raison: string | unde
 
 /** Atouts/Défauts d'artisanat (LDB 60 l.9-62) — dérivés de la DONNÉE éditable (`qualities.json`,
  *  qualités d'Objet) par `id` ; tooltips/libellés via le registre (`describeQuality`). */
-const ATOUTS = qualities.filter((q) => q.polarite === 'atout' && q.subType === 'objet').map((q) => q.id);
-const DEFAUTS = qualities.filter((q) => q.polarite === 'defaut' && q.subType === 'objet').map((q) => q.id);
+const atoutsDObjet = memoParVersion('qualities', () => qualities.filter((q) => q.polarite === 'atout' && q.subType === 'objet').map((q) => q.id));
+const defautsDObjet = memoParVersion('qualities', () => qualities.filter((q) => q.polarite === 'defaut' && q.subType === 'objet').map((q) => q.id));
 /** Libellé + desc d'une qualité d'artisanat par id (registre via `describeQuality`). */
 const craftQual = (id: string) => describeQuality({ id }) ?? { label: id, desc: undefined };
 
@@ -740,12 +741,12 @@ function CraftPane({ hero, refus, money, desc }: { hero: Combatant; refus?: stri
     >
       <TrappingSelect options={catalog} value={id} onChange={setId} />
       <div className="interlude-craft-q">
-        {ATOUTS.map((q) => (
+        {atoutsDObjet().map((q) => (
           <label key={q} title={mdToText(craftQual(q).desc ?? '')}>
             <input type="checkbox" checked={atouts.includes(q)} onChange={() => toggle(atouts, setAtouts, q)} /> {craftQual(q).label}
           </label>
         ))}
-        {DEFAUTS.map((q) => (
+        {defautsDObjet().map((q) => (
           <label key={q} title={mdToText(craftQual(q).desc ?? '')}>
             <input type="checkbox" checked={defauts.includes(q)} onChange={() => toggle(defauts, setDefauts, q)} /> {craftQual(q).label} (défaut)
           </label>

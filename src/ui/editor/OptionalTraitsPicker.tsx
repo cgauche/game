@@ -7,7 +7,7 @@
  *    (l'auteur complète l'Indice/la Cible : « Armure 2 », « Haine (Sigmarites) ») ;
  *  - sorts connus (la donnée bestiaire n'en liste pas — choix d'auteur, datalist sur spells.json).
  */
-import { CreatureData, traits } from '../../data';
+import { CreatureData, memoParVersion, traits } from '../../data';
 import { CHAR_KEYS } from '../../engine/types';
 import { traitLabels, parseTraitInstance, formatTrait, optionalLabel } from '../../engine/traits/dispatch';
 import { isOptionalNote, type OptionalEntry } from '../../engine/statEntry';
@@ -15,7 +15,7 @@ import { RefField } from '../compendium/RefField';
 
 /** Traits Standard de créature (LDB 76 l.28-31) — « ajoutés à la liste Facultative de TOUTES les
  *  créatures » : dérivés de la DONNÉE (`traits.json`, drapeau `standard`), pas d'une liste en dur. */
-const STANDARD_OPTIONALS = traits.filter((t) => t.standard).map((t) => t.label);
+const traitsStandard = memoParVersion('traits', () => traits.filter((t) => t.standard).map((t) => t.label));
 
 /** Aperçu lecture seule du profil du bestiaire : ligne de caractéristiques (« – » = inexistante,
  *  Schéma des Profils LDB 76) + traits fixes. */
@@ -95,7 +95,7 @@ export function OptionalTraitsPicker({
           </optgroup>
         )}
         <optgroup label="Traits standard (LDB 76 : toutes créatures)">
-          {STANDARD_OPTIONALS.map((o) => (
+          {traitsStandard().map((o) => (
             <option key={o} value={`std:${o}`}>{o}</option>
           ))}
         </optgroup>

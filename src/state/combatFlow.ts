@@ -200,7 +200,7 @@ import { bearingPostes, mostArmedSide } from './shipBattery';
 import { shipHelmsman, maneuverShip } from './shipManeuver';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { warMachineFireWeapon, warMachineCrewRequired, warMachineCrewPenalty } from '../engine/warMachineCrew';
-import { fearSourceFor, refreshAllDefendedPsych, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, supersededLines, psychResolution, psychBranchOps, psychBranchFlow, gainPhobieIfThreshold, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
+import { fearSourceFor, refreshAllDefendedPsych, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, supersededLines, psychResolution, psychBranchOps, psychBranchFlow, gainPhobieIfThreshold, estCibleType, cibleLabel, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import {
@@ -6928,7 +6928,7 @@ export function collectHeroRoundStartPsych(get: Get, c: Combatant): HeroPsychDue
   // Traits psy CIBLÉS (Animosité/Haine/… — LDB 21) : re-test des actifs, puis nouveaux déclenchements.
   const visible = visibleFoesAndAllies(battle, scene, c);
   for (const p of state) {
-    if (p.active && CIBLE_TYPES.has(p.type) && p.cible && p.lastTestRound !== battle.round && visible.some((v) => groupMatch(p.cible!, v.groups ?? [])))
+    if (p.active && estCibleType(p.type) && p.cible && p.lastTestRound !== battle.round && visible.some((v) => groupMatch(p.cible!, v.groups ?? [])))
       return { kind: p.type, sourceId: p.sourceId ?? '', sourceName: '', indice: 0, prevDR: 0, cible: p.cible }; // affliction active à re-tester
   }
   const tt = targetedTrigger(c, visible);
@@ -6984,8 +6984,8 @@ interface CombatPsychDue { decl: CombatPsychDecl; row: BatchParticipant; icon: s
 function psychDueFor(get: Get, c: Combatant, collect: (get: Get, c: Combatant) => HeroPsychDue | null): CombatPsychDue | null {
   const t = collect(get, c);
   if (!t) return null;
-  const isCible = CIBLE_TYPES.has(t.kind);
-  const cl = isCible ? CIBLE_LABEL[t.kind] : null;
+  const isCible = estCibleType(t.kind);
+  const cl = isCible ? cibleLabel(t.kind) : null;
   // Paramètres du Test EN DONNÉES (psychology.json `test`) : compétence (défaut Calme) + difficulté
   // (défaut Intermédiaire). Plus de Calme/Intermédiaire codé en dur.
   const td = findPsychologyById(t.kind)?.test;
@@ -7160,7 +7160,7 @@ function resolveCombatPsychRow(get: Get, hero: Combatant, cp: CombatPsychDecl, r
   let line: string;
   let phobieLine: string | null = null;
   const res = psychResolution(cp.kind);
-  const cible = CIBLE_TYPES.has(cp.kind);
+  const cible = estCibleType(cp.kind);
   // Peur = Test ÉTENDU de Calme (LDB 21 l.25) : cumuler le DR vers l'Indice (calque resolvePeurTest).
   // Sans Peur (LDB 10 l.1051) : « un seul Test (+20) » → une réussite IGNORE la Peur d'emblée
   // (DR porté à l'Indice) ; un échec laisse le porteur sujet (re-tests suivants = Peur normale +0).
@@ -7195,7 +7195,7 @@ function resolveCombatPsychRow(get: Get, hero: Combatant, cp: CombatPsychDecl, r
     }
   } else if (cible) {
     // Trait ciblé : échec → affliction active ; succès → marqueur inerte (pas de re-déclenchement).
-    const cl = CIBLE_LABEL[cp.kind];
+    const cl = cibleLabel(cp.kind);
     line = r.success ? tr('out.cibleMaster', { name: hero.label, kind: cl?.label.toLowerCase() ?? cp.kind }) : tr('out.cibleGrip', { name: hero.label, kind: cl?.label.toLowerCase() ?? cp.kind });
   } else {
     line = (calmeDR ?? 0) >= cp.indice

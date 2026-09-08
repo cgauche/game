@@ -40,7 +40,7 @@ import type { CastingNumberMod, CastingNumberSubject } from './castingNumber';
 import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { ALL_MAGIC, Combatant, HitLocation, Difficulty, CharKey, CastPenalty, DIFFICULTY_MODIFIERS, type ItemInstance } from './types';
-import { traitById, talentIdByLabel, findTalentById, findDomainById, findGodById, findTrappingById, type TestMatch } from '../data';
+import { findTraitById, talentIdByLabel, findTalentById, findDomainById, findGodById, findTrappingById, type TestMatch } from '../data';
 import { effectiveTalents, talentPassiveMods } from './talentEffects';
 import { effectiveEntry } from './variants';
 import { ritualReduction, type RitualReduced } from './grimoire';
@@ -127,7 +127,7 @@ function penaltyMatches(p: { skill: string }, skill: 'priere' | 'langue' | 'foca
  *  `castBlockedBy` — aucun champ d'exception à porter en donnée. */
 function passiveCastPenalties(c: Combatant): CastPenalty[] {
   const sources: { label: string; ops: import('./ops').GameOp[] }[] = [
-    ...(c.traits ?? []).map((t) => ({ label: traitById.get(t.id)?.label ?? t.id, ops: traitById.get(t.id)?.passive ?? [] })),
+    ...(c.traits ?? []).map((t) => ({ label: findTraitById(t.id)?.label ?? t.id, ops: findTraitById(t.id)?.passive ?? [] })),
     ...(c.mutations ?? []).map((m) => ({ label: m.label, ops: m.passive ?? [] })),
   ];
   const out: CastPenalty[] = [];
@@ -779,7 +779,7 @@ export function evaluateCasting(
 export function traitSpellDRMod(c: Combatant): number {
   let n = 0;
   for (const t of c.traits ?? []) {
-    for (const op of traitById.get(t.id)?.passive ?? []) {
+    for (const op of findTraitById(t.id)?.passive ?? []) {
       if (op.op === 'incomingSpellDRMod') n += resolveFormula(op.amount, c) * Math.max(1, t.value ?? 1);
     }
   }

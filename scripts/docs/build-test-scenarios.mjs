@@ -97,6 +97,16 @@ function scenarioLiteral(sf) {
 
 const FIELDS = ['id', 'order', 'category', 'icon', 'title', 'tests', 'partyNote']
 
+/** L'EXPRESSION que porte un champ du littéral : sa valeur (`tests: '…'`) ou, pour un champ rendu à
+ *  la LECTURE (`get tests() { return \`…\` }` — un scénario dont le compte se lit vif dans la donnée),
+ *  l'expression de son unique `return`. Toute autre forme n'est pas évaluable ici. */
+function valeurDuChamp(prop) {
+  if (ts.isPropertyAssignment(prop)) return prop.initializer
+  if (!ts.isGetAccessorDeclaration(prop) || !prop.body) return null
+  const [seule] = prop.body.statements
+  return prop.body.statements.length === 1 && ts.isReturnStatement(seule) ? (seule.expression ?? null) : null
+}
+
 function readScenario(file) {
   const path = join(DIR, file)
   const text = readFileSync(path, 'utf8')
@@ -108,10 +118,12 @@ function readScenario(file) {
   }
   const row = {}
   for (const prop of literal.properties) {
-    if (!ts.isPropertyAssignment(prop) || !ts.isIdentifier(prop.name)) continue
+    if (!ts.isIdentifier(prop.name ?? {})) continue
     const key = prop.name.text
     if (!FIELDS.includes(key)) continue
-    row[key] = key === 'order' ? evalNumber(prop.initializer) : evalStaticString(prop.initializer)
+    const expr = valeurDuChamp(prop)
+    if (!expr) continue
+    row[key] = key === 'order' ? evalNumber(expr) : evalStaticString(expr)
   }
   for (const key of FIELDS) {
     if (row[key] == null) {

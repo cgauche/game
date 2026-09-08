@@ -16,7 +16,7 @@
 import { RNG, defaultRNG, roll, type DiceSpec, rollDice } from './dice';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, addClockCondition, removeCondition, loseWounds, hasCondition, releaseConditionLocks, syncDerivedConditions } from './conditions';
-import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, traitById, refLabel, findTrappingById } from '../data';
+import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, findTraitById, refLabel, findTrappingById } from '../data';
 import { contractDiseaseOnce, aggravateDiseaseSymptom, attenuateDiseaseSymptom, grantDiseaseSymptom, suspendSymptom } from './disease';
 import { groupMatch } from './groups';
 import { findTableEntry } from './tables';
@@ -239,7 +239,7 @@ export function skillDRBonus(c: Combatant, skillId: string, spec?: string): numb
   const matches = (s?: { id: string; spec?: string }) => s?.id === skillId && (s.spec == null || s.spec === spec);
   let n = 0;
   for (const t of c.traits ?? []) {
-    for (const op of traitById.get(t.id)?.passive ?? []) {
+    for (const op of findTraitById(t.id)?.passive ?? []) {
       if (op.op === 'skillDRBonus' && matches(op.skill)) n += resolveFormula(op.bonus, c);
     }
   }
@@ -271,7 +271,7 @@ export function skillDRBonus(c: Combatant, skillId: string, spec?: string): numb
 function offTerrainOps(c: Combatant): Extract<GameOp, { op: 'offTerrainMod' }>[] {
   const out: Extract<GameOp, { op: 'offTerrainMod' }>[] = [];
   for (const t of c.traits ?? []) {
-    for (const op of traitById.get(t.id)?.passive ?? []) if (op.op === 'offTerrainMod') out.push(op);
+    for (const op of findTraitById(t.id)?.passive ?? []) if (op.op === 'offTerrainMod') out.push(op);
   }
   return out;
 }
@@ -317,7 +317,7 @@ export function charDRBonusOf(c: Combatant, char: CharKey | undefined): number {
   if (!char) return 0;
   let n = 0;
   for (const t of c.traits ?? []) {
-    for (const op of traitById.get(t.id)?.passive ?? []) {
+    for (const op of findTraitById(t.id)?.passive ?? []) {
       if (op.op === 'charDRBonus' && op.char === char) n += resolveFormula(op.bonus, c);
     }
   }
@@ -331,7 +331,7 @@ export function charDRBonusOf(c: Combatant, char: CharKey | undefined): number {
 export function incomingAttackMod(c: Combatant, mode: 'melee' | 'ranged'): number {
   let n = 0;
   for (const t of c.traits ?? []) {
-    for (const op of traitById.get(t.id)?.passive ?? []) {
+    for (const op of findTraitById(t.id)?.passive ?? []) {
       if (op.op === 'incomingAttackMod' && (op.mode === mode || op.mode === 'all')) n += op.amount;
     }
   }
@@ -341,7 +341,7 @@ export function incomingAttackMod(c: Combatant, mode: 'melee' | 'ranged'): numbe
 /** L'attaque du porteur compte-t-elle comme `keyword` (op passive `attackKeyword`, par id) ? Magique/
  *  Démoniaque/Fabriqué → 'magic'. (La qualité d'arme 'magic' est vérifiée à part par `isMagicWeapon`.) */
 export function attackHasKeyword(c: Combatant, keyword: 'magic'): boolean {
-  for (const t of c.traits ?? []) for (const op of traitById.get(t.id)?.passive ?? []) if (op.op === 'attackKeyword' && op.keyword === keyword) return true;
+  for (const t of c.traits ?? []) for (const op of findTraitById(t.id)?.passive ?? []) if (op.op === 'attackKeyword' && op.keyword === keyword) return true;
   return false;
 }
 
@@ -350,7 +350,7 @@ export function attackHasKeyword(c: Combatant, keyword: 'magic'): boolean {
  *  mot-clé OU l'arme est magique → `weaponHasMagic`). */
 export function incomingDamageNullified(defender: Combatant, attacker: Combatant, weaponHasMagic: boolean): boolean {
   for (const t of defender.traits ?? []) {
-    for (const op of traitById.get(t.id)?.passive ?? []) {
+    for (const op of findTraitById(t.id)?.passive ?? []) {
       if (op.op === 'mitigateIncoming' && op.mode === 'nullify') {
         if (op.unlessKeyword === 'magic' && (weaponHasMagic || attackHasKeyword(attacker, 'magic'))) continue;
         return true;

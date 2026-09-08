@@ -435,6 +435,51 @@ export function labelLiteralStockDrift(measured) {
   return out;
 }
 
+// ── Index CONSTRUIT sur un champ d'AFFICHAGE, dans le moteur/store (#909) ───────────────────────
+// `scanLabelLogic` ne juge que l'INTERROGATION d'une collection par `.label` : la REMPLIR depuis du
+// texte y est tolérée (contre-épreuve `NAME_TO_GROUP[norm(t.label)] = …`), la conversion label→id
+// étant licite — mais à UN endroit : « Seule couture tolérée : la conversion label→id au CHARGEMENT
+// des données, dans `src/data/index.ts` uniquement » (CLAUDE.md § Pour TOUT agent). Dans
+// `src/engine`/`src/state`, la même construction est donc la faute, et elle était MUETTE : le
+// `Record` `QUALITY_DESC` (`engine/qualities/describe.ts`) a vécu keyé par LIBELLÉ, bâti par
+// `Object.fromEntries(… .map((q) => [q.label, q.desc]))` puis LU via une variable
+// (`QUALITY_DESC[key]`) — hors de portée d'un scan syntaxique (cf. LIMITE CONNUE de `scanLabelLogic`).
+// La CONSTRUCTION est la seule moitié structurellement visible : c'est elle qu'on vise.
+const LABEL_PAIR_RX = new RegExp('\\[\\s*[\\w.]+\\.' + DISPLAY_FIELD + '\\s*,');
+/** … une paire n'en est une que dans une construction de STRUCTURE (`map`/`fromEntries`/`new Map`) :
+ *  `[a.label, b.label].join(', ')` est un tableau d'AFFICHAGE, aucune clé n'y naît. */
+const PAIR_CONTEXT_RX = /\b(?:map|fromEntries|new Map|new Set)\s*\(/;
+const LABEL_SET_RX = new RegExp('\\.set\\(\\s*[\\w.]+\\.' + DISPLAY_FIELD + '\\s*,');
+const LABEL_INDEX_WRITE_RX = new RegExp('[\\w)\\]]\\[[^\\]]*\\.' + DISPLAY_FIELD + '\\b[^\\]]*\\]\\s*(?:\\?\\?|\\|\\||&&)?=[^=]');
+
+/**
+ * Sites qui CONSTRUISENT une structure keyée par un champ d'affichage : paire d'un `fromEntries`/
+ * `Map`/tableau de paires (`[q.label, q.desc]`), `.set(x.label, …)`, écriture d'index
+ * (`M[x.label] = …`). À n'appliquer qu'à `STRICT_DIRS` — hors `src/data`, aucune couture label→id
+ * n'est tolérée. La CLÉ doit être le champ d'affichage : `[v.id, v.label]` (libellé en VALEUR) n'est
+ * pas visé, c'est la lecture légitime d'un libellé.
+ * @param {string} relPath @param {string} contenu
+ * @returns {{ line: number, detail: string, rule: 'label-keyed-index' }[]}
+ */
+export function scanLabelKeyedIndex(relPath, contenu) {
+  const findings = [];
+  stripComments(contenu).split('\n').forEach((line, i) => {
+    if ((LABEL_PAIR_RX.test(line) && PAIR_CONTEXT_RX.test(line)) || LABEL_SET_RX.test(line) || LABEL_INDEX_WRITE_RX.test(line)) {
+      findings.push({ line: i + 1, detail: line.trim(), rule: 'label-keyed-index' });
+    }
+  });
+  return findings;
+}
+
+/**
+ * Stock VIDE : la règle est à tolérance ZÉRO sur tout `STRICT_DIRS`. Les deux index mesurés à sa pose
+ * (2026-09-08) sont migrés dans le même geste — `weaponGroupIdByWeaponLabel` et le couple
+ * `conditionIds`/`conditionIdInText` portent désormais la couture dans `src/data/index.ts`. Cliquet
+ * strict dans les DEUX sens comme `LABEL_LITERAL_STOCK` : une entrée neuve se migre, jamais
+ * s'inscrit. @type {Readonly<Record<string, number>>}
+ */
+export const LABEL_KEYED_INDEX_STOCK = {};
+
 /** Découpe une liste de PARAMÈTRES de déclaration sur les VIRGULES de premier niveau — profondeur
  *  `(){}[]`/générique `<>` comptée (types génériques `Map<string, T>` fréquents en signature),
  *  jamais une virgule à l'intérieur d'un objet/tableau/callback/liste de types imbriquée. Profondeur

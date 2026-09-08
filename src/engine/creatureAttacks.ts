@@ -10,7 +10,7 @@
  * sinon le défaut élémentaire `souffle-feu` (exotiques arbitrés MJ). Aucun regex « (Type) » en dur.
  */
 import { formatTrait } from './traits/dispatch';
-import { traitById, findManeuverById, type ManeuverDef } from '../data';
+import { findTraitById, findManeuverById, type ManeuverDef } from '../data';
 import { norm } from '../lib/normalize';
 import { spellEffectOps } from './flowCore';
 import type { TraitList } from './statEntry';
@@ -89,7 +89,7 @@ export function creatureAttacks(traits: TraitList): CreatureAttack[] {
   const out: CreatureAttack[] = [];
   for (const x of traits) {
     const inst = x;
-    const grants = traitById.get(inst.id)?.grantsManeuvers;
+    const grants = findTraitById(inst.id)?.grantsManeuvers;
     if (!grants?.length) continue;
     const def = pickGranted(grants.map((r) => r.id), inst.arg);
     if (!def) continue;
@@ -116,7 +116,7 @@ export function creatureAttacks(traits: TraitList): CreatureAttack[] {
 export function selfManeuversOf(c: Combatant): ManeuverDef[] {
   const out: ManeuverDef[] = [];
   for (const tr of c.traits ?? [])
-    for (const r of traitById.get(tr.id)?.grantsManeuvers ?? []) {
+    for (const r of findTraitById(tr.id)?.grantsManeuvers ?? []) {
       const def = findManeuverById(r.id);
       if (def?.targeting === 'self') out.push(def);
     }

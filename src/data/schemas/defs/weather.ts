@@ -1,6 +1,6 @@
 /**
  * Schéma de `weather.json` — Météo de voyage TERRESTRE (EDOC 8), consommée par
- * `src/data/index.ts` et typée par `engine/travelStages.ts` (`Weather`, `WEATHER_TABLE`,
+ * `src/data/index.ts` et typée par `engine/travelStages.ts` (`Weather`, `weatherRanges`,
  * `WeatherCondition`). Deux volets :
  *  - `seasons` : table de tirage d100 par saison (`ranges` = fourchette PLATE `{min, max}` incluse →
  *    `weather`, lookup via `rollStageWeather` → `findTableEntry`) ;

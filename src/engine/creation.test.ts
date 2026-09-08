@@ -24,6 +24,7 @@ import {
   XP_STAR_ROLLED,
 } from './creation';
 import { careers, findSpeciesById, species, stars, type SpeciesData } from '../data';
+import { setDataset } from '../data/overrides';
 
 describe('bonus de PX des choix aléatoires (LDB 04 l.91 / 05 l.208-341)', () => {
   it('valeurs verbatim', () => {
@@ -145,7 +146,7 @@ describe('Gnome jouable — règle optionnelle (NADJ 14 l.5)', () => {
     expect(gnome.source.book).toBe('nuits-agitees-et-dures-journees');
     const fictive: SpeciesData = { ...gnome, id: 'sonde-espece-nadj', label: 'Sonde NADJ', rand: 97 };
     delete fictive.gatedByRule;
-    species.push(fictive);
+    setDataset('species', [...species, fictive]);
     try {
       const ids = () => randomSpeciesTable().flatMap((e) => e.ids);
       expect(ids()).toContain('sonde-espece-nadj'); // même livre, aucun champ → jamais masquée
@@ -154,7 +155,7 @@ describe('Gnome jouable — règle optionnelle (NADJ 14 l.5)', () => {
       expect(ids()).toContain('gnomes'); // règle active → ouverte
       expect(ids()).toContain('sonde-espece-nadj');
     } finally {
-      species.splice(species.indexOf(fictive), 1);
+      setDataset('species', species.filter((s) => s !== fictive));
     }
   });
 });

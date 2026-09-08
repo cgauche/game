@@ -3,7 +3,7 @@ import { t, interpolate, getLocale } from './index';
 import { fr } from './messages/fr';
 import { CHAR_LABELS, DIFFICULTY_LABELS, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from '../engine/types';
 import { DEFENSE_LABEL, FREE_ATTACK_LABEL } from '../engine/combat';
-import { CIBLE_LABEL } from '../engine/psychology';
+import { cibleLabel } from '../engine/psychology';
 import { psychologyLabel } from '../data';
 
 describe('i18n — primitive t() + catalogue FR (seam, plan → #320)', () => {
@@ -37,9 +37,10 @@ describe('i18n — primitive t() + catalogue FR (seam, plan → #320)', () => {
     expect(FREE_ATTACK_LABEL.caudale).toBe('Attaque caudale');
     expect(BODY_SHAPE_LOC_LABELS.quadrupede.brasG).toBe('Membre antérieur gauche');
     expect(BODY_SHAPE_LOC_LABELS.oiseau.brasG).toBe(t('hitloc.oiseau.brasG'));
-    // CIBLE_LABEL DÉRIVE désormais de psychology.json (donnée app-owned, comme etats.json), pas du catalogue t().
-    expect(CIBLE_LABEL.animosite.label).toBe(psychologyLabel('animosite'));
-    expect(CIBLE_LABEL.haine.icon).toBe('flag/anger'); // icône du registre <Icon>, portée par la donnée
+    // Le libellé d'un type psy CIBLÉ DÉRIVE de psychology.json (donnée app-owned, comme etats.json),
+    // pas du catalogue t().
+    expect(cibleLabel('animosite')!.label).toBe(psychologyLabel('animosite'));
+    expect(cibleLabel('haine')!.icon).toBe('flag/anger'); // icône du registre <Icon>, portée par la donnée
   });
 
   it('garde `out.*` : aucune clé ne re-imprime le jet (roll/sl/drow, ou {target} en paire avec {roll}) — #295 Lot 0 Décision 1b/ceinture', () => {

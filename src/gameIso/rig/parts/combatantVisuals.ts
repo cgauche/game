@@ -16,7 +16,7 @@ import { feat as catalogFeatures, featureMorpho } from './elements';
 import { eyesArtFromKeys } from './eyes';
 import { injuryOverlaysFor, injuryAppearance } from './injuries';
 import { traitOverlaysFor } from './traitVisuals';
-import { traitById, findCreatureById } from '../../../data';
+import { findTraitById, findCreatureById } from '../../../data';
 import { mutationById } from '../../../data/mutations';
 import { liveMorphRef } from '../../../engine/polymorph';
 
@@ -32,7 +32,7 @@ function stateFragments(c: Combatant): EntityAppearance[] {
     if (app) out.push(app);
   }
   for (const x of c.traits ?? []) {
-    const td = traitById.get(x.id);
+    const td = findTraitById(x.id);
     if (td?.appearance) out.push(td.appearance);
   }
   return out;

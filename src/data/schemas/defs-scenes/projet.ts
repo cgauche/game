@@ -45,7 +45,7 @@ export const projetDoc = document(
     auteur: z.string().min(1).optional(),
     scenes: z.array(sceneSchema),
     worldMap: worldMapSchema.optional(),
-    /** Axes de forces/faiblesses ACTIFS de la campagne (#409) — absent = socle `CORE_AXIS_IDS`. */
+    /** Axes de forces/faiblesses ACTIFS de la campagne (#409) — absent = socle `coreAxisIds`. */
     activeAxes: z.array(z.string()).optional(),
     narratif: narratifSchema,
   },

@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Scene } from '../../state/scene';
 import { WorldMap, MapPlace, MapRoute, emptyWorldMap, placeById } from '../../state/worldMap';
 import { TravelMode, TRAVEL_DEFAULTS } from '../../engine/travel';
-import { allAxes, CORE_AXIS_IDS } from '../../data';
+import { allAxes, coreAxisIds } from '../../data';
 import { Icon, IconG } from '../Icon';
 import { ICON_DEFS } from '../icons';
 import { ScreenShell } from '../ScreenShell';
@@ -27,7 +27,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
   scenes: Scene[];
   onClose: () => void;
   /** Axes de forces/faiblesses ACTIFS du PROJET (#409, `ProjectDoc.activeAxes`) — `undefined` =
-   *  socle de base (`CORE_AXIS_IDS`). Propriété PROJET réglée ici, dans l'éditeur de carte du monde
+   *  socle de base (`coreAxisIds`). Propriété PROJET réglée ici, dans l'éditeur de carte du monde
    *  (la surface d'authoring de la campagne). */
   activeAxes?: string[];
   setActiveAxes?: (ids: string[] | undefined) => void;
@@ -257,9 +257,9 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
                     <label key={a.id} className="ed-check" title={a.desc}>
                       <input
                         type="checkbox"
-                        checked={(activeAxes ?? CORE_AXIS_IDS).includes(a.id)}
+                        checked={(activeAxes ?? coreAxisIds()).includes(a.id)}
                         onChange={(e) => {
-                          const base = activeAxes ?? CORE_AXIS_IDS;
+                          const base = activeAxes ?? coreAxisIds();
                           const next = e.target.checked ? [...base, a.id] : base.filter((id) => id !== a.id);
                           setActiveAxes(next.length ? next : undefined);
                         }}

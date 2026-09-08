@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import type { Weapon } from '../types';
-import { QUALITIES } from './registry';
 import { hasQuality, qualitySum, qualityCritTriggered, parryDRAdjust, isUnbreakable, attackDRAdjust, dangerousNine, reloadDRTarget, magazineSize, resolveQualities, qualityArmourBypasses } from './dispatch';
 import { craftEncDelta } from './craftEconomy';
-import { findQualityById, findTrappingById, qualityRefLabel, trappings } from '../../data';
+import { findQualityById, qualityIdByLabel, findTrappingById, qualityRefLabel, trappings } from '../../data';
 import { itemFromTrappingById } from '../items';
 import { parseQualityInstance } from './normalize';
 import { readFileSync } from 'node:fs';
@@ -172,45 +171,55 @@ describe('Poudre imprégnée d’Aqshy (AA 08 l.544) — seuil de Maladresse él
   });
 });
 
-describe('registry — entrées attendues', () => {
+describe('catalogue — entrées attendues', () => {
   it('contient les qualités d’arme implémentées', () => {
     for (const k of ['Précise', 'Perforante', 'Pointue', 'Empaleuse', 'Défensive', 'À Enroulement', 'Pistolet', 'Incassable', 'Inoffensive', 'Dévastatrice', 'Percutante',
       'Léger', 'Pratique', 'Raffiné', 'Solide', 'Bâclé', 'Laid', 'Peu Fiable', 'Volumineux',
       'Taillade', 'Déséquilibrée', 'Déstabilisante', // Aux Armes p.89 — câblées (effets onCrit/onHit data-driven / defenderParryDR)
       "Arme d'équipe", 'Salve', 'Tir de zone']) { // Aux Armes p.124/126/89 — artillerie câblée (sous-effectif / chargeur / zone)
-      expect(QUALITIES[k]).toBeTruthy();
+      expect(qualityIdByLabel(k), k).toBeTruthy();
     }
   });
 });
 
-describe('parité — toute qualité d’ARME des données est connue (registre ou allowlist explicite)', () => {
-  // Toute NOUVELLE qualité de données doit être soit une entrée QUALITIES, soit ajoutée ici EN
-  // CONSCIENCE — c'est le garde-fou anti-empilement. (Vide depuis l'intégration des 10 dernières
-  // qualités d'arme : À Répétition, Immobilisante, Perturbante, Piège-lame, Protectrice, Rapide,
-  // Dangereuse, Épuisante, Imprécise, Lente.)
-  // Vide : toutes les qualités d'arme de qualities.json (Aux Armes incluses) sont désormais câblées
-  // au registre. Une NOUVELLE qualité non câblée s'ajouterait ici EN CONSCIENCE (garde-fou anti-empilement).
-  const NON_DANS_REGISTRE = new Set<string>([]);
-  it('chaque Atout/Défaut d’arme de qualities.json est dans QUALITIES ou dans l’allowlist', () => {
+describe('couture label→id — toute qualité d’arme/armure des données se résout par son LIBELLÉ', () => {
+  // `parseQuality` (authoring : « Solide 3 » saisi à l'éditeur) passe par `qualityIdByLabel`, la
+  // SEULE couture label→id tolérée (CLAUDE.md). Ce banc refuse qu'un libellé du catalogue n'y résolve
+  // PAS, ou qu'il y résolve sur une entrée d'un AUTRE nom (masquage par slug).
+  const parSousType = (prefixe: string) => {
     const path = fileURLToPath(new URL('../../data/qualities.json', import.meta.url));
     const raw = JSON.parse(readFileSync(path, 'utf8')) as unknown;
-    const all = (Array.isArray(raw) ? raw : Object.values(raw as Record<string, unknown>)) as { label: string; subType?: string }[];
-    const armes = all.filter((q) => (q.subType ?? '').toLowerCase().startsWith('arme'));
-    const known = new Set(Object.keys(QUALITIES));
-    const missing = armes.map((q) => q.label).filter((l) => !known.has(l) && !NON_DANS_REGISTRE.has(l));
-    expect(missing).toEqual([]);
+    const all = (Array.isArray(raw) ? raw : Object.values(raw as Record<string, unknown>)) as { id: string; label: string; subType?: string }[];
+    return all.filter((q) => (q.subType ?? '').toLowerCase().startsWith(prefixe));
+  };
+  const masquees = (entrees: { id: string; label: string }[]) =>
+    entrees.filter((q) => findQualityById(qualityIdByLabel(q.label) ?? '')?.label.toLowerCase() !== q.label.toLowerCase()).map((q) => q.label);
+
+  it('chaque Atout/Défaut d’ARME se résout sur une entrée du MÊME libellé', () => {
+    const armes = parSousType('arme');
+    expect(armes.length).toBeGreaterThan(0);
+    expect(masquees(armes)).toEqual([]);
   });
-  // Pénalités « % en Discrétion/Perception » : pas des qualités du registre — parsées par
+  // Pénalités « % en Discrétion/Perception » : pas des qualités nommées — parsées par
   // wearPenalty.ts directement depuis la donnée d'armure (LDB 63, colonne Pénalités).
-  const ARMURE_HORS_REGISTRE = new Set(['% en discretion', '% en perception']);
-  it('chaque Atout/Défaut d’ARMURE de qualities.json est dans QUALITIES ou allowlisté', () => {
-    const path = fileURLToPath(new URL('../../data/qualities.json', import.meta.url));
-    const raw = JSON.parse(readFileSync(path, 'utf8')) as unknown;
-    const all = (Array.isArray(raw) ? raw : Object.values(raw as Record<string, unknown>)) as { label: string; subType?: string }[];
-    const armures = all.filter((q) => (q.subType ?? '').toLowerCase().startsWith('armure'));
-    const known = new Set(Object.keys(QUALITIES));
-    const missing = armures.map((q) => q.label).filter((l) => !known.has(l) && !ARMURE_HORS_REGISTRE.has(l));
-    expect(missing).toEqual([]);
+  const ARMURE_HORS_CATALOGUE = new Set(['% en discretion', '% en perception']);
+  it('chaque Atout/Défaut d’ARMURE se résout sur une entrée du MÊME libellé', () => {
+    const armures = parSousType('armure').filter((q) => !ARMURE_HORS_CATALOGUE.has(q.label));
+    expect(armures.length).toBeGreaterThan(0);
+    expect(masquees(armures)).toEqual([]);
+  });
+
+  // DOUBLON DE MODÉLISATION DU DÉPÔT, borné ici : `qualities.json` porte DEUX entrées sous le même
+  // libellé imprimé « Immobilisante » — `immobilisante` (LDB 62 l.256-258) et `immobilisante-fixe`
+  // (`qualities.json:270-279`), dont la `desc` recopie AA 08 l.310, la NOTE de l'arme Filet lesté.
+  // Conséquence mesurée : l'authoring par libellé n'en atteint qu'une (`qualityIdByLabel` rend l'id
+  // CANONIQUE, le slug du libellé → `immobilisante`) ; le runtime reste sur l'id (`{ id: 'immobilisante-fixe' }` authorée
+  // en donnée, `zi-filets.test.ts`). Curation de la donnée : ticket de curation ouvert par l'orchestrateur.
+  it('le doublon de libellé du catalogue est CONNU et borné à « Immobilisante »', () => {
+    const parLabel = new Map<string, string[]>();
+    for (const q of parSousType('')) parLabel.set(q.label.toLowerCase(), [...(parLabel.get(q.label.toLowerCase()) ?? []), q.id]);
+    expect([...parLabel].filter(([, ids]) => ids.length > 1)).toEqual([['immobilisante', ['immobilisante', 'immobilisante-fixe']]]);
+    expect(parseQualityInstance('Immobilisante')).toEqual({ id: 'immobilisante' });
   });
 });
 

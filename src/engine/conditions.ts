@@ -6,7 +6,8 @@ import { Combatant, ActiveEffect, ConditionInstance, effectRef, type ModLine, ty
 import { evalCondition } from './flowCore';
 import { conditionLockCtx } from './actorView';
 import { tickRound, type Duration } from './duration';
-import { conditionLabel, findConditionById, findPsychologyById, findSpellById, refLabel, skills } from '../data';
+import { conditionIds, conditionLabel, findConditionById, findPsychologyById, findSpellById, refLabel, skills } from '../data';
+import { indexParId } from '../data/versionDataset';
 import { slugId } from '../data/slug';
 import { t } from '../i18n';
 import { rule } from './policy';
@@ -52,8 +53,22 @@ export function etatNonCumulable(id: string): boolean {
 }
 
 /** Marqueurs NARRATIFS hors LDB 16 (PAS des États `etats.json`, cf. `data-wellformed.test`) : Pétrifié
- *  (LDB 85), sans entrée catalogue — sévérité portée ICI, unique exception. */
-const NARRATIVE_MARKER_SEVERITY: Record<string, number> = { petrifie: 95 };
+ *  (LDB 85), sans entrée catalogue — REGISTRE UNIQUE de l'exception (libellé, sévérité, icone) : la
+ *  sévérité (`conditionSeverity`), l'icone (`gameIso/effectIcons.conditionMeta`) et le nom scanné dans
+ *  le journal (`conditionIdInText`) le COMPOSENT, aucun n'en garde de copie. */
+export const NARRATIVE_MARKERS: Record<string, { label: string; severity: number; icon: string }> = {
+  petrifie: { label: 'Pétrifié', severity: 95, icon: 'condition/petrified' },
+};
+
+/** id de l'État NOMMÉ dans un texte de journal (jeu de noms FERMÉ : catalogue VIF + marqueurs
+ *  narratifs), `undefined` sinon — la logique reste keyée par ID, le libellé n'est que le motif
+ *  cherché dans un texte FRANÇAIS. SOURCE UNIQUE du scan, partagée par l'importance d'un évènement
+ *  (`state/combatLog`) et son icone (`gameIso/combatNarration`) ; meurt avec le journal STRUCTURÉ (#1330). */
+export function conditionIdInText(text: string): string | undefined {
+  for (const id of conditionIds()) if (text.includes(conditionLabel(id))) return id;
+  for (const [id, marqueur] of Object.entries(NARRATIVE_MARKERS)) if (text.includes(marqueur.label)) return id;
+  return undefined;
+}
 
 /** Sévérité d'un État (`etats.json` : `severity`, sinon marqueur narratif, sinon défaut 10) — PUR, clé
  *  slugifiée (tolère un libellé : 'Pétrifié' → 'petrifie'). SOURCE UNIQUE partagée par l'icône
@@ -61,7 +76,7 @@ const NARRATIVE_MARKER_SEVERITY: Record<string, number> = { petrifie: 95 };
  *  combat pour le bandeau/la cadence (`state/combatLog.isImportantEvent`). */
 export function conditionSeverity(name: string): number {
   const id = slugId(name);
-  return findConditionById(id)?.severity ?? NARRATIVE_MARKER_SEVERITY[id] ?? 10;
+  return findConditionById(id)?.severity ?? NARRATIVE_MARKERS[id]?.severity ?? 10;
 }
 
 /**
@@ -511,13 +526,12 @@ export function combatTestPenalty(c: Combatant): number {
 // Tests « impliquant un déplacement » (LDB 16 l.35/l.64) — classification DÉRIVÉE de la donnée
 // (`SkillData.movement`, éditable au Codex), jamais une liste d'ids en dur. Acrobaties (spé de
 // Représentation) non classables à l'id de base → non couvertes.
-const MOVEMENT_SKILL = new Set(skills.filter((s) => s.movement).map((s) => s.id));
+const competenceParId = indexParId('skills', skills);
 // Tests « impliquant l'audition » (Assourdi −10, LDB 16 l.29) — même patron DONNÉE (`SkillData.hearing`).
-const HEARING_SKILL = new Set(skills.filter((s) => s.hearing).map((s) => s.id));
 /** Le Test `skill` est-il classé « déplacement » (`SkillData.movement`) ? Réutilisée par #193
  *  (Épaule luxée/Genou démis : `testMod.movementOnly` = MÊME catégorie que l'État À Terre/Empêtré). */
 export function isMovementSkill(skill?: string): boolean {
-  return MOVEMENT_SKILL.has(skill ?? '');
+  return !!competenceParId(skill)?.movement;
 }
 
 /** Σ des `testMod` char-QUALIFIÉS ACTIFS (op `testMod{char}` exécutée, #193) pour la Caractéristique
@@ -559,8 +573,8 @@ export function testStatePenaltyParts(c: Combatant, skill?: string): ModLine[] {
   if (c.conditions?.length && !hasActiveFlag(c, 'ignoreStatePenalties')) {
     for (const m of etatTestMods(c)) {
       if (m.op.combatOnly) continue; // Aveuglé (vue) : non classé hors combat (faute de classification du Test)
-      if (m.op.movementOnly && !MOVEMENT_SKILL.has(skill ?? '')) continue; // À Terre/Empêtré : Tests de déplacement seuls
-      if (m.op.hearingOnly && !HEARING_SKILL.has(skill ?? '')) continue; // Assourdi : Tests d'audition seuls (Perception)
+      if (m.op.movementOnly && !competenceParId(skill)?.movement) continue; // À Terre/Empêtré : Tests de déplacement seuls
+      if (m.op.hearingOnly && !competenceParId(skill)?.hearing) continue; // Assourdi : Tests d'audition seuls (Perception)
       if (m.op.exceptSkills?.includes(skill ?? '')) continue; // Brisé : sauf course (Athlétisme) / dissimulation (Discrétion)
       cand.push({ amount: m.op.amount, nature: 'État', src: m.src });
     }

@@ -5,8 +5,7 @@
  * flottant et le cadrage caméra : `kind` (type d'événement) + `actorId`/`targetId` + texte FR
  * déjà composé. L'icône et l'importance se déduisent du `kind` (plus aucun devinage par mots-clés).
  */
-import { etats } from '../data';
-import { conditionSeverity } from '../engine/conditions';
+import { conditionIdInText, conditionSeverity } from '../engine/conditions';
 
 export type CombatEventKind =
   | 'charge' | 'attack' | 'shoot' | 'cast' | 'item' | 'heal' | 'move' | 'flee'
@@ -74,18 +73,13 @@ const IMPORTANT: Set<CombatEventKind> = new Set([
   'defensive', 'aim', 'focus', 'frenzy', 'crit', 'fear', 'death', 'round',
 ]);
 
-/** Libellé État (`etats.json` + Pétrifié, hors catalogue) → id — le texte d'un évènement `condition`/
- *  `detail` est en FRANÇAIS (journal) : on scanne le libellé pour retrouver l'État nommé, jeu de noms
- *  FERMÉ (pas de devinage de verbe libre). Partagé par l'icône (`gameIso/combatNarration`) ET l'importance. */
-export const STATE_LABEL_TO_ID: [string, string][] = [...etats.map((e): [string, string] => [e.label, e.id]), ['Pétrifié', 'petrifie']];
-
 /** Un évènement `condition`/`detail` est important s'il applique un État INCAPACITANT (Sonné, À terre…
- *  — sévérité ≥ 50, `conditionSeverity`). */
+ *  — sévérité ≥ 50, `conditionSeverity`). Le texte est en FRANÇAIS (journal) : l'État nommé se retrouve
+ *  par `conditionIdInText` (`engine/conditions`, scan UNIQUE partagé avec `gameIso/combatNarration`),
+ *  et tout ce qui suit ne manipule qu'un id. */
 function isImportantConditionText(text: string): boolean {
-  for (const [label, id] of STATE_LABEL_TO_ID) {
-    if (text.includes(label)) return conditionSeverity(id) >= 50;
-  }
-  return false;
+  const id = conditionIdInText(text);
+  return id !== undefined && conditionSeverity(id) >= 50;
 }
 
 /** Un évènement est-il un « temps fort » (bandeau haut ET cadence) ? */

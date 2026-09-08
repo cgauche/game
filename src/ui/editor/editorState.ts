@@ -6,7 +6,6 @@ import { walkFlow, type Flow } from '../../state/flow';
 import { nextEntityId } from '../../state/entityId';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { speciesLabel } from '../../gameIso/rig/creatures';
-import { siegeEngines } from '../../data';
 import { propRefPatch } from './propDefaults';
 import { type Rect, type Pt, type EffectZoneSeed, canonEdge, edgeWallState, rectFrom, entityAt, addEntity, editEntity, moveEntityTo, removeEntity } from '../../state/sceneEdit';
 
@@ -102,11 +101,6 @@ export const EFFECT_ZONE_SEEDS: Record<'room' | 'effect', EffectZoneSeed> = {
   room: { label: 'Pièce', presentation: 'interior' },
   effect: { label: 'Piège', onCross: [{ op: 'wounds', amount: 5, ignoreTB: false, ignoreAP: true }] },
 };
-
-/** Catalogue des pièces d'artillerie posables (engins de siège, AA/MDG) — SOURCE UNIQUE de l'outil
- *  Palette et du sélecteur d'engin de l'inspecteur. Posable ⇔ l'engin a un art d'affût (`siegeRig`) : c'est
- *  ce rig qui rend l'affût inerte en éditeur comme en combat. L'invariant ne vit qu'ici (pas dupliqué). */
-export const SIEGE_ENGINES = siegeEngines; // FOYER UNIQUE du filtre = `data/siegeEngines` (partagé avec le Codex)
 
 /** Sous-mode de l'outil MURS : cloison pleine, porte (arête franchissable), ou diagonale en travers. */
 export type WallPaint = 'wall' | 'door' | 'diagBack' | 'diagFwd';

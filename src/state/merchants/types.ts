@@ -29,7 +29,7 @@ export interface MerchantArchetypeDef {
    *  bandeau d'interlocuteur statique (`SpeakerBanner` variant `boniment`) au-dessus de l'étal. */
   boniment?: string;
   /** CATÉGORIES d'unités vendues (#619 Lot A) — jamais une liste d'ids en dur (doctrine `category` ci-
-   *  dessus, même esprit que `FABRICATION_ATOUTS` DÉRIVÉ de la donnée) : `computeFreshStockLines`
+   *  dessus, même esprit que `fabricationAtouts` DÉRIVÉ de la donnée) : `computeFreshStockLines`
    *  (`state/merchantFlow.ts`) DÉRIVE les membres à chaque catégorie en itérant `creatures`/`vehicles`
    *  (facette `purchase`) — une monture/un véhicule neuf apparaît AUTOMATIQUEMENT, sans toucher ce
    *  fichier. `'bete'` = créatures à `purchase` (montures/bêtes de trait) ; `'vehicule-terrestre'` =

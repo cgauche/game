@@ -29,7 +29,7 @@ import { battementRemoval } from './combatManeuvers';
 import { fleeBackstab, fleeCalme } from './pendings';
 import type { PendingEncounterPsych } from './encounterPsychFlow';
 import type { PendingActivity } from './interludeFlow';
-import { CIBLE_TYPES, CIBLE_LABEL } from '../engine/psychology';
+import { estCibleType, cibleLabel } from '../engine/psychology';
 import { activityById, matchOutcomes } from '../engine/activities';
 import { isFumble } from '../engine/oups';
 import { extendedTestStep, isImpressiveSuccess, isImpressiveFailure, isAstoundingFailure, SL_ASTOUNDING } from '../engine/tests';
@@ -65,8 +65,8 @@ export function amazingTestLabel(pt: PendingTest): { success: boolean; text: str
 export function describeEncounterPsych(pe: PendingEncounterPsych, name: string): string {
   const r = pe.result;
   if (!r) return '';
-  if (CIBLE_TYPES.has(pe.kind)) {
-    const cl = CIBLE_LABEL[pe.kind];
+  if (estCibleType(pe.kind)) {
+    const cl = cibleLabel(pe.kind);
     const kind = cl?.label.toLowerCase() ?? pe.kind;
     return r.success ? t('out.cibleMaster', { name, kind }) : t('out.cibleGrip', { name, kind });
   }

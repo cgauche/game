@@ -14,8 +14,9 @@ import type { RecapLine } from '../state/recapLine';
 import type { RefusIHM } from '../state/refusVisible';
 import {
   type CombatEvent, type CombatEventKind, type ActorAim, type ActorAimKind,
-  type CombatTone, toneOf, isImportantEvent, STATE_LABEL_TO_ID,
+  type CombatTone, toneOf, isImportantEvent,
 } from '../state/combatLog';
+import { conditionIdInText } from '../engine/conditions';
 
 export interface NarratedSegment {
   text: string;
@@ -47,13 +48,12 @@ const KIND_ICON: Record<CombatEventKind, IconId> = {
 
 /** États (LDB 16) reconnus dans le texte d'un événement `condition`/`detail` → icône via la
  *  source unique `conditionMeta` (jeu de noms FERMÉ, pas du devinage de verbe libre). Le texte d'un
- *  événement est en FRANÇAIS (journal) → on scanne le LIBELLÉ (`STATE_LABEL_TO_ID`, partagé avec
- *  `state/combatLog.isImportantEvent`), puis on mappe à l'`id` pour l'icône. Data-driven (zéro liste figée). */
+ *  événement est en FRANÇAIS (journal) → l'État nommé se retrouve par `conditionIdInText`
+ *  (`engine/conditions`, scan UNIQUE partagé avec `state/combatLog.isImportantEvent`), puis l'`id`
+ *  donne l'icône. Data-driven (zéro liste figée). */
 function iconOfState(text: string): IconId | null {
-  for (const [label, id] of STATE_LABEL_TO_ID) {
-    if (text.includes(label)) return conditionMeta(id).icon;
-  }
-  return null;
+  const id = conditionIdInText(text);
+  return id ? conditionMeta(id).icon : null;
 }
 
 function iconOf(e: CombatEvent): IconId {

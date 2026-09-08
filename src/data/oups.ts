@@ -6,6 +6,7 @@
  * Ajouter/régler une entrée = éditer le JSON, jamais ce fichier.
  */
 import { oups } from './index';
+import { memoParVersion } from './versionDataset';
 
 export type OupsKind =
   | 'selfWound' | 'weaponDamageActLast' | 'actionPenalty'
@@ -17,6 +18,6 @@ export interface OupsMisfireEntry { id: string; kind: 'misfire'; label: string; 
 export type OupsRow = OupsEntry | OupsMisfireEntry;
 
 /** Bandes d100 du Tableau des Oups ! (les 7 fourchettes) — lues par `findTableEntry`. */
-export const OUPS_TABLE = oups.filter((e): e is OupsEntry => e.kind !== 'misfire');
+export const oupsTable = memoParVersion('oups', () => oups.filter((e): e is OupsEntry => e.kind !== 'misfire'));
 /** Entrée « Incident de Tir » (label DISPLAY-ONLY) — source UNIQUE, lue par `rollOups`. */
-export const OUPS_MISFIRE = oups.find((e): e is OupsMisfireEntry => e.kind === 'misfire')!;
+export const oupsMisfire = memoParVersion('oups', () => oups.find((e): e is OupsMisfireEntry => e.kind === 'misfire')!);

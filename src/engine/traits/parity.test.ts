@@ -255,7 +255,7 @@ function mechanicFieldsOf(t: RawTrait): string[] {
 
 describe('parité — registre des Traits dérivé de traits.json', () => {
   it('la dérivation est totale : chaque trait de traits.json est dans TRAITS (par id)', () => {
-    const missing = allTraitLabels().filter((l) => !TRAITS[slugId(l)]);
+    const missing = allTraitLabels().filter((l) => !TRAITS()[slugId(l)]);
     expect(missing).toEqual([]);
   });
 

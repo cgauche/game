@@ -21,6 +21,7 @@ import { emptyScene, sceneMetresPerTile, heightAt, type Scene } from '../../stat
 import { mapLights, type LightSource } from '../../state/vision';
 import { combatantLights } from '../../state/vision';
 import { lightTones, props as propsData, trappings, type LightToneDef } from '../../data';
+import { setDataset } from '../../data/overrides';
 import { schema as lightTonesSchema } from '../../data/schemas/defs/lightTones';
 import { ambianceLuminance } from '../catalog/ambiance';
 import { AUCUN_CHROME, TEINTE_PLEINE, poseBoards, type Board } from './boardPose';
@@ -97,13 +98,14 @@ describe('lightTones.json — le catalogue livré, et les bornes qui le tiennent
 // ── 2. LE CRITÈRE N+1 : un ton forgé, zéro ligne de code ────────────────────────────────────────
 
 describe('Un ton FORGÉ change l’apparence de la flaque SANS une ligne de code (#1245 L4)', () => {
-  /** Pousse un ton dans le catalogue LIVE — exactement ce que fait l'éditeur du Codex (mutation en
-   *  place de la MÊME référence de tableau, `data/overrides.ts`), et rien d'autre. */
+  /** Pousse un ton dans le catalogue LIVE par le SEAM d'écriture (`setDataset`, `data/overrides.ts`) —
+   *  la seule porte : elle mute le tableau en place ET versionne l'édition. */
   function forger(ton: LightToneDef): void {
-    lightTones.push(ton);
+    setDataset('lightTones', [...lightTones, ton]);
   }
+  const TONS_LIVRES = [...lightTones];
   afterEach(() => {
-    while (lightTones.length > 4) lightTones.pop();
+    setDataset('lightTones', TONS_LIVRES);
   });
 
   it('couleur, part d’intensité et vacillement de la lampe écrite viennent TOUS du ton', () => {

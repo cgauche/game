@@ -32,6 +32,7 @@ import { testValue } from './skills';
 import { rollMountIncident, mountIncidentEffects, type TravelTableEntry } from './travelTables';
 import { t, type MsgKey } from '../i18n';
 import { refLabel, dataLabel } from '../data';
+import { indexParId, memoParVersion } from '../data/versionDataset';
 
 export type Allure = 'pas' | 'trot' | 'galop';
 export const ALLURES: readonly Allure[] = ['pas', 'trot', 'galop'];
@@ -61,14 +62,16 @@ export interface MountProfile {
 }
 
 export const MOUNT_PROFILES: MountProfile[] = (monturesJson as { entries: MountProfile[] }).entries;
-const BY_ID = new Map(MOUNT_PROFILES.map((p) => [p.id, p]));
-const BY_CREATURE = new Map(MOUNT_PROFILES.flatMap((p) => p.creatureIds.map((c) => [c, p] as const)));
+const montureParId = indexParId('montures', MOUNT_PROFILES);
+const montureParCreature = memoParVersion('montures', () =>
+  new Map(MOUNT_PROFILES.flatMap((p) => p.creatureIds.map((c) => [c, p] as const))),
+);
 
 export function mountProfileById(id: string): MountProfile | undefined {
-  return BY_ID.get(id);
+  return montureParId(id);
 }
 export function mountProfileForCreature(creatureId: string): MountProfile | undefined {
-  return BY_CREATURE.get(creatureId);
+  return montureParCreature().get(creatureId);
 }
 /** Bonus d'Endurance d'un profil (dizaines de E). */
 export const mountBE = (p: MountProfile): number => Math.floor(p.e / 10);

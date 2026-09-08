@@ -3,7 +3,7 @@ import { combatantSections } from './registry';
 import { pregen, PREGEN } from '../../data/pregens';
 import { effectiveChar } from '../../engine/characteristics';
 import { skillBaseValue } from '../../engine/skills';
-import { CHAR_ABR } from '../../data';
+import { charAbr } from '../../data';
 
 /**
  * Contre-vérification au moteur (#498) : `combatantSections` (statbloc Codex/inspection) doit AFFICHER
@@ -21,7 +21,7 @@ describe('combatantSections — affichage carac/compétence = moteur (#498)', ()
   it('la row de carac CC affiche effectiveChar, pas la carac brute', () => {
     const sections = combatantSections(sigmund);
     const carSec = sections.find((s) => s.title === 'Caractéristiques')!;
-    const ccRow = carSec.rows.find((r) => 'k' in r && r.k === CHAR_ABR['capacite-de-combat']) as { v: string };
+    const ccRow = carSec.rows.find((r) => 'k' in r && r.k === charAbr('capacite-de-combat')) as { v: string };
     expect(ccRow.v).toBe(String(effectiveChar(sigmund, 'capacite-de-combat')));
   });
 

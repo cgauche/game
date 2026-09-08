@@ -37,7 +37,7 @@ import { isValidFormula } from '../engine/ops';
 import { ICON_DEFS } from '../ui/icons';
 import { flowHasImpureOpOutsideTest } from '../engine/flowCore';
 import type { Flow } from '../engine/flowCore';
-import { findCreatureById, findVehicleById, traitById, findConditionById, findDiseaseById, symptomById } from './index';
+import { findCreatureById, findVehicleById, findTraitById, findConditionById, findDiseaseById, findSymptomById } from './index';
 import { ruleDef } from '../engine/policy';
 import { TOLERATED } from '../../scripts/guards/lib/gameOpRefFk.mjs';
 
@@ -108,9 +108,9 @@ function refResolves(op: string, o: Record<string, unknown>, file: string, path:
     // Résolution par ID (runtime `spawnEnemy`) ; `'self'` = sentinelle `scheduleRespawn` (engine/ops.ts),
     // coque de véhicule = créature portée par `VehicleData.hull`.
     ref('ref', o.ref, (s) => s === 'self' || !!findCreatureById(s) || !!findVehicleById(s)?.hull, 'créature');
-  if (op === 'grantTrait') ref('traitId', o.traitId, (s) => traitById.has(s), 'trait');
+  if (op === 'grantTrait') ref('traitId', o.traitId, (s) => !!findTraitById(s), 'trait');
   if (op === 'condition' || op === 'removeCondition') ref('id', o.id, (s) => !!findConditionById(s) || SOFT_CONDITIONS.has(s), 'État');
-  if (op === 'exposeDisease' || op === 'contractDisease') ref('disease', o.disease, (s) => !!findDiseaseById(s) || !!symptomById.get(s), 'maladie');
+  if (op === 'exposeDisease' || op === 'contractDisease') ref('disease', o.disease, (s) => !!findDiseaseById(s) || !!findSymptomById(s), 'maladie');
 }
 
 function walk(node: unknown, file: string, path: string, scan: Scan): void {

@@ -18,6 +18,7 @@ import type { CharKey, Difficulty } from './types';
 import { rule } from './policy';
 import type { CodexTarget } from './ruleRefs';
 import { weather, weatherConditions, weatherPhysicalTestChars } from '../data';
+import { indexParId } from '../data/versionDataset';
 import { weatherIdSchema } from '../data/schemas/defs/weather';
 import { findTableEntry } from './tables';
 
@@ -79,15 +80,15 @@ interface WeatherRange { min: number; max: number; weather: Weather; }
  *  | Neige            | 96-00     | -      | 99-00   | 66-90  |
  *  | Blizzard         | -         | -      | -       | 91-00  |
  */
-/** Vue Record DÉRIVÉE (compat/tests) du dataset `weather` (1 entrée/saison, éditable au Codex).
- *  Snapshot au chargement ; le TIRAGE lit la donnée live ci-dessous (réf stable via splice) → une
- *  édition au Codex change la météo tirée. */
-export const WEATHER_TABLE: Record<Season, WeatherRange[]> =
-  Object.fromEntries(weather.map((s) => [s.id, s.ranges])) as Record<Season, WeatherRange[]>;
+const saisonParId = indexParId('weather', weather);
+/** Plages d100 d'une saison, LIVE (le dataset `weather` est éditable au Codex). */
+export function weatherRanges(season: Season): WeatherRange[] {
+  return (saisonParId(season)?.ranges ?? []) as WeatherRange[];
+}
 
 /** Météo depuis un jet d100 explicite (1-100) et une saison — lecture LIVE de la donnée éditable. */
 export function weatherFromRoll(roll: number, season: Season): Weather {
-  const ranges = (weather.find((s) => s.id === season)?.ranges ?? []) as WeatherRange[];
+  const ranges = weatherRanges(season);
   return findTableEntry(ranges, roll).weather;
 }
 

@@ -9,27 +9,24 @@
  * `setDataset` mute EN PLACE (`data/overrides.ts` : `arr.splice(0, arr.length, …)`) — son IDENTITÉ ne
  * change donc jamais, et `memoByRef` (`state/sceneMemo.ts`, mémo par identité de référence) y serait
  * un cache qui ne s'invalide pas : ce patron-là suppose qu'une mutation rende une NOUVELLE réf, ce
- * que la couche donnée ne fait pas. Le témoin est donc le CONTENU : les 25 références d'entrée,
- * comparées à l'identité, position par position (l'atelier réécrit l'entrée éditée, `CodexEdit.tsx`
- * `arr.map((x, i) => (i === index ? e : x))`). Coût mesuré : 14 ns par lecture indexée contre 71 ns
- * pour un `find` vif sur les 25 entrées, sur les 55 033 faces de terrain du corpus livré — et
- * `tileBlocksSight` en pose une par PAS DE RAYON.
+ * que la couche donnée ne fait pas. Le témoin est la VERSION du dataset, posée par le seam d'écriture
+ * lui-même (`memoParVersion`, `data/versionDataset.ts`, #1692) : une lecture n'y coûte plus qu'une
+ * comparaison d'entiers, là où le témoin de CONTENU rebalayait les 25 entrées à chaque accès — et
+ * `tileBlocksSight` en pose un par PAS DE RAYON.
  */
 import { terrains } from '../../data/index';
+import { memoParVersion } from '../../data/versionDataset';
 import type { TerrainDef } from '../../data/terrains.types';
 
 export type { TerrainDef } from '../../data/terrains.types';
 
-let cache: { temoin: readonly TerrainDef[]; index: Readonly<Record<string, TerrainDef>> } | null = null;
+const indexVif = memoParVersion('terrains', () =>
+  Object.fromEntries(terrains.map((t) => [t.id, t])) as Readonly<Record<string, TerrainDef>>,
+);
 
-/** Le dataset indexé par id — reconstruit dès qu'une entrée a changé d'identité (édition à l'atelier). */
+/** Le dataset indexé par id — reconstruit à la première lecture qui suit une écriture au seam. */
 export function indexDesTerrains(): Readonly<Record<string, TerrainDef>> {
-  const c = cache;
-  if (c && c.temoin.length === terrains.length && c.temoin.every((t, i) => t === terrains[i])) return c.index;
-  const temoin = [...terrains];
-  const index = Object.fromEntries(temoin.map((t) => [t.id, t]));
-  cache = { temoin, index };
-  return index;
+  return indexVif();
 }
 
 /** Les entrées du dataset, dans l'ordre authoré (palette de l'éditeur, audits de plan). */

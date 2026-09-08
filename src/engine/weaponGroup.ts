@@ -9,7 +9,7 @@
  * Explosifs, Ingénierie.
  */
 import type { Weapon } from './types';
-import { trappings } from '../data';
+import { weaponGroupIdByWeaponLabel } from '../data';
 import { norm } from '../lib/normalize';
 
 /** id de Groupe (subType) → clé de famille propre (sans accents). */
@@ -19,12 +19,6 @@ const GROUP_KEY: Record<string, string> = {
   arc: 'arc', arbalete: 'arbalete', 'poudre-noire': 'poudre', fronde: 'fronde',
   lancer: 'lancer', entraves: 'entraves', explosifs: 'explosifs', ingenierie: 'ingenierie',
 };
-
-/** libellé normalisé d'arme catalogué → subType canonique (construit une fois). */
-const NAME_TO_GROUP: Record<string, string> = {};
-for (const t of trappings as { label: string; categorie: string; subType: string | null }[]) {
-  if ((t.categorie === 'melee' || t.categorie === 'ranged') && t.subType) NAME_TO_GROUP[norm(t.label)] = t.subType;
-}
 
 /**
  * Alias EXACTS (pas de sous-chaîne) pour les libellés génériques joués mais absents de
@@ -44,10 +38,11 @@ const ALIAS_GROUP: Record<string, string> = {
 /**
  * COUTURE texte→id (#602) : libellé d'arme SAISI (arme custom, statbloc sans identité de catalogue) →
  * Groupe canonique. Prend du TEXTE, jamais une entité en main — une arme qui porte son `subType` se
- * résout par son ID (cf. `weaponGroup`). null si non catalogué.
+ * résout par son ID (cf. `weaponGroup`). null si non catalogué. La conversion libellé→id est DÉLÉGUÉE
+ * au résolveur VIF `weaponGroupIdByWeaponLabel` (`src/data/index.ts`, seule couture tolérée).
  */
 export function weaponGroupFromText(text: string): string | null {
-  return NAME_TO_GROUP[norm(text)] ?? null;
+  return weaponGroupIdByWeaponLabel(text) ?? null;
 }
 
 /** COUTURE texte→id (#602) : alias EXACT d'un libellé d'arme non catalogué → clé de famille. */

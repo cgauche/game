@@ -15,6 +15,7 @@
  * quand le passage en porte une) ; les formes réelles sont mesurées au schéma de la donnée.
  */
 import reglesOptionnellesJson from '../data/reglesOptionnelles.json';
+import { indexParId } from '../data/versionDataset';
 import type { SourceRef } from '../data/schemas/grammaire/valeurs';
 
 /** Forme du contrôle qu'une règle optionnelle fait auto-rendre au panneau in-game : `flag` =
@@ -87,23 +88,23 @@ export interface RuleAction {
  */
 export const OPTIONAL_RULES = reglesOptionnellesJson as unknown as OptionalRule[];
 
-const RULES_BY_ID = new Map<string, OptionalRule>(OPTIONAL_RULES.map((r) => [r.id, r]));
+const regleParId = indexParId('reglesOptionnelles', OPTIONAL_RULES);
 const overrides = new Map<string, RuleValue>();
 
 /** Définition d'une règle (métadonnée pour l'auto-rendu du panneau). */
 export function ruleDef(id: string): OptionalRule | undefined {
-  return RULES_BY_ID.get(id);
+  return regleParId(id);
 }
 
 /** Valeur EFFECTIVE d'une règle : surcharge runtime si présente, sinon défaut. */
 export function rule(id: string): RuleValue {
   if (overrides.has(id)) return overrides.get(id)!;
-  return RULES_BY_ID.get(id)?.default ?? false;
+  return regleParId(id)?.default ?? false;
 }
 
 /** Surcharge runtime (depuis le panneau in-game). Ignore un id inconnu. */
 export function setRule(id: string, value: RuleValue): void {
-  if (RULES_BY_ID.has(id)) overrides.set(id, value);
+  if (regleParId(id)) overrides.set(id, value);
 }
 
 /** Retire la surcharge → retour au défaut. */
@@ -119,5 +120,5 @@ export function ruleOverrides(): Record<string, RuleValue> {
 /** Remplace les surcharges (depuis la persistance). Ignore les ids inconnus. */
 export function loadRuleOverrides(o: Record<string, RuleValue>): void {
   overrides.clear();
-  for (const [k, v] of Object.entries(o)) if (RULES_BY_ID.has(k)) overrides.set(k, v);
+  for (const [k, v] of Object.entries(o)) if (regleParId(k)) overrides.set(k, v);
 }

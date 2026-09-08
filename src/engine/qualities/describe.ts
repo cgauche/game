@@ -1,22 +1,10 @@
 /**
- * Descriptions FR canoniques des qualités d'objet (Atouts/Défauts), pour l'affichage (fiche, marchand,
- * infobulles). RAW : Atouts d'arme **LDB 62 « Les armes »**, Défauts d'arme + Taille + Recharge
- * **LDB 63 « Armures »**, qualités d'artisanat **LDB 60 « Fabrication »**, magie **ADE II**. Aucune
- * invention : chaque texte résume fidèlement le passage cité. Le `type` (Atout/Défaut) vient du registre.
+ * Vue d'AFFICHAGE d'une qualité d'objet (fiche, marchand, infobulles) : `QualityInstance` → clé,
+ * polarité, Indice, libellé, description. Tout est lu PAR ID dans la donnée app-owned
+ * (`qualities.json`, chaque entrée taguée à sa `source`) — aucun texte ni aucune table ici.
  */
 import type { QualityInstance } from '../types';
-import { qualityById } from '../../data';
-import qualitiesJson from '../../data/qualities.json';
-
-/** Descriptions issues de la DONNÉE app-owned (`qualities.json`) — SOURCE UNIQUE des qualités
- *  cataloguées (dont toutes les nouvelles : Aux Armes…). On ne re-hardcode plus leur desc ici. */
-const DATA_DESC: Record<string, string> = Object.fromEntries(
-  (qualitiesJson as { label: string; desc?: string }[]).filter((q) => q.desc).map((q) => [q.label, q.desc!]),
-);
-
-/** Description courte par clé canonique — PILOTÉE ENTIÈREMENT par `qualities.json` (app-owned).
- *  Toute qualité du registre y a son entrée (donnée) ; il n'y a plus de desc codée en dur ici. */
-export const QUALITY_DESC: Record<string, string> = DATA_DESC;
+import { findQualityById } from '../../data';
 
 export interface QualityInfo {
   /** Clé canonique du registre (ex. 'Solide'). */
@@ -34,7 +22,7 @@ export interface QualityInfo {
 /** Décrit une `QualityInstance` runtime (`{id, value?}`) pour l'affichage : clé, type, Indice, desc.
  *  null si la qualité est inconnue du registre. Lecture PAR ID (plus de parse de chaîne). */
 export function describeQuality(q: QualityInstance): QualityInfo | null {
-  const data = qualityById.get(q.id);
+  const data = findQualityById(q.id);
   if (!data) return null;
   const key = data.label; // clé canonique = libellé FR du registre
   return {
@@ -42,6 +30,6 @@ export function describeQuality(q: QualityInstance): QualityInfo | null {
     polarite: data.polarite === 'atout' || data.polarite === 'defaut' ? data.polarite : undefined,
     indice: q.value,
     label: q.value != null ? `${key} ${q.value}` : key,
-    desc: QUALITY_DESC[key],
+    desc: data.desc,
   };
 }

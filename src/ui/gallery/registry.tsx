@@ -46,7 +46,7 @@ import { MenuCard, MenuSection, MenuButton, MenuToggle } from '../MenuCard';
 import { CreatorDice } from '../creator/CreatorDice';
 import { GameOpEditor } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
-import { species, careers, levelsForCareer, stars, mutations, rigSpeciesId, allAxes, CHAR_ABR, spells } from '../../data';
+import { species, careers, levelsForCareer, stars, mutations, rigSpeciesId, allAxes, charAbr, spells, memoParVersion } from '../../data';
 import { makePregens } from '../../data/pregens';
 import { toMoney } from '../../engine/money';
 import { RoseAxes } from '../RoseAxes';
@@ -56,29 +56,31 @@ import { GameOpChips } from '../GameOpChips';
 import { Band } from '../Band';
 import { CAREER_CHAR_ADVANCES } from '../creator/draft';
 
-// ── Données réelles pour les spécimens vivants (aucune donnée inventée) ──
-const HUMAN_SPECIES = species.find((s) => s.id === 'humains-reiklander') ?? species[0];
-const SPECIES_BY_FAMILY = new Map<string, typeof species>();
-for (const sp of species) {
-  const arr = SPECIES_BY_FAMILY.get(sp.family) ?? [];
-  arr.push(sp);
-  SPECIES_BY_FAMILY.set(sp.family, arr);
-}
-export const SPECIES_SECTIONS: PickGridSection[] = [...SPECIES_BY_FAMILY.entries()].slice(0, 3).map(([family, list]) => ({
-  id: family,
-  label: family,
-  items: list.slice(0, 3).map((sp) => ({
-    id: sp.id,
-    label: sp.label,
-    preview: { appearance: { species: rigSpeciesId(sp.id), sex: 'M' as const, build: 0.5, seed: 7 } },
-  })),
-}));
-export const SAMPLE_CAREER = careers.find((c) => c.id === 'agitateur') ?? careers[0];
-export const SAMPLE_CAREER_LEVELS = levelsForCareer(SAMPLE_CAREER.id);
-export const SAMPLE_STAR = stars[0];
-export const SAMPLE_HEROES = makePregens();
-export const SAMPLE_HERO = SAMPLE_HEROES[0];
-export const SAMPLE_HERO_B = SAMPLE_HEROES[1] ?? SAMPLE_HEROES[0];
+// ── Données réelles pour les spécimens vivants (aucune donnée inventée), lues VIVES (#1692) ──
+const especeHumaine = memoParVersion('species', () => species.find((s) => s.id === 'humains-reiklander') ?? species[0]);
+export const sectionsDEspeces = memoParVersion('species', (): PickGridSection[] => {
+  const parFamille = new Map<string, typeof species>();
+  for (const sp of species) {
+    const arr = parFamille.get(sp.family) ?? [];
+    arr.push(sp);
+    parFamille.set(sp.family, arr);
+  }
+  return [...parFamille.entries()].slice(0, 3).map(([family, list]) => ({
+    id: family,
+    label: family,
+    items: list.slice(0, 3).map((sp) => ({
+      id: sp.id,
+      label: sp.label,
+      preview: { appearance: { species: rigSpeciesId(sp.id), sex: 'M' as const, build: 0.5, seed: 7 } },
+    })),
+  }));
+});
+export const carriereExemple = memoParVersion('careers', () => careers.find((c) => c.id === 'agitateur') ?? careers[0]);
+export const niveauxDeLaCarriereExemple = memoParVersion(['careers', 'careerLevels'], () => levelsForCareer(carriereExemple().id));
+export const signeAstralExemple = memoParVersion('stars', () => stars[0]);
+export const herosExemples = memoParVersion('pregens', () => makePregens());
+export const herosExemple = () => herosExemples()[0];
+export const herosExempleB = () => herosExemples()[1] ?? herosExemples()[0];
 
 function TokenSwatches() {
   const TOKEN_SWATCHES: { label: string; token: string; role: string }[] = [
@@ -256,8 +258,8 @@ function DescRefFieldDemo() {
 }
 
 function GroupedPickGridDemo() {
-  const [sel, setSel] = useState<string | undefined>(SPECIES_SECTIONS[0]?.items[0]?.id);
-  return <GroupedPickGrid sections={SPECIES_SECTIONS} selectedId={sel} onSelect={setSel} label="Choix d'espèce" />;
+  const [sel, setSel] = useState<string | undefined>(sectionsDEspeces()[0]?.items[0]?.id);
+  return <GroupedPickGrid sections={sectionsDEspeces()} selectedId={sel} onSelect={setSel} label="Choix d'espèce" />;
 }
 
 /** Cadre-figurine unique (#430/#431) — patron `.fam-tile` de la planche : rivets d'or, boîte-figurine
@@ -269,8 +271,8 @@ function FigTileDemo() {
     <div className="row-flex">
       <div style={{ width: 140 }}>
         <FigTile
-          preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'M', build: 0.5, seed: 7 } }}
-          label={HUMAN_SPECIES.label}
+          preview={{ appearance: { species: rigSpeciesId(especeHumaine().id), sex: 'M', build: 0.5, seed: 7 } }}
+          label={especeHumaine().label}
           sub="Non sélectionné"
           onClick={() => {}}
           tabIndex={0}
@@ -278,8 +280,8 @@ function FigTileDemo() {
       </div>
       <div style={{ width: 140 }}>
         <FigTile
-          preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'F', build: 0.5, seed: 7 } }}
-          label={HUMAN_SPECIES.label}
+          preview={{ appearance: { species: rigSpeciesId(especeHumaine().id), sex: 'F', build: 0.5, seed: 7 } }}
+          label={especeHumaine().label}
           sub="Sélectionné"
           selected
           onClick={() => {}}
@@ -288,8 +290,8 @@ function FigTileDemo() {
       </div>
       <div style={{ width: 140 }}>
         <FigTile
-          preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'M', build: 0.5, seed: 9 } }}
-          label={HUMAN_SPECIES.label}
+          preview={{ appearance: { species: rigSpeciesId(especeHumaine().id), sex: 'M', build: 0.5, seed: 9 } }}
+          label={especeHumaine().label}
           sub="Scellé"
           sealed
           onClick={() => {}}
@@ -298,8 +300,8 @@ function FigTileDemo() {
       </div>
       <div style={{ width: 213 }}>
         <FigTile
-          preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'F', build: 0.5, seed: 11 } }}
-          label={HUMAN_SPECIES.label}
+          preview={{ appearance: { species: rigSpeciesId(especeHumaine().id), sex: 'F', build: 0.5, seed: 11 } }}
+          label={especeHumaine().label}
           sub="Variante pleine zone"
           fig="big"
           onClick={() => {}}
@@ -308,7 +310,7 @@ function FigTileDemo() {
       </div>
       <div style={{ width: 180 }}>
         <FigTile
-          preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'M', build: 0.5, seed: 13 } }}
+          preview={{ appearance: { species: rigSpeciesId(especeHumaine().id), sex: 'M', build: 0.5, seed: 13 } }}
           fig="hero"
           zoneBadges={FIG_ZONE_BADGES_PA}
         />
@@ -316,7 +318,7 @@ function FigTileDemo() {
       </div>
       <div style={{ width: 180 }}>
         <FigTile
-          preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'M', build: 0.5, seed: 13 } }}
+          preview={{ appearance: { species: rigSpeciesId(especeHumaine().id), sex: 'M', build: 0.5, seed: 13 } }}
           fig="hero"
           zoneBadges={FIG_ZONE_BADGES_CRIT}
         />
@@ -347,17 +349,17 @@ const FIG_ZONE_BADGES_CRIT: ZoneBadgeSpec[] = [
  *  d'ALLOCATION à rubrique gravée (`sub` = le `.rf` de la planche, étape 5) — les états de la
  *  primitive, aucune rangée recodée. */
 function PlaqueRowDemo() {
-  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
-  const ch = Object.fromEntries(CHAR_KEYS.map((k) => [k, effectiveChar(SAMPLE_HERO, k)])) as Record<(typeof CHAR_KEYS)[number], number>;
+  if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
+  const ch = Object.fromEntries(CHAR_KEYS.map((k) => [k, effectiveChar(herosExemple(), k)])) as Record<(typeof CHAR_KEYS)[number], number>;
   const [k1, k2, k3] = CHAR_KEYS;
   return (
     <div className="stack">
       <PlaqueGrid>
         {[k1, k2].map((k) => (
-          <PlaqueRow key={k} prefix={CHAR_ABR[k]} content={CHAR_LABELS[k]} value={ch[k]} />
+          <PlaqueRow key={k} prefix={charAbr(k)} content={CHAR_LABELS[k]} value={ch[k]} />
         ))}
         <PlaqueRow
-          prefix={CHAR_ABR[k3]}
+          prefix={charAbr(k3)}
           content={CHAR_LABELS[k3]}
           rolling
           meta={
@@ -401,7 +403,7 @@ function CharStatsGridDemo() {
       {(['sm', 'md', 'lg'] as const).map((size) => (
         <div key={size}>
           <span className="hint">size=&quot;{size}&quot;</span>
-          <CharStatsGrid size={size} value={(k) => effectiveChar(SAMPLE_HERO, k)} />
+          <CharStatsGrid size={size} value={(k) => effectiveChar(herosExemple(), k)} />
         </div>
       ))}
     </div>
@@ -412,7 +414,7 @@ function WaxSealDemo() {
   return (
     <div className="row-flex">
       <WaxSeal size={40} />
-      <SealedPlaque title={SAMPLE_CAREER.label} desc="Carrière élue" selected />
+      <SealedPlaque title={carriereExemple().label} desc="Carrière élue" selected />
       <SealedPlaque title="Carrière non retenue" desc="Autre proposition" />
     </div>
   );
@@ -421,23 +423,23 @@ function WaxSealDemo() {
 function DetailFrameDemo() {
   return (
     <DetailFrame
-      label={SAMPLE_CAREER.label}
-      meta={<MetalStatus status={SAMPLE_CAREER_LEVELS[0]?.status ?? 'Bronze 1'} />}
-      prose={SAMPLE_CAREER.desc}
-      proseSelfLabel={SAMPLE_CAREER.label}
+      label={carriereExemple().label}
+      meta={<MetalStatus status={niveauxDeLaCarriereExemple()[0]?.status ?? 'Bronze 1'} />}
+      prose={carriereExemple().desc}
+      proseSelfLabel={carriereExemple().label}
       proseSelfCategory="career"
     />
   );
 }
 
 function HeroSheetDemo() {
-  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
+  if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
   return (
     <div className="stack">
       <p className="hint">`header` (bande figurine+identité+rose) : composé tel quel par le détail candidat de l'écran d'équipe.</p>
-      <HeroSheet hero={SAMPLE_HERO} />
+      <HeroSheet hero={herosExemple()} />
       <p className="hint">`header={false}` : composé par la fiche vivante du créateur (alcôve propre à l'appelant).</p>
-      <HeroSheet hero={SAMPLE_HERO} header={false} />
+      <HeroSheet hero={herosExemple()} header={false} />
     </div>
   );
 }
@@ -463,9 +465,9 @@ function CreatorStepFrameNote() {
 function CreatorDiceDemo() {
   return (
     <div className="stack">
-      <CreatorDice label={`Tirer le Signe astral (d100) — ${SAMPLE_STAR?.label ?? ''}`} rolled={false} xp={20} onRoll={() => {}} />
+      <CreatorDice label={`Tirer le Signe astral (d100) — ${signeAstralExemple()?.label ?? ''}`} rolled={false} xp={20} onRoll={() => {}} />
       <CreatorDice rolled xp={20}>
-        <p className="hint">Résultat gardé — {SAMPLE_STAR?.label}.</p>
+        <p className="hint">Résultat gardé — {signeAstralExemple()?.label}.</p>
       </CreatorDice>
     </div>
   );
@@ -477,21 +479,21 @@ function CreatorDiceDemo() {
  *  2026-07-17, « ça ne va pas être possible » sur deux `row` désalignées) : valeur au-dessus, piste
  *  pleine largeur — l'aside de la fiche l'utilise pour Blessures ET Encombrement, mêmes barres. */
 function LifeBarDemo() {
-  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
+  if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
   return (
     <div className="stack">
       <LifeBar
         label="Blessures"
-        value={SAMPLE_HERO.wounds.current}
-        max={SAMPLE_HERO.wounds.max}
+        value={herosExemple().wounds.current}
+        max={herosExemple().wounds.max}
         tone={(v, m) => (m > 0 && v / m <= 0.34 ? 'danger' : m > 0 && v / m <= 0.67 ? 'warn' : 'ok')}
       />
       <LifeBar label="Encombrement — surchargé" value={9} max={6} tone="danger" />
       <LifeBar
         stacked
         label="Blessures (stacked)"
-        value={SAMPLE_HERO.wounds.current}
-        max={SAMPLE_HERO.wounds.max}
+        value={herosExemple().wounds.current}
+        max={herosExemple().wounds.max}
         tone={(v, m) => (m > 0 && v / m <= 0.34 ? 'danger' : m > 0 && v / m <= 0.67 ? 'warn' : 'ok')}
       />
       <LifeBar stacked label="Encombrement (stacked) — surchargé" value={9} max={6} tone="danger" />
@@ -500,19 +502,19 @@ function LifeBarDemo() {
 }
 
 function PortraitTileDemo() {
-  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
+  if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
   return (
     <div className="row-flex">
-      <PortraitTile c={SAMPLE_HERO} ring="var(--gold)" variant="identity" size="md" />
-      <PortraitTile c={SAMPLE_HERO} ring="var(--gold)" variant="vital" size="md" />
-      <PortraitTile c={SAMPLE_HERO} ring="var(--gold)" variant="full" size="md" active />
+      <PortraitTile c={herosExemple()} ring="var(--gold)" variant="identity" size="md" />
+      <PortraitTile c={herosExemple()} ring="var(--gold)" variant="vital" size="md" />
+      <PortraitTile c={herosExemple()} ring="var(--gold)" variant="full" size="md" active />
     </div>
   );
 }
 
 function CharacterPreviewDemo() {
-  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
-  return <CharacterPreview hero={SAMPLE_HERO} size="lg" ambiance="panel" />;
+  if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
+  return <CharacterPreview hero={herosExemple()} size="lg" ambiance="panel" />;
 }
 
 function ScreenMetaDemo() {
@@ -544,7 +546,7 @@ function ReadyRowDemo() {
 
 /** Trois Sorts RÉELS du catalogue portant un NI (`cn`) — la matière du panneau « Quel Sort
  *  dissiper ? » de la console, sans rien inventer. */
-const SORTS_A_DISSIPER = spells.filter((s) => typeof s.cn === 'number').slice(0, 3);
+const sortsADissiper = memoParVersion('spells', () => spells.filter((s) => typeof s.cn === 'number').slice(0, 3));
 
 /** Panneau-paramètre VIVANT : un déclencheur, le panneau qui en NAÎT (ancré à son rect), un clic qui
  *  commet ET referme, Échap/clic-dehors qui annulent sans rien engager. Le choix retenu s'affiche
@@ -553,7 +555,7 @@ function PanneauParametreDemo() {
   const declencheur = useRef<HTMLButtonElement>(null);
   const [ouvert, setOuvert] = useState(false);
   const [choisi, setChoisi] = useState<string | null>(null);
-  if (!SORTS_A_DISSIPER.length) return <p className="hint">Aucun Sort à NI dans le catalogue.</p>;
+  if (!sortsADissiper().length) return <p className="hint">Aucun Sort à NI dans le catalogue.</p>;
   return (
     <div className="col gap-sm">
       <button ref={declencheur} type="button" className="chip" aria-haspopup="dialog" aria-expanded={ouvert} onClick={() => setOuvert((v) => !v)}>
@@ -564,7 +566,7 @@ function PanneauParametreDemo() {
         <PanneauParametre
           anchor={declencheur.current}
           intitule="Quel Sort dissiper ?"
-          options={SORTS_A_DISSIPER.map((s) => ({
+          options={sortsADissiper().map((s) => ({
             key: s.id,
             label: s.label,
             meta: `NI ${s.cn}`,
@@ -591,15 +593,15 @@ function ParchmentCardDemo() {
 }
 
 function InfluenceRowDemo() {
-  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
+  if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
   // Jet POSÉ et RATÉ, jamais relancé : la vitrine montre le cycle d'influence AU COMPLET (les
   // fenêtres sont dérivées des prédicats du seam, aucune n'est forcée ici).
-  return <InfluenceRow actor={SAMPLE_HERO} roll={{ rolled: true, failed: true }} onReroll={() => {}} onBonusSL={() => {}} onDarkPact={() => {}} onForce={() => {}} />;
+  return <InfluenceRow actor={herosExemple()} roll={{ rolled: true, failed: true }} onReroll={() => {}} onBonusSL={() => {}} onDarkPact={() => {}} onForce={() => {}} />;
 }
 
 function VsHeaderDemo() {
-  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
-  return <VsHeader actor={SAMPLE_HERO} target={SAMPLE_HERO_B} label="Épée · Dégâts 6 + DR" />;
+  if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
+  return <VsHeader actor={herosExemple()} target={herosExempleB()} label="Épée · Dégâts 6 + DR" />;
 }
 
 function MasterDetailDemo() {
@@ -661,7 +663,7 @@ function ProseDemo() {
   // `DetailFrame` autour de la démo est ASSUMÉ (galerie DEV, aucun écran joueur) : c'est le contexte
   // réel de lecture de cette prose.
   return (
-    <DetailFrame prose={SAMPLE_CAREER.desc} proseSelfLabel={SAMPLE_CAREER.label} proseSelfCategory="career" />
+    <DetailFrame prose={carriereExemple().desc} proseSelfLabel={carriereExemple().label} proseSelfCategory="career" />
   );
 }
 
@@ -681,9 +683,9 @@ function MenuCardDemo() {
 }
 
 function RoseAxesDemo() {
-  if (SAMPLE_HEROES.length < 2) return <p className="hint">Aucun pregen disponible.</p>;
+  if (herosExemples().length < 2) return <p className="hint">Aucun pregen disponible.</p>;
   const CORE = allAxes.filter((a) => a.core);
-  const heroes = SAMPLE_HEROES.slice(0, 3);
+  const heroes = herosExemples().slice(0, 3);
   return (
     <div className="stack">
       <p className="hint">Scores RÉELS des pré-tirés (`axesProfile`, `src/engine/axes.ts`) sur les axes du socle de base.</p>
@@ -708,7 +710,7 @@ function RoseAxesDemo() {
  *  (`CharacterCreator.tsx`) : titre + sous-titre, compteur d'allocation à droite, contenu réel
  *  (rangées de caractéristiques de carrière du pré-tiré). */
 function BandDemo() {
-  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
+  if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
   const careerKeys = CHAR_KEYS.slice(0, 3);
   const alloc = CAREER_CHAR_ADVANCES - 2;
   return (
@@ -718,7 +720,7 @@ function BandDemo() {
     >
       <PlaqueGrid>
         {careerKeys.map((k) => (
-          <PlaqueRow key={k} prefix={CHAR_ABR[k]} content={CHAR_LABELS[k]} value={effectiveChar(SAMPLE_HERO, k)} />
+          <PlaqueRow key={k} prefix={charAbr(k)} content={CHAR_LABELS[k]} value={effectiveChar(herosExemple(), k)} />
         ))}
       </PlaqueGrid>
     </Band>
@@ -825,7 +827,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { label: 'GameOpChips', file: 'src/ui/GameOpChips.tsx', category: 'Texte', render: GameOpChipsDemo },
   { label: 'MetalStatus', file: 'src/ui/MetalStatus.tsx', category: 'Atelier du scribe', render: MetalStatusDemo },
   { label: 'WaxSeal / SealedPlaque', file: 'src/ui/WaxSeal.tsx', category: 'Atelier du scribe', render: WaxSealDemo },
-  { label: 'CareerPath', file: 'src/ui/CareerPath.tsx', category: 'Atelier du scribe', render: () => <CareerPath levels={SAMPLE_CAREER_LEVELS} currentLevel={2} /> },
+  { label: 'CareerPath', file: 'src/ui/CareerPath.tsx', category: 'Atelier du scribe', render: () => <CareerPath levels={niveauxDeLaCarriereExemple()} currentLevel={2} /> },
   { label: 'FigTile', file: 'src/ui/FigTile.tsx', category: 'Atelier du scribe', render: FigTileDemo },
   { label: 'PlaqueRow / PlaqueGrid', file: 'src/ui/PlaqueRow.tsx', category: 'Atelier du scribe', render: PlaqueRowDemo },
   { label: 'GroupedPickGrid', file: 'src/ui/GroupedPickGrid.tsx', category: 'Atelier du scribe', render: GroupedPickGridDemo },

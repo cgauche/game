@@ -10,9 +10,4 @@
  * échouer la compilation aux sites qui le citaient. Fraîcheur vérifiée par `ids.test.ts`
  * (mode `--check`).
  */
-import { slugId } from '../../data/slug';
-
 export type { QualityId } from './qualityId.generated';
-
-/** Id stable d'une qualité depuis sa clé de registre (label FR canonique). */
-export const qualityIdOf = (key: string): string => slugId(key);

@@ -1,5 +1,5 @@
 import { CHAR_LABELS, type CharKey } from '../engine/types';
-import { CHAR_ABR } from '../data';
+import { charAbr } from '../data';
 import { CodexRef } from './compendium/CodexRef';
 import type { StatGridSize } from './CharStatsGrid';
 
@@ -14,7 +14,7 @@ import type { StatGridSize } from './CharStatsGrid';
 export function CharValue({ charKey, value, bonus, size = 'sm' }: { charKey: CharKey; value: number | string; bonus?: number; size?: StatGridSize }) {
   return (
     <span className={`char-value char-value-${size}`}>
-      <CodexRef category="characteristics" id={charKey} label={CHAR_LABELS[charKey]}>{CHAR_ABR[charKey]}</CodexRef>
+      <CodexRef category="characteristics" id={charKey} label={CHAR_LABELS[charKey]}>{charAbr(charKey)}</CodexRef>
       <b>{value}</b>
       {bonus != null && <em title={`Bonus de ${CHAR_LABELS[charKey]}`}>B{bonus}</em>}
     </span>

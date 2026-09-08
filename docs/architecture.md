@@ -13,6 +13,15 @@ src/data/                   NOTRE base APP-OWNED (JSON commité, éditable dans 
                             mutations.ts (Tableaux de Corruption LDB 19). Les métadonnées de résolution
                             des sorts vivent dans SpellData (spells.json) — l'ancien registre spellspecs/
                             et le repli regex sont SUPPRIMÉS (Migration #5)
+                            SEAM d'ÉCRITURE (`overrides.ts`) : `setDataset`/`setObjectDataset`/`resetData`
+                            remplacent le CONTENU d'un dataset sans réassigner son binding (`splice` en
+                            place) ET VERSIONNENT l'écriture (`bumperDataset`, module FEUILLE
+                            `versionDataset.ts`) — l'identité du tableau ne bougeant jamais, cette version
+                            est le SEUL témoin qu'un lecteur indexé peut consulter. Tout index de niveau
+                            module se bâtit donc par `indexParId`/`indexParChamp`/`memoParVersion`
+                            (#1692) ; deux gardes structurelles le tiennent : `index-vif-guard.test.ts`
+                            (aucun index figé à l'import sur un dataset du seam) et
+                            `seam-ecriture-guard.test.ts` (aucun `push`/`splice` hors `overrides.ts`)
   schemas/                    CONTRAT de la donnée. Chaque dataset a UN def (`defs/<nom>.ts`,
                               `defs-scenes/<nom>.ts`) qui DÉCLARE son document par la fabrique
                               `document()` (`grammaire/document.ts`) : enveloppe commune posée par la
@@ -124,7 +133,7 @@ src/state/
                             au foyer des caps (`state/dir8.ts`)
   worldMap.ts               SCHÉMA DE CARTE DU MONDE (#T2) : lieux/routes au niveau projet + format projet v2
                             (`ProjectDoc`, `activeAxes?: string[]` #409 — axes de forces/faiblesses ACTIFS de
-                            la campagne, ids de `data/axes.json`, défaut `CORE_AXIS_IDS` via `resolveActiveAxes`).
+                            la campagne, ids de `data/axes.json`, défaut `coreAxisIds` via `resolveActiveAxes`).
                             DONNÉES DE LIEU (#343) : le nœud `MapPlace` est LA source des services d'un lieu —
                             `port` (schéma riche + catalogue `naval-ports.json`), `market` (LandMarketProfile) et
                             `services[]` EXTENSIBLES (catalogue `lieux-services.json` : auberge/temple/forgeron/

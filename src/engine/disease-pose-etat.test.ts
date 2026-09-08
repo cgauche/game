@@ -11,7 +11,8 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { Combatant, type UpkeepDeferTest } from './types';
 import { MINUTES_PER_DAY } from './clock';
 import { contractDisease, tickDisease } from './disease';
-import { symptomById } from '../data';
+import { symptoms } from '../data';
+import { setDataset } from '../data/overrides';
 import { stacks } from './conditions';
 import type { RNG } from './dice';
 
@@ -28,14 +29,15 @@ const cobaye = (over: Partial<Combatant> = {}): Combatant =>
   }) as Combatant;
 
 const SONDE = 'sonde-double-ko';
-afterEach(() => { symptomById.delete(SONDE); });
+const SYMPTOMES_LIVRES = [...symptoms];
+afterEach(() => { setDataset('symptoms', SYMPTOMES_LIVRES); });
 
 describe('le cycle de maladie pose ses États par la source unique (LDB 16)', () => {
   it('un `onTick.ops` qui pose DEUX fois l’Inconscient ne rend qu’UN pion (l.115)', () => {
     // Aucun symptôme LIVRÉ ne pose d'État non cumulable par son cycle : la sonde en déclare un dans
     // l'index que le moteur interroge (`findSymptomById`), pour que le chemin joué soit le VRAI —
     // conséquence quotidienne CERTAINE (aucun `test`), posée deux fois.
-    symptomById.set(SONDE, { id: SONDE, label: 'Sonde', onTick: { ops: [{ op: 'condition', id: 'inconscient' }, { op: 'condition', id: 'inconscient' }] } } as never);
+    setDataset('symptoms', [...symptoms, { id: SONDE, label: 'Sonde', onTick: { ops: [{ op: 'condition', id: 'inconscient' }, { op: 'condition', id: 'inconscient' }] } } as never]);
     const c = cobaye({
       diseases: [{ id: 'dz-sonde', phase: 'active', symptoms: [{ symptomId: SONDE }], minutesLeft: 40 * MINUTES_PER_DAY, durationMinutes: 40 * MINUTES_PER_DAY }] as never,
     });

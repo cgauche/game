@@ -15,7 +15,7 @@ import { formatDice, parseDice } from '../../engine/dice';
 import type { CombatFeature, CastingKind } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData, HarvestRarity, HarvestDanger, TalentTest, TestMatch, SpecEntry } from '../../data';
 import { dispoSaisonniereSchema, harvestRaritySchema } from '../../data/schemas/grammaire/valeurs';
-import { specEntryId, specEntryLabel, CHAR_ABR, findCreatureById, findVehicleById, seasonLabel } from '../../data';
+import { specEntryId, specEntryLabel, charAbr, findCreatureById, findVehicleById, seasonLabel } from '../../data';
 import type { z } from 'zod';
 import { slugId } from '../../data/slug';
 import { ConditionEditor } from '../editor/ConditionEditor';
@@ -546,7 +546,7 @@ export function CharKeysField({ value, onChange }: { value: CharKey[] | undefine
         {CHAR_KEYS.map((k) => (
           <label className="ed-check" key={k}>
             <input type="checkbox" checked={set.has(k)} onChange={(e) => toggle(k, e.target.checked)} />
-            <span>{CHAR_ABR[k]} — {CHAR_LABELS[k]}</span>
+            <span>{charAbr(k)} — {CHAR_LABELS[k]}</span>
           </label>
         ))}
       </div>

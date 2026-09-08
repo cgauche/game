@@ -37,9 +37,11 @@ import {
   trappings as allTrappings,
   type TrappingRef,
   levelsForCareer,
-  CHAR_ABR,
+  charAbr,
   stars as starsTable,
   celestialHouses,
+  indexParId,
+  memoParVersion,
   spells as allSpells,
   rigSpeciesId,
   specLabel,
@@ -49,7 +51,7 @@ import {
   SpeciesData,
   CareerData,
   StarData,
-  FABRICATION_ATOUTS,
+  fabricationAtouts,
   DEFAULT_FABRICATION_ATOUT,
 } from '../../data';
 import { SIZE_LABEL } from '../../engine/size';
@@ -187,17 +189,17 @@ export const STEP_META: Record<StepId, { label: string; screen: (p: StepProps) =
 
 /** Espèces mises en avant : celles du Livre de base — dérivé des données, les suppléments
  *  apparaissent automatiquement à la suite. */
-const CORE = allSpecies.filter((s) => s.source.book === 'livre-de-base').map((s) => s.label);
+const especesDuLivreDeBase = memoParVersion('species', () => allSpecies.filter((s) => s.source.book === 'livre-de-base').map((s) => s.label));
 
 /** Choix proposés pour l'emplacement `{wildcard:'arme'}` : toutes les ARMES des données ({id, label}),
  *  hors celles que le catalogue DÉCLARE « Mains nues » (`TrappingData.unarmed`) — on ne choisit pas ses
  *  poings comme équipement de départ. */
-const WEAPON_CHOICES = allTrappings
+const armesChoisissables = memoParVersion('trappings', () => allTrappings
   .filter((t) => (t.categorie === 'melee' || t.categorie === 'ranged') && !t.unarmed)
   .map((t) => ({ id: t.id, label: t.label }))
-  .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+  .sort((a, b) => a.label.localeCompare(b.label, 'fr')));
 /** Demeure céleste par ID (ADE II 3 l.504-512) — libellé affiché + desc RAW en tooltip du thème astral. */
-const HOUSE_BY_ID = new Map(celestialHouses.map((h) => [h.id, h]));
+const demeureParId = indexParId('celestialHouses', celestialHouses);
 
 /** Texte de données (desc Markdown) → extrait lisible pour cartes et infobulles. */
 function blurb(md: string | null | undefined, max = 160): string {
@@ -466,7 +468,8 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
     if (g) g.list.push(s);
     else families.push({ family: s.family, list: [s] });
   }
-  families.sort((a, b) => Number(b.list.some((s) => CORE.includes(s.label))) - Number(a.list.some((s) => CORE.includes(s.label))));
+  const socle = especesDuLivreDeBase();
+  families.sort((a, b) => Number(b.list.some((s) => socle.includes(s.label))) - Number(a.list.some((s) => socle.includes(s.label))));
   const totalRaces = families.reduce((n, f) => n + f.list.length, 0);
 
   /** Apparence de la figurine qui REPRÉSENTE une famille sur sa carte : sa 1ʳᵉ lignée (la canonique
@@ -1042,7 +1045,7 @@ export function CharScreen({ d, setD }: StepProps): ReactNode {
                   <PlaqueRow
                     key={k}
                     rolling={rowRolling}
-                    prefix={<CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]}>{CHAR_ABR[k]}</CodexRef>}
+                    prefix={<CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]}>{charAbr(k)}</CodexRef>}
                     content={
                       <>
                         {CHAR_LABELS[k]}
@@ -1344,8 +1347,8 @@ export function StarScreen({ d, setD }: StepProps) {
             <div className="lore-text">
               {d.ascendant && <p style={{ margin: '0 0 6px' }}><b>Ascendant :</b> {d.ascendant}</p>}
               {d.dwellings?.map((h) => (
-                <p key={h.house} style={{ margin: '0 0 4px' }} title={mdToText(HOUSE_BY_ID.get(h.house)?.desc ?? '')}>
-                  <b>{HOUSE_BY_ID.get(h.house)?.label ?? h.house} :</b> {h.sign}
+                <p key={h.house} style={{ margin: '0 0 4px' }} title={mdToText(demeureParId(h.house)?.desc ?? '')}>
+                  <b>{demeureParId(h.house)?.label ?? h.house} :</b> {h.sign}
                 </p>
               ))}
             </div>
@@ -1915,7 +1918,7 @@ export function PettySpellsSection({ d, setD }: StepProps) {
 /** Picker d'arme de l'emplacement `{wildcard:'arme'}` — icône + libellé (`MediaSelect`, MÊME rendu
  *  que le Sac/`EquipmentPanel`), filtrable (`SearchFilterField`, 100+ armes). */
 function WeaponWildcardPicker({ value, onChange }: { value?: string; onChange: (v: string) => void }) {
-  const { search, setSearch, filtered } = useFilteredList(WEAPON_CHOICES, (w) => w.label);
+  const { search, setSearch, filtered } = useFilteredList(armesChoisissables(), (w) => w.label);
   const options: MediaOption[] = filtered.map((w) => {
     const item = itemFromTrappingById(w.id);
     return { key: w.id, media: item ? <ItemIcon item={item} size="sm" /> : undefined, label: w.label };
@@ -1934,7 +1937,7 @@ function WeaponWildcardPicker({ value, onChange }: { value?: string; onChange: (
  *  choisie EST rendue récursivement — une branche `{id,qualityChoice}` déroule son picker d'Atout
  *  NESTED juste dessous) ; `{wildcard:'arme'}` → `WeaponWildcardPicker` (valeur stockée = l'`id`
  *  d'arme) ; `{id,qualityChoice:true}` → un Atout de Fabrication (LDB 60 « X de qualité ») parmi
- *  `FABRICATION_ATOUTS`, libellé + effet verbatim (`QualityData.desc`) en hint — `raffine` PRÉ-SÉLECTIONNÉ
+ *  `fabricationAtouts`, libellé + effet verbatim (`QualityData.desc`) en hint — `raffine` PRÉ-SÉLECTIONNÉ
  *  (défaut du résolveur, `DEFAULT_FABRICATION_ATOUT`) tant qu'aucun choix n'est stocké : ne rien choisir
  *  reste un brouillon VALIDE (l'objet est « de qualité » raffiné par défaut). Une autre catégorie de
  *  joker sans picker dédié affiche un repli explicite (jamais un `<select>` brut recodé). */
@@ -1967,7 +1970,7 @@ export function TrappingChoiceSlot({ slot, choices, onChoicesChange }: {
     return <p className="hint">Catégorie « {slot.wildcard} » sans picker dédié pour l'instant.</p>;
   }
   if ('id' in slot && slot.qualityChoice) {
-    const options = FABRICATION_ATOUTS.map((atoutId) => {
+    const options = fabricationAtouts().map((atoutId) => {
       const q = findQualityById(atoutId);
       return {
         key: atoutId,

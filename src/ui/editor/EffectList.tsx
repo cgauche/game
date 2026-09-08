@@ -14,7 +14,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { EFFECT_HANDLERS, EFFECT_GROUP_ORDER } from '../../state/combatEffects';
 import { DAY_PHASES, DayPhaseId, IMPERIAL_MONTHS, type ScheduleSpec } from '../../engine/clock';
 import { DISEASE_DEFS } from '../../engine/disease';
-import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE, vehicles, findVehicleById, crewRoles } from '../../data';
+import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE, vehicles, findVehicleById, crewRoles, memoParVersion } from '../../data';
 import { MANANN_FACTORS, findManannFactor } from '../../engine/seaVoyage';
 import { giveTrappingLabel } from '../../engine/items';
 import { FlowEditor } from './FlowEditor';
@@ -35,7 +35,7 @@ import { formatMoney, toMoney } from '../../engine/money';
 const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
 
 /** Navires dotables (`setVessel`) : véhicules à facette `ship` de `vehicles.json` (embarcations). */
-const SHIP_VEHICLES = vehicles.filter((v) => v.ship);
+const naviresJouables = memoParVersion('vehicles', () => vehicles.filter((v) => v.ship));
 
 /** Roster d'équipage salarié (`crew: CrewHire[]`) — partagé par `setVessel` (dotation) et
  *  `adjustVessel` (#233, patch du navire de campagne existant). */
@@ -63,7 +63,7 @@ function CrewRosterFields({ e, upd }: { e: any; upd: (patch: any) => void }) {
 const EFFECT_TYPES = Object.keys(EFFECT_HANDLERS) as Effect['type'][];
 
 /** Sorts de la base groupés pour le select de `learnSpell` (audit M9 : fini « libellé exact »). */
-const SPELL_GROUPS: [string, { id: string; label: string }[]][] = (() => {
+const groupesDeSorts = memoParVersion('spells', (): [string, { id: string; label: string }[]][] => {
   const m = new Map<string, { id: string; label: string }[]>();
   for (const sp of spells) {
     const g = `${sp.ecole ?? 'Sorts'}${sp.subType ? ` — ${sp.subType}` : ''}`;
@@ -72,7 +72,7 @@ const SPELL_GROUPS: [string, { id: string; label: string }[]][] = (() => {
   }
   for (const list of m.values()) list.sort((a, b) => a.label.localeCompare(b.label));
   return [...m.entries()].sort(([a], [b]) => a.localeCompare(b));
-})();
+});
 
 /** Contexte « projet » des selects guidés (M9), depuis la scène active + les autres scènes.
  *  `worldMap` est PROJET (pas scène) : passé par le fournisseur quand il y a structurellement
@@ -534,7 +534,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
           <>
             <select value={e.spell ?? ''} onChange={(ev) => upd({ spell: ev.target.value })}>
               <option value="">— sort de la base —</option>
-              {SPELL_GROUPS.map(([g, list]) => (
+              {groupesDeSorts().map(([g, list]) => (
                 <optgroup key={g} label={g}>
                   {list.map((sp) => (
                     <option key={sp.id} value={sp.id}>{sp.label}</option>
@@ -559,7 +559,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             )}
             <select value={e.spellId ?? ''} onChange={(ev) => upd({ spellId: ev.target.value })}>
               <option value="">— sort/prière —</option>
-              {SPELL_GROUPS.map(([g, list]) => (
+              {groupesDeSorts().map(([g, list]) => (
                 <optgroup key={g} label={g}>
                   {list.map((sp) => (
                     <option key={sp.id} value={sp.id}>{sp.label}</option>
@@ -587,7 +587,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
           <>
             <select value={e.vehicleId ?? ''} onChange={(ev) => upd({ vehicleId: ev.target.value })}>
               <option value="">— navire de campagne —</option>
-              {SHIP_VEHICLES.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
+              {naviresJouables().map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
             </select>
             <input placeholder="Nom du navire (ex. « Le Cormoran » — vide = nom du type)" value={e.label ?? ''} onChange={(ev) => upd({ label: ev.target.value || undefined })} />
             <div className="tf-row">

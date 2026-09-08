@@ -26,7 +26,8 @@ import { structureAppearance } from '../../gameIso/catalog/structures';
 import { isWallEdgeStructure, isDoorEdgeStructure } from '../../engine/structures';
 import { GatedAction } from '../GatedAction';
 import type { Pt, Tool, ZoneVariant } from './editorState';
-import { SIEGE_ENGINES, planStairFlight } from './editorState';
+import { planStairFlight } from './editorState';
+import { siegeEngines } from '../../data';
 import { LayerField, layerLabel } from './LayerField';
 
 type Family = 'select' | 'architecture' | 'tile' | 'wall' | 'height' | 'stair' | 'crenellated' | 'personnage' | 'prop' | 'heroStart' | 'zone' | 'entry' | 'encounter' | 'emplacement' | 'erase';
@@ -150,7 +151,7 @@ export function Palette({
   // Derniers choix par famille → re-cliquer l'icône retrouve l'outil précis.
   const [lastTerrain, setLastTerrain] = useState<Terrain>('herbe');
   const [lastProp, setLastProp] = useState(REF_DECOR_DEFAUT);
-  const [lastEngine, setLastEngine] = useState(SIEGE_ENGINES[0]?.id ?? 'baliste');
+  const [lastEngine, setLastEngine] = useState(siegeEngines()[0]?.id ?? 'baliste');
   // Matériau MÉMORISÉ par sous-mode (Cloison/Porte) — l'outil porte son matériau comme un pinceau porte
   // sa couleur : la palette ne montre que ce qui est POSABLE sur une arête pour ce sous-mode (#830).
   const wallEdgeStructures = structures.filter(isWallEdgeStructure);
@@ -548,7 +549,7 @@ export function Palette({
             <div className="mini-title">Pièce d'artillerie à poser</div>
             {searchBox('engin de siège…')}
             <div className="pal-list">
-              {filterByLabel(SIEGE_ENGINES, (t) => t.label, search).map((t) => (
+              {filterByLabel(siegeEngines(), (t) => t.label, search).map((t) => (
                 <button
                   key={t.id}
                   className={`pal-item${tool.trappingId === t.id ? ' active' : ''}`}

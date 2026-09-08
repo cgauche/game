@@ -3,7 +3,7 @@ import { emptyScene, isDescriptiveZone, Scene } from '../../state/scene';
 import { propFootTiles } from '../../state/footprint';
 import { entityAt } from '../../state/sceneEdit';
 import { validateScene } from '../../state/validateScene';
-import { findCreatureById, creatureLabel } from '../../data';
+import { findCreatureById, creatureLabel, siegeEngines } from '../../data';
 import {
   eraseAt,
   hitAt,
@@ -32,7 +32,6 @@ import {
   setPosteCrew,
   setPosteSide,
   setPosteEngine,
-  SIEGE_ENGINES,
   selRect,
   sameSel,
   DEFAULT_LAYERS,
@@ -432,10 +431,10 @@ describe('editorState — pose', () => {
 });
 
 describe('editorState — emplacement de siège (postes authorés à l’éditeur)', () => {
-  it('SIEGE_ENGINES = engins posables non vide, tous avec art d’affût `siegeRig` (baliste présente)', () => {
-    expect(SIEGE_ENGINES.length).toBeGreaterThan(0);
-    expect(SIEGE_ENGINES.every((t) => !!t.siegeRig)).toBe(true); // posable ⇔ a un art d'affût
-    expect(SIEGE_ENGINES.some((t) => t.id === 'baliste')).toBe(true);
+  it('siegeEngines() = engins posables non vide, tous avec art d’affût `siegeRig` (baliste présente)', () => {
+    expect(siegeEngines().length).toBeGreaterThan(0);
+    expect(siegeEngines().every((t) => !!t.siegeRig)).toBe(true); // posable ⇔ a un art d'affût
+    expect(siegeEngines().some((t) => t.id === 'baliste')).toBe(true);
   });
 
   it('placeEmplacement : pose un personnage COMPLET (ref source + poste équipage vide, apparence DÉRIVÉE)', () => {
@@ -487,7 +486,7 @@ describe('editorState — emplacement de siège (postes authorés à l’éditeu
     const id = s.entities[0].id;
     s = setPosteCrew(s, id, ['g1']);
     s = setPosteEngine(s, id, 'mortier');
-    const mortier = SIEGE_ENGINES.find((t) => t.id === 'mortier')!;
+    const mortier = siegeEngines().find((t) => t.id === 'mortier')!;
     expect(s.entities[0].postes![0].trappingId).toBe('mortier'); // #222 — la réf change, jamais une base copiée
     expect(s.entities[0].postes![0].item).toBeUndefined(); // base HYDRATÉE au spawn, pas matérialisée à l'authoring
     expect(s.entities[0].label).toBe(mortier.label);

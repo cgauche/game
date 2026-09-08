@@ -10,7 +10,7 @@ import { scanCharKeyLegacy } from '../../scripts/guards/lib/charKeyLegacy.mjs';
  * `'CC'|'CT'|'F'|'E'|'I'|'Ag'|'Dex'|'Int'|'FM'|'Soc'` en VALEUR mécanique (clé de `Characteristics`,
  * champ `char`/`resolveChar`/`testModChar`/`characteristic`). Cible `src/data` + `src/state` +
  * `src/engine` + `src/ui` + `src/gameIso` (datasets, state, moteur, rendu, UI) — jamais l'AFFICHAGE
- * dérivé (`CHAR_ABR`, issu de `characteristics.json` par id). Extension #410 : moteur/UI/rendu ajoutés
+ * dérivé (`charAbr`, issu de `characteristics.json` par id). Extension #410 : moteur/UI/rendu ajoutés
  * au périmètre (recensement 2026-07-13 — ZÉRO offender, extension à coût nul, tout nouveau dossier
  * naît couvert plutôt que d'attendre un opt-in par dossier).
  *

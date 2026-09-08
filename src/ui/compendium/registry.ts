@@ -19,7 +19,7 @@ import {
   isNamed, specCatalogOf, specLabel, seasonLabel,
   SYMPTOM_SEVERITIES, SYMPTOM_SEVERITY_LABELS,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, shipStations, NAVAL_TRAITS, findCreatureById, findVehicleById, findTrappingById, structures, regles,
-  CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
+  charAbr, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
   conditionLabel, traitProjectingManeuver, materials, terrains, props,
 } from '../../data';
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
@@ -499,7 +499,7 @@ export function raceCharSection(s: (typeof species)[number]): CodexSection {
     const diff = base - 20;
     return {
       t: 'kv',
-      k: CHAR_ABR[k],
+      k: charAbr(k),
       v: diff !== 0 ? `${base} (${diff > 0 ? '+' : ''}${diff})` : String(base),
       kref: { category: 'characteristics', id: k, label: CHAR_LABELS[k] },
     };
@@ -578,7 +578,7 @@ function creatureStatblock(c: (typeof creatures)[number]): NonNullable<CodexItem
   return {
     profile: [
       cell('M', c.char.M, { category: 'characteristics', id: 'mouvement', label: 'Mouvement' }),
-      ...CHAR_KEYS.map((k) => cell(CHAR_ABR[k], c.char[k], { category: 'characteristics', id: k, label: CHAR_LABELS[k] })),
+      ...CHAR_KEYS.map((k) => cell(charAbr(k), c.char[k], { category: 'characteristics', id: k, label: CHAR_LABELS[k] })),
       { label: 'B', value: String(wounds), kref: { category: 'characteristics', id: 'blessure', label: 'Blessure' } },
     ],
     traits: refRows('traits', traitLabels(c.traits)),
@@ -1562,10 +1562,10 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'siegeEngines', label: 'Engins de siège', group: 'Équipement',
     // Engins de siège = Possessions portant l'art d'affût `siegeRig` (les 12 mêmes que la Palette de
-    // l'éditeur, `SIEGE_ENGINES`). Miroir de « Créatures » pour l'aperçu rig (l'affût est rendu par le
+    // l'éditeur, `siegeEngines`). Miroir de « Créatures » pour l'aperçu rig (l'affût est rendu par le
     // MÊME chemin — appearance.species = siegeRig) ET de « Possessions » pour les faits d'arme
     // (Portée/Dégâts) + Atouts (l'Indice « Arme d'équipe N » = équipage requis).
-    build: () => siegeEngines.map((t) => depuisEnveloppe(t, {
+    build: () => siegeEngines().map((t) => depuisEnveloppe(t, {
       sub: join(trappingTypeLabel(t.categorie), weaponGroupLabel(t.subType) || undefined),
       // Aperçu rig de l'affût, résolu comme une créature (par id + apparence species).
       appearance: { species: t.siegeRig! }, previewRef: t.siegeRig!,
@@ -2711,7 +2711,7 @@ export function combatantSections(c: Combatant): CodexSection[] {
   const ch = c.characteristics;
   const charRows: CodexRow[] = [
     { t: 'kv', k: 'M', v: String(c.movement), kref: { category: 'characteristics', id: 'mouvement', label: 'Mouvement' } },
-    ...CHAR_KEYS.map((k) => ({ t: 'kv', k: CHAR_ABR[k], v: ch[k] > 0 || c.kind === 'hero' ? String(effectiveChar(c, k)) : '–', kref: { category: 'characteristics', id: k, label: CHAR_LABELS[k] } } as CodexRow)),
+    ...CHAR_KEYS.map((k) => ({ t: 'kv', k: charAbr(k), v: ch[k] > 0 || c.kind === 'hero' ? String(effectiveChar(c, k)) : '–', kref: { category: 'characteristics', id: k, label: CHAR_LABELS[k] } } as CodexRow)),
     { t: 'kv', k: 'Taille', v: SIZE_LABEL[effectiveSize(c.size)] }, // Taille : pas une caractéristique → pas de lien Codex
   ];
   const skillRows: CodexRow[] = (c.skills ?? []).map((s) =>

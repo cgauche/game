@@ -47,7 +47,7 @@
  *    de flamme (calage L1 du profil de flaque), pas d'ajouter un champ.
  */
 import * as THREE from 'three';
-import { LIGHT_LEVEL_BY_ID, findLightToneById, DEFAULT_LIGHT_TONE_ID, type LightToneDef } from '../../data';
+import { findLightLevelById, findLightToneById, DEFAULT_LIGHT_TONE_ID, type LightToneDef } from '../../data';
 import { heightAt, type Scene } from '../../state/scene';
 import type { LightSource } from '../../state/vision';
 import { ambianceLuminance } from '../catalog/ambiance';
@@ -73,7 +73,7 @@ export const FOYER_NUIT_CIBLE = 0.85;
 
 /** Luminance du palier `nuit` — le plancher que les flaques COMPLÈTENT (`stageLights.ts` :
  *  `ambianceLuminance` du scalaire de `lightLevels.json`), lu en donnée et jamais recopié. */
-const AMBIANCE_NUIT = ambianceLuminance(LIGHT_LEVEL_BY_ID.get('nuit')!.scalar);
+const AMBIANCE_NUIT = ambianceLuminance(findLightLevelById('nuit')!.scalar);
 
 /** Part d'albédo qu'une flaque rend à son foyer AVANT extinction par l'ambiance (l'intensité écrite
  *  vaut `FLAME_INTENSITY × π × extinction` : le facteur `π` est la conversion du lambertien de three,

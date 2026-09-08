@@ -29,7 +29,7 @@ import { chebyshev } from './path';
 import { losClear, tileSeenByFoe } from './lineOfSight';
 import { smokeOf, combatantsWithinRadius, porteeEnCases } from './combatGeometry';
 import { sceneMetresPerTile } from './scene';
-import { traitById, qualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById, findSymptomById, findMutationById, refLabel } from '../data';
+import { findTraitById, findQualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById, findSymptomById, findMutationById, refLabel } from '../data';
 import { activeSymptoms } from '../engine/disease';
 import { difficultyFromLabel, rollTest } from '../engine/tests';
 import { rawCombatTestBase } from '../engine/skills';
@@ -102,10 +102,10 @@ function withArg(effects: TriggeredEffect[], arg?: string, value?: number): Trig
 export function effectSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSource[] {
   const out: TriggerSource[] = [];
   if (weapon?.onHitEffects?.length) { const wid = weaponIdentity(weapon); out.push({ effects: withSource(weapon.onHitEffects, { kind: 'trapping', id: wid }), cap: 1, key: `weapon:${wid}`, label: weapon.label }); }
-  for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withSource(withArg(d.effects, tr.arg, tr.value), { kind: 'trait', id: tr.id }), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
+  for (const tr of actor.traits ?? []) { const d = findTraitById(tr.id); if (d?.effects?.length) out.push({ effects: withSource(withArg(d.effects, tr.arg, tr.value), { kind: 'trait', id: tr.id }), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
   // L'Indice de l'instance (`Taillade (1A)` → 1) PARAMÈTRE les effets de la qualité comme l'arg/l'Indice
   // d'un Trait paramètre les siens — MÊME `withArg`, même convention `$indice`, aucune voie parallèle.
-  if (weapon) for (const { id, indice } of resolveQualities(weapon)) { const d = qualityById.get(id); if (d?.effects?.length) out.push({ effects: withSource(withArg(d.effects, undefined, indice), { kind: 'quality', id }), cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
+  if (weapon) for (const { id, indice } of resolveQualities(weapon)) { const d = findQualityById(id); if (d?.effects?.length) out.push({ effects: withSource(withArg(d.effects, undefined, indice), { kind: 'quality', id }), cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
   for (const t of actor.talents ?? []) { const d = findTalentById(t.talentId); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'talent', id: t.talentId }), cap: t.times ?? 1, key: t.talentId, label: d.label ?? t.talentId }); }
   // Symptômes ACTIFS des maladies (Crampes abdominales `onOwnTestFailed`, MSRC 16) — insérés APRÈS les
   // Talents et AVANT les États : ils composent comme un Trait/passif du CORPS (source NON-statut, sans
@@ -553,7 +553,7 @@ export function maneuverEffects(def: { id: string; effects?: TriggeredEffect[] }
  *  Test qu'elle exige en dérive son enjeu (#1262 V2 L6d). */
 export function maneuverEffectsOf(actor: Combatant, kind: string): TriggeredEffect[] {
   for (const raw of actor.traits ?? []) {
-    const td = traitById.get(raw.id);
+    const td = findTraitById(raw.id);
     for (const ref of td?.grantsManeuvers ?? []) {
       const def = findManeuverById(ref.id);
       if (def?.kind === kind) return maneuverEffects(def);

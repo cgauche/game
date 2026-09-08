@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { gods, CULT_IDS, blessingsOf, miraclesOf, findGodById, godLabel } from './index';
+import { gods, cultIds, blessingsOf, miraclesOf, findGodById, godLabel } from './index';
 import { slugId } from './slug';
 
 /** Invariants STRUCTURELS du dataset (pas de longueurs figées : la donnée est éditable au Codex).
@@ -25,12 +25,12 @@ describe('Cultes (dataset gods.json, façade data, éditable au Codex)', () => {
     expect(flavor.length).toBeGreaterThan(0);
     for (const g of flavor) expect(g.miracles, g.id).toHaveLength(0);
   });
-  it('CULT_IDS = cultes à Bénédictions SEULEMENT (choix « Béni (Au choix) » dérivé de la donnée)', () => {
-    expect(CULT_IDS).toEqual(gods.filter((g) => g.blessings.length > 0).map((g) => g.id).sort());
-    expect(CULT_IDS).toContain('sigmar');
-    expect(CULT_IDS).toContain('evawn'); // NADJ : dieux gnomes à prières
-    expect(CULT_IDS).not.toContain('khorne'); // Puissance de la Ruine = saveur
-    expect(CULT_IDS).not.toContain('grungni'); // dieu ancêtre nain = saveur
+  it('cultIds() = cultes à Bénédictions SEULEMENT (choix « Béni (Au choix) » dérivé de la donnée)', () => {
+    expect(cultIds()).toEqual(gods.filter((g) => g.blessings.length > 0).map((g) => g.id).sort());
+    expect(cultIds()).toContain('sigmar');
+    expect(cultIds()).toContain('evawn'); // NADJ : dieux gnomes à prières
+    expect(cultIds()).not.toContain('khorne'); // Puissance de la Ruine = saveur
+    expect(cultIds()).not.toContain('grungni'); // dieu ancêtre nain = saveur
   });
   it('blessingsOf/miraclesOf = IDS de sort (le runtime compare par id) ; culte inconnu → []', () => {
     expect(blessingsOf('sigmar')).toContain('benediction-de-protection');

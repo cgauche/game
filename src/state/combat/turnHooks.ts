@@ -32,7 +32,7 @@ import { smokeOf } from '../combatGeometry';
 import { groupMatch } from '../../engine/groups';
 import {
   fearSourceFor, sansPeurVs, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isFrenzied, isPsychImmune,
-  resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, suppressSupersededPsych, CIBLE_TYPES, psychResolution,
+  resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, suppressSupersededPsych, estCibleType, psychResolution,
 } from '../../engine/psychology';
 import { psychologyLabel, combatStakeRef } from '../../data';
 import { isColdBlooded, hasRage } from '../../engine/traits/dispatch';
@@ -234,7 +234,7 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
   const visible = battle.combatants.filter((v) => v.id !== enemy.id && v.pos && !isOutOfAction(v) && losClear(scene, enemy.pos!, v.pos, smokeOf(battle)));
   for (const p of enemy.psychState) {
     // Re-test (fin de Round) des afflictions ciblées actives, tant qu'un membre du groupe est visible.
-    if (!p.active || !CIBLE_TYPES.has(p.type) || !p.cible || p.lastTestRound === battle.round) continue;
+    if (!p.active || !estCibleType(p.type) || !p.cible || p.lastTestRound === battle.round) continue;
     if (!visible.some((v) => groupMatch(p.cible!, v.groups ?? []))) continue;
     p.lastTestRound = battle.round;
     if (resolveCalmeSimple(calmeValue(enemy), battleRng()).success) { p.active = false; log.push(t('turn.recompose', { name: enemy.label, type: p.type })); }

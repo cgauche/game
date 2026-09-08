@@ -13,7 +13,7 @@ import { ACTIVITIES } from '../engine/activities';
 import { MISCAST_TABLES } from '../engine/miscast';
 import { slugId } from '../data/slug';
 import { isFrenzied } from '../engine/psychology';
-import { conditionSeverity } from '../engine/conditions';
+import { NARRATIVE_MARKERS, conditionSeverity } from '../engine/conditions';
 import { roundsLabel } from '../engine/duration';
 
 /** Clés STABLES des états-drapeaux (`EffectFlags`) — vocabulaire d'identité partagé par `flagChips`
@@ -67,18 +67,14 @@ export interface EffectChip {
 
 interface CondMeta { icon: IconId; severity: number; important: boolean; }
 
-/** Icônes des marqueurs NARRATIFS hors LDB 16 (PAS des États `etats.json`, cf. data-wellformed.test) :
- *  Pétrifié (LDB 85), sans entrée catalogue. Sévérité : `conditionSeverity` (engine, SOURCE UNIQUE
- *  partagée avec l'importance d'un évènement de combat, `state/combatLog`). */
-const NARRATIVE_ICONS: Record<string, IconId> = { petrifie: 'condition/petrified' };
-
 /** Icône + sévérité d'AFFICHAGE d'un État — icône lue en DONNÉE (`etats.json`) ou sur un marqueur
- *  narratif (repli `journal/info`) ; sévérité déléguée à `conditionSeverity` (engine). `important` =
+ *  narratif (registre UNIQUE `NARRATIVE_MARKERS`, engine ; repli `journal/info`) ; sévérité déléguée
+ *  à `conditionSeverity` (même registre). `important` =
  *  sévérité ≥ 50 (incapacitant, créneau unique de l'ordre de bataille). Clé SLUGIFIÉE → tolère un
  *  libellé ('Pétrifié' → 'petrifie'). */
 export function conditionMeta(name: string): CondMeta {
   const id = slugId(name);
-  const icon = (findConditionById(id)?.icon as IconId | undefined) ?? NARRATIVE_ICONS[id] ?? 'journal/info';
+  const icon = ((findConditionById(id)?.icon ?? NARRATIVE_MARKERS[id]?.icon) as IconId | undefined) ?? 'journal/info';
   const severity = conditionSeverity(name);
   return { icon, severity, important: severity >= 50 };
 }

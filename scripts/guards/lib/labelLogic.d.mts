@@ -43,6 +43,15 @@ export function scanLabelLiteralCompare(relPath: string, contenu: string): Label
 export const LABEL_LITERAL_STOCK: Readonly<Record<string, number>>;
 export function labelLiteralStockDrift(measured: Map<string, number> | Record<string, number>): string[];
 
+/** Finding d'index CONSTRUIT sur un champ d'affichage (#909), dans `src/engine`/`src/state`. */
+export interface LabelKeyedIndexFinding {
+  line: number;
+  detail: string;
+  rule: 'label-keyed-index';
+}
+export function scanLabelKeyedIndex(relPath: string, contenu: string): LabelKeyedIndexFinding[];
+export const LABEL_KEYED_INDEX_STOCK: Readonly<Record<string, number>>;
+
 /** Finding d'appel à un résolveur d'entité par libellé (#909), depuis `src/engine`/`src/state`. */
 export interface LabelResolverCallFinding {
   line: number;

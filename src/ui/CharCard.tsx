@@ -10,7 +10,7 @@ import { RoseAxes, type RoseAxisValue } from './RoseAxes';
 import { MetalStatus } from './MetalStatus';
 import { WaxSeal } from './WaxSeal';
 import { EntityRef } from './EntityChip';
-import { speciesSingular, findSpeciesById, careerLabelFor, skillInstanceLabel, talentConcrete, allAxes, levelsForCareer, CORE_AXIS_IDS, type AxisData } from '../data';
+import { speciesSingular, findSpeciesById, careerLabelFor, skillInstanceLabel, talentConcrete, allAxes, levelsForCareer, coreAxisIds, type AxisData } from '../data';
 import { dominantAxes, axesProfile } from '../engine/axes';
 import { t } from '../i18n';
 import { GatedAction } from './GatedAction';
@@ -46,13 +46,13 @@ export function heroStatusLabel(hero: Combatant): string {
 }
 
 /** Résout des ids d'axes en `AxisData[]`, dans l'ORDRE fourni (ids inconnus écartés). */
-export function axisDataFor(ids: string[] = CORE_AXIS_IDS): AxisData[] {
+export function axisDataFor(ids: string[] = coreAxisIds()): AxisData[] {
   return ids.map((id) => allAxes.find((a) => a.id === id)).filter((a): a is AxisData => !!a);
 }
 
 /** Profil « rose des forces » d'un héros pour les axes actifs — SOURCE UNIQUE `axesProfile`
  *  (`engine/axes.ts`), directement consommable par `RoseAxes` (#417). */
-export function heroRoseAxes(hero: Combatant, axisIds: string[] = CORE_AXIS_IDS): RoseAxisValue[] {
+export function heroRoseAxes(hero: Combatant, axisIds: string[] = coreAxisIds()): RoseAxisValue[] {
   return axesProfile(hero, axisDataFor(axisIds));
 }
 
@@ -171,7 +171,7 @@ export function CandidateCard({
   recruited?: boolean;
   /** Candidat déplié dans le détail (bordure or « en lecture », #417). */
   selected?: boolean;
-  /** Axes ACTIFS de la campagne pour le glyphe de rose (`CORE_AXIS_IDS` par défaut). */
+  /** Axes ACTIFS de la campagne pour le glyphe de rose (`coreAxisIds` par défaut). */
   axisIds?: string[];
   onRecruit?: () => void;
   onPresent?: () => void;
@@ -239,7 +239,7 @@ export function SeatCard({
   hero: Combatant;
   /** Libellé de l'acte (« Acte I »), rendu en cartouche au-dessus du nom. */
   seatLabel?: string;
-  /** Axes ACTIFS de la campagne pour le glyphe de rose (`CORE_AXIS_IDS` par défaut). */
+  /** Axes ACTIFS de la campagne pour le glyphe de rose (`coreAxisIds` par défaut). */
   axisIds?: string[];
   onPresent?: () => void;
   /** Boutons de gestion (Modifier / Remplacer / Retirer) — rendus par l'écran (droits coop). */

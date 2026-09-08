@@ -48,6 +48,7 @@ import riverPerilsRawJson from './river-perils.json';
 import crewMoraleRawJson from './crew-morale.json';
 import { DATASET_FICHIER_DERIVE } from './schemas/exposition-derivee';
 import { poserSourceDIdsVivants } from './schemas/grammaire/idsVivants';
+import { bumperDataset } from './versionDataset';
 import { DEFS_DE_DOCUMENT } from './schemas/validate';
 import { critiqueEntries, type CritEntry } from './criticals';
 import { SHIP_CRITICAL_TABLES, RIVER_CRIT_SET } from './shipCriticals';
@@ -319,10 +320,13 @@ const OBJECT_SEED = Object.fromEntries(
   OBJECT_DATASET_KEYS.map((k) => [k, structuredClone(OBJECTS[k])]),
 ) as Record<ObjectDatasetKey, object>;
 
-/** Remplace EN PLACE le contenu d'un dataset (jamais de réassignation du binding). */
+/** Remplace EN PLACE le contenu d'un dataset (jamais de réassignation du binding) et VERSIONNE
+ *  l'écriture — l'identité du tableau ne bougeant pas, la version est le seul témoin qu'un index
+ *  mémoïsé (`indexParId`, `data/index.ts`) puisse consulter (#1692). */
 export function setDataset<K extends DatasetKey>(key: K, next: readonly (typeof ARRAYS)[K][number][]): void {
   const arr = ARRAYS[key] as unknown[];
   arr.splice(0, arr.length, ...(next as readonly unknown[]));
+  bumperDataset(key);
 }
 
 /** Datasets-tableaux NICHÉS sous une enveloppe ou dans un fichier-objet PARTAGÉ : `mass-battle.json`
@@ -492,6 +496,7 @@ function mergeInPlace(target: Record<string, unknown>, next: Record<string, unkn
 /** Remplace EN PLACE le contenu d'un dataset-objet (réf stable, jusqu'aux tables nichées). */
 export function setObjectDataset<K extends ObjectDatasetKey>(key: K, next: (typeof OBJECTS)[K]): void {
   mergeInPlace(OBJECTS[key] as Record<string, unknown>, next as Record<string, unknown>);
+  bumperDataset(key);
 }
 
 /** Réinitialise tous les datasets (tableaux ET objets) au seed d'origine (JSON app-owned). */
@@ -499,6 +504,7 @@ export function resetData(): void {
   for (const k of DATASET_KEYS) {
     const arr = ARRAYS[k] as unknown[];
     arr.splice(0, arr.length, ...structuredClone(SEED[k]));
+    bumperDataset(k);
   }
   for (const k of OBJECT_DATASET_KEYS) setObjectDataset(k, structuredClone(OBJECT_SEED[k]) as never);
 }

@@ -6,18 +6,12 @@
  * (le dispatch lit `q.id`/`q.value` sans parser). Correspondance EXACTE sur le label (casse ignorée)
  * OU sur l'id stable (slug).
  */
-import { QUALITIES } from './registry';
-import { qualityIdOf } from './ids';
-import { slugId } from '../../data/slug';
+import { qualityIdByLabel } from '../../data';
 import type { QualityInstance } from '../types';
 
-const KEY_BY_LOWER = new Map(Object.keys(QUALITIES).map((k) => [k.toLowerCase(), k]));
-// Résolution par `id` STABLE (slug du libellé) — la donnée/runtime stocke l'id, pas le libellé.
-const KEY_BY_ID = new Map(Object.keys(QUALITIES).map((k) => [slugId(k), k]));
-
 export interface ParsedQuality {
-  /** Clé canonique du registre (ex. 'Solide'). */
-  key: string;
+  /** `id` STABLE du registre (ex. 'solide'). */
+  id: string;
   /** Indice numérique éventuel (« Solide 3 » → 3). */
   indice?: number;
 }
@@ -31,12 +25,13 @@ export function splitIndice(raw: string): { label: string; indice?: number } {
   return { label: raw.trim() };
 }
 
-/** Normalise une qualité (id STABLE OU libellé saisi à l'éditeur) en { clé canonique, Indice? }, ou null
- *  si inconnue. Résout d'abord par libellé (casse ignorée), sinon par id (slug). AUTHORING uniquement. */
+/** Normalise une qualité (id STABLE OU libellé saisi à l'éditeur) en { id STABLE, Indice? }, ou null si
+ *  inconnue. La conversion texte→id est DÉLÉGUÉE à `qualityIdByLabel` (`src/data/index.ts`, la seule
+ *  couture tolérée) : ce module ne voit qu'un id. AUTHORING uniquement. */
 export function parseQuality(raw: string): ParsedQuality | null {
   const { label, indice } = splitIndice(raw);
-  const key = KEY_BY_LOWER.get(label.toLowerCase()) ?? KEY_BY_ID.get(slugId(label));
-  return key ? { key, indice } : null;
+  const id = qualityIdByLabel(label);
+  return id ? { id, indice } : null;
 }
 
 /** Parse une qualité saisie en prose (« Solide 3 ») → `QualityInstance` structurée `{id, value?}`, ou null
@@ -44,5 +39,5 @@ export function parseQuality(raw: string): ParsedQuality | null {
 export function parseQualityInstance(raw: string): QualityInstance | null {
   const p = parseQuality(raw);
   if (!p) return null;
-  return p.indice != null ? { id: qualityIdOf(p.key), value: p.indice } : { id: qualityIdOf(p.key) };
+  return p.indice != null ? { id: p.id, value: p.indice } : { id: p.id };
 }

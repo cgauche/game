@@ -6,7 +6,7 @@
  * courtine rouge). Purement additif : n'altère NI le rendu NI le tri.
  */
 import { Scene, type WallSeg } from '../../state/scene';
-import { structureById } from '../../data';
+import { findStructureById } from '../../data';
 import { wallEnds } from '../builders/walls';
 import { Dims, tileCenter, diamondPath } from '../../geometry/iso';
 
@@ -41,7 +41,7 @@ export function DebugMapLabels({ scene, dims, liftAt }: { scene: Scene; dims: Di
   const edgePts = (w: WallSeg, z: number): [{ cx: number; cy: number }, { cx: number; cy: number }] =>
     wallEnds(w).map((p) => tileCenter(p.x, p.y, dims, z)) as [{ cx: number; cy: number }, { cx: number; cy: number }];
   for (const w of scene.walls ?? []) {
-    const role = structureById.get(w.structure ?? '')?.kind === 'porte' ? 'var(--dbg-door)' : 'var(--dbg-wall)';
+    const role = findStructureById(w.structure ?? '')?.kind === 'porte' ? 'var(--dbg-door)' : 'var(--dbg-wall)';
     const z = w.z ?? 0;
     const [a, b] = edgePts(w, z);
     const key = `${w.x}-${w.y}-${w.side}-${w.z ?? 0}`;

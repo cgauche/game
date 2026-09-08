@@ -5,7 +5,7 @@ import { Icon } from '../Icon';
 import { MasterDetail } from '../MasterDetail';
 import { MonsterPartsFields } from './MonsterPartsFields';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
-import { creatures, creatureLabel, findCreatureById } from '../../data';
+import { creatures, creatureLabel, findCreatureById, memoParVersion } from '../../data';
 import { CHAR_KEYS, CHAR_LABELS, type CharKey } from '../../engine/types';
 import type { NarratifBlock, PresetPnj, Affaire, Indice, IndiceStade, OuvertureBlock, ClotureBlock, AmbianceCadre } from '../../state/campaignNarratif';
 import { ConditionEditor } from './ConditionEditor';
@@ -24,7 +24,7 @@ import { NumberField } from '../NumberField';
 type NarratifTab = 'cadre' | 'affaires' | 'indices' | 'presetsPnj' | 'objets';
 
 /** Liste des créatures globales (base d'un preset), triée par libellé — patron `Inspector.tsx`. */
-const CREATURE_OPTIONS = [...creatures].map((c) => ({ id: c.id, label: c.label })).sort((a, b) => a.label.localeCompare(b.label));
+const optionsDeCreature = memoParVersion('creatures', () => [...creatures].map((c) => ({ id: c.id, label: c.label })).sort((a, b) => a.label.localeCompare(b.label)));
 
 /** Nom affiché d'un preset dans la liste maître : profil.label, sinon la base, sinon l'id. */
 function presetName(p: PresetPnj): string {
@@ -95,7 +95,7 @@ export function NarratifEditor({ narratif, onChange, onClose }: {
     const id = freshPresetId(narratif.presetsPnj);
     // Base par défaut = première créature globale : garantit un preset VALIDE au round-trip
     // (`narratifSchema` refuse un preset sans base ni profil) ; l'auteur la change ensuite.
-    setPresets([...narratif.presetsPnj, { id, base: CREATURE_OPTIONS[0]?.id }]);
+    setPresets([...narratif.presetsPnj, { id, base: optionsDeCreature()[0]?.id }]);
     setSelId(id);
   };
 
@@ -617,7 +617,7 @@ function PresetForm({ preset, onRename, onPatch, onRemove }: {
         Créature de base (profil de combat)
         <select value={preset.base ?? ''} onChange={(e) => onPatch({ base: e.target.value || undefined })}>
           <option value="">— aucune (profil ad hoc) —</option>
-          {CREATURE_OPTIONS.map((c) => (
+          {optionsDeCreature().map((c) => (
             <option key={c.id} value={c.id}>{c.label}</option>
           ))}
         </select>

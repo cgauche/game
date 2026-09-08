@@ -10,7 +10,7 @@ import { MISSING_ART } from './viewArt';
  * Sans def, le repli rend l'affût en humanoïde — échec NOMINATIF par engin ci-dessous.
  */
 describe('siegeRig → CreatureDef de rendu', () => {
-  const rigs = [...new Set(siegeEngines.map((t) => t.siegeRig as string))].sort();
+  const rigs = [...new Set(siegeEngines().map((t) => t.siegeRig as string))].sort();
 
   it('la donnée porte bien des engins à affût', () => {
     expect(rigs.length).toBeGreaterThan(0);

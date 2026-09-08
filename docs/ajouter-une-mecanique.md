@@ -145,13 +145,13 @@ Lecture — un seul point d'entrée par portée, chaque canal restant disjoint p
 
 | Lecteur | Site | Portée |
 |---|---|---|
-| `traitCapability` | `src/engine/traits/dispatch.ts:230` | par trait |
+| `traitCapability` | `src/engine/traits/dispatch.ts:222` | par trait |
 | `itemCapability` | `src/engine/capabilities.ts:25` | par objet |
 | `hasCapability` | `src/engine/capabilities.ts:45` | agrégat cross-source, par personnage |
 
 ### Une capacité peut être ANNULÉE par un autre trait porté
 
-`suppressesCapabilities` (lu par `traitCapability`, `src/engine/traits/dispatch.ts:234`) : un trait déclare
+`suppressesCapabilities` (lu par `traitCapability`, `src/engine/traits/dispatch.ts:226`) : un trait déclare
 les capacités qu'il annule chez **les autres traits du même porteur** — la résolution rend `false`
 même si un second trait la déclare. C'est de la DONNÉE, jamais un chemin de code par nom de trait :
 1 entrée(s) de `src/data/traits.json` l'exercent, dont `dresse-dompte`
@@ -163,7 +163,7 @@ Le drapeau dit qu'une mécanique s'applique ; sa VALEUR (Salve N, Protectrice N,
 l'INSTANCE portée par l'objet — `QualityInstance.value` (`src/engine/types.ts:358`), que le
 dispatcher runtime expose sous `indice` (`resolveQualities`, `src/engine/qualities/dispatch.ts:56`).
 La saisie en prose (« Solide 3 ») n'est convertie en instance qu'à l'AUTHORING, par
-`parseQuality` (`src/engine/qualities/normalize.ts:36`) — le runtime ne re-parse jamais un libellé
+`parseQuality` (`src/engine/qualities/normalize.ts:31`) — le runtime ne re-parse jamais un libellé
 (convention `indice:{label}` côté champ d'édition). N'ajoute donc **jamais** un drapeau numéroté
 (`salve3`) : la capacité marque la présence, l'Indice se lit sur l'instance.
 
@@ -220,4 +220,4 @@ primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autr
 | `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
 | `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
 | `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |
-<!-- sources-empreinte: 4f8d341c26d5c09db90a1b447685b5cc1e86b2d3 (155 fichiers, 1 dossiers) corps: 83851d33e16160c480557f2459053e5234a0c9a4 -->
+<!-- sources-empreinte: df1321b676b5a09cbae2dac3880dc3fa73f80c7b (155 fichiers, 1 dossiers) corps: 60ac987e884f2ea6a418630d117fcb74f6b29302 -->

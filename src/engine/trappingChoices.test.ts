@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { resolveTrappingChoices } from './trappingChoices';
-import { trappingRefLabel, FABRICATION_ATOUTS, type TrappingRef } from '../data/index';
+import { trappingRefLabel, fabricationAtouts, type TrappingRef } from '../data/index';
 
 describe('resolveTrappingChoices', () => {
   it('choice sans entrée dans choices -> 1re branche (défaut)', () => {
@@ -73,7 +73,7 @@ describe('resolveTrappingChoices', () => {
     expect(trappingRefLabel({ id: 'fleuret', qualities: [{ id: 'solide' }] })).toBe('Fleuret (Solide)');
   });
 
-  it('FABRICATION_ATOUTS est DÉRIVÉ de qualities.json (atout/objet), pas une liste codée', () => {
-    expect(FABRICATION_ATOUTS).toEqual(['leger', 'pratique', 'raffine', 'solide']);
+  it('fabricationAtouts() est DÉRIVÉ de qualities.json (atout/objet), pas une liste codée', () => {
+    expect(fabricationAtouts()).toEqual(['leger', 'pratique', 'raffine', 'solide']);
   });
 });

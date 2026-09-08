@@ -48,6 +48,7 @@ import { ouvrirChute } from './combatEffects';
 import { applyHealWounds } from '../engine/healing';
 import { declareDisease } from '../engine/disease';
 import { findVehicleById, voyageStakeRef, weather } from '../data';
+import { memoParVersion } from '../data/versionDataset';
 import { PERIPETIES } from '../data/peripeties';
 import { rollTest, testDetail } from '../engine/tests';
 import { partyAssisted, supportSplit, testValue, type SupportDetail } from '../engine/skills';
@@ -644,14 +645,19 @@ const stageWeatherTableId = (season: Season): string => `stage-weather-${season}
 export const stageWeatherRows = (ranges: { min: number; max: number; weather: string }[]): TableStepRow[] =>
   ranges.map((r) => ({ id: r.weather, min: r.min, max: r.max }));
 
-for (const saison of weather) {
-  registerTableStep(stageWeatherTableId(saison.id as Season), {
-    label: t('step.stageWeather'),
-    die: 100,
-    rows: stageWeatherRows(saison.ranges),
-    lines: (die) => [t('out.stageWeather', { weather: weatherCondition(weatherFromRoll(die, saison.id as Season)).label })],
-  });
-}
+/** Les tables de météo par saison, POSÉES à la première lecture qui suit une édition de `weather`
+ *  (#1692) — une fourchette éditée au Codex est dans la table sans recharger la page. */
+const poserLesTablesDeMeteo = memoParVersion('weather', () => {
+  for (const saison of weather) {
+    registerTableStep(stageWeatherTableId(saison.id as Season), {
+      label: t('step.stageWeather'),
+      die: 100,
+      rows: stageWeatherRows(saison.ranges),
+      lines: (die) => [t('out.stageWeather', { weather: weatherCondition(weatherFromRoll(die, saison.id as Season)).label })],
+    });
+  }
+  return true;
+});
 
 registerCascadeApplier(STAGE_WEATHER_KIND, (get, set, step) => {
   const tiree = step.table?.result;
@@ -689,6 +695,7 @@ function buildTravelDayCascade(
   // dans son APPLIER, qui l'`insert` derrière elle : c'est le canal du séquenceur pour « ces étapes-là
   // n'existent qu'une fois le dé connu ». L'ordre des dés reste météo → Résistance → postes.
   if (rule('travel-etapes')) {
+    poserLesTablesDeMeteo();
     pousseSi(steps, tableStep({
       id: STAGE_WEATHER_STEP_ID, kind: STAGE_WEATHER_KIND, worldOwner: true, icon: 'travel/wave',
       label: t('step.stageWeather'),

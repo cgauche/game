@@ -6,12 +6,12 @@
  *
  * La MÉCANIQUE de chaque qualité vit dans `qualities.json`, lue PAR ID —
  * `passive: GameOp[]` (weaponRollMod/weaponDamageMod/armourPierce/critOnRoll/testMod) pour les
- * modificateurs, `capabilities` pour les drapeaux irréductibles. `QUALITIES` ne porte que le libellé.
+ * modificateurs, `capabilities` pour les drapeaux irréductibles.
  */
 import type { Weapon, QualityInstance, ArmourBypass } from '../types';
 import type { QualityId } from './ids';
-import { QualityDef } from './registry';
-import { qualityById, findWeaponGroupById, qualityInstance, type QualityCapabilities, type QualityData } from '../../data';
+import type { QualityDef } from './types';
+import { findQualityById, findWeaponGroupById, qualityInstance, type QualityCapabilities, type QualityData } from '../../data';
 import type { GameOp } from '../ops';
 
 /** Tout porteur de qualités (Weapon ou ItemInstance) — seul `qualities` est requis ; `weaponGroup`/
@@ -40,7 +40,7 @@ export interface ResolvedQuality {
 }
 
 /** Ops passives de la qualité (lecture par id dans la donnée). */
-const passiveOf = (id: string): GameOp[] => qualityById.get(id)?.passive ?? [];
+const passiveOf = (id: string): GameOp[] => findQualityById(id)?.passive ?? [];
 
 /** SOURCE UNIQUE des ops PASSIVES d'ARME à consulter : celles des qualités présentes (registre, par id) +
  *  celles conférées par une ALTÉRATION de l'arme (`Weapon.passive`, op `augmentWeapon.passive` — VDM 05
@@ -61,7 +61,7 @@ export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality
   const merged = [...own, ...familyQualities.filter((q) => !ownIds.has(q.id)).map(qualityInstance)];
   const out: ResolvedQuality[] = [];
   for (const q of merged) {
-    const data = qualityById.get(q.id);
+    const data = findQualityById(q.id);
     out.push({ def: { key: data?.label ?? q.id }, id: q.id, data, caps: data?.capabilities, indice: q.value });
   }
   const beaten = new Set(out.flatMap((r) => r.caps?.beats ?? []));
@@ -82,7 +82,7 @@ export function hasQuality(w: QualityCarrier | undefined, id: QualityId): boolea
 /** La qualité d'`id` est-elle un Atout (≠ Défaut) ? Lu dans la DONNÉE (`qualities.json` champ `polarite`). Sert au
  *  « perd tous ses Atouts » d'une baliste tirée en solo (AA 10 p.122 l.3818). Qualité inconnue → false (pas un Atout). */
 export function isAtoutQuality(id: string): boolean {
-  return qualityById.get(id)?.polarite === 'atout';
+  return findQualityById(id)?.polarite === 'atout';
 }
 
 /** Indice de la qualité d'`id` sur l'objet (ex. Solide/Recharge → N), ou undefined si absente/sans Indice. */

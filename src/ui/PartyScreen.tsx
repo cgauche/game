@@ -24,7 +24,7 @@ import { HeroSheet } from './HeroSheet';
 import { MasterDetail } from './MasterDetail';
 import { Icon } from './Icon';
 import { Tabs } from './Tabs';
-import { CORE_AXIS_IDS } from '../data';
+import { coreAxisIds } from '../data';
 import { resolveActiveAxes } from '../state/worldMap';
 import { t } from '../i18n';
 
@@ -102,7 +102,7 @@ export function PartyScreen() {
   // Le choix de campagne appartient à l'hôte (ou au solo), hors partie en cours (« Reprendre »).
   const canPickCampaign = net.mode !== 'guest' && !inProgress;
   // Axes ACTIFS de la campagne (#409/#417) : `resolveActiveAxes` lit `activeAxes` sur
-  // `pendingCampaign` (`ProjectDoc`, `state/worldMap.ts`) et retombe sur le socle `CORE_AXIS_IDS`
+  // `pendingCampaign` (`ProjectDoc`, `state/worldMap.ts`) et retombe sur le socle `coreAxisIds`
   // si absent — SOURCE UNIQUE de ce défaut, jamais un `?? []` dispersé côté écran.
   const axisIds = resolveActiveAxes(pendingCampaign ?? {});
 
@@ -301,7 +301,7 @@ export function PartyScreenView({
   title,
   campaignName,
   onChangeCampaign,
-  axisIds = CORE_AXIS_IDS,
+  axisIds = coreAxisIds(),
   inProgress,
   onMenu,
   onPossessions,
@@ -320,7 +320,7 @@ export function PartyScreenView({
   title: string;
   /** Campagne sélectionnée (cartouche du rail). Absent = cartouche masqué (vue partielle/tests). */
   campaignName?: string;
-  /** Axes ACTIFS de la campagne (rose des forces, rail de composition, #417). `CORE_AXIS_IDS` par défaut. */
+  /** Axes ACTIFS de la campagne (rose des forces, rail de composition, #417). `coreAxisIds` par défaut. */
   axisIds?: string[];
   /** Ouvre le choix de campagne — absent = lecture seule (invité coop, partie en cours). */
   onChangeCampaign?: () => void;
@@ -582,7 +582,7 @@ export function PartyScreenView({
 export function HeroSelector({
   party,
   mode,
-  axisIds = CORE_AXIS_IDS,
+  axisIds = coreAxisIds(),
   replaceName,
   onPick,
   onClose,
@@ -590,7 +590,7 @@ export function HeroSelector({
 }: {
   party: Combatant[];
   mode: 'recruit' | 'replace';
-  /** Axes ACTIFS de la campagne (glyphes de rose des candidats, #417). `CORE_AXIS_IDS` par défaut. */
+  /** Axes ACTIFS de la campagne (glyphes de rose des candidats, #417). `coreAxisIds` par défaut. */
   axisIds?: string[];
   /** Nom du héros remplacé (titre du mode `replace`). */
   replaceName?: string;
@@ -629,7 +629,7 @@ export function CandidatePool({
   variant = 'gallery',
   canRecruit = true,
   hideInParty = false,
-  axisIds = CORE_AXIS_IDS,
+  axisIds = coreAxisIds(),
   onCreate,
 }: {
   party: Combatant[];
@@ -641,7 +641,7 @@ export function CandidatePool({
   /** Écarte du vivier les personnages DÉJÀ dans le groupe (recrutement) : un recruté quitte l'étal. Le
    *  mode remplacement (`false`) les garde, grisés « Déjà choisi ». */
   hideInParty?: boolean;
-  /** Axes ACTIFS de la campagne (glyphe + médaillon de rose, #417). `CORE_AXIS_IDS` par défaut. */
+  /** Axes ACTIFS de la campagne (glyphe + médaillon de rose, #417). `coreAxisIds` par défaut. */
   axisIds?: string[];
   /** Ouvre le créateur (carte-action « Créer un personnage »). */
   onCreate?: () => void;

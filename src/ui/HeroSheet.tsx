@@ -6,7 +6,7 @@ import { effectiveChar } from '../engine/characteristics';
 import { effectiveTalents } from '../engine/talentEffects';
 import { itemLabel } from '../engine/items';
 import { castInfoIsPrayer } from '../engine/magic';
-import { CORE_AXIS_IDS, findSpellById, byId, skillInstanceLabel } from '../data';
+import { coreAxisIds, findSpellById, byId, skillInstanceLabel } from '../data';
 import { Coins } from './Coins';
 import { Icon } from './Icon';
 import { CharacterPreview } from './CharacterPreview';
@@ -43,7 +43,7 @@ export type HeroSheetDerivedField = (typeof HERO_SHEET_DERIVED_FIELDS)[number];
  */
 export function HeroSheet({
   hero,
-  axisIds = CORE_AXIS_IDS,
+  axisIds = coreAxisIds(),
   header = true,
   wealth,
   pending,
@@ -54,7 +54,7 @@ export function HeroSheet({
   className,
 }: {
   hero: Combatant;
-  /** Axes ACTIFS de la campagne (rose + Forces) — `CORE_AXIS_IDS` par défaut. */
+  /** Axes ACTIFS de la campagne (rose + Forces) — `coreAxisIds` par défaut. */
   axisIds?: string[];
   /** Bande d'en-tête figurine+identité+statut+rose — `false` quand l'appelant porte déjà sa propre
    *  alcôve (fiche vivante du créateur, alcôve grande à part). */

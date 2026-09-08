@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { describeQuality, QUALITY_DESC } from './describe';
-import { QUALITIES } from './registry';
+import { describeQuality } from './describe';
+import { qualities } from '../../data';
 import { parseQualityInstance } from './normalize';
 
 /** Décrit depuis un libellé/id saisi (authoring) : prose → `QualityInstance` → describe. Inconnu → id brut. */
@@ -31,9 +31,9 @@ describe('describeQuality (affichage Atouts/Défauts)', () => {
     expect(dq('Sortilège bidon')).toBeNull();
   });
 
-  it('chaque qualité du registre a une description (anti-régression)', () => {
-    for (const key of Object.keys(QUALITIES)) {
-      expect(QUALITY_DESC[key], `description manquante pour « ${key} »`).toBeTruthy();
+  it('chaque qualité du catalogue a une description SERVIE par son id (anti-régression)', () => {
+    for (const q of qualities) {
+      expect(describeQuality({ id: q.id })?.desc, `description manquante pour « ${q.label} » (${q.id})`).toBeTruthy();
     }
   });
 });

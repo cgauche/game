@@ -49,6 +49,7 @@ import { advantageModLine, type ModLine } from '../engine/combat';
 import type { BatchParticipant } from './pendings';
 import { registerCascadeApplier, rollBatchParticipant, pushStep, registerTableStep, rollTableStep } from './cascade';
 import { combatStakeRef, refLabel } from '../data/index';
+import { memoParVersion } from '../data/versionDataset';
 import {
   registerSequence, startSequence, resolveSequenceTie, sequenceCumRound, sequenceDrBonus,
   sequencePhaseOf, sequenceScoreOf, sequenceTableRow, resolveSequencePotTurn, sequencePotIssue,
@@ -1124,30 +1125,36 @@ function potTableId(gameId: string): string {
   return `tavern-pot:${gameId}`;
 }
 
-for (const jeu of TAVERN_GAMES) {
-  const regles = jeu.pot;
-  if (!regles) continue;
-  registerTableStep(potTableId(jeu.id), {
-    label: jeu.label,
-    die: regles.dice.faces,
-    rows: regles.rows.map((r) => ({ min: r.min, max: r.max, id: r.potEffectId, label: r.label })),
-    // L'ENCART de résultat (ce que le joueur lit juste après « Lancer ») dit l'ISSUE du lancer, pas
-    // la fourchette où il tombe : la cible est celle du TOUR, lue à la RÉSOLUTION via le contexte du
-    // tirage — jamais figée ici, à l'enregistrement. Même fonction que le journal (`sequencePotIssue`),
-    // donc une seule vérité ; sans contexte ni séquence, la fourchette reste le libellé.
-    lines: (total, ctx) => {
-      const plage = findTableEntry([...regles.rows], total);
-      const seq = ctx ? activeSequence<TavernPayload>(ctx.get) : null;
-      if (!seq || seq.payload.gameId !== jeu.id) return [plage.label];
-      const cible = seq.payload.target ?? regles.targetRange?.min ?? 0;
-      const { outcome } = resolveSequencePotTurn(seq.params, potTurnOf(seq.payload, total, cible));
-      return [sequencePotIssue(outcome) ?? plage.label];
-    },
-  });
-}
+/** Les tables de MISE du catalogue, POSÉES à la première lecture qui suit une édition de
+ *  `tavernGames` (#1692) — un jeu édité/ajouté au Codex a SA table, sans recharger la page. */
+const poserLesTablesDePot = memoParVersion('tavernGames', () => {
+  for (const jeu of TAVERN_GAMES) {
+    const regles = jeu.pot;
+    if (!regles) continue;
+    registerTableStep(potTableId(jeu.id), {
+      label: jeu.label,
+      die: regles.dice.faces,
+      rows: regles.rows.map((r) => ({ min: r.min, max: r.max, id: r.potEffectId, label: r.label })),
+      // L'ENCART de résultat (ce que le joueur lit juste après « Lancer ») dit l'ISSUE du lancer, pas
+      // la fourchette où il tombe : la cible est celle du TOUR, lue à la RÉSOLUTION via le contexte du
+      // tirage — jamais figée ici, à l'enregistrement. Même fonction que le journal (`sequencePotIssue`),
+      // donc une seule vérité ; sans contexte ni séquence, la fourchette reste le libellé.
+      lines: (total, ctx) => {
+        const plage = findTableEntry([...regles.rows], total);
+        const seq = ctx ? activeSequence<TavernPayload>(ctx.get) : null;
+        if (!seq || seq.payload.gameId !== jeu.id) return [plage.label];
+        const cible = seq.payload.target ?? regles.targetRange?.min ?? 0;
+        const { outcome } = resolveSequencePotTurn(seq.params, potTurnOf(seq.payload, total, cible));
+        return [sequencePotIssue(outcome) ?? plage.label];
+      },
+    });
+  }
+  return true;
+});
 
 /** La DÉCLARATION de tirage d'un tour : les dés de la donnée, jamais un dé écrit ici. */
 function potDecl(game: TavernGame): CascadeTableDecl {
+  poserLesTablesDePot();
   const dice = game.pot!.dice;
   return { tableId: potTableId(game.id), spec: { n: dice.count, sides: dice.faces } };
 }

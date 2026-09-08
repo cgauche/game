@@ -1,4 +1,5 @@
-import { careers } from '../../../data';
+import { careers, findCareerById } from '../../../data';
+import { memoParVersion } from '../../../data/versionDataset';
 import {
   TENUE_BY_ID, CLASS_TENUE_BY_ID, TENUE_PALETTE_BY_ID, CLASS_PALETTE_BY_ID,
   TENUE_OVERLAYS_BY_ID, CLASS_OVERLAYS_BY_ID,
@@ -7,32 +8,27 @@ import {
 import type { StoredPalette } from '../palette';
 import type { RigOverlay } from '../bones';
 
-// Carrière (id) → classe (id) ; `careers.json` porte `id` et `class` DÉJÀ en ids.
-const CAREER_CLASS_BY_ID: Record<string, string> = {};
-for (const row of careers) CAREER_CLASS_BY_ID[row.id] = row.class;
-
 // Carrière (id) → tenue spécifique réutilisée (id) ; `careers.json` porte `tenue` (variants MDG
 // « (Côtier) » sans archétype de classe dédié, MDG 09 l.255/343/458) — champ optionnel, DÉJÀ un id.
-const CAREER_TENUE_BY_ID: Record<string, string> = {};
-for (const row of careers) if (row.tenue) CAREER_TENUE_BY_ID[row.id] = row.tenue;
+const tenueDeCarriere = (id: string): string | undefined => findCareerById(id)?.tenue;
 
 // Vocabulaire de garde-robe RÉSOLVABLE (id STABLE, jamais un libellé) : carrière (careers.json) ∪ classe
 // (CLASS_TENUE_BY_ID) ∪ tenue spécifique (TENUE_BY_ID, dont 'nu'). Hors de cet ensemble = vocabulaire
 // INCONNU (faute d'authoring) → repli Nu BRUYANT (#223).
-const KNOWN_WARDROBE_IDS = new Set<string>([
-  ...Object.keys(CAREER_CLASS_BY_ID),
+const idsDeGardeRobe = memoParVersion('careers', () => new Set<string>([
+  ...careers.map((row) => row.id),
   ...Object.keys(CLASS_TENUE_BY_ID),
   ...Object.keys(TENUE_BY_ID),
-]);
+]));
 /** Une clé de garde-robe (id de carrière/classe/tenue) résout-elle à une garde-robe connue ? */
 export function wardrobeKeyResolves(key: string | undefined): boolean {
   const id = key ?? '';
-  return id === '' || id === 'nu' || KNOWN_WARDROBE_IDS.has(id);
+  return id === '' || id === 'nu' || idsDeGardeRobe().has(id);
 }
 
 /** Classe (id) d'une CLÉ — id de carrière (héros) ou id de tenue/inconnu → défaut « citadins ». */
 export function careerClass(key: string): string {
-  return CAREER_CLASS_BY_ID[key] ?? 'citadins';
+  return findCareerById(key)?.class ?? 'citadins';
 }
 
 /** Tenue d'archétype d'une classe (par id de classe). Aucune tenue générique par classe n'existe
@@ -57,7 +53,7 @@ export function tenueLabel(id: string | undefined): string { return TENUE_LABEL_
  */
 export function tenuePaletteFor(tenue: string | undefined): StoredPalette {
   const id = tenue ?? '';
-  const specificId = CAREER_TENUE_BY_ID[id] ?? id;
+  const specificId = tenueDeCarriere(id) ?? id;
   return TENUE_PALETTE_BY_ID[specificId] ?? CLASS_PALETTE_BY_ID[id] ?? {};
 }
 
@@ -137,7 +133,7 @@ export function rigStoredPalette(species: StoredPalette | undefined, tenue: stri
  */
 export function tenueOverlaysFor(tenue: string | undefined): RigOverlay[] {
   const id = tenue ?? '';
-  const specificId = CAREER_TENUE_BY_ID[id] ?? id;
+  const specificId = tenueDeCarriere(id) ?? id;
   return TENUE_OVERLAYS_BY_ID[specificId] ?? CLASS_OVERLAYS_BY_ID[id] ?? [];
 }
 
@@ -150,7 +146,7 @@ export function tenueOverlaysFor(tenue: string | undefined): RigOverlay[] {
 export function tenueFor(tenue: string | undefined): TenueSet {
   const id = tenue ?? '';
   if (id === 'nu') return TENUE_NUE; // corps nu (monstres sans habit)
-  const specific = TENUE_BY_ID[CAREER_TENUE_BY_ID[id] ?? id];
+  const specific = TENUE_BY_ID[tenueDeCarriere(id) ?? id];
   if (specific) return specific;
   if (id !== '' && !wardrobeKeyResolves(id))
     console.warn(`[tenue] « ${tenue} » introuvable au catalogue (careers ∪ classes ∪ tenues) — repli Nu (#223)`);
@@ -162,7 +158,7 @@ export function tenueFor(tenue: string | undefined): TenueSet {
 export function resolveWardrobeId(key: string | undefined): string {
   const id = key ?? '';
   if (id === 'nu') return 'nu';
-  const specificId = CAREER_TENUE_BY_ID[id] ?? id;
+  const specificId = tenueDeCarriere(id) ?? id;
   if (TENUE_BY_ID[specificId]) return specificId;
   if (id in CLASS_TENUE_BY_ID) return id;
   return 'nu';

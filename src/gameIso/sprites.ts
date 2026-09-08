@@ -9,6 +9,7 @@ import { MISSING_GRADIENT, terrainGradientId, terrainStopsOrdonnes } from './cat
 import { MISSING_TONE, MISSING_TONE_DARK } from './catalog/missing';
 import type { Dir8 } from '../state/dir8';
 import { tousLesTerrains, type TerrainDef } from '../state/terrain';
+import { memoParVersion } from '../data/versionDataset';
 import { rigFxGradients } from './rig/fxGradients';
 
 // Le DÉCOR en billboard (arbre du terrain `bois`, tonneaux…) passe par `propSvg` (catalogue), et le
@@ -74,17 +75,12 @@ const degradeAlarme =
  * viennent d'un dataset ÉDITABLE au Codex (`terrains.json`, #1690) — assemblées une fois à
  * l'import, une édition des `stops` ne repeindrait ni la vue plan ni l'éditeur sans rechargement.
  *
- * Mémoïsée par TÉMOIN DE CONTENU du dataset, patron d'`indexDesTerrains` (`state/terrain/index.ts`) :
- * `setDataset` splice le tableau EN PLACE (son identité ne change jamais), et l'atelier remplace
- * l'entrée éditée par un objet NEUF — ce sont donc les références d'entrée, position par position,
- * qui disent qu'une rampe a bougé. Les dégradés RIG/FX sont des littéraux : ils ne se re-lisent pas.
+ * Mémoïsée par la VERSION du dataset, patron d'`indexDesTerrains` (`state/terrain/index.ts`) :
+ * `setDataset` splice le tableau EN PLACE (son identité ne change jamais) et VERSIONNE son écriture
+ * (`memoParVersion`, `data/versionDataset.ts`, #1692) — c'est cette version qui dit qu'une rampe a
+ * bougé. Les dégradés RIG/FX sont des littéraux : ils ne se re-lisent pas.
  */
-let memoDefs: { temoin: readonly TerrainDef[]; svg: string } | null = null;
+const memoDefs = memoParVersion('terrains', () => degradesDeTerrains(tousLesTerrains()) + degradeAlarme + rigFxGradients);
 export function defsGlobaux(): string {
-  const terrains = tousLesTerrains();
-  const m = memoDefs;
-  if (m && m.temoin.length === terrains.length && m.temoin.every((t, i) => t === terrains[i])) return m.svg;
-  const svg = degradesDeTerrains(terrains) + degradeAlarme + rigFxGradients;
-  memoDefs = { temoin: [...terrains], svg };
-  return svg;
+  return memoDefs();
 }

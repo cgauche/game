@@ -19,7 +19,7 @@ import { METRES_PER_LEVEL } from './relief';
 import { sceneIsDark } from './sceneRules';
 import { propFootTiles, decorAncre } from './footprint';
 import { Pt, chebyshev } from './path';
-import { LIGHT_LEVEL_BY_ID, findTraitById, findPropById, findTrappingById } from '../data';
+import { findLightLevelById, findTraitById, findPropById, findTrappingById } from '../data';
 import { empreinteDuProp, rotatePropLocal, CAP_IDENTITE_PROP, type PropData } from '../data/props.types';
 import type { Dir8 } from './dir8';
 import { memoByRef } from './sceneMemo';
@@ -167,7 +167,7 @@ function rayBlocked(scene: Scene, occ: Occ, smoke: Set<string>, from: Pt, to: Pt
  *  dérivé de l'horloge (`sceneIsDark` : extérieur de nuit = sombre). */
 function levelOf(scene: Scene, gameTime: number) {
   const id = scene.ambientLight && scene.ambientLight !== 'auto' ? scene.ambientLight : sceneIsDark(scene, gameTime) ? 'nuit' : 'jour';
-  return LIGHT_LEVEL_BY_ID.get(id) ?? LIGHT_LEVEL_BY_ID.get('jour')!;
+  return findLightLevelById(id) ?? findLightLevelById('jour')!;
 }
 
 /** Scalaire d'éclairement 0..1 de la scène (assombrissement du rendu + plancher du champ de lumière).

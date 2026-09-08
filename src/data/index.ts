@@ -1480,13 +1480,13 @@ export interface PsychologyData extends StatusData {
   stake?: string;
   stakeForm?: StakeForm;
   /** AFFICHAGE (couche UI, hors RAW LDB 21) : icône du registre `<Icon>` (id `famille/nom`), à l'égal
-   *  d'`EtatData.icon`. Lu par `CIBLE_LABEL` (engine/psychology.ts). */
+   *  d'`EtatData.icon`. Lu par `cibleLabel` (engine/psychology.ts). */
   icon?: string;
   /** Porter cet état psy IMMUNISE à la Psychologie (Frénésie, LDB 21 l.33) — lu GÉNÉRIQUEMENT par
    *  `isPsychImmune` (jamais codé par-nom), à l'égal du drapeau de trait « Immunité (Psychologie) ». */
   psychImmune?: boolean;
   /** Trait psychologique CIBLÉ (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie, LDB 21) : résolution
-   *  binaire de Calme pilotée par un Groupe-Cible. Dérive `CIBLE_TYPES` de la donnée (jamais un Set codé). */
+   *  binaire de Calme pilotée par un Groupe-Cible. Dérive `estCibleType` de la donnée (jamais un Set codé). */
   targeted?: boolean;
   /** RAW LDB 21 : cette affliction CIBLÉE cesse dès que son porteur tombe sous un AUTRE effet psychologique
    *  « dominant » (Peur/Terreur/Haine…) — « Animosité est annulé par Peur et Terreur » ; Préjugé idem. */
@@ -2258,12 +2258,16 @@ export interface NamePool {
   lastNameSuffixes?: { M: string[]; F: string[] };
 }
 
+import { indexParChamp, indexParId, memoParVersion } from './versionDataset';
+/** Les primitives d'INDEX VIF (#1692), REEXPORTÉES par la façade : un lecteur hors `src/data` compose
+ *  l'accesseur d'ici plutôt que de rebâtir son propre index sur un dataset muté en place. */
+export { indexParChamp, indexParId, memoParVersion, versionDuDataset } from './versionDataset';
+
 export const characteristics = characteristicsJson as CharacteristicsData;
 /** Abréviation FR AFFICHÉE d'une caractéristique à jet (« CC », « Ag »…), dérivée de `characteristics.json`
  *  par `id` (jamais recopiée en dur dans l'UI — `CharKey` reste un id opaque, cf. engine/types.ts). */
-export const CHAR_ABR: Record<CharKey, string> = Object.fromEntries(
-  characteristics.filter((c) => c.nature === 'roll').map((c) => [c.id, c.abr]),
-) as Record<CharKey, string>;
+const charARoulerParId = indexParChamp('characteristics', characteristics, (c) => (c.nature === 'roll' ? c.id : undefined));
+export const charAbr = (k: CharKey): string => charARoulerParId(k)?.abr ?? k;
 export const species = speciesJson as SpeciesData[];
 export const classes = classesJson as ClassData[];
 export const careers = careersJson as CareerData[];
@@ -2291,48 +2295,50 @@ export const disponibilite = disponibiliteJson as DispoData;
 /** Maladies (LDB 20) — app-owned éditable au Codex ; le COMPORTEMENT (cycle/symptômes) vit dans
  *  `engine/disease`. `DiseaseDef` (type) y est défini ; ici on n'expose que la DONNÉE. */
 export const maladies = maladiesJson as DiseaseDef[];
-const DISEASE_BY_ID = new Map(maladies.map((m) => [m.id, m]));
+const maladieParId = indexParId('maladies', maladies);
 /** Résout une Maladie par son `id` STABLE. */
 export function findDiseaseById(id: string): DiseaseDef | undefined {
-  return DISEASE_BY_ID.get(id);
+  return maladieParId(id);
 }
 /** Libellé d'affichage d'une Maladie par son id (repli sur l'id). */
 export function diseaseLabel(id: string): string {
-  return DISEASE_BY_ID.get(id)?.label ?? id;
+  return maladieParId(id)?.label ?? id;
 }
 // Traits app-owned (officiels + homebrew frenchy.bzh Aura de Dhar/Mort, Charnier + suppléments
 // Redoutable/Fouissement ZI) — TOUT dans `traits.json` ; chaque entrée garde sa vraie `source` : ZI, frenchy.bzh…).
 export const traits = traitsJson as TraitData[];
-/** Index des Traits par libellé canonique — lecture des `effects` au runtime (state/triggeredEffects). */
-export const traitByLabel: Map<string, TraitData> = new Map(traits.map((t) => [t.label, t]));
-/** Index des Traits par `id` STABLE (slug) — lookup runtime indépendant de la langue. */
-export const traitById: Map<string, TraitData> = new Map(traits.map((t) => [t.id, t]));
-export const findTraitById = (id: string): TraitData | undefined => traitById.get(id);
+const traitParLabelMinuscule = indexParChamp('traits', traits, (t) => t.label.toLowerCase());
+/** `id` STABLE d'un Trait depuis un LIBELLÉ d'AUTHORING (statbloc saisi, migration), casse ignorée —
+ *  `undefined` si le texte ne nomme aucun trait du catalogue. La couture label→id vit ICI, au
+ *  CHARGEMENT de la donnée (CLAUDE.md § Pour TOUT agent) : `src/engine` délègue à ce résolveur d'ID
+ *  et ne manipule que des ids ; le runtime résout par `findTraitById`. Patron `talentIdByLabel`. */
+export const traitIdByLabel = (label: string): string | undefined => traitParLabelMinuscule(label.toLowerCase())?.id;
+const traitParId = indexParId('traits', traits);
+/** Trait par `id` STABLE (slug) — lookup runtime indépendant de la langue. */
+export const findTraitById = (id: string): TraitData | undefined => traitParId(id);
 export const qualities = qualitiesJson as QualityData[];
-/** Index des Atouts/Défauts par libellé — lecture des `effects` déclenchés au runtime (triggeredEffects). */
-export const qualityByLabel: Map<string, QualityData> = new Map(qualities.map((q) => [q.label, q]));
 /** Index des Atouts/Défauts par `id` STABLE (slug) — lookup runtime indépendant de la langue (dispatch). */
-export const qualityById: Map<string, QualityData> = new Map(qualities.map((q) => [q.id, q]));
+const qualiteParId = indexParId('qualities', qualities);
 /** Atouts de Fabrication (LDB 60 p.286) — DÉRIVÉS de la donnée : les qualités `atout` d'objet que la
  *  Compétence Métier produit, donc hors qualités MAGIQUES (`capabilities.magic` : Maudit, VDM 12
  *  folio 170, est un Atout d'objet qu'aucun artisan ne fabrique). */
-export const FABRICATION_ATOUTS: string[] = qualities
-  .filter((q) => q.polarite === 'atout' && q.subType === 'objet' && !q.capabilities?.magic)
-  .map((q) => q.id);
+export const fabricationAtouts = memoParVersion('qualities', (): string[] =>
+  qualities.filter((q) => q.polarite === 'atout' && q.subType === 'objet' && !q.capabilities?.magic).map((q) => q.id),
+);
 /** Atout de fabrication par DÉFAUT (fallback maison quand le joueur ne choisit pas ; le RAW n'en fixe
  *  aucun — un objet de qualité a toujours UN Atout, LDB 60 p.286). */
 export const DEFAULT_FABRICATION_ATOUT = 'raffine';
 /** `QualityRef` d'un Atout de fabrication résolu — une qualité INDICÉE (`indice`) prend l'Indice 1
  *  par défaut d'un Atout UNIQUE de fabrication (Solide « encaisse Indice PdD », LDB 60 p.286). */
 export function fabricationAtoutQuality(id: string): { id: string; value?: number } {
-  return qualityById.get(id)?.indice ? { id, value: 1 } : { id };
+  return qualiteParId(id)?.indice ? { id, value: 1 } : { id };
 }
 /** Symptômes de maladie (LDB 20) — entités de DONNÉE éditables au Codex (passive/onTick/capabilities). */
 export const symptoms = symptomsJson as SymptomData[];
-export const symptomById: Map<string, SymptomData> = new Map(symptoms.map((s) => [s.id, s]));
-export const findSymptomById = (id: string): SymptomData | undefined => symptomById.get(id);
+const symptomeParId = indexParId('symptoms', symptoms);
+export const findSymptomById = (id: string): SymptomData | undefined => symptomeParId(id);
 /** Libellé FR d'un symptôme par son id (repli sur l'id si inconnu). */
-export const symptomLabel = (id: string): string => symptomById.get(id)?.label ?? id;
+export const symptomLabel = (id: string): string => symptomeParId(id)?.label ?? id;
 /** Les paliers de SÉVÉRITÉ d'une instance de symptôme, dans l'ordre CROISSANT (LDB 20 l.157 « (Modéré) »,
  *  l.170 « (Grave) ») — SOURCE UNIQUE de l'énumération (canaux `passiveBySeverity`/`difficultyBySeverity`,
  *  atelier du Codex). La LOGIQUE reste keyée par ces ids ; `SYMPTOM_SEVERITY_LABELS` n'en donne que
@@ -2356,27 +2362,29 @@ export const mutationTables = mutationTablesJson as MutationTable[];
 /** Tables d'EFFETS référençables (`tables.json`, tirées par l'op `rollTable` variante `tableId`) —
  *  loader + lookup fail-fast dans `data/effectTables.ts` (importe le type `GameOp` du moteur, réservé). */
 export { effectTables, findEffectTableById, type EffectTable, type EffectTableRow } from './effectTables';
-const MUTATION_BY_ID = new Map(mutations.map((m) => [m.id, m]));
+const mutationParId = indexParId('mutations', mutations);
 /** Résout une Mutation (entité) par son `id` STABLE — lookup DONNÉE sans cycle (le résolveur de tirage
  *  `mutationById` de `data/mutations` importe le moteur → réservé au runtime de corruption). */
 export function findMutationById(id: string | null | undefined): MutationData | undefined {
-  return id ? MUTATION_BY_ID.get(id) : undefined;
+  return mutationParId(id);
 }
 /** Libellé d'affichage d'une Mutation par son id (repli sur l'id). SOURCE UNIQUE du nom. */
 export function mutationLabel(id: string | null | undefined): string {
-  return id ? (MUTATION_BY_ID.get(id)?.label ?? id) : '';
+  return id ? (mutationParId(id)?.label ?? id) : '';
 }
 export const trappings = trappingsJson as TrappingData[];
-/** Engins de siège POSABLES = trappings portant un art d'affût (`siegeRig`). FOYER UNIQUE du filtre,
- *  partagé par l'outil emplacement de l'éditeur (`SIEGE_ENGINES`) ET la catégorie Codex « Engins de siège »
- *  — plus de `trappings.filter(siegeRig)` dupliqué à deux endroits. */
-export const siegeEngines = trappings.filter((t) => !!t.siegeRig);
+/** Engins de siège POSABLES = trappings portant un art d'affût (`siegeRig`). FOYER UNIQUE du filtre :
+ *  l'invariant « posable ⇔ l'engin a un art d'affût, et c'est ce rig qui rend l'affût inerte en
+ *  éditeur comme en combat » ne vit QU'ICI — partagé par l'outil emplacement de l'éditeur
+ *  (Palette/Inspecteur/StatusBar) ET la catégorie Codex « Engins de siège », plus aucun
+ *  `trappings.filter(siegeRig)` dupliqué ailleurs. */
+export const siegeEngines = memoParVersion('trappings', () => trappings.filter((t) => !!t.siegeRig));
 /** Véhicules / embarcations à coque — FOYER UNIQUE app-owned (data-driven). Trois facettes par
  *  enregistrement (achat / voyage / coque) ; cf. `VehicleData`. La facette `travel` est lue par
  *  `engine/travel` ; les facettes `purchase`/`hull` par le marché et les incidents/combat. */
 export const vehicles = vehiclesJson as VehicleData[];
-export const vehicleById: Map<string, VehicleData> = new Map(vehicles.map((v) => [v.id, v]));
-export const findVehicleById = (id: string): VehicleData | undefined => vehicleById.get(id);
+const vehiculeParId = indexParId('vehicles', vehicles);
+export const findVehicleById = (id: string): VehicleData | undefined => vehiculeParId(id);
 
 /** Archétypes de marchand (#2, donnée éditable — aucun archétype en dur dans le code) — FOYER UNIQUE
  *  app-owned. `MERCHANTS`/`MERCHANT_ARCHETYPES` (`state/merchants/index.ts`) réexportent ce registre :
@@ -2388,8 +2396,8 @@ export const findMerchantArchetypeById = (id: string): MerchantArchetypeDef | un
 /** Structures destructibles de siège (ADE II 8) — catalogue app-owned éditable au Codex. Modèle à PV
  *  calqué sur la facette `hull` des véhicules ; lu par `engine/structures.ts` (`structureCombatant`). */
 export const structures = structuresJson as StructureData[];
-export const structureById: Map<string, StructureData> = new Map(structures.map((s) => [s.id, s]));
-export const findStructureById = (id: string): StructureData | undefined => structureById.get(id);
+const structureParId = indexParId('structures', structures);
+export const findStructureById = (id: string): StructureData | undefined => structureParId(id);
 /** Apparence de RENDU des structures (murs/portes) — donnée pure, découplée des règles ci-dessus. */
 export const structureAppearances = structureAppearanceJson as import('../gameIso/catalog/structures/types').StructureAppearanceDef[];
 
@@ -2516,11 +2524,11 @@ export interface NavalTraitData {
   maison?: string;
 }
 export const NAVAL_TRAITS = navalTraitsJson as NavalTraitData[];
-const navalTraitById = new Map(NAVAL_TRAITS.map((t) => [t.id, t]));
+const traitNavalParId = indexParId('navalTraits', NAVAL_TRAITS);
 /** Entrée du catalogue pour une réf par id STABLE (`NavalTraitRef.id`) — l'Indice vit dans `NavalTraitRef.value`,
  *  PAS dans la clé (jamais un parsing de libellé « Renforcé 2 »). PUR. */
 export function findNavalTrait(id: string): NavalTraitData | undefined {
-  return navalTraitById.get(id);
+  return traitNavalParId(id);
 }
 /** Index des ports de la Mer des Griffes (#217, MDG 15 l.439-506) — catalogue app-owned éditable au
  *  Codex, consommé PAR RÉFÉRENCE depuis un lieu de la carte du monde (`MapPlace.port.ref`,
@@ -2546,9 +2554,9 @@ export interface NavalPortData {
   source: SourceRef;
 }
 export const navalPorts = navalPortsJson as NavalPortData[];
-const navalPortById = new Map(navalPorts.map((p) => [p.id, p]));
+const portNavalParId = indexParId('navalPorts', navalPorts);
 export function findNavalPortById(id: string): NavalPortData | undefined {
-  return navalPortById.get(id);
+  return portNavalParId(id);
 }
 
 /** LOT 1 #422 : 5 datasets NAVAUX de contenu (tables MDG 12/13/15) exposés au Codex — mêmes garanties
@@ -2615,9 +2623,9 @@ export interface SeaShantyData {
   source: SourceRef;
 }
 export const seaShanties = seaShantiesJson as SeaShantyData[];
-const seaShantyById = new Map(seaShanties.map((s) => [s.id, s]));
+const chansonMarinParId = indexParId('seaShanties', seaShanties);
 export function findSeaShantyById(id: string): SeaShantyData | undefined {
-  return seaShantyById.get(id);
+  return chansonMarinParId(id);
 }
 /** Rôles d'équipage naval (MDG 14 « Tests d'équipage ») — catalogue app-owned éditable au Codex.
  *  Chaque rôle mappe une (ou plusieurs, ex. Mousse = Voile/Ramer → meilleure) Compétence par `id` STABLE
@@ -2665,14 +2673,14 @@ export interface ShipStationData {
   requiresTrait?: { id: string };
 }
 export const shipStations = shipStationsJson as ShipStationData[];
-const shipStationById = new Map(shipStations.map((s) => [s.id, s]));
-export const findShipStation = (id: string): ShipStationData | undefined => shipStationById.get(id);
+const stationParId = indexParId('shipStations', shipStations);
+export const findShipStation = (id: string): ShipStationData | undefined => stationParId(id);
 export const crewRoles = crewRolesJson as CrewRoleData[];
-const crewRoleById = new Map(crewRoles.map((r) => [r.id, r]));
-export const findCrewRoleById = (id: string): CrewRoleData | undefined => crewRoleById.get(id);
+const roleEquipageParId = indexParId('crewRoles', crewRoles);
+export const findCrewRoleById = (id: string): CrewRoleData | undefined => roleEquipageParId(id);
 export const crewTestTypes = (crewTestTypesJson as { types: CrewTestTypeData[] }).types;
-const crewTestTypeById = new Map(crewTestTypes.map((t) => [t.id, t]));
-export const findCrewTestTypeById = (id: string): CrewTestTypeData | undefined => crewTestTypeById.get(id);
+const testEquipageParId = indexParId('crewTestTypes', crewTestTypes);
+export const findCrewTestTypeById = (id: string): CrewTestTypeData | undefined => testEquipageParId(id);
 /** Groupes d'objet app-owned (taxonomie `subType` id-ifiée) — éditable au Codex. */
 export const weaponGroups = weaponGroupsJson as WeaponGroupData[];
 export const groups = groupsJson as GroupData[];
@@ -2690,8 +2698,8 @@ export const maneuvers = maneuversJson as ManeuverDef[];
  *  portée de vue). Édité au Codex. `Scene.ambientLight` réfère un `id` (ou `auto` = suit l'horloge). */
 export interface LightLevelDef { id: string; type: 'lightLevels'; label: string; scalar: number; baseSightTiles: number }
 export const lightLevels = lightLevelsJson as LightLevelDef[];
-export const LIGHT_LEVEL_BY_ID = new Map(lightLevels.map((l) => [l.id, l]));
-export const findLightLevelById = (id: string): LightLevelDef | undefined => LIGHT_LEVEL_BY_ID.get(id);
+const niveauLumiereParId = indexParId('lightLevels', lightLevels);
+export const findLightLevelById = (id: string): LightLevelDef | undefined => niveauLumiereParId(id);
 /** TON de lumière app-owned (#1245, L4) : l'APPARENCE d'une source PONCTUELLE — couleur, part
  *  d'intensité (facteur du calage anti-saturation du rendu, jamais une intensité absolue) et
  *  vacillement optionnel. Aucune conséquence de règle : le moteur ne connaît d'une source que son
@@ -2699,9 +2707,10 @@ export const findLightLevelById = (id: string): LightLevelDef | undefined => LIG
  *  absent = `flamme`. Résolu au bord du RENDU (`gameIso/stage/stagePointLights.ts`). */
 export interface LightToneDef { id: string; type: 'lightTones'; label: string; color: string; intensity: number; flicker?: { amplitude: number; hz: number } }
 export const lightTones = lightTonesJson as LightToneDef[];
-/** Lookup LIVE — un balayage du tableau, pas une `Map` cuite au chargement : le catalogue se mute EN
- *  PLACE (`data/overrides.ts`, éditeur du Codex / surcharges de campagne), et un index figé servirait
- *  encore l'ancien ton après une édition. Quatre entrées : le balayage ne coûte rien. */
+/** Lookup LIVE par BALAYAGE, et non par `indexParId` : à QUATRE entrées, l'index ne rachète pas son
+ *  coût — même choix MESURÉ que `matieresDe` (`+4,1 ms` contre un index sur 18 026 lookups, #1686 lot
+ *  3a-1, cf. `findPropMaterialById` ci-dessous). Le balayage est vif par construction : le catalogue
+ *  se mute EN PLACE (`data/overrides.ts`). */
 export const findLightToneById = (id: string): LightToneDef | undefined => lightTones.find((t) => t.id === id);
 /** Ton SERVI à une source qui n'en nomme aucun — le feu, le cas du monde (brasero, feu de camp). */
 export const DEFAULT_LIGHT_TONE_ID = 'flamme';
@@ -2711,8 +2720,8 @@ export type { PropData, PropMaterialData, PropMaterialId, PropPoint3, PropSize3,
 export { validatePropCatalog, propFootOf, REF_DECOR_DEFAUT } from './props.types';
 import { REF_DECOR_DEFAUT } from './props.types';
 export const props = propsJson as PropData[];
-export const PROP_BY_ID = new Map(props.map((p) => [p.id, p]));
-export const findPropById = (id: string): PropData | undefined => PROP_BY_ID.get(id);
+const propParId = indexParId('props', props);
+export const findPropById = (id: string): PropData | undefined => propParId(id);
 /** Un type de décor rend-il en VOLUME (recette authorée) plutôt qu'en billboard ? RÈGLE UNIQUE, propriété
  *  du CATALOGUE : l'émetteur de décor (`gameIso/builders/props.ts`) comme le validateur de scène
  *  (`state/validateScene.ts`) la lisent ici — aucun site ne la redevine. `ref` absente = le défaut du
@@ -2726,16 +2735,16 @@ export const findPropMaterialById = (id: string): PropMaterialData | undefined =
  *  projectile, post-incantation). Le RUNTIME résout par `id` STABLE (= `SpellData.domainId`, cf.
  *  `findDomainById`) ; `domainByLabel`/`findDomain` restent pour l'authoring/affichage. */
 export const domains = domainsJson as DomainData[];
-export const domainByLabel: Map<string, DomainData> = new Map(domains.map((d) => [d.label, d]));
-export const findDomain = (label: string | null | undefined): DomainData | undefined => (label ? domainByLabel.get(label) : undefined);
+const domaineParLabel = indexParChamp('domains', domains, (d) => d.label);
+export const findDomain = (label: string | null | undefined): DomainData | undefined => domaineParLabel(label);
 /** Index des Domaines par `id` STABLE — lookup RUNTIME indépendant de la langue (sort→domaine). */
-export const domainById: Map<string, DomainData> = new Map(domains.map((d) => [d.id, d]));
-export const findDomainById = (id: string | null | undefined): DomainData | undefined => (id ? domainById.get(id) : undefined);
+const domaineParId = indexParId('domains', domains);
+export const findDomainById = (id: string | null | undefined): DomainData | undefined => domaineParId(id);
 /** Index des Domaines par `wind` (Vent de Magie) — résout un Vent (Ghur, Aqshy, Dhar…) vers son Domaine.
  *  SOURCE de la Compétence Focalisation (spécialisée par Vent) : un `focalisation.spec` porte l'id du
  *  Domaine et AFFICHE le Vent ; ce lookup fait l'inverse (authoring/migration Vent → id). */
-export const domainByWind: Map<string, DomainData> = new Map(domains.filter((d) => d.wind).map((d) => [d.wind as string, d]));
-export const findDomainByWind = (wind: string | null | undefined): DomainData | undefined => (wind ? domainByWind.get(wind) : undefined);
+const domaineParVent = indexParChamp('domains', domains, (d) => d.wind);
+export const findDomainByWind = (wind: string | null | undefined): DomainData | undefined => domaineParVent(wind);
 /** Un axe du catalogue `axes.json` (#409) — vue TS de son schéma zod. */
 export type AxisData = AxesData[number];
 /** Catalogue des axes de forces/faiblesses (mécanique MAISON, #409) : socle de base (`core`) +
@@ -2743,10 +2752,10 @@ export type AxisData = AxesData[number];
  *  `skills.json`/`talents.json` — résolus par `axisScore` (`src/engine/axes.ts`). Intégrité des ids
  *  vérifiée par `axes-integrity.test.ts` (patron `book-source-integrity.test.ts`). */
 export const allAxes = axesJson as AxisData[];
-const AXIS_BY_ID = new Map(allAxes.map((a) => [a.id, a]));
-export const findAxisById = (id: string): AxisData | undefined => AXIS_BY_ID.get(id);
+const axeParId = indexParId('axes', allAxes);
+export const findAxisById = (id: string): AxisData | undefined => axeParId(id);
 /** Socle par défaut d'une campagne SANS `activeAxes` déclaré (`WorldMap.activeAxes`). */
-export const CORE_AXIS_IDS: string[] = allAxes.filter((a) => a.core).map((a) => a.id);
+export const coreAxisIds = memoParVersion('axes', (): string[] => allAxes.filter((a) => a.core).map((a) => a.id));
 export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
 /** Calendrier impérial — tables de CONTENU éditables au Codex (cf. `engine/clock.ts` pour la mécanique). */
@@ -2794,21 +2803,21 @@ export const celestialHouses = astrologyJson as CelestialHouseData[];
 /** Apparences d'espèce de rig (app-owned, éditable) — SOURCE lue+résolue par `raceById` (rig). */
 export const raceAppearance = raceAppearanceJson as RaceAppearanceData[];
 export const locations = locationsJson as LocationData[];
-const LOCATION_BY_ID = new Map(locations.map((l) => [l.id, l]));
+const lieuParId = indexParId('locations', locations);
 /** Résout un Lieu par son `id` STABLE (cible de `LocationData.parent`). Le libellé ne sert qu'à l'affichage. */
 export function findLocationById(id: string | null | undefined): LocationData | undefined {
-  return id ? LOCATION_BY_ID.get(id) : undefined;
+  return lieuParId(id);
 }
 export const books = booksJson as BookData[];
-const BOOK_BY_ID = new Map<string, BookData>(books.map((b) => [b.id, b]));
+const livreParId = indexParId('books', books);
 /** Résout un Livre par son `id` STABLE (cible de `source.book`) — `abbr`/`label` ne servent qu'à l'affichage. */
 export function findBookById(id: string | null | undefined): BookData | undefined {
-  return id ? BOOK_BY_ID.get(id) : undefined;
+  return livreParId(id);
 }
 /** Acronyme d'un livre depuis l'`id` porté par `source.book` (fallback = l'id si inconnu). */
 export function bookAbr(id: string | null | undefined): string {
   if (!id) return '';
-  return BOOK_BY_ID.get(id)?.abbr ?? id;
+  return livreParId(id)?.abbr ?? id;
 }
 /** Culte/Dieu (LDB 41) : `id` = slug STABLE (« sigmar »), `label` = nom affiché (« Sigmar »), Bénédictions/
  *  Miracles en `Ref[]` (sorts par id), desc = lore HTML (Codex). Dataset éditable (Compendium) — remplace
@@ -2891,33 +2900,37 @@ export function findReseauRoutierById(id: string): ReseauRoutierData | undefined
   return reseauRoutierById.get(id);
 }
 
-const ETAT_BY_ID = new Map(etats.map((e) => [e.id, e]));
+const etatParId = indexParId('etats', etats);
 /** Résout un État par son `id` STABLE (`ConditionId`). */
 export function findConditionById(id: string): EtatData | undefined {
-  return ETAT_BY_ID.get(id);
+  return etatParId(id);
 }
 
 /** États PSYCHOLOGIQUES (LDB 21) — base app-owned éditable au Codex. Données de Frénésie aujourd'hui ;
  *  Peur/Terreur/Animosité/Haine à migrer (chantier psychologie data-driven). */
 export const psychologies = psychologyJson as PsychologyData[];
-const PSYCH_BY_ID = new Map(psychologies.map((p) => [p.id, p]));
+const psychologieParId = indexParId('psychologies', psychologies);
 /** Résout un état psychologique par son `id` STABLE (`PsychType`). Absent → undefined (folding inerte). */
 export function findPsychologyById(id: string): PsychologyData | undefined {
-  return PSYCH_BY_ID.get(id);
+  return psychologieParId(id);
 }
 /** Libellé d'affichage d'un État par son id (repli sur l'id). SOURCE UNIQUE du nom d'État affiché. */
 export function conditionLabel(id: string): string {
-  return ETAT_BY_ID.get(id)?.label ?? id;
+  return etatParId(id)?.label ?? id;
 }
 /** Libellé d'affichage d'un état psychologique par son `id` (`PsychType`), repli sur l'id — délègue au
  *  résolveur de libellé GÉNÉRIQUE (`refLabel`), jamais une copie locale du motif `MAP.get(id)?.label ?? id`. */
 export function psychologyLabel(id: string): string {
   return refLabel('psychologies', { id });
 }
-const ETAT_ID_BY_LABEL = new Map(etats.map((e) => [e.label.toLowerCase(), e.id]));
+/** ids d'États du catalogue, dans l'ordre du dataset — vue VIVE (`memoParVersion`), reconstruite
+ *  après une édition au Codex. Consommée par le scan du journal (`engine/conditions.conditionIdInText`)
+ *  qui itère des ids et n'obtient le libellé que pour le chercher dans un texte FRANÇAIS. */
+export const conditionIds = memoParVersion('etats', () => etats.map((e) => e.id));
+const etatParLabelMinuscule = indexParChamp('etats', etats, (e) => e.label.toLowerCase());
 /** Résout un `id` d'État depuis un LIBELLÉ (authoring : parsing de desc/texte) — insensible à la casse. */
 export function conditionIdByLabel(label: string): string | undefined {
-  return ETAT_ID_BY_LABEL.get(label.toLowerCase());
+  return etatParLabelMinuscule(label.toLowerCase())?.id;
 }
 /** Inverse de `CHAR_LABELS` (engine/types) : nom FR complet (« Force Mentale ») → `CharKey` (« FM »).
  *  Couture UNIQUE label→id des Caractéristiques — consommée par `engine/spellRange.ts` pour parser
@@ -2926,11 +2939,11 @@ const CHAR_KEY_BY_LABEL = new Map<string, CharKey>((Object.entries(CHAR_LABELS) 
 export function charKeyByLabel(label: string): CharKey | undefined {
   return CHAR_KEY_BY_LABEL.get(label);
 }
-const SPECIES_BY_ID = new Map(species.map((s) => [s.id, s]));
+const especeParId = indexParId('species', species);
 /** Résout une Espèce par son `id` STABLE (slug du libellé) — réf runtime/données (Combatant.species,
  *  pregens, draft). Le libellé ne sert qu'à l'affichage (`speciesSingular`). */
 export function findSpeciesById(id: string | undefined): SpeciesData | undefined {
-  return id ? SPECIES_BY_ID.get(id) : undefined;
+  return especeParId(id);
 }
 /** Taille CONFÉRÉE par les talents d'espèce FIXES (une référence ARRÊTÉE, jamais un `{pick}`, un
  *  `{random}` ni un `choix` résiduels — chip décoratif du créateur avant résolution complète, #572).
@@ -2984,10 +2997,10 @@ export function careersForSpecies(refCareer: RefCareerId, ignoreRestrictions = f
   if (ignoreRestrictions) return careers;
   return careers.filter((c) => c.rand?.[refCareer] != null);
 }
-const CAREER_BY_ID = new Map(careers.map((c) => [c.id, c]));
+const carriereParId = indexParId('careers', careers);
 /** Résout une Carrière par son `id` STABLE. Le libellé ne sert qu'à l'affichage. */
 export function findCareerById(id: string | undefined): CareerData | undefined {
-  return id ? CAREER_BY_ID.get(id) : undefined;
+  return carriereParId(id);
 }
 /** Choix d'AFFICHAGE masculin/féminin (source unique) : `labelF` si sexe F et disponible, sinon
  *  `label`. Le sexe vit dans l'apparence cosmétique (`Combatant.appearance.sex`), jamais dans le moteur. */
@@ -3001,10 +3014,10 @@ export function careerLabelFor(c: { career?: string; appearance?: { sex?: 'M' | 
   if (!career) return c.career ?? '';
   return displayLabelForSex(c.appearance?.sex, career.label, career.labelF);
 }
-const CLASS_BY_ID = new Map(classes.map((c) => [c.id, c]));
+const classeParId = indexParId('classes', classes);
 /** Résout une Classe par son `id` STABLE (= `CareerData.class`). */
 export function findClassById(id: string | undefined): ClassData | undefined {
-  return id ? CLASS_BY_ID.get(id) : undefined;
+  return classeParId(id);
 }
 export function levelsForCareer(careerId: string): CareerLevelData[] {
   return careerLevels.filter((c) => c.career === careerId).sort((a, b) => a.level - b.level);
@@ -3026,11 +3039,11 @@ export function skillIdByLabel(label: string): string {
  *  STABLE. Un type y entre AVEC le lot qui migre son concept (patron `TYPES`,
  *  `schemas/grammaire/ref.ts`) — ce qui n'y est pas déclaré ne se résout pas par la porte. */
 const PAR_ID = {
-  skill: new Map<string, SkillData>(skills.map((s) => [s.id, s])),
-} satisfies Partial<Record<TypeEntite, ReadonlyMap<string, unknown>>>;
+  skill: indexParId('skills', skills),
+} satisfies Partial<Record<TypeEntite, (id: string) => unknown>>;
 /** Types d'entité que la porte résout — sous-ensemble DÉCLARÉ de `TypeEntite`. */
 export type TypeResolu = keyof typeof PAR_ID;
-type EntiteDe<T extends TypeResolu> = (typeof PAR_ID)[T] extends Map<string, infer E> ? E : never;
+type EntiteDe<T extends TypeResolu> = NonNullable<ReturnType<(typeof PAR_ID)[T]>>;
 /**
  * PORTE UNIQUE de résolution d'une entité par son `id` STABLE (#1463 L2) : le type d'entité
  * paramètre le lookup ET le type rendu ; `undefined` si l'id est absent de son dataset.
@@ -3038,7 +3051,7 @@ type EntiteDe<T extends TypeResolu> = (typeof PAR_ID)[T] extends Map<string, inf
  * (`idDe`, `schemas/grammaire/ref.ts`) ; le moteur, lui, porte des ids nus (`SkillInstance.id`).
  */
 export function byId<T extends TypeResolu>(type: T, id: string): EntiteDe<T> | undefined {
-  return PAR_ID[type].get(id) as EntiteDe<T> | undefined;
+  return PAR_ID[type](id) as EntiteDe<T> | undefined;
 }
 /** Noyau de RÉFÉRENCE structurée par `id` STABLE — partagé par toutes les refs de la donnée
  *  (compétences, talents, sorts, qualités, possessions, bénédictions…). `id` = slug du libellé
@@ -3080,10 +3093,10 @@ export function wildcardSpecIds(name: string): string[] {
   const def = findSkill(name) ?? findTalent(name);
   return def ? specPoolOf(def) : [];
 }
-const TALENT_BY_ID = new Map(talents.map((t) => [t.id, t]));
+const talentParId = indexParId('talents', talents);
 /** Résout un Talent par son `id` STABLE (référence structurée — fin du lookup par libellé parsé). */
 export function findTalentById(id: string): TalentData | undefined {
-  return TALENT_BY_ID.get(id);
+  return talentParId(id);
 }
 /** Référence STRUCTURÉE à un Talent (`Ref` + niveau `times` ≥2) — fin des chaînes « Maîtrise du combat 2 ». */
 export interface TalentRef extends Ref {
@@ -3097,35 +3110,35 @@ export function talentRefLabel(ref: TalentRef): string {
 /** Sous-type d'une QUALITÉ (classification RAW : qualités d'Arme LDB 62, d'Armure LDB 63, d'Objet). */
 export interface QualitySubtypeData { id: string; type: 'qualitySubtypes'; label: string; }
 export const qualitySubtypes = qualitySubtypesJson as QualitySubtypeData[];
-const QUALITY_SUBTYPE_BY_ID = new Map(qualitySubtypes.map((s) => [s.id, s]));
+const sousTypeQualiteParId = indexParId('qualitySubtypes', qualitySubtypes);
 /** Résout un sous-type de Qualité par son `id` STABLE (= `QualityData.subType`). */
 export function findQualitySubtypeById(id: string | null | undefined): QualitySubtypeData | undefined {
-  return id ? QUALITY_SUBTYPE_BY_ID.get(id) : undefined;
+  return sousTypeQualiteParId(id);
 }
 /** Libellé d'affichage d'un sous-type de Qualité par son id (repli sur l'id). SOURCE UNIQUE du nom. */
 export function qualitySubtypeLabel(id: string | null | undefined): string {
-  return id ? (QUALITY_SUBTYPE_BY_ID.get(id)?.label ?? id) : '';
+  return id ? (sousTypeQualiteParId(id)?.label ?? id) : '';
 }
 /** Type d'une QUALITÉ : Atout (bénéfique) / Défaut (handicap) — classification RAW (LDB 62/63). */
 export interface QualityTypeData { id: string; type: 'qualityTypes'; label: string; }
 export const qualityTypes = qualityTypesJson as QualityTypeData[];
-const QUALITY_TYPE_BY_ID = new Map(qualityTypes.map((t) => [t.id, t]));
+const typeQualiteParId = indexParId('qualityTypes', qualityTypes);
 /** Résout un type de Qualité par son `id` STABLE (= `QualityData.polarite`). */
 export function findQualityTypeById(id: string | null | undefined): QualityTypeData | undefined {
-  return id ? QUALITY_TYPE_BY_ID.get(id) : undefined;
+  return typeQualiteParId(id);
 }
 /** Libellé d'affichage d'un type de Qualité par son id (repli sur l'id). SOURCE UNIQUE du nom. */
 export function qualityTypeLabel(id: string | null | undefined): string {
-  return id ? (QUALITY_TYPE_BY_ID.get(id)?.label ?? id) : '';
+  return id ? (typeQualiteParId(id)?.label ?? id) : '';
 }
-const WEAPON_GROUP_BY_ID = new Map(weaponGroups.map((g) => [g.id, g]));
+const groupeObjetParId = indexParId('weaponGroups', weaponGroups);
 /** Résout un Groupe d'objet par son `id` STABLE (= `subType` d'un trapping/Weapon/ItemInstance). */
 export function findWeaponGroupById(id: string | null | undefined): WeaponGroupData | undefined {
-  return id ? WEAPON_GROUP_BY_ID.get(id) : undefined;
+  return groupeObjetParId(id);
 }
 /** Libellé d'affichage d'un Groupe d'objet par son id (repli sur l'id). SOURCE UNIQUE du nom de Groupe. */
 export function weaponGroupLabel(id: string | null | undefined): string {
-  return id ? (WEAPON_GROUP_BY_ID.get(id)?.label ?? id) : '';
+  return id ? (groupeObjetParId(id)?.label ?? id) : '';
 }
 /** VOCABULAIRE FERMÉ des catégories de possession (`TrappingData.categorie`), miroir de l'enum du
  *  schéma `src/data/schemas/defs/trappings.ts` — une union, pas un registre de données. */
@@ -3144,58 +3157,67 @@ const TRAPPING_TYPE_LABEL: Record<TrappingTypeId, string> = {
 export function trappingTypeLabel(id: string | null | undefined): string {
   return id ? (TRAPPING_TYPE_LABEL[id as TrappingTypeId] ?? id) : '';
 }
-const WEAPON_GROUP_ID_BY_LABEL = new Map(weaponGroups.map((g) => [g.label.toLowerCase(), g.id]));
+const armeParLabelNormalise = indexParChamp('trappings', trappings, (t) =>
+  (t.categorie === 'melee' || t.categorie === 'ranged') && t.subType ? norm(t.label) : undefined);
+/** `id` de Groupe d'arme (`TrappingData.subType`) depuis un LIBELLÉ d'arme SAISI (arme custom, statbloc
+ *  sans identité de catalogue) — libellé normalisé, `undefined` hors catalogue. La couture label→id vit
+ *  ICI, au chargement de la donnée (CLAUDE.md § Pour TOUT agent) : `engine/weaponGroup` délègue et ne
+ *  manipule que des ids. Patron `traitIdByLabel`/`qualityIdByLabel`. */
+export function weaponGroupIdByWeaponLabel(label: string): string | undefined {
+  return armeParLabelNormalise(norm(label))?.subType ?? undefined;
+}
+const groupeObjetParLabelMinuscule = indexParChamp('weaponGroups', weaponGroups, (g) => g.label.toLowerCase());
 /** Résout un `id` de Groupe depuis un LIBELLÉ (authoring/données de Sort « subType » par libellé) —
  *  insensible à la casse. Renvoie l'id si déjà un id connu, sinon résout le libellé. */
 export function weaponGroupIdByLabel(label: string | null | undefined): string | undefined {
   if (!label) return undefined;
-  if (WEAPON_GROUP_BY_ID.has(label)) return label; // déjà un id
-  return WEAPON_GROUP_ID_BY_LABEL.get(label.toLowerCase());
+  if (groupeObjetParId(label)) return label; // déjà un id
+  return groupeObjetParLabelMinuscule(label.toLowerCase())?.id;
 }
-const GROUP_BY_ID = new Map(groups.map((g) => [g.id, g]));
+const groupeParId = indexParId('groups', groups);
 /** Résout un Groupe d'APPARTENANCE par son `id` STABLE (cible de Trait psy, filtre onlyGroups/exceptGroups). */
 export function findGroupById(id: string | null | undefined): GroupData | undefined {
-  return id ? GROUP_BY_ID.get(id) : undefined;
+  return groupeParId(id);
 }
 /** Libellé d'affichage d'un Groupe d'appartenance par son id (repli sur l'id). SOURCE UNIQUE du nom de Groupe. */
 export function groupLabel(id: string | null | undefined): string {
-  return id ? (GROUP_BY_ID.get(id)?.label ?? id) : '';
+  return id ? (groupeParId(id)?.label ?? id) : '';
 }
 /** Type de Souffle d'une créature (Feu/Froid/Corrosif/Électrique/Poison/Fumée) — argument du Trait Souffle,
  *  aligné sur les manœuvres `souffle-*`. Registre SSOT (`breath-types.json`). */
 export interface BreathTypeData { id: string; type: 'breath-types'; label: string; }
 export const breathTypes = breathTypesJson as BreathTypeData[];
-const BREATH_TYPE_BY_ID = new Map(breathTypes.map((b) => [b.id, b]));
+const typeSouffleParId = indexParId('breathTypes', breathTypes);
 /** Résout un Type de Souffle par son `id` STABLE. */
 export function findBreathTypeById(id: string | null | undefined): BreathTypeData | undefined {
-  return id ? BREATH_TYPE_BY_ID.get(id) : undefined;
+  return typeSouffleParId(id);
 }
 /** Libellé d'affichage d'un Type de Souffle par son id (repli sur l'id). SOURCE UNIQUE du nom. */
 export function breathTypeLabel(id: string | null | undefined): string {
-  return id ? (BREATH_TYPE_BY_ID.get(id)?.label ?? id) : '';
+  return id ? (typeSouffleParId(id)?.label ?? id) : '';
 }
 /** Type de Dégâts ignoré par le Trait Immunité (LDB 85 : « poison, magiques ou électriques ») — argument du
  *  Trait Immunité (multi-valeurs) ET référent des `unlessImmune` des Flows (Venin (Poison)…). Registre SSOT
  *  (`damage-types.json`, éditable). */
 export interface DamageTypeData { id: string; type: 'damage-types'; label: string; }
 export const damageTypes = damageTypesJson as DamageTypeData[];
-const DAMAGE_TYPE_BY_ID = new Map(damageTypes.map((t) => [t.id, t]));
+const typeDegatsParId = indexParId('damageTypes', damageTypes);
 /** Résout un Type de Dégâts par son `id` STABLE. */
 export function findDamageTypeById(id: string | null | undefined): DamageTypeData | undefined {
-  return id ? DAMAGE_TYPE_BY_ID.get(id) : undefined;
+  return typeDegatsParId(id);
 }
 /** Libellé d'affichage d'un Type de Dégâts par son id (repli sur l'id). SOURCE UNIQUE du nom. */
 export function damageTypeLabel(id: string | null | undefined): string {
-  return id ? (DAMAGE_TYPE_BY_ID.get(id)?.label ?? id) : '';
+  return id ? (typeDegatsParId(id)?.label ?? id) : '';
 }
-const CREATURE_BY_ID = new Map(creatures.map((c) => [c.id, c]));
+const creatureParId = indexParId('creatures', creatures);
 /** Résout une créature par son `id` STABLE — référence runtime/données (scènes, encounters, rig). */
 export function findCreatureById(id: string | undefined): CreatureData | undefined {
-  return id ? CREATURE_BY_ID.get(id) : undefined;
+  return creatureParId(id);
 }
 /** Libellé d'affichage d'une créature par son id (repli sur l'id si introuvable). */
 export function creatureLabel(id: string): string {
-  return CREATURE_BY_ID.get(id)?.label ?? id;
+  return creatureParId(id)?.label ?? id;
 }
 /** Seul lecteur autorisé de la nommé-ité (jamais via `title`) : `true` si la créature est un individu nommé. */
 export function isNamed(c: CreatureData): boolean {
@@ -3213,61 +3235,76 @@ export function findSpell(label: string): SpellData | undefined {
 export function findStar(label: string): StarData | undefined {
   return stars.find((s) => s.label === label);
 }
-const STAR_BY_ID = new Map(stars.map((s) => [s.id, s]));
+const signeAstralParId = indexParId('stars', stars);
 /** Signe astral par `id` STABLE — lookup RUNTIME indépendant de la langue (`Combatant.star` = id). */
 export function findStarById(id: string | null | undefined): StarData | undefined {
-  return id ? STAR_BY_ID.get(id) : undefined;
+  return signeAstralParId(id);
 }
 
-const TRAPPING_BY_ID = new Map(trappings.map((t) => [t.id, t]));
+const possessionParId = indexParId('trappings', trappings);
 /** Résout une Possession par son `id` STABLE (référence structurée — ≠ `findTrapping` par libellé, authoring). */
 export function findTrappingById(id: string): TrappingData | undefined {
-  return TRAPPING_BY_ID.get(id);
+  return possessionParId(id);
 }
-const TRAPPING_BY_NORM_LABEL = new Map(trappings.map((t) => [norm(t.label), t] as const));
+const possessionParLabelNormalise = indexParChamp('trappings', trappings, (t) => norm(t.label));
 /** Résout une Possession par LIBELLÉ normalisé — bord AUTHORING (texte libre saisi par l'auteur : override
  *  de scène `weapon:'X'`, fixtures de test), JAMAIS au runtime moteur (qui reste sur `findTrappingById`,
  *  seule la couture label→id à l'authoring/chargement est tolérée, cf. CLAUDE.md règle stricte 7). */
 export function findTrappingByLabel(label: string): TrappingData | undefined {
-  return TRAPPING_BY_NORM_LABEL.get(norm(label));
+  return possessionParLabelNormalise(norm(label));
 }
 /** Résout une Qualité par son `id` STABLE. */
 export function findQualityById(id: string): QualityData | undefined {
-  return qualityById.get(id);
+  return qualiteParId(id);
 }
-const SPELL_BY_ID = new Map(spells.map((s) => [s.id, s]));
+const qualiteParLabelMinuscule = indexParChamp('qualities', qualities, (q) => q.label.toLowerCase());
+const qualiteParSlugDeLabel = indexParChamp('qualities', qualities, (q) => slugId(q.label));
+/** `id` STABLE d'une Qualité depuis un LIBELLÉ saisi à l'AUTHORING (« Solide », « solide »,
+ *  « tir-de-zone ») — casse ignorée puis slug du libellé, `undefined` si hors catalogue. La couture
+ *  label→id vit ICI, au chargement de la donnée, JAMAIS dans `src/engine`/`src/state`
+ *  (CLAUDE.md § Pour TOUT agent) : le moteur ne reçoit qu'un id, résolu par `findQualityById`. */
+export const qualityIdByLabel = (label: string): string | undefined => {
+  const q = qualiteParLabelMinuscule(label.toLowerCase()) ?? qualiteParSlugDeLabel(slugId(label));
+  if (!q) return undefined;
+  // Doublon de LIBELLÉ imprimé du catalogue (« Immobilisante », `qualities.json:230` et `:271`) :
+  // l'authoring par libellé atteint l'entrée CANONIQUE — celle dont l'`id` EST le slug du libellé ;
+  // l'homonyme ne s'authore que par son `id` (`immobilisante-fixe`, `state/zi-filets.test.ts`).
+  const canonique = slugId(q.label);
+  return qualiteParId(canonique) ? canonique : q.id;
+};
+const sortParId = indexParId('spells', spells);
 /** Résout un Sort par son `id` STABLE, sous la forme EFFECTIVE des règles optionnelles actives
  *  (`effectiveEntry`, `src/engine/variants.ts`) — POINT UNIQUE de lecture d'un sort par id : moteur,
  *  store et UI passent tous par ici, aucun ne relit `spells.json` par lui-même. Une variante réglée
  *  (VDM, `magic-vdm-incantation`) y republie ses champs de `VARIANT_RESOLVED_FIELDS`
  *  (`src/data/schemas/defs/spells.ts`). Sans variante active, l'entrée de base est rendue telle quelle. */
 export function findSpellById(id: string): SpellData | undefined {
-  return effectiveEntry(SPELL_BY_ID.get(id));
+  return effectiveEntry(sortParId(id));
 }
-export const MANEUVER_BY_ID = new Map(maneuvers.map((m) => [m.id, m]));
+const manoeuvreParId = indexParId('maneuvers', maneuvers);
 /** Résout une Manœuvre par son `id` STABLE (réf `TraitData.grantsManeuvers` → résolveur générique). */
 export function findManeuverById(id: string): ManeuverDef | undefined {
-  return MANEUVER_BY_ID.get(id);
+  return manoeuvreParId(id);
 }
 /** Index INVERSE manœuvre → Trait PROJETANT (#1226), DÉRIVÉ de l'unique déclaration du lien
  *  (`TraitData.grantsManeuvers`) : aucune seconde source de vérité côté manœuvre. Un trait en projette
  *  N (Souffle → un id par Type ; Métamorphose → entrée/sortie), d'où la table id-de-manœuvre → trait.
  *  La relation est de N vers UN : deux traits revendiquant la même manœuvre s'écraseraient ici — le
  *  contrat d'unicité est tenu par `maneuver-trait-projection.test.ts`. */
-const TRAIT_BY_GRANTED_MANEUVER = new Map<string, TraitData>(
+const traitParManoeuvreOctroyee = memoParVersion('traits', () => new Map<string, TraitData>(
   traits.flatMap((t) => (t.grantsManeuvers ?? []).map((r) => [r.id, t] as const)),
-);
+));
 /** Le Trait de créature dont la manœuvre est la PROJECTION mécanique — porteur de la prose VERBATIM et
  *  de l'ancrage `source` (LDB 85 = « TRAITS DE CRÉATURE », folios 338-343). Une entité, une prose :
  *  l'affichage d'une manœuvre lit la `desc` du trait résolu ici, la manœuvre n'en porte aucune. La
  *  prose est repérée au FOLIO chez le trait, jamais à la ligne chez la manœuvre (#1228). */
 export function traitProjectingManeuver(id: string): TraitData | undefined {
-  return TRAIT_BY_GRANTED_MANEUVER.get(id);
+  return traitParManoeuvreOctroyee().get(id);
 }
-const GOD_BY_ID = new Map(gods.map((g) => [g.id, g]));
+const dieuParId = indexParId('gods', gods);
 /** Résout un Culte/Dieu par son id STABLE (« sigmar »). */
 export function findGodById(id: string): GodData | undefined {
-  return GOD_BY_ID.get(id);
+  return dieuParId(id);
 }
 /** Libellé affiché d'un Culte/Dieu (id → « Sigmar ») ; id inconnu → l'id lui-même. */
 export function godLabel(id: string): string {
@@ -3277,7 +3314,7 @@ export function godLabel(id: string): string {
  *  « Béni (Au choix) » à la création/avancement). Les fiches de SAVEUR (dieux nains/elfes/halflings,
  *  provinciaux, Puissances de la Ruine) n'accordent ni Bénédictions ni Miracles (LDB 37 l.17,
  *  LDB 36 l.9) → exclues de tout choix de Prière. */
-export const CULT_IDS: string[] = gods.filter((g) => g.blessings.length > 0).map((g) => g.id).sort();
+export const cultIds = memoParVersion('gods', (): string[] => gods.filter((g) => g.blessings.length > 0).map((g) => g.id).sort());
 /** Les six Bénédictions d'un culte, IDS de sort (le runtime/grimoire compare par id ; l'UI résout en
  *  libellé). Culte inconnu → []. */
 export function blessingsOf(cult: string): string[] {
@@ -3471,7 +3508,7 @@ export function qualityInstance(q: QualityRef): import('../engine/types').Qualit
 export function qualityRefLabel(q: QualityRef): string {
   const base = refLabel('qualities', q);
   if (q.value == null) return base;
-  const unite = qualityById.get(q.id)?.indice?.unite;
+  const unite = qualiteParId(q.id)?.indice?.unite;
   return unite ? `${base} (${q.value}${unite})` : `${base} ${q.value}`;
 }
 /** Libellé d'affichage / CLÉ d'une `SkillInstance` (id+spec → « Langue (Magick) »). Repli sur l'id.

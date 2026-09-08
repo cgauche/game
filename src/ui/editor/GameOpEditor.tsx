@@ -12,7 +12,7 @@ import { Formula, GameOp, type ResolveWindow } from '../../engine/ops';
 import { CHAOS_ALIGN_LABELS, ChaosAlign, EXPOSURE_LABELS, ExposureLevel } from '../../engine/corruption';
 import { CHAR_LABELS, CharKey, ArmourBypass } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
-import { etats, talentConcrete, qualityRefLabel, refLabel, findCrewTestTypeById, CHAR_ABR, effectTables, mutationTables, conditionLabel, lightTones } from '../../data';
+import { etats, talentConcrete, qualityRefLabel, refLabel, findCrewTestTypeById, charAbr, effectTables, mutationTables, conditionLabel, lightTones, memoParVersion } from '../../data';
 import { findFallTable, fallTables } from '../../data/shipCriticals';
 import { RefField } from '../compendium/RefField';
 import type { DatasetKey } from '../../data/overrides';
@@ -227,7 +227,7 @@ const OP_MENU_GROUPS: TypeMenuGroup[] = OP_GROUPS.map(([g, keys]) => ({
 
 /** Règles optionnelles NUMÉRIQUES (`kind: 'param'`) — seules éligibles au terme `{rule}` d'une Formula
  *  (une règle-interrupteur ou un mode n'a pas de valeur à résoudre). Dérivée du registre, jamais listée. */
-const PARAMS_DE_REGLE = OPTIONAL_RULES.filter((r) => r.kind === 'param');
+const paramsDeRegle = memoParVersion('reglesOptionnelles', () => OPTIONAL_RULES.filter((r) => r.kind === 'param'));
 
 export type FormulaShape = 'lit' | 'bonus' | 'char' | 'dice' | 'rolled' | 'times' | 'regle' | 'dr';
 export const shapeOf = (f: Formula | undefined): FormulaShape =>
@@ -242,7 +242,7 @@ export function formulaForShape(s: FormulaShape, current: Formula | undefined): 
   if (s === 'char') return { charOf: 'force' };
   if (s === 'rolled') return { rolled: true };
   if (s === 'times') return { times: { of: { dice: { n: 1, sides: 10 } }, factor: 10 } }; // « 1d10 × 10 » (LDB 71)
-  if (s === 'regle') return { rule: PARAMS_DE_REGLE[0]?.id ?? '' };
+  if (s === 'regle') return { rule: paramsDeRegle()[0]?.id ?? '' };
   if (s === 'dr') return { sl: true };
   return { dice: { n: 1, sides: 10 } };
 }
@@ -255,8 +255,8 @@ const charOfFormula = (f: Formula | undefined): CharKey =>
 export function formulaSummary(f: Formula | undefined): string {
   if (f == null) return '0';
   if (typeof f === 'number') return String(f);
-  if ('bonusOf' in f) return `B${CHAR_ABR[f.bonusOf]}`;
-  if ('charOf' in f) return CHAR_ABR[f.charOf];
+  if ('bonusOf' in f) return `B${charAbr(f.bonusOf)}`;
+  if ('charOf' in f) return charAbr(f.charOf);
   if ('rolled' in f) return 'dé';
   if ('indiceOf' in f) return 'Indice';
   if ('stacks' in f) return 'pions';
@@ -297,7 +297,7 @@ export function FormulaField({ label, value, onChange, min }: {
         {shape === 'regle' && (
           <select aria-label="Règle optionnelle" value={typeof value === 'object' && value != null && 'rule' in value ? value.rule : ''}
             onChange={(e) => onChange({ rule: e.target.value })}>
-            {PARAMS_DE_REGLE.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
+            {paramsDeRegle().map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
           </select>
         )}
         {shape === 'lit' && (

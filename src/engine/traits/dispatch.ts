@@ -7,7 +7,7 @@
 import type { CharKey, Combatant } from '../types';
 import { TRAITS, TraitDef } from './registry';
 import { parseStatEntry, isOptionalNote, type TraitInstance, type TraitList, type OptionalEntry } from '../statEntry';
-import { traitByLabel, traitById, SPEC_SOURCES, type SpecsSource, type TraitCapabilities, type TraitData } from '../../data';
+import { traitIdByLabel, findTraitById, SPEC_SOURCES, type SpecsSource, type TraitCapabilities, type TraitData } from '../../data';
 import { slugId } from '../../data/slug';
 import type { PassiveMod } from '../ops';
 import { t, type MsgKey } from '../../i18n';
@@ -16,10 +16,6 @@ import { t, type MsgKey } from '../../i18n';
  *  donnée, AUSSI source de `TRAITS`) — source unique de l'import label→id (statblocs / migration).
  *  Les attaques naturelles (Morsure, Cornes…) et marqueurs spéciaux (Venin, Maladie, Mort-vivant…)
  *  sont désormais des traits EN DONNÉE : plus aucune liste de libellés en dur à tenir alignée. */
-const CANON_BY_LOWER = new Map<string, string>(
-  [...traitByLabel.keys()].map((label) => [label.toLowerCase(), slugId(label)] as const),
-);
-
 /** COUTURE libellé→id (#602) : nom de trait SAISI (statbloc, migration) → `id` STABLE. Prend du
  *  TEXTE — le seul sens toléré par la doctrine ; aucun appelant ne l'alimente avec le `.label` d'une
  *  entité qu'il tient déjà (elle porte alors son `id`). Inconnu du registre → slug du texte. */
@@ -30,16 +26,12 @@ export function canonTraitId(text: string): string {
 /** Idem, mais `undefined` si le texte ne nomme AUCUN trait du registre (le repli par slug masquerait
  *  l'inconnu là où l'appelant doit le distinguer — cf. `parseTrait`). */
 export function knownTraitId(text: string): string | undefined {
-  return CANON_BY_LOWER.get(text.toLowerCase());
+  return traitIdByLabel(text);
 }
 
-/** Inverse : `id` → libellé FR canonique (affichage : inspecteur/Codex/éditeur). Même couverture. */
-const LABEL_BY_ID = new Map<string, string>(
-  [...traitByLabel.keys()].map((label) => [slugId(label), label] as const),
-);
-
-/** Libellé FR d'un trait par son `id` (repli sur l'id si inconnu). */
-export const traitLabelById = (id: string): string => LABEL_BY_ID.get(id) ?? id;
+/** Inverse : `id` → libellé FR canonique (affichage : inspecteur/Codex/éditeur). Même couverture —
+ *  l'id d'un trait EST le slug de son libellé (`engine/traits/parity.test.ts`). */
+export const traitLabelById = (id: string): string => findTraitById(id)?.label ?? id;
 
 /** IMPORT (saisie éditeur / migration JSON) : chaîne de statbloc → trait STRUCTURÉ. La clé est
  *  canonicalisée sur le registre (« morsure » → « Morsure ») ; sinon le nom brut est conservé
@@ -81,7 +73,7 @@ function resolveTraitArg(def: TraitData | undefined, arg: string): string {
  *  en dur) : une attaque = trait qui octroie des Manœuvres (`grantsManeuvers`, mêlée) OU est une arme
  *  naturelle (`capabilities.naturalWeapon`, dont le tir) → sa valeur s'affiche « +Dégâts ». */
 export function formatTrait(t: TraitInstance): string {
-  const td = traitById.get(t.id);
+  const td = findTraitById(t.id);
   const label = traitLabelById(t.id);
   const head = t.count != null ? `${t.count} ${label}` : label;
   const isAttack = !!td?.grantsManeuvers || !!td?.capabilities?.naturalWeapon;
@@ -158,7 +150,7 @@ export interface ParsedTrait {
 export function parseTrait(raw: string): ParsedTrait | null {
   const p = parseStatEntry(raw);
   const id = knownTraitId(p.name);
-  return id && TRAITS[id] ? { id, indice: p.indice ?? p.bonus, arg: p.arg } : null;
+  return id && TRAITS()[id] ? { id, indice: p.indice ?? p.bonus, arg: p.arg } : null;
 }
 
 export interface ResolvedTrait {
@@ -174,7 +166,7 @@ export interface ResolvedTrait {
 export function resolveTraits(traits: TraitList | undefined): ResolvedTrait[] {
   const out: ResolvedTrait[] = [];
   for (const t of traits ?? []) {
-    const def = TRAITS[t.id];
+    const def = TRAITS()[t.id];
     if (def) out.push({ id: t.id, def, indice: t.value, arg: t.arg });
   }
   return out;
@@ -182,7 +174,7 @@ export function resolveTraits(traits: TraitList | undefined): ResolvedTrait[] {
 
 /** La créature possède-t-elle le trait d'`id` donné ? (registre `defs/` UNIQUEMENT). */
 export function hasTrait(traits: TraitList | undefined, id: string): boolean {
-  return (traits ?? []).some((t) => t.id === id && !!TRAITS[id]);
+  return (traits ?? []).some((t) => t.id === id && !!TRAITS()[id]);
 }
 
 /** Résout UN trait du registre par son `id` STABLE — source unique des lookups par-id (armure, taille…). */
@@ -203,7 +195,7 @@ export function hasTraitKey(traits: TraitList | undefined, id: string): boolean 
 export function traitPassiveMods(traits: TraitList | undefined): PassiveMod[] {
   const out: PassiveMod[] = [];
   for (const t of traits ?? []) {
-    const ops = traitById.get(t.id)?.passive; // lecture PAR ID stable (≠ jointure par libellé)
+    const ops = findTraitById(t.id)?.passive; // lecture PAR ID stable (≠ jointure par libellé)
     // `src` = LE trait émetteur : c'est lui qui NOMME la composante d'un détail de jet (« +10 Dressé
     // pour divertir ») et ouvre sa fiche — jamais le repli de famille (`passivePartLine`).
     if (ops) for (const op of ops) out.push({ op, kind: 'intrinseque', src: { category: 'traits', id: t.id } }); // le collecteur affecte le kind (≠ donnée)
@@ -231,8 +223,8 @@ export function traitCapability(traits: TraitList | undefined, cap: keyof TraitC
   const list = traits ?? [];
   // Suppression GÉNÉRIQUE (Dressé (Dompté) « ignore son Trait Bestial », LDB 85 l.85) : un trait porté
   // peut annuler la capacité d'un AUTRE trait du même porteur — aucun code par-nom de discipline.
-  if (list.some((t) => traitById.get(t.id)?.suppressesCapabilities?.includes(cap))) return false;
-  return list.some((t) => !!traitById.get(t.id)?.capabilities?.[cap]);
+  if (list.some((t) => findTraitById(t.id)?.suppressesCapabilities?.includes(cap))) return false;
+  return list.some((t) => !!findTraitById(t.id)?.capabilities?.[cap]);
 }
 
 /** Endurant (LDB 85 p.339) : +Bonus d'Endurance Blessures. */
@@ -245,8 +237,8 @@ export function traitBonusWoundsBE(traits: TraitList | undefined): boolean {
  *  `slugId` — runtime 100% id) ; absent = tirage sur le Tableau `kind`. */
 export function mutationsAtSpawn(traits: TraitList | undefined): { kind: 'physique' | 'mentale'; mutationId?: string }[] {
   return (traits ?? [])
-    .filter((t) => traitById.get(t.id)?.capabilities?.mutationAtSpawn)
-    .map((t) => ({ kind: traitById.get(t.id)!.capabilities!.mutationAtSpawn!, mutationId: t.arg ? slugId(t.arg) : undefined }));
+    .filter((t) => findTraitById(t.id)?.capabilities?.mutationAtSpawn)
+    .map((t) => ({ kind: findTraitById(t.id)!.capabilities!.mutationAtSpawn!, mutationId: t.arg ? slugId(t.arg) : undefined }));
 }
 
 /** Marque du Chaos (Marque de Tzeentch, EDOC 13 l.522-524) : tirage PLURIEL et ALTERNÉ de Mutations au
@@ -254,7 +246,7 @@ export function mutationsAtSpawn(traits: TraitList | undefined): { kind: 'physiq
  *  Un seul porteur attendu ; le premier trait qui porte la capacité fait foi. */
 export function markMutationsAtSpawn(traits: TraitList | undefined): NonNullable<TraitCapabilities['markMutations']> | undefined {
   for (const t of traits ?? []) {
-    const spec = traitById.get(t.id)?.capabilities?.markMutations;
+    const spec = findTraitById(t.id)?.capabilities?.markMutations;
     if (spec) return spec;
   }
   return undefined;
@@ -263,7 +255,7 @@ export function markMutationsAtSpawn(traits: TraitList | undefined): NonNullable
 // ── Mathématique de combat ────────────────────────────────────────────────────────────────────────
 /** Sauvegardes « 1d10 ≥ Indice → coup ignoré » (Démoniaque 8+, Protection N). Liste des seuils. */
 export function wardSaves(traits: TraitList | undefined): number[] {
-  return (traits ?? []).filter((t) => traitById.get(t.id)?.capabilities?.wardSave && t.value != null).map((t) => t.value!);
+  return (traits ?? []).filter((t) => findTraitById(t.id)?.capabilities?.wardSave && t.value != null).map((t) => t.value!);
 }
 
 // Défense du champion (LDB 85) : capacité GÉNÉRIQUE `counterOnDefenseWin` (traits ET talents), lue par
@@ -277,7 +269,7 @@ export function wardSaves(traits: TraitList | undefined): number[] {
 export function traitAuras(traits: TraitList | undefined): { traitId: string; aura: NonNullable<TraitData['aura']> }[] {
   const out: { traitId: string; aura: NonNullable<TraitData['aura']> }[] = [];
   for (const t of traits ?? []) {
-    const aura = traitById.get(t.id)?.aura;
+    const aura = findTraitById(t.id)?.aura;
     if (aura) out.push({ traitId: t.id, aura });
   }
   return out;
@@ -285,7 +277,7 @@ export function traitAuras(traits: TraitList | undefined): { traitId: string; au
 
 /** Immunité (Type) : types de Dégâts totalement ignorés (en minuscules). */
 export function immunityTypes(traits: TraitList | undefined): string[] {
-  return (traits ?? []).filter((t) => traitById.get(t.id)?.capabilities?.damageImmunity && t.arg).map((t) => t.arg!.toLowerCase());
+  return (traits ?? []).filter((t) => findTraitById(t.id)?.capabilities?.damageImmunity && t.arg).map((t) => t.arg!.toLowerCase());
 }
 
 /** Manifestation de Ghur (Middenheim) : id du Domaine de Sort dont les effets n'affectent PAS le porteur
@@ -293,7 +285,7 @@ export function immunityTypes(traits: TraitList | undefined): string[] {
  *  confère cette immunité. SOURCE UNIQUE — consommée par le chemin d'incantation (`immuneToSpellDomain`). */
 export function spellDomainImmunityOf(traits: TraitList | undefined): string | undefined {
   for (const t of traits ?? []) {
-    const dom = traitById.get(t.id)?.capabilities?.spellDomainImmunity;
+    const dom = findTraitById(t.id)?.capabilities?.spellDomainImmunity;
     if (dom) return dom;
   }
   return undefined;
@@ -360,13 +352,13 @@ export function isSkittishMount(traits: TraitList | undefined): boolean {
 // ── Mouvement & vision ────────────────────────────────────────────────────────────────────────────
 /** Vol (Indice) : distance de vol en MÈTRES, ou null. */
 export function flyMeters(traits: TraitList | undefined): number | null {
-  const t = (traits ?? []).find((t) => traitById.get(t.id)?.capabilities?.fly);
+  const t = (traits ?? []).find((t) => findTraitById(t.id)?.capabilities?.fly);
   return t ? t.value ?? 0 : null;
 }
 
 /** Bond (LDB 85 p.338) : Charge/Course ×2 (et ignore les obstacles traversés). */
 export function hasLeap(traits: TraitList | undefined): boolean {
-  return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.leap);
+  return (traits ?? []).some((t) => !!findTraitById(t.id)?.capabilities?.leap);
 }
 
 /** Nuée / Essaim (LDB 85) : SOURCE UNIQUE de la détection d'amas — pilote le gabarit « swarm » et le
@@ -377,7 +369,7 @@ export function isSwarm(traits: TraitList | undefined): boolean {
 
 /** Foulée (LDB 85 p.339) : Course ×1,5. */
 export function hasStride(traits: TraitList | undefined): boolean {
-  return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.stride);
+  return (traits ?? []).some((t) => !!findTraitById(t.id)?.capabilities?.stride);
 }
 
 /** Grimpant (LDB 85 l.160-162) : réussite automatique de tout Test d'Escalade — aucun jet. */
@@ -394,7 +386,7 @@ export function hasClimbFullSpeed(traits: TraitList | undefined): boolean {
 /** Rampant (MSRC 15 p.90) : « Elle ne peut pas réaliser d'Action de Course. » Capacité NON exprimable
  *  en GameOp → drapeau `capabilities.noRun`, interrogé par `runMultiplier`. */
 export function hasNoRun(traits: TraitList | undefined): boolean {
-  return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.noRun);
+  return (traits ?? []).some((t) => !!findTraitById(t.id)?.capabilities?.noRun);
 }
 
 /** Multiplicateur de Mouvement de COURSE/CHARGE dû aux traits : Rampant ×0 (aucune Course — le budget de
@@ -408,5 +400,5 @@ export function runMultiplier(traits: TraitList | undefined): number {
 
 /** Vision nocturne / Infravision : voit dans l'obscurité (annule la pénalité d'obscurité). */
 export function traitSeesInDark(traits: TraitList | undefined): boolean {
-  return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.seesInDark);
+  return (traits ?? []).some((t) => !!findTraitById(t.id)?.capabilities?.seesInDark);
 }
