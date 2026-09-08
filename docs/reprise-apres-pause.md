@@ -102,7 +102,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 - Les schémas de données : `src/data/schemas/` (`src/data/schemas/types.ts`,
   `src/data/schemas/validate.ts`, `src/data/schemas/_registry.generated.ts`,
   `src/data/schemas/_ids.generated.ts`, `src/data/schemas/grammaire/` — le vocabulaire partagé —
-  `src/data/schemas/defs/` : 128 fichiers, un par catalogue, et
+  `src/data/schemas/defs/` : 129 fichiers, un par catalogue, et
   `src/data/schemas/defs-scenes/` : 17 fichiers pour les documents de scène).
 - `scripts/art-ref/` — le PIPELINE d'extraction d'images (`extract.py`, `ldb_extract.py`, `ldb_map.py`, `probe.py`) : le code est
   tracké, ses SORTIES (images) ne le sont pas (§ 3).
@@ -182,4 +182,4 @@ refaire `npm install`.
 
 Vérifier qu'elles tournent : onglet Actions du dépôt, ou `gh run list --workflow=canari.yml`. La
 porte à chaque push est `.github/workflows/ci.yml` (« CI », push, pull_request).
-<!-- sources-empreinte: 4fba5f35764089256e5bf0db9fecb5351e2cda9a (13 fichiers, 9 dossiers) corps: 56bd5572e1f86266bfaa059ed7fc8749c527b47b -->
+<!-- sources-empreinte: 1ccb704132f8f8bd693579b3034c38349e84d484 (13 fichiers, 9 dossiers) corps: 278b0f650beaab11b1a067841eaf6764d10da0f6 -->
