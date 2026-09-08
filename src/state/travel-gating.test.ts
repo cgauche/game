@@ -14,7 +14,7 @@ import { useGame } from './store';
 import { beginShipwreck } from './shipwreck';
 import { makePregens } from '../data/pregens';
 import { emptyScene, type Scene } from './scene';
-import { CAMPAIGN_START } from '../engine/clock';
+import { campaignStart } from '../engine/clock';
 import type { TravelPlan } from './travelFlow';
 import type { WorldMap } from './worldMap';
 
@@ -66,7 +66,7 @@ function auDepart(flags: Record<string, boolean> = {}): void {
     battle: null,
   });
   get().loadProject([scenePlate('monde-a'), scenePlate('monde-b')], 'monde-a', carte);
-  set({ gameTime: CAMPAIGN_START, flags, journal: [] });
+  set({ gameTime: campaignStart(), flags, journal: [] });
 }
 
 describe('`startTravel` — le trajet FERMÉ est refusé au départ, au même niveau que le sens interdit', () => {

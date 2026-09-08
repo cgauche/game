@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { GameDate } from './GameDate';
-import { CAMPAIGN_START, fromDate, WEEKDAYS } from '../engine/clock';
+import { campaignStart, fromDate, WEEKDAYS } from '../engine/clock';
 
 describe('GameDate — instant de jeu unifié', () => {
   it('icône de phase + jour de semaine + date impériale complète', () => {
-    const html = renderToStaticMarkup(<GameDate time={CAMPAIGN_START} />);
+    const html = renderToStaticMarkup(<GameDate time={campaignStart()} />);
     expect(html).toContain('<svg'); // icône time/* de la phase (dayPhase().icon)
     expect(html).toContain('Jahrdrung 2512 CI');
     expect(html).toContain('08:00');

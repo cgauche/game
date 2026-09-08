@@ -1601,7 +1601,7 @@ export interface CascadeDeResult {
 }
 
 /** TIRAGE SUR TABLE d'une étape de cascade — le MÊME dé (`CascadeDeDecl`), LU en table : le total
- *  sert de dé EFFECTIF au lookup de `tableId` (registre `tableStepDefs` de `state/cascade.ts`).
+ *  sert de dé EFFECTIF au lookup de `tableId` (registre `tableStepDef` de `state/cascade.ts`).
  *  `result` absent = dé non jeté (interaction `'table'`). */
 export type CascadeTableDecl = CascadeDeTirage & {
   tableId: string;
@@ -1733,7 +1733,7 @@ export interface CascadeStepBase extends Omit<RollParticipant, 'interactive'> {
   clamped?: number;
   result?: CascadeRoll | null;
   /** Étape à TABLE (#942 L2) : un TIRAGE SUR TABLEAU est l'interaction `'table'` — le dé de l'étape se
-   *  jette sur `table.tableId` (registre `tableStepDefs`), `rollTableStep` pose `table.result` (dé
+   *  jette sur `table.tableId` (registre `tableStepDef`), `rollTableStep` pose `table.result` (dé
    *  naturel + dé effectif + id de ligne + lignes). Résolue → l'étape s'affiche comme les autres
    *  (rangée `TableRollLine` + lignes de l'entrée). Une étape peut porter `table` ET `reveal` (charge
    *  riche du Critique) : la déclaration du tirage et son rendu détaillé sont deux choses. */

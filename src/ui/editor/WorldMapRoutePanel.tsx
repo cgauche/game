@@ -10,7 +10,7 @@ import { Icon } from '../Icon';
 import { NumberField } from '../NumberField';
 import { Scene } from '../../state/scene';
 import { type WorldMap, type MapRoute, placeById } from '../../state/worldMap';
-import { type TravelMode, TRAVEL_DEFAULTS, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, travelModeIcon } from '../../engine/travel';
+import { type TravelMode, TRAVEL_DEFAULTS, travelVehicles, travelModeLabels, travelModeIcon } from '../../engine/travel';
 import { EffectList, type Ctx } from './EffectList';
 import { RefSelect } from './worldMapPickers';
 import { WhenEditor } from './ConditionEditor';
@@ -79,13 +79,13 @@ export function WorldMapRoutePanel({ route, map, scenes, updRoute, effCtx, toggl
             </>
           )}
           <div className="mini-title">Modes de voyage</div>
-          {(['pied', ...TRAVEL_VEHICLES.map((v) => v.id)] as TravelMode[]).map((mode) => (
+          {(['pied', ...travelVehicles().map((v) => v.id)] as TravelMode[]).map((mode) => (
             <label key={mode} className="ed-check">
               <input type="checkbox" checked={route.modes.includes(mode)} onChange={() => toggleMode(route, mode)} />
-              <Icon id={travelModeIcon(mode)} /> {TRAVEL_MODE_LABEL[mode] ?? mode}
+              <Icon id={travelModeIcon(mode)} /> {travelModeLabels()[mode] ?? mode}
             </label>
           ))}
-          {TRAVEL_VEHICLES.filter((v) => route.modes.includes(v.id)).map((v) => (
+          {travelVehicles().filter((v) => route.modes.includes(v.id)).map((v) => (
             <div key={v.id}>
               <label className="ed-field">{v.label} — prix (sous/km/passager, RAW : {v.travel!.classes.map((c) => `${c.label} ${c.brassPerKm}`).join(' / ')})
                 <NumberField

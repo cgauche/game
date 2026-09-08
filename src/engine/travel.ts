@@ -34,15 +34,16 @@ import {
 import { VehicleData } from './types';
 import { traceLineOf } from './traceLine';
 import vehiclesJson from '../data/vehicles.json';
+import { indexParId, memoParVersion } from '../data/versionDataset';
 import { refLabel } from '../data';
 import { t } from '../i18n';
 
 /** FOYER UNIQUE des véhicules/embarcations (`src/data/vehicles.json`), data-driven (cf. `VehicleData`). */
 export const VEHICLES_LIST = vehiclesJson as VehicleData[];
-const VEHICLE_BY_ID: Map<string, VehicleData> = new Map(VEHICLES_LIST.map((v) => [v.id, v]));
+const vehicleById = indexParId('vehicles', VEHICLES_LIST);
 
 /** Transports payants RAW (LDB 51 l.180-189) = véhicules dotés d'une facette `travel` (passage payant). */
-export const TRAVEL_VEHICLES: VehicleData[] = VEHICLES_LIST.filter((v) => v.travel);
+export const travelVehicles = memoParVersion('vehicles', (): VehicleData[] => VEHICLES_LIST.filter((v) => v.travel));
 
 /** Mode de voyage : `'pied'` (Mouvement du groupe), `'monture'` (bêtes possédées, EDOC 7 — règle
  *  optionnelle `travel-allures`) OU l'`id` d'un véhicule à passage payant (`vehicles.json`). */
@@ -51,15 +52,22 @@ export type TravelMode = 'pied' | 'monture' | string;
 /** Facette `travel` (passage payant) d'un mode ≠ `'pied'` — source UNIQUE des classes/Déplacement.
  *  Renvoie `undefined` si le mode n'est pas un véhicule à passage payant. */
 export function vehicleTravel(mode: TravelMode): NonNullable<VehicleData['travel']> | undefined {
-  return mode === 'pied' ? undefined : VEHICLE_BY_ID.get(mode)?.travel;
+  return mode === 'pied' ? undefined : vehicleById(mode)?.travel;
 }
 
-export const TRAVEL_MODE_LABEL: Record<string, string> = {
+/** Libellé d'affichage par mode de voyage — les modes FIXES, plus un libellé par véhicule payant
+ *  (éditable au Codex : la table se refait à la première lecture qui suit une édition). */
+export const travelModeLabels = memoParVersion('vehicles', (): Record<string, string> => ({
   pied: 'À pied',
   monture: 'En selle',
   mer: 'En mer', // traversée sur le navire de campagne (route `sea`, MDG 13-15)
-  ...Object.fromEntries(TRAVEL_VEHICLES.map((v) => [v.id, v.label])),
-};
+  ...Object.fromEntries(travelVehicles().map((v) => [v.id, v.label])),
+}));
+
+/** Libellé d'UN mode (`travelModeLabels()[mode]`, forme de très loin la plus fréquente au call-site). */
+export function travelModeLabel(mode: TravelMode): string | undefined {
+  return travelModeLabels()[mode];
+}
 
 /** Unité affichée pour une distance de route : une route `sea` (mode `'mer'`) porte ses
  *  MILLES dans le même champ `km` — les tables RAW de traversée sont en milles (MDG 13/15
@@ -81,7 +89,7 @@ export function travelModeIcon(mode: TravelMode): string {
   if (mode === 'pied') return 'travel/foot';
   if (mode === 'monture') return 'travel/mount';
   if (mode === 'mer') return 'travel/anchor';
-  return VEHICLE_BY_ID.get(mode)?.icon ?? 'travel/coach';
+  return vehicleById(mode)?.icon ?? 'travel/coach';
 }
 
 /** Défauts paramétrables (surchargés par la carte du monde / la route dans l'éditeur). */

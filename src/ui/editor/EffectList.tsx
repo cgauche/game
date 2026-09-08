@@ -13,7 +13,7 @@ import { Icon } from '../Icon';
 import { EMPTY_FLOW } from '../../state/flow';
 import { EFFECT_HANDLERS, EFFECT_GROUP_ORDER } from '../../state/combatEffects';
 import { DAY_PHASES, DayPhaseId, IMPERIAL_MONTHS, type ScheduleSpec } from '../../engine/clock';
-import { DISEASE_DEFS } from '../../engine/disease';
+import { diseaseDefs } from '../../engine/disease';
 import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE, vehicles, findVehicleById, crewRoles, memoParVersion } from '../../data';
 import { MANANN_FACTORS, findManannFactor } from '../../engine/seaVoyage';
 import { giveTrappingLabel } from '../../engine/items';
@@ -32,7 +32,7 @@ import { activitiesFor } from '../../engine/activities';
 import { formatMoney, toMoney } from '../../engine/money';
 
 /** Noms des maladies câblées (LDB 20) proposés dans l'éditeur. */
-const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
+const diseaseNames = memoParVersion('maladies', () => Object.keys(diseaseDefs()));
 
 /** Navires dotables (`setVessel`) : véhicules à facette `ship` de `vehicles.json` (embarcations). */
 const naviresJouables = memoParVersion('vehicles', () => vehicles.filter((v) => v.ship));
@@ -352,7 +352,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         {effect.type === 'inflictDisease' && (
           <>
             <select value={e.disease ?? ''} onChange={(ev) => upd({ disease: ev.target.value })}>
-              {DISEASE_NAMES.map((n) => (
+              {diseaseNames().map((n) => (
                 <option key={n} value={n}>{n}</option>
               ))}
             </select>

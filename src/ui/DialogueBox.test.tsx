@@ -12,7 +12,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { DialogueBox } from './DialogueBox';
 import { useGame } from '../state/store';
-import { CAMPAIGN_START } from '../engine/clock';
+import { campaignStart } from '../engine/clock';
 import type { Dialogue, SceneEntity } from '../state/scene';
 import type { Scene } from '../state/scene';
 
@@ -42,7 +42,7 @@ describe('DialogueBox — résolution du locuteur PAR ID (#669)', () => {
     useGame.setState({
       scene,
       flags: {},
-      gameTime: CAMPAIGN_START,
+      gameTime: campaignStart(),
       party: [],
       dialogue: { dialogue: dlg, nodeId, speakerId: 'e1' },
     });

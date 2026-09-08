@@ -3,7 +3,7 @@ import type { Combatant, UpkeepDeferTest } from './types';
 import { porteEntretien, applique } from './upkeepPorte.testkit';
 import type { RNG } from './dice';
 import { MINUTES_PER_DAY } from './clock';
-import { contractDisease, contractDiseaseOnce, tickDisease, aggravateDiseaseSymptom, DISEASE_DEFS } from './disease';
+import { contractDisease, contractDiseaseOnce, tickDisease, aggravateDiseaseSymptom, diseaseDefs } from './disease';
 import { dailyDiseaseUpkeep } from './rest';
 import { applyOps } from './ops';
 import { syncDerivedConditions } from './conditions';
@@ -54,7 +54,7 @@ describe('Rhume commun → Pneumonie : la mue à 14 jours (EDOC 08 l.122)', () =
   });
 
   it('la mue est portée par la DONNÉE (aucun id de maladie codé dans le moteur)', () => {
-    expect(DISEASE_DEFS['rhume-commun'].mutation).toEqual({ afterDays: 14, into: 'pneumonie' });
+    expect(diseaseDefs()['rhume-commun'].mutation).toEqual({ afterDays: 14, into: 'pneumonie' });
   });
 });
 
@@ -93,7 +93,7 @@ describe('Pneumonie : le Test de Résistance quotidien (EDOC 08 l.104-108)', () 
     tickDisease(c, MINUTES_PER_DAY, seq([]), defer);
     for (const s of specs) applique(c, s, { success: false });
     expect(fievre(c).severity).toBe('grave');
-    expect(DISEASE_DEFS['pneumonie'].symptoms.find((s) => s.symptomId === 'fievre')!.severity).toBeUndefined();
+    expect(diseaseDefs()['pneumonie'].symptoms.find((s) => s.symptomId === 'fievre')!.severity).toBeUndefined();
   });
 });
 
@@ -121,7 +121,7 @@ describe('Pneumonie : le Test quotidien passe par le canal INFLUENÇABLE de l’
 
   it('l’applicateur de l’étape (applyOps sur `onFail`) produit la MÊME échelle d’aggravation', () => {
     const c = hero({ diseases: [contractDisease('pneumonie', seq([5, 5, 5]))!] });
-    const onFail = spellOps(DISEASE_DEFS['pneumonie'].dailyTest!.test.fail, 'target');
+    const onFail = spellOps(diseaseDefs()['pneumonie'].dailyTest!.test.fail, 'target');
     applyOps(c, onFail, { rng: seq([]) });
     expect(fievre(c).severity).toBe('grave');
     applyOps(c, onFail, { rng: seq([]) });
@@ -130,7 +130,7 @@ describe('Pneumonie : le Test quotidien passe par le canal INFLUENÇABLE de l’
 });
 
 describe('`aggravateSymptom` : TROIS issues distinctes, jamais un booléen (EDOC 08 l.104-108)', () => {
-  const onFail = () => spellOps(DISEASE_DEFS['pneumonie'].dailyTest!.test.fail, 'target');
+  const onFail = () => spellOps(diseaseDefs()['pneumonie'].dailyTest!.test.fail, 'target');
 
   it('symptôme présent, PAS encore à cette sévérité → `aggrave` (et rien de l’échelon suivant)', () => {
     const c = hero({ diseases: [contractDisease('pneumonie', seq([5, 5, 5]))!] });
@@ -218,7 +218,7 @@ describe('RÉ-EXPOSITION : la prolongation est portée par la DONNÉE (`reExposi
   });
 
   it('porteur d’une maladie SANS `reExposition` → rien (aucune prolongation inventée)', () => {
-    expect(DISEASE_DEFS['pneumonie'].reExposition, 'la pneumonie n’en porte pas').toBeUndefined();
+    expect(diseaseDefs()['pneumonie'].reExposition, 'la pneumonie n’en porte pas').toBeUndefined();
     const dz = contractDisease('pneumonie', seq([]), { incubation: 0, duration: 5 })!;
     const c = hero({ diseases: [dz] });
     expect(contractDiseaseOnce(c, 'pneumonie', seq([7]))).toEqual([]);

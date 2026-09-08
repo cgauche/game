@@ -16,6 +16,7 @@
  * `DAY_PHASES`, `WEEKDAYS`) restent valides et live.
  */
 import { calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases } from '../data';
+import { memoParVersion } from '../data/versionDataset';
 
 export interface ImperialMonth { label: string; days: number; }
 
@@ -119,10 +120,10 @@ export function formatImperial(minutes: number): string {
 }
 
 /** Début de la campagne (EiS) : dernier jour de Jahrdrung 2512, 08:00 (« fin Jahrdrung », année défaut WFRP4). */
-export const CAMPAIGN_START = fromDate({
+export const campaignStart = memoParVersion(['calendarMonths', 'calendarIntercalary', 'calendarWeekdays'], () => fromDate({
   year: 2512, month: 1, monthName: 'Jahrdrung', day: IMPERIAL_MONTHS[1].days,
   intercalary: null, weekday: WEEKDAYS[0].label, hour: 8, minute: 0,
-});
+}));
 
 // ─── Phases du jour (#T1c) ─── affichage riche, découplé de l'obscurité mécanique ───
 export type DayPhaseId = 'aube' | 'matin' | 'midi' | 'apresmidi' | 'crepuscule' | 'soir' | 'nuit';

@@ -2,11 +2,11 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { resolveSurface, surfaceDesEtapes, buildBand, surfaceOf, tableStep, displayStep, type RollRequest } from './rollSeam';
 import { actorIn } from './combatants';
-import { runCascadeImmediate, lireDeEtape, tableStepDefs, naturalRollForTableRow, rollTableStep, registerTableStep, startCascade, pushStep, registerCascadeApplier, suspendActiveCascade, poserCurseurCascade, stepReady } from './cascade';
+import { runCascadeImmediate, lireDeEtape, tableStepDef, naturalRollForTableRow, rollTableStep, registerTableStep, startCascade, pushStep, registerCascadeApplier, suspendActiveCascade, poserCurseurCascade, stepReady } from './cascade';
 import { fixtureText } from '../i18n/fixtureText';
 import { makePregens } from '../data/pregens';
 import { emptyScene, type Scene } from './scene';
-import { CAMPAIGN_START } from '../engine/clock';
+import { campaignStart } from '../engine/clock';
 import { setRule, resetRule } from '../engine/policy';
 import { buildSeaPlan, runSeaDay } from './seaVoyageFlow';
 import type { CascadeStep } from './pendings';
@@ -519,7 +519,7 @@ describe('#1426 Q2 — le pourcentage d’auteur se lit « dé ≤ nombre visé 
 describe('#1426 — la POSE fonctionne sur les tables de monde migrées', () => {
   it('Météo : les 4 saisons couvrent 1..100 sans trou ni chevauchement (table DÉRIVÉE de la donnée)', () => {
     for (const saison of weather) {
-      const def = tableStepDefs[`stage-weather-${saison.id}`];
+      const def = tableStepDef(`stage-weather-${saison.id}`)!;
       expect(def, `table de saison « ${saison.id} » enregistrée`).toBeTruthy();
       expect(def.rows[0].min).toBe(1);
       expect(def.rows[def.rows.length - 1].max).toBe(100);
@@ -531,7 +531,7 @@ describe('#1426 — la POSE fonctionne sur les tables de monde migrées', () => 
     const inatteignables: string[] = [];
     for (const saison of weather) {
       const tableId = `stage-weather-${saison.id}`;
-      const def = tableStepDefs[tableId];
+      const def = tableStepDef(tableId)!;
       for (const row of def.rows) {
         const nat = naturalRollForTableRow({ tableId, spec: { n: 1, sides: 100 } }, row);
         if (nat == null) inatteignables.push(`${tableId}/${row.id}`);
@@ -552,7 +552,7 @@ describe('#1426 — la POSE fonctionne sur les tables de monde migrées', () => 
   });
 
   it('Événement de bord : l’Humeur de Manann DÉPLACE la fenêtre atteignable de la table (MDG 15 l.85)', () => {
-    const def = tableStepDefs['sea-board-events'];
+    const def = tableStepDef('sea-board-events')!;
     expect(def, 'table des événements de bord enregistrée').toBeTruthy();
     // La table court de −9999 à +9999 : le d100 seul n'en atteint qu'une TRANCHE, et l'Humeur la
     // déplace. Une ligne est visable exactement quand sa plage croise [1+mod, 100+mod] — c'est le RAW
@@ -746,9 +746,9 @@ function prepareJourTerrestre(seed: number): void {
   seedBattleRng(seed);
   siegeDuMonde();
   setRule('travel-etapes', true);
-  set({ party: makePregens().slice(0, 3), gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, suspendedCascades: [], travelRecap: null, journal: [], battle: null });
+  set({ party: makePregens().slice(0, 3), gameTime: campaignStart(), travelPlan: null, pendingRest: null, pendingCascade: null, suspendedCascades: [], travelRecap: null, journal: [], battle: null });
   get().loadProject([scenePlate('monde-a'), scenePlate('monde-b')], 'monde-a', carteMonde);
-  set({ gameTime: CAMPAIGN_START });
+  set({ gameTime: campaignStart() });
 }
 const ouvreJourTerrestre = (seed: number): void => { prepareJourTerrestre(seed); get().startTravel('rt', 'pied'); };
 

@@ -17,6 +17,7 @@ import type { Mutation } from '../engine/corruption';
 import mutationsJson from './mutations.json';
 import mutationTablesJson from './mutationTables.json';
 import { stripBookMarker } from './bookMarker';
+import { indexParId, memoParVersion } from './versionDataset';
 import type { PlayerText } from '../i18n/playerText';
 
 /** Une MUTATION (entité, `mutations.json`) : identité + effets, INDÉPENDANTE de toute table de tirage. */
@@ -33,12 +34,16 @@ export interface MutationTable {
 
 const MUTATIONS = mutationsJson as MutationData[];
 const TABLES = mutationTablesJson as MutationTable[];
-const BY_ID = new Map(MUTATIONS.map((m) => [m.id, m]));
-const TABLE_BY_ID = new Map(TABLES.map((t) => [t.id, t]));
+const mutationParId = indexParId('mutations', MUTATIONS);
+const tableParId = indexParId('mutationTables', TABLES);
 
-/** `id`s par nature de mutation — pour le registre visuel du rig et son test d'exhaustivité. */
-export const IDS_PHYSIQUES: readonly string[] = MUTATIONS.filter((m) => m.kind === 'physique').map((m) => m.id);
-export const IDS_MENTALES: readonly string[] = MUTATIONS.filter((m) => m.kind === 'mentale').map((m) => m.id);
+/** `id`s par nature de mutation — pour le registre visuel du rig et son test d'exhaustivité.
+ *  ACCESSEURS (#1692) : le jeu de mutations est celui de la donnée À CET INSTANT — une mutation
+ *  ajoutée/retirée au Codex entre et sort de ces listes sans rechargement. */
+export const idsPhysiques = memoParVersion('mutations', (): readonly string[] =>
+  MUTATIONS.filter((m) => m.kind === 'physique').map((m) => m.id));
+export const idsMentales = memoParVersion('mutations', (): readonly string[] =>
+  MUTATIONS.filter((m) => m.kind === 'mentale').map((m) => m.id));
 
 /** Une LIGNE d'étape d'une table de Corruption : la fourchette d100 de `mutationTables.json` projetée
  *  sur l'**id** STABLE de la mutation référencée, plus son `label` (AFFICHAGE seul — picker de lignes).
@@ -50,14 +55,17 @@ export interface MutationTableRow {
   label?: string;
 }
 
-const ROWS_BY_TABLE = new Map<string, MutationTableRow[]>();
+/** Le CACHE des lignes projetées, remis à neuf par toute écriture sur l'un des DEUX datasets qu'une
+ *  ligne lit : les fourchettes viennent de `mutationTables`, le libellé de chaque ligne de `mutations`. */
+const lignesParTable = memoParVersion(['mutationTables', 'mutations'], () => new Map<string, MutationTableRow[]>());
 
 /** ids de TOUTES les tables de Corruption (LDB, EDOC par Puissance, sous-tables) — source unique des
- *  tables déclarables en étape de séquence. */
-export const MUTATION_TABLE_IDS: readonly string[] = TABLES.map((t) => t.id);
+ *  tables déclarables en étape de séquence, ACCESSEUR (#1692) : une table ajoutée au Codex y entre,
+ *  une table retirée en sort, sans rechargement. */
+export const mutationTableIds = memoParVersion('mutationTables', (): readonly string[] => TABLES.map((t) => t.id));
 
 function tableOf(table: string): MutationTable {
-  const t = TABLE_BY_ID.get(table);
+  const t = tableParId(table);
   if (!t) throw new Error(`mutations : table « ${table} » introuvable (mutationTables.json)`);
   return t;
 }
@@ -82,10 +90,11 @@ export function mutationTablePlayerLabel(table: string): PlayerText {
 
 /** Lignes d'étape d'une table — mémoïsées : une seule projection par table, rendue PAR RÉFÉRENCE. */
 export function mutationTableRows(table: string): MutationTableRow[] {
-  const cached = ROWS_BY_TABLE.get(table);
-  if (cached) return cached;
-  const rows = tableOf(table).ranges.map((r) => ({ min: r.min, max: r.max, id: r.mutation, label: BY_ID.get(r.mutation)?.label }));
-  ROWS_BY_TABLE.set(table, rows);
+  const cache = lignesParTable();
+  const connu = cache.get(table);
+  if (connu) return connu;
+  const rows = tableOf(table).ranges.map((r) => ({ min: r.min, max: r.max, id: r.mutation, label: mutationParId(r.mutation)?.label }));
+  cache.set(table, rows);
   return rows;
 }
 
@@ -93,7 +102,7 @@ export function mutationTableRows(table: string): MutationTableRow[] {
  *  matérialisation : `rollTableStep` rend déjà l'id de la ligne tirée (l'AUTORITÉ), l'appelant le
  *  CONSOMME au lieu de refaire un lookup sur un dé — naturel ou effectif — qui pourrait diverger. */
 export function mutationOfRow(id: string, roll: number): Mutation {
-  const m = BY_ID.get(id);
+  const m = mutationParId(id);
   if (!m) throw new Error(`mutations : ligne « ${id} » sans mutation valide (mutations.json)`);
   return { ...m, roll };
 }
@@ -115,7 +124,7 @@ export function mutationAt(table: string, roll: number): Mutation {
 export function mutationSubTableFor(table: string, m: { subTable?: string }): string | null {
   if (!m.subTable) return null;
   const suffix = table.includes('-') ? table.slice(table.lastIndexOf('-')) : '';
-  return TABLE_BY_ID.has(m.subTable + suffix) ? m.subTable + suffix : null;
+  return tableParId(m.subTable + suffix) ? m.subTable + suffix : null;
 }
 
 /** Tire une mutation sur la TABLE d'`id` `table` (LDB : 'physique'/'mentale' ; Compagnon T1 : 'khorne'…), d100 seedable.
@@ -136,6 +145,6 @@ export function rollMutation(table: string, rng: RNG, forcedRoll?: number): Muta
 /** Mutation EXPLICITE par **id** (sans tirage — ex. trait « Mutation (Cornes asymétriques) » résolu en id
  *  au spawn). null si inconnue. */
 export function mutationById(id: string): Mutation | null {
-  const m = BY_ID.get(id);
+  const m = mutationParId(id);
   return m ? { ...m, roll: 0 } : null;
 }

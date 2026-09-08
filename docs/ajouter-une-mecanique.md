@@ -3,7 +3,7 @@
 > ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-mecanique.mjs` (`npm run docs:mecanique`) — NE PAS ÉDITER À LA MAIN.
 
 **Périmètre mesuré / angles morts** — sont DÉRIVÉS à chaque génération : le SITE réel du lecteur de
-chaque canal (`src/engine/trauma.ts:980`, `src/state/triggeredEffects.ts:463`, `src/engine/capabilities.ts:45`), les
+chaque canal (`src/engine/trauma.ts:983`, `src/state/triggeredEffects.ts:463`, `src/engine/capabilities.ts:45`), les
 20 membres d'`EffectTrigger` et les 6 formes d'`EffectTargeting`
 (`src/engine/flowCore.ts`), les 7 champs de `TriggeredEffect`, les 8 kinds
 de source réunis par `effectSourcesOf`, les 4 interfaces de capacités et leur nombre de
@@ -23,7 +23,7 @@ Toute mécanique — trait de créature, talent, atout d'arme/armure, mutation, 
 
 | Canal | Ce qu’il porte | Lu par |
 |---|---|---|
-| `passive: GameOp[]` | modificateur CONTINU, sans déclencheur | `passiveMods` (`src/engine/trauma.ts:980`) |
+| `passive: GameOp[]` | modificateur CONTINU, sans déclencheur | `passiveMods` (`src/engine/trauma.ts:983`) |
 | `effects: TriggeredEffect[]` | effet sur ÉVÉNEMENT (à la touche, en fin de Round…) | `fireTriggers` (`src/state/triggeredEffects.ts:463`) |
 | `capabilities` | drapeau IRRÉDUCTIBLE que le moteur INTERROGE (aucune valeur numérique ni formule) | `hasCapability` (`src/engine/capabilities.ts:45`) |
 
@@ -53,7 +53,7 @@ signal qu'il faut étendre le vocabulaire.
 ## 2. Canal `passive` — le continu
 
 Le même vocabulaire d'ops que les sorts. Le collecteur UNIQUE est `passiveMods`
-(`src/engine/trauma.ts:980`) ; **ne jamais lire un champ typé d'origine** dans un consommateur — toujours
+(`src/engine/trauma.ts:983`) ; **ne jamais lire un champ typé d'origine** dans un consommateur — toujours
 passer par ses helpers d'extraction. Détail complet (profils d'annulation, combinaison, branches du
 collecteur) : `docs/systeme-passifs.md`.
 
@@ -220,4 +220,4 @@ primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autr
 | `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
 | `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
 | `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |
-<!-- sources-empreinte: df1321b676b5a09cbae2dac3880dc3fa73f80c7b (155 fichiers, 1 dossiers) corps: 60ac987e884f2ea6a418630d117fcb74f6b29302 -->
+<!-- sources-empreinte: 81df2cd80e6e47367da75e93fa606928cf1b3e9e (155 fichiers, 1 dossiers) corps: 20b8eff40355794325917b09aff616137d1539f8 -->

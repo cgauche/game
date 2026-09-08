@@ -1463,7 +1463,7 @@ export function monoStep(spec: MonoSpec): BuiltCascadeStep | undefined {
 }
 
 /** DÉCLARATION d'une étape à TABLE : quel tirage, pour qui. La DÉCLARATION du tirage (`table`) est
- *  celle du registre (`tableStepDefs`, `cascade.ts`) — modificateur, plancher, dé imposé compris. */
+ *  celle du registre (`tableStepDef`, `cascade.ts`) — modificateur, plancher, dé imposé compris. */
 export interface TableSpec {
   id: string;
   kind: string;

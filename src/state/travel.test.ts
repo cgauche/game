@@ -8,7 +8,7 @@ import { seedBattleRng } from './battleRng';
 import { emptyScene, Scene } from './scene';
 import { buildEncounter } from './encounterAuthoring';
 import { WorldMap } from './worldMap';
-import { CAMPAIGN_START } from '../engine/clock';
+import { campaignStart } from '../engine/clock';
 import { toBrass } from '../engine/money';
 import { partyMoneyTotal, creditBourse } from './bourseFlow';
 import { rationCount } from '../engine/provisions';
@@ -100,7 +100,7 @@ describe('startTravel — à pied', () => {
   it('court trajet (12 km à M4, 3 h) : arrive le jour même, horloge avancée, transition vers la scène du lieu', () => {
     setup(map());
     const t0 = useGame.getState().gameTime;
-    expect(t0).toBe(CAMPAIGN_START);
+    expect(t0).toBe(campaignStart());
     useGame.getState().startTravel('r1', 'pied');
     const st = useGame.getState();
     expect(st.travelPlan).toBeNull();
@@ -427,7 +427,7 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
     let exposed = false;
     for (let seed = 1; seed <= 20 && !exposed; seed++) {
       seedBattleRng(seed);
-      const winter = CAMPAIGN_START + 0; // la date par défaut (fin Jahrdrung) suffit : printemps a aussi pluie/neige
+      const winter = campaignStart() + 0; // la date par défaut (fin Jahrdrung) suffit : printemps a aussi pluie/neige
       // Poste Récupérer : pas de « Plein air » → la porte `suppressExposure` reste fermée, l'Exposition se joue.
       setup(map({ km: 12, perilDie: 0 }), [hero({ travelRole: 'recuperer' })]);
       useGame.setState({ gameTime: winter });
@@ -445,7 +445,7 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
     for (let seed = 1; seed <= 40 && !sick; seed++) {
       seedBattleRng(seed);
       setup(map({ km: 12, perilDie: 0 }), [hero({ travelRole: 'recuperer' })]);
-      useGame.setState({ gameTime: CAMPAIGN_START }); // fin Jahrdrung = printemps, saison froide
+      useGame.setState({ gameTime: campaignStart() }); // fin Jahrdrung = printemps, saison froide
       useGame.getState().startTravel('r1', 'pied');
       drainCascade();
       sick = (useGame.getState().party[0].diseases ?? []).find((d) => d.id === 'rhume-commun');
@@ -471,7 +471,7 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
       const porteur = hero({ travelRole: 'recuperer' });
       porteur.diseases = [{ id: 'rhume-commun', symptoms: [], phase: 'active', minutesLeft: 5 * JOUR, durationMinutes: 5 * JOUR }];
       setup(map({ km: 12, perilDie: 0 }), [porteur]);
-      useGame.setState({ gameTime: CAMPAIGN_START });
+      useGame.setState({ gameTime: campaignStart() });
       useGame.getState().startTravel('r1', 'pied');
       drainCascade();
       const dz = (useGame.getState().party[0].diseases ?? []).find((d) => d.id === 'rhume-commun')!;
@@ -494,7 +494,7 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
       seedBattleRng(seed);
       const h = hero({ travelRole: 'plein-air', skills: [{ id: 'survie-en-exterieur', advances: 60 } as any] });
       setup(map({ km: 12, perilDie: 0 }), [h]);
-      useGame.setState({ gameTime: CAMPAIGN_START });
+      useGame.setState({ gameTime: campaignStart() });
       useGame.getState().startTravel('r1', 'pied');
       drainCascade(); // cascade travelDay (Plein air, l'Exposition sautée si réussi) → drainer
       const st = useGame.getState();

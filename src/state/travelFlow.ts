@@ -29,7 +29,7 @@ const LAND_PERIL_INTERRUPT = 'travel-land';
 import { openRest, placesOfKind } from './restFlow';
 import { placeById, placeOfScene, otherEnd, type MapRoute, type WorldMap } from './worldMap';
 import {
-  TravelMode, TRAVEL_DEFAULTS, TRAVEL_MODE_LABEL, travelSpeed, transportCost, forcedMarchTest, applyTravelFatigue,
+  TravelMode, TRAVEL_DEFAULTS, travelModeLabels, travelSpeed, transportCost, forcedMarchTest, applyTravelFatigue,
   vehicleTravel,
 } from '../engine/travel';
 import {
@@ -63,7 +63,7 @@ import { dayIndex } from './upkeep';
 import { seasonOfMonth, weatherFromRoll, weatherCondition, type Season, type Weather } from '../engine/travelStages';
 import { stageAssignmentFromRoles, type StagePosting } from '../engine/activities';
 import { buildStageSteps, buildWeatherResistanceSteps, type StageContext } from './travelPostes';
-import { startCascade, registerCascadeApplier, registerTableStep, type TableStepRow } from './cascade';
+import { startCascade, registerCascadeApplier, registerTableStepFamily, type TableStepDef, type TableStepRow } from './cascade';
 import { freeCons, rollSansPilote, monoStep, displayStep, surfaceOf, tableStep, pousseSi } from './rollSeam';
 import { t } from '../i18n';
 import type { CascadeStep, PendingCascade } from './pendings';
@@ -370,10 +370,10 @@ export function startTravel(
     if (!cost) return; // mode sans facette `travel` (id de véhicule invalide) — rien à débiter, rien à jouer
     // Dépense de GROUPE (LDB 51 l.178) : passage sans bénéficiaire unique → cotisation gloutonne des bourses.
     if (!payFromGroup(get, set, cost, { purpose: 'passage' })) {
-      log(get, set, [t('tf.passageTooDear', { mode: TRAVEL_MODE_LABEL[mode].toLowerCase(), cost: formatMoney(cost) })]);
+      log(get, set, [t('tf.passageTooDear', { mode: travelModeLabels()[mode].toLowerCase(), cost: formatMoney(cost) })]);
       return;
     }
-    log(get, set, [t('tf.passagePaid', { cost: formatMoney(cost), mode: TRAVEL_MODE_LABEL[mode].toLowerCase() })]);
+    log(get, set, [t('tf.passagePaid', { cost: formatMoney(cost), mode: travelModeLabels()[mode].toLowerCase() })]);
   }
 
   // Allure EDOC (règle `travel-allures`) : en selle, pas/trot/galop (EDOC 07 l.140) ; sur un attelage,
@@ -404,7 +404,7 @@ export function startTravel(
   };
   set({ travelPlan: plan, worldMapOpen: false, travelRecap: null });
   const allureLabel = allure ? t('tf.fragAllure', { allure: allureName(allure).toLowerCase() }) : '';
-  log(get, set, [t('tf.depart', { to: to.label, km: route.km, mode: TRAVEL_MODE_LABEL[mode].toLowerCase(), allure: allureLabel })]);
+  log(get, set, [t('tf.depart', { to: to.label, km: route.km, mode: travelModeLabels()[mode].toLowerCase(), allure: allureLabel })]);
   runTravelDays(get, set);
 }
 
@@ -645,19 +645,20 @@ const stageWeatherTableId = (season: Season): string => `stage-weather-${season}
 export const stageWeatherRows = (ranges: { min: number; max: number; weather: string }[]): TableStepRow[] =>
   ranges.map((r) => ({ id: r.weather, min: r.min, max: r.max }));
 
-/** Les tables de météo par saison, POSÉES à la première lecture qui suit une édition de `weather`
- *  (#1692) — une fourchette éditée au Codex est dans la table sans recharger la page. */
-const poserLesTablesDeMeteo = memoParVersion('weather', () => {
-  for (const saison of weather) {
-    registerTableStep(stageWeatherTableId(saison.id as Season), {
-      label: t('step.stageWeather'),
-      die: 100,
-      rows: stageWeatherRows(saison.ranges),
-      lines: (die) => [t('out.stageWeather', { weather: weatherCondition(weatherFromRoll(die, saison.id as Season)).label })],
-    });
-  }
-  return true;
-});
+/** Les tables de météo par saison — FAMILLE dérivée de `weather` (#1692) : la Map se refait à la
+ *  première lecture du registre qui suit une édition, donc une saison ajoutée au Codex a sa table et
+ *  une saison retirée n'en a plus — pour TOUS les lecteurs, y compris une cascade reprise d'une
+ *  sauvegarde, jamais seulement pour celui qui ouvre l'étape. */
+const tablesDeMeteo = memoParVersion('weather', () => new Map<string, TableStepDef>(
+  weather.map((saison) => [stageWeatherTableId(saison.id as Season), {
+    label: t('step.stageWeather'),
+    die: 100,
+    rows: stageWeatherRows(saison.ranges),
+    lines: (die) => [t('out.stageWeather', { weather: weatherCondition(weatherFromRoll(die, saison.id as Season)).label })],
+  }]),
+));
+
+registerTableStepFamily(tablesDeMeteo);
 
 registerCascadeApplier(STAGE_WEATHER_KIND, (get, set, step) => {
   const tiree = step.table?.result;
@@ -695,7 +696,6 @@ function buildTravelDayCascade(
   // dans son APPLIER, qui l'`insert` derrière elle : c'est le canal du séquenceur pour « ces étapes-là
   // n'existent qu'une fois le dé connu ». L'ordre des dés reste météo → Résistance → postes.
   if (rule('travel-etapes')) {
-    poserLesTablesDeMeteo();
     pousseSi(steps, tableStep({
       id: STAGE_WEATHER_STEP_ID, kind: STAGE_WEATHER_KIND, worldOwner: true, icon: 'travel/wave',
       label: t('step.stageWeather'),

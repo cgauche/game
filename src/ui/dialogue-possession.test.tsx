@@ -14,7 +14,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { DialogueBox } from './DialogueBox';
 import { useGame } from '../state/store';
 import type { GameState } from '../state/store';
-import { CAMPAIGN_START } from '../engine/clock';
+import { campaignStart } from '../engine/clock';
 import type { Dialogue, Scene, SceneEntity } from '../state/scene';
 
 beforeAll(() => {
@@ -40,7 +40,7 @@ let container: HTMLDivElement;
 let root: Root;
 
 function monte(n: GameState['net']) {
-  useGame.setState({ scene, flags: {}, gameTime: CAMPAIGN_START, party: [], net: n, dialogue: { dialogue: dlg, nodeId: 'n1', speakerId: 'e1' } });
+  useGame.setState({ scene, flags: {}, gameTime: campaignStart(), party: [], net: n, dialogue: { dialogue: dlg, nodeId: 'n1', speakerId: 'e1' } });
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);

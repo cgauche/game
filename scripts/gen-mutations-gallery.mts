@@ -13,7 +13,7 @@ import { combatantOverlays, combatantAppearance } from '../src/gameIso/rig/parts
 import { creatureToCombatant } from '../src/state/spawn';
 import { findCreatureById } from '../src/data';
 import { EYE_OPTIONS } from '../src/gameIso/rig/parts/eyes';
-import { IDS_PHYSIQUES, mutationById } from '../src/data/mutations';
+import { idsPhysiques, mutationById } from '../src/data/mutations';
 import type { Mutation } from '../src/engine/corruption';
 import type { Combatant, Trauma } from '../src/engine/types';
 import type { Appearance } from '../src/gameIso/rig/appearance';
@@ -58,7 +58,7 @@ const section = (title: string, cells: string[]) =>
     + `<div style="display:grid;grid-template-columns:repeat(auto-fill,120px);gap:14px">${cells.join('')}</div>`);
 
 // 1) La table physique complète, de face.
-section('Tableau de Corruption physique (LDB 19) — vue de face', IDS_PHYSIQUES.map((id) => mutCell(id)));
+section('Tableau de Corruption physique (LDB 19) — vue de face', idsPhysiques().map((id) => mutCell(id)));
 
 // 2) Vues directionnelles : détails de visage (face seule), membres remplacés, morpho.
 const VUES = ['groin-poilu', 'visage-inverse', 'cornes-asymetriques', 'tentacule-epais', 'pattes-d-animaux', 'plumes-eparses', 'court-sur-pattes', 'corpulent', 'emacie'];

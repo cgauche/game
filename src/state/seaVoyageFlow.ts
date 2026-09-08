@@ -96,7 +96,7 @@ import { rollShipCritical, applyCrewHit, exposedCrew, type ShipCriticalResolved 
 import { bandeTriggeredTest } from './combat/triggeredTest';
 import { drainPendingLog } from './combatEffects';
 import type { ShipCritKey } from '../data/shipCriticals';
-import { contractDisease, applyContraction, contractionDue, DISEASE_DEFS } from '../engine/disease';
+import { contractDisease, applyContraction, contractionDue, diseaseDefs } from '../engine/disease';
 import { CHAR_LABELS, DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
 import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
@@ -1275,7 +1275,7 @@ registerCascadeApplier('sea-mal-de-mer', (get, set, step) => {
 
 /** Tonneau d'eau — EXPOSITION (MDG 14 l.209) : boire au tonneau contaminé la veille
  *  expose au Test de Contraction propre à la maladie qui l'a contaminé (même cycle générique que
- *  Scorbut ci-dessus, difficulté lue sur `DISEASE_DEFS[…].contractDifficulty`). */
+ *  Scorbut ci-dessus, difficulté lue sur `diseaseDefs()[…].contractDifficulty`). */
 registerCascadeApplier('sea-tonneau-expose', (get, set, step, hero) => {
   if (!step.result || !hero) return;
   const diseaseId = String(step.meta?.diseaseId ?? '');
@@ -1343,7 +1343,7 @@ function buildBarrelSteps(get: Get, sea: SeaVoyageState, vessel: CampaignVessel 
   const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
   if (sea.waterContaminated) {
     const diseaseId = sea.waterContaminated.diseaseId;
-    const diff: Difficulty = DISEASE_DEFS[diseaseId]?.contractDifficulty ?? 'intermediaire';
+    const diff: Difficulty = diseaseDefs()[diseaseId]?.contractDifficulty ?? 'intermediaire';
     for (const h of get().party.filter((c) => !c.dead && contractionDue(c, diseaseId))) {
       pousseSi(out, monoStep({
         id: `sea-tonneau-expose-${h.id}`, kind: 'sea-tonneau-expose', actor: h,
@@ -1357,7 +1357,7 @@ function buildBarrelSteps(get: Get, sea: SeaVoyageState, vessel: CampaignVessel 
   } else {
     for (const h of get().party) {
       if (h.dead) continue;
-      const dz = (h.diseases ?? []).find((d) => d.phase === 'active' && DISEASE_DEFS[d.id]?.contaminatesWaterBarrel);
+      const dz = (h.diseases ?? []).find((d) => d.phase === 'active' && diseaseDefs()[d.id]?.contaminatesWaterBarrel);
       if (!dz) continue;
       pousseSi(out, monoStep({
         id: `sea-tonneau-contamine-${h.id}`, kind: 'sea-tonneau-contamine', actor: h,

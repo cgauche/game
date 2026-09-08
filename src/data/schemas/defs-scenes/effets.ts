@@ -307,7 +307,7 @@ export const inflictPsychologySchema = z.strictObject({
 });
 
 /** Inflige une Maladie (`LDB 20`) à un héros (défaut : le premier) — nourriture avariée, contact infecté,
- *  morsure… L'auteur choisit la maladie (DISEASE_DEFS) ; incubation/durée sont tirées à la contraction. */
+ *  morsure… L'auteur choisit la maladie (diseaseDefs()) ; incubation/durée sont tirées à la contraction. */
 export const inflictDiseaseSchema = z.strictObject({
   type: z.literal('inflictDisease'),
   disease: z.string(),

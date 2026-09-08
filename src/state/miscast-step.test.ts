@@ -4,7 +4,7 @@ import { applyMiscast } from './combatFlow';
 import { seedBattleRng, battleRng } from './battleRng';
 import { makeRNG, d100 } from '../engine/dice';
 import { createHero } from '../engine/character';
-import { stepInteraction, tableStepDefs } from './cascade';
+import { stepInteraction, tableStepDef } from './cascade';
 import { avanceEtapeCascade, draineCascade } from './cascadeTestKit';
 import { canFixDie } from './netOwnership';
 import {
@@ -95,7 +95,7 @@ describe('Imparfaite/Colère — le tirage en étape à table (#942 L6)', () => 
 
   it('registre : une entrée par table RÉELLE de miscast.json, lignes projetées de la DONNÉE (par référence)', () => {
     for (const [id, rows] of Object.entries(MISCAST_TABLE_ROWS)) {
-      const def = tableStepDefs[id];
+      const def = tableStepDef(id)!;
       expect(def, `table « ${id} » non enregistrée`).toBeDefined();
       expect(def.rows).toBe(rows); // par RÉFÉRENCE : zéro duplication de fourchettes
       expect(def.die).toBe(100);

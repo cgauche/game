@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { GameMenu } from './GameMenu';
-import { CAMPAIGN_START } from '../engine/clock';
+import { campaignStart } from '../engine/clock';
 import { useGame } from '../state/store';
 import { KEYBINDINGS } from '../state/keybindings';
 import type { GameState } from '../state/store';
@@ -11,7 +11,7 @@ describe('GameMenu — menu système plein écran (pause)', () => {
   // (aides de test) plutôt que le flag de store `gameMenuOpen` (lu en direct côté navigateur seulement).
   it('fermé par défaut : seulement le bouton ☰ (pas d’overlay)', () => {
     const html = renderToStaticMarkup(
-      <GameMenu sceneName="La taverne" time={CAMPAIGN_START} onQuit={() => {}} />,
+      <GameMenu sceneName="La taverne" time={campaignStart()} onQuit={() => {}} />,
     );
     expect(html).toContain('☰');
     expect(html).not.toContain('game-menu-overlay');
@@ -21,7 +21,7 @@ describe('GameMenu — menu système plein écran (pause)', () => {
     const html = renderToStaticMarkup(
       <GameMenu
         sceneName="La taverne"
-        time={CAMPAIGN_START}
+        time={campaignStart()}
         onQuit={() => {}}
         onSaveLoad={() => {}}
         onEndSession={() => {}}
@@ -52,7 +52,7 @@ describe('GameMenu — menu système plein écran (pause)', () => {
 
   it('Sauvegarder/Fin de séance désactivés quand le contexte les refuse (combat/invité)', () => {
     const html = renderToStaticMarkup(
-      <GameMenu sceneName="La taverne" time={CAMPAIGN_START} onQuit={() => {}} initialOpen />,
+      <GameMenu sceneName="La taverne" time={campaignStart()} onQuit={() => {}} initialOpen />,
     );
     // Les six entrées restent affichées (menu STABLE) mais les deux indisponibles sont disabled.
     expect(html).toContain('Sauvegarder / Charger');
@@ -62,7 +62,7 @@ describe('GameMenu — menu système plein écran (pause)', () => {
 
   it('sous-écran Options : onglets Clavier / Audio / Règles maison (même coquille)', () => {
     const html = renderToStaticMarkup(
-      <GameMenu sceneName="La taverne" time={CAMPAIGN_START} onQuit={() => {}} initialOpen initialView="options" />,
+      <GameMenu sceneName="La taverne" time={campaignStart()} onQuit={() => {}} initialOpen initialView="options" />,
     );
     expect(html).toContain('tablist'); // primitive Tabs (le rôle tablist reste réservé à Tabs.tsx, cf. tab-systems guard)
     expect(html).toContain('Clavier');
@@ -75,7 +75,7 @@ describe('GameMenu — menu système plein écran (pause)', () => {
 
   it('sous-écran Coopération : en-tête Retour + briques coop (plus aucun widget coop inline au menu)', () => {
     const html = renderToStaticMarkup(
-      <GameMenu sceneName="La taverne" time={CAMPAIGN_START} onQuit={() => {}} initialOpen initialView="coop" />,
+      <GameMenu sceneName="La taverne" time={campaignStart()} onQuit={() => {}} initialOpen initialView="coop" />,
     );
     expect(html).toContain('Coopération');
     expect(html).toContain('Retour');

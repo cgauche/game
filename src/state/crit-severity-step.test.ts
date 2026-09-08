@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { applyAttackResult, resolveCritSeverity, critSeverityDecl, critSeverityInSeam, CRIT_TABLE_IDS } from './combatFlow';
 import { setRule, resetRule } from '../engine/policy';
-import { stepInteraction, rollTableStep, tableStepDefs } from './cascade';
+import { stepInteraction, rollTableStep, tableStepDef } from './cascade';
 import { draineCascade } from './cascadeTestKit';
 import { seedBattleRng, battleRng } from './battleRng';
 import { makeRNG, d100 } from '../engine/dice';
@@ -70,7 +70,7 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
 
   it('registre : une table déclarée par TABLE de rattachement, lignes = la DONNÉE `criticals.json` (par référence)', () => {
     for (const key of ['tete', 'bras', 'corps', 'jambe'] as const) {
-      const def = tableStepDefs[CRIT_TABLE_IDS[key]];
+      const def = tableStepDef(CRIT_TABLE_IDS[key])!;
       expect(def, `table « ${key} » non enregistrée`).toBeDefined();
       expect(def.rows).toBe(critTableRows('ldb', key)); // par RÉFÉRENCE : zéro duplication de fourchettes
       expect(def.die).toBe(100);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { IDS_PHYSIQUES, IDS_MENTALES, mutationById } from '../../../data/mutations';
+import { idsPhysiques, idsMentales, mutationById } from '../../../data/mutations';
 import { combatantOverlays, combatantAppearance } from './combatantVisuals';
 import { APPEARANCE_ELEMENTS } from './elements';
 import { resolveRig } from '../composeRig';
@@ -16,7 +16,7 @@ const cm = (...ids: string[]): Combatant =>
 
 describe('apparence data-driven des mutations (LDB 19)', () => {
   it('chaque mutation physique déclare son apparence (sauf Choix du MJ) ; clés de catalogue valides', () => {
-    for (const id of IDS_PHYSIQUES) {
+    for (const id of idsPhysiques()) {
       const m = mutationById(id)!;
       if (id === 'choix-du-mj') { expect(m.appearance).toBeUndefined(); continue; }
       // Mutation NON-VISUELLE déclarée en donnée (Souffle du feu, Sang acide… : aucune manifestation
@@ -36,7 +36,7 @@ describe('apparence data-driven des mutations (LDB 19)', () => {
   });
 
   it('les mutations mentales ne produisent aucun calque', () => {
-    expect(combatantOverlays(cm(...IDS_MENTALES))).toEqual([]);
+    expect(combatantOverlays(cm(...idsMentales()))).toEqual([]);
   });
 
   it('combatantAppearance : morpho cumulée (carrure/jambes) + clamp', () => {

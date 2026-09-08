@@ -13,7 +13,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { INTERLUDE_EVENT_TABLE } from './interludeFlow';
 import { INTERLUDE_EVENTS, interludeEventFor } from '../data/interludeEvents';
-import { rollTableStep, stepInteraction, tableStepDefs } from './cascade';
+import { rollTableStep, stepInteraction, tableStepDef } from './cascade';
 import { seedBattleRng, battleRng } from './battleRng';
 import { makeRNG, d100 } from '../engine/dice';
 import { fromBrass, toBrass } from '../engine/money';
@@ -76,7 +76,7 @@ describe('Événement d’interlude — un tirage par héros en étape à table 
   });
 
   it('registre : le Tableau des Événements est déclaré, lignes prises PAR RÉFÉRENCE dans la donnée', () => {
-    const def = tableStepDefs[INTERLUDE_EVENT_TABLE];
+    const def = tableStepDef(INTERLUDE_EVENT_TABLE)!;
     expect(def).toBeDefined();
     expect(def.rows).toBe(INTERLUDE_EVENTS); // par RÉFÉRENCE : zéro duplication de fourchettes
     expect(def.die).toBe(100);

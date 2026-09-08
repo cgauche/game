@@ -42,7 +42,7 @@ câblé côté `src/state`, ou n'être jamais posé dans aucun JSON de campagne 
 | `inflictNightmares` | `heroId?` | Inflige le trauma « Cauchemars » (`LDB 21 l.95`) à un héros (défaut : le premier) après une scène marquante : chaque nuit, Test de Calme Facile (+40) ou Exténué. |
 | `ambitionLost` | `heroId?` | Trauma (`ADE II Annexe I` « Troubles psychologiques », règle facultative `psych-acquisition-optional`) : un héros TÉMOIN d'un événement rendant une de ses Ambitions complètement irréalisable → Test de Calme Accessible (+20) ; échec → Trait psychologique *Trauma*. |
 | `inflictPsychology` | `kind`, `indice`, `label`, `target?`, `heroId?` | Source de PEUR/TERREUR scénique (`LDB 21`) — une apparition, un présage, une vision d'horreur mise en scène par l'auteur (PAS un PNJ de la scène : hors combat, la Peur/Terreur de créature ne se teste QUE scriptée, cf. `engine/encounterPsych`). |
-| `inflictDisease` | `disease`, `heroId?` | Inflige une Maladie (`LDB 20`) à un héros (défaut : le premier) — nourriture avariée, contact infecté, morsure… L'auteur choisit la maladie (DISEASE_DEFS) ; incubation/durée sont tirées à la contraction. |
+| `inflictDisease` | `disease`, `heroId?` | Inflige une Maladie (`LDB 20`) à un héros (défaut : le premier) — nourriture avariée, contact infecté, morsure… L'auteur choisit la maladie (diseaseDefs()) ; incubation/durée sont tirées à la contraction. |
 | `inflictHunger` | `days?`, `target?`, `heroId?` | Impose la Faim (`LDB 18 l.337-343`) : `days` échecs de Test de Faim déjà encaissés — 1ᵉʳ → −10 F/E ; 2ᵉ+ → −10 aux autres Caractéristiques + 1d10 Dégâts (ignore les PA, min 1). |
 | `inflictThirst` | `days?`, `target?`, `heroId?` | Impose la Soif (`LDB 18 l.340`, miroir de la Faim) : `days` échecs de Test de Soif déjà encaissés — 1ᵉʳ → −10 Int/FM/Soc ; 2ᵉ+ → −10 aux autres Caractéristiques + 1d10 Dégâts (ignore les PA, min 1). |
 | `exposureNight` | `kind`, `count?`, `target?`, `heroId?` | Exposition au froid ou à la chaleur (`LDB 18 l.326-334`) : `count` Tests de Résistance (Intermédiaire), échecs en cascade (froid : −10 CT/Ag/Dex, puis −10 le reste, puis 1d10 Dégâts ignorant les PA, Inconscient à 0 PB ; chaleur : −10 Int/FM + Exténué, puis −10 le reste + Exténué, puis 1d10). |
@@ -73,4 +73,4 @@ câblé côté `src/state`, ou n'être jamais posé dans aucun JSON de campagne 
 | `endDialogue` | — | — |
 
 _58 Effects — dérivés de `src/data/schemas/defs-scenes/effets.ts`._
-<!-- sources-empreinte: c807a08b8913dddbaab5a5493c8b0730eeca7ec1 (6 fichiers, 0 dossiers) corps: 143905ad534cfdda164ae8cc1089b6b8b6e7cdbd -->
+<!-- sources-empreinte: 2a270f502251c34def1e38881a0c6c5cc8be1efd (6 fichiers, 0 dossiers) corps: e5fc347e8ccb8fc5fbc825f582faa532363b7682 -->

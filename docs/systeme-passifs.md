@@ -4,7 +4,7 @@
 
 **Périmètre mesuré / angles morts** — sont DÉRIVÉS à chaque génération : les 10 membres de
 `PassiveKind` (`src/engine/ops.ts`) et leur commentaire de queue, la table `PASSIVE_CANCELLERS`
-(`src/engine/trauma.ts:881`), le mode de combinaison (le seul kind ADDITIF reconnu par
+(`src/engine/trauma.ts:884`), le mode de combinaison (le seul kind ADDITIF reconnu par
 `isAdditiveKind` est `intrinseque`), les 14 branches d'émission du collecteur
 `passiveMods` avec leur ligne, les 6 producteurs nommés qu'il appelle, et les
 9 documents qui déclarent un champ de passif (def zod + population réelle du `.json`).
@@ -46,7 +46,7 @@ pour l'affichage d'une composante de jet, et ne sont jamais lus par le calcul.
 | `ivresse` | pénalité d'Ivresse (LDB 09 l.475) : pool non-cumul ; ignorée 1 Round par la Détermination (flag `drunkIgnore`) | Ivresse (LDB 09) : gaté à la SOURCE par le flag `drunkIgnore` (Détermination, 1 Round) ; pool non-cumul | pool non-cumul (meilleur bonus + pire malus) |
 | `intrinseque` | trait/mutation/qualité : inconditionnel ET ADDITIF (Σ dans la base — corps/équipement permanent) | rien | Σ dans la BASE (additif) |
 
-Table des annulateurs : `PASSIVE_CANCELLERS` (`src/engine/trauma.ts:881`) — elle doit rester
+Table des annulateurs : `PASSIVE_CANCELLERS` (`src/engine/trauma.ts:884`) — elle doit rester
 TOTALE sur l'union (ce générateur échoue si un kind n'y figure plus). Seul `intrinseque` se somme
 dans la base ; tout le reste se combine en pool NON-CUMUL.
 
@@ -55,25 +55,25 @@ Pour une SÉQUELLE, le `kind` n'est pas stocké : il est dérivé du type d'op p
 
 ## 3. Le collecteur — `passiveMods(c)`
 
-`passiveMods` (`src/engine/trauma.ts:980`) est le **point de
+`passiveMods` (`src/engine/trauma.ts:983`) est le **point de
 lecture UNIQUE**. Ses 14 branches d'émission, dans l'ordre du code :
 
 | Ligne | `kind` émis | Producteur | Ce que la branche collecte (commentaire du code) |
 |---|---|---|---|
-| `src/engine/trauma.ts:982` | — | `traumaPassiveMods` | — |
-| `src/engine/trauma.ts:988` | — | `diseasePassiveOps` | Maladies (kind `maladie`, annulée par Détermination ; passifs des symptômes via `diseasePassiveOps`) + Faim (kind `faim`, non annulée : `noHunger` purge l'état à l'entretien, pas ici). |
-| `src/engine/trauma.ts:991` | `faim` | inline | — |
+| `src/engine/trauma.ts:985` | — | `traumaPassiveMods` | — |
+| `src/engine/trauma.ts:991` | — | `diseasePassiveOps` | Maladies (kind `maladie`, annulée par Détermination ; passifs des symptômes via `diseasePassiveOps`) + Faim (kind `faim`, non annulée : `noHunger` purge l'état à l'entretien, pas ici). |
 | `src/engine/trauma.ts:994` | `faim` | inline | — |
-| `src/engine/trauma.ts:999` | `ivresse` | inline | Ivresse (LDB 09 l.475) : −10/échec aux CC/CT/Ag/Dex/Int (pool non-cumul, kind `ivresse`). |
-| `src/engine/trauma.ts:1009` | `etat` | inline | États (LDB 16) : leur `passive: GameOp[]` (pénalité de Test → `testMod`, bonus à l'attaquant → `incomingAttackMod`, échelle de Mouvement…) émis kind `etat` (pool NON-CUMUL, le pire seul, l.20). |
-| `src/engine/trauma.ts:1014` | `etat` | inline | États PSYCHOLOGIQUES (LDB 21, `psychology.json`) : leur `passive` (Frénésie → `sbBonus +1`) émis dans le MÊME pool `etat` que les États — MÊME folding générique, zéro chemin parallèle. |
-| `src/engine/trauma.ts:1022` | `intrinseque` | inline | Mutations de Corruption (LDB 19) : modifs PERMANENTES du corps → leur `passive: GameOp[]` (vocab unifié, `mutations.json`) émis tel quel en kind `intrinseque`, COMME les traits. |
-| `src/engine/trauma.ts:1025` | — | `wornSocialMods` | Qualités d'objet équipées (LDB 60), producteurs sans cycle (wearPenalty est une feuille) : objet Laid → −Soc aux Tests sociaux (testMod char-qualifié) ; port d'armure → −N% par compétence (skillMod, intrinsèque). |
-| `src/engine/trauma.ts:1026` | — | `qualityWearMods` | — |
-| `src/engine/trauma.ts:1033` | `intrinseque` | inline | Objets PORTÉS (equipped) ou TENUS (arme du loadout actif `c.weapons`) : leur `passive: GameOp[]` (skillMod des Bésicles…) émis kind 'intrinseque' — comme les mutations. |
-| `src/engine/trauma.ts:1039` | — | `traitPassiveMods` | Traits à modificateur de PROFIL appliqués en DIRECT (LDB 85 : Élite/Coriace/Brutal/Rapide… facultatifs, statbloc d'éditeur, traits accordés) — leurs `PassiveMod` (vocab GameOp unifié, `TraitData.passive`) émis TELS QUELS. |
-| `src/engine/trauma.ts:1042` | — | `talentPassiveMods` | Talents POSSÉDÉS (LDB 10) : leur `passive: GameOp[]` (Coup puissant, Dur à cuire… ou Frénésie → grantFreeAttack) émis kind `intrinseque`, par niveau — comme les traits. |
-| `src/engine/trauma.ts:1047` | `magique` | inline | — |
+| `src/engine/trauma.ts:997` | `faim` | inline | — |
+| `src/engine/trauma.ts:1002` | `ivresse` | inline | Ivresse (LDB 09 l.475) : −10/échec aux CC/CT/Ag/Dex/Int (pool non-cumul, kind `ivresse`). |
+| `src/engine/trauma.ts:1012` | `etat` | inline | États (LDB 16) : leur `passive: GameOp[]` (pénalité de Test → `testMod`, bonus à l'attaquant → `incomingAttackMod`, échelle de Mouvement…) émis kind `etat` (pool NON-CUMUL, le pire seul, l.20). |
+| `src/engine/trauma.ts:1017` | `etat` | inline | États PSYCHOLOGIQUES (LDB 21, `psychology.json`) : leur `passive` (Frénésie → `sbBonus +1`) émis dans le MÊME pool `etat` que les États — MÊME folding générique, zéro chemin parallèle. |
+| `src/engine/trauma.ts:1025` | `intrinseque` | inline | Mutations de Corruption (LDB 19) : modifs PERMANENTES du corps → leur `passive: GameOp[]` (vocab unifié, `mutations.json`) émis tel quel en kind `intrinseque`, COMME les traits. |
+| `src/engine/trauma.ts:1028` | — | `wornSocialMods` | Qualités d'objet équipées (LDB 60), producteurs sans cycle (wearPenalty est une feuille) : objet Laid → −Soc aux Tests sociaux (testMod char-qualifié) ; port d'armure → −N% par compétence (skillMod, intrinsèque). |
+| `src/engine/trauma.ts:1029` | — | `qualityWearMods` | — |
+| `src/engine/trauma.ts:1036` | `intrinseque` | inline | Objets PORTÉS (equipped) ou TENUS (arme du loadout actif `c.weapons`) : leur `passive: GameOp[]` (skillMod des Bésicles…) émis kind 'intrinseque' — comme les mutations. |
+| `src/engine/trauma.ts:1042` | — | `traitPassiveMods` | Traits à modificateur de PROFIL appliqués en DIRECT (LDB 85 : Élite/Coriace/Brutal/Rapide… facultatifs, statbloc d'éditeur, traits accordés) — leurs `PassiveMod` (vocab GameOp unifié, `TraitData.passive`) émis TELS QUELS. |
+| `src/engine/trauma.ts:1045` | — | `talentPassiveMods` | Talents POSSÉDÉS (LDB 10) : leur `passive: GameOp[]` (Coup puissant, Dur à cuire… ou Frénésie → grantFreeAttack) émis kind `intrinseque`, par niveau — comme les traits. |
+| `src/engine/trauma.ts:1050` | `magique` | inline | — |
 
 Producteurs nommés, avec leur site réel :
 
@@ -83,7 +83,7 @@ Producteurs nommés, avec leur site réel :
 | `qualityWearMods` | `src/engine/wearPenalty.ts:45` | Pénalités de port → ops `skillMod` skill-qualifiées (kind `intrinseque`, Σ) pour le collecteur passif unifié, chacune ATTRIBUÉE à la pièce qui la porte (`src`) pour que le détail de jet la NOMME. |
 | `talentPassiveMods` | `src/engine/talentEffects.ts:255` | Modificateurs PASSIFS continus des talents POSSÉDÉS (`TalentData.passive` : Coup puissant, Dur à cuire…, ou Frénésie → `grantFreeAttack`) en `GameOp[]`, émis kind `intrinseque` et RÉPÉTÉS par niveau (`t.times`). |
 | `traitPassiveMods` | `src/engine/traits/dispatch.ts:195` | PassiveMod[] de PROFIL des traits — la DONNÉE éditable `TraitData.passive` (vocab GameOp unifié, éditée par GameOpEditor comme un sort). |
-| `traumaPassiveMods` | `src/engine/trauma.ts:959` | Ops PASSIVES des SÉQUELLES seules (`c.traumas`), `kind` résolu (surcharge de fiche > `traumaOpKind`) et gating `modSurvives` appliqué. |
+| `traumaPassiveMods` | `src/engine/trauma.ts:962` | Ops PASSIVES des SÉQUELLES seules (`c.traumas`), `kind` résolu (surcharge de fiche > `traumaOpKind`) et gating `modSurvives` appliqué. |
 | `wornSocialMods` | `src/engine/wearPenalty.ts:52` | Modificateurs de Sociabilité (≤ 0) des objets ÉQUIPÉS de `c` (objet Laid −10, LDB 60 l.54), UN PAR QUALITÉ émettrice : le `src` porte la qualité, donc le détail de jet la NOMME (« −10 Laid ») au lieu d'un total anonyme. |
 
 **Ajouter une source de passif = ajouter une branche ICI**, jamais un second collecteur ni une
@@ -163,4 +163,4 @@ Tout passe par le Compendium in-app (écran Codex) :
   champ à part (§7).
 - **Ajouter une table de Corruption** (un dieu du Chaos) : Codex → Tables de Corruption → une entrée
   dont les plages référencent des mutations EXISTANTES par id.
-<!-- sources-empreinte: d31e2646f075c0f5feb0bf3df8099e8660f1f669 (141 fichiers, 1 dossiers) corps: 4e5ab41c09681a8d512db929d289d88810afe228 -->
+<!-- sources-empreinte: ac27f798c593cdb4e9d1cfdaef4554f80ac3b3d7 (141 fichiers, 1 dossiers) corps: 008a5ff5bb6ab3c51f009d75f29b5ee17da8c5e7 -->

@@ -108,7 +108,7 @@ import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualitie
 import { type HealMode } from '../engine/healing';
 import type { DefenseMode } from '../engine/combat';
 import { campGain } from './combat/advantagePool';
-import { CAMPAIGN_START } from '../engine/clock';
+import { campaignStart } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { checkPartyWiped } from './partyWipe';
@@ -1727,10 +1727,10 @@ export const useGame = create<GameState>((set, get) => ({
   compendiumReturn: 'menu',
   codexOverlay: null,
   possessionsScreen: null,
-  gameTime: CAMPAIGN_START,
-  lastUpkeepDay: dayIndex(CAMPAIGN_START),
-  travelDayHours: { day: dayIndex(CAMPAIGN_START), foot: 0, mount: 0, marched: false },
-  lastNightDay: dayIndex(CAMPAIGN_START),
+  gameTime: campaignStart(),
+  lastUpkeepDay: dayIndex(campaignStart()),
+  travelDayHours: { day: dayIndex(campaignStart()), foot: 0, mount: 0, marched: false },
+  lastNightDay: dayIndex(campaignStart()),
   vessel: null,
   possessions: [],
   tradeRumours: [],

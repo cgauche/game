@@ -234,11 +234,49 @@ export interface TableStepDef {
   entryCategory?: string;
 }
 
-export const tableStepDefs: Record<string, TableStepDef> = {};
+/** REGISTRE STATIQUE : les tables dont l'id est ÉCRIT AU CODE (Critiques de Structure, Événements
+ *  d'interlude, `sea-board-events`…) — une def posée une fois, au chargement de son module. */
+const tableStepStatiques: Record<string, TableStepDef> = {};
 
-/** Enregistre (ou remplace) une table tirable par une étape. */
+/**
+ * FAMILLE de tables DÉRIVÉES d'un dataset (#1692) — ses ids ET ses defs se redemandent à CHAQUE
+ * lecture du registre, la famille portant son mémo (`memoParVersion`, `src/data/versionDataset.ts`).
+ * Une saison retirée au Codex quitte le registre, une saison ajoutée y entre sans rechargement, et
+ * AUCUN lecteur ne dépend d'un enregistrement déclenché ailleurs : la reprise d'une cascade
+ * sauvegardée lit la même chose que la fenêtre qui a ouvert l'étape.
+ *
+ * La famille EST son mémo : un accesseur qui rend la table des defs à cet instant. Une famille de
+ * plus coûte donc UNE ligne (`registerTableStepFamily(tablesDeX)`), pas une paire `ids`/`def`
+ * recopiée.
+ */
+export type TableStepFamily = () => ReadonlyMap<string, TableStepDef>;
+
+const tableStepFamilles: TableStepFamily[] = [];
+
+/** Enregistre (ou remplace) une table tirable par une étape — id FIXE, def écrite au code. */
 export function registerTableStep(tableId: string, def: TableStepDef): void {
-  tableStepDefs[tableId] = def;
+  tableStepStatiques[tableId] = def;
+}
+
+/** Enregistre une FAMILLE de tables dérivées de la donnée (cf. `TableStepFamily`). */
+export function registerTableStepFamily(famille: TableStepFamily): void {
+  tableStepFamilles.push(famille);
+}
+
+/** LECTURE UNIQUE du registre — les statiques d'abord, les familles ensuite. */
+export function tableStepDef(tableId: string): TableStepDef | undefined {
+  const statique = tableStepStatiques[tableId];
+  if (statique) return statique;
+  for (const famille of tableStepFamilles) {
+    const def = famille().get(tableId);
+    if (def) return def;
+  }
+  return undefined;
+}
+
+/** TOUS les ids tirables à cet instant — statiques + familles, sans doublon. */
+export function tableStepIds(): string[] {
+  return [...new Set([...Object.keys(tableStepStatiques), ...tableStepFamilles.flatMap((f) => [...f().keys()])])];
 }
 
 /**
@@ -272,7 +310,7 @@ function declVivante<T extends CascadeDeTirage>(s: GameState, decl: T, actorId: 
 /** LES DÉS d'un tirage sur TABLE : la déclaration l'emporte, la table donne son défaut, d100 sinon —
  *  seul endroit où le repli de la table s'exprime, lu par le résolveur comme par les bornes de saisie. */
 export function tableSpec(decl: CascadeTableDecl): DiceSpec {
-  return decl.spec ?? { n: 1, sides: tableStepDefs[decl.tableId]?.die ?? 100 };
+  return decl.spec ?? { n: 1, sides: tableStepDef(decl.tableId)?.die ?? 100 };
 }
 
 /** PLAGE des dés NATURELS que ce `DiceSpec` peut sortir : `n` dés de `sides` faces, totalisés — de `n`
@@ -327,15 +365,23 @@ export function rollTableStep(decl: CascadeTableDecl, rng: RNG, ctx?: TableStepC
  * l'issue porte son id stable + ses lignes. PURE.
  *
  * Deux fail-fast, aucun repli silencieux :
- *  - table non enregistrée (un `tableId` fautif ne se résout jamais en silence) ;
+ *  - table introuvable au registre — jamais enregistrée, ou RETIRÉE de la donnée (un `tableId`
+ *    fautif ne se résout jamais en silence) ;
  *  - dé EFFECTIF HORS de la plage couverte par la table : `findTableEntry` replie sur la DERNIÈRE
  *    ligne, donc un `mod` fautif (au-dessus comme en dessous de la plage) rendrait la MÊME ligne
  *    extrême — ici la borne est vérifiée et l'appelant est nommé (tableId/dé/mod). Seul le PLANCHER
  *    se déclare (`clamp`, table dont le RAW borne par le bas) ; le plafond reste un fail-fast.
  */
 export function lireEnTable(decl: CascadeTableDecl, de: CascadeDeResult, ctx?: TableStepCtx): CascadeTableResult {
-  const def = tableStepDefs[decl.tableId];
-  if (!def) throw new Error(`rollTableStep : table d'étape « ${decl.tableId} » non enregistrée (registerTableStep)`);
+  const def = tableStepDef(decl.tableId);
+  // Une table RETIRÉE de la donnée (saison, seuil d'espèce, Tableau de Corruption) rend IRRÉSOLUBLE
+  // toute cascade persistée sur son id : le refus est NOMMÉ, jamais un repli sur une autre table.
+  // Aucune migration de sauvegarde (`.claude/memory/user-arbitrage-saves-reset-pas-migration.md`).
+  if (!def) {
+    throw new Error(
+      `rollTableStep : table d'étape « ${decl.tableId} » introuvable — jamais enregistrée (registerTableStep) ou table retirée de la donnée.`,
+    );
+  }
   const lo = def.rows[0].min;
   const hi = def.rows[def.rows.length - 1].max;
   const die = decl.clamp ? Math.max(de.total, lo) : de.total;
@@ -361,7 +407,7 @@ export function lireEnTable(decl: CascadeTableDecl, de: CascadeDeResult, ctx?: T
  * renvoi fabriqué). PURE.
  */
 export function stakeAtTableRow(stake: StakeRef | undefined, decl: CascadeTableDecl, result: CascadeTableResult): StakeRef | undefined {
-  const category = tableStepDefs[decl.tableId]?.entryCategory;
+  const category = tableStepDef(decl.tableId)?.entryCategory;
   if (!stake || !category || stake.key == null) return stake;
   return { ...stake, key: { ...stake.key, entryId: result.id, entryCategory: category } };
 }
@@ -806,7 +852,7 @@ export function naturalRollForTableRow(decl: CascadeTableDecl, row: TableStepRow
  *  `mod` compris) — sans quoi une saisie extrême sous `mod` sortirait de la plage et ferait lever
  *  `rollTableStep` en pleine modale. */
 function clampTableNatural(decl: CascadeTableDecl, roll: number): number {
-  const def = tableStepDefs[decl.tableId];
+  const def = tableStepDef(decl.tableId);
   const mod = decl.mod ?? 0;
   const plage = tableStepNaturalRange(decl);
   const lo = def ? Math.max(plage.min, def.rows[0].min - mod) : plage.min;

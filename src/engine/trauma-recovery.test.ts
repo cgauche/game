@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { traumaById, dechirureFractureFicheId, traumaRecoveryDays, tickTraumaRecovery, applyFractureEnd, treatTrauma, hasTreatableTrauma, traumaSkillPenalty, hasSurgeryTrauma, removeSurgicalTrauma, AMPUTATION_WOUND_DESC } from './trauma';
+import { traumaById, dechirureFractureFicheId, traumaRecoveryDays, tickTraumaRecovery, applyFractureEnd, treatTrauma, hasTreatableTrauma, traumaSkillPenalty, hasSurgeryTrauma, removeSurgicalTrauma, amputationWoundDesc } from './trauma';
 import type { HitLocation } from './types';
 import type { UpkeepDeferTest } from './types';
 const tk = (k: 'dechirure' | 'fracture', sv: 'mineur' | 'majeur', loc: HitLocation, opts?: { be?: number; d10?: number }) => traumaById(dechirureFractureFicheId(k, sv, loc), opts, loc);
@@ -166,7 +166,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
     applyFractureEnd(tete, false, 'majeur', 'tete', 'Fracture');
     expect(tete.traumas![0].desc).toBe('Sur un échec, vous subirez une pénalité permanente à tous vos Tests de Langue s’il s’agit d’une blessure à la tête mal guérie.');
     // Plaie chirurgicale d'amputation (LDB 18 l.239).
-    expect(AMPUTATION_WOUND_DESC).toBe('Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.');
+    expect(amputationWoundDesc()).toBe('Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.');
   });
 
   it('hasTreatableTrauma : faux pour une fracture hors fenêtre d’une semaine', () => {

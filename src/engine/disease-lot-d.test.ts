@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  DISEASE_DEFS, contractDisease, rollContraction, tickDisease, diseasePassiveOps,
+  diseaseDefs, contractDisease, rollContraction, tickDisease, diseasePassiveOps,
   diseaseBlesseCount, hasActiveCapability, contagiousDiseases, Disease,
 } from './disease';
 import { makeRNG } from './dice';
@@ -31,14 +31,14 @@ const active = (name: string): Disease => {
 };
 
 describe('Litanie de la Pestilence — les 9 maladies du LDB 20 sont câblées', () => {
-  it('toutes présentes dans DISEASE_DEFS', () => {
+  it('toutes présentes dans diseaseDefs()', () => {
     for (const n of ['infection-mineure', 'blessure-purulente', 'infection-du-sang', 'courante-galopante',
       'fievre-du-rongeur', 'flux-sanglant', 'peste-noire', 'verole-du-tanneur', 'verole-urticante']) {
-      expect(DISEASE_DEFS[n], n).toBeTruthy();
+      expect(diseaseDefs()[n], n).toBeTruthy();
     }
   });
   it('Fièvre du Rongeur : symptômes du verbatim (l.55)', () => {
-    expect(DISEASE_DEFS['fievre-du-rongeur'].symptoms.map((s) => s.symptomId).sort()).toEqual(
+    expect(diseaseDefs()['fievre-du-rongeur'].symptoms.map((s) => s.symptomId).sort()).toEqual(
       ['blesse', 'convulsions', 'demangeaisons', 'fievre', 'malaise', 'persistant'].sort(),
     );
   });

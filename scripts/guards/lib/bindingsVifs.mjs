@@ -18,7 +18,12 @@ export const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 /** Retire commentaires de ligne et de bloc (jamais les chaînes : on ne lit que des déclarations).
  *  UNE alternance, gauche-droite : le motif le plus à gauche gagne, donc un `//` consomme sa ligne
  *  entière, ouverture de bloc comprise : un chemin à joker cité dans un commentaire de ligne
- *  n'ouvre aucun bloc, donc n'efface pas la source jusqu'au prochain fermant. */
+ *  n'ouvre aucun bloc, donc n'efface pas la source jusqu'au prochain fermant.
+ *
+ *  COUVERTURE, dite : ce balayage ne connaît pas les LITTÉRAUX DE REGEX. Une regex qui contient une
+ *  barre échappée suivie d'une étoile y OUVRE un bloc de commentaire, et efface la source jusqu'au
+ *  prochain fermant de bloc — mesuré sous `src/` aujourd'hui : 0 site réel, les 4 ouvertures de bloc
+ *  hors commentaire étant toutes des annotations de pureté `@__PURE__`. */
 export function sansCommentaires(src) {
   return src.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '');
 }
@@ -53,6 +58,22 @@ function entrees(corps) {
   return out.map((e) => e.trim()).filter(Boolean);
 }
 
+/**
+ * Le NOM SURVEILLÉ d'une entrée `clé: valeur` du littéral `ARRAYS`, selon la FORME de sa valeur :
+ *  - IDENTIFIANT NU (`axes: allAxes`, `obsessions: OBSESSIONS as unknown as …`) → cet identifiant,
+ *    c'est lui que les modules importent ;
+ *  - MEMBRE (`shipHullSizes: shipConstruction.standard`) → l'objet PORTEUR, vivant et importable ;
+ *  - APPEL (`miscastMinor: miscastEntries('miscast-mineure')`) → la CLÉ. Aucun binding n'existe sous
+ *    le nom de la fabrique : la retenir posait un nom FANTÔME que personne n'importe, pendant que le
+ *    nom réellement exporté du dataset (`miscastMinor`) sortait du vocabulaire des deux gardes.
+ */
+function bindingSurveille(cle, valeur) {
+  const nu = valeur.match(/^([A-Za-z_$][\w$]*)\s*(?:!)?\s*(?:as\s[\s\S]*)?$/);
+  if (nu) return nu[1];
+  const membre = valeur.match(/^([A-Za-z_$][\w$]*)\s*[.[]/);
+  return membre ? membre[1] : cle;
+}
+
 /** Les entrées du littéral `ARRAYS` du seam : `[clé de dataset, nom du binding]`. Un même binding
  *  peut porter PLUSIEURS clés (`shipConstruction.standard`/`.speedTraits`…) : la liste les garde
  *  toutes, l'index par binding n'en retient qu'une (il ne sert qu'à NOMMER le fautif). */
@@ -60,8 +81,8 @@ function entreesDuSeam() {
   const src = sansCommentaires(readFileSync(join(RACINE, 'src/data/overrides.ts'), 'utf8'));
   const out = [];
   for (const e of entrees(corpsDuLitteral(src, 'ARRAYS'))) {
-    const avecCle = e.match(/^([A-Za-z_$][\w$]*)\s*:\s*([A-Za-z_$][\w$]*)/);
-    if (avecCle) { out.push([avecCle[1], avecCle[2]]); continue; }
+    const avecCle = e.match(/^([A-Za-z_$][\w$]*)\s*:\s*([\s\S]+)$/);
+    if (avecCle) { out.push([avecCle[1], bindingSurveille(avecCle[1], avecCle[2].trim())]); continue; }
     const seul = e.match(/^([A-Za-z_$][\w$]*)$/);
     if (seul) out.push([seul[1], seul[1]]);
   }
@@ -84,7 +105,16 @@ export function bindingsVifs() {
 /** Les noms LOCAUX d'un fichier qui désignent un binding vif — un nom IMPORTÉ, éventuellement renommé
  *  (`import { props as propsData }`), ou EXPORTÉ par le module propriétaire du dataset lui-même
  *  (`export const MOUNT_PROFILES`). Un homonyme local non exporté (`const props = []` dans une scène)
- *  n'est PAS le dataset : le vocabulaire ne le retient pas. */
+ *  n'est PAS le dataset : le vocabulaire ne le retient pas.
+ *
+ *  S'y ajoutent les deux formes par lesquelles un module ATTEINT son dataset sans jamais nommer le
+ *  seam :
+ *   - l'IMPORT JSON DIRECT (`import vehiclesJson from '../data/vehicles.json'`) — le document importé
+ *     EST le singleton que le seam splice, et le nom de fichier PORTE la clé de dataset ;
+ *   - l'ALIAS NU de niveau module (`const VEHICLES_LIST = vehiclesJson as VehicleData[]`,
+ *     `export const IMPERIAL_MONTHS: ImperialMonth[] = calendarMonths`) — il ne copie rien, il donne
+ *     un second nom au MÊME tableau vif. Le nom dérivé hérite du dataset (même contamination par nom
+ *     que celle d'`indexFiges`), et les chaînes d'alias suivent, les déclarations étant en ordre. */
 export function nomsVifsDuFichier(src, parBinding) {
   const noms = new Map();
   for (const m of src.matchAll(/import\s+(?:type\s+)?\{([^}]*)\}\s*from\s*['"][^'"]+['"]/g)) {
@@ -93,8 +123,21 @@ export function nomsVifsDuFichier(src, parBinding) {
       if (parBinding.has(source)) noms.set(alias || source, parBinding.get(source));
     }
   }
+  const cles = new Set(parBinding.values());
+  for (const m of src.matchAll(/import\s+([A-Za-z_$][\w$]*)\s+from\s*['"][^'"]*?([\w$-]+)\.json['"]/g)) {
+    if (cles.has(m[2])) noms.set(m[1], m[2]);
+  }
   for (const [binding, cle] of parBinding) {
     if (new RegExp(`^export (const|let|var) ${binding}\\b`, 'm').test(src)) noms.set(binding, cle);
+  }
+  for (const decl of declarationsDeNiveauModule(src)) {
+    // La règle porte sur la DÉCLARATION ENTIÈRE, blancs REPLIÉS : un alias coupé en plusieurs lignes
+    // (`const LISTE:\n  VehicleData[] = vehiclesJson as VehicleData[];`) est le même alias. La regex est
+    // ANCRÉE aux deux bouts et ses parties libres sont bornées : sur une déclaration-monstre (littéral
+    // de milliers de caractères) elle échoue sans backtracking.
+    const texte = decl.texte.replace(/\s+/g, ' ').trim();
+    const m = texte.match(/^(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)(?:\s*:\s*[^=]{0,200})?\s*=\s*([A-Za-z_$][\w$]*)\s*!?\s*(?:as\s+[^;]{0,200})?;?\s*$/);
+    if (m && noms.has(m[2]) && !noms.has(m[1])) noms.set(m[1], noms.get(m[2]));
   }
   return noms;
 }
@@ -152,8 +195,10 @@ export function declarationsDeNiveauModule(src) {
   while (i < src.length) {
     const c = src[i];
     if (c === '/' && src[i + 1] === '/') { i = src.indexOf('\n', i); if (i < 0) break; continue; }
-    if (c === '/' && src[i + 1] === '*') { i = src.indexOf('*/', i) + 2; continue; }
-    if (c === "'" || c === '"' || c === '`') { i = finDeChaine(src, i); continue; }
+    // Ouverture de bloc JAMAIS refermée (il en naît dans un littéral de regex, que ce balayage ne
+    // connaît pas) : le curseur saute à la FIN, jamais à `indexOf` −1 — il avance toujours.
+    if (c === '/' && src[i + 1] === '*') { const f = src.indexOf('*/', i); i = f < 0 ? src.length : f + 2; continue; }
+    if (c === "'" || c === '"' || c === '`') { i = Math.max(finDeChaine(src, i), i + 1); continue; }
     if (c === '{') { profondeur++; i++; continue; }
     if (c === '}') { profondeur--; i++; continue; }
     if (profondeur === 0 && (i === 0 || /[\s;})]/.test(src[i - 1]))) {
@@ -161,14 +206,14 @@ export function declarationsDeNiveauModule(src) {
       if (/^(export\s+)?(const|let|var)\s+[A-Za-z_$]/.test(reste) || /^(export\s+)?(const|let|var)\s*[[{]/.test(reste)) {
         const fin = finDeDeclaration(src, i);
         out.push({ ligne: ligneDe(i), texte: src.slice(i, fin) });
-        i = fin;
+        i = Math.max(fin, i + 1); // le curseur avance toujours, même sur une fin calculée ≤ i
         continue;
       }
       // `export default new Map(traits.map(…))` : aucun `const` ne le porte, et il s'évalue à l'import.
       if (/^export\s+default\b/.test(reste)) {
         const fin = finDeDeclaration(src, i);
         out.push({ ligne: ligneDe(i), texte: src.slice(i, fin) });
-        i = fin;
+        i = Math.max(fin, i + 1); // le curseur avance toujours, même sur une fin calculée ≤ i
         continue;
       }
       // AFFECTATION NUE de module (`let M; … M = new Map(traits.map(…));`) : la déclaration `let M;`
@@ -176,7 +221,7 @@ export function declarationsDeNiveauModule(src) {
       if (/^[A-Za-z_$][\w$]*(?:\s*\.\s*[A-Za-z_$][\w$]*)*\s*=(?![=>])/.test(reste)) {
         const fin = finDeDeclaration(src, i);
         out.push({ ligne: ligneDe(i), texte: src.slice(i, fin) });
-        i = fin;
+        i = Math.max(fin, i + 1); // le curseur avance toujours, même sur une fin calculée ≤ i
         continue;
       }
       // Une BOUCLE de niveau module remplit son index à l'import tout autant qu'un `new Map(…)` :
@@ -184,7 +229,7 @@ export function declarationsDeNiveauModule(src) {
       if (/^(for|while)\s*\(/.test(reste)) {
         const fin = finDeBoucle(src, i);
         out.push({ ligne: ligneDe(i), texte: src.slice(i, fin), boucle: true });
-        i = fin;
+        i = Math.max(fin, i + 1); // le curseur avance toujours, même sur une fin calculée ≤ i
         continue;
       }
     }
@@ -225,9 +270,11 @@ function finDeDeclaration(src, i) {
   let profondeur = 0;
   for (let j = i; j < src.length; j++) {
     const c = src[j];
-    if (c === '/' && src[j + 1] === '/') { j = src.indexOf('\n', j) - 1; continue; }
-    if (c === '/' && src[j + 1] === '*') { j = src.indexOf('*/', j) + 1; continue; }
-    if (c === "'" || c === '"' || c === '`') { j = finDeChaine(src, j) - 1; continue; }
+    // Délimiteur JAMAIS refermé (un `//` ou une ouverture de bloc née dans un littéral de regex, que
+    // ce balayage ne connaît pas) : on rend la fin du source, jamais un curseur en arrière.
+    if (c === '/' && src[j + 1] === '/') { const f = src.indexOf('\n', j); if (f < 0) return src.length; j = f - 1; continue; }
+    if (c === '/' && src[j + 1] === '*') { const f = src.indexOf('*/', j); if (f < 0) return src.length; j = f + 1; continue; }
+    if (c === "'" || c === '"' || c === '`') { j = Math.max(finDeChaine(src, j) - 1, j); continue; }
     if ('([{'.includes(c)) profondeur++;
     else if (')]}'.includes(c)) profondeur--;
     else if (c === ';' && profondeur === 0) return j + 1;
@@ -237,9 +284,21 @@ function finDeDeclaration(src, i) {
 }
 
 const PRIMITIVES_VIVES = /\b(indexParId|indexParChamp|memoParVersion)\s*\(/;
-/** Toute méthode qui rend une valeur DÉRIVÉE du contenu : l'appeler au niveau module fige ce contenu,
- *  qu'on en fasse une `Map` (index) ou un tableau (vue). Les deux ont le même défaut de fond. */
-const RECEVEUR = '(map|filter|flatMap|reduce|reduceRight|slice|concat|find|findIndex|findLast|some|every|sort|reverse|join|forEach|keys|values|entries|at)';
+/** Toute méthode qui rend une valeur DÉRIVÉE du contenu : l'APPELER au niveau module fige ce contenu,
+ *  qu'on en fasse une `Map` (index) ou un tableau (vue). Les deux ont le même défaut de fond. La
+ *  parenthèse d'APPEL fait partie du motif : `FILE.entries` (champ d'un document JSON) n'est pas
+ *  `arr.entries()` — sans elle, tout CHAMP homonyme d'une méthode de tableau passait pour une lecture. */
+const RECEVEUR = '(map|filter|flatMap|flat|reduce|reduceRight|slice|concat|find|findIndex|findLast|findLastIndex|some|every|sort|reverse|toSorted|toReversed|toSpliced|with|join|forEach|keys|values|entries|at)';
+
+/** Les ENVELOPPES : les dérivations qui prennent le dataset EN ARGUMENT au lieu de l'appeler comme
+ *  receveur. `new Set(traits)`, `Array.from(traits)`, `Object.keys(record)` figent le contenu tout
+ *  autant qu'un `.map(…)`, et aucun motif de receveur ne les voit — le nom y est à droite de la
+ *  parenthèse. `.includes(…)` n'en est pas une : elle rend un booléen, pas une structure. */
+const enveloppes = (expr) => [
+  `(?<![.\\w])new\\s+(?:Set|Map|WeakSet|WeakMap)\\s*\\(\\s*${expr}\\s*[,)]`,
+  `(?<![.\\w])Array\\s*\\.\\s*from\\s*\\(\\s*${expr}\\s*[,)]`,
+  `(?<![.\\w])Object\\s*\\.\\s*(?:keys|values|entries)\\s*\\(\\s*${expr}\\s*\\)`,
+];
 const MUTATEURS = 'push|splice|pop|shift|unshift|sort|reverse|fill|copyWithin';
 
 /** Le VOCABULAIRE d'un fichier : chaque motif désigne une LECTURE du contenu d'un dataset du seam —
@@ -248,26 +307,34 @@ const MUTATEURS = 'push|splice|pop|shift|unshift|sort|reverse|fill|copyWithin';
 function motifsDeLecture(noms, espaces, parBinding, accesseurs = new Set()) {
   const out = [];
   for (const nom of noms.keys()) {
-    out.push([nom, `(?<![.\\w])${nom}\\s*\\.\\s*${RECEVEUR}\\b`]);
+    out.push([nom, `(?<![.\\w])${nom}\\s*\\.\\s*${RECEVEUR}\\s*\\(`]);
+    // Le CAST PARENTHÉSÉ (`(traumasJson as TraumaFiche[]).find(…)`) : la lecture est la même, mais le
+    // `as` s'interpose entre le nom et sa méthode — sans ce motif, l'annotation lave le dataset.
+    out.push([nom, `\\(\\s*${nom}\\s+as\\s[^)]*\\)\\s*\\.\\s*${RECEVEUR}\\s*\\(`]);
     out.push([nom, `(?<![.\\w])for\\s*\\([^)]*\\bof\\s+${nom}\\s*\\)`]);
     out.push([nom, `\\[\\s*\\.\\.\\.\\s*${nom}\\s*[,\\]]`]);
     out.push([nom, `(?<![.\\w])${nom}\\s*(?:\\[|\\.\\s*length\\b)`]);
     // DÉSTRUCTURATION (`const [premier] = traits`, `const { length } = creatures`) : elle extrait le
     // contenu sans nommer aucune méthode ni aucun indice — l'élément capturé est figé comme un index.
     out.push([nom, `^\\s*(?:export\\s+)?(?:const|let|var)?\\s*[\\[{][^=;]*[\\]}]\\s*=\\s*${nom}(?![\\w$(])`]);
+    for (const m of enveloppes(nom)) out.push([nom, m]);
   }
   // ACCESSEUR VIF RE-FIGÉ : `const ENGINS = siegeEngines().filter(…)`, `new Map(oupsTable().map(…))`.
   // L'appel au niveau module capture la valeur de la version COURANTE — la dévie de l'accesseur ne
   // change rien, le module servira cette valeur-là jusqu'au rechargement.
   for (const nom of accesseurs) out.push([`${nom}()`, `(?<![.\\w])${nom}\\s*\\(\\s*\\)`]);
+  // Le MEMBRE d'un espace de noms et l'accès par la CLÉ s'enveloppent aussi bien qu'un binding nommé.
+  const parLaCle = `datasetArray\\s*\\(\\s*['"][\\w$-]+['"]\\s*\\)(?:\\s+as\\s[^;=)]*)?`;
+  for (const m of enveloppes(parLaCle)) out.push(['datasetArray(…)', m]);
   // `import * as D` ne nomme rien : c'est le MEMBRE qui désigne le dataset — tout le vocabulaire du
   // seam est donc candidat derrière un espace de noms, pas seulement ce que le fichier importe.
   for (const espace of espaces) {
     for (const binding of parBinding.keys()) {
-      out.push([`${espace}.${binding}`, `(?<![.\\w])${espace}\\s*\\.\\s*${binding}\\s*(?:\\.\\s*${RECEVEUR}\\b|\\[|\\.\\s*length\\b)`]);
+      out.push([`${espace}.${binding}`, `(?<![.\\w])${espace}\\s*\\.\\s*${binding}\\s*(?:\\.\\s*${RECEVEUR}\\s*\\(|\\[|\\.\\s*length\\b)`]);
+      for (const m of enveloppes(`${espace}\\s*\\.\\s*${binding}`)) out.push([`${espace}.${binding}`, m]);
     }
   }
-  out.push(['datasetArray(…)', `datasetArray\\s*\\(\\s*['"][\\w$-]+['"]\\s*\\)\\s*(?:as\\s[^;=]*?)?\\.\\s*${RECEVEUR}\\b`]);
+  out.push(['datasetArray(…)', `datasetArray\\s*\\(\\s*['"][\\w$-]+['"]\\s*\\)\\s*(?:as\\s[^;=]*?)?\\.\\s*${RECEVEUR}\\s*\\(`]);
   return out;
 }
 
@@ -321,17 +388,23 @@ export function indexFiges(chemin, src, parBinding, vifs = accesseursVifs()) {
   const accesseurs = accesseursDuFichier(src, vifs);
   if (!noms.size && !espaces.length && !accesseurs.size && !src.includes('datasetArray')) return [];
   const out = [];
+  // Motifs COMPILÉS une fois, refaits seulement quand le vocabulaire grandit (contamination par nom
+  // dérivé) : les recompiler à chaque déclaration coûtait |déclarations| × |motifs| regex par fichier.
+  let motifs = motifsDeLecture(noms, espaces, parBinding, accesseurs).map(([nom, m]) => [nom, new RegExp(m)]);
   for (const decl of declarationsDeNiveauModule(src)) {
     if (PRIMITIVES_VIVES.test(decl.texte)) continue;
     const morceaux = decl.boucle ? [decl.texte] : declarateurs(decl.texte);
     let vu = false;
-    for (const [nom, motif] of motifsDeLecture(noms, espaces, parBinding, accesseurs)) {
+    for (const [nom, rx] of motifs) {
       for (const morceau of morceaux) {
-        const m = morceau.match(new RegExp(motif));
+        const m = morceau.match(rx);
         if (!m || (!decl.boucle && positionVive(morceau, m.index))) continue;
         out.push(`${chemin}:${decl.ligne} — valeur figée à l’import sur la source vive « ${nom} » : ${decl.texte.split('\n')[0].trim()}`);
         const declare = decl.texte.match(/^(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)/);
-        if (declare) noms.set(declare[1], nom);
+        if (declare && !noms.has(declare[1])) {
+          noms.set(declare[1], nom);
+          motifs = motifsDeLecture(noms, espaces, parBinding, accesseurs).map(([n, x]) => [n, new RegExp(x)]);
+        }
         vu = true;
         break;
       }

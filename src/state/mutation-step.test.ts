@@ -2,14 +2,14 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { applyMutation, gainCorruption, mutationNatureTableId, mutationTableIdFor } from './corruptionFlow';
 import { bonus, effectiveChar } from '../engine/characteristics';
-import { stepInteraction, rollTableStep, tableStepDefs } from './cascade';
+import { stepInteraction, rollTableStep, tableStepDef } from './cascade';
 import { seedBattleRng, battleRng } from './battleRng';
 import { makeRNG, d100 } from '../engine/dice';
 import {
   mutationKindFor, mutationNatureRows, attachMutation, mutationLimitExceeded, corruptionThresholdExceeded,
 } from '../engine/corruption';
 import {
-  MUTATION_TABLE_IDS, mutationAt, mutationSubTableFor, mutationTableRows, rollMutation,
+  mutationTableIds, mutationAt, mutationSubTableFor, mutationTableRows, rollMutation,
 } from '../data/mutations';
 import { species } from '../data';
 import { createHero } from '../engine/character';
@@ -72,9 +72,9 @@ describe('Mutation — les trois tirages en étapes à table (#942 L5)', () => {
   });
 
   it('registre : une entrée par table RÉELLE de mutationTables.json, lignes projetées de la DONNÉE (par référence)', () => {
-    expect(MUTATION_TABLE_IDS.length).toBeGreaterThan(0);
-    for (const id of MUTATION_TABLE_IDS) {
-      const def = tableStepDefs[id];
+    expect(mutationTableIds().length).toBeGreaterThan(0);
+    for (const id of mutationTableIds()) {
+      const def = tableStepDef(id)!;
       expect(def, `table « ${id} » non enregistrée`).toBeDefined();
       expect(def.rows).toBe(mutationTableRows(id)); // par RÉFÉRENCE : zéro duplication de fourchettes
       expect(def.die).toBe(100);
@@ -87,12 +87,12 @@ describe('Mutation — les trois tirages en étapes à table (#942 L5)', () => {
   it('registre : une table « corps ou esprit » par SEUIL d’espèce, et son dé concorde avec le lookup moteur', () => {
     // Toutes les espèces de la donnée (Elfe 0, Nain 5, Halfling/Ogre 10, Humain 50…) ont leur table.
     for (const sp of species) {
-      const def = tableStepDefs[mutationNatureTableId(sp.id)];
+      const def = tableStepDef(mutationNatureTableId(sp.id))!;
       expect(def, `espèce « ${sp.id} » sans table de nature`).toBeDefined();
       expect(def.rows).toBe(mutationNatureRows(sp.id)); // les lignes du Tableau viennent du MOTEUR
     }
     // Elfe : « Esprit 01-100 » — une seule ligne, aucune ligne Corps (LDB 19 l.78-81).
-    const elfe = tableStepDefs[mutationNatureTableId('hauts-elfes')];
+    const elfe = tableStepDef(mutationNatureTableId('hauts-elfes'))!;
     expect(elfe.rows.map((r) => r.id)).toEqual(['mentale']);
     // Sur TOUT le dé et pour chaque seuil distinct, l'id de ligne EST la nature du moteur.
     for (const sp of ['hauts-elfes', 'nains', 'halflings', HUMAIN]) {

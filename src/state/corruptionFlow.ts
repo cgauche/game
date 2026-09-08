@@ -34,11 +34,12 @@ import {
   type Mutation,
 } from '../engine/corruption';
 import {
-  MUTATION_TABLE_IDS, mutationAt, mutationOfRow, mutationSubTableFor, mutationTablePlayerLabel, mutationTableRows,
+  mutationTableIds, mutationAt, mutationOfRow, mutationSubTableFor, mutationTablePlayerLabel, mutationTableRows,
 } from '../data/mutations';
 import { species, mutationBodyMaxForSpecies, combatStakeRef } from '../data';
 import { findTableEntry } from '../engine/tables';
-import { registerCascadeApplier, registerTableStep, pushStep } from './cascade';
+import { registerCascadeApplier, registerTableStepFamily, pushStep, type TableStepDef } from './cascade';
+import { memoParVersion } from '../data/versionDataset';
 import { touchActors } from './combatOrParty';
 import { actorIn } from './combatants';
 import type { PendingCascade, PendingCorruption, PendingMutationStep } from './pendings';
@@ -142,38 +143,55 @@ export function mutationNatureTableId(species: string | undefined): string {
   return `${NATURE_TABLE_PREFIX}${mutationBodyMaxForSpecies(species)}`;
 }
 
-// Un enregistrement par SEUIL présent en donnée (+ le défaut 50) : les lignes viennent du moteur
+// Une table par SEUIL présent en donnée (+ le défaut 50) : les lignes viennent du moteur
 // (`mutationNatureRowsFor`, PAR RÉFÉRENCE — mémoïsées par seuil), et l'id de la ligne tirée EST la
 // nature ('physique'/'mentale'). Le moteur expose le MÊME lookup sur les MÊMES lignes
 // (`mutationKindFor`), qui sert d'oracle d'équivalence au test — jamais un second chemin de décision.
-for (const max of new Set([50, ...species.map((s) => s.mutationBodyMax ?? 50)])) {
-  const rows = mutationNatureRowsFor(max);
-  registerTableStep(`${NATURE_TABLE_PREFIX}${max}`, {
-    label: t('cor.natureTable'),
-    die: 100,
-    rows,
-    lines: (die) => [findTableEntry(rows, die).label],
-    // La ligne tirée EST l'id du Tableau de Corruption qui suivra : sa fiche Codex est le foyer de
-    // l'enjeu une fois le dé tombé (`stakeAtTableRow`).
-    entryCategory: 'mutationTables',
-  });
-}
+// FAMILLE (#1692) : le jeu de seuils est celui de `species` À CET INSTANT — une espèce dont le seuil
+// est édité au Codex a sa table, là où un jeu figé à l'import faisait lever `lireEnTable`.
+const tablesDeNature = memoParVersion('species', () => {
+  const tables = new Map<string, TableStepDef>();
+  for (const max of new Set([50, ...species.map((s) => s.mutationBodyMax ?? 50)])) {
+    const rows = mutationNatureRowsFor(max);
+    tables.set(`${NATURE_TABLE_PREFIX}${max}`, {
+      label: t('cor.natureTable'),
+      die: 100,
+      rows,
+      lines: (die) => [findTableEntry(rows, die).label],
+      // La ligne tirée EST l'id du Tableau de Corruption qui suivra : sa fiche Codex est le foyer de
+      // l'enjeu une fois le dé tombé (`stakeAtTableRow`).
+      entryCategory: 'mutationTables',
+    });
+  }
+  return tables;
+});
+
+registerTableStepFamily(tablesDeNature);
 
 // Une entrée par table RÉELLE de `mutationTables.json` (LDB physique/mentale, tables EDOC par
 // Puissance, sous-tables « Tête bestiale ») : fourchettes et ids de mutation PROJETÉS depuis la
 // donnée (`mutationTableRows`, par référence) ; le lookup mécanique reste `mutationAt`. Le `label`
 // est celui rendu au JOUEUR (rangée de tirage) → `mutationTablePlayerLabel`, sans marque de livre
 // (`docs/charte-ui.md`) ; le libellé d'authoring reste intact en donnée.
-for (const id of MUTATION_TABLE_IDS) {
-  const rows = mutationTableRows(id);
-  registerTableStep(id, {
-    label: mutationTablePlayerLabel(id),
-    die: 100,
-    rows,
-    lines: (die) => [mutationAt(id, die).label],
-    entryCategory: 'mutations', // la ligne tirée EST la mutation : sa fiche est le foyer de l'enjeu
-  });
-}
+// FAMILLE (#1692), même patron que les tables de nature ci-dessus : le jeu de Tableaux est celui de
+// `mutationTables` À CET INSTANT — une table ajoutée au Codex est tirable, une table retirée quitte
+// le registre, là où une boucle jouée à l'import figeait les deux à vie.
+const tablesDeMutation = memoParVersion(['mutationTables', 'mutations'], () => {
+  const tables = new Map<string, TableStepDef>();
+  for (const id of mutationTableIds()) {
+    const rows = mutationTableRows(id);
+    tables.set(id, {
+      label: mutationTablePlayerLabel(id),
+      die: 100,
+      rows,
+      lines: (die) => [mutationAt(id, die).label],
+      entryCategory: 'mutations', // la ligne tirée EST la mutation : sa fiche est le foyer de l'enjeu
+    });
+  }
+  return tables;
+});
+
+registerTableStepFamily(tablesDeMutation);
 
 /** Table de Corruption d'une nature de mutation : l'alignement de la SOURCE (posé par l'éditeur de
  *  niveau) PRIME ; sinon la règle globale `corruption-tables-edoc` ('ldb' → Tableaux du Livre de base ;

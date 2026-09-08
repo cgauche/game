@@ -31,6 +31,7 @@ import type { SkillRef } from './skills';
 // AUCUNE dépendance runtime au store : les tables restent du moteur pur (`rollMiscast` testable seul).
 import { poserEnjeu, type Flow, type FlowTest } from './flowCore';
 import miscastJson from '../data/miscast.json';
+import { memoParVersion } from '../data/versionDataset';
 
 export type MiscastSeverity = 'mineure' | 'majeure' | 'colere';
 
@@ -331,8 +332,13 @@ export const MISCAST_TABLE_LABELS: Record<string, string> = Object.fromEntries(
 const TABLE_IDS_LDB: Record<MiscastSeverity, string> = { mineure: 'miscast-mineure', majeure: 'miscast-majeure', colere: 'miscast-colere' };
 const TABLE_IDS_VDM: Record<MiscastSeverity, string> = { mineure: 'miscast-mineure-vdm', majeure: 'miscast-majeure-vdm', colere: 'miscast-colere' };
 
-const RUNTIME_ROWS: Record<string, Row[]> = Object.fromEntries(
-  Object.entries(MISCAST_TABLE_ROWS).map(([id, rows]) => [id, (rows as JsonRow[]).map(buildRow)]),
+/** Rangées RUNTIME par table (ops closées sur les Points de Péché, Tests dépliés) — MÉMOÏSÉES sur
+ *  les datasets de rangées du seam (#1692) : un dépliage figé à l'import faisait jouer à `rollMiscast`
+ *  la rangée d'AVANT une édition au Codex pendant que `miscastRowAt` servait déjà la nouvelle — deux
+ *  vérités sur le même tirage. Les deux tables VDM ne sont pas exposées au seam (3 des 5 documents le
+ *  sont) : leur version ne bouge jamais, leur dépliage suit celui des trois autres. */
+const runtimeRows = memoParVersion(['miscastMinor', 'miscastMajor', 'miscastWrath'], (): Record<string, Row[]> =>
+  Object.fromEntries(Object.entries(MISCAST_TABLE_ROWS).map(([id, rows]) => [id, (rows as JsonRow[]).map(buildRow)])),
 );
 
 /** Id de la table d'une sévérité sous le jeu de tables EN VIGUEUR — `VDM 02 l.218-263` sous la règle
@@ -372,7 +378,8 @@ export function miscastRowAt(tableId: string, die: number): MiscastTableRow {
  *  POINT DE LECTURE UNIQUE du delta LDB/VDM. */
 function miscastTables(): Record<MiscastSeverity, Row[]> {
   const ids = rule('magic-vdm-incantation') === true ? TABLE_IDS_VDM : TABLE_IDS_LDB;
-  return { mineure: RUNTIME_ROWS[ids.mineure], majeure: RUNTIME_ROWS[ids.majeure], colere: RUNTIME_ROWS[ids.colere] };
+  const rows = runtimeRows();
+  return { mineure: rows[ids.mineure], majeure: rows[ids.majeure], colere: rows[ids.colere] };
 }
 
 // ---------------------------------------------------------------------------

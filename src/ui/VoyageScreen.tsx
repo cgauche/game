@@ -8,7 +8,7 @@ import { DAY_PHASE_CATALOG } from '../state/recapLine';
 import type { Combatant } from '../engine/types';
 import type { Possession } from '../engine/possession';
 import { placeById } from '../state/worldMap';
-import { routeDistanceLabel, TRAVEL_MODE_LABEL } from '../engine/travel';
+import { routeDistanceLabel, travelModeLabels } from '../engine/travel';
 import { allureLabel, partyMounts } from '../engine/mountTravel';
 import { windForceLabel, windDirectionLabel, precipitationDef, temperatureDef, visibilityDef } from '../engine/seaWeather';
 import { riverForceLabel, riverDirLabel } from '../engine/riverNavigation';
@@ -227,7 +227,7 @@ export function voyageTiles(
     value: plan.allure ? allureLabel(plan.allure)
       : plan.mode === 'monture' ? 'En selle'
         : plan.mode === 'pied' ? 'À pied'
-          : TRAVEL_MODE_LABEL[plan.mode] ?? plan.mode,
+          : travelModeLabels()[plan.mode] ?? plan.mode,
   });
   // Météo du jour EN COURS (règle `travel-etapes`, EDOC 8) — absente si la règle est éteinte ou
   // qu'aucun jour n'est encore engagé.

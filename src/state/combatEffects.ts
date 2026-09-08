@@ -32,7 +32,8 @@ import { MORALE_BASE } from '../engine/crewMorale';
 import { clampSaboteurDR } from './shipCrew';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
 import { applySummon } from './summonFlow';
-import { contractDisease, applyContraction, DISEASE_DEFS } from '../engine/disease';
+import { contractDisease, applyContraction, diseaseDefs } from '../engine/disease';
+import { memoParVersion } from '../data/versionDataset';
 import { hasHealSkill, HEAL_SKILL, type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
 import { seaWeatherTestMod, openPortAt, vesselManann, setVesselHull } from './seaVoyageFlow';
@@ -1181,7 +1182,7 @@ export interface EffectHandler<T extends Effect = Effect> {
 }
 
 /** Noms des maladies câblées (LDB 20) — défaut de la fabrique `inflictDisease.make`. */
-const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
+const diseaseNames = memoParVersion('maladies', () => Object.keys(diseaseDefs()));
 
 /** Ordre des groupes d'intention dans le picker « + Effet » (l'ordre des handlers ci-dessous donne
  *  l'ordre INTRA-groupe — la déclaration suit l'ancien `EFFECT_GROUPS` aplati). */
@@ -1577,7 +1578,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   },
   inflictDisease: {
     group: 'Afflictions', label: 'Infliger une maladie (LDB 20)', icon: 'medical/infection',
-    make: () => ({ type: 'inflictDisease', disease: DISEASE_NAMES[0] ?? '', heroId: '' }),
+    make: () => ({ type: 'inflictDisease', disease: diseaseNames()[0] ?? '', heroId: '' }),
     apply: (e, env) => {
       // Maladie (LDB 20) infligée par l'auteur (nourriture avariée, contact infecté…). Incubation/durée
       // tirées à la contraction ; les symptômes se déclareront au repos. Dédoublonnée par nom.

@@ -25,7 +25,7 @@ import { TableRollLine } from './RollLine';
 import { testBreakdown, testPending, opposedLines } from './breakdown';
 import type { ModLine } from '../engine/combat';
 import { Icon } from './Icon';
-import { stepInteraction, stepReady, secondReadOf, tableStepDefs, tableStepNaturalRange, naturalRollForTableRow, liveTableDecl, specDeEtape } from '../state/cascade';
+import { stepInteraction, stepReady, secondReadOf, tableStepDef, tableStepNaturalRange, naturalRollForTableRow, liveTableDecl, specDeEtape } from '../state/cascade';
 import { formatDice } from '../engine/dice';
 import { opposedAttackerLabel } from '../state/rollSeam';
 import { useOwns } from './ownership';
@@ -212,7 +212,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     if (!r) return undefined;
     return (
       <TableRollLine
-        table={tableLineLabel(tableStepDefs[s.table!.tableId]?.label, s.label, p.title)}
+        table={tableLineLabel(tableStepDef(s.table!.tableId)?.label, s.label, p.title)}
         roll={r.roll} die={r.die} mod={s.table!.mod ?? 0} result={r.lines[0] ?? ''}
       />
     );
@@ -468,7 +468,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     if (!decl) return { rows: [], lines: null };
     const mod = decl.mod ?? 0;
     const dieMax = tableStepNaturalRange(decl).max;
-    const options: RollGridOption[] = (tableStepDefs[decl.tableId]?.rows ?? []).map((r) => {
+    const options: RollGridOption[] = (tableStepDef(decl.tableId)?.rows ?? []).map((r) => {
       const nat = naturalRollForTableRow(decl, r);
       return {
         key: r.id,
@@ -512,7 +512,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // standard, la rangée `TableRollLine` annonce SUR QUOI on tire (le résultat s'y inscrira). Le tirage
   // naturel reste le DÉFAUT : les affordances de pose (#942 L3) s'ajoutent, ne remplacent rien.
   if (interaction === 'table') {
-    const def = tableStepDefs[cur.table!.tableId];
+    const def = tableStepDef(cur.table!.tableId);
     const aff = affordancesDuDe(cur);
     const tableActions: RollAction[] = [
       { key: 'roll', label: <><Icon id="nav/dice" size="sm" /> Lancer</>, onClick: () => tableRoll(cur.id), when: 'pre' },
@@ -603,7 +603,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
            contenu de l'étape résolue — c'est le verdict, il ne se cherche pas sous une grille. */
         extra={tbl ? (
           <>
-            <TableRollLine table={tableLineLabel(tableStepDefs[cur.table!.tableId]?.label, cur.label, modalTitle)} roll={tbl.roll} die={tbl.die} mod={cur.table!.mod ?? 0} result={tbl.lines[0] ?? ''} />
+            <TableRollLine table={tableLineLabel(tableStepDef(cur.table!.tableId)?.label, cur.label, modalTitle)} roll={tbl.roll} die={tbl.die} mod={cur.table!.mod ?? 0} result={tbl.lines[0] ?? ''} />
             {tbl.lines.slice(1).map((l, i) => <p key={i} className="rm-log">{l}</p>)}
             {aff.lines}
           </>
@@ -682,7 +682,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         // sachant où en est la partie) — même tableau de marque que les fenêtres de jet.
         extra={tblChoix ? (
           <>
-            <TableRollLine table={tableLineLabel(tableStepDefs[cur.table!.tableId]?.label, cur.label, modalTitle)} roll={tblChoix.roll} die={tblChoix.die} mod={cur.table!.mod ?? 0} result={tblChoix.lines[0] ?? ''} />
+            <TableRollLine table={tableLineLabel(tableStepDef(cur.table!.tableId)?.label, cur.label, modalTitle)} roll={tblChoix.roll} die={tblChoix.die} mod={cur.table!.mod ?? 0} result={tblChoix.lines[0] ?? ''} />
             {aff.lines}
             <SequencePanel />
           </>

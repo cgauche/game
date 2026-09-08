@@ -20,7 +20,7 @@ import { z } from 'zod';
 import { Combatant, type UpkeepDeferTest } from './types';
 import { makeRNG } from './dice';
 import { MINUTES_PER_DAY } from './clock';
-import { contractDisease, tickDisease, symptomOnTick, DISEASE_DEFS } from './disease';
+import { contractDisease, tickDisease, symptomOnTick, diseaseDefs } from './disease';
 import { spellOps, walkFlow } from './flowCore';
 import { flowSchema, noeudTest } from '../data/schemas/grammaire/mecanique';
 import { symptoms } from '../data';
@@ -185,7 +185,7 @@ describe('cycle de maladie — le JET vit dans le nœud `test` du Flow (#1657 B2
     const porteurs = ['infection-mineure', 'infection-du-sang', 'peste-noire', 'vers-de-carie', 'vers-du-reik', 'pneumonie'];
     /** Ce que la DONNÉE déclare pour un symptôme (ou pour la maladie), recalculé depuis le nœud. */
     const attendu = (diseaseName: string, symptomId: string) => {
-      const daily = DISEASE_DEFS[diseaseName]?.dailyTest;
+      const daily = diseaseDefs()[diseaseName]?.dailyTest;
       if (daily && daily.symptomId === symptomId) return { difficulty: daily.test.test.difficulty, onFail: spellOps(daily.test.fail, 'target') };
       const tick = cycles().find((c) => c.id === symptomId)?.tick;
       const node = tick?.test as z.infer<typeof noeudDuCycle> | undefined;

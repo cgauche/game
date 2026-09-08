@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { mesurerProseInline, livresExtraits } from '../../scripts/guards/lib/proseInline.mjs';
 import { PROSE_INLINE_TOLEREE } from './schemas/grammaire/prose-inline';
-import { EXTRAITS } from './schemas/grammaire/livres-extraits';
+import { extraits } from './schemas/grammaire/livres-extraits';
 
 /**
  * EN-TÊTE STRUCTURÉ de la garde (#1475).
@@ -89,7 +89,7 @@ describe(`prose inline recopiée d’un livre extrait — stock à cible ZÉRO (
     // qu'absent) les décorrellerait EN SILENCE — le stock compterait ce que le verrou ne voit plus.
     // 3ᵉ dérivation, HORS de ce contrat : `BOOKS`/`BOOK_DIR` (`scripts/raw/_lib.mjs:38-44`), keyée par
     // `abbr` et bornée à un `BOOK_ORDER` écrit à la main — elle sert l'Atlas, pas la grammaire.
-    expect([...EXTRAITS].sort()).toEqual([...livresExtraits()].sort());
+    expect([...extraits()].sort()).toEqual([...livresExtraits()].sort());
   });
 
   it('chaque ligne porte son PILOTAGE : lot, date, motif', () => {

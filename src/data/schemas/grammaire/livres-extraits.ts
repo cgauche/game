@@ -8,15 +8,16 @@
  * extraction est irrésoluble, et se refuse au PARSE plutôt qu'à la lecture.
  */
 import booksJson from '../../books.json';
+import { memoParVersion } from '../../versionDataset';
 
 /** Ids des livres dont l'extraction FR est sur disque (`dir` non vide). */
-export const EXTRAITS: ReadonlySet<string> = new Set(
+export const extraits = memoParVersion('books', (): ReadonlySet<string> => new Set(
   (booksJson as { id: string; dir?: string }[])
     .filter((b) => typeof b.dir === 'string' && b.dir.length > 0)
     .map((b) => b.id),
-);
+));
 
 /** Ce livre a-t-il une extraction FR sur disque ? (`undefined` — pas de livre — n'en est pas une.) */
 export function estExtrait(bookId: string | undefined): boolean {
-  return bookId !== undefined && EXTRAITS.has(bookId);
+  return bookId !== undefined && extraits().has(bookId);
 }

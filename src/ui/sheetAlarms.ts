@@ -44,7 +44,7 @@ export function sheetAlarms(hero: Combatant): SheetAlarm[] {
   if (corruption > 0) out.push({ key: 'corruption', label: `Corruption ${corruption}${hero.damned ? ' — DAMNÉ' : ''}` });
 
   for (const d of hero.diseases ?? []) {
-    // `d.name` = id STABLE (`DISEASE_DEFS`), jamais l'affichage — `diseaseLabel` résout (repli sur l'id).
+    // `d.name` = id STABLE (`diseaseDefs()`), jamais l'affichage — `diseaseLabel` résout (repli sur l'id).
     out.push({ key: `maladie-${d.id}`, label: diseaseLabel(d.id) });
   }
 

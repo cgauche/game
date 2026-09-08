@@ -1,5 +1,6 @@
 import { TENUE_DEFS } from './_registry.generated';
 import { careers } from '../../../../data';
+import { memoParVersion } from '../../../../data/versionDataset';
 import type { TenueSet } from './types';
 import type { StoredPalette } from '../../palette';
 import type { RigOverlay } from '../../bones';
@@ -13,8 +14,8 @@ export type { TenueSet, TenueDef } from './types';
  * aucun flag `career` sur le def : la donnée des carrières est l'unique autorité. Une carrière sans
  * tenue dédiée peut réutiliser celle d'une autre via `CareerData.tenue` (résolu dans `career.ts`).
  */
-const CLASS_IDS = new Set((careers as Array<{ class: string }>).map((c) => c.class));
-const isClassDef = (id: string): boolean => CLASS_IDS.has(id);
+const classIds = memoParVersion('careers', () => new Set((careers as Array<{ class: string }>).map((c) => c.class)));
+const isClassDef = (id: string): boolean => classIds().has(id);
 
 /** Tenues SPÉCIFIQUES (carrière / créature / PNJ / 'Nu') par id de tenue — lookup direct. */
 export const TENUE_BY_ID: Record<string, TenueSet> = Object.fromEntries(

@@ -2,7 +2,7 @@ import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { makeRNG } from '../engine/dice';
-import { startCascade, registerTableStep, rollTableStep, runCascadeImmediate, stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow } from './cascade';
+import { startCascade, registerTableStep, rollTableStep, runCascadeImmediate, stepInteraction, stepReady, tableStepDef, tableStepIds, tableStepDie, naturalRollForTableRow } from './cascade';
 import { spyApplier } from './cascadeTestKit';
 import { STRUCTURE_CRIT_TABLE } from './combatFlow';
 import { STRUCTURE_CRITICALS } from '../data/structureCriticals';
@@ -11,13 +11,15 @@ import { combatStakeRef, resolveStake } from '../data';
 import { findTableEntry } from '../engine/tables';
 import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
 import { intentAllowedFor } from './netOwnership';
+import { setDataset, datasetArray } from '../data/overrides';
+import { type MutationTable } from '../data/mutations';
 import type { CascadeStep } from './pendings';
 
 /**
  * ÉTAPE À TABLE (#942 L2) — le TIRAGE SUR TABLEAU est une interaction d'étape de cascade, résolue en UN
  * site (`rollTableStep` : dé, `mod` appliqué avant le lookup, `findTableEntry`, id de ligne STABLE),
  * exercée par les VRAIES coutures du store (`cascadeTableRoll`/`cascadeNext`/`cascadeResolveAll`) et par
- * le pilote immédiat. La table est résolue par le registre `tableStepDefs`, peuplé par les modules de
+ * le pilote immédiat. La table est résolue par le registre (`tableStepDef`), peuplé par les modules de
  * domaine (le cœur générique ne nomme aucune table).
  */
 describe('Étape à TABLE — le tirage sur tableau, résolu en un site', () => {
@@ -106,7 +108,10 @@ describe('Étape à TABLE — le tirage sur tableau, résolu en un site', () => 
   });
 
   it('table non enregistrée : fail-fast (un `tableId` fautif ne se résout jamais en silence)', () => {
-    expect(() => rollTableStep({ tableId: 'table-inexistante' }, makeRNG(1))).toThrow(/non enregistrée/i);
+    // Le refus NOMME l'id ET ses deux causes possibles (jamais enregistrée, ou table retirée de la
+    // donnée — cf. le cas de reprise ci-dessous) : un `tableId` fautif ne se résout jamais en silence.
+    expect(() => rollTableStep({ tableId: 'table-inexistante' }, makeRNG(1)))
+      .toThrow(/« table-inexistante ».*jamais enregistrée.*retirée de la donnée/);
   });
 
   it('dé effectif HORS PLAGE : fail-fast, jamais le repli silencieux sur la ligne extrême', () => {
@@ -122,8 +127,8 @@ describe('Étape à TABLE — le tirage sur tableau, résolu en un site', () => 
   });
 
   it("registre : la table de Critiques de Structure est déclarée par son module de domaine, fourchettes = la DONNÉE", () => {
-    expect(tableStepDefs[STRUCTURE_CRIT_TABLE]).toBeDefined();
-    expect(tableStepDefs[STRUCTURE_CRIT_TABLE].rows).toBe(STRUCTURE_CRITICALS);
+    expect(tableStepDef(STRUCTURE_CRIT_TABLE)).toBeDefined();
+    expect(tableStepDef(STRUCTURE_CRIT_TABLE)!.rows).toBe(STRUCTURE_CRITICALS);
     // Le résolveur GÉNÉRIQUE trouve la même ligne que le lookup partagé sur la donnée verbatim.
     for (const die of [10, 40, 85, 98]) {
       expect(rollTableStep({ tableId: STRUCTURE_CRIT_TABLE, forcedRoll: die }, makeRNG(1)).id)
@@ -138,7 +143,8 @@ describe('Étape à TABLE — le tirage sur tableau, résolu en un site', () => 
     // PROJETTENT avant d'entrer au registre. L'invariant est écrit avec CETTE projection (`stripBookMarker`,
     // `src/data/bookMarker.ts`) — un critère maison (tokenisation, liste de sigles) divergerait d'elle.
     // Couvre TOUTES les tables déclarées (les modules de domaine sont chargés via le store).
-    const fautifs = Object.entries(tableStepDefs)
+    const fautifs = tableStepIds()
+      .map((id) => [id, tableStepDef(id)!] as const)
       .filter(([, def]) => def.label !== stripBookMarker(def.label))
       .map(([id, def]) => `${id} : « ${def.label} » → « ${stripBookMarker(def.label)} »`);
     expect(fautifs, `Référence de livre dans un libellé de table rendu au joueur :\n${fautifs.join('\n')}`).toEqual([]);
@@ -154,6 +160,27 @@ describe('Étape à TABLE — le tirage sur tableau, résolu en un site', () => 
     for (const l of ['Rencontres de Lustria', 'Ruelles de Salzemund']) {
       expect(hasBookMarker(l), `faux positif : « ${l} »`).toBe(false);
     }
+  });
+
+  it('une table RETIRÉE de la donnée : la cascade PERSISTÉE sur son id est refusée NOMMÉMENT', () => {
+    // Le registre SUIT la donnée (#1692) : une table retirée de la donnée rend irrésoluble toute
+    // cascade persistée qui la tirait — refus nommé sur l'id, jamais un repli sur une autre table,
+    // aucune migration de sauvegarde (`.claude/memory/user-arbitrage-saves-reset-pas-migration.md`).
+    const livrees = [...(datasetArray('mutationTables') as MutationTable[])];
+    const retiree = livrees[0];
+    expect(tableStepDef(retiree.id), 'la table doit exister AVANT le retrait').toBeDefined();
+    startCascade(useGame.getState, useGame.setState, {
+      title: 'Reprise', purpose: 'test',
+      steps: [{ ...tableStep('t1'), table: { tableId: retiree.id } }],
+    });
+    try {
+      setDataset('mutationTables', livrees.filter((t) => t.id !== retiree.id));
+      expect(() => useGame.getState().cascadeTableRoll('t1'))
+        .toThrowError(new RegExp(`« ${retiree.id} ».*retirée de la donnée`));
+    } finally {
+      setDataset('mutationTables', livrees);
+    }
+    expect(tableStepDef(retiree.id), 'le dataset livré est restauré').toBeDefined();
   });
 });
 
@@ -193,22 +220,22 @@ describe('MODE TABLE — poser le dé d’une étape à table (option « Dés fi
   it('le dé d’une LIGNE est son `min − mod` (le lookup se fait sur le dé EFFECTIF), pas sa borne brute', () => {
     const decl = { tableId: T, mod: -10 };
     // Poser la borne BRUTE (51) donnerait un dé effectif de 41 → la ligne BASSE : la ligne cliquée glisse.
-    expect(naturalRollForTableRow(decl, tableStepDefs[T].rows[1])).toBe(61);
-    expect(naturalRollForTableRow(decl, tableStepDefs[T].rows[0])).toBe(11);
-    expect(naturalRollForTableRow({ tableId: T, mod: 10 }, tableStepDefs[T].rows[1])).toBe(41);
+    expect(naturalRollForTableRow(decl, tableStepDef(T)!.rows[1])).toBe(61);
+    expect(naturalRollForTableRow(decl, tableStepDef(T)!.rows[0])).toBe(11);
+    expect(naturalRollForTableRow({ tableId: T, mod: 10 }, tableStepDef(T)!.rows[1])).toBe(41);
     expect(tableStepDie({ tableId: T })).toBe(100);
     expect(tableStepDie({ tableId: T, spec: { n: 1, sides: 10 } })).toBe(10);
   });
 
   it('ligne HORS D’ATTEINTE sous le `mod` : aucun dé naturel n’y tombe → `null` (jamais un dé qui glisse)', () => {
-    expect(naturalRollForTableRow({ tableId: T, mod: 60 }, tableStepDefs[T].rows[0])).toBeNull(); // 1-50 : max 100-60 → -10
-    expect(naturalRollForTableRow({ tableId: T, mod: 60 }, tableStepDefs[T].rows[1])).toBe(1);
-    expect(naturalRollForTableRow({ tableId: T, mod: -60 }, tableStepDefs[T].rows[1])).toBeNull(); // 51-100 : min 111 > d100
+    expect(naturalRollForTableRow({ tableId: T, mod: 60 }, tableStepDef(T)!.rows[0])).toBeNull(); // 1-50 : max 100-60 → -10
+    expect(naturalRollForTableRow({ tableId: T, mod: 60 }, tableStepDef(T)!.rows[1])).toBe(1);
+    expect(naturalRollForTableRow({ tableId: T, mod: -60 }, tableStepDef(T)!.rows[1])).toBeNull(); // 51-100 : min 111 > d100
   });
 
   it('POSER le dé d’une ligne (mod −10) : la ligne CLIQUÉE sort, le dé naturel est celui qui l’atteint', () => {
     open(-10);
-    const nat = naturalRollForTableRow(curStep().table!, tableStepDefs[T].rows[1])!;
+    const nat = naturalRollForTableRow(curStep().table!, tableStepDef(T)!.rows[1])!;
     useGame.getState().cascadeTableSetForcedRoll('tm', nat);
     expect(curStep().table!.result).toMatchObject({ roll: 61, die: 51, id: 'haute' });
     useGame.getState().cascadeNext(); // la conséquence lit l'id de ligne, comme un tirage naturel

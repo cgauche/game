@@ -18,7 +18,7 @@ import { mountUp } from './mount';
 import { combatValue, resolveMeleePassive } from '../engine/combat';
 import { seedBattleRng } from './battleRng';
 import type { AttackResult } from '../engine/combat';
-import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
+import { campaignStart, MINUTES_PER_DAY } from '../engine/clock';
 import { setRule, resetRule } from '../engine/policy';
 import { loadWeapon, unloadWeapon, setReloadProgress, recomputeLoadout } from '../engine/items';
 import { loadRegister, weaponLoaded, reloadProgressOf } from '../engine/weaponLoad';
@@ -2998,18 +2998,18 @@ describe("Orientation du meneur à l'entrée de scène (spawnFacing / heroStart 
 
 describe('Horloge in-game — gameTime + advanceTime (Phase T1)', () => {
   it('advanceTime fait avancer gameTime (depuis le départ de campagne)', () => {
-    useGame.setState({ gameTime: CAMPAIGN_START });
+    useGame.setState({ gameTime: campaignStart() });
     useGame.getState().advanceTime(90); // +1h30
-    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + 90);
+    expect(useGame.getState().gameTime).toBe(campaignStart() + 90);
     useGame.getState().advanceTime(MINUTES_PER_DAY); // +1 jour
-    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + 90 + MINUTES_PER_DAY);
+    expect(useGame.getState().gameTime).toBe(campaignStart() + 90 + MINUTES_PER_DAY);
   });
 
   it('advanceTime est un no-op si minutes ≤ 0', () => {
-    useGame.setState({ gameTime: CAMPAIGN_START });
+    useGame.setState({ gameTime: campaignStart() });
     useGame.getState().advanceTime(0);
     useGame.getState().advanceTime(-30);
-    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START);
+    expect(useGame.getState().gameTime).toBe(campaignStart());
   });
 });
 
@@ -3024,25 +3024,25 @@ describe('« Tout est horodaté » — branchements TIME_COST (Phase T1)', () =>
     scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Cadavre', interact: { flow: flowFromEffects([{ type: 'giveMoney', montant: { gold: 1 } }]) } });
     useGame.setState({ party: [{ id: 'a', label: 'A', xp: 0, wounds: { current: 12, max: 12 }, conditions: [] } as unknown as Combatant] });
     useGame.getState().startScene(scene);
-    useGame.setState({ partyPos: { x: 0, y: 0 }, gameTime: CAMPAIGN_START });
+    useGame.setState({ partyPos: { x: 0, y: 0 }, gameTime: campaignStart() });
 
     useGame.getState().interactEntity('cadavre');
-    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + TIME_COST.search);
+    expect(useGame.getState().gameTime).toBe(campaignStart() + TIME_COST.search);
     // Re-fouille : retour anticipé (déjà fouillé) → aucun nouvel avancement.
     useGame.getState().interactEntity('cadavre');
-    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + TIME_COST.search);
+    expect(useGame.getState().gameTime).toBe(campaignStart() + TIME_COST.search);
   });
 
   it('clôturer un dialogue avance le temps de TIME_COST.dialogue (idempotent)', () => {
     useGame.setState({
-      gameTime: CAMPAIGN_START,
+      gameTime: campaignStart(),
       dialogue: { dialogue: { id: 'd', start: 'n', nodes: [{ id: 'n', text: '…', choices: [] }] }, nodeId: 'n' } as any,
     });
     useGame.getState().closeDialogue();
-    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + TIME_COST.dialogue);
+    expect(useGame.getState().gameTime).toBe(campaignStart() + TIME_COST.dialogue);
     // Re-clôture (dialogue déjà null) → no-op (garde `if (get().dialogue)`).
     useGame.getState().closeDialogue();
-    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + TIME_COST.dialogue);
+    expect(useGame.getState().gameTime).toBe(campaignStart() + TIME_COST.dialogue);
   });
 
   it('franchir un Round de combat avance le temps de TIME_COST.combatRound', () => {
@@ -3054,9 +3054,9 @@ describe('« Tout est horodaté » — branchements TIME_COST (Phase T1)', () =>
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     b.combatants.forEach((c) => { c.fortune = 0; }); // neutralise la pré-emption Chance
-    useGame.setState({ battle: { ...b, turn: b.order.length - 1 }, gameTime: CAMPAIGN_START });
+    useGame.setState({ battle: { ...b, turn: b.order.length - 1 }, gameTime: campaignStart() });
     useGame.getState().battleEndTurn(); // dernier tour → advanceTurn franchit le Round
-    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + TIME_COST.combatRound);
+    expect(useGame.getState().gameTime).toBe(campaignStart() + TIME_COST.combatRound);
   });
 
   it('sceneTransition reste à 0 (intérieur) — le point d’appel existe (seam #T2), sans avancer le temps', () => {
@@ -3078,7 +3078,7 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
   it('startScene réinitialise TOUT champ d’état à son défaut de création (garde-fou anti-dérive)', () => {
     // 1) Salir un maximum de champs — simule une partie précédente abandonnée en plein combat.
     useGame.setState({
-      gameTime: CAMPAIGN_START + 99_999,
+      gameTime: campaignStart() + 99_999,
       facing: { fantome: 4 } as any,
       previousScene: { id: 'vieux', pos: { x: 9, y: 9 } },
       document: { title: 'x', text: 'y' },
@@ -3107,7 +3107,7 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
     }
 
     // 4) Points névralgiques explicites (les 5 suspensions de combat + horloge + orientation + retour).
-    expect(st.gameTime).toBe(CAMPAIGN_START);
+    expect(st.gameTime).toBe(campaignStart());
     // Le fantôme de l'ancienne partie est purgé ; SEUL le meneur est ré-orienté vers le contenu
     // (heroStart (0,0) sur une 6×6 → centroïde (2.5,2.5) = SE).
     expect(st.facing).toEqual({ h: 'SE' });
@@ -3136,7 +3136,7 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
 
 describe('Effet setTime — forcer l’heure du jour (jour/nuit via trigger, #T1c)', () => {
   beforeEach(() => reset());
-  const dayAt = (h: number) => CAMPAIGN_START - (CAMPAIGN_START % MINUTES_PER_DAY) + h * 60; // un jour donné, à h:00
+  const dayAt = (h: number) => campaignStart() - (campaignStart() % MINUTES_PER_DAY) + h * 60; // un jour donné, à h:00
 
   it('setTime phase nuit depuis 14:00 → avance à la prochaine 22:00 (8 h)', () => {
     useGame.setState({ gameTime: dayAt(14) });

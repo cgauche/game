@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { Modal } from './Modal';
 import { MultiRollList } from './MultiRollList';
 import { RecapLineSections } from './RecapLine';
-import { TRAVEL_MODE_LABEL, routeDistanceLabel } from '../engine/travel';
+import { travelModeLabels, routeDistanceLabel } from '../engine/travel';
 import type { TravelRecap } from '../state/travelFlow';
 import { GameDate } from './GameDate';
 import { SeaVoyageBody } from './SeaVoyageScreen';
@@ -54,7 +54,7 @@ export function TravelRecapModal({ seam }: { seam?: TravelRecap } = {}) {
   return (
     <Modal title={title} variant="plain" className="travel-recap" onClose={dismiss} backdropClose={!ambush}>
       <p className="travel-recap-route">
-        {recap.fromLabel} → <b>{recap.toLabel}</b> · {routeDistanceLabel(recap.km, sea)}, {TRAVEL_MODE_LABEL[recap.mode].toLowerCase()}
+        {recap.fromLabel} → <b>{recap.toLabel}</b> · {routeDistanceLabel(recap.km, sea)}, {travelModeLabels()[recap.mode].toLowerCase()}
         {recap.status !== 'arrived' && <> · <b>{kmLeft > 0 ? `${routeDistanceLabel(kmLeft, sea)} restants` : `aux portes de ${recap.toLabel}`}</b></>}
       </p>
       {/* ARRIVÉE amincie (diagnostic fil 4, vague « lisibilité 2/2 ») : un ACCUSÉ (route + durée +

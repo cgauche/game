@@ -10,6 +10,10 @@
  * `Object.fromEntries`, `.reduce` en Record), l'index rempli PAR UNE BOUCLE de niveau module, la VUE
  * dérivée (`const armes = trappings.filter(…)`, `species[0]`, `[...creatures]`), l'accès par
  * ESPACE DE NOMS (`import * as D` → `D.traits.map`) et l'accès par la CLÉ (`datasetArray('traits').map`).
+ * S'y ajoutent les dérivations qui prennent le dataset EN ARGUMENT au lieu de l'appeler comme receveur
+ * — les ENVELOPPES `new Set(traits)`/`new Map(traits)`/`Array.from(traits)`/`Object.keys|values|entries(traits)`,
+ * où le nom est à DROITE de la parenthèse — et les méthodes à COPIE (`toSorted`, `toReversed`, `flat`…).
+ * `.includes(…)` n'en est pas : elle rend un booléen, pas une structure.
  * Le nom déclaré par une déclaration fautive rejoint le vocabulaire : l'index bâti ENSUITE sur cette
  * vue est nommé lui aussi.
  *
@@ -36,7 +40,26 @@
  *  - FABRIQUE INTER-MODULE — `const PAR_ID = construire();` où `construire()` (autre fichier) lit le
  *    dataset : le détecteur ne suit aucun appel hors du fichier ;
  *  - RÉ-EXPORT RENOMMÉ — `export { traits as tousLesTraits }` dans un module tiers, puis
- *    `new Map(tousLesTraits.map(…))` chez son importateur : le vocabulaire ne suit que le seam.
+ *    `new Map(tousLesTraits.map(…))` chez son importateur : le vocabulaire ne suit que le seam ;
+ *  - CLÉ DE DATASET ≠ NOM DE FICHIER — `miscastMinor`/`miscastMajor`/`miscastWrath` sont trois
+ *    DOCUMENTS de `miscast.json` : le vocabulaire de l'import JSON ne relie pas `engine/miscast.ts`
+ *    à ses datasets (sa staleness `RUNTIME_ROWS`, corrigée à ce lot, n'a été vue par AUCUN motif) ;
+ *  - PARTITION PAR UN PRÉDICAT VIF — `TENUE_DEFS.filter((d) => !isClassDef(d.id))`
+ *    (`gameIso/rig/parts/tenues/index.ts:20-42`) : la source énumérée n'est PAS un dataset (code
+ *    généré), seul le PRÉDICAT lit `careers` — la partition reste donc figée à l'import alors que le
+ *    prédicat, lui, est vif. Aucun motif ne la voit : le dataset n'y est nommé nulle part.
+ *
+ * SONT désormais du VOCABULAIRE, joués à ce lot (les deux formes par lesquelles le module
+ * PROPRIÉTAIRE d'un dataset l'atteint sans jamais nommer le seam) : l'IMPORT JSON DIRECT
+ * (`import vehiclesJson from '../data/vehicles.json'` — le document importé EST le singleton que le
+ * seam splice, et le nom de fichier porte la clé) et l'ALIAS NU de niveau module
+ * (`const VEHICLES_LIST = vehiclesJson as VehicleData[]`, `export const IMPERIAL_MONTHS = calendarMonths`),
+ * qui hérite du dataset. Ils ont révélé 10 staleness, toutes migrées à ce lot : `engine/travel.ts`
+ * (index, transports payants, libellés de mode), `engine/trauma.ts` (index des fiches, fiches à
+ * cumul, texte de plaie), `engine/clock.ts` (`campaignStart`), `data/bookMarker.ts`,
+ * `data/schemas/grammaire/livres-extraits.ts`, `engine/disease.ts` (`diseaseDefs`) et ses deux
+ * dérivés re-figés (`state/combatEffects.ts`, `ui/editor/EffectList.tsx`),
+ * `gameIso/rig/parts/tenues/index.ts` (`classIds`).
  *
  * ASYMÉTRIE DE PÉRIMÈTRE, dite : la garde d'ÉCRITURE (`seam-ecriture-guard.test.ts`) balaie AUSSI les
  * `.test.ts` (une écriture hors seam dans un test contamine les autres tests du même processus) ;
@@ -48,7 +71,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { bindingsVifs, clesDuSeam, indexFiges, fichiersSources, fichiersDuSeam, accesseursVifs, sansCommentaires, RACINE } from '../../scripts/guards/lib/bindingsVifs.mjs';
+import { bindingsVifs, clesDuSeam, indexFiges, nomsVifsDuFichier, fichiersSources, fichiersDuSeam, accesseursVifs, sansCommentaires, RACINE } from '../../scripts/guards/lib/bindingsVifs.mjs';
 import { DATASET_KEYS } from './overrides';
 
 describe('#1692 — aucun index figé à l’import sur un dataset mutable', () => {
@@ -61,6 +84,24 @@ describe('#1692 — aucun index figé à l’import sur un dataset mutable', () 
     expect(parBinding.get('traits')).toBe('traits');
     expect(parBinding.get('allAxes')).toBe('axes');
     expect(parBinding.get('MOUNT_PROFILES')).toBe('montures');
+  });
+
+  it('une entrée du seam à valeur d’APPEL est surveillée sous sa CLÉ, jamais sous sa fabrique', () => {
+    // `miscastMinor: miscastEntries('miscast-mineure')` : `miscastEntries` est une fonction PRIVÉE
+    // d'`overrides.ts` — la retenir comme binding posait un nom FANTÔME que personne n'importe, et
+    // laissait le nom réellement exposé du dataset hors du vocabulaire des DEUX gardes.
+    for (const cle of ['miscastMinor', 'miscastMajor', 'miscastWrath']) expect(parBinding.get(cle)).toBe(cle);
+    expect(parBinding.has('miscastEntries'), 'la fabrique n’est pas un binding').toBe(false);
+    // Les entrées à valeur de MEMBRE gardent leur objet porteur (lui, est bien importé ailleurs) —
+    // et les shorthands leur propre nom.
+    expect(parBinding.get('shipConstruction')).toBe('shipHullSizes');
+    expect(parBinding.get('criticalsTete')).toBe('criticalsTete');
+
+    // Et le détecteur VOIT désormais un index figé sur ce nom, injecté dans une copie en mémoire.
+    const fige = `import { miscastMinor } from '../data/overrides';\nconst PAR_ID = new Map(miscastMinor.map((r) => [r.id, r]));\n`;
+    expect(indexFiges('copie.ts', fige, parBinding)).toHaveLength(1);
+    const figeCrit = `import { criticalsTete } from '../data/overrides';\nconst PREMIER = criticalsTete[0];\n`;
+    expect(indexFiges('copie.ts', figeCrit, parBinding)).toHaveLength(1);
   });
 
   it('le SEAM se DÉRIVE de ce que les fichiers déclarent, pas d’une liste de chemins', () => {
@@ -118,6 +159,37 @@ describe('#1692 — aucun index figé à l’import sur un dataset mutable', () 
     expect(indexFiges('copie.ts', parLaCle, parBinding)).toHaveLength(1);
   });
 
+  it('CONTRÔLE POSITIF : les dérivations qui prennent le dataset EN ARGUMENT (enveloppes) et les méthodes à COPIE', () => {
+    // `new Set(traits)` fige le contenu autant que `new Map(traits.map(…))`, mais le nom y est à DROITE
+    // de la parenthèse : aucun motif de receveur ne le voyait.
+    for (const cas of [
+      `import { traits } from '../data';\nconst IDS = new Set(traits);\n`,
+      `import { traits } from '../data';\nconst T = Array.from(traits);\n`,
+      `import { traits } from '../data';\nconst K = Object.keys(traits);\n`,
+      `import { traits } from '../data';\nconst V = Object.values(traits);\n`,
+      `import { traits } from '../data';\nconst E = Object.entries(traits);\n`,
+      // Méthodes à COPIE (ES2023) : elles rendent une STRUCTURE dérivée, comme `.concat([])` (témoin déjà vu).
+      `import { traits } from '../data';\nconst T = traits.toSorted((a, b) => a.id.localeCompare(b.id));\n`,
+      `import { traits } from '../data';\nconst T = traits.flat();\n`,
+      `import { traits } from '../data';\nconst T = traits.concat([]);\n`,
+      // L'enveloppe voit aussi le MEMBRE d'un espace de noms et l'accès par la CLÉ.
+      `import * as D from '../data';\nconst T = Array.from(D.traits);\n`,
+      `import { datasetArray } from '../data/overrides';\nconst IDS = new Set(datasetArray('traits'));\n`,
+    ]) expect(indexFiges('copie.ts', cas, parBinding), cas).toHaveLength(1);
+    // `.includes(…)` rend un BOOLÉEN, pas une structure : rien n'est figé. Et une enveloppe dans un
+    // corps de fonction se refait à chaque appel.
+    expect(indexFiges('copie.ts', `import { traits } from '../data';\nconst B = traits.includes('x');\n`, parBinding)).toEqual([]);
+    expect(indexFiges('copie.ts', `import { traits } from '../data';\nexport const f = () => new Set(traits);\n`, parBinding)).toEqual([]);
+  });
+
+  it('CONTRÔLE POSITIF : un ALIAS coupé en PLUSIEURS LIGNES est le même alias — la règle porte sur la déclaration, blancs repliés', () => {
+    // La borne « une ligne, 200 caractères » laissait passer un alias mis en forme par le formateur :
+    // l'héritage du dataset cessait, et l'index bâti dessus redevenait invisible.
+    const multiligne = `import vehiclesJson from '../data/vehicles.json';\nconst LISTE:\n  VehicleData[] = vehiclesJson as VehicleData[];\nconst PAR_ID = new Map(LISTE.map((v) => [v.id, v]));\n`;
+    expect(nomsVifsDuFichier(multiligne, parBinding).get('LISTE'), 'l’alias multi-ligne hérite du dataset').toBe('vehicles');
+    expect(indexFiges('copie.ts', multiligne, parBinding)).toHaveLength(1);
+  });
+
   it('CONTRÔLE POSITIF : les formes SANS méthode ni `const` porteur — sœur, IIFE, déstructuration, `export default`, affectation nue', () => {
     const soeurDUneFleche = `import { traits } from '../data';\nconst f = () => 1, PAR_ID = new Map(traits.map((t) => [t.id, t]));\n`;
     expect(indexFiges('copie.ts', soeurDUneFleche, parBinding)).toHaveLength(1);
@@ -153,9 +225,29 @@ describe('#1692 — aucun index figé à l’import sur un dataset mutable', () 
     const champStatique = `import { traits } from '../data';\nexport class R { static PAR_ID = new Map(traits.map((t) => [t.id, t])); }\n`;
     const fabriqueInterModule = `import { construire } from './autre';\nconst PAR_ID = construire();\n`;
     const reexportRenomme = `import { tousLesTraits } from './reexport';\nconst PAR_ID = new Map(tousLesTraits.map((t) => [t.id, t]));\n`;
-    for (const cas of [champStatique, fabriqueInterModule, reexportRenomme]) {
+    // CLÉ ≠ NOM DE FICHIER : `miscastMinor` est un DOCUMENT de `miscast.json`.
+    const documentNiche = `import miscastJson from '../data/miscast.json';\nconst TABLES = miscastJson as MiscastTableDef[];\nconst PAR_ID = new Map(TABLES.map((t) => [t.id, t]));\n`;
+    for (const cas of [champStatique, fabriqueInterModule, reexportRenomme, documentNiche]) {
       expect(indexFiges('copie.ts', cas, parBinding), 'angle mort couvert : l’en-tête de ce fichier ne dit plus vrai').toEqual([]);
     }
+  });
+
+  it('CONTRÔLE POSITIF : l’IMPORT JSON DIRECT et son ALIAS NU sont du vocabulaire — mesuré sur un fichier RÉEL', () => {
+    // Le module PROPRIÉTAIRE d'un dataset ne nomme jamais le seam : il importe SON document et l'aliase.
+    // Le nom de fichier porte la clé, l'alias hérite — sans quoi trois staleness (`vehicles`, `traumas`,
+    // `books`) restaient invisibles alors que le seam splice ces tableaux-là.
+    const reel = readFileSync(join(RACINE, 'src/engine/travel.ts'), 'utf8');
+    const noms = nomsVifsDuFichier(reel, parBinding);
+    expect(noms.get('vehiclesJson')).toBe('vehicles');
+    expect(noms.get('VEHICLES_LIST'), 'l’alias nu hérite du dataset').toBe('vehicles');
+    // Le fichier RÉEL est propre ; la même vue réinjectée dans une COPIE est vue.
+    expect(indexFiges('src/engine/travel.ts', reel, parBinding)).toEqual([]);
+    const injecte = `${reel}\nconst PAYANTS = VEHICLES_LIST.filter((v) => v.travel);\n`;
+    expect(indexFiges('copie.ts', injecte, parBinding)).toHaveLength(1);
+    const alias = `import vehiclesJson from '../data/vehicles.json';\nconst LISTE = vehiclesJson as VehicleData[];\nconst PAR_ID = new Map(LISTE.map((v) => [v.id, v]));\n`;
+    expect(indexFiges('copie.ts', alias, parBinding)).toHaveLength(1);
+    // Un JSON qui n'est PAS un dataset du seam n'entre pas au vocabulaire.
+    expect(nomsVifsDuFichier(`import x from './rien-du-tout.json';\n`, parBinding).size).toBe(0);
   });
 
   it('CONTRÔLE NÉGATIF : une lecture dans un CORPS (flèche, `function`, accesseur, méthode) est innocente', () => {

@@ -3,7 +3,7 @@ import { useGame } from '../state/store';
 import { placeOfScene, placeById, routesEtat, visiblePlaces, otherEnd, declutterPositions, MapRoute, MapPlace } from '../state/worldMap';
 import { baseHoursPerDay, maxHoursPerDay } from '../state/travelFlow';
 import {
-  TravelMode, TRAVEL_MODE_LABEL, vehicleTravel, travelModeIcon, travelSpeed, travelPlanCalc, transportCost,
+  TravelMode, travelModeLabels, vehicleTravel, travelModeIcon, travelSpeed, travelPlanCalc, transportCost,
   routeDistanceLabel,
 } from '../engine/travel';
 import {
@@ -478,9 +478,9 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               layout="seg"
               options={modeChoices.map((m) => ({
                 key: m,
-                label: TRAVEL_MODE_LABEL[m],
+                label: travelModeLabels()[m],
                 selected: mode === m,
-                content: <><Icon id={travelModeIcon(m)} /> {TRAVEL_MODE_LABEL[m]}</>,
+                content: <><Icon id={travelModeIcon(m)} /> {travelModeLabels()[m]}</>,
                 onSelect: () => pickMode(m),
               }))}
             />

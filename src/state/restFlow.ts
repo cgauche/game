@@ -31,7 +31,7 @@ import { hasHealSkill } from '../engine/healing';
 import { soberUpDissipate, soberUpHangover } from '../engine/drunkenness';
 import { isOutOfAction, addCondition, loseWounds, addClockCondition } from '../engine/conditions';
 import { restRecovery, applyRecoveryDay, needsRecoveryRoll, applyDiseaseEnd, type RestRoll } from '../engine/rest';
-import { rollContraction, DISEASE_DEFS, contagiousDiseases, contractionDue, applyContraction, applyDiseaseGangrene, diseaseTestModLines } from '../engine/disease';
+import { rollContraction, diseaseDefs, contagiousDiseases, contractionDue, applyContraction, applyDiseaseGangrene, diseaseTestModLines } from '../engine/disease';
 import { applyOps } from '../engine/ops';
 import { rule } from '../engine/policy';
 import { type Difficulty } from '../engine/types';
@@ -226,7 +226,7 @@ function runContagion(party: Combatant[], n: number, rng: RNG): { actorId: strin
     for (const dz of contagiousDiseases(sick)) {
       for (const other of party) {
         if (other === sick || other.dead) continue;
-        const def = DISEASE_DEFS[dz.id];
+        const def = diseaseDefs()[dz.id];
         for (let d = 0; d < n; d++) {
           const log = rollContraction(other, dz.id, testValue(other, 'resistance'), def?.contractDifficulty ?? 'accessible', rng);
           if (log.length) out.push({ actorId: other.id, dz: dz.id, log });
@@ -252,7 +252,7 @@ function collectContagion(party: Combatant[]): ContagionSpec[] {
         const key = `${other.id}:${dz.id}`;
         if (seen.has(key) || !contractionDue(other, dz.id)) continue;
         seen.add(key);
-        out.push({ heroId: other.id, diseaseName: dz.id, difficulty: DISEASE_DEFS[dz.id]?.contractDifficulty ?? 'accessible' });
+        out.push({ heroId: other.id, diseaseName: dz.id, difficulty: diseaseDefs()[dz.id]?.contractDifficulty ?? 'accessible' });
       }
     }
   }
@@ -744,7 +744,7 @@ export function restSleep(get: Get, set: Set): void {
     if (cfg.food === 'repas' || cfg.food === 'maison') {
       feedFromMeal(h);
       if (cfg.food === 'repas' && p.quality === 'pietre' && rng.int(1, 100) <= 10 && contractionDue(h, 'courante-galopante')) {
-        extraContagion.push({ heroId: h.id, diseaseName: 'courante-galopante', difficulty: DISEASE_DEFS['courante-galopante']?.contractDifficulty ?? 'accessible' });
+        extraContagion.push({ heroId: h.id, diseaseName: 'courante-galopante', difficulty: diseaseDefs()['courante-galopante']?.contractDifficulty ?? 'accessible' });
       }
     }
     // 'ration' : consommée par l'entretien quotidien (#T3) ; 'rien' : la Faim suivra son cours.

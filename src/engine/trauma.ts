@@ -29,6 +29,7 @@ import { wornSocialMods, qualityWearMods } from './wearPenalty';
 import type { GameOp, PairedSense, PassiveKind, PassiveMod } from './ops';
 import { normalizePassiveKind, resolveFormula } from './ops';
 import traumasJson from '../data/traumas.json';
+import { indexParId, memoParVersion } from '../data/versionDataset';
 import { t as tr } from '../i18n'; // alias : `t` est un identifiant local très fréquent ici (la séquelle courante)
 
 export type TraumaKind = 'dechirure' | 'fracture';
@@ -38,7 +39,9 @@ const LEG: HitLocation[] = ['jambeG', 'jambeD'];
 
 /** Texte de la plaie chirurgicale d'une amputation (fiche `amputation-plaie`, LDB 18 l.239, DISPLAY-ONLY) —
  *  SOURCE UNIQUE partagée par l'op `amputer` (ops.ts) et `stampCriticalEscalation` (« Pied écrasé »). */
-export const AMPUTATION_WOUND_DESC = (traumasJson as TraumaFiche[]).find((f) => f.id === 'amputation-plaie')!.desc;
+export function amputationWoundDesc(): string | undefined {
+  return traumaFicheById('amputation-plaie').desc;
+}
 
 /**
  * Règle de COMPTAGE/AGRÉGATION d'une séquelle CUMULATIVE, déclarée sur SON entrée de `traumas.json` —
@@ -113,11 +116,11 @@ export interface TraumaFiche {
 }
 
 const FICHES = traumasJson as TraumaFiche[];
-const FICHE_BY_ID = new Map(FICHES.map((f) => [f.id, f]));
+const ficheById = indexParId('traumas', FICHES);
 
 /** Fiche de Traumatisme par id STABLE (`traumas.json`). Lève si l'id est inconnu (réf cassée = bug data). */
 export function traumaFicheById(id: string): TraumaFiche {
-  const f = FICHE_BY_ID.get(id);
+  const f = ficheById(id);
   if (!f) throw new Error(`Trauma fiche inconnue : ${id}`);
   return f;
 }
@@ -127,7 +130,7 @@ export function traumaFicheById(id: string): TraumaFiche {
  *  `traumaId` orphelins dans les saves, et un écran ne doit pas planter pour un visuel manquant. Toute
  *  lecture MÉCANIQUE passe par `traumaFicheById`, qui lève (une règle silencieusement absente = bug). */
 export function findTraumaFiche(id: string | undefined): TraumaFiche | undefined {
-  return id == null ? undefined : FICHE_BY_ID.get(id);
+  return ficheById(id);
 }
 
 /** Ops PASSIVES d'une séquelle (lecteur UNIQUE de `t.ops` — vocab GameOp partagé). */
@@ -425,8 +428,8 @@ export function amputationCombatPenalty(c: Combatant, weapon: Weapon): number {
 }
 
 /** Fiches à règle de cumul déclarée (`TraumaCumul`) — l'ordre du registre fixe l'ordre de consolidation. */
-const CUMUL_FICHES = FICHES.filter((f) => f.cumul);
-const IS_CUMUL = (t: Trauma): boolean => CUMUL_FICHES.some((f) => f.id === t.traumaId);
+const cumulFiches = memoParVersion('traumas', () => FICHES.filter((f) => f.cumul));
+const IS_CUMUL = (t: Trauma): boolean => cumulFiches().some((f) => f.id === t.traumaId);
 
 /** Séquelle cumulative agrégée : `total` unités à `loc`, ops recalculées ; le libellé porte la
  *  Localisation quand le cumul est PAR LOCALISATION (LDB 18 l.251 « cette main »). */
@@ -468,7 +471,7 @@ export function consolidateAmputations(c: Combatant): string[] {
   const traumas = c.traumas ?? [];
   if (!traumas.some(IS_CUMUL)) return log;
   const kept = traumas.filter((t) => !IS_CUMUL(t));
-  for (const f of CUMUL_FICHES) {
+  for (const f of cumulFiches()) {
     const grp = traumas.filter((t) => t.traumaId === f.id);
     if (!grp.length) continue;
     const cumul = f.cumul!;
@@ -568,7 +571,7 @@ export function stampCriticalEscalation(
   // escalades ; l'op `amputer` dédoublonne par membre (`estPlaieAmputation`), la plaie reste unique.
   let plaie = traumas.find(estPlaieAmputation);
   const plaieOuCreee = (): Trauma => {
-    if (!plaie) { plaie = { label: traumaFicheById('amputation-plaie').label, location, needsSurgery: true, desc: AMPUTATION_WOUND_DESC }; traumas.push(plaie); }
+    if (!plaie) { plaie = { label: traumaFicheById('amputation-plaie').label, location, needsSurgery: true, desc: amputationWoundDesc() }; traumas.push(plaie); }
     return plaie;
   };
   if (esc.perRound) { const p = plaieOuCreee(); p.perRound = { ...esc.perRound }; p.awaitingMedicalAid = true; }
@@ -867,7 +870,7 @@ export function prosthesisMoveRestore(c: Combatant): number {
  *  par `traumaId` STABLE (`TraumaFiche.amputation` en donnée) — jamais par le `label` d'affichage. */
 function isAmputationTrauma(t: Trauma): boolean {
   if (t.traumaId == null) return false;
-  return FICHE_BY_ID.get(t.traumaId)?.amputation === true;
+  return ficheById(t.traumaId)?.amputation === true;
 }
 
 /** Insensible à la douleur (LDB 85 p.340) : les pénalités de Blessures Critiques NE DÉCOULANT PAS

@@ -31,7 +31,7 @@ import { rollTest } from './tests';
 import { effectiveChar, bonus } from './characteristics';
 import { testValue } from './skills';
 import { removeCondition, stacks, hasCondition, nightmareCheck, syncDerivedConditions, derivedStacks } from './conditions';
-import { tickDisease, diseaseBlesseCount, applyDiseasePersist, DISEASE_DEFS } from './disease';
+import { tickDisease, diseaseBlesseCount, applyDiseasePersist, diseaseDefs } from './disease';
 import { MINUTES_PER_DAY } from './clock';
 import { isStarving, isThirsty, isDeprived } from './provisions';
 import { applyHealWounds } from './healing';
@@ -96,7 +96,7 @@ export function cureDiseases(c: Combatant, n: number): string[] {
   c.diseases = c.diseases.filter((d) => !removed.has(d));
   for (const d of removed) {
     log.push(t('rest.cured', { name: c.label, disease: diseaseLabel(d.id) }));
-    if (DISEASE_DEFS[d.id]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), d.id];
+    if (diseaseDefs()[d.id]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), d.id];
   }
   log.push(...syncDerivedConditions(c));
   return log;

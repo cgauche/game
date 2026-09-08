@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { vehicles, trappings } from '../data';
-import { VEHICLES_LIST, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, vehicleTravel, travelModeIcon } from './travel';
+import { VEHICLES_LIST, travelVehicles, travelModeLabels, vehicleTravel, travelModeIcon } from './travel';
 
 /**
  * Fondation données « véhicule à coque » (`vehicles.json`) — FOYER UNIQUE des transports payants.
@@ -18,7 +18,7 @@ describe('catalogue véhicules (data-driven)', () => {
   });
 
   it('toute facette travel a un Déplacement > 0 et au moins une classe', () => {
-    for (const v of TRAVEL_VEHICLES) {
+    for (const v of travelVehicles()) {
       expect(v.travel!.movement).toBeGreaterThan(0);
       expect(v.travel!.classes.length).toBeGreaterThan(0);
       for (const c of v.travel!.classes) expect(c.brassPerKm).toBeGreaterThanOrEqual(0);
@@ -39,8 +39,8 @@ describe('catalogue véhicules (data-driven)', () => {
   });
 
   it('libellés et pictogrammes de mode viennent de la donnée', () => {
-    expect(TRAVEL_MODE_LABEL.pied).toBe('À pied');
-    expect(TRAVEL_MODE_LABEL.diligence).toBe('Diligence');
+    expect(travelModeLabels().pied).toBe('À pied');
+    expect(travelModeLabels().diligence).toBe('Diligence');
     expect(travelModeIcon('pied')).toBe('travel/foot');
     expect(travelModeIcon('diligence')).toBe('travel/coach');
     expect(travelModeIcon('barge')).toBe('travel/barge');

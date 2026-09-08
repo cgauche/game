@@ -168,7 +168,7 @@ function critRollTwiceFor(c: Combatant | undefined | null): boolean {
 import { domainOnHitEffects, domainCasterOps, isSorceryDomain, domainEnvironmentBonus } from '../engine/domainAttributes';
 import { decayZones, discTiles, wallTiles, clampZoneTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
-import { contractionDue, applyContraction, hasActiveCapability, DISEASE_DEFS } from '../engine/disease';
+import { contractionDue, applyContraction, hasActiveCapability, diseaseDefs } from '../engine/disease';
 import { resolveCritique, jeuDeCritique, critiqueTriviale, critWoundLocation, critImmediateSummary, prendreAmputationsDifferees, critSeverityReduction, critTableKeyFor, critTableRows, type CriticalResolved, type CritTableKey } from '../engine/critical';
 import { findTableEntry } from '../engine/tables';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
@@ -5899,7 +5899,7 @@ function decideCombatEndHeroTests(
   // 'off' : aucune contraction.
   if (dm !== 'off' && !c.dead) {
     for (const exp of c.diseaseExposure ?? []) {
-      const def = DISEASE_DEFS[exp.disease];
+      const def = diseaseDefs()[exp.disease];
       if (def && contractionDue(c, def.id)) diseases.push({
         entry: 'contagion',
         disease: def.id,

@@ -47,7 +47,7 @@ import {
 import type { CascadeSecondRead, CascadeStep, CascadeTableDecl } from './pendings';
 import { advantageModLine, type ModLine } from '../engine/combat';
 import type { BatchParticipant } from './pendings';
-import { registerCascadeApplier, rollBatchParticipant, pushStep, registerTableStep, rollTableStep } from './cascade';
+import { registerCascadeApplier, rollBatchParticipant, pushStep, registerTableStepFamily, rollTableStep, type TableStepDef } from './cascade';
 import { combatStakeRef, refLabel } from '../data/index';
 import { memoParVersion } from '../data/versionDataset';
 import {
@@ -1125,13 +1125,15 @@ function potTableId(gameId: string): string {
   return `tavern-pot:${gameId}`;
 }
 
-/** Les tables de MISE du catalogue, POSÉES à la première lecture qui suit une édition de
- *  `tavernGames` (#1692) — un jeu édité/ajouté au Codex a SA table, sans recharger la page. */
-const poserLesTablesDePot = memoParVersion('tavernGames', () => {
+/** Les tables de MISE du catalogue — FAMILLE dérivée de `tavernGames` (#1692) : un jeu ajouté au
+ *  Codex a SA table et un jeu retiré n'en a plus, à la première lecture du registre qui suit
+ *  l'édition, pour TOUS ses lecteurs — pas seulement pour le site qui ouvre le lancer. */
+const tablesDePot = memoParVersion('tavernGames', () => {
+  const tables = new Map<string, TableStepDef>();
   for (const jeu of TAVERN_GAMES) {
     const regles = jeu.pot;
     if (!regles) continue;
-    registerTableStep(potTableId(jeu.id), {
+    tables.set(potTableId(jeu.id), {
       label: jeu.label,
       die: regles.dice.faces,
       rows: regles.rows.map((r) => ({ min: r.min, max: r.max, id: r.potEffectId, label: r.label })),
@@ -1149,12 +1151,13 @@ const poserLesTablesDePot = memoParVersion('tavernGames', () => {
       },
     });
   }
-  return true;
+  return tables;
 });
+
+registerTableStepFamily(tablesDePot);
 
 /** La DÉCLARATION de tirage d'un tour : les dés de la donnée, jamais un dé écrit ici. */
 function potDecl(game: TavernGame): CascadeTableDecl {
-  poserLesTablesDePot();
   const dice = game.pot!.dice;
   return { tableId: potTableId(game.id), spec: { n: dice.count, sides: dice.faces } };
 }

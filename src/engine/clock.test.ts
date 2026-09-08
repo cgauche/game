@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { IMPERIAL_MONTHS, INTERCALARY, WEEKDAYS, DAYS_PER_YEAR, daysPerYear, MINUTES_PER_DAY, toDate, fromDate, formatImperial, CAMPAIGN_START, dayPhase, isNight, minutesUntilNext, DAWN_MINUTE, DUSK_MINUTE, DAY_PHASES, ancreDePhase } from './clock';
+import { IMPERIAL_MONTHS, INTERCALARY, WEEKDAYS, DAYS_PER_YEAR, daysPerYear, MINUTES_PER_DAY, toDate, fromDate, formatImperial, campaignStart, dayPhase, isNight, minutesUntilNext, DAWN_MINUTE, DUSK_MINUTE, DAY_PHASES, ancreDePhase } from './clock';
 import { setDataset } from '../data/overrides';
 import { calendarMonths } from '../data';
 
@@ -74,8 +74,8 @@ describe('clock — calendrier impérial', () => {
     expect(formatImperial(min)).toMatch(/30 Jahrdrung 2512 CI · 14:30/);
   });
 
-  it('CAMPAIGN_START = fin Jahrdrung 2512 08:00', () => {
-    const d = toDate(CAMPAIGN_START);
+  it('campaignStart() = fin Jahrdrung 2512 08:00', () => {
+    const d = toDate(campaignStart());
     expect(d).toMatchObject({ year: 2512, monthName: 'Jahrdrung', day: 33, hour: 8, minute: 0 });
   });
 });

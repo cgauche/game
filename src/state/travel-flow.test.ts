@@ -16,7 +16,7 @@ import { stageWeatherRows } from './travelFlow';
 import { emptyScene, Scene } from './scene';
 import { buildEncounter } from './encounterAuthoring';
 import { WorldMap } from './worldMap';
-import { CAMPAIGN_START } from '../engine/clock';
+import { campaignStart } from '../engine/clock';
 import { setRule, resetRule } from '../engine/policy';
 import { buildWeatherResistanceSteps, buildStageSteps } from './travelPostes';
 import { seasonOfMonth, weatherFromRoll, type Season } from '../engine/travelStages';
@@ -52,9 +52,9 @@ function map(rp: Partial<WorldMap['routes'][0]> = {}): WorldMap {
   ], routes: [{ id: 'r1', a: 'pa', b: 'pb', km: 12, modes: ['pied'], perilDie: 0, ...rp }] };
 }
 function setup(wm: WorldMap, party: Combatant[]) {
-  useGame.setState({ party, gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
+  useGame.setState({ party, gameTime: campaignStart(), travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
   get().loadProject([sceneA(), sceneB()], 'lieu-a-scene', wm);
-  useGame.setState({ gameTime: CAMPAIGN_START });
+  useGame.setState({ gameTime: campaignStart() });
 }
 
 /** Déroule la cascade OUVERTE (jour ou nuit) — pilote PARTAGé `cascadeTestKit.draineCascade`. */
@@ -344,9 +344,9 @@ describe('#270 — allure forcée (attelage) : gate contrôleur', () => {
     setRule('travel-allures', true);
     seedBattleRng(1);
     const h = hero({ id: 'h', skills: [{ id: 'conduite-d-attelage', advances: 40 } as any] });
-    useGame.setState({ party: [h], gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
+    useGame.setState({ party: [h], gameTime: campaignStart(), travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
     get().loadProject([sceneA(), sceneB()], 'lieu-a-scene', forcedRoute(20));
-    useGame.setState({ gameTime: CAMPAIGN_START });
+    useGame.setState({ gameTime: campaignStart() });
     creditBourse(get, set, 'h', { gold: 500, silver: 0, brass: 0 }); // passage de l'attelage (dépense de groupe)
     get().startTravel('r1', 'diligence', { allure: 'galop' });
     const pc = get().pendingCascade;
@@ -360,9 +360,9 @@ describe('#270 — allure forcée (attelage) : gate contrôleur', () => {
     setRule('travel-allures', true);
     seedBattleRng(1);
     const h = hero({ id: 'h', aiControlled: true, skills: [{ id: 'conduite-d-attelage', advances: 40 } as any] });
-    useGame.setState({ party: [h], gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
+    useGame.setState({ party: [h], gameTime: campaignStart(), travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
     get().loadProject([sceneA(), sceneB()], 'lieu-a-scene', forcedRoute(20));
-    useGame.setState({ gameTime: CAMPAIGN_START });
+    useGame.setState({ gameTime: campaignStart() });
     creditBourse(get, set, 'h', { gold: 500, silver: 0, brass: 0 }); // passage de l'attelage (dépense de groupe)
     get().startTravel('r1', 'diligence', { allure: 'galop' });
     // Résolu par le chemin synchrone historique : soit une cascade travelDay SANS étape landForcedPace
@@ -525,12 +525,12 @@ describe('#1153 — allure forcée : km suivant et reprise de contrôle, une seu
     setRule('travel-allures', true);
     seedBattleRng(1);
     const { lead, aide } = attelage();
-    useGame.setState({ party: [lead, aide], gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
+    useGame.setState({ party: [lead, aide], gameTime: campaignStart(), travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
     get().loadProject([sceneA(), sceneB()], 'lieu-a-scene', { id: 'c', label: 'c', places: [
       { id: 'pa', label: 'A', pos: { x: 0, y: 0 }, scene: 'lieu-a-scene' },
       { id: 'pb', label: 'B', pos: { x: 70, y: 0 }, scene: 'lieu-b-scene' },
     ], routes: [{ id: 'r1', a: 'pa', b: 'pb', km: 20, modes: ['diligence', 'pied'], perilDie: 0 }] } as WorldMap);
-    useGame.setState({ gameTime: CAMPAIGN_START });
+    useGame.setState({ gameTime: campaignStart() });
     creditBourse(get, set, 'lead', { gold: 500, silver: 0, brass: 0 });
     get().startTravel('r1', 'diligence', { allure: 'galop' });
   }

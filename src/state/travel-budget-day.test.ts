@@ -12,7 +12,7 @@ import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 import { emptyScene, Scene } from './scene';
 import { WorldMap } from './worldMap';
-import { CAMPAIGN_START } from '../engine/clock';
+import { campaignStart } from '../engine/clock';
 import { setRule, resetRule, rule } from '../engine/policy';
 import { stacks } from '../engine/conditions';
 import { dayIndex } from './upkeep';
@@ -37,9 +37,9 @@ function map(km = 16): WorldMap {
   ], routes: [{ id: 'r1', a: 'pa', b: 'pb', km, modes: ['pied'], perilDie: 0 }] };
 }
 function setup(km = 16, party: Combatant[] = [hero()]): void {
-  useGame.setState({ party, gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
+  useGame.setState({ party, gameTime: campaignStart(), travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
   get().loadProject([sceneA(), sceneB()], 'lieu-a-scene', map(km));
-  useGame.setState({ gameTime: CAMPAIGN_START });
+  useGame.setState({ gameTime: campaignStart() });
 }
 
 beforeEach(() => { seedBattleRng(1); });
@@ -88,7 +88,7 @@ describe('#340 — budget d’heures PAR JOUR CALENDAIRE (marche forcée sur le 
 describe('#340 — porte d’heure de départ (terre & fleuve, maison ON par défaut)', () => {
   it('départ à pied de nuit (23:00) → porte « Attendre l’aube » (aucun trajet lancé)', () => {
     setup(16);
-    useGame.setState({ gameTime: CAMPAIGN_START + 15 * 60 }); // 08:00 + 15 h = 23:00 (nuit)
+    useGame.setState({ gameTime: campaignStart() + 15 * 60 }); // 08:00 + 15 h = 23:00 (nuit)
     get().startTravel('r1', 'pied');
     expect(get().travelPlan).toBeNull();
     expect(get().pendingDeparture).not.toBeNull();
@@ -112,7 +112,7 @@ describe('#340 — porte d’heure de départ (terre & fleuve, maison ON par dé
   it('porte débrayable : désactivée, un départ de nuit part directement', () => {
     setRule('travel-departure-gate', false);
     setup(16);
-    useGame.setState({ gameTime: CAMPAIGN_START + 15 * 60 });
+    useGame.setState({ gameTime: campaignStart() + 15 * 60 });
     get().startTravel('r1', 'pied');
     expect(get().pendingDeparture).toBeNull();
   });
@@ -121,7 +121,7 @@ describe('#340 — porte d’heure de départ (terre & fleuve, maison ON par dé
 describe('#340 — nuit forcée (privation de sommeil, maison, défaut ON [arbitrage user 2026-07-11])', () => {
   it('ACTIVÉE PAR DÉFAUT : jour calendaire franchi SANS nuit jouée → +1 Exténué « privation de sommeil »', () => {
     setup(16);
-    useGame.setState({ gameTime: CAMPAIGN_START, lastNightDay: dayIndex(CAMPAIGN_START), lastUpkeepDay: dayIndex(CAMPAIGN_START) });
+    useGame.setState({ gameTime: campaignStart(), lastNightDay: dayIndex(campaignStart()), lastUpkeepDay: dayIndex(campaignStart()) });
     const before = stacks(get().party[0], 'extenue');
     get().advanceTime(24 * 60); // franchit un jour sans dormir
     expect(stacks(get().party[0], 'extenue')).toBeGreaterThan(before);
@@ -130,7 +130,7 @@ describe('#340 — nuit forcée (privation de sommeil, maison, défaut ON [arbit
   it('débrayable : désactivée, franchir un jour sans dormir ne coûte pas d’Exténué', () => {
     setRule('travel-sleep-forced', false);
     setup(16);
-    useGame.setState({ gameTime: CAMPAIGN_START, lastNightDay: dayIndex(CAMPAIGN_START), lastUpkeepDay: dayIndex(CAMPAIGN_START) });
+    useGame.setState({ gameTime: campaignStart(), lastNightDay: dayIndex(campaignStart()), lastUpkeepDay: dayIndex(campaignStart()) });
     const before = stacks(get().party[0], 'extenue');
     get().advanceTime(24 * 60);
     expect(stacks(get().party[0], 'extenue')).toBe(before);

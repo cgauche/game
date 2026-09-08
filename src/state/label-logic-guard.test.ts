@@ -186,7 +186,7 @@ describe('garde-fou « logique par label interdite » (#142)', () => {
       'roots.add(e.label);',
       'NAME_TO_GROUP[norm(t.label)] = t.subType;',
       '(acc[it.name] ??= { name: it.name, uids: [] }).uids.push(it.uid);',
-      '...Object.fromEntries(TRAVEL_VEHICLES.map((v) => [v.id, v.label])),',
+      '...Object.fromEntries(travelVehicles().map((v) => [v.id, v.label])),',
     ].join('\n');
     expect(scanLabelLogic('fixture.ts', src)).toEqual([]);
   });
@@ -418,7 +418,7 @@ describe('garde-fou « index keyé par un LIBELLÉ, construit dans le moteur » 
 
   it('CONTRE-ÉPREUVES : libellé en VALEUR, index par id, lecture d’un libellé', () => {
     const src = [
-      '...Object.fromEntries(TRAVEL_VEHICLES.map((v) => [v.id, v.label])),', // le libellé est la VALEUR
+      '...Object.fromEntries(travelVehicles().map((v) => [v.id, v.label])),', // le libellé est la VALEUR
       'byId.set(e.id, e);',
       'return DISEASE_BY_ID.get(id)?.label ?? id;',
       'const noms = [a.label, b.label].join(\', \');', // tableau d'AFFICHAGE, pas une paire clé/valeur

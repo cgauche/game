@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { openCombatEndCascade } from './combatFlow';
 import { fireTriggers } from './triggeredEffects';
 import { applyOps } from '../engine/ops';
-import { DISEASE_DEFS } from '../engine/disease';
+import { diseaseDefs } from '../engine/disease';
 import { easeDifficulty } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { seedBattleRng } from './battleRng';
@@ -66,7 +66,7 @@ describe('Contagieux (Type) — transmission au toucher (EDO App.2 l.228-230)', 
     const bande = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'combatEndDisease')!;
     const row = bande.participants!.find((r) => r.id === 'a')!;
     const base = 30; // Résistance = E 30, sans avance
-    expect(DISEASE_DEFS['fievre-du-rongeur'].contractDifficulty).toBe('accessible'); // normale : +20
+    expect(diseaseDefs()['fievre-du-rongeur'].contractDifficulty).toBe('accessible'); // normale : +20
     expect(easeDifficulty('accessible', -2)).toBe('complexe'); // « 2 niveaux plus difficile » : −10
     expect(row.target).toBe(base + DIFFICULTY_MODIFIERS.complexe); // 30 − 10 = 20 (vs 50 sans Contagieux)
     expect(row.meta?.instant).toBe(true);
