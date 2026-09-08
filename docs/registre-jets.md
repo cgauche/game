@@ -58,7 +58,7 @@ seam (`ROLL_SEAM_CORE`) sont hors périmètre — leur pending EST le foyer.
 
 | Fichier | Sites | Nature | Lignes | Justification |
 |---|---|---|---|---|
-| `src/state/combatEffects.ts` | 1 | canonique | 959 | canonique : le corps d'`openSkillTest` (combatEffects.ts:326) — LA fabrique du `pendingTest` de la famille Flow authorée, le pending y est monté UNE fois pour tous ses appelants. |
+| `src/state/combatEffects.ts` | 1 | canonique | 960 | canonique : le corps d'`openSkillTest` (combatEffects.ts:326) — LA fabrique du `pendingTest` de la famille Flow authorée, le pending y est monté UNE fois pour tous ses appelants. |
 | `src/state/combatFlow.ts` | 2 | mixte | 3252, 7610 | 1 gate de main (`pendingHandGate`, `openAttackCascade`) monté à la main -> #1064 ; 1 `PendingReload` d'ennemi construit APRÈS un `rollSansPilote` déjà scellé — canonique : objet de RENDU (journal/popin), aucun jet à ouvrir. |
 | `src/state/combatSlice.ts` | 5 | dette | 2018, 2064, 2173, 2623, 3032 | 2 `pendingReload` (pièce servie / poste de navire), 1 `pendingStateRecovery`, 1 `pendingHandGate` (2ᵉ main), 1 `pendingHeal` -> #1064 (le lot d'affichage les re-route ; 6 -> 5 : le `pendingTest` de `battleGainAdvantage` passe par `openSkillTest`). |
 | `src/state/interludeFlow.ts` | 1 | dette | 748 | `pendingActivity` du catalogue d'Activités (`openCatalogActivity`) — fabrique UNIQUE de toutes les Activités à jet d'interlude -> #1064. |
@@ -250,4 +250,4 @@ reste `ROLL_SEAM_PHASE2_STOCK`. 29 sites dans 14 fichiers.
 | `src/state/travelPostes.ts` | 1 |
 | `src/state/triggeredEffects.ts` | 1 |
 
-<!-- sources-empreinte: 2a1192b0b7b3b55ad3399376a6a9f3ea19475e6e (2080 fichiers, 136 dossiers) corps: ff4097f311be8630b704ae389ca20ea4ef39a9ad -->
+<!-- sources-empreinte: ddfa9efd63e56d0f0a1ec7c43f2b7538514cd0a0 (2080 fichiers, 136 dossiers) corps: 1d1b268edb7adb60caa4c22ede5f9d111cc15a78 -->

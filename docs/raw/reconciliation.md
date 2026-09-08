@@ -44,8 +44,8 @@ _Aucune._
 ### EDOC 9 — 5 réf(s) code, 0 dans l'Atlas
 - `src/engine/disease.ts:587` (l.21) — *  voyage (EDOC 09 l.21) passent par ici. No-op sur une maladie déjà active. */
 - `src/state/travel.test.ts:441` (l.21) — it('saison froide + Exposition RATÉE : le Rhume commun contracté en route se DÉCLARE à la Phase d’arrivée (EDOC 8 l.92, EDOC 9 l.21)', () => {
-- `src/state/travelFlow.ts:187` (l.21) — *  (EDOC 09 l.21, `declareArrivalDiseases`). */
-- `src/state/travelFlow.ts:442` (l.21) — // après interruption retrouve celle du départ). Lue par la Phase d'arrivée (EDOC 09 l.21).
+- `src/state/travelFlow.ts:188` (l.21) — *  (EDOC 09 l.21, `declareArrivalDiseases`). */
+- `src/state/travelFlow.ts:443` (l.21) — // après interruption retrouve celle du départ). Lue par la Phase d'arrivée (EDOC 09 l.21).
 
 ### EDOC 10 — 2 réf(s) code, 0 dans l'Atlas
 - `src/data/reseau-routier.json:173` (l.30) — "note": "EDOC 10 l.30 — section « Postes de péage » ; tarif l.32."
@@ -82,7 +82,7 @@ _Aucune._
 - `src/data/index.ts:828` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
 - `src/data/reglesOptionnelles.json:542` (l.5) — "ref": "NADJ 14 l.5",
 - `src/data/schemas/defs/species.ts:57` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
-- `src/engine/creation.test.ts:127` (l.5) — describe('Gnome jouable — règle optionnelle (NADJ 14 l.5)', () => {
+- `src/engine/creation.test.ts:128` (l.5) — describe('Gnome jouable — règle optionnelle (NADJ 14 l.5)', () => {
 
 ### PDT 8 — 1 réf(s) code, 0 dans l'Atlas
 - `src/ui/mono-stake-ratchet.test.ts:67` (l.370) — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
@@ -116,9 +116,9 @@ _Aucune._
 - l.340 — `src/scenes/diligence/edo-ch1-calibration-voyage.test.ts:20` — * D'où vient le `km` : `EDO 01 l.340` — « Une borne sur le bas-côté indique : « Altdorf, 180 km ». »
 
 ### MSRC 12 — 6/12 ligne(s) code hors couverture
-- l.85 — `src/data/index.ts:2509` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
+- l.85 — `src/data/index.ts:2517` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
 - l.107 — `src/engine/naval-traits.test.ts:303` — it('Plat-bord : palier de LONGUEUR (grande barge ~30 m, bande ouverte au-delà de 20 m) → 45 CO / 60 Enc (MSRC 12 l.107/109)', () => {
-- l.111 — `src/data/index.ts:2509` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
+- l.111 — `src/data/index.ts:2517` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
 - l.117 — `src/engine/naval-traits.test.ts:306` — it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, MSRC 12 l.117)', () => {
 - l.137 — `src/data/schemas/defs/sea-weather.ts:106` — /** Gréement de course (MSRC 12 l.137) : DELTA de % voiles ajouté au tableau standard par aspect de vent. */
 - l.140 — `src/engine/naval-traits.test.ts:193` — it('Gréement de course → −10 au Test de Navigation (MSRC 12 l.140) ; converti −1 DR d’équipage', () => {
@@ -179,4 +179,4 @@ LDB 38
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, EDO, EDOC, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: 249642373233bf69803fdb1dc23cc3594c101006 (4048 fichiers, 152 dossiers) corps: f17a366cde4d0b327be9c6d0130fce7b13e484a7 -->
+<!-- sources-empreinte: 433ab23e7ba3b5d30353cda8860d77069fcb6d97 (4052 fichiers, 152 dossiers) corps: 15833f616aeae6e65713d33280cfad3f507b0d31 -->

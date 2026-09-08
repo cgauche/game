@@ -57,15 +57,15 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 62 | `src/data/index.ts:2940` |
-| `spec` | 18 | `src/data/index.ts:3451` |
+| `id` | 62 | `src/data/index.ts:2953` |
+| `spec` | 18 | `src/data/index.ts:3488` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 5 | `src/data/index.ts:3463` |
-| `value` | 4 | `src/data/index.ts:3464` |
+| `id` | 5 | `src/data/index.ts:3500` |
+| `value` | 4 | `src/data/index.ts:3501` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -85,8 +85,8 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `fixed` | 4 | `src/data/index.ts:3532` |
-| `roll` | 3 | `src/data/index.ts:3532` |
+| `fixed` | 4 | `src/data/index.ts:3569` |
+| `roll` | 3 | `src/data/index.ts:3569` |
 
 ### `TrappingRef` (src/data/index.ts)
 
@@ -94,27 +94,27 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 |---|---|---|
 | `id` | 8 | `src/engine/items.ts:307` |
 | `spec` | 2 | `src/engine/items.ts:309` |
-| `count` | 10 | `src/data/index.ts:3532` |
-| `qualities` | 4 | `src/data/index.ts:3535` |
-| `qualityChoice` | 6 | `src/data/index.ts:3533` |
-| `text` | 2 | `src/data/index.ts:3526` |
-| `vehicleId` | 5 | `src/data/index.ts:3528` |
+| `count` | 10 | `src/data/index.ts:3569` |
+| `qualities` | 4 | `src/data/index.ts:3572` |
+| `qualityChoice` | 6 | `src/data/index.ts:3570` |
+| `text` | 2 | `src/data/index.ts:3563` |
+| `vehicleId` | 5 | `src/data/index.ts:3565` |
 | `label` | 7 | `src/engine/possessionGrants.ts:25` |
-| `creatureId` | 5 | `src/data/index.ts:3530` |
-| `choice` | 5 | `src/data/index.ts:3523` |
-| `wildcard` | 3 | `src/data/index.ts:3524` |
+| `creatureId` | 5 | `src/data/index.ts:3567` |
+| `choice` | 5 | `src/data/index.ts:3560` |
+| `wildcard` | 3 | `src/data/index.ts:3561` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 8 | `src/data/index.ts:3505` |
+| `id` | 8 | `src/data/index.ts:3542` |
 | `spec` | 2 | `src/engine/careerSlots.ts:170` |
-| `choix` | 7 | `src/data/index.ts:2940` |
-| `pick` | 2 | `src/data/index.ts:3508` |
-| `of` | 6 | `src/data/index.ts:3507` |
+| `choix` | 7 | `src/data/index.ts:2953` |
+| `pick` | 2 | `src/data/index.ts:3545` |
+| `of` | 6 | `src/data/index.ts:3544` |
 | `table` | — | *absent du type TS* |
-| `random` | 3 | `src/data/index.ts:3510` |
+| `random` | 3 | `src/data/index.ts:3547` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -139,17 +139,17 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 |---|---|---|
 | `stake` | 10 | `src/engine/flowCore.ts:841` |
 | `skill` | 30 | `src/engine/disease.ts:371` |
-| `sense` | 2 | `src/state/combatEffects.ts:923` |
+| `sense` | 2 | `src/state/combatEffects.ts:924` |
 | `characteristic` | 24 | `src/engine/disease.ts:371` |
 | `difficulty` | 8 | `src/engine/disease.ts:358` |
-| `requireSL` | 2 | `src/state/combatEffects.ts:962` |
+| `requireSL` | 2 | `src/state/combatEffects.ts:963` |
 | `label` | 11 | `src/state/combat/triggeredTest.ts:232` |
-| `tool` | 2 | `src/state/combatEffects.ts:925` |
-| `vsGroups` | 5 | `src/state/combatEffects.ts:830` |
-| `vsStatus` | 1 | `src/state/combatEffects.ts:829` |
-| `begging` | 3 | `src/state/combatEffects.ts:834` |
-| `vsCapricieux` | 1 | `src/state/combatEffects.ts:838` |
-| `easierIf` | 11 | `src/state/combatEffects.ts:879` |
+| `tool` | 2 | `src/state/combatEffects.ts:926` |
+| `vsGroups` | 5 | `src/state/combatEffects.ts:831` |
+| `vsStatus` | 1 | `src/state/combatEffects.ts:830` |
+| `begging` | 3 | `src/state/combatEffects.ts:835` |
+| `vsCapricieux` | 1 | `src/state/combatEffects.ts:839` |
+| `easierIf` | 11 | `src/state/combatEffects.ts:880` |
 | `argDifficulty` | 1 | `src/state/triggeredEffects.ts:75` |
 | `unlessImmune` | 1 | `src/state/combat/flowEval.ts:137` |
 | `onlyGroups` | 1 | `src/state/combat/flowEval.ts:138` |
@@ -164,15 +164,15 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `min` | 2 | `src/state/travelFlow.ts:1146` |
+| `min` | 2 | `src/state/travelFlow.ts:1153` |
 | `max` | 1 | `src/ui/compendium/registry.ts:778` |
-| `id` | 8 | `src/engine/mountTravel.ts:214` |
-| `label` | 8 | `src/engine/mountTravel.ts:198` |
+| `id` | 8 | `src/engine/mountTravel.ts:217` |
+| `label` | 8 | `src/engine/mountTravel.ts:201` |
 | `desc` | 1 | `src/state/travelPostes.ts:362` |
 | `stageOutcome` | 1 | `src/state/travelPostes.ts:363` |
 | `vehicleWounds` | 3 | `src/engine/vehicle.ts:59` |
-| `occupantOps` | 3 | `src/state/travelFlow.ts:1150` |
-| `mount` | 2 | `src/engine/mountTravel.ts:199` |
+| `occupantOps` | 3 | `src/state/travelFlow.ts:1157` |
+| `mount` | 2 | `src/engine/mountTravel.ts:202` |
 
 ### `ShipCrewHit` (src/data/shipCriticals.ts)
 
@@ -200,7 +200,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 12 | `src/data/index.ts:2714` |
+| `id` | 11 | `src/data/props.types.ts:576` |
 | `type` | **0 — JAMAIS LU** | — |
 | `label` | 1 | `src/ui/compendium/registry.ts:290` |
 | `labelF` | — | *absent du type TS* |
@@ -215,7 +215,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `cover` | 3 | `src/data/props.types.ts:581` |
 | `light` | 3 | `src/data/props.types.ts:590` |
 | `foot` | 2 | `src/data/props.types.ts:371` |
-| `volume` | 18 | `src/data/index.ts:2720` |
+| `volume` | 18 | `src/data/index.ts:2729` |
 | `seatSlots` | 3 | `src/data/props.types.ts:399` |
 
 ### `PropVolumeRecipe` (src/data/props.types.ts)
@@ -268,13 +268,13 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `perRound` | 1 | `src/engine/trauma.ts:574` |
-| `apresDelai` | 2 | `src/engine/trauma.ts:575` |
-| `medicalAidGate` | 2 | `src/engine/trauma.ts:579` |
-| `bleedOnReinjury` | 2 | `src/engine/trauma.ts:590` |
+| `perRound` | 1 | `src/engine/trauma.ts:577` |
+| `apresDelai` | 2 | `src/engine/trauma.ts:578` |
+| `medicalAidGate` | 2 | `src/engine/trauma.ts:582` |
+| `bleedOnReinjury` | 2 | `src/engine/trauma.ts:593` |
 | `onRepeat` | 1 | `src/engine/critical.ts:312` |
-| `onNextCritWhileCondition` | 2 | `src/engine/trauma.ts:602` |
-| `onHealGrant` | 2 | `src/engine/trauma.ts:596` |
+| `onNextCritWhileCondition` | 2 | `src/engine/trauma.ts:605` |
+| `onHealGrant` | 2 | `src/engine/trauma.ts:599` |
 
 ### `Amputation` (src/data/criticals.ts)
 
@@ -299,4 +299,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: bb1a7b1801e6d8ee4ee0c50a58f978be5ea602b1 (2077 fichiers, 171 dossiers) corps: 9df41ee019667a2b239d4ef3c8fd30ae399a09d7 -->
+<!-- sources-empreinte: d119205378a27fbc1c2a6451790afbf7d6c378dc (2077 fichiers, 171 dossiers) corps: 60f66715db03cc308145a5783705b5b85a61f5e5 -->
