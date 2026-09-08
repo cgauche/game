@@ -8,7 +8,7 @@ import { combatantTokenScale, footprintTokenScale, sizeTokenScale } from '../../
 import { tokenBodyKind } from '../../tokenBodyKind';
 import { parseProject } from '../../../state/worldMap';
 import { creatureToCombatant } from '../../../state/spawn';
-import { sceneMetresPerTile, type Scene } from '../../../state/scene';
+import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../../../state/scene';
 import { creatures } from '../../../data';
 import type { BattleState } from '../../../state/store';
 import type { Combatant } from '../../../engine/types';
@@ -24,10 +24,27 @@ import type { Combatant } from '../../../engine/types';
  *    catégorie de Taille.
  */
 const doc = parseProject(JSON.parse(readFileSync(join(__dirname, '../../../scenes/arene/arene-projet.json'), 'utf8')));
-const SCENES = new Map(doc.scenes.map((s) => [s.id, s] as const));
 
-/** Les scènes de l'arène qui POSENT une embuscade (`combat.hiddenUntilCombat`), et leur compte. */
-const EMBUSCADES: [string, number][] = [['arene-exp-foret', 8], ['arene-exp-marais', 4], ['arene-route-embuscade', 4]];
+/**
+ * Scène CONSTRUITE pour ce contrat : deux figurants VISIBLES et deux EMBUSQUÉS
+ * (`combat.hiddenUntilCombat`) sur un plain-pied nu. La propriété — « la voie volumique dessine les
+ * corps du BUILDER, pas la scène brute » — ne dépend d'aucune carte jouée, ni de son roster, ni de
+ * son compte : c'est la fixture qui porte les cas.
+ */
+function sceneEmbuscade(): Scene {
+  const perso = (id: string, x: number, embusque: boolean): SceneEntity => ({
+    id,
+    kind: 'personnage',
+    pos: { x, y: 1 },
+    ref: 'villageois',
+    ...(embusque ? { combat: { hiddenUntilCombat: true } } : {}),
+  });
+  return {
+    ...emptyScene(8, 4),
+    id: 'fixture-embuscade',
+    entities: [perso('vu-1', 1, false), perso('vu-2', 2, false), perso('embusque-1', 5, true), perso('embusque-2', 6, true)],
+  };
+}
 
 
 /** Tout est en vue : la population mesurée est celle des FILTRES, pas celle du brouillard. */
@@ -58,22 +75,24 @@ const persosBillboardés = (subs: { kind: string; identity: string }[]): string[
   subs.filter((s) => s.kind === 'personnage').map((s) => s.identity.replace(/^perso:/, '').split('|')[0]);
 
 describe('POPULATION — le monde volumique dessine les corps du builder, pas la scène brute', () => {
-  it('les trois scènes témoins posent bien une embuscade (sinon la mesure ne pèserait rien)', () => {
-    expect(EMBUSCADES.map(([id]) => embusques(SCENES.get(id)!).length)).toEqual(EMBUSCADES.map(([, n]) => n));
+  it('la fixture porte les DEUX cas — des figurants visibles et des embusqués (sinon la mesure ne pèserait rien)', () => {
+    const scene = sceneEmbuscade();
+    expect(embusques(scene).length).toBeGreaterThan(0);
+    expect(persosBruts(scene).filter((id) => !embusques(scene).includes(id)).length).toBeGreaterThan(0);
   });
 
-  for (const [id, n] of EMBUSCADES)
-    it(`${id} : hors combat, les ${n} embusqués ne sont pas billboardés — la voie brute les montrait`, () => {
-      const scene = SCENES.get(id)!;
-      const rendus = persosBillboardés(collectBillboards(scene, sceneMetresPerTile(scene), elsDuStage(scene, null)));
-      const cachés = embusques(scene);
-      expect(rendus.filter((rid) => cachés.includes(rid))).toEqual([]);
-      // La mesure MORD : la lecture brute de `scene.entities` en montrait exactement `n` de plus.
-      expect(persosBruts(scene).filter((pid) => !rendus.includes(pid)).sort()).toEqual([...cachés].sort());
-    });
+  it('hors combat, AUCUN embusqué n’est billboardé — et les figurants visibles le sont tous', () => {
+    const scene = sceneEmbuscade();
+    const rendus = persosBillboardés(collectBillboards(scene, sceneMetresPerTile(scene), elsDuStage(scene, null)));
+    const cachés = embusques(scene);
+    expect(rendus.filter((rid) => cachés.includes(rid))).toEqual([]);
+    // La mesure MORD : la lecture BRUTE de `scene.entities` en montrait exactement les embusqués de plus.
+    expect(persosBruts(scene).filter((pid) => !rendus.includes(pid)).sort()).toEqual([...cachés].sort());
+  });
 
-  it('sur TOUTES les scènes de l’arène, les deux voies montent les MÊMES corps (un pour un)', () => {
-    let corps = 0;
+  /** La MÊME propriété relue sur la géométrie livrée : entrée RÉELLE, attente DÉRIVÉE de l'entrée
+   *  (les deux voies comparées l'une à l'autre) — aucun roster ni aucun compte n'est écrit ici. */
+  it('sur toute scène livrée du paquet, les deux voies montent les MÊMES corps (un pour un)', () => {
     for (const scene of doc.scenes) {
       const els = elsDuStage(scene, null);
       const affine = els.tokens
@@ -82,13 +101,11 @@ describe('POPULATION — le monde volumique dessine les corps du builder, pas la
         .sort();
       const volumique = persosBillboardés(collectBillboards(scene, sceneMetresPerTile(scene), els)).sort();
       expect([scene.id, volumique]).toEqual([scene.id, affine]);
-      corps += affine.length;
     }
-    expect(corps).toBeGreaterThan(20); // la mesure porte sur une vraie population, pas sur des listes vides
   });
 
   it('en COMBAT, une entité enrôlée n’est PAS dessinée deux fois (billboard de scène + acteur)', () => {
-    const scene = SCENES.get('arene-exp-foret')!;
+    const scene = sceneEmbuscade();
     const mpt = sceneMetresPerTile(scene);
     const ent = scene.entities.find((e) => e.kind === 'personnage' && !e.combat?.hiddenUntilCombat)!;
     const enrôlé = creatureToCombatant(creatures[0], ent.id, { x: ent.pos.x, y: ent.pos.y, z: ent.z ?? 0 });
@@ -103,7 +120,8 @@ describe('POPULATION — le monde volumique dessine les corps du builder, pas la
 });
 
 describe('ÉCHELLE — la même pour les deux voies, sur TOUT le bestiaire', () => {
-  const scene = SCENES.get('arene-hub')!;
+  // La scène n'est ici qu'un repère (échelle + sol) : une fixture nue suffit, le sujet est le bestiaire.
+  const scene = emptyScene(8, 4);
   const mpt = sceneMetresPerTile(scene);
 
   /** Facteur d'échelle du jeton dans le repère SVG de référence : le `speciesScale` du

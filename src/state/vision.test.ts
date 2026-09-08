@@ -3,7 +3,8 @@ import { computeVisible, computeLightField, ambientScalar, baseSightTiles, comba
 import { Scene, WallSeg, emptyScene, sceneMetresPerTile } from './scene';
 import { METRES_PER_LEVEL } from './relief';
 import { computeStateVisible } from './visionState';
-import { campaign, diligenceCampaign, builtinCampaigns } from '../scenes/campaign';
+import { parseWalledAscii } from './asciiMap';
+import { builtinCampaigns } from '../scenes/campaign';
 
 /** L'échelle des scènes de ce fichier — LUE, jamais redite : elles ne déclarent pas de
  *  `metresPerTile`, donc c'est le défaut du monde (`LDB 15 l.12`). */
@@ -302,17 +303,57 @@ describe('computeLightField — ambiance plancher + halo de source', () => {
 });
 
 /**
- * CE QUE LE GROUPE VOIT SUR LES CARTES RÉELLES — empreinte de la vue (taille + hachage FNV-1a des
- * cases) à 36 postes répartis sur trois cartes jouées, dont l'étage de La Diligence. Les petites
- * scènes ci-dessus disent la RÈGLE ; celle-ci dit le RÉSULTAT, seul filet qui attrape un changement
- * de brouillard né d'une optimisation — le rayon échantillonné décide d'un pixel de coin, et une
- * « accélération équivalente » qui déplace une seule case le fait ici tomber en rouge.
- * Empreintes MESURÉES le 2026-08-19 (#1416) : identiques à celles de l'implémentation d'avant
- * l'étape sans-allocation (les deux versions comparées dans le même processus, 36/36 postes égaux,
- * champ de lumière compris). Une empreinte qui change = un changement de VUE : le justifier, puis
- * remesurer — jamais recopier la nouvelle valeur pour faire taire le rouge.
+ * CE QUE LE GROUPE VOIT SUR UN PLAN COMPLET — empreinte de la vue (taille + hachage FNV-1a des cases)
+ * à chaque poste d'une carte-FIXTURE bâtie pour ce seul contrat : une refend percée d'une PORTE et
+ * d'une FENÊTRE, une refend pleine, un ÉTAGE au-dessus de l'aile est. Les petites scènes ci-dessus
+ * disent la RÈGLE ; celle-ci dit le RÉSULTAT sur un plan entier — le filet qui attrape un changement
+ * de brouillard né d'une optimisation (le rayon échantillonné décide d'un pixel de coin, et une
+ * « accélération équivalente » qui déplace une seule case le fait ici tomber en rouge).
+ *
+ * La carte est CONSTRUITE (`parseWalledAscii`) : aucune scène jouée n'en est le sujet, donc aucune
+ * édition d'auteur ne peut rougir ces empreintes. Une empreinte qui change = un changement de VUE :
+ * le justifier, puis remesurer — jamais recopier la nouvelle valeur pour faire taire le rouge.
  */
-describe('computeVisible — vue INCHANGÉE sur les cartes réelles (empreintes #1416)', () => {
+describe('computeVisible — vue INCHANGÉE sur un plan complet (carte-fixture)', () => {
+  /** (2W+1)×(2H+1) — refend nord-sud percée d'une porte (y=3) et d'une fenêtre (y=5), refend
+   *  est-ouest pleine sous la porte, pourtour clos. */
+  const ROWS = [
+    '+-+-+-+-+-+-+-+-+-+-+',
+    '|. . . . .|. . . . .|',
+    '+ + + + + + + + + + +',
+    '|. . . . .|. . . . .|',
+    '+ + + + + + + + + + +',
+    '|. . . . .|. . . . .|',
+    '+ + + + + + + + + + +',
+    '|. . . . .:. . . . .|',
+    '+ + + + + +-+-+-+-+-+',
+    '|. . . . .|. . . . .|',
+    '+ + + + + + + + + + +',
+    '|. . . . .o. . . . .|',
+    '+ + + + + + + + + + +',
+    '|. . . . .|. . . . .|',
+    '+ + + + + + + + + + +',
+    '|. . . . .#. . . . .|',
+    '+-+-+-+-+-+-+-+-+-+-+',
+  ];
+
+  /** La carte-fixture : rez bâti + ÉTAGE au-dessus de l'aile est (x ≥ 5, y ≤ 3), à un niveau de haut. */
+  const carteTemoin = (): Scene => {
+    const { w, h, tiles, walls } = parseWalledAscii(ROWS, 'plancher', {}, { structures: { '#': 'cloture-en-clayonnage' } });
+    const surEtage = (x: number, y: number) => x >= 5 && y <= 3;
+    const t1 = new Array(w * h).fill('vide');
+    const h1 = new Array(w * h).fill(0);
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++)
+        if (surEtage(x, y)) { t1[y * w + x] = 'plancher'; h1[y * w + x] = METRES_PER_LEVEL; }
+    return {
+      ...emptyScene(w, h),
+      id: 'fixture-plan-complet',
+      layers: [{ z: 0, tiles }, { z: 1, tiles: t1, height: h1 }],
+      walls: [...walls, ...walls.filter((m) => m.x >= 5 && m.y <= 4).map((m) => ({ ...m, z: 1 }))],
+    } as unknown as Scene;
+  };
+
   const empreinte = (cases: Set<string>): string => {
     let hache = 0x811c9dc5;
     for (const k of [...cases].sort())
@@ -320,73 +361,51 @@ describe('computeVisible — vue INCHANGÉE sur les cartes réelles (empreintes 
     return `${cases.size}:${hache.toString(16)}`;
   };
 
-  const cartes: [string, Scene, [number, number, number, string][]][] = [
-    ['arene-hub', campaign.find((c) => c.id === 'arene-hub')!.scene, [
-      [1, 1, 0, '186:466dec0f'],
-      [6, 4, 0, '253:19f6ab98'],
-      [20, 7, 0, '955:90165a9c'],
-      [27, 10, 0, '1143:25498f87'],
-      [35, 13, 0, '141:732cf450'],
-      [46, 16, 0, '891:1b30cc4b'],
-      [3, 20, 0, '932:889f176d'],
-      [8, 23, 0, '1046:9440af01'],
-      [15, 26, 0, '1213:1db43e95'],
-      [25, 29, 0, '1202:fc9a14b'],
-      [33, 32, 0, '1078:4ca5078b'],
-      [43, 35, 0, '127:a5f5cc4f'],
-    ]],
-    ['arene-exp-village', campaign.find((c) => c.id === 'arene-exp-village')!.scene, [
-      [1, 1, 0, '136:5ec30abb'],
-      [26, 2, 0, '254:37438b9d'],
-      [21, 4, 0, '473:6beec7a4'],
-      [15, 6, 0, '589:b7f576e'],
-      [9, 8, 0, '600:78514c0b'],
-      [8, 10, 0, '606:4e7da482'],
-      [1, 12, 0, '481:345b1333'],
-      [26, 13, 0, '509:bd457a0d'],
-      [19, 15, 0, '657:4a2d12e1'],
-      [13, 17, 0, '661:251fc6f7'],
-      [6, 19, 0, '536:415b1edb'],
-      [31, 20, 0, '366:56245c56'],
-    ]],
-    // Empreintes REMESURÉES le 2026-09-04 (#1680 ligne 15-B) : 6 des 12 postes voient PLUS LOIN depuis
-    // que l'opacité d'une arête se lit sur sa Structure (`areteOcculte`) et que la clôture en clayonnage
-    // est déclarée `occulte: false` dans `structures.json`, où son champ `maison` porte la raison :
-    // l'opacité n'est pas au folio, AA 10 l.65 décrit la nature de la clôture et son emploi comme couvert. La
-    // carte en porte 25 : les 13 du jardin potager, les 6 de l'enclos nord (19,0-5 E), et les 6
-    // séparations de box des Écuries migrées ce jour. Elles cessent de couper la Ligne de Vue.
-    // CAUSE UNIQUE MESURÉE : la même scène dont ces 25 arêtes reprennent une structure occultante rend
-    // les DOUZE empreintes d'avant, à l'octet — aucune autre cause. Les 24 postes des deux cartes Arène
-    // sont inchangés (leurs 235 `mur-en-bois` restent opaques).
-    ['diligence', diligenceCampaign.scenes[0], [
-      [0, 0, 0, '62:75652ee8'],
-      [8, 4, 0, '172:3302dc25'],
-      [16, 8, 0, '226:d1ab5033'],
-      [24, 12, 0, '116:d17fb990'],
-      [0, 17, 0, '38:a48e3264'],
-      // Poste du couloir de service, derrière la porte (8,20). Empreinte REMESURÉE le 2026-08-23 avec
-      // la ré-implantation de la salle (#1443) : 42 cases au lieu de 77. SEULE cause mesurée —
-      // `cheminee-interieure` en (10,18), unique décor `opaque` de la salle : la scène privée de ce
-      // seul meuble rend 77, la scène privée des dix-sept autres rend 42. Les 35 cases en moins
-      // forment le cône (11,15)→(19,0) derrière l'âtre ; la porte de service, la ruelle du tenancier
-      // et le sud de la salle restent vus. Les onze autres postes de la carte sont inchangés.
-      [8, 21, 0, '42:969c2be4'],
-      [16, 25, 0, '274:a69b0064'],
-      // Poste au bord des BOX des Écuries, dont les séparations sont les 6 arêtes migrées (21-23, 29-30) :
-      // 13 cases vues → 67. C'est l'écran que la ligne 15-B change — on voit par-dessus les cloisons de box.
-      [24, 29, 0, '67:bc12b454'],
-      [0, 34, 0, '114:d2cd989a'],
-      [5, 7, 1, '1276:a3005eaa'],
-      [11, 12, 1, '1378:a00ce914'],
-      [17, 17, 1, '1386:72c7a3da'],
-    ]],
+  /** Les postes : un dans chaque aile, sur le SEUIL de la porte, contre la FENÊTRE, aux quatre coins,
+   *  et deux à l'ÉTAGE. Empreintes MESURÉES sur la fixture. */
+  const POSTES: [number, number, number, string][] = [
+    [0, 0, 0, '43:a82fec0c'],
+    [2, 3, 0, '50:62ae7b45'],
+    [5, 3, 0, '54:bf797db4'],
+    [6, 5, 0, '21:b4c6100e'],
+    [4, 5, 0, '44:6d312895'],
+    [9, 7, 0, '27:27361b03'],
+    [0, 7, 0, '57:bdf9b34e'],
+    [6, 1, 1, '114:3fde5310'],
+    [8, 2, 1, '111:5240e8ea'],
   ];
 
-  it.each(cartes)('%s — même vue à chaque poste', (nom, carte, postes) => {
-    for (const [x, y, z, attendue] of postes) {
-      const pos = z ? { x, y, z } : { x, y };
-      const vue = computeStateVisible({ scene: carte, battle: null, party: [], partyPos: pos, gameTime: DAY, lightLevel: null });
-      expect(empreinte(vue), `${nom} — poste ${x},${y},${z}`).toBe(attendue);
-    }
-  }, 60000);
+  const vueAu = (carte: Scene, x: number, y: number, z: number) =>
+    computeStateVisible({ scene: carte, battle: null, party: [], partyPos: z ? { x, y, z } : { x, y }, gameTime: DAY, lightLevel: null });
+
+  it('la carte-fixture porte bien les cinq cas du contrat — refend pleine, porte, fenêtre, clayonnage, étage', () => {
+    const carte = carteTemoin();
+    const arete = (x: number, y: number, side: 'N' | 'E') => carte.walls!.find((m) => m.x === x && m.y === y && m.side === side && (m.z ?? 0) === 0);
+    expect(arete(4, 1, 'E'), 'refend pleine').toBeTruthy();
+    expect(arete(4, 1, 'E')!.door).toBeUndefined();
+    expect(arete(4, 3, 'E')!.door, 'porte dans la refend').toBe(true);
+    expect(arete(4, 5, 'E')!.window, 'fenêtre dans la refend').toBe(true);
+    expect(arete(4, 7, 'E')!.structure, 'clayonnage dans la refend').toBe('cloture-en-clayonnage');
+    expect(carte.layers.map((l) => l.z)).toEqual([0, 1]);
+  });
+
+  it('chaque poste rend la MÊME vue qu’à la mesure', () => {
+    const carte = carteTemoin();
+    expect(POSTES.map(([x, y, z]) => `${x},${y},${z} → ${empreinte(vueAu(carte, x, y, z))}`))
+      .toEqual(POSTES.map(([x, y, z, attendue]) => `${x},${y},${z} → ${attendue}`));
+  });
+
+  /**
+   * Attentes DÉRIVÉES, sans valeur figée — ce que le SOCLE dit de l'opacité d'une arête
+   * (`areteOcculte`, `state/scene.ts:643`) : seules une arête OUVERTE (porte ouverte, structure
+   * abattue) et une Structure déclarée `occulte: false` laissent voir. Une FENÊTRE n'est pas de
+   * celles-là : `wallIsOpen` ne lit que `door`/`structure`, la fenêtre ne perce que le rendu.
+   */
+  it('la refend pleine coupe, la porte et le clayonnage laissent voir, la fenêtre non', () => {
+    const carte = carteTemoin();
+    expect(vueAu(carte, 4, 1, 0).has('5,1,0'), 'à travers la refend PLEINE').toBe(false);
+    expect(vueAu(carte, 4, 3, 0).has('5,3,0'), 'à travers la PORTE').toBe(true);
+    expect(vueAu(carte, 4, 5, 0).has('5,5,0'), 'à travers la FENÊTRE').toBe(false);
+    expect(vueAu(carte, 4, 7, 0).has('5,7,0'), 'à travers le CLAYONNAGE').toBe(true);
+  });
 });

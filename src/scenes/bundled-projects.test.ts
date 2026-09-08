@@ -3,9 +3,14 @@ import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { parseProject, type ProjectDoc } from '../state/worldMap';
 import { validateScene } from '../state/validateScene';
-import { books } from '../data';
+import { emptyScene } from '../state/scene';
+import { books, findCrewRoleById, findNavalTrait, findVehicleById } from '../data';
+import { findManannFactor } from '../engine/seaVoyage';
+import { MERCHANTS } from '../state/merchants';
 import { rigSpeciesVocab } from '../gameIso/rig/appearance';
 import { TENUE_BY_ID } from '../gameIso/rig/parts/tenues';
+import type { Effect } from '../state/scene';
+import type { Flow } from '../state/flow';
 
 /**
  * Garde TRANSVERSE (#809) : tout paquet bundlé `src/scenes/*.../*-projet.json` doit se relire dans
@@ -37,9 +42,55 @@ function erreursDe(doc: Pick<ProjectDoc, 'scenes' | 'worldMap'>): string[] {
     .map((w) => `${w.sceneId} [${w.scope}${w.refId ? ` ${w.refId}` : ''}] ${w.message}`);
 }
 
+/** Marche UN Flow (feuille `do`, `seq`, `if`, `test`) et collecte ses `Effect`. */
+function marcheFlow(flow: Flow | undefined, out: Effect[]): void {
+  if (!flow) return;
+  if (flow.kind === 'do') out.push(flow.effect);
+  else if (flow.kind === 'seq') for (const s of flow.steps) marcheFlow(s, out);
+  else if (flow.kind === 'if') { marcheFlow(flow.then, out); marcheFlow(flow.else, out); }
+  else if (flow.kind === 'test') { marcheFlow(flow.success, out); marcheFlow(flow.fail, out); }
+}
+
+/** TOUS les `Effect` posés par un paquet, chacun avec la scène qui le porte — choix de dialogue,
+ *  triggers, `onVictory` de rencontre, interactions de décor. */
+function effetsDuProjet(doc: Pick<ProjectDoc, 'scenes'>): { sceneId: string; eff: Effect }[] {
+  const out: { sceneId: string; eff: Effect }[] = [];
+  for (const sc of doc.scenes) {
+    const effets: Effect[] = [];
+    for (const d of sc.dialogues) for (const n of d.nodes) for (const c of n.choices) marcheFlow(c.flow, effets);
+    for (const t of sc.triggers) marcheFlow(t.flow, effets);
+    for (const enc of sc.encounters) marcheFlow(enc.onVictory, effets);
+    for (const e of sc.entities) marcheFlow(e.interact?.flow, effets);
+    out.push(...effets.map((eff) => ({ sceneId: sc.id, eff })));
+  }
+  return out;
+}
+
 describe('paquets de campagne bundlés — se relisent tous dans le modèle COURANT (#809)', () => {
   it('au moins un paquet trouvé (la garde couvre réellement quelque chose)', () => {
     expect(bundledFiles.length).toBeGreaterThan(0);
+  });
+
+  /**
+   * NON-VACUITÉ des gardes ci-dessous : chaque famille a un SUJET dans les paquets livrés. Aucun
+   * compte n'est écrit — seulement « il en existe ». Une famille tombée à zéro rend sa garde muette :
+   * le rouge dit laquelle, à charge de retirer la garde ou de rendre son sujet.
+   */
+  it('chaque famille de garde a au moins un sujet dans les paquets livrés', () => {
+    const docs = bundledFiles.map((f) => parseProject(JSON.parse(readFileSync(f, 'utf8'))));
+    const entites = docs.flatMap((d) => d.scenes.flatMap((sc) => sc.entities));
+    const rencontres = docs.flatMap((d) => d.scenes.flatMap((sc) => sc.encounters));
+    const muettes = Object.entries({
+      'amélioration navale d’instance': entites.some((e) => e.upgrades?.length),
+      'coffre à munitions de poste': entites.some((e) => (e.postes ?? []).some((p) => p.ammo?.length)),
+      'équipage exposé (crewIds)': entites.some((e) => e.crewIds?.length),
+      'marchand à archétype': entites.some((e) => e.merchant?.archetype),
+      'CustomStatblock d’auteur': entites.some((e) => e.statblock),
+      'victoire par seuil de Blessures': rencontres.some((enc) => enc.victoryCondition?.type === 'woundsThreshold'),
+      'dialogue joueur': docs.some((d) => d.scenes.some((sc) => sc.dialogues.length > 0)),
+      'Effect de campagne': docs.some((d) => effetsDuProjet(d).length > 0),
+    }).filter(([, sujet]) => !sujet).map(([nom]) => nom);
+    expect(muettes, 'famille(s) de garde sans sujet — la garde ne mesure plus rien').toEqual([]);
   });
 
   it.each(bundledFiles.map((f) => [f] as const))('%s : parseProject ne lève pas et porte une identité valide', (file) => {
@@ -97,6 +148,14 @@ describe('paquets de campagne bundlés — se relisent tous dans le modèle COUR
     expect(anonymes, 'entité(s) de personnage sans nom — le combattant spawne anonyme (spawn.ts:339)').toEqual([]);
   });
 
+  /** Et le CustomStatblock d'auteur porte SON label : `spawn.ts:339` le lit sans repli — le `label`
+   *  d'entité ne le sauve pas, il n'est jamais consulté par ce chemin. */
+  it.each(bundledFiles.map((f) => [f] as const))('%s : tout CustomStatblock d’auteur porte son label', (file) => {
+    const doc = parseProject(JSON.parse(readFileSync(file, 'utf8')));
+    const fautifs = doc.scenes.flatMap((sc) => sc.entities.filter((e) => e.statblock && !e.statblock.label).map((e) => `${sc.id}:${e.id}`));
+    expect(fautifs).toEqual([]);
+  });
+
   /**
    * `validateScene` est le juge du CONTENU d'un projet (réfs cassées, connectivité, empreinte de spawn,
    * porte orpheline, arrivée de carte du monde — familles couvertes sur fixtures par
@@ -106,6 +165,109 @@ describe('paquets de campagne bundlés — se relisent tous dans le modèle COUR
   it.each(bundledFiles.map((f) => [f] as const))('%s : validateScene ne rend AUCUNE erreur', (file) => {
     const doc = parseProject(JSON.parse(readFileSync(file, 'utf8')));
     expect(erreursDe(doc)).toEqual([]);
+  });
+
+  /**
+   * ARMEMENT ET ÉQUIPAGE D'UNE COQUE — les contrats que le moteur naval lit sur l'authoring, relus
+   * PAR GLOB : une amélioration d'instance (`upgrades`) est un trait du catalogue (`findNavalTrait`),
+   * un poste servable porte un coffre à munitions dont chaque pièce est une munition en quantité, sa
+   * sélection persistante (`ammoUid`) désigne une pièce RÉELLEMENT en soute (sinon `selectedAmmo` ne
+   * la retrouve pas), et un équipage exposé (`crewIds`) nomme des entités de SA scène.
+   */
+  it.each(bundledFiles.map((f) => [f] as const))('%s : coques — upgrades du catalogue, coffres à munitions cohérents, équipage exposé résoluble', (file) => {
+    const doc = parseProject(JSON.parse(readFileSync(file, 'utf8')));
+    const fautifs: string[] = [];
+    for (const sc of doc.scenes) {
+      const ids = new Set(sc.entities.map((e) => e.id));
+      for (const e of sc.entities) {
+        for (const u of e.upgrades ?? [])
+          if (!findNavalTrait(u.id)) fautifs.push(`${sc.id}:${e.id} amélioration navale « ${u.id} » absente du catalogue`);
+        for (const id of e.crewIds ?? [])
+          if (!ids.has(id)) fautifs.push(`${sc.id}:${e.id} équipage exposé « ${id} » : aucune entité de cette scène`);
+        for (const p of e.postes ?? []) {
+          for (const a of p.ammo ?? []) {
+            if (a.kind !== 'ammo') fautifs.push(`${sc.id}:${e.id}/${p.trappingId} : « ${a.uid} » n’est pas une munition`);
+            if ((a.qty ?? 0) <= 0) fautifs.push(`${sc.id}:${e.id}/${p.trappingId} : munition « ${a.uid} » en quantité nulle`);
+          }
+          if (p.ammoUid && !(p.ammo ?? []).some((a) => a.uid === p.ammoUid))
+            fautifs.push(`${sc.id}:${e.id}/${p.trappingId} : ammoUid « ${p.ammoUid} » hors du coffre`);
+        }
+      }
+    }
+    expect(fautifs).toEqual([]);
+  });
+
+  /** Un marchand d'auteur pointe un ARCHÉTYPE du registre (`state/merchants.ts`) — sinon son stock est vide. */
+  it.each(bundledFiles.map((f) => [f] as const))('%s : tout marchand référence un archétype RÉEL du registre', (file) => {
+    const doc = parseProject(JSON.parse(readFileSync(file, 'utf8')));
+    const fautifs = doc.scenes.flatMap((sc) =>
+      sc.entities
+        .filter((e) => e.merchant?.archetype && !MERCHANTS[e.merchant.archetype])
+        .map((e) => `${sc.id}:${e.id} archétype « ${e.merchant!.archetype} »`),
+    );
+    expect(fautifs).toEqual([]);
+  });
+
+  /**
+   * EFFETS DE CAMPAGNE, relus par glob — chacun est une RÉFÉRENCE, jamais une valeur devinée :
+   * `adjustManann` porte un facteur du catalogue (`MANANN_FACTORS`, jamais un delta brut),
+   * `setVessel` un véhicule du catalogue et un roster de rôles réels en effectif non nul,
+   * `setObjective` un id d'objectif non vide (la pile est keyée par id STABLE).
+   */
+  it.each(bundledFiles.map((f) => [f] as const))('%s : tout Effect de campagne référence du catalogue (Manann, navire, rôles d’équipage, objectif)', (file) => {
+    const doc = parseProject(JSON.parse(readFileSync(file, 'utf8')));
+    const fautifs: string[] = [];
+    for (const { sceneId, eff } of effetsDuProjet(doc)) {
+      if (eff.type === 'adjustManann' && (!eff.factorId || !findManannFactor(eff.factorId)))
+        fautifs.push(`${sceneId} : adjustManann sans facteur du catalogue (« ${String(eff.factorId)} »)`);
+      if (eff.type === 'setVessel') {
+        if (!findVehicleById(eff.vehicleId)) fautifs.push(`${sceneId} : setVessel « ${eff.vehicleId} » absent de vehicles.json`);
+        for (const hire of eff.crew ?? []) {
+          if (!findCrewRoleById(hire.roleId)) fautifs.push(`${sceneId} : rôle d’équipage « ${hire.roleId} » absent de crew-roles.json`);
+          if (hire.count <= 0) fautifs.push(`${sceneId} : rôle d’équipage « ${hire.roleId} » embauché à ${hire.count}`);
+        }
+      }
+      if (eff.type === 'setObjective' && !eff.id) fautifs.push(`${sceneId} : setObjective sans id stable`);
+    }
+    expect(fautifs).toEqual([]);
+  });
+
+  /** Une condition de victoire par seuil de Blessures cible une entité de SA scène, sous un seuil utile. */
+  it.each(bundledFiles.map((f) => [f] as const))('%s : toute victoire par seuil de Blessures cible une entité de sa scène', (file) => {
+    const doc = parseProject(JSON.parse(readFileSync(file, 'utf8')));
+    const fautifs: string[] = [];
+    for (const sc of doc.scenes) {
+      const ids = new Set(sc.entities.map((e) => e.id));
+      for (const enc of sc.encounters) {
+        const vc = enc.victoryCondition;
+        if (vc?.type !== 'woundsThreshold') continue;
+        if (!ids.has(vc.targetId)) fautifs.push(`${sc.id}/${enc.id} : cible « ${vc.targetId} » absente de la scène`);
+        if (!(vc.belowPercent > 0 && vc.belowPercent <= 100)) fautifs.push(`${sc.id}/${enc.id} : seuil ${vc.belowPercent} % hors ]0,100]`);
+      }
+    }
+    expect(fautifs).toEqual([]);
+  });
+
+  /**
+   * ZÉRO jargon technique dans les textes JOUEUR (dialogues, journal, modales document, objectifs) :
+   * le nom d'une op, d'un champ d'état ou d'une réf de folio n'a rien à faire sous les yeux du joueur.
+   */
+  it.each(bundledFiles.map((f) => [f] as const))('%s : aucun jargon technique dans les textes joueur', (file) => {
+    const doc = parseProject(JSON.parse(readFileSync(file, 'utf8')));
+    const jargon = /`|INEXPRIMABLE|CONTOURN|\bstate\.|\bvessel\.|\bTODO\b|seaVoyageFlow|op:'testMod'|engine\/ops\.ts|adjustManann|adjustVessel|setVessel|setObjective|saboteurDR|factorId|woundsThreshold|[A-Z]{2,4} \d+ l\.\d/;
+    const fautifs: string[] = [];
+    for (const sc of doc.scenes)
+      for (const d of sc.dialogues)
+        for (const n of d.nodes) {
+          if (jargon.test(n.desc)) fautifs.push(`${sc.id}/${d.id}/${n.id} : node.desc`);
+          for (const c of n.choices) if (jargon.test(c.label)) fautifs.push(`${sc.id}/${d.id}/${n.id} : choix « ${c.label} »`);
+        }
+    for (const { sceneId, eff } of effetsDuProjet(doc)) {
+      if (eff.type === 'journal' && jargon.test(eff.desc)) fautifs.push(`${sceneId} : journal « ${eff.desc} »`);
+      if (eff.type === 'document' && (jargon.test(eff.title) || jargon.test(eff.desc))) fautifs.push(`${sceneId} : document « ${eff.title} »`);
+      if (eff.type === 'setObjective' && jargon.test(eff.desc)) fautifs.push(`${sceneId} : objectif « ${eff.desc} »`);
+    }
+    expect(fautifs).toEqual([]);
   });
 
   it('CONTRE-PREUVE : une réf de créature inexistante glissée dans une COPIE d’un paquet livré rougit la garde, en nommant la scène et l’entité', () => {
@@ -131,14 +293,28 @@ describe('paquets de campagne bundlés — se relisent tous dans le modèle COUR
     expect(erreurs.some((m) => m.includes(sceneId) && m.includes(entityId) && m.includes('creature-qui-n-existe-pas'))).toBe(true);
   });
 
-  it('CONTRE-PREUVE : un paquet ramené au format PRÉCÉDENT (schema 2, sans identité) est REFUSÉ À LA PORTE', () => {
-    const raw = JSON.parse(readFileSync(bundledFiles[0], 'utf8'));
-    // ⚠ copie EN MÉMOIRE — aucun fichier touché. Les scènes sont dépouillées de leur `type` : au
-    // format 2, une scène ne s'annonçait pas (c'est `PROJECT_MIGRATIONS[6]` qui le pose, #1552).
-    const scenes = raw.scenes.map(({ type: _s, ...reste }: Record<string, unknown>) => reste);
-    const regressed = { schema: 2, scenes, worldMap: raw.worldMap };
+  /**
+   * CONTRE-PREUVE de la PORTE d'identité (`worldMap.ts:757`), sur une enveloppe CONSTRUITE — aucun
+   * paquet livré n'en est le sujet. La scène est dépouillée de son `type` : au format 2 une scène ne
+   * s'annonçait pas, c'est `PROJECT_MIGRATIONS[6]` qui le pose (#1552). L'enveloppe est COMPLÈTE par
+   * ailleurs (`label`, `versionContenu`) : seule l'identité manque, et le motif attendu NOMME le champ
+   * refusé — `/id/` seul serait satisfait par l'en-tête du message (« JSON inval*id*e ») et par
+   * n'importe quel autre champ absent.
+   */
+  const ENVELOPPE_SCHEMA_2 = (identite: Record<string, unknown>) => {
+    const { type: _type, ...sceneSansType } = emptyScene(4, 4) as unknown as Record<string, unknown>;
+    return { schema: 2, scenes: [{ ...sceneSansType, id: 'fixture-scene', label: 'Fixture' }], label: 'Fixture', versionContenu: 1, ...identite };
+  };
+  /** Le champ refusé, tel que `validateDocument` l'énumère : une puce «  - <champ>: … » par champ. */
+  const REFUS_NOMME_ID = /^\s*- id: /m;
+
+  it('la même enveloppe AVEC son identité passe la porte — la contre-preuve ci-dessous ne mesure que l’identité', () => {
+    expect(() => parseProject(ENVELOPPE_SCHEMA_2({ id: 'fixture-schema-2' }))).not.toThrow();
+  });
+
+  it('CONTRE-PREUVE : un paquet ramené au format PRÉCÉDENT (schema 2, sans identité) est REFUSÉ À LA PORTE, qui NOMME `id`', () => {
     // La migration monte la forme 2→7 mais n'INVENTE aucune identité : la porte refuse, en la nommant.
-    expect(() => parseProject(regressed)).toThrow(/id/);
+    expect(() => parseProject(ENVELOPPE_SCHEMA_2({}))).toThrow(REFUS_NOMME_ID);
   });
 });
 

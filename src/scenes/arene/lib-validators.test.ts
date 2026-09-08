@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 // @ts-expect-error — outil d'auteur .mjs sans types (validateurs id-only branchés dans NPC/scene/poste).
 import { NPC, NUEE_DE_RATS, poste, scene } from '../../../scripts/campagne/lib.mjs';
+import { sceneMetresPerTile } from '../../state/scene';
 
 /** Scène MER minimale (eau, 6×6) portant une rencontre terse d'un seul ennemi `ref` — sert à exercer
  *  `creatureId()` (branché dans `normalizeEnemy`) sans dépendre d'un catalogue de créature particulier. */
@@ -102,5 +103,17 @@ describe('lib.mjs — poste() : forme référence #222, trappingId à art d’af
 
   it('un trappingId inconnu → throw', () => {
     expect(() => poste('canon-imaginaire', 'proue')).toThrow(/poste/i);
+  });
+});
+
+describe('lib.mjs — `scene()` FORWARDE l’échelle demandée au MapSpec compilé', () => {
+  it('une scène qui déclare `metresPerTile` la retrouve à la lecture', () => {
+    const sc = scene({ id: 'tmp-mer', nom: 'Mer ouverte', base: 'eau', rows: ['====', '===='], metresPerTile: 8 });
+    expect(sceneMetresPerTile(sc)).toBe(8);
+  });
+
+  it('une scène qui n’en déclare pas retombe sur le défaut du monde', () => {
+    const sc = scene({ id: 'tmp-terre', nom: 'Plaine', base: 'terre', rows: ['....', '....'] });
+    expect(sceneMetresPerTile(sc)).toBe(sceneMetresPerTile({ layers: [] } as never));
   });
 });
