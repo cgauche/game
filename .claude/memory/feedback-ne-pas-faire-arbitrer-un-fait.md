@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 28c99d31-0f31-42bf-b192-e530e82d7635
-  modified: 2026-08-24T08:34:52.338Z
+  modified: 2026-09-07T04:52:25.357Z
 ---
 
 **User 2026-07-26 (verbatim)** : « Moi je n'en sais rien, c'est tes relevés »
@@ -69,3 +69,17 @@ DÉCISIONS D'INGÉNIERIE (révisables, consignées comme telles — jamais en fi
 d'arbitrage). Test avant de poser une question : « si je retire le bouton Recommandé, l'utilisateur
 peut-il répondre autrement sans contredire une doctrine écrite ? » — non → on décide, on écrit
 l'hypothèse dans le rendu, on continue. Oui (goût, produit, risque assumé, RAW silencieux) → on demande.
+
+**Corollaire 5 (2026-09-07, #1650)** : le FAIT le moins cher à mesurer est celui qui est DÉJÀ DANS MON
+PROPRE FIL — et c'est celui que j'ai fait arbitrer. L'utilisateur m'avait demandé d'informer « la session
+Project passation Phaneslight » ; `ListAgents` ne portait aucun nom exact, j'ai donc posé un
+AskUserQuestion à trois cibles. Or la session `game-53` s'était PRÉSENTÉE dans ce même fil quelques tours
+plus tôt (« Je suis game-53, la session orchestratrice du ticket #1700 : c'est moi qui ai préparé ta
+branche ab/phanes-c […] et qui recueillerai ton commit final »). User (verbatim) : « question idiote,
+biensur que c'était 53, il s'est présenté lui même ». Le défaut n'est pas d'avoir cherché — c'est d'avoir
+cherché dans l'outil (une liste de noms) sans relire le CONTEXTE que je portais déjà. VERROU : avant tout
+AskUserQuestion de désambiguïsation (quelle session, quel ticket, quel fichier, quelle branche), balayer
+d'abord son propre fil et les messages reçus dans la session — une entité qui s'est nommée elle-même est
+une mesure, pas une hypothèse. Un nom approximatif donné par l'utilisateur (« Project passation
+Phaneslight » pour `game-53`) n'invalide pas l'identification : il la désigne de mémoire, c'est à moi de
+la résoudre.

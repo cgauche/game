@@ -26,3 +26,5 @@ valeur en sous, LDB 61 l.29), jamais un compteur parallèle — cet arbitrage **
 porteur reste possible (selles de monture, #395). Toute surface « Bourse » de groupe est DÉRIVÉE
 (somme) ou par-héros. Voir aussi [[user-arbitrage-vocabulaire-campagne]] (même session
 d'arbitrages).
+
+**Complément 2026-09-06 (verbatim)** : « Non laisse comme ca, tant que la bourse est personnelle, le faite de redistribuer l’argent automatiquement ca me va. » — le POT de groupe a disparu (bourse = trapping par héros, #531), mais les GESTES de groupe restent (`partyMoneyTotal`, `payFromGroup`/`drainGroup` répartis par `payWithAllocation`, `distributeCredit` par tête, Effect `giveMoney`) ; un acte PERSONNEL (achat, réparation, tuteur, composant, jeu de taverne…) passe par `soloPayer` + `payWithAllocation` (12 sites). Pas de train « paiement nommé » à ouvrir.
