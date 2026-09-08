@@ -16,17 +16,15 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { bindingsVifs, ecrituresHorsSeam, fichiersSources, RACINE } from '../../scripts/guards/lib/bindingsVifs.mjs';
-
-/** Le seam LUI-MÊME : c'est son métier de muter en place. */
-const SEAM = 'src/data/overrides.ts';
+import { bindingsVifs, ecrituresHorsSeam, fichiersSources, fichiersDuSeam, RACINE } from '../../scripts/guards/lib/bindingsVifs.mjs';
 
 describe('#1692 — aucune écriture de dataset hors du seam `overrides.ts`', () => {
   const parBinding = bindingsVifs();
+  const seam = fichiersDuSeam();
 
   it('aucun `push`/`splice`/`sort`… ni écriture PAR INDEX sur un binding de dataset, tests compris', () => {
     const fautifs = fichiersSources()
-      .filter((f) => f !== SEAM)
+      .filter((f) => !seam.has(f))
       .flatMap((f) => ecrituresHorsSeam(f, readFileSync(join(RACINE, f), 'utf8'), parBinding));
     expect(fautifs, 'passer par `setDataset(clé, …)` : elle seule versionne l’écriture (les index mémoïsés ne verraient rien)').toEqual([]);
   });

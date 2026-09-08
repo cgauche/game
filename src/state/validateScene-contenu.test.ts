@@ -14,7 +14,7 @@ import type { MapPlace, WorldMap } from './worldMap';
 /** Ids LUS AUX REGISTRES (jamais un littéral : le bestiaire et les catalogues vivent). */
 const REF_CREATURE = creatures[0].id;
 const REF_COQUE = vehicles.find((v) => v.hull)!.id;
-const REF_ENGIN = siegeEngines[0].id;
+const REF_ENGIN = siegeEngines()[0].id;
 
 /** Plain-pied 8×8 d'herbe (tout est marchable) avec le départ du groupe posé en (1,1). */
 function scene(): Scene {

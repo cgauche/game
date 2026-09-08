@@ -15,9 +15,12 @@ import { listerArbre } from './lister.mjs';
 
 export const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 
-/** Retire commentaires de ligne et de bloc (jamais les chaînes : on ne lit que des déclarations). */
-function sansCommentaires(src) {
-  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
+/** Retire commentaires de ligne et de bloc (jamais les chaînes : on ne lit que des déclarations).
+ *  UNE alternance, gauche-droite : le motif le plus à gauche gagne, donc un `//` consomme sa ligne
+ *  entière, ouverture de bloc comprise : un chemin à joker cité dans un commentaire de ligne
+ *  n'ouvre aucun bloc, donc n'efface pas la source jusqu'au prochain fermant. */
+export function sansCommentaires(src) {
+  return src.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '');
 }
 
 /** Le corps du littéral `const <nom> = { … }` d'un module (accolades équilibrées). */
@@ -361,4 +364,24 @@ export function ecrituresHorsSeam(chemin, src, parBinding) {
  *  (`listerArbre`, #1679 L3b : un listing brut suit l'ordre du système de fichiers). */
 export function fichiersSources() {
   return listerArbre(join(RACINE, 'src'), { filtre: (rel) => /\.tsx?$/.test(rel) }).map((rel) => `src/${rel}`);
+}
+
+/** Le SEAM lui-même, DÉRIVÉ de ce que les fichiers DÉCLARENT — jamais une liste de chemins. Un
+ *  fichier NON-test est le seam s'il DÉFINIT `bumperDataset` (le versionneur d'écriture) ou s'il
+ *  l'IMPORTE (l'écrivain : muter en place et versionner est son métier). Ces deux-là PORTENT la
+ *  mécanique que les gardes d'index et d'écriture cherchent chez les autres : les y chercher rendrait
+ *  la garde fausse. Un `.test.ts(x)` n'est jamais le seam — il en parle, il ne le porte pas. */
+let _seam = null;
+export function fichiersDuSeam() {
+  if (_seam) return _seam;
+  const definit = /export\s+function\s+bumperDataset\b/;
+  const importe = /import\s*\{[^}]*\bbumperDataset\b[^}]*\}\s*from/;
+  const out = new Set();
+  for (const chemin of fichiersSources()) {
+    if (/\.test\.tsx?$/.test(chemin)) continue;
+    const src = sansCommentaires(readFileSync(join(RACINE, chemin), 'utf8'));
+    if (definit.test(src) || importe.test(src)) out.add(chemin);
+  }
+  _seam = out;
+  return out;
 }

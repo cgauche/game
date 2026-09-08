@@ -22,7 +22,10 @@
  *
  * Périmètre : tout `src/**` en `.ts(x)` NON-test. Vocabulaire IMPORTÉ du seam (`bindingsVifs`, dérivé
  * du littéral `ARRAYS` d'`overrides.ts`) et des accesseurs DÉCLARÉS sous `src/` (`accesseursVifs`) —
- * jamais une liste recopiée ici. Est INNOCENTE toute déclaration qui passe par les primitives d'index
+ * jamais une liste recopiée ici. Le SEAM exclu du balayage est DÉRIVÉ lui aussi (`fichiersDuSeam` :
+ * le module NON-test qui DÉFINIT `bumperDataset`, et celui qui l'IMPORTE pour versionner ses
+ * écritures) — ce sont les deux porteurs de la mécanique.
+ * Est INNOCENTE toute déclaration qui passe par les primitives d'index
  * VIF (`indexParId`/`indexParChamp`/`memoParVersion`, `src/data/versionDataset.ts`) et toute lecture
  * située DANS un corps de fonction (flèche, `function`, accesseur `get x()`, méthode abrégée) qui
  * n'est pas appelé sur place — elle se refait à chaque appel.
@@ -45,11 +48,8 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { bindingsVifs, clesDuSeam, indexFiges, fichiersSources, accesseursVifs, RACINE } from '../../scripts/guards/lib/bindingsVifs.mjs';
+import { bindingsVifs, clesDuSeam, indexFiges, fichiersSources, fichiersDuSeam, accesseursVifs, sansCommentaires, RACINE } from '../../scripts/guards/lib/bindingsVifs.mjs';
 import { DATASET_KEYS } from './overrides';
-
-/** Le seam lui-même (il PORTE les bindings) et le module qui pose la version. */
-const HORS_PERIMETRE = new Set(['src/data/overrides.ts', 'src/data/versionDataset.ts']);
 
 describe('#1692 — aucun index figé à l’import sur un dataset mutable', () => {
   const parBinding = bindingsVifs();
@@ -63,11 +63,28 @@ describe('#1692 — aucun index figé à l’import sur un dataset mutable', () 
     expect(parBinding.get('MOUNT_PROFILES')).toBe('montures');
   });
 
+  it('le SEAM se DÉRIVE de ce que les fichiers déclarent, pas d’une liste de chemins', () => {
+    // Ce qu'il PORTE le désigne : définir `bumperDataset`, ou l'importer pour versionner ses écritures.
+    expect([...fichiersDuSeam()].sort()).toEqual(['src/data/overrides.ts', 'src/data/versionDataset.ts']);
+  });
+
   it('aucun index NI aucune vue dérivée de niveau module sur un dataset du seam', () => {
+    const seam = fichiersDuSeam();
     const fautifs = fichiersSources()
-      .filter((f) => !/\.test\.tsx?$/.test(f) && !HORS_PERIMETRE.has(f))
+      .filter((f) => !/\.test\.tsx?$/.test(f) && !seam.has(f))
       .flatMap((f) => indexFiges(f, readFileSync(join(RACINE, f), 'utf8'), parBinding));
     expect(fautifs, 'ces index servent l’ancien monde après une édition au Codex — passer par `indexParId`/`indexParChamp` (src/data/versionDataset.ts)').toEqual([]);
+  });
+
+  it('CONTRÔLE POSITIF : un `/*` cité dans un commentaire de LIGNE n’efface pas la source qui suit', () => {
+    // Le commentaire de ligne gagne : sans cela, tout le code jusqu'au prochain `*/` disparaît du
+    // vocabulaire — et le seam, dérivé de ce que les fichiers déclarent, cesse d'être vu.
+    const src = '// a /* b\nconst x = 1; /* c */ const y = 2;';
+    const net = sansCommentaires(src);
+    expect(net).toContain('const x = 1;');
+    expect(net).toContain('const y = 2;');
+    expect(net).not.toContain('/* c */');
+    expect(net).not.toContain(' b');
   });
 
   it('CONTRÔLE POSITIF : le même détecteur voit un index figé injecté dans une COPIE en mémoire', () => {
