@@ -299,4 +299,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: afab87822919dcf284f50511a41aa536873d61b1 (2077 fichiers, 172 dossiers) corps: 9df41ee019667a2b239d4ef3c8fd30ae399a09d7 -->
+<!-- sources-empreinte: e156a69b0ff2408c8cb3d3e72a6052e2db84fa94 (2077 fichiers, 171 dossiers) corps: 9df41ee019667a2b239d4ef3c8fd30ae399a09d7 -->

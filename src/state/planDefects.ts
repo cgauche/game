@@ -665,10 +665,8 @@ export function auditWallDeadEndsAtBorder(scene: Scene, z: number): PlanDefect[]
  *  le segment de mur lui-même, percé. Isolée, elle n'ouvre sur rien — elle se contourne par les deux
  *  côtés, ne ferme aucune pièce, et le rendu lui dresse un chambranle en plein air. Seules les arêtes
  *  CARDINALES comptent (une diagonale ne s'accroche à aucun coin de la trame, cf. `cardinalWalls`).
- *  Le critère vient du détecteur nominatif de `scenes/diligence/diligence-projet.test.ts`, qui ne juge
- *  que la Diligence : il balaie tous les murs, mais ses coins portent déjà leur `z` dans la clé, donc
- *  aucun mur d'un autre étage n'y rattache une porte — la partition PAR ÉTAGE faite ici rend le MÊME
- *  verdict, elle ne fait que le dire au socle. Mesuré : 0 porte orpheline sur les 4 paquets livrés. */
+ *  La partition PAR ÉTAGE est déjà portée par la clé de coin (`wallVertices` y met le `z`) : aucun mur
+ *  d'un autre étage n'y rattache une porte. Mesuré : 0 porte orpheline sur les 4 paquets livrés. */
 export function auditOrphanDoors(scene: Scene, z: number): PlanDefect[] {
   const degree = new Map<string, number>();
   for (const seg of cardinalWalls(scene, z)) for (const v of wallVertices(seg)) degree.set(v, (degree.get(v) ?? 0) + 1);

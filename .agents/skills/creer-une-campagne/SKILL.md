@@ -47,10 +47,16 @@ est une clé) — utile pour un aller/retour asymétrique (embuscades différent
 PAS le sens : nommer clairement (`-aller`/`-retour`), le joueur peut en théorie retomber sur la route
 « retour » à l'aller.
 
-**5. Un test `.test.ts` sur le modèle de `src/scenes/arene/arene-projet.test.ts` / `loup-et-saumure-projet.test.ts`.**
-Charge le JSON généré, `parseProject`, vérifie que toutes les refs (créature/compétence/sort/scène/lieu)
-résolvent et que les transitions/triggers pointent vers des scènes/entrées existantes. Verrouille contre
-toute régénération qui casserait silencieusement une ref.
+**5. AUCUN test nominatif sur le paquet livré — rien à écrire.**
+La garde TRANSVERSE `src/scenes/bundled-projects.test.ts` prend tout `src/scenes/**/*-projet.json` au
+GLOB dès que le fichier est posé : `parseProject` sans lever + identité plate valide, apparence et nom
+résolus pour chaque entité de personnage, AUCUNE `error` de `validateScene` (réfs créature/scène/
+dialogue/lieu, transitions, carte du monde), prose `narratif` sourcée confrontée au `Source/` à l'octet.
+Une MÉCANIQUE à prouver se prouve sur une scène de FIXTURE (skill `creer-un-scenario-de-test`), jamais
+sur la carte livrée : elle appartient à son auteur, et un test qui recopie son contenu (compte de scènes,
+ids, valeurs d'un lieu, « X est bien le boss ») rougit au premier coup de pinceau.
+Arbitrage utilisateur du 2026-09-07 : « Franchement si on veut faire de test, faites les sur des scenes
+créé spécialement pour ces tests, pas sur des scénes qui sont utilisés ». (#1709)
 
 **6. Recette navigateur.**
 `loadProject(doc.scenes, startId, doc.worldMap)` — dérouler le flux complet (voir

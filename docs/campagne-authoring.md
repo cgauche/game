@@ -311,7 +311,8 @@ directement sur sa scène d'entrée et ne se ferme jamais — aucun paquet exist
   défaut `veillee`). `loadProject` la pose dans `pendingOuverture` **après** `startScene` (qui remet
   l'état à l'init) ; `CampaignView` monte alors `CampaignOpeningScreen` par-dessus la vue. Le `pitch`
   est un COPIÉ/COLLÉ verbatim de la source (règle stricte 5), rendu par `<Prose>` : il se vérifie au
-  fichier `Source/` (test `src/scenes/diligence/diligence-projet.test.ts`), jamais à l'œil.
+  fichier `Source/` — garde transverse sur tout paquet livré qui déclare un `source`
+  (`src/scenes/bundled-projects.test.ts`, livre résolu par `books.json`), jamais à l'œil.
 - **`cloture`** (`ClotureBlock`) : `when` (`Condition`), `titre`, `sousTitre?`. Le `when` est ÉVALUÉ
   au contexte HORS COMBAT (`condCtx`, `src/state/bourseFlow.ts`) — même sous-ensemble borné qu'un
   `when` de carte (`CONDITION_KINDS_CARTE`), sinon la Condition serait FAUSSE en silence. Il est relu
