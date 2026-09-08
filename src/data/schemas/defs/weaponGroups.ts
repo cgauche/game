@@ -8,6 +8,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
+import { enumNomme } from '../grammaire/valeurs';
 import { qualityRefSchema } from '../grammaire/reference';
 
 export const file = 'weaponGroups.json';
@@ -17,7 +18,7 @@ const doc = document(
   'weaponGroups',
   famille,
   {
-    kind: z.enum(['weapon', 'ammo', 'armour', 'inventory']),
+    kind: enumNomme({ weapon: 'Groupe d’arme', ammo: 'Munitions', armour: 'Armure', inventory: 'Inventaire' }),
     material: z.enum(['metal', 'leather', 'chaos']).optional(),
     combat: z.enum(['melee', 'ranged']).optional(),
     /** Qualités COMMUNES à toute la famille, mergées par `resolveQualities` (LDB 62 l.137). */
@@ -27,7 +28,6 @@ const doc = document(
     kind: {
       label: 'Type de Groupe',
       hint: 'Arme, munition, armure ou inventaire',
-      valeurs: { weapon: 'Groupe d’arme', ammo: 'Munitions', armour: 'Armure', inventory: 'Inventaire' },
     },
     material: {
       label: 'Matériau (armure)',

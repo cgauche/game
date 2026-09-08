@@ -17,21 +17,23 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
+import { enumNomme } from '../grammaire/valeurs';
 
 export const file = 'oups.json';
 export const famille = 'entite';
 
-/** Effets mécaniques que le moteur sait jouer (`OupsKind` + `misfire`, `src/engine/oups.ts`). */
-const KINDS = [
-  'selfWound',
-  'weaponDamageActLast',
-  'actionPenalty',
-  'loseMovement',
-  'loseAction',
-  'trauma',
-  'hitAlly',
-  'misfire',
-] as const;
+/** Effets mécaniques que le moteur sait jouer (`OupsKind` + `misfire`, `src/engine/oups.ts`), NOMMÉS :
+ *  les options de l'enum SONT les clés de cette table (#1694). */
+const KINDS = {
+  selfWound: 'Auto-blessure',
+  weaponDamageActLast: 'Arme abîmée + agit en dernier',
+  actionPenalty: 'Malus d’Action',
+  loseMovement: 'Perte de Mouvement',
+  loseAction: 'Perte d’Action',
+  trauma: 'Traumatisme',
+  hitAlly: 'Touche un allié',
+  misfire: 'Incident de Tir',
+} as const;
 
 const doc = document(
   'oups',
@@ -39,7 +41,7 @@ const doc = document(
   {
     min: z.number().optional(),
     max: z.number().optional(),
-    kind: z.enum(KINDS),
+    kind: enumNomme(KINDS),
   },
   {
     min: { label: 'Borne basse du d100' },
@@ -47,11 +49,6 @@ const doc = document(
     kind: {
       label: 'Effet mécanique',
       hint: 'misfire = Incident de Tir, HORS table (LDB 14 folio 160)',
-      valeurs: {
-        selfWound: 'Auto-blessure', weaponDamageActLast: 'Arme abîmée + agit en dernier', actionPenalty: 'Malus d’Action',
-        loseMovement: 'Perte de Mouvement', loseAction: 'Perte d’Action', trauma: 'Traumatisme', hitAlly: 'Touche un allié',
-        misfire: 'Incident de Tir',
-      },
     },
   },
   {

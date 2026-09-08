@@ -85,6 +85,11 @@ compilation ET d'exécution. Leur libellé FR appartient donc lui aussi à la fa
 | `maison` | Arbitrage maison | oui (`options.exiges`) |
 | `icon` | Icône | oui (`options.exiges`) |
 
+**LIBELLÉS** : le nom FR d'un CHAMP vit dans la `meta` du def ; le nom FR d'une **valeur d'enum
+affichée se pose par `enumNomme`** (`src/data/schemas/grammaire/valeurs.ts`), qui porte la table
+`{ option: 'Libellé FR' }` SUR LE NŒUD — jamais un Record de libellés côté UI (ce serait une seconde
+vérité, et l'atelier ne saurait pas la lire en profondeur).
+
 **PROVENANCE** : une entrée porte `source` **ou** `maison` (la raison de l'arbitrage en clair),
 jamais ni l'un ni l'autre — le refus est posé par la fabrique elle-même, pas par une garde
 secondaire. Une entrée sans folio n'est pas interdite : elle doit DIRE pourquoi.
@@ -120,4 +125,4 @@ JAMAIS un choix d'agent silencieux enterré. Avant de conclure « le moteur ne s
 | `src/data/data-atlas-complete.test.ts` | atlas des données (docs/donnees.md) — complétude |
 | `src/data/maison-sans-source.test.ts` | cliquet « maison sans source » — le régime d’arbitrage ne dérive pas (#1467 L1b) |
 | `src/data/data-wellformed.test.ts` | Intégrité des données src/data/*.json |
-<!-- sources-empreinte: 59504a6f101fddb37ec006375ca95d7e96eecbb1 (18 fichiers, 1 dossiers) corps: a46d346bcf873ea712ae687034303eab32e9cda3 -->
+<!-- sources-empreinte: 57a971536aad975dcb9aa785b2bf7f98c1cfb9c8 (18 fichiers, 1 dossiers) corps: ef534ea498cafe52f609037b406960b9280d7418 -->

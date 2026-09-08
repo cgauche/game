@@ -18,8 +18,8 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { detailRecipeSchema } from '../grammaire/valeurs';
-import { DOMAINES_MATIERE, type MaterialDomain } from '../../materials.types';
+import { detailRecipeSchema, enumNomme } from '../grammaire/valeurs';
+import { type MaterialDomain } from '../../materials.types';
 
 export const file = 'materials.json';
 export const famille = 'entite';
@@ -34,8 +34,9 @@ export const famille = 'entite';
 export const discriminant = 'domain';
 
 /**
- * Libellés FR des DOMAINES — les valeurs du champ discriminant, nommées à UN endroit (`MetaChamp.valeurs`,
- * plus bas) : le Codex en titre ses groupes, le `select` de l'atelier en fait ses options.
+ * Libellés FR des DOMAINES — les valeurs du champ discriminant, nommées à UN endroit : cette table EST
+ * l'univers du champ (`enumNomme`, plus bas), le Codex en titre ses groupes et le `select` de l'atelier
+ * en fait ses options.
  */
 const LIBELLES_DE_DOMAINE = {
   prop: 'Décor',
@@ -58,7 +59,7 @@ const CHARGE_PAR_DOMAINE = {
     requises: [],
   },
   relief: { cles: ['built', 'detail', 'face', 'foot', 'slopeTop', 'shadeDark'], requises: ['face'] },
-} as const satisfies Record<(typeof DOMAINES_MATIERE)[number], { cles: readonly string[]; requises: readonly string[] }>;
+} as const satisfies Record<MaterialDomain, { cles: readonly string[]; requises: readonly string[] }>;
 
 /**
  * CHARGE par valeur du DISCRIMINANT, telle que la lit l'atelier (`SchemaDef.chargeParDiscriminant`,
@@ -77,7 +78,7 @@ const doc = document(
   'materials',
   famille,
   {
-    domain: z.enum(DOMAINES_MATIERE),
+    domain: enumNomme(LIBELLES_DE_DOMAINE),
     // ── domaine `prop`
     color: z.string().regex(/^#[0-9a-f]{6}$/).optional(),
     roughness: z.number().min(0).max(1).optional(),
@@ -113,7 +114,6 @@ const doc = document(
     domain: {
       label: 'Domaine',
       hint: 'Ce que la matière peint : décor volumique, toiture, relief — les clés admises en dépendent',
-      valeurs: LIBELLES_DE_DOMAINE,
     },
     color: { label: 'Couleur', hint: 'Teinte hexadécimale `#rrggbb` du matériau' },
     roughness: { label: 'Rugosité', hint: 'Réponse mate/brillante à la lumière' },

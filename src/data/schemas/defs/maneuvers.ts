@@ -13,7 +13,7 @@
  * Résolution du trait : `traitProjectingManeuver` (`src/data/index.ts`).
  */
 import { z } from 'zod';
-import { charKeySchema, stakeFormSchema } from '../grammaire/valeurs';
+import { charKeySchema, enumNomme, stakeFormSchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 import { triggeredEffectSchema } from '../grammaire/mecanique';
 
@@ -31,12 +31,12 @@ const doc = document(
   famille,
   {
     kind: z.enum(['arme', 'morsure', 'caudale', 'cornes', 'souffle', 'vomi', 'tentacules', 'etreinte', 'regard', 'langue', 'hurlement']),
-    activation: z.enum(['action', 'free', 'charge']),
+    activation: enumNomme({ action: 'Action', free: 'Gratuite (coût d’Avantage)', charge: 'À la Charge' }),
     advantageCost: z.number(),
-    advantageMode: z.enum(['fixed', 'variable', 'all']).optional(),
-    stat: z.enum(['capacite-de-combat', 'capacite-de-tir']).optional(),
-    defense: z.enum(['esquive', 'parade', 'init', 'resist', 'auto']).optional(),
-    targeting: z.enum(['melee', 'ranged', 'zone', 'allFoes', 'allAround', 'self']),
+    advantageMode: enumNomme({ fixed: 'Coût fixe', variable: 'Au choix (+1 DR/Av)', all: 'Tout l’Avantage' }).optional(),
+    stat: enumNomme({ 'capacite-de-combat': 'CC (mêlée)', 'capacite-de-tir': 'CT (distance)' }).optional(),
+    defense: enumNomme({ esquive: 'Esquive', parade: 'Parade', init: 'Initiative', resist: 'Résistance (cible)', auto: 'Meilleure (auto)' }).optional(),
+    targeting: enumNomme({ melee: 'Mêlée', ranged: 'Distance', zone: 'Zone', allFoes: 'Tous les ennemis', allAround: 'Tout le monde alentour', self: 'Sur soi' }),
     range: maneuverMeasure.optional(),
     blast: maneuverMeasure.optional(),
     magic: z.boolean().optional(),
@@ -49,29 +49,12 @@ const doc = document(
   },
   {
     kind: { label: 'Type d’attaque (rendu)', hint: 'Anime et illustre la manœuvre — n’entre pas dans la résolution' },
-    activation: {
-      label: 'Activation',
-      hint: 'Action / gratuite / charge',
-      valeurs: { action: 'Action', free: 'Gratuite (coût d’Avantage)', charge: 'À la Charge' },
-    },
+    activation: { label: 'Activation', hint: 'Action / gratuite / charge' },
     advantageCost: { label: 'Coût en Avantage' },
-    advantageMode: {
-      label: 'Mode de coût',
-      hint: 'Fixe / variable / tout l’Avantage',
-      valeurs: { fixed: 'Coût fixe', variable: 'Au choix (+1 DR/Av)', all: 'Tout l’Avantage' },
-    },
-    stat: {
-      label: 'Caractéristique de test',
-      valeurs: { 'capacite-de-combat': 'CC (mêlée)', 'capacite-de-tir': 'CT (distance)' },
-    },
-    defense: {
-      label: 'Défense opposée',
-      valeurs: { esquive: 'Esquive', parade: 'Parade', init: 'Initiative', resist: 'Résistance (cible)', auto: 'Meilleure (auto)' },
-    },
-    targeting: {
-      label: 'Ciblage',
-      valeurs: { melee: 'Mêlée', ranged: 'Distance', zone: 'Zone', allFoes: 'Tous les ennemis', allAround: 'Tout le monde alentour', self: 'Sur soi' },
-    },
+    advantageMode: { label: 'Mode de coût', hint: 'Fixe / variable / tout l’Avantage' },
+    stat: { label: 'Caractéristique de test' },
+    defense: { label: 'Défense opposée' },
+    targeting: { label: 'Ciblage' },
     range: { label: 'Portée' },
     blast: { label: 'Zone d’effet' },
     magic: { label: 'Magique' },

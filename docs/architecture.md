@@ -29,6 +29,11 @@ src/data/                   NOTRE base APP-OWNED (JSON commité, éditable dans 
                               par famille (entite/table/config/record), méta d'édition et exposition
                               Codex/éditeur. Registres GÉNÉRÉS (`_registry*.generated.ts`,
                               `_ids.generated.ts`) par `npm run gen` — jamais édités à la main.
+                              Le nom FR d'une VALEUR d'enum vit sur le NŒUD (`enumNomme`,
+                              `grammaire/valeurs.ts`, lu par `valeursDe`/`libelleDeValeur` de
+                              `grammaire/meta.ts`), donc à toute profondeur et pour tous les
+                              consommateurs — jamais un Record de libellés côté UI (cliquet
+                              `grammaire/records-de-libelles.test.ts`).
                               Détail : `docs/donnees.md` §E-bis
   source/                     Parseur de DÉCOUPE des chapitres de `Source/` (`decoupe.ts` : sections,
                               blocs, folios, empreinte `sumOf`, résolution d'une adresse `DescRef`) +

@@ -9,6 +9,47 @@ import { AVAILABILITIES, COUVERT_DIFFICULTES, STAKE_FORMS } from '../../../engin
 import { refOuSpec, idDe } from './ref';
 
 /**
+ * ENUM NOMMÉ (#1694) — la FABRIQUE d'un univers fermé dont chaque valeur porte son libellé FR SUR LE
+ * NŒUD, à sa déclaration : `z.enum(Object.keys(valeurs)).meta({ valeurs })`. Couverture et ORDRE sont
+ * vrais PAR CONSTRUCTION (les options SONT les clés de la table), si bien qu'aucun contrôle externe
+ * n'a plus à les vérifier, et qu'un site d'affichage lit le libellé par `libelleDeValeur(noeud, v)`
+ * (`grammaire/meta.ts`) au lieu de tenir sa propre table par valeur.
+ *
+ * Le porteur est le NŒUD, jamais la clé de premier niveau : un enum niché (`[].outcomes[].on`) ou
+ * partagé par 2 950 chemins (`actorRefSchema`) se nomme UNE fois, ici, comme un champ de racine.
+ *
+ * `.extract`/`.exclude` sont REFUSÉS sur un enum nommé : zod 4.4.3 rend un NOUVEAU nœud dont la
+ * `.meta()` est vide (mesuré) — le sous-univers perdrait ses libellés EN SILENCE. Un sous-univers se
+ * déclare par son propre `enumNomme`. Le refus posé ci-dessous n'est PAS un verrou par construction :
+ * il ne couvre que l'usage DIRECT de l'instance, un clone (`.describe(…)`, `.meta(…)`, `.optional()`)
+ * rendant un nœud neuf qui reprend les méthodes de zod. Le verrou est la garde STRUCTURELLE de
+ * `valeurs-de-champ.test.ts` : aucun `.extract(`/`.exclude(` sur un enum nommé dans `src/**`.
+ */
+export function enumNomme<const V extends Readonly<Record<string, string>>>(valeurs: V) {
+  type Cle = Extract<keyof V, string>;
+  const options = Object.keys(valeurs) as [Cle, ...Cle[]];
+  const noeud = z.enum(options).meta({ valeurs });
+  const refuse = (op: string) => (): never => {
+    throw new Error(
+      `enumNomme : \`.${op}()\` sur un enum NOMMÉ rendrait un nœud SANS ses libellés de valeurs (zod 4.4.3 : la meta ne suit pas le sous-enum) — déclarer le sous-univers par son propre \`enumNomme\`.`,
+    );
+  };
+  const site = noeud as unknown as Record<string, unknown>;
+  site.extract = refuse('extract');
+  site.exclude = refuse('exclude');
+  return noeud;
+}
+
+/**
+ * Nature d'une Mutation (`Mutation.kind`, `src/engine/corruption.ts`) — UNE déclaration pour les trois
+ * nœuds qui portent ce vocabulaire : `mutations.kind` (`defs/mutations.ts`) et les deux capacités de
+ * trait `mutationAtSpawn` / `markMutations.first` (`defs/traits.ts`). Un enum = une const nommée : un
+ * jumeau redéclaré en `z.enum` rendrait un `select` ANONYME que rien ne suivrait, le stock de
+ * `valeurs-de-champ.test.ts` se tenant par VOCABULAIRE.
+ */
+export const mutationKindSchema = enumNomme({ physique: 'Physique', mentale: 'Mentale' });
+
+/**
  * Disponibilité (`Availability`, `src/engine/types.ts`) — le schéma DÉRIVE du tuple canon au lieu de
  * retaper ses 4 paliers : c'est la porte unique des defs (`disponibilite`, `creatures`, `vehicles`,
  * `trappings`).

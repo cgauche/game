@@ -6,7 +6,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { entityAppearanceSchema } from '../grammaire/valeurs';
+import { entityAppearanceSchema, mutationKindSchema } from '../grammaire/valeurs';
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'mutations.json';
@@ -16,7 +16,7 @@ const doc = document(
   'mutations',
   famille,
   {
-    kind: z.enum(['physique', 'mentale']),
+    kind: mutationKindSchema,
     passive: z.array(gameOpSchema).optional(),
     effects: z.array(triggeredEffectSchema).optional(),
     note: z.string().optional(),
@@ -29,7 +29,6 @@ const doc = document(
     kind: {
       label: 'Type de Mutation',
       hint: 'Physique ou mentale',
-      valeurs: { physique: 'Physique', mentale: 'Mentale' },
     },
     passive: { label: 'Effets passifs' },
     effects: { label: 'Effets déclenchés' },

@@ -64,10 +64,13 @@ for (const r of REGLES) {
 // ── Clés déclarées par le schéma (support de l'angle mort annoncé) ───────────────────────────────
 
 const DEF_SRC = lire(DEF)
-const KINDS_DECLARES = capture(DEF_SRC, /kind: z\.enum\(\[([^\]]+)\]\)/, "l'énumération `kind`", DEF)
-  .split(',')
-  .map((s) => s.trim().replace(/^'|'$/g, ''))
-  .filter(Boolean)
+// Le vocabulaire de `kind` est un enum NOMMÉ (`enumNomme`, `src/data/schemas/grammaire/valeurs.ts`) :
+// ses OPTIONS sont les clés de la table `{ option: 'Libellé FR' }` portée par le nœud (#1694).
+const KINDS_DECLARES = [
+  ...capture(DEF_SRC, /kind: enumNomme\(\{([^}]+)\}\)/, "l'énumération `kind`", DEF).matchAll(
+    /(?:'([^']+)'|"([^"]+)"|([A-Za-z_$][\w$]*))\s*:/g,
+  ),
+].map((m) => m[1] ?? m[2] ?? m[3])
 const KINDS_MESURES = [...new Set(REGLES.map((r) => r.kind))].sort()
 for (const k of KINDS_MESURES) {
   if (!KINDS_DECLARES.includes(k)) abandon(`kind « ${k} » mesuré dans ${DATA} mais absent de l'énumération de ${DEF}`)

@@ -82,7 +82,7 @@ import { opRows, tableRows } from './opRows';
 import { humanizeCastBonus, CAUSE_PERSISTANTE, replieCausesPersistantes } from './humanize';
 import { reverseGroups, bookContents } from './relations';
 import { formatManeuverMeasure } from './maneuverMeasure';
-import { metaPourFichier, chargeDiscriminee } from '../../data/schemas/validate';
+import { metaPourFichier, chargeDiscriminee, noeudDuChamp } from '../../data/schemas/validate';
 import { libelleDuChamp } from './editFields';
 // Ordre des arrêts d'une rampe de terrain : SOURCE UNIQUE partagée avec les émetteurs SVG — la fiche
 // Codex lit la rampe dans l'ordre où le rendu la peint, jamais dans l'ordre des clés du Record.
@@ -389,11 +389,11 @@ const careerStatusRange = (levels: import('../../data').CareerLevelData[]): stri
 };
 
 /**
- * Libellé FR d'une VALEUR d'un champ ÉNUMÉRÉ, par le canal registre (`MetaChamp.valeurs`, #1686) : les
- * noms des valeurs vivent au def, avec la forme du champ — le Codex les LIT, il n'en tient plus la table.
+ * Libellé FR d'une VALEUR d'un champ ÉNUMÉRÉ, lu SUR SON NŒUD (`enumNomme`, #1694) : les noms des
+ * valeurs vivent à la déclaration du champ — le Codex les LIT, il n'en tient plus la table.
  */
 const valeurFR = (fichier: string, champ: string, valeur: string): string =>
-  libelleDeValeur(metaPourFichier(fichier), champ, valeur);
+  libelleDeValeur(noeudDuChamp(fichier, champ), valeur);
 /** Libellés FR des CAPACITÉS irréductibles d'un Symptôme (drapeaux lus par la machinerie de maladie). */
 const SYMPTOM_CAP_LABEL: Record<string, string> = {
   blocksHealing: 'Bloque la guérison (1 PB)', amputation: 'Gangrène (amputation)',
@@ -2025,13 +2025,13 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     // Matières du monde (#1686) : UN document à DISCRIMINANT (`domain`) — le groupe, le sous-titre et
     // les champs affichés découlent de la valeur du discriminant, par le canal registre. Aucune table
-    // de libellés ni de clés ici : `MetaChamp.valeurs` nomme les domaines, `chargeDiscriminee` dit ce
+    // de libellés ni de clés ici : l'enum NOMMÉ du nœud `domain` nomme les domaines, `chargeDiscriminee` dit ce
     // que porte le domaine d'une entrée, `libelleDuChamp` nomme chaque champ.
     key: 'materials', label: 'Matières', group: 'Monde',
     build: () => {
       const meta = metaPourFichier('materials.json');
       return materials.map((m) => {
-        const domaine = libelleDeValeur(meta, 'domain', m.domain);
+        const domaine = valeurFR('materials.json', 'domain', m.domain);
         const entree = m as unknown as Record<string, unknown>;
         const charge = chargeDiscriminee('materials.json', entree)?.duCas ?? [];
         return depuisEnveloppe(m, {

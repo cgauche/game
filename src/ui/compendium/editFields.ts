@@ -4,7 +4,8 @@
  * structure intermédiaire — on édite les vrais objets de `src/data`. Consommé par `CodexEdit`.
  */
 import { LIBELLES_ENVELOPPE, type CleEnveloppe } from '../../data/schemas/grammaire/document';
-import { valeursDuChamp, type MetaChamp } from '../../data/schemas/grammaire/meta';
+import { valeursDe, type MetaChamp } from '../../data/schemas/grammaire/meta';
+import { defDe } from '../../data/schemas/grammaire/slots';
 
 export type FieldKind = 'text' | 'textarea' | 'number' | 'checkbox' | 'stringList' | 'numberList' | 'source' | 'descRef' | 'recordNumber' | 'recordText' | 'object' | 'json' | 'select';
 
@@ -15,8 +16,11 @@ export interface FieldDesc {
   kind: FieldKind;
   /** Le champ est null/absent sur au moins une entrée (autorise le vide). */
   nullable: boolean;
-  /** Valeurs NOMMÉES d'un champ ÉNUMÉRÉ (`kind: 'select'`) — `valeur → libellé FR`, du def. */
+  /** Valeurs NOMMÉES d'un champ ÉNUMÉRÉ (`kind: 'select'`) — `valeur → libellé FR`, lues SUR LE NŒUD. */
   valeurs?: Readonly<Record<string, string>>;
+  /** NŒUD zod du champ, quand l'appelant en tient un — ce que le sous-formulaire redescend pour
+   *  retrouver les libellés de valeurs de SES propres champs (#1694). */
+  noeud?: unknown;
   /** Valeur POSÉE par le def (littéral d'enveloppe) : elle s'AFFICHE, elle ne se saisit pas. */
   fige?: boolean;
 }
@@ -64,6 +68,9 @@ function kindOf(key: string, v: unknown): FieldKind {
 export interface RegimeDeLibelle {
   /** Méta d'édition du document, par le canal registre (`SchemaDef.meta`) — champs de premier niveau. */
   meta?: Readonly<Record<string, MetaChamp>>;
+  /** NŒUD OBJET du niveau édité (`noeudObjet`, `schemas/validate.ts`) — porteur des libellés de
+   *  VALEURS de ses champs, à TOUTE profondeur : le libellé du CHAMP est un autre axe (`meta`). */
+  noeud?: unknown;
   /** `document` = champ de premier niveau ; `profondeur` = sous-champ (méta dérivée : lot #1466 L6). */
   niveau?: 'document' | 'profondeur';
 }
@@ -115,12 +122,14 @@ export function inferFields(entries: Record<string, unknown>[], regime: RegimeDe
       if (sample === undefined) sample = v;
     }
     const echantillon = Array.isArray(sample) ? elements : sample;
-    // Un champ ÉNUMÉRÉ se rend en `select` : ses options ET leurs libellés viennent du def
-    // (`MetaChamp.valeurs`), jamais de la donnée observée — une valeur qu'aucune entrée ne porte
-    // encore reste proposable, et une valeur inconnue de l'enum n'est pas proposée.
-    const valeurs = regime.niveau === 'profondeur' ? undefined : valeursDuChamp(regime.meta, key);
+    // Un champ ÉNUMÉRÉ se rend en `select` : ses options ET leurs libellés viennent de son NŒUD
+    // (`enumNomme`, #1694), jamais de la donnée observée — une valeur qu'aucune entrée ne porte encore
+    // reste proposable, et une valeur inconnue de l'enum n'est pas proposée. Le NŒUD vaut à TOUTE
+    // profondeur : un champ énuméré de sous-formulaire se nomme comme un champ de racine.
+    const noeud = (defDe(regime.noeud)?.shape ?? {})[key];
+    const valeurs = valeursDe(noeud);
     const nullable = sawNull || sample === undefined;
-    if (valeurs) return { key, label: libelleDuChamp(key, regime), kind: 'select' as FieldKind, nullable, valeurs };
-    return { key, label: libelleDuChamp(key, regime), kind: kindOf(key, echantillon), nullable };
+    if (valeurs) return { key, label: libelleDuChamp(key, regime), kind: 'select' as FieldKind, nullable, valeurs, noeud };
+    return { key, label: libelleDuChamp(key, regime), kind: kindOf(key, echantillon), nullable, noeud };
   });
 }

@@ -11,10 +11,10 @@ import { CATEGORY_DATASET_DERIVE, OBJECT_CATEGORY_DERIVE } from '../../data/sche
 import type { SkillRef } from '../../engine/skills';
 import type { SteamBreakdownEntry } from '../../engine/shipBuild';
 import { serializeDataset } from '../../data/serialize';
-import { validateDataset, metaPourFichier, chargeDiscriminee, brouillonNeuf } from '../../data/schemas/validate';
+import { validateDataset, metaPourFichier, chargeDiscriminee, brouillonNeuf, noeudDuChamp, noeudObjet, schemaForFile } from '../../data/schemas/validate';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
-import { valeursDuChamp } from '../../data/schemas/grammaire/meta';
+import { valeursDe } from '../../data/schemas/grammaire/meta';
 import { entryKey, invalidateCodexLookup, OUTCOME_ON_LABEL, BATTLE_COND_LABEL, BATTLE_TARGET_LABEL, BATTLE_SCALE_LABEL, BATTLE_SIDE_LABEL } from './registry';
 import { ACTIVITY_RESOLVERS, RESOLVER_OWNER, resolversOwnedBy } from '../../engine/activities';
 import type { ActivityContext, OutcomeBand, BattleOutcome, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond, ActivityResolver, ResolverOwner } from '../../engine/activities';
@@ -564,7 +564,11 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   // que sur l'entrée de base.
   // La méta d'ÉDITION du document arrive par le CANAL REGISTRE (`SchemaDef.meta`, posée par
   // `document()`) — un def qui adopte la fabrique fait apparaître ses libellés FR sans une ligne d'UI.
-  const allFields = useMemo(() => inferFields(src.entries as Record<string, unknown>[], { meta: metaPourFichier(src.file) }), [src.entries, src.file]);
+  const allFields = useMemo(() => inferFields(src.entries as Record<string, unknown>[], { meta: metaPourFichier(src.file), noeud: noeudObjet(schemaForFile(src.file)) }), [src.entries, src.file]);
+  // Un éditeur DÉDIÉ de tableau d'objets reçoit le NŒUD de SON champ, comme le chemin générique
+  // (`Field` → `GenericArrayField`, `field.noeud`) : c'est le nœud qui porte le libellé des VALEURS
+  // (`enumNomme`, #1694), donc le `select` nommé à toute profondeur du sous-formulaire.
+  const noeudDe = (champ: string): unknown => noeudDuChamp(src.file, champ);
   // Un document DISCRIMINÉ (`SchemaDef.discriminant`) présente la charge du CAS de l'entrée — jamais
   // l'union des cas (mesuré sur `materials.json` : union 28 clés, 7 portées par une matière `prop`).
   // Le discriminant lui-même reste à l'écran : c'est en le changeant qu'on change de cas.
@@ -758,15 +762,15 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
             onCasterOps={(v) => edit('casterOps', v)}
           />
         )}
-        {hasDomainEffects && <GenericArrayField label="windModifiers (rubrique de Vent — DR par circonstance)" value={entry.windModifiers as Record<string, unknown>[] | undefined} onChange={(v) => edit('windModifiers', v)} />}
+        {hasDomainEffects && <GenericArrayField noeud={noeudDe('windModifiers')} label="windModifiers (rubrique de Vent — DR par circonstance)" value={entry.windModifiers as Record<string, unknown>[] | undefined} onChange={(v) => edit('windModifiers', v)} />}
         {/* DÉPENSES d'une ressource (`characteristics.options` — Résilience, #1117 geste 5) : tableau
             top-level d'objets homogènes → MÊME éditeur générique que la rubrique de Vent. */}
-        {categoryKey === 'characteristics' && <GenericArrayField label="options (dépenses de la ressource — verbatim du Source)" value={entry.options as Record<string, unknown>[] | undefined} onChange={(v) => edit('options', v)} />}
+        {categoryKey === 'characteristics' && <GenericArrayField noeud={noeudDe('options')} label="options (dépenses de la ressource — verbatim du Source)" value={entry.options as Record<string, unknown>[] | undefined} onChange={(v) => edit('options', v)} />}
         {/* OPTIONS de Test d'un jeu de taverne (`tavernGames.options` — Middenball NADJ 16 l.119 :
             Bagarre (+20) OU Athlétisme (+0)) : même forme, même éditeur générique. */}
-        {categoryKey === 'tavernGames' && <GenericArrayField label="options de Test (la règle en offre plusieurs — le joueur choisit)" value={entry.options as Record<string, unknown>[] | undefined} onChange={(v) => edit('options', v)} />}
+        {categoryKey === 'tavernGames' && <GenericArrayField noeud={noeudDe('options')} label="options de Test (la règle en offre plusieurs — le joueur choisit)" value={entry.options as Record<string, unknown>[] | undefined} onChange={(v) => edit('options', v)} />}
         {/* Barème de points par plage de DR (`tavernGames.table` — Torchon trempé NADJ 16 l.111). */}
-        {categoryKey === 'tavernGames' && <GenericArrayField label="barème de points par plage de DR" value={entry.table as Record<string, unknown>[] | undefined} onChange={(v) => edit('table', v)} />}
+        {categoryKey === 'tavernGames' && <GenericArrayField noeud={noeudDe('table')} label="barème de points par plage de DR" value={entry.table as Record<string, unknown>[] | undefined} onChange={(v) => edit('table', v)} />}
         {isCreature && (
           <>
             <TraitListField label="Traits" hint="(LDB 85 — armement « Arme (Épée) +7 », Psychologie « Peur 3 »…)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />
@@ -793,7 +797,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
         {hasCrewSkills && <SkillSpecListField value={entry.skills as SkillRef[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasAxes && <SkillSpecListField hint="compétences contribuant à l'axe (facultatif)" value={entry.skills as SkillRef[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasAxes && <TalentSpecListField value={entry.talents as { talentId: string; spec?: string }[] | undefined} onChange={(v) => edit('talents', v)} />}
-        {hasConsumable && <GenericArrayField label="prosthesisTraining (paliers d’entraînement — PX, libellé joueur, tranche rachetée, aspect levé)" value={entry.prosthesisTraining as Record<string, unknown>[] | undefined} onChange={(v) => edit('prosthesisTraining', v.length ? v : undefined)} />}
+        {hasConsumable && <GenericArrayField noeud={noeudDe('prosthesisTraining')} label="prosthesisTraining (paliers d’entraînement — PX, libellé joueur, tranche rachetée, aspect levé)" value={entry.prosthesisTraining as Record<string, unknown>[] | undefined} onChange={(v) => edit('prosthesisTraining', v.length ? v : undefined)} />}
         {hasProsthesis && <ProsthesisField value={entry.prosthesis as { trappingId: string; cancels: 'all' | 'movement' }[] | undefined} onChange={(v) => edit('prosthesis', v.length ? v : undefined)} />}
         {hasTraumaList && <TraumaListField value={entry.traumas as string[] | undefined} onChange={(v) => edit('traumas', v.length ? v : undefined)} />}
         {hasRestartTest && <RestartTestField value={entry.restart as RestartTest[] | undefined} onChange={(v) => edit('restart', v.length ? v : undefined)} />}
@@ -801,25 +805,25 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
         {isWaterExposure && <WaterTestField value={entry.test as WaterTest | undefined} onChange={(v) => edit('test', v)} />}
         {isWaterExposure && <WaterModifiersField value={entry.modifiers as WaterExposureModifier[] | undefined} onChange={(v) => edit('modifiers', v)} />}
         {isWaterExposure && <WaterDiseasesField value={entry.diseases as WaterExposureData['diseases'] | undefined} onChange={(v) => edit('diseases', v)} />}
-        {isSeaNavigation && <GenericArrayField label="forcerLeRythme (bonus M → difficulté Voile/Rames)" value={entry.forcerLeRythme as Record<string, unknown>[] | undefined} onChange={(v) => edit('forcerLeRythme', v)} />}
-        {isSeaPerils && <GenericArrayField label="hazards (dangers flottants)" value={entry.hazards as Record<string, unknown>[] | undefined} onChange={(v) => edit('hazards', v)} />}
-        {isSeaPerils && <GenericArrayField label="detroits" value={entry.detroits as Record<string, unknown>[] | undefined} onChange={(v) => edit('detroits', v)} />}
-        {isSeaPerils && <GenericArrayField label="tourbillons" value={entry.tourbillons as Record<string, unknown>[] | undefined} onChange={(v) => edit('tourbillons', v)} />}
-        {isSeaPerils && <GenericArrayField label="gestionDesPerils" value={entry.gestionDesPerils as Record<string, unknown>[] | undefined} onChange={(v) => edit('gestionDesPerils', v)} />}
-        {isSeaWeather && <GenericArrayField label="table (tirage quotidien)" value={entry.table as Record<string, unknown>[] | undefined} onChange={(v) => edit('table', v)} />}
-        {isSeaWeather && <GenericArrayField label="precipitations" value={entry.precipitations as Record<string, unknown>[] | undefined} onChange={(v) => edit('precipitations', v)} />}
-        {isSeaWeather && <GenericArrayField label="temperatures" value={entry.temperatures as Record<string, unknown>[] | undefined} onChange={(v) => edit('temperatures', v)} />}
-        {isSeaWeather && <GenericArrayField label="visibilites" value={entry.visibilites as Record<string, unknown>[] | undefined} onChange={(v) => edit('visibilites', v)} />}
-        {isSeaWeather && <GenericArrayField label="vents" value={entry.vents as Record<string, unknown>[] | undefined} onChange={(v) => edit('vents', v)} />}
-        {isSeaWeather && <GenericArrayField label="roseDesVents" value={entry.roseDesVents as Record<string, unknown>[] | undefined} onChange={(v) => edit('roseDesVents', v)} />}
-        {isDisponibilite && <GenericArrayField label="dispoPct (% de Disponibilité par taille de colonie)" value={entry.dispoPct as Record<string, unknown>[] | undefined} onChange={(v) => edit('dispoPct', v)} />}
-        {isDisponibilite && <GenericArrayField label="barterRatios (Ratios de Troc)" value={entry.barterRatios as Record<string, unknown>[] | undefined} onChange={(v) => edit('barterRatios', v)} />}
-        {isArcanePhenomena && <GenericArrayField label="saturationLevels (Paliers de Saturation)" value={entry.saturationLevels as Record<string, unknown>[] | undefined} onChange={(v) => edit('saturationLevels', v)} />}
-        {isArcanePhenomena && <GenericArrayField label="windSaturationEffects (Effets de Saturation par Vent)" value={entry.windSaturationEffects as Record<string, unknown>[] | undefined} onChange={(v) => edit('windSaturationEffects', v)} />}
-        {isArcanePhenomena && <GenericArrayField label="phenomena (Phénomènes arcaniques)" value={entry.phenomena as Record<string, unknown>[] | undefined} onChange={(v) => edit('phenomena', v)} />}
-        {isArcanePhenomena && <GenericArrayField label="tables (Tables du chapitre)" value={entry.tables as Record<string, unknown>[] | undefined} onChange={(v) => edit('tables', v)} />}
-        {isRiverNavigation && <GenericArrayField label="windForces (Force du vent, 1d10)" value={entry.windForces as Record<string, unknown>[] | undefined} onChange={(v) => edit('windForces', v)} />}
-        {isRiverNavigation && <GenericArrayField label="windDirections (Direction du vent, 1d10)" value={entry.windDirections as Record<string, unknown>[] | undefined} onChange={(v) => edit('windDirections', v)} />}
+        {isSeaNavigation && <GenericArrayField noeud={noeudDe('forcerLeRythme')} label="forcerLeRythme (bonus M → difficulté Voile/Rames)" value={entry.forcerLeRythme as Record<string, unknown>[] | undefined} onChange={(v) => edit('forcerLeRythme', v)} />}
+        {isSeaPerils && <GenericArrayField noeud={noeudDe('hazards')} label="hazards (dangers flottants)" value={entry.hazards as Record<string, unknown>[] | undefined} onChange={(v) => edit('hazards', v)} />}
+        {isSeaPerils && <GenericArrayField noeud={noeudDe('detroits')} label="detroits" value={entry.detroits as Record<string, unknown>[] | undefined} onChange={(v) => edit('detroits', v)} />}
+        {isSeaPerils && <GenericArrayField noeud={noeudDe('tourbillons')} label="tourbillons" value={entry.tourbillons as Record<string, unknown>[] | undefined} onChange={(v) => edit('tourbillons', v)} />}
+        {isSeaPerils && <GenericArrayField noeud={noeudDe('gestionDesPerils')} label="gestionDesPerils" value={entry.gestionDesPerils as Record<string, unknown>[] | undefined} onChange={(v) => edit('gestionDesPerils', v)} />}
+        {isSeaWeather && <GenericArrayField noeud={noeudDe('table')} label="table (tirage quotidien)" value={entry.table as Record<string, unknown>[] | undefined} onChange={(v) => edit('table', v)} />}
+        {isSeaWeather && <GenericArrayField noeud={noeudDe('precipitations')} label="precipitations" value={entry.precipitations as Record<string, unknown>[] | undefined} onChange={(v) => edit('precipitations', v)} />}
+        {isSeaWeather && <GenericArrayField noeud={noeudDe('temperatures')} label="temperatures" value={entry.temperatures as Record<string, unknown>[] | undefined} onChange={(v) => edit('temperatures', v)} />}
+        {isSeaWeather && <GenericArrayField noeud={noeudDe('visibilites')} label="visibilites" value={entry.visibilites as Record<string, unknown>[] | undefined} onChange={(v) => edit('visibilites', v)} />}
+        {isSeaWeather && <GenericArrayField noeud={noeudDe('vents')} label="vents" value={entry.vents as Record<string, unknown>[] | undefined} onChange={(v) => edit('vents', v)} />}
+        {isSeaWeather && <GenericArrayField noeud={noeudDe('roseDesVents')} label="roseDesVents" value={entry.roseDesVents as Record<string, unknown>[] | undefined} onChange={(v) => edit('roseDesVents', v)} />}
+        {isDisponibilite && <GenericArrayField noeud={noeudDe('dispoPct')} label="dispoPct (% de Disponibilité par taille de colonie)" value={entry.dispoPct as Record<string, unknown>[] | undefined} onChange={(v) => edit('dispoPct', v)} />}
+        {isDisponibilite && <GenericArrayField noeud={noeudDe('barterRatios')} label="barterRatios (Ratios de Troc)" value={entry.barterRatios as Record<string, unknown>[] | undefined} onChange={(v) => edit('barterRatios', v)} />}
+        {isArcanePhenomena && <GenericArrayField noeud={noeudDe('saturationLevels')} label="saturationLevels (Paliers de Saturation)" value={entry.saturationLevels as Record<string, unknown>[] | undefined} onChange={(v) => edit('saturationLevels', v)} />}
+        {isArcanePhenomena && <GenericArrayField noeud={noeudDe('windSaturationEffects')} label="windSaturationEffects (Effets de Saturation par Vent)" value={entry.windSaturationEffects as Record<string, unknown>[] | undefined} onChange={(v) => edit('windSaturationEffects', v)} />}
+        {isArcanePhenomena && <GenericArrayField noeud={noeudDe('phenomena')} label="phenomena (Phénomènes arcaniques)" value={entry.phenomena as Record<string, unknown>[] | undefined} onChange={(v) => edit('phenomena', v)} />}
+        {isArcanePhenomena && <GenericArrayField noeud={noeudDe('tables')} label="tables (Tables du chapitre)" value={entry.tables as Record<string, unknown>[] | undefined} onChange={(v) => edit('tables', v)} />}
+        {isRiverNavigation && <GenericArrayField noeud={noeudDe('windForces')} label="windForces (Force du vent, 1d10)" value={entry.windForces as Record<string, unknown>[] | undefined} onChange={(v) => edit('windForces', v)} />}
+        {isRiverNavigation && <GenericArrayField noeud={noeudDe('windDirections')} label="windDirections (Direction du vent, 1d10)" value={entry.windDirections as Record<string, unknown>[] | undefined} onChange={(v) => edit('windDirections', v)} />}
         {hasHullLength && (
           <PlageField
             label="Longueur"
@@ -834,8 +838,8 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
         {isActivity && <ActivityTestField entry={entry} edit={edit} />}
         {isActivity && <ActivityResolverField entry={entry} edit={edit} />}
         {isActivity && <OutcomeBandsField value={entry.outcomes as OutcomeBand[] | undefined} onChange={(v) => edit('outcomes', v.length ? v : undefined)} />}
-        {isActivity && <GenericArrayField label="testMods (modificateurs de situation du Test)" value={entry.testMods as Record<string, unknown>[] | undefined} onChange={(v) => edit('testMods', v.length ? v : undefined)} />}
-        {isActivity && <GenericArrayField label="worldRolls (tirages d’environnement après le Test)" value={entry.worldRolls as Record<string, unknown>[] | undefined} onChange={(v) => edit('worldRolls', v.length ? v : undefined)} />}
+        {isActivity && <GenericArrayField noeud={noeudDe('testMods')} label="testMods (modificateurs de situation du Test)" value={entry.testMods as Record<string, unknown>[] | undefined} onChange={(v) => edit('testMods', v.length ? v : undefined)} />}
+        {isActivity && <GenericArrayField noeud={noeudDe('worldRolls')} label="worldRolls (tirages d’environnement après le Test)" value={entry.worldRolls as Record<string, unknown>[] | undefined} onChange={(v) => edit('worldRolls', v.length ? v : undefined)} />}
         {opsFields.map((fieldKey) => (
           <div className="ed-field" key={fieldKey}>
             <span>{fieldKey} — effet (GameOp[], même éditeur que les modificateurs passifs)</span>
@@ -988,10 +992,10 @@ function TriggeredEffectsField({ value, onChange, label = 'effets déclenchés (
   );
 }
 
-/** Options d'un champ ÉNUMÉRÉ d'un document, par le canal registre (`MetaChamp.valeurs`, #1686) :
+/** Options d'un champ ÉNUMÉRÉ d'un document, lues SUR SON NŒUD (`enumNomme`, #1694) :
  *  l'éditeur dédié d'une manœuvre tire ses `<option>` de la MÊME déclaration que le formulaire
  *  générique et que le Codex — plus aucune table de libellés par valeur ici. */
-const optionsDe = (fichier: string, champ: string): [string, string][] => Object.entries(valeursDuChamp(metaPourFichier(fichier), champ) ?? {});
+const optionsDe = (fichier: string, champ: string): [string, string][] => Object.entries(valeursDe(noeudDuChamp(fichier, champ)) ?? {});
 
 /** Éditeur d'une MANŒUVRE (entité de 1ʳᵉ classe, `maneuvers.json`) : son PROFIL (type/activation/coût/
  *  jet/défense/ciblage/portée/magie) + ses effets AUTHORÉS (Dégâts + États en GameOp, via
@@ -1799,7 +1803,7 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
     );
   }
   if (kind === 'select' && field.valeurs) {
-    // Choix BORNÉ d'un champ énuméré : options ET libellés viennent du def (`MetaChamp.valeurs`) —
+    // Choix BORNÉ d'un champ énuméré : options ET libellés viennent de son nœud (`enumNomme`) —
     // même `<select>` que les autres choix bornés de l'atelier (`ManeuverDefField` ci-dessus).
     const valeurs = field.valeurs;
     return (
@@ -1830,7 +1834,7 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
     return <div className="ed-field"><span>{label}</span>{keys.length === 0 ? <em className="de-hint">vide</em> : <div className="de-grid">{keys.map((k) => <label key={k} className="de-cell"><span>{k}</span><NumberField variant="nu" label={`${label} — ${k}`} vide value={rec[k]} onChange={(n) => onChange({ ...rec, [k]: n })} /></label>)}</div>}</div>;
   }
   if (kind === 'recordText') return <RecordTextField label={label} value={value as Record<string, string> | undefined} onChange={onChange} />;
-  if (kind === 'object') return <ObjectField label={label} value={value as Record<string, unknown> | undefined} onChange={onChange} />;
+  if (kind === 'object') return <ObjectField label={label} value={value as Record<string, unknown> | undefined} noeud={field.noeud} onChange={onChange} />;
   if (kind === 'json') {
     // Un tableau d'objets PLATS niché (`vitesseMax.table`, `hazards[].entanglePenalties`… sous un
     // `ObjectField`/`GenericArrayField` récursif, hors du périmètre TOP-LEVEL du garde
@@ -1840,7 +1844,7 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
     // fonctionnel). `JsonField` ne reste qu'un filet pour une forme vraiment hors gabarit (tableau de
     // tableaux…), aucun cas réel actuel.
     if (value == null || (Array.isArray(value) && value.every((x) => x != null && typeof x === 'object' && !Array.isArray(x))))
-      return <GenericArrayField label={label} value={value as Record<string, unknown>[] | undefined} onChange={onChange as (v: Record<string, unknown>[]) => void} />;
+      return <GenericArrayField label={label} value={value as Record<string, unknown>[] | undefined} noeud={field.noeud} onChange={onChange as (v: Record<string, unknown>[]) => void} />;
     return <JsonField label={label} value={value} onChange={onChange} />;
   }
   // `fige` : valeur POSÉE par le def — affichée, jamais saisie (un champ ouvert à la frappe dont une
@@ -1878,11 +1882,12 @@ function RecordTextField({ label, value, onChange }: { label: string; value: Rec
 /** Objet de config hétérogène (`interludeEvents.fx`, `raceAppearance.eyes`…) : SOUS-FORMULAIRE inféré
  *  (récursif) — chaque sous-champ retrouve son kind structuré (number/checkbox/stringList/recordText/…)
  *  via le MÊME `inferFields` + `Field`, sans repli JSON pour les objets plats. */
-function ObjectField({ label, value, onChange }: { label: string; value: Record<string, unknown> | undefined; onChange: (v: Record<string, unknown>) => void }) {
+function ObjectField({ label, value, noeud, onChange }: { label: string; value: Record<string, unknown> | undefined; noeud?: unknown; onChange: (v: Record<string, unknown>) => void }) {
   const obj = value ?? {};
   // Régime PROFONDEUR : un sous-champ nommé `id`/`maison` n'est pas le champ d'enveloppe du même nom —
-  // il reste en clé technique, sa méta relève de la dérivation des widgets (#1466 L6).
-  const subFields = useMemo(() => inferFields([obj], { niveau: 'profondeur' }), [obj]);
+  // il reste en clé technique, sa méta relève de la dérivation des widgets (#1466 L6). Le NŒUD, lui,
+  // redescend : les libellés de VALEURS d'un enum nommé valent à toute profondeur (#1694).
+  const subFields = useMemo(() => inferFields([obj], { niveau: 'profondeur', noeud: noeudObjet(noeud) }), [obj, noeud]);
   return (
     <div className="ed-field ed-subform">
       <span>{label}</span>
@@ -1906,17 +1911,18 @@ function ObjectField({ label, value, onChange }: { label: string; value: Record<
  *  inférable localement. `columns` (optionnel) permet à un appelant récursif d'imposer ce gabarit externe
  *  plutôt que de le re-dériver depuis un tableau parfois vide. « + Ajouter » clone la 1ʳᵉ ligne (gabarit
  *  de champs) ou démarre vide si le tableau l'est. */
-function GenericArrayField({ label, value, onChange, columns }: { label: string; value: Record<string, unknown>[] | undefined; onChange: (v: Record<string, unknown>[]) => void; columns?: FieldDesc[] }) {
+function GenericArrayField({ label, value, noeud, onChange, columns }: { label: string; value: Record<string, unknown>[] | undefined; noeud?: unknown; onChange: (v: Record<string, unknown>[]) => void; columns?: FieldDesc[] }) {
   const list = value ?? [];
-  // Colonnes de PROFONDEUR : même frontière que `ObjectField` (méta de profondeur = #1466 L6).
-  const selfCols = useMemo(() => inferFields(list, { niveau: 'profondeur' }), [list]);
+  // Colonnes de PROFONDEUR : même frontière que `ObjectField` (méta de profondeur = #1466 L6 ; le nœud
+  // de rangée porte, lui, les libellés de valeurs de ses enums nommés, #1694).
+  const selfCols = useMemo(() => inferFields(list, { niveau: 'profondeur', noeud: noeudObjet(noeud) }), [list, noeud]);
   const cols = columns ?? selfCols;
   const nestedCols = useMemo(() => {
     const map = new Map<string, FieldDesc[]>();
     for (const f of cols) {
       if (f.kind !== 'json') continue;
       const pool = list.flatMap((r) => (Array.isArray(r[f.key]) ? (r[f.key] as Record<string, unknown>[]) : []));
-      if (pool.length && pool.every((x) => x != null && typeof x === 'object' && !Array.isArray(x))) map.set(f.key, inferFields(pool, { niveau: 'profondeur' }));
+      if (pool.length && pool.every((x) => x != null && typeof x === 'object' && !Array.isArray(x))) map.set(f.key, inferFields(pool, { niveau: 'profondeur', noeud: noeudObjet(f.noeud) }));
     }
     return map;
   }, [list, cols]);
@@ -1927,7 +1933,7 @@ function GenericArrayField({ label, value, onChange, columns }: { label: string;
       {list.map((row, i) => (
         <div className="ed-subfield" key={i}>
           {cols.map((f) => nestedCols.has(f.key)
-            ? <GenericArrayField key={f.key} label={f.label} value={(row[f.key] as Record<string, unknown>[] | undefined) ?? []} columns={nestedCols.get(f.key)} onChange={(v) => setRow(i, f.key, v)} />
+            ? <GenericArrayField key={f.key} label={f.label} value={(row[f.key] as Record<string, unknown>[] | undefined) ?? []} noeud={f.noeud} columns={nestedCols.get(f.key)} onChange={(v) => setRow(i, f.key, v)} />
             : <Field key={f.key} field={f} value={row[f.key]} onChange={(v) => setRow(i, f.key, v)} />)}
           <button className="btn small danger" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕ Retirer la rangée</button>
         </div>

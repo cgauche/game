@@ -7,7 +7,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema, formulaSchema, moneyPartialSchema, stakeFormSchema } from '../grammaire/valeurs';
+import { difficultySchema, enumNomme, formulaSchema, moneyPartialSchema, stakeFormSchema } from '../grammaire/valeurs';
 import { conditionSchema, gameOpSchema, stageOutcomeSchema } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
 
@@ -42,7 +42,14 @@ const termeAleatoire = (f: unknown): string | null => {
   return null;
 };
 
-const activityContextSchema = z.enum(['interlude', 'voyage', 'mer', 'bataille', 'bataille-round', 'auberge']);
+const activityContextSchema = enumNomme({
+  interlude: 'Entre deux aventures',
+  voyage: 'Voyage (terre)',
+  mer: 'Mer',
+  bataille: 'Bataille — préparation',
+  'bataille-round': 'Bataille — Scène de Round',
+  auberge: 'Auberge (hub de ville)',
+});
 
 const battleSideSchema = z.enum(['ally', 'enemy']);
 const battleOutcomeTargetSchema = z.enum(['might', 'startMight', 'allyTestMod', 'firstRoundBonus', 'planningBonus']);
@@ -169,11 +176,6 @@ const doc = document(
     contexts: {
       label: 'Contextes d’offre',
       hint: 'Situations (interlude, voyage, mer, bataille…) où l’Activité est proposée',
-      valeurs: {
-        interlude: 'Entre deux aventures', voyage: 'Voyage (terre)', mer: 'Mer',
-        bataille: 'Bataille — préparation', 'bataille-round': 'Bataille — Scène de Round',
-        auberge: 'Auberge (hub de ville)',
-      },
     },
     skills: { label: 'Compétences du Test' },
     char: { label: 'Caractéristique du Test', hint: 'Utilisée quand aucune Compétence n’est requise' },

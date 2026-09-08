@@ -3715,7 +3715,7 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 
 | Def | Ligne | Champ | Concept | Statut | Empreinte | Schéma commun candidat |
 |---|---|---|---|---|---|---|
-| `activities.ts` | 91 | — | test | divergente | `char,difficulty+…` | — |
+| `activities.ts` | 98 | — | test | divergente | `char,difficulty+…` | — |
 | `arcane-phenomena.ts` | 153 | `controlFlux` | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 86 | — | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 96 | `loss` | test | divergente | `difficulty+…` | — |
@@ -3733,7 +3733,7 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `miscast.ts` | 43 | — | — | hors lexique | `times` | `formulaSchema` |
 | `miscast.ts` | 43 | `times` | — | hors lexique | `factor,of` | `formulaSchema` |
 | `miscast.ts` | 82 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
-| `oups.ts` | 39 | — | plage | cible | `max,min+…` | — |
+| `oups.ts` | 41 | — | plage | cible | `max,min+…` | — |
 | `psychology.ts` | 54 | `test` | test | historique | `difficulty,skill` | — |
 | `raceAppearance.ts` | 31 | `parts` | — | hors lexique | `cheveux,visage` | `entityAppearanceSchema` |
 | `raceAppearance.ts` | 33 | `eyes` | — | hors lexique | `D,G` | `entityAppearanceSchema` |
@@ -4951,4 +4951,4 @@ pèse **2950** slots sur 3304.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: 16dae95bf80937ccda0edafbf2854bf592f1b068 (372 fichiers, 10 dossiers) corps: df26fa50002097204aa276102f80df818f1373e6 -->
+<!-- sources-empreinte: 28c9fa51248e13c5b58e0749d80c5c16a0307187 (372 fichiers, 10 dossiers) corps: 5c4a426d8dd0fb805a492d118215c354c0cf7ab0 -->

@@ -4,19 +4,11 @@
  * `SpecsSource`, `engine/skillCombatApps`).
  */
 import { z } from 'zod';
-import { specEntrySchema } from '../grammaire/valeurs';
+import { charKeySchema, enumNomme, specEntrySchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 
 export const file = 'skills.json';
 export const famille = 'entite';
-
-/** 10 Caractéristiques (LDB) — cf. `engine/types.ts::CharKey`. Dupliqué ici ;
- *  candidat à mutualisation sur `grammaire/valeurs.ts::charKeySchema`, avec talents/spells/etats qui le
- *  redéfinissent aussi. */
-const charKeySchema = z.enum([
-  'capacite-de-combat', 'capacite-de-tir', 'force', 'endurance', 'initiative', 'agilite', 'dexterite',
-  'intelligence', 'force-mentale', 'sociabilite',
-]);
 
 /** `SpecsSource` (`src/data/index.ts`) — registre partagé `SPEC_SOURCES` d'où dérive le pool de
  *  spécialisations quand `specs[]` est absent. Constaté sur skills.json : `weaponGroupsMelee`/
@@ -49,7 +41,7 @@ const doc = document(
      *  Caractéristique nue ; `avancee` = exige au moins une Augmentation, sinon le Test est impossible.
      *  DISCRIMINANT DE LOGIQUE, jamais un libellé : lu par `possesses` (`engine/skillCombatApps.ts`) et
      *  par la fourchette de tuteur de l'Entraînement (`engine/activities.ts`). Mesuré : 25 / 23 sur 48. */
-    acces: z.enum(['base', 'avancee']),
+    acces: enumNomme({ base: 'Base', avancee: 'Avancée' }),
     specs: z.array(specEntrySchema).optional(),
     specsSource: specsSourceSchema.optional(),
     specsOpen: z.boolean().optional(),
@@ -80,7 +72,6 @@ const doc = document(
     acces: {
       label: 'Accès',
       hint: 'De base (testable sans formation) ou Avancée : sans Augmentation, aucun Test n’est possible',
-      valeurs: { base: 'Base', avancee: 'Avancée' },
     },
     specs: { label: 'Spécialisations', hint: 'Liste fermée de spécialisations proposées' },
     specsSource: { label: 'Registre de spécialisations' },

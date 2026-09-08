@@ -23,7 +23,9 @@ import { RefField, refFieldCfg } from './RefField';
 import { editableEntries, isEditableCategory } from './CodexEdit';
 import { CODEX } from './registry';
 import { CLES_ENVELOPPE, LIBELLES_ENVELOPPE, document } from '../../data/schemas/grammaire/document';
-import { metaPourFichier, DEFS_DE_DOCUMENT } from '../../data/schemas/validate';
+import { metaPourFichier, DEFS_DE_DOCUMENT, noeudObjet } from '../../data/schemas/validate';
+import { enumNomme } from '../../data/schemas/grammaire/valeurs';
+import { defDe } from '../../data/schemas/grammaire/slots';
 import { stripComments } from '../../../scripts/guards/lib/hardcode.mjs';
 
 const handleDemo = () => document(
@@ -431,5 +433,55 @@ describe('convention d’export lue par le générateur de registre', () => {
       expect(NOMME_UN_FICHIER.test(stripComments(src)), `${nom}.ts nomme son fichier de campagne`).toBe(true);
       expect(FILE_DU_GEN.test(src), `${nom}.ts : \`file\` à la forme que le gen collecte`).toBe(true);
     }
+  });
+});
+
+/**
+ * #1694 — le libellé d'une VALEUR vit sur le NŒUD (`enumNomme`), donc il vaut à TOUTE profondeur :
+ * un enum niché sous un tableau d'objets se rend en `select` NOMMÉ dès que le sous-formulaire reçoit
+ * le nœud de SON champ. La fixture est une COPIE de def (aucun def réel n'a d'enum nommé en
+ * profondeur avant le train B) — c'est le MÉCANISME qui est verrouillé ici, pas une population.
+ */
+const docNiche = () => document(
+  'demo-niche', 'entite',
+  { rangees: z.array(z.object({ nature: enumNomme({ physique: 'Physique', mentale: 'Mentale' }) })) },
+  { rangees: { label: 'Rangées' } },
+  { codex: { keys: ['demo-niche'] }, edit: { none: 'fixture de test' } },
+);
+
+describe('libellés de VALEURS à toute profondeur', () => {
+  const noeudDesRangees = (): unknown => (defDe(noeudObjet(docNiche().schema))?.shape ?? {})['rangees'];
+
+  it('inferFields en PROFONDEUR rend les valeurs de l’enum niché', () => {
+    const cols = inferFields([{ nature: 'physique' }], { niveau: 'profondeur', noeud: noeudObjet(noeudDesRangees()) });
+    const nature = cols.find((f) => f.key === 'nature')!;
+    expect(nature.kind).toBe('select');
+    expect(nature.valeurs).toEqual({ physique: 'Physique', mentale: 'Mentale' });
+    expect(nature.label).toBe('nature');
+  });
+
+  it('sans le nœud, le sous-formulaire ne peut rien nommer — le NŒUD est le porteur', () => {
+    const cols = inferFields([{ nature: 'physique' }], { niveau: 'profondeur' });
+    expect(cols.find((f) => f.key === 'nature')!.valeurs).toBeUndefined();
+  });
+
+  /**
+   * PÉRIMÈTRE RÉEL : les `GenericArrayField` DÉDIÉS de `CodexEdit.tsx` (ceux montés sur un champ nommé
+   * `entry.X`) — eux seuls peuvent recevoir `noeud={noeudDe('X')}`. Les éditeurs dédiés qui rendent
+   * LEUR PROPRE `select` (`OutcomeBandsField`, `WaterModifiersField`, `ProsthesisField`,
+   * `TraitListField`) ne passent pas par ici : leurs libellés de valeurs restent au stock des Records
+   * (`grammaire/records-de-libelles.test.ts`), à éteindre au train B.
+   */
+  it('chaque `GenericArrayField` dédié de tableau d’objets reçoit le nœud de SON champ', () => {
+    const src = readFileSync(join(process.cwd(), 'src/ui/compendium/CodexEdit.tsx'), 'utf8');
+    const balises = src.match(/<GenericArrayField\b[\s\S]*?\/>/g) ?? [];
+    expect(balises.length, 'le matcher voit les balises du fichier').toBeGreaterThan(20);
+    const sansNoeud: string[] = [];
+    for (const balise of balises) {
+      const champ = /value=\{entry\.([A-Za-z_$][\w$]*)\b/.exec(balise)?.[1];
+      if (!champ) continue;
+      if (!balise.includes(`noeud={noeudDe('${champ}')}`)) sansNoeud.push(champ);
+    }
+    expect(sansNoeud, 'ces champs dédiés rendraient un select ANONYME en profondeur').toEqual([]);
   });
 });

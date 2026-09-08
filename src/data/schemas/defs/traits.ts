@@ -4,7 +4,7 @@
  * `desc`/`source`/`alsoIn`/`maison` sont des clés d'ENVELOPPE, posées par la fabrique.
  */
 import { z } from 'zod';
-import { entityAppearanceSchema, charKeySchema } from '../grammaire/valeurs';
+import { entityAppearanceSchema, charKeySchema, mutationKindSchema } from '../grammaire/valeurs';
 import { refSchema } from '../grammaire/reference';
 import { document } from '../grammaire/document';
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
@@ -37,11 +37,11 @@ const specsSourceSchema = z.enum([
  *  le sous-ensemble vu aujourd'hui — une future entrée peut légitimement en ajouter. */
 const traitCapabilitiesSchema = z.strictObject({
   bonusWoundsBE: z.boolean().optional(),
-  mutationAtSpawn: z.enum(['physique', 'mentale']).optional(),
+  mutationAtSpawn: mutationKindSchema.optional(),
   markMutations: z.strictObject({
     countDie: z.number(),
     countDivide: z.number(),
-    first: z.enum(['physique', 'mentale']),
+    first: mutationKindSchema,
     mentalTable: z.string(),
     physTable: z.string(),
   }).optional(),

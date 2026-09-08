@@ -253,6 +253,11 @@ ${table(
   (r) => `| \`${r.k}\` | ${r.l} | ${r.ex ? 'oui (`options.exiges`)' : '—'} |`,
 )}
 
+**LIBELLÉS** : le nom FR d'un CHAMP vit dans la \`meta\` du def ; le nom FR d'une **valeur d'enum
+affichée se pose par \`enumNomme\`** (\`src/data/schemas/grammaire/valeurs.ts\`), qui porte la table
+\`{ option: 'Libellé FR' }\` SUR LE NŒUD — jamais un Record de libellés côté UI (ce serait une seconde
+vérité, et l'atelier ne saurait pas la lire en profondeur).
+
 **PROVENANCE** : une entrée porte \`source\` **ou** \`maison\` (la raison de l'arbitrage en clair),
 jamais ni l'un ni l'autre — le refus est posé par la fabrique elle-même, pas par une garde
 secondaire. Une entrée sans folio n'est pas interdite : elle doit DIRE pourquoi.

@@ -20,7 +20,7 @@
  * `src/ui/rule-action-wiring.test.ts`.
  */
 import { z } from 'zod';
-import { bornesSchema, ecartDeCoPresenceDesBornes, ruleValueSchema } from '../grammaire/valeurs';
+import { bornesSchema, ecartDeCoPresenceDesBornes, enumNomme, ruleValueSchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 
 export const file = 'reglesOptionnelles.json';
@@ -32,7 +32,7 @@ const doc = document(
   {
     ref: z.string().min(1),
     group: z.string().min(1),
-    kind: z.enum(['flag', 'param', 'mode']),
+    kind: enumNomme({ flag: 'Interrupteur', param: 'Nombre', mode: 'Choix' }),
     default: ruleValueSchema,
     options: z.array(z.string()).min(2).optional(),
     ...bornesSchema.shape,
@@ -52,7 +52,6 @@ const doc = document(
     kind: {
       label: 'Forme du contrôle',
       hint: 'Interrupteur / paramètre chiffré / mode à choix',
-      valeurs: { flag: 'Interrupteur', param: 'Nombre', mode: 'Choix' },
     },
     default: { label: 'Valeur par défaut' },
     options: { label: 'Libellés des choix', hint: 'Pour une règle de type mode' },

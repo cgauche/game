@@ -13,7 +13,8 @@ import type { z } from 'zod';
 import { SCHEMA_DEFS } from './_registry.generated';
 import { SCHEMA_DEFS_SCENES } from './_registry-scenes.generated';
 import type { SchemaDef } from './types';
-import type { MetaChamp } from './grammaire/meta';
+import { defDe, enfantsDe } from './grammaire/slots';
+import { valeursDe, type MetaChamp } from './grammaire/meta';
 
 /** Le registre des DEUX racines de documents (`src/data` + `src/scenes`). */
 export const DEFS_DE_DOCUMENT: readonly SchemaDef[] = [...SCHEMA_DEFS, ...SCHEMA_DEFS_SCENES];
@@ -35,6 +36,38 @@ export function schemaForFile(file: string): z.ZodTypeAny | undefined {
  *  `document()` ; adoption par def : lot L1b #1467. */
 export function metaPourFichier(file: string): Readonly<Record<string, MetaChamp>> | undefined {
   return DEFS_DE_DOCUMENT.find((d) => d.file === file)?.meta;
+}
+
+/**
+ * NŒUD OBJET sous un nœud quelconque — le premier nœud à `shape`, atteint par la descente UNIQUE
+ * (`enfantsDe`, `grammaire/slots.ts`) à travers l'emballage de famille, le sceau et les enveloppes
+ * (`z.array`, `.pipe`, refines, `optional`). C'est le seul chemin schéma→atelier vers les NŒUDS d'un
+ * document scellé, à TOUTE profondeur : la méta publiée ne porte que le libellé du CHAMP, celui de ses
+ * VALEURS vit sur le nœud (`enumNomme`, #1694).
+ */
+export function noeudObjet(schema: unknown): unknown {
+  let niveau: unknown[] = [schema];
+  const vus = new Set<unknown>();
+  for (let profondeur = 0; profondeur < 8 && niveau.length; profondeur++) {
+    const suivant: unknown[] = [];
+    for (const n of niveau) {
+      if (!n || typeof n !== 'object' || vus.has(n)) continue;
+      vus.add(n);
+      const def = defDe(n);
+      if (!def) continue;
+      if (def.shape) return n;
+      for (const e of enfantsDe(def)) suivant.push(e.noeud);
+    }
+    niveau = suivant;
+  }
+  return undefined;
+}
+
+/** NŒUD zod d'un champ de PREMIER NIVEAU d'un document (`undefined` hors registre, ou si le document
+ *  ne porte pas ce champ) — porte de lecture des libellés de valeurs (`valeursDe`/`libelleDeValeur`). */
+export function noeudDuChamp(file: string, champ: string): unknown {
+  const entree = noeudObjet(schemaForFile(file));
+  return entree ? (defDe(entree)?.shape ?? {})[champ] : undefined;
 }
 
 /** CHARGE d'une entrée d'un document DISCRIMINÉ : le champ discriminant, les clés que porte le CAS de
@@ -71,7 +104,7 @@ export function chargeDiscriminee(file: string, entree: Record<string, unknown>)
  *    sans handle, `type` est un discriminant de CHARGE utile, pas le type du document (même frontière
  *    que `libelleDuChamp`, `src/ui/compendium/editFields.ts`).
  *  - la PREMIÈRE valeur du champ DISCRIMINANT, celle que le `select` de l'atelier affiche en tête
- *    (ordre des `MetaChamp.valeurs`, que `document()` tient sur l'ordre de l'enum) : un `select` qui
+ *    (ordre de l'enum NOMMÉ du nœud, dont les options SONT les clés de ses libellés) : un `select` qui
  *    affiche « Décor » sur un brouillon sans domaine ment à l'écran, refuse au save, et fait présenter
  *    l'UNION des cas (`chargeDiscriminee` ne reconnaît aucune valeur).
  */
@@ -84,7 +117,7 @@ export function brouillonNeuf(file: string, entrees: readonly Record<string, unk
   const champ = def.discriminant;
   const table = def.chargeParDiscriminant;
   if (champ && table) {
-    const premiere = Object.keys(def.meta?.[champ]?.valeurs ?? table)[0];
+    const premiere = Object.keys(valeursDe(noeudDuChamp(file, champ)) ?? table)[0];
     if (premiere !== undefined) brouillon[champ] = premiere;
   }
   return brouillon;

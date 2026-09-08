@@ -7,6 +7,7 @@
 // `innerType`, `getter`, `in`/`out`).
 import type { SchemaDef } from '../../../src/data/schemas/types';
 import { defDe, enfantsDe, type DefZod } from '../../../src/data/schemas/grammaire/slots';
+import { valeursDe } from '../../../src/data/schemas/grammaire/meta';
 import { parUnitesDeCode } from '../../guards/lib/lister.mjs';
 
 /**
@@ -79,7 +80,10 @@ function classeZod(s: unknown, profondeur = 0): string {
     case 'literal':
       return `literal ${JSON.stringify(def.values ?? def.value)}`;
     case 'enum':
-      return `enum(${Object.values(def.entries ?? {}).length})`;
+      // Un enum NOMMÉ (`enumNomme`, `grammaire/valeurs.ts`) porte le libellé FR de chacune de ses
+      // options SUR SON NŒUD (#1694) : le relevé le dit, c'est ce qui distingue un vocabulaire dont
+      // l'atelier sait écrire les valeurs à l'écran d'un vocabulaire encore muet.
+      return `enum${valeursDe(s) ? ' nommé' : ''}(${Object.values(def.entries ?? {}).length})`;
     case 'array':
       return `array<${classeZod(d.element, profondeur + 1)}>`;
     case 'object':
