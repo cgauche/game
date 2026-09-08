@@ -64,11 +64,6 @@ export const travelModeLabels = memoParVersion('vehicles', (): Record<string, st
   ...Object.fromEntries(travelVehicles().map((v) => [v.id, v.label])),
 }));
 
-/** Libellé d'UN mode (`travelModeLabels()[mode]`, forme de très loin la plus fréquente au call-site). */
-export function travelModeLabel(mode: TravelMode): string | undefined {
-  return travelModeLabels()[mode];
-}
-
 /** Unité affichée pour une distance de route : une route `sea` (mode `'mer'`) porte ses
  *  MILLES dans le même champ `km` — les tables RAW de traversée sont en milles (MDG 13/15
  *  l.57-78, cf. `src/state/seaVoyageFlow.ts:7`). Source UNIQUE de l'unité, pour ne jamais
