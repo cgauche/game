@@ -191,7 +191,9 @@ const RAW_KNOWN: Record<string, number> = {
   // de `combatSlice.ts` (3 → 2 → 1 ci-dessous) — un DÉPLACEMENT vers le module qui POSSÈDE la table
   // `PASSIVE_CANCELLERS`, à somme nulle, jamais un site neuf. Le reste : pénalité de combat PAR MAIN
   // (doigts/main) + crochet entraîné + Esquive nommée au RAW — axes NON couverts par `cumul`.
-  'src/engine/trauma.ts': 8,
+  // 8 → 7 (#1692) : `FICHE_BY_ID`/`CUMUL_FICHES` figés à l'import deviennent des accesseurs vifs
+  // (`ficheById`/`cumulFiches`) — une comparaison d'id de la construction figée disparaît avec elle.
+  'src/engine/trauma.ts': 7,
   'src/engine/weaponDamage.ts': 1,
   'src/engine/windsOfMagic.ts': 1,
   'src/gameIso/rig/mountedRig.ts': 1,
