@@ -1,7 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { propSvg } from './decor';
 import { scenarioEntities } from '../../scenes/opera/furnished';
 import { buildOperaFloorplan } from '../../scenes/opera/floorplan';
@@ -17,6 +14,8 @@ import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '..
 import { sceneEntitySchema } from '../../data/schemas/defs-scenes/scene';
 import { validateScene } from '../../state/validateScene';
 import { DIR4_ORDER, type Dir4 } from '../../state/dir8';
+import { memoByRef } from '../../state/sceneMemo';
+import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * LE DÉCOR VOLUMIQUE — les refs de `props.json` dont le corps MONDE est leur recette, et dont le SVG
@@ -28,6 +27,15 @@ import { DIR4_ORDER, type Dir4 } from '../../state/dir8';
  * en donnée — une liste manuscrite laisserait les suivantes hors garde en silence.
  */
 const IDS = props.filter((p) => p.volume).map((p) => p.id);
+/** La seule scène écrite en TS — le second gisement d'instances authorées, invisible au corpus. */
+const SOURCE_TS = 'opera/furnished.ts';
+/** NON-VACUITÉ PAR GISEMENT des deux contrats de POPULATION ci-dessous : ils jugent la MÊME
+ *  population, et ce qui les rendrait muets n'est pas un CARDINAL — une carte s'édite, un décor se
+ *  retire — mais la disparition d'une SOURCE : le corpus `.json` de `src/scenes`, ou la scène TS. */
+const gisementsDe = (instances: readonly DecorAuthore[]): string[] =>
+  [...new Set(instances.map((e) => (e.source === SOURCE_TS ? 'ts' : 'json')))].sort();
+const GISEMENTS = ['json', 'ts'];
+const SANS_GISEMENT = 'une SOURCE d’instances volumiques a disparu du scan (corpus `.json` de `src/scenes`, scène TS de l’Opéra)';
 
 const propEntity = ({ id, ref, pos, facing }: { id: string; ref: string; pos: { x: number; y: number }; facing: 'N' | 'E' | 'S' | 'O' }): SceneEntity =>
   ({ id, kind: 'prop', pos, ref, facing }) as SceneEntity;
@@ -49,8 +57,11 @@ interface DecorAuthore { source: string; id: string; kind?: string; ref?: string
  * ANGLE MORT NOMMÉ : une scène TS de plus devrait être branchée ici — `src/data/prop-foot-migration.test.ts`
  * a exactement la même frontière, pour la même raison.
  */
-const RACINE_SCENES = fileURLToPath(new URL('../../scenes', import.meta.url));
-function entitesAuthorees(): DecorAuthore[] {
+const CORPUS_SCENES = () => readCorpus(['src/scenes'], { exts: ['.json'], tests: true });
+/** Le dépouillement d'un corpus donné, retenu par l'IDENTITÉ de ce corpus (`memoByRef`) : `readCorpus`
+ *  rend le MÊME tableau gelé à chaque appel de la même clé, donc la moisson ne se refait pas d'un `it`
+ *  à l'autre — et une relecture disque (`viderCorpus`) rend un tableau neuf, donc une moisson neuve. */
+const moisson = memoByRef((corpus: ReturnType<typeof CORPUS_SCENES>): DecorAuthore[] => {
   const out: DecorAuthore[] = [];
   const recolte = (o: unknown, fichier: string): void => {
     if (!o || typeof o !== 'object') return;
@@ -63,16 +74,13 @@ function entitesAuthorees(): DecorAuthore[] {
       for (const e of noeud.entities as DecorAuthore[]) out.push({ ...e, source: fichier, mpt: sceneMetresPerTile(noeud as { metresPerTile?: number }) });
     for (const v of Object.values(noeud)) recolte(v, fichier);
   };
-  const parcours = (dir: string, rel: string): void => {
-    for (const ent of readdirSync(dir, { withFileTypes: true })) {
-      const relPath = rel ? `${rel}/${ent.name}` : ent.name;
-      if (ent.isDirectory()) parcours(join(dir, ent.name), relPath);
-      else if (ent.name.endsWith('.json')) recolte(JSON.parse(readFileSync(join(dir, ent.name), 'utf8')), relPath);
-    }
-  };
-  parcours(RACINE_SCENES, '');
-  for (const e of scenarioEntities as unknown as DecorAuthore[]) out.push({ ...e, source: 'opera/furnished.ts', mpt: sceneMetresPerTile(buildOperaFloorplan()) });
+  for (const f of corpus) recolte(JSON.parse(f.text), f.rel.replace(/^src\/scenes\//, ''));
+  const mptOpera = sceneMetresPerTile(buildOperaFloorplan());
+  for (const e of scenarioEntities as unknown as DecorAuthore[]) out.push({ ...e, source: SOURCE_TS, mpt: mptOpera });
   return out;
+});
+function entitesAuthorees(): DecorAuthore[] {
+  return moisson(CORPUS_SCENES());
 }
 
 /** Emprise d'une primitive : sa boîte englobante au sol en CASES (la recette est en mètres, #1507 —
@@ -332,7 +340,7 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
   it('chaque instance authorée d’un décor volumique couvre, à l’échelle RÉELLE de sa scène, les cases du catalogue', () => {
     const volumiques = new Set(IDS);
     const instances = entitesAuthorees().filter((e) => e.kind === 'prop' && volumiques.has(e.ref ?? REF_DECOR_DEFAUT));
-    expect(instances.length, 'aucune instance de décor volumique authorée : le scan ne joint plus rien').toBeGreaterThan(100);
+    expect(gisementsDe(instances), SANS_GISEMENT).toEqual(GISEMENTS);
     const ecarts = instances.filter((e) => {
       const prop = findPropById(e.ref ?? REF_DECOR_DEFAUT)!;
       const cap = (e.facing ?? CAP_IDENTITE_PROP) as Dir4;
@@ -353,7 +361,7 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
   it('aucune instance authorée d’un décor VOLUMIQUE ne porte un cap DIAGONAL', () => {
     const volumiques = new Set(IDS);
     const instances = entitesAuthorees().filter((e) => e.kind === 'prop' && volumiques.has(e.ref ?? REF_DECOR_DEFAUT));
-    expect(instances.length, 'aucune instance de décor volumique authorée : le scan ne joint plus rien').toBeGreaterThan(0);
+    expect(gisementsDe(instances), SANS_GISEMENT).toEqual(GISEMENTS);
     expect(instances.filter((e) => e.facing && !DIR4_ORDER.includes(e.facing as Dir4))
       .map((e) => `${e.source}/${e.id} (${e.ref ?? REF_DECOR_DEFAUT}, cap ${e.facing})`)).toEqual([]);
   });

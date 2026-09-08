@@ -17,9 +17,11 @@ import {
   bakeWorldGeometry,
   buildWorldGeometry,
   shadeSousSoleil,
+  worldBakeDeps,
   type BakedWorld,
   type TintAt,
 } from './sceneMeshes';
+import { memoByRefDeps } from '../../../state/sceneMemo';
 import { tintOf, visibilityField } from './visibilityTint';
 import { scenario as arene } from '../../../scenes/test-scenarios/arene';
 import { buildVitrineScene } from '../../../scenes/vitrine-batiments';
@@ -27,6 +29,14 @@ import { sceneMetresPerTile, type Scene } from '../../../state/scene';
 
 const scene = arene.scene;
 const mpt = sceneMetresPerTile(scene);
+
+/** Le bake d'une scène, RETENU par son read-set réel (`worldBakeDeps`) — exactement le patron de
+ *  l'écran (`stage/GameStage3D.tsx`, `memoByRefDeps`). Ce banc rejoue la même scène d'un `it` à
+ *  l'autre : la passe LOURDE se paie une fois, la TEINTE (`applyVisibilityTint`, en place) se
+ *  recalcule à chaque appel. Un `it` qui MUTE la scène obtient une identité neuve, donc un bake frais.
+ *  Le contrat de BUDGET ci-dessous, dont le SUJET est le coût de la cuisson, ne passe pas par ici. */
+const bakeRetenu = memoByRefDeps<Scene, BakedWorld>();
+const cuire = (s: Scene, m: number): BakedWorld => bakeRetenu(s, worldBakeDeps(s, m), () => bakeWorldGeometry(s, m));
 
 /** Teinte de VISIBILITÉ non triviale : les trois états de la politique se répartissent sur la carte —
  *  une teinte constante ne prouverait rien d'un index sommet → monde. */
@@ -44,7 +54,7 @@ const couleurs = (g: { getAttribute(n: string): { array: ArrayLike<number> } }):
 
 describe('BAKE ⇄ TEINTE — la visibilité ne retriangule rien', () => {
   it('la teinte écrit EN PLACE : un bake = UN consommateur, même géométrie, même attribut, seules les couleurs bougent', () => {
-    const baked = bakeWorldGeometry(scene, mpt);
+    const baked = cuire(scene, mpt);
     const g1 = applyVisibilityTint(baked, tintA).geometry;
     const posA = (g1.getAttribute('position').array as Float32Array).slice();
     const colA = couleurs(g1);
@@ -65,7 +75,7 @@ describe('BAKE ⇄ TEINTE — la visibilité ne retriangule rien', () => {
   });
 
   it('la teinte se re-multiplie sur la couleur NUE, jamais sur la précédente (A → B → A)', () => {
-    const baked = bakeWorldGeometry(scene, mpt);
+    const baked = cuire(scene, mpt);
     const premier = couleurs(applyVisibilityTint(baked, tintA).geometry);
     applyVisibilityTint(baked, tintB);
     const retour = couleurs(applyVisibilityTint(baked, tintA).geometry);
@@ -79,6 +89,8 @@ describe('BAKE ⇄ TEINTE — la visibilité ne retriangule rien', () => {
     // La borne porte sur le RAPPORT des deux mesures du MÊME run, jamais sur une horloge murale : une
     // machine chargée ralentit les deux à la fois, alors qu'une régression vers le re-bake ramène le
     // rapport vers 1. L'échantillonnage par sommet a un coût — c'est CE rapport qui le tient.
+    // Cuisson FRAÎCHE, jamais `cuire` : le SUJET de ce contrat est le coût de la passe lourde — un
+    // bake retenu rendrait `msBake` nul et le rapport ne mesurerait plus rien.
     const t0 = performance.now();
     const baked = bakeWorldGeometry(scene, mpt);
     const msBake = performance.now() - t0;
@@ -97,7 +109,7 @@ describe('BAKE ⇄ TEINTE — la visibilité ne retriangule rien', () => {
 
   it('`buildWorldGeometry` reste la composition des deux (mêmes couleurs, même compte)', () => {
     const compose = couleurs(buildWorldGeometry(scene, mpt, tintA));
-    const enDeuxTemps = couleurs(applyVisibilityTint(bakeWorldGeometry(scene, mpt), tintA).geometry);
+    const enDeuxTemps = couleurs(applyVisibilityTint(cuire(scene, mpt), tintA).geometry);
     expect(compose).toEqual(enDeuxTemps);
   });
 });
@@ -115,7 +127,7 @@ function attenduAuSommet(baked: BakedWorld, spanIdx: number, v: number, tintAt: 
 
 describe('CHAMP CONTINU — la teinte s’échantillonne AU SOMMET, pas à la case d’ancrage', () => {
   it('chaque sommet porte la valeur du champ À SA POSITION (loi re-dérivée, arène entière)', () => {
-    const baked = bakeWorldGeometry(scene, mpt);
+    const baked = cuire(scene, mpt);
     const arr = couleurs(applyVisibilityTint(baked, tintA).geometry);
     let vus = 0;
     // Tous les spans, un sommet sur sept : la couverture est la SCÈNE, pas un échantillon choisi.
@@ -132,7 +144,7 @@ describe('CHAMP CONTINU — la teinte s’échantillonne AU SOMMET, pas à la ca
   });
 
   it('champ UNIFORME ⇒ teinte UNIFORME : aucune variation fantôme dans un span', () => {
-    const baked = bakeWorldGeometry(scene, mpt);
+    const baked = cuire(scene, mpt);
     const arr = couleurs(applyVisibilityTint(baked, uniforme(0.5)).geometry);
     for (const span of baked.spans) {
       const r0 = arr[span.start * 3];
@@ -147,7 +159,7 @@ describe('CHAMP CONTINU — la teinte s’échantillonne AU SOMMET, pas à la ca
   });
 
   it('champ uniforme : la teinte reste un SCALAIRE exact sur la couleur pleine', () => {
-    const baked = bakeWorldGeometry(scene, mpt);
+    const baked = cuire(scene, mpt);
     const plein = couleurs(applyVisibilityTint(baked, uniforme(1)).geometry);
     const demi = couleurs(applyVisibilityTint(baked, uniforme(0.5)).geometry);
     for (let i = 0; i < plein.length; i += 331) expect(demi[i]).toBeCloseTo(plein[i] * 0.5, 6);
@@ -171,7 +183,7 @@ describe('FRONTIÈRE — une masse à cheval sur le brouillard n’est plus tein
   const champ = visibilityField(vues, new Set<string>(), vitrine.dimensions);
 
   it('des spans portent des teintes DIFFÉRENTES d’un sommet à l’autre (fin du bloc uniforme)', () => {
-    const baked = bakeWorldGeometry(vitrine, mv);
+    const baked = cuire(vitrine, mv);
     const arr = couleurs(applyVisibilityTint(baked, champ).geometry);
     let panachés = 0;
     let ecartMax = 0;
@@ -198,7 +210,7 @@ describe('FRONTIÈRE — une masse à cheval sur le brouillard n’est plus tein
    * bake peint une fois à champ PLEIN, une fois au champ — le rapport des deux EST le facteur appliqué.
    */
   it('des sommets portent des teintes INTERMÉDIAIRES, absentes de la politique par case (le FONDU)', () => {
-    const baked = bakeWorldGeometry(vitrine, mv);
+    const baked = cuire(vitrine, mv);
     const plein = couleurs(applyVisibilityTint(baked, uniforme(1)).geometry);
     const rendu = couleurs(applyVisibilityTint(baked, champ).geometry);
     const paliers = [tintOf('visible'), tintOf('unknown')]; // les deux seules valeurs de la politique
@@ -216,7 +228,7 @@ describe('FRONTIÈRE — une masse à cheval sur le brouillard n’est plus tein
   });
 
   it('un ÉLÉMENT multi-cases reçoit plusieurs teintes, et pas celle de sa seule case d’ancrage', () => {
-    const baked = bakeWorldGeometry(vitrine, mv);
+    const baked = cuire(vitrine, mv);
     const pos = baked.geometry.getAttribute('position').array as Float32Array;
     // Un span dont les sommets traversent la frontière : c'est là que la loi d'ancrage mentait.
     const traversant = baked.spans.find((span) => {

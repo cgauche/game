@@ -17,7 +17,8 @@
  */
 import { describe, expect, it } from 'vitest';
 import { AMBIANCE } from '../catalog/ambiance';
-import { applyVisibilityTint, bakeWorldGeometry, shadeSousSoleil } from '../backends/webgl/sceneMeshes';
+import { applyVisibilityTint, bakeWorldGeometry, shadeSousSoleil, worldBakeDeps, type BakedWorld } from '../backends/webgl/sceneMeshes';
+import { memoByRefDeps } from '../../state/sceneMemo';
 import { SHADE_CYCLE, shadeFamily, type ShadeFamily } from '../backends/webgl/worldTris';
 import { shadeFactorOf } from '../backends/webgl/faceColors';
 import { extinctionDe, pointLightWrites } from './stagePointLights';
@@ -25,6 +26,13 @@ import { stageLightScalars } from './stageLights';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
 import { scenario as arene } from '../../scenes/test-scenarios/arene';
 import { scenario as opera } from '../../scenes/test-scenarios/opera';
+
+/** Le bake d'une scène, RETENU par son read-set réel (`worldBakeDeps`) — le patron de l'écran
+ *  (`GameStage3D.tsx`, `memoByRefDeps`). L'arène et l'opéra sont recuits par plusieurs `it` de ce
+ *  banc ; la passe LOURDE se paie une fois par scène, la teinte (`applyVisibilityTint`, en place) se
+ *  recalcule à chaque appel. Une scène fabriquée sur place a une identité neuve, donc un bake frais. */
+const bakeRetenu = memoByRefDeps<Scene, BakedWorld>();
+const cuire = (s: Scene, m: number): BakedWorld => bakeRetenu(s, worldBakeDeps(s, m), () => bakeWorldGeometry(s, m));
 
 const N = {
   haut: { x: 0, y: 1, z: 0 },
@@ -100,7 +108,7 @@ describe('#1300 — la famille se lit sur la normale que la loi d’orientation 
     // la famille AVANT ce retournement peindrait tous les sols de toutes les scènes en famille de
     // soffite : c'est cette inversion-là que ce test tient.
     for (const [nom, scene] of [['arène', arene.scene], ['opéra', opera.scene]] as const) {
-      const baked = bakeWorldGeometry(scene, sceneMetresPerTile(scene));
+      const baked = cuire(scene, sceneMetresPerTile(scene));
       // `shades` est un `Float32Array` : la valeur AUTHORÉE (double) ne s'y retrouve qu'arrondie — une
       // clé non `fround`ée ne joint AUCUN sommet et ferait passer n'importe quel compte pour zéro.
       const facteur = (v: number) => Math.fround(v);
@@ -129,7 +137,7 @@ describe('#1300 — la famille se lit sur la normale que la loi d’orientation 
     // portée d'un facteur d'orientation : deux montants SYMÉTRIQUES par rapport au centre reçoivent
     // des familles opposées — ils regardent bien deux directions opposées du point de vue de la carte.
     for (const [nom, scene] of [['arène', arene.scene], ['opéra', opera.scene]] as const) {
-      const baked = bakeWorldGeometry(scene, sceneMetresPerTile(scene));
+      const baked = cuire(scene, sceneMetresPerTile(scene));
       const pos = baked.geometry.getAttribute('position').array as Float32Array;
       let panachés = 0;
       for (const span of baked.spans) {
@@ -157,7 +165,7 @@ describe('#1300 — la famille se lit sur la normale que la loi d’orientation 
 
   it('la scène VIDE — que des dalles de sol — est modelée en HORIZONTALE d’un bout à l’autre', () => {
     const scene = { ...emptyScene(4, 4), ambiance: 'interieur' } as Scene;
-    const baked = bakeWorldGeometry(scene, sceneMetresPerTile(scene));
+    const baked = cuire(scene, sceneMetresPerTile(scene));
     expect(baked.shades.length).toBeGreaterThan(0);
     expect([...new Set(baked.shades)]).toEqual([AMBIANCE.faceShade.haut]);
   });
@@ -171,7 +179,7 @@ describe('#1300 — le CÂBLAGE : le facteur arrive dans la couleur de sommet', 
     (g.getAttribute('color').array as Float32Array).slice();
 
   it('à porte OUVERTE (intérieur, fade 0) chaque sommet porte EXACTEMENT le facteur de sa famille', () => {
-    const baked = bakeWorldGeometry(scene, mpt);
+    const baked = cuire(scene, mpt);
     const nu = couleurs(applyVisibilityTint(baked, plein, 1).geometry);
     const modelé = couleurs(applyVisibilityTint(baked, plein, 0).geometry);
     const rapports = new Set<number>();
@@ -189,7 +197,7 @@ describe('#1300 — le CÂBLAGE : le facteur arrive dans la couleur de sommet', 
   });
 
   it('sous le PLEIN SOLEIL le modelé s’efface : les couleurs sont celles d’avant le lot', () => {
-    const baked = bakeWorldGeometry(scene, mpt);
+    const baked = cuire(scene, mpt);
     const avecPorteFermée = couleurs(applyVisibilityTint(baked, plein, 1).geometry);
     const parDéfaut = couleurs(applyVisibilityTint(baked, plein).geometry);
     expect(parDéfaut).toEqual(avecPorteFermée);

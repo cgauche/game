@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import {
+  applyVisibilityTint,
+  bakeWorldGeometry,
+  worldBakeDeps,
+  type BakedWorld,
+  type TintAt,
+  type WorldGeometry,
   billboardDepthOffsetUnits,
   billboardPose,
   buildWorldGeometry,
@@ -65,10 +71,26 @@ import { PROPS, propSvg } from '../../catalog/decor';
 import { AMBIANCE, ambianceLuminance } from '../../catalog/ambiance';
 import { schema as ambianceSchema } from '../../../data/schemas/defs/ambiance';
 import { fogAt, fogCurveOf } from '../../pov/camera';
+import { memoByRef, memoByRefDeps } from '../../../state/sceneMemo';
 
 const scene = buildScene(siegeSpec);
 const mpt = sceneMetresPerTile(scene);
 const plein = () => 1;
+
+/** La scène d'un CONSTRUCTEUR de témoin, retenue par l'identité du constructeur : les témoins sont
+ *  traversés par plusieurs bancs de ce fichier, et une scène rebâtie à chaque `it` n'a plus la même
+ *  identité — donc plus aucun bake retenu. La construction reste PARESSEUSE (rien n'est bâti à
+ *  l'import), et une scène fabriquée sur place, hors de cette table, garde son identité neuve. */
+const sceneDe = memoByRef((faire: () => Scene) => faire());
+/** Le bake d'une scène, RETENU par son read-set réel — le patron de l'écran (`stage/GameStage3D.tsx`,
+ *  `memoByRefDeps`), ici pour les bancs qui recuisent la MÊME scène d'un `it` à l'autre. */
+const bakeRetenu = memoByRefDeps<Scene, BakedWorld>();
+const cuire = (s: Scene, m: number): BakedWorld => bakeRetenu(s, worldBakeDeps(s, m), () => bakeWorldGeometry(s, m));
+/** `buildWorldGeometry` sur un bake RETENU : mêmes sommets, mêmes couleurs — la teinte se recalcule en
+ *  place à chaque appel. À n'employer que là où UNE géométrie est lue à la fois : deux appels rendent
+ *  LE MÊME objet (contrat de propriété de `BakedWorld`), donc un banc qui compare deux teintes
+ *  côte à côte, ou deux constructions, garde `buildWorldGeometry`. */
+const monde = (s: Scene, m: number, tint: TintAt = plein): WorldGeometry => applyVisibilityTint(cuire(s, m), tint).geometry;
 
 /** Le PRÉPROCESSEUR GLSL, pour le seul cas qui nous occupe : `POV_FOG_GAMMA` non défini — tout bloc
  *  `#ifdef POV_FOG_GAMMA … #endif` disparaît, lignes comprises. Idempotent sur un chunk qui n'en porte
@@ -88,13 +110,17 @@ function sansDéfine(glsl: string): string {
  *  de ce banc (et débarrassé du bloc si un autre banc du même worker a déjà installé la surcharge). */
 const CHUNK_SANS_DEFINE = sansDéfine(THREE.ShaderChunk.fog_fragment);
 
+/** Nommé : c'est l'IDENTITÉ du constructeur qui porte le bake retenu, donc le banc hors table
+ *  (`écarte le terrain nu`) doit demander la MÊME vitrine que la table des témoins. */
+const faireVitrine = () => buildVitrineScene();
+
 /** Les SIX scènes-témoins du chantier de rendu — la population que l'utilisateur juge. */
 const TEMOINS: [string, () => Scene][] = [
   ['siege-enceinte', () => scene],
   ['pont-vitrine', () => pontVitrine.scene],
   ['opera', () => buildOperaFloorplan()],
   ['arene', () => arene.scene],
-  ['vitrine-batiments', () => buildVitrineScene()],
+  ['vitrine-batiments', faireVitrine],
   ['diligence', () => diligence.scene],
 ];
 
@@ -112,7 +138,7 @@ function triNormal(pos: Float32Array | ArrayLike<number>, i: number) {
 
 describe('FUSION — toute la scène en UNE géométrie', () => {
   it('une seule BufferGeometry porte position + couleur de tous les triangles, sous un index IDENTITÉ', () => {
-    const g = buildWorldGeometry(scene, mpt, plein);
+    const g = monde(scene, mpt);
     const pos = g.getAttribute('position');
     const col = g.getAttribute('color');
     // Aucun sommet PARTAGÉ (`computeVertexNormals` donne donc la normale de FACE) : l'index est
@@ -145,7 +171,7 @@ describe('ORIENTATION — les triangles regardent DEHORS (la carte d’ombre en 
   function bilan(scn: Scene) {
     const m = sceneMetresPerTile(scn);
     const listées = worldFaces(scn);
-    const pos = buildWorldGeometry(scn, m, plein).getAttribute('position').array as Float32Array;
+    const pos = monde(scn, m).getAttribute('position').array as Float32Array;
     const geoms = facesGeometry(listées.map((f) => f.face), m, faceDepthOf());
     // La fusion émet les faces GROUPÉES par surface (un groupe = un dessin) : le bilan les parcourt
     // dans CET ordre, sinon il compare le triangle d'une face à la normale d'une autre.
@@ -229,9 +255,9 @@ describe('CONTENU — ce qu’un cadrage doit tenir', () => {
 
   for (const [nom, faire] of TEMOINS)
     it(`${nom} : la boîte de contenu tient dans la géométrie élargie aux sujets, et porte tout le bâti`, () => {
-      const scn = faire();
+      const scn = sceneDe(faire);
       const m = sceneMetresPerTile(scn);
-      const geoBox = buildWorldGeometry(scn, m, plein).boundingBox!;
+      const geoBox = monde(scn, m).boundingBox!;
       const subs = collectBillboards(scn, m, wholeSceneBillboardEls(scn));
       const box = contentBox(scn, m, subs, quadDe, geoBox);
       const englobante = worldShadowBox(geoBox, subs, quadDe);
@@ -255,9 +281,9 @@ describe('CONTENU — ce qu’un cadrage doit tenir', () => {
     });
 
   it('elle ÉCARTE le terrain nu : la plaine d’herbe de vitrine-batiments sort du cadrage', () => {
-    const scn = buildVitrineScene();
+    const scn = sceneDe(faireVitrine);
     const m = sceneMetresPerTile(scn);
-    const geoBox = buildWorldGeometry(scn, m, plein).boundingBox!;
+    const geoBox = monde(scn, m).boundingBox!;
     const subs = collectBillboards(scn, m, wholeSceneBillboardEls(scn));
     const box = contentBox(scn, m, subs, quadDe, geoBox);
     const t = (b: THREE.Box3) => b.getSize(new THREE.Vector3());
@@ -319,9 +345,9 @@ describe('LUMIÈRE — un soleil neutre et calibré', () => {
   // frustum, la silhouette cesse de projeter.
   for (const [nom, faire] of TEMOINS)
     it(`${nom} : le frustum d’ombre contient la géométrie ET les billboards (ancres + sommets)`, () => {
-      const scn = faire();
+      const scn = sceneDe(faire);
       const m = sceneMetresPerTile(scn);
-      const geoBox = buildWorldGeometry(scn, m, plein).boundingBox!;
+      const geoBox = monde(scn, m).boundingBox!;
       const subs = collectBillboards(scn, m, wholeSceneBillboardEls(scn));
       const quadDe = (s: (typeof subs)[number]) =>
         anchorAndSize(billboardHeightM('jeu', s.kind) * s.scaleK, BILLBOARD_BOX_ASPECT);
@@ -354,7 +380,7 @@ describe('LUMIÈRE — un soleil neutre et calibré', () => {
     });
 
   it('le biais de normale se compte en TEXELS de la carte d’ombre (jamais un forfait métrique)', () => {
-    const box = buildWorldGeometry(scene, mpt, plein).boundingBox!;
+    const box = monde(scene, mpt).boundingBox!;
     const rig = sunRig(box);
     expect(rig.mapSize).toBe(SHADOW_MAP_SIZE);
     expect(rig.normalBias).toBeCloseTo(((2 * rig.span) / SHADOW_MAP_SIZE) * SHADOW_NORMAL_BIAS_TEXELS, 9);
@@ -376,7 +402,7 @@ describe('LUMIÈRE — un soleil neutre et calibré', () => {
   /** Biais de normale RÉEL d'une scène, au pire des conventions de taille de billboard. */
   function biaisReel(scn: Scene): number {
     const m = sceneMetresPerTile(scn);
-    const geoBox = buildWorldGeometry(scn, m, plein).boundingBox!;
+    const geoBox = monde(scn, m).boundingBox!;
     const subs = collectBillboards(scn, m, wholeSceneBillboardEls(scn));
     const biais = (['jeu', 'heroique', 'metrique'] as BillboardConvention[]).map((conv) =>
       sunRig(
@@ -390,7 +416,7 @@ describe('LUMIÈRE — un soleil neutre et calibré', () => {
 
   for (const [nom, faire] of TEMOINS)
     it(`${nom} : le plus MINCE relief du catalogue dépasse le biais d’ombre de la scène (marge ≥ 20 %)`, () => {
-      const biais = biaisReel(faire());
+      const biais = biaisReel(sceneDe(faire));
       expect([nom, biais > 0]).toEqual([nom, true]);
       expect([nom, MIN_RELIEF_M > biais]).toEqual([nom, true]);
       expect([nom, MIN_RELIEF_M / biais >= MARGE_MIN]).toEqual([nom, true]);
@@ -758,8 +784,8 @@ describe('OMBRE DE CONTACT — le socle se dimensionne sur le SUJET, jamais sur 
 describe('ATTRIBUTS d’UV — les deux jeux voyagent dans LA géométrie fusionnée', () => {
   it('chaque scène-témoin rend UNE géométrie qui porte position + couleur + uv + uv1, alignés au sommet', () => {
     for (const [nom, charge] of TEMOINS) {
-      const scène = charge();
-      const g = buildWorldGeometry(scène, sceneMetresPerTile(scène), plein);
+      const scène = sceneDe(charge);
+      const g = monde(scène, sceneMetresPerTile(scène));
       const n = g.getAttribute('position').count;
       // Index IDENTITÉ : un sommet par coin de triangle, aucun partage — la case que le masque de
       // dégagement réécrit (`applyCutawayMask`), jamais une déduplication de sommets.
@@ -775,7 +801,7 @@ describe('ATTRIBUTS d’UV — les deux jeux voyagent dans LA géométrie fusion
   });
 
   it('`uv` est la maille MONDE en MÈTRES : chaque arête de triangle y garde sa longueur', () => {
-    const g = buildWorldGeometry(scene, mpt, plein);
+    const g = monde(scene, mpt);
     const pos = g.getAttribute('position').array as Float32Array;
     const uv = g.getAttribute('uv').array as Float32Array;
     let pires = 0;
@@ -793,7 +819,7 @@ describe('ATTRIBUTS d’UV — les deux jeux voyagent dans LA géométrie fusion
   });
 
   it('`uv1` reste dans [0,1] et exploite la face (pas un aplat de zéros)', () => {
-    const g = buildWorldGeometry(scene, mpt, plein);
+    const g = monde(scene, mpt);
     const uv1 = Array.from(g.getAttribute('uv1').array as Float32Array);
     expect(uv1.filter((v) => v < -1e-6 || v > 1 + 1e-6)).toEqual([]);
     expect(uv1.filter((v) => v > 0.99).length).toBeGreaterThan(100);
@@ -859,7 +885,7 @@ describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde',
   };
 
   it('les groupes couvrent EXACTEMENT tous les sommets, chacun une fois', () => {
-    const g = buildWorldGeometry(scene, mpt, plein);
+    const g = monde(scene, mpt);
     const total = g.getAttribute('position').count;
     expect(g.groups.length).toBe(g.userData.surfaceGroups.length);
     expect(g.groups.length).toBeGreaterThan(1); // la scène porte plus que le seul groupe nu
@@ -940,7 +966,7 @@ describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde',
     let facesCuites = 0;
     let cellulesCuites = 0;
     for (const [nom, faire] of TEMOINS) {
-      const scn = faire();
+      const scn = sceneDe(faire);
       const m = sceneMetresPerTile(scn);
       const wfs = worldFaces(scn);
       const { groups, faceIndices } = surfaceGrouping(wfs, m);
@@ -974,7 +1000,7 @@ describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde',
     const parts = new Set<string>();
     let cuits = 0;
     for (const [nom, faire] of TEMOINS) {
-      const scn = faire();
+      const scn = sceneDe(faire);
       const wfs = worldFaces(scn);
       const { groups, faceIndices } = surfaceGrouping(wfs, sceneMetresPerTile(scn));
       groups.forEach((g, i) => {
@@ -996,7 +1022,7 @@ describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde',
     // cuisson d'une part étroite (un poteau de 8 cm de large recevait une ossature entière).
     let mesurés = 0;
     for (const [nom, faire] of TEMOINS) {
-      const scn = faire();
+      const scn = sceneDe(faire);
       const { groups } = surfaceGrouping(worldFaces(scn), sceneMetresPerTile(scn));
       for (const g of groups) {
         if (!g.bake) continue;
