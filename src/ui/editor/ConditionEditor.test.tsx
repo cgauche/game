@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ConditionEditor, WhenEditor, condSummary, recast } from './ConditionEditor';
 import type { Condition } from '../../state/flow';
+import { libelleDeValeur, valeursDe } from '../../data/schemas/grammaire/meta';
+import { actorFieldSchema, actorRefSchema, hasWhatSchema, partyWhoSchema, relationOrCampSchema, startleCauseSchema } from '../../data/schemas/grammaire/mecanique';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -105,6 +107,37 @@ describe('#1318 E1 — le domaine du créneau horaire atteint le champ (cale de 
   });
 });
 
+
+describe('#1694 B2 — les sélecteurs de Condition sont NOMMÉS par leur nœud de grammaire', () => {
+  /** Chaque cas : la Condition rendue, et le nœud dont le `select` doit tirer options ET libellés. */
+  const CAS: [string, Condition, unknown][] = [
+    ['compare (who + field)', { kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 }, actorFieldSchema],
+    ['compare (acteur)', { kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 }, actorRefSchema],
+    ['relation', { kind: 'relation', who: 'target', is: 'ally' }, relationOrCampSchema],
+    ['has', { kind: 'has', who: 'target', what: 'trait', value: 'mort-vivant' }, hasWhatSchema],
+    ['startleCause', { kind: 'startleCause', is: 'noise' }, startleCauseSchema],
+    ['partyDead', { kind: 'partyDead', who: 'any' }, partyWhoSchema],
+  ];
+  for (const [nom, cond, noeud] of CAS) {
+    it(`${nom} : chaque option porte le libellé FR du nœud, aucun libellé au site`, () => {
+      const valeurs = valeursDe(noeud);
+      expect(valeurs, `le nœud de « ${nom} » n’est pas un enum NOMMÉ`).toBeDefined();
+      const html = renderToStaticMarkup(<ConditionEditor cond={cond} onChange={() => {}} />);
+      for (const [v, l] of Object.entries(valeurs!)) {
+        expect(l, `${nom}/${v} : le libellé ne peut pas être la clé technique`).not.toBe(v);
+        expect(html, `${nom} : l’option « ${v} » n’est pas rendue`).toContain(`value="${v}"`);
+        expect(html, `${nom} : le libellé « ${l} » n’est pas rendu`).toContain(l.replace(/&/g, '&amp;').replace(/≠/g, '≠'));
+      }
+    });
+  }
+
+  it('le résumé humain d’une Condition lit les mêmes libellés que les sélecteurs', () => {
+    expect(condSummary({ kind: 'relation', who: 'caster', is: 'opponent' }))
+      .toBe(`${libelleDeValeur(actorRefSchema, 'caster')} : ${libelleDeValeur(relationOrCampSchema, 'opponent')}`);
+    expect(condSummary({ kind: 'startleCause', is: 'magic' }))
+      .toBe(`effarouché par ${libelleDeValeur(startleCauseSchema, 'magic')}`);
+  });
+});
 
 describe('#1318 E1 — la largeur des champs nombre du bloc Condition vit dans le CSS, pas au site', () => {
   it('editor.css borne `.cond-time input[type=number]` à la largeur compacte d’atelier', () => {

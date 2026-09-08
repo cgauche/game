@@ -9,8 +9,8 @@ import { isMenaceId, menaceIds } from '../../../engine/menace';
 import { CATEGORY_BY_SOURCE_KIND, type EffectSourceKind } from '../../../engine/types';
 import type { StakeRef } from '../../index';
 import { messageRecurrenceHorloge, type GameOp } from '../../../engine/ops';
-import { INDICE_TEMPLATE, type Condition, type EffectOp, type Flow } from '../../../engine/flowCore';
-import { charKeySchema, difficultySchema, formulaSchema, hitLocationSchema, plageSchema, refTestDeCorruption } from './valeurs';
+import { INDICE_TEMPLATE, type Condition, type EffectOp, type EffectTrigger, type Flow } from '../../../engine/flowCore';
+import { charKeySchema, difficultySchema, enumNomme, formulaSchema, hitLocationSchema, plageSchema, refTestDeCorruption, symptomSeveritySchema } from './valeurs';
 import { marque } from './slots';
 import { idDe, ref, refs, refOuSpec } from './ref';
 
@@ -39,7 +39,7 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
     op: z.literal('aggravateSymptom'),
     disease: idDe('maladie'),
     symptomId: idDe('symptome'),
-    severity: z.enum(['moderee', 'grave']),
+    severity: symptomSeveritySchema,
     otherwise: z.array(z.lazy(() => gameOpSchema)).optional(),
   }),
   attenuateSymptom: z.strictObject({
@@ -52,7 +52,7 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
     op: z.literal('grantSymptom'),
     disease: idDe('maladie'),
     symptomId: idDe('symptome'),
-    severity: z.enum(['moderee', 'grave']).optional(),
+    severity: symptomSeveritySchema.optional(),
   }),
   /** `amputer` (LDB 18 l.233-286) : AUTHORABLE comme toute op (l'atelier la propose sous « Séquelles &
    *  mobilité » — un Trait de créature qui tranche un membre s'écrit avec elle), mais AUCUNE donnée
@@ -178,17 +178,40 @@ export const gameOpSchema: z.ZodType<GameOp> = z.looseObject({ op: z.string() })
 // ============================================================================
 
 export const compareOpSchema = z.enum(['>=', '<=', '==', '<', '>']);
-/** ACTEUR désigné par une mécanique — 2ᵉ espèce de slot, retrouvée par la marche (`slots.ts`). */
-export const actorRefSchema = marque(z.enum(['target', 'caster']), { espece: 'acteur', site: 'actorRefSchema' });
+/** ACTEUR désigné par une mécanique — 2ᵉ espèce de slot, retrouvée par la marche (`slots.ts`). La
+ *  marque de slot et les libellés de valeurs vivent sur le MÊME nœud : `marque` rend la feuille telle
+ *  quelle, il n'y a donc pas de second registre. */
+export const actorRefSchema = marque(enumNomme({ target: 'la cible', caster: 'le lanceur' }), { espece: 'acteur', site: 'actorRefSchema' });
 
 /** `Relation | Camp` (`src/engine/relations.ts`) — union complète lue par la Condition `relation`.
  *  Resserré depuis `z.string()` (variantes `domains`/`talents`/`etats`/`spells`) : les 9 JSON ne
  *  portent que `'opponent'` aujourd'hui, sans-risque vis-à-vis de l'enum SOURCE (vérifié au parse). */
-export const relationOrCampSchema = z.enum(['self', 'ally', 'opponent', 'party', 'neutral', 'hostile']);
+export const relationOrCampSchema = enumNomme({
+  self: 'soi-même',
+  ally: 'allié (même camp)',
+  opponent: 'adversaire (camp ≠)',
+  party: 'du groupe (joueur)',
+  neutral: 'neutre (PNJ)',
+  hostile: 'hostile (ennemi)',
+});
+
+/** Donnée FIXE d'un acteur, comparable par la Condition `compare` (`ActorField`, `engine/flowCore`).
+ *  UNE instance pour les deux côtés de la comparaison (sujet et valeur). */
+export const actorFieldSchema = enumNomme({ woundsCurrent: 'PB courants', woundsMax: 'PB max', size: 'Taille', advantage: 'Avantage' });
+
+/** QUANTIFICATEUR sur le groupe des héros (`partyDead`/`skill`/`career`/`species`/`status`) — déclaré
+ *  au module : sous le `lazy` de `conditionSchema`, ses cinq sites rendaient 1 475 nœuds jumeaux. */
+export const partyWhoSchema = enumNomme({ any: 'un héros au moins', all: 'tout le groupe' });
+
+/** Cause d'effarouchement testée par la Condition `startleCause` (Nerveux, `LDB 85 l.197`). */
+export const startleCauseSchema = enumNomme({ noise: 'Bruits forts', magic: 'Magie' });
+
+/** Nature de l'appartenance testée par la Condition `has`. */
+export const hasWhatSchema = enumNomme({ group: 'le Groupe', talent: 'le Talent', trait: 'le Trait', psych: 'l’état psy' });
 
 const charRefSchema = z.strictObject({ who: actorRefSchema, char: charKeySchema, bonus: z.boolean().optional() });
 const compareSubjectSchema = z.union([
-  z.strictObject({ who: actorRefSchema, field: z.enum(['woundsCurrent', 'woundsMax', 'size', 'advantage']) }),
+  z.strictObject({ who: actorRefSchema, field: actorFieldSchema }),
   z.strictObject({ who: actorRefSchema, condition: z.string() }),
   charRefSchema,
 ]);
@@ -201,7 +224,7 @@ const compareValueSchema = z.union([
   z.number(),
   z.strictObject({
     who: actorRefSchema,
-    field: z.enum(['woundsCurrent', 'woundsMax', 'size', 'advantage']),
+    field: actorFieldSchema,
     factor: z.number().optional(),
   }),
   z.strictObject({ who: actorRefSchema, condition: z.string(), factor: z.number().optional() }),
@@ -227,16 +250,16 @@ export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
       kind: z.literal('money'),
       atLeast: z.strictObject({ gold: z.number().optional(), silver: z.number().optional(), brass: z.number().optional() }),
     }),
-    z.strictObject({ kind: z.literal('partyDead'), who: z.enum(['any', 'all']) }),
-    z.strictObject({ kind: z.literal('skill'), id: z.string(), spec: z.string().optional(), advances: z.number().optional(), who: z.enum(['any', 'all']).optional() }),
-    z.strictObject({ kind: z.literal('career'), id: z.string(), who: z.enum(['any', 'all']).optional() }),
-    z.strictObject({ kind: z.literal('species'), id: z.string(), who: z.enum(['any', 'all']).optional() }),
-    z.strictObject({ kind: z.literal('status'), atLeast: z.string(), who: z.enum(['any', 'all']).optional() }),
+    z.strictObject({ kind: z.literal('partyDead'), who: partyWhoSchema }),
+    z.strictObject({ kind: z.literal('skill'), id: z.string(), spec: z.string().optional(), advances: z.number().optional(), who: partyWhoSchema.optional() }),
+    z.strictObject({ kind: z.literal('career'), id: z.string(), who: partyWhoSchema.optional() }),
+    z.strictObject({ kind: z.literal('species'), id: z.string(), who: partyWhoSchema.optional() }),
+    z.strictObject({ kind: z.literal('status'), atLeast: z.string(), who: partyWhoSchema.optional() }),
     z.strictObject({ kind: z.literal('compare'), subject: compareSubjectSchema, op: compareOpSchema, value: compareValueSchema }),
     z.strictObject({ kind: z.literal('slThreshold'), op: compareOpSchema, value: z.number() }),
     z.strictObject({ kind: z.literal('location'), is: hitLocationSchema }),
     z.strictObject({ kind: z.literal('attackKind'), is: z.string() }),
-    z.strictObject({ kind: z.literal('startleCause'), is: z.enum(['noise', 'magic']) }),
+    z.strictObject({ kind: z.literal('startleCause'), is: startleCauseSchema }),
     z.strictObject({ kind: z.literal('woundsDealt'), op: compareOpSchema, value: z.number() }),
     z.strictObject({ kind: z.literal('engagedAdvantageGap'), op: compareOpSchema, value: z.number() }),
     z.strictObject({ kind: z.literal('engagedAdvantageLead'), op: compareOpSchema, value: z.number() }),
@@ -247,7 +270,7 @@ export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
     z.strictObject({ kind: z.literal('nearestFoe'), op: compareOpSchema, value: z.number() }),
     z.strictObject({ kind: z.literal('capability'), who: actorRefSchema, id: z.string(), op: compareOpSchema.optional(), value: z.number().optional() }),
     z.strictObject({ kind: z.literal('relation'), who: actorRefSchema, is: relationOrCampSchema }),
-    z.strictObject({ kind: z.literal('has'), who: actorRefSchema, what: z.enum(['group', 'talent', 'trait', 'psych']), value: z.string(), spec: z.string().optional() }),
+    z.strictObject({ kind: z.literal('has'), who: actorRefSchema, what: hasWhatSchema, value: z.string(), spec: z.string().optional() }),
     z.strictObject({ kind: z.literal('casterChaosDomain'), is: z.string() }),
     z.strictObject({ kind: z.literal('visiblePassive'), who: actorRefSchema }),
     z.strictObject({ kind: z.literal('all'), of: z.array(conditionSchema) }),
@@ -501,22 +524,53 @@ export const flowSchema: z.ZodType<Flow<EffectOp>> = z.lazy(() =>
 );
 
 
+/** CIBLE simple d'un effet déclenché — la branche chaîne de `EffectTargeting` (les deux autres sont
+ *  des géométries, pas un univers de valeurs). */
+export const effectOnSchema = enumNomme({
+  self: 'soi-même',
+  victim: 'la victime',
+  engaged: 'les adversaires engagés',
+  grappled: 'la victime empoignée (absorbée)',
+});
+
 /** `EffectTargeting` (`engine/flowCore.ts:469`). */
 export const effectTargetingSchema = z.union([
-  z.enum(['self', 'victim', 'engaged', 'grappled']),
+  effectOnSchema,
   z.strictObject({ near: z.enum(['victim', 'self']), radiusMeters: z.number() }),
   z.strictObject({ pick: z.literal('engaged'), sizeAtMost: z.literal('self').optional(), max: z.number() }),
 ]);
 
+/** DÉCLENCHEUR d'un `TriggeredEffect` (`EffectTrigger`, `engine/flowCore.ts`). Le `satisfies` garde
+ *  l'exhaustivité de COMPILATION que le Record d'affichage tenait : un trigger ajouté à l'union sans
+ *  son libellé ici ne compile pas. La taxonomie du recensement d'événements de combat
+ *  (`state/combat-event-emission-coverage.test.ts`) en dérive. */
+export const effectTriggerSchema = enumNomme({
+  onHit: 'À la touche',
+  onCrit: 'Sur un Critique',
+  onWoundLoss: 'En perdant des PB',
+  onSlain: 'À sa mise hors de combat',
+  onRoundStart: 'Au début du Round',
+  onStartled: 'Surpris (magie / bruit)',
+  onKill: 'En tuant un adversaire',
+  onCharged: 'Quand Chargé',
+  onGainCondition: 'En gagnant un État',
+  onCombatStart: 'Au début du combat',
+  onCombatEnd: 'À la fin du combat',
+  onRoundEnd: 'À la fin du Round',
+  onTurnStart: 'Au début de son tour',
+  onTurnEnd: 'À la fin de son tour',
+  onDayStart: 'Au début de chaque jour',
+  onWake: 'Au réveil',
+  onAttackResolved: 'Après une attaque résolue',
+  onCastResolved: 'Après une incantation résolue',
+  onMiscast: 'Sur une Imparfaite',
+  onOwnTestFailed: 'En échouant à un Test',
+} satisfies Record<EffectTrigger, string>);
+
 /** `TriggeredEffect<EffectOp>` (`engine/flowCore.ts:472`). `optional` (Contrôle de la Frénésie…)
  *  seule 1/9 des JSON le peuple (`talents.json`) — laissé optionnel, sans risque pour les autres. */
 export const triggeredEffectSchema = z.strictObject({
-  trigger: z.enum([
-    'onHit', 'onCrit', 'onWoundLoss', 'onSlain', 'onRoundStart', 'onStartled', 'onKill', 'onCharged', 'onGainCondition',
-    'onCombatStart', 'onCombatEnd', 'onRoundEnd', 'onTurnStart', 'onTurnEnd',
-    'onDayStart', 'onWake',
-    'onAttackResolved', 'onCastResolved', 'onMiscast', 'onOwnTestFailed',
-  ]),
+  trigger: effectTriggerSchema,
   on: effectTargetingSchema,
   flow: flowSchema,
   condition: z.string().optional(),

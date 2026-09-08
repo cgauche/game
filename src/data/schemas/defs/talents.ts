@@ -14,19 +14,13 @@
  * `min(1)` » — est PURGÉE par la migration de ce lot ; exiger `desc` ici refuserait cette entrée.
  */
 import { z } from 'zod';
-import { charKeySchema, combatFeatureSchema, specEntrySchema } from '../grammaire/valeurs';
+import { charKeySchema, combatFeatureSchema, specEntrySchema, specsSourceSchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 import { gameOpSchema, conditionSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'talents.json';
 export const famille = 'entite';
-
-const specsSourceSchema = z.enum([
-  'weaponGroupsMelee', 'weaponGroupsRanged', 'winds', 'arcaneDomains', 'cultBlessings',
-  'cultMiracles', 'cultChaos', 'seaShanties', 'groups', 'diseases', 'sizes', 'mutations',
-  'breathTypes', 'damageTypes', 'weaponsMelee', 'weaponsRanged',
-]);
 
 // ── TestMatch / TalentTest (src/data/index.ts) ──────────────────────────────────────────────────
 /** Un `TestMatch` désigne la spec visée d'UNE façon : `skill.spec` FIXE, `specFromInstance` (la spec

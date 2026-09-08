@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { flowSchema, gameOpSchema, noeudTest } from '../grammaire/mecanique';
 import { idDe } from '../grammaire/ref';
-import { diceSpecSchema } from '../grammaire/valeurs';
+import { diceSpecSchema, symptomSeveritySchema } from '../grammaire/valeurs';
 
 export const file = 'maladies.json';
 export const famille = 'entite';
@@ -21,7 +21,7 @@ const diseaseTimeSchema = z.strictObject({
 
 const diseaseSymptomSchema = z.strictObject({
   symptomId: z.string(),
-  severity: z.enum(['moderee', 'grave']).optional(),
+  severity: symptomSeveritySchema.optional(),
   difficulty: z.string().optional(),
   spec: z.string().optional(),
 });

@@ -73,7 +73,7 @@ restent des hooks ordonnés (interleave par `order`, y compris le cross-phase `o
   importables UNIQUEMENT par `combatEvents.ts`, les deux définisseurs et les modules bus-owned — le
   dispatch direct est INEXPRIMABLE (fail-closed, preuve par fichier fictif).
 - **Complétude d'émission** (`combat-event-emission-coverage.test.ts`) : chaque `EffectTrigger` du schéma
-  d'authoring (dérivé de `TRIGGER_LABEL`, exhaustif au compilateur) a ≥1 point d'émission — zéro
+  d'authoring (dérivé d'`effectTriggerSchema`, dont le `satisfies Record<EffectTrigger, string>` tient l'exhaustivité au compilateur) a ≥1 point d'émission — zéro
   affordance morte.
 
 Triggers CÂBLÉS par #316 (jadis orphelins) : `onAttackResolved` (fin de résolution d'attaque),

@@ -13,7 +13,9 @@ import type { Flow, TriggeredEffect } from '../../state/flow';
 import { walkFlow } from '../../engine/flowCore';
 import { refLabel } from '../../data';
 import { statName } from '../../engine/statEntry';
-import { TRIGGER_LABEL, onLabel } from './triggerLabels';
+import { onLabel } from './triggerLabels';
+import { effectTriggerSchema } from '../../data/schemas/grammaire/mecanique';
+import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
 import { humanizeFlowSentence, humanizeOp, humanizeCondition, coutAvantageTexte, flowMuet } from './humanize';
 
 /** Octrois de carrière (`grantCareerSkill`/`grantCareerTalent`) — affichés à part (cross-réf cliquable),
@@ -64,7 +66,7 @@ function flowSummary(f: Flow): string {
  *  que l'effet fait, avec la forme TECHNIQUE d'atelier (`flowSummary`) repliée dans « Détail technique ». */
 const effectRows = (effects: TriggeredEffect[] | undefined): CodexRow[] =>
   (effects ?? []).flatMap((e) => {
-    const head = `${TRIGGER_LABEL[e.trigger]} — ${onLabel(e.on)}`;
+    const head = `${libelleDeValeur(effectTriggerSchema, e.trigger)} — ${onLabel(e.on)}`;
     const human = humanizeFlowSentence(e.flow);
     const tech = flowSummary(e.flow);
     const rows: CodexRow[] = [

@@ -9,6 +9,8 @@ import { t } from '../i18n';
 import type { RigSpeciesId } from '../gameIso/rig/appearance';
 import type { SourceRef, SecondaryRef, RaceKey, RefCareerId } from './schemas/grammaire/valeurs';
 import type { TypeEntite } from './schemas/grammaire/ref';
+import { symptomSeveritySchema } from './schemas/grammaire/valeurs';
+import { libelleDeValeur } from './schemas/grammaire/meta';
 import type { MerchantArchetypeDef } from '../state/merchants/types';
 import { slugId } from './slug';
 import { norm } from '../lib/normalize';
@@ -2341,18 +2343,16 @@ export const findSymptomById = (id: string): SymptomData | undefined => symptome
 export const symptomLabel = (id: string): string => symptomeParId(id)?.label ?? id;
 /** Les paliers de SÉVÉRITÉ d'une instance de symptôme, dans l'ordre CROISSANT (LDB 20 l.157 « (Modéré) »,
  *  l.170 « (Grave) ») — SOURCE UNIQUE de l'énumération (canaux `passiveBySeverity`/`difficultyBySeverity`,
- *  atelier du Codex). La LOGIQUE reste keyée par ces ids ; `SYMPTOM_SEVERITY_LABELS` n'en donne que
- *  l'AFFICHAGE. */
+ *  atelier du Codex). La LOGIQUE reste keyée par ces ids ; leur AFFICHAGE vit sur le nœud
+ *  `symptomSeveritySchema` (`schemas/grammaire/valeurs.ts`), lu par `libelleDeValeur`. */
 export const SYMPTOM_SEVERITIES = ['moderee', 'grave'] as const;
-export const SYMPTOM_SEVERITY_LABELS: Record<(typeof SYMPTOM_SEVERITIES)[number], string> = { moderee: 'Modérée', grave: 'Grave' };
 /** Libellé d'une INSTANCE de symptôme portée par une maladie : le nom du symptôme, suivi de ce qui
  *  QUALIFIE l'instance — sa sévérité (`LDB 20 l.156-159`, `LDB 20 l.170`) et sa précision imprimée
  *  (`EDO App.2 l.143`, « Gonflement (Visage et tête) »). SOURCE UNIQUE de cette composition : une
  *  instance ne se nomme jamais par son seul `symptomLabel`, sinon deux fièvres de sévérités
- *  différentes s'affichent à l'identique. Vocabulaire d'affichage aligné sur l'atelier du Codex
- *  (`ui/compendium/StructFields.tsx` — « Modérée »/« Grave »). */
+ *  différentes s'affichent à l'identique. */
 export const symptomInstanceLabel = (inst: { symptomId: string; severity?: 'moderee' | 'grave'; spec?: string }): string => {
-  const qualifs = [inst.severity ? SYMPTOM_SEVERITY_LABELS[inst.severity] : null, inst.spec ?? null].filter(Boolean);
+  const qualifs = [inst.severity ? libelleDeValeur(symptomSeveritySchema, inst.severity) : null, inst.spec ?? null].filter(Boolean);
   return qualifs.length ? `${symptomLabel(inst.symptomId)} (${qualifs.join(', ')})` : symptomLabel(inst.symptomId);
 };
 /** Mutations (entités) + Tables de Corruption (plages d100 → réf), DÉCOUPLÉES (cf. data/mutations.ts) —

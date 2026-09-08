@@ -14,7 +14,7 @@ import { serializeDataset } from '../../data/serialize';
 import { validateDataset, metaPourFichier, chargeDiscriminee, brouillonNeuf, noeudDuChamp, noeudObjet, schemaForFile } from '../../data/schemas/validate';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
-import { valeursDe } from '../../data/schemas/grammaire/meta';
+import { libelleDeValeur, valeursDe } from '../../data/schemas/grammaire/meta';
 import { entryKey, invalidateCodexLookup } from './registry';
 import { ACTIVITY_RESOLVERS, RESOLVER_OWNER, resolversOwnedBy } from '../../engine/activities';
 import type { ActivityContext, OutcomeBand, BattleOutcome, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond, ActivityResolver, ResolverOwner } from '../../engine/activities';
@@ -40,9 +40,9 @@ import { creatureSpeciesOptions, QUAD_SPECIES, WINGED_SPECIES } from '../../game
 import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
-import { TRIGGER_LABEL, ON_LABEL } from './triggerLabels';
+import { effectOnSchema, effectTriggerSchema } from '../../data/schemas/grammaire/mecanique';
 import type { ManeuverDef, ManeuverMeasure } from '../../data';
-import { SYMPTOM_SEVERITIES, SYMPTOM_SEVERITY_LABELS } from '../../data';
+import { SYMPTOM_SEVERITIES } from '../../data';
 import type { AttackKind } from '../../engine/creatureAttacks';
 import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
@@ -57,7 +57,8 @@ import { CHAR_KEYS, CHAR_LABELS, DIFFICULTY_LABELS, HIT_LOCATION_LABELS } from '
 import type { DiseaseSymptom } from '../../engine/disease';
 import type { CombatFeature } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef, TalentTest, SpecEntry, WaterExposureData, WaterExposureModifier } from '../../data';
-import { SPEC_SOURCES, skillRefLabel, talentRefLabel, type SpecsSource, type SkillRef as SkillRefLivre, type TalentRef } from '../../data';
+import { skillRefLabel, talentRefLabel, type SkillRef as SkillRefLivre, type TalentRef } from '../../data';
+import { specsSourceSchema, symptomSeveritySchema } from '../../data/schemas/grammaire/valeurs';
 import { parseSkillRef, parseTalentRef } from '../editor/refFormatLivre';
 import type { SecondaryRef, Variant } from '../../data/schemas/grammaire/valeurs';
 import { OPTIONAL_RULES, type RuleKind, type RuleValue } from '../../engine/policy';
@@ -677,7 +678,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
           const parPalier = (entry.passiveBySeverity as Record<string, GameOp[] | undefined> | undefined) ?? {};
           return (
             <div className="ed-field" key={cle}>
-              <span>modificateurs PASSIFS du palier {SYMPTOM_SEVERITY_LABELS[cle]} — ils S’AJOUTENT aux « Effets passifs » dès que l’instance atteint ce palier ; une pénalité s’y écrit en valeur ABSOLUE, la pire l’emporte (LDB 20 l.157, l.170)</span>
+              <span>modificateurs PASSIFS du palier {libelleDeValeur(symptomSeveritySchema, cle)} — ils S’AJOUTENT aux « Effets passifs » dès que l’instance atteint ce palier ; une pénalité s’y écrit en valeur ABSOLUE, la pire l’emporte (LDB 20 l.157, l.170)</span>
               <GameOpEditor
                 ops={parPalier[cle] ?? []}
                 onChange={(ops) => {
@@ -956,7 +957,7 @@ function TriggeredEffectsField({ value, onChange, label = 'effets déclenchés (
           <div className="tf-row">
             <label className="dr">Déclencheur
               <select value={eff.trigger} onChange={(e) => set(i, { trigger: e.target.value as EffectTrigger })}>
-                {(Object.keys(TRIGGER_LABEL) as EffectTrigger[]).map((t) => <option key={t} value={t}>{TRIGGER_LABEL[t]}</option>)}
+                {optionsDuNoeud(effectTriggerSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </label>
             <label className="dr">Cible
@@ -965,7 +966,7 @@ function TriggeredEffectsField({ value, onChange, label = 'effets déclenchés (
                   e.target.value === 'near' ? { near: 'victim', radiusMeters: 2 }
                   : e.target.value === 'pick' ? { pick: 'engaged', sizeAtMost: 'self', max: 1 }
                   : e.target.value as TriggeredEffect['on'] })}>
-                {(Object.keys(ON_LABEL) as ('self' | 'victim' | 'engaged' | 'grappled')[]).map((o) => <option key={o} value={o}>{ON_LABEL[o]}</option>)}
+                {optionsDuNoeud(effectOnSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 <option value="near">les cibles à portée (zone)</option>
                 <option value="pick">un adversaire engagé (sélection)</option>
               </select>
@@ -1082,19 +1083,6 @@ function ManeuverDefField({ entry, edit }: { entry: Entry; edit: (key: string, v
   );
 }
 
-/** Libellés FR (affichage) des sources de spéc. La LISTE d'options DÉRIVE de `SPEC_SOURCES` (SSOT) ;
- *  ce map n'est qu'un habillage — repli sur la clé brute si absent, donc une source ajoutée à l'union
- *  `SpecsSource` reste sélectionnable sans toucher ici. */
-const SPECS_SOURCE_LABEL: Partial<Record<SpecsSource, string>> = {
-  weaponGroupsMelee: 'Groupes d’arme (mêlée)', weaponGroupsRanged: 'Groupes d’arme (distance)',
-  winds: 'Vents de magie', arcaneDomains: 'Domaines arcaniques', cultBlessings: 'Bénédictions (dieux)',
-  cultMiracles: 'Miracles (dieux)', cultChaos: 'Magie du Chaos (dieux)', seaShanties: 'Chansons de marin',
-  groups: 'Groupes (créatures/factions)', diseases: 'Maladies', sizes: 'Tailles', mutations: 'Mutations',
-  breathTypes: 'Types de Souffle', damageTypes: 'Types de Dégâts (immunité)',
-};
-/** Sources sélectionnables — DÉRIVÉES du catalogue `SPEC_SOURCES` (jamais une copie en dur de l'union). */
-const SPECS_SOURCE_KEYS = Object.keys(SPEC_SOURCES) as SpecsSource[];
-
 /** Éditeur du SCHÉMA d'ARGUMENT d'un Trait (`traits.json`) : décrit comment son INSTANCE porte sa
  *  valeur/argument — `indice` (sens de la valeur numérique : Indice/Difficulté/Degré…), `range` (portée
  *  en m), `specsSource` (registre d'où l'`arg` tire ses ids — catalogue `SPEC_SOURCES`), `specsOpen`
@@ -1116,7 +1104,7 @@ function TraitSchemaField({ entry, edit }: { entry: Entry; edit: (key: string, v
         <label className="dr">source de l’argument (registre)
           <select value={(entry.specsSource as string) ?? ''} onChange={(e) => edit('specsSource', e.target.value || undefined)}>
             <option value="">— (aucune / argument libre) —</option>
-            {SPECS_SOURCE_KEYS.map((s) => <option key={s} value={s}>{SPECS_SOURCE_LABEL[s] ?? s}</option>)}
+            {optionsDuNoeud(specsSourceSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </label>
         <label className="dr"><input type="checkbox" checked={!!entry.specsOpen} onChange={(e) => edit('specsOpen', e.target.checked || undefined)} /> argument en texte libre (ouvert)</label>

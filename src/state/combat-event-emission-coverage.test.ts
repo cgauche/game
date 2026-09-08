@@ -2,15 +2,17 @@ import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { TRIGGER_LABEL } from '../ui/compendium/triggerLabels';
+import { valeursDe } from '../data/schemas/grammaire/meta';
+import { effectTriggerSchema } from '../data/schemas/grammaire/mecanique';
 import type { EffectTrigger } from './flow';
 
 /**
  * GARDE DE COMPLÉTUDE (nouvelle classe, #316) : « zéro trigger d'authoring sans point d'émission ».
  * Chaque valeur d'`EffectTrigger` OFFERTE au schéma d'authoring (donc éditable au Compendium) doit
  * avoir ≥1 SITE D'ÉMISSION en production — sinon un effet authoré dessus est une AFFORDANCE MORTE
- * (se pose dans l'éditeur, ne se déclenche JAMAIS). La taxonomie est DÉRIVÉE de `TRIGGER_LABEL`
- * (`Record<EffectTrigger,…>`, exhaustif AU COMPILATEUR) — pas une liste maintenue à la main.
+ * (se pose dans l'éditeur, ne se déclenche JAMAIS). La taxonomie est DÉRIVÉE d'`effectTriggerSchema`
+ * (`grammaire/mecanique.ts`, dont le `satisfies Record<EffectTrigger, string>` tient l'exhaustivité AU
+ * COMPILATEUR) — pas une liste maintenue à la main.
  *
  * Un site d'émission = `emitCombatEvent('<trigger>'` (l'unique porte) OU, pour les événements de
  * CYCLE, la boucle `fireTriggers`/`fireTurnEdgeTriggers` interne aux modules BUS-OWNED
@@ -68,7 +70,7 @@ function emittedTriggers(): Set<string> {
 
 describe('couverture d’émission du bus — chaque trigger d’authoring a un point d’émission (#316)', () => {
   it('aucun trigger de la taxonomie n’est une affordance morte (émission manquante)', () => {
-    const taxonomy = Object.keys(TRIGGER_LABEL) as EffectTrigger[];
+    const taxonomy = Object.keys(valeursDe(effectTriggerSchema)!) as EffectTrigger[];
     const emitted = emittedTriggers();
     const orphans = taxonomy.filter((t) => !emitted.has(t));
     expect(

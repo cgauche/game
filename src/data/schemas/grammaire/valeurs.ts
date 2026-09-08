@@ -50,6 +50,41 @@ export function enumNomme<const V extends Readonly<Record<string, string>>>(vale
 export const mutationKindSchema = enumNomme({ physique: 'Physique', mentale: 'Mentale' });
 
 /**
+ * Registre d'où DÉRIVE le pool de spécialisations d'une def (`SpecsSource`, `src/data/index.ts` ;
+ * catalogue `SPEC_SOURCES`) — UNE déclaration pour les trois defs qui portent ce champ
+ * (`skills`/`talents`/`traits`), qui en tenaient chacune une copie. La couverture est TOTALE (16/16 de
+ * `SPEC_SOURCES`, verrouillée par `grammaire/enums-nommes-grammaire.test.ts`) : elle ne peut plus être partielle
+ * comme l'était le Record d'affichage qu'elle remplace. `weaponsMelee`/`weaponsRanged` portent le
+ * libellé de la catégorie de catalogue que leur `pool()` FILTRE (`trappings.categorie`,
+ * `defs/trappings.ts`), seule graphie FR déjà posée sur ce filtre.
+ */
+export const specsSourceSchema = enumNomme({
+  weaponGroupsMelee: 'Groupes d’arme (mêlée)',
+  weaponGroupsRanged: 'Groupes d’arme (distance)',
+  winds: 'Vents de magie',
+  arcaneDomains: 'Domaines arcaniques',
+  cultBlessings: 'Bénédictions (dieux)',
+  cultMiracles: 'Miracles (dieux)',
+  cultChaos: 'Magie du Chaos (dieux)',
+  seaShanties: 'Chansons de marin',
+  groups: 'Groupes (créatures/factions)',
+  diseases: 'Maladies',
+  sizes: 'Tailles',
+  mutations: 'Mutations',
+  breathTypes: 'Types de Souffle',
+  damageTypes: 'Types de Dégâts (immunité)',
+  weaponsMelee: 'Armes de mêlée',
+  weaponsRanged: 'Armes à distance',
+});
+
+/**
+ * Sévérité d'un symptôme de Maladie (`SymptomSeverity`, `src/data/index.ts`) — UNE déclaration pour
+ * les trois nœuds qui portent ce vocabulaire : `maladies.symptoms[].severity` (`defs/maladies.ts`) et
+ * les charges des ops `aggravateSymptom`/`grantSymptom` (`grammaire/mecanique.ts`).
+ */
+export const symptomSeveritySchema = enumNomme({ moderee: 'Modérée', grave: 'Grave' });
+
+/**
  * Disponibilité (`Availability`, `src/engine/types.ts`) — le schéma DÉRIVE du tuple canon au lieu de
  * retaper ses 4 paliers : c'est la porte unique des defs (`disponibilite`, `creatures`, `vehicles`,
  * `trappings`).

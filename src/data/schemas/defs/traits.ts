@@ -4,32 +4,13 @@
  * `desc`/`source`/`alsoIn`/`maison` sont des clés d'ENVELOPPE, posées par la fabrique.
  */
 import { z } from 'zod';
-import { entityAppearanceSchema, charKeySchema, mutationKindSchema } from '../grammaire/valeurs';
+import { entityAppearanceSchema, charKeySchema, mutationKindSchema, specsSourceSchema } from '../grammaire/valeurs';
 import { refSchema } from '../grammaire/reference';
 import { document } from '../grammaire/document';
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'traits.json';
 export const famille = 'entite';
-
-const specsSourceSchema = z.enum([
-  'weaponGroupsMelee',
-  'weaponGroupsRanged',
-  'winds',
-  'arcaneDomains',
-  'cultBlessings',
-  'cultMiracles',
-  'cultChaos',
-  'seaShanties',
-  'groups',
-  'diseases',
-  'sizes',
-  'mutations',
-  'breathTypes',
-  'damageTypes',
-  'weaponsMelee',
-  'weaponsRanged',
-]);
 
 /** `TraitCapabilities` (`src/data/index.ts`) — clés OBSERVÉES dans `traits.json` (31/54 déclarées
  *  sur l'interface ; les autres appartiennent aux capabilities de qualités/symptômes ou sont réservées

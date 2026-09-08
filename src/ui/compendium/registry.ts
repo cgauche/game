@@ -17,7 +17,7 @@ import {
   allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms, symptomLabel, windsOfMagicTable,
   isNamed, specCatalogOf, specLabel, seasonLabel,
-  SYMPTOM_SEVERITIES, SYMPTOM_SEVERITY_LABELS,
+  SYMPTOM_SEVERITIES,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, shipStations, NAVAL_TRAITS, findCreatureById, findVehicleById, findTrappingById, structures, regles,
   charAbr, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
   conditionLabel, traitProjectingManeuver, materials, terrains, props,
@@ -26,6 +26,7 @@ import {
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
 // importés directement d'`engine/massBattle`).
 import type { RaceKey, SourceRef } from '../../data/schemas/grammaire/valeurs';
+import { symptomSeveritySchema } from '../../data/schemas/grammaire/valeurs';
 import type { EnveloppeDocument } from '../../data/schemas/grammaire/document';
 import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
 import { outcomeOnSchema, battleCondSchema, battleOutcomeTargetSchema, battleOutcomeScaleSchema, battleSideSchema } from '../../data/schemas/defs/activities';
@@ -1562,7 +1563,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         rows: m.symptoms.map((s) => ({
           // `spec` = localisation/précision imprimée de l'instance (« Gonflement (Visage et tête) », EDO 11 p.145).
           t: 'kv', k: `${symptomLabel(s.symptomId)}${s.spec ? ` (${s.spec})` : ''}`,
-          v: [s.severity ? SYMPTOM_SEVERITY_LABELS[s.severity] : null, s.difficulty ? `Test ${DIFFICULTY_LABELS[s.difficulty]}` : null].filter(Boolean).join(' · ') || '—',
+          v: [s.severity ? libelleDeValeur(symptomSeveritySchema, s.severity) : null, s.difficulty ? `Test ${DIFFICULTY_LABELS[s.difficulty]}` : null].filter(Boolean).join(' · ') || '—',
         } as CodexRow)),
       }),
     })),
@@ -1572,7 +1573,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => symptoms.map((s) => depuisEnveloppe(s, {
       sections: sections(
         passiveSection(s.passive),
-        ...SYMPTOM_SEVERITIES.map((cle) => passiveSection(s.passiveBySeverity?.[cle], `Modificateurs (${SYMPTOM_SEVERITY_LABELS[cle]})`)),
+        ...SYMPTOM_SEVERITIES.map((cle) => passiveSection(s.passiveBySeverity?.[cle], `Modificateurs (${libelleDeValeur(symptomSeveritySchema, cle)})`)),
         s.onTick
           ? {
               title: 'Cycle quotidien', layout: 'list',

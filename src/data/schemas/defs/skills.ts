@@ -4,33 +4,11 @@
  * `SpecsSource`, `engine/skillCombatApps`).
  */
 import { z } from 'zod';
-import { charKeySchema, enumNomme, specEntrySchema } from '../grammaire/valeurs';
+import { charKeySchema, enumNomme, specEntrySchema, specsSourceSchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 
 export const file = 'skills.json';
 export const famille = 'entite';
-
-/** `SpecsSource` (`src/data/index.ts`) — registre partagé `SPEC_SOURCES` d'où dérive le pool de
- *  spécialisations quand `specs[]` est absent. Constaté sur skills.json : `weaponGroupsMelee`/
- *  `weaponGroupsRanged`/`winds` seulement, mais le type complet est repris (colonne vertébrale TS). */
-const specsSourceSchema = z.enum([
-  'weaponGroupsMelee',
-  'weaponGroupsRanged',
-  'winds',
-  'arcaneDomains',
-  'cultBlessings',
-  'cultMiracles',
-  'cultChaos',
-  'seaShanties',
-  'groups',
-  'diseases',
-  'sizes',
-  'mutations',
-  'breathTypes',
-  'damageTypes',
-  'weaponsMelee',
-  'weaponsRanged',
-]);
 
 const doc = document(
   'skills',

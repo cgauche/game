@@ -79,7 +79,7 @@ _Aucune._
 - `src/state/tavern-npc-a-fiche.test.ts:98` (l.72) — it('la SCÈNE décide : `tavernGame` sur l’entité déclare le jeu et la mise de départ (patron `NADJ 04 l.72`)', () => {
 
 ### NADJ 14 — 5 réf(s) code, 0 dans l'Atlas
-- `src/data/index.ts:828` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
+- `src/data/index.ts:830` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
 - `src/data/reglesOptionnelles.json:542` (l.5) — "ref": "NADJ 14 l.5",
 - `src/data/schemas/defs/species.ts:57` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
 - `src/engine/creation.test.ts:128` (l.5) — describe('Gnome jouable — règle optionnelle (NADJ 14 l.5)', () => {
@@ -130,8 +130,8 @@ _Aucune._
 - l.50 — `src/state/interlude-activities.test.ts:362` — it('Identifier : Échec (−2 à −3) → confond avec un objet similaire, AUCUNE fausse Particularité (ADE II 4 l.50)', () => {
 
 ### EDOC 13 — 3/8 ligne(s) code hors couverture
-- l.137 — `src/data/index.ts:1078` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
-- l.522 — `src/data/index.ts:1646` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
+- l.137 — `src/data/index.ts:1080` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
+- l.522 — `src/data/index.ts:1648` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
 - l.524 — `src/data/refs-migrated.test.ts:852` — *  sont au catalogue, sourcées à la desc verbatim de leur Trait (`EDOC 13 l.524` folio 83,
 
 ### MDG 15 — 3/49 ligne(s) code hors couverture
@@ -142,10 +142,10 @@ _Aucune._
 ### VDM 14 — 3/7 ligne(s) code hors couverture
 - l.353 — `src/data/arcanePhenomena.ts:77` — /** Modificateurs de NIVEAU D'INCANTATION apportés par le lieu (`VDM 14 l.353`, l.437, l.489) —
 - l.437 — `src/engine/castingNumber.test.ts:28` — it('Caverne de l’Attache : moitié ARRONDIE À L’INFÉRIEUR, Sorts de la Bête (VDM 14 l.437)', () => {
-- l.489 — `src/data/index.ts:2074` — *  deux natures (`VDM 12 l.646-647`, `VDM 14 l.489`). */
+- l.489 — `src/data/index.ts:2076` — *  deux natures (`VDM 12 l.646-647`, `VDM 14 l.489`). */
 
 ### ADE I 6 — 1/1 ligne(s) code hors couverture
-- l.185 — `src/data/index.ts:1078` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
+- l.185 — `src/data/index.ts:1080` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
 
 ### EDO 7 — 1/1 ligne(s) code hors couverture
 - l.184 — `src/ui/mono-stake-ratchet.test.ts:67` — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
@@ -179,4 +179,4 @@ LDB 38
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, EDO, EDOC, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: c0331adc434299d3faf40b4c36db0ee35c7bb648 (4054 fichiers, 152 dossiers) corps: 15833f616aeae6e65713d33280cfad3f507b0d31 -->
+<!-- sources-empreinte: d5941e49b555f3c836f57375c228c0d563f375c8 (4055 fichiers, 152 dossiers) corps: 98cc6a5d0b5a57e0fa4135312f59422ffdad5ed7 -->

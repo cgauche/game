@@ -180,7 +180,6 @@ function sourcesDuDepot(): Fichier[] {
  * couvert la forme (b) — elles préexistaient toutes deux au cliquet, la COUVERTURE a grandi, pas la dette.
  */
 const STOCK: readonly string[] = [
-  'src/data/index.ts:SYMPTOM_SEVERITY_LABELS',
   'src/engine/corruption.ts:CHAOS_ALIGN_LABELS',
   'src/engine/corruption.ts:EXPOSURE_LABELS',
   'src/engine/combat.ts:RANGE_BANDS',
@@ -194,20 +193,12 @@ const STOCK: readonly string[] = [
   'src/ui/EquipmentPanel.tsx:ZONE_OF_LOC',
   'src/ui/InterludeScreen.tsx:FAVOR_LEVEL_LABELS',
   'src/ui/ShipSheet.tsx:DIR_LABEL',
-  'src/ui/compendium/CodexEdit.tsx:SPECS_SOURCE_LABEL',
   'src/ui/compendium/humanize.ts:FIELD',
   'src/ui/compendium/humanize.ts:REL_PLAYER',
   'src/ui/compendium/humanize.ts:SENSE_LABEL',
   'src/ui/compendium/humanize.ts:negTable',
   'src/ui/compendium/humanize.ts:table',
   'src/ui/compendium/registry.ts:SHIP_SIZE_LABEL',
-  'src/ui/compendium/triggerLabels.ts:ON_LABEL',
-  'src/ui/compendium/triggerLabels.ts:TRIGGER_LABEL',
-  'src/ui/editor/ConditionEditor.tsx:FIELD_LABEL',
-  'src/ui/editor/ConditionEditor.tsx:REL_LABEL',
-  'src/ui/editor/ConditionEditor.tsx:STARTLE_CAUSE_LABELS',
-  'src/ui/editor/ConditionEditor.tsx:WHO_LABEL',
-  'src/ui/editor/ConditionEditor.tsx:WHAT_LABEL',
   'src/ui/editor/GameOpEditor.tsx:NATURE_INFLUENCE',
   'src/ui/editor/editorState.ts:KIND_LABEL',
 ].sort();

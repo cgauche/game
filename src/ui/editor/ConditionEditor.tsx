@@ -9,8 +9,9 @@
 import type { Condition, ActorRef, ActorField, CompareOp, CompareSubject } from '../../state/flow';
 import type { TemporalCondition } from '../../state/scene';
 import { HIT_LOCATION_LABELS, type HitLocation } from '../../engine/types';
-import { valeursDe } from '../../data/schemas/grammaire/meta';
+import { libelleDeValeur, valeursDe } from '../../data/schemas/grammaire/meta';
 import { attackKindSchema } from '../../data/schemas/defs/maneuvers';
+import { actorFieldSchema, actorRefSchema, hasWhatSchema, partyWhoSchema, relationOrCampSchema, startleCauseSchema } from '../../data/schemas/grammaire/mecanique';
 import type { Camp, Relation } from '../../engine/relations';
 import { findTrappingById } from '../../data';
 import { formatMoney } from '../../engine/money';
@@ -20,13 +21,9 @@ import { NumberField } from '../NumberField';
 /** Libellé d'affichage d'un `trappingId` (objet catalogué) — repli sur l'id brut (objet CUSTOM par nom). */
 const trappingLabelOrId = (id?: string): string => (id ? findTrappingById(id)?.label ?? id : '');
 
-/** Libellés des valeurs de la Condition `relation` : RELATIF au lanceur (allié/adversaire) + camp ABSOLU. */
-const REL_LABEL: Record<Relation | Camp, string> = {
-  self: 'soi-même', ally: 'allié (même camp)', opponent: 'adversaire (camp ≠)',
-  party: 'du groupe (joueur)', neutral: 'neutre (PNJ)', hostile: 'hostile (ennemi)',
-};
-/** Nature de l'appartenance testée par la Condition `has`. */
-const WHAT_LABEL: Record<'group' | 'talent' | 'trait' | 'psych', string> = { group: 'le Groupe', talent: 'le Talent', trait: 'le Trait', psych: 'l’état psy' };
+/** Options `[valeur, libellé]` d'un nœud ÉNUMÉRÉ de la grammaire (`enumNomme`, #1694) — l'éditeur ne
+ *  tient AUCUNE table de libellés : options ET noms viennent de la déclaration du nœud. */
+const optionsDuNoeud = (noeud: unknown): [string, string][] => Object.entries(valeursDe(noeud) ?? {});
 
 const ALWAYS: Condition = { kind: 'always' };
 
@@ -35,18 +32,12 @@ const ALWAYS: Condition = { kind: 'always' };
  *  manœuvre de Taille, hors type `AttackKind` mais valeur runtime de `creatureAttackKind`). */
 const ATTACK_KIND_LABELS: Record<string, string> = { ...(valeursDe(attackKindSchema) ?? {}), pietinement: 'Piétinement' };
 
-/** Causes d'effarouchement (cf. Nerveux, LDB 85 l.197) — libellés du sélecteur de la Condition `startleCause`. */
-const STARTLE_CAUSE_LABELS: Record<'noise' | 'magic', string> = { noise: 'Bruits forts', magic: 'Magie' };
-
-/** Données fixes d'un acteur comparables (Condition `compare`) — libellés des sélecteurs. */
-const FIELD_LABEL: Record<ActorField, string> = { woundsCurrent: 'PB courants', woundsMax: 'PB max', size: 'Taille', advantage: 'Avantage' };
-const WHO_LABEL: Record<ActorRef, string> = { target: 'la cible', caster: 'le lanceur' };
 const COMPARE_OPS: CompareOp[] = ['>=', '<=', '==', '<', '>'];
 /** Libellé du SUJET/valeur d'une comparaison : donnée fixe, valeur d'un État nommé, ou Caractéristique. */
 const subjectLabel = (s: CompareSubject): string =>
   'condition' in s ? `État « ${s.condition || '?'} »`
     : 'char' in s ? `Carac. ${s.char}${s.bonus ? ' (Bonus)' : ''}`
-      : FIELD_LABEL[s.field];
+      : libelleDeValeur(actorFieldSchema, s.field);
 
 const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['always', 'Toujours'],
@@ -99,13 +90,13 @@ export function condSummary(c: Condition | undefined): string {
     case 'money': return `bourse ≥ ${formatMoney({ gold: c.atLeast.gold ?? 0, silver: c.atLeast.silver ?? 0, brass: c.atLeast.brass ?? 0 })}`;
     case 'partyDead': return c.who === 'all' ? 'tout le groupe mort' : 'un héros mort';
     case 'compare': {
-      const val = typeof c.value === 'number' ? `${c.value}` : `${WHO_LABEL[c.value.who]} ${subjectLabel(c.value)}`;
-      return `${WHO_LABEL[c.subject.who]} : ${subjectLabel(c.subject)} ${c.op} ${val}`;
+      const val = typeof c.value === 'number' ? `${c.value}` : `${libelleDeValeur(actorRefSchema, c.value.who)} ${subjectLabel(c.value)}`;
+      return `${libelleDeValeur(actorRefSchema, c.subject.who)} : ${subjectLabel(c.subject)} ${c.op} ${val}`;
     }
     case 'slThreshold': return `marge ${c.op} ${c.value} DR`;
     case 'location': return `touche ${HIT_LOCATION_LABELS[c.is]}`;
     case 'attackKind': return `attaque = ${ATTACK_KIND_LABELS[c.is] ?? (c.is || '?')}`;
-    case 'startleCause': return `effarouché par ${STARTLE_CAUSE_LABELS[c.is]}`;
+    case 'startleCause': return `effarouché par ${libelleDeValeur(startleCauseSchema, c.is)}`;
     case 'woundsDealt': return `PB infligés ${c.op} ${c.value}`;
     case 'engagedAdvantageGap': return `écart d’Avantage ${c.op} ${c.value}`;
     case 'engagedAdvantageLead': return `avance d’Avantage ${c.op} ${c.value}`;
@@ -115,9 +106,9 @@ export function condSummary(c: Condition | undefined): string {
     case 'engaged': return 'engagé avec un ennemi';
     case 'crewTest': return 'au sein d’un Test d’équipage';
     case 'nearestFoe': return `ennemi le + proche ${c.op} ${c.value} cases`;
-    case 'capability': return `${WHO_LABEL[c.who]} : capacité « ${c.id || '?'} » ${c.op ?? '>='} ${c.value ?? 1}`;
-    case 'relation': return `${WHO_LABEL[c.who]} : ${REL_LABEL[c.is]}`;
-    case 'has': return `${WHO_LABEL[c.who]} a ${WHAT_LABEL[c.what]} « ${c.value || '?'}${c.spec ? ` (${c.spec})` : ''} »`;
+    case 'capability': return `${libelleDeValeur(actorRefSchema, c.who)} : capacité « ${c.id || '?'} » ${c.op ?? '>='} ${c.value ?? 1}`;
+    case 'relation': return `${libelleDeValeur(actorRefSchema, c.who)} : ${libelleDeValeur(relationOrCampSchema, c.is)}`;
+    case 'has': return `${libelleDeValeur(actorRefSchema, c.who)} a ${libelleDeValeur(hasWhatSchema, c.what)} « ${c.value || '?'}${c.spec ? ` (${c.spec})` : ''} »`;
     case 'casterChaosDomain': return `Domaine du Chaos du lanceur = ${c.is || '?'}`;
     case 'skill': return `${c.who === 'all' ? 'groupe' : 'un héros'} : Compétence « ${c.id || '?'}${c.spec ? ` (${c.spec})` : ''} »${c.advances ? ` ≥${c.advances}` : ''}`;
     case 'career': return `${c.who === 'all' ? 'groupe' : 'un héros'} : carrière « ${c.id || '?'} »`;
@@ -228,18 +219,17 @@ export function ConditionEditor({ cond, onChange, kinds }: {
       )}
       {cond.kind === 'partyDead' && (
         <select className="cond-kind" value={cond.who} onChange={(e) => onChange({ kind: 'partyDead', who: e.target.value === 'all' ? 'all' : 'any' })}>
-          <option value="any">un héros au moins</option>
-          <option value="all">tout le groupe</option>
+          {optionsDuNoeud(partyWhoSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       )}
       {cond.kind === 'compare' && (
         <span className="cond-time">
           <select className="cond-kind" value={cond.subject.who} onChange={(e) => onChange({ ...cond, subject: { ...cond.subject, who: e.target.value as ActorRef } })}>
-            {(Object.keys(WHO_LABEL) as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
+            {optionsDuNoeud(actorRefSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
           <select className="cond-kind" value={'field' in cond.subject ? cond.subject.field : 'condition'}
             onChange={(e) => onChange({ ...cond, subject: e.target.value === 'condition' ? { who: cond.subject.who, condition: '' } : { who: cond.subject.who, field: e.target.value as ActorField } })}>
-            {(Object.keys(FIELD_LABEL) as ActorField[]).map((s) => <option key={s} value={s}>{FIELD_LABEL[s]}</option>)}
+            {optionsDuNoeud(actorFieldSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             <option value="condition">valeur d’un État</option>
           </select>
           {'condition' in cond.subject && (
@@ -259,10 +249,10 @@ export function ConditionEditor({ cond, onChange, kinds }: {
           ) : (
             <>
               <select className="cond-kind" value={cond.value.who} onChange={(e) => onChange({ ...cond, value: { who: e.target.value as ActorRef, field: (cond.value as { field: ActorField }).field } })}>
-                {(Object.keys(WHO_LABEL) as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
+                {optionsDuNoeud(actorRefSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
               <select className="cond-kind" value={'field' in cond.value ? cond.value.field : 'woundsCurrent'} onChange={(e) => onChange({ ...cond, value: { who: (cond.value as { who: ActorRef }).who, field: e.target.value as ActorField } })}>
-                {(Object.keys(FIELD_LABEL) as ActorField[]).map((s) => <option key={s} value={s}>{FIELD_LABEL[s]}</option>)}
+                {optionsDuNoeud(actorFieldSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </>
           )}
@@ -287,7 +277,7 @@ export function ConditionEditor({ cond, onChange, kinds }: {
       {cond.kind === 'capability' && (
         <span className="cond-time">
           <select className="cond-kind" value={cond.who} onChange={(e) => onChange({ ...cond, who: e.target.value as ActorRef })}>
-            {(['target', 'caster'] as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
+            {optionsDuNoeud(actorRefSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
           <input className="cond-flag" value={cond.id} placeholder="capacité (ex. braveheart)" onChange={(e) => onChange({ ...cond, id: e.target.value.trim() })} />
           <select className="cond-kind" value={cond.op ?? '>='} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
@@ -308,7 +298,7 @@ export function ConditionEditor({ cond, onChange, kinds }: {
       )}
       {cond.kind === 'startleCause' && (
         <select className="cond-kind" value={cond.is} onChange={(e) => onChange({ kind: 'startleCause', is: e.target.value as 'noise' | 'magic' })}>
-          {(Object.keys(STARTLE_CAUSE_LABELS) as ('noise' | 'magic')[]).map((k) => <option key={k} value={k}>{STARTLE_CAUSE_LABELS[k]}</option>)}
+          {optionsDuNoeud(startleCauseSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       )}
       {cond.kind === 'woundsDealt' && (
@@ -339,7 +329,7 @@ export function ConditionEditor({ cond, onChange, kinds }: {
         <span className="cond-time">
           <select className="cond-kind" aria-label="Porteur de l’atteinte visible" value={cond.who}
             onChange={(e) => onChange({ ...cond, who: e.target.value as ActorRef })}>
-            {(Object.keys(WHO_LABEL) as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
+            {optionsDuNoeud(actorRefSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
           porte une atteinte visible
         </span>
@@ -347,15 +337,15 @@ export function ConditionEditor({ cond, onChange, kinds }: {
       {cond.kind === 'relation' && (
         <span className="cond-time">
           <select className="cond-kind" value={cond.who} onChange={(e) => onChange({ ...cond, who: e.target.value as ActorRef })}>
-            {(Object.keys(WHO_LABEL) as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
+            {optionsDuNoeud(actorRefSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
           est
           <select className="cond-kind" value={cond.is} onChange={(e) => onChange({ ...cond, is: e.target.value as Relation | Camp })}>
             <optgroup label="relatif au lanceur">
-              {(['self', 'ally', 'opponent'] as const).map((r) => <option key={r} value={r}>{REL_LABEL[r]}</option>)}
+              {(['self', 'ally', 'opponent'] as const).map((r) => <option key={r} value={r}>{libelleDeValeur(relationOrCampSchema, r)}</option>)}
             </optgroup>
             <optgroup label="camp absolu">
-              {(['party', 'neutral', 'hostile'] as const).map((r) => <option key={r} value={r}>{REL_LABEL[r]}</option>)}
+              {(['party', 'neutral', 'hostile'] as const).map((r) => <option key={r} value={r}>{libelleDeValeur(relationOrCampSchema, r)}</option>)}
             </optgroup>
           </select>
         </span>
@@ -363,11 +353,11 @@ export function ConditionEditor({ cond, onChange, kinds }: {
       {cond.kind === 'has' && (
         <span className="cond-time">
           <select className="cond-kind" value={cond.who} onChange={(e) => onChange({ ...cond, who: e.target.value as ActorRef })}>
-            {(Object.keys(WHO_LABEL) as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
+            {optionsDuNoeud(actorRefSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
           a
           <select className="cond-kind" value={cond.what} onChange={(e) => onChange({ ...cond, what: e.target.value as 'group' | 'talent' | 'trait' | 'psych' })}>
-            {(Object.keys(WHAT_LABEL) as ('group' | 'talent' | 'trait' | 'psych')[]).map((w) => <option key={w} value={w}>{WHAT_LABEL[w]}</option>)}
+            {optionsDuNoeud(hasWhatSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
           <input className="cond-flag" value={cond.value} placeholder={cond.what === 'group' ? 'Groupe (ex. Morts-vivants)' : cond.what === 'talent' ? 'id Talent (ex. magie-des-arcanes)' : cond.what === 'psych' ? 'type psy (ex. frenesie)' : 'id Trait (ex. mort-vivant)'} onChange={(e) => onChange({ ...cond, value: e.target.value })} />
           {cond.what === 'talent' && (
@@ -391,8 +381,7 @@ export function ConditionEditor({ cond, onChange, kinds }: {
           <input style={{ width: '6em' }} value={cond.spec ?? ''} placeholder="spéc. (Serrures…)" onChange={(e) => onChange({ ...cond, spec: e.target.value || undefined })} />
           <label className="dr">≥ avances<NumberField variant="nu" label="Avances minimales" min={0} vide value={cond.advances} onChange={(n) => onChange({ ...cond, advances: n ?? undefined })} /></label>
           <select className="cond-kind" value={cond.who ?? 'any'} onChange={(e) => onChange({ ...cond, who: e.target.value === 'all' ? 'all' : 'any' })}>
-            <option value="any">un héros au moins</option>
-            <option value="all">tout le groupe</option>
+            {optionsDuNoeud(partyWhoSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </span>
       )}
@@ -404,8 +393,7 @@ export function ConditionEditor({ cond, onChange, kinds }: {
             onChange={(v) => onChange({ ...cond, id: (v as string) ?? '' })}
           />
           <select className="cond-kind" value={cond.who ?? 'any'} onChange={(e) => onChange({ ...cond, who: e.target.value === 'all' ? 'all' : 'any' })}>
-            <option value="any">un héros au moins</option>
-            <option value="all">tout le groupe</option>
+            {optionsDuNoeud(partyWhoSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </span>
       )}
@@ -417,8 +405,7 @@ export function ConditionEditor({ cond, onChange, kinds }: {
             onChange={(v) => onChange({ ...cond, id: (v as string) ?? '' })}
           />
           <select className="cond-kind" value={cond.who ?? 'any'} onChange={(e) => onChange({ ...cond, who: e.target.value === 'all' ? 'all' : 'any' })}>
-            <option value="any">un héros au moins</option>
-            <option value="all">tout le groupe</option>
+            {optionsDuNoeud(partyWhoSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </span>
       )}
@@ -426,8 +413,7 @@ export function ConditionEditor({ cond, onChange, kinds }: {
         <span className="cond-time">
           <input className="cond-flag" value={cond.atLeast} placeholder="Statut (ex. Argent 2)" onChange={(e) => onChange({ ...cond, atLeast: e.target.value })} />
           <select className="cond-kind" value={cond.who ?? 'any'} onChange={(e) => onChange({ ...cond, who: e.target.value === 'all' ? 'all' : 'any' })}>
-            <option value="any">un héros au moins</option>
-            <option value="all">tout le groupe</option>
+            {optionsDuNoeud(partyWhoSchema).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </span>
       )}

@@ -3753,7 +3753,7 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `spells.ts` | 37 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `spells.ts` | 40 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `steam-breakdown.ts` | 28 | `restart` | test | divergente | `char,difficulty,skill+…` | — |
-| `talents.ts` | 80 | `max` | — | hors lexique | `bonusOf` | `formulaSchema` |
+| `talents.ts` | 74 | `max` | — | hors lexique | `bonusOf` | `formulaSchema` |
 | `tavernGames.ts` | 76 | `options` | test | divergente | `char,difficulty,skill+…` | — |
 | `tavernGames.ts` | 103 | `rows` | plage | cible | `max,min+…` | — |
 | `tavernGames.ts` | 140 | `throwerPenalty` | test | divergente | `difficulty+…` | — |
@@ -4951,4 +4951,4 @@ pèse **2950** slots sur 3304.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: f61f053265a95fd1acc4bd77c21b42acd2c98e23 (372 fichiers, 10 dossiers) corps: 8bbb86c37ed9699ddc95a5be086b0ac6d24f08ba -->
+<!-- sources-empreinte: ad4d0da355f331ec1ad42589b8bdbb56924f3c99 (372 fichiers, 10 dossiers) corps: 7e2a7e2b4827af1b5f5ed203bbe8998ec93a9f5b -->
