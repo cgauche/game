@@ -54,23 +54,6 @@ export interface CreatureAttack {
   def: ManeuverDef;
 }
 
-/** Libellé de FAMILLE (Codex uniquement, `sub` de l'entrée « Manœuvres ») — PAS l'affichage bouton/
- *  journal d'une manœuvre PRÉCISE (`ManeuverDef.label`, ex. « Souffle (Feu) », « Prendre forme
- *  hybride ») : plusieurs `ManeuverDef` partagent un `kind` (6 souffles, 2 étreintes, 4 hurlements). */
-export const ATTACK_LABEL: Record<AttackKind, string> = {
-  morsure: 'Morsure',
-  caudale: 'Attaque caudale',
-  cornes: 'Cornes',
-  arme: 'Arme / griffes',
-  souffle: 'Souffle',
-  vomi: 'Vomissement',
-  tentacules: 'Tentacules',
-  etreinte: 'Étreinte',
-  regard: 'Regard pétrifiant',
-  langue: 'Langue préhensile',
-  hurlement: 'Hurlement',
-};
-
 /** Choisit, parmi les manœuvres octroyées par un trait, celle qui correspond à l'argument de l'instance
  *  (Souffle « (Feu) » → `souffle-feu`). Désambiguïsation GÉNÉRIQUE par suffixe d'id ; défaut = 1ʳᵉ
  *  octroyée (un seul grant → elle ; Souffle exotique sans correspondance → `souffle-feu`, en tête). */

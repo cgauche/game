@@ -9,13 +9,16 @@
  * `desc`/`source`/`alsoIn` sont des clés d'ENVELOPPE, posées par la fabrique.
  */
 import { z } from 'zod';
-import { charKeySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { charKeySchema, enumNomme, sourceRefSchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 import { flowTestSchema, gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'domains.json';
 export const famille = 'entite';
+
+/** Matière de PA ignorée par les Projectiles du Domaine (LDB 48). */
+export const missileBypassSchema = enumNomme({ metal: 'PA métalliques', nonMagic: 'PA non magiques' });
 
 const doc = document(
   'domains',
@@ -34,7 +37,7 @@ const doc = document(
     /** Effets DÉCLENCHÉS « à la touche » sur une cible d'un Sort du Domaine — 5/19 entrées. */
     effects: z.array(triggeredEffectSchema).optional(),
     /** Mitigation des Projectiles (ignore les PA d'une matière). */
-    missile: z.strictObject({ bypass: z.enum(['metal', 'nonMagic']), bonusFromBypass: z.boolean().optional() }).optional(),
+    missile: z.strictObject({ bypass: missileBypassSchema, bonusFromBypass: z.boolean().optional() }).optional(),
     /** Ops appliquées AU LANCEUR après une incantation réussie. */
     casterOps: z.array(gameOpSchema).optional(),
     /** Élément du Souffle conféré par le Talent Magie des Arcanes du Domaine. */

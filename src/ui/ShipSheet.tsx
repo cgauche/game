@@ -18,10 +18,10 @@ import type { Dir8 } from '../state/dir8';
 import { Icon } from './Icon';
 import { Prose } from './Prose';
 import { Tabs } from './Tabs';
+import { libelleDeValeur } from '../data/schemas/grammaire/meta';
+import { rigSchema, posteSideSchema } from '../data/schemas/defs/vehicles';
 
 const DIR_LABEL: Record<Dir8, string> = { N: 'Nord', NE: 'Nord-Est', E: 'Est', SE: 'Sud-Est', S: 'Sud', SO: 'Sud-Ouest', O: 'Ouest', NO: 'Nord-Ouest' };
-const RIG_LABEL: Record<string, string> = { avirons: 'Avirons', voile: 'Voile', mixte: 'Mixte (voile et avirons)' };
-const SIDE_LABEL: Record<string, string> = { proue: 'Proue', tribord: 'Tribord', poupe: 'Poupe', babord: 'Bâbord' };
 
 /** État du navire (lecture seule, dérivé) — mêmes `stat-chip` que les vitaux d'une fiche héros. PUR. */
 export function ShipStateBlock({ ship, cap, morale, crew }: { ship: Combatant; cap?: Dir8; morale: number; crew: Combatant[] }) {
@@ -50,7 +50,7 @@ export function PosteDetail({ hull, poste, combatants, readOnly }: { hull: Comba
   const loadedAmmoItem = poste.loaded !== false ? stock.find((a) => a.uid === poste.loadedAmmoUid) : undefined;
   return (
     <div className="ship-poste selected">
-      <span className="ship-poste-name"><Icon id="action/aim" size="sm" /> {poste.side ? SIDE_LABEL[poste.side] ?? poste.side : 'Omni'} · {poste.item.label}</span>
+      <span className="ship-poste-name"><Icon id="action/aim" size="sm" /> {poste.side ? libelleDeValeur(posteSideSchema, poste.side) : 'Omni'} · {poste.item.label}</span>
       {stock.length > 0 && (readOnly ? (
         // Inspection (#240) : munition chargée VISIBLE mais non modifiable (pas de sélecteur sur la pièce d'autrui).
         <span className="ship-poste-ammo"><span aria-hidden><Icon id="fire/blast" size="sm" /></span> {loadedAmmoItem ? loadedAmmoItem.label : 'pièce déchargée'}</span>
@@ -98,7 +98,7 @@ export function ShipInspectBody({ hull, crew, cap }: { hull: Combatant; crew: Co
       <div className="sheet-vitals">
         {hull.wounds.max > 0 && <div className="stat-chip pv"><span className="sc-label">Coque</span><span className="sc-value">{hull.wounds.current}/{hull.wounds.max}</span></div>}
         {cap && <div className="stat-chip"><span className="sc-label">Cap</span><span className="sc-value">{DIR_LABEL[cap]}</span></div>}
-        {rig && <div className="stat-chip"><span className="sc-label">Gréement</span><span className="sc-value">{RIG_LABEL[rig] ?? rig}</span></div>}
+        {rig && <div className="stat-chip"><span className="sc-label">Gréement</span><span className="sc-value">{libelleDeValeur(rigSchema, rig)}</span></div>}
         {crew.length > 0 && <div className="stat-chip"><span className="sc-label">Effectif</span><span className="sc-value">{apte.length}/{crew.length}</span></div>}
       </div>
       {postes.length > 0 && (
@@ -216,7 +216,7 @@ export function PosteSheet({ combatantIds, initialHullId, onClose }: { combatant
                 selectedStationId={selectedStationId}
                 onSelectStation={(s) => setSelectedPosteUid(s.ref.kind === 'poste' ? s.ref.posteUid : null)}
                 renderDetail={() => (selectedPoste ? <PosteDetail hull={hull} poste={selectedPoste} combatants={battle.combatants} /> : null)}
-                subtitleOf={(s) => (s.side ? SIDE_LABEL[s.side] ?? s.side : 'Omni')}
+                subtitleOf={(s) => (s.side ? libelleDeValeur(posteSideSchema, s.side) : 'Omni')}
                 detailTitle="Armes · postes"
               />
             ) : (

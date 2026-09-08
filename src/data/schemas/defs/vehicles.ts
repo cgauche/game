@@ -6,12 +6,18 @@
  * 22/25, `ship` 20/25, `travel` 3/25, `deck` 1/25). `icon` est une clé d'ENVELOPPE, posée par la fabrique.
  */
 import { z } from 'zod';
-import { availabilitySchema, cell2Schema, moneySchema } from '../grammaire/valeurs';
+import { availabilitySchema, cell2Schema, enumNomme, moneySchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 import { ref } from '../grammaire/ref';
 
 export const file = 'vehicles.json';
 export const famille = 'entite';
+
+/** Gréement d'une coque (MDG 12) — affiché par la fiche et le dossier de navire. */
+export const rigSchema = enumNomme({ avirons: 'Avirons', voile: 'Voile', mixte: 'Mixte (voile et avirons)' });
+
+/** BORD du pont où siège un poste d'équipage (MDG 12) — affiché par la fiche de navire. */
+export const posteSideSchema = enumNomme({ proue: 'Proue', tribord: 'Tribord', poupe: 'Poupe', babord: 'Bâbord' });
 
 /** `NavalTraitRef` (`src/data/index.ts`) — Trait INTÉGRÉ à la construction du type de navire
  *  (MDG 12), + Indice éventuel. Le foyer des ids est `naval-traits.json`, JAMAIS `traits.json` :
@@ -21,7 +27,7 @@ const navalTraitRefSchema = ref('navalTrait', { value: z.number().optional() });
 
 const deckPosteSlotSchema = z.strictObject({
   pos: cell2Schema,
-  side: z.enum(['proue', 'tribord', 'poupe', 'babord']),
+  side: posteSideSchema,
   cover: z.enum(['imparfaite', 'moyenne', 'totale']).optional(),
 });
 
@@ -66,7 +72,7 @@ const doc = document(
       char: z.strictObject({ endurance: z.number(), B: z.number() }),
       bodyShape: z.literal('vehicule'),
       propulsion: z.enum(['terrestre', 'fluvial', 'maritime']),
-      rig: z.enum(['avirons', 'voile', 'mixte']).optional(),
+      rig: rigSchema.optional(),
       /** Table de Localisation des coups (`shipHitLocation`, `src/engine/combat.ts`) — vocabulaire
        *  FERMÉ : une coquille d'authoring résoudrait sinon la coque fluviale sur la table maritime.
        *  Absent/`null` = `navire` (MDG 13) ; `navire-fluvial` = MSRC 7. */

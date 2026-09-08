@@ -15,14 +15,18 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema, plageSchema, sourceRefSchema, castingNumberModSchema } from '../grammaire/valeurs';
+import { difficultySchema, enumNomme, plageSchema, sourceRefSchema, castingNumberModSchema } from '../grammaire/valeurs';
 
 export const file = 'arcane-phenomena.json';
 export const famille = 'config';
 
 /** Tests portés par un modificateur de phénomène — surensemble de `WindTest` (`domainAttributes.ts`) :
  *  l'Atténuation module AUSSI les Tests de Dissipation (`VDM 14`, folio 194). */
-const phenomenonTest = z.enum(['incantation', 'focalisation', 'dissipation']);
+export const phenomenonTestSchema = enumNomme({
+  incantation: 'Incantation',
+  focalisation: 'Focalisation',
+  dissipation: 'Dissipation',
+});
 
 /** À QUELS Sorts s'applique le modificateur. Absent = tous les Domaines.
  *  `dominantWinds`/`nonDominantWinds` sont relatifs à la ZONE (le ou les Vents prépondérants) : ils
@@ -42,7 +46,7 @@ const scope = z.strictObject({
 });
 
 const testMod = z.strictObject({
-  tests: z.array(phenomenonTest).min(1),
+  tests: z.array(phenomenonTestSchema).min(1),
   /** Delta de DR appliqué au Test (borne BASSE quand `drMax` est présent). */
   dr: z.number(),
   /** Borne HAUTE d'une fourchette laissée aux circonstances par le RAW. */
@@ -84,6 +88,26 @@ const saturationEffect = z.strictObject({
   desc: z.string(),
 });
 
+/** Palier d'apparition d'un Effet de Saturation dans le tableau par Vent (italique = premier signe,
+ *  gras = Saturation Extrême). */
+export const saturationTierSchema = enumNomme({
+  premier: 'Premier signe',
+  courant: 'Signe courant',
+  extreme: 'Signe extrême',
+});
+
+/** Nature d'un phénomène arcanique — vocabulaire du chapitre (`VDM 14`), jamais une paraphrase. */
+export const phenomenonKindSchema = enumNomme({
+  'ligne-de-force': 'Ligne de force',
+  'pierre-gardienne': 'Pierre gardienne',
+  vortex: 'Vortex',
+  nexus: 'Jonction tellurique',
+  'appui-arcanique': 'Appui arcanique',
+  tempete: 'Tempête de magie',
+  corruption: 'Corruption',
+  site: 'Site',
+});
+
 const attestedNote = z.strictObject({ source: sourceRefSchema, desc: z.string() });
 
 const doc = document(
@@ -117,7 +141,7 @@ const doc = document(
       environments: z.array(z.string()).min(1),
       /** Effets de Saturation : `premier` = apparaît en premier (italique du tableau),
        *  `extreme` = Saturation Extrême seulement (gras du tableau). */
-      effects: z.array(z.strictObject({ label: z.string(), tier: z.enum(['premier', 'courant', 'extreme']) })).min(1),
+      effects: z.array(z.strictObject({ label: z.string(), tier: saturationTierSchema })).min(1),
       /** Surnoms populaires de la condition météorologique. */
       surnoms: z.array(z.string()).min(1),
       source: sourceRefSchema,
@@ -128,7 +152,7 @@ const doc = document(
       id: z.string(),
       label: z.string(),
       /** `site` = lieu NOMMÉ du chapitre dont le RAW chiffre l'effet magique (folios 200-207). */
-      kind: z.enum(['ligne-de-force', 'pierre-gardienne', 'vortex', 'nexus', 'appui-arcanique', 'tempete', 'corruption', 'site']),
+      kind: phenomenonKindSchema,
       testMods: z.array(testMod).optional(),
       /** Modificateurs de NIVEAU D'INCANTATION du lieu (`VDM 14 l.353`, l.437, l.489). */
       niMods: z.array(castingNumberModSchema).optional(),

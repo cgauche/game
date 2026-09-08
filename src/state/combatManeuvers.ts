@@ -29,7 +29,9 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { isOutOfAction, applyZeroWounds, stacks, COND, cannotDefend } from '../engine/conditions';
 import { isBestial, traitCapability } from '../engine/traits/dispatch';
 import { isFrenzied } from '../engine/psychology';
-import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatureAttacks';
+import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
+import { libelleDeValeur } from '../data/schemas/grammaire/meta';
+import { attackKindSchema } from '../data/schemas/defs/maneuvers';
 import { findTalentById, findPsychologyById, findManeuverById, combatStakeRef, dataLabel, type ManeuverDef, type ManeuverMeasure } from '../data';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { freeCons } from './rollSeam';
@@ -224,7 +226,7 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
   //     branche distance pour une arme à distance).
   const freeWeapon = hasFreeWeaponAttack(active);
   if ((!battle.acted && canTakeAction(active)) || freeWeapon)
-    out.push({ id: 'arme', kind: 'arme', label: ATTACK_LABEL.arme, icon: MANEUVER_ICON.arme, targeting: 'melee', cost: { action: !freeWeapon, advantage: 0 } });
+    out.push({ id: 'arme', kind: 'arme', label: libelleDeValeur(attackKindSchema, 'arme'), icon: MANEUVER_ICON.arme, targeting: 'melee', cost: { action: !freeWeapon, advantage: 0 } });
   // (1) Attaques de trait : gratuites de MÊLÉE (Morsure/Caudale/Tentacules) ou SPÉCIALES de zone (Souffle/
   //     Vomi/Langue/Regard/Étreinte/Hurlement). 'arme' (ci-dessus) et 'charge' (Cornes, auto) exclues.
   //     Mêmes prédicats d'abordabilité (Avantage RAW ou 1 si variable ; Action si trigger='action').
@@ -375,8 +377,8 @@ export function resolveManeuver(
   campSpend(get, attacker, spent); // dépense l'Avantage : réserve du camp (mode groupe AA 11 l.30-38) / le combattant (LDB)
   const rng = battleRng();
   // Libellé de feed = celui de la manœuvre (« Souffle (Feu) ») s'il enrichit le geste, sinon le libellé
-  // canonique du geste (`ATTACK_LABEL[def.kind]`). Aucune LOGIQUE sur le label — pur affichage.
-  const lines: string[] = [t('manv.trigger', { name: attacker.label, label: def.label || ATTACK_LABEL[def.kind] })];
+  // canonique du geste (`libelleDeValeur(attackKindSchema, def.kind)`). Aucune LOGIQUE sur le label — pur affichage.
+  const lines: string[] = [t('manv.trigger', { name: attacker.label, label: def.label || libelleDeValeur(attackKindSchema, def.kind) })];
   // Orientation du geste : l'attaquant vise le centre RÉELLEMENT résolu plus bas (la cible cliquée peut
   // être écartée — morte, hors portée — et le souffle recentré sur le plus proche). UNE écriture par
   // manœuvre ; cible = SOI (transformation) ou case identique ⇒ delta nul, facing inchangé ; population
@@ -519,12 +521,12 @@ function openManeuverDefenseCascade(
   // Texte AUTHORÉ (`ManeuverDef.label`, `maneuvers.json`) → minteur du texte de donnée. La dégradation
   // passe par `||` et non par le `repli` de `dataLabel` : `label` est un `string` REQUIS, donc seul le
   // vide (jamais `null`/`undefined`) peut manquer — le `??` du repli ne le verrait pas.
-  // DETTE — le repli est un libellé de FAMILLE : `ATTACK_LABEL` est réservé au Codex par sa propre
-  // définition (`engine/creatureAttacks.ts` l.57-59), plusieurs `ManeuverDef` partageant un `kind`.
+  // DETTE — le repli est un libellé de FAMILLE : `attackKindSchema` nomme la FAMILLE
+  // (`data/schemas/defs/maneuvers.ts`), plusieurs `ManeuverDef` partageant un `kind`.
   // S'il servait, le titre de cascade dirait la famille (« Souffle ») et non la manœuvre (« Souffle
   // (Feu) »). Chemin INERTE : les 20 entrées de `maneuvers.json` portent toutes un `label` non vide
   // (mesuré, 11 `kind` pour 20 entrées). Une manœuvre authorée sans `label` afficherait la famille.
-  const attackerLabel = dataLabel(def.label || ATTACK_LABEL[def.kind]);
+  const attackerLabel = dataLabel(def.label || libelleDeValeur(attackKindSchema, def.kind));
   const steps: CascadeStep[] = heroes.map((h) => {
     const base = maneuverDefenseValue(h, def.defense!);
     return {

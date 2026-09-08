@@ -4,7 +4,7 @@
  * toutes les catégories porteuses (traits, mutations, qualités…) : enrichir une fiche = composer ces
  * sections, pas réécrire un rendu. Réutilise `opRows` (ref #495, renderer JOUEUR — chips codex-liées,
  * jamais le résumeur d'atelier `opSummary`), `humanizeCondition` (ref #495, renderer JOUEUR — jamais
- * le résumeur d'atelier `condSummary`) et `ATTACK_LABEL` (libellés de manœuvre).
+ * le résumeur d'atelier `condSummary`).
  */
 import type { CodexRow, CodexSection } from './registry';
 import { opRows } from './opRows';

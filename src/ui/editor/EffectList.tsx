@@ -28,6 +28,8 @@ import { CHAOS_ALIGN_LABELS, ChaosAlign } from '../../engine/corruption';
 import { POWER_ESTIMATE, clampMight, type MassBattleSpec } from '../../engine/massBattle';
 import { PURSUIT_ESCAPE_DISTANCE } from '../../engine/pursuit';
 import { battleSceneById } from '../../state/massBattleFlow';
+import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
+import { sceneKindSchema } from '../../data/schemas/defs/activities';
 import { activitiesFor } from '../../engine/activities';
 import { formatMoney, toMoney } from '../../engine/money';
 
@@ -946,7 +948,6 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
 }
 
 // ── Combat de masse / Puissance de Bataille (ADE II 08) — édition du `MassBattleSpec` authoré ──────
-const MB_KIND_LABEL: Record<string, string> = { test: 'Test', combat: 'Combat', threat: 'Menace', hold: 'Tenue', rally: 'Rassemblement' };
 
 /** Catalogue des Scènes de Round (`ActivityDef` contexte 'bataille-round') — source des pickers. */
 const BATTLE_SCENES = (): { id: string; label: string; sceneKind?: string }[] => activitiesFor('bataille-round');
@@ -982,7 +983,7 @@ function SceneMultiSelect({ value, onChange, placeholder }: { value: string[]; o
         <div key={i} className="de-reflrow">
           <select value={id} onChange={(ev) => set(list.map((s, j) => (j === i ? ev.target.value : s)))}>
             {!BATTLE_SCENES().some((o) => o.id === id) && <option value={id}>{id} (inconnu)</option>}
-            {BATTLE_SCENES().map((o) => <option key={o.id} value={o.id}>{o.label} · {MB_KIND_LABEL[o.sceneKind ?? '']}</option>)}
+            {BATTLE_SCENES().map((o) => <option key={o.id} value={o.id}>{o.label} · {libelleDeValeur(sceneKindSchema, o.sceneKind ?? '')}</option>)}
           </select>
           <button className="btn small danger" title="Retirer la Scène" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
         </div>

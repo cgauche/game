@@ -15,11 +15,13 @@ import { validateDataset, metaPourFichier, chargeDiscriminee, brouillonNeuf, noe
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
 import { valeursDe } from '../../data/schemas/grammaire/meta';
-import { entryKey, invalidateCodexLookup, OUTCOME_ON_LABEL, BATTLE_COND_LABEL, BATTLE_TARGET_LABEL, BATTLE_SCALE_LABEL, BATTLE_SIDE_LABEL } from './registry';
+import { entryKey, invalidateCodexLookup } from './registry';
 import { ACTIVITY_RESOLVERS, RESOLVER_OWNER, resolversOwnedBy } from '../../engine/activities';
 import type { ActivityContext, OutcomeBand, BattleOutcome, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond, ActivityResolver, ResolverOwner } from '../../engine/activities';
 import { weatherCondition } from '../../engine/travelStages';
 import { weatherIdSchema } from '../../data/schemas/defs/weather';
+import { outcomeOnSchema, battleCondSchema, battleOutcomeTargetSchema, battleOutcomeScaleSchema, battleSideSchema } from '../../data/schemas/defs/activities';
+import { waterAppliesToSchema, waterTableSchema } from '../../data/schemas/defs/water-exposure';
 import { RefField, refFieldCfg } from './RefField';
 import { DescRefField } from './DescRefField';
 import type { DescRef } from '../../data/source/decoupe';
@@ -41,7 +43,7 @@ import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from 
 import { TRIGGER_LABEL, ON_LABEL } from './triggerLabels';
 import type { ManeuverDef, ManeuverMeasure } from '../../data';
 import { SYMPTOM_SEVERITIES, SYMPTOM_SEVERITY_LABELS } from '../../data';
-import { ATTACK_LABEL, type AttackKind } from '../../engine/creatureAttacks';
+import type { AttackKind } from '../../engine/creatureAttacks';
 import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
 import type { Weapon } from '../../engine/types';
@@ -997,6 +999,10 @@ function TriggeredEffectsField({ value, onChange, label = 'effets déclenchés (
  *  générique et que le Codex — plus aucune table de libellés par valeur ici. */
 const optionsDe = (fichier: string, champ: string): [string, string][] => Object.entries(valeursDe(noeudDuChamp(fichier, champ)) ?? {});
 
+/** Options d'un nœud énuméré IMPORTÉ (enum NICHÉ, hors d'atteinte de `noeudDuChamp` qui ne voit que le
+ *  premier niveau) — même lecture, même déclaration : `valeursDe` du nœud lui-même. */
+const optionsDuNoeud = (noeud: unknown): [string, string][] => Object.entries(valeursDe(noeud) ?? {});
+
 /** Éditeur d'une MANŒUVRE (entité de 1ʳᵉ classe, `maneuvers.json`) : son PROFIL (type/activation/coût/
  *  jet/défense/ciblage/portée/magie) + ses effets AUTHORÉS (Dégâts + États en GameOp, via
  *  `TriggeredEffectsField`). Édite les champs TOP-LEVEL de `ManeuverDef` (id/label/desc/source restent
@@ -1031,7 +1037,7 @@ function ManeuverDefField({ entry, edit }: { entry: Entry; edit: (key: string, v
       <div className="tf-row">
         <label className="dr">Type (geste)
           <select value={m.kind ?? 'morsure'} onChange={(e) => edit('kind', e.target.value as AttackKind)}>
-            {(Object.keys(ATTACK_LABEL) as AttackKind[]).map((k) => <option key={k} value={k}>{ATTACK_LABEL[k]}</option>)}
+            {optionsDe('maneuvers.json', 'kind').map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </select>
         </label>
         <label className="dr">Activation
@@ -1380,13 +1386,8 @@ function WaterTestField({ value, onChange }: { value: WaterTest | undefined; onC
   );
 }
 
-/** Contextes d'application d'un modificateur d'Exposition hydrique (MSRC 16 p.91). */
-const WATER_APPLIES_TO: { id: 'ingestion' | 'immersion'; label: string }[] = [
-  { id: 'ingestion', label: 'Ingestion' }, { id: 'immersion', label: 'Immersion' },
-];
-const WATER_TABLE_OPTS: { id: 'source-d-eau' | 'blessures-et-etats'; label: string }[] = [
-  { id: 'source-d-eau', label: 'Source d’eau' }, { id: 'blessures-et-etats', label: 'Blessures et États' },
-];
+const WATER_APPLIES_TO_OPTS = optionsDuNoeud(waterAppliesToSchema) as [WaterExposureModifier['appliesTo'][number], string][];
+const WATER_TABLE_OPTS = optionsDuNoeud(waterTableSchema);
 
 /** Modificateurs du Test de Résistance d'Exposition hydrique (`waterExposure.modifiers`, MSRC 16 p.91) :
  *  id/libellé/valeur + contexte (Ingestion/Immersion, cumulables) + table d'origine. `auto` (dérivation
@@ -1409,13 +1410,13 @@ function WaterModifiersField({ value, onChange }: { value: WaterExposureModifier
             <input placeholder="libellé" value={m.label} onChange={(e) => set(i, { label: e.target.value })} />
             <NumberField variant="nu" label={`Modificateur — ${m.label || m.id || 'sans libellé'}`} width={64} value={m.mod} onChange={(mod) => set(i, { mod })} />
             <select value={m.table} onChange={(e) => set(i, { table: e.target.value as WaterExposureModifier['table'] })}>
-              {WATER_TABLE_OPTS.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+              {WATER_TABLE_OPTS.map(([id, l]) => <option key={id} value={id}>{l}</option>)}
             </select>
             <button className="btn small danger" title="Retirer" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
           </div>
           <div className="tf-row">
-            {WATER_APPLIES_TO.map((ctx) => (
-              <label className="dr" key={ctx.id}><input type="checkbox" checked={m.appliesTo.includes(ctx.id)} onChange={() => toggleAppliesTo(i, ctx.id)} /> {ctx.label}</label>
+            {WATER_APPLIES_TO_OPTS.map(([id, l]) => (
+              <label className="dr" key={id}><input type="checkbox" checked={m.appliesTo.includes(id)} onChange={() => toggleAppliesTo(i, id)} /> {l}</label>
             ))}
           </div>
           <JsonField label="condition automatique (auto — facultatif, dérivée du Combatant)" value={m.auto} onChange={(v) => set(i, { auto: v as WaterExposureModifier['auto'] })} />
@@ -1454,11 +1455,13 @@ function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['dis
 
 // ── Activités (`activities.json`, #168) — Test « posté » + table d'issues `OutcomeBand[]` ────────────
 const ACTIVITY_CONTEXTS = optionsDe('activities.json', 'contexts') as [ActivityContext, string][];
-const OUTCOME_ON_KEYS = Object.keys(OUTCOME_ON_LABEL) as ('success' | 'failure' | 'fumble')[];
-const BATTLE_COND_KEYS = Object.keys(BATTLE_COND_LABEL) as BattleCond[];
-const BATTLE_TARGET_KEYS = Object.keys(BATTLE_TARGET_LABEL) as BattleOutcomeTarget[];
-const BATTLE_SCALE_KEYS = Object.keys(BATTLE_SCALE_LABEL) as BattleOutcomeScale[];
-const BATTLE_SIDE_KEYS = Object.keys(BATTLE_SIDE_LABEL) as BattleSide[];
+// Les quatre `select` d'issue lisent leurs options SUR LE NŒUD de `activities.ts` (`enumNomme`, #1694) —
+// nœuds NICHÉS (`outcomes[].on`, `outcomes[].battle[].target`…), donc importés du def, pas `noeudDuChamp`.
+const OUTCOME_ON_OPTIONS = optionsDuNoeud(outcomeOnSchema);
+const BATTLE_COND_OPTIONS = optionsDuNoeud(battleCondSchema);
+const BATTLE_TARGET_OPTIONS = optionsDuNoeud(battleOutcomeTargetSchema);
+const BATTLE_SCALE_OPTIONS = optionsDuNoeud(battleOutcomeScaleSchema);
+const BATTLE_SIDE_OPTIONS = optionsDuNoeud(battleSideSchema);
 
 /** Test « posté » d'une Activité (`TestSpec` — LDB 12) : contextes de proposition + compétence(s) « au
  *  choix » (la meilleure de l'acteur est retenue) + caractéristique de repli + Difficulté. Réutilise
@@ -1505,15 +1508,15 @@ function BattleOutcomeListField({ value, onChange }: { value: BattleOutcome[] | 
       {list.map((o, i) => (
         <div className="tf-row" key={i}>
           <select value={o.target} onChange={(e) => set(i, { target: e.target.value as BattleOutcomeTarget })}>
-            {BATTLE_TARGET_KEYS.map((t) => <option key={t} value={t}>{BATTLE_TARGET_LABEL[t]}</option>)}
+            {BATTLE_TARGET_OPTIONS.map(([t, l]) => <option key={t} value={t}>{l}</option>)}
           </select>
           <select value={o.scale} onChange={(e) => set(i, { scale: e.target.value as BattleOutcomeScale })}>
-            {BATTLE_SCALE_KEYS.map((s) => <option key={s} value={s}>{BATTLE_SCALE_LABEL[s]}</option>)}
+            {BATTLE_SCALE_OPTIONS.map(([s, l]) => <option key={s} value={s}>{l}</option>)}
           </select>
           <label className="dr">montant<NumberField variant="nu" label="montant" width={72} value={o.amount} onChange={(amount) => set(i, { amount })} /></label>
           <select value={o.side ?? ''} onChange={(e) => set(i, { side: (e.target.value || undefined) as BattleSide | undefined })}>
             <option value="">— camp (auto) —</option>
-            {BATTLE_SIDE_KEYS.map((s) => <option key={s} value={s}>{BATTLE_SIDE_LABEL[s]}</option>)}
+            {BATTLE_SIDE_OPTIONS.map(([s, l]) => <option key={s} value={s}>{l}</option>)}
           </select>
           <button className="btn small danger" title="Retirer" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
         </div>
@@ -1596,7 +1599,7 @@ function OutcomeBandsField({ value, onChange }: { value: OutcomeBand[] | undefin
             <label className="dr">Issue
               <select value={b.on ?? ''} onChange={(e) => set(i, { on: (e.target.value || undefined) as OutcomeBand['on'] })}>
                 <option value="">— toute issue —</option>
-                {OUTCOME_ON_KEYS.map((o) => <option key={o} value={o}>{OUTCOME_ON_LABEL[o]}</option>)}
+                {OUTCOME_ON_OPTIONS.map(([o, l]) => <option key={o} value={o}>{l}</option>)}
               </select>
             </label>
             <label className="dr">DR min<NumberField variant="nu" label="DR min" width={64} vide value={b.minSL} onChange={(n) => set(i, { minSL: n ?? undefined })} /></label>
@@ -1604,7 +1607,7 @@ function OutcomeBandsField({ value, onChange }: { value: OutcomeBand[] | undefin
             <label className="dr">gate bataille
               <select value={b.when ?? ''} onChange={(e) => set(i, { when: (e.target.value || undefined) as BattleCond | undefined })}>
                 <option value="">— aucun —</option>
-                {BATTLE_COND_KEYS.map((c) => <option key={c} value={c}>{BATTLE_COND_LABEL[c]}</option>)}
+                {BATTLE_COND_OPTIONS.map(([c, l]) => <option key={c} value={c}>{l}</option>)}
               </select>
             </label>
             <button className="btn small danger" title="Supprimer la bande" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>

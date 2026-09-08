@@ -26,11 +26,30 @@ const maneuverMeasure = z.strictObject({
   plus: z.number().optional(),
 });
 
+/**
+ * FAMILLE d'attaque d'une manœuvre (`AttackKind`, `src/engine/creatureAttacks.ts`) — le libellé est
+ * celui de la FAMILLE, jamais l'affichage d'une manœuvre PRÉCISE (`ManeuverDef.label`, ex. « Souffle
+ * (Feu) ») : plusieurs `ManeuverDef` partagent un `kind` (6 souffles, 2 étreintes, 4 hurlements).
+ */
+export const attackKindSchema = enumNomme({
+  arme: 'Arme / griffes',
+  morsure: 'Morsure',
+  caudale: 'Attaque caudale',
+  cornes: 'Cornes',
+  souffle: 'Souffle',
+  vomi: 'Vomissement',
+  tentacules: 'Tentacules',
+  etreinte: 'Étreinte',
+  regard: 'Regard pétrifiant',
+  langue: 'Langue préhensile',
+  hurlement: 'Hurlement',
+});
+
 const doc = document(
   'maneuvers',
   famille,
   {
-    kind: z.enum(['arme', 'morsure', 'caudale', 'cornes', 'souffle', 'vomi', 'tentacules', 'etreinte', 'regard', 'langue', 'hurlement']),
+    kind: attackKindSchema,
     activation: enumNomme({ action: 'Action', free: 'Gratuite (coût d’Avantage)', charge: 'À la Charge' }),
     advantageCost: z.number(),
     advantageMode: enumNomme({ fixed: 'Coût fixe', variable: 'Au choix (+1 DR/Av)', all: 'Tout l’Avantage' }).optional(),

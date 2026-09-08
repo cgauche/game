@@ -8,7 +8,16 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { gameOpSchema } from '../grammaire/mecanique';
-import { plageSchema } from '../grammaire/valeurs';
+import { enumNomme, plageSchema } from '../grammaire/valeurs';
+
+/** Les 5 issues du Tableau d'Ivresse (lues par `drunkStaggers`/`soberUp`). */
+export const drunkennessOutcomeSchema = enumNomme({
+  bravoure: 'Bravoure du Marienburgher',
+  ami: 'Meilleur ami',
+  staggering: 'La pièce tourne',
+  belligerent: 'Tous, un par un',
+  blackout: 'Trou noir (gueule de bois)',
+});
 
 export const file = 'drunkenness.json';
 export const famille = 'config';
@@ -18,7 +27,7 @@ const drunkEntrySchema = z.strictObject({
   ...plageSchema.shape,
   id: z.string(),
   label: z.string(),
-  outcome: z.enum(['bravoure', 'ami', 'staggering', 'belligerent', 'blackout']),
+  outcome: drunkennessOutcomeSchema,
   desc: z.string(),
   ops: z.array(gameOpSchema).optional(),
 });

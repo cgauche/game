@@ -7,7 +7,15 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { plageSchema } from '../grammaire/valeurs';
+import { enumNomme, plageSchema } from '../grammaire/valeurs';
+
+/** Les 4 issues du tableau (`DrivingMishapOutcome`, lu par `mishapCausesCrash`). */
+export const drivingMishapOutcomeSchema = enumNomme({
+  harness: 'Harnais cassé',
+  jolt: 'Cahots de la route',
+  wheel: 'Roue brisée',
+  crash: 'Essieu cassé (Accidenté)',
+});
 
 export const file = 'driving-mishap.json';
 export const famille = 'config';
@@ -17,7 +25,7 @@ const mishapEntrySchema = z.strictObject({
   ...plageSchema.shape,
   id: z.string(),
   label: z.string(),
-  outcome: z.enum(['harness', 'jolt', 'wheel', 'crash']),
+  outcome: drivingMishapOutcomeSchema,
   desc: z.string(),
 });
 

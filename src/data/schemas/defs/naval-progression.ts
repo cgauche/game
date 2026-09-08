@@ -5,7 +5,16 @@
  */
 import { z } from 'zod';
 import { document, type DocumentARangees } from '../grammaire/document';
-import { plageSchema, sourceRefSchema } from '../grammaire/valeurs';
+import { enumNomme, plageSchema, sourceRefSchema } from '../grammaire/valeurs';
+
+/** Les 5 modes de déplacement de la table PROGRESSION D'UN NAVIRE (MDG 13 l.68-75). */
+export const progressionModeSchema = enumNomme({
+  plus2: 'Progression maximale (M+2)',
+  plus1: 'Bonne progression (M+1)',
+  normal: 'Progression normale (M)',
+  minus1: 'Progression lente (M−1)',
+  half: 'Lutte pour avancer (M÷2)',
+});
 
 export const file = 'naval-progression.json';
 export const famille = 'config';
@@ -15,7 +24,7 @@ const progressionEntrySchema = z.strictObject({
   ...plageSchema.shape,
   /** id STABLE = `mode` (déjà une clé fermée à 5 valeurs) — identité d'entrée pour le Codex (#422). */
   id: z.string(),
-  mode: z.enum(['plus2', 'plus1', 'normal', 'minus1', 'half']),
+  mode: progressionModeSchema,
   desc: z.string(),
   source: sourceRefSchema,
 });

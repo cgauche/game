@@ -7,7 +7,7 @@
  * CONCRÈTE à plat (`PortProfile` complet). Un port sans `ref` porte donc son profil en entier.
  */
 import { z } from 'zod';
-import { effectSchema } from './effets';
+import { effectSchema, waterExposureModeSchema } from './effets';
 import { conditionSchema } from '../grammaire/mecanique';
 import type { Condition } from '../../../engine/flowCore';
 
@@ -217,7 +217,7 @@ export const mapRouteSchema = z.strictObject({
   riverExposure: z
     .strictObject({
       source: z.string().optional(),
-      mode: z.enum(['ingestion', 'immersion']),
+      mode: waterExposureModeSchema,
       chancePct: z.number(),
     })
     .optional(),

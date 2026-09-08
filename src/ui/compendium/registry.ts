@@ -11,7 +11,7 @@ import { useSyncExternalStore } from 'react';
 import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, siegeEngines, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
-  stars, locations, findLocationById, books, bookAbr, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, advancementBaseId, weaponGroupLabel, trappingTypeLabel, qualitySubtypeLabel, qualityTypeLabel,
+  stars, locations, findLocationById, books, bookAbr, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, advancementBaseId, weaponGroupLabel, qualitySubtypeLabel, qualityTypeLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   allAxes,
@@ -28,6 +28,14 @@ import {
 import type { RaceKey, SourceRef } from '../../data/schemas/grammaire/valeurs';
 import type { EnveloppeDocument } from '../../data/schemas/grammaire/document';
 import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
+import { outcomeOnSchema, battleCondSchema, battleOutcomeTargetSchema, battleOutcomeScaleSchema, battleSideSchema } from '../../data/schemas/defs/activities';
+import { phenomenonKindSchema, phenomenonTestSchema, saturationTierSchema } from '../../data/schemas/defs/arcane-phenomena';
+import { drivingMishapOutcomeSchema } from '../../data/schemas/defs/driving-mishap';
+import { drunkennessOutcomeSchema } from '../../data/schemas/defs/drunkenness';
+import { progressionModeSchema } from '../../data/schemas/defs/naval-progression';
+import { waterTableSchema } from '../../data/schemas/defs/water-exposure';
+import { attackKindSchema } from '../../data/schemas/defs/maneuvers';
+import { trappingCategorieSchema } from '../../data/schemas/defs/trappings';
 import { MOUNT_PROFILES } from '../../engine/mountTravel';
 import { MOUNT_INCIDENTS, VEHICLE_PROBLEMS } from '../../engine/travelTables';
 import type { TravelTableEntry } from '../../engine/travelTables';
@@ -60,11 +68,10 @@ import { rangeSpecLabel, ammoRangeModLabel, conditionalDamageNote } from '../wea
 import { formatSpellRange, formatSpellTarget, formatSpellDuration } from '../../engine/spellRangeFormat';
 import { talentMaxLabel } from '../../engine/careerSlots';
 import type { AdvancementRef, TrappingRef, WaterExposureModifier, SpellData } from '../../data';
-import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { POWER_ESTIMATE, MIGHT_MODIFIERS, WAR_MACHINES, STRUCTURES as MASS_BATTLE_STRUCTURES, BATTLE_HAZARDS } from '../../engine/massBattle';
 import { AVAILABILITIES } from '../../engine/types';
 import { ACTIVITIES } from '../../engine/activities';
-import type { OutcomeBand, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond } from '../../engine/activities';
+import type { OutcomeBand } from '../../engine/activities';
 import { traitLabels, optionalLabels, traitArgSkeleton } from '../../engine/traits/dispatch';
 import { resolveQualities } from '../../engine/qualities/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
@@ -422,25 +429,6 @@ const QUALITY_CAP_LABEL: Record<string, string> = {
   unbreakable: 'Incassable', magic: 'Magique',
 };
 
-// ── Activités (activities.json) — libellés FR d'affichage, SOURCE UNIQUE partagée par la projection
-//    Codex ci-dessous ET l'éditeur `CodexEdit` (selects). La logique reste keyée par id STABLE. ──
-export const OUTCOME_ON_LABEL: Record<'success' | 'failure' | 'fumble', string> = {
-  success: 'Succès', failure: 'Échec', fumble: 'Maladresse',
-};
-export const BATTLE_COND_LABEL: Record<BattleCond, string> = {
-  generalDown: 'Général ennemi tombé', intervention: 'Un autre PJ a frappé',
-  noIntervention: 'Aucune intervention', combatWon: 'Combat gagné', combatLost: 'Combat perdu',
-};
-export const BATTLE_TARGET_LABEL: Record<BattleOutcomeTarget, string> = {
-  might: 'Puissance courante', startMight: 'Puissance de départ',
-  allyTestMod: 'Mod. Tests alliés (permanent)', firstRoundBonus: 'Bonus au 1er Round',
-  planningBonus: 'Bonus au prochain Test de Planification',
-};
-export const BATTLE_SCALE_LABEL: Record<BattleOutcomeScale, string> = {
-  fixed: 'Plat', perDR: '× DR', perHit: '× touches', perKill: '× ennemis tués',
-};
-export const BATTLE_SIDE_LABEL: Record<BattleSide, string> = { ally: 'Armée alliée', enemy: 'Armée ennemie' };
-
 /** Section « Issues par Degrés de Réussite » d'une Activité (bandes `OutcomeBand[]`) : une sous-tête par
  *  bande (issue + fourchette de DR + gate de bataille) puis note verbatim, résolveur, rendu, effets et
  *  issues de bataille. Vide si l'Activité n'a pas de table d'issues. */
@@ -449,9 +437,9 @@ function outcomeBandsSection(bands?: OutcomeBand[]): CodexSection | null {
   const rows: CodexRow[] = [];
   for (const b of bands) {
     const head = [
-      b.on ? OUTCOME_ON_LABEL[b.on] : 'Toute issue',
+      b.on ? libelleDeValeur(outcomeOnSchema, b.on) : 'Toute issue',
       b.minSL != null || b.maxSL != null ? `DR ${b.minSL ?? '−∞'} … ${b.maxSL ?? '+∞'}` : null,
-      b.when ? BATTLE_COND_LABEL[b.when] : null,
+      b.when ? libelleDeValeur(battleCondSchema, b.when) : null,
     ].filter(Boolean).join(' · ');
     rows.push({ t: 'sub', label: head });
     if (b.note) rows.push({ t: 'text', text: b.note });
@@ -461,7 +449,7 @@ function outcomeBandsSection(bands?: OutcomeBand[]): CodexSection | null {
     // `rollTable` expansé en ses rangées), jamais un compte. Même projection que « Tables d'effets ».
     if (b.ops?.length) rows.push(...opRows(b.ops));
     for (const o of b.battle ?? [])
-      rows.push({ t: 'kv', k: 'Bataille', v: `${BATTLE_TARGET_LABEL[o.target]} ${BATTLE_SCALE_LABEL[o.scale]} ${o.amount >= 0 ? '+' : ''}${o.amount}${o.side ? ` (${BATTLE_SIDE_LABEL[o.side]})` : ''}` });
+      rows.push({ t: 'kv', k: 'Bataille', v: `${libelleDeValeur(battleOutcomeTargetSchema, o.target)} ${libelleDeValeur(battleOutcomeScaleSchema, o.scale)} ${o.amount >= 0 ? '+' : ''}${o.amount}${o.side ? ` (${libelleDeValeur(battleSideSchema, o.side)})` : ''}` });
     if (b.chains?.length) rows.push({ t: 'kv', k: 'Enchaîne', v: b.chains.join(', ') });
   }
   return { title: 'Issues par Degrés de Réussite', layout: 'list', rows };
@@ -837,9 +825,6 @@ function manannFactorItem(f: ManannFactor): CodexItem {
   });
 }
 
-/** Libellé d'une TABLE de modificateur d'Exposition hydrique (MSRC 16 p.91, #157 suite). */
-const WATER_TABLE_LABEL: Record<string, string> = { 'source-d-eau': 'Source d’eau', 'blessures-et-etats': 'Blessures et États' };
-
 /** Section « Modificateurs » d'Exposition hydrique — groupée par table (Source d'eau / Blessures et
  *  États), chaque ligne portant son contexte d'application (Ingestion/Immersion). */
 function waterModifiersSection(mods: WaterExposureModifier[]): CodexSection | null {
@@ -847,7 +832,7 @@ function waterModifiersSection(mods: WaterExposureModifier[]): CodexSection | nu
   const groups = [...new Set(mods.map((m) => m.table))];
   const rows: CodexRow[] = [];
   for (const g of groups) {
-    rows.push({ t: 'sub', label: WATER_TABLE_LABEL[g] ?? g });
+    rows.push({ t: 'sub', label: libelleDeValeur(waterTableSchema, g) });
     for (const m of mods.filter((x) => x.table === g))
       rows.push({ t: 'kv', k: m.label, v: `${m.mod > 0 ? '+' : ''}${m.mod} (${m.appliesTo.join(', ')})` });
   }
@@ -895,12 +880,6 @@ function portCargoRow(id: string, qty?: number): CodexRow {
   return entry && isEchangeable(entry) ? { t: 'ref', category: 'seaCargo', id: entry.id, label, show } : { t: 'text', text: show };
 }
 
-/** Libellés FR des 5 modes de la table PROGRESSION D'UN NAVIRE (`naval-progression.json`, MDG 13 l.68-75). */
-const PROGRESSION_MODE_LABEL: Record<string, string> = {
-  plus2: 'Progression maximale (M+2)', plus1: 'Bonne progression (M+1)', normal: 'Progression normale (M)',
-  minus1: 'Progression lente (M−1)', half: 'Lutte pour avancer (M÷2)',
-};
-
 /** Libellés FR des 7 gabarits de coque standard (`ship-construction.json::standard`, MDG 12 l.120-129). */
 const SHIP_SIZE_LABEL: Record<string, string> = {
   minuscule: 'Minuscule', 'tres-petite': 'Très petite', petite: 'Petite', moyenne: 'Moyenne',
@@ -942,20 +921,6 @@ function shipConstructionRulesSection(): CodexSection {
 //    l'exposition, #422) ; Disponibilité & Troc est une FICHE DE RÈGLE UNIQUE (dataset-objet, patron
 //    `waterExposure`) ; Accidents de Conduite / Ivresse restent des CATÉGORIES-tableau (id/name déjà
 //    en donnée, MÊME patron que `incidentsMonture`/`problemesVehicule`). ──
-
-/** Libellés FR des 4 issues de l'Accident de Conduite d'attelage (`driving-mishap.json::outcome`, LDB 09
- *  l.140-149) — vocabulaire machine (`DrivingMishapOutcome`) lu par `mishapCausesCrash`. */
-const DRIVING_MISHAP_OUTCOME_LABEL: Record<string, string> = {
-  harness: 'Harnais cassé', jolt: 'Cahots de la route', wheel: 'Roue brisée', crash: 'Essieu cassé (Accidenté)',
-};
-
-/** Libellés FR des 5 résultats du Tableau d'Ivresse (`drunkenness.json::outcome`, LDB 09 l.475-481) —
- *  vocabulaire machine lu par `drunkStaggers`/`soberUp`. */
-const DRUNKENNESS_OUTCOME_LABEL: Record<string, string> = {
-  bravoure: 'Bravoure du Marienburgher', ami: 'Meilleur ami', staggering: 'La pièce tourne',
-  belligerent: 'Tous, un par un', blackout: 'Trou noir (gueule de bois)',
-};
-
 
 /** Valeur d'une règle optionnelle rendue LISIBLE (un booléen se lit « Activée »/« Désactivée », pas
  *  « true ») — `RuleValue` est une union fermée booléen | nombre | chaîne. */
@@ -1077,20 +1042,6 @@ function miscastRowItem(e: MiscastRowEntry): CodexItem {
   });
 }
 
-/** Libellé FR du `kind` d'un phénomène arcanique (VDM 14) — vocabulaire déjà porté par le RAW
- *  (« Jonction tellurique », « Pierre gardienne »…), jamais une paraphrase de règle. */
-const PHENOMENON_KIND_LABEL: Record<ArcanePhenomenon['kind'], string> = {
-  'ligne-de-force': 'Ligne de force', 'pierre-gardienne': 'Pierre gardienne', vortex: 'Vortex',
-  nexus: 'Jonction tellurique', 'appui-arcanique': 'Appui arcanique', tempete: 'Tempête de magie',
-  corruption: 'Corruption', site: 'Site',
-};
-const PHENOMENON_TEST_LABEL: Record<PhenomenonTestMod['tests'][number], string> = {
-  incantation: 'Incantation', focalisation: 'Focalisation', dissipation: 'Dissipation',
-};
-const SATURATION_TIER_LABEL: Record<WindSaturationEffects['effects'][number]['tier'], string> = {
-  premier: 'Premier signe', courant: 'Signe courant', extreme: 'Signe extrême',
-};
-
 /** Portée d'un modificateur de Test/NI environnemental (Domaines/Vent dominant/Magie du Chaos/Sorts
  *  nommés…) → texte compact, liens Domaine/Sort résolus par `refLabel`. */
 function phenomenonScopeLabel(scope: PhenomenonScope | CastingNumberScope | undefined): string | undefined {
@@ -1110,7 +1061,7 @@ function phenomenonScopeLabel(scope: PhenomenonScope | CastingNumberScope | unde
 
 /** Une rangée de Test (`PhenomenonTestMod`) → ligne Codex (Incantation/Focalisation +N DR, portée). */
 function testModRow(m: PhenomenonTestMod): CodexRow {
-  const tests = m.tests.map((t) => PHENOMENON_TEST_LABEL[t]).join(' / ');
+  const tests = m.tests.map((t) => libelleDeValeur(phenomenonTestSchema, t)).join(' / ');
   const drText = m.drMax != null && m.drMax !== m.dr
     ? `${m.dr >= 0 ? '+' : ''}${m.dr}…${m.drMax >= 0 ? '+' : ''}${m.drMax} DR`
     : `${m.dr >= 0 ? '+' : ''}${m.dr} DR`;
@@ -1193,12 +1144,12 @@ const CODEX_SPECS: CodexCategorySpec[] = [
           group: 'Effets de Saturation par Vent',
           sub: w.environments.join(', '),
           sections: sections(
-            { title: 'Effets de Saturation', layout: 'list', rows: w.effects.map((e) => ({ t: 'kv', k: SATURATION_TIER_LABEL[e.tier], v: e.label } as CodexRow)) },
+            { title: 'Effets de Saturation', layout: 'list', rows: w.effects.map((e) => ({ t: 'kv', k: libelleDeValeur(saturationTierSchema, e.tier), v: e.label } as CodexRow)) },
             w.surnoms.length ? { title: 'Surnoms', layout: 'chips', rows: w.surnoms.map((s) => ({ t: 'text', text: s } as CodexRow)) } : null,
           ),
         })),
         ...d.phenomena.map((p) => depuisEnveloppe(p, {
-          group: 'Phénomènes arcaniques', sub: PHENOMENON_KIND_LABEL[p.kind],
+          group: 'Phénomènes arcaniques', sub: libelleDeValeur(phenomenonKindSchema, p.kind),
           meta: facts(
             phenomenonSaturationFact(p.saturation),
             fact('Influence malfaisante', p.influenceMalveillante ? 'oui (WFJDR 236)' : null),
@@ -1273,14 +1224,14 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     key: 'drivingMishap', label: 'Accidents de Conduite d’attelage', group: 'Tables', cluster: 'Voyage terrestre', sourceRef: 'LDB 09',
     build: () => datasetArray('drivingMishap').map((e) => ({
       id: e.id, label: e.label, sub: `1d10 ${e.min}–${e.max}`, desc: e.desc,
-      meta: facts(fact('Type', DRIVING_MISHAP_OUTCOME_LABEL[e.outcome] ?? e.outcome)),
+      meta: facts(fact('Type', libelleDeValeur(drivingMishapOutcomeSchema, e.outcome))),
     })),
   },
   {
     key: 'drunkenness', label: 'Ivresse (Tableau)', group: 'Tables', sourceRef: 'LDB 09',
     build: () => datasetArray('drunkenness').map((e) => ({
       id: e.id, label: e.label, sub: `1d10 ${e.min}–${e.max}`, desc: e.desc,
-      meta: facts(fact('Type', DRUNKENNESS_OUTCOME_LABEL[e.outcome] ?? e.outcome)),
+      meta: facts(fact('Type', libelleDeValeur(drunkennessOutcomeSchema, e.outcome))),
       sections: sections(passiveSection(e.ops, 'Effet')),
     })),
   },
@@ -1549,7 +1500,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         ? fact('Portée', rangeSpecLabel(t.range) ?? ammoRangeModLabel(t.ammoRangeMod))
         : fact('Allonge', t.reach);
       return depuisEnveloppe(t, {
-        sub: join(trappingTypeLabel(t.categorie), weaponGroupLabel(t.subType) || undefined),
+        sub: join(libelleDeValeur(trappingCategorieSchema, t.categorie), weaponGroupLabel(t.subType) || undefined),
         meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Emplacement', t.loc), fact('Dégâts', damageFact(t)), fact('PA', t.pa), reachFact),
         sections: sections(
           chips('Qualités', 'qualities', resolveQualities({ qualities: t.qualities, subType: t.subType }).map((r) => qualityRefLabel({ id: r.id, value: r.indice }))),
@@ -1566,7 +1517,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // MÊME chemin — appearance.species = siegeRig) ET de « Possessions » pour les faits d'arme
     // (Portée/Dégâts) + Atouts (l'Indice « Arme d'équipe N » = équipage requis).
     build: () => siegeEngines().map((t) => depuisEnveloppe(t, {
-      sub: join(trappingTypeLabel(t.categorie), weaponGroupLabel(t.subType) || undefined),
+      sub: join(libelleDeValeur(trappingCategorieSchema, t.categorie), weaponGroupLabel(t.subType) || undefined),
       // Aperçu rig de l'affût, résolu comme une créature (par id + apparence species).
       appearance: { species: t.siegeRig! }, previewRef: t.siegeRig!,
       meta: facts(
@@ -1680,7 +1631,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // Une manœuvre est la PROJECTION mécanique d'un Trait de créature (#1226) : la prose affichée est le
     // VERBATIM du trait projetant (`traitProjectingManeuver`), jamais un résumé recopié dans la manœuvre.
     build: () => maneuvers.map((m) => depuisEnveloppe(m, {
-      sub: ATTACK_LABEL[m.kind], desc: traitProjectingManeuver(m.id)?.desc,
+      sub: libelleDeValeur(attackKindSchema, m.kind), desc: traitProjectingManeuver(m.id)?.desc,
       meta: facts(
         fact('Activation', valeurFR('maneuvers.json', 'activation', m.activation)),
         fact('Coût Av', m.advantageCost),
@@ -2288,7 +2239,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'navalProgression', label: 'Progression de navire (DR de Navigation → Mouvement)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG 13',
     build: () => datasetArray('navalProgression').map((e) => ({
-      id: e.id, label: PROGRESSION_MODE_LABEL[e.mode] ?? e.mode,
+      id: e.id, label: libelleDeValeur(progressionModeSchema, e.mode),
       sub: `DR ${e.min}…${e.max}`, desc: e.desc, source: src(e.source),
     })),
   },

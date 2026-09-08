@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { creatureAttacks, ATTACK_LABEL } from './creatureAttacks';
+import { creatureAttacks } from './creatureAttacks';
 import { difficultyFromLabel } from './tests';
 import type { TraitInstance } from './statEntry';
 
@@ -74,8 +74,5 @@ describe('creatureAttacks — attaques + RÈGLES dérivées des traits (RAW)', (
   });
   it('ignore les traits non-attaque (Armure, Taille, Vol…)', () => {
     expect(creatureAttacks([{ id: 'armure', value: 3 }, { id: 'taille', arg: 'Grande' }, { id: 'vision-nocturne' }])).toEqual([]);
-  });
-  it('chaque type a un libellé FR', () => {
-    expect(ATTACK_LABEL.caudale).toBe('Attaque caudale');
   });
 });

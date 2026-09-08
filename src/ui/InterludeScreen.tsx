@@ -22,7 +22,9 @@ import { testValue } from '../engine/skills';
 import { combatValue } from '../engine/combat';
 import { RULE_REF } from '../engine/ruleRefs';
 import { buildWeapon } from '../engine/items';
-import { findTalentById, skillInstanceLabel, findTrappingById, qualities, refLabel, trappingTypeLabel, activityStakeRef, hasActivityStake } from '../data';
+import { findTalentById, skillInstanceLabel, findTrappingById, qualities, refLabel, activityStakeRef, hasActivityStake } from '../data';
+import { libelleDeValeur } from '../data/schemas/grammaire/meta';
+import { trappingCategorieSchema } from '../data/schemas/defs/trappings';
 import type { Combatant, ConditionId } from '../engine/types';
 import { rule } from '../engine/policy';
 import { effectiveEntry } from '../engine/variants';
@@ -669,7 +671,7 @@ function TrappingSelect({ options, value, onChange, detail }: {
   const families = useMemo(() => {
     const m = new Map<string, typeof filtered>();
     for (const o of filtered) {
-      const f = trappingTypeLabel(o.categorie) || 'Équipement';
+      const f = (o.categorie ? libelleDeValeur(trappingCategorieSchema, o.categorie) : '') || 'Équipement';
       if (!m.has(f)) m.set(f, []);
       m.get(f)!.push(o);
     }

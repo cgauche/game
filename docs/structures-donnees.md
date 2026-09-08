@@ -3715,8 +3715,8 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 
 | Def | Ligne | Champ | Concept | Statut | Empreinte | Schéma commun candidat |
 |---|---|---|---|---|---|---|
-| `activities.ts` | 98 | — | test | divergente | `char,difficulty+…` | — |
-| `arcane-phenomena.ts` | 153 | `controlFlux` | test | divergente | `difficulty+…` | — |
+| `activities.ts` | 127 | — | test | divergente | `char,difficulty+…` | — |
+| `arcane-phenomena.ts` | 177 | `controlFlux` | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 86 | — | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 96 | `loss` | test | divergente | `difficulty+…` | — |
 | `etats.ts` | 25 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
@@ -3757,9 +3757,9 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `tavernGames.ts` | 76 | `options` | test | divergente | `char,difficulty,skill+…` | — |
 | `tavernGames.ts` | 103 | `rows` | plage | cible | `max,min+…` | — |
 | `tavernGames.ts` | 140 | `throwerPenalty` | test | divergente | `difficulty+…` | — |
-| `water-exposure.ts` | 17 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
-| `water-exposure.ts` | 18 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
-| `water-exposure.ts` | 28 | `test` | test | historique | `difficulty,skill` | — |
+| `water-exposure.ts` | 23 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
+| `water-exposure.ts` | 24 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
+| `water-exposure.ts` | 34 | `test` | test | historique | `difficulty,skill` | — |
 | `weather.ts` | 76 | `resistanceTest` | test | divergente | `difficulty+…` | — |
 
 ## 5. Ops en donnée (strate Ops)
@@ -4951,4 +4951,4 @@ pèse **2950** slots sur 3304.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: 28c9fa51248e13c5b58e0749d80c5c16a0307187 (372 fichiers, 10 dossiers) corps: 5c4a426d8dd0fb805a492d118215c354c0cf7ab0 -->
+<!-- sources-empreinte: f61f053265a95fd1acc4bd77c21b42acd2c98e23 (372 fichiers, 10 dossiers) corps: 8bbb86c37ed9699ddc95a5be086b0ac6d24f08ba -->

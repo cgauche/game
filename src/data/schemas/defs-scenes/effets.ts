@@ -17,6 +17,7 @@ import { hitLocationSchema, moneyPartialSchema, refTestDeCorruption } from '../g
 import { conditionSchema, effectOpSchema, extendedTestSchema, gameOpSchema, noeudTest } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
 import { customStatblockSchema, ptSchema, wallSideSchema } from './communs';
+import { waterAppliesToSchema } from '../defs/water-exposure';
 import type { Effect } from '../../../state/scene';
 import type { Flow } from '../../../engine/flowCore';
 
@@ -34,8 +35,9 @@ export const livingRefSchema = z.union([
 ]);
 /** `ChaosAlign` (`engine/corruption.ts`) — Puissance du Chaos d'une table de mutation alignée. */
 export const chaosAlignSchema = z.enum(['toute', 'khorne', 'nurgle', 'slaanesh', 'tzeentch']);
-/** `WaterExposureMode` (`src/data/index.ts`) — `MSRC 16` : boire, ou être immergé. */
-export const waterExposureModeSchema = z.enum(['ingestion', 'immersion']);
+/** `WaterExposureMode` (`src/data/index.ts`) — `MSRC 16` : boire, ou être immergé. MÊME vocabulaire
+ *  que `waterExposure.modifiers[].appliesTo` : la const NOMMÉE du def de règle est partagée (#1694). */
+export const waterExposureModeSchema = waterAppliesToSchema;
 /** `FavorLevel` (`engine/favor.ts`) — Niveau d'une Faveur due (`LDB 23 l.145-151`). */
 export const favorLevelSchema = z.enum(['mineure', 'majeure', 'importante']);
 /** `CrewHire` (`engine/crewMorale.ts`) — un rôle d'équipage salarié et son effectif. */

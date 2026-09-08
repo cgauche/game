@@ -3143,20 +3143,6 @@ export function weaponGroupLabel(id: string | null | undefined): string {
 /** VOCABULAIRE FERMÉ des catégories de possession (`TrappingData.categorie`), miroir de l'enum du
  *  schéma `src/data/schemas/defs/trappings.ts` — une union, pas un registre de données. */
 export type TrappingTypeId = 'melee' | 'ranged' | 'ammunition' | 'armor' | 'trapping';
-/** Libellés FR des CATÉGORIES de possession — SOURCE UNIQUE : l'enum est un id de logique, il ne s'affiche
- *  jamais nu (« ammunition » lu à l'écran, grief du juge vision). Table EXHAUSTIVE par son type de
- *  clé : tout membre nouveau du vocabulaire sans libellé est un échec `tsc`. */
-const TRAPPING_TYPE_LABEL: Record<TrappingTypeId, string> = {
-  melee: 'Armes de mêlée',
-  ranged: 'Armes à distance',
-  ammunition: 'Munitions',
-  armor: 'Armures',
-  trapping: 'Équipement',
-};
-/** Libellé d'affichage d'une catégorie de possession par son id (repli sur l'id). */
-export function trappingTypeLabel(id: string | null | undefined): string {
-  return id ? (TRAPPING_TYPE_LABEL[id as TrappingTypeId] ?? id) : '';
-}
 const armeParLabelNormalise = indexParChamp('trappings', trappings, (t) =>
   (t.categorie === 'melee' || t.categorie === 'ranged') && t.subType ? norm(t.label) : undefined);
 /** `id` de Groupe d'arme (`TrappingData.subType`) depuis un LIBELLÉ d'arme SAISI (arme custom, statbloc

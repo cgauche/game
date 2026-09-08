@@ -5,19 +5,23 @@
  * d'un vocabulaire d'enum déjà porté par le registre — c'est-à-dire une SECONDE vérité à côté du
  * libellé qui vit sur le NŒUD (`enumNomme`, `grammaire/valeurs.ts`) ?
  *
- * DÉTECTEUR STRUCTUREL (jamais un grep de nom `_LABEL`) : un littéral d'objet de niveau module dont
- * le JEU DE CLÉS est inclus dans les options d'un des vocabulaires atteints par `DEFS_DE_DOCUMENT`
- * (≥ 2 clés, couverture ≥ 60 % du vocabulaire) et dont les VALEURS sont du texte FR. La table de
- * libellés passée à `enumNomme` est le FOYER : elle est écartée par construction (littéral argument,
+ * DÉTECTEUR STRUCTUREL (jamais un grep de nom `_LABEL`), DEUX FORMES du même faux : (a) le Record —
+ * un littéral d'objet dont le JEU DE CLÉS est inclus dans les options d'un des vocabulaires atteints
+ * par `DEFS_DE_DOCUMENT` (≥ 2 clés, couverture ≥ 60 % du vocabulaire) et dont les VALEURS sont du
+ * texte FR ; (b) la TABLE `[{ id: '…', label: '…' }, …]` déclarée au niveau module, où l'`id` tient
+ * la clé et le `label` la valeur — mêmes deux règles, mêmes seuils. La forme (b) exige que CHAQUE
+ * objet de la table porte les deux champs en chaîne littérale, ce qui laisse dehors les rangées
+ * d'action poussées une à une (`state/combatManeuvers.ts`, `out.push({ id, label, icon, … })`).
+ * La table de libellés passée à `enumNomme` est le FOYER : elle est écartée par construction (littéral argument,
  * ou constante nommée passée à `enumNomme` dans le même fichier), pas par une liste de fichiers.
  *
  * Deux RÈGLES, jamais une liste d'exceptions. (1) « VALEUR = texte FR » : aucune valeur ne doit
  * ressembler à un identifiant (point/slash/underscore, camelCase, PascalCase composé, kebab minuscule,
  * sigle d'une lettre) et au moins une doit porter une marque de texte FR (espace, accent, apostrophe,
  * mot capitalisé). Le « mot capitalisé » reste de la partie : le resserrer à accent/espace/apostrophe
- * a été MESURÉ et perdrait quatre VRAIS Records (`seaWeather.ts:WIND_DIRECTION_LABEL`,
- * `ShipSheet.tsx:DIR_LABEL`, `registry.ts:PHENOMENON_TEST_LABEL`, `EffectList.tsx:MB_KIND_LABEL` —
- * Nord/Sud/Est/Ouest, Incantation/Focalisation/Dissipation…). (2) « table de SEGMENTS DE CLÉ » : un
+ * a été MESURÉ sur le stock et perdrait les deux Records qui ne tiennent QUE par lui
+ * (`seaWeather.ts:WIND_DIRECTION_LABEL` et `ShipSheet.tsx:DIR_LABEL` — Nord/Sud/Est/Ouest,
+ * Nord-Est/Sud-Ouest…). (2) « table de SEGMENTS DE CLÉ » : un
  * Record dont TOUTES les lectures `NOM[…]` sont des interpolations d'un gabarit qui ne fabrique QUE
  * des caractères d'identifiant ne porte pas des libellés mais des morceaux de clé — c'est ce qui
  * écarte `shipCritical.ts:SHIP_CRIT_CODEX_SEGMENT`, dont les valeurs sont concaténées en catégorie
@@ -89,12 +93,48 @@ const RX_LITTERAL =
 const RX_PAIRE =
   /(?:'([^']+)'|"([^"]+)"|([A-Za-z_$][\w$]*))\s*:\s*(?:'([^']*)'|"([^"]*)"|`([^`]*)`)/g;
 
+/** L'autre FORME du même faux : la TABLE `[{ id: '…', label: '…' }, …]` déclarée au niveau module —
+ *  la clé du vocabulaire y est l'`id`, le libellé le `label`. Mêmes deux règles, mêmes seuils. */
+const RX_TABLE =
+  /(?:^|\n)(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)[^=\n]*=\s*\[\s*((?:\{[^{}]*\}\s*,?\s*)+)\]/g;
+const RX_OBJET = /\{[^{}]*\}/g;
+
+/** Les couples (id, label) d'une table — `undefined` dès qu'un objet de la table n'a pas les DEUX en
+ *  chaîne littérale (ce n'est alors pas une table de libellés d'options). */
+function couplesIdLabel(corps: string): { ids: string[]; labels: string[] } | undefined {
+  const ids: string[] = [];
+  const labels: string[] = [];
+  for (const objet of corps.match(RX_OBJET) ?? []) {
+    const paires = [...objet.matchAll(RX_PAIRE)];
+    const par = new Map(paires.map((x) => [x[1] ?? x[2] ?? x[3], x[4] ?? x[5] ?? x[6]] as const));
+    const id = par.get('id');
+    const label = par.get('label');
+    if (id === undefined || label === undefined) return undefined;
+    ids.push(id);
+    labels.push(label);
+  }
+  return ids.length ? { ids, labels } : undefined;
+}
+
 export type Fichier = { readonly chemin: string; readonly source: string };
 
 /** Le détecteur, appliqué à des SOURCES données — donc jouable sur une COPIE (contrôle positif). */
 export function recordsDeLibelles(fichiers: readonly Fichier[], vocabulaires: readonly Set<string>[]): string[] {
   const trouvailles: string[] = [];
+  const couvert = (cles: readonly string[]): boolean =>
+    vocabulaires.some((set) => set.size >= 2 && cles.every((k) => set.has(k)) && cles.length / set.size >= 0.6);
   for (const { chemin, source } of fichiers) {
+    let t: RegExpExecArray | null;
+    RX_TABLE.lastIndex = 0;
+    while ((t = RX_TABLE.exec(source))) {
+      const nom = t[1];
+      const couples = couplesIdLabel(t[2]);
+      if (!couples || couples.ids.length < 2) continue;
+      if (couples.labels.some(estIdentifiant) || !couples.labels.some(marqueFR)) continue;
+      if (estTableDeSegments(nom, source)) continue;
+      if (!couvert(couples.ids)) continue;
+      trouvailles.push(`${chemin}:${nom}`);
+    }
     let m: RegExpExecArray | null;
     RX_LITTERAL.lastIndex = 0;
     while ((m = RX_LITTERAL.exec(source))) {
@@ -108,10 +148,7 @@ export function recordsDeLibelles(fichiers: readonly Fichier[], vocabulaires: re
       const nom = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)[^=]*=\s*$/.exec(avant)?.[1];
       if (nom && new RegExp('enumNomme[(]\\s*' + nom + '[^A-Za-z0-9_$]').test(source)) continue;
       if (nom && estTableDeSegments(nom, source)) continue;
-      const couvre = vocabulaires.some(
-        (set) => set.size >= 2 && cles.every((k) => set.has(k)) && cles.length / set.size >= 0.6,
-      );
-      if (!couvre) continue;
+      if (!couvert(cles)) continue;
       trouvailles.push(`${chemin}:${nom ?? `ligne ${avant.split('\n').length}`}`);
     }
   }
@@ -137,15 +174,17 @@ function sourcesDuDepot(): Fichier[] {
 
 /**
  * STOCK NOMINATIF GELÉ, par `fichier:symbole` — les Records de libellés de valeurs qui vivaient déjà
- * hors de la grammaire quand le cliquet est né (#1694 train A). Il ne GRANDIT jamais : nommer un
- * vocabulaire par `enumNomme` retire sa ligne d'ici (train B).
+ * hors de la grammaire quand le cliquet est né (#1694 train A). Aucune DETTE NEUVE n'y entre : nommer
+ * un vocabulaire par `enumNomme` retire sa ligne d'ici (train B). Les deux TABLES `[{id,label}]`
+ * (`combat.ts:RANGE_BANDS`, `Inspector.tsx:ROOF_PROFILES`) sont entrées le jour où le détecteur a
+ * couvert la forme (b) — elles préexistaient toutes deux au cliquet, la COUVERTURE a grandi, pas la dette.
  */
 const STOCK: readonly string[] = [
   'src/data/index.ts:SYMPTOM_SEVERITY_LABELS',
-  'src/data/index.ts:TRAPPING_TYPE_LABEL',
   'src/engine/corruption.ts:CHAOS_ALIGN_LABELS',
   'src/engine/corruption.ts:EXPOSURE_LABELS',
-  'src/engine/creatureAttacks.ts:ATTACK_LABEL',
+  'src/engine/combat.ts:RANGE_BANDS',
+  'src/ui/editor/Inspector.tsx:ROOF_PROFILES',
   'src/engine/seaWeather.ts:WIND_DIRECTION_LABEL',
   'src/engine/size.ts:SIZE_LABEL',
   'src/state/combatFlow.ts:CRIT_TABLE_LABELS',
@@ -154,30 +193,14 @@ const STOCK: readonly string[] = [
   'src/ui/CityHubScreen.tsx:SCENE_WEATHER_LABEL',
   'src/ui/EquipmentPanel.tsx:ZONE_OF_LOC',
   'src/ui/InterludeScreen.tsx:FAVOR_LEVEL_LABELS',
-  'src/ui/ShipDossier.tsx:RIG_LABEL',
   'src/ui/ShipSheet.tsx:DIR_LABEL',
-  'src/ui/ShipSheet.tsx:RIG_LABEL',
-  'src/ui/ShipSheet.tsx:SIDE_LABEL',
   'src/ui/compendium/CodexEdit.tsx:SPECS_SOURCE_LABEL',
-  'src/ui/compendium/StructFields.tsx:BYPASS_LABEL',
   'src/ui/compendium/humanize.ts:FIELD',
   'src/ui/compendium/humanize.ts:REL_PLAYER',
   'src/ui/compendium/humanize.ts:SENSE_LABEL',
   'src/ui/compendium/humanize.ts:negTable',
   'src/ui/compendium/humanize.ts:table',
-  'src/ui/compendium/registry.ts:BATTLE_COND_LABEL',
-  'src/ui/compendium/registry.ts:BATTLE_SCALE_LABEL',
-  'src/ui/compendium/registry.ts:BATTLE_SIDE_LABEL',
-  'src/ui/compendium/registry.ts:BATTLE_TARGET_LABEL',
-  'src/ui/compendium/registry.ts:DRIVING_MISHAP_OUTCOME_LABEL',
-  'src/ui/compendium/registry.ts:DRUNKENNESS_OUTCOME_LABEL',
-  'src/ui/compendium/registry.ts:OUTCOME_ON_LABEL',
-  'src/ui/compendium/registry.ts:PHENOMENON_KIND_LABEL',
-  'src/ui/compendium/registry.ts:PHENOMENON_TEST_LABEL',
-  'src/ui/compendium/registry.ts:PROGRESSION_MODE_LABEL',
-  'src/ui/compendium/registry.ts:SATURATION_TIER_LABEL',
   'src/ui/compendium/registry.ts:SHIP_SIZE_LABEL',
-  'src/ui/compendium/registry.ts:WATER_TABLE_LABEL',
   'src/ui/compendium/triggerLabels.ts:ON_LABEL',
   'src/ui/compendium/triggerLabels.ts:TRIGGER_LABEL',
   'src/ui/editor/ConditionEditor.tsx:FIELD_LABEL',
@@ -185,7 +208,6 @@ const STOCK: readonly string[] = [
   'src/ui/editor/ConditionEditor.tsx:STARTLE_CAUSE_LABELS',
   'src/ui/editor/ConditionEditor.tsx:WHO_LABEL',
   'src/ui/editor/ConditionEditor.tsx:WHAT_LABEL',
-  'src/ui/editor/EffectList.tsx:MB_KIND_LABEL',
   'src/ui/editor/GameOpEditor.tsx:NATURE_INFLUENCE',
   'src/ui/editor/editorState.ts:KIND_LABEL',
 ].sort();
@@ -222,6 +244,30 @@ describe('cliquet — un libellé de valeur vit sur le NŒUD, jamais dans un Rec
       },
     ];
     expect(recordsDeLibelles(copie, vocabulaires)).toEqual(['src/ui/CopieDeControle.tsx:KIND_INJECTE']);
+  });
+
+  it('contrôle positif : la FORME TABLE `[{id,label}]` injectée dans une COPIE est VUE', () => {
+    const copie: Fichier[] = [
+      {
+        chemin: 'src/ui/CopieDeControle.tsx',
+        source:
+          "const NATURE_TABLE: { id: 'physique' | 'mentale'; label: string }[] = [\n" +
+          "  { id: 'physique', label: 'Physique' }, { id: 'mentale', label: 'Mentale' },\n];\n",
+      },
+    ];
+    expect(recordsDeLibelles(copie, vocabulaires)).toEqual(['src/ui/CopieDeControle.tsx:NATURE_TABLE']);
+  });
+
+  it('une rangée d’action poussée une à une n’est pas une table de libellés', () => {
+    const copie: Fichier[] = [
+      {
+        chemin: 'src/state/CopieDeControle.ts',
+        source:
+          "out.push({ id: 'physique', label: 'Physique', icon: 'a/b' });\n" +
+          "out.push({ id: 'mentale', label: 'Mentale', icon: 'a/c' });\n",
+      },
+    ];
+    expect(recordsDeLibelles(copie, vocabulaires)).toEqual([]);
   });
 
   it('la règle « valeur = texte FR » écarte les tables clé→clé, sans liste d’exceptions', () => {

@@ -10,6 +10,8 @@ import { provisioningManifest } from '../engine/provisions';
 import { fromBrass } from '../engine/money';
 import { bulkCarriers, type CarrierStateSlice } from '../state/carriers';
 import { Coins } from './Coins';
+import { libelleDeValeur } from '../data/schemas/grammaire/meta';
+import { rigSchema } from '../data/schemas/defs/vehicles';
 import { Icon } from './Icon';
 import { NotchGauge, type GaugeTone } from './NotchGauge';
 import { moraleTone, crewRoleLabel } from './shipStatus';
@@ -27,9 +29,6 @@ import { ShipPreview } from './ShipPreview';
  * ≤900/700/560 via `.layout-sidebar`/`.panel-grid`. La coque reste une JAUGE (pas de silhouette à
  * localisations — arbitrage USER). La fiche de combat `PosteSheet` (postes/manœuvre) reste distincte.
  */
-
-/** Gréement (colonne de Localisation des Dégâts, MDG 13) → libellé d'affichage. */
-const RIG_LABEL: Record<string, string> = { avirons: 'Avirons', voile: 'Voile', mixte: 'Mixte (voile et avirons)' };
 
 /** Humeur de Manann (MDG 15) → ton par SIGNE : favorable = ok, courroucée = danger, neutre = neutral. */
 const manannTone = (score: number): GaugeTone => (score > 0 ? 'ok' : score < 0 ? 'danger' : 'neutral');
@@ -108,7 +107,7 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
       className="port-overlay ship-dossier"
       title={<>
         <Icon id="travel/sail-ship" size="sm" /> {name}
-        <span className="char-sub"> — {vd.label}{rig ? ` · ${RIG_LABEL[rig] ?? rig}` : ''}</span>
+        <span className="char-sub"> — {vd.label}{rig ? ` · ${libelleDeValeur(rigSchema, rig)}` : ''}</span>
       </>}
       onClose={onClose}
       body="centered"
@@ -129,7 +128,7 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
             <ShipPreview vehicleId={vessel.vehicleId} sunk={woundsCur <= 0} label={name} />
             <div>
               <h3>{name}</h3>
-              <p className="port-hint">{vd.label}{rig ? ` · ${RIG_LABEL[rig] ?? rig}` : ''}{vd.ship.lengthM ? ` · ${vd.ship.lengthM} m` : ''}</p>
+              <p className="port-hint">{vd.label}{rig ? ` · ${libelleDeValeur(rigSchema, rig)}` : ''}{vd.ship.lengthM ? ` · ${vd.ship.lengthM} m` : ''}</p>
               <p>Coque : <b>{woundsCur}</b> / {woundsMax} Blessure(s){woundsCur <= 0 ? ' — épave, échouée' : missing > 0 ? ' — avariée' : ' — intacte'}</p>
             </div>
           </section>

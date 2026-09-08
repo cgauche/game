@@ -5,11 +5,17 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema, plageSchema } from '../grammaire/valeurs';
+import { difficultySchema, enumNomme, plageSchema } from '../grammaire/valeurs';
 import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'water-exposure.json';
 export const famille = 'config';
+
+/** Les deux tables de modificateurs d'Exposition hydrique (MSRC 16 p.91). */
+export const waterTableSchema = enumNomme({ 'source-d-eau': 'Source d’eau', 'blessures-et-etats': 'Blessures et États' });
+
+/** Les deux contextes d'application d'un modificateur d'Exposition hydrique (MSRC 16 p.91). */
+export const waterAppliesToSchema = enumNomme({ ingestion: 'Ingestion', immersion: 'Immersion' });
 
 /** Union PLATE (pas `discriminatedUnion` — `woundsLost` a 2 formes selon `op`, discriminant non-unique
  *  sur `kind` seul). */
@@ -35,8 +41,8 @@ const doc = document(
       id: z.string(),
       label: z.string(),
       mod: z.number(),
-      appliesTo: z.array(z.enum(['ingestion', 'immersion'])),
-      table: z.enum(['source-d-eau', 'blessures-et-etats']),
+      appliesTo: z.array(waterAppliesToSchema),
+      table: waterTableSchema,
       auto: waterExposureAutoSchema.optional(),
     }),
   ),

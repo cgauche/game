@@ -183,7 +183,7 @@ Soin aux animaux, Voile**
 **Sources RAW :** LDB 09 l.65-574 (descriptions individuelles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.65-574) → `mendier-ennuis`, `GearAssignList`, `rollDrivingMishap` ⚠sans-appelant, `altCharKey`, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `accidents-conduite-attelage`, `actBlockReason`, `skillAdvantageCap`, `carryOverState`, +103 — `src/data/activities.json`, `src/data/combat-stakes.json`, `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, +40 fichiers
+- `LDB 9` (l.65-574) → `mendier-ennuis`, `GearAssignList`, `rollDrivingMishap` ⚠sans-appelant, `altCharKey`, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `accidents-conduite-attelage`, `actBlockReason`, `skillAdvantageCap`, `carryOverState`, +102 — `src/data/activities.json`, `src/data/combat-stakes.json`, `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, +39 fichiers
 
 ---
 

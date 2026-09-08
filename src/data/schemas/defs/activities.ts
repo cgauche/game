@@ -51,9 +51,20 @@ const activityContextSchema = enumNomme({
   auberge: 'Auberge (hub de ville)',
 });
 
-const battleSideSchema = z.enum(['ally', 'enemy']);
-const battleOutcomeTargetSchema = z.enum(['might', 'startMight', 'allyTestMod', 'firstRoundBonus', 'planningBonus']);
-const battleOutcomeScaleSchema = z.enum(['fixed', 'perDR', 'perHit', 'perKill']);
+export const battleSideSchema = enumNomme({ ally: 'Armée alliée', enemy: 'Armée ennemie' });
+export const battleOutcomeTargetSchema = enumNomme({
+  might: 'Puissance courante',
+  startMight: 'Puissance de départ',
+  allyTestMod: 'Mod. Tests alliés (permanent)',
+  firstRoundBonus: 'Bonus au 1er Round',
+  planningBonus: 'Bonus au prochain Test de Planification',
+});
+export const battleOutcomeScaleSchema = enumNomme({
+  fixed: 'Plat',
+  perDR: '× DR',
+  perHit: '× touches',
+  perKill: '× ennemis tués',
+});
 
 const battleOutcomeSchema = z.strictObject({
   side: battleSideSchema.optional(),
@@ -62,7 +73,13 @@ const battleOutcomeSchema = z.strictObject({
   amount: z.number(),
 });
 
-const battleCondSchema = z.enum(['generalDown', 'intervention', 'noIntervention', 'combatWon', 'combatLost']);
+export const battleCondSchema = enumNomme({
+  generalDown: 'Général ennemi tombé',
+  intervention: 'Un autre PJ a frappé',
+  noIntervention: 'Aucune intervention',
+  combatWon: 'Combat gagné',
+  combatLost: 'Combat perdu',
+});
 
 /** `ActivityResolver` (`src/engine/activities.ts`) — VOCABULAIRE FERMÉ des résolveurs bespoke
  *  d'Activité (dispatch `runActivityResolver`/`seaActivities`/`travelPostes`/`battleActivities`).
@@ -79,8 +96,20 @@ const activityResolverSchema = z.enum([
   'forage', 'seaChart', 'opportunityTrade', 'crewTraining',
 ]);
 
+/** Nature d'une Scène de Round de Bataille de masse (ADE II 8). */
+export const sceneKindSchema = enumNomme({
+  test: 'Test',
+  combat: 'Combat',
+  threat: 'Menace',
+  hold: 'Tenue',
+  rally: 'Rassemblement',
+});
+
+/** Issue du Test qui ouvre une bande (absente = toute issue). */
+export const outcomeOnSchema = enumNomme({ success: 'Succès', failure: 'Échec', fumble: 'Maladresse' });
+
 const outcomeBandSchema = z.strictObject({
-  on: z.enum(['success', 'failure', 'fumble']).optional(),
+  on: outcomeOnSchema.optional(),
   minSL: z.number().optional(),
   maxSL: z.number().optional(),
   ops: z.array(gameOpSchema).optional(),
@@ -142,7 +171,7 @@ const doc = document(
       gap: z.enum(['armyMight']),
       roundTo: z.number().optional(),
     }).optional(),
-    sceneKind: z.enum(['test', 'combat', 'threat', 'hold', 'rally']).optional(),
+    sceneKind: sceneKindSchema.optional(),
     encounter: z.string().optional(),
     rounds: z.number().optional(),
     hold: z.strictObject({

@@ -224,8 +224,8 @@ export function recense(
  * n'est pas du texte joueur, et une dégradation d'UNE lettre (`'?'`, `'A'`) n'est pas de la prose.
  *
  * ANGLE MORT ASSUMÉ, et il est STRUCTUREL : ce cliquet ne voit que les littéraux écrits AU CALL-SITE. Une
- * CARTE FR en dur vivant dans `src/engine` — l'étalon de classe est `ATTACK_LABEL`
- * (`engine/creatureAttacks.ts`, 11 littéraux nus) — passée à `dataLabel` en repli est BLANCHIE sans un
+ * CARTE FR en dur vivant dans `src/engine` — l'étalon de classe est `SIZE_LABEL`
+ * (`engine/size.ts`, littéraux nus) — passée à `dataLabel` en repli est BLANCHIE sans un
  * mot : l'argument est une expression, pas une chaîne. C'est voulu (un repli dérivé du catalogue est
  * licite, cf. le JSDoc de `dataLabel`), mais ça veut dire qu'une telle carte reste du FR hors catalogue,
  * invisible à `setLocale`, et que seule sa relecture la tient. Elle est de la même classe que

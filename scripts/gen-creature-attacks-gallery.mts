@@ -10,7 +10,12 @@ import { defsGlobaux } from '../src/gameIso/sprites';
 import { planById, bodyPlanById, resolveById, planOptsForRecord, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
 import { mul, translate, type Matrix } from '../src/gameIso/rig/kinematics';
 import type { ResolvedBone } from '../src/gameIso/rig/composeRig';
-import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../src/engine/creatureAttacks';
+import { creatureAttacks, type AttackKind } from '../src/engine/creatureAttacks';
+import { libelleDeValeur } from '../src/data/schemas/grammaire/meta';
+import { attackKindSchema } from '../src/data/schemas/defs/maneuvers';
+
+/** Libellé de FAMILLE d'attaque, lu sur le nœud qui la déclare (`enumNomme`, #1694). */
+const familleFR = (kind: AttackKind): string => libelleDeValeur(attackKindSchema, kind);
 import { animatedRig } from './_lib-anim-rig';
 import { creatures } from '../src/data/index';
 
@@ -47,7 +52,7 @@ function cell(id: string, kind: AttackKind, label: string): string {
   styles.push(css);
   return `<figure style="margin:0;text-align:center">
     <svg viewBox="0 0 120 150" width="116" height="145"><defs>${defsGlobaux()}</defs><rect width="120" height="150" fill="#221a1a"/>${svg}</svg>
-    <figcaption style="color:#e9b;font:10px sans-serif">${ATTACK_LABEL[kind]}<br><span style="color:#9a8">${label.replace(ATTACK_LABEL[kind], '').trim() || ''}</span></figcaption></figure>`;
+    <figcaption style="color:#e9b;font:10px sans-serif">${familleFR(kind)}<br><span style="color:#9a8">${label.replace(familleFR(kind), '').trim() || ''}</span></figcaption></figure>`;
 }
 
 const rows: string[] = [];

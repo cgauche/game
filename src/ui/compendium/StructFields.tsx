@@ -15,6 +15,8 @@ import { formatDice, parseDice } from '../../engine/dice';
 import type { CombatFeature, CastingKind } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData, HarvestRarity, HarvestDanger, TalentTest, TestMatch, SpecEntry } from '../../data';
 import { dispoSaisonniereSchema, harvestRaritySchema } from '../../data/schemas/grammaire/valeurs';
+import { valeursDe } from '../../data/schemas/grammaire/meta';
+import { missileBypassSchema } from '../../data/schemas/defs/domains';
 import { specEntryId, specEntryLabel, charAbr, findCreatureById, findVehicleById, seasonLabel } from '../../data';
 import type { z } from 'zod';
 import { slugId } from '../../data/slug';
@@ -634,10 +636,6 @@ export function SpecsField({ value, onChange }: { value: SpecEntry[] | undefined
  *      → Edité via `GameOpEditor` (source unique, même brique que sorts/traits/mutations).
  * ──────────────────────────────────────────────────────────────────────────── */
 
-const BYPASS_LABEL: Record<NonNullable<DomainData['missile']>['bypass'], string> = {
-  metal: 'PA métalliques', nonMagic: 'PA non magiques',
-};
-
 export function DomainEffectsField(
   { castBonus, missile, casterOps, onCastBonus, onMissile, onCasterOps }:
   {
@@ -677,7 +675,7 @@ export function DomainEffectsField(
           <div className="tf-row">
             <label className="dr">ignore
               <select value={missile.bypass} onChange={(e) => onMissile({ ...missile, bypass: e.target.value as NonNullable<DomainData['missile']>['bypass'] })}>
-                {(Object.keys(BYPASS_LABEL) as NonNullable<DomainData['missile']>['bypass'][]).map((b) => <option key={b} value={b}>{BYPASS_LABEL[b]}</option>)}
+                {Object.entries(valeursDe(missileBypassSchema) ?? {}).map(([b, l]) => <option key={b} value={b}>{l}</option>)}
               </select>
             </label>
             <label className="dr"><input type="checkbox" checked={!!missile.bonusFromBypass} onChange={(e) => onMissile({ ...missile, bonusFromBypass: e.target.checked || undefined })} /> + ajoute aux Dégâts</label>

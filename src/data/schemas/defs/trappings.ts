@@ -7,7 +7,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { availabilitySchema, formulaSchema, moneySchema, sizeCategorySchema } from '../grammaire/valeurs';
+import { availabilitySchema, enumNomme, formulaSchema, moneySchema, sizeCategorySchema } from '../grammaire/valeurs';
 import { gameOpSchema, flowSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 /** Les Atouts d'un objet passent par la vue COMMUNE `qualityRefSchema` : `quality` n'est PAS un type
  *  de `TYPES` (`grammaire/ref.ts`) — aucune fabrique FK ne le vise, et son ouverture est ancrée
@@ -19,6 +19,15 @@ import { REACH_LABELS, REACH_VARIABLE } from '../../../engine/types';
 
 export const file = 'trappings.json';
 export const famille = 'entite';
+
+/** CATÉGORIE de catalogue d'une possession — id de logique qui ne s'affiche jamais nu. */
+export const trappingCategorieSchema = enumNomme({
+  melee: 'Armes de mêlée',
+  ranged: 'Armes à distance',
+  ammunition: 'Munitions',
+  armor: 'Armures',
+  trapping: 'Équipement',
+});
 
 /** `WeaponDamageSpec` (`src/engine/types.ts`) : `{literal}` OU `{plusBF,flat,bare?}` (`plusBF`
  *  toujours explicite — cf. `filet`/`lance-harpon`/`piege-a-chaines`, ZI). */
@@ -92,7 +101,7 @@ const doc = document(
      *  ammunition 22, armor 17, trapping 257. ≠ `Weapon.type` du moteur (`src/engine/types.ts`,
      *  `'melee' | 'ranged'`, persisté) et ≠ `ItemInstance.kind` : le pont est `kindOf()`
      *  (`src/engine/items.ts`), une TRADUCTION. `vehicle` n'a aucun porteur et n'est plus admis. */
-    categorie: z.enum(['melee', 'ranged', 'ammunition', 'armor', 'trapping']),
+    categorie: trappingCategorieSchema,
     subType: z.union([z.string(), z.null()]),
     weaponGroup: z.string().optional(),
     soloSimple: z.boolean().optional(),
