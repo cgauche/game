@@ -74,6 +74,14 @@ const ICI = fileURLToPath(new URL('.', import.meta.url))
 /**
  * Ce que chaque gate ÉCRIT et LIT dans l'ARBRE, MESURÉ (sonde d'écritures transitives sur les
  * scripts atteints par la commande de `ci.yml`, 2026-09-04 ; chaque ligne re-vérifiée à la source).
+ * Repassée le 2026-09-08 (#1709 E) à l'ENREGISTREUR DE LECTURES (`scripts/docs/lib/enregistreur-lectures.mjs`
+ * posé en `--import` sur la commande de chaque gate) : `lit` déclare désormais aussi le CODE que la
+ * gate exécute — le changer change son verdict, donc c'est une lecture. Angles morts de la sonde,
+ * nommés : ce qu'un sous-processus NON-node lit (`git ls-files` de src/source-eol-guard.test.ts:50,
+ * `tsc`/`eslint` binaires) lui échappe, et un chemin RELATIF écrit par un enfant dont le `cwd` est un
+ * dépôt jetable lui apparaît sous la racine (vérifié fichier par fichier avant d'être écrit ici).
+ * `lit` est ce qui décide de la CLÉ : une entrée touchant `docs/` ou `.claude/` exige la gate dans
+ * `RAISON_CLE_COMPLETE` (garde dérivée, `toutes.test.mjs`).
  * C'est cette table, et rien d'autre, qui autorise deux gates à tourner EN MÊME TEMPS : un écrivain
  * et son lecteur dans deux lanes différentes, c'est un lecteur sur un fichier à moitié écrit.
  * Un chemin qui finit par `/` désigne le dossier et tout ce qu'il contient.
@@ -88,8 +96,11 @@ const ICI = fileURLToPath(new URL('.', import.meta.url))
 export const ECRIT_LU = {
   'agents:check': {
     ecrit: [],
-    lit: ['.claude/'],
-    raison: 'mode `check` : `runCompat` n’écrit que sous `mode === "sync"` (scripts/agents/compat-cli.mjs:64,72)',
+    lit: ['.claude/', '.agents/', '.codex/', 'AGENTS.md', 'CLAUDE.md', 'scripts/agents/'],
+    raison:
+      'mode `check` : `runCompat` n’écrit que sous `mode === "sync"` (scripts/agents/compat-cli.mjs:64,72) ; ' +
+      'les 48 lectures mesurées sont les DEUX côtés de la compat — .claude/ (source) et .agents/ + .codex/ + ' +
+      'AGENTS.md + CLAUDE.md (miroirs comparés), plus son propre code',
   },
   'test:agents': {
     ecrit: [],
@@ -98,7 +109,16 @@ export const ECRIT_LU = {
   },
   'test:hooks': {
     ecrit: [],
-    lit: ['.claude/', 'docs/', 'scripts/', 'src/', 'Source/', 'tsconfig.json'],
+    ecritFerme: {
+      '.claude/logs/new-src-guard-skips.log':
+        'journal d’urgences du garde de nouveaux fichiers (scripts/hooks/new-src-file-guard.mjs:35) : il est ' +
+        'GITIGNORÉ (.gitignore:41 `.claude/*`, sans négation pour `logs/`), donc il n’entre dans aucune des ' +
+        'deux clés de contenu et ne salit pas l’arbre ; aucune gate ne le lit',
+    },
+    lit: [
+      '.claude/', '.codex/', '.github/workflows/', 'docs/', 'scripts/', 'src/', 'Source/',
+      'CLAUDE.md', 'eslint.config.js', 'package.json', 'tsconfig.json',
+    ],
     raison:
       'le registre d’écrans que `new-src-file-guard.test.mjs` éprouve est INJECTABLE (`WFRP_REGISTRE_ECRANS`, ' +
       'scripts/hooks/new-src-file-guard.mjs:42) et le test en écrit une COPIE sous os.tmpdir() ; ' +
@@ -106,11 +126,14 @@ export const ECRIT_LU = {
       'joue de VRAIS générateurs en `--check` (build-index-moteur, build-donnees, build-structures), qui comparent ' +
       'sans écrire ; LIT Source/ parce que `idempotence-ordre-des-cles.test.mjs` copie le corpus (Source/ moins les ' +
       '`.pdf`, écartés par extension : sans les extractions quatre migrations sortent 1 faute de livres) sous ' +
-      'os.tmpdir() avant de rejouer les 89 migrations',
+      'os.tmpdir() avant de rejouer les 89 migrations ; LIT .codex/hooks.json et .claude/settings.json ' +
+      '(parité des canaux), .github/workflows/ci.yml, CLAUDE.md, eslint.config.js et package.json — ' +
+      'sonde 2026-09-08, 4 117 lectures. Le retrait des trois fichiers les plus lents ne la sortirait PAS ' +
+      'de src/ : 3 715 lectures y subsistent sans eux (mesuré)',
   },
   'test:ops': {
     ecrit: [],
-    lit: ['src/', 'scripts/ops/', 'scripts/guards/lib/', 'scripts/hooks/', '.claude/workflows/', '.github/workflows/', 'knip-exports-baseline.json'],
+    lit: ['src/', 'scripts/ops/', 'scripts/guards/lib/', 'scripts/hooks/', '.claude/workflows/', '.github/workflows/', 'knip.json', 'knip-exports-baseline.json'],
     raison:
       'sept modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
       '`knip-exports-ratchet.mjs` (`main()` gardé par `import.meta.url === argv[1]`, l.121 ; seul `--sync` ' +
@@ -127,40 +150,63 @@ export const ECRIT_LU = {
       'jetables de `fermer-depuis-main.test.mjs` et `faits-de-palier.test.mjs` : ses seules écritures ' +
       '(`mkdtempSync`, `cpSync`, `rmSync` — depotGabarit.mjs:62,82,99-100) visent `os.tmpdir()` ; ' +
       'LIT .claude/workflows/ (`workflows.test.mjs` les parse, `workflows-joues.test.mjs` les joue) ' +
-      'et scripts/hooks/ (`validateRevuePalier` de solde-ticket-guard.mjs), sans rien y écrire',
+      'et scripts/hooks/ (`validateRevuePalier` de solde-ticket-guard.mjs), sans rien y écrire ; LIT knip.json ' +
+      '(le cliquet d’exports le relit) ; les 3 fichiers de .claude/workflows/ sont lus EN PLACE, sur l’arbre ' +
+      'réel — c’est cette lecture qui met la gate sous la clé COMPLÈTE (sonde 2026-09-08, deux passes). ' +
+      'Ce que `soldesSuivis()` lirait de .claude/soldes/ n’est atteint que par le `main()` du script, ' +
+      'gardé par `import.meta.url === argv[1]` (fermetures-non-citees.mjs:195) : les tests passent leurs ' +
+      'PROPRES dépôts jetables, et la sonde n’a mesuré aucune lecture sous .claude/soldes/',
   },
   'test:runner': {
     ecrit: [],
-    lit: ['scripts/'],
-    raison: 'chaque cas fabrique son arbre sous os.tmpdir() (`mkdtempSync`), y compris son node_modules/.cache',
+    lit: ['scripts/', 'package.json'],
+    raison:
+      'chaque cas fabrique son arbre sous os.tmpdir() (`mkdtempSync`), y compris son node_modules/.cache ; ' +
+      'LIT package.json (les scripts que le runner relaie)',
   },
   'test:docs': {
     ecrit: [],
-    lit: ['docs/', '.claude/memory/', 'scripts/docs/', 'scripts/guards/lib/'],
+    lit: [
+      'docs/', '.claude/memory/', 'scripts/docs/', 'scripts/guards/lib/', 'scripts/test/partition.mjs',
+      'scripts/lancer-local.mjs', 'scripts/outillage-local.mjs',
+    ],
     raison:
-      'fixtures sous os.tmpdir() ; lit les docs et la mémoire réels (RAISON_CLE_COMPLETE, justificatif.mjs:90) ' +
+      'fixtures sous os.tmpdir() ; lit les docs et la mémoire réels (RAISON_CLE_COMPLETE, justificatif.mjs:93) ' +
       'et scripts/guards/lib/ (`check-plans-anchors.test.mjs` lit le code de `lister.mjs` et importe ' +
-      '`depotGabarit.mjs`), sans rien y écrire',
+      '`depotGabarit.mjs`), sans rien y écrire ; LIT les trois modules du lanceur local que `build-all.mjs` ' +
+      'ramène (sonde 2026-09-08, 50 lectures)',
   },
   'deps:unused': {
     ecrit: [],
-    lit: ['src/', 'scripts/', 'server/', 'package.json', 'knip-exports-baseline.json'],
-    raison: 'knip et le cliquet LISENT ; la baseline ne s’écrit que sous `--sync`, absent de la commande de ci.yml',
+    lit: [
+      'src/', 'scripts/', 'server/', 'docs/', 'Source/', 'package.json', 'knip.json', 'knip-exports-baseline.json',
+      'tsconfig.json', 'vite.config.ts', 'eslint.config.js', 'index.html', '.gitignore', 'CLAUDE.md',
+    ],
+    raison:
+      'knip et le cliquet LISENT ; la baseline ne s’écrit que sous `--sync`, absent de la commande de ci.yml ; ' +
+      'LIT docs/ et Source/ — la passe knip OUVRE docs/charte-ui.md, docs/donnees.md et les trois chapitres ' +
+      'Source/ que des tests adressent en tête de module (Psychologie, Aux Armes ANNEXE III, Artefacts ' +
+      'magiques) : deux passes d’enregistreur, même ensemble de 5 (2026-09-08) — c’est cette lecture-là ' +
+      'qui met la gate sous la clé COMPLÈTE',
   },
   'test:recette': {
     ecrit: [],
-    lit: ['scripts/recette/'],
-    raison: 'le profil de navigateur et les captures vivent hors de l’arbre',
+    lit: ['scripts/recette/', 'scripts/port-dev.mjs'],
+    raison: 'le profil de navigateur et les captures vivent hors de l’arbre ; LIT le dériveur de port qu’il éprouve',
   },
   typecheck: {
     ecrit: [],
-    lit: ['src/', 'scripts/', 'server/', 'tsconfig.json'],
-    raison: '`tsc --noEmit --incremental false` : aucune sortie, aucun `.tsbuildinfo`',
+    lit: ['src/', 'scripts/', 'server/', 'tsconfig.json', 'package.json', 'vite.config.ts'],
+    raison:
+      '`tsc --noEmit --incremental false` : aucune sortie, aucun `.tsbuildinfo` ; LIT package.json et ' +
+      'vite.config.ts (mesurés à la sonde, hors des deux racines de `include`)',
   },
   lint: {
     ecrit: [],
-    lit: ['src/', 'scripts/', 'server/'],
-    raison: '`eslint .` sans `--fix` ni `--cache`',
+    lit: ['src/', 'scripts/', 'server/', 'eslint.config.js', 'package.json', 'kill-pid.mjs'],
+    raison:
+      '`eslint .` sans `--fix` ni `--cache` ; LIT sa config à plat, package.json et le seul module de ' +
+      'racine qu’il ramène — aucune lecture sous docs/ ni .claude/ (sonde 2026-09-08, 4 009 lectures)',
   },
   test: {
     ecrit: [],
@@ -170,34 +216,62 @@ export const ECRIT_LU = {
         '(scripts/gen-registry.mjs:435,662) — `toutes.mjs` joue `npm run gen` AVANT les lanes et REFUSE si un ' +
         'registre bouge, donc il ne reste rien à écrire',
     },
-    lit: ['src/', 'server/src/', 'scripts/map/', 'docs/', 'vite.config.ts'],
+    lit: ['src/', 'server/src/', 'scripts/map/', 'docs/', '.claude/memory/', 'Source/', '.gitattributes', 'vite.config.ts'],
     raison:
-      'LIT docs/ ET docs/raw/ — src/oversize-search-blindspot.test.ts:86, src/data/manual-docs-ratchet.test.ts:30, ' +
-      'src/data/index-moteur-ratchet.test.ts:24 — d’où la lane SÉPARÉE des trois écrivains de docs/raw',
+      'LIT docs/ ET docs/raw/ — 9 fichiers de la suite, 12 sites (mesuré 2026-09-08) : la famille des ' +
+      'CLIQUETS ET CONTRATS qui confrontent le code à un doc DÉRIVÉ (data-atlas-complete, ' +
+      'index-moteur-ratchet, slots-contrat, structures-contrat, roll-seam-exclusivity-guard, ' +
+      'scene-field-editability-guard, ui-ratchets, oversize-search-blindspot) plus le balayage de docs/ à ' +
+      'plat de manual-docs-ratchet:30 — d’où la lane SÉPARÉE des trois écrivains de docs/raw ; ' +
+      'LIT .claude/memory/ (src/memory-links-guard.test.ts:81 balaie l’arbre RÉEL) ; LIT Source/ (verbatims ' +
+      'et résolution de prose : src/data/psychology-verbatim.test.ts:24, tavern-desc-verbatim.test.ts:20, ' +
+      'variants-integrity.test.ts:234, vdm-objets-maudits.test.ts:154, prose-resolution.test.ts:142, ' +
+      'src/oversize-search-blindspot.test.ts:121) ; LIT .gitattributes parce que le verdict de ' +
+      'src/source-eol-guard.test.ts:45 tient à la colonne `-text` que `git ls-files --eol` en tire',
   },
   build: {
     ecrit: [],
     ecritFerme: {
       'src/_registry.generated.ts': 'même `genAll()` que la suite, même porte : `npm run gen` avant les lanes',
+      'vite.config.ts.timestamp-':
+        'Vite recompile sa config dans un module horodaté posé à côté d’elle, puis l’efface — mesuré ' +
+        '(`vite.config.ts.timestamp-1788894628882-….mjs`, sonde 2026-09-08). LA PORTE : AUCUNE gate ne lit ' +
+        'ce chemin — c’est un module que Vite écrit pour lui-même, sous un nom que le suffixe horodaté rend ' +
+        'unique à chaque run, et il est gitignoré (.gitignore, section « Config de Vite recompilée »), donc ' +
+        'il ne salit pas l’arbre. `ecrit` le dirait CHEVAUCHANT `vite.config.ts` (recouvrement par PRÉFIXE), ' +
+        'que `test` et `typecheck` lisent depuis d’autres lanes : ce serait un faux conflit',
     },
-    lit: ['src/', 'scripts/', 'Source/', 'tsconfig.json', 'vite.config.ts'],
+    lit: ['src/', 'scripts/', 'Source/', 'tsconfig.json', 'vite.config.ts', 'package.json', 'index.html'],
     raison:
       '`gen && vite build` : le typage est jugé par la gate `typecheck` (ci.yml:52, avant `build`), ' +
       '`build` juge que le bundle se construit, et `dist/` n’est lu par aucune gate ; LIT tsconfig.json ' +
       'parce que l’esbuild de Vite y relit `target`/`jsx`/`useDefineForClassFields` pour transformer ' +
       'chaque module TS (les `meaningfulFields` que Vite 5.4 recopie dans `tsconfigRaw`) — `paths`, lui, ' +
       'n’en vient pas : l’alias `@` est déclaré dans vite.config.ts:47 ; LIT Source/ parce que le plugin ' +
-      '`wfrp:prose-source` (scripts/source/prose-source-plugin.mjs) y résout la prose que les entrées ADRESSENT',
+      '`wfrp:prose-source` (scripts/source/prose-source-plugin.mjs) y résout la prose que les entrées ADRESSENT ' +
+      '— la sonde du 2026-09-08 n’a compté AUCUNE lecture sous Source/ sur un build complet (2 056 lectures) : ' +
+      'la déclaration reste, une sur-déclaration ne peut que RESSERRER les lanes ; LIT aussi index.html ' +
+      '(l’entrée) et package.json',
   },
   'docs:check': {
     ecrit: [],
-    lit: ['docs/', 'src/', 'scripts/', 'Source/'],
-    raison: 'les générateurs y tournent en `--check` : ils COMPARENT (build-all.mjs, `if (check) continue`)',
+    lit: ['docs/', 'src/', 'scripts/', 'Source/', '.claude/memory/', 'CLAUDE.md'],
+    raison:
+      'les générateurs y tournent en `--check` : ils COMPARENT (build-all.mjs, `if (check) continue`) ; ' +
+      'LIT .claude/memory/ et CLAUDE.md parce que `build-doctrines.mjs` dérive le bloc « Doctrines ' +
+      'utilisateur » des fiches `.claude/memory/user-*.md` SUIVIES par git (build-doctrines.mjs:197) et ' +
+      'le confronte au fichier manuscrit (build-all.mjs:73, `injecte: [\'CLAUDE.md\']`)',
   },
   'docs:empreinte': {
     ecrit: [],
-    lit: ['docs/'],
-    raison: '`--empreinte` sort avant toute génération (build-all.mjs, branche `--empreinte` de `main`)',
+    lit: [
+      'docs/', 'scripts/docs/', 'scripts/guards/lib/', 'scripts/test/partition.mjs',
+      'scripts/lancer-local.mjs', 'scripts/outillage-local.mjs',
+    ],
+    raison:
+      '`--empreinte` sort avant toute génération (build-all.mjs, branche `--empreinte` de `main`) : les 9 ' +
+      'lectures mesurées sont `docs/.sources-lues.json` et son propre code — les BLOBS qu’il compare sortent ' +
+      'de l’INDEX (`indexGit`), jamais du disque',
   },
   'raw:coverage': {
     ecrit: [],
@@ -208,28 +282,48 @@ export const ECRIT_LU = {
         'lanceur, un rapport à jour n’est pas réécrit. S’il est périmé au commit, il est réécrit UNE fois et ' +
         '`photoArbre` avant/après fait REFUSER le run — jamais un vert de course',
     },
-    lit: ['docs/raw/', 'src/'],
-    raison: 'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte',
+    lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs', 'scripts/docs/lib/empreinte-sources.mjs'],
+    raison:
+      'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT Source/ ' +
+      '(312 chapitres mesurés) et son propre code',
   },
   'raw:reconcile': {
     ecrit: [],
     ecritFerme: {
       'docs/raw/reconciliation.md': 'scripts/raw/reconcile.mjs:411, même seam `ecrireDoc` et même porte que raw:coverage',
     },
-    lit: ['docs/raw/', 'src/'],
-    raison: 'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte',
+    lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/docs/lib/empreinte-sources.mjs'],
+    raison:
+      'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT Source/ ' +
+      '(285 chapitres mesurés), son stock `scripts/raw/reconciliation-stock.json` et son propre code',
   },
   'test:raw': {
     ecrit: [],
-    lit: ['docs/raw/', 'scripts/raw/'],
-    raison: 'harnais de l’Atlas : il lit les fiches que les trois rapports écrivent',
+    lit: ['docs/raw/', 'scripts/raw/', 'scripts/guards/lib/', 'Source/', 'src/'],
+    raison:
+      'harnais de l’Atlas : il lit les fiches que les trois rapports écrivent ; éprouvant les scripts ' +
+      'eux-mêmes, il LIT ce qu’ils lisent — Source/ et src/ (4 105 lectures mesurées)',
   },
-  'raw:check-refs': { ecrit: [], lit: ['docs/raw/', 'Source/'], raison: 'aucune écriture dans les scripts atteints' },
-  'raw:check-code-refs': { ecrit: [], lit: ['docs/raw/', 'src/'], raison: 'aucune écriture dans les scripts atteints' },
+  'raw:check-refs': {
+    ecrit: [],
+    lit: ['docs/raw/', 'Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs'],
+    raison:
+      'aucune écriture dans les scripts atteints ; LIT le registre de livres et le normaliseur de références ' +
+      '(src/data/books.json, src/data/source/normalize.ts) et sa baseline scripts/raw/dead-refs-baseline.json',
+  },
+  'raw:check-code-refs': {
+    ecrit: [],
+    lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs'],
+    raison:
+      'aucune écriture dans les scripts atteints ; LIT Source/ (134 chapitres mesurés) et sa baseline ' +
+      'scripts/raw/empty-line-code-refs-baseline.json',
+  },
   'raw:check-folio-continuity': {
     ecrit: [],
-    lit: ['docs/raw/', 'Source/'],
-    raison: 'aucune écriture dans les scripts atteints',
+    lit: ['docs/raw/', 'Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs'],
+    raison:
+      'aucune écriture dans les scripts atteints ; LIT le registre de livres, le normaliseur de références ' +
+      'et ses deux baselines (scripts/raw/empty-folios-baseline.json, folio-gaps-baseline.json)',
   },
   'raw:reanchor': {
     ecrit: [],
@@ -238,8 +332,13 @@ export const ECRIT_LU = {
         'scripts/raw/reanchor.mjs:344, même seam `ecrireDoc` et même porte que raw:coverage ; la réécriture des ' +
         'FICHES (l.309) est gardée par `apply || remap`, que la commande de ci.yml ne passe pas',
     },
-    lit: ['docs/raw/', 'Source/'],
-    raison: 'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte',
+    lit: [
+      'docs/raw/', 'Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/',
+      'scripts/guards/lib/lister.mjs', 'scripts/docs/lib/empreinte-sources.mjs',
+    ],
+    raison:
+      'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT le registre ' +
+      'de livres, le normaliseur de références et sa baseline scripts/raw/reanchor-low-baseline.json',
   },
   'server:typecheck': { ecrit: [], lit: ['server/'], raison: '`tsc` du sous-projet serveur, sans émission' },
 }
@@ -263,16 +362,22 @@ export const AVANT_LES_LANES = ['raw:coverage', 'raw:reconcile', 'raw:reanchor']
  *
  * TROIS lanes, et non quatre : la première exécution réelle (2026-09-04) a fait rendre au loader
  * Windows `STATUS_DLL_INIT_FAILED` sur quatre spawns concurrents. Une lane de moins, c'est −25 % de
- * processus simultanés au pire moment, pour un mur inchangé — `suite` (275 s mesurées) domine, et la
- * somme de `types` + `reste` (≈ 386 s séquentielles) reste sous elle une fois `docs:check` ciblé.
+ * processus simultanés au pire moment, pour un mur inchangé.
+ *
+ * QUI EST LE MUR, MESURÉ LE 2026-09-08 (durées du dernier run, `node_modules/.cache/gates/durees.json`,
+ * en secondes) : phase série 6,99 + max(suite 133,10 ; types 198,29 ; docs 93,24) = 205,3 s. Ce n'est
+ * plus la suite : `test` est tombé à 133,1 s, et c'est la lane `types` qui tient le mur, à 198,3 s.
+ * La composition ci-dessous reste juste — aucune lane ne dépasse la somme des autres — mais la marge
+ * qui la justifiait a changé de côté : c'est `types` qu'on remesure avant d'y ajouter quoi que ce
+ * soit, et c'est en l'ALLÉGEANT, non en allégeant la suite, qu'on ferait bouger le mur.
  */
 export const LANES = [
   {
     nom: 'suite',
     gates: ['test'],
     raison:
-      'la plus longue (275,1 s mesurées) et la seule à saturer la machine — seule dans sa lane, et BORNÉE ' +
-      'par `WFRP_TEST_COEURS` pendant que les deux autres tournent',
+      'la seule à saturer la machine — seule dans sa lane, et BORNÉE par `WFRP_TEST_COEURS` pendant que ' +
+      'les deux autres tournent. Elle n’est pas le mur (133,1 s le 2026-09-08) — voir « QUI EST LE MUR » ci-dessus',
   },
   {
     nom: 'types',
@@ -281,12 +386,13 @@ export const LANES = [
       'test:runner', 'test:recette', 'test:hooks',
     ],
     raison:
-      'lectures du même graphe TypeScript et gates courtes, aucune écriture d’arbre. Somme mesurée en ' +
-      'SÉRIE (`gates --serie`, chaque gate seule, 2026-09-07) : typecheck 77,8 + lint 63,4 + deps:unused 23,1 + ' +
-      'test:hooks 27,5 + test:recette 5,7 + test:ops 3,5 + test:runner 2,3 + server:typecheck 2,0 = 205,3 s — ' +
-      'sous le mur de la suite bornée (275,1 s). `test:hooks` y est admis parce qu’il ne fait AUCUNE écriture ' +
-      'd’arbre (registre d’écrans injectable). C’est aussi la lane la plus CHÈRE : rien ne s’y ajoute sans ' +
-      'la remesurer contre ce mur',
+      'lectures du même graphe TypeScript et gates courtes, aucune écriture d’arbre. Somme du dernier run ' +
+      '(durees.json, 2026-09-08) : typecheck 65,7 + lint 59,7 + test:hooks 37,7 + deps:unused 19,9 + ' +
+      'test:recette 6,8 + test:ops 3,3 + test:runner 2,4 + server:typecheck 2,2 + test:agents 0,8 = ' +
+      '198,3 s. C’est ELLE le mur (suite 133,1 s, docs 93,2 s) : rien ne s’y ajoute sans la remesurer, et ' +
+      'toute seconde qu’on lui retire est une seconde de moins avant push. `test:hooks` y est admis parce ' +
+      'qu’il ne fait aucune écriture d’arbre SUIVIE (registre d’écrans injectable ; sa seule écriture ' +
+      'réelle, le journal gitignoré, est en `ecritFerme`)',
   },
   {
     nom: 'docs',
@@ -296,10 +402,10 @@ export const LANES = [
     ],
     raison:
       'tous les LECTEURS de docs/ et docs/raw/ — leurs trois écrivains ont déjà tourné, en série, avant que ' +
-      'cette lane ne commence. `build` y tient parce que c’est la gate la moins chère (18-21 s mesurées, ' +
-      '2026-09-07 : il ne joue plus que `gen && vite build`) et que cette lane est la plus courte — 68,7 s ' +
-      'sans lui, ≈ 88,7 s avec (série du 2026-09-07), très loin du mur de la suite ; il n’écrit d’ailleurs que ' +
-      'les registres déjà régénérés par `gen` en phase préalable',
+      'cette lane ne commence. `build` y tient parce que c’est une des gates les moins chères (22,5 s au ' +
+      'dernier run : il ne joue plus que `gen && vite build`) et que cette lane est la plus courte — 70,8 s ' +
+      'sans lui, 93,2 s avec (durees.json, 2026-09-08), loin sous le mur de `types` ; il n’écrit d’ailleurs ' +
+      'que les registres déjà régénérés par `gen` en phase préalable',
   },
 ]
 
@@ -604,7 +710,7 @@ export async function principal({
   // l'ancienne (un fichier par gate, sans clé ni propreté dans le nom) seraient invisibles et
   // chaque gate serait redonnée à jouer.
   migrerAncienneGraphie({ cwd: racine, journal })
-  // DEUX clés, comme le pre-push (scripts/git-hooks/pre-push.mjs) : les 12 gates de
+  // DEUX clés, comme le pre-push (scripts/git-hooks/pre-push.mjs) : les 15 gates de
   // `RAISON_CLE_COMPLETE` lisent `docs/` ou `.claude/`, hors de la clé partielle. Sans la clé
   // complète ici, le lanceur déclare « déjà justifiée » ce que le push refuse ensuite (mesuré sur
   // fdf62479e : 22 gates sautées, 11 refusées au push).

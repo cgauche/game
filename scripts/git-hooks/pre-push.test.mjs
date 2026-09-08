@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url'
 import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import {
   cheminJustificatifs,
+  cleGouvernante,
   clesDeContenu,
   ecrireJustificatif,
   fichierDeJustificatif,
@@ -132,7 +133,7 @@ test('magasin à l’ANCIENNE graphie : le hook le migre à l’ouverture, puis 
     assert.match(notes.join('\n'), /2 justificatif\(s\) passé\(s\) à la graphie courante/)
     assert.deepEqual(
       readdirSync(dossier).sort(),
-      ['test', 'typecheck'].map((gate) => fichierDeJustificatif({ gate, cle: cles.cleTree, sale: false })).sort(),
+      ['test', 'typecheck'].map((gate) => fichierDeJustificatif({ gate, cle: cleGouvernante(gate, cles), sale: false })).sort(),
     )
   } finally {
     jeter(racine)
@@ -183,7 +184,13 @@ test('le contenu a bougé APRÈS la gate : la clé diverge, refus', () => {
   }
 })
 
-test('commit `docs/` seul après la gate : clé égale, sha différent → PASSE avec la mention', () => {
+// Un commit `docs/` seul TRIE les gates au lieu de toutes les gracier : celle qui ne lit pas docs/
+// (`typecheck`) réutilise sa preuve, celle qui le LIT (`test` — neuf fichiers de la suite ouvrent un
+// chemin sous docs/, un dixième balaie .claude/memory/) doit être rejouée. Sans ce tri, 7 des 39
+// dernières paires de commits d'origin/main (mesurées par `clesDeContenu`, 2026-09-08 : 6 ne portent
+// que des fichiers docs/, la 7ᵉ que deux fichiers .claude/memory/) auraient poussé sur une suite
+// jouée sur un AUTRE contenu (#1709 E).
+test('commit `docs/` seul après la gate : la gate qui ne LIT pas docs/ passe, celle qui le lit est REJOUÉE', () => {
   const racine = depot()
   const g = git(racine)
   try {
@@ -191,6 +198,33 @@ test('commit `docs/` seul après la gate : clé égale, sha différent → PASSE
     ecrire(racine, DOC_A, 'doc régénéré\n')
     g(['add', '-A'])
     g(['commit', '-m', 'docs seuls'])
+    const { refus, notes } = jugerPush({ cwd: racine, stdin: pousse(racine), env: ciVerte(racine) })
+    assert.match(refus.join('\n'), /1\/2 gate\(s\) sans justificatif sur ce contenu/)
+    assert.match(refus.join('\n'), /gate « test » jouée sur un AUTRE arbre : elle lit docs\//)
+    assert.ok(!refus.join('\n').includes('« typecheck »'), '`typecheck` ne lit ni docs/ ni .claude/ : sa preuve tient')
+    assert.equal(notes.join('\n').includes('réutilisé'), false, 'rien ne se réutilise tant qu’une gate manque')
+
+    // Le refus est LEVABLE par la seule gate qui lit docs/ : la preuve de `typecheck`, prise sur
+    // `shaGate`, reste valable ici. La réponse CI stubée vit dans l'arbre : elle en sort avant la
+    // gate, sinon le verdict serait SALE.
+    assert.ok(shaGate !== g(['rev-parse', 'HEAD']))
+    rmSync(join(racine, 'gh.json'))
+    ecrireJustificatif({ cwd: racine, gate: 'test', sha: g(['rev-parse', 'HEAD']) })
+    assert.deepEqual(jugerPush({ cwd: racine, stdin: pousse(racine), env: ciVerte(racine) }).refus, [])
+  } finally {
+    jeter(racine)
+  }
+})
+
+// Le sha bouge, AUCUN des deux périmètres ne bouge (commit vide) : les deux gates réutilisent leur
+// preuve, et la mention DIT sur quel sha elle a été prise — sans quoi un push vert ne dirait pas ce
+// qui a réellement été mesuré.
+test('sha différent, arbre identique : les deux gates réutilisent, et la mention nomme le sha mesuré', () => {
+  const racine = depot()
+  const g = git(racine)
+  try {
+    const shaGate = gatesVertes(racine)
+    g(['commit', '--allow-empty', '-m', 'sha neuf, arbre identique'])
     const { refus, notes } = jugerPush({ cwd: racine, stdin: pousse(racine), env: ciVerte(racine) })
     assert.deepEqual(refus, [])
     assert.match(notes.join('\n'), new RegExp(`justificatif de ${shaGate.slice(0, 7)} réutilisé`))

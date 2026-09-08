@@ -32,12 +32,55 @@ import {
   refusDeCouverture,
   tuerArbre,
 } from './toutes.mjs'
-import { clesDeContenu, ecrireJustificatif, gatesRequises } from '../guards/lib/justificatif.mjs'
+import {
+  RAISON_CLE_COMPLETE,
+  clesDeContenu,
+  ecrireJustificatif,
+  gatesRequises,
+  horsCle,
+} from '../guards/lib/justificatif.mjs'
 import { refusVerrou } from '../test/verrou.mjs'
 import { coeurs, repartitionWorkers } from '../test/partition.mjs'
 
 const NOMS = gatesRequises().map((g) => g.nom)
 const gate = (nom) => ({ nom, commande: `npm run ${nom}` })
+
+/**
+ * COHÉRENCE DES DEUX DÉCLARATIONS : `ECRIT_LU.lit` dit ce que la gate lit, `horsCle`
+ * (justificatif.mjs:43, source UNIQUE du périmètre — il n'est pas recopié ici) dit ce que la clé
+ * PARTIELLE laisse tomber. Une gate qui lit ce que sa clé ne voit pas réutilise un justificatif
+ * écrit sur un AUTRE contenu : mesuré par `clesDeContenu` sur les 40 dernières têtes d'origin/main
+ * (2026-09-08), 7 des 39 paires partagent la `cleTree` de leur parent alors que la `cleComplete`
+ * diffère — 6 ne portent que des fichiers `docs/`, la 7ᵉ (28a23356f) que deux fichiers
+ * `.claude/memory/`.
+ *
+ * CE QUE CE TEST PROUVE : que les deux TABLES s'accordent. CE QU'IL NE PROUVE PAS : que `lit` soit
+ * VRAI. Retirer de concert la ligne de `RAISON_CLE_COMPLETE` et la ligne de `lit` d'une même gate
+ * le laisse vert alors que la gate lit toujours (vérifié sur `test:ops`, qui lit
+ * `.claude/workflows/` en place — scripts/ops/workflows.test.mjs:33, workflows-joues.test.mjs:25).
+ * La seule porte vers l'invariant reste la MESURE : rejouer la gate sous l'enregistreur de lectures
+ * (`scripts/docs/lib/enregistreur-lectures.mjs` en `--import`) et confronter le rendu à `lit`.
+ * L'équivalence se lit dans les DEUX sens : une clé complète sans lecture déclarée est un coût sans
+ * cause déclarée.
+ */
+test('clé COMPLÈTE ⟺ la gate DÉCLARE lire docs/ ou .claude/ — les deux tables se tiennent', () => {
+  for (const nom of NOMS) {
+    const lues = (ECRIT_LU[nom]?.lit ?? []).filter(horsCle)
+    const sousCleComplete = nom in RAISON_CLE_COMPLETE
+    if (lues.length)
+      assert.ok(
+        sousCleComplete,
+        `« ${nom} » LIT ${lues.join(', ')} — hors de la clé partielle : l'inscrire dans RAISON_CLE_COMPLETE ` +
+          '(scripts/guards/lib/justificatif.mjs) avec sa raison, sinon son justificatif vaut pour un autre contenu',
+      )
+    else
+      assert.ok(
+        !sousCleComplete,
+        `« ${nom} » est sous la clé COMPLÈTE alors qu'aucune de ses lectures mesurées ne touche docs/ ni ` +
+          '.claude/ — soit ECRIT_LU.lit sous-déclare, soit la ligne de RAISON_CLE_COMPLETE coûte sans cause',
+      )
+  }
+})
 
 test('toute gate de ci.yml a une place — une lane, ou la phase série des écrivains', () => {
   assert.deepEqual(refusDeCouverture(NOMS), [], 'LANES / AVANT_LES_LANES / ECRIT_LU ne couvrent pas ci.yml')

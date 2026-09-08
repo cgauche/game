@@ -124,7 +124,9 @@ test('un fichier PAR (gate, clé gouvernante, propreté), sans fichier en cours 
     assert.deepEqual(
       listerDossier(join(cheminJustificatifs({ cwd: racine }), cles.cleTree)),
       [
-        fichierDeJustificatif({ gate: 'test', cle: cles.cleTree, sale: false }),
+        // Deux gates, DEUX clés gouvernantes dans le MÊME dossier : la suite lit docs/ et .claude/memory/
+        // (RAISON_CLE_COMPLETE), `typecheck` ni l'un ni l'autre.
+        fichierDeJustificatif({ gate: 'test', cle: cles.cleComplete, sale: false }),
         fichierDeJustificatif({ gate: 'typecheck', cle: cles.cleTree, sale: false }),
       ].sort(),
     )
@@ -224,7 +226,7 @@ test('`ecrireJustificatif` rend le fichier, les deux clés et les chemins salis 
     assert.deepEqual([rendu.cleTree, rendu.cleComplete], [cles.cleTree, cles.cleComplete])
     assert.equal(
       rendu.fichier,
-      join(cheminJustificatifs({ cwd: racine }), cles.cleTree, fichierDeJustificatif({ gate: 'test', cle: cles.cleTree, sale: false })),
+      join(cheminJustificatifs({ cwd: racine }), cles.cleTree, fichierDeJustificatif({ gate: 'test', cle: cles.cleComplete, sale: false })),
     )
   } finally {
     jeter(racine)
@@ -271,14 +273,20 @@ test('clé COMPLÈTE : chaque contenu a SON justificatif, et un contenu inconnu 
   }
 })
 
-test('`cleGouvernante` : complète pour les gates qui lisent docs/ ou .claude/, partielle pour les autres', () => {
+// L'APPARTENANCE d'une gate à la table ne se recopie pas ici : elle se MESURE contre ses lectures
+// déclarées, dans `scripts/gates/toutes.test.mjs` (ECRIT_LU y est visible, pas ici — ce module est
+// une feuille). Ce qui se juge ICI est le dispatch lui-même, et le fait que chaque entrée porte la
+// raison que `motifDeRefus` sert telle quelle.
+test('`cleGouvernante` : arbre PLEIN pour une gate de la table, partiel pour toute autre', () => {
   const cles = { cleTree: 'a'.repeat(40), cleComplete: 'b'.repeat(40) }
-  for (const nom of ['docs:check', 'docs:empreinte', 'test:docs', 'test:raw', 'test:hooks', 'agents:check']) {
-    assert.equal(cleGouvernante(nom, cles), cles.cleComplete, `${nom} lit docs/ ou .claude/ : sa clé est l'arbre PLEIN`)
+  const nommees = Object.keys(RAISON_CLE_COMPLETE)
+  assert.ok(nommees.length > 0, 'une table vide ferait passer ce test sans rien mesurer')
+  for (const nom of nommees) {
+    assert.equal(cleGouvernante(nom, cles), cles.cleComplete, `${nom} est dans la table : sa clé est l'arbre PLEIN`)
     assert.ok(RAISON_CLE_COMPLETE[nom], `${nom} doit porter sa raison, elle sert au refus`)
   }
-  for (const nom of ['test', 'typecheck', 'lint', 'build', 'deps:unused'])
-    assert.equal(cleGouvernante(nom, cles), cles.cleTree, `${nom} ne lit ni docs/ ni .claude/`)
+  for (const nom of ['server:typecheck', 'gate-qui-nexiste-pas'])
+    assert.equal(cleGouvernante(nom, cles), cles.cleTree, `${nom} est hors table : sa clé est l'arbre PRIVÉ de docs/ et .claude/`)
 })
 
 test('un nom de justificatif porte la gate, la clé gouvernante et la propreté — et se relit', () => {
@@ -329,7 +337,7 @@ test('MIGRATION : l’ancienne graphie est RENOMMÉE, les rouges effacés, l’i
       'build.json',
       fichierDeJustificatif({ gate: 'docs:check', cle: cles.cleComplete, sale: false }),
       fichierDeJustificatif({ gate: 'lint', cle: cles.cleTree, sale: false }),
-      fichierDeJustificatif({ gate: 'test', cle: cles.cleTree, sale: true }),
+      fichierDeJustificatif({ gate: 'test', cle: cles.cleComplete, sale: true }),
     ].sort())
 
     // Les preuves survivent au renommage, et se relisent par la clé qui GOUVERNE chaque gate.

@@ -4,8 +4,8 @@
 //
 // DEUX CLÉS, CHOISIES PAR GATE. `cleTree` hache les blobs de l'arbre du commit PRIVÉ de `docs/` et
 // `.claude/` : deux commits qui ne diffèrent que par un doc régénéré ou une fiche mémoire la
-// partagent, et une gate qui ne lit pas ces dossiers vaut pour les deux (7/30 des dernières têtes
-// poussées, mesuré). Mais 12 gates LISENT `docs/` ou `.claude/` (table `RAISON_CLE_COMPLETE`,
+// partagent, et une gate qui ne lit pas ces dossiers vaut pour les deux (7 des 39 dernières paires
+// de têtes poussées, mesuré 2026-09-08). Mais 15 gates LISENT `docs/` ou `.claude/` (table `RAISON_CLE_COMPLETE`,
 // chacune avec sa raison) : pour celles-là, la clé est l'arbre PLEIN (`cleComplete`) — sans quoi un
 // commit qui casse `docs/raw/combat.md` réutiliserait un `docs:check` vert, la classe exacte de
 // l'incident 17926d5de.
@@ -84,8 +84,26 @@ export function clesDeContenu(sha, { cwd = process.cwd() } = {}) {
  * arbre IDENTIQUE EN ENTIER. Table NOMINATIVE — une gate absente d'ici est gouvernée par la clé
  * partielle. Chaque raison est mesurée sur le corpus que la gate lit, et sert telle quelle dans le
  * refus « jouée sur un AUTRE arbre ».
+ *
+ * ELLE EST TENUE PAR L'AUTRE DÉCLARATION, PAS PAR UNE MESURE : `scripts/gates/toutes.test.mjs` la
+ * confronte à `ECRIT_LU.lit` (toutes.mjs) — une gate qui DÉCLARE lire `docs/` ou `.claude/` et qui
+ * manque ici fait rougir, et l'inverse aussi ; ce module étant une feuille (aucun import de
+ * `toutes.mjs`), la confrontation vit chez celui qui voit les deux tables. Ce que cet accord NE dit
+ * PAS : que `lit` soit vrai. Retirer de concert la ligne d'ici et la ligne de `lit` d'une même gate
+ * reste vert alors que la gate lit toujours. Une ligne ne se retire donc que sur une MESURE —
+ * rejeu de la gate sous `scripts/docs/lib/enregistreur-lectures.mjs` posé en `--import`.
  */
 export const RAISON_CLE_COMPLETE = {
+  test:
+    'lit docs/ — 9 fichiers de la suite, 12 sites, y ouvrent un chemin (mesuré 2026-09-08) : la ' +
+    'famille des CLIQUETS ET CONTRATS qui confrontent le code à un doc DÉRIVÉ (donnees, index-moteur, ' +
+    'structures-donnees, registre-jets, architecture, charte-ui, raw/00-index) plus le balayage de ' +
+    'docs/ à plat de manual-docs-ratchet ; et .claude/memory/, balayé sur l’ARBRE RÉEL par ' +
+    'src/memory-links-guard.test.ts:81',
+  'test:ops': 'lit .claude/workflows/ — scripts/ops/workflows.test.mjs et workflows-joues.test.mjs les lisent en place',
+  'deps:unused':
+    'lit docs/ — la passe knip OUVRE docs/charte-ui.md et docs/donnees.md (enregistreur de lectures, deux ' +
+    'passes, même ensemble, 2026-09-08)',
   'agents:check': 'lit .claude/ (credo, skills, agents, settings) — scripts/agents/compat-cli.mjs:16-20',
   'test:hooks': 'lit .claude/ (soldes, settings.json) — scripts/hooks/soldes-stock.test.mjs:16, settings-guard-canaux.test.mjs:27',
   'test:docs': 'lit docs/ et .claude/memory/ — scripts/docs/check-plans-anchors.test.mjs, build-doctrines.test.mjs:1',

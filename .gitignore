@@ -56,6 +56,11 @@ scripts/data/.out/
 *.exe
 *.log
 
+# Config de Vite recompilée à côté d'elle-même à chaque `vite build`/`vite dev`, puis effacée : tant
+# qu'elle est là, elle est NON SUIVIE à la racine et `perimetreSale` la compte, ce qui fait écrire un
+# justificatif `sale` et refuser le push (mesuré sur la gate `build`, 2026-09-08)
+vite.config.ts.timestamp-*.mjs
+
 # Logs de serveurs de dev lancés en arrière-plan (vite/wrangler) — éphémères, régénérés
 vite-*.out
 vite-*.err

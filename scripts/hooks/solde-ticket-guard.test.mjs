@@ -1488,8 +1488,11 @@ test('repoRoot : résolu depuis l\'emplacement du script, retrouve la racine du 
     process.chdir(tmpdir())
     const root = repoRoot(import.meta.url)
     // scripts/hooks/solde-ticket-guard.test.mjs → ../.. = racine du dépôt (package.json y vit).
-    assert.doesNotThrow(() => writeFileSync(join(root, '.repoRoot-probe-tmp'), 'x'))
-    rmSync(join(root, '.repoRoot-probe-tmp'))
+    // La preuve se LIT : une sonde par écriture pose un fichier NON SUIVI à la racine RÉELLE,
+    // que `perimetreSale` compte — un justificatif `sale` intermittent refuse alors le push.
+    assert.equal(resolve(root), resolve(new URL('../../', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')))
+    assert.equal(JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).name, 'warhammer-v4-rpg')
+    assert.notEqual(resolve(root), resolve(process.cwd()), 'le cwd est tmpdir : la racine ne vient donc PAS de lui')
   } finally {
     process.chdir(cwd)
   }
