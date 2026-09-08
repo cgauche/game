@@ -231,7 +231,7 @@
     "fichier": "src/gameIso/rig/bodyPlan.ts",
     "concept": "résolution rendu + dispatch backend",
     "perimetre": "tout rendu iso/POV/portrait",
-    "verrou": "gameiso-purity.test.ts"
+    "verrou": "eslint.config.js"
   },
   {
     "id": "masterDetail",

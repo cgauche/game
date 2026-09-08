@@ -57,6 +57,50 @@ const VERROU_DIALECTE = [{
   message: 'Dialecte de parse (#1679 L3b) : le `ts.ScriptKind` se déduit de l’extension par `scriptKindDe` (`scripts/guards/lib/dialecte.mjs`) — une table recopiée au site fait lire un `.mts` en TS ici et en JS là, et un scan silencieusement faux ne se voit pas.',
 }];
 
+/** PURETÉ DE COUCHE (#1709 C3b-2 ; CLAUDE.md règle stricte 3, issues #8 et #161) : la couche AMONT
+ *  n'a AUCUNE arête d'EXÉCUTION vers la couche AVAL. Le critère est STRUCTUREL, jamais nominatif :
+ *  ce qui est élidé à la compilation (`import type … from`, `import { type X }` tout-type,
+ *  `export type … from`, et la référence inline `import('…').T` — un `TSImportType`, qu'aucune des
+ *  deux règles ne visite) ne crée aucune arête et PASSE ; tout le reste est refusé, y compris l'alias
+ *  `@/…` (`tsconfig.json` `paths`) et le `export … from`.
+ *
+ *  DEUX règles, parce qu'aucune ne suffit seule (mesuré sur 7 formes d'import, cf.
+ *  `src/eslint-purete-de-couche.test.ts` qui rejoue la table sur la config RÉSOLUE) :
+ *  `no-restricted-imports` ne visite que `ImportDeclaration` / `ExportNamedDeclaration[source]` /
+ *  `ExportAllDeclaration` (`node_modules/eslint/lib/rules/no-restricted-imports.js` — aucun
+ *  `ImportExpression`), donc l'import DYNAMIQUE lui échappe et revient à `no-restricted-syntax`.
+ *  Précédent du dépôt : le mur de l'ordre total, plus bas, « DEUX règles, parce qu'aucune ne suffit
+ *  seule ». `allowTypeImports` est porté par la règle CORE d'ESLint 10 (la variante
+ *  `@typescript-eslint` est DÉPRÉCIÉE depuis 8.64.0 au profit d'elle).
+ */
+const msgPurete = (amont, aval, suite) =>
+  `Pureté de couche (#1709, CLAUDE.md règle 3) : src/${amont} n’importe rien de src/${aval} à l’EXÉCUTION — ${suite}`;
+
+/** Formes d'import STATIQUES vers une couche aval (le type-only passe : il n'a pas d'arête runtime). */
+const pureteImports = (amont, avals) => ({
+  patterns: avals.map(([aval, suite]) => ({
+    group: [`**/${aval}`, `**/${aval}/**`],
+    allowTypeImports: true,
+    message: msgPurete(amont, aval, suite),
+  })),
+});
+
+/** Import DYNAMIQUE vers une couche aval — hors de portée de `no-restricted-imports`. */
+const pureteSyntaxe = (amont, avals) => avals.map(([aval, suite]) => ({
+  selector: `ImportExpression[source.value=/(^|\\/)${aval}\\//]`,
+  message: msgPurete(amont, aval, suite),
+}));
+
+const AVALS_ENGINE = [
+  ['state', 'extraire le type/la logique partagée vers une couche neutre — `engine/flowCore` a été extrait pour cela (#8), la couche `state` ne fait qu’instancier la feuille générique.'],
+  ['ui', 'extraire le type/la logique partagée vers une couche neutre, ou n’importer que le TYPE (`import type`).'],
+  ['gameIso', 'extraire le type/la logique partagée vers une couche neutre, ou n’importer que le TYPE (`import type`).'],
+];
+const AVALS_STATE = [
+  ['ui', 'le store/flux est en amont de l’affichage — extraire le type/la logique partagée, ou n’importer que le TYPE (`import type`).'],
+  ['gameIso', 'extraire la géométrie/simulation partagée vers `src/geometry` (ou le module neutre pertinent) — c’est le geste de l’audit #161.'],
+];
+
 export default tseslint.config(
   { ignores: ['dist/**', 'node_modules/**', 'public/**', '_site/**', 'src/data/**/*', '!src/data/source/**', '!src/data/hash.ts', '**/*.json', '*.config.*', '.claude/**', 'server/.wrangler/**', '.playwright-mcp/**', '.wt-*/**'] },
   js.configs.recommended,
@@ -172,11 +216,15 @@ export default tseslint.config(
       'src/state/**/*.test.ts', 'src/state/**/*.test.tsx', // les tests mesurent les describeX eux-mêmes
     ],
     rules: {
+      // La PURETÉ DE COUCHE de `src/state` est REDITE ici : en flat config, le dernier bloc qui
+      // déclare une règle REMPLACE ses options — deux blocs `src/state/**` déclarant
+      // `no-restricted-imports` s'écraseraient l'un l'autre. Les trois goulots exemptés ci-dessus le
+      // sont du seul CANAL D'ISSUE : ils restent sous la pureté par le bloc qui les nomme, plus bas.
       'no-restricted-imports': ['error', {
         patterns: [{
           group: ['**/flowOutcomes'],
           message: 'Canal d’issue (#1262 V3 Lj) : déclarer `issue` au flux (`RollFlowSpec.issue`) et acquitter par `flow.apply(get, …)` — un site ne rédige plus sa ligne d’issue.',
-        }],
+        }, ...pureteImports('state', AVALS_STATE).patterns],
       }],
     },
   },
@@ -241,6 +289,48 @@ export default tseslint.config(
           message: 'Ordre total (#1679 L3b) : comparer deux chaînes par `parUnitesDeCode` (`scripts/guards/lib/lister.mjs`) — unités de code, jamais `localeCompare`, dont le verdict suit la locale du processus.',
         },
       ],
+    },
+  },
+  {
+    // PURETÉ DU MOTEUR (#1709 C3b-2 ; CLAUDE.md règle 3, issue #8) — `src/engine` est la couche RÈGLES,
+    // PURE : `state`/`ui`/`gameIso` en dépendent, JAMAIS l'inverse. Les fichiers de TEST sont hors
+    // portée : ils exercent légitimement le runtime des couches aval (`runPureFlowLines`,
+    // `applyTriggeredEffects`, `combatantVisuals`…) — ce sont des consommateurs, pas le moteur.
+    // `VERROU_MARQUES`/`VERROU_CONTENEUR` sont REDITS : en flat config, le dernier bloc qui déclare
+    // `no-restricted-syntax` REMPLACE ses options — les omettre désarmerait #1262/#1318 sur `src/engine`.
+    files: ['src/engine/**/*.ts', 'src/engine/**/*.tsx'],
+    ignores: ['src/engine/**/*.test.ts', 'src/engine/**/*.test.tsx'],
+    rules: {
+      'no-restricted-imports': ['error', pureteImports('engine', AVALS_ENGINE)],
+      'no-restricted-syntax': ['error', ...VERROU_MARQUES, ...VERROU_CONTENEUR, ...pureteSyntaxe('engine', AVALS_ENGINE)],
+    },
+  },
+  {
+    // PURETÉ DE `state` — volet IMPORT DYNAMIQUE (#1709 C3b-2 ; règle 3, #161). Le volet statique est
+    // déclaré plus haut, DANS le bloc du canal d'issue (une seule déclaration de `no-restricted-imports`
+    // par périmètre). Tests hors portée, même raison que pour le moteur. `rollSeam`/`revealStep` sont
+    // traités par le bloc suivant : ils sont MINTEURS des marques, donc hors `VERROU_MARQUES`.
+    files: ['src/state/**/*.ts', 'src/state/**/*.tsx'],
+    ignores: ['src/state/**/*.test.ts', 'src/state/**/*.test.tsx', 'src/state/rollSeam.ts', 'src/state/revealStep.ts'],
+    rules: {
+      'no-restricted-syntax': ['error', ...VERROU_MARQUES, ...VERROU_CONTENEUR, ...pureteSyntaxe('state', AVALS_STATE)],
+    },
+  },
+  {
+    // Les deux MINTEURS de `src/state` : exemptés des verrous de marque (forger la marque EST leur
+    // corps de métier), JAMAIS de la pureté de couche — sans ce bloc, la règle du dessus les ferait
+    // sortir du radar de l'import dynamique.
+    files: ['src/state/rollSeam.ts', 'src/state/revealStep.ts'],
+    rules: {
+      'no-restricted-syntax': ['error', ...pureteSyntaxe('state', AVALS_STATE)],
+    },
+  },
+  {
+    // Les trois goulots du canal d'issue restent SOUS la pureté de couche : leur exemption ne porte
+    // que sur `flowOutcomes` (bloc du canal, plus haut, qui les `ignores`).
+    files: ['src/state/flowOutcomes.ts', 'src/state/rollFlowSpecs.ts', 'src/state/encounterPsychFlow.ts'],
+    rules: {
+      'no-restricted-imports': ['error', pureteImports('state', AVALS_STATE)],
     },
   },
 );

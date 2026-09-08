@@ -86,8 +86,10 @@ export function terrainMatiere(id: string): string | undefined {
  *  et le volumique (`groundAccents.ts`) ; le POV lit la recette NON restreinte en direct monde
  *  volumique. Elle vit avec le dataset qu'elle interroge, au même titre que `terrainOverlayProp`.
  *
- *  Type par ACCÈS INDEXÉ sur `TerrainDef` : la garde de pureté state→gameIso (#161) interdit tout
- *  `import … from '../../gameIso/…'` ici, `import type` compris. */
+ *  Type par ACCÈS INDEXÉ sur `TerrainDef`, déjà importé ici : `DetailRecipe` vit dans
+ *  `gameIso/detail/types.ts`, et la police de pureté state→gameIso (#161) ne refuse plus, depuis
+ *  #1709, qu'une arête d'EXÉCUTION — un `import type` serait donc licite ; l'accès indexé n'économise
+ *  plus qu'un second import. */
 export function terrainDetail(id: string): NonNullable<TerrainDef['detail']> | null {
   const d = indexDesTerrains()[id]?.detail;
   return d && (d.tufts || d.speckle) ? d : null;

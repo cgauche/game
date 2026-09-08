@@ -12,8 +12,10 @@ import { fileURLToPath } from 'node:url';
  * `import type { Appearance } from '../gameIso/rig/appearance'`) sont autorisés : une déclaration
  * `import type …` est ÉLIDÉE à la compilation — critère STRUCTUREL, lu sur la ligne. Les réfs de type
  * INLINE (`import('../state/flow').Condition`), elles, ne sont pas distinguables d'un import runtime
- * par la ligne : elles restent couvertes PAR ALLOWLIST (fichier → réf inline factuelle), même patron
- * que `engine-purity.test.ts` sur `types.ts`→`gameIso`.
+ * par la ligne : elles restent couvertes PAR ALLOWLIST (fichier → réf inline factuelle). La pureté
+ * des AUTRES couches (engine→state/ui/gameIso, state→ui/gameIso) vit dans `eslint.config.js` depuis
+ * #1709 ; `src/data` est hors du périmètre ESLint du dépôt (`ignores` de tête `src/data/**`), d'où ce
+ * banc.
  *
  * Incident #421 : `pregens.ts` important `../ui/creator/draft` + `../ui/creator/creatorDefaults`
  * tirait tout le graphe `ui/creator` dans le graphe `data`, contaminant (Vitest `isolate:false`)
