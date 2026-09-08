@@ -426,44 +426,44 @@ describe('deriveArchitectureMasses — une colonne OUVERTE au sommet adopte la n
   });
 });
 
+const S = 10;
+const dans = (rect: ArchitectureRect, x: number, y: number) =>
+  x >= rect.x && x < rect.x + rect.w && y >= rect.y && y < rect.y + rect.h;
+
+/** Bâti à N couches : chaque couche pose `pierre` sur ses rectangles, moins ses `trous`. `cotes`
+ *  cote le rez (palier haut d'une volée à `METRES_PER_LEVEL`). */
+function bati(
+  couches: { z: number; rects: ArchitectureRect[]; trous?: string[] }[],
+  cotes: Record<string, number>,
+  emprise: ArchitectureRect[],
+): Scene {
+  let scene = emptyScene(S, S);
+  for (const couche of couches) {
+    const tiles: Terrain[] = new Array(S * S).fill(couche.z === 0 ? 'herbe' : 'vide');
+    const height = new Array<number>(S * S).fill(0);
+    for (let y = 0; y < S; y++)
+      for (let x = 0; x < S; x++)
+        if (couche.rects.some((r) => dans(r, x, y)) && !(couche.trous ?? []).includes(`${x},${y}`))
+          tiles[y * S + x] = 'pierre';
+    if (couche.z === 0)
+      for (const [key, m] of Object.entries(cotes)) {
+        const [x, y] = key.split(',').map(Number);
+        height[y * S + x] = m;
+      }
+    scene = putLayer(scene, couche.z, tiles, couche.z === 0 ? height : undefined);
+  }
+  scene.walls = perimeterWallSegs(emprise);
+  scene.architecture = [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }];
+  return scene;
+}
+const porteuse = (scene: Scene, key: string) => massesOf(scene).find((mass) => cellsOf(mass.footprint).has(key));
+
 /**
  * ADOPTION au DÉBOUCHÉ (#1181) — une volée n'ouvre QUE vers l'étage où elle monte. Élire le voisin le
  * plus HAUT donnait la trémie à la TOUR qui la borde : une masse de trois niveaux posée sur une case
  * qui n'en porte qu'un, nappe passée par-dessus le corps au lieu de le coiffer.
  */
 describe('deriveArchitectureMasses — la colonne ouverte est adoptée au DÉBOUCHÉ, jamais par le voisin le plus haut', () => {
-  const S = 10;
-  const dans = (rect: ArchitectureRect, x: number, y: number) =>
-    x >= rect.x && x < rect.x + rect.w && y >= rect.y && y < rect.y + rect.h;
-
-  /** Bâti à N couches : chaque couche pose `pierre` sur ses rectangles, moins ses `trous`. `cotes`
-   *  cote le rez (palier haut d'une volée à `METRES_PER_LEVEL`). */
-  function bati(
-    couches: { z: number; rects: ArchitectureRect[]; trous?: string[] }[],
-    cotes: Record<string, number>,
-    emprise: ArchitectureRect[],
-  ): Scene {
-    let scene = emptyScene(S, S);
-    for (const couche of couches) {
-      const tiles: Terrain[] = new Array(S * S).fill(couche.z === 0 ? 'herbe' : 'vide');
-      const height = new Array<number>(S * S).fill(0);
-      for (let y = 0; y < S; y++)
-        for (let x = 0; x < S; x++)
-          if (couche.rects.some((r) => dans(r, x, y)) && !(couche.trous ?? []).includes(`${x},${y}`))
-            tiles[y * S + x] = 'pierre';
-      if (couche.z === 0)
-        for (const [key, m] of Object.entries(cotes)) {
-          const [x, y] = key.split(',').map(Number);
-          height[y * S + x] = m;
-        }
-      scene = putLayer(scene, couche.z, tiles, couche.z === 0 ? height : undefined);
-    }
-    scene.walls = perimeterWallSegs(emprise);
-    scene.architecture = [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }];
-    return scene;
-  }
-  const porteuse = (scene: Scene, key: string) => massesOf(scene).find((mass) => cellsOf(mass.footprint).has(key));
-
   it('une TOUR accolée ne vole pas la trémie : la volée qui débouche sur l’étage prend la nappe de l’ÉTAGE', () => {
     // Tour de 3 niveaux (x1..2) contre un corps de 2 (x3..6) ; volée en (3,2), contre la tour, qui
     // débouche sur le plancher z1 du corps.
@@ -516,54 +516,82 @@ describe('deriveArchitectureMasses — la colonne ouverte est adoptée au DÉBOU
 });
 
 /**
- * LA DILIGENCE RÉELLE (#1181) — le plan livré, pas une maquette : ses deux volées ouvrent huit trémies
- * dans le plancher de l'étage, et chacune faisait un TROU dans la nappe d'ardoise (diagnostic
- * utilisateur : « il ne genere pas de toit au dessus d'une case vide, mais en dessous c'est
- * l'escalier »). Le toit doit passer au-dessus, à la hauteur de la nappe qui l'entoure.
+ * VOLÉES SOUS PLANCHER (#1181) — une volée de relief ouvre une TRÉMIE dans le plancher de l'étage
+ * qu'elle rejoint, et chacune faisait un TROU dans la nappe (diagnostic utilisateur : « il ne genere
+ * pas de toit au dessus d'une case vide, mais en dessous c'est l'escalier »). Le toit doit passer
+ * au-dessus, à la hauteur de la nappe qui l'entoure. Mesuré sur une scène CONSTRUITE (#1709) : DEUX
+ * volées de quatre marches, chacune ouvrant quatre trémies dans un plancher d'étage plein.
  */
-describe('deriveArchitectureMasses — les trémies de La Diligence sont TOITÉES', () => {
-  const scene = parseProject(diligenceProjet).scenes[0];
+describe('deriveArchitectureMasses — les trémies d’une volée sont TOITÉES', () => {
+  const CORPS = { x: 1, y: 1, w: 8, h: 8 };
+  /** Deux volées de quatre marches, CONTRE les faces ouest et est du corps (comme celles d'un plan
+   *  livré) : leur trémie touche le bord de la nappe, donc AUCUNE enclosure ne la rattrape — seule
+   *  l'adoption au débouché la coiffe. La dernière marche affleure le plancher de l'étage
+   *  (`METRES_PER_LEVEL`), les trois précédentes montent d'un mètre par case (lien `ramp`). */
+  const VOLEES = [CORPS.x, CORPS.x + CORPS.w - 1].map((x) => [1, 2, 3, 4].map((m, i) => ({ key: `${x},${2 + i}`, m })));
+  const CELLULES = VOLEES.flat().map((c) => c.key);
+  const scene = bati(
+    [
+      { z: 0, rects: [CORPS] },
+      { z: 1, rects: [CORPS], trous: CELLULES },
+    ],
+    Object.fromEntries(VOLEES.flat().map((c) => [c.key, c.m])),
+    [CORPS],
+  );
   const tremies = [...stairFlightCells(scene, 0, 1)].sort();
   const masses = deriveArchitectureMasses(scene).flatMap((body) => body.masses);
-  const porteuse = (key: string) => masses.find((mass) => cellsOf(mass.footprint).has(key));
+  const porte = (key: string) => masses.find((mass) => cellsOf(mass.footprint).has(key));
 
-  it('les huit cases de volée sont bien les trémies du plan', () => {
-    expect(tremies).toEqual(['13,25', '14,23', '14,24', '14,25', '19,20', '19,21', '19,22', '20,22']);
+  it('la fixture EXERCE le cas : les cases de volée cotées SONT les trémies détectées', () => {
+    expect(tremies).toEqual([...CELLULES].sort());
   });
 
   it('chaque trémie est couverte, à la hauteur de l’étage (z1, deux niveaux) — jamais à la cote de la marche', () => {
     for (const key of tremies) {
-      expect(porteuse(key), key).toBeDefined();
-      expect(porteuse(key)!.z, key).toBe(1);
-      expect(porteuse(key)!.levels, key).toBe(2);
+      expect(porte(key), key).toBeDefined();
+      expect(porte(key)!.z, key).toBe(1);
+      expect(porte(key)!.levels, key).toBe(2);
     }
   });
 
   it('la nappe est CONTINUE : la trémie porte la MÊME masse que le plancher d’étage voisin', () => {
-    expect(porteuse('13,25')!.id).toBe(porteuse('12,25')!.id); // volée ouest, débouché sur l'étage
-    expect(porteuse('20,22')!.id).toBe(porteuse('21,22')!.id); // volée est
+    for (const key of tremies) {
+      const [x, y] = key.split(',').map(Number);
+      // Premier 4-voisin qui porte VRAIMENT le plancher d'étage : ni trémie, ni hors emprise.
+      const voisin = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+        .map(([dx, dy]) => ({ key: `${x + dx},${y + dy}`, x: x + dx, y: y + dy }))
+        .find((c) => dans(CORPS, c.x, c.y) && !CELLULES.includes(c.key))!;
+      expect(voisin, `${key} : aucun plancher d’étage voisin, la mesure n’a plus de sujet`).toBeDefined();
+      expect(porte(key)!.id, `${key} vs ${voisin.key}`).toBe(porte(voisin.key)!.id);
+    }
   });
 });
 
 /**
  * L'ATTRIBUTION du plancher résiduel ne doit rien devoir à l'ORDRE du tableau `architecture` (#1172).
  * La Diligence portait DEUX corps non bornés (`diligence` et un `architecture-0` vide) : la dérivation
- * donnait ses 654 cases et ses 5 masses au PREMIER du tableau, et tout basculait sur l'autre à l'ordre
- * inversé. Le corps mort purgé, le résultat est le MÊME dans les deux sens.
+ * donnait tout son plancher et toutes ses masses au PREMIER du tableau, et tout basculait sur l'autre
+ * à l'ordre inversé. Le corps mort purgé, le résultat est le MÊME dans les deux sens — c'est cette
+ * ÉGALITÉ des deux sens qui se mesure ici, jamais un compte figé du plan livré (#1709).
  */
-describe('deriveArchitectureMasses — La Diligence purgée dérive la MÊME toiture quel que soit l’ordre', () => {
+describe('deriveArchitectureMasses — l’ORDRE du tableau `architecture` ne décide de rien', () => {
   const scene = parseProject(diligenceProjet).scenes[0];
   const bilan = (s: Scene) => deriveArchitectureMasses(s)
-    .map((body) => `${body.id}:${body.masses.length}:${cellsOf(body.masses.flatMap((mass) => mass.footprint)).size}`);
+    .map((body) => `${body.id}:${body.masses.length}:${cellsOf(body.masses.flatMap((mass) => mass.footprint)).size}`)
+    .sort();
 
-  it('un seul corps NON BORNÉ subsiste : le résiduel légitime', () => {
+  it('au plus UN corps NON BORNÉ : deux résiduels se disputeraient le plancher', () => {
     const nonBornes = (scene.architecture ?? []).filter((body) => bodyFootCells(body).size === 0);
-    expect(nonBornes.map((body) => body.id)).toEqual(['diligence']);
+    // Flanc à zéro assumé : un plan SANS résiduel passe ici, et c'est la non-vacuité de l'`it` suivant
+    // (au moins une masse dérivée) qui refuse un plan devenu muet.
+    expect(nonBornes.map((body) => body.id).length).toBeLessThanOrEqual(1);
   });
 
-  it('5 masses sur 654 cases, à l’endroit comme à l’envers', () => {
-    expect(bilan(scene)).toEqual(['diligence:5:654']);
-    expect(bilan({ ...scene, architecture: [...(scene.architecture ?? [])].reverse() })).toEqual(['diligence:5:654']);
+  it('le MÊME bilan à l’endroit comme à l’envers', () => {
+    const endroit = bilan(scene);
+    // NON-VACUITÉ : un plan qui ne dériverait aucune masse rendrait l'égalité muette.
+    expect(endroit.some((ligne) => !ligne.endsWith(':0:0')), 'aucune masse dérivée : rien à comparer').toBe(true);
+    expect(bilan({ ...scene, architecture: [...(scene.architecture ?? [])].reverse() })).toEqual(endroit);
   });
 });
 

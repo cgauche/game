@@ -6,7 +6,7 @@ import { WALL_H_M } from '../iso';
 import { roofMaterial } from '../catalog/roofs';
 import { MISSING_ID, MISSING_TONE } from '../catalog/missing';
 import { emptyScene, type BuildingMass, type Scene, type WallSeg } from '../../state/scene';
-import { addLayer, DEFAULT_ROOF_DEFAULTS, effectiveArchitecture, fillTerrainRect, paintTiles, rederiveRoofMasses } from '../../state/sceneEdit';
+import { addLayer, DEFAULT_ROOF_DEFAULTS, effectiveArchitecture, fillTerrainRect, paintTiles, putLayer, rederiveRoofMasses } from '../../state/sceneEdit';
 import { encloseRect, perimeterWallSegs } from '../../state/sceneEdit.testkit';
 import { diligenceCampaign } from '../../scenes/campaign';
 
@@ -1171,25 +1171,28 @@ describe('groupe de nappe — un champ de hauteur sur le domaine UNION (#1186)',
 });
 
 /**
- * #1186 — LA DILIGENCE RÉELLE : ses trois masses de l'étage partageaient un égout (8 m) et trois
- * pentes fittées, et retombaient chacune à l'égout au joint (griefs de la maquette : « les 3 toitures
- * sont sensées se rejoindre »). Mesure sur la scène de campagne, jamais sur une fixture.
+ * #1186 — LA DILIGENCE RÉELLE : ses masses d'étage partageaient un égout et des pentes fittées
+ * distinctes, et retombaient chacune à l'égout au joint (griefs de la maquette : « les 3 toitures
+ * sont sensées se rejoindre »). Ce que ce bloc mesure sur le plan livré est DÉRIVÉ de lui — jamais un
+ * compte ni une cote recopiés (#1709) ; les comptes exacts se prennent sur la fixture qui suit.
  */
 describe('La Diligence — les nappes de l’étage se REJOIGNENT (#1186)', () => {
   const scene = diligenceCampaign.scenes[0];
   const masses = () => effectiveArchitecture(scene).find((b) => b.id === 'diligence')!.masses.filter((m) => m.z === 1);
   const nappeOf = (massId: string) => resolveNappes(scene).get(nappeKey('diligence', massId))!;
 
-  it('les 3 masses de l’étage forment UN groupe (même égout mesuré, 4-adjacentes)', () => {
+  it('les masses de l’étage forment UN groupe (même égout MESURÉ, 4-adjacentes)', () => {
     const ids = masses().map((m) => m.id);
-    expect(ids).toHaveLength(3);
+    // NON-VACUITÉ, jamais un cardinal du plan livré (#1709) : sans DEUX nappes il n'y a pas de
+    // jonction à mesurer, et le compte exact se prend sur la fixture ci-dessous.
+    expect(ids.length, 'moins de deux nappes d’étage : rien à rejoindre').toBeGreaterThan(1);
     expect(new Set(ids.map((id) => nappeOf(id).groupId)).size).toBe(1);
-    expect(new Set(ids.map((id) => nappeOf(id).field.shape.eaveHeightM))).toEqual(new Set([8]));
+    expect(new Set(ids.map((id) => nappeOf(id).field.shape.eaveHeightM)).size).toBe(1);
   });
 
-  it('aucune face SÉCANTE entre les 3 masses : toute leur couverture émise repose sur UN champ', () => {
+  it('aucune face SÉCANTE entre les masses : toute leur couverture émise repose sur UN champ', () => {
     // Deux nappes ne peuvent se croiser que si elles lisent deux hauteurs : chaque sommet de chaque
-    // pan des trois masses se relit ici sur LE champ du groupe (les débords d'avant-toit, hors nappe
+    // pan des masses d'étage se relit ici sur LE champ du groupe (les débords d'avant-toit, hors nappe
     // par construction, ne sont pas de la couverture).
     const pans = buildRoofs(scene).filter((el) => el.cell.z === 1 && !el.panId?.startsWith('pignon-'));
     expect(pans.length).toBeGreaterThan(0);
@@ -1235,11 +1238,14 @@ describe('La Diligence — les nappes de l’étage se REJOIGNENT (#1186)', () =
     expect(buildWalls(scene).filter((el) => el.key.startsWith('seam:') && el.cell.z === 1)).toEqual([]);
   });
 
-  it('le corps central garde ses DEUX pignons, les ailes en croupe n’en ferment aucun', () => {
+  it('chaque corps en `gable` ferme DEUX pignons, les croupes n’en ferment aucun', () => {
     const pignons = buildRoofs(scene).filter((el) => el.cell.z === 1 && el.panId?.startsWith('pignon-'));
-    expect(pignons).toHaveLength(2);
-    const gable = masses().find((m) => m.profile === 'gable')!;
-    expect(new Set(pignons.map((el) => el.sectionId))).toEqual(new Set([gable.id]));
+    const gables = masses().filter((m) => m.profile === 'gable');
+    expect(gables.length, 'aucune masse `gable` à l’étage : la mesure n’a plus de sujet').toBeGreaterThan(0);
+    // DEUX pignons par masse à deux rampants, aucun par croupe : le compte se DÉDUIT du plan, il ne
+    // se recopie pas (#1709).
+    expect(pignons).toHaveLength(gables.length * 2);
+    expect(new Set(pignons.map((el) => el.sectionId))).toEqual(new Set(gables.map((m) => m.id)));
   });
 });
 
@@ -1314,16 +1320,65 @@ describe('groupe de nappe — une masse AUTHORÉE ne cède ni sa pente ni son pr
     expect(nappeOf(duo, 'grand').groupId).not.toBe(nappeOf(duo, 'app').groupId);
   });
 
-  it('les masses DÉRIVÉES, elles, groupent malgré TROIS pentes distinctes — La Diligence, chemin réel', () => {
-    // Une masse `derived` ne peut pas se poser à la main : `effectiveArchitecture` rejoue la
-    // dérivation depuis le plan. La preuve se prend donc sur la scène de campagne.
-    const carte = diligenceCampaign.scenes[0];
-    const masses = effectiveArchitecture(carte).find((b) => b.id === 'diligence')!.masses.filter((m) => m.z === 1);
-    expect(masses).toHaveLength(3);
-    expect(masses.every((m) => m.derived)).toBe(true);
-    expect(new Set(masses.map((m) => resolveMass(carte, m).shape.pitch)).size).toBe(3);
-    const nappes = masses.map((m) => resolveNappes(carte).get(nappeKey('diligence', m.id))!);
+});
+
+/**
+ * #1186 — LES MASSES DÉRIVÉES, elles, GROUPENT malgré des pentes distinctes. Une masse `derived` ne se
+ * pose pas à la main : `effectiveArchitecture` rejoue la dérivation depuis le PLAN — la scène est donc
+ * CONSTRUITE plan compris (#1709), jamais empruntée à une carte de campagne.
+ *
+ * LE PLAN MINIMAL qui dérive trois masses d'un même étage : deux corps CLOS au rez (`interiorCells`
+ * les voit, ils sortent à deux niveaux), séparés par un PASSAGE que rien ne clôt au rez (un seul
+ * niveau), et un plancher d'étage qui court d'un bout à l'autre par-dessus les trois. Trois
+ * composantes de sommet, trois portées — donc trois pentes fittées — et un seul égout, celui de leur
+ * étage : le champ commun, la noue de la maquette.
+ */
+describe('nappes DÉRIVÉES — trois masses d’étage, trois pentes, UN champ (#1186)', () => {
+  const SIZE = 24;
+  const OUEST = { x: 1, y: 1, w: 7, h: 14 };
+  const PASSAGE = { x: 8, y: 1, w: 3, h: 14 };
+  const EST = { x: 11, y: 1, w: 8, h: 14 };
+  const ETAGE = { x: OUEST.x, y: OUEST.y, w: OUEST.w + PASSAGE.w + EST.w, h: OUEST.h };
+
+  const dans = (r: { x: number; y: number; w: number; h: number }, x: number, y: number) =>
+    x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
+
+  const plan = (): Scene => {
+    let sc = emptyScene(SIZE, SIZE);
+    for (const [z, rects] of [[0, [OUEST, EST]], [1, [ETAGE]]] as const) {
+      const tiles = new Array(SIZE * SIZE).fill(z === 0 ? 'herbe' : 'vide');
+      for (let y = 0; y < SIZE; y++)
+        for (let x = 0; x < SIZE; x++) if (rects.some((r) => dans(r, x, y))) tiles[y * SIZE + x] = 'pierre';
+      sc = putLayer(sc, z, tiles);
+    }
+    sc.walls = perimeterWallSegs([OUEST, EST]); // le PASSAGE n'est clos de rien : un seul niveau
+    sc.architecture = [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }];
+    return sc;
+  };
+
+  const scene = plan();
+  const masses = () => effectiveArchitecture(scene).find((b) => b.id === 'corps')!.masses.filter((m) => m.z === 1);
+  const nappeOf = (massId: string) => resolveNappes(scene).get(nappeKey('corps', massId))!;
+
+  it('la fixture EXERCE le cas : trois masses DÉRIVÉES à l’étage, à trois pentes distinctes', () => {
+    const trois = masses();
+    expect(trois).toHaveLength(3);
+    expect(trois.every((m) => m.derived)).toBe(true);
+    expect(new Set(trois.map((m) => resolveMass(scene, m).shape.pitch)).size).toBe(3);
+  });
+
+  it('elles GROUPENT quand même : un seul groupe, et LE même champ — la noue de la maquette', () => {
+    const nappes = masses().map((m) => nappeOf(m.id));
     expect(new Set(nappes.map((n) => n.groupId)).size).toBe(1);
-    expect(new Set(nappes.map((n) => n.field)).size).toBe(1); // LE même champ : la noue de la maquette
+    expect(new Set(nappes.map((n) => n.field)).size).toBe(1);
+    expect(new Set(nappes.map((n) => n.field.shape.eaveHeightM)).size).toBe(1);
+  });
+
+  it('la masse en `gable` ferme DEUX pignons, les croupes n’en ferment aucun', () => {
+    const gables = masses().filter((m) => m.profile === 'gable');
+    expect(gables).toHaveLength(1); // le passage, seule portée sous la borne de comble
+    const pignons = buildRoofs(scene).filter((el) => el.cell.z === 1 && el.panId?.startsWith('pignon-'));
+    expect(pignons).toHaveLength(2);
+    expect(new Set(pignons.map((el) => el.sectionId))).toEqual(new Set([gables[0].id]));
   });
 });

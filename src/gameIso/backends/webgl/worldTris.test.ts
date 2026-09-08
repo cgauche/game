@@ -707,26 +707,34 @@ describe('RELIEF MINCE — le prix mesuré du volume (#1176 P1-E)', () => {
 
   /** MESURES du lot, par scène-témoin du spike : triangles avant/après le relief, et paires coplanaires
    *  recouvrantes AVANT biais. Les chants de boîte des parties en saillie/traversant recréent des paires
-   *  (une joue de plinthe et son chant croisent les plans voisins) : +13,3 % au siège, +10,2 % à l'arène,
-   *  +11,4 % à la vitrine — toutes séparées par le biais coplanaire, comme
-   *  l'atteste le zéro final. La vitrine porte en plus la RUINE authorée par ce lot (gravats, seuil,
-   *  vantail), d'où un `avant` qui n'est plus celui d'avant l'extension. */
+   *  (une joue de plinthe et son chant croisent les plans voisins) : +13,3 % au siège, +11,4 % à la
+   *  vitrine — toutes séparées par le biais coplanaire, comme l'atteste le zéro final. La vitrine porte
+   *  en plus la RUINE authorée par ce lot (gravats, seuil, vantail), d'où un `avant` qui n'est plus
+   *  celui d'avant l'extension.
+   *  Les deux sujets qui restent sont CONSTRUITS : `siege-enceinte` compile son `MapSpec` dans le
+   *  fichier du scénario, la vitrine est une spec de rendu — aucune main d'auteur ne peut déplacer
+   *  leurs chiffres. */
   const MESURES: [string, () => Scene, { trisAvant: number; trisApres: number; paires: number }][] = [
     ['siege-enceinte', () => siege, { trisAvant: 6912, trisApres: 7404, paires: 1238 }],
-    ['arene (hub)', () => arene.scene, { trisAvant: 15242, trisApres: 16888, paires: 7070 }],
     ['vitrine-batiments', buildVitrineScene, { trisAvant: 9666, trisApres: 11146, paires: 5279 }],
   ];
 
-  /** EN AUTHORING — scènes SORTIES des mesures épinglées le temps que leur carte bouge sous le
-   *  pinceau : une épingle chiffrée n'a de sens que sur une carte stabilisée, sinon elle rougit à
-   *  chaque coup de pinceau d'une session d'authoring et bloque le tronc. Arbitrage 2026-08-21
-   *  (#1447), verbatim de l'utilisateur : « C'est absurde d'avoir un guard qui bloque totalement la
-   *  diligence alors qu'elle n'est même pas finalisé ».
-   *  RÉ-ENTRÉE : ré-étalonner à la FINALISATION de la carte — recopier les valeurs REÇUES dans
-   *  `MESURES` et dire dans le commit ce qui les a déplacées. Ce qui NE dépend pas d'un chiffre
-   *  authoré (plafond de hausse, zéro paire coplanaire après biais) continue de couvrir ces scènes. */
-  const EN_AUTHORING: [string, () => Scene, string][] = [
-    ['diligence', () => diligence.scene, 'carte en cours d’authoring'],
+  /** SANS ÉPINGLE CHIFFRÉE — scènes dont la carte appartient à un AUTEUR (ou à son générateur) : une
+   *  épingle chiffrée n'y mesure plus une dérive de géométrie mais un coup de pinceau, et bloque le
+   *  tronc. Arbitrage 2026-08-21 (#1447), verbatim de l'utilisateur : « C'est absurde d'avoir un guard
+   *  qui bloque totalement la diligence alors qu'elle n'est même pas finalisé » ; étendu à toute carte
+   *  livrée par #1709, arbitrage 2026-09-07, verbatim de l'utilisateur : « Franchement si on veut faire
+   *  de test, faites les sur des scenes créé spécialement pour ces tests, pas sur des scénes qui sont
+   *  utilisés » — `arene (hub)` EST la carte de campagne (`test-scenarios/arene.ts` parse
+   *  `arene-projet.json` et prend `arene-hub`), et un coffre déplacé d'une case par le générateur
+   *  déplaçait ses épingles. Ce qui NE dépend pas d'un chiffre authoré (plafond de hausse, zéro paire
+   *  coplanaire après biais) continue de couvrir ces scènes, ici et dans les blocs voisins.
+   *  DETTE NOMMÉE : la mesure de relief n'a plus que DEUX sujets chiffrés. Un TROISIÈME régime
+   *  (bourg meublé à fort relief) se rétablit par une scène CONSTRUITE portant du relief, pas en
+   *  ré-épinglant une carte livrée. */
+  const SANS_EPINGLE: [string, () => Scene, string][] = [
+    ['diligence', () => diligence.scene, 'carte livrée (authoring au studio)'],
+    ['arene (hub)', () => arene.scene, 'carte livrée (générateur d’auteur)'],
   ];
 
   /** Plafond de hausse ASSUMÉ du lot : au-delà, le relief coûte plus qu'il ne rend et la mesure remonte
@@ -757,8 +765,8 @@ describe('RELIEF MINCE — le prix mesuré du volume (#1176 P1-E)', () => {
       expect(coplanarOverlapPairs(quads.map((p, i) => biasPoly(p, ranks[i])))).toEqual([]);
     });
 
-  for (const [nom, faire, raison] of EN_AUTHORING)
-    it(`${nom} (EN AUTHORING, ${raison}) : hausse sous +35 % et zéro paire coplanaire après biais, sans épingle`, () => {
+  for (const [nom, faire, raison] of SANS_EPINGLE)
+    it(`${nom} (SANS ÉPINGLE, ${raison}) : hausse sous +35 % et zéro paire coplanaire après biais`, () => {
       const scene = faire();
       const faces = facesOf(scene);
       const avant = trisAvantRelief(faces, sceneMetresPerTile(scene));

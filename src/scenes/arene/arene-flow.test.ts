@@ -5,7 +5,7 @@ import { useGame } from '../../state/store';
 import { applyEffects, runFlow } from '../../state/combatFlow';
 import { EFFECT_HANDLERS } from '../../state/combatEffects';
 import { sceneNpc } from '../../state/sceneNpc';
-import { wallBetween, type ArchitectureRect, type Scene, type WallSeg } from '../../state/scene';
+import { emptyScene, wallBetween, type ArchitectureRect, type Scene, type SceneEntity, type WallSeg } from '../../state/scene';
 import { evalCondition, flowEffects, type Condition } from '../../state/flow';
 import { parseProject } from '../../state/worldMap';
 import { makeShowcaseParty } from '../../data/pregens';
@@ -128,7 +128,7 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
     expect(condOk(prime.when!)).toBe(true);
   });
 
-  it('CARTE DU MONDE : le Bourg est un lieu connu (bouton 🗺️) et ses routes partent vers les 3 expéditions', async () => {
+  it('CARTE DU MONDE : le Bourg est un lieu connu (bouton 🗺️) et ses routes mènent à d’AUTRES scènes du paquet', async () => {
     const { placeOfScene, routesFrom, otherEnd, placeById } = await import('../../state/worldMap');
     const wm = doc.worldMap!;
     const bourg = placeOfScene(wm, 'arene-hub')!;
@@ -146,7 +146,12 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
       }
     }
     const scenes = [...dests].map((id) => placeById(wm, id)!.scene);
-    expect(scenes.sort()).toEqual(['arene-exp-foret', 'arene-exp-marais', 'arene-exp-village']);
+    // La population des destinations se DÉRIVE de la carte livrée, elle ne se recopie pas (#1709) :
+    // une expédition ajoutée ou renommée par le générateur entre dans la mesure sans toucher ce test.
+    expect(scenes.length, 'aucune destination : la carte ne mène nulle part').toBeGreaterThan(0);
+    expect(scenes.filter((id) => !project.some((s) => s.id === id)), 'destination(s) sans scène au paquet').toEqual([]);
+    expect(scenes).not.toContain(bourg.scene); // on part du Bourg, on n'y « voyage » pas
+    expect(new Set(scenes).size, 'deux lieux pour la même scène').toBe(scenes.length);
   });
 });
 
@@ -211,17 +216,27 @@ describe('Médecin (PNJ) — soins payants (LDB 75), via l’infirmerie', () => 
     expect(sansSoin[0].message).toContain('Guérison');
   });
 
-  it('le NOM affiché est celui de l’ENTITÉ, jamais celui de la fiche spawnée (L2 #1548)', () => {
+  it('le NOM affiché est celui de l’ENTITÉ, la VALEUR celle de la fiche (L2 #1548)', () => {
+    // Scène CONSTRUITE (#1709) : un soigneur dont la FICHE porte un nom et une Guérison, et dont
+    // l'ENTITÉ porte un AUTRE nom — la fiche donne les valeurs, l'entité donne le nom. Aucune carte
+    // livrée n'entre ici : renommer un PNJ d'une campagne ne doit rougir aucun test.
+    const GUERISON = 60;
+    const infirmerie: Scene = {
+      ...emptyScene(8, 8),
+      id: 'fixture-infirmerie',
+      entities: [{
+        id: 'soigneur', kind: 'personnage', pos: { x: 1, y: 1 }, label: 'Frère Anselm',
+        statblock: { type: 'statblock', label: 'Prêtre de Sigmar', char: { intelligence: 40 }, skills: [{ id: 'guerison', value: GUERISON }] },
+      } as SceneEntity],
+    };
     const party = makeShowcaseParty();
     party[1].wounds = { ...party[1].wounds, current: party[1].wounds.current - 6 };
-    useGame.setState({ party, scene: hub, battle: null, pendingHeal: null, medic: null });
-    // `frere` réfère la fiche « pretre-de-sigmar » (label « Prêtre de Sigmar ») mais l'auteur l'a
-    // nommé « Frère Anselm » : la fiche donne les VALEURS, l'entité donne le NOM.
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], entityId: 'frere' }]);
+    useGame.setState({ party, scene: infirmerie, battle: null, pendingHeal: null, medic: null });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], entityId: 'soigneur' }]);
     const m = useGame.getState().medic!;
-    expect(m.npc!.id).toBe('frere');
-    expect(m.npc!.label).toBe('Frère Anselm');
-    expect(m.npc!.skill.value).toBe(60); // Guérison de la fiche « pretre-de-sigmar »
+    expect(m.npc!.id).toBe('soigneur');
+    expect(m.npc!.label).toBe('Frère Anselm'); // le nom de l'ENTITÉ, pas celui de la fiche
+    expect(m.npc!.skill.value).toBe(GUERISON); // la valeur de la FICHE, que l'effet ne porte pas
     useGame.getState().closeMedic();
   });
 

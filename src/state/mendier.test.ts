@@ -257,7 +257,7 @@ describe('Échec Stupéfiant (LDB 09 l.97 : « des ennuis ») — la bande RENVO
  * Les rues sont PARTOUT : l'Activité est proposable à tout lieu de la carte du monde, et hors carte.
  *
  * MUTATION : poser `"where": ["altdorf"]` sur l'entrée `mendier` d'`activities.json` — les deux `it`
- * de ce bloc tombent (hors carte refusé, et 9 des 10 lieux livrés perdent l'Activité).
+ * de ce bloc tombent (hors carte refusé, et tout lieu livré autre qu'Altdorf perd l'Activité).
  */
 describe('Lieu — Mendier se fait « dans les rues » (LDB 09 l.97), donc PARTOUT', () => {
   /** Les lieux de carte RÉELLEMENT livrés, DÉRIVÉS des projets de campagne — jamais une liste tenue
@@ -280,12 +280,14 @@ describe('Lieu — Mendier se fait « dans les rues » (LDB 09 l.97), donc PARTO
     expect(activityAvailableAt(def, null)).toBe(true);
   });
 
-  it('proposable sur les 10 lieux des 4 campagnes livrées (liste DÉRIVÉE des projets)', () => {
+  it('proposable sur CHAQUE lieu des campagnes livrées (population DÉRIVÉE des projets)', () => {
     const def = activityById('mendier')!;
     const lieux = lieuxLivres();
-    expect(lieux.length, 'aucun lieu dérivé : la sonde ne mesurerait rien').toBe(10);
+    // NON-VACUITÉ, jamais un cardinal : un lieu ajouté ou retiré à une campagne entre dans la mesure
+    // sans toucher ce test — seule une carte SANS aucun lieu le rendrait muet.
+    expect(lieux.length, 'aucun lieu dérivé : la sonde ne mesurerait rien').toBeGreaterThan(0);
     expect(
-      lieux.filter((l) => !activityAvailableAt(def, l.id)),
+      lieux.filter((l) => !activityAvailableAt(def, l.id)).map((l) => `${l.projet}/${l.id}`),
       'lieu(x) livré(s) où Mendier n’est pas proposable',
     ).toEqual([]);
   });

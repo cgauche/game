@@ -9,7 +9,6 @@ import { parseProject, routesFrom, routesEtat, visiblePlaces, type WorldMap } fr
 import { emptyNarratif } from './campaignNarratif';
 import type { ConditionCtx } from '../engine/flowCore';
 import areneProjet from '../scenes/arene/arene-projet.json';
-import bargeDuSelProjet from '../scenes/barge-du-sel/barge-du-sel-projet.json';
 import loupEtSaumureProjet from '../scenes/loup-et-saumure/loup-et-saumure-projet.json';
 
 const ctx = (flags: Record<string, boolean> = {}): ConditionCtx => ({ flags, gameTime: 0 });
@@ -26,9 +25,27 @@ const cartesNonGatees: [string, WorldMap][] = [
   ['loup-et-saumure-projet.json', carteDe('loup-et-saumure-projet.json', loupEtSaumureProjet)],
 ];
 
-/** Carte réelle GATÉE : la campagne de test « La Barge du Sel » porte les deux axes sur ses DEUX lieux. */
-const carteBarge = carteDe('barge-du-sel-projet.json', bargeDuSelProjet);
-const CAP_SEL = 'sel-cap-donne';
+/** Carte-FIXTURE portant les DEUX axes sur le MÊME flag : le cap donné au quai révèle l'îlot ET ouvre
+ *  la traversée. C'est la forme qu'une campagne à chapitres pose — construite ici (#1709), jamais
+ *  empruntée à un paquet livré : ajouter un lieu à une campagne ne doit rougir aucun test. */
+const CAP_SEL = 'cap-donne';
+const carteBarge: WorldMap = {
+  id: 'fixture-barge',
+  label: 'Fixture — le cap donné au quai',
+  places: [
+    { id: 'quai', label: 'Le Quai', pos: { x: 10, y: 10 }, scene: 's-quai' },
+    { id: 'ilot', label: 'L’Îlot', pos: { x: 40, y: 20 }, scene: 's-ilot', when: { kind: 'flag', expr: CAP_SEL } },
+  ],
+  routes: [{
+    id: 'route-quai-ilot',
+    a: 'quai',
+    b: 'ilot',
+    km: 30,
+    modes: ['mer'],
+    when: { kind: 'flag', expr: CAP_SEL },
+    refus: 'Aucun cap n’est donné : la barge ne sait pas encore où porter le sel.',
+  }],
+};
 
 describe('cartes RÉELLES sans `when` — l’offre est identique avec et sans ctx', () => {
   it.each(cartesNonGatees)('%s : lieux et routes inchangés', (_nom, map) => {
@@ -48,18 +65,18 @@ describe('cartes RÉELLES sans `when` — l’offre est identique avec et sans c
   });
 });
 
-describe('carte RÉELLE GATÉE — « La Barge du Sel » : le cap donné au quai révèle l’îlot ET sa traversée', () => {
+describe('les DEUX axes sur un MÊME flag — le cap donné au quai révèle l’îlot ET sa traversée', () => {
   it('sans le cap : un seul lieu offert, aucune route ; avec : les deux lieux et la traversée', () => {
-    expect(visiblePlaces(carteBarge, ctx()).map((p) => p.id)).toEqual(['quai-du-sel']);
-    expect(routesFrom(carteBarge, 'quai-du-sel', ctx())).toEqual([]);
+    expect(visiblePlaces(carteBarge, ctx()).map((p) => p.id)).toEqual(['quai']);
+    expect(routesFrom(carteBarge, 'quai', ctx())).toEqual([]);
 
     const cap = ctx({ [CAP_SEL]: true });
-    expect(visiblePlaces(carteBarge, cap).map((p) => p.id)).toEqual(['quai-du-sel', 'ilot-du-sel']);
-    expect(routesFrom(carteBarge, 'quai-du-sel', cap).map((r) => r.id)).toEqual(['route-quai-ilot']);
+    expect(visiblePlaces(carteBarge, cap).map((p) => p.id)).toEqual(['quai', 'ilot']);
+    expect(routesFrom(carteBarge, 'quai', cap).map((r) => r.id)).toEqual(['route-quai-ilot']);
   });
 
   it('la traversée fermée reste CONSULTABLE, avec sa raison joueur (`routesEtat` + `refus`)', () => {
-    const etat = routesEtat(carteBarge, 'quai-du-sel', ctx());
+    const etat = routesEtat(carteBarge, 'quai', ctx());
     expect(etat.map((e) => [e.route.id, e.ouverte])).toEqual([['route-quai-ilot', false]]);
     expect(etat[0].route.refus).toBeTruthy();
   });

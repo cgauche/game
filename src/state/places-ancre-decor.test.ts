@@ -1,16 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
-import { findPropById } from '../data';
+import { findPropById, props } from '../data';
 import { chebyshev } from '../engine/grid';
-import { empreinteDuProp, offsetAncre, placesLocalesDuProp, rotatePropLocal, type PropData } from '../data/props.types';
+import { caseDe, capVolumique, empreinteDuProp, offsetAncre, placesLocalesDuProp, rotatePropLocal, type PropData } from '../data/props.types';
 import { buildProps } from '../gameIso/builders/props';
 import { buildPropVolumes } from '../gameIso/builders/propVolumes';
 import { estPropVolumique } from '../gameIso/builders/types';
-import { scenario as opera } from '../scenes/test-scenarios/opera';
 import { emptyScene, heightAt, sceneMetresPerTile, type Scene, type SceneEntity } from './scene';
 import { seatSlotsOf } from './seating';
-import { parseProject } from './worldMap';
 import type { Dir4 } from './dir8';
 
 /**
@@ -19,101 +15,133 @@ import type { Dir4 } from './dir8';
  * Une place assise se pose sur `decorAncre` (`state/footprint.ts`) — le centre de l'empreinte
  * effective du meuble — exactement comme la géométrie de sa recette (`gameIso/builders/props.ts`) et
  * comme le foyer de la lampe qu'il porte (`state/vision.ts`). Ce fichier tient les deux faces de
- * cette affirmation :
- *  1. la POPULATION authorée, place par place, au flottant près — valeurs FIGÉES ci-dessous. Les
- *     tables RONDES y tiennent sur une case, où l'ancre du décor EST `pos` ; les deux tables MURALES
- *     de la Diligence couvrent DEUX cases depuis le ré-authoring de leurs cotes (#1509 L9′) : leur
- *     ancre de décor est une demi-case au sud de `pos` (centre de l'empreinte 1×2), et leurs quatre
- *     places l'ont suivie — chacune tombant dans SA case, ce que ces valeurs figées mesurent ;
+ * cette affirmation, sur des scènes CONSTRUITES pour ce contrat (#1709 — aucune carte de campagne
+ * n'entre ici : une case déplacée sur un plan livré ne doit rougir aucun test) :
+ *  1. la POPULATION posée, place par place, sur les deux décors à places du catalogue et aux quatre
+ *     caps — l'ancre de CHAQUE place est celle de SON décor, mesurée sur les faces émises ;
  *  2. sur un meuble qui couvre VRAIMENT deux cases, l'ancre de ses places coïncide avec celle que la
  *     géométrie emploie — l'ancre géométrique étant MESURÉE sur les faces émises, jamais recalculée.
  */
 
-const SCENES_DIR = join(__dirname, '../scenes');
-
-/** Tous les paquets de campagne bundlés (`*-projet.json`, glob récursif — jamais une liste de noms
- *  en dur : un paquet neuf entre dans ce contrat sans qu'on y pense). */
-function fichiersDeProjet(dir: string): string[] {
-  const out: string[] = [];
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, e.name);
-    if (e.isDirectory()) out.push(...fichiersDeProjet(full));
-    else if (e.isFile() && e.name.endsWith('-projet.json')) out.push(full);
-  }
-  return out;
-}
-
-/** Les scènes COMMITTÉES où une place peut être authorée : les paquets bundlés, plus l'Opéra, dont la
- *  carte est déclarée en `MapSpec` et compilée hors de tout `.json`. */
-function scenesCommittees(): Scene[] {
-  const out: Scene[] = [];
-  for (const f of fichiersDeProjet(SCENES_DIR)) out.push(...parseProject(JSON.parse(readFileSync(f, 'utf8'))).scenes);
-  out.push(opera.scene as Scene);
-  return out;
-}
-
 const n6 = (v: number) => v.toFixed(6);
 
-/** Toutes les places AUTHORÉES du dépôt, résolues, une ligne par place : l'instance porteuse (ref,
- *  cap, case), l'ANCRE fractionnaire du corps assis, son sol, son cap et sa case d'ABORD. */
-function placesAuthorees(): string[] {
-  const out: string[] = [];
-  for (const sc of scenesCommittees()) {
-    for (const e of sc.entities) {
-      if (e.kind !== 'prop') continue;
-      if (!findPropById(e.ref ?? '')?.seatSlots?.length) continue;
-      for (const s of seatSlotsOf(sc, e.id)) {
-        out.push(`${sc.id}/${e.id}[${e.ref}@${e.facing ?? 'S'}](${e.pos.x},${e.pos.y})/${s.slotId}`
-          + ` ancre=(${n6(s.anchor.x)},${n6(s.anchor.y)},${n6(s.anchor.h)}) sol=${n6(s.ground)}`
-          + ` cap=${s.facing} abord=(${s.approach.x},${s.approach.y},${s.approach.z ?? 0})`);
-      }
-    }
-  }
-  return out;
+/**
+ * ANCRE MONDE que la GÉOMÉTRIE emploie pour un décor POSÉ, MESURÉE sur les faces émises : la recette
+ * bâtie à l'origine (`ancre` (0,0)) et la recette du décor posé ne diffèrent que d'une TRANSLATION
+ * rigide, et cette translation EST l'ancre. Rien n'est relu de `decorAncre` ici — sinon ces contrats
+ * répéteraient la formule qu'ils jugent au lieu de la confronter au monde dessiné.
+ */
+function ancreGeometrique(sc: Scene, entId: string): { x: number; y: number; sol: number } {
+  const ent = sc.entities.find((e) => e.id === entId)!;
+  const prop = findPropById(ent.ref ?? '') as PropData;
+  const mpt = sceneMetresPerTile(sc);
+  const el = buildProps(sc).find((e) => e.entId === entId)!;
+  expect(estPropVolumique(el), `${ent.ref} doit sortir en VOLUME (sinon rien n’est mesuré)`).toBe(true);
+  const posees = estPropVolumique(el) ? el.faces : [];
+  const locales = buildPropVolumes(prop, { ancre: { x: 0, y: 0 }, facing: capVolumique(ent.facing, entId), baseHeightM: 0 }, mpt);
+  expect(posees.length).toBe(locales.length);
+  const deltas = posees.flatMap((f, i) => f.poly.map((p, j) => ({ x: p.x - locales[i].poly[j].x, y: p.y - locales[i].poly[j].y, h: p.h - locales[i].poly[j].h })));
+  const ecart = Math.max(...deltas.map((d) => Math.max(chebyshev(d, deltas[0]), Math.abs(d.h - deltas[0].h))));
+  expect(ecart, 'la pose du décor doit être une translation RIGIDE de sa recette').toBeLessThan(1e-9);
+  return { x: deltas[0].x, y: deltas[0].y, sol: deltas[0].h };
 }
 
-describe('places AUTHORÉES — la population entière, ancre et abord, au flottant près', () => {
-  it('les seize places de `la-diligence` sont exactement celles-ci', () => {
-    expect(placesAuthorees()).toEqual([
-      'la-diligence/diligence-salle-table-ronde-1[table-ronde-4-tabourets@S](11,8)/place-1 ancre=(11.000000,8.480000,0.460000) sol=0.000000 cap=N abord=(12,7,0)',
-      'la-diligence/diligence-salle-table-ronde-1[table-ronde-4-tabourets@S](11,8)/place-2 ancre=(10.520000,8.000000,0.460000) sol=0.000000 cap=E abord=(10,8,0)',
-      'la-diligence/diligence-salle-table-ronde-1[table-ronde-4-tabourets@S](11,8)/place-3 ancre=(11.000000,7.520000,0.460000) sol=0.000000 cap=S abord=(11,7,0)',
-      'la-diligence/diligence-salle-table-ronde-1[table-ronde-4-tabourets@S](11,8)/place-4 ancre=(11.480000,8.000000,0.460000) sol=0.000000 cap=O abord=(12,8,0)',
-      'la-diligence/diligence-salle-table-murale-1[table-murale-2-tabourets@E](14,11)/place-1 ancre=(13.800000,11.000000,0.460000) sol=0.000000 cap=E abord=(13,11,0)',
-      'la-diligence/diligence-salle-table-murale-1[table-murale-2-tabourets@E](14,11)/place-2 ancre=(13.800000,12.000000,0.460000) sol=0.000000 cap=E abord=(13,12,0)',
-      'la-diligence/diligence-salle-table-murale-2[table-murale-2-tabourets@E](14,16)/place-1 ancre=(13.800000,16.000000,0.460000) sol=0.000000 cap=E abord=(13,16,0)',
-      'la-diligence/diligence-salle-table-murale-2[table-murale-2-tabourets@E](14,16)/place-2 ancre=(13.800000,17.000000,0.460000) sol=0.000000 cap=E abord=(13,17,0)',
-      'la-diligence/diligence-salle-table-ronde-2[table-ronde-4-tabourets@S](12,18)/place-1 ancre=(12.000000,18.480000,0.460000) sol=0.000000 cap=N abord=(12,19,0)',
-      'la-diligence/diligence-salle-table-ronde-2[table-ronde-4-tabourets@S](12,18)/place-2 ancre=(11.520000,18.000000,0.460000) sol=0.000000 cap=E abord=(11,18,0)',
-      'la-diligence/diligence-salle-table-ronde-2[table-ronde-4-tabourets@S](12,18)/place-3 ancre=(12.000000,17.520000,0.460000) sol=0.000000 cap=S abord=(12,17,0)',
-      'la-diligence/diligence-salle-table-ronde-2[table-ronde-4-tabourets@S](12,18)/place-4 ancre=(12.480000,18.000000,0.460000) sol=0.000000 cap=O abord=(13,18,0)',
-      'la-diligence/diligence-salle-table-ronde-3[table-ronde-4-tabourets@S](10,21)/place-1 ancre=(10.000000,21.480000,0.460000) sol=0.000000 cap=N abord=(10,22,0)',
-      'la-diligence/diligence-salle-table-ronde-3[table-ronde-4-tabourets@S](10,21)/place-2 ancre=(9.520000,21.000000,0.460000) sol=0.000000 cap=E abord=(9,21,0)',
-      'la-diligence/diligence-salle-table-ronde-3[table-ronde-4-tabourets@S](10,21)/place-3 ancre=(10.000000,20.520000,0.460000) sol=0.000000 cap=S abord=(10,20,0)',
-      'la-diligence/diligence-salle-table-ronde-3[table-ronde-4-tabourets@S](10,21)/place-4 ancre=(10.480000,21.000000,0.460000) sol=0.000000 cap=O abord=(11,21,0)',
-    ]);
+/** ANCRE MONDE que la PLACE emploie : sa position résolue, moins la rotation de son ancre locale au
+ *  cap de l'instance (`rotatePropLocal`, la même rotation que la géométrie applique). */
+function ancreDeLaPlace(sc: Scene, entId: string, slotId: string): { x: number; y: number } {
+  const ent = sc.entities.find((e) => e.id === entId)!;
+  const prop = findPropById(ent.ref ?? '') as PropData;
+  const place = seatSlotsOf(sc, entId).find((s) => s.slotId === slotId)!;
+  const slot = prop.seatSlots!.find((s) => s.id === slotId)!;
+  const [rx, ry] = rotatePropLocal(slot.anchor.xM / sceneMetresPerTile(sc), slot.anchor.yM / sceneMetresPerTile(sc), capVolumique(ent.facing, entId));
+  return { x: place.anchor.x - rx, y: place.anchor.y - ry };
+}
+
+/**
+ * POPULATION DE PLACES sur une scène CONSTRUITE : les DEUX décors à places du catalogue, posés aux
+ * QUATRE caps, chacun avec ses places — et la propriété qui vaut pour chacune d'elles, DÉRIVÉE du
+ * décor qui la porte. Rien n'y est recopié : ni une coordonnée, ni un compte.
+ */
+describe('places POSÉES — chaque place tient l’ancre de SON décor (scène construite)', () => {
+  const CAPS: Dir4[] = ['N', 'E', 'S', 'O'];
+  /** TOUS les décors à places du catalogue, DÉRIVÉS : un troisième y entre sans toucher ce test. */
+  const REFS = props.filter((p) => p.seatSlots?.length).map((p) => p.id);
+  /** Un décor par (réf × cap), espacés de 4 cases : aucun ne mord sur l'abord d'un autre. */
+  const POSES = REFS.flatMap((ref, i) => CAPS.map((facing, j) => ({
+    id: `${ref}-${facing}`, ref, facing, pos: { x: 3 + j * 4, y: 3 + i * 4 },
+  })));
+
+  const salle = (): Scene => {
+    const w = 20;
+    const h = 12;
+    return {
+      ...emptyScene(w, h),
+      id: 'fixture-places',
+      layers: [{ z: 0, tiles: new Array(w * h).fill('plancher') }],
+      entities: POSES.map((p) => ({ id: p.id, kind: 'prop', ref: p.ref, pos: { ...p.pos }, facing: p.facing } as SceneEntity)),
+    };
+  };
+
+  it('la fixture EXERCE les deux étendues du catalogue : la ronde tient sur UNE case, la murale sur DEUX', () => {
+    const sc = salle();
+    const mpt = sceneMetresPerTile(sc);
+    const etendues = new Set(POSES.map((p) => {
+      const { w, h } = empreinteDuProp(findPropById(p.ref), p.facing, mpt);
+      return `${w}x${h}`;
+    }));
+    // PROPRIÉTÉ, jamais la liste : il FAUT plus d'une étendue pour que l'ancre au centre se distingue
+    // de l'ancre au coin NO — avec des empreintes toutes impaires, les deux coïncideraient.
+    expect(etendues.size, `étendues mesurées : ${[...etendues].sort().join(', ')}`).toBeGreaterThan(1);
+    // Et chaque décor posé porte bien des places : sans elles, tout ce qui suit serait vide.
+    for (const p of POSES) expect(seatSlotsOf(sc, p.id).length, p.id).toBeGreaterThan(0);
   });
 
-  /** Les étendues qui produisent la liste ci-dessus, à l'échelle de LEUR scène : les rondes tiennent
-   *  sur une case, les deux MURALES en couvrent deux depuis le ré-authoring de leurs cotes (#1509 L9′)
-   *  — c'est ce qui pose leurs deux places dans deux cases distinctes, une par siège. */
-  it('POURQUOI elles sont là : à l’échelle de leur scène, la ronde tient sur UNE case et la murale sur DEUX', () => {
-    const etendues = new Set<string>();
-    for (const sc of scenesCommittees()) {
-      for (const e of sc.entities) {
-        if (e.kind !== 'prop') continue;
-        const prop = findPropById(e.ref ?? '');
-        if (!prop?.seatSlots?.length) continue;
-        const { w, h } = empreinteDuProp(prop, e.facing, sceneMetresPerTile(sc));
-        etendues.add(`${e.ref}@${e.facing ?? 'S'}:${w}x${h}`);
+  it('l’ancre de CHAQUE place est celle de son décor, mesurée sur la géométrie (≤ 1e-9)', () => {
+    const sc = salle();
+    const ecarts: string[] = [];
+    for (const p of POSES) {
+      const geo = ancreGeometrique(sc, p.id);
+      for (const place of seatSlotsOf(sc, p.id)) {
+        const ancre = ancreDeLaPlace(sc, p.id, place.slotId);
+        const d = chebyshev(ancre, geo);
+        if (d > 1e-9) ecarts.push(`${p.id}/${place.slotId} : place=(${n6(ancre.x)},${n6(ancre.y)}) géométrie=(${n6(geo.x)},${n6(geo.y)}) écart=${n6(d)}`);
       }
     }
-    expect([...etendues].sort()).toEqual(['table-murale-2-tabourets@E:1x2', 'table-ronde-4-tabourets@S:1x1']);
+    expect(ecarts).toEqual([]);
+  });
+
+  it('le SOL de chaque place est celui du PIED de son décor', () => {
+    const sc = salle();
+    const ecarts: string[] = [];
+    for (const p of POSES) {
+      const geo = ancreGeometrique(sc, p.id);
+      for (const place of seatSlotsOf(sc, p.id))
+        if (Math.abs(place.ground - geo.sol) > 1e-9) ecarts.push(`${p.id}/${place.slotId} : sol=${n6(place.ground)} pied=${n6(geo.sol)}`);
+    }
+    expect(ecarts).toEqual([]);
+  });
+
+  it('chaque place aborde une case VOISINE de son siège, et deux places ne partagent jamais un abord', () => {
+    const sc = salle();
+    const abords = new Map<string, string>();
+    const ecarts: string[] = [];
+    for (const p of POSES) {
+      for (const place of seatSlotsOf(sc, p.id)) {
+        const siege = caseDe(place.anchor.x, place.anchor.y);
+        const d = chebyshev(place.approach, siege);
+        if (d !== 1) ecarts.push(`${p.id}/${place.slotId} : abord (${place.approach.x},${place.approach.y}) à ${d} case(s) du siège (${siege.x},${siege.y})`);
+        const cle = `${place.approach.x},${place.approach.y},${place.approach.z ?? 0}`;
+        const deja = abords.get(cle);
+        if (deja) ecarts.push(`${p.id}/${place.slotId} : abord ${cle} déjà pris par ${deja}`);
+        abords.set(cle, `${p.id}/${place.slotId}`);
+      }
+    }
+    expect(ecarts).toEqual([]);
   });
 });
 
 /**
- * MEUBLE À PLACES SUR DEUX CASES — le cas, aux QUATRE caps, sur la donnée authorée qui l'exerce.
+ * MEUBLE À PLACES SUR DEUX CASES — le cas, aux QUATRE caps, sur une pose CONSTRUITE qui l'exerce.
  *
  * Le corps de `table-murale-2-tabourets` mesure 3,00 m le long du mur (#1509 L9′) : il couvre deux
  * cases à l'échelle par défaut du monde (2 m/case, LDB 15 l.12) — le premier contrat ci-dessous le
@@ -124,8 +152,7 @@ describe('meuble à places de DEUX cases — l’ancre des places EST celle de l
   const REF = 'table-murale-2-tabourets';
   const ID = 'murale';
   const POS = { x: 5, y: 5 };
-  /** Échelle à laquelle le corps de ce meuble couvre deux cases : celle du monde par défaut, la même
-   *  que la Diligence (cf. l'en-tête ci-dessus). */
+  /** Échelle à laquelle le corps de ce meuble couvre deux cases : celle du monde par défaut. */
   const MPT = 2;
   const CAPS: Dir4[] = ['N', 'E', 'S', 'O'];
 
@@ -136,32 +163,8 @@ describe('meuble à places de DEUX cases — l’ancre des places EST celle de l
     entities: [{ id: ID, kind: 'prop', pos: { ...POS }, ref: REF, facing } as SceneEntity],
   });
 
-  /**
-   * ANCRE MONDE que la GÉOMÉTRIE emploie, MESURÉE sur les faces émises : la recette bâtie à
-   * l'origine (`ancre` (0,0)) et la recette du décor posé ne diffèrent que d'une TRANSLATION rigide,
-   * et cette translation EST l'ancre. Rien n'est relu de `decorAncre` ici — sinon ce contrat
-   * répéterait la formule qu'il juge au lieu de la confronter au monde dessiné.
-   */
-  function ancreDeLaGeometrie(facing: Dir4, sc: Scene = scene(facing)): { x: number; y: number; sol: number } {
-    const el = buildProps(sc).find((e) => e.entId === ID)!;
-    expect(estPropVolumique(el), `${REF} doit sortir en VOLUME (sinon rien n’est mesuré)`).toBe(true);
-    const posees = estPropVolumique(el) ? el.faces : [];
-    const locales = buildPropVolumes(prop, { ancre: { x: 0, y: 0 }, facing, baseHeightM: 0 }, MPT);
-    expect(posees.length).toBe(locales.length);
-    const deltas = posees.flatMap((f, i) => f.poly.map((p, j) => ({ x: p.x - locales[i].poly[j].x, y: p.y - locales[i].poly[j].y, h: p.h - locales[i].poly[j].h })));
-    const ecart = Math.max(...deltas.map((d) => Math.max(chebyshev(d, deltas[0]), Math.abs(d.h - deltas[0].h))));
-    expect(ecart, 'la pose du décor doit être une translation RIGIDE de sa recette').toBeLessThan(1e-9);
-    return { x: deltas[0].x, y: deltas[0].y, sol: deltas[0].h };
-  }
-
-  /** ANCRE MONDE que la PLACE emploie : sa position résolue, moins la rotation de son ancre locale au
-   *  cap de l'instance (`rotatePropLocal`, la même rotation que la géométrie applique). */
-  function ancreDeLaPlace(facing: Dir4, slotId: string): { x: number; y: number } {
-    const place = seatSlotsOf(scene(facing), ID).find((s) => s.slotId === slotId)!;
-    const slot = prop.seatSlots!.find((s) => s.id === slotId)!;
-    const [rx, ry] = rotatePropLocal(slot.anchor.xM / MPT, slot.anchor.yM / MPT, facing);
-    return { x: place.anchor.x - rx, y: place.anchor.y - ry };
-  }
+  const ancreDeLaGeometrie = (facing: Dir4, sc: Scene = scene(facing)) => ancreGeometrique(sc, ID);
+  const ancrePlace = (facing: Dir4, slotId: string) => ancreDeLaPlace(scene(facing), ID, slotId);
 
   it('la fixture EXERCE bien le cas : deux cases, et l’empreinte tourne avec le cap', () => {
     expect(CAPS.map((c) => { const { w, h } = empreinteDuProp(prop, c, MPT); return `${c}:${w}x${h}`; }))
@@ -174,7 +177,7 @@ describe('meuble à places de DEUX cases — l’ancre des places EST celle de l
     for (const cap of CAPS) {
       const geo = ancreDeLaGeometrie(cap);
       for (const slot of prop.seatSlots!) {
-        const place = ancreDeLaPlace(cap, slot.id);
+        const place = ancrePlace(cap, slot.id);
         const d = chebyshev(place, geo);
         if (d > 1e-9) ecarts.push(`${cap}/${slot.id} : place=(${n6(place.x)},${n6(place.y)}) géométrie=(${n6(geo.x)},${n6(geo.y)}) écart=${n6(d)}`);
       }
