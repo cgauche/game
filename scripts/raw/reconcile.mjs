@@ -10,16 +10,27 @@
 // Sens B (Atlas → code) : règles citées par l'Atlas marquées `(non implémenté)`, et chapitres
 //   cités par l'Atlas mais jamais référencés dans le code → l'Atlas décrit une règle hors-code.
 //   (Sens B reste borné au LDB — hors périmètre #434 défaut 9.)
+// CLIQUET (#1709 lot D2, #925) : les TROUS DURS des deux sens — chapitre-livre cité par le code et
+//   absent de l'Atlas (`hardA`/`hardAOther`), chapitre LDB de l'Atlas jamais atteint par le code après
+//   crédit folio (`atlasOnly`) — sont confrontés au STOCK NOMINATIF `reconciliation-stock.json` : une
+//   entrée neuve OU une entrée du stock devenue caduque pose `process.exitCode = 1` (double sens).
+//   Les mesures fines (trous de ligne, `(non implémenté)`, folios ignorés, réfs sans chapitre) restent
+//   IMPRIMÉES et jamais assertées. Lecteur = `readBaseline` (check-code-refs.mjs), écart = `ecartsDeStock`
+//   (guards/lib/stock.mjs) — jamais un troisième.
 // Sortie : docs/raw/reconciliation.md  ·  Re-run : node scripts/raw/reconcile.mjs
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { parUnitesDeCode, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
+import { ecartsDeStock } from '../guards/lib/stock.mjs'
 import { ldbRe, otherRe, ldbFolioRe, otherFolioRe, folioSpan, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED, readText, PIVOT_ABBR } from './_lib.mjs'
+import { readBaseline } from './check-code-refs.mjs'
 import { loadAbbrMap, folioCitationsFromJson } from './build-implemente.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 
 export const TOL = 20 // tolérance en lignes : la synthèse Atlas pine un ancrage proche, pas la ligne exacte
 export const RAWDIR = 'docs/raw'
+export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'reconciliation-stock.json')
 
 function fichiersSources(dir, exts) {
   return listerArbre(dir, {
@@ -360,6 +371,53 @@ export function renderReport(data) {
   return L.join('\n')
 }
 
+/** Entrées de TROU DUR d'une réconciliation, NOMMÉES (jamais un compte) — l'unité du cliquet.
+ *  Clé : `<ABRÉV> <ch>` pour le sens A (code → Atlas), `B2 <ABRÉV> <ch>` pour le sens B2
+ *  (Atlas → code). `sites` = les `fichier:ligne` échantillonnés, pour le message nominatif. */
+export function trousDurs({ hardA = [], hardAOther = [], atlasOnly = [] }) {
+  const site = (s) => `${s.file}:${s.row}`
+  const entrees = []
+  for (const h of hardA)
+    entrees.push({ cle: `${PIVOT_ABBR} ${h.ch}`, quoi: `${h.count} réf(s) de code, 0 dans l'Atlas`, sites: (h.sample ?? []).map(site) })
+  for (const h of hardAOther)
+    entrees.push({ cle: `${h.book} ${h.ch}`, quoi: `${h.count} réf(s) de code, 0 dans l'Atlas`, sites: (h.sample ?? []).map(site) })
+  for (const ch of atlasOnly)
+    entrees.push({ cle: `B2 ${PIVOT_ABBR} ${ch}`, quoi: "chapitre décrit par l'Atlas, jamais référencé par le code (ni crédité par un folio de `src/data`)", sites: [] })
+  return entrees
+}
+
+/** Stock committé des trous durs : `{ cle: { sites, lot, date, quoi } }` — chaque entrée nomme ses
+ *  SITES (le cliquet de plage `stocksNominatifs.mjs` ne voit une entrée que si son sous-arbre nomme
+ *  un fichier), son LOT et sa DATE. Fichier absent = `{}` (tolérance ZÉRO, `readBaseline` de
+ *  check-code-refs.mjs — même lecteur que les autres cliquets de `scripts/raw/`). */
+export function lireStock(path = STOCK_PATH) {
+  return readBaseline(path).trous ?? {}
+}
+
+/** Écart NOMINATIF des trous durs mesurés à leur stock, dans les deux sens (`ecartsDeStock`), PLUS
+ *  le refus du livre PIVOT : une clé `LDB <ch>` — trou observé OU entrée de stock — est refusée, le
+ *  LDB est couvert fiche à fiche par l'Atlas et un chapitre manquant s'y CORRIGE (CLAUDE.md règle 1 :
+ *  « devoir rouvrir `Source/` = un défaut de l'Atlas à corriger »). Le sens B2 (`B2 LDB <ch>`) n'est
+ *  pas concerné : il dit l'Atlas hors-code, pas l'Atlas incomplet.
+ *  Pur : aucun exit — l'appelant décide (frontière de `guards/lib/stock.mjs`). */
+export function ecartsTrousDurs(entrees, stock) {
+  const estPivot = (cle) => cle.startsWith(`${PIVOT_ABBR} `)
+  const pivot = [
+    ...entrees.filter((e) => estPivot(e.cle)).map((e) => `${e.cle} — ${e.quoi}${e.sites.length ? ` · ${e.sites.join(' , ')}` : ''}`),
+    ...Object.keys(stock).filter(estPivot).map((cle) => `${cle} — entrée de stock INADMISSIBLE (${stock[cle]?.quoi ?? stock[cle]})`),
+  ]
+  const { neuves, perimees } = ecartsDeStock({
+    observe: entrees,
+    stock: Object.keys(stock).map((cle) => ({ cle })),
+    cle: (e) => e.cle,
+    remede: {
+      neuve: (cle, e) => `${cle} — ${e.quoi}${e.sites.length ? ` · ${e.sites.join(' , ')}` : ''}`,
+      perimee: (cle) => `${cle} — ${stock[cle]?.quoi ?? stock[cle]} (${stock[cle]?.lot ?? 'lot non dit'})`,
+    },
+  })
+  return { neuves, perimees, pivot }
+}
+
 function main() {
   const data = computeReconciliation()
   ecrireDoc(join(RAWDIR, 'reconciliation.md'), renderReport(data))
@@ -369,6 +427,26 @@ function main() {
   for (const [book, st] of [...data.bookStats].sort((a, b) => parUnitesDeCode(a[0], b[0])))
     console.log(`  ${book} : ${st.hard} trous durs · ${st.soft} chapitres non pinés · ${st.noCh} réfs sans chapitre`)
   console.log(`Sens B : ${data.nonImpl.length} (non implémenté) · B2 ${data.atlasOnlyBefore.length} → ${data.atlasOnly.length} chapitres Atlas hors-code (${data.atlasOnlyFolioCredited.length} crédités par folio)`)
+
+  const entrees = trousDurs(data)
+  const stock = lireStock()
+  const { neuves, perimees, pivot } = ecartsTrousDurs(entrees, stock)
+  if (pivot.length) {
+    console.log(`LIVRE PIVOT — ${pivot.length} chapitre(s) ${PIVOT_ABBR} : le livre pivot se CORRIGE, il ne se stocke pas.`)
+    for (const p of pivot) console.log(`  ${p}`)
+    console.log("  Remède : couvrir le chapitre dans une fiche de l'Atlas (ou retirer la réf de code) — aucune voie de stock en Sens A pour le LDB.")
+  }
+  if (neuves.length) {
+    console.log(`TROU(S) DUR(S) NEUF(S) — ${neuves.length} chapitre(s) hors du stock \`scripts/raw/reconciliation-stock.json\` :`)
+    for (const n of neuves) console.log(`  ${n}`)
+    console.log("  Remède : couvrir le chapitre dans l'Atlas (ou retirer la réf de code) — l'ajouter au stock ne se fait qu'avec une dette instruite.")
+  }
+  if (perimees.length) {
+    console.log(`STOCK À DÉCROÎTRE — ${perimees.length} entrée(s) de \`scripts/raw/reconciliation-stock.json\` sans trou mesuré : retirer l'entrée.`)
+    for (const p of perimees) console.log(`  ${p}`)
+  }
+  if (neuves.length || perimees.length || pivot.length) process.exitCode = 1
+  else console.log(`Cliquet des trous durs : ${entrees.length} trou(s) dur(s), tous au stock (${Object.keys(stock).length} entrée(s)) — aucun neuf, aucun périmé, aucun ${PIVOT_ABBR}.`)
 }
 
 const isMain = process.argv[1] && process.argv[1].endsWith('reconcile.mjs')

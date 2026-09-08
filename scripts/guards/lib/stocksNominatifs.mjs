@@ -9,7 +9,11 @@
 // avec quel message et sous quelle dérogation.
 //
 // PÉRIMÈTRE : les fichiers où un stock vit dans ce dépôt — tests de `src/**`, libs de garde
-// `scripts/guards/lib/**`, tests de `scripts/**`, tables JSON de `scripts/hooks/`. Il est exprimé
+// `scripts/guards/lib/**`, tests de `scripts/**`, tables JSON de `scripts/hooks/`, et les stocks
+// NOMMÉS de l'Atlas RAW (`scripts/raw/*-stock.json`, #1709 D2). Ce dernier motif nomme la FAMILLE,
+// pas le dossier : les `scripts/raw/*-baseline.json` voisines gèlent un COMPTE PAR FICHIER (patron
+// `assertAgainstBaseline`), pas une dette nominative — le cliquet de plage compte des ENTRÉES
+// nommées, et un compte n'en est pas une. Il est exprimé
 // en EXPRESSIONS RÉGULIÈRES et non en littéraux de chemin : un tableau de chemins écrit ici serait
 // lui-même vu comme un stock par la règle qu'il sert.
 //
@@ -85,6 +89,7 @@ const PORTEURS = [
   /^scripts\/guards\/lib\/.+\.mjs$/,
   /^scripts\/.+\.test\.mjs$/,
   /^scripts\/hooks\/[^/]+\.json$/,
+  /^scripts\/raw\/[^/]+-stock\.json$/,
 ];
 
 /** Chemin de dépôt : une racine suivie, puis tout sauf des espaces. */

@@ -1,0 +1,83 @@
+{
+  "quoi": "STOCK NOMINATIF des TROUS DURS de la réconciliation CODE ↔ ATLAS : une DETTE RAW à drainer vers ZÉRO, jamais un registre, jamais un plafond. Une entrée = un chapitre-livre que le code cite alors qu'aucune fiche ni aucun catalogue de l'Atlas ne le porte (Sens A), ou — clé préfixée « B2 » — un chapitre LDB que l'Atlas décrit et qu'aucune réf de code ni aucune source folio de src/data n'atteint (Sens B2). Chaque entrée nomme ses SITES, son LOT et sa DATE : sans eux, une ligne de stock est un régime, pas un cliquet. Se solde en COUVRANT le chapitre dans l'Atlas (ou en retirant la réf de code), PUIS en retirant son entrée ici : node scripts/raw/reconcile.mjs refuse toute entrée NEUVE et toute entrée du stock devenue caduque (cliquet à double sens), et la porte de plage compte toute croissance de ce fichier (scripts/guards/lib/stocksNominatifs.mjs). Le livre PIVOT n'a pas de voie de stock en Sens A : un chapitre LDB cité par le code et absent de l'Atlas se CORRIGE, il ne se stocke pas. Mesuré le 2026-09-08 (#1709 lot D2, #925).",
+  "trous": {
+    "ADE I 2": {
+      "sites": ["src/data/talents.json"],
+      "lot": "#1709 D2 — dette RAW à drainer par le chantier Atlas",
+      "date": "2026-09-08",
+      "quoi": "Les archives de l'Empire volume 1, ch.2 (talents) — aucune fiche de l'Atlas ne cite ce chapitre."
+    },
+    "EDO 10": {
+      "sites": ["src/data/skills.json"],
+      "lot": "#1709 D2 — dette RAW à drainer par le chantier Atlas",
+      "date": "2026-09-08",
+      "quoi": "L'Ennemi dans l'Ombre, ch.10 (compétences) — aucune fiche de l'Atlas ne cite ce chapitre."
+    },
+    "EDOC 9": {
+      "sites": ["src/engine/disease.ts", "src/state/travelFlow.ts", "src/state/travel.test.ts"],
+      "lot": "#1709 D2 — dette RAW à drainer par le chantier Atlas",
+      "date": "2026-09-08",
+      "quoi": "L'Ennemi dans l'Ombre — Compagnon, ch.9 (maladies, voyage) — aucune fiche de l'Atlas ne cite ce chapitre."
+    },
+    "EDOC 10": {
+      "sites": ["src/data/reseau-routier.json"],
+      "lot": "#1709 D2 — dette RAW à drainer par le chantier Atlas",
+      "date": "2026-09-08",
+      "quoi": "L'Ennemi dans l'Ombre — Compagnon, ch.10 (réseau routier) — aucune fiche de l'Atlas ne cite ce chapitre."
+    },
+    "MCLB 2": {
+      "sites": ["src/data/creatures.json", "src/data/skills.json"],
+      "lot": "#1709 D2 — dette RAW à drainer par le chantier Atlas",
+      "date": "2026-09-08",
+      "quoi": "Middenheim, la cité du Loup Blanc, ch.2 — aucune fiche de l'Atlas ne cite ce chapitre."
+    },
+    "MDG 3": {
+      "sites": ["src/state/restFlow.ts", "src/state/riverVoyageFlow.ts", "src/state/seaActivities.ts"],
+      "lot": "#1709 D2 — dette RAW à drainer par le chantier Atlas",
+      "date": "2026-09-08",
+      "quoi": "La Mer des Griffes, ch.3 (repos, activités de bord) — aucune fiche de l'Atlas ne cite ce chapitre."
+    },
+    "MDG 6": {
+      "sites": ["src/data/species.json"],
+      "lot": "#1709 D2 — dette RAW à drainer par le chantier Atlas",
+      "date": "2026-09-08",
+      "quoi": "La Mer des Griffes, ch.6 (espèces) — aucune fiche de l'Atlas ne cite ce chapitre."
+    },
+    "MSRC 10": {
+      "sites": ["src/data/naval-traits.json", "src/ui/ship-stations-panel.test.tsx", "src/ui/compendium/registry-enveloppe.test.ts"],
+      "lot": "#1709 D2 — dette RAW à drainer par le chantier Atlas",
+      "date": "2026-09-08",
+      "quoi": "Mort sur le Reik — Compagnon, ch.10 (postes de navire) — aucune fiche de l'Atlas ne cite ce chapitre."
+    },
+    "NADJ 4": {
+      "sites": ["src/state/scene.ts", "src/data/schemas/defs-scenes/scene.ts", "src/state/tavern-npc-a-fiche.test.ts"],
+      "lot": "#1709 D2 — dette RAW à drainer par le chantier Atlas",
+      "date": "2026-09-08",
+      "quoi": "Nuits agitées & dures journées, ch.4 (taverne) — aucune fiche de l'Atlas ne cite ce chapitre."
+    },
+    "NADJ 14": {
+      "sites": ["src/data/index.ts", "src/data/reglesOptionnelles.json", "src/data/schemas/defs/species.ts", "src/engine/creation.test.ts"],
+      "lot": "#1709 D2 — dette RAW à drainer par le chantier Atlas",
+      "date": "2026-09-08",
+      "quoi": "Nuits agitées & dures journées, ch.14 (gnomes) — aucune fiche de l'Atlas ne cite ce chapitre."
+    },
+    "PDT 8": {
+      "sites": ["src/ui/mono-stake-ratchet.test.ts"],
+      "lot": "#1709 D2 — dette RAW à drainer par le chantier Atlas",
+      "date": "2026-09-08",
+      "quoi": "Le Pouvoir derrière le Trône, ch.8 — cité par l'instruction des candidats « porte à enfoncer » (#1117) ; aucune fiche de l'Atlas ne cite ce chapitre."
+    },
+    "PDT 9": {
+      "sites": ["src/ui/mono-stake-ratchet.test.ts"],
+      "lot": "#1709 D2 — dette RAW à drainer par le chantier Atlas",
+      "date": "2026-09-08",
+      "quoi": "Le Pouvoir derrière le Trône, ch.9 — cité par l'instruction des candidats « porte à enfoncer » (#1117) ; aucune fiche de l'Atlas ne cite ce chapitre."
+    },
+    "B2 LDB 38": {
+      "sites": ["docs/raw/catalogue-divin.md"],
+      "lot": "#1709 D2 — dette RAW à drainer par le chantier Atlas",
+      "date": "2026-09-08",
+      "quoi": "Livre de base, ch.38 « Les dieux halflings » — décrit par l'Atlas, jamais référencé par le code ni crédité par une source folio de src/data."
+    }
+  }
+}

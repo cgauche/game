@@ -214,7 +214,7 @@ export const ECRIT_LU = {
   'raw:reconcile': {
     ecrit: [],
     ecritFerme: {
-      'docs/raw/reconciliation.md': 'scripts/raw/reconcile.mjs:367, même seam `ecrireDoc` et même porte que raw:coverage',
+      'docs/raw/reconciliation.md': 'scripts/raw/reconcile.mjs:411, même seam `ecrireDoc` et même porte que raw:coverage',
     },
     lit: ['docs/raw/', 'src/'],
     raison: 'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte',

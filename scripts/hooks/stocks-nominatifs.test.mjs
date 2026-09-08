@@ -74,6 +74,8 @@ test('périmètre — les porteurs de stock, et eux seuls', () => {
   assert.equal(estPorteurDeStock('scripts/guards/lib/domResiduStock.mjs'), true)
   assert.equal(estPorteurDeStock('scripts/hooks/fermetures-sans-solde.test.mjs'), true)
   assert.equal(estPorteurDeStock('scripts/hooks/ecrans-ui.json'), true)
+  assert.equal(estPorteurDeStock('scripts/raw/reconciliation-stock.json'), true, 'stock nominatif de l\'Atlas RAW (#1709 D2)')
+  assert.equal(estPorteurDeStock('scripts/raw/dead-code-refs-baseline.json'), false, 'une baseline gèle un COMPTE par fichier, pas une dette nommée')
   assert.equal(estPorteurDeStock('src/state/combatFlow.ts'), false, 'un module de prod n\'est pas un stock')
   assert.equal(estPorteurDeStock('docs/architecture.md'), false)
 })
