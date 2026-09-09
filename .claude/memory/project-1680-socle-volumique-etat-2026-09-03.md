@@ -21,3 +21,5 @@ Chantier #1680 (socle des décors volumiques, 18 lignes), mené en worktree `.wt
 **Passation** : cette fiche + les commentaires de pilotage/inventaire sur #1680 (2026-09-04) ; les tickets ouverts par les décisions du soir : #1686 (matières), #1687 (décor utilisable) ; le lot « IA cible des structures en siège seul » est en cours dans `.wt-1624` (le scratchpad de session s’est révélé instable — fichiers de travail sous `.wt-1624/node_modules/.cache/`).
 
 **Why:** reprise sans relire 15 commits ni 5 tickets. **How to apply:** lire ce résumé, puis `gh issue view 1680 --comments` (derniers pilotages/inventaire) et `TODO-vague-1624.md`. Liens : [[user-regime-une-session-par-chantier-2026-09-01]], [[env-recette-worktree-preview-kit]], [[env-recette-jamais-en-parallele-dun-juge-qui-teste]].
+
+**Mise à jour 2026-09-09** : #1686 (épic) et #1688 LIVRÉS ; #1644 lot A livré depuis le 2026-09-01, parqué sur la validation de goût utilisateur ; #1687 attend une maquette validée (arbitrage de la touche de surbrillance). Voir [[project-1688-be-structures-livre-2026-09-09]].
