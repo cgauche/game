@@ -7,27 +7,18 @@
  * avec ce qu'il attend — il ne peut que DÉCROÎTRE, jamais remonter.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
-const UI = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
-
-/** Les SOURCES de `src/ui`, récursivement. Les fichiers de test sont hors sujet : ils NOMMENT la
- *  classe (souvent pour prouver son absence), ils n'affichent aucune affordance. */
-function uiFiles(dir: string): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
-    const p = join(dir, e.name);
-    if (e.isDirectory()) return uiFiles(p);
-    return /\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name) ? [p] : [];
-  });
-}
+/** Les SOURCES de `src/ui`. Les fichiers de test sont hors sujet : ils NOMMENT la classe (souvent
+ *  pour prouver son absence), ils n'affichent aucune affordance. */
+const UI = 'src/ui';
 
 /** Occurrences de la classe d'ⓘ, par chemin RELATIF à `src/ui`. */
 function infoAffordances(): Record<string, number> {
   const out: Record<string, number> = {};
-  for (const f of uiFiles(join(UI, 'ui'))) {
-    const n = (readFileSync(f, 'utf8').match(/ab-codex-info/g) ?? []).length;
-    if (n) out[f.slice(join(UI, 'ui').length + 1).replace(/\\/g, '/')] = n;
+  for (const { rel, text } of readCorpus([UI])) {
+    const n = (text.match(/ab-codex-info/g) ?? []).length;
+    if (n) out[rel.slice(UI.length + 1)] = n;
   }
   return out;
 }
@@ -50,9 +41,8 @@ function infoAffordances(): Record<string, number> {
  * Toute NOUVELLE occurrence, et tout retour d'une occurrence supprimée, échoue ici.
  */
 const RATCHET: Record<string, number> = {
-  // 3 → 0 (entrée retirée) : la barre v7 est SUPPRIMÉE ; ses trois ⓘ (alvéole de sort, munition,
-  // Calme d'approche) meurent avec elle. La console porte ses foyers de règle par `CodexRef wrap`
-  // sur la case elle-même — aucun ⓘ parallèle n'y naît.
+  // La CONSOLE n'y figure pas : ses foyers de règle passent par `CodexRef wrap` sur la case
+  // elle-même — aucun ⓘ parallèle n'y a de place.
   'StakeNote.tsx': 1,
   'CharacterSheet.tsx': 1,
   'MerchantPanel.tsx': 3,

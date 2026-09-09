@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
+import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 import { emptyScene, type Scene } from '../../state/scene';
 import { validateScene } from '../../state/validateScene';
 import { changePropRef, deleteSel, moveSel, eraseAt, placeEntity } from './editorState';
@@ -171,17 +172,10 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
     // passe lui aussi par `addEntity`. Le balayage couvre `.ts` ET `.tsx` — un module utilitaire de
     // `src/ui/**` n'est pas moins une porte qu'un composant.
     const fautifs: string[] = [];
-    const walk = (dir: string) => {
-      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-        const p = path.join(dir, e.name);
-        if (e.isDirectory()) { walk(p); continue; }
-        if (!/\.tsx?$/.test(e.name) || /\.test\.tsx?$/.test(e.name)) continue;
-        const rel = path.relative(ROOT, p).replace(/\\/g, '/');
-        const sf = parse(fs.readFileSync(p, 'utf8'), rel);
-        for (const motif of proprietesEntites(sf, sf)) fautifs.push(`${rel} :: ${motif}`);
-      }
-    };
-    walk(path.join(ROOT, 'src', 'ui'));
+    for (const { rel, text } of readCorpus(['src/ui'])) {
+      const sf = parse(text, rel);
+      for (const motif of proprietesEntites(sf, sf)) fautifs.push(`${rel} :: ${motif}`);
+    }
     expect(fautifs, `écriture d’entité en direct depuis l’interface :\n${fautifs.join('\n')}`).toEqual([]);
   });
 

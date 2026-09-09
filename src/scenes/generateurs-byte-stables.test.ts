@@ -1,7 +1,8 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { describe, it, expect } from 'vitest';
+import { listerArbre, listerDossier } from '../../scripts/guards/lib/lister.mjs';
 
 /**
  * Garde TRANSVERSE (#1522) : la SOURCE d'authoring possède 100 % de la donnée de l'artefact généré.
@@ -33,9 +34,8 @@ type Generateur = { build: () => unknown; OUT: string };
 
 function generateurs(): string[] {
   const out: string[] = [];
-  for (const entry of readdirSync(SCRIPTS_DIR, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
-    const f = join(SCRIPTS_DIR, entry.name, 'generate.mjs');
+  for (const nom of listerDossier(SCRIPTS_DIR)) {
+    const f = join(SCRIPTS_DIR, nom, 'generate.mjs');
     try {
       readFileSync(f);
       out.push(f);
@@ -46,15 +46,8 @@ function generateurs(): string[] {
   return out;
 }
 
-function projets(dir: string): string[] {
-  const out: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...projets(full));
-    else if (entry.isFile() && entry.name.endsWith('-projet.json')) out.push(full);
-  }
-  return out;
-}
+const projets = (dir: string): string[] =>
+  listerArbre(dir, { filtre: (rel) => rel.endsWith('-projet.json') }).map((rel) => join(dir, rel));
 
 const GENERATEURS = generateurs();
 

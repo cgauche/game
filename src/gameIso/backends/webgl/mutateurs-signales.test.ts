@@ -34,14 +34,11 @@
  * fichier voisin, y compris étrangère au foyer — le compte par fichier est le compromis retenu.
  */
 import { describe, expect, it } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import { readCorpus } from '../../../../scripts/guards/lib/sourceCorpus.mjs';
 
-const ROOT = fileURLToPath(new URL('../../../../', import.meta.url)); // …/backends/webgl/ → racine du dépôt
-const DIR_WEBGL = join(ROOT, 'src/gameIso/backends/webgl');
-const DIR_STAGE = join(ROOT, 'src/gameIso/stage');
+const DIR_WEBGL = 'src/gameIso/backends/webgl';
+const DIR_STAGE = 'src/gameIso/stage';
 
 /** Préfixes de MUTATION : le vocabulaire du dépôt pour « touche un objet qui existe déjà ». */
 const PREFIXES = /^(apply|repose|reposer|write|pose|poser|percer|set)[A-Z]/;
@@ -116,22 +113,6 @@ const FOYERS_SITE: readonly {
 ];
 
 // ── Outillage AST ────────────────────────────────────────────────────────────────────────────────
-
-function sourcesDe(dir: string): string[] {
-  const out: string[] = [];
-  const walk = (d: string) => {
-    for (const e of readdirSync(d)) {
-      const p = join(d, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) out.push(p);
-    }
-  };
-  walk(dir);
-  return out;
-}
-
-const relatif = (p: string) => relative(ROOT, p).split('\\').join('/');
-const lire = (p: string) => readFileSync(p, 'utf8');
 
 function analyser(fichier: string, code: string): ts.SourceFile {
   const kind = /\.tsx$/.test(fichier) ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
@@ -254,12 +235,12 @@ export function sitesDe(fichier: string, code: string, noms: ReadonlySet<string>
 
 // ── Le monde réel ────────────────────────────────────────────────────────────────────────────────
 
-const MUTATEURS = sourcesDe(DIR_WEBGL).flatMap((f) =>
-  mutateursDe(relatif(f), lire(f)).map((m) => ({ ...m, fichier: relatif(f) })),
+const MUTATEURS = readCorpus([DIR_WEBGL]).flatMap(({ rel, text }) =>
+  mutateursDe(rel, text).map((m) => ({ ...m, fichier: rel })),
 );
 const SIGNALANTS = new Set(MUTATEURS.filter((m) => m.signalant).map((m) => m.nom));
-const SITES = [...sourcesDe(DIR_WEBGL), ...sourcesDe(DIR_STAGE)].flatMap((f) =>
-  sitesDe(relatif(f), lire(f), SIGNALANTS).map((s) => ({ ...s, fichier: relatif(f) })),
+const SITES = readCorpus([DIR_WEBGL, DIR_STAGE]).flatMap(({ rel, text }) =>
+  sitesDe(rel, text, SIGNALANTS).map((s) => ({ ...s, fichier: rel })),
 );
 /** Les sites qui laissent tomber un verdict, exclusions structurelles retirées. */
 const PERDUS = SITES.filter((s) => s.nu && !s.nettoyage);

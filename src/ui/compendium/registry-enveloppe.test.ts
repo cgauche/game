@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { listerDossier } from '../../../scripts/guards/lib/lister.mjs';
 import { createHash } from 'node:crypto';
 import { CODEX, depuisEnveloppe } from './registry';
 import { books } from '../../data';
@@ -36,6 +37,8 @@ import { books } from '../../data';
  */
 
 const DATA_DIR = fileURLToPath(new URL('../../data/', import.meta.url));
+/** Les datasets de `src/data`, listés UNE fois — deux faits ci-dessous les relisent tous. */
+const DATASETS = listerDossier(DATA_DIR).filter((x) => x.endsWith('.json'));
 
 /**
  * sha256 (16 hex) de `<id>|<clés triées>` par item, jointes par \n — gel STRICT clé par clé.
@@ -524,7 +527,7 @@ describe('Codex — défaut d’enveloppe (#1467 L1b)', () => {
     const apparies: string[] = [];
     const partiels: string[] = [];
     const orphelins: string[] = [];
-    for (const f of readdirSync(DATA_DIR).filter((x) => x.endsWith('.json'))) {
+    for (const f of DATASETS) {
       for (const [n, arr] of tableauxIdentifies(JSON.parse(readFileSync(DATA_DIR + f, 'utf8'))).entries()) {
         const ids = arr.map((e) => e.id as string);
         let etat: 'total' | 'partiel' | 'orphelin' = 'orphelin';
@@ -584,7 +587,7 @@ describe('depuisEnveloppe — le défaut lui-même', () => {
     // (inclusion des ids), donc aucune table à tenir ; une catégorie qui perdrait la projection se
     // dénoncerait ici avec le NOM de l’entrée muette.
     const muets: string[] = [];
-    for (const f of readdirSync(DATA_DIR).filter((x) => x.endsWith('.json'))) {
+    for (const f of DATASETS) {
       for (const arr of tableauxIdentifies(JSON.parse(readFileSync(DATA_DIR + f, 'utf8')))) {
         const porteuses = arr.filter((e) => typeof e.maison === 'string' && e.maison.length > 0);
         if (!porteuses.length) continue;

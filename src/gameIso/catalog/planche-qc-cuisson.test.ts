@@ -15,9 +15,7 @@
  *  - CLIQUET : aucun littéral de projection dans `scripts/qc/`.
  */
 import { describe, expect, it } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { join, relative, sep } from 'node:path';
+import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 import {
   ECHELLE_PROJETEE,
   MPT_DE_PLANCHE,
@@ -35,7 +33,6 @@ import { affineScales } from '../backends/webgl/cameras';
 import { findPropById } from '../../data';
 import type { Rot } from '../../geometry/iso';
 
-const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 const CRANS: Rot[] = [0, 1, 2, 3];
 const facesDe = (id: string) => buildPropVolumes(findPropById(id)!, ancrageDePlanche, MPT_DE_PLANCHE);
 
@@ -177,24 +174,16 @@ const INTERDITS: { nom: string; motif: RegExp }[] = [
   { nom: 'cadence de pixels par mètre déclarée sur place', motif: /\b[A-Z_]*(?:PX|PIXELS)_(?:PAR|PER)_(?:M|METRE|METER)\b|\b[A-Z_]*(?:M|METRE|METER)S?_(?:PAR|PER)_(?:PX|PIXELS?)\b/ },
 ];
 
-/** Tous les scripts de QC, récursivement — un outil de plus est couvert par sa seule existence. */
-function scriptsDeQc(dir: string): string[] {
-  return readdirSync(dir).flatMap((n) => {
-    const p = join(dir, n);
-    if (statSync(p).isDirectory()) return scriptsDeQc(p);
-    return /\.(mts|mjs|ts|js)$/.test(n) ? [p] : [];
-  });
-}
-
 describe('CLIQUET — aucun outil de QC ne tient sa propre projection', () => {
   it('scripts/qc : zéro littéral de projection', () => {
-    const fichiers = scriptsDeQc(join(RACINE, 'scripts/qc')).sort();
+    // Tous les scripts de QC, récursivement — un outil de plus est couvert par sa seule existence.
+    const fichiers = readCorpus(['scripts/qc'], { exts: ['.mts', '.mjs', '.ts', '.js'] });
     expect(fichiers.length).toBeGreaterThan(0);
     const fautes: string[] = [];
-    for (const f of fichiers) {
-      readFileSync(f, 'utf8').split('\n').forEach((ligne, i) => {
+    for (const { rel, text } of fichiers) {
+      text.split('\n').forEach((ligne, i) => {
         for (const { nom, motif } of INTERDITS)
-          if (motif.test(ligne)) fautes.push(`${relative(RACINE, f).split(sep).join('/')}:${i + 1} — ${nom}`);
+          if (motif.test(ligne)) fautes.push(`${rel}:${i + 1} — ${nom}`);
       });
     }
     expect(fautes).toEqual([]);

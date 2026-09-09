@@ -5,9 +5,10 @@
  * maillage à la main hors des foyers déclarés ci-dessous.
  */
 import { describe, expect, it } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../../../scripts/guards/lib/sourceCorpus.mjs';
 import * as THREE from 'three';
 import { poserCompteInstances } from './instancePools';
 import { buildHighlightMesh, writeHighlightInstances } from './highlightMeshes';
@@ -93,7 +94,7 @@ describe('les pools du monde passent par la couture', () => {
 });
 
 const ROOT = fileURLToPath(new URL('../../../../', import.meta.url)); // …/backends/webgl/ → racine du dépôt
-const SCAN_DIR = join(ROOT, 'src/gameIso');
+const SCAN_DIRS = ['src/gameIso'];
 
 /**
  * FOYERS de `count` — les seuls sites qui écrivent un compte hors de la couture, avec leur raison.
@@ -132,27 +133,13 @@ export function scanEcrituresDeCompte(src: string): string[] {
     .map((l) => l.trim());
 }
 
-function sourcesDuMonde(): string[] {
-  const out: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) out.push(p);
-    }
-  };
-  walk(SCAN_DIR);
-  return out;
-}
-
 describe('garde — le compte d’un pool passe par la couture', () => {
   it('aucune écriture de `count` hors des foyers déclarés', () => {
     const exemptés = new Set(FOYERS.map((f) => f.fichier));
     const fautifs: string[] = [];
-    for (const f of sourcesDuMonde()) {
-      const rel = relative(ROOT, f).split('\\').join('/');
+    for (const { rel, text } of readCorpus(SCAN_DIRS)) {
       if (exemptés.has(rel)) continue;
-      for (const site of scanEcrituresDeCompte(readFileSync(f, 'utf8'))) fautifs.push(`${rel} : ${site}`);
+      for (const site of scanEcrituresDeCompte(text)) fautifs.push(`${rel} : ${site}`);
     }
     expect(
       fautifs,

@@ -1,6 +1,5 @@
-import { readdirSync, readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { describe, it, expect } from 'vitest';
+import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 import { materials } from '../../data';
 
 /**
@@ -20,17 +19,15 @@ import { materials } from '../../data';
  *
  * AUCUNE exception nominative : le stock mesuré est vide, il doit le rester.
  */
-const BUILDERS = fileURLToPath(new URL('.', import.meta.url));
+const BUILDERS = 'src/gameIso/builders';
 
-/** Les sources de `src/gameIso/builders` (récursif), hors `*.test.ts`. */
-function sources(dir = BUILDERS, rel = ''): string[] {
-  const out: string[] = [];
-  for (const ent of readdirSync(dir, { withFileTypes: true })) {
-    const relPath = rel ? `${rel}/${ent.name}` : ent.name;
-    if (ent.isDirectory()) out.push(...sources(`${dir}/${ent.name}`, relPath));
-    else if (/\.tsx?$/.test(ent.name) && !/\.test\.tsx?$/.test(ent.name)) out.push(relPath);
-  }
-  return out;
+/** Les sources de `src/gameIso/builders` (récursif), hors `*.test.ts` — chemin DEPUIS `builders/`,
+ *  la forme que porte le rapport. */
+function sources(): { chemin: string; code: string }[] {
+  return readCorpus([BUILDERS]).map(({ rel, text }) => ({
+    chemin: rel.slice(BUILDERS.length + 1),
+    code: text,
+  }));
 }
 
 /**
@@ -61,13 +58,12 @@ describe('builders du pivot — aucune matière du monde nommée en dur (#1691)'
 
   it('aucun id de `materials.json` n’apparaît en littéral dans `src/gameIso/builders/**`', () => {
     const fautes: string[] = [];
-    for (const f of fichiers) {
-      const code = codeSeul(readFileSync(`${BUILDERS}/${f}`, 'utf8'));
-      const lignes = code.split('\n');
+    for (const { chemin, code } of fichiers) {
+      const lignes = codeSeul(code).split('\n');
       for (const m of materials) {
         const re = new RegExp(`(['"\`])${m.id}\\1`);
         lignes.forEach((l, i) => {
-          if (re.test(l)) fautes.push(`${f}:${i + 1} — « ${m.id} » (domaine ${m.domain})`);
+          if (re.test(l)) fautes.push(`${chemin}:${i + 1} — « ${m.id} » (domaine ${m.domain})`);
         });
       }
     }

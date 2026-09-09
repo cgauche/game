@@ -69,7 +69,7 @@ _Aucune._
 ### MSRC 10 — 4 réf(s) code, 0 dans l'Atlas
 - `src/data/naval-traits.json:12` (l.90) — "maison": "MSRC 07 l.94 gate le Critique de Superstructure sur « si le bateau dispose d'une cale » sans imprimer de Trait naval ; la cale rejoint le catalogue d
 - `src/data/schemas/grammaire/formes-partagees.test.ts:406` (l.90) — // de Superstructure sur « si le bateau dispose d'une cale », MSRC 10 l.90 la dit du navire marchand).
-- `src/ui/compendium/registry-enveloppe.test.ts:148` (l.90) — // gate le Critique de Superstructure dessus ; MSRC 10 l.90 le dit du navire marchand).
+- `src/ui/compendium/registry-enveloppe.test.ts:151` (l.90) — // gate le Critique de Superstructure dessus ; MSRC 10 l.90 le dit du navire marchand).
 - `src/ui/ship-stations-panel.test.tsx:120` (l.90) — it('5. « Cale » sur la BARGE commerciale (MSRC 10 l.90) : ouverte, épinglable', () => {
 
 ### NADJ 4 — 7 réf(s) code, 0 dans l'Atlas
@@ -85,10 +85,10 @@ _Aucune._
 - `src/engine/creation.test.ts:128` (l.5) — describe('Gnome jouable — règle optionnelle (NADJ 14 l.5)', () => {
 
 ### PDT 8 — 1 réf(s) code, 0 dans l'Atlas
-- `src/ui/mono-stake-ratchet.test.ts:67` (l.370) — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
+- `src/ui/mono-stake-ratchet.test.ts:73` (l.370) — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
 
 ### PDT 9 — 1 réf(s) code, 0 dans l'Atlas
-- `src/ui/mono-stake-ratchet.test.ts:67` (l.285) — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
+- `src/ui/mono-stake-ratchet.test.ts:73` (l.285) — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
 
 ## A2-AUTRES — Lignes appelées par le CODE (autres livres) non pinées par l'Atlas
 
@@ -148,7 +148,7 @@ _Aucune._
 - l.185 — `src/data/index.ts:1080` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
 
 ### EDO 7 — 1/1 ligne(s) code hors couverture
-- l.184 — `src/ui/mono-stake-ratchet.test.ts:67` — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
+- l.184 — `src/ui/mono-stake-ratchet.test.ts:73` — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
 
 ### MSRC 5 — 1/1 ligne(s) code hors couverture
 - l.113 — `src/state/riverVoyageFlow.ts:876` — // Réparateur de SUBSTITUTION (`MSRC 5 l.113-117`) : le −10 est DÉJÀ fondu dans la valeur jetée,
@@ -179,4 +179,4 @@ LDB 38
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, EDO, EDOC, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: 441d2e91b9d3085b7b6fd78d73859a0694636bcd (4058 fichiers, 152 dossiers) corps: d0cb4a26adda97682897284e1947aa55474cf5b8 -->
+<!-- sources-empreinte: 3de690851c0f69d398724effa191f5e345c5c5fe (4058 fichiers, 152 dossiers) corps: 29d6004eba34b7cdb8db8ab90c40760441438fae -->

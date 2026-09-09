@@ -225,8 +225,18 @@ for (const nom of IDENTIFIANTS_GARDE) {
   }
 }
 
-const RACINE_SCAN = capture(NO_EMOJI, /const SRC = join\(ROOT, '([^']+)'\)/, 'la racine de scan `SRC`', 'src/ui/no-emoji-affordance.test.ts')
-const EXTENSIONS_SCAN = capture(NO_EMOJI, /else if \((\/.+?\/)\.test\(e\)\)/, 'le filtre d’extensions du walk', 'src/ui/no-emoji-affordance.test.ts')
+const RACINE_SCAN = capture(NO_EMOJI, /const SRC = '([^']+)'/, 'la racine de scan `SRC`', 'src/ui/no-emoji-affordance.test.ts')
+/** Les extensions que la garde demande à `readCorpus` (`exts: ['.ts', '.tsx', '.json']`), rendues en
+ *  la forme que le § 7 affiche — un motif de fin de nom, comme la garde le lit. */
+const EXTENSIONS_SCAN = `/\\.(${capture(
+  NO_EMOJI,
+  /exts: \[([^\]]+)\]/,
+  'les extensions de `readCorpus`',
+  'src/ui/no-emoji-affordance.test.ts',
+)
+  .split(',')
+  .map((e) => e.trim().replace(/^'\.?|'$/g, ''))
+  .join('|')})$/`
 
 // ── Rendu ────────────────────────────────────────────────────────────────────────────────────────
 

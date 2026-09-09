@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Gardes du SYSTÈME DE COMPOSANTS unifié (#236). Une garde par classe de conformité, scan de source
@@ -11,19 +9,13 @@ import { fileURLToPath } from 'node:url';
  * barres de jet à la déduction par rôle (plus de style au call-site).
  */
 
-const UI = fileURLToPath(new URL('.', import.meta.url)); // src/ui/
+const UI = 'src/ui';
 
-function walk(dir: string, acc: string[] = []): string[] {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) walk(p, acc);
-    else if (/\.tsx$/.test(e) && !/\.test\./.test(e)) acc.push(p);
-  }
-  return acc;
-}
-/** Chemin relatif POSIX à `src/ui/`. */
-const rel = (abs: string) => abs.slice(UI.length).split('\\').join('/');
-const FILES = walk(UI).map((f) => ({ rel: rel(f), src: readFileSync(f, 'utf8') }));
+/** Les composants de `src/ui`, hors tests — chemin relatif POSIX à `src/ui/`. */
+const FILES = readCorpus([UI], { exts: ['.tsx'] }).map(({ rel, text }) => ({
+  rel: rel.slice(UI.length + 1),
+  src: text,
+}));
 
 /** Valeurs de tous les attributs `className=` (double/simple/accolade+template) d'un fichier. */
 function classNames(src: string): string[] {

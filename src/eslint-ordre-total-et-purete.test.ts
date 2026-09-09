@@ -26,10 +26,11 @@ import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';
  *
  * SECOND MUR MESURÉ ICI — L'ORDRE TOTAL DANS LES TESTS DE `src` (#1709 C3c-1). Même raison d'être :
  * le `files:` du bloc est POSIX et par couche, donc un dossier renommé le rendrait MUET et VERT.
- * Deux volets, symétriques de ceux de la pureté : la TABLE DES FORMES (import nommé, accès par
- * membre, déstructuration, namespace) sur un fichier réel de CHAQUE couche couverte, et le
- * PÉRIMÈTRE (les sélecteurs du mur sont résolus pour `src/engine`, `src/state` et la racine — et
- * ABSENTS pour `src/ui` et `src/gameIso`, qui entrent aux trains suivants).
+ * Trois volets : la TABLE DES FORMES (import nommé, accès par membre, déstructuration, namespace)
+ * sur un fichier réel de CHAQUE couche couverte ; le PÉRIMÈTRE (les sélecteurs du mur sont résolus
+ * pour les sept couches sous le mur, et `src/data` reste HORS de portée d'ESLint — c'est l'`ignores`
+ * de tête que le train suivant lève) ; et la POLICE de la possession, que le mur REMPLACERAIT sur
+ * les tests de `src/ui` s'il ne la redisait pas — mesurée sur la config résolue, jamais postulée.
  */
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -125,9 +126,20 @@ describe('pureté de couche — la doctrine vit dans eslint.config.js, mesurée 
   });
 });
 
-/** Les couches dont les TESTS sont sous le mur de l'ordre total, et celles qui n'y sont pas encore. */
-const SOUS_LE_MUR = ['src/engine', 'src/state', 'src'] as const;
-const HORS_MUR = ['src/ui', 'src/gameIso'] as const;
+/** Les couches dont les TESTS sont sous le mur de l'ordre total. */
+const SOUS_LE_MUR = ['src/engine', 'src/state', 'src/ui', 'src/gameIso', 'src/audio', 'src/scenes', 'src'] as const;
+/** Ce qui reste HORS du mur : `src/data`, qu'ESLint ne LIT PAS (`ignores` de tête). Un test réel y
+ *  est `isPathIgnored` — c'est ce fait, et non un `files:` étroit, que le train suivant lève. */
+const HORS_PORTEE = 'src/data';
+
+/** Le premier fichier de PRODUCTION réel de `src/ui` (corpus, jamais un nom en dur) : le mur ne vise
+ *  que les `*.test.*`, et c'est ce fichier-là qui le dit — un `files:` élargi à toute la couche se
+ *  lirait ici. */
+function sondeProduction(): string {
+  const f = readCorpus(['src/ui'], { exts: ['.tsx'] })[0];
+  expect(f, 'src/ui : aucun composant de production — le témoin négatif ne mesure rien').toBeTruthy();
+  return f.rel;
+}
 
 /** Le premier fichier de TEST réel de la couche `dir`, à sa PROFONDEUR attendue : `src` désigne la
  *  RACINE (un `src/x.test.ts`, glob `src/*.test.ts`), les autres toute la couche. Jamais un nom en
@@ -188,12 +200,27 @@ describe('ordre total dans les tests de `src` — mur mesuré sur la config RÉS
     }
     const generateur = await selecteursDe('scripts/docs/build-all.mjs');
     expect(generateur, 'la clôture des générateurs garde son volet `localeCompare`').toContain('localeCompare');
-    for (const dir of HORS_MUR) {
-      const rel = sondeTest(dir);
-      expect(
-        await selecteursDe(rel),
-        `${dir} n’entre au mur qu’au train suivant — un élargissement non voulu du \`files:\` se lit ici. Sonde : ${rel}`,
-      ).not.toContain('opendirSync');
-    }
+    // TÉMOIN NÉGATIF : le mur vise les TESTS, pas la couche — un composant de production n'en résout
+    // aucun sélecteur. Sans lui, un `files:` élargi à `src/ui/**` passerait inaperçu.
+    const production = sondeProduction();
+    expect(
+      await selecteursDe(production),
+      `le mur ne vise que les \`*.test.*\` : un fichier de PRODUCTION ne doit résoudre aucun de ses sélecteurs. Sonde : ${production}`,
+    ).not.toContain('opendirSync');
+    const horsPortee = sondeTest(HORS_PORTEE);
+    expect(
+      await eslint.isPathIgnored(`${ROOT}/${horsPortee}`),
+      `${HORS_PORTEE} : ESLint devrait l’IGNORER (\`ignores\` de tête) — si ce n’est plus le cas, le mur le couvre et la couche entre au \`files:\`. Sonde : ${horsPortee}`,
+    ).toBe(true);
+  });
+
+  it('POLICE : sur un test réel de `src/ui`, la config résolue porte ENCORE `netOwnership`', { timeout: 30_000 }, async () => {
+    // Le mur déclare `no-restricted-imports` : sans la redite, il REMPLACERAIT la police de la
+    // possession (#1262 L1), seule `no-restricted-imports` que ces tests résolvaient.
+    const rel = sondeTest('src/ui');
+    const cfg = await eslint.calculateConfigForFile(`${ROOT}/${rel}`);
+    const resolus = JSON.stringify(cfg.rules?.['no-restricted-imports']);
+    expect(resolus, `police de la possession DÉSARMÉE sur les tests de src/ui — sonde : ${rel}`).toContain('netOwnership');
+    expect(resolus, `mur de l’ordre total absent des tests de src/ui — sonde : ${rel}`).toContain('opendirSync');
   });
 });

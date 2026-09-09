@@ -21,9 +21,7 @@ import { SWARM_FORMS } from './swarm/forms';
 import { rigSpeciesVocab, asRigSpeciesId } from './appearance';
 import { resolveRender } from './bodyPlan';
 import { rigSpeciesId, species, creatures, raceAppearance, vehicles, trappings } from '../../data';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 
 /** Vocabulaire CANONIQUE des ids d'espèce — DÉRIVÉ des 6 registres par la SOURCE UNIQUE de
  *  production `rigSpeciesVocab()` (celle contre laquelle `asRigSpeciesId` valide), jamais recopié ici. */
@@ -151,26 +149,11 @@ const SITE_PRODUCTEUR = 'src/gameIso/rig/appearance.ts';
 const MOTIF = new RegExp(['as', 'RigSpeciesId'].join(' '), 'g');
 
 describe('garde structurelle — assertion vers `RigSpeciesId` = 1 site de production + baseline décroissante', () => {
-  const SRC = fileURLToPath(new URL('../..', import.meta.url));
-  const SCRIPTS = fileURLToPath(new URL('../../../scripts/', import.meta.url));
-  function walk(dir: string, out: string[]): void {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p, out);
-      else if (/\.(tsx?|mts)$/.test(e)) out.push(p);
-    }
-  }
-
   it('aucune assertion de type vers `RigSpeciesId` neuve dans src/ NI dans scripts/ ; la baseline ne croît pas', () => {
     const compte: Record<string, number> = {};
-    for (const [racine, prefixe] of [[SRC, 'src/'], [SCRIPTS, 'scripts/']] as const) {
-      const files: string[] = [];
-      walk(racine, files);
-      for (const f of files) {
-        const rel = `${prefixe}${f.slice(racine.length).replace(/\\/g, '/')}`;
-        const n = (readFileSync(f, 'utf8').match(MOTIF) ?? []).length;
-        if (n) compte[rel] = n;
-      }
+    for (const { rel, text } of readCorpus(['src', 'scripts'], { exts: ['.ts', '.tsx', '.mts'], tests: true })) {
+      const n = (text.match(MOTIF) ?? []).length;
+      if (n) compte[rel] = n;
     }
     const bad: string[] = [];
     for (const [rel, n] of Object.entries(compte)) {

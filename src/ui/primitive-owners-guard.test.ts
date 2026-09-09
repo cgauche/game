@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Garde structurelle #1318 P8/D10 — les MARQUEURS STRUCTURELS (classes racines distinctives des
@@ -26,17 +24,15 @@ import { fileURLToPath } from 'node:url';
  * gater serait du bruit, elles restent hors table.
  */
 
-const UI = fileURLToPath(new URL('.', import.meta.url)); // src/ui/
+const UI = 'src/ui';
 
-function walk(dir: string, acc: string[] = []): string[] {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) walk(p, acc);
-    else if (e.endsWith('.tsx') && !e.endsWith('.test.tsx')) acc.push(p);
-  }
-  return acc;
+/** Les composants de `src/ui`, hors tests — chemin DEPUIS `src/ui/`, la forme des tables ci-dessous. */
+function composants(): { chemin: string; code: string }[] {
+  return readCorpus([UI], { exts: ['.tsx'] }).map(({ rel, text }) => ({
+    chemin: rel.slice(UI.length + 1),
+    code: text,
+  }));
 }
-const rel = (abs: string) => abs.slice(UI.length).split('\\').join('/');
 
 /** Une classe citée en commentaire (JSDoc de renvoi vers la primitive) n'est pas une pose de markup.
  *  Les commentaires sont blanchis (et non supprimés) pour préserver la numérotation de lignes. */
@@ -211,8 +207,7 @@ function markersIn(src: string): { marker: string; line: number }[] {
 }
 
 describe('#1318 P8/D10 — marqueurs structurels = propriété des primitives (recopie de markup bloquée)', () => {
-  const files = walk(UI);
-  const found = files.map((f) => ({ path: rel(f), hits: markersIn(stripComments(readFileSync(f, 'utf8'))) }));
+  const found = composants().map(({ chemin, code }) => ({ path: chemin, hits: markersIn(stripComments(code)) }));
 
   it('aucune recopie de marqueur hors du fichier propriétaire au-delà du stock mesuré', () => {
     const offenders: string[] = [];

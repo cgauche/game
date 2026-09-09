@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import { iconRefsIn } from '../../scripts/guards/lib/iconRefs.mjs';
 import { ICON_DEFS } from './icons';
 
@@ -23,32 +25,25 @@ const SCAN_DIRS = ['src/state', 'src/scenes'];
  *  l'utilisateur, pas des affordances réelles). */
 const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
 
-function walk(dir: string, out: string[]): void {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) walk(p, out);
-    else if (/\.(ts|tsx)$/.test(e)) out.push(p);
-  }
-}
-
-function scanFiles(): string[] {
-  const files: string[] = [];
-  for (const d of SCAN_DIRS) walk(join(ROOT, d), files);
-  for (const e of readdirSync(join(ROOT, 'src/data'))) {
-    if (e.endsWith('.json')) files.push(join(ROOT, 'src/data', e));
-  }
-  return files;
+/** Les SOURCES des deux racines de donnée (tests compris — `EXCLUDED` les écarte au site), plus les
+ *  datasets PLATS de `src/data`, chacun avec son texte. */
+function scanFiles(): { rel: string; text: string }[] {
+  const data = join(ROOT, 'src/data');
+  return [
+    ...readCorpus(SCAN_DIRS, { tests: true }).map(({ rel, text }) => ({ rel, text })),
+    ...listerDossier(data)
+      .filter((e) => e.endsWith('.json'))
+      .map((e) => ({ rel: `src/data/${e}`, text: readFileSync(join(data, e), 'utf8') })),
+  ];
 }
 
 describe('garde-fou anti-icône-fantôme (réfs de donnée → registre d’icônes)', () => {
   it('toute réf `icon:`/`"icon":` de src/state, src/scenes et src/data/*.json résout dans le registre', () => {
     const offenders: string[] = [];
     let scanned = 0;
-    for (const f of scanFiles()) {
-      const rel = relative(ROOT, f).split('\\').join('/');
+    for (const { rel, text } of scanFiles()) {
       if (EXCLUDED(rel)) continue;
-      const refs = iconRefsIn(readFileSync(f, 'utf8'));
-      for (const { id, line } of refs) {
+      for (const { id, line } of iconRefsIn(text)) {
         scanned++;
         if (!ICON_DEFS[id]) offenders.push(`${rel}:${line} → icône inconnue « ${id} »`);
       }

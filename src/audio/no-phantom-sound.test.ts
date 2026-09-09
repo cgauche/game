@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { soundRefsIn } from '../../scripts/guards/lib/soundRefs.mjs';
 import { SOUND_DEFS } from './_registry.generated';
 
@@ -14,27 +12,14 @@ import { SOUND_DEFS } from './_registry.generated';
  * `scripts/guards/lib/soundRefs.mjs`.
  */
 
-const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const IDS = new Set(SOUND_DEFS.map((d) => d.id));
-
-function walk(dir: string, out: string[]): void {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) walk(p, out);
-    else if (/\.(ts|tsx)$/.test(e) && !/\.test\.[tj]sx?$/.test(e)) out.push(p);
-  }
-}
 
 describe('garde-fou anti-son-fantôme (réfs playSfx → registre de sons)', () => {
   it('toute réf `playSfx(\'...\')` de src/** résout dans le registre', () => {
-    const files: string[] = [];
-    walk(join(ROOT, 'src'), files);
     const offenders: string[] = [];
     let scanned = 0;
-    for (const f of files) {
-      const rel = relative(ROOT, f).split('\\').join('/');
-      const refs = soundRefsIn(readFileSync(f, 'utf8'));
-      for (const { id, line } of refs) {
+    for (const { rel, text } of readCorpus(['src'])) {
+      for (const { id, line } of soundRefsIn(text)) {
         scanned++;
         if (!IDS.has(id)) offenders.push(`${rel}:${line} → son inconnu « ${id} »`);
       }

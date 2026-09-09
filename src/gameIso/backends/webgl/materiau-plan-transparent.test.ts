@@ -15,12 +15,13 @@
  * (`stage/scene-rendue-invariants.test.tsx`).
  */
 import { describe, expect, it } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../../../scripts/guards/lib/sourceCorpus.mjs';
 
 const ROOT = fileURLToPath(new URL('../../../../', import.meta.url)); // …/backends/webgl/ → racine du dépôt
-const SCAN_DIR = join(ROOT, 'src');
+const SCAN_DIRS = ['src'];
 
 /** Le FOYER — le seul littéral légitime du dépôt, celui que la primitive construit. Son exemption est
  *  vérifiée plus bas : le fichier doit porter le motif ET le drapeau. */
@@ -44,26 +45,12 @@ export function scanPlansDeuxPasses(src: string): string[] {
   return trouvés;
 }
 
-function sources(): string[] {
-  const out: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) out.push(p);
-    }
-  };
-  walk(SCAN_DIR);
-  return out;
-}
-
 describe('convention « plan transparent » — une seule passe, une seule source', () => {
   it('aucun `MeshBasicMaterial` littéral transparent+DoubleSide hors materiauPlanTransparent', () => {
     const fautifs: string[] = [];
-    for (const f of sources()) {
-      const rel = relative(ROOT, f).split('\\').join('/');
+    for (const { rel, text } of readCorpus(SCAN_DIRS)) {
       if (rel === FOYER) continue;
-      for (const site of scanPlansDeuxPasses(readFileSync(f, 'utf8'))) fautifs.push(`${rel} : ${site}`);
+      for (const site of scanPlansDeuxPasses(text)) fautifs.push(`${rel} : ${site}`);
     }
     expect(
       fautifs,

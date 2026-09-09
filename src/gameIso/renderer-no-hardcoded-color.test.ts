@@ -19,10 +19,13 @@
  * est du chrome NEUTRE allowlisté ; tout AUTRE hex y est une fuite d'identité de matériau à attraper.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 
 const HERE = fileURLToPath(new URL('.', import.meta.url)); // …/src/gameIso/
+const SOUS_GAMEISO = 'src/gameIso/';
 
 // Renderers d'environnement à la RACINE de gameIso/ (hors arborescence balayée) — nommés.
 const ROOT_RENDERERS = [
@@ -36,20 +39,11 @@ const ROOT_RENDERERS = [
 // `catalog/decor/defs` a son bloc dédié (palette) → exclu du balayage.
 const SWEEP_DIRS = ['builders', 'backends', 'authoring', 'detail', 'pov', 'catalog', 'stage'];
 
-/** Fichiers .ts/.tsx (hors tests) d'un sous-arbre, chemins relatifs à `gameIso/`. */
-function walk(abs: string, rel: string): string[] {
-  const out: string[] = [];
-  for (const ent of readdirSync(abs, { withFileTypes: true })) {
-    const childRel = `${rel}/${ent.name}`;
-    if (ent.isDirectory()) {
-      if (childRel.endsWith('catalog/decor/defs')) continue; // bloc dédié ci-dessous
-      out.push(...walk(`${abs}/${ent.name}`, childRel));
-    } else if (/\.tsx?$/.test(ent.name) && !/\.test\.tsx?$/.test(ent.name)) {
-      out.push(childRel);
-    }
-  }
-  return out;
-}
+/** Le balayage : les sources (hors tests) des arborescences déclarées, chemins relatifs à `gameIso/`.
+ *  `catalog/decor/defs` a son bloc dédié plus bas (palette) — il sort ici. */
+const BALAYAGE = readCorpus(SWEEP_DIRS.map((d) => `${SOUS_GAMEISO}${d}`))
+  .filter(({ rel }) => !rel.startsWith(`${SOUS_GAMEISO}catalog/decor/defs/`))
+  .map(({ rel, text }) => [rel.slice(SOUS_GAMEISO.length), text] as const);
 
 // Chrome d'état des TOKENS : la surcouche des jetons (pion-disque, PV, badges, ombres) et tokenBodyKind
 // (bloc de siège) rendent l'ÉTAT de combat, pas un MATÉRIAU du monde. La couleur d'IDENTITÉ vient de
@@ -59,8 +53,12 @@ function walk(abs: string, rel: string): string[] {
 // l'autre, jamais par les deux — et jamais par aucun (le filtre ci-dessous ne retire que du connu).
 const CHROME_RENDERERS = ['stage/TokenChromeOverlay.tsx', 'tokenBodyKind.tsx'];
 
-const COVERED = [...ROOT_RENDERERS, ...SWEEP_DIRS.flatMap((d) => walk(HERE + d, d))]
-  .filter((rel) => !CHROME_RENDERERS.includes(rel));
+/** Le texte de chaque fichier couvert, par chemin relatif à `gameIso/`. */
+const SOURCE = new Map<string, string>([
+  ...ROOT_RENDERERS.map((rel) => [rel, readFileSync(HERE + rel, 'utf8')] as const),
+  ...BALAYAGE,
+]);
+const COVERED = [...SOURCE.keys()].filter((rel) => !CHROME_RENDERERS.includes(rel));
 
 // `rgb(`/`hsl(` ne mordent que sur des CANAUX LITTÉRAUX : `rgb(${r},…)` (assemblage d'une couleur
 // CALCULÉE, ex. `tint` du POV) n'est pas une identité en dur.
@@ -113,7 +111,7 @@ describe('garde-fou — aucune couleur en dur dans un renderer d’environnement
   });
 
   it.each(COVERED)('%s : zéro couleur en dur', (rel) => {
-    const hits = colorHits(readFileSync(HERE + rel, 'utf8'));
+    const hits = colorHits(SOURCE.get(rel)!);
     expect(hits, `Couleurs en dur dans ${rel} :\n${hits.join('\n')}`).toEqual([]);
   });
 });
@@ -140,7 +138,7 @@ describe('garde-fou — chrome des tokens : hex neutre allowlisté, tout autre =
 // Les 97 defs de décor : le dessin reste du code par def, MAIS toute couleur vient de la palette
 // partagée (`P.<ton>`, `src/data/decorPalette.json`). Glob → couvre aussi tout nouveau `defs/<id>.ts`.
 const DECOR_DEFS_DIR = HERE + 'catalog/decor/defs';
-const DECOR_DEFS = readdirSync(DECOR_DEFS_DIR).filter((f) => f.endsWith('.ts'));
+const DECOR_DEFS = listerDossier(DECOR_DEFS_DIR).filter((f) => f.endsWith('.ts'));
 
 describe('garde-fou — decor defs consomment la palette (zéro couleur en dur)', () => {
   it('la liste des defs n’est pas vide', () => {

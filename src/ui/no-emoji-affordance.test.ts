@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { emojisIn } from '../../scripts/guards/lib/emojiAffordance.mjs';
 
 /**
@@ -16,8 +14,7 @@ import { emojisIn } from '../../scripts/guards/lib/emojiAffordance.mjs';
  * `scripts/guards/lib/emojiAffordance.mjs` (module .mjs pur, partagé avec un futur hook pre-commit).
  */
 
-const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // racine du projet (src/ui/ → ../../)
-const SRC = join(ROOT, 'src');
+const SRC = 'src';
 
 /** Exclusions par NATURE (jamais par état de migration) :
  *  - `*.test.*` : les tests portent les emojis de leurs composants non migrés et sont réécrits AVEC
@@ -29,26 +26,12 @@ const EXCLUDED = (rel: string): boolean =>
   rel.endsWith('_registry.generated.ts') ||
   rel.includes('__snapshots__/');
 
-function scanFiles(): string[] {
-  const files: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.(ts|tsx|json)$/.test(e)) files.push(p);
-    }
-  };
-  walk(SRC);
-  return files;
-}
-
 describe('garde-fou anti-emoji (affordances → registre d’icônes)', () => {
   it('aucun emoji dans TOUT src/ (.ts/.tsx/.json), hors exclusions par nature', () => {
     const offenders: string[] = [];
-    for (const f of scanFiles()) {
-      const rel = relative(ROOT, f).split('\\').join('/');
+    for (const { rel, text } of readCorpus([SRC], { exts: ['.ts', '.tsx', '.json'], tests: true })) {
       if (EXCLUDED(rel)) continue;
-      const hits = emojisIn(readFileSync(f, 'utf8'));
+      const hits = emojisIn(text);
       if (hits.length) offenders.push(`${rel} → ${hits.join(' ')}`);
     }
     expect(offenders, 'Emoji détecté — affordance : <Icon id> (src/ui/icons/) ; log/prose/donnée : texte nu').toEqual([]);

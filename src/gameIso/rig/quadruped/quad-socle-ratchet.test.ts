@@ -20,8 +20,9 @@
  * y basculer du branchement pour faire baisser les plafonds échoue la garde.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { listerDossier } from '../../../../scripts/guards/lib/lister.mjs';
 import { QUAD_HEAD_DEFS } from './heads/_registry.generated';
 import { QUAD_TAIL_DEFS } from './tails/_registry.generated';
 import { QUAD_MANE_DEFS } from './manes/_registry.generated';
@@ -147,7 +148,7 @@ describe('socle quadrupède : le branchement par espèce ne peut que DÉCROÎTRE
     const fautes: string[] = [];
     for (const part of PARTS) {
       const dir = fileURLToPath(new URL(`./${part}/defs`, import.meta.url));
-      for (const f of readdirSync(dir)) {
+      for (const f of listerDossier(dir)) {
         const src = readFileSync(`${dir}/${f}`, 'utf8');
         for (const autre of PARTS)
           if (autre !== part && new RegExp(`from '\\.\\./\\.\\./${autre}`).test(src))
@@ -155,7 +156,7 @@ describe('socle quadrupède : le branchement par espèce ne peut que DÉCROÎTRE
       }
     }
     expect(fautes).toEqual([]);
-    expect(readdirSync(fileURLToPath(new URL('./tails/defs', import.meta.url))).length).toBeGreaterThan(1);
+    expect(listerDossier(fileURLToPath(new URL('./tails/defs', import.meta.url))).length).toBeGreaterThan(1);
   });
 
   it('le stock des crinières a MIGRÉ : 3 defs enregistrées', () => {

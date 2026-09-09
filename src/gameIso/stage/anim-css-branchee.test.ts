@@ -19,11 +19,13 @@
  * cassé, et le motif courant du dépôt pour le reste.
  */
 import { describe, expect, it } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 
 const GAMEISO = fileURLToPath(new URL('../', import.meta.url)); // …/stage/ → …/gameIso/
+const SOUS_GAMEISO = 'src/gameIso/';
 const CSS = join(GAMEISO, 'anim.css');
 /** L'HÔTE du monde : il possède le canevas et ne se démonte qu'avec l'écran de campagne. */
 const HOTE = join(GAMEISO, 'stage/MondeDeCampagne.tsx');
@@ -51,18 +53,12 @@ export function classesAnimees(css: string): string[] {
   return [...out];
 }
 
-/** Les fichiers d'un dossier, hors tests. */
-function sources(dir: string): string[] {
-  const out: string[] = [];
-  const walk = (d: string) => {
-    for (const e of readdirSync(d)) {
-      const p = join(d, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) out.push(p);
-    }
-  };
-  walk(dir);
-  return out;
+/** Les sources de `gameIso/`, hors tests — chemin DEPUIS `gameIso/`, la forme que porte le rapport. */
+function sources(): { chemin: string; code: string }[] {
+  return readCorpus([SOUS_GAMEISO]).map(({ rel, text }) => ({
+    chemin: rel.slice(SOUS_GAMEISO.length),
+    code: text,
+  }));
 }
 
 /** Les classes du CSS qu'un source RÉCLAME — dans un `className`/`class` littéral ou un template. */
@@ -88,9 +84,9 @@ describe('keyframes du stage — la feuille est BRANCHÉE, et sur l’hôte du m
   });
 
   it('AUCUN autre module ne l’importe : une feuille globale a UN propriétaire', () => {
-    const importeurs = sources(GAMEISO)
-      .filter((f) => importeAnimCss(readFileSync(f, 'utf8')))
-      .map((f) => f.slice(GAMEISO.length).split('\\').join('/'));
+    const importeurs = sources()
+      .filter(({ code }) => importeAnimCss(code))
+      .map(({ chemin }) => chemin);
     expect(importeurs, `deux propriétaires pour une même feuille :\n${importeurs.join('\n')}`)
       .toEqual(['stage/MondeDeCampagne.tsx']);
   });
@@ -101,8 +97,8 @@ describe('keyframes du stage — la feuille est BRANCHÉE, et sur l’hôte du m
     expect(animees.length, 'la feuille ne déclare aucune animation : la mesure porterait sur rien')
       .toBeGreaterThan(5);
     const reclamees = new Set<string>();
-    for (const f of sources(GAMEISO)) {
-      for (const c of classesReclamees(readFileSync(f, 'utf8'), animees)) reclamees.add(c);
+    for (const { code } of sources()) {
+      for (const c of classesReclamees(code, animees)) reclamees.add(c);
     }
     // PRÉMISSE — le scan MORD : des composants réclament bien ces classes.
     expect(reclamees.size, 'aucune classe animée réclamée : le scan ne voit rien').toBeGreaterThan(3);

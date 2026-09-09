@@ -4,9 +4,7 @@ import { InitiativeStrip, initiativePhase } from './InitiativeStrip';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 function fixtures() {
   const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Gunnar', rng: makeRNG(3) });
@@ -116,27 +114,17 @@ describe('InitiativeStrip', () => {
   // Design 2026-07-31 §5 : le contraste d'une entrée `future` est le contraste normal — aucune
   // feuille de style de l'app ne doit l'atténuer (opacité < 1, ou désaturation/luminosité).
   it('aucun style n’atténue une entrée d’initiative future', () => {
-    const styles = fileURLToPath(new URL('./styles/', import.meta.url));
-    const files: string[] = [];
-    const walkCss = (dir: string) => {
-      for (const e of readdirSync(dir)) {
-        const p = join(dir, e);
-        if (statSync(p).isDirectory()) walkCss(p);
-        else if (e.endsWith('.css')) files.push(p);
-      }
-    };
-    walkCss(styles);
-    expect(files.length).toBeGreaterThan(0);
+    const feuilles = readCorpus(['src/ui/styles'], { exts: ['.css'] });
+    expect(feuilles.length).toBeGreaterThan(0);
 
     const fautes: string[] = [];
-    for (const f of files) {
-      const css = readFileSync(f, 'utf8');
-      for (const m of css.matchAll(/([^{}]*\[data-phase\s*=\s*['"]?future['"]?\][^{}]*)\{([^}]*)\}/g)) {
+    for (const { rel, text } of feuilles) {
+      for (const m of text.matchAll(/([^{}]*\[data-phase\s*=\s*['"]?future['"]?\][^{}]*)\{([^}]*)\}/g)) {
         const [selecteur, corps] = [m[1].trim().split('\n').pop()!.trim(), m[2]];
         const op = corps.match(/opacity\s*:\s*([\d.]+)/);
-        if (op && Number(op[1]) < 1) fautes.push(`${f}: ${selecteur} { opacity: ${op[1]} }`);
+        if (op && Number(op[1]) < 1) fautes.push(`${rel}: ${selecteur} { opacity: ${op[1]} }`);
         const filtre = corps.match(/filter\s*:\s*([^;]+)/);
-        if (filtre && !/^none$/i.test(filtre[1].trim())) fautes.push(`${f}: ${selecteur} { filter: ${filtre[1].trim()} }`);
+        if (filtre && !/^none$/i.test(filtre[1].trim())) fautes.push(`${rel}: ${selecteur} { filter: ${filtre[1].trim()} }`);
       }
     }
     expect(fautes, `Entrées futures atténuées :\n${fautes.join('\n')}`).toEqual([]);

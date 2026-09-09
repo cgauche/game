@@ -11,12 +11,18 @@
  * site NEUF muet échoue ; un site doté dont la ligne reste ici échoue aussi (baseline périmée).
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { FLOW_STAKES } from '../data';
 import { FLOW_VERBS } from '../state/flowVerbs';
 
-const UI = join(process.cwd(), 'src', 'ui');
+const UI = 'src/ui';
+
+/** Les modales de la RACINE de `src/ui` — c'est là que vivent les coquilles de jet ; les
+ *  sous-dossiers (atelier, créateur, compendium) ne montent pas de `RollShell`. Nom NU du fichier,
+ *  la forme que porte le message. */
+const MODALES = readCorpus([UI], { exts: ['.tsx'] })
+  .filter(({ rel }) => !rel.slice(UI.length + 1).includes('/'))
+  .map(({ rel, text }) => ({ nom: rel.slice(UI.length + 1), code: text }));
 
 /** Balise JSX ouvrante qui contient l'index `i` : de son `<` jusqu'au `>` de même profondeur. */
 function openingTag(src: string, i: number): string {
@@ -74,9 +80,9 @@ const BASELINE: Record<string, string> = {
 describe('cliquet — une modale de jet dit son ENJEU (#1117 L1b)', () => {
   it('aucune coquille NEUVE sans enjeu, et toute baseline soldée est RETIRÉE', () => {
     const muets = new Map<string, string[]>(); // flowKey → fichiers
-    for (const f of readdirSync(UI).filter((n) => n.endsWith('.tsx') && !n.includes('.test.'))) {
-      for (const k of shellsWithoutStake(readFileSync(join(UI, f), 'utf8'))) {
-        muets.set(k, [...(muets.get(k) ?? []), f]);
+    for (const { nom, code } of MODALES) {
+      for (const k of shellsWithoutStake(code)) {
+        muets.set(k, [...(muets.get(k) ?? []), nom]);
       }
     }
     const neufs = [...muets].filter(([k]) => !(k in BASELINE)).map(([k, fs]) => `${k} (${fs.join(', ')})`);

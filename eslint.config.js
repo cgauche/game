@@ -82,6 +82,15 @@ const VERROU_LISTAGE = [
   { selector: `ObjectPattern > Property[key.name=/^(${MARCHE_BRUTE.join('|')})$/]`, message: MSG_ORDRE_TOTAL },
 ];
 
+/** POLICE DE LA POSSESSION À L'AFFICHAGE (#1262 L1) — le motif d'import restreint, DÉFINI ICI parce
+ *  que DEUX blocs le posent : la police de `src/ui/**` et, après le mur de l'ordre total (qui
+ *  déclare `no-restricted-imports` et REMPLACERAIT donc ses options), les TESTS de `src/ui`. */
+const POLICE_POSSESSION = [{
+  group: ['**/state/netOwnership', '**/state/netFlow'],
+  importNames: ['ownsLocally'],
+  message: 'Possession à l’affichage (#1262) : passer par `ui/ownership.ts` (`ownsLocal`/`useOwns`) — le terme `net.mode === "local"` y est déjà mort.',
+}];
+
 /** Volet COMPARAISON DE CHAÎNES — porté par la seule clôture des générateurs (cf. le bloc des tests). */
 const VERROU_LOCALE_COMPARE = [
   { selector: "CallExpression[callee.property.name='localeCompare']", message: MSG_LOCALE_COMPARE },
@@ -221,13 +230,7 @@ export default tseslint.config(
     files: ['src/ui/**/*.ts', 'src/ui/**/*.tsx'],
     ignores: ['src/ui/ownership.ts'],
     rules: {
-      'no-restricted-imports': ['error', {
-        patterns: [{
-          group: ['**/state/netOwnership', '**/state/netFlow'],
-          importNames: ['ownsLocally'],
-          message: 'Possession à l’affichage (#1262) : passer par `ui/ownership.ts` (`ownsLocal`/`useOwns`) — le terme `net.mode === "local"` y est déjà mort.',
-        }],
-      }],
+      'no-restricted-imports': ['error', { patterns: POLICE_POSSESSION }],
     },
   },
   {
@@ -348,9 +351,9 @@ export default tseslint.config(
     // CORPUS : `readCorpus` (`scripts/guards/lib/sourceCorpus.mjs`, mémoïsé, gelé, ordre total, refus du
     // vide par base) ; un LISTAGE de dossier passe par `listerDossier`/`listerArbre`. La marche brute
     // n'est plus écrivable ici — ni par import nommé, ni par membre, ni par déstructuration.
-    // PÉRIMÈTRE PAR COUCHE : `src/engine`, `src/state` et la racine de `src`. `src/ui`, `src/gameIso`,
-    // `src/audio` et `src/scenes` entrent au train C3c-2 ; `src/data/**` est IGNORÉ par ESLint
-    // (`ignores` de tête) et entre au train C3c-3, avec la levée de cet `ignores` pour ses tests.
+    // PÉRIMÈTRE PAR COUCHE : `src/engine`, `src/state`, la racine de `src` (C3c-1), puis `src/ui`,
+    // `src/gameIso`, `src/audio` et `src/scenes` (C3c-2). Reste `src/data/**`, IGNORÉ par ESLint
+    // (`ignores` de tête) : il entre au train C3c-3, avec la levée de cet `ignores` pour ses tests.
     // `VERROU_MARQUES` est REDIT : en flat config, le dernier bloc qui déclare `no-restricted-syntax`
     // REMPLACE ses options — c'est la seule option que ces tests résolvent aujourd'hui (mesuré sur la
     // config résolue, cf. `src/eslint-ordre-total-et-purete.test.ts`), l'omettre désarmerait #1262/#1318.
@@ -362,11 +365,26 @@ export default tseslint.config(
     files: [
       'src/engine/**/*.test.ts', 'src/engine/**/*.test.tsx',
       'src/state/**/*.test.ts', 'src/state/**/*.test.tsx',
+      'src/ui/**/*.test.ts', 'src/ui/**/*.test.tsx',
+      'src/gameIso/**/*.test.ts', 'src/gameIso/**/*.test.tsx',
+      'src/audio/**/*.test.ts', 'src/audio/**/*.test.tsx',
+      'src/scenes/**/*.test.ts', 'src/scenes/**/*.test.tsx',
       'src/*.test.ts', 'src/*.test.tsx',
     ],
     rules: {
       'no-restricted-imports': ['error', ORDRE_TOTAL_IMPORTS],
       'no-restricted-syntax': ['error', ...VERROU_MARQUES, ...VERROU_LISTAGE],
+    },
+  },
+  {
+    // … et la POLICE DE LA POSSESSION redite pour les TESTS de `src/ui` : le bloc ci-dessus déclare
+    // `no-restricted-imports`, donc il REMPLACE les options que ces fichiers résolvaient (mesuré :
+    // eux seuls, parmi les sept couches, portaient une `no-restricted-imports`). Les deux volets se
+    // posent ICI dans la MÊME option — `paths` pour la marche brute, `patterns` pour la possession —,
+    // chacun depuis sa constante : rien n'est recopié, et le mur reste le même pour toutes les couches.
+    files: ['src/ui/**/*.test.ts', 'src/ui/**/*.test.tsx'],
+    rules: {
+      'no-restricted-imports': ['error', { ...ORDRE_TOTAL_IMPORTS, patterns: POLICE_POSSESSION }],
     },
   },
 );

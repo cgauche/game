@@ -16,10 +16,9 @@
  * effet de bord d'un autre lot.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
-const RACINE = join(process.cwd(), 'src');
+const RACINE = 'src';
 
 /** Fichiers AUTORISÉS à nommer la touche : le registre en est la source (`CODE_ECHAP`). */
 const SOURCE = ['src/state/keybindings.ts'];
@@ -38,24 +37,14 @@ const BASELINE: Record<string, number> = {
   'src/ui/editor/EditorToolbar.tsx': 1,
 };
 
-function fichiers(dir: string, acc: string[] = []): string[] {
-  for (const nom of readdirSync(dir)) {
-    const p = join(dir, nom);
-    if (statSync(p).isDirectory()) fichiers(p, acc);
-    else if (/\.tsx?$/.test(nom) && !/\.test\.tsx?$/.test(nom)) acc.push(p);
-  }
-  return acc;
-}
-
 const PORTE = /(['"])Escape\1/g;
 
 describe('Échap : une seule couture (#1476)', () => {
   it('aucune porte NEUVE, et les portes restantes ne grossissent pas', () => {
     const compte: Record<string, number> = {};
-    for (const p of fichiers(RACINE)) {
-      const rel = relative(process.cwd(), p).split(sep).join('/');
+    for (const { rel, text } of readCorpus([RACINE])) {
       if (SOURCE.includes(rel)) continue;
-      const n = (readFileSync(p, 'utf8').match(PORTE) ?? []).length;
+      const n = (text.match(PORTE) ?? []).length;
       if (n > 0) compte[rel] = n;
     }
     const neuves = Object.keys(compte).filter((f) => !(f in BASELINE));

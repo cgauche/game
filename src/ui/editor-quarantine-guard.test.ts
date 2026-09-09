@@ -16,9 +16,8 @@ import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
  */
 
 /** Les `.ts(x)` de `src/**` hors tests (corpus rendu par la primitive de marche `readCorpus`), moins
- *  `src/ui/editor/**` — l'atelier peut s'auto-référencer — et moins les déclarations `.d.ts`. */
-const scanFiles = () =>
-  readCorpus(['src']).filter((f) => !f.rel.startsWith('src/ui/editor/') && !f.rel.endsWith('.d.ts'));
+ *  `src/ui/editor/**` — l'atelier peut s'auto-référencer. */
+const scanFiles = () => readCorpus(['src']).filter((f) => !f.rel.startsWith('src/ui/editor/'));
 
 /** Import nommant `opSummary`/`formulaSummary`/`condSummary` DEPUIS `editor/GameOpEditor`/
  *  `editor/ConditionEditor` — ZÉRO exemption. */

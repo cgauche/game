@@ -4,9 +4,10 @@
  * abonnements quel que soit le nombre d'hôtes installés.
  */
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 import { bus, EVT } from '../../state/bus';
 import { PLAN_ATTACK_IMPACT_MS } from '../rig/anim/actorAnimSelect';
 import {
@@ -186,25 +187,11 @@ const DEFINITION = 'src/gameIso/fx/animTracks.ts';
 const HOTE_AFFINE = 'src/gameIso/useRigAnim.ts';
 const EMISSION_AFFINE = 'bus.emit(EVT.ANIM_IMPACT';
 
-function fichiersProd(): string[] {
-  const out: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e) && !/\.(test|d)\.tsx?$/.test(e)) out.push(p);
-    }
-  };
-  walk(join(ROOT, 'src'));
-  return out;
-}
-
 describe('contrat d’émission unique d’ANIM_IMPACT (verrou structurel)', () => {
   it('un appelant de PRODUCTION d’installAnimTracks interdit l’émission de useRigAnim', () => {
-    const appelants = fichiersProd()
-      .map((f) => [relative(ROOT, f).split('\\').join('/'), readFileSync(f, 'utf8')] as const)
-      .filter(([rel, src]) => rel !== DEFINITION && /\binstallAnimTracks\s*\(/.test(src))
-      .map(([rel]) => rel);
+    const appelants = readCorpus(['src'])
+      .filter(({ rel, text }) => rel !== DEFINITION && /\binstallAnimTracks\s*\(/.test(text))
+      .map(({ rel }) => rel);
     const émetEncore = readFileSync(join(ROOT, HOTE_AFFINE), 'utf8').includes(EMISSION_AFFINE);
     expect(
       émetEncore ? appelants : [],

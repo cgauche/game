@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { listerDossier } from '../../../../../scripts/guards/lib/lister.mjs';
 
 /**
  * CLIQUET — migration de la jambe vers le GABARIT partagé (#633 Lot 0).
@@ -11,8 +12,8 @@ import { dirname, join } from 'node:path';
  * lissé UNE fois ; une tenue le consomme (ou compose le corps via `BODIES.`). Ce cliquet scanne les
  * SOURCES `defs/*.ts` : un `jambes:` qui n'appelle NI `jambeVetue(` NI `BODIES.` est encore INLINE.
  *
- *   1. `JAMBE_LEGACY` — dette gelée : les defs encore inline (stock initial mesuré = 103). Ne peut que
- *      DÉCROÎTRE (cible 0). Un def migré doit SORTIR de ce stock dans le même commit (sinon `perimees`).
+ *   1. `JAMBE_INLINE` — les defs dont la jambe est encore inline. Ce stock ne peut que DÉCROÎTRE
+ *      (cible 0, plafond `PLAFOND_INLINE`) : un def migré en SORT dans le même commit (sinon `perimees`).
  *   2. `JAMBE_SILHOUETTE_OVERRIDES` — silhouettes ASSUMÉES (jambe volontairement hors gabarit) :
  *      plafond `MAX_OVERRIDES = 8`, vide au départ.
  *
@@ -21,10 +22,8 @@ import { dirname, join } from 'node:path';
  * est migré échoue (`perimees` : le stock ment). Solder = migrer PUIS retirer du stock.
  */
 
-// Stock initial mesuré (grep des `jambes:` sans `jambeVetue(`/`BODIES.` sur defs/*.ts, 2026-07-22).
-// Lot 1 PILOTE (#633) : soldés (migrés au gabarit `jambeVetue`) — charlatan, chevalier,
-// chevaucheur-de-blaireau, soldat, sorcier, villageois (103→97).
-const JAMBE_LEGACY: ReadonlySet<string> = new Set([
+// Les defs dont la jambe est encore INLINE : un `jambes:` sans `jambeVetue(` ni `BODIES.`.
+const JAMBE_INLINE: ReadonlySet<string> = new Set([
   'agitateur', 'apothicaire', 'archer', 'arquebusier', 'artilleur', 'artilleur-de-navire', 'artisan',
   'artiste', 'bailli', 'batelier', 'boucher-ogre', 'bourgeois', 'cartographe', 'cavalier',
   'cavalier-leger', 'chansonnier', 'chasseur', 'chasseur-de-primes',
@@ -43,7 +42,8 @@ const JAMBE_LEGACY: ReadonlySet<string> = new Set([
   'sorcier-dissident', 'spadassin', 'specialiste-de-siege', 'squelette', 'suiveur-de-camp', 'tueur',
   'vampire', 'vermine-de-choc', 'voleur',
 ]);
-const INITIAL_LEGACY = 103;
+// Plafond du stock : il ne peut que BAISSER — migrer une jambe l'abaisse, rien ne le relève.
+const PLAFOND_INLINE = 103;
 
 // Silhouettes ASSUMÉES hors gabarit — vide au départ ; plafond gelé ICI (la baisse est le seul geste).
 const JAMBE_SILHOUETTE_OVERRIDES: ReadonlySet<string> = new Set<string>([]);
@@ -77,7 +77,7 @@ function idOf(src: string, file: string): string {
 /** ids des defs dont la jambe est encore INLINE (ni `jambeVetue(` ni `BODIES.`). */
 function inlineJambeIds(): Set<string> {
   const found = new Set<string>();
-  for (const file of readdirSync(DEFS_DIR).filter((f) => f.endsWith('.ts')).sort()) {
+  for (const file of listerDossier(DEFS_DIR).filter((f) => f.endsWith('.ts'))) {
     const src = readFileSync(join(DEFS_DIR, file), 'utf8');
     if (!/jambes:/.test(src)) continue;
     const migrated = /jambeVetue\s*\(/.test(src) || /BODIES\./.test(jambesRegion(src));
@@ -95,24 +95,24 @@ function ratchet(found: ReadonlySet<string>, stock: ReadonlySet<string>) {
 
 describe('jambe : migration vers le gabarit partagé (cliquet #633 Lot 0)', () => {
   const found = inlineJambeIds();
-  const stock = new Set([...JAMBE_LEGACY, ...JAMBE_SILHOUETTE_OVERRIDES]);
+  const stock = new Set([...JAMBE_INLINE, ...JAMBE_SILHOUETTE_OVERRIDES]);
 
   it('aucune jambe inline NEUVE, et un id soldé ne traîne pas hors stock', () => {
     const { neuves } = ratchet(found, stock);
     expect(neuves, `Jambe(s) INLINE hors stock — consommer \`jambeVetue(\`/\`BODIES.\`, ou (silhouette\n` +
-      `assumée) inscrire dans JAMBE_SILHOUETTE_OVERRIDES. Un id retiré de JAMBE_LEGACY encore inline\n` +
+      `assumée) inscrire dans JAMBE_SILHOUETTE_OVERRIDES. Un id retiré de JAMBE_INLINE encore inline\n` +
       `RETOMBE ici :\n  ${neuves.join('\n  ')}`).toEqual([]);
   });
 
   it('le stock ne MENT pas : un id migré en sort', () => {
     const { perimees } = ratchet(found, stock);
-    expect(perimees, `Clés de stock qui ne sont plus inline (migrées) — les RETIRER de JAMBE_LEGACY /\n` +
-      `JAMBE_SILHOUETTE_OVERRIDES, sinon le stock surestime la dette :\n  ${perimees.join('\n  ')}`).toEqual([]);
+    expect(perimees, `Clés de stock qui ne sont plus inline (migrées) — les RETIRER de JAMBE_INLINE /\n` +
+      `JAMBE_SILHOUETTE_OVERRIDES, sinon le stock surestime ce qui reste à migrer :\n  ${perimees.join('\n  ')}`).toEqual([]);
   });
 
-  it('la dette LEGACY ne peut que DÉCROÎTRE (cible 0)', () => {
-    expect(JAMBE_LEGACY.size, `JAMBE_LEGACY a GONFLÉ (${JAMBE_LEGACY.size} > ${INITIAL_LEGACY}). Solder une jambe\n` +
-      `= la migrer au gabarit et la retirer du stock — jamais allonger la liste.`).toBeLessThanOrEqual(INITIAL_LEGACY);
+  it('le stock des jambes inline ne peut que DÉCROÎTRE (cible 0)', () => {
+    expect(JAMBE_INLINE.size, `JAMBE_INLINE a GONFLÉ (${JAMBE_INLINE.size} > ${PLAFOND_INLINE}). Solder une jambe\n` +
+      `= la migrer au gabarit et la retirer du stock — jamais allonger la liste.`).toBeLessThanOrEqual(PLAFOND_INLINE);
   });
 
   it('les silhouettes assumées restent plafonnées', () => {

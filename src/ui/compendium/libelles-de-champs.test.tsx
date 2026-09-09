@@ -13,8 +13,9 @@
  * reste le SEUL document registré sans méta (schéma d'UNION, hors des vagues d'adoption), et c'est lui
  * qui sert de témoin au canal « document sans méta » ci-dessous.
  */
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { z } from 'zod';
@@ -348,12 +349,15 @@ export function defsSansExportsPlats(sources: { file: string; src: string }[]): 
     .map((r) => `${r.file} : manque ${r.manquants.join(', ')}`);
 }
 
+/** Les modules DIRECTS des racines de defs : la population est celle du générateur, qui liste chaque
+ *  racine À PLAT (`scripts/gen-registry.mjs:371,543,582` — aucune récursion) ; un module posé dans un
+ *  sous-dossier n'entre pas au registre, il n'a donc pas la convention à tenir. Le corpus est
+ *  récursif : la profondeur se borne ICI, comme la garde le mesure. */
 function sourcesDesDefs(): { file: string; src: string }[] {
-  return RACINES_DE_DEFS.flatMap((dir) =>
-    readdirSync(dir)
-      .filter((f) => /\.tsx?$/.test(f) && !f.startsWith('_') && !/\.test\.tsx?$/.test(f))
-      .map((f) => ({ file: `${dir}/${f}`, src: readFileSync(join(dir, f), 'utf8') })),
-  );
+  return readCorpus(RACINES_DE_DEFS)
+    .filter(({ rel }) => RACINES_DE_DEFS.some((dir) => rel.startsWith(`${dir}/`) && !rel.slice(dir.length + 1).includes('/')))
+    .filter(({ rel }) => !rel.slice(rel.lastIndexOf('/') + 1).startsWith('_'))
+    .map(({ rel, text }) => ({ file: rel, src: text }));
 }
 
 describe('convention d’export lue par le générateur de registre', () => {

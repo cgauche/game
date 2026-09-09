@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import ts from 'typescript';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Garde-fou « réf de livre hors surface Codex » (#601, même classe que #596).
@@ -23,7 +23,6 @@ import { fileURLToPath } from 'node:url';
  */
 
 const UI_DIR = fileURLToPath(new URL('.', import.meta.url));
-const ROOT = join(UI_DIR, '../..');
 
 /** Sigles des livres autorisés (§ Sources VF) suivis d'un numéro de chapitre/fiche. */
 const BOOK_REF = /\b(LDB|MDG|EDOC|EDO|ADE2?|ACE|T2C|NADJ|ZI|AA)\s+\d+/;
@@ -48,18 +47,8 @@ const BOOK_REF = /\b(LDB|MDG|EDOC|EDO|ADE2?|ACE|T2C|NADJ|ZI|AA)\s+\d+/;
  */
 const AUTHORING_DIRS = ['src/ui/compendium/', 'src/ui/editor/'];
 
-function walk(dir: string, out: string[] = []): string[] {
-  for (const name of readdirSync(dir)) {
-    const p = join(dir, name);
-    if (statSync(p).isDirectory()) walk(p, out);
-    else if (/\.tsx?$/.test(p) && !/\.test\.tsx?$/.test(p)) out.push(p);
-  }
-  return out;
-}
-
 /** Nœuds RENDUS uniquement — les commentaires (trivia) ne sont jamais visités. */
-function renderedBookRefs(file: string): { line: number; text: string }[] {
-  const src = readFileSync(file, 'utf8');
+function renderedBookRefs(file: string, src: string): { line: number; text: string }[] {
   const sf = ts.createSourceFile(file, src, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const hits: { line: number; text: string }[] = [];
   const visit = (node: ts.Node): void => {
@@ -76,15 +65,12 @@ function renderedBookRefs(file: string): { line: number; text: string }[] {
   return hits;
 }
 
-const posix = (p: string): string => relative(ROOT, p).replace(/\\/g, '/');
-
 describe('réfs de livre — réservées au Codex et aux surfaces d’authoring (#601)', () => {
   it('aucune surface de JEU de src/ui ne rend une référence de livre', () => {
     const offenders: string[] = [];
-    for (const file of walk(UI_DIR)) {
-      const rel = posix(file);
+    for (const { rel, text } of readCorpus(['src/ui'])) {
       if (AUTHORING_DIRS.some((d) => rel.startsWith(d))) continue;
-      for (const h of renderedBookRefs(file)) offenders.push(`${rel}:${h.line} — « ${h.text} »`);
+      for (const h of renderedBookRefs(rel, text)) offenders.push(`${rel}:${h.line} — « ${h.text} »`);
     }
     expect(offenders, `Réf de livre rendue hors Codex (retirer la réf ; si la glose porte une RÈGLE, la relier par <CodexRef> à son entrée réelle) :\n${offenders.join('\n')}`).toEqual([]);
   });

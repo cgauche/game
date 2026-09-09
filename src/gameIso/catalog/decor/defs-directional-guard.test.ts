@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listerDossier } from '../../../../scripts/guards/lib/lister.mjs';
 
 // Garde STRUCTURELLE : la SÉLECTION DE VUE d'un prop directionnel vit dans la MACHINERIE (`propSvg`,
 // `catalog/decor/index.ts`), JAMAIS dans une def. Une def déclare ses trois vues (`PropViz.views`) ;
@@ -23,7 +24,7 @@ const FORBIDDEN: { pattern: RegExp; why: string }[] = [
 const stripComments = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
 
 describe('props directionnels — sélection de vue hors des defs', () => {
-  const files = readdirSync(DEFS_DIR).filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'));
+  const files = listerDossier(DEFS_DIR).filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'));
 
   it('aucune def ne projette dir/camRot ni ne sélectionne de vue', () => {
     const offenders: string[] = [];

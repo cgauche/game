@@ -1,6 +1,7 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
+import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import { parseProject, type ProjectDoc } from '../state/worldMap';
 import { validateScene } from '../state/validateScene';
 import { emptyScene } from '../state/scene';
@@ -23,17 +24,8 @@ import type { Flow } from '../state/flow';
  */
 const SCENES_DIR = join(__dirname);
 
-function findBundledProjectFiles(dir: string): string[] {
-  const out: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...findBundledProjectFiles(full));
-    else if (entry.isFile() && entry.name.endsWith('-projet.json')) out.push(full);
-  }
-  return out;
-}
-
-const bundledFiles = findBundledProjectFiles(SCENES_DIR);
+const bundledFiles = listerArbre(SCENES_DIR, { filtre: (rel) => rel.endsWith('-projet.json') })
+  .map((rel) => join(SCENES_DIR, rel));
 
 /** Erreurs de contenu d'un paquet, chacune NOMMANT son fautif (scène / portée / réf) — jamais un compte. */
 function erreursDe(doc: Pick<ProjectDoc, 'scenes' | 'worldMap'>): string[] {
@@ -351,15 +343,8 @@ function proseSourcees(node: unknown, chemin: string, out: ProseSourcee[]): void
   for (const [key, value] of Object.entries(rec)) proseSourcees(value, `${chemin}.${key}`, out);
 }
 
-function fichiersMd(dir: string): string[] {
-  const out: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...fichiersMd(full));
-    else if (entry.isFile() && entry.name.endsWith('.md')) out.push(full);
-  }
-  return out;
-}
+const fichiersMd = (dir: string): string[] =>
+  listerArbre(dir, { filtre: (rel) => rel.endsWith('.md') }).map((rel) => join(dir, rel));
 
 const texteParLivre = new Map<string, string>();
 /** Tout le texte extrait d'un livre, en un seul tampon — la garde cherche le TEXTE, pas un chapitre. */

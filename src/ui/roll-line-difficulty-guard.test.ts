@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * CLIQUET — une LIGNE DE JET fabriquée à la main DIT sa Difficulté (#1112 G8b). Le contrat : une ligne
@@ -13,17 +11,7 @@ import { fileURLToPath } from 'node:url';
  * Stock NOMINATIF (fichier + nombre), plafond COLLÉ et décroissant : assainir un site l'ABAISSE.
  */
 
-const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-
-function walk(dir: string): string[] {
-  const out: string[] = [];
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) { out.push(...walk(p)); continue; }
-    if (/\.tsx?$/.test(e) && !e.includes('.test.')) out.push(p);
-  }
-  return out;
-}
+const SCAN_DIRS = ['src/ui', 'src/state'];
 
 /** Littéraux de LIGNE DE JET sans `difficulty` — exporté pour la preuve fail-closed. */
 export function scanHandmadeRollLines(src: string): number[] {
@@ -59,9 +47,9 @@ const BASELINE: Record<string, number> = {};
 describe('cliquet — une ligne de jet fabriquée à la main dit sa Difficulté (#1112 G8b)', () => {
   it('aucun site NEUF, et toute baseline assainie est ABAISSÉE', () => {
     const counts: Record<string, number[]> = {};
-    for (const f of [...walk(join(ROOT, 'src', 'ui')), ...walk(join(ROOT, 'src', 'state'))]) {
-      const hits = scanHandmadeRollLines(readFileSync(f, 'utf8'));
-      if (hits.length) counts[relative(ROOT, f).split(sep).join('/')] = hits;
+    for (const { rel, text } of readCorpus(SCAN_DIRS)) {
+      const hits = scanHandmadeRollLines(text);
+      if (hits.length) counts[rel] = hits;
     }
     const over: string[] = [];
     for (const [f, l] of Object.entries(counts)) {

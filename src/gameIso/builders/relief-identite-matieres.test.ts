@@ -13,9 +13,11 @@ import { matieresDe } from '../../data';
  * (`terrains.json › matiere`), toute autre paroi prend celle que la SCÈNE pose pour cette partie
  * (`scene.reliefDefaults[part]`) ; les montants de pilotis prennent `reliefDefaults.pilier`.
  *
- * Le balayage est dérivé du REGISTRE (scénarios générés + campagnes intégrées) — aucun cardinal de
- * faces en dur : ajouter une scène ou une matière rejoue le contrat sans toucher ce fichier. Un
- * plancher dérivé du registre empêche un scan vide de rester vert.
+ * Le balayage est dérivé du REGISTRE (scénarios générés + campagnes intégrées) — aucun cardinal en
+ * dur : ajouter une scène ou une matière rejoue le contrat sans toucher ce fichier. La non-vacuité
+ * se mesure par GISEMENT et non sur le total : le registre des scénarios porte au moins une scène, et
+ * CHAQUE campagne intégrée porte les siennes — un gisement qui s'ampute se nomme, là où un total
+ * comparé à sa propre somme serait vrai de tout registre, y compris amputé.
  */
 
 /** Toutes les scènes LIVRÉES : un scénario du registre porte sa scène, une campagne les siennes. */
@@ -23,8 +25,6 @@ const scenesLivrees = (): { nom: string; scene: Scene }[] => [
   ...testScenarios.map((s) => ({ nom: `scenario:${s.id}`, scene: s.scene })),
   ...allBuiltinCampaigns.flatMap((c) => (c.scenes ?? []).map((scene) => ({ nom: `campagne:${c.id}/${scene.id}`, scene }))),
 ];
-const plancherScenes = (): number =>
-  testScenarios.length + allBuiltinCampaigns.reduce((n, c) => n + (c.scenes?.length ?? 0), 0);
 
 /** `<scène> (x,y,z) <part> <side> : id émis ≠ id posé par la donnée` — une ligne par écart. */
 function ecarts(nom: string, scene: Scene): { fautes: string[]; faces: number; idsEmis: Set<string> } {
@@ -53,10 +53,12 @@ describe('matières de relief — l’id émis est celui de la DONNÉE (toutes s
   const livrees = scenesLivrees();
   const mesures = livrees.map(({ nom, scene }) => ecarts(nom, scene));
 
-  it('le balayage porte sur toutes les scènes livrées et émet des faces de relief', () => {
-    expect(livrees.length).toBe(plancherScenes());
-    expect(livrees.length).toBeGreaterThan(40);
-    expect(mesures.reduce((n, m) => n + m.faces, 0)).toBeGreaterThan(0);
+  it('chaque gisement de scènes livrées alimente le balayage, et le balayage émet des faces de relief', () => {
+    expect(testScenarios.length, 'le registre des scénarios ne porte plus aucune scène').toBeGreaterThan(0);
+    for (const c of allBuiltinCampaigns) {
+      expect(c.scenes?.length ?? 0, `campagne « ${c.id} » : aucune scène livrée — elle n’entre plus dans la mesure`).toBeGreaterThan(0);
+    }
+    expect(mesures.reduce((n, m) => n + m.faces, 0), 'aucune face de relief émise : le contrat porterait sur rien').toBeGreaterThan(0);
   });
 
   it('chaque face de relief porte l’id que la donnée pose (terrain à bloc plein, sinon la scène)', () => {

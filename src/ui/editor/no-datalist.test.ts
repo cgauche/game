@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Garde bloquante #286 : `<datalist>` hand-rollé interdit dans l'UI — `RefField`
@@ -20,8 +18,7 @@ import { fileURLToPath } from 'node:url';
  * Ce stock reste GELÉ et VISIBLE au cliquet : toute HAUSSE échoue, toute BAISSE abaisse la baseline.
  */
 
-const UI = fileURLToPath(new URL('..', import.meta.url)); // src/ui/editor/ → src/ui/
-const ROOT = fileURLToPath(new URL('../../../', import.meta.url)); // racine du repo
+const UI = 'src/ui';
 
 const EXCLUDED = (rel: string) => rel === 'src/ui/compendium/RefField.tsx';
 
@@ -45,19 +42,11 @@ function stripComments(src: string): string {
 
 function countsByFile(): Record<string, number> {
   const counts: Record<string, number> = {};
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e) && !/\.test\./.test(e)) {
-        const rel = relative(ROOT, p).split('\\').join('/');
-        if (EXCLUDED(rel)) continue;
-        const n = (stripComments(readFileSync(p, 'utf8')).match(/<datalist\b/g) ?? []).length;
-        if (n > 0) counts[rel] = n;
-      }
-    }
-  };
-  walk(UI);
+  for (const { rel, text } of readCorpus([UI])) {
+    if (EXCLUDED(rel)) continue;
+    const n = (stripComments(text).match(/<datalist\b/g) ?? []).length;
+    if (n > 0) counts[rel] = n;
+  }
   return counts;
 }
 

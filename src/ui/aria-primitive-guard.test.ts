@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Garde structurelle #414 — les rôles ARIA COMPOSITES à roving tabindex (`listbox`/`radiogroup`/
@@ -13,17 +11,15 @@ import { fileURLToPath } from 'node:url';
  * entrée sans migration dédiée.
  */
 
-const UI = fileURLToPath(new URL('.', import.meta.url)); // src/ui/
+const UI = 'src/ui';
 
-function walk(dir: string, test: (f: string) => boolean, acc: string[] = []): string[] {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) walk(p, test, acc);
-    else if (test(e)) acc.push(p);
-  }
-  return acc;
+/** Les composants de `src/ui`, hors tests — chemin DEPUIS `src/ui/`, la forme des tables ci-dessous. */
+function composants(): { chemin: string; code: string }[] {
+  return readCorpus([UI], { exts: ['.tsx'] }).map(({ rel, text }) => ({
+    chemin: rel.slice(UI.length + 1),
+    code: text,
+  }));
 }
-const rel = (abs: string) => abs.slice(UI.length).split('\\').join('/');
 
 /** Une réf de rôle dans un commentaire (JSDoc, JSX) n'est pas une pose réelle du widget. */
 function stripComments(src: string): string {
@@ -68,11 +64,9 @@ function rolesIn(src: string): CompositeRole[] {
 
 describe('#414 — widgets ARIA composites = propriété des primitives (baseline gelée, croissance bloquée)', () => {
   it('aucun rôle composite hors-propriétaire au-delà du stock gelé', () => {
-    const files = walk(UI, (e) => e.endsWith('.tsx') && !e.endsWith('.test.tsx'));
     const offenders: string[] = [];
-    for (const f of files) {
-      const path = rel(f);
-      const src = stripComments(readFileSync(f, 'utf8'));
+    for (const { chemin: path, code } of composants()) {
+      const src = stripComments(code);
       for (const role of new Set(rolesIn(src))) {
         if (OWNERS[role].includes(path)) continue;
         if (BASELINE[path]?.includes(role)) continue;
