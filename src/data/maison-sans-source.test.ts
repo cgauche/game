@@ -86,8 +86,13 @@ const TOTAL_GELE = 50;
  * `schemas/defs/terrains.ts`). Ces règles vivaient NON TAGUÉES dans 25 modules TS : le stock ne
  * croît pas, il devient visible. Il n'est pas attendu à décroître — aucun folio n'imprime de
  * catalogue de sols.
+ *
+ * `buildings.json` (7) ENTRE le 2026-09-09 (#1715) par le MÊME chemin : le document est de l'art et
+ * exempté au dataset, et chaque entrée dit ce que CE bâtiment arbitre (son empreinte de pose, sa
+ * couverture, son ornement) — `maison` y est EXIGÉE (`exiges` de `schemas/defs/buildings.ts`). Ces
+ * arbitrages vivaient NON TAGUÉS dans 7 modules TS : le stock ne croît pas, il devient visible.
  */
-const MASQUES_GELES: Record<string, number> = { 'actions.json': 29, 'props.json': 41, 'terrains.json': 25 };
+const MASQUES_GELES: Record<string, number> = { 'actions.json': 29, 'buildings.json': 7, 'props.json': 41, 'terrains.json': 25 };
 
 const lire = (dir: string, f: string): unknown => JSON.parse(readFileSync(join(dir, f), 'utf8'));
 
@@ -183,7 +188,7 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
       'sea-navigation', 'sea-perils', 'sea-weather', 'ship-construction', 'weather',
     ]);
     expect(Object.keys(SANS_LIVRE).sort()).toEqual([
-      'actions', 'ambiance', 'books', 'breath-types', 'calendarPhases', 'damage-types',
+      'actions', 'ambiance', 'books', 'breath-types', 'buildings', 'calendarPhases', 'damage-types',
       'decorPalette', 'details', 'donnees.manifest', 'groups', 'lieux-services', 'lightLevels',
       'lightTones', 'localisation', 'materials', 'merchantFamilies', 'merchants', 'names', 'pregens',
       'primitives.manifest', 'progression-schemas.derived', 'props',
@@ -200,7 +205,9 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
     // 48 → 46 : `propMaterials`/`reliefMaterials`/`roofMaterials` fusionnent en `materials` (#1686 lot 2).
     // 46 → 47 : `terrains` entre (#1690) — 25 sols qu'aucun folio n'imprime, dont les 4 champs de
     // règle par entrée sont couverts, eux, par un `maison` EXIGÉ au def.
-    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(47);
+    // 47 → 48 : `buildings` entre (#1715) — 7 types de bâtiment qu'aucun folio n'imprime, chacun
+    // portant son `maison` EXIGÉ au def.
+    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(48);
   });
 
   it('`maison` est TOUJOURS une chaîne — zéro drapeau booléen, à TOUTE profondeur des deux racines', () => {

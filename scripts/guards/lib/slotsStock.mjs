@@ -86,7 +86,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "arene-projet.json", champ: "scene", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "spells", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "start", occurrences: 9, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "arene-projet.json", champ: "style", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "traits", occurrences: 11, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "walls", occurrences: 235, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "weapon", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -109,6 +108,12 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "barge-du-sel-projet.json", champ: "scene", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "skills", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "victoryCondition", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // La référence de PROP est ADOPTÉE (`features: z.array(ref('prop', { anchor }))`, `defs/buildings.ts`)
+  // et elle RÉSOUT (4/4, volet RÉSOLUTION) : ce qui laisse la ligne ici est l'angle mort DÉCLARÉ de la
+  // référence ENVELOPPÉE — `[].features[].id` projette sur `id`, jamais sur le champ porteur `features`.
+  // Même forme que `structures.json | traits`, `vehicles.json | traits` et `ship-stations.json |
+  // requiresTrait` : elle meurt avec le dériveur d'un niveau (L3 #1473), pas par une adoption au champ.
+  { dataset: "buildings.json", champ: "features", occurrences: 4, lot: "L2/L3 #1473", date: "2026-09-09" },
   { dataset: "careerLevels.json", champ: "career", occurrences: 432, lot: "L2/L3 #1473", date: "2026-08-26" },
   // 27 → 29 (#1463 L-ref-1) : RAFRAÎCHISSEMENT DE COMPTE, pas un champ neuf — « Atelier (Ingénierie ou
   // Magie) » (alchimiste-4) devient l'emplacement `{choice:[{id,spec},{id,spec}]}` et pose 2 références
@@ -183,7 +188,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "domains.json", champ: "requiresSkill", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "domains.json", champ: "subject", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "domains.json", champ: "tables", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "domains.json", champ: "when", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "domains.json", champ: "skill", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "drunkenness.json", champ: "ops", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "etats.json", champ: "exceptSkills", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },

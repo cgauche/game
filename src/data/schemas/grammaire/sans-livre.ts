@@ -35,6 +35,8 @@ export const SANS_LIVRE: Readonly<Record<string, string>> = {
     'configuration de rendu — LES matières du monde (décor volumique, toiture, relief : couleur, réponse à la lumière, recettes de détail de surface) ; aucun folio n’imprime une teinte de surface',
   renduMonte: 'configuration de rendu — réglages d’assiette de la monture à l’écran',
   structureAppearance: 'configuration de rendu — apparences de structures bâties',
+  buildings:
+    'catalogue des TYPES DE BÂTIMENT — le DOCUMENT est de l’art (empreinte offerte à la pose, matière de couverture, ornements d’identité posés en billboard) ; aucun folio n’imprime de catalogue de bâtiments. Chacune des 7 entrées EXIGE `maison` (`exiges` de `schemas/defs/buildings.ts`) : ce qu’un bâtiment vaut en cases et sous quelle couverture est un arbitrage, et il se dit à l’entrée',
   terrains:
     'catalogue des SOLS de la grille — le DOCUMENT est de l’art (teinte, rampe de dégradé, recette de surface, décor posé) ; aucun folio n’imprime de catalogue de sols. Quatre de ses CHAMPS sont des règles et ne sont pas couverts par cette exemption : `walkable`, `priority`, `opaque` et `built` — les 25 entrées les portent toutes et EXIGENT `maison` (`exiges` de `schemas/defs/terrains.ts`)',
   teintesJeu: 'configuration de rendu — palette de teintes de l’interface de jeu',

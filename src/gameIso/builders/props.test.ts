@@ -328,7 +328,7 @@ describe('buildProps — features de façade authorées', () => {
     ];
     s.architecture = [{
       id: 'corps-auberge',
-      style: 'auberge',
+      style: 'maison',
       storeys: [],
       facades: [{
         id: 'facade-rue',

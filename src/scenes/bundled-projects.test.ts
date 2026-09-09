@@ -5,7 +5,7 @@ import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import { parseProject, type ProjectDoc } from '../state/worldMap';
 import { validateScene } from '../state/validateScene';
 import { emptyScene } from '../state/scene';
-import { books, findCrewRoleById, findNavalTrait, findVehicleById } from '../data';
+import { books, buildings, findCrewRoleById, findNavalTrait, findVehicleById } from '../data';
 import { findManannFactor } from '../engine/seaVoyage';
 import { MERCHANTS } from '../state/merchants';
 import { rigSpeciesVocab } from '../gameIso/rig/appearance';
@@ -307,6 +307,48 @@ describe('paquets de campagne bundlés — se relisent tous dans le modèle COUR
   it('CONTRE-PREUVE : un paquet ramené au format PRÉCÉDENT (schema 2, sans identité) est REFUSÉ À LA PORTE, qui NOMME `id`', () => {
     // La migration monte la forme 2→7 mais n'INVENTE aucune identité : la porte refuse, en la nommant.
     expect(() => parseProject(ENVELOPPE_SCHEMA_2({}))).toThrow(REFUS_NOMME_ID);
+  });
+
+  /**
+   * `ArchitectureBody.style` est une RÉFÉRENCE vers `buildings.json` (`idDe('building')`, #1715) : la
+   * porte résout l'id, et un corps SANS type de bâtiment reste valide (bourg, hameau, corps
+   * composite). Le sujet est un paquet FABRIQUÉ ICI : le contenu des paquets LIVRÉS est une carte que
+   * son auteur doit pouvoir retoucher sans rougir un test (arbitrage utilisateur 2026-09-07).
+   */
+  const PAQUET_ARCHITECTURE = (styles: (string | undefined)[]) => {
+    const { type: _type, ...sceneSansType } = emptyScene(6, 6) as unknown as Record<string, unknown>;
+    return {
+      schema: 2,
+      id: 'fixture-architecture',
+      label: 'Fixture',
+      versionContenu: 1,
+      scenes: [{
+        ...sceneSansType,
+        id: 'fixture-scene',
+        label: 'Fixture',
+        architecture: styles.map((style, i) => ({
+          id: `corps-${i}`,
+          ...(style === undefined ? {} : { style }),
+          storeys: [{ id: 'z0', z: 0, parts: [{ id: 'p', foot: { x: 0, y: 0, w: 2, h: 2 } }], roomZoneIds: [] }],
+          facades: [],
+          masses: [],
+        })),
+      }],
+    };
+  };
+  /** Un type de bâtiment RÉEL, dérivé du catalogue — aucun id récité ici. */
+  const TYPE_REEL = buildings[0].id;
+
+  it('un corps TYPÉ et un corps SANS type passent la porte ensemble', () => {
+    const doc = parseProject(PAQUET_ARCHITECTURE([TYPE_REEL, undefined]));
+    const corps = doc.scenes.flatMap((sc) => sc.architecture ?? []);
+    expect(corps.map((b) => b.style)).toEqual([TYPE_REEL, undefined]);
+  });
+
+  it('CONTRE-PREUVE : un `style` hors de `buildings.json` est REFUSÉ À LA PORTE, qui NOMME le champ et la valeur', () => {
+    expect(buildings.some((b) => b.id === 'bourg'), '« bourg » est devenu un type de bâtiment : la contre-preuve n’a plus de sujet.').toBe(false);
+    expect(() => parseProject(PAQUET_ARCHITECTURE(['bourg']))).toThrow(/style/);
+    expect(() => parseProject(PAQUET_ARCHITECTURE(['bourg']))).toThrow(/bourg/);
   });
 });
 

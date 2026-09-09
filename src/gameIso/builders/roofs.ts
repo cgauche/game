@@ -34,6 +34,7 @@ import { memoByRef } from '../../state/sceneMemo';
 import { aretesA } from '../../state/wallIndex';
 import { DEFAULT_ROOF_DEFAULTS, effectiveArchitecture, fittedPitchDeg, localCrossSpans } from '../../state/sceneEdit';
 import { roofMaterial } from '../catalog/roofs';
+import { buildingsMeta } from '../catalog/buildings';
 import { facadeStructureAppearance, facadeWallFeatureAppearance } from '../catalog/facades';
 import { wallApp } from '../catalog/structures';
 import { WALL_H_M, isoPxToM } from '../iso';
@@ -41,6 +42,12 @@ import { interiorZoneTilesById, occupiedInteriorZoneIds } from '../stage/roomFoc
 import { cutawayForSection, type ClearedSpace } from '../stage/architectureVisibility';
 import type { CellSide, Face, GP, RoofEl, RoofLine, RoofLineKind } from './types';
 import { viewedBuilder, type Viewed, type ViewRule } from './viewTruth';
+
+/** Le nom PEINT sur le plan pour une pièce de nappe (`authoring/roofsSvg`) : le libellé authoré du
+ *  corps, sinon celui de son TYPE de bâtiment (`buildings.json`), sinon son id technique. */
+function bodyLabel(body: ArchitectureBody): string {
+  return body.label ?? (body.style === undefined ? undefined : buildingsMeta()[body.style]?.label) ?? body.id;
+}
 
 /** Montée de la nappe par CRAN de profondeur d'avant-toit (17 px-iso), en mètres — une seule
  *  vérité px⇔m (`isoPxToM`). Les rangs de tuiles se comptent PAR cran, et le débord de soffite y lit
@@ -1325,7 +1332,7 @@ function roofGeometry(scene: Scene): Viewed<RoofEl, ClearedSpace>[] {
             span: { w: maxX - minX + 1, h: maxY - minY + 1 },
             cells: panCellsList,
             material: mass.material,
-            label: body.label ?? body.style,
+            label: bodyLabel(body),
             faces: pan.faces,
             lines: pan.lines,
             states: {
@@ -1370,7 +1377,7 @@ function roofGeometry(scene: Scene): Viewed<RoofEl, ClearedSpace>[] {
             span: { w: maxX - minX + 1, h: maxY - minY + 1 },
             cells: end.inside,
             material: mass.material,
-            label: body.label ?? body.style,
+            label: bodyLabel(body),
             faces: [{ poly: end.poly, material: { domain: 'structure', id: appearance, part: 'face' }, side: closureSide, oriented: false }],
             lines: [],
             states: { visible: true, roofOccupied: false },

@@ -386,6 +386,9 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   // #851 : Magie environnementale (`arcanePhenomena`, mode 'single', patron `waterExposure`) — ses 4
   // tableaux top-level → éditeur GÉNÉRIQUE commun (`GenericArrayField`).
   if (categoryKey === 'arcanePhenomena') add('saturationLevels', 'windSaturationEffects', 'phenomena', 'tables');
+  // #1715 : ornements d'identité d'un bâtiment — tableau d'objets HOMOGÈNES `{id, anchor}` → éditeur
+  // GÉNÉRIQUE commun (`GenericArrayField`, nœud du schéma), jamais le repli JSON.
+  if (categoryKey === 'buildings') add('features');
   return k;
 }
 
@@ -775,6 +778,8 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
         {categoryKey === 'tavernGames' && <GenericArrayField noeud={noeudDe('options')} label="options de Test (la règle en offre plusieurs — le joueur choisit)" value={entry.options as Record<string, unknown>[] | undefined} onChange={(v) => edit('options', v)} />}
         {/* Barème de points par plage de DR (`tavernGames.table` — Torchon trempé NADJ 16 l.111). */}
         {categoryKey === 'tavernGames' && <GenericArrayField noeud={noeudDe('table')} label="barème de points par plage de DR" value={entry.table as Record<string, unknown>[] | undefined} onChange={(v) => edit('table', v)} />}
+        {/* Ornements d'identité d'un bâtiment (#1715) : `{id, anchor}[]` — le nœud porte les libellés des ancrages. */}
+        {categoryKey === 'buildings' && <GenericArrayField noeud={noeudDe('features')} label="ornements d’identité (décor posé et son ancrage)" value={entry.features as Record<string, unknown>[] | undefined} onChange={(v) => edit('features', v.length ? v : undefined)} />}
         {isCreature && (
           <>
             <TraitListField label="Traits" hint="(LDB 85 — armement « Arme (Épée) +7 », Psychologie « Peur 3 »…)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />

@@ -46,7 +46,7 @@ Ce que la mesure ci-dessous **ne voit pas** — un compte n’a de sens qu’ave
 
 | Racine | Fichiers retenus | Documents | Au registre zod |
 |---|---|---|---|
-| `src/data` | `*.json` | 121 | 121 / 121 |
+| `src/data` | `*.json` | 122 | 122 / 122 |
 | `src/scenes` | `*-projet.json` (récursif) | 4 | 4 / 4 |
 
 Documents qu’AUCUNE def ne déclare : **0**.
@@ -56,9 +56,9 @@ troncature se COMPTE ici, elle ne se tait pas.
 
 ### 1bis. Index des ids (le cœur du détecteur)
 
-Identités indexées : **5886** (entrées de racine + documents embarqués) ; libellés
-normalisés : **5122**. Un id vu dans PLUSIEURS datasets rend la résolution
-AMBIGUË (jamais fausse) : **397** collisions, et **3407** ids
+Identités indexées : **5889** (entrées de racine + documents embarqués) ; libellés
+normalisés : **5128**. Un id vu dans PLUSIEURS datasets rend la résolution
+AMBIGUË (jamais fausse) : **401** collisions, et **3412** ids
 sont aussi le libellé d’une entité (faux positif possible sur la résolvabilité d’un `{text}`).
 
 | Id | Datasets |
@@ -185,6 +185,7 @@ sont aussi le libellé d’une entité (faux positif possible sur la résolvabil
 | `chaloupe` | `structures.json` `vehicles.json` |
 | `chansonnier` | `careers.json` `crew-roles.json` |
 | `chaos` | `skills.json` `talents.json` |
+| `chapelle` | `arene-projet.json` `buildings.json` |
 | `charge` | `actions.json` `activities.json` |
 | `chariot-leger` | `structures.json` `vehicles.json` |
 | `chariot-lourd` | `structures.json` `vehicles.json` |
@@ -223,6 +224,7 @@ sont aussi le libellé d’une entité (faux positif possible sur la résolvabil
 | `dragons` | `skills.json` `talents.json` |
 | `dressage` | `activities.json` `skills.json` |
 | `eau` | `obsessions.json` `terrains.json` |
+| `echoppe` | `arene-projet.json` `buildings.json` |
 | `eclaireur` | `careers.json` `skills.json` |
 | `ecriture` | `skills.json` `talents.json` |
 | `effrayant` | `spells.json` `talents.json` |
@@ -251,6 +253,7 @@ sont aussi le libellé d’une entité (faux positif possible sur la résolvabil
 | `flechette` | `spells.json` `trappings.json` |
 | `folklore` | `skills.json` `talents.json` |
 | `foret` | `arene-projet.json` `talents.json` |
+| `forge` | `arene-projet.json` `buildings.json` |
 | `fort` | `river-navigation.json` `sea-perils.json` |
 | `frisson-paralysant` | `maneuvers.json` `traits.json` |
 | `fronde` | `trappings.json` `weaponGroups.json` |
@@ -418,6 +421,7 @@ sont aussi le libellé d’une entité (faux positif possible sur la résolvabil
 | `tailleur` | `skills.json` `talents.json` |
 | `tailleur-de-pierre` | `skills.json` `talents.json` |
 | `tanneur` | `skills.json` `talents.json` |
+| `taverne` | `arene-projet.json` `buildings.json` |
 | `taverniere` | `arene-projet.json` `merchants.json` |
 | `taxes` | `skills.json` `talents.json` |
 | `tempete` | `mass-battle.json` `sea-events.json` |
@@ -535,6 +539,7 @@ nombre d’entrées qui la portent.
 | `src/data/axes.json` | array | liste | entité | 9 | `core`:boolean(6) `desc`:string(9) `id`:string(9) `label`:string(9) `maison`:string(9) `skills`:array(9) `talents`:array(3) `type`:string(9) |
 | `src/data/books.json` | array | liste | entité | 29 | `abbr`:string(29) `desc`:string(18) `dir`:string(16) `extractionDir`:string(1) `folder`:string(29) `id`:string(29) `label`:string(29) `language`:string(29) `type`:string(29) |
 | `src/data/breath-types.json` | array | liste | entité | 6 | `id`:string(6) `label`:string(6) `type`:string(6) |
+| `src/data/buildings.json` | array | liste | entité | 7 | `features`:array(4) `id`:string(7) `label`:string(7) `maison`:string(7) `roofMaterial`:string(7) `type`:string(7) |
 | `src/data/calendarIntercalary.json` | array | liste | entité | 6 | `afterMonth`:number(6) `id`:string(6) `label`:string(6) `source`:object(6) `type`:string(6) |
 | `src/data/calendarMonths.json` | array | liste | entité | 12 | `days`:number(12) `id`:string(12) `label`:string(12) `source`:object(12) `type`:string(12) |
 | `src/data/calendarPhases.json` | array | liste | entité | 7 | `icon`:string(7) `id`:string(7) `label`:string(7) `start`:number(7) `type`:string(7) |
@@ -653,7 +658,7 @@ nombre d’entrées qui la portent.
 
 ### 2.2 Fréquence globale des signatures d’entrée
 
-Signatures distinctes d’entrée de document : **618**. Les 40 plus fréquentes :
+Signatures distinctes d’entrée de document : **620**. Les 40 plus fréquentes :
 
 | Signature d’entrée | Entrées |
 |---|---|
@@ -707,19 +712,19 @@ dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGENTES.
 
 | Rôle | Clé | Statut de la clé | Documents | Documents (n entrées) |
 |---|---|---|---|---|
-| identité | `id` | cible (`string`) | 123 | actions.json(55) activities.json(63) advancementCosts.json(15) ambiance.json(1) arcane-phenomena.json(1) artillery-misfire.json(1) astrology.json(5) axes.json(9) books.json(29) breath-types.json(6) calendarIntercalary.json(6) calendarMonths.json(12) … |
+| identité | `id` | cible (`string`) | 124 | actions.json(55) activities.json(63) advancementCosts.json(15) ambiance.json(1) arcane-phenomena.json(1) artillery-misfire.json(1) astrology.json(5) axes.json(9) books.json(29) breath-types.json(6) buildings.json(7) calendarIntercalary.json(6) … |
 | identité | `key` | divergente | 0 | — |
 | identité | `nom` | divergente | 0 | — |
-| libellé | `label` | cible (`string`) | 123 | actions.json(55) activities.json(63) advancementCosts.json(15) ambiance.json(1) arcane-phenomena.json(1) artillery-misfire.json(1) astrology.json(5) axes.json(9) books.json(29) breath-types.json(6) calendarIntercalary.json(6) calendarMonths.json(12) … |
+| libellé | `label` | cible (`string`) | 124 | actions.json(55) activities.json(63) advancementCosts.json(15) ambiance.json(1) arcane-phenomena.json(1) artillery-misfire.json(1) astrology.json(5) axes.json(9) books.json(29) breath-types.json(6) buildings.json(7) calendarIntercalary.json(6) … |
 | libellé | `nom` | divergente | 0 | — |
 | sous-titre | `title` | cible | 2 | creatures.json(493) gods.json(40) |
 | prose | `desc` | cible | 41 | activities.json(62) astrology.json(5) axes.json(9) books.json(18) careers.json(108) characteristics.json(19) classes.json(9) creatures.json(196) crew-roles.json(9) domains.json(14) etats.json(21) gods.json(40) … |
 | prose | `text` | divergente | 0 | — |
 | prose | `description` | divergente | 0 | — |
 | adresse de prose | `descRef` | cible (`object`) | 0 | — |
-| type de document | `type` | cible (`string`) | 123 | actions.json(55) activities.json(63) advancementCosts.json(15) ambiance.json(1) arcane-phenomena.json(1) artillery-misfire.json(1) astrology.json(5) axes.json(9) books.json(29) breath-types.json(6) calendarIntercalary.json(6) calendarMonths.json(12) … |
+| type de document | `type` | cible (`string`) | 124 | actions.json(55) activities.json(63) advancementCosts.json(15) ambiance.json(1) arcane-phenomena.json(1) artillery-misfire.json(1) astrology.json(5) axes.json(9) books.json(29) breath-types.json(6) buildings.json(7) calendarIntercalary.json(6) … |
 | source | `source` | cible (`object`) | 75 | actions.json(12) activities.json(63) advancementCosts.json(15) artillery-misfire.json(1) astrology.json(5) calendarIntercalary.json(6) calendarMonths.json(12) calendarWeekdays.json(8) careerLevels.json(432) careers.json(108) characteristics.json(19) classes.json(9) … |
-| maison | `maison` | cible (`string`) | 20 | actions.json(30) activities.json(9) axes.json(9) creatures.json(1) crew-roles.json(7) etats.json(1) naval-traits.json(3) props.json(41) reglesOptionnelles.json(33) structures.json(24) symptoms.json(1) tables.json(1) … |
+| maison | `maison` | cible (`string`) | 21 | actions.json(30) activities.json(9) axes.json(9) buildings.json(7) creatures.json(1) crew-roles.json(7) etats.json(1) naval-traits.json(3) props.json(41) reglesOptionnelles.json(33) structures.json(24) symptoms.json(1) … |
 | méta libre | `_source` | divergente | 0 | — |
 | méta libre | `_comment` | divergente | 0 | — |
 | méta libre | `_doc` | divergente | 0 | — |
@@ -727,7 +732,7 @@ dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGENTES.
 | méta libre | `__lecture` | divergente | 0 | — |
 | méta libre | `__livres` | divergente | 0 | — |
 
-Groupes mesurés : **125** jeux d’ENTRÉES DE RACINE et **133** chemins de
+Groupes mesurés : **126** jeux d’ENTRÉES DE RACINE et **133** chemins de
 DOCUMENTS EMBARQUÉS (**2154** objets). **42** divergences
 (rôle × clé × document × chemin) au stock `STRUCTURES_ENVELOPPE` (`scripts/guards/lib/structuresStock.mjs`,
 garde `src/data/structures-contrat.test.ts`) — une ligne se solde en migrant l’enveloppe, la ligne part
@@ -743,8 +748,8 @@ Documents dont AUCUNE ENTRÉE DE RACINE ne porte `source` : **42** (lot `L1d #14
 Le DoD ajouté de #1465 annonçait « 13 datasets sans `source` » : la mesure en trouve
 **42** — le chiffre de 13 n’a pas de porteur dans l’arbre, il ne se recopie pas.
 
-Documents de racine ne portant AUCUNE clé `source` à quelque profondeur que ce soit : **35**
-(lot `L1d #1469`) — `ambiance.json` `arene-projet.json` `axes.json` `barge-du-sel-projet.json` `books.json` `breath-types.json` `calendarPhases.json` `damage-types.json` `decorPalette.json` `details.json` `donnees.manifest.json` `groups.json` `lieux-services.json` `lightLevels.json` `lightTones.json` `loup-et-saumure-projet.json` `materials.json` `merchantFamilies.json` `merchants.json` `names.json` `pregens.json` `primitives.manifest.json` `progression-schemas.derived.json` `props.json` `qualitySubtypes.json` `qualityTypes.json` `raceAppearance.json` `raw.manifest.json` `renduMonte.json` `sizes.json` `speciesRace.json` `structureAppearance.json` `systemes.manifest.json` `teintesJeu.json` `terrains.json`
+Documents de racine ne portant AUCUNE clé `source` à quelque profondeur que ce soit : **36**
+(lot `L1d #1469`) — `ambiance.json` `arene-projet.json` `axes.json` `barge-du-sel-projet.json` `books.json` `breath-types.json` `buildings.json` `calendarPhases.json` `damage-types.json` `decorPalette.json` `details.json` `donnees.manifest.json` `groups.json` `lieux-services.json` `lightLevels.json` `lightTones.json` `loup-et-saumure-projet.json` `materials.json` `merchantFamilies.json` `merchants.json` `names.json` `pregens.json` `primitives.manifest.json` `progression-schemas.derived.json` `props.json` `qualitySubtypes.json` `qualityTypes.json` `raceAppearance.json` `raw.manifest.json` `renduMonte.json` `sizes.json` `speciesRace.json` `structureAppearance.json` `systemes.manifest.json` `teintesJeu.json` `terrains.json`
 
 Documents EMBARQUÉS mesurés, par chemin :
 
@@ -757,7 +762,7 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `arcane-phenomena.json` | `tables` | 3 | `desc`(3) `die`(3) `id`(3) `label`(3) `rows`(3) `source`(3) |
 | `arcane-phenomena.json` | `windSaturationEffects` | 8 | `domainId`(8) `effects`(8) `environments`(8) `id`(8) `source`(8) `surnoms`(8) `wind`(8) |
 | `arene-projet.json` | `scenes` | 18 | `ambiance`(18) `ambientLight`(18) `architecture`(2) `desc`(18) `dialogues`(18) `dimensions`(18) `effectZones`(2) `encounters`(18) `entities`(18) `entryPoints`(1) `flags`(18) `id`(18) `label`(18) `layers`(18) `metresPerTile`(18) `music`(1) `reliefDefaults`(18) `rest`(14) `startMessage`(18) `triggers`(18) `type`(18) `walls`(2) `weather`(3) |
-| `arene-projet.json` | `scenes.architecture` | 2 | `facades`(2) `id`(2) `label`(2) `masses`(2) `storeys`(2) `style`(2) |
+| `arene-projet.json` | `scenes.architecture` | 2 | `facades`(2) `id`(2) `label`(2) `masses`(2) `storeys`(2) |
 | `arene-projet.json` | `scenes.architecture.facades` | 3 | `appearance`(3) `edges`(3) `features`(3) `id`(3) `roomZoneIds`(3) `z`(3) |
 | `arene-projet.json` | `scenes.architecture.facades.features` | 3 | `edge`(3) `id`(3) `kind`(3) `offset`(3) `width`(1) |
 | `arene-projet.json` | `scenes.architecture.masses` | 9 | `footprint`(9) `id`(9) `levels`(9) `material`(9) `pitchDeg`(9) `profile`(9) `ridge`(4) `z`(9) |
@@ -895,7 +900,7 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 
 #### A. Par défaut — sans lot de peuplement (stock `STRUCTURES_DEFAUT`)
 
-**123** documents portent au moins une clé déclarée jamais observée, **729** clés en tout
+**124** documents portent au moins une clé déclarée jamais observée, **735** clés en tout
 (stock `STRUCTURES_DEFAUT`, `scripts/guards/lib/structuresStock.mjs`, garde `src/data/structures-contrat.test.ts`).
 
 | Document | Clés | Détail |
@@ -910,6 +915,7 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 | `axes.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `source` |
 | `books.json` | 6 | `alsoIn` `descRef` `icon` `labelF` `maison` `source` |
 | `breath-types.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `buildings.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `source` |
 | `calendarIntercalary.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
 | `calendarMonths.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
 | `calendarPhases.json` | 6 | `alsoIn` `desc` `descRef` `labelF` `maison` `source` |
@@ -1098,8 +1104,8 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | reference | `choice` | historique | 14 |
 | reference | `random` | historique | 21 |
 | reference | `text` | declaree | 577 |
-| reference | `id-nu` | historique | 2222 |
-| refs | `ids-nus` | cible | 632 |
+| reference | `id-nu` | historique | 2228 |
+| refs | `ids-nus` | cible | 630 |
 | monnaie | `brass,gold,silver` | cible | 465 |
 | monnaie | `brass` | cible | 0 |
 | monnaie | `gold` | cible | 27 |
@@ -1139,16 +1145,16 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **868** (cible 400 · declaree 6 · historique 126 · divergente 336). Objets JSON parcourus : **49355**, dont **32273** portent une forme
+Lignes concept × dataset × champ × forme : **869** (cible 399 · declaree 6 · historique 127 · divergente 337). Objets JSON parcourus : **49367**, dont **32281** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **88**.
 
-Entrées de racine sans concept de valeur : **4058** sur **4145** —
+Entrées de racine sans concept de valeur : **4065** sur **4152** —
 un document n’est ni orphelin ni hors strate : ce compte est le seul porteur de ce qu’aucun concept ne revendique.
 Dont, NOMMÉES, celles qu’un concept de valeur revendiquerait sans la clause `horsDesignation` du lexique : `activities.json` 52.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-485 ligne(s), 24745 occurrence(s).
+487 ligne(s), 24755 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1175,7 +1181,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | config | `a` | `id-nu` | historique | `arene-projet.json` | 4 | — | `arene-projet.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `acts` | `act+…` | divergente | `arene-projet.json` | 1 | — | `regles.json` |  |
 | config | `ambush` | `encounter,scene` | divergente | `arene-projet.json` | 4 | — | `arene-projet.json` |  |
-| config | `appearance` | `id-nu` | historique | `arene-projet.json` | 2 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `appearance` | `id-nu` | historique | `arene-projet.json` | 2 | — | `arene-projet.json` `buildings.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `appearance` | `species` | divergente | `arene-projet.json` | 3 | — | `creatures.json` |  |
 | config | `appearance` | `species,tenue` | divergente | `arene-projet.json` | 5 | — | `careers.json` `creatures.json` `obsessions.json` `skills.json` `species.json` `talents.json` |  |
 | config | `appearance` | `species,tenue+…` | divergente | `arene-projet.json` | 12 | — | `careers.json` `creatures.json` `groups.json` `obsessions.json` `skills.json` `species.json` … |  |
@@ -1209,7 +1215,6 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | config | `scene` | `id-nu` | historique | `arene-projet.json` | 4 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `skill` | `id` | cible | `arene-projet.json` | 10 | — | `activities.json` `axes.json` `creatures.json` `drunkenness.json` `maladies.json` `river-navigation.json` … |  |
 | config | `start` | `id-nu` | historique | `arene-projet.json` | 9 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
-| config | `style` | `id-nu` | historique | `arene-projet.json` | 2 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `traits` | `arg,id` | historique | `arene-projet.json` | 3 | — | `qualities.json` `ship-construction.json` `traits.json` | paramètre d’entité non déclaré (#1463 S2 A11) |
 | config | `traits` | `arg,id,value` | historique | `arene-projet.json` | 1 | — | `spells.json` `traits.json` |  |
 | config | `traits` | `id` | cible | `arene-projet.json` | 3 | — | `spells.json` `traits.json` |  |
@@ -1237,6 +1242,8 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | config | `skills` | `id,spec,value` | cible | `barge-du-sel-projet.json` | 2 | — | `skills.json` `weaponGroups.json` | idem, spécialisation DÉSIGNÉE |
 | config | `skills` | `id,value` | cible | `barge-du-sel-projet.json` | 4 | — | `skills.json` | réf de Compétence de STATBLOC + son nombre imprimé (`refOuSpec('skill', {value})`) |
 | config | `victoryCondition` | `targetId,type+…` | divergente | `barge-du-sel-projet.json` | 1 | — | `barge-du-sel-projet.json` `sea-events.json` |  |
+| entité | `features` | `id+…` | divergente | `buildings.json` | 4 | — | `props.json` |  |
+| entité | `roofMaterial` | `id-nu` | historique | `buildings.json` | 7 | — | `materials.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `career` | `id-nu` | historique | `careerLevels.json` | 432 | — | `arene-projet.json` `careers.json` `creatures.json` `crew-roles.json` `groups.json` `interludeEvents.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `choice` | `choice>id` | historique | `careerLevels.json` | 25 | — | `qualities.json` `spells.json` `trappings.json` |  |
 | entité | `choice` | `choice>id,qualityChoice` | historique | `careerLevels.json` | 2 | — | `trappings.json` |  |
@@ -1325,6 +1332,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | config | `ref` | `id-nu` | historique | `diligence-projet.json` | 20 | — | `props.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `reliefDefaults` | `cliff,deck,pilier,ramp` | divergente | `diligence-projet.json` | 2 | — | `materials.json` `terrains.json` |  |
 | config | `scene` | `id-nu` | historique | `diligence-projet.json` | 2 | — | `diligence-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `style` | `id-nu` | historique | `diligence-projet.json` | 1 | — | `buildings.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `walls` | `appearance,structure+…` | divergente | `diligence-projet.json` | 6 | — | `structureAppearance.json` `structures.json` |  |
 | config | `walls` | `structure+…` | divergente | `diligence-projet.json` | 662 | — | `mass-battle.json` `structureAppearance.json` `structures.json` |  |
 | entité | `amount` | `bonusOf` | divergente | `domains.json` | 3 | — | `characteristics.json` |  |
@@ -1357,7 +1365,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | config | `free` | `id,value+…` | divergente | `grapple.json` | 1 | — | `etats.json` |  |
 | config | `init` | `id,value+…` | divergente | `grapple.json` | 1 | — | `etats.json` |  |
 | config | `skill` | `id` | cible | `incidents-monture.json` | 2 | — | `skills.json` |  |
-| entité | `backdrop` | `id-nu` | historique | `lieux-services.json` | 2 | — | `arene-projet.json` `lieux-services.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `backdrop` | `id-nu` | historique | `lieux-services.json` | 2 | — | `arene-projet.json` `buildings.json` `lieux-services.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `merchantArchetype` | `id-nu` | historique | `lieux-services.json` | 1 | — | `loup-et-saumure-projet.json` `merchants.json` `skills.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `parent` | `id-nu` | historique | `locations.json` | 46 | — | `locations.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `a` | `id-nu` | historique | `loup-et-saumure-projet.json` | 2 | — | `books.json` `loup-et-saumure-projet.json` `naval-ports.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
@@ -1641,7 +1649,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 
 ### 3.2 liste de références (ids nus) — `refs` (strate Référence)
 
-74 ligne(s), 632 occurrence(s).
+73 ligne(s), 630 occurrence(s).
 Reconnu par : tableau de chaînes dont au moins un élément résout
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1675,7 +1683,6 @@ Reconnu par : tableau de chaînes dont au moins un élément résout
 | config | `roomZoneIds` | `ids-nus` | cible | `diligence-projet.json` | 38 | `diligence-projet.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | config | `tiles` | `ids-nus` | cible | `diligence-projet.json` | 3 | `materials.json` `terrains.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | entité | `environments` | `ids-nus` | cible | `domains.json` | 1 | `skills.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
-| entité | `when` | `ids-nus` | cible | `domains.json` | 2 | `books.json` `skills.json` `traits.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | entité | `exceptSkills` | `ids-nus` | cible | `etats.json` | 1 | `axes.json` `creatures.json` `skills.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | entité | `grantGroups` | `ids-nus` | cible | `gods.json` | 2 | `groups.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | entité | `exceptGroups` | `ids-nus` | cible | `groups.json` | 1 | `groups.json` `raceAppearance.json` `skills.json` `traits.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
@@ -2383,15 +2390,15 @@ lexique), pas une valeur qui pointerait vers rien — le contenu de ces objets e
 clé `source` à elle seule en déclenche la majorité. Ce motif-là se solde au VOCABULAIRE (#1463 S2 :
 un nom de concept est réservé à son type), pas en curant un contenu ni en posant une enveloppe.
 
-**97** signatures orphelines, **406** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 95 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `#1553` en porte 97.
+**97** signatures orphelines, **408** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 95 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `#1553` en porte 97.
 
 | Dataset | Champ | Signature | Motif | Occurrences |
 |---|---|---|---|---|
 | `talents.json` | `matches` | `manual,skill` | clé réservée | 74 |
 | `talents.json` | `matches` | `skill` | clé réservée | 34 |
 | `careerLevels.json` | `trappings` | `count,text` | clé réservée | 25 |
+| `domains.json` | `windModifiers` | `desc,dr,source,tests,when` | clé réservée | 19 |
 | `vehicles.json` | `hull` | `bodyShape,char,propulsion,rig` | clé réservée | 18 |
-| `domains.json` | `windModifiers` | `desc,dr,source,tests,when` | clé réservée | 17 |
 | `vehicles.json` | `purchase` | `price` | clé réservée | 17 |
 | `creatures.json` | `purchase` | `availability,price` | clé réservée | 14 |
 | `vehicles.json` | `purchase` | `availability,price` | clé réservée | 14 |
@@ -2485,7 +2492,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13195** objets sur **49355** ne sont portés par AUCUNE
+Au-delà des orphelines, **13196** objets sur **49367** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -2532,8 +2539,8 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `progression-schemas.derived.json` | `3` | `characteristic,col,teinte,x` | 111 |
 | `progression-schemas.derived.json` | `4` | `characteristic,col,teinte,x` | 111 |
 | `naval-traits.json` | `bands` | `maxLengthM,value` | 103 |
+| `donnees.manifest.json` | `entrees` | `desc,files` | 95 |
 | `arene-projet.json` | `flow` | `kind,steps` | 94 |
-| `donnees.manifest.json` | `entrees` | `desc,files` | 94 |
 | `spells.json` | `target` | `kind,meters,span` | 83 |
 | `arene-projet.json` | `effect` | `desc,type` | 82 |
 | `diligence-projet.json` | `edge` | `side,x,y` | 71 |
@@ -3678,7 +3685,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 
 ## 4. Redéclarations locales dans `src/data/schemas/defs/*.ts`
 
-Littéraux d’objet zod lus : **469** ; **46** recoupent le lexique
+Littéraux d’objet zod lus : **470** ; **46** recoupent le lexique
 ou un littéral de `src/data/schemas/grammaire/`. « Schéma commun candidat » = même signature EXACTE
 qu’un littéral de la grammaire (candidat à examiner, cf. angles morts).
 
@@ -4218,7 +4225,7 @@ dans `src/data/slots-contrat.test.ts`.
 
 Ce volet est le REMPLAÇANT committé du « test FK générique » re-scopé au commentaire #1466 du 2026-08-23 : « le registre des SLOTS pour `docs/structures-donnees.md` (déclaré × observé) ».
 
-Slots déclarés : **3304** — espèce `id` **354**, espèce `acteur` **2950**.
+Slots déclarés : **3310** — espèce `id` **360**, espèce `acteur` **2950**.
 
 ### 6.1 Slots RÉSOLUBLES (espèce `id`, type du registre `_ids.generated`)
 
@@ -4231,6 +4238,8 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `activities.json` | `[].testMods[].mod\|10.rule` | `rule` | `regleOptionnelle` | liste | 2 | 2 / 2 |
 | `activities.json` | `[].worldRolls[].cible\|10.rule` | `rule` | `regleOptionnelle` | liste | 1 | 1 / 1 |
 | `axes.json` | `[].skills[].id` | `id` | `skill` | liste | 15 | 15 / 15 |
+| `buildings.json` | `[].roofMaterial` | `roofMaterial` | `material` | liste | 7 | 7 / 7 |
+| `buildings.json` | `[].features[].id` | `id` | `prop` | liste | 4 | 4 / 4 |
 | `careerLevels.json` | `[].skills[]\|0.id` | `id` | `skill` | liste | 2237 | 2237 / 2237 |
 | `careerLevels.json` | `[].skills[]\|1\|0.of[]\|0.id` | `id` | `skill` | liste | 2 | 2 / 2 |
 | `careerLevels.json` | `[].skills[]\|1\|0.of[]\|1.id` | `id` | `skill` | liste | 2 | 2 / 2 |
@@ -4438,6 +4447,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `arene-projet.json` | `scenes[].entities[].interact.flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].entities[].interact.flow\|3.test.skill.id` | `id` | `skill` | liste | 4 | 4 / 4 |
 | `arene-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].architecture[].masses[].material` | `material` | `material` | liste | 9 | 9 / 9 |
 | `arene-projet.json` | `scenes[].architecture[].roofDefaults.material` | `material` | `material` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4477,6 +4487,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `barge-du-sel-projet.json` | `scenes[].entities[].interact.flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].interact.flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].architecture[].masses[].material` | `material` | `material` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].architecture[].roofDefaults.material` | `material` | `material` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4516,6 +4527,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `diligence-projet.json` | `scenes[].entities[].interact.flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].interact.flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 1 | 1 / 1 |
 | `diligence-projet.json` | `scenes[].architecture[].masses[].material` | `material` | `material` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].architecture[].roofDefaults.material` | `material` | `material` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4555,6 +4567,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `loup-et-saumure-projet.json` | `scenes[].entities[].interact.flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].interact.flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].architecture[].masses[].material` | `material` | `material` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].architecture[].roofDefaults.material` | `material` | `material` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4582,7 +4595,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `loup-et-saumure-projet.json` | `narratif.presetsPnj[].profil.optionals[]\|2.grant[]\|1.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 
-Champs porteurs de réfs OBSERVÉES que le déclaré ATTEINT : **11** — `activities.json | rule` `arene-projet.json | material` `arene-projet.json | tiles` `barge-du-sel-projet.json | tiles` `diligence-projet.json | tiles` `loup-et-saumure-projet.json | tiles` `merchants.json | curated` `river-criticals.json | stations` `ship-criticals.json | stations` `terrains.json | matiere` `terrains.json | overlayProp`. Une jointure VIDE rendrait ce volet muet :
+Champs porteurs de réfs OBSERVÉES que le déclaré ATTEINT : **13** — `activities.json | rule` `arene-projet.json | material` `arene-projet.json | tiles` `barge-du-sel-projet.json | tiles` `buildings.json | roofMaterial` `diligence-projet.json | style` `diligence-projet.json | tiles` `loup-et-saumure-projet.json | tiles` `merchants.json | curated` `river-criticals.json | stations` `ship-criticals.json | stations` `terrains.json | matiere` `terrains.json | overlayProp`. Une jointure VIDE rendrait ce volet muet :
 la garde l’exige NON VIDE.
 
 ### 6.2 Couverture — réfs observées qu’AUCUN slot ne déclare
@@ -4592,7 +4605,7 @@ La dette d’ADOPTION du registre : un `(dataset, champ)` porteur de référence
 (`scripts/guards/lib/slotsStock.mjs`, garde `src/data/slots-contrat.test.ts`) — il se solde concept
 par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 
-**343** couples (dataset, champ) sans slot déclaré.
+**342** couples (dataset, champ) sans slot déclaré.
 
 | Dataset | Champ | Occurrences observées |
 |---|---|---|
@@ -4639,7 +4652,6 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `arene-projet.json` | `skill` | 10 |
 | `arene-projet.json` | `spells` | 2 |
 | `arene-projet.json` | `start` | 9 |
-| `arene-projet.json` | `style` | 2 |
 | `arene-projet.json` | `traits` | 11 |
 | `arene-projet.json` | `walls` | 235 |
 | `arene-projet.json` | `weapon` | 6 |
@@ -4661,6 +4673,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `barge-du-sel-projet.json` | `scene` | 2 |
 | `barge-du-sel-projet.json` | `skills` | 6 |
 | `barge-du-sel-projet.json` | `victoryCondition` | 1 |
+| `buildings.json` | `features` | 4 |
 | `careerLevels.json` | `career` | 432 |
 | `careerLevels.json` | `choice` | 29 |
 | `careerLevels.json` | `of` | 11 |
@@ -4721,7 +4734,6 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `domains.json` | `skill` | 2 |
 | `domains.json` | `subject` | 1 |
 | `domains.json` | `tables` | 8 |
-| `domains.json` | `when` | 2 |
 | `drunkenness.json` | `ops` | 1 |
 | `etats.json` | `exceptSkills` | 1 |
 | `etats.json` | `ops` | 14 |
@@ -4943,7 +4955,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 ### 6.3 Angles morts DÉCLARÉS de ce volet
 
 Source UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`) — l’espèce `acteur`
-pèse **2950** slots sur 3304.
+pèse **2950** slots sur 3310.
 
 - L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.
 - Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).
@@ -4951,4 +4963,4 @@ pèse **2950** slots sur 3304.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: d3eff139139e10de37545006cb58e96405446cf5 (372 fichiers, 10 dossiers) corps: ffb88d1cbfcdca663b65515a4a933b6394687983 -->
+<!-- sources-empreinte: 1b6a349be1f8a6fd7dd34da29dfe6f8d7edb330f (374 fichiers, 10 dossiers) corps: 2e0a2aea7c66a2cc9f28eea32c2229407bfae757 -->

@@ -70,11 +70,13 @@ function updateArchitectureBody(scene: Scene, bodyId: string, update: (body: Arc
  *  NON BORNÉ — sa dérivation (`deriveArchitectureMasses`) n'a plus d'autre arbitre que l'ordre du
  *  tableau, et deux tels corps se disputent silencieusement le même plancher : au plus UN par scène,
  *  vérifié par `validateArchitectureResiduals` (`state/mapSpec.ts`). L'auteur redimensionne ensuite ce
- *  volume (`resizeSel`) au lieu de partir d'un corps qui revendique toute la scène. */
-export function addArchitectureBody(scene: Scene, style: string, foot: Rect): { scene: Scene; id: string } {
+ *  volume (`resizeSel`) au lieu de partir d'un corps qui revendique toute la scène.
+ *  `style` est le TYPE de bâtiment (`buildings.json`), OPTIONNEL au schéma : un corps qui n'en porte
+ *  aucun est un bâti sans type (bourg, hameau, corps composite). */
+export function addArchitectureBody(scene: Scene, style: string | undefined, foot: Rect): { scene: Scene; id: string } {
   const id = nextEntityId('architecture', (scene.architecture ?? []).map((body) => body.id));
   const part: ArchitecturePart = { id: nextEntityId('part', []), foot: boundedRect(scene, foot) };
-  const body: ArchitectureBody = { id, style, storeys: [{ id: 'z0', z: 0, parts: [part], roomZoneIds: [] }], facades: [], masses: [] };
+  const body: ArchitectureBody = { id, ...(style === undefined ? {} : { style }), storeys: [{ id: 'z0', z: 0, parts: [part], roomZoneIds: [] }], facades: [], masses: [] };
   return { scene: { ...scene, architecture: [...(scene.architecture ?? []), body] }, id };
 }
 

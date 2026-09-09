@@ -631,7 +631,7 @@ describe('Inspector — orientation : les caps OFFERTS suivent le catalogue', ()
 describe('Inspector — le profil de toiture est nommé par le NŒUD, une seule fois (#1694)', () => {
   const body = {
     id: 'corps',
-    style: 'reikland',
+    style: 'taverne',
     storeys: [{ id: 'rdc', z: 0, parts: [{ id: 'p', foot: { x: 0, y: 0, w: 2, h: 2 } }], roomZoneIds: [] }],
     facades: [],
     masses: [{
@@ -705,7 +705,7 @@ describe("Inspector — le type d'un ornement de façade est nommé par le NŒUD
       ...emptyScene(4, 4),
       architecture: [{
         id: 'corps',
-        style: 'reikland',
+        style: 'taverne',
         storeys: [{ id: 'rdc', z: 0, parts: [{ id: 'p', foot: { x: 0, y: 0, w: 2, h: 2 } }], roomZoneIds: [] }],
         facades: [{
           id: 'pan-sud',

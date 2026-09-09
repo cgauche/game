@@ -84,6 +84,10 @@ const jumeauxMuets = (vocabulaires: Map<string, CompteDeNoeuds>): string[] =>
 /** Les vocabulaires NOMMÉS, par leurs options — un par `enumNomme` atteint depuis le registre. */
 const NOMMES = [
   'N|NE|E|SE|S|SO|O|NO',
+  // `domainCircumstanceSchema` (#1715) : les circonstances (météo, saison, relief, lieu, bâti) qu'un
+  // modificateur de Vent attend, et que l'appelant signale — vocabulaire FERMÉ des rubriques
+  // `VDM 04`–`VDM 11`, partagé par `windModifiers[].when` et `…cancelledBy.circumstance`.
+  'feu-proche|volcan-actif|ville-en-flammes|charnier|lieu-de-massacre|lieu-sans-mort|eau-abondante|milieu-sec|mois-sommerzeit|mois-vorgeheim|mois-ulriczeit|mois-vorhexen|tour|colline-elevee|sommet-de-montagne|en-vol|voyage-vers-equateur|metaux-abondants|temps-orageux|temps-brumeux|temps-ensoleille|brise-legere|ville|cite|pleine-nature|region-reculee|middenheim|assistance-chantee',
   'clair|pluie|brouillard|neige|tempete',
   'heroStart|personnage|prop',
   'hip|gable|shed|flat',
@@ -95,6 +99,8 @@ const NOMMES = [
   // les 7 libellés de la table LDB 85 l.346-354.
   'minuscule|tresPetite|petite|moyenne|grande|enorme|monstrueuse',
   'nord|sud|est|ouest',
+  // `buildingAnchorSchema` (#1715) : où un ornement d'identité s'accroche sur un bâtiment.
+  'ridge|facade|front',
   'tete|bras|corps|jambe',
   'toute|khorne|nurgle|slaanesh|tzeentch',
   'vue|ouie',

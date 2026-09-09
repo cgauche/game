@@ -21,6 +21,7 @@ export const IDS_PAR_DATASET: Readonly<Record<string, readonly string[]>> = {
   'axes.json': ['discretion', 'ingenierie', 'melee', 'navigation', 'negoce', 'savoir', 'social', 'soins', 'tir'],
   'books.json': ['altdorf-couronne-de-l-empire', 'archives-de-l-empire-1', 'archives-de-l-empire-2', 'archives-de-l-empire-3', 'aux-armes', 'aventures-a-ubersreik-1', 'aventures-a-ubersreik-2', 'aventures-a-ubersreik-3', 'boite-d-initiation', 'empire-en-ruine', 'empire-en-ruine-compagnon', 'ennemi-dans-l-ombre', 'ennemi-dans-l-ombre-compagnon', 'frenchy-bzh', 'livre-de-base', 'lustria', 'mer-des-griffes', 'middenheim', 'mort-sur-le-reik', 'mort-sur-le-reik-compagnon', 'nuits-agitees-et-dures-journees', 'pouvoir-derriere-le-trone', 'pouvoir-derriere-le-trone-compagnon', 'rat-cornu', 'rat-cornu-compagnon', 'reikland-miscellanea', 'salzenmund', 'vents-de-la-magie', 'zoo-imperial'],
   'breath-types.json': ['corrosif', 'electrique', 'feu', 'froid', 'fumee', 'poison'],
+  'buildings.json': ['chapelle', 'echoppe', 'forge', 'maison', 'manoir', 'taverne', 'tour'],
   'calendarIntercalary.json': ['geheimnistag', 'hexenstag', 'mitterfruhl', 'mittherbst', 'mondstille', 'sonnstill'],
   'calendarMonths.json': ['brauzeit', 'erntezeit', 'jahrdrung', 'kaldezeit', 'nachgeheim', 'nachhexen', 'pflugzeit', 'sigmarzeit', 'sommerzeit', 'ulriczeit', 'vorgeheim', 'vorhexen'],
   'calendarPhases.json': ['apresmidi', 'aube', 'crepuscule', 'matin', 'midi', 'nuit', 'soir'],

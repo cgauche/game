@@ -656,7 +656,8 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
     //   #1686 lot 2 : `propMaterials`/`roofMaterials`/`reliefMaterials` fusionnent en UN def
     //         `materials` (81 → 79) — trois defs SCELLÉS en deviennent un, la population perd 2.
     //   #1690 : `terrains` naît SCELLÉ (79 → 80) — le registre TS des 25 sols devient un dataset.
-    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 80, mesures: 0 });
+    //   #1715 : `buildings` naît SCELLÉ (80 → 81) — le registre TS des 7 types de bâtiment devient un dataset.
+    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 81, mesures: 0 });
   });
 
 });
@@ -826,6 +827,9 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
     // `opaque`, `built`) que l'exemption de document ne couvre pas — `maison` est donc exigée à
     // l'entrée, même patron que les 41 règles de `props.json` (#1680).
     'terrains.json · maison',
+    // #1715 — les 7 types de bâtiment naissent en donnée : aucun folio n'imprime de catalogue de
+    // bâtiments, chaque entrée dit ce qu'elle arbitre (empreinte, couverture, ornement).
+    'buildings.json · maison',
   ];
 
   it('la 1ʳᵉ entrée réelle de chaque def adopté est ACCEPTÉE — témoin positif de chaque paire', () => {

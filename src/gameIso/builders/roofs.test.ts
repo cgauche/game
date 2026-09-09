@@ -9,6 +9,7 @@ import { emptyScene, type BuildingMass, type Scene, type WallSeg } from '../../s
 import { addLayer, DEFAULT_ROOF_DEFAULTS, effectiveArchitecture, fillTerrainRect, paintTiles, putLayer, rederiveRoofMasses } from '../../state/sceneEdit';
 import { encloseRect, perimeterWallSegs } from '../../state/sceneEdit.testkit';
 import { diligenceCampaign } from '../../scenes/campaign';
+import { buildings } from '../../data';
 
 /**
  * Builder de TOITS du pivot : on teste la FUSION EN PANS CONTINUS (le fix de la cause racine « toit
@@ -257,6 +258,25 @@ describe('buildRoofs — masses de bâtiment (#823)', () => {
     }];
     return scene;
   };
+
+  /** Le `label` d'une pièce de nappe est PEINT sur le plan (`authoring/roofsSvg`) : sans libellé
+   *  authoré, il vaut le nom FR du TYPE de bâtiment du corps ; l'id technique n'est le repli que
+   *  lorsque le corps n'a NI libellé NI type. */
+  it('sans libellé authoré, la nappe porte le LIBELLÉ du type de bâtiment — l’id du corps n’est que le dernier repli', () => {
+    const type = buildings.find((b) => b.label !== b.id)!;
+    expect(type, 'aucun bâtiment dont le libellé diffère de l’id : le test ne distinguerait rien.').toBeTruthy();
+    // Une scène PAR cas : les nappes se mémoïsent par IDENTITÉ de scène (`memoByRef`).
+    const sansLabel = (style: string | undefined): Scene => {
+      const scene = sceneWithMasses(mass());
+      const corps = scene.architecture![0];
+      delete corps.label;
+      corps.style = style;
+      return scene;
+    };
+
+    expect(new Set(buildRoofs(sansLabel(type.id)).map((el) => el.label))).toEqual(new Set([type.label]));
+    expect(new Set(buildRoofs(sansLabel(undefined)).map((el) => el.label))).toEqual(new Set(['corps-principal']));
+  });
 
   it.each(['x', 'y'] as const)('respecte le faîtage authoré %s', (ridge) => {
     const footprint = [ridge === 'x' ? { x: 2, y: 2, w: 4, h: 2 } : { x: 2, y: 2, w: 2, h: 4 }];

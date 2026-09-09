@@ -5984,7 +5984,6 @@
     {
      "id": "bourg",
      "label": "Le Bourg de l’Arène",
-     "style": "bourg",
      "storeys": [
       {
        "id": "taverne-z0",
@@ -24419,7 +24418,6 @@
     {
      "id": "felsbach",
      "label": "Felsbach — village pesteux",
-     "style": "village",
      "storeys": [
       {
        "id": "maison-1-z0",

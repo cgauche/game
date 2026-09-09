@@ -1,30 +1,41 @@
 /**
- * Catalogue des bâtiments — DÉRIVÉ du registre `defs/` (gen-registry.mjs).
- * Ajouter un bâtiment = déposer `defs/<id>.ts` (`export const building: BuildingDef = { id, label, defaultFoot,
- * roofMaterial }`) puis `npm run gen` (auto en dev via le plugin Vite). `BUILDINGS_META` (méta sémantique,
- * pour l'éditeur) en dérive — un seul fichier par bâtiment à tenir.
+ * BÂTIMENTS — façade de lecture du dataset `src/data/buildings.json` (#1715). Ajouter un bâtiment =
+ * ajouter une entrée au dataset ; plus aucun module TS ne déclare de type de bâtiment.
+ *
+ * C'est le SEAM unique : la palette de l'éditeur et les ornements du rendu passent par les
+ * accesseurs ci-dessous, jamais par le tableau brut.
+ *
+ * LECTURE VIVE, index O(1). Le tableau exporté par `src/data/index.ts` est le binding que
+ * `setDataset` mute EN PLACE (`data/overrides.ts`) : son IDENTITÉ ne change jamais, et le témoin est
+ * la VERSION du dataset posée par le seam d'écriture (`memoParVersion`, `data/versionDataset.ts`,
+ * #1692). Des accesseurs, jamais une const de module : une entrée éditée au Codex se voit dans
+ * l'éditeur et au rendu sans rechargement.
  */
-import type { BuildingDef, BuildingFeature } from '../types';
-import { BUILDING_DEFS } from './_registry.generated';
+import { buildings } from '../../../data/index';
+import { memoParVersion } from '../../../data/versionDataset';
+import type { BuildingDef, BuildingFeature } from '../../../data/buildings.types';
 
-/** Méta sémantique d'un bâtiment pour l'éditeur (libellé d'outil, empreinte par défaut à la pose,
- *  matériau de toit par défaut). */
-export type BuildingMeta = Pick<BuildingDef, 'id' | 'label' | 'defaultFoot' | 'roofMaterial'>;
+/** Ce qu'un porteur de type de bâtiment NOMME à l'écran : l'id qu'il référence et son libellé FR. */
+export type BuildingMeta = Pick<BuildingDef, 'id' | 'label'>;
 
-export const BUILDINGS_META: Record<string, BuildingMeta> = Object.fromEntries(
-  BUILDING_DEFS.map((b) => [b.id, { id: b.id, label: b.label, defaultFoot: b.defaultFoot, roofMaterial: b.roofMaterial }]),
+const indexVif = memoParVersion('buildings', () =>
+  Object.fromEntries(buildings.map((b) => [b.id, b])) as Readonly<Record<string, BuildingDef>>,
 );
 
-/** Matériau de toit par DÉFAUT d'un style de bâtiment (id `RoofMaterialDef`, porté par le `BuildingDef`).
- *  Style absent du registre → `undefined` : l'appelant tranche, aucun matériau ne se substitue à un autre. */
-export function styleRoofMaterial(style: string): string | undefined {
-  return BUILDINGS_META[style]?.roofMaterial;
+const metaVive = memoParVersion('buildings', () =>
+  Object.fromEntries(
+    buildings.map((b) => [b.id, { id: b.id, label: b.label }]),
+  ) as Readonly<Record<string, BuildingMeta>>,
+);
+
+/** Les métas indexées par id — reconstruites à la première lecture qui suit une écriture. */
+export function buildingsMeta(): Readonly<Record<string, BuildingMeta>> {
+  return metaVive();
 }
 
-const BY_ID: Record<string, BuildingDef> = Object.fromEntries(BUILDING_DEFS.map((b) => [b.id, b]));
-
-/** Ornements d'identité d'un style de bâtiment (clocheton/cheminée/enseigne/étal), repli `[]` — lus par
- *  `builders/props` pour émettre un billboard par ornement. SÉPARÉ de `BUILDINGS_META` (méta éditeur). */
-export function buildingFeatures(style: string): BuildingFeature[] {
-  return BY_ID[style]?.features ?? [];
+/** Ornements d'identité d'un type de bâtiment (clocheton/cheminée/enseigne/étal), repli `[]` — lus par
+ *  `builders/props` pour émettre un billboard par ornement. SÉPARÉ des métas d'éditeur.
+ *  Un corps SANS type de bâtiment (`ArchitectureBody.style` absent : bourg, hameau) n'en porte aucun. */
+export function buildingFeatures(style: string | undefined): BuildingFeature[] {
+  return style === undefined ? [] : indexVif()[style]?.features ?? [];
 }

@@ -22,7 +22,7 @@ import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { tokenBodyKind } from '../../gameIso/tokenBodyKind';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import { PROPS } from '../../gameIso/catalog/decor';
-import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
+import { buildingsMeta } from '../../gameIso/catalog/buildings';
 import { FACADE_APPEARANCE_IDS } from '../../gameIso/catalog/facades';
 import { MERCHANTS } from '../../state/merchants/index';
 import { TAVERN_GAMES } from '../../engine/tavernGame';
@@ -356,13 +356,13 @@ export function Inspector({
                   />
                 </label>
                 <label className="ed-field">
-                  Style
+                  Type de bâtiment
                   <select
-                    value={architectureBody.style}
-                    onChange={(event) => updateArchitectureBody((body) => ({ ...body, style: event.target.value }))}
+                    value={architectureBody.style ?? ''}
+                    onChange={(event) => updateArchitectureBody((body) => ({ ...body, style: event.target.value || undefined }))}
                   >
-                    {!BUILDINGS_META[architectureBody.style] && <option value={architectureBody.style}>{architectureBody.style} (inconnu)</option>}
-                    {Object.values(BUILDINGS_META).map((meta) => <option key={meta.id} value={meta.id}>{meta.label}</option>)}
+                    <option value="" />
+                    {Object.values(buildingsMeta()).map((meta) => <option key={meta.id} value={meta.id}>{meta.label}</option>)}
                   </select>
                 </label>
                 <p className="hint">{architectureBody.storeys.length} étage{architectureBody.storeys.length > 1 ? 's' : ''}.</p>

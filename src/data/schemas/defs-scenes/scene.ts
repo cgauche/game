@@ -214,6 +214,12 @@ export const eaveSideSchema = z.enum(['N', 'E', 'S', 'O']);
  * `state/validateScene.ts` : le domaine `roof` porte aussi le « plan » vu du dessus.
  */
 const couvertureSchema: z.ZodType<string, string> = idDe('material', 'roof');
+/**
+ * TYPE de bâtiment d'un corps architectural (`buildings.json`) : même porte et MÊME patron de sortie
+ * que `couvertureSchema` ci-dessus — `ArchitectureBody` est un `z.infer` LU par l'éditeur, où le type
+ * est une valeur de `<select>`, et par l'authoring TS des scénarios.
+ */
+const typeDeBatimentSchema: z.ZodType<string, string> = idDe('building');
 /** Matière de RELIEF — même porte que `couvertureSchema`, sur la sous-liste `relief` de
  *  `materials.json` : une couverture de toit ou une matière de décor posée sur une falaise n'entre pas. */
 const matiereReliefSchema: z.ZodType<string, string> = idDe('material', 'relief');
@@ -304,7 +310,11 @@ export const roofDefaultsSchema = z.strictObject({
 export const architectureBodySchema = z.strictObject({
   id: z.string(),
   label: z.string().optional(),
-  style: z.string(),
+  /** TYPE de bâtiment du corps (`buildings.json`) : il porte la couverture de référence du type et
+   *  ses ornements d'identité (`buildingFeatures`, `gameIso/builders/props.ts`). ABSENT =
+   *  corps sans identité de bâtiment (un bourg, un hameau : plusieurs bâtiments sous UN corps) — la
+   *  dérivation le coiffe, aucun ornement n'est émis. */
+  style: typeDeBatimentSchema.optional(),
   storeys: z.array(architectureStoreySchema),
   facades: z.array(facadeSectionSchema),
   /** SURCHARGES (#829, cf. doc `buildingMassSchema`) — jamais l'obligation de couvrir tout le bâti à

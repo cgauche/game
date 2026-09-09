@@ -94,7 +94,9 @@ const CLES: Record<string, string> = {
   "mutations": 'bd3a933e0e43e9fd',
   // #1686 lot 3a-2 : la catégorie « Matières » ouvre (16 items, 3 groupes titrés par le libellé de
   // valeur du discriminant `domain`) — elle QUITTE du même geste la liste des orphelins ci-dessous.
-  "materials": '904ac73056ba299a',
+  // Le retrait de la matière `plafond` (relief, 0 émetteur — 4c052ca9a) enlève un item à la catégorie :
+  // l'empreinte porte la LISTE des ids, elle est recalée à la MESURE (15 items).
+  "materials": '1767440daa0f9208',
   "mutationTables": '0d6e17a2d2e12dca',
   // #1612 : la table MAISON `mendier-ennuis` entre au dataset, et sa rangée de gardes porte l'AMENDE
   // (op `money` à `Formula`, rendue par `opRows` comme toute autre op de rangée).
@@ -140,6 +142,9 @@ const CLES: Record<string, string> = {
   // `taille` entre par `meta`/`sections`, d'où une FORME inchangée. Empreinte recalée à la MESURE.
   "structures": 'de0741d264020293',
   "terrains": 'e542c259ce8b1e79',
+  // #1715 : les 7 types de bâtiment quittent le code pour `buildings.json` et entrent au Codex —
+  // empreinte MESURÉE, chaque item portant son `maison` (aucun folio n'imprime de catalogue de bâtiments).
+  "buildings": '90fe536489e3927b',
   "vehicles": 'dcc320ad1f8760a1',
   "celestialHouses": '0507cb49e07e8336',
   "groups": '72ed4fd1de352fae',
@@ -279,6 +284,7 @@ const FORME: Record<string, string> = {
   "names": 'id label sections sub',
   "structures": 'desc id label maison meta sections source sub',
   "terrains": 'id label maison meta sections',
+  "buildings": 'id label maison meta',
   "vehicles": 'desc id label meta source',
   "celestialHouses": 'desc id label source sub',
   "groups": 'id label',
@@ -555,7 +561,9 @@ describe('Codex — défaut d’enveloppe (#1467 L1b)', () => {
     // 107 → 108 : la catégorie `shipStations` apparie son dataset (#1657 B3-2b-a).
     // 108 → 109 : la catégorie `materials` apparie `materials.json` (#1686 lot 3a-2).
     // 109 → 110 : la catégorie `terrains` apparie `terrains.json` — les 25 sols quittent `PARTIELS` (#1690 lot 3).
-    expect(apparies.length).toBe(110);
+    // 110 → 111 : la catégorie `buildings` apparie `buildings.json` — les 7 types de bâtiment naissent
+    // en donnée et au Codex dans le MÊME lot (#1715), sans passer par `PARTIELS`.
+    expect(apparies.length).toBe(111);
   });
 });
 

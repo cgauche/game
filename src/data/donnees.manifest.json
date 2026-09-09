@@ -617,6 +617,12 @@
         },
         {
           "files": [
+            "buildings.json"
+          ],
+          "desc": "LES types de bâtiment — empreinte offerte à la pose, couverture par défaut des nappes de toit, ornements d'identité posés en billboard ; lu par la façade `src/gameIso/catalog/buildings`"
+        },
+        {
+          "files": [
             "ambiance.json",
             "lightLevels.json",
             "lightTones.json"

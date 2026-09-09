@@ -43,6 +43,8 @@ import materialsJson from './materials.json';
 import type { MaterialDomain, MaterialEntry, MatiereDe, PropMaterialData, RoofMaterialDef } from './materials.types';
 import terrainsJson from './terrains.json';
 import type { TerrainDef } from './terrains.types';
+import buildingsJson from './buildings.json';
+import type { BuildingDef } from './buildings.types';
 import ambianceJson from './ambiance.json';
 import teintesJeuJson from './teintesJeu.json';
 import navalTraitsJson from './naval-traits.json';
@@ -2425,6 +2427,11 @@ export const materials = materialsJson as MaterialEntry[];
  *  rampe, recette, décor posé, bloc plein) dans UNE entrée. Binding muté EN PLACE par `setDataset`
  *  (`data/overrides.ts`) : la façade `src/state/terrain` et le catalogue de rendu le lisent VIF. */
 export const terrains = terrainsJson as unknown as TerrainDef[];
+
+/** LES types de bâtiment (#1715) — empreinte et couverture par défaut à la pose, ornements d'identité
+ *  émis en billboard. Binding muté EN PLACE par `setDataset` (`data/overrides.ts`) : la façade
+ *  `src/gameIso/catalog/buildings` le lit VIF. */
+export const buildings = buildingsJson as unknown as BuildingDef[];
 
 /**
  * Les matières d'UN domaine — vue DÉRIVÉE du document, jamais un second catalogue, et jamais un

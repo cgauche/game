@@ -447,7 +447,7 @@ function sceneFacade(): Scene {
     ...emptyScene(10, 10),
     walls: [{ x: 3, y: 3, side: 'N' }],
     architecture: [{
-      id: 'corps', style: 'auberge', storeys: [{ id: 'rez', z: 0, parts: [], roomZoneIds: [] }],
+      id: 'corps', style: 'taverne', storeys: [{ id: 'rez', z: 0, parts: [], roomZoneIds: [] }],
       facades: [{
         id: 'sud', z: 0, edges: [{ x: 3, y: 3, side: 'N' }], appearance: 'auberge-relais-imperiale',
         features: [{ id: 'pignon', kind: 'gable', edge: { x: 3, y: 3, side: 'N' } }],

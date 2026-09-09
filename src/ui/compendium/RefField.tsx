@@ -54,6 +54,10 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   // du domaine `relief` (`idDe('material', 'relief')` au schéma) — le sélecteur n'offre donc QUE ce
   // domaine, une couverture de toit ou une matière de décor n'ayant rien à faire sur une falaise.
   'terrains.matiere': { ds: 'materials', single: true, filter: (e) => e.domain === 'relief' },
+  // Couverture par défaut d'un bâtiment (#1715) : le champ porte un id de `materials.json` du domaine
+  // `roof` (`idDe('material', 'roof')` au schéma) — le sélecteur n'offre donc QUE ce domaine, une
+  // matière de relief ou de décor n'ayant rien à faire sur une nappe de toit.
+  'buildings.roofMaterial': { ds: 'materials', single: true, filter: (e) => e.domain === 'roof' },
   // ── vocab (valeurs distinctes d'un champ) ───────────────────────────────────
   // refChar/refCareer n'existent QUE sur les espèces → repli global par nom (la catégorie Codex
   // d'`species.json` est `races`, pas `species` ; un nom de champ unique évite de la coder en dur).

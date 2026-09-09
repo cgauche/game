@@ -744,7 +744,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // 462, au-delà des 4 places que les lots précédents avaient laissées sous le plafond. Ce ne sont
       // pas des graphies neuves : ce sont les références que `gameIso/builders/floors.ts` portait EN DUR
       // et qui deviennent mesurables, à la forme CIBLE (`idDe('material', 'relief')` les refine au parse).
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 462],
+      // Cliquet REMONTÉ 462 → 464 (#1715, 2026-09-09) : le catalogue des BÂTIMENTS quitte le code pour
+      // la donnée — TROIS lignes NEUVES (`buildings.json › roofMaterial` id nu, `› features` référence
+      // enveloppée à charge, `diligence-projet.json › style` id nu, le TYPE de bâtiment d'un corps
+      // devenu une référence résolue au parse), UNE morte (`arene-projet.json › style` : ses deux corps
+      // COMPOSITES n'ont pas de type de bâtiment, le champ y est absent). Aucune graphie neuve : ce
+      // sont celles que `catalog/buildings/defs/*.ts` portait EN DUR, devenues mesurables.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 464],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -1140,7 +1146,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // terrain à bloc plein, id nu comme son voisin `overlayProp`) et `<projet> › reliefDefaults` sur
       // les quatre projets de scène (l'enveloppe des quatre parties émises). MÊME graphie que leurs
       // sœurs déjà stockées ici : elles s'éteindront avec elles, d'un seul geste.
-      'L3 #1463': 388,
+      // #1715 (2026-09-09) : 388 → 390 — TROIS lignes de référence NEUVES pour UNE morte, toutes du
+      // catalogue de BÂTIMENTS passé en donnée (`buildings.json › roofMaterial` et `› features`,
+      // `diligence-projet.json › style` ; `arene-projet.json › style` s'éteint). MÊME graphie que leurs
+      // sœurs déjà stockées ici : elles s'éteindront avec elles, d'un seul geste.
+      'L3 #1463': 390,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en

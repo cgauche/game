@@ -141,7 +141,7 @@ describe('buildWalls — façades architecturales authorées', () => {
     ]);
     s.architecture = [{
       id: 'corps-auberge',
-      style: 'auberge',
+      style: 'taverne',
       storeys: [{ id: 'rez', z: 0, parts: [], roomZoneIds: ['salle'] }],
       facades: [{
         id: 'facade-sud',

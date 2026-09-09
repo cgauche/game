@@ -223,7 +223,6 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "arene-projet.json", champ: "reliefDefaults", signature: "cliff,deck,pilier,ramp", statut: "divergente", strate: "Référence", occurrences: 18, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "scene", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "start", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 9, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "arene-projet.json", champ: "style", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "traits", signature: "arg,id", statut: "historique", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "traits", signature: "arg,id,value", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "traits", signature: "id,value", statut: "historique", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
@@ -245,6 +244,12 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "barge-du-sel-projet.json", champ: "reliefDefaults", signature: "cliff,deck,pilier,ramp", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "barge-du-sel-projet.json", champ: "scene", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "barge-du-sel-projet.json", champ: "victoryCondition", signature: "targetId,type+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  // #1715 : les 7 bâtiments du catalogue TS deviennent la DONNÉE `buildings.json`. Aucune référence
+  // n'est authorée de neuf — les deux champs portaient déjà ces valeurs en TS ; ils entrent au
+  // dénominateur en devenant de la donnée MESURÉE. Les deux GRAPHIES sont celles que L3 éteint
+  // partout : l'id NU d'une couverture, la référence ENVELOPPÉE `{id}` + charge (`anchor`) d'un ornement.
+  { concept: "reference", dataset: "buildings.json", champ: "features", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-09-09" },
+  { concept: "reference", dataset: "buildings.json", champ: "roofMaterial", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 7, lot: "L3 #1463", date: "2026-09-09" },
   { concept: "reference", dataset: "careerLevels.json", champ: "career", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 432, lot: "L3 #1463", date: "2026-08-30", motif: "référence de CARRIÈRE" },
   { concept: "reference", dataset: "careerLevels.json", champ: "choice", signature: "choice>id", statut: "historique", strate: "Référence", occurrences: 25, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "careerLevels.json", champ: "choice", signature: "choice>id,qualityChoice", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
@@ -318,6 +323,12 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "diligence-projet.json", champ: "ref", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 20, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "reliefDefaults", signature: "cliff,deck,pilier,ramp", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "scene", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-31" },
+  // #1715 : le TYPE de bâtiment d'un corps architectural (`ArchitectureBody.style`) résout désormais
+  // contre `buildings.json` (`idDe('building')`, `defs-scenes/scene.ts`) — la même valeur `maison`
+  // qu'avant, mesurée comme la référence qu'elle est. La ligne sœur `arene-projet.json | style` (2) est
+  // MORTE au même geste : ses deux corps COMPOSITES (le Bourg, Felsbach) ne portent aucun type de
+  // bâtiment, le champ y est absent.
+  { concept: "reference", dataset: "diligence-projet.json", champ: "style", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-09-09" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "walls", signature: "appearance,structure+…", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "walls", signature: "structure+…", statut: "divergente", strate: "Référence", occurrences: 662, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "domains.json", champ: "amount", signature: "bonusOf", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
@@ -867,12 +878,12 @@ export const STRUCTURES_ENVELOPPE = [
  *  ne résout vers RIEN, sans être un document ni une op : HORS STRATE. `L1a #1466` quand le NOM de
  *  la clé annonçait une FK (`clé de référence non résolue`) — branche VIDE à ce jour, 0 ligne —,
  *  `#1553` sinon. CE QUE LE MOTIF DIT, ligne à ligne (mesuré 2026-09-01, #1633) : `clé réservée`
- *  95 lignes / 404 occurrences, `identité non résolue` 2 / 2. Ces comptes sont DÉRIVÉS des lignes
+ *  95 lignes / 406 occurrences, `identité non résolue` 2 / 2. Ces comptes sont DÉRIVÉS des lignes
  *  ci-dessous — la garde `src/data/plage-bornes-contrat.test.ts` (sonde D) les recalcule et exige
  *  que cet en-tête les CITE, elle ne les compare plus à un littéral recopié. Le motif `clé
  *  réservée` ne décrit PAS une valeur qui pointerait vers rien — le déclencheur est le NOM
  *  (`CLES_RESERVEES` du lexique : skill, char, talent, price, cost, count, source), et le contenu
- *  est légitime : `source` à lui seul déclenche 64 des 95 lignes (143 occurrences), qui portent de
+ *  est légitime : `source` à lui seul déclenche 64 des 95 lignes (145 occurrences), qui portent de
  *  vraies références de livre. Il se solde donc au VOCABULAIRE (#1463 S2 : un nom de concept est
  *  réservé à son type), jamais en curant un contenu. Les 97 lignes de ce volet ne sont pas du
  *  ressort de `L1b #1467`, dont le dénominateur (205) les comptait ; elles portent leur lot ligne
@@ -915,7 +926,11 @@ export const STRUCTURES_ORPHELINES = [
   { dataset: "disponibilite.json", champ: "dispoPct", signature: "availability,pct,source", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
   { dataset: "domains.json", champ: "cancelledBy", signature: "circumstance,desc,requiresSkill,source,sustained,test", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
   { dataset: "domains.json", champ: "windModifiers", signature: "cancelledBy,desc,dr,source,tests", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
-  { dataset: "domains.json", champ: "windModifiers", signature: "desc,dr,source,tests,when", motif: "clé réservée", occurrences: 17, lot: "#1553", date: "2026-08-23" },
+  // 17 → 19 (#1715, 2026-09-09) : AUCUNE donnée neuve. Les circonstances de `when` sont désormais un
+  // vocabulaire FERMÉ (`domainCircumstanceSchema`, `defs/domains.ts`) — elles n'ouvrent plus de
+  // référence, et les 2 rangs qui résolvaient par HOMONYMIE (`tour`, `middenheim`) rejoignent leurs 17
+  // sœurs sous la signature commune.
+  { dataset: "domains.json", champ: "windModifiers", signature: "desc,dr,source,tests,when", motif: "clé réservée", occurrences: 19, lot: "#1553", date: "2026-08-23" },
   { dataset: "etats.json", champ: "of", signature: "id,kind,who", motif: "identité non résolue", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "land-cargo.json", champ: "buy", signature: "availabilityMultiplier,merchantSkill,minEnc,partialSurchargePct,source,wineAlcoholResistThreshold,wineEvalDifficulty,wineEvalEasyDifficulty", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "land-cargo.json", champ: "sell", signature: "commerceBonus,dumpingPctOfBase,offerByRichesse,source,targetPerSize", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },

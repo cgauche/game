@@ -268,7 +268,6 @@ const VILLAGE_ARCHITECTURE = [
   {
     id: 'felsbach',
     label: 'Felsbach — village pesteux',
-    style: 'village',
     storeys: VILLAGE_HOUSES.map((h) => ({
       id: `${h.id}-z0`, z: 0, parts: [{ id: `${h.id}-volume`, foot: h.foot }], roomZoneIds: [`piece-${h.id}`],
     })),

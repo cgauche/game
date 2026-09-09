@@ -12,7 +12,7 @@
 import {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
   qualities, qualitySubtypes, qualityTypes, mutations, mutationTables, trappings, weaponGroups, breathTypes, damageTypes, creatures, spells, maneuvers, domains, lightLevels, lightTones, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
-  materials, terrains,
+  materials, terrains, buildings,
   pregens, oups, interludeEvents, peripeties, details, names, allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms,
   massBattleWarMachines, massBattleStructures, massBattleHazards, massBattleMightModifiers, massBattlePowerEstimate, massBattleData,
@@ -170,6 +170,11 @@ const ARRAYS = {
   // et du catalogue `gameIso/catalog/terrain` — tous deux indexent le TABLEAU et revérifient son
   // contenu à chaque accès (`indexDesTerrains`), un splice étant invisible à l'identité du tableau.
   terrains,
+  // Types de bâtiment (#1715) : UN document, l'empreinte et la couverture offertes à la pose plus les
+  // ornements d'identité. Ce binding EST le seam de mutation en place ; la façade
+  // `src/gameIso/catalog/buildings` reconstruit son index au témoin de VERSION du dataset, si bien
+  // qu'une entrée éditée au Codex se voit dans l'éditeur et au rendu sans rechargement.
+  buildings,
   pregens, oups, interludeEvents, peripeties, names,
   // Axes de forces/faiblesses (#409) — mécanique MAISON, éditable au Codex comme tout catalogue.
   axes: allAxes,

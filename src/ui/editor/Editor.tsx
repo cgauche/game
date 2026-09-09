@@ -336,9 +336,10 @@ export function Editor({
 
   /** Le corps naît BORNÉ : son volume de départ est la case visée (`hoverRef`, la même cible que le
    *  collage), à redimensionner ensuite. Un corps sans emprise revendiquerait tout le plancher libre de
-   *  la scène, et à deux ce serait l'ordre du tableau qui trancherait (`validateArchitectureResiduals`). */
+   *  la scène, et à deux ce serait l'ordre du tableau qui trancherait (`validateArchitectureResiduals`).
+   *  Il naît SANS type de bâtiment : le type est un choix d'auteur, posé à l'inspecteur (case vide). */
   function createArchitectureBody() {
-    const out = addArchitectureBody(scene, 'maison', { ...hoverRef.current, w: 1, h: 1 });
+    const out = addArchitectureBody(scene, undefined, { ...hoverRef.current, w: 1, h: 1 });
     setScene(out.scene);
     setArchitectureBodyId(out.id);
     setArchitectureStoreyId('z0');

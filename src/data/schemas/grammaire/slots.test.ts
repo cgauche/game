@@ -119,6 +119,10 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
     // `defs/structures.ts › traits` (`ref('trait')`). Le stock des sites ADOPTÉS ne peut que CROÎTRE.
     ).toEqual([
       'actorRefSchema',
+      // +1 site ADOPTÉ (#1715, 2026-09-09) : `defs-scenes/scene.ts › typeDeBatimentSchema` — le TYPE
+      // de bâtiment d'un corps architectural (`ArchitectureBody.style`) résout contre `buildings.json`,
+      // le catalogue de bâtiments passé du code à la donnée. UNE instance de fabrique.
+      "idDe('building')",
       "idDe('career')",
       "idDe('creature')",
       // +1 site ADOPTÉ (#1657 B3-2b-a) : `grammaire/mecanique.ts › crewTargetSchema.role` désigne le
@@ -153,6 +157,9 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // une fabrique partagée = une marque) et `defs/terrains.ts › matiere` (les flancs d'un bloc plein).
       "idDe('material', 'relief')",
       "idDe('material', 'relief')",
+      // 1 → 2 (#1715) : `defs/buildings.ts › roofMaterial` porte la COUVERTURE par défaut d'un type de
+      // bâtiment, à côté de `defs-scenes/scene.ts › couvertureSchema` (la couverture posée par la scène).
+      "idDe('material', 'roof')",
       "idDe('material', 'roof')",
       // 1 → 2 (#1657 B3-2b-a) : `defs/ship-stations.ts › requiresTrait` porte EN DONNÉE le gate d'une
       // station (`cale` — MSRC 07 l.94 ; `nid-de-pie` — MDG 12 l.299), à côté de `defs/vehicles.ts ›
@@ -160,7 +167,10 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       "idDe('navalTrait')",
       "idDe('navalTrait')",
       // +1 site ADOPTÉ (#1690) : `defs/terrains.ts › overlayProp` désigne le DÉCOR répété sur chaque
-      // tuile d'un terrain (`props.json`) — la seule référence de décor du dépôt qui passe la fabrique.
+      // tuile d'un terrain (`props.json`).
+      // +1 site ADOPTÉ (#1715) : `defs/buildings.ts › features[].id` désigne l'ORNEMENT d'identité posé
+      // en billboard sur un bâtiment (clocheton, cheminée, enseigne, étal), composé par `ref('prop', …)`.
+      "idDe('prop')",
       "idDe('prop')",
       // +1 site ADOPTÉ (#1657 B3-2b-a) : `grammaire/mecanique.ts › crewTargetSchema.stations` désigne
       // les PRÉSENCES à bord que les livres nomment (`ship-stations.json`, catalogue FERMÉ).

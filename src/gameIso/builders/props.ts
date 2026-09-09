@@ -272,7 +272,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
         const base = {
           key: `orn:${body.id}:${mass.id}:${i}`,
           source: 'ornament' as const,
-          ref: feat.prop,
+          ref: feat.id,
           interact: false,
           states: { visible: vis },
         };

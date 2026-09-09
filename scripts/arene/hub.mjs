@@ -421,7 +421,6 @@ const HUB_ARCHITECTURE = [
   {
     id: 'bourg',
     label: 'Le Bourg de l’Arène',
-    style: 'bourg',
     storeys: [
       { id: 'taverne-z0', z: 0, parts: [{ id: 'taverne-volume', foot: { x: 3, y: 3, w: 15, h: 10 } }], roomZoneIds: ['piece-taverne'] },
       { id: 'chapelle-z0', z: 0, parts: [{ id: 'chapelle-volume', foot: { x: 34, y: 3, w: 13, h: 11 } }], roomZoneIds: ['piece-chapelle'] },

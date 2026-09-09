@@ -20,13 +20,14 @@ import {
   SYMPTOM_SEVERITIES,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, shipStations, NAVAL_TRAITS, findCreatureById, findVehicleById, findTrappingById, structures, regles,
   charAbr, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
-  conditionLabel, traitProjectingManeuver, materials, terrains, props,
+  conditionLabel, traitProjectingManeuver, materials, terrains, props, buildings,
 } from '../../data';
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
 // importés directement d'`engine/massBattle`).
 import type { RaceKey, SourceRef } from '../../data/schemas/grammaire/valeurs';
 import { symptomSeveritySchema } from '../../data/schemas/grammaire/valeurs';
+import { buildingAnchorSchema } from '../../data/schemas/defs/buildings';
 import type { EnveloppeDocument } from '../../data/schemas/grammaire/document';
 import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
 import { shipSizeSchema } from '../../data/schemas/grammaire/valeurs';
@@ -305,6 +306,8 @@ const propLabel = (id: string): string => props.find((p) => p.id === id)?.label 
 /** Nom d'auteur d'une matière de RELIEF de `materials.json` (domaine filtré comme le picker,
  *  `REF_FIELD['terrains.matiere']`) — lecture VIVE, l'id nu tenant lieu de nom hors catalogue. */
 const matiereLabel = (id: string): string => materials.find((m) => m.id === id && m.domain === 'relief')?.label ?? id;
+/** Nom d'auteur d'une matière de COUVERTURE (`materials.json` domaine `roof`) — l'id nu à défaut. */
+const couvertureLabel = (id: string): string => materials.find((m) => m.id === id && m.domain === 'roof')?.label ?? id;
 
 /** Famille d'une race/variante : « Humains (Reiklander) » → « Humains ». */
 const family = (label: string): string => label.split(' (')[0].trim();
@@ -2032,6 +2035,29 @@ const CODEX_SPECS: CodexCategorySpec[] = [
             ...terrainStopsOrdonnes(t.stops).map(([offset, couleur]) => ({ t: 'couleur', k: offset, v: couleur } as CodexRow)),
           ],
         }),
+      }));
+    },
+  },
+  {
+    // Types de bâtiment (#1715) : UNE forme sans discriminant — chaque entrée porte la couverture de
+    // référence du type et les ornements d'identité que le rendu émet en billboard. Aucune table de
+    // libellés ici : les noms FR viennent de la méta du def
+    // (`libelleDuChamp`), le nom d'une couverture de l'entrée `materials.json` visée, celui d'un
+    // ornement de l'entrée `props.json` qu'il référence, et l'ancrage de l'enum NOMMÉ du schéma.
+    key: 'buildings', label: 'Bâtiments', group: 'Monde',
+    build: () => {
+      const meta = metaPourFichier('buildings.json');
+      const nom = (cle: string) => libelleDuChamp(cle, { meta });
+      return buildings.map((b) => depuisEnveloppe(b, {
+        meta: facts(
+          fact(nom('roofMaterial'), couvertureLabel(b.roofMaterial)),
+          fact(
+            nom('features'),
+            b.features?.length
+              ? b.features.map((f) => `${propLabel(f.id)} (${libelleDeValeur(buildingAnchorSchema, f.anchor)})`).join(' · ')
+              : null,
+          ),
+        ),
       }));
     },
   },

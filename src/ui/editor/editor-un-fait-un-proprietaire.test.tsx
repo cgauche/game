@@ -164,7 +164,7 @@ describe('un CORPS d’architecture : la palette VISE et CRÉE, l’inspecteur �
 
   it('l’inspecteur possède le libellé, le style et la toiture du corps', () => {
     const html = inspecteur(sceneAvecCorps(), { type: 'architectureBody', id: 'corps' });
-    expect(champsEtiquetes(html)).toEqual(['Libellé', 'Style', 'Profil', 'Pente (degrés)', 'Couverture']);
+    expect(champsEtiquetes(html)).toEqual(['Libellé', 'Type de bâtiment', 'Profil', 'Pente (degrés)', 'Couverture']);
     expect(html).toContain('Toiture du corps');
   });
 

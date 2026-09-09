@@ -66,6 +66,7 @@ export const TYPES = {
   regleOptionnelle: { dataset: 'reglesOptionnelles.json', specsOpen: false },
   terrain: { dataset: 'terrains.json', specsOpen: false },
   prop: { dataset: 'props.json', specsOpen: false },
+  building: { dataset: 'buildings.json', specsOpen: false },
 } as const satisfies Record<string, CibleDeType>;
 
 export type TypeEntite = keyof typeof TYPES;

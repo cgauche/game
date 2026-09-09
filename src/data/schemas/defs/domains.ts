@@ -20,6 +20,43 @@ export const famille = 'entite';
 /** Matière de PA ignorée par les Sorts du Domaine (LDB 48). */
 export const missileBypassSchema = enumNomme({ metal: 'PA métalliques', nonMagic: 'PA non magiques' });
 
+/**
+ * CIRCONSTANCES d'un modificateur de Vent (`VDM 04`–`VDM 11`) — vocabulaire FERMÉ de situations que
+ * l'appelant signale (`DomainWindCtx.circumstances`, `src/engine/domainAttributes.ts`), jamais des ids
+ * d'entités : météo, saison, relief, lieu, densité de bâti. UNE déclaration pour les DEUX nœuds qui le
+ * portent (`windModifiers[].when`, `windModifiers[].cancelledBy.circumstance`).
+ */
+export const domainCircumstanceSchema = enumNomme({
+  'feu-proche': 'Proche d’un feu',
+  'volcan-actif': 'Volcan actif',
+  'ville-en-flammes': 'Ville en flammes',
+  charnier: 'Charnier',
+  'lieu-de-massacre': 'Lieu de massacre',
+  'lieu-sans-mort': 'Lieu sans mort',
+  'eau-abondante': 'Eau abondante',
+  'milieu-sec': 'Milieu sec',
+  'mois-sommerzeit': 'Mois de Sommerzeit',
+  'mois-vorgeheim': 'Mois de Vorgeheim',
+  'mois-ulriczeit': 'Mois d’Ulriczeit',
+  'mois-vorhexen': 'Mois de Vorhexen',
+  tour: 'Au sommet d’une tour',
+  'colline-elevee': 'Colline élevée',
+  'sommet-de-montagne': 'Sommet de montagne',
+  'en-vol': 'En vol',
+  'voyage-vers-equateur': 'Voyage vers l’équateur',
+  'metaux-abondants': 'Métaux abondants',
+  'temps-orageux': 'Temps orageux',
+  'temps-brumeux': 'Temps brumeux',
+  'temps-ensoleille': 'Temps ensoleillé',
+  'brise-legere': 'Brise légère',
+  ville: 'Ville',
+  cite: 'Cité',
+  'pleine-nature': 'Pleine nature',
+  'region-reculee': 'Région reculée',
+  middenheim: 'Middenheim',
+  'assistance-chantee': 'Assistance chantée d’un tiers',
+});
+
 const doc = document(
   'domains',
   famille,
@@ -76,13 +113,13 @@ const doc = document(
       tests: z.array(z.enum(['incantation', 'focalisation', 'seconde-vue'])).min(1),
       /** Delta de DR appliqué au Test. */
       dr: z.number(),
-      /** Ids STABLES de circonstances dont UNE suffit à déclencher le modificateur (météo, saison,
-       *  lieu, relief…), résolues par l'appelant. ABSENT = permanent. */
-      when: z.array(z.string()).min(1).optional(),
+      /** Circonstances dont UNE suffit à déclencher le modificateur, signées par l'appelant.
+       *  ABSENT = permanent. */
+      when: z.array(domainCircumstanceSchema).min(1).optional(),
       /** Annulation par un TIERS (Hysh) : l'appelant signale `circumstance` quand un assistant
        *  possédant `requiresSkill` a réussi `test` et maintient son chant (`sustained`). */
       cancelledBy: z.strictObject({
-        circumstance: z.string(),
+        circumstance: domainCircumstanceSchema,
         requiresSkill: refOuSpec('skill').optional(),
         test: flowTestSchema,
         sustained: z.boolean().optional(),

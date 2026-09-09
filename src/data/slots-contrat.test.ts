@@ -167,7 +167,22 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // mort DÉCLARÉ ci-dessus — `scenes[].reliefDefaults.cliff` projette sur `cliff`, jamais sur le champ
 // porteur. Même forme que `props.json | light` : ces lignes meurent avec le dériveur d'un niveau
 // (L3 #1473), pas par une adoption au champ.
-const DETTE_ADOPTION_MAX = 343;
+// Cliquet DESCENDU 343 → 342 (#1715, 2026-09-09) — DEUX lignes meurent, une naît :
+// `arene-projet.json | style` (2) MEURT de la DONNÉE : ses deux corps COMPOSITES (le Bourg, Felsbach)
+// ne sont pas des bâtiments et ne portent plus de type ; le champ y est absent, et le seul `style`
+// restant (`diligence-projet.json`, `maison`) est ATTEINT par le slot déclaré `idDe('building')`.
+// `domains.json | when` (2) SORT du dénominateur, non par un stock mais par la FORME VRAIE du champ —
+// les circonstances d'un modificateur de Vent sont un vocabulaire FERMÉ, déclaré par `enumNomme`
+// (`domainCircumstanceSchema`, `defs/domains.ts`, partagé avec `cancelledBy.circumstance`) : un
+// littéral d'enum du schéma n'ouvre plus de référence. La ligne existait depuis le 2026-08-26 et son
+// compte venait de monter 2 → 3, le dataset `buildings.json` (#1715) rendant la circonstance `tour`
+// homonyme d'un id de bâtiment — une FK que la donnée n'a jamais voulue.
+// `buildings.json | features` (4) ENTRE, et ce n'est PAS une référence sans fabrique : `features:
+// z.array(ref('prop', { anchor }))` est adoptée et RÉSOUT 4/4 au volet RÉSOLUTION. C'est l'angle mort
+// DÉCLARÉ de la référence ENVELOPPÉE — `[].features[].id` projette sur `id`, jamais sur le champ
+// porteur — celui-là même que `structures.json | traits`, `vehicles.json | traits` et
+// `ship-stations.json | requiresTrait` portent déjà : il meurt avec le dériveur d'un niveau (L3 #1473).
+const DETTE_ADOPTION_MAX = 342;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {
