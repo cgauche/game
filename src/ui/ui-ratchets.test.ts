@@ -1382,7 +1382,8 @@ const NUMBER_INPUT_BASELINE: Record<string, number> = {
   // champ lui-même (empreinte verrouillée à la source). Stock baissé, détecteur inchangé.
   // -1 (23 → 22, #1507) : le rayon d'éclairage d'une instance compose `NumberField` — l'écran touché
   // par le passage du rayon en mètres a rendu son champ à la primitive.
-  'editor/Inspector.tsx': 22,
+  // -1 (22 → 21, #1715) : la pente et le comble d'un corps composent `NumberField` (vide = suit la scène).
+  'editor/Inspector.tsx': 21,
   'editor/Palette.tsx': 1,
 };
 
