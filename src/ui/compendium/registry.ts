@@ -96,6 +96,7 @@ import { libelleDuChamp } from './editFields';
 // Ordre des arrêts d'une rampe de terrain : SOURCE UNIQUE partagée avec les émetteurs SVG — la fiche
 // Codex lit la rampe dans l'ordre où le rendu la peint, jamais dans l'ordre des clés du Record.
 import { terrainStopsOrdonnes } from '../../gameIso/catalog/terrain';
+import { porteurDApercu } from './apercuPorteur';
 import { slugId } from '../../data/slug';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde' | 'Tables';
@@ -193,6 +194,9 @@ export interface CodexItem {
   appearance?: EntityAppearance;
   /** `id` de créature pour résoudre l'aperçu rig PAR ID (Nuées/non-bipèdes lisent leurs traits du record). */
   previewRef?: string;
+  /** Espèce du PORTEUR sur lequel prévisualiser une `appearance` qui est un FRAGMENT (mutation, trait) —
+   *  déclarée par la catégorie (`porteurDApercu`). Absente = entité autonome, résolue par son record. */
+  previewPorteur?: string;
   /** Statbloc COMPACT (bande parchemin en tête de fiche) : profil imprimé (M + 10 caracs + Blessures)
    *  + traits en chips cross-réf. Projection data-driven (catégorie créatures). */
   statblock?: { profile: CodexFact[]; traits: CodexRow[] };
@@ -575,7 +579,10 @@ function creatureStatblock(c: (typeof creatures)[number]): NonNullable<CodexItem
   };
 }
 
-const traitItem = (t0: (typeof traits)[number]): CodexItem => {
+/** Fiche d'un Trait, projetée par DEUX catégories (`traits` et le filtre `psychologie`) : chacune
+ *  passe SA clé, et c'est elle qui déclare le porteur d'aperçu (`porteurDApercu`) — sans quoi la
+ *  déclaration de `psychologie` ne serait jamais lue. */
+export const traitItem = (t0: (typeof traits)[number], categoryKey: string): CodexItem => {
   // Entrée EFFECTIVE sous les règles optionnelles actives (#563/#564), comme la catégorie Talents :
   // desc, source, capacités, passifs et effets affichés sont ceux de la variante réglée quand elle est
   // active. `traits.json` n'en porte AUCUNE aujourd'hui (mesuré) — la lecture s'aligne sur le schéma
@@ -584,6 +591,7 @@ const traitItem = (t0: (typeof traits)[number]): CodexItem => {
   const cap = t.capabilities;
   return depuisEnveloppe(t, {
     sub: traitArgSkeleton(t), appearance: t.appearance,
+    ...(t.appearance ? { previewPorteur: porteurDApercu(categoryKey) } : {}),
     meta: facts(
       cap?.psychType ? fact('Psychologie', psychologyLabel(cap.psychType)) : null,
       cap?.psychImmune ? fact('Immunité', '(Psychologie)') : null,
@@ -1591,6 +1599,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       sub: valeurFR('mutations.json', 'kind', m.kind),
       group: valeurFR('mutations.json', 'kind', m.kind),
       appearance: m.appearance,
+      ...(m.appearance ? { previewPorteur: porteurDApercu('mutations') } : {}),
       // PA / arme naturelle / traits conférés sont désormais des GameOps du `passive` (ap /
       // grantNaturalWeapon / grantTrait) → rendus par passiveSection ; plus de facts/chips dédiés.
       sections: sections(
@@ -1644,7 +1653,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // Groupés par type (Peur, Terreur, Animosité…). Édition = catégorie « Traits » (source unique).
     build: () => traits
       .filter((t) => t.capabilities?.psychType || t.capabilities?.psychImmune)
-      .map((t) => ({ ...traitItem(t), group: t.capabilities?.psychType ? psychologyLabel(t.capabilities.psychType) : 'Immunité' })),
+      .map((t) => ({ ...traitItem(t, 'psychologie'), group: t.capabilities?.psychType ? psychologyLabel(t.capabilities.psychType) : 'Immunité' })),
   },
   {
     key: 'domains', label: 'Domaines', group: 'Magie',
@@ -1737,7 +1746,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'traits', label: 'Traits', group: 'Monde',
-    build: () => traits.map(traitItem),
+    build: () => traits.map((t) => traitItem(t, 'traits')),
   },
   {
     key: 'locations', label: 'Lieux', group: 'Monde',

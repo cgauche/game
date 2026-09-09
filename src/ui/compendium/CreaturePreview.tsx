@@ -16,12 +16,16 @@ import type { EntityAppearance } from '../../engine/authoringAppearance';
 
 // `name` = id de créature (Codex/bestiaire) ; `a.species` = id du vocabulaire rig (validé par
 // asRigSpeciesId en aval). Les Nuées tirent leur trait du record par id.
-function rigSvg(name: string, a: EntityAppearance | undefined, view: View): string {
+// `porteur` = espèce du PORTEUR déclarée par l'appelant quand l'apparence est un FRAGMENT (mutation,
+// trait) : elle alimente l'argument `species` que `resolveRender` consulte en premier, et le fragment
+// se compose PAR-DESSUS par le canal habituel (`entityRigProfile`). Sans porteur, rien ne change.
+function rigSvg(name: string, a: EntityAppearance | undefined, view: View, porteur?: string): string {
   const seed = a?.seed ?? hashSeed(name);
-  const r = resolveRender(a?.species, findCreatureById(name)?.traits, name);
+  const species = a?.species ?? porteur;
+  const r = resolveRender(species, findCreatureById(name)?.traits, name);
   if (r.kind === 'rig') {
     const p = entityRigProfile(name, seed, {
-      species: a?.species, tenue: a?.tenue, monster: a?.monster, features: a?.features,
+      species, tenue: a?.tenue, monster: a?.monster, features: a?.features,
       colors: a?.colors, parts: a?.parts, sex: a?.sex, build: a?.build, eyes: a?.eyes,
     });
     return p ? bonesToSvg(resolveRig(p.appearance, p.equip, {}, p.tenue, view, [])) : '';
@@ -32,11 +36,11 @@ function rigSvg(name: string, a: EntityAppearance | undefined, view: View): stri
   return bonesToSvg(plan.resolve(r.species, view, plan.restPose(), planOptsForRecord(name, a)));
 }
 
-export function CreaturePreview({ label, appearance }: { label: string; appearance?: EntityAppearance }) {
+export function CreaturePreview({ label, appearance, porteur }: { label: string; appearance?: EntityAppearance; porteur?: string }) {
   const key = JSON.stringify(appearance ?? {});
   const views = useMemo(
-    () => (['front', 'profile'] as View[]).map((v) => ({ v, svg: rigSvg(label, appearance, v) })),
-    [label, key], // re-rend à CHAQUE édition d'apparence
+    () => (['front', 'profile'] as View[]).map((v) => ({ v, svg: rigSvg(label, appearance, v, porteur) })),
+    [label, key, porteur], // re-rend à CHAQUE édition d'apparence
   );
   return (
     <div className="creature-preview">

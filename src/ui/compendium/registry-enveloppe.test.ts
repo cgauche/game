@@ -49,6 +49,12 @@ const DATA_DIR = fileURLToPath(new URL('../../data/', import.meta.url));
  * de premier rang → 16 catégories, empreintes de `activities`/`reglesOptionnelles`/`effectTables` mesurées.
  * `axes` y entre par une correction : sa projection était écrite à la main (`{ id, label, desc }`)
  * et court-circuitait le défaut d'enveloppe — l'invariant du bas de fichier l'a dénoncée.
+ *
+ * #1693 : un item dont l'`appearance` est un FRAGMENT porté projette `previewPorteur` — l'espèce du
+ * porteur sur lequel il se prévisualise, déclarée par la catégorie (`porteurDApercu`). La clé ne se pose
+ * QUE sur un item à fragment : `mutations` la gagne (FORME et CLES recalées à la MESURE), `traits` et
+ * `psychologie` (même projection `traitItem`, à qui chaque catégorie passe SA clé) ne portent aucune
+ * `appearance` en donnée — aucun de leurs items ne gagne la clé, CLES et FORME les gèlent sans elle.
  */
 const CLES: Record<string, string> = {
   "arcanePhenomena": '68318e5ed9e81981',
@@ -82,7 +88,7 @@ const CLES: Record<string, string> = {
   "etats": '7e64eca6c569f24e',
   "maladies": '25e48bb168ea15e0',
   "symptoms": 'f903df541e9b7ff5',
-  "mutations": 'a507855641eff14a',
+  "mutations": 'bd3a933e0e43e9fd',
   // #1686 lot 3a-2 : la catégorie « Matières » ouvre (16 items, 3 groupes titrés par le libellé de
   // valeur du discriminant `domain`) — elle QUITTE du même geste la liste des orphelins ci-dessous.
   "materials": '904ac73056ba299a',
@@ -229,7 +235,7 @@ const FORME: Record<string, string> = {
   "etats": 'desc id label maison sections source',
   "maladies": 'desc id label meta sections source sub',
   "symptoms": 'desc id label maison sections source',
-  "mutations": 'appearance desc group id label sections source sub',
+  "mutations": 'appearance desc group id label previewPorteur sections source sub',
   "materials": 'group id label meta sub',
   "mutationTables": 'id label sections source sub',
   "effectTables": 'id label maison sections source sub',

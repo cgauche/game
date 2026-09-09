@@ -38,6 +38,7 @@ import type { ConsumableDuration } from '../../engine/consumables';
 import { JsonField } from '../editor/JsonField';
 import { creatureSpeciesOptions, QUAD_SPECIES, WINGED_SPECIES } from '../../gameIso/rig/creatures';
 import { CreaturePreview } from './CreaturePreview';
+import { porteurDApercu } from './apercuPorteur';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
 import { effectOnSchema, effectTriggerSchema } from '../../data/schemas/grammaire/mecanique';
@@ -643,7 +644,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
         </ul>
       )}
       <div className="codex-edit-form">
-        {hasAppearance && <AppearanceField label={String(entry.label ?? label)} value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
+        {hasAppearance && <AppearanceField label={String(entry.label ?? label)} porteur={porteurDApercu(categoryKey)} value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
         {isSpell && <SpellEffectsField value={entry.effects as Flow | undefined} onChange={(v) => edit('effects', v)} />}
         {CRITICAL_CATEGORIES.includes(categoryKey) && (
           <NoeudTestField
@@ -863,7 +864,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
 /** Éditeur d'apparence par défaut d'une créature (bloc `appearance` UNIFIÉ) — réutilise la brique
  *  partagée `MonsterPartsFields` (espèce + parts/couleurs/coiffure/tenue/harnachement/yeux). Édite le VRAI record
  *  `creatures.json` ; le rig le lit comme couche de défaut → l'apparence en jeu reflète l'édition. */
-function AppearanceField({ label, value, onChange }: { label: string; value: EntityAppearance | undefined; onChange: (v: EntityAppearance) => void }) {
+function AppearanceField({ label, porteur, value, onChange }: { label: string; porteur?: string; value: EntityAppearance | undefined; onChange: (v: EntityAppearance) => void }) {
   const a = value ?? {};
   const patch = (p: Partial<EntityAppearance>) => onChange({ ...a, ...p });
   // Le harnachement est un canal du pipeline QUADRUPÈDE (quad ∪ ailé) : hors de ces gabarits, la
@@ -872,7 +873,7 @@ function AppearanceField({ label, value, onChange }: { label: string; value: Ent
   return (
     <div className="ed-field ed-appearance">
       <span>apparence par défaut (rig) — éditée sur le record, reflétée en jeu</span>
-      <CreaturePreview label={label} appearance={a} />{/* aperçu LIVE : se met à jour à chaque modification */}
+      <CreaturePreview label={label} appearance={a} porteur={porteur} />{/* aperçu LIVE : se met à jour à chaque modification */}
       <label className="ed-subfield">
         Espèce
         <select value={a.species ?? ''} onChange={(e) => patch({ species: e.target.value || undefined })}>
