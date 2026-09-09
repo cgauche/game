@@ -46,9 +46,10 @@
  *    en silence ; consigné sur `setLocale` lui-même (`i18n/index.ts`).
  */
 import { describe, it, expect } from 'vitest';
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * GEL VIDE — LE FOSSILE EST MORT (E7-FINAL, 2026-08-17). Le compte est 0 partout, et
@@ -198,17 +199,16 @@ export function recense(
   hors: ReadonlySet<string>,
 ): Record<string, number> {
   const out: Record<string, number> = {};
-  const parcours = (rel: string): void => {
-    for (const e of readdirSync(join(racine, rel), { withFileTypes: true })) {
-      const child = `${rel}/${e.name}`;
-      if (e.isDirectory()) { parcours(child); continue; }
-      if (!/\.tsx?$/.test(e.name) || hors.has(child)) continue;
-      if (filtre && !filtre(child)) continue;
-      const n = compte(readFileSync(join(racine, child), 'utf8'));
-      if (n > 0) out[child] = n;
-    }
-  };
-  parcours('src');
+  const base = join(racine, 'src');
+  for (const { abs, text } of readCorpus([base], { tests: true })) {
+    // La clé est POSIX depuis `racine` — `racine` peut être un arbre FACTICE hors dépôt (sondes de
+    // mutation), où le `rel` du corpus (relatif à la racine du DÉPÔT) ne veut rien dire.
+    const child = `src/${relative(base, abs).split('\\').join('/')}`;
+    if (hors.has(child)) continue;
+    if (filtre && !filtre(child)) continue;
+    const n = compte(text);
+    if (n > 0) out[child] = n;
+  }
   return out;
 }
 

@@ -15,9 +15,7 @@
  */
 import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -316,21 +314,10 @@ describe('une bande par MALADIE', () => {
 describe('les TROIS producteurs d’Exposition passent par la MÊME fabrique de vagues', () => {
   it('aucun site ne construit d’étape d’Exposition sans `exposureWaveBand`', () => {
     const rxExposition = new RegExp(`kind: '(?:${EXPOSURE_BAND_KINDS.join('|')})'`);
-    const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
-    const walk = (dir: string, out: string[] = []): string[] => {
-      for (const e of readdirSync(dir)) {
-        const p = join(dir, e);
-        if (statSync(p).isDirectory()) walk(p, out);
-        else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) out.push(p);
-      }
-      return out;
-    };
-    const producteurs = walk(root)
-      .filter((f) => rxExposition.test(readFileSync(f, 'utf-8')))
-      .map((f) => f.replace(/\\/g, '/').slice(f.replace(/\\/g, '/').indexOf('/src/') + 1));
-    expect(producteurs.sort(), 'le stock de producteurs a bougé — vérifier que le nouveau passe par la fabrique')
+    const producteurs = readCorpus(['src']).filter((f) => rxExposition.test(f.text));
+    expect(producteurs.map((f) => f.rel), 'le stock de producteurs a bougé — vérifier que le nouveau passe par la fabrique')
       .toEqual(['src/state/combatEffects.ts', 'src/state/restFlow.ts', 'src/state/seaVoyageFlow.ts']);
-    const sansFabrique = producteurs.filter((rel) => !readFileSync(join(root, '..', rel), 'utf-8').includes('exposureWaveBand'));
+    const sansFabrique = producteurs.filter((f) => !f.text.includes('exposureWaveBand')).map((f) => f.rel);
     expect(sansFabrique, `producteur d’Exposition hors fabrique :\n${sansFabrique.join('\n')}`).toEqual([]);
   });
 });

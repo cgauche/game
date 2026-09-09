@@ -21,11 +21,15 @@ import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';
  *
  * CE QUE LA POLICE NE VOIT PAS, et pourquoi : les formes ÉLIDÉES à la compilation (`import type
  * … from`, `import { type X }` tout-type, la référence inline `import('…').T`) ne créent aucune
- * arête d'exécution — c'est le critère STRUCTUREL qui remplace les trois exemptions NOMINATIVES de
- * l'ancien banc (`state/combatManeuvers.ts`, `state/roster.ts`, `state/revealStep.ts`, tous trois
- * des `import type … from '../ui/…'`) et l'allowlist `engine/types.ts` (une référence inline vers
- * `gameIso/rig/appearance`). Reste hors de portée, comme pour toute police d'accès : la recopie qui
- * ne passe par aucun import, et `require()`.
+ * arête d'exécution — le critère est STRUCTUREL, jamais nominatif. Reste hors de portée, comme pour
+ * toute police d'accès : la recopie qui ne passe par aucun import, et `require()`.
+ *
+ * SECOND MUR MESURÉ ICI — L'ORDRE TOTAL DANS LES TESTS DE `src` (#1709 C3c-1). Même raison d'être :
+ * le `files:` du bloc est POSIX et par couche, donc un dossier renommé le rendrait MUET et VERT.
+ * Deux volets, symétriques de ceux de la pureté : la TABLE DES FORMES (import nommé, accès par
+ * membre, déstructuration, namespace) sur un fichier réel de CHAQUE couche couverte, et le
+ * PÉRIMÈTRE (les sélecteurs du mur sont résolus pour `src/engine`, `src/state` et la racine — et
+ * ABSENTS pour `src/ui` et `src/gameIso`, qui entrent aux trains suivants).
  */
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -103,7 +107,7 @@ describe('pureté de couche — la doctrine vit dans eslint.config.js, mesurée 
       });
     }
 
-    it(`${amont} : l’alias \`@/…\` est pris lui aussi (l’ancien banc, en regex \`(\\.\\./)+\`, ne le voyait pas)`, { timeout: 30_000 }, async () => {
+    it(`${amont} : l’alias \`@/…\` est pris comme le chemin relatif`, { timeout: 30_000 }, async () => {
       for (const rel of sondes(amont)) {
         for (const aval of avals) {
           expect(
@@ -118,5 +122,78 @@ describe('pureté de couche — la doctrine vit dans eslint.config.js, mesurée 
   it('un import LÉGITIME de la couche ne mord pas (fail-open mesuré, pas postulé)', async () => {
     const [rel] = sondes('src/engine');
     expect(await pris("import { rollD100 } from './dice';\nexport const a = rollD100;\n", `${ROOT}/${rel}`)).toEqual([]);
+  });
+});
+
+/** Les couches dont les TESTS sont sous le mur de l'ordre total, et celles qui n'y sont pas encore. */
+const SOUS_LE_MUR = ['src/engine', 'src/state', 'src'] as const;
+const HORS_MUR = ['src/ui', 'src/gameIso'] as const;
+
+/** Le premier fichier de TEST réel de la couche `dir`, à sa PROFONDEUR attendue : `src` désigne la
+ *  RACINE (un `src/x.test.ts`, glob `src/*.test.ts`), les autres toute la couche. Jamais un nom en
+ *  dur — la sonde suit l'arbre. */
+function sondeTest(dir: string): string {
+  const profondeurRacine = dir === 'src';
+  const f = readCorpus([dir], { tests: true }).find(
+    ({ rel }) => /\.test\.tsx?$/.test(rel) && (!profondeurRacine || rel.split('/').length === 2),
+  );
+  expect(f, `${dir} : aucun fichier de test réel — la sonde du mur ne mesure rien`).toBeTruthy();
+  return f!.rel;
+}
+
+/** Les formes d'écriture de la marche brute, et les règles qui DOIVENT les prendre (mesuré : le
+ *  NAMESPACE est pris par les DEUX — `no-restricted-imports` refuse déjà `import * as fs` dès qu'un
+ *  `importNames` est déclaré, et le sélecteur de membre voit l'usage). */
+const FORMES_MARCHE: { nom: string; code: string; regle: string }[] = [
+  { nom: 'import nommé', code: "import { readdirSync } from 'node:fs';\nexport const a = readdirSync('.');\n", regle: 'no-restricted-imports' },
+  { nom: 'accès par membre', code: "import fs from 'node:fs';\nexport const a = fs.readdirSync('.');\n", regle: 'no-restricted-syntax' },
+  { nom: 'déstructuration', code: "import fs from 'node:fs';\nconst { readdirSync } = fs;\nexport const a = readdirSync('.');\n", regle: 'no-restricted-syntax' },
+  { nom: 'namespace', code: "import * as fs from 'node:fs';\nexport const a = fs.readdirSync('.');\n", regle: 'no-restricted-imports+no-restricted-syntax' },
+];
+
+/** Règles qui ont pris ce code au titre de l'ORDRE TOTAL (message porteur de la réf du mur). */
+async function prisOrdreTotal(code: string, filePath: string): Promise<string[]> {
+  const [res] = await eslint.lintText(code, { filePath, warnIgnored: false });
+  const mur = res.messages.filter((m) => m.message.includes('Ordre total'));
+  for (const m of mur) {
+    expect(m.ruleId, `${filePath} : ruleId nul — la config n’a pas été résolue, tout serait faussement « pris »`).toBeTruthy();
+  }
+  return [...new Set(mur.map((m) => m.ruleId!))].sort();
+}
+
+describe('ordre total dans les tests de `src` — mur mesuré sur la config RÉSOLUE (#1709 C3c-1)', () => {
+  for (const dir of SOUS_LE_MUR) {
+    it(`${dir} : les 4 formes de marche brute sont prises, \`readCorpus\` passe`, { timeout: 30_000 }, async () => {
+      const chemin = `${ROOT}/${sondeTest(dir)}`;
+      const table: Record<string, string> = {};
+      for (const f of FORMES_MARCHE) table[f.nom] = (await prisOrdreTotal(f.code, chemin)).join('+') || 'passe';
+      expect(table, `sonde : ${chemin}`).toEqual(Object.fromEntries(FORMES_MARCHE.map((f) => [f.nom, f.regle])));
+      const parLaPorte = "import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';\nexport const a = readCorpus(['src']);\n";
+      expect(await prisOrdreTotal(parLaPorte, chemin), 'la PORTE ne doit jamais mordre').toEqual([]);
+    });
+  }
+
+  it('PÉRIMÈTRE : les sélecteurs du mur sont résolus pour les couches couvertes, et ABSENTS des autres', { timeout: 30_000 }, async () => {
+    const selecteursDe = async (rel: string) => {
+      const cfg = await eslint.calculateConfigForFile(`${ROOT}/${rel}`);
+      return JSON.stringify([cfg.rules?.['no-restricted-imports'], cfg.rules?.['no-restricted-syntax']]);
+    };
+    for (const dir of SOUS_LE_MUR) {
+      const rel = sondeTest(dir);
+      const resolus = await selecteursDe(rel);
+      expect(resolus, `Mur MUET sur ${dir} (glob décalé ? dossier renommé ?) — sonde : ${rel}`).toContain('opendirSync');
+      // Le volet `localeCompare` reste à la CLÔTURE DES GÉNÉRATEURS : un test qui asserte l'ordre
+      // que le produit rend par locale mesure un contrat produit, pas un listing.
+      expect(resolus, `${dir} : \`localeCompare\` n’appartient pas au mur des tests — sonde : ${rel}`).not.toContain('localeCompare');
+    }
+    const generateur = await selecteursDe('scripts/docs/build-all.mjs');
+    expect(generateur, 'la clôture des générateurs garde son volet `localeCompare`').toContain('localeCompare');
+    for (const dir of HORS_MUR) {
+      const rel = sondeTest(dir);
+      expect(
+        await selecteursDe(rel),
+        `${dir} n’entre au mur qu’au train suivant — un élargissement non voulu du \`files:\` se lit ici. Sonde : ${rel}`,
+      ).not.toContain('opendirSync');
+    }
   });
 });

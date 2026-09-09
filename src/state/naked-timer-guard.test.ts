@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { scanNakedTimers, SCAN_DIR, ALLOWED } from '../../scripts/guards/lib/nakedTimerScan.mjs';
 
 /**
@@ -12,9 +10,6 @@ import { scanNakedTimers, SCAN_DIR, ALLOWED } from '../../scripts/guards/lib/nak
  * ailleurs dans ce même fichier (défaut mesuré, patron repris de `RATCHET_EXCEPTIONS` du garde-fou
  * label-logic + CLIQUET de péremption, même mécanique que `label-logic-guard.test.ts`).
  */
-
-const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const DIR = join(ROOT, SCAN_DIR);
 
 // Exemptions JUSTIFIÉES par SITE — une entrée = `fichier :: MOTIF`, le motif étant la ligne de code
 // du timer telle qu'écrite (trimée). L'ancre est INSENSIBLE au numéro de ligne : déplacer le site ne
@@ -36,25 +31,12 @@ const ALLOWED_SITES: Record<string, string> = {
     'nettoyé par `clearTrackedTimers`), magasin distinct.',
 };
 
-function scanFiles(): { abs: string; rel: string }[] {
-  const out: { abs: string; rel: string }[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir, { withFileTypes: true })) {
-      const p = join(dir, e.name);
-      if (e.isDirectory()) walk(p);
-      else if (/\.[mc]?tsx?$/.test(e.name) && !/\.test\.[mc]?tsx?$/.test(e.name)) out.push({ abs: p, rel: relative(ROOT, p).split('\\').join('/') });
-    }
-  };
-  walk(DIR);
-  return out;
-}
-
 function findingsAcrossFiles(): { site: string; rel: string; line: number; call: string }[] {
   const out: { site: string; rel: string; line: number; call: string }[] = [];
-  for (const { abs, rel } of scanFiles()) {
+  for (const { rel, text } of readCorpus([SCAN_DIR], { exts: ['.ts', '.tsx', '.mts', '.cts'] })) {
     if (ALLOWED.includes(rel)) continue;
-    const lignes = readFileSync(abs, 'utf8').split('\n');
-    for (const f of scanNakedTimers(lignes.join('\n'))) out.push({ site: `${rel} :: ${lignes[f.line - 1].trim()}`, rel, line: f.line, call: f.call });
+    const lignes = text.split('\n');
+    for (const f of scanNakedTimers(text)) out.push({ site: `${rel} :: ${lignes[f.line - 1].trim()}`, rel, line: f.line, call: f.call });
   }
   return out;
 }

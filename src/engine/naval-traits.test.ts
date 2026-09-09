@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
-import { join, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { shipHasNavalTrait, navalTraitLevel, navalTraitsDe, hullNavalTraits, vesselNavalTraits, navalPassiveOps, navalMoveMod, navalMoveMult, navalSkillTestDR, navalTestTypeDR, navalNavTestMod, navalNavTestDR, hullArmourBonus, belierRam, navalDeckCover, effectiveDeckPostes } from './navalTraits';
 import { resolveCollision } from './collision';
 import { installCost } from './shipBuild';
@@ -322,19 +320,14 @@ describe('navalTraitsDe — foyer UNIQUE de la concaténation type + instance', 
   const RECOMPOSE = /\.\.\.\([^)]*traits\s*\?\?\s*\[\]\)\s*,\s*\.\.\.\([^)]*upgrades\s*\?\?\s*\[\]\)/;
 
   it('AUCUN site de `src/**` ne recompose la liste hors du foyer', () => {
-    const racine = fileURLToPath(new URL('..', import.meta.url));
     const fautifs: string[] = [];
-    const marcher = (dir: string) => {
-      for (const e of readdirSync(dir, { withFileTypes: true })) {
-        const p = join(dir, e.name);
-        if (e.isDirectory()) { marcher(p); continue; }
-        if (!/\.tsx?$/.test(e.name) || e.name === 'navalTraits.ts' || e.name.endsWith('naval-traits.test.ts')) continue;
-        readFileSync(p, 'utf8').split('\n').forEach((l, i) => {
-          if (RECOMPOSE.test(l)) fautifs.push(`${p.slice(racine.length).split(sep).join('/')}:${i + 1}`);
-        });
-      }
-    };
-    marcher(racine);
+    for (const { rel, text } of readCorpus(['src'], { tests: true })) {
+      // Le FOYER (`navalTraits.ts`) et CE fichier sont hors mesure : leur corps EST le motif.
+      if (rel.endsWith('/navalTraits.ts') || rel.endsWith('naval-traits.test.ts')) continue;
+      text.split('\n').forEach((l, i) => {
+        if (RECOMPOSE.test(l)) fautifs.push(`${rel.slice('src/'.length)}:${i + 1}`);
+      });
+    }
     expect(
       fautifs,
       'site(s) recomposant « Traits du type + Améliorations d’instance » à la main : passer par `hullNavalTraits` ' +

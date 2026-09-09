@@ -1,14 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Garde-fou #498 — toute valeur de carac/compétence AFFICHÉE (`src/ui`, `src/state`) passe par les
  * lecteurs canoniques du moteur (`effectiveChar`/`skillBaseValue`, `src/engine`). Motif interdit :
  * un accès brut `.characteristics` (TOKEN large — pas seulement `.characteristics[...]`, un alias
  * `const x = y.characteristics; x[k]` contourne aussi bien mutations/traumas/talents actifs). Scan
- * structurel de `src/ui/**` et `src/state/**`, hors `*.test.ts(x)`/`.d.ts`.
+ * structurel de `src/ui/**` et `src/state/**`, hors `*.test.ts(x)` (les `.d.ts` ne sont déjà dans
+ * aucun corpus).
  *
  * `CHAR_ACCESS_EXEMPT` (patron des exemptions nominatives au SITE) porte les
  * seuls sites légitimes restants : un champ `characteristics: CharKey[]` d'un NIVEAU de carrière
@@ -18,21 +17,7 @@ import { fileURLToPath } from 'node:url';
  * compte déclaré échoue (zéro entrée fantôme), toute ligne non exemptée échoue aussi.
  */
 
-const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const DIRS = [join(ROOT, 'src', 'ui'), join(ROOT, 'src', 'state')];
-
-function scanFiles(): string[] {
-  const files: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.(ts|tsx)$/.test(e) && !/\.test\.(ts|tsx)$/.test(e) && !e.endsWith('.d.ts')) files.push(p);
-    }
-  };
-  for (const d of DIRS) walk(d);
-  return files;
-}
+const DIRS = ['src/ui', 'src/state'];
 
 const CHAR_ACCESS_RX = /\.characteristics\b/;
 
@@ -79,13 +64,11 @@ const CHAR_ACCESS_EXEMPT: { file: string; match: string; count: number; reason: 
 
 describe('garde-fou lecteurs canoniques carac/compétence à l’affichage (#498)', () => {
   it('aucun src/ui ou src/state n’accède aux caracs hors effectiveChar/skillBaseValue (hors exemptions nominatives)', () => {
-    const files = scanFiles();
     const offenders: string[] = [];
     const exemptHits = new Map<string, number>();
 
-    for (const f of files) {
-      const rel = relative(ROOT, f).split('\\').join('/');
-      const lines = readFileSync(f, 'utf8').split('\n');
+    for (const { rel, text } of readCorpus(DIRS)) {
+      const lines = text.split('\n');
       lines.forEach((line, i) => {
         if (CHAR_ACCESS_RX.test(line)) {
           const exemption = CHAR_ACCESS_EXEMPT.find((e) => e.file === rel && line.includes(e.match));

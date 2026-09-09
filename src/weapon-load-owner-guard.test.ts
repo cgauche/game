@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * GARDE STRUCTURELLE — PROPRIÉTAIRE UNIQUE de l'état de charge : charger une arme sélectionne sa munition,
@@ -26,9 +24,6 @@ import { fileURLToPath } from 'node:url';
  * couvre la forme réellement rencontrée (`x.champ = …`), qui est celle des deux régressions mesurées.
  */
 
-const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const SRC_DIR = join(ROOT, 'src');
-
 /** Champs de l'état de charge — mêmes noms sur `Weapon`, `ItemInstance` et `ShipPoste`. */
 export const LOAD_FIELDS = ['loaded', 'loadedAmmoUid', 'reloadProgress', 'chambered', 'ammoUid'] as const;
 
@@ -46,26 +41,12 @@ export function loadWritesIn(rel: string, source: string): { file: string; line:
   return hits;
 }
 
-function prodFiles(): string[] {
-  const out: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.(ts|tsx)$/.test(e) && !/\.test\.tsx?$/.test(e)) out.push(p);
-    }
-  };
-  walk(SRC_DIR);
-  return out;
-}
-
 describe('PROPRIÉTAIRE UNIQUE de l’état de charge (verrou par construction)', () => {
   it('aucune affectation directe hors `loadWeapon`/`unloadWeapon` (le registre est le SEUL porteur)', () => {
     const found: { file: string; line: number; text: string }[] = [];
-    for (const abs of prodFiles()) {
-      const rel = relative(ROOT, abs).replace(/\\/g, '/');
+    for (const { rel, text } of readCorpus(['src'])) {
       if (OWNER_FILES.includes(rel)) continue;
-      found.push(...loadWritesIn(rel, readFileSync(abs, 'utf-8')));
+      found.push(...loadWritesIn(rel, text));
     }
     expect(
       found.map((f) => `${f.file}:${f.line} ${f.text}`),

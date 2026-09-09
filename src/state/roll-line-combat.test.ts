@@ -16,8 +16,10 @@ import { rule, setRule, resetRule } from '../engine/policy';
 import { findCrewRoleById } from '../data';
 import { RULE_REF } from '../engine/ruleRefs';
 import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, type Combatant, type Difficulty } from '../engine/types';
-import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 
 /**
  * MONTEUR CANONIQUE — les sites de COMBAT (#1153 L1b). Chaque site migré est jugé sur DEUX grandeurs
@@ -461,24 +463,13 @@ describe('SONDES PROMUES (#1153 L1b) — ce que le monteur NE fait PAS encore', 
    * SOURCE (l'appel et son objet-spec), jamais une liste tenue à la main.
    */
   it('TRAPPE — aucun appelant de `rollStep` n’ouvre le mode plafonné (sinon : relayer le palier)', () => {
-    const root = resolve(__dirname, '..');
-    const fichiers: string[] = [];
-    const walk = (dir: string) => {
-      for (const e of readdirSync(dir, { withFileTypes: true })) {
-        const p = join(dir, e.name);
-        if (e.isDirectory()) walk(p);
-        else if (/\.tsx?$/.test(e.name) && !/\.(test|spec)\./.test(e.name)) fichiers.push(p);
-      }
-    };
-    walk(root);
     const sites: string[] = [];
     let vus = 0;
-    for (const f of fichiers) {
-      const src = readFileSync(f, 'utf8');
+    for (const { rel, text: src } of readCorpus(['src'])) {
       // L'appel + son objet-spec (jusqu'à la parenthèse fermante de premier niveau, sur N lignes).
       for (const m of src.matchAll(/rollStep\(([\s\S]{0,600}?)\)\s*[,;)\]}]/g)) {
         vus++;
-        if (/plafond\s*:/.test(m[1])) sites.push(`${relative(root, f)} — ${m[1].slice(0, 80).replace(/\s+/g, ' ')}`);
+        if (/plafond\s*:/.test(m[1])) sites.push(`${rel} — ${m[1].slice(0, 80).replace(/\s+/g, ' ')}`);
       }
     }
     expect(vus, 'le scan doit VOIR des appels — un scan cassé rendrait la garde vide et verte').toBeGreaterThan(16);
@@ -619,19 +610,6 @@ describe('DIFFICULTÉ COMPOSÉE — contrat balayé sur tout le produit cartési
  * STRUCTURELLE : elle lit les SOURCES, jamais une liste tenue à la main.
  */
 describe('DIFFICULTÉ COMBINÉE — étanchéité du vocabulaire et du champ dérivé (#1153)', () => {
-  const sources = (dir: string): string[] => {
-    const out: string[] = [];
-    const walk = (d: string) => {
-      for (const e of readdirSync(d, { withFileTypes: true })) {
-        const p = join(d, e.name);
-        if (e.isDirectory()) walk(p);
-        else if (/\.tsx?$/.test(e.name) && !/\.(test|spec)\./.test(e.name)) out.push(p);
-      }
-    };
-    walk(dir);
-    return out;
-  };
-
   it('l’échelle de Difficulté reste à NEUF crans — « combinee » n’en est pas un', () => {
     expect(Object.keys(DIFFICULTY_MODIFIERS)).toHaveLength(9);
     expect(Object.keys(DIFFICULTY_LABELS)).toHaveLength(9);
@@ -644,15 +622,15 @@ describe('DIFFICULTÉ COMBINÉE — étanchéité du vocabulaire et du champ dé
    *  COMMENTAIRE reste légitime (il explique ce que l'affichage en fera) : le scan neutralise donc
    *  les commentaires avant de chercher, et cherche accents ET casse confondus. */
   it('le mot ne se MANIPULE ni dans `src/engine`, ni dans `src/state` — il est de l’affichage', () => {
-    const fichiers = [...sources(resolve(__dirname, '../engine')), ...sources(resolve(__dirname, '.'))];
+    const fichiers = readCorpus(['src/engine', 'src/state']);
     expect(fichiers.length, 'le scan doit VOIR des fichiers — un scan cassé serait vert à vide').toBeGreaterThan(50);
     const sansCommentaires = (src: string): string => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
     // Les LITTÉRAUX de chaîne du code restant (simples, doubles, gabarits) — c'est là que le mot
     // deviendrait une donnée de moteur.
     const litteraux = (src: string): string[] => [...sansCommentaires(src).matchAll(/'([^'\\\n]*)'|"([^"\\\n]*)"|`([^`\\]*)`/g)]
       .map((m) => m[1] ?? m[2] ?? m[3] ?? '');
-    const fuites = fichiers.filter((f) => litteraux(readFileSync(f, 'utf8')).some((s) => /combin[ée]e/i.test(s)));
-    expect(fuites.map((f) => relative(resolve(__dirname, '..'), f))).toEqual([]);
+    const fuites = fichiers.filter((f) => litteraux(f.text).some((s) => /combin[ée]e/i.test(s)));
+    expect(fuites.map((f) => f.rel.slice('src/'.length))).toEqual([]);
     // Le scan MORD : le même détecteur trouve le mot dans le catalogue i18n, sa seule maison.
     const catalogue = readFileSync(resolve(__dirname, '../i18n/messages/fr.ts'), 'utf8');
     expect(litteraux(catalogue).some((s) => /combin[ée]e/i.test(s)), 'sinon le détecteur ne mesure rien').toBe(true);
@@ -664,7 +642,7 @@ describe('DIFFICULTÉ COMBINÉE — étanchéité du vocabulaire et du champ dé
     expect(decl.length, 'le découpage doit VOIR la déclaration d’entrée').toBeGreaterThan(200);
     expect(decl).not.toContain('difficultyCombined');
     const data = resolve(__dirname, '../data');
-    const json = readdirSync(data).filter((f) => f.endsWith('.json'));
+    const json = listerDossier(data).filter((f) => f.endsWith('.json'));
     expect(json.length).toBeGreaterThan(10);
     const enDonnee = json.filter((f) => readFileSync(join(data, f), 'utf8').includes('difficultyCombined'));
     expect(enDonnee).toEqual([]);

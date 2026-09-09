@@ -117,11 +117,11 @@ _Aucune._
 
 ### MSRC 12 — 6/12 ligne(s) code hors couverture
 - l.85 — `src/data/index.ts:2517` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
-- l.107 — `src/engine/naval-traits.test.ts:303` — it('Plat-bord : palier de LONGUEUR (grande barge ~30 m, bande ouverte au-delà de 20 m) → 45 CO / 60 Enc (MSRC 12 l.107/109)', () => {
+- l.107 — `src/engine/naval-traits.test.ts:301` — it('Plat-bord : palier de LONGUEUR (grande barge ~30 m, bande ouverte au-delà de 20 m) → 45 CO / 60 Enc (MSRC 12 l.107/109)', () => {
 - l.111 — `src/data/index.ts:2517` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
-- l.117 — `src/engine/naval-traits.test.ts:306` — it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, MSRC 12 l.117)', () => {
+- l.117 — `src/engine/naval-traits.test.ts:304` — it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, MSRC 12 l.117)', () => {
 - l.137 — `src/data/schemas/defs/sea-weather.ts:106` — /** Gréement de course (MSRC 12 l.137) : DELTA de % voiles ajouté au tableau standard par aspect de vent. */
-- l.140 — `src/engine/naval-traits.test.ts:193` — it('Gréement de course → −10 au Test de Navigation (MSRC 12 l.140) ; converti −1 DR d’équipage', () => {
+- l.140 — `src/engine/naval-traits.test.ts:191` — it('Gréement de course → −10 au Test de Navigation (MSRC 12 l.140) ; converti −1 DR d’équipage', () => {
 
 ### ADE II 4 — 4/5 ligne(s) code hors couverture
 - l.41 — `src/state/interlude-activities.test.ts:319` — it('Identifier : exige Savoir (Magie) acquis (« Pour d’autres sorciers », ADE II 4 l.41)', () => {
@@ -179,4 +179,4 @@ LDB 38
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, EDO, EDOC, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: 47d828d7369e0af5b1dd22e8f1d67ce72fb0b9b9 (4058 fichiers, 152 dossiers) corps: fd15d078443f64d5c48ca5057882beca976a8c60 -->
+<!-- sources-empreinte: 441d2e91b9d3085b7b6fd78d73859a0694636bcd (4058 fichiers, 152 dossiers) corps: d0cb4a26adda97682897284e1947aa55474cf5b8 -->

@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * CLIQUET — une étape de cascade QUI LANCE DIT sa Difficulté (#1112). Une étape-jet porte `base` et
@@ -14,18 +13,7 @@ import { join } from 'node:path';
  * DÉCROISSANTE : un site assaini doit ABAISSER sa baseline (cliquet à double sens).
  */
 
-const STATE = join(process.cwd(), 'src', 'state');
-
-/** Fichiers `.ts` de production de `src/state` (récursif, tests exclus). */
-function sourceFiles(dir: string): string[] {
-  const out: string[] = [];
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) { out.push(...sourceFiles(p)); continue; }
-    if (e.endsWith('.ts') && !e.includes('.test.')) out.push(p);
-  }
-  return out;
-}
+const STATE = 'src/state';
 
 /** Neutralise commentaires, chaînes et gabarits (contenu remplacé par des espaces, sauts conservés) —
  *  les accolades d'un `${…}` ne doivent JAMAIS compter dans l'appariement du littéral. */
@@ -95,9 +83,10 @@ const BASELINE: Record<string, number> = {};
 describe('cliquet — une étape de cascade qui LANCE dit sa Difficulté (#1112)', () => {
   it('aucun nouveau site sans Difficulté, et toute baseline assainie est ABAISSÉE', () => {
     const counts: Record<string, number[]> = {};
-    for (const f of sourceFiles(STATE)) {
-      const found = stepsWithoutDifficulty(readFileSync(f, 'utf8'));
-      if (found.length) counts[f.slice(STATE.length + 1).split('\\').join('/')] = found;
+    for (const { rel, text } of readCorpus([STATE], { exts: ['.ts'] })) {
+      const found = stepsWithoutDifficulty(text);
+      // La CLÉ de la baseline est relative à `src/state/`.
+      if (found.length) counts[rel.slice(STATE.length + 1)] = found;
     }
     const over: string[] = [];
     for (const [f, l] of Object.entries(counts)) {

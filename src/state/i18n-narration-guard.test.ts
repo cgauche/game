@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Garde-fou i18n — narration moteur (Phase C, plan évacué → #320).
@@ -31,7 +29,6 @@ import { fileURLToPath } from 'node:url';
  * d'étape de MODALE (surface UI distincte, Phase D) — leurs chaînes ne sont PAS du journal.
  */
 
-const ROOT = fileURLToPath(new URL('../../', import.meta.url)); // src/state/ → ../../ = racine du repo
 const SCAN_DIRS = ['src/engine', 'src/state'];
 
 /** Fichiers DISPENSÉS par NATURE (#1117) : leur sortie n'est pas une surface de JEU mais une sortie
@@ -394,19 +391,11 @@ export function narrationCount(raw: string): number {
 
 function countsByFile(): Record<string, number> {
   const counts: Record<string, number> = {};
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e) && !/\.test\.[tj]sx?$/.test(e)) {
-        const rel = relative(ROOT, p).split('\\').join('/');
-        if (DEV_ONLY.has(rel)) continue; // sortie d'OUTIL de dev : hors périmètre de la narration de JEU
-        const n = narrationCount(readFileSync(p, 'utf8'));
-        if (n > 0) counts[rel] = n;
-      }
-    }
-  };
-  for (const d of SCAN_DIRS) walk(join(ROOT, d));
+  for (const { rel, text } of readCorpus(SCAN_DIRS)) {
+    if (DEV_ONLY.has(rel)) continue; // sortie d'OUTIL de dev : hors périmètre de la narration de JEU
+    const n = narrationCount(text);
+    if (n > 0) counts[rel] = n;
+  }
   return counts;
 }
 

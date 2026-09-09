@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { scanCombatEventPort } from '../../scripts/guards/lib/combatEventPort.mjs';
 
 /**
@@ -19,7 +17,6 @@ import { scanCombatEventPort } from '../../scripts/guards/lib/combatEventPort.mj
  * FIXE, il n'y a pas de baseline à faire décroître (zéro violation tolérée).
  */
 
-const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const SCAN_DIRS = ['src'];
 
 /** Importeurs AUTORISÉS de `fireTriggers`/`runCombatHooks` (chemins POSIX relatifs à la racine). */
@@ -34,26 +31,12 @@ const WHITELIST = new Set<string>([
 
 const isTest = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
 
-function scanFiles(): string[] {
-  const files: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e)) files.push(p);
-    }
-  };
-  for (const d of SCAN_DIRS) walk(join(ROOT, d));
-  return files;
-}
-
 describe('quarantaine d’import — bus d’événements de combat unique (#316)', () => {
   it('fireTriggers / runCombatHooks importés UNIQUEMENT par la porte + les modules bus-owned', () => {
     const offenders: string[] = [];
-    for (const f of scanFiles()) {
-      const rel = relative(ROOT, f).split('\\').join('/');
+    for (const { rel, text } of readCorpus(SCAN_DIRS, { tests: true })) {
       if (isTest(rel) || WHITELIST.has(rel)) continue;
-      for (const { line, symbol } of scanCombatEventPort(readFileSync(f, 'utf8'))) {
+      for (const { line, symbol } of scanCombatEventPort(text)) {
         offenders.push(`${rel}:${line} importe ${symbol}`);
       }
     }

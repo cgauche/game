@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Garde-fou `isolate: false` × mock de MODULE — la suite tourne avec `test.isolate: false`
@@ -22,11 +23,13 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url)); // racine du projet (src/ → ..)
 
-/** Racines scannées — miroir de `test.include` (vite.config.ts), verrouillé par le test de dérive. */
+/** Racines scannées — miroir de `test.include` (vite.config.ts), verrouillé par le test de dérive.
+ *  Une racine du miroir qui DISPARAÎT fait LEVER `readCorpus` (refus du vide, par base) : la garde
+ *  rougit en nommant la racine, au lieu de scanner un périmètre amputé en silence. */
 const INCLUDE_ROOTS: { dir: string; re: RegExp; glob: string }[] = [
-  { dir: join(ROOT, 'src'), re: /\.test\.(ts|tsx)$/, glob: 'src/**/*.test.{ts,tsx}' },
-  { dir: join(ROOT, 'server', 'src'), re: /\.test\.ts$/, glob: 'server/src/**/*.test.ts' },
-  { dir: join(ROOT, 'scripts', 'map'), re: /\.test\.ts$/, glob: 'scripts/map/**/*.test.ts' },
+  { dir: 'src', re: /\.test\.(ts|tsx)$/, glob: 'src/**/*.test.{ts,tsx}' },
+  { dir: 'server/src', re: /\.test\.ts$/, glob: 'server/src/**/*.test.ts' },
+  { dir: 'scripts/map', re: /\.test\.ts$/, glob: 'scripts/map/**/*.test.ts' },
 ];
 
 const VI = 'vi';
@@ -42,19 +45,13 @@ export function moduleMockHits(source: string, label: string): string[] {
   return out;
 }
 
-function scanIncludedTests(): string[] {
-  const files: string[] = [];
-  const walk = (dir: string, re: RegExp) => {
-    let entries: string[];
-    try { entries = readdirSync(dir); } catch { return; }
-    for (const e of entries) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) { if (e !== 'node_modules') walk(p, re); }
-      else if (re.test(e)) files.push(p);
-    }
-  };
-  for (const r of INCLUDE_ROOTS) walk(r.dir, r.re);
-  return files;
+/** Les fichiers de TEST des racines du miroir, avec leur chemin POSIX depuis la racine du dépôt. */
+function scanIncludedTests(): { rel: string; text: string }[] {
+  return INCLUDE_ROOTS.flatMap(({ dir, re }) =>
+    readCorpus([dir], { tests: true })
+      .filter(({ rel }) => re.test(rel))
+      .map(({ rel, text }) => ({ rel, text })),
+  );
 }
 
 const VITE_CONFIG = readFileSync(join(ROOT, 'vite.config.ts'), 'utf8');
@@ -92,10 +89,7 @@ describe('garde-fou — mock de module interdit tant que la suite partage son gr
   it('aucun fichier de test du périmètre ne mocke de module', () => {
     if (!ISOLATE_FALSE) return; // suite isolée par fichier : la liaison redevient déterministe
     const offenders: string[] = [];
-    for (const f of scanIncludedTests()) {
-      const label = relative(ROOT, f).replace(/\\/g, '/');
-      offenders.push(...moduleMockHits(readFileSync(f, 'utf8'), label));
-    }
+    for (const { rel, text } of scanIncludedTests()) offenders.push(...moduleMockHits(text, rel));
     expect(offenders, `Mock de module sous \`isolate: false\` — la liaison dépend de l'ordre des fichiers du worker.\nEnregistrer la donnée fabriquée dans le registre lu à l'appel (patron \`withTenue\`, resolve-membre.test.ts) :\n${offenders.join('\n')}`).toEqual([]);
   });
 });

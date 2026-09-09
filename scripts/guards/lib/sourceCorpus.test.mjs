@@ -24,6 +24,9 @@
 //      multi-dossiers sont la norme (`STRICT_DIRS`/`RATCHET_DIRS` de `labelLogic.mjs`,
 //      `['src','scripts']`) : sur un total, une base évaporée resterait muette derrière une base
 //      peuplée — la moitié perdue du corpus ne dirait rien.
+//  (i) DÉCLARATION : un `*.d.ts` est hors corpus, quelles que soient les `exts` et `tests` demandés —
+//      il n'a aucun corps, donc aucun des motifs qu'une garde cherche, et il fausse tout compte de
+//      modules de production.
 import test from 'node:test'
 import assert from 'node:assert/strict'
 // eslint-disable-next-line no-restricted-imports -- ORACLE du cas (f) : marche naïve TÉMOIN, indépendante de `listerArbre` par construction (sinon le test ne prouverait rien) ; son rendu est trié par unités de code avant comparaison, l’ordre du système de fichiers n’en sort jamais.
@@ -36,7 +39,9 @@ import { readCorpus, viderCorpus } from './sourceCorpus.mjs'
 /** La même racine que celle contre laquelle `sourceCorpus.mjs` normalise ses clés. */
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url)).replace(/[\\/]$/, '')
 
-/** Fixture : deux `.ts` (dont un test), un `.tsx`, un `.md`, un sous-dossier — et un dossier VOISIN. */
+/** Fixture : deux `.ts` (dont un test), un `.tsx`, un `.md`, une DÉCLARATION `.d.ts`, un
+ *  sous-dossier — et un dossier VOISIN. La déclaration est hors corpus : toutes les attentes de
+ *  texte de ce fichier la mesurent par son ABSENCE, en plus du cas (i) qui la nomme. */
 function fixture() {
   const racine = mkdtempSync(join(tmpdir(), 'corpus-'))
   const a = join(racine, 'a')
@@ -47,9 +52,25 @@ function fixture() {
   writeFileSync(join(a, 'un.test.ts'), 'un-test')
   writeFileSync(join(a, 'sous', 'deux.tsx'), 'deux')
   writeFileSync(join(a, 'notes.md'), 'notes')
+  writeFileSync(join(a, 'types.d.ts'), 'declaration')
   writeFileSync(join(b, 'trois.ts'), 'trois')
   return { racine, a, b }
 }
+
+test('une DÉCLARATION `.d.ts` est hors corpus, `tests` et `exts` quels qu’ils soient', () => {
+  const { racine, a } = frais()
+  try {
+    assert.deepEqual(readCorpus([a]).map((f) => f.text), ['deux', 'un'])
+    assert.deepEqual(readCorpus([a], { tests: true }).map((f) => f.text), ['deux', 'un-test', 'un'])
+    assert.deepEqual(readCorpus([a], { exts: ['.ts'] }).map((f) => f.text), ['un'])
+    // Demander l'extension elle-même ne la fait pas entrer : la base ne rend alors AUCUN fichier,
+    // et c'est le refus du vide qui parle.
+    assert.throws(() => readCorpus([a], { exts: ['.d.ts'], tests: true }), /CORPUS VIDE/)
+  } finally {
+    viderCorpus()
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
 
 /** Chaque test part d'un mémo VIDE : le mémo vit aussi longtemps que le module. */
 function frais() {
@@ -155,6 +176,7 @@ function marcheNaive(dir, exts, tests) {
       if (nom.isDirectory()) { descendre(p); continue }
       if (!exts.some((e) => nom.name.endsWith(e))) continue
       if (!tests && /\.test\./.test(nom.name)) continue
+      if (/\.d\.ts$/.test(nom.name)) continue
       out.push(relative(ROOT, p).split('\\').join('/'))
     }
   }

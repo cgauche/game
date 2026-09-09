@@ -57,6 +57,36 @@ const VERROU_DIALECTE = [{
   message: 'Dialecte de parse (#1679 L3b) : le `ts.ScriptKind` se déduit de l’extension par `scriptKindDe` (`scripts/guards/lib/dialecte.mjs`) — une table recopiée au site fait lire un `.mts` en TS ici et en JS là, et un scan silencieusement faux ne se voit pas.',
 }];
 
+/** MUR DE L'ORDRE TOTAL (#1679 L3b, incident #1620 ; étendu aux tests de `src` par #1709 C3c) — les
+ *  NOMS de la marche brute, et les trois messages. Définis ICI parce que DEUX blocs les posent : la
+ *  clôture des générateurs et les tests de `src` (par couche). Une recopie divergerait au premier nom
+ *  ajouté. `readCorpus` est nommé dans le message : un test qui balaie l'arbre lit un CORPUS. */
+const MARCHE_BRUTE = ['readdirSync', 'readdir', 'opendirSync', 'opendir', 'globSync'];
+const MSG_ORDRE_TOTAL =
+  'Ordre total (#1679 L3b) : lister un dossier passe par `listerDossier`/`listerArbre` (`scripts/guards/lib/lister.mjs`), et LIRE un corpus source par `readCorpus` (`scripts/guards/lib/sourceCorpus.mjs`) — un listing brut suit l’ordre du système de fichiers et périme le doc dérivé sur l’autre OS.';
+const MSG_LOCALE_COMPARE =
+  'Ordre total (#1679 L3b) : comparer deux chaînes par `parUnitesDeCode` (`scripts/guards/lib/lister.mjs`) — unités de code, jamais `localeCompare`, dont le verdict suit la locale du processus.';
+
+/** Volet IMPORT du mur : les quatre modules `fs`, chacun avec les cinq noms de la marche brute. */
+const ORDRE_TOTAL_IMPORTS = {
+  paths: ['fs', 'node:fs', 'fs/promises', 'node:fs/promises'].map((name) => ({
+    name,
+    importNames: MARCHE_BRUTE,
+    message: MSG_ORDRE_TOTAL,
+  })),
+};
+
+/** Volet SYNTAXE du LISTAGE : accès par membre et déstructuration. */
+const VERROU_LISTAGE = [
+  { selector: `MemberExpression[property.name=/^(${MARCHE_BRUTE.join('|')})$/]`, message: MSG_ORDRE_TOTAL },
+  { selector: `ObjectPattern > Property[key.name=/^(${MARCHE_BRUTE.join('|')})$/]`, message: MSG_ORDRE_TOTAL },
+];
+
+/** Volet COMPARAISON DE CHAÎNES — porté par la seule clôture des générateurs (cf. le bloc des tests). */
+const VERROU_LOCALE_COMPARE = [
+  { selector: "CallExpression[callee.property.name='localeCompare']", message: MSG_LOCALE_COMPARE },
+];
+
 /** PURETÉ DE COUCHE (#1709 C3b-2 ; CLAUDE.md règle stricte 3, issues #8 et #161) : la couche AMONT
  *  n'a AUCUNE arête d'EXÉCUTION vers la couche AVAL. Le critère est STRUCTUREL, jamais nominatif :
  *  ce qui est élidé à la compilation (`import type … from`, `import { type X }` tout-type,
@@ -65,7 +95,7 @@ const VERROU_DIALECTE = [{
  *  `@/…` (`tsconfig.json` `paths`) et le `export … from`.
  *
  *  DEUX règles, parce qu'aucune ne suffit seule (mesuré sur 7 formes d'import, cf.
- *  `src/eslint-purete-de-couche.test.ts` qui rejoue la table sur la config RÉSOLUE) :
+ *  `src/eslint-ordre-total-et-purete.test.ts` qui rejoue la table sur la config RÉSOLUE) :
  *  `no-restricted-imports` ne visite que `ImportDeclaration` / `ExportNamedDeclaration[source]` /
  *  `ExportAllDeclaration` (`node_modules/eslint/lib/rules/no-restricted-imports.js` — aucun
  *  `ImportExpression`), donc l'import DYNAMIQUE lui échappe et revient à `no-restricted-syntax`.
@@ -264,31 +294,11 @@ export default tseslint.config(
     ],
     ignores: ['scripts/guards/lib/lister.mjs'],
     rules: {
-      'no-restricted-imports': ['error', {
-        paths: ['fs', 'node:fs', 'fs/promises', 'node:fs/promises'].map((name) => ({
-          name,
-          importNames: ['readdirSync', 'readdir', 'opendirSync', 'opendir', 'globSync'],
-          message: 'Ordre total (#1679 L3b) : lister un dossier passe par `listerDossier`/`listerArbre` (`scripts/guards/lib/lister.mjs`) — un listing brut suit l’ordre du système de fichiers et périme le doc dérivé sur l’autre OS.',
-        })),
-      }],
+      'no-restricted-imports': ['error', ORDRE_TOTAL_IMPORTS],
       // `VERROU_DIALECTE` est REDIT ici : en flat config, le dernier bloc qui déclare une règle REMPLACE
       // ses options — l'omettre désarmerait le mur du dialecte sur `scripts/guards/lib/**`, où vivent 12
       // des 14 sites migrés.
-      'no-restricted-syntax': ['error',
-        ...VERROU_DIALECTE,
-        {
-          selector: 'MemberExpression[property.name=/^(readdirSync|readdir|opendirSync|opendir|globSync)$/]',
-          message: 'Ordre total (#1679 L3b) : lister un dossier passe par `listerDossier`/`listerArbre` (`scripts/guards/lib/lister.mjs`) — un listing brut suit l’ordre du système de fichiers et périme le doc dérivé sur l’autre OS.',
-        },
-        {
-          selector: 'ObjectPattern > Property[key.name=/^(readdirSync|readdir|opendirSync|opendir|globSync)$/]',
-          message: 'Ordre total (#1679 L3b) : lister un dossier passe par `listerDossier`/`listerArbre` (`scripts/guards/lib/lister.mjs`) — un listing brut suit l’ordre du système de fichiers et périme le doc dérivé sur l’autre OS.',
-        },
-        {
-          selector: "CallExpression[callee.property.name='localeCompare']",
-          message: 'Ordre total (#1679 L3b) : comparer deux chaînes par `parUnitesDeCode` (`scripts/guards/lib/lister.mjs`) — unités de code, jamais `localeCompare`, dont le verdict suit la locale du processus.',
-        },
-      ],
+      'no-restricted-syntax': ['error', ...VERROU_DIALECTE, ...VERROU_LISTAGE, ...VERROU_LOCALE_COMPARE],
     },
   },
   {
@@ -331,6 +341,32 @@ export default tseslint.config(
     files: ['src/state/flowOutcomes.ts', 'src/state/rollFlowSpecs.ts', 'src/state/encounterPsychFlow.ts'],
     rules: {
       'no-restricted-imports': ['error', pureteImports('state', AVALS_STATE)],
+    },
+  },
+  {
+    // MUR DE L'ORDRE TOTAL — LES TESTS DE `src` (#1709 C3c-1). Une garde qui balaie l'arbre réel lit un
+    // CORPUS : `readCorpus` (`scripts/guards/lib/sourceCorpus.mjs`, mémoïsé, gelé, ordre total, refus du
+    // vide par base) ; un LISTAGE de dossier passe par `listerDossier`/`listerArbre`. La marche brute
+    // n'est plus écrivable ici — ni par import nommé, ni par membre, ni par déstructuration.
+    // PÉRIMÈTRE PAR COUCHE : `src/engine`, `src/state` et la racine de `src`. `src/ui`, `src/gameIso`,
+    // `src/audio` et `src/scenes` entrent au train C3c-2 ; `src/data/**` est IGNORÉ par ESLint
+    // (`ignores` de tête) et entre au train C3c-3, avec la levée de cet `ignores` pour ses tests.
+    // `VERROU_MARQUES` est REDIT : en flat config, le dernier bloc qui déclare `no-restricted-syntax`
+    // REMPLACE ses options — c'est la seule option que ces tests résolvent aujourd'hui (mesuré sur la
+    // config résolue, cf. `src/eslint-ordre-total-et-purete.test.ts`), l'omettre désarmerait #1262/#1318.
+    // `VERROU_LOCALE_COMPARE` n'est PAS repris : l'ordre total vise le déterminisme cross-OS des docs
+    // DÉRIVÉS ; un test qui asserte l'ordre que le PRODUIT rend par locale (`src/ui/compendium/
+    // relations.test.ts` compare la donnée réelle à `localeCompare(b, 'fr')` ; deux scénarios trient des
+    // ids en `{ numeric: true }`, que `lister.mjs` ne sait pas exprimer) mesure un contrat PRODUIT, pas
+    // un listing — le refuser ici exigerait des exemptions au site.
+    files: [
+      'src/engine/**/*.test.ts', 'src/engine/**/*.test.tsx',
+      'src/state/**/*.test.ts', 'src/state/**/*.test.tsx',
+      'src/*.test.ts', 'src/*.test.tsx',
+    ],
+    rules: {
+      'no-restricted-imports': ['error', ORDRE_TOTAL_IMPORTS],
+      'no-restricted-syntax': ['error', ...VERROU_MARQUES, ...VERROU_LISTAGE],
     },
   },
 );

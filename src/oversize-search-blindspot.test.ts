@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listerArbre } from '../scripts/guards/lib/lister.mjs';
 
 /**
  * Garde « angle mort de recherche » — les outils de lecture/recherche lean-ctx (`ctx_search` et
@@ -44,21 +45,14 @@ const FROZEN_SOURCE_MD = [
 
 /** Parcourt `dir` récursivement et rend les chemins relatifs à ROOT (séparateur `/`) des fichiers > seuil. */
 function oversizeIn(dir: string, opts: { ext?: RegExp; skipDirs?: string[] } = {}): string[] {
-  const out: string[] = [];
-  const walk = (abs: string) => {
-    for (const entry of readdirSync(abs)) {
-      const p = join(abs, entry);
-      const rel = relative(ROOT, p).split('\\').join('/');
-      if (statSync(p).isDirectory()) {
-        if (opts.skipDirs?.some((d) => rel === d || rel.startsWith(`${d}/`))) continue;
-        walk(p);
-      } else {
-        if (opts.ext && !opts.ext.test(entry)) continue;
-        if (statSync(p).size > SEUIL_OCTETS) out.push(rel);
-      }
-    }
+  const dansLeSaut = (interne: string) => {
+    const rel = `${dir}/${interne}`;
+    return opts.skipDirs?.some((d) => rel === d || rel.startsWith(`${d}/`)) ?? false;
   };
-  walk(join(ROOT, dir));
+  const out = listerArbre(join(ROOT, dir), {
+    descendre: (interne) => !dansLeSaut(interne),
+    filtre: (interne) => (!opts.ext || opts.ext.test(interne)) && statSync(join(ROOT, dir, interne)).size > SEUIL_OCTETS,
+  }).map((interne) => `${dir}/${interne}`);
   return out.sort();
 }
 

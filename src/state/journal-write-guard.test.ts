@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { scanJournalWrite } from '../../scripts/guards/lib/journalWrite.mjs';
 
 /**
@@ -17,25 +18,11 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ →
 const SCAN_DIRS = ['src/state'];
 const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel === 'src/state/store.ts';
 
-function scanFiles(): string[] {
-  const files: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e)) files.push(p);
-    }
-  };
-  for (const d of SCAN_DIRS) walk(join(ROOT, d));
-  return files;
-}
-
 function countsByFile(): Record<string, number> {
   const counts: Record<string, number> = {};
-  for (const f of scanFiles()) {
-    const rel = relative(ROOT, f).split('\\').join('/');
+  for (const { rel, text } of readCorpus(SCAN_DIRS, { tests: true })) {
     if (EXCLUDED(rel)) continue;
-    const n = scanJournalWrite(rel, readFileSync(f, 'utf8')).length;
+    const n = scanJournalWrite(rel, text).length;
     if (n > 0) counts[rel] = n;
   }
   return counts;

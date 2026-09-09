@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';
 // @ts-expect-error - lib de garde ESM JS (pas de types)
 import { codeSeul } from '../scripts/guards/lib/commentPoison.mjs';
 
@@ -31,12 +29,10 @@ import { codeSeul } from '../scripts/guards/lib/commentPoison.mjs';
  * littéral de chemin absolu, il est donc soumis à sa propre garde comme le reste du périmètre.
  */
 
-const ROOT = fileURLToPath(new URL('..', import.meta.url)); // racine du projet (src/ → ..)
-
 /** Racines scannées : dossier + extensions retenues. */
-const SCAN_ROOTS: { dir: string; re: RegExp }[] = [
-  { dir: join(ROOT, 'src'), re: /\.(ts|tsx)$/ },
-  { dir: join(ROOT, 'scripts'), re: /\.(mjs|mts)$/ },
+const SCAN_ROOTS: { dir: string; exts: string[] }[] = [
+  { dir: 'src', exts: ['.ts', '.tsx'] },
+  { dir: 'scripts', exts: ['.mjs', '.mts'] },
 ];
 
 const WIN_DRIVE = /(?<![A-Za-z])[A-Za-z]:[\\/]+[A-Za-z0-9._-]/g;
@@ -57,18 +53,10 @@ export function absoluteMachinePathIn(line: string): string | null {
   return null;
 }
 
-function scanFiles(): string[] {
-  const files: string[] = [];
-  const walk = (dir: string, re: RegExp) => {
-    for (const e of readdirSync(dir)) {
-      if (e === 'node_modules') continue;
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p, re);
-      else if (re.test(e)) files.push(p);
-    }
-  };
-  for (const r of SCAN_ROOTS) walk(r.dir, r.re);
-  return files;
+function scanFiles(): { rel: string; text: string }[] {
+  return SCAN_ROOTS.flatMap(({ dir, exts }) =>
+    readCorpus([dir], { exts, tests: true }).map(({ rel, text }) => ({ rel, text })),
+  );
 }
 
 const DRIVE = 'C' + ':';
@@ -120,9 +108,8 @@ describe('garde-fou chemins portables — aucun chemin absolu de machine dans le
 
   it('aucune source du périmètre ne porte de chemin absolu de machine (tolérance ZÉRO)', () => {
     const offenders: string[] = [];
-    for (const f of scanFiles()) {
-      const rel = relative(ROOT, f).split('\\').join('/');
-      const lines = (codeSeul(readFileSync(f, 'utf8')) as string).split(/\r?\n/);
+    for (const { rel, text } of scanFiles()) {
+      const lines = (codeSeul(text) as string).split(/\r?\n/);
       lines.forEach((line, i) => {
         const hit = absoluteMachinePathIn(line);
         if (hit) offenders.push(`${rel}:${i + 1} → ${hit}`);

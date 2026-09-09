@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import type { Combatant } from './types';
 import { applyOps } from './ops';
 
@@ -38,16 +39,6 @@ const ANCHOR = /\bsource\b|sourceSpellId|effectId|sourceSpell\b/;
  *  `imbrique(…)` est LA dérivation du ctx relayé pour les ops imbriquées (`engine/ops.ts`, un seul site
  *  de définition) : elle n'ôte que le drapeau de rejeu, l'ancrage y descend intact. */
 const FORWARDED = /\bctx\b|Ctx\b|\binner\b|\bimbrique\(/;
-
-function tsFiles(dir: string): string[] {
-  const out: string[] = [];
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
-    const p = join(dir, e.name);
-    if (e.isDirectory()) out.push(...tsFiles(p));
-    else if (/\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) out.push(p);
-  }
-  return out;
-}
 
 /** Arguments de premier niveau d'un appel dont `(` commence à `open` — chaînes et imbrications sautées. */
 function callArgs(src: string, open: number): string[] {
@@ -100,9 +91,9 @@ interface Callsite { at: string; key: string; opsDisp: string; ctxDisp: string; 
 function unanchoredCallsites(): Callsite[] {
   const posts = postingKinds();
   const found: Callsite[] = [];
-  for (const file of tsFiles(SRC)) {
-    const src = readFileSync(file, 'utf8');
-    const rel = file.slice(SRC.length).replace(/\\/g, '/').replace(/^\/?/, '');
+  for (const { rel: relDepot, text: src } of readCorpus(['src'])) {
+    // La CLÉ de la baseline est relative à `src/` (`engine/ops.ts`), pas à la racine du dépôt.
+    const rel = relDepot.slice('src/'.length);
     let idx = 0;
     while ((idx = src.indexOf('applyOps(', idx)) >= 0) {
       const open = idx + 'applyOps'.length;

@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * ANTI-DÉRIVE DU SYSTÈME DE JET — « tout passe par notre système » (fabrique + atomes PARTAGÉS).
@@ -27,25 +28,12 @@ import { join } from 'node:path';
  * DR MAX) reste le complément à ajouter.
  */
 const STATE_DIR = fileURLToPath(new URL('.', import.meta.url)); // src/state
-const ENGINE_DIR = fileURLToPath(new URL('../engine', import.meta.url)); // src/engine
-
-function tsFiles(dir: string, acc: string[] = []): string[] {
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, e.name);
-    if (e.isDirectory()) tsFiles(full, acc);
-    else if (e.name.endsWith('.ts') && !e.name.includes('.test.')) acc.push(full);
-  }
-  return acc;
-}
-const FILES = [...tsFiles(STATE_DIR), ...tsFiles(ENGINE_DIR)];
-const rel = (f: string) => f.slice(Math.max(0, f.indexOf('src'))).replace(/\\/g, '/');
 
 /** Toutes les occurrences `chemin:ligne` d'un motif dans le code de résolution (hors tests). */
 function scan(re: RegExp): string[] {
   const out: string[] = [];
-  for (const f of FILES) {
-    const src = readFileSync(f, 'utf8');
-    for (const m of src.matchAll(re)) out.push(`${rel(f)}:${src.slice(0, m.index!).split('\n').length}`);
+  for (const { rel, text: src } of readCorpus(['src/state', 'src/engine'], { exts: ['.ts'] })) {
+    for (const m of src.matchAll(re)) out.push(`${rel}:${src.slice(0, m.index!).split('\n').length}`);
   }
   return out;
 }

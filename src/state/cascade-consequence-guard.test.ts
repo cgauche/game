@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ESLint } from 'eslint';
@@ -274,18 +273,11 @@ describe('cliquet du canal — l’ISSUE d’un jet ne se compose qu’aux GOULO
   it('src/state RÉEL : aucun fichier ne compose d’issue hors goulot (la population EST le contrat)', async () => {
     // Pré-filtre par SOUS-CHAÎNE nue (« flowOutcomes ») — aucune forme d'import n'y échappe, et seuls
     // les candidats sont lintés (linter tout `src/state` coûte ~8 s à chaque run pour le même verdict).
-    // Scan de population borné par le DISQUE (readdir+stat+read de tout src/state), pas par la logique —
-    // lectures menées EN PARALLÈLE (Promise.all) et budget de test explicite (patron ui-ratchets.test.ts).
-    const candidats: string[] = [];
-    const walk = async (dir: string): Promise<void> => {
-      const entries = await readdir(dir);
-      await Promise.all(entries.map(async (e) => {
-        const p = join(dir, e);
-        if ((await stat(p)).isDirectory()) { await walk(p); return; }
-        if (/\.tsx?$/.test(e) && (await readFile(p, 'utf8')).includes('flowOutcomes')) candidats.push(p);
-      }));
-    };
-    await walk(join(ROOT, 'src', 'state'));
+    // La population EST le corpus réel de `src/state`, tests compris, lu par `readCorpus` — mémoïsé par
+    // clé, donc partagé avec les autres gardes du même worker.
+    const candidats = readCorpus(['src/state'], { tests: true })
+      .filter(({ text }) => text.includes('flowOutcomes'))
+      .map(({ abs }) => abs);
     const res = await eslint.lintFiles(candidats);
     const offenders = res.flatMap((r) => r.messages
       .filter((m) => m.ruleId === 'no-restricted-imports')

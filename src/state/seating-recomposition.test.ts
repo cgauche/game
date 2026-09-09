@@ -14,6 +14,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { useGame } from './store';
 import { emptyScene, type Scene } from './scene';
 import { assignSeat, seatPoseOf } from './seating';
@@ -171,21 +172,11 @@ describe('recomposition du groupe — l’emplacement dont le corps change se l�
 describe('la couture d’occupation est UNIQUE', () => {
   const ROOT = path.resolve(__dirname, '..', '..');
   const lire = (rel: string) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
-  const sources = (dir: string): string[] => {
-    const out: string[] = [];
-    const walk = (d: string) => {
-      for (const e of fs.readdirSync(d, { withFileTypes: true })) {
-        const p = path.join(d, e.name);
-        if (e.isDirectory()) walk(p);
-        else if (/\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) out.push(path.relative(ROOT, p).replace(/\\/g, '/'));
-      }
-    };
-    walk(path.join(ROOT, dir));
-    return out;
-  };
 
   it('un SEUL site de `src/**` réconcilie l’occupation d’une recomposition', () => {
-    const appelants = sources('src').filter((rel) => rel !== 'src/state/seating.ts' && /releaseRecomposedRanks\(/.test(lire(rel)));
+    const appelants = readCorpus(['src'])
+      .filter(({ rel, text }) => rel !== 'src/state/seating.ts' && /releaseRecomposedRanks\(/.test(text))
+      .map(({ rel }) => rel);
     expect(appelants).toEqual(['src/state/store.ts']);
   });
 

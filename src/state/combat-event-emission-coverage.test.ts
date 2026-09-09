@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { valeursDe } from '../data/schemas/grammaire/meta';
 import { effectTriggerSchema } from '../data/schemas/grammaire/mecanique';
 import type { EffectTrigger } from './flow';
@@ -21,8 +19,6 @@ import type { EffectTrigger } from './flow';
  * Test — combat OU scène OU entretien, MSRC 16), sa PORTE DÉDIÉE `fireTriggers(…, '<trigger>'` dans le
  * module ÉMETTEUR whitelisté (`triggeredEffects.ts` porte `fireOwnTestFailed`, l'unique point d'émission).
  */
-
-const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const BUS_OWNED = ['src/state/combat/roundHooks.ts', 'src/state/combat/turnHooks.ts', 'src/state/clockHooks.ts'];
 // Portes DÉDIÉES hors cycle de combat : un émetteur nommé fié à un seam qui n'est pas le bus de combat
 // (pas d'`emitCombatEvent`, ils tirent aussi hors combat), mais un point d'émission RÉEL et unique.
@@ -36,19 +32,9 @@ const DEDICATED_EMITTERS = ['src/state/triggeredEffects.ts', 'src/state/upkeep.t
 const isTest = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
 
 function tsFiles(): { rel: string; src: string }[] {
-  const out: { rel: string; src: string }[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e)) {
-        const rel = relative(ROOT, p).split('\\').join('/');
-        if (!isTest(rel)) out.push({ rel, src: readFileSync(p, 'utf8') });
-      }
-    }
-  };
-  walk(join(ROOT, 'src'));
-  return out;
+  return readCorpus(['src'], { tests: true })
+    .filter(({ rel }) => !isTest(rel))
+    .map(({ rel, text }) => ({ rel, src: text }));
 }
 
 /** Ensemble des triggers ayant ≥1 émission de production. */

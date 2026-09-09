@@ -1,7 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { useGame } from './store';
 import { runDailyUpkeep } from './upkeep';
 import { fireClockTriggers } from './clockHooks';
@@ -227,21 +225,13 @@ describe('Effets de mutation lus AU REGISTRE (jamais sur l’instance gelée)', 
 });
 
 describe('CADENCE — aucun jet authoré sous un déclencheur d’horloge tant que le canal DIFFÉRÉ manque', () => {
-  /** Tous les documents authorés des deux racines (mêmes racines que les gardes de structure). */
-  const documents = (): { rel: string; json: unknown }[] => {
-    const root = fileURLToPath(new URL('../..', import.meta.url));
-    const out: { rel: string; json: unknown }[] = [];
-    const walk = (dir: string): void => {
-      for (const e of readdirSync(dir)) {
-        const p = join(dir, e);
-        if (statSync(p).isDirectory()) walk(p);
-        else if (e.endsWith('.json')) out.push({ rel: relative(root, p).split('\\').join('/'), json: JSON.parse(readFileSync(p, 'utf8')) });
-      }
-    };
-    walk(join(root, 'src/data'));
-    walk(join(root, 'src/scenes'));
-    return out;
-  };
+  /** Tous les documents authorés des deux racines (mêmes racines que les gardes de structure).
+   *  `tests: true` parce que c'est l'INCLUSION qui est le contrat : la mesure porte sur TOUT document
+   *  authoré. Aucun `.json` ne porte `.test.` aujourd'hui — sans l'option, un document nommé ainsi
+   *  demain sortirait du scan sans un mot. */
+  const documents = (): { rel: string; json: unknown }[] =>
+    readCorpus(['src/data', 'src/scenes'], { exts: ['.json'], tests: true })
+      .map(({ rel, text }) => ({ rel, json: JSON.parse(text) as unknown }));
 
   /** Chaque `TriggeredEffect` authoré d'un document, quel que soit le champ qui le porte. */
   const effetsDeclenches = (node: unknown, out: { trigger: string; flow: unknown }[] = []): { trigger: string; flow: unknown }[] => {

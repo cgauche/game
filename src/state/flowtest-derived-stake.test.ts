@@ -25,7 +25,8 @@
  * volet « aucun renvoi MORT »). La mutation qui MORD ici est la dérivation débranchée, pas le renommage.
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { simpleTriggeredTestStep, withDerivedStake } from './combat/triggeredTest';
@@ -158,7 +159,7 @@ interface Noeud { fichier: string; entryId: string; ft: FlowTest }
 /** Tous les nœuds `kind:'test'` de la base app-owned, avec l'ENTRÉE qui les porte (id STABLE). */
 function noeudsDeTest(): Noeud[] {
   const out: Noeud[] = [];
-  for (const fichier of readdirSync(DATA).filter((f) => f.endsWith('.json'))) {
+  for (const fichier of listerDossier(DATA).filter((f) => f.endsWith('.json'))) {
     let json: unknown;
     try { json = JSON.parse(readFileSync(join(DATA, fichier), 'utf8')); } catch { continue; }
     const entrees = Array.isArray(json) ? json : [json];

@@ -8,7 +8,7 @@ export interface CorpusFile {
 }
 
 export interface ReadCorpusOptions {
-  /** Extensions retenues (défaut : `.ts`, `.tsx`). */
+  /** Extensions retenues (défaut : `.ts`, `.tsx`). Un `*.d.ts` est hors corpus quoi qu'il arrive. */
   exts?: string[];
   /** Garder les `*.test.*` (défaut : non). */
   tests?: boolean;

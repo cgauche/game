@@ -7,8 +7,9 @@
  *    ATTACHÉE à SA rangée (rendue par `RollRow`, site unique), persistante après validation.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { useGame } from './store';
 import { buildStageSteps } from './travelPostes';
 import { cascadeAppliers } from './cascade';
@@ -101,19 +102,12 @@ describe('Voyage — poste Cartographie (Établir des cartes, test étendu)', ()
   // sa raison. ActivityModal/FocusModal/DispelModal/ReloadModal/useExtendedTestJetProps sont CONVERGÉS
   // sur `RollRow.extendedDr` (plus d'import direct) — toute réapparition d'un import fait échouer ce test.
   it('DrBar : import limité au site unique RollRow + exceptions nommées', () => {
-    const uiDir = fileURLToPath(new URL('../ui/', import.meta.url));
     const importers: string[] = [];
-    const walk = (dir: string, prefix: string) => {
-      for (const entry of readdirSync(dir, { withFileTypes: true })) {
-        if (entry.isDirectory()) { walk(`${dir}/${entry.name}`, `${prefix}${entry.name}/`); continue; }
-        if (!entry.isFile() || !/\.tsx?$/.test(entry.name)) continue;
-        const path = `${prefix}${entry.name}`;
-        if (path === 'DrBar.tsx') continue; // le composant ne s'importe pas lui-même
-        const content = readFileSync(`${dir}/${entry.name}`, 'utf8');
-        if (/from ['"].*\/DrBar['"]/.test(content)) importers.push(path);
-      }
-    };
-    walk(uiDir.replace(/\/$/, ''), '');
+    for (const { rel, text } of readCorpus(['src/ui'], { tests: true })) {
+      const path = rel.slice('src/ui/'.length);
+      if (path === 'DrBar.tsx') continue; // le composant ne s'importe pas lui-même
+      if (/from ['"].*\/DrBar['"]/.test(text)) importers.push(path);
+    }
     // Exception nommée : `MedicModal.tsx` — état d'opération de Chirurgie ARMÉE, visible AVANT/ENTRE
     // les passes (hors de toute rangée de jet ; `SurgeryRollFlow` n'a pas de rangée tant qu'aucune passe
     // n'est ouverte) — pas la barre d'UN jet, le cumul PERSISTANT de l'opération.
