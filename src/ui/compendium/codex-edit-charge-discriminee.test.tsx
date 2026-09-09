@@ -164,7 +164,6 @@ describe('cliquet — champs ÉTRANGERS présentés par les catégories éditabl
     activities: 3, // `recuperer` : `stake`/`stakeForm`/`rule` (enjeu et règle optionnelle d'un autre cas d'activité)
     oups: 2, // Incident de Tir : `min`/`max`, les bornes d100 d'une bande de table (defs/oups.ts)
     reglesOptionnelles: 2, // règle à BANDES : `min`/`max` d'une autre forme de valeur par défaut
-    structures: 1, // `porte` : `occulte`, drapeau d'un mur
     // ENTRÉE #1691 : `terrains` rejoint la même famille — le bloc plein et la matière de ses flancs
     // vont par PAIRE (`solidHeightM` ⟺ `matiere`, `defs/terrains.ts`), si bien qu'un sol nu à qui
     // l'atelier offre l'un des deux se verrait refuser au save. La partition est portée par la

@@ -132,7 +132,10 @@ const CLES: Record<string, string> = {
   "massBattleHazards": 'e58c05b6a89d14d1',
   "details": '1d94d0c95e00ff48',
   "names": '8ab7649e0daf9e50',
-  "structures": '16630200f1f162ea',
+  // #1688 : `taille` + `maison` exigés sur les 24 structures (mesuré en donnée : `maison` 2 → 24,
+  // `taille` 0 → 24). La clé projetée qui bouge est `maison`, désormais portée par TOUS les items —
+  // `taille` entre par `meta`/`sections`, d'où une FORME inchangée. Empreinte recalée à la MESURE.
+  "structures": 'de0741d264020293',
   "terrains": 'e542c259ce8b1e79',
   "vehicles": 'dcc320ad1f8760a1',
   "celestialHouses": '0507cb49e07e8336',
