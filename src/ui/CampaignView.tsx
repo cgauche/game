@@ -57,12 +57,10 @@ import { restPlacesHere } from '../state/restFlow';
 import { hoverClickCommits } from './pointerCaps';
 import { controlsActive, controlsCombatant } from '../state/netOwnership';
 import { combatantClickActs } from '../state/combatOrParty';
-import { useGameKeyboard } from './useGameKeyboard';
 import { useGamepad } from './useGamepad';
 import { campaign } from '../scenes/campaign';
 
 export function CampaignView() {
-  useGameKeyboard(); // raccourcis clavier de jeu (registre unique)
   useGamepad(); // couche manette : dispatche les MÊMES intentions que le clavier (registre partagé)
   const scene = useGame((s) => s.scene);
   const mode = useGame((s) => s.mode);

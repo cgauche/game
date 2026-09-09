@@ -5,6 +5,7 @@
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Scene } from '../../state/scene';
+import { publierEditeur } from '../../state/editeurBridge';
 import { Icon } from '../Icon';
 
 export function EditorToolbar({
@@ -63,20 +64,19 @@ export function EditorToolbar({
 }) {
   const [fileOpen, setFileOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  // Fermeture du menu au clic extérieur / Échap.
+  // Fermeture du menu au clic extérieur. Échap passe par le REGISTRE (`editeur-echap`) : la commande
+  // n'est publiée au pont QUE tant que le menu est ouvert — sa PRÉSENCE est ce qui donne la touche au
+  // menu plutôt qu'à la désélection.
   useEffect(() => {
     if (!fileOpen) return;
     const onDown = (e: PointerEvent) => {
       if (!menuRef.current?.contains(e.target as Node)) setFileOpen(false);
     };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setFileOpen(false);
-    };
     document.addEventListener('pointerdown', onDown);
-    document.addEventListener('keydown', onKey);
+    const retirer = publierEditeur({ fermerMenuFichier: () => setFileOpen(false) });
     return () => {
       document.removeEventListener('pointerdown', onDown);
-      document.removeEventListener('keydown', onKey);
+      retirer();
     };
   }, [fileOpen]);
   const item = (label: ReactNode, fn: () => void) => (

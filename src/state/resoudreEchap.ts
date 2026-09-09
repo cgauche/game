@@ -15,7 +15,7 @@
  * rend la main au registre) : sans mémoire partagée, la répétition suivante ouvrirait le menu.
  */
 import type { GameState } from './store';
-import { KEYBINDINGS, effectiveCodes, CODE_ECHAP } from './keybindings';
+import { KEYBINDINGS, effectiveCodes, effectiveMods, modsMatch, CODE_ECHAP, type KeyMod } from './keybindings';
 import { dismissStackSize, dismissTop } from './dismissStack';
 
 /** Jeton de prise quand c'est la PILE qui a répondu (aucun id de raccourci ne peut le valoir). */
@@ -33,13 +33,15 @@ export interface OptionsEchap {
   controlFocused?: boolean;
   /** Répétition automatique du clavier (`KeyboardEvent.repeat`) — jamais vrai pour la manette. */
   repeat?: boolean;
+  /** Modificateurs tenus pendant l'appui — défaut AUCUN (le B de la manette n'en porte pas). */
+  mods?: readonly KeyMod[];
 }
 
 /**
  * Résout un appui d'annulation. Rend le JETON de ce qui a pris la touche (`PRISE_COUCHE` ou l'id du
  * raccourci), ou `null` si rien ne la réclame — l'appelant en déduit s'il doit la consommer.
  */
-export function resoudreEchap(get: () => GameState, { controlFocused = false, repeat = false }: OptionsEchap = {}): string | null {
+export function resoudreEchap(get: () => GameState, { controlFocused = false, repeat = false, mods = [] }: OptionsEchap = {}): string | null {
   if (dismissStackSize() > 0) {
     if (repeat && prise !== null && prise !== PRISE_COUCHE) return prise;
     if (!repeat) dismissTop(); // une pression = au plus UNE fermeture
@@ -48,7 +50,11 @@ export function resoudreEchap(get: () => GameState, { controlFocused = false, re
   }
   const s = get();
   const b = KEYBINDINGS.find(
-    (k) => effectiveCodes(k, s.keyOverrides).includes(CODE_ECHAP) && (!k.notWhenControlFocused || !controlFocused) && k.when(s),
+    (k) =>
+      effectiveCodes(k, s.keyOverrides).includes(CODE_ECHAP) &&
+      modsMatch(effectiveMods(k, s.keyOverrides), mods) &&
+      (!k.notWhenControlFocused || !controlFocused) &&
+      k.when(s),
   );
   if (!b) return null;
   if (repeat && prise !== null && prise !== b.id) return prise;

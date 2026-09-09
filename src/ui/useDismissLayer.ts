@@ -8,9 +8,12 @@
  * PORTE CLAVIER de la pile : ce module installe un écouteur `keydown` en CAPTURE sur `window` tant
  * qu'au moins une couche est montée, et le retire ensuite. Conséquences voulues :
  *  - la pile tranche AVANT tout écouteur local (elle est la couche du dessus par définition) ;
- *  - une surface dismissible répond à Échap sur TOUT écran, y compris ceux qui ne montent pas
- *    `useGameKeyboard` (Compendium, créateur, éditeur) ;
+ *  - une surface dismissible répond à Échap quel que soit l'écran ouvert ;
  *  - pile vide = aucun écouteur, et l'échelle métier du registre reste exactement celle d'avant.
+ *
+ * @clavier-hors-registre l'annulation appartient à la COUCHE du dessus, pas à l'application : elle se
+ * résout par la pile (LIFO), n'est pas remappable, et passe AVANT le registre (garde
+ * `ui/raccourcis-registre.test.ts`).
  *
  * FAIT sur cette porte : elle ne consulte PAS l'état de saisie (champ focalisé). Échap dans un champ
  * de texte porté par un dialogue congédie donc ce dialogue — patron des `<dialog>` natifs. Aucun

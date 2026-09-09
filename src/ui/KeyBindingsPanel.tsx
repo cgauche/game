@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useGame } from '../state/store';
-import { KEYBINDINGS, bindingLabel, keySectionLabel, effectiveCodes, keyLabel, type KeyBindingSection } from '../state/keybindings';
+import {
+  KEYBINDINGS, bindingLabel, keySectionLabel, effectiveCodes, effectiveMods, eventMods, comboLabel, formatCombo,
+  type KeyBindingSection,
+} from '../state/keybindings';
 import { Icon } from './Icon';
 
 /**
@@ -12,11 +15,17 @@ import { Icon } from './Icon';
  *
  * Détection de PARTAGE de touche (#376 pt.5) : deux raccourcis sur la MÊME touche effective sont
  * signalés par un badge — la plupart sont des contextes MUTUELLEMENT EXCLUSIFS voulus (POV vs Caméra
- * sur Q/E : `exploringPov`/`when: () => true` ne se recouvrent jamais en jeu), mais un joueur qui
+ * sur Q/E : `exploringPov` et `screen === 'campaign'` ne se recouvrent jamais en jeu), mais un joueur qui
  * REMAPPE à la main peut créer un VRAI conflit (même touche, même contexte) — le badge est donc
  * informatif dans TOUS les cas, la garde `when` de chaque binding restant l'arbitre d'exécution.
+ *
+ * @clavier-hors-registre la CAPTURE de remap n'est pas un raccourci : elle lit la touche BRUTE pour
+ * l'écrire dans le registre, et doit donc passer avant lui (garde `ui/raccourcis-registre.test.ts`).
  */
-const SECTION_ORDER: KeyBindingSection[] = ['systeme', 'pov', 'camera', 'combat', 'curseur', 'hotbar', 'exploration'];
+const SECTION_ORDER: KeyBindingSection[] = ['systeme', 'pov', 'camera', 'combat', 'curseur', 'hotbar', 'exploration', 'editeur'];
+
+/** Codes qui ne sont QUE des modificateurs : tenus seuls, ils ne désignent aucune touche — la capture attend la touche qualifiée. */
+const CODES_MODIFICATEUR = /^(Control|Alt|Shift|Meta)(Left|Right)$/;
 
 export function KeyBindingsPanel() {
   const keyOverrides = useGame((s) => s.keyOverrides);
@@ -31,7 +40,8 @@ export function KeyBindingsPanel() {
     const onKey = (e: KeyboardEvent) => {
       e.preventDefault();
       e.stopImmediatePropagation();
-      if (e.code !== 'Escape') setKeyBinding(rebinding, e.code); // Échap = annule la capture sans changer
+      if (CODES_MODIFICATEUR.test(e.code)) return; // Ctrl/Alt/Maj seuls : on attend la touche qu'ils qualifient
+      if (e.code !== 'Escape') setKeyBinding(rebinding, formatCombo(e.code, eventMods(e))); // Échap = annule la capture sans changer
       setRebinding(null);
     };
     window.addEventListener('keydown', onKey, true);
@@ -42,7 +52,8 @@ export function KeyBindingsPanel() {
   const sharedBy = useMemo(() => {
     const byCode = new Map<string, { id: string; label: string }[]>();
     for (const b of KEYBINDINGS) {
-      const code = effectiveCodes(b, keyOverrides)[0];
+      // La TOUCHE, c'est le code ET ses modificateurs : Ctrl+Z ne partage rien avec Z.
+      const code = formatCombo(effectiveCodes(b, keyOverrides)[0], effectiveMods(b, keyOverrides));
       (byCode.get(code) ?? byCode.set(code, []).get(code)!).push({ id: b.id, label: bindingLabel(b) });
     }
     const out = new Map<string, string>(); // id → titre listant les autres partageant sa touche
@@ -88,7 +99,7 @@ export function KeyBindingsPanel() {
                     onClick={() => setRebinding(b.id)}
                     title={remapped ? 'Touche personnalisée — clic pour réassigner' : 'Clic pour réassigner'}
                   >
-                    {rebinding === b.id ? 'Appuyez sur une touche…' : keyLabel(code)}
+                    {rebinding === b.id ? 'Appuyez sur une touche…' : comboLabel(code, effectiveMods(b, keyOverrides))}
                   </button>
                 </div>
               );

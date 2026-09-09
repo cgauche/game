@@ -18,6 +18,15 @@ import { tileCenter, type Dims } from '../../geometry/iso';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { useGame } from '../../state/store';
+import { useGameKeyboard } from '../useGameKeyboard';
+
+/** Le hook de raccourcis est monté par `App`, AU-DESSUS des écrans : le monter avec l'éditeur
+ *  reproduit l'application réelle (registre unique, section `editeur` gardée par `screen`). */
+function Clavier() {
+  useGameKeyboard();
+  return null;
+}
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -573,8 +582,9 @@ describe('Editor v2 — sauvegarde locale de secours (#834 audit)', () => {
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root: Root = createRoot(container);
+    useGame.setState({ screen: 'editor' } as never); // le registre de raccourcis arbitre sur l'ÉCRAN
     await act(async () => {
-      root.render(<Editor initialScene={initialScene} />);
+      root.render(<><Clavier /><Editor initialScene={initialScene} /></>);
     });
     await act(async () => {
       await new Promise((r) => setTimeout(r, 0));
@@ -591,7 +601,8 @@ describe('Editor v2 — sauvegarde locale de secours (#834 audit)', () => {
     expect(nomInput().value).toBe('apres-restore');
 
     await act(async () => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }));
+      // Le raccourci passe par le REGISTRE : touche par POSITION (`code`) sur `window`, comme le hook unique l'écoute.
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyZ', ctrlKey: true, bubbles: true }));
     });
     expect(nomInput().value).toBe('avant-restore'); // Ctrl+Z annule la restauration : un instantané a été poussé, l'historique n'a pas été vidé
 

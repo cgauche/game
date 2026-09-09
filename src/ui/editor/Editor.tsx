@@ -24,6 +24,7 @@ import type { BuiltinCampaign } from '../../scenes/campaign';
 import { WorldMap, parseProject, CURRENT_PROJECT_SCHEMA, MAISON_PROJET_AUTHORE, type ProjectIdentite } from '../../state/worldMap';
 import { type NarratifBlock, emptyNarratif } from '../../state/campaignNarratif';
 import { nextEntityId } from '../../state/entityId';
+import { publierEditeur } from '../../state/editeurBridge';
 import {
   Tool, Sel, Pt, deleteSel, moveSel, selPos, pasteEntity, addLayer, removeLayer,
   addArchitectureBody, addArchitectureStorey, addArchitecturePart, addBuildingMass,
@@ -421,55 +422,48 @@ export function Editor({
     resetScene(next);
   }
 
-  // Raccourcis clavier (hors champ de saisie) : undo/redo, copier/coller/dupliquer,
-  // Suppr (tout type sélectionné), flèches (nudge), Échap (désélection).
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement | null)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      const k = e.key.toLowerCase();
-      if (e.ctrlKey || e.metaKey) {
-        if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
-        else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
-        else if (k === 'c' && sel?.type === 'entity') {
+  // Commandes d'édition publiées au PONT (`state/editeurBridge`) : le registre de raccourcis unique
+  // porte leurs touches (section `editeur`) et leur remap. Republiées à chaque changement de scène /
+  // sélection / presse-papier — ces états sont LOCAUX, seule l'intention traverse le pont.
+  useEffect(
+    () =>
+      publierEditeur({
+        annuler: undo,
+        retablir: redo,
+        copier: () => {
+          if (sel?.type !== 'entity') return;
           const ent = scene.entities.find((x) => x.id === sel.id);
-          if (ent) { e.preventDefault(); setClip(JSON.parse(JSON.stringify(ent))); }
-        } else if (k === 'v' && clip) {
-          e.preventDefault();
+          if (ent) setClip(JSON.parse(JSON.stringify(ent)));
+        },
+        coller: () => {
+          if (!clip) return;
           const out = pasteEntity(scene, clip, hoverRef.current);
           setScene(out.scene);
           setSel({ type: 'entity', id: out.id });
-        } else if (k === 'd' && sel?.type === 'entity') {
+        },
+        dupliquer: () => {
+          if (sel?.type !== 'entity') return;
           const ent = scene.entities.find((x) => x.id === sel.id);
-          if (ent) {
-            e.preventDefault();
-            const { w, h } = scene.dimensions;
-            const out = pasteEntity(scene, ent, { x: Math.min(w - 1, ent.pos.x + 1), y: Math.min(h - 1, ent.pos.y + 1) });
-            setScene(out.scene);
-            setSel({ type: 'entity', id: out.id });
-          }
-        }
-        return;
-      }
-      if (e.key === 'Escape') { setSel(null); return; }
-      if ((e.key === 'Delete' || e.key === 'Backspace') && sel) {
-        e.preventDefault();
-        setScene(deleteSel(scene, sel));
-        setSel(null);
-        return;
-      }
-      const d: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
-      if (sel && d[e.key]) {
-        const p = selPos(scene, sel);
-        if (p) {
-          e.preventDefault();
-          setScene(moveSel(scene, sel, { x: p.x + d[e.key][0], y: p.y + d[e.key][1] }));
-        }
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [scene, sel, clip, undo, redo, setScene]);
+          if (!ent) return;
+          const { w, h } = scene.dimensions;
+          const out = pasteEntity(scene, ent, { x: Math.min(w - 1, ent.pos.x + 1), y: Math.min(h - 1, ent.pos.y + 1) });
+          setScene(out.scene);
+          setSel({ type: 'entity', id: out.id });
+        },
+        supprimer: () => {
+          if (!sel) return;
+          setScene(deleteSel(scene, sel));
+          setSel(null);
+        },
+        deplacer: (dx, dy) => {
+          if (!sel) return;
+          const p = selPos(scene, sel);
+          if (p) setScene(moveSel(scene, sel, { x: p.x + dx, y: p.y + dy }));
+        },
+        deselectionner: () => setSel(null),
+      }),
+    [scene, sel, clip, undo, redo, setScene],
+  );
 
   // Avertissements de LA scène éditée + ceux de la carte du monde.
   const warnings = useMemo(

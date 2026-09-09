@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { diamondCorners, type Dims } from '../../geometry/iso';
+import { publierEditeur } from '../../state/editeurBridge';
 
 /** Boîte visée, en PIXELS du contenu défilable (repère du conteneur, défilement inclus). */
 export type ScrollBox = { left: number; top: number; right: number; bottom: number };
@@ -151,8 +152,8 @@ export function scrollElementIntoPort(el: HTMLElement, port: HTMLElement) {
 }
 
 /**
- * Caméra de l'ÉDITEUR : rotation 90° (touches Q/E par POSITION physique e.code — A/E sur AZERTY),
- * zoom/pan via le `viewBox` (molette ancrée au curseur, clic-milieu / Espace + glisser).
+ * Caméra de l'ÉDITEUR : rotation 90° et mode panoramique, commandés par le REGISTRE de raccourcis via
+ * le pont `editeurBridge` ; zoom/pan via le `viewBox` (molette ancrée au curseur, clic-milieu / glisser).
  * `getScreenCTM` tient compte du viewBox → le picking est inchangé (zéro modif du placement).
  */
 export function useEditorView() {
@@ -173,19 +174,18 @@ export function useEditorView() {
    *  le cadrage doit éviter tout autant (sans elle, une case fautive proche du bas se recadre dessous). */
   const bottomOverlayRef = useRef<HTMLElement | null>(null);
 
-  // Rotation au clavier (hors champ de saisie).
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const ae = document.activeElement as HTMLElement | null;
-      if (ae && (/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) || ae.isContentEditable)) return;
-      // e.code = POSITION physique (indépendant AZERTY/QWERTY) : rotation sur les touches au même
-      // endroit que Q/E sur QWERTY — soit A/E sur AZERTY.
-      if (e.code === 'KeyE') setRot((r) => (((r + 1) % 4) as 0 | 1 | 2 | 3));
-      else if (e.code === 'KeyQ') setRot((r) => (((r + 3) % 4) as 0 | 1 | 2 | 3));
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  // Rotation et panoramique au clavier : publiés au PONT de l'éditeur, le registre de raccourcis
+  // (`state/keybindings`, section `editeur`) porte les touches et leur remap.
+  useEffect(
+    () =>
+      publierEditeur({
+        tourner: (dir) => setRot((r) => (((r + (dir === 1 ? 1 : 3)) % 4) as 0 | 1 | 2 | 3)),
+        pan: (on) => {
+          spaceRef.current = on;
+        },
+      }),
+    [],
+  );
 
   // Borne BASSE sous 1 : une carte plus haute que la fenêtre (32×38 cases) doit pouvoir tenir à l'écran
   // d'un bloc — à 1, « Zoom arrière » n'avait aucun effet depuis l'état initial.
@@ -221,22 +221,6 @@ export function useEditorView() {
     };
     svg.addEventListener('wheel', onWheel, { passive: false });
     return () => svg.removeEventListener('wheel', onWheel);
-  }, []);
-
-  // Barre Espace maintenue → mode pan (au glisser).
-  useEffect(() => {
-    const d = (e: KeyboardEvent) => {
-      if (e.code === 'Space') spaceRef.current = true;
-    };
-    const u = (e: KeyboardEvent) => {
-      if (e.code === 'Space') spaceRef.current = false;
-    };
-    window.addEventListener('keydown', d);
-    window.addEventListener('keyup', u);
-    return () => {
-      window.removeEventListener('keydown', d);
-      window.removeEventListener('keyup', u);
-    };
   }, []);
 
   /**

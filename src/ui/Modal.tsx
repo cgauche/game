@@ -24,8 +24,13 @@ export function visibleFocusables(container: HTMLElement): HTMLElement[] {
 
 /** Comportement a11y des dialogues (pattern WAI-ARIA) : focus déplacé dans la boîte à l'ouverture,
  *  piège de focus (Tab/Shift+Tab bouclent), Échap = `onClose` quand il existe — seule la modale du
- *  DESSUS (dernier [role=dialog] du document) réagit. Pour les dialogues au markup spécifique
- *  (Fiche, Inspection…) qui ne passent pas par <Modal> : poser role="dialog" + appeler ce hook. */
+ *  DESSUS (dernier [role=dialog] du document) réagit.
+ *
+ *  @clavier-hors-registre Tab et Échap appartiennent ici au DIALOGUE ouvert (pattern WAI-ARIA) : ils
+ *  ne sont ni des raccourcis d'application ni remappables (garde `ui/raccourcis-registre.test.ts`).
+ *
+ *  Pour les dialogues au markup spécifique (Fiche, Inspection…) qui ne passent pas par <Modal> :
+ *  poser role="dialog" + appeler ce hook. */
 /** Options d'un GROUPE DE CHOIX de la modale (segmented `.seg`, grille `.rm-loc-grid`, sélecteur de dé
  *  `.rm-die-pick`) — `<button>` qui vivent HORS `.modal-actions`. Le clavier doit pouvoir les COCHER,
  *  sinon une étape « choix » (déviation de Critique, Parade/Esquive, dé choisi…) est un cul-de-sac :

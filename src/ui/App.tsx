@@ -9,6 +9,7 @@ import { GlobalSvgDefs } from './GlobalSvgDefs';
 import { Icon } from './Icon';
 import { SceneErrorBoundary } from './SceneErrorBoundary';
 import { PossessionsScreen } from './PossessionsScreen';
+import { useGameKeyboard } from './useGameKeyboard';
 
 // Le rendu de jeu (iso SVG + sprites du bestiaire) et l'éditeur d'authoring ne
 // sont pas nécessaires à l'écran menu : chunks async séparés (React.lazy) pour
@@ -50,6 +51,10 @@ function CoopBanner() {
 }
 
 export function App() {
+  // Raccourcis clavier de TOUTE l'application (registre unique `state/keybindings`) : UN SEUL
+  // montage, au-dessus de tous les écrans — le `when` de chaque raccourci dit où il vit (l'éditeur y
+  // a sa section, atteinte par le pont `editeurBridge`).
+  useGameKeyboard();
   const screen = useGame((s) => s.screen);
   const codexOverlay = useGame((s) => s.codexOverlay);
   const possessionsScreen = useGame((s) => s.possessionsScreen);

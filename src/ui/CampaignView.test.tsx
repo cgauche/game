@@ -12,6 +12,7 @@ import { useGame } from '../state/store';
 import { testScene } from '../scenes/test-fixture';
 import { makePregens } from '../data/pregens';
 import { CampaignView } from './CampaignView';
+import { useGameKeyboard } from './useGameKeyboard';
 import { resetStageFrames } from '../gameIso/stage/stageFrames';
 import { PAS_TAP_DEG, SEUIL_MAINTIEN_MS, getStageYaw, resetStageYaw } from '../state/stageYaw';
 
@@ -22,12 +23,19 @@ beforeAll(() => {
 let host: HTMLDivElement;
 let root: Root;
 
+/** Le hook de raccourcis est monté par `App`, AU-DESSUS des écrans (registre unique, tous écrans) :
+ *  le monter ici avec l'écran reproduit l'application réelle. */
+function Clavier() {
+  useGameKeyboard();
+  return null;
+}
+
 function monter(povActive: boolean) {
-  useGame.setState({ scene: testScene, mode: 'exploration', povActive, battle: null });
+  useGame.setState({ screen: 'campaign', scene: testScene, mode: 'exploration', povActive, battle: null });
   host = document.createElement('div');
   document.body.appendChild(host);
   root = createRoot(host);
-  act(() => { root.render(<CampaignView />); });
+  act(() => { root.render(<><Clavier /><CampaignView /></>); });
   return host;
 }
 
