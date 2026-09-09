@@ -11,7 +11,7 @@ import { t } from '../i18n';
 import { rollTest, resolveOpposed, evaluateTest, opposedReasons, exactDifficultyFromModifier, TestResult, type VerdictReason } from './tests';
 import { bonus, effectiveChar, baseWithTraits } from './characteristics';
 import { woundsFromHit } from './woundsCalc';
-import { isInanimate } from './structures';
+import { isInanimate, isStructure, structureEnduranceMult, structureTaille } from './structures';
 import { agilityTestPenalty } from './encumbrance';
 import { skillBaseValue } from './skills';
 import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, CHAR_LABELS, DIFFICULTY_MODIFIERS, locationLabel, type CharKey, type Difficulty, type ModLine } from './types';
@@ -1549,7 +1549,13 @@ function applyHit(
   // AUCUNE Blessure ni Critique de navire ; sinon plancher 0 pour une coque (un coup faible ricoche).
   const hullBlocked = !!hullAdj && 'blocked' in hullAdj;
   if (hullBlocked) isCritical = false;
-  const woundsLost = hullBlocked ? 0 : woundsFromHit(weapon, defender, loc, damage, extraAP - ignoredAP - sureShot, hullAdj ? 0 : 1);
+  const woundsLost = hullBlocked ? 0 : woundsFromHit(weapon, defender, loc, damage, extraAP - ignoredAP - sureShot, hullAdj ? 0 : 1, attacker.size);
+  // AA 10 l.98 — terme DIT au journal quand le BE d'une Structure est compté plusieurs fois.
+  const beMult = structureEnduranceMult(weapon, defender, attacker.size);
+  const beBase = bonus(effectiveChar(defender, 'endurance'));
+  const mitLabel = beMult > 1
+    ? `BE ${beBase} × ${beMult} (Taille ${SIZE_LABEL[effectiveSize(structureTaille(defender))]} contre ${SIZE_LABEL[effectiveSize(attacker.size)]}) = ${beBase * beMult}, +PA`
+    : 'BE+PA';
   const newWounds = defender.wounds.current - woundsLost;
   const defeated = newWounds <= 0;
   // Retenir ses coups (Aux Armes 07 l.59) : « vous N'infligez de Blessure Critique QUE SI votre adversaire tombe à 0
@@ -1572,7 +1578,7 @@ function applyHit(
           ? 'les tirs de petites armes n’infligent pas assez de Dégâts pour avoir un effet sur un vaisseau'
           : 'trop petit pour entamer cette coque'} — MDG 13).`
       : `${attacker.label} touche ${defender.label}${loc ? ` (${locationLabel(loc, defender.bodyShape)})` : ''} : ` +
-        `${damage} dégâts − ${damage - woundsLost} (BE+PA) = ${woundsLost} Blessures` +
+        `${damage} dégâts − ${damage - woundsLost} (${mitLabel}) = ${woundsLost} Blessures` +
         (isCritical ? ' — CRITIQUE !' : '') +
         '.',
   };
@@ -1588,8 +1594,11 @@ function applyHit(
  * `location`. Les PB du Critique eux-mêmes ignorent BE+PA (gérés à part, `LDB 18 l.53`).
  */
 export function woundsAtCritLocation(res: AttackResult, weapon: Weapon, defender: Combatant, location: HitLocation): number {
+  // AA 10 l.105 — ce site re-tire une Localisation : une Structure ne peut pas y passer, et la Taille de
+  // l'attaquant (`AA 10 l.98`) n'y a donc aucun terme à compter (passée `undefined`, jamais omise).
+  if (isStructure(defender)) throw new Error(`woundsAtCritLocation : ${defender.label} est une Structure — AA 10 l.105.`);
   const ignoredAP = ignoredArmourAP(defender, location, { roll: res.attackerRoll, critical: true, empaleuse: hasQuality(weapon, 'empaleuse') });
-  return woundsFromHit(weapon, defender, location, res.damage ?? 0, (res.apExternal ?? 0) - ignoredAP);
+  return woundsFromHit(weapon, defender, location, res.damage ?? 0, (res.apExternal ?? 0) - ignoredAP, 1, undefined);
 }
 
 function miss(

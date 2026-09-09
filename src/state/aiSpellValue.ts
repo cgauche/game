@@ -18,6 +18,7 @@ import { effectiveWeaponDamage } from '../engine/weaponDamage';
 import { missileDamage } from '../engine/magic';
 import { formulaExpectation, slBonus, applyOps, type GameOp } from '../engine/ops';
 import type { RNG } from '../engine/dice';
+import type { SizeCategory } from '../engine/size';
 import { groupMatch } from '../engine/groups';
 import { spellOps } from './flow';
 import { type SpellData, findCreatureById, findConditionById } from '../data';
@@ -58,14 +59,14 @@ export function expectedDamage(attacker: Combatant, target: Combatant, weapon: W
   const bf = bonus(effectiveChar(attacker, 'force'));
   const totalDamage = finite(effectiveWeaponDamage(weapon, Number.isFinite(bf) ? bf : 0) + AVG_DR, NaN);
   if (!Number.isFinite(totalDamage)) return NaN;
-  return p * safeWounds(weapon, target, totalDamage);
+  return p * safeWounds(weapon, target, totalDamage, attacker.size);
 }
 
 /** `woundsFromHit` défensif : un combattant de test minimal peut ne pas porter `armour`. On lui prête
  *  une armure NULLE le cas échéant ; renvoie 0 si NaN. */
-export function safeWounds(weapon: Weapon, target: Combatant, totalDamage: number): number {
+export function safeWounds(weapon: Weapon, target: Combatant, totalDamage: number, attackerSize?: SizeCategory): number {
   const safe = target.armour ? target : ({ ...target, armour: {} as Combatant['armour'] });
-  return finite(woundsFromHit(weapon, safe, 'corps', totalDamage), 0);
+  return finite(woundsFromHit(weapon, safe, 'corps', totalDamage, 0, 1, attackerSize), 0);
 }
 
 // Dangerosité d'un ÉTAT infligé (« Blessures espérées ») : lue en DONNÉE sur `etats.json` (`aiThreat`,

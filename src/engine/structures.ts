@@ -23,6 +23,7 @@ import { hasCapability } from './capabilities';
 import { findStructureById } from '../data';
 import { inanimateCombatant } from './inanimate';
 import { chebyshev } from './grid';
+import { sizeGap, type SizeCategory } from './size';
 
 /** Cette cible est-elle une STRUCTURE de siège (`bodyShape:'structure'`) ? Prédicat NOMMÉ (source UNIQUE —
  *  jamais un littéral `'structure'` dispersé) : une structure est inerte (Tableau de Localisation propre,
@@ -76,6 +77,17 @@ function structureKind(target: Combatant): 'porte' | 'mur' | undefined {
   return target.creatureId ? findStructureById(target.creatureId)?.kind : undefined;
 }
 
+/** Catégorie de Taille de la structure cible, lue dans le CATALOGUE par son `id` (posé sur `creatureId`
+ *  au build) — même patron que `structureKind`. Elle n'est JAMAIS portée par le `Combatant` : `Combatant.size`
+ *  est le Trait Taille d'une créature (LDB 85 l.344), lu par le mod de Tir, l'empreinte de grille, le
+ *  multiplicateur de Dégâts, le Test de Force opposé et la Peur/Terreur — un mur n'entre dans aucun de ces
+ *  comptes (AA 10 l.96 : toute attaque au corps à corps contre une Structure touche automatiquement).
+ *  `undefined` si la cible n'est pas une structure du catalogue. */
+export function structureTaille(target: Pick<Combatant, 'bodyShape' | 'creatureId'>): SizeCategory | undefined {
+  if (!isStructure(target)) return undefined;
+  return target.creatureId ? findStructureById(target.creatureId)?.taille : undefined;
+}
+
 /** Le Bélier (cap `ram`) frappe-t-il une cible qui n'est PAS une porte ? (ADE II 8 l.249) — hors-porte,
  *  le résolveur de coup (`applyHit`) le transforme alors en Arme improvisée. */
 export function ramVsNonDoor(weapon: Pick<Weapon, 'qualities'> | undefined, target: Combatant): boolean {
@@ -99,6 +111,24 @@ export function structureImmune(weapon: Weapon | undefined, target: Combatant): 
  *  STRUCTURE, ×1 sinon. Appliqué au TOTAL de Dégâts entrant (avant Bonus d'Endurance) par `woundsFromHit`. */
 export function siegeMultiplier(weapon: Weapon | undefined, target: Combatant): number {
   return isStructure(target) && weaponHasCap(weapon, 'siege') ? 2 : 1;
+}
+
+/**
+ * Combien de fois compter le Bonus d'Endurance de la Structure `target` face à un attaquant de Taille
+ * `attackerSize` (`AA 10 l.98`) : `1` hors Structure, hors écart, ou pour une arme à Atout Siège ; sinon
+ * `1 + écart de catégories` (Taille de la Structure au-dessus de celle de l'attaquant). La Taille de la
+ * Structure est la DONNÉE `StructureData.taille`, lue au catalogue par `structureTaille` — elle ne compte
+ * que POUR CE TERME-LÀ ; absente des deux côtés, `effectiveSize` la rabat sur Moyenne (`LDB 14 l.128`) —
+ * écart nul, aucun effet. Lu par `woundsFromHit` (le BE) ET par le journal du coup (`applyHit`), source
+ * UNIQUE du terme.
+ */
+export function structureEnduranceMult(
+  weapon: Pick<Weapon, 'qualities'> | undefined,
+  target: Pick<Combatant, 'bodyShape' | 'creatureId'>,
+  attackerSize: SizeCategory | undefined,
+): number {
+  if (!isStructure(target) || weaponHasCap(weapon, 'siege')) return 1;
+  return 1 + Math.max(0, sizeGap(structureTaille(target), attackerSize));
 }
 
 /** Les DEUX cases bordant l'arête d'une structure (ses deux FACES) — calque `parapetTilesAbove` au sol

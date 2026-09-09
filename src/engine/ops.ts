@@ -1628,7 +1628,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // MODE COUP D'ARME (S1) : délègue au résolveur partagé `woundsFromHit` → qualités d'arme
         // (Perforante/Empaleuse), armure à la `ctx.location` et BE, sans dupliquer la mitigation.
         if (o.weaponHit && ctx.weapon) {
-          const n = woundsFromHit(ctx.weapon, target, ctx.location ?? 'corps', raw, o.extraAP ?? 0, o.min ?? 1);
+          const n = woundsFromHit(ctx.weapon, target, ctx.location ?? 'corps', raw, o.extraAP ?? 0, o.min ?? 1, ctx.caster?.size);
           ctx.woundsDealt = loseWounds(target, n); // PB réellement perdus (drain/Vol de vie suivant)
           lines.push(t('op.wounds', { name: target.label, n, mitig: '' }));
           break;

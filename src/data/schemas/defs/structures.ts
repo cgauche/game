@@ -8,7 +8,7 @@
  * Folios : ADE II 89 ; AA 119-120 (`src/data/structures-folio.test.ts` les confronte à `auditFolio`).
  */
 import { z } from 'zod';
-import { couvertDifficultySchema } from '../grammaire/valeurs';
+import { couvertDifficultySchema, sizeCategorySchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 import { ref } from '../grammaire/ref';
 
@@ -38,6 +38,18 @@ const doc = document(
     /** Laisse-t-elle VOIR à travers ? `false` seul est écrivable, et il exige son `maison` ; l'état
      *  occultant est l'ABSENCE du champ — une seule graphie par état (LDB 14 l.86, LDB 85 l.329). */
     occulte: z.literal(false).optional(),
+    /**
+     * Catégorie de Taille de la Structure, qui compte son Bonus d'Endurance (`AA 10 l.98`) — et RIEN
+     * d'autre : ce n'est pas le Trait Taille d'une créature (LDB 85 l.344), elle ne se pose donc jamais
+     * sur le `Combatant` bâti par `structureCombatant`. Aucune table de source ne l'imprime — valeur
+     * MAISON par entrée, dont `maison` porte la raison DE CETTE ENTRÉE.
+     *
+     * Barème d'authoring (dit ICI une fois, jamais recopié en donnée) : on prend la Taille de la créature
+     * dont la Structure a l'encombrement — ouvrage d'enceinte, porte de ville, herse, terrassement et
+     * navire = Énorme (l'exemple RAW est un mur de pierre Énorme) ; porte, cloison de bâtiment, clôture,
+     * palissade, mantelet, muret, chariot et chaloupe = Grande.
+     */
+    taille: sizeCategorySchema,
   },
   {
     kind: { label: 'Nature de la Structure', hint: 'Porte ou Mur, pour la résolution mécanique' },
@@ -59,6 +71,10 @@ const doc = document(
       label: 'Laisse voir à travers',
       hint: 'Ne se pose qu’à « faux », et exige un arbitrage maison ; retirer le champ rend la Structure occultante',
     },
+    taille: {
+      label: 'Taille de la Structure',
+      hint: 'Compte son Bonus d’Endurance une fois de plus par catégorie au-dessus de l’attaquant ; exige un arbitrage maison',
+    },
   },
   {
     codex: { keys: ['structures'] },
@@ -73,12 +89,19 @@ const doc = document(
      */
     affinerEntree: (entree) =>
       entree.superRefine((v, ctx) => {
-        const e = v as { id: string; occulte?: unknown; maison?: unknown };
-        if (e.occulte === false && (typeof e.maison !== 'string' || !e.maison))
+        const e = v as { id: string; occulte?: unknown; maison?: unknown; taille?: unknown };
+        const sansRaison = typeof e.maison !== 'string' || !e.maison;
+        if (e.occulte === false && sansRaison)
           ctx.addIssue({
             code: 'custom',
             path: ['maison'],
             message: `${e.id} : \`occulte: false\` sans \`maison\` — aucun folio ne rend une Structure transparente (LDB 14 l.86), l’arbitrage se nomme.`,
+          });
+        if (e.taille != null && sansRaison)
+          ctx.addIssue({
+            code: 'custom',
+            path: ['maison'],
+            message: `${e.id} : \`taille\` sans \`maison\` — aucune table de source n’imprime la Taille d’une Structure (AA 10 l.98 la laisse à déterminer), l’arbitrage se nomme.`,
           });
       }),
   },

@@ -8,9 +8,8 @@
  *    ne donne aucune Endurance/Blessures à un engin (c'est une « Arme d'équipe ») → on le neutralise en
  *    tuant son équipage, pas en le détruisant. `hull` ABSENT ⇒ Blessures {0,0,0} (immune via `woundsFromHit`).
  *
- * Remplace le squelette + `ZERO_CHARS` qui étaient recopiés à l'identique dans `structureCombatant`
- * (`engine/structures.ts`) et `vehicleCombatant` (`engine/vehicle.ts`) — ces deux builders en sont
- * désormais de minces adaptateurs (donnée → `InanimateSpec` → ici).
+ * `structureCombatant` (`engine/structures.ts`) et `vehicleCombatant` (`engine/vehicle.ts`) sont de
+ * minces adaptateurs vers ce builder : donnée → `InanimateSpec` → ici.
  */
 import type { Combatant, Characteristics, BodyShape } from './types';
 import type { TraitList } from './statEntry';

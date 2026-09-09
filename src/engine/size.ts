@@ -48,9 +48,10 @@ export function sizeFootprintSide(size: SizeCategory): number {
   return (sizesJson.footprintSide as Record<SizeCategory, number>)[size];
 }
 
+/** Libellés des 7 catégories — graphies de la table du LDB 85 l.348-354. */
 export const SIZE_LABEL: Record<SizeCategory, string> = {
   minuscule: 'Minuscule',
-  tresPetite: 'Très Petite',
+  tresPetite: 'Très petite',
   petite: 'Petite',
   moyenne: 'Moyenne',
   grande: 'Grande',

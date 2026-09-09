@@ -941,7 +941,7 @@ export function previewAttack(
   const dmg = effectiveWeaponDamage(weapon, bonus(effectiveChar(attacker, 'force')));
   const base = combatValue(attacker, kind, weapon);
   const loc = location ?? 'corps';
-  const soak = (dmg + 20) - woundsFromHit(weapon, target, loc, dmg + 20);
+  const soak = (dmg + 20) - woundsFromHit(weapon, target, loc, dmg + 20, 0, 1, attacker.size);
   if (kind === 'melee' && dist > reachTiles(weapon)) return { weapon, kind, inRange: false, blocked: false, target: 0, base, mods: [], dmg, soak, difficulty: 'intermediaire' };
   const { env, blocked } = attackEnv(get, attacker, target, weapon, opts);
   if (blocked) return { weapon, kind, inRange: true, blocked: true, target: 0, base, mods: [], dmg, soak, difficulty: 'intermediaire' };
@@ -2427,7 +2427,7 @@ export function applyAttackResult(
     // Blessures supplémentaires d'une Déviation (Dégâts recalculés à PA−1, LDB 63 l.30) : la PA n'est pas
     // encore sacrifiée ici (deflectCrit/autoDeviate le font) → on recompute woundsFromHit à PA−1
     // (`extraAP:-1`) et on isole le DELTA par rapport aux Blessures de base déjà appliquées.
-    const extra = Math.max(0, woundsFromHit(weapon, target, loc, res.damage ?? 0, -1) - (res.woundsLost ?? 0));
+    const extra = Math.max(0, woundsFromHit(weapon, target, loc, res.damage ?? 0, -1, 1, attacker.size) - (res.woundsLost ?? 0));
     // Déviation (LDB 63 l.30-32), MÊME prédicat qu'à la fenêtre ci-dessus : un porteur que personne ne
     // tient voit l'automate trancher (`autoDeviate`, rule-gated) ; un porteur TENU a déjà eu son étape et
     // ne dévie que s'il l'a CHOISI (deviated===true, `deflectCrit`) — un « Subir » du MJ sur son propre
@@ -2895,7 +2895,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
       if (allies.length) {
         const ally = allies[battleRng().int(0, allies.length - 1)];
         const loc = hitLocationByShape(reverseRoll(r.roll), ally.bodyShape);
-        const lost = woundsFromHit(weapon, ally, loc, effectiveWeaponDamage(weapon, sb) + units); // plancher 1 (l.165)
+        const lost = woundsFromHit(weapon, ally, loc, effectiveWeaponDamage(weapon, sb) + units, 0, 1, c.size); // plancher 1 (l.165)
         ally.wounds.current = Math.max(0, ally.wounds.current - lost);
         if (ally.wounds.current <= 0) applyZeroWounds(ally);
         log.push(tr('cf.fumbleHitAlly', { name: ally.label, loc: locationLabel(loc, ally.bodyShape), lost }));
@@ -2906,7 +2906,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
       break;
     }
     case 'misfire': {
-      const lost = woundsFromHit(weapon, c, 'brasD', effectiveWeaponDamage(weapon, sb) + units); // plancher 1
+      const lost = woundsFromHit(weapon, c, 'brasD', effectiveWeaponDamage(weapon, sb) + units, 0, 1, c.size); // plancher 1
       c.wounds.current = Math.max(0, c.wounds.current - lost);
       if (c.wounds.current <= 0) applyZeroWounds(c);
       wearActiveWeapon(c, weapon, true); // arme détruite, persistée sur l'ItemInstance source
@@ -2920,7 +2920,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
           .map((id) => inBattleId(battle, id))
           .filter((x): x is Combatant => !!x));
         for (const s of servants) {
-          const sLost = woundsFromHit(weapon, s, 'brasD', effectiveWeaponDamage(weapon, sb) + units);
+          const sLost = woundsFromHit(weapon, s, 'brasD', effectiveWeaponDamage(weapon, sb) + units, 0, 1, c.size);
           s.wounds.current = Math.max(0, s.wounds.current - sLost);
           if (s.wounds.current <= 0) applyZeroWounds(s);
           log.push(tr('cf.fumbleMisfireCrew', { name: s.label, lost: sLost }));
@@ -2944,7 +2944,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
         for (let i = 0; i < salve.hits; i++) {
           for (const s of salveCrew) {
             const loc: HitLocation = salve.entry.location === 'brasPrincipal' ? 'brasD' : hitLocationByShape(reverseRoll(battleRng().int(1, 100)), s.bodyShape);
-            const sLost = woundsFromHit(weapon, s, loc, effectiveWeaponDamage(weapon, sb) + battleRng().int(0, 9));
+            const sLost = woundsFromHit(weapon, s, loc, effectiveWeaponDamage(weapon, sb) + battleRng().int(0, 9), 0, 1, c.size);
             s.wounds.current = Math.max(0, s.wounds.current - sLost);
             if (s.wounds.current <= 0) applyZeroWounds(s);
             log.push(tr('cf.artillerySalveHit', { name: s.label, lost: sLost, loc: locationLabel(loc, s.bodyShape) }));

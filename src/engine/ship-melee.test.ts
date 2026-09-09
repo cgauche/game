@@ -108,7 +108,7 @@ describe('applyHit contre une coque (résolution complète)', () => {
 describe('woundsFromHit — plancher 0 navire piloté par l’appelant (paramètre minWounds)', () => {
   it('minWounds 0 → un coup trop faible ricoche ; défaut 1 → plancher personnage (Robuste)', () => {
     const h = hull('cogue', 50);
-    expect(woundsFromHit(hache, h, undefined, 2, 0, 0)).toBe(0);
-    expect(woundsFromHit(hache, bruiser(), 'corps', 1)).toBe(1);
+    expect(woundsFromHit(hache, h, undefined, 2, 0, 0, undefined)).toBe(0);
+    expect(woundsFromHit(hache, bruiser(), 'corps', 1, 0, 1, undefined)).toBe(1);
   });
 });

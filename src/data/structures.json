@@ -13,10 +13,12 @@
         "id": "resistant"
       }
     ],
+    "taille": "grande",
     "source": {
       "book": "archives-de-l-empire-2",
       "page": 89
-    }
+    },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : battant d’une habitation ordinaire, l’encombrement d’une créature Grande — il n’a ni la masse ni l’épaisseur d’un ouvrage d’enceinte."
   },
   {
     "id": "porte-blindee",
@@ -32,10 +34,12 @@
         "id": "resistant"
       }
     ],
+    "taille": "grande",
     "source": {
       "book": "archives-de-l-empire-2",
       "page": 89
-    }
+    },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : même battant qu’une porte ordinaire, bardé de métal : le renfort change son Bonus d’Endurance, pas son encombrement — Grande."
   },
   {
     "id": "porte-de-ville",
@@ -52,10 +56,12 @@
         "id": "impenetrable-structure"
       }
     ],
+    "taille": "enorme",
     "source": {
       "book": "archives-de-l-empire-2",
       "page": 89
-    }
+    },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : vantail d’une enceinte urbaine, à l’échelle du rempart qu’il perce — Énorme, comme le mur de pierre de l’exemple RAW."
   },
   {
     "id": "mur-en-bois",
@@ -71,10 +77,12 @@
         "id": "resistant"
       }
     ],
+    "taille": "grande",
     "source": {
       "book": "archives-de-l-empire-2",
       "page": 89
-    }
+    },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : paroi de bois d’un bâtiment ou d’un enclos, à hauteur d’homme — encombrement d’une créature Grande, pas d’un rempart."
   },
   {
     "id": "mur-en-pierre",
@@ -91,10 +99,12 @@
         "id": "impenetrable-structure"
       }
     ],
+    "taille": "enorme",
     "source": {
       "book": "archives-de-l-empire-2",
       "page": 89
-    }
+    },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : rempart de pierre maçonné (Impénétrable) — c’est la Structure de l’exemple RAW, « un mur de pierre Énorme »."
   },
   {
     "id": "charrette",
@@ -110,10 +120,12 @@
     "enc": 10,
     "encLimit": 30,
     "couvertPenalty": "intermediaire",
+    "taille": "grande",
     "source": {
       "book": "aux-armes",
       "page": 119
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : véhicule à deux roues tiré par un âne : l’encombrement de la bête qui le tire, une créature Grande.",
     "desc": "Les petits véhicules à deux roues, par exemple les carrioles à âne et les chars à deux roues de transport ou de combat. Les charrettes à passagers incluent un siège avec de la place pour jusqu'à deux personnes et celles transportant des marchandises ont un seul siège et un plateau pour la cargaison."
   },
   {
@@ -130,10 +142,12 @@
     "enc": 30,
     "encLimit": 30,
     "couvertPenalty": "complexe",
+    "taille": "grande",
     "source": {
       "book": "aux-armes",
       "page": 119
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : chariot attelé à deux chevaux — encombrement d’un attelage, une créature Grande.",
     "desc": "Les chariots sont de grands véhicules ouverts faits pour transporter n'importe quel type de cargaison. Selon leur taille, ils sont tirés par au moins deux chevaux ou deux bœufs. L'avant comporte un banc assez grand pour trois personnes, même si un seul conducteur est nécessaire. Certains chariots sont même spécialement conçus pour porter des armes ou fournir une plateforme depuis laquelle des troupes peuvent se battre et si le MJ l'autorise, ces véhicules de guerre peuvent accorder une meilleure pénalité de Couvert."
   },
   {
@@ -150,10 +164,12 @@
     "enc": 50,
     "encLimit": 60,
     "couvertPenalty": "difficile",
+    "taille": "grande",
     "source": {
       "book": "aux-armes",
       "page": 119
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : même gabarit de chariot attelé que le chariot léger ; sa charge change son profil, pas son encombrement — Grande.",
     "desc": "Les chariots sont de grands véhicules ouverts faits pour transporter n'importe quel type de cargaison. Selon leur taille, ils sont tirés par au moins deux chevaux ou deux bœufs. L'avant comporte un banc assez grand pour trois personnes, même si un seul conducteur est nécessaire. Certains chariots sont même spécialement conçus pour porter des armes ou fournir une plateforme depuis laquelle des troupes peuvent se battre et si le MJ l'autorise, ces véhicules de guerre peuvent accorder une meilleure pénalité de Couvert."
   },
   {
@@ -170,10 +186,12 @@
     "enc": 75,
     "encLimit": 80,
     "couvertPenalty": "difficile",
+    "taille": "grande",
     "source": {
       "book": "aux-armes",
       "page": 119
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : même gabarit de chariot attelé, monté plus lourd : sa charge change son profil, pas son encombrement — Grande.",
     "desc": "Les chariots sont de grands véhicules ouverts faits pour transporter n'importe quel type de cargaison. Selon leur taille, ils sont tirés par au moins deux chevaux ou deux bœufs. L'avant comporte un banc assez grand pour trois personnes, même si un seul conducteur est nécessaire. Certains chariots sont même spécialement conçus pour porter des armes ou fournir une plateforme depuis laquelle des troupes peuvent se battre et si le MJ l'autorise, ces véhicules de guerre peuvent accorder une meilleure pénalité de Couvert."
   },
   {
@@ -190,10 +208,12 @@
     "enc": 100,
     "encLimit": 80,
     "couvertPenalty": "complexe",
+    "taille": "grande",
     "source": {
       "book": "aux-armes",
       "page": 120
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : voiture fermée à quatre roues, plus haute qu’un chariot mais toujours à l’échelle de son attelage — Grande.",
     "desc": "Une diligence est un véhicule fermé à quatre roues, tiré par 2 à 6 chevaux. Les riches ont tendance à les utiliser pour les voyages sur de longues distances, et l'Empire abrite plusieurs compagnies de diligences qui exploitent des lignes régulières."
   },
   {
@@ -210,10 +230,12 @@
     "enc": 100,
     "encLimit": 300,
     "couvertPenalty": "complexe",
+    "taille": "enorme",
     "source": {
       "book": "aux-armes",
       "page": 119
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : bateau d’une vingtaine de mètres : hors de l’échelle des créatures Grandes, Énorme comme un ouvrage d’enceinte.",
     "desc": "Les barges sur le Reik mesurent généralement environ 20 mètres de long. Elles sont conçues pour transporter de grosses cargaisons pour leur taille et sont propulsées à la fois à voile et à rames."
   },
   {
@@ -230,10 +252,12 @@
     "enc": 130,
     "encLimit": 50,
     "couvertPenalty": "difficile",
+    "taille": "enorme",
     "source": {
       "book": "aux-armes",
       "page": 119
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : navire d’environ vingt-cinq mètres bâti pour encaisser — Énorme, à l’échelle d’un ouvrage d’enceinte.",
     "desc": "Les équipages de patrouilleurs fluviaux utilisent des navires rapides propulsés par des rangées de rames pour les poursuites à grande vitesse ou par des voiles pour les patrouilles menées à un rythme plus posé. Ces bateaux font environ 25 mètres de long et sont construits pour pouvoir résister à beaucoup de dommages."
   },
   {
@@ -250,10 +274,12 @@
     "enc": 25,
     "encLimit": 60,
     "couvertPenalty": "intermediaire",
+    "taille": "grande",
     "source": {
       "book": "aux-armes",
       "page": 119
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : petite embarcation de dix mètres au plus, à quelques rameurs — encombrement d’une créature Grande.",
     "desc": "Les chaloupes sont de petits vaisseaux mesurant 10 mètres de longueur maximum, par exemple les petits bateaux de pêche du Reikland ou les chalands de Marienburg."
   },
   {
@@ -268,11 +294,12 @@
     "traits": [],
     "couvertPenalty": "intermediaire",
     "occulte": false,
-    "maison": "opacité maison : aucun folio ne déclare une Structure transparente (LDB 14 l.86, LDB 85 l.329). Décision maison déduite d’AA 10 l.65 : une barrière d’enclos se regarde par-dessus, elle ne coupe pas la Ligne de Vue. Elle garde son couvert Intermédiaire (AA 10 l.41) et reste INFRANCHISSABLE.",
+    "taille": "grande",
     "source": {
       "book": "aux-armes",
       "page": 119
     },
+    "maison": "opacité maison : aucun folio ne déclare une Structure transparente (LDB 14 l.86, LDB 85 l.329). Décision maison déduite d’AA 10 l.65 : une barrière d’enclos se regarde par-dessus, elle ne coupe pas la Ligne de Vue. Elle garde son couvert Intermédiaire (AA 10 l.41) et reste INFRANCHISSABLE. Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : barrière d’enclos tressée, à hauteur d’homme — encombrement d’une créature Grande, jamais celui d’un rempart.",
     "desc": "Les clôtures en clayonnage sont tressées avec de minces branches de saule. Elles sont faciles à fabriquer et résistantes si leur tressage est bon. Cependant, elles conviennent davantage pour des enclos d'animaux que pour des fortifications. Elles restent employées comme couvert par ceux qui n'ont pas le temps de trouver autre chose ou qui ne disposent pas d'une meilleure alternative."
   },
   {
@@ -287,11 +314,12 @@
     },
     "traits": [],
     "occulte": false,
-    "maison": "opacité maison : aucun folio ne déclare une Structure transparente (LDB 14 l.86, LDB 85 l.329). Décision maison déduite d’AA 10 l.70 : on voit à travers une grille. Elle n’a aucune Pénalité de Couvert (N/A, AA 10 l.42) et reste INFRANCHISSABLE une fois baissée.",
+    "taille": "enorme",
     "source": {
       "book": "aux-armes",
       "page": 120
     },
+    "maison": "opacité maison : aucun folio ne déclare une Structure transparente (LDB 14 l.86, LDB 85 l.329). Décision maison déduite d’AA 10 l.70 : on voit à travers une grille. Elle n’a aucune Pénalité de Couvert (N/A, AA 10 l.42) et reste INFRANCHISSABLE une fois baissée. Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : grille de fer qui ferme l’entrée principale d’une forteresse, à l’échelle de la porte de ville et du rempart qu’elle défend — Énorme.",
     "desc": "Une grille de fer qui peut être abaissée pour protéger l'entrée principale d'une forteresse."
   },
   {
@@ -306,10 +334,12 @@
     "traits": [],
     "enc": 5,
     "couvertPenalty": "complexe",
+    "taille": "grande",
     "source": {
       "book": "aux-armes",
       "page": 120
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : panneau de bois mobile fait pour couvrir quelques hommes en progression — encombrement d’une créature Grande.",
     "desc": "Les mantelets sont de grandes planches de bois solides fixées sur des supports ou des chariots à roues, ce qui permet de les prendre et de les déplacer relativement facilement pour leur taille.\n\nLors des batailles et des sièges, ce sont des défenses mobiles qui peuvent être avancées pour couvrir les troupes et le matériel au fur et à mesure qu'ils se repositionnent ou progressent."
   },
   {
@@ -324,10 +354,12 @@
     "traits": [],
     "encLimit": 30,
     "couvertPenalty": "complexe",
+    "taille": "grande",
     "source": {
       "book": "aux-armes",
       "page": 120
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : mur d’habitation à colombage, une cloison de bâtiment à hauteur d’étage — encombrement d’une créature Grande.",
     "desc": "Ce mur est typique de beaucoup de résidences du Vieux Monde. Il a pour ossature une solide charpente en bois qui accueille ensuite des matériaux tels que des briques, de la pierre ou du clayonnage et du torchis. Ces murs ne sont généralement pas faits pour y monter une arme, mais la Limite d'Encombrement est indiquée pour prendre en compte le cas où un Personnage utilise un rebord de fenêtre bien pratique pour y poser son arme."
   },
   {
@@ -342,10 +374,12 @@
     "traits": [],
     "encLimit": 150,
     "couvertPenalty": "tresDifficile",
+    "taille": "enorme",
     "source": {
       "book": "aux-armes",
       "page": 120
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : courtine de château en pierre maçonnée : l’exemple littéral du RAW, « un mur de pierre Énorme (avec un BE de 6) ».",
     "desc": "Les murs de château sont normalement composés de deux faces de pierres étroitement ajustées les unes dans les autres et fixées par du mortier entre lesquelles se trouve une cavité remplie d'un mélange de gravier, de mortier ou de coquilles d'huître."
   },
   {
@@ -360,10 +394,12 @@
     "traits": [],
     "encLimit": 200,
     "couvertPenalty": "tresDifficile",
+    "taille": "enorme",
     "source": {
       "book": "aux-armes",
       "page": 120
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : muraille de blocs de pierre massive, au moins aussi épaisse qu’une courtine de château — Énorme.",
     "desc": "Les nains ont tendance à bâtir les murs de leurs forteresses à partir d'énormes blocs de roche, taillés pour s'emboîter impeccablement les uns dans les autres. Ils sont aussi épais que les murs des châteaux des humains, si ce n'est plus, mais sont donc composés uniquement de pierre massive et bien plus résistants.\n\nLes murs des cités humaines comme Altdorf, Ubersreik et Marienburg sont construits et entretenus par les nains, contre rémunération significative."
   },
   {
@@ -378,10 +414,12 @@
     "traits": [],
     "encLimit": 100,
     "couvertPenalty": "difficile",
+    "taille": "enorme",
     "source": {
       "book": "aux-armes",
       "page": 120
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : mur de pierre permanent d’un relais fortifié — la Structure que nomme l’exemple RAW, « un mur de pierre Énorme ».",
     "desc": "Un « mur de pierre » désigne un mur assemblés par leurs formes taillées, du mortier, ou les deux pour donner une Structure permanente, plus stable qu'un mur de pierres sèches, mais moins épaisse qu'un mur de château. Un relais de poste fortifié est généralement entouré d'un mur de pierre."
   },
   {
@@ -396,10 +434,12 @@
     "traits": [],
     "encLimit": 30,
     "couvertPenalty": "complexe",
+    "taille": "grande",
     "source": {
       "book": "aux-armes",
       "page": 120
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : muret de pierres empilées sans mortier, à hauteur d’appui (Limite d’Encombrement 30) — encombrement d’une créature Grande.",
     "desc": "Les murs en pierres sèches incluent toutes les Structures de pierre fabriquées avec des rochers qui ne sont ni taillés ni fixés pour rester en place."
   },
   {
@@ -414,10 +454,12 @@
     "traits": [],
     "encLimit": 60,
     "couvertPenalty": "difficile",
+    "taille": "grande",
     "source": {
       "book": "aux-armes",
       "page": 120
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : clôture de pieux de bois plantés, à hauteur d’homme — encombrement d’une créature Grande, à la différence du terrassement continu qu’elle borde.",
     "desc": "Une palissade est construite en érigeant une clôture de pieux de bois enfoncés dans la terre. Des remparts de terre sont élevés derrière la ligne de pieux et des passerelles en bois sont construites par-dessus ces remparts."
   },
   {
@@ -431,10 +473,12 @@
     },
     "traits": [],
     "enc": 5,
+    "taille": "grande",
     "source": {
       "book": "aux-armes",
       "page": 120
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : battant épais bardé de fer d’une forteresse ou d’un grand bâtiment : une porte, donc l’encombrement d’une créature Grande.",
     "desc": "Les portes généralement présentes dans une maison d'habitation ordinaire sont totalement détruites lorsqu'elles sont touchées par une arme un tant soit peu puissante. Cependant, une « solide porte en bois » fait ici référence aux portes épaisses renforcées par des bandes de fer présentes dans les forteresses et autres grands bâtiments."
   },
   {
@@ -449,10 +493,12 @@
     "traits": [],
     "encLimit": 60,
     "couvertPenalty": "complexe",
+    "taille": "enorme",
     "source": {
       "book": "aux-armes",
       "page": 120
     },
+    "maison": "Taille maison (AA 10 l.98 : « Le MJ doit déterminer la Taille de la Structure attaquée ») : contrefort de terre empilée sur toute une ligne de défense — une masse à l’échelle du rempart de l’exemple RAW, Énorme.",
     "desc": "Les terrassements sont des contreforts de terre volontairement empilée pour servir de fortifications."
   }
 ]

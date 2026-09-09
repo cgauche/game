@@ -90,6 +90,10 @@ const NOMMES = [
   'mineure|majeure|importante',
   'mineure|moderee|majeure',
   'minuscule|tres-petite|petite|moyenne|grande|enorme|monstrueuse',
+  // `sizeCategorySchema` (#1688) : la porte UNIQUE des defs qui nomment une catégorie de Taille
+  // (`structures.taille`, `trappings.sizeFor`, `talents.size`, `CustomStatblock.size`), nommée avec
+  // les 7 libellés de la table LDB 85 l.346-354.
+  'minuscule|tresPetite|petite|moyenne|grande|enorme|monstrueuse',
   'nord|sud|est|ouest',
   'tete|bras|corps|jambe',
   'toute|khorne|nurgle|slaanesh|tzeentch',

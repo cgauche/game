@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { findStructureById } from './index';
+import { findStructureById, structures } from './index';
+import { SIZE_ORDER } from '../engine/size';
 
 /**
  * Catalogue AA « Tableau des Structures Courantes » (AA 10 l.26-92, VERBATIM) — 19 entrées ajoutées
@@ -76,5 +77,17 @@ describe('Structures AA (AA 10 l.26-92)', () => {
       // La table court sur DEUX folios (`src/data/structures-folio.test.ts` atteste lequel par entrée).
       expect([119, 120]).toContain(s!.source.page);
     }
+  });
+
+  /**
+   * `AA 10 l.98` exige une Taille pour compter le Bonus d'Endurance d'une Structure, et le RAW la laisse
+   * à déterminer (« Le MJ doit déterminer la Taille de la Structure attaquée ») : chaque entrée la porte
+   * en valeur MAISON, avec sa raison. DÉRIVÉ du dataset (aucun cardinal, aucune liste re-tapée).
+   */
+  it('Toute Structure porte sa Taille et la RAISON maison qui la nomme (AA 10 l.98)', () => {
+    const sansTaille = structures.filter((s) => !(s.taille in SIZE_ORDER));
+    expect(sansTaille.map((s) => s.id)).toEqual([]);
+    const sansRaison = structures.filter((s) => !s.maison?.includes('Taille maison'));
+    expect(sansRaison.map((s) => s.id)).toEqual([]);
   });
 });

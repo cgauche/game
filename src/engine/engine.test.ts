@@ -73,27 +73,27 @@ describe("Atouts d'arme (LDB Les armes)", () => {
 
     it('cuir souple PA 1 + cotte de mailles PA 3 (même localisation) → 2 PA effectifs', () => {
       const t = target(4, [piece({ uid: 'l', subType: 'cuir-souple', pa: 1 }), piece({ uid: 'm', subType: 'mailles', pa: 3 })]);
-      expect(woundsFromHit(arme(true), t, 'corps', 100)).toBe(100 - 3 - 2);
+      expect(woundsFromHit(arme(true), t, 'corps', 100, 0, 1, undefined)).toBe(100 - 3 - 2);
     });
     it('cuir seul PA 2 → 0 (tout le cuir ignoré)', () => {
       const t = target(2, [piece({ uid: 'l', subType: 'cuir-souple', pa: 2 })]);
-      expect(woundsFromHit(arme(true), t, 'corps', 100)).toBe(100 - 3 - 0);
+      expect(woundsFromHit(arme(true), t, 'corps', 100, 0, 1, undefined)).toBe(100 - 3 - 0);
     });
     it('mailles seules PA 3 → 2 (le « premier point », UNE fois)', () => {
       const t = target(3, [piece({ uid: 'm', subType: 'mailles', pa: 3 })]);
-      expect(woundsFromHit(arme(true), t, 'corps', 100)).toBe(100 - 3 - 2);
+      expect(woundsFromHit(arme(true), t, 'corps', 100, 0, 1, undefined)).toBe(100 - 3 - 2);
     });
     it('deux pièces MÉTALLIQUES PA 2 + PA 2 → 3, pas 2 (retrait plat, pas par couche)', () => {
       const t = target(4, [piece({ uid: 'm1', subType: 'mailles', pa: 2 }), piece({ uid: 'm2', subType: 'plate', pa: 2 })]);
-      expect(woundsFromHit(arme(true), t, 'corps', 100)).toBe(100 - 3 - 3);
+      expect(woundsFromHit(arme(true), t, 'corps', 100, 0, 1, undefined)).toBe(100 - 3 - 3);
     });
     it('armure NATURELLE (PA hors item porté) PA 3 → 2 (matériau inconnu NON ignoré, #1255)', () => {
       const t = target(3, []);
-      expect(woundsFromHit(arme(true), t, 'corps', 100)).toBe(100 - 3 - 2);
+      expect(woundsFromHit(arme(true), t, 'corps', 100, 0, 1, undefined)).toBe(100 - 3 - 2);
     });
     it('arme SANS Perforante → aucune des valeurs ci-dessus ne bouge (retrait plat + bypass inertes)', () => {
       const t = target(4, [piece({ uid: 'l', subType: 'cuir-souple', pa: 1 }), piece({ uid: 'm', subType: 'mailles', pa: 3 })]);
-      expect(woundsFromHit(arme(false), t, 'corps', 100)).toBe(100 - 3 - 4);
+      expect(woundsFromHit(arme(false), t, 'corps', 100, 0, 1, undefined)).toBe(100 - 3 - 4);
     });
   });
   // Pointue, LDB 62 l.288 : « Gagnez un bonus de +1 DR à tout Test réussi quand vous attaquez avec

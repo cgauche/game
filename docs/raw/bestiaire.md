@@ -155,7 +155,7 @@ Règle d'application des Traits Facultatifs modificateurs de profil (**Élite, C
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.11-13, l.45) → `sceneEntitySchema`, `doc`, `SceneEntity`, `critTableKeyFor`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique` — `src/data/criticals.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
-- `LDB 85` (l.339-340) → `doc`, `resizeBySteps`, `StructureData`, `taille-modificateurs-en-combat`, `regard-petrifiant`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, `souffle-electrique`, `souffle-poison`, +17 — `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/schemas/defs/structures.ts`, `src/data/structures.json`, `src/data/traits.json`, `src/engine/size.ts`, +2 fichiers
+- `LDB 85` (l.339-340) → `doc`, `SIZE_LABEL`, `structureTaille`, `resizeBySteps`, `StructureData`, `taille-modificateurs-en-combat`, `regard-petrifiant`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, +19 — `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/schemas/defs/structures.ts`, `src/data/structures.json`, `src/data/traits.json`, `src/engine/size.ts`, +3 fichiers
 
 ---
 
@@ -204,7 +204,7 @@ Le trait **Endurant** ajoute +BE aux Blessures calculées (appliqué avant tout 
 **Voir aussi** : [Modificateurs de Taille en combat](#modificateurs-de-taille-en-combat) ; [Taille dans combat.md](combat.md#taille-categories-et-modificateurs-de-combat) (récapitulatif en-combat, renvoi ici pour le détail des Blessures).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.343-406) → `cannotStopOn`, `markAttacked`, `agressifEnvers`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, `displaceSmaller`, +49 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/creatureEquip.ts`, +12 fichiers
+- `LDB 85` (l.343-406) → `doc`, `SIZE_LABEL`, `cannotStopOn`, `markAttacked`, `agressifEnvers`, `structureTaille`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `EnemyTurnInput`, +52 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/schemas/defs/structures.ts`, `src/data/traits.json`, `src/engine/combat.ts`, +14 fichiers
 
 ---
 
@@ -222,7 +222,7 @@ Ces modificateurs s'appliquent **par catégorie d'écart**. Ils sont cumulatifs 
 - `LDB 85 l.339-340` — règle d'agrandissement/réduction.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.276-277, l.339-340) → `doc`, `StatblockEditor`, `resizeBySteps`, `resolvePsychAI`, `creatureToCombatant`, `StructureData`, `taille-modificateurs-en-combat`, `regard-petrifiant`, `souffle-feu`, `souffle-froid`, +22 — `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/schemas/defs/structures.ts`, `src/data/structures.json`, `src/data/traits.json`, `src/engine/size.ts`, +6 fichiers
+- `LDB 85` (l.276-277, l.339-340) → `doc`, `SIZE_LABEL`, `StatblockEditor`, `structureTaille`, `resizeBySteps`, `resolvePsychAI`, `creatureToCombatant`, `StructureData`, `taille-modificateurs-en-combat`, `regard-petrifiant`, +24 — `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/schemas/defs/structures.ts`, `src/data/structures.json`, `src/data/traits.json`, `src/engine/size.ts`, +7 fichiers
 
 ---
 
@@ -295,7 +295,7 @@ Une créature plus grande peut effectuer une **Attaque de Piétinement comme Act
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 14` (l.142-165) → `GrappleModal`, `areGrappling`, `setGrapple`, `scatter`, `combat-deux-armes`, `grappleTierMod`, `grapple`, `main-secondaire`, `grappleEnvMod`, `MANUAL_COMBAT_INTENTS`, +42 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/engine/combat.ts`, +23 fichiers
-- `LDB 85` (l.357-387) → `cannotStopOn`, `markAttacked`, `agressifEnvers`, `sizeDamageMultiplier`, `sizeGrantedQualities`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, `displaceSmaller`, `MoveEnv`, +24 — `src/data/index.ts`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/psychology.ts`, +10 fichiers
+- `LDB 85` (l.357-387) → `SIZE_LABEL`, `cannotStopOn`, `markAttacked`, `agressifEnvers`, `sizeDamageMultiplier`, `sizeGrantedQualities`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, `displaceSmaller`, +25 — `src/data/index.ts`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/psychology.ts`, +10 fichiers
 
 ---
 
@@ -353,7 +353,7 @@ Ces traits octroient une ou plusieurs manœuvres d'attaque à la créature (`LDB
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.31-35) → `traitsStandard`, `sceneEntitySchema`, `doc`, `SceneEntity`, `critTableKeyFor`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
-- `LDB 85` (l.1-447) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `doc`, `affame`, `scenario`, `creatureWeapon`, +172 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/structures.ts`, `src/data/schemas/defs/traits.ts`, +36 fichiers
+- `LDB 85` (l.1-447) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `doc`, `affame`, `scenario`, `creatureWeapon`, +174 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/structures.ts`, `src/data/schemas/defs/traits.ts`, +37 fichiers
 
 ---
 

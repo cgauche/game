@@ -356,7 +356,8 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
   // (`structureImmune` — Impénétrable / Résistant, `ADE II 08 l.296-300` ; même filtre que l'IA, `ai.ts`) :
   // le survol retombe alors sur le déplacement (monter au rempart) au lieu d'un « hors de portée » absurde.
   // Une pièce de siège SERVIE la rend ciblable. Chemin JOUEUR : indépendant du drapeau `siege` de la
-  // rencontre, qui ne gouverne que le vivier de l'IA. Pénalité de Taille `AA 10 l.98` non implémentée (#1688).
+  // rencontre, qui ne gouverne que le vivier de l'IA. Une arme qui l'abîme reste ciblable : son Bonus
+  // d'Endurance se compte une fois de plus par catégorie de Taille au-dessus du porteur (`AA 10 l.98`).
   if (isStructure(target) && active.weapons.every((w) => structureImmune(w, target))) return { kind: 'none' };
   if (option.targeting === 'trample')
     return (active.advantage ?? 0) >= 1 && !!trampleTarget(battle, active, target.id)

@@ -1065,8 +1065,9 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // côté ennemi — `ai.ts` ignore le drapeau. L'Atout Siège (×2 aux structures, `siegeMultiplier` appliqué
   // dans `woundsFromHit`, `ADE II 08 l.292`) donne à une pièce de siège une utilité d'attaque élevée sur la
   // porte. `structureImmune` écarte les armes qui ne l'abîment pas (Impénétrable / Résistant, `ADE II 08
-  // l.296-300`) ; les autres restent candidates — la pénalité de Taille de `AA 10 l.98` n'est pas implémentée
-  // (#1688). Indépendant du vivier héros : une pièce peut n'avoir QUE la porte en vue (≠ `canShoot`, qui
+  // l.296-300`) ; les autres restent candidates, leur utilité étant amortie par le Bonus d'Endurance compté
+  // une fois de plus par catégorie de Taille (`AA 10 l.98`, `structureEnduranceMult`). Indépendant du vivier
+  // héros : une pièce peut n'avoir QUE la porte en vue (≠ `canShoot`, qui
   // exige un héros tirable). Vide → aucun candidat.
   const structureTargets = (input.structures ?? []).filter((st) => st.pos);
   const canFireStruct = !frenzied && hasRanged && !!rangedW && !reloadNeeded && !(adjacentFoes.length > 0 && hasMeleeWeapon);

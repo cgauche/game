@@ -133,8 +133,8 @@ describe('Protectrice — Indice PA partout en opposant (LDB 62 l.294-296)', () 
   });
   it('woundsFromHit : les PA conférés réduisent les Blessures', () => {
     const cible = fighter();
-    const sans = woundsFromHit(w([]), cible, 'corps', 10);
-    const avec = woundsFromHit(w([]), cible, 'corps', 10, 2);
+    const sans = woundsFromHit(w([]), cible, 'corps', 10, 0, 1, undefined);
+    const avec = woundsFromHit(w([]), cible, 'corps', 10, 2, 1, undefined);
     expect(sans - avec).toBe(2);
   });
   it('Indice ≥ 2 → peut opposer les projectiles (rangedOpposeWeapon)', () => {

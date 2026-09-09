@@ -14,7 +14,7 @@
  * `min(1)` » — est PURGÉE par la migration de ce lot ; exiger `desc` ici refuserait cette entrée.
  */
 import { z } from 'zod';
-import { charKeySchema, combatFeatureSchema, specEntrySchema, specsSourceSchema } from '../grammaire/valeurs';
+import { charKeySchema, combatFeatureSchema, sizeCategorySchema, specEntrySchema, specsSourceSchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 import { gameOpSchema, conditionSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
@@ -74,7 +74,7 @@ const doc = document(
     max: z.union([z.number(), z.strictObject({ bonusOf: charKeySchema }), z.null()]),
     test: talentTestSchema.nullable(),
     specs: z.array(specEntrySchema).optional(),
-    size: z.enum(['minuscule', 'tresPetite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']).optional(),
+    size: sizeCategorySchema.optional(),
     specsSource: specsSourceSchema.optional(),
     /** Le `spec` de ce Talent nomme un CULTE (`gods.json`) : ses `grantGroups` sont accordés au
      *  porteur (`groupsFor`). Absent = le `spec` n'ouvre aucun Groupe d'appartenance. */

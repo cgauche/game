@@ -89,8 +89,8 @@ describe('augmentWeapon — enchantement porté par l’arme, replié dans c.wea
     expect(hammerGuy.weapons[0].bypass).toBeUndefined(); // pas d'épée tenue → fizzle
     expect(heldEnchants(hammerGuy)).toBeUndefined();
     const armored = dummy({ armour: { tete: 0, brasG: 0, brasD: 0, corps: 5, jambeG: 0, jambeD: 0 } }); // 5 PA corps, BE 3
-    expect(woundsFromHit(sword(), armored, 'corps', 12)).toBe(12 - 3 - 5); // arme nue : −BE −PA
-    expect(woundsFromHit(c.weapons[0], armored, 'corps', 12)).toBe(12 - 3); // épée enchantée : ignore les 5 PA
+    expect(woundsFromHit(sword(), armored, 'corps', 12, 0, 1, undefined)).toBe(12 - 3 - 5); // arme nue : −BE −PA
+    expect(woundsFromHit(c.weapons[0], armored, 'corps', 12, 0, 1, undefined)).toBe(12 - 3); // épée enchantée : ignore les 5 PA
   });
 
   it('Épée de justice : onHit porte un NŒUD FLOW `test` GATÉ par le Groupe « Criminel » (Inconscient sur échec)', () => {

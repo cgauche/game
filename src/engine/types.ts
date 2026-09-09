@@ -277,9 +277,13 @@ export interface StructureData {
   /** Laisse-t-elle VOIR à travers ? `undefined` = occultante ; seul `false` est écrivable, et il porte
    *  son `maison` (LDB 14 l.86, LDB 85 l.329). Lu par le seul `areteOcculte` (`state/scene.ts`). */
   occulte?: false;
+  /** Catégorie de Taille de la Structure — entre dans le compte de son Bonus d'Endurance (`AA 10 l.98`).
+   *  Aucune table de source ne l'imprime : c'est une valeur MAISON par entrée, éditable au Codex, dont la
+   *  raison vit dans `maison`. */
+  taille: import('./size').SizeCategory;
   /** Provenance RAW au FOLIO imprimé (ADE II 89 ; AA 119-120) — même forme que `SourceRef`. */
   source: { book: string; page: number };
-  /** Raison MAISON de l’écart au défaut occultant — exigée par le schéma dès que `occulte: false`. */
+  /** Raison MAISON — exigée par le schéma pour `taille` (toujours) et pour `occulte: false`. */
   maison?: string;
   desc?: string;
 }

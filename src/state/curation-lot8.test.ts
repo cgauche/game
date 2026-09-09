@@ -72,7 +72,7 @@ describe('Armure Aethyrique — PA temporisés', () => {
     expect(effectiveArmourAt(w, 'corps')).toBe(before + 1);
     const arme: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], subType: 'Base' } as never;
     const sans = { ...w, activeEffects: [] } as Combatant;
-    expect(woundsFromHit(arme, w, 'corps', 10)).toBe(woundsFromHit(arme, sans, 'corps', 10) - 1);
+    expect(woundsFromHit(arme, w, 'corps', 10, 0, 1, undefined)).toBe(woundsFromHit(arme, sans, 'corps', 10, 0, 1, undefined) - 1);
   });
 });
 

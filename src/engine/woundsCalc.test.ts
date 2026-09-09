@@ -29,21 +29,21 @@ describe('woundsFromHit — Inoffensive (LDB 62 l.327)', () => {
     const normale = mkWeapon({ qualities: [] });
     const inoffensive = mkWeapon({ qualities: [{ id: 'inoffensive' }] });
     // BE(30)=3, PA=2, Dégâts totaux=10 → normale : 10-(3+2)=5 ; Inoffensive : 10-(3+4)=3.
-    expect(woundsFromHit(normale, target(2), 'corps', 10)).toBe(5);
-    expect(woundsFromHit(inoffensive, target(2), 'corps', 10)).toBe(3);
+    expect(woundsFromHit(normale, target(2), 'corps', 10, 0, 1, undefined)).toBe(5);
+    expect(woundsFromHit(inoffensive, target(2), 'corps', 10, 0, 1, undefined)).toBe(3);
   });
 
   it('minimum de 1 Blessure NON forcé : une touche trop faible tombe à 0 (≠ arme normale, plancher 1)', () => {
     const normale = mkWeapon({ qualities: [] });
     const inoffensive = mkWeapon({ qualities: [{ id: 'inoffensive' }] });
     // BE(30)=3, PA=2 → normale : max(1, 4-(3+2))=1(plancher) ; Inoffensive : PA doublés à 4 → max(0, 4-(3+4))=0.
-    expect(woundsFromHit(normale, target(2), 'corps', 4)).toBe(1);
-    expect(woundsFromHit(inoffensive, target(2), 'corps', 4)).toBe(0);
+    expect(woundsFromHit(normale, target(2), 'corps', 4, 0, 1, undefined)).toBe(1);
+    expect(woundsFromHit(inoffensive, target(2), 'corps', 4, 0, 1, undefined)).toBe(0);
   });
 
   it('branche STRUCTURE intacte (ADE II 8) : minWounds=0 déjà géré, PA=0 (aucune Localisation)', () => {
     const canon = mkWeapon({ label: 'Canon', type: 'ranged', qualities: [{ id: 'siege' }] });
     const struct = structureCombatant(findStructureById('porte')!);
-    expect(woundsFromHit(canon, struct, undefined, 10)).toBe(18); // BE 2 (E20) → 20 dégâts (×2 Siège) - 2 = 18
+    expect(woundsFromHit(canon, struct, undefined, 10, 0, 1, undefined)).toBe(18); // BE 2 (E20) → 20 dégâts (×2 Siège) - 2 = 18
   });
 });

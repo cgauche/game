@@ -49,7 +49,7 @@ describe("op:'wounds' mode COUP D'ARME (S1) — délègue à woundsFromHit (qual
   it("weaponHit:true + ctx.weapon → Blessures == woundsFromHit (mêmes BE + PA à la localisation)", () => {
     const c = hero({ wounds: { current: 30, max: 30 }, armour: { tete: 0, brasG: 0, brasD: 0, corps: 3, jambeG: 0, jambeD: 0 } });
     const w = sword();
-    const expected = woundsFromHit(w, c, 'corps', 12); // 12 − BE(4) − PA(3) = 5
+    const expected = woundsFromHit(w, c, 'corps', 12, 0, 1, undefined); // 12 − BE(4) − PA(3) = 5
     const before = c.wounds.current;
     applyOps(c, [{ op: 'wounds', amount: 12, weaponHit: true }], { weapon: w, location: 'corps' });
     expect(before - c.wounds.current).toBe(expected);
@@ -61,7 +61,7 @@ describe("op:'wounds' mode COUP D'ARME (S1) — délègue à woundsFromHit (qual
     const w = sword();
     const before = c.wounds.current;
     applyOps(c, [{ op: 'wounds', amount: 12, weaponHit: true }], { weapon: w, location: 'tete' }); // 12 − 4 − 5 = 3
-    expect(before - c.wounds.current).toBe(woundsFromHit(w, c, 'tete', 12));
+    expect(before - c.wounds.current).toBe(woundsFromHit(w, c, 'tete', 12, 0, 1, undefined));
   });
 
   it("réutilise les QUALITÉS de l'arme (Perforante) via woundsFromHit — équivalence par construction", () => {
@@ -69,7 +69,7 @@ describe("op:'wounds' mode COUP D'ARME (S1) — délègue à woundsFromHit (qual
     const w = sword([{ id: 'perforante' }]);
     const before = c.wounds.current;
     applyOps(c, [{ op: 'wounds', amount: 12, weaponHit: true }], { weapon: w, location: 'corps' });
-    expect(before - c.wounds.current).toBe(woundsFromHit(w, c, 'corps', 12));
+    expect(before - c.wounds.current).toBe(woundsFromHit(w, c, 'corps', 12, 0, 1, undefined));
   });
 
   it("weaponHit SANS ctx.weapon → repli en mode Formula (défaut : ignore BE+PA)", () => {

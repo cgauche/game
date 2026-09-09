@@ -60,7 +60,7 @@ function start(structId: string, opts?: { down?: boolean; seed?: number }) {
 function hitRes(weapon: Weapon, target: Combatant, totalDamage: number, over: Partial<AttackResult> = {}): AttackResult {
   return {
     hit: true, attackerRoll: 41, netSL: 2, location: 'corps', damage: totalDamage,
-    woundsLost: woundsFromHit(weapon, target, 'corps', totalDamage),
+    woundsLost: woundsFromHit(weapon, target, 'corps', totalDamage, 0, 1, undefined),
     critical: false, advantageTo: 'attacker', defenderDefeated: false, log: 'touche', ...over,
   };
 }

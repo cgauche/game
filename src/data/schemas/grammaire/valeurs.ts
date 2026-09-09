@@ -470,7 +470,15 @@ export const charStatKeySchema = z.enum([...charKeySchema.options, 'M', 'B']);
 
 /** `SizeCategory` (`src/engine/size.ts:14`) — CANON de la Taille (LDB 85), porte UNIQUE des defs qui
  *  nomment une catégorie (`trappings.sizeFor`, `CustomStatblock.size`). */
-export const sizeCategorySchema = z.enum(['minuscule', 'tresPetite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
+export const sizeCategorySchema = enumNomme({
+  minuscule: 'Minuscule',
+  tresPetite: 'Très petite',
+  petite: 'Petite',
+  moyenne: 'Moyenne',
+  grande: 'Grande',
+  enorme: 'Énorme',
+  monstrueuse: 'Monstrueuse',
+});
 
 /** `Money` (`src/engine/money.ts:10`) — bourse à 3 dénominations, toutes CHIFFRÉES : la forme des
  *  CATALOGUES (`trappings`/`creatures`/`vehicles`/`crew-roles`/`mass-battle`), qui impriment un montant complet. */

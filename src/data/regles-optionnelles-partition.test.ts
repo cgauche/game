@@ -57,7 +57,9 @@ const COEXISTENCE: Record<string, number> = {
   // 1 → 2 (#1657 B3-2b-a) : le Trait `cale` porte MSRC 10 p.53 (le livre DIT la cale du navire
   // marchand) ET son `maison` (MSRC 07 l.94 gate le Critique dessus sans imprimer de Trait naval).
   'naval-traits.json': 2,
-  'structures.json': 2,
+  // 2 → 24 (#1688) : les 24 Structures citent leur folio (ADE II 89, AA 119-120) ET portent désormais
+  // chacune la raison de sa `taille`, valeur qu'aucune table n'imprime (AA 10 l.98).
+  'structures.json': 24,
   // +1 (#1599) : le symptôme `convulsions` cite son folio (LDB 188) ET porte en clair l'arbitrage de
   // son palier Grave — LDB 20 l.157 chiffre −10 (base) et −20 (Modéré) sans jamais rechiffrer Grave.
   'symptoms.json': 1,

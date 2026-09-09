@@ -781,6 +781,9 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
     'skills.json · desc',
     'skills.json · source',
     'steam-breakdown.json · desc',
+    // #1688 : `taille` est une valeur MAISON (le RAW `AA 10 l.98` la laisse à déterminer) — toute entrée
+    // en porte une, donc toute entrée doit dire sa raison (`affinerEntree`, `defs/structures.ts`).
+    'structures.json · maison',
     'structures.json · source',
     'symptoms.json · desc',
     'talents.json · source',

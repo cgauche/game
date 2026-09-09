@@ -9,7 +9,8 @@ import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { bypassedAP } from './armourBypass';
 import { qualitySum, qualityArmourBypasses, hasQuality } from './qualities/dispatch';
 import { talentDamageReduction } from './combatFeatures/dispatch';
-import { isStructure, structureImmune, siegeMultiplier } from './structures';
+import { isStructure, structureImmune, siegeMultiplier, structureEnduranceMult } from './structures';
+import type { SizeCategory } from './size';
 
 /**
  * Blessures infligées par un coup : `totalDamage` (Dégâts d'arme + DR + qualités) moins le Bonus
@@ -21,8 +22,12 @@ import { isStructure, structureImmune, siegeMultiplier } from './structures';
  * IMPARABLE (Résistant/Impénétrable/Bélier hors-porte) inflige 0 ; sinon le TOTAL de Dégâts est doublé par
  * Siège AVANT le Bonus d'Endurance (RAW « le double des dégâts »), et le plancher passe à 0 (un coup trop
  * faible ne raye pas la structure — comme une coque). Sans PA, l'`effectiveArmour` d'une structure vaut 0.
+ *
+ * `attackerSize` = Taille de l'attaquant, qui compte le Bonus d'Endurance d'une STRUCTURE
+ * (`structureEnduranceMult`, `AA 10 l.98`). REQUIS (jamais omis à l'appel) : `undefined` est une valeur
+ * qui se PASSE, et `effectiveSize` la rabat alors sur Moyenne (`LDB 14 l.128`), le standard jouable.
  */
-export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation | undefined, totalDamage: number, extraAP = 0, minWounds = 1): number {
+export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation | undefined, totalDamage: number, extraAP = 0, minWounds = 1, attackerSize: SizeCategory | undefined): number {
   // Engin de siège INERTE (AA 10 p.122-123) : le RAW ne lui donne aucune Blessure → NON-DESTRUCTIBLE (immune).
   // On le neutralise en tuant son équipage, jamais en le frappant. (≠ structure/véhicule, qui NE sont PAS `inert`.)
   if (target.inert) return 0;
@@ -37,7 +42,9 @@ export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLo
   if (inoffensive) minWounds = 0;
   // Robuste (LDB 10) : « Vous réduisez tous les Dégâts subis de 1 par niveau […] toujours un minimum de 1 Blessure ».
   totalDamage -= talentDamageReduction(target);
-  const tb = bonus(effectiveChar(target, 'endurance'));
+  // `AA 10 l.98` — le BE d'une Structure se compte une fois de plus par catégorie de Taille au-dessus de
+  // l'attaquant (Atout Siège exempté) ; hors Structure le multiplicateur vaut 1.
+  const tb = bonus(effectiveChar(target, 'endurance')) * structureEnduranceMult(weapon, target, attackerSize);
   // PA bruts = armure portée/naturelle + PA temporisés de sort + PA conférés par l'arme d'opposition
   // (`extraAP`). `location` ABSENTE (STRUCTURE inanimée, ADE II 8 : pas de Localisation) → aucune armure
   // de pièce (une structure a 0 PA partout) : le terme d'armure vaut 0.

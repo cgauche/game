@@ -45,8 +45,8 @@ describe('dégâts (LDB 10) — Coup puissant / Tir précis / Combat déloyal / 
   it('woundsFromHit : Robuste réduit les Dégâts subis (plancher 1 conservé)', () => {
     const cible = mk([{ name: 'Robuste', times: 2 }]);
     const naive = mk([]);
-    expect(woundsFromHit(w(), naive, 'corps', 10) - woundsFromHit(w(), cible, 'corps', 10)).toBe(2);
-    expect(woundsFromHit(w(), cible, 'corps', 2)).toBe(1); // min 1 Blessure
+    expect(woundsFromHit(w(), naive, 'corps', 10, 0, 1, undefined) - woundsFromHit(w(), cible, 'corps', 10, 0, 1, undefined)).toBe(2);
+    expect(woundsFromHit(w(), cible, 'corps', 2, 0, 1, undefined)).toBe(1); // min 1 Blessure
   });
 });
 

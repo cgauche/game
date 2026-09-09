@@ -96,7 +96,7 @@ export function resolveVolley(
     // « Pour le pire » (l.128) : sur un Test RÉUSSI, un DR négatif réduit les Dégâts — on n'écrase PAS le DR à 0.
     const gunDR = dr + attackDRAdjust(weapon, success);
     const damage = success ? effectiveWeaponDamage(weapon, 0) + gunDR : 0;
-    const wounds = success ? woundsFromHit(weapon, target, 'corps', damage, 0, 0) : 0; // BE/blindage/Perforante/bypass, plancher 0
+    const wounds = success ? woundsFromHit(weapon, target, 'corps', damage, 0, 0, chef?.size) : 0; // BE/blindage/Perforante/bypass, plancher 0
     const locRoll = d100(rng); // Localisation des Dégâts d'un bateau (MDG 13 l.571)
     shots.push({
       weaponName: weapon.label, ammoName: ammo?.label, ammo, damage, wounds, weapon, // arme effective : Atouts d'aire + effets onHit côté appelant
