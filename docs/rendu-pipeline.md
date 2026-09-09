@@ -95,7 +95,7 @@ La vérité de VUE (estompe d'occlusion, révélation, assombrissement d'un éta
 | `buildHighlights` | `HighlightEl[]` | `src/gameIso/builders/highlights.ts:64` | — |
 | `buildPropVolumes` | `Face[]` | `src/gameIso/builders/propVolumes.ts:52` | Les faces MONDE d'un décor volumique : recette locale × cap × ancre, posées sur `baseHeightM`. |
 | `buildProps` | `PropEl[]` | `src/gameIso/builders/props.ts:125` | Éléments `prop` de la scène. |
-| `buildRoofs` | `RoofEl[]` | `src/gameIso/builders/roofs.ts:1390` | Éléments `roof` de la scène. |
+| `buildRoofs` | `RoofEl[]` | `src/gameIso/builders/roofs.ts:1397` | Éléments `roof` de la scène. |
 | `buildTokens` | `TokenEl[]` | `src/gameIso/builders/tokens.ts:80` | Éléments `token` de la scène — figurants (toujours), puis combattants (si `battle`). |
 | `buildWalls` | `WallEl[]` | `src/gameIso/builders/walls.ts:631` | Éléments `wall` de la scène. |
 
@@ -106,7 +106,7 @@ La vérité de VUE (estompe d'occlusion, révélation, assombrissement d'un éta
 | `src/gameIso/authoring/` | 5 | 0 | peintres SVG (plan de station, aperçu d’éditeur, oracles de parité) — pilotés par `Dims`, seul pont monde→écran |
 | `src/gameIso/backends/` | 0 | 1 | le MONDE, cuit en géométrie et rendu par une caméra réelle (three) — LE moteur du jeu en toutes vues |
 | `src/gameIso/builders/` | 12 | 1 | dérivation PURE de la Scène en éléments sémantiques, en espace MONDE (aucun import de caméra ni d’écran) |
-| `src/gameIso/catalog/` | 6 | 6 | catalogues d’apparence : ambiance, décor, dégradés — la couleur y est une DONNÉE |
+| `src/gameIso/catalog/` | 6 | 5 | catalogues d’apparence : ambiance, décor, dégradés — la couleur y est une DONNÉE |
 | `src/gameIso/detail/` | 3 | 0 | détail de surface (matériaux v2) : recettes dépliées en primitives UV, déterministes au seed |
 | `src/gameIso/fx/` | 5 | 0 | effets de combat — hors périmètre de la garde anti-couleur (couleur d’intention, pas d’identité de matériau) |
 | `src/gameIso/pov/` | 3 | 0 | première personne : caméra, brume, boîtes de billboard, voiles d’écran |
@@ -160,7 +160,7 @@ relancer, comparer : une migration donnée-neutre doit rester identique.
 | Catalogue | Entrées |
 |---|---|
 | `src/data/structureAppearance.json` | 18 |
-| `src/data/materials.json` | 16 |
+| `src/data/materials.json` | 15 |
 | `src/data/decorPalette.json` | 435 |
 
 - **un matériau** (structure / relief / toit) : une entrée dans le catalogue correspondant ci-dessus
@@ -174,4 +174,4 @@ relancer, comparer : une migration donnée-neutre doit rester identique.
 - **un TYPE d'élément** (au-delà des 5 membres de `SceneEl`) : ajouter le variant au pivot,
   son builder, sa cuisson dans le monde volumique, et — s'il doit se voir à l'authoring — son peintre
   SVG avec sa profondeur de tri.
-<!-- sources-empreinte: be41f4104605db8b6d17b417869153cae27b72be (23 fichiers, 10 dossiers) corps: cf881c1e20344b641d5bb6411cd40cc5020551b7 -->
+<!-- sources-empreinte: 8d63da8df35402f1ae22d10c251004efddea46b8 (23 fichiers, 10 dossiers) corps: b5271e39cd16ad105bf9d740ba47a9de4beeed72 -->

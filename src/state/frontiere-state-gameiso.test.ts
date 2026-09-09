@@ -22,23 +22,19 @@
  * (`combatManeuvers.ts`, `revealStep.ts` → `ui/icons` ; `roster.ts` → `ui/creator/draft`).
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { IMPORT_RE, resolveImport } from '../../scripts/guards/lib/importGraph.mjs';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 const SRC = fileURLToPath(new URL('../', import.meta.url)).split('\\').join('/');
 const STATE = `${SRC}state`;
 const RENDU = `${SRC}gameIso/`;
 
-/** Sources de production d'un dossier, récursivement (chemins absolus, séparateur `/`). */
-function sourcesDe(dir: string): string[] {
-  const out: string[] = [];
-  for (const ent of readdirSync(dir, { withFileTypes: true })) {
-    const chemin = `${dir}/${ent.name}`;
-    if (ent.isDirectory()) { out.push(...sourcesDe(chemin)); continue; }
-    if (/\.tsx?$/.test(ent.name) && !/\.test\.tsx?$/.test(ent.name)) out.push(chemin);
-  }
-  return out;
+/** Sources de PRODUCTION de `src/state`, récursivement, avec leur texte : marche et lecture viennent
+ *  de la primitive de corpus (`readCorpus`, `*.test.*` hors corpus). Le chemin est rendu absolu à
+ *  séparateur `/` — la forme que `resolveImport` compare à `RENDU`. */
+function sourcesDeState(): { chemin: string; texte: string }[] {
+  return readCorpus(['src/state']).map(({ abs, text }) => ({ chemin: abs.split('\\').join('/'), texte: text }));
 }
 
 /** Les imports d'un module qui atteignent `src/gameIso`, en `spécificateur → cible relative à src/`.
@@ -54,12 +50,12 @@ export function importsDuRendu(fichierAbs: string, texte: string): { spec: strin
 }
 
 describe('frontière state → gameIso (CLAUDE.md règle 3)', () => {
-  const fichiers = sourcesDe(STATE);
+  const fichiers = sourcesDeState();
 
   it('le scan voit bien les sources de production de src/state (preuve de câblage)', () => {
     expect(fichiers.length).toBeGreaterThan(50);
-    expect(fichiers.some((f) => f.endsWith('/state/sceneEdit.ts'))).toBe(true);
-    expect(fichiers.some((f) => /\.test\.tsx?$/.test(f))).toBe(false);
+    expect(fichiers.some((f) => f.chemin.endsWith('/state/sceneEdit.ts'))).toBe(true);
+    expect(fichiers.some((f) => /\.test\.tsx?$/.test(f.chemin))).toBe(false);
   });
 
   it('cas planté : un import du rendu est VU, un import de state ne l’est pas (preuve TDD)', () => {
@@ -75,8 +71,8 @@ describe('frontière state → gameIso (CLAUDE.md règle 3)', () => {
   it('aucune source de production de src/state n’importe src/gameIso', () => {
     const fautes: string[] = [];
     for (const f of fichiers)
-      for (const { spec, cible } of importsDuRendu(f, readFileSync(f, 'utf8')))
-        fautes.push(`${f.slice(SRC.length)} → ${cible}  (« ${spec} »)`);
+      for (const { spec, cible } of importsDuRendu(f.chemin, f.texte))
+        fautes.push(`${f.chemin.slice(SRC.length)} → ${cible}  (« ${spec} »)`);
     expect(
       fautes,
       'Le store importe le RENDU : le rendu dépend du store, jamais l’inverse (CLAUDE.md règle 3). ' +

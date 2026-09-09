@@ -23,6 +23,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { listerDossier } from '../../guards/lib/lister.mjs';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 const MIGRATION = '2026-09-09-1715-roof-defaults-scenes.mjs';
@@ -68,11 +69,10 @@ function rienTouche(racine, avant) {
   return fautes;
 }
 
-/** Les projets de scène de l'arbre. */
-const PROJETS = fs
-  .readdirSync(path.join(RACINE, 'src/scenes'), { withFileTypes: true })
-  .filter((d) => d.isDirectory())
-  .map((d) => `src/scenes/${d.name}/${d.name}-projet.json`)
+/** Les projets de scène de l'arbre (listage par la primitive `listerDossier` — ordre total ; une
+ *  entrée qui n'est pas un dossier de campagne ne porte aucun document et tombe au filtre). */
+const PROJETS = listerDossier(path.join(RACINE, 'src/scenes'))
+  .map((nom) => `src/scenes/${nom}/${nom}-projet.json`)
   .filter((rel) => fs.existsSync(path.join(RACINE, rel)));
 assert.ok(PROJETS.length > 0, 'aucun projet de scène — la fixture ne mesure rien');
 

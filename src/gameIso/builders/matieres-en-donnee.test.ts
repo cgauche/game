@@ -1,6 +1,7 @@
-import { readdirSync, readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, it, expect } from 'vitest';
+import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 import { materials } from '../../data';
 
 /**
@@ -30,15 +31,20 @@ import { materials } from '../../data';
  * AUCUNE exception nominative : le stock mesuré est vide, il doit le rester.
  */
 const GAMEISO = fileURLToPath(new URL('../', import.meta.url));
-const STATE = fileURLToPath(new URL('../../state/', import.meta.url));
 
-/** Les quatre couches ÉMETTRICES scannées, chacune sous sa racine. */
+/** Les quatre couches ÉMETTRICES scannées. `prefixe`/`dir` composent le chemin que le rapport porte ;
+ *  `recursif: false` borne la couche à la profondeur 1. */
 const COUCHES = [
-  { racine: GAMEISO, prefixe: 'gameIso/', dir: 'builders', recursif: true, filtre: (f: string) => /\.tsx?$/.test(f) },
-  { racine: GAMEISO, prefixe: 'gameIso/', dir: 'authoring', recursif: false, filtre: (f: string) => /Svg\.tsx?$/.test(f) },
-  { racine: GAMEISO, prefixe: 'gameIso/', dir: 'catalog', recursif: true, filtre: (f: string) => /\.tsx?$/.test(f) },
-  { racine: STATE, prefixe: '', dir: '.', recursif: true, filtre: (f: string) => /\.tsx?$/.test(f) },
+  { prefixe: 'gameIso/', dir: 'builders', recursif: true, filtre: (f: string) => /\.tsx?$/.test(f) },
+  { prefixe: 'gameIso/', dir: 'authoring', recursif: false, filtre: (f: string) => /Svg\.tsx?$/.test(f) },
+  { prefixe: 'gameIso/', dir: 'catalog', recursif: true, filtre: (f: string) => /\.tsx?$/.test(f) },
+  { prefixe: '', dir: '.', recursif: true, filtre: (f: string) => /\.tsx?$/.test(f) },
 ] as const;
+
+/** BASE de lecture d'une couche, DÉRIVÉE de son préfixe et de son dossier — chemin POSIX depuis la
+ *  racine du dépôt, la forme que `readCorpus` prend et rend. La racine du store est `src/state`,
+ *  celle des trois couches de rendu `src/gameIso/<dossier>`. */
+const baseDe = (c: (typeof COUCHES)[number]) => `src/${c.prefixe}${c.dir === '.' ? 'state' : c.dir}`;
 
 /**
  * Les trois SIGNAUX STRUCTURELS du store, chacun neutralisé par `codeSeul` — aucun nom de fichier,
@@ -63,25 +69,15 @@ const LIGNE_STRUCTURELLE = new RegExp(
 /** La DÉCLARATION d'une semence, du `=` au `satisfies` : elle porte ses littéraux sur plusieurs lignes. */
 const SEMENCE_DECL = /=\s*\{[^{}]*\}\s*as const satisfies\s+\w*Defaults\b/g;
 
-/** Les sources d'une couche (récursif ou non), hors `*.test.ts`. */
-function sourcesDe(racine: string, recursif: boolean, filtre: (f: string) => boolean, rel = ''): string[] {
-  const out: string[] = [];
-  const dir = rel ? `${racine}/${rel}` : racine;
-  for (const ent of readdirSync(dir, { withFileTypes: true })) {
-    const relPath = rel ? `${rel}/${ent.name}` : ent.name;
-    if (ent.isDirectory()) { if (recursif) out.push(...sourcesDe(racine, true, filtre, relPath)); continue; }
-    if (filtre(ent.name) && !/\.test\.tsx?$/.test(ent.name)) out.push(relPath);
-  }
-  return out;
-}
-
-/** Tous les fichiers du périmètre, en chemins relatifs à `src/` (racine de la couche comprise). */
-function fichiersDuPerimetre(): { rel: string; abs: string }[] {
+/** Tous les fichiers du périmètre : la marche de l'arbre ET la lecture viennent de la primitive de
+ *  corpus (`readCorpus`, une clé par base, `*.test.*` hors corpus). Le chemin rendu est celui que le
+ *  rapport porte — relatif à `src/` pour les couches de `gameIso`, à `src/state/` pour le store. */
+function fichiersDuPerimetre(): { rel: string; code: string }[] {
   return COUCHES.flatMap((c) =>
-    sourcesDe(`${c.racine}${c.dir === '.' ? '' : c.dir}`, c.recursif, c.filtre).map((f) => ({
-      rel: `${c.prefixe}${c.dir === '.' ? '' : `${c.dir}/`}${f}`,
-      abs: `${c.racine}${c.dir === '.' ? '' : `${c.dir}/`}${f}`,
-    })),
+    readCorpus([baseDe(c)])
+      .map(({ rel, text }) => ({ f: rel.slice(baseDe(c).length + 1), text }))
+      .filter(({ f }) => (c.recursif || !f.includes('/')) && c.filtre(f.slice(f.lastIndexOf('/') + 1)))
+      .map(({ f, text }) => ({ rel: `${c.prefixe}${c.dir === '.' ? '' : `${c.dir}/`}${f}`, code: text })),
   );
 }
 
@@ -127,7 +123,7 @@ describe('couches émettrices du monde — aucune matière nommée en dur (#1691
   it('les HOMONYMES du store portent tous un signal STRUCTUREL, et aucun ne survit à la neutralisation', () => {
     const nus: { rel: string; ligne: number; texte: string }[] = [];
     for (const f of fichiers.filter((x) => !x.rel.startsWith('gameIso/'))) {
-      const sansCommentaires = readFileSync(f.abs, 'utf8')
+      const sansCommentaires = f.code
         .replace(/\/\*[\s\S]*?\*\//g, (bloc) => bloc.replace(/[^\n]/g, ' '))
         .split('\n')
         .map((l) => (l.indexOf('//') >= 0 ? l.slice(0, l.indexOf('//')) : l));
@@ -163,7 +159,7 @@ describe('couches émettrices du monde — aucune matière nommée en dur (#1691
   it('aucun id de `materials.json` n’apparaît en littéral dans les couches émettrices', () => {
     const fautes: string[] = [];
     for (const f of fichiers) {
-      const code = codeSeul(readFileSync(f.abs, 'utf8'));
+      const code = codeSeul(f.code);
       const lignes = code.split('\n');
       for (const m of materials) {
         const re = new RegExp(`(['"\`])${m.id}\\1`);

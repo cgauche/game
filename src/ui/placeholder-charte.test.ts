@@ -1,5 +1,5 @@
-import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * Le TEXTE FANTÔME d'un champ de saisie (consigne, ou valeur effective héritée quand le champ est
@@ -11,10 +11,11 @@ import { describe, expect, it } from 'vitest';
  * de l'élément) : la couleur RENDUE se mesure au navigateur (recette #1715 b), ce banc verrouille
  * l'UNICITÉ de la règle et son TOKEN.
  */
-const stylesDir = new URL('./styles/', import.meta.url);
-const feuilles = readdirSync(stylesDir)
-  .filter((f) => f.endsWith('.css'))
-  .map((f) => ({ nom: f, css: readFileSync(new URL(f, stylesDir), 'utf8') }));
+const STYLES = 'src/ui/styles';
+const feuilles = readCorpus([STYLES], { exts: ['.css'] }).map(({ rel, text }) => ({
+  nom: rel.slice(STYLES.length + 1),
+  css: text,
+}));
 
 describe('charte — texte fantôme des champs de saisie', () => {
   it('base.css pose la règle globale input/textarea en encre atténuée', () => {
