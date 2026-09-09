@@ -17,7 +17,7 @@ import { refOuSpec } from '../grammaire/ref';
 export const file = 'domains.json';
 export const famille = 'entite';
 
-/** Matière de PA ignorée par les Projectiles du Domaine (LDB 48). */
+/** Matière de PA ignorée par les Sorts du Domaine (LDB 48). */
 export const missileBypassSchema = enumNomme({ metal: 'PA métalliques', nonMagic: 'PA non magiques' });
 
 const doc = document(

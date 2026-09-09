@@ -20,8 +20,7 @@ import { Prose } from './Prose';
 import { Tabs } from './Tabs';
 import { libelleDeValeur } from '../data/schemas/grammaire/meta';
 import { rigSchema, posteSideSchema } from '../data/schemas/defs/vehicles';
-
-const DIR_LABEL: Record<Dir8, string> = { N: 'Nord', NE: 'Nord-Est', E: 'Est', SE: 'Sud-Est', S: 'Sud', SO: 'Sud-Ouest', O: 'Ouest', NO: 'Nord-Ouest' };
+import { dir8Schema } from '../data/schemas/grammaire/valeurs';
 
 /** État du navire (lecture seule, dérivé) — mêmes `stat-chip` que les vitaux d'une fiche héros. PUR. */
 export function ShipStateBlock({ ship, cap, morale, crew }: { ship: Combatant; cap?: Dir8; morale: number; crew: Combatant[] }) {
@@ -30,7 +29,7 @@ export function ShipStateBlock({ ship, cap, morale, crew }: { ship: Combatant; c
   return (
     <div className="sheet-vitals">
       <div className="stat-chip pv"><span className="sc-label">Coque</span><span className="sc-value">{ship.wounds.current}/{ship.wounds.max}</span></div>
-      {cap && <div className="stat-chip"><span className="sc-label">Cap</span><span className="sc-value">{DIR_LABEL[cap]}</span></div>}
+      {cap && <div className="stat-chip"><span className="sc-label">Cap</span><span className="sc-value">{libelleDeValeur(dir8Schema, cap)}</span></div>}
       <div className="stat-chip"><span className="sc-label">Moral</span><span className="sc-value">{morale}{band.crewTestDR ? ` (${band.crewTestDR > 0 ? '+' : ''}${band.crewTestDR})` : ''}</span></div>
       <div className="stat-chip"><span className="sc-label">Effectif</span><span className="sc-value">{apte.length}/{crew.length}</span></div>
     </div>
@@ -97,7 +96,7 @@ export function ShipInspectBody({ hull, crew, cap }: { hull: Combatant; crew: Co
     <>
       <div className="sheet-vitals">
         {hull.wounds.max > 0 && <div className="stat-chip pv"><span className="sc-label">Coque</span><span className="sc-value">{hull.wounds.current}/{hull.wounds.max}</span></div>}
-        {cap && <div className="stat-chip"><span className="sc-label">Cap</span><span className="sc-value">{DIR_LABEL[cap]}</span></div>}
+        {cap && <div className="stat-chip"><span className="sc-label">Cap</span><span className="sc-value">{libelleDeValeur(dir8Schema, cap)}</span></div>}
         {rig && <div className="stat-chip"><span className="sc-label">Gréement</span><span className="sc-value">{libelleDeValeur(rigSchema, rig)}</span></div>}
         {crew.length > 0 && <div className="stat-chip"><span className="sc-label">Effectif</span><span className="sc-value">{apte.length}/{crew.length}</span></div>}
       </div>
@@ -193,7 +192,7 @@ export function PosteSheet({ combatantIds, initialHullId, onClose }: { combatant
             <div className="sheet-portrait">
               <PortraitTile c={hull} ring="var(--gold)" variant="full" size="xl" />
               <h3>{hull.label}</h3>
-              <span className="char-sub">{vehicle ? 'Navire' : 'Emplacement de siège'}{cap ? ` · cap ${DIR_LABEL[cap]}` : ''}</span>
+              <span className="char-sub">{vehicle ? 'Navire' : 'Emplacement de siège'}{cap ? ` · cap ${libelleDeValeur(dir8Schema, cap)}` : ''}</span>
             </div>
             <ShipStateBlock ship={hull} cap={cap} morale={shipMoraleScore(useGame.getState, hull)} crew={crew} />
           </aside>

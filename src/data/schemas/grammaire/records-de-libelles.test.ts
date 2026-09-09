@@ -18,10 +18,12 @@
  * Deux RÈGLES, jamais une liste d'exceptions. (1) « VALEUR = texte FR » : aucune valeur ne doit
  * ressembler à un identifiant (point/slash/underscore, camelCase, PascalCase composé, kebab minuscule,
  * sigle d'une lettre) et au moins une doit porter une marque de texte FR (espace, accent, apostrophe,
- * mot capitalisé). Le « mot capitalisé » reste de la partie : le resserrer à accent/espace/apostrophe
- * a été MESURÉ sur le stock et perdrait les deux Records qui ne tiennent QUE par lui
- * (`seaWeather.ts:WIND_DIRECTION_LABEL` et `ShipSheet.tsx:DIR_LABEL` — Nord/Sud/Est/Ouest,
- * Nord-Est/Sud-Ouest…). (2) « table de SEGMENTS DE CLÉ » : un
+ * mot capitalisé). Le « mot capitalisé » ne tient AUCUNE ligne du stock vivant : mesuré en neutralisant
+ * `MOT_CAPITALISE`, les 9 lignes du STOCK restent VUES (aucune ne dépend de lui). Ce qu'il tient est la
+ * COUVERTURE, et cela se mesure aux contrôles positifs : sans lui, les trois fixtures dont les libellés
+ * sont des mots capitalisés NUS (sans accent, sans espace, sans apostrophe — `{ physique: 'Physique',
+ * mentale: 'Mentale' }`, sa forme TABLE, et `g.ts:SEG`) cessent d'être vues ; un Record de cette forme
+ * échapperait au détecteur. (2) « table de SEGMENTS DE CLÉ » : un
  * Record dont TOUTES les lectures `NOM[…]` sont des interpolations d'un gabarit qui ne fabrique QUE
  * des caractères d'identifiant ne porte pas des libellés mais des morceaux de clé — c'est ce qui
  * écarte `shipCritical.ts:SHIP_CRIT_CODEX_SEGMENT`, dont les valeurs sont concaténées en catégorie
@@ -34,6 +36,11 @@
  * COUVERTURE DU DÉTECTEUR (dite, pas devinée) : littéraux à valeurs de chaîne écrits en clair dans
  * `src/ui`, `src/engine`, `src/state`, `src/data` (hors tests). Un Record bâti par calcul, ou dont
  * toutes les valeurs sont des mots FR minuscules sans accent, lui échappe.
+ *
+ * CE QUE CETTE GARDE NE VOIT PAS, mesuré : la même seconde vérité écrite en JSX plutôt qu'en littéral
+ * d'objet — des `<option value="vue">Vue</option>` énumérés à la main (cas vivant :
+ * `src/ui/editor/GameOpEditor.tsx:860-863`, vocabulaire `senseSchema`). Le détecteur ne lit que des
+ * paires `clé : 'texte'` ; aucune balise n'entre dans `RX_LITTERAL` ni dans `RX_TABLE`.
  */
 import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -174,33 +181,21 @@ function sourcesDuDepot(): Fichier[] {
 
 /**
  * STOCK NOMINATIF GELÉ, par `fichier:symbole` — les Records de libellés de valeurs qui vivaient déjà
- * hors de la grammaire quand le cliquet est né (#1694 train A). Aucune DETTE NEUVE n'y entre : nommer
- * un vocabulaire par `enumNomme` retire sa ligne d'ici (train B). Les deux TABLES `[{id,label}]`
- * (`combat.ts:RANGE_BANDS`, `Inspector.tsx:ROOF_PROFILES`) sont entrées le jour où le détecteur a
- * couvert la forme (b) — elles préexistaient toutes deux au cliquet, la COUVERTURE a grandi, pas la dette.
+ * hors de la grammaire quand le cliquet est né. Aucune DETTE NEUVE n'y entre : nommer un vocabulaire
+ * par `enumNomme` retire sa ligne d'ici ; les lignes restantes portent leur raison au ticket #1714. La TABLE `[{id,label}]`
+ * `combat.ts:RANGE_BANDS` est entrée le jour où le détecteur a couvert la forme (b) — elle préexistait
+ * au cliquet, la COUVERTURE a grandi, pas la dette.
  */
 const STOCK: readonly string[] = [
-  'src/engine/corruption.ts:CHAOS_ALIGN_LABELS',
-  'src/engine/corruption.ts:EXPOSURE_LABELS',
   'src/engine/combat.ts:RANGE_BANDS',
-  'src/ui/editor/Inspector.tsx:ROOF_PROFILES',
-  'src/engine/seaWeather.ts:WIND_DIRECTION_LABEL',
   'src/engine/size.ts:SIZE_LABEL',
-  'src/state/combatFlow.ts:CRIT_TABLE_LABELS',
-  'src/ui/BackgroundPanel.tsx:FAVOR_LEVEL_LABELS',
   'src/ui/CarrierInventory.tsx:LOC_SHORT',
-  'src/ui/CityHubScreen.tsx:SCENE_WEATHER_LABEL',
   'src/ui/EquipmentPanel.tsx:ZONE_OF_LOC',
-  'src/ui/InterludeScreen.tsx:FAVOR_LEVEL_LABELS',
-  'src/ui/ShipSheet.tsx:DIR_LABEL',
   'src/ui/compendium/humanize.ts:FIELD',
   'src/ui/compendium/humanize.ts:REL_PLAYER',
-  'src/ui/compendium/humanize.ts:SENSE_LABEL',
   'src/ui/compendium/humanize.ts:negTable',
   'src/ui/compendium/humanize.ts:table',
-  'src/ui/compendium/registry.ts:SHIP_SIZE_LABEL',
   'src/ui/editor/GameOpEditor.tsx:NATURE_INFLUENCE',
-  'src/ui/editor/editorState.ts:KIND_LABEL',
 ].sort();
 
 describe('cliquet — un libellé de valeur vit sur le NŒUD, jamais dans un Record', () => {

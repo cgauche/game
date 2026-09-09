@@ -22,8 +22,12 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema, hitLocationSchema, plageSchema, sourceRefSchema, formulaSchema } from '../grammaire/valeurs';
+import { difficultySchema, enumNomme, hitLocationSchema, plageSchema, sourceRefSchema, formulaSchema } from '../grammaire/valeurs';
 import { gameOpSchema, flowSchema, noeudTest } from '../grammaire/mecanique';
+
+/** FAMILLE de Localisation d'un tableau de Critiques (`CritTableKey`, `src/engine/critical.ts`) — les 4
+ *  tables couvrent les 6 `HitLocation`. Le libellé nomme la table à l'écran (baril de jet, Codex). */
+export const critTableSchema = enumNomme({ tete: 'Tête', bras: 'Bras', corps: 'Corps', jambe: 'Jambe' });
 
 export const file = 'criticals.json';
 // Un FICHIER, 8 DOCUMENTS-tables : famille `entite` + charge `options.rangee` (patron `miscast.ts`).
@@ -128,7 +132,7 @@ const doc = document(
     jeu: z.enum(['ldb', 'aa']),
     /** Famille de Localisation du tableau — les 4 tables couvrent les 6 `HitLocation` (bras gauche =
      *  bras droit, jambe gauche = jambe droite ; repli Bras pour une loc sans table, LDB 76 l.21). */
-    localisation: z.enum(['tete', 'bras', 'corps', 'jambe']),
+    localisation: critTableSchema,
   },
   {
     jeu: { label: 'Système de règles', hint: 'ldb = Traumatisme (LDB 18) ; aa = approche alternative (AA 07)' },

@@ -25,6 +25,7 @@ import {
 import {
   scanLabelLogic, scanLabelAsIdArg, collectIdParamFnsAcrossDirs, effectiveIdParamFns,
   scanLabelLiteralCompare, LABEL_LITERAL_STOCK,
+  scanCallResultLiteralCompare, LABEL_CALL_LITERAL_STOCK,
   STRICT_DIRS, RATCHET_DIRS, RATCHET_EXCEPTIONS, ratchetShortKey,
 } from '../guards/lib/labelLogic.mjs';
 import { emojisIn } from '../guards/lib/emojiAffordance.mjs';
@@ -153,6 +154,13 @@ for (const f of staged) {
   if (!isTestFile && (strictRe.test(rel) || ratchetRe.test(rel))) {
     const n = scanLabelLiteralCompare(rel, text).length;
     if (n > (LABEL_LITERAL_STOCK[rel] ?? 0)) offenders.push(`${rel} [logique par LIBELLÉ] ${n} site(s), stock = ${LABEL_LITERAL_STOCK[rel] ?? 0}`);
+  }
+  // #1694 B3 — retour d'APPEL comparé à un littéral FR (`rangeBandName(…) === 'Bout portant'`), stock
+  // par fichier `LABEL_CALL_LITERAL_STOCK` : même double détente que ci-dessus, le volet « dette
+  // soldée » restant à la CI (`label-logic-guard.test.ts`), qui scanne le corpus entier.
+  if (!isTestFile && strictRe.test(rel)) {
+    const n = scanCallResultLiteralCompare(rel, text).length;
+    if (n > (LABEL_CALL_LITERAL_STOCK[rel] ?? 0)) offenders.push(`${rel} [retour d'appel comparé à un LIBELLÉ] ${n} site(s), stock = ${LABEL_CALL_LITERAL_STOCK[rel] ?? 0}`);
   }
   if (!isTestFile && /^src\/(ui|state|gameIso)\//.test(rel))
     for (const emoji of emojisIn(text)) offenders.push(`${rel} [emoji d'affordance] ${emoji}`);

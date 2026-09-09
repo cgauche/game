@@ -14,6 +14,8 @@
  * table id→label parallèle. PUR (structure → string) — testable sans DOM.
  */
 import type { Flow, Condition, EffectOp } from '../../state/flow';
+import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
+import { senseSchema } from '../../data/schemas/grammaire/mecanique';
 import { INDICE_TEMPLATE, type ActorRef, type CompareOp, type CompareSubject } from '../../engine/flowCore';
 import { estCausePersistante, type GameOp, type Formula, type ResolveWindow } from '../../engine/ops';
 import type { Camp, Relation } from '../../engine/relations';
@@ -256,7 +258,6 @@ export function humanizeCondition(c: Condition, neg = false): string {
 
 const RESOURCE_LABEL = { fortune: 'Chance', fate: 'Destin' } as const;
 const ATTR_LABEL = { wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination' } as const;
-const SENSE_LABEL = { vue: 'la vue', ouie: "l'ouïe" } as const;
 const ARMOUR_BYPASS_CAT_LABEL = { all: "toute l'armure", metal: 'le métal', leather: 'le cuir', nonMagic: 'le non-magique', nonMetal: 'le non-métal' } as const;
 /** Libellé JOUEUR du volet matériau d'`armourPierce.bypass` (LDB 62 l.270) — `undefined`/nombre = pas de volet matériau. */
 const armourBypassCatLabel = (b: ArmourBypass | undefined): string | undefined =>
@@ -451,7 +452,7 @@ export function humanizeOp(o: GameOp): string {
     case 'maxWeaponHands': return `ne peut manier que des armes à ${o.hands} main(s)`;
     case 'disarm': return `lâche l'objet tenu dans une main`;
     case 'handGate': return `doit réussir un Test avant d'agir de cette main`;
-    case 'senseLoss': return `perd ${SENSE_LABEL[o.sense]}`;
+    case 'senseLoss': return `perd ${libelleDeValeur(senseSchema, o.sense)}`;
     case 'loseTurn': return `perd ${o.what === 'action' ? 'son Action' : o.what === 'movement' ? 'son Mouvement' : 'son Action et son Mouvement'}`;
     case 'actGate': return `doit réussir un Test de ${CHAR_LABELS[o.char]} chaque Round pour agir`;
     case 'diseaseTestMod': return `${o.amount >= 0 ? 'gagne' : 'subit'} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests de maladie`;

@@ -9,12 +9,13 @@
 import { z } from 'zod';
 import { effectSchema, waterExposureModeSchema } from './effets';
 import { conditionSchema } from '../grammaire/mecanique';
+import { enumNomme } from '../grammaire/valeurs';
 import type { Condition } from '../../../engine/flowCore';
 
 /** `TravelMode` (`engine/travel.ts`) — `'pied'`/`'monture'` ou id de `vehicles.json`. */
 export const travelModeSchema = z.string();
 /** `WindDirection` (`engine/seaWeather.ts`) — cap dominant d'une route maritime (`MDG 13 l.262-270`). */
-export const windDirectionSchema = z.enum(['nord', 'sud', 'est', 'ouest']);
+export const windDirectionSchema = enumNomme({ nord: 'Nord', sud: 'Sud', est: 'Est', ouest: 'Ouest' });
 
 /** `PortProfile` (`engine/seaVoyage.ts:217`) en forme AUTHORÉE : SPARSE quand `ref` désigne une
  *  entrée de `naval-ports.json` (les champs présents sont des SURCHARGES locales), COMPLET sinon.

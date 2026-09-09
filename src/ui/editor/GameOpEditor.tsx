@@ -9,7 +9,9 @@
  * « 0 » puis écrasé). Un nouveau type d'op = 1 entrée dans `OP_GROUPS` + 1 défaut dans `newOp`.
  */
 import { Formula, GameOp, type ResolveWindow } from '../../engine/ops';
-import { CHAOS_ALIGN_LABELS, ChaosAlign, EXPOSURE_LABELS, ExposureLevel } from '../../engine/corruption';
+import { ChaosAlign, ExposureLevel } from '../../engine/corruption';
+import { libelleDeValeur, valeursDe } from '../../data/schemas/grammaire/meta';
+import { chaosAlignSchema, exposureLevelSchema } from '../../data/schemas/grammaire/valeurs';
 import { CHAR_LABELS, CharKey, ArmourBypass } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
 import { etats, talentConcrete, qualityRefLabel, refLabel, findCrewTestTypeById, charAbr, effectTables, mutationTables, conditionLabel, lightTones, memoParVersion } from '../../data';
@@ -589,9 +591,9 @@ export function opSummary(o: GameOp): string {
     case 'freeReroll': return 'relance gratuite';
     case 'critTwice': return 'deux lancers de Critique';
     case 'gainResource': return `${o.amount >= 0 ? '+' : '−'}${Math.abs(o.amount)} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
-    case 'corruption': return `${o.amount >= 0 ? '+' : ''}${o.amount}${o.align ? ` (${CHAOS_ALIGN_LABELS[o.align as ChaosAlign]})` : ''}`;
+    case 'corruption': return `${o.amount >= 0 ? '+' : ''}${o.amount}${o.align ? ` (${libelleDeValeur(chaosAlignSchema, o.align)})` : ''}`;
     case 'sinMod': return `${o.amount >= 0 ? '+' : ''}${o.amount}`;
-    case 'corruptionExposure': return o.easeSteps != null ? `abri : −${o.easeSteps} cran(s) d’Influence` : `${EXPOSURE_LABELS[o.level as ExposureLevel] ?? o.level}${o.skill ? ` (${refLabel('skills', o.skill)})` : ''}`;
+    case 'corruptionExposure': return o.easeSteps != null ? `abri : −${o.easeSteps} cran(s) d’Influence` : `${libelleDeValeur(exposureLevelSchema, o.level ?? '')}${o.skill ? ` (${refLabel('skills', o.skill)})` : ''}`;
     case 'castPenalty': return `${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill ? refLabel('skills', o.skill) : 'toute magie'}`}`;
     case 'money': return `bourse ${typeof o.montant.brass === 'number' && o.montant.brass < 0 ? '' : '+'}${formulaSummary(o.montant.brass)} sc`;
     case 'statusMod': return `Standing ${formulaSummary(o.amount)} (prochaine aventure)`;
@@ -738,8 +740,8 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
             {o.easeSteps == null && (
               <>
                 <select value={o.level ?? 'mineure'} onChange={(e) => upd({ level: e.target.value as ExposureLevel })}>
-                  {(Object.keys(EXPOSURE_LABELS) as ExposureLevel[]).map((k) => (
-                    <option key={k} value={k}>Exposition {EXPOSURE_LABELS[k]}</option>
+                  {Object.entries(valeursDe(exposureLevelSchema) ?? {}).map(([k, l]) => (
+                    <option key={k} value={k}>Exposition {l}</option>
                   ))}
                 </select>
                 {/* Options BORNÉES à `TESTS_DE_CORRUPTION` (même alphabet que la porte de document) ;
@@ -760,8 +762,8 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
             <label className="dr">Points<NumberField variant="nu" label="Points de Corruption" value={o.amount ?? 1} onChange={(amount) => upd({ amount })} /></label>
             <select value={o.align ?? ''} onChange={(e) => upd({ align: (e.target.value || undefined) as ChaosAlign | undefined })}>
               <option value="">Mutation : règle globale</option>
-              {(Object.keys(CHAOS_ALIGN_LABELS) as ChaosAlign[]).map((k) => (
-                <option key={k} value={k}>Table EDOC : {CHAOS_ALIGN_LABELS[k]}</option>
+              {Object.entries(valeursDe(chaosAlignSchema) ?? {}).map(([k, l]) => (
+                <option key={k} value={k}>Table EDOC : {l}</option>
               ))}
             </select>
           </>

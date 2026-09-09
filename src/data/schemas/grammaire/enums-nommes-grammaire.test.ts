@@ -12,7 +12,15 @@
  */
 import { describe, it, expect } from 'vitest';
 import { valeursDe, libelleDeValeur } from './meta';
-import { specsSourceSchema, symptomSeveritySchema, mutationKindSchema } from './valeurs';
+import {
+  specsSourceSchema,
+  symptomSeveritySchema,
+  mutationKindSchema,
+  chaosAlignSchema,
+  exposureLevelSchema,
+  dir8Schema,
+  shipSizeSchema,
+} from './valeurs';
 import {
   actorRefSchema,
   actorFieldSchema,
@@ -22,6 +30,7 @@ import {
   startleCauseSchema,
   effectOnSchema,
   effectTriggerSchema,
+  senseSchema,
 } from './mecanique';
 import { SPEC_SOURCES } from '../../index';
 
@@ -67,6 +76,20 @@ const MIGRES: readonly [string, unknown, Record<string, string>][] = [
     onAttackResolved: 'Après une attaque résolue', onCastResolved: 'Après une incantation résolue',
     onMiscast: 'Sur une Imparfaite', onOwnTestFailed: 'En échouant à un Test',
   }],
+  ['op corruption.align + effet de scène corruption.align', chaosAlignSchema, {
+    toute: 'Toute Puissance', khorne: 'Khorne', nurgle: 'Nurgle', slaanesh: 'Slaanesh', tzeentch: 'Tzeentch',
+  }],
+  ['op corruptionExposure.level + effet de scène corruptionExposure.level', exposureLevelSchema, {
+    mineure: 'mineure', moderee: 'modérée', majeure: 'majeure',
+  }],
+  ['scene.entities[].facing + props.places[].facing (Dir8)', dir8Schema, {
+    N: 'Nord', NE: 'Nord-Est', E: 'Est', SE: 'Sud-Est', S: 'Sud', SO: 'Sud-Ouest', O: 'Ouest', NO: 'Nord-Ouest',
+  }],
+  ['ship-construction.size + sea-perils.min|maxSize + ship-criticals.tailles[]', shipSizeSchema, {
+    minuscule: 'Minuscule', 'tres-petite': 'Très petite', petite: 'Petite', moyenne: 'Moyenne',
+    grande: 'Grande', enorme: 'Énorme', monstrueuse: 'Monstrueuse',
+  }],
+  ['FlowTest.sense (op senseLoss)', senseSchema, { vue: 'la vue', ouie: "l'ouïe" }],
 ];
 
 describe('enums de GRAMMAIRE nommés (#1694 B2) — le libellé de chaque VALEUR vit sur son nœud', () => {

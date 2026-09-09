@@ -5,7 +5,7 @@
  * (`src/data/props.types.ts`) ; l'ENTRÉE elle-même est rendue par `document()`.
  */
 import { z } from 'zod';
-import { cell2Schema } from '../grammaire/valeurs';
+import { cell2Schema, dir8Schema } from '../grammaire/valeurs';
 import { idDe } from '../grammaire/ref';
 import { document } from '../grammaire/document';
 import { CAP_IDENTITE_PROP, PROP_CYLINDER_SIDES } from '../../props.types';
@@ -57,7 +57,7 @@ export const propSeatSlotSchema = z.strictObject({
   // Verrou par CONSTRUCTION : un `place-nord` ne peut plus entrer.
   id: z.string().regex(/^place-\d+$/, 'id de place : `place-<rang>` attendu (un id de place ne porte pas de côté)'),
   anchor: propPoint3Schema,
-  facing: z.enum(['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']),
+  facing: dir8Schema,
   approach: cell2Schema,
 });
 

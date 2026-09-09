@@ -37,8 +37,9 @@
  *  - le nom `rawText` employé pour AUTRE CHOSE qu'un minteur (`ui/compendium/relations.ts` le prend comme
  *    nom de PARAMÈTRE) : le cliquet 1 compte des APPELS `rawText(`, donc un paramètre homonyme APPELÉ y
  *    rougirait à tort — angle mort inverse, dit ici et sans site actuel ;
- *  - `src/ui/CityHubScreen.tsx` (`SCENE_WEATHER_LABEL`) — 2ᵉ carte météo FR hors catalogue, autre axe
- *    (`Scene['weather']`), même classe que ce lot ; migration possédée par #1585. L'axe VOYAGE, lui,
+ *  - la météo de Scène (`Scene['weather']`) : son libellé FR vit désormais SUR LE NŒUD
+ *    (`sceneWeatherSchema`, `defs-scenes/scene.ts`, #1694) et le hub de ville le LIT — la carte FR hors
+ *    catalogue a disparu du call-site, le gel de locale du module de schéma reste. L'axe VOYAGE, lui,
  *    n'a AUCUNE carte : le libellé d'une météo d'Étape vit dans `weather.json` seul, servi par l'unique
  *    porte `engine/travelStages.ts::weatherCondition` (#1580) ;
  *  - le GEL DE LOCALE au chargement des cartes dérivées du catalogue — `setLocale` les laisserait en FR
@@ -228,8 +229,7 @@ export function recense(
  * (`engine/size.ts`, littéraux nus) — passée à `dataLabel` en repli est BLANCHIE sans un
  * mot : l'argument est une expression, pas une chaîne. C'est voulu (un repli dérivé du catalogue est
  * licite, cf. le JSDoc de `dataLabel`), mais ça veut dire qu'une telle carte reste du FR hors catalogue,
- * invisible à `setLocale`, et que seule sa relecture la tient. Elle est de la même classe que
- * `SCENE_WEATHER_LABEL`, consignée plus haut.
+ * invisible à `setLocale`, et que seule sa relecture la tient.
  * PÉRIMÈTRE MESURÉ (2026-08-30) : `CHAR_LABELS` (`engine/types.ts:58`) et `DEFENSE_LABEL`
  * (`engine/combat.ts:494`) ne sont PAS de cette classe — ils sont bâtis entièrement sur `t('char.*')` /
  * `t('defense.*')`, donc AU catalogue. Ce qui leur reste est le GEL DE LOCALE au chargement du module,

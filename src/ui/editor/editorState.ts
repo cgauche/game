@@ -7,6 +7,8 @@ import { nextEntityId } from '../../state/entityId';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { speciesLabel } from '../../gameIso/rig/creatures';
 import { propRefPatch } from './propDefaults';
+import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
+import { entityKindSchema } from '../../data/schemas/defs-scenes/scene';
 import { type Rect, type Pt, type EffectZoneSeed, canonEdge, edgeWallState, rectFrom, entityAt, addEntity, editEntity, moveEntityTo, removeEntity } from '../../state/sceneEdit';
 
 export {
@@ -222,12 +224,6 @@ export function setEffectZoneArea(zone: SceneEffectZone, area: ZoneArea): SceneE
   const inside = new Set(zoneAreaTiles(area, zone.z).map(tileKey));
   return withCarve({ ...zone, area }, moved.filter((t) => inside.has(tileKey(t))));
 }
-
-export const KIND_LABEL: Record<EntityKind, string> = {
-  heroStart: 'Départ héros',
-  personnage: 'Personnage',
-  prop: 'Décor',
-};
 
 const inRect = (p: Pt, r: Rect) => p.x >= r.x && p.x < r.x + r.w && p.y >= r.y && p.y < r.y + r.h;
 const clamp = (v: number, max: number) => Math.max(0, Math.min(max - 1, v));
@@ -540,7 +536,7 @@ export function pickArchitectureEdge(scene: Scene, fx: number, fy: number, z: nu
  *  Les props appliquent leurs défauts de catalogue (empreinte, interactif si fouillable). */
 export function placeEntity(scene: Scene, kind: EntityKind, ref: string | undefined, p: Pt, z = 0): { scene: Scene; id: string } {
   const id = nextEntityId(kind, scene.entities.map((e) => e.id));
-  let ent: SceneEntity = { id, kind, pos: { ...p }, label: KIND_LABEL[kind] };
+  let ent: SceneEntity = { id, kind, pos: { ...p }, label: libelleDeValeur(entityKindSchema, kind) };
   if (ref && kind === 'prop') ent = { ...ent, ...propRefPatch(ref, false), label: PROPS[ref]?.label };
   // Personnage d'ambiance : `ref` porte l'id d'ESPÈCE rig (sélecteur Palette) → apparence + libellé.
   else if (ref && kind === 'personnage') ent = { ...ent, appearance: { species: ref }, label: speciesLabel(ref) };

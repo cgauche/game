@@ -1,8 +1,8 @@
 /**
  * #1694 train B1 — CONTRAT POSITIF des enums de def NOMMÉS : chaque vocabulaire migré rend, depuis son
- * NŒUD, la totalité de ses options ET le libellé FR attendu pour chacune. C'est la couverture que les
- * Records de libellés côté UI portaient avant leur mort (`grammaire/records-de-libelles.test.ts`) : la
- * table est ici la SEULE, et le site d'affichage ne fait plus que la lire (`libelleDeValeur`).
+ * NŒUD, la totalité de ses options ET le libellé FR attendu pour chacune. La table du nœud est la SEULE
+ * (`grammaire/records-de-libelles.test.ts` refuse tout Record UI qui la doublerait), et le site
+ * d'affichage ne fait que la lire (`libelleDeValeur`).
  *
  * L'ordre compte : les options SONT les clés de la table, donc l'ordre du `select` de l'atelier et
  * celui des sous-titres du Codex se lisent ici.
@@ -26,6 +26,10 @@ import { waterAppliesToSchema, waterTableSchema } from './water-exposure';
 import { rigSchema, posteSideSchema } from './vehicles';
 import { attackKindSchema } from './maneuvers';
 import { trappingCategorieSchema } from './trappings';
+import { critTableSchema } from './criticals';
+import { favorLevelSchema } from '../defs-scenes/effets';
+import { entityKindSchema, roofProfileSchema, sceneWeatherSchema } from '../defs-scenes/scene';
+import { windDirectionSchema } from '../defs-scenes/worldmap';
 
 /** Un vocabulaire migré : son nœud, et la table FR ATTENDUE — dans l'ordre de ses options. */
 const MIGRES: readonly [string, unknown, Record<string, string>][] = [
@@ -87,6 +91,25 @@ const MIGRES: readonly [string, unknown, Record<string, string>][] = [
   ['trappings.categorie', trappingCategorieSchema, {
     melee: 'Armes de mêlée', ranged: 'Armes à distance', ammunition: 'Munitions',
     armor: 'Armures', trapping: 'Équipement',
+  }],
+  ['criticals.localisation', critTableSchema, {
+    tete: 'Tête', bras: 'Bras', corps: 'Corps', jambe: 'Jambe',
+  }],
+  ['effets.favor.level', favorLevelSchema, {
+    mineure: 'Faveur Mineure', majeure: 'Faveur Majeure', importante: 'Faveur Importante',
+  }],
+  ['scene.entities[].kind', entityKindSchema, {
+    heroStart: 'Départ héros', personnage: 'Personnage', prop: 'Décor',
+  }],
+  ['scene.architecture[].masses[].profile', roofProfileSchema, {
+    hip: 'Croupe (hip) — 4 pans', gable: 'Pignon (gable) — 2 pans + faîte',
+    shed: 'Appentis (shed) — 1 pan', flat: 'Terrasse (flat) — plat',
+  }],
+  ['scene.weather', sceneWeatherSchema, {
+    clair: 'Ciel clair', pluie: 'Pluie', brouillard: 'Brouillard', neige: 'Neige', tempete: 'Tempête',
+  }],
+  ['worldmap.routes[].windFrom (WindDirection)', windDirectionSchema, {
+    nord: 'Nord', sud: 'Sud', est: 'Est', ouest: 'Ouest',
   }],
 ];
 

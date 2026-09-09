@@ -1,6 +1,7 @@
 import { useGame } from '../state/store';
 import { availableResistance, resistanceImproves } from '../engine/menace';
-import { EXPOSURE_LABELS } from '../engine/corruption';
+import { libelleDeValeur } from '../data/schemas/grammaire/meta';
+import { exposureLevelSchema } from '../data/schemas/grammaire/valeurs';
 import { testValue } from '../engine/skills';
 import { flowStakeRef, refLabel } from '../data';
 import { RollShell, type RollAction } from './RollShell';
@@ -73,7 +74,7 @@ export function CorruptionModal() {
     <RollShell
       flowKey="corruption"
       stake={flowStakeRef('corruption', seuil ? 'seuil' : (pc.level ?? 'mineure'))}
-      title={seuil ? <><Icon id="nav/mutation" size="sm" /> Seuil de Corruption ({hero?.corruption ?? '?'} Points)</> : <><Icon id="nav/mutation" size="sm" /> Influence corruptrice ({EXPOSURE_LABELS[pc.level ?? 'mineure']})</>}
+      title={seuil ? <><Icon id="nav/mutation" size="sm" /> Seuil de Corruption ({hero?.corruption ?? '?'} Points)</> : <><Icon id="nav/mutation" size="sm" /> Influence corruptrice ({libelleDeValeur(exposureLevelSchema, pc.level ?? 'mineure')})</>}
       subtitle={
         <>
           <strong>{hero?.label ?? '?'}</strong> — Test de {skillLabel} Intermédiaire (+0)

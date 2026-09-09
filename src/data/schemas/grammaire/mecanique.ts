@@ -10,7 +10,7 @@ import { CATEGORY_BY_SOURCE_KIND, type EffectSourceKind } from '../../../engine/
 import type { StakeRef } from '../../index';
 import { messageRecurrenceHorloge, type GameOp } from '../../../engine/ops';
 import { INDICE_TEMPLATE, type Condition, type EffectOp, type EffectTrigger, type Flow } from '../../../engine/flowCore';
-import { charKeySchema, difficultySchema, enumNomme, formulaSchema, hitLocationSchema, plageSchema, refTestDeCorruption, symptomSeveritySchema } from './valeurs';
+import { chaosAlignSchema, charKeySchema, difficultySchema, enumNomme, exposureLevelSchema, formulaSchema, hitLocationSchema, plageSchema, refTestDeCorruption, symptomSeveritySchema } from './valeurs';
 import { marque } from './slots';
 import { idDe, ref, refs, refOuSpec } from './ref';
 
@@ -27,11 +27,11 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
     op: z.literal('corruption'),
     amount: z.number(),
     perSL: perSLSchema.optional(),
-    align: z.enum(['toute', 'khorne', 'nurgle', 'slaanesh', 'tzeentch']).optional(),
+    align: chaosAlignSchema.optional(),
   }),
   corruptionExposure: z.strictObject({
     op: z.literal('corruptionExposure'),
-    level: z.enum(['mineure', 'moderee', 'majeure']).optional(),
+    level: exposureLevelSchema.optional(),
     skill: refTestDeCorruption.optional(),
     easeSteps: z.number().optional(),
   }),
@@ -209,6 +209,10 @@ export const startleCauseSchema = enumNomme({ noise: 'Bruits forts', magic: 'Mag
 /** Nature de l'appartenance testée par la Condition `has`. */
 export const hasWhatSchema = enumNomme({ group: 'le Groupe', talent: 'le Talent', trait: 'le Trait', psych: 'l’état psy' });
 
+/** SENS engagé par un Test (`FlowTest.sense` — Perception : vue ou ouïe) ; le libellé est celui de la
+ *  phrase qui le montre au joueur (op `senseLoss` : « perd la vue »). */
+export const senseSchema = enumNomme({ vue: 'la vue', ouie: "l'ouïe" });
+
 const charRefSchema = z.strictObject({ who: actorRefSchema, char: charKeySchema, bonus: z.boolean().optional() });
 const compareSubjectSchema = z.union([
   z.strictObject({ who: actorRefSchema, field: actorFieldSchema }),
@@ -319,7 +323,7 @@ export const flowTestSchema = z.strictObject({
   /** ENJEU du Test (#1117) — cf. `stakeRefSchema`. */
   stake: stakeRefSchema.optional(),
   skill: refOuSpec('skill').optional(),
-  sense: z.enum(['vue', 'ouie']).optional(),
+  sense: senseSchema.optional(),
   characteristic: charKeySchema.optional(),
   difficulty: difficultySchema.optional(),
   requireSL: z.number().optional(),

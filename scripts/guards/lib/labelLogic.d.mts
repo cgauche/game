@@ -41,6 +41,15 @@ export function ratchetShortKey(finding: { rel: string; line: number }): string;
 export function isLabelLiteral(text: string): boolean;
 export function scanLabelLiteralCompare(relPath: string, contenu: string): LabelLiteralFinding[];
 export const LABEL_LITERAL_STOCK: Readonly<Record<string, number>>;
+/** Finding « retour d'APPEL comparé à un littéral FR » (#1694 B3), dans `src/engine`/`src/state`. */
+export interface LabelCallLiteralFinding {
+  line: number;
+  detail: string;
+  rule: 'label-call-literal';
+}
+export function scanCallResultLiteralCompare(relPath: string, contenu: string): LabelCallLiteralFinding[];
+export const LABEL_CALL_LITERAL_STOCK: Readonly<Record<string, number>>;
+export function labelCallLiteralStockDrift(measured: Map<string, number> | Record<string, number>): string[];
 export function labelLiteralStockDrift(measured: Map<string, number> | Record<string, number>): string[];
 
 /** Finding d'index CONSTRUIT sur un champ d'affichage (#909), dans `src/engine`/`src/state`. */

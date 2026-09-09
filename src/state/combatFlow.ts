@@ -127,6 +127,8 @@ import { runConsumable } from './consumableFlow';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import { gainCorruption } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
+import { libelleDeValeur } from '../data/schemas/grammaire/meta';
+import { critTableSchema } from '../data/schemas/defs/criticals';
 import { canCastFromGrimoire } from '../engine/grimoire';
 import { effectiveCastingNumber } from '../engine/castingNumber';
 import type { CastingNumberMod } from '../engine/castingNumber';
@@ -1633,7 +1635,6 @@ export function notifySlain(get: Get, set: SetFn, c: Combatant): string[] {
 export const CRIT_TABLE_IDS: Record<CritTableKey, string> = {
   tete: 'criticals-tete', bras: 'criticals-bras', corps: 'criticals-corps', jambe: 'criticals-jambe',
 };
-const CRIT_TABLE_LABELS: Record<CritTableKey, string> = { tete: 'Tête', bras: 'Bras', corps: 'Corps', jambe: 'Jambe' };
 /** Catégorie Codex où vit CHAQUE ligne de ces tables — c'est elle qui fait descendre l'enjeu de
  *  l'étape à la Blessure critique RÉELLEMENT tirée (#1117, `stakeAtTableRow`). */
 const CRIT_TABLE_CATEGORIES: Record<CritTableKey, string> = {
@@ -1642,7 +1643,7 @@ const CRIT_TABLE_CATEGORIES: Record<CritTableKey, string> = {
 for (const key of Object.keys(CRIT_TABLE_IDS) as CritTableKey[]) {
   const rows = critTableRows('ldb', key);
   registerTableStep(CRIT_TABLE_IDS[key], {
-    label: `Blessures critiques — ${CRIT_TABLE_LABELS[key]}`,
+    label: `Blessures critiques — ${libelleDeValeur(critTableSchema, key)}`,
     die: 100,
     rows,
     lines: (die) => [findTableEntry(rows, die).label],

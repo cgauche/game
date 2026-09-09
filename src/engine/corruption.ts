@@ -30,12 +30,6 @@ import type { TriggeredEffect } from './flowCore';
 
 export type ExposureLevel = 'mineure' | 'moderee' | 'majeure';
 
-export const EXPOSURE_LABELS: Record<ExposureLevel, string> = {
-  mineure: 'mineure',
-  moderee: 'modérée',
-  majeure: 'majeure',
-};
-
 /** Échelle ORDONNÉE des Expositions (LDB 19 l.23-75), du plus léger au plus lourd — SOURCE UNIQUE du
  *  « cran » d'Influence corruptrice. */
 export const EXPOSURE_LADDER: ExposureLevel[] = ['mineure', 'moderee', 'majeure'];
@@ -59,14 +53,6 @@ export function corruptionEaseSteps(c: Combatant): number {
  *  à tirer pour la mutation, quelle que soit la règle globale ; sinon la règle `corruption-tables-edoc`
  *  décide. `toute` = Chaos non aligné (table EDOC élargie). */
 export type ChaosAlign = 'toute' | 'khorne' | 'nurgle' | 'slaanesh' | 'tzeentch';
-
-export const CHAOS_ALIGN_LABELS: Record<ChaosAlign, string> = {
-  toute: 'Toute Puissance',
-  khorne: 'Khorne',
-  nurgle: 'Nurgle',
-  slaanesh: 'Slaanesh',
-  tzeentch: 'Tzeentch',
-};
 
 /** Mutation subie (donnée persistée ; cf. Tableaux LDB 19 p.184-185). */
 export interface Mutation {

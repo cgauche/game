@@ -24,7 +24,9 @@ import { ScheduleSpecFields } from './ScheduleSpecFields';
 import { RefField } from '../compendium/RefField';
 import { NumberField } from '../NumberField';
 import { CHAR_KEYS, CHAR_LABELS, CharKey, DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
-import { CHAOS_ALIGN_LABELS, ChaosAlign } from '../../engine/corruption';
+import { ChaosAlign } from '../../engine/corruption';
+import { chaosAlignSchema } from '../../data/schemas/grammaire/valeurs';
+import { valeursDe } from '../../data/schemas/grammaire/meta';
 import { POWER_ESTIMATE, clampMight, type MassBattleSpec } from '../../engine/massBattle';
 import { PURSUIT_ESCAPE_DISTANCE } from '../../engine/pursuit';
 import { battleSceneById } from '../../state/massBattleFlow';
@@ -193,7 +195,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
       : `Déplacer ${e.id || '?'} → (${e.to?.x ?? '?'},${e.to?.y ?? '?'})`;
     case 'playSfx': return `Son : ${e.id || '?'}`;
     case 'giveSin': return `${e.amount ?? 1} point(s) de Péché`;
-    case 'corruptionExposure': return `Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ? refLabel('skills', e.skill) : 'au choix'})${e.align ? ` — ${CHAOS_ALIGN_LABELS[e.align as ChaosAlign]}` : ''}`;
+    case 'corruptionExposure': return `Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ? refLabel('skills', e.skill) : 'au choix'})${e.align ? ` — ${libelleDeValeur(chaosAlignSchema, e.align)}` : ''}`;
     case 'waterExposure': return `Eau souillée (${e.mode === 'immersion' ? 'immersion' : 'ingestion'}${e.source ? ` · ${e.source}` : ''}) → ${e.target === 'party' ? 'groupe' : (e.heroId || '1ᵉʳ héros')}`;
     case 'learnSpell': return `Apprendre : ${e.spell ? refLabel('spells', { id: e.spell }) : '?'}`;
     case 'castSpell': return `Incanter ${e.spellId ? refLabel('spells', { id: e.spellId }) : '?'} — ${e.casterId || '?'}${e.targetId ? ` → ${e.targetId}` : ''}${e.mode === 'forceSuccess' ? ' (garanti)' : ''}`;
@@ -501,8 +503,8 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
                 EDOC alignée. « règle globale » = laisse décider le réglage Règles maison. */}
             <select value={e.align ?? ''} onChange={(ev) => upd({ align: (ev.target.value || undefined) as ChaosAlign | undefined })}>
               <option value="">Mutation : règle globale (par défaut)</option>
-              {(Object.keys(CHAOS_ALIGN_LABELS) as ChaosAlign[]).map((k) => (
-                <option key={k} value={k}>Table EDOC : {CHAOS_ALIGN_LABELS[k]}</option>
+              {Object.entries(valeursDe(chaosAlignSchema) ?? {}).map(([k, l]) => (
+                <option key={k} value={k}>Table EDOC : {l}</option>
               ))}
             </select>
             <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />

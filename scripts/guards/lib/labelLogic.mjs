@@ -389,6 +389,80 @@ export function scanLabelLiteralCompare(relPath, contenu) {
 }
 
 /**
+ * Le RETOUR D'UN APPEL comparé à un LITTÉRAL FR — `rangeBandName(d, r, m) === 'Bout portant'`
+ * (`engine/combat.ts`, décision de l'Esquive à Bout Portant) : le sujet n'est ni un champ (`x.label`,
+ * `scanLabelLiteralCompare`) ni une variable qui en dérive, donc AUCUN des scans ci-dessus ne le
+ * voyait — mesuré sur la ligne isolée, `scanLabelLogic` et `scanLabelLiteralCompare` rendent `[]`.
+ * Critère STRUCTUREL : égalité dont un côté est un APPEL et l'autre un littéral de FORME libellé
+ * (`isLabelLiteral` : majuscule initiale, accent, ou espace) — le pendant par id existe toujours
+ * (ici `rangeBandId(...) === 'bout-portant'`).
+ * CE QUE CE SCAN NE VOIT PAS : l'appel dont le retour est d'abord posé dans une variable puis comparé
+ * (aucun lien de flot ici) ; et il ne juge PAS le retour d'un `t(...)`/`String(...)` (formatage), qui
+ * reste une comparaison de texte fabriqué — cf. `FORMATTING_CALLS`.
+ * @param {string} relPath @param {string} contenu
+ * @returns {{ line: number, detail: string, rule: 'label-call-literal' }[]}
+ */
+const FORMATTING_CALLS = new Set(['String', 't', 'JSON']);
+export function scanCallResultLiteralCompare(relPath, contenu) {
+ const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, scriptKindDe(relPath));
+ const lines = contenu.split('\n');
+ const findings = [];
+ const seen = new Set();
+ const calleeName = (call) => {
+  const e = unwrap(call.expression);
+  if (ts.isIdentifier(e)) return e.text;
+  if (ts.isPropertyAccessExpression(e)) return ts.isIdentifier(e.expression) ? e.expression.text : null;
+  return null;
+};
+ const visit = (node) => {
+  if (ts.isBinaryExpression(node) && EQUALITY_OPS.has(node.operatorToken.kind)) {
+   const l = unwrap(node.left);
+   const r = unwrap(node.right);
+   const paire = ts.isCallExpression(l) && isEntryLiteral(r) && isLabelLiteral(r.text) ? l
+    : ts.isCallExpression(r) && isEntryLiteral(l) && isLabelLiteral(l.text) ? r
+    : null;
+   if (paire && !FORMATTING_CALLS.has(calleeName(paire))) {
+    const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+    if (!seen.has(line)) {
+     seen.add(line);
+     findings.push({ line, detail: (lines[line - 1] || '').trim(), rule: 'label-call-literal' });
+    }
+   }
+  }
+  ts.forEachChild(node, visit);
+ };
+ ts.forEachChild(sf, visit);
+ findings.sort((a, b) => a.line - b.line);
+ return findings;
+}
+
+/**
+ * STOCK NOMINATIF GELÉ de `label-call-literal`, par fichier (même patron/cliquet que
+ * `LABEL_LITERAL_STOCK`) — mesuré sur `src/engine` + `src/state` le 2026-09-09, 1 site :
+ * `state/combatFlow.ts` `worstCorruptionExposure`, qui classe le Degré de Corruption d'un adversaire
+ * en re-lisant le TEXTE authoré de l'argument du trait (`t.arg.toLowerCase() === 'modérée'`, à côté
+ * d'un `rank` keyé par le même texte). Sa migration demande un vocabulaire d'ids pour l'argument du
+ * trait `corruption` (donnée + authoring), hors du geste qui pose cette règle : GELÉ, pas exempté.
+ * @type {Readonly<Record<string, number>>}
+ */
+export const LABEL_CALL_LITERAL_STOCK = {
+ 'src/state/combatFlow.ts': 1,
+};
+
+/** Écart au stock `label-call-literal`, cliquet STRICT dans les deux sens (cf. `labelLiteralStockDrift`).
+ *  @param {Map<string, number> | Record<string, number>} measured @returns {string[]} */
+export function labelCallLiteralStockDrift(measured) {
+ const entries = measured instanceof Map ? [...measured] : Object.entries(measured);
+ const out = [];
+ for (const [rel, n] of entries) {
+  const stock = LABEL_CALL_LITERAL_STOCK[rel] ?? 0;
+  if (n > stock) out.push(`${rel} : ${n} retour(s) d'appel comparé(s) à un LIBELLÉ, stock = ${stock} — comparer l'id STABLE que la même couture expose.`);
+  else if (n < stock) out.push(`${rel} : ${n} retour(s) d'appel comparé(s) à un LIBELLÉ, stock = ${stock} — dette SOLDÉE, mettre LABEL_CALL_LITERAL_STOCK à jour dans le même geste.`);
+}
+ return out;
+}
+
+/**
  * STOCK d'ANCIEN COMPORTEMENT, par fichier (patron `*Stock.mjs` du dépôt) : les vocabulaires de
  * LIBELLÉS encore employés comme logique, à la pose de la règle (2026-07-26, #142 LOT 7). Ce ne sont
  * pas des exemptions — aucun de ces sites n'est légitime : ce sont des AXES entiers qui restent à

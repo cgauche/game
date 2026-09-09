@@ -13,7 +13,7 @@
  * `test` vient de la fabrique `noeudTest` de la grammaire, aucune structure n'est recopiée.
  */
 import { z } from 'zod';
-import { hitLocationSchema, moneyPartialSchema, refTestDeCorruption } from '../grammaire/valeurs';
+import { chaosAlignSchema, enumNomme, exposureLevelSchema, hitLocationSchema, moneyPartialSchema, refTestDeCorruption } from '../grammaire/valeurs';
 import { conditionSchema, effectOpSchema, extendedTestSchema, gameOpSchema, noeudTest } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
 import { customStatblockSchema, ptSchema, wallSideSchema } from './communs';
@@ -33,13 +33,18 @@ export const livingRefSchema = z.union([
   z.strictObject({ creatureId: z.string() }),
   z.strictObject({ custom: customStatblockSchema }),
 ]);
-/** `ChaosAlign` (`engine/corruption.ts`) — Puissance du Chaos d'une table de mutation alignée. */
-export const chaosAlignSchema = z.enum(['toute', 'khorne', 'nurgle', 'slaanesh', 'tzeentch']);
+/** `ChaosAlign` (`engine/corruption.ts`) — Puissance du Chaos d'une table de mutation alignée. MÊME
+ *  vocabulaire que la charge de l'op `corruption` : la const NOMMÉE de la grammaire est partagée (#1694). */
+export { chaosAlignSchema };
 /** `WaterExposureMode` (`src/data/index.ts`) — `MSRC 16` : boire, ou être immergé. MÊME vocabulaire
  *  que `waterExposure.modifiers[].appliesTo` : la const NOMMÉE du def de règle est partagée (#1694). */
 export const waterExposureModeSchema = waterAppliesToSchema;
 /** `FavorLevel` (`engine/favor.ts`) — Niveau d'une Faveur due (`LDB 23 l.145-151`). */
-export const favorLevelSchema = z.enum(['mineure', 'majeure', 'importante']);
+export const favorLevelSchema = enumNomme({
+  mineure: 'Faveur Mineure',
+  majeure: 'Faveur Majeure',
+  importante: 'Faveur Importante',
+});
 /** `CrewHire` (`engine/crewMorale.ts`) — un rôle d'équipage salarié et son effectif. */
 export const crewHireSchema = z.strictObject({ roleId: z.string(), count: z.number() });
 /** `PursuitFoeRef` (`state/pursuitFlow.ts`) — adversaire de poursuite : une RÉFÉRENCE de vivant
@@ -429,7 +434,7 @@ export const giveSinSchema = z.strictObject({
  *  C'est à l'éditeur de niveau de le poser quand la source est dédiée. */
 export const corruptionExposureSchema = z.strictObject({
   type: z.literal('corruptionExposure'),
-  level: z.enum(['mineure', 'moderee', 'majeure']),
+  level: exposureLevelSchema,
   skill: refTestDeCorruption.optional(),
   align: chaosAlignSchema.optional(),
   heroId: z.string().optional(),

@@ -1,10 +1,9 @@
 /**
  * CONTRAT DE FRAÎCHEUR (#1692) — une écriture au seam est vue par les LECTEURS, sans rechargement.
  *
- * Ces cas ÉCHOUAIENT avant le lot : les accesseurs lisaient un index construit une fois à l'import,
- * si bien qu'après une édition au Codex (`setDataset`, la porte de `CodexEdit.save`) l'entrée éditée
- * gardait son ancien libellé et une entrée NEUVE n'existait pour personne. Ils ne sont pas
- * théoriques : `traits`, `trappings`, `characteristics` et `props` sont tous édités par l'atelier
+ * CONTRAT : après une édition au Codex (`setDataset`, la porte de `CodexEdit.save`), chaque accesseur
+ * sert l'entrée ÉDITÉE et voit une entrée NEUVE — aucun lecteur ne peut tenir un index figé à l'import.
+ * Ces cas ne sont pas théoriques : `traits`, `trappings`, `characteristics` et `props` sont tous édités par l'atelier
  * (`exposition.edit` de leur def).
  *
  * Restauration `afterEach` par le seam lui-même : aucun test ne touche un dataset autrement.

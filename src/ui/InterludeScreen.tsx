@@ -6,7 +6,7 @@ import { formatMoney, fromBrass, toBrass, toMoney, add as moneyAdd, PA_PER_SC, t
 import { bourseOf } from '../state/bourseFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { heroStatus, heroClass, incomeSkillOf, interludeCatalog, bestActivitySkill, type InterludeState, type InterludeHeroState, type BankDeposit } from '../state/interludeFlow';
-import { favorRequiredActivities, type Favor, type FavorLevel } from '../engine/favor';
+import { favorRequiredActivities, type Favor } from '../engine/favor';
 import { armyMight, battleActivityDifficulty, battlePrepEntries, type MassBattleState } from '../state/massBattleFlow';
 import {
   craftCatalog, craftTarget, learnableTalents, orderCatalog, metierOf, bankPayout, entrainementOptions,
@@ -24,6 +24,7 @@ import { RULE_REF } from '../engine/ruleRefs';
 import { buildWeapon } from '../engine/items';
 import { findTalentById, skillInstanceLabel, findTrappingById, qualities, refLabel, activityStakeRef, hasActivityStake } from '../data';
 import { libelleDeValeur } from '../data/schemas/grammaire/meta';
+import { favorLevelSchema } from '../data/schemas/defs-scenes/effets';
 import { trappingCategorieSchema } from '../data/schemas/defs/trappings';
 import type { Combatant, ConditionId } from '../engine/types';
 import { rule } from '../engine/policy';
@@ -79,9 +80,6 @@ const craftQual = (id: string) => describeQuality({ id }) ?? { label: id, desc: 
 const fmt = (brass: number) => formatMoney(fromBrass(brass));
 /** Montant AFFICHÉ : le rendu coloré unique. */
 const CoinsB = ({ brass }: { brass: number }) => <Coins money={fromBrass(brass)} />;
-
-/** Libellés d'affichage des Niveaux de Faveur (LDB 23 l.145-151, #509). */
-const FAVOR_LEVEL_LABELS: Record<FavorLevel, string> = { mineure: 'Faveur Mineure', majeure: 'Faveur Majeure', importante: 'Faveur Importante' };
 
 /** Chip de compétence du Codex (popover desc + source) par id (+ spécialisation affichée). */
 const SkillChip = ({ skillId, show }: { skillId: string; show?: string }) => (
@@ -895,7 +893,7 @@ function FavorSettlePane({ hero, refus, favors }: { hero: Combatant; refus?: str
       title="Acquitter une Faveur"
       blocked={banniereFaveur}
       note={sel
-        ? <>{FAVOR_LEVEL_LABELS[sel.level]} envers {sel.owedTo}{sel.desc ? ` — ${sel.desc}` : ''}{required != null ? ` (${sel.progress}/${required} Activité${required > 1 ? 's' : ''} consécutive${required > 1 ? 's' : ''})` : ''}</>
+        ? <>{libelleDeValeur(favorLevelSchema, sel.level)} envers {sel.owedTo}{sel.desc ? ` — ${sel.desc}` : ''}{required != null ? ` (${sel.progress}/${required} Activité${required > 1 ? 's' : ''} consécutive${required > 1 ? 's' : ''})` : ''}</>
         : undefined}
       actions={
         <GatedAction
@@ -911,7 +909,7 @@ function FavorSettlePane({ hero, refus, favors }: { hero: Combatant; refus?: str
       {favors.length > 1 && (
         <select className="interlude-select" value={id} onChange={(e) => setId(e.target.value)}>
           {favors.map((f) => (
-            <option key={f.id} value={f.id}>{FAVOR_LEVEL_LABELS[f.level]} envers {f.owedTo}</option>
+            <option key={f.id} value={f.id}>{libelleDeValeur(favorLevelSchema, f.level)} envers {f.owedTo}</option>
           ))}
         </select>
       )}

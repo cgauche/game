@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   scanLabelLogic, collectIdParamFunctions, scanLabelAsIdArg, collectIdParamFnsAcrossDirs, effectiveIdParamFns,
   scanLabelLiteralCompare, labelLiteralStockDrift, LABEL_LITERAL_STOCK,
+  scanCallResultLiteralCompare, labelCallLiteralStockDrift, LABEL_CALL_LITERAL_STOCK,
   STRICT_DIRS, RATCHET_DIRS, RATCHET_EXCEPTIONS,
   collectLabelEntityResolvers, labelEntityResolverNames, scanLabelResolverCalls,
   scanLabelKeyedIndex, LABEL_KEYED_INDEX_STOCK,
@@ -394,6 +395,47 @@ describe('garde-fou « logique par LIBELLÉ hors du champ label » (#142 LOT 7)'
       'const n = txt.match(/[0-9]+/);', // motif numérique
     ].join('\n');
     expect(scanLabelLiteralCompare('fixture.ts', src)).toEqual([]);
+  });
+});
+
+/**
+ * Troisième volet (#1694 B3) : le sujet comparé à un libellé n'est pas toujours un CHAMP.
+ * `rangeBandName(distanceTiles, rangeM, metresPerTile) === 'Bout portant'` décidait l'Esquive contre
+ * un tir (`engine/combat.ts`, LDB 14 l.40) sur le TEXTE FR d'une bande de portée, alors que la même
+ * couture expose `rangeBandId(...) === 'bout-portant'`. Les deux volets ci-dessus étaient AVEUGLES à
+ * cette forme — mesuré : sur la ligne isolée, `scanLabelLogic` et `scanLabelLiteralCompare` rendent
+ * `[]`. Critère STRUCTUREL : égalité dont un côté est un APPEL et l'autre un littéral de FORME libellé.
+ */
+describe('garde-fou « retour d’APPEL comparé à un LIBELLÉ » (#1694 B3)', () => {
+  it('CLIQUET src/engine + src/state : aucun site neuf, aucune dette soldée non retirée du stock', () => {
+    const counts = new Map<string, number>();
+    for (const { rel, text } of corpus(STRICT_DIRS)) {
+      const n = scanCallResultLiteralCompare(rel, text).length;
+      if (n > 0 || rel in LABEL_CALL_LITERAL_STOCK) counts.set(rel, n);
+    }
+    const drift = labelCallLiteralStockDrift(counts);
+    expect(drift, 'Retour d’appel comparé à un LIBELLÉ :\n' + drift.join('\n')).toEqual([]);
+  });
+
+  it('ANTI-VACANCE : la faute d’Esquive à Bout Portant reconstituée est VUE, et les deux volets précédents ne la voient PAS', () => {
+    const avant =
+      "if (distanceTiles != null && rangeM != null && rangeBandName(distanceTiles, rangeM, metresPerTile) === 'Bout portant')\n"
+      + "  modes.add('esquive');";
+    expect(scanCallResultLiteralCompare('combat.ts', avant).map((f) => f.rule)).toEqual(['label-call-literal']);
+    expect(scanLabelLogic('combat.ts', avant)).toEqual([]);
+    expect(scanLabelLiteralCompare('combat.ts', avant)).toEqual([]);
+    const apres = "if (rangeBandId(distanceTiles, rangeM, metresPerTile) === 'bout-portant') modes.add('esquive');";
+    expect(scanCallResultLiteralCompare('combat.ts', apres)).toEqual([]);
+  });
+
+  it('CONTRE-ÉPREUVES : id kebab, comparaison à une variable, texte FABRIQUÉ (`t`/`String`)', () => {
+    const src = [
+      "if (rangeBandId(d, r, m) === 'bout-portant') return 1;", // l'id STABLE : la forme attendue
+      'if (bandOf(a) === bandOf(b)) return 0;', // aucun libellé figé
+      "if (t('roll.voile') === 'Voile') return 1;", // texte FABRIQUÉ par l'i18n, pas une clé de logique
+      "if (String(n) === 'Deux') return 1;",
+    ].join('\n');
+    expect(scanCallResultLiteralCompare('fixture.ts', src)).toEqual([]);
   });
 });
 

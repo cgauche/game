@@ -10,7 +10,9 @@ import type { Possession } from '../engine/possession';
 import { placeById } from '../state/worldMap';
 import { routeDistanceLabel, travelModeLabels } from '../engine/travel';
 import { allureLabel, partyMounts } from '../engine/mountTravel';
-import { windForceLabel, windDirectionLabel, precipitationDef, temperatureDef, visibilityDef } from '../engine/seaWeather';
+import { windForceLabel, precipitationDef, temperatureDef, visibilityDef } from '../engine/seaWeather';
+import { libelleDeValeur } from '../data/schemas/grammaire/meta';
+import { windDirectionSchema } from '../data/schemas/defs-scenes/worldmap';
 import { riverForceLabel, riverDirLabel } from '../engine/riverNavigation';
 import { cargoTotalEnc } from '../engine/seaVoyage';
 import { partyItemsCargoEnc, partyLandCapacity } from '../state/carriers';
@@ -187,7 +189,7 @@ export function voyageTiles(
   if (sub === 'mer' && plan.sea) {
     const sea = plan.sea;
     // Vent (direction + force) — la tuile Météo (ci-dessous) porte les 3 AUTRES aspects MDG du jour.
-    tiles.push({ key: 'vent', icon: 'nautical/wind', label: 'Vent', value: `${windForceLabel(sea.weather.vent)} — vent de ${windDirectionLabel(sea.windFrom)}` });
+    tiles.push({ key: 'vent', icon: 'nautical/wind', label: 'Vent', value: `${windForceLabel(sea.weather.vent)} — vent de ${libelleDeValeur(windDirectionSchema, sea.windFrom)}` });
     // Météo du jour (MDG 13 l.164) : Précipitations/Température/Visibilité — 4e aspect (Vent) déjà sa tuile.
     tiles.push({
       key: 'meteo',

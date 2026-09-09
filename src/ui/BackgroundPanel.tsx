@@ -6,13 +6,9 @@ import { BackgroundFields } from './BackgroundFields';
 import { Icon } from './Icon';
 import { ChoiceButtons } from './OptionChooser';
 import { GatedAction } from './GatedAction';
-import { favorRequiredActivities, type Favor, type FavorLevel } from '../engine/favor';
-
-const FAVOR_LEVEL_LABELS: Record<FavorLevel, string> = {
-  mineure: 'Faveur Mineure',
-  majeure: 'Faveur Majeure',
-  importante: 'Faveur Importante',
-};
+import { favorRequiredActivities, type Favor } from '../engine/favor';
+import { libelleDeValeur } from '../data/schemas/grammaire/meta';
+import { favorLevelSchema } from '../data/schemas/defs-scenes/effets';
 
 /** Onglet « Background » de la fiche : bio en LECTURE SEULE (détails physiques + astrologie, LDB 05
  *  étape 6 — cosmétique) et les champs ÉDITABLES hors combat (Motivation + Ambitions court/long,
@@ -89,8 +85,8 @@ function FavorRow({ favor, disabled, onBreak }: { favor: Favor; disabled: boolea
   const required = favorRequiredActivities(favor.level);
   return (
     <div className="stat-chip favor-chip">
-      <span className="sc-label" title={`${FAVOR_LEVEL_LABELS[favor.level]} envers ${favor.owedTo}`}>
-        {FAVOR_LEVEL_LABELS[favor.level]} envers {favor.owedTo}
+      <span className="sc-label" title={`${libelleDeValeur(favorLevelSchema, favor.level)} envers ${favor.owedTo}`}>
+        {libelleDeValeur(favorLevelSchema, favor.level)} envers {favor.owedTo}
       </span>
       <span className="sc-value">{favor.desc}</span>
       <span className="bg-hint">

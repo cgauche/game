@@ -30,14 +30,9 @@ import { allMusicDefs } from '../../audio/music';
 import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, matieresCouvrantes, matieresDe, structureAppearances, refEstVolumique, siegeEngines } from '../../data';
 import { DEFAULT_ROOF_DEFAULTS, rederiveRoofMasses } from '../../state/sceneEdit';
 import { activitiesFor } from '../../engine/activities';
+import { libelleDeValeur, valeursDe } from '../../data/schemas/grammaire/meta';
+import { entityKindSchema, facadeFeatureKindSchema, roofProfileSchema } from '../../data/schemas/defs-scenes/scene';
 
-/** Profils de toiture du modèle (`BuildingMass.profile`) et leur nom d'auteur. */
-const ROOF_PROFILES = [
-  { id: 'hip' as const, label: 'Croupe (hip) — 4 pans' },
-  { id: 'gable' as const, label: 'Pignon (gable) — 2 pans + faîte' },
-  { id: 'shed' as const, label: 'Appentis (shed) — 1 pan' },
-  { id: 'flat' as const, label: 'Terrasse (flat) — plat' },
-];
 /** Cibles d'une ANCRE de bataille (`Scene.stations[].sceneId`) : les Scènes de Round du catalogue
  *  d'Activités (contexte `bataille-round`) — le SEUL espace d'ids que le consommateur sait résoudre
  *  (`state/stations.battleScenesToStations` → `battleSceneById`). Les Scènes du PROJET sont un autre
@@ -52,7 +47,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { SeatAssignmentsField } from './SeatAssignmentsField';
-import { KIND_LABEL, Sel, type Tool, changePropRef, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffectCount, setPosteCrew, setPosteSide, setPosteEngine, editEntity, editEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setNorthDeg, setEnvironment, setSceneFlags } from './editorState';
+import { Sel, type Tool, changePropRef, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffectCount, setPosteCrew, setPosteSide, setPosteEngine, editEntity, editEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setNorthDeg, setEnvironment, setSceneFlags } from './editorState';
 import { scrollElementIntoPort } from './useEditorView';
 import type { FireArc, StructureData, NavalTraitRef } from '../../engine/types';
 import { DIFFICULTY_LABELS } from '../../engine/types';
@@ -314,7 +309,7 @@ export function Inspector({
   };
 
   const title = ent
-    ? <>{entIcon(ent)} {ent.label ?? ent.ref ?? KIND_LABEL[ent.kind]}</>
+    ? <>{entIcon(ent)} {ent.label ?? ent.ref ?? libelleDeValeur(entityKindSchema, ent.kind)}</>
     : selT
         ? <><Icon id="map-tool/zone" size="sm" /> {selT.id}</>
         : zone
@@ -386,7 +381,7 @@ export function Inspector({
                     value={roofDefaults.profile}
                     onChange={(event) => patchRoofDefaults({ profile: event.target.value as RoofDefaults['profile'] })}
                   >
-                    {ROOF_PROFILES.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+                    {Object.entries(valeursDe(roofProfileSchema) ?? {}).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
                   </select>
                 </label>
                 {roofDefaults.profile === 'shed' && (
@@ -535,11 +530,7 @@ export function Inspector({
                               : candidate),
                           })}
                         >
-                          <option value="gable">Pignon</option>
-                          <option value="stone-entry">Entrée de pierre</option>
-                          <option value="chimney">Cheminée</option>
-                          <option value="sign">Enseigne</option>
-                          <option value="window-band">Bande de fenêtres</option>
+                          {Object.entries(valeursDe(facadeFeatureKindSchema) ?? {}).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
                         </select>
                       </label>
                       <label className="ed-field">
@@ -677,10 +668,7 @@ export function Inspector({
                 <label className="ed-field">
                   Profil
                   <select value={roofSection.profile} onChange={(event) => updateRoofSection({ profile: event.target.value as BuildingMass['profile'] })}>
-                    <option value="gable">Deux pans</option>
-                    <option value="hip">Croupe</option>
-                    <option value="shed">Appentis</option>
-                    <option value="flat">Plat</option>
+                    {Object.entries(valeursDe(roofProfileSchema) ?? {}).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
                   </select>
                 </label>
                 <label className="ed-field">
@@ -1248,7 +1236,7 @@ function EntityPanel({
           )}
         </svg>
         <span className="hint">
-          {KIND_LABEL[ent.kind]} @ ({ent.pos.x}, {ent.pos.y})
+          {libelleDeValeur(entityKindSchema, ent.kind)} @ ({ent.pos.x}, {ent.pos.y})
         </span>
       </div>
       <Fold title="Identité" open>

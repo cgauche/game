@@ -53,8 +53,8 @@ export const mutationKindSchema = enumNomme({ physique: 'Physique', mentale: 'Me
  * Registre d'où DÉRIVE le pool de spécialisations d'une def (`SpecsSource`, `src/data/index.ts` ;
  * catalogue `SPEC_SOURCES`) — UNE déclaration pour les trois defs qui portent ce champ
  * (`skills`/`talents`/`traits`), qui en tenaient chacune une copie. La couverture est TOTALE (16/16 de
- * `SPEC_SOURCES`, verrouillée par `grammaire/enums-nommes-grammaire.test.ts`) : elle ne peut plus être partielle
- * comme l'était le Record d'affichage qu'elle remplace. `weaponsMelee`/`weaponsRanged` portent le
+ * `SPEC_SOURCES`, verrouillée par `grammaire/enums-nommes-grammaire.test.ts`) : elle ne peut pas être
+ * partielle, les options SONT les clés de la table. `weaponsMelee`/`weaponsRanged` portent le
  * libellé de la catégorie de catalogue que leur `pool()` FILTRE (`trappings.categorie`,
  * `defs/trappings.ts`), seule graphie FR déjà posée sur ce filtre.
  */
@@ -83,6 +83,42 @@ export const specsSourceSchema = enumNomme({
  * les charges des ops `aggravateSymptom`/`grantSymptom` (`grammaire/mecanique.ts`).
  */
 export const symptomSeveritySchema = enumNomme({ moderee: 'Modérée', grave: 'Grave' });
+
+/**
+ * Alignement d'une source de Corruption (`ChaosAlign`, `src/engine/corruption.ts`) — UNE déclaration
+ * pour les deux nœuds qui portent ce vocabulaire : la charge de l'op `corruption`
+ * (`grammaire/mecanique.ts`) et l'effet de scène `corruption.align` (`defs-scenes/effets.ts`).
+ */
+export const chaosAlignSchema = enumNomme({
+  toute: 'Toute Puissance',
+  khorne: 'Khorne',
+  nurgle: 'Nurgle',
+  slaanesh: 'Slaanesh',
+  tzeentch: 'Tzeentch',
+});
+
+/**
+ * Palier d'une Influence corruptrice (`ExposureLevel`, `src/engine/corruption.ts` ; LDB 19 l.23-75) —
+ * UNE déclaration pour la charge de l'op `corruptionExposure` (`grammaire/mecanique.ts`) et l'effet de
+ * scène `corruptionExposure.level` (`defs-scenes/effets.ts`).
+ */
+export const exposureLevelSchema = enumNomme({ mineure: 'mineure', moderee: 'modérée', majeure: 'majeure' });
+
+/**
+ * `Dir8` (`src/state/dir8.ts`) — orientation MONDE à huit aires, UNE déclaration pour les deux nœuds
+ * qui la portent : `entities[].facing` d'une Scène (`defs-scenes/scene.ts`) et le cap d'une place assise
+ * de décor (`defs/props.ts`).
+ */
+export const dir8Schema = enumNomme({
+  N: 'Nord',
+  NE: 'Nord-Est',
+  E: 'Est',
+  SE: 'Sud-Est',
+  S: 'Sud',
+  SO: 'Sud-Ouest',
+  O: 'Ouest',
+  NO: 'Nord-Ouest',
+});
 
 /**
  * Disponibilité (`Availability`, `src/engine/types.ts`) — le schéma DÉRIVE du tuple canon au lieu de
@@ -451,7 +487,15 @@ export const diceSpecSchema = z.strictObject({ n: z.number(), sides: z.number(),
  *  dérivées de la LONGUEUR par `shipSizeOfLength` (`src/engine/shipBuild.ts`). Déclarées ICI une fois :
  *  `ship-construction` (colonne Taille), `sea-perils` (bornes min/max) et `ship-criticals` (bandes de la
  *  table « Tomber du gréement ») les lisent, aucun ne les réécrit. */
-export const shipSizeSchema = z.enum(['minuscule', 'tres-petite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
+export const shipSizeSchema = enumNomme({
+  minuscule: 'Minuscule',
+  'tres-petite': 'Très petite',
+  petite: 'Petite',
+  moyenne: 'Moyenne',
+  grande: 'Grande',
+  enorme: 'Énorme',
+  monstrueuse: 'Monstrueuse',
+});
 
 /** `ShipLocation` (`src/engine/combat.ts`) — les Localisations de coque des DEUX jeux de Critiques
  *  (MDG naval : cargaison/gréement/coque/avirons/équipements ; MSRC fluvial : gouvernail/superstructure). */

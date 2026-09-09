@@ -3,6 +3,8 @@ import { useGame } from '../state/store';
 import { partyMoneyTotal } from '../state/bourseFlow';
 import { placeServices, placeServiceMerchantId, serviceIcon, poiIcon, type ResolvedPlaceService, type MapPlace } from '../state/worldMap';
 import type { Scene } from '../state/scene';
+import { libelleDeValeur } from '../data/schemas/grammaire/meta';
+import { sceneWeatherSchema } from '../data/schemas/defs-scenes/scene';
 import { restServicePrice, type RestPlaces } from '../state/restFlow';
 import { findLandCargoById, findLandCargoEntryById } from '../engine/landCargo';
 import { findCargoEntryById, isEchangeable } from '../engine/seaVoyage';
@@ -32,15 +34,6 @@ import { GatedAction } from './GatedAction';
  * dans un ScreenShell). L'auberge est le panneau RICHE : prix RÉELS du catalogue (source unique
  * `restServicePrice`), action Dormir (flux de repos existant), rumeurs déjà glanées.
  */
-
-/** Libellé d'affichage de la météo de scène (id → français) — pur AFFICHAGE, keyé par id stable. */
-const SCENE_WEATHER_LABEL: Record<NonNullable<Scene['weather']>, string> = {
-  clair: 'Ciel clair',
-  pluie: 'Pluie',
-  brouillard: 'Brouillard',
-  neige: 'Neige',
-  tempete: 'Tempête',
-};
 
 /** Services d'un lieu tels que listés par le hub (délégué à `placeServices`, source unique) — surface
  *  PURE testable (composition + ordre : port, marché, puis services de catalogue dont l'auberge). */
@@ -328,7 +321,7 @@ export function CityHubScreen({
       title={<><Icon id={place.icon ?? 'nav/entry-point'} size="sm" /> {place.label}</>}
       onClose={onClose}
       meta={{ time: gameTime, money }}
-      actions={scene?.weather && <span className="city-hub-weather">· {SCENE_WEATHER_LABEL[scene.weather]}</span>}
+      actions={scene?.weather && <span className="city-hub-weather">· {libelleDeValeur(sceneWeatherSchema, scene.weather)}</span>}
       tabs={screenTabs.length > 1 ? <Tabs tabs={screenTabs} active={screenTab} onChange={setScreenTab} label={`Onglets de ${place.label}`} /> : undefined}
       backdrop={place.backdrop ?? sel?.backdrop}
       body="centered"

@@ -3717,8 +3717,8 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 |---|---|---|---|---|---|---|
 | `activities.ts` | 127 | — | test | divergente | `char,difficulty+…` | — |
 | `arcane-phenomena.ts` | 177 | `controlFlux` | test | divergente | `difficulty+…` | — |
-| `criticals.ts` | 86 | — | test | divergente | `difficulty+…` | — |
-| `criticals.ts` | 96 | `loss` | test | divergente | `difficulty+…` | — |
+| `criticals.ts` | 90 | — | test | divergente | `difficulty+…` | — |
+| `criticals.ts` | 100 | `loss` | test | divergente | `difficulty+…` | — |
 | `etats.ts` | 25 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
 | `land-cargo.ts` | 107 | `gossip` | test | divergente | `difficulty+…` | — |
 | `miscast.ts` | 34 | — | — | hors lexique | `bonusOf` | `formulaSchema` |
@@ -4951,4 +4951,4 @@ pèse **2950** slots sur 3304.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: ad4d0da355f331ec1ad42589b8bdbb56924f3c99 (372 fichiers, 10 dossiers) corps: 7e2a7e2b4827af1b5f5ed203bbe8998ec93a9f5b -->
+<!-- sources-empreinte: f02aa0b2d235db1eb54ef7ae84d92ee4cd8c40d3 (372 fichiers, 10 dossiers) corps: 7a4d9f90e7de8ac76db856c1530681ee4fc80803 -->

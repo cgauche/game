@@ -53,8 +53,8 @@ export function seasonOfMonth(monthIndex: number | null): Season {
  * vérité de l'alphabet — une union littérale recopiée ici aurait divergé en silence du z.enum qui
  * valide le fichier.
  *
- * SECONDE CARTE MÉTÉO — `src/ui/CityHubScreen.tsx` (`SCENE_WEATHER_LABEL`) porte un AUTRE axe
- * (`Scene['weather']`, la météo d'une scène jouée) ; migration possédée par #1585.
+ * AXE DISTINCT : la météo AUTHORÉE d'une Scène jouée (`Scene['weather']`, `sceneWeatherSchema`,
+ * `data/schemas/defs-scenes/scene.ts`) — son libellé vit sur le nœud (`enumNomme`).
  */
 export type Weather = (typeof weatherIdSchema.options)[number];
 

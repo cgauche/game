@@ -20,7 +20,7 @@
  * existante par `PROJECT_MIGRATIONS[6]` (`src/state/worldMap.ts`, `schema` 6 → 7).
  */
 import { z } from 'zod';
-import { difficultySchema, entityAppearanceSchema, moneyPartialSchema } from '../grammaire/valeurs';
+import { difficultySchema, dir8Schema, entityAppearanceSchema, enumNomme, moneyPartialSchema } from '../grammaire/valeurs';
 import { conditionSchema, flowTestSchema, gameOpSchema } from '../grammaire/mecanique';
 import { refIndiceSchema } from '../grammaire/reference';
 import { customStatblockSchema, ptSchema, skillRefSchema, wallSideSchema } from './communs';
@@ -32,8 +32,9 @@ import { PARTS_RELIEF, type PartRelief } from '../../materials.types';
 import type { AuthoredShipPoste } from '../../../engine/types';
 import type { OptionalEntry } from '../../../engine/statEntry';
 
-/** `Dir8` (`state/dir8.ts`) — orientation MONDE éditable, projetée au rendu. */
-export const dir8Schema = z.enum(['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']);
+/** `Dir8` (`state/dir8.ts`) — orientation MONDE éditable, projetée au rendu. MÊME vocabulaire que le cap
+ *  d'une place assise de décor (`defs/props.ts`) : la const NOMMÉE de la grammaire est partagée (#1694). */
+export { dir8Schema };
 /** Rectangle de zone/déclencheur — `z` = étage (défaut 0). */
 export const rectSchema = z.strictObject({ x: z.number(), y: z.number(), w: z.number(), h: z.number(), z: z.number().optional() });
 /** Offre de couchage d'une scène/zone (`RestPlaces` sans `bord`, réservé au navire de campagne). */
@@ -57,7 +58,7 @@ export const seatOccupantSchema = z.discriminatedUnion('kind', [
 /** Rôle d'une entité de scène. `personnage` = tout être animé (apparence libre via `ref` +
  *  dialogue/quête optionnel) — fusion des anciens `pnj`/`ennemi`, que le combat (encounters) et
  *  l'interaction (dialogueId) ne distinguaient pas. */
-export const entityKindSchema = z.enum(['heroStart', 'personnage', 'prop']);
+export const entityKindSchema = enumNomme({ heroStart: 'Départ héros', personnage: 'Personnage', prop: 'Décor' });
 
 const VOLUMIQUES = new Set(PROPS_VOLUMIQUES);
 
@@ -156,10 +157,20 @@ export const architectureStoreySchema = z.strictObject({
   parts: z.array(architecturePartSchema),
   roomZoneIds: z.array(z.string()),
 });
+/** Nature d'un ornement de façade — les trois `KINDS_DE_DECOR` (`builders/walls.ts`) portent le libellé
+ *  du prop que le catalogue de façades leur pose (`data/props.json`). */
+export const facadeFeatureKindSchema = enumNomme({
+  gable: 'Pignon',
+  'stone-entry': 'Entrée de pierre',
+  chimney: 'Cheminée',
+  sign: 'Enseigne',
+  'window-band': 'Bande de fenêtres',
+  belfry: 'Clocheton',
+});
 /** `FacadeFeature` — ornement posé sur une arête de façade. */
 export const facadeFeatureSchema = z.strictObject({
   id: z.string(),
-  kind: z.enum(['gable', 'stone-entry', 'chimney', 'sign', 'window-band', 'belfry']),
+  kind: facadeFeatureKindSchema,
   edge: architectureEdgeRefSchema,
   offset: z.number().optional(),
   width: z.number().optional(),
@@ -175,7 +186,21 @@ export const facadeSectionSchema = z.strictObject({
   features: z.array(facadeFeatureSchema).optional(),
 });
 /** Profil de toiture d'une masse/d'une intention de toiture. */
-export const roofProfileSchema = z.enum(['gable', 'hip', 'shed', 'flat']);
+export const roofProfileSchema = enumNomme({
+  hip: 'Croupe (hip) — 4 pans',
+  gable: 'Pignon (gable) — 2 pans + faîte',
+  shed: 'Appentis (shed) — 1 pan',
+  flat: 'Terrasse (flat) — plat',
+});
+/** Météo AUTHORÉE d'une Scène (`Scene.weather`, `LDB 14 l.68-82`) — lue par `sceneCombatModifiers` et
+ *  nommée à l'écran par le hub de ville. */
+export const sceneWeatherSchema = enumNomme({
+  clair: 'Ciel clair',
+  pluie: 'Pluie',
+  brouillard: 'Brouillard',
+  neige: 'Neige',
+  tempete: 'Tempête',
+});
 /** Côté d'égout bas (OBLIGATOIRE pour `shed`, ignoré sinon). */
 export const eaveSideSchema = z.enum(['N', 'E', 'S', 'O']);
 /**
@@ -606,7 +631,7 @@ export const sceneSchema = z.strictObject({
   /** Classification écologique lue par les attributs de Domaine (`LDB 48 l.690`). */
   environment: z.enum(['rural', 'urbain', 'sauvage']).optional(),
   /** Météo (`LDB 14 l.68-82`) — défaut 'clair', lue par `sceneCombatModifiers`. */
-  weather: z.enum(['clair', 'pluie', 'brouillard', 'neige', 'tempete']).optional(),
+  weather: sceneWeatherSchema.optional(),
   /** Id d'un `lightLevels`, ou `'auto'`/absent = suit l'horloge via `ambiance`. */
   ambientLight: z.string().optional(),
   /** NORD de la carte — rotation horaire en degrés `[0,360[` du nord réel (posé par `setNorthDeg`). */

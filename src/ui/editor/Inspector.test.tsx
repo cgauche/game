@@ -5,6 +5,9 @@ import { createRoot, type Root } from 'react-dom/client';
 import { Inspector } from './Inspector';
 import { emptyScene, type Scene, type SceneEntity } from '../../state/scene';
 import { lightTones } from '../../data';
+import { valeursDe } from '../../data/schemas/grammaire/meta';
+import { facadeFeatureKindSchema, roofProfileSchema } from '../../data/schemas/defs-scenes/scene';
+import type { Sel } from './editorState';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -622,5 +625,126 @@ describe('Inspector — orientation : les caps OFFERTS suivent le catalogue', ()
     const h = mount({ id: 'pnj-1', kind: 'personnage', pos: { x: 1, y: 1 }, facing: 'SE' });
     h.mount();
     expect(capsOfferts(h.container)).toEqual(['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']);
+  });
+});
+
+describe('Inspector — le profil de toiture est nommé par le NŒUD, une seule fois (#1694)', () => {
+  const body = {
+    id: 'corps',
+    style: 'reikland',
+    storeys: [{ id: 'rdc', z: 0, parts: [{ id: 'p', foot: { x: 0, y: 0, w: 2, h: 2 } }], roomZoneIds: [] }],
+    facades: [],
+    masses: [{
+      id: 'masse',
+      z: 0,
+      footprint: [{ x: 0, y: 0, w: 2, h: 2 }],
+      levels: 1,
+      profile: 'gable' as const,
+      pitchDeg: 40,
+      material: 'toit-ardoise',
+      ridge: 'x' as const,
+    }],
+  };
+
+  function profilOptions(sel: Sel) {
+    const scene: Scene = { ...emptyScene(4, 4), architecture: [body] };
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    return { scene, container, root, sel };
+  }
+
+  it('les DEUX selects de profil (défauts du corps, masse posée) rendent les libellés du nœud', async () => {
+    const attendu = Object.entries(valeursDe(roofProfileSchema)!);
+    expect(attendu.length).toBeGreaterThan(1);
+
+    const lu: [string, string][][] = [];
+    for (const sel of [
+      { type: 'architectureBody', id: 'corps' },
+      { type: 'roofSection', bodyId: 'corps', id: 'masse' },
+    ] as Sel[]) {
+      const h = profilOptions(sel);
+      await act(() => {
+        h.root.render(
+          <Inspector
+            scene={h.scene}
+            otherScenes={[]}
+            worldMap={null}
+            setScene={() => undefined}
+            sel={h.sel}
+            setSel={() => undefined}
+            enemyCreatures={[]}
+            openLogic={() => undefined}
+            resizeScene={() => undefined}
+            narratif={{ affaires: [], indices: [], presetsPnj: [], objets: [] }}
+            tool={{ mode: 'select' }}
+            armZoneTiles={() => undefined}
+            zoneFocusKey={null}
+          />,
+        );
+      });
+      const select = Array.from(h.container.querySelectorAll('select'))
+        .find((el) => el.closest('label')?.textContent?.trim().startsWith('Profil')) as HTMLSelectElement;
+      expect(select).toBeTruthy();
+      lu.push(Array.from(select.options).map((o) => [o.value, o.textContent ?? ''] as [string, string]));
+      await act(async () => h.root.unmount());
+      h.container.remove();
+    }
+
+    expect(lu[0]).toEqual(attendu);
+    expect(lu[1]).toEqual(attendu);
+  });
+});
+
+describe("Inspector — le type d'un ornement de façade est nommé par le NŒUD (#1694)", () => {
+  it('le select « Type » rend les options du nœud, `belfry` compris', async () => {
+    const attendu = Object.entries(valeursDe(facadeFeatureKindSchema)!);
+    expect(attendu.map(([id]) => id)).toContain('belfry');
+
+    const scene: Scene = {
+      ...emptyScene(4, 4),
+      architecture: [{
+        id: 'corps',
+        style: 'reikland',
+        storeys: [{ id: 'rdc', z: 0, parts: [{ id: 'p', foot: { x: 0, y: 0, w: 2, h: 2 } }], roomZoneIds: [] }],
+        facades: [{
+          id: 'pan-sud',
+          z: 0,
+          edges: [{ x: 0, y: 1, side: 'N' as const }],
+          appearance: 'chapelle',
+          features: [{ id: 'clocheton-nef', kind: 'belfry' as const, edge: { x: 0, y: 1, side: 'N' as const } }],
+        }],
+        masses: [],
+      }],
+    };
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(() => {
+      root.render(
+        <Inspector
+          scene={scene}
+          otherScenes={[]}
+          worldMap={null}
+          setScene={() => undefined}
+          sel={{ type: 'facadeSection', bodyId: 'corps', id: 'pan-sud' } as Sel}
+          setSel={() => undefined}
+          enemyCreatures={[]}
+          openLogic={() => undefined}
+          resizeScene={() => undefined}
+          narratif={{ affaires: [], indices: [], presetsPnj: [], objets: [] }}
+          tool={{ mode: 'select' }}
+          armZoneTiles={() => undefined}
+          zoneFocusKey={null}
+        />,
+      );
+    });
+    const select = Array.from(container.querySelectorAll('select'))
+      .find((el) => el.closest('label')?.textContent?.trim().startsWith('Type')) as HTMLSelectElement;
+    expect(select).toBeTruthy();
+    expect(Array.from(select.options).map((o) => [o.value, o.textContent ?? ''])).toEqual(attendu);
+    expect(select.value).toBe('belfry');
+    await act(async () => root.unmount());
+    container.remove();
   });
 });

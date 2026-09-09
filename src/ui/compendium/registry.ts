@@ -29,6 +29,7 @@ import type { RaceKey, SourceRef } from '../../data/schemas/grammaire/valeurs';
 import { symptomSeveritySchema } from '../../data/schemas/grammaire/valeurs';
 import type { EnveloppeDocument } from '../../data/schemas/grammaire/document';
 import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
+import { shipSizeSchema } from '../../data/schemas/grammaire/valeurs';
 import { outcomeOnSchema, battleCondSchema, battleOutcomeTargetSchema, battleOutcomeScaleSchema, battleSideSchema } from '../../data/schemas/defs/activities';
 import { phenomenonKindSchema, phenomenonTestSchema, saturationTierSchema } from '../../data/schemas/defs/arcane-phenomena';
 import { drivingMishapOutcomeSchema } from '../../data/schemas/defs/driving-mishap';
@@ -880,12 +881,6 @@ function portCargoRow(id: string, qty?: number): CodexRow {
   const show = qty != null ? `${nom} (${qty})` : nom;
   return entry && isEchangeable(entry) ? { t: 'ref', category: 'seaCargo', id: entry.id, label, show } : { t: 'text', text: show };
 }
-
-/** Libellés FR des 7 gabarits de coque standard (`ship-construction.json::standard`, MDG 12 l.120-129). */
-const SHIP_SIZE_LABEL: Record<string, string> = {
-  minuscule: 'Minuscule', 'tres-petite': 'Très petite', petite: 'Petite', moyenne: 'Moyenne',
-  grande: 'Grande', enorme: 'Énorme', monstrueuse: 'Monstrueuse',
-};
 
 /** Libellés FR des 4 Traits de CONSTRUCTION (`ship-construction.json::constructionTraits`, sans champ
  *  `label` en donnée — id STABLE déjà la clé, MDG 12 l.167-193). */
@@ -2247,7 +2242,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'shipHullSizes', label: 'Gabarits de coque (Construction navale)', group: 'Équipement', cluster: 'Mer & rivière', sourceRef: 'MDG 12',
     build: () => datasetArray('shipHullSizes').map((s) => ({
-      id: s.id, label: SHIP_SIZE_LABEL[s.size] ?? s.size, source: src(s.source),
+      id: s.id, label: libelleDeValeur(shipSizeSchema, s.size), source: src(s.source),
       meta: facts(
         fact('Coût', formatMoney(priceToMoney({ gold: s.costGold, silver: 0, brass: 0 }))),
         fact('Équipage', s.crew),
