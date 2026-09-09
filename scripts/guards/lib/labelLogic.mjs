@@ -902,12 +902,18 @@ export function ratchetShortKey(finding) {
 // depuis `src/engine`/`src/state`, où le paramètre reçu est déjà, la plupart du temps, un id : y
 // appeler `findCreature(x)` bascule quand même toute la résolution sur le texte d'affichage.
 //
-// Reconnaissance du résolveur — DEUX critères structurels, jamais une liste de noms :
+// Reconnaissance du résolveur — critères structurels, jamais une liste de noms :
 //  1. déclaré et exporté dans `src/data/index.ts` (seul fichier où la légitimité existe, doctrine
 //     CLAUDE.md — un résolveur par label ailleurs serait une AUTRE faute, hors périmètre #909) ;
-//  2. son paramètre s'appelle EXACTEMENT `label`, et son type de retour est une entité de catalogue
-//     — `XxxData` (`CreatureData`/`SpellData`/`TalentData`/`SkillData`/`StarData`/`DomainData`/
-//     `TrappingData`), la convention de nommage RÉELLE de ce dépôt pour les interfaces app-owned.
+//  2. il RÉSOUT par libellé, sous l'une des deux formes que porte ce fichier :
+//     a. fonction/flèche dont le paramètre s'appelle EXACTEMENT `label` et dont le type de retour est
+//        une entité de catalogue — `XxxData` (`CreatureData`/`SpellData`/`TalentData`/`SkillData`/
+//        `StarData`/`DomainData`/`TrappingData`), convention RÉELLE des interfaces app-owned ;
+//     b. ALIAS d'un binding construit par `indexParChamp(cle, entrees, (e) => e.label…)` — l'index
+//        vif rend l'ENTRÉE elle-même, donc l'alias résout l'entité par son libellé exactement comme
+//        (a). C'est la forme prise par `findDomain` (`index.ts:2738-2739`) quand son corps fléché a
+//        cédé la place à l'index vif : un critère qui ne juge que la FORME SYNTAXIQUE (flèche avec
+//        corps) devenait muet sur un résolveur inchangé pour l'appelant.
 // Choix MESURÉ plutôt qu'une liste : une liste nommée sur les 3 résolveurs cités par le ticket
 // (`findCreature`/`findSpell`/`findTrappingByLabel`) aurait manqué `findStar`/`findDomain`/
 // `findSkill`/`findTalent` — QUATRE résolveurs de MÊME forme, présents dans le corpus réel,
@@ -944,16 +950,60 @@ function isExported(node) {
   return (node.modifiers ?? []).some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
 }
 
+/** L'initialiseur est-il un INDEX VIF keyé par le LIBELLÉ — `indexParChamp(cle, entrees, (e) =>
+ *  e.label…)` (`src/data/versionDataset.ts`) ? Cet accesseur rend l'ENTRÉE de catalogue elle-même
+ *  (`(k) => T | undefined`) : le binding qui le tient RÉSOUT une entité par son libellé, quelle que
+ *  soit la forme sous laquelle un export le publie ensuite. La clef est lue par son CORPS (`d.label`,
+ *  `t.label.toLowerCase()`, `norm(t.label)`, `slugId(q.label)`), pas par le nom du binding.
+ *  @param {ts.Node} init */
+function isLabelKeyedIndex(init) {
+  const n = unwrap(init);
+  if (!ts.isCallExpression(n) || !ts.isIdentifier(n.expression) || n.expression.text !== 'indexParChamp') return false;
+  const clef = n.arguments[2];
+  if (!clef || !(ts.isArrowFunction(clef) || ts.isFunctionExpression(clef))) return false;
+  let litLeLabel = false;
+  const voir = (x) => {
+    if (ts.isPropertyAccessExpression(x) && ts.isIdentifier(x.name) && x.name.text === 'label') litLeLabel = true;
+    ts.forEachChild(x, voir);
+  };
+  voir(clef.body);
+  return litLeLabel;
+}
+
+/** Les bindings qui TIENNENT une résolution par libellé : index keyé par label, ou ALIAS NU d'un tel
+ *  binding — les déclarations étant en ordre, une chaîne d'alias suit (même mécanique d'héritage par
+ *  alias que `nomsVifsDuFichier`, `bindingsVifs.mjs`).
+ *  @param {ts.SourceFile} sf @returns {Set<string>} */
+function labelKeyedBindings(sf) {
+  const noms = new Set();
+  const visit = (node) => {
+    if (ts.isVariableStatement(node)) {
+      for (const d of node.declarationList.declarations) {
+        if (!ts.isIdentifier(d.name) || !d.initializer) continue;
+        const init = unwrap(d.initializer);
+        if (isLabelKeyedIndex(init) || (ts.isIdentifier(init) && noms.has(init.text))) noms.add(d.name.text);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(sf, visit);
+  return noms;
+}
+
 /**
  * Résolveurs d'entité par libellé déclarés dans `src/data/index.ts` — fonction nommée exportée
  * (`export function findX(label: string): XData {…}`) ou const fléchée exportée
  * (`export const findX = (label: …): XData | undefined => …`), premier paramètre nommé `label`,
- * retour `XxxData` (cf. en-tête ci-dessus pour la doctrine du critère).
+ * retour `XxxData` (cf. en-tête ci-dessus pour la doctrine du critère) ; OU export qui ALIASE un
+ * binding keyé par le libellé (`export const findDomain: … = domaineParLabel;`, où `domaineParLabel
+ * = indexParChamp('domains', domains, (d) => d.label)`) — la résolution est la même, seule la forme
+ * syntaxique diffère.
  * @param {string} contenu — contenu de `src/data/index.ts` @returns {Set<string>}
  */
 export function collectLabelEntityResolvers(contenu) {
   const sf = ts.createSourceFile('index.ts', contenu, ts.ScriptTarget.Latest, true, scriptKindDe('index.ts'));
   const names = new Set();
+  const parLabel = labelKeyedBindings(sf);
   const hasLabelFirstParam = (params) => params.length >= 1 && ts.isIdentifier(params[0].name) && params[0].name.text === 'label';
   const visit = (node) => {
     if (ts.isFunctionDeclaration(node) && node.name && isExported(node)
@@ -963,11 +1013,12 @@ export function collectLabelEntityResolvers(contenu) {
     if (ts.isVariableStatement(node) && isExported(node)) {
       for (const d of node.declarationList.declarations) {
         if (!ts.isIdentifier(d.name)) continue;
-        const init = d.initializer;
+        const init = d.initializer && unwrap(d.initializer);
         if (init && (ts.isArrowFunction(init) || ts.isFunctionExpression(init))
           && hasLabelFirstParam(init.parameters) && isEntityDataType(init.type)) {
           names.add(d.name.text);
         }
+        if (init && ts.isIdentifier(init) && parLabel.has(init.text)) names.add(d.name.text);
       }
     }
     ts.forEachChild(node, visit);

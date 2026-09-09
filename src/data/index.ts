@@ -2317,7 +2317,7 @@ const traitParLabelMinuscule = indexParChamp('traits', traits, (t) => t.label.to
 export const traitIdByLabel = (label: string): string | undefined => traitParLabelMinuscule(label.toLowerCase())?.id;
 const traitParId = indexParId('traits', traits);
 /** Trait par `id` STABLE (slug) — lookup runtime indépendant de la langue. */
-export const findTraitById = (id: string): TraitData | undefined => traitParId(id);
+export const findTraitById: (id: string) => TraitData | undefined = traitParId;
 export const qualities = qualitiesJson as QualityData[];
 /** Index des Atouts/Défauts par `id` STABLE (slug) — lookup runtime indépendant de la langue (dispatch). */
 const qualiteParId = indexParId('qualities', qualities);
@@ -2338,7 +2338,7 @@ export function fabricationAtoutQuality(id: string): { id: string; value?: numbe
 /** Symptômes de maladie (LDB 20) — entités de DONNÉE éditables au Codex (passive/onTick/capabilities). */
 export const symptoms = symptomsJson as SymptomData[];
 const symptomeParId = indexParId('symptoms', symptoms);
-export const findSymptomById = (id: string): SymptomData | undefined => symptomeParId(id);
+export const findSymptomById: (id: string) => SymptomData | undefined = symptomeParId;
 /** Libellé FR d'un symptôme par son id (repli sur l'id si inconnu). */
 export const symptomLabel = (id: string): string => symptomeParId(id)?.label ?? id;
 /** Les paliers de SÉVÉRITÉ d'une instance de symptôme, dans l'ordre CROISSANT (LDB 20 l.157 « (Modéré) »,
@@ -2384,7 +2384,7 @@ export const siegeEngines = memoParVersion('trappings', () => trappings.filter((
  *  `engine/travel` ; les facettes `purchase`/`hull` par le marché et les incidents/combat. */
 export const vehicles = vehiclesJson as VehicleData[];
 const vehiculeParId = indexParId('vehicles', vehicles);
-export const findVehicleById = (id: string): VehicleData | undefined => vehiculeParId(id);
+export const findVehicleById: (id: string) => VehicleData | undefined = vehiculeParId;
 
 /** Archétypes de marchand (#2, donnée éditable — aucun archétype en dur dans le code) — FOYER UNIQUE
  *  app-owned. `MERCHANTS`/`MERCHANT_ARCHETYPES` (`state/merchants/index.ts`) réexportent ce registre :
@@ -2397,7 +2397,7 @@ export const findMerchantArchetypeById = (id: string): MerchantArchetypeDef | un
  *  calqué sur la facette `hull` des véhicules ; lu par `engine/structures.ts` (`structureCombatant`). */
 export const structures = structuresJson as StructureData[];
 const structureParId = indexParId('structures', structures);
-export const findStructureById = (id: string): StructureData | undefined => structureParId(id);
+export const findStructureById: (id: string) => StructureData | undefined = structureParId;
 /** Apparence de RENDU des structures (murs/portes) — donnée pure, découplée des règles ci-dessus. */
 export const structureAppearances = structureAppearanceJson as import('../gameIso/catalog/structures/types').StructureAppearanceDef[];
 
@@ -2674,13 +2674,13 @@ export interface ShipStationData {
 }
 export const shipStations = shipStationsJson as ShipStationData[];
 const stationParId = indexParId('shipStations', shipStations);
-export const findShipStation = (id: string): ShipStationData | undefined => stationParId(id);
+export const findShipStation: (id: string) => ShipStationData | undefined = stationParId;
 export const crewRoles = crewRolesJson as CrewRoleData[];
 const roleEquipageParId = indexParId('crewRoles', crewRoles);
-export const findCrewRoleById = (id: string): CrewRoleData | undefined => roleEquipageParId(id);
+export const findCrewRoleById: (id: string) => CrewRoleData | undefined = roleEquipageParId;
 export const crewTestTypes = (crewTestTypesJson as { types: CrewTestTypeData[] }).types;
 const testEquipageParId = indexParId('crewTestTypes', crewTestTypes);
-export const findCrewTestTypeById = (id: string): CrewTestTypeData | undefined => testEquipageParId(id);
+export const findCrewTestTypeById: (id: string) => CrewTestTypeData | undefined = testEquipageParId;
 /** Groupes d'objet app-owned (taxonomie `subType` id-ifiée) — éditable au Codex. */
 export const weaponGroups = weaponGroupsJson as WeaponGroupData[];
 export const groups = groupsJson as GroupData[];
@@ -2699,7 +2699,7 @@ export const maneuvers = maneuversJson as ManeuverDef[];
 export interface LightLevelDef { id: string; type: 'lightLevels'; label: string; scalar: number; baseSightTiles: number }
 export const lightLevels = lightLevelsJson as LightLevelDef[];
 const niveauLumiereParId = indexParId('lightLevels', lightLevels);
-export const findLightLevelById = (id: string): LightLevelDef | undefined => niveauLumiereParId(id);
+export const findLightLevelById: (id: string) => LightLevelDef | undefined = niveauLumiereParId;
 /** TON de lumière app-owned (#1245, L4) : l'APPARENCE d'une source PONCTUELLE — couleur, part
  *  d'intensité (facteur du calage anti-saturation du rendu, jamais une intensité absolue) et
  *  vacillement optionnel. Aucune conséquence de règle : le moteur ne connaît d'une source que son
@@ -2721,7 +2721,7 @@ export { validatePropCatalog, propFootOf, REF_DECOR_DEFAUT } from './props.types
 import { REF_DECOR_DEFAUT } from './props.types';
 export const props = propsJson as PropData[];
 const propParId = indexParId('props', props);
-export const findPropById = (id: string): PropData | undefined => propParId(id);
+export const findPropById: (id: string) => PropData | undefined = propParId;
 /** Un type de décor rend-il en VOLUME (recette authorée) plutôt qu'en billboard ? RÈGLE UNIQUE, propriété
  *  du CATALOGUE : l'émetteur de décor (`gameIso/builders/props.ts`) comme le validateur de scène
  *  (`state/validateScene.ts`) la lisent ici — aucun site ne la redevine. `ref` absente = le défaut du
@@ -2736,15 +2736,15 @@ export const findPropMaterialById = (id: string): PropMaterialData | undefined =
  *  `findDomainById`) ; `domainByLabel`/`findDomain` restent pour l'authoring/affichage. */
 export const domains = domainsJson as DomainData[];
 const domaineParLabel = indexParChamp('domains', domains, (d) => d.label);
-export const findDomain = (label: string | null | undefined): DomainData | undefined => domaineParLabel(label);
+export const findDomain: (label: string | null | undefined) => DomainData | undefined = domaineParLabel;
 /** Index des Domaines par `id` STABLE — lookup RUNTIME indépendant de la langue (sort→domaine). */
 const domaineParId = indexParId('domains', domains);
-export const findDomainById = (id: string | null | undefined): DomainData | undefined => domaineParId(id);
+export const findDomainById: (id: string | null | undefined) => DomainData | undefined = domaineParId;
 /** Index des Domaines par `wind` (Vent de Magie) — résout un Vent (Ghur, Aqshy, Dhar…) vers son Domaine.
  *  SOURCE de la Compétence Focalisation (spécialisée par Vent) : un `focalisation.spec` porte l'id du
  *  Domaine et AFFICHE le Vent ; ce lookup fait l'inverse (authoring/migration Vent → id). */
 const domaineParVent = indexParChamp('domains', domains, (d) => d.wind);
-export const findDomainByWind = (wind: string | null | undefined): DomainData | undefined => domaineParVent(wind);
+export const findDomainByWind: (wind: string | null | undefined) => DomainData | undefined = domaineParVent;
 /** Un axe du catalogue `axes.json` (#409) — vue TS de son schéma zod. */
 export type AxisData = AxesData[number];
 /** Catalogue des axes de forces/faiblesses (mécanique MAISON, #409) : socle de base (`core`) +
@@ -2753,7 +2753,7 @@ export type AxisData = AxesData[number];
  *  vérifiée par `axes-integrity.test.ts` (patron `book-source-integrity.test.ts`). */
 export const allAxes = axesJson as AxisData[];
 const axeParId = indexParId('axes', allAxes);
-export const findAxisById = (id: string): AxisData | undefined => axeParId(id);
+export const findAxisById: (id: string) => AxisData | undefined = axeParId;
 /** Socle par défaut d'une campagne SANS `activeAxes` déclaré (`WorldMap.activeAxes`). */
 export const coreAxisIds = memoParVersion('axes', (): string[] => allAxes.filter((a) => a.core).map((a) => a.id));
 export const eyes = eyesJson as DetailColorData[];

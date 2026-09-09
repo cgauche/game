@@ -17,18 +17,28 @@ import type { DatasetKey, ObjectDatasetKey } from './overrides';
 /** Clé de dataset versionnée : les tableaux (`ARRAYS`) ET les datasets-objets (`OBJECTS`) du seam. */
 export type CleDeDataset = DatasetKey | ObjectDatasetKey;
 
-const VERSIONS = new Map<string, number>();
+/** Le compteur d'UN dataset, dans une CELLULE que le mémo capture UNE fois : une lecture chaude n'est
+ *  plus une recherche par chaîne dans une `Map` mais une lecture de champ. */
+type Cellule = { v: number };
+
+const VERSIONS = new Map<string, Cellule>();
+
+function cellule(cle: CleDeDataset): Cellule {
+  let c = VERSIONS.get(cle);
+  if (!c) VERSIONS.set(cle, (c = { v: 0 }));
+  return c;
+}
 
 /** Version courante d'un dataset — 0 tant qu'aucune édition n'a eu lieu, +1 par écriture au seam. */
 export function versionDuDataset(cle: CleDeDataset): number {
-  return VERSIONS.get(cle) ?? 0;
+  return VERSIONS.get(cle)?.v ?? 0;
 }
 
 /** Marque un dataset comme ÉDITÉ — appelée par le seam d'écriture (`setDataset`/`setObjectDataset`/
  *  `resetData`), jamais par un lecteur. Tout index mémoïsé sur cette clé se reconstruira à sa
  *  prochaine lecture. */
 export function bumperDataset(cle: CleDeDataset): void {
-  VERSIONS.set(cle, (VERSIONS.get(cle) ?? 0) + 1);
+  cellule(cle).v += 1;
 }
 
 /**
@@ -38,11 +48,19 @@ export function bumperDataset(cle: CleDeDataset): void {
  * l'import, la première lecture paie.
  */
 export function memoParVersion<T>(cle: CleDeDataset | readonly CleDeDataset[], calcul: () => T): () => T {
-  const cles = typeof cle === 'string' ? [cle] : cle;
-  let version = '';
+  const cellules = (typeof cle === 'string' ? [cle] : cle).map(cellule);
+  // Le témoin est un NOMBRE, jamais une chaîne fabriquée à la lecture : `bumperDataset` n'INCRÉMENTE
+  // (jamais de remise à zéro), donc la SOMME des versions croît strictement à chaque écriture sur
+  // l'une quelconque des clés — aucune collision possible, et le chemin chaud n'alloue rien.
+  const somme = (): number => {
+    let v = 0;
+    for (let i = 0; i < cellules.length; i++) v += cellules[i].v;
+    return v;
+  };
+  let version = -1;
   let valeur: T;
   return () => {
-    const v = cles.map(versionDuDataset).join('/');
+    const v = somme();
     if (v !== version) {
       valeur = calcul();
       version = v;
