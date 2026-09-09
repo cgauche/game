@@ -28,7 +28,7 @@ import { REF_DECOR_DEFAUT } from '../../../data/props.types';
 import { estPropVolumique, type CellSide, type Face, type PropEl, type RoofEl, type SceneEl, type TokenEl, type WallEl } from '../../builders/types';
 import { findPropById, findPropMaterialById, matieresDe } from '../../../data';
 import { roofMaterial } from '../../catalog/roofs';
-import { DEFAULT_ROOF_DEFAULTS } from '../../../state/sceneEdit';
+import { toitureEffective } from '../../../state/sceneEdit';
 import type { PropVertexRange } from './spriteRaycast';
 import { roofCourseStepM, variantOf } from '../../detail/courses';
 import type { DetailRecipe } from '../../detail/types';
@@ -332,7 +332,7 @@ export function shadeSousSoleil(shade: number, fade: number): number {
  * besoin la résout sur SA scène vive, par la clé stable de l'élément (`roomZonesByElKey`).
  */
 export function worldBakeDeps(scene: Scene, mpt: number): readonly unknown[] {
-  return [scene.layers, scene.dimensions, scene.walls, scene.architecture, scene.reliefDefaults, scene.metresPerTile, mpt,
+  return [scene.layers, scene.dimensions, scene.walls, scene.architecture, scene.reliefDefaults, scene.roofDefaults, scene.metresPerTile, mpt,
     propVolumeSignature(scene), ...propRecipeDeps(scene), ...matiereDeps(scene), ...terrainDeps()];
 }
 
@@ -367,8 +367,9 @@ function propRecipeDeps(scene: Scene): readonly unknown[] {
  * Ce que la cuisson lit du catalogue des MATIÈRES pour les deux autres domaines du monde — MÊME patron
  * que `propRecipeDeps` : une dep par OBJET, comparée par identité, si bien qu'une retouche de matière
  * au Codex change la dep sans que la scène ait bougé.
- *  - TOITURES : celles que la scène NOMME (`BuildingMass.material`, et le `material` de l'intention
- *    `roofDefaults` dont les masses DÉRIVÉES héritent — `deriveArchitectureMasses`, `state/sceneEdit.ts`).
+ *  - TOITURES : celles que la scène NOMME (`BuildingMass.material`, et la couverture EFFECTIVE dont les
+ *    masses DÉRIVÉES héritent — `toitureEffective`, `state/sceneEdit.ts` : corps, puis type de bâtiment,
+ *    puis scène).
  *    Résolues par le MÊME accès que la cuisson (`roofMaterial`, `builders/roofs.ts`). Une couverture
  *    qu'aucun corps ne pose ne recuit donc rien.
  *  - RELIEF : le domaine ENTIER. Les ids que le sol émet viennent de la SCÈNE (`reliefDefaults`, dep
@@ -380,7 +381,7 @@ function propRecipeDeps(scene: Scene): readonly unknown[] {
 function matiereDeps(scene: Scene): readonly unknown[] {
   const out: unknown[] = [];
   for (const body of scene.architecture ?? []) {
-    out.push(roofMaterial((body.roofDefaults ?? DEFAULT_ROOF_DEFAULTS).material));
+    out.push(roofMaterial(toitureEffective(scene, body).material));
     for (const mass of body.masses) out.push(roofMaterial(mass.material));
   }
   out.push(...matieresDe('relief'));

@@ -34,7 +34,7 @@ import type {
   architectureBodySchema, architectureEdgeRefSchema, architecturePartSchema, architectureRectSchema,
   architectureStoreySchema, buildingMassSchema, dialogueChoiceSchema, dialogueNodeSchema,
   dialogueSchema, encounterDefSchema, encounterMemberSchema, entityKindSchema, facadeFeatureSchema,
-  facadeSectionSchema, layerSchema, reliefDefaultsSchema, roofDefaultsSchema, sceneStationAnchorSchema, triggerSchema,
+  facadeSectionSchema, layerSchema, reliefDefaultsSchema, roofDefaultsSchema, sceneRoofDefaultsSchema, sceneStationAnchorSchema, triggerSchema,
   victoryConditionSchema, wallClimbSchema, wallSegSchema, zoneAreaSchema,
 } from '../data/schemas/defs-scenes/scene';
 import type { wallSideSchema } from '../data/schemas/defs-scenes/communs';
@@ -165,6 +165,8 @@ export type FacadeFeature = z.infer<typeof facadeFeatureSchema>;
 export type FacadeSection = z.infer<typeof facadeSectionSchema>;
 export type BuildingMass = z.infer<typeof buildingMassSchema>;
 export type RoofDefaults = z.infer<typeof roofDefaultsSchema>;
+/** `Scene.roofDefaults` — matière, pente de référence et borne de comble de la scène (#1715). */
+export type SceneRoofDefaults = z.infer<typeof sceneRoofDefaultsSchema>;
 /** `Scene.reliefDefaults` — la matière de chaque PARTIE de relief (#1691), clés = `PARTS_RELIEF`. */
 export type ReliefDefaults = z.infer<typeof reliefDefaultsSchema>;
 export type ArchitectureBody = z.infer<typeof architectureBodySchema>;
@@ -394,6 +396,12 @@ export interface Scene {
    *  refuse au parse une scène qui n'en porte pas, et `emptyScene` la pose à la création. La face d'un
    *  terrain à BLOC PLEIN (mur) tient sa matière de son TERRAIN (`terrains.json › matiere`), pas d'ici. */
   reliefDefaults: ReliefDefaults;
+  /** TOITURE par défaut de la scène (#1715) : couverture, pente de RÉFÉRENCE et borne de comble des
+   *  masses DÉRIVÉES. REQUISE — `toitureEffective` (`state/sceneEdit.ts`) la LIT, la dérivation ne
+   *  choisit plus rien ; le schema refuse au parse une scène qui n'en porte pas, et `emptyScene` la
+   *  pose à la création. Un corps la surcharge champ par champ (`ArchitectureBody.roofDefaults`), et
+   *  le TYPE de bâtiment du corps porte SA couverture (`buildings.json › roofMaterial`). */
+  roofDefaults: SceneRoofDefaults;
   /** Couches d'empilement de la scène. Au moins une ; `z:0` = couche de base. Chaque couche a sa propre
    *  grille aplatie w×h + ses hauteurs métriques (`Layer.height`). Les couches z>0 sont des surfaces
    *  superposées (ponts, passerelles, étages) : on marche DESSUS et DESSOUS. Le franchissement vertical
@@ -700,12 +708,26 @@ export function parapetTilesAbove(scene: Scene, seg: { x: number; y: number; sid
  * Matières de relief d'une scène NEUVE (#1691) — le défaut d'AUTHORING, pas une règle : un talus et une
  * rampe de sol nu en terre, la dalle d'un tablier et son pilier en ouvrage. Chaque scène porte ensuite
  * SES valeurs (panneau de scène de l'inspecteur) ; le builder ne connaît que celles de la scène.
- * Il vit ICI, avec `emptyScene` qui le pose, et non auprès de `DEFAULT_ROOF_DEFAULTS` (`sceneEdit.ts`,
- * qui importe ce module) : ce défaut-ci est celui de la SCÈNE, matérialisé à sa création.
+ * Il vit ICI, avec `emptyScene` qui le pose : ce défaut-ci est celui de la SCÈNE, matérialisé à sa
+ * création — aucun builder, aucun panneau ne le lit.
  */
 export const DEFAULT_RELIEF_DEFAULTS = {
   cliff: 'terre', ramp: 'terre', deck: 'pierre', pilier: 'pilier',
 } as const satisfies ReliefDefaults;
+
+/**
+ * Toiture d'une scène NEUVE (#1715) — le défaut d'AUTHORING, pas une règle. `pitchDeg: 45` et
+ * `riseMaxStoreys: 1` se lisent sur la planche officielle de La Diligence (`art-ref/page012_img3.png`,
+ * son élévation en haut à gauche) : un long faîtage à deux pentes dont les pignons montent d'une
+ * demi-portée environ (montée ≈ demi-portée ⇒ pente ≈ 45°), sur des combles d'un étage. Aucune source
+ * ne cote de TOITURE (l'Atlas `docs/raw/` ne touche au bâti que par ses murs), donc c'est un arbitrage
+ * maison — et il vit en DONNÉE : chaque scène porte ensuite SES valeurs (panneau de scène de
+ * l'inspecteur), un corps les surcharge, un type de bâtiment porte sa propre couverture.
+ * Lu par `emptyScene` ci-dessous et par la migration 8 → 9 (`worldMap.ts`) UNIQUEMENT.
+ */
+export const DEFAULT_ROOF_DEFAULTS = {
+  material: 'toit-ardoise', pitchDeg: 45, riseMaxStoreys: 1,
+} as const satisfies SceneRoofDefaults;
 
 /** Scène neuve — pose les défauts EXPLICITES au lieu de laisser `undefined` : le contrôle d'inspecteur
  *  affiche alors la valeur RÉELLEMENT effective (2 m, horloge) au lieu d'un simple placeholder vide qui
@@ -721,6 +743,7 @@ export function emptyScene(w = 20, h = 15): Scene {
     metresPerTile: 2,
     ambientLight: 'auto',
     reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS },
+    roofDefaults: { ...DEFAULT_ROOF_DEFAULTS },
     layers: [{ z: 0, tiles: new Array(w * h).fill('herbe') }],
     entities: [],
     dialogues: [],

@@ -2,7 +2,7 @@
  "id": "arene",
  "type": "projet",
  "label": "L’Arène",
- "schema": 8,
+ "schema": 9,
  "icon": "scenario/arena",
  "versionContenu": 1,
  "maison": "bac à sable de combat authoré pour le jeu — aucun livre ne publie cette arène ; les créatures, armes et règles qu'elle compose portent chacune sa propre source",
@@ -29,6 +29,11 @@
     "ramp": "terre",
     "deck": "pierre",
     "pilier": "pilier"
+   },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
    },
    "layers": [
     {
@@ -724,6 +729,11 @@
     "ramp": "terre",
     "deck": "pierre",
     "pilier": "pilier"
+   },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
    },
    "layers": [
     {
@@ -6296,6 +6306,11 @@
     "deck": "pierre",
     "pilier": "pilier"
    },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
+   },
    "layers": [
     {
      "z": 0,
@@ -7299,6 +7314,11 @@
     "deck": "pierre",
     "pilier": "pilier"
    },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
+   },
    "layers": [
     {
      "z": 0,
@@ -8240,6 +8260,11 @@
     "ramp": "terre",
     "deck": "pierre",
     "pilier": "pilier"
+   },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
    },
    "layers": [
     {
@@ -9264,6 +9289,11 @@
     "deck": "pierre",
     "pilier": "pilier"
    },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
+   },
    "layers": [
     {
      "z": 0,
@@ -10131,6 +10161,11 @@
     "ramp": "terre",
     "deck": "pierre",
     "pilier": "pilier"
+   },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
    },
    "layers": [
     {
@@ -11349,6 +11384,11 @@
     "deck": "pierre",
     "pilier": "pilier"
    },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
+   },
    "layers": [
     {
      "z": 0,
@@ -12474,6 +12514,11 @@
     "deck": "pierre",
     "pilier": "pilier"
    },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
+   },
    "layers": [
     {
      "z": 0,
@@ -13418,6 +13463,11 @@
     "ramp": "terre",
     "deck": "pierre",
     "pilier": "pilier"
+   },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
    },
    "layers": [
     {
@@ -14528,6 +14578,11 @@
     "ramp": "terre",
     "deck": "pierre",
     "pilier": "pilier"
+   },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
    },
    "layers": [
     {
@@ -15900,6 +15955,11 @@
     "deck": "pierre",
     "pilier": "pilier"
    },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
+   },
    "layers": [
     {
      "z": 0,
@@ -17092,6 +17152,11 @@
     "deck": "pierre",
     "pilier": "pilier"
    },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
+   },
    "layers": [
     {
      "z": 0,
@@ -18160,6 +18225,11 @@
     "ramp": "terre",
     "deck": "pierre",
     "pilier": "pilier"
+   },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
    },
    "layers": [
     {
@@ -19761,6 +19831,11 @@
     "ramp": "terre",
     "deck": "pierre",
     "pilier": "pilier"
+   },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
    },
    "layers": [
     {
@@ -21468,6 +21543,11 @@
     "deck": "pierre",
     "pilier": "pilier"
    },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
+   },
    "layers": [
     {
      "z": 0,
@@ -22793,6 +22873,11 @@
     "ramp": "terre",
     "deck": "pierre",
     "pilier": "pilier"
+   },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
    },
    "layers": [
     {
@@ -24683,6 +24768,11 @@
     "ramp": "terre",
     "deck": "pierre",
     "pilier": "pilier"
+   },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
    },
    "layers": [
     {

@@ -2,7 +2,7 @@
  "id": "barge-du-sel",
  "type": "projet",
  "label": "La Barge du Sel",
- "schema": 8,
+ "schema": 9,
  "icon": "scenario/naval",
  "versionContenu": 1,
  "maison": "scénario naval authoré pour le jeu — aucun livre ne le publie (mesuré : absent de `Source/`) ; il compose des règles de la Mer des Griffes, qui portent leur source à leur foyer",
@@ -43,6 +43,11 @@
     "ramp": "terre",
     "deck": "pierre",
     "pilier": "pilier"
+   },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
    },
    "layers": [
     {
@@ -278,6 +283,11 @@
     "ramp": "terre",
     "deck": "pierre",
     "pilier": "pilier"
+   },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
    },
    "layers": [
     {
@@ -1208,6 +1218,11 @@
     "ramp": "terre",
     "deck": "pierre",
     "pilier": "pilier"
+   },
+   "roofDefaults": {
+    "material": "toit-ardoise",
+    "pitchDeg": 45,
+    "riseMaxStoreys": 1
    },
    "layers": [
     {

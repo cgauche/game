@@ -82,6 +82,14 @@ export const SLOTS_SANS_DECLARATION = [
   // même solde que `props.json | light` (`light.tone` déclaré, `light` observé) : la ligne meurt avec
   // le dériveur d'un niveau, pas par une adoption au champ.
   { dataset: "arene-projet.json", champ: "reliefDefaults", occurrences: 18, lot: "L2/L3 #1473", date: "2026-09-07" },
+  // #1715 : `<scène> › roofDefaults` — la couverture, la pente de RÉFÉRENCE et la borne de comble des
+  // toitures DÉRIVÉES, lues par `toitureEffective` (`state/sceneEdit.ts`). MÊME forme et MÊME solde
+  // que `reliefDefaults` ci-dessus : le slot EST déclaré et il RÉSOUT
+  // (`defs-scenes/scene.ts › sceneRoofDefaultsSchema`, `idDe('material','roof')` sur `material`) ;
+  // ce qui laisse ces quatre lignes au stock est l'ANGLE MORT déclaré en tête — le path
+  // `scenes[].roofDefaults.material` se projette sur `material`, jamais sur le champ PORTEUR
+  // `roofDefaults` que le scan observe. La ligne meurt avec le dériveur d'un niveau.
+  { dataset: "arene-projet.json", champ: "roofDefaults", occurrences: 18, lot: "L2/L3 #1473", date: "2026-09-09" },
   { dataset: "arene-projet.json", champ: "roomZoneIds", occurrences: 12, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "scene", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "spells", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -105,6 +113,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "barge-du-sel-projet.json", champ: "qualities", occurrences: 15, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "ref", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "reliefDefaults", occurrences: 3, lot: "L2/L3 #1473", date: "2026-09-07" },
+  { dataset: "barge-du-sel-projet.json", champ: "roofDefaults", occurrences: 3, lot: "L2/L3 #1473", date: "2026-09-09" },
   { dataset: "barge-du-sel-projet.json", champ: "scene", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "skills", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "victoryCondition", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -176,6 +185,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "diligence-projet.json", champ: "modes", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "diligence-projet.json", champ: "ref", occurrences: 20, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "diligence-projet.json", champ: "reliefDefaults", occurrences: 2, lot: "L2/L3 #1473", date: "2026-09-07" },
+  { dataset: "diligence-projet.json", champ: "roofDefaults", occurrences: 2, lot: "L2/L3 #1473", date: "2026-09-09" },
   { dataset: "diligence-projet.json", champ: "roomZoneIds", occurrences: 38, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "diligence-projet.json", champ: "scene", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "diligence-projet.json", champ: "walls", occurrences: 668, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -235,6 +245,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "loup-et-saumure-projet.json", champ: "qualities", occurrences: 30, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "ref", occurrences: 10, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "reliefDefaults", occurrences: 5, lot: "L2/L3 #1473", date: "2026-09-07" },
+  { dataset: "loup-et-saumure-projet.json", champ: "roofDefaults", occurrences: 5, lot: "L2/L3 #1473", date: "2026-09-09" },
   { dataset: "loup-et-saumure-projet.json", champ: "scene", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "serviceKind", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "services", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },

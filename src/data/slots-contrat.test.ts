@@ -167,6 +167,13 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // mort DÉCLARÉ ci-dessus — `scenes[].reliefDefaults.cliff` projette sur `cliff`, jamais sur le champ
 // porteur. Même forme que `props.json | light` : ces lignes meurent avec le dériveur d'un niveau
 // (L3 #1473), pas par une adoption au champ.
+// CRAN À LA HAUSSE 342 → 346 (#1715 volet b, 2026-09-09) : les QUATRE `<projet>.json | roofDefaults`
+// entrent au dénominateur — la toiture par défaut d'une scène passe en donnée, et le record que
+// chaque scène porte est vu par le scan comme UN nœud de référence (champ porteur `roofDefaults`,
+// signature `material,pitchDeg,riseMaxStoreys`). MESURÉ : le slot EST déclaré et il RÉSOUT
+// (`defs-scenes/scene.ts › sceneRoofDefaultsSchema`, `idDe('material','roof')` sur `material`) ; ce
+// qui laisse la ligne au stock est l'angle mort DÉCLARÉ — `scenes[].roofDefaults.material` projette
+// sur `material`, jamais sur le champ porteur. Même solde que `reliefDefaults`.
 // Cliquet DESCENDU 343 → 342 (#1715, 2026-09-09) — DEUX lignes meurent, une naît :
 // `arene-projet.json | style` (2) MEURT de la DONNÉE : ses deux corps COMPOSITES (le Bourg, Felsbach)
 // ne sont pas des bâtiments et ne portent plus de type ; le champ y est absent, et le seul `style`
@@ -182,7 +189,7 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // DÉCLARÉ de la référence ENVELOPPÉE — `[].features[].id` projette sur `id`, jamais sur le champ
 // porteur — celui-là même que `structures.json | traits`, `vehicles.json | traits` et
 // `ship-stations.json | requiresTrait` portent déjà : il meurt avec le dériveur d'un niveau (L3 #1473).
-const DETTE_ADOPTION_MAX = 342;
+const DETTE_ADOPTION_MAX = 346;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {

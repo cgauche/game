@@ -105,7 +105,7 @@ describe('PROJECT_MIGRATIONS[5] — un projet format 5 se charge à travers la m
   it('SANS le migrateur, ce document ne passerait PAS la porte — la garde le prouve par le message', () => {
     // Un document schema 5 dont le libellé a été « modernisé » à la main SANS bump reste refusé :
     // c'est le numéro de forme qui commande la migration, jamais la forme devinée.
-    const bricole = { ...structuredClone(PROJET_FORMAT_5), schema: 9 };
-    expect(() => parseProject(bricole)).toThrow(/schema/);
+    const bricole = { ...structuredClone(PROJET_FORMAT_5), schema: CURRENT_PROJECT_SCHEMA };
+    expect(() => parseProject(bricole)).toThrow(/sch[eé]ma/);
   });
 });

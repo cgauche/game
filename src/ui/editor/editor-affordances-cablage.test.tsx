@@ -17,8 +17,8 @@ import { emptyScene, type Scene, type SceneEntity, type Dialogue } from '../../s
 import { buildRoofs } from '../../gameIso/builders/roofs';
 import { buildWalls } from '../../gameIso/builders/walls';
 import { battleScenesToStations } from '../../state/stations';
+import { buildingRoofMaterial } from '../../state/buildings';
 import { validateScene } from '../../state/validateScene';
-import { DEFAULT_ROOF_DEFAULTS } from '../../state/sceneEdit';
 import { encloseRect } from '../../state/sceneEdit.testkit';
 import { sceneZonesToBattle, sceneZoneTiles } from '../../state/zones';
 import { useGame } from '../../state/store';
@@ -135,9 +135,11 @@ describe('Inspecteur — l’INTENTION de toiture atteint le rendu (#829/#841)',
 
     // Le plan porte la salle : le corps y reçoit ses pans dès l'affichage, au modèle du dépôt.
     const parDefaut = pansDe(h.sceneOf());
-    expect(parDefaut).toHaveLength(2); // salle de 4×4 = UNE travée à DEUX pentes (profil par défaut)
-    expect(parDefaut.every((el) => el.profile === DEFAULT_ROOF_DEFAULTS.profile)).toBe(true);
-    expect(parDefaut.every((el) => el.material === DEFAULT_ROOF_DEFAULTS.material)).toBe(true);
+    expect(parDefaut).toHaveLength(2); // salle de 4×4 = UNE travée à DEUX pentes (la portée tranche)
+    expect(parDefaut.every((el) => el.profile === 'gable')).toBe(true);
+    // Le corps ne déclare aucune couverture : c'est celle de son TYPE de bâtiment qui s'applique
+    // (`buildings.json › maison › roofMaterial`), devant celle de la scène (#1715).
+    expect(parDefaut.every((el) => el.material === buildingRoofMaterial('maison'))).toBe(true);
 
     const profil = selectByLabel(h.container, 'Profil');
     await setSelect(profil, 'hip');
@@ -229,21 +231,44 @@ describe('Inspecteur — l’INTENTION de toiture atteint le rendu (#829/#841)',
     await h.unmount();
   });
 
-  it('la PENTE du corps est bornée à la plage du modèle, champ vidé compris', async () => {
+  it('la PENTE du corps est bornée à la plage du modèle, et le champ VIDÉ rend la main à la scène', async () => {
     const h = mount(sceneAvecCorps(), { type: 'architectureBody', id: 'corps' });
     await h.mount();
-    await setSelect(selectByLabel(h.container, 'Profil'), 'gable'); // matérialise les masses dérivées
 
     const pente = fieldByLabel<HTMLInputElement>(h.container, 'input', 'Pente');
     expect([pente.min, pente.max]).toEqual(['5', '75']);
 
     const penteDuRendu = () => [...new Set(buildRoofs(h.sceneOf()).map((el) => el.pitch))];
-    await setInput(pente, ''); // `Number('') === 0` : une pente nulle passerait la validation en rouge
-    expect(h.sceneOf().architecture![0].roofDefaults!.pitchDeg).toBe(5);
     await setInput(pente, '120');
     expect(h.sceneOf().architecture![0].roofDefaults!.pitchDeg).toBe(75);
     expect(validateScene([h.sceneOf()]).filter((warning) => warning.scope === 'architecture')).toEqual([]);
     expect(penteDuRendu().every((pitch) => (pitch ?? 0) > 0)).toBe(true);
+
+    // VIDÉ = « suivre la scène » (#1715) : le champ QUITTE le corps, il ne se cale pas sur la borne.
+    await setInput(pente, '');
+    expect(h.sceneOf().architecture![0].roofDefaults?.pitchDeg).toBeUndefined();
+    const derivees = h.sceneOf().architecture![0].masses.filter((mass) => mass.derived);
+    expect(derivees.length).toBeGreaterThan(0);
+    expect(derivees.every((mass) => mass.pitchDeg === h.sceneOf().roofDefaults.pitchDeg)).toBe(true);
+
+    await h.unmount();
+  });
+
+  /** #1715 — le PREMIER réglage d'un corps ne matérialise QUE le champ touché. Avant ce lot, régler
+   *  la couverture posait aussi `profile` et `pitchDeg` sur le corps : la pente cessait de s'adapter
+   *  à la portée et le profil de suivre la portée, sans que l'auteur l'ait demandé. */
+  it('le panneau de corps n’écrit QUE le champ touché — le reste continue de SUIVRE', async () => {
+    const h = mount(sceneAvecCorps(), { type: 'architectureBody', id: 'corps' });
+    await h.mount();
+    expect(h.sceneOf().architecture![0].roofDefaults).toBeUndefined();
+
+    await setSelect(selectByLabel(h.container, 'Couverture'), 'chaume');
+    expect(h.sceneOf().architecture![0].roofDefaults).toEqual({ material: 'chaume' });
+
+    // …et le champ se RETIRE quand l'auteur rend la main : le corps ne surcharge plus rien.
+    await setSelect(selectByLabel(h.container, 'Couverture'), '');
+    expect(h.sceneOf().architecture![0].roofDefaults).toBeUndefined();
+    expect(buildRoofs(h.sceneOf()).every((el) => el.material === buildingRoofMaterial('maison'))).toBe(true);
 
     await h.unmount();
   });

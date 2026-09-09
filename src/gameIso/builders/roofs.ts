@@ -32,9 +32,9 @@ import { heightAt, sceneMetresPerTile, type ArchitectureBody, type ArchitectureR
 import { sceneZoneTiles } from '../../state/zones';
 import { memoByRef } from '../../state/sceneMemo';
 import { aretesA } from '../../state/wallIndex';
-import { DEFAULT_ROOF_DEFAULTS, effectiveArchitecture, fittedPitchDeg, localCrossSpans } from '../../state/sceneEdit';
+import { effectiveArchitecture, fittedPitchDeg, localCrossSpans, toitureEffective } from '../../state/sceneEdit';
 import { roofMaterial } from '../catalog/roofs';
-import { buildingsMeta } from '../catalog/buildings';
+import { buildingsMeta } from '../../state/buildings';
 import { facadeStructureAppearance, facadeWallFeatureAppearance } from '../catalog/facades';
 import { wallApp } from '../catalog/structures';
 import { WALL_H_M, isoPxToM } from '../iso';
@@ -1192,7 +1192,7 @@ function groupField(scene: Scene, body: ArchitectureBody, group: readonly Resolv
     2 * deepest,
     metresPerTile,
     Math.max(...group.map((r) => r.mass.pitchDeg)),
-    body.roofDefaults?.riseMaxStoreys ?? DEFAULT_ROOF_DEFAULTS.riseMaxStoreys,
+    toitureEffective(scene, body).riseMaxStoreys,
   );
   const shape: RoofShapeSpec = {
     profile: 'hip',

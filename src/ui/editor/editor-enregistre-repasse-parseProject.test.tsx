@@ -225,7 +225,7 @@ async function importePuisEnregistre(docJson: string): Promise<SavedProject[]> {
   await act(async () => { byText('Fichier').click(); });
   await act(async () => { byText('Enregistrer…').click(); });
   // Le champ « Nom » est PRÉ-REMPLI du nom du document importé — l'auteur enregistre sans le ressaisir.
-  const champNom = container.querySelector('.field input') as HTMLInputElement;
+  const champNom = container.querySelector('.modal .field input') as HTMLInputElement;
   expect(champNom.value, 'le nom du document importé pré-remplit la modale').toBe('Campagne importée');
   const saveBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Enregistrer')!;
   await act(async () => { saveBtn.click(); });

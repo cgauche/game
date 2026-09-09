@@ -475,9 +475,9 @@ describe('Editor v2 — authoring architectural', () => {
     await act(async () => {
       button('Architecture').click();
     });
-    // Les CINQ champs du corps, et rien d'autre : c'est la signature de l'inspecteur du corps (le
+    // Les SIX champs du corps, et rien d'autre : c'est la signature de l'inspecteur du corps (le
     // titre ne suffirait pas — la scène porte le même nom que le corps sur cette carte).
-    const CHAMPS_DU_CORPS = ['Libellé', 'Type de bâtiment', 'Profil', 'Pente (degrés)', 'Couverture'];
+    const CHAMPS_DU_CORPS = ['Libellé', 'Type de bâtiment', 'Profil', 'Pente (degrés)', 'Comble (étages)', 'Couverture'];
     expect(champsInspecteur()).toEqual(CHAMPS_DU_CORPS);
 
     // La sélection part ailleurs (l'étage), comme le ferait n'importe quel clic sur le plan.

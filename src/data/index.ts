@@ -2430,7 +2430,7 @@ export const terrains = terrainsJson as unknown as TerrainDef[];
 
 /** LES types de bâtiment (#1715) — empreinte et couverture par défaut à la pose, ornements d'identité
  *  émis en billboard. Binding muté EN PLACE par `setDataset` (`data/overrides.ts`) : la façade
- *  `src/gameIso/catalog/buildings` le lit VIF. */
+ *  `src/state/buildings` le lit VIF. */
 export const buildings = buildingsJson as unknown as BuildingDef[];
 
 /**

@@ -22,13 +22,13 @@ import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { tokenBodyKind } from '../../gameIso/tokenBodyKind';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import { PROPS } from '../../gameIso/catalog/decor';
-import { buildingsMeta } from '../../gameIso/catalog/buildings';
+import { buildingsMeta } from '../../state/buildings';
 import { FACADE_APPEARANCE_IDS } from '../../gameIso/catalog/facades';
 import { MERCHANTS } from '../../state/merchants/index';
 import { TAVERN_GAMES } from '../../engine/tavernGame';
 import { allMusicDefs } from '../../audio/music';
 import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, matieresCouvrantes, matieresDe, structureAppearances, refEstVolumique, siegeEngines } from '../../data';
-import { DEFAULT_ROOF_DEFAULTS, rederiveRoofMasses } from '../../state/sceneEdit';
+import { poseToitureDeCorps, rederiveRoofMasses, toitureEffective } from '../../state/sceneEdit';
 import { activitiesFor } from '../../engine/activities';
 import { libelleDeValeur, valeursDe } from '../../data/schemas/grammaire/meta';
 import { entityKindSchema, facadeFeatureKindSchema, roofProfileSchema } from '../../data/schemas/defs-scenes/scene';
@@ -251,11 +251,11 @@ export function Inspector({
     if (!architectureBody) return;
     setScene(rederiveRoofMasses(sceneWithBody(update)));
   };
-  // Le défaut affiché est CELUI que la dérivation applique en l'absence de réglage — l'auteur voit la
-  // valeur réelle, pas un champ vide.
-  const roofDefaults: RoofDefaults = architectureBody?.roofDefaults ?? DEFAULT_ROOF_DEFAULTS;
-  const patchRoofDefaults = (patch: Partial<RoofDefaults>) =>
-    updateArchitectureRoof((body) => ({ ...body, roofDefaults: { ...roofDefaults, ...patch } }));
+  // Ce que la dérivation appliquerait MAINTENANT à ce corps : surcharge du corps, sinon couverture de
+  // son TYPE de bâtiment, sinon toiture de la scène (#1715).
+  const toiture = architectureBody ? toitureEffective(scene, architectureBody) : null;
+  const poseToiture = (champ: keyof RoofDefaults, valeur: RoofDefaults[keyof RoofDefaults] | undefined) =>
+    updateArchitectureRoof((body) => poseToitureDeCorps(body, champ, valeur));
   const patchExclusion = (i: number, patch: Partial<{ z: number; rect: ArchitectureRect }>) =>
     updateArchitectureRoof((body) => ({
       ...body,
@@ -345,7 +345,7 @@ export function Inspector({
 
           {ent && <EntityPanel ent={ent} scene={scene} otherScenes={otherScenes} worldMap={worldMap} setScene={setScene} updateSel={updateSel} removeSel={removeSel} />}
 
-          {sel?.type === 'architectureBody' && architectureBody && (
+          {sel?.type === 'architectureBody' && architectureBody && toiture && (
             <>
               <Fold title="Corps" open>
                 <label className="ed-field">
@@ -373,23 +373,29 @@ export function Inspector({
               <Fold title="Toiture du corps">
                 <p className="hint">
                   Profil, pente et matériau des masses DÉRIVÉES du plancher de ce corps. Une masse déclarée
-                  à la main (surcharge) garde les siens.
+                  à la main (surcharge) garde les siens. Un réglage laissé vide SUIT : la couverture du
+                  type de bâtiment, sinon la toiture de la scène ; le profil, lui, suit la portée.
+                </p>
+                <p className="hint">
+                  Appliqué en l'état : {matieresCouvrantes().find((m) => m.id === toiture.material)?.label ?? toiture.material},
+                  pente de référence {toiture.penteReference}°, comble {toiture.riseMaxStoreys} étage{toiture.riseMaxStoreys > 1 ? 's' : ''}.
                 </p>
                 <label className="ed-field">
                   Profil
                   <select
-                    value={roofDefaults.profile}
-                    onChange={(event) => patchRoofDefaults({ profile: event.target.value as RoofDefaults['profile'] })}
+                    value={architectureBody.roofDefaults?.profile ?? ''}
+                    onChange={(event) => poseToiture('profile', (event.target.value || undefined) as RoofDefaults['profile'])}
                   >
+                    <option value="" />
                     {Object.entries(valeursDe(roofProfileSchema) ?? {}).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
                   </select>
                 </label>
-                {roofDefaults.profile === 'shed' && (
+                {toiture.profile === 'shed' && (
                   <label className="ed-field">
                     Côté d'égout bas (obligatoire en appentis)
                     <select
-                      value={roofDefaults.eaveSide ?? ''}
-                      onChange={(event) => patchRoofDefaults({ eaveSide: (event.target.value || undefined) as RoofDefaults['eaveSide'] })}
+                      value={architectureBody.roofDefaults?.eaveSide ?? ''}
+                      onChange={(event) => poseToiture('eaveSide', (event.target.value || undefined) as RoofDefaults['eaveSide'])}
                     >
                       <option value="">— à déclarer —</option>
                       <option value="N">Nord</option>
@@ -399,20 +405,32 @@ export function Inspector({
                     </select>
                   </label>
                 )}
-                <label className="ed-field">
-                  Pente (degrés)
-                  <input
-                    type="number"
-                    min={5}
-                    max={75}
-                    step={1}
-                    value={roofDefaults.pitchDeg}
-                    onChange={(event) => patchRoofDefaults({ pitchDeg: Math.max(5, Math.min(75, Number(event.target.value) || 5)) })}
-                  />
-                </label>
+                <NumberField
+                  variant="champ"
+                  label="Pente (degrés)"
+                  min={5}
+                  max={75}
+                  vide
+                  placeholder={String(toiture.penteReference)}
+                  value={architectureBody.roofDefaults?.pitchDeg ?? null}
+                  onChange={(pitchDeg) => poseToiture('pitchDeg', pitchDeg ?? undefined)}
+                />
+                <NumberField
+                  variant="champ"
+                  label="Comble (étages)"
+                  min={1}
+                  vide
+                  placeholder={String(toiture.riseMaxStoreys)}
+                  value={architectureBody.roofDefaults?.riseMaxStoreys ?? null}
+                  onChange={(riseMaxStoreys) => poseToiture('riseMaxStoreys', riseMaxStoreys ?? undefined)}
+                />
                 <label className="ed-field">
                   Couverture
-                  <select value={roofDefaults.material} onChange={(event) => patchRoofDefaults({ material: event.target.value })}>
+                  <select
+                    value={architectureBody.roofDefaults?.material ?? ''}
+                    onChange={(event) => poseToiture('material', event.target.value || undefined)}
+                  >
+                    <option value="" />
                     {matieresCouvrantes().map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
                   </select>
                 </label>
@@ -1975,6 +1993,37 @@ function SceneProps({
             </select>
           </label>
         ))}
+      </Fold>
+      <Fold title="Toiture par défaut">
+        <p className="hint">
+          Couverture, pente de référence et hauteur de comble des toitures DÉRIVÉES du plan. Un corps
+          les surcharge champ par champ, et un corps qui porte un type de bâtiment prend la couverture
+          de son type.
+        </p>
+        <label className="ed-field">
+          Couverture
+          <select
+            value={scene.roofDefaults.material}
+            onChange={(e) => setScene(rederiveRoofMasses({ ...scene, roofDefaults: { ...scene.roofDefaults, material: e.target.value } }))}
+          >
+            {matieresCouvrantes().map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+          </select>
+        </label>
+        <NumberField
+          variant="champ"
+          label="Pente de référence (degrés)"
+          min={5}
+          max={75}
+          value={scene.roofDefaults.pitchDeg}
+          onChange={(pitchDeg) => setScene(rederiveRoofMasses({ ...scene, roofDefaults: { ...scene.roofDefaults, pitchDeg } }))}
+        />
+        <NumberField
+          variant="champ"
+          label="Comble (étages)"
+          min={1}
+          value={scene.roofDefaults.riseMaxStoreys}
+          onChange={(riseMaxStoreys) => setScene(rederiveRoofMasses({ ...scene, roofDefaults: { ...scene.roofDefaults, riseMaxStoreys } }))}
+        />
       </Fold>
       <Fold title="Repos sur place">
         <p className="hint">Offre du bouton <Icon id="time/night" size="sm" /> d'exploration, pour TOUT le plan. Affinable par ZONE : outil <Icon id="map-tool/zone" size="sm" /> → Zone de repos, dessinée sur la carte et listée dans le contenu du plan.</p>

@@ -19,7 +19,7 @@ import { decorAncre, decorFootGeometry } from '../../state/footprint';
 import { findPropById, refEstVolumique } from '../../data';
 import { buildPropVolumes } from './propVolumes';
 import { terrainOverlayProp } from '../../state/terrain';
-import { buildingFeatures } from '../catalog/buildings';
+import { buildingFeatures } from '../../state/buildings';
 import { facadeFeatureViz } from '../catalog/facades';
 import { WALL_H_M } from '../iso';
 import { capVolumique, empreinteDuProp, REF_DECOR_DEFAUT } from '../../data/props.types';

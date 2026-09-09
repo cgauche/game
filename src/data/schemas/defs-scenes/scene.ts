@@ -239,6 +239,36 @@ export const reliefDefaultsSchema = z.strictObject(
     typeof matiereReliefSchema
   >,
 );
+/**
+ * PLAGE de pente d'une toiture, en DEGRÉS — source UNIQUE des deux portes qui la tiennent : le PARSE
+ * (`sceneRoofDefaultsSchema` et `roofDefaultsSchema` ci-dessous, une pente authorée hors plage est
+ * refusée nommément) et la VALIDATION d'une masse matérialisée (`validateScene.ts`, qui SIGNALE au
+ * lieu de refuser : une masse dérivée tient sa pente de `fittedPitchDeg`, rabattue par la portée).
+ * Deux littéraux séparés laisseraient les deux portes diverger sans le dire.
+ */
+export const PENTE_TOIT_DEG = { min: 5, max: 75 } as const;
+/**
+ * TOITURE PAR DÉFAUT de la scène (#1715) — les trois valeurs que la dérivation des masses LIT quand
+ * ni le corps ni le TYPE de bâtiment ne les surchargent (`toitureEffective`, `state/sceneEdit.ts`).
+ *
+ * Le champ est EXIGÉ sur la scène : la dérivation n'a plus AUCUN choix de toiture à faire, donc aucun
+ * repli à offrir — une scène qui n'en porte pas est refusée AU PARSE, nommément. Pas de `profile`
+ * ici : un profil non posé se choisit par PORTÉE (`ROOF_GABLE_SPAN_MAX_M`), c'est le socle qui le
+ * résout ; un `profile` de scène serait soit mort, soit une seconde vérité face à la portée.
+ */
+export const sceneRoofDefaultsSchema = z.strictObject({
+  /** Matière de COUVERTURE de dernier recours — même porte que `BuildingMass.material`. Le TYPE de
+   *  bâtiment du corps (`buildings.json › roofMaterial`) et le corps lui-même passent avant. */
+  material: couvertureSchema,
+  /** Pente de RÉFÉRENCE en DEGRÉS : la plus RAIDE que la dérivation pose. `fittedPitchDeg`
+   *  (`state/sceneEdit.ts`) la rabat jusqu'à ce que le comble tienne dans `riseMaxStoreys`. Bornée à
+   *  `PENTE_TOIT_DEG` — la MÊME plage que celle dont `validateScene.ts` signale la sortie sur une
+   *  masse matérialisée : une toiture plate ou verticale n'est pas une toiture. */
+  pitchDeg: z.number().min(PENTE_TOIT_DEG.min).max(PENTE_TOIT_DEG.max),
+  /** BORNE de comble en hauteurs d'ÉTAGE (`METRES_PER_LEVEL`) — c'est elle qui fait s'adapter la
+   *  pente à la portée (#947). */
+  riseMaxStoreys: z.number().int().min(1),
+});
 /** MASSE de bâtiment (#823, remplace `RoofSection` authoré à la main) : l'INTENTION, jamais la
  *  géométrie du toit — `gameIso/builders/roofs.ts` DÉRIVE pans/faîte/noues/croupes par une formule
  *  UNIQUE (`hauteur(case) = hauteurÉgout + distance(case, bord de la masse) × métresParCase ×
@@ -282,29 +312,37 @@ export const buildingMassSchema = z.strictObject({
   derived: z.literal(true).optional(),
 });
 /** Intention de toiture pour les masses DÉRIVÉES d'un corps (#829) — réglée dans l'outil Architecture
- *  de l'éditeur ; défaut si absent : `gable`/`toit-ardoise`, pente ADAPTÉE à la portée sous la borne de
- *  comble (cf. `DEFAULT_ROOF_DEFAULTS`/`fittedPitchDeg`, `sceneEdit.ts`).
+ *  de l'éditeur. SURCHARGE PARTIELLE de la toiture de la SCÈNE (`Scene.roofDefaults`, #1715) : chaque
+ *  champ absent se résout par `toitureEffective` (`sceneEdit.ts`) — type de bâtiment du corps puis
+ *  scène pour la matière, corps puis scène pour la borne de comble ; la pente de RÉFÉRENCE, elle,
+ *  reste celle de la scène (un `pitchDeg` de corps POSE une pente qui ne s'adapte jamais, il ne
+ *  surcharge pas la référence) ; un profil absent se choisit par PORTÉE.
  *  Cette intention s'applique telle quelle à CHAQUE corps : le plancher réel se décompose en
  *  composantes 4-connexes, et chacune reçoit UNE masse (`deriveArchitectureMasses`, `sceneEdit.ts`),
  *  faîtage le long de sa plus grande dimension. Le profil déclaré ici PRIME sur la lecture de portée
  *  (`ROOF_GABLE_SPAN_MAX_M`) qui, à défaut, choisit entre pignon et croupe. */
 export const roofDefaultsSchema = z.strictObject({
-  profile: roofProfileSchema,
+  /** Profil POSÉ par l'auteur : il PRIME sur la lecture de portée. ABSENT : la portée tranche entre
+   *  pignon et croupe (`ROOF_GABLE_SPAN_MAX_M`, `sceneEdit.ts`) — la scène n'en porte aucun. */
+  profile: roofProfileSchema.optional(),
   /** Pente en DEGRÉS POSÉE par l'auteur : elle ne s'adapte JAMAIS à la portée. ABSENTE : la
    *  dérivation calcule la pente de CHAQUE masse par `fittedPitchDeg` (`sceneEdit.ts`) — pente de
-   *  référence rabattue jusqu'à ce que le comble tienne dans `riseMaxStoreys` (#947). */
-  pitchDeg: z.number().optional(),
-  /** Matière de COUVERTURE des masses DÉRIVÉES — même porte que `BuildingMass.material`. */
-  material: couvertureSchema,
+   *  référence rabattue jusqu'à ce que le comble tienne dans `riseMaxStoreys` (#947). Bornée à
+   *  `PENTE_TOIT_DEG`, la même plage que la pente de référence de la scène. */
+  pitchDeg: z.number().min(PENTE_TOIT_DEG.min).max(PENTE_TOIT_DEG.max).optional(),
+  /** Matière de COUVERTURE des masses DÉRIVÉES — même porte que `BuildingMass.material`. SURCHARGE :
+   *  absente = celle du TYPE de bâtiment du corps (`buildings.json › roofMaterial`) si le corps en
+   *  porte un, sinon celle de la scène (`Scene.roofDefaults.material`). */
+  material: couvertureSchema.optional(),
   /** Côté d'égout bas des masses dérivées — OBLIGATOIRE dès que `profile` vaut `shed` (le côté bas
    *  d'un appentis est une intention d'AUTEUR, aucun défaut deviné ; même contrat que
    *  `BuildingMass.eaveSide`, que la dérivation recopie depuis ici). Ignoré par les autres profils. */
   eaveSide: eaveSideSchema.optional(),
   /** BORNE de comble des masses dérivées, en hauteurs d'ÉTAGE (`METRES_PER_LEVEL`) : c'est elle qui
    *  fait s'adapter la PENTE à la portée (#947) — un corps profond porte un toit plus PLAT, sa
-   *  couverture ne se découpe jamais. Absente = `DEFAULT_ROOF_DEFAULTS.riseMaxStoreys`. Sans effet
+   *  couverture ne se découpe jamais. Absente = celle de la scène (`Scene.roofDefaults`). Sans effet
    *  dès que `pitchDeg` est posé : l'intention de l'auteur passe avant la borne. */
-  riseMaxStoreys: z.number().optional(),
+  riseMaxStoreys: z.number().int().min(1).optional(),
 });
 /** `ArchitectureBody` — corps architectural authoré (volumes, façades, toitures). */
 export const architectureBodySchema = z.strictObject({
@@ -320,7 +358,7 @@ export const architectureBodySchema = z.strictObject({
   /** SURCHARGES (#829, cf. doc `buildingMassSchema`) — jamais l'obligation de couvrir tout le bâti à
    *  la main : la dérivation couvre le reste. */
   masses: z.array(buildingMassSchema),
-  /** Intention des masses DÉRIVÉES par défaut (#829) — absent = `DEFAULT_ROOF_DEFAULTS`. */
+  /** Intention des masses DÉRIVÉES (#829) — SURCHARGE de `Scene.roofDefaults`, champ par champ. */
   roofDefaults: roofDefaultsSchema.optional(),
   /** Cases à NE JAMAIS couvrir par la dérivation par défaut (cour intérieure à ciel ouvert…), par
    *  étage — surcharge NÉGATIVE (#829), symétrique des `masses` (surcharge positive). */
@@ -669,6 +707,8 @@ export const sceneSchema = z.strictObject({
   music: z.strictObject({ ambient: z.string().nullable().optional(), combat: z.string().nullable().optional() }).optional(),
   /** Matière de chaque PARTIE de relief (#1691) — EXIGÉE : c'est la donnée que le builder LIT. */
   reliefDefaults: reliefDefaultsSchema,
+  /** Toiture par défaut de la scène (#1715) — EXIGÉE : c'est la donnée que la dérivation LIT. */
+  roofDefaults: sceneRoofDefaultsSchema,
   layers: z.array(layerSchema).optional(),
   /** Cloisons sur arête — au plus UNE par clé `x,y,side,z` (`refuseAretesDupliquees`). */
   walls: z.array(wallSegSchema).superRefine(refuseAretesDupliquees).optional(),

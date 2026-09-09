@@ -43,8 +43,9 @@ const SCRIPT_13 = '2026-08-28-l1b-13-projet-forme.mjs';
 const SCRIPT_15B = '2026-08-29-l1b-15b-projet-forme-6.mjs';
 const SCRIPT_1552 = '2026-08-31-1552-projet-sannonce.mjs';
 const SCRIPT_1691 = '2026-09-07-1691-relief-defaults-scenes.mjs';
+const SCRIPT_1715 = '2026-09-09-1715-roof-defaults-scenes.mjs';
 /** La DERNIÈRE de la chaîne dans l'ordre lexical — celle qui NOMME un `schema` inconnu. */
-const DERNIERE = SCRIPT_1691;
+const DERNIERE = SCRIPT_1715;
 
 /** Sérialiseur des documents de SCÈNE (indentation 1) — les deux scripts l'exigent avant de lire. */
 const canonique = (doc: unknown) => `${JSON.stringify(doc, null, 1)}\n`;
@@ -125,27 +126,31 @@ describe(`${SCRIPT_13} — le bump de forme 4 → 5 (aplatissement de la poche \
     expect(apres).toBe(avant);
   });
 
-  it('t6. RATTRAPAGE : un `schema` FUTUR (9), avalé par TOUTES les amont, est REFUSÉ par la DERNIÈRE de la chaîne', () => {
+  it('t6. RATTRAPAGE : un `schema` FUTUR (10), avalé par TOUTES les amont, est REFUSÉ par la DERNIÈRE de la chaîne', () => {
     // Le document est à la forme d'ARRIVÉE de chaque amont (annoncé, provenance posée) : sans quoi
     // leur vérification de rejeu sortirait rouge pour une autre raison que le numéro de forme.
     const futur = {
-      type: 'projet', schema: 9, id: 'camp', label: 'C', versionContenu: 3, maison: 'fixture',
+      type: 'projet', schema: 10, id: 'camp', label: 'C', versionContenu: 3, maison: 'fixture',
       narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
       scenes: [{ type: 'scene', id: 's1', label: 'Une salle', dimensions: { w: 1, h: 1 } }],
     };
     // Les migrations AMONT ont une borne ouverte vers le haut : chacune a été élargie quand la vague
     // suivante a bumpé le même document. Elles avalent donc l'inconnu — c'est le trou.
+    // `SCRIPT_1691` n'entre pas dans cette boucle : sa borne haute est OUVERTE depuis #1715 (elle
+    // avale bien le futur), mais elle porte un CARDINAL de périmètre (4 projets, 28 Scènes) qui
+    // l'arrête dans un dépôt jetable à UN projet. Sa borne ouverte se mesure sur l'arbre réel, banc
+    // `scripts/migrations/lib/1691-relief-portes.test.mjs` test (j).
     for (const amont of [SCRIPT_3I, SCRIPT_13, SCRIPT_15B, SCRIPT_1552]) {
       expect(joue(amont, futur).code, `${amont} avale le futur en silence`).toBe(0);
     }
     // La DERNIÈRE dans l'ordre lexical le NOMME : le rejeu sort rouge, pas muet. C'est l'invariant
-    // de la chaîne — il se DÉPLACE à chaque bump (15b hier, 1552 puis 1691), il ne disparaît jamais.
+    // de la chaîne — il se DÉPLACE à chaque bump (15b, 1552, 1691, puis 1715), il ne disparaît jamais.
     const { code, err, avant, apres } = joue(DERNIERE, futur);
     expect(code, 'la dernière migration doit refuser un schema futur').toBe(1);
-    expect(err, 'le refus doit NOMMER le `schema` inattendu').toMatch(/`schema` inattendu 9/);
+    expect(err, 'le refus doit NOMMER le `schema` inattendu').toMatch(/`schema` inattendu 10/);
     expect(apres).toBe(avant);
     // ET c'est bien la dernière du TRI : sans cette assertion, « dernière » resterait une intention.
-    const tri = [SCRIPT_3I, SCRIPT_13, SCRIPT_15B, SCRIPT_1552, DERNIERE].slice().sort();
+    const tri = [SCRIPT_3I, SCRIPT_13, SCRIPT_15B, SCRIPT_1552, SCRIPT_1691, DERNIERE].slice().sort();
     expect(tri[tri.length - 1]).toBe(DERNIERE);
   });
 });

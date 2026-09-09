@@ -2,13 +2,13 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { checkTriggers } from './combatEffects';
 import { flowFromEffects } from './flow';
-import { DEFAULT_RELIEF_DEFAULTS, type Scene, type Trigger } from './scene';
+import { DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS, type Scene, type Trigger } from './scene';
 
 /** Intégration : `temporalCondition` doit gater le trigger dans `checkTriggers` — il ne se déclenche
  *  qu'en étant DANS la zone ET DANS la fenêtre horaire. On observe un effet `journal` (évite la
  *  question du flag) et on pilote `gameTime` au cran près. */
 const sceneWith = (trigger: Trigger): Scene => ({
-  type: 'scene', id: 't', label: 't', dimensions: { w: 5, h: 5 }, ambiance: 'interieur', reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS },
+  type: 'scene', id: 't', label: 't', dimensions: { w: 5, h: 5 }, ambiance: 'interieur', reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS }, roofDefaults: { ...DEFAULT_ROOF_DEFAULTS },
   layers: [{ z: 0, tiles: new Array(25).fill('sol') }], entities: [], dialogues: [], triggers: [trigger], encounters: [], flags: {},
 });
 

@@ -12,6 +12,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { projetSchema, projetDoc, SCHEMA_PROJET } from './projet';
+import { PENTE_TOIT_DEG } from './scene';
 import { narratifSchema } from './narratif';
 import diligenceProjet from '../../../scenes/diligence/diligence-projet.json';
 
@@ -26,13 +27,16 @@ const sceneMinimale = (over: Jouet = {}): Jouet => ({
   // EXIGÉ (#1691) : la matière de chaque partie de relief vient de la scène, le rendu n'en devine
   // aucune — une scène qui n'en porte pas est refusée ici même.
   reliefDefaults: { cliff: 'terre', ramp: 'terre', deck: 'pierre', pilier: 'pilier' },
+  // EXIGÉE (#1715) : la couverture, la pente de référence et la borne de comble des toitures
+  // dérivées viennent de la scène — même refus nominatif si elle manque.
+  roofDefaults: { material: 'toit-ardoise', pitchDeg: 45, riseMaxStoreys: 1 },
   ...over,
 });
 
 /** Projet-JOUET au format COURANT : l'enveloppe exige le `type`, l'identité et la provenance. */
 const projet = (over: Jouet = {}): Jouet => ({
   type: 'projet',
-  schema: 8,
+  schema: 9,
   id: 'projet-jouet',
   label: 'Projet jouet',
   versionContenu: 1,
@@ -83,6 +87,25 @@ describe('projetSchema — la FORME que voit le seam (avant normalizeScene/resol
 
   it('`schema: 2` est REFUSÉ (littéral 3 — un document non migré n\'entre pas par cette porte)', () => {
     expect(fautes(projet({ schema: 2 }))[0]).toContain('schema');
+  });
+
+  /**
+   * PLAGE de pente (`PENTE_TOIT_DEG`) : une toiture verticale ou plate n'est pas une toiture, et la
+   * même plage borne la pente de RÉFÉRENCE de la scène et la pente POSÉE sur un corps. Le refus est
+   * nominatif, au chemin — la garde ne dit pas « invalide », elle dit OÙ.
+   */
+  it('une pente de RÉFÉRENCE hors plage est REFUSÉE au chemin, aux DEUX bornes', () => {
+    const pente = (deg: number) => fautes(projet({ scenes: [sceneMinimale({ roofDefaults: { material: 'toit-ardoise', pitchDeg: deg, riseMaxStoreys: 1 } })] }));
+    expect(pente(90)).toEqual([`scenes.0.roofDefaults.pitchDeg :: Too big: expected number to be <=${PENTE_TOIT_DEG.max}`]);
+    expect(pente(0)).toEqual([`scenes.0.roofDefaults.pitchDeg :: Too small: expected number to be >=${PENTE_TOIT_DEG.min}`]);
+    expect(projetSchema.safeParse(projet({ scenes: [sceneMinimale({ roofDefaults: { material: 'toit-ardoise', pitchDeg: PENTE_TOIT_DEG.max, riseMaxStoreys: 1 } })] })).success).toBe(true);
+  });
+
+  it('une pente POSÉE sur un CORPS suit la même plage, au chemin du corps', () => {
+    const corps = [{ id: 'corps-1', storeys: [], facades: [], masses: [], roofDefaults: { pitchDeg: 90 } }];
+    expect(fautes(projet({ scenes: [sceneMinimale({ architecture: corps })] }))).toEqual([
+      `scenes.0.architecture.0.roofDefaults.pitchDeg :: Too big: expected number to be <=${PENTE_TOIT_DEG.max}`,
+    ]);
   });
 
   it('une clé inconnue sur une scène est REFUSÉE (schéma STRICT)', () => {
@@ -280,7 +303,7 @@ describe('projetSchema — le document RÉEL, ses FK et son enveloppe (sondes du
     expect(ok(reel())).toBe(true);
     expect(projetDoc.type).toBe('projet');
     expect(projetDoc.famille).toBe('config');
-    expect(SCHEMA_PROJET).toBe(8);
+    expect(SCHEMA_PROJET).toBe(9);
   });
 
   it('FK `activeAxes` → axes.json : ids RÉELS acceptés (et la liste vide/absente aussi), inconnu REFUSÉ au CHEMIN', () => {
@@ -327,7 +350,7 @@ describe('projetSchema — le document RÉEL, ses FK et son enveloppe (sondes du
   });
 
   it('SCEAU sur la donnée réelle : `schema` non courant, clé inconnue et scène muette sont refusés', () => {
-    expect(fautes({ ...reel(), schema: 6 })).toEqual(['schema :: Invalid input: expected 8']);
+    expect(fautes({ ...reel(), schema: 6 })).toEqual(['schema :: Invalid input: expected 9']);
     // Chemin VIDE : la clé inconnue est rapportée à la RACINE du document.
     expect(fautes({ ...reel(), champInconnu: 1 })).toEqual([' :: Unrecognized key: "champInconnu"']);
     const d = reel();

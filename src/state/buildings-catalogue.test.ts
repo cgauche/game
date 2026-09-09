@@ -1,6 +1,6 @@
 /**
  * CONTRAT du catalogue des BÂTIMENTS (#1715) — le dataset `src/data/buildings.json` et la façade
- * `catalog/buildings` qui le lit.
+ * `state/buildings` qui le lit.
  *
  * Un bâtiment n'est pas un volume : ce sont des `WallSeg` (murs d'arête) sur un sol de terrain, sa
  * nappe de toit venant du pivot (`builders/roofs` + `authoring/roofsSvg`). L'entrée porte donc la
@@ -12,15 +12,15 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { buildings, props } from '../../data/index';
-import { resetData, setDataset } from '../../data/overrides';
-import { IDS_PAR_DISCRIMINANT, IDS_PAR_DATASET } from '../../data/schemas/_ids.generated';
-import { schema } from '../../data/schemas/defs/buildings';
-import type { BuildingDef } from '../../data/buildings.types';
+import { buildings, props } from '../data/index';
+import { resetData, setDataset } from '../data/overrides';
+import { IDS_PAR_DISCRIMINANT, IDS_PAR_DATASET } from '../data/schemas/_ids.generated';
+import { schema } from '../data/schemas/defs/buildings';
+import type { BuildingDef } from '../data/buildings.types';
 import { buildingsMeta, buildingFeatures } from './buildings';
 
 const charger = (): BuildingDef[] =>
-  JSON.parse(readFileSync(fileURLToPath(new URL('../../data/buildings.json', import.meta.url)), 'utf8'));
+  JSON.parse(readFileSync(fileURLToPath(new URL('../data/buildings.json', import.meta.url)), 'utf8'));
 
 /** Parse une copie du dataset après y avoir injecté une faute ; rend les messages de refus. */
 function refus(saboter: (dataset: BuildingDef[]) => void): string[] {

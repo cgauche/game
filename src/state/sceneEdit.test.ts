@@ -4,7 +4,6 @@ import { METRES_PER_LEVEL } from './relief';
 import {
   addArchitectureBody,
   bodyFootCells,
-  DEFAULT_ROOF_DEFAULTS,
   ROOF_GABLE_SPAN_MAX_M,
   deriveArchitectureMasses,
   fittedPitchDeg,
@@ -17,7 +16,9 @@ import {
   putLayer,
   rectCoverOf,
   ridgeAxisOf,
+  poseToitureDeCorps,
   seatOccupant,
+  toitureEffective,
 } from './sceneEdit';
 import { PARTY_MAX } from './combatants';
 import { validateScene } from './validateScene';
@@ -179,9 +180,68 @@ describe('deriveArchitectureMasses — un corps, UN toit (#930)', () => {
     for (const mass of massesOf(scene)) expect(mass.eaveSide).toBe('S');
   });
 
-  it('l’intention par défaut suit la planche : deux pentes, pente raide, ardoise, un étage de comble', () => {
-    expect(DEFAULT_ROOF_DEFAULTS).toEqual({ profile: 'gable', pitchDeg: 45, material: 'toit-ardoise', riseMaxStoreys: 1 });
+  it('la SCÈNE porte la toiture par défaut, et une scène neuve suit la planche : pente raide, ardoise, un étage de comble', () => {
+    expect(emptyScene(8, 8).roofDefaults).toEqual({ material: 'toit-ardoise', pitchDeg: 45, riseMaxStoreys: 1 });
     expect(ROOF_GABLE_SPAN_MAX_M).toBe(8);
+  });
+
+  /** #1715 — la pente de RÉFÉRENCE est une donnée de la SCÈNE : la dérivation la lit, elle n'en
+   *  porte plus aucune. Sur la portée que montre la planche, la pente dérivée EST celle de la scène ;
+   *  changer la scène change la charpente de toutes ses masses dérivées. */
+  it('la pente de référence de la SCÈNE commande les masses dérivées', () => {
+    const emprise = [{ x: 2, y: 2, w: ROOF_GABLE_SPAN_MAX_M / 2, h: 16 }];
+    const scene = corpsScene(24, emprise);
+    expect(massesOf(scene)[0].pitchDeg).toBe(scene.roofDefaults.pitchDeg);
+
+    const plate = corpsScene(24, emprise);
+    plate.roofDefaults = { ...plate.roofDefaults, pitchDeg: 25 };
+    expect(massesOf(plate)[0].pitchDeg).toBe(25);
+    expect(massesOf(plate)[0].pitchDeg).toBeLessThan(massesOf(scene)[0].pitchDeg);
+  });
+
+  /** #1715 — TROIS étages pour la couverture : surcharge du corps, puis couverture du TYPE de
+   *  bâtiment, puis toiture de la scène. Un corps sans type ne connaît que la scène. */
+  it('la couverture se résout corps > type de bâtiment > scène', () => {
+    const emprise = [{ x: 2, y: 2, w: 6, h: 12 }];
+
+    const sansType = corpsScene(24, emprise, { style: undefined });
+    expect(sansType.roofDefaults.material).toBe('toit-ardoise');
+    expect(massesOf(sansType)[0].material).toBe(sansType.roofDefaults.material);
+
+    // `maison` est couverte de tuile par son TYPE (`buildings.json › roofMaterial`) : le type passe
+    // devant la scène, sans que le corps ait rien à déclarer.
+    const parType = corpsScene(24, emprise, { style: 'maison' });
+    expect(massesOf(parType)[0].material).toBe('tuile');
+    expect(massesOf(parType)[0].material).not.toBe(parType.roofDefaults.material);
+
+    // …et la SURCHARGE du corps passe devant les deux.
+    const surcharge = corpsScene(24, emprise, { style: 'maison', roofDefaults: { material: 'chaume' } });
+    expect(massesOf(surcharge)[0].material).toBe('chaume');
+
+    // La scène redevient la source dès que ni le corps ni le type ne tranchent.
+    const autreScene = corpsScene(24, emprise, { style: undefined });
+    autreScene.roofDefaults = { ...autreScene.roofDefaults, material: 'chaume' };
+    expect(massesOf(autreScene)[0].material).toBe('chaume');
+    expect(toitureEffective(autreScene, autreScene.architecture![0]).material).toBe('chaume');
+  });
+
+  /** #1715 — le réducteur que le panneau de CORPS appelle : « suivre la scène » RETIRE le champ, et un
+   *  corps qui ne surcharge plus rien perd `roofDefaults` entier (aucune poche vide ne survit). */
+  it('poseToitureDeCorps écrit UN champ, et « suivre » le retire jusqu’à la poche', () => {
+    const nu: ArchitectureBody = { id: 'corps-1', storeys: [], facades: [], masses: [] };
+
+    const avecMatiere = poseToitureDeCorps(nu, 'material', 'chaume');
+    expect(avecMatiere.roofDefaults).toEqual({ material: 'chaume' });
+    expect(nu.roofDefaults, 'le réducteur a muté son entrée').toBeUndefined();
+
+    const avecPente = poseToitureDeCorps(avecMatiere, 'pitchDeg', 32);
+    expect(avecPente.roofDefaults).toEqual({ material: 'chaume', pitchDeg: 32 });
+
+    // « suivre la scène » sur UN champ : les autres surcharges restent.
+    expect(poseToitureDeCorps(avecPente, 'pitchDeg', undefined).roofDefaults).toEqual({ material: 'chaume' });
+    // …et sur le DERNIER : la poche disparaît, le corps ne surcharge plus rien.
+    expect(poseToitureDeCorps(avecMatiere, 'material', undefined).roofDefaults).toBeUndefined();
+    expect('roofDefaults' in poseToitureDeCorps(avecMatiere, 'material', undefined)).toBe(false);
   });
 });
 
@@ -196,7 +256,7 @@ describe('deriveArchitectureMasses — borne de comble (#947)', () => {
   /** Montée au faîte, en mètres : `portée / 2 × tan(pente)` — LA formule des nappes (`riseAt`). */
   const monteeM = (mass: BuildingMass, metresPerTile = 2): number =>
     ((spanOf(mass) * metresPerTile) / 2) * Math.tan((mass.pitchDeg * Math.PI) / 180);
-  const borneM = DEFAULT_ROOF_DEFAULTS.riseMaxStoreys * METRES_PER_LEVEL;
+  const borneM = emptyScene(4, 4).roofDefaults.riseMaxStoreys * METRES_PER_LEVEL;
 
   it('quelle que soit la portée, le comble tient sous la borne — et reste UNE seule masse', () => {
     for (const profondeur of [3, 5, 8, 12, 17, 24]) {
@@ -218,7 +278,7 @@ describe('deriveArchitectureMasses — borne de comble (#947)', () => {
     // étage — la borne ne rabat rien de ce que la référence donne à voir.
     const scene = corpsScene(24, [{ x: 2, y: 2, w: ROOF_GABLE_SPAN_MAX_M / 2, h: 16 }]);
     const [masse] = massesOf(scene);
-    expect(masse.pitchDeg).toBe(DEFAULT_ROOF_DEFAULTS.pitchDeg);
+    expect(masse.pitchDeg).toBe(scene.roofDefaults.pitchDeg);
     expect(monteeM(masse)).toBeCloseTo(METRES_PER_LEVEL, 9);
   });
 
@@ -235,7 +295,7 @@ describe('deriveArchitectureMasses — borne de comble (#947)', () => {
     const emprise = [{ x: 2, y: 2, w: 20, h: 26 }];
     const defaut = massesOf(corpsScene(32, emprise))[0];
     const haut = massesOf(corpsScene(32, emprise, {
-      roofDefaults: { profile: 'hip', material: 'toit-ardoise', riseMaxStoreys: 2 },
+      roofDefaults: { profile: 'hip', riseMaxStoreys: 2 },
     }))[0];
     expect(haut.pitchDeg).toBeGreaterThan(defaut.pitchDeg);
     expect(monteeM(haut)).toBeGreaterThan(borneM);

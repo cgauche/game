@@ -5,7 +5,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { seedBattleRng } from './battleRng';
 import { findVehicleById } from '../data';
-import { DEFAULT_RELIEF_DEFAULTS, type Scene } from './scene';
+import { DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS, type Scene } from './scene';
 import type { CampaignVessel } from './store';
 
 // #230 — le nom d'INSTANCE du navire de campagne (affichage) se propage aux coques spawnées.
@@ -36,7 +36,7 @@ describe('#230 — réconciliation combat : le nom d’instance ne touche QUE la
   afterEach(() => { vi.useRealTimers(); });
 
   const scene = (): Scene => ({
-    type: 'scene', id: 's', label: 'Bataille navale', dimensions: { w: 8, h: 8 }, reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS },
+    type: 'scene', id: 's', label: 'Bataille navale', dimensions: { w: 8, h: 8 }, reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS }, roofDefaults: { ...DEFAULT_ROOF_DEFAULTS },
     layers: [{ z: 0, tiles: new Array(64).fill('eau') }],
     entities: [
       { id: 'coque-campagne', kind: 'personnage', ref: 'cogue', pos: { x: 1, y: 1 } },

@@ -6,7 +6,7 @@
  * Chaque fonction renvoie une NOUVELLE Scène (immuable). `editorState.ts` les RÉ-EXPORTE : les câblages
  * du canvas (couplés UI/gameIso) y restent. NE JAMAIS importer `../ui/` ni `../gameIso/` ici.
  */
-import { Scene, SceneEntity, SceneEffectZone, Terrain, CellSide, EncounterMember, layerTiles, tileAt, sceneMetresPerTile, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, ArchitectureRect, FacadeSection, BuildingMass, RoofDefaults } from './scene';
+import { Scene, SceneEntity, SceneEffectZone, Terrain, CellSide, EncounterMember, layerTiles, tileAt, sceneMetresPerTile, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, ArchitectureRect, FacadeSection, BuildingMass, RoofDefaults, SceneRoofDefaults } from './scene';
 import { memoByRef } from './sceneMemo';
 import type { FireArc, AuthoredShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
@@ -28,6 +28,7 @@ import {
   type SeatOccupant,
 } from './seating';
 import { METRES_PER_LEVEL } from './relief';
+import { buildingRoofMaterial } from './buildings';
 import { decorEnCaseEtage } from './decorIndex';
 
 export type Rect = { x: number; y: number; w: number; h: number };
@@ -118,14 +119,17 @@ export function addBuildingMass(scene: Scene, bodyId: string, foot: Rect, z: num
   const body = scene.architecture?.find((candidate) => candidate.id === bodyId);
   if (!body) return null;
   const id = nextEntityId('masse', body.masses.map((mass) => mass.id));
+  const toiture = toitureEffective(scene, body);
   const mass: BuildingMass = {
     id,
     z,
     footprint: [boundedRect(scene, foot)],
     levels: 1,
+    // Le PROFIL est le geste : une masse posée à la main est un pignon jusqu'à ce que l'auteur en
+    // change, tandis que matière et pente viennent de la toiture EFFECTIVE du corps (#1715).
     profile: 'gable',
-    pitchDeg: 40,
-    material: 'tuile',
+    pitchDeg: toiture.penteReference,
+    material: toiture.material,
   };
   return { scene: updateArchitectureBody(scene, bodyId, (candidate) => ({ ...candidate, masses: [...candidate.masses, mass] })), id };
 }
@@ -702,29 +706,66 @@ export function roofExclusionsByZ(body: ArchitectureBody): Map<number, Set<strin
   return out;
 }
 
-/** Intention de toiture appliquée à une masse dérivée quand le corps n'en déclare aucune (#829).
- *  Exportée : l'inspecteur affiche la valeur RÉELLEMENT appliquée plutôt qu'un champ vide, sinon
- *  l'auteur règle à l'aveugle.
+/**
+ * TOITURE EFFECTIVE d'un corps — SEUL site qui lit ensemble les trois porteurs (#1715), dans cet
+ * ordre : la SURCHARGE du corps (`ArchitectureBody.roofDefaults`), puis la couverture du TYPE de
+ * bâtiment (`buildings.json › roofMaterial` — une forge est couverte d'ardoise par son type), puis la
+ * toiture de la SCÈNE (`Scene.roofDefaults`, EXIGÉE au schéma : aucun repli en code ne reste).
+ * Le type ne porte QUE la matière. La pente de RÉFÉRENCE se lit sur la SCÈNE SEULE — un `pitchDeg` de
+ * corps POSE une pente qui ne s'adapte jamais à la portée (rendue telle quelle ci-dessous), il ne
+ * surcharge pas la référence ; la borne de comble, elle, se lit corps > scène.
  *
- *  `gable`/45° se lisent sur la planche officielle de La Diligence (`art-ref/page012_img3.png`, son
- *  élévation en haut à gauche) : un long faîtage à DEUX pentes parallèle à la façade, percé de
- *  cheminées, avec des ailes à pignon perpendiculaires ; les pignons y montent d'une demi-portée
- *  environ (montée ≈ demi-portée ⇒ pente ≈ 45°) — une pente RAIDE, celle qui évacue la neige et loge
- *  un comble. La croupe reste à un geste de l'auteur (`roofDefaults.profile: 'hip'`, réglable à
- *  l'inspecteur) et la dérivation la respecte telle quelle : elle n'est simplement plus le profil
- *  appliqué à l'aveugle.
- *
- *  `pitchDeg` est ici la pente de RÉFÉRENCE — la plus RAIDE que la dérivation pose, jamais dépassée :
- *  sur une portée plus grande que celles de la planche, `fittedPitchDeg` la rabat pour tenir
- *  `riseMaxStoreys`. `riseMaxStoreys: 1` (#947) : aucune source ne cote de TOITURE (l'Atlas
- *  `docs/raw/` ne touche au bâti que par ses murs — matériau, Encombrement, Blessures de Structure),
- *  la planche montre des combles d'un étage — plafond d'esthétique RÉVISABLE (l'édition des
- *  bâtiments est un chantier ouvert). Un comble d'UN étage laisse intact tout ce que
- *  la planche montre (à 45°, 8 m de portée montent de 4 m = `METRES_PER_LEVEL`) et ne rabat que les
- *  portées qu'elle ne montre pas. La borne se règle par corps (`ArchitectureBody.roofDefaults`). */
-export const DEFAULT_ROOF_DEFAULTS = {
-  profile: 'gable', pitchDeg: 45, material: 'toit-ardoise', riseMaxStoreys: 1,
-} as const satisfies RoofDefaults;
+ * `penteReference` est la pente la plus RAIDE que la dérivation pose : `fittedPitchDeg` la rabat
+ * jusqu'à ce que le comble tienne dans `riseMaxStoreys` (#947). `profile`/`pitchDeg`/`eaveSide` sont
+ * rendus tels que le corps les porte — absents, ils restent des CHOIX du socle : le profil se lit sur
+ * la PORTÉE, la pente se dérive.
+ */
+export function toitureEffective(scene: Scene, body: ArchitectureBody): {
+  material: string;
+  riseMaxStoreys: number;
+  penteReference: number;
+  profile?: RoofDefaults['profile'];
+  pitchDeg?: number;
+  eaveSide?: RoofDefaults['eaveSide'];
+} {
+  const corps = body.roofDefaults;
+  const scenique: SceneRoofDefaults = scene.roofDefaults;
+  return {
+    material: corps?.material ?? buildingRoofMaterial(body.style) ?? scenique.material,
+    riseMaxStoreys: corps?.riseMaxStoreys ?? scenique.riseMaxStoreys,
+    penteReference: scenique.pitchDeg,
+    ...(corps?.profile !== undefined ? { profile: corps.profile } : {}),
+    ...(corps?.pitchDeg !== undefined ? { pitchDeg: corps.pitchDeg } : {}),
+    ...(corps?.eaveSide !== undefined ? { eaveSide: corps.eaveSide } : {}),
+  };
+}
+
+/**
+ * Écrit UN champ de la SURCHARGE de toiture d'un corps (#1715) — pur, testé hors JSX. `undefined` =
+ * « suivre » : le champ QUITTE le corps, et un corps qui ne surcharge plus rien perd `roofDefaults`
+ * entier. C'est ce qui garde le premier réglage MINIMAL : régler la couverture ne matérialise ni
+ * profil ni pente, donc la pente continue de s'adapter à la portée et le profil de suivre la portée.
+ * Appelé par le panneau de CORPS de l'inspecteur (`ui/editor/Inspector.tsx`).
+ */
+export function poseToitureDeCorps(
+  body: ArchitectureBody,
+  // Le champ est une CLÉ, jamais un paramètre de type : la garde d'éditabilité (#841,
+  // `scene-field-editability-guard`) crédite une clé calculée par les littéraux de chaîne de SON
+  // type — un `K extends keyof …` ne lui rend rien, et les cinq champs passeraient pour orphelins.
+  champ: keyof RoofDefaults,
+  valeur: RoofDefaults[keyof RoofDefaults] | undefined,
+): ArchitectureBody {
+  const { [champ]: _retire, ...reste } = (body.roofDefaults ?? {}) as RoofDefaults;
+  if (valeur !== undefined) {
+    const roofDefaults: RoofDefaults = { ...reste, [champ]: valeur };
+    return { ...body, roofDefaults };
+  }
+  if (Object.keys(reste).length === 0) {
+    const { roofDefaults: _vide, ...sansToiture } = body;
+    return sansToiture;
+  }
+  return { ...body, roofDefaults: reste };
+}
 
 /** Pente (°) d'une nappe DÉRIVÉE de portée `spanTiles` : la pente de RÉFÉRENCE, rabattue jusqu'à ce
  *  que le comble tienne dans `riseMaxStoreys` hauteurs d'étage. C'est la PENTE qui s'adapte à la
@@ -1046,7 +1087,7 @@ export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
 
   return bodies.map((body) => {
     const overrides = body.masses.filter((mass) => !mass.derived);
-    const defaults = body.roofDefaults ?? DEFAULT_ROOF_DEFAULTS;
+    const defaults = toitureEffective(scene, body);
     // BORNE d'emprise : un corps ne dérive que SUR SON PROPRE plancher (`bodyFootCells`), jamais sur
     // celui d'un voisin — `floorAt` rend le plancher de la scène ENTIÈRE, tous corps confondus.
     // Emprise vide (corps sans volume déclaré) = aucune borne : le pool partagé `claimed` reste le
@@ -1144,13 +1185,12 @@ export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
           levels,
           // La portée ne choisit plus un NOMBRE de toits, elle choisit une FORME : au-delà de la portée
           // de pignon, le corps garde sa nappe unique et s'abat en croupe.
-          profile: body.roofDefaults?.profile
+          profile: defaults.profile
             ?? (span <= spanMaxTiles ? 'gable' : 'hip'),
           // La PENTE s'adapte à la portée sous la borne de comble ; une pente POSÉE par l'auteur ne
           // s'adapte jamais.
-          pitchDeg: body.roofDefaults?.pitchDeg ?? fittedPitchDeg(
-            span, sceneMetresPerTile(scene), DEFAULT_ROOF_DEFAULTS.pitchDeg,
-            defaults.riseMaxStoreys ?? DEFAULT_ROOF_DEFAULTS.riseMaxStoreys,
+          pitchDeg: defaults.pitchDeg ?? fittedPitchDeg(
+            span, sceneMetresPerTile(scene), defaults.penteReference, defaults.riseMaxStoreys,
           ),
           material: defaults.material,
           ridge,

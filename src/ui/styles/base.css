@@ -279,6 +279,16 @@ input[type='range'],
 progress {
   accent-color: var(--gold);
 }
+/* Charte : TEXTE FANTÔME de tout champ de saisie (input texte/nombre/recherche, textarea) — encre
+   ATTÉNUÉE `--muted`, jamais l'encre `--text` d'une valeur POSÉE : un placeholder (consigne de champ,
+   valeur effective héritée d'un champ vide) doit se distinguer AU COUP D'ŒIL d'une valeur saisie.
+   `opacity: 1` neutralise l'opacité de la feuille UA (Firefox) pour que la couleur rendue soit
+   exactement le token. Règle UNIQUE de l'app : aucune redéclaration par écran. */
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
 /* Charte : cases & radios CUSTOM (fin du carré bleu système) — case charbon bordée, cochée =
    fond sang + marque or. S'applique à TOUTE l'UI (jeu + éditeur). */
 input[type='checkbox'],

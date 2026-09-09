@@ -23,12 +23,12 @@
  * vérifiée AVANT toute écriture : non canonique = sortie 1, jamais un reflow silencieux.
  * IDEMPOTENT : une Scène portant déjà `reliefDefaults` est reconnue migrée ; rejouée sur l'état final,
  * la migration n'écrit rien et sort 0.
- * BORNE HAUTE CLOSE (`schema` ∈ {7, 8}, jamais « ≥ 7 ») : DERNIÈRE de la chaîne dans l'ordre lexical,
- * elle est la seule à savoir ce qui existe après elle et NOMME un `schema` futur, là où les amont
- * l'avalent par leur borne ouverte. `2026-08-31-1552-projet-sannonce.mjs` a fermé la sienne jusqu'ici ;
- * ce bump l'élargit à « ≥ 7 » et ferme celle-ci.
+ * BORNE HAUTE OUVERTE (`schema` ∈ {7, ≥ 8}) : la DERNIÈRE migration de la chaîne dans l'ordre lexical
+ * est la seule à nommer un `schema` futur ; ce rôle est passé à
+ * `2026-09-09-1715-roof-defaults-scenes.mjs` (#1715), qui ferme sa borne à {8, 9}. Le document sort
+ * donc d'ici en `schema` = max(le sien, 8) : une migration amont ne RABAISSE jamais une forme.
  * FAIL-FAST : `reliefDefaults` présent mais incomplet ou de forme inattendue, `schema` absent, non
- * numérique ou ∉ {7, 8} → rien n'est écrit, sortie 1.
+ * numérique ou < 7 → rien n'est écrit, sortie 1.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -52,14 +52,15 @@ const canonique = (doc) => `${JSON.stringify(doc, null, 1)}\n`;
 
 /**
  * La Scène, `reliefDefaults` inséré à la place que la CRÉATION lui donne (`emptyScene`,
- * `src/state/scene.ts`) : juste avant `layers`. Les projets d'arène, de barge et de cogue sont
+ * `src/state/scene.ts`) : devant la première clé qui la SUIT là-bas — `roofDefaults` (#1715) si le
+ * document la porte déjà, sinon `layers`. Les projets d'arène, de barge et de cogue sont
  * re-générables à l'octet (`src/scenes/generateurs-byte-stables.test.ts`) — poser la clé en queue
- * ferait diverger l'artefact committé de son `build()`. Sans `layers` (document ancien), la clé va en
- * queue : la position n'est alors contrainte par rien.
+ * ferait diverger l'artefact committé de son `build()`. Sans aucune des deux (document ancien), la
+ * clé va en queue : la position n'est alors contrainte par rien.
  */
 function avecReliefDefaults(s) {
   const cles = Object.keys(s);
-  const rang = cles.indexOf('layers');
+  const rang = ['roofDefaults', 'layers'].map((k) => cles.indexOf(k)).filter((i) => i >= 0).sort((a, b) => a - b)[0] ?? -1;
   if (rang < 0) return { ...s, reliefDefaults: { ...POSE } };
   return Object.fromEntries([
     ...cles.slice(0, rang).map((k) => [k, s[k]]),
@@ -84,8 +85,8 @@ for (const abs of cibles) {
   const doc = JSON.parse(brut);
 
   if (canonique(doc) !== brut) { echecs.push(`${rel} : FORME NON CANONIQUE`); continue; }
-  if (doc.schema !== SCHEMA_AVANT && doc.schema !== SCHEMA_APRES) {
-    echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`);
+  if (typeof doc.schema !== 'number' || doc.schema < SCHEMA_AVANT) {
+    echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (${SCHEMA_AVANT} ou \u2265 ${SCHEMA_APRES} attendus)`);
     continue;
   }
   if (!Array.isArray(doc.scenes)) { echecs.push(`${rel} : \`scenes\` absent ou non-tableau`); continue; }
@@ -116,7 +117,7 @@ if (echecs.length) {
 
 for (const r of rapports) {
   const sortie = Object.fromEntries(
-    Object.entries(r.doc).map(([k, v]) => (k === 'scenes' ? [k, r.scenes] : k === 'schema' ? [k, SCHEMA_APRES] : [k, v])),
+    Object.entries(r.doc).map(([k, v]) => (k === 'scenes' ? [k, r.scenes] : k === 'schema' ? [k, Math.max(v, SCHEMA_APRES)] : [k, v])),
   );
   const out = canonique(sortie);
   if (out !== r.brut) fs.writeFileSync(r.abs, out, 'utf8');
@@ -124,7 +125,7 @@ for (const r of rapports) {
   // PREUVE post-écriture : chaque Scène porte les QUATRE parties, avec les valeurs posées.
   const apres = JSON.parse(out);
   const muettes = apres.scenes.filter((s) => PARTIES.some((p) => s.reliefDefaults?.[p] !== POSE[p])).map((s) => s.id);
-  if (muettes.length || apres.schema !== SCHEMA_APRES) {
+  if (muettes.length || !(apres.schema >= SCHEMA_APRES)) {
     console.error(`[${NOM}] VÉRIFICATION POST-ÉCRITURE ROUGE — ${r.rel} : schema=${apres.schema}, ${muettes.join(', ')}`);
     process.exit(1);
   }

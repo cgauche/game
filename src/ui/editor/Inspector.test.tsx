@@ -691,7 +691,10 @@ describe('Inspector — le profil de toiture est nommé par le NŒUD, une seule 
       h.container.remove();
     }
 
-    expect(lu[0]).toEqual(attendu);
+    // Le select du CORPS ouvre sur une case VIDE (#1715 : profil non posé = la PORTÉE tranche) ; les
+    // options NOMMÉES, elles, restent celles du nœud. Celui d'une masse POSÉE n'a pas ce degré de
+    // liberté : une masse porte toujours un profil.
+    expect(lu[0]).toEqual([['', ''], ...attendu]);
     expect(lu[1]).toEqual(attendu);
   });
 });

@@ -99,9 +99,6 @@
   color: var(--text);
   font-size: 14px;
 }
-.codex-search::placeholder {
-  color: var(--muted);
-}
 .codex-rows {
   flex: 1;
   min-height: 0;

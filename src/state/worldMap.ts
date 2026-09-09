@@ -11,7 +11,7 @@
  * marche forcée au niveau carte.
  */
 import type { Effect, Scene } from './scene';
-import { normalizeScene, DEFAULT_RELIEF_DEFAULTS } from './scene';
+import { normalizeScene, DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS } from './scene';
 import type { TravelMode } from '../engine/travel';
 import type { PortProfile } from '../engine/seaVoyage';
 import type { LandMarketProfile } from '../engine/landCargo';
@@ -582,6 +582,38 @@ function migreChoix(scenes: unknown): unknown {
   });
 }
 
+/**
+ * Pose une clé de SCÈNE sur chaque scène d'un document, à la POSITION que `emptyScene` lui donne —
+ * geste PARTAGÉ par les migrations qui EXIGENT un nouveau champ de scène (#1691 `reliefDefaults`,
+ * #1715 `roofDefaults`) : c'est le même mouvement, pas deux.
+ *
+ * Trois invariants, tenus ici une seule fois : une scène qui porte DÉJÀ la clé traverse INTACTE (un
+ * document hybride n'est pas réécrit — c'est le schéma qui juge sa forme) ; l'ANCRE absente met la
+ * clé en queue plutôt que de deviner un rang ; ce qui n'est pas une liste de scènes traverse tel
+ * quel (`parseProject` le refuse ensuite, en le nommant).
+ *
+ * La valeur est une FABRIQUE : chaque scène reçoit SA copie, jamais un objet partagé entre scènes.
+ */
+function poseSurChaqueScene(
+  scenes: unknown,
+  cle: string,
+  valeur: () => unknown,
+  ancre: { avant: string } | { apres: string },
+): unknown {
+  if (!Array.isArray(scenes)) return scenes;
+  return scenes.map((s) => {
+    if (!s || typeof s !== 'object' || cle in s) return s;
+    const sc = s as Record<string, unknown>;
+    const cles = Object.keys(sc);
+    const pose: [string, unknown] = [cle, valeur()];
+    const repere = 'avant' in ancre ? ancre.avant : ancre.apres;
+    const rang = cles.indexOf(repere);
+    const coupe = rang < 0 ? cles.length : 'avant' in ancre ? rang : rang + 1;
+    const entree = (k: string): [string, unknown] => [k, sc[k]];
+    return Object.fromEntries([...cles.slice(0, coupe).map(entree), pose, ...cles.slice(coupe).map(entree)]);
+  });
+}
+
 /** Migrations SÉQUENTIELLES de ProjectDoc : la clé N met à niveau un schema N → N+1. `2` injecte le
  *  bloc `narratif` vide (#765 — un projet schema 2 est un paquet SANS narratif). `3` porte les
  *  RÔLES DE PROSE du lot #1467 L1b V-P2 : c'est la MÊME transformation que les migrations de dépôt
@@ -692,29 +724,33 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
    * Pendant applicatif du script de dépôt `scripts/migrations/2026-09-07-1691-relief-defaults-scenes.mjs`
    * (parité mesurée par `projet-migration-7-vers-8.test.ts`).
    */
-  7: (doc) => {
-    const scenes = Array.isArray(doc.scenes)
-      ? doc.scenes.map((s) => {
-        if (!s || typeof s !== 'object' || 'reliefDefaults' in s) return s;
-        const sc = s as Record<string, unknown>;
-        const cles = Object.keys(sc);
-        const rang = cles.indexOf('layers');
-        const pose: [string, unknown] = ['reliefDefaults', { ...DEFAULT_RELIEF_DEFAULTS }];
-        if (rang < 0) return Object.fromEntries([...cles.map((k) => [k, sc[k]] as [string, unknown]), pose]);
-        return Object.fromEntries([
-          ...cles.slice(0, rang).map((k) => [k, sc[k]] as [string, unknown]),
-          pose,
-          ...cles.slice(rang).map((k) => [k, sc[k]] as [string, unknown]),
-        ]);
-      })
-      : doc.scenes;
-    return {
-      ...doc,
-      ...(doc.scenes !== undefined ? { scenes } : {}),
-      version: 8,
-      schema: 8,
-    };
-  },
+  7: (doc) => ({
+    ...doc,
+    ...(doc.scenes !== undefined
+      ? { scenes: poseSurChaqueScene(doc.scenes, 'reliefDefaults', () => ({ ...DEFAULT_RELIEF_DEFAULTS }), { avant: 'layers' }) }
+      : {}),
+    version: 8,
+    schema: 8,
+  }),
+  /**
+   * `8` pose la TOITURE PAR DÉFAUT de chaque scène (#1715) : `roofDefaults`, EXIGÉ par `sceneSchema`
+   * depuis que la dérivation des masses ne choisit plus ni couverture, ni pente de référence, ni
+   * borne de comble (`toitureEffective`, `state/sceneEdit.ts`). Les valeurs posées sont
+   * `DEFAULT_ROOF_DEFAULTS` — exactement ce que la dérivation appliquait en dur avant le lot, donc un
+   * projet de bibliothèque utilisateur se rend à l'identique après migration. La clé va à la POSITION
+   * que la création lui donne (`emptyScene`) : juste après `reliefDefaults`. Une scène qui en porte
+   * déjà une traverse INTACTE.
+   * Pendant applicatif du script de dépôt `scripts/migrations/2026-09-09-1715-roof-defaults-scenes.mjs`
+   * (parité mesurée par `projet-migration-8-vers-9.test.ts`).
+   */
+  8: (doc) => ({
+    ...doc,
+    ...(doc.scenes !== undefined
+      ? { scenes: poseSurChaqueScene(doc.scenes, 'roofDefaults', () => ({ ...DEFAULT_ROOF_DEFAULTS }), { apres: 'reliefDefaults' }) }
+      : {}),
+    version: 9,
+    schema: 9,
+  }),
 };
 
 /** Provenance d'une campagne AUTHORÉE À L'ÉDITEUR : aucun livre ne la publie, et un folio ne se

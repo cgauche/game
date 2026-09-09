@@ -7,6 +7,7 @@ import { CHAR_KEYS } from '../engine/types';
 import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, carriedFlows, EMPTY_FLOW } from './flow';
 import { refEstVolumique, stakeSpeaks, REF_DECOR_DEFAUT, matieresCouvrantes } from '../data';
 import { capDecorAdmis } from '../data/props.types';
+import { PENTE_TOIT_DEG } from '../data/schemas/defs-scenes/scene';
 // Registre des effets (réfs de validation `handler.refs`) — importé via le BARIL `combatFlow` (qui
 // ré-exporte combatEffects), comme le store : entrer le cycle d'effets/combat par le MÊME nœud
 // canonique préserve l'ordre d'évaluation (un import direct de `combatEffects` ici casse la
@@ -285,7 +286,8 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
         if (!couvertures.has(mass.material))
           add('error', 'architecture', mass.id, `Masse « ${mass.id} » : « ${mass.material} » n’est pas une couverture de toit`, massRef);
         if (!Number.isInteger(mass.levels) || mass.levels < 1) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : niveaux invalides`, massRef);
-        if (!Number.isFinite(mass.pitchDeg) || mass.pitchDeg < 5 || mass.pitchDeg > 75) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : pente hors plage`, massRef);
+        if (!Number.isFinite(mass.pitchDeg) || mass.pitchDeg < PENTE_TOIT_DEG.min || mass.pitchDeg > PENTE_TOIT_DEG.max)
+          add('error', 'architecture', mass.id, `Masse « ${mass.id} » : pente hors plage`, massRef);
         // INVARIANT d'ALTITUDE — les deux encodages de la même hauteur (l'INDEX d'étage `z` et la COTE
         // métrique que `layer.height` porte, lue par `heightAt`) ne peuvent pas diverger sans le dire.
         // L'égout dérivé (`gameIso/builders/roofs.resolveMass`) et les murs qui le portent

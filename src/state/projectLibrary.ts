@@ -6,11 +6,12 @@ import type { NarratifBlock } from './campaignNarratif';
  *  projet enregistré avant #765 est un schema 2 sans `narratif`, un projet enregistré avant #1467 est
  *  un schema 3 aux anciens rôles de prose ou un schema 4 à poche `meta`, un projet enregistré avant
  *  #1552 est un schema ≤ 6 sans `type` ni identité requise, un projet enregistré avant #1691 est un
- *  schema 7 dont les scènes n'ont pas de matières de relief. La montée au format courant se fait au
- *  CHARGEMENT via `parseProject` (chaîne 2→3→4→5→6→7→8), jamais dans ce module — et c'est là, pas ici,
+ *  schema 7 dont les scènes n'ont pas de matières de relief, un projet enregistré avant #1715 est un
+ *  schema 8 dont les scènes n'ont pas de toiture par défaut. La montée au format courant se fait au
+ *  CHARGEMENT via `parseProject` (chaîne 2→3→4→5→6→7→8→9), jamais dans ce module — et c'est là, pas ici,
  *  que l'absence d'identité se fait REFUSER. */
 export type StoredProject = Omit<ProjectDoc, 'schema' | 'narratif' | 'type' | 'id' | 'label' | 'versionContenu'> & {
-  schema: 2 | 3 | 4 | 5 | 6 | 7 | 8;
+  schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
   narratif?: NarratifBlock;
   type?: 'projet';
   id?: string;

@@ -312,8 +312,8 @@ describe('paquets de campagne bundlés — se relisent tous dans le modèle COUR
   /**
    * `ArchitectureBody.style` est une RÉFÉRENCE vers `buildings.json` (`idDe('building')`, #1715) : la
    * porte résout l'id, et un corps SANS type de bâtiment reste valide (bourg, hameau, corps
-   * composite). Le sujet est un paquet FABRIQUÉ ICI : le contenu des paquets LIVRÉS est une carte que
-   * son auteur doit pouvoir retoucher sans rougir un test (arbitrage utilisateur 2026-09-07).
+   * composite). Le sujet est un paquet FABRIQUÉ ICI : un paquet livré est la CARTE de son auteur, que
+   * ce test laisse intacte — la contre-preuve porte sur une fixture, jamais sur `diligence-projet.json`.
    */
   const PAQUET_ARCHITECTURE = (styles: (string | undefined)[]) => {
     const { type: _type, ...sceneSansType } = emptyScene(6, 6) as unknown as Record<string, unknown>;

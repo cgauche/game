@@ -6,7 +6,7 @@ import { WALL_H_M } from '../iso';
 import { roofMaterial } from '../catalog/roofs';
 import { MISSING_ID, MISSING_TONE } from '../catalog/missing';
 import { emptyScene, type BuildingMass, type Scene, type WallSeg } from '../../state/scene';
-import { addLayer, DEFAULT_ROOF_DEFAULTS, effectiveArchitecture, fillTerrainRect, paintTiles, putLayer, rederiveRoofMasses } from '../../state/sceneEdit';
+import { addLayer, effectiveArchitecture, fillTerrainRect, paintTiles, putLayer, rederiveRoofMasses } from '../../state/sceneEdit';
 import { encloseRect, perimeterWallSegs } from '../../state/sceneEdit.testkit';
 import { diligenceCampaign } from '../../scenes/campaign';
 import { buildings } from '../../data';
@@ -952,9 +952,9 @@ describe('toiture dérivée — le comble mesuré au SOMMET tient sous la borne 
   };
 
   it('de l’aile étroite au corps le plus profond, le comble reste sous un étage de bâti', () => {
-    const borne = DEFAULT_ROOF_DEFAULTS.riseMaxStoreys * WALL_H_M;
     for (const profondeur of [3, 6, 10, 16, 22]) {
       const scene = corps(profondeur);
+      const borne = scene.roofDefaults.riseMaxStoreys * WALL_H_M;
       const masses = effectiveArchitecture(scene).flatMap((body) => body.masses);
       expect(masses).toHaveLength(1);
       const { egout, faite } = faiteM(scene, masses[0]);
@@ -1118,7 +1118,7 @@ describe('groupe de nappe — un champ de hauteur sur le domaine UNION (#1186)',
         faite = Math.max(faite, fieldHeightAt(field, { x: x + dx, y: y + dy }));
     }
     expect(faite).toBeGreaterThan(field.shape.eaveHeightM);
-    expect(faite - field.shape.eaveHeightM).toBeLessThanOrEqual(DEFAULT_ROOF_DEFAULTS.riseMaxStoreys * WALL_H_M + 1e-9);
+    expect(faite - field.shape.eaveHeightM).toBeLessThanOrEqual(scene.roofDefaults.riseMaxStoreys * WALL_H_M + 1e-9);
   });
 
   it('un groupe d’UNE masse est le chemin HISTORIQUE : domaine = ses cellules, pavage identique', () => {
