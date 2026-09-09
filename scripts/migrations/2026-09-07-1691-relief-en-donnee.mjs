@@ -14,8 +14,9 @@
  *
  * Entrées : `src/data/terrains.json`, `src/data/materials.json` (lus et écrits).
  * CARDINAUX ATTENDUS, mesurés sur l'arbre au moment de l'écriture (2026-09-07) : 25 terrains dont 1 à
- * bloc plein ; 16 matières dont 4 de relief et 4 de toiture, une seule sans `couverture`. Un écart
+ * bloc plein ; 15 matières dont 3 de relief et 4 de toiture, une seule sans `couverture`. Un écart
  * fait sortir 1 AVANT toute écriture.
+ * CARDINAUX RECALÉS #1715 : `materials` 16 → 15 et `relief` 4 → 3, `plafond` purgé (0 émetteur).
  * MARQUEURS D'IDEMPOTENCE : présence de `matiere` sur les terrains à bloc, présence de
  * `vueDeDessus`. Rejouée sur l'arbre migré, la migration n'écrit rien et sort 0.
  * FORMATAGE PRÉSERVÉ : `src/data/*.json` est `JSON.stringify(doc, null, 2)` (sans saut final) ; une
@@ -31,7 +32,7 @@ const NOM = '2026-09-07-1691-relief-en-donnee';
 /** MATIÈRE des flancs, par terrain à bloc plein — la valeur que `floors.ts` choisissait en dur. */
 const MATIERE_DE_BLOC = { mur: 'pierre' };
 /** Cardinaux mesurés (2026-09-07) — portes d'identité du périmètre, jamais des estimations. */
-const ATTENDU = { terrains: 25, blocs: 1, materials: 16, relief: 4, roof: 4, sansCouverture: 1 };
+const ATTENDU = { terrains: 25, blocs: 1, materials: 15, relief: 3, roof: 4, sansCouverture: 1 };
 
 const echec = (m) => {
   console.error(`[${NOM}] ${m}`);

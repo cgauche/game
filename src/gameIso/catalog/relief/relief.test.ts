@@ -19,7 +19,6 @@ describe('apparence de relief (JSON pur iso/POV)', () => {
     ['pierre', '#6b6f76'],
     ['terre', '#5a4a33'],
     ['pilier', '#565a61'],
-    ['plafond', '#2c2a26'],
   ])('« %s » est au registre et se résout sur sa face', (id, face) => {
     expect(matieresDe('relief').map((m) => m.id)).toContain(id);
     expect(reliefMaterial(id).id).toBe(id);

@@ -49,7 +49,7 @@ export const IDS_PAR_DATASET: Readonly<Record<string, readonly string[]>> = {
   'locations.json': ['altdorf', 'altdorf-et-les-villes-libres', 'auerswald', 'bogen', 'bogenhafen', 'bois-de-pins-sanglants', 'canal-de-wessbruck', 'canal-grunberg', 'canaux-du-vorbergland', 'cercle-de-pierres-noires', 'chateau-drachenfels', 'collines-de-skaag', 'diesdorf', 'drachenberg', 'dunkerlberg', 'eilhart', 'foret-de-reikewald', 'grissenwald', 'grunburg', 'hagercrybs', 'helmgart', 'helspire', 'holthusen', 'kemperbad', 'le-rocher', 'les-bastions-et-forteresses', 'les-marais-maudits-et-fetides', 'les-montagnes-les-collines-et-le-vorbergland', 'les-rivieres-canaux-et-lacs', 'les-sinistres-et-sombres-forets', 'les-villages-hameaux-et-sites-sacres', 'lorlay', 'manoir-steirlich', 'marais-grootscher', 'marais-reiker', 'monastere-de-la-parole-sacree', 'montagnes-grises', 'pierres-chantantes', 'plaines-d-altdorf', 'reik', 'reikland', 'rottfurt', 'schadelheim', 'schilderheim', 'sites-anciens-et-ruines-terrifiantes', 'stimmigen', 'teufel', 'tour-noire', 'tourbieres-d-uhland', 'ubersreik', 'vorbergland', 'weissbruck', 'wheburg', 'worlin', 'zahnstadt'],
   'maladies.json': ['blessure-purulente', 'colique', 'courante-galopante', 'fievre-cerebrale-pourpre', 'fievre-du-rongeur', 'flux-sanglant', 'infection-du-sang', 'infection-mineure', 'mal-de-mer', 'peste-noire', 'pneumonie', 'rhume-commun', 'scorbut', 'verole-cerebrale-a-taches-vertes', 'verole-du-tanneur', 'verole-urticante', 'vers-de-carie', 'vers-du-reik'],
   'maneuvers.json': ['arme', 'caudale', 'cornes', 'etreinte-glaciale', 'forme-humaine-ulric', 'forme-hybride-ulric', 'frisson-paralysant', 'hurlement-de-la-bete-indomptable', 'hurlement-fantomatique', 'langue-prehensile', 'morsure', 'regard-petrifiant', 'souffle-corrosif', 'souffle-electrique', 'souffle-feu', 'souffle-froid', 'souffle-fumee', 'souffle-poison', 'tentacules', 'vomissement'],
-  'materials.json': ['albatre', 'bois-chene', 'braises', 'chaume', 'fer-noirci', 'laiton-dore', 'pierre', 'pierre-atre', 'pilier', 'plafond', 'plan', 'prop-ardoise', 'terre', 'toile-rouge', 'toit-ardoise', 'tuile'],
+  'materials.json': ['albatre', 'bois-chene', 'braises', 'chaume', 'fer-noirci', 'laiton-dore', 'pierre', 'pierre-atre', 'pilier', 'plan', 'prop-ardoise', 'terre', 'toile-rouge', 'toit-ardoise', 'tuile'],
   'merchantFamilies.json': ['ammo', 'armor', 'boucliers', 'divers', 'melee', 'ranged', 'unites'],
   'merchants.json': ['armurier', 'avitailleur', 'herboriste', 'maquignon', 'medecin', 'taverniere'],
   'miscast.json': ['miscast-colere', 'miscast-majeure', 'miscast-majeure-vdm', 'miscast-mineure', 'miscast-mineure-vdm'],
@@ -177,7 +177,7 @@ export const PROPS_VOLUMIQUES: readonly string[] = ['applique-murale', 'armoire'
 export const IDS_PAR_DISCRIMINANT: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>> = {
   'materials.json': {
     'prop': ['albatre', 'bois-chene', 'braises', 'fer-noirci', 'laiton-dore', 'pierre-atre', 'prop-ardoise', 'toile-rouge'],
-    'relief': ['pierre', 'pilier', 'plafond', 'terre'],
+    'relief': ['pierre', 'pilier', 'terre'],
     'roof': ['chaume', 'plan', 'toit-ardoise', 'tuile'],
   },
 };

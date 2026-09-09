@@ -241,13 +241,5 @@
     "domain": "relief",
     "built": true,
     "face": "#565a61"
-  },
-  {
-    "id": "plafond",
-    "type": "materials",
-    "label": "Plafond",
-    "domain": "relief",
-    "built": true,
-    "face": "#2c2a26"
   }
 ]

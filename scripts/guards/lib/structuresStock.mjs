@@ -834,7 +834,9 @@ export const STRUCTURES_ENVELOPPE = [
   // catalogues `prop`/`roof`/`relief` fusionnent) ; 8 + 4 + 4 = 16 entrées, inchangées. Deltas des
   // trois lignes d'origine, repris ici : +1 : albatre, matière de l'urne (#1644) [prop] ;
   // −2 : riser, sol-inconnu — 0 consommateur, purgés (#1540) [relief].
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "materials.json", chemin: "(entrées)", entrees: 16, lot: "L1d #1469", date: "2026-08-23" },
+  // 16 → 15 (#1715) : −1 : plafond — 0 émetteur mesuré (le dessous d'un surplomb est une dalle
+  // `deck`), purgé [relief].
+  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "materials.json", chemin: "(entrées)", entrees: 15, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "merchantFamilies.json", chemin: "(entrées)", entrees: 7, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "merchants.json", chemin: "(entrées)", entrees: 6, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "names.json", chemin: "(entrées)", entrees: 7, lot: "L1d #1469", date: "2026-08-23" },

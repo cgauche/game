@@ -14,6 +14,8 @@
  * TABLE RECALÉE #1686 lot 2 : les deux catalogues sont devenus les domaines `relief` et `roof` d'un
  * SEUL document (`materials.json`). L'arbitrage ne change pas ; son PORTEUR, si. Les entrées des
  * autres domaines ne sont pas de la juridiction de cette vague et traversent intactes.
+ * TABLE RECALÉE #1715 : `plafond` (relief) purgé du dataset — 0 émetteur mesuré (le dessous d'un
+ * surplomb est une dalle `deck`), quitte la table.
  *
  * Entrées : `src/data/materials.json` (lu et écrit).
  *
@@ -38,7 +40,6 @@ const LOTS = [
       terre: 'Terre',
       pierre: 'Pierre',
       pilier: 'Pilier',
-      plafond: 'Plafond',
     },
   },
   {

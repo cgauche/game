@@ -18,7 +18,8 @@
  * `src/data/reliefMaterials.json` (lus puis SUPPRIMÉS) et `src/data/materials.json` (écrit).
  *
  * CARDINAUX ATTENDUS, mesurés sur l'arbre au moment de l'écriture (2026-09-05) : 8 `prop`, 4 `roof`,
- * 4 `relief` = 16 entrées. Un écart fait sortir 1 AVANT toute écriture.
+ * 3 `relief` = 15 entrées. Un écart fait sortir 1 AVANT toute écriture.
+ * CARDINAL RECALÉ #1715 : `relief` 4 → 3, `plafond` purgé (0 émetteur) ; `TOTAL_ATTENDU` en dérive.
  * MARQUEUR D'IDEMPOTENCE : l'existence des fichiers. Trois sources présentes et pas de `materials.json`
  * = migration ; trois sources absentes et `materials.json` présent = rejeu, aucune écriture, sortie 0
  * (les cardinaux du RÉSULTAT y sont revérifiés). Tout état MIXTE est une anomalie nommée, sortie 1.
@@ -42,7 +43,7 @@ const CIBLE_REL = 'src/data/materials.json';
 const SOURCES = [
   { rel: 'src/data/propMaterials.json', domain: 'prop', attendu: 8 },
   { rel: 'src/data/roofMaterials.json', domain: 'roof', attendu: 4 },
-  { rel: 'src/data/reliefMaterials.json', domain: 'relief', attendu: 4 },
+  { rel: 'src/data/reliefMaterials.json', domain: 'relief', attendu: 3 },
 ];
 const TOTAL_ATTENDU = SOURCES.reduce((n, s) => n + s.attendu, 0);
 
