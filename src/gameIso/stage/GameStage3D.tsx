@@ -916,7 +916,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // la cascade tombe avec la population, par construction — plus de jumeau de silhouette ni d'ombre de
   // contact (montés PAR sujet, plus bas), plus de quad à percer (`percage` cherche un board par `cid`),
   // et plus aucune cible portant un `cid` sous le rayon, donc le clic retombe sur la CASE, où le disque
-  // est centré (`useStagePointer.pickTile`).
+  // est centré (`useStagePointer.pickVerdict`).
   const hauteurDeps = sceneHeightDeps(scene);
   const elsMonde = useMemo(
     () => (pionsEnDisques ? { tokens: AUCUN_TOKEN, props: els.props } : els),

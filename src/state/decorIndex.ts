@@ -1,5 +1,6 @@
 /**
- * INDEX case → DÉCOR d'une scène — la seule lecture de « quel décor couvre cette case ? ».
+ * INDEX case → ENTITÉS d'une scène — les seules lectures de « qu'y a-t-il sur cette case ? », en DEUX
+ * questions distinctes : « quel DÉCOR la COUVRE ? » (empreinte) et « quelles entités y sont ANCRÉES ? ».
  *
  * Les cases viennent de `propFootTiles` (`state/footprint.ts`), la couture UNIQUE de l'empreinte
  * effective d'un décor (corps tourné pour une recette, empreinte déclarée pour un billboard) : aucun
@@ -29,25 +30,35 @@ import { memoByRefDeps } from './sceneMemo';
 import { sceneMetresPerTile, type Scene, type SceneEntity } from './scene';
 
 interface IndexDecor {
-  /** Clé `x,y` — la vue SANS étage. */
+  /** Clé `x,y` — la vue COUVERTURE, SANS étage. */
   parCase: ReadonlyMap<string, SceneEntity>;
-  /** Clé `x,y,z` — la vue PAR étage. */
+  /** Clé `x,y,z` — la vue COUVERTURE, PAR étage. */
   parCaseEtage: ReadonlyMap<string, SceneEntity>;
+  /** Clé `x,y,z` — la vue ANCRAGE : TOUTES les entités dont la POSE tombe sur la case, dans l'ordre
+   *  du document. */
+  ancrees: ReadonlyMap<string, readonly SceneEntity[]>;
 }
+
+const AUCUNE: readonly SceneEntity[] = [];
 
 function bati(entities: readonly SceneEntity[], mpt: number): IndexDecor {
   const parCase = new Map<string, SceneEntity>();
   const parCaseEtage = new Map<string, SceneEntity>();
+  const ancrees = new Map<string, SceneEntity[]>();
   for (const e of entities) {
-    if (e.kind !== 'prop') continue;
     const z = e.z ?? 0;
+    const cleAncre = `${e.pos.x},${e.pos.y},${z}`;
+    const deja = ancrees.get(cleAncre);
+    if (deja) deja.push(e);
+    else ancrees.set(cleAncre, [e]);
+    if (e.kind !== 'prop') continue;
     for (const t of propFootTiles(e.ref, e.pos, e.facing, mpt)) {
       const cle = `${t.x},${t.y}`;
       if (!parCase.has(cle)) parCase.set(cle, e);
       if (!parCaseEtage.has(`${cle},${z}`)) parCaseEtage.set(`${cle},${z}`, e);
     }
   }
-  return { parCase, parCaseEtage };
+  return { parCase, parCaseEtage, ancrees };
 }
 
 const index = memoByRefDeps<readonly SceneEntity[], IndexDecor>();
@@ -64,3 +75,13 @@ export const decorEnCase = (scene: Scene, x: number, y: number): SceneEntity | u
 /** Le décor dont l'empreinte couvre la case (x, y) À l'étage `z`. */
 export const decorEnCaseEtage = (scene: Scene, x: number, y: number, z: number): SceneEntity | undefined =>
   indexDe(scene).parCaseEtage.get(`${x},${y},${z}`);
+
+/** TOUTES les entités ANCRÉES sur la case (x, y, z) — toutes natures, dans l'ordre du document. C'est
+ *  la lecture PAR POSITION du picking (`gameIso/stage/pickResolve.ts` § `Verdict`) : le rayon nomme ce
+ *  qu'il a frappé, et quand c'est la CASE qui est la question (survol « y a-t-il de l'interactif ici ? »,
+ *  clic sur une case qu'aucun rayon n'a nommée), on lit ICI — en O(1), là où un balayage de
+ *  `scene.entities` à chaque `pointermove` coûte la scène entière. Vue d'ANCRAGE et non de
+ *  COUVERTURE : le picking rend déjà la case d'ANCRAGE d'un meuble (`meubleDessine`), et une entité
+ *  sans empreinte authorée (PNJ, conteneur, déclencheur) n'en a pas d'autre. */
+export const entitesEnCaseEtage = (scene: Scene, x: number, y: number, z: number): readonly SceneEntity[] =>
+  indexDe(scene).ancrees.get(`${x},${y},${z}`) ?? AUCUNE;

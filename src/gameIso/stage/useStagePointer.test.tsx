@@ -1158,6 +1158,51 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     expect(useGame.getState().pendingInteract).toBeNull();
   });
 
+  /**
+   * DEUX ENTITÉS SUR UNE MÊME CASE, dont la SECONDE seule est interactive (#1687). Le rayon ne nomme
+   * rien (plateau fin) : la question est alors la CASE, et elle se lit à l'index d'ancrage
+   * (`state/decorIndex.ts:entitesEnCaseEtage`). L'affordance et le clic lisent la MÊME entité — une
+   * main au survol suivie d'un clic qui sert l'autre entité serait un mensonge d'interface.
+   */
+  const sceneDeuxDecors = () => {
+    const scene = emptyScene(8, 8);
+    scene.entities = [
+      // PREMIER du document, SANS affordance : c'est lui qu'une lecture par position rend, toujours.
+      { id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: REF_BILLBOARD, facing: 'S' },
+      { id: 'coffre-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: REF_BILLBOARD, facing: 'S',
+        interact: { flow: { kind: 'seq', steps: [] } } },
+    ] as typeof scene.entities;
+    // La fixture DIT ce qu'elle prétend : le premier décor n'appelle aucun geste — ni `interact`, ni
+    // place servable (une place est interactive sans `interact`, cf. `estInteractive`).
+    expect(seatSlotsOf(scene, 'table-1'), 'le décor témoin doit être SANS affordance').toHaveLength(0);
+    return scene;
+  };
+
+  it('survol d’une case à deux décors : la main s’affiche pour l’entité INTERACTIVE de la case', () => {
+    useGame.setState({ scene: sceneDeuxDecors(), mode: 'exploration', partyPos: { x: 2, y: 2 }, party: [], dialogue: null });
+    setSpritePicker(null); // aucun rayon : le verdict est une CASE, sans identité
+    const pointer = monter();
+    const surLeMeuble = tileCenter(2, 3, dims);
+    const ev = pointerEvent(surLeMeuble.cx, surLeMeuble.cy);
+    pointer.handlers.onPointerMove(ev);
+    expect((ev.currentTarget as unknown as SVGElement).style.cursor).toBe('pointer');
+  });
+
+  it('clic sur cette même case : c’est l’entité INTERACTIVE qui est servie, pas la première du document', () => {
+    const interactEntity = vi.fn();
+    useGame.setState({
+      scene: sceneDeuxDecors(), mode: 'exploration', partyPos: { x: 2, y: 2 }, party: [], dialogue: null,
+      interactEntity, setPendingInteract: vi.fn(), flags: {},
+    });
+    setSpritePicker(null);
+    const pointer = monter();
+    const surLeMeuble = tileCenter(2, 3, dims);
+    const ev = pointerEvent(surLeMeuble.cx, surLeMeuble.cy);
+    pointer.handlers.onPointerDown(ev);
+    pointer.handlers.onPointerUp(ev);
+    expect(interactEntity).toHaveBeenCalledWith('coffre-1'); // adjacent (2,2)→(2,3) : servi sur place
+  });
+
   it('hors combat, le hit-test n’est PAS sollicité sur une scène sans mobilier volumique', () => {
     const picker = vi.fn(() => null);
     setSpritePicker(picker);

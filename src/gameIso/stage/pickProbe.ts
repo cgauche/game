@@ -20,23 +20,29 @@ import { etageActif, getViewZ } from '../../state/viewLevel';
 import { poseFromDims } from './projection';
 import { getStageFrame, targetUnderPointer } from './spritePicker';
 import { pointStageSousPixel, resoudrePixel, tireLeRayon } from './pickResolve';
+import { entiteDuGeste } from './geste';
 
 /** Ce que le picking résoudrait sous `px` (pixel CLIENT). `null` tant qu'aucun stage n'est à l'écran. */
 export const pickTileAt: PickProbe = (px) => {
   const st = useGame.getState();
   const svg = document.querySelector('svg.iso-stage') as SVGSVGElement | null;
   if (!st.scene || !svg) return null;
+  const scene = st.scene;
   // Le cadre PUBLIÉ est la seule pose admise : sans hôte monté, il n'y a pas d'image sous ce pixel, et
   // la sonde le NOMME plutôt que de résoudre sur une pose qu'aucun écran ne rend.
   const cadre = getStageFrame();
-  if (!cadre) return { tile: null, cid: null, via: 'aucune' };
+  if (!cadre) return { tile: null, cid: null, via: 'aucune', nature: 'case', geste: {} };
   const { dims } = cadre;
   // La caméra est relue À L'APPEL, comme le geste la lit à l'instant de son événement : la boucle
   // d'images la réécrit entre deux rendus.
   const g = pointStageSousPixel(svg, px.x, px.y, cadre.camRendue(), cadre.zoom);
   if (!g) return null; // élément sans surface mesurée : aucune image à sonder
   const visé = tireLeRayon(st) ? targetUnderPointer(px.x, px.y) : null;
-  return resoudrePixel(st, visé, () => g, { pose: poseFromDims(dims), dims, activeZ: etageActif(st, getViewZ()) });
+  const v = resoudrePixel(st, visé, () => g, { pose: poseFromDims(dims), dims, activeZ: etageActif(st, getViewZ()) });
+  // Le VERDICT dit ce que le pixel frappe ; le GESTE dit ce qu'un clic traiterait — un PNJ ancré sur la
+  // case rend `nature:'case'` et ouvre pourtant son dialogue. Les deux sont rapportés, par la même
+  // fonction que le hook appelle (`stage/geste.ts`).
+  return { ...v, geste: { entId: v.tile ? entiteDuGeste(scene, v, v.tile)?.id : undefined } };
 };
 
 setPickProbe(pickTileAt);

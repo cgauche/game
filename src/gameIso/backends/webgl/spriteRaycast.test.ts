@@ -5,7 +5,7 @@ import { pickNearestTarget, type PickTarget } from './spriteRaycast';
 /**
  * QUI GAGNE UN PIXEL DISPUTÉ (#1176 P2-4, #1297 lot B + correctif du juge du cumul).
  *
- * Le hit-test de sprite tourne à CHAQUE `pointermove` en combat (`stage/useStagePointer.pickTile`), et
+ * Le hit-test de sprite tourne à CHAQUE `pointermove` en combat (`stage/useStagePointer.pickVerdict`), et
  * ses cibles sont les seuls QUADS : la masse triangulée de la carte, de très loin la plus lourde, n'y
  * est plus inscrite (`stage/GameStage3D`) — un jeton qu'elle occulte se lit en SILHOUETTE, donc se
  * clique. Restent deux natures de quad : le JETON, qui porte un id, et le DÉCOR, qui n'en porte pas et
@@ -72,7 +72,7 @@ describe('pickNearestTarget (billboards seuls) — le plus PROCHE tranche, et un
   it('PIONS EN DISQUES (#1176 P3-5c) : sans un seul quad de personnage, le verdict est `null` — le clic RETOMBE sur la case', () => {
     // Sous le verdict `pionsEnDisques` (vue du dessus), le monde ne monte AUCUN sujet `personnage`
     // (`stage/GameStage3D`) : les seules cibles restantes sont du DÉCOR, qui ne rend jamais d'id. Le
-    // picking de sprite se tait donc PAR CONSTRUCTION, et `useStagePointer.pickTile` résout par
+    // picking de sprite se tait donc PAR CONSTRUCTION, et `useStagePointer.pickVerdict` résout par
     // le repli de surface de `stage/pickResolve.ts:resoudrePixel` — juste, puisque le disque est
     // centré sur SA case.
     const cibles = [decor(-9).cible, decor(-3).cible];

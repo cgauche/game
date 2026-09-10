@@ -5,7 +5,7 @@ import { Vector3, type OrthographicCamera, type PerspectiveCamera } from 'three'
 import { afterEach, describe, expect, it } from 'vitest';
 import type { Dims } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
-import { heightAt, isWalkable, sceneMetresPerTile, type Scene } from '../../state/scene';
+import { emptyScene, heightAt, isWalkable, sceneMetresPerTile, type Scene } from '../../state/scene';
 import { walkNeighbors, type Pt } from '../../state/path';
 import { useGame } from '../../state/store';
 import { scenario as diligence } from '../../scenes/test-scenarios/diligence';
@@ -18,9 +18,10 @@ import { stage3dFraming } from './stage3dCamera';
 import { useStagePointer, type StagePointer } from './useStagePointer';
 import { setSpritePicker, setStageFrame, type CadreRendu } from './spritePicker';
 import { pickTileAt } from './pickProbe';
-import { caseAuSol } from './pickResolve';
+import { caseAuSol, type Verdict } from './pickResolve';
+import type { PickProbe } from '../../state/devtools';
 import { buildPropVolumes } from '../builders/propVolumes';
-import { findPropById } from '../../data';
+import { findPropById, props, refEstVolumique } from '../../data';
 import { capVolumique } from '../../data/props.types';
 import type { SceneEntity } from '../../state/scene';
 
@@ -407,10 +408,15 @@ describe('sonde de picking — hors combat, un décor volumique nommé rend SA c
   it('le rayon nomme une ENTITÉ : la sonde rend sa case d’ancrage, par la voie `decor`', () => {
     armer();
     setSpritePicker(() => ({ kind: 'entity', id: cible.id }));
+    // Le verdict porte l'IDENTITÉ frappée à CÔTÉ de sa case d'ancrage (#1687) : aucun lecteur n'a
+    // plus à retrouver l'entité par la position rendue.
     expect(pickTileAt(pixel)).toEqual({
       tile: { x: cible.pos.x, y: cible.pos.y, z: cible.z ?? 0 },
       cid: null,
       via: 'decor',
+      nature: 'entite',
+      entId: cible.id,
+      geste: { entId: cible.id },
     });
   });
 
@@ -422,6 +428,80 @@ describe('sonde de picking — hors combat, un décor volumique nommé rend SA c
     // `null` et la sonde poursuivait la chaîne en silence, en rapportant l'étage suivant là où le
     // geste rend le décor que le rayon nomme.
     expect(vu?.via).toBe('meuble');
+  });
+});
+
+/**
+ * CONFORMITÉ de la SONDE DE RECETTE (#1687) — `state/devtools.ts` déclare la forme que le rendu lui
+ * rend SANS pouvoir l'importer : la frontière `src/state ↛ src/gameIso` refuse jusqu'au `import type`
+ * (`state/frontiere-state-gameiso.test.ts`). Ce test vit du côté qui voit les DEUX types, et refuse
+ * qu'une 3ᵉ forme naisse : les deux se contiennent l'une l'autre, sinon le typecheck rougit ici.
+ */
+describe('sonde de recette — la forme déclarée au store EST le verdict du rendu (#1687)', () => {
+  it('les deux types se contiennent : ni champ ni nature ne dérive', () => {
+    type Contient<A, B> = [A] extends [B] ? true : false;
+    // Ce que la SONDE rend = le verdict du rendu PLUS le geste qu'elle rapporte (`stage/geste.ts`).
+    type VerdictSonde = (Verdict & { geste: { entId?: string } }) | null;
+    const versLeStore: Contient<VerdictSonde, ReturnType<PickProbe>> = true;
+    const versLeRendu: Contient<ReturnType<PickProbe>, VerdictSonde> = true;
+    expect([versLeStore, versLeRendu]).toEqual([true, true]);
+  });
+});
+
+/**
+ * CE QUE LE VERDICT NOMME (#1687) — le rayon nomme l'ENTITÉ frappée, un étage de surface ne nomme
+ * qu'une CASE.
+ *
+ * Scène FABRIQUÉE ici, jamais un paquet livré : le cas mesuré est DEUX entités sur la MÊME case — une
+ * lecture par position (`entities.find(pos === t)`) les confond, elle rend la PREMIÈRE du document
+ * quel que soit le pixel.
+ */
+describe('verdict de picking — le rayon nomme, la surface ne devine pas (#1687)', () => {
+  /** Décor VOLUMIQUE DÉRIVÉ du catalogue (jamais une ref écrite en dur) : c'est sa présence qui
+   *  autorise le rayon hors combat (`builders/props.ts:sceneAUnPropVolumique`). */
+  const REF_VOLUMIQUE = props.find((p) => refEstVolumique(p.id))!.id;
+  const scene = emptyScene(8, 8);
+  scene.entities = [
+    { id: 'table-1', kind: 'prop', pos: { x: 3, y: 3 }, ref: REF_VOLUMIQUE, facing: 'S' },
+    { id: 'coffre-1', kind: 'prop', pos: { x: 3, y: 3 }, ref: REF_VOLUMIQUE, facing: 'S' },
+  ] as unknown as SceneEntity[];
+  const mpt = sceneMetresPerTile(scene);
+  const camera = cameraVolumique(dimsDe(scene), mpt);
+  const pixelDe = (x: number, y: number) => {
+    const p = pixelVolumique(camera, mpt, x, y, heightAt(scene, x, y, 0));
+    return { x: p.sx, y: p.sy };
+  };
+
+  function armer(): void {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    el.setAttribute('class', 'iso-stage');
+    el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
+    document.body.appendChild(el);
+    setStageFrame(cadreRendu(dimsDe(scene)));
+    useGame.setState({
+      scene, mode: 'exploration', battle: null, dialogue: null, party: [],
+      partyPos: { x: 1, y: 1 }, camPan: CAM, zoom: ZOOM, camRot: 0, camEdge: false, viewMode: 'iso',
+    });
+  }
+
+  afterEach(() => {
+    document.querySelectorAll('svg.iso-stage').forEach((el) => el.remove());
+    setStageFrame(null);
+  });
+
+  it('deux entités sur une MÊME case, le pixel tombe sur la SECONDE : le verdict nomme la SECONDE', () => {
+    armer();
+    setSpritePicker(() => ({ kind: 'entity', id: 'coffre-1' }));
+    const vu = pickTileAt(pixelDe(3, 3));
+    expect(vu).toEqual({ tile: { x: 3, y: 3, z: 0 }, cid: null, via: 'decor', nature: 'entite', entId: 'coffre-1', geste: { entId: 'coffre-1' } });
+  });
+
+  it('case de SOL qu’aucun rayon ne nomme : le verdict est une CASE, et ne nomme aucune entité', () => {
+    armer();
+    setSpritePicker(null);
+    const vu = pickTileAt(pixelDe(6, 6));
+    expect(vu).toEqual({ tile: { x: 6, y: 6, z: 0 }, cid: null, via: 'sol', nature: 'case', geste: {} });
+    expect(vu && 'entId' in vu, 'un étage de surface ne pose aucune identité').toBe(false);
   });
 });
 
@@ -559,7 +639,7 @@ describe('sonde de picking — le CADRE est celui que l’écran rend, jamais le
   it('hors montage du stage, la sonde NOMME l’absence d’image plutôt que de résoudre à l’aveugle', () => {
     armerCadre(dimsDe(scene));
     setStageFrame(null); // aucun hôte de rendu : plus aucune pose commise
-    expect(pickTileAt({ x: CANVAS.w / 2, y: CANVAS.h / 2 })).toEqual({ tile: null, cid: null, via: 'aucune' });
+    expect(pickTileAt({ x: CANVAS.w / 2, y: CANVAS.h / 2 })).toEqual({ tile: null, cid: null, via: 'aucune', nature: 'case', geste: {} });
   });
 });
 
@@ -614,5 +694,67 @@ describe('sonde de picking — la CAMÉRA du cadre est celle du RENDU, jamais `s
       if (cle(vu?.tile) !== cle(attendu)) ecarts.push(`${ent.id} : geste=${cle(attendu)} sonde=${cle(vu?.tile)} (via ${vu?.via ?? 'rien'})`);
     }
     expect(ecarts).toEqual([]);
+  });
+});
+
+/**
+ * CE QUE LE GESTE SERVIRAIT — la sonde ne s'arrête pas à l'entonnoir de résolution (#1687).
+ *
+ * Mesuré en recette le 2026-09-10 : au pixel d'un PNJ à dialogue, `pickTileAt` rendait `nature:'case'`
+ * — aucun rayon ne nomme un personnage hors combat — alors que le CLIC ouvrait bien son dialogue. La
+ * sonde n'appelait que `resoudrePixel` ; le geste, lui, poursuit par l'entité de la case
+ * (`stage/geste.ts:entiteDuGeste`). Une sonde qui ne joue pas le geste innocente le pixel que le clic
+ * manque : elle rapporte désormais les DEUX, et par la MÊME fonction que le hook.
+ *
+ * Scène FABRIQUÉE ici (jamais un paquet livré) : un PNJ à `dialogueId`, aucun rayon inscrit.
+ */
+describe('sonde de recette — le verdict dit la CASE, le geste nomme le PNJ (#1687)', () => {
+  const scene = emptyScene(8, 8);
+  const PNJ = 'baron-a-la-case';
+  scene.entities = [
+    { id: PNJ, kind: 'personnage', pos: { x: 4, y: 4 }, dialogueId: 'dlg-baron', facing: 'S' },
+  ] as unknown as SceneEntity[];
+  const mpt = sceneMetresPerTile(scene);
+  const px = pixelVolumique(
+    cameraVolumique(dimsDe(scene), mpt), mpt, 4, 4, heightAt(scene, 4, 4, 0),
+  );
+
+  afterEach(() => {
+    document.querySelectorAll('svg.iso-stage').forEach((el) => el.remove());
+    setStageFrame(null);
+  });
+
+  it('un pixel sur la case d’un PNJ à dialogue : `nature:"case"`, et `geste.entId` = le PNJ', () => {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    el.setAttribute('class', 'iso-stage');
+    el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
+    document.body.appendChild(el);
+    setStageFrame(cadreRendu(dimsDe(scene)));
+    setSpritePicker(null); // hors rayon : c'est la CASE qui répond, comme à l'écran hors combat
+    useGame.setState({
+      scene, mode: 'exploration', battle: null, dialogue: null, party: [],
+      partyPos: { x: 0, y: 0 }, camPan: CAM, zoom: ZOOM, camRot: 0, camEdge: false, viewMode: 'iso',
+    });
+    const vu = pickTileAt({ x: px.sx, y: px.sy });
+    expect(vu?.tile).toEqual({ x: 4, y: 4, z: 0 });
+    expect(vu?.nature, 'aucun rayon ne nomme un PNJ hors combat').toBe('case');
+    expect(vu?.geste).toEqual({ entId: PNJ });
+  });
+
+  it('TÉMOIN — une case NUE du même plancher ne fait servir aucune entité', () => {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    el.setAttribute('class', 'iso-stage');
+    el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
+    document.body.appendChild(el);
+    setStageFrame(cadreRendu(dimsDe(scene)));
+    setSpritePicker(null);
+    useGame.setState({
+      scene, mode: 'exploration', battle: null, dialogue: null, party: [],
+      partyPos: { x: 0, y: 0 }, camPan: CAM, zoom: ZOOM, camRot: 0, camEdge: false, viewMode: 'iso',
+    });
+    const nu = pixelVolumique(cameraVolumique(dimsDe(scene), mpt), mpt, 6, 6, heightAt(scene, 6, 6, 0));
+    const vu = pickTileAt({ x: nu.sx, y: nu.sy });
+    expect(vu?.tile).toEqual({ x: 6, y: 6, z: 0 });
+    expect(vu?.geste).toEqual({});
   });
 });

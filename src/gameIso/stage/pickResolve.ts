@@ -1,7 +1,7 @@
 /**
  * RÉSOLUTION DU PICKING — « quel pixel désigne quoi ? », en UN lieu et en entier.
  *
- * Deux porteurs posent la question : le GESTE (`useStagePointer.pickTile`, ce qu'un clic fait) et la
+ * Deux porteurs posent la question : le GESTE (`useStagePointer.pickVerdict`, ce qu'un clic fait) et la
  * SONDE DE RECETTE (`pickProbe.pickTileAt`, ce qu'une recette lit sans cliquer). Tenue en double, la
  * chaîne dérive — et une sonde qui a dérivé RAPPORTE un verdict que le clic ne rend pas, donc innocente
  * le pixel que le clic manque. `resoudrePixel` porte la chaîne COMPLÈTE (rayon → meuble dessiné → pas
@@ -38,13 +38,29 @@ export interface EtatDePick extends EtatEtage {
 /** Par quelle voie la case a été désignée. L'ordre de ce type EST celui de la chaîne. */
 export type PickVia = 'sprite' | 'decor' | 'meuble' | 'pas-etage' | 'sol' | 'aucune';
 
-/** Verdict du picking sous un pixel : la case du monde (`null` = rien de dessiné), le combattant dont
- *  le CORPS s'y trouve, et l'étage de la chaîne qui a tranché. */
-export interface Verdict {
+/** Verdict du picking sous un pixel : la case d'ANCRAGE (`null` = rien de dessiné), la NATURE de ce
+ *  qui est frappé, et l'étage de la chaîne qui a tranché.
+ *
+ *  CE QUE CE TYPE FAIT (#1687) : le RAYON nomme l'entité qu'il a frappée (`nature: 'entite'`, `entId`)
+ *  ou le combattant dont le jeton est sous le pixel (`nature: 'combattant'`, `cid`). Une case rendue
+ *  par un étage de SURFACE (meuble dessiné, pas inter-étages, case marchable, sol cross-couche) ne
+ *  nomme RIEN d'autre : ces étages inversent une géométrie, ils ne devinent aucune identité. La lecture
+ *  PAR POSITION — « quelles entités sont ancrées sur cette case ? » — est assumée, unique et vit
+ *  ailleurs : l'index case → entités de `state/decorIndex.ts` (`entitesEnCaseEtage`), que les lecteurs
+ *  composent quand la case, et non le pixel, est la question.
+ *
+ *  L'UNION est DISCRIMINÉE par `nature` : `'entite'` sans `entId` ne compile pas, et un lecteur qui
+ *  branche sur `nature` reçoit du compilateur le `never` de son défaut si une nature s'ajoute. */
+export type Verdict = {
   tile: { x: number; y: number; z: number } | null;
   cid: string | null;
   via: PickVia;
-}
+} & (
+  | { nature: 'case' }
+  | { nature: 'combattant' }
+  /** Entité de scène frappée PAR LE RAYON (décor volumique, PNJ…). */
+  | { nature: 'entite'; entId: string }
+);
 
 /** LIFTS D'AFFICHAGE distincts d'une scène, du plus HAUT au plus bas — l'ensemble des hauteurs
  *  auxquelles une case peut être DESSINÉE (`metricToLift` de chaque hauteur de relief authorée, plus le
@@ -82,12 +98,12 @@ export function caseVisee(vise: PickResult, st: EtatDePick): Verdict | null {
       if (st.mode !== 'battle') return null;
       const c = inBattleId(st.battle, vise.id);
       if (!c?.pos) return null;
-      return { tile: { x: c.pos.x, y: c.pos.y, z: c.pos.z ?? 0 }, cid: c.id, via: 'sprite' };
+      return { tile: { x: c.pos.x, y: c.pos.y, z: c.pos.z ?? 0 }, cid: c.id, via: 'sprite', nature: 'combattant' };
     }
     case 'entity': {
       const e = st.scene?.entities.find((x) => x.id === vise.id);
       if (!e) return null;
-      return { tile: { x: e.pos.x, y: e.pos.y, z: e.z ?? 0 }, cid: null, via: 'decor' };
+      return { tile: { x: e.pos.x, y: e.pos.y, z: e.z ?? 0 }, cid: null, via: 'decor', nature: 'entite', entId: e.id };
     }
     default: {
       const jamais: never = vise;
@@ -210,7 +226,11 @@ export function caseAuSol(scene: Scene, cadre: CadreDePick, g: PointStage): Pt |
   return null;
 }
 
-const verdict = (t: Pt, via: PickVia): Verdict => ({ tile: { x: t.x, y: t.y, z: t.z ?? 0 }, cid: null, via });
+/** Verdict d'un étage de SURFACE : une case, et rien d'autre — aucune identité n'est devinée depuis
+ *  la position rendue (cf. le JSDoc de `Verdict`). */
+const verdict = (t: Pt, via: PickVia): Verdict => ({ tile: { x: t.x, y: t.y, z: t.z ?? 0 }, cid: null, via, nature: 'case' });
+
+const RIEN: Verdict = { tile: null, cid: null, via: 'aucune', nature: 'case' };
 
 /**
  * LA CHAÎNE — l'ordre dans lequel les étages se départagent, et le seul endroit où il est écrit.
@@ -226,9 +246,9 @@ export function resoudrePixel(st: EtatDePick, vise: PickResult, pointStage: () =
   const nommé = caseVisee(vise, st);
   if (nommé) return nommé;
   const scene = st.scene;
-  if (!scene) return { tile: null, cid: null, via: 'aucune' };
+  if (!scene) return RIEN;
   const g = pointStage();
-  if (!g) return { tile: null, cid: null, via: 'aucune' };
+  if (!g) return RIEN;
   if (st.mode !== 'battle') {
     const meuble = meubleDessine(scene, cadre, g, cadre.activeZ);
     if (meuble) return verdict(meuble, 'meuble');
@@ -240,5 +260,5 @@ export function resoudrePixel(st: EtatDePick, vise: PickResult, pointStage: () =
     if (ici) return verdict(ici, 'sol');
   }
   const sol = caseAuSol(scene, cadre, g);
-  return sol ? verdict(sol, 'sol') : { tile: null, cid: null, via: 'aucune' };
+  return sol ? verdict(sol, 'sol') : RIEN;
 }

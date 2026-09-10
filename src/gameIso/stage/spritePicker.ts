@@ -1,6 +1,6 @@
 /**
  * HIT-TEST DE SPRITE du stage (#1176, lot P2-3) — la COUTURE UNIQUE entre le pointeur et la voie de
- * rendu : « quel combattant est dessiné sous ce pixel ? ». Le pointeur (`useStagePointer.pickTile`)
+ * rendu : « quel combattant est dessiné sous ce pixel ? ». Le pointeur (`useStagePointer.pickVerdict`)
  * pose la question ; la voie qui PEINT y répond, de la seule façon dont elle sait trancher son
  * empilement.
  *

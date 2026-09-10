@@ -1,13 +1,26 @@
 import { useGame, SCREENS } from './store';
 
-/** Ce que la SONDE DE PICKING du rendu rend (`gameIso/stage/pickProbe`) : la case que le picking
- *  résoudrait sous un pixel CLIENT, le combattant dont le corps s'y trouve, et par quelle voie. Les
- *  voies sont celles de `gameIso/stage/pickResolve.ts`, partagées avec le geste. */
-export type PickProbe = (px: { x: number; y: number }) => {
+/** Ce que la SONDE DE PICKING du rendu rend (`gameIso/stage/pickProbe`) : le verdict que le picking
+ *  résoudrait sous un pixel CLIENT — case d'ANCRAGE, nature de ce qui est frappé, combattant, et voie
+ *  qui a tranché — PLUS `geste`, ce qu'un clic à ce pixel traiterait vraiment
+ *  (`gameIso/stage/geste.ts`, la fonction que le hook de pointeur appelle) : sans lui, la sonde
+ *  rapportait `nature:'case'` sur un PNJ dont le clic ouvre le dialogue. La forme est ÉCRITE ici et
+ *  non importée de `gameIso/stage/pickResolve.ts` : la
+ *  frontière `src/state ↛ src/gameIso` ne connaît aucune exception, pas même un `import type`
+ *  (`state/frontiere-state-gameiso.test.ts`). Ce qui empêche les deux formes de dériver est un test de
+ *  CONFORMITÉ qui vit du côté autorisé à voir les deux (`gameIso/stage/pick-parity.test.tsx`). */
+export type PickProbe = (px: { x: number; y: number }) => ({
   tile: { x: number; y: number; z: number } | null;
   cid: string | null;
   via: 'sprite' | 'decor' | 'meuble' | 'pas-etage' | 'sol' | 'aucune';
-} | null;
+  /** L'entité que le GESTE servirait sous ce verdict (dialogue, marchand, place à s'asseoir…) ;
+   *  `entId` absent = le clic ne traite aucune entité. */
+  geste: { entId?: string };
+} & (
+  | { nature: 'case' }
+  | { nature: 'combattant' }
+  | { nature: 'entite'; entId: string }
+)) | null;
 
 let sondeDePicking: PickProbe | null = null;
 
@@ -102,7 +115,9 @@ function routesRendues(map: WorldMap, sceneId: string | undefined): { route: Map
  *   __wfrp.tileScreenPos({x,y,z?}) → même bounding box ÉCRAN pour une CASE (vide comprise), là où
  *                           `screenPos` exige un token `data-cid` — viser un déplacement au clic réel
  *   __wfrp.pickTileAt({x,y}) → l'INVERSE : ce que le PICKING RÉEL résoudrait sous ce pixel écran
- *                           ({tile, cid, via:'sprite'|'decor'|'meuble'|'pas-etage'|'sol'|'aucune'}) — lecture seule, aucun clic
+ *                           ({tile, cid, via:'sprite'|'decor'|'meuble'|'pas-etage'|'sol'|'aucune',
+ *                           nature, geste:{entId?}} — `geste.entId` = l'entité qu'un clic traiterait)
+ *                           — lecture seule, aucun clic
  *   __wfrp.talk('id')     → téléporte le groupe à côté de l'entité et l'interpelle (dialogue/marchand)
  *   __wfrp.goto('id')     → place le groupe sur la case de l'entité (déclenche portes/triggers au pas)
  *   __wfrp.screen('menu') → navigue vers un écran

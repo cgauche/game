@@ -1,11 +1,13 @@
 /**
  * Pointeur du stage iso :
- *  - `pickTile` : écran → tuile. Ce hook n'y apporte que les COORDONNÉES du `PointerEvent` React
+ *  - `pickVerdict` : écran → VERDICT (case d'ancrage + nature + identité, `pickResolve.ts`). Ce hook
+ *    n'y apporte que les COORDONNÉES du `PointerEvent` React
  *    (`ev.clientX/clientY`) et interroge la voie de rendu (`targetUnderPointer` : `elementFromPoint`
  *    en affine, lancer de rayon en volumique). L'inversion du pixel (`pointStageSousPixel`) comme la
  *    CHAÎNE de résolution — rayon, meuble dessiné, pas inter-étages, case marchable, sol cross-couche
  *    — sont `stage/pickResolve.ts`, que la sonde de recette (`stage/pickProbe.ts`) appelle aussi :
- *    une seule règle, deux porteurs, aucun étage propre à l'un des deux ;
+ *    une seule règle, deux porteurs, aucun étage propre à l'un des deux ; l'ENTITÉ que ce verdict fait
+ *    traiter (et celle que l'affordance annonce) est `stage/geste.ts`, que la sonde appelle aussi ;
  *  - glisser-caméra (seuil PAN_THRESHOLD, l'action de clic est DIFFÉRÉE au relâchement) — bouton
  *    principal : panoramique posé HORS de React (`state/stagePan`, un battement de frame par
  *    mouvement) et commis au store en UN `set` au relâchement ; bouton MILIEU : lacet libre de la vue ;
@@ -44,7 +46,8 @@ import { type Dims } from '../../geometry/iso';
 import { STEP_MS } from '../../geometry/walk';
 import { poseFromDims } from './projection';
 import { targetUnderPointer } from './spritePicker';
-import { pointStageSousPixel, pointViewBoxSousPixel, resoudrePixel, tireLeRayon } from './pickResolve';
+import { pointStageSousPixel, pointViewBoxSousPixel, resoudrePixel, tireLeRayon, type Verdict } from './pickResolve';
+import { entiteDuGeste, estInteractive } from './geste';
 import type { RoomPortal } from '../../state/roomPortals';
 
 const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sinon = clic)
@@ -95,7 +98,7 @@ export function useStagePointer({
   // décalage vivant) se re-pose dès qu'une de ses hypothèses bouge sous le geste : un recentrage
   // (`resetCamPan`) ou un cran de molette. Sans elle, le delta CUMULÉ serait ré-échelonné par le
   // nouveau zoom, et le relâchement contredirait le recentrage.
-  const dragRef = useRef<{ sx: number; sy: number; vbX: number; vbY: number; panned: boolean; button: number; tile: Pt | null; yaw0: number; pan0: { x: number; y: number }; zoom0: number; accord0: number } | null>(null);
+  const dragRef = useRef<{ sx: number; sy: number; vbX: number; vbY: number; panned: boolean; button: number; verdict: Verdict | null; yaw0: number; pan0: { x: number; y: number }; zoom0: number; accord0: number } | null>(null);
   // Pointeurs ACTIFS sur le stage, par `pointerId` — c'est leur NOMBRE qui distingue les deux régimes
   // du tactile : un doigt = le glisser historique (`dragRef`), deux = le PINCER (zoom + panoramique).
   // `pinchRef` porte l'état du geste à deux doigts (écart et milieu du dernier échantillon).
@@ -130,15 +133,17 @@ export function useStagePointer({
   // inter-étages, case marchable, sol cross-couche) vit en UN lieu : `stage/pickResolve.ts`, que la
   // sonde de recette (`stage/pickProbe.ts`) appelle aussi. Ce hook n'y apporte que les coordonnées de
   // l'événement et la caméra du rendu que son hôte lui tend.
-  const pickTile = (ev: React.PointerEvent): Pt | null => {
+  const pickVerdict = (ev: React.PointerEvent): Verdict => {
     const st = useGame.getState();
     const visé = tireLeRayon(st) ? targetUnderPointer(ev.clientX, ev.clientY) : null;
     // Le point de stage est passé en THUNK : quand le rayon nomme sa cible, le pixel n'est jamais
     // inversé — donc aucun `getBoundingClientRect()` par `pointermove` (cf. `resoudrePixel`).
-    const { tile } = resoudrePixel(st, visé, () => stagePointOf(ev), { pose, dims, activeZ });
-    if (!tile) return null;
-    return tile.z ? { x: tile.x, y: tile.y, z: tile.z } : { x: tile.x, y: tile.y };
+    return resoudrePixel(st, visé, () => stagePointOf(ev), { pose, dims, activeZ });
   };
+
+  /** La case d'ANCRAGE du verdict, dans la forme que le reste du hook manipule (z omis à l'étage 0). */
+  const tuileDe = (v: Verdict): Pt | null =>
+    v.tile ? (v.tile.z ? { x: v.tile.x, y: v.tile.y, z: v.tile.z } : { x: v.tile.x, y: v.tile.y }) : null;
 
   // Écran → coordonnées de VIEWBOX — base du panoramique (delta de glissement), premier étage de
   // l'inversion partagée (`pickResolve.ts:pointViewBoxSousPixel`) : la caméra du groupe reste en
@@ -251,10 +256,11 @@ export function useStagePointer({
   };
 
   // Action de clic (DIFFÉRÉE au relâchement, sautée si on a fait un panoramique) — sélection / cible / déplacement.
-  const performClick = (t: Pt | null) => {
+  const performClick = (v: Verdict | null) => {
     const st = useGame.getState();
     const sc = st.scene;
-    if (!sc || st.dialogue || !t) return;
+    const t = v ? tuileDe(v) : null;
+    if (!sc || st.dialogue || !v || !t) return;
     const { x, y } = t;
     const tz = t.z ?? 0;
     if (st.mode === 'battle') {
@@ -269,7 +275,7 @@ export function useStagePointer({
       else st.battleClickTile(tz ? { x, y, z: tz } : { x, y }, { confirm: hoverClickCommits() }); // z-aware : escalier / case de rempart
       return;
     }
-    const ent = sc.entities.find((e) => e.pos.x === x && e.pos.y === y && (e.z ?? 0) === tz);
+    const ent = entiteDuGeste(sc, v, t);
     // Case d'arrivée partagée avec l'aperçu de survol (explorePath) — JAMAIS recalculée à part (cf.
     // exploreMoveDest) : escalier (autre bout), case adjacente d'un objet/PNJ interactif, ou déplacement simple.
     const plan = exploreMovePlan(sc, st.partyPos, t, pathOpts());
@@ -397,7 +403,7 @@ export function useStagePointer({
       return;
     }
     const p = clientToSvg(ev);
-    dragRef.current = { sx: ev.clientX, sy: ev.clientY, vbX: p?.x ?? 0, vbY: p?.y ?? 0, panned: false, button: ev.button, tile: pickTile(ev), yaw0: getStageYaw(), pan0: getStagePan(), zoom0: zoom, accord0: accordsPan() };
+    dragRef.current = { sx: ev.clientX, sy: ev.clientY, vbX: p?.x ?? 0, vbY: p?.y ?? 0, panned: false, button: ev.button, verdict: pickVerdict(ev), yaw0: getStageYaw(), pan0: getStagePan(), zoom0: zoom, accord0: accordsPan() };
     svgRef.current?.setPointerCapture?.(ev.pointerId);
   };
 
@@ -455,14 +461,15 @@ export function useStagePointer({
         return; // pendant un panoramique : pas d'affordance ni de hover de visée
       }
     }
-    const t = pickTile(ev);
+    const v = pickVerdict(ev);
+    const t = tuileDe(v);
     // Affordance : curseur main au survol d'un décor interactif / dialogue (DOM direct, sans re-render).
+    // MÊME entité que celle qu'un clic traiterait (`entiteDuGeste`) : l'affordance ne peut pas annoncer
+    // autre chose que ce que le clic fera.
     const sc = useGame.getState().scene;
+    const eSurvolée = sc && t ? entiteDuGeste(sc, v, t) : undefined;
     const overInteractive =
-      !!sc && !!t && useGame.getState().mode === 'exploration' &&
-      sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.z ?? 0) === (t.z ?? 0)
-        // Un meuble à places est interactif SANS `SceneEntity.interact` : c'est la place qui appelle.
-        && (e.dialogueId || !!e.interact || !!e.merchant || (e.kind === 'prop' && seatSlotsOf(sc, e.id).length > 0)));
+      !!sc && !!eSurvolée && useGame.getState().mode === 'exploration' && estInteractive(sc, eSurvolée);
     (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
     // Survol suivi en COMBAT (visée) ET en EXPLORATION (halo renforcé du décor interactif + aperçu de
     // déplacement) — borné aux changements de tuile, donc peu de re-rendus.
@@ -500,7 +507,7 @@ export function useStagePointer({
     // Un recentrage arrivé APRÈS le dernier mouvement a le dernier mot : il a déjà commis {0,0} et
     // ramené le vivant, il n'y a rien à écrire par-dessus.
     if (d.panned && d.button === 0 && accordsPan() === d.accord0) setCamPan(getStagePan().x, getStagePan().y);
-    if (!d.panned && d.button === 0) performClick(d.tile); // tap (sans glisser) au bouton principal = clic
+    if (!d.panned && d.button === 0) performClick(d.verdict); // tap (sans glisser) au bouton principal = clic
   };
 
   const onPointerLeave = () => {
