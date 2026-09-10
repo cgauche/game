@@ -95,7 +95,7 @@ describe('exploreSeatPlan — marcher vers l’ABORD d’une place libre', () =>
   const TABLE = 'table-ronde-4-tabourets';
   /** Table en (10,10) au cap N : abords nord (10,9), est (11,10), sud (10,11), ouest (9,10). */
   const table = (over: Partial<SceneEntity> = {}): SceneEntity =>
-    ({ id: 'table-1', kind: 'prop', pos: { x: 10, y: 10 }, ref: TABLE, facing: 'N', ...over }) as SceneEntity;
+    ({ id: 'table-1', kind: 'prop', pos: { x: 10, y: 10 }, ref: TABLE, facing: 'N', usable: {}, ...over }) as SceneEntity;
   const scèneTable = (assignments?: Scene['seatAssignments']): Scene => {
     const sc = emptyScene(16, 16);
     sc.entities = [table()];
@@ -179,6 +179,25 @@ describe('exploreSeatPlan — marcher vers l’ABORD d’une place libre', () =>
     expect(chebyshev(plan!.dest, { x: 10, y: 10 }), 'une case ADJACENTE').toBe(1);
     // Déjà à portée : plus rien à marcher — c'est à l'appelant de le DIRE (`useStagePointer`).
     expect(exploreMovePlan(sc, { x: 10, y: 11 }, { x: 10, y: 10 }, { blocked: new Set() })).toBeNull();
+  });
+
+  /** L'assise est un opt-in d'AUTEUR (#1687) : sur un meuble NON activé, la destination du clic est
+   *  celle du sol occupé — jamais l'abord d'une place. La destination du clic est une lecture
+   *  d'INTERACTION, au même titre que le halo et le curseur. */
+  it('meuble à places NON activé : le clic vise la marche GÉNÉRIQUE, jamais l’abord d’une place', () => {
+    const sc = emptyScene(16, 16);
+    sc.entities = [table({ usable: undefined })];
+    expect(seatSlotsOf(sc, 'table-1'), 'précondition : le TYPE porte bien ses places').toHaveLength(4);
+
+    const plan = exploreMovePlan(sc, { x: 8, y: 8 }, { x: 10, y: 10 }, { blocked: new Set() });
+    expect(plan, 'le clic mène quelque part').not.toBeNull();
+    expect(plan!.dest).toEqual(exploreMoveDest(sc, { x: 8, y: 8 }, { x: 10, y: 10 }));
+
+    // …et c'est bien l'ACTIVATION qui décide : le même meuble activé route vers l'abord d'une place.
+    const active = scèneTable();
+    const seat = exploreSeatPlan(active, { x: 8, y: 8 }, 'table-1')!;
+    expect(exploreMovePlan(active, { x: 8, y: 8 }, { x: 10, y: 10 }, { blocked: new Set() })!.dest).toEqual(seat.approach);
+    expect(plan!.dest, 'les deux destinations diffèrent — sans quoi la sonde ne mesure rien').not.toEqual(seat.approach);
   });
 
   it('exploreMovePlan route le clic d’un meuble à places vers CE plan (survol et clic, une seule source)', () => {

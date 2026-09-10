@@ -43,6 +43,7 @@ import { MonsterPartsFields } from './MonsterPartsFields';
 import { effectCtxOf } from './EffectList';
 import { GameOpEditor } from './GameOpEditor';
 import { FlowEditor, TestFields } from './FlowEditor';
+import { actionsDe } from '../../state/usable';
 import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
@@ -1549,6 +1550,7 @@ function EntityPanel({
               </div>
             </>
           )}
+          <UsableFields ent={ent} scene={scene} updateSel={updateSel} />
         </Fold>
       )}
       <div className="insp-actions">
@@ -1556,6 +1558,43 @@ function EntityPanel({
           Supprimer
         </button>
       </div>
+    </>
+  );
+}
+
+/**
+ * DÉCOR UTILISABLE (#1687) — la case que l'auteur coche pour ACTIVER cette instance. Ce que le joueur
+ * verra est RENDU ici en lecture par le dériveur UNIQUE (`actionsDe`, `state/usable.ts`) : l'auteur
+ * lit la même liste que le jeu, jamais une liste recopiée.
+ *
+ * L'activation n'a d'effet PROPRE que sur un décor dont le TYPE porte des places (c'est la seule
+ * capacité qui vive sur le type) ; les autres capacités se dérivent sans elle, et la liste le montre.
+ */
+function UsableFields({ ent, scene, updateSel }: {
+  ent: SceneEntity;
+  scene: Scene;
+  updateSel: (patch: Partial<SceneEntity>) => void;
+}) {
+  return (
+    <>
+      <label className="ed-check">
+        <input
+          type="checkbox"
+          checked={!!ent.usable}
+          onChange={(e) => updateSel({ usable: e.target.checked ? {} : undefined })}
+        />{' '}
+        Décor utilisable (l'auteur ACTIVE cette instance — ouvre l'assise d'un décor à places)
+      </label>
+      {ent.usable && (
+        <div className="ed-field">
+          <span className="mini-title">Ce que le joueur verra</span>
+          <div className="chips">
+            {actionsDe(scene, ent).map((a) => (
+              <span key={a.id} className="chip">{a.label}</span>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   );
 }

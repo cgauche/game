@@ -2,7 +2,7 @@ import { type Scene, isDescriptiveZone, isWalkable } from './scene';
 import { entityBlockedAt } from './sceneRules';
 import { pathTo, walkNeighbors, type MoveEnv, type Pt } from './path';
 import { portalsForParty } from './roomPortals';
-import { memeCase, seatSlotsOf } from './seating';
+import { memeCase, placesJouables, seatSlotsOf } from './seating';
 import { sceneZoneTiles } from './zones';
 import { screenStepDot, type ScreenDir } from './combatCursor';
 import { type Dims } from '../geometry/iso';
@@ -71,6 +71,10 @@ export interface ExploreMovePlan {
  *  L'abord ne se redérive JAMAIS ici : `slot.approach` porte déjà l'approche effective (repli sur le
  *  voisinage du siège compris) — `state/seating` en est la seule couture.
  *
+ *  `seatSlotsOf` et non `placesJouables` : ce plan n'est atteint que DERRIÈRE le gate d'activation
+ *  d'`exploreMovePlan` (ou par un appelant qui a déjà décidé de l'assise) — il résout la géométrie,
+ *  il ne décide pas de l'offre.
+ *
  *  Le chemin retourné se termine EXACTEMENT sur l'abord : c'est ce que `interactEntity` exige pour
  *  asseoir (le groupe doit être SUR la case d'abord, pas simplement à côté du meuble). Déjà sur
  *  l'abord → chemin d'un seul point, à l'appelant d'y voir « rien à marcher ». */
@@ -106,7 +110,9 @@ export function exploreMovePlan(
   // prises, aucun abord atteignable), on REPASSE la main à la marche générique — un meuble plein qui
   // porte une fouille se rejoint encore par une case adjacente.
   const meuble = scene.entities.find((e) => e.kind === 'prop' && e.pos.x === tile.x && e.pos.y === tile.y && (e.z ?? 0) === (tile.z ?? 0));
-  if (meuble && seatSlotsOf(scene, meuble.id).length) {
+  // ...et seulement si l'auteur a ACTIVÉ l'instance (`placesJouables`, #1687) : la destination du
+  // clic est une lecture d'INTERACTION, comme le halo et le curseur.
+  if (meuble && placesJouables(scene, meuble.id).length) {
     const place = exploreSeatPlan(scene, partyPos, meuble.id, opts);
     if (place && place.path.length >= 2) return { dest: place.approach, path: place.path };
   }

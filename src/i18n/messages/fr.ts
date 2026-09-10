@@ -1384,6 +1384,14 @@ export const fr = {
   'seating.occupied': 'Toutes les places sont occupées.',
   'seating.noReachableSeat': 'Aucune place libre n’est accessible d’ici.',
   'seating.mustReachApproach': 'Vous devez rejoindre la place pour vous y asseoir.',
+
+  // ── UTILISABLE (`state/usable.ts`, `usable.*`) : les actions qu'une entité OFFRE au joueur. ──
+  'usable.parler': 'Parler',
+  'usable.commercer': 'Commercer',
+  'usable.jouer': 'Jouer',
+  'usable.fouiller': 'Fouiller',
+  'usable.sasseoir': 'S’asseoir',
+
   'store.cargoRaid': 'Vol terrestre — {issue} : {enc} Enc de cargaison pillée ({pct} %{porteurs}).',
   'store.cargoRaidFled': 'le convoi fuit',
   'store.cargoRaidBroken': 'le convoi est enfoncé',

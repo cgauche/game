@@ -9,7 +9,8 @@ import { metricToLift } from '../../state/relief';
 import { walkNeighbors } from '../../state/path';
 import { chebyshev } from '../../engine/grid';
 import { resolveCursorZ } from '../../state/combatCursor';
-import { seatPoseOf, seatSlotsOf } from '../../state/seating';
+import { placesJouables, seatPoseOf, seatSlotsOf } from '../../state/seating';
+import { estUtilisable } from '../../state/usable';
 import { interactionHalos } from '../builders/interactHalos';
 import { exploreMovePlan, exploreSeatPlan } from '../../state/exploreNav';
 import { useGame } from '../../state/store';
@@ -850,7 +851,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
   it('un meuble à places cliqué de loin : marche jusqu’à l’ABORD, puis assoit le meneur', () => {
     vi.useFakeTimers();
     const scene = emptyScene(8, 8);
-    scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' }] as typeof scene.entities;
+    scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S', usable: {} }] as typeof scene.entities;
     const meneur = meneurJouable();
     // Bout en bout = ACTIONS RÉELLES : un test voisin a substitué des `vi.fn()` dans le store, et un
     // pending armé sur un espion ne prouverait rien.
@@ -892,7 +893,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     // ÉTAGE au-dessus : c'est lui que la boucle cross-couche servait à la place du meuble (cas du plateau fin).
     scene.layers = [scene.layers[0], { z: 1, tiles: new Array(8 * 8).fill('bois') }];
     scene.entities = [
-      { id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' },
+      { id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S', usable: {} },
       // Le meuble HAUT que le rayon touche alors que le pixel tombe sur la case de la table : posé
       // ADJACENT au groupe pour que son affordance se serve sur place, et donc s'observe.
       { id: 'comptoir-1', kind: 'prop', pos: { x: 3, y: 2 }, ref: 'comptoir-droit', facing: 'S',
@@ -925,7 +926,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
   it('le chemin croise l’abord d’une place PRISE : un seul clic assoit quand même à l’arrivée', () => {
     vi.useFakeTimers();
     const scene = emptyScene(8, 8);
-    scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' }] as typeof scene.entities;
+    scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S', usable: {} }] as typeof scene.entities;
     // Une SEULE place reste libre (`place-3`) : la marche vers son abord longe celui d'une place prise.
     scene.seatAssignments = { 'table-1': { 'place-1': pnjAssis('a'), 'place-2': pnjAssis('b'), 'place-4': pnjAssis('d') } };
     const vierge = useGame.getInitialState();
@@ -963,7 +964,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
   it('debout sur l’abord d’une place PRISE : le clic MARCHE vers une place libre et y assoit', () => {
     vi.useFakeTimers();
     const scene = emptyScene(8, 8);
-    scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' }] as typeof scene.entities;
+    scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S', usable: {} }] as typeof scene.entities;
     scene.seatAssignments = { 'table-1': { 'place-1': pnjAssis('a') } }; // une seule des quatre places est prise
     const vierge = useGame.getInitialState();
     const places = seatSlotsOf(scene, 'table-1');
@@ -998,7 +999,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
   it('table PLEINE sans fouille : le clic PARCOURT le chemin que le survol trace, et ne refuse qu’à portée', () => {
     vi.useFakeTimers();
     const scene = emptyScene(8, 8);
-    scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' }] as typeof scene.entities;
+    scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S', usable: {} }] as typeof scene.entities;
     scene.seatAssignments = { 'table-1': { 'place-1': pnjAssis('a'), 'place-2': pnjAssis('b'), 'place-3': pnjAssis('c'), 'place-4': pnjAssis('d') } };
     const vierge = useGame.getInitialState();
     const poser = (pos: { x: number; y: number }) => useGame.setState({
@@ -1081,7 +1082,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     const scene = emptyScene(8, 8);
     const prises = { 'place-1': pnjAssis('a'), 'place-2': pnjAssis('b'), 'place-3': pnjAssis('c'), 'place-4': pnjAssis('d') };
     scene.entities = [{
-      id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S',
+      id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S', usable: {},
       interact: { flow: { kind: 'seq', steps: [] } },
     }] as typeof scene.entities;
     scene.seatAssignments = { 'table-1': prises };
@@ -1124,7 +1125,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     vi.useFakeTimers();
     const scene = emptyScene(8, 8);
     scene.entities = [{
-      id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S',
+      id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S', usable: {},
       interact: { flow: { kind: 'seq', steps: [] } },
     }] as typeof scene.entities;
     scene.seatAssignments = { 'table-1': { 'place-1': pnjAssis('a'), 'place-2': pnjAssis('b'), 'place-3': pnjAssis('c'), 'place-4': pnjAssis('d') } };
@@ -1168,13 +1169,18 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     const scene = emptyScene(8, 8);
     scene.entities = [
       // PREMIER du document, SANS affordance : c'est lui qu'une lecture par position rend, toujours.
-      { id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: REF_BILLBOARD, facing: 'S' },
+      // Décor À PLACES que l'auteur n'a PAS activé — le témoin le plus tendu du contrat : sa
+      // GÉOMÉTRIE d'assise existe, et il n'offre pourtant aucun geste.
+      { id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' },
       { id: 'coffre-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: REF_BILLBOARD, facing: 'S',
         interact: { flow: { kind: 'seq', steps: [] } } },
     ] as typeof scene.entities;
-    // La fixture DIT ce qu'elle prétend : le premier décor n'appelle aucun geste — ni `interact`, ni
-    // place servable (une place est interactive sans `interact`, cf. `estInteractive`).
-    expect(seatSlotsOf(scene, 'table-1'), 'le décor témoin doit être SANS affordance').toHaveLength(0);
+    // La fixture DIT ce qu'elle prétend : le premier décor n'offre RIEN (`estUtilisable` faux) alors
+    // que son type porte des places — la géométrie ne dépend pas de l'activation (`seatSlotsOf`),
+    // l'offre en dépend (`placesJouables`).
+    expect(seatSlotsOf(scene, 'table-1').length, 'la géométrie des places existe sans activation').toBeGreaterThan(0);
+    expect(placesJouables(scene, 'table-1'), 'décor NON activé : aucune place jouable').toHaveLength(0);
+    expect(estUtilisable(scene, scene.entities[0]), 'le décor témoin doit être SANS affordance').toBe(false);
     return scene;
   };
 

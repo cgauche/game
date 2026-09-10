@@ -30,7 +30,7 @@ const PROP = 'table-1';
 function scèneAttablée(assis: boolean, species = 'humain'): Scene {
   const s = emptyScene(8, 8);
   s.entities = [
-    { id: PROP, kind: 'prop', pos: { x: 2, y: 2 }, ref: TABLE, facing: 'N' },
+    { id: PROP, kind: 'prop', pos: { x: 2, y: 2 }, ref: TABLE, facing: 'N', usable: {} },
     { id: 'f1', kind: 'personnage', pos: { x: 3, y: 2 }, facing: 'S', appearance: { species } },
   ] as unknown as SceneEntity[];
   if (assis) s.seatAssignments = { [PROP]: { 'place-2': { kind: 'entity', entityId: 'f1' } } };

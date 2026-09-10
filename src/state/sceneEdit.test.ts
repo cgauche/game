@@ -688,7 +688,7 @@ describe('normaliseAssises / seatOccupant — le seam unique d’assise', () => 
     const s = emptyScene(10, 10);
     s.layers = [{ z: 0, tiles: new Array(100).fill('plancher') }];
     s.entities = [
-      { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' },
+      { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N', usable: {} },
       { id: 'pnj-1', kind: 'personnage', pos: { x: 8, y: 8 } },
     ];
     if (seatAssignments) s.seatAssignments = seatAssignments;

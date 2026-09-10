@@ -137,6 +137,12 @@ export interface SceneEntity {
    *  cuivre (la modale reste libre de la changer — l'auteur pose le défaut, pas une contrainte) ;
    *  absente, la table s'accorde sans mise. */
   tavernGame?: { gameId: string; stakeBrass?: number };
+  /** DÉCOR ACTIVÉ par l'auteur (#1687) : présent = l'auteur a coché « utilisable » sur CETTE instance.
+   *  Son seul effet propre aujourd'hui est l'ASSISE d'un décor dont le TYPE porte des places
+   *  (`placesJouables`, `state/seating.ts`) — la seule capacité qui vive sur le TYPE. Les autres
+   *  (dialogue, marchand, fouille, jeu de taverne) vivent sur l'instance et se dérivent sans lui.
+   *  L'enveloppe est VIDE : les actions authorées et leur exécution arrivent avec le lot 3 de #1687. */
+  usable?: Record<string, never>;
   /** RÔLE combat optionnel (au même titre que dialogue/marchand) : présent = ce personnage peut être
    *  enrôlé dans une rencontre (cf. EncounterMember). Porte les choix d'auteur qui DÉCRIVENT la
    *  personne au combat — son profil (ref/statblock) et son apparence vivent déjà sur l'entité. */

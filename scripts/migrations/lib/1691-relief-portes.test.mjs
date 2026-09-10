@@ -273,7 +273,7 @@ test('(i) CARDINAL des Scènes cassé (une Scène retirée) → sortie 1 CHIFFRA
 
 test('(j) `schema` FUTUR : la borne haute est OUVERTE depuis #1715 — le document TRAVERSE sans être rabaissé', (t) => {
   // Ce rôle de sentinelle appartient à la DERNIÈRE migration de la chaîne dans l'ordre lexical
-  // (`2026-09-09-1715-roof-defaults-scenes.mjs`, banc `1715-roof-defaults-portes.test.mjs`) : elle
+  // (`2026-09-10-1687-usable-sieges.mjs`, banc `1687-usable-sieges-portes.test.mjs`) : elle
   // seule sait ce qui existe après elle. Ici, la porte mesurée est l'inverse — un `schema` plus
   // récent ne doit ni ARRÊTER, ni redescendre à 8.
   const futur = Math.max(...Object.values(SCHEMA_ARBRE)) + 1;

@@ -30,7 +30,7 @@ function derniereePlaceLibre(): void {
   const s = emptyScene(12, 12);
   s.id = 'taverne-coop';
   s.entities = [
-    { id: PROP, kind: 'prop', pos: { x: 5, y: 5 }, ref: TABLE, facing: 'N' },
+    { id: PROP, kind: 'prop', pos: { x: 5, y: 5 }, ref: TABLE, facing: 'N', usable: {} },
     { id: 'pnj-1', kind: 'personnage', pos: { x: 6, y: 5 } },
     { id: 'pnj-2', kind: 'personnage', pos: { x: 5, y: 6 } },
     { id: 'pnj-3', kind: 'personnage', pos: { x: 4, y: 5 } },

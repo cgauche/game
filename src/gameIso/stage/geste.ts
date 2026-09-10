@@ -11,24 +11,18 @@
  * verdict et la case lui sont TENDUS.
  */
 import { entitesEnCaseEtage } from '../../state/decorIndex';
-import { seatSlotsOf } from '../../state/seating';
+import { estUtilisable } from '../../state/usable';
 import type { Pt } from '../../state/path';
 import type { Scene, SceneEntity } from '../../state/scene';
 import type { Verdict } from './pickResolve';
 
-/** Une entité APPELLE-t-elle un geste ? SOURCE UNIQUE de l'affordance (curseur main) et du choix de
- *  l'entité qu'un clic sur la CASE traite — les deux mentiraient séparément. Un meuble à places est
- *  interactif SANS `SceneEntity.interact` : c'est la place qui appelle. */
-export const estInteractive = (sc: Scene, e: SceneEntity): boolean =>
-  !!e.dialogueId || !!e.interact || !!e.merchant || (e.kind === 'prop' && seatSlotsOf(sc, e.id).length > 0);
-
 /** L'entité que le geste traite sous ce verdict. Le RAYON prime : quand il a nommé une entité, c'est
  *  celle-là qu'on VOIT sous le pixel, même si une autre partage sa case. Sinon la question est la
  *  CASE, et elle se lit à l'index d'ancrage (`state/decorIndex.ts:entitesEnCaseEtage`, O(1) par
- *  mouvement de souris) : l'INTERACTIVE d'abord — c'est elle que l'affordance annonce —, la première
- *  du document à défaut. */
+ *  mouvement de souris) : l'UTILISABLE d'abord (`state/usable.ts:estUtilisable`, dériveur unique de
+ *  l'offre) — c'est elle que l'affordance annonce —, la première du document à défaut. */
 export const entiteDuGeste = (sc: Scene, v: Verdict, t: Pt): SceneEntity | undefined => {
   if (v.nature === 'entite') return sc.entities.find((e) => e.id === v.entId);
   const surLaCase = entitesEnCaseEtage(sc, t.x, t.y, t.z ?? 0);
-  return surLaCase.find((e) => estInteractive(sc, e)) ?? surLaCase[0];
+  return surLaCase.find((e) => estUtilisable(sc, e)) ?? surLaCase[0];
 };

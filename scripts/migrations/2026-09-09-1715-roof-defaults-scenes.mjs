@@ -21,12 +21,12 @@
  * sortie 1, jamais un reflow silencieux.
  * IDEMPOTENT : une Scène portant déjà `roofDefaults` est reconnue migrée ; rejouée sur l'état final,
  * la migration n'écrit rien et sort 0.
- * BORNE HAUTE CLOSE (`schema` ∈ {8, 9}, jamais « ≥ 8 ») : DERNIÈRE de la chaîne dans l'ordre lexical,
- * elle est la seule à savoir ce qui existe après elle et NOMME un `schema` futur, là où les amont
- * l'avalent par leur borne ouverte. `2026-09-07-1691-relief-defaults-scenes.mjs` a fermé la sienne
- * jusqu'ici ; ce bump l'élargit à « ≥ 8 » et ferme celle-ci.
+ * BORNE HAUTE OUVERTE (`schema` ∈ {8, ≥ 9}) : la DERNIÈRE migration de la chaîne dans l'ordre lexical
+ * est la seule à nommer un `schema` futur ; ce rôle est passé à
+ * `2026-09-10-1687-usable-sieges.mjs` (#1687), qui ferme sa borne à {9, 10}. Le document sort donc
+ * d'ici en `schema` = max(le sien, 9) : une migration amont ne RABAISSE jamais une forme.
  * FAIL-FAST : `roofDefaults` présent mais incomplet ou de forme inattendue, `schema` absent, non
- * numérique ou ∉ {8, 9} → rien n'est écrit, sortie 1.
+ * numérique ou < 8 → rien n'est écrit, sortie 1.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -43,7 +43,7 @@ const CHAMPS = Object.keys(POSE);
 const TYPE_DE = { material: 'string', pitchDeg: 'number', riseMaxStoreys: 'number' };
 /** Cardinaux mesurés (2026-09-09) — portes d'identité du périmètre. */
 const ATTENDU = { projets: 4, scenes: 28 };
-/** Forme du document AVANT et APRÈS ce bump — la borne haute est CLOSE (cf. en-tête). */
+/** Forme du document AVANT et APRÈS ce bump — la borne haute est OUVERTE (cf. en-tête). */
 const SCHEMA_AVANT = 8;
 const SCHEMA_APRES = 9;
 
@@ -84,8 +84,8 @@ for (const abs of cibles) {
   const doc = JSON.parse(brut);
 
   if (canonique(doc) !== brut) { echecs.push(`${rel} : FORME NON CANONIQUE`); continue; }
-  if (doc.schema !== SCHEMA_AVANT && doc.schema !== SCHEMA_APRES) {
-    echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`);
+  if (typeof doc.schema !== 'number' || doc.schema < SCHEMA_AVANT) {
+    echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (${SCHEMA_AVANT} ou ≥ ${SCHEMA_APRES} attendus)`);
     continue;
   }
   if (!Array.isArray(doc.scenes)) { echecs.push(`${rel} : \`scenes\` absent ou non-tableau`); continue; }
@@ -116,7 +116,7 @@ if (echecs.length) {
 
 for (const r of rapports) {
   const sortie = Object.fromEntries(
-    Object.entries(r.doc).map(([k, v]) => (k === 'scenes' ? [k, r.scenes] : k === 'schema' ? [k, SCHEMA_APRES] : [k, v])),
+    Object.entries(r.doc).map(([k, v]) => (k === 'scenes' ? [k, r.scenes] : k === 'schema' ? [k, Math.max(v, SCHEMA_APRES)] : [k, v])),
   );
   const out = canonique(sortie);
   if (out !== r.brut) fs.writeFileSync(r.abs, out, 'utf8');
@@ -124,7 +124,7 @@ for (const r of rapports) {
   // PREUVE post-écriture : chaque Scène porte les TROIS champs, avec les valeurs posées.
   const apres = JSON.parse(out);
   const muettes = apres.scenes.filter((s) => CHAMPS.some((c) => s.roofDefaults?.[c] !== POSE[c])).map((s) => s.id);
-  if (muettes.length || apres.schema !== SCHEMA_APRES) {
+  if (muettes.length || !(apres.schema >= SCHEMA_APRES)) {
     console.error(`[${NOM}] VÉRIFICATION POST-ÉCRITURE ROUGE — ${r.rel} : schema=${apres.schema}, ${muettes.join(', ')}`);
     process.exit(1);
   }

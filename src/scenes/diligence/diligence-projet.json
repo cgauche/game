@@ -2,7 +2,7 @@
  "id": "la-diligence",
  "type": "projet",
  "label": "L’Ennemi Intérieur — chapitre 1 : la route d’Altdorf",
- "schema": 9,
+ "schema": 10,
  "icon": "scenario/travel",
  "desc": "Les Personnages se forment à l’auberge-relais La Diligence, à deux jours d’Altdorf, et cherchent une place à bord d’une diligence pour la capitale.",
  "versionContenu": 2,
@@ -5007,7 +5007,8 @@
       "x": 11,
       "y": 8
      },
-     "facing": "S"
+     "facing": "S",
+     "usable": {}
     },
     {
      "id": "diligence-salle-comptoir-1",
@@ -5147,7 +5148,8 @@
       "x": 14,
       "y": 11
      },
-     "facing": "E"
+     "facing": "E",
+     "usable": {}
     },
     {
      "id": "diligence-salle-table-murale-2",
@@ -5157,7 +5159,8 @@
       "x": 14,
       "y": 16
      },
-     "facing": "E"
+     "facing": "E",
+     "usable": {}
     },
     {
      "id": "diligence-salle-table-ronde-2",
@@ -5167,7 +5170,8 @@
       "x": 12,
       "y": 18
      },
-     "facing": "S"
+     "facing": "S",
+     "usable": {}
     },
     {
      "id": "diligence-salle-table-ronde-3",
@@ -5177,7 +5181,8 @@
       "x": 10,
       "y": 21
      },
-     "facing": "S"
+     "facing": "S",
+     "usable": {}
     },
     {
      "id": "diligence-salle-meuble-1",

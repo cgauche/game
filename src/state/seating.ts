@@ -266,6 +266,24 @@ export function seatSlotsOf(scene: Scene, propId: string): ResolvedSeatSlot[] {
   return placesResoluesMemo(scene).get(propId) ?? [];
 }
 
+/**
+ * Les places JOUABLES du meuble `propId` — la MÊME géométrie que `seatSlotsOf`, GATÉE par
+ * l'ACTIVATION de l'instance (`SceneEntity.usable`, #1687). SOURCE UNIQUE des lecteurs
+ * d'INTERACTION : halo de place libre (`gameIso/builders/interactHalos`), clic de meuble
+ * (`gameIso/stage/useStagePointer`), assise au clic (`store.interactEntity`).
+ *
+ * La GÉOMÉTRIE ne dépend d'aucune activation : `seatSlotsOf` reste inchangé et sert l'éditeur, le
+ * placement d'un PNJ authoré assis, la validation de document et le rig — un tabouret non activé
+ * porte toujours ses places, et un PNJ authoré peut y être assis.
+ *
+ * L'assise est la SEULE capacité qui vive sur le TYPE (`PropData.seatSlots`), donc la seule qu'un
+ * opt-in d'instance ait à ouvrir (verbatim utilisateur 2026-09-09 : « on doit pouvoir s'assoire sur
+ * une chaise si dans l'éditeur on l'active »).
+ */
+export function placesJouables(scene: Scene, propId: string): ResolvedSeatSlot[] {
+  return propEntity(scene, propId)?.usable ? seatSlotsOf(scene, propId) : [];
+}
+
 /** Parcours DÉTERMINISTE de l'occupation : entités de la scène dans leur ordre, puis places du
  *  catalogue dans leur ordre. Base commune de `seatPoseOf` et de `pruneSeatAssignments`. */
 function* placesOccupees(scene: Scene): Generator<{ slot: ResolvedSeatSlot; occupant: SeatOccupant }> {

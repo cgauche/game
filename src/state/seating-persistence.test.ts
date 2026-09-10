@@ -14,7 +14,7 @@ function sceneWithAssignments(seatAssignments?: SeatAssignments): Scene {
   // Table en (4,4) cap `N`. RÈGLE : la `pos` d'un attablé EST l'abord de sa place —
   // nord (4,3), sud (4,5).
   s.entities = [
-    { id: PROP, kind: 'prop', pos: { x: 4, y: 4 }, ref: TABLE, facing: 'N' },
+    { id: PROP, kind: 'prop', pos: { x: 4, y: 4 }, ref: TABLE, facing: 'N', usable: {} },
     { id: 'pnj-1', kind: 'personnage', pos: { x: 4, y: 3 } },
     { id: 'pnj-2', kind: 'personnage', pos: { x: 4, y: 5 } },
   ] as SceneEntity[];

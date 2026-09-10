@@ -310,7 +310,7 @@ Pour les bêtes sauvages, les profils du bestiaire sont **arrondis à des multip
 Les Caractéristiques inexistantes (« – » → 0) **ne sont pas tirées**.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 77` (l.108) → `CustomStatblock`, `randomizeChars`, `Possession`, `sceneEntitySchema`, `skillInstance`, `SceneEntity`, `StatblockEditor`, `SpawnExtras`, `creatureToCombatant`, `statblockToCombatant`, +5 — `src/data/creatures.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/scene.ts`, `src/engine/possession.ts`, `src/engine/statblock.ts`, `src/state/scene.ts`, +3 fichiers
+- `LDB 77` (l.108) → `CustomStatblock`, `randomizeChars`, `Possession`, `skillInstance`, `sceneEntitySchema`, `SceneEntity`, `StatblockEditor`, `SpawnExtras`, `creatureToCombatant`, `statblockToCombatant`, +5 — `src/data/creatures.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/scene.ts`, `src/engine/possession.ts`, `src/engine/statblock.ts`, `src/state/scene.ts`, +3 fichiers
 
 ---
 

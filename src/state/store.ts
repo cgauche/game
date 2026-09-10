@@ -56,7 +56,7 @@ import { snapshotSave, saveToSlot, readSlot, importSave, AUTO_SLOT, type SaveSlo
 import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
 import { captureMutation, applyMutation as applySceneMutation, type SceneMutation } from './sceneInstance';
-import { assignSeat, memeCase, pruneSeatAssignments, RANG_MENEUR, releaseRecomposedRanks, releaseSeat, seatPoseOf, seatSlotsOf, type SeatPose } from './seating';
+import { assignSeat, memeCase, placesJouables, pruneSeatAssignments, RANG_MENEUR, releaseRecomposedRanks, releaseSeat, seatPoseOf, type SeatPose } from './seating';
 import type { ClueState } from './clues';
 import { togglePin } from './clues';
 import type { CodexFocus } from './codexFocus';
@@ -2356,7 +2356,9 @@ export const useGame = create<GameState>((set, get) => ({
     // Le MENEUR est l'emplacement 1 du groupe ; son id ne sert qu'à re-vérifier, à l'écriture, que
     // le meneur n'a pas changé entre le clic et le commit (coop).
     const leaderId = get().party[0]?.id;
-    const places = ent.kind === 'prop' ? seatSlotsOf(scene, entityId) : [];
+    // Places JOUABLES, pas la géométrie : un décor que l'auteur n'a pas ACTIVÉ n'offre pas l'assise
+    // (#1687, `placesJouables`) — le clic y reste inerte au lieu de servir une raison de refus.
+    const places = ent.kind === 'prop' ? placesJouables(scene, entityId) : [];
     const occupant = leaderId ? ({ kind: 'party', rang: RANG_MENEUR } as const) : null;
     if (places.length && occupant && seatPoseOf(scene, occupant)?.propId === entityId) {
       set({ scene: releaseSeat(scene, occupant) });
@@ -2401,7 +2403,7 @@ export const useGame = create<GameState>((set, get) => ({
         const gagnee: { pose: SeatPose | null } = { pose: null };
         set((s) => {
           if (!s.scene || s.party[0]?.id !== leaderId) return {};
-          const place = seatSlotsOf(s.scene, entityId).find((p) => p.slotId === cible.slotId);
+          const place = placesJouables(s.scene, entityId).find((p) => p.slotId === cible.slotId);
           if (!place || !memeCase(s.partyPos, place.approach)) return {};
           const res = assignSeat(s.scene, entityId, place.slotId, occupant, s.party.length);
           if (!res.ok) return {};

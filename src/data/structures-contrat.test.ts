@@ -313,7 +313,11 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // `| times | factor,of` — signatures déjà connues d'`activities.json`, neuves dans CE dataset.
 // L'op `wounds` de la rangée « autres mendiants », elle, n'ajoute AUCUNE ligne : ses deux mitigations
 // déclarées la rangent sous la signature commune de `tables.json` (5 → 6 occurrences).
-const PLAFOND_HORS_STRATE = 1174;
+// 1174 → 1175 (#1687, 2026-09-10) : UNE signature neuve, mesurée —
+// `diligence-projet.json | usable | ` (signature VIDE, 5 occurrences) : l'activation d'un décor par
+// l'auteur est une ENVELOPPE sans clé (`usable: z.strictObject({})`, `sceneEntitySchema`) — un
+// drapeau posé sur l'instance, aucune graphie neuve.
+const PLAFOND_HORS_STRATE = 1175;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 

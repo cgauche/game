@@ -36,7 +36,7 @@ const sceneMinimale = (over: Jouet = {}): Jouet => ({
 /** Projet-JOUET au format COURANT : l'enveloppe exige le `type`, l'identité et la provenance. */
 const projet = (over: Jouet = {}): Jouet => ({
   type: 'projet',
-  schema: 9,
+  schema: SCHEMA_PROJET,
   id: 'projet-jouet',
   label: 'Projet jouet',
   versionContenu: 1,
@@ -85,7 +85,7 @@ describe('projetSchema — la FORME que voit le seam (avant normalizeScene/resol
     ]);
   });
 
-  it('`schema: 2` est REFUSÉ (littéral 3 — un document non migré n\'entre pas par cette porte)', () => {
+  it('`schema: 2` est REFUSÉ (littéral COURANT — un document non migré n\'entre pas par cette porte)', () => {
     expect(fautes(projet({ schema: 2 }))[0]).toContain('schema');
   });
 
@@ -303,7 +303,7 @@ describe('projetSchema — le document RÉEL, ses FK et son enveloppe (sondes du
     expect(ok(reel())).toBe(true);
     expect(projetDoc.type).toBe('projet');
     expect(projetDoc.famille).toBe('config');
-    expect(SCHEMA_PROJET).toBe(9);
+    expect(SCHEMA_PROJET).toBe(10);
   });
 
   it('FK `activeAxes` → axes.json : ids RÉELS acceptés (et la liste vide/absente aussi), inconnu REFUSÉ au CHEMIN', () => {
@@ -350,7 +350,7 @@ describe('projetSchema — le document RÉEL, ses FK et son enveloppe (sondes du
   });
 
   it('SCEAU sur la donnée réelle : `schema` non courant, clé inconnue et scène muette sont refusés', () => {
-    expect(fautes({ ...reel(), schema: 6 })).toEqual(['schema :: Invalid input: expected 9']);
+    expect(fautes({ ...reel(), schema: 6 })).toEqual([`schema :: Invalid input: expected ${SCHEMA_PROJET}`]);
     // Chemin VIDE : la clé inconnue est rapportée à la RACINE du document.
     expect(fautes({ ...reel(), champInconnu: 1 })).toEqual([' :: Unrecognized key: "champInconnu"']);
     const d = reel();

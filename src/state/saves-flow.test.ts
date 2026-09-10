@@ -186,7 +186,7 @@ describe('parseSave — la version DOIT être la courante', () => {
     // LE DÉFAUT, mesuré sur le chemin réel : ce que ferait le chargement si la version laissait passer.
     const scene = emptyScene(12, 12);
     scene.entities = [
-      { id: 'table-1', kind: 'prop', ref: 'table-ronde-4-tabourets', pos: { x: 5, y: 5 } },
+      { id: 'table-1', kind: 'prop', ref: 'table-ronde-4-tabourets', pos: { x: 5, y: 5 }, usable: {} },
       { id: 'pnj-1', kind: 'personnage', pos: { x: 5, y: 6 } },
     ] as typeof scene.entities;
     const ancien = { 'table-1': { 'place-nord': { kind: 'entity' as const, entityId: 'pnj-1' } } };

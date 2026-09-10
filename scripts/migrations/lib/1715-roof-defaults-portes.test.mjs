@@ -2,7 +2,7 @@
  * MORSURE des PORTES de la migration #1715 — la TOITURE PAR DÉFAUT passe en DONNÉE.
  *
  *  - `2026-09-09-1715-roof-defaults-scenes.mjs` (racine `src/scenes`) : pose `roofDefaults` sur
- *    chaque Scène embarquée et bump le document en `schema: 9`.
+ *    chaque Scène embarquée et porte le document à `schema` ≥ 9 (borne haute OUVERTE depuis #1687).
  *
  * Une déclaration n'est pas une porte tant qu'on ne l'a pas vue MORDRE : ce banc joue la migration
  * sur un dépôt JETABLE (`os.tmpdir()`), une fois par scénario, et exige la sortie attendue, un
@@ -84,16 +84,21 @@ for (const rel of PROJETS)
     `${rel} : une Scène sans \`roofDefaults\` — l’arbre n’est pas migré`,
   );
 
-/** Forme du document avant et après le bump porté par cette migration — borne haute CLOSE. */
+/** Forme du document avant et après le bump porté par cette migration. La borne haute de cette
+ *  migration est OUVERTE depuis #1687 : l'arbre porte un `schema` PLUS RÉCENT, que la migration
+ *  traverse sans le rabaisser. */
 const SCHEMA_AVANT = 8;
 const SCHEMA_APRES = 9;
+/** Le `schema` que l'arbre porte AUJOURD'HUI — lu, jamais récité. */
+const SCHEMA_ARBRE = Object.fromEntries(PROJETS.map((rel) => [rel, JSON.parse(lire(rel)).schema]));
 for (const rel of PROJETS)
-  assert.equal(JSON.parse(lire(rel)).schema, SCHEMA_APRES, `${rel} : \`schema\` ≠ ${SCHEMA_APRES} — l’arbre n’est pas migré`);
+  assert.ok(SCHEMA_ARBRE[rel] >= SCHEMA_APRES, `${rel} : \`schema\` ${SCHEMA_ARBRE[rel]} < ${SCHEMA_APRES} — l’arbre n’est pas migré`);
 
-/** PROJECTION INVERSE d'un projet : `roofDefaults` retiré de chaque Scène, `schema` rendu à 8. */
+/** PROJECTION INVERSE d'un projet : `roofDefaults` retiré de chaque Scène. Le `schema` de l'arbre est
+ *  CONSERVÉ — c'est ce que la borne ouverte doit traverser sans rien rabaisser. */
 function projetAvant(rel) {
   const doc = JSON.parse(lire(rel));
-  return { ...doc, schema: SCHEMA_AVANT, scenes: doc.scenes.map(({ roofDefaults: _pose, ...reste }) => reste) };
+  return { ...doc, scenes: doc.scenes.map(({ roofDefaults: _pose, ...reste }) => reste) };
 }
 
 const depotScenes = (fabrique) => depot(Object.fromEntries(PROJETS.map((rel) => [rel, fabrique(rel)])));
@@ -106,7 +111,7 @@ test('(a) ALLER-RETOUR : l’état d’avant projeté → chaque projet BYTE-IDE
   assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 1200)}`);
   for (const rel of PROJETS) {
     assert.ok(
-      sortie.includes(`${rel} — schema ${SCHEMA_AVANT} → ${SCHEMA_APRES}, roofDefaults posés : ${SCENES_PAR_PROJET[rel]}`),
+      sortie.includes(`${rel} — schema ${SCHEMA_ARBRE[rel]} → ${SCHEMA_ARBRE[rel]}, roofDefaults posés : ${SCENES_PAR_PROJET[rel]}`),
       `${rel} : le bump ou la pose ne DIT pas son compte : ${sortie.slice(0, 1200)}`,
     );
     assert.equal(fs.readFileSync(path.join(d.racine, rel), 'utf8'), lire(rel), `${rel} produit ≠ arbre`);
@@ -179,17 +184,32 @@ test('(e) CARDINAL des Scènes cassé (une Scène retirée) → sortie 1 CHIFFRA
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
 });
 
-test('(f) `schema` FUTUR → sortie 1 NOMMANT le numéro : la borne haute de la DERNIÈRE de la chaîne est CLOSE', (t) => {
-  // Les migrations amont ont toutes une borne ouverte (`≥ N = déjà migré`) et avalent l'inconnu ;
-  // celle-ci, dernière dans l'ordre lexical, est la seule à savoir ce qui existe après elle.
-  const futur = SCHEMA_APRES + 1;
-  const d = depotScenes((rel) => serialise({ ...JSON.parse(lire(rel)), schema: futur }));
+test('(f) `schema` FUTUR : la borne haute est OUVERTE depuis #1687 — le document TRAVERSE sans être rabaissé', (t) => {
+  // Ce rôle de sentinelle appartient à la DERNIÈRE migration de la chaîne dans l'ordre lexical
+  // (`2026-09-10-1687-usable-sieges.mjs`, banc `1687-usable-sieges-portes.test.mjs`) : elle seule
+  // sait ce qui existe après elle. Ici, la porte mesurée est l'inverse — un `schema` plus récent ne
+  // doit ni ARRÊTER, ni redescendre à 9.
+  const futur = Math.max(...Object.values(SCHEMA_ARBRE)) + 1;
+  const d = depotScenes((rel) => serialise({ ...projetAvant(rel), schema: futur }));
   t.after(() => efface(d.racine));
 
   const { code, sortie } = joue(d);
-  assert.equal(code, 1, `sortie ${code} — un schema futur doit ARRÊTER : ${sortie.slice(0, 1200)}`);
+  assert.equal(code, 0, `sortie ${code} — un schema futur doit TRAVERSER : ${sortie.slice(0, 1200)}`);
+  for (const rel of PROJETS) {
+    assert.ok(sortie.includes(`${rel} — schema ${futur} → ${futur},`), `${rel} : le schema a été RABAISSÉ : ${sortie.slice(0, 1200)}`);
+    assert.equal(JSON.parse(fs.readFileSync(path.join(d.racine, rel), 'utf8')).schema, futur, `${rel} : \`schema\` écrit ≠ ${futur}`);
+  }
+});
+
+test('(f bis) `schema` ANTÉRIEUR à la chaîne → sortie 1 NOMMANT le numéro : la borne BASSE reste close', (t) => {
+  const ancien = SCHEMA_AVANT - 1;
+  const d = depotScenes((rel) => serialise({ ...projetAvant(rel), schema: ancien }));
+  t.after(() => efface(d.racine));
+
+  const { code, sortie } = joue(d);
+  assert.equal(code, 1, `sortie ${code} — un schema antérieur doit ARRÊTER : ${sortie.slice(0, 1200)}`);
   assert.ok(
-    sortie.includes(`\`schema\` inattendu ${futur} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`),
+    sortie.includes(`\`schema\` inattendu ${ancien} (${SCHEMA_AVANT} ou ≥ ${SCHEMA_APRES} attendus)`),
     `arrêt sans NOMMER le numéro : ${sortie.slice(0, 1200)}`,
   );
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');

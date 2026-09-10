@@ -85,6 +85,9 @@ const ATTENDU = {
     // +1 le 2026-09-09 (#1715 volet b) : morsure des portes de la migration #1715 (toiture par défaut
     // de la scène) ; son dépôt jetable vit sous `os.tmpdir()`, l'arbre n'est jamais écrit.
     'scripts/migrations/lib/1715-roof-defaults-portes.test.mjs',
+    // +1 le 2026-09-10 (#1687 lot 2) : morsure des portes de la migration #1687 (activation des
+    // décors à places) ; son dépôt jetable vit sous `os.tmpdir()`, l'arbre n'est jamais écrit.
+    'scripts/migrations/lib/1687-usable-sieges-portes.test.mjs',
     'scripts/migrations/lib/empreinteRejeu.test.mjs',
     'scripts/migrations/lib/idempotence-ordre-des-cles.test.mjs',
     'scripts/migrations/replay-head.mjs',

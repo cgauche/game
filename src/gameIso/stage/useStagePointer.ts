@@ -24,7 +24,7 @@ import { toggleDoorIn } from '../../state/scene';
 import { entityBlockedAt } from '../../state/sceneRules';
 import { chebyshev, walkNeighbors, type Pt } from '../../state/path';
 import { exploreMovePlan, exploreSeatPlan, type ExploreMovePlan, type PathOpts } from '../../state/exploreNav';
-import { RANG_MENEUR, seatPoseOf, seatSlotsOf } from '../../state/seating';
+import { placesJouables, RANG_MENEUR, seatPoseOf } from '../../state/seating';
 // `t` est déjà le nom local de la TUILE survolée dans ce module : la traduction s'y importe sous son
 // rôle, sans rebaptiser trente sites de pointeur.
 import { t as message } from '../../i18n';
@@ -47,7 +47,8 @@ import { STEP_MS } from '../../geometry/walk';
 import { poseFromDims } from './projection';
 import { targetUnderPointer } from './spritePicker';
 import { pointStageSousPixel, pointViewBoxSousPixel, resoudrePixel, tireLeRayon, type Verdict } from './pickResolve';
-import { entiteDuGeste, estInteractive } from './geste';
+import { entiteDuGeste } from './geste';
+import { estUtilisable } from '../../state/usable';
 import type { RoomPortal } from '../../state/roomPortals';
 
 const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sinon = clic)
@@ -283,7 +284,7 @@ export function useStagePointer({
     // de la place (`exploreSeatPlan` via `exploreMovePlan`), jamais à la case d'ancrage du meuble.
     // Aucun second pending, aucune route `sit`/`seat` : le geste reste `interactEntity`. Cette branche
     // n'INTERCEPTE rien : sans place servable elle repasse la main à la chaîne fouille/marchand/dialogue.
-    if (ent && ent.kind === 'prop' && seatSlotsOf(sc, ent.id).length) {
+    if (ent && ent.kind === 'prop' && placesJouables(sc, ent.id).length) {
       const meneur = st.party[0]?.id;
       const assisIci = !!meneur && seatPoseOf(sc, { kind: 'party', rang: RANG_MENEUR })?.propId === ent.id;
       // UNE SEULE source de « place LIBRE » : le plan d'assise (`exploreSeatPlan`, qui filtre les
@@ -469,7 +470,7 @@ export function useStagePointer({
     const sc = useGame.getState().scene;
     const eSurvolée = sc && t ? entiteDuGeste(sc, v, t) : undefined;
     const overInteractive =
-      !!sc && !!eSurvolée && useGame.getState().mode === 'exploration' && estInteractive(sc, eSurvolée);
+      !!sc && !!eSurvolée && useGame.getState().mode === 'exploration' && estUtilisable(sc, eSurvolée);
     (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
     // Survol suivi en COMBAT (visée) ET en EXPLORATION (halo renforcé du décor interactif + aperçu de
     // déplacement) — borné aux changements de tuile, donc peu de re-rendus.

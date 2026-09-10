@@ -114,6 +114,13 @@ export const sceneEntitySchema = z.strictObject({
     .optional(),
   /** JOUEUR de taverne (`NADJ 04 l.72`) : `gameId` de `tavernGames.json`, mise de DÉPART en sous. */
   tavernGame: z.strictObject({ gameId: z.string(), stakeBrass: z.number().optional() }).optional(),
+  /** DÉCOR ACTIVÉ par l'auteur. Présent = l'auteur a coché « utilisable » sur CETTE instance ; son
+   *  seul effet propre aujourd'hui est l'ASSISE d'un décor dont le TYPE porte des `seatSlots`
+   *  (`placesJouables`, `state/seating.ts`) — la seule capacité qui vive sur le TYPE, donc la seule
+   *  qu'un opt-in d'instance ait à ouvrir. Les autres capacités (dialogue, marchand, fouille, jeu de
+   *  taverne) vivent DÉJÀ sur l'instance et se dérivent sans lui (`actionsDe`, `state/usable.ts`).
+   *  L'enveloppe est VIDE : les actions authorées et leur exécution arrivent avec le lot 3 de #1687. */
+  usable: z.strictObject({}).optional(),
   /** RÔLE combat optionnel : ce que l'auteur choisit pour CETTE personne au combat. */
   combat: z
     .strictObject({

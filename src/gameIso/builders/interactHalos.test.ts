@@ -130,7 +130,7 @@ describe('Halos d’interaction — le PNJ INTERLOCUTEUR (#1176 P3-0g)', () => {
   });
 
   it('un MEUBLE À PLACES appelle le joueur SANS porter `interact`, et s’éteint quand tout est pris', () => {
-    const table: SceneEntity = { id: 'table-1', kind: 'prop', pos: { x: 3, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'N' };
+    const table: SceneEntity = { id: 'table-1', kind: 'prop', pos: { x: 3, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'N', usable: {} };
     const el = décor('table-1', 3, 3, { interact: false, ref: 'table-ronde-4-tabourets' });
     const libre = scèneAvec(table);
     expect(interactionHalos([el], libre, {}, null, EXPLORE).fouilles.map((h) => h.id)).toEqual(['table-1']);

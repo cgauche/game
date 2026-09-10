@@ -470,6 +470,7 @@ export function declutterPositions(
 // graphie `label` et fait s'annoncer les statblocs embarqués, la 6→7 fait s'annoncer le document
 // LUI-MÊME et ses scènes et pose la provenance, la 7→8 pose les matières de relief de chaque scène.
 import { migrateDoc, type MigrationMap } from './migrateDoc';
+import { findPropById } from '../data';
 import { type NarratifBlock, emptyNarratif } from './campaignNarratif';
 import { validateDocument } from '../data/schemas/validate';
 import { projetSchema, SCHEMA_PROJET } from '../data/schemas/defs-scenes/projet';
@@ -614,6 +615,46 @@ function poseSurChaqueScene(
   });
 }
 
+/**
+ * Pose la clé `cle` en QUEUE de chaque ENTITÉ de chaque scène que `retient` désigne — sœur de
+ * `poseSurChaqueScene`, d'un cran plus bas dans le document.
+ *
+ * MÊMES trois invariants : une entité qui porte DÉJÀ la clé traverse INTACTE, ce qui n'est pas une
+ * liste traverse tel quel (`parseProject` le refuse ensuite en le nommant), la valeur est une
+ * FABRIQUE (chaque entité reçoit SA copie).
+ *
+ * QUEUE, sans ancre : c'est la place que l'ÉDITEUR donne à un champ posé sur une entité existante
+ * (`editEntity` étale l'entité puis le patch, `state/sceneEdit.ts`) — la migration écrit donc ce que
+ * l'auteur aurait écrit à la main.
+ */
+function poseSurChaqueEntite(
+  scenes: unknown,
+  cle: string,
+  valeur: () => unknown,
+  retient: (ent: Record<string, unknown>) => boolean,
+): unknown {
+  if (!Array.isArray(scenes)) return scenes;
+  return scenes.map((s) => {
+    if (!s || typeof s !== 'object' || !Array.isArray((s as Record<string, unknown>).entities)) return s;
+    const sc = s as Record<string, unknown>;
+    const entities = (sc.entities as unknown[]).map((e) => {
+      if (!e || typeof e !== 'object' || cle in e) return e;
+      const ent = e as Record<string, unknown>;
+      return retient(ent) ? { ...ent, [cle]: valeur() } : ent;
+    });
+    return { ...sc, entities };
+  });
+}
+
+/** Une entité dont le TYPE de décor porte des places assises — la seule capacité qui vive sur le
+ *  TYPE, donc la seule population que l'activation d'instance (#1687) concerne.
+ *
+ *  Le catalogue est lu à l'INSTANT de la migration : un type qui gagnerait des `seatSlots` plus tard
+ *  n'active rétroactivement aucune instance — l'activation reste un opt-in d'AUTEUR, à la case de
+ *  l'inspecteur. */
+const porteDesPlaces = (ent: Record<string, unknown>): boolean =>
+  ent.kind === 'prop' && (findPropById(typeof ent.ref === 'string' ? ent.ref : '')?.seatSlots?.length ?? 0) > 0;
+
 /** Migrations SÉQUENTIELLES de ProjectDoc : la clé N met à niveau un schema N → N+1. `2` injecte le
  *  bloc `narratif` vide (#765 — un projet schema 2 est un paquet SANS narratif). `3` porte les
  *  RÔLES DE PROSE du lot #1467 L1b V-P2 : c'est la MÊME transformation que les migrations de dépôt
@@ -750,6 +791,24 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
       : {}),
     version: 9,
     schema: 9,
+  }),
+  /**
+   * `9` ACTIVE les décors qui étaient assis-ables AVANT le lot #1687 : `usable: {}` sur chaque entité
+   * dont le TYPE porte des `seatSlots`. Depuis ce lot, l'assise d'un siège autonome est une propriété
+   * de l'INSTANCE, activée par l'auteur (verbatim utilisateur 2026-09-09 : « on doit pouvoir
+   * s'assoire sur une chaise si dans l'éditeur on l'active ») : sans ce passage, les meubles à places
+   * d'un projet de bibliothèque utilisateur deviendraient MUETS. Une entité qui porte déjà `usable`
+   * traverse INTACTE.
+   * Pendant applicatif du script de dépôt `scripts/migrations/2026-09-10-1687-usable-sieges.mjs`
+   * (parité mesurée par `projet-migration-9-vers-10.test.ts`).
+   */
+  9: (doc) => ({
+    ...doc,
+    ...(doc.scenes !== undefined
+      ? { scenes: poseSurChaqueEntite(doc.scenes, 'usable', () => ({}), porteDesPlaces) }
+      : {}),
+    version: 10,
+    schema: 10,
   }),
 };
 
