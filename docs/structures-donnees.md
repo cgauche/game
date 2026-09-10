@@ -801,7 +801,7 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `diligence-projet.json` | `scenes.architecture.facades.features` | 71 | `edge`(71) `id`(71) `kind`(71) `offset`(3) `width`(2) |
 | `diligence-projet.json` | `scenes.architecture.storeys` | 2 | `id`(2) `parts`(2) `roomZoneIds`(2) `z`(2) |
 | `diligence-projet.json` | `scenes.effectZones` | 39 | `area`(39) `id`(39) `label`(39) `presentation`(39) `tiles`(10) `z`(37) |
-| `diligence-projet.json` | `scenes.entities` | 22 | `facing`(20) `id`(22) `kind`(22) `pos`(22) `ref`(20) |
+| `diligence-projet.json` | `scenes.entities` | 22 | `facing`(20) `id`(22) `kind`(22) `pos`(22) `ref`(20) `usable`(5) |
 | `diligence-projet.json` | `worldMap` | 1 | `id`(1) `label`(1) `places`(1) `routes`(1) |
 | `diligence-projet.json` | `worldMap.places` | 2 | `icon`(2) `id`(2) `label`(2) `pos`(2) `scene`(2) `when`(1) |
 | `diligence-projet.json` | `worldMap.routes` | 1 | `a`(1) `b`(1) `id`(1) `inns`(1) `km`(1) `modes`(1) `refus`(1) `speed`(1) `when`(1) |
@@ -1145,7 +1145,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **873** (cible 399 · declaree 6 · historique 127 · divergente 341). Objets JSON parcourus : **49395**, dont **32309** portent une forme
+Lignes concept × dataset × champ × forme : **873** (cible 399 · declaree 6 · historique 127 · divergente 341). Objets JSON parcourus : **49400**, dont **32309** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **89**.
 
 Entrées de racine sans concept de valeur : **4065** sur **4152** —
@@ -2496,14 +2496,14 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13196** objets sur **49395** ne sont portés par AUCUNE
+Au-delà des orphelines, **13201** objets sur **49400** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
 (`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`
 ou d’une `Formula` (`{kind,steps}`, `{bonusOf}`) et les objets à `op`, dont la grammaire est mesurée en §5.
 Ils ne sont pas au stock — ils se lisent ici, EN ENTIER : les
-**1174** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
+**1175** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
 table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 `src/data/structures-contrat.test.ts` (plafond sur le COMPTE, liste de référence = cette table).
 
@@ -2762,6 +2762,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `arene-projet.json` | `effect` | `disease,type` | 5 |
 | `careerLevels.json` | `count` | `roll` | 5 |
 | `creatures.json` | `char` | `` | 5 |
+| `diligence-projet.json` | `usable` | `` | 5 |
 | `loup-et-saumure-projet.json` | `dimensions` | `h,w` | 5 |
 | `loup-et-saumure-projet.json` | `effect` | `desc,title,type` | 5 |
 | `loup-et-saumure-projet.json` | `flags` | `` | 5 |
@@ -4975,4 +4976,4 @@ pèse **2950** slots sur 3314.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: be6fd821da69d361302e5f428d46ccf25b0b74d5 (374 fichiers, 10 dossiers) corps: 39011645465f2bbb66eee237a8120390bce261da -->
+<!-- sources-empreinte: 8c3d2b8b1920cba7519f2efe0872ef455292f65b (374 fichiers, 10 dossiers) corps: 491145206f2ceb1e007a2449dd2dc46cf7e1fedd -->
