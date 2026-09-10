@@ -58,14 +58,14 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | Champ | Lecteurs | Exemple |
 |---|---|---|
 | `id` | 62 | `src/data/index.ts:2960` |
-| `spec` | 18 | `src/data/index.ts:3481` |
+| `spec` | 18 | `src/data/index.ts:3482` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 5 | `src/data/index.ts:3493` |
-| `value` | 4 | `src/data/index.ts:3494` |
+| `id` | 5 | `src/data/index.ts:3494` |
+| `value` | 4 | `src/data/index.ts:3495` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -85,8 +85,8 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `fixed` | 4 | `src/data/index.ts:3562` |
-| `roll` | 3 | `src/data/index.ts:3562` |
+| `fixed` | 4 | `src/data/index.ts:3563` |
+| `roll` | 3 | `src/data/index.ts:3563` |
 
 ### `TrappingRef` (src/data/index.ts)
 
@@ -94,27 +94,27 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 |---|---|---|
 | `id` | 8 | `src/engine/items.ts:307` |
 | `spec` | 2 | `src/engine/items.ts:309` |
-| `count` | 10 | `src/data/index.ts:3562` |
-| `qualities` | 4 | `src/data/index.ts:3565` |
-| `qualityChoice` | 6 | `src/data/index.ts:3563` |
-| `text` | 2 | `src/data/index.ts:3556` |
-| `vehicleId` | 5 | `src/data/index.ts:3558` |
+| `count` | 10 | `src/data/index.ts:3563` |
+| `qualities` | 4 | `src/data/index.ts:3566` |
+| `qualityChoice` | 6 | `src/data/index.ts:3564` |
+| `text` | 2 | `src/data/index.ts:3557` |
+| `vehicleId` | 5 | `src/data/index.ts:3559` |
 | `label` | 7 | `src/engine/possessionGrants.ts:25` |
-| `creatureId` | 5 | `src/data/index.ts:3560` |
-| `choice` | 5 | `src/data/index.ts:3553` |
-| `wildcard` | 3 | `src/data/index.ts:3554` |
+| `creatureId` | 5 | `src/data/index.ts:3561` |
+| `choice` | 5 | `src/data/index.ts:3554` |
+| `wildcard` | 3 | `src/data/index.ts:3555` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 8 | `src/data/index.ts:3535` |
+| `id` | 8 | `src/data/index.ts:3536` |
 | `spec` | 2 | `src/engine/careerSlots.ts:170` |
 | `choix` | 7 | `src/data/index.ts:2960` |
-| `pick` | 2 | `src/data/index.ts:3538` |
-| `of` | 6 | `src/data/index.ts:3537` |
+| `pick` | 2 | `src/data/index.ts:3539` |
+| `of` | 6 | `src/data/index.ts:3538` |
 | `table` | — | *absent du type TS* |
-| `random` | 3 | `src/data/index.ts:3540` |
+| `random` | 3 | `src/data/index.ts:3541` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -200,7 +200,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 11 | `src/data/props.types.ts:576` |
+| `id` | 11 | `src/data/props.types.ts:577` |
 | `type` | **0 — JAMAIS LU** | — |
 | `label` | 1 | `src/ui/compendium/registry.ts:304` |
 | `labelF` | — | *absent du type TS* |
@@ -210,59 +210,59 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `alsoIn` | — | *absent du type TS* |
 | `maison` | — | *absent du type TS* |
 | `icon` | — | *absent du type TS* |
-| `solid` | 2 | `src/data/props.types.ts:616` |
-| `opaque` | 3 | `src/data/props.types.ts:581` |
-| `cover` | 3 | `src/data/props.types.ts:581` |
-| `light` | 3 | `src/data/props.types.ts:590` |
-| `foot` | 2 | `src/data/props.types.ts:371` |
+| `solid` | 2 | `src/data/props.types.ts:617` |
+| `opaque` | 3 | `src/data/props.types.ts:582` |
+| `cover` | 3 | `src/data/props.types.ts:582` |
+| `light` | 3 | `src/data/props.types.ts:591` |
+| `foot` | 2 | `src/data/props.types.ts:372` |
 | `volume` | 18 | `src/data/index.ts:2736` |
-| `seatSlots` | 3 | `src/data/props.types.ts:399` |
+| `seatSlots` | 3 | `src/data/props.types.ts:400` |
 
 ### `PropVolumeRecipe` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `capIdentite` | 2 | `src/data/props.types.ts:575` |
-| `primitives` | 6 | `src/data/props.types.ts:448` |
+| `capIdentite` | 2 | `src/data/props.types.ts:576` |
+| `primitives` | 6 | `src/data/props.types.ts:449` |
 
 ### `PropPrimitive` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `kind` | 5 | `src/data/props.types.ts:274` |
-| `center` | 6 | `src/data/props.types.ts:274` |
-| `size` | 3 | `src/data/props.types.ts:274` |
-| `material` | 3 | `src/data/props.types.ts:550` |
-| `emet` | 2 | `src/data/props.types.ts:587` |
-| `radiusM` | 2 | `src/data/props.types.ts:275` |
-| `heightM` | 2 | `src/data/props.types.ts:275` |
-| `sides` | 2 | `src/data/props.types.ts:275` |
-| `slope` | 1 | `src/data/props.types.ts:276` |
+| `kind` | 5 | `src/data/props.types.ts:275` |
+| `center` | 6 | `src/data/props.types.ts:275` |
+| `size` | 3 | `src/data/props.types.ts:275` |
+| `material` | 3 | `src/data/props.types.ts:551` |
+| `emet` | 2 | `src/data/props.types.ts:588` |
+| `radiusM` | 2 | `src/data/props.types.ts:276` |
+| `heightM` | 2 | `src/data/props.types.ts:276` |
+| `sides` | 2 | `src/data/props.types.ts:276` |
+| `slope` | 1 | `src/data/props.types.ts:277` |
 
 ### `PropSeatSlot` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 5 | `src/data/props.types.ts:600` |
-| `anchor` | 5 | `src/data/props.types.ts:400` |
+| `id` | 5 | `src/data/props.types.ts:601` |
+| `anchor` | 5 | `src/data/props.types.ts:401` |
 | `facing` | 1 | `src/state/seating.ts:157` |
-| `approach` | 2 | `src/data/props.types.ts:527` |
+| `approach` | 2 | `src/data/props.types.ts:528` |
 
 ### `PropPoint3` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `xM` | 16 | `src/data/props.types.ts:168` |
-| `yM` | 16 | `src/data/props.types.ts:167` |
-| `hM` | 15 | `src/data/props.types.ts:167` |
+| `xM` | 16 | `src/data/props.types.ts:169` |
+| `yM` | 16 | `src/data/props.types.ts:168` |
+| `hM` | 15 | `src/data/props.types.ts:168` |
 
 ### `PropSize3` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `xM` | 3 | `src/data/props.types.ts:197` |
-| `yM` | 3 | `src/data/props.types.ts:198` |
-| `hM` | 3 | `src/data/props.types.ts:199` |
+| `xM` | 3 | `src/data/props.types.ts:198` |
+| `yM` | 3 | `src/data/props.types.ts:199` |
+| `hM` | 3 | `src/data/props.types.ts:200` |
 
 ### `CritEscalation` (src/data/criticals.ts)
 
@@ -299,4 +299,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: e6e0c5f9704d5e7abf65907dc4c47bacf49b928f (2074 fichiers, 169 dossiers) corps: 2ecef211d39ed9a7ed654400d3a2b0e5f5bf1b07 -->
+<!-- sources-empreinte: 64968ce487e76974add08e39a99d877f40e491be (2074 fichiers, 169 dossiers) corps: 49f37c1ed1cf7ebccfd37b9eaed624597b654639 -->

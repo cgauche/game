@@ -105,14 +105,13 @@ test('FAIL-CLOSED — eslint qui échoue SANS rapport (outil absent) est un refu
 
 test('MORSURE — un fichier fautif est refusé, un fichier IGNORÉ par la config ne l’est pas', () => {
   const dossier = dossierDeFixtures()
-  const relIgnore = 'src/data/.lint-fixture.ts'
+  const relIgnore = 'lint-fixture.config.ts'
   try {
-    mkdirSync(join(dossier, 'src', 'data'), { recursive: true })
     // Espace insécable dans le code : `no-irregular-whitespace` (eslint:recommended) le refuse.
     writeFileSync(join(dossier, 'fautif.ts'), `export const a =${NBSP}1\n`)
     writeFileSync(join(dossier, 'sain.ts'), 'export const b = 1\n')
-    // `eslint.config.js` ignore `src/data/**` : cité EXPLICITEMENT, il rendrait un avertissement —
-    // donc un échec sous `--max-warnings 0` — sans `--no-warn-ignored`.
+    // `eslint.config.js` ignore `*.config.*` : cité EXPLICITEMENT, ce fichier rendrait un
+    // avertissement — donc un échec sous `--max-warnings 0` — sans `--no-warn-ignored`.
     writeFileSync(join(dossier, relIgnore), `export const c =${NBSP}1\n`)
 
     const { defauts, brut } = lancerLint(RACINE, ['fautif.ts', 'sain.ts', relIgnore], { cwd: dossier })

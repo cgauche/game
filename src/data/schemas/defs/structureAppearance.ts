@@ -12,7 +12,7 @@ export const famille = 'entite';
 
 /** Parties de mur admises comme clés de `relief` — RECOPIE de `WALL_PARTS`
  *  (`src/gameIso/catalog/structures/types.ts`) : `src/data` ne dépend jamais RUNTIME de `src/gameIso`
- *  (`data-purity.test.ts`). La parité des deux listes est gardée par
+ *  (pureté de couche, `eslint.config.js`). La parité des deux listes est gardée par
  *  `src/gameIso/catalog/structures/relief.test.ts`. */
 export const WALL_PART_KEYS = [
   'face', 'poteau', 'couronnement', 'panneau', 'moulure', 'plinthe',

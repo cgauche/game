@@ -43,7 +43,7 @@ const set = useGame.setState;
 const here = (f: string) => fileURLToPath(new URL(f, import.meta.url));
 /** Retire commentaires de bloc et de ligne — un prédicat CITÉ en prose (« cf. `defenseSurfaced` ») n'est
  *  PAS un câblage : sans ce strip, la garde reste verte alors que le câblage a été débranché (mutation D
- *  du juge). Même stripper que `src/data/data-purity.test.ts`. */
+ *  du juge). */
 function stripComments(src: string): string {
   return src
     .replace(/\/\*[\s\S]*?\*\//g, '')

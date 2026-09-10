@@ -43,7 +43,7 @@ const hexColor = z.string().regex(/^#[0-9a-f]{6}$/i, 'couleur hexadécimale « #
 
 /** Ids admis — RECOPIE de ce que servent les deux façades (`src/gameIso/highlightTints.ts` et
  *  `src/gameIso/teamColors.ts`) : `src/data` ne dépend jamais RUNTIME de `src/gameIso`
- *  (`data-purity.test.ts`). La parité des deux listes est gardée par
+ *  (pureté de couche, `eslint.config.js`). La parité des deux listes est gardée par
  *  `src/gameIso/highlightTints.test.ts` (patron `WALL_PART_KEYS` ⇄ `relief.test.ts`). */
 export const TEINTE_KEYS = [
   // Surbrillances de TERRAIN — tapis de cases posés sous les pions.

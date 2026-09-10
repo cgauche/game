@@ -5,7 +5,8 @@
 // Quatre règles de câblage, chacune mesurée :
 //   · l'outil vient de CET arbre (`scripts/lancer-local.mjs`) — un worktree sans `eslint` doit REFUSER,
 //     pas emprunter celui de l'arbre principal ;
-//   · `--no-warn-ignored` : `eslint.config.js` ignore `src/data/**` et `*.config.*`, et un fichier
+//   · `--no-warn-ignored` : `eslint.config.js` ignore `*.config.*` et les dossiers dérivés
+//     (`dist/`, `public/`, `_site/`…), et un fichier
 //     ignoré CITÉ explicitement rend un avertissement — avec `--max-warnings 0` il ferait échouer le
 //     commit sans qu'aucune règle ne soit violée (7 commits sur 30 concernés) ;
 //   · seuls les chemins EXISTANTS partent : un chemin supprimé cité rend exit 2 après ~15 s ;

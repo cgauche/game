@@ -71,7 +71,7 @@ function rangees(): Rangee[] {
  * Tout le reste est un caractère ÉTRANGER — un mojibake (`Ã©`) est refusé par sa lettre `Ã`, une
  * lettre grecque ou cyrillique de même.
  */
-const REPERTOIRE = /^[A-Za-zÀÂÄÇÉÈÊËÎÏÔÖÙÛÜŸÆŒàâäçéèêëîïôöùûüÿæœ0-9ᵉʳ ,()’\/':—`.=+;%«»#→×≤−÷…!-]*$/u;
+const REPERTOIRE = /^[A-Za-zÀÂÄÇÉÈÊËÎÏÔÖÙÛÜŸÆŒàâäçéèêëîïôöùûüÿæœ0-9ᵉʳ ,()’/':—`.=+;%«»#→×≤−÷…!-]*$/u;
 
 /**
  * ANTI-JARGON : lexèmes de MOTEUR, en liste FERMÉE. Comparés sur le mot ENTIER (frontières de mot),

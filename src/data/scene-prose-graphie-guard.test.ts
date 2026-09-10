@@ -62,7 +62,7 @@ const FORMES: readonly { motif: RegExp; quoi: string; cible: string }[] = [
   { motif: /(?<![A-Za-z0-9_$`^])description:/g, quoi: '`description` de scène/projet', cible: 'desc' },
   // Propriété RACCOURCIE : ancrée sur le `type:` de l'effet, donc aveugle aux `text` LÉGITIMES
   // (`narrative.text`, `TrappingRef.text`) que le lot #1467 L1b a laissés intacts.
-  { motif: /type:\s*'(?:journal|document|setObjective)'[^\n]*?,\s*text\s*[,}\)]/g, quoi: "effet `journal`/`document`/`setObjective` à `text` RACCOURCI", cible: 'desc' },
+  { motif: /type:\s*'(?:journal|document|setObjective)'[^\n]*?,\s*text\s*[,})]/g, quoi: "effet `journal`/`document`/`setObjective` à `text` RACCOURCI", cible: 'desc' },
 ];
 
 /**

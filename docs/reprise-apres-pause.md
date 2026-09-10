@@ -182,4 +182,4 @@ refaire `npm install`.
 
 Vérifier qu'elles tournent : onglet Actions du dépôt, ou `gh run list --workflow=canari.yml`. La
 porte à chaque push est `.github/workflows/ci.yml` (« CI », push, pull_request).
-<!-- sources-empreinte: e6a2efacae00ae713aaafc5a985d7485874e0be7 (13 fichiers, 9 dossiers) corps: d8627a977c1a94502dc98a697605b74000cf70a3 -->
+<!-- sources-empreinte: 2273c4d4a2802d763e3fadb1fa39b3544432d442 (13 fichiers, 9 dossiers) corps: d8627a977c1a94502dc98a697605b74000cf70a3 -->

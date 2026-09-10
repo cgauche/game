@@ -10,8 +10,8 @@
  * `src/data` ne doit JAMAIS importer `src/ui` (inversion de couche, #421 REDO) : ce module ne
  * consomme QUE des primitives `engine` (`createHero`, `rollInitialWealth`, `pettySpellQuotaFor`,
  * `fillPettySpellsToQuota`), jamais `ui/creator`. `Appearance` (`gameIso/rig/appearance`) n'est
- * importé qu'en TYPE (élidé à la compilation, `data-purity.test.ts` l'autorise — comme la police de
- * pureté d'`eslint.config.js` laisse passer la même réf inline dans `engine/types.ts`) —
+ * importé qu'en TYPE (élidé à la compilation : la police de pureté d'`eslint.config.js` le laisse
+ * passer ici comme elle laisse passer la même réf inline dans `engine/types.ts`) —
  * `rigSpeciesId` (résolveur d'id RIG) est lui une primitive DATA (`./index`), pas gameIso.
  *
  * Les DÉFINITIONS (espèce/carrière/seed/talent/sorts…) vivent dans `pregens.json` (éditable, comme

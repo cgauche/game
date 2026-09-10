@@ -25,12 +25,14 @@ import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';
  * toute police d'accès : la recopie qui ne passe par aucun import, et `require()`.
  *
  * SECOND MUR MESURÉ ICI — L'ORDRE TOTAL DANS LES TESTS DE `src` (#1709 C3c-1). Même raison d'être :
- * le `files:` du bloc est POSIX et par couche, donc un dossier renommé le rendrait MUET et VERT.
+ * le `files:` du bloc est POSIX, donc un `src/` réorganisé ou un `ignores` élargi le rendrait MUET
+ * et VERT — et la sonde de chaque couche vient du CORPUS réel (`readCorpus` refuse une base vide),
+ * jamais d'un nom en dur ni d'un compte de fichiers recopié.
  * Trois volets : la TABLE DES FORMES (import nommé, accès par membre, déstructuration, namespace)
  * sur un fichier réel de CHAQUE couche couverte ; le PÉRIMÈTRE (les sélecteurs du mur sont résolus
- * pour les sept couches sous le mur, et `src/data` reste HORS de portée d'ESLint — c'est l'`ignores`
- * de tête que le train suivant lève) ; et la POLICE de la possession, que le mur REMPLACERAIT sur
- * les tests de `src/ui` s'il ne la redisait pas — mesurée sur la config résolue, jamais postulée.
+ * pour toutes les couches de `src`, et ABSENTS d'un fichier de production — le mur ne vise que les
+ * `*.test.*`) ; et la POLICE de la possession, que le mur REMPLACERAIT sur les tests de `src/ui`
+ * s'il ne la redisait pas — mesurée sur la config résolue, jamais postulée.
  */
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -41,6 +43,7 @@ const eslint = new ESLint({ cwd: ROOT });
 const COUCHES = [
   { amont: 'src/engine', avals: ['state', 'ui', 'gameIso'] },
   { amont: 'src/state', avals: ['ui', 'gameIso'] },
+  { amont: 'src/data', avals: ['ui', 'state', 'gameIso'] },
 ] as const;
 
 /** Les 7 formes d'import vers `p`, et la règle qui DOIT les prendre (`null` = passe : élidée). */
@@ -127,10 +130,7 @@ describe('pureté de couche — la doctrine vit dans eslint.config.js, mesurée 
 });
 
 /** Les couches dont les TESTS sont sous le mur de l'ordre total. */
-const SOUS_LE_MUR = ['src/engine', 'src/state', 'src/ui', 'src/gameIso', 'src/audio', 'src/scenes', 'src'] as const;
-/** Ce qui reste HORS du mur : `src/data`, qu'ESLint ne LIT PAS (`ignores` de tête). Un test réel y
- *  est `isPathIgnored` — c'est ce fait, et non un `files:` étroit, que le train suivant lève. */
-const HORS_PORTEE = 'src/data';
+const SOUS_LE_MUR = ['src/engine', 'src/state', 'src/ui', 'src/gameIso', 'src/audio', 'src/scenes', 'src/data', 'src'] as const;
 
 /** Le premier fichier de PRODUCTION réel de `src/ui` (corpus, jamais un nom en dur) : le mur ne vise
  *  que les `*.test.*`, et c'est ce fichier-là qui le dit — un `files:` élargi à toute la couche se
@@ -207,11 +207,15 @@ describe('ordre total dans les tests de `src` — mur mesuré sur la config RÉS
       await selecteursDe(production),
       `le mur ne vise que les \`*.test.*\` : un fichier de PRODUCTION ne doit résoudre aucun de ses sélecteurs. Sonde : ${production}`,
     ).not.toContain('opendirSync');
-    const horsPortee = sondeTest(HORS_PORTEE);
-    expect(
-      await eslint.isPathIgnored(`${ROOT}/${horsPortee}`),
-      `${HORS_PORTEE} : ESLint devrait l’IGNORER (\`ignores\` de tête) — si ce n’est plus le cas, le mur le couvre et la couche entre au \`files:\`. Sonde : ${horsPortee}`,
-    ).toBe(true);
+    // `src/data` est LU par ESLint (#1709 C3c-3b) : ni son test ni sa production n’est `isPathIgnored`.
+    // C’est ce fait qui porte les deux volets ci-dessus pour cette couche — un `ignores` de tête qui la
+    // reprendrait les rendrait MUETS et VERTS.
+    for (const rel of [sondeTest('src/data'), sondes('src/data')[0]]) {
+      expect(
+        await eslint.isPathIgnored(`${ROOT}/${rel}`),
+        `src/data : ESLint doit le LIRE (aucun \`ignores\` ne le reprend) — sinon le mur et la pureté de couche y sont muets. Sonde : ${rel}`,
+      ).toBe(false);
+    }
   });
 
   it('POLICE : sur un test réel de `src/ui`, la config résolue porte ENCORE `netOwnership`', { timeout: 30_000 }, async () => {

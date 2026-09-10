@@ -135,13 +135,21 @@ const AVALS_ENGINE = [
   ['ui', 'extraire le type/la logique partagée vers une couche neutre, ou n’importer que le TYPE (`import type`).'],
   ['gameIso', 'extraire le type/la logique partagée vers une couche neutre, ou n’importer que le TYPE (`import type`).'],
 ];
+const AVALS_DATA = [
+  ['ui', 'la base APP-OWNED est en amont de l’affichage — incident #421 : `pregens.ts` important `ui/creator` tirait tout ce graphe dans celui de `data`. Reconstruire sur les primitives `engine` (`createHero`, `rollInitialWealth`…), ou n’importer que le TYPE (`import type`).'],
+  ['state', 'la donnée est en amont du store/flux — extraire le type/la logique partagée vers une couche neutre, ou n’importer que le TYPE (`import type`).'],
+  ['gameIso', 'la donnée est SERVIE au rendu, elle ne l’importe pas — extraire la forme partagée vers une couche neutre, ou n’importer que le TYPE (`import type`).'],
+];
 const AVALS_STATE = [
   ['ui', 'le store/flux est en amont de l’affichage — extraire le type/la logique partagée, ou n’importer que le TYPE (`import type`).'],
   ['gameIso', 'extraire la géométrie/simulation partagée vers `src/geometry` (ou le module neutre pertinent) — c’est le geste de l’audit #161.'],
 ];
 
 export default tseslint.config(
-  { ignores: ['dist/**', 'node_modules/**', 'public/**', '_site/**', 'src/data/**/*', '!src/data/source/**', '!src/data/hash.ts', '**/*.json', '*.config.*', '.claude/**', 'server/.wrangler/**', '.playwright-mcp/**', '.wt-*/**'] },
+  // `src/data` est LU par ESLint comme le reste de `src` (#1709 C3c-3b) : ses `.ts` (fabriques,
+  // grammaire, schémas générés, gardes) passent sous les mêmes verrous et la même pureté de couche ;
+  // ses `.json` restent ignorés par `**/*.json` — la DONNÉE n'est pas ce qu'un lint juge.
+  { ignores: ['dist/**', 'node_modules/**', 'public/**', '_site/**', '**/*.json', '*.config.*', '.claude/**', 'server/.wrangler/**', '.playwright-mcp/**', '.wt-*/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -188,8 +196,9 @@ export default tseslint.config(
     // le texte destiné à l'œil du joueur. Ses MINTEURS sont exemptés au FICHIER (`i18n/index.ts` pour
     // `t()`, `state/rollSeam.ts` pour `composeRollLabel` — déjà dans la liste), et le minteur de fixture
     // `i18n/fixtureText.ts` est SOUS la règle avec son exemption AU SITE : un second cast
-    // y échouerait. `data/index.ts` (minteur des libellés de donnée) est hors du périmètre ESLint du
-    // dépôt (`ignores` de tête `src/data/**`) — dit au JSDoc de `playerText.ts`, jamais un oubli.
+    // y échouerait. Même régime pour le MINTEUR (b), les libellés de la donnée (#1709 C3c-3b, depuis que
+    // `src/data` est linté) : `data/index.ts` (`dataLabel`) et `data/mutations.ts`
+    // (`mutationTablePlayerLabel`) portent chacun son exemption AU SITE — un troisième cast y échouerait.
     files: ['src/**/*.ts', 'src/**/*.tsx'],
     ignores: ['src/state/rollSeam.ts', 'src/state/revealStep.ts', 'src/ui/rollRowBuild.ts', 'src/i18n/index.ts'],
     rules: {
@@ -347,13 +356,31 @@ export default tseslint.config(
     },
   },
   {
+    // PURETÉ DE `src/data` (#1709 C3c-3b ; CLAUDE.md règle 3, incident #421) — la base APP-OWNED est
+    // la couche la plus AMONT : `ui`, `state` et `gameIso` la lisent, JAMAIS l'inverse. Le critère est
+    // STRUCTUREL, comme pour le moteur et le store : ce qui est élidé à la compilation passe (les réfs
+    // de TYPE INLINE d'`index.ts`, `import('../state/flow').Condition`, sont des `TSImportType`
+    // qu'aucune des deux règles ne visite), tout import RUNTIME est refusé. Les deux inversions
+    // VIVANTES sont visibles à leur site, avec leur ticket : `fsPersist.ts` (#518) et `props.types.ts`
+    // (#1506) portent chacune un `eslint-disable-next-line` motivé — jamais un nom de fichier en liste.
+    // Tests hors portée, même raison que pour le moteur : ils exercent légitimement le runtime aval.
+    // `VERROU_MARQUES`/`VERROU_CONTENEUR` sont REDITS : en flat config, le dernier bloc qui déclare
+    // `no-restricted-syntax` REMPLACE ses options — ce sont exactement les deux que les fichiers
+    // non-test de `src/data` résolvent (mesuré par `calculateConfigForFile` sur `data/index.ts`).
+    files: ['src/data/**/*.ts', 'src/data/**/*.tsx'],
+    ignores: ['src/data/**/*.test.ts', 'src/data/**/*.test.tsx'],
+    rules: {
+      'no-restricted-imports': ['error', pureteImports('data', AVALS_DATA)],
+      'no-restricted-syntax': ['error', ...VERROU_MARQUES, ...VERROU_CONTENEUR, ...pureteSyntaxe('data', AVALS_DATA)],
+    },
+  },
+  {
     // MUR DE L'ORDRE TOTAL — LES TESTS DE `src` (#1709 C3c-1). Une garde qui balaie l'arbre réel lit un
     // CORPUS : `readCorpus` (`scripts/guards/lib/sourceCorpus.mjs`, mémoïsé, gelé, ordre total, refus du
     // vide par base) ; un LISTAGE de dossier passe par `listerDossier`/`listerArbre`. La marche brute
     // n'est plus écrivable ici — ni par import nommé, ni par membre, ni par déstructuration.
-    // PÉRIMÈTRE PAR COUCHE : `src/engine`, `src/state`, la racine de `src` (C3c-1), puis `src/ui`,
-    // `src/gameIso`, `src/audio` et `src/scenes` (C3c-2). Reste `src/data/**`, IGNORÉ par ESLint
-    // (`ignores` de tête) : il entre au train C3c-3, avec la levée de cet `ignores` pour ses tests.
+    // PÉRIMÈTRE (#1709 C3c-3b) : TOUT test de `src`, en UNE paire de globs — un dossier neuf sous
+    // `src/` naît donc SOUS le mur, sans qu'on ait à y penser.
     // `VERROU_MARQUES` est REDIT : en flat config, le dernier bloc qui déclare `no-restricted-syntax`
     // REMPLACE ses options — c'est la seule option que ces tests résolvent aujourd'hui (mesuré sur la
     // config résolue, cf. `src/eslint-ordre-total-et-purete.test.ts`), l'omettre désarmerait #1262/#1318.
@@ -362,15 +389,7 @@ export default tseslint.config(
     // relations.test.ts` compare la donnée réelle à `localeCompare(b, 'fr')` ; deux scénarios trient des
     // ids en `{ numeric: true }`, que `lister.mjs` ne sait pas exprimer) mesure un contrat PRODUIT, pas
     // un listing — le refuser ici exigerait des exemptions au site.
-    files: [
-      'src/engine/**/*.test.ts', 'src/engine/**/*.test.tsx',
-      'src/state/**/*.test.ts', 'src/state/**/*.test.tsx',
-      'src/ui/**/*.test.ts', 'src/ui/**/*.test.tsx',
-      'src/gameIso/**/*.test.ts', 'src/gameIso/**/*.test.tsx',
-      'src/audio/**/*.test.ts', 'src/audio/**/*.test.tsx',
-      'src/scenes/**/*.test.ts', 'src/scenes/**/*.test.tsx',
-      'src/*.test.ts', 'src/*.test.tsx',
-    ],
+    files: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
     rules: {
       'no-restricted-imports': ['error', ORDRE_TOTAL_IMPORTS],
       'no-restricted-syntax': ['error', ...VERROU_MARQUES, ...VERROU_LISTAGE],
