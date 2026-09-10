@@ -11,8 +11,7 @@
  * `z.enum` muets, qui rendaient un `select` anonyme sans jamais paraître au stock.
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../../../scripts/guards/lib/sourceCorpus.mjs';
 import { z } from 'zod';
 import { DEFS_DE_DOCUMENT } from '../validate';
 import { defDe, enfantsDe, PROFONDEUR_MAX } from './slots';
@@ -306,26 +305,10 @@ describe('libellés de VALEURS — stock nominatif décroissant des VOCABULAIRES
   });
 });
 
-const RACINE_SRC = fileURLToPath(new URL('../../../', import.meta.url));
-
 export type Fichier = { readonly chemin: string; readonly source: string };
 
-function sourcesDeSrc(): Fichier[] {
-  const fichiers: Fichier[] = [];
-  const marcher = (rel: string): void => {
-    for (const e of readdirSync(RACINE_SRC + rel, { withFileTypes: true })) {
-      const chemin = rel ? `${rel}/${e.name}` : e.name;
-      if (e.isDirectory()) {
-        marcher(chemin);
-        continue;
-      }
-      if (!/\.tsx?$/.test(e.name) || /\.test\.tsx?$/.test(e.name)) continue;
-      fichiers.push({ chemin: `src/${chemin}`, source: readFileSync(RACINE_SRC + chemin, 'utf8') });
-    }
-  };
-  marcher('');
-  return fichiers;
-}
+const sourcesDeSrc = (): Fichier[] =>
+  readCorpus(['src']).map(({ rel, text }) => ({ chemin: rel, source: text }));
 
 const RX_DECLARATION_NOMMEE = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)[^=\n]*=\s*enumNomme\s*\(/g;
 /** Récepteur nommé, éventuellement CLONÉ en chemin (`X.describe(…).extract(…)`) — c'est justement le

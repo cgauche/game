@@ -19,8 +19,9 @@
  *     l'autre rend `true` inassignable (TS2322).
  */
 import { describe, it, expect, expectTypeOf } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { listerArbre } from '../../../../scripts/guards/lib/lister.mjs';
 import type { z } from 'zod';
 import {
   effectSchema, sceneFlowSchema, setFlagSchema, setObjectiveSchema, delayedEffectSchema,
@@ -43,18 +44,10 @@ const CONTEXTES_D_EFFET = ['effect', 'effects', 'onEnter', 'onExit', 'reward', '
 const RACINES = ['src/scenes', 'src/data'];
 
 /** Tous les `.json` des deux racines authorées. */
-function fichiersJson(): string[] {
-  const fichiers: string[] = [];
-  const marche = (d: string) => {
-    for (const e of readdirSync(d, { withFileTypes: true })) {
-      const p = join(d, e.name);
-      if (e.isDirectory()) marche(p);
-      else if (e.name.endsWith('.json')) fichiers.push(p);
-    }
-  };
-  for (const racine of RACINES) marche(join(ROOT, racine));
-  return fichiers;
-}
+const fichiersJson = (): string[] =>
+  RACINES.flatMap((racine) =>
+    listerArbre(join(ROOT, racine), { filtre: (rel) => rel.endsWith('.json') }).map((rel) => join(ROOT, racine, rel)),
+  );
 
 /** Tous les objets à clé `type` posés SOUS une clé de contexte d'effet, dans les deux racines. */
 function effetsPoses(): { chemin: string; noeud: unknown }[] {

@@ -26,9 +26,10 @@
  * ci-dessous : inline et adressée rendent le MÊME `desc`, donc le MÊME verdict de folio.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import { books } from './index';
 import { auditFolio, auditFolios, citedEntriesOf } from '../../scripts/guards/lib/folioIntegrity.mjs';
 import { FOLIO_RATCHET } from '../../scripts/guards/lib/folioRatchetStock.mjs';
@@ -48,7 +49,7 @@ function collectBooks(o: unknown, acc: Set<string>): void {
 }
 
 describe('relation-livre id-pure — tout source.book est un id de books.json', () => {
-  const files = readdirSync(DIR).filter((f) => f.endsWith('.json') && f !== 'books.json');
+  const files = listerDossier(DIR).filter((f) => f.endsWith('.json') && f !== 'books.json');
   for (const f of files) {
     it(`${f} : source.book ∈ ids de livres`, () => {
       const found = new Set<string>();

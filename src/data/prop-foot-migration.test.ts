@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import { props, findPropById } from './index';
 import { normalizeScene, emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../state/scene';
 import { empreinteDuProp } from './props.types';
@@ -55,15 +56,7 @@ const SCENES_DIR = join(__dirname, '../scenes');
 const ARENE_JSON = join(SCENES_DIR, 'arene/arene-projet.json');
 
 /** Tous les `.json` de `src/scenes` (récursif). */
-function sceneJsonFiles(dir = SCENES_DIR, rel = ''): string[] {
-  const out: string[] = [];
-  for (const ent of readdirSync(dir, { withFileTypes: true })) {
-    const relPath = rel ? `${rel}/${ent.name}` : ent.name;
-    if (ent.isDirectory()) out.push(...sceneJsonFiles(join(dir, ent.name), relPath));
-    else if (ent.name.endsWith('.json')) out.push(relPath);
-  }
-  return out;
-}
+const sceneJsonFiles = (): string[] => listerArbre(SCENES_DIR, { filtre: (rel) => rel.endsWith('.json') });
 
 /** `<fichier>/<scène>/<entité>` pour chaque entité portant un `foot` d'INSTANCE dans un document BRUT. */
 function entitesAvecFoot(doc: unknown, fichier: string): string[] {

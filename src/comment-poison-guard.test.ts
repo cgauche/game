@@ -783,14 +783,6 @@ const TEST_DECISION_SITES: BaselineEntry[] = [
       'verbatim utilisateur du 2026-08-31 (AskUserQuestion, option choisie) cité en toutes lettres dans le MÊME commentaire (« Un projet se NOMME avant d’être enregistré (Recommandé) »), consigné au ticket #1552 : c’est lui qui rend `id`/`label`/`versionContenu` REQUIS. Site UNIQUE de cette citation dans les tests — les autres sites du lot (migration, bibliothèque, éditeur) y RENVOIENT au lieu de la recopier.',
     date: '2026-08-31',
   },
-  {
-    fichier: 'src/data/manual-docs-ratchet.test.ts',
-    motif: 'listes décroissantes = liste d’exception (garde de routage SANS stock)',
-    ancre: 'Arbitrage utilisateur (2026-07-27, verbatim)',
-    raison:
-      'verbatim utilisateur du 2026-07-27 cité en toutes lettres dans le MÊME commentaire (« avoir des listes qui doivent diminuer avec le temps… on a juste une liste d’exception qui empoisonne ») : c’est lui qui interdit à cette garde d’avoir un stock cliqueté',
-    date: '2026-07-27',
-  },
 ];
 
 describe('cliquet : revendications d’autorité dans les fichiers de test (#136, famille 4)', () => {

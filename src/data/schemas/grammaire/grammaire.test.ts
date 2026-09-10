@@ -6,7 +6,9 @@
  * ils prouvent du même coup que le registre généré `_ids.generated.ts` et la donnée s'accordent.
  */
 import { describe, it, expect, expectTypeOf } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { listerDossier } from '../../../../scripts/guards/lib/lister.mjs';
 import { z } from 'zod';
 import skillsJson from '../../skills.json';
 import talentsJson from '../../talents.json';
@@ -517,7 +519,7 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
 describe('defs/ — forme de FICHIER et EXPOSITION déclarée (#1472 sous-lot A)', () => {
   it('tout fichier de `defs/` se termine par une newline', () => {
     const dossier = new URL('../defs/', import.meta.url);
-    const fautifs = readdirSync(dossier)
+    const fautifs = listerDossier(fileURLToPath(dossier))
       .filter((f) => f.endsWith('.ts'))
       .filter((f) => !readFileSync(new URL(f, dossier), 'utf8').endsWith('\n'));
     expect(fautifs).toEqual([]);

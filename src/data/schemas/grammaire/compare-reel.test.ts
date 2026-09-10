@@ -9,7 +9,8 @@
  * et le COMPTE est asserté pour que l'ajout d'une forme neuve passe par ici.
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { listerArbre } from '../../../../scripts/guards/lib/lister.mjs';
 import { conditionSchema } from './mecanique';
 
 /** Nombre de `compare` authorés dans les deux racines, MESURÉ (2026-08-24) : 29 sous `src/data`,
@@ -19,18 +20,8 @@ import { conditionSchema } from './mecanique';
  *  `toBeGreaterThan`. */
 const COMPARE_AUTHORES = 29;
 
-const fichiersJson = (racine: string): string[] => {
-  const out: string[] = [];
-  const walk = (d: string): void => {
-    for (const e of readdirSync(d, { withFileTypes: true })) {
-      const p = `${d}/${e.name}`;
-      if (e.isDirectory()) walk(p);
-      else if (e.name.endsWith('.json')) out.push(p);
-    }
-  };
-  walk(racine);
-  return out;
-};
+const fichiersJson = (racine: string): string[] =>
+  listerArbre(racine, { filtre: (rel) => rel.endsWith('.json') }).map((rel) => `${racine}/${rel}`);
 
 /** Toutes les valeurs `{ kind: 'compare', … }` d'un document, à toute profondeur, avec leur chemin. */
 const comparesDe = (valeur: unknown, chemin: string, dans: { chemin: string; noeud: unknown }[]): void => {

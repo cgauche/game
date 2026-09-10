@@ -16,8 +16,8 @@
  * peut pas s'écarter de la dérivation.
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import propsJson from './props.json';
 import { fileURLToPath } from 'node:url';
 import { DECOR_DEFS_DIR, labelDArt } from '../../scripts/guards/lib/propArtLabels.mjs';
@@ -27,7 +27,7 @@ const entrees = propsJson as { id: string; label: string }[];
 
 /** Les ids des defs d'ART : un fichier `<id>.ts` du répertoire des defs, hors tests. */
 const idsDArt = (): string[] =>
-  readdirSync(join(RACINE, DECOR_DEFS_DIR))
+  listerDossier(join(RACINE, DECOR_DEFS_DIR))
     .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'))
     .map((f) => f.replace(/\.ts$/, ''))
     .sort();

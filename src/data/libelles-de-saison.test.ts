@@ -14,19 +14,11 @@
  * RENDU — c'est là que les libellés attendus se vérifient (`src/ui/PlageField.test.tsx`).
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { weather, seasonLabel } from './index';
 
 /** Les libellés que la donnée porte — cherchés tels qu'elle les écrit, jamais recopiés ici. */
 const LIBELLES = weather.map((s) => s.label);
-
-const sources = (dir: string, prefixe: string): [string, string][] =>
-  readdirSync(dir).flatMap((e): [string, string][] => {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) return sources(p, `${prefixe}${e}/`);
-    return /\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e) ? [[`${prefixe}${e}`, p]] : [];
-  });
 
 /** Une ligne de COMMENTAIRE ne pose aucun libellé à l'écran (citation de table RAW en JSDoc). */
 const estCommentaire = (ligne: string) => /^\s*(\/\/|\/\*|\*)/.test(ligne);
@@ -43,10 +35,10 @@ describe('libellés de saison — une SOURCE, la donnée (#1659)', () => {
 
   it('aucun libellé de saison écrit EN DUR dans le code de production', () => {
     const sites: string[] = [];
-    for (const [nom, chemin] of sources(join(process.cwd(), 'src'), '')) {
-      readFileSync(chemin, 'utf8').split('\n').forEach((ligne, i) => {
+    for (const { rel, text } of readCorpus(['src'])) {
+      text.split('\n').forEach((ligne, i) => {
         if (estCommentaire(ligne)) return;
-        for (const l of LIBELLES) if (ligne.includes(`'${l}'`) || ligne.includes(`"${l}"`)) sites.push(`src/${nom}:${i + 1} « ${l} »`);
+        for (const l of LIBELLES) if (ligne.includes(`'${l}'`) || ligne.includes(`"${l}"`)) sites.push(`${rel}:${i + 1} « ${l} »`);
       });
     }
     expect(

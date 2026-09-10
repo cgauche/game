@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { listerArbre, listerDossier } from '../../scripts/guards/lib/lister.mjs';
 
 /**
  * Garde-fou « l'id d'un document de RACINE est unique » (#1467 L1b V-FLIP-CONFIG).
@@ -28,19 +29,14 @@ type Porteur = { id: string; ou: string };
 function idsDePremierNiveau(): Porteur[] {
   const out: Porteur[] = [];
   const visite = (dir: string, prefixe: string) => {
-    for (const e of readdirSync(dir, { withFileTypes: true })) {
-      if (e.isDirectory()) {
-        visite(`${dir}${e.name}/`, `${prefixe}${e.name}/`);
-        continue;
-      }
-      if (!e.name.endsWith('.json')) continue;
+    for (const nom of listerArbre(dir, { filtre: (rel) => rel.endsWith('.json') })) {
       let racine: unknown;
       try {
-        racine = JSON.parse(readFileSync(`${dir}${e.name}`, 'utf8'));
+        racine = JSON.parse(readFileSync(`${dir}${nom}`, 'utf8'));
       } catch {
         continue;
       }
-      const ou = `${prefixe}${e.name}`;
+      const ou = `${prefixe}${nom}`;
       if (Array.isArray(racine)) {
         for (const item of racine) {
           if (item && typeof item === 'object' && typeof (item as { id?: unknown }).id === 'string') {
@@ -79,7 +75,7 @@ const FLIPPES_V_FLIP_CONFIG = [
  *  DOCUMENTS, pas d'un lot. */
 function documentsConfig(): (Porteur & { type: string })[] {
   const dir = fileURLToPath(new URL('./', import.meta.url));
-  return readdirSync(dir)
+  return listerDossier(dir)
     .filter((f) => f.endsWith('.json'))
     .flatMap((f) => {
       let racine: unknown;

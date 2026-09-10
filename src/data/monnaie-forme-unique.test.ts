@@ -17,8 +17,9 @@
  *     la colonne Prix telle que le livre l'imprime, `number` est le facteur saisonnier du vin.
  */
 import { describe, it, expect } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 
 const ROOT = process.cwd();
 const RACINES = ['src/data', 'src/scenes'];
@@ -26,16 +27,11 @@ const RACINES = ['src/data', 'src/scenes'];
 const DENOMINATIONS = ['gold', 'silver', 'brass', 'bronze'];
 
 function documents(): unknown[] {
-  const out: unknown[] = [];
-  const marcher = (dir: string) => {
-    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-      const p = path.join(dir, e.name);
-      if (e.isDirectory()) marcher(p);
-      else if (e.name.endsWith('.json')) out.push(JSON.parse(fs.readFileSync(p, 'utf8')));
-    }
-  };
-  for (const r of RACINES) marcher(path.join(ROOT, r));
-  return out;
+  return RACINES.flatMap((r) =>
+    listerArbre(join(ROOT, r), { filtre: (rel) => rel.endsWith('.json') }).map((rel) =>
+      JSON.parse(readFileSync(join(ROOT, r, rel), 'utf8')),
+    ),
+  );
 }
 
 type Compte = Record<string, number>;

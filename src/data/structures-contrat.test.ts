@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -1465,7 +1466,7 @@ describe('les concepts de VALEUR sont reconnus à leur noyau (contrats positifs)
       for (const [k, e] of Object.entries(o)) marche(e, dataset, k);
     };
     const jsons = (d: string): string[] =>
-      readdirSync(d).flatMap((e) => (statSync(join(d, e)).isDirectory() ? jsons(join(d, e)) : e.endsWith('.json') ? [join(d, e)] : []));
+      listerArbre(d, { filtre: (rel) => rel.endsWith('.json') }).map((rel) => join(d, rel));
     for (const f of ['src/data', 'src/scenes'].flatMap((r) => jsons(join(ROOT, r)))) {
       let doc: unknown;
       try { doc = JSON.parse(readFileSync(f, 'utf8')); } catch { continue; }

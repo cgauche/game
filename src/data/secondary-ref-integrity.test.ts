@@ -12,12 +12,15 @@
  * établi par `book-source-integrity.test.ts` pour l'ancre.
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import { fileURLToPath } from 'node:url';
 import { auditSecondaries, auditSecondaryRef, secondaryEntriesOf } from '../../scripts/guards/lib/folioIntegrity.mjs';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
+/** Les datasets `.json` de `src/data`, en ordre total — UN listage pour les deux sites qui le lisent. */
+const DATASETS = listerDossier(DIR).filter((f) => f.endsWith('.json'));
 
 describe('secondaryEntriesOf — walk de `alsoIn[]`', () => {
   it('collecte chaque emplacement secondaire avec le label du porteur et son propre quote', () => {
@@ -95,8 +98,7 @@ describe('auditSecondaries — 71 entrées `alsoIn` réelles sur src/data/*.json
   });
 
   it('EXHAUSTIF : les fichiers portant `alsoIn` sont exactement les datasets migrés (Lot 2 + talents #734 + creatures #731 + species #1457)', () => {
-    const files = readdirSync(DIR).filter((f) => f.endsWith('.json'));
-    const offenders = files.filter((f) => readFileSync(join(DIR, f), 'utf8').includes('"alsoIn"')).sort();
+    const offenders = DATASETS.filter((f) => readFileSync(join(DIR, f), 'utf8').includes('"alsoIn"'));
     expect(offenders).toEqual(['creatures.json', 'domains.json', 'naval-traits.json', 'qualities.json', 'skills.json', 'species.json', 'spells.json', 'talents.json', 'traits.json', 'trappings.json']);
   });
 });
@@ -129,8 +131,7 @@ function selfRepublications(data: unknown): string[] {
 
 describe('un `alsoIn` ne républie JAMAIS son ancre (livre ET folio identiques)', () => {
   it('EXHAUSTIF : aucun dataset de src/data/*.json ne porte de secondaire égal à sa source', () => {
-    const files = readdirSync(DIR).filter((f) => f.endsWith('.json'));
-    const offenders = files.flatMap((f) => selfRepublications(JSON.parse(readFileSync(join(DIR, f), 'utf8'))).map((k) => `${f}: ${k}`));
+    const offenders = DATASETS.flatMap((f) => selfRepublications(JSON.parse(readFileSync(join(DIR, f), 'utf8'))).map((k) => `${f}: ${k}`));
     expect(offenders).toEqual([]);
   });
 

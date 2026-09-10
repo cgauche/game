@@ -215,9 +215,9 @@ primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autr
 | Garde | Ce qu’elle verrouille (son propre `describe`) |
 |---|---|
 | `src/ui/compendium/no-json-fields.test.ts` | Codex — aucun champ éditable n’infère kind:json (E3b) |
-| `src/data/defs-migrated.test.ts` | defs mécaniques migrées en DONNÉE (traits + qualités) |
+| `src/data/defs-migrated.test.ts` | Traits et Qualités : mécanique en DONNÉE, résolution PAR ID |
 | `src/data/data-wellformed.test.ts` | Intégrité des données src/data/*.json |
 | `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
 | `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
 | `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |
-<!-- sources-empreinte: 303ece6801600f96929fd92c1e694cb2f870b268 (156 fichiers, 1 dossiers) corps: e527de7f8fe740354630c8824310463e6b306658 -->
+<!-- sources-empreinte: e5477cc61f1785812cd0398e8c0b8cb6ae96707b (156 fichiers, 1 dossiers) corps: aae4ab614fc06a8c9f013339b856f08065271dfe -->

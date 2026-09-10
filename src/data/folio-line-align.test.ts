@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import {
   auditAlignment,
   auditDataDir,
@@ -72,7 +73,7 @@ function compteSources(dir: string): { sourcees: number; citees: number } {
     }
     for (const [k, v] of Object.entries(rec)) if (k !== 'source') walk(v);
   };
-  for (const f of readdirSync(dir).filter((x) => x.endsWith('.json'))) {
+  for (const f of listerDossier(dir).filter((x) => x.endsWith('.json'))) {
     walk(JSON.parse(readFileSync(join(dir, f), 'utf8')));
   }
   return { sourcees, citees };

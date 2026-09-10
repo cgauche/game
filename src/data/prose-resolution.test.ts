@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import { fileURLToPath } from 'node:url';
 // @ts-expect-error - résolveur ESM JS (pas de types) — même convention que `vite.config.ts`
 import { resoudreProse } from '../../scripts/source/resoudre.mjs';
@@ -54,15 +55,8 @@ interface AdresseVue {
 const RACINES = ['data', 'scenes'].map((r) => fileURLToPath(new URL(`../${r}/`, import.meta.url)));
 
 /** Tous les `.json` d'une racine, à toute profondeur. */
-function fichiersJson(dir: string): string[] {
-  const out: string[] = [];
-  for (const nom of readdirSync(dir)) {
-    const p = join(dir, nom);
-    if (statSync(p).isDirectory()) out.push(...fichiersJson(p));
-    else if (nom.endsWith('.json')) out.push(p);
-  }
-  return out.sort();
-}
+const fichiersJson = (dir: string): string[] =>
+  listerArbre(dir, { filtre: (rel) => rel.endsWith('.json') }).map((rel) => join(dir, rel));
 
 /** Nœuds porteurs d'une `descRef`, à toute profondeur des deux racines. Clé = `id` STABLE quand il
  *  existe, sinon le chemin JSON — jamais un libellé (doctrine 2026-07-09). */

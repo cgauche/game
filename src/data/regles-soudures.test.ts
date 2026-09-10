@@ -10,19 +10,16 @@
  * finale, la suite (première ligne non vide après le marqueur) doit se retrouver dans la `desc`.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { chapterFile, readText } from '../../scripts/guards/lib/rawRefIntegrity.mjs';
 import { regles, books } from './index';
 
 const chapCache = new Map<string, string[] | null>();
 function chapitre(bookId: string, ch: string): string[] | null {
   const key = `${bookId}#${ch}`;
   if (!chapCache.has(key)) {
-    const dir = books.find((b) => b.id === bookId)?.dir;
-    if (!dir) { chapCache.set(key, null); return null; }
-    const root = join(process.cwd(), dir);
-    const f = readdirSync(root).find((x) => x.startsWith(`${ch.padStart(2, '0')} - `) && x.endsWith('.md'));
-    chapCache.set(key, f ? readFileSync(join(root, f), 'utf8').split(/\r?\n/) : null);
+    const abbr = books.find((b) => b.id === bookId)?.abbr;
+    const f = abbr ? chapterFile(abbr, ch) : null;
+    chapCache.set(key, f ? readText(f.path).split('\n') : null);
   }
   return chapCache.get(key)!;
 }

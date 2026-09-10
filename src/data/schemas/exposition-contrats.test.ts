@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { listerDossier } from '../../../scripts/guards/lib/lister.mjs';
 import { SCHEMA_DEFS } from './_registry.generated';
 import {
   deriveExposition,
@@ -28,7 +28,7 @@ import type { Exposition } from './grammaire/document';
  */
 
 const DATA_DIR = fileURLToPath(new URL('../', import.meta.url));
-const jsonSurDisque = () => readdirSync(DATA_DIR).filter((f) => f.endsWith('.json'));
+const jsonSurDisque = () => listerDossier(DATA_DIR).filter((f) => f.endsWith('.json'));
 
 /**
  * Cliquet des exemptions de DETTE : fichier → ticket daté. Un `exempt.kind === 'dette'` est une

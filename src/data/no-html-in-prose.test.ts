@@ -1,17 +1,18 @@
 /**
  * Garde-fou RÈGLE 5 : aucune balise HTML dans les datasets app-owned. Les champs de prose (`desc`,
  * `text`…) sont du **Markdown verbatim** de la source, rendus par `<Prose>` — jamais du HTML. Ce test
- * échoue si une string contient une vraie balise (legacy `<br>`, `<b>`, `<div>`… réintroduits par
- * mégarde ou par un copier-coller depuis l'ancien format). Détecte des tags NOMMÉS connus, pas un
- * simple « < » (formules « PV < 5 » non concernées).
+ * échoue si une string contient une vraie balise HTML (`<br>`, `<b>`, `<div>`…), qu'elle vienne
+ * d'une saisie ou d'un copier-coller. Détecte des tags NOMMÉS connus, pas un simple « < »
+ * (formules « PV < 5 » non concernées).
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
-const files = readdirSync(DIR).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
+const files = listerDossier(DIR).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
 
 const HTML_TAG = /<(\/?)(b|i|em|strong|br|p|ul|ol|li|table|thead|tbody|tr|td|th|span|div|h[1-6]|a|code|pre|blockquote|sup|sub|hr)\b[^>]*>/i;
 

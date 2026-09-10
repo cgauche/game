@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * GARDE DE PURETÉ DE LA COUCHE `src/data` (CLAUDE.md règle 3 ; #421 REDO). `src/data` est la base
@@ -25,8 +24,6 @@ import { fileURLToPath } from 'node:url';
  * Les fichiers de TEST sont exclus du scan : ils exercent légitimement des helpers `ui`/`state`
  * pour préparer leurs fixtures — ce sont des consommateurs, pas la couche `data`.
  */
-
-const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
 
 /** Segments interdits en amont de `data`, avec leur allowlist propre (fichier → réf inline factuelle). */
 const FORBIDDEN_SEGMENTS: { segment: string; allow: Set<string> }[] = [
@@ -80,30 +77,20 @@ function stripComments(src: string): string {
     .join('\n');
 }
 
-/** Tous les `.ts` de `src/data` (récursif), hors `*.test.ts`. Chemins relatifs à DATA_DIR. */
-function dataSources(dir = DATA_DIR, rel = ''): string[] {
-  const out: string[] = [];
-  for (const ent of readdirSync(dir, { withFileTypes: true })) {
-    const relPath = rel ? `${rel}/${ent.name}` : ent.name;
-    if (ent.isDirectory()) out.push(...dataSources(`${dir}/${ent.name}`, relPath));
-    else if (ent.name.endsWith('.ts') && !ent.name.endsWith('.test.ts')) out.push(relPath);
-  }
-  return out;
-}
-
 describe('pureté de src/data — ne dépend JAMAIS (runtime) de src/ui, src/state ou src/gameIso (règle 3, #421)', () => {
-  const files = dataSources();
+  /** Tous les `.ts` de `src/data` (récursif) avec leur texte, hors `*.test.ts` : `readCorpus`. */
+  const files = readCorpus(['src/data'], { exts: ['.ts'] });
 
   for (const { segment, allow } of FORBIDDEN_SEGMENTS) {
     const IMPORT_RE = importRegexFor(segment);
 
     it(`aucun fichier data (hors tests) n'importe RUNTIME de src/${segment} (sauf allowlist type-only/factuelle)`, () => {
       const offenders: string[] = [];
-      for (const f of files) {
-        const base = f.split('/').pop()!;
+      for (const { rel, text } of files) {
+        const base = rel.split('/').pop()!;
         if (allow.has(base)) continue;
-        const code = stripComments(readFileSync(`${DATA_DIR}/${f}`, 'utf8'));
-        if (code.split('\n').some((l) => IMPORT_RE.test(l) && !TYPE_ONLY_RE.test(l))) offenders.push(f);
+        const code = stripComments(text);
+        if (code.split('\n').some((l) => IMPORT_RE.test(l) && !TYPE_ONLY_RE.test(l))) offenders.push(rel);
       }
       expect(
         offenders,

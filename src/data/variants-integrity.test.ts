@@ -11,8 +11,9 @@
  * doivent jamais pouvoir être actives ensemble — `activeVariant` prend la première, silencieusement.
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import { fileURLToPath } from 'node:url';
 import { OPTIONAL_RULES } from '../engine/policy';
 import { unknownVariantRules, variantRulesOf } from '../../scripts/guards/lib/variantRule.mjs';
@@ -23,6 +24,8 @@ import * as spellsDef from './schemas/defs/spells';
 import { characteristics, skills, traits } from './index';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
+/** Les datasets `.json` de `src/data`, en ordre total — UN listage pour les quatre sites qui le lisent. */
+const DATASETS = listerDossier(DIR).filter((f) => f.endsWith('.json'));
 const KNOWN_RULE_IDS = new Set(OPTIONAL_RULES.map((r) => r.id));
 /** Clés du schéma d'ENTRÉE de chaque dataset à variantes — lues du def, jamais recopiées. Un def
  *  ADOPTÉ par `document()` rend un nœud SCELLÉ, sans `.element.shape` : il publie ses clés relevées
@@ -68,9 +71,8 @@ describe('garde-fou « when.rule ∈ OPTIONAL_RULES » (#564 Lot 3 item 1)', () 
   });
 
   it('EXHAUSTIF : seuls les datasets à liste blanche déclarée référencent `variants` en donnée (contrôle croisé texte brut)', () => {
-    const files = readdirSync(DIR).filter((f) => f.endsWith('.json'));
     // La liste autorisée est DÉRIVÉE des defs (`RESOLVED_BY_FILE`), jamais une liste de fichiers à la main.
-    const offenders = files.filter((f) => !RESOLVED_BY_FILE.has(f) && readFileSync(join(DIR, f), 'utf8').includes('"variants"'));
+    const offenders = DATASETS.filter((f) => !RESOLVED_BY_FILE.has(f) && readFileSync(join(DIR, f), 'utf8').includes('"variants"'));
     expect(offenders).toEqual([]);
   });
 });
@@ -103,7 +105,7 @@ function gateRuleRefs(node: unknown, path = ''): { key: string; rule: string }[]
 
 describe('garde-fou « gatedByRule ∈ OPTIONAL_RULES » (#1318 E4/C2)', () => {
   const filesWithGate = () =>
-    readdirSync(DIR).filter((f) => f.endsWith('.json') && readFileSync(join(DIR, f), 'utf8').includes(`"${GATE_FIELD}"`));
+    DATASETS.filter((f) => readFileSync(join(DIR, f), 'utf8').includes(`"${GATE_FIELD}"`));
 
   it('0 entrée réelle de src/data/*.json ne subordonne sa disponibilité à un id de règle inconnu', () => {
     const offenders = filesWithGate().flatMap((f) =>
@@ -200,8 +202,7 @@ function variantConflicts(node: unknown, path = ''): { key: string; rules: strin
 
 describe('garde-fou « deux variantes jamais actives ensemble » (#564)', () => {
   it('0 entrée réelle de src/data/*.json ne porte deux variantes co-activables', () => {
-    const files = readdirSync(DIR).filter((f) => f.endsWith('.json'));
-    const offenders = files.flatMap((f) =>
+    const offenders = DATASETS.flatMap((f) =>
       variantConflicts(JSON.parse(readFileSync(join(DIR, f), 'utf8'))).map((c) => ({ file: f, ...c })),
     );
     expect(offenders).toEqual([]);
@@ -313,8 +314,7 @@ function unresolvedVariantFields(node: unknown, resolved: readonly string[] | un
 
 describe('garde-fou « une variante ne déclare QUE des champs résolus » (#564 audit)', () => {
   it('0 variante réelle de src/data/*.json ne déclare un champ hors de la liste résolue de son dataset', () => {
-    const files = readdirSync(DIR).filter((f) => f.endsWith('.json'));
-    const offenders = files.flatMap((f) =>
+    const offenders = DATASETS.flatMap((f) =>
       unresolvedVariantFields(JSON.parse(readFileSync(join(DIR, f), 'utf8')), RESOLVED_BY_FILE.get(f)).map((v) => ({ file: f, ...v })),
     );
     expect(offenders).toEqual([]);

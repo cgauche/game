@@ -33,10 +33,11 @@
  */
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, copyFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 
 const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -275,9 +276,7 @@ describe('vague 12b — la donnée porte son `type` et RIEN d’autre n’a boug
 describe('enveloppe — les `.json` de `src/data`, partitionnés SANS reste', () => {
   const estObjet = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
-  const FICHIERS = readdirSync(join(RACINE, 'src', 'data'))
-    .filter((f) => f.endsWith('.json'))
-    .sort();
+  const FICHIERS = listerDossier(join(RACINE, 'src', 'data')).filter((f) => f.endsWith('.json'));
   const DOCS = FICHIERS.map((f) => [f, JSON.parse(readFileSync(join(RACINE, 'src', 'data', f), 'utf8')) as unknown] as const);
 
   /** PARTITION 1 — racine TABLEAU d'entrées : le contrat porte sur CHAQUE entrée. */

@@ -5,10 +5,12 @@
 // le prédicat de couverture d'une CELLULE se verrouille sur une fixture, faute d'une section à deux
 // tables dans le corpus extrait — un verrou ne s'écrit pas après le dégât.
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { chapterFile } from '../../../scripts/guards/lib/rawRefIntegrity.mjs';
+import { listerDossier } from '../../../scripts/guards/lib/lister.mjs';
 import {
   type ChapitreParse, type Fragment, type FragmentBlocs, type FragmentCellule, type Resolu,
   blocsCouverts, blocsPlats, empreinteDe, estErreur, findCells, normText, parseChapitre,
@@ -16,7 +18,7 @@ import {
 } from './decoupe.ts';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
-const LIVRES: { id: string; dir?: string }[] = JSON.parse(
+const LIVRES: { id: string; abbr?: string; dir?: string }[] = JSON.parse(
   readFileSync(join(RACINE, 'src/data/books.json'), 'utf8'),
 );
 const LDB = 'livre-de-base';
@@ -25,12 +27,10 @@ const _cache = new Map<string, ChapitreParse>();
 
 /** Chemin du fichier de chapitre `NN` d'un livre. */
 function cheminChapitre(bookId: string, ch: string): string {
-  const dir = LIVRES.find((b) => b.id === bookId)?.dir;
-  if (!dir) throw new Error(`livre sans dir : ${bookId}`);
-  const abs = join(RACINE, dir);
-  const f = readdirSync(abs).find((x) => x.startsWith(`${ch} - `) && x.endsWith('.md'));
+  const abbr = LIVRES.find((b) => b.id === bookId)?.abbr;
+  const f = abbr ? chapterFile(abbr, ch) : null;
   if (!f) throw new Error(`chapitre introuvable : ${bookId} ch.${ch}`);
-  return join(abs, f);
+  return join(RACINE, f.path);
 }
 
 /** Chapitre `NN` d'un livre, lu au disque (CRLF-robuste) et parsé, avec cache. */
@@ -223,7 +223,7 @@ describe('sumOf — empreinte 64 bits', () => {
     let collisions = 0;
     for (const livre of LIVRES.filter((b) => b.dir)) {
       const dir = join(RACINE, livre.dir!);
-      for (const f of readdirSync(dir)) {
+      for (const f of listerDossier(dir)) {
         const m = /^(\d{2}) - .+\.md$/.exec(f);
         if (!m) continue;
         for (const b of blocsPlats(chapitreDe(livre.id, m[1]))) {

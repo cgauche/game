@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import { SANS_LIVRE, SANS_PROVENANCE_EXIGEE, SOURCE_EN_PROFONDEUR } from './schemas/grammaire/sans-livre';
 
 /**
@@ -98,14 +99,7 @@ const lire = (dir: string, f: string): unknown => JSON.parse(readFileSync(join(d
 
 /** `.json` du dossier — RÉCURSIF : les projets de `src/scenes` vivent en sous-dossiers
  *  (`arene/arene-projet.json`), un scan à plat les manquerait en silence. */
-function jsons(dir: string, prefixe = ''): string[] {
-  const out: string[] = [];
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
-    if (e.isDirectory()) out.push(...jsons(join(dir, e.name), `${prefixe}${e.name}/`));
-    else if (e.name.endsWith('.json')) out.push(`${prefixe}${e.name}`);
-  }
-  return out;
-}
+const jsons = (dir: string): string[] => listerArbre(dir, { filtre: (rel) => rel.endsWith('.json') });
 
 /** `maison` non vide ET `source` absente, sur les entrées de PREMIER niveau. */
 function maisonSansSource(data: unknown): number {

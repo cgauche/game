@@ -43,12 +43,9 @@
  * paires `clé : 'texte'` ; aucune balise n'entre dans `RX_LITTERAL` ni dans `RX_TABLE`.
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../../../../scripts/guards/lib/sourceCorpus.mjs';
 import { DEFS_DE_DOCUMENT } from '../validate';
 import { defDe, enfantsDe, PROFONDEUR_MAX } from './slots';
-
-const RACINE_SRC = fileURLToPath(new URL('../../../', import.meta.url));
 
 /** Les vocabulaires (jeux d'options) d'enum atteints par le registre — une descente `enfantsDe`. */
 function vocabulairesDuRegistre(): Set<string>[] {
@@ -162,22 +159,8 @@ export function recordsDeLibelles(fichiers: readonly Fichier[], vocabulaires: re
   return trouvailles.sort();
 }
 
-function sourcesDuDepot(): Fichier[] {
-  const fichiers: Fichier[] = [];
-  const marcher = (rel: string): void => {
-    for (const e of readdirSync(RACINE_SRC + rel, { withFileTypes: true })) {
-      const chemin = `${rel}/${e.name}`;
-      if (e.isDirectory()) {
-        marcher(chemin);
-        continue;
-      }
-      if (!/\.tsx?$/.test(e.name) || /\.test\.tsx?$/.test(e.name)) continue;
-      fichiers.push({ chemin: `src/${chemin}`, source: readFileSync(RACINE_SRC + chemin, 'utf8') });
-    }
-  };
-  for (const racine of ['ui', 'engine', 'state', 'data']) marcher(racine);
-  return fichiers;
-}
+const sourcesDuDepot = (): Fichier[] =>
+  readCorpus(['src/ui', 'src/engine', 'src/state', 'src/data']).map(({ rel, text }) => ({ chemin: rel, source: text }));
 
 /**
  * STOCK NOMINATIF GELÉ, par `fichier:symbole` — les Records de libellés de valeurs qui vivaient déjà

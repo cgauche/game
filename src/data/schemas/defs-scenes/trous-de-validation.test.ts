@@ -9,7 +9,8 @@
  * déclaration — angles morts compris.
  */
 import { describe, it, expect } from 'vitest';
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { listerDossier } from '../../../../scripts/guards/lib/lister.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { TROUS_DE_VALIDATION } from './trous-de-validation';
@@ -24,7 +25,7 @@ const GARDE = {
     'ou champ porteur>` — le `dir` est un PARAMÈTRE : le cliquet est jouable sur un répertoire-jouet, donc ' +
     'sa propre mutation est testable.',
   perimetre:
-    'les `*.ts` de PRODUCTION du seul répertoire `src/data/schemas/defs-scenes/` (`readdirSync(__dirname)`, ' +
+    'les `*.ts` de PRODUCTION du seul répertoire `src/data/schemas/defs-scenes/` (`listerDossier(__dirname)`, ' +
     'non récursif).',
   angleMort: [
     'un `z.custom` ALIASÉ (`const c = z.custom; c<T>()`) ou ré-exporté depuis un autre module échappe au ' +
@@ -55,7 +56,7 @@ const DEFS_SCENES = __dirname;
  *  l'ordre du scan. `dir` est paramétré : le cliquet se joue aussi sur un répertoire-jouet (câblage). */
 function sitesZCustom(dir: string): string[] {
   const out: string[] = [];
-  for (const f of readdirSync(dir).filter((n) => n.endsWith('.ts') && !n.endsWith('.test.ts'))) {
+  for (const f of listerDossier(dir).filter((n) => n.endsWith('.ts') && !n.endsWith('.test.ts'))) {
     readFileSync(join(dir, f), 'utf8')
       .split(/\r?\n/)
       .forEach((ligne) => {

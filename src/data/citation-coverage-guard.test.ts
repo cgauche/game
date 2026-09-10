@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { auditDataset, EXEMPT_DATASETS, isCitedItem } from '../../scripts/guards/lib/citationCoverage.mjs';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 
 /**
  * Garde-fou « citation par ENTRÉE » (#309, phase 1 — suite #278/#281). #278/#281 gardent la FORME
@@ -28,6 +29,8 @@ import { auditDataset, EXEMPT_DATASETS, isCitedItem } from '../../scripts/guards
  */
 
 const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
+/** Les datasets `.json` de `src/data`, en ordre total — UN listage pour les deux sites qui le lisent. */
+const DATASETS = listerDossier(DATA_DIR).filter((f) => f.endsWith('.json'));
 
 /**
  * Baseline gelée = nombre d'entrées SANS citation, par dataset. Vidée à la phase 3 (#309,
@@ -41,9 +44,8 @@ const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
 const BASELINES: Record<string, number> = {};
 
 function missingByFile(): Record<string, number> {
-  const files = readdirSync(DATA_DIR).filter((f) => f.endsWith('.json'));
   const missing: Record<string, number> = {};
-  for (const f of files) {
+  for (const f of DATASETS) {
     if (EXEMPT_DATASETS[f]) continue;
     const data = JSON.parse(readFileSync(join(DATA_DIR, f), 'utf8'));
     const { total, cited } = auditDataset(data);
@@ -162,7 +164,7 @@ describe('garde-fou « citation par entrée » — couverture source:{book,page}
   });
 
   it('EXEMPT_DATASETS ne cible que des fichiers réellement présents', () => {
-    const files = new Set(readdirSync(DATA_DIR).filter((f) => f.endsWith('.json')));
+    const files = new Set(DATASETS);
     const dangling = Object.keys(EXEMPT_DATASETS).filter((f) => !files.has(f));
     expect(dangling, `Exemption(s) fantôme(s) (fichier absent) — nettoyer EXEMPT_DATASETS :\n${dangling.join('\n')}`).toEqual([]);
   });

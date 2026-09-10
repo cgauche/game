@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { fileURLToPath } from 'node:url';
 import { effectTables, findEffectTableById, mutationTables } from './index';
 import { TABLE_ORPHAN_RATCHET } from '../../scripts/guards/lib/tableConsumerStock.mjs';
@@ -12,7 +14,7 @@ import { TABLE_ORPHAN_RATCHET } from '../../scripts/guards/lib/tableConsumerStoc
  * mutationTables.json) vivent ICI (jamais un tirage vers une table fantôme au runtime).
  */
 const DIR = fileURLToPath(new URL('.', import.meta.url));
-const files = readdirSync(DIR).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
+const files = listerDossier(DIR).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
 const effectIds = new Set(effectTables.map((t) => t.id));
 const mutationTableIds = new Set(mutationTables.map((t) => t.id));
 
@@ -101,15 +103,10 @@ describe('cliquet — toute table d’effets a un CONSOMMATEUR (donnée écrite,
     }
     const stripComments = (src: string): string =>
       src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
-    const walk = (d: string): void => {
-      for (const e of readdirSync(d, { withFileTypes: true })) {
-        const p = join(d, e.name);
-        if (e.isDirectory()) walk(p);
-        else if (/\.(ts|tsx)$/.test(e.name) && !/\.test\./.test(e.name) && !/\.generated\.ts$/.test(e.name))
-          corpus += stripComments(readFileSync(p, 'utf8'));
-      }
-    };
-    walk(join(DIR, '..'));
+    for (const { rel, text } of readCorpus(['src'])) {
+      if (rel.endsWith('.generated.ts')) continue;
+      corpus += stripComments(text);
+    }
     return corpus;
   }
 

@@ -4,7 +4,7 @@
  * encore manuscrits (`manualDocsStock.mjs`) pour qu'un document manuscrit NEUF échoue la CI.
  *
  * Périmètre — `docs/*.md` À PLAT (hors sous-dossiers, `docs/plans/` et `docs/raw/` compris),
- * même frontière que `scripts/docs/check-doc-refs.mjs` (`readdirSync(DOCS_DIR)` non récursif).
+ * même frontière que `scripts/docs/check-doc-refs.mjs` (`listerDossier(DOCS_DIR)` non récursif).
  * Détection GÉNÉRÉ — marqueur `GÉNÉRÉ par` en tête de ligne dans les 10 premières lignes du doc ;
  * les deux formes mesurées dans le dépôt sont couvertes : « ⚠️ Fichier GÉNÉRÉ par … » et
  * « GÉNÉRÉ par `npx tsx …` ».
@@ -16,8 +16,9 @@
  * verrouille que le marqueur ENGAGE réellement son générateur.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import { fileURLToPath } from 'node:url';
 import { MANUAL_DOCS_STOCK } from '../../scripts/guards/lib/manualDocsStock.mjs';
 import { ecartsDeStock } from '../../scripts/guards/lib/stock.mjs';
@@ -28,6 +29,8 @@ import { commandeEffective } from '../../scripts/guards/lib/justificatif.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const DOCS_DIR = join(ROOT, 'docs');
+/** Les `.md` À PLAT de `docs/`, en ordre total — UN listage pour les quatre volets qui le lisent. */
+const DOCS_MD = listerDossier(DOCS_DIR).filter((f) => f.endsWith('.md'));
 
 const GENERATED_MARKER = /^>\s*(?:⚠️\s*)?(?:Fichier\s+)?GÉNÉRÉ par\b/m;
 
@@ -37,8 +40,7 @@ function isGenerated(text: string): boolean {
 }
 
 function manualDocs(): string[] {
-  return readdirSync(DOCS_DIR)
-    .filter((f) => f.endsWith('.md'))
+  return DOCS_MD
     .filter((f) => !isGenerated(readFileSync(join(DOCS_DIR, f), 'utf8')))
     .map((f) => `docs/${f}`);
 }
@@ -93,8 +95,7 @@ function extractGeneratorScript(head: string): string | null {
 }
 
 function generatedDocs(): { file: string; head: string }[] {
-  return readdirSync(DOCS_DIR)
-    .filter((f) => f.endsWith('.md'))
+  return DOCS_MD
     .map((f) => ({ file: f, text: readFileSync(join(DOCS_DIR, f), 'utf8') }))
     .filter(({ text }) => isGenerated(text))
     .map(({ file, text }) => ({ file, head: text.split('\n').slice(0, 10).join('\n') }));
@@ -159,8 +160,7 @@ function hasPerimeterSection(text: string): boolean {
 }
 
 function fullGeneratedDocs(): { file: string; text: string }[] {
-  return readdirSync(DOCS_DIR)
-    .filter((f) => f.endsWith('.md'))
+  return DOCS_MD
     .map((f) => ({ file: f, text: readFileSync(join(DOCS_DIR, f), 'utf8') }))
     .filter(({ text }) => isGenerated(text));
 }
@@ -182,10 +182,9 @@ describe('tout doc `GÉNÉRÉ` déclare son périmètre mesuré et ses angles mo
  * `CLAUDE.md` (§ « Table de routage — lire le bon doc AU MOMENT du déclencheur ») est la SEULE
  * surface injectée chez tout agent de ce dépôt : un doc qu'elle ne mentionne pas — ni
  * directement, ni via un document lui-même routé — est invisible, quelle que soit sa qualité.
- * Arbitrage utilisateur (2026-07-27, verbatim) : « avoir des listes qui doivent diminuer avec le
- * temps, c'est un truc pour dire "c'est fait, on en parle plus", et au final on a juste une liste
- * d'exception qui empoisonne et qu'on maintient à jamais » — cette garde n'a donc PAS de stock
- * cliqueté : tout doc non routé la fait échouer, sans marge.
+ * Cette garde n'a PAS de stock cliqueté : tout doc non routé la fait échouer, sans marge — une
+ * liste d'exceptions « qui décroît » se maintient à jamais et se contourne
+ * (`.claude/memory/game-garde-exemption-au-site-jamais-au-fichier.md`).
  *
  * « Routé » = atteint depuis la table par une clôture transitive de citations `docs/<fichier>.md`
  * (motif explicite, chemin depuis la racine du dépôt) : la table cite directement des docs, et
@@ -235,9 +234,7 @@ function routedFlatDocs(): Set<string> {
 }
 
 function flatDocPaths(): string[] {
-  return readdirSync(DOCS_DIR)
-    .filter((f) => f.endsWith('.md'))
-    .map((f) => `docs/${f}`);
+  return DOCS_MD.map((f) => `docs/${f}`);
 }
 
 describe('docs/*.md à plat doit être atteignable depuis la table de routage de CLAUDE.md — pas de stock, un doc neuf se ROUTE', () => {

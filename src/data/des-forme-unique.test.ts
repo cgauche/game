@@ -11,8 +11,9 @@
  * La sonde marche la DONNÉE des 2 racines authorées (`src/data`, `src/scenes`), jamais le code.
  */
 import { describe, it, expect } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 
 const ROOT = process.cwd();
 const RACINES = ['src/data', 'src/scenes'];
@@ -22,16 +23,12 @@ const CANON = ['n', 'sides', 'plus'];
 const EXPRESSION_DE_DE = /^\s*\d*\s*d\s*\d+/i;
 
 function fichiers(): { chemin: string; doc: unknown }[] {
-  const out: { chemin: string; doc: unknown }[] = [];
-  const marcher = (dir: string) => {
-    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-      const p = path.join(dir, e.name);
-      if (e.isDirectory()) marcher(p);
-      else if (e.name.endsWith('.json')) out.push({ chemin: path.relative(ROOT, p).replace(/\\/g, '/'), doc: JSON.parse(fs.readFileSync(p, 'utf8')) });
-    }
-  };
-  for (const r of RACINES) marcher(path.join(ROOT, r));
-  return out;
+  return RACINES.flatMap((r) =>
+    listerArbre(join(ROOT, r), { filtre: (rel) => rel.endsWith('.json') }).map((rel) => ({
+      chemin: `${r}/${rel}`,
+      doc: JSON.parse(readFileSync(join(ROOT, r, rel), 'utf8')),
+    })),
+  );
 }
 
 /** Marche TOUT nœud objet d'un document, en donnant à `visiter` ses clés. */

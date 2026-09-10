@@ -11,7 +11,8 @@
  *  (d) preuve plantée : une clé inconnue est REJETÉE par le schéma `characteristics` (TDD).
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { listerArbre, listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import { fileURLToPath } from 'node:url';
 import { schema as characteristicsSchema } from './schemas/defs/characteristics';
 import { DEFS_DE_DOCUMENT, formatZodError } from './schemas/validate';
@@ -23,15 +24,8 @@ const SCENES_DIR = fileURLToPath(new URL('../scenes/', import.meta.url));
 const DIR_DE_RACINE: Record<RacineDocument, string> = { 'src/data': DATA_DIR, 'src/scenes': SCENES_DIR };
 
 /** Les documents `*-projet.json` de `src/scenes`, chemins relatifs a la racine (recursif). */
-function projetsDeScene(dir = SCENES_DIR, rel = ''): string[] {
-  const out: string[] = [];
-  for (const ent of readdirSync(dir, { withFileTypes: true })) {
-    const relPath = rel ? `${rel}/${ent.name}` : ent.name;
-    if (ent.isDirectory()) out.push(...projetsDeScene(`${dir}${ent.name}/`, relPath));
-    else if (ent.name.endsWith('-projet.json')) out.push(relPath);
-  }
-  return out;
-}
+const projetsDeScene = (): string[] =>
+  listerArbre(SCENES_DIR, { filtre: (rel) => rel.endsWith('-projet.json') });
 
 /**
  * Documents sans schéma, DÉSIGNÉS PAR LEUR CHEMIN COMPLET (`src/data/x.json`, `src/scenes/y/z.json`)
@@ -53,7 +47,7 @@ describe('contrat de donnée — les documents des deux racines valident leur sc
   it('EXHAUSTIVITÉ : tout document des DEUX racines est registré ou explicitement PENDING', () => {
     const registres = new Set(DEFS_DE_DOCUMENT.map((d) => `${d.root}/${d.file}`));
     const documents = [
-      ...readdirSync(DATA_DIR).filter((f) => f.endsWith('.json')).map((f) => `src/data/${f}`),
+      ...listerDossier(DATA_DIR).filter((f) => f.endsWith('.json')).map((f) => `src/data/${f}`),
       ...projetsDeScene().map((f) => `src/scenes/${f}`),
     ];
     const orphans = documents.filter((f) => !registres.has(f) && !PENDING.has(f));

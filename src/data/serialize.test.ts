@@ -4,13 +4,14 @@
  * la moindre sauvegarde produirait un diff de reformatage géant. Couvre TOUS les datasets réels.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import { serializeDataset } from './serialize';
 
 const DIR = join(fileURLToPath(new URL('.', import.meta.url)));
-const files = readdirSync(DIR).filter((f) => f.endsWith('.json'));
+const files = listerDossier(DIR).filter((f) => f.endsWith('.json'));
 
 describe('serializeDataset — round-trip byte-fidèle des datasets app-owned', () => {
   for (const f of files) {

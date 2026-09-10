@@ -13,8 +13,7 @@
  * « **Blessé :** »/« **Toxine :** » fabriqués, 2ᵉ fragment à cheval sur deux folios).
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { chapterFile, readText } from '../../scripts/guards/lib/rawRefIntegrity.mjs';
 import { NIGHT_STAKES, FLOW_STAKES, ACTIVITY_STAKES, books, regles } from './index';
 import { ACTIVITIES } from '../engine/activities';
 import { STAKE_FORMS, type StakeForm } from '../engine/types';
@@ -28,12 +27,10 @@ function chapterLines(bookId: string, note: string): string[] {
   if (!chap) throw new Error(`note sans numéro de chapitre : « ${note} »`);
   const key = `${bookId}#${chap}`;
   if (!chapterCache.has(key)) {
-    const dir = books.find((b) => b.id === bookId)?.dir;
-    if (!dir) throw new Error(`livre sans dossier d’extraction : ${bookId}`);
-    const root = join(process.cwd(), dir);
-    const file = readdirSync(root).find((f) => f.startsWith(`${chap.padStart(2, '0')} - `) && f.endsWith('.md'));
-    if (!file) throw new Error(`chapitre ${chap} introuvable sous ${dir}`);
-    chapterCache.set(key, readFileSync(join(root, file), 'utf8').split(/\r?\n/));
+    const abbr = books.find((b) => b.id === bookId)?.abbr;
+    const fichier = abbr ? chapterFile(abbr, chap) : null;
+    if (!fichier) throw new Error(`chapitre ${chap} introuvable pour le livre ${bookId}`);
+    chapterCache.set(key, readText(fichier.path).split('\n'));
   }
   return chapterCache.get(key)!;
 }

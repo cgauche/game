@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import { schema as propsSchema } from './schemas/defs/props';
 import { PROPS_VOLUMIQUES } from './schemas/_ids.generated';
 import { props, matieresDe, findPropMaterialById, findPropById } from './index';
@@ -341,13 +343,13 @@ describe('validatePropCatalog — invariants de données du décor', () => {
   const ECHELLES_EN_USAGE = (() => {
     const vues = new Set<number>([MPT]);
     const racine = new URL('../scenes/', import.meta.url);
-    for (const dossier of readdirSync(racine, { withFileTypes: true })) {
-      if (!dossier.isDirectory()) continue;
-      for (const fichier of readdirSync(new URL(`${dossier.name}/`, racine))) {
-        if (!fichier.endsWith('-projet.json')) continue;
-        const doc = JSON.parse(readFileSync(new URL(`${dossier.name}/${fichier}`, racine), 'utf8')) as { scenes?: { metresPerTile?: number }[] };
-        for (const sc of doc.scenes ?? []) if (typeof sc.metresPerTile === 'number') vues.add(sc.metresPerTile);
-      }
+    const projets = listerArbre(fileURLToPath(racine), {
+      descendre: (rel) => !rel.includes('/'),
+      filtre: (rel) => rel.includes('/') && rel.endsWith('-projet.json'),
+    });
+    for (const rel of projets) {
+      const doc = JSON.parse(readFileSync(new URL(rel, racine), 'utf8')) as { scenes?: { metresPerTile?: number }[] };
+      for (const sc of doc.scenes ?? []) if (typeof sc.metresPerTile === 'number') vues.add(sc.metresPerTile);
     }
     return [...vues].sort((a, b) => a - b);
   })();

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import { fileURLToPath } from 'node:url';
 import reglesOptionnelles from './reglesOptionnelles.json';
 
@@ -94,7 +95,7 @@ describe('reglesOptionnelles.json — partition source ⊕ maison (#1467 L1b)', 
 
   it('la COEXISTENCE `source` + `maison` du reste de `src/data` est celle gelée (le XOR reste LOCAL)', () => {
     const mesure: Record<string, number> = {};
-    for (const f of readdirSync(DATA_DIR)) {
+    for (const f of listerDossier(DATA_DIR)) {
       if (!f.endsWith('.json')) continue;
       let data: unknown;
       try {

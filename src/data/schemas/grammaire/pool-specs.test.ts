@@ -10,7 +10,8 @@
  *     entrées ont un pool VIDE et 34 spécialisations réelles sont rejetées au parse.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { listerDossier } from '../../../../scripts/guards/lib/lister.mjs';
 import { SPECS_PAR_DATASET } from '../_ids.generated';
 import { specRef } from './ref';
 import { skills, talents, traits, specCatalogOf } from '../../index';
@@ -67,7 +68,7 @@ function paitesAuthorees(): Map<string, Set<string>> {
       Object.values(v).forEach(walk);
     }
   };
-  for (const f of readdirSync(R).filter((x) => x.endsWith('.json'))) {
+  for (const f of listerDossier(R).filter((x) => x.endsWith('.json'))) {
     try { walk(JSON.parse(readFileSync(`${R}/${f}`, 'utf8'))); } catch { /* dataset illisible : couvert ailleurs */ }
   }
   return trouves;

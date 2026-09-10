@@ -1,28 +1,20 @@
 /**
- * Garde-fou ANTI-RÉGRESSION de la migration « defs/ mécaniques → DONNÉE » (traits + qualités).
- * Directive : les `defs/` ne servent QU'aux SVG (rig) ; toute la mécanique des Traits et des Atouts/
- * Défauts vit dans `traits.json` / `qualities.json` (capabilities/passive/effects), le registre est
- * DÉRIVÉ de la donnée, et le runtime résout PAR ID. Toute réintroduction d'un `defs/` mécanique ou
- * d'un `_registry.generated` casse ici. Cf. [[game-label-id-migration-complete]].
+ * La mécanique des Traits et des Atouts/Défauts vit dans `traits.json` / `qualities.json`
+ * (capabilities/passive/effects) : le registre est DÉRIVÉ de la donnée et le runtime résout PAR ID.
+ * Les Traits et les Qualités sont les DEUX familles sans registre généré — 31 `_registry.generated.ts`
+ * existent ailleurs sous `src/` (mesuré) : la distinction est vivante, ce fichier la tient, et il porte
+ * la SEULE couverture exhaustive de la résolution par id des deux catalogues.
+ * Cf. [[game-label-id-migration-complete]].
  */
 import { describe, it, expect } from 'vitest';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { traits, qualities, findTraitById, findQualityById } from './index';
 
 const ENGINE = join(fileURLToPath(new URL('../engine', import.meta.url)));
-/** Fichiers `.ts` (hors tests) présents dans un dossier — [] si le dossier n'existe pas. */
-const tsFiles = (rel: string): string[] =>
-  existsSync(join(ENGINE, rel)) ? readdirSync(join(ENGINE, rel)).filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts')) : [];
 
-describe('defs mécaniques migrées en DONNÉE (traits + qualités)', () => {
-  it('aucun fichier defs/ mécanique de Traits ne subsiste (seuls les defs SVG du rig sont permis)', () => {
-    expect(tsFiles('traits/defs')).toEqual([]);
-  });
-  it('aucun fichier defs/ mécanique de Qualités ne subsiste', () => {
-    expect(tsFiles('qualities/defs')).toEqual([]);
-  });
+describe('Traits et Qualités : mécanique en DONNÉE, résolution PAR ID', () => {
   it('aucun registre généré (_registry.generated.ts) pour Traits/Qualités', () => {
     expect(existsSync(join(ENGINE, 'traits/_registry.generated.ts'))).toBe(false);
     expect(existsSync(join(ENGINE, 'qualities/_registry.generated.ts'))).toBe(false);

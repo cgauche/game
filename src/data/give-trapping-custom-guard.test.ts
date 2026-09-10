@@ -20,8 +20,10 @@
  * `custom` légitimes : ils n'ont ni homonyme ni forme au catalogue.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { fileURLToPath } from 'node:url';
 import trappings from './trappings.json';
 
@@ -70,13 +72,9 @@ function hitLine(where: string, label: string, hit: { id: string; form?: string 
   return `${where} : custom "${label}" → utiliser trappingId "${hit.id}"${hit.form ? ` (forme ${hit.form})` : ''}`;
 }
 
-function walkFiles(dir: string, keep: (f: string) => boolean, out: string[] = []): string[] {
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
-    const p = join(dir, e.name);
-    if (e.isDirectory()) walkFiles(p, keep, out);
-    else if (keep(e.name)) out.push(p);
-  }
-  return out;
+/** Fichiers d'une racine, à toute profondeur, retenus sur leur NOM de base. */
+function fichiersSous(dir: string, garde: (nom: string) => boolean): string[] {
+  return listerArbre(dir, { filtre: (rel) => garde(rel.split('/').pop()!) }).map((rel) => join(dir, rel));
 }
 
 /** Nœuds `giveTrapping` (Effet `type` ou GameOp `op`) portant un `custom` littéral, dans un JSON. */
@@ -93,8 +91,8 @@ const GIVE_CUSTOM_TS = /giveTrapping'[^\n]*?\bcustom:\s*'([^']+)'/;
 
 describe('giveTrapping : un `custom` ne recrée jamais un objet du catalogue', () => {
   const jsonFiles = [
-    ...walkFiles(DATA_DIR, (f) => f.endsWith('.json') && !f.startsWith('_')),
-    ...walkFiles(SCENES_DIR, (f) => f.endsWith('.json')),
+    ...fichiersSous(DATA_DIR, (f) => f.endsWith('.json') && !f.startsWith('_')),
+    ...fichiersSous(SCENES_DIR, (f) => f.endsWith('.json')),
   ];
   it('données JSON (data + scènes)', () => {
     const hits: string[] = [];
@@ -111,11 +109,11 @@ describe('giveTrapping : un `custom` ne recrée jamais un objet du catalogue', (
 
   it('scènes authorées en TypeScript', () => {
     const hits: string[] = [];
-    for (const f of walkFiles(SCENES_DIR, (n) => n.endsWith('.ts') && !n.endsWith('.test.ts'))) {
-      readFileSync(f, 'utf8').split(/\r?\n/).forEach((line, i) => {
+    for (const { rel, text } of readCorpus(['src/scenes'], { exts: ['.ts'] })) {
+      text.split(/\r?\n/).forEach((line, i) => {
         const m = GIVE_CUSTOM_TS.exec(line);
         const hit = m && recreates(m[1]);
-        if (m && hit) hits.push(hitLine(`${f}:${i + 1}`, m[1], hit));
+        if (m && hit) hits.push(hitLine(`${rel}:${i + 1}`, m[1], hit));
       });
     }
     expect(hits, `Objets de catalogue recréés en \`custom\` :\n${hits.join('\n')}`).toEqual([]);

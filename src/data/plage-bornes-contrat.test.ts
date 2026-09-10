@@ -32,8 +32,9 @@
  * plus de son résultat.
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import { STRUCTURES_ORPHELINES } from '../../scripts/guards/lib/structuresStock.mjs';
 
 /** Les DEUX racines de donnée du projet, comme le scan des structures (`scripts/docs/lib/structures-scan.mts`) :
@@ -123,14 +124,12 @@ function mesurer(): Mesure {
 
     for (const c of cles) walk(o[c], doc, `${chemin}.${c}`, false);
   };
-  const documents = (dir: string, prefixe: string): [string, string][] =>
-    readdirSync(dir).flatMap((e): [string, string][] => {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) return documents(p, `${prefixe}${e}/`);
-      return e.endsWith('.json') ? [[`${prefixe}${e}`, p]] : [];
-    });
+  /** Les `.json` d'une racine, à toute profondeur : ce qui est collecté est de la DONNÉE, pas un
+   *  corpus source — `listerArbre`, jamais `readCorpus`. */
+  const documents = (dir: string): [string, string][] =>
+    listerArbre(dir, { filtre: (rel) => rel.endsWith('.json') }).map((rel) => [rel, join(dir, rel)]);
   for (const [cle, racine] of RACINES) {
-    const lus = documents(racine, '');
+    const lus = documents(racine);
     m.documentsParRacine[cle] = lus.length;
     for (const [nom, chemin] of lus) walk(JSON.parse(readFileSync(chemin, 'utf8')), nom, '', false);
   }

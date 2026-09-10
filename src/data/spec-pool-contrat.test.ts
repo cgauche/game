@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import { fileURLToPath } from 'node:url';
 import { skills, talents, careerLevels, species, stars, specCatalogOf, specLabel, specPoolOf, specResolves, specEntryId } from './index';
 import tablesJson from './tables.json';
@@ -177,15 +178,8 @@ const normLabel = (s: string): string => s.toLowerCase().normalize('NFD').replac
  */
 const SPECS_EN_LIBELLE: { cle: string; date: string; lot: string }[] = [];
 
-function fichiersDeDonnees(dir: string): string[] {
-  const out: string[] = [];
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
-    const abs = join(dir, e.name);
-    if (e.isDirectory()) out.push(...fichiersDeDonnees(abs));
-    else if (e.name.endsWith('.json')) out.push(abs);
-  }
-  return out;
-}
+const fichiersDeDonnees = (dir: string): string[] =>
+  listerArbre(dir, { filtre: (rel) => rel.endsWith('.json') }).map((rel) => join(dir, rel));
 
 describe('L2 #1548 — aucune `spec` de Compétence ni de Talent écrite en LIBELLÉ (`src/data` ET `src/scenes`)', () => {
   /** Par id de Compétence : « cet id résout-il ? » et l'index LIBELLÉ normalisé → id attendu. */

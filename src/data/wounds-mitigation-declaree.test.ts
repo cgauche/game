@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import { fileURLToPath } from 'node:url';
 
 /**
@@ -47,7 +48,7 @@ function collectWounds(node: unknown, path: string, acc: { path: string; op: Any
 }
 
 /** `[fichier, wounds trouvés]` — calculé UNE fois, sert le verdict ET la mesure de couverture. */
-const SCAN = readdirSync(DIR)
+const SCAN = listerDossier(DIR)
   .filter((f) => f.endsWith('.json'))
   .map((file) => ({ file, wounds: collectWounds(JSON.parse(readFileSync(join(DIR, file), 'utf8')) as unknown, '') }))
   .filter((s) => s.wounds.length > 0);

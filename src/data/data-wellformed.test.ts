@@ -30,7 +30,7 @@
  * (famille 2 : ce sont des noms `GameOp` standard), mais ses Formules/refs suivent un autre vocabulaire.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isValidFormula } from '../engine/ops';
@@ -40,9 +40,10 @@ import type { Flow } from '../engine/flowCore';
 import { findCreatureById, findVehicleById, findTraitById, findConditionById, findDiseaseById, findSymptomById } from './index';
 import { ruleDef } from '../engine/policy';
 import { TOLERATED } from '../../scripts/guards/lib/gameOpRefFk.mjs';
+import { listerArbre, listerDossier } from '../../scripts/guards/lib/lister.mjs';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
-const files = readdirSync(DIR).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
+const files = listerDossier(DIR).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
 
 // --- Vocabulaire GameOp EXACT, extrait de l'union `GameOp` de engine/ops.ts (membres `| { op: '…'`) →
 //     jamais une liste maintenue à la main qui dériverait de l'union.
@@ -268,15 +269,8 @@ describe('Intégrité des données src/data/*.json', () => {
  */
 describe('Indice d’Atout — une qualité qui déclare `indice` l’exige sur CHAQUE référence', () => {
   const SCENES_DIR = fileURLToPath(new URL('../scenes', import.meta.url));
-  const jsonSous = (dir: string): string[] => {
-    const out: string[] = [];
-    for (const e of readdirSync(dir, { withFileTypes: true })) {
-      const p = join(dir, e.name);
-      if (e.isDirectory()) out.push(...jsonSous(p));
-      else if (e.name.endsWith('.json')) out.push(p);
-    }
-    return out;
-  };
+  const jsonSous = (dir: string): string[] =>
+    listerArbre(dir, { filtre: (rel) => rel.endsWith('.json') }).map((rel) => join(dir, rel));
   const racines = [...files.map((f) => join(DIR, f)), ...jsonSous(SCENES_DIR)];
 
   /** Ids des qualités qui DÉCLARENT un Indice — lus de la donnée, jamais listés à la main. */
