@@ -1219,7 +1219,7 @@ export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
     .filter((c): c is Combatant => !!c && !isOutOfAction(c));
   // Désengagement GRATUIT du plus grand (LDB 85 l.373-374) : une créature plus grande que TOUS ses
   // adversaires Engagés les écarte et se déplace librement, sans Test ni sacrifice d'Avantage.
-  // Plus grand que TOUS ses Engagés (85 l.373-374) OU Nuée (ignore l'Engagement en se déplaçant, l.200) → départ libre.
+  // Plus grand que TOUS ses Engagés (85 l.373-374) OU Nuée (ignore l'Engagement en se déplaçant, LDB 85 l.253) → départ libre.
   const freeDisengage = foes.length > 0 && (mover.swarm || foes.every((f) => sizeGap(mover.size, f.size) >= 1));
   if (!foes.length || freeDisengage) {
     if (freeDisengage) {

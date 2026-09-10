@@ -1526,8 +1526,8 @@ export interface Combatant {
    *  traits ACCORDÉS en jeu (`grantTrait`). Absent ⇒ aucun (profil déjà final / héros sans trait créature).
    *  `characteristics` reste la BASE pure ; `effectiveChar` ajoute ces traits (cf. `baseWithTraits`). */
   liveTraits?: import('./statEntry').TraitList;
-  /** Nuée (Trait Essaim, LDB 85 l.199-200) : ignore la Taille et la Psychologie, +40 au tir CONTRE
-   *  elle, Frappe Mortelle sur toute touche, 1 PB/Round aux Engagés ; ×5 PB & +10 CC posés au spawn. */
+  /** Trait Nuée (LDB 85 l.251-253) — posé au spawn (`applySwarmBuild`), lu par le combat, la fin de
+   *  Round et le désengagement. */
   swarm?: boolean;
   /** Combat monté (LDB 14 l.175-187). `mountId` = la monture que CE combattant chevauche (→ il est
    *  cavalier) ; `riderId` = le cavalier porté (→ il est monture). Appairage DYNAMIQUE (Monter/Descendre).

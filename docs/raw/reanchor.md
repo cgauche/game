@@ -4,7 +4,7 @@
 > exit 1 sur dérive non appliquée, ambiguïté, ou hausse de réf FAUSSE (❌) — voir en-tête du script.
 > Pour chaque citation verbatim « … » d'une fiche, on relocalise le texte dans le `.md` source
 > courant et on vérifie le n° de ligne cité. ✅ juste · 🔧 dérive corrigée (HIGH, unique) · 🟡 ambigu
-**Bilan : ✅ 498 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 22 introuvables · ➖ 2838 synthèses** (⛔ 0 hors-fichier · ⚠️ 0 sans source) sur 3358 réfs · 520 citations · 28 fiches.
+**Bilan : ✅ 499 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 21 introuvables · ➖ 2838 synthèses** (⛔ 0 hors-fichier · ⚠️ 0 sans source) sur 3358 réfs · 520 citations · 28 fiches.
 
 > (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).
 
@@ -36,7 +36,6 @@
 | `ADE II 04 l.215` | ❌ LOW | « funeste : l'arme est imprégnée de magie de mor… » — aucune occurrence |
 | `ADE II 04 l.235` | ❌ LOW | « de coupure infinie : … si un coup de cette arm… » — aucune occurrence |
 | `ADE II 04 l.237` | ❌ LOW | « de blessure grave : … il peut inverser les chi… » — aucune occurrence |
-| `LDB 85 l.199-200` | ❌ LOW | « nuée - les nuées sont constituées d'un grand n… » — aucune occurrence |
 | `ZI 13 l.984` | ❌ LOW | « nuée - la nuée est considérée comme une seule … » — aucune occurrence |
 | `AA 10 l.215` | ❌ LOW | « pierrier 20 co 5 rare 30 +14 dangereuse, recha… » — aucune occurrence |
 
@@ -74,4 +73,4 @@
 | Réf | Statut | Détail |
 |---|---|---|
 | `LDB 17 l.68` | ❌ LOW | « "je ne faillirai pas !" : au lieu de lancer le… » — aucune occurrence |
-<!-- sources-empreinte: e5ac111d8c2858b4be5f3efc78abbd5a8d06ca84 (217 fichiers, 15 dossiers) corps: 9eceb14a92f53beec7a99218c5324f6c037842a8 -->
+<!-- sources-empreinte: 7f4bdfe09d6f7442545df85e3c829815b8b50ec1 (217 fichiers, 15 dossiers) corps: 531f3e2a52dc0771f15fec363fd14b3a094b2af5 -->

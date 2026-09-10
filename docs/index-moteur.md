@@ -2742,7 +2742,7 @@ _2123 exports publics mesurés (160 fichiers de `src/engine`, hors tests) — 18
 | `isSkittishMount` | 348 | function | Monture ombrageuse (Nerveux, LDB 14 l.182) : MONTÉE, ne prend pas sa propre Action d'attaque. | Aiguillage des traits, Combat : attaque, Avantage, engagement, Coups Critiques, Voyage : terrestre, monté, fluvial, maritime |
 | `flyMeters` | 354 | function | Vol (Indice) : distance de vol en MÈTRES, ou null. | Aiguillage des traits |
 | `hasLeap` | 360 | function | Bond (LDB 85 p.338) : Charge/Course ×2 (et ignore les obstacles traversés). | Aiguillage des traits |
-| `isSwarm` | 366 | function | Nuée / Essaim (LDB 85) : SOURCE UNIQUE de la détection d'amas — pilote le gabarit « swarm » et le build ×5 PB. | Aiguillage des traits, Encombrement, taille, gabarit |
+| `isSwarm` | 366 | function | Trait Nuée (LDB 85 l.251-253) : SOURCE UNIQUE de la détection d'amas — pilote le gabarit « swarm » et le build ×5 PB — lue par le rendu, la classification et le spawn. | Aiguillage des traits, Encombrement, taille, gabarit |
 | `hasStride` | 371 | function | Foulée (LDB 85 p.339) : Course ×1,5. | Aiguillage des traits |
 | `hasAutoClimb` | 376 | function | Grimpant (LDB 85 l.160-162) : réussite automatique de tout Test d'Escalade — aucun jet. | Aiguillage des traits |
 | `hasClimbFullSpeed` | 382 | function | Grimpant (LDB 85 l.160-162) : vitesse de Mouvement MAXIMALE (coût normal) sur les surfaces d'escalade, au lieu de la ½ vitesse du Talent Grimpeur (LDB 15 l.53, joueur). | Aiguillage des traits, Compétences, Talents, Carrières |
@@ -3126,4 +3126,4 @@ _2123 exports publics mesurés (160 fichiers de `src/engine`, hors tests) — 18
 |---|---|---|---|---|
 | `woundsFromHit` | 30 | function | Blessures infligées par un coup : `totalDamage` (Dégâts d'arme + DR + qualités) moins le Bonus d'Endurance et les PA EFFECTIFS à la `location` (armure portée/naturelle + `extraAP`, matériau ignoré PUIS retrait plat, LDB 62 l.270). | Calcul des Blessures, Blessures, dégâts, soin, guérison, Tests : Degrés de Réussite, Caractéristiques, tables, Qualités d'arme et d'armure |
 
-<!-- sources-empreinte: b3641e2c29a915d93fd31bdbb45fad4dc4d718df (166 fichiers, 6 dossiers) corps: 3cdda28aaaf885b6f19a68e3fb85dcdbe7dca5c6 -->
+<!-- sources-empreinte: 183c289ac5e097c8f7a59050fe4093dc55aa1005 (166 fichiers, 6 dossiers) corps: 54f072a7d94d1e8ad0c5cf84f1f5800974561de6 -->

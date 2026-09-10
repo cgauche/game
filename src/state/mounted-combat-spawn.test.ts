@@ -4,6 +4,9 @@ import { checkBattleOver } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
+import { buildEncounter } from './encounterAuthoring';
+import { validateScene } from './validateScene';
+import type { Scene } from './scene';
 import type { Possession } from '../engine/possession';
 
 /**
@@ -106,5 +109,83 @@ describe('#621 — montures-possession spawnées en combat monté (LDB 14)', () 
 
     const battle = useGame.getState().battle!;
     expect(battle.combatants.find((c) => c.id === 'pos-cheval-2')).toBeUndefined();
+  });
+});
+
+/**
+ * Combat monté AUTHORÉ (`LDB 14 l.175-187`) — la voie de l'auteur de scène : un membre de rencontre
+ * porte `mount: true` (monture rideable), un autre `ridesEntityId` (pré-monté sur elle). Scène
+ * CONSTRUITE pour ce banc : le départ du groupe de la fixture + une paire cavalier/monture.
+ */
+const ENC_CAVALERIE = 'enc-cavalerie';
+
+function cavalerieScene(preMonte: boolean): { scene: Scene; montureId: string; cavalierId: string } {
+  const enc = buildEncounter({
+    id: ENC_CAVALERIE,
+    enemies: [
+      { ref: 'cheval', pos: { x: 16, y: 11 }, mount: true },
+      { ref: 'mutant', pos: { x: 19, y: 11 }, ...(preMonte ? { rides: 0 } : {}) },
+    ],
+  });
+  const scene: Scene = {
+    ...testScene,
+    id: 'test-cavalerie',
+    entities: [...testScene.entities.filter((e) => e.kind === 'heroStart'), ...enc.entities],
+    encounters: [enc.encounter],
+  };
+  return { scene, montureId: enc.entities[0].id, cavalierId: enc.entities[1].id };
+}
+
+function startCavalerie(scene: Scene) {
+  useGame.setState({ party: [makeHero()], battle: null });
+  useGame.getState().startScene(scene);
+  useGame.getState().startCombat(ENC_CAVALERIE);
+  return useGame.getState().battle!;
+}
+
+describe('Combat monté AUTHORÉ — `mount` / `ridesEntityId` au spawn (LDB 14 l.175-187)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  it('couple pré-monté : deux Combattants DISTINCTS (l.182), appairés, sur la case de la monture', () => {
+    const { scene, montureId, cavalierId } = cavalerieScene(true);
+    const battle = startCavalerie(scene);
+
+    const ids = battle.combatants.map((c) => c.id);
+    expect(ids).toContain(montureId);
+    expect(ids).toContain(cavalierId);
+    const monture = battle.combatants.find((c) => c.id === montureId)!;
+    const cavalier = battle.combatants.find((c) => c.id === cavalierId)!;
+    expect(monture.mountable).toBe(true);
+    expect(monture.riderId).toBe(cavalierId);
+    expect(cavalier.mountId).toBe(montureId);
+    expect(cavalier.pos).toEqual(monture.pos);
+  });
+
+  it('membre `mount` SANS `ridesEntityId` : la monture reste chevauchable, personne ne la monte', () => {
+    const { scene, montureId, cavalierId } = cavalerieScene(false);
+    const battle = startCavalerie(scene);
+
+    const monture = battle.combatants.find((c) => c.id === montureId)!;
+    const cavalier = battle.combatants.find((c) => c.id === cavalierId)!;
+    expect(monture.mountable).toBe(true);
+    expect(monture.riderId).toBeUndefined();
+    expect(cavalier.mountId).toBeUndefined();
+  });
+
+  it('`ridesEntityId` vers une entité ABSENTE : `validateScene` nomme la monture inexistante, et le spawn rend les deux combattants sans appairage', () => {
+    const { scene, montureId, cavalierId } = cavalerieScene(false);
+    const membres = scene.encounters[0].members!;
+    membres[1] = { ...membres[1], ridesEntityId: 'monture-absente' };
+
+    const fautes = validateScene([scene]).filter((w) => w.scope === 'encounter' && w.refId === ENC_CAVALERIE);
+    expect(fautes.some((f) => f.level === 'error' && f.message.includes('monture-absente'))).toBe(true);
+
+    const battle = startCavalerie(scene);
+    const monture = battle.combatants.find((c) => c.id === montureId)!;
+    const cavalier = battle.combatants.find((c) => c.id === cavalierId)!;
+    expect(monture.riderId).toBeUndefined();
+    expect(cavalier.mountId).toBeUndefined();
+    expect(monture.mountable).toBe(true); // `mount: true` du membre tient : seul l'appairage manque
   });
 });

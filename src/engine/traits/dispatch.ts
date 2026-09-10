@@ -361,8 +361,8 @@ export function hasLeap(traits: TraitList | undefined): boolean {
   return (traits ?? []).some((t) => !!findTraitById(t.id)?.capabilities?.leap);
 }
 
-/** Nuée / Essaim (LDB 85) : SOURCE UNIQUE de la détection d'amas — pilote le gabarit « swarm » et le
- *  build ×5 PB. Remplace les regex `/^Nu[eé]e\b/i` éparpillées (rendu/classification/spawn). */
+/** Trait Nuée (LDB 85 l.251-253) : SOURCE UNIQUE de la détection d'amas — pilote le gabarit « swarm » et le
+ *  build ×5 PB — lue par le rendu, la classification et le spawn. */
 export function isSwarm(traits: TraitList | undefined): boolean {
   return traitCapability(traits, 'swarm');
 }

@@ -268,7 +268,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   if (swapWounds == null && traitBonusWoundsBE(optTraits)) wounds += bonus(charsEff.endurance); // Endurant facultatif : +BE Blessures (LDB 85)
   const skills = [...bookSkills, ...skillsFromBook(swapSkillRefs, chars, `spec:swap:${id}`)]; // swap : dérivée sur le profil FINAL (post-Taille)
   const swarm = isSwarm(traits);
-  if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // ×5 PB + 10 CC (la nuée = 5 créatures)
+  if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // ×5 PB + 10 CC (la nuée = 5 créatures, LDB 85 l.253)
   const movement = typeof creature.char.M === 'number' ? creature.char.M : 4; // facultatifs → liveTraits (effectiveMovement)
   return {
     id,
@@ -287,7 +287,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     bodyShape: bodyShapeOf(creature.id), // Tableau de Localisation par forme du corps (LDB p.312)
     ...(creature.followsCharacterRules ? { followsCharacterRules: true } : {}), // #152 : bestiaire HUMAIN rétro-flagué (CreatureData) — même prédicat unique que statblockToCombatant (#143)
     ...parsePsychTraits(traits), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
-    ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (l.200)
+    ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (LDB 85 l.253)
     ...(isMindless(traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)
     ...spawnMutations(traits, id), // Mutation / Corruption mentale : tirage au spawn (LDB 85)
     // Sorts : ceux de la DONNÉE (PNJ nommés — Eusapia en a 12), surchargés par le choix d'auteur.
@@ -332,7 +332,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
   // statbloc est réputé final, comme au bestiaire).
   if ((typeof sb.char.B !== 'number' || rolled) && traitBonusWoundsBE(traits)) wounds += Math.floor(charsEff.endurance / 10);
   const swarm = isSwarm(traits);
-  if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // Nuée : ×5 PB + 10 CC (l.200)
+  if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // Nuée : ×5 PB + 10 CC (LDB 85 l.253)
   const movement = typeof sb.char.M === 'number' ? (sb.char.M as number) : 4; // traits → liveTraits (effectiveMovement)
   return {
     id,
@@ -352,7 +352,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     ...(sb.inert ? { inert: true } : {}), // affût inerte servi (AA/MDG 12) : ciblable, sans réaction de combat ni tour
     ...(sb.followsCharacterRules ? { followsCharacterRules: true } : {}), // #143 : PNJ humain hostile MODÉLISÉ (Corruption/composant/maladie de personnage)
     ...parsePsychTraits(traits), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
-    ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (l.200)
+    ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (LDB 85 l.253)
     ...(isMindless(traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)
     ...spawnMutations(traits, id), // Mutation / Corruption mentale : tirage au spawn (LDB 85)
     ...(sb.spells?.length ? { spells: sb.spells.filter((id) => !!findSpellById(id)) } : {}), // ids d'auteur (filtrés valides)

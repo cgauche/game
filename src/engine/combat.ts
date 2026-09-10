@@ -1514,7 +1514,7 @@ function applyHit(
   const units = atkBd.roll % 10; // dé des unités (LDB 62 l.244/266) ; « 00 » → 0
   // Dévastatrice (max(DR, unités)) / Percutante (+unités), annulés par Inoffensive ; Atouts conférés
   // par la Taille (attaquant plus grand, LDB 85 l.360) fusionnés via `extra` (qualityDamageStep).
-  // Une Nuée ignore toutes les règles de Taille (l.200) : ni Atout ni multiplicateur de Taille.
+  // Une Nuée ignore toutes les règles de Taille (LDB 85 l.253) : ni Atout ni multiplicateur de Taille.
   // Épuisante (LDB 62 l.319) : Percutante/Dévastatrice de l'arme inertes hors Charge (`charged`).
   const noSize = !!attacker.swarm || !!defender.swarm || withholding || !!hullAdj; // Retenir ses coups perd l'Atout Taille (Aux Armes 07 l.61) ; coque : tableau MDG à la place (l.616)
   const { dmgDR, bonus: dmgBonus } = qualityDamageStep(weapon, { effDR: dr, units, charged: !!attacker.chargedThisTurn }, noSize ? [] : sizeGrantedQualities(dmgSize, defender.size));
