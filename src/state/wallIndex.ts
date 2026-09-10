@@ -28,12 +28,14 @@ import type { Scene, WallSeg, WallSide } from './scene';
  *  partagée des arêtes vides. */
 const AUCUNE: readonly WallSeg[] = [];
 
-const cle = (x: number, y: number, side: WallSide, z: number): string => `${x},${y},${side},${z}`;
+/** Clé CANONIQUE d'une arête — la forme d'identité de cet index, et celle que tout dériveur d'arête
+ *  reprend pour départager deux lectures de la MÊME arête (`state/aretes.ts`). */
+export const cleArete = (x: number, y: number, side: WallSide, z: number): string => `${x},${y},${side},${z}`;
 
 const index = memoByRef((walls: readonly WallSeg[]): ReadonlyMap<string, WallSeg[]> => {
   const parArete = new Map<string, WallSeg[]>();
   for (const w of walls) {
-    const k = cle(w.x, w.y, w.side, w.z ?? 0);
+    const k = cleArete(w.x, w.y, w.side, w.z ?? 0);
     const liste = parArete.get(k);
     if (liste) liste.push(w);
     else parArete.set(k, [w]);
@@ -48,4 +50,4 @@ export const wallIndexOf = (scene: Pick<Scene, 'walls'>): ReadonlyMap<string, Wa
 /** Les segments posés sur l'arête (x, y, side, z) — liste vide si aucun. */
 export const aretesA = (
   scene: Pick<Scene, 'walls'>, x: number, y: number, side: WallSide, z = 0,
-): readonly WallSeg[] => wallIndexOf(scene).get(cle(x, y, side, z)) ?? AUCUNE;
+): readonly WallSeg[] => wallIndexOf(scene).get(cleArete(x, y, side, z)) ?? AUCUNE;

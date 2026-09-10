@@ -11,6 +11,7 @@ import { Scene, edgeOf } from '../../state/scene';
 import { planFall } from '../../state/fallMove';
 import { bus, EVT } from '../../state/bus';
 import { Dims, tileEdge } from '../../geometry/iso';
+import { t } from '../../i18n';
 import type { Pt } from '../../state/path';
 
 const CARDINALS: ReadonlyArray<readonly [number, number]> = [[1, 0], [-1, 0], [0, 1], [0, -1]];
@@ -39,7 +40,7 @@ export function FallOverlays({ scene, dims, activeZ, visible, ctrls }: { scene: 
               bus.emit(EVT.SCENE_DIRTY);
             }}
           >
-            <title>{`Sauter en bas (${Math.round(plan.metres)} m)`}</title>
+            <title>{t('arete.sauterEnBas', { m: Math.round(plan.metres) })}</title>
           </line>
         );
       })}

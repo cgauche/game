@@ -1392,6 +1392,17 @@ export const fr = {
   'usable.fouiller': 'Fouiller',
   'usable.sasseoir': 'S’asseoir',
 
+  // ── ARÊTES UTILISABLES (`state/aretes.ts`, `arete.*`) : les gestes qu'une ARÊTE offre au joueur. ──
+  'arete.porteExterieureFermee': 'Porte extérieure fermée',
+  'arete.porteFermee': 'Porte fermée',
+  'arete.entreeInterieure': 'Entrée intérieure',
+  'arete.sortieExterieure': 'Sortie extérieure',
+  'arete.porteOuverte': 'Porte ouverte',
+  'arete.passage': 'Passage vers une autre pièce',
+  'arete.escalader': 'Escalader',
+  'arete.descendreEnEscalade': 'Descendre en escalade',
+  'arete.sauterEnBas': 'Sauter en bas ({m} m)',
+
   'store.cargoRaid': 'Vol terrestre — {issue} : {enc} Enc de cargaison pillée ({pct} %{porteurs}).',
   'store.cargoRaidFled': 'le convoi fuit',
   'store.cargoRaidBroken': 'le convoi est enfoncé',

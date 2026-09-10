@@ -9,6 +9,7 @@ import { useGame } from '../../state/store';
 import { Scene, heightAt } from '../../state/scene';
 import { bus, EVT } from '../../state/bus';
 import { Dims, tileEdge } from '../../geometry/iso';
+import { t } from '../../i18n';
 import type { Pt } from '../../state/path';
 
 export function ClimbOverlays({ scene, dims, activeZ, visible, ctrls }: { scene: Scene; dims: Dims; activeZ: number; visible: ReadonlySet<string>; ctrls: Pt[] }) {
@@ -41,7 +42,7 @@ export function ClimbOverlays({ scene, dims, activeZ, visible, ctrls }: { scene:
                 bus.emit(EVT.SCENE_DIRTY);
               }}
             >
-              <title>{up ? 'Escalader' : 'Descendre en escalade'}</title>
+              <title>{up ? t('arete.escalader') : t('arete.descendreEnEscalade')}</title>
             </line>
           );
         })}

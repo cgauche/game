@@ -1,6 +1,7 @@
 import type { Dims } from '../../geometry/iso';
 import { tileEdge } from '../../geometry/iso';
 import type { RoomPortal } from '../../state/roomPortals';
+import { libellePortail } from '../../state/aretes';
 import type { Pt } from '../../state/path';
 import { GOLD_TINT } from '../highlightTints';
 
@@ -17,14 +18,9 @@ interface DoorOverlaysProps {
 
 const visibleKey = (point: Pt, z: number) => `${point.x},${point.y},${point.z ?? z}`;
 
-const portalTitle = (portal: RoomPortal): string =>
-  portal.kind === 'door-closed'
-    ? portal.exterior ? 'Porte extérieure fermée' : 'Porte fermée'
-    : portal.exterior
-      ? portal.fromZoneId === null ? 'Entrée intérieure' : 'Sortie extérieure'
-      : portal.kind === 'door-open'
-        ? 'Porte ouverte'
-        : 'Passage vers une autre pièce';
+/** Le libellé d'un accès vient du dériveur d'arêtes (`state/aretes.ts`) — source UNIQUE, partagée
+ *  avec `aretesUtilisables`. */
+const portalTitle = libellePortail;
 
 export function DoorOverlays({
   portals,
