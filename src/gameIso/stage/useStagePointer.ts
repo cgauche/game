@@ -50,6 +50,8 @@ import { pointStageSousPixel, pointViewBoxSousPixel, resoudrePixel, tireLeRayon,
 import { entiteDuGeste } from './geste';
 import { estUtilisable } from '../../state/usable';
 import type { RoomPortal } from '../../state/roomPortals';
+import type { AreteUtilisable } from '../../state/aretes';
+import type { AreteProjetee } from './aretesProjetees';
 
 const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sinon = clic)
 
@@ -57,10 +59,13 @@ export interface StagePointer {
   /** Tuile survolée (tooltip + réticule de visée ; suivie dans tous les modes de ciblage). */
   hover: Pt | null;
   hoveredPortal: RoomPortal | null;
-  portalHandlers: {
-    onPortalHover: (portal: RoomPortal | null) => void;
-    onPortalClick: (portal: RoomPortal) => void;
-  };
+  /** LE geste d'une arête — celui que le verdict de pixel déclenche ET celui que le clavier du peintre
+   *  appelle (`stage/DoorOverlays.tsx`), la MÊME fonction, jamais deux chemins d'activation. */
+  activerArete: (arete: AreteUtilisable) => void;
+  /** SURVOL d'une arête par le clavier (focus du peintre), `null` au blur. Il pose le MÊME état que le
+   *  survol au pointeur (`hoveredPortal`, source unique de l'accent et de l'armement) : sans lui, un
+   *  seuil atteint au Tab n'a aucun rendu, et sur un appareil sans survol il faudrait deux Entrée. */
+  survolerArete: (arete: AreteUtilisable | null) => void;
   handlers: {
     onPointerDown: (ev: React.PointerEvent) => void;
     onPointerMove: (ev: React.PointerEvent) => void;
@@ -79,6 +84,7 @@ export function useStagePointer({
   hoverTracking,
   partyLeader,
   activeZ = 0,
+  aretes,
 }: {
   svgRef: RefObject<SVGSVGElement>;
   dims: Dims;
@@ -89,6 +95,10 @@ export function useStagePointer({
   hoverTracking: boolean;
   partyLeader: Combatant | undefined;
   activeZ?: number;
+  /** ARÊTES utilisables projetées que l'hôte a filtrées et posées à l'écran
+   *  (`stage/aretesProjetees.ts`) — l'entrée de l'étage `arete` de la chaîne, comme `vise` est celle
+   *  du rayon. */
+  aretes: readonly AreteProjetee[];
 }): StagePointer {
   const setCamPan = useGame((s) => s.setCamPan);
   const [hover, setHover] = useState<Pt | null>(null);
@@ -137,9 +147,11 @@ export function useStagePointer({
   const pickVerdict = (ev: React.PointerEvent): Verdict => {
     const st = useGame.getState();
     const visé = tireLeRayon(st) ? targetUnderPointer(ev.clientX, ev.clientY) : null;
-    // Le point de stage est passé en THUNK : quand le rayon nomme sa cible, le pixel n'est jamais
-    // inversé — donc aucun `getBoundingClientRect()` par `pointermove` (cf. `resoudrePixel`).
-    return resoudrePixel(st, visé, () => stagePointOf(ev), { pose, dims, activeZ });
+    // Le point de stage est passé en THUNK : il n'est inversé que si un étage en a besoin, et jamais
+    // deux fois (cf. `resoudrePixel`). Quand des arêtes sont offertes, l'étage d'arête l'appelle, donc
+    // un `getBoundingClientRect()` par `pointermove` : la parité de geste avec le hit-target SVG se
+    // paie d'une mesure de layout par mouvement.
+    return resoudrePixel(st, visé, () => stagePointOf(ev), { pose, dims, activeZ, aretes });
   };
 
   /** La case d'ANCRAGE du verdict, dans la forme que le reste du hook manipule (z omis à l'étage 0). */
@@ -256,12 +268,33 @@ export function useStagePointer({
     activatePortal(portal);
   };
 
+  /** LE geste d'une arête. Un seul chemin, deux déclencheurs : le VERDICT de pixel (`performClick`) et
+   *  la touche Entrée/Espace du peintre (`stage/DoorOverlays.tsx`). Ce lot ne sert que la capacité
+   *  `porte` ; escalade, chute et structure restent servies par les handlers de leurs propres overlays
+   *  (`ClimbOverlays`, `FallOverlays`, `SiegeHitAreas`) jusqu'aux lots 1b-3/1b-4, qui les y feront
+   *  entrer à leur tour. */
+  const activerArete = (arete: AreteUtilisable) => {
+    if (arete.capacite === 'porte' && arete.portail) onPortalClick(arete.portail);
+  };
+
+  /** LE survol d'une arête, quel qu'en soit le canal : le pixel (`onPointerMove`) ou le focus clavier
+   *  du peintre. Un seul état survolé, donc un seul rendu à l'écran et un seul armement du geste. */
+  const survolerArete = (arete: AreteUtilisable | null) => {
+    const portail = arete?.portail ?? null;
+    if ((hoveredPortal?.id ?? null) !== (portail?.id ?? null)) setHoveredPortal(portail);
+  };
+
   // Action de clic (DIFFÉRÉE au relâchement, sautée si on a fait un panoramique) — sélection / cible / déplacement.
   const performClick = (v: Verdict | null) => {
     const st = useGame.getState();
     const sc = st.scene;
     const t = v ? tuileDe(v) : null;
     if (!sc || st.dialogue || !v || !t) return;
+    // ARÊTE : elle a déjà tranché en tête de chaîne, son geste prime sur la case qu'elle borde.
+    if (v.nature === 'arete') {
+      activerArete(v.arete);
+      return;
+    }
     const { x, y } = t;
     const tz = t.z ?? 0;
     if (st.mode === 'battle') {
@@ -468,9 +501,12 @@ export function useStagePointer({
     // MÊME entité que celle qu'un clic traiterait (`entiteDuGeste`) : l'affordance ne peut pas annoncer
     // autre chose que ce que le clic fera.
     const sc = useGame.getState().scene;
+    // SURVOL-ARMEMENT d'une ARÊTE : le verdict est la seule source du seuil survolé — l'accent du
+    // peintre, l'aperçu de marche et le tap-1 tactile en descendent tous.
+    survolerArete(v.nature === 'arete' ? v.arete : null);
     const eSurvolée = sc && t ? entiteDuGeste(sc, v, t) : undefined;
-    const overInteractive =
-      !!sc && !!eSurvolée && useGame.getState().mode === 'exploration' && estUtilisable(sc, eSurvolée);
+    const overInteractive = v.nature === 'arete'
+      || (!!sc && !!eSurvolée && useGame.getState().mode === 'exploration' && estUtilisable(sc, eSurvolée));
     (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
     // Survol suivi en COMBAT (visée) ET en EXPLORATION (halo renforcé du décor interactif + aperçu de
     // déplacement) — borné aux changements de tuile, donc peu de re-rendus.
@@ -536,10 +572,8 @@ export function useStagePointer({
   return {
     hover,
     hoveredPortal,
-    portalHandlers: {
-      onPortalHover: setHoveredPortal,
-      onPortalClick,
-    },
+    activerArete,
+    survolerArete,
     handlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp, onPointerLeave, onContextMenu },
   };
 }

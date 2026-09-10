@@ -16,7 +16,7 @@ import type { Pt } from '../../state/path';
 
 const CARDINALS: ReadonlyArray<readonly [number, number]> = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
-export function FallOverlays({ scene, dims, activeZ, visible, ctrls }: { scene: Scene; dims: Dims; activeZ: number; visible: ReadonlySet<string>; ctrls: Pt[] }) {
+export function FallOverlays({ scene, dims, activeZ, visible, ctrls }: { scene: Scene; dims: Dims; activeZ: number; visible: ReadonlySet<string>; ctrls: readonly Pt[] }) {
   if (!ctrls.length) return null;
   const mover = ctrls.find((p) => (p.z ?? 0) === activeZ);
   if (!mover) return null;

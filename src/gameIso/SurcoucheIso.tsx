@@ -24,7 +24,6 @@ import { viewPolicy } from './stage/viewPolicy';
 import { wallTraitObjs } from './stage/layers';
 import { gridLines } from '../geometry/grid';
 import { type TintAt } from './backends/webgl/sceneMeshes';
-import { occupiedInteriorZoneIds } from './stage/roomFocus';
 import { DoorOverlays } from './stage/DoorOverlays';
 import { ClimbOverlays } from './stage/ClimbOverlays';
 import { FallOverlays } from './stage/FallOverlays';
@@ -42,7 +41,7 @@ import { useHoverTargeting } from './stage/useHoverTargeting';
 import type { Scene } from '../state/scene';
 import type { BattleState } from '../state/store';
 import type { Pt } from '../state/path';
-import { portalsForParty } from '../state/roomPortals';
+import type { AreteProjetee } from './stage/aretesProjetees';
 
 /** OPACITÉ de la grille TACTIQUE (encre `--iso-grid`, partagée avec l'éditeur), plus basse que celle de
  *  l'auteur (`ui/editor/EditorCanvas`, 0,22) : en jeu la grille est un FOND qui donne l'échelle des
@@ -61,6 +60,13 @@ export type VueDePlateau = {
   visible: ReadonlySet<string>;
   tintAt: TintAt;
   liftAt: (x: number, y: number, z?: number) => number;
+  /** Élévation d'affichage d'une CASE — la même fonction que celle dont l'hôte projette les arêtes. */
+  liftOf: (p: Pt) => number;
+  /** ARÊTES utilisables dérivées PUIS projetées par l'hôte (`stage/aretesProjetees.ts`) : la
+   *  population que le picking résout ET que le peintre des seuils rend, au MÊME segment. */
+  aretes: readonly AreteProjetee[];
+  /** Cases de CONTRÔLE des overlays d'arête encore hors chaîne (escalade, chute) — lots 1b-3/1b-4. */
+  doorCtrls: readonly Pt[];
   politique: ReturnType<typeof viewPolicy>;
   chromes: readonly TokenChromeMark[];
   /** PASTILLES d'ENTITÉ (spec zone 4) : déjà dérivées par l'hôte, comme le chrome des jetons. */
@@ -70,7 +76,6 @@ export type VueDePlateau = {
   /** Le combat EN COURS, ou `null` hors combat (déjà tranché par l'hôte). */
   battle: BattleState | null;
   myTurn: boolean;
-  partyPos: Pt;
   mode: string;
   targeting: ReturnType<typeof cameraTargeting>;
   anyWalking: boolean;
@@ -83,8 +88,8 @@ export type VueDePlateau = {
 };
 
 export function SurcoucheIso({
-  scene, dims, turning, activeZ, visible, tintAt, liftAt, politique, chromes, gestes, walkPosAt,
-  activeC, battle, myTurn, partyPos, mode, targeting, anyWalking, camTransform, camGRef,
+  scene, dims, turning, activeZ, visible, tintAt, liftAt, liftOf, aretes, doorCtrls, politique, chromes, gestes, walkPosAt,
+  activeC, battle, myTurn, mode, targeting, anyWalking, camTransform, camGRef,
   poserSvg, pointeur, visée,
 }: VueDePlateau) {
   // Vérités d'OVERLAY (jamais du monde) : ce que cette vue seule affiche.
@@ -103,7 +108,7 @@ export function SurcoucheIso({
   const pendingHeal = useGame((s) => s.pendingHeal);
   const pendingDefense = useGame((s) => s.pendingDefense);
   const { floats, projs, auras, aoes } = useCombatFx();
-  const { hover, hoveredPortal, portalHandlers, handlers } = pointeur;
+  const { hover, hoveredPortal, activerArete, survolerArete, handlers } = pointeur;
   const { hoverAim, hoveredId, hoverMove, explorePath, effHover } = visée;
   const walkPosOf = walkPosAt(performance.now());
 
@@ -121,31 +126,12 @@ export function SurcoucheIso({
     [politique, dims, activeZ],
   );
 
-  // ── Accès de PIÈCE (portes/passages des overlays) ──────────────────────────────────────────────
-  // `portalsForParty` lit les accès de la scène (mémoïsés) et, hors zone intérieure, ne garde que les
-  // sorties de la COMPOSANTE marchable du groupe (`walkComponentAt`, étiquetage bâti une fois par
-  // scène — #1416). Ses seules vraies entrées sont la SCÈNE (réf neuve dès qu'une porte s'ouvre —
-  // `wallEdges`/`doorIsOpen` lisent `scene.flags`) et la case de CONTRÔLE arrondie ; le glissement
-  // visuel d'une marche n'en fait pas partie, donc une image d'animation ne recalcule aucun accès (#817).
-  const doorCtrlKey = battle
-    ? (myTurn && activeC?.kind === 'hero' && activeC.pos ? `${activeC.id}@${activeC.pos.x},${activeC.pos.y},${activeC.pos.z ?? 0}` : '')
-    : `party@${partyPos.x},${partyPos.y},${partyPos.z ?? 0}`;
-  const doorCtrls = useMemo<Pt[]>(
-    () => (battle ? (myTurn && activeC?.kind === 'hero' && activeC.pos ? [activeC.pos] : []) : [partyPos]),
-    [doorCtrlKey],
-  );
-  const portals = useMemo(
-    () => (doorCtrls.length ? portalsForParty(scene, doorCtrls[0], occupiedInteriorZoneIds(scene, doorCtrls)) : []),
-    [scene, doorCtrls],
-  );
-
   /** Ancre écran d'un combattant pour réticule/ligne de visée : centre de l'EMPREINTE, suit le glissé. */
   const reticleAnchor = (c: Combatant) => {
     const off = (sizeFootprint(c.size) - 1) / 2;
     const wp = walkPosOf(c.id, c.pos!.x, c.pos!.y);
     return tileCenter(wp.x + off, wp.y + off, dims);
   };
-  const liftOf = (p: Pt) => (p.z ? liftAt(p.x, p.y, p.z) : 0);
   // Empreinte du MOBILE actif (sa MONTURE si cavalier) → aperçus/curseur à la BONNE taille.
   const activeMoveN = activeC && battle ? footprintN(mountOf(battle, activeC) ?? activeC) : 1;
   /** Difficulté de l'aperçu tap-1 : résolue par la MÊME couture que le réticule au survol
@@ -177,14 +163,11 @@ export function SurcoucheIso({
         )}
         {mursTrait.length > 0 && <g pointerEvents="none" data-murs-trait={mursTrait.length}>{mursTrait.map((o) => o.el)}</g>}
         <DoorOverlays
-          portals={portals}
-          dims={dims}
-          activeZ={activeZ}
-          visible={visible}
+          aretes={aretes}
           hoveredPortalId={hoveredPortal?.id ?? null}
-          lift={liftOf}
-          onPortalHover={portalHandlers.onPortalHover}
-          onPortalClick={portalHandlers.onPortalClick}
+          activerArete={activerArete}
+          onFocusArete={survolerArete}
+          onBlurArete={() => survolerArete(null)}
         />
         <ClimbOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         <FallOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />

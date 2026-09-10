@@ -58,7 +58,7 @@ const dimsDe = (scene: Scene): Dims => ({ w: scene.dimensions.w, h: scene.dimens
 
 /** Le cadre que l'hôte PUBLIE : projection commise + caméra RENDUE (un lecteur, comme `camRef`) + zoom. */
 const cadreRendu = (dims: Dims, cam: { x: number; y: number } = CAM, zoom = ZOOM): CadreRendu =>
-  ({ dims, camRendue: () => cam, zoom });
+  ({ dims, camRendue: () => cam, zoom, aretes: () => [] });
 
 type Camera = OrthographicCamera | PerspectiveCamera;
 
@@ -146,7 +146,7 @@ function viseur(scene: Scene, activeZ: number, partyPos: Pt, cadre?: Dims): (sx:
     const svgRef = useRef(stageEl());
     const camRef = useRef(CAM);
     pointer = useStagePointer({
-      svgRef, dims, zoom: ZOOM, camRef, hoverTracking: false, partyLeader: undefined, activeZ,
+      svgRef, dims, zoom: ZOOM, camRef, hoverTracking: false, partyLeader: undefined, activeZ, aretes: [],
     });
     return null;
   };
@@ -561,7 +561,7 @@ describe('sonde de picking — plateau FIN : la case du meuble DESSINÉ, jamais 
     const pieges: string[] = [];
     for (const { ent, px } of decors) {
       const g = stagePointAt(viewBoxPointAt({ sx: px.sx, sy: px.sy }, CANVAS), CAM, ZOOM);
-      const sol = caseAuSol(scene, { pose, dims, activeZ: 0 }, g);
+      const sol = caseAuSol(scene, { pose, dims, activeZ: 0, aretes: [] }, g);
       if (sol && (sol.x !== ent.pos.x || sol.y !== ent.pos.y || (sol.z ?? 0) !== 0))
         pieges.push(`${ent.id} (${ent.pos.x},${ent.pos.y}) → sol ${sol.x},${sol.y},z${sol.z ?? 0}`);
     }

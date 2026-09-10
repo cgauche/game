@@ -19,6 +19,8 @@ import { bus, EVT } from '../../state/bus';
 import { STEP_MS } from '../../geometry/walk';
 import type { Combatant } from '../../engine/types';
 import type { RoomPortal } from '../../state/roomPortals';
+import { aretesUtilisables, type AreteUtilisable } from '../../state/aretes';
+import { projeterAretes } from './aretesProjetees';
 import { VH, VW } from './useStageCamera';
 import { useStagePointer, type StagePointer } from './useStagePointer';
 import { setSpritePicker } from './spritePicker';
@@ -75,6 +77,16 @@ const closedExteriorPortal: RoomPortal = {
   from: { x: 0, y: 1 },
   to: { x: 1, y: 1 },
 };
+
+/** L'ARÊTE d'un accès, dérivée comme l'hôte la dérive (`state/aretes.ts`) : le verdict de pixel et la
+ *  touche Entrée du peintre passent tous deux par elle, jamais par le `RoomPortal` nu. */
+const areteDe = (p: RoomPortal): AreteUtilisable => aretesUtilisables({
+  scene: emptyScene(1, 1),
+  visible: new Set([`${p.from.x},${p.from.y},${p.z}`]),
+  controleur: null,
+  activeZ: p.z,
+  portails: [p],
+})[0];
 
 function pointerEvent(x: number, y: number) {
   return {
@@ -133,6 +145,7 @@ describe('useStagePointer — picking exploration', () => {
         hoverTracking: false,
         partyLeader: undefined,
         activeZ: 0,
+        aretes: [],
       });
       return null;
     };
@@ -174,6 +187,7 @@ describe('useStagePointer — picking exploration', () => {
         hoverTracking: false,
         partyLeader: undefined,
         activeZ: 0,
+        aretes: [],
       });
       return null;
     };
@@ -232,6 +246,7 @@ describe('useStagePointer — picking exploration', () => {
         hoverTracking: false,
         partyLeader: { id: 'hero' } as Combatant,
         activeZ: 0,
+        aretes: [],
       });
       return null;
     };
@@ -279,6 +294,7 @@ describe('useStagePointer — picking exploration', () => {
         hoverTracking: false,
         partyLeader: { id: 'hero' } as Combatant,
         activeZ: 0,
+        aretes: [],
       });
       return null;
     };
@@ -322,6 +338,7 @@ describe('useStagePointer — picking exploration', () => {
         hoverTracking: false,
         partyLeader: { id: 'hero' } as Combatant,
         activeZ: 0,
+        aretes: [],
       });
       return null;
     };
@@ -376,12 +393,13 @@ describe('useStagePointer — picking exploration', () => {
         hoverTracking: false,
         partyLeader: undefined,
         activeZ: 0,
+        aretes: [],
       });
       return null;
     };
     renderToStaticMarkup(<Probe />);
 
-    pointer!.portalHandlers.onPortalClick({ ...portal, to: { x: 2, y: 4 } });
+    pointer!.activerArete(areteDe({ ...portal, to: { x: 2, y: 4 } }));
     vi.runAllTimers();
 
     expect(positions).toEqual([{ x: 2, y: 2 }, { x: 2, y: 3 }, { x: 2, y: 4 }]);
@@ -423,16 +441,64 @@ describe('useStagePointer — picking exploration', () => {
         hoverTracking: false,
         partyLeader: undefined,
         activeZ: 0,
+        aretes: [],
       });
       return null;
     };
     renderToStaticMarkup(<Probe />);
 
-    pointer!.portalHandlers.onPortalClick({ ...portal, to: { x: 2, y: 4 } });
+    pointer!.activerArete(areteDe({ ...portal, to: { x: 2, y: 4 } }));
     vi.runAllTimers();
 
     expect(positions).toEqual([{ x: 2, y: 2 }]);
     expect(useGame.getState().partyPos).toEqual({ x: 2, y: 2 });
+  });
+
+  it('le CLIC sur le pixel d’un seuil passe par le VERDICT et joue LE geste de l’arête', () => {
+    vi.useFakeTimers();
+    const scene = emptyScene(8, 8);
+    const positions: { x: number; y: number; z?: number }[] = [];
+    useGame.setState({
+      scene,
+      mode: 'exploration',
+      partyPos: { x: 2, y: 1 },
+      party: [],
+      dialogue: null,
+      moveParty: (pos) => {
+        positions.push(pos);
+        useGame.setState({ partyPos: pos });
+      },
+    });
+    // L'offre que l'hôte projette, à la géométrie du peintre : un seul accès, l'arête N de (2,2).
+    const aretes = projeterAretes([areteDe(portal)], dims, () => 0);
+    const [a, b] = [aretes[0].a, aretes[0].b];
+    const pixel = pointerEvent((a.cx + b.cx) / 2, (a.cy + b.cy) / 2);
+
+    let pointer: StagePointer | undefined;
+    const Probe = () => {
+      const svgRef = useRef(stageEl());
+      const camRef = useRef({ x: 0, y: 0 });
+      pointer = useStagePointer({
+        svgRef,
+        dims,
+        zoom: 1,
+        camRef,
+        hoverTracking: false,
+        partyLeader: undefined,
+        activeZ: 0,
+        aretes,
+      });
+      return null;
+    };
+    const container = document.createElement('div');
+    root = createRoot(container);
+    act(() => root!.render(<Probe />));
+
+    act(() => pointer!.handlers.onPointerDown(pixel));
+    act(() => pointer!.handlers.onPointerUp(pixel));
+    act(() => vi.runAllTimers());
+
+    expect(positions).toEqual([{ x: 2, y: 2 }]);
   });
 
   it('réutilise la confirmation tactile : premier tap aperçu, second tap déplacement exact du portail', () => {
@@ -464,6 +530,7 @@ describe('useStagePointer — picking exploration', () => {
         hoverTracking: false,
         partyLeader: undefined,
         activeZ: 0,
+        aretes: [],
       });
       return null;
     };
@@ -471,11 +538,11 @@ describe('useStagePointer — picking exploration', () => {
     root = createRoot(container);
     act(() => root!.render(<Probe />));
 
-    act(() => pointer!.portalHandlers.onPortalClick(portal));
+    act(() => pointer!.activerArete(areteDe(portal)));
     expect(positions).toEqual([]);
     expect(pointer!.hoveredPortal).toEqual(portal);
 
-    act(() => pointer!.portalHandlers.onPortalClick(portal));
+    act(() => pointer!.activerArete(areteDe(portal)));
     act(() => vi.runAllTimers());
 
     expect(positions).toEqual([{ x: 2, y: 2 }]);
@@ -516,16 +583,17 @@ describe('useStagePointer — picking exploration', () => {
         hoverTracking: false,
         partyLeader: undefined,
         activeZ: 0,
+        aretes: [],
       });
       return null;
     };
     renderToStaticMarkup(<Probe />);
 
-    pointer!.portalHandlers.onPortalClick(closedExteriorPortal);
+    pointer!.activerArete(areteDe(closedExteriorPortal));
     vi.runAllTimers();
     expect(positions).toEqual([]);
 
-    pointer!.portalHandlers.onPortalClick({ ...closedExteriorPortal, kind: 'door-open' });
+    pointer!.activerArete(areteDe({ ...closedExteriorPortal, kind: 'door-open' }));
     vi.runAllTimers();
     expect(positions).toEqual([{ x: 1, y: 1 }]);
   });
@@ -586,6 +654,7 @@ describe('useStagePointer — picking exploration', () => {
         hoverTracking: false,
         partyLeader: hero,
         activeZ: 0,
+        aretes: [],
       });
       return null;
     };
@@ -626,6 +695,7 @@ describe('useStagePointer — relief et franchissement d’étage à la souris',
         hoverTracking: false,
         partyLeader: undefined,
         activeZ,
+        aretes: [],
       });
       return null;
     };
@@ -712,7 +782,7 @@ describe('useStagePointer — glisser-tourner au bouton MILIEU', () => {
     const Probe = () => {
       const svgRef = useRef(stageEl());
       const camRef = useRef({ x: 0, y: 0 });
-      pointer = useStagePointer({ svgRef, dims, zoom: 1, camRef, hoverTracking: false, partyLeader: undefined, activeZ: 0 });
+      pointer = useStagePointer({ svgRef, dims, zoom: 1, camRef, hoverTracking: false, partyLeader: undefined, activeZ: 0, aretes: [] });
       return null;
     };
     renderToStaticMarkup(<Probe />);
@@ -818,7 +888,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     const Probe = () => {
       const svgRef = useRef(stageEl());
       const camRef = useRef({ x: 0, y: 0 });
-      pointer = useStagePointer({ svgRef, dims, zoom: 1, camRef, hoverTracking: false, partyLeader: undefined, activeZ: 0 });
+      pointer = useStagePointer({ svgRef, dims, zoom: 1, camRef, hoverTracking: false, partyLeader: undefined, activeZ: 0, aretes: [] });
       return null;
     };
     renderToStaticMarkup(<Probe />);

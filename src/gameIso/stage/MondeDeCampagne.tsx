@@ -20,7 +20,7 @@
  * LE CHANGEMENT DE REGARD EST UNE REPOSE — toute reconstruction à la bascule est un défaut, sauf le
  * meneur et les nappes de brume (mesuré : `stage/bascule-de-vue.test.tsx`). LA VUE N+1 COÛTE UNE LIGNE.
  */
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useGame } from '../../state/store';
 import { heightAt, isIndoor, sceneMetresPerTile } from '../../state/scene';
 import { metricToLift } from '../../state/relief';
@@ -62,6 +62,11 @@ import { NO_CLEARED_SPACE, frontFacadeCutaway, cutawayForSection, cutawayOverhea
 import { clePercage } from './percage';
 import { useStageCamera, cameraTargeting, stageFocus, computeViewBounds, adoucirFocal, DUREE_FOCALE_MS, VW, VH, type LissageFocal } from './useStageCamera';
 import { useStagePointer } from './useStagePointer';
+import { projeterAretes, type AreteProjetee } from './aretesProjetees';
+import { aretesUtilisables } from '../../state/aretes';
+import { portalsForParty } from '../../state/roomPortals';
+import { occupiedInteriorZoneIds } from './roomFocus';
+import type { Pt } from '../../state/path';
 import { inBattleId } from '../../state/combatants';
 import { useHoverTargeting } from './useHoverTargeting';
 import { SceneErrorBoundary } from '../../ui/SceneErrorBoundary';
@@ -131,6 +136,9 @@ function CorpsDuMonde() {
   const hoverCombatantId = useGame((s) => s.hoverCombatantId); // survol de la frise → peek caméra + réticule
   const svgRef = useRef<SVGSVGElement>(null);
   const camRef = useRef({ x: 0, y: 0 }); // caméra du rendu courant, lue par les handlers du pointeur
+  // ARÊTES projetées du rendu courant — même rôle que `camRef` pour le cadre publié : la sonde de
+  // recette les lit À L'APPEL, sur l'offre que l'écran rend à cet instant.
+  const aretesEcranRef = useRef<readonly AreteProjetee[]>([]);
   const camGRef = useRef<SVGGElement>(null); // groupe à la transform CAMÉRA — recalé hors React pendant une marche volumique
   // Un pas FRANCHI pendant une marche volumique : le seul rendu que la boucle demande (cf. son battement).
   const [, setWalkStep] = useState(0);
@@ -178,7 +186,13 @@ function CorpsDuMonde() {
   const layerZ = planVue ? activeZ : viewZ;
   // LIFT vertical d'une case = sa HAUTEUR MÉTRIQUE en unités de niveau, DÉCOUPLÉ de l'index de couche
   // `z` (qui ne sert qu'au TRI). Sert au JETON (qui monte avec son sol) ET aux SURLIGNAGES de case.
-  const liftAt = (x: number, y: number, z = 0) => (scene ? metricToLift(heightAt(scene, Math.round(x), Math.round(y), z)) : 0);
+  const liftAt = useCallback(
+    (x: number, y: number, z = 0) => (scene ? metricToLift(heightAt(scene, Math.round(x), Math.round(y), z)) : 0),
+    [scene],
+  );
+  /** ÉLÉVATION d'affichage de la CASE d'où part un geste — la seule définition, servie au peintre des
+   *  seuils comme à la projection des arêtes : les deux doivent poser le même segment. */
+  const liftOf = useCallback((p: Pt) => (p.z ? liftAt(p.x, p.y, p.z) : 0), [liftAt]);
   // BROUILLARD DE GUERRE (cases visibles) + CHAMP DE LUMIÈRE par tuile en UN calcul (`sceneLightField`,
   // potentiellement lourd, ne tourne qu'UNE fois par pas — la vue ET l'éclairage des sols le partagent).
   // Dérivé des positions LOGIQUES, pas du glissement → memo STABLE pendant la marche. UNE vision pour
@@ -255,7 +269,7 @@ function CorpsDuMonde() {
   // l'écran rend — première personne et lacet lissé compris — au lieu de le rebâtir depuis le store.
   // La CAMÉRA y va en LECTEUR de `camRef` (jamais une copie) : c'est la valeur que le pointeur lui-même
   // inverse, et la boucle d'images la réécrit après chaque calcul de focal, sans rendu React.
-  useEffect(() => { setStageFrame({ dims: dimsVue, camRendue: () => camRef.current, zoom }); }, [dimsVue, zoom]);
+  useEffect(() => { setStageFrame({ dims: dimsVue, camRendue: () => camRef.current, zoom, aretes: () => aretesEcranRef.current }); }, [dimsVue, zoom]);
   useEffect(() => () => setStageFrame(null), []);
   const partyLeader = partyLeaderOf(party);
   // PLACE ASSISE du meneur — résolue UNE fois pour tout l'écran (corps, chrome, caméra, POV). Le
@@ -567,7 +581,37 @@ function CorpsDuMonde() {
   // Le picking inverse la projection COMMISE : exacte à chaque commit du lacet (cran, départ, arrêt,
   // pose au pointeur). PENDANT un maintien entre deux crans, elle retarde du lacet parcouru depuis le
   // dernier commit — jusqu'à un demi-cran, le temps du geste (#1403).
-  const pointeur = useStagePointer({ svgRef, dims: dimsVue, zoom, camRef, hoverTracking, partyLeader, activeZ });
+  // ── Accès de PIÈCE et ARÊTES UTILISABLES ──────────────────────────────────────────────
+  // `portalsForParty` lit les accès de la scène (mémoïsés) et, hors zone intérieure, ne garde que les
+  // sorties de la COMPOSANTE marchable du groupe (`walkComponentAt`, étiquetage bâti une fois par
+  // scène — #1416). Ses seules vraies entrées sont la SCÈNE (réf neuve dès qu'une porte s'ouvre —
+  // `wallEdges`/`doorIsOpen` lisent `scene.flags`) et la case de CONTRÔLE arrondie ; le glissement
+  // visuel d'une marche n'en fait pas partie, donc une image d'animation ne recalcule aucun accès (#817).
+  const doorCtrlKey = combatBattle
+    ? (myTurn && activeC?.kind === 'hero' && activeC.pos ? `${activeC.id}@${activeC.pos.x},${activeC.pos.y},${activeC.pos.z ?? 0}` : '')
+    : `party@${partyPos.x},${partyPos.y},${partyPos.z ?? 0}`;
+  const doorCtrls = useMemo<Pt[]>(
+    () => (combatBattle ? (myTurn && activeC?.kind === 'hero' && activeC.pos ? [activeC.pos] : []) : [partyPos]),
+    [doorCtrlKey],
+  );
+  const portals = useMemo(
+    () => (scene && doorCtrls.length ? portalsForParty(scene, doorCtrls[0], occupiedInteriorZoneIds(scene, doorCtrls)) : []),
+    [scene, doorCtrls],
+  );
+  // Les ARÊTES que le picking consulte AVANT le rayon, et que le peintre des seuils rend : UNE
+  // population, dérivée ici (`state/aretes.ts`) et projetée là (`stage/aretesProjetees.ts`). Le
+  // contexte fourni est celui des seules PORTES : escalade, chute et structure gardent leurs propres
+  // overlays et leurs propres handlers jusqu'aux lots 1b-3/1b-4, qui les feront entrer à leur tour.
+  const aretes = useMemo(
+    () => (scene ? aretesUtilisables({ scene, visible, controleur: null, activeZ, battle: null, portails: portals }) : []),
+    [scene, visible, activeZ, portals],
+  );
+  const aretesEcran = projeterAretes(aretes, dimsVue, liftOf);
+  // La réf ne se pose qu'au COMMIT, comme celle de la caméra : un rendu jeté avant commit publierait
+  // aux sondes une offre que l'écran ne montre pas.
+  useLayoutEffect(() => { aretesEcranRef.current = aretesEcran; }, [aretesEcran]);
+
+  const pointeur = useStagePointer({ svgRef, dims: dimsVue, zoom, camRef, hoverTracking, partyLeader, activeZ, aretes: aretesEcran });
   const hover = pointeur.hover;
   const visée = useHoverTargeting(scene, hover, myTurn, pointeur.hoveredPortal);
 
@@ -681,6 +725,9 @@ function CorpsDuMonde() {
             visible={visible}
             tintAt={tintAt}
             liftAt={liftAt}
+            liftOf={liftOf}
+            aretes={aretesEcran}
+            doorCtrls={doorCtrls}
             politique={politique}
             chromes={chromes}
             gestes={gesteEls}
@@ -688,7 +735,6 @@ function CorpsDuMonde() {
             activeC={activeC}
             battle={combatBattle}
             myTurn={myTurn}
-            partyPos={partyPos}
             mode={mode}
             targeting={targeting}
             anyWalking={anyWalking}

@@ -85,6 +85,10 @@ export interface AreteUtilisable {
   libelle: string;
   /** Combattant-structure visé par le geste de siège (`battleClickEntity`). */
   cid?: string;
+  /** Accès de pièce que le geste FRANCHIT (ouvrir la porte, marcher jusqu'à `to`) — jumeau de `cid`
+   *  pour la capacité `porte` : la clé d'arête dit OÙ, ce champ dit avec QUOI le geste s'exécute
+   *  (`kind` et `to` ne se retrouvent pas depuis l'arête). */
+  portail?: RoomPortal;
 }
 
 /** Tout ce que le dériveur lit — aucun store, aucune dimension d'écran. */
@@ -138,6 +142,7 @@ function portes(ctx: ContexteAretes): AreteUtilisable[] {
       ancrage: { ...p.from, z: p.z },
       largeurPrise: LARGEUR_PRISE_ARETE.porte,
       libelle: libellePortail(p),
+      portail: p,
     });
   }
   return out;

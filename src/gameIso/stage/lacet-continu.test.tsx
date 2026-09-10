@@ -3,6 +3,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Vector3 } from 'three';
 import { CursorOverlay } from './MoveOverlays';
 import { DoorOverlays } from './DoorOverlays';
+import { projeterAretes } from './aretesProjetees';
+import { aretesUtilisables } from '../../state/aretes';
+import { emptyScene } from '../../state/scene';
 import { poseFromDims, screenToTileAtLift, worldToScreen } from './projection';
 import { LEVEL_H, screenToTileAtZ, tileCenter, type Dims, type Rot } from '../../geometry/iso';
 import { affineCamera, projectToScreen } from '../backends/webgl/cameras';
@@ -56,17 +59,18 @@ const PORTE: RoomPortal = {
 function boutsDePorte(dims: Dims): { x: number; y: number }[] {
   const html = renderToStaticMarkup(
     <DoorOverlays
-      portals={[PORTE]}
-      dims={dims}
-      activeZ={0}
-      visible={new Set(['4,3,0'])}
+      aretes={projeterAretes(
+        aretesUtilisables({ scene: emptyScene(dims.w, dims.h), visible: new Set(['4,3,0']), controleur: null, activeZ: 0, portails: [PORTE] }),
+        dims,
+        () => 0,
+      )}
       hoveredPortalId={null}
-      lift={() => 0}
-      onPortalHover={() => {}}
-      onPortalClick={() => {}}
+      activerArete={() => {}}
+      onFocusArete={() => {}}
+      onBlurArete={() => {}}
     />,
   );
-  const cible = html.match(/<line data-portal-target=""[^>]*>/)?.[0];
+  const cible = html.match(/<line data-portal-arete=""[^>]*>/)?.[0];
   if (!cible) throw new Error('porte sans cible de clic');
   const at = (n: string) => Number(cible.match(new RegExp(`${n}="([^"]+)"`))?.[1]);
   return [{ x: at('x1'), y: at('y1') }, { x: at('x2'), y: at('y2') }];

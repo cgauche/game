@@ -1,4 +1,5 @@
 import { useGame, SCREENS } from './store';
+import type { AreteUtilisable } from './aretes';
 
 /** Ce que la SONDE DE PICKING du rendu rend (`gameIso/stage/pickProbe`) : le verdict que le picking
  *  résoudrait sous un pixel CLIENT — case d'ANCRAGE, nature de ce qui est frappé, combattant, et voie
@@ -12,7 +13,7 @@ import { useGame, SCREENS } from './store';
 export type PickProbe = (px: { x: number; y: number }) => ({
   tile: { x: number; y: number; z: number } | null;
   cid: string | null;
-  via: 'sprite' | 'decor' | 'meuble' | 'pas-etage' | 'sol' | 'aucune';
+  via: 'arete' | 'sprite' | 'decor' | 'meuble' | 'pas-etage' | 'sol' | 'aucune';
   /** L'entité que le GESTE servirait sous ce verdict (dialogue, marchand, place à s'asseoir…) ;
    *  `entId` absent = le clic ne traite aucune entité. */
   geste: { entId?: string };
@@ -20,6 +21,7 @@ export type PickProbe = (px: { x: number; y: number }) => ({
   | { nature: 'case' }
   | { nature: 'combattant' }
   | { nature: 'entite'; entId: string }
+  | { nature: 'arete'; arete: AreteUtilisable }
 )) | null;
 
 let sondeDePicking: PickProbe | null = null;

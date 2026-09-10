@@ -25,6 +25,7 @@
  * cases, pour le même pixel — et sur un écran centré sur le groupe, aucune case du tout.
  */
 import type { Dims } from '../../geometry/iso';
+import type { AreteProjetee } from './aretesProjetees';
 import type { PickResult } from '../backends/webgl/spriteRaycast';
 
 /** Répondeur de la voie volumique : coordonnées CLIENT (celles d'un `PointerEvent`) → ce qui est visé. */
@@ -62,6 +63,11 @@ export interface CadreRendu {
   camRendue: () => { x: number; y: number };
   /** Zoom que le geste inverse (`useStagePointer`, prop `zoom`). */
   zoom: number;
+  /** ARÊTES utilisables projetées que la chaîne consulte AVANT le rayon (`stage/aretesProjetees.ts`),
+   *  en LECTEUR comme la caméra : l'offre change à chaque pas du groupe, la sonde doit lire celle de
+   *  l'INSTANT. Elles sont publiées parce que l'hôte seul connaît le brouillard et le contrôleur qui
+   *  les filtrent — une sonde qui les rebâtirait résoudrait sur une autre offre que le clic. */
+  aretes: () => readonly AreteProjetee[];
 }
 
 let _cadre: CadreRendu | null = null;

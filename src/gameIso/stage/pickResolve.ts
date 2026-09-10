@@ -23,10 +23,12 @@ import { walkNeighbors, type Pt } from '../../state/path';
 import { inBattleId } from '../../state/combatants';
 import { sceneAUnPropVolumique } from '../builders/props';
 import { hasSpritePicker } from './spritePicker';
+import { distanceAuSegment, type AreteProjetee } from './aretesProjetees';
 import { screenToTileAtLift, type StagePose } from './projection';
 import { stagePointAt, viewBoxPointAt } from './stageCam';
 import type { Dims } from '../../geometry/iso';
 import type { EtatEtage } from '../../state/viewLevel';
+import type { AreteUtilisable } from '../../state/aretes';
 import type { PickResult } from '../backends/webgl/spriteRaycast';
 
 /** Ce que la résolution lit de l'état — la tranche EXACTE, jamais le store entier. Elle ÉTEND celle de
@@ -36,7 +38,7 @@ export interface EtatDePick extends EtatEtage {
 }
 
 /** Par quelle voie la case a été désignée. L'ordre de ce type EST celui de la chaîne. */
-export type PickVia = 'sprite' | 'decor' | 'meuble' | 'pas-etage' | 'sol' | 'aucune';
+export type PickVia = 'arete' | 'sprite' | 'decor' | 'meuble' | 'pas-etage' | 'sol' | 'aucune';
 
 /** Verdict du picking sous un pixel : la case d'ANCRAGE (`null` = rien de dessiné), la NATURE de ce
  *  qui est frappé, et l'étage de la chaîne qui a tranché.
@@ -60,6 +62,9 @@ export type Verdict = {
   | { nature: 'combattant' }
   /** Entité de scène frappée PAR LE RAYON (décor volumique, PNJ…). */
   | { nature: 'entite'; entId: string }
+  /** ARÊTE utilisable sous le pixel (`state/aretes.ts`) : le geste qu'elle porte prime sur la case
+   *  qu'elle borde. `tile` est son ANCRAGE — la case d'où le geste part. */
+  | { nature: 'arete'; arete: AreteUtilisable }
 );
 
 /** LIFTS D'AFFICHAGE distincts d'une scène, du plus HAUT au plus bas — l'ensemble des hauteurs
@@ -153,6 +158,9 @@ export interface CadreDePick {
   pose: StagePose;
   dims: Dims;
   activeZ: number;
+  /** ARÊTES utilisables DÉJÀ projetées (`stage/aretesProjetees.ts`), filtrées par l'hôte comme `vise`
+   *  l'est : brouillard, contrôleur, couche active. La chaîne ne les dérive pas — elle les lit. */
+  aretes: readonly AreteProjetee[];
 }
 
 /** Case du MEUBLE réellement dessinée sous le pixel, à la couche `z` : la MÊME inversion par LIFT que
@@ -226,6 +234,25 @@ export function caseAuSol(scene: Scene, cadre: CadreDePick, g: PointStage): Pt |
   return null;
 }
 
+/**
+ * ARÊTE sous le pixel : celle dont le SEGMENT projeté passe à moins de `largeurPrise / 2` du point —
+ * la moitié du trait que l'overlay exposait au pointeur, donc la même prise qu'avant, capacité par
+ * capacité (`state/aretes.ts:LARGEUR_PRISE_ARETE`). La PLUS PROCHE gagne ; à égalité stricte c'est
+ * l'ordre de la liste qui tranche, et cet ordre EST `PRIORITE_ARETES` (`aretesUtilisables` la rend
+ * déjà triée) — une enceinte enrôlée se frappe, elle ne s'ouvre pas.
+ */
+export function areteSousLePixel(g: PointStage, aretes: readonly AreteProjetee[]): AreteUtilisable | null {
+  let prise: AreteUtilisable | null = null;
+  let meilleure = Infinity;
+  for (const { arete, a, b } of aretes) {
+    const d = distanceAuSegment(g, a, b);
+    if (d > arete.largeurPrise / 2 || d >= meilleure) continue;
+    meilleure = d;
+    prise = arete;
+  }
+  return prise;
+}
+
 /** Verdict d'un étage de SURFACE : une case, et rien d'autre — aucune identité n'est devinée depuis
  *  la position rendue (cf. le JSDoc de `Verdict`). */
 const verdict = (t: Pt, via: PickVia): Verdict => ({ tile: { x: t.x, y: t.y, z: t.z ?? 0 }, cid: null, via, nature: 'case' });
@@ -237,17 +264,37 @@ const RIEN: Verdict = { tile: null, cid: null, via: 'aucune', nature: 'case' };
  * `vise` = ce que la voie de rendu a nommé (`null` si le rayon n'a pas été tiré).
  *
  * `pointStage` est un THUNK, et c'est une contrainte de COÛT, pas un style : inverser le pixel coûte un
- * `getBoundingClientRect()` (mesure forcée du layout) et la chaîne tourne à CHAQUE `pointermove`. Quand
- * le rayon nomme déjà sa cible — le cas ordinaire du survol en combat — aucun étage de surface n'est
- * atteint et le pixel n'a pas à être inversé. Il rend `null` quand rien n'est inversable (élément sans
- * surface mesurée) : seul le rayon peut alors répondre.
+ * `getBoundingClientRect()` (mesure forcée du layout) et la chaîne tourne à CHAQUE `pointermove`. Le
+ * thunk n'est appelé QU'UNE fois par résolution — l'étage d'arête et les étages de surface partagent le
+ * point inversé — et il n'est appelé DU TOUT que si un étage en a besoin : aucune arête offerte et un
+ * rayon qui nomme sa cible, et le pixel n'est jamais inversé. CE QUE ÇA COÛTE, dit au présent : dès que
+ * `cadre.aretes` est non vide, l'étage d'arête inverse, donc UNE mesure de layout par `pointermove` —
+ * en combat, chaque `pointermove` de mon tour, où le contrôleur d'accès EST le héros actif
+ * (`MondeDeCampagne.tsx:590-598`). C'est le prix de la PARITÉ de geste : le seuil se prend au pixel
+ * comme la cible SVG le prenait (89/89 des portails de la Diligence, mesure 1b-0). Le thunk rend `null`
+ * quand rien n'est inversable (élément sans surface mesurée) : seul le rayon peut alors répondre.
+ *
+ * L'ARÊTE passe AVANT le rayon, et c'est la PARITÉ avec le régime qu'elle remplace : la cible SVG de
+ * l'overlay retenait le `pointerdown` avant que la chaîne ne soit consultée (sonde
+ * `priorite-arete-vs-rayon`). Mesuré au lot 1b-0 : 89 portails de la Diligence sur 89 sont résolus
+ * par la surface en case marchable — la placer après le rayon changerait chacun de ces verdicts.
  */
 export function resoudrePixel(st: EtatDePick, vise: PickResult, pointStage: () => PointStage | null, cadre: CadreDePick): Verdict {
+  let inversé: PointStage | null | undefined;
+  const pointInversé = () => (inversé === undefined ? (inversé = pointStage()) : inversé);
+  if (cadre.aretes.length) {
+    const p = pointInversé();
+    const arete = p && areteSousLePixel(p, cadre.aretes);
+    if (arete?.ancrage) {
+      const { x, y, z } = arete.ancrage;
+      return { tile: { x, y, z: z ?? 0 }, cid: arete.cid ?? null, via: 'arete', nature: 'arete', arete };
+    }
+  }
   const nommé = caseVisee(vise, st);
   if (nommé) return nommé;
   const scene = st.scene;
   if (!scene) return RIEN;
-  const g = pointStage();
+  const g = pointInversé();
   if (!g) return RIEN;
   if (st.mode !== 'battle') {
     const meuble = meubleDessine(scene, cadre, g, cadre.activeZ);

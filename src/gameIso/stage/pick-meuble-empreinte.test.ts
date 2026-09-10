@@ -38,7 +38,7 @@ const etat = (scene: Scene): EtatDePick =>
 /** Verdict de la chaîne sous le pixel-CENTRE d'une case, sans aucun rayon (`vise` nul). */
 function souslaCase(scene: Scene, x: number, y: number, activeZ = 0): Verdict {
   const dims = dimsDe(scene);
-  const cadre: CadreDePick = { pose: poseFromDims(dims), dims, activeZ };
+  const cadre: CadreDePick = { pose: poseFromDims(dims), dims, activeZ, aretes: [] };
   const g = worldToScreen(cadre.pose, { x, y, lift: 0 });
   return resoudrePixel(etat(scene), null, () => g, cadre);
 }

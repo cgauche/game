@@ -33,12 +33,13 @@ export const pickTileAt: PickProbe = (px) => {
   const cadre = getStageFrame();
   if (!cadre) return { tile: null, cid: null, via: 'aucune', nature: 'case', geste: {} };
   const { dims } = cadre;
+  const aretes = cadre.aretes();
   // La caméra est relue À L'APPEL, comme le geste la lit à l'instant de son événement : la boucle
   // d'images la réécrit entre deux rendus.
   const g = pointStageSousPixel(svg, px.x, px.y, cadre.camRendue(), cadre.zoom);
   if (!g) return null; // élément sans surface mesurée : aucune image à sonder
   const visé = tireLeRayon(st) ? targetUnderPointer(px.x, px.y) : null;
-  const v = resoudrePixel(st, visé, () => g, { pose: poseFromDims(dims), dims, activeZ: etageActif(st, getViewZ()) });
+  const v = resoudrePixel(st, visé, () => g, { pose: poseFromDims(dims), dims, activeZ: etageActif(st, getViewZ()), aretes });
   // Le VERDICT dit ce que le pixel frappe ; le GESTE dit ce qu'un clic traiterait — un PNJ ancré sur la
   // case rend `nature:'case'` et ouvre pourtant son dialogue. Les deux sont rapportés, par la même
   // fonction que le hook appelle (`stage/geste.ts`).

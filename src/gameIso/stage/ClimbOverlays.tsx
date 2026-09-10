@@ -12,7 +12,7 @@ import { Dims, tileEdge } from '../../geometry/iso';
 import { t } from '../../i18n';
 import type { Pt } from '../../state/path';
 
-export function ClimbOverlays({ scene, dims, activeZ, visible, ctrls }: { scene: Scene; dims: Dims; activeZ: number; visible: ReadonlySet<string>; ctrls: Pt[] }) {
+export function ClimbOverlays({ scene, dims, activeZ, visible, ctrls }: { scene: Scene; dims: Dims; activeZ: number; visible: ReadonlySet<string>; ctrls: readonly Pt[] }) {
   if (!ctrls.length) return null;
   const same = (a: Pt, b: { x: number; y: number }) => a.x === b.x && a.y === b.y && (a.z ?? 0) === activeZ;
   return (

@@ -172,6 +172,7 @@ describe('aretesUtilisables — le dériveur d’arêtes rend ce que les overlay
       ancrage: { x: 1, y: 1, z: 0 },
       largeurPrise: 28,
       libelle: 'Passage vers une autre pièce',
+      portail: passage,
     }]);
   });
 
