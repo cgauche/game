@@ -1,8 +1,11 @@
 ---
 name: index-env-outillage
-description: Sous-index des pièges d'environnement/outillage (worktree, vitest, RTK, lean-ctx, shell, navigateur) — chaque fiche garde son détail
-metadata:
+description: "Sous-index des pièges d'environnement/outillage (worktree, vitest, RTK, lean-ctx, shell, navigateur) — chaque fiche garde son détail"
+metadata: 
+  node_type: memory
   type: reference
+  originSessionId: 8314f5c1-8d14-4bcb-a3ef-0927a40555fc
+  modified: 2026-09-09T05:27:36.216Z
 ---
 
 # Pièges d'environnement / outillage (sous-index)
@@ -12,6 +15,9 @@ Déplacés ici depuis `MEMORY.md` le 2026-09-01 (compaction) — les fiches font
 ## Worktree, cache, dépendances
 - Isolation d'un worktree = PORTES, pas des consignes (#1679 L1c) : setup vitest ancré + garde `src/worktree-isolation-guard.test.ts` (son en-tête explique le mécanisme), refus nommé sans `node_modules` local (`scripts/outillage-local.mjs`), verrou de suite complète (`scripts/test/verrou.mjs`), port de dev dérivé strict (`scripts/port-dev.mjs`). Un rouge « impossible à HEAD » se contre-prouve par `git show HEAD:<fichier>` avant toute attribution ([rouge = ARBRE COMMITTÉ](feedback-attribution-rouge-suite-sonde-arbre-committe.md)).
 - [Worktree/clone : remotes, convention `.wt-<ticket>-L<n>`](game-worktree-clone-remotes-pieges.md) · [npm 10 jamais 11](env-npm-lock-regen-npm10-ci.md) · [jamais junctionner node_modules](game-worktree-node-modules-junction-hazard.md) (refusé par `git-destructive-guard`).
+
+## Git / WIP sur arbre partagé (déplacé de `MEMORY.md` le 2026-09-09)
+- [portes sur l'INDEX](game-train-chirurgical-portes-sur-l-index.md) · [commit par chemins](game-index-git-partage-entre-sessions.md) · [WIP voisin ≠ excuse](feedback-wip-voisin-jamais-une-excuse.md) · [MES fichiers](git-commits-propres-wip-parallele.md) · [WORKTREE](game-agents-worktree-isolation-shared-branch.md) · [ni stash/restore](feedback-jamais-git-surgery-arbre-partage-actif.md) · [WIP orphelin = session VIVANTE](feedback-wip-orphelin-presume-session-vivante.md) · [git destructif](game-agents-stray-main-tree-destructive-git.md) · [décisivité](feedback-decisiveness-routine-git.md) · [rebase avant push](game-parallel-codeurs-shared-tree-and-rebase.md) · [stage par hunk](game-stage-chirurgical-hunk-arbre-partage.md).
 
 ## Vitest / RTK / preuve des runners
 - [Vitest isolate:false](game-tests-isolate-false-speedup.md) + [vi.mock = ORDRE](game-vi-mock-isolate-false-liaison-ordre.md).

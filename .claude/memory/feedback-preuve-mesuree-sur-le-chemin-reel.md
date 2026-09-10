@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: cb384a41-d20a-494b-aa60-728b2ed7534f
-  modified: 2026-07-20T08:54:50.990Z
+  modified: 2026-09-10T17:34:58.503Z
 ---
 
 **Incident (2026-07-18)** : un fix de socle (« `g_flesh` dérivé de la peau du personnage ») a livré une preuve chiffrée impeccable — « avant-bras `[48,30,20]` vs main `[52,32,22]`, distance RGB **4,9**, couture fermée ». J'ai accepté le chiffre. Un juge adversarial a re-mesuré **sans forcer `appearance.colors`** (une personnalisation OPTIONNELLE, `src/gameIso/rig/appearance.ts:27`, non renseignée par défaut) : sur 21 races × 10 tenues, **174 paires sur 210 avaient une couture > 30 RGB, jusqu'à 227**. La preuve avait été mesurée sur le SEUL chemin qui contourne le bug.
@@ -22,5 +22,7 @@ metadata:
 - **Correctif structurel** : le harnais devient CANONIQUE et committé (`scripts/qc/mesure-volume.mts`) ; artiste et juge l'INVOQUENT, ils ne l'écrivent plus. Une divergence avec lui est un GRIEF à instruire, jamais un chiffre à substituer. Gravé dans `.claude/agents/{artiste,juge}.md`.
 - **Tout chiffre porte son RÉGLAGE** (masque, érosion, chair incluse ou non) — c'est l'absence de cette mention qui a permis le mélange silencieux.
 - **Le meilleur diagnostic n'était pas le Δ mais OÙ TOMBE LE P90** : sur les deux vues fautives il tombait exactement sur la valeur de BASE de la matière — donc aucune surface éclairée — pendant que le Δ affiché paraissait sain. Un scalaire agrégé peut être bon pour une mauvaise raison ; l'ancrage du percentile sur une valeur CONNUE de la palette, lui, ne ment pas.
+
+**Forme « équivalence par migration » (2026-09-09, #1709 C3c-1)** : pour prouver qu'un walker migré scanne le MÊME ensemble, le codeur avait RECOPIÉ le walker historique à la main dans sa sonde — aveugle à tout filtre oublié ; le juge en a trouvé un (le saut de `node_modules`). Règle : le témoin d'une équivalence est EXTRAIT de `git show HEAD:<fichier>` et JOUÉ (module temporaire), jamais retranscrit — C3c-2 l'a fait sur 38 sites. Même famille : une sonde de config résolue qui n'imprime que la première forme d'une option (`patterns` avant `paths`) « prouve » un fait qu'elle ne mesure pas — lire le JSON complet.
 
 Lié : [[feedback-verifier-les-claims-architecturaux-des-agents]], [[feedback-audit-obligatoire-avant-annonce-de-fermeture]], [[game-test-de-cablage-vs-ctx-forge]] (même famille : une clé testée par un ctx forgé au lieu du flux réel).

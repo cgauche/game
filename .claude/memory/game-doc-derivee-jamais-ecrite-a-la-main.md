@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: f99ca0f7-6f7b-4bd6-9080-4fe86b48eb33
-  modified: 2026-07-27T09:29:04.914Z
+  modified: 2026-09-10T17:35:05.540Z
 ---
 
 **Loi établie le 2026-07-15**, en réponse à la question utilisateur « comment éviter que cela se
@@ -88,6 +88,8 @@ Le code porte déjà sa vérité terrain : **2927 réfs RAW canoniques** en comm
 
 Machinerie déjà présente, rien à inventer : `build-systemes.mjs` (closure transitive),
 `scripts/guards/lib/importGraph.mjs`, `reconcile.mjs` (map chapitre→réfs du code).
+
+**Piège des générateurs qui SCRAPENT un source par regex (2026-09-09, #1709 C3c-2 ; déjà #1694)** : `scripts/docs/build-icones.mjs` lisait le périmètre de la garde anti-emoji dans le texte de `no-emoji-affordance.test.ts` (`const SRC = join(ROOT, '…')`, le filtre d'extensions du walk) ; `build-regles-optionnelles.mjs` scrapait `z.enum([…])`. Une refonte de la FORME du source casse `docs:build` après le commit (run de gates perdu si les docs ne sont pas rebâties avant). Avant de migrer un fichier, `grep -l "<nom du fichier>" scripts/docs/*.mjs` : un générateur qui le cite se recale dans le MÊME geste, et l'idéal reste un fait EXPORTÉ (constante importable) plutôt qu'un texte lu par regex.
 
 Voir aussi [[feedback-jamais-de-constat-silencieux]] (la garde qui compte sans gater),
 [[feedback-gardes-structurelles-pas-greps]], [[game-exhaustive-guard-vs-per-domain]].

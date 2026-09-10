@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 39a8970a-cba9-474a-be43-12bdf0b366e7
-  modified: 2026-09-01T02:20:35.998Z
+  modified: 2026-09-10T17:34:52.674Z
 ---
 
 Vécu 2026-08-31→09-01, TROIS occurrences de la même classe en 2 jours (épic #1463) :
@@ -47,3 +47,5 @@ CI rouge attrapée par la voisine, corrigée dans SON train. Mes gates = 5 suite
 `slots-contrat`. **La règle n'est pas « jouer la bonne famille » (je ne la devine jamais toute) : c'est
 la SUITE COMPLÈTE avant push d'un train de données, sérialisée s'il le faut** — les sous-ensembles sont
 une porte de codeur, pas une porte de commit.
+
+**6e occurrence (2026-09-08, #1709 fermeture de #996) — le hook de solde juge l'INDEX AVANT la commande :** `git add <revue> && git commit …` dans UNE commande → refus « revue non stagée » (le PreToolUse évalue l'index tel qu'il est au moment de l'appel, l'`add` n'a pas encore couru). Règle : stager dans une commande, committer dans la suivante ; le message par `-F <chemin LITTÉRAL>` (une variable `$M` rend le fichier « illisible » pour la porte, fail-closed). Corollaire vécu 2026-09-09 (C3c-1) : un fichier RENOMMÉ sous ~60 % de similarité est une NAISSANCE pour le détecteur de plage (`stocks-nominatifs`, gate `test:hooks`) alors que le pre-commit, qui suit le renommage, compte 0 → `CLIQUET: <fichier> +N` au compte de la PLAGE, sinon un run de gates perdu.
