@@ -1,11 +1,13 @@
 /**
  * Structures de siège (AA 10 p.120) : la fortification d'arête est une CIBLE de combat. Hit-area
- * TRANSPARENTE posée sur l'arête, portant le `data-cid` du Combattant-structure → survol (réticule de
- * visée) + clic-attaque (`battleClickEntity`, comme un token ; `stopPropagation` court-circuite le
- * clic-sol du SVG, comme l'overlay porte). Présente tant que la structure TIENT (Combattant présent)
- * et qu'une de ses deux cases est visible — PAS de garde d'adjacence : on la pilonne à distance. À la
+ * TRANSPARENTE posée sur l'arête : elle prend le CLIC (`battleClickEntity`, comme un token — aperçu
+ * puis commit, cf. le gestionnaire ci-dessous ; seul le clic qui FRAPPE court-circuite le clic-sol du
+ * SVG). Son `data-cid` nomme le Combattant-structure pour la voie AFFINE de `targetUnderPointer`
+ * (`stage/spritePicker.ts`) et pour la recette (`__wfrp.screenPos`) — la voie volumique tranche au
+ * rayon et ne lit aucun `data-cid`. Présente tant que la structure TIENT (Combattant présent) et
+ * qu'une de ses deux cases est visible — PAS de garde d'adjacence : on la pilonne à distance. À la
  * BRÈCHE, `collapseStructure` retire le Combattant et pose le flag → l'overlay disparaît, l'arête
- * reste en gravats. INTERACTION (picking data-cid) → reste un overlay du stage, hors builders.
+ * reste en gravats. INTERACTION (clic sur l'arête) → reste un overlay du stage, hors builders.
  */
 import { useGame, type BattleState } from '../../state/store';
 import { Scene, structureIsDown } from '../../state/scene';
