@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useGame } from '../state/store';
-import { KEYBINDINGS, effectiveCodes, effectiveMods, eventMods, modsMatch, CODE_ECHAP } from '../state/keybindings';
+import { KEYBINDINGS, effectiveCodes, effectiveMods, eventMods, modsMatch, runBindingUpById, CODE_ECHAP } from '../state/keybindings';
 import { resoudreEchap, echapRelachee } from '../state/resoudreEchap';
 
 /** Touches de NAVIGATION : elles ne sont à personne par défaut — un bouton focalisé ne les possède
@@ -34,7 +34,7 @@ export function useGameKeyboard() {
       return KEYBINDINGS.find(
         (k) =>
           effectiveCodes(k, s.keyOverrides).includes(e.code) &&
-          modsMatch(effectiveMods(k, s.keyOverrides), tenus) &&
+          modsMatch(effectiveMods(k, s.keyOverrides), tenus, e.code) &&
           (!k.notWhenControlFocused || !controlFocused) &&
           k.when(s),
       );
@@ -77,15 +77,20 @@ export function useGameKeyboard() {
       if (e.repeat && (b.runUp || b.unePression)) return;
       b.run(useGame.getState);
     };
+    // Le relâchement s'apparie par la PRISE, jamais par une nouvelle élection : ce qui se termine est
+    // le geste qui a PRIS cette touche à l'enfoncement, quels que soient les modificateurs tenus au
+    // relâchement et l'état du jeu depuis. Ré-élire au keyup ferait courir le geste maintenu sans fin
+    // dès qu'Alt/Ctrl est pressé pendant l'appui, ou que son `when` retombe (changement d'écran) —
+    // caméra qui tourne seule, marche qui continue. La garde `saisie` ne couvre pas non
+    // plus ce chemin : un clic dans un champ texte pendant l'appui ne doit pas avaler la fin du geste.
     const onKeyUp = (e: KeyboardEvent) => {
+      const prise = priseParCode.get(e.code);
       priseParCode.delete(e.code); // l'appui est fini : la touche est rendue au registre
       if (e.code === CODE_ECHAP) echapRelachee();
-      const { saisie, controlFocused } = saisieEnCours(e);
-      if (saisie) return;
-      const b = trouver(e, controlFocused);
-      if (!b?.runUp) return;
+      if (prise === undefined) return; // touche jamais prise : rien à terminer
+      if (!KEYBINDINGS.find((k) => k.id === prise)?.runUp) return;
       e.preventDefault();
-      b.runUp(useGame.getState);
+      runBindingUpById(prise, useGame.getState);
     };
     // PERTE DE FOCUS (Alt-Tab, onglet caché) : le `keyup` de la touche tenue part à la fenêtre qui
     // reçoit le focus, jamais à nous — un geste MAINTENU y resterait en cours indéfiniment. On relâche

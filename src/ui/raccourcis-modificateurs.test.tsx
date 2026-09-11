@@ -7,6 +7,10 @@
  *  • `Ctrl+KeyZ` déclenche l'annulation de l'éditeur, et `KeyZ` seul ne la déclenche pas.
  * L'éditeur passe par le PONT (`state/editeurBridge`) : pont vide (éditeur démonté), la touche ne
  * fait rien et ne jette pas.
+ *
+ * Une touche-MODIFICATEUR est son propre modificateur (`modsDeLaTouche`) : Alt nue porte un raccourci.
+ * Et le RELÂCHEMENT s'apparie par la PRISE, pas par une seconde élection : le geste maintenu se termine
+ * quels que soient les modificateurs tenus, le `when` du moment et le focus au keyup.
  */
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
 import { act } from 'react';
@@ -16,11 +20,20 @@ import { emptyScene } from '../state/scene';
 import { resetStageWalk } from '../state/stageWalk';
 import { publierEditeur } from '../state/editeurBridge';
 import { useGameKeyboard } from './useGameKeyboard';
-import { KEYBINDINGS, modsMatch, type KeyMod } from '../state/keybindings';
+import { KEYBINDINGS, modsMatch, type KeyBinding, type KeyMod } from '../state/keybindings';
+
+/** Raccourci FABRIQUÉ, posé EN TÊTE du registre : ce qui est éprouvé ici est la LOI du hook (prise,
+ *  relâchement), jamais le stock de raccourcis du jeu. En tête = il gagne l'élection sur un code déjà
+ *  porté par le registre. `KEYBINDINGS` est le registre de PRODUCTION, partagé par tout le fichier de
+ *  test (et, `isolate: false`, par le module lui-même) : sa remise en état est STRUCTURELLE — snapshot
+ *  au `beforeEach`, restauration au `afterEach`, aucun retrait à la charge d'un cas. */
+const poser = (b: Pick<KeyBinding, 'id' | 'codes'> & Partial<KeyBinding>): void => {
+  KEYBINDINGS.unshift({ labelKey: 'key.camLeft', section: 'camera', when: () => true, run: () => {}, ...b } as KeyBinding);
+};
 
 /** Raccourcis du registre que cette touche (code + modificateurs tenus) désigne — la SONDE du juge. */
 const candidats = (code: string, tenus: KeyMod[]): string[] =>
-  KEYBINDINGS.filter((k) => k.codes.includes(code) && modsMatch(k.mods ?? [], tenus)).map((k) => k.id);
+  KEYBINDINGS.filter((k) => k.codes.includes(code) && modsMatch(k.mods ?? [], tenus, code)).map((k) => k.id);
 
 function Harness() {
   useGameKeyboard();
@@ -39,7 +52,9 @@ describe('raccourcis — les modificateurs font partie de la touche', () => {
   });
   let host: HTMLDivElement;
   let root: Root;
+  let registre: KeyBinding[];
   beforeEach(() => {
+    registre = [...KEYBINDINGS];
     vi.useFakeTimers();
     resetStageWalk();
     host = document.createElement('div');
@@ -58,6 +73,7 @@ describe('raccourcis — les modificateurs font partie de la touche', () => {
     act(() => root.render(<Harness />));
   });
   afterEach(() => {
+    KEYBINDINGS.splice(0, KEYBINDINGS.length, ...registre);
     act(() => root.unmount());
     host.remove();
     resetStageWalk();
@@ -177,5 +193,67 @@ describe('raccourcis — les modificateurs font partie de la touche', () => {
     frapper('keydown', 'Escape');
     expect(deselectionner).toHaveBeenCalledOnce();
     retirerTout();
+  });
+
+  it('une touche-MODIFICATEUR porte son raccourci : Alt enfoncée agit, Alt relâchée termine', () => {
+    const run = vi.fn();
+    const runUp = vi.fn();
+    poser({ id: 'test-alt-nu', codes: ['AltLeft', 'AltRight'], mods: [], run, runUp });
+    frapper('keydown', 'AltLeft', { altKey: true });
+    expect(run, 'l’appui d’Alt porte `altKey` : le raccourci d’Alt ne s’est jamais armé').toHaveBeenCalledOnce();
+    frapper('keyup', 'AltLeft', { altKey: false });
+    expect(runUp, 'Alt relâchée n’a pas terminé son geste').toHaveBeenCalledOnce();
+  });
+
+  it('un keyup d’une touche JAMAIS prise ne termine rien', () => {
+    const runUp = vi.fn();
+    poser({ id: 'test-jamais-pris', codes: ['KeyJ'], runUp });
+    frapper('keyup', 'KeyJ');
+    expect(runUp, 'le relâchement a joué sans appui').not.toHaveBeenCalled();
+  });
+
+  it('le geste MAINTENU se termine même si Alt est pressée PENDANT l’appui', () => {
+    const runUp = vi.fn();
+    poser({ id: 'test-maintenu-alt', codes: ['KeyJ'], runUp });
+    frapper('keydown', 'KeyJ');
+    frapper('keydown', 'AltLeft', { altKey: true }); // Alt vient par-dessus le maintien
+    frapper('keyup', 'KeyJ', { altKey: true });
+    expect(runUp, 'Alt pressée pendant le maintien laisse le geste courir sans fin').toHaveBeenCalledOnce();
+  });
+
+  it('le geste MAINTENU se termine même si son contexte (`when`) est retombé pendant l’appui', () => {
+    const runUp = vi.fn();
+    let actif = true;
+    poser({ id: 'test-when-retombe', codes: ['KeyJ'], when: () => actif, runUp });
+    frapper('keydown', 'KeyJ');
+    actif = false; // changement d'écran pendant que la touche est tenue
+    frapper('keyup', 'KeyJ');
+    expect(runUp, 'un `when` retombé laisse le geste courir jusqu’au blur').toHaveBeenCalledOnce();
+  });
+
+  it('le geste MAINTENU se termine même si un champ de saisie a pris le focus pendant l’appui', () => {
+    const runUp = vi.fn();
+    poser({ id: 'test-saisie-pendant', codes: ['KeyJ'], runUp });
+    const champ = document.createElement('input');
+    document.body.appendChild(champ);
+    try {
+      frapper('keydown', 'KeyJ');
+      champ.focus();
+      expect(document.activeElement).toBe(champ);
+      frapper('keyup', 'KeyJ');
+      expect(runUp, 'un clic dans un champ texte avale la fin du geste').toHaveBeenCalledOnce();
+    } finally {
+      champ.remove();
+    }
+  });
+
+  it('Maj tenue puis relâchée AVANT la touche : le geste se termine quand même', () => {
+    const run = vi.fn();
+    const runUp = vi.fn();
+    poser({ id: 'test-maj-fleche', codes: ['ArrowRight'], run, runUp });
+    frapper('keydown', 'ArrowRight', { shiftKey: true });
+    expect(run).toHaveBeenCalledOnce();
+    frapper('keyup', 'ArrowRight', { shiftKey: false });
+    expect(runUp).toHaveBeenCalledOnce();
   });
 });

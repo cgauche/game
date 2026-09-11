@@ -65,18 +65,44 @@ export function eventMods(e: { ctrlKey: boolean; metaKey: boolean; altKey: boole
   return out;
 }
 
+/** Modificateur qu'une touche porte ELLE-MÊME, par POSITION physique — le registre est 100 % `e.code`,
+ *  donc les deux positions de chaque modificateur sont nommées ici, une fois. Une touche N+1 de cette
+ *  nature (une `Meta`, un pédalier) coûte une ligne. */
+const MOD_DE_LA_TOUCHE: Record<string, KeyMod> = {
+  AltLeft: 'alt', AltRight: 'alt',
+  ControlLeft: 'ctrl', ControlRight: 'ctrl',
+  ShiftLeft: 'shift', ShiftRight: 'shift',
+};
+
+/** Le modificateur que CETTE touche porte elle-même (`AltLeft` → `alt`), ou `null` si c'en est une
+ *  ordinaire. */
+export function modsDeLaTouche(code: string): KeyMod | null {
+  return MOD_DE_LA_TOUCHE[code] ?? null;
+}
+
 /** La touche tenue est-elle celle qu'un raccourci déclare ? Deux régimes, selon `KeyMod` :
  *  • binding AVEC `mods` : correspondance EXACTE (`Ctrl+KeyZ` n'est pas `Ctrl+Maj+KeyZ` — ce sont
  *    deux touches différentes, qui peuvent porter deux raccourcis) ;
  *  • binding SANS `mods` (touche NUE) : la POSITION physique suffit, quelle que soit la COUCHE — Maj
  *    est donc toléré (sur AZERTY, `Digit1` ne produit « 1 » qu'avec Maj tenu : sans cette tolérance,
  *    les cases 1-8 de la grille de capacités seraient injouables), tandis que `ctrl` et `alt` tenus
- *    la refusent (Alt+D ne déclenche pas le pas d'exploration de D). AltGr est `ctrl`+`alt` : il
- *    reste donc refusé sur une touche nue — AltGr COMPOSE un caractère, il ne frappe pas un
- *    raccourci. */
-export function modsMatch(declares: readonly KeyMod[], tenus: readonly KeyMod[]): boolean {
-  if (declares.length > 0) return declares.length === tenus.length && declares.every((m) => tenus.includes(m));
-  return !tenus.includes('ctrl') && !tenus.includes('alt');
+ *    la refusent (Alt+D ne déclenche pas le pas d'exploration de D). AltGr vaut `ctrl`+`alt` : une
+ *    touche nue le refuse — AltGr COMPOSE un caractère, il ne frappe pas un raccourci. Sous Windows,
+ *    AltGr émet DEUX événements (`ControlLeft`, puis `AltRight` avec `ctrl` tenu) : côté `AltRight`
+ *    il reste `ctrl` dans les `restants`, donc refus ; côté `ControlLeft`, un binding NU sur ce code
+ *    répondrait — Ctrl est son propre modificateur, c'est la même loi que pour Alt. Aucun raccourci
+ *    du registre n'est sur `ControlLeft`, et `KeyBindingsPanel` refuse d'y remapper.
+ *
+ *  Le `code` de l'ÉVÉNEMENT entre dans le comparatif parce qu'une touche-modificateur EST son propre
+ *  modificateur : l'appui d'`AltLeft` porte `altKey` vrai, et le relâchement d'une touche pendant
+ *  qu'Alt est tenu porte `altKey` vrai aussi. Le modificateur de la touche frappée est donc retiré
+ *  des `tenus` — un raccourci `AltLeft` nu répond à son propre appui, tandis que `KeyA` nu sous Alt
+ *  reste refusé (même loi : `KeyA` ne porte aucun modificateur). */
+export function modsMatch(declares: readonly KeyMod[], tenus: readonly KeyMod[], code: string): boolean {
+  const propre = modsDeLaTouche(code);
+  const restants = propre === null ? tenus : tenus.filter((m) => m !== propre);
+  if (declares.length > 0) return declares.length === restants.length && declares.every((m) => restants.includes(m));
+  return !restants.includes('ctrl') && !restants.includes('alt');
 }
 
 export interface KeyBinding {

@@ -7,7 +7,7 @@
  * rendait TOUT le clavier muet pendant que la souris continuait de cibler.
  */
 import { describe, it, expect, vi } from 'vitest';
-import { KEYBINDINGS, formatCombo, type KeyBinding } from './keybindings';
+import { KEYBINDINGS, formatCombo, modsDeLaTouche, modsMatch, type KeyBinding } from './keybindings';
 import type { GameState } from './store';
 
 const binding = (id: string) => KEYBINDINGS.find((k) => k.id === id)!;
@@ -308,5 +308,35 @@ describe('raccourcis — Échap pendant l’interlude d’un AUTRE siège (coop)
   it('le siège qui NE tient PAS le ciblage garde le menu système : ni sortie, ni impasse', () => {
     const hits = escapes(table(0, 1));
     expect(hits, 'un siège sans sortie ET sans menu serait enfermé par l’interlude d’autrui').toEqual(['toggle-menu']);
+  });
+});
+
+describe('raccourcis — une touche-MODIFICATEUR est son propre modificateur', () => {
+  it('la table nomme les deux positions de chaque modificateur, et rien d’autre', () => {
+    expect(modsDeLaTouche('AltLeft')).toBe('alt');
+    expect(modsDeLaTouche('AltRight')).toBe('alt');
+    expect(modsDeLaTouche('ControlLeft')).toBe('ctrl');
+    expect(modsDeLaTouche('ControlRight')).toBe('ctrl');
+    expect(modsDeLaTouche('ShiftLeft')).toBe('shift');
+    expect(modsDeLaTouche('ShiftRight')).toBe('shift');
+    expect(modsDeLaTouche('KeyA'), 'une touche ordinaire ne porte aucun modificateur').toBeNull();
+  });
+
+  it('un raccourci NU sur Alt répond à son propre appui — et `KeyA` nu sous Alt reste refusé', () => {
+    // L'appui d'`AltLeft` porte `altKey` vrai : sans l'exclusion, aucun raccourci d'Alt ne serait
+    // jamais frappable.
+    expect(modsMatch([], ['alt'], 'AltLeft'), 'Alt nu s’est tu sur son propre appui').toBe(true);
+    expect(modsMatch([], ['alt'], 'AltRight')).toBe(true);
+    expect(modsMatch([], ['ctrl'], 'ControlLeft')).toBe(true);
+    expect(modsMatch([], ['alt'], 'KeyA'), 'Alt+A a déclenché le raccourci de A').toBe(false);
+    expect(modsMatch([], ['ctrl'], 'KeyA')).toBe(false);
+    // L'exclusion ne porte QUE le modificateur de la touche frappée : Ctrl+Alt (AltGr) reste refusé.
+    expect(modsMatch([], ['ctrl', 'alt'], 'AltLeft'), 'Ctrl tenu pendant l’appui d’Alt est passé').toBe(false);
+    // La couche Maj reste tolérée sur une touche nue, et exacte quand elle est déclarée.
+    expect(modsMatch([], ['shift'], 'Digit1')).toBe(true);
+    expect(modsMatch(['ctrl'], ['ctrl'], 'KeyZ')).toBe(true);
+    expect(modsMatch(['ctrl'], ['ctrl', 'shift'], 'KeyZ')).toBe(false);
+    // Un raccourci Ctrl+Alt DÉCLARÉ sur la touche Alt : son propre mod sort du comparatif.
+    expect(modsMatch(['ctrl'], ['ctrl', 'alt'], 'AltLeft')).toBe(true);
   });
 });

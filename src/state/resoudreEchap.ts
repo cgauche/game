@@ -52,7 +52,7 @@ export function resoudreEchap(get: () => GameState, { controlFocused = false, re
   const b = KEYBINDINGS.find(
     (k) =>
       effectiveCodes(k, s.keyOverrides).includes(CODE_ECHAP) &&
-      modsMatch(effectiveMods(k, s.keyOverrides), mods) &&
+      modsMatch(effectiveMods(k, s.keyOverrides), mods, CODE_ECHAP) &&
       (!k.notWhenControlFocused || !controlFocused) &&
       k.when(s),
   );
