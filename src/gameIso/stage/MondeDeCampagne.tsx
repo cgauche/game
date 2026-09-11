@@ -606,13 +606,14 @@ function CorpsDuMonde() {
   );
   // Les ARÊTES que le picking consulte AVANT le rayon, et que le peintre unique rend : UNE population,
   // dérivée ici (`state/aretes.ts`) et projetée là (`stage/aretesProjetees.ts`). Le CONTRÔLEUR est le
-  // même pour toutes les capacités — celui qui borde les seuils : le groupe hors combat, le héros actif
-  // quand c'est mon tour. `battle` reste `null` : la capacité `structure` garde son overlay et son
-  // geste jusqu'au lot 1b-4 (`SiegeHitAreas`), et une arête qui porterait les deux disparaîtrait par la
-  // priorité avant d'être servie.
+  // même pour les quatre capacités — celui qui borde les seuils et qui FRAPPE : le groupe hors combat,
+  // le héros actif quand c'est mon tour, personne sinon. Le COMBAT entre avec lui : une fortification
+  // d'arête n'est une cible que tant qu'un Combattant la tient (`state/combatSlice.ts` l'enrôle), et
+  // une arête qui porte un seuil ET une fortification sort en structure — `PRIORITE_ARETES` tranche, pas l'ordre
+  // de peinture.
   const aretes = useMemo(
-    () => (scene ? aretesUtilisables({ scene, visible, controleur: doorCtrls[0] ?? null, activeZ, battle: null, portails: portals }) : []),
-    [scene, visible, activeZ, portals, doorCtrls],
+    () => (scene ? aretesUtilisables({ scene, visible, controleur: doorCtrls[0] ?? null, activeZ, battle: combatBattle, portails: portals }) : []),
+    [scene, visible, activeZ, portals, doorCtrls, combatBattle],
   );
   const aretesEcran = projeterAretes(aretes, dimsVue, liftOf);
   // La réf ne se pose qu'au COMMIT, comme celle de la caméra : un rendu jeté avant commit publierait

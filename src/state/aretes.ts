@@ -15,22 +15,19 @@
  * `gameIso/stage/MondeDeCampagne.tsx`, cardinal ≤ 1). L'unité du porteur est le contrat : deux
  * capacités qui répondraient à deux mobiles différents offriraient deux gestes sur la même arête.
  *
- * Les divergences que ce module a HÉRITÉES des quatre overlays d'origine et qui vivent encore, la
- * capacité `structure` gardant son peintre et son geste jusqu'au lot 1b-4 :
+ * Les divergences que ce module a HÉRITÉES des quatre overlays d'origine et qui vivent encore :
  *  (a) INTERROGATION DU PORTEUR — les deux capacités de dénivelé ne lisent pas le même mobile de la
  *      même façon : l'escalade exige qu'il BORDE l'arête (`escalades`), la chute sonde ses quatre
- *      cardinaux (`chutes`) ;
- *  (b) ANCRAGE DE LA STRUCTURE — l'overlay de siège est monté sur le seul `battle`
- *      (`SurcoucheIso.tsx:168`), sans contrôleur en main : son geste est piloté par `cid`
- *      (`battleClickEntity`), jamais par une case, d'où un `ancrage` NULLABLE pour cette capacité
- *      seule ;
+ *      cardinaux (`chutes`) ; la structure, elle, ne l'interroge pas du tout — on pilonne à distance,
+ *      et le porteur n'y OUVRE que l'offre : pas de frappeur en main, pas de frappe offerte. Son
+ *      geste, lui, part de la case du MUR comme le clic de n'importe quel jeton ennemi ;
  *  (c) BROUILLARD — porte et structure/escalade ne bâtissent pas leur clé de visibilité de la même
  *      façon (`portal.from.z ?? portal.z` contre `w.z ?? 0`).
  *
  * LIFT — l'élévation d'écran ne se lit plus ici : les arêtes que le peintre unique rend et que le
  * picking résout sont projetées une seule fois par l'hôte, au lift MÉTRIQUE de la case d'ancrage
  * (`gameIso/stage/aretesProjetees.ts`). `AreteUtilisable.z` ne porte que l'INDEX de couche, qui sert à
- * la clé et au brouillard. `SiegeHitAreas` projette encore lui-même, à l'index (lot 1b-4).
+ * la clé et au brouillard.
  *
  * PORTES : la liste vient de `portalsForParty` (`roomPortals.ts`), CALCULÉE PAR L'HÔTE et passée en
  * `portails` — la recalculer ici exigerait `occupiedInteriorZoneIds`, qui vit dans
@@ -79,9 +76,12 @@ export interface AreteUtilisable {
   side: WallSide;
   z: number;
   capacite: CapaciteArete;
-  /** La case CÔTÉ CONTRÔLEUR, celle depuis laquelle le geste part : `from` du portail, case du mobile
-   *  pour l'escalade et la chute, case du frappeur pour une structure. `null` pour la seule structure
-   *  quand aucun contrôleur n'est en main — voir divergence (b) en tête de module. */
+  /** La case QUE LE GESTE VISE, et le pied de sa géométrie d'écran : `from` du portail, case du mobile
+   *  pour l'escalade et la chute, case du MUR pour une structure — celle de son Combattant
+   *  (`state/combatSlice.ts`, `c.pos = { x: w.x, y: w.y }`), d'où la prise se projette AU LIFT DU MUR
+   *  et le survol tombe sur le jeton visé. Aucun dériveur ne rend `null` : la forme reste nullable
+   *  parce que la projection et `caseOpposee` la traitent comme un état, et le banc
+   *  `gameIso/stage/aretesProjetees.test.ts` verrouille qu'aucune arête offerte n'y tombe. */
   ancrage: Pt | null;
   /** Largeur pleine du trait de prise, en pixels (`LARGEUR_PRISE_ARETE`). */
   largeurPrise: number;
@@ -221,11 +221,15 @@ function chutes(ctx: ContexteAretes): AreteUtilisable[] {
   return out;
 }
 
-/** STRUCTURE — `SiegeHitAreas.tsx` : arête `structure` debout de la couche active, ENRÔLÉE dans
- *  la file de combat (le Combattant tient la cible ; à la brèche il disparaît et l'arête avec). */
+/** STRUCTURE (AA 10 p.120) : arête `structure` debout de la couche active, ENRÔLÉE dans la file de
+ *  combat (le Combattant tient la cible ; à la brèche il disparaît et l'arête avec). Aucune garde
+ *  d'adjacence — on la pilonne à distance. Le FRAPPEUR n'ouvre que l'OFFRE (sans héros en main, hors
+ *  de mon tour, une enceinte ne se frappe pas) ; l'ANCRAGE est la case du MUR, celle du
+ *  Combattant-structure : le geste d'une structure EST le clic de son jeton, et l'étage d'arête ne lui
+ *  donne que la prise géométrique que le rayon ne rend pas (#1297). */
 function structures(ctx: ContexteAretes): AreteUtilisable[] {
   const { scene, battle, activeZ } = ctx;
-  if (!battle) return [];
+  if (!battle || !ctx.controleur) return [];
   const out: AreteUtilisable[] = [];
   for (const w of scene.walls ?? []) {
     if (!w.structure || (w.z ?? 0) !== activeZ || (w.side !== 'N' && w.side !== 'E')) continue;
@@ -240,7 +244,7 @@ function structures(ctx: ContexteAretes): AreteUtilisable[] {
       cle: cleArete(w.x, w.y, w.side, z),
       x: w.x, y: w.y, side: w.side, z,
       capacite: 'structure',
-      ancrage: ctx.controleur,
+      ancrage: { x: w.x, y: w.y, z },
       largeurPrise: LARGEUR_PRISE_ARETE.structure,
       libelle: sc.label,
       cid,

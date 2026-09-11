@@ -80,7 +80,6 @@ const BASELINES: Record<string, number> = {
   // cette couche — son find-par-id de cible part avec lui (le nouvel hôte, `stage/MoveOverlays`,
   // passe par `inBattleId`).
   'src/gameIso/stage/highlightLayer.tsx': 3,
-  'src/gameIso/stage/SiegeHitAreas.tsx': 1,
   'src/gameIso/stage/useHoverTargeting.ts': 5,
   'src/gameIso/stage/useStageCamera.ts': 8,
   // -1 (2 → 1) : la chaîne de picking descend en `stage/pickResolve.ts`, dont la branche `combatant`

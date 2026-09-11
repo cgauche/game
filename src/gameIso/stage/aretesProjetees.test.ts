@@ -9,10 +9,9 @@ import { projeterAretes } from './aretesProjetees';
 
 /**
  * CE QUE LA PROJECTION REFUSE (#1687, lot 1b-2) — `projeterAretes` écarte en silence l'arête qu'elle
- * ne sait pas poser (pas d'ancrage, côté non cardinal). Ce banc dit QUI tombe là : la structure sans
- * contrôleur en main, et personne d'autre. Une arête utilisable que la projection refuserait pour une
- * autre raison serait un seuil peint sans pixel qui l'atteigne — c'est ici que ça rougit, et non dans
- * un journal de dev.
+ * ne sait pas poser (pas d'ancrage, côté non cardinal). Ce banc dit QUI tombe là : PERSONNE. Une arête
+ * utilisable que la projection refuserait serait un geste offert sans pixel qui l'atteigne — c'est ici
+ * que ça rougit, et non dans un journal de dev.
  */
 
 const dims: Dims = { w: 5, h: 4, rot: 0, view: 'iso' };
@@ -66,8 +65,8 @@ const contexte = (controleur: ContexteAretes['controleur']): ContexteAretes => (
 });
 
 /** Les arêtes des trois postures de contrôleur qui font parler les quatre dériveurs : au pied de la
- *  paroi (escalade + porte + structure), sur la case haute (chutes), et sans contrôleur (la structure
- *  seule, sans ancrage). */
+ *  paroi (escalade + porte + structure), sur la case haute (chutes), et sans contrôleur (aucune offre
+ *  — hors de mon tour, rien ne se joue). */
 const parPosture = (): { posture: string; aretes: AreteUtilisable[] }[] => [
   { posture: 'au pied de la paroi', aretes: aretesUtilisables(contexte({ x: 1, y: 1, z: 0 })) },
   { posture: 'sur la case haute', aretes: aretesUtilisables(contexte({ x: 2, y: 1, z: 0 })) },
@@ -87,11 +86,11 @@ describe('projeterAretes — ce que la projection écarte, et rien d’autre', (
     expect(diagonales).toEqual([]);
   });
 
-  it('la SEULE arête écartée est la structure sans contrôleur en main', () => {
+  it('AUCUNE arête offerte n’est écartée : tout ce que le dériveur rend est atteignable au pixel', () => {
     const ecartees = parPosture().flatMap(({ posture, aretes }) => {
       const projetees = new Set(projeterAretes(aretes, dims, () => 0).map((p) => p.arete));
       return aretes.filter((a) => !projetees.has(a)).map((a) => `${posture} : ${a.capacite} (ancrage ${a.ancrage ? 'posé' : 'nul'})`);
     });
-    expect(ecartees).toEqual(['sans contrôleur : structure (ancrage nul)']);
+    expect(ecartees).toEqual([]);
   });
 });

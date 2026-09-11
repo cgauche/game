@@ -7,7 +7,7 @@ import { aretesUtilisables, libellePortail, LARGEUR_PRISE_ARETE, PRIORITE_ARETES
 
 /**
  * PARITÉ DÉRIVEUR ⇄ PEINTRE (#1687, lot 1b-1) — chaque banc reprend la scène du banc de rendu
- * correspondant (`escalade-et-chute-par-l-arete.test.tsx`, `SiegeHitAreas.test.tsx`,
+ * correspondant (`escalade-et-chute-par-l-arete.test.tsx`, `structure-par-l-arete.test.tsx`,
  * `AreteOverlay.test.tsx` : leurs fabriques sont locales, elles sont donc reconstruites ici à
  * l'identique) et exige du dériveur la MÊME sélection, sans aucune géométrie d'écran : aucun rendu
  * dans ce fichier.
@@ -37,7 +37,7 @@ function scèneDeFalaise(): Scene {
   return s;
 }
 
-/** `SiegeHitAreas.test.tsx` : une fortification d'arête en (1,1,E). */
+/** `structure-par-l-arete.test.tsx` : une fortification d'arête en (1,1,E). */
 function scèneFortifiée(): Scene {
   const s = emptyScene(5, 4);
   s.walls = [{ x: 1, y: 1, side: 'E', structure: 'mur-a-ossature-en-bois' }];
@@ -130,7 +130,7 @@ describe('aretesUtilisables — le dériveur d’arêtes rend ce que les overlay
     });
   });
 
-  it('STRUCTURE : l’arête fortifiée ENRÔLÉE en combat, nommée par son Combattant', () => {
+  it('STRUCTURE : l’arête fortifiée ENRÔLÉE en combat, nommée par son Combattant et ancrée sur la case du MUR', () => {
     const aretes = aretesUtilisables({
       scene: scèneFortifiée(),
       visible: VU_11,
@@ -143,17 +143,23 @@ describe('aretesUtilisables — le dériveur d’arêtes rend ce que les overlay
       cle: '1,1,E,0',
       x: 1, y: 1, side: 'E', z: 0,
       capacite: 'structure',
-      ancrage: { x: 0, y: 1, z: 0 },
+      // La case du mur (`Combatant.pos` de la Structure), jamais celle du frappeur en (0,1) : le geste
+      // est le clic du jeton, et la prise se projette au lift du mur.
+      ancrage: { x: 1, y: 1, z: 0 },
       largeurPrise: 16,
       libelle: 'Mur à ossature en bois',
       cid: ID_MUR,
     }]);
   });
 
-  it('STRUCTURE : aucune arête pour une fortification qu’aucun Combattant ne tient, ni hors combat', () => {
+  it('STRUCTURE : aucune arête sans Combattant qui la tienne, hors combat, ou hors de mon tour', () => {
     const ctx = { scene: scèneFortifiée(), visible: VU_11, controleur: { x: 0, y: 1, z: 0 }, activeZ: 0 };
     expect(aretesUtilisables({ ...ctx, battle: bataille([]) })).toEqual([]);
     expect(aretesUtilisables(ctx), 'hors combat, la structure n’est pas une cible').toEqual([]);
+    expect(
+      aretesUtilisables({ ...ctx, controleur: null, battle: bataille([mur]) }),
+      'sans héros en main (hors de mon tour), une enceinte ne se frappe pas',
+    ).toEqual([]);
   });
 
   it('PORTE : l’accès de la couche active, ancré sur la case de départ', () => {

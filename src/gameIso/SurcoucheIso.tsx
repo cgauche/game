@@ -25,7 +25,6 @@ import { wallTraitObjs } from './stage/layers';
 import { gridLines } from '../geometry/grid';
 import { type TintAt } from './backends/webgl/sceneMeshes';
 import { AreteOverlay } from './stage/AreteOverlay';
-import { SiegeHitAreas } from './stage/SiegeHitAreas';
 import { EnemyMoveTelegraph, EnemyAimTelegraph, EnemyAoeTelegraph } from './stage/Telegraphs';
 import { ZdeTemplate } from './stage/ZdeTemplate';
 import { CursorOverlay, HoverMovePreview, ExplorePathPreview, TapPreview } from './stage/MoveOverlays';
@@ -165,7 +164,6 @@ export function SurcoucheIso({
           onFocusArete={survolerArete}
           onBlurArete={() => survolerArete(null)}
         />
-        {battle && <SiegeHitAreas scene={scene} battle={battle} dims={dims} activeZ={activeZ} visible={visible} />}
         <EnemyMoveTelegraph actorMove={actorMove} dims={dims} footN={activeMoveN} lift={liftOf} />
         <EnemyAimTelegraph targeting={targeting} anchor={reticleAnchor} />
         <Flies scene={scene} dims={dims} />

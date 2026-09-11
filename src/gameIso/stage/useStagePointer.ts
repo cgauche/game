@@ -47,7 +47,7 @@ import { STEP_MS } from '../../geometry/walk';
 import { poseFromDims } from './projection';
 import { targetUnderPointer } from './spritePicker';
 import { pointStageSousPixel, pointViewBoxSousPixel, resoudrePixel, tireLeRayon, type Verdict } from './pickResolve';
-import { entiteDuGeste, jouerArete, type VerbesArete } from './geste';
+import { armeParSurvol, entiteDuGeste, jouerArete, type VerbesArete } from './geste';
 import { estUtilisable } from '../../state/usable';
 import type { RoomPortal } from '../../state/roomPortals';
 import type { AreteUtilisable } from '../../state/aretes';
@@ -62,7 +62,8 @@ export interface StagePointer {
    *  du peintre et de l'armement du geste. */
   areteSurvolee: AreteUtilisable | null;
   /** LE geste d'une arête — celui que le verdict de pixel déclenche ET celui que le clavier du peintre
-   *  appelle (`stage/AreteOverlay.tsx`), la MÊME fonction, jamais deux chemins d'activation. */
+   *  appelle (`stage/AreteOverlay.tsx`), la MÊME fonction, jamais deux chemins d'activation. Le clic
+   *  qui l'atteint est CONSOMMÉ (`stage/geste.ts`). */
   activerArete: (arete: AreteUtilisable) => void;
   /** SURVOL d'une arête par le clavier (focus du peintre), `null` au blur. Il pose le MÊME état que le
    *  survol au pointeur (`areteSurvolee`) : sans lui, une arête atteinte au Tab n'a aucun rendu, et sur
@@ -269,15 +270,28 @@ export function useStagePointer({
     franchir: activatePortal,
     grimper: (de, vers) => { useGame.getState().climbAcross(de, vers); bus.emit(EVT.SCENE_DIRTY); },
     sauter: (de, vers) => { useGame.getState().fallAcross(de, vers); bus.emit(EVT.SCENE_DIRTY); },
+    // FRAPPER une structure : le MUR est un Combattant (`state/combatSlice.ts`, `cid`), son geste est
+    // donc EXACTEMENT celui d'un jeton ennemi sous le rayon (`performClick` ci-dessous) — MÊME porte
+    // partagée (`state/combatOrParty.ts:combatantClickActs`, source unique des 3 surfaces) et même
+    // retombée : quand la porte refuse (Inspection ON), la structure s'INSPECTE comme un jeton.
+    // L'aperçu et le commit sont ceux du flux de combat (`state/targetingModes.ts`, `samePreview`),
+    // celui que lit déjà le réticule de visée.
+    frapper: (cid) => {
+      const st = useGame.getState();
+      if (combatantClickActs(useGame.getState, { id: cid })) st.battleClickEntity(cid, { confirm: hoverClickCommits() });
+      else if (st.inspectEnabled) st.setInspectId(cid);
+    },
   };
 
   /** LE geste d'une arête. Un seul chemin, deux déclencheurs : le VERDICT de pixel (`performClick`) et
    *  la touche Entrée/Espace du peintre (`stage/AreteOverlay.tsx`) ; la capacité est servie par LA
-   *  table (`stage/geste.ts:jouerArete`), jamais par un `if` recopié ici. Le RÉGIME du geste est celui
-   *  de tout le stage (`hoverClickCommits`) : sur un appareil qui survole, un clic COMMET ; sans
-   *  survol, le premier tap ARME l'arête (elle prend l'accent) et le second la joue. */
-  const activerArete = (arete: AreteUtilisable) => {
-    if (!hoverClickCommits() && areteSurvolee?.cle !== arete.cle) {
+   *  table (`stage/geste.ts:jouerArete`), jamais par un `if` recopié ici, et le RÉGIME d'armement est
+   *  une colonne de cette même table (`armeParSurvol`) : porte, escalade et chute suivent le régime du
+   *  stage (`hoverClickCommits` — là où l'on survole un clic COMMET ; sans survol le 1er tap ARME
+   *  l'arête, qui prend l'accent, et le 2e la joue) ; la structure n'arme rien ici, elle passe la main
+   *  au flux de combat, qui porte le même régime pour tout jeton. */
+  const activerArete = (arete: AreteUtilisable): void => {
+    if (armeParSurvol(arete.capacite) && !hoverClickCommits() && areteSurvolee?.cle !== arete.cle) {
       setAreteSurvolee(arete);
       return;
     }
@@ -296,11 +310,10 @@ export function useStagePointer({
     const sc = st.scene;
     const t = v ? tuileDe(v) : null;
     if (!sc || st.dialogue || !v || !t) return;
-    // ARÊTE : elle a déjà tranché en tête de chaîne, son geste prime sur la case qu'elle borde.
-    if (v.nature === 'arete') {
-      activerArete(v.arete);
-      return;
-    }
+    // ARÊTE : elle a déjà tranché en tête de chaîne, son geste prime sur la case qu'elle borde et
+    // consomme le clic — rien ne redescend au clic-sol, qui écraserait l'aperçu qu'une frappe vient de
+    // poser (`combatSlice.battleClickTile` réécrit `preview` à chaque sortie de déplacement).
+    if (v.nature === 'arete') { activerArete(v.arete); return; }
     const { x, y } = t;
     const tz = t.z ?? 0;
     if (st.mode === 'battle') {
@@ -511,8 +524,11 @@ export function useStagePointer({
     // peintre, l'aperçu de marche et le tap-1 tactile en descendent tous.
     survolerArete(v.nature === 'arete' ? v.arete : null);
     const eSurvolée = sc && t ? entiteDuGeste(sc, v, t) : undefined;
-    const overInteractive = v.nature === 'arete'
-      || (!!sc && !!eSurvolée && useGame.getState().mode === 'exploration' && estUtilisable(sc, eSurvolée));
+    // Le stage n'écrit le curseur que pour ce qu'il résout LUI-MÊME — le décor utilisable en
+    // exploration. Une ARÊTE porte le sien sur son propre trait, par capacité
+    // (`stage/AreteOverlay.tsx:Matiere.cursor` : réticule sur une structure, main sur un seuil), comme
+    // un jeton de combat survolé, pour lequel cette ligne n'écrit rien non plus.
+    const overInteractive = !!sc && !!eSurvolée && useGame.getState().mode === 'exploration' && estUtilisable(sc, eSurvolée);
     (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
     // Survol suivi en COMBAT (visée) ET en EXPLORATION (halo renforcé du décor interactif + aperçu de
     // déplacement) — borné aux changements de tuile, donc peu de re-rendus.

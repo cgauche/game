@@ -42,8 +42,8 @@ const estCardinale = (side: WallSide): side is EdgeSide & WallSide => side === '
 /**
  * Les arêtes du contexte, posées à l'écran. `lift` est l'ÉLÉVATION d'affichage de la case d'où le
  * geste part — la fonction que l'hôte passe déjà au peintre (`SurcoucheIso.liftOf`), pas une seconde
- * hauteur bâtie ici. Une arête sans ancrage n'est pas projetée : sa case de départ est ce que le lift
- * lit (les structures sans contrôleur en main entrent au lot 1b-4).
+ * hauteur bâtie ici. Pour une structure, cet ancrage est la case du MUR : la prise se pose au lift du
+ * mur, là où le joueur le voit.
  */
 export function projeterAretes(
   aretes: readonly AreteUtilisable[],
@@ -51,12 +51,11 @@ export function projeterAretes(
   lift: (p: Pt) => number,
 ): readonly AreteProjetee[] {
   return memo(aretes, [dims, lift], () => aretes.flatMap((arete) => {
-    // CE QUE CE REFUS COUVRE, et pourquoi il est muet : une seule forme le déclenche aujourd'hui —
-    // la structure sans contrôleur en main, dont l'ancrage est `null` par contrat (divergence (b) de
-    // `state/aretes.ts`) et qui n'entre au picking qu'au lot 1b-4. Ce n'est donc pas une anomalie de
-    // donnée à signaler, c'est un état nommé du dériveur : `aretesProjetees.test.ts` verrouille qu'AUCUNE
-    // autre arête ne tombe ici (pas de diagonale, pas d'ancrage manquant ailleurs). Le jour où une
-    // capacité y tombe pour une autre raison, c'est le banc qui rougit, pas un journal que nul ne lit.
+    // CE QUE CE REFUS COUVRE, et pourquoi il est muet : AUCUNE arête offerte aujourd'hui — les quatre
+    // dériveurs posent tous leur ancrage et ne rendent que des côtés cardinaux. Il garde la FORME du
+    // type (`ancrage: Pt | null`, `WallSide` diagonal) contre une capacité N+1 qui l'oublierait, et
+    // c'est `aretesProjetees.test.ts` qui mesure sa population : elle doit rester VIDE. Le jour où une
+    // arête y tombe, c'est le banc qui rougit, pas un journal que nul ne lit.
     if (!arete.ancrage || !estCardinale(arete.side)) return [];
     const [a, b] = tileEdge(arete.x, arete.y, arete.side, dims, lift(arete.ancrage));
     return [{ arete, a, b }];

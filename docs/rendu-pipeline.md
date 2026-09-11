@@ -111,7 +111,7 @@ La vérité de VUE (estompe d'occlusion, révélation, assombrissement d'un éta
 | `src/gameIso/fx/` | 5 | 0 | effets de combat — hors périmètre de la garde anti-couleur (couleur d’intention, pas d’identité de matériau) |
 | `src/gameIso/pov/` | 3 | 0 | première personne : caméra, brume, boîtes de billboard, voiles d’écran |
 | `src/gameIso/rig/` | 20 | 25 | art des sujets (bestiaire, équipement, véhicules) — hors périmètre de la garde anti-couleur |
-| `src/gameIso/stage/` | 50 | 0 | hôtes de montage : le monde et ses surcouches React, le plan de station, le tri des objets |
+| `src/gameIso/stage/` | 49 | 0 | hôtes de montage : le monde et ses surcouches React, le plan de station, le tri des objets |
 
 ## 4. Détail de surface — la recette (`src/gameIso/detail/types.ts:19`)
 
@@ -174,4 +174,4 @@ relancer, comparer : une migration donnée-neutre doit rester identique.
 - **un TYPE d'élément** (au-delà des 5 membres de `SceneEl`) : ajouter le variant au pivot,
   son builder, sa cuisson dans le monde volumique, et — s'il doit se voir à l'authoring — son peintre
   SVG avec sa profondeur de tri.
-<!-- sources-empreinte: 57e458a77d5eaf5c0dcdf9177ca40df9baac7a8e (23 fichiers, 10 dossiers) corps: b5271e39cd16ad105bf9d740ba47a9de4beeed72 -->
+<!-- sources-empreinte: d62181e1475002aac84df9962c0dca1b001395a7 (23 fichiers, 10 dossiers) corps: d83b7cb8fce02e3700ae680862e9be0d4b6eb5bd -->

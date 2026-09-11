@@ -1,7 +1,7 @@
 /**
  * ARÊTES UTILISABLES — LE peintre des gestes portés par une arête de scène : franchir un seuil,
- * grimper, sauter en bas. UN composant, une TABLE de matière par capacité (`MATIERE`) : une capacité
- * de plus est une entrée de plus, jamais un overlay de plus.
+ * grimper, sauter en bas, frapper une fortification. UN composant, une TABLE de matière par capacité
+ * (`MATIERE`) : une capacité de plus est une entrée de plus, jamais un overlay de plus.
  *
  * Ce peintre ne porte AUCUN handler de pointeur : l'arête est un étage de la chaîne de picking
  * (`stage/pickResolve.ts:areteSousLePixel`, consulté avant le rayon), et le survol comme le clic lui
@@ -17,9 +17,7 @@
  * partagée (lot 3).
  *
  * Sa population EST celle du dériveur (`state/aretes.ts:aretesUtilisables`) : il ne refiltre ni la
- * couche active ni le brouillard, sinon peintre et chaîne offriraient deux gestes différents. La
- * capacité `structure` n'a pas d'entrée de matière : elle est peinte et servie par `SiegeHitAreas`
- * (#1687, lot 1b-4), et le contexte que l'hôte dérive l'exclut (`battle: null`).
+ * couche active ni le brouillard, sinon peintre et chaîne offriraient deux gestes différents.
  */
 import type { ReactNode } from 'react';
 import type { AreteUtilisable, CapaciteArete } from '../../state/aretes';
@@ -32,16 +30,21 @@ interface Segment {
   b: PointEcran;
 }
 
-/** Ce qu'une capacité peint SUR son segment : les classes de son groupe et ses marques. Le trait de
- *  PRISE (transparent, a11y) est commun aux trois et vit hors de la table. */
+/** Ce qu'une capacité peint SUR son segment : les classes de son groupe, ses marques et le CURSEUR de
+ *  sa prise. Le trait de PRISE (transparent, a11y) est commun aux quatre et vit hors de la table. */
 interface Matiere {
   classes: (arete: AreteUtilisable, accentuee: boolean) => string;
   marques: (arete: AreteUtilisable, seg: Segment, accentuee: boolean) => ReactNode;
+  /** Curseur porté par le trait de prise : ce que le geste ANNONCE. Une cible de combat prend le
+   *  réticule (`crosshair`), un geste de déplacement la main (`pointer`). Il vit ICI, avec la matière,
+   *  parce qu'il dépend de la capacité : le stage, lui, ne connaît que la nature du verdict. */
+  cursor: string;
 }
 
 /** Trait de DÉNIVELÉ (escalade, chute) : le même pointillé sobre pour les deux gestes, à l'encre
  *  `--iso-climb`, sur toute l'arête ; l'armement (survol, focus, tap-1) le rend franc. */
 const denivele: Matiere = {
+  cursor: 'pointer',
   classes: (arete) => `arete-denivele arete-${arete.capacite}`,
   marques: (arete, { a, b }, accentuee) => (
     <line
@@ -60,6 +63,7 @@ const denivele: Matiere = {
 /** SEUIL de pièce (passage, porte, sortie) : marqueur au MILIEU de l'arête — jamais un trait pleine
  *  arête —, symbole propre au battant fermé et à la sortie, accent local au survol. */
 const seuil: Matiere = {
+  cursor: 'pointer',
   classes: (arete, accentuee) => {
     const portal = arete.portail;
     if (!portal) return '';
@@ -142,13 +146,24 @@ const seuil: Matiere = {
   },
 };
 
+/** STRUCTURE de siège (AA 10 p.120) : le mur PORTE déjà son trait (`stage/layers.ts:wallTraitObjs`) et
+ *  sa visée son réticule (`stage/AimOverlay.tsx`) — la capacité n'ajoute donc AUCUNE marque, elle ne
+ *  met qu'une prise sur l'arête. Sa classe la nomme, comme les autres, et son curseur dit ce qu'elle
+ *  est : une cible de combat. */
+const fortification: Matiere = {
+  cursor: 'crosshair',
+  classes: (arete) => `arete-${arete.capacite}`,
+  marques: () => null,
+};
+
 /** LA table : une capacité, une matière. Les deux gestes de DÉNIVELÉ partagent la leur — même trait,
  *  même encre, même largeur (verdict de design du 2026-09-10) ; ce qui les distingue est leur SOURCE
  *  (deux dériveurs) et leur libellé, tous deux déjà tranchés en amont. */
-const MATIERE: Readonly<Partial<Record<CapaciteArete, Matiere>>> = {
+const MATIERE: Readonly<Record<CapaciteArete, Matiere>> = {
   porte: seuil,
   escalade: denivele,
   chute: denivele,
+  structure: fortification,
 };
 
 interface AreteOverlayProps {
@@ -171,7 +186,6 @@ export function AreteOverlay({ aretes, areteSurvolee, activerArete, onFocusArete
     <>
       {aretes.map(({ arete, a, b }) => {
         const matiere = MATIERE[arete.capacite];
-        if (!matiere) return null;
         const accentuee = arete.cle === areteSurvolee;
         return (
           <g key={arete.cle} className={matiere.classes(arete, accentuee)}>
@@ -179,9 +193,12 @@ export function AreteOverlay({ aretes, areteSurvolee, activerArete, onFocusArete
             {/* L'ARÊTE elle-même : un trait de PRISE sans aucun handler — la chaîne répond pour elle,
                 à la MÊME largeur de prise. Il reste hit-testable pour la seule chose que la chaîne ne
                 rend pas, l'infobulle native de son `<title>` ; l'événement qui s'y pose bulle jusqu'au
-                handler racine. C'est aussi un bouton ATTEIGNABLE au clavier. */}
+                handler racine. C'est aussi un bouton ATTEIGNABLE au clavier. Il porte enfin le `cid`
+                de l'arête quand elle en a un (structure) : le nœud `[data-cid]` que la recette mesure
+                (`state/devtools.ts:screenPos`) et la voie AFFINE de `stage/spritePicker.ts` lisent. */}
             <line
               data-arete-cible={arete.capacite}
+              data-cid={arete.cid}
               x1={a.cx}
               y1={a.cy}
               x2={b.cx}
@@ -193,7 +210,7 @@ export function AreteOverlay({ aretes, areteSurvolee, activerArete, onFocusArete
               tabIndex={0}
               role="button"
               aria-label={arete.libelle}
-              style={{ outline: 'none' }}
+              style={{ outline: 'none', cursor: matiere.cursor }}
               onFocus={() => onFocusArete(arete)}
               onBlur={() => onBlurArete()}
               onKeyDown={(event) => {
