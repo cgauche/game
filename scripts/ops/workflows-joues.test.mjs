@@ -8,29 +8,21 @@
 //
 // `workflows.test.mjs` juge leur FORME (sans les exécuter) ; ce fichier-ci juge leur COMPORTEMENT.
 //
-// Ce qui s'y joue : la porte de solde accepte-t-elle le texte de `revue-palier`
-// (`validateRevuePalier`), s'en déduit-il un nom d'archive (`nomDArchiveDeRevue`), un rejeu de BANC
-// se dit-il comme tel, chaque lentille ne reçoit-elle QUE les faits de son angle (le COÛT), et
-// `juge-design-socle` laisse-t-il passer un brief qui porte SIX invariants (deux runs réels arrêtés
-// à tort : wf_2595703f-917, wf_cd16b62d-d3b).
+// Ce qui s'y joue : `juge-design-socle` laisse-t-il passer un brief qui porte SIX invariants (deux
+// runs réels arrêtés à tort : wf_2595703f-917, wf_cd16b62d-d3b), un réfutateur par lentille et
+// CROISÉ, et ce qui survit quand un réfutateur ne rend rien.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateRevuePalier } from '../hooks/solde-ticket-guard.mjs';
-import { fenetreDeRevue, nomDArchiveDeRevue } from '../guards/lib/revuePalier.mjs';
 
 const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 const DOSSIER = join(RACINE, '.claude', 'workflows');
 const DATE = '2026-09-04';
-const BASE = 'f0f9436f5';
-const TETE = 'c5b9087dc';
-const MARQUEUR_REVUE = 'MARQUEUR-DE-LA-REVUE-PRECEDENTE';
 // Chemins de FIXTURE : les scripts ne les OUVRENT pas, ils les recopient dans leurs prompts. Ils
 // s'écrivent sans lettre de lecteur — une fixture ne nomme aucune machine
 // (`src/portable-paths-guard.test.ts`).
-const FAITS_CHEMIN = '/faits-de-palier/faits.json';
 const ARBRE = '/arbre-jete';
 const SONDES = '/sondes-jetees';
 const BRIEF = '/briefs/brief-L3-socle.md';
@@ -77,175 +69,6 @@ async function jouer(nomDuScript, argsDuRun, repondre) {
   const rendu = await fabrique(agent, parallel, pipeline, () => {}, (m) => journal.push(m), argsDuRun, undefined);
   return { rendu, promptsParLabel, journal };
 }
-
-// ── `revue-palier.js` ────────────────────────────────────────────────────────────────────────────
-
-const faits = (chainage) => ({
-  base: BASE,
-  tete: TETE,
-  depuis: '2026-09-04',
-  chainage,
-  faitsChemin: FAITS_CHEMIN,
-  commits: [{ sha: 'aaa111', sujet: 'feat: un lot', corps: 'feat: un lot\n\nCLIQUET: scripts/x.test.mjs +1 — raison assez longue pour compter', substance: true }],
-  fermetures: [{ numero: '1679', sha: 'aaa111', sujet: 'feat: un lot', solde: true }],
-  stocks: { disponible: true, valeur: { refus: [], notes: [], commits: 1 } },
-  fermeturesHorsCommit: { disponible: false, raison: 'hors ligne' },
-  auditStock: { disponible: false, raison: 'hors ligne' },
-  derogations: { disponible: true, valeur: { dansLaFenetre: [], horsFenetre: 6, illisibles: 0 } },
-  coursesCi: { disponible: false, raison: 'hors ligne' },
-  revuePrecedente: { chemin: '.claude/soldes/revue-palier-2026-09-04-2c11fdd9a.md', disponible: true, valeur: `# Revue précédente ${MARQUEUR_REVUE}` },
-  provenance: { commits: 'script' },
-});
-
-/** `trouvaillesDe(label)` décide ce que rend chaque lentille ; le réfutateur confirme tout ce qu'il reçoit. */
-const jouerRevue = ({ mode = 'palier', chainage = 'vérifié', dod = [], trouvaillesDe = null, refutationDe = null } = {}) => jouer(
-  'revue-palier.js',
-  { worktree: ARBRE, scratchpad: SONDES, base: BASE, tete: TETE, date: DATE, mode, dod, faits: faits(chainage) },
-  (prompt, opts) => {
-    if (opts.phase === 'Lentilles') {
-      if (trouvaillesDe) return { trouvailles: trouvaillesDe(opts.label), tenues: [] };
-      return opts.label === 'fermetures-soldes'
-        ? { trouvailles: [{ titre: 'Un solde qui ne répond pas', preuve: `vu de ${BASE} à ${TETE}`, attendu: 'le solde répond au DoD' }], tenues: ['le reste tient'] }
-        : { trouvailles: [], tenues: [`${opts.label} : rien à dire`] };
-    }
-    // Un réfutateur juge un LOT : il rend UN verdict par trouvaille reçue, apparié par le titre.
-    const recues = JSON.parse(prompt.slice(prompt.indexOf('TROUVAILLES : ') + 14, prompt.indexOf('\n\nArbre jugé')));
-    if (refutationDe) return refutationDe(opts.label, recues);
-    return { verdicts: recues.map((t) => ({ titre: t.titre, confirmee: true, bloquante: false, preuve: 'confirmé sur pièces' })) };
-  },
-);
-
-test('revue-palier, mode palier : le texte PASSE la porte de solde et se NOMME lui-même', async () => {
-  const { rendu } = await jouerRevue();
-  assert.equal(rendu.verdict, 'PARTIEL');
-  assert.equal(rendu.banc, false);
-  assert.equal(rendu.texte.split('\n')[0], `# Revue de palier — fenêtre ${BASE}..${TETE} — ${DATE}`);
-  const porte = validateRevuePalier(rendu.texte, DATE);
-  assert.deepEqual(porte.problems, []);
-  assert.equal(porte.ok, true);
-  assert.equal(nomDArchiveDeRevue(rendu.texte), `revue-palier-${DATE}-${BASE}-${TETE}.md`);
-  assert.deepEqual(fenetreDeRevue(rendu.texte), { date: DATE, base: BASE, tete: TETE });
-});
-
-test('revue-palier : UNE seule plage `sha..sha` dans tout le texte — les preuves écrivent « de X à Y »', async () => {
-  const { rendu } = await jouerRevue();
-  const plages = rendu.texte.match(/[0-9a-f]{7,40}\.\.[0-9a-f]{7,40}/g) ?? [];
-  assert.equal(plages.length, 1, `plages trouvées : ${plages.join(', ')}`);
-  assert.match(rendu.texte, /de f0f9436f5 à c5b9087dc/);
-});
-
-test('revue-palier, BANC : un rejeu sans chaînage se DIT dans le texte, et reste lisible par la porte', async () => {
-  const { rendu } = await jouerRevue({ chainage: "ignoré (--sans-chainage, banc) — base attendue par l'histoire : f0f9436f5, base jouée : 2c11fdd9a" });
-  assert.equal(rendu.banc, true);
-  assert.equal(rendu.texte.split('\n')[0], `# BANC — revue de palier REJOUÉE sur la fenêtre ${BASE}..${TETE} — ${DATE}`);
-  assert.match(rendu.texte, /^banc: chaînage ignoré \(--sans-chainage\) — fenêtre déjà jugée par \.claude\/soldes\/revue-palier-2026-09-04-2c11fdd9a\.md ; ce texte est une MESURE, il ne s’archive pas\.$/m);
-  assert.equal(validateRevuePalier(rendu.texte, DATE).ok, true);
-});
-
-test('revue-palier, mode refutation : aucun texte de solde n’est fabriqué', async () => {
-  const { rendu } = await jouerRevue({ mode: 'refutation', dod: ['la clause une', 'la clause deux'] });
-  assert.equal(rendu.texte, null);
-  assert.equal(rendu.mode, 'refutation');
-  // 2 clauses de DoD + fermetures + hotfixes + dérogations = 5 lentilles, aucune trouvaille ici.
-  assert.deepEqual(rendu.agents, { lentilles: 5, refutation: 0, total: 5 });
-});
-
-test('revue-palier : UN réfutateur PAR LENTILLE, pas par trouvaille', async () => {
-  const { rendu, promptsParLabel } = await jouerRevue({
-    trouvaillesDe: (label) => (['fermetures-soldes', 'cross-os'].includes(label)
-      ? [1, 2, 3].map((n) => ({ titre: `${label} — trouvaille ${n}`, preuve: 'p', attendu: 'a' }))
-      : []),
-  });
-  assert.deepEqual(rendu.agents, { lentilles: 8, refutation: 2, total: 10 });
-  assert.deepEqual(
-    [...promptsParLabel.keys()].filter((c) => c.startsWith('Réfutation:')).sort(),
-    ['Réfutation:refutation:cross-os', 'Réfutation:refutation:fermetures-soldes'],
-  );
-  assert.equal(rendu.trouvailles.length, 6, '6 trouvailles jugées par 2 agents');
-});
-
-test('revue-palier : au-delà de 12 trouvailles, une lentille en garde 12 jugées et 3 NON RÉFUTÉES, dites', async () => {
-  const { rendu, journal } = await jouerRevue({
-    trouvaillesDe: (label) => (label === 'poison-des-diffs'
-      ? Array.from({ length: 15 }, (_, i) => ({ titre: `poison ${i + 1}`, preuve: 'p', attendu: 'a' }))
-      : []),
-  });
-  assert.deepEqual(rendu.agents, { lentilles: 8, refutation: 1, total: 9 }, 'UN seul réfutateur pour 15 trouvailles');
-  assert.equal(rendu.trouvailles.length, 15, 'aucune trouvaille n’est perdue');
-  const nonRefutees = rendu.trouvailles.filter((t) => t.nonRefutee);
-  assert.equal(nonRefutees.length, 3, '15 − 12 = 3 au-delà du plafond');
-  assert.deepEqual(nonRefutees.map((t) => t.titre), ['poison 13', 'poison 14', 'poison 15']);
-  assert.ok(journal.some((l) => /3 trouvaille\(s\) AU-DELÀ du plafond/.test(l)), 'le plafond est DIT dans le journal');
-  assert.match(rendu.texte, /3 trouvaille\(s\) NON RÉFUTÉE\(S\) au-delà du plafond/);
-  assert.match(rendu.texte, /NON RÉFUTÉE : au-delà du plafond de 12 trouvailles par réfutateur/);
-});
-
-test('revue-palier, COÛT : chaque lentille ne reçoit QUE les faits de son angle', async () => {
-  const { promptsParLabel } = await jouerRevue();
-  const revuePrec = promptsParLabel.get('Lentilles:restes-de-la-revue-precedente');
-  const fermetures = promptsParLabel.get('Lentilles:fermetures-soldes');
-  const poison = promptsParLabel.get('Lentilles:poison-des-diffs');
-  assert.match(revuePrec, new RegExp(MARQUEUR_REVUE), 'la lentille des restes reçoit la revue précédente');
-  assert.equal(fermetures.includes(MARQUEUR_REVUE), false, 'les autres lentilles ne la portent pas');
-  assert.match(fermetures, /"fermetures"/);
-  assert.equal(fermetures.includes('CLIQUET'), false, 'les commits arrivent SANS leur corps hors des angles qui le lisent');
-  assert.match(poison, /CLIQUET/, 'la lentille du poison lit les messages entiers');
-  assert.equal(fermetures.includes(FAITS_CHEMIN), true, 'le chemin des faits complets est donné pour le reste');
-});
-
-test('revue-palier : un réfutateur qui ne rend rien laisse ses trouvailles RETENUES, dites', async () => {
-  const { rendu, journal } = await jouerRevue({
-    trouvaillesDe: (label) => (['fermetures-soldes', 'cross-os'].includes(label)
-      ? [1, 2].map((n) => ({ titre: `${label} — trouvaille ${n}`, preuve: 'p', attendu: 'a' }))
-      : []),
-    refutationDe: (label, recues) => (label === 'refutation:cross-os'
-      ? null
-      : { verdicts: recues.map((t) => ({ titre: t.titre, confirmee: true, bloquante: false, preuve: 'confirmé sur pièces' })) }),
-  });
-  assert.equal(rendu.agents.refutation, 1, 'le réfutateur qui ne rend rien ne compte pas');
-  assert.equal(rendu.trouvailles.length, 4, 'aucune trouvaille perdue, aucune rendue deux fois');
-  const retenues = rendu.trouvailles.filter((t) => t.nonRefutee);
-  assert.deepEqual(retenues.map((t) => t.titre), ['cross-os — trouvaille 1', 'cross-os — trouvaille 2']);
-  assert.deepEqual(retenues.map((t) => t.nonRefutee), Array(2).fill('le réfutateur de la lentille n’a pas rendu'));
-  assert.deepEqual(retenues.map((t) => t.bloquante), [false, false]);
-  assert.deepEqual(retenues.map((t) => t.refutation), [null, null]);
-  assert.ok(journal.some((l) => /Lentille cross-os : le réfutateur n'a pas rendu — ses 2 trouvaille\(s\)/.test(l)), 'le lot perdu est DIT dans le journal');
-  assert.match(rendu.texte, /\*\*cross-os — trouvaille 1\*\*/, 'le texte rendu les liste');
-  assert.match(rendu.texte, /NON RÉFUTÉE : le réfutateur de la lentille n’a pas rendu/);
-  assert.match(rendu.texte, /2 trouvaille\(s\) RETENUE\(S\) dont le réfutateur n’a pas rendu/);
-});
-
-test('revue-palier : une trouvaille au titre sans caractère à normaliser est RETENUE, sous une clé de repli', async () => {
-  const { rendu, journal } = await jouerRevue({
-    trouvaillesDe: (label) => (label === 'cross-os' ? [{ titre: '???', preuve: 'p', attendu: 'a' }] : []),
-  });
-  assert.equal(rendu.verdict, 'PARTIEL');
-  assert.equal(rendu.trouvailles.length, 1, 'la trouvaille n’est pas jetée');
-  assert.equal(rendu.trouvailles[0].titre, '???', 'elle garde son titre d’origine');
-  assert.ok(journal.some((l) => /titre sans caractère à normaliser — clé de repli « sans-titre-cross-os-1 »/.test(l)), 'la clé de repli est DITE');
-  assert.match(rendu.texte, /\*\*\?\?\?\*\* \(lentille cross-os\)/);
-});
-
-test('revue-palier : la SONDE d’une trouvaille part dans le texte archivé, en bloc de code', async () => {
-  const { rendu } = await jouerRevue({
-    trouvaillesDe: (label) => (label === 'cross-os'
-      ? [{ titre: 'un chemin à barres inversées', preuve: 'p', attendu: 'a', sonde: 'node sonde-chemins.mjs' }]
-      : []),
-  });
-  assert.match(rendu.texte, /```\nnode sonde-chemins\.mjs\n```/, 'le code de la sonde est dans le texte');
-});
-
-test('revue-palier, mode refutation : au-delà de 12 clauses de DoD, les suivantes ne sont PAS jugées et sont nommées', async () => {
-  const dod = Array.from({ length: 30 }, (_, i) => `clause ${i + 1}`);
-  const { rendu, journal, promptsParLabel } = await jouerRevue({ mode: 'refutation', dod });
-  // 12 lentilles de DoD + les 3 lentilles fixes de la réfutation (fermetures, hotfixes, dérogations).
-  assert.deepEqual(rendu.agents, { lentilles: 15, refutation: 0, total: 15 });
-  assert.equal(promptsParLabel.has('Lentilles:dod-12'), true);
-  assert.equal(promptsParLabel.has('Lentilles:dod-13'), false, 'la 13e clause n’est jugée par personne');
-  assert.equal(rendu.clausesNonJugees.length, 18);
-  assert.deepEqual(rendu.clausesNonJugees[0], 'clause 13');
-  assert.ok(journal.some((l) => /18 clause\(s\) de DoD AU-DELÀ du plafond de 12 par revue/.test(l)), 'les non jugées sont DITES');
-});
 
 // ── `juge-design-socle.js` ───────────────────────────────────────────────────────────────────────
 

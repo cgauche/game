@@ -273,7 +273,7 @@ export default tseslint.config(
   {
     // MUR DU DIALECTE DE PARSE (#1679 L3b) : 14 sites choisissaient leur `ts.ScriptKind` par une table
     // d'extensions recopiée (2 à 3 branches, trois graphies) — une extension neuve entrait en TS ici et
-    // en JS là. La table vit désormais dans `scripts/guards/lib/dialecte.mjs` (`scriptKindDe`), qui porte
+    // en JS là. La table vit dans `scripts/guards/lib/dialecte.mjs` (`scriptKindDe`), qui porte
     // son exemption AU SITE avec sa raison : c'est là que la table se lit.
     files: ['scripts/**'],
     rules: {

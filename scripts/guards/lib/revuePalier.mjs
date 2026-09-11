@@ -161,13 +161,26 @@ export function derniereRevueArchivee(cwd = process.cwd()) {
 export const ascendanceDansHead = (sha, cwd = process.cwd()) =>
   sha ? estAncetre(sha, 'HEAD', { cwd }) : { disponible: true, absent: true }
 
+/** Les dossiers qui font la SUBSTANCE d'un commit : le moteur et l'outillage. Source unique du
+ *  critère — la mesure du palier (`commitsDeSubstanceDepuis`) et la porte du ticket au commit
+ *  (`evaluatePorteDuTicket`, scripts/hooks/solde-ticket-guard.mjs) lisent la MÊME liste, sinon deux
+ *  définitions de « substance » cohabitent et un commit passe l'une sans passer l'autre. */
+export const DOSSIERS_DE_SUBSTANCE = ['src', 'scripts']
+
+/** Ce chemin est-il de SUBSTANCE ? PUR — le pendant par-chemin de `DOSSIERS_DE_SUBSTANCE`, pour qui
+ *  tient déjà la liste des fichiers (le contenu qu'un commit EMPORTE) plutôt qu'un pathspec git. */
+export function estCheminDeSubstance(chemin) {
+  const p = String(chemin ?? '').replace(/\\/g, '/')
+  return DOSSIERS_DE_SUBSTANCE.some((d) => p === d || p.startsWith(`${d}/`))
+}
+
 /** Commits de SUBSTANCE depuis `tete` : ceux qui touchent `src` ou `scripts`, plus celui que l'index
  *  s'apprête à faire s'il en touche aussi (le commit en cours compte pour le palier qu'il franchit). */
 export function commitsDeSubstanceDepuis(cwd, tete) {
   const publies = Number.parseInt(
-    git(['rev-list', '--count', `${tete}..HEAD`, '--', 'src', 'scripts'], cwd).trim(), 10,
+    git(['rev-list', '--count', `${tete}..HEAD`, '--', ...DOSSIERS_DE_SUBSTANCE], cwd).trim(), 10,
   )
-  const stage = git(['diff', '--cached', '--name-only', '--', 'src', 'scripts'], cwd).trim()
+  const stage = git(['diff', '--cached', '--name-only', '--', ...DOSSIERS_DE_SUBSTANCE], cwd).trim()
   return (Number.isFinite(publies) ? publies : 0) + (stage ? 1 : 0)
 }
 

@@ -249,7 +249,7 @@ validation de goût (données, gardes, routes d'édition, ré-instruction de vie
 arbitrages se gardent pour la fenêtre de PRÉSENCE.
 **Checkpoint avant épuisement de quota** : commit du carnet + état de vague posé (todo de vague à
 jour, tickets commentés), pour que la relance tienne en une phrase.
-**La revue de palier et la réfutation de fermeture d'un lot se jouent par le workflow `revue-palier`** (mode `refutation` pour la seconde) ; le texte rendu s'écrit sous le nom d'archive qu'il donne (`nomDArchiveDeRevue`).
+**La revue de palier et la réfutation de fermeture d'un lot se jouent par UN juge**, nourri des faits mesurés par `scripts/ops/faits-de-palier.mjs` (`npm run ops:faits-de-palier -- --base <sha> --tete <sha>`) : le script mesure, le juge juge. Le texte rendu s'écrit sous le nom d'archive qu'il donne (`nomDArchiveDeRevue`) et passe la porte de solde (`validateRevuePalier`).
 
 **Épique : pas de salve d'ouverture.** À l'ouverture, une épique crée SON PREMIER LOT et l'index de
 ses phases EN PROSE ; les enfants suivants naissent quand leur vague se dispatche (contre-modèle

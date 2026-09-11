@@ -266,3 +266,42 @@ test('DRIVER : « corrigé par <sha> » dont le commit n\'existe pas dans le dé
     rmSync(repo, { recursive: true, force: true })
   }
 })
+
+// Porte du TICKET (option retenue par l'utilisateur le 2026-09-11) : le driver apporte à la porte le
+// lot que le commit EMPORTE. Sur un dépôt réel, un commit de substance sans ticket est refusé, et le
+// même geste avec `refs #N` ne l'est plus.
+test('DRIVER : un commit de substance sans ticket est refusé ; avec `refs #N`, il passe', () => {
+  const { racine: repo } = instanceDeDepot({ fichiers: { 'src/x.ts': 'export const a = 1\n' }, message: 'socle' })
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    writeFileSync(join(repo, 'src', 'x.ts'), 'export const a = 2\n', 'utf8')
+    git('add', 'src/x.ts')
+
+    const refus = decisionOf('git commit -m "chore: une ligne de rien"', repo)
+    assert.ok(refus, 'aucune décision : un commit de substance sans ticket est passé')
+    assert.equal(refus.decision, 'deny')
+    assert.match(refus.reason, /Commit de SUBSTANCE sans ticket/)
+    assert.match(refus.reason, /src\/x\.ts/)
+
+    const avec = decisionOf('git commit -m "chore: une ligne de rien (refs #1709)"', repo)
+    assert.doesNotMatch(avec?.reason ?? '', /SUBSTANCE sans ticket/, 'un commit qui cite son ticket passe la porte')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+// Le pendant : un commit qui ne touche NI `src` NI `scripts` (docs dérivés, mémoire) n'a pas de
+// ticket à citer — la porte n'y voit pas de substance.
+test('DRIVER : un commit hors src/ et scripts/ passe sans ticket', () => {
+  const { racine: repo } = instanceDeDepot({ fichiers: { 'docs/architecture.md': '# carte\n' }, message: 'socle' })
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    writeFileSync(join(repo, 'docs', 'architecture.md'), '# carte\n\nune ligne de plus\n', 'utf8')
+    git('add', 'docs/architecture.md')
+
+    const out = decisionOf('git commit -m "chore(docs): régénéré"', repo)
+    assert.doesNotMatch(out?.reason ?? '', /SUBSTANCE sans ticket/, 'un commit de docs n’a aucun ticket à citer')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})

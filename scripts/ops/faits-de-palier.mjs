@@ -1,11 +1,10 @@
-// FAITS D'UN PALIER — tout ce qu'un script PUR mesure d'une fenêtre `<base>..<tête>`, pour qu'un
-// workflow n'ait plus rien à mesurer lui-même.
+// FAITS D'UN PALIER — tout ce qu'un script PUR mesure d'une fenêtre `<base>..<tête>`, pour que le
+// JUGE qui écrit la revue n'ait plus rien à mesurer lui-même.
 //
-// Un script de workflow n'a aucun accès au système de fichiers et n'importe rien : s'il devait
-// mesurer, il le ferait par des agents, c'est-à-dire à la parole d'un modèle. Les faits arrivent
-// donc en `args.faits`, produits ICI, et chacun porte sa PROVENANCE — un fait `gh` peut manquer
-// (réseau, jeton) sans que le reste de la mesure tombe : l'indisponibilité se DIT, elle ne se
-// devine pas.
+// Un juge mesure à la parole d'un modèle ; ce script mesure avec git et le système de fichiers. Les
+// faits lui arrivent donc tout faits, produits ICI, et chacun porte sa PROVENANCE — un fait `gh`
+// peut manquer (réseau, jeton) sans que le reste de la mesure tombe : l'indisponibilité se DIT,
+// elle ne se devine pas.
 //
 // Aucune mesure n'est réécrite : ce script COMPOSE les hôtes existants (`revuePalier.mjs`,
 // `plageStock.mjs`, `fermetures-non-citees.mjs`, `audit-stock.mjs`, le journal de dérogations du
@@ -16,18 +15,18 @@
 //   `--revue-precedente <p>`  impose le texte de la revue précédente au lieu de celui de HEAD ;
 //   `--cwd <dossier>`         l'arbre MESURÉ (défaut : la racine de ce script) — git, soldes suivis et
 //                             journal de dérogations sont tous lus dans CET arbre, jamais mélangés ;
-//   `--sortie <chemin>`       où le JSON complet est aussi ÉCRIT (défaut sous `os.tmpdir()`) : un
-//                             workflow n'embarque alors dans ses prompts que les champs dont il a
-//                             besoin et donne ce chemin pour le reste ;
+//   `--sortie <chemin>`       où le JSON complet est aussi ÉCRIT (défaut sous `os.tmpdir()`) : le
+//                             brief du juge n'embarque alors que les champs dont il a besoin et
+//                             donne ce chemin pour le reste ;
 //   `--sans-chainage`         BANC uniquement : rejoue une fenêtre DÉJÀ jugée (le chaînage à la revue
 //                             précédente n'est pas exigé). Le JSON le DIT (`chainage`), et le texte
-//                             produit par `revue-palier` porte alors sa marque de banc.
+//                             de revue porte alors sa marque de banc.
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ascendanceDansHead, derniereRevueArchivee, memeSha } from '../guards/lib/revuePalier.mjs'
+import { DOSSIERS_DE_SUBSTANCE, ascendanceDansHead, derniereRevueArchivee, memeSha } from '../guards/lib/revuePalier.mjs'
 import { croissancesDeLaPlage } from '../guards/lib/plageStock.mjs'
 import { tenter } from '../guards/lib/gitPorte.mjs'
 import { coursesCiDeMain } from '../guards/lib/coursesCi.mjs'
@@ -174,7 +173,9 @@ export function derogationsDeLaFenetre(texte, shas) {
 
 /**
  * Courses CI par commit, depuis la liste servie par `coursesCiDeMain`. PUR.
- * Un sha sans course est rendu avec `conclusion: null` : « pas de course » est un fait.
+ * Un sha sans course est rendu avec `conclusion: null` : « pas de course » est un fait, et pas un
+ * défaut — un push de plusieurs commits est jugé par sa TÊTE (régime du 2026-09-11, CLAUDE.md
+ * § Commandes) : la CI ne joue que le sha poussé.
  * @returns {{ sha: string, courses: { workflow: string, conclusion: string|null, statut: string|null }[] }[]}
  */
 export function coursesParCommit(servies, shas) {
@@ -233,7 +234,7 @@ function main() {
 
   const commits = marquerSubstance(
     parserJournal(git(['log', `--format=%H${CHAMP}%s${CHAMP}%B${ENREGISTREMENT}`, `${base}..${tete}`], cwd)),
-    git(['rev-list', `${base}..${tete}`, '--', 'src', 'scripts'], cwd).split('\n').map((l) => l.trim()).filter(Boolean),
+    git(['rev-list', `${base}..${tete}`, '--', ...DOSSIERS_DE_SUBSTANCE], cwd).split('\n').map((l) => l.trim()).filter(Boolean),
   )
   const shas = commits.map((c) => c.sha)
   const fermetures = fermeturesDesCommits(commits, soldesSuivis(cwd))

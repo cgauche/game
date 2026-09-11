@@ -23,8 +23,13 @@
 // de fenêtre de la dernière revue archivée), donc TOUT commit de substance y entre, fermeture ou pas ;
 // (2) anti-esquive — un commit `ref #N` qui touche `src/**` (≥10 lignes de diff staged) exige lui
 // aussi sa réfutation (ligne `REFUTATION:` dans le message, ou fichier `.claude/soldes/ref-<N>.md`).
-// Le déclencheur reste le TICKET explicitement rattaché (fermeture ou `ref #N`) — un commit sans
-// AUCUN ticket n'entre jamais dans ce mécanisme (périmètre tranché #591, 2026-07-17).
+// Le déclencheur du mécanisme REFUTATION est le TICKET explicitement rattaché (fermeture ou `ref #N`),
+// et c'est la PORTE DU TICKET qui le précède : un commit de substance cite un ticket, donc tout commit
+// de substance arrive ici avec le sien.
+//
+// Porte du ticket (option retenue par l'utilisateur le 2026-09-11, verbatim) — « Tout commit de
+// substance cite un ticket — un commit qui touche src/ ou scripts/ sans `refs #N`/`corrige #N` est
+// refusé par le pre-commit ; le ticket est l'unité de travail, même pour un fix d'une ligne. »
 //
 // Ce que le garde exige AUJOURD'HUI, par volet (chacun a son évaluateur PUR et ses tests) :
 //   `evaluate`                    solde conforme pour chaque ticket fermé — dont, dans « ## Restes »,
@@ -32,6 +37,8 @@
 //                                 site (`fichier:ligne`) pour « corrigé dans ce commit », un état
 //                                 lisible pour « inventaire #<épic> », et une « ## Recette visuelle »
 //                                 à capture vérifiée quand un ÉCRAN est touché ;
+//   `evaluatePorteDuTicket`       commit de substance (`src`/`scripts`) dont le message ne cite
+//                                 AUCUN ticket ;
 //   `evaluateAntiEsquive`         réfutation d'un commit « ref #N » de substance ;
 //   `evaluateJuge`                preuve de juge adversarial (+ JUGE-VISION sur un écran) ;
 //   `evaluateAmendInvisible`      amend dont le message échappe au contrôle ;
@@ -58,7 +65,8 @@ import { execFileSync } from 'node:child_process'
 import { croissancesNonCouvertes, estPorteurDeStock, raisonDeRefus } from '../guards/lib/stocksNominatifs.mjs'
 import { GitIndisponible, estDansHead } from '../guards/lib/gitPorte.mjs'
 import {
-  fenetreDeRevue, memeSha, mesureDuPalier, nomDArchiveDeRevue, problemesDeRevue, revuesNeuves,
+  DOSSIERS_DE_SUBSTANCE, estCheminDeSubstance, fenetreDeRevue, memeSha, mesureDuPalier,
+  nomDArchiveDeRevue, problemesDeRevue, revuesNeuves,
 } from '../guards/lib/revuePalier.mjs'
 
 // Message passé par FICHIER (`git commit -F <path>` / `--file <path>` / `--file=<path>`) : le
@@ -1186,12 +1194,53 @@ export function readSoldeFile(n, dir = process.cwd()) {
   try { return readFileSync(join(dir, '.claude/soldes', `${n}.md`), 'utf8') } catch { return null }
 }
 
-// ── Anti-esquive (extension 2026-07-14, périmètre tranché #591) ────────────────────────────────────
+// ── Porte du TICKET (option retenue par l'utilisateur le 2026-09-11) ──────────────────────────────
+// Le ticket est l'unité de travail : un commit qui touche `src` ou `scripts` cite au moins un ticket.
+// Le critère de SUBSTANCE est celui du palier (`estCheminDeSubstance`, scripts/guards/lib/revuePalier.mjs) —
+// une seule définition, sinon un commit franchit l'une des deux portes sans franchir l'autre. La
+// grammaire des références est celle des deux extracteurs déjà en place (`extractClosedIssues` pour
+// `corrige`/`fixes`/`closes`/`ferme`, `extractRefIssues` pour `ref`/`refs`), jamais une regex de plus.
+// Ce que le commit EMPORTE décide (`diffDuCommit`), pas l'index : un `git commit -- <chemins>` ou un
+// `-a` sans `git add` emporte l'arbre de travail, et c'est ce lot-là que la porte doit voir.
+const MAX_FICHIERS_NOMMES = 3
+
+/**
+ * Décision de la porte du ticket (PURE, testable). `fichiersEmportes` = les chemins que le commit
+ * va produire (`analyzeDiffDuCommit(...).fichiers`), injectés par le driver.
+ * @returns {{ reason: string } | null} — non-null = `deny`, null = silence.
+ */
+export function evaluatePorteDuTicket({ command, fichiersEmportes = [] }) {
+  if (!command || !isGitCommitCommand(command)) return null
+  const substance = fichiersEmportes.filter(estCheminDeSubstance)
+  if (substance.length === 0) return null
+  if (extractClosedIssues(command).length > 0 || extractRefIssues(command).length > 0) return null
+
+  const nommes = substance.slice(0, MAX_FICHIERS_NOMMES).join(', ')
+  const reste = substance.length > MAX_FICHIERS_NOMMES ? ` (+${substance.length - MAX_FICHIERS_NOMMES})` : ''
+  // Message NON LISIBLE ICI : `--amend` sans `-m`/`-F` hérite du message de HEAD, et un `git commit`
+  // nu (ou `-v`/`-e`) l'ouvre dans l'ÉDITEUR — dans les deux cas le ticket peut y être, la commande
+  // ne le porte pas. Le refus le DIT, au lieu d'ordonner de citer un ticket déjà écrit.
+  const messageInvisible = !MESSAGE_FLAG_RE.test(command) && !FILE_FLAG_RE.test(command)
+  return {
+    reason:
+      `⚠ Commit de SUBSTANCE sans ticket : ${nommes}${reste}. Ajouter \`refs #N\` au message (ou `
+      + '`corrige #N` à la fermeture, avec son solde). '
+      + (messageInvisible
+        ? 'Le message de ce commit part à l’ÉDITEUR (ou est hérité par `--amend`) : ce contrôle ne le '
+          + 'lit pas — re-committer avec `-m` ou `-F <fichier>`. '
+        : '')
+      + 'Option retenue par l’utilisateur le 2026-09-11 (verbatim) — « Tout commit de substance cite un '
+      + 'ticket — un commit qui touche src/ ou scripts/ sans `refs #N`/`corrige #N` est refusé par le '
+      + 'pre-commit ; le ticket est l’unité de travail, même pour un fix d’une ligne. »',
+  }
+}
+
+// ── Anti-esquive (extension 2026-07-14) ────────────────────────────────────────────────
 // Un commit `ref #N`/`refs #N` (rattaché SANS fermer), qui touche `src/**` pour un diff STAGED de
 // substance, doit lui aussi porter sa réfutation — sinon la fermeture reste le SEUL chemin regardé
-// et « ref #N » devient l'esquive mécanique. Un commit SANS aucun ticket (ni fermeture, ni `ref #N`)
-// reste hors du déclencheur : le mécanisme REFUTATION ne porte que sur le ticket EXPLICITEMENT
-// rattaché (#591).
+// et « ref #N » devient l'esquive mécanique. Le mécanisme REFUTATION porte sur le ticket
+// EXPLICITEMENT rattaché ; le commit de substance qui n'en cite AUCUN est refusé en amont par
+// `evaluatePorteDuTicket`.
 const REF_KEYWORD_RE = /\brefs?\s+#(\d+)/gi
 const REFUTATION_LINE_RE = /REFUTATION\s*:\s*(.+)/i
 const MIN_REFUTATION_LINE_LEN = 40
@@ -1238,7 +1287,8 @@ export function evaluateAntiEsquive({ command, stagedTouchesSrc, stagedTotalLine
   if (hasInlineRefutation(command)) return null
 
   const refIssues = extractRefIssues(command)
-  // Aucun ticket rattaché (ni fermeture, ni `ref #N`) : hors du déclencheur (#591).
+  // Aucun ticket rattaché (ni fermeture, ni `ref #N`) : hors du déclencheur — l'absence de ticket se
+  // juge sur la SUBSTANCE, et c'est `evaluatePorteDuTicket` qui la juge.
   if (refIssues.length === 0) return null
 
   const failures = []
@@ -1258,7 +1308,7 @@ export function evaluateAntiEsquive({ command, stagedTouchesSrc, stagedTotalLine
 }
 
 // ── JUGE adversarial (extension du mécanisme REFUTATION, générale à tout domaine) ──────────────────
-// EXACTEMENT le même déclencheur qu'`evaluateAntiEsquive` (#591 : un `ref #N` rattaché sans fermer,
+// EXACTEMENT le même déclencheur qu'`evaluateAntiEsquive` (un `ref #N` rattaché sans fermer,
 // jamais un commit sans ticket du tout, jamais une fermeture — déjà couverte par sa propre section
 // "## Réfutation" à verdict) : un `ref #N` qui touche `src/**` en substance doit en plus porter la
 // preuve qu'un agent juge adversarial est passé sur le diff. Si le diff touche `src/ui/**`, une
@@ -1327,7 +1377,8 @@ export function evaluateJuge({ command, stagedTouchesSrc, stagedTotalLines, stag
   if (extractClosedIssues(command).length > 0) return null
 
   const refIssues = extractRefIssues(command)
-  // Aucun ticket rattaché (ni fermeture, ni `ref #N`) : hors du déclencheur (#591).
+  // Aucun ticket rattaché (ni fermeture, ni `ref #N`) : hors du déclencheur — l'absence de ticket se
+  // juge sur la SUBSTANCE, et c'est `evaluatePorteDuTicket` qui la juge.
   if (refIssues.length === 0) return null
 
   const needsVision = !!stagedTouchesUi
@@ -1639,7 +1690,7 @@ export function fichiersCitantTickets(numeros, dir = process.cwd()) {
   if (numeros.length === 0) return []
   const motif = `#(${numeros.join('|')})([^0-9]|$)`
   try {
-    return execFileSync('git', ['grep', '--cached', '-l', '-E', motif, '--', 'src', 'scripts'], {
+    return execFileSync('git', ['grep', '--cached', '-l', '-E', motif, '--', ...DOSSIERS_DE_SUBSTANCE], {
       encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
     }).split('\n').map((l) => l.trim()).filter(Boolean)
   } catch { return [] } // aucun match : `git grep` sort en 1
@@ -2024,6 +2075,9 @@ if (isMain) {
       lignesDuCommit: (sha, fichier) => lignesDeHunks(diffDunSha(sha, fichier, targetDir)),
     },
   }))
+  // La porte du ticket juge le lot que le commit EMPORTE (`fichiers`), pas l'index : c'est la même
+  // lecture que toutes les autres évaluations de ce driver.
+  const porteDuTicket = evaluatePorteDuTicket({ command: text, fichiersEmportes: fichiers })
   // TOUT ce que le garde lit sur DISQUE se lit dans le répertoire où le commit s'exécute — comme le
   // solde stagé, la mesure du palier, le message `-F` et la revue de palier. Lu depuis le dépôt du HOOK, un
   // fichier de réfutation écrit dans le worktree était invisible, et la porte refusait à tort.
@@ -2078,7 +2132,7 @@ if (isMain) {
     images: { lirePostImage: commit.contenu, lirePreImage: commit.avant },
   })
   const cumul = decisionCumulee([
-    decision, antiEsquive, juge, amendInvisible, manifestClosure,
+    decision, porteDuTicket, antiEsquive, juge, amendInvisible, manifestClosure,
     horsCommit, tombale, arbrePrincipal, hunks?.decision ? hunks : null, stocks,
   ])
   if (cumul) {

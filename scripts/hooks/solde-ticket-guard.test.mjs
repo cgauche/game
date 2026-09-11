@@ -16,6 +16,7 @@ import {
   extractRefIssues,
   validateRefFile,
   evaluateAntiEsquive,
+  evaluatePorteDuTicket,
   analyzeDiffDuCommit,
   extractMessageSources,
   evaluateAmendInvisible,
@@ -989,6 +990,54 @@ test('extractCommitPathspecs : "-cam" groupé + valeur COLLÉE ("-cam\\"a b c\\"
 
 test('extractClosedIssues : "--message=" multi-mots reconnaît toujours le mot-clef de fermeture', () => {
   assert.deepEqual(extractClosedIssues('git commit --message="corrige #501 pour de bon"'), [501])
+})
+
+// ── evaluatePorteDuTicket (porte du ticket, option retenue le 2026-09-11) ───────────────────
+const porte = (command, ...fichiersEmportes) => evaluatePorteDuTicket({ command, fichiersEmportes })
+
+test('porte du ticket : un commit qui touche src/ sans aucun ticket est REFUSÉ, fichier nommé', () => {
+  const d = porte('git commit -m "chore: une ligne de rien"', 'src/state/combatFlow.ts')
+  assert.ok(d, 'un commit de substance sans ticket doit être refusé')
+  assert.match(d.reason, /src\/state\/combatFlow\.ts/)
+  assert.match(d.reason, /refs #N/)
+  assert.match(d.reason, /2026-09-11/, 'le refus porte le verbatim daté du régime')
+})
+
+test('porte du ticket : `scripts/` est de la substance au même titre que `src/`', () => {
+  assert.ok(porte('git commit -m "chore: outillage"', 'scripts/guards/lib/lister.mjs'))
+})
+
+test('porte du ticket : `refs #N` suffit, `corrige #N` aussi', () => {
+  assert.equal(porte('git commit -m "feat: x (refs #1709)"', 'src/x.ts'), null)
+  assert.equal(porte('git commit -m "feat: x (corrige #1709)"', 'src/x.ts'), null)
+})
+
+test('porte du ticket : docs/ et .claude/ seuls passent sans ticket (docs dérivés, mémoire)', () => {
+  assert.equal(porte('git commit -m "chore(docs): régénéré"', 'docs/architecture.md'), null)
+  assert.equal(porte('git commit -m "chore: fiche"', '.claude/memory/feedback-x.md', 'public/qc/a.png'), null)
+})
+
+test('porte du ticket : un fichier GÉNÉRÉ de src/ reste de la substance', () => {
+  const d = porte('git commit -m "chore: regen"', 'src/data/schemas/_registry.generated.ts')
+  assert.ok(d, 'un dérivé committé sous src/ est du contenu de src/ : il cite son ticket')
+  assert.match(d.reason, /_registry\.generated\.ts/)
+})
+
+test('porte du ticket : un message que la commande NE PORTE PAS (éditeur, --amend) est dit comme tel', () => {
+  for (const cmd of ['git commit', 'git commit -v', 'git commit -e', 'git commit --amend']) {
+    const d = porte(cmd, 'src/x.ts')
+    assert.ok(d, `${cmd} : refus attendu`)
+    assert.match(d.reason, /part à l’ÉDITEUR \(ou est hérité par `--amend`\)/, cmd)
+  }
+  // Message LISIBLE et sans ticket : le refus ne parle plus d'éditeur, il manque un ticket, point.
+  const lisible = porte('git commit -m "chore: une ligne de rien"', 'src/x.ts')
+  assert.doesNotMatch(lisible.reason, /ÉDITEUR/)
+  assert.equal(porte('git commit --amend -m "feat: x (refs #1709)"', 'src/x.ts'), null)
+})
+
+test('porte du ticket : ce qui n’est pas un `git commit` ne déclenche rien', () => {
+  assert.equal(porte('gh issue create --body "touche src/x.ts sans ticket"', 'src/x.ts'), null)
+  assert.equal(porte('git commit -m "chore: rien"'), null)
 })
 
 // ── evaluateAntiEsquive ──────────────────────────────────────────────────────────────────────────

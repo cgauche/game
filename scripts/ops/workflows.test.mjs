@@ -42,7 +42,6 @@ const ts = createRequire(import.meta.url)('typescript');
 const PHASES_DE_JUGEMENT = {
   'audit-poison.js': [],
   'juge-design-socle.js': ['Design', 'Réfutation'],
-  'revue-palier.js': ['Lentilles', 'Réfutation'],
 };
 
 /** Étages MÉCANIQUES qui ne portent PAS de type épinglé — nominatif, avec sa raison, décroissant. */
