@@ -4,11 +4,12 @@ import { createRoot, type Root } from 'react-dom/client';
 import { Vector3, type OrthographicCamera, type PerspectiveCamera } from 'three';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { Dims } from '../../geometry/iso';
-import { metricToLift } from '../../state/relief';
+import { METRES_PER_LEVEL, metricToLift } from '../../state/relief';
 import { emptyScene, heightAt, isWalkable, sceneMetresPerTile, type Scene } from '../../state/scene';
+import { buildScene, type MapSpec } from '../../state/mapSpec';
+import { chebyshev } from '../../engine/grid';
 import { walkNeighbors, type Pt } from '../../state/path';
 import { useGame } from '../../state/store';
-import { scenario as diligence } from '../../scenes/test-scenarios/diligence';
 import { scenario as pont } from '../../scenes/test-scenarios/pont-vitrine';
 import { scenario as siege } from '../../scenes/test-scenarios/siege-explore';
 import { affineCamera, projectToScreen } from '../backends/webgl/cameras';
@@ -20,9 +21,9 @@ import { setSpritePicker, setStageFrame, type CadreRendu } from './spritePicker'
 import { pickTileAt } from './pickProbe';
 import { caseAuSol, type Verdict } from './pickResolve';
 import type { PickProbe } from '../../state/devtools';
-import { buildPropVolumes } from '../builders/propVolumes';
+import { buildPropVolumes, type AncrageVolume } from '../builders/propVolumes';
 import { findPropById, props, refEstVolumique } from '../../data';
-import { capVolumique } from '../../data/props.types';
+import { capVolumique, polygonesDePrimitive, type PropData } from '../../data/props.types';
 import type { SceneEntity } from '../../state/scene';
 
 /**
@@ -37,10 +38,10 @@ import type { SceneEntity } from '../../state/scene';
  * côtés — celle du rendu : parmi les surfaces marchables dessinées sous le pixel, LA PLUS HAUTE gagne,
  * c'est celle qu'on voit (cf. `stage/pickResolve.ts:caseMarchable`).
  *
- * L'échantillonnage couvre ce que le relief a de piégeux : rampes et tablier du pont, les DEUX étages
- * de `la-diligence` (dont les 8 marches qui étaient injouables à la souris), les remparts du siège, et
- * les cases au bord du vide. Chaque case est visée en son centre, puis à 0,35 px du bord de son
- * losange — un demi-pixel d'écart entre les deux voies y change de case.
+ * L'échantillonnage couvre ce que le relief a de piégeux : les trois marches d'un mètre et l'étage 1
+ * de la carte-FIXTURE (ci-dessous), rampes et tablier du pont, les remparts du siège, et les cases au
+ * bord du vide. Chaque case est visée en son centre, puis à 0,35 px du bord de son losange — un
+ * demi-pixel d'écart entre les deux voies y change de case.
  *
  * L'état de caméra n'est pas neutre exprès (décalage manuel, zoom, cadre plus large que le viewBox) :
  * les deux étages de `stageCam` — recouvrement `slice` et caméra du groupe — doivent s'inverser tous
@@ -89,6 +90,151 @@ function grilleVolumique(camera: Camera, mpt: number, p: { sx: number; sy: numbe
   return { x: (u * d - v * b) / det, y: (a * v - c * u) / det };
 }
 
+/* ── LA CARTE-FIXTURE DE CE BANC ──────────────────────────────────────────────────────────────────
+ * Un banc se joue sur une carte CRÉÉE POUR LUI, jamais sur une carte que l'auteur édite
+ * (`.claude/memory/user-arbitrage-tests-sur-scenes-dediees-jamais-sur-scenes-utilisees.md`, 2026-09-07) :
+ * éditer une carte de campagne ne rougit aucun test d'ici. La fixture est de la donnée d'AUTHORING (`buildScene`) et
+ * pose exactement les pièges que les contrats de ce fichier mesurent : trois marches d'un mètre sur
+ * l'étage 0 (plusieurs hauteurs de relief à inverser), un étage 1 marchable, un meuble HAUT dont le
+ * pixel du dessus tombe sur la case d'un AUTRE décor, et un décor à plateau FIN dont le repli
+ * cross-couche rend une case de l'étage du dessus. Les deux types de décor se CHOISISSENT dans le
+ * catalogue par leur géométrie mesurée, et les cases piégées se MESURENT sur la projection. */
+
+/** Sommet MONDE d'un décor posé, dérivé de ses faces réelles (aucune relecture de recette). */
+function sommetDuDecor(prop: PropData, ancrage: AncrageVolume, mpt: number): number {
+  return Math.max(...buildPropVolumes(prop, ancrage, mpt).flatMap((f) => f.poly.map((p) => p.h)));
+}
+
+/** Épaisseur (mètres) de la tranche qui PORTE le dessus d'un type de décor — un plateau FIN n'offre
+ *  au rayon qu'une tranche, et c'est alors la case DESSINÉE qui décide. Mesurée sur la géométrie
+ *  locale du catalogue, métrique en hauteur comme les faces monde. */
+function epaisseurDuDessus(prop: PropData): number {
+  const tranches = (prop.volume?.primitives ?? []).map((p) => {
+    const hs = polygonesDePrimitive(p).flat().map((s) => s.hM);
+    return { haut: Math.max(...hs), bas: Math.min(...hs) };
+  });
+  const sommet = Math.max(...tranches.map((t) => t.haut));
+  return Math.min(...tranches.filter((t) => t.haut === sommet).map((t) => t.haut - t.bas));
+}
+
+/** Étage 0 : trois marches d'un mètre (`1`/`2`/`3`, hauteurs posées par `elevate`), le reste à plat. */
+const MARCHES = String.raw`
+..............
+..............
+..123.........
+..123.........
+..123.........
+..............
+..............
+..............
+..............
+..............
+..............
+..............
+..............
+..............
+`;
+
+/** Étage 1 : vide partout — son plateau est posé en COORDONNÉES, à la case que la mesure désigne. */
+const SANS_ETAGE = String.raw`
+..............
+..............
+..............
+..............
+..............
+..............
+..............
+..............
+..............
+..............
+..............
+..............
+..............
+..............
+`;
+
+/** La spec d'authoring de la fixture, jouée DEUX fois : une première pour mesurer sa projection, la
+ *  seconde avec les poses que cette mesure désigne. */
+const specFixture = (pose: Partial<MapSpec>): MapSpec => ({
+  id: 'pick-parity-fixture',
+  label: 'Fixture du banc de picking',
+  size: [14, 14],
+  levels: { z0: MARCHES, z1: SANS_ETAGE },
+  legend: { '1': 'pierre', '2': 'pierre', '3': 'pierre' },
+  elevate: { '1': 1, '2': 2, '3': 3 },
+  heroStart: [0, 0],
+  ...pose,
+});
+
+const SOCLE = buildScene(specFixture({}));
+const DIMS_FIXTURE = dimsDe(SOCLE);
+const MPT_FIXTURE = sceneMetresPerTile(SOCLE);
+const CAMERA_FIXTURE = cameraVolumique(DIMS_FIXTURE, MPT_FIXTURE);
+
+/** La case que l'inversion du STAGE au lift `lift` rend pour le pixel volumique du point (`ancre`,
+ *  `hM`) : la mesure qui place les pièges de la fixture, jamais une coordonnée devinée. */
+function caseInverseeAuLift(ancre: Pt, hM: number, lift: number): Pt {
+  const px = pixelVolumique(CAMERA_FIXTURE, MPT_FIXTURE, ancre.x, ancre.y, hM);
+  const g = stagePointAt(viewBoxPointAt({ sx: px.sx, sy: px.sy }, CANVAS), CAM, ZOOM);
+  const p = screenToWorldAtLift(poseFromDims(DIMS_FIXTURE), g, lift);
+  return { x: Math.round(p.x), y: Math.round(p.y) };
+}
+
+/** L'ancrage NEUTRE d'un type de décor — l'origine, cap `S`, pied au sol : ce que le catalogue seul
+ *  décide, avant toute pose dans une scène. */
+const ANCRAGE_A_PLAT: AncrageVolume = { ancre: { x: 0, y: 0 }, facing: 'S', baseHeightM: 0 };
+
+/** La case que le pixel du DESSUS d'un type de décor désigne quand on l'inverse au lift du SOL. */
+const caseDuDessus = (prop: PropData, ancre: Pt): Pt =>
+  caseInverseeAuLift(ancre, sommetDuDecor(prop, { ...ANCRAGE_A_PLAT, ancre }, MPT_FIXTURE), 0);
+
+/** Cases d'ANCRAGE des décors de la fixture : hors de l'escalier, et assez loin des bords pour que
+ *  les cases mesurées autour d'elles restent sur la carte. */
+const POSE_HAUTE: Pt = { x: 9, y: 5 };
+const POSE_FINE: Pt = { x: 4, y: 7 };
+
+const VOLUMIQUES = props.filter((p) => refEstVolumique(p.id));
+
+/** MEUBLE HAUT — le décor le plus HAUT du catalogue dont le DESSUS, inversé au lift du SOL, désigne
+ *  la case VOISINE : c'est ce décalage d'un pas que le rayon doit trancher, et la fixture pose l'autre
+ *  décor sur la case ainsi mesurée. */
+const MEUBLE_HAUT = VOLUMIQUES
+  .filter((p) => chebyshev(POSE_HAUTE, caseDuDessus(p, POSE_HAUTE)) === 1)
+  .sort((a, b) => sommetDuDecor(b, ANCRAGE_A_PLAT, MPT_FIXTURE) - sommetDuDecor(a, ANCRAGE_A_PLAT, MPT_FIXTURE))[0];
+
+/** PLATEAU FIN — le dessus le plus MINCE du catalogue parmi les décors qui ne décalent AUCUNE case :
+ *  rien que le rayon puisse toucher, et aucun décalage du dessus pour masquer le repli cross-couche. */
+const PLATEAU_FIN = VOLUMIQUES
+  .filter((p) => chebyshev(POSE_FINE, caseDuDessus(p, POSE_FINE)) === 0)
+  .sort((a, b) => epaisseurDuDessus(a) - epaisseurDuDessus(b))[0];
+
+const MEUBLE_HAUT_ID = 'fixture-meuble-haut';
+const VOISIN_ID = 'fixture-voisin-du-dessus';
+const PLATEAU_FIN_ID = 'fixture-plateau-fin';
+
+/** Le plateau de l'ÉTAGE 1, posé à la case que le repli cross-couche désigne depuis le pixel du sol
+ *  du décor à plateau fin — c'est la géométrie qui décide de l'endroit, pas l'inverse. */
+const CASE_ETAGE = caseInverseeAuLift(POSE_FINE, heightAt(SOCLE, POSE_FINE.x, POSE_FINE.y, 0), 1);
+/** Une case de marge autour d'elle. Les deux specs d'authoring ne disent pas une aire de la même
+ *  façon : `terrainRects` prend un COIN et une taille, `relief` une BOÎTE inclusive (`applyRelief`). */
+const COTE_PLATEAU = 3;
+const PLATEAU_COIN: [number, number, number, number] = [CASE_ETAGE.x - 1, CASE_ETAGE.y - 1, COTE_PLATEAU, COTE_PLATEAU];
+const PLATEAU_BOITE: [number, number, number, number] = [CASE_ETAGE.x - 1, CASE_ETAGE.y - 1, CASE_ETAGE.x + 1, CASE_ETAGE.y + 1];
+
+const FIXTURE = buildScene(specFixture({
+  entities: [
+    { id: MEUBLE_HAUT_ID, kind: 'prop', ref: MEUBLE_HAUT.id, pos: POSE_HAUTE, facing: 'S' },
+    { id: VOISIN_ID, kind: 'prop', ref: PLATEAU_FIN.id, pos: caseDuDessus(MEUBLE_HAUT, POSE_HAUTE), facing: 'S' },
+    { id: PLATEAU_FIN_ID, kind: 'prop', ref: PLATEAU_FIN.id, pos: POSE_FINE, facing: 'S' },
+  ],
+  terrainRects: [{ rect: PLATEAU_COIN, terrain: 'planches', z: 1 }],
+  // Le plancher de l'étage est à UN niveau d'écran : le lift auquel le repli cross-couche inverse la couche 1.
+  relief: [{ rect: PLATEAU_BOITE, height: METRES_PER_LEVEL, z: 1 }],
+}));
+
+/** Les étages que la fixture porte, et que le banc parcourt. */
+const ETAGES_FIXTURE = [0, 1];
+
 /** Hauteurs métriques DISTINCTES auxquelles une case de cet étage peut être dessinée, décroissantes. */
 function hauteurs(scene: Scene, z: number): number[] {
   const hs = new Set<number>([0]);
@@ -131,11 +277,24 @@ let root: Root | null = null;
 
 afterEach(() => {
   setSpritePicker(null);
+  document.querySelectorAll('svg.iso-stage').forEach((el) => el.remove());
+  setStageFrame(null);
   if (root) {
     act(() => root!.unmount());
     root = null;
   }
 });
+
+/** Monte l'élément de stage que la sonde cherche dans le DOM (`svg.iso-stage`), mesuré au cadre de ce
+ *  banc, et PUBLIE le cadre rendu qu'elle lit. Le démontage est celui du fichier (`afterEach`). */
+function monterStage(cadre: CadreRendu): SVGSVGElement {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  el.setAttribute('class', 'iso-stage');
+  el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
+  document.body.appendChild(el);
+  setStageFrame(cadre);
+  return el;
+}
 
 /** Monte le pointeur sur une scène, à l'étage `activeZ`, et rend « viser un pixel → la case survolée ». */
 function viseur(scene: Scene, activeZ: number, partyPos: Pt, cadre?: Dims): (sx: number, sy: number) => Pt | null {
@@ -192,10 +351,44 @@ function posteDuGroupe(scene: Scene, z: number, defaut: Pt): Pt {
 }
 
 const CARTES: { nom: string; scene: Scene; etages: number[] }[] = [
-  { nom: 'la-diligence', scene: diligence.scene as Scene, etages: [0, 1] },
+  { nom: 'fixture', scene: FIXTURE, etages: ETAGES_FIXTURE },
   { nom: 'pont-vitrine', scene: pont.scene as Scene, etages: [0, 1] },
   { nom: 'siege-enceinte', scene: siege.scene as Scene, etages: [0] },
 ];
+
+/**
+ * CE QUE LA FIXTURE POSE — hors de la boucle des cartes, donc INSENSIBLE à ce que cette boucle
+ * parcourt : une carte retirée de `CARTES` fait disparaître ses `it` sans un seul rouge, et ce
+ * describe est l'endroit où cela se voit. Il mesure sur la fixture ce dont les contrats de ce fichier
+ * ont besoin pour départager quoi que ce soit.
+ */
+describe('la carte-FIXTURE porte les pièges que ces contrats mesurent', () => {
+  it('étage 0 : un escalier — plusieurs hauteurs de relief, et des cases SOULEVÉES dans l’échantillon', () => {
+    expect(hauteurs(FIXTURE, 0).length, 'une seule hauteur n’inverse qu’un plan').toBeGreaterThan(1);
+    const soulevees = echantillon(FIXTURE, 0, 8).filter((t) => metricToLift(heightAt(FIXTURE, t.x, t.y, 0)) > 0);
+    expect(soulevees.length, 'l’échantillon met les cases soulevées d’abord').toBeGreaterThan(0);
+  });
+
+  it('chaque étage offre au moins quatre cases à viser — aucun étage de ce banc ne tourne à vide', () => {
+    for (const z of ETAGES_FIXTURE) expect(echantillon(FIXTURE, z, 8).length, `étage ${z}`).toBeGreaterThanOrEqual(4);
+  });
+
+  it('et la boucle de parité la PARCOURT, sur ses deux étages', () => {
+    expect(CARTES.find((c) => c.scene === FIXTURE)?.etages, 'hors de `CARTES`, la fixture perd ses `it` sans un seul rouge').toEqual(ETAGES_FIXTURE);
+  });
+
+  it('l’étage 1 est marchable, et c’est le repli cross-couche du décor à plateau fin qui l’a placé', () => {
+    expect(hauteurs(FIXTURE, 1), 'le plancher de l’étage est posé à un niveau d’écran').toContain(METRES_PER_LEVEL);
+    expect(isWalkable(FIXTURE, CASE_ETAGE.x, CASE_ETAGE.y, 1), 'la case que le repli désigne est marchable').toBe(true);
+  });
+
+  it('les deux décors du piège sont CHOISIS sur leur géométrie, et posés sur des cases distinctes', () => {
+    expect(chebyshev(POSE_HAUTE, caseDuDessus(MEUBLE_HAUT, POSE_HAUTE)), 'le dessus du meuble haut décale la case').toBeGreaterThan(0);
+    expect(chebyshev(POSE_FINE, caseDuDessus(PLATEAU_FIN, POSE_FINE)), 'le plateau fin, lui, ne décale rien').toBe(0);
+    expect(FIXTURE.entities.filter((e) => e.kind === 'prop').map((e) => e.id))
+      .toEqual([MEUBLE_HAUT_ID, VOISIN_ID, PLATEAU_FIN_ID]);
+  });
+});
 
 describe('Picking de TUILE — la case résolue est celle que la voie volumique dessine (#1176 P2-3)', () => {
   for (const carte of CARTES) {
@@ -263,13 +456,13 @@ describe('Picking de TUILE — la case résolue est celle que la voie volumique 
  * `screenToTileAtLift`.
  */
 describe('Frontière de deux cases — les deux inversions coïncident, seul l’arrondi du .5 les sépare', () => {
-  const carte = CARTES[0];
+  const carte = { nom: 'fixture', scene: FIXTURE };
   const dims = dimsDe(carte.scene);
   const mpt = sceneMetresPerTile(carte.scene);
   const camera = cameraVolumique(dims, mpt);
   const pose = poseFromDims(dims);
 
-  it('la-diligence : le point continu du pointeur EST celui de la caméra volumique', () => {
+  it('fixture : le point continu du pointeur EST celui de la caméra volumique', () => {
     let pires = 0;
     let points = 0;
     for (const t of echantillon(carte.scene, 0, 8)) {
@@ -294,32 +487,28 @@ describe('Frontière de deux cases — les deux inversions coïncident, seul l�
 /**
  * MEUBLE HAUT — le pixel du DESSUS appartient au meuble, et c'est le RAYON qui le dit (#1443, round 2).
  *
- * La résolution de case du pointeur inverse l'écran au LIFT DU SOL : sur une FACE SUPÉRIEURE portée à
- * un mètre, elle rend une case décalée vers l'arrière — mesuré sur la Diligence, le pixel du dessus
- * d'un comptoir désigne la table voisine, et un clic y envoyait le groupe s'attabler au lieu de servir
- * le comptoir. Le rayon, lui, touche la face RÉELLEMENT dessinée à sa hauteur réelle : quand il nomme
+ * La résolution de case du pointeur inverse l'écran au LIFT DU SOL : sur une FACE SUPÉRIEURE portée en
+ * hauteur, elle rend une case décalée vers l'arrière — le piège que la fixture pose, un meuble haut
+ * dont le pixel du dessus désigne la case du décor voisin, où un clic enverrait le groupe au lieu de
+ * servir le meuble visé. Le rayon, lui, touche la face RÉELLEMENT dessinée à sa hauteur réelle : quand il nomme
  * un décor, c'est lui qui décide ; la case dessinée n'est qu'un REPLI (plateau fin, aucune face touchée).
  */
 describe('meuble HAUT — le rayon décide, la case dessinée n’est qu’un repli (#1443)', () => {
-  const scene = diligence.scene as Scene;
+  const scene = FIXTURE;
   const dims = dimsDe(scene);
   const mpt = sceneMetresPerTile(scene);
   const camera = cameraVolumique(dims, mpt);
 
-  /** Sommet MONDE d'un décor posé, dérivé de ses faces réelles (aucune relecture de recette). */
-  const sommet = (ent: SceneEntity): number => {
-    const prop = findPropById(ent.ref ?? '')!;
-    const faces = buildPropVolumes(prop, {
-      ancre: ent.pos,
-      facing: capVolumique(ent.facing, ent.id),
-      baseHeightM: heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0),
-      entId: ent.id,
-    }, mpt);
-    return Math.max(...faces.flatMap((f) => f.poly.map((p) => p.h)));
-  };
+  /** Sommet MONDE d'un décor POSÉ dans la scène, cap et altitude de son pied compris. */
+  const sommet = (ent: SceneEntity): number => sommetDuDecor(findPropById(ent.ref ?? '')!, {
+    ancre: ent.pos,
+    facing: capVolumique(ent.facing, ent.id),
+    baseHeightM: heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0),
+    entId: ent.id,
+  }, mpt);
 
   /** Les décors dont le pixel du DESSUS tombe, au lift du SOL, sur la case d'un AUTRE décor : le cas
-   *  exact que la règle tranche. Vide = la carte a changé, et la garde ne mesure plus rien. */
+   *  exact que la règle tranche — la fixture en pose un, et le contrat refuse une liste vide. */
   const pieges = scene.entities
     .filter((e) => e.kind === 'prop' && (e.z ?? 0) === 0)
     .map((e) => ({ ent: e, px: pixelVolumique(camera, mpt, e.pos.x, e.pos.y, sommet(e)) }))
@@ -333,7 +522,7 @@ describe('meuble HAUT — le rayon décide, la case dessinée n’est qu’un re
     .filter((c) => !!c.voisin);
 
   it('le pixel du DESSUS d’un meuble haut cible CE meuble, jamais le voisin que le lift du sol désigne', () => {
-    expect(pieges.length, 'la Diligence DOIT porter au moins un meuble haut qui décale sa case').toBeGreaterThan(0);
+    expect(pieges.map((c) => c.ent.id), 'la fixture pose un meuble haut dont le dessus décale la case').toContain(MEUBLE_HAUT_ID);
     const ecarts: string[] = [];
     for (const { ent, px, voisin } of pieges) {
       setSpritePicker(() => ({ kind: 'entity', id: ent.id })); // le rayon touche la face du dessus
@@ -367,7 +556,7 @@ describe('meuble HAUT — le rayon décide, la case dessinée n’est qu’un re
  * RÉSOLUTION de ce que le rayon nomme, dont la branche `entity` retombait en silence sur le sol.
  */
 describe('sonde de picking — hors combat, un décor volumique nommé rend SA case (#1680)', () => {
-  const scene = diligence.scene as Scene;
+  const scene = FIXTURE;
   const cible = scene.entities.find((e) => e.kind === 'prop' && (e.z ?? 0) === 0)!;
   const mpt = sceneMetresPerTile(scene);
   /** Un pixel qui tombe sur une SURFACE dessinée : le repli de sol y a donc une réponse, et le
@@ -378,26 +567,11 @@ describe('sonde de picking — hors combat, un décor volumique nommé rend SA c
   );
   const pixel = { x: px.sx, y: px.sy };
 
-  /** Élément de stage que la sonde cherche dans le DOM (`svg.iso-stage`), mesuré au cadre du test. */
-  function poserStage(): SVGSVGElement {
-    const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    el.setAttribute('class', 'iso-stage');
-    el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
-    document.body.appendChild(el);
-    return el;
-  }
-
-  afterEach(() => {
-    document.querySelectorAll('svg.iso-stage').forEach((el) => el.remove());
-    setStageFrame(null);
-  });
-
   /** Le poste du groupe est POSÉ, jamais hérité : `partyPos.z` décide de l'étage sur lequel la sonde
    *  résout (`state/viewLevel.ts:etageActif`), donc de la voie qui répond — un `z` de 1 laissé par un
    *  test voisin fait rendre `sol` là où l'étage 0 rend `meuble`. */
   function armer(): void {
-    poserStage();
-    setStageFrame(cadreRendu(dimsDe(scene)));
+    monterStage(cadreRendu(dimsDe(scene)));
     useGame.setState({
       scene, mode: 'exploration', battle: null, dialogue: null,
       partyPos: posteDuGroupe(scene, 0, { x: 0, y: 0 }),
@@ -473,21 +647,12 @@ describe('verdict de picking — le rayon nomme, la surface ne devine pas (#1687
   };
 
   function armer(): void {
-    const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    el.setAttribute('class', 'iso-stage');
-    el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
-    document.body.appendChild(el);
-    setStageFrame(cadreRendu(dimsDe(scene)));
+    monterStage(cadreRendu(dimsDe(scene)));
     useGame.setState({
       scene, mode: 'exploration', battle: null, dialogue: null, party: [],
       partyPos: { x: 1, y: 1 }, camPan: CAM, zoom: ZOOM, camRot: 0, camEdge: false, viewMode: 'iso',
     });
   }
-
-  afterEach(() => {
-    document.querySelectorAll('svg.iso-stage').forEach((el) => el.remove());
-    setStageFrame(null);
-  });
 
   it('deux entités sur une MÊME case, le pixel tombe sur la SECONDE : le verdict nomme la SECONDE', () => {
     armer();
@@ -510,12 +675,13 @@ describe('verdict de picking — le rayon nomme, la surface ne devine pas (#1687
  *
  * Un plateau fin ne présente aucune face au rayon : c'est alors la case DESSINÉE qui décide. La
  * résolution de tuile l'écarte (l'empreinte d'un meuble solide n'est pas marchable) et le repli
- * cross-couche rend une case d'un AUTRE ÉTAGE — décalage mesuré sur `la-diligence` : (+3,+3) et z0→z1,
- * soit la table voisine, à l'autre bout de la salle. Le geste s'en protégeait seul ; la sonde de
- * recette, qui n'avait pas cet étage, innocentait donc le pixel que le clic manquait.
+ * cross-couche rend une case d'un AUTRE ÉTAGE — le piège que la fixture pose : son étage 1 est
+ * justement là où ce repli envoie le pixel du décor à plateau fin, plusieurs pas plus loin. Le geste
+ * s'en protégeait seul ; la sonde de recette, qui n'avait pas cet étage, innocentait donc le pixel que
+ * le clic manquait.
  */
 describe('sonde de picking — plateau FIN : la case du meuble DESSINÉ, jamais celle d’un autre étage (#1680)', () => {
-  const scene = diligence.scene as Scene;
+  const scene = FIXTURE;
   const dims = dimsDe(scene);
   const mpt = sceneMetresPerTile(scene);
   const camera = cameraVolumique(dims, mpt);
@@ -528,26 +694,17 @@ describe('sonde de picking — plateau FIN : la case du meuble DESSINÉ, jamais 
     .map((ent) => ({ ent, px: pixelVolumique(camera, mpt, ent.pos.x, ent.pos.y, heightAt(scene, ent.pos.x, ent.pos.y, 0)) }));
 
   function poserStage(): void {
-    const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    el.setAttribute('class', 'iso-stage');
-    el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
-    document.body.appendChild(el);
-    setStageFrame(cadreRendu(dims));
+    monterStage(cadreRendu(dims));
     useGame.setState({
       scene, mode: 'exploration', battle: null, dialogue: null, partyPos: poste,
       camPan: CAM, zoom: ZOOM, camRot: 0, camEdge: false, viewMode: 'iso',
     });
   }
 
-  afterEach(() => {
-    document.querySelectorAll('svg.iso-stage').forEach((el) => el.remove());
-    setStageFrame(null);
-  });
-
   it('sans rayon, chaque décor de l’étage rend SA case par la voie `meuble`', () => {
     poserStage();
     setSpritePicker(null);
-    expect(decors.length, 'la Diligence DOIT porter des décors à l’étage 0').toBeGreaterThan(0);
+    expect(decors.map((d) => d.ent.id), 'la fixture pose ses décors à l’étage 0').toContain(PLATEAU_FIN_ID);
     const ecarts: string[] = [];
     for (const { ent, px } of decors) {
       const vu = pickTileAt({ x: px.sx, y: px.sy });
@@ -558,16 +715,17 @@ describe('sonde de picking — plateau FIN : la case du meuble DESSINÉ, jamais 
   });
 
   it('TÉMOIN — le repli cross-couche, lui, désigne bien une case d’un AUTRE étage : c’est ce que cet étage évite', () => {
-    const pieges: string[] = [];
-    for (const { ent, px } of decors) {
-      const g = stagePointAt(viewBoxPointAt({ sx: px.sx, sy: px.sy }, CANVAS), CAM, ZOOM);
-      const sol = caseAuSol(scene, { pose, dims, activeZ: 0, aretes: [] }, g);
-      if (sol && (sol.x !== ent.pos.x || sol.y !== ent.pos.y || (sol.z ?? 0) !== 0))
-        pieges.push(`${ent.id} (${ent.pos.x},${ent.pos.y}) → sol ${sol.x},${sol.y},z${sol.z ?? 0}`);
-    }
-    expect(pieges.length, 'aucun piège mesuré : ce contrat ne départage plus rien').toBeGreaterThan(0);
-    // Le décalage EST celui du bug : la case rendue est celle de l'étage du dessus, trois pas plus loin.
-    expect(pieges).toContain('diligence-salle-table-murale-1 (14,11) → sol 17,14,z1');
+    const pieges = decors
+      .map(({ ent, px }) => {
+        const g = stagePointAt(viewBoxPointAt({ sx: px.sx, sy: px.sy }, CANVAS), CAM, ZOOM);
+        return { ent, sol: caseAuSol(scene, { pose, dims, activeZ: 0, aretes: [] }, g) };
+      })
+      .filter(({ ent, sol }) => !!sol && (sol.x !== ent.pos.x || sol.y !== ent.pos.y || (sol.z ?? 0) !== 0));
+    expect(pieges.map((p) => p.ent.id), 'aucun piège mesuré : ce contrat ne départage plus rien').toContain(PLATEAU_FIN_ID);
+    // Le décalage EST celui du bug : la case rendue est celle de l'ÉTAGE DU DESSUS, plusieurs pas plus loin.
+    const { ent, sol } = pieges.find((p) => p.ent.id === PLATEAU_FIN_ID)!;
+    expect(sol!.z, 'le repli quitte l’étage où le décor est posé').toBe(1);
+    expect(chebyshev(sol!, ent.pos), 'et la case rendue n’est pas la sienne').toBeGreaterThan(0);
   });
 });
 
@@ -581,22 +739,13 @@ describe('sonde de picking — plateau FIN : la case du meuble DESSINÉ, jamais 
  * Le cadre commis est publié (`spritePicker.ts:setStageFrame`) ; la sonde le lit.
  */
 describe('sonde de picking — le CADRE est celui que l’écran rend, jamais le store nu (#1680)', () => {
-  const scene = diligence.scene as Scene;
+  const scene = FIXTURE;
   const poste = posteDuGroupe(scene, 0, { x: 0, y: 0 });
-
-  afterEach(() => {
-    document.querySelectorAll('svg.iso-stage').forEach((el) => el.remove());
-    setStageFrame(null);
-  });
 
   /** Monte le stage, PUBLIE `cadre`, et pose au store un `viewMode` DIVERGENT — celui qu'une sonde
    *  rebâtisseuse lirait. C'est exactement la situation de la première personne. */
   function armerCadre(cadre: Dims): void {
-    const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    el.setAttribute('class', 'iso-stage');
-    el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
-    document.body.appendChild(el);
-    setStageFrame(cadreRendu(cadre));
+    monterStage(cadreRendu(cadre));
     useGame.setState({
       scene, mode: 'exploration', battle: null, dialogue: null, partyPos: poste,
       camPan: CAM, zoom: ZOOM, camRot: 0, camEdge: false, viewMode: 'top', // le store DIVERGE du cadre commis
@@ -648,14 +797,14 @@ describe('sonde de picking — le CADRE est celui que l’écran rend, jamais le
  *
  * Un écran qui SUIT le groupe ne pose rien dans `store.camPan` : le focal vit dans la réf que la boucle
  * d'images réécrit (`MondeDeCampagne.tsx:camRef`), et c'est cette valeur-là que le geste inverse à
- * l'instant de l'événement. Une sonde qui inverse avec le store part donc de tout le focal à côté —
- * mesuré sur Chrome (scène `diligence`, 1600×900) : au pixel MÊME dont le clic déplaçait le groupe en
- * (19,4), la sonde rendait `{tile: null, via: 'aucune'}`.
+ * l'instant de l'événement. Une sonde qui inverse avec le store part donc de tout le focal à côté :
+ * au pixel MÊME dont le clic déplace le groupe, elle rend `{tile: null, via: 'aucune'}` (mesuré en
+ * recette sur Chrome, 1600×900).
  *
  * D'où le cadre PUBLIÉ en LECTEUR de caméra : les deux porteurs lisent la même valeur au même instant.
  */
 describe('sonde de picking — la CAMÉRA du cadre est celle du RENDU, jamais `store.camPan` (#1680)', () => {
-  const scene = diligence.scene as Scene;
+  const scene = FIXTURE;
   const dims = dimsDe(scene);
   const mpt = sceneMetresPerTile(scene);
   const camera = cameraVolumique(dims, mpt);
@@ -665,19 +814,10 @@ describe('sonde de picking — la CAMÉRA du cadre est celle du RENDU, jamais `s
     .filter((e) => e.kind === 'prop' && (e.z ?? 0) === 0)
     .map((ent) => ({ ent, px: pixelVolumique(camera, mpt, ent.pos.x, ent.pos.y, heightAt(scene, ent.pos.x, ent.pos.y, 0)) }));
 
-  afterEach(() => {
-    document.querySelectorAll('svg.iso-stage').forEach((el) => el.remove());
-    setStageFrame(null);
-  });
-
   it('cadre publié à la caméra du RENDU, store AU REPOS : la sonde résout la case du geste', () => {
-    const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    el.setAttribute('class', 'iso-stage');
-    el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
-    document.body.appendChild(el);
     // L'image est cadrée en `CAM` (c'est la caméra que `viseur` tend au geste par sa réf) ; le store,
     // lui, reste à l'origine — exactement l'état d'un écran centré sur le groupe.
-    setStageFrame(cadreRendu(dims, CAM));
+    monterStage(cadreRendu(dims, CAM));
     useGame.setState({
       scene, mode: 'exploration', battle: null, dialogue: null, partyPos: poste,
       camPan: { x: 0, y: 0 }, zoom: ZOOM, camRot: 0, camEdge: false, viewMode: 'iso',
@@ -719,17 +859,8 @@ describe('sonde de recette — le verdict dit la CASE, le geste nomme le PNJ (#1
     cameraVolumique(dimsDe(scene), mpt), mpt, 4, 4, heightAt(scene, 4, 4, 0),
   );
 
-  afterEach(() => {
-    document.querySelectorAll('svg.iso-stage').forEach((el) => el.remove());
-    setStageFrame(null);
-  });
-
   it('un pixel sur la case d’un PNJ à dialogue : `nature:"case"`, et `geste.entId` = le PNJ', () => {
-    const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    el.setAttribute('class', 'iso-stage');
-    el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
-    document.body.appendChild(el);
-    setStageFrame(cadreRendu(dimsDe(scene)));
+    monterStage(cadreRendu(dimsDe(scene)));
     setSpritePicker(null); // hors rayon : c'est la CASE qui répond, comme à l'écran hors combat
     useGame.setState({
       scene, mode: 'exploration', battle: null, dialogue: null, party: [],
@@ -742,11 +873,7 @@ describe('sonde de recette — le verdict dit la CASE, le geste nomme le PNJ (#1
   });
 
   it('TÉMOIN — une case NUE du même plancher ne fait servir aucune entité', () => {
-    const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    el.setAttribute('class', 'iso-stage');
-    el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
-    document.body.appendChild(el);
-    setStageFrame(cadreRendu(dimsDe(scene)));
+    monterStage(cadreRendu(dimsDe(scene)));
     setSpritePicker(null);
     useGame.setState({
       scene, mode: 'exploration', battle: null, dialogue: null, party: [],
