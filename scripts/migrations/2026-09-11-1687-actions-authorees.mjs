@@ -35,8 +35,8 @@
  * plus aucune enveloppe vide).
  * BORNE HAUTE CLOSE (`schema` ∈ {10, 11}, jamais « ≥ 10 ») : DERNIÈRE de la chaîne dans l'ordre
  * lexical, elle est la seule à savoir ce qui existe après elle et NOMME un `schema` futur, là où les
- * amont l'avalent par leur borne ouverte. `2026-09-10-1687-usable-sieges.mjs` a fermé la sienne
- * jusqu'ici ; ce bump l'élargit à « ≥ 10 » et ferme celle-ci.
+ * amont l'avalent par leur borne ouverte — celle de `2026-09-10-1687-usable-sieges.mjs` est ouverte
+ * à « ≥ 10 », un document porté plus loin y traverse en NO-OP.
  * FAIL-FAST : `interact` de forme inattendue (clé hors `flow`/`consume`, `flow` absent), `usable` de
  * forme inattendue, `schema` absent, non numérique ou ∉ {10, 11} → rien n'est écrit, sortie 1.
  */

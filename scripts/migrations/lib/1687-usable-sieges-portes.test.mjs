@@ -3,18 +3,24 @@
  *
  *  - `2026-09-10-1687-usable-sieges.mjs` (racine `src/scenes`, `src/data/props.json` en LECTURE
  *    SEULE) : pose `usable: {}` sur chaque entité dont le TYPE de décor porte des `seatSlots`, et
- *    porte le document de `schema` 9 à 10. DERNIÈRE de la chaîne dans l'ordre lexical : sa borne
- *    haute est CLOSE, et c'est elle qui NOMME un `schema` futur.
+ *    porte le document au `schema` 10. Sa borne haute est OUVERTE (`schema` ∈ {9, ≥ 10}) : un
+ *    document déjà porté plus loin par un passage postérieur y traverse en NO-OP nominatif, sans
+ *    être RABAISSÉ — le rôle de sentinelle du `schema` futur appartient à la DERNIÈRE de la chaîne
+ *    dans l'ordre lexical, `2026-09-11-1687-actions-authorees.mjs`.
  *
  * Une déclaration n'est pas une porte tant qu'on ne l'a pas vue MORDRE : ce banc joue la migration
  * sur un dépôt JETABLE (`os.tmpdir()`), une fois par scénario, et exige la sortie attendue, un
  * message NOMINATIF, et — pour les rouges d'avant-écriture — ZÉRO fichier touché (octet ET
  * horodatage antidaté).
  *
- * L'état d'AVANT n'existe plus dans l'arbre et AUCUNE révision ne sert de fixture : il est
- * reconstruit par projection INVERSE des documents VIVANTS (`usable` retiré des entités à places,
- * `schema` rendu à 9). Les TYPES à places et tous les cardinaux se LISENT (catalogue et documents),
- * jamais récités ici.
+ * NI l'état d'entrée NI l'état d'arrivée de ce passage ne vivent encore dans l'arbre — un passage
+ * postérieur l'a mené plus loin (`usable` y porte des faits NOMMÉS, `schema` y est plus récent) — et
+ * AUCUNE révision ne sert de fixture : les DEUX se projettent depuis les documents VIVANTS,
+ * `projetAvant` (`usable` retiré des entités à places, `schema` rendu à 9) et `projetApres`
+ * (`usable` réduit à l'enveloppe VIDE, `schema` à 10). Une fixture GELÉE ne tiendrait pas : les
+ * cardinaux d'identité de la migration (projets, Scènes, entités à places) portent sur l'arbre
+ * ENTIER. Les TYPES à places et tous les cardinaux se LISENT (catalogue et documents), jamais
+ * récités ici.
  *
  * Ce banc vit sous `lib/` : `replay.mjs` scanne le dossier des migrations à PLAT et n'y admet que
  * des `.mjs` à préfixe DATÉ.
@@ -102,14 +108,19 @@ assert.ok(SIEGES > 0, 'aucune entité à places dans les projets livrés — la 
 /** Le PREMIER projet qui porte des places : c'est lui que les scénarios de faute mutent. */
 const PORTEUR = PROJETS.find((rel) => SIEGES_PAR_PROJET[rel] > 0);
 
-/** Forme du document avant et après le bump porté par cette migration — borne haute CLOSE. */
+/** Forme d'entrée et CIBLE du bump porté par cette migration — borne haute OUVERTE. */
 const SCHEMA_AVANT = 9;
 const SCHEMA_APRES = 10;
 for (const rel of PROJETS) {
   const doc = JSON.parse(lire(rel));
-  assert.equal(doc.schema, SCHEMA_APRES, `${rel} : \`schema\` ${doc.schema} ≠ ${SCHEMA_APRES} — l’arbre n’est pas migré`);
+  // L'arbre a PASSÉ ce bump : son numéro est à la cible ou au-delà. Le FIGER à un numéro exact
+  // rendrait ce banc rouge à chaque bump ultérieur d'un document que ce passage ne possède plus.
+  assert.ok(
+    doc.schema >= SCHEMA_APRES,
+    `${rel} : \`schema\` ${doc.schema} < ${SCHEMA_APRES} — l’arbre n’a pas passé ce bump`,
+  );
   const muettes = entitesDe(doc).filter((e) => estSiege(e) && !e.usable).map((e) => e.id);
-  assert.deepEqual(muettes, [], `${rel} : entité(s) à places sans \`usable\` — l’arbre n’est pas migré`);
+  assert.deepEqual(muettes, [], `${rel} : entité(s) à places sans \`usable\` — l’arbre n’a pas passé ce bump`);
 }
 
 /** PROJECTION INVERSE d'un projet : `usable` retiré de chaque entité à places, `schema` rendu à la
@@ -124,9 +135,22 @@ function projetAvant(rel) {
   return { ...doc, schema: SCHEMA_AVANT, scenes };
 }
 
+/** PROJECTION AVANT : l'ÉTAT D'ARRIVÉE de ce passage — le document vivant, son enveloppe `usable`
+ *  réduite à ce que CE passage pose (vide) et son `schema` à la cible. La position de la clé est
+ *  celle de l'arbre, garantie en QUEUE par le scénario (h). */
+function projetApres(rel) {
+  const doc = JSON.parse(lire(rel));
+  const scenes = doc.scenes.map((s) => (
+    Array.isArray(s.entities)
+      ? { ...s, entities: s.entities.map((e) => (estSiege(e) ? { ...e, usable: {} } : e)) }
+      : s
+  ));
+  return { ...doc, schema: SCHEMA_APRES, scenes };
+}
+
 const depotScenes = (fabrique) => depot(Object.fromEntries(PROJETS.map((rel) => [rel, fabrique(rel)])));
 
-test('(a) ALLER-RETOUR : l’état d’avant projeté → chaque projet BYTE-IDENTIQUE à l’arbre', (t) => {
+test('(a) ALLER-RETOUR : l’état d’avant projeté → chaque projet BYTE-IDENTIQUE à l’état d’arrivée', (t) => {
   const d = depotScenes((rel) => serialise(projetAvant(rel)));
   t.after(() => efface(d.racine));
 
@@ -137,7 +161,7 @@ test('(a) ALLER-RETOUR : l’état d’avant projeté → chaque projet BYTE-IDE
       sortie.includes(`${rel} — schema ${SCHEMA_AVANT} → ${SCHEMA_APRES}, usable posés : ${SIEGES_PAR_PROJET[rel]}`),
       `${rel} : le bump ou la pose ne DIT pas son compte : ${sortie.slice(0, 1200)}`,
     );
-    assert.equal(fs.readFileSync(path.join(d.racine, rel), 'utf8'), lire(rel), `${rel} produit ≠ arbre`);
+    assert.equal(fs.readFileSync(path.join(d.racine, rel), 'utf8'), serialise(projetApres(rel)), `${rel} produit ≠ état d’arrivée`);
   }
 });
 
@@ -240,20 +264,24 @@ test('(e bis) CARDINAL des entités à PLACES cassé (un siège retiré) → sor
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
 });
 
-test('(f) SENTINELLE : un `schema` FUTUR est NOMMÉ — la borne haute de la DERNIÈRE reste close', (t) => {
-  // C'est le rôle que les amont abandonnent en s'élargissant : elles avalent l'inconnu, la dernière
-  // le refuse. L'invariant se déplace à chaque bump (cf. `src/scenes/migrations-format-projet.test.ts`).
-  const futur = SCHEMA_APRES + 1;
-  const d = depotScenes((rel) => serialise({ ...projetAvant(rel), schema: futur }));
+test('(f) BORNE HAUTE OUVERTE : un `schema` FUTUR traverse en NO-OP nommé — aucun RABAISSEMENT', (t) => {
+  // Ce que les amont avalent, la DERNIÈRE de la chaîne le refuse : la sentinelle du `schema` futur
+  // vit chez `2026-09-11-1687-actions-authorees.mjs`, et l'invariant se déplace à chaque bump
+  // (cf. `src/scenes/migrations-format-projet.test.ts`). Ici, le document part comme il est venu :
+  // c'est ce que le rejeu de la chaîne (`npm run migrations:replay`) exige de tout passage dépassé.
+  const futur = SCHEMA_APRES + 7;
+  const d = depotScenes((rel) => serialise({ ...JSON.parse(lire(rel)), schema: futur }));
   t.after(() => efface(d.racine));
 
   const { code, sortie } = joue(d);
-  assert.equal(code, 1, `sortie ${code} — un schema futur doit ARRÊTER : ${sortie.slice(0, 1200)}`);
-  assert.ok(
-    sortie.includes(`\`schema\` inattendu ${futur} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`),
-    `arrêt sans NOMMER le numéro : ${sortie.slice(0, 1200)}`,
-  );
-  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
+  assert.equal(code, 0, `sortie ${code} — un schema futur doit TRAVERSER : ${sortie.slice(0, 1200)}`);
+  for (const rel of PROJETS) {
+    assert.ok(
+      sortie.includes(`${rel} — schema ${futur} → ${futur} — DÉJÀ MIGRÉ au-delà de ${SCHEMA_APRES}`),
+      `${rel} : le no-op ne se DIT pas, ou le document est rabaissé : ${sortie.slice(0, 1200)}`,
+    );
+  }
+  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'le passage a écrit sur un document qu’il ne possède plus');
 });
 
 test('(f bis) `schema` ANTÉRIEUR à la chaîne → sortie 1 NOMMANT le numéro : la borne BASSE est close aussi', (t) => {
@@ -264,7 +292,7 @@ test('(f bis) `schema` ANTÉRIEUR à la chaîne → sortie 1 NOMMANT le numéro 
   const { code, sortie } = joue(d);
   assert.equal(code, 1, `sortie ${code} — un schema antérieur doit ARRÊTER : ${sortie.slice(0, 1200)}`);
   assert.ok(
-    sortie.includes(`\`schema\` inattendu ${ancien} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`),
+    sortie.includes(`\`schema\` inattendu ${ancien} (${SCHEMA_AVANT} ou plus récent attendu)`),
     `arrêt sans NOMMER le numéro : ${sortie.slice(0, 1200)}`,
   );
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
@@ -293,8 +321,11 @@ test('(h) PARITÉ au RÉEL : sur les projets LIVRÉS, chaque entité à places p
   for (const rel of PROJETS) {
     const doc = JSON.parse(lire(rel));
     for (const e of entitesDe(doc)) {
+      // Une entité SANS place peut porter une enveloppe `usable` (d'autres capacités y vivent) ;
+      // ce qu'elle ne peut pas porter, c'est l'ASSISE — la seule que CE passage active, et qui se
+      // dérive du TYPE de décor.
       if (!estSiege(e)) {
-        if (e?.usable) fautes.push(`${rel} › ${e.id} : \`usable\` sur une entité SANS place`);
+        if (e?.usable?.assise !== undefined) fautes.push(`${rel} › ${e.id} : \`assise\` sur une entité SANS place`);
         continue;
       }
       const k = Object.keys(e);

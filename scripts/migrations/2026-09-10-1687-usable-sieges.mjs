@@ -44,7 +44,7 @@ const PROPS = path.join(ROOT, 'src/data/props.json');
 
 /** Cardinaux mesurés (2026-09-10) — portes d'identité du périmètre. */
 const ATTENDU = { projets: 4, scenes: 28, sieges: 5 };
-/** Forme du document AVANT et APRÈS ce bump — la borne haute est CLOSE (cf. en-tête). */
+/** Forme d'entrée et CIBLE de ce bump — la borne haute est OUVERTE (cf. en-tête). */
 const SCHEMA_AVANT = 9;
 const SCHEMA_APRES = 10;
 
@@ -85,8 +85,8 @@ for (const abs of cibles) {
   const doc = JSON.parse(brut);
 
   if (canonique(doc) !== brut) { echecs.push(`${rel} : FORME NON CANONIQUE`); continue; }
-  if (doc.schema !== SCHEMA_AVANT && doc.schema !== SCHEMA_APRES) {
-    echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`);
+  if (typeof doc.schema !== 'number' || !Number.isInteger(doc.schema) || doc.schema < SCHEMA_AVANT) {
+    echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (${SCHEMA_AVANT} ou plus récent attendu)`);
     continue;
   }
   if (!Array.isArray(doc.scenes)) { echecs.push(`${rel} : \`scenes\` absent ou non-tableau`); continue; }
@@ -126,8 +126,11 @@ if (echecs.length) {
 }
 
 for (const r of rapports) {
+  // Le document ne REDESCEND jamais : un projet déjà porté plus loin par un passage postérieur garde
+  // son numéro, ce passage-ci n'ayant à garantir que le plancher de SA cible.
+  const cible = Math.max(r.doc.schema, SCHEMA_APRES);
   const sortie = Object.fromEntries(
-    Object.entries(r.doc).map(([k, v]) => (k === 'scenes' ? [k, r.scenes] : k === 'schema' ? [k, SCHEMA_APRES] : [k, v])),
+    Object.entries(r.doc).map(([k, v]) => (k === 'scenes' ? [k, r.scenes] : k === 'schema' ? [k, cible] : [k, v])),
   );
   const out = canonique(sortie);
   if (out !== r.brut) fs.writeFileSync(r.abs, out, 'utf8');
@@ -138,9 +141,10 @@ for (const r of rapports) {
     .flatMap((s) => (Array.isArray(s.entities) ? s.entities : []))
     .filter((e) => estSiege(e) && !e.usable)
     .map((e) => e.id);
-  if (muettes.length || apres.schema !== SCHEMA_APRES) {
+  if (muettes.length || apres.schema < SCHEMA_APRES) {
     console.error(`[${NOM}] VÉRIFICATION POST-ÉCRITURE ROUGE — ${r.rel} : schema=${apres.schema}, ${muettes.join(', ')}`);
     process.exit(1);
   }
-  console.log(`[${NOM}] ${r.rel} — schema ${r.doc.schema} → ${apres.schema}, usable posés : ${r.migres} (déjà activées : ${r.deja}, entités à places : ${r.sieges}, scènes : ${apres.scenes.length}) — fichier ${out !== r.brut ? 'réécrit' : 'INCHANGÉ'}`);
+  const deja = r.doc.schema > SCHEMA_APRES ? ` — DÉJÀ MIGRÉ au-delà de ${SCHEMA_APRES}` : '';
+  console.log(`[${NOM}] ${r.rel} — schema ${r.doc.schema} → ${apres.schema}${deja}, usable posés : ${r.migres} (déjà activées : ${r.deja}, entités à places : ${r.sieges}, scènes : ${apres.scenes.length}) — fichier ${out !== r.brut ? 'réécrit' : 'INCHANGÉ'}`);
 }
