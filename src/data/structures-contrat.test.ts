@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
@@ -2010,76 +2010,127 @@ describe('régime `valeurs` : le scan descend dans `entries` d’un record ENVEL
 });
 
 /**
+ * LES TROIS CONTREFACTUELS DE REDÉCLARATION — un seul sous-processus, trois verdicts (#1654,
+ * #1463 L-gram-3).
+ *
+ * SOUS-PROCESSUS + racines SÉPARÉES, obligatoires : les caches de parse du scanner (`CACHE_SOURCE`,
+ * `CACHE_LITTERAUX`, `scripts/docs/lib/structures-scan.mts`) sont module-level et ne sont JAMAIS
+ * invalidés (angle mort déclaré au lexique) — une mutation mesurée dans le processus de la suite,
+ * ou sur la MÊME racine, mesurerait le premier état lu et mentirait.
+ *
+ * Ce qui se BATCHE : le pilote est le même scan, et la racine `avant` est la même copie des defs +
+ * de la grammaire pour les trois — trois `tsx` (~1,7 s de démarrage chacun) et trois scans de
+ * `avant` rendaient trois fois les mêmes chiffres. Ce qui reste TROIS contrats : les `apres` sont
+ * des mutations DISTINCTES (une def de sonde injectée ; `avail` re-tapé ; `price` re-tapé), chacune
+ * sur sa racine, et chaque `it` lit SON verdict.
+ */
+type VerdictRedecl = {
+  avant: number; apres: number; litterauxAvant: number; litterauxApres: number; nees: string[]; perdues: string[];
+};
+
+/** Le littéral INJECTÉ : une re-déclaration des deux bornes, que `plageSchema` possède déjà. */
+const SONDE_DEF = [
+  "import { z } from 'zod';",
+  'export const sondeMutationSchema = z.strictObject({ min: z.number(), max: z.number() });',
+].join('\n');
+
+/** Le littéral à quatre saisons, tel que les deux defs l'écrivaient avant `parSaison`. */
+const SAISONS = (valeur: string) =>
+  `z.strictObject({ printemps: ${valeur}, ete: ${valeur}, automne: ${valeur}, hiver: ${valeur} })`;
+
+/** Une contrefaçon RE-TAPÉE dans les deux defs de commerce d'une racine (`defs` = son dossier). */
+const reTape = (remplace: (source: string) => string) => (defs: string) => {
+  for (const def of ['sea-cargo.ts', 'land-cargo.ts']) {
+    const chemin = join(defs, def);
+    writeFileSync(chemin, remplace(readFileSync(chemin, 'utf8')), 'utf8');
+  }
+};
+
+/** Les trois mutations, chacune posée sur SA racine `apres`. La clé nomme le verdict. */
+const MUTATIONS: Record<string, (defs: string) => void> = {
+  sonde: (defs) => writeFileSync(join(defs, 'sonde-mutation.ts'), SONDE_DEF, 'utf8'),
+  cfAvail: reTape((source) => source.replace('avail: dispoSaisonniereSchema,', `avail: ${SAISONS('plageSchema')},`)),
+  cfPrix: reTape((source) =>
+    source.replace(
+      'price: z.union([prixSaisonnierSchema, prixTireSchema]),',
+      `price: z.union([${SAISONS('z.number()')}, z.strictObject({ dice: diceSpecSchema })]),`,
+    ),
+  ),
+};
+
+const PILOTE_REDECL = [
+  "import { pathToFileURL } from 'node:url';",
+  "import { join } from 'node:path';",
+  'const [avantRoot, ...variantes] = process.argv.slice(2);',
+  "const SCAN = pathToFileURL(join(process.cwd(), 'scripts/docs/lib/structures-scan.mjs')).href;",
+  'const { scannerRedeclarations } = await import(SCAN);',
+  "const cle = (r) => r.def + ' | ' + (r.champ || '(racine)') + ' | ' + r.signature + ' | ' + r.concept + ' | ' + r.statut + ' | ' + r.commun;",
+  'const avant = scannerRedeclarations(avantRoot);',
+  'const clesAvant = avant.redeclarations.map(cle);',
+  'const out = {};',
+  'for (const v of variantes) {',
+  "  const coupe = v.indexOf('=');",
+  '  const apres = scannerRedeclarations(v.slice(coupe + 1));',
+  '  const clesApres = apres.redeclarations.map(cle);',
+  '  out[v.slice(0, coupe)] = {',
+  '    avant: avant.redeclarations.length,',
+  '    apres: apres.redeclarations.length,',
+  '    litterauxAvant: avant.totalLitteraux,',
+  '    litterauxApres: apres.totalLitteraux,',
+  '    nees: clesApres.filter((k) => !clesAvant.includes(k)).sort(),',
+  '    perdues: clesAvant.filter((k) => !clesApres.includes(k)).sort(),',
+  '  };',
+  '}',
+  "process.stdout.write('<<<DIFF>>>' + JSON.stringify(out));",
+].join('\n');
+
+let verdictsRedecl: Record<string, VerdictRedecl> | undefined;
+let dossierRedecl: string | undefined;
+afterAll(() => {
+  if (dossierRedecl) rmSync(dossierRedecl, { recursive: true, force: true });
+});
+
+/** Le verdict d'UNE mutation. Le pilote est joué au premier appel, une fois pour le run. */
+function verdictRedecl(nom: string): VerdictRedecl {
+  if (!verdictsRedecl) {
+    const dossier = (dossierRedecl = mkdtempSync(join(tmpdir(), 'structures-redecl-')));
+    for (const racine of ['avant', ...Object.keys(MUTATIONS)]) {
+      for (const sous of ['defs', 'grammaire']) {
+        cpSync(join(ROOT, 'src/data/schemas', sous), join(dossier, racine, 'src/data/schemas', sous), { recursive: true });
+      }
+    }
+    for (const [cle, muter] of Object.entries(MUTATIONS)) muter(join(dossier, cle, 'src/data/schemas/defs'));
+    const pilote = join(dossier, 'pilote.mjs');
+    writeFileSync(pilote, PILOTE_REDECL, 'utf8');
+    const sortie = execFileSync(
+      process.execPath,
+      ['--import', 'tsx', pilote, join(dossier, 'avant'), ...Object.keys(MUTATIONS).map((cle) => `${cle}=${join(dossier, cle)}`)],
+      { cwd: ROOT, encoding: 'utf8' },
+    ).split('<<<DIFF>>>');
+    verdictsRedecl = JSON.parse(sortie[sortie.length - 1]) as Record<string, VerdictRedecl>;
+  }
+  return verdictsRedecl[nom]!;
+}
+
+/**
  * CONTRÔLE POSITIF du scan AST des redéclarations (#1654) — le détecteur MORD.
  *
  * Le stock `STRUCTURES_REDECLARATIONS` est un dénominateur DÉCROISSANT : à zéro, plus rien ne
  * distinguerait « aucune redéclaration » de « le scanner ne voit plus rien ». Cette sonde INJECTE une
  * redéclaration dans une COPIE de `src/data/schemas/` et exige que le compte passe N → N+1 avec une
  * ligne NOMINATIVE.
- *
- * SOUS-PROCESSUS (même patron que la sonde D de la strate `Document` ci-dessus) : les caches de parse
- * du scanner (`CACHE_SOURCE`, `CACHE_LITTERAUX`, `scripts/docs/lib/structures-scan.mts`) sont
- * module-level et ne sont JAMAIS invalidés (angle mort déclaré au lexique) — une mutation mesurée
- * dans le processus de la suite serait avalée dès qu'un chemin ou une racine a déjà été lu.
  */
 describe('scannerRedeclarations — contrôle POSITIF du détecteur (#1654)', () => {
-  /** Le littéral INJECTÉ : une re-déclaration des deux bornes, que `plageSchema` possède déjà. */
-  const SONDE_DEF = [
-    "import { z } from 'zod';",
-    'export const sondeMutationSchema = z.strictObject({ min: z.number(), max: z.number() });',
-  ].join('\n');
-
-  const PILOTE = [
-    "import { pathToFileURL } from 'node:url';",
-    "import { join } from 'node:path';",
-    'const [avantRoot, apresRoot] = process.argv.slice(2);',
-    "const SCAN = pathToFileURL(join(process.cwd(), 'scripts/docs/lib/structures-scan.mjs')).href;",
-    'const { scannerRedeclarations } = await import(SCAN);',
-    'const avant = scannerRedeclarations(avantRoot);',
-    'const apres = scannerRedeclarations(apresRoot);',
-    "const cle = (r) => r.def + ' | ' + (r.champ || '(racine)') + ' | ' + r.signature + ' | ' + r.concept + ' | ' + r.statut + ' | ' + r.commun;",
-    'const clesAvant = avant.redeclarations.map(cle);',
-    'const clesApres = apres.redeclarations.map(cle);',
-    "process.stdout.write('<<<DIFF>>>' + JSON.stringify({",
-    '  avant: avant.redeclarations.length,',
-    '  apres: apres.redeclarations.length,',
-    '  litterauxAvant: avant.totalLitteraux,',
-    '  litterauxApres: apres.totalLitteraux,',
-    '  nees: clesApres.filter((k) => !clesAvant.includes(k)).sort(),',
-    '  perdues: clesAvant.filter((k) => !clesApres.includes(k)).sort(),',
-    '}));',
-  ].join('\n');
-
   it('une redéclaration INJECTÉE dans une copie des defs est VUE — N → N+1, ligne nominative', () => {
-    const dossier = mkdtempSync(join(tmpdir(), 'structures-redecl-'));
-    try {
-      for (const quoi of ['avant', 'apres']) {
-        cpSync(join(ROOT, 'src/data/schemas/defs'), join(dossier, quoi, 'src/data/schemas/defs'), { recursive: true });
-        cpSync(join(ROOT, 'src/data/schemas/grammaire'), join(dossier, quoi, 'src/data/schemas/grammaire'), { recursive: true });
-      }
-      writeFileSync(join(dossier, 'apres/src/data/schemas/defs/sonde-mutation.ts'), SONDE_DEF, 'utf8');
-      const pilote = join(dossier, 'pilote.mjs');
-      writeFileSync(pilote, PILOTE, 'utf8');
-      const sortie = execFileSync(
-        process.execPath,
-        ['--import', 'tsx', pilote, join(dossier, 'avant'), join(dossier, 'apres')],
-        { cwd: ROOT, encoding: 'utf8' },
-      ).split('<<<DIFF>>>');
-      const diff = JSON.parse(sortie[sortie.length - 1]) as {
-        avant: number; apres: number; litterauxAvant: number; litterauxApres: number; nees: string[]; perdues: string[];
-      };
-
-      // La copie mesure le MÊME arbre que le scan du fichier : sans cet ancrage, le +1 ne prouverait rien.
-      expect(diff.avant, 'la copie NON MUTÉE ne mesure pas le même arbre que `scannerRedeclarations(ROOT)`.').toBe(redeclarations.length);
-      expect(diff.litterauxApres - diff.litterauxAvant, 'le littéral injecté n’a pas été LU par le scan.').toBe(1);
-      expect(diff.apres - diff.avant, 'la redéclaration injectée n’est pas COMPTÉE : le détecteur ne mord plus.').toBe(1);
-      expect(diff.nees, 'la ligne née n’est pas celle de la sonde, nominative.').toEqual([
-        'sonde-mutation.ts | (racine) | max,min | plage | cible | plageSchema',
-      ]);
-      expect(diff.perdues, 'la copie a PERDU des redéclarations : la mutation n’est pas isolée.').toEqual([]);
-    } finally {
-      rmSync(dossier, { recursive: true, force: true });
-    }
+    const diff = verdictRedecl('sonde');
+    // La copie mesure le MÊME arbre que le scan du fichier : sans cet ancrage, le +1 ne prouverait rien.
+    expect(diff.avant, 'la copie NON MUTÉE ne mesure pas le même arbre que `scannerRedeclarations(ROOT)`.').toBe(redeclarations.length);
+    expect(diff.litterauxApres - diff.litterauxAvant, 'le littéral injecté n’a pas été LU par le scan.').toBe(1);
+    expect(diff.apres - diff.avant, 'la redéclaration injectée n’est pas COMPTÉE : le détecteur ne mord plus.').toBe(1);
+    expect(diff.nees, 'la ligne née n’est pas celle de la sonde, nominative.').toEqual([
+      'sonde-mutation.ts | (racine) | max,min | plage | cible | plageSchema',
+    ]);
+    expect(diff.perdues, 'la copie a PERDU des redéclarations : la mutation n’est pas isolée.').toEqual([]);
   });
 });
 
@@ -2093,63 +2144,10 @@ describe('scannerRedeclarations — contrôle POSITIF du détecteur (#1654)', ()
  * ce que la grammaire déclare — la colonne à quatre saisons (CF1) ou l'union de prix (CF2) —, le
  * scanner le VERRAIT, nominativement. Le lot a donc rendu 3 lignes parce que les littéraux ont
  * disparu, pas parce que la mesure s'est éteinte.
- *
- * ROOTS SÉPARÉS + SOUS-PROCESSUS, obligatoires : les caches de parse du scanner (`CACHE_SOURCE`,
- * `CACHE_LITTERAUX`) sont module-level et ne sont JAMAIS invalidés (angle mort déclaré au lexique) —
- * un contrefactuel joué dans le processus de la suite, ou sur la MÊME racine, mesurerait le premier
- * état lu et mentirait.
  */
 describe('scannerRedeclarations — CONTREFACTUEL `parSaison` / `prix` (#1463 L-gram-3)', () => {
-  const PILOTE_CF = [
-    "import { pathToFileURL } from 'node:url';",
-    "import { join } from 'node:path';",
-    'const [avantRoot, apresRoot] = process.argv.slice(2);',
-    "const SCAN = pathToFileURL(join(process.cwd(), 'scripts/docs/lib/structures-scan.mjs')).href;",
-    'const { scannerRedeclarations } = await import(SCAN);',
-    'const avant = scannerRedeclarations(avantRoot);',
-    'const apres = scannerRedeclarations(apresRoot);',
-    "const cle = (r) => r.def + ' | ' + (r.champ || '(racine)') + ' | ' + r.signature + ' | ' + r.concept + ' | ' + r.statut + ' | ' + r.commun;",
-    'const clesAvant = avant.redeclarations.map(cle);',
-    'const clesApres = apres.redeclarations.map(cle);',
-    "process.stdout.write('<<<DIFF>>>' + JSON.stringify({",
-    '  avant: avant.redeclarations.length,',
-    '  apres: apres.redeclarations.length,',
-    '  nees: clesApres.filter((k) => !clesAvant.includes(k)).sort(),',
-    '  perdues: clesAvant.filter((k) => !clesApres.includes(k)).sort(),',
-    '}));',
-  ].join('\n');
-
-  /** Le littéral à quatre saisons, tel que les deux defs l'écrivaient avant `parSaison`. */
-  const SAISONS = (valeur: string) =>
-    `z.strictObject({ printemps: ${valeur}, ete: ${valeur}, automne: ${valeur}, hiver: ${valeur} })`;
-
-  /** Monte deux racines de scan (`avant` = l'arbre, `apres` = l'arbre + la contrefaçon). */
-  const contrefactuel = (patch: (source: string, def: string) => string) => {
-    const dossier = mkdtempSync(join(tmpdir(), 'structures-cf-gram3-'));
-    try {
-      for (const quoi of ['avant', 'apres']) {
-        cpSync(join(ROOT, 'src/data/schemas/defs'), join(dossier, quoi, 'src/data/schemas/defs'), { recursive: true });
-        cpSync(join(ROOT, 'src/data/schemas/grammaire'), join(dossier, quoi, 'src/data/schemas/grammaire'), { recursive: true });
-      }
-      for (const def of ['sea-cargo.ts', 'land-cargo.ts']) {
-        const chemin = join(dossier, 'apres/src/data/schemas/defs', def);
-        writeFileSync(chemin, patch(readFileSync(chemin, 'utf8'), def), 'utf8');
-      }
-      const pilote = join(dossier, 'pilote.mjs');
-      writeFileSync(pilote, PILOTE_CF, 'utf8');
-      const sortie = execFileSync(
-        process.execPath,
-        ['--import', 'tsx', pilote, join(dossier, 'avant'), join(dossier, 'apres')],
-        { cwd: ROOT, encoding: 'utf8' },
-      ).split('<<<DIFF>>>');
-      return JSON.parse(sortie[sortie.length - 1]) as { avant: number; apres: number; nees: string[]; perdues: string[] };
-    } finally {
-      rmSync(dossier, { recursive: true, force: true });
-    }
-  };
-
   it('CF1 — `avail` re-tapé à la place de `parSaison` : DEUX lignes naissent, nominatives', () => {
-    const diff = contrefactuel((source) => source.replace('avail: dispoSaisonniereSchema,', `avail: ${SAISONS('plageSchema')},`));
+    const diff = verdictRedecl('cfAvail');
     expect(diff.avant, 'la copie NON MUTÉE ne mesure pas le même arbre que `scannerRedeclarations(ROOT)`.').toBe(redeclarations.length);
     expect(diff.perdues, 'la copie a PERDU des redéclarations : la contrefaçon n’est pas isolée.').toEqual([]);
     expect(diff.nees, 'un `avail` re-tapé n’est PAS vu : `parSaison` masquerait la mesure au lieu de la solder.').toEqual([
@@ -2159,12 +2157,7 @@ describe('scannerRedeclarations — CONTREFACTUEL `parSaison` / `prix` (#1463 L-
   });
 
   it('CF2 — l’union de `price` re-tapée à la place des deux nœuds de grammaire : les lignes du concept `prix` renaissent', () => {
-    const diff = contrefactuel((source) =>
-      source.replace(
-        'price: z.union([prixSaisonnierSchema, prixTireSchema]),',
-        `price: z.union([${SAISONS('z.number()')}, z.strictObject({ dice: diceSpecSchema })]),`,
-      ),
-    );
+    const diff = verdictRedecl('cfPrix');
     expect(diff.avant, 'la copie NON MUTÉE ne mesure pas le même arbre que `scannerRedeclarations(ROOT)`.').toBe(redeclarations.length);
     expect(diff.perdues, 'la copie a PERDU des redéclarations : la contrefaçon n’est pas isolée.').toEqual([]);
     expect(diff.nees, 'un `price` re-tapé n’est PAS vu : les deux nœuds `prix` masqueraient la mesure.').toEqual([

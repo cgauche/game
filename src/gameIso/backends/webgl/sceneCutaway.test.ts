@@ -12,10 +12,12 @@ import {
   applyVisibilityTint,
   bakeWorldGeometry,
   surfaceGrouping,
+  worldBakeDeps,
   worldFaces,
   type BakedWorld,
   type KeepEl,
 } from './sceneMeshes';
+import { memoByRefDeps } from '../../../state/sceneMemo';
 import { facesGeometry } from './worldTris';
 import { faceDepthOf } from './faceRelief';
 import { mountGroundAccentLots, reposeGroundAccents, sceneGroundAccents } from './groundAccents';
@@ -26,6 +28,18 @@ import { sceneMetresPerTile, type Scene } from '../../../state/scene';
 
 const scene = arene.scene;
 const mpt = sceneMetresPerTile(scene);
+
+/** Le bake d'une scène-témoin, RETENU par son read-set réel (`worldBakeDeps`) — exactement le patron
+ *  de l'écran (`stage/GameStage3D.tsx`, `memoByRefDeps`) et du banc de teinte (`sceneTint.test.ts`).
+ *  Le dégagement est un MASQUE D'INDEX posé EN PLACE qui se relit du bake (clause d'IDEMPOTENCE plus
+ *  bas) : les cas de ce fichier rejouent les mêmes deux scènes, la cuisson se paie donc une fois par
+ *  scène et par run. Le contrat de BUDGET, dont le SUJET est le coût de la cuisson, ne passe pas par
+ *  ici. Un `it` qui MUTE une scène obtient une identité neuve, donc un bake frais. */
+const bakeRetenu = memoByRefDeps<Scene, BakedWorld>();
+const cuire = (scn: Scene): BakedWorld => {
+  const m = sceneMetresPerTile(scn);
+  return bakeRetenu(scn, worldBakeDeps(scn, m), () => bakeWorldGeometry(scn, m));
+};
 
 /** Trois lois de dégagement DÉTERMINISTES — elles ne singent pas `cutawayForSection`, elles la
  *  remplacent par des verdicts reproductibles portant sur les trois natures d'élément à faces. */
@@ -54,24 +68,33 @@ function fnv(s: string): string {
 
 /** Les faces RÉELLEMENT DESSINÉES, relues dans l'INDEX (jamais dans les `spans` : ce serait relire
  *  l'intention au lieu du rendu) — par groupe de surface, dans l'ordre de dessin. Vérifie au passage
- *  que chaque face gardée y est CONTIGUË et complète : un index compacté à moitié lèverait ici. */
+ *  que chaque face gardée y est CONTIGUË et complète : un index compacté à moitié lèverait ici.
+ *  Le balayage NOMME ses fautes et n'appelle `expect` qu'UNE fois : l'index de l'arène porte des
+ *  dizaines de milliers de sommets, et une assertion par sommet coûte plus que la cuisson qu'elle
+ *  juge. */
 function facesRendues(baked: BakedWorld): Map<string, string[]> {
   const parDébut = new Map(baked.spans.map((s) => [s.start, s] as const));
   const idx = baked.geometry.getIndex()!.array as Uint32Array;
   const groupes = baked.geometry.userData.surfaceGroups;
   const out = new Map<string, string[]>();
+  const fautes: string[] = [];
   for (const g of baked.geometry.groups) {
     const liste: string[] = [];
     let p = g.start;
     while (p < g.start + g.count) {
       const s = parDébut.get(idx[p]);
-      expect(s, `index ${p} : aucun début de face`).toBeDefined();
-      for (let k = 0; k < s!.count; k++) expect(idx[p + k]).toBe(s!.start + k);
-      liste.push(`${s!.cell.x},${s!.cell.y},${s!.cell.z}#${s!.count}`);
-      p += s!.count;
+      if (!s) { fautes.push(`index ${p} : aucun début de face`); break; }
+      for (let k = 0; k < s.count; k++) {
+        if (idx[p + k] === s.start + k) continue;
+        fautes.push(`index ${p + k} : la face ${s.cell.x},${s.cell.y},${s.cell.z} n’est pas contiguë (${idx[p + k]} au lieu de ${s.start + k})`);
+        break;
+      }
+      liste.push(`${s.cell.x},${s.cell.y},${s.cell.z}#${s.count}`);
+      p += s.count;
     }
     if (liste.length) out.set(groupes[g.materialIndex!].key, liste);
   }
+  expect(fautes, 'une face gardée n’est ni contiguë ni complète dans l’index dessiné').toEqual([]);
   return out;
 }
 
@@ -110,14 +133,14 @@ function empreinteBakeFiltré(scn: Scene, keepEl: KeepEl): { groupes: number; fa
 }
 
 function masqué(scn: Scene, keepEl: KeepEl): BakedWorld {
-  const baked = bakeWorldGeometry(scn, sceneMetresPerTile(scn));
+  const baked = cuire(scn);
   applyCutawayMask(baked, keepEl);
   return baked;
 }
 
 describe('INVARIANCE — deux dégagements, UN seul bake', () => {
   it('le masque n’écrit QUE l’index : même géométrie, mêmes sommets, mêmes couleurs', () => {
-    const baked = bakeWorldGeometry(scene, mpt);
+    const baked = cuire(scene);
     applyVisibilityTint(baked, tint);
     const gA = applyCutawayMask(baked, LOIS['sans-toits']).geometry;
     const attrPos = gA.getAttribute('position');
@@ -150,7 +173,10 @@ describe('INVARIANCE — deux dégagements, UN seul bake', () => {
 });
 
 describe('PARITÉ — le masque rend EXACTEMENT les triangles du bake filtré qu’il remplace', () => {
-  const SCENES: [string, () => Scene][] = [['arene', () => scene], ['vitrine', () => buildVitrineScene()]];
+  // La vitrine est BÂTIE une fois : c'est son IDENTITÉ qui donne au bake retenu sa clé — une scène
+  // rebâtie à chaque cas rendrait une réf neuve, donc une cuisson par cas.
+  let vitrine: Scene | undefined;
+  const SCENES: [string, () => Scene][] = [['arene', () => scene], ['vitrine', () => (vitrine ??= buildVitrineScene())]];
 
   for (const [sid, faire] of SCENES)
     it(`${sid} : les lois retirent vraiment des faces (sinon la parité ne pèserait rien)`, () => {
@@ -177,15 +203,22 @@ describe('PARITÉ — le masque rend EXACTEMENT les triangles du bake filtré qu
       it(`${sid} × ${lid} : les plages de dessin ne se chevauchent pas et ne s’inversent pas`, () => {
         const baked = masqué(faire(), LOIS[lid]);
         const idx = baked.geometry.getIndex()!.array as Uint32Array;
+        // Un balayage, deux fautes NOMMÉES, une assertion : une par sommet coûterait plus que le bake.
+        const fautes: string[] = [];
         let fin = 0;
-        for (const g of baked.geometry.groups) {
+        for (const [r, g] of baked.geometry.groups.entries()) {
           // CONTIGUÏTÉ : chaque groupe reprend là où le précédent s'est arrêté — zéro chevauchement,
           // zéro trou (le masque compacte en UNE passe linéaire).
-          expect(g.start).toBe(fin);
+          if (g.start !== fin) fautes.push(`groupe ${r} : commence à ${g.start}, le précédent s’arrêtait à ${fin}`);
           fin = g.start + g.count;
           // ORDRE DE CUISSON conservé À L'INTÉRIEUR du groupe : les sommets référencés montent.
-          for (let p = g.start + 1; p < fin; p++) expect(idx[p]).toBeGreaterThan(idx[p - 1]);
+          for (let p = g.start + 1; p < fin; p++) {
+            if (idx[p] > idx[p - 1]) continue;
+            fautes.push(`groupe ${r} : l’index ${p} redescend (${idx[p]} après ${idx[p - 1]})`);
+            break;
+          }
         }
+        expect(fautes, 'les plages de dessin se chevauchent, trouent ou inversent l’ordre de cuisson').toEqual([]);
       });
 });
 
@@ -210,7 +243,7 @@ describe('BUDGET — masquer coûte une passe d’index, pas un re-bake', () => 
 
 describe('IDEMPOTENCE — le masque se relit du bake, jamais de l’état précédent', () => {
   it('A → B → A rend les mêmes triangles que le premier A', () => {
-    const baked = bakeWorldGeometry(scene, mpt);
+    const baked = cuire(scene);
     applyCutawayMask(baked, LOIS['sans-toits']);
     const premier = empreinte(baked);
     const plages = baked.geometry.groups.map((g) => [g.start, g.count]);

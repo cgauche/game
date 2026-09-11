@@ -826,15 +826,27 @@ function tableDeSonde(): void {
     lines: () => ['ligne de sonde'],
   });
 }
-/** Étape à TABLE portée par le MONDE (aucun acteur nommé). */
-const etapeTableMonde = (id: string): CascadeStep => tableStep({
-  id, kind: 'sonde-table', worldOwner: true,
+/** Étape à TABLE portée par le MONDE (aucun acteur nommé). Le `kind` route l'applier de sonde. */
+const etapeTableMonde = (id: string, kind = 'sonde-table'): CascadeStep => tableStep({
+  id, kind, worldOwner: true,
   label: fixtureText('Table de monde'), table: { tableId: TABLE_SONDE, spec: { n: 1, sides: 100 } },
   stake: { key: { dataset: 'combat', kind: 'mutation' } },
 })!;
 /** Étape d'AFFICHAGE (rien à lancer) — `kind` libre : c'est lui qui route l'applier de sonde. */
 const etapeAffichage = (id: string, kind = 'sonde-affichage'): CascadeStep =>
   displayStep({ id, kind, label: fixtureText('Étape muette'), worldOwner: true });
+
+/** Assez d'étapes pour qu'un seul geste en franchisse une SUITE, et pour que la profondeur de pile
+ *  ait le temps de dériver si le franchissement récursait (une frame par étape). */
+const PAS_DE_CHARGE = 200;
+/** Profondeur de pile relevée au COMMIT de chaque étape de charge, dans l'ordre des rangs. */
+const profondeurs: number[] = [];
+registerCascadeApplier('sonde-charge', () => {
+  const limite = Error.stackTraceLimit;
+  Error.stackTraceLimit = Infinity;
+  profondeurs.push(new Error().stack!.split('\n').length);
+  Error.stackTraceLimit = limite;
+});
 
 // ── LES PORTES DU CURSEUR : une seule, et elle tient la charge ───────────────────────────────
 
@@ -914,16 +926,31 @@ describe('#1426 — les portes du curseur', () => {
     expect(fautifs, 'poser le curseur passe par `cascade.poserCurseurCascade`/`curseurPose` — sinon le seam du pilote est court-circuité').toEqual([]);
   });
 
-  it('CHARGE — une séquence de 20 000 tables résolues d’office se FERME (jamais une pile épuisée)', () => {
+  /**
+   * Le sujet n'est pas un VOLUME, c'est la FORME du franchissement : `advanceCascade` enchaîne les
+   * étapes résolues d'office par une BOUCLE, donc la profondeur de pile au commit d'une étape ne
+   * dépend pas de son rang — une récursion y ajoute une frame par étape, et la séquence finit en
+   * `RangeError`, cascade OUVERTE sur son curseur. La déviation se lit sur la PROFONDEUR dès la
+   * deuxième étape ; par le seul volume il faut dépasser la pile, mesuré entre 9 000 et 12 800
+   * étapes sur cet arbre (sonde du 2026-09-11, ~20 s pour 20 000 : le pas de commit est en O(n) du
+   * nombre d'étapes). `PAS_DE_CHARGE` n'a donc à couvrir que la CLÔTURE d'une séquence qu'un seul
+   * geste franchit.
+   */
+  it('CHARGE — les étapes résolues d’office se franchissent à profondeur de pile CONSTANTE, et la séquence se ferme', () => {
     setCadence('rapide');
     seedBattleRng(13);
     tableDeSonde();
     set({ party: makePregens().slice(0, 1), pendingCascade: null, suspendedCascades: [], battle: null });
-    const steps = [...Array(20000)].map((_, i) => etapeTableMonde(`charge-${i}`));
+    profondeurs.length = 0;
+    const steps = [...Array(PAS_DE_CHARGE)].map((_, i) => etapeTableMonde(`charge-${i}`, 'sonde-charge'));
     startCascade(get, set, { title: 'Charge', purpose: 'test', steps });
     expect(get().pendingCascade!.participants[0].table!.result, 'la 1ʳᵉ est tirée à l’ouverture').toBeTruthy();
-    get().cascadeNext(); // UN geste : le socle franchit les 19 999 restantes
+    get().cascadeNext(); // UN geste : le socle franchit toutes les suivantes
     expect(get().pendingCascade, 'la séquence est allée jusqu’à son dénouement').toBeNull();
+    expect(profondeurs, 'chaque étape a été commitée une fois').toHaveLength(PAS_DE_CHARGE);
+    const creuse = Math.min(...profondeurs);
+    const profonde = Math.max(...profondeurs);
+    expect(profonde - creuse, `la pile CROÎT avec le rang de l’étape (${creuse} → ${profonde} frames) : le franchissement n’est pas une boucle`).toBe(0);
   });
 });
 

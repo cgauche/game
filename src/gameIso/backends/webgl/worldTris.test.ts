@@ -49,23 +49,36 @@ import { scenario as diligence } from '../../../scenes/test-scenarios/diligence'
 import { buildVitrineScene } from '../../../scenes/vitrine-batiments';
 import { buildOperaFloorplan } from '../../../scenes/opera/floorplan';
 import { sceneMetresPerTile, type Scene } from '../../../state/scene';
+import { memoByRef } from '../../../state/sceneMemo';
 import { TW } from '../../../geometry/iso';
 import type { Face } from '../../builders/types';
 
 const siege = buildScene(siegeSpec);
+/** La vitrine est BÂTIE une fois : son IDENTITÉ est la clé des listes retenues ci-dessous. */
+const vitrine = buildVitrineScene();
 
-/** Toutes les faces MONDE d'une scène, dans l'ordre de peinture des builders. */
-function facesOf(scene: Scene): Face[] {
-  return [...buildFloors(scene), ...buildWalls(scene), ...buildRoofs(scene)].flatMap((el) => el.faces);
-}
+/**
+ * Toutes les faces MONDE d'une scène, dans l'ordre de peinture des builders.
+ *
+ * Cette liste et les deux qui suivent sont RETENUES par l'identité de la scène — patron canonique
+ * du dépôt (`memoByRef`, `state/sceneMemo.ts`, celui de l'écran). Ce fichier rejoue les cinq mêmes
+ * cartes-témoins d'un cas à l'autre et la construction des builders est la passe LOURDE ; les
+ * listes rendues sont LUES, jamais mutées (biais, géométrie et empreintes rendent des tableaux
+ * neufs). Une scène bâtie DANS un cas garde son identité propre, donc sa liste propre.
+ */
+const facesOf = memoByRef((scene: Scene): Face[] =>
+  [...buildFloors(scene), ...buildWalls(scene), ...buildRoofs(scene)].flatMap((el) => el.faces));
 
 /** Quads MONDE d'une scène à la profondeur que les catalogues d'apparence résolvent (`faceRelief`) —
  *  la liste EXACTE que `bakeWorldGeometry` fusionne, jamais une géométrie de laboratoire. */
-function quadsOf(scene: Scene): WorldPoly[] {
+const quadsOf = memoByRef((scene: Scene): WorldPoly[] => {
   const mpt = sceneMetresPerTile(scene);
   const depthOf = faceDepthOf();
   return facesOf(scene).flatMap((f) => faceQuads(f, mpt, depthOf(f)));
-}
+});
+
+/** La géométrie triangulée de TOUTES les faces d'une scène — ce que `bakeWorldGeometry` appelle. */
+const geomsOf = memoByRef((scene: Scene) => facesGeometry(facesOf(scene), sceneMetresPerTile(scene), faceDepthOf()));
 
 describe('gpToWorld — GP (tuiles + mètres) → repère three Y-haut', () => {
   it('(x, y, h) devient (x·mpt, h, y·mpt)', () => {
@@ -347,7 +360,7 @@ describe('coplanarRanks — le balayage spatial rend EXACTEMENT les rangs de la 
     ['arene (hub)', arene.scene],
     ['siege-enceinte', siege],
     ['diligence', diligence.scene],
-    ['vitrine-batiments', buildVitrineScene()],
+    ['vitrine-batiments', vitrine],
     ['opera (la plus lourde du dépôt)', buildOperaFloorplan()],
   ];
   for (const [nom, scene] of cartes)
@@ -609,8 +622,7 @@ describe('UV — la maille MONDE en mètres (attribut `uv`)', () => {
   });
 
   it('scène réelle (siege-enceinte) : chaque triangle porte 3 UV monde, à l’échelle métrique de SON quad', () => {
-    const mpt = sceneMetresPerTile(siege);
-    const geoms = facesGeometry(facesOf(siege), mpt, faceDepthOf());
+    const geoms = geomsOf(siege);
     expect(geoms.length).toBeGreaterThan(100);
     let pires = 0;
     for (const g of geoms) {
@@ -646,14 +658,14 @@ describe('UV1 — la FACE d’origine en [0,1]² (attribut `uv1`)', () => {
       ['siege', siege],
       ['arene', arene.scene],
     ] as [string, Scene][]) {
-      const geoms = facesGeometry(facesOf(scène), sceneMetresPerTile(scène), faceDepthOf());
+      const geoms = geomsOf(scène);
       const hors = geoms.flatMap((g) => g.uv1.flat()).filter((c) => c.u < 0 || c.u > 1 || c.v < 0 || c.v > 1);
       expect(hors).toEqual([]);
     }
   });
 
   it('scène réelle : uv1 EXPLOITE la face (elle n’est pas un aplat de zéros)', () => {
-    const geoms = facesGeometry(facesOf(siege), sceneMetresPerTile(siege), faceDepthOf());
+    const geoms = geomsOf(siege);
     const toutes = geoms.flatMap((g) => g.uv1.flat());
     expect(toutes.length).toBeGreaterThan(100);
     expect(toutes.filter((c) => c.u > 0.99).length).toBeGreaterThan(50);
@@ -680,11 +692,11 @@ describe('RELIEF MINCE — le prix mesuré du volume (#1176 P1-E)', () => {
   /** Les faces que le backend FUSIONNE réellement — la liste de `sceneMeshes.worldFaces` (toutes les
    *  couches pleines, `activeZ` au plus haut étage), pas celle du `facesOf` d'atelier : une scène à deux
    *  niveaux n'y émet pas les mêmes planchers, et le compte de triangles s'en ressent. */
-  function facesRendues(scene: Scene): Face[] {
+  const facesRendues = memoByRef((scene: Scene): Face[] => {
     const maxZ = Math.max(...scene.layers.map((l) => l.z));
     return [...buildFloors(scene, undefined, { activeZ: maxZ }), ...buildWalls(scene), ...buildRoofs(scene)]
       .flatMap((el) => el.faces);
-  }
+  });
 
   /** Ce que le backend produisait AVANT le relief : les parties PLEINES en boîte mince à l'épaisseur du
    *  mur, TOUTE autre partie de mur en deux copies plates (une par joue), le reste en plan. Réplique
@@ -716,7 +728,7 @@ describe('RELIEF MINCE — le prix mesuré du volume (#1176 P1-E)', () => {
    *  leurs chiffres. */
   const MESURES: [string, () => Scene, { trisAvant: number; trisApres: number; paires: number }][] = [
     ['siege-enceinte', () => siege, { trisAvant: 6912, trisApres: 7404, paires: 1238 }],
-    ['vitrine-batiments', buildVitrineScene, { trisAvant: 9666, trisApres: 11146, paires: 5279 }],
+    ['vitrine-batiments', () => vitrine, { trisAvant: 9666, trisApres: 11146, paires: 5279 }],
   ];
 
   /** SANS ÉPINGLE CHIFFRÉE — scènes dont la carte appartient à un AUTEUR (ou à son générateur) : une
@@ -746,10 +758,8 @@ describe('RELIEF MINCE — le prix mesuré du volume (#1176 P1-E)', () => {
   for (const [nom, faire, m] of MESURES)
     it(`${nom} : ${m.trisAvant} → ${m.trisApres} triangles (hausse sous +35 %)`, () => {
       const scene = faire();
-      const mpt = sceneMetresPerTile(scene);
-      const faces = facesOf(scene);
-      const avant = trisAvantRelief(faces, mpt);
-      const tris = facesGeometry(faces, mpt, faceDepthOf()).reduce((s, g) => s + g.tris.length, 0);
+      const avant = trisAvantRelief(facesOf(scene), sceneMetresPerTile(scene));
+      const tris = geomsOf(scene).reduce((s, g) => s + g.tris.length, 0);
       expect(tris / avant).toBeLessThanOrEqual(HAUSSE_MAX);
       expect({ avant, tris }).toEqual({ avant: m.trisAvant, tris: m.trisApres });
     });
@@ -768,9 +778,8 @@ describe('RELIEF MINCE — le prix mesuré du volume (#1176 P1-E)', () => {
   for (const [nom, faire, raison] of SANS_EPINGLE)
     it(`${nom} (SANS ÉPINGLE, ${raison}) : hausse sous +35 % et zéro paire coplanaire après biais`, () => {
       const scene = faire();
-      const faces = facesOf(scene);
-      const avant = trisAvantRelief(faces, sceneMetresPerTile(scene));
-      const tris = facesGeometry(faces, sceneMetresPerTile(scene), faceDepthOf()).reduce((s, g) => s + g.tris.length, 0);
+      const avant = trisAvantRelief(facesOf(scene), sceneMetresPerTile(scene));
+      const tris = geomsOf(scene).reduce((s, g) => s + g.tris.length, 0);
       expect(tris / avant).toBeLessThanOrEqual(HAUSSE_MAX);
       const quads = quadsOf(scene);
       expect(coplanarOverlapPairs(quads).length).toBeGreaterThan(0);
@@ -779,7 +788,7 @@ describe('RELIEF MINCE — le prix mesuré du volume (#1176 P1-E)', () => {
     });
 
   it('la vitrine porte les parties de RUINE et de porte FERMÉE qu’aucune autre scène-témoin n’émet', () => {
-    const parts = new Set(facesRendues(buildVitrineScene()).map((f) => f.material.part));
+    const parts = new Set(facesRendues(vitrine).map((f) => f.material.part));
     for (const part of ['gravats', 'gravats-tas', 'seuil', 'vantail', 'vantail-planche', 'poignee'])
       expect(parts.has(part as WallPart), `${part} absent de la vitrine`).toBe(true);
   });

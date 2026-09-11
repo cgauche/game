@@ -7,7 +7,8 @@
  *  2. le porteur ne garde que ce qu'il DÉCRIT (QUI/QUAND/CE QU'ON DEVIENT) : `symptomId`,
  *     `afterDays`/`once`, `difficultyBySeverity` ; il ne redit ni le jet ni la conséquence ;
  *  3. le LECTEUR (`symptomOnTick`, `tickDisease`) ne tire sa Difficulté et ses ops QUE du nœud —
- *     vérifié étape par étape sur 40 seeds × chaque maladie porteuse, chemin DIFFÉRÉ ;
+ *     vérifié étape par étape sur chaque maladie porteuse (chemin DIFFÉRÉ), la COUVERTURE des
+ *     porteurs et des sévérités étant elle-même assertée depuis la donnée ;
  *  4. la branche `success` est VIDE partout : le canal `diseaseTick` (`state/restFlow.ts`) n'applique
  *     que l'échec, une branche de réussite peuplée serait ignorée en silence.
  */
@@ -28,7 +29,16 @@ import * as defSymptoms from '../data/schemas/defs/symptoms';
 import * as defMaladies from '../data/schemas/defs/maladies';
 
 const DATA = join(fileURLToPath(new URL('.', import.meta.url)), '..', 'data');
-const lire = (f: string) => JSON.parse(readFileSync(join(DATA, f), 'utf8')) as Record<string, unknown>[];
+/** Le JSON d'un dataset, LU une fois par run : les sondes le relisent à chaque cas, et la boucle de
+ *  vérification par étape l'interroge des milliers de fois. */
+const LUS = new Map<string, Record<string, unknown>[]>();
+const lire = (f: string): Record<string, unknown>[] => {
+  const memo = LUS.get(f);
+  if (memo) return memo;
+  const lu = JSON.parse(readFileSync(join(DATA, f), 'utf8')) as Record<string, unknown>[];
+  LUS.set(f, lu);
+  return lu;
+};
 
 /** LE schéma du nœud, tel que les deux defs le composent (`defs/symptoms.ts`, `defs/maladies.ts`). */
 const noeudDuCycle = noeudTest(flowSchema, { difficulteRequise: true, echecSeulServi: true });
@@ -181,7 +191,19 @@ describe('cycle de maladie — le JET vit dans le nœud `test` du Flow (#1657 B2
     expect(symptoms.filter((s) => s.onTick).map((s) => s.id)).toEqual(cycles().map((c) => c.id));
   });
 
-  it('40 seeds × chaque porteur : CHAQUE étape différée porte la Difficulté et les ops de SON nœud', () => {
+  /**
+   * Les GRAINES ne sont qu'un moyen de faire APPARAÎTRE les symptômes et leurs sévérités ; ce que le
+   * cas prouve est la COUVERTURE, et elle est désormais ASSERTÉE à partir de la DONNÉE (tout porteur
+   * dont le cycle est une épreuve doit avoir produit une étape ; tout symptôme à
+   * `difficultyBySeverity` doit avoir été vu AVEC une sévérité). Mesuré le 2026-09-11 : les cinq
+   * couples (porteur × symptôme × sévérité) sont tous atteints dès la PREMIÈRE graine, et les 39
+   * suivantes n'en ajoutaient aucun — 2 760 étapes vérifiées pour 5 sujets. Dix graines gardent la
+   * marge d'une donnée qui rendrait un symptôme plus rare ; si elle ne suffisait plus, c'est la
+   * couverture qui rougit, jamais un compte d'étapes qui s'amenuise en silence.
+   */
+  const GRAINES = 10;
+
+  it('chaque porteur, sur dix graines : CHAQUE étape différée porte la Difficulté et les ops de SON nœud', () => {
     const porteurs = ['infection-mineure', 'infection-du-sang', 'peste-noire', 'vers-de-carie', 'vers-du-reik', 'pneumonie'];
     /** Ce que la DONNÉE déclare pour un symptôme (ou pour la maladie), recalculé depuis le nœud. */
     const attendu = (diseaseName: string, symptomId: string) => {
@@ -192,9 +214,10 @@ describe('cycle de maladie — le JET vit dans le nœud `test` du Flow (#1657 B2
       return node ? { difficulty: node.test.difficulty, onFail: spellOps(node.fail, 'target') } : undefined;
     };
     let vus = 0;
+    const couverture = new Set<string>();
     const menteuses: string[] = [];
     for (const maladie of porteurs) {
-      for (let seed = 1; seed <= 40; seed++) {
+      for (let seed = 1; seed <= GRAINES; seed++) {
         const rng = makeRNG(seed);
         const c = sick({ diseases: [contractDisease(maladie, rng, { incubation: 0, duration: 30 })!] });
         const etapes: { kind: string; difficulty: string; meta?: Record<string, unknown> }[] = [];
@@ -207,13 +230,29 @@ describe('cycle de maladie — le JET vit dans le nœud `test` du Flow (#1657 B2
           const sev = c.diseases![0]?.symptoms.find((s) => s.symptomId === e.meta!.symptomId)?.severity;
           const bySev = cycles().find((x) => x.id === e.meta!.symptomId)?.tick?.difficultyBySeverity as Record<string, string> | undefined;
           const difficulty = (sev && bySev?.[sev]) || att!.difficulty;
+          couverture.add(`${maladie} | ${String(e.meta!.symptomId)} | ${sev ?? '-'}`);
           if (e.difficulty !== difficulty || JSON.stringify(e.meta!.onFail) !== JSON.stringify(att!.onFail)) {
             menteuses.push(`${maladie}/seed ${seed}/${String(e.meta!.symptomId)} : ${e.difficulty} vs ${difficulty}`);
           }
         }
       }
     }
-    expect(vus, 'aucune étape mesurée : la sonde a glissé').toBeGreaterThan(2000);
+    expect(vus, 'aucune étape mesurée : la sonde a glissé').toBeGreaterThan(0);
+    // COUVERTURE, dérivée de la donnée : un porteur MUET n'est légitime que si son cycle est un effet
+    // CERTAIN (MSRC 16 l.142 — `vers-du-reik` éclate sans épreuve, donc sans étape différée).
+    const porteursVus = new Set([...couverture].map((c) => c.split(' | ')[0]));
+    const sansEpreuve = cycles().filter((c) => c.tick!.ops).map((c) => c.id);
+    expect(
+      porteurs.filter((p) => !porteursVus.has(p)),
+      'un porteur à ÉPREUVE n’a produit AUCUNE étape différée : la sonde ne le mesure plus',
+    ).toEqual(porteurs.filter((p) => sansEpreuve.includes(p)));
+    // Et le chemin `difficultyBySeverity` est bien EMPRUNTÉ : sinon la Difficulté indexée par la
+    // sévérité ne serait vérifiée par aucune étape de cette boucle.
+    const vusAvecSeverite = new Set([...couverture].filter((c) => !c.endsWith('| -')).map((c) => c.split(' | ')[1]));
+    expect(
+      cycles().filter((c) => c.tick!.difficultyBySeverity).map((c) => c.id).filter((id) => !vusAvecSeverite.has(id)),
+      'aucune étape vue AVEC une sévérité pour ce symptôme : le chemin indexé n’est plus prouvé',
+    ).toEqual([]);
     expect([...new Set(menteuses)].slice(0, 5), 'une étape dont la Difficulté/les ops ne viennent pas du nœud').toEqual([]);
   });
 });

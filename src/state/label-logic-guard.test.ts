@@ -67,6 +67,13 @@ function corpus(dirs: string[]): { rel: string; text: string }[] {
   return readCorpus(dirs, { tests: true }).filter(({ rel }) => !EXCLUDED(rel));
 }
 
+/** Le corpus des QUATRE dossiers, COMPOSÉ des deux périmètres au lieu d'être demandé sous sa propre
+ *  clé : `readCorpus` concatène ses bases dans l'ordre reçu et `ALL_DIRS` est `[...STRICT_DIRS,
+ *  ...RATCHET_DIRS]` — même liste, mêmes entrées. Une 3ᵉ clé relirait les 1 677 fichiers du disque
+ *  (1,2 s mesurées le 2026-09-11) et rendrait des entrées d'identité NEUVE, donc hors des mémos
+ *  keyés par identité de fichier. */
+const corpusTotal = (): { rel: string; text: string }[] => [...corpus(STRICT_DIRS), ...corpus(RATCHET_DIRS)];
+
 // Fonctions à paramètre `id` (5ᵉ forme, LOT 5) — collecte GLOBALE sur src/engine+state+gameIso+ui
 // (déclaration et appel peuvent vivre dans des fichiers différents, ex. `bodyShapeOf` déclarée dans
 // `state/spawn.ts`, appelée depuis le même module). PARESSEUSE : au top-level, cette collecte se
@@ -330,7 +337,7 @@ describe('garde-fou « logique par label interdite » (#142)', () => {
 describe('garde-fou « logique par LIBELLÉ hors du champ label » (#142 LOT 7)', () => {
   const literalFindings = () => {
     const counts = new Map<string, number>();
-    for (const { rel, text } of corpus(ALL_DIRS)) {
+    for (const { rel, text } of corpusTotal()) {
       const n = scanLabelLiteralCompare(rel, text).length;
       if (n > 0 || rel in LABEL_LITERAL_STOCK) counts.set(rel, n);
     }
