@@ -7,7 +7,9 @@ import { heightAt, sceneMetresPerTile, type Scene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import { occludesActor, type Dims } from '../../geometry/iso';
 import { diligenceCampaign } from '../../scenes/campaign';
-import { buildRoofs } from '../builders/roofs';
+import { buildRoofs, massFootprintCells } from '../builders/roofs';
+import { effectiveArchitecture } from '../../state/sceneEdit';
+import { chebyshev } from '../../engine/grid';
 import type { RoofEl, SceneEl } from '../builders/types';
 import { elOccluder } from './occluders';
 import { actorCapsuleOf } from './actorCapsule';
@@ -22,7 +24,7 @@ import {
 } from './GameStage3D';
 import { BancRenderer, attendreQuads, brancherArdoise, brancherImagesPilotees, caméras, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures } from './banc-volumique';
 import { PERCAGE_DEFINE, PERCAGE_FONDU_MS, PERCAGE_RAYON_PX, percerMateriau, trousPercage } from '../backends/webgl/percageLocal';
-import { centrePercage, clePercage } from './percage';
+import { centrePercage, clePercage, verdictPercage } from './percage';
 import { sourcesDeFrames } from './stageFrames';
 import { frameRectOf } from './boardPose';
 import { resetBakeQueue } from '../backends/webgl/atlasBake';
@@ -48,14 +50,56 @@ const CADRE: StageFrame = { mode: 'plateau', dims: DIMS, cam: { x: 0, y: 0 }, zo
  *  donc une SECONDE source du battement, vivante en même temps que le fondu. */
 const SCENE_PLUIE: Scene = { ...SCENE, weather: 'pluie', ambiance: 'exterieur' };
 
-/** POSTE COIFFÉ et POSTE À DÉCOUVERT — les mêmes que le banc du verdict (`percage.test.ts`). */
-const COIFFÉ = { x: 24, y: 22 } as const;
-const DÉCOUVERT = { x: 31, y: 0 } as const;
-
 /** Le montage du stage, mot pour mot (`MondeDeCampagne`) : une nappe par masse de toit, projetée. */
 const LIDS = buildRoofs(SCENE).map((el) => ({
   sectionId: el.sectionId ?? el.key, z: el.cell.z, cells: el.cells, occluder: elOccluder(el, DIMS),
 }));
+
+/**
+ * LES TROIS POSTES SE DÉRIVENT DU PLAN, comme au banc du verdict (`percage.test.ts`) — aucune
+ * coordonnée de la carte n'est recopiée, déplacer un bâtiment les déplace :
+ *  · COIFFÉ — la case la plus PROFONDE (anneau de Chebyshev du premier voisin hors emprise) parmi
+ *    celles que le verdict coiffe, dans la plus grande masse qui en porte ;
+ *  · DÉCOUVERT — la case que la plus proche des masses laisse le plus loin ;
+ *  · SOUS_LES_NAPPES — une case HORS de toute emprise que des nappes recouvrent pourtant : le cas
+ *    « cachée sans être abritée », c'est-à-dire la définition même du contrat de `keepEl` ci-dessous.
+ */
+type Case = { x: number; y: number };
+const cle = (p: Case) => `${p.x},${p.y}`;
+const EMPRISES = effectiveArchitecture(SCENE)
+  .flatMap((corps) => corps.masses.map((masse) => [...massFootprintCells(masse.footprint)].map((c) => { const [x, y] = c.split(',').map(Number); return { x, y }; })))
+  .sort((a, b) => b.length - a.length || a[0].y - b[0].y || a[0].x - b[0].x);
+const SOUS_MASSE = EMPRISES.flat();
+const DANS_MASSE = new Set(SOUS_MASSE.map(cle));
+const ECART = (p: Case) => Math.min(...SOUS_MASSE.map((m) => chebyshev(m, p)));
+function profondeur(p: Case, dans: Set<string>): number {
+  for (let k = 1; ; k++)
+    for (let dy = -k; dy <= k; dy++)
+      for (let dx = -k; dx <= k; dx++)
+      { const voisin = { x: p.x + dx, y: p.y + dy }; if (chebyshev(p, voisin) === k && !dans.has(cle(voisin))) return k; }
+}
+const estCoiffé = (p: Case) => verdictPercage(LIDS, [{
+  capsule: actorCapsuleOf({ x: p.x, y: p.y, h: heightAt(SCENE, p.x, p.y, 0) }, DIMS), z: 0,
+  monde: new THREE.Vector3(p.x, heightAt(SCENE, p.x, p.y, 0), p.y),
+}])[0];
+const COIFFÉ = EMPRISES.flatMap((cells) => {
+  const dans = new Set(cells.map(cle));
+  const coiffees = cells.filter(estCoiffé);
+  return coiffees.length
+    ? [coiffees.reduce((m, p) => (profondeur(p, dans) - profondeur(m, dans) || m.y - p.y || m.x - p.x) > 0 ? p : m)]
+    : [];
+})[0];
+if (!COIFFÉ) throw new Error('perçage (hôte) : aucune masse de la carte ne porte de case coiffée — le banc n’a plus de sujet');
+const NUES = [...Array(SCENE.dimensions.h).keys()]
+  .flatMap((y) => [...Array(SCENE.dimensions.w).keys()].map((x) => ({ x, y })))
+  .filter((p) => !DANS_MASSE.has(cle(p)));
+const DÉCOUVERT = NUES.reduce((loin, p) => (ECART(p) > ECART(loin) ? p : loin));
+/** Les nappes qui recouvrent RÉELLEMENT la capsule d'un héros posté là — la géométrie du stage. */
+const cacheursDe = (pos: Case) => {
+  const capsule = actorCapsuleOf({ x: pos.x, y: pos.y, h: heightAt(SCENE, pos.x, pos.y, 0) }, DIMS);
+  return LIDS.filter((lid) => lid.z >= 0 && occludesActor(lid.occluder, capsule));
+};
+const SOUS_LES_NAPPES = NUES.reduce((mieux, p) => (cacheursDe(p).length > cacheursDe(mieux).length ? p : mieux));
 
 function combattant(id: string, pos: { x: number; y: number }): Combatant {
   return {
@@ -236,7 +280,7 @@ describe('Le MONDE sait se trouer (#1176, M3)', () => {
 });
 
 describe('Le TROU s’ouvre sur le héros coiffé, et sur lui seul (#1176, M3)', () => {
-  it('héros COIFFÉ (24,22) : son trou a un rayon, et sa profondeur écran est celle d’un point vu', async () => {
+  it('héros COIFFÉ (cœur de masse) : son trou a un rayon, et sa profondeur écran est celle d’un point vu', async () => {
     await monter(COIFFÉ, entreesDe(COIFFÉ));
     const trous = trousPercage();
     expect(trous[0].w, 'rayon du trou du héros coiffé').toBeGreaterThan(0);
@@ -245,7 +289,7 @@ describe('Le TROU s’ouvre sur le héros coiffé, et sur lui seul (#1176, M3)',
     expect(trous[1].w, 'aucun second héros : son emplacement reste éteint').toBe(0);
   });
 
-  it('TÉMOIN — héros à DÉCOUVERT (31,0) : aucun trou ne s’ouvre', async () => {
+  it('TÉMOIN — héros à DÉCOUVERT (le plus loin de toute masse) : aucun trou ne s’ouvre', async () => {
     await monter(DÉCOUVERT, entreesDe(DÉCOUVERT));
     expect(trousPercage()[0].w, 'rayon du trou du héros à découvert').toBe(0);
   });
@@ -471,19 +515,13 @@ describe('L’hôte de plateau alimente la découpe (#1176, M3)', () => {
  * CÂBLAGE de l'hôte qui est en jeu : ce que `MondeDeCampagne` remet réellement au renderer par son `keepEl`.
  * Une levée d'écran rebranchée dans l'hôte seul laisserait la loi verte et l'écran troué.
  *
- * Le poste est celui de la cour (17,2) : des nappes y recouvrent la capsule du héros, et rien ne
- * l'abrite — la prémisse se re-mesure DANS le contrat.
+ * Le poste est `SOUS_LES_NAPPES`, DÉRIVÉ du plan : hors de toute emprise (rien ne l'abrite) et
+ * pourtant recouvert par des nappes — la prémisse se re-mesure DANS le contrat.
  */
 describe('L’hôte de plateau garde les nappes qui CACHENT sans abriter (#1176, M3)', () => {
-  const COUR = { x: 17, y: 2 } as const;
+  const COUR = SOUS_LES_NAPPES;
 
-  /** Les nappes qui recouvrent RÉELLEMENT la capsule du héros posté là — la géométrie du stage. */
-  const cacheursDe = (pos: { x: number; y: number }) => {
-    const capsule = actorCapsuleOf({ x: pos.x, y: pos.y, h: heightAt(SCENE, pos.x, pos.y, 0) }, DIMS);
-    return LIDS.filter((lid) => lid.z >= 0 && occludesActor(lid.occluder, capsule));
-  };
-
-  it('groupe dans la cour (17,2) : les nappes qui le cachent sont REMISES au renderer, toutes', async () => {
+  it('groupe hors de toute emprise mais SOUS des nappes : celles qui le cachent sont REMISES au renderer, toutes', async () => {
     const cachées = new Set(cacheursDe(COUR).map((lid) => lid.sectionId));
     expect(cachées.size, 'des nappes recouvrent bien la capsule du héros à ce poste').toBeGreaterThan(0);
 

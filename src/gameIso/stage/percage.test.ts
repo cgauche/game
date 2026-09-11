@@ -6,7 +6,9 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { type Dims } from '../../geometry/iso';
 import { elOccluder } from './occluders';
-import { buildRoofs } from '../builders/roofs';
+import { buildRoofs, massFootprintCells } from '../builders/roofs';
+import { effectiveArchitecture } from '../../state/sceneEdit';
+import { chebyshev } from '../../engine/grid';
 import { heightAt } from '../../state/scene';
 import { actorCapsuleOf } from './actorCapsule';
 import { diligenceCampaign } from '../../scenes/campaign';
@@ -35,29 +37,82 @@ const camera = (() => {
   return cam;
 })();
 
+/**
+ * LES POSTES SE DÉRIVENT DU PLAN, jamais d'une coordonnée recopiée : les masses de bâtiment se lisent
+ * par `effectiveArchitecture` (les masses `derived` s'y recalculent du plan). Le poste COIFFÉ d'une
+ * masse est la case de son emprise la plus PROFONDE (distance de Chebyshev maximale au premier voisin
+ * hors emprise) PARMI celles que le verdict coiffe — l'occlusion est une affaire d'écran, une case de
+ * bord d'emprise peut n'être coiffée par aucune nappe. À l'opposé, les cases les plus ÉLOIGNÉES de
+ * toute masse sont les postes NUS. Les deux familles suivent l'auteur : déplacer un bâtiment les déplace.
+ */
+type Case = { x: number; y: number };
+const cle = (p: Case) => `${p.x},${p.y}`;
+const cellulesDe = (footprint: Parameters<typeof massFootprintCells>[0]): Case[] =>
+  [...massFootprintCells(footprint)].map((c) => { const [x, y] = c.split(',').map(Number); return { x, y }; });
+/** Profondeur d'une case DANS son emprise : l'anneau de Chebyshev où apparaît la première case hors emprise. */
+function profondeur(p: Case, dans: Set<string>): number {
+  for (let k = 1; ; k++)
+    for (let dy = -k; dy <= k; dy++)
+      for (let dx = -k; dx <= k; dx++)
+      { const voisin = { x: p.x + dx, y: p.y + dy }; if (chebyshev(p, voisin) === k && !dans.has(cle(voisin))) return k; }
+}
+const EMPRISES = effectiveArchitecture(scene)
+  .flatMap((corps) => corps.masses.map((masse) => ({ id: `${corps.id}/${masse.id}`, cells: cellulesDe(masse.footprint) })))
+  .sort((a, b) => b.cells.length - a.cells.length || a.cells[0].y - b.cells[0].y || a.cells[0].x - b.cells[0].x);
+const coiffe = (p: Case) => verdictPercage(lids, [acteur(p.x, p.y)])[0];
+/** Le poste coiffé d'une emprise : la plus profonde de ses cases COIFFÉES (départage par balayage). */
+function posteCoiffeDe(cells: Case[]): Case | null {
+  const dans = new Set(cells.map(cle));
+  const coiffees = cells.filter(coiffe);
+  if (!coiffees.length) return null;
+  return coiffees.reduce((m, p) =>
+    (profondeur(p, dans) - profondeur(m, dans) || m.y - p.y || m.x - p.x) > 0 ? p : m);
+}
+const POSTES = EMPRISES.map((e) => ({ ...e, poste: posteCoiffeDe(e.cells) }));
+const SOUS_MASSE = EMPRISES.flatMap((e) => e.cells);
+const DANS_MASSE = new Set(SOUS_MASSE.map(cle));
+const ECART = (p: Case) => Math.min(...SOUS_MASSE.map((m) => chebyshev(m, p)));
+const NUES = [...Array(scene.dimensions.h).keys()]
+  .flatMap((y) => [...Array(scene.dimensions.w).keys()].map((x) => ({ x, y })))
+  .filter((p) => !DANS_MASSE.has(cle(p)));
+const LOIN_MAX = Math.max(...NUES.map(ECART));
+/** Les postes NUS : les cases que la plus proche des masses laisse le plus loin. */
+const DECOUVERTS = NUES.filter((p) => ECART(p) === LOIN_MAX);
+/** Le poste COIFFÉ de référence : celui de la plus grande masse qui en porte un. */
+const COIFFE = POSTES.map((e) => e.poste).find((p): p is Case => !!p);
+if (!COIFFE) throw new Error('perçage : aucune masse de la carte ne porte de case coiffée — le banc n’a plus de sujet');
+const DECOUVERT = DECOUVERTS[0];
+
 describe('verdict — qui est CACHÉ par une masse, sur La Diligence', () => {
-  it('les trois postes du prototype sont couverts, un poste à découvert ne l’est pas', () => {
-    for (const [x, y] of [[24, 22], [17, 2], [20, 12]] as const)
-      expect(verdictPercage(lids, [acteur(x, y)])[0], `(${x},${y}) est coiffé par une masse`).toBe(true);
-    // TÉMOIN : le nord-est de la carte est nu — sans lui, un verdict constamment vrai passerait pour
-    // une loi.
-    expect(verdictPercage(lids, [acteur(31, 0)])[0], '(31,0) est à découvert').toBe(false);
+  it('chaque masse porte une case coiffée, son poste dérivé l’est, et les cases les plus loin de toute masse ne le sont pas', () => {
+    expect(POSTES.length, 'la carte porte des masses de bâtiment').toBeGreaterThan(0);
+    expect(POSTES.filter((e) => !e.poste).map((e) => e.id), 'masse(s) qu’AUCUNE nappe ne coiffe').toEqual([]);
+    expect(POSTES.filter((e) => e.poste && !coiffe(e.poste)).map((e) => e.id)).toEqual([]);
+    // TÉMOIN : sans lui, un verdict constamment vrai passerait pour une loi.
+    expect(DECOUVERTS.length, 'la carte porte des cases hors de toute masse').toBeGreaterThanOrEqual(1);
+    expect(DECOUVERTS.filter(coiffe)).toEqual([]);
   });
 
   it('le verdict est PAR HÉROS : un même appel rend un booléen par acteur, dans l’ordre', () => {
-    expect(verdictPercage(lids, [acteur(31, 0), acteur(17, 2), acteur(30, 1)])).toEqual([false, true, false]);
+    const autreNu = DECOUVERTS[1] ?? NUES.filter((p) => !coiffe(p) && cle(p) !== cle(DECOUVERT))[0];
+    expect(autreNu, 'un SECOND poste nu, distinct du premier').toBeTruthy();
+    expect(verdictPercage(lids, [acteur(DECOUVERT.x, DECOUVERT.y), acteur(COIFFE.x, COIFFE.y), acteur(autreNu.x, autreNu.y)]))
+      .toEqual([false, true, false]);
   });
 
-  it('CENSUS de la carte : la loi tranche des deux côtés, elle ne dit pas oui partout', () => {
-    let libres = 0;
+  it('CENSUS de la carte : la loi tranche des deux côtés, et chaque famille dérivée tombe du côté qu’elle nomme', () => {
+    const libres = new Set<string>();
     for (let y = 0; y < scene.dimensions.h; y++)
-      for (let x = 0; x < scene.dimensions.w; x++) if (!verdictPercage(lids, [acteur(x, y)])[0]) libres++;
-    expect(libres).toBeGreaterThan(100);
-    expect(libres).toBeLessThan(scene.dimensions.w * scene.dimensions.h);
+      for (let x = 0; x < scene.dimensions.w; x++) if (!coiffe({ x, y })) libres.add(`${x},${y}`);
+    expect(DECOUVERTS.filter((p) => !libres.has(cle(p))), 'poste(s) NU(S) que le balayage dit coiffé(s)').toEqual([]);
+    expect(POSTES.flatMap((e) => (e.poste && libres.has(cle(e.poste)) ? [e.id] : [])), 'poste(s) COIFFÉ(S) que le balayage dit libre(s)').toEqual([]);
+    // Bornes DÉRIVÉES des deux familles — aucun chiffre recopié de la carte.
+    expect(libres.size).toBeGreaterThanOrEqual(DECOUVERTS.length);
+    expect(libres.size).toBeLessThanOrEqual(scene.dimensions.w * scene.dimensions.h - POSTES.filter((e) => e.poste).length);
   });
 
   it('une nappe SOUS les pieds ne cache pas : la garde de niveau du verdict', () => {
-    const enHauteur = acteur(17, 2, 2);
+    const enHauteur = acteur(COIFFE.x, COIFFE.y, 2);
     const dessous = lids.filter((l) => l.z < 2);
     expect(dessous.length, 'la carte porte bien des nappes sous le niveau 2').toBeGreaterThan(0);
     expect(verdictPercage(dessous, [enHauteur])[0]).toBe(false);
@@ -65,13 +120,13 @@ describe('verdict — qui est CACHÉ par une masse, sur La Diligence', () => {
 });
 
 describe('cadence — le verdict ne se rejoue qu’à la CLÉ', () => {
-  const entree = (cle: string) => ({ cle, lids, acteurs: [acteur(17, 2)] });
+  const entree = (cle: string) => ({ cle, lids, acteurs: [acteur(COIFFE.x, COIFFE.y)] });
 
   it('la clé porte le PAS, le cran de caméra et l’étage — pas la frame', () => {
-    const tuiles = [{ id: 'h1', x: 17, y: 2, z: 0 }];
+    const tuiles = [{ id: 'h1', x: COIFFE.x, y: COIFFE.y, z: 0 }];
     const base = clePercage({ tuiles, rot: 0, view: 'iso', activeZ: 0 });
     expect(clePercage({ tuiles, rot: 0, view: 'iso', activeZ: 0 })).toBe(base);
-    expect(clePercage({ tuiles: [{ id: 'h1', x: 18, y: 2, z: 0 }], rot: 0, view: 'iso', activeZ: 0 })).not.toBe(base);
+    expect(clePercage({ tuiles: [{ id: 'h1', x: COIFFE.x + 1, y: COIFFE.y, z: 0 }], rot: 0, view: 'iso', activeZ: 0 })).not.toBe(base);
     expect(clePercage({ tuiles, rot: 1, view: 'iso', activeZ: 0 })).not.toBe(base);
     expect(clePercage({ tuiles, rot: 0, view: 'top', activeZ: 0 })).not.toBe(base);
     expect(clePercage({ tuiles, rot: 0, view: 'iso', activeZ: 1 })).not.toBe(base);
@@ -112,7 +167,7 @@ describe('fondu et écriture des trous', () => {
 
   it('le pilote écrit les quatre trous : centre projeté + rayon, et ZÉRO pour qui n’est pas caché', () => {
     const percage = creerPercage();
-    const acteurs = [acteur(17, 2), acteur(31, 0)];
+    const acteurs = [acteur(COIFFE.x, COIFFE.y), acteur(DECOUVERT.x, DECOUVERT.y)];
     percage.majVerdict({ cle: 'x', lids, acteurs });
     fondreEnEntier(percage);
     const trous = trousPercage();
@@ -130,7 +185,7 @@ describe('fondu et écriture des trous', () => {
    *  RÉFÉRENCE et reprojeté à chaque `avancer`. Deux caméras, un seul verdict. */
   it('sans REJOUER le verdict, une autre caméra déplace le centre du trou', () => {
     const percage = creerPercage();
-    const acteurs = [acteur(17, 2)];
+    const acteurs = [acteur(COIFFE.x, COIFFE.y)];
     percage.majVerdict({ cle: 'y', lids, acteurs });
     const fin = fondreEnEntier(percage);
     const avant = trousPercage()[0].clone();
