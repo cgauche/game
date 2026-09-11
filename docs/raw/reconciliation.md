@@ -73,8 +73,8 @@ _Aucune._
 - `src/ui/ship-stations-panel.test.tsx:120` (l.90) — it('5. « Cale » sur la BARGE commerciale (MSRC 10 l.90) : ouverte, épinglable', () => {
 
 ### NADJ 4 — 7 réf(s) code, 0 dans l'Atlas
-- `src/data/schemas/defs-scenes/scene.ts:115` (l.72) — /** JOUEUR de taverne (`NADJ 04 l.72`) : `gameId` de `tavernGames.json`, mise de DÉPART en sous. */
-- `src/state/scene.ts:130` (l.72) — *  Le patron est AUTHORÉ dans la source, pas inventé : `NADJ 04 l.72` — « Elle jouera une partie de
+- `src/data/schemas/defs-scenes/scene.ts:128` (l.72) — /** JOUEUR de taverne (`NADJ 04 l.72`) : `gameId` de `tavernGames.json`, mise de DÉPART en sous. */
+- `src/state/scene.ts:149` (l.72) — *  Le patron est AUTHORÉ dans la source, pas inventé : `NADJ 04 l.72` — « Elle jouera une partie de
 - `src/state/tavern-npc-a-fiche.test.ts:6` (l.72) — *  · `NADJ 04 l.72` — « Elle jouera une partie de L'Impératrice écarlate avec quiconque lui propose,
 - `src/state/tavern-npc-a-fiche.test.ts:98` (l.72) — it('la SCÈNE décide : `tavernGame` sur l’entité déclare le jeu et la mise de départ (patron `NADJ 04 l.72`)', () => {
 
@@ -179,4 +179,4 @@ LDB 38
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, EDO, EDOC, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: ba9453d204553baea047a1d25c969df3c7de7efd (4067 fichiers, 150 dossiers) corps: fead0c1dcb37e0629b0c81e9543d0be9f7302a21 -->
+<!-- sources-empreinte: 9a0c0d59639723b8212c7ca66dbac84328ae9ce1 (4071 fichiers, 150 dossiers) corps: b6f50957dcfc6f7d8a0f94db21d9f3a0f6398990 -->

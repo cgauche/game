@@ -58,15 +58,15 @@ seam (`ROLL_SEAM_CORE`) sont hors périmètre — leur pending EST le foyer.
 
 | Fichier | Sites | Nature | Lignes | Justification |
 |---|---|---|---|---|
-| `src/state/combatEffects.ts` | 1 | canonique | 960 | canonique : le corps d'`openSkillTest` (combatEffects.ts:326) — LA fabrique du `pendingTest` de la famille Flow authorée, le pending y est monté UNE fois pour tous ses appelants. |
+| `src/state/combatEffects.ts` | 1 | canonique | 990 | canonique : le corps d'`openSkillTest` (combatEffects.ts:326) — LA fabrique du `pendingTest` de la famille Flow authorée, le pending y est monté UNE fois pour tous ses appelants. |
 | `src/state/combatFlow.ts` | 2 | mixte | 3253, 7611 | 1 gate de main (`pendingHandGate`, `openAttackCascade`) monté à la main -> #1064 ; 1 `PendingReload` d'ennemi construit APRÈS un `rollSansPilote` déjà scellé — canonique : objet de RENDU (journal/popin), aucun jet à ouvrir. |
-| `src/state/combatSlice.ts` | 5 | dette | 2018, 2064, 2173, 2623, 3032 | 2 `pendingReload` (pièce servie / poste de navire), 1 `pendingStateRecovery`, 1 `pendingHandGate` (2ᵉ main), 1 `pendingHeal` -> #1064 (le lot d'affichage les re-route ; 6 -> 5 : le `pendingTest` de `battleGainAdvantage` passe par `openSkillTest`). |
+| `src/state/combatSlice.ts` | 5 | dette | 2020, 2066, 2175, 2628, 3037 | 2 `pendingReload` (pièce servie / poste de navire), 1 `pendingStateRecovery`, 1 `pendingHandGate` (2ᵉ main), 1 `pendingHeal` -> #1064 (le lot d'affichage les re-route ; 6 -> 5 : le `pendingTest` de `battleGainAdvantage` passe par `openSkillTest`). |
 | `src/state/interludeFlow.ts` | 1 | dette | 748 | `pendingActivity` du catalogue d'Activités (`openCatalogActivity`) — fabrique UNIQUE de toutes les Activités à jet d'interlude -> #1064. |
 | `src/state/massBattleFlow.ts` | 1 | dette | 348 | `openBattleActivity` — fabrique PARTAGÉE, atteinte par 6 call-sites (prep ×3/round ×2/resistance) -> #1067 (surfaçage massBattle). |
 | `src/state/medicFlow.ts` | 2 | dette | 176, 202 | `pendingHeal` et `pendingSurgery` du soigneur PNJ hors combat -> #1064. |
 | `src/state/merchantFlow.ts` | 1 | dette | 878 | `pendingAppraise` (Évaluation / Intuition de détection) -> #1064. |
 | `src/state/seaVoyageFlow.ts` | 1 | dette | 2095 | `pendingSteamSave` (`openSteamSave`, Test d'Initiative de l'ingénieur) : le flux a bien sa spec canonique (`rollFlowSpecs.ts` `steamSave`, `makeRollFlow`), c'est la FABRIQUE du pending qui reste montée à la main -> #1474. |
-| `src/state/store.ts` | 1 | canonique | 2746 | canonique : re-ciblage d'un `pendingTest` EXISTANT (`{ ...pt, … }`) sur un autre candidat — `target` recopié du candidat DÉJÀ calculé par la fabrique, aucun jet neuf décrit. |
+| `src/state/store.ts` | 1 | canonique | 2827 | canonique : re-ciblage d'un `pendingTest` EXISTANT (`{ ...pt, … }`) sur un autre candidat — `target` recopié du candidat DÉJÀ calculé par la fabrique, aucun jet neuf décrit. |
 
 _15 sites mesurés dans 9 fichiers — par nature : 11 dette, 2 canonique, 2 mixte._
 
@@ -250,4 +250,4 @@ reste `ROLL_SEAM_PHASE2_STOCK`. 29 sites dans 14 fichiers.
 | `src/state/travelPostes.ts` | 1 |
 | `src/state/triggeredEffects.ts` | 1 |
 
-<!-- sources-empreinte: 34567d68604b60602ace71ab639fb55581e50a09 (2077 fichiers, 134 dossiers) corps: 256482d34aa9c68fb64e4b862f57c0444a1cbfcd -->
+<!-- sources-empreinte: 6f5703d1b30465eaeef75770059c21627415d05b (2079 fichiers, 134 dossiers) corps: 186cb536f31fc458fe9572aa6a99b0c30cedaeeb -->
