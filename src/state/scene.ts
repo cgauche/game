@@ -46,7 +46,7 @@ import type { Dir8 } from './dir8';
 import type { Pt } from './path';
 import { terrainWalkable } from './terrain';
 import { entityBlockedAt } from './sceneRules';
-import { type Grade, gradeBetween } from './relief';
+import { type Grade, gradeBetween, metricToLift } from './relief';
 import { aretesA } from './wallIndex';
 
 /** Un terrain est un id de catalogue (cf. src/state/terrain.ts). */
@@ -478,6 +478,28 @@ export function heightAt(scene: Scene, x: number, y: number, z = 0): number {
   if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return 0;
   const layer = scene.layers.find((l) => l.z === z) ?? scene.layers[0];
   return layer.height?.[y * scene.dimensions.w + x] ?? 0;
+}
+
+/**
+ * HAUTEUR MÉTRIQUE d'un point de grille — LE SOCLE : la hauteur de la surface sous `p`, sur la couche
+ * `p.z`. DÉCOUPLÉE de l'index de couche, qui ne sert qu'au TRI : la couche 0 porte du relief comme
+ * les autres, donc une absence de `z` vaut la couche 0, JAMAIS une hauteur nulle. Les coordonnées
+ * sont ARRONDIES (une position en cours de marche tombe entre deux cases ; `heightAt` indexe une
+ * case entière). C'est le sol que le monde volumique tend à ses passes de pose (`solM` de
+ * `gameIso/stage`), et ce dont l'élévation d'affichage `liftDe` dérive. PUR.
+ */
+export function hauteurDe(scene: Scene, p: Pt): number {
+  return heightAt(scene, Math.round(p.x), Math.round(p.y), p.z ?? 0);
+}
+
+/**
+ * ÉLÉVATION D'AFFICHAGE d'un point de grille — SOURCE UNIQUE du lift, celle que consomment le trait de
+ * mur (`gameIso/stage/layers.tsx`), le picking (`gameIso/stage/pickResolve.ts`), le curseur de
+ * combat, les arêtes, les surlignages et les aperçus de déplacement. DÉRIVÉ de `hauteurDe` : la
+ * hauteur métrique de la case rendue en unités de niveau. PUR.
+ */
+export function liftDe(scene: Scene, p: Pt): number {
+  return metricToLift(hauteurDe(scene, p));
 }
 
 /** Id de structure crénelée d'une case de chemin de ronde (couche `z`), ou `null`. Marqueur de RENDU PUR

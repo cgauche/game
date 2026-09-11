@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { tileEdge, type Dims } from '../../geometry/iso';
-import { emptyScene, heightAt, isWalkable, type Scene } from '../../state/scene';
-import { metricToLift } from '../../state/relief';
+import { emptyScene, isWalkable, liftDe, type Scene } from '../../state/scene';
 import { roomPortals, type RoomPortal } from '../../state/roomPortals';
 import { aretesUtilisables } from '../../state/aretes';
 import { scenario as diligence } from '../../scenes/test-scenarios/diligence';
@@ -30,10 +29,9 @@ import { resoudrePixel, type CadreDePick, type EtatDePick } from './pickResolve'
 
 const dimsDe = (scene: Scene): Dims => ({ w: scene.dimensions.w, h: scene.dimensions.h, rot: 0, view: 'iso' });
 
-/** Le lift que le peintre des seuils passe à `tileEdge` (`SurcoucheIso.tsx:148` `liftOf` →
- *  `MondeDeCampagne.tsx:181` `liftAt`) : hauteur MÉTRIQUE de la case de départ, 0 au rez. */
-const liftDePortail = (scene: Scene, p: { x: number; y: number; z?: number }): number =>
-  (p.z ? metricToLift(heightAt(scene, p.x, p.y, p.z)) : 0);
+/** Le lift que le peintre des seuils passe à `tileEdge` : le SOCLE `state/scene.ts:liftDe`, celui que
+ *  l'hôte ferme sur la scène (`MondeDeCampagne.liftOf` → `SurcoucheIso`), pas une seconde hauteur. */
+const liftDePortail = (scene: Scene, p: { x: number; y: number; z?: number }): number => liftDe(scene, p);
 
 const milieu = (a: { cx: number; cy: number }, b: { cx: number; cy: number }) =>
   ({ x: (a.cx + b.cx) / 2, y: (a.cy + b.cy) / 2 });

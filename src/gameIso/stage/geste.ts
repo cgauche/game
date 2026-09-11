@@ -46,10 +46,8 @@ export interface VerbesArete {
 }
 
 /** Dénivelé : le geste part de l'ancrage et va à la case d'en face (`state/aretes.ts:caseOpposee`). */
-const traverser = (arete: AreteUtilisable, verbe: (de: Pt, vers: Pt) => void) => {
-  const vers = caseOpposee(arete);
-  if (arete.ancrage && vers) verbe(arete.ancrage, vers);
-};
+const traverser = (arete: AreteUtilisable, verbe: (de: Pt, vers: Pt) => void) =>
+  verbe(arete.ancrage, caseOpposee(arete));
 
 /** Ce qu'une capacité fait d'un clic : son RÉGIME d'armement et son geste. */
 interface GesteArete {

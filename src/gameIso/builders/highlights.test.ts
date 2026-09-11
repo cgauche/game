@@ -32,7 +32,7 @@ describe('buildHighlights — surbrillances sémantiques (clés historiques stab
     });
     expect(els.map((e) => e.key)).toEqual(['h1,1', 'h2,1,1', 'r3,1']);
     expect(els[1].cell).toEqual({ x: 2, y: 1, z: 1 });
-    expect(els[0].h).toBe(0); // au sol : lift 0 (byte-identique mono-niveau)
+    expect(els[0].h).toBe(0); // scène sans relief : la surface de toute case est à 0 m
   });
 
   it('hors de mon tour (coop) : AUCUNE grille, mais les teintes d’équipe restent', () => {

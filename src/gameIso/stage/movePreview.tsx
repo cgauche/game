@@ -8,9 +8,9 @@ import { footprintTiles } from '../../state/footprint';
 import type { Pt } from '../../state/path';
 import { GOLD_TINT } from '../highlightTints';
 
-// `lift` = élévation-écran (px) d'un point selon son étage z (multi-niveau) ; défaut `() => 0` pour un
-// appelant mono-niveau. Un appelant de COMBAT passe `(p) => p.z ? liftAt(...) : 0` → chemin et
-// destination se posent au bon étage (rempart) au lieu d'être écrasés sur la cour.
+// `lift` = élévation-écran d'un point (socle `state/scene.ts:liftDe` fermé sur la scène, hauteur
+// MÉTRIQUE de la case, couche 0 comprise) ; défaut `() => 0` pour un appelant qui n'a pas de scène.
+// Chemin et destination se posent ainsi au même niveau que le trait de mur (rempart, falaise).
 // `label` accepte PLUSIEURS lignes : le badge dit le geste (« Aller (2) ») puis ce qu'il fait de la
 // ressource (« Mouvement 4 → 2 ») / le palier qu'il produirait — empilées vers le HAUT depuis la case,
 // même classe `pv-badge` (aucun style neuf).

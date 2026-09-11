@@ -87,7 +87,7 @@ describe('l’aperçu tap-1 porte la Difficulté de l’attaque qu’il commettr
       <svg>
         <TapPreview
           battle={battle({ combatants: [héros, cible], preview: { kind: 'attack', targetId: 'e1', path: [] } } as unknown as Partial<BattleState>)}
-          activeC={héros} dims={dims} liftAt={() => 0} myTurn difficulty={{ difficulty: 'difficile' }}
+          activeC={héros} dims={dims} liftOf={() => 0} myTurn difficulty={{ difficulty: 'difficile' }}
         />
       </svg>,
     );
@@ -100,7 +100,7 @@ describe('l’aperçu tap-1 porte la Difficulté de l’attaque qu’il commettr
       <svg>
         <TapPreview
           battle={battle({ combatants: [héros, cible], preview: { kind: 'attack', targetId: 'e1', path: [] } } as unknown as Partial<BattleState>)}
-          activeC={héros} dims={dims} liftAt={() => 0} myTurn
+          activeC={héros} dims={dims} liftOf={() => 0} myTurn
         />
       </svg>,
     );

@@ -7,7 +7,7 @@
  * PUR : les portées/cibles (dérivées du store) arrivent EN DONNÉES (`HighlightsView`), le builder ne
  * fait que les mapper en cases + hauteur MÉTRIQUE (le lift d'étage est projeté par le backend).
  */
-import { heightAt, sceneMetresPerTile, type Scene } from '../../state/scene';
+import { hauteurDe, sceneMetresPerTile, type Scene } from '../../state/scene';
 import { isOutOfAction } from '../../engine/conditions';
 import { isRider } from '../../state/mount';
 import { footprintN } from '../../state/footprint';
@@ -65,8 +65,9 @@ export function buildHighlights(scene: Scene, battle: BattleState, view: Highlig
   const out: HighlightEl[] = [];
   const { w: sw, h: sh } = scene.dimensions;
   const inScene = (x: number, y: number) => x >= 0 && y >= 0 && x < sw && y < sh;
-  // Hauteur métrique d'une case : 0 au sol (byte-identique mono-niveau), sinon la surface réelle.
-  const hAt = (x: number, y: number, z: number) => (z ? heightAt(scene, x, y, z) : 0);
+  // Hauteur MÉTRIQUE de la surface d'une case, relief de la couche 0 compris : la même que celle où
+  // le sol est bâti (`builders/floors.ts`), sans quoi le quad se pose sous la dalle.
+  const hAt = (x: number, y: number, z: number) => hauteurDe(scene, { x, y, z });
   const parse = (k: string): [number, number, number] => {
     const [x, y, z = 0] = k.split(',').map(Number); // clé z-aware : « x,y » (sol) ou « x,y,z » (étage)
     return [x, y, z];

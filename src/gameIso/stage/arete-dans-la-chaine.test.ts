@@ -96,7 +96,7 @@ describe('L’étage `arete` : le seuil se résout dans la chaîne, plus par un 
       if (v.nature !== 'arete') continue;
       expect(v.arete.cle).toBe(cleArete(arete.x, arete.y, arete.side, arete.z));
       expect(v.via).toBe('arete');
-      expect(v.tile).toEqual({ x: arete.ancrage!.x, y: arete.ancrage!.y, z: 0 });
+      expect(v.tile).toEqual({ x: arete.ancrage.x, y: arete.ancrage.y, z: 0 });
       expect(v.arete.portail?.id).toBeTruthy();
     }
   });

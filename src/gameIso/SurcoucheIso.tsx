@@ -181,7 +181,7 @@ export function SurcoucheIso({
           && !hoverAim && <CursorOverlay tile={combatCursor.tile} footN={activeMoveN} dims={dims} liftAt={liftAt} />}
         {battle && hoverMove && effHover && <HoverMovePreview move={hoverMove} at={effHover} footN={activeMoveN} dims={dims} lift={liftOf} battle={battle} activeC={activeC} />}
         {mode === 'exploration' && explorePath && (hover || areteSurvolee?.portail) && <ExplorePathPreview path={explorePath} dims={dims} lift={liftOf} walking={anyWalking} />}
-        {battle && <TapPreview battle={battle} activeC={activeC} dims={dims} liftAt={liftAt} myTurn={myTurn} difficulty={previewDifficulty} />}
+        {battle && <TapPreview battle={battle} activeC={activeC} dims={dims} liftOf={liftOf} myTurn={myTurn} difficulty={previewDifficulty} />}
         {battle && (
           <AimOverlay battle={battle} hoverAim={hoverAim} anchor={reticleAnchor} dims={dims}
             pendingAttack={pendingAttack} pendingDefense={pendingDefense} pendingTrample={pendingTrample} pendingHeal={pendingHeal} pendingCast={pendingCast} />

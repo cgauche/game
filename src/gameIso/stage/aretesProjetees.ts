@@ -52,11 +52,11 @@ export function projeterAretes(
 ): readonly AreteProjetee[] {
   return memo(aretes, [dims, lift], () => aretes.flatMap((arete) => {
     // CE QUE CE REFUS COUVRE, et pourquoi il est muet : AUCUNE arête offerte aujourd'hui — les quatre
-    // dériveurs posent tous leur ancrage et ne rendent que des côtés cardinaux. Il garde la FORME du
-    // type (`ancrage: Pt | null`, `WallSide` diagonal) contre une capacité N+1 qui l'oublierait, et
-    // c'est `aretesProjetees.test.ts` qui mesure sa population : elle doit rester VIDE. Le jour où une
+    // dériveurs ne rendent que des côtés cardinaux. Il garde la FORME du type (`WallSide` diagonal,
+    // que `tileEdge` ne sait pas poser) contre une capacité N+1 qui l'oublierait, et c'est
+    // `aretesProjetees.test.ts` qui mesure sa population : elle doit rester VIDE. Le jour où une
     // arête y tombe, c'est le banc qui rougit, pas un journal que nul ne lit.
-    if (!arete.ancrage || !estCardinale(arete.side)) return [];
+    if (!estCardinale(arete.side)) return [];
     const [a, b] = tileEdge(arete.x, arete.y, arete.side, dims, lift(arete.ancrage));
     return [{ arete, a, b }];
   }));

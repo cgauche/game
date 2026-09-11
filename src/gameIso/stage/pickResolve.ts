@@ -14,7 +14,7 @@
  * `PickResult`. Le `never` du défaut fait refuser par le compilateur une nature qu'aucune branche ne
  * nomme, là où une égalité sur `kind` la laisserait tomber en silence dans le repli de sol.
  */
-import { heightAt, isWalkable, type Scene } from '../../state/scene';
+import { isWalkable, liftDe, type Scene } from '../../state/scene';
 import { metricToLift } from '../../state/relief';
 import { memoByRef } from '../../state/sceneMemo';
 import { decorEnCaseEtage } from '../../state/decorIndex';
@@ -178,7 +178,7 @@ export function meubleDessine(scene: Scene, cadre: CadreDePick, g: PointStage, z
   for (const lift of sceneLifts(scene)) {
     const { x, y } = screenToTileAtLift(cadre.pose, g, lift);
     if (x < 0 || y < 0 || x >= cadre.dims.w || y >= cadre.dims.h) continue;
-    if (metricToLift(heightAt(scene, x, y, z)) !== lift) continue; // cette case n'est pas dessinée à ce lift
+    if (liftDe(scene, { x, y, z }) !== lift) continue; // cette case n'est pas dessinée à ce lift
     // PREMIÈRE case dessinée sous le pixel (lift le plus haut) : c'est celle qu'on VOIT, et elle
     // décide seule — porte-t-elle un meuble ou non. Continuer à sonder les lifts plus bas
     // rendrait un meuble d'AILLEURS, la maladie même qu'on soigne.
@@ -193,20 +193,20 @@ export function meubleDessine(scene: Scene, cadre: CadreDePick, g: PointStage, z
  *  franchissement vertical (marches, rampe, tablier) se CLIQUE donc comme il se pousse au clavier.
  *  Hors de ce voisinage l'étage ACTIF garde la priorité : une case d'un étage qu'AUCUN pas ne rejoint
  *  reste une silhouette translucide posée au-dessus du sol qu'on foule, et ne lui vole jamais le clic.
- *  Le LIFT de chaque candidat est sa HAUTEUR MÉTRIQUE rendue (`metricToLift(heightAt)`), PAS son index
+ *  Le LIFT de chaque candidat est sa HAUTEUR MÉTRIQUE rendue (`state/scene.ts:liftDe`), PAS son index
  *  de couche — même correction qu'au curseur clavier (`screenStepDot`, `combatCursor.ts`). */
 export function pasInterEtages(scene: Scene, cadre: CadreDePick, partyPos: Pt, g: PointStage): Pt | null {
   for (const n of walkNeighbors(scene, partyPos)) {
     const nz = n.z ?? 0;
     if (nz === cadre.activeZ) continue; // même étage : la résolution de l'étage actif suffit
-    const { x, y } = screenToTileAtLift(cadre.pose, g, metricToLift(heightAt(scene, n.x, n.y, nz)));
+    const { x, y } = screenToTileAtLift(cadre.pose, g, liftDe(scene, { x: n.x, y: n.y, z: nz }));
     if (x === n.x && y === n.y) return { x: n.x, y: n.y, z: nz };
   }
   return null;
 }
 
 /** Case MARCHABLE de la couche `z` réellement DESSINÉE sous le pixel. Chaque case est projetée à son
- *  LIFT MÉTRIQUE (`metricToLift(heightAt)`), JAMAIS au seul index de couche : une marche d'escalier est
+ *  LIFT MÉTRIQUE (`state/scene.ts:liftDe`), JAMAIS au seul index de couche : une marche d'escalier est
  *  dessinée soulevée, et l'inverser à plat rendait la case voisine 1 à 3 pas plus loin — les 8 marches
  *  de `la-diligence` étaient toutes injouables à la souris, donc l'étage inatteignable. Le lift le plus
  *  HAUT gagne : c'est lui qu'on voit, et une case cachée DERRIÈRE une marche n'a pas à être cliquable.
@@ -215,7 +215,7 @@ export function caseMarchable(scene: Scene, cadre: CadreDePick, g: PointStage, z
   for (const lift of sceneLifts(scene)) {
     const { x, y } = screenToTileAtLift(cadre.pose, g, lift);
     if (x < 0 || y < 0 || x >= cadre.dims.w || y >= cadre.dims.h) continue;
-    if (metricToLift(heightAt(scene, x, y, z)) !== lift) continue; // cette case n'est pas dessinée à ce lift
+    if (liftDe(scene, { x, y, z }) !== lift) continue; // cette case n'est pas dessinée à ce lift
     if (!isWalkable(scene, x, y, z)) continue;
     return { x, y, z };
   }
@@ -285,7 +285,7 @@ export function resoudrePixel(st: EtatDePick, vise: PickResult, pointStage: () =
   if (cadre.aretes.length) {
     const p = pointInversé();
     const arete = p && areteSousLePixel(p, cadre.aretes);
-    if (arete?.ancrage) {
+    if (arete) {
       const { x, y, z } = arete.ancrage;
       return { tile: { x, y, z: z ?? 0 }, cid: arete.cid ?? null, via: 'arete', nature: 'arete', arete };
     }

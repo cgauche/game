@@ -18,7 +18,7 @@
  */
 import { useMemo, useState, type MutableRefObject } from 'react';
 import { useGame, type BattleState } from '../../state/store';
-import { heightAt, type Scene } from '../../state/scene';
+import { hauteurDe, type Scene } from '../../state/scene';
 import type { Dir8 } from '../../state/dir8';
 import type { Pt } from '../../state/path';
 import type { SeatPose } from '../../state/seating';
@@ -143,7 +143,7 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
   // En POV le meneur ne porte AUCUN billboard (on regarde par ses yeux) : sa base entre quand même
   // dans la table, car c'est son glissement que la caméra suit.
   if (frame.mode === 'pov' && frame.cid) bases.set(frame.cid, { x: frame.partyPos.x, y: frame.partyPos.y, z: frame.partyPos.z ?? 0 });
-  const solM = (x: number, y: number, z: number) => heightAt(scene, Math.round(x), Math.round(y), z);
+  const solM = (x: number, y: number, z: number) => hauteurDe(scene, { x, y, z });
   const anim: StageWalkAnim = {
     glide: (cid) => {
       const base = bases.get(cid);

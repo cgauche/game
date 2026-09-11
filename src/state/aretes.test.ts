@@ -1,9 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { emptyScene, type Scene } from './scene';
+import { edgeOf, emptyScene, type Scene } from './scene';
 import type { RoomPortal } from './roomPortals';
 import type { BattleState } from './store';
 import type { Combatant } from '../engine/types';
-import { aretesUtilisables, libellePortail, LARGEUR_PRISE_ARETE, PRIORITE_ARETES } from './aretes';
+import {
+  aretesUtilisables,
+  caseOpposee,
+  libellePortail,
+  LARGEUR_PRISE_ARETE,
+  PRIORITE_ARETES,
+  type AreteUtilisable,
+  type ContexteAretes,
+} from './aretes';
 
 /**
  * PARITÉ DÉRIVEUR ⇄ PEINTRE (#1687, lot 1b-1) — chaque banc reprend la scène du banc de rendu
@@ -243,5 +251,40 @@ describe('aretesUtilisables — le dériveur d’arêtes rend ce que les overlay
   it('la largeur de prise est PAR capacité — jamais un trait uniforme', () => {
     expect(LARGEUR_PRISE_ARETE).toEqual({ structure: 16, chute: 9, escalade: 9, porte: 28 });
     expect(new Set(Object.values(LARGEUR_PRISE_ARETE)).size, 'trois largeurs distinctes').toBe(3);
+  });
+});
+
+/** Un contexte par capacité, bâti des MÊMES fabriques que les bancs ci-dessus : la population
+ *  mesurée est celle des quatre dériveurs réels, jamais une arête forgée à la main. */
+const CONTEXTES: ReadonlyArray<readonly [string, ContexteAretes]> = [
+  ['escalade', { scene: scèneGrimpable(), visible: VU_11, controleur: { x: 1, y: 1, z: 0 }, activeZ: 0 }],
+  ['chute', { scene: scèneDeFalaise(), visible: new Set(['2,0,0', '2,1,0']), controleur: { x: 2, y: 0, z: 0 }, activeZ: 0 }],
+  ['structure', { scene: scèneFortifiée(), visible: VU_11, controleur: { x: 0, y: 1, z: 0 }, activeZ: 0, battle: bataille([mur]) }],
+  ['porte', { scene: scèneFortifiée(), visible: VU_11, controleur: { x: 1, y: 1, z: 0 }, activeZ: 0, portails: [passage] }],
+];
+
+describe('caseOpposee — l’ancrage BORDE l’arête, sur les quatre dériveurs', () => {
+  it.each(CONTEXTES)('%s : l’ancrage et la case d’en face sont les deux cases que l’arête sépare', (capacite, ctx) => {
+    const aretes = aretesUtilisables(ctx).filter((a) => a.capacite === capacite);
+    expect(aretes, 'le contexte offre bien cette capacité').toHaveLength(1);
+
+    const [arete] = aretes;
+    const vers = caseOpposee(arete);
+    expect(vers.z, 'la case d’en face reste sur la couche de l’arête').toBe(arete.z);
+    expect(
+      edgeOf(arete.ancrage.x, arete.ancrage.y, vers.x, vers.y),
+      'ancrage et case d’en face se séparent EXACTEMENT par cette arête',
+    ).toEqual({ x: arete.x, y: arete.y, side: arete.side });
+  });
+
+  it('un ancrage qui ne borde pas l’arête LÈVE en se nommant — jamais un `null` muet', () => {
+    const horsSujet = {
+      cle: '1,1,E,0', x: 1, y: 1, side: 'E', z: 0,
+      capacite: 'escalade',
+      ancrage: { x: 4, y: 3, z: 0 },
+      largeurPrise: LARGEUR_PRISE_ARETE.escalade,
+      libelle: 'Escalader',
+    } as AreteUtilisable;
+    expect(() => caseOpposee(horsSujet)).toThrow(/\(4,3\).*1,1,E,0/);
   });
 });

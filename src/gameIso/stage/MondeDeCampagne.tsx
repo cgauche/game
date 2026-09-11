@@ -22,8 +22,7 @@
  */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useGame } from '../../state/store';
-import { heightAt, isIndoor, sceneMetresPerTile } from '../../state/scene';
-import { metricToLift } from '../../state/relief';
+import { heightAt, isIndoor, liftDe, sceneMetresPerTile } from '../../state/scene';
 import { computeStateVisibleAndLight, sceneLightSources } from '../../state/visionState';
 import { partyLeaderOf } from '../../state/combatants';
 import { placingZoneOf } from '../../state/combatFlow';
@@ -184,21 +183,13 @@ function CorpsDuMonde() {
   // ils ne lisent que le `viewZ` reçu ; la MASSE du monde, cuite en bloc, le reçoit par `keepEl`.
   const planVue = politique.etageIsole;
   const layerZ = planVue ? activeZ : viewZ;
-  // LIFT vertical d'une case = sa HAUTEUR MÉTRIQUE en unités de niveau, DÉCOUPLÉ de l'index de couche
-  // `z` (qui ne sert qu'au TRI). Sert au JETON (qui monte avec son sol) ET aux SURLIGNAGES de case.
-  const liftAt = useCallback(
-    (x: number, y: number, z = 0) => (scene ? metricToLift(heightAt(scene, Math.round(x), Math.round(y), z)) : 0),
-    [scene],
-  );
-  /** ÉLÉVATION d'affichage de la CASE d'où part un geste — la seule définition, servie au peintre des
-   *  seuils comme à la projection des arêtes : les deux doivent poser le même segment.
-   *
-   *  TROU MESURÉ : la garde `p.z ?` rend 0 sur la couche 0 quel que soit le relief, là où le trait de
-   *  mur lit la hauteur sans garde (`stage/layers.tsx:99`, `metricToLift(heightAt(…))`) — sur une
-   *  falaise de couche 0, le marqueur reste au plancher tandis que son trait monte de `LEVEL_H` px par
-   *  niveau de relief (96 px pour 4 m). Même famille dans `stage/MoveOverlays.tsx:96,111`. Traité au
-   *  lot 1b-5 (socle : lift métrique de la case, couche 0 comprise). */
-  const liftOf = useCallback((p: Pt) => (p.z ? liftAt(p.x, p.y, p.z) : 0), [liftAt]);
+  /** ÉLÉVATION d'affichage d'un point de grille — le SOCLE `state/scene.ts:liftDe` fermé sur la scène,
+   *  servi au peintre des seuils comme à la projection des arêtes, au jeton (qui monte avec son sol) et
+   *  aux surlignages de case : tous posent le même segment que le trait de mur (`stage/layers.tsx:99`). */
+  const liftOf = useCallback((p: Pt) => (scene ? liftDe(scene, p) : 0), [scene]);
+  /** La même élévation, appelée par coordonnées (forme que réclament les peintres qui balaient une
+   *  grille) — un DÉRIVÉ de `liftOf`, jamais un second calcul. */
+  const liftAt = useCallback((x: number, y: number, z = 0) => liftOf({ x, y, z }), [liftOf]);
   // BROUILLARD DE GUERRE (cases visibles) + CHAMP DE LUMIÈRE par tuile en UN calcul (`sceneLightField`,
   // potentiellement lourd, ne tourne qu'UNE fois par pas — la vue ET l'éclairage des sols le partagent).
   // Dérivé des positions LOGIQUES, pas du glissement → memo STABLE pendant la marche. UNE vision pour

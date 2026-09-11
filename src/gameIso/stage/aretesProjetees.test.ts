@@ -9,9 +9,10 @@ import { projeterAretes } from './aretesProjetees';
 
 /**
  * CE QUE LA PROJECTION REFUSE (#1687, lot 1b-2) — `projeterAretes` écarte en silence l'arête qu'elle
- * ne sait pas poser (pas d'ancrage, côté non cardinal). Ce banc dit QUI tombe là : PERSONNE. Une arête
- * utilisable que la projection refuserait serait un geste offert sans pixel qui l'atteigne — c'est ici
- * que ça rougit, et non dans un journal de dev.
+ * ne sait pas poser (côté non cardinal). Ce banc dit QUI tombe là : PERSONNE. Une arête utilisable que
+ * la projection refuserait serait un geste offert sans pixel qui l'atteigne — c'est ici que ça rougit,
+ * et non dans un journal de dev. Il mesure AUSSI que chaque offre se pose au LIFT MÉTRIQUE de son
+ * ancrage, relief de la couche 0 compris (lot 1b-5).
  */
 
 const dims: Dims = { w: 5, h: 4, rot: 0, view: 'iso' };
@@ -89,7 +90,7 @@ describe('projeterAretes — ce que la projection écarte, et rien d’autre', (
   it('AUCUNE arête offerte n’est écartée : tout ce que le dériveur rend est atteignable au pixel', () => {
     const ecartees = parPosture().flatMap(({ posture, aretes }) => {
       const projetees = new Set(projeterAretes(aretes, dims, () => 0).map((p) => p.arete));
-      return aretes.filter((a) => !projetees.has(a)).map((a) => `${posture} : ${a.capacite} (ancrage ${a.ancrage ? 'posé' : 'nul'})`);
+      return aretes.filter((a) => !projetees.has(a)).map((a) => `${posture} : ${a.capacite} ${a.cle} (côté ${a.side})`);
     });
     expect(ecartees).toEqual([]);
   });

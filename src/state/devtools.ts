@@ -867,6 +867,10 @@ export function buildApi() {
       return {
         round: b.round, over: b.over, action: b.action, selectedSpellId: b.selectedSpellId,
         actif: b.order[b.turn], acted: b.acted, movementUsed: b.movementUsed,
+        // L'APERÇU ARMÉ tel que le store le porte (`BattleState.preview`), sans projection maison : c'est
+        // lui que le 2e clic commet (`targetingModes.samePreview`), donc la seule façon de vérifier
+        // qu'un 1er clic a bien armé le geste qu'on croit.
+        preview: b.preview,
         modales: pendings,
         combatants: b.combatants.map((c) => ({
           id: c.id, name: c.label, kind: c.kind, pos: c.pos,

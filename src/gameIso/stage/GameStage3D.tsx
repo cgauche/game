@@ -66,7 +66,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { freeYaw, type ActorCapsule, type Dims, type Rot } from '../../geometry/iso';
-import { heightAt, type Scene } from '../../state/scene';
+import { hauteurDe, type Scene } from '../../state/scene';
 import { DIR8_DELTA, DIR8_ORDER, type Dir8 } from '../../state/dir8';
 import { reposerAffineCamera, reposerPovCamera, StretchedOrthographicCamera } from '../backends/webgl/cameras';
 import { fogCurveOf, povDepth } from '../pov/camera';
@@ -964,12 +964,13 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // ── HALOS D'INTERACTION (P3-0g) : même politique de pool, et un contenu qui BAT (l'opacité de leurs
   // matériaux est une fonction de la frame, écrite par la passe de pose).
   const poolsHalos = useRef<HaloPools>({});
-  // Le SOL d'une case, la même convention que le builder de marques (0 au rez, la surface réelle en
-  // hauteur) : c'est la hauteur d'où le glissement vertical de la marche se compte. RETENU sur la
-  // scène : c'est une DÉPENDANCE du redessin (la passe de frame le lit), et une fonction neuve par
-  // rendu y ferait peindre une image à chaque commit de l'hôte.
+  // Le SOL d'une case : la hauteur MÉTRIQUE de sa surface, celle où le monde volumique bâtit sa dalle
+  // (`builders/floors.ts`) — la couche 0 porte du relief comme les autres, et c'est de là que le
+  // glissement vertical de la marche se compte. RETENU sur la scène : c'est une DÉPENDANCE du redessin
+  // (la passe de frame le lit), et une fonction neuve par rendu y ferait peindre une image à chaque
+  // commit de l'hôte.
   const solM = useCallback(
-    (x: number, y: number, z: number) => (z ? heightAt(scene, Math.round(x), Math.round(y), z) : 0),
+    (x: number, y: number, z: number) => hauteurDe(scene, { x, y, z }),
     [scene],
   );
 

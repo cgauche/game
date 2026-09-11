@@ -15,8 +15,7 @@
  * Fonctions PURES.
  */
 import { depth, projectOccluder, tileEdge, type Dims, type EdgeSide } from '../../geometry/iso';
-import { heightAt, tileAt } from '../../state/scene';
-import { metricToLift } from '../../state/relief';
+import { liftDe, tileAt } from '../../state/scene';
 import { terrainSolidHeightM } from '../../state/terrain';
 import { memoByRefDeps } from '../../state/sceneMemo';
 import { panelOf } from './occluders';
@@ -96,7 +95,7 @@ function solidTileTraitObjs(scene: Scene, dims: Dims, z: number, visible?: Reado
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     if (!plein(x, y)) continue;
     if (visible && !visible.has(`${x},${y},${z}`)) continue;
-    const lift = metricToLift(heightAt(scene, x, y, z));
+    const lift = liftDe(scene, { x, y, z });
     for (const [side, dx, dy] of ARETES) {
       if (plein(x + dx, y + dy)) continue;
       const [a, b] = tileEdge(x, y, side, dims, lift);

@@ -8,8 +8,7 @@ import type { Pt } from './path';
 import type { Get } from './flowTypes';
 import type { Combatant } from '../engine/types';
 import { tileCenter, type Dims } from '../geometry/iso';
-import { heightAt, isWalkable, tileAt, type Scene } from './scene';
-import { metricToLift } from './relief';
+import { isWalkable, liftDe, tileAt, type Scene } from './scene';
 import { combatantAtTile } from './combatGeometry';
 import { combatantClickActs } from './combatOrParty';
 import type { TargetingMode } from './targetingModes';
@@ -43,16 +42,15 @@ const DIR_VEC: Record<ScreenDir, [number, number]> = {
  * écran (origine→candidat, via `tileCenter`) avec le vecteur écran de `dir`. C'est la projection « le
  * curseur suit les yeux », SOURCE UNIQUE partagée par `nextCursorTile` (curseur de combat) ET
  * `exploreStepDest` (pas clavier d'exploration) — rien n'est codé en dur (rotation/vue comprises).
- * Le LIFT vertical d'une case est sa HAUTEUR MÉTRIQUE rendue (`metricToLift(heightAt)`), PAS l'index de
+ * Le LIFT vertical d'une case est celui du socle (`scene.liftDe`, hauteur MÉTRIQUE), PAS l'index de
  * couche `z` : une case d'une couche haute mais de même hauteur réelle (tablier rejoint par une rampe)
  * se projette au MÊME écran que sa voisine — sinon le candidat cross-couche serait scoré à une hauteur
  * fantôme et perdrait l'alignement (le pas clavier ne montait alors pas sur le chemin de ronde).
  * >0 ⇒ `to` part bien dans le sens poussé à l'écran. PUR.
  */
 export function screenStepDot(scene: Scene, from: Pt, to: Pt, dir: ScreenDir, dims: Dims): number {
-  const liftOf = (p: Pt) => metricToLift(heightAt(scene, p.x, p.y, p.z ?? 0));
-  const o = tileCenter(from.x, from.y, dims, liftOf(from));
-  const c = tileCenter(to.x, to.y, dims, liftOf(to));
+  const o = tileCenter(from.x, from.y, dims, liftDe(scene, from));
+  const c = tileCenter(to.x, to.y, dims, liftDe(scene, to));
   const sx = c.cx - o.cx;
   const sy = c.cy - o.cy;
   const mag = Math.hypot(sx, sy) || 1;

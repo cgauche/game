@@ -4,7 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { tileCenter, tileEdge, type Dims } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
-import { emptyScene, heightAt, type Scene } from '../../state/scene';
+import { emptyScene, heightAt, liftDe, type Scene } from '../../state/scene';
 import { aretesUtilisables } from '../../state/aretes';
 import { useGame } from '../../state/store';
 import type { Pt } from '../../state/path';
@@ -268,7 +268,7 @@ describe('Escalade et chute passent par l’étage `arete`', () => {
       scene.walls = [{ x: 1, y: 1, side: 'E', z: 1, climb: { kind: 'surface' } }];
       const controleur: Pt = { x: 1, y: 1, z: 1 };
       const vues = ['1,1,1', '2,1,1'];
-      const metrique = offre(scene, controleur, vues, (p) => (p.z ? metricToLift(heightAt(scene, p.x, p.y, p.z)) : 0));
+      const metrique = offre(scene, controleur, vues, (p) => liftDe(scene, p));
       const parIndex = offre(scene, controleur, vues, (p) => p.z ?? 0);
 
       expect(metrique, 'la scène offre bien l’arête grimpable de la couche 1').toHaveLength(1);

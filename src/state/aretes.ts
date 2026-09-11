@@ -79,10 +79,9 @@ export interface AreteUtilisable {
   /** La case QUE LE GESTE VISE, et le pied de sa géométrie d'écran : `from` du portail, case du mobile
    *  pour l'escalade et la chute, case du MUR pour une structure — celle de son Combattant
    *  (`state/combatSlice.ts`, `c.pos = { x: w.x, y: w.y }`), d'où la prise se projette AU LIFT DU MUR
-   *  et le survol tombe sur le jeton visé. Aucun dériveur ne rend `null` : la forme reste nullable
-   *  parce que la projection et `caseOpposee` la traitent comme un état, et le banc
-   *  `gameIso/stage/aretesProjetees.test.ts` verrouille qu'aucune arête offerte n'y tombe. */
-  ancrage: Pt | null;
+   *  et le survol tombe sur le jeton visé. TOUJOURS posée : une arête sans case à viser n'est pas une
+   *  offre, et les quatre dériveurs la construisent avant de rendre l'offre. */
+  ancrage: Pt;
   /** Largeur pleine du trait de prise, en pixels (`LARGEUR_PRISE_ARETE`). */
   largeurPrise: number;
   /** Texte JOUEUR déjà résolu. */
@@ -123,16 +122,20 @@ const vue = (visible: ReadonlySet<string>, a: Pt, b: Pt, z: number): boolean =>
 /**
  * La case D'EN FACE, vue depuis l'ancrage : le second bout du geste (grimper vers elle, sauter vers
  * elle). Dérivée des deux cases que l'arête sépare (`cotes`) plutôt que portée en champ de plus, qui
- * dirait deux fois la même géométrie. `null` quand l'arête n'a pas d'ancrage, ou qu'il n'est sur
- * aucun de ses deux côtés.
+ * dirait deux fois la même géométrie. TOUJOURS définie : les quatre dériveurs ancrent sur l'un des
+ * deux côtés de l'arête (case de départ du portail, case du mobile, case du mur) — un ancrage qui ne
+ * la borde pas est une invariante VIOLÉE, qui LÈVE en se nommant au lieu de rendre un `null` qu'un
+ * appelant avalerait en silence.
  */
-export function caseOpposee(arete: AreteUtilisable): Pt | null {
+export function caseOpposee(arete: AreteUtilisable): Pt {
   const de = arete.ancrage;
-  if (!de) return null;
   const [c1, c2] = cotes(arete.x, arete.y, arete.side);
   const memeCase = (c: Pt) => c.x === de.x && c.y === de.y;
   const vers = memeCase(c1) ? c2 : memeCase(c2) ? c1 : null;
-  return vers ? { x: vers.x, y: vers.y, z: arete.z } : null;
+  if (!vers) {
+    throw new Error(`caseOpposee : l'ancrage (${de.x},${de.y}) ne borde pas l'arête ${arete.cle}`);
+  }
+  return { x: vers.x, y: vers.y, z: arete.z };
 }
 
 /**

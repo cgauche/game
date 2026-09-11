@@ -81,11 +81,13 @@ export function ExplorePathPreview({ path, dims, lift, walking = false }: { path
  *  cela coûte (`battle.preview`), la seconde commet. MÊME tracé que le survol desktop
  *  (`movePreviewEls`, source unique) plus l'EMPREINTE de la cible quand l'aperçu vise un combattant.
  *  Le badge dit AUSSI ce que le geste fait du Mouvement du Tour et la Difficulté qu'il produira. */
-export function TapPreview({ battle, activeC, dims, liftAt, myTurn, difficulty }: {
+export function TapPreview({ battle, activeC, dims, liftOf, myTurn, difficulty }: {
   battle: BattleState;
   activeC: Combatant | undefined;
   dims: Dims;
-  liftAt: (x: number, y: number, z?: number) => number;
+  /** Élévation d'affichage d'un point (socle `state/scene.ts:liftDe`, fermé sur la scène par l'hôte) —
+   *  la MÊME fonction que le peintre des seuils et la projection des arêtes reçoivent. */
+  liftOf: (p: Pt) => number;
   myTurn: boolean;
   /** Difficulté que dira le jet de ce geste (`previewDifficultyOf`, résolue par l'appelant qui tient
    *  le store — MÊME chemin que le réticule au survol), mise en mots par `ui/difficultyText`. */
@@ -93,7 +95,6 @@ export function TapPreview({ battle, activeC, dims, liftAt, myTurn, difficulty }
 }) {
   const pv = myTurn ? battle.preview : null;
   if (!pv) return null;
-  const liftOf = (p: Pt) => (p.z ? liftAt(p.x, p.y, p.z) : 0);
   const cible = 'targetId' in pv ? inBattleId(battle, pv.targetId) : undefined;
   const dest = pv.kind === 'move' || pv.kind === 'run' ? pv.tile : pv.kind === 'attack' ? cible?.pos : pv.dest;
   const label = pv.kind === 'move' ? `Aller (${pv.cost})`
@@ -108,7 +109,7 @@ export function TapPreview({ battle, activeC, dims, liftAt, myTurn, difficulty }
       {cible?.pos && footprintTiles(cible.pos, footprintN(cible)).map((t) => (
         <path
           key={`pv-tgt-${t.x}-${t.y}`}
-          d={diamondPath(t.x, t.y, dims, cible.pos!.z ? liftAt(t.x, t.y, cible.pos!.z) : 0)}
+          d={diamondPath(t.x, t.y, dims, liftOf({ x: t.x, y: t.y, z: cible.pos!.z }))}
           fill={GOLD_TINT}
           opacity={0.18}
         />
