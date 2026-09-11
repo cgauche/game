@@ -8,7 +8,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import { applyTriggeredEffects } from './triggeredEffects';
-import { findManeuverById } from '../data';
+import { maneuvers, findManeuverById } from '../data';
+import { setDataset } from '../data/overrides';
 import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 import type { TriggeredEffect } from './flow';
@@ -58,20 +59,19 @@ describe('manœuvres = donnée éditable (GameOp)', () => {
   });
 
   it('ÉDITER les effects d’une ManeuverDef CHANGE la résolution (recréable depuis le Codex)', () => {
-    const def = findManeuverById('souffle-feu')!;
-    const original = def.effects;
+    const avant = [...maneuvers];
     const edited: TriggeredEffect[] = [
       { trigger: 'onHit', on: 'victim', flow: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: 'empoisonne' }] } } },
     ];
     try {
-      def.effects = edited; // « édition » : Empoisonné, sans Dégâts
+      setDataset('maneuvers', maneuvers.map((m) => (m.id === 'souffle-feu' ? { ...m, effects: edited } : m))); // « édition » : Empoisonné, sans Dégâts
       const e = mk();
       fire('souffle-feu', e, 15);
       expect(cond(e, 'empoisonne')).toBeTruthy(); // le NOUVEL effet s'applique
       expect(cond(e, 'en-flammes')).toBeFalsy();  // l'ancien a disparu
       expect(e.wounds.current).toBe(30);           // plus de wounds op → 0 Dégât
     } finally {
-      def.effects = original; // restaure la donnée partagée
+      setDataset('maneuvers', avant); // restaure la donnée partagée
     }
   });
 });

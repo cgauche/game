@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { combatTestPenalty, combatTestPenaltyParts, testStatePenalty, meleeAttackerBonus, addCondition, COND } from './conditions';
 import { conditionModLines, baseTestModLines, defenseModifiers } from './combat';
 import type { Combatant } from './types';
-import { findConditionById } from '../data';
+import { etats, findConditionById } from '../data';
+import { setDataset } from '../data/overrides';
 
 const mk = (): Combatant => ({
   id: 'x', name: 'X', kind: 'hero', characteristics: {}, skills: [], talents: [], traits: [],
@@ -89,14 +90,18 @@ describe('pénalités de Test d’État lues en DONNÉES (etats.json passive tes
   });
   // TÉMOIN INVERSE : c'est la DONNÉE (`perStack` de l'entrée) qui gouverne le cumul, pas le code.
   it('la donnée gouverne : sans `perStack` sur l’entrée `brise`, Brisé ×3 retombe à −10', () => {
-    const ed = findConditionById(COND.brise)!;
-    expect(ed.perStack).toBe(true);
-    delete ed.perStack;
+    expect(findConditionById(COND.brise)!.perStack).toBe(true);
+    const avant = [...etats];
+    setDataset('etats', etats.map((e) => {
+      if (e.id !== COND.brise) return e;
+      const { perStack: _omis, ...sans } = e;
+      return sans;
+    }));
     try {
       const c = mk(); addCondition(c, COND.brise); addCondition(c, COND.brise); addCondition(c, COND.brise);
       expect(combatTestPenalty(c)).toBe(-10);
     } finally {
-      ed.perStack = true;
+      setDataset('etats', avant);
     }
     const c2 = mk(); addCondition(c2, COND.brise); addCondition(c2, COND.brise); addCondition(c2, COND.brise);
     expect(combatTestPenalty(c2)).toBe(-30);

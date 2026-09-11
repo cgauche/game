@@ -11,7 +11,9 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import ts from 'typescript';
 import { listerArbre } from './lister.mjs';
+import { scriptKindDe } from './dialecte.mjs';
 
 export const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 
@@ -414,22 +416,219 @@ export function indexFiges(chemin, src, parBinding, vifs = accesseursVifs()) {
   return out;
 }
 
-/** Les ÉCRITURES HORS SEAM d'un source : une mutation posée directement sur le binding d'un dataset —
- *  par une méthode mutante (`traits.push(…)`), par sa `length`, ou PAR INDEX (`traits[0] = …`,
- *  `traits[0].label = …`, qui ne passe par aucune méthode et échappe donc au premier motif). */
-export function ecrituresHorsSeam(chemin, src, parBinding) {
+/** Les TROIS FORMES sous lesquelles `src/data` EXPORTE un résolveur, mesurées sur son source : la
+ *  fonction qui rend un accesseur, l'ALIAS NU de l'accesseur, et la FLÈCHE qui l'appelle. Le nom
+ *  capturé est le résolveur, le second l'accesseur — retenu s'il est vif. */
+const FORMES_RESOLVEUR = [
+  // `export function findConditionById(id) { return etatParId(id); }`
+  /export\s+function\s+([A-Za-z_$][\w$]*)\s*\([^)]*\)[^{]{0,200}\{\s*return\s+([A-Za-z_$][\w$]*)\s*\(/g,
+  // `export const findPropById: (id: string) => PropData | undefined = propParId;`
+  /export\s+const\s+([A-Za-z_$][\w$]*)\s*(?::[^;]{0,300})?=\s*([A-Za-z_$][\w$]*)\s*;/g,
+  // `export const charAbr = (k: CharKey): string => charARoulerParId(k)?.abr ?? k;`
+  /export\s+const\s+([A-Za-z_$][\w$]*)\s*(?::[^;]{0,300}?)?=\s*(?:async\s*)?\([^)]{0,300}\)\s*(?::[^=]{0,200})?=>\s*([A-Za-z_$][\w$]*)\s*\(/g,
+];
+
+/** Les RÉSOLVEURS D'ENTRÉE du dépôt : tout export de `src/data` qui donne accès à la donnée d'un
+ *  dataset par un ACCESSEUR VIF (`indexParId`/`indexParChamp`/`memoParVersion`), sous l'une des
+ *  `FORMES_RESOLVEUR`. Ce qu'un tel résolveur atteint n'est pas une copie : c'est l'ENTRÉE que le
+ *  seam splice. La muter écrit dans le dataset sans le versionner (aucun index mémoïsé ne l'apprend)
+ *  et change l'ORDRE D'INSERTION de ses clés, dont `JSON.stringify` dépend (#1717).
+ *  La flèche qui rend un CHAMP de l'entrée (`… ?.abr ?? k`) entre dans le vocabulaire comme les
+ *  autres : le critère est l'ACCÈS à la donnée vive, et le classer au cas par cas rouvrirait la
+ *  liste tenue à la main que cette dérivation remplace. */
+let _resolveurs = null;
+export function resolveursDentree() {
+  if (_resolveurs) return _resolveurs;
+  const accesseurs = accesseursVifs();
+  const out = new Set();
+  for (const chemin of fichiersSources()) {
+    if (!chemin.startsWith('src/data/') || /\.test\.tsx?$/.test(chemin)) continue;
+    const src = sansCommentaires(readFileSync(join(RACINE, chemin), 'utf8'));
+    for (const forme of FORMES_RESOLVEUR) {
+      for (const m of src.matchAll(forme)) if (accesseurs.has(m[2])) out.add(m[1]);
+    }
+  }
+  if (!out.size) throw new Error('resolveursDentree : aucun résolveur lu — la forme des résolveurs de `src/data` a changé');
+  _resolveurs = out;
+  return out;
+}
+
+const MUTANTES = new Set(MUTATEURS.split('|'));
+/** Les méthodes qui TIRENT une entrée du tableau (`etats.find(…)` rend l'objet, pas une copie). */
+const TIREUSES = new Set(['find', 'findLast', 'at']);
+/** Les nœuds qui OUVRENT une portée de déclaration (`let`/`const`, paramètres, liant de `for…of`). */
+const EST_PORTEE = (n) =>
+  ts.isSourceFile(n) || ts.isBlock(n) || ts.isModuleBlock(n) || ts.isCaseBlock(n) || ts.isCatchClause(n) ||
+  ts.isForStatement(n) || ts.isForOfStatement(n) || ts.isForInStatement(n) ||
+  ts.isArrowFunction(n) || ts.isFunctionExpression(n) || ts.isFunctionDeclaration(n) ||
+  ts.isMethodDeclaration(n) || ts.isConstructorDeclaration(n) || ts.isClassDeclaration(n);
+const EST_ENVELOPPE = (n) =>
+  ts.isNonNullExpression(n) || ts.isParenthesizedExpression(n) || ts.isAsExpression(n) ||
+  (ts.isSatisfiesExpression ? ts.isSatisfiesExpression(n) : false);
+
+/** La BASE d'une chaîne d'accès : `ed.recover!.difficulty` → `ed`, `(etats as E[])[0]` → `etats`,
+ *  `findConditionById('x')!.perStack` → l'APPEL lui-même (la chaîne part de la donnée vive). */
+function baseDe(n) {
+  for (;;) {
+    if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n) || EST_ENVELOPPE(n)) { n = n.expression; continue; }
+    return n;
+  }
+}
+
+/** La portée qui PORTE une déclaration (le nœud de portée le plus proche qui l'enveloppe). */
+function porteeDe(n) {
+  for (let p = n.parent; p; p = p.parent) if (EST_PORTEE(p)) return p;
+  return n.getSourceFile();
+}
+
+/**
+ * La CIBLE VIVE d'une expression, nommée — `null` si rien de vif. Sa BASE tranche à elle seule :
+ * un binding importé EST le dataset ; un appel de résolveur, une tireuse posée sur du vif, ou une
+ * variable que la portée résout comme entrée, DÉSIGNENT une entrée. Une seule fonction sert les
+ * deux usages du détecteur : dire d'où sort une valeur, et dire ce qu'une écriture atteint.
+ */
+function cibleVive(expr, noms, resolveurs, resoudre) {
+  const b = baseDe(expr);
+  if (ts.isIdentifier(b)) {
+    if (noms.has(b.text)) return `le dataset « ${b.text} »`;
+    return resoudre(b.text, expr) ? `une ENTRÉE VIVE du dataset « ${b.text} »` : null;
+  }
+  if (ts.isCallExpression(b)) {
+    const appele = b.expression;
+    if (ts.isIdentifier(appele) && resolveurs.has(appele.text)) return `une ENTRÉE VIVE du dataset (« ${appele.text}(…) »)`;
+    if (ts.isPropertyAccessExpression(appele) && TIREUSES.has(appele.name.text)) {
+      const source = cibleVive(appele.expression, noms, resolveurs, resoudre);
+      return source ? `une ENTRÉE VIVE tirée de ${source}` : null;
+    }
+  }
+  return null;
+}
+
+/**
+ * Les DÉCLARATIONS d'un source, par portée : `nom → est-ce une ENTRÉE VIVE d'un dataset ?`. Une
+ * déclaration non-vive y entre AUSSI — c'est elle qui OMBRE l'homonyme d'une portée englobante (une
+ * variable de boucle `for (const c of heroes)` n'est pas l'entrée `const c = findCreatureById(…)`
+ * déclarée ailleurs dans le fichier). La vivacité se propage par FIXPOINT sur trois chemins : le
+ * déclarateur nommé (`const rec = ed.recover`), le liant DÉSTRUCTURÉ (`const { recover } = ed` —
+ * chaque élément hérite de l'initialiseur) et la RÉAFFECTATION d'un identifiant déjà déclaré
+ * (`let ed = null; ed = findConditionById('x')`), qui rend vif le nom dans la portée qui le déclare.
+ */
+function declarationsParPortee(sf, noms, resolveurs) {
+  const parPortee = new Map();
+  const poser = (nom, portee, entree) => {
+    let m = parPortee.get(portee);
+    if (!m) parPortee.set(portee, (m = new Map()));
+    if (entree || !m.has(nom)) m.set(nom, entree);
+  };
+  const resoudre = (nom, depuis) => {
+    for (let p = depuis; p; p = p.parent) {
+      const m = parPortee.get(p);
+      if (m && m.has(nom)) return m.get(nom);
+    }
+    return false;
+  };
+  const porteeQuiDeclare = (nom, depuis) => {
+    for (let p = depuis; p; p = p.parent) {
+      const m = parPortee.get(p);
+      if (m && m.has(nom)) return p;
+    }
+    return null;
+  };
+  // La portée d'où l'on résout est celle de l'EXPRESSION elle-même : ses parents mènent au liant.
+  const estVif = (expr) => !!expr && !!cibleVive(expr, noms, resolveurs, resoudre);
+  const declarateurs = [];
+  const promotions = [];
+  /** Les noms qu'un liant DÉCLARE : identifiant nu, ou tous les éléments d'un motif imbriqué. */
+  const nomsDuLiant = (liant, out = []) => {
+    if (ts.isIdentifier(liant)) out.push(liant.text);
+    else if (ts.isObjectBindingPattern(liant) || ts.isArrayBindingPattern(liant)) {
+      for (const el of liant.elements) if (ts.isBindingElement(el)) nomsDuLiant(el.name, out);
+    }
+    return out;
+  };
+  const visiter = (n) => {
+    if (ts.isVariableDeclaration(n)) {
+      const portee = porteeDe(n);
+      const declares = nomsDuLiant(n.name);
+      for (const nom of declares) poser(nom, portee, false);
+      declarateurs.push({ noms: declares, portee, init: n.initializer });
+    } else if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isIdentifier(n.left)) {
+      promotions.push({ nom: n.left.text, depuis: n, init: n.right });
+    } else if (ts.isParameter(n) && ts.isIdentifier(n.name)) poser(n.name.text, porteeDe(n), false);
+    else if ((ts.isFunctionDeclaration(n) || ts.isClassDeclaration(n)) && n.name) poser(n.name.text, porteeDe(n), false);
+    else if (ts.isImportSpecifier(n) || ts.isNamespaceImport(n)) poser(n.name.text, n.getSourceFile(), false);
+    ts.forEachChild(n, visiter);
+  };
+  visiter(sf);
+  // FIXPOINT : une entrée en engendre d'autres (`const rec = ed.recover`), et la propagation suit
+  // les DÉPENDANCES, dans un ordre propre à elles. Borné par le nombre de sites — chaque tour en
+  // promeut au moins un, sans quoi il s'arrête.
+  for (let tour = 0; tour <= declarateurs.length + promotions.length; tour++) {
+    let bouge = false;
+    for (const d of declarateurs) {
+      if (!estVif(d.init)) continue;
+      for (const nom of d.noms) if (!parPortee.get(d.portee).get(nom)) { poser(nom, d.portee, true); bouge = true; }
+    }
+    for (const p of promotions) {
+      if (!estVif(p.init)) continue;
+      const portee = porteeQuiDeclare(p.nom, p.depuis);
+      if (portee && !parPortee.get(portee).get(p.nom)) { poser(p.nom, portee, true); bouge = true; }
+    }
+    if (!bouge) break;
+  }
+  return resoudre;
+}
+
+/**
+ * Les ÉCRITURES HORS SEAM d'un source, par analyse STRUCTURELLE (AST) — une seule lecture pour les
+ * deux cibles, que `cibleVive` distingue :
+ *  - le BINDING d'un dataset (`traits.push(…)`, `traits.length = 0`, `traits[0].label = …`) ;
+ *  - une ENTRÉE VIVE tirée du dataset (`const ed = findConditionById('brise')!` puis
+ *    `delete ed.perStack`, `const { recover } = ed`, `findManeuverById('x')!.effects = …`) :
+ *    l'objet muté EST celui du tableau.
+ * Les gestes reconnus sont ceux qui changent l'objet en place : affectation (simple ou composée) à
+ * un membre, `delete`, `++`/`--`, méthode mutante, `Object.assign` sur la cible.
+ *
+ * ANGLE MORT, dit : la passe est LOCALE À LA PORTÉE. Une entrée passée en ARGUMENT
+ * (`muter(findConditionById('x'))`, puis `e.perStack = false` dans le corps de `muter`) sort de ce
+ * que la pile de portées sait relier — le paramètre y est déclaré non-vif, et le suivre demanderait
+ * un graphe d'appels inter-procédural (le vérificateur de types de `tsProgram`, ~1,3 Go par
+ * programme, pour une forme qu'aucun site du dépôt ne pratique). Ce qui reste couvert dans ce cas :
+ * l'écriture faite DANS la portée qui résout l'entrée.
+ */
+export function ecrituresHorsSeam(chemin, src, parBinding, resolveurs = resolveursDentree()) {
   const noms = nomsVifsDuFichier(src, parBinding);
-  if (!noms.size) return [];
+  const candidateEntree = [...resolveurs].some((r) => src.includes(r));
+  if (!noms.size && !candidateEntree) return [];
+  const sf = ts.createSourceFile(chemin, src, ts.ScriptTarget.Latest, true, scriptKindDe(chemin));
+  const resoudre = declarationsParPortee(sf, noms, resolveurs);
   const lignes = src.split('\n');
   const out = [];
-  for (const nom of noms.keys()) {
-    const parMethode = `\\.\\s*(?:(?:${MUTATEURS})\\s*\\(|length\\s*=[^=])`;
-    const parIndex = `\\[[^\\]]*\\]\\s*(?:\\.\\s*[A-Za-z_$][\\w$]*\\s*)*=(?![=>])`;
-    const rx = new RegExp(`(?<![.\\w])${nom}\\s*(?:${parMethode}|${parIndex})`);
-    lignes.forEach((l, i) => {
-      if (rx.test(l)) out.push(`${chemin}:${i + 1} — écriture hors seam sur le dataset « ${nom} » : ${l.trim()}`);
-    });
-  }
+  const cible = (expr) => cibleVive(expr, noms, resolveurs, resoudre);
+  /** Un MEMBRE de la cible, jamais la variable elle-même : réaffecter le nom local (`ed = autre`)
+   *  ne touche pas la donnée, muter `ed.perStack` si. */
+  const membre = (acces) =>
+    ts.isPropertyAccessExpression(acces) || ts.isElementAccessExpression(acces) ? cible(acces) : null;
+  const fauter = (n, quoi) => {
+    const ligne = sf.getLineAndCharacterOfPosition(n.getStart(sf)).line;
+    out.push(`${chemin}:${ligne + 1} — écriture hors seam sur ${quoi} : ${(lignes[ligne] ?? '').trim()}`);
+  };
+  const visiter = (n) => {
+    let quoi = null;
+    if (ts.isDeleteExpression(n)) quoi = membre(n.expression);
+    else if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment) quoi = membre(n.left);
+    else if ((ts.isPrefixUnaryExpression(n) || ts.isPostfixUnaryExpression(n)) && (n.operator === ts.SyntaxKind.PlusPlusToken || n.operator === ts.SyntaxKind.MinusMinusToken)) quoi = membre(n.operand);
+    else if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression)) {
+      const appele = n.expression;
+      if (MUTANTES.has(appele.name.text)) quoi = cible(appele.expression);
+      else if (appele.name.text === 'assign' && ts.isIdentifier(appele.expression) && appele.expression.text === 'Object' && n.arguments.length) {
+        quoi = cible(n.arguments[0]);
+      }
+    }
+    if (quoi) fauter(n, quoi);
+    ts.forEachChild(n, visiter);
+  };
+  visiter(sf);
   return out;
 }
 

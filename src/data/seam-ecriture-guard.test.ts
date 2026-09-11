@@ -8,10 +8,17 @@
  * celui des lecteurs divergent en silence (c'était le cas de deux tests, dont un qui se disait
  * « exactement ce que fait l'éditeur du Codex » alors que l'atelier passe par `setDataset`).
  *
+ * La cible surveillée est le dataset ET SES ENTRÉES (#1717) : `findConditionById('brise')` rend
+ * l'objet même du tableau. Le muter écrit dans la donnée sans versionner l'écriture, et change
+ * l'ORDRE D'INSERTION de ses clés — dont `JSON.stringify` dépend, donc le save « sans édition » de
+ * `dataset-save-parse` sort d'autres octets que le disque. La restauration de la VALEUR ne rend pas
+ * cet ordre, et le SEED de `resetData()` (capté à la première évaluation d'`overrides.ts`) fige la
+ * forme qu'il trouve : dans un worker où la mutation précède, c'est la forme fautive qu'il restaure.
+ *
  * Périmètre : tout `src/**` en `.ts(x)`, TESTS COMPRIS (c'est là que vivaient les écritures sauvages).
- * Vocabulaire IMPORTÉ du seam (`bindingsVifs`, dérivé du littéral `ARRAYS` d'`overrides.ts`), et un
- * nom n'est retenu que s'il est IMPORTÉ par le fichier (ou exporté par le module propriétaire) : un
- * `props` local d'une scène n'est pas le dataset `props`.
+ * Vocabulaire IMPORTÉ du seam (`bindingsVifs`, dérivé du littéral `ARRAYS` d'`overrides.ts` et des
+ * résolveurs de `src/data`), et un nom n'est retenu que s'il est IMPORTÉ par le fichier (ou exporté
+ * par le module propriétaire) : un `props` local d'une scène n'est pas le dataset `props`.
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -22,7 +29,7 @@ describe('#1692 — aucune écriture de dataset hors du seam `overrides.ts`', ()
   const parBinding = bindingsVifs();
   const seam = fichiersDuSeam();
 
-  it('aucun `push`/`splice`/`sort`… ni écriture PAR INDEX sur un binding de dataset, tests compris', () => {
+  it('aucun `push`/`splice`/`sort`… ni écriture PAR INDEX, ni mutation d’une ENTRÉE vive, tests compris', () => {
     const fautifs = fichiersSources()
       .filter((f) => !seam.has(f))
       .flatMap((f) => ecrituresHorsSeam(f, readFileSync(join(RACINE, f), 'utf8'), parBinding));
@@ -49,5 +56,39 @@ describe('#1692 — aucune écriture de dataset hors du seam `overrides.ts`', ()
     expect(ecrituresHorsSeam('copie.ts', lectureParIndex, parBinding)).toEqual([]);
     const comparaison = `import { traits } from '../data';\nif (traits[0] === neuf) f();\n`;
     expect(ecrituresHorsSeam('copie.ts', comparaison, parBinding)).toEqual([]);
+  });
+
+  it('CONTRÔLE POSITIF : l’ENTRÉE résolue est le dataset — `delete` et affectation sur elle sont vus', () => {
+    const parResolveur = `import { findConditionById } from '../data';\nconst ed = findConditionById('brise')!;\ndelete ed.perStack;\ned.perStack = true;\n`;
+    expect(ecrituresHorsSeam('copie.ts', parResolveur, parBinding)).toHaveLength(2);
+    // MEMBRE d'une entrée, et ENTRÉE dérivée d'une entrée : la même donnée, un cran plus bas.
+    const parMembre = `import { findConditionById } from '../data';\nconst rec = findConditionById('empetre')!.recover!;\nrec.difficulty = 'difficile';\n`;
+    expect(ecrituresHorsSeam('copie.ts', parMembre, parBinding)).toHaveLength(1);
+    const parFind = `import { etats } from '../data';\nconst e = etats.find((x) => x.id === 'brise')!;\ne.label = 'X';\n`;
+    expect(ecrituresHorsSeam('copie.ts', parFind, parBinding)).toHaveLength(1);
+    // La PORTE, elle, ne fabrique que des copies : rien à signaler.
+    const parLeSeam = `import { etats } from '../data';\nsetDataset('etats', etats.map((e) => ({ ...e, perStack: undefined })));\n`;
+    expect(ecrituresHorsSeam('copie.ts', parLeSeam, parBinding)).toEqual([]);
+  });
+
+  it('CONTRÔLE POSITIF : les trois chemins LOCAUX vers l’entrée sont suivis (motif, chaîne, réaffectation)', () => {
+    // (a) LIANT DÉSTRUCTURÉ : l'élément hérite de la vivacité de son initialiseur.
+    const parMotif = `import { findConditionById } from '../data';\nconst { recover } = findConditionById('empetre')!;\nrecover.difficulty = 'difficile';\n`;
+    expect(ecrituresHorsSeam('copie.ts', parMotif, parBinding)).toHaveLength(1);
+    // (b) CHAÎNE DIRECTE : aucune variable ne nomme l'entrée, l'appel est la base de l'écriture.
+    const parChaine = `import { findConditionById } from '../data';\nfindConditionById('brise')!.perStack = false;\n`;
+    expect(ecrituresHorsSeam('copie.ts', parChaine, parBinding)).toHaveLength(1);
+    // (c) RÉAFFECTATION : le nom devient vif dans la portée qui le déclare.
+    const parReaffectation = `import { findConditionById } from '../data';\nlet ed = null;\ned = findConditionById('brise');\ned.perStack = false;\n`;
+    expect(ecrituresHorsSeam('copie.ts', parReaffectation, parBinding)).toHaveLength(1);
+  });
+
+  it('CONTRÔLE NÉGATIF : la PORTÉE départage — un homonyme local n’hérite pas de l’entrée', () => {
+    // Même nom, deux origines : `c` résolu du dataset au niveau module, `c` de boucle dans la fonction.
+    const ombre = `import { findCreatureById } from '../data';\nconst c = findCreatureById('x')!;\nfunction f(heroes) {\n  for (const c of heroes) { c.hunger = 1; }\n}\n`;
+    expect(ecrituresHorsSeam('copie.ts', ombre, parBinding)).toEqual([]);
+    // Et la COPIE d'une entrée n'est plus l'entrée : l'écrire ne touche aucune donnée vive.
+    const copie = `import { findCreatureById } from '../data';\nconst c = { ...findCreatureById('x')! };\nc.label = 'X';\n`;
+    expect(ecrituresHorsSeam('copie.ts', copie, parBinding)).toEqual([]);
   });
 });

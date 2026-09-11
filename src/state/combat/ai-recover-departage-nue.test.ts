@@ -6,7 +6,8 @@ import { seedBattleRng } from '../battleRng';
 import { resolveRecoverTest } from './recover';
 import { makeRNG } from '../../engine/dice';
 import { opposedTest, REPLIS_DEUX_CIBLES } from '../../engine/tests';
-import { findConditionById } from '../../data';
+import { etats } from '../../data';
+import { setDataset } from '../../data/overrides';
 import type { Combatant, Difficulty } from '../../engine/types';
 
 /**
@@ -97,10 +98,9 @@ describe('LDB 12 l.166 — la Difficulté de `recover` s’applique à l’ACTEU
 
   /** Donnée DÉVIANTE forgée : `empetre.recover.difficulty` décalée le temps du cas. */
   function withRecoverDifficulty<T>(difficulty: Difficulty, body: () => T): T {
-    const rec = findConditionById('empetre')!.recover!;
-    const avant = rec.difficulty;
-    rec.difficulty = difficulty;
-    try { return body(); } finally { rec.difficulty = avant; }
+    const avant = [...etats];
+    setDataset('etats', etats.map((e) => (e.id === 'empetre' ? { ...e, recover: { ...e.recover!, difficulty } } : e)));
+    try { return body(); } finally { setDataset('etats', avant); }
   }
 
   it('ASYMÉTRIE MESURÉE (voie joueur) : la cible de l’acteur porte la Difficulté, celle de l’entrave NON', () => {

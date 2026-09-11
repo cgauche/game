@@ -16,7 +16,8 @@
 import { describe, expect, it } from 'vitest';
 import { emptyScene, heightAt, sceneMetresPerTile, type Scene } from '../../state/scene';
 import { mapLights } from '../../state/vision';
-import { findPropById } from '../../data';
+import { props, findPropById, type PropVolumeRecipe } from '../../data';
+import { setDataset } from '../../data/overrides';
 import { buildProps } from '../builders/props';
 import { gpToWorld } from '../backends/webgl/worldTris';
 import { pointLightWrites, FLAME_LIFT_M } from './stagePointLights';
@@ -122,19 +123,21 @@ describe('la lampe d’un décor VOLUMIQUE est posée sur sa primitive émettric
     const scene = sceneAvec('cheminee-interieure', facing);
     // Le builder comme `mapLights` (`foyerDe`) lisent la MÊME entrée de catalogue, par la même
     // `findPropById` : lui poser sa recette élargie le temps de la mesure les sert tous deux, et c'est
-    // la seule façon de mesurer les deux chemins sur une donnée strictement identique. La recette est
-    // REMPLACÉE (objet neuf), pas mutée : c'est son identité qui clé le cache d'empreinte.
-    const entree = findPropById('cheminee-interieure')!;
-    const recetteInitiale = entree.volume!;
+    // la seule façon de mesurer les deux chemins sur une donnée strictement identique. L'édition passe
+    // par la PORTE du seam (`setDataset`) : entrée et recette sont des objets NEUFS, ce qui versionne
+    // l'écriture pour les index mémoïsés et clé le cache d'empreinte (#1717).
+    const recetteInitiale = findPropById('cheminee-interieure')!.volume!;
+    const avant = [...props];
     // Une semelle de 3,5 m de côté ⇒ 1,75 case ⇒ empreinte 2×2 ; posée au ras du sol et dans un
     // matériau qui n'est pas celui du foyer, elle ne touche ni la mesure du barycentre ni le foyer.
-    entree.volume = {
+    const elargie: PropVolumeRecipe = {
       ...recetteInitiale,
       primitives: [...recetteInitiale.primitives, {
         kind: 'box', center: { xM: 0, yM: 0, hM: 0.01 }, size: { xM: 3.5, yM: 3.5, hM: 0.02 },
         material: recetteInitiale.primitives[0].material,
       }],
     };
+    setDataset('props', props.map((p) => (p.id === 'cheminee-interieure' ? { ...p, volume: elargie } : p)));
     try {
       const lampe = lampeDe(scene);
       const foyer = barycentreCuit(scene, MATIERE_DU_FOYER);
@@ -144,7 +147,7 @@ describe('la lampe d’un décor VOLUMIQUE est posée sur sa primitive émettric
       // Et l'offset est bien NON NUL : sans lui, le test ci-dessus ne prouverait rien de plus que le 1×1.
       expect(mapLights(scene)[0].foyer!.x).not.toBeCloseTo(0, 6);
     } finally {
-      entree.volume = recetteInitiale;
+      setDataset('props', avant);
     }
   });
 
