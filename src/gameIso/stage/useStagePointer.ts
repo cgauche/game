@@ -59,6 +59,9 @@ const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sin
 export interface StagePointer {
   /** Tuile survolée (tooltip + réticule de visée ; suivie dans tous les modes de ciblage). */
   hover: Pt | null;
+  /** L'ENTITÉ UTILISABLE sous le curseur (#1687), `null` sinon : celle que le clic traiterait
+   *  (`entiteDuGeste` + `estUtilisable`), source unique du halo renforcé et de sa plaque de nom. */
+  entiteSurvolee: string | null;
   /** L'arête SURVOLÉE, quel qu'en soit le canal (pixel ou focus clavier) : source unique de l'accent
    *  du peintre et de l'armement du geste. */
   areteSurvolee: AreteUtilisable | null;
@@ -107,6 +110,10 @@ export function useStagePointer({
   const setCamPan = useGame((s) => s.setCamPan);
   const [hover, setHover] = useState<Pt | null>(null);
   const [areteSurvolee, setAreteSurvolee] = useState<AreteUtilisable | null>(null);
+  // ENTITÉ SOUS LE CURSEUR (#1687) : celle que le clic traiterait (`entiteDuGeste`), publiée telle quelle
+  // — le halo et la plaque de nom du survolé n'ont ainsi pas de second résolveur à tenir. État à part
+  // de `hover` : une même tuile peut changer d'entité (décor épuisé), et l'id ne bouge pas à chaque pixel.
+  const [entiteSurvolee, setEntiteSurvolee] = useState<string | null>(null);
   const movingRef = useRef(false);
   // Glisser-caméra : on diffère l'action de clic au relâchement ; un glissement > seuil = panoramique.
   // La BASE du panoramique (`pan0` + le point de viewBox `vbX/vbY` + le zoom + le n° d'accord du
@@ -120,12 +127,26 @@ export function useStagePointer({
   const ptrs = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ dist: number; cx: number; cy: number; accord0: number } | null>(null);
 
+  /** L'UTILISABLE que ce verdict désigne, ou `null` : le résolveur du CLIC (`entiteDuGeste`) suivi du
+   *  dériveur UNIQUE de l'offre (`estUtilisable`). Le survol ne peut pas annoncer autre chose que ce
+   *  que le clic ferait — c'est la même question, posée une image plus tôt. */
+  const utilisableSous = (v: Verdict, t: Pt | null): string | null => {
+    const st = useGame.getState();
+    const sc = st.scene;
+    const e = sc && t ? entiteDuGeste(sc, v, t) : undefined;
+    return sc && e && estUtilisable(sc, e, st.flags) ? e.id : null;
+  };
+
   // Recette (DEV) : pilotage PROGRAMMATIQUE du survol — __wfrp.hover('id') passe par ce hook,
-  // le tooltip/réticule se rendent sans souris réelle (pas de chasse aux pixels).
+  // le tooltip/réticule se rendent sans souris réelle (pas de chasse aux pixels). Sans pixel, pas de
+  // rayon : la question devient celle de la CASE, et c'est la branche que `entiteDuGeste` tranche déjà.
   useEffect(() => {
     if (!import.meta.env.DEV) return;
     const w = window as unknown as { __wfrpSetHover?: (t: Pt | null) => void };
-    w.__wfrpSetHover = (t) => setHover(t);
+    w.__wfrpSetHover = (t) => {
+      setHover(t);
+      setEntiteSurvolee(utilisableSous({ tile: t ? { x: t.x, y: t.y, z: t.z ?? 0 } : null, cid: null, via: 'aucune', nature: 'case' }, t));
+    };
     return () => { delete w.__wfrpSetHover; };
   }, []);
 
@@ -527,22 +548,20 @@ export function useStagePointer({
     const v = pickVerdict(ev);
     const t = tuileDe(v);
     // Affordance : curseur main au survol d'un décor interactif / dialogue (DOM direct, sans re-render).
-    // MÊME entité que celle qu'un clic traiterait (`entiteDuGeste`) : l'affordance ne peut pas annoncer
-    // autre chose que ce que le clic fera.
-    // UNE lecture d'état pour le verdict d'affordance : la scène, le mode ET les drapeaux — les deux
-    // sites de CLIC ci-dessus lisent déjà `st.flags`, et le curseur ne peut pas promettre ce que le clic
-    // ne fera pas (un décor dont l'unique action `unique` est épuisée n'appelle plus).
+    // MÊME entité que celle qu'un clic traiterait (`utilisableSous` → `entiteDuGeste`) : l'affordance ne
+    // peut pas annoncer autre chose que ce que le clic fera — un décor dont l'unique action `unique`
+    // est épuisée n'appelle plus.
     const st = useGame.getState();
-    const sc = st.scene;
     // SURVOL-ARMEMENT d'une ARÊTE : le verdict est la seule source du seuil survolé — l'accent du
     // peintre, l'aperçu de marche et le tap-1 tactile en descendent tous.
     survolerArete(v.nature === 'arete' ? v.arete : null);
-    const eSurvolée = sc && t ? entiteDuGeste(sc, v, t) : undefined;
     // Le stage n'écrit le curseur que pour ce qu'il résout LUI-MÊME — le décor utilisable en
     // exploration. Une ARÊTE porte le sien sur son propre trait, par capacité
     // (`stage/AreteOverlay.tsx:Matiere.cursor` : réticule sur une structure, main sur un seuil), comme
     // un jeton de combat survolé, pour lequel cette ligne n'écrit rien non plus.
-    const overInteractive = !!sc && !!eSurvolée && st.mode === 'exploration' && estUtilisable(sc, eSurvolée, st.flags);
+    const idSurvolé = utilisableSous(v, t);
+    if (idSurvolé !== entiteSurvolee) setEntiteSurvolee(idSurvolé);
+    const overInteractive = !!idSurvolé && st.mode === 'exploration';
     (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
     // Survol suivi en COMBAT (visée) ET en EXPLORATION (halo renforcé du décor interactif + aperçu de
     // déplacement) — borné aux changements de tuile, donc peu de re-rendus.
@@ -588,6 +607,7 @@ export function useStagePointer({
     pinchRef.current = null;
     if (hover) setHover(null);
     if (areteSurvolee) setAreteSurvolee(null);
+    if (entiteSurvolee) setEntiteSurvolee(null);
   };
 
   // Clic droit en combat = attaque la plus PERTINENTE sur l'ennemi survolé (scoreur partagé avec l'IA :
@@ -607,6 +627,7 @@ export function useStagePointer({
 
   return {
     hover,
+    entiteSurvolee,
     areteSurvolee,
     activerArete,
     survolerArete,

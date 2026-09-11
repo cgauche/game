@@ -55,7 +55,7 @@ describe('renderRanks — les familles MONTÉES portent leur rang', () => {
 
   it('marques dynamiques et halos : rang `chrome` (les affordances ne se voilent jamais)', () => {
     expect(buildDynamicMarkMesh('tether', 4).renderOrder).toBe(RENDER_ORDER.chrome);
-    expect(buildHaloMesh('pnjContour', 4).renderOrder).toBe(RENDER_ORDER.chrome);
+    expect(buildHaloMesh('haloContour', 4).renderOrder).toBe(RENDER_ORDER.chrome);
   });
 
   it('jumeau de silhouette : rang `jumeau` (il ne peint que des pixels occlus)', () => {

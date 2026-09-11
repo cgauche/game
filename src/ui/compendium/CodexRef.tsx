@@ -76,6 +76,19 @@ export function computePopoverPos(
     : { left, bottom: vh - rect.top + GAP, maxHeight: Math.max(0, Math.min(above, cap)), width };
 }
 
+/** LE TITRE du chrome de nom — titre, et sous-titre quand le nom d'INSTANCE surmonte le nom de
+ *  référence. Ces deux spans sont la matrice du nom à l'écran : le popover du Codex les porte, et le
+ *  peintre de plaques de nom du monde les repose au-dessus de l'entité (`stage/PlaquesDeNom`) — UNE
+ *  définition, donc un seul endroit où leur matière se retouche. */
+export function CodexTitre({ title, sub }: { title?: ReactNode; sub?: ReactNode }): JSX.Element {
+  return (
+    <>
+      {title ? <span className="codex-pop-title">{title}</span> : null}
+      {sub ? <span className="codex-pop-sub">{sub}</span> : null}
+    </>
+  );
+}
+
 export function CodexRef({
   category,
   refus,
@@ -346,8 +359,7 @@ export function CodexRef({
             {/* Le REFUS ouvre le popover : c'est la réponse à « pourquoi je ne peux pas ? », avant
                 toute règle. Il ne s'écrit nulle part ailleurs à l'écran (arbitrage 2026-08-24). */}
             {refus && <span data-refus="">{refus}</span>}
-            {(inst ?? title) ? <span className="codex-pop-title">{inst ?? title}</span> : null}
-            {inst && <span className="codex-pop-sub">{title}</span>}
+            <CodexTitre title={inst ?? title} sub={inst ? title : undefined} />
             {popSub && <span className="codex-pop-sub">{popSub}</span>}
             {metaLine && <span className="codex-pop-meta">{metaLine}</span>}
             {/* PROVENANCES de la chip (qui soutient, qui octroie) — arbitrage user 2026-08-05 :

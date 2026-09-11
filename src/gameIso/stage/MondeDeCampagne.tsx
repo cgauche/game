@@ -44,7 +44,7 @@ import { seatedEyeH } from '../pov/camera';
 import { elOccluder } from './occluders';
 import { tireurSurvole, type HighlightOpts } from './highlightLayer';
 import { dynamicMarks } from '../builders/dynamicMarks';
-import { interactionHalos, NO_INTERACTION_HALOS, type InteractionHalos } from '../builders/interactHalos';
+import { interactionHalos, NO_INTERACTION_HALOS, type InteractHalo } from '../builders/interactHalos';
 import { tokenChromes, tokenGesteMarks, type GesteMark, type TokenChromeMark } from '../builders/tokenChrome';
 import { entityGestes } from '../../state/registreOffres';
 import { offresUtilisables } from '../../state/offresUtilisables';
@@ -133,6 +133,7 @@ function CorpsDuMonde() {
   // MONDE INAFFICHABLE (#1176 C5a) : contexte volumique refusé = plus aucun peintre du monde — l'écran
   // le DIT, il ne se replie plus en silence (`stage/webglSupport`).
   const sansMonde = useWebglRefusé();
+  const reveler = useGame((s) => s.reveler); // Alt maintenu : tous les utilisables visibles se révèlent (halo + plaque)
   const hoverCombatantId = useGame((s) => s.hoverCombatantId); // survol de la frise → peek caméra + réticule
   const svgRef = useRef<SVGSVGElement>(null);
   const camRef = useRef({ x: 0, y: 0 }); // caméra du rendu courant, lue par les handlers du pointeur
@@ -658,14 +659,16 @@ function CorpsDuMonde() {
     () => tokenGesteMarks(tokenEls, propEls, offresDEntite),
     [tokenEls, propEls, offresDEntite],
   );
-  // HALOS D'INTERACTION (P3-0g) : même partage que les marques dynamiques — dérivés UNE fois
-  // (`builders/interactHalos`) ; le contexte qui les autorise (exploration, combat ouvert) se tranche
-  // ici, et nulle part ailleurs.
-  const halos = useMemo<InteractionHalos>(
-    () => (scene
-      ? interactionHalos(propEls, scene, flags, hover, { exploring: mode === 'exploration', combat: mode === 'battle' && !!battle })
-      : NO_INTERACTION_HALOS),
-    [propEls, scene, flags, hover, mode, battle],
+  // HALOS D'INTERACTION (P3-0g ; régime de révélation #1687) : même partage que les marques dynamiques
+  // — dérivés UNE fois (`builders/interactHalos`), et servis aux DEUX peintres (anneaux du monde
+  // volumique, plaques de nom de la surcouche). Même couple d'entrées que les pastilles de gestes
+  // (jetons ET décors) : un marchand à qui parler est un utilisable comme un coffre à fouiller. Le
+  // RÉGIME est tout ce que la frame en dit : l'entité sous le curseur (celle que le clic traiterait,
+  // résolue par le pointeur) et la révélation tenue (Alt). Aucun mode n'y entre : ce que le monde offre
+  // ne dépend pas du combat.
+  const halos = useMemo<readonly InteractHalo[]>(
+    () => (scene ? interactionHalos(tokenEls, propEls, scene, flags, { survol: pointeur.entiteSurvolee, reveler }) : NO_INTERACTION_HALOS),
+    [tokenEls, propEls, scene, flags, pointeur.entiteSurvolee, reveler],
   );
 
   if (!scene) return null;
@@ -745,6 +748,7 @@ function CorpsDuMonde() {
             poserSvg={poserSvg}
             pointeur={pointeur}
             visée={visée}
+            halos={halos}
           />
         )}
       </SceneErrorBoundary>

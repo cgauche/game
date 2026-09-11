@@ -17,9 +17,11 @@ import { useCombatFx } from './fx/useCombatFx';
 import { type WalkPos } from './fx/walkPose';
 import { FxLayer } from './fx/FxLayer';
 import { TokenChromeOverlay } from './stage/TokenChromeOverlay';
+import { PlaquesDeNom } from './stage/PlaquesDeNom';
 // SONDE DE PICKING de la recette : son import l'enregistre auprès de l'outillage (`__wfrp.pickTileAt`).
 import './stage/pickProbe';
 import { type GesteMark, type TokenChromeMark } from './builders/tokenChrome';
+import { type InteractHalo } from './builders/interactHalos';
 import { viewPolicy } from './stage/viewPolicy';
 import { wallTraitObjs } from './stage/layers';
 import { gridLines } from '../geometry/grid';
@@ -66,6 +68,9 @@ export type VueDePlateau = {
   chromes: readonly TokenChromeMark[];
   /** PASTILLES d'ENTITÉ (spec zone 4) : déjà dérivées par l'hôte, comme le chrome des jetons. */
   gestes: readonly GesteMark[];
+  /** HALOS des utilisables (#1687), dérivés UNE fois par l'hôte : cette surcouche en peint les PLAQUES
+   *  DE NOM, le monde volumique en peint les anneaux — une liste, deux peintres. */
+  halos: readonly InteractHalo[];
   walkPosAt: (now: number) => WalkPos;
   activeC: Combatant | undefined;
   /** Le combat EN COURS, ou `null` hors combat (déjà tranché par l'hôte). */
@@ -83,7 +88,7 @@ export type VueDePlateau = {
 };
 
 export function SurcoucheIso({
-  scene, dims, turning, activeZ, visible, tintAt, liftAt, liftOf, aretes, politique, chromes, gestes, walkPosAt,
+  scene, dims, turning, activeZ, visible, tintAt, liftAt, liftOf, aretes, politique, chromes, gestes, halos, walkPosAt,
   activeC, battle, myTurn, mode, targeting, anyWalking, camTransform, camGRef,
   poserSvg, pointeur, visée,
 }: VueDePlateau) {
@@ -174,6 +179,9 @@ export function SurcoucheIso({
             gabarits) — l'état d'un combattant se lit par-dessus ce qui est peint sur le sol, jamais
             dessous — et, sous `pionsEnDisques`, c'est ICI que vit le pion lui-même. */}
         <TokenChromeOverlay chromes={chromes} gestes={gestes} dims={dims} liftAt={liftAt} pions={politique.pionsEnDisques} tintAt={tintAt} walkPosAt={walkPosAt} />
+        {/* PLAQUES DE NOM : au-dessus du chrome des jetons — un nom se lit par-dessus ce que le champ
+            porte, et cette couche ne prend jamais le pointeur. */}
+        <PlaquesDeNom halos={halos} dims={dims} liftAt={liftAt} pions={politique.pionsEnDisques} walkPosAt={walkPosAt} />
         {/* Curseur LIBRE : il se tait dès qu'un ciblage carte tient la scène (verdict du registre
             `mapTargetingActive`) — le réticule/le gabarit du mode prennent alors le relais. */}
         {battle && combatCursor

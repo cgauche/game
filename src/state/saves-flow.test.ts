@@ -109,6 +109,27 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     expect(rule(id)).toBe(!def); // … restaurée par le chargement
   });
 
+  /**
+   * SNAPSHOT ZÉRO-MAINTENANCE : le contrat POSITIF de `snapshotSave` — tout champ de DONNÉES de l'état
+   * initial entre dans la save, sans qu'aucune liste ne le déclare ; ce qui n'y entre pas est une
+   * exclusion NOMMÉE dans le module, et elles se comptent ici. Un champ neuf oublié (une préférence
+   * qui ne se rechargerait pas) rougit sans qu'on ait rien à inscrire.
+   */
+  it('tout champ de données de l’état initial entre au snapshot ; les exclusions sont NOMMÉES', () => {
+    const initial = useGame.getInitialState() as unknown as Record<string, unknown>;
+    const champsDeDonnees = Object.keys(initial).filter((k) => typeof initial[k] !== 'function');
+    expect(champsDeDonnees.length, 'témoin : l’état initial porte bien des données').toBeGreaterThan(20);
+    const data = snapshotSave(useGame.getState() as unknown as Record<string, unknown>, initial, 'maintenant').data;
+    const absents = champsDeDonnees.filter((k) => !(k in data));
+    expect(absents.sort(), 'un champ de données hors save sans exclusion nommée').toEqual(['campaignNarratif', 'reveler']);
+  });
+
+  it('`reveler` (Alt maintenu) n’entre dans AUCUNE save : c’est un état de TOUCHE', () => {
+    useGame.setState({ reveler: true } as never);
+    expect(useGame.getState().saveGame(1), 'témoin : la save est bien écrite').toBe(true);
+    expect('reveler' in readSlot(1)!.data, 'une partie rechargée aurait ses utilisables révélés, touche relâchée').toBe(false);
+  });
+
   it('en combat : sauvegarde refusée, le slot reste vide', () => {
     useGame.getState().startCombat('enc-mutants');
     useGame.getState().confirmRoundStart();

@@ -632,8 +632,10 @@ export async function setMobileViewport(session) {
  * `dans` = sélecteur RACINE où chercher (même patron que `{ racine }` de `cliquerAction`) : c'est la
  * sortie propre quand le même libellé vit dans deux zones de l'écran (un « Fermer » de modale et
  * celui du bandeau), là où `exact` ne départage pas.
+ *
+ * `modifiers` = les touches TENUES pendant le clic (`MOD_ALT`), même paramètre que `survoler`.
  */
-export async function clickButtonByText(session, texte, { exact = false, dans } = {}) {
+export async function clickButtonByText(session, texte, { exact = false, dans, modifiers = 0 } = {}) {
   const rect = await evaluate(session, `(() => {
     const norm = (s) => (s || '').replace(/\\s+/g, ' ').replace(/[\\u2019']/g, "'").trim();
     const target = norm(${JSON.stringify(texte)});
@@ -651,9 +653,9 @@ export async function clickButtonByText(session, texte, { exact = false, dans } 
   if (rect.textes && rect.textes.length > 1) {
     console.warn(`clickButtonByText « ${texte} » : ${rect.textes.length} boutons matchent (${rect.textes.join(' | ')}) — le PREMIER est cliqué. Préciser avec { exact: true } si ce n'est pas celui-là.`);
   }
-  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseMoved', x: rect.x, y: rect.y });
-  await session.rpc('Input.dispatchMouseEvent', { type: 'mousePressed', x: rect.x, y: rect.y, button: 'left', clickCount: 1 });
-  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseReleased', x: rect.x, y: rect.y, button: 'left', clickCount: 1 });
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseMoved', x: rect.x, y: rect.y, modifiers });
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mousePressed', x: rect.x, y: rect.y, button: 'left', clickCount: 1, modifiers });
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseReleased', x: rect.x, y: rect.y, button: 'left', clickCount: 1, modifiers });
   return rect;
 }
 
@@ -664,9 +666,11 @@ export async function clickButtonByText(session, texte, { exact = false, dans } 
  * est lu APRÈS `scrollIntoView`, sinon la souris se pose sur ce qui n'est pas là.
  *
  * `attenteMs` laisse l'infobulle s'ouvrir (elle naît sur `pointerenter`, pas au rendu suivant).
+ * `modifiers` porte les touches TENUES pendant le geste (`MOD_ALT` sous un Alt maintenu) : sans lui,
+ * l'événement dirait au navigateur que la touche vient d'être relâchée.
  * Rend le point survolé `{ x, y }` ; lève si la cible est absente.
  */
-export async function survoler(session, cible, { attenteMs = 500 } = {}) {
+export async function survoler(session, cible, { attenteMs = 500, modifiers = 0 } = {}) {
   const point = await evaluate(session, `(() => {
     const norm = (s) => (s || '').replace(/\\s+/g, ' ').replace(/[\\u2019']/g, "'").trim();
     const cible = ${JSON.stringify(cible)};
@@ -679,7 +683,7 @@ export async function survoler(session, cible, { attenteMs = 500 } = {}) {
     return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) };
   })()`);
   if (!point) throw new Error(`survoler : aucune cible « ${cible} » (sélecteur ni texte de bouton)`);
-  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseMoved', x: point.x, y: point.y, buttons: 0 });
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseMoved', x: point.x, y: point.y, buttons: 0, modifiers });
   await sleep(attenteMs);
   return point;
 }
@@ -866,6 +870,32 @@ export async function realKey(session, key) {
   await session.rpc('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...common });
   if (key.length === 1) await session.rpc('Input.dispatchKeyEvent', { type: 'char', text: key, ...common });
   await session.rpc('Input.dispatchKeyEvent', { type: 'keyUp', ...common });
+}
+
+/** Alt GAUCHE, tel que CDP le nomme — la touche des gestes MAINTENUS du jeu (`decor.reveler`). */
+export const ALT = { key: 'Alt', code: 'AltLeft', windowsVirtualKeyCode: 18 };
+/** Bit de modificateur CDP pour Alt — à passer en `modifiers` aux gestes ÉMIS PENDANT le maintien. */
+export const MOD_ALT = 1;
+
+/**
+ * APPUI et RELÂCHEMENT SÉPARÉS (`realKeyDown` / `realKeyUp`) — ce que `realKey` ne sait pas faire :
+ * un geste MAINTENU (Alt tenu qui révèle les utilisables) dure entre les deux, et tout ce que la
+ * recette fait dans l'intervalle doit porter le modificateur (`modifiers`), sans quoi les événements
+ * émis déclareraient la touche relâchée et l'état tenu ne serait plus celui de l'écran.
+ */
+export async function realKeyDown(session, touche) {
+  const vk = touche.windowsVirtualKeyCode ?? 0;
+  await session.rpc('Input.dispatchKeyEvent', {
+    type: 'rawKeyDown', key: touche.key, code: touche.code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk,
+    ...(touche.modifiers === undefined ? {} : { modifiers: touche.modifiers }),
+  });
+}
+
+export async function realKeyUp(session, touche) {
+  const vk = touche.windowsVirtualKeyCode ?? 0;
+  await session.rpc('Input.dispatchKeyEvent', {
+    type: 'keyUp', key: touche.key, code: touche.code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk,
+  });
 }
 
 /**

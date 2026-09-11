@@ -215,7 +215,11 @@ describe('POV volumique — la BRUME du milieu (#1176 P3-1c)', () => {
     poser('exterieur');
     monter(<MondeDeCampagne />);
     const chrome = chromeMonté(dernièreScène());
-    expect(chrome.length, 'la scène POV monte bien des pools d’affordance (marques dynamiques, halos)').toBeGreaterThanOrEqual(12);
+    // NON-VACUITÉ PAR FAMILLE, jamais par un compte : la scène POV monte des pools de CHAQUE famille
+    // d'affordance — un compte figé rougirait au premier slot ajouté ou retiré (les halos en ont perdu
+    // deux en passant au régime de révélation, #1687) sans qu'aucune brume soit en cause.
+    const familles = new Set(chrome.map((c) => c.nom.split(':')[0]));
+    expect([...familles].sort(), 'la scène POV monte bien ses familles d’affordance').toEqual(['halos', 'marquesDyn']);
     expect(chrome.filter((c) => c.mat.fog).map((c) => c.nom), 'la brume délaverait une affordance lointaine').toEqual([]);
     expect(chrome.filter((c) => c.mat.defines?.[FOG_GAMMA_DEFINE] !== undefined).map((c) => c.nom)).toEqual([]);
   });

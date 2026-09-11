@@ -153,15 +153,17 @@ describe('meuble à places ET fouillable — les deux affordances restent atteig
     posrFouillable(ABORD_NORD);
     const el = { kind: 'prop', key: `prop:${PROP}`, cell: { x: 5, y: 5, z: 0 }, source: 'entity', entId: PROP,
       ref: TABLE, foot: { offX: 0, offY: 0, scale: 1 },states: { visible: true } } as unknown as BillboardPropEl;
-    const ctx = { exploring: true, combat: false };
+    // RÉGIME de révélation (#1687) : Alt tenu, donc ce qui APPELLE est allumé — ce que le halo dit ici,
+    // c'est l'appartenance à la liste des utilisables, pas la variante peinte.
     const sc = () => useGame.getState().scene!;
-    expect(interactionHalos([el], sc(), useGame.getState().flags, null, ctx).fouilles).toHaveLength(1);
+    const halos = () => interactionHalos([], [el], sc(), useGame.getState().flags, { survol: null, reveler: true });
+    expect(halos()).toHaveLength(1);
 
     useGame.getState().interactEntity(PROP); // fouille consommée
     useGame.getState().interactEntity(PROP); // place prise
     expect(poseDuMeneur()).not.toBeNull();
     // Il reste 3 places : le halo appelle encore, et le clic sert encore (se relever).
-    expect(interactionHalos([el], sc(), useGame.getState().flags, null, ctx).fouilles).toHaveLength(1);
+    expect(halos()).toHaveLength(1);
     useGame.getState().interactEntity(PROP);
     expect(poseDuMeneur(), 'le clic du meuble occupé relève TOUJOURS, quoi que porte le meuble').toBeNull();
   });

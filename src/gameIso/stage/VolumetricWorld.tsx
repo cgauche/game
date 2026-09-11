@@ -28,7 +28,7 @@ import type { Dims } from '../../geometry/iso';
 import { walkGlideM, type WalkTrack } from '../fx/walkPose';
 import { buildHighlights, type HighlightEl } from '../builders/highlights';
 import { NO_DYNAMIC_MARKS, type DynamicMarks } from '../builders/dynamicMarks';
-import { NO_INTERACTION_HALOS, type InteractionHalos } from '../builders/interactHalos';
+import { NO_INTERACTION_HALOS, type InteractHalo } from '../builders/interactHalos';
 import type { TokenChromeMark } from '../builders/tokenChrome';
 import type { PropEl, TokenEl } from '../builders/types';
 import { actorPoseKey, actorPoses, type ActorPose, type KeepEl, type TintAt } from '../backends/webgl/sceneMeshes';
@@ -94,7 +94,7 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
   /** MARQUES DYNAMIQUES déjà dérivées par l'hôte (`builders/dynamicMarks`) — cette couche les pose. */
   dynMarks?: DynamicMarks;
   /** HALOS D'INTERACTION déjà dérivés par l'hôte (`builders/interactHalos`) — même partage. */
-  halos?: InteractionHalos;
+  halos?: readonly InteractHalo[];
   /** CHROME des jetons déjà dérivé par l'hôte — cet écran n'en consomme que l'ALLURE (le reste se
    *  peint en overlay SVG, `stage/TokenChromeOverlay`). */
   chromes?: readonly TokenChromeMark[];

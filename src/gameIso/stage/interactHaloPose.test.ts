@@ -23,7 +23,7 @@ import {
   type HaloPools,
 } from './interactHaloPose';
 import { HALO_RING_CHORDS, HALO_SLOTS, HALO_SLOT_CAPACITY, HALO_SLOT_OPACITY, buildHaloMesh, type HaloSlot } from '../backends/webgl/interactHaloMeshes';
-import { HALO_HOVER_SCALE, HALO_RX_PX, NPC_HALO_RX_PX, SPARK_DX_PX, SPARK_DY_PX, haloRadiusK, type InteractionHalos } from '../builders/interactHalos';
+import { HALO_HOVER_SCALE, HALO_RX_PX, SPARK_DX_PX, SPARK_DY_PX, haloRadiusK, type InteractHalo } from '../builders/interactHalos';
 import { ISO_PX_PER_M } from '../iso';
 import { pxPerM } from '../backends/webgl/worldTris';
 import { ringDashes } from './dynamicMarkPose';
@@ -47,18 +47,20 @@ function frame(tSec: number, camQuat = new THREE.Quaternion()) {
   return { mpt: MPT, groundM: PLAT, kind: 'iso' as const, yawDeg: 0, camQuat, tSec };
 }
 
-const fouille = (id: string, extra: Record<string, unknown> = {}) => ({
+/** UN utilisable de la frame, RÉVÉLÉ par défaut (`etat` se surcharge : `survole`, `muet`). */
+const halo = (id: string, extra: Partial<InteractHalo> = {}): InteractHalo => ({
   id,
   cell: { x: 3, y: 4, z: 0 },
+  n: 1,
+  scaleK: 1,
+  bodyTopFrac: 1,
   span: { w: 1, h: 1 },
   centre: { x: 3, y: 4 },
   echelle: { x: 1, y: 1 },
-  hovered: false,
+  etat: 'revele',
   visible: true,
   ...extra,
 });
-
-const halos = (h: Partial<InteractionHalos>): InteractionHalos => ({ fouilles: [], pnjs: [], ...h });
 
 /** Position, lacet et échelle d'une instance écrite. */
 function instance(mesh: THREE.InstancedMesh, i: number) {
@@ -134,23 +136,23 @@ describe('Pulsations : des fonctions de frame (#1176 P3-0g)', () => {
 describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
   it('un décor fouillable pose son disque et son anneau au pied, au RAYON de l’ellipse affine', () => {
     const p = pools();
-    const n = poseInteractHalos(p, halos({ fouilles: [fouille('coffre')] }), frame(0));
-    expect(n.fouilleDisque).toBe(1);
-    expect(n.fouilleContour).toBeGreaterThan(3);
-    expect(n.fouilleDisqueSurvol + n.fouilleContourSurvol, 'aucun renfort sans survol').toBe(0);
+    const n = poseInteractHalos(p, [halo('coffre')], frame(0));
+    expect(n.haloDisque).toBe(1);
+    expect(n.haloContour).toBeGreaterThan(3);
+    expect(n.haloDisqueSurvol + n.haloContourSurvol, 'aucun renfort sans survol').toBe(0);
     const rM = haloRadiusK(HALO_RX_PX) * MPT;
     // le DISQUE : gabarit de diamètre 1, donc une échelle de 2·r ; le contour : des cordes sur le cercle
-    const d = instance(p.fouilleDisque!, 0);
+    const d = instance(p.haloDisque!, 0);
     expect(d.pos.x).toBeCloseTo(3 * MPT, 6);
     expect(d.pos.z).toBeCloseTo(4 * MPT, 6);
     expect(d.scl.x).toBeCloseTo(2 * rM, 6);
-    expect(rayonDesCordes(p.fouilleContour!, 3 * MPT, 4 * MPT)).toBeCloseTo(rM, 6);
+    expect(rayonDesCordes(p.haloContour!, 3 * MPT, 4 * MPT)).toBeCloseTo(rM, 6);
   });
 
   it('un décor GRAND porte un halo GRAND — l’échelle du décor entre dans le rayon', () => {
     const p = pools();
-    poseInteractHalos(p, halos({ fouilles: [fouille('epave', { echelle: { x: 2, y: 2 } })] }), frame(0));
-    expect(instance(p.fouilleDisque!, 0).scl.x).toBeCloseTo(2 * haloRadiusK(HALO_RX_PX) * 2 * MPT, 6);
+    poseInteractHalos(p, [halo('epave', { echelle: { x: 2, y: 2 } })], frame(0));
+    expect(instance(p.haloDisque!, 0).scl.x).toBeCloseTo(2 * haloRadiusK(HALO_RX_PX) * 2 * MPT, 6);
   });
 
   /**
@@ -160,8 +162,8 @@ describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
    */
   it('un décor 1×2 porte un halo ALLONGÉ — le disque et son contour épousent chaque axe', () => {
     const p = pools();
-    poseInteractHalos(p, halos({ fouilles: [fouille('murale', { echelle: { x: 1, y: 2 } })] }), frame(0));
-    const disque = instance(p.fouilleDisque!, 0);
+    poseInteractHalos(p, [halo('murale', { echelle: { x: 1, y: 2 } })], frame(0));
+    const disque = instance(p.haloDisque!, 0);
     expect(disque.scl.x, 'axe court : une case').toBeCloseTo(2 * haloRadiusK(HALO_RX_PX) * 1 * MPT, 6);
     expect(disque.scl.z, 'axe long : deux cases').toBeCloseTo(2 * haloRadiusK(HALO_RX_PX) * 2 * MPT, 6);
     // Le CONTOUR suit la MÊME ellipse : aucune de ses cordes ne sort des demi-axes (c'est la
@@ -170,7 +172,7 @@ describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
     // résolution du chapelet, on ne l'exige donc pas à l'égalité).
     const rx = haloRadiusK(HALO_RX_PX) * 1 * MPT;
     const ry = haloRadiusK(HALO_RX_PX) * 2 * MPT;
-    const cordes = [...Array(p.fouilleContour!.count).keys()].map((i) => instance(p.fouilleContour!, i));
+    const cordes = [...Array(p.haloContour!.count).keys()].map((i) => instance(p.haloContour!, i));
     const ecartX = Math.max(...cordes.map((c) => Math.abs(c.pos.x - 3 * MPT)));
     const ecartZ = Math.max(...cordes.map((c) => Math.abs(c.pos.z - 4 * MPT)));
     expect(ecartX, 'axe court : rien ne sort du demi-axe').toBeLessThanOrEqual(rx + 1e-5);
@@ -180,27 +182,27 @@ describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
 
   it('un décor 1×1 garde un halo ROND (contrat de non-régression)', () => {
     const p = pools();
-    poseInteractHalos(p, halos({ fouilles: [fouille('coffre')] }), frame(0));
-    const disque = instance(p.fouilleDisque!, 0);
+    poseInteractHalos(p, [halo('coffre')], frame(0));
+    const disque = instance(p.haloDisque!, 0);
     expect(disque.scl.x).toBeCloseTo(2 * haloRadiusK(HALO_RX_PX) * MPT, 6);
     expect(disque.scl.z).toBeCloseTo(disque.scl.x, 6);
   });
 
   it('SURVOL : le halo change de pool, s’agrandit de 1,32 et laisse le pool de repos VIDE', () => {
     const p = pools();
-    const n = poseInteractHalos(p, halos({ fouilles: [fouille('coffre', { hovered: true })] }), frame(0));
-    expect(n.fouilleDisque + n.fouilleContour, 'un halo survolé n’est pas peint deux fois').toBe(0);
-    expect(n.fouilleDisqueSurvol).toBe(1);
-    expect(n.fouilleContourSurvol).toBeGreaterThan(3);
-    expect(instance(p.fouilleDisqueSurvol!, 0).scl.x).toBeCloseTo(2 * haloRadiusK(HALO_RX_PX) * HALO_HOVER_SCALE * MPT, 6);
+    const n = poseInteractHalos(p, [halo('coffre', { etat: 'survole' })], frame(0));
+    expect(n.haloDisque + n.haloContour, 'un halo survolé n’est pas peint deux fois').toBe(0);
+    expect(n.haloDisqueSurvol).toBe(1);
+    expect(n.haloContourSurvol).toBeGreaterThan(3);
+    expect(instance(p.haloDisqueSurvol!, 0).scl.x).toBeCloseTo(2 * haloRadiusK(HALO_RX_PX) * HALO_HOVER_SCALE * MPT, 6);
   });
 
   it('l’ÉTINCELLE est un quad face caméra, au-dessus du décor et décalé vers la droite de l’écran', () => {
     const p = pools();
     // caméra tournée d’un quart de tour : la « droite de l'écran » n'est plus l'axe X du monde
     const quat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2);
-    poseInteractHalos(p, halos({ fouilles: [fouille('coffre')] }), { ...frame(0), camQuat: quat });
-    const e = instance(p.fouilleEtincelle!, 0);
+    poseInteractHalos(p, [halo('coffre')], { ...frame(0), camQuat: quat });
+    const e = instance(p.haloEtincelle!, 0);
     // hauteur : 26 px d'écran, à `ISO_PX_PER_M` px par mètre de hauteur (sans flottement à t = 0)
     expect(e.pos.y).toBeCloseTo(26 / ISO_PX_PER_M, 6);
     // décalage : 9 px vers la droite de l'ÉCRAN, donc sur l'axe que la caméra désigne
@@ -212,22 +214,35 @@ describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
     expect(e.quat.angleTo(quat.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2)))).toBeCloseTo(0, 6);
   });
 
-  it('un PNJ interlocuteur pose SON anneau, plus petit, dans SES pools', () => {
+  /** MUET = RIEN (#1687) : un utilisable ni survolé ni révélé ne s'annonce pas — aucun pool ne le
+   *  porte, pas même son étincelle. C'est la fin du halo permanent. */
+  it('un utilisable MUET n’écrit dans AUCUN pool', () => {
     const p = pools();
-    const n = poseInteractHalos(p, halos({ pnjs: [{ id: 'marchand', cell: { x: 5, y: 5, z: 0 } }] }), frame(0));
-    expect(n.pnjDisque).toBe(1);
-    expect(n.pnjContour).toBeGreaterThan(3);
-    expect(n.fouilleDisque + n.fouilleContour + n.fouilleEtincelle, 'un PNJ n’a ni étincelle ni halo de fouille').toBe(0);
-    // le halo de PNJ porte TOUJOURS la variante renforcée
-    const attendu = haloRadiusK(NPC_HALO_RX_PX) * HALO_HOVER_SCALE * MPT;
-    expect(rayonDesCordes(p.pnjContour!, 5 * MPT, 5 * MPT)).toBeCloseTo(attendu, 6);
-    expect(attendu).toBeLessThan(haloRadiusK(HALO_RX_PX) * HALO_HOVER_SCALE * MPT);
+    const n = poseInteractHalos(p, [halo('coffre', { etat: 'muet' })], frame(0));
+    for (const slot of HALO_SLOTS) expect(n[slot], slot).toBe(0);
+  });
+
+  /** UNE MATIÈRE POUR TOUS (#1687) : un PNJ à qui parler et un coffre à fouiller sont deux utilisables
+   *  — mêmes pools, même rayon. L'entité utilisable n'a pas de kind. */
+  it('deux utilisables révélés partagent la MÊME matière — un jeton de PNJ comme un décor', () => {
+    const p = pools();
+    const n = poseInteractHalos(
+      p,
+      [halo('coffre'), halo('marchand', { cell: { x: 5, y: 5, z: 0 }, centre: { x: 5, y: 5 } })],
+      frame(0),
+    );
+    expect(n.haloDisque, 'un disque par utilisable révélé').toBe(2);
+    expect(n.haloDisqueSurvol + n.haloContourSurvol, 'et aucun renfort sans survol').toBe(0);
+    const r = haloRadiusK(HALO_RX_PX) * MPT;
+    expect(instance(p.haloDisque!, 0).scl.x).toBeCloseTo(2 * r, 6);
+    expect(instance(p.haloDisque!, 1).scl.x, 'le rayon ne dépend pas de QUI porte le halo').toBeCloseTo(2 * r, 6);
+    expect(instance(p.haloDisque!, 1).pos.x, 'et chacun est chez lui').toBeCloseTo(5 * MPT, 6);
   });
 
   it('aucun halo : tous les pools tombent à zéro, et rien n’est laissé de la frame précédente', () => {
     const p = pools();
-    poseInteractHalos(p, halos({ fouilles: [fouille('coffre')], pnjs: [{ id: 'm', cell: { x: 5, y: 5, z: 0 } }] }), frame(0));
-    const n = poseInteractHalos(p, halos({}), frame(0));
+    poseInteractHalos(p, [halo('coffre'), halo('m', { cell: { x: 5, y: 5, z: 0 }, centre: { x: 5, y: 5 } })], frame(0));
+    const n = poseInteractHalos(p, [], frame(0));
     for (const slot of HALO_SLOTS) {
       expect(n[slot as HaloSlot], slot).toBe(0);
       expect(p[slot as HaloSlot]!.count, slot).toBe(0);
@@ -235,18 +250,17 @@ describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
   });
 
   it('SATURATION : un halo qui ne tient pas n’est pas ENTAMÉ — pas même son disque', () => {
-    const p: HaloPools = { fouilleContour: buildHaloMesh('fouilleContour', 4), fouilleDisque: buildHaloMesh('fouilleDisque') };
-    const n = poseInteractHalos(p, halos({ fouilles: [fouille('coffre')] }), frame(0));
-    expect(n.fouilleContour, 'un arc isolé se lirait comme une autre marque').toBe(0);
-    expect(n.fouilleDisque, 'et un disque sans son contour serait une flaque muette').toBe(0);
+    const p: HaloPools = { haloContour: buildHaloMesh('haloContour', 4), haloDisque: buildHaloMesh('haloDisque') };
+    const n = poseInteractHalos(p, [halo('coffre')], frame(0));
+    expect(n.haloContour, 'un arc isolé se lirait comme une autre marque').toBe(0);
+    expect(n.haloDisque, 'et un disque sans son contour serait une flaque muette').toBe(0);
   });
 
   it('CAPACITÉ COUPLÉE : le pool de disques ne dépasse jamais ce que son pool de contours sait habiller', () => {
     // CONTRAT DE MONTAGE : chaque paire (disque, contour) tient la même population de halos.
     const paires: [HaloSlot, HaloSlot][] = [
-      ['fouilleDisque', 'fouilleContour'],
-      ['fouilleDisqueSurvol', 'fouilleContourSurvol'],
-      ['pnjDisque', 'pnjContour'],
+      ['haloDisque', 'haloContour'],
+      ['haloDisqueSurvol', 'haloContourSurvol'],
     ];
     for (const [disque, contour] of paires)
       expect(HALO_SLOT_CAPACITY[contour], `${contour} doit habiller les ${HALO_SLOT_CAPACITY[disque]} disques de ${disque}`)
@@ -254,18 +268,17 @@ describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
     // et le palier de cordes est bien une BORNE du chapelet réellement demandé au gabarit de référence
     expect(ringDashes(haloRadiusK(HALO_RX_PX), null, 'iso').length).toBeLessThanOrEqual(HALO_RING_CHORDS);
     expect(ringDashes(haloRadiusK(HALO_RX_PX) * HALO_HOVER_SCALE, null, 'iso').length).toBeLessThanOrEqual(HALO_RING_CHORDS);
-    expect(ringDashes(haloRadiusK(NPC_HALO_RX_PX) * HALO_HOVER_SCALE, null, 'iso').length).toBeLessThanOrEqual(HALO_RING_CHORDS);
     // MESURE DE BOUT EN BOUT : au décor de trop, aucun disque NU ne reste (le juge P3-0g : au 52ᵉ halo,
     // l'ancien couple 64 disques / 1024 cordes en peignait un).
     const cordes = ringDashes(haloRadiusK(HALO_RX_PX), null, 'iso').length;
     const tenus = 3;
     const p: HaloPools = {
-      fouilleContour: buildHaloMesh('fouilleContour', cordes * tenus),
-      fouilleDisque: buildHaloMesh('fouilleDisque', HALO_SLOT_CAPACITY.fouilleDisque),
+      haloContour: buildHaloMesh('haloContour', cordes * tenus),
+      haloDisque: buildHaloMesh('haloDisque', HALO_SLOT_CAPACITY.haloDisque),
     };
-    const n = poseInteractHalos(p, halos({ fouilles: Array.from({ length: tenus + 5 }, (_, i) => fouille(`d${i}`)) }), frame(0));
-    expect(n.fouilleContour).toBe(cordes * tenus);
-    expect(n.fouilleDisque, 'autant de disques que de contours habillés, pas un de plus').toBe(tenus);
+    const n = poseInteractHalos(p, Array.from({ length: tenus + 5 }, (_, i) => halo(`d${i}`)), frame(0));
+    expect(n.haloContour).toBe(cordes * tenus);
+    expect(n.haloDisque, 'autant de disques que de contours habillés, pas un de plus').toBe(tenus);
   });
 
   it('l’ÉTINCELLE ne grandit ni ne monte avec le décor — seule sa POSITION suit l’échelle', () => {
@@ -276,10 +289,10 @@ describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
     const mesure = (scale: number) => {
       const echelle = { x: scale, y: scale };
       const p = pools();
-      poseInteractHalos(p, halos({ fouilles: [fouille('e', { echelle })] }), frame(0));
-      const bas = instance(p.fouilleEtincelle!, 0);
-      poseInteractHalos(p, halos({ fouilles: [fouille('e', { echelle })] }), frame(SPARK_S / 2));
-      const haut = instance(p.fouilleEtincelle!, 0);
+      poseInteractHalos(p, [halo('e', { echelle })], frame(0));
+      const bas = instance(p.haloEtincelle!, 0);
+      poseInteractHalos(p, [halo('e', { echelle })], frame(SPARK_S / 2));
+      const haut = instance(p.haloEtincelle!, 0);
       return { côté: bas.scl.x, montée: haut.pos.y - bas.pos.y, hauteur: bas.pos.y };
     };
     const un = mesure(1);
@@ -298,8 +311,8 @@ describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
     // élévation en Y y serait invisible. Patron `sceneMeshes.billboardPose` (consommé par `boardPose`).
     const p = pools();
     const quat = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0, 'YXZ'));
-    poseInteractHalos(p, halos({ fouilles: [fouille('coffre')] }), { ...frame(0), kind: 'top', camQuat: quat });
-    const e = instance(p.fouilleEtincelle!, 0);
+    poseInteractHalos(p, [halo('coffre')], { ...frame(0), kind: 'top', camQuat: quat });
+    const e = instance(p.haloEtincelle!, 0);
     const haut = new THREE.Vector3(0, 1, 0).applyQuaternion(quat);
     expect(Math.abs(haut.y), 'témoin : sous cette caméra, le haut de l’écran n’est PAS l’axe Y').toBeLessThan(1e-9);
     // le pied du décor, décalage de droite d'écran compris
@@ -314,44 +327,44 @@ describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
 describe('Pose des halos — la PULSATION passe par l’opacité des pools (#1176 P3-0g)', () => {
   it('les opacités de matériau suivent l’horloge, chacune sur SA courbe', () => {
     const p = pools();
-    const jeu = halos({ fouilles: [fouille('a'), fouille('b', { hovered: true })], pnjs: [{ id: 'm', cell: { x: 5, y: 5, z: 0 } }] });
+    const jeu = [halo('a'), halo('b', { etat: 'survole' })];
     poseInteractHalos(p, jeu, frame(0));
-    expect(opacité(p.fouilleDisque!)).toBeCloseTo(HALO_SLOT_OPACITY.fouilleDisque * HALO_PULSE_MIN, 12);
-    expect(opacité(p.fouilleContour!)).toBeCloseTo(HALO_SLOT_OPACITY.fouilleContour * HALO_PULSE_MIN, 12);
-    expect(opacité(p.pnjContour!), 'le PNJ bat sur la courbe VIVE').toBeCloseTo(HALO_SLOT_OPACITY.pnjContour * HALO_HOVER_PULSE_MIN, 12);
-    expect(opacité(p.fouillePing!)).toBeCloseTo(PING_OPACITY_MAX, 12);
-    expect(opacité(p.fouilleEtincelle!)).toBeCloseTo(SPARK_OPACITY_MIN, 12);
+    expect(opacité(p.haloDisque!)).toBeCloseTo(HALO_SLOT_OPACITY.haloDisque * HALO_PULSE_MIN, 12);
+    expect(opacité(p.haloContour!)).toBeCloseTo(HALO_SLOT_OPACITY.haloContour * HALO_PULSE_MIN, 12);
+    expect(opacité(p.haloContourSurvol!), 'le SURVOLÉ bat sur la courbe VIVE').toBeCloseTo(HALO_SLOT_OPACITY.haloContourSurvol * HALO_HOVER_PULSE_MIN, 12);
+    expect(opacité(p.haloOnde!)).toBeCloseTo(PING_OPACITY_MAX, 12);
+    expect(opacité(p.haloEtincelle!)).toBeCloseTo(SPARK_OPACITY_MIN, 12);
     // une demi-période plus tard, le halo de repos est à son maximum
     poseInteractHalos(p, jeu, frame(HALO_PULSE_S / 2));
-    expect(opacité(p.fouilleDisque!)).toBeCloseTo(HALO_SLOT_OPACITY.fouilleDisque * HALO_PULSE_MAX, 12);
-    expect(opacité(p.fouilleContourSurvol!)).toBeCloseTo(
-      HALO_SLOT_OPACITY.fouilleContourSurvol * haloPulse(HALO_PULSE_S / 2, true),
+    expect(opacité(p.haloDisque!)).toBeCloseTo(HALO_SLOT_OPACITY.haloDisque * HALO_PULSE_MAX, 12);
+    expect(opacité(p.haloContourSurvol!)).toBeCloseTo(
+      HALO_SLOT_OPACITY.haloContourSurvol * haloPulse(HALO_PULSE_S / 2, true),
       12,
     );
   });
 
   it('l’ONDE s’élargit d’une frame à l’autre, et n’est PAS peinte quand elle est éteinte', () => {
     const p = pools();
-    const jeu = halos({ fouilles: [fouille('coffre')] });
+    const jeu = [halo('coffre')];
     poseInteractHalos(p, jeu, frame(0));
-    const r0 = rayonDesCordes(p.fouillePing!, 3 * MPT, 4 * MPT);
+    const r0 = rayonDesCordes(p.haloOnde!, 3 * MPT, 4 * MPT);
     poseInteractHalos(p, jeu, frame(PING_S * 0.3));
-    const r1 = rayonDesCordes(p.fouillePing!, 3 * MPT, 4 * MPT);
+    const r1 = rayonDesCordes(p.haloOnde!, 3 * MPT, 4 * MPT);
     expect(r1, 'l’onde sonar avance entre deux frames').toBeGreaterThan(r0);
     expect(r0).toBeCloseTo(haloRadiusK(HALO_RX_PX) * PING_SCALE_MIN * MPT, 6);
     // au-delà de 75 % du tour, la pulsation est à opacité nulle : rien à écrire
     const n = poseInteractHalos(p, jeu, frame(PING_S * 0.9));
-    expect(n.fouillePing).toBe(0);
-    expect(n.fouilleContour, 'mais le halo permanent, lui, reste peint').toBeGreaterThan(0);
+    expect(n.haloOnde).toBe(0);
+    expect(n.haloContour, 'mais le halo révélé, lui, reste peint').toBeGreaterThan(0);
   });
 
   it('l’ÉTINCELLE monte entre deux frames — le flottement est bien une fonction de l’horloge', () => {
     const p = pools();
-    const jeu = halos({ fouilles: [fouille('coffre')] });
+    const jeu = [halo('coffre')];
     poseInteractHalos(p, jeu, frame(0));
-    const y0 = instance(p.fouilleEtincelle!, 0).pos.y;
+    const y0 = instance(p.haloEtincelle!, 0).pos.y;
     poseInteractHalos(p, jeu, frame(SPARK_S / 2));
-    const y1 = instance(p.fouilleEtincelle!, 0).pos.y;
+    const y1 = instance(p.haloEtincelle!, 0).pos.y;
     expect(y1 - y0).toBeCloseTo(SPARK_RISE_PX / ISO_PX_PER_M, 6);
   });
 });

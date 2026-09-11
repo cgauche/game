@@ -1182,10 +1182,11 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     setSpritePicker(() => ({ kind: 'entity', id: 'table-1' }));
     // PRÉCONDITION : le halo appelle — il n'y a plus de place, mais la fouille n'est pas épuisée.
     expect(interactionHalos(
+      [],
       [{ kind: 'prop', key: 'prop:table-1', cell: { x: 2, y: 3, z: 0 }, source: 'entity', entId: 'table-1',
         ref: 'table-ronde-4-tabourets', foot: { offX: 0, offY: 0, scale: 1 },states: { visible: true } } as never],
-      useGame.getState().scene!, {}, null, { exploring: true, combat: false },
-    ).fouilles, 'le halo DOIT appeler pour que le test morde').toHaveLength(1);
+      useGame.getState().scene!, {}, { survol: null, reveler: true },
+    ), 'le halo DOIT appeler pour que le test morde').toHaveLength(1);
 
     const pointer = monter();
     const ailleurs = tileCenter(7, 7, dims);

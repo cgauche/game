@@ -404,6 +404,11 @@ export interface GameState extends RollFlowActionsMap {
    *  (préférence du joueur — l'inspection casse un peu l'immersion) ; préférence persistante (comme la vue). */
   inspectEnabled: boolean;
   toggleInspectEnabled: () => void;
+  /** RÉVÉLATION des utilisables (Alt maintenu, binding `decor.reveler`) : état de TOUCHE, jamais une
+   *  préférence — il vaut ce que vaut la touche à l'instant, se rend au relâchement comme au `blur`
+   *  (`relacherTout`), et n'entre dans aucune sauvegarde. */
+  reveler: boolean;
+  setReveler: (v: boolean) => void;
   /** Combattant dont on regarde le statbloc (InspectPanel) — porté par le STORE pour que la frise ET
    *  le token sur la carte ouvrent la même inspection (clic non-actionnable). null = panneau fermé. */
   inspectId: string | null;
@@ -1950,6 +1955,8 @@ export const useGame = create<GameState>((set, get) => ({
   },
   inspectEnabled: false,
   toggleInspectEnabled: () => set((s) => ({ inspectEnabled: !s.inspectEnabled })),
+  reveler: false,
+  setReveler: (v) => set((s) => (s.reveler === v ? {} : { reveler: v })),
   inspectId: null,
   setInspectId: (id) => set((s) => (s.inspectId === id ? {} : { inspectId: id })),
   sheetId: null,

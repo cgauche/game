@@ -185,7 +185,7 @@ const ancreDeGeste = (g: GesteMark) => ({ id: g.entityId, cell: g.cell, n: g.n }
  *  tactile doit, elle, mesurer ses pixels d'ÉCRAN — elle se contre-échelonne donc de ce facteur, mesuré
  *  sur le SVG porteur (son cadre EST celui du rendu). Le viewBox nominal sert de repli tant que
  *  l'élément n'est pas mesuré (montage, environnement sans mise en page). */
-function useEchelleEcran(porteur: { current: SVGGElement | null }): number {
+export function useEchelleEcran(porteur: { current: SVGGElement | null }): number {
   const zoom = useGame((s) => s.zoom);
   const [canvas, setCanvas] = useState<StageCanvas>({ w: VW, h: VH });
   useEffect(() => {

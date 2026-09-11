@@ -19,7 +19,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import type { Dims } from '../../geometry/iso';
 import type { LightSource } from '../../state/vision';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
-import type { InteractionHalos } from '../builders/interactHalos';
+import type { InteractHalo } from '../builders/interactHalos';
 import { GameStage3D, setStageRendererFactory, type StageWalkAnim } from './GameStage3D';
 import { BancRenderer, brancherArdoise, brancherImagesPilotees, scènes, viderCaptures } from './banc-volumique';
 import { POINT_LIGHT_BUDGET, resolveTone } from './stagePointLights';
@@ -47,10 +47,9 @@ const NUIT = 23 * 60; // de jour les flaques retombent à 0, et rien ne vacille
 /** Une source POSÉE au ton par défaut (`flamme`), donc porteuse d'un vacillement : le deuxième motif. */
 const LAMPES: LightSource[] = [{ pos: { x: 4, y: 4 }, radiusTiles: 4, srcId: 'brasero' }];
 /** Un décor fouillable à l'écran : le troisième motif. */
-const HALOS: InteractionHalos = {
-  fouilles: [{ id: 'coffre', cell: { x: 3, y: 4, z: 0 }, span: { w: 1, h: 1 }, centre: { x: 3, y: 4 }, echelle: { x: 1, y: 1 }, hovered: false, visible: true }],
-  pnjs: [],
-};
+const HALOS: readonly InteractHalo[] = [
+  { id: 'coffre', cell: { x: 3, y: 4, z: 0 }, n: 1, scaleK: 1, bodyTopFrac: 1, span: { w: 1, h: 1 }, centre: { x: 3, y: 4 }, echelle: { x: 1, y: 1 }, etat: 'revele', visible: true },
+];
 /** Câblage de PRODUCTION (`VolumetricWorld`) : AUCUN pilote d'images — l'écran s'abonne lui-même au
  *  battement du module. Un `subscribe` de plus ici doublerait l'abonnement, donc les rendus. */
 const ANIM: StageWalkAnim = {
@@ -109,7 +108,7 @@ function prémisses(canevas: HTMLCanvasElement): void {
   expect(Number(canevas.dataset.precip), 'aucune particule : la boucle de chute n’aurait rien à animer').toBeGreaterThan(0);
   expect(canevas.dataset.lampes, 'aucune flaque allumée : rien ne vacille').toBe(`1/${POINT_LIGHT_BUDGET}`);
   expect(resolveTone(undefined).flicker, 'le ton par défaut ne vacille pas : le deuxième motif serait éteint').toBeDefined();
-  expect(HALOS.fouilles.length, 'aucun halo : le troisième motif serait éteint').toBeGreaterThan(0);
+  expect(HALOS.filter((h) => h.etat !== 'muet').length, 'aucun halo : le troisième motif serait éteint').toBeGreaterThan(0);
 }
 
 beforeAll(() => {

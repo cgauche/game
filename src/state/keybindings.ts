@@ -253,6 +253,14 @@ export const KEYBINDINGS: KeyBinding[] = [
   { id: 'cam-recenter', codes: ['KeyC'], labelKey: 'key.camRecenter', section: 'camera', when: (s) => s.screen === 'campaign', run: (g) => { g().resetCamPan(); g().setZoom(1); } },
   // Vue ISO ⇄ TOP au clavier. Muette en POV : la vue subjective a sa propre bascule (`toggle-pov`).
   { id: 'toggle-view', codes: ['KeyV'], labelKey: 'key.toggleView', section: 'camera', when: (s) => s.screen === 'campaign' && !s.povActive, run: (g) => g().toggleViewMode() },
+  // RÉVÉLER les utilisables (#1687) : geste MAINTENU sur les deux positions d'Alt — il dure ce que dure
+  // l'appui, en exploration comme en combat (ce que le monde offre ne dépend pas du mode). L'état qu'il
+  // pose est lu par les halos et les plaques de nom (`builders/interactHalos`, `stage/PlaquesDeNom`).
+  {
+    id: 'decor.reveler', codes: ['AltLeft', 'AltRight'], mods: [], labelKey: 'key.reveler', section: 'exploration',
+    when: (s) => exploring(s) || inBattle(s),
+    run: (g) => g().setReveler(true), runUp: (g) => g().setReveler(false),
+  },
   // Inspection des combattants (option de jeu) : le clic sur un allié non actionnable ouvre son
   // statbloc. En combat seulement — hors combat aucun clic ne l'emprunte.
   { id: 'toggle-inspect', codes: ['KeyI'], labelKey: 'key.toggleInspect', section: 'combat', when: inBattle, run: (g) => g().toggleInspectEnabled() },

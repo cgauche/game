@@ -2203,6 +2203,7 @@ export const fr = {
   'key.camRecenter': 'Caméra : recentrer (position et zoom)',
   'key.toggleView': 'Basculer la vue (isométrique / du dessus)',
   'key.toggleInspect': 'Inspection des combattants (activer / désactiver)',
+  'key.reveler': 'Révéler les utilisables (maintenir)',
   'key.switchLoadout': 'Changer de set d’armes (fait tourner les sets)',
   'key.roundStart': 'Commencer le round',
   'key.preemptArm': 'Tir rapide : viser (interruption de début de Round)',

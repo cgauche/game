@@ -159,6 +159,18 @@
   opacity: 0.8;
 }
 
+/* PLAQUE DE NOM (#1687) : le nom d'un utilisable révélé (Alt maintenu) ou survolé, posé au-dessus de
+   lui dans le SVG du plateau (foreignObject). Le TEXTE est celui du chrome de nom du Codex
+   (`CodexTitre` → `.codex-pop-title`) : une seule matière de nom à l'écran. Jamais une cible — le
+   monde dessous reste cliquable sur toute sa surface. */
+.plaque-nom {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.7);
+}
+
 @keyframes zdeMarch {
   to { stroke-dashoffset: -32; }
 }

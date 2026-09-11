@@ -170,6 +170,9 @@ export function snapshotSave(
     // `campaignNarratif` (#767) = couche runtime posée par `loadProject`, non embarquée au snapshot :
     // sa persistance (forme + golden + bump `SAVE_VERSION`) est le périmètre de #766.
     if (k === 'campaignNarratif') continue;
+    // `reveler` (#1687) = état de la TOUCHE Alt à l'instant, pas une préférence : une save qui le
+    // porterait rechargerait une partie aux utilisables révélés, touche relâchée.
+    if (k === 'reveler') continue;
     const v = state[k];
     if (typeof v === 'function') continue;
     data[k] = v === undefined ? null : v;

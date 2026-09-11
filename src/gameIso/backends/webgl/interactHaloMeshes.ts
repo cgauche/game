@@ -1,7 +1,8 @@
 /**
- * BACKEND VOLUMIQUE des HALOS D'INTERACTION (#1176, P3-0g) — les deux affordances hors combat : le halo
- * permanent d'un décor FOUILLABLE et le halo de survol d'un PNJ interlocuteur. Même partage que
- * `dynamicMarkMeshes.ts` : le MONTAGE est ici, la POSE par frame vit dans `stage/interactHaloPose.ts`.
+ * BACKEND VOLUMIQUE des HALOS D'INTERACTION (#1176, P3-0g ; régime de révélation #1687) — l'affordance
+ * qui dit qu'une entité du champ offre quelque chose, à la variante que la frame lui donne. Même
+ * partage que `dynamicMarkMeshes.ts` : le MONTAGE est ici, la POSE par frame vit dans
+ * `stage/interactHaloPose.ts`.
  *
  * POOLS de capacité FIXE, montés une fois pour la vie de l'écran — même raison qu'aux marques
  * dynamiques : ces halos PULSENT, donc ils se réécrivent à la cadence de la frame, et un pool qui se
@@ -25,8 +26,6 @@ import { GOLD_TINT, HALO_TINT } from '../../highlightTints';
 import {
   HALO_FILL_OPACITY,
   HALO_STROKE_OPACITY,
-  NPC_FILL_OPACITY,
-  NPC_STROKE_OPACITY,
   SPARK_BRANCHES,
   SPARK_INNER_R_PX,
   SPARK_R_PX,
@@ -39,25 +38,21 @@ import { poserCompteInstances } from './instancePools';
 
 /** Un pool de halo d'interaction. */
 export type HaloSlot =
-  | 'fouilleDisque'
-  | 'fouilleContour'
-  | 'fouilleDisqueSurvol'
-  | 'fouilleContourSurvol'
-  | 'fouillePing'
-  | 'fouilleEtincelle'
-  | 'pnjDisque'
-  | 'pnjContour';
+  | 'haloDisque'
+  | 'haloContour'
+  | 'haloDisqueSurvol'
+  | 'haloContourSurvol'
+  | 'haloOnde'
+  | 'haloEtincelle';
 
 /** Tous les pools, dans l'ordre de RANG croissant. */
 export const HALO_SLOTS: readonly HaloSlot[] = [
-  'fouilleDisque',
-  'fouilleContour',
-  'fouilleDisqueSurvol',
-  'fouilleContourSurvol',
-  'fouillePing',
-  'pnjDisque',
-  'pnjContour',
-  'fouilleEtincelle',
+  'haloDisque',
+  'haloContour',
+  'haloDisqueSurvol',
+  'haloContourSurvol',
+  'haloOnde',
+  'haloEtincelle',
 ];
 
 /** RANG de superposition, dans la MÊME échelle que les marques de case (`highlightMeshes.SLOT_RANK`,
@@ -65,14 +60,12 @@ export const HALO_SLOTS: readonly HaloSlot[] = [
  *  12) : ces halos passent au-dessus des deux. L'ÉTINCELLE n'est pas au sol — son rang ne la départage
  *  de rien, mais la table reste totale. */
 export const HALO_SLOT_RANK: Record<HaloSlot, number> = {
-  fouilleDisque: 13,
-  fouilleContour: 14,
-  fouilleDisqueSurvol: 15,
-  fouilleContourSurvol: 16,
-  fouillePing: 17,
-  pnjDisque: 18,
-  pnjContour: 19,
-  fouilleEtincelle: 20,
+  haloDisque: 13,
+  haloContour: 14,
+  haloDisqueSurvol: 15,
+  haloContourSurvol: 16,
+  haloOnde: 17,
+  haloEtincelle: 20,
 };
 
 /** Décollement (m) d'un pool au-dessus de la surface qui le porte. */
@@ -84,34 +77,30 @@ export function haloSlotLiftM(slot: HaloSlot): number {
  *  pulsation de l'instant (`stage/interactHaloPose`). L'onde « sonar » et l'étincelle n'ont pas de
  *  repos propre : leur pulsation donne l'opacité entière. */
 export const HALO_SLOT_OPACITY: Record<HaloSlot, number> = {
-  fouilleDisque: HALO_FILL_OPACITY,
-  fouilleContour: HALO_STROKE_OPACITY,
-  fouilleDisqueSurvol: HALO_FILL_OPACITY,
-  fouilleContourSurvol: HALO_STROKE_OPACITY,
-  fouillePing: 1,
-  fouilleEtincelle: 1,
-  pnjDisque: NPC_FILL_OPACITY,
-  pnjContour: NPC_STROKE_OPACITY,
+  haloDisque: HALO_FILL_OPACITY,
+  haloContour: HALO_STROKE_OPACITY,
+  haloDisqueSurvol: HALO_FILL_OPACITY,
+  haloContourSurvol: HALO_STROKE_OPACITY,
+  haloOnde: 1,
+  haloEtincelle: 1,
 };
 
 /** Teintes — le catalogue partagé `gameIso/highlightTints` : le disque prend le halo doux,
  *  le contour, l'onde et l'étincelle prennent l'or. */
 export const HALO_SLOT_TINT: Record<HaloSlot, string> = {
-  fouilleDisque: HALO_TINT,
-  fouilleContour: GOLD_TINT,
-  fouilleDisqueSurvol: HALO_TINT,
-  fouilleContourSurvol: GOLD_TINT,
-  fouillePing: GOLD_TINT,
-  fouilleEtincelle: GOLD_TINT,
-  pnjDisque: HALO_TINT,
-  pnjContour: GOLD_TINT,
+  haloDisque: HALO_TINT,
+  haloContour: GOLD_TINT,
+  haloDisqueSurvol: HALO_TINT,
+  haloContourSurvol: GOLD_TINT,
+  haloOnde: GOLD_TINT,
+  haloEtincelle: GOLD_TINT,
 };
 
-/** POPULATION portée par les pools : le nombre de décors fouillables qu'ils tiennent EN MÊME TEMPS, et
- *  le nombre de décors RENFORCÉS (survol du curseur, PNJ désigné — bornés par nature : le pointeur ne
- *  désigne qu'une tuile). Toutes les capacités en DÉRIVENT : un pool de DISQUES plus grand que ce que
+/** POPULATION portée par les pools : le nombre d'utilisables RÉVÉLÉS qu'ils tiennent EN MÊME TEMPS
+ *  (Alt maintenu les allume tous à la fois), et le nombre de RENFORCÉS — borné par nature, le pointeur
+ *  ne désigne qu'une tuile. Toutes les capacités en DÉRIVENT : un pool de DISQUES plus grand que ce que
  *  son pool de CONTOURS sait habiller peindrait, au décor de trop, un disque NU. */
-export const HALO_FOUILLES_MAX = 64;
+export const HALO_UTILISABLES_MAX = 64;
 export const HALO_SURVOL_MAX = 8;
 /** Chapelet d'un anneau, en cordes. `ringDashes` en rend 20 pour le halo de référence sous la caméra
  *  losange, 25 pour l'onde à son maximum, 15 sous la vue du dessus ; le compte croît en RACINE du rayon
@@ -122,14 +111,12 @@ export const HALO_RING_CHORDS = 32;
 /** Capacité FIXE de chaque pool, DÉRIVÉE de la population et du chapelet ci-dessus. Au-delà, la pose
  *  écrit ce qu'elle peut et s'arrête — elle ne réalloue jamais dans la boucle de rendu. */
 export const HALO_SLOT_CAPACITY: Record<HaloSlot, number> = {
-  fouilleDisque: HALO_FOUILLES_MAX,
-  fouilleContour: HALO_FOUILLES_MAX * HALO_RING_CHORDS,
-  fouilleDisqueSurvol: HALO_SURVOL_MAX,
-  fouilleContourSurvol: HALO_SURVOL_MAX * HALO_RING_CHORDS,
-  fouillePing: HALO_FOUILLES_MAX * HALO_RING_CHORDS,
-  fouilleEtincelle: HALO_FOUILLES_MAX,
-  pnjDisque: HALO_SURVOL_MAX,
-  pnjContour: HALO_SURVOL_MAX * HALO_RING_CHORDS,
+  haloDisque: HALO_UTILISABLES_MAX,
+  haloContour: HALO_UTILISABLES_MAX * HALO_RING_CHORDS,
+  haloDisqueSurvol: HALO_SURVOL_MAX,
+  haloContourSurvol: HALO_SURVOL_MAX * HALO_RING_CHORDS,
+  haloOnde: HALO_UTILISABLES_MAX * HALO_RING_CHORDS,
+  haloEtincelle: HALO_UTILISABLES_MAX,
 };
 
 /** Gabarit UNITÉ d'un DISQUE plat : un cercle horizontal de DIAMÈTRE 1 centré sur l'origine (plan XZ),
@@ -169,8 +156,8 @@ export function unitStarGeometry(branches = SPARK_BRANCHES, innerRatio = SPARK_I
  *  la matière du monde ; la brume du POV (`applyFogGamma`, `sceneMeshes.ts`) délaverait une affordance
  *  lointaine de 71 % à 26 cases (#1176 P3-1c). */
 export function buildHaloMesh(slot: HaloSlot, capacity = HALO_SLOT_CAPACITY[slot]): THREE.InstancedMesh {
-  const disque = slot === 'fouilleDisque' || slot === 'fouilleDisqueSurvol' || slot === 'pnjDisque';
-  const geo = disque ? unitDiscGeometry() : slot === 'fouilleEtincelle' ? unitStarGeometry() : tileQuadGeometry();
+  const disque = slot === 'haloDisque' || slot === 'haloDisqueSurvol';
+  const geo = disque ? unitDiscGeometry() : slot === 'haloEtincelle' ? unitStarGeometry() : tileQuadGeometry();
   const mat = materiauPlanTransparent({
     color: new THREE.Color(HALO_SLOT_TINT[slot]),
     opacity: HALO_SLOT_OPACITY[slot],

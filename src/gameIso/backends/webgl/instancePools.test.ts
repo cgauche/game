@@ -18,7 +18,7 @@ import { poseDynamicMarks } from '../../stage/dynamicMarkPose';
 import { poseInteractHalos } from '../../stage/interactHaloPose';
 import type { HighlightEl } from '../../builders/highlights';
 import type { DynamicMarks, TeamRing } from '../../builders/dynamicMarks';
-import type { InteractionHalos } from '../../builders/interactHalos';
+import type { InteractHalo } from '../../builders/interactHalos';
 import { HERO_RING } from '../../teamColors';
 
 const MPT = 2;
@@ -29,13 +29,16 @@ const ANNEAU: TeamRing = { id: 'h1', cell: { x: 2, y: 3, z: 0 }, rK: 0.4, color:
 
 const CASE: HighlightEl = { key: 'w:3,2', cell: { x: 3, y: 2, z: 0 }, h: 0, kind: 'walk' };
 
-const FOUILLE = {
+const UTILISABLE: InteractHalo = {
   id: 'coffre',
   cell: { x: 3, y: 4, z: 0 },
+  n: 1,
+  scaleK: 1,
+  bodyTopFrac: 1,
   span: { w: 1, h: 1 },
   centre: { x: 3, y: 4 },
   echelle: { x: 1, y: 1 },
-  hovered: false,
+  etat: 'revele',
   visible: true,
 };
 
@@ -79,15 +82,14 @@ describe('les pools du monde passent par la couture', () => {
     expect(jumeau.visible).toBe(false);
   });
 
-  it('halos : monté invisible, visible dès qu’une fouille est posée, invisible quand elle disparaît', () => {
-    const pool = buildHaloMesh('fouilleDisque');
+  it('halos : monté invisible, visible dès qu’un utilisable est révélé, invisible quand il se tait', () => {
+    const pool = buildHaloMesh('haloDisque');
     const frame = { mpt: MPT, groundM: PLAT, kind: 'iso' as const, yawDeg: 0, camQuat: new THREE.Quaternion(), tSec: 0 };
-    const halos = (h: Partial<InteractionHalos>): InteractionHalos => ({ fouilles: [], pnjs: [], ...h });
     expect(pool.visible).toBe(false);
-    poseInteractHalos({ fouilleDisque: pool }, halos({ fouilles: [FOUILLE] }), frame);
+    poseInteractHalos({ haloDisque: pool }, [UTILISABLE], frame);
     expect(pool.count).toBeGreaterThan(0);
     expect(pool.visible).toBe(true);
-    poseInteractHalos({ fouilleDisque: pool }, halos({}), frame);
+    poseInteractHalos({ haloDisque: pool }, [], frame);
     expect(pool.count).toBe(0);
     expect(pool.visible).toBe(false);
   });

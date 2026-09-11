@@ -11,7 +11,7 @@ import { MondeDeCampagne } from './MondeDeCampagne';
 import { GameStage3D, setStageRendererFactory, type StageWalkAnim } from './GameStage3D';
 import { BancRenderer, brancherArdoise, scènes, viderCaptures } from './banc-volumique';
 import { HALO_SLOTS } from '../backends/webgl/interactHaloMeshes';
-import { haloRadiusK, HALO_RX_PX, type InteractionHalos } from '../builders/interactHalos';
+import { haloRadiusK, HALO_RX_PX, type InteractHalo } from '../builders/interactHalos';
 import { PING_S } from './interactHaloPose';
 
 /**
@@ -60,7 +60,7 @@ const coffre = {
   usable: { actions: [{ id: 'fouiller', flow: { kind: 'seq', steps: [] }, unique: true }] },
 } as unknown as SceneEntity;
 
-/** Un PNJ INTERLOCUTEUR — l'autre affordance : pas de halo permanent, un halo au SURVOL seul. */
+/** Un PNJ INTERLOCUTEUR — l'autre CORPS d'un utilisable : un jeton, et le même régime que le décor. */
 const marchand = {
   id: 'marchand',
   kind: 'personnage',
@@ -82,7 +82,7 @@ function survoler(t: { x: number; y: number; z?: number } | null): void {
   act(() => w.__wfrpSetHover!(t));
 }
 
-function monter(flags: Record<string, boolean> = {}): HTMLDivElement {
+function monter(flags: Record<string, boolean> = {}, reveler = false): HTMLDivElement {
   useGame.setState({
     scene: scèneAvecCoffre(),
     mode: 'exploration',
@@ -93,6 +93,7 @@ function monter(flags: Record<string, boolean> = {}): HTMLDivElement {
     flags,
     hovered: null,
     pendingAttack: null,
+    reveler,
   } as never);
   viderCaptures();
   conteneur = document.createElement('div');
@@ -136,68 +137,78 @@ afterEach(() => {
 });
 
 describe('Halos d’interaction — le monde volumique peint l’affordance (#1176 P3-0g)', () => {
-  it('un décor fouillable appelle le joueur', () => {
+  it('RIEN n’est allumé en permanence ; la RÉVÉLATION allume TOUS les utilisables, décor ET PNJ', () => {
     monter();
-    const p = poolsVolumiques();
-    expect(Object.keys(p).sort(), 'les huit pools sont montés d’emblée').toEqual(HALO_SLOTS.slice().sort().map((s) => s));
-    expect(p.fouilleDisque.count, 'le disque du halo').toBe(1);
-    expect(p.fouilleContour.count, 'le contour doré').toBeGreaterThan(3);
-    expect(p.fouilleEtincelle.count, 'l’étincelle au-dessus du décor').toBe(1);
-    expect(p.fouilleDisqueSurvol.count + p.fouilleContourSurvol.count, 'rien n’est survolé').toBe(0);
-    expect(p.pnjDisque.count + p.pnjContour.count, 'aucun PNJ interlocuteur ici').toBe(0);
-  });
-
-  it('ÉPUISEMENT : le drapeau `__action_<ent>_<action>` éteint le halo', () => {
-    monter({ __action_coffre_fouiller: true });
-    expect(totalVolumique(), 'un coffre vidé n’appelle plus').toBe(0);
+    expect(Object.keys(poolsVolumiques()).sort(), 'les pools sont montés d’emblée').toEqual(HALO_SLOTS.slice().sort().map((s) => s));
+    expect(totalVolumique(), 'sans Alt ni survol, le champ est muet').toBe(0);
     démonter();
 
-    // TÉMOIN : sans le flag, quelque chose est bien peint (le test ci-dessus ne mesure pas seulement
-    // une scène vide).
-    monter();
-    expect(totalVolumique()).toBeGreaterThan(0);
+    monter({}, true);
+    const p = poolsVolumiques();
+    expect(p.haloDisque.count, 'un disque par utilisable : le coffre ET le marchand').toBe(2);
+    expect(p.haloContour.count, 'le contour doré').toBeGreaterThan(3);
+    expect(p.haloEtincelle.count, 'l’étincelle au-dessus de chacun').toBe(2);
+    expect(p.haloDisqueSurvol.count + p.haloContourSurvol.count, 'rien n’est survolé').toBe(0);
   });
 
-  it('le halo volumique est au PIED du décor, au rayon que la loi de halo demande', () => {
-    monter();
+  it('ÉPUISEMENT : le drapeau `__action_<ent>_<action>` éteint le halo du décor, pas celui du PNJ', () => {
+    monter({ __action_coffre_fouiller: true }, true);
+    expect(poolsVolumiques().haloDisque.count, 'un coffre vidé n’appelle plus ; le marchand, si').toBe(1);
+    démonter();
+
+    // TÉMOIN : sans le flag, les DEUX appellent (le test ci-dessus ne mesure pas une scène vide).
+    monter({}, true);
+    expect(poolsVolumiques().haloDisque.count).toBe(2);
+  });
+
+  it('le halo volumique est au PIED de son porteur, au rayon que la loi de halo demande', () => {
+    monter({}, true);
     const mpt = sceneMetresPerTile(emptyScene(10, 10));
     const m = new THREE.Matrix4();
     const pos = new THREE.Vector3();
-    poolsVolumiques().fouilleDisque.getMatrixAt(0, m);
-    pos.setFromMatrixPosition(m);
-    expect(pos.x).toBeCloseTo(3 * mpt, 5);
-    expect(pos.z).toBeCloseTo(4 * mpt, 5);
-    // Les cordes du contour sont sur le cercle dont l'ellipse d'un décor 1×1 (rayon écran `HALO_RX_PX`,
-    // la constante partagée de `builders/interactHalos`) EST la projection.
-    const contour = poolsVolumiques().fouilleContour;
+    const pieds = [coffre.pos, marchand.pos!].map((c) => ({ x: c.x * mpt, z: c.y * mpt }));
+    const disques = poolsVolumiques().haloDisque;
+    const posesDisques = [...Array(disques.count).keys()].map((i) => {
+      disques.getMatrixAt(i, m);
+      pos.setFromMatrixPosition(m);
+      return { x: pos.x, z: pos.z };
+    });
+    for (const pied of pieds)
+      expect(posesDisques.some((d) => Math.abs(d.x - pied.x) < 1e-4 && Math.abs(d.z - pied.z) < 1e-4), `${pied.x},${pied.z}`).toBe(true);
+    // Les cordes du contour sont sur le cercle dont l'ellipse d'un porteur 1×1 (rayon écran
+    // `HALO_RX_PX`, la constante partagée de `builders/interactHalos`) EST la projection — et c'est LE
+    // même rayon pour les deux corps : un utilisable n'a pas de kind.
+    const contour = poolsVolumiques().haloContour;
     const rAttendu = haloRadiusK(HALO_RX_PX) * mpt;
     for (let i = 0; i < contour.count; i++) {
       contour.getMatrixAt(i, m);
       pos.setFromMatrixPosition(m);
-      expect(Math.hypot(pos.x - 3 * mpt, pos.z - 4 * mpt)).toBeCloseTo(rAttendu, 5);
+      const écarts = pieds.map((pied) => Math.abs(Math.hypot(pos.x - pied.x, pos.z - pied.z) - rAttendu));
+      expect(Math.min(...écarts), `corde ${i}`).toBeLessThan(1e-4);
     }
   });
 
-  it('un PNJ INTERLOCUTEUR n’appelle qu’au SURVOL', () => {
+  it('le SURVOLÉ porte la variante renforcée — un PNJ comme un décor, et lui seul', () => {
     monter();
-    expect(poolsVolumiques().pnjDisque.count, 'sans survol : aucun halo de PNJ').toBe(0);
+    expect(poolsVolumiques().haloDisqueSurvol.count, 'sans survol : rien').toBe(0);
     survoler({ x: marchand.pos!.x, y: marchand.pos!.y, z: 0 });
     const p = poolsVolumiques();
-    expect(p.pnjDisque.count, 'le disque du halo de PNJ').toBe(1);
-    expect(p.pnjContour.count, 'et son contour doré').toBeGreaterThan(3);
+    expect(p.haloDisqueSurvol.count, 'le disque renforcé du survolé').toBe(1);
+    expect(p.haloContourSurvol.count, 'et son contour doré').toBeGreaterThan(3);
+    expect(p.haloDisque.count, 'les autres utilisables restent muets').toBe(0);
     survoler(null);
-    expect(poolsVolumiques().pnjDisque.count + poolsVolumiques().pnjContour.count).toBe(0);
+    expect(totalVolumique()).toBe(0);
   });
 
   it('SUPPRESSION : le halo retiré vide ses pools AU RENDU, sans attendre un battement', () => {
-    monter();
-    expect(totalVolumique(), 'témoin : le coffre appelle').toBeGreaterThan(0);
+    monter({}, true);
+    expect(poolsVolumiques().haloDisque.count, 'témoin : les deux appellent').toBe(2);
     const frames = scènes.length;
     // Le décor est fouillé : c'est le RENDU qui doit vider les pools — la boucle de pulsation ne bat
     // pas dans ce banc (aucun `requestAnimationFrame` n'est déclenché ici).
     act(() => useGame.setState({ flags: { __action_coffre_fouiller: true } } as never));
     expect(scènes.length, 'le rendu a bien rejoué la scène volumique').toBeGreaterThan(frames);
-    expect(totalVolumique(), 'et rien ne reste des instances de la frame précédente').toBe(0);
+    expect(poolsVolumiques().haloDisque.count, 'et rien ne reste des instances de la frame précédente').toBe(1);
   });
 });
 
@@ -205,10 +216,9 @@ describe('Halos d’interaction — le monde volumique peint l’affordance (#11
 
 const SCENE_NUE: Scene = emptyScene(10, 10);
 const DIMS: Dims = { w: SCENE_NUE.dimensions.w, h: SCENE_NUE.dimensions.h, rot: 0, view: 'iso' };
-const HALOS: InteractionHalos = {
-  fouilles: [{ id: 'coffre', cell: { x: 3, y: 4, z: 0 }, span: { w: 1, h: 1 }, centre: { x: 3, y: 4 }, echelle: { x: 1, y: 1 }, hovered: false, visible: true }],
-  pnjs: [],
-};
+const HALOS: readonly InteractHalo[] = [
+  { id: 'coffre', cell: { x: 3, y: 4, z: 0 }, n: 1, scaleK: 1, bodyTopFrac: 1, span: { w: 1, h: 1 }, centre: { x: 3, y: 4 }, echelle: { x: 1, y: 1 }, etat: 'revele', visible: true },
+];
 
 describe('Halos d’interaction — la pulsation se prend à la FRAME (#1176 P3-0g)', () => {
   it('un battement fait avancer la PHASE ; aucun rendu React n’y participe', () => {
@@ -244,7 +254,7 @@ describe('Halos d’interaction — la pulsation se prend à la FRAME (#1176 P3-
     ));
 
     expect(battre, 'l’écran doit s’être abonné au battement').toBeTypeOf('function');
-    const onde = () => poolsVolumiques().fouillePing;
+    const onde = () => poolsVolumiques().haloOnde;
     const rayonOnde = () => {
       const p = onde();
       const m = new THREE.Matrix4();
@@ -257,7 +267,7 @@ describe('Halos d’interaction — la pulsation se prend à la FRAME (#1176 P3-
       }
       return somme / p.count;
     };
-    const opacitéHalo = () => (poolsVolumiques().fouilleDisque.material as THREE.MeshBasicMaterial).opacity;
+    const opacitéHalo = () => (poolsVolumiques().haloDisque.material as THREE.MeshBasicMaterial).opacity;
 
     expect(onde().count, 'le témoin doit VRAIMENT peindre une onde').toBeGreaterThan(0);
     const r0 = rayonOnde();
@@ -289,7 +299,7 @@ describe('Halos d’interaction — la pulsation se prend à la FRAME (#1176 P3-
     conteneur = document.createElement('div');
     document.body.appendChild(conteneur);
     root = createRoot(conteneur);
-    const écran = (halos: InteractionHalos | undefined) => (
+    const écran = (halos: readonly InteractHalo[] | undefined) => (
       <GameStage3D
         scene={SCENE_NUE}
         mpt={sceneMetresPerTile(SCENE_NUE)}

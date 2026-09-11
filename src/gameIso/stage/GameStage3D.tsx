@@ -180,7 +180,7 @@ import type { HighlightEl } from '../builders/highlights';
 import { NO_DYNAMIC_MARKS, type DynamicMarks } from '../builders/dynamicMarks';
 import { DYN_MARK_SLOTS, buildDynamicMarkMesh, buildSilhouetteTwin } from '../backends/webgl/dynamicMarkMeshes';
 import { poseDynamicMarks, type DynMarkPools } from './dynamicMarkPose';
-import { NO_INTERACTION_HALOS, type InteractionHalos } from '../builders/interactHalos';
+import { NO_INTERACTION_HALOS, type InteractHalo } from '../builders/interactHalos';
 import { HALO_SLOTS, buildHaloMesh } from '../backends/webgl/interactHaloMeshes';
 import { poseInteractHalos, type HaloPools } from './interactHaloPose';
 import { ndcAt, pickNearestTarget, type PickTarget, type WorldPickMesh } from '../backends/webgl/spriteRaycast';
@@ -380,10 +380,11 @@ export interface GameStage3DProps {
    *  dérivation pure `builders/dynamicMarks`, en cases LOGIQUES. Leur position se prend à la FRAME, sur
    *  le glissement de `anim` — jamais à un rendu React. */
   dynMarks?: DynamicMarks;
-  /** HALOS D'INTERACTION (#1176, P3-0g) — affordance de fouille d'un décor, halo de survol d'un PNJ
-   *  interlocuteur : la dérivation pure `builders/interactHalos`. Leurs PULSATIONS sont des fonctions
-   *  de la frame (`stage/interactHaloPose`). Absents = aucun halo, et pas une frame de plus. */
-  halos?: InteractionHalos;
+  /** HALOS D'INTERACTION (#1176, P3-0g ; régime de révélation #1687) — un par entité utilisable du
+   *  champ, à l'état que la frame lui donne : la dérivation pure `builders/interactHalos`. Leurs
+   *  PULSATIONS sont des fonctions de la frame (`stage/interactHaloPose`). Absents ou tous MUETS =
+   *  aucun halo, et pas une frame de plus. */
+  halos?: readonly InteractHalo[];
   /** ALLURE des jetons (#1176, P3-0f) — fantôme hors Ligne de Vue, corps hors d'action, cible
    *  survolée : la dérivation pure `builders/tokenChrome`, demandée à la FRAME et posée sur le matériau
    *  des quads déjà montés. Absente = aucun jeton ne se distingue. */
@@ -1476,7 +1477,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // pluie, sans feu et sans décor fouillable ne rejoue aucune image. Aucune horloge ici — la cadence
   // comme la cession d'une même image vivent au module, et nulle part ailleurs.
   const vacille = hasFlicker(flaquesÉcrites);
-  const pulseHalos = !!halos && (halos.fouilles.length > 0 || halos.pnjs.length > 0);
+  const pulseHalos = !!halos && halos.some((h) => h.etat !== 'muet');
   // Un CORPS ANIMÉ est un motif comme les autres (#1396) : sa planche de flipbook se choisit PAR IMAGE
   // (`choisirFrame` : respiration au repos, cycle de marche, effondrement d'un corps à terre, et la vue
   // que le regard courant demande). Sans battement, ces gestes n'avancent qu'aux commits React — l'idle

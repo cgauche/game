@@ -256,4 +256,25 @@ describe('raccourcis — les modificateurs font partie de la touche', () => {
     frapper('keyup', 'ArrowRight', { shiftKey: false });
     expect(runUp).toHaveBeenCalledOnce();
   });
+
+  /**
+   * RÉVÉLER LES UTILISABLES (#1687 lot 3-II-b) — le binding de PRODUCTION `decor.reveler`, mesuré sur
+   * le vrai registre : Alt maintenu pose l'état que les halos et les plaques de nom lisent, et il se
+   * rend au relâchement comme au `blur` (Alt-Tab : la touche part sans keyup).
+   */
+  it('Alt maintenu RÉVÈLE, et l’état se rend au relâchement — les deux positions de la touche', () => {
+    for (const code of ['AltLeft', 'AltRight']) {
+      frapper('keydown', code, { altKey: true });
+      expect(useGame.getState().reveler, `${code} enfoncée`).toBe(true);
+      frapper('keyup', code, { altKey: false });
+      expect(useGame.getState().reveler, `${code} relâchée`).toBe(false);
+    }
+  });
+
+  it('ALT-TAB : la fenêtre perd le focus, la révélation se rend (aucun keyup ne viendra)', () => {
+    frapper('keydown', 'AltLeft', { altKey: true });
+    expect(useGame.getState().reveler).toBe(true);
+    act(() => { window.dispatchEvent(new Event('blur')); });
+    expect(useGame.getState().reveler, 'l’état serait resté collé jusqu’au prochain appui').toBe(false);
+  });
 });

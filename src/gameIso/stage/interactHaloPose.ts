@@ -28,14 +28,12 @@ import {
   HALO_HOVER_STROKE_PX,
   HALO_RX_PX,
   HALO_STROKE_PX,
-  NPC_HALO_RX_PX,
   PING_STROKE_PX,
   SPARK_DX_PX,
   SPARK_DY_PX,
   SPARK_R_PX,
   haloRadiusK,
   type InteractHalo,
-  type InteractionHalos,
 } from '../builders/interactHalos';
 import { HALO_SLOT_OPACITY, haloSlotLiftM, type HaloSlot } from '../backends/webgl/interactHaloMeshes';
 import { billboardPose } from '../backends/webgl/sceneMeshes';
@@ -93,10 +91,10 @@ export function phase(tSec: number, periodeS: number): number {
 
 /** MULTIPLICATEUR d'opacité du halo à l'instant `tSec` — il porte sur le halo ENTIER, et les opacités
  *  de repos de ses deux pools (disque, contour) le multiplient. */
-export function haloPulse(tSec: number, hovered: boolean): number {
-  const min = hovered ? HALO_HOVER_PULSE_MIN : HALO_PULSE_MIN;
-  const max = hovered ? HALO_HOVER_PULSE_MAX : HALO_PULSE_MAX;
-  return min + (max - min) * rampeSymetrique(phase(tSec, hovered ? HALO_HOVER_PULSE_S : HALO_PULSE_S));
+export function haloPulse(tSec: number, survole: boolean): number {
+  const min = survole ? HALO_HOVER_PULSE_MIN : HALO_PULSE_MIN;
+  const max = survole ? HALO_HOVER_PULSE_MAX : HALO_PULSE_MAX;
+  return min + (max - min) * rampeSymetrique(phase(tSec, survole ? HALO_HOVER_PULSE_S : HALO_PULSE_S));
 }
 
 /** ONDE « sonar » du décor fouillable : période 1,9 s — de `scale 0,65`/opacité 0,7 à `scale 1,55`/
@@ -236,14 +234,12 @@ function battreOpacite(mesh: THREE.InstancedMesh | undefined, repos: number, pul
 /** Comptes à zéro — un relevé NEUF par frame (la passe rend ce qu'elle a écrit). */
 function comptesVierges(): HaloCounts {
   return {
-    fouilleDisque: 0,
-    fouilleContour: 0,
-    fouilleDisqueSurvol: 0,
-    fouilleContourSurvol: 0,
-    fouillePing: 0,
-    fouilleEtincelle: 0,
-    pnjDisque: 0,
-    pnjContour: 0,
+    haloDisque: 0,
+    haloContour: 0,
+    haloDisqueSurvol: 0,
+    haloContourSurvol: 0,
+    haloOnde: 0,
+    haloEtincelle: 0,
   };
 }
 
@@ -251,12 +247,14 @@ function comptesVierges(): HaloCounts {
  * Re-pose les halos d'interaction dans leurs pools, et fait battre leurs opacités. Rien n'est monté,
  * rien n'est démonté : c'est la passe que la boucle rejoue tant qu'un halo est à l'écran.
  */
-export function poseInteractHalos(pools: HaloPools, halos: InteractionHalos, f: HaloFrame): HaloCounts {
+export function poseInteractHalos(pools: HaloPools, halos: readonly InteractHalo[], f: HaloFrame): HaloCounts {
   const n = comptesVierges();
-  const étincelles = pools.fouilleEtincelle;
+  const étincelles = pools.haloEtincelle;
   const ping = haloPing(f.tSec);
   const spark = sparkBob(f.tSec);
-  for (const h of halos.fouilles) {
+  for (const h of halos) {
+    // MUET = rien de peint : un utilisable ni survolé ni révélé ne s'annonce pas (#1687).
+    if (h.etat === 'muet') continue;
     // Le halo épouse l'EMPREINTE, axe par axe (`InteractHalo.echelle`) : rond sur un décor d'une case,
     // allongé sur une table murale 1×2 — où un rayon isotrope débordait d'une demi-case à travers le
     // mur qu'elle longe.
@@ -264,19 +262,19 @@ export function poseInteractHalos(pools: HaloPools, halos: InteractionHalos, f: 
     const centre = caseDe(h.centre.x, h.centre.y, h.cell.z);
     // La variante de SURVOL est le MÊME anneau, agrandi et épaissi : le facteur porte sur le halo
     // entier, donc sur le rayon ET sur le trait.
-    if (h.hovered)
-      poserAnneauDeHalo(pools, 'fouilleDisqueSurvol', 'fouilleContourSurvol', n, centre, { x: rK.x * HALO_HOVER_SCALE, y: rK.y * HALO_HOVER_SCALE }, HALO_HOVER_STROKE_PX * HALO_HOVER_SCALE, f);
-    else poserAnneauDeHalo(pools, 'fouilleDisque', 'fouilleContour', n, centre, rK, HALO_STROKE_PX, f);
+    if (h.etat === 'survole')
+      poserAnneauDeHalo(pools, 'haloDisqueSurvol', 'haloContourSurvol', n, centre, { x: rK.x * HALO_HOVER_SCALE, y: rK.y * HALO_HOVER_SCALE }, HALO_HOVER_STROKE_PX * HALO_HOVER_SCALE, f);
+    else poserAnneauDeHalo(pools, 'haloDisque', 'haloContour', n, centre, rK, HALO_STROKE_PX, f);
     // ONDE « SONAR » : le même cercle, à l'échelle de l'instant — trait compris, l'échelle porte sur
     // le halo ENTIER.
-    const onde = pools.fouillePing;
+    const onde = pools.haloOnde;
     if (onde && ping.opacity > 0) {
       const tirets = ringDashes(((rK.x + rK.y) / 2) * ping.scale, null, f.kind);
-      if (n.fouillePing + tirets.length <= onde.instanceMatrix.count) {
-        centreDe(centre.x, centre.y, centre.z, haloSlotLiftM('fouillePing'), f, CENTRE);
-        n.fouillePing = writeRingChords(
+      if (n.haloOnde + tirets.length <= onde.instanceMatrix.count) {
+        centreDe(centre.x, centre.y, centre.z, haloSlotLiftM('haloOnde'), f, CENTRE);
+        n.haloOnde = writeRingChords(
           onde,
-          n.fouillePing,
+          n.haloOnde,
           CENTRE,
           rK.x * ping.scale * f.mpt,
           strokeWidthK(PING_STROKE_PX * ping.scale) * f.mpt,
@@ -287,31 +285,16 @@ export function poseInteractHalos(pools: HaloPools, halos: InteractionHalos, f: 
         );
       }
     }
-    if (étincelles) n.fouilleEtincelle = poserEtincelle(étincelles, n.fouilleEtincelle, h, spark.risePx, f);
+    if (étincelles) n.haloEtincelle = poserEtincelle(étincelles, n.haloEtincelle, h, spark.risePx, f);
   }
-  for (const p of halos.pnjs)
-    // Le halo de PNJ est TOUJOURS à la variante SURVOL : même
-    // agrandissement, même trait épaissi, même cadence rapide que la variante de survol d'une fouille.
-    poserAnneauDeHalo(
-      pools,
-      'pnjDisque',
-      'pnjContour',
-      n,
-      caseDe(p.cell.x, p.cell.y, p.cell.z),
-      { x: haloRadiusK(NPC_HALO_RX_PX) * HALO_HOVER_SCALE, y: haloRadiusK(NPC_HALO_RX_PX) * HALO_HOVER_SCALE },
-      HALO_HOVER_STROKE_PX * HALO_HOVER_SCALE,
-      f,
-    );
   const lent = haloPulse(f.tSec, false);
   const vif = haloPulse(f.tSec, true);
-  battreOpacite(pools.fouilleDisque, HALO_SLOT_OPACITY.fouilleDisque, lent);
-  battreOpacite(pools.fouilleContour, HALO_SLOT_OPACITY.fouilleContour, lent);
-  battreOpacite(pools.fouilleDisqueSurvol, HALO_SLOT_OPACITY.fouilleDisqueSurvol, vif);
-  battreOpacite(pools.fouilleContourSurvol, HALO_SLOT_OPACITY.fouilleContourSurvol, vif);
-  battreOpacite(pools.fouillePing, HALO_SLOT_OPACITY.fouillePing, ping.opacity);
-  battreOpacite(pools.fouilleEtincelle, HALO_SLOT_OPACITY.fouilleEtincelle, spark.opacity);
-  battreOpacite(pools.pnjDisque, HALO_SLOT_OPACITY.pnjDisque, vif);
-  battreOpacite(pools.pnjContour, HALO_SLOT_OPACITY.pnjContour, vif);
+  battreOpacite(pools.haloDisque, HALO_SLOT_OPACITY.haloDisque, lent);
+  battreOpacite(pools.haloContour, HALO_SLOT_OPACITY.haloContour, lent);
+  battreOpacite(pools.haloDisqueSurvol, HALO_SLOT_OPACITY.haloDisqueSurvol, vif);
+  battreOpacite(pools.haloContourSurvol, HALO_SLOT_OPACITY.haloContourSurvol, vif);
+  battreOpacite(pools.haloOnde, HALO_SLOT_OPACITY.haloOnde, ping.opacity);
+  battreOpacite(pools.haloEtincelle, HALO_SLOT_OPACITY.haloEtincelle, spark.opacity);
   for (const slot of Object.keys(n) as HaloSlot[]) {
     const mesh = pools[slot];
     if (!mesh) continue;
