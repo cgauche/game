@@ -90,7 +90,7 @@ export const FLOW_VERBS = {
   // vivent dans `maneuverConfirm`) — le porteur est donc `attackerId`, jamais la cible.
   maneuver:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingManeuver', field: 'attackerId' } },
   run:          { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], jetOwner: { pending: 'pendingRun', field: 'combatantId' } },
-  // Chute VOLONTAIRE (clic `FallOverlays`, ouverte par `battleClickTile`).
+  // Chute VOLONTAIRE (clic sur une arête de capacité `chute`, ouverte par `battleClickTile`).
   fall:         { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], jetOwner: { pending: 'pendingFall', field: 'combatantId' } },
   reload:       { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingReload', field: 'actorId' } },
   handGate:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingHandGate', field: 'attackerId' } },

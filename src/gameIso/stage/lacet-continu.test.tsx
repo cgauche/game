@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Vector3 } from 'three';
 import { CursorOverlay } from './MoveOverlays';
-import { DoorOverlays } from './DoorOverlays';
+import { AreteOverlay } from './AreteOverlay';
 import { projeterAretes } from './aretesProjetees';
 import { aretesUtilisables } from '../../state/aretes';
 import { emptyScene } from '../../state/scene';
@@ -55,22 +55,22 @@ const PORTE: RoomPortal = {
   to: { x: 5, y: 3 },
 };
 
-/** Les deux bouts de la CIBLE de clic d'une porte, LUS DU RENDU de `DoorOverlays`. */
+/** Les deux bouts de la CIBLE de clic d'une porte, LUS DU RENDU de `AreteOverlay`. */
 function boutsDePorte(dims: Dims): { x: number; y: number }[] {
   const html = renderToStaticMarkup(
-    <DoorOverlays
+    <AreteOverlay
       aretes={projeterAretes(
         aretesUtilisables({ scene: emptyScene(dims.w, dims.h), visible: new Set(['4,3,0']), controleur: null, activeZ: 0, portails: [PORTE] }),
         dims,
         () => 0,
       )}
-      hoveredPortalId={null}
+      areteSurvolee={null}
       activerArete={() => {}}
       onFocusArete={() => {}}
       onBlurArete={() => {}}
     />,
   );
-  const cible = html.match(/<line data-portal-arete=""[^>]*>/)?.[0];
+  const cible = html.match(/<line data-arete-cible="porte"[^>]*>/)?.[0];
   if (!cible) throw new Error('porte sans cible de clic');
   const at = (n: string) => Number(cible.match(new RegExp(`${n}="([^"]+)"`))?.[1]);
   return [{ x: at('x1'), y: at('y1') }, { x: at('x2'), y: at('y2') }];

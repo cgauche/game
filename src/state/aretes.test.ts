@@ -6,14 +6,14 @@ import type { Combatant } from '../engine/types';
 import { aretesUtilisables, libellePortail, LARGEUR_PRISE_ARETE, PRIORITE_ARETES } from './aretes';
 
 /**
- * PARITÉ DÉRIVEUR ⇄ OVERLAYS (#1687, lot 1b-1) — chaque banc reprend la scène du contrat 1b-0 de
- * l'overlay correspondant (`ClimbOverlays.test.tsx`, `FallOverlays.test.tsx`,
- * `SiegeHitAreas.test.tsx`, `DoorOverlays.test.tsx` : leurs fabriques sont locales, elles sont donc
- * reconstruites ici à l'identique) et exige du dériveur la MÊME sélection, sans aucune géométrie
- * d'écran. Ce lot ne câble rien : il n'y a pas d'overlay dans ce fichier.
+ * PARITÉ DÉRIVEUR ⇄ PEINTRE (#1687, lot 1b-1) — chaque banc reprend la scène du banc de rendu
+ * correspondant (`escalade-et-chute-par-l-arete.test.tsx`, `SiegeHitAreas.test.tsx`,
+ * `AreteOverlay.test.tsx` : leurs fabriques sont locales, elles sont donc reconstruites ici à
+ * l'identique) et exige du dériveur la MÊME sélection, sans aucune géométrie d'écran : aucun rendu
+ * dans ce fichier.
  */
 
-/** `ClimbOverlays.test.tsx` : une arête grimpable en (1,1,E) — la case d'en face (2,1) est 4 m plus
+/** Escalade : une arête grimpable en (1,1,E) — la case d'en face (2,1) est 4 m plus
  *  haut — et une seconde en (3,3,E), que rien ne borde. */
 function scèneGrimpable(): Scene {
   const s = emptyScene(5, 4);
@@ -27,7 +27,7 @@ function scèneGrimpable(): Scene {
   return s;
 }
 
-/** `FallOverlays.test.tsx` : une CORNICHE — toute la rangée y=0 à 4 m, le reste au sol, sans arête
+/** Chute : une CORNICHE — toute la rangée y=0 à 4 m, le reste au sol, sans arête
  *  `climb`. Depuis (2,0), seul le cardinal SUD descend. */
 function scèneDeFalaise(): Scene {
   const s = emptyScene(4, 4);
@@ -49,7 +49,7 @@ const mur = { id: ID_MUR, label: 'Mur à ossature en bois' } as unknown as Comba
 const bataille = (combatants: Combatant[]): BattleState =>
   ({ combatants, order: [], turn: 0 } as unknown as BattleState);
 
-/** `DoorOverlays.test.tsx` : un passage intérieur sur l'arête (1,1,E). */
+/** Porte : un passage intérieur sur l'arête (1,1,E). */
 const passage: RoomPortal = {
   id: '0:1,1:E:room-a:room-b',
   z: 0,

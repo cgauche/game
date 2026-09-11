@@ -14,9 +14,10 @@ import { SiegeHitAreas } from './SiegeHitAreas';
  * n'en avait aucun : la hit-area transparente n'existe que pour une structure ENRÔLÉE dans la file de
  * combat, et son appui suit l'aperçu-puis-commit — le 1er arme SANS retenir l'événement (le clic-sol
  * résout un pas le long du mur), le 2e frappe et le retient. Hors combat, l'overlay n'est même pas
- * monté (`SurcoucheIso.tsx:191`, `{battle && …}`) : ce qu'il tient ici, c'est le refus d'une structure
- * non enrôlée. Sonde d'invariance des lots suivants de #1687 : le lift passé à `tileEdge` est l'INDEX
- * DE COUCHE `w.z`, là où `DoorOverlays` reçoit un lift MÉTRIQUE (`SurcoucheIso.tsx:148`).
+ * monté (`SurcoucheIso.tsx:168`, `{battle && …}`) : ce qu'il tient ici, c'est le refus d'une structure
+ * non enrôlée. Sonde d'invariance du lot 1b-4 de #1687 : le lift passé à `tileEdge` est l'INDEX DE
+ * COUCHE `w.z`, là où les trois capacités déjà dans la chaîne sont projetées au lift MÉTRIQUE de leur
+ * case d'ancrage (`stage/aretesProjetees.ts`, appelé par `stage/MondeDeCampagne.tsx`).
  */
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

@@ -24,9 +24,7 @@ import { viewPolicy } from './stage/viewPolicy';
 import { wallTraitObjs } from './stage/layers';
 import { gridLines } from '../geometry/grid';
 import { type TintAt } from './backends/webgl/sceneMeshes';
-import { DoorOverlays } from './stage/DoorOverlays';
-import { ClimbOverlays } from './stage/ClimbOverlays';
-import { FallOverlays } from './stage/FallOverlays';
+import { AreteOverlay } from './stage/AreteOverlay';
 import { SiegeHitAreas } from './stage/SiegeHitAreas';
 import { EnemyMoveTelegraph, EnemyAimTelegraph, EnemyAoeTelegraph } from './stage/Telegraphs';
 import { ZdeTemplate } from './stage/ZdeTemplate';
@@ -63,10 +61,8 @@ export type VueDePlateau = {
   /** Élévation d'affichage d'une CASE — la même fonction que celle dont l'hôte projette les arêtes. */
   liftOf: (p: Pt) => number;
   /** ARÊTES utilisables dérivées PUIS projetées par l'hôte (`stage/aretesProjetees.ts`) : la
-   *  population que le picking résout ET que le peintre des seuils rend, au MÊME segment. */
+   *  population que le picking résout ET que le peintre unique rend, au MÊME segment. */
   aretes: readonly AreteProjetee[];
-  /** Cases de CONTRÔLE des overlays d'arête encore hors chaîne (escalade, chute) — lots 1b-3/1b-4. */
-  doorCtrls: readonly Pt[];
   politique: ReturnType<typeof viewPolicy>;
   chromes: readonly TokenChromeMark[];
   /** PASTILLES d'ENTITÉ (spec zone 4) : déjà dérivées par l'hôte, comme le chrome des jetons. */
@@ -88,7 +84,7 @@ export type VueDePlateau = {
 };
 
 export function SurcoucheIso({
-  scene, dims, turning, activeZ, visible, tintAt, liftAt, liftOf, aretes, doorCtrls, politique, chromes, gestes, walkPosAt,
+  scene, dims, turning, activeZ, visible, tintAt, liftAt, liftOf, aretes, politique, chromes, gestes, walkPosAt,
   activeC, battle, myTurn, mode, targeting, anyWalking, camTransform, camGRef,
   poserSvg, pointeur, visée,
 }: VueDePlateau) {
@@ -108,7 +104,7 @@ export function SurcoucheIso({
   const pendingHeal = useGame((s) => s.pendingHeal);
   const pendingDefense = useGame((s) => s.pendingDefense);
   const { floats, projs, auras, aoes } = useCombatFx();
-  const { hover, hoveredPortal, activerArete, survolerArete, handlers } = pointeur;
+  const { hover, areteSurvolee, activerArete, survolerArete, handlers } = pointeur;
   const { hoverAim, hoveredId, hoverMove, explorePath, effHover } = visée;
   const walkPosOf = walkPosAt(performance.now());
 
@@ -162,15 +158,13 @@ export function SurcoucheIso({
           </g>
         )}
         {mursTrait.length > 0 && <g pointerEvents="none" data-murs-trait={mursTrait.length}>{mursTrait.map((o) => o.el)}</g>}
-        <DoorOverlays
+        <AreteOverlay
           aretes={aretes}
-          hoveredPortalId={hoveredPortal?.id ?? null}
+          areteSurvolee={areteSurvolee?.cle ?? null}
           activerArete={activerArete}
           onFocusArete={survolerArete}
           onBlurArete={() => survolerArete(null)}
         />
-        <ClimbOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
-        <FallOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         {battle && <SiegeHitAreas scene={scene} battle={battle} dims={dims} activeZ={activeZ} visible={visible} />}
         <EnemyMoveTelegraph actorMove={actorMove} dims={dims} footN={activeMoveN} lift={liftOf} />
         <EnemyAimTelegraph targeting={targeting} anchor={reticleAnchor} />
@@ -188,7 +182,7 @@ export function SurcoucheIso({
           && !mapInert && !mapTargeting
           && !hoverAim && <CursorOverlay tile={combatCursor.tile} footN={activeMoveN} dims={dims} liftAt={liftAt} />}
         {battle && hoverMove && effHover && <HoverMovePreview move={hoverMove} at={effHover} footN={activeMoveN} dims={dims} lift={liftOf} battle={battle} activeC={activeC} />}
-        {mode === 'exploration' && explorePath && (hover || hoveredPortal) && <ExplorePathPreview path={explorePath} dims={dims} lift={liftOf} walking={anyWalking} />}
+        {mode === 'exploration' && explorePath && (hover || areteSurvolee?.portail) && <ExplorePathPreview path={explorePath} dims={dims} lift={liftOf} walking={anyWalking} />}
         {battle && <TapPreview battle={battle} activeC={activeC} dims={dims} liftAt={liftAt} myTurn={myTurn} difficulty={previewDifficulty} />}
         {battle && (
           <AimOverlay battle={battle} hoverAim={hoverAim} anchor={reticleAnchor} dims={dims}

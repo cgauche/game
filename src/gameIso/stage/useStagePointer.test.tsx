@@ -540,7 +540,7 @@ describe('useStagePointer — picking exploration', () => {
 
     act(() => pointer!.activerArete(areteDe(portal)));
     expect(positions).toEqual([]);
-    expect(pointer!.hoveredPortal).toEqual(portal);
+    expect(pointer!.areteSurvolee?.portail).toEqual(portal);
 
     act(() => pointer!.activerArete(areteDe(portal)));
     act(() => vi.runAllTimers());

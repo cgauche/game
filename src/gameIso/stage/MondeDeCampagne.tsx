@@ -191,7 +191,13 @@ function CorpsDuMonde() {
     [scene],
   );
   /** ÉLÉVATION d'affichage de la CASE d'où part un geste — la seule définition, servie au peintre des
-   *  seuils comme à la projection des arêtes : les deux doivent poser le même segment. */
+   *  seuils comme à la projection des arêtes : les deux doivent poser le même segment.
+   *
+   *  TROU MESURÉ : la garde `p.z ?` rend 0 sur la couche 0 quel que soit le relief, là où le trait de
+   *  mur lit la hauteur sans garde (`stage/layers.tsx:99`, `metricToLift(heightAt(…))`) — sur une
+   *  falaise de couche 0, le marqueur reste au plancher tandis que son trait monte de `LEVEL_H` px par
+   *  niveau de relief (96 px pour 4 m). Même famille dans `stage/MoveOverlays.tsx:96,111`. Traité au
+   *  lot 1b-5 (socle : lift métrique de la case, couche 0 comprise). */
   const liftOf = useCallback((p: Pt) => (p.z ? liftAt(p.x, p.y, p.z) : 0), [liftAt]);
   // BROUILLARD DE GUERRE (cases visibles) + CHAMP DE LUMIÈRE par tuile en UN calcul (`sceneLightField`,
   // potentiellement lourd, ne tourne qu'UNE fois par pas — la vue ET l'éclairage des sols le partagent).
@@ -598,13 +604,15 @@ function CorpsDuMonde() {
     () => (scene && doorCtrls.length ? portalsForParty(scene, doorCtrls[0], occupiedInteriorZoneIds(scene, doorCtrls)) : []),
     [scene, doorCtrls],
   );
-  // Les ARÊTES que le picking consulte AVANT le rayon, et que le peintre des seuils rend : UNE
-  // population, dérivée ici (`state/aretes.ts`) et projetée là (`stage/aretesProjetees.ts`). Le
-  // contexte fourni est celui des seules PORTES : escalade, chute et structure gardent leurs propres
-  // overlays et leurs propres handlers jusqu'aux lots 1b-3/1b-4, qui les feront entrer à leur tour.
+  // Les ARÊTES que le picking consulte AVANT le rayon, et que le peintre unique rend : UNE population,
+  // dérivée ici (`state/aretes.ts`) et projetée là (`stage/aretesProjetees.ts`). Le CONTRÔLEUR est le
+  // même pour toutes les capacités — celui qui borde les seuils : le groupe hors combat, le héros actif
+  // quand c'est mon tour. `battle` reste `null` : la capacité `structure` garde son overlay et son
+  // geste jusqu'au lot 1b-4 (`SiegeHitAreas`), et une arête qui porterait les deux disparaîtrait par la
+  // priorité avant d'être servie.
   const aretes = useMemo(
-    () => (scene ? aretesUtilisables({ scene, visible, controleur: null, activeZ, battle: null, portails: portals }) : []),
-    [scene, visible, activeZ, portals],
+    () => (scene ? aretesUtilisables({ scene, visible, controleur: doorCtrls[0] ?? null, activeZ, battle: null, portails: portals }) : []),
+    [scene, visible, activeZ, portals, doorCtrls],
   );
   const aretesEcran = projeterAretes(aretes, dimsVue, liftOf);
   // La réf ne se pose qu'au COMMIT, comme celle de la caméra : un rendu jeté avant commit publierait
@@ -613,7 +621,7 @@ function CorpsDuMonde() {
 
   const pointeur = useStagePointer({ svgRef, dims: dimsVue, zoom, camRef, hoverTracking, partyLeader, activeZ, aretes: aretesEcran });
   const hover = pointeur.hover;
-  const visée = useHoverTargeting(scene, hover, myTurn, pointeur.hoveredPortal);
+  const visée = useHoverTargeting(scene, hover, myTurn, pointeur.areteSurvolee?.portail ?? null);
 
   // MARQUES DYNAMIQUES : dérivées UNE fois (`builders/dynamicMarks`) et servies au monde volumique — le
   // contexte qui les autorise (mode, dialogue ouvert) se tranche ici, et nulle part ailleurs. Les
@@ -727,7 +735,6 @@ function CorpsDuMonde() {
             liftAt={liftAt}
             liftOf={liftOf}
             aretes={aretesEcran}
-            doorCtrls={doorCtrls}
             politique={politique}
             chromes={chromes}
             gestes={gesteEls}

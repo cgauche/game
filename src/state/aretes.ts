@@ -10,22 +10,27 @@
  * aucun libellé en dur (`t()`/`MsgKey`, ou le `label` du Combattant pour une structure). Le CONTEXTE
  * (brouillard, contrôleur, couche active, combat, accès de pièce) est FOURNI par l'appelant.
  *
- * CE LOT NE CORRIGE RIEN : chaque fonction interne REPRODUIT la sélection de l'overlay correspondant
- * (`gameIso/stage/DoorOverlays.tsx`, `ClimbOverlays.tsx`, `FallOverlays.tsx`, `SiegeHitAreas.tsx`),
- * divergences comprises — elles sont NOMMÉES ci-dessous pour le lot 1b-3, qui les tranchera :
- *  (a) SÉLECTION DU PORTEUR — l'escalade exige que le contrôleur BORDE l'arête, la chute se contente
- *      qu'il soit sur la couche active et sonde ses quatre cardinaux ;
+ * PORTEUR UNIQUE CÔTÉ HÔTE (lot 1b-3) : les quatre capacités reçoivent le MÊME mobile — le groupe hors
+ * combat, le héros actif quand c'est mon tour (`ContexteAretes.controleur` = `doorCtrls[0] ?? null`,
+ * `gameIso/stage/MondeDeCampagne.tsx`, cardinal ≤ 1). L'unité du porteur est le contrat : deux
+ * capacités qui répondraient à deux mobiles différents offriraient deux gestes sur la même arête.
+ *
+ * Les divergences que ce module a HÉRITÉES des quatre overlays d'origine et qui vivent encore, la
+ * capacité `structure` gardant son peintre et son geste jusqu'au lot 1b-4 :
+ *  (a) INTERROGATION DU PORTEUR — les deux capacités de dénivelé ne lisent pas le même mobile de la
+ *      même façon : l'escalade exige qu'il BORDE l'arête (`escalades`), la chute sonde ses quatre
+ *      cardinaux (`chutes`) ;
  *  (b) ANCRAGE DE LA STRUCTURE — l'overlay de siège est monté sur le seul `battle`
- *      (`SurcoucheIso.tsx:191`), sans contrôleur en main : son geste est piloté par `cid`
+ *      (`SurcoucheIso.tsx:168`), sans contrôleur en main : son geste est piloté par `cid`
  *      (`battleClickEntity`), jamais par une case, d'où un `ancrage` NULLABLE pour cette capacité
  *      seule ;
  *  (c) BROUILLARD — porte et structure/escalade ne bâtissent pas leur clé de visibilité de la même
- *      façon (`portal.from.z ?? portal.z` contre `w.z ?? 0`) ;
- *  (d) LIFT — l'élévation passée à `tileEdge` n'a pas la même unité selon l'overlay : `DoorOverlays`
- *      reçoit un lift MÉTRIQUE (`lift(portal.from)`, `SurcoucheIso.tsx:185` → `liftOf` de
- *      `SurcoucheIso.tsx:148`), tandis que `ClimbOverlays`/`FallOverlays`/`SiegeHitAreas` passent
- *      l'INDEX de couche `z`. `AreteUtilisable.z` ne porte que l'index ; le lot 1b-3 unifie (métrique
- *      pour les quatre).
+ *      façon (`portal.from.z ?? portal.z` contre `w.z ?? 0`).
+ *
+ * LIFT — l'élévation d'écran ne se lit plus ici : les arêtes que le peintre unique rend et que le
+ * picking résout sont projetées une seule fois par l'hôte, au lift MÉTRIQUE de la case d'ancrage
+ * (`gameIso/stage/aretesProjetees.ts`). `AreteUtilisable.z` ne porte que l'INDEX de couche, qui sert à
+ * la clé et au brouillard. `SiegeHitAreas` projette encore lui-même, à l'index (lot 1b-4).
  *
  * PORTES : la liste vient de `portalsForParty` (`roomPortals.ts`), CALCULÉE PAR L'HÔTE et passée en
  * `portails` — la recalculer ici exigerait `occupiedInteriorZoneIds`, qui vit dans
@@ -46,18 +51,17 @@ export type CapaciteArete = 'structure' | 'chute' | 'escalade' | 'porte';
 
 /**
  * PRIORITÉ entre capacités sur une MÊME arête, du plus fort au plus faible. Elle est ÉCRITE ici et
- * nulle part ailleurs — elle vivait dans l'ordre de PEINTURE des overlays du stage
- * (`SurcoucheIso.tsx:179-191` : porte, escalade, chute, siège, le dernier peint prenant le pointeur),
- * un ordre qu'aucun banc ne tenait. L'ordre de la liste rendue par `aretesUtilisables` EST cette
- * priorité.
+ * nulle part ailleurs : ni l'ordre de peinture ni l'ordre d'un `if` ne la disent. L'ordre de la liste
+ * rendue par `aretesUtilisables` EST cette priorité, et la chaîne de picking la relit à égalité de
+ * distance (`stage/pickResolve.ts:areteSousLePixel`).
  */
 export const PRIORITE_ARETES: readonly CapaciteArete[] = ['structure', 'chute', 'escalade', 'porte'];
 
 /**
- * Largeur PLEINE du trait exposé au pointeur, en pixels, PAR capacité — parité `strokeWidth` des
- * overlays d'aujourd'hui (28 pour la hit-area de porte, 9 pour les traits d'escalade et de chute, 16
- * pour la hit-area de siège) ; le rayon de prise vaut la moitié. Donnée du dériveur : un 28 uniforme
- * ferait mordre les gestes les uns sur les autres.
+ * Largeur PLEINE du trait offert au geste, en pixels, PAR capacité : 28 pour un seuil, 9 pour les
+ * traits d'escalade et de chute, 16 pour une structure ; le rayon de prise vaut la moitié, et le
+ * peintre trace à cette même largeur. Donnée du dériveur : un 28 uniforme ferait mordre les gestes les
+ * uns sur les autres.
  */
 export const LARGEUR_PRISE_ARETE: Readonly<Record<CapaciteArete, number>> = {
   structure: 16,
@@ -96,7 +100,8 @@ export interface ContexteAretes {
   scene: Scene;
   /** Cases éclaircies, clés `x,y,z` (brouillard de guerre). */
   visible: ReadonlySet<string>;
-  /** Groupe hors combat, héros actif si c'est mon tour, `null` sinon (`SurcoucheIso.tsx:130-136`). */
+  /** Groupe hors combat, héros actif si c'est mon tour, `null` sinon
+   *  (`gameIso/stage/MondeDeCampagne.tsx`, `doorCtrls`) — le MÊME porteur pour les quatre capacités. */
   controleur: Pt | null;
   activeZ: number;
   battle?: BattleState | null;
@@ -116,8 +121,23 @@ const vue = (visible: ReadonlySet<string>, a: Pt, b: Pt, z: number): boolean =>
   visible.has(`${a.x},${a.y},${z}`) || visible.has(`${b.x},${b.y},${z}`);
 
 /**
- * Libellé JOUEUR d'un accès de pièce — SOURCE UNIQUE, lue aussi par `DoorOverlays` pour son
- * `aria-label` et son `<title>` : six formes selon la nature de l'accès et le sens du franchissement.
+ * La case D'EN FACE, vue depuis l'ancrage : le second bout du geste (grimper vers elle, sauter vers
+ * elle). Dérivée des deux cases que l'arête sépare (`cotes`) plutôt que portée en champ de plus, qui
+ * dirait deux fois la même géométrie. `null` quand l'arête n'a pas d'ancrage, ou qu'il n'est sur
+ * aucun de ses deux côtés.
+ */
+export function caseOpposee(arete: AreteUtilisable): Pt | null {
+  const de = arete.ancrage;
+  if (!de) return null;
+  const [c1, c2] = cotes(arete.x, arete.y, arete.side);
+  const memeCase = (c: Pt) => c.x === de.x && c.y === de.y;
+  const vers = memeCase(c1) ? c2 : memeCase(c2) ? c1 : null;
+  return vers ? { x: vers.x, y: vers.y, z: arete.z } : null;
+}
+
+/**
+ * Libellé JOUEUR d'un accès de pièce — SOURCE UNIQUE, celle que le peintre affiche en `aria-label` et
+ * en `<title>` : six formes selon la nature de l'accès et le sens du franchissement.
  */
 export const libellePortail = (portal: RoomPortal): string =>
   (portal.kind === 'door-closed'
@@ -128,7 +148,7 @@ export const libellePortail = (portal: RoomPortal): string =>
         ? t('arete.porteOuverte')
         : t('arete.passage'));
 
-/** PORTES — `DoorOverlays.tsx:41-43` : accès de la couche active dont une extrémité est éclaircie. */
+/** PORTES : accès de la couche active dont une extrémité est éclaircie. */
 function portes(ctx: ContexteAretes): AreteUtilisable[] {
   const out: AreteUtilisable[] = [];
   for (const p of ctx.portails ?? []) {
@@ -148,8 +168,8 @@ function portes(ctx: ContexteAretes): AreteUtilisable[] {
   return out;
 }
 
-/** ESCALADE — `ClimbOverlays.tsx:20-33` : arête `climb` de la couche active que le mobile BORDE ; on
- *  grimpe depuis sa case vers celle d'en face, le libellé disant le sens du dénivelé. */
+/** ESCALADE : arête `climb` de la couche active que le mobile BORDE ; on grimpe depuis sa case vers
+ *  celle d'en face, le libellé disant le sens du dénivelé. */
 function escalades(ctx: ContexteAretes): AreteUtilisable[] {
   const { scene, controleur, activeZ } = ctx;
   if (!controleur) return [];
@@ -176,8 +196,8 @@ function escalades(ctx: ContexteAretes): AreteUtilisable[] {
   return out;
 }
 
-/** CHUTE — `FallOverlays.tsx:22-32` : les quatre cardinaux du mobile de la couche active, sondés par
- *  `planFall` ; seul un plan `fall` (dénivelé descendant sans arête grimpable) donne une arête. */
+/** CHUTE : les quatre cardinaux du mobile de la couche active, sondés par `planFall` ; seul un plan
+ *  `fall` (dénivelé descendant sans arête grimpable) donne une arête. */
 function chutes(ctx: ContexteAretes): AreteUtilisable[] {
   const { scene, controleur, activeZ } = ctx;
   if (!controleur || (controleur.z ?? 0) !== activeZ) return [];
@@ -201,7 +221,7 @@ function chutes(ctx: ContexteAretes): AreteUtilisable[] {
   return out;
 }
 
-/** STRUCTURE — `SiegeHitAreas.tsx:24-33` : arête `structure` debout de la couche active, ENRÔLÉE dans
+/** STRUCTURE — `SiegeHitAreas.tsx` : arête `structure` debout de la couche active, ENRÔLÉE dans
  *  la file de combat (le Combattant tient la cible ; à la brèche il disparaît et l'arête avec). */
 function structures(ctx: ContexteAretes): AreteUtilisable[] {
   const { scene, battle, activeZ } = ctx;

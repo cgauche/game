@@ -5,7 +5,7 @@
  * L'hôte de rendu (`stage/MondeDeCampagne.tsx`) FOURNIT les arêtes déjà filtrées par le contexte
  * (brouillard, contrôleur, couche active) — exactement comme il fournit `vise` au picking — et ce
  * module ne fait qu'une chose : les poser à l'écran par `tileEdge`, la MÊME géométrie que le peintre
- * (`stage/DoorOverlays.tsx`), au lift que le peintre reçoit.
+ * (`stage/AreteOverlay.tsx`), au lift que le peintre reçoit.
  *
  * MÉMOÏSATION : la géométrie se rebâtit à chaque `pointermove` sans elle, et la chaîne la relit à
  * chaque pixel. `memoByRefDeps` la retient par identité de la LISTE d'arêtes plus les dépendances de

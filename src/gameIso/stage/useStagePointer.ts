@@ -47,7 +47,7 @@ import { STEP_MS } from '../../geometry/walk';
 import { poseFromDims } from './projection';
 import { targetUnderPointer } from './spritePicker';
 import { pointStageSousPixel, pointViewBoxSousPixel, resoudrePixel, tireLeRayon, type Verdict } from './pickResolve';
-import { entiteDuGeste } from './geste';
+import { entiteDuGeste, jouerArete, type VerbesArete } from './geste';
 import { estUtilisable } from '../../state/usable';
 import type { RoomPortal } from '../../state/roomPortals';
 import type { AreteUtilisable } from '../../state/aretes';
@@ -58,13 +58,15 @@ const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sin
 export interface StagePointer {
   /** Tuile survolée (tooltip + réticule de visée ; suivie dans tous les modes de ciblage). */
   hover: Pt | null;
-  hoveredPortal: RoomPortal | null;
+  /** L'arête SURVOLÉE, quel qu'en soit le canal (pixel ou focus clavier) : source unique de l'accent
+   *  du peintre et de l'armement du geste. */
+  areteSurvolee: AreteUtilisable | null;
   /** LE geste d'une arête — celui que le verdict de pixel déclenche ET celui que le clavier du peintre
-   *  appelle (`stage/DoorOverlays.tsx`), la MÊME fonction, jamais deux chemins d'activation. */
+   *  appelle (`stage/AreteOverlay.tsx`), la MÊME fonction, jamais deux chemins d'activation. */
   activerArete: (arete: AreteUtilisable) => void;
   /** SURVOL d'une arête par le clavier (focus du peintre), `null` au blur. Il pose le MÊME état que le
-   *  survol au pointeur (`hoveredPortal`, source unique de l'accent et de l'armement) : sans lui, un
-   *  seuil atteint au Tab n'a aucun rendu, et sur un appareil sans survol il faudrait deux Entrée. */
+   *  survol au pointeur (`areteSurvolee`) : sans lui, une arête atteinte au Tab n'a aucun rendu, et sur
+   *  un appareil sans survol il faudrait deux Entrée. */
   survolerArete: (arete: AreteUtilisable | null) => void;
   handlers: {
     onPointerDown: (ev: React.PointerEvent) => void;
@@ -102,7 +104,7 @@ export function useStagePointer({
 }): StagePointer {
   const setCamPan = useGame((s) => s.setCamPan);
   const [hover, setHover] = useState<Pt | null>(null);
-  const [hoveredPortal, setHoveredPortal] = useState<RoomPortal | null>(null);
+  const [areteSurvolee, setAreteSurvolee] = useState<AreteUtilisable | null>(null);
   const movingRef = useRef(false);
   // Glisser-caméra : on diffère l'action de clic au relâchement ; un glissement > seuil = panoramique.
   // La BASE du panoramique (`pan0` + le point de viewBox `vbX/vbY` + le zoom + le n° d'accord du
@@ -240,7 +242,7 @@ export function useStagePointer({
         scene: toggleDoorIn(st.scene, portal.edge.x, portal.edge.y, portal.edge.side, portal.z),
       });
       bus.emit(EVT.SCENE_DIRTY);
-      setHoveredPortal(null);
+      setAreteSurvolee(null);
       return;
     }
     if (st.mode !== 'exploration') return;
@@ -249,39 +251,43 @@ export function useStagePointer({
       const openedScene = toggleDoorIn(currentScene, portal.edge.x, portal.edge.y, portal.edge.side, portal.z);
       useGame.setState({ scene: openedScene });
       bus.emit(EVT.SCENE_DIRTY);
-      setHoveredPortal(null);
+      setAreteSurvolee(null);
       return;
     }
     const plan = exploreMovePlan(currentScene, st.partyPos, portal.to, pathOpts());
     if (!plan) return;
     setHover(null);
-    setHoveredPortal(null);
+    setAreteSurvolee(null);
     st.setPendingInteract(null);
     moveAlong(currentScene.id, plan);
   };
 
-  const onPortalClick = (portal: RoomPortal) => {
-    if (!hoverClickCommits() && hoveredPortal?.id !== portal.id) {
-      setHoveredPortal(portal);
-      return;
-    }
-    activatePortal(portal);
+  /** Les VERBES que la table des gestes appelle (`stage/geste.ts`) : le franchissement vit ici, parce
+   *  qu'il tient le survol et la marche pas à pas ; grimper et sauter sont des verbes du store, suivis
+   *  du battement de scène que les peintres d'arête émettaient. */
+  const verbes: VerbesArete = {
+    franchir: activatePortal,
+    grimper: (de, vers) => { useGame.getState().climbAcross(de, vers); bus.emit(EVT.SCENE_DIRTY); },
+    sauter: (de, vers) => { useGame.getState().fallAcross(de, vers); bus.emit(EVT.SCENE_DIRTY); },
   };
 
   /** LE geste d'une arête. Un seul chemin, deux déclencheurs : le VERDICT de pixel (`performClick`) et
-   *  la touche Entrée/Espace du peintre (`stage/DoorOverlays.tsx`). Ce lot ne sert que la capacité
-   *  `porte` ; escalade, chute et structure restent servies par les handlers de leurs propres overlays
-   *  (`ClimbOverlays`, `FallOverlays`, `SiegeHitAreas`) jusqu'aux lots 1b-3/1b-4, qui les y feront
-   *  entrer à leur tour. */
+   *  la touche Entrée/Espace du peintre (`stage/AreteOverlay.tsx`) ; la capacité est servie par LA
+   *  table (`stage/geste.ts:jouerArete`), jamais par un `if` recopié ici. Le RÉGIME du geste est celui
+   *  de tout le stage (`hoverClickCommits`) : sur un appareil qui survole, un clic COMMET ; sans
+   *  survol, le premier tap ARME l'arête (elle prend l'accent) et le second la joue. */
   const activerArete = (arete: AreteUtilisable) => {
-    if (arete.capacite === 'porte' && arete.portail) onPortalClick(arete.portail);
+    if (!hoverClickCommits() && areteSurvolee?.cle !== arete.cle) {
+      setAreteSurvolee(arete);
+      return;
+    }
+    jouerArete(arete, verbes);
   };
 
   /** LE survol d'une arête, quel qu'en soit le canal : le pixel (`onPointerMove`) ou le focus clavier
    *  du peintre. Un seul état survolé, donc un seul rendu à l'écran et un seul armement du geste. */
   const survolerArete = (arete: AreteUtilisable | null) => {
-    const portail = arete?.portail ?? null;
-    if ((hoveredPortal?.id ?? null) !== (portail?.id ?? null)) setHoveredPortal(portail);
+    if ((areteSurvolee?.cle ?? null) !== (arete?.cle ?? null)) setAreteSurvolee(arete);
   };
 
   // Action de clic (DIFFÉRÉE au relâchement, sautée si on a fait un panoramique) — sélection / cible / déplacement.
@@ -551,7 +557,7 @@ export function useStagePointer({
     ptrs.current.clear();
     pinchRef.current = null;
     if (hover) setHover(null);
-    if (hoveredPortal) setHoveredPortal(null);
+    if (areteSurvolee) setAreteSurvolee(null);
   };
 
   // Clic droit en combat = attaque la plus PERTINENTE sur l'ennemi survolé (scoreur partagé avec l'IA :
@@ -571,7 +577,7 @@ export function useStagePointer({
 
   return {
     hover,
-    hoveredPortal,
+    areteSurvolee,
     activerArete,
     survolerArete,
     handlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp, onPointerLeave, onContextMenu },

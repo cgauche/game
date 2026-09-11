@@ -42,7 +42,7 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   'battleShipReload', 'battleManPoste', 'battleLeavePoste', 'battleWater', 'battlePushEngine',
   'battleAidTeam',
   'spendResolveCondition',
-  // Escalade d'une arête (`ClimbOverlays`) : jumeau de `fallAcross`, même possession (l'actif).
+  // Escalade d'une arête (capacité `escalade`) : jumeau de `fallAcross`, même possession (l'actif).
   'climbAcross',
   // attaque : paramètres de la modale différée + jet/appliquer propres au flux d'attaque
   'attackSetLocation', 'attackSetWeapon', 'attackSetDualMode',
