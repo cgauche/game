@@ -29,8 +29,7 @@ const village = buildScene({
     // Effet `petitePriere` (LDB 25 l.22-24, option `prayer-petites`) : site sacré pour un non-Béni.
     {
       id: 'autel', kind: 'prop', ref: 'autel', pos: { x: 8, y: 7 },
-      interact: {
-        consume: false,
+      usable: { actions: [{ id: 'fouiller', unique: true, consume: false,
         flow: flowFromEffects([
           {
             type: 'petitePriere',
@@ -39,8 +38,7 @@ const village = buildScene({
               { type: 'giveXp', amount: 20 },
             ]),
           },
-        ]),
-      },
+        ]) }] },
     },
     // Effet `ambitionLost` (ADE II Annexe I, reporté de #94) : le messager annonce une catastrophe.
     {

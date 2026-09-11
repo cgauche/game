@@ -62,7 +62,6 @@ interface AncrageDecor {
   /** L'ancrage ne sait pas s'orienter (arête diagonale, côté sortant indéterminé) : repli BILLBOARD
    *  explicite, une géométrie monde mal tournée traverserait le mur qu'elle habille. */
   sansVolume?: boolean;
-  interact: boolean;
   states: { visible: boolean };
 }
 
@@ -79,7 +78,6 @@ function elDeDecor(a: AncrageDecor, mpt: number): PropEl {
     cell: a.cell,
     source: a.source,
     ref: a.ref,
-    interact: a.interact,
     states: a.states,
     ...(a.span ? { span: a.span } : {}),
     ...(a.entId ? { entId: a.entId } : {}),
@@ -147,7 +145,6 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
           solM: heightAt(scene, x, y, lvl.z),
           source: 'terrain',
           ref,
-          interact: false,
           states: { visible: !visible || visible.has(`${x},${y},${lvl.z}`) },
         }, mpt));
       }
@@ -175,7 +172,6 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
       entId: ent.id,
       ref: ent.ref ?? REF_DECOR_DEFAUT,
       ...(ent.facing ? { facing: ent.facing } : {}),
-      interact: !!ent.interact,
       states: { visible: !visible || visible.has(`${ent.pos.x},${ent.pos.y},${z}`) },
     }, mpt));
   }
@@ -228,7 +224,6 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
           architectureFeatureId: featureId,
           ref: feature.appearance ?? viz.prop,
           ...(sortant ? { facing: sortant } : { sansVolume: true }),
-          interact: false,
           states: {
             visible: !visible ||
               visible.has(`${edge.x},${edge.y},${z}`) ||
@@ -273,7 +268,6 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
           key: `orn:${body.id}:${mass.id}:${i}`,
           source: 'ornament' as const,
           ref: feat.id,
-          interact: false,
           states: { visible: vis },
         };
         if (feat.anchor === 'ridge') {

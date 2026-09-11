@@ -17,7 +17,7 @@ import { PING_S } from './interactHaloPose';
 /**
  * HALOS D'INTERACTION (#1176, P3-0g). Deux faits distincts s'y mesurent :
  *
- *  1. PRÉSENCE — le décor fouillable appelle le joueur, le flag d'épuisement (`__fouille_<id>`)
+ *  1. PRÉSENCE — le décor fouillable appelle le joueur, le drapeau d'épuisement (`__action_<ent>_<action>`)
  *     l'éteint, et le PNJ interlocuteur n'appelle qu'au survol. Ce qui se mesure, c'est ce que les
  *     pools d'anneaux plats peignent et ce qu'ils ne peignent pas.
  *  2. PULSATION PAR FRAME — elle n'est qu'une fonction de l'horloge, rejouée dans la BOUCLE. Le banc
@@ -57,7 +57,7 @@ const coffre = {
   kind: 'prop',
   pos: { x: 3, y: 4 },
   ref: 'tonneau',
-  interact: { flow: { do: [] } },
+  usable: { actions: [{ id: 'fouiller', flow: { kind: 'seq', steps: [] }, unique: true }] },
 } as unknown as SceneEntity;
 
 /** Un PNJ INTERLOCUTEUR — l'autre affordance : pas de halo permanent, un halo au SURVOL seul. */
@@ -147,8 +147,8 @@ describe('Halos d’interaction — le monde volumique peint l’affordance (#11
     expect(p.pnjDisque.count + p.pnjContour.count, 'aucun PNJ interlocuteur ici').toBe(0);
   });
 
-  it('ÉPUISEMENT : le flag `__fouille_<id>` éteint le halo', () => {
-    monter({ __fouille_coffre: true });
+  it('ÉPUISEMENT : le drapeau `__action_<ent>_<action>` éteint le halo', () => {
+    monter({ __action_coffre_fouiller: true });
     expect(totalVolumique(), 'un coffre vidé n’appelle plus').toBe(0);
     démonter();
 
@@ -195,7 +195,7 @@ describe('Halos d’interaction — le monde volumique peint l’affordance (#11
     const frames = scènes.length;
     // Le décor est fouillé : c'est le RENDU qui doit vider les pools — la boucle de pulsation ne bat
     // pas dans ce banc (aucun `requestAnimationFrame` n'est déclenché ici).
-    act(() => useGame.setState({ flags: { __fouille_coffre: true } } as never));
+    act(() => useGame.setState({ flags: { __action_coffre_fouiller: true } } as never));
     expect(scènes.length, 'le rendu a bien rejoué la scène volumique').toBeGreaterThan(frames);
     expect(totalVolumique(), 'et rien ne reste des instances de la frame précédente').toBe(0);
   });

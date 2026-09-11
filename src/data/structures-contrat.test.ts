@@ -317,7 +317,33 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // `diligence-projet.json | usable | ` (signature VIDE, 5 occurrences) : l'activation d'un décor par
 // l'auteur est une ENVELOPPE sans clé (`usable: z.strictObject({})`, `sceneEntitySchema`) — un
 // drapeau posé sur l'instance, aucune graphie neuve.
-const PLAFOND_HORS_STRATE = 1175;
+// 1175 → 1177 (#1687 lot 3-I, 2026-09-11) : le champ `interact` des instances de décor MEURT au
+// profit de `usable.{assise,actions}` — mesure ligne à ligne, 5 lignes SORTENT, 7 ENTRENT, occurrences
+// 13201 → 13205. Sortent : `arene-projet.json | interact | flow` (28) et `| interact | consume,flow` (1),
+// `loup-et-saumure-projet.json | interact | flow` (2), `barge-du-sel-projet.json | interact | flow` (1),
+// `diligence-projet.json | usable | ` (5, la signature VIDE de la ligne ci-dessus). Entrent, aux MÊMES
+// comptes : `usable | actions` (29 / 2 / 1) et `usable | assise` (5) — un champ porteur de plus, la même
+// donnée. La hausse NETTE (+2) a une autre cause, MESURÉE par quatre scans {defs} × {données} : les
+// 4 objets `effect` des graphies `arene-projet.json › lodging,type` (1), `phase,type` (2) et `type+…` (1)
+// ne vivent PAS sous `interact` (ils vivent sous `.scenes[].dialogues[].nodes[].choices[].flow.steps[]`
+// et `.scenes[].triggers[].flow.steps[]`, et leur donnée n'a pas bougé d'un octet) ; c'est la
+// DÉCLARATION qui a changé, et ce n'est PAS un enum neuf : `effectSchema` déclare `phase` (aube…nuit)
+// et `lodging` (auberge/maison/camp) DÉJÀ à HEAD (`schemas/defs-scenes/effets.ts`, fichier intouché par
+// ce lot). Ce qui bouge est la PORTÉE de l'INSTRUMENT : `choixDeclares` (`scripts/docs/lib/zod-introspect.mts`)
+// marche en DFS mémoïsé PAR IDENTITÉ, borné à `PROFONDEUR_MEMO = 12` — borne ATTEIGNANTE sur ce schéma,
+// mesurée : 452 clés visitées à 12, 488 à 20 et au-delà. Le PREMIER chemin qui atteint un nœud décide
+// donc s'il est vu : `interact` (chemin COURT vers le flux) meurt au profit de `usable → refine →
+// actions[] → flow` (plus profond), l'ordre de visite change, et avec lui les littéraux tenus sous la
+// borne. `ouvreReference` (`structures-scan.mts:501`) refusant comme FK toute valeur qui EST un littéral
+// d'enum déclaré, ces 4 objets cessent d'être des références et passent hors strate (comptés, pas
+// perdus ; le dataset déclare en tout 47 clés / 348 littéraux dans l'arbre de ce lot). Qu'un instrument
+// classe une valeur selon la PROFONDEUR d'un chemin de schéma est un DÉFAUT, nommé sur #1687 et hors de
+// ce lot. Mesure : defs HEAD → 873 formes /
+// 1175 hors strate, que les données soient HEAD ou celles de ce lot ; defs de ce lot → 870 / 1178 sur les
+// données HEAD et 870 / 1177 sur les siennes (le −1 restant vient de la donnée). Le reclassement est
+// JUSTE (un discriminant déclaré n'est pas une clé étrangère), et il ne migre rien : ces 4 objets
+// changent de dénominateur, cf. `STRUCTURES_FORMES` 394 → 391 pour le lot L3 #1463.
+const PLAFOND_HORS_STRATE = 1177;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -1161,7 +1187,19 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // catalogue de BÂTIMENTS passé en donnée (`buildings.json › roofMaterial` et `› features`,
       // `diligence-projet.json › style` ; `arene-projet.json › style` s'éteint). MÊME graphie que leurs
       // sœurs déjà stockées ici : elles s'éteindront avec elles, d'un seul geste.
-      'L3 #1463': 394,
+      // #1687 lot 3-I (2026-09-11) : 394 → 391 — TROIS lignes MEURENT, aucune ne naît, et ce n'est PAS une
+      // migration : les graphies `arene-projet.json › effect` `lodging,type` (1), `phase,type` (2) et
+      // `type+…` (1) vivent sous `.scenes[].dialogues[].nodes[].choices[].flow.steps[]` et
+      // `.scenes[].triggers[].flow.steps[]` — jamais sous `interact` — et leur donnée n'a pas bougé d'un
+      // octet. Cause MESURÉE (quatre scans {defs} × {données}) : ce que `choixDeclares('arene-projet.json')`
+      // ATTEINT change — `phase` et `lodging` sont déclarés à HEAD comme ici (`defs-scenes/effets.ts`), mais
+      // la marche de l'instrument est mémoïsée et bornée (`PROFONDEUR_MEMO = 12`, borne atteignante :
+      // 452 clés à 12 contre 488 à 20), donc le chemin par lequel un nœud est atteint décide s'il est vu —
+      // et `interact` (court) cède à `usable → refine → actions[] → flow` (profond). `ouvreReference`
+      // (`structures-scan.mts:501`) ne tenant pas un littéral d'enum DÉCLARÉ pour une clé étrangère, ces 4
+      // objets cessent d'être des références et passent au dénominateur HORS STRATE (cf.
+      // `PLAFOND_HORS_STRATE`, qui porte la mesure chiffrée ; le défaut d'instrument y est nommé).
+      'L3 #1463': 391,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en

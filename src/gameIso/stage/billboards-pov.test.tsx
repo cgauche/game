@@ -82,7 +82,7 @@ const HÉROS = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat',
 const ACTEURS: ActorPose[] = [{ c: HÉROS, x: 4, y: 4, z: 0, facing: 'S' }];
 const TONNEAU: PropEl = {
   kind: 'prop', source: 'entity', key: 'prop:tonneau', ref: 'tonneau', facing: 'S',
-  cell: { x: 6, y: 4, z: 0 }, foot: { offX: 0, offY: 0, scale: 1 }, interact: false,
+  cell: { x: 6, y: 4, z: 0 }, foot: { offX: 0, offY: 0, scale: 1 },
   states: { visible: true },
 };
 const ELS: SceneBillboardEls = { tokens: [], props: [TONNEAU] };

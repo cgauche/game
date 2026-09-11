@@ -1,8 +1,9 @@
-import { type Scene, isDescriptiveZone, isWalkable } from './scene';
+import { type Scene, type SceneEntity, isDescriptiveZone, isWalkable } from './scene';
 import { entityBlockedAt } from './sceneRules';
 import { pathTo, walkNeighbors, type MoveEnv, type Pt } from './path';
 import { portalsForParty } from './roomPortals';
 import { memeCase, placesJouables, seatSlotsOf } from './seating';
+import { estUtilisable } from './usable';
 import { sceneZoneTiles } from './zones';
 import { screenStepDot, type ScreenDir } from './combatCursor';
 import { type Dims } from '../geometry/iso';
@@ -30,6 +31,18 @@ export function adjacentWalkable(sc: Scene, target: Pt, from: Pt): Pt | null {
   return best;
 }
 
+/** PORTÉE D'UN GESTE SUR UNE CHOSE DU CHAMP — SOURCE UNIQUE (#1687) : elle est à portée de `pos` (le
+ *  groupe en exploration, le combattant ACTIF en combat) quand elle est 8-adjacente (ou sous les
+ *  pieds) ET au MÊME étage. L'étage fait partie de la portée, il n'en est pas un raffinement : deux
+ *  cases superposées sont à distance de Chebyshev 0 et pourtant séparées par un plancher (#800).
+ *
+ *  Ce prédicat est le MÊME pour ce que la pastille montre, pour ce que le clic joue sur place, pour
+ *  ce que `jouerAction` accepte, pour ce que l'abord décide et pour ce qu'un Round permet de
+ *  ramasser : l'écrire deux fois, c'est promettre d'un côté ce que l'autre refuse. */
+export function aPorteeDe(pos: Pt, ent: SceneEntity): boolean {
+  return chebyshev(pos, ent.pos) <= 1 && (ent.z ?? 0) === (pos.z ?? 0);
+}
+
 /** Case d'ARRIVÉE qu'un clic/survol sur `tile` enverrait au groupe en EXPLORATION — SOURCE UNIQUE
  *  partagée par l'aperçu de chemin (IsoStage `explorePath`) et le clic (`performClick`), pour qu'ils
  *  ne divergent jamais (la divergence = le bug « le chemin ne s'affiche pas au survol d'un objet »).
@@ -43,12 +56,14 @@ export function exploreMoveDest(sc: Scene, partyPos: Pt, tile: Pt): Pt | null {
   // On ne marche jamais SUR un personnage ni sur un décor qui OCCUPE sa case : on s'approche d'une case
   // adjacente (sinon le groupe entrerait dans le corps du PNJ, et la case d'un décor bloquant est
   // infranchissable). L'occupation ne se lit PAS au `kind` : c'est la règle unique de blocage
-  // (`state/sceneRules.entityBlockedAt` — empreinte déclarée, solidité de type, décor interactif), la
+  // (`state/sceneRules.entityBlockedAt` — empreinte déclarée, solidité de type, action authorée), la
   // même que `isWalkable`. Un décor PASSABLE (mare de sang, tas de foin : ni empreinte, ni solide, ni
-  // interactif) reste du SOL — on marche DESSUS, comme sur la case nue.
+  // action) reste du SOL — on marche DESSUS, comme sur la case nue.
+  // L'ABORD se décide sur l'OFFRE qui EXISTE, drapeaux non comptabilisés : on s'approche d'un coffre
+  // qu'on a déjà vidé comme on s'en approchait avant — c'est le geste, arrivé, qui dit qu'il est vide.
   const occupe = !!ent && ent.kind === 'prop' && entityBlockedAt(sc, tile.x, tile.y, tz);
-  if (ent && (!!ent.dialogueId || !!ent.interact || !!ent.merchant || ent.kind === 'personnage' || occupe)) {
-    if (chebyshev(partyPos, ent.pos) <= 1) return null; // déjà à portée → interaction/échange/badaud sur place
+  if (ent && (estUtilisable(sc, ent) || ent.kind === 'personnage' || occupe)) {
+    if (aPorteeDe(partyPos, ent)) return null; // déjà à portée → interaction/échange/badaud sur place
     return adjacentWalkable(sc, ent.pos, partyPos);
   }
   // Déplacement simple : on renvoie la case cliquée telle quelle. Le franchissement vertical s'auto-dérive

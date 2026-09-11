@@ -365,7 +365,7 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
     // Flow d'INTERACTION d'une entité (fouiller, crocheter, examiner) : une PORTE de Flow authoré au
     // même titre qu'une zone ou un choix de dialogue — donc validée par le même parcours (réfs d'effets,
     // fenêtres horaires, enjeu des jets). Sans elle, la moitié des jets d'une scène échapperait à la garde.
-    for (const e of s.entities) if (e.interact) checkFlow(e.interact.flow, e.id, 'entity');
+    for (const e of s.entities) for (const a of e.usable?.actions ?? []) checkFlow(a.flow, `${e.id}›${a.id}`, 'entity');
     for (const d of s.dialogues) {
       const nodeIds = new Set(d.nodes.map((n) => n.id));
       if (!nodeIds.has(d.start)) add('error', 'dialogue', d.id, `Dialogue « ${d.id} » : départ « ${d.start} » inexistant`);

@@ -1310,8 +1310,9 @@ export type Cloture =
   | { verbe: 'avancerHorloge'; minutes: number }
   /** Décor consommé par sa fouille (`interact.consume`). */
   | { verbe: 'retirerEntite'; entityId: string }
-  /** Décor fouillé qui RESTE (drapeau `__fouille_<id>`). */
-  | { verbe: 'marquerFouillee'; entityId: string }
+  /** Action authorée `unique` JOUÉE sur un décor qui RESTE (drapeau `__action_<entId>_<actionId>`,
+   *  `cleActionJouee`) : c'est l'ACTION qui s'épuise, pas le décor. */
+  | { verbe: 'marquerActionJouee'; entityId: string; actionId: string }
   /** Seam `onOwnTestFailed` d'un Test RATÉ (MSRC 16 l.152) — il APPLIQUE des ops, il attend le dé. */
   | { verbe: 'testRateDeLActeur'; actorId: string; sl: number }
   /** Effets PROGRAMMÉS dus au même pas d'horloge et pas encore joués (`fireScheduledEffects`). */

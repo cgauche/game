@@ -174,9 +174,10 @@ export interface BillboardPropEl extends ElBase {
    *  ornement de FAÎTE (clocheton) ou de MUR (enseigne) se pose EN HAUTEUR. Honoré par les deux backends
    *  (iso : lift additionnel du token ; POV : hauteur d'ancre du billboard). */
   liftM?: number;
-  /** Prop fouillable : l'affordance (halo/étincelle) est décidée côté stage (flags de jeu). */
-  interact: boolean;
-  /** Id de l'entité source (flags `__fouille_<id>`, clés d'affordance). Absent pour un overlay terrain. */
+  /** Id de l'ENTITÉ source — la seule clé dont un élément de décor a besoin : l'OFFRE d'interaction
+   *  ne se recopie pas ici, elle se DÉRIVE de l'entité au moment du rendu (`estUtilisable`,
+   *  `state/usable.ts`), seul endroit qui voie à la fois la scène et les drapeaux d'épuisement.
+   *  Absent pour un overlay terrain. */
   entId?: string;
 }
 /** Élément de décor à FACES : un décor dont le TYPE porte une recette volumique (`PropData.volume`) est
@@ -200,7 +201,6 @@ export interface VolumePropEl extends ElBase {
   /** Zones de PIÈCE de cette nappe — comme pour un `RoofEl`, PRIVÉE du monde cuit (`elCuit`) et
    *  redemandée vive par l'hôte (`roomZonesByElKey`). */
   roomZoneIds?: string[];
-  interact: boolean;
   faces: Face[];
 }
 export type PropEl = BillboardPropEl | VolumePropEl;

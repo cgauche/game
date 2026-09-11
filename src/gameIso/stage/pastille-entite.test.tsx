@@ -10,6 +10,8 @@ import { battreStageFrames } from './stageFrames';
 import { BancRenderer, brancherArdoise } from './banc-volumique';
 import { useGame, type BattleState } from '../../state/store';
 import { emptyScene } from '../../state/scene';
+import { tileCenter, type Dims } from '../../geometry/iso';
+import { VH, VW } from './useStageCamera';
 import { flowFromEffects } from '../../state/flow';
 import { itemFromTrappingById } from '../../engine/items';
 import { ACTIONS, type ActionDef } from '../../data/index';
@@ -147,7 +149,7 @@ function sceneAvecTas(nb: number): Scene {
   const sc = emptyScene(12, 12);
   sc.entities.push({
     id: 'tas', kind: 'prop', pos: { x: 4, y: 3 }, label: 'Tas',
-    interact: { flow: flowFromEffects(Array.from({ length: nb }, (_, i) => ({ type: 'giveTrapping', custom: `Objet ${i + 1}` }))) },
+    usable: { actions: [{ id: 'fouiller', unique: true, flow: flowFromEffects(Array.from({ length: nb }, (_, i) => ({ type: 'giveTrapping', custom: `Objet ${i + 1}` }))) }] },
   } as never);
   return sc;
 }
@@ -207,6 +209,42 @@ describe('Pastille d’entité — le geste vit sur ce qui l’offre (#1411 P2-C
     expect(bloc, 'la boîte est transparente au pointeur').toContain('pointer-events: none');
     expect(bloc, 'et le bouton le reçoit, lui seul').toContain('.pastille-entite .btn {');
     expect(bloc.slice(bloc.indexOf('.pastille-entite .btn {')), 'le bouton reçoit le pointeur').toContain('pointer-events: auto');
+  });
+
+  it('SURVOL — poser le pointeur SUR la pastille ne re-résout pas le monde (témoin : à côté, si)', () => {
+    // Le bouton FLOTTE au-dessus de la tête de son porteur : le pixel qu'il occupe ne retombe PAS dans
+    // la case du porteur. Un `pointermove` qui filerait au monde y résoudrait donc une AUTRE case —
+    // réticule déplacé en combat, et hors combat l'entité survolée change sous le doigt.
+    const h = hero('h1', { x: 3, y: 3 });
+    const m = hero('m1', { x: 3, y: 4 }, { mountable: true } as Partial<Combatant>);
+    const el = monter({ party: [h], battle: combat([h, m]) });
+    const { svg } = svgTémoin(el);
+    // TÉMOIN vivant : le survol du monde ÉCRIT le curseur du SVG à chaque événement qu'il reçoit
+    // (`useStagePointer.onPointerMove`) — une sentinelle posée dessus dit si l'événement l'a atteint.
+    svg.style.cursor = 'crosshair';
+    geste(svg, 'pointermove');
+    expect(svg.style.cursor, 'témoin : hors de la pastille, le survol du monde reçoit le geste').not.toBe('crosshair');
+    svg.style.cursor = 'crosshair';
+    geste(boutonDe(el, 'm1')!, 'pointermove');
+    expect(svg.style.cursor, 'sur le bouton, le monde n’est pas re-résolu : le survol reste où il est').toBe('crosshair');
+  });
+
+  it('PANNEAU ouvert : le survol du bouton et du panneau ne file pas au monde (il reste atteignable)', () => {
+    const h = hero('h1', { x: 3, y: 3 });
+    const hull = mkHull([mkPoste('belier-ade2', []), mkPoste('belier-ade2', [])]);
+    const el = monter({ party: [h], battle: combat([h, hull]) });
+    const { svg } = svgTémoin(el);
+    act(() => boutonDe(el, 'hull')!.click());
+    expect(panneau(), 'le panneau est ouvert').toBeTruthy();
+    // Le panneau est PORTALISÉ hors du SVG mais ses événements remontent l'arbre REACT : sans arrêt, le
+    // simple fait de promener le pointeur dessus re-résoudrait le monde — et en exploration, où la
+    // pastille naît du SURVOL, cela démonterait le panneau que l'on vise.
+    for (const cible of [boutonDe(el, 'hull')!, panneau()!.querySelector('button')!]) {
+      svg.style.cursor = 'crosshair';
+      geste(cible, 'pointermove');
+      expect(svg.style.cursor, 'ni le bouton ni le panneau ne rendent le pointeur au monde').toBe('crosshair');
+    }
+    expect(panneau(), 'le panneau ouvert survit au geste qui l’atteint').toBeTruthy();
   });
 
   it('PANNEAU ancré au MONDE : un cran de molette le ferme (recette 2026-08-23 — il y survivait)', () => {
@@ -388,6 +426,88 @@ describe('Pastille d’entité — le geste vit sur ce qui l’offre (#1411 P2-C
       }
     }
     expect(mesures.length, 'les neuf combinaisons sont bien mesurées').toBe(9);
+  });
+});
+
+/**
+ * HORS COMBAT — la pastille se monte sur toute entité À PORTÉE du groupe (`offresUtilisables`, hôte
+ * `MondeDeCampagne`), exactement comme au combat : le survol n'y entre pas. C'est le régime « pastille
+ * de l'entité survolée » qui rendait le panneau « Que faire ? » INATTEIGNABLE À LA SOURIS (recette
+ * 2026-09-11) : le bouton flotte au-dessus de la tête, donc l'atteindre fait quitter la case du
+ * porteur ; le survol repartait vers une autre case, l'offre redevenait vide et la pastille se
+ * DÉMONTAIT sous le curseur au bout de ~19 px.
+ * Le geste est joué ici comme au navigateur : le TRAJET complet du pointeur, par pas de 10 px, du
+ * pixel de la case jusqu'au bouton qui flotte au-dessus — chaque pas étant reçu par le MONDE (donc
+ * résolvant d'autres cases) — puis le clic.
+ */
+describe('Pastille d’entité HORS COMBAT — à portée elle est là, et aucun trajet de pointeur ne l’emporte', () => {
+  /** La scène d'exploration : un décor à DEUX gestes en (4,3), le groupe à portée de bras en (4,4). */
+  const sceneDecor = (): Scene => {
+    const sc = emptyScene(12, 12);
+    sc.entities.push({
+      id: 'coffre', kind: 'prop', pos: { x: 4, y: 3 }, label: 'Un coffre',
+      usable: { actions: [
+        { id: 'fouiller', flow: { kind: 'seq', steps: [] } },
+        { id: 'forcer', label: 'Forcer le couvercle', flow: { kind: 'seq', steps: [] } },
+      ] },
+    } as never);
+    return sc;
+  };
+
+  /** Le stage, calé pour qu'un pixel client SOIT un point de viewBox (même contrat que `pick-parity`). */
+  const stageCale = (el: HTMLElement) => {
+    const svg = el.querySelector('svg.iso-stage') as SVGSVGElement;
+    svg.setPointerCapture = () => undefined;
+    svg.releasePointerCapture = () => undefined;
+    svg.getBoundingClientRect = () => ({ left: 0, top: 0, width: VW, height: VH, right: VW, bottom: VH, x: 0, y: 0, toJSON: () => ({}) }) as DOMRect;
+    // La caméra du groupe telle que le DOM la porte : `matrix(k,0,0,k,tx,ty)`. Le pixel d'une case s'en
+    // déduit sans reprendre la formule du module qui la pose.
+    const [k, , , , tx, ty] = entreParentheses((el.querySelector('svg.iso-stage g') as SVGGElement).style.transform).split(',').map(Number);
+    return { svg, pixelDe: (x: number, y: number) => {
+      const c = tileCenter(x, y, { w: 12, h: 12, rot: 0, view: 'iso' } as Dims);
+      return { cx: c.cx * k + tx, cy: c.cy * k + ty };
+    } };
+  };
+
+  const survol = (cible: Element, at: { cx: number; cy: number }) =>
+    act(() => { cible.dispatchEvent(new MouseEvent('pointermove', { clientX: at.cx, clientY: at.cy, bubbles: true })); });
+
+  it('le groupe à portée SUFFIT, et le trajet du pointeur jusqu’au bouton ne l’emporte pas', () => {
+    poserCadre(VW, VH);
+    const el = monter({
+      scene: sceneDecor(), mode: 'exploration', battle: null, party: [hero('h1', { x: 4, y: 4 })],
+      partyPos: { x: 4, y: 4 }, zoom: 1,
+    });
+    const { svg, pixelDe } = stageCale(el);
+    expect(pastille(el, 'coffre'), 'le groupe est à portée : le décor offre ses gestes sans qu’un seul pixel ait bougé').toBeTruthy();
+
+    // LE TRAJET DU JOUEUR, reçu par le MONDE : le bouton flotte AU-DESSUS de la tête, donc le viser
+    // traverse d'AUTRES cases. Chaque pas de 10 px est bien au-delà des ~19 px où l'ancien régime
+    // démontait la pastille (recette 2026-09-11) ; le pixel d'arrivée, lui, est à 120 px de la case.
+    const depart = pixelDe(4, 3);
+    const auDessus = { cx: depart.cx, cy: depart.cy - 120 };
+    for (let dy = 0; dy >= -120; dy -= 10) {
+      survol(svg, { cx: depart.cx, cy: depart.cy + dy });
+      expect(pastille(el, 'coffre'), `pas de ${-dy} px vers le bouton : la pastille tient`).toBeTruthy();
+    }
+
+    survol(boutonDe(el, 'coffre')!, auDessus);
+    expect(pastille(el, 'coffre'), 'le pointeur posé sur la pastille la GARDE').toBeTruthy();
+    act(() => boutonDe(el, 'coffre')!.click());
+    expect(panneau(), 'le panneau « Que faire ? » s’ouvre — et reste').toBeTruthy();
+    expect(panneau()!.textContent, 'il borne les DEUX gestes de CETTE entité').toContain('Forcer le couvercle');
+  });
+
+  it('TÉMOIN — une case de trop : aucune pastille, même en survolant le décor', () => {
+    poserCadre(VW, VH);
+    const el = monter({
+      scene: sceneDecor(), mode: 'exploration', battle: null, party: [hero('h1', { x: 4, y: 5 })],
+      partyPos: { x: 4, y: 5 }, zoom: 1,
+    });
+    const { svg, pixelDe } = stageCale(el);
+    expect(pastille(el, 'coffre'), 'hors de portée : la pastille ne promet rien d’immédiat').toBeNull();
+    survol(svg, pixelDe(4, 3));
+    expect(pastille(el, 'coffre'), 'et le survol ne la fait pas naître : la portée décide, pas le pixel').toBeNull();
   });
 });
 

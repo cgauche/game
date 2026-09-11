@@ -124,11 +124,12 @@ src/engine/                 Règles WFRP4, PUR + testé :
                                 skills/talents) — SOURCE UNIQUE du mini-radar, du rail de composition (#417)
                                 et des « rôles » de carte (`heroRoles`, `ui/CharCard.tsx`, réconcilié dessus)
 src/state/
-  scene.ts                  SCÈNE : 34 fonctions PURES (tuiles, murs, portes, relief) + 35 types exportés,
+  scene.ts                  SCÈNE : 34 fonctions PURES (tuiles, murs, portes, relief) + 36 types exportés,
                             dont 24 `z.infer` des schémas de `data/schemas/defs-scenes/`, 2 ré-exports
                             (`CustomStatblock`, `TemporalCondition`) et 1 COMPOSÉ : l'union `Effect`
                             (55 `z.infer` de `defs-scenes/effets.ts` + `DelayedEffect`/`PetitePriere`/
-                            `EffectOp` = 58 membres). Restent 8 MANUSCRITS : `Scene`, `SceneEntity`,
+                            `EffectOp` = 58 membres). Restent 9 MANUSCRITS : `Scene`, `SceneEntity`,
+                            `ActionAuthoree` (geste authoré d'une instance de décor),
                             `SceneEffectZone` (corps du document), `DelayedEffect`, `PetitePriere`
                             (annotations du `z.lazy`), `Layer` (l'infer du schéma dont `tiles` est
                             ÉLARGI à l'alias ci-dessous : `idDe('terrain')` brande l'id qu'il rend, et

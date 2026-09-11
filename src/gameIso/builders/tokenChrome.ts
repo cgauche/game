@@ -23,7 +23,7 @@ import { HERO_RING, relationColor } from '../teamColors';
 import { combatantBodyTopFrac, combatantTokenScale, entityTokenScale } from '../sizeScale';
 import type { TokenSubject } from '../tokenBodyKind';
 import { teamRingDecor, type MarkCell } from './dynamicMarks';
-import type { Offre, OffresParPorteur } from '../../state/registreOffres';
+import type { OffreRendue, OffresRenduesParPorteur } from '../../state/offreRendue';
 import { estPropVolumique, type PropEl, type TokenEl, type TokenSubjectEl } from './types';
 
 /** ALVÉOLES RÉSERVÉES du chrome d'un jeton — autant de places que le rack d'États du portrait
@@ -163,7 +163,9 @@ export interface GesteMark extends Ancrage {
   /** Clé de groupe SVG — préfixée, pour ne jamais entrer en collision avec le chrome du même porteur. */
   id: string;
   entityId: string;
-  gestes: readonly Offre[];
+  /** Nom du porteur à l'écran — lu par l'infobulle unique du jeu au survol de la pastille. */
+  label?: string;
+  gestes: readonly OffreRendue[];
 }
 
 /** Les pastilles de la frame : une par ENTITÉ qui offre au moins un geste, posée sur SON porteur —
@@ -173,7 +175,7 @@ export interface GesteMark extends Ancrage {
 export function tokenGesteMarks(
   tokens: readonly TokenEl[],
   props: readonly PropEl[],
-  offres: readonly OffresParPorteur[],
+  offres: readonly OffresRenduesParPorteur[],
 ): GesteMark[] {
   const out: GesteMark[] = [];
   for (const groupe of offres) {
@@ -182,7 +184,7 @@ export function tokenGesteMarks(
     const pr = tk ? undefined : props.find((p) => p.entId === groupe.porteurId);
     const a = tk ? ancrageDuJeton(tk) : pr ? ancrageDuDecor(pr) : null;
     if (!a) continue;
-    out.push({ id: `geste-${groupe.porteurId}`, entityId: groupe.porteurId, gestes: groupe.offres, ...a });
+    out.push({ id: `geste-${groupe.porteurId}`, entityId: groupe.porteurId, label: groupe.porteurLabel, gestes: groupe.offres, ...a });
   }
   return out;
 }

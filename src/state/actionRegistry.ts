@@ -36,7 +36,7 @@ import { pushSlot } from './siegePush';
 import { ACTIONS, findSpellById, type ActionDef } from '../data/index';
 import { isArcaneSpell, castBlockedBy, focusSkillFor, focusWindLabel } from '../engine/magic';
 import { t } from '../i18n';
-import { chebyshev } from '../engine/grid';
+import { aPorteeDe } from './exploreNav';
 
 /** Verdict d'un gate : l'indisponibilité PORTE SA RAISON (patron `GatedAction`, charte UI). */
 export interface ActionGate {
@@ -276,14 +276,13 @@ export const ACTION_CANDIDATES: Record<string, (ctx: ActionSelectorCtx) => unkno
     if (!state || !active.pos) return [];
     const flags = state.flags ?? {};
     return (state.scene?.entities ?? [])
-      .filter(
-        (e) =>
-          e.kind === 'prop' && !!e.interact &&
-          chebyshev(e.pos, active.pos!) <= 1 &&
-          (e.z ?? 0) === (active.pos!.z ?? 0) &&
-          !flags[`__fouille_${e.id}`],
-      )
-      .flatMap((e) => entityPickables(e).map((p) => ({ entityId: e.id, ...p })));
+      // La portée se lit à la SOURCE UNIQUE (`exploreNav.aPorteeDe`, étage compris) : ce que l'alvéole
+      // propose de ramasser est exactement ce que `battlePickup` acceptera.
+      .filter((e) => e.kind === 'prop' && aPorteeDe(active.pos!, e))
+      // L'ÉPUISEMENT n'est plus une garde séparée : `entityPickables` ne rend que les feuilles des
+      // actions ENCORE jouables (`actionsAuthorees` filtre les drapeaux), donc un décor épuisé sort
+      // avec zéro candidat sans qu'une seconde garde ait à redire la même chose.
+      .flatMap((e) => entityPickables(e, flags).map((p) => ({ entityId: e.id, ...p })));
   },
 };
 

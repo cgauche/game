@@ -1,14 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { parseQualityInstance } from '../engine/qualities/normalize';
 import { resetFields } from './stateFields';
-import { useGame, type BattleState } from './store';
+import { useGame, entityPickables, type BattleState } from './store';
 import { draineCascade } from './cascadeTestKit';
 import { flowFromEffects, flowEffects, testFlow, EMPTY_FLOW } from './flow';
 import { buildAdvancementView } from './advancement';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
-import { emptyScene } from './scene';
+import { emptyScene, type ActionAuthoree } from './scene';
+import { actionsDe, cleActionJouee } from './usable';
 import { bus, EVT } from './bus';
 import { DIFFICULTY_MODIFIERS, type Combatant, type ItemInstance, type Weapon } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
@@ -1519,11 +1520,15 @@ describe('Fouille / butin par objet cherchable (store)', () => {
       kind: 'prop',
       pos: { x: 1, y: 0 },
       label: 'Cadavre du cocher',
-      interact: {
-        flow: flowFromEffects([
-          { type: 'giveMoney', montant: { gold: 2 } },
-          { type: 'giveXp', amount: 10 },
-        ]),
+      usable: {
+        actions: [{
+          id: 'fouiller',
+          unique: true,
+          flow: flowFromEffects([
+            { type: 'giveMoney', montant: { gold: 2 } },
+            { type: 'giveXp', amount: 10 },
+          ]),
+        }],
       },
     });
     useGame.setState({ party: [looter()] });
@@ -1563,7 +1568,7 @@ describe('Fouille / butin par objet cherchable (store)', () => {
     const scene = emptyScene(6, 6);
     scene.id = 'loot-scene';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
-    scene.entities.push({ id: 'coffre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Coffre', interact: { consume: true, flow: flowFromEffects([{ type: 'giveTrapping', custom: 'Fiole' }, { type: 'giveTrapping', custom: 'Lettre' }]) } });
+    scene.entities.push({ id: 'coffre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Coffre', usable: { actions: [{ id: 'fouiller', consume: true, flow: flowFromEffects([{ type: 'giveTrapping', custom: 'Fiole' }, { type: 'giveTrapping', custom: 'Lettre' }]) }] } });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
     useGame.setState({ partyPos: { x: 0, y: 0 } });
@@ -1612,7 +1617,7 @@ describe('Fouille / butin par objet cherchable (store)', () => {
       kind: 'prop',
       pos: { x: 1, y: 0 },
       label: 'Cadavre du cocher',
-      interact: { flow: flowFromEffects([{ type: 'giveTrapping', trappingId: 'dague' }]) },
+      usable: { actions: [{ id: 'fouiller', unique: true, flow: flowFromEffects([{ type: 'giveTrapping', trappingId: 'dague' }]) }] },
     });
     useGame.setState({ party: [heroWithBag()] });
     useGame.getState().startScene(scene);
@@ -1638,7 +1643,7 @@ describe('Fouille / butin par objet cherchable (store)', () => {
       pos: { x: 0, y: 0 },
       z: 0,
       label: 'Cadavre au rez',
-      interact: { flow: flowFromEffects([{ type: 'giveMoney', montant: { gold: 5 } }]) },
+      usable: { actions: [{ id: 'fouiller', unique: true, flow: flowFromEffects([{ type: 'giveMoney', montant: { gold: 5 } }]) }] },
     });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
@@ -1653,6 +1658,119 @@ describe('Fouille / butin par objet cherchable (store)', () => {
   });
 });
 
+/**
+ * L'EXÉCUTEUR UNIQUE des gestes d'exploration (#1687) : `actionsDe` DIT ce qui est offert,
+ * `jouerAction` le JOUE — et `interactEntity` n'est que « joue l'UNIQUE offre ». Les scènes sont
+ * FABRIQUÉES ici : aucune scène de campagne n'est prise pour fixture.
+ */
+describe('jouerAction — l’exécuteur unique des gestes authorés', () => {
+  beforeEach(() => reset());
+
+  const looter = (): Combatant => ({ id: 'a', label: 'A', xp: 0, wounds: { current: 12, max: 12 }, conditions: [] }) as unknown as Combatant;
+
+  /** Décor à N actions authorées, posé adjacent au groupe. */
+  function poser(actions: ActionAuthoree[]) {
+    const scene = emptyScene(6, 6);
+    scene.id = 'gestes-scene';
+    scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+    scene.entities.push({ id: 'coffre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Coffre', usable: { actions } });
+    useGame.setState({ party: [looter()] });
+    useGame.getState().startScene(scene);
+    useGame.setState({ partyPos: { x: 0, y: 0 } });
+  }
+
+  const or = () => partyMoneyTotal(useGame.getState).gold;
+  const don = (gold: number) => flowFromEffects([{ type: 'giveMoney', montant: { gold } }]);
+
+  it('joue le Flow de l’action NOMMÉE — et elle seule, parmi celles que le décor offre', () => {
+    poser([{ id: 'fouiller', flow: don(2) }, { id: 'ouvrir', flow: don(5) }]);
+    useGame.getState().jouerAction('coffre', 'ouvrir');
+    expect(or()).toBe(5);
+  });
+
+  it('`unique` : le drapeau est posé et l’action QUITTE l’offre — rejouée, elle ne donne plus rien', () => {
+    poser([{ id: 'fouiller', flow: don(2), unique: true }]);
+    useGame.getState().jouerAction('coffre', 'fouiller');
+    expect(or()).toBe(2);
+    expect(useGame.getState().flags[cleActionJouee('coffre', 'fouiller')]).toBe(true);
+    const scene = useGame.getState().scene!;
+    const coffre = scene.entities.find((e) => e.id === 'coffre')!;
+    expect(actionsDe(scene, coffre, useGame.getState().flags)).toEqual([]);
+    useGame.getState().jouerAction('coffre', 'fouiller');
+    expect(or(), 'une action épuisée ne se rejoue pas').toBe(2);
+  });
+
+  it('SANS `unique`, l’action reste offerte : le geste est REJOUABLE (capacité neuve du lot)', () => {
+    poser([{ id: 'tirer-le-levier', flow: don(1) }]);
+    useGame.getState().jouerAction('coffre', 'tirer-le-levier');
+    useGame.getState().jouerAction('coffre', 'tirer-le-levier');
+    expect(or()).toBe(2);
+  });
+
+  it('`consume` : l’entité est RETIRÉE de la scène après le geste', () => {
+    poser([{ id: 'ramasser', flow: don(3), consume: true }]);
+    useGame.getState().jouerAction('coffre', 'ramasser');
+    expect(or()).toBe(3);
+    expect(useGame.getState().scene!.entities.find((e) => e.id === 'coffre')).toBeUndefined();
+  });
+
+  it('interactEntity : UNE offre → jouée ; N offres → rien n’est joué (le panneau borné les sert)', () => {
+    poser([{ id: 'fouiller', flow: don(2), unique: true }]);
+    useGame.getState().interactEntity('coffre');
+    expect(or(), 'une seule offre : le clic la joue').toBe(2);
+
+    poser([{ id: 'fouiller', flow: don(2) }, { id: 'ouvrir', flow: don(5) }]);
+    const avant = useGame.getState().journal.length;
+    useGame.getState().interactEntity('coffre');
+    expect(or(), 'plusieurs gestes : le raccourci ne choisit pas à la place du joueur').toBe(0);
+    // Et il ne le DIT pas non plus : la pastille de l'entité porte les N gestes, son panneau
+    // « Que faire ? » les sert. Un journal ici serait un message que personne ne lit.
+    expect(useGame.getState().journal.length, 'aucune ligne de journal').toBe(avant);
+  });
+
+  it('le coût de temps est une DONNÉE d’auteur : `minutes` avance l’horloge d’autant, absent = TIME_COST.search', () => {
+    poser([{ id: 'ouvrir', flow: don(1), minutes: 5 }, { id: 'fouiller', flow: don(1) }]);
+    useGame.setState({ gameTime: campaignStart() });
+    useGame.getState().jouerAction('coffre', 'ouvrir');
+    expect(useGame.getState().gameTime, '`minutes: 5` — pas les 10 de la fouille').toBe(campaignStart() + 5);
+
+    useGame.setState({ gameTime: campaignStart() });
+    useGame.getState().jouerAction('coffre', 'fouiller');
+    expect(useGame.getState().gameTime, 'sans `minutes` : le défaut').toBe(campaignStart() + TIME_COST.search);
+  });
+
+  it('le journal NOMME le geste joué (et non « Vous fouillez » pour toute action)', () => {
+    poser([{ id: 'ouvrir', label: 'Ouvrir', flow: don(1) }]);
+    useGame.getState().jouerAction('coffre', 'ouvrir');
+    expect(useGame.getState().journal.join(' ')).toContain('Coffre : Ouvrir…');
+  });
+
+  /**
+   * PORTÉE de l'exécuteur (#1687) : `jouerAction` recalcule l'offre sur l'état courant, il doit aussi
+   * recalculer la PORTÉE (`exploreNav.aPorteeDe`, étage compris) — sinon un ordre arrivé de loin (coop,
+   * clic en retard, marche interrompue) joue le geste à travers le plancher, alors que la pastille et
+   * le clic, eux, l'avaient déjà refusé. La forme 8-adjacente DANS LE PLAN est la seule qu'une portée
+   * z-aveugle servirait.
+   */
+  it('PORTÉE : un ordre venu d’un AUTRE étage ne joue rien — de plain-pied, le même ordre joue', () => {
+    poser([{ id: 'fouiller', flow: don(2), unique: true }]);
+    const scene = useGame.getState().scene!;
+    const coffre = scene.entities.find((e) => e.id === 'coffre')!;
+    (coffre as { z?: number }).z = 1; // adjacent dans le plan, un plancher entre les deux
+    useGame.setState({ scene: { ...scene }, journal: [] });
+    useGame.getState().jouerAction('coffre', 'fouiller');
+    expect(or(), 'aucun butin : le geste n’a pas été joué').toBe(0);
+    expect(useGame.getState().journal, 'ni ligne de journal').toEqual([]);
+    expect(useGame.getState().flags[cleActionJouee('coffre', 'fouiller')], 'ni drapeau d’épuisement').toBeUndefined();
+
+    // TÉMOIN — le MÊME ordre, le décor ramené de plain-pied : rien d'autre n'a changé.
+    delete (coffre as { z?: number }).z;
+    useGame.setState({ scene: { ...useGame.getState().scene! } });
+    useGame.getState().jouerAction('coffre', 'fouiller');
+    expect(or(), 'de plain-pied, la portée est celle de toujours').toBe(2);
+  });
+});
+
 describe('Déplacement-puis-fouille (move-to-interact, P5)', () => {
   beforeEach(() => reset());
   const looter = (): Combatant => ({ id: 'a', label: 'A', xp: 0, wounds: { current: 12, max: 12 }, conditions: [] }) as unknown as Combatant;
@@ -1661,7 +1779,7 @@ describe('Déplacement-puis-fouille (move-to-interact, P5)', () => {
     const scene = emptyScene(8, 8);
     scene.id = 'mti-scene';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
-    scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 5, y: 0 }, label: 'Cadavre', interact: { flow: flowFromEffects([{ type: 'giveMoney', montant: { gold: 3 } }]) } });
+    scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 5, y: 0 }, label: 'Cadavre', usable: { actions: [{ id: 'fouiller', unique: true, flow: flowFromEffects([{ type: 'giveMoney', montant: { gold: 3 } }]) }] } });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
     useGame.setState({ partyPos: { x: 0, y: 0 } });
@@ -1727,11 +1845,11 @@ describe('Fenêtre de loot (pendingLoot) — capture, attribution, révélation'
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
     scene.entities.push({
       id: 'coffre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Coffre de la garnison',
-      interact: { flow: flowFromEffects([
+      usable: { actions: [{ id: 'fouiller', unique: true, flow: flowFromEffects([
         { type: 'journal', desc: 'Sous une fausse planche, la solde du mois.' },
         { type: 'giveMoney', montant: { silver: 18 } },
         { type: 'giveTrapping', custom: 'Épée', qualities: ['de-plaies-atroces'], identified: false },
-      ]) },
+      ]) }] },
     });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
@@ -2092,12 +2210,16 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB 13 l.115-116)',
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
     scene.entities.push({
       id: 'corps', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Cocher',
-      interact: {
-        flow: flowFromEffects([
-          { type: 'journal', desc: 'Son tromblon repose à côté.' }, // index 0 (non ramassable)
-          { type: 'giveTrapping', trappingId: 'dague' }, // index 1
-          { type: 'giveTrapping', trappingId: 'tromblon' }, // index 2
-        ]),
+      usable: {
+        actions: [{
+          id: 'fouiller',
+          unique: true,
+          flow: flowFromEffects([
+            { type: 'journal', desc: 'Son tromblon repose à côté.' }, // index 0 (non ramassable)
+            { type: 'giveTrapping', trappingId: 'dague' }, // index 1
+            { type: 'giveTrapping', trappingId: 'tromblon' }, // index 2
+          ]),
+        }],
       },
     });
     const bh: Combatant = JSON.parse(JSON.stringify(hero));
@@ -2111,22 +2233,26 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB 13 l.115-116)',
 
   it('ramasse UN objet : il arrive dans l’inventaire (battle + party), consomme l’Action, retire du pool', () => {
     const bh = setup();
-    useGame.getState().battlePickup('corps', 'eff:2'); // index 2 = Tromblon
+    useGame.getState().battlePickup('corps', 'fouiller:eff:2'); // index 2 = Tromblon
     const st = useGame.getState();
     const bH = st.battle!.combatants.find((c) => c.id === bh.id)!;
     expect((bH.items ?? []).some((i) => i.label === 'Tromblon')).toBe(true); // utilisable ce combat
     expect((st.party[0].items ?? []).some((i) => i.label === 'Tromblon')).toBe(true); // persiste
     expect((bH.items ?? []).filter((i) => i.label === 'Tromblon').length).toBe(1); // un SEUL objet ramassé
     expect(st.battle!.acted).toBe(true); // coûte l'Action
+    // Le DOCUMENT de scène est intact — c'est de la donnée d'auteur ; ce qui a changé, c'est l'ÉTAT de
+    // la partie : le drapeau de la feuille prise, que le pool comme la fouille en exploration lisent.
     const corps = st.scene!.entities.find((e) => e.id === 'corps')!;
-    expect(flowEffects(corps.interact!.flow).some((e) => e.type === 'giveTrapping' && e.trappingId === 'tromblon')).toBe(false);
-    expect(flowEffects(corps.interact!.flow).some((e) => e.type === 'giveTrapping' && e.trappingId === 'dague')).toBe(true);
+    const feuilles = flowEffects(corps.usable!.actions![0].flow);
+    expect(feuilles.some((e) => e.type === 'giveTrapping' && e.trappingId === 'tromblon')).toBe(true);
+    expect(feuilles.some((e) => e.type === 'giveTrapping' && e.trappingId === 'dague')).toBe(true);
+    expect(entityPickables(corps, st.flags).map((p) => p.key)).toEqual(['fouiller:eff:1']);
   });
 
   it('refusé si l’Action est déjà consommée', () => {
     const bh = setup();
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: true } });
-    useGame.getState().battlePickup('corps', 'eff:2');
+    useGame.getState().battlePickup('corps', 'fouiller:eff:2');
     const bH = useGame.getState().battle!.combatants.find((c) => c.id === bh.id)!;
     expect((bH.items ?? []).some((i) => i.label === 'Tromblon')).toBe(false);
   });
@@ -2136,7 +2262,7 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB 13 l.115-116)',
     const scene = useGame.getState().scene!;
     scene.entities.find((e) => e.id === 'corps')!.z = 1; // corps à l'étage 1
     useGame.setState({ scene: { ...scene }, battle: { ...useGame.getState().battle!, combatants: [{ ...bh, pos: { x: 0, y: 0, z: 0 } }] } }); // actif au rez
-    useGame.getState().battlePickup('corps', 'eff:2');
+    useGame.getState().battlePickup('corps', 'fouiller:eff:2');
     expect((useGame.getState().battle!.combatants[0].items ?? []).some((i) => i.label === 'Tromblon')).toBe(false); // pas de ramassage à travers l'étage
   });
 });
@@ -3021,7 +3147,7 @@ describe('« Tout est horodaté » — branchements TIME_COST (Phase T1)', () =>
     const scene = emptyScene(6, 6);
     scene.id = 'fouille-temps';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
-    scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Cadavre', interact: { flow: flowFromEffects([{ type: 'giveMoney', montant: { gold: 1 } }]) } });
+    scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Cadavre', usable: { actions: [{ id: 'fouiller', unique: true, flow: flowFromEffects([{ type: 'giveMoney', montant: { gold: 1 } }]) }] } });
     useGame.setState({ party: [{ id: 'a', label: 'A', xp: 0, wounds: { current: 12, max: 12 }, conditions: [] } as unknown as Combatant] });
     useGame.getState().startScene(scene);
     useGame.setState({ partyPos: { x: 0, y: 0 }, gameTime: campaignStart() });

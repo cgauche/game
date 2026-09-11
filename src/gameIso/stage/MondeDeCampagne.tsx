@@ -47,6 +47,7 @@ import { dynamicMarks } from '../builders/dynamicMarks';
 import { interactionHalos, NO_INTERACTION_HALOS, type InteractionHalos } from '../builders/interactHalos';
 import { tokenChromes, tokenGesteMarks, type GesteMark, type TokenChromeMark } from '../builders/tokenChrome';
 import { entityGestes } from '../../state/registreOffres';
+import { offresUtilisables } from '../../state/offresUtilisables';
 import { actorCapsuleOf } from './actorCapsule';
 import { VolumetricWorld, type WorldFrame } from './VolumetricWorld';
 import { viewPolicy } from './viewPolicy';
@@ -643,13 +644,15 @@ function CorpsDuMonde() {
     () => tokenChromes(tokenEls, { ghostIds: visée.ghostIds, hoveredId: visée.hoveredId }, partyToken),
     [tokenEls, visée.ghostIds, visée.hoveredId, partyToken],
   );
-  // PASTILLES D'ENTITÉ (#1411 P2-C, spec zone 4) : ce que les CHOSES du champ offrent à l'actif
-  // contrôlé — lu au REGISTRE (`state/entityGestes`, aucun id d'action ici), puis posé sur son porteur
-  // par le même ancrage que le chrome. Les offres se relisent quand change ce dont elles dépendent :
-  // le combat, la scène (les objets au sol y vivent), les drapeaux de fouille, et le siège qui joue.
+  // PASTILLES D'ENTITÉ (#1411 P2-C, spec zone 4) : ce que les CHOSES du champ offrent — en combat à
+  // l'actif contrôlé, lu au REGISTRE (`state/entityGestes`, aucun id d'action ici) ; hors combat au
+  // groupe (`state/offresUtilisables`) — puis posé sur leur porteur par le même ancrage que le chrome.
+  // UN RÉGIME pour les deux producteurs : les porteurs À PORTÉE, le survol n'y entre pas. Les offres se
+  // relisent quand change ce dont elles dépendent : le combat, la scène (les objets au sol y vivent),
+  // les drapeaux de fouille, le siège qui joue, et la position du groupe (qui décide de la portée).
   const offresDEntite = useMemo(
-    () => (combatBattle && myTurn ? entityGestes(useGame.getState()) : []),
-    [combatBattle, scene, flags, myTurn],
+    () => (combatBattle && myTurn ? entityGestes(useGame.getState()) : offresUtilisables(useGame.getState())),
+    [combatBattle, scene, flags, myTurn, partyPos],
   );
   const gesteEls = useMemo<GesteMark[]>(
     () => tokenGesteMarks(tokenEls, propEls, offresDEntite),

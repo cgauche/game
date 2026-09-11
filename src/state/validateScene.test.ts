@@ -399,9 +399,9 @@ describe('validateScene', () => {
     const s = base();
     s.entities.push({
       id: 'coffre', kind: 'prop', pos: { x: 1, y: 1 },
-      interact: { flow: testFlow({ skill: { id: 'crochetage' }, label: 'Crocheter' }, EMPTY_FLOW, EMPTY_FLOW) },
+      usable: { actions: [{ id: 'crocheter', flow: testFlow({ skill: { id: 'crochetage' }, label: 'Crocheter' }, EMPTY_FLOW, EMPTY_FLOW) }] },
     });
-    expect(validateScene([s]).some((w) => w.level === 'error' && w.refId === 'coffre' && /sans enjeu/.test(w.message))).toBe(true);
+    expect(validateScene([s]).some((w) => w.level === 'error' && w.refId === 'coffre›crocheter' && /sans enjeu/.test(w.message))).toBe(true);
   });
 
   /**

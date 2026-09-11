@@ -16,14 +16,17 @@
  * l'escamoter (loi du refus visible, arbitrage 2026-08-19).
  */
 import type { GameState } from './store';
-import { activeCombatant } from './store';
+import { activeCombatant, useGame } from './store';
+import { actorIn } from './combatants';
 import { controlsActive } from './netOwnership';
+import type { OffreRendue, OffresRenduesParPorteur } from './offreRendue';
 import { ACTIONS, type ActionDef } from '../data/index';
 import {
   ACTION_CANDIDATES,
   ACTION_PORTEURS,
   actionCostLabel,
   actionGate,
+  runAction,
   type ActionGate,
   type ActionRunCtx,
   type ActionSelectorCtx,
@@ -83,13 +86,33 @@ export function offresDuRegistre(surface: ActionDef['surface'], ctx: ActionSelec
   return [...parPorteur.values()];
 }
 
+/** PROJECTION d'une offre du registre dans l'invariant d'affichage de la pastille (`OffreRendue`) :
+ *  la surface n'y lit plus ni `ActionDef` ni arguments de dispatch, et l'engagement est refermé sur
+ *  la porte UNIQUE du registre (`runAction`). Clé stable : l'action et ce qui distingue son candidat. */
+export function rendreOffre(o: Offre): OffreRendue {
+  return {
+    id: `${o.actionId}|${Object.values(o.args).join('|')}`,
+    label: o.label,
+    icon: o.icon,
+    cost: o.cost,
+    candidat: o.candidat,
+    gate: o.gate,
+    onSelect: () => runAction(o.actionId, useGame.getState, o.args),
+  };
+}
+
 /** Les PASTILLES D'ENTITÉ de l'instant : les offres de la surface du champ, par entité qui les porte.
  *  Vide hors combat, hors de son tour, ou quand le siège local ne contrôle pas l'actif (coop : les
  *  gestes du héros d'un autre joueur ne s'offrent pas ici). */
-export function entityGestes(state: GameState): OffresParPorteur[] {
+export function entityGestes(state: GameState): OffresRenduesParPorteur[] {
   const battle = state.battle;
   if (!battle || battle.over || !controlsActive(state)) return [];
   const active = activeCombatant(battle);
   if (!active) return [];
-  return offresDuRegistre('pastille-entite', { active, battle, netMode: state.net.mode, state });
+  return offresDuRegistre('pastille-entite', { active, battle, netMode: state.net.mode, state }).map((g) => ({
+    porteurId: g.porteurId,
+    // Le nom du porteur à l'écran : le combattant qui le porte, ou l'entité de scène (un tas au sol).
+    porteurLabel: actorIn(state, g.porteurId)?.label ?? state.scene?.entities.find((e) => e.id === g.porteurId)?.label,
+    offres: g.offres.map(rendreOffre),
+  }));
 }

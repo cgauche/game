@@ -94,9 +94,13 @@ export function GatedAction({
    *  où rien ne garantit la densité d'un panneau. Comme `bare`/`dense` : la variante vit chez la
    *  primitive, jamais en neutralisation de `.btn` depuis la feuille d'un écran. */
   tactile?: boolean;
-  /** Le bouton CONSOMME ses événements de pointeur (`stopPropagation` sur pointerdown/up/click) — pour
-   *  un contrôle posé SUR une surface de picking (le SVG du monde, qui écoute tout à sa racine) : sans
-   *  cela un clic vaudrait le geste ET le clic-monde qui est dessous. */
+  /** Le bouton CONSOMME ses événements de pointeur (`stopPropagation` sur pointerdown/up/move/click) —
+   *  pour un contrôle posé SUR une surface de picking (le SVG du monde, qui écoute tout à sa racine) :
+   *  sans cela un clic vaudrait le geste ET le clic-monde qui est dessous, et le simple fait de POSER le
+   *  pointeur sur le bouton re-résoudrait le monde sous ce pixel — le survol sauterait à la case qui est
+   *  derrière le bouton (réticule déplacé en combat ; hors combat, l'entité survolée change, et le
+   *  contrôle qu'on vise se démonte avant d'avoir été cliqué). Le pointeur posé sur le contrôle
+   *  appartient au CHROME, pas au monde. */
   arretePointeur?: boolean;
   /** RAISON RENDUE EN CLAIR sous le bouton, au lieu de l'infobulle de survol/focus — OPT-IN, réservé
    *  au refus qui est le SEUL signal d'un écran : l'attente d'un invité en coop (écran d'équipe), le
@@ -158,6 +162,7 @@ export function GatedAction({
       title={enabled && descOfferte ? descOfferte : ariaLabel}
       aria-describedby={describedBy}
       onPointerDown={arret}
+      onPointerMove={arret}
       onPointerUp={arret}
       onClick={(e) => { arret?.(e); if (!enabled) return; onClick(); }}
     >

@@ -53,22 +53,22 @@ const scene = buildScene({
   levels: { z0: CAVEAU_Z0 },
   entities: [
     { id: 'levier', kind: 'prop', ref: 'roue-dentee', pos: { x: 2, y: 2 }, label: 'Mécanisme rouillé',
-      interact: { flow: flowFromEffects([
+      usable: { actions: [{ id: 'fouiller', unique: true, flow: flowFromEffects([
         { type: 'setFlag', flag: 'levier_tire' },
         { type: 'journal', desc: 'Le mécanisme cède dans un grincement — quelque chose s’ébranle derrière le mur.' },
-      ]) } },
+      ]) }] } },
     { id: 'cle', kind: 'prop', ref: 'cle', pos: { x: 2, y: 8 }, label: 'Clé en fer, posée là',
-      interact: { consume: true, flow: flowFromEffects([
+      usable: { actions: [{ id: 'fouiller', consume: true, flow: flowFromEffects([
         { type: 'giveTrapping', custom: 'Clé en fer' },
         { type: 'journal', desc: 'Vous empochez la lourde clé en fer.' },
-      ]) } },
+      ]) }] } },
     { id: 'herse-grille', kind: 'prop', ref: 'grille', pos: { x: 10, y: 5 }, label: 'Herse du trésor' },
     { id: 'tresor', kind: 'prop', ref: 'coffre', pos: { x: 12, y: 5 }, label: 'Coffre du trésor',
-      interact: { consume: true, flow: flowFromEffects([
+      usable: { actions: [{ id: 'fouiller', consume: true, flow: flowFromEffects([
         { type: 'giveMoney', montant: { gold: 5 } },
         { type: 'giveTrapping', trappingId: 'arme-simple', qualities: ['precise'], identified: false },
         { type: 'journal', desc: 'Le coffre regorge d’or et d’une lame finement ouvragée.' },
-      ]) } },
+      ]) }] } },
   ],
   triggers: [
     // Dalle piégée (centre) : Test d'Athlétisme → esquive, sinon piques + À Terre + alarme.

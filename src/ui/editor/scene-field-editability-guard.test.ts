@@ -361,7 +361,9 @@ export interface Scene { id: string; walls: (typeof murSchema)['sortie'][]; voc:
     return { [rel]: brut.replace(ancre, remplacement) };
   };
 
-  const ANCRE_LABEL = '  label?: string;\n';
+  // ANCRE d'un champ de `SceneEntity` PROPRE à elle : `label?` ne l'est plus depuis que
+  // `ActionAuthoree` en porte un (#1687), et c'est la PREMIÈRE occurrence que `replace` prend.
+  const ANCRE_LABEL = '  dialogueId?: string;\n';
   const ANCRE_FOOT = '   *  @fossile */\n';
 
   it('gate @fossile (cas A) : un champ EXISTANT que l’on tague sans l’inscrire au registre est ROUGE', () => {
@@ -369,7 +371,7 @@ export interface Scene { id: string; walls: (typeof murSchema)['sortie'][]; voc:
       programAvec(modifie('src/state/scene.ts', ANCRE_LABEL, `  /** @fossile */\n${ANCRE_LABEL}`)),
       ROOT
     );
-    expect(audit.taguesHorsListe, 'un tag posé hors registre doit être nommé').toEqual(['SceneEntity.label']);
+    expect(audit.taguesHorsListe, 'un tag posé hors registre doit être nommé').toEqual(['SceneEntity.dialogueId']);
   });
 
   it('gate @fossile (cas B) : un champ NEUF né tagué — LE canal d’évasion — est ROUGE, et il RESTE dans le périmètre', () => {

@@ -56,12 +56,10 @@ const scene = buildScene({
   entities: [
     {
       id: 'coffre-de-cour', kind: 'prop', ref: 'coffre', pos: { x: 5, y: 7 }, label: 'Coffre entrouvert',
-      interact: {
-        flow: flowFromEffects([
+      usable: { actions: [{ id: 'fouiller', unique: true, flow: flowFromEffects([
           { type: 'giveTrapping', trappingId: 'dague' },
           { type: 'giveTrapping', custom: 'Fiole d’huile' },
-        ]),
-      },
+        ]) }] },
     },
   ],
 });

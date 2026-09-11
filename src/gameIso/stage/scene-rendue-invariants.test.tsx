@@ -54,7 +54,7 @@ const coffre = {
   kind: 'prop',
   pos: { x: 3, y: 4 },
   ref: 'tonneau',
-  interact: { flow: { do: [] } },
+  usable: { actions: [{ id: 'fouiller', flow: { kind: 'seq', steps: [] }, unique: true }] },
 } as unknown as SceneEntity;
 
 function scèneAvecCoffre(): Scene {

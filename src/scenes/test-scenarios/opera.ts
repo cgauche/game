@@ -125,8 +125,7 @@ const ents: SceneEntity[] = [
   // caché », livrée dans l'ANTICHAMBRE de la loge royale (z1). Désamorçage = retirer le détonateur.
   {
     id: 'plante-bombe', kind: 'prop', ref: 'plante-pot', pos: { x: 10, y: 15 }, z: 1,
-    interact: {
-      consume: false,
+    usable: { actions: [{ id: 'fouiller', unique: true, consume: false,
       flow: testFlow(
         {
           skill: { id: 'perception' }, difficulty: 'complexe',
@@ -140,8 +139,7 @@ const ents: SceneEntity[] = [
           { type: 'giveXp', amount: 50 }, // déjouer le complot de la bombe de Dammenblatz (source 08 l.275)
         ]),
         flowFromEffects([{ type: 'journal', desc: 'Une grande plante en pot, sans rien de particulier.' }]),
-      ),
-    },
+      ) }] },
   },
 
   // Pas d'objet escalier : les deux RAMPES d'angle (cases 'E' de hauteur croissante) montent à la galerie ;

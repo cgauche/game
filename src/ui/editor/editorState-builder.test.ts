@@ -13,7 +13,9 @@ import {
 // `state/mapSpec.ts` (compilateur `buildScene`) l'appelle — import direct de sa source. Même raison
 // pour `patchEntity`/`patchEntityCombat` : l'interface passe par le seam d'assise (`editEntity`),
 // ces écritures mécaniques ne sont plus joignables depuis l'éditeur, même à un import près.
-import { patchEntity, patchEntityCombat, putLayer } from '../../state/sceneEdit';
+import { patchEntity, patchEntityCombat, putLayer, renameActionAuthoree } from '../../state/sceneEdit';
+import { sceneEntitySchema } from '../../data/schemas/defs-scenes/scene';
+import type { ActionAuthoree, SceneEntity } from '../../state/scene';
 
 /** Primitives pures consommées par le headless-editor `buildScene`. */
 
@@ -156,5 +158,46 @@ describe('editorState — putLayer', () => {
     const out = putLayer(putLayer(s, 0, ['eau', 'eau', 'eau', 'eau']), 0, ['herbe', 'herbe', 'herbe', 'herbe']);
     expect(out.layers.filter((l) => l.z === 0)).toHaveLength(1);
     expect(layerTiles(out, 0)).toEqual(['herbe', 'herbe', 'herbe', 'herbe']);
+  });
+});
+
+/**
+ * L'ÉDITEUR N'ÉCRIT JAMAIS UN DOCUMENT QUE LE SCHÉMA REFUSE (CLAUDE.md règle 2). L'unicité des ids
+ * d'action est portée par le `refine` d'`usable` (`data/schemas/defs-scenes/scene.ts`), qui ne mord
+ * qu'au PARSE : entre deux chargements, la scène vivante porterait deux actions homonymes, et
+ * `jouerAction` jouerait la première pour les deux. La garde vit donc AU GESTE.
+ */
+describe('renameActionAuthoree — l’unicité d’un id d’action se garde au GESTE, pas au parse', () => {
+  const decor = (actions: ActionAuthoree[]): SceneEntity =>
+    ({ id: 'coffre', kind: 'prop', pos: { x: 1, y: 1 }, usable: { actions } }) as SceneEntity;
+  const deux = (): ActionAuthoree[] => [
+    { id: 'fouiller', flow: { kind: 'seq', steps: [] } },
+    { id: 'crocheter', flow: { kind: 'seq', steps: [] } },
+  ];
+
+  it('vers un id LIBRE : renommé', () => {
+    const suivant = renameActionAuthoree(deux(), 'crocheter', 'forcer');
+    expect(suivant.map((a) => a.id)).toEqual(['fouiller', 'forcer']);
+    expect(sceneEntitySchema.safeParse(decor(suivant)).success, 'et le document reste lisible').toBe(true);
+  });
+
+  it('vers un id DÉJÀ PORTÉ : liste INCHANGÉE (même référence — c’est là que l’appelant lit le refus)', () => {
+    const avant = deux();
+    const suivant = renameActionAuthoree(avant, 'crocheter', 'fouiller');
+    expect(suivant, 'référence identique : rien n’a été écrit').toBe(avant);
+    expect(suivant.map((a) => a.id)).toEqual(['fouiller', 'crocheter']);
+    // CE QUE LA GARDE ÉVITE — le document que l'écriture naïve aurait posé est refusé au parse.
+    const double = avant.map((a) => (a.id === 'crocheter' ? { ...a, id: 'fouiller' } : a));
+    const verdict = sceneEntitySchema.safeParse(decor(double));
+    expect(verdict.success, 'deux actions homonymes : un document que le schéma refuse').toBe(false);
+    expect(JSON.stringify(verdict.error?.issues)).toContain('même `id`');
+  });
+
+  it('id vide, inchangé, ou action absente : rien n’est écrit', () => {
+    const avant = deux();
+    expect(renameActionAuthoree(avant, 'fouiller', '   '), 'un id vide n’est pas une identité').toBe(avant);
+    expect(renameActionAuthoree(avant, 'fouiller', 'fouiller'), 'inchangé').toBe(avant);
+    expect(renameActionAuthoree(avant, 'inconnue', 'forcer'), 'aucune action à renommer').toBe(avant);
+    expect(renameActionAuthoree(avant, 'fouiller', '  forcer  ').map((a) => a.id), 'l’id est TRIMÉ comme partout').toEqual(['forcer', 'crocheter']);
   });
 });

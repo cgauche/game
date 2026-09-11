@@ -2,7 +2,7 @@
  "id": "barge-du-sel",
  "type": "projet",
  "label": "La Barge du Sel",
- "schema": 10,
+ "schema": 11,
  "icon": "scenario/naval",
  "versionContenu": 1,
  "maison": "scénario naval authoré pour le jeu — aucun livre ne le publie (mesuré : absent de `Source/`) ; il compose des règles de la Mer des Griffes, qui portent leur source à leur foyer",
@@ -169,18 +169,24 @@
       "y": 6
      },
      "label": "Appareiller vers l’îlot",
-     "interact": {
-      "flow": {
-       "kind": "seq",
-       "steps": [
-        {
-         "kind": "do",
-         "effect": {
-          "type": "openWorldMap"
-         }
-        }
-       ]
-      }
+     "usable": {
+      "actions": [
+       {
+        "id": "fouiller",
+        "flow": {
+         "kind": "seq",
+         "steps": [
+          {
+           "kind": "do",
+           "effect": {
+            "type": "openWorldMap"
+           }
+          }
+         ]
+        },
+        "unique": true
+       }
+      ]
      }
     }
    ],

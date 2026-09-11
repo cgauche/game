@@ -23,7 +23,7 @@ import { useGame } from '../../state/store';
 import { toggleDoorIn } from '../../state/scene';
 import { entityBlockedAt } from '../../state/sceneRules';
 import { chebyshev, walkNeighbors, type Pt } from '../../state/path';
-import { exploreMovePlan, exploreSeatPlan, type ExploreMovePlan, type PathOpts } from '../../state/exploreNav';
+import { aPorteeDe, exploreMovePlan, exploreSeatPlan, type ExploreMovePlan, type PathOpts } from '../../state/exploreNav';
 import { placesJouables, RANG_MENEUR, seatPoseOf } from '../../state/seating';
 // `t` est déjà le nom local de la TUILE survolée dans ce module : la traduction s'y importe sous son
 // rôle, sans rebaptiser trente sites de pointeur.
@@ -48,7 +48,8 @@ import { poseFromDims } from './projection';
 import { targetUnderPointer } from './spritePicker';
 import { pointStageSousPixel, pointViewBoxSousPixel, resoudrePixel, tireLeRayon, type Verdict } from './pickResolve';
 import { armeParSurvol, entiteDuGeste, jouerArete, type VerbesArete } from './geste';
-import { estUtilisable } from '../../state/usable';
+import { actionsDe, estUtilisable } from '../../state/usable';
+import { porteDOffre } from '../../state/offresUtilisables';
 import type { RoomPortal } from '../../state/roomPortals';
 import type { AreteUtilisable } from '../../state/aretes';
 import type { AreteProjetee } from './aretesProjetees';
@@ -366,7 +367,7 @@ export function useStagePointer({
       // clic PARCOURT le plan que le survol trace déjà (`exploreMovePlan`, source unique des deux) —
       // sinon le tracé promettait une marche que le clic n'honorait pas — et ne dit pourquoi il ne
       // sert pas qu'une fois À PORTÉE, plus rien à marcher (parité exacte avec le décor sans affordance).
-      if (!ent.dialogueId && !ent.interact && !ent.merchant) {
+      if (!estUtilisable(sc, ent, st.flags)) {
         setHover(null);
         st.setPendingInteract(null);
         if (plan) moveAlong(sc.id, plan);
@@ -374,15 +375,24 @@ export function useStagePointer({
         return;
       }
     }
-    if (ent && (ent.dialogueId || !!ent.interact || !!ent.merchant)) {
-      if (chebyshev(st.partyPos, ent.pos) <= 1) {
+    if (ent && estUtilisable(sc, ent, st.flags)) {
+      // CE QUE L'ENTITÉ OFFRE, dit par le dériveur unique — aucun champ n'est interrogé ici. UNE offre :
+      // le clic la JOUE (adjacent) ou la vise à travers la marche (loin). N offres : le joueur choisit,
+      // et c'est le PANNEAU borné de la pastille qui les sert — le clic ne devine pas à sa place.
+      // Les offres OUVERTES, au même verdict que la pastille (`porteDOffre`) : une offre refusée
+      // (toutes les places prises) se lit au survol, elle ne se joue pas — et ne compte donc pas
+      // dans « une seule offre ».
+      const offres = actionsDe(sc, ent, st.flags).filter((o) => porteDOffre(sc, ent, o.origine).ok);
+      const seule = offres.length === 1 ? offres[0] : null;
+      if (aPorteeDe(st.partyPos, ent)) {
+        if (!seule) return; // la pastille de l'entité, montée dès qu'elle est à portée, porte les N gestes
         setHover(null);
         st.setPendingInteract(null);
-        st.interactEntity(ent.id); // adjacent → fouille / dialogue immédiat
+        st.jouerAction(ent.id, seule.id);
       } else if (plan) {
-        // Déplacement-puis-fouille (P5) : marche vers la case adjacente libre, puis fouille à l'arrivée.
+        // Déplacement-puis-geste (P5) : marche vers la case adjacente libre, puis le geste à l'arrivée.
         setHover(null);
-        st.setPendingInteract({ id: ent.id, at: plan.dest });
+        st.setPendingInteract({ id: ent.id, ...(seule ? { actionId: seule.id } : null), at: plan.dest });
         moveAlong(sc.id, plan);
       }
       return;
@@ -392,7 +402,7 @@ export function useStagePointer({
       // d'une case adjacente, ou on le dit s'il est déjà à côté.
       setHover(null);
       st.setPendingInteract(null);
-      if (chebyshev(st.partyPos, ent.pos) <= 1) st.log(`${ent.label ?? 'Ce badaud'} n’a rien à vous dire.`);
+      if (aPorteeDe(st.partyPos, ent)) st.log(`${ent.label ?? 'Ce badaud'} n’a rien à vous dire.`);
       else if (plan) moveAlong(sc.id, plan);
       return;
     }
@@ -519,7 +529,11 @@ export function useStagePointer({
     // Affordance : curseur main au survol d'un décor interactif / dialogue (DOM direct, sans re-render).
     // MÊME entité que celle qu'un clic traiterait (`entiteDuGeste`) : l'affordance ne peut pas annoncer
     // autre chose que ce que le clic fera.
-    const sc = useGame.getState().scene;
+    // UNE lecture d'état pour le verdict d'affordance : la scène, le mode ET les drapeaux — les deux
+    // sites de CLIC ci-dessus lisent déjà `st.flags`, et le curseur ne peut pas promettre ce que le clic
+    // ne fera pas (un décor dont l'unique action `unique` est épuisée n'appelle plus).
+    const st = useGame.getState();
+    const sc = st.scene;
     // SURVOL-ARMEMENT d'une ARÊTE : le verdict est la seule source du seuil survolé — l'accent du
     // peintre, l'aperçu de marche et le tap-1 tactile en descendent tous.
     survolerArete(v.nature === 'arete' ? v.arete : null);
@@ -528,7 +542,7 @@ export function useStagePointer({
     // exploration. Une ARÊTE porte le sien sur son propre trait, par capacité
     // (`stage/AreteOverlay.tsx:Matiere.cursor` : réticule sur une structure, main sur un seuil), comme
     // un jeton de combat survolé, pour lequel cette ligne n'écrit rien non plus.
-    const overInteractive = !!sc && !!eSurvolée && useGame.getState().mode === 'exploration' && estUtilisable(sc, eSurvolée);
+    const overInteractive = !!sc && !!eSurvolée && st.mode === 'exploration' && estUtilisable(sc, eSurvolée, st.flags);
     (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
     // Survol suivi en COMBAT (visée) ET en EXPLORATION (halo renforcé du décor interactif + aperçu de
     // déplacement) — borné aux changements de tuile, donc peu de re-rendus.
@@ -543,8 +557,8 @@ export function useStagePointer({
     if (!hover || hover.x !== t.x || hover.y !== t.y || (hover.z ?? 0) !== (t.z ?? 0)) {
       if (useGame.getState().combatCursor) useGame.getState().clearCursor(); // la souris (nouvelle tuile) reprend la main sur le curseur clavier/manette
       setHover(t);
-      const st = useGame.getState();
-      if (st.hoverCombatantId) st.setHoverCombatant(null); // la souris reprend la main sur le ciblage clavier (Tab) / frise
+      const apres = useGame.getState();
+      if (apres.hoverCombatantId) apres.setHoverCombatant(null); // la souris reprend la main sur le ciblage clavier (Tab) / frise
     }
   };
 

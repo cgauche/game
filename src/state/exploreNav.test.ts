@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, isWalkable, type Scene, type SceneEntity } from './scene';
 import type { Flow } from './flow';
-import { exploreMoveDest, exploreMovePlan, exploreSeatPlan, exploreStepDest, spawnFacing } from './exploreNav';
+import { aPorteeDe, exploreMoveDest, exploreMovePlan, exploreSeatPlan, exploreStepDest, spawnFacing } from './exploreNav';
 import { chebyshev } from '../engine/grid';
 import { seatSlotsOf } from './seating';
 
@@ -22,7 +22,7 @@ describe('exploreMoveDest — case d’arrivée partagée survol/clic (explorati
     // RÉGRESSION : « au survol d’un objet avec interaction, le chemin ne s’affiche pas ». La case de
     // l’objet est non marchable (entityBlockedAt), donc l’aperçu doit viser la case adjacente — celle
     // où le clic emmène le groupe avant la fouille — au lieu de ne rien afficher.
-    const prop: SceneEntity = { id: 'coffre', kind: 'prop', pos: { x: 5, y: 5 }, interact: { flow: emptyFlow } };
+    const prop: SceneEntity = { id: 'coffre', kind: 'prop', pos: { x: 5, y: 5 }, usable: { actions: [{ id: 'fouiller', flow: emptyFlow, unique: true }] } };
     const sc = sceneWith([prop]);
     expect(isWalkable(sc, 5, 5)).toBe(false); // précondition : la case de l’objet est bloquée
     const dest = exploreMoveDest(sc, { x: 1, y: 1 }, { x: 5, y: 5 });
@@ -57,7 +57,7 @@ describe('exploreMoveDest — case d’arrivée partagée survol/clic (explorati
   });
 
   it('objet interactif, groupe déjà adjacent : aucune marche (fouille sur place)', () => {
-    const prop: SceneEntity = { id: 'coffre', kind: 'prop', pos: { x: 5, y: 5 }, interact: { flow: emptyFlow } };
+    const prop: SceneEntity = { id: 'coffre', kind: 'prop', pos: { x: 5, y: 5 }, usable: { actions: [{ id: 'fouiller', flow: emptyFlow, unique: true }] } };
     expect(exploreMoveDest(sceneWith([prop]), { x: 5, y: 6 }, { x: 5, y: 5 })).toBeNull();
   });
 
@@ -95,7 +95,7 @@ describe('exploreSeatPlan — marcher vers l’ABORD d’une place libre', () =>
   const TABLE = 'table-ronde-4-tabourets';
   /** Table en (10,10) au cap N : abords nord (10,9), est (11,10), sud (10,11), ouest (9,10). */
   const table = (over: Partial<SceneEntity> = {}): SceneEntity =>
-    ({ id: 'table-1', kind: 'prop', pos: { x: 10, y: 10 }, ref: TABLE, facing: 'N', usable: {}, ...over }) as SceneEntity;
+    ({ id: 'table-1', kind: 'prop', pos: { x: 10, y: 10 }, ref: TABLE, facing: 'N', usable: { assise: true }, ...over }) as SceneEntity;
   const scèneTable = (assignments?: Scene['seatAssignments']): Scene => {
     const sc = emptyScene(16, 16);
     sc.entities = [table()];
@@ -155,7 +155,7 @@ describe('exploreSeatPlan — marcher vers l’ABORD d’une place libre', () =>
     const prises = Object.fromEntries(seatSlotsOf(scèneTable(), 'table-1')
       .map((s) => [s.slotId, { kind: 'entity' as const, entityId: `pnj-${s.slotId}` }]));
     const sc = scèneTable({ 'table-1': prises });
-    (sc.entities[0] as SceneEntity).interact = { flow: emptyFlow };
+    (sc.entities[0] as SceneEntity).usable = { assise: true, actions: [{ id: 'fouiller', flow: emptyFlow, unique: true }] };
 
     expect(exploreSeatPlan(sc, { x: 5, y: 5 }, 'table-1'), 'précondition : plus une seule place').toBeNull();
     for (const depart of [{ x: 5, y: 5 }, { x: 12, y: 12 }]) { // au loin, et adjacent HORS abord
@@ -213,7 +213,7 @@ describe('exploreSeatPlan — marcher vers l’ABORD d’une place libre', () =>
 
 describe('exploreMovePlan — destination et chemin uniques', () => {
   it('compose le chemin depuis la destination choisie par exploreMoveDest', () => {
-    const prop: SceneEntity = { id: 'coffre', kind: 'prop', pos: { x: 5, y: 5 }, interact: { flow: emptyFlow } };
+    const prop: SceneEntity = { id: 'coffre', kind: 'prop', pos: { x: 5, y: 5 }, usable: { actions: [{ id: 'fouiller', flow: emptyFlow, unique: true }] } };
     const scene = sceneWith([prop]);
     const partyPos = { x: 1, y: 1 };
     const plan = exploreMovePlan(scene, partyPos, { x: 5, y: 5 }, { blocked: new Set() });
@@ -358,5 +358,32 @@ describe('spawnFacing — orientation d’entrée vers le CONTENU de la carte', 
 
   it("entrée déjà au centre → 'S' (aucune direction vers le contenu ne domine)", () => {
     expect(spawnFacing({ x: 3, y: 3 }, { w: 7, h: 7 })).toBe('S');
+  });
+});
+
+describe('aPorteeDe — la portée d’un geste d’exploration, étage COMPRIS', () => {
+  const coffre = (pos: { x: number; y: number; z?: number }): SceneEntity =>
+    ({ id: 'coffre', kind: 'prop', pos: { x: pos.x, y: pos.y }, ...(pos.z ? { z: pos.z } : null),
+       usable: { actions: [{ id: 'fouiller', flow: emptyFlow, unique: true }] } }) as SceneEntity;
+
+  it('8-adjacent de plain-pied : à portée ; une case de plus : hors de portée', () => {
+    expect(aPorteeDe({ x: 4, y: 4 }, coffre({ x: 4, y: 3 })), 'orthogonal').toBe(true);
+    expect(aPorteeDe({ x: 4, y: 4 }, coffre({ x: 3, y: 3 })), 'diagonale : le 8-voisinage compte').toBe(true);
+    expect(aPorteeDe({ x: 4, y: 4 }, coffre({ x: 4, y: 4 })), 'sous les pieds').toBe(true);
+    expect(aPorteeDe({ x: 4, y: 4 }, coffre({ x: 4, y: 2 })), 'deux cases : le clic marche, il ne joue pas').toBe(false);
+  });
+
+  it('l’ÉTAGE fait partie de la portée : superposé n’est pas adjacent', () => {
+    // Chebyshev 1 dans le plan, un plancher entre les deux : le geste ne s’ouvre pas à travers.
+    expect(aPorteeDe({ x: 4, y: 4, z: 0 }, coffre({ x: 4, y: 3, z: 1 })), 'un étage au-dessus').toBe(false);
+    expect(aPorteeDe({ x: 4, y: 4, z: 1 }, coffre({ x: 4, y: 3 })), 'le groupe en haut, la chose en bas').toBe(false);
+    // Chebyshev 0 — la superposition exacte, cas que le seul plan ne peut PAS distinguer.
+    expect(aPorteeDe({ x: 4, y: 4, z: 0 }, coffre({ x: 4, y: 4, z: 1 })), 'pile au-dessus de la tête').toBe(false);
+    expect(aPorteeDe({ x: 4, y: 4, z: 1 }, coffre({ x: 4, y: 3, z: 1 })), 'même étage, adjacent : à portée').toBe(true);
+  });
+
+  it('`exploreMoveDest` s’en sert : un décor de l’étage se REJOINT au lieu d’être servi sur place', () => {
+    const sc = sceneWith([coffre({ x: 4, y: 3 })]);
+    expect(exploreMoveDest(sc, { x: 4, y: 4 }, { x: 4, y: 3 }), 'de plain-pied et adjacent : rien à marcher').toBeNull();
   });
 });

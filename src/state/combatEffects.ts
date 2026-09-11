@@ -72,6 +72,8 @@ import { ev } from './combatLog';
 import { t } from '../i18n';
 import { stepPrecision, stepDetail } from './rollSeam';
 import { dataLabel } from '../data';
+import { actionsAuthorees, type Drapeaux } from './usable';
+import type { SceneEntity } from './scene';
 
 /**
  * Effets de scène/campagne (`Effect[]`) appliqués par le store : le grand `applyEffects`
@@ -144,15 +146,43 @@ export function pushCombatStep(set: SetFn, step: BuiltCascadeStep | ((index: num
 
 // occupied / pushBackTiles / findFreeTile / displaceSmaller / removeEntity → combatGeometry.ts
 
-/** Items ramassables d'un prop interactif : un par feuille `do` « donneuse » de son `interact.flow`.
- *  `key` = `eff:<index dans flowEffects(interact.flow)>`. Effets non-objet & branches (test) ignorés. */
-export function entityPickables(ent: { interact?: { flow: Flow } }): { key: string; label: string }[] {
+/** Items ramassables d'un décor : un par feuille `do` « donneuse » de CHAQUE action authorée encore
+ *  jouable (`actionsAuthorees`). `key` = `<actionId>:eff:<index dans flowEffects(action.flow)>` — elle
+ *  porte l'action, parce que le ramassage épuise UNE action, pas un décor. Effets non-objet &
+ *  branches (test) ignorés. */
+export function entityPickables(ent: SceneEntity, flags: Drapeaux = {}): { key: string; label: string }[] {
   const out: { key: string; label: string }[] = [];
-  (ent.interact ? flowEffects(ent.interact.flow) : []).forEach((e, i) => {
-    if (e.type === 'giveTrapping') out.push({ key: `eff:${i}`, label: giveTrappingLabel(e, trappingById) });
-    else if (e.type === 'giveMoney') out.push({ key: `eff:${i}`, label: 'Argent' });
-  });
+  for (const a of actionsAuthorees(ent, flags))
+    flowEffects(a.flow).forEach((e, i) => {
+      if (flags[cleFeuilleRamassee(ent.id, a.id, i)]) return; // déjà pris, un objet à la fois
+      if (e.type === 'giveTrapping') out.push({ key: `${a.id}:eff:${i}`, label: giveTrappingLabel(e, trappingById) });
+      else if (e.type === 'giveMoney') out.push({ key: `${a.id}:eff:${i}`, label: 'Argent' });
+    });
   return out;
+}
+
+/**
+ * Clé du drapeau qui ferme UNE feuille donneuse d'une action authorée : en combat, on ramasse un objet
+ * à la fois (`LDB 13 l.115-116`), et ce qui est pris ne se redonne pas — ni au ramassage suivant, ni
+ * à la fouille en exploration. `index` = rang de la feuille dans `flowEffects(action.flow)`, STABLE
+ * parce que le document de scène n'est jamais réécrit : l'état de jeu vit dans les drapeaux.
+ */
+export const cleFeuilleRamassee = (entId: string, actionId: string, index: number): string =>
+  `__ramasse_${entId}_${actionId}_${index}`;
+
+/**
+ * Le Flow d'une action authorée PRIVÉ des feuilles déjà ramassées — SOURCE UNIQUE de « ce qu'il reste
+ * à donner », lue par l'exécuteur d'exploration (`jouerAction`) comme par le pool de combat.
+ * L'original n'est pas touché : un `seq` rend une copie sans ces pas, une feuille unique ramassée rend
+ * le Flow VIDE.
+ */
+export function flowRestant(entId: string, action: { id: string; flow: Flow }, flags: Drapeaux): Flow {
+  const pris = (i: number) => !!flags[cleFeuilleRamassee(entId, action.id, i)];
+  if (action.flow.kind === 'seq') {
+    let rang = -1;
+    return { ...action.flow, steps: action.flow.steps.filter((s) => (s.kind === 'do' ? !pris(++rang) : true)) };
+  }
+  return action.flow.kind === 'do' && pris(0) ? EMPTY_FLOW : action.flow;
 }
 
 export function checkTriggers(get: Get, set: SetFn) {
@@ -707,7 +737,7 @@ export function registerCloture<K extends Cloture['verbe']>(verbe: K, fn: Clotur
   clotureAppliers.set(verbe, fn as unknown as ClotureApplier<Cloture['verbe']>);
 }
 /** Les verbes de l'union, en VALEURS — lus par la garde de totalité du registre. */
-export const CLOTURE_VERBES = ['dialogueSuivant', 'avancerHorloge', 'retirerEntite', 'marquerFouillee',
+export const CLOTURE_VERBES = ['dialogueSuivant', 'avancerHorloge', 'retirerEntite', 'marquerActionJouee',
   'testRateDeLActeur', 'effetsProgrammes', 'ouvrirEcranDeVictoire', 'teardownDeVictoire'] as const;
 /** TOTALITÉ AU TYPE : un verbe ajouté à `Cloture` sans entrée dans `CLOTURE_VERBES` fait échouer `tsc`. */
 export type _ClotureVerbesTotaux = [Exclude<Cloture['verbe'], (typeof CLOTURE_VERBES)[number]>] extends [never] ? true

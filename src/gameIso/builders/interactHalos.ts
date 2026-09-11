@@ -10,9 +10,10 @@
  * se tranche UNE fois chez l'appelant, comme le repère de groupe des marques dynamiques.
  */
 import type { Pt } from '../../state/path';
-import type { Scene } from '../../state/scene';
+import type { Scene, SceneEntity } from '../../state/scene';
 import { decorFootGeometry } from '../../state/footprint';
 import { placesJouables } from '../../state/seating';
+import { actionsDe } from '../../state/usable';
 import { RING_A_PX, type MarkCell } from './dynamicMarks';
 import type { PropEl } from './types';
 
@@ -57,7 +58,7 @@ export function haloRadiusK(rxPx: number): number {
 
 /** Halo de FOUILLE d'un décor interactif non épuisé. */
 export interface InteractHalo {
-  /** Id de l'ENTITÉ de scène (`PropEl.entId`) — la clé du flag d'épuisement `__fouille_<id>`. */
+  /** Id de l'ENTITÉ de scène (`PropEl.entId`) — la clé des drapeaux d'épuisement (`cleActionJouee`). */
   id: string;
   /** Case d'ANCRAGE du décor (coin NO) et son étage : la profondeur de tri s'y mesure. */
   cell: MarkCell;
@@ -103,8 +104,8 @@ export interface HaloCtx {
 }
 
 /**
- * Les halos d'interaction de l'instant. `flags` = les drapeaux de jeu (un décor fouillé porte
- * `__fouille_<entId>` et n'appelle plus), `hover` = la tuile sous le curseur.
+ * Les halos d'interaction de l'instant. `flags` = les drapeaux de jeu (une action authorée `unique`
+ * déjà jouée porte `__action_<entId>_<actionId>` et n'appelle plus), `hover` = la tuile sous le curseur.
  */
 export function interactionHalos(
   propEls: readonly PropEl[],
@@ -113,16 +114,22 @@ export function interactionHalos(
   hover: Pt | null,
   ctx: HaloCtx,
 ): InteractionHalos {
+  // L'entité de scène par son id, INDEXÉE une fois : la boucle ci-dessous en réclame une par élément de
+  // rendu, et un `find` par élément rendrait le relevé quadratique en nombre d'entités.
+  const parId = new Map<string, SceneEntity>();
+  for (const e of scene.entities) if (!parId.has(e.id)) parId.set(e.id, e);
   const fouilles: InteractHalo[] = [];
   for (const el of propEls) {
     if (el.source !== 'entity' || !el.entId) continue;
-    // Un MEUBLE À PLACES appelle comme un décor fouillable, sans porter `SceneEntity.interact` : son
-    // affordance est la place LIBRE qui reste (toutes prises → plus rien à proposer). L'assise se lit
-    // à la couture unique `state/seating`, jamais à une empreinte ou à une référence de modèle — et
-    // c'est la dérivée d'INTERACTION `placesJouables` qui est lue, donc un décor que l'auteur n'a pas
-    // activé ne porte aucun halo (#1687).
+    // DEUX raisons d'appeler, et c'est tout : une place encore LIBRE (l'assise épuise ses places, pas
+    // un drapeau — toutes prises, le meuble n'a plus rien à proposer), ou une offre NON-assise encore
+    // jouable (action authorée non épuisée, dialogue, marchand). Les deux se lisent au dériveur UNIQUE
+    // `actionsDe` et à la couture d'assise `state/seating` — jamais à une empreinte, à une référence de
+    // modèle, ni à un drapeau recopié sur l'élément de rendu (#1687).
+    const ent = parId.get(el.entId);
+    if (!ent) continue;
     const placeLibre = placesJouables(scene, el.entId).some((s) => !scene.seatAssignments?.[el.entId!]?.[s.slotId]);
-    if (!placeLibre && (!el.interact || flags[`__fouille_${el.entId}`])) continue;
+    if (!placeLibre && !actionsDe(scene, ent, flags).some((a) => a.origine !== 'assise')) continue;
     const ez = el.cell.z;
     // La géométrie du halo se dérive de l'EMPREINTE de l'élément — la même source pour un décor
     // billboardé et pour un décor volumique, qui ne porte aucune empreinte de billboard.
@@ -140,10 +147,12 @@ export function interactionHalos(
   const pnjs: NpcHalo[] = [];
   if (hover && !ctx.combat)
     for (const ent of scene.entities) {
-      if (ent.kind === 'prop' || ent.interact) continue; // fouille = halo permanent, déjà relevé ci-dessus
-      if (!ent.dialogueId && !ent.merchant) continue;
+      if (ent.kind === 'prop') continue; // décor = halo permanent, déjà relevé ci-dessus
       const ez = ent.z ?? 0;
       if (ent.pos.x !== hover.x || ent.pos.y !== hover.y || ez !== (hover.z ?? 0)) continue;
+      // Ce qui allume un PNJ au survol : ses CAPACITÉS d'instance, lues au dériveur unique (`CAPACITES`,
+      // `state/usable`) — une capacité N+1 s'y déclare, et le halo la suit sans une ligne de plus ici.
+      if (!actionsDe(scene, ent, flags).some((a) => a.origine === 'capacite')) continue;
       pnjs.push({ id: ent.id, cell: { x: ent.pos.x, y: ent.pos.y, z: ez } });
     }
   return { fouilles, pnjs };

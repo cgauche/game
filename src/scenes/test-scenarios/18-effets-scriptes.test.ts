@@ -40,7 +40,7 @@ describe('Scénario « Effets scriptés » : moteurs orphelins câblés à un d�
     useGame.setState({ party: [...useGame.getState().party] });
     const autel = scene.entities.find((e) => e.id === 'autel')!;
     seedBattleRng(1);
-    runFlow(useGame.getState, useGame.setState, autel.interact!.flow);
+    runFlow(useGame.getState, useGame.setState, autel.usable!.actions![0].flow);
     expect(useGame.getState().party.find((h) => h.id === p.id)!.xp).toBe(20); // reward authoré (giveXp)
     expect(useGame.getState().journal.join('\n')).toMatch(/entend/);
   });
@@ -72,7 +72,7 @@ describe('Scénario « Effets scriptés » : moteurs orphelins câblés à un d�
   it('anti-grind : les quatre déclencheurs sont chacun UNE interaction unique (aucune mécanique à répéter)', () => {
     expect(scene.dialogues.find((d) => d.id === 'dlg-medecin')!.nodes).toHaveLength(1);
     expect(scene.dialogues.find((d) => d.id === 'dlg-messager')!.nodes).toHaveLength(1);
-    expect(scene.entities.find((e) => e.id === 'autel')!.interact?.consume).toBe(false); // ré-utilisable mais l'issue est jouée en 1 jet
+    expect(scene.entities.find((e) => e.id === 'autel')!.usable!.actions![0].consume).toBe(false); // ré-utilisable mais l'issue est jouée en 1 jet
     expect(scene.triggers.find((t) => t.id === 'trappe-cave')!.once).toBe(true); // une seule chute possible
   });
 });

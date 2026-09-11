@@ -26,7 +26,7 @@ function scèneDeTaverne(): Scene {
   s.id = 'taverne';
   s.entities = [
     { id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } },
-    { id: PROP, kind: 'prop', pos: { x: 5, y: 5 }, ref: TABLE, facing: 'N', usable: {} },
+    { id: PROP, kind: 'prop', pos: { x: 5, y: 5 }, ref: TABLE, facing: 'N', usable: { assise: true } },
     { id: 'pnj-1', kind: 'personnage', pos: { x: 6, y: 5 } },
   ];
   return s;
@@ -115,13 +115,13 @@ describe('interactEntity sur un meuble à places — bascule s’asseoir / se re
  * que le halo annonce n'est inatteignable.
  */
 describe('meuble à places ET fouillable — les deux affordances restent atteignables', () => {
-  const FOUILLE = { flow: flowFromEffects([{ type: 'giveMoney', montant: { gold: 2 } }]) };
+  const FOUILLE = { actions: [{ id: 'fouiller', flow: flowFromEffects([{ type: 'giveMoney', montant: { gold: 2 } }]), unique: true }] };
 
   function posrFouillable(pos: { x: number; y: number }, seatAssignments?: Scene['seatAssignments']) {
     useGame.setState({ party: [hero()], scene: null, mode: 'exploration', journal: [], battle: null, dialogue: null, flags: {} });
     const sc = scèneDeTaverne();
     const table = sc.entities.find((e) => e.id === PROP)!;
-    (table as { interact?: unknown }).interact = FOUILLE;
+    (table as { usable?: unknown }).usable = { assise: true, ...FOUILLE };
     if (seatAssignments) sc.seatAssignments = seatAssignments;
     useGame.getState().startScene(sc);
     useGame.setState({ partyPos: { ...pos }, flags: {} });
@@ -130,7 +130,7 @@ describe('meuble à places ET fouillable — les deux affordances restent atteig
   it('fouille D’ABORD, assise ENSUITE : les deux gestes passent par le même meuble', () => {
     posrFouillable(ABORD_NORD);
     useGame.getState().interactEntity(PROP);
-    expect(journalEntier()).toContain('Vous fouillez');
+    expect(journalEntier(), 'le journal NOMME le geste joué').toContain('Fouiller…');
     expect(poseDuMeneur(), 'la fouille ne fait pas asseoir').toBeNull();
 
     useGame.getState().interactEntity(PROP); // fouille épuisée → la place prend le relais
@@ -142,7 +142,7 @@ describe('meuble à places ET fouillable — les deux affordances restent atteig
     const pris = (id: string): SeatOccupant => ({ kind: 'entity', entityId: id });
     posrFouillable(ABORD_NORD, { [PROP]: { 'place-1': pris('a'), 'place-2': pris('b'), 'place-3': pris('c'), 'place-4': pris('d') } });
     useGame.getState().interactEntity(PROP);
-    expect(journalEntier()).toContain('Vous fouillez');
+    expect(journalEntier(), 'le journal NOMME le geste joué').toContain('Fouiller…');
     // …et une fois épuisée, le meuble dit la seule chose qui reste vraie.
     useGame.getState().interactEntity(PROP);
     expect(dernierJournal()).toContain('Toutes les places sont occupées');
@@ -152,7 +152,7 @@ describe('meuble à places ET fouillable — les deux affordances restent atteig
     // Halo ALLUMÉ = fouille non épuisée OU place libre — exactement ce que le store sert.
     posrFouillable(ABORD_NORD);
     const el = { kind: 'prop', key: `prop:${PROP}`, cell: { x: 5, y: 5, z: 0 }, source: 'entity', entId: PROP,
-      ref: TABLE, foot: { offX: 0, offY: 0, scale: 1 }, interact: true, states: { visible: true } } as unknown as BillboardPropEl;
+      ref: TABLE, foot: { offX: 0, offY: 0, scale: 1 },states: { visible: true } } as unknown as BillboardPropEl;
     const ctx = { exploring: true, combat: false };
     const sc = () => useGame.getState().scene!;
     expect(interactionHalos([el], sc(), useGame.getState().flags, null, ctx).fouilles).toHaveLength(1);

@@ -57,6 +57,7 @@ import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
 import { captureMutation, applyMutation as applySceneMutation, type SceneMutation } from './sceneInstance';
 import { assignSeat, memeCase, placesJouables, pruneSeatAssignments, RANG_MENEUR, releaseRecomposedRanks, releaseSeat, seatPoseOf, type SeatPose } from './seating';
+import { actionsDe, actionsAuthorees, cleActionJouee, estCapacite, type CapaciteId } from './usable';
 import type { ClueState } from './clues';
 import { togglePin } from './clues';
 import type { CodexFocus } from './codexFocus';
@@ -145,11 +146,11 @@ export type { PendingRest, RestPlaces } from './restFlow';
 import { councilPay as councilPayFlow, councilClose as councilCloseFlow } from './shipCrew';
 import type { PendingCouncil } from './shipCrew';
 export type { PendingCouncil } from './shipCrew';
-import { Scene, Dialogue, isWalkable, sceneMetresPerTile, heightAt, speakerLabel, type VictoryCondition } from './scene';
+import { Scene, Dialogue, isWalkable, sceneMetresPerTile, heightAt, speakerLabel, type SceneEntity, type VictoryCondition } from './scene';
 import { recordTurn, type DialogueTurn } from './dialogueHistory';
 import { placeCombatant } from './spawn';
 import { chebyshev, Pt } from './path';
-import { exploreStepDest, povStepDest, spawnFacing } from './exploreNav';
+import { aPorteeDe, exploreStepDest, povStepDest, spawnFacing } from './exploreNav';
 import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
 import type { NarratifBlock, OuvertureBlock } from './campaignNarratif';
@@ -168,7 +169,7 @@ import * as seaActivities from './seaActivities';
 import * as seaVoyageFlow from './seaVoyageFlow';
 import { applyLandCargoRaid } from './carriers';
 import { suspendActiveCascade, resumeSuspendedCascade, dropSceneEntrySteps, extendedTestOutcomeAppliers, curseurPose } from './cascade';
-import { differerLaSuite, jouerFlowEntier, nePeutPasDifferer, cloturer, registerCloture } from './combatEffects';
+import { differerLaSuite, jouerFlowEntier, nePeutPasDifferer, cloturer, registerCloture, flowRestant } from './combatEffects';
 import { flowFromEffects } from './flow';
 import { nightBands } from './nightBands';
 import { resultLine, openSequence, hostStep, pousseSi, type BuiltCascadeStep } from './rollSeam';
@@ -337,6 +338,11 @@ export interface CampaignDoc {
   narratif: NarratifBlock;
   startSceneId: string;
 }
+
+/** Déplacement-puis-interaction (P5) : le décor visé, l'offre NOMMÉE qu'on lui destine (absente quand
+ *  le décor en porte plusieurs — sa pastille les sert à l'arrivée) et la case où la marche se termine.
+ *  UN type, lu par l'état comme par son poseur : les deux ne peuvent plus diverger. */
+export type PendingInteract = { id: string; actionId?: string; at: Pt };
 
 export interface GameState extends RollFlowActionsMap {
   screen: Screen;
@@ -580,7 +586,7 @@ export interface GameState extends RollFlowActionsMap {
    *  (`ExploreMovePlan.dest` — abord d'une place, ou case adjacente d'un décor fouillable). L'interaction
    *  se consomme À CETTE CASE : une adjacence CROISÉE en chemin ne l'ouvre pas (le chemin vers l'abord
    *  d'une place longe la table, et la fouille/assise s'y déclenchait à mi-parcours, hors de l'abord). */
-  pendingInteract: { id: string; at: Pt } | null;
+  pendingInteract: PendingInteract | null;
   pendingCast: PendingCast | null;
   /** Contre-sort à PLUSIEURS (réaction au Sort figé dans `pendingCast`) : les contre-lanceurs
    *  enrôlés par `routeCounterspell`, chacun son jet (flux multi `FLOWS.counterspell`). Null = pas de réaction. */
@@ -920,7 +926,10 @@ export interface GameState extends RollFlowActionsMap {
    *  pas ≠ avant (un pas latéral/arrière ne réoriente pas le meneur). */
   stepPartyRelative: (rel: 'forward' | 'back' | 'left' | 'right') => void;
   interactEntity: (entityId: string) => void;
-  setPendingInteract: (pending: { id: string; at: Pt } | null) => void;
+  /** JOUE une offre NOMMÉE d'une entité (`ActionOfferte.id`) — l'exécuteur UNIQUE des gestes
+   *  d'exploration ; `interactEntity` n'en est que le raccourci « joue l'unique offre ». */
+  jouerAction: (entityId: string, actionId: string) => void;
+  setPendingInteract: (pending: PendingInteract | null) => void;
   chooseDialogue: (choiceIndex: number) => void;
   closeDialogue: () => void;
   openMerchant: (entityId: string) => void;
@@ -1693,7 +1702,7 @@ function soldeDeLAction(get: () => GameState, set: (s: Partial<GameState>) => vo
 //    est enregistré ICI, au patron `cascadeAppliers` — la donnée voyage (sauvegarde, réseau), le code reste.
 registerCloture('avancerHorloge', (get, _set, c) => get().advanceTime(c.minutes));
 registerCloture('retirerEntite', (get, set, c) => removeEntity(get, set, c.entityId));
-registerCloture('marquerFouillee', (_get, set, c) => set((s) => ({ flags: { ...s.flags, [`__fouille_${c.entityId}`]: true } })));
+registerCloture('marquerActionJouee', (_get, set, c) => set((s) => ({ flags: { ...s.flags, [cleActionJouee(c.entityId, c.actionId)]: true } })));
 /** AVANCÉE du dialogue — verbe de CLÔTURE (#1508). Une modale de jet ENCORE ouverte (un Test que la
  *  suite vient d'ouvrir) reprend la transition à son compte : « le dialogue n'avance jamais sous une
  *  modale de jet » vaut du Test comme du dé — le dé, lui, est tenu par la mécanique de continuation
@@ -1717,6 +1726,82 @@ registerCloture('teardownDeVictoire', (get, set, c) => {
   // reste d'une journée de voyage interrompue par un abordage) — APRÈS l'écran de victoire, jamais devant.
   resumeSuspendedCascade(get, set);
 });
+
+/**
+ * EXÉCUTEURS des capacités d'instance (#1687) — table TOTALE keyée par le MÊME `CapaciteId` que
+ * `CAPACITES` (`state/usable.ts`) : une capacité N+1 ne compile pas sans son OFFRE *et* son
+ * exécuteur, et il n'existe pas de `if (actionId === …)` pour en ajouter une.
+ */
+const JOUER_CAPACITE: Readonly<Record<CapaciteId, (get: Get, set: Set, ent: SceneEntity, scene: Scene) => void>> = {
+  parler: (_get, set, ent, scene) => {
+    const dlg = scene.dialogues.find((d) => d.id === ent.dialogueId);
+    if (dlg) set({ dialogue: { dialogue: dlg, nodeId: dlg.start, speakerId: ent.id } });
+  },
+  commercer: (get, _set, ent) => get().openMerchant(ent.id),
+};
+
+/** Places JOUABLES d'une entité : la géométrie vit sur le TYPE de décor, donc seule une instance de
+ *  décor en porte (`placesJouables`, `state/seating.ts`). */
+function placesDe(scene: Scene, entityId: string) {
+  const ent = scene.entities.find((e) => e.id === entityId);
+  return ent?.kind === 'prop' ? placesJouables(scene, entityId) : [];
+}
+
+/** Le meneur occupe-t-il CE meuble ? Alors il s'en relève, et le dit. Rend `true` s'il s'est levé —
+ *  c'est la bascule du même intent, prioritaire sur toute autre affordance du meuble. */
+function seLeverDe(get: Get, set: Set, entityId: string): boolean {
+  const { scene } = get();
+  if (!scene || !get().party[0]) return false;
+  const occupant = { kind: 'party', rang: RANG_MENEUR } as const;
+  if (!placesDe(scene, entityId).length) return false;
+  if (seatPoseOf(scene, occupant)?.propId !== entityId) return false;
+  set({ scene: releaseSeat(scene, occupant) });
+  get().log(t('seating.stood'));
+  bus.emit(EVT.SCENE_DIRTY);
+  return true;
+}
+
+/** Le meneur prend place à CE meuble, ou lit la raison française du refus. SOURCE UNIQUE du geste
+ *  d'assise : `interactEntity` l'ordonne parmi les autres affordances, `jouerAction` le joue NU
+ *  quand le joueur a choisi l'offre `sasseoir`. */
+function sasseoirA(get: Get, set: Set, entityId: string): void {
+  const { scene, partyPos } = get();
+  const leaderId = get().party[0]?.id;
+  if (!scene || !leaderId) return;
+  const places = placesDe(scene, entityId);
+  if (!places.length) return;
+  const occupant = { kind: 'party', rang: RANG_MENEUR } as const;
+  const libres = places.filter((p) => !scene.seatAssignments?.[entityId]?.[p.slotId]);
+  const cible = libres.find((p) => memeCase(p.approach, partyPos));
+  if (cible) {
+    // REVALIDATION ATOMIQUE dans le callback `set` : entre le choix de la place ci-dessus et
+    // l'écriture, un autre siège coop a pu prendre la dernière — un seul gagnant en sort. La place
+    // ET son abord y sont RE-RÉSOLUS sur l'état courant : l'abord lu au clic peut avoir bougé (un
+    // décor posé sur la case déclarée bascule la place sur son repli).
+    const gagnee: { pose: SeatPose | null } = { pose: null };
+    set((s) => {
+      if (!s.scene || s.party[0]?.id !== leaderId) return {};
+      const place = placesJouables(s.scene, entityId).find((p) => p.slotId === cible.slotId);
+      if (!place || !memeCase(s.partyPos, place.approach)) return {};
+      const res = assignSeat(s.scene, entityId, place.slotId, occupant, s.party.length);
+      if (!res.ok) return {};
+      gagnee.pose = res.pose;
+      return { scene: res.scene };
+    });
+    if (gagnee.pose) {
+      get().log(t('seating.sat'));
+      // POSE UNIQUE : le cap d'ÉTAT suit celui de la place — le corps, la vue subjective et tout
+      // ce qui lit `facing` regardent la table, pas la direction d'où l'on venait.
+      get().setFacing(leaderId, gagnee.pose.facing);
+      bus.emit(EVT.SCENE_DIRTY);
+      return;
+    }
+  }
+  // UN SEUL message par situation : la place visée est partie (course perdue) ou toutes sont
+  // prises → « occupé » ; il en reste une, mais pas sous les pieds → « rejoindre la place ».
+  const resteLibre = places.some((p) => !get().scene?.seatAssignments?.[entityId]?.[p.slotId]);
+  get().log(t(resteLibre ? 'seating.mustReachApproach' : 'seating.occupied'));
+}
 
 export const useGame = create<GameState>((set, get) => ({
   // Actions de combat inline — extraites dans `combatSlice.ts`, spreadées EN TÊTE (mêmes `get`/`set`).
@@ -2224,7 +2309,10 @@ export const useGame = create<GameState>((set, get) => ({
       if (!target) set({ pendingInteract: null });
       else if (memeCase(pt, pi.at)) {
         set({ pendingInteract: null });
-        get().interactEntity(pi.id);
+        // L'offre VISÉE au clic si le décor n'en portait qu'une ; sinon l'arbitrage de proximité
+        // (relevage, unique offre recalculée à l'arrivée) — à N offres, la pastille les sert.
+        if (pi.actionId) get().jouerAction(pi.id, pi.actionId);
+        else get().interactEntity(pi.id);
       }
     }
   },
@@ -2358,75 +2446,68 @@ export const useGame = create<GameState>((set, get) => ({
     const leaderId = get().party[0]?.id;
     // Places JOUABLES, pas la géométrie : un décor que l'auteur n'a pas ACTIVÉ n'offre pas l'assise
     // (#1687, `placesJouables`) — le clic y reste inerte au lieu de servir une raison de refus.
-    const places = ent.kind === 'prop' ? placesJouables(scene, entityId) : [];
-    const occupant = leaderId ? ({ kind: 'party', rang: RANG_MENEUR } as const) : null;
-    if (places.length && occupant && seatPoseOf(scene, occupant)?.propId === entityId) {
-      set({ scene: releaseSeat(scene, occupant) });
-      get().log(t('seating.stood'));
-      bus.emit(EVT.SCENE_DIRTY);
-      return;
-    }
-    const horsPortee = chebyshev(partyPos, ent.pos) > 1 || (ent.z ?? 0) !== (partyPos.z ?? 0);
-    // Trop loin ou autre étage (#800, classe z-blind) : le déplacement-puis-fouille (P5) est armé par
-    // l'UI (setPendingInteract) ; ici, aucune des affordances de proximité ne s'ouvre.
+    const places = placesDe(scene, entityId);
+    if (seLeverDe(get, set, entityId)) return;
+    const horsPortee = !aPorteeDe(partyPos, ent);
+    // Trop loin ou autre étage : la portée se lit à la SOURCE UNIQUE (`exploreNav.aPorteeDe`, qui
+    // compte l'étage). Ici, aucune des affordances de proximité ne s'ouvre ; le déplacement-puis-fouille
+    // (P5) est armé par l'UI (setPendingInteract).
     if (!horsPortee) {
-      if (ent.dialogueId) {
-        const dlg = scene.dialogues.find((d) => d.id === ent.dialogueId);
-        if (dlg) set({ dialogue: { dialogue: dlg, nodeId: dlg.start, speakerId: ent.id } });
-        return;
-      }
-      if (ent.merchant) { get().openMerchant(ent.id); return; }
-      if (ent.interact && !get().flags[`__fouille_${entityId}`]) {
-        // Décor INTERACTIF (fouille/ramassage) — canal unique d'Effets (cf. SceneEntity.interact).
-        get().log(t('store.searching', { what: ent.label ?? t('store.searchPlaceFallback') }));
-        // Logique de fouille (Flow) : butin → fenêtre d'attribution, test → fouille à risque (modale).
-        // CLÔTURES de la fouille (#1508) : l'horloge (« tout est horodaté » : fouiller ≈ search min)
-        // puis le sort du décor. L'horloge tire les effets PROGRAMMÉS et les ticks — jouée devant un dé
-        // de chute, elle les tirerait sur des Blessures qui n'ont pas encaissé.
-        cloturer(get, set, runFlow(get, set, ent.interact.flow, ent.label ?? t('store.searchTitle')), [
-          { verbe: 'avancerHorloge', minutes: TIME_COST.search },
-          ent.interact.consume // butin → le décor disparaît ; sinon il reste, marqué fouillé
-            ? { verbe: 'retirerEntite', entityId }
-            : { verbe: 'marquerFouillee', entityId },
-        ]);
-        return;
-      }
+      const offres = actionsDe(scene, ent, get().flags).filter((o) => o.origine !== 'assise');
+      // UNE offre → on la joue ; N → rien ici : le PANNEAU borné de la pastille les sert (« Que faire ? »),
+      // et deviner à la place du joueur serait le choisir pour lui ; zéro → la chaîne d'assise, puis rien.
+      if (offres.length === 1) { get().jouerAction(entityId, offres[0].id); return; }
+      if (offres.length > 1) return;
     }
-    if (places.length && occupant) {
-      const libres = places.filter((p) => !scene.seatAssignments?.[entityId]?.[p.slotId]);
-      const cible = libres.find((p) => memeCase(p.approach, partyPos));
-      if (cible) {
-        // REVALIDATION ATOMIQUE dans le callback `set` : entre le choix de la place ci-dessus et
-        // l'écriture, un autre siège coop a pu prendre la dernière — un seul gagnant en sort. La place
-        // ET son abord y sont RE-RÉSOLUS sur l'état courant : l'abord lu au clic peut avoir bougé (un
-        // décor posé sur la case déclarée bascule la place sur son repli).
-        const gagnee: { pose: SeatPose | null } = { pose: null };
-        set((s) => {
-          if (!s.scene || s.party[0]?.id !== leaderId) return {};
-          const place = placesJouables(s.scene, entityId).find((p) => p.slotId === cible.slotId);
-          if (!place || !memeCase(s.partyPos, place.approach)) return {};
-          const res = assignSeat(s.scene, entityId, place.slotId, occupant, s.party.length);
-          if (!res.ok) return {};
-          gagnee.pose = res.pose;
-          return { scene: res.scene };
-        });
-        if (gagnee.pose) {
-          get().log(t('seating.sat'));
-          // POSE UNIQUE : le cap d'ÉTAT suit celui de la place — le corps, la vue subjective et tout
-          // ce qui lit `facing` regardent la table, pas la direction d'où l'on venait.
-          get().setFacing(leaderId!, gagnee.pose.facing);
-          bus.emit(EVT.SCENE_DIRTY);
-          return;
-        }
-      }
-      // UN SEUL message par situation : la place visée est partie (course perdue) ou toutes sont
-      // prises → « occupé » ; il en reste une, mais pas sous les pieds → « rejoindre la place ».
-      const resteLibre = places.some((p) => !get().scene?.seatAssignments?.[entityId]?.[p.slotId]);
-      get().log(t(resteLibre ? 'seating.mustReachApproach' : 'seating.occupied'));
+    if (places.length && leaderId) { sasseoirA(get, set, entityId); return; }
+    // Actions authorées toutes ÉPUISÉES et rien d'autre à offrir : on le dit (le halo, lui, s'est
+    // déjà éteint). Le décor en PORTE (l'auteur en a posé), aucune n'est plus jouable.
+    if (!horsPortee && ent.usable?.actions?.length && !actionsAuthorees(ent, get().flags).length)
+      get().log(t('store.searchedAlready', { what: ent.label ?? t('store.searchedFallback') }));
+  },
+
+  /**
+   * EXÉCUTEUR UNIQUE d'une offre d'exploration (#1687) : `actionsDe` DIT ce qui est offert, `jouerAction`
+   * le JOUE — et le dispatch se fait sur l'ORIGINE de l'offre, jamais sur un champ de l'entité ni sur
+   * son id. Une action authorée N+1 ne coûte AUCUNE ligne ici ; une capacité d'instance N+1 coûte une
+   * ligne de `JOUER_CAPACITE`, que la table TOTALE exige pour compiler.
+   *
+   * Une offre inconnue ou épuisée ne fait RIEN : l'offre est recalculée ICI sur l'état courant, donc un
+   * clic arrivé en retard (coop, marche-puis-geste) ne rejoue pas une action fermée entre-temps.
+   */
+  jouerAction: (entityId, actionId) => {
+    const { scene } = get();
+    if (!scene) return;
+    const ent = scene.entities.find((e) => e.id === entityId);
+    if (!ent) return;
+    const offre = actionsDe(scene, ent, get().flags).find((o) => o.id === actionId);
+    if (!offre) return;
+    // PORTÉE, même source unique que la pastille et le clic (`exploreNav.aPorteeDe`, étage compris) :
+    // un ordre arrivé de loin (coop, clic en retard, marche interrompue) ne joue rien sur place.
+    // L'assise est dehors : sa portée se mesure à l'ABORD de la place (`slot.approach`), qui peut
+    // tomber hors du voisinage de la case d'ancrage.
+    if (offre.origine !== 'assise' && !aPorteeDe(get().partyPos, ent)) return;
+    if (offre.origine === 'capacite') {
+      if (estCapacite(actionId)) JOUER_CAPACITE[actionId](get, set, ent, scene);
       return;
     }
-    // Fouille ÉPUISÉE et rien d'autre à offrir : on le dit (le halo, lui, s'est déjà éteint).
-    if (!horsPortee && ent.interact) get().log(t('store.searchedAlready', { what: ent.label ?? t('store.searchedFallback') }));
+    if (offre.origine === 'assise') {
+      if (!seLeverDe(get, set, entityId)) sasseoirA(get, set, entityId);
+      return;
+    }
+    const action = (ent.usable?.actions ?? []).find((a) => a.id === actionId);
+    if (!action) return;
+    get().log(t('store.actionJouee', { what: ent.label ?? t('store.searchPlaceFallback'), action: offre.label }));
+    // Logique authorée (Flow) : butin → fenêtre d'attribution, test → geste à risque (modale).
+    // CLÔTURES (#1508) : l'horloge (« tout est horodaté ») puis le sort du décor. L'horloge tire les
+    // effets PROGRAMMÉS et les ticks — jouée devant un dé de chute, elle les tirerait sur des
+    // Blessures qui n'ont pas encaissé. Le coût de temps est une DONNÉE d'auteur (`minutes`) ; absent,
+    // c'est celui de la fouille.
+    cloturer(get, set, runFlow(get, set, flowRestant(entityId, action, get().flags), ent.label ?? offre.label), [
+      { verbe: 'avancerHorloge', minutes: action.minutes ?? TIME_COST.search },
+      ...(action.consume ? [{ verbe: 'retirerEntite' as const, entityId }] : []),
+      ...(action.unique ? [{ verbe: 'marquerActionJouee' as const, entityId, actionId }] : []),
+    ]);
   },
 
   /** Arme (ou annule via null) un déplacement-puis-interaction : l'UI le pose au clic d'un décor

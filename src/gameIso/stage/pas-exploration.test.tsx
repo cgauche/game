@@ -195,7 +195,7 @@ const anim: StageWalkAnim = {
 
 const décor = (id: string, x: number): BillboardPropEl => ({
   kind: 'prop', source: 'entity', key: `prop:${id}`, ref: 'tonneau', facing: 'S',
-  cell: { x, y: 4, z: 0 }, foot: { offX: 0, offY: 0, scale: 1 }, interact: false,
+  cell: { x, y: 4, z: 0 }, foot: { offX: 0, offY: 0, scale: 1 },
   states: { visible: true },
 } as unknown as BillboardPropEl);
 const DECORS: BillboardPropEl[] = [décor('a', 6), décor('b', 7), décor('c', 8)];

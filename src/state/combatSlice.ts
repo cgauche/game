@@ -22,7 +22,7 @@ import { Combatant, HitLocation, CHAR_LABELS, type FireArc, type Weapon } from '
 import { rollLine, hostStep, openSequence, pushHost, pushDisplay } from './rollSeam';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { defenseDodgeMod, activeCombatant, STANCE_BLOCK, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castContextMods, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, trampleFreeMove, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, resolveMovement, fearedSourceTowards, markActed, noteApproachMove, clearApproachMoves, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart, releaseSeatsOfCombatants } from './combatFlow';
+import { defenseDodgeMod, activeCombatant, STANCE_BLOCK, moveEnv, removeEntity, entityPickables, cleFeuilleRamassee, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castContextMods, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, trampleFreeMove, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, resolveMovement, fearedSourceTowards, markActed, noteApproachMove, clearApproachMoves, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart, releaseSeatsOfCombatants } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from './lineOfSight';
 import { smokeOf, captureMoveSnapshot } from './combatGeometry';
@@ -99,6 +99,7 @@ import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
 import { seaMagicContext, windsMagicModOf } from './combatOrParty';
 import { actorIn, inBattleId } from './combatants';
+import { aPorteeDe } from './exploreNav';
 import { controlsCombatant, defenseSurfaced, influencesLocally, quorumAtteint } from './netOwnership';
 import { nextCursorTile, nextCaseCursorTile, tileModeValidTiles, cursorCommitIntent, type ScreenDir } from './combatCursor';
 import { cycleTarget, cyclePrevTarget, cursorActor } from './targeting';
@@ -121,6 +122,7 @@ import { pursuitAbandon } from './pursuitFlow';
 import { closeSequenceRound } from './sequenceCore';
 import { checkPartyWiped } from './partyWipe';
 import { FLOWS } from './rollFlowSpecs';
+import { actionsAuthorees } from './usable';
 
 /** Un flux DIFFÉRÉ tient la main (modale de jet/révélation, ciblage par carte : Frappe Mortelle,
  *  2ᵉ frappe, Surincantation +Cible, pose de zone) :
@@ -2306,13 +2308,17 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || battle.over || battle.acted || !scene) return;
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return; // ramasser = une Action
-      if (get().flags[`__fouille_${entityId}`]) return; // déjà entièrement fouillé en exploration
-      const ent = scene.entities.find((e) => e.id === entityId && e.kind === 'prop' && !!e.interact);
-      if (!ent || !ent.interact || !active.pos || chebyshev(active.pos, ent.pos) > 1 || (ent.z ?? 0) !== (active.pos.z ?? 0)) return; // doit être adjacent/sur la case, même étage (#800)
-      const [tag, idxStr] = key.split(':');
-      if (tag !== 'eff') return; // clé = `eff:<index dans flowEffects(interact.flow)>` (cf. entityPickables)
+      const ent = scene.entities.find((e) => e.id === entityId && e.kind === 'prop');
+      if (!ent || !active.pos || !aPorteeDe(active.pos, ent)) return; // adjacent/sur la case, même étage — source unique `exploreNav.aPorteeDe` (#800)
+      // Clé = `<actionId>:eff:<index dans flowEffects(action.flow)>` (cf. `entityPickables`) : c'est
+      // l'ACTION authorée qu'on grappille, et l'ÉPUISEMENT est celui du même exécuteur que
+      // l'exploration — `actionsAuthorees` refuse d'elle-même une action déjà fermée par son drapeau.
+      const [actionId, tag, idxStr] = key.split(':');
+      if (tag !== 'eff') return;
+      const action = actionsAuthorees(ent, get().flags).find((a) => a.id === actionId);
+      if (!action) return;
       const idx = Number(idxStr);
-      const eff = flowEffects(ent.interact.flow)[idx];
+      const eff = flowEffects(action.flow)[idx];
       if (!eff) return;
       let label: string; // assigné dans chaque branche atteignant l'usage (le cas `else` renvoie)
       if (eff.type === 'giveTrapping') {
@@ -2339,15 +2345,14 @@ export function createCombatSlice(get: Get, set: Set) {
         // ramassée qui suit ne peut donc pas passer devant un dé (#1508) — et si ça changeait, ça lèverait.
         nePeutPasDifferer(applyEffects(get, set, [eff]), 'combatSlice.pickupItem (giveMoney)'); // bourse party
       } else return; // effet non ramassable (journal/document…) : pas grappillable en combat
-      // Retire la i-ème feuille `do` du flow de fouille (les props ramassables sont des seq de `do`).
-      const flow = ent.interact.flow;
-      if (flow.kind === 'seq') {
-        let seen = -1;
-        flow.steps = flow.steps.filter((s) => (s.kind === 'do' ? ++seen !== idx : true));
-      } else ent.interact.flow = EMPTY_FLOW;
+      // La feuille prise se FERME par un drapeau (`cleFeuilleRamassee`), jamais en réécrivant le Flow de
+      // l'action : le document de scène est de la DONNÉE d'auteur, l'état de la partie vit dans les
+      // drapeaux — et c'est le même drapeau que la fouille en exploration lit pour ne pas redonner ce
+      // qui est déjà pris (`flowRestant`).
+      set((s) => ({ flags: { ...s.flags, [cleFeuilleRamassee(entityId, action.id, idx)]: true } }));
       // Pool de ramassables vidé : `consume` → le décor disparaît ; sinon il reste (ses Effets non-objet
       // — journal/document — restent fouillables en exploration ; pas de sens à les grappiller en combat).
-      if (entityPickables(ent).length === 0 && ent.interact.consume) {
+      if (entityPickables(ent, get().flags).length === 0 && action.consume) {
         removeEntity(get, set, entityId);
         set({ battle: { ...markActed(get, set, battle), action: null, log: [...battle.log, ev('item', t('cs.pickup', { name: active.label, label }), active.id)] } });
       } else {

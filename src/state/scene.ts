@@ -61,6 +61,29 @@ import { chebyshev } from '../engine/grid';
 import type { SeatAssignments } from './seating';
 export type { CustomStatblock };
 
+/**
+ * Une ACTION AUTHORÉE sur une instance de décor (#1687) — le vocabulaire OUVERT des gestes qu'un
+ * auteur pose : fouiller, ouvrir, tirer un levier. Un geste N+1 coûte une déclaration, zéro ligne de
+ * code (`actionsDe` les rend toutes, `jouerAction` les joue toutes).
+ *
+ * `id` : identité STABLE, unique sur l'entité — c'est elle que la LOGIQUE manipule (drapeau
+ * d'épuisement, clé d'offre). `label` : surcharge d'AFFICHAGE de l'auteur ; absent, le libellé vient
+ * du catalogue i18n à la clé `usable.<id>`, jamais une chaîne française figée en donnée.
+ * `consume` : l'entité est RETIRÉE de la scène une fois l'action jouée (butin ramassé).
+ * `unique` : l'action n'est jouable qu'UNE fois — le drapeau `__action_<entId>_<id>` la ferme
+ * (`cleActionJouee`, `state/usable.ts`). Absent ou `false` = REJOUABLE.
+ */
+export interface ActionAuthoree {
+  id: string;
+  label?: string;
+  flow: Flow;
+  consume?: boolean;
+  unique?: boolean;
+  /** Ce que l'action coûte à l'horloge, en MINUTES (« tout est horodaté »). Absent = `TIME_COST.search`,
+   *  le coût d'une fouille (`engine/timeCost.ts`) — un geste plus bref ou plus long se dit ici. */
+  minutes?: number;
+}
+
 /** RESTE MANUSCRIT (les 22 autres formes de la scène sont des `z.infer` de
  *  `data/schemas/defs-scenes/scene.ts`) — deux écarts MESURÉS avec `sceneEntitySchema` :
  *  `foot` n'existe QUE sur le schéma (fossile toléré au parse, dépouillé par `stripLegacyFoot`,
@@ -96,10 +119,6 @@ export interface SceneEntity {
    *  s'ajoutent aux Traits du TYPE et modifient ce navire-ci (PA de coque, M, couvert…). Posées au spawn. */
   upgrades?: NavalTraitRef[];
   dialogueId?: string;
-  /** Décor INTERACTIF (fouille/ramassage). Absent = décor pur. `flow` exécuté une fois (un butin de
-   *  feuilles `do` est ramassable un à un — cf. entityPickables ; un `test` en fait une fouille à risque) ;
-   *  `consume:true` → le décor disparaît quand pris, sinon il reste (marqué `__fouille_<id>`). */
-  interact?: { flow: Flow; consume?: boolean };
   /** Apparence (calques) : override éditeur ; sinon auto-variée au seed de l'id. */
   appearance?: EntityAppearance;
   /** Animation d'ambiance en boucle (clé de AMBIENT_CLIPS) — rend l'entité via le rig. */
@@ -137,12 +156,13 @@ export interface SceneEntity {
    *  cuivre (la modale reste libre de la changer — l'auteur pose le défaut, pas une contrainte) ;
    *  absente, la table s'accorde sans mise. */
   tavernGame?: { gameId: string; stakeBrass?: number };
-  /** DÉCOR ACTIVÉ par l'auteur (#1687) : présent = l'auteur a coché « utilisable » sur CETTE instance.
-   *  Son seul effet propre aujourd'hui est l'ASSISE d'un décor dont le TYPE porte des places
-   *  (`placesJouables`, `state/seating.ts`) — la seule capacité qui vive sur le TYPE. Les autres
-   *  (dialogue, marchand, fouille, jeu de taverne) vivent sur l'instance et se dérivent sans lui.
-   *  L'enveloppe est VIDE : les actions authorées et leur exécution arrivent avec le lot 3 de #1687. */
-  usable?: Record<string, never>;
+  /** DÉCOR UTILISABLE (#1687) — deux faits NOMMÉS que l'auteur pose sur CETTE instance, jamais un
+   *  drapeau fourre-tout : `assise` ouvre les places que le TYPE porte (`placesJouables`,
+   *  `state/seating.ts` — la seule capacité qui vive sur le type, donc la seule qu'un opt-in
+   *  d'instance ait à ouvrir), `actions` est le vocabulaire OUVERT des gestes authorés. Les autres
+   *  capacités (dialogue, marchand, jeu de taverne) vivent sur l'instance et se dérivent sans lui.
+   *  Lu par le dériveur UNIQUE `actionsDe` (`state/usable.ts`) et par personne d'autre. */
+  usable?: { assise?: true; actions?: ActionAuthoree[] };
   /** RÔLE combat optionnel (au même titre que dialogue/marchand) : présent = ce personnage peut être
    *  enrôlé dans une rencontre (cf. EncounterMember). Porte les choix d'auteur qui DÉCRIVENT la
    *  personne au combat — son profil (ref/statblock) et son apparence vivent déjà sur l'entité. */
@@ -823,7 +843,9 @@ export function normalizeScene(s: Scene): Scene {
     type: 'scene',
     layers: s.layers ?? emptyScene(s.dimensions?.w, s.dimensions?.h).layers,
     entities: (s.entities ?? []).map((e) => stripLegacyFoot(
-      e.interact ? { ...e, interact: { ...e.interact, flow: sanitizeSceneFlow(e.interact.flow) as Flow } } : e)),
+      e.usable?.actions
+      ? { ...e, usable: { ...e.usable, actions: e.usable.actions.map((a) => ({ ...a, flow: sanitizeSceneFlow(a.flow) as Flow })) } }
+      : e)),
     dialogues: (s.dialogues ?? []).map((d) => ({
       ...d,
       nodes: (d.nodes ?? []).map((n) => ({

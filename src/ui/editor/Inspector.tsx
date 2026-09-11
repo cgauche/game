@@ -5,14 +5,15 @@
  * musique, repos, points d'entrée) + liste filtrable du contenu (sélection au clic).
  * Composant de PRÉSENTATION : la scène et la sélection vivent dans Editor.
  */
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { useEffect, useRef, useState, type ComponentProps, type ReactNode, type RefObject } from 'react';
 import {
-  Scene, SceneEntity, Trigger, SceneEffectZone, WallSeg,
+  Scene, SceneEntity, Trigger, SceneEffectZone, WallSeg, type ActionAuthoree,
   type ArchitecturePart, type ArchitectureStorey, type FacadeSection, type BuildingMass, type RoofDefaults,
   type ArchitectureRect, type SceneStationAnchor, type ReliefDefaults, isDescriptiveZone, sceneMetresPerTile,
 } from '../../state/scene';
 import { PARTS_RELIEF } from '../../data/materials.types';
 import { NumberField } from '../NumberField';
+import { TIME_COST } from '../../engine/timeCost';
 import { sceneZoneTiles, zoneAreaTiles } from '../../state/zones';
 import type { WorldMap } from '../../state/worldMap';
 import type { NarratifBlock } from '../../state/campaignNarratif';
@@ -28,7 +29,7 @@ import { MERCHANTS } from '../../state/merchants/index';
 import { TAVERN_GAMES } from '../../engine/tavernGame';
 import { allMusicDefs } from '../../audio/music';
 import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, matieresCouvrantes, matieresDe, structureAppearances, refEstVolumique, siegeEngines } from '../../data';
-import { poseToitureDeCorps, rederiveRoofMasses, toitureEffective } from '../../state/sceneEdit';
+import { poseToitureDeCorps, rederiveRoofMasses, renameActionAuthoree, toitureEffective } from '../../state/sceneEdit';
 import { activitiesFor } from '../../engine/activities';
 import { libelleDeValeur, valeursDe } from '../../data/schemas/grammaire/meta';
 import { entityKindSchema, facadeFeatureKindSchema, roofProfileSchema } from '../../data/schemas/defs-scenes/scene';
@@ -43,7 +44,7 @@ import { MonsterPartsFields } from './MonsterPartsFields';
 import { effectCtxOf } from './EffectList';
 import { GameOpEditor } from './GameOpEditor';
 import { FlowEditor, TestFields } from './FlowEditor';
-import { actionsDe } from '../../state/usable';
+import { actionsDe, ACTION_FOUILLER } from '../../state/usable';
 import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
@@ -1192,7 +1193,13 @@ function EntryRename({ label, caption = 'Nom (référencé par les transitions)'
       <input
         value={val}
         onChange={(e) => setVal(e.target.value)}
-        onBlur={() => val.trim() && val !== label && onRename(val)}
+        onBlur={() => {
+          if (val.trim() && val !== label) onRename(val);
+          // Le champ ne garde JAMAIS un id que le document a REFUSÉ (doublon) : il se recale sur l'id
+          // en vigueur. Renommage accepté → `label` change au rendu suivant et la resynchro ci-dessus
+          // reprend la main ; refusé → `label` est resté le même, et c'est lui qui s'affiche.
+          setVal(label);
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
         }}
@@ -1522,35 +1529,12 @@ function EntityPanel({
               </label>
             </>
           )}
-          <label className="ed-check">
-            <input
-              type="checkbox"
-              checked={!!ent.interact}
-              onChange={(e) => updateSel({ interact: e.target.checked ? (ent.interact ?? { flow: EMPTY_FLOW }) : undefined })}
-            />{' '}
-            Interactif (fouille / ramassage)
-          </label>
-          {ent.interact && (
-            <>
-              <label className="ed-check">
-                <input
-                  type="checkbox"
-                  checked={!!ent.interact.consume}
-                  onChange={(e) => updateSel({ interact: { ...ent.interact!, consume: e.target.checked } })}
-                />{' '}
-                Disparaît quand pris (butin) — sinon reste, fouillé une fois
-              </label>
-              <div className="ed-field">
-                <span className="mini-title">Fouille / ramassage (effets · conditions · tests)</span>
-                <FlowEditor
-                  flow={ent.interact.flow}
-                  onChange={(flow) => updateSel({ interact: { ...ent.interact!, flow } })}
-                  ctx={{ encounters: scene.encounters, dialogues: scene.dialogues, ...effectCtxOf(scene, otherScenes, worldMap ?? undefined) }}
-                />
-              </div>
-            </>
-          )}
-          <UsableFields ent={ent} scene={scene} updateSel={updateSel} />
+          <UsableFields
+            ent={ent}
+            scene={scene}
+            updateSel={updateSel}
+            flowCtx={{ encounters: scene.encounters, dialogues: scene.dialogues, ...effectCtxOf(scene, otherScenes, worldMap ?? undefined) }}
+          />
         </Fold>
       )}
       <div className="insp-actions">
@@ -1570,33 +1554,102 @@ function EntityPanel({
  * L'activation n'a d'effet PROPRE que sur un décor dont le TYPE porte des places (c'est la seule
  * capacité qui vive sur le type) ; les autres capacités se dérivent sans elle, et la liste le montre.
  */
-function UsableFields({ ent, scene, updateSel }: {
+function UsableFields({ ent, scene, updateSel, flowCtx }: {
   ent: SceneEntity;
   scene: Scene;
   updateSel: (patch: Partial<SceneEntity>) => void;
+  flowCtx: ComponentProps<typeof FlowEditor>['ctx'];
 }) {
+  const actions = ent.usable?.actions ?? [];
+  const poser = (patch: Partial<NonNullable<SceneEntity['usable']>>) => {
+    const suivant = { ...ent.usable, ...patch };
+    if (!suivant.assise && !suivant.actions?.length) return updateSel({ usable: undefined });
+    updateSel({ usable: suivant });
+  };
+  const editerAction = (i: number, patch: Partial<ActionAuthoree>) =>
+    poser({ actions: actions.map((a, j) => (j === i ? { ...a, ...patch } : a)) });
+  // L'OPÉRATEUR de scène décide, l'éditeur écrit ce qu'il rend : liste inchangée = refus (id déjà
+  // porté sur ce décor), et le champ se recale tout seul sur l'id EN VIGUEUR.
+  const renommerAction = (from: string, to: string) => {
+    const suivant = renameActionAuthoree(actions, from, to);
+    if (suivant !== actions) poser({ actions: suivant });
+  };
   return (
     <>
       <label className="ed-check">
         <input
           type="checkbox"
-          checked={!!ent.usable}
-          onChange={(e) => updateSel({ usable: e.target.checked ? {} : undefined })}
+          checked={!!ent.usable?.assise}
+          onChange={(e) => poser({ assise: e.target.checked ? true : undefined })}
         />{' '}
-        Décor utilisable (l'auteur ACTIVE cette instance — ouvre l'assise d'un décor à places)
+        Assise (ouvre les places que le TYPE de décor porte)
       </label>
-      {ent.usable && (
-        <div className="ed-field">
-          <span className="mini-title">Ce que le joueur verra</span>
-          <div className="chips">
-            {actionsDe(scene, ent).map((a) => (
-              <span key={a.id} className="chip">{a.label}</span>
-            ))}
-          </div>
+      {actions.map((a, i) => (
+        <div className="ed-field" key={a.id}>
+          <span className="mini-title">Action « {a.label ?? a.id} »</span>
+          {/* L'id n'est écrit au document qu'au COMMIT (blur/Entrée) — la primitive du fichier, déjà
+              servie par les points d'entrée et les zones d'effet. Frappé lettre à lettre, il posait
+              `f`, `fo`, `fou` dans la scène. L'unicité, elle, se garde AU GESTE
+              (`state/sceneEdit.renameActionAuthoree`) : le `refine` du schéma ne mord qu'au parse, et
+              une scène VIVANTE à deux actions homonymes se joue faux avant d'être relue. */}
+          <EntryRename
+            label={a.id}
+            caption="Identifiant (logique — stable, unique sur ce décor)"
+            onRename={(next) => renommerAction(a.id, next)}
+          />
+          <label className="ed-field">
+            Libellé affiché (vide = libellé du catalogue pour cet identifiant)
+            <input value={a.label ?? ''} onChange={(e) => editerAction(i, { label: e.target.value || undefined })} />
+          </label>
+          <label className="ed-check">
+            <input type="checkbox" checked={!!a.consume} onChange={(e) => editerAction(i, { consume: e.target.checked || undefined })} />{' '}
+            Le décor disparaît une fois l'action jouée (butin)
+          </label>
+          <label className="ed-check">
+            <input type="checkbox" checked={!!a.unique} onChange={(e) => editerAction(i, { unique: e.target.checked || undefined })} />{' '}
+            Jouable une seule fois (sinon rejouable indéfiniment)
+          </label>
+          <NumberField
+            variant="champ"
+            label="Temps que l'action coûte (minutes)"
+            ariaLabel={`Temps que l'action « ${a.label ?? a.id} » coûte (minutes)`}
+            min={0}
+            vide
+            value={a.minutes ?? null}
+            placeholder={String(TIME_COST.search)}
+            onChange={(minutes) => editerAction(i, { minutes: minutes ?? undefined })}
+          />
+          <FlowEditor flow={a.flow} onChange={(flow) => editerAction(i, { flow })} ctx={flowCtx} />
+          <button className="btn small danger" onClick={() => poser({ actions: actions.filter((_, j) => j !== i) })}>
+            Supprimer l'action
+          </button>
         </div>
-      )}
+      ))}
+      <button
+        className="btn small"
+        onClick={() => poser({ actions: [...actions, { id: idActionLibre(actions), flow: EMPTY_FLOW, unique: true }] })}
+      >
+        Ajouter une action
+      </button>
+      <div className="ed-field">
+        <span className="mini-title">Ce que le joueur verra</span>
+        <div className="chips">
+          {actionsDe(scene, ent).map((a) => (
+            <span key={a.id} className="chip">{a.label}</span>
+          ))}
+        </div>
+      </div>
     </>
   );
+}
+
+/** Premier id LIBRE pour une action neuve : `fouiller`, puis `fouiller-2`, `fouiller-3`… L'unicité est
+ *  un invariant du schéma (`usable` `refine`) — l'éditeur ne laisse donc pas l'auteur la violer au
+ *  premier clic, il lui donne un id qui passe et qu'il renommera. */
+function idActionLibre(actions: readonly ActionAuthoree[]): string {
+  const pris = new Set(actions.map((a) => a.id));
+  if (!pris.has(ACTION_FOUILLER)) return ACTION_FOUILLER;
+  for (let n = 2; ; n++) if (!pris.has(`${ACTION_FOUILLER}-${n}`)) return `${ACTION_FOUILLER}-${n}`;
 }
 
 /** Emplacement de siège (poste d'artillerie éventuel) + équipage EXPOSÉ à bord + Améliorations

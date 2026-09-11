@@ -79,7 +79,7 @@ describe('Identité d’un prop — l’échelle et le cap en font partie (#1396
   const propEl = (patch: { facing?: 'S' | 'E'; scale?: number }) => ({
     kind: 'prop' as const, source: 'entity' as const, key: 'prop:decor-1', ref: REF_A,
     cell: { x: 2, y: 2, z: 0 }, foot: { offX: 0, offY: 0, scale: patch.scale ?? 1 },
-    interact: false, states: { visible: true },
+    states: { visible: true },
     ...(patch.facing ? { facing: patch.facing } : {}),
   });
   const scene = emptyScene(6, 6);

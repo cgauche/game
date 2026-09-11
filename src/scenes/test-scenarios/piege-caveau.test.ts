@@ -54,16 +54,16 @@ describe('Scénario « Le Caveau piégé » : vitrine Flow + Condition', () => {
     const levier = scene.entities.find((e) => e.id === 'levier')!;
     const cle = scene.entities.find((e) => e.id === 'cle')!;
     useGame.setState({ battle: null, flags: {}, party: scenario.makeParty(), scene });
-    runFlow(useGame.getState, useGame.setState, levier.interact!.flow);
+    runFlow(useGame.getState, useGame.setState, levier.usable!.actions![0].flow);
     expect(useGame.getState().flags.levier_tire).toBe(true);
     // la fouille de la clé donne l'objet « Clé en fer » — c'est lui que la condition hasItem de la herse lit.
-    expect(flowEffects(cle.interact!.flow).some((e) => e.type === 'giveTrapping' && e.custom === 'Clé en fer')).toBe(true);
+    expect(flowEffects(cle.usable!.actions![0].flow).some((e) => e.type === 'giveTrapping' && e.custom === 'Clé en fer')).toBe(true);
   });
 
   it('le coffre donne une ARME de catalogue (LDB 62 l.125-127), Précise et non identifiée, tenable en main', () => {
     const tresor = scene.entities.find((e) => e.id === 'tresor')!;
     useGame.setState({ battle: null, flags: {}, party: scenario.makeParty(), scene, pendingLoot: null });
-    runFlow(useGame.getState, useGame.setState, tresor.interact!.flow);
+    runFlow(useGame.getState, useGame.setState, tresor.usable!.actions![0].flow);
     const gear = useGame.getState().pendingLoot!.gear;
     expect(gear.length).toBe(1);
     const heroId = useGame.getState().party[0].id;

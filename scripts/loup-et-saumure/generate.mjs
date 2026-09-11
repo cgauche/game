@@ -172,14 +172,16 @@ scenes.push(scene({
     NPC('avitailleur', 13, 4, 'Chandelier du quai (eau, rations de mer, pièces, boulets)', { facing: 'S', merchant: { archetype: 'avitailleur' }, appearance: { species: 'humains-reiklander', tenue: 'bourgeois', sex: 'M', build: 0.5 } }),
     P(2, 8, undefined, {
       label: 'La jetée d’appareillage',
-      interact: {
+      usable: { actions: [{
+        id: 'fouiller',
         flow: {
           kind: 'if', cond: flagWhen('ls_commission_acceptee'),
           then: flowOf([{ type: 'openWorldMap' }]),
           // Refus VISIBLE (modale) : « personne ne lit le journal » — le maître de quai barre la passerelle.
           else: flowOf([{ type: 'document', title: 'La passerelle du Grimm', desc: 'Le maître de quai croise les bras devant la passerelle. « Pas d’appareillage sans l’ordre du baron Köhler, capitaine. Voyez-le d’abord. »' }]),
         },
-      },
+        unique: true,
+      }] },
     }),
   ],
   dialogues: [
@@ -485,7 +487,7 @@ scenes.push(scene({
     NPC('charpentier', 9, 6, 'Charpentier de bord', { facing: 'N', dialogueId: 'dlg-reparation', appearance: { species: 'humains-reiklander', tenue: 'artisan', sex: 'M', build: 0.6, seed: 3312 } }),
     P(2, 7, undefined, {
       label: 'Reprendre la mer vers Salzenmund',
-      interact: { flow: flowOf([OBJ('Ramener le Grimm et sa cargaison à Salzenmund.'), { type: 'openWorldMap' }]) },
+      usable: { actions: [{ id: 'fouiller', flow: flowOf([OBJ('Ramener le Grimm et sa cargaison à Salzenmund.'), { type: 'openWorldMap' }]), unique: true }] },
     }),
   ],
   dialogues: [

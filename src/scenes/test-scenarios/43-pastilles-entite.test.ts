@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from '../../state/store';
 import { scenario } from './43-pastilles-entite';
 import { entityGestes } from '../../state/registreOffres';
+import type { OffreRendue } from '../../state/offreRendue';
 import { chebyshev } from '../../engine/grid';
 
 /**
@@ -26,6 +27,10 @@ function ouvrir() {
   return useGame.getState();
 }
 
+/** L'ACTION d'une offre rendue : la clé stable d'une pastille est `action|arguments du candidat`
+ *  (`rendreOffre`) — deux candidats d'un même coffre y diffèrent par leur queue. */
+const actionDe = (o: OffreRendue) => o.id.split('|')[0];
+
 describe('Scénario « Pastilles d’entité » — le banc de recette de la zone 4', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
@@ -45,7 +50,7 @@ describe('Scénario « Pastilles d’entité » — le banc de recette de la zon
   it('les gestes ANNONCÉS par le scénario sont ceux que le registre offre RÉELLEMENT sur ce banc', () => {
     const st = ouvrir();
     const offres = entityGestes(st);
-    const parAction = new Map(offres.flatMap((p) => p.offres.map((o) => [o.actionId, p.porteurId] as const)));
+    const parAction = new Map(offres.flatMap((p) => p.offres.map((o) => [actionDe(o), p.porteurId] as const)));
     // Monter (la monture), Ramasser (le coffre), Pousser (l'engin servi) — chacun porté par SON entité.
     expect([...parAction.keys()].sort(), 'les gestes du banc').toEqual(['mount', 'pickup', 'push-engine']);
     const cheval = st.battle!.combatants.find((c) => c.mountable)!;
@@ -66,7 +71,7 @@ describe('Scénario « Pastilles d’entité » — le banc de recette de la zon
 
   it('« Pousser » est OFFERT (Équipe complète) — et son coût est dit sur la pastille', () => {
     const st = ouvrir();
-    const pousser = entityGestes(st).flatMap((p) => p.offres).find((o) => o.actionId === 'push-engine')!;
+    const pousser = entityGestes(st).flatMap((p) => p.offres).find((o) => actionDe(o) === 'push-engine')!;
     expect(pousser.gate.ok, 'l’Équipe de 6 est au complet : le geste est ouvert').toBe(true);
     expect(pousser.cost, 'la poussée prend le Mouvement').toBeTruthy();
   });

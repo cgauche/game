@@ -169,7 +169,7 @@ export function scene({ id, label, desc, ambiance = 'exterieur', weather, music,
   // entryPoints d'auteur `{name:{x,y}}` → `{name:[x,y]}` (forme MapSpec).
   if (entryPoints) spec.entryPoints = Object.fromEntries(Object.entries(entryPoints).map(([k, p]) => [k, [p.x, p.y]]));
   // Compétences/sorts des flows (tests, corruption, learnSpell) → ids : dialogues, triggers, onVictory des
-  // rencontres, ET les flows de fouille nichés dans `entities[].interact` (testNode d'un décor piégé).
+  // rencontres, ET les flows des actions authorées (`entities[].usable.actions[]` — décor piégé).
   validateFlowRefs({ dialogues, triggers, entities, encounters: spec.encounters });
   // Les uid de postes sont une séquence remise à zéro PAR SCÈNE (`resetIds`) : leur unicité n'est plus
   // portée par un compteur global. Sans ce fail-fast, un doublon serait SILENCIEUX (tout lecteur résout
@@ -272,11 +272,13 @@ export function zoneVictory(n, { money, xp, journal, extra = [] }) {
   ]);
 }
 
-/** Fouille interactive (décor). Accepte une LISTE d'Effets (butin ramassable, → flowOf) OU un Flow
- *  déjà construit (fouille à risque : `testNode(...)`). `consume` retire le décor une fois pris. */
+/** Fouille authorée (décor) — l'action `fouiller` de l'enveloppe `usable` (#1687). Accepte une LISTE
+ *  d'Effets (butin ramassable, → flowOf) OU un Flow déjà construit (fouille à risque :
+ *  `testNode(...)`). `consume` retire le décor une fois pris ; sinon le geste ne se joue qu'UNE fois
+ *  (`unique`, drapeau `__action_<ent>_fouiller`). */
 export function fouille(effectsOrFlow, consume = false) {
   const flow = Array.isArray(effectsOrFlow) ? flowOf(effectsOrFlow) : effectsOrFlow;
-  return { interact: { flow, ...(consume ? { consume: true } : {}) } };
+  return { usable: { actions: [{ id: 'fouiller', flow, ...(consume ? { consume: true } : { unique: true }) }] } };
 }
 
 /** Statblocks d'AUTEUR (sourcés à leur création). Sans réf de bestiaire, une entité `personnage` n'a

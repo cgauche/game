@@ -13,16 +13,18 @@
  *
  * PICKING : le monde entier est cliquable par UN `<svg>` (`SurcoucheIso`, handlers de `useStagePointer`),
  * et une pastille dessinée dedans y bullerait — un clic vaudrait le geste ET le clic-monde qui est
- * dessous. Seul le BOUTON (et le panneau qu'il ouvre) reçoit le pointeur et l'arrête
- * (`GatedAction arretePointeur`) : la boîte qui l'entoure est transparente au pointeur
- * (`pointer-events: none`), sans quoi elle mangerait une bande du champ — survol compris.
+ * dessous, et un SURVOL du bouton re-résoudrait le monde sous ce pixel (le bouton flotte au-dessus de
+ * la tête : la case résolue n'est plus celle du porteur). Seul le BOUTON (et le panneau qu'il ouvre)
+ * reçoit le pointeur et l'arrête — down, MOVE, up, clic (`GatedAction arretePointeur`) : la boîte qui
+ * l'entoure est transparente au pointeur (`pointer-events: none`), sans quoi elle mangerait une bande
+ * du champ — survol compris.
  */
 import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { Icon } from '../../ui/Icon';
 import { GatedAction } from '../../ui/GatedAction';
 import { PanneauParametre, type ParamOption } from '../../ui/PanneauParametre';
-import { runAction } from '../../state/actionRegistry';
-import type { Offre } from '../../state/registreOffres';
+import { CodexRef } from '../../ui/compendium/CodexRef';
+import type { OffreRendue } from '../../state/offreRendue';
 import { t } from '../../i18n';
 import { useGame } from '../../state/store';
 import { getStagePan } from '../../state/stagePan';
@@ -37,8 +39,6 @@ export const PASTILLE_W = 176;
 /** Écart écran entre la tête du porteur et le bas de la pastille. */
 const PASTILLE_GAP = 10;
 
-/** Clé stable d'une offre : son action et les paramètres qui la distinguent (le poste, l'objet). */
-const cleDeLOffre = (o: Offre) => `${o.actionId}|${Object.values(o.args).join('|')}`;
 
 export function PastilleEntite({ mark, headY, echelle }: { mark: GesteMark; headY: number; echelle: number }) {
   const [ouvert, setOuvert] = useState(false);
@@ -48,7 +48,10 @@ export function PastilleEntite({ mark, headY, echelle }: { mark: GesteMark; head
   // Le verdict de la pastille : celui de l'offre unique ; sinon celui de la première offre OUVERTE (un
   // porteur dont un geste au moins est ouvert est cliquable), et à défaut le premier refus, qui se lit.
   const verdict = unique ? unique.gate : (offres.find((o) => o.gate.ok)?.gate ?? offres[0].gate);
-  const commettre = (o: Offre) => runAction(o.actionId, useGame.getState, o.args);
+  const commettre = (o: OffreRendue) => o.onSelect();
+  // NOM au survol : le porteur, dans l'UNIQUE infobulle du jeu, et sa RAISON de refus quand AUCUNE de
+  // ses offres n'est ouverte (arbitrage 2026-08-24 — la raison au survol, jamais en texte inline).
+  const refus = offres.every((o) => !o.gate.ok) ? verdict.reason : undefined;
   const stop = (e: SyntheticEvent) => e.stopPropagation();
 
   // Le panneau est ancré à un déclencheur qui vit DANS le monde : dès que la caméra bouge (pan, cran de
@@ -69,7 +72,7 @@ export function PastilleEntite({ mark, headY, echelle }: { mark: GesteMark; head
   }, [ouvert]);
 
   const options: ParamOption[] = offres.map((o) => ({
-    key: cleDeLOffre(o),
+    key: o.id,
     label: o.candidat ? `${o.label} — ${o.candidat}` : o.label,
     meta: o.cost,
     consequence: o.gate.ok ? undefined : o.gate.reason,
@@ -86,6 +89,13 @@ export function PastilleEntite({ mark, headY, echelle }: { mark: GesteMark; head
         height={PASTILLE_PX + PASTILLE_GAP}
         style={{ overflow: 'visible' }}
       >
+        <CodexRef
+          label={mark.label ?? ''}
+          refus={refus}
+          wrap
+          tooltipOnly
+          {...(mark.label ? { fallback: {} } : null)}
+        >
         <div className="pastille-entite" data-pastille-entite={mark.entityId}>
           <GatedAction
             id={`pastille-${mark.entityId}`}
@@ -94,7 +104,7 @@ export function PastilleEntite({ mark, headY, echelle }: { mark: GesteMark; head
             arretePointeur
             label={
               <>
-                <Icon id={(unique ?? offres[0]).icon} size="sm" />
+                {(unique ?? offres[0]).icon ? <Icon id={(unique ?? offres[0]).icon!} size="sm" /> : null}
                 <span>{unique ? unique.label : t('pastille.nGestes', { n: offres.length })}</span>
                 {unique?.cost ? <span className="pe-cost">{unique.cost}</span> : null}
               </>
@@ -106,7 +116,7 @@ export function PastilleEntite({ mark, headY, echelle }: { mark: GesteMark; head
           {/* Le panneau est PORTALISÉ hors du SVG, mais ses événements remontent l'arbre REACT — donc
               jusqu'aux handlers du monde. Il les arrête ici, au même titre que le bouton. */}
           {ouvert && (
-            <div onPointerDown={stop} onPointerUp={stop} onClick={stop}>
+            <div onPointerDown={stop} onPointerMove={stop} onPointerUp={stop} onClick={stop}>
               <PanneauParametre
                 anchor={ancre.current}
                 intitule={t('pastille.intitule')}
@@ -116,6 +126,7 @@ export function PastilleEntite({ mark, headY, echelle }: { mark: GesteMark; head
             </div>
           )}
         </div>
+        </CodexRef>
       </foreignObject>
     </g>
   );

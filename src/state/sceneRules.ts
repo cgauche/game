@@ -9,6 +9,7 @@ import { isNight } from '../engine/clock';
 import { findPropById } from '../data';
 import { propDeclaredFoot, propFootTiles } from './footprint';
 import { memoByRefDeps } from './sceneMemo';
+import { actionsAuthorees } from './usable';
 
 export interface SceneCombatMods {
   /** Cible dissimulée (obscurité de nuit ou brouillard) → −20 au tir, bande Difficile (LDB 14 l.75). */
@@ -66,7 +67,10 @@ function buildEntityBlockIndex(entities: SceneEntity[], mpt: number): Set<string
     // solidité) qui dit si un décor bloque — l'empreinte dérivée ne fournit que l'ÉTENDUE des cases.
     // Sans cette séparation, cheminée/enseigne/clocheton/applique (recettes NON solides, sans `foot`)
     // se mettraient à murer leur case.
-    if (!propDeclaredFoot(e.ref) && !e.interact && !propIsSolid(e.ref)) continue;
+    // « utilisable » ici = l'objet a un CORPS à heurter, pas « il reste du butin » : un coffre vidé
+    // bloque toujours sa case. La porte lit donc les actions AUTHORÉES de l'instance, sans drapeau
+    // d'épuisement.
+    if (!propDeclaredFoot(e.ref) && !actionsAuthorees(e).length && !propIsSolid(e.ref)) continue;
     const z = e.z ?? 0;
     for (const t of propFootTiles(e.ref, e.pos, e.facing, mpt)) blocked.add(`${t.x},${t.y},${z}`);
   }

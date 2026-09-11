@@ -28,7 +28,7 @@ const poseDe = (rang: number) => seatPoseOf(useGame.getState().scene!, place(ran
 function scèneDeTaverne(id: string): Scene {
   const s = emptyScene(12, 12);
   s.id = id;
-  s.entities.push({ id: PROP, kind: 'prop', pos: { x: 5, y: 5 }, ref: TABLE, facing: 'N', usable: {} });
+  s.entities.push({ id: PROP, kind: 'prop', pos: { x: 5, y: 5 }, ref: TABLE, facing: 'N', usable: { assise: true } });
   return s;
 }
 
@@ -134,7 +134,7 @@ describe('mort / indisponibilité d’un occupant', () => {
     useGame.getState().startScene(testScene);
     const sc = useGame.getState().scene!;
     const badaud: SceneEntity = { id: 'badaud', kind: 'personnage', pos: { x: 5, y: 4 } };
-    const entities: SceneEntity[] = [...sc.entities, { id: PROP, kind: 'prop', pos: { x: 5, y: 5 }, ref: TABLE, facing: 'N', usable: {} }, badaud];
+    const entities: SceneEntity[] = [...sc.entities, { id: PROP, kind: 'prop', pos: { x: 5, y: 5 }, ref: TABLE, facing: 'N', usable: { assise: true } }, badaud];
     const occupant: SeatOccupant = { kind: 'entity', entityId: 'badaud' };
     useGame.setState({ scene: { ...sc, entities, seatAssignments: { [PROP]: { 'place-1': occupant } } } });
     expect(seatPoseOf(useGame.getState().scene!, occupant)).not.toBeNull();
@@ -158,7 +158,7 @@ describe('ouverture de combat — le MENEUR assis se lève avec les autres enrô
     const sc = useGame.getState().scene!;
     // Table au NORD du groupe, cap `N` : son abord SUD est exactement la case du groupe.
     const table = { x: useGame.getState().partyPos.x, y: useGame.getState().partyPos.y - 1 };
-    const entities: SceneEntity[] = [...sc.entities, { id: PROP, kind: 'prop', pos: table, ref: TABLE, facing: 'N', usable: {} }];
+    const entities: SceneEntity[] = [...sc.entities, { id: PROP, kind: 'prop', pos: table, ref: TABLE, facing: 'N', usable: { assise: true } }];
     useGame.setState({ scene: { ...sc, entities } });
     useGame.getState().interactEntity(PROP);
     expect(poseDe(1)).toMatchObject({ slotId: 'place-3' });

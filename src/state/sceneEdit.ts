@@ -6,7 +6,7 @@
  * Chaque fonction renvoie une NOUVELLE Scène (immuable). `editorState.ts` les RÉ-EXPORTE : les câblages
  * du canvas (couplés UI/gameIso) y restent. NE JAMAIS importer `../ui/` ni `../gameIso/` ici.
  */
-import { Scene, SceneEntity, SceneEffectZone, Terrain, CellSide, EncounterMember, layerTiles, tileAt, sceneMetresPerTile, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, ArchitectureRect, FacadeSection, BuildingMass, RoofDefaults, SceneRoofDefaults } from './scene';
+import { ActionAuthoree, Scene, SceneEntity, SceneEffectZone, Terrain, CellSide, EncounterMember, layerTiles, tileAt, sceneMetresPerTile, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, ArchitectureRect, FacadeSection, BuildingMass, RoofDefaults, SceneRoofDefaults } from './scene';
 import { memoByRef } from './sceneMemo';
 import type { FireArc, AuthoredShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
@@ -410,6 +410,19 @@ export function renameEffectZone(scene: Scene, from: string, to: string): Scene 
   };
 }
 
+
+/** Renommage d'un id d'ACTION AUTHORÉE sur un décor — MÊME LOI que `renameEffectZone` ci-dessus : un
+ *  id vide, inchangé, absent, ou DÉJÀ PORTÉ par une autre action du même décor rend la liste INCHANGÉE
+ *  (référence identique — l'appelant y lit le refus sans second canal).
+ *
+ *  L'unicité des ids d'action est une règle du SCHÉMA (`refine` du def d'entité) : sans garde au geste,
+ *  elle ne mordait qu'au chargement, et la scène VIVANTE portait deux actions homonymes que
+ *  `jouerAction` confondait (il joue la première, le drapeau `unique` vaut pour les deux). */
+export function renameActionAuthoree(actions: ActionAuthoree[], from: string, to: string): ActionAuthoree[] {
+  const next = to.trim();
+  if (!next || next === from || !actions.some((a) => a.id === from) || actions.some((a) => a.id === next)) return actions;
+  return actions.map((a) => (a.id === from ? { ...a, id: next } : a));
+}
 
 /** Rattache une entité existante à la rencontre `encId` (créée si absente). No-op si déjà membre. */
 export function addMember(scene: Scene, encId: string, entityId: string): { scene: Scene; encId: string } {

@@ -62,6 +62,21 @@ export const entityKindSchema = enumNomme({ heroStart: 'Départ héros', personn
 
 const VOLUMIQUES = new Set(PROPS_VOLUMIQUES);
 
+/** Une ACTION AUTHORÉE sur une instance de décor (#1687) — le vocabulaire OUVERT des gestes qu'un
+ *  auteur pose. `id` : identité STABLE et non vide, unique sur l'entité (l'unicité est gardée par le
+ *  `refine` de `usable`, qui seul voit la liste) ; `label` : surcharge d'AFFICHAGE, absent le libellé
+ *  vient du catalogue i18n à la clé `usable.<id>` ; `consume` : l'entité est retirée après ;
+ *  `unique` : jouable une fois (drapeau `__action_<entId>_<id>`), absent ou `false` = REJOUABLE ;
+ *  `minutes` : ce que l'action coûte à l'horloge, absent = `TIME_COST.search` (`engine/timeCost.ts`). */
+export const actionAuthoreeSchema = z.strictObject({
+  id: z.string().min(1),
+  label: z.string().optional(),
+  flow: sceneFlowSchema,
+  consume: z.boolean().optional(),
+  unique: z.boolean().optional(),
+  minutes: z.number().min(0).optional(),
+});
+
 /** `SceneEntity` (`state/scene.ts:41`). `id` = identité STABLE partagée avec le `Combatant` au spawn.
  *  Le `superRefine` en pied porte le seul invariant CROSS-CHAMP de l'entité : le cap d'un décor
  *  volumique (cf. `PROPS_VOLUMIQUES`). */
@@ -82,8 +97,6 @@ export const sceneEntitySchema = z.strictObject({
   postes: z.array(authoredShipPosteSchema).optional(),
   upgrades: z.array(navalTraitRefSchema).optional(),
   dialogueId: z.string().optional(),
-  /** Décor INTERACTIF : `flow` exécuté une fois ; `consume` = le décor disparaît quand pris. */
-  interact: z.strictObject({ flow: sceneFlowSchema, consume: z.boolean().optional() }).optional(),
   appearance: entityAppearanceSchema.optional(),
   /** Animation d'ambiance en boucle (clé de `AMBIENT_CLIPS`). */
   anim: z.string().optional(),
@@ -114,13 +127,21 @@ export const sceneEntitySchema = z.strictObject({
     .optional(),
   /** JOUEUR de taverne (`NADJ 04 l.72`) : `gameId` de `tavernGames.json`, mise de DÉPART en sous. */
   tavernGame: z.strictObject({ gameId: z.string(), stakeBrass: z.number().optional() }).optional(),
-  /** DÉCOR ACTIVÉ par l'auteur. Présent = l'auteur a coché « utilisable » sur CETTE instance ; son
-   *  seul effet propre aujourd'hui est l'ASSISE d'un décor dont le TYPE porte des `seatSlots`
-   *  (`placesJouables`, `state/seating.ts`) — la seule capacité qui vive sur le TYPE, donc la seule
-   *  qu'un opt-in d'instance ait à ouvrir. Les autres capacités (dialogue, marchand, fouille, jeu de
-   *  taverne) vivent DÉJÀ sur l'instance et se dérivent sans lui (`actionsDe`, `state/usable.ts`).
-   *  L'enveloppe est VIDE : les actions authorées et leur exécution arrivent avec le lot 3 de #1687. */
-  usable: z.strictObject({}).optional(),
+  /** DÉCOR UTILISABLE — deux faits NOMMÉS que l'auteur pose sur CETTE instance : `assise` ouvre les
+   *  places que le TYPE porte (`seatSlots` → `placesJouables`, `state/seating.ts` — la seule capacité
+   *  qui vive sur le TYPE, donc la seule qu'un opt-in d'instance ait à ouvrir), `actions` porte les
+   *  gestes AUTHORÉS. Les autres capacités (dialogue, marchand, jeu de taverne) vivent DÉJÀ sur
+   *  l'instance et se dérivent sans lui (`actionsDe`, `state/usable.ts`). */
+  usable: z
+    .strictObject({
+      assise: z.literal(true).optional(),
+      actions: z.array(actionAuthoreeSchema).optional(),
+    })
+    .refine(
+      (u) => !u.actions || new Set(u.actions.map((a) => a.id)).size === u.actions.length,
+      { message: 'usable.actions : deux actions partagent le même `id` — l’id est l’identité de l’action sur cette entité (drapeau d’épuisement, clé d’offre), il est unique.' },
+    )
+    .optional(),
   /** RÔLE combat optionnel : ce que l'auteur choisit pour CETTE personne au combat. */
   combat: z
     .strictObject({

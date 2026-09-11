@@ -2,7 +2,7 @@
  "id": "loup-et-saumure",
  "type": "projet",
  "label": "Le Loup et la Saumure",
- "schema": 10,
+ "schema": 11,
  "icon": "scenario/naval",
  "versionContenu": 1,
  "maison": "scénario naval authoré pour le jeu — aucun livre ne le publie (mesuré : absent de `Source/`) ; il compose des règles de la Mer des Griffes, qui portent leur source à leur foyer",
@@ -348,38 +348,44 @@
       "y": 8
      },
      "label": "La jetée d’appareillage",
-     "interact": {
-      "flow": {
-       "kind": "if",
-       "cond": {
-        "kind": "flag",
-        "expr": "ls_commission_acceptee"
-       },
-       "then": {
-        "kind": "seq",
-        "steps": [
-         {
-          "kind": "do",
-          "effect": {
-           "type": "openWorldMap"
-          }
+     "usable": {
+      "actions": [
+       {
+        "id": "fouiller",
+        "flow": {
+         "kind": "if",
+         "cond": {
+          "kind": "flag",
+          "expr": "ls_commission_acceptee"
+         },
+         "then": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "openWorldMap"
+            }
+           }
+          ]
+         },
+         "else": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "document",
+             "title": "La passerelle du Grimm",
+             "desc": "Le maître de quai croise les bras devant la passerelle. « Pas d’appareillage sans l’ordre du baron Köhler, capitaine. Voyez-le d’abord. »"
+            }
+           }
+          ]
          }
-        ]
-       },
-       "else": {
-        "kind": "seq",
-        "steps": [
-         {
-          "kind": "do",
-          "effect": {
-           "type": "document",
-           "title": "La passerelle du Grimm",
-           "desc": "Le maître de quai croise les bras devant la passerelle. « Pas d’appareillage sans l’ordre du baron Köhler, capitaine. Voyez-le d’abord. »"
-          }
-         }
-        ]
+        },
+        "unique": true
        }
-      }
+      ]
      }
     }
    ],
@@ -2075,26 +2081,32 @@
       "y": 7
      },
      "label": "Reprendre la mer vers Salzenmund",
-     "interact": {
-      "flow": {
-       "kind": "seq",
-       "steps": [
-        {
-         "kind": "do",
-         "effect": {
-          "type": "setObjective",
-          "id": "ls-mission",
-          "desc": "Ramener le Grimm et sa cargaison à Salzenmund."
-         }
+     "usable": {
+      "actions": [
+       {
+        "id": "fouiller",
+        "flow": {
+         "kind": "seq",
+         "steps": [
+          {
+           "kind": "do",
+           "effect": {
+            "type": "setObjective",
+            "id": "ls-mission",
+            "desc": "Ramener le Grimm et sa cargaison à Salzenmund."
+           }
+          },
+          {
+           "kind": "do",
+           "effect": {
+            "type": "openWorldMap"
+           }
+          }
+         ]
         },
-        {
-         "kind": "do",
-         "effect": {
-          "type": "openWorldMap"
-         }
-        }
-       ]
-      }
+        "unique": true
+       }
+      ]
      }
     }
    ],

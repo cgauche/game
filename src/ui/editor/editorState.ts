@@ -492,7 +492,7 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
  *  mutation. */
 export function changePropRef(scene: Scene, propId: string, ref: string): Scene {
   const ent = scene.entities.find((e) => e.id === propId && e.kind === 'prop');
-  return ent ? editEntity(scene, propId, propRefPatch(ref, !!ent.interact)) : scene;
+  return ent ? editEntity(scene, propId, propRefPatch(ref, ent.usable)) : scene;
 }
 
 /** Arête la plus proche du centre de la case, depuis l'offset (ox,oy) ∈ [-0.5,0.5] du pointeur. */
@@ -537,7 +537,7 @@ export function pickArchitectureEdge(scene: Scene, fx: number, fy: number, z: nu
 export function placeEntity(scene: Scene, kind: EntityKind, ref: string | undefined, p: Pt, z = 0): { scene: Scene; id: string } {
   const id = nextEntityId(kind, scene.entities.map((e) => e.id));
   let ent: SceneEntity = { id, kind, pos: { ...p }, label: libelleDeValeur(entityKindSchema, kind) };
-  if (ref && kind === 'prop') ent = { ...ent, ...propRefPatch(ref, false), label: PROPS[ref]?.label };
+  if (ref && kind === 'prop') ent = { ...ent, ...propRefPatch(ref, undefined), label: PROPS[ref]?.label };
   // Personnage d'ambiance : `ref` porte l'id d'ESPÈCE rig (sélecteur Palette) → apparence + libellé.
   else if (ref && kind === 'personnage') ent = { ...ent, appearance: { species: ref }, label: speciesLabel(ref) };
   return { scene: addEntity(scene, ent, z), id }; // l'étage se pose à la porte d'ajout

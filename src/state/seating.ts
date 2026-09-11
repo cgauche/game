@@ -281,7 +281,7 @@ export function seatSlotsOf(scene: Scene, propId: string): ResolvedSeatSlot[] {
  * une chaise si dans l'éditeur on l'active »).
  */
 export function placesJouables(scene: Scene, propId: string): ResolvedSeatSlot[] {
-  return propEntity(scene, propId)?.usable ? seatSlotsOf(scene, propId) : [];
+  return propEntity(scene, propId)?.usable?.assise ? seatSlotsOf(scene, propId) : [];
 }
 
 /** Parcours DÉTERMINISTE de l'occupation : entités de la scène dans leur ordre, puis places du

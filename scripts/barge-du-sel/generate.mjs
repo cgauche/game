@@ -155,7 +155,7 @@ scenes.push(scene({
     hero(2, 3),
     P(2, 6, undefined, {
       label: 'Appareiller vers l’îlot',
-      interact: { flow: flowOf([{ type: 'openWorldMap' }]) },
+      usable: { actions: [{ id: 'fouiller', flow: flowOf([{ type: 'openWorldMap' }]), unique: true }] },
     }),
   ],
 }));

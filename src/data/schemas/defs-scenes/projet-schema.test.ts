@@ -71,6 +71,24 @@ describe('projetSchema — la FORME que voit le seam (avant normalizeScene/resol
     expect('entities' in sceneMinimale()).toBe(false);
   });
 
+  /**
+   * DÉCOR UTILISABLE (#1687) : l'enveloppe `usable` porte DEUX faits nommés, et le champ `interact`
+   * d'avant le lot n'existe plus — un document qui en porte un est REFUSÉ, à son chemin, plutôt
+   * qu'ignoré en silence (c'est ce refus que `PROJECT_MIGRATIONS[10]` rattrape au chargement).
+   */
+  it('`usable` : l’enveloppe à deux faits passe, `interact` est REFUSÉ, un `id` d’action DOUBLÉ aussi', () => {
+    const FLOW = { kind: 'seq', steps: [] };
+    const entite = (over: Jouet) => [sceneMinimale({ entities: [{ id: 'coffre', kind: 'prop', pos: { x: 1, y: 1 }, ...over }] })];
+
+    expect(projetSchema.safeParse(projet({ scenes: entite({ usable: { assise: true, actions: [{ id: 'fouiller', flow: FLOW, unique: true }] } }) })).success).toBe(true);
+    expect(fautes(projet({ scenes: entite({ interact: { flow: FLOW } }) })))
+      .toEqual(['scenes.0.entities.0 :: Unrecognized key: "interact"']);
+    expect(fautes(projet({ scenes: entite({ usable: { actions: [{ id: 'fouiller', flow: FLOW }, { id: 'fouiller', flow: FLOW }] } }) })))
+      .toEqual([expect.stringMatching(/^scenes\.0\.entities\.0\.usable :: usable\.actions : deux actions partagent le même `id`/)]);
+    // `assise` ne se DÉSACTIVE pas par `false` : le fait est présent ou absent, jamais nié.
+    expect(fautes(projet({ scenes: entite({ usable: { assise: false } }) })).length).toBeGreaterThan(0);
+  });
+
   it('un `port` SPARSE `{ ref }` (avant `resolvePortRef`) est VALIDE ; sans `ref`, le profil est exigé EN ENTIER', () => {
     const carte = (port: Jouet) => ({
       id: 'carte',
@@ -303,7 +321,7 @@ describe('projetSchema — le document RÉEL, ses FK et son enveloppe (sondes du
     expect(ok(reel())).toBe(true);
     expect(projetDoc.type).toBe('projet');
     expect(projetDoc.famille).toBe('config');
-    expect(SCHEMA_PROJET).toBe(10);
+    expect(SCHEMA_PROJET).toBe(11);
   });
 
   it('FK `activeAxes` → axes.json : ids RÉELS acceptés (et la liste vide/absente aussi), inconnu REFUSÉ au CHEMIN', () => {

@@ -94,7 +94,7 @@ describe('buildProps — éléments prop du pivot', () => {
     s.layers[0].tiles[3 * 6 + 4] = 'bois'; // (4,3) : overlay à DÉCOR (overlayProp → 'arbre')
     s.entities = [
       { id: 'p1', kind: 'prop', pos: { x: 1, y: 1 }, ref: REF_BILLBOARD },
-      { id: 'p2', kind: 'prop', pos: { x: 3, y: 2 }, ref: 'tente', facing: 'SE', interact: { flow: { kind: 'seq', steps: [] } } }, // tente 2×2 au catalogue
+      { id: 'p2', kind: 'prop', pos: { x: 3, y: 2 }, ref: 'tente', facing: 'SE', usable: { actions: [{ id: 'fouiller', flow: { kind: 'seq', steps: [] }, unique: true }] } }, // tente 2×2 au catalogue
       { id: 'npc', kind: 'personnage', pos: { x: 5, y: 5 } }, // pas un prop → ignoré
     ] as SceneEntity[];
     return s;
@@ -106,7 +106,7 @@ describe('buildProps — éléments prop du pivot', () => {
     expect(terrain.map((e) => e.key)).toEqual(['ov:4,3,0']); // seul `bois` a un overlayProp
     expect(terrain.map((e) => e.ref)).toEqual(['arbre']);  // rendu comme un prop d'entité (billboard partagé)
     expect(terrain[0].foot).toEqual({ offX: 0, offY: 0, scale: 1 });
-    expect(terrain[0].interact).toBe(false);
+    expect(terrain[0].entId, 'un overlay de terrain n’est l’instance de personne').toBeUndefined();
     for (const t of terrain) expect(t.states.visible).toBe(true); // `visible` absent (éditeur/QC) → tout visible
     const props = els.filter((e) => e.source === 'entity');
     expect(props.map((e) => e.key)).toEqual(['prop:p1', 'prop:p2']);
@@ -125,17 +125,18 @@ describe('buildProps — éléments prop du pivot', () => {
     expect(buildProps(s).filter((e) => e.source === 'entity').map((e) => e.ref)).toEqual(['tonneau']);
   });
 
-  it('porte ref/facing/empreinte/interact', () => {
+  it('porte ref/facing/empreinte, et l’ID D’ENTITÉ — l’OFFRE, elle, n’est pas recopiée sur l’élément', () => {
     const [p1, p2] = buildBillboardProps(scene()).filter((e) => e.source === 'entity');
     expect(p1.ref).toBe(REF_BILLBOARD);
     expect(p1.foot).toEqual({ offX: 0, offY: 0, scale: 1 });
-    expect(p1.interact).toBe(false);
     expect(p2.ref).toBe('tente');
     expect(p2.facing).toBe('SE');
     expect(p2.foot).toEqual({ offX: 0.5, offY: 0.5, scale: 2 }); // décalage vers le centre + côté max
     expect(p2.span).toEqual({ w: 2, h: 2 });
-    expect(p2.interact).toBe(true);
+    // L'élément de rendu porte l'IDENTITÉ de l'entité, et rien de son offre : c'est `actionsDe` qui
+    // dit ce qu'elle offre, au moment du rendu, drapeaux en main (`estUtilisable`, `state/usable.ts`).
     expect(p2.entId).toBe('p2');
+    expect(Object.keys(p2)).not.toContain('interact');
   });
 
   it('tague `visible` un prop en vue, mémorisé sinon', () => {
@@ -200,7 +201,6 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     expect(o.facing).toBe('E'); // cap du faîtage résolu (ridge 'x' authoré par la fixture)
     expect(poseA(o, { x: 2.5, y: 3 }, 'E')).toBe(true); // recentré sur l'empreinte 4×5
     expect(socleM(o)).toBeGreaterThan(2); // posé haut sur la pente (≈ égout + 0.6·flèche), pas au sol
-    expect(o.interact).toBe(false);
     expect(o.states.visible).toBe(true); // `visible` absent (éditeur/QC) → visible
   });
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { emptyScene, type Scene, type SceneEntity } from '../../state/scene';
 import { RING_A_PX } from './dynamicMarks';
 import { HALO_RX_PX, haloRadiusK, interactionHalos, NO_INTERACTION_HALOS } from './interactHalos';
+import { cleActionJouee } from '../../state/usable';
 import type { BillboardPropEl } from './types';
 
 /**
@@ -19,11 +20,17 @@ function décor(id: string, x: number, y: number, extra: Partial<BillboardPropEl
     entId: id,
     ref: 'tonneau',
     foot: { offX: 0, offY: 0, scale: 1 },
-    interact: true,
     states: { visible: true },
     ...extra,
   };
 }
+
+/** L'ENTITÉ derrière l'élément de décor : l'élément de rendu ne porte plus AUCUNE offre, le halo la
+ *  dérive de la scène (`actionsDe`). Un geste authoré non épuisé est tout ce qu'il demande. */
+const fouillable = (id: string, x = 0, y = 0): SceneEntity => ({
+  id, kind: 'prop', pos: { x, y }, ref: 'tonneau',
+  usable: { actions: [{ id: 'fouiller', flow: { kind: 'seq', steps: [] }, unique: true }] },
+});
 
 function scèneAvec(...entities: SceneEntity[]): Scene {
   const s = emptyScene(10, 10);
@@ -36,27 +43,43 @@ const pnj = (id: string, x: number, y: number, extra: Partial<SceneEntity> = {})
 const EXPLORE = { exploring: true, combat: false };
 
 describe('Halos d’interaction — le décor FOUILLABLE (#1176 P3-0g)', () => {
-  it('un décor interactif porte un halo ; le flag d’épuisement l’éteint', () => {
+  it('un décor à geste authoré porte un halo ; le drapeau d’épuisement l’éteint', () => {
     const els = [décor('coffre', 3, 4)];
-    const vivants = interactionHalos(els, scèneAvec(), {}, null, EXPLORE);
-    expect(vivants.fouilles.map((h) => h.id)).toEqual(['coffre']);
-    expect(interactionHalos(els, scèneAvec(), { __fouille_coffre: true }, null, EXPLORE).fouilles).toHaveLength(0);
-    // et le flag d'un AUTRE décor n'éteint pas celui-ci
-    expect(interactionHalos(els, scèneAvec(), { __fouille_tonneau: true }, null, EXPLORE).fouilles).toHaveLength(1);
+    const sc = scèneAvec(fouillable('coffre', 3, 4));
+    expect(interactionHalos(els, sc, {}, null, EXPLORE).fouilles.map((h) => h.id)).toEqual(['coffre']);
+    expect(interactionHalos(els, sc, { [cleActionJouee('coffre', 'fouiller')]: true }, null, EXPLORE).fouilles).toHaveLength(0);
+    // et le drapeau d'un AUTRE décor n'éteint pas celui-ci
+    expect(interactionHalos(els, sc, { [cleActionJouee('tonneau', 'fouiller')]: true }, null, EXPLORE).fouilles).toHaveLength(1);
   });
 
-  it('ni un décor NON interactif ni un overlay de TERRAIN n’appellent le joueur', () => {
+  it('UNE action épuisée sur DEUX n’éteint rien : le halo s’éteint quand il ne reste PLUS RIEN à jouer', () => {
+    const deux: SceneEntity = {
+      id: 'coffre', kind: 'prop', pos: { x: 3, y: 4 }, ref: 'tonneau',
+      usable: { actions: [
+        { id: 'fouiller', flow: { kind: 'seq', steps: [] }, unique: true },
+        { id: 'ouvrir', flow: { kind: 'seq', steps: [] }, unique: true },
+      ] },
+    };
+    const els = [décor('coffre', 3, 4)];
+    const sc = scèneAvec(deux);
+    const une = { [cleActionJouee('coffre', 'fouiller')]: true };
+    expect(interactionHalos(els, sc, une, null, EXPLORE).fouilles).toHaveLength(1);
+    expect(interactionHalos(els, sc, { ...une, [cleActionJouee('coffre', 'ouvrir')]: true }, null, EXPLORE).fouilles).toHaveLength(0);
+  });
+
+  it('ni un décor SANS offre ni un overlay de TERRAIN n’appellent le joueur', () => {
+    const nu: SceneEntity = { id: 'mort', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'tonneau' };
     const els = [
-      décor('mort', 1, 1, { interact: false }),
-      { ...décor('arbre', 2, 2), source: 'terrain' as const, entId: undefined, interact: false },
+      décor('mort', 1, 1),
+      { ...décor('arbre', 2, 2), source: 'terrain' as const, entId: undefined },
     ];
-    expect(interactionHalos(els, scèneAvec(), {}, null, EXPLORE).fouilles).toHaveLength(0);
+    expect(interactionHalos(els, scèneAvec(nu), {}, null, EXPLORE).fouilles).toHaveLength(0);
   });
 
   it('le halo est aux PIEDS du décor : le centre de l’empreinte, et son étage', () => {
     const [h] = interactionHalos(
       [décor('epave', 4, 6, { cell: { x: 4, y: 6, z: 2 }, span: { w: 2, h: 2 }, foot: { offX: 0.5, offY: 0.5, scale: 2 } })],
-      scèneAvec(),
+      scèneAvec(fouillable('epave')),
       {},
       null,
       EXPLORE,
@@ -76,7 +99,7 @@ describe('Halos d’interaction — le décor FOUILLABLE (#1176 P3-0g)', () => {
    */
   it('l’échelle du halo suit CHAQUE axe de l’empreinte, et le halo tient dans son bloc de cases', () => {
     const murale = décor('murale', 14, 11, { span: { w: 1, h: 2 }, foot: { offX: 0, offY: 0.5, scale: 2 } });
-    const [h] = interactionHalos([murale], scèneAvec(), {}, null, EXPLORE).fouilles;
+    const [h] = interactionHalos([murale], scèneAvec(fouillable('murale')), {}, null, EXPLORE).fouilles;
     expect(h.echelle, 'un 1×2 ne grandit que sur y').toEqual({ x: 1, y: 2 });
     // CONTENANCE, en cases : demi-axes du halo (rayon monde × échelle) contre le demi-bloc (w/2, h/2).
     const demi = { x: haloRadiusK(HALO_RX_PX) * h.echelle.x, y: haloRadiusK(HALO_RX_PX) * h.echelle.y };
@@ -86,7 +109,7 @@ describe('Halos d’interaction — le décor FOUILLABLE (#1176 P3-0g)', () => {
 
   /** Les décors d'UNE case ne bougent pas d'un flottant : leur halo reste le cercle qu'il était. */
   it('un décor 1×1 garde un halo ISOTROPE (contrat de non-régression)', () => {
-    const [h] = interactionHalos([décor('coffre', 3, 4)], scèneAvec(), {}, null, EXPLORE).fouilles;
+    const [h] = interactionHalos([décor('coffre', 3, 4)], scèneAvec(fouillable('coffre')), {}, null, EXPLORE).fouilles;
     expect(h.echelle).toEqual({ x: 1, y: 1 });
     expect(h.centre).toEqual({ x: 3, y: 4 });
   });
@@ -94,7 +117,7 @@ describe('Halos d’interaction — le décor FOUILLABLE (#1176 P3-0g)', () => {
   it('le SURVOL renforce le halo — sur SA case, à SON étage, et seulement en exploration', () => {
     const els = [décor('coffre', 3, 4, { cell: { x: 3, y: 4, z: 1 } })];
     const survolé = (hover: { x: number; y: number; z?: number } | null, ctx = EXPLORE) =>
-      interactionHalos(els, scèneAvec(), {}, hover, ctx).fouilles[0].hovered;
+      interactionHalos(els, scèneAvec(fouillable('coffre')), {}, hover, ctx).fouilles[0].hovered;
     expect(survolé({ x: 3, y: 4, z: 1 })).toBe(true);
     expect(survolé({ x: 3, y: 4, z: 0 }), 'un étage plus bas n’est pas ce décor').toBe(false);
     expect(survolé({ x: 3, y: 5, z: 1 })).toBe(false);
@@ -123,23 +146,23 @@ describe('Halos d’interaction — le PNJ INTERLOCUTEUR (#1176 P3-0g)', () => {
   });
 
   it('en COMBAT, aucun halo de PNJ — le survol y sert au ciblage', () => {
-    const scène = scèneAvec(pnj('marchand', 5, 5));
+    const scène = scèneAvec(pnj('marchand', 5, 5), fouillable('coffre', 3, 4));
     expect(interactionHalos([], scène, {}, { x: 5, y: 5 }, { exploring: false, combat: true }).pnjs).toHaveLength(0);
     // mais le décor fouillable, lui, garde son halo permanent
     expect(interactionHalos([décor('coffre', 3, 4)], scène, {}, { x: 5, y: 5 }, { exploring: false, combat: true }).fouilles).toHaveLength(1);
   });
 
-  it('un MEUBLE À PLACES appelle le joueur SANS porter `interact`, et s’éteint quand tout est pris', () => {
-    const table: SceneEntity = { id: 'table-1', kind: 'prop', pos: { x: 3, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'N', usable: {} };
-    const el = décor('table-1', 3, 3, { interact: false, ref: 'table-ronde-4-tabourets' });
+  it('un MEUBLE À PLACES appelle le joueur SANS aucune action authorée, et s’éteint quand tout est pris', () => {
+    const table: SceneEntity = { id: 'table-1', kind: 'prop', pos: { x: 3, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'N', usable: { assise: true } };
+    const el = décor('table-1', 3, 3, { ref: 'table-ronde-4-tabourets' });
     const libre = scèneAvec(table);
     expect(interactionHalos([el], libre, {}, null, EXPLORE).fouilles.map((h) => h.id)).toEqual(['table-1']);
 
     const pleine = { ...libre, seatAssignments: { 'table-1': Object.fromEntries(['place-1', 'place-2', 'place-3', 'place-4'].map((s) => [s, { kind: 'entity' as const, entityId: `pnj-${s}` }])) } };
     expect(interactionHalos([el], pleine, {}, null, EXPLORE).fouilles).toHaveLength(0);
 
-    // Le flag de FOUILLE n'a aucune prise sur une place : ce n'est pas une ressource qui s'épuise.
-    expect(interactionHalos([el], libre, { __fouille_table_1: true, '__fouille_table-1': true }, null, EXPLORE).fouilles).toHaveLength(1);
+    // Un drapeau d'ÉPUISEMENT n'a aucune prise sur une place : ce n'est pas une ressource qui s'épuise.
+    expect(interactionHalos([el], libre, { [cleActionJouee('table-1', 'fouiller')]: true, [cleActionJouee('table-1', 'sasseoir')]: true }, null, EXPLORE).fouilles).toHaveLength(1);
   });
 
   it('la valeur VIDE est gelée — une voie ne peut pas la salir pour l’autre', () => {

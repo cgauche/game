@@ -64,7 +64,7 @@ describe('Scénario « Opéra — Théâtre » : Scene produite par buildScene(M
     // la plante piégée (interact avec test) est bien une entité posée sur z1
     const plante = scene.entities.find((e) => e.id === 'plante-bombe')!;
     expect(plante.z).toBe(1);
-    expect(plante.interact?.flow.kind).toBe('test');
+    expect(plante.usable?.actions?.[0].flow.kind).toBe('test');
     // le dialogue gaté de la Comtesse est présent (branche `when: flag bombeDesamorcee`)
     const dlg = scene.dialogues.find((d) => d.id === 'dlg-comtesse')!;
     expect(dlg.nodes[0].choices.some((c) => c.when?.kind === 'flag' && c.when.expr === 'bombeDesamorcee')).toBe(true);
@@ -118,7 +118,7 @@ describe('Scénario « Opéra — Théâtre » : Scene produite par buildScene(M
 describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', () => {
   const arm = scenario.scene.triggers.find((t) => t.id === 'armer-bombe')!;
   const plante = scenario.scene.entities.find((e) => e.id === 'plante-bombe')!;
-  const detect = plante.interact!.flow as Extract<Flow, { kind: 'test' }>;
+  const detect = plante.usable!.actions![0].flow as Extract<Flow, { kind: 'test' }>;
   /** Le nœud Test « voleur » niché dans le flow du delayedEffect des pétards (à 20h30). */
   const spotNode = (): Extract<Flow, { kind: 'test' }> => {
     const petards = flowEffects(arm.flow).find((e): e is Extract<Effect, { type: 'delayedEffect' }> => e.type === 'delayedEffect' && e.afterMinutes === 10)!;

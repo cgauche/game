@@ -31,7 +31,7 @@ import { narratifSchema } from './narratif';
 const idsDAxes = (): readonly string[] => IDS_PAR_DATASET['axes.json'] ?? [];
 
 /** Version de FORME du document de projet — reprise par `CURRENT_PROJECT_SCHEMA` (`worldMap.ts`). */
-export const SCHEMA_PROJET = 10;
+export const SCHEMA_PROJET = 11;
 
 /** Handle du document de projet : `schema` sert `parseProject`, `meta`/`exposition` le registre. */
 export const projetDoc = document(

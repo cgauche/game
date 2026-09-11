@@ -52,7 +52,7 @@ function effetsDuProjet(doc: Pick<ProjectDoc, 'scenes'>): { sceneId: string; eff
     for (const d of sc.dialogues) for (const n of d.nodes) for (const c of n.choices) marcheFlow(c.flow, effets);
     for (const t of sc.triggers) marcheFlow(t.flow, effets);
     for (const enc of sc.encounters) marcheFlow(enc.onVictory, effets);
-    for (const e of sc.entities) marcheFlow(e.interact?.flow, effets);
+    for (const e of sc.entities) for (const a of e.usable?.actions ?? []) marcheFlow(a.flow, effets);
     out.push(...effets.map((eff) => ({ sceneId: sc.id, eff })));
   }
   return out;

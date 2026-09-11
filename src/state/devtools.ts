@@ -78,6 +78,7 @@ import { partyMoneyTotal, creditBourse, distributeCredit, condCtx } from './bour
 import { t } from '../i18n';
 import { diamondCorners, type Dims } from '../geometry/iso';
 import { chebyshev } from '../engine/grid';
+import { actionsDe } from './usable';
 
 /** Trace du DERNIER Test résolu (`resolveTest`, `EVT.TEST_RESOLVED`) — observation pure pour la
  *  recette navigateur (`__wfrp.lastRoll()`), JAMAIS dans l'état de jeu persisté (module DEV seul,
@@ -513,7 +514,9 @@ export function buildApi() {
         label: e.label,
         kind: e.kind,
         pos: e.pos,
-        access: e.dialogueId ? 'talk' : e.merchant ? 'merchant' : e.interact ? 'interact' : '—',
+        // Ce que l'entité OFFRE, lu au dériveur unique et aux drapeaux vivants — la recette voit la
+        // même liste que le joueur, jamais une carte de champs recopiée qui dérive.
+        access: actionsDe(g().scene!, e, g().flags).map((a) => a.id).join('+') || '—',
       })),
 
     /** CARTOGRAPHIE (symétrique d'`entities()`) : les routes CLIQUABLES (`clickRoute`, MÊME source

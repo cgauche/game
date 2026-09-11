@@ -471,6 +471,7 @@ export function declutterPositions(
 // LUI-MÊME et ses scènes et pose la provenance, la 7→8 pose les matières de relief de chaque scène.
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { findPropById } from '../data';
+import { ACTION_FOUILLER } from './usable';
 import { type NarratifBlock, emptyNarratif } from './campaignNarratif';
 import { validateDocument } from '../data/schemas/validate';
 import { projetSchema, SCHEMA_PROJET } from '../data/schemas/defs-scenes/projet';
@@ -655,6 +656,46 @@ function poseSurChaqueEntite(
 const porteDesPlaces = (ent: Record<string, unknown>): boolean =>
   ent.kind === 'prop' && (findPropById(typeof ent.ref === 'string' ? ent.ref : '')?.seatSlots?.length ?? 0) > 0;
 
+/**
+ * La fouille d'un décor devient une ACTION AUTHORÉE, et l'enveloppe `usable` vide se NOMME (#1687).
+ *
+ * L'enveloppe prend la PLACE qu'occupait `interact` (patron `renommeCle`) : le document migré est
+ * celui que l'auteur aurait écrit. L'ancien `consume` (le décor disparaît) traverse tel quel ; son
+ * absence devient `unique` — la fouille sans butin restait en place, marquée jouée. Une entité sans
+ * `interact` ni `usable` traverse INTACTE, et ce qui n'est pas une liste traverse tel quel
+ * (`parseProject` le refuse ensuite, en le nommant).
+ */
+function migreActionsAuthorees(scenes: unknown): unknown {
+  if (!Array.isArray(scenes)) return scenes;
+  return scenes.map((s) => {
+    if (!s || typeof s !== 'object' || !Array.isArray((s as Record<string, unknown>).entities)) return s;
+    const sc = s as Record<string, unknown>;
+    const entities = (sc.entities as unknown[]).map((e) => {
+      if (!e || typeof e !== 'object') return e;
+      const ent = e as Record<string, unknown>;
+      const it = ent.interact as { flow?: unknown; consume?: boolean } | undefined;
+      const avant = ent.usable as Record<string, unknown> | undefined;
+      if (it === undefined && avant === undefined) return ent;
+      const base: Record<string, unknown> = avant && Object.keys(avant).length === 0 ? { assise: true } : { ...avant };
+      const usable = it?.flow === undefined
+        ? base
+        : {
+          ...base,
+          actions: [
+            ...(Array.isArray(base.actions) ? base.actions : []),
+            { id: ACTION_FOUILLER, flow: it.flow, ...(it.consume ? { consume: true } : { unique: true }) },
+          ],
+        };
+      return Object.fromEntries(
+        Object.entries(ent)
+          .filter(([k]) => !(k === 'usable' && ent.interact !== undefined))
+          .map(([k, v]) => (k === 'interact' || k === 'usable' ? ['usable', usable] : [k, v])),
+      );
+    });
+    return { ...sc, entities };
+  });
+}
+
 /** Migrations SÉQUENTIELLES de ProjectDoc : la clé N met à niveau un schema N → N+1. `2` injecte le
  *  bloc `narratif` vide (#765 — un projet schema 2 est un paquet SANS narratif). `3` porte les
  *  RÔLES DE PROSE du lot #1467 L1b V-P2 : c'est la MÊME transformation que les migrations de dépôt
@@ -809,6 +850,22 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
       : {}),
     version: 10,
     schema: 10,
+  }),
+  /**
+   * `10` donne à l'enveloppe `usable` ses deux faits NOMMÉS (#1687) : la fouille quitte le champ
+   * `interact`, que le schéma ne connaît plus, pour devenir une ACTION AUTHORÉE du vocabulaire ouvert
+   * (`usable.actions`), et l'enveloppe VIDE posée par la 9→10 — qui disait « assise activée » par sa
+   * seule PRÉSENCE — dit désormais `assise: true`. Sans ce passage, un projet de bibliothèque
+   * utilisateur serait REFUSÉ au parse sur sa première clé `interact` (`strictObject`) et ses meubles
+   * à places redeviendraient muets.
+   * Pendant applicatif du script de dépôt `scripts/migrations/2026-09-11-1687-actions-authorees.mjs`
+   * (parité mesurée par `projet-migration-10-vers-11.test.ts`).
+   */
+  10: (doc) => ({
+    ...doc,
+    ...(doc.scenes !== undefined ? { scenes: migreActionsAuthorees(doc.scenes) } : {}),
+    version: 11,
+    schema: 11,
   }),
 };
 

@@ -65,7 +65,7 @@ const SANS_ACTEUR: ActorPose[] = [];
 
 const décor = (id: string, x: number, y = GROUPE.y): BillboardPropEl => ({
   kind: 'prop', source: 'entity', key: `prop:${id}`, ref: 'tonneau', facing: 'S',
-  cell: { x, y, z: 0 }, foot: { offX: 0, offY: 0, scale: 1 }, interact: false,
+  cell: { x, y, z: 0 }, foot: { offX: 0, offY: 0, scale: 1 },
   states: { visible: true },
 });
 

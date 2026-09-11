@@ -52,7 +52,9 @@ describe('PROJECT_MIGRATIONS[9] — un projet format 9 se charge à travers la m
   it('il se charge VERT, et le meuble à places ressort ACTIVÉ — il était assis-able avant le lot', () => {
     const doc = parseProject(structuredClone(PROJET_FORMAT_9));
     const [table, tonneau] = doc.scenes[0].entities!;
-    expect(table.usable).toEqual({});
+    // La chaîne ne s'arrête pas à ce bump : la 10→11 NOMME l'enveloppe que celui-ci pose
+    // (`projet-migration-10-vers-11.test.ts`). Ce qui se mesure ici est l'ACTIVATION, bout en bout.
+    expect(table.usable).toEqual({ assise: true });
     // Un décor SANS place au catalogue n'a rien à activer : l'assise est la seule capacité de TYPE.
     expect(tonneau).not.toHaveProperty('usable');
   });
@@ -61,7 +63,7 @@ describe('PROJECT_MIGRATIONS[9] — un projet format 9 se charge à travers la m
     const avec = structuredClone(PROJET_FORMAT_9) as Record<string, unknown>;
     const scene = (avec.scenes as Record<string, unknown>[])[0];
     (scene.entities as Record<string, unknown>[])[1].usable = {}; // le tonneau, activé à la main
-    expect(parseProject(avec).scenes[0].entities![1].usable).toEqual({});
+    expect(parseProject(avec).scenes[0].entities![1].usable).toEqual({ assise: true });
   });
 
   /**

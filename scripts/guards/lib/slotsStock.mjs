@@ -65,7 +65,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "arene-projet.json", champ: "b", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "choices", occurrences: 14, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "dialogueId", occurrences: 9, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "arene-projet.json", champ: "effect", occurrences: 76, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "arene-projet.json", champ: "effect", occurrences: 72, lot: "L2/L3 #1473", date: "2026-09-11" }, // 76→72 (#1687 lot 3-I) : cette ligne dérive de `scan.formes` (`champsSansSlot`), et 4 objets `effect` d'`arene-projet.json` en sortent — non parce que leur donnée bouge (elle ne bouge pas, et ils vivent sous les flux de dialogue/déclencheur, jamais sous `interact`) mais parce que `choixDeclares` les ATTEINT désormais : `phase` et `lodging` sont déclarés à HEAD comme ici (`defs-scenes/effets.ts`), et c'est la marche de l'instrument — DFS mémoïsé borné à `PROFONDEUR_MEMO = 12` — qui change de chemin quand `interact` cède à `usable.actions[].flow` ; un littéral d'enum DÉCLARÉ n'est pas une clé étrangère (`structures-scan.mts:501`). Mesure au commentaire de `PLAFOND_HORS_STRATE`
   { dataset: "arene-projet.json", champ: "members", occurrences: 116, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "merchant", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "modes", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },

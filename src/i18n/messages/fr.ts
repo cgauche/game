@@ -1371,9 +1371,8 @@ export const fr = {
   'store.climberFallback': 'Le grimpeur',
   'store.searchedAlready': '{what} : rien de plus à trouver.',
   'store.searchedFallback': 'Déjà fouillé',
-  'store.searching': 'Vous fouillez {what}…',
+  'store.actionJouee': '{what} : {action}…',
   'store.searchPlaceFallback': 'les lieux',
-  'store.searchTitle': 'Fouille',
   'store.propInerte': '{what} : rien à en tirer.',
   'store.propInerteFallback': 'Ce décor',
   'store.dialogueNoMoney': 'Pas assez d’argent pour cette option.',
@@ -1388,7 +1387,6 @@ export const fr = {
   // ── UTILISABLE (`state/usable.ts`, `usable.*`) : les actions qu'une entité OFFRE au joueur. ──
   'usable.parler': 'Parler',
   'usable.commercer': 'Commercer',
-  'usable.jouer': 'Jouer',
   'usable.fouiller': 'Fouiller',
   'usable.sasseoir': 'S’asseoir',
 

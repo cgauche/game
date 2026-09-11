@@ -68,7 +68,7 @@ En principe, déterminer une **Localisation** pour une créature non humaine est
 **Voir aussi** : [Tableau de Localisation humanoïde](combat.md#tableau-de-localisation-humanoide) — `combat.md` ; Critiques et Frappe Mortelle — `combat.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 76` (l.19-45) → `traitsStandard`, `sceneEntitySchema`, `doc`, `SceneEntity`, `critTableKeyFor`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
+- `LDB 76` (l.19-45) → `traitsStandard`, `doc`, `sceneEntitySchema`, `SceneEntity`, `critTableKeyFor`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
 
 ---
 
@@ -87,7 +87,7 @@ En principe, déterminer une **Localisation** pour une créature non humaine est
 Ces deux tables remplacent la table humanoïde standard pour les morphologies concernées. Toutes les autres créatures — quadrupèdes, oiseaux, créatures à tentacules — utilisent le **tableau humanoïde réétiquetté** (membres antérieurs = bras, membres postérieurs = jambes, ailes = bras).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 76` (l.28-35) → `traitsStandard`, `sceneEntitySchema`, `doc`, `SceneEntity`, `critTableKeyFor`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
+- `LDB 76` (l.28-35) → `traitsStandard`, `doc`, `sceneEntitySchema`, `SceneEntity`, `critTableKeyFor`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
 
 ---
 
@@ -106,7 +106,7 @@ Ces Traits dits « standard » peuvent donc être ajoutés à **n'importe quelle
 **Voir aussi** : [Index des Traits de créature](#index-des-traits-de-creature) ; Traits Facultatifs.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 76` (l.31-35, l.37) → `traitsStandard`, `sceneEntitySchema`, `doc`, `SceneEntity`, `critTableKeyFor`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
+- `LDB 76` (l.31-35, l.37) → `traitsStandard`, `doc`, `sceneEntitySchema`, `SceneEntity`, `critTableKeyFor`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
 
 ---
 
@@ -154,7 +154,7 @@ Règle d'application des Traits Facultatifs modificateurs de profil (**Élite, C
 - `LDB 85 l.339-340` — « Utiliser les Tailles » (si la Taille Facultative change la catégorie → ±10 F/E, ∓5 Ag).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 76` (l.11-13, l.45) → `sceneEntitySchema`, `doc`, `SceneEntity`, `critTableKeyFor`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique` — `src/data/criticals.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
+- `LDB 76` (l.11-13, l.45) → `doc`, `sceneEntitySchema`, `SceneEntity`, `critTableKeyFor`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique` — `src/data/criticals.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
 - `LDB 85` (l.339-340) → `doc`, `SIZE_LABEL`, `structureTaille`, `resizeBySteps`, `StructureData`, `taille-modificateurs-en-combat`, `regard-petrifiant`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, +19 — `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/schemas/defs/structures.ts`, `src/data/structures.json`, `src/data/traits.json`, `src/engine/size.ts`, +3 fichiers
 
 ---
@@ -310,7 +310,7 @@ Pour les bêtes sauvages, les profils du bestiaire sont **arrondis à des multip
 Les Caractéristiques inexistantes (« – » → 0) **ne sont pas tirées**.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 77` (l.108) → `CustomStatblock`, `randomizeChars`, `Possession`, `skillInstance`, `sceneEntitySchema`, `SceneEntity`, `StatblockEditor`, `SpawnExtras`, `creatureToCombatant`, `statblockToCombatant`, +5 — `src/data/creatures.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/scene.ts`, `src/engine/possession.ts`, `src/engine/statblock.ts`, `src/state/scene.ts`, +3 fichiers
+- `LDB 77` (l.108) → `CustomStatblock`, `randomizeChars`, `Possession`, `skillInstance`, `sceneEntitySchema`, `StatblockEditor`, `SceneEntity`, `SpawnExtras`, `creatureToCombatant`, `statblockToCombatant`, +5 — `src/data/creatures.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/scene.ts`, `src/engine/possession.ts`, `src/engine/statblock.ts`, `src/state/scene.ts`, +3 fichiers
 
 ---
 
@@ -352,7 +352,7 @@ Ces traits octroient une ou plusieurs manœuvres d'attaque à la créature (`LDB
 | **Langue Préhensile (Indice)(Portée)** | Attaque gratuite | 1 Avantage | Distance ; Empêtré ; tire la cible si Taille inférieure (`LDB 85 l.211-213`) |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 76` (l.31-35) → `traitsStandard`, `sceneEntitySchema`, `doc`, `SceneEntity`, `critTableKeyFor`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
+- `LDB 76` (l.31-35) → `traitsStandard`, `doc`, `sceneEntitySchema`, `SceneEntity`, `critTableKeyFor`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
 - `LDB 85` (l.1-447) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `doc`, `affame`, `scenario`, `creatureWeapon`, +176 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/structures.ts`, `src/data/schemas/defs/traits.ts`, +37 fichiers
 
 ---
