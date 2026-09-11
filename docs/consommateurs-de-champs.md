@@ -139,17 +139,17 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 |---|---|---|
 | `stake` | 10 | `src/engine/flowCore.ts:841` |
 | `skill` | 30 | `src/engine/disease.ts:371` |
-| `sense` | 2 | `src/state/combatEffects.ts:924` |
+| `sense` | 2 | `src/state/combatEffects.ts:954` |
 | `characteristic` | 24 | `src/engine/disease.ts:371` |
 | `difficulty` | 8 | `src/engine/disease.ts:358` |
-| `requireSL` | 2 | `src/state/combatEffects.ts:963` |
+| `requireSL` | 2 | `src/state/combatEffects.ts:993` |
 | `label` | 11 | `src/state/combat/triggeredTest.ts:232` |
-| `tool` | 2 | `src/state/combatEffects.ts:926` |
-| `vsGroups` | 5 | `src/state/combatEffects.ts:831` |
-| `vsStatus` | 1 | `src/state/combatEffects.ts:830` |
-| `begging` | 3 | `src/state/combatEffects.ts:835` |
-| `vsCapricieux` | 1 | `src/state/combatEffects.ts:839` |
-| `easierIf` | 11 | `src/state/combatEffects.ts:880` |
+| `tool` | 2 | `src/state/combatEffects.ts:956` |
+| `vsGroups` | 5 | `src/state/combatEffects.ts:861` |
+| `vsStatus` | 1 | `src/state/combatEffects.ts:860` |
+| `begging` | 3 | `src/state/combatEffects.ts:865` |
+| `vsCapricieux` | 1 | `src/state/combatEffects.ts:869` |
+| `easierIf` | 11 | `src/state/combatEffects.ts:910` |
 | `argDifficulty` | 1 | `src/state/triggeredEffects.ts:75` |
 | `unlessImmune` | 1 | `src/state/combat/flowEval.ts:137` |
 | `onlyGroups` | 1 | `src/state/combat/flowEval.ts:138` |
@@ -299,4 +299,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: 0fac81c3f2dd9a9f8a6f407d5d1a202ecbe6276d (2074 fichiers, 169 dossiers) corps: e4ef8f7482585f98c30b5878710592e47883bc4b -->
+<!-- sources-empreinte: 30e32ca3b9f1b8ae3073c72980d9a8d443544b45 (2076 fichiers, 169 dossiers) corps: 065fe10b2dea0799733c4aef9a433ffbf3bc2e4d -->
