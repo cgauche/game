@@ -65,6 +65,11 @@ const diffDe = (fichier, ajoutees = [], retirees = []) =>
     ...ajoutees.map((l) => `+${l}`),
   ].join('\n')
 
+/** Lecteur d'image qui rend `null` : la porte l'a, et le REPLI de ligne juge. C'est la voie que
+ *  mesurent les diffs FABRIQUÉS ci-dessous, dont aucun fichier n'existe — un appel SANS lecteur,
+ *  lui, est REFUSÉ (`croissanceDesStocks`, un compte sans image ment). */
+const REPLI = { lirePostImage: () => null }
+
 const ENTREE_A = "  'src/state/combatSlice.ts',"
 const ENTREE_B = "  'src/ui/CampaignView.test.tsx // div',"
 const ENTREE_CLE = "  'scripts/guards/lib/labelLogic.mjs': 'raison mesurée',"
@@ -106,29 +111,29 @@ test('entrée — un chemin cité en PROSE ou en commentaire n en est pas une', 
 })
 
 test('croissance — un stock qui NAÎT est une croissance nette, avec ses exemples', () => {
-  const [c] = croissanceDesStocks(diffDe('src/state/flowtest-derived-stake.test.ts', [ENTREE_A, ENTREE_B]))
+  const [c] = croissanceDesStocks(diffDe('src/state/flowtest-derived-stake.test.ts', [ENTREE_A, ENTREE_B]), REPLI)
   assert.equal(c.fichier, 'src/state/flowtest-derived-stake.test.ts')
   assert.deepEqual([c.ajoutees, c.retirees, c.net], [2, 0, 2])
   assert.deepEqual(c.exemples, [ENTREE_A.trim(), ENTREE_B.trim()])
 })
 
 test('croissance — un stock qui DÉCROÎT ou qui se déplace ne dit rien', () => {
-  assert.deepEqual(croissanceDesStocks(diffDe('scripts/guards/lib/domResiduStock.mjs', [], [ENTREE_A, ENTREE_B])), [])
-  assert.deepEqual(croissanceDesStocks(diffDe('scripts/guards/lib/domResiduStock.mjs', [ENTREE_A], [ENTREE_B])), [])
+  assert.deepEqual(croissanceDesStocks(diffDe('scripts/guards/lib/domResiduStock.mjs', [], [ENTREE_A, ENTREE_B]), REPLI), [])
+  assert.deepEqual(croissanceDesStocks(diffDe('scripts/guards/lib/domResiduStock.mjs', [ENTREE_A], [ENTREE_B]), REPLI), [])
 })
 
 test('croissance — un diff qui n’est PAS une chaîne LÈVE, et un « 0 » ne peut plus mentir', () => {
   // Témoin POSITIF d'abord : sans lui, un `[]` prouverait autant que la lib cassée. Le même diff,
   // passé en OBJET (l'appel qu'un juge a fait le 2026-09-04), doit lever au lieu de rendre [].
   const diff = diffDe('src/state/flowtest-derived-stake.test.ts', [ENTREE_A, ENTREE_B])
-  assert.ok(croissanceDesStocks(diff).length > 0, 'témoin positif muet : la mesure ne mesure rien')
-  assert.throws(() => croissanceDesStocks({ diff }), /POSITIONNELLE/)
-  assert.throws(() => croissanceDesStocks(undefined), /attend le diff en CHAÎNE/)
-  assert.throws(() => croissanceDesStocks(null), /attend le diff en CHAÎNE/)
+  assert.ok(croissanceDesStocks(diff, REPLI).length > 0, 'témoin positif muet : la mesure ne mesure rien')
+  assert.throws(() => croissanceDesStocks({ diff }, REPLI), /POSITIONNELLE/)
+  assert.throws(() => croissanceDesStocks(undefined, REPLI), /attend le diff en CHAÎNE/)
+  assert.throws(() => croissanceDesStocks(null, REPLI), /attend le diff en CHAÎNE/)
 })
 
 test('croissance — hors fichier PORTEUR, la règle se tait', () => {
-  assert.deepEqual(croissanceDesStocks(diffDe('src/state/combatFlow.ts', [ENTREE_A, ENTREE_B])), [])
+  assert.deepEqual(croissanceDesStocks(diffDe('src/state/combatFlow.ts', [ENTREE_A, ENTREE_B]), REPLI), [])
 })
 
 test('CLIQUET — le message couvre le fichier s il annonce le BON compte et un motif', () => {
@@ -136,23 +141,23 @@ test('CLIQUET — le message couvre le fichier s il annonce le BON compte et un 
   const couvrant =
     'feat: lot\n\nCLIQUET: src/state/flowtest-derived-stake.test.ts +2 — deux familles auto-résolues mesurées ce jour\n'
   assert.deepEqual(cliquetsDuMessage(couvrant).map((k) => k.n), [2])
-  assert.deepEqual(croissancesNonCouvertes({ diff, message: couvrant }), [])
+  assert.deepEqual(croissancesNonCouvertes({ diff, message: couvrant }, REPLI), [])
 })
 
 test('CLIQUET — un compte FAUX ou un motif de tampon ne couvre rien, et le refus le dit', () => {
   const diff = diffDe('src/state/flowtest-derived-stake.test.ts', [ENTREE_A, ENTREE_B])
   const fauxCompte = 'CLIQUET: src/state/flowtest-derived-stake.test.ts +1 — motif suffisamment long pour passer'
-  const [c] = croissancesNonCouvertes({ diff, message: fauxCompte })
+  const [c] = croissancesNonCouvertes({ diff, message: fauxCompte }, REPLI)
   assert.deepEqual([c.net, c.declare], [2, 1])
   assert.match(raisonDeRefus([c]), /annonce `\+1`, pas \+2/)
   const tampon = 'CLIQUET: src/state/flowtest-derived-stake.test.ts +2 — besoin'
-  assert.equal(croissancesNonCouvertes({ diff, message: tampon }).length, 1)
+  assert.equal(croissancesNonCouvertes({ diff, message: tampon }, REPLI).length, 1)
   const autreFichier = 'CLIQUET: scripts/guards/lib/domResiduStock.mjs +2 — un motif assez long mais pour un autre fichier'
-  assert.equal(croissancesNonCouvertes({ diff, message: autreFichier }).length, 1)
+  assert.equal(croissancesNonCouvertes({ diff, message: autreFichier }, REPLI).length, 1)
 })
 
 test('refus — nomme le fichier, le compte et jusqu à trois exemples', () => {
-  const raison = raisonDeRefus(croissanceDesStocks(diffDe('scripts/guards/lib/domResiduStock.mjs', [ENTREE_A, ENTREE_B, ENTREE_CLE, ENTREE_A])))
+  const raison = raisonDeRefus(croissanceDesStocks(diffDe('scripts/guards/lib/domResiduStock.mjs', [ENTREE_A, ENTREE_B, ENTREE_CLE, ENTREE_A]), REPLI))
   assert.match(raison, /STOCK NOMINATIF qui NAÎT ou GRANDIT/)
   assert.match(raison, /scripts\/guards\/lib\/domResiduStock\.mjs : \+4 entrée\(s\) nette\(s\)/)
   assert.equal(raison.split(' · ').length, 3, 'trois exemples, pas la liste entière')
@@ -213,11 +218,10 @@ test('portée — le MÊME littéral compte en constante de module, jamais dans 
   assert.deepEqual([c.fichier, c.net], [f, 1])
 })
 
-test('portée — sans lecteur d\'image, ou sans image lisible, l\'entrée COMPTE', () => {
+test('portée — quand le lecteur rend `null`, le REPLI juge et l\'entrée COMPTE', () => {
   const f = 'scripts/docs/lib/enregistreur-lectures.test.mjs'
-  assert.equal(croissanceDesStocks(diffAjoutA(f, 5)).length, 1, 'sans lecteur : comportement inchangé')
   assert.equal(
-    croissanceDesStocks(diffAjoutA(f, 5), { lirePostImage: () => null }).length, 1,
+    croissanceDesStocks(diffAjoutA(f, 5), REPLI).length, 1,
     'fichier supprimé ou binaire : la porte perd sa précision, jamais sa vue',
   )
 })
@@ -360,16 +364,95 @@ test('définition — un porteur JSON se lit comme les autres', () => {
   assert.deepEqual([c.fichier, c.net], [f, 1])
 })
 
-test('repli — sans image, une entrée à ACCOLADE n’est pas vue, et l’en-tête le dit', () => {
+test('repli — sur une image `null`, une entrée à ACCOLADE n’est pas vue, et l’en-tête le dit', () => {
   const f = 'scripts/guards/lib/legacyVocabStock.mjs'
   const post = ['export const STOCK = [', '  {', "    fichier: 'src/ui/Tabs.tsx',", '  },', ']'].join('\n')
   const diff = [
     `diff --git a/${f} b/${f}`, `--- a/${f}`, `+++ b/${f}`, '@@ -2,0 +2,3 @@',
     '+  {', "+    fichier: 'src/ui/Tabs.tsx',", '+  },',
   ].join('\n')
-  assert.deepEqual(croissanceDesStocks(diff), [], 'sans image, le repli de ligne ne voit pas l’accolade')
+  assert.deepEqual(croissanceDesStocks(diff, REPLI), [], 'image `null` : le repli de ligne ne voit pas l’accolade')
   const [c] = croissanceDesStocks(diff, { lirePostImage: () => `${post}\n` })
   assert.deepEqual([c.fichier, c.net], [f, 1], 'avec l’image, l’entrée multiligne est vue une fois')
+})
+
+// ── NAISSANCE : le compte d'un fichier qui naît vient du LECTEUR, ou l'appel est REFUSÉ ─────────
+// Sonde 3 de la revue de palier du 2026-09-08 : `croissanceDesStocks(diff)` SANS lecteur rendait
+// `[]` sur `5756d2d2c`, où `scripts/raw/reconciliation-stock.json` NAÎT avec 13 entrées — un zéro
+// qui ment pour tout appelant hors CI (diagnostic, sonde, revue). Un tel appel est désormais un
+// REFUS NOMMÉ : la lib ne devine aucune image, elle exige son unique source.
+
+/** Diff d'un fichier qui NAÎT : la graphie de `git diff` (pré-image `/dev/null`, hunk à partir de 1). */
+const diffNaissance = (fichier, source) => {
+  const lignes = source.replace(/\n$/, '').split('\n')
+  return [
+    `diff --git a/${fichier} b/${fichier}`,
+    'new file mode 100644',
+    'index 0000000..1111111',
+    '--- /dev/null',
+    `+++ b/${fichier}`,
+    `@@ -0,0 +1,${lignes.length} @@`,
+    ...lignes.map((l) => `+${l}`),
+  ].join('\n')
+}
+
+/** Un `*-stock.json` de l'Atlas à sa forme RÉELLE : une entrée = une rubrique dont la propriété
+ *  `sites` nomme les fichiers — aucune de ses lignes, prise seule, ne se lit comme une entrée. */
+const stockJson = (entrees) => [
+  '{',
+  '  "quoi": "fixture — un trou dur par rubrique",',
+  '  "trous": {',
+  entrees.map(([cle, sites]) => [
+    `    "${cle}": {`,
+    `      "sites": [${sites.map((s) => `"${s}"`).join(', ')}],`,
+    '      "lot": "#1709 D3",',
+    '      "date": "2026-09-11"',
+    '    }',
+  ].join('\n')).join(',\n'),
+  '  }',
+  '}',
+  '',
+].join('\n')
+
+// Les rubriques de fixture s'écrivent DANS le corps de chaque test : au MODULE d'un
+// `scripts/**.test.mjs`, le même littéral — fût-il derrière une flèche à corps concis — serait un
+// stock de trois entrées, et cette porte se ferait croître elle-même.
+
+test('lecteur — un appel SANS lecteur d’image est REFUSÉ nommément, jamais compté', () => {
+  const f = 'scripts/raw/fixture-stock.json'
+  const diff = diffNaissance(f, stockJson([
+    ['ADE I 2', ['src/data/talents.json']],
+    ['EDO 10', ['src/data/skills.json']],
+    ['MDG 3', ['src/state/seaActivities.ts', 'src/state/travelFlow.ts']],
+  ]))
+  const attendu = /aucun lecteur d'image post — un compte sans image ment/
+  assert.throws(() => croissanceDesStocks(diff), attendu)
+  assert.throws(() => croissanceDesStocks(diff, {}), attendu)
+  assert.throws(() => croissanceDesStocks(diff, { lirePostImage: null }), attendu)
+  assert.throws(() => croissancesNonCouvertes({ diff, message: 'muet' }), attendu, 'le refus se propage')
+})
+
+test('naissance — un `*-stock.json` qui naît compte ses entrées sur l’image du lecteur', () => {
+  const f = 'scripts/raw/fixture-stock.json'
+  const source = stockJson([
+    ['ADE I 2', ['src/data/talents.json']],
+    ['EDO 10', ['src/data/skills.json']],
+    ['MDG 3', ['src/state/seaActivities.ts', 'src/state/travelFlow.ts']],
+  ])
+  assert.deepEqual(
+    source.split('\n').filter((l) => estEntreeDeStock(l)), [],
+    'témoin : le REPLI de ligne ne voit AUCUNE de ces entrées — le compte ne peut venir que d’une image',
+  )
+  assert.equal(entreesDeStock(source, f).length, 3)
+  const diff = diffNaissance(f, source)
+  assert.deepEqual(
+    croissanceDesStocks(diff, { lirePostImage: () => source }).map((c) => [c.fichier, c.net]), [[f, 3]],
+    'le lecteur rend le contenu du fichier qui naît : trois entrées',
+  )
+  assert.deepEqual(
+    croissanceDesStocks(diff, REPLI), [],
+    'lecteur qui rend `null` : le repli ne lit aucune de ces entrées — le prix dit en tête de module',
+  )
 })
 
 // ── L'INVARIANT sur les porteurs RÉELS : l'image VOIT, et jamais moins que le repli ───────────────
@@ -509,7 +592,7 @@ test('portée — une entrée écrite en GABARIT à substitution est vue par l�
     '+  `src/${n}.test.ts`,', '+  `src/${n}b.test.ts`,', ']',
   ].join('\n')
   const parImage = croissanceDesStocks(diff, { lirePostImage: () => `${post}\n`, lirePreImage: () => `${pre}\n` })
-  const parRepli = croissanceDesStocks(diff, {})
+  const parRepli = croissanceDesStocks(diff, REPLI)
   assert.deepEqual(parImage.map((c) => [c.fichier, c.net]), [[f, 2]])
   assert.deepEqual(parImage.map((c) => c.net), parRepli.map((c) => c.net), 'l’image ne voit pas MOINS que le repli')
 })

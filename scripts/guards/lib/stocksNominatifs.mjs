@@ -42,11 +42,16 @@
 // `429b9a1a2`, les deux faux positifs de `91c928d16` et le `+8` de `572e60b8b` sont tous de cette
 // classe ; précédent `0d6ddeee1` : la classe se règle au garde, jamais à la fixture).
 //
-// DEUX VOIES. NOMINALE : l'image du fichier est lisible, `entreesDeStock` y pose les entrées, et une
-// ligne du diff ne compte que si elle en porte une. REPLI : sans image lisible (fichier supprimé,
-// binaire, dialecte hors `DIALECTE`, appelant qui n'en fournit pas), `estEntreeDeStock` juge la
-// LIGNE seule et l'entrée COMPTE — la porte perd sa précision, jamais sa vue. Les deux appelants de
-// production fournissent l'image (`plageStock.mjs`, `solde-ticket-guard.mjs`).
+// UNE SEULE SOURCE D'IMAGE : le lecteur `lirePostImage` que l'appelant fournit (contrat
+// `lirePostImage` de `gitPorte.mjs`). `croissanceDesStocks` REFUSE nommément l'appel qui n'en porte
+// pas — un compte sans image ment —, et ne reconstruit aucune image depuis le diff. VOIE NOMINALE :
+// le lecteur rend l'image, `entreesDeStock` y pose les entrées, et une ligne du diff ne compte que
+// si elle en porte une. REPLI : quand le lecteur rend `null` (fichier supprimé, binaire, dialecte
+// hors `DIALECTE`), `estEntreeDeStock` juge la LIGNE seule et l'entrée COMPTE — la porte perd sa
+// précision, jamais sa vue. Ce que le repli ne sait pas lire, il le rate : entrée MULTILIGNE,
+// entrée-objet JSON, propriété dont la CLÉ ne nomme pas de fichier alors que sa valeur en nomme
+// (`"sites": [ … ]` de `scripts/raw/reconciliation-stock.json`). Les appelants de production
+// fournissent l'image (`plageStock.mjs`, `solde-ticket-guard.mjs`).
 //
 // CE QUE LA RÈGLE MESURE MAL, par construction, et qui doit se lire ici plutôt que se découvrir :
 //   · plusieurs entrées sur UNE ligne = SOUS-COMPTAGE (la ligne compte pour une), jamais une cécité :
@@ -58,7 +63,7 @@
 //     lignes internes d'une entrée déjà là ne compte rien (angle mort latent aujourd'hui, que
 //     `scripts/hooks/ecrans-ui.json` deviendra le jour où une entrée y tiendra sur deux lignes) ;
 //   · le REPLI ne voit ni accolade ouvrante ni entrée multiligne : ce qu'il rate, il le rate en
-//     silence, et c'est le prix d'une image illisible ;
+//     silence, et c'est le prix d'une image que le lecteur rend `null` ;
 //   · une table de MAPPING qui vit sous un chemin de `PORTEURS` (`entityConsumers.mjs`,
 //     `hors-modal-intent-path.test.ts`) compte comme un stock : la condition de porteur est un
 //     CHEMIN, et une ligne de mapping de plus dans une lib de garde se DÉCLARE par `CLIQUET:` comme
@@ -315,11 +320,11 @@ const ENTETE_INERTE =
  * Les lignes AJOUTÉES se lisent sur le POST-IMAGE (`lirePostImage(chemin)`), les RETIRÉES sur le
  * PRÉ-IMAGE (`lirePreImage(chemin)`) — sans quoi le retrait d'une fixture locale compenserait
  * l'ajout d'une vraie entrée. Une ligne compte quand `entreesDeStock` de l'image correspondante y
- * pose une entrée ; sans image lisible, `estEntreeDeStock` juge la ligne seule. Les deux lecteurs
- * sont fournis par l'appelant : la lib reste PURE.
+ * pose une entrée ; quand le lecteur rend `null`, `estEntreeDeStock` juge la ligne seule. Les deux
+ * lecteurs sont fournis par l'appelant : la lib reste PURE.
  * @param {string} diffU0
- * @param {{ lirePostImage?: (chemin: string) => string | null,
- *           lirePreImage?: (chemin: string) => string | null }} [images]
+ * @param {{ lirePostImage: (chemin: string) => string | null,
+ *           lirePreImage?: (chemin: string) => string | null }} images
  * @returns {{ fichier: string, ajoutees: number, retirees: number, net: number, exemples: string[] }[]}
  *   trié par fichier ; `exemples` = jusqu'à 3 entrées ajoutées, telles qu'écrites.
  * @throws {TypeError} si le diff n'est pas une CHAÎNE : la signature est POSITIONNELLE, et un appel
@@ -327,14 +332,26 @@ const ENTETE_INERTE =
  *   les commits, y compris sur des croissances réelles. Un juge a publié ce faux zéro le 2026-09-04
  *   (revue de palier n°4, trouvaille 5) : la lib ne peut pas distinguer un diff vide d'un appel mal
  *   formé, elle refuse donc de deviner.
+ * @throws {Error} si `images.lirePostImage` n'est pas une fonction : sans image, une entrée que le
+ *   repli de ligne ne sait pas lire (entrée-objet JSON, propriété dont la clé ne nomme pas de
+ *   fichier) ne se compte pas, et l'appelant reçoit un zéro qui ment. Un lecteur qui rend `null`
+ *   est un lecteur : le repli juge alors, et la porte le sait.
  */
-export function croissanceDesStocks(diffU0, { lirePostImage = null, lirePreImage = null } = {}) {
+export function croissanceDesStocks(diffU0, images) {
   if (typeof diffU0 !== 'string') {
     throw new TypeError(
       `croissanceDesStocks(diffU0, images) attend le diff en CHAÎNE, reçu ${typeof diffU0} `
       + '— la signature est POSITIONNELLE : croissanceDesStocks(diff, { lirePostImage, lirePreImage })',
     );
   }
+  if (typeof images?.lirePostImage !== 'function') {
+    throw new Error(
+      "croissanceDesStocks : aucun lecteur d'image post — un compte sans image ment. Passer "
+      + '`{ lirePostImage: (chemin) => string | null }` ; un lecteur qui rend `null` laisse le REPLI '
+      + 'de ligne juger.',
+    );
+  }
+  const { lirePostImage, lirePreImage = null } = images;
   /** @type {Map<string, { ajoutees: { texte: string, ligne: number }[], retirees: number[] }>} */
   const parFichier = new Map();
   let courant = null;
@@ -416,9 +433,10 @@ export function cliquetsDuMessage(message) {
  * ANNONCE LE BON COMPTE (`+N` = la croissance nette réelle) — sinon la ligne serait un tampon qui
  * survit à l'ajout suivant.
  * @param {{ diff: string, message: string }} p
- * @param {Parameters<typeof croissanceDesStocks>[1]} [images]
+ * @param {Parameters<typeof croissanceDesStocks>[1]} images
  * @returns {{ fichier: string, ajoutees: number, retirees: number, net: number, exemples: string[],
  *   declare: number | null }[]}
+ * @throws {Error} propagé de `croissanceDesStocks` : sans `images.lirePostImage`, le compte ment.
  */
 export function croissancesNonCouvertes({ diff, message }, images) {
   const cliquets = cliquetsDuMessage(message);

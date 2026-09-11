@@ -23,10 +23,11 @@ import { croissanceDesStocks, croissancesNonCouvertes } from './stocksNominatifs
 export const SHA_NUL = '0'.repeat(40)
 
 /**
- * Refus d'une plage, PUR. `commits` = `[{ sha, message, diff, images? }]` dans l'ordre de l'histoire,
+ * Refus d'une plage, PUR. `commits` = `[{ sha, message, diff, images }]` dans l'ordre de l'histoire,
  * `cumule` = le diff `<avant>..<apres>` d'un bloc, `imagesCumul` = les lecteurs d'image de ses deux
- * bouts.
+ * bouts. Chaque `images` porte un `lirePostImage` : `croissanceDesStocks` refuse nommément sinon.
  * @returns {{ sha: string, fichier: string, net: number, declare: number | null, exemples: string[] }[]}
+ * @throws {Error} propagé de `croissanceDesStocks` : sans lecteur d'image post, le compte ment.
  */
 export function refusDeLaPlage({ commits = [], cumule = '', imagesCumul } = {}) {
   const enCroissance = new Set(croissanceDesStocks(cumule, imagesCumul).map((c) => c.fichier))

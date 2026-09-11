@@ -5,7 +5,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { refusDeLaPlage, raisonDeRefusDePlage, croissancesDeLaPlage, SHA_NUL } from './plageStock.mjs'
@@ -24,6 +24,11 @@ const diffDe = (ajoutees = [], retirees = [], ligne = 1) =>
     ...ajoutees.map((l) => `+${l}`),
   ].join('\n')
 
+/** Lecteur d'image qui rend `null` : la porte l'a, et le REPLI de ligne juge — la voie des diffs
+ *  FABRIQUÉS ci-dessous, dont aucun fichier n'existe. Sans lecteur du tout, `croissanceDesStocks`
+ *  refuse nommément (un compte sans image ment). */
+const REPLI = { lirePostImage: () => null }
+
 const A = "  'src/a.ts',"
 const B = "  'src/b.ts',"
 const C = "  'src/c.ts',"
@@ -32,31 +37,39 @@ const D = "  'src/d.ts',"
 test('C : deux commits CLIQUETÉS +2 chacun passent — le cumul +4 ne demande pas un cliquet +4', () => {
   const refus = refusDeLaPlage({
     commits: [
-      { sha: 'aaa1111', diff: diffDe([A, B]), message: 'T1\n\nCLIQUET: scripts/x.test.mjs +2 — fixtures du test neuf, motif assez long' },
-      { sha: 'bbb2222', diff: diffDe([C, D]), message: 'T2\n\nCLIQUET: scripts/x.test.mjs +2 — seconde fournée, motif suffisamment long aussi' },
+      { sha: 'aaa1111', diff: diffDe([A, B]), images: REPLI, message: 'T1\n\nCLIQUET: scripts/x.test.mjs +2 — fixtures du test neuf, motif assez long' },
+      { sha: 'bbb2222', diff: diffDe([C, D]), images: REPLI, message: 'T2\n\nCLIQUET: scripts/x.test.mjs +2 — seconde fournée, motif suffisamment long aussi' },
     ],
     cumule: diffDe([A, B, C, D]),
+    imagesCumul: REPLI,
   })
   assert.deepEqual(refus, [], 'le CLIQUET vit dans UN message : la plage se juge par commit')
 })
 
 test('C : un stock ajouté puis RETIRÉ dans la plage ne refuse rien — le filtre cumulé l\'écarte', () => {
   const commits = [
-    { sha: 'aaa1111', diff: diffDe([A, B]), message: 'ajoute' },
-    { sha: 'bbb2222', diff: diffDe([], [A, B]), message: 'retire' },
+    { sha: 'aaa1111', diff: diffDe([A, B]), images: REPLI, message: 'ajoute' },
+    { sha: 'bbb2222', diff: diffDe([], [A, B]), images: REPLI, message: 'retire' },
   ]
-  assert.equal(refusDeLaPlage({ commits, cumule: diffDe([A, B]) }).length, 1, 'sans retrait cumulé, le refus tient')
-  assert.deepEqual(refusDeLaPlage({ commits, cumule: '' }), [], 'croissance cumulée nulle : rien à refuser')
+  assert.equal(
+    refusDeLaPlage({ commits, cumule: diffDe([A, B]), imagesCumul: REPLI }).length, 1,
+    'sans retrait cumulé, le refus tient',
+  )
+  assert.deepEqual(
+    refusDeLaPlage({ commits, cumule: '', imagesCumul: REPLI }), [],
+    'croissance cumulée nulle : rien à refuser',
+  )
 })
 
 test('C : un commit du MILIEU sans cliquet est refusé, et le refus le NOMME', () => {
   const refus = refusDeLaPlage({
     commits: [
-      { sha: 'aaa1111', diff: diffDe([]), message: 'socle' },
-      { sha: 'bbb2222', diff: diffDe([A, B]), message: 'lot sans cliquet' },
-      { sha: 'ccc3333', diff: diffDe([]), message: 'tête innocente' },
+      { sha: 'aaa1111', diff: diffDe([]), images: REPLI, message: 'socle' },
+      { sha: 'bbb2222', diff: diffDe([A, B]), images: REPLI, message: 'lot sans cliquet' },
+      { sha: 'ccc3333', diff: diffDe([]), images: REPLI, message: 'tête innocente' },
     ],
     cumule: diffDe([A, B]),
+    imagesCumul: REPLI,
   })
   assert.deepEqual(refus.map((r) => [r.sha, r.fichier, r.net]), [['bbb2222', PORTEUR, 2]])
   const raison = raisonDeRefusDePlage(refus)
@@ -218,4 +231,82 @@ test('équivalence — solde au commit et plage au push comptent la même chose'
     }
   }
   t.diagnostic('deux voies, deux cas, même verdict')
+})
+
+// #1709 D3 — sonde 3 de la revue de palier du 2026-09-08, promue sur un dépôt RÉEL : un
+// `*-stock.json` qui NAÎT. Ses entrées vivent sur des propriétés (`"sites": [ … ]`) qu'aucune
+// lecture par ligne ne reconnaît : seule une IMAGE les compte. Les deux portes en ont une — l'arbre
+// de travail au commit, `git show <sha>:<f>` au push — et rendent le même compte ; un appelant qui
+// n'en fournit aucune est REFUSÉ, jamais servi d'un zéro.
+test('équivalence — un `*-stock.json` qui NAÎT, puis qui GRANDIT : même compte aux deux portes', async (t) => {
+  const { croissanceDesStocks } = await import('./stocksNominatifs.mjs')
+  const { diffDuCommit, evaluateStocksQuiGrandissent } = await import('../../hooks/solde-ticket-guard.mjs')
+  const porteur = 'scripts/raw/fixture-stock.json'
+  const trous = (n) => Array.from({ length: n }, (_, i) => [`LIV ${i + 1}`, [`src/data/x${i + 1}.json`]])
+  const stock = (entrees) => [
+    '{',
+    '  "quoi": "fixture — un trou dur par rubrique",',
+    '  "trous": {',
+    entrees.map(([cle, sites]) => [
+      `    "${cle}": {`,
+      `      "sites": [${sites.map((s) => `"${s}"`).join(', ')}],`,
+      '      "lot": "#1709 D3"',
+      '    }',
+    ].join('\n')).join(',\n'),
+    '  }',
+    '}',
+    '',
+  ].join('\n')
+
+  const { racine } = instanceDeDepot({ fichiers: { 'scripts/raw/socle.md': '# socle\n' }, message: 'socle' })
+  const gitDe = (...args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  const poser = (entrees) => { writeFileSync(join(racine, porteur), stock(entrees), 'utf8'); gitDe('add', '-A') }
+  const auPush = (avant) => croissancesDeLaPlage({ cwd: racine, avant, apres: gitDe('rev-parse', 'HEAD').trim() })
+  const auCommit = (commande) => {
+    const lectures = diffDuCommit(commande, racine)
+    return {
+      verdict: evaluateStocksQuiGrandissent({
+        command: commande,
+        diff: lectures.fichier(porteur),
+        images: { lirePostImage: lectures.contenu, lirePreImage: lectures.avant },
+      }),
+      diff: lectures.fichier(porteur),
+    }
+  }
+  try {
+    // NAISSANCE de 13 entrées, message muet : les deux portes refusent, et le compte est le VRAI.
+    const base = gitDe('rev-parse', 'HEAD').trim()
+    poser(trous(13))
+    const naissance = auCommit('git commit -m "test: un stock qui naît"')
+    assert.match(naissance.verdict?.reason ?? '', /\+13 entrée\(s\) nette\(s\)/, 'porte au commit : le compte de la naissance')
+    assert.deepEqual(
+      croissanceDesStocks(naissance.diff, { lirePostImage: (f) => readFileSync(join(racine, f), 'utf8') })
+        .map((c) => c.net), [13],
+      'troisième lecture, image de l’arbre : le même compte que les deux portes',
+    )
+    assert.throws(
+      () => croissanceDesStocks(naissance.diff),
+      /aucun lecteur d'image post — un compte sans image ment/,
+      'un appelant sans lecteur (diagnostic, sonde, revue) est REFUSÉ, jamais servi d’un zéro qui ment',
+    )
+    gitDe('commit', '-q', '--no-verify', '-m', 'test: un stock qui naît')
+    assert.deepEqual(auPush(base).refus.map((r) => [r.fichier, r.net]), [[porteur, 13]], 'porte au push : le même compte')
+
+    // CROISSANCE de deux entrées sur les treize, DITE par le message : les deux portes passent.
+    const avant = gitDe('rev-parse', 'HEAD').trim()
+    poser(trous(15))
+    const message = 'test: deux trous durs de plus\n\nCLIQUET: scripts/raw/fixture-stock.json +2 — deux chapitres non couverts par l’Atlas'
+    const croissance = auCommit(`git commit -m "${message}"`)
+    assert.equal(croissance.verdict, null, 'porte au commit : la croissance est DITE, elle passe')
+    assert.deepEqual(
+      croissanceDesStocks(croissance.diff, { lirePostImage: (f) => readFileSync(join(racine, f), 'utf8') })
+        .map((c) => c.net), [2],
+      'témoin de non-vacuité : la croissance vaut bien +2 — sans le cliquet, le verdict serait un refus',
+    )
+    gitDe('commit', '-q', '--no-verify', '-m', message)
+    assert.deepEqual(auPush(avant).refus, [], 'porte au push : le cliquet du message couvre la croissance')
+    t.diagnostic('naissance +13, croissance +2, trois lectures concordantes')
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
 })
