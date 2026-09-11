@@ -1457,7 +1457,7 @@ function widthBreakpoints(css: string): string[] {
 //    expose `disabled`/`title` dans son API, et c'est l'APPELANT qui déciderait d'une raison. Chaque
 //    ligne porte sa raison ; une ligne périmée (le site a bougé ou a été migré) échoue aussi.
 const REFUS_MUET_EXEMPT_SITES = new Map<string, string>([
-  ['GatedAction.tsx:151', 'la primitive elle-même : `title={ariaLabel}` y est le NOM accessible, pas une raison'],
+  ['GatedAction.tsx:155', 'la primitive elle-même : `title={ariaLabel}` y est le NOM accessible, pas une raison'],
   ['OptionChooser.tsx:104', '`OptionBouton` : la composition partagée des trois layouts, dont la branche gatée compose déjà `GatedAction`'],
   ['RollShell.tsx:299', 'modèle de props de la coquille de jet — passage à `GatedAction` = train T9'],
   ['MenuCard.tsx:130', 'modèle de props du menu — train T9'],
