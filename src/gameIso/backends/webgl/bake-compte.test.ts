@@ -16,18 +16,18 @@
  *     2026-09-07, verbatim de l'utilisateur : « Franchement si on veut faire de test, faites les sur
  *     des scenes créé spécialement pour ces tests, pas sur des scénes qui sont utilisés ») — mesuré :
  *     une armoire déplacée d'une case et un coffre déplacé d'une case font 23 352 → 23 400 triangles
- *     au hub de l'Arène. C'est le motif qui avait déjà sorti la Diligence du compte exact (arbitrage
- *     2026-08-21, #1447, verbatim de l'utilisateur : « C'est absurde d'avoir un guard qui bloque
- *     totalement la diligence alors qu'elle n'est même pas finalisé ») ; il vaut pour toute carte ;
+ *     au hub de l'Arène, et le motif vaut pour toute carte livrée ;
  *  2. le CATALOGUE DE DÉCOR (`src/data/props.json`) est vivant et RETOUCHABLE sans changer aucune
  *     cote : `buildProps` ne cuit que des recettes résolues par `findPropById` (aucune recette ne se
  *     passe en objet), donc toute scène qui POSE un décor hérite de ce catalogue — mesuré : passer le
  *     `tonneau` de 16 à 12 facettes fait 2 770 → 2 674 triangles. Une scène meublée ne peut donc pas
  *     porter de compte exact ; elle reste couverte par l'ORDRE des régimes, qu'une facette ne renverse
  *     pas.
- * Les scènes livrées ET la scène meublée restent couvertes par les invariants SANS chiffre plus bas
- * (index identité, hiérarchie des régimes). La garde `aucun étalon chiffré ne pose d'entité` ci-dessous
- * tient la règle 2 par construction, et non par cette prose.
+ * Les scènes livrées ET la scène meublée restent couvertes par les invariants SANS chiffre plus bas :
+ * une carte livrée par l'index IDENTITÉ et par la comptabilité de `SANS_CHIFFRE` (couverte, jamais
+ * figée) ; la salle MEUBLÉE, qui est une fixture, par l'index identité ET par la hiérarchie des
+ * régimes — aucune masse de carte livrée n'est comparée à une autre. La garde `aucun étalon chiffré
+ * ne pose d'entité` ci-dessous tient la règle 2 par construction, et non par cette prose.
  *
  * POLITIQUE DE MISE À JOUR — la seule admise :
  *  - un changement de géométrie VOULU des BUILDERS (épaisseur authorée, nouvelle face émise, volume
@@ -166,13 +166,7 @@ describe('COMPTEURS DU BAKE — la masse de géométrie de chaque scène étalon
     }
   });
 
-  it('les régimes des scènes LIVRÉES sont bien DISTINCTS (une salle nue ne pèse pas une ville meublée)', () => {
-    const triangles = (id: string) => compteursDe(SCENES.find(([n]) => n === id)![1]()).triangles;
-    expect(triangles('arene-zone13')).toBeLessThan(triangles('arene-hub'));
-    expect(triangles('arene-hub')).toBeLessThan(triangles('la-diligence'));
-  });
-
-  it('sur les scènes CONSTRUITES aussi, chaque régime PÈSE : l’étage et le décor ajoutent de la masse', () => {
+  it('chaque régime PÈSE : l’étage et le décor ajoutent de la masse (une salle nue ne pèse pas une ville meublée)', () => {
     const triangles = (charger: () => Scene) => compteursDe(charger()).triangles;
     const nue = triangles(salleNue);
     expect(nue).toBeLessThan(triangles(corpsAEtage)); // nappe dérivée portée à z1 sur deux niveaux

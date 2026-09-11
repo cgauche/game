@@ -93,8 +93,8 @@ export function tireLeRayon(st: EtatDePick): boolean {
  * DÉCOR VOLUMIQUE : c'est le MEUBLE qui est dessiné sous le pixel, pas la tuile derrière lui — on
  * rend sa case d'ANCRAGE, d'où l'interaction d'exploration le reprend comme n'importe quel décor. Le
  * rayon touche la face réellement dessinée, à sa hauteur réelle : il est juste même sur le DESSUS
- * d'un meuble haut, là où une inversion écran→case au lift du SOL décale la case (mesuré sur
- * `la-diligence` : un pixel sur le dessus de `comptoir-2` (11,24) rend (10,23), la table voisine).
+ * d'un meuble haut, là où une inversion écran→case au lift du SOL décale la case vers l'arrière et
+ * désigne le décor voisin (banc `stage/pick-parity.test.tsx`).
  */
 export function caseVisee(vise: PickResult, st: EtatDePick): Verdict | null {
   if (!vise) return null;
@@ -166,9 +166,8 @@ export interface CadreDePick {
 /** Case du MEUBLE réellement dessinée sous le pixel, à la couche `z` : la MÊME inversion par LIFT que
  *  `caseMarchable`, mais pour une case qu'un décor `prop` OCCUPE — donc justement celle que la
  *  marchabilité écarte (l'empreinte d'un meuble solide n'est pas marchable). Sans elle, le pixel d'un
- *  plateau FIN que le rayon ne touche pas retombe sur la boucle CROSS-COUCHE, qui rend une case d'un
- *  AUTRE ÉTAGE : mesuré sur `la-diligence`, la table murale (13,10) résolvait (16,13,z1) et envoyait le
- *  groupe à l'autre bout de la salle.
+ *  plateau FIN que le rayon ne touche pas retombe sur la boucle CROSS-COUCHE, qui rend une case de
+ *  l'ÉTAGE DU DESSUS — et envoie le groupe à l'autre bout du bâti.
  *
  *  L'OCCUPATION se lit à l'index case → décor (`state/decorIndex.ts`, bâti sur `propFootTiles`) : un
  *  meuble répond sur TOUTES les cases de son empreinte, donc les deux d'une table 2×1. Le verdict,
@@ -207,8 +206,8 @@ export function pasInterEtages(scene: Scene, cadre: CadreDePick, partyPos: Pt, g
 
 /** Case MARCHABLE de la couche `z` réellement DESSINÉE sous le pixel. Chaque case est projetée à son
  *  LIFT MÉTRIQUE (`state/scene.ts:liftDe`), JAMAIS au seul index de couche : une marche d'escalier est
- *  dessinée soulevée, et l'inverser à plat rendait la case voisine 1 à 3 pas plus loin — les 8 marches
- *  de `la-diligence` étaient toutes injouables à la souris, donc l'étage inatteignable. Le lift le plus
+ *  dessinée soulevée, et l'inverser à plat rend la case voisine 1 à 3 pas plus loin — un escalier
+ *  entier devient injouable à la souris, donc l'étage qu'il dessert inatteignable. Le lift le plus
  *  HAUT gagne : c'est lui qu'on voit, et une case cachée DERRIÈRE une marche n'a pas à être cliquable.
  *  Scène sans relief ⇒ un seul lift (0) ⇒ strictement l'inversion plan-sol. */
 export function caseMarchable(scene: Scene, cadre: CadreDePick, g: PointStage, z: number): Pt | null {
@@ -271,13 +270,13 @@ const RIEN: Verdict = { tile: null, cid: null, via: 'aucune', nature: 'case' };
  * `cadre.aretes` est non vide, l'étage d'arête inverse, donc UNE mesure de layout par `pointermove` —
  * en combat, chaque `pointermove` de mon tour, où le contrôleur d'accès EST le héros actif
  * (`MondeDeCampagne.tsx:590-598`). C'est le prix de la PARITÉ de geste : le seuil se prend au pixel
- * comme la cible SVG le prenait (89/89 des portails de la Diligence, mesure 1b-0). Le thunk rend `null`
- * quand rien n'est inversable (élément sans surface mesurée) : seul le rayon peut alors répondre.
+ * comme la cible SVG le prend. Le thunk rend `null` quand rien n'est inversable (élément sans surface
+ * mesurée) : seul le rayon peut alors répondre.
  *
- * L'ARÊTE passe AVANT le rayon, et c'est la PARITÉ avec le régime qu'elle remplace : la cible SVG de
- * l'overlay retenait le `pointerdown` avant que la chaîne ne soit consultée (sonde
- * `priorite-arete-vs-rayon`). Mesuré au lot 1b-0 : 89 portails de la Diligence sur 89 sont résolus
- * par la surface en case marchable — la placer après le rayon changerait chacun de ces verdicts.
+ * L'ARÊTE passe AVANT le rayon, et c'est la PARITÉ avec la cible SVG de l'overlay, qui retient le
+ * `pointerdown` avant que la chaîne ne soit consultée : le pixel du centre d'un seuil est résolu par
+ * les étages de SURFACE en une case marchable de son portail (sonde `priorite-arete-vs-rayon`) —
+ * placer l'étage après le rayon change chacun de ces verdicts.
  */
 export function resoudrePixel(st: EtatDePick, vise: PickResult, pointStage: () => PointStage | null, cadre: CadreDePick): Verdict {
   let inversé: PointStage | null | undefined;

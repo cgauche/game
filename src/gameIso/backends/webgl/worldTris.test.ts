@@ -679,7 +679,7 @@ describe('UV1 — la FACE d’origine en [0,1]² (attribut `uv1`)', () => {
 describe('RELIEF MINCE — le prix mesuré du volume (#1176 P1-E)', () => {
   /** Les faces que le backend FUSIONNE réellement — la liste de `sceneMeshes.worldFaces` (toutes les
    *  couches pleines, `activeZ` au plus haut étage), pas celle du `facesOf` d'atelier : une scène à deux
-   *  niveaux (`diligence`) n'y émet pas les mêmes planchers, et le compte de triangles s'en ressent. */
+   *  niveaux n'y émet pas les mêmes planchers, et le compte de triangles s'en ressent. */
   function facesRendues(scene: Scene): Face[] {
     const maxZ = Math.max(...scene.layers.map((l) => l.z));
     return [...buildFloors(scene, undefined, { activeZ: maxZ }), ...buildWalls(scene), ...buildRoofs(scene)]
