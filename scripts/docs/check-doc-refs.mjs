@@ -140,7 +140,9 @@ if (existsSync(CLAUDE_MD)) {
 // 4. Catalogue atomique CSS (docs/charte-ui.md, section « Couche atomique — catalogue »), les DEUX
 // sens :
 //   4a. chaque classe backtiquée `.foo` de la section doit exister comme sélecteur réel dans
-//       src/ui/styles/*.css — sinon la doc ment (classe fantôme).
+//       la COUCHE PARTAGÉE — sinon la doc ment (classe fantôme). Cette couche est celle que garde le
+//       cliquet (xiii) d'`src/ui/ui-ratchets.test.ts` (`SHARED_CSS_FILES`) : `src/ui/styles/*.css` ET
+//       la feuille du chrome du monde `src/gameIso/anim.css`, dont le catalogue est la SEULE sortie.
 //   4b. chaque classe CANONIQUE (sélecteur de PREMIER NIVEAU, ni pseudo/combinateur/parenthèse) de
 //       la zone PARTAGÉE de `src/ui/styles/components.css` doit être citée dans la section — sinon
 //       la doc devient incomplète en silence. Zone PARTAGÉE = tout le fichier AVANT le premier bloc
@@ -159,7 +161,9 @@ if (existsSync(CHARTE_MD)) {
     if (endIdx < 0) endIdx = lines.length
     const section = lines.slice(startIdx, endIdx).join('\n')
 
-    const CSS_TEXT = fichiersSources('src/ui/styles', ['.css']).map((f) => readFileSync(f, 'utf8')).join('\n')
+    const CSS_TEXT = [...fichiersSources('src/ui/styles', ['.css']), 'src/gameIso/anim.css']
+      .map((f) => readFileSync(f, 'utf8'))
+      .join('\n')
 
     // Faux positifs à écarter : extensions de fichier (`CLAUDE.md`…) et motifs jocker cités comme
     // ANTI-exemples exprès NON catalogués (`.voyage-*`, `.char-card*`…, cf. prose de la section).
