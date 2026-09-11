@@ -160,7 +160,12 @@ const ATTENDU = {
     'scripts/raw/reconcile.test.mjs',
   ],
   'raw:check-refs': [],
-  'raw:check-code-refs': [],
+  // +1 le 2026-09-11 (#925) : la gate enchaîne `citation-graphy-guard.mjs`, qui IMPORTE
+  // `fieldBlockMask` de `build-implemente.mjs` (frontière du bloc de champ généré, source unique) ;
+  // la réécriture des fiches de ce module vit derrière sa porte `isMain` (build-implemente.mjs:670).
+  // Mesure du 2026-09-11 (`scripts/docs/lib/enregistreur-lectures.mjs` en `--import` sur le CLI) :
+  // 4 137 lectures, ZÉRO écriture.
+  'raw:check-code-refs': ['scripts/raw/build-implemente.mjs'],
   'raw:check-folio-continuity': [],
   'raw:reanchor': ['scripts/docs/lib/empreinte-sources.mjs', 'scripts/raw/reanchor.mjs'],
   'server:typecheck': [],

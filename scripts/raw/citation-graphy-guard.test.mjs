@@ -11,6 +11,7 @@ import {
   scanGraphyViolations, scanDocsRawViolations, scanImplProseViolations, BOOK_NO_CHAPTER_RE,
   scanChDotViolations, scanBareFolioViolations, scanBookNoChapterSrcViolations, scanUnknownAbbrViolations,
   scanMultiFolioSplitViolations, scanChapterBoundaryFolioViolations, readBaseline, BASELINE_PATH,
+  scanTout,
 } from './citation-graphy-guard.mjs'
 import { otherAbbrAlternation, chapterBoundaryRisk } from './_lib.mjs'
 import { countsByFile, assertAgainstBaseline } from './check-code-refs.mjs'
@@ -561,4 +562,64 @@ test('non-régression : les 4 familles cliquetées (#585, #454) du VRAI repo son
 
 test('graphy-baseline.json existe (#585 lot A)', () => {
   assert.equal(existsSync(BASELINE_PATH), true)
+})
+
+// --- (#925) la PASSE UNIQUE nourrit les neuf classes : un corpus jouet portant UNE ligne fautive
+// par famille, UN seul `scanTout`, chaque détecteur voit la sienne. Un détecteur débranché de la
+// passe rougit ici en nommant sa classe (le rapport du garde, lui, resterait muet sur elle).
+const JOUET_SRC = [
+  '// 18-Traumatisme l.417 : graphie chapitre-relative',                 // 1  graphy
+  '// LDB ch.6 l.2 : ch. cosmétique',                                    // 2  chDot
+  '// EDOC l.172 : réf de livre sans chapitre',                          // 3  bookNoChapterSrc
+  '// RAW 16 l.105 : abréviation inconnue',                              // 4  unknownAbbr
+  '// Amphibie (LDB p.338) : folio nu',                                  // 5  bareFolio
+  '// Outre à eau (LDB 64 p.301/303) : multi-folio à cheval',            // 6  multiFolioSplit
+  '// Mauvais œil (LDB 48 p.255) : folio en fin de chapitre',            // 7  chapterBoundaryFolio
+].join('\n') + '\n'
+const JOUET_FICHE = [
+  `Faim (${spec(18, '417–422')}) plage à tiret cadratin`,                  // 1  docsRaw emdash-range
+  'ogres : Langue Magick (ADE II l.653)',                                // 2  docsRaw book-no-chapter + bookNoChapterSrc
+  '**Source :** ADE II `08 - Le théâtre de la guerre.md` l.89-131.',      // 3  docsRaw backtick-file
+  "Ce passage n'est pas implémenté.",                                    // 4  implProse
+  'Voir RAW 16 l.105 : abréviation inconnue en fiche',                    // 5  unknownAbbr
+].join('\n') + '\n'
+
+test('(#925) passe UNIQUE : une ligne fautive par classe, un seul scanTout, chaque classe est nourrie', () => {
+  withTempSrcAndRawDir({ 'x.ts': JOUET_SRC }, { 'combat.md': JOUET_FICHE }, (srcDir, rawDir) => {
+    const passe = scanTout(srcDir, ['.ts', '.tsx', '.json'], rawDir)
+    const sites = (famille) => passe[famille].map((v) => `${v.file.split('/').pop()}:${v.row}`)
+    const attendu = {
+      graphy: ['x.ts:1'],
+      chDot: ['x.ts:2'],
+      bookNoChapterSrc: ['x.ts:3', 'combat.md:2'], // les DEUX corpus de la même passe
+      unknownAbbr: ['x.ts:4', 'combat.md:5'], // les DEUX corpus de la même passe
+      bareFolio: ['x.ts:5'],
+      multiFolioSplit: ['x.ts:6'],
+      chapterBoundaryFolio: ['x.ts:7'],
+      docsRaw: ['combat.md:1', 'combat.md:2', 'combat.md:3'],
+      implProse: ['combat.md:4'],
+    }
+    for (const [famille, sitesAttendus] of Object.entries(attendu)) {
+      assert.deepEqual(sites(famille), sitesAttendus, `classe ${famille} : la passe unique ne la nourrit pas comme attendu`)
+    }
+    assert.deepEqual(passe.docsRaw.map((v) => v.kind), ['emdash-range', 'book-no-chapter', 'backtick-file'])
+    assert.equal(passe.unknownAbbr[0].abbr, 'RAW')
+    assert.deepEqual(passe.multiFolioSplit[0].folios.map((f) => f.folio), [301, 303])
+    assert.deepEqual(
+      [passe.chapterBoundaryFolio[0].abbr, passe.chapterBoundaryFolio[0].ch, passe.chapterBoundaryFolio[0].folio],
+      ['LDB', 48, 255],
+    )
+  })
+})
+
+test('(#925) ce que rend une passe est GELÉ : un appelant ne peut pas écrire dans le mémo', () => {
+  withTempSrcAndRawDir({ 'x.ts': JOUET_SRC }, { 'combat.md': JOUET_FICHE }, (srcDir, rawDir) => {
+    const exts = ['.ts', '.tsx', '.json']
+    const premier = scanGraphyViolations(srcDir, exts)
+    assert.equal(Object.isFrozen(premier), true)
+    assert.throws(() => premier.push({ file: 'x.ts', row: 99, text: 'intrus' }), TypeError)
+    const second = scanGraphyViolations(srcDir, exts)
+    assert.deepEqual(second.map((v) => `${v.row}`), premier.map((v) => `${v.row}`))
+    assert.equal(Object.isFrozen(scanTout(srcDir, exts, rawDir).chDot), true)
+  })
 })

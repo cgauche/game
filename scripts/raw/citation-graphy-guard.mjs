@@ -1,8 +1,8 @@
 // Garde de graphie des citations RAW (#487 lot 3, étendue #585 lot A, #454 DoD) — verrouille la
 // classe « chapitre-relative » (zéro tolérance) et CLIQUETTE les dérives de graphie cosmétique
 // (`ch.`, folio nu, réf sans chapitre) le temps de leur strip mécanique (lot B). Les familles
-// `bareFolio`/`bookNoChapterSrc` couvrent désormais `src/**` ET `docs/raw/*.md` (fiches scannées,
-// même périmètre que `chDot` — #454 : les scans étaient auparavant aveugles à docs/raw).
+// `bareFolio`/`bookNoChapterSrc` couvrent `src/**` ET `docs/raw/*.md` (fiches scannées, même
+// périmètre que `chDot` — #454).
 // `NN-Nom l.X` (ex. `18-Traumatisme l.417-422`) : cette forme est INVISIBLE de `ldbRe`/`otherRe`
 // (_lib.mjs — les deux exigent le livre AVANT le numéro de chapitre, jamais un nom de chapitre
 // collé au numéro), donc jamais comptée par `reconcile.mjs`, jamais ré-ancrée. Forme canonique :
@@ -10,7 +10,6 @@
 // Zéro tolérance, PAS de baseline (le stock doit être à 0 après le lot #487) : toute occurrence
 // nouvelle ou survivante fait échouer le test avec la liste `fichier:ligne`.
 // Re-run : node scripts/raw/citation-graphy-guard.mjs
-import { readFileSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { fileURLToPath } from 'node:url'
@@ -108,68 +107,104 @@ export const MULTI_FOLIO_RE = () => new RegExp(`\\b(${ALL_ABBR_ALT()}) (\\d+) p\
 // verbatim tranche si le sujet cité vit réellement en N ou en N+1 — non automatisable ici.
 export const CHAPTER_BOUNDARY_FOLIO_RE = () => new RegExp(`\\b(${ALL_ABBR_ALT()}) (\\d+) p\\.(\\d+)(?![/,-]\\d)`, 'g')
 
-/** Scan (h) : multi-folios à cheval sur des chapitres différents — `src/**` (.ts/.tsx/.json), même
- *  périmètre que (f) (commentaire en .ts/.tsx, champ `"ref"` en .json). Un folio NON RÉSOLVABLE
- *  (`folioRange` → `null`/`'ambiguous'`, ancre absente — résidus #522) est INDÉTERMINÉ, jamais une
- *  violation (silence, pas de faux positif sur les trous de la ré-extraction Marker) : seul un folio
- *  qui RÉSOUT dans un chapitre différent de N est fautif. Retourne `{ file, row, folios, text }[]`
- *  (`folios` = les folios fautifs, avec leur chapitre résolu). Pur (aucune écriture). */
-export function scanMultiFolioSplitViolations(srcDir = SRC_DIR, exts = EXTS) {
-  const violations = []
-  for (const f of fichiersSources(srcDir, exts)) {
-    const rel = f.replace(/\\/g, '/')
-    const isJson = f.endsWith('.json')
-    const lines = readFileSync(f, 'utf8').split('\n')
-    lines.forEach((ln, i) => {
-      const inScope = isJson ? isRefFieldLine(ln) : isCommentLine(ln)
-      if (!inScope) return
-      const re = MULTI_FOLIO_RE()
-      let m
-      while ((m = re.exec(ln))) {
-        const [, abbr, chStr, folioStr, suffix] = m
-        const ch = Number(chStr)
-        const extraFolios = (suffix.match(/\d+/g) || []).map(Number)
-        const badFolios = []
-        for (const folio of [Number(folioStr), ...extraFolios]) {
-          const res = folioRange(abbr, folio)
-          if (!res || res === 'ambiguous') continue // indéterminé, jamais une violation
-          if (res.ch !== ch) badFolios.push({ folio, ch: res.ch })
-        }
-        if (badFolios.length) violations.push({ file: rel, row: i + 1, folios: badFolios, text: ln.trim().slice(0, 160) })
-      }
-    })
-  }
-  return violations
+// --- PASSE UNIQUE : un corpus lu une fois, une itération par (fichier, ligne), tous les détecteurs
+// nourris au passage. Chaque CLASSE est une fonction PURE d'une LIGNE vers ses occurrences
+// (`detecte*`) ; chaque `scan*Violations` lit sa famille dans le résultat de la passe, qui est
+// mémoïsé par clé (dossiers + extensions). Ce qui coûtait n'était pas l'I/O (~2 s) mais le RE-SCAN
+// du même corpus par famille, sept fois (mesure #1709 D2 : 18,9 s pour 3 743 fichiers de `src/`).
+// MÉMO : il porte le RÉSULTAT de la passe, pas le texte lu (`readCorpus`, scripts/guards/lib) ;
+// même condition de licéité — l'arbre scanné est STATIQUE pendant un run (les gates écrivantes
+// jouent en série avant les lectrices, `scripts/gates/toutes.mjs` `AVANT_LES_LANES`). Les familles
+// rendues sont GELÉES, comme le corpus de `readCorpus` (`sourceCorpus.mjs:96,100`) : un `push`/`sort`
+// d'appelant ne peut pas s'écrire dans le mémo.
+// LECTEUR : la marche reste `listerArbre`/`listerDossier` et non `readCorpus`, parce que ce garde
+// scanne des corpus que ce dernier ne sait pas dire — une base à 0 fichier (il la refuse, par base)
+// et un arbre dont `node_modules` est exclu (il n'expose pas `descendre` ; le contrat est verrouillé
+// par `citation-graphy-guard.test.mjs:79-89`).
+
+/** Occurrences de la fabrique de RegExp `/g` dans `ln` (fabrique FRAÎCHE : état `lastIndex` jamais
+ *  partagé d'une ligne à l'autre). Pur. */
+const occurrences = (fabrique, ln) => { const re = fabrique(); let n = 0; while (re.exec(ln)) n++; return n }
+
+/** Classe chapitre-relative (`GRAPHY_RE`) : la ligne porte-t-elle la graphie ? Pur. */
+export const detecteGraphy = (ln) => GRAPHY_RE().test(ln)
+
+/** Graphies de FICHE d'une ligne, dans l'ordre du rapport : (a) plage à tiret cadratin,
+ *  (b) réf de livre sans chapitre, (c) nom de fichier de chapitre en backticks. Une occurrence AU
+ *  PLUS par `kind` et par ligne. Pur. */
+export function detecteFiche(ln) {
+  const kinds = []
+  if (EMDASH_RANGE_RE().test(ln)) kinds.push('emdash-range')
+  if (BOOK_NO_CHAPTER_RE().test(ln)) kinds.push('book-no-chapter')
+  if (BACKTICK_FILE_RE().test(ln)) kinds.push('backtick-file')
+  return kinds
 }
 
-/** Scan (i) : folio simple `<ABRÉV> N p.X` au DERNIER folio du chapitre N, chapitre N+1 s'ouvrant
- *  sur X/X+1 (#454 juge adversarial, `chapterBoundaryRisk`). Même périmètre que (h) en `src/**`, ET
- *  `docs/raw/*.md` (fiches scannées, patron `chDot`/`bareFolio`). AVERTISSEMENT cliqueté (non bloquant
- *  sur le stock EXISTANT, cf. `main()`) — un candidat structurel n'est PAS une preuve verbatim.
- *  Retourne `{ file, row, abbr, ch, folio, text }[]`. Pur (aucune écriture). */
-export function scanChapterBoundaryFolioViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
-  const violations = []
-  const srcFiles = fichiersSources(srcDir, exts).map((f) => ({ f, isJson: f.endsWith('.json'), isRaw: false }))
-  const docFiles = rawFiles(rawDir, isScannedFiche).map((f) => ({ f, isJson: false, isRaw: true }))
-  for (const { f, isJson, isRaw } of [...srcFiles, ...docFiles]) {
-    const rel = f.replace(/\\/g, '/')
-    const lines = readText(f).split('\n')
-    lines.forEach((ln, i) => {
-      const inScope = isRaw ? true : (isJson ? isRefFieldLine(ln) : isCommentLine(ln))
-      if (!inScope) return
-      const re = CHAPTER_BOUNDARY_FOLIO_RE()
-      let m
-      while ((m = re.exec(ln))) {
-        const [, abbr, chStr, folioStr] = m
-        const ch = Number(chStr)
-        const folio = Number(folioStr)
-        if (chapterBoundaryRiskFor(abbr, ch, folio)) {
-          violations.push({ file: rel, row: i + 1, abbr, ch, folio, text: ln.trim().slice(0, 160) })
-        }
-      }
-    })
+/** (d) Prose d'état d'implémentation (`NONIMPL_RE`) — la frontière du bloc de champ généré
+ *  `**Implémente**` est portée par l'appelant (`fieldBlockMask`, source unique). Pur. */
+export const detecteImplProse = (ln) => NONIMPL_RE().test(ln)
+
+/** (e) `ch.` cosmétique : nombre d'occurrences de la ligne. Pur. */
+export const detecteChDot = (ln) => occurrences(CH_DOT_RE, ln)
+
+/** (f) Folio NU `<ABRÉV> p.X` : nombre d'occurrences. La mise en SCOPE de la ligne (commentaire en
+ *  `.ts`/`.tsx`, champ `"ref"` en `.json`, toute ligne en fiche) est portée par l'appelant. Pur. */
+export const detecteBareFolio = (ln) => occurrences(BARE_FOLIO_RE, ln)
+
+/** (b) Réf de livre SANS chapitre `<ABRÉV> l.<n>` : nombre d'occurrences. Pur. */
+export const detecteBookNoChapter = (ln) => occurrences(BOOK_NO_CHAPTER_RE, ln)
+
+/** (g) Abréviations de la ligne INCONNUES de `_lib.mjs` (`bookOf` → null) : une abréviation hors
+ *  `books.json` est une citation qui ne mène nulle part — zéro tolérance, pas de baseline. Pur. */
+export function detecteUnknownAbbr(ln) {
+  const abbrs = []
+  const re = UNKNOWN_ABBR_RE()
+  let m
+  while ((m = re.exec(ln))) {
+    const abbr = m[0].replace(/ \d+ [lp]\.\d+$/, '')
+    if (!bookOf(abbr)) abbrs.push(abbr)
   }
-  return violations
+  return abbrs
+}
+
+/** (h) Multi-folios de la ligne dont un folio RÉSOUT dans un chapitre différent du chapitre écrit.
+ *  Un folio NON RÉSOLVABLE (`folioRange` → `null`/`'ambiguous'`, ancre absente — résidus #522) est
+ *  INDÉTERMINÉ, jamais une violation (silence, pas de faux positif sur les trous de la ré-extraction
+ *  Marker). Retourne `{ folios }[]` — une entrée par multi-folio fautif, `folios` = les folios
+ *  fautifs avec leur chapitre résolu. Pur. */
+export function detecteMultiFolioSplit(ln) {
+  const hits = []
+  const re = MULTI_FOLIO_RE()
+  let m
+  while ((m = re.exec(ln))) {
+    const [, abbr, chStr, folioStr, suffix] = m
+    const ch = Number(chStr)
+    const extraFolios = (suffix.match(/\d+/g) || []).map(Number)
+    const folios = []
+    for (const folio of [Number(folioStr), ...extraFolios]) {
+      const res = folioRange(abbr, folio)
+      if (!res || res === 'ambiguous') continue // indéterminé, jamais une violation
+      if (res.ch !== ch) folios.push({ folio, ch: res.ch })
+    }
+    if (folios.length) hits.push({ folios })
+  }
+  return hits
+}
+
+/** (i) Folios SIMPLES de la ligne cités au DERNIER folio de leur chapitre alors que le chapitre
+ *  suivant s'ouvre sur X ou X+1 (`chapterBoundaryRiskFor`, _lib.mjs). Retourne
+ *  `{ abbr, ch, folio }[]`. Pur. */
+export function detecteChapterBoundary(ln) {
+  const hits = []
+  const re = CHAPTER_BOUNDARY_FOLIO_RE()
+  let m
+  while ((m = re.exec(ln))) {
+    const [, abbr, chStr, folioStr] = m
+    const ch = Number(chStr)
+    const folio = Number(folioStr)
+    if (chapterBoundaryRiskFor(abbr, ch, folio)) hits.push({ abbr, ch, folio })
+  }
+  return hits
 }
 
 function fichiersSources(dir, exts) {
@@ -179,135 +214,149 @@ function fichiersSources(dir, exts) {
   }).map((rel) => join(dir, rel))
 }
 
-function rawFiles(rawDir, filter) {
-  return listerDossier(rawDir, { absent: 'vide' }).filter(filter).map((n) => join(rawDir, n))
+/** Fiches SCANNÉES de `rawDir` (hors rapports générés et épreuves), lues : `prose` dit si la fiche
+ *  entre aussi au scan (d) (fiches d'auteur exclues, `RAWDOC_AUTHOR_META`). */
+function fichesScannees(rawDir) {
+  return listerDossier(rawDir, { absent: 'vide' }).filter(isScannedFiche).map((nom) => ({
+    file: join(rawDir, nom).replace(/\\/g, '/'),
+    prose: isImplProseScanned(nom),
+    lignes: readText(join(rawDir, nom)).split('\n'),
+  }))
 }
 
-/** Scanne `srcDir` (défaut `src/`) pour la graphie chapitre-relative. Retourne
- *  `{ file, row, text }[]` — `text` = la ligne tronquée (160c) pour le diagnostic. Pur (aucune écriture). */
+const FAMILLES = ['graphy', 'docsRaw', 'implProse', 'chDot', 'bareFolio', 'bookNoChapterSrc', 'unknownAbbr', 'multiFolioSplit', 'chapterBoundaryFolio']
+const vide = () => Object.fromEntries(FAMILLES.map((f) => [f, []]))
+/** Gèle les neuf familles et leur porteur : ce que rend une passe est IMMUABLE. */
+const geler = (familles) => {
+  for (const f of FAMILLES) Object.freeze(familles[f])
+  return Object.freeze(familles)
+}
+const MEMO = new Map()
+const memoise = (cle, calcul) => {
+  const vu = MEMO.get(cle)
+  if (vu) return vu
+  const fait = calcul()
+  MEMO.set(cle, fait)
+  return fait
+}
+
+/** Passe unique sur `src/**` : chaque fichier lu UNE fois, chaque ligne offerte à tous les
+ *  détecteurs dont la classe couvre ce corpus. Les classes (f)/(h)/(i) ne voient que les lignes en
+ *  SCOPE (commentaire en `.ts`/`.tsx`, champ `"ref"` en `.json` — une citation dans un titre de test
+ *  `describe`/`it` n'est pas un commentaire ; les champs `desc`/prose sont verbatim source, règle 5,
+ *  et `source:{book,page}` est la convention folio-imprimé, hors périmètre, #585). Pur. */
+function passeSrc(srcDir, exts) {
+  return memoise(JSON.stringify(['src', resolve(srcDir), exts]), () => {
+    const out = vide()
+    for (const f of fichiersSources(srcDir, exts)) {
+      const file = f.replace(/\\/g, '/')
+      const isJson = f.endsWith('.json')
+      readText(f).split('\n').forEach((ln, i) => {
+        const row = i + 1
+        const text = ln.trim().slice(0, 160)
+        if (detecteGraphy(ln)) out.graphy.push({ file, row, text })
+        for (let n = detecteChDot(ln); n > 0; n--) out.chDot.push({ file, row, text })
+        for (let n = detecteBookNoChapter(ln); n > 0; n--) out.bookNoChapterSrc.push({ file, row, text })
+        for (const abbr of detecteUnknownAbbr(ln)) out.unknownAbbr.push({ file, row, abbr, text })
+        if (!(isJson ? isRefFieldLine(ln) : isCommentLine(ln))) return
+        for (let n = detecteBareFolio(ln); n > 0; n--) out.bareFolio.push({ file, row, text })
+        for (const { folios } of detecteMultiFolioSplit(ln)) out.multiFolioSplit.push({ file, row, folios, text })
+        for (const { abbr, ch, folio } of detecteChapterBoundary(ln)) out.chapterBoundaryFolio.push({ file, row, abbr, ch, folio, text })
+      })
+    }
+    return geler(out)
+  })
+}
+
+/** Passe unique sur les fiches `docs/raw/*.md` : TOUTE ligne est en scope (prose de citation, pas
+ *  de notion de « commentaire ») ; seul le scan (d) masque le bloc de champ généré. Pur. */
+function passeFiches(rawDir) {
+  return memoise(JSON.stringify(['fiches', resolve(rawDir)]), () => {
+    const out = vide()
+    for (const { file, prose, lignes } of fichesScannees(rawDir)) {
+      const inFieldBlock = prose ? fieldBlockMask(lignes).inFieldBlock : null
+      lignes.forEach((ln, i) => {
+        const row = i + 1
+        const text = ln.trim().slice(0, 160)
+        for (const kind of detecteFiche(ln)) out.docsRaw.push({ file, row, kind, text })
+        if (prose && !inFieldBlock[i] && detecteImplProse(ln)) out.implProse.push({ file, row, text })
+        for (let n = detecteChDot(ln); n > 0; n--) out.chDot.push({ file, row, text })
+        for (let n = detecteBareFolio(ln); n > 0; n--) out.bareFolio.push({ file, row, text })
+        for (let n = detecteBookNoChapter(ln); n > 0; n--) out.bookNoChapterSrc.push({ file, row, text })
+        for (const abbr of detecteUnknownAbbr(ln)) out.unknownAbbr.push({ file, row, abbr, text })
+        for (const { abbr, ch, folio } of detecteChapterBoundary(ln)) out.chapterBoundaryFolio.push({ file, row, abbr, ch, folio, text })
+      })
+    }
+    return geler(out)
+  })
+}
+
+/** Les neuf familles du garde, corpus `src/**` PUIS fiches `docs/raw/*.md` (l'ordre des deux passes
+ *  décide de l'ordre du rapport). Pur (aucune écriture). */
+export function scanTout(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
+  const src = passeSrc(srcDir, exts)
+  const fiches = passeFiches(rawDir)
+  return geler(Object.fromEntries(FAMILLES.map((f) => [f, [...src[f], ...fiches[f]]])))
+}
+
+/** Scan (h) : multi-folios à cheval sur des chapitres différents (#522 juge adversarial) — `src/**`
+ *  (.ts/.tsx/.json), lignes en scope (commentaire / champ `"ref"`). Forme canonique : deux réfs
+ *  séparées (`ABRÉV NN p.X / ABRÉV MM p.Y`). Retourne `{ file, row, folios, text }[]`. */
+export function scanMultiFolioSplitViolations(srcDir = SRC_DIR, exts = EXTS) {
+  return passeSrc(srcDir, exts).multiFolioSplit
+}
+
+/** Scan (i) : folio simple `<ABRÉV> N p.X` au DERNIER folio du chapitre N, chapitre N+1 s'ouvrant
+ *  sur X/X+1 (#454 juge adversarial). Même périmètre que (h) en `src/**`, ET `docs/raw/*.md` (fiches
+ *  scannées, patron `chDot`/`bareFolio`). AVERTISSEMENT cliqueté (non bloquant sur le stock EXISTANT,
+ *  cf. `main()`) — un candidat structurel n'est PAS une preuve verbatim.
+ *  Retourne `{ file, row, abbr, ch, folio, text }[]`. */
+export function scanChapterBoundaryFolioViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
+  return scanTout(srcDir, exts, rawDir).chapterBoundaryFolio
+}
+
+/** Scan (a′) : graphie chapitre-relative de `srcDir` (défaut `src/`). Retourne `{ file, row, text }[]`
+ *  — `text` = la ligne tronquée (160c) pour le diagnostic. */
 export function scanGraphyViolations(srcDir = SRC_DIR, exts = EXTS) {
-  const violations = []
-  for (const f of fichiersSources(srcDir, exts)) {
-    const lines = readFileSync(f, 'utf8').split('\n')
-    lines.forEach((ln, i) => {
-      const re = GRAPHY_RE()
-      if (re.test(ln)) violations.push({ file: f.replace(/\\/g, '/'), row: i + 1, text: ln.trim().slice(0, 160) })
-    })
-  }
-  return violations
+  return passeSrc(srcDir, exts).graphy
 }
 
-/** Scanne les fiches `docs/raw/*.md` (hors rapports/épreuves) pour les DEUX graphies de fiche à
- *  verrouiller : (a) plage à tiret cadratin, (b) réf de livre sans chapitre. Retourne
- *  `{ file, row, kind, text }[]` (`kind` ∈ `emdash-range` | `book-no-chapter`). Pur (aucune écriture). */
+/** Scans (a)/(b)/(c) des fiches `docs/raw/*.md` (hors rapports/épreuves) : plage à tiret cadratin,
+ *  réf de livre sans chapitre, nom de fichier de chapitre en backticks. Retourne
+ *  `{ file, row, kind, text }[]` (`kind` ∈ `emdash-range` | `book-no-chapter` | `backtick-file`). */
 export function scanDocsRawViolations(rawDir = RAWDIR) {
-  const violations = []
-  for (const name of listerDossier(rawDir, { absent: 'vide' }).filter(isScannedFiche)) {
-    const lines = readText(join(rawDir, name)).split('\n')
-    lines.forEach((ln, i) => {
-      const hit = (re, kind) => { if (re().test(ln)) violations.push({ file: `${rawDir}/${name}`, row: i + 1, kind, text: ln.trim().slice(0, 160) }) }
-      hit(EMDASH_RANGE_RE, 'emdash-range')
-      hit(BOOK_NO_CHAPTER_RE, 'book-no-chapter')
-      hit(BACKTICK_FILE_RE, 'backtick-file')
-    })
-  }
-  return violations
+  return passeFiches(rawDir).docsRaw
 }
 
-/** Scanne les fiches `docs/raw/*.md` (hors rapports/épreuves + 00-index) pour la prose d'état
- *  d'implémentation (scan d) : toute ligne HORS bloc de champ `**Implémente**` qui matche `NONIMPL_RE`.
- *  Retourne `{ file, row, text }[]`. Pur (aucune écriture). */
+/** Scan (d) : prose d'état d'implémentation des fiches (hors rapports/épreuves, hors fiches
+ *  d'auteur), HORS bloc de champ généré `**Implémente**`. Retourne `{ file, row, text }[]`. */
 export function scanImplProseViolations(rawDir = RAWDIR) {
-  const violations = []
-  for (const name of listerDossier(rawDir, { absent: 'vide' }).filter(isImplProseScanned)) {
-    const lines = readText(join(rawDir, name)).split('\n')
-    const { inFieldBlock } = fieldBlockMask(lines)
-    lines.forEach((ln, i) => {
-      if (inFieldBlock[i]) return
-      if (NONIMPL_RE().test(ln)) violations.push({ file: `${rawDir}/${name}`, row: i + 1, text: ln.trim().slice(0, 160) })
-    })
-  }
-  return violations
+  return passeFiches(rawDir).implProse
 }
 
 /** Scan (e) : `ch.` cosmétique — src/** (.ts/.tsx/.json) ET docs/raw/*.md (mêmes fiches que (b)/(c)).
  *  Retourne `{ file, row, text }[]`, UNE entrée par occurrence (cliqueté par fichier, cf. `countsByFile`). */
 export function scanChDotViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
-  const violations = []
-  const files = [...fichiersSources(srcDir, exts), ...rawFiles(rawDir, isScannedFiche)]
-  for (const f of files) {
-    const rel = f.replace(/\\/g, '/')
-    const lines = readText(f).split('\n')
-    lines.forEach((ln, i) => {
-      const re = CH_DOT_RE()
-      while (re.exec(ln)) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
-    })
-  }
-  return violations
+  return scanTout(srcDir, exts, rawDir).chDot
 }
 
-/** Scan (f) : folio NU `<ABRÉV> p.X` sans chapitre — seulement les lignes en SCOPE en `src/` :
- *  commentaire `.ts`/`.tsx`, champ `"ref"` en `.json` (desc/prose et `source:{book,page}` HORS
- *  scope, #585) — ET, en `docs/raw/*.md` (fiches scannées, patron `chDot`), TOUTE ligne (prose de
- *  citation, pas de notion de « commentaire »). Retourne `{ file, row, text }[]`. Pur (aucune écriture). */
+/** Scan (f) : folio NU `<ABRÉV> p.X` sans chapitre (chapitre absent → invérifiable contre les
+ *  data-folio bakés) — lignes en scope de `src/**`, toute ligne des fiches scannées.
+ *  Retourne `{ file, row, text }[]`. */
 export function scanBareFolioViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
-  const violations = []
-  for (const f of fichiersSources(srcDir, exts)) {
-    const rel = f.replace(/\\/g, '/')
-    const isJson = f.endsWith('.json')
-    const lines = readFileSync(f, 'utf8').split('\n')
-    lines.forEach((ln, i) => {
-      const inScope = isJson ? isRefFieldLine(ln) : isCommentLine(ln)
-      if (!inScope) return
-      const re = BARE_FOLIO_RE()
-      while (re.exec(ln)) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
-    })
-  }
-  for (const f of rawFiles(rawDir, isScannedFiche)) {
-    const rel = f.replace(/\\/g, '/')
-    const lines = readText(f).split('\n')
-    lines.forEach((ln, i) => {
-      const re = BARE_FOLIO_RE()
-      while (re.exec(ln)) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
-    })
-  }
-  return violations
+  return scanTout(srcDir, exts, rawDir).bareFolio
 }
 
 /** Scan (b) étendu à src/** ET docs/raw/*.md (fiches scannées, patron `chDot`) — réf de livre sans
- *  chapitre `<ABRÉV> l.<n>` (`BOOK_NO_CHAPTER_RE`). Retourne `{ file, row, text }[]`. Pur (aucune écriture). */
+ *  chapitre `<ABRÉV> l.<n>` (`BOOK_NO_CHAPTER_RE`). Retourne `{ file, row, text }[]`. */
 export function scanBookNoChapterSrcViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
-  const violations = []
-  const files = [...fichiersSources(srcDir, exts), ...rawFiles(rawDir, isScannedFiche)]
-  for (const f of files) {
-    const rel = f.replace(/\\/g, '/')
-    const lines = readText(f).split('\n')
-    lines.forEach((ln, i) => {
-      const re = BOOK_NO_CHAPTER_RE()
-      while (re.exec(ln)) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
-    })
-  }
-  return violations
+  return scanTout(srcDir, exts, rawDir).bookNoChapterSrc
 }
 
 /** Scan (g) : réf `ABRÉV NN l.X`/`ABRÉV NN p.X` dont l'abréviation est INCONNUE de `_lib.mjs`
  *  (`bookOf` retourne null). Zéro tolérance, PAS de baseline. Retourne `{ file, row, abbr, text }[]`. */
 export function scanUnknownAbbrViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
-  const violations = []
-  const files = [...fichiersSources(srcDir, exts), ...rawFiles(rawDir, isScannedFiche)]
-  for (const f of files) {
-    const rel = f.replace(/\\/g, '/')
-    const lines = readText(f).split('\n')
-    lines.forEach((ln, i) => {
-      const re = UNKNOWN_ABBR_RE()
-      let m
-      while ((m = re.exec(ln))) {
-        const abbr = m[0].replace(/ \d+ [lp]\.\d+$/, '')
-        if (!bookOf(abbr)) violations.push({ file: rel, row: i + 1, abbr, text: ln.trim().slice(0, 160) })
-      }
-    })
-  }
-  return violations
+  return scanTout(srcDir, exts, rawDir).unknownAbbr
 }
 
 /** Baseline gelée si `graphy-baseline.json` existe, sinon `{}` (une famille absente = `{}`). */
@@ -324,16 +373,17 @@ function checkFamily(label, family, violations, baseline) {
 }
 
 function main() {
-  const src = scanGraphyViolations()
-  const docs = scanDocsRawViolations()
-  const implProse = scanImplProseViolations()
+  const passe = scanTout()
+  const src = passe.graphy
+  const docs = passe.docsRaw
+  const implProse = passe.implProse
   const baseline = readBaseline()
-  const chDot = checkFamily('ch. cosmétique', 'chDot', scanChDotViolations(), baseline)
-  const bareFolio = checkFamily('folio nu', 'bareFolio', scanBareFolioViolations(), baseline)
-  const bookNoChapterSrc = checkFamily('réf sans chapitre (src+docs/raw)', 'bookNoChapterSrc', scanBookNoChapterSrcViolations(), baseline)
-  const unknownAbbr = scanUnknownAbbrViolations()
-  const multiFolioSplit = scanMultiFolioSplitViolations()
-  const chapterBoundaryFolio = checkFamily('folio en fin de chapitre (AVERTISSEMENT)', 'chapterBoundaryFolio', scanChapterBoundaryFolioViolations(), baseline)
+  const chDot = checkFamily('ch. cosmétique', 'chDot', passe.chDot, baseline)
+  const bareFolio = checkFamily('folio nu', 'bareFolio', passe.bareFolio, baseline)
+  const bookNoChapterSrc = checkFamily('réf sans chapitre (src+docs/raw)', 'bookNoChapterSrc', passe.bookNoChapterSrc, baseline)
+  const unknownAbbr = passe.unknownAbbr
+  const multiFolioSplit = passe.multiFolioSplit
+  const chapterBoundaryFolio = checkFamily('folio en fin de chapitre (AVERTISSEMENT)', 'chapterBoundaryFolio', passe.chapterBoundaryFolio, baseline)
 
   if (src.length) {
     console.log(`citation-graphy-guard : ${src.length} graphie(s) chapitre-relative(s) (src/) :`)

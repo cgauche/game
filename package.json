@@ -74,7 +74,7 @@
     "raw:coverage": "node scripts/raw/coverage.mjs",
     "raw:reconcile": "node scripts/raw/reconcile.mjs",
     "raw:check-refs": "node scripts/raw/check-refs.mjs",
-    "raw:check-code-refs": "node scripts/raw/check-code-refs.mjs",
+    "raw:check-code-refs": "node scripts/raw/check-code-refs.mjs && node scripts/raw/citation-graphy-guard.mjs",
     "raw:check-entity-in-chapter": "node scripts/raw/check-entity-in-chapter.mjs",
     "raw:check-catalogue-complete": "node scripts/raw/check-catalogue-complete.mjs",
     "raw:check-folio-continuity": "node scripts/raw/check-folio-continuity.mjs",
