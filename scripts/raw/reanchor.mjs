@@ -13,19 +13,21 @@
 //   - 🟡 MEDIUM : c'est CE verdict qui a produit le bug réel (ZI 13 l.954 auto-résolu vers le
 //     candidat le plus proche, alors que le vrai texte vivait en ZI 2 l.68) — zéro tolérance
 //     (baseline mesurée à 0 aujourd'hui), jamais d'auto-résolution.
-//   - ❌ LOW : la réf MENT (citation introuvable à la ligne annoncée) — cliquet PAR chapitre-réf
-//     (`scripts/raw/reanchor-low-baseline.json`, patron `check-refs.mjs`/`dead-refs-baseline.json`) :
-//     toute HAUSSE échoue, toute baseline périmée (réfs réparées) doit être ABAISSÉE.
+//   - ❌ LOW : la réf MENT (citation introuvable à la ligne annoncée) — cliquet NOMINATIF PAR SITE
+//     (`scripts/raw/reanchor-low-stock.json`, écart `ecartDuVolet` de `stockNominatif.mjs`, clé
+//     `fiche :: réf citée :: occurrence`) : un site NEUF est une régression à corriger ou à déclarer,
+//     une entrée dont le site a disparu est une dette SOLDÉE à retirer. L'entrée nomme sa fiche
+//     `docs/raw/<x>.md` : l'ajouter est une croissance que la porte de plage compte.
 //   - ⛔ PAST-EOF (hors-fichier) : NE PAS doubler — déjà cliqueté par `check-refs.mjs`
-//     (`dead-refs-baseline.json`), sur la borne HAUTE dépliée d'une plage (`span`), un sur-ensemble
+//     (`dead-refs-stock.json`), sur la borne HAUTE dépliée d'une plage (`span`), un sur-ensemble
 //     de la borne de départ vérifiée ici.
-import { readFileSync, writeFileSync } from 'node:fs'
+import { writeFileSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { BOOKS, esc, chapterFile, normalize, ELLIPSIS_SENTINEL as SENT, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve, readText } from './_lib.mjs'
-import { countsByChapterRef, assertAgainstBaseline } from './check-refs.mjs'
+import { ecartDuVolet, readStock } from './stockNominatif.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 
 const APPLY = process.argv.includes('--apply')
@@ -36,7 +38,10 @@ const APPLY = process.argv.includes('--apply')
 const REMAP = process.argv.includes('--remap')
 const MIN_QUOTE_LEN = 24   // ancre verbatim < 24 car. → trop générique, on n'ancre pas
 export const RAWDIR = 'docs/raw'
-export const LOW_BASELINE_PATH = join(dirname(fileURLToPath(import.meta.url)), 'reanchor-low-baseline.json')
+export const LOW_STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'reanchor-low-stock.json')
+// Sites LOW observés → sites du stock : la FICHE où la réf est lue (chemin depuis la racine du dépôt,
+// c'est lui que la porte de plage reconnaît) et la RÉF CITÉE telle qu'écrite (`full`).
+export const sitesLow = (lowRows) => lowRows.map((r) => ({ file: r.doc, ref: r.full }))
 // On ne traite que les fiches de DOMAINE + catalogues. On saute les rapports générés ET les fichiers
 // MÉTA (index, conventions, rapports d'épreuve) dont les réfs sont ILLUSTRATIVES, pas des citations
 // vivantes. Deux ensembles PARTAGÉS (#454 DoD, #585 lot A) : source unique `_lib.mjs`.
@@ -208,7 +213,7 @@ export function scan(rawDir = RAWDIR, { apply = false, remap = false } = {}) {
   const DOCS = listerDossier(rawDir).filter((f) => f.endsWith('.md') && !isMeta(f))
   const tally = { OK: 0, DRIFT: 0, MEDIUM: 0, LOW: 0, RANGE: 0, 'PAST-EOF': 0, 'NO-SOURCE': 0 }
   let totalRefs = 0, totalQuotes = 0, appliedTotal = 0, remappedTotal = 0
-  const lowRows = []   // [{ ref: 'ABBR NN', full, detail }] — unité du cliquet (patron check-refs.mjs)
+  const lowRows = []   // [{ doc: chemin de la FICHE, full, detail }] — un SITE = une unité du cliquet
   const sections = []  // [{ file, rows }] pour le rapport
 
   for (const file of DOCS.sort()) {
@@ -291,7 +296,7 @@ export function scan(rawDir = RAWDIR, { apply = false, remap = false } = {}) {
         } else if (r.status === 'LOW') {
           const detail = `« ${snippet}… » — ${r.reason}`
           rows.push({ full, status: 'LOW', cited: citedStart, detail })
-          lowRows.push({ ref: `${abbr} ${Number(ch)}`, full, detail })
+          lowRows.push({ doc: path.split('\\').join('/'), full, detail })
         } else if (r.status === 'NO-SOURCE') {
           rows.push({ full, status: 'NO-SOURCE', detail: 'chapitre source introuvable' })
         }
@@ -358,17 +363,17 @@ function main() {
     console.log(`RÉGRESSION — ${tally.MEDIUM} réf(s) ambiguë(s) 🟡 : trancher manuellement (jamais d'auto-résolution, cf. #434 défaut 1).`)
     fail = true
   }
-  const lowCounts = countsByChapterRef(lowRows)
-  const baseline = JSON.parse(readFileSync(LOW_BASELINE_PATH, 'utf8'))
-  const { over, stale } = assertAgainstBaseline(lowCounts, baseline)
-  if (over.length) {
-    console.log('RÉGRESSION — hausse de réfs FAUSSES (❌ LOW) par chapitre-réf :')
-    for (const o of over) console.log(`  ${o}`)
+  const { neuves, perimees } = ecartDuVolet({
+    sites: sitesLow(lowRows), stock: readStock(LOW_STOCK_PATH), ou: 'reanchor-low-stock.json',
+  })
+  if (neuves.length) {
+    console.log('RÉGRESSION — site(s) de réf FAUSSE (❌ LOW) hors du stock :')
+    for (const o of neuves) console.log(`  ${o}`)
     fail = true
   }
-  if (stale.length) {
-    console.log('Baseline(s) LOW PÉRIMÉE(s) (réfs réparées) — à ABAISSER dans reanchor-low-baseline.json :')
-    for (const s of stale) console.log(`  ${s}`)
+  if (perimees.length) {
+    console.log('Entrée(s) SOLDÉE(s) (réfs réparées) :')
+    for (const s of perimees) console.log(`  ${s}`)
     fail = true
   }
   if (fail) process.exitCode = 1

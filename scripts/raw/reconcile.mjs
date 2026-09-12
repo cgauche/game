@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url'
 import { parUnitesDeCode, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { ecartsDeStock } from '../guards/lib/stock.mjs'
 import { ldbRe, otherRe, ldbFolioRe, otherFolioRe, folioSpan, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED, readText, PIVOT_ABBR } from './_lib.mjs'
-import { lireStockJson } from './check-code-refs.mjs'
+import { lireStockJson } from './stockNominatif.mjs'
 import { loadAbbrMap, folioCitationsFromJson } from './build-implemente.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 

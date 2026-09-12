@@ -5,8 +5,8 @@
 // périmètre que le générateur `build-implemente`), résout le fichier-chapitre (`chapterFile`, _lib.mjs)
 // et signale la réf dont la borne haute dépasse le nombre de lignes du chapitre, OU dont le chapitre
 // est introuvable. Regex de réfs RÉUTILISÉES (`ldbRe`/`otherRe`/`span`/`bookOf`) — jamais réécrites.
-// Cliquet NOMINATIF (`scripts/raw/dead-code-refs-stock.json`, écart calculé par `ecartsDeStock` de
-// `guards/lib/stock.mjs`, forme de `reconciliation-stock.json`) : une ENTRÉE par site, et les deux
+// Cliquet NOMINATIF (`scripts/raw/dead-code-refs-stock.json`, écart calculé par `ecartDuVolet` de
+// `stockNominatif.mjs`, forme de `reconciliation-stock.json`) : une ENTRÉE par site, et les deux
 // sens échouent — un site NEUF est une régression à corriger ou à déclarer, une entrée dont le site
 // a disparu est une dette SOLDÉE à retirer. Un nombre relevé dans un fichier de compte est net 0 à la
 // porte de plage ; une entrée ajoutée est une croissance qui se déclare (`stocksNominatifs.mjs`).
@@ -26,7 +26,7 @@ import { listerArbre } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ldbRe, otherRe, span, chapterFile, bookOf, readText, PIVOT_ABBR } from './_lib.mjs'
-import { ecartsDeStock } from '../guards/lib/stock.mjs'
+import { ecartDuVolet, readStock } from './stockNominatif.mjs'
 
 export const SRC_DIR = 'src'
 export const EXCLUDE_SRC_PREFIX = 'src/gameIso/rig/parts/tenues/defs/' // art de couverture, pas une règle (cf. build-implemente)
@@ -124,69 +124,6 @@ export function scanEmptyLineCodeRefs(srcDir = SRC_DIR) {
     })
   }
   return vides
-}
-
-/** CLÉ NOMINATIVE d'une entrée ou d'un site : la famille quand la garde en distingue, le fichier, la
- *  réf, et l'OCCURRENCE. Jamais un numéro de ligne — il dérive à chaque édition du fichier et rendrait
- *  la moitié du stock périmée à chaque commit. Même clé des deux côtés de `ecartsDeStock`. */
-export const cleDeSite = (e) => [e.famille ?? '', e.fichier, e.ref, e.occurrence].join(' :: ')
-
-/**
- * Sites OBSERVÉS → entrées NOMINALES. L'occurrence est l'ordinal du site parmi ceux qui partagent la
- * même (famille, fichier, réf), dans l'ordre du balayage.
- * ANGLE MORT DIT : quand un fichier porte DEUX fois la même réf et que la PREMIÈRE se corrige, la
- * seconde descend de l'occurrence 2 à la 1 — l'écart rend alors une périmée ET une neuve pour un seul
- * geste. Le cliquet reste juste (le solde doit se déclarer), sa phrase est seulement plus bavarde.
- * @param {{ file: string, ref: string }[]} sites @param {{ famille?: string }} [p]
- */
-export function sitesEnEntrees(sites, { famille } = {}) {
-  const vus = new Map()
-  return sites.map(({ file, ref }) => {
-    const k = [famille ?? '', file, ref].join(' :: ')
-    const occurrence = (vus.get(k) ?? 0) + 1
-    vus.set(k, occurrence)
-    return { famille, fichier: file, ref, occurrence }
-  })
-}
-
-/** Contenu JSON d'un fichier de stock, ou `{}` s'il est ABSENT (mode ZÉRO-TOLÉRANCE : rien de toléré,
- *  l'écart fait le reste). Lecteur partagé : `reconcile.mjs` en tire ses `trous`. */
-export function lireStockJson(path = STOCK_PATH) {
-  try {
-    return JSON.parse(readFileSync(path, 'utf8'))
-  } catch (err) {
-    if (err.code === 'ENOENT') return {}
-    throw err
-  }
-}
-
-/** Les ENTRÉES d'un fichier de stock (fichier absent, ou stock vide : aucune entrée). */
-export function readStock(path = STOCK_PATH) {
-  return lireStockJson(path).entrees ?? []
-}
-
-/**
- * VERDICT d'un volet à stock nominatif : les deux sens, en phrases prêtes à afficher. Le calcul est
- * celui de `ecartsDeStock` ; ce qui vit ici est le REMÈDE — ce que le lecteur doit faire de chaque
- * ligne. Le PLAFOND n'y est pas : il vit dans le test de la garde.
- * ANGLE MORT DIT, À LA PORTE DE PLAGE : un ÉCHANGE EN PLACE à total constant — réécrire le `fichier`
- * ou la `ref` d'une entrée existante pour couvrir un site neuf pendant qu'un autre est soldé, dans le
- * MÊME commit — rend `[]` à `croissanceDesStocks` : le stock ne peut pas CROÎTRE ainsi, mais ce solde
- * et ce neuf ne se déclarent pas. Cette garde-ci, elle, les voit toujours (la clé a changé des deux
- * côtés) : c'est la SUITE qui tient ce cas, pas la porte de plage.
- * @param {{ sites: {file: string, ref: string}[], stock: object[], famille?: string, ou?: string }} p
- *   `ou` nomme le fichier de stock dans le remède.
- */
-export function ecartDuVolet({ sites, stock, famille, ou }) {
-  return ecartsDeStock({
-    observe: sitesEnEntrees(sites, { famille }),
-    stock,
-    cle: cleDeSite,
-    remede: {
-      neuve: (k) => `${k} — site NEUF : corriger la réf, ou déclarer une entrée dans ${ou} et la porter au message par \`CLIQUET:\`.`,
-      perimee: (k) => `${k} — entrée SOLDÉE : le site a disparu, retirer cette entrée de ${ou}.`,
-    },
-  })
 }
 
 function main() {

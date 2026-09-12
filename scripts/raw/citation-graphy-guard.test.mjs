@@ -14,7 +14,7 @@ import {
   scanTout,
 } from './citation-graphy-guard.mjs'
 import { otherAbbrAlternation, chapterBoundaryRisk } from './_lib.mjs'
-import { ecartDuVolet } from './check-code-refs.mjs'
+import { ecartDuVolet } from './stockNominatif.mjs'
 
 function withTempSrcDir(content, fn) {
   const dir = mkdtempSync(join(tmpdir(), 'graphy-guard-'))

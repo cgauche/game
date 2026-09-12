@@ -4,11 +4,11 @@
 // (LOW + « texte trouvé en ZI 2 l.68 ») mais ne bloquait rien. Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, writeFileSync, rmSync, readFileSync } from 'node:fs'
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import { countsByChapterRef, assertAgainstBaseline } from './check-refs.mjs'
-import { buildIndex, classifyQuote, scan, RAWDIR, LOW_BASELINE_PATH } from './reanchor.mjs'
+import { join, basename } from 'node:path'
+import { ecartDuVolet, readStock } from './stockNominatif.mjs'
+import { buildIndex, classifyQuote, scan, sitesLow, RAWDIR, LOW_STOCK_PATH } from './reanchor.mjs'
 
 function withTempRawDir(content, fn) {
   const dir = mkdtempSync(join(tmpdir(), 'reanchor-'))
@@ -80,7 +80,10 @@ test('scan() : citation introuvable dans le chapitre cité → LOW, alimente low
     const r = scan(dir, {})
     assert.equal(r.tally.LOW, 1)
     assert.equal(r.lowRows.length, 1)
-    assert.equal(r.lowRows[0].ref, 'LDB 6')
+    assert.equal(basename(r.lowRows[0].doc), 'fixture.md', 'le site NOMME la fiche où la réf est lue')
+    assert.equal(r.lowRows[0].doc, `${dir.split('\\').join('/')}/fixture.md`, 'chemin de la fiche depuis la racine du balayage, en séparateurs /')
+    assert.equal(r.lowRows[0].full, 'LDB 6 l.5', 'et la RÉF CITÉE telle qu’écrite')
+    assert.deepEqual(sitesLow(r.lowRows), [{ file: r.lowRows[0].doc, ref: 'LDB 6 l.5' }])
   })
 })
 
@@ -93,33 +96,77 @@ test('scan() : citation présente mais à une autre ligne du chapitre RÉEL → 
   })
 })
 
-// ---------- cliquet (réutilise LES MÊMES primitives que check-refs.mjs, patron dead-refs-baseline.json) ----------
+// ---------- cliquet NOMINATIF (mêmes primitives que check-code-refs.mjs / citation-graphy-guard.mjs) ----------
 
-test('countsByChapterRef + assertAgainstBaseline : hausse de réfs ❌ LOW détectée', () => {
-  const lowRows = [{ ref: 'ZI 13' }, { ref: 'ZI 13' }, { ref: 'LDB 6' }]
-  const counts = countsByChapterRef(lowRows)
-  assert.deepEqual(counts, { 'ZI 13': 2, 'LDB 6': 1 })
-  const { over, stale } = assertAgainstBaseline(counts, { 'ZI 13': 1, 'LDB 6': 1 })
-  assert.equal(over.length, 1)
-  assert.match(over[0], /ZI 13/)
-  assert.equal(stale.length, 0)
+test('écart : un site ❌ LOW hors du stock est NEUF, une entrée sans site est SOLDÉE, les deux nommés', () => {
+  const { neuves, perimees } = ecartDuVolet({
+    sites: sitesLow([{ doc: 'docs/raw/bestiaire.md', full: 'ZI 13 l.954' }]),
+    stock: [{ fichier: 'docs/raw/magie.md', ref: 'LDB 6 l.5', occurrence: 1 }],
+    ou: 'reanchor-low-stock.json',
+  })
+  assert.equal(neuves.length, 1)
+  assert.match(neuves[0], /docs\/raw\/bestiaire\.md :: ZI 13 l\.954 :: 1 — site NEUF/)
+  assert.match(neuves[0], /CLIQUET:/)
+  assert.equal(perimees.length, 1)
+  assert.match(perimees[0], /docs\/raw\/magie\.md/)
+  assert.match(perimees[0], /entrée SOLDÉE/)
 })
 
-test('countsByChapterRef + assertAgainstBaseline : baseline PÉRIMÉE (réf réparée) détectée', () => {
-  const counts = countsByChapterRef([{ ref: 'LDB 6' }])
-  const { over, stale } = assertAgainstBaseline(counts, { 'LDB 6': 1, 'ZI 13': 3 })
-  assert.equal(over.length, 0)
-  assert.equal(stale.length, 1)
-  assert.match(stale[0], /ZI 13/)
+test('écart : deux sites de la MÊME réf dans la MÊME fiche se distinguent par leur OCCURRENCE', () => {
+  const sites = sitesLow([
+    { doc: 'docs/raw/bestiaire.md', full: 'ZI 13 l.954' },
+    { doc: 'docs/raw/bestiaire.md', full: 'ZI 13 l.954' },
+  ])
+  const stock = [
+    { fichier: 'docs/raw/bestiaire.md', ref: 'ZI 13 l.954', occurrence: 1 },
+    { fichier: 'docs/raw/bestiaire.md', ref: 'ZI 13 l.954', occurrence: 2 },
+  ]
+  const couvert = ecartDuVolet({ sites, stock, ou: 'reanchor-low-stock.json' })
+  assert.deepEqual([couvert.neuves, couvert.perimees], [[], []], 'deux entrées d’occurrences distinctes couvrent les deux sites')
+  const { neuves } = ecartDuVolet({ sites, stock: stock.slice(0, 1), ou: 'reanchor-low-stock.json' })
+  assert.equal(neuves.length, 1, 'le second site n’est pas couvert par l’entrée du premier')
+})
+
+// Les QUATRE gestes qu'un auteur peut faire sur le stock RÉEL, et ce que chaque porte en dit. Le
+// stock sert de MODÈLE de sites : rien n'est écrit sur le disque, et aucun cardinal n'est figé —
+// c'est la RELATION entre geste et verdict qui est le contrat.
+test('stock réel — les quatre gestes : site neuf, entrée ajoutée, occurrence relevée, stock vidé', () => {
+  const stock = readStock(LOW_STOCK_PATH)
+  assert.ok(stock.length > 0, 'stock vide : la sonde jugerait par vacuité')
+  const sitesDuStock = stock.map((e) => ({ file: e.fichier, ref: e.ref }))
+  const ou = 'reanchor-low-stock.json'
+
+  const neuf = ecartDuVolet({ sites: [...sitesDuStock, { file: 'docs/raw/combat.md', ref: 'LDB 99 l.1' }], stock, ou })
+  assert.equal(neuf.neuves.length, 1, 'un site jamais déclaré doit sortir SEUL')
+  assert.match(neuf.neuves[0], /docs\/raw\/combat\.md :: LDB 99 l\.1 :: 1 — site NEUF/)
+  assert.deepEqual(neuf.perimees, [])
+
+  const declare = ecartDuVolet({
+    sites: [...sitesDuStock, { file: 'docs/raw/combat.md', ref: 'LDB 99 l.1' }],
+    stock: [...stock, { fichier: 'docs/raw/combat.md', ref: 'LDB 99 l.1', occurrence: 1 }], ou,
+  })
+  assert.deepEqual([declare.neuves, declare.perimees], [[], []], 'déclarer l’entrée éteint la garde — et la porte de plage, elle, compte la ligne ajoutée')
+
+  const releve = ecartDuVolet({
+    sites: sitesDuStock,
+    stock: stock.map((e, i) => (i === 0 ? { ...e, occurrence: e.occurrence + 1 } : e)), ou,
+  })
+  assert.equal(releve.neuves.length, 1, 'une occurrence relevée découvre le site qu’elle abandonne')
+  assert.equal(releve.perimees.length, 1, 'et laisse une entrée que plus aucun site ne porte')
+
+  const vide = ecartDuVolet({ sites: sitesDuStock, stock: [], ou })
+  assert.equal(vide.neuves.length, sitesDuStock.length, 'stock vidé : tolérance ZÉRO, chaque site redevient neuf')
+  assert.deepEqual(vide.perimees, [])
 })
 
 // ---------- auto-cohérence sur le VRAI Atlas (le cliquet vaut pour de vrai, pas seulement en fixture) ----------
 
-test('scan(RAWDIR) réel : les réfs ❌ LOW mesurées correspondent EXACTEMENT à reanchor-low-baseline.json', () => {
+test('scan(RAWDIR) réel : les sites ❌ LOW mesurés sont EXACTEMENT les entrées de reanchor-low-stock.json', () => {
   const r = scan(RAWDIR, {})
-  const counts = countsByChapterRef(r.lowRows)
-  const baseline = JSON.parse(readFileSync(LOW_BASELINE_PATH, 'utf8'))
-  const { over, stale } = assertAgainstBaseline(counts, baseline)
-  assert.deepEqual(over, [], `Régression LOW non gelée : ${over.join(', ')}`)
-  assert.deepEqual(stale, [], `Baseline LOW périmée à abaisser : ${stale.join(', ')}`)
+  const stock = readStock(LOW_STOCK_PATH)
+  assert.ok(stock.length > 0, 'le stock des réfs ❌ LOW est une dette encore ouverte : un stock vide ici serait une perte de mesure')
+  const { neuves, perimees } = ecartDuVolet({ sites: sitesLow(r.lowRows), stock, ou: 'reanchor-low-stock.json' })
+  assert.deepEqual(neuves, [], `site(s) NEUF(s) :\n${neuves.join('\n')}`)
+  assert.deepEqual(perimees, [], `entrée(s) SOLDÉE(s) :\n${perimees.join('\n')}`)
+  assert.equal(stock.every((e) => e.fichier.startsWith('docs/raw/')), true, 'chaque entrée NOMME sa fiche : c’est ce que la porte de plage lit')
 })

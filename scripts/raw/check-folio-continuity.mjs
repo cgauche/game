@@ -13,8 +13,8 @@
 // la page tout de même PERDUE — deux ancres adjacentes sans un octet utile entre elles (LDB 08,
 // folios 88/89 collés : la carrière de Juriste manque). Cf. `emptyFolioAnchorsInText` et son stock
 // nominatif trié au PDF `empty-folios-baseline.json` (généré par `lib/empty-folios-stock.mjs`).
-// Cliquet PAR fichier-chapitre (`scripts/raw/folio-gaps-baseline.json`, patron `check-refs.mjs`/
-// `dead-refs-baseline.json`) : le stock déjà présent (mesuré, pas 0) est GELÉ — toute HAUSSE
+// Cliquet PAR fichier-chapitre (`scripts/raw/folio-gaps-baseline.json`, `countsByChapterRef` et
+// `assertAgainstBaseline` de `check-refs.mjs`) : le stock déjà présent (mesuré, pas 0) est GELÉ — toute HAUSSE
 // échoue ; une baseline devenue trop haute (extraction réparée) doit être ABAISSÉE.
 // Re-run : node scripts/raw/check-folio-continuity.mjs
 import { readFileSync } from 'node:fs'

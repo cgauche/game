@@ -10,9 +10,9 @@ import { mkdtempSync, writeFileSync, rmSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
-  scanDeadCodeRefs, scanEmptyLineCodeRefs, isExcludedSrc, readStock, sitesEnEntrees, cleDeSite,
-  ecartDuVolet, STOCK_PATH, EMPTY_LINE_STOCK_PATH,
+  scanDeadCodeRefs, scanEmptyLineCodeRefs, isExcludedSrc, STOCK_PATH, EMPTY_LINE_STOCK_PATH,
 } from './check-code-refs.mjs'
+import { readStock, ecartDuVolet } from './stockNominatif.mjs'
 
 // LDB 06 (Source/…/06 - Classes.md) fait 6 lignes (split('\n').length) — chapitre réel, court, stable :
 // sert d'ancrage pour planter une réf hors borne sans toucher au vrai src/.
@@ -80,53 +80,6 @@ test('.json scanné comme .ts/.tsx', () => {
 test('isExcludedSrc : art de couverture (tenues/defs/) exclu, reste inclus', () => {
   assert.equal(isExcludedSrc('src/gameIso/rig/parts/tenues/defs/Loup-blanc.ts'), true)
   assert.equal(isExcludedSrc('src/engine/combat.ts'), false)
-})
-
-test('sitesEnEntrees : deux sites de la MÊME réf dans le MÊME fichier se distinguent par leur OCCURRENCE', () => {
-  const entrees = sitesEnEntrees([
-    { file: 'src/a.ts', ref: 'LDB 6 l.2' },
-    { file: 'src/a.ts', ref: 'LDB 6 l.2' },
-    { file: 'src/b.ts', ref: 'LDB 6 l.2' },
-  ])
-  assert.deepEqual(entrees.map((e) => e.occurrence), [1, 2, 1])
-  assert.equal(new Set(entrees.map(cleDeSite)).size, entrees.length, 'la clé doit distinguer chaque site')
-  assert.equal(entrees.every((e) => !/:\d+$/.test(cleDeSite(e))), true, 'aucun numéro de ligne dans la clé')
-})
-
-test('écart : un site hors du stock est NEUF, une entrée sans site est SOLDÉE, les deux nommés', () => {
-  const stock = [{ fichier: 'src/a.ts', ref: 'LDB 6 l.2', occurrence: 1 }, { fichier: 'src/c.ts', ref: 'LDB 6 l.2', occurrence: 1 }]
-  const { neuves, perimees } = ecartDuVolet({
-    sites: [{ file: 'src/a.ts', ref: 'LDB 6 l.2' }, { file: 'src/b.ts', ref: 'LDB 6 l.2' }],
-    stock, ou: 'x-stock.json',
-  })
-  assert.equal(neuves.length, 1)
-  assert.match(neuves[0], /src\/b\.ts/)
-  assert.match(neuves[0], /site NEUF/)
-  assert.match(neuves[0], /CLIQUET:/)
-  assert.equal(perimees.length, 1)
-  assert.match(perimees[0], /src\/c\.ts/)
-  assert.match(perimees[0], /entrée SOLDÉE/)
-})
-
-test('écart : un stock qui décrit EXACTEMENT les sites observés ne dit rien', () => {
-  const { neuves, perimees } = ecartDuVolet({
-    sites: [{ file: 'src/a.ts', ref: 'LDB 6 l.2' }, { file: 'src/a.ts', ref: 'LDB 6 l.2' }],
-    stock: [
-      { fichier: 'src/a.ts', ref: 'LDB 6 l.2', occurrence: 1 },
-      { fichier: 'src/a.ts', ref: 'LDB 6 l.2', occurrence: 2 },
-    ],
-    ou: 'x-stock.json',
-  })
-  assert.deepEqual([neuves, perimees], [[], []])
-})
-
-test('readStock : fichier absent → aucune entrée (zéro-tolérance), fichier présent → ses entrées', () => {
-  assert.deepEqual(readStock(join(tmpdir(), 'inexistant-check-code-refs.json')), [])
-  withTempSrcDir('_unused.ts', '', (dir) => {
-    const path = join(dir, 'stock.json')
-    writeFileSync(path, '{"entrees":[{"fichier":"src/a.ts","ref":"LDB 6 l.2","occurrence":1}]}', 'utf8')
-    assert.deepEqual(readStock(path).map(cleDeSite), [' :: src/a.ts :: LDB 6 l.2 :: 1'])
-  })
 })
 
 // Les QUATRE gestes qu'un auteur peut faire sur le stock RÉEL, et ce que chaque porte en dit (sonde

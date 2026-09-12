@@ -5,7 +5,8 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { scanDeadRefs, countsByChapterRef, assertAgainstBaseline } from './check-refs.mjs'
+import { scanDeadRefs, sitesMorts, countsByChapterRef, assertAgainstBaseline, STOCK_PATH } from './check-refs.mjs'
+import { ecartDuVolet, readStock } from './stockNominatif.mjs'
 
 // LDB 06 (Source/Warhammer v4 - Livre de base version corrigée/06 - Classes.md) fait 6 lignes
 // (split('\n').length) — chapitre réel, court, stable : sert d'ancrage pour planter une réf hors
@@ -65,6 +66,37 @@ test('fichier EXCLU (coverage.md/reconciliation.md/reanchor.md) → jamais scann
   })
 })
 
+test('sitesMorts : un site NOMME sa fiche et la réf citée, borne HAUTE comprise — jamais sa ligne', () => {
+  const sites = sitesMorts([{ doc: 'combat.md', row: 12, ref: 'LDB 6', hi: 999 }])
+  assert.deepEqual(sites, [{ file: 'docs/raw/combat.md', ref: 'LDB 6 l.999' }])
+  assert.equal(/:\d+$/.test(sites[0].file), false, 'la fiche se nomme sans numéro de ligne')
+})
+
+test('écart : un site hors du stock est NEUF, une entrée sans site est SOLDÉE', () => {
+  const { neuves, perimees } = ecartDuVolet({
+    sites: sitesMorts([{ doc: 'combat.md', ref: 'LDB 6', hi: 999 }]),
+    stock: [{ fichier: 'docs/raw/magie.md', ref: 'AA 1 l.42', occurrence: 1 }],
+    ou: 'dead-refs-stock.json',
+  })
+  assert.equal(neuves.length, 1)
+  assert.match(neuves[0], /docs\/raw\/combat\.md :: LDB 6 l\.999 :: 1 — site NEUF/)
+  assert.match(neuves[0], /CLIQUET:/)
+  assert.equal(perimees.length, 1)
+  assert.match(perimees[0], /magie\.md/)
+  assert.match(perimees[0], /entrée SOLDÉE/)
+})
+
+test('stock ABSENT → tolérance ZÉRO : tout site mort est neuf, et l’Atlas réel n’en porte aucun', () => {
+  assert.deepEqual(readStock(STOCK_PATH), [], 'le régime nominal est le stock ABSENT (ou vide)')
+  const { neuves, perimees } = ecartDuVolet({
+    sites: sitesMorts(scanDeadRefs()), stock: readStock(STOCK_PATH), ou: 'dead-refs-stock.json',
+  })
+  assert.deepEqual(neuves, [], `site(s) de réf morte dans docs/raw :\n${neuves.join('\n')}`)
+  assert.deepEqual(perimees, [], `entrée(s) SOLDÉE(s) :\n${perimees.join('\n')}`)
+})
+
+// `countsByChapterRef`/`assertAgainstBaseline` servent `check-folio-continuity.mjs`, dont le cliquet
+// de folios est un COMPTE par fichier-chapitre : leur contrat se vérifie ici, là où ils vivent.
 test('countsByChapterRef + assertAgainstBaseline : hausse détectée, baisse détectée comme périmée', () => {
   const counts = countsByChapterRef([{ ref: 'LDB 6' }, { ref: 'LDB 6' }, { ref: 'AA 1' }])
   assert.deepEqual(counts, { 'LDB 6': 2, 'AA 1': 1 })

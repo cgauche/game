@@ -3,18 +3,24 @@
 // (`chapterFile`, _lib.mjs) et vérifie que la borne haute de la plage ne dépasse pas le nombre
 // de lignes du fichier. Un livre/chapitre INTROUVABLE n'est pas le sujet ici (Sens A de
 // reconcile.mjs) — seul un chapitre TROUVÉ dont la ligne est HORS BORNE est une réf morte.
-// Cliquet PAR RÉF-CHAPITRE (`scripts/raw/dead-refs-baseline.json`, patron src/ui/ui-ratchets.test.ts) :
-// toute HAUSSE échoue ; une baseline devenue trop haute (réfs réparées) doit être ABAISSÉE.
+// Cliquet NOMINATIF PAR SITE (`scripts/raw/dead-refs-stock.json`, écart `ecartDuVolet` de
+// `stockNominatif.mjs`, clé `fiche :: réf citée :: occurrence`) : un site NEUF est une régression à
+// corriger ou à déclarer, une entrée dont le site a disparu est une dette SOLDÉE à retirer. Le stock
+// est ABSENT en régime nominal → tolérance ZÉRO (`readStock` traite un fichier absent comme zéro
+// entrée). S'il renaît, il se recrée à sa mesure MINIMALE, chaque entrée portant son lot et sa date.
 // Re-run : node scripts/raw/check-refs.mjs
-import { readFileSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ldbRe, otherRe, span, chapterFile, bookOf, RAWDOC_META_GENERATED, readText, PIVOT_ABBR } from './_lib.mjs'
+import { ecartDuVolet, readStock } from './stockNominatif.mjs'
 
 export const RAWDIR = 'docs/raw'
 export const EXCLUDE = RAWDOC_META_GENERATED // (#454 DoD, #585 lot A) — source unique _lib.mjs
-export const BASELINE_PATH = join(dirname(fileURLToPath(import.meta.url)), 'dead-refs-baseline.json')
+export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'dead-refs-stock.json')
+// Sites morts observés → sites du stock : la FICHE où la réf est lue (chemin depuis la racine du
+// dépôt, c'est lui que la porte de plage reconnaît) et la réf citée, borne HAUTE comprise.
+export const sitesMorts = (dead, rawDir = RAWDIR) => dead.map((d) => ({ file: `${rawDir}/${d.doc}`, ref: `${d.ref} l.${d.hi}` }))
 
 // Réfs `LDB NN l.X…` et réfs « autres livres » (AA/ZI/EDO…) d'une ligne — génère
 // `{ abbr, nn, hi }` (borne haute de la plage dépliée par `span`).
@@ -59,7 +65,8 @@ export function scanDeadRefs(rawDir = RAWDIR, exclude = EXCLUDE) {
   return dead
 }
 
-/** Groupe les réfs mortes par clé `ABBR NN` (unité du cliquet). */
+/** Groupe des lignes-réf par clé `ABBR NN`. Servi à `check-folio-continuity.mjs`, dont le cliquet
+ *  de folios est encore un COMPTE par fichier-chapitre. */
 export function countsByChapterRef(dead) {
   const counts = {}
   for (const d of dead) counts[d.ref] = (counts[d.ref] ?? 0) + 1
@@ -67,7 +74,8 @@ export function countsByChapterRef(dead) {
 }
 
 /** Compare des comptes mesurés à une baseline gelée : toute hausse ET toute baisse (baseline
- *  périmée) sont des anomalies — retourne `{ over, stale }` (listes de lignes-rapport). */
+ *  périmée) sont des anomalies — retourne `{ over, stale }` (listes de lignes-rapport). Seul
+ *  consommateur : `check-folio-continuity.mjs`, sur `folio-gaps-baseline.json`. */
 export function assertAgainstBaseline(counts, baseline) {
   const over = []
   for (const [k, n] of Object.entries(counts)) {
@@ -84,21 +92,21 @@ export function assertAgainstBaseline(counts, baseline) {
 
 function main() {
   const dead = scanDeadRefs()
-  const counts = countsByChapterRef(dead)
-  const baseline = JSON.parse(readFileSync(BASELINE_PATH, 'utf8'))
-  const { over, stale } = assertAgainstBaseline(counts, baseline)
+  const { neuves, perimees } = ecartDuVolet({
+    sites: sitesMorts(dead), stock: readStock(STOCK_PATH), ou: 'dead-refs-stock.json',
+  })
 
-  console.log(`refs mortes (ligne hors borne du chapitre résolu) : ${dead.length} sur ${Object.keys(counts).length} chapitre(s)-réf`)
+  console.log(`refs mortes (ligne hors borne du chapitre résolu) : ${dead.length} site(s)`)
 
-  if (over.length) {
-    console.log('RÉGRESSION — hausse de réfs mortes par chapitre-réf :')
-    for (const o of over) console.log(`  ${o}`)
+  if (neuves.length) {
+    console.log('RÉGRESSION — site(s) de réf morte hors du stock :')
+    for (const o of neuves) console.log(`  ${o}`)
   }
-  if (stale.length) {
-    console.log('Baseline(s) PÉRIMÉE(s) (réfs réparées) — à ABAISSER dans dead-refs-baseline.json :')
-    for (const s of stale) console.log(`  ${s}`)
+  if (perimees.length) {
+    console.log('Entrée(s) SOLDÉE(s) (réfs réparées) :')
+    for (const s of perimees) console.log(`  ${s}`)
   }
-  if (!over.length && !stale.length) {
+  if (!neuves.length && !perimees.length) {
     console.log('OK — cliquet aligné, aucune régression.')
     return
   }

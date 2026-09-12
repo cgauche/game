@@ -315,7 +315,7 @@ export const ECRIT_LU = {
     lit: ['docs/raw/', 'Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs'],
     raison:
       'aucune écriture dans les scripts atteints ; LIT le registre de livres et le normaliseur de références ' +
-      '(src/data/books.json, src/data/source/normalize.ts) et sa baseline scripts/raw/dead-refs-baseline.json',
+      '(src/data/books.json, src/data/source/normalize.ts) et son stock scripts/raw/dead-refs-stock.json, ABSENT en régime nominal',
   },
   'raw:check-code-refs': {
     ecrit: [],
@@ -344,7 +344,7 @@ export const ECRIT_LU = {
     ],
     raison:
       'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT le registre ' +
-      'de livres, le normaliseur de références et sa baseline scripts/raw/reanchor-low-baseline.json',
+      'de livres, le normaliseur de références et son stock scripts/raw/reanchor-low-stock.json',
   },
   'server:typecheck': {
     ecrit: [],

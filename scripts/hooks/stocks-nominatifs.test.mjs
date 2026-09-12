@@ -80,7 +80,7 @@ test('périmètre — les porteurs de stock, et eux seuls', () => {
   assert.equal(estPorteurDeStock('scripts/hooks/fermetures-sans-solde.test.mjs'), true)
   assert.equal(estPorteurDeStock('scripts/hooks/ecrans-ui.json'), true)
   assert.equal(estPorteurDeStock('scripts/raw/reconciliation-stock.json'), true, 'stock nominatif de l\'Atlas RAW (#1709 D2)')
-  assert.equal(estPorteurDeStock('scripts/raw/dead-refs-baseline.json'), true, 'baseline de COMPTE de l\'Atlas RAW : porteuse pour ses CLÉS (#1711 T1)')
+  assert.equal(estPorteurDeStock('scripts/raw/empty-folios-baseline.json'), true, 'gel de folios de l\'Atlas RAW : porteur par son motif `scripts/raw/*-baseline.json` (#1711 T1)')
   assert.equal(estPorteurDeStock('scripts/guards/raw-blind-refs-baseline.json'), true, 'baseline gelée hors du dossier `raw/` par `rawRefIntegrity.mjs`')
   assert.equal(estPorteurDeStock('scripts/guards/lib/decisions-baseline.json'), true, 'stock NOMINATIF de sites du détecteur de commentaires')
   assert.equal(estPorteurDeStock('knip-exports-baseline.json'), true, 'gel d\'exports à clés-chemins, à la RACINE')
@@ -132,7 +132,7 @@ test('périmètre — tout JSON suivi dont la FORME est un stock tombe sous un m
 
 // ── BASELINES DE COMPTE (#1711 T1) : ce que le filet voit, et ce qu'il ne voit pas ───────────────
 
-const BASELINE = 'scripts/raw/dead-refs-baseline.json'
+const BASELINE = 'knip-exports-baseline.json'
 /** Diff d'UN fichier, lignes ajoutées/retirées données telles quelles, avec le numéro de la
  *  première ligne touchée : les images réelles sont fournies à côté, c'est elles qui font foi. */
 const diffAuxLignes = (fichier, debut, ajoutees, retirees = []) =>
@@ -206,6 +206,34 @@ test('stock NOMINATIF de l Atlas RAW — une entrée ajoutée est une croissance
   assert.equal(
     entree('LDB 13 l.184').map((l) => l.trim()).includes(c.exemples[0]), true,
     `l’exemple cité doit APPARTENIR à l’entrée ajoutée, quelle que soit la ligne à laquelle la porte la pose — reçu : ${c.exemples[0]}`,
+  )
+})
+
+test('stock NOMINATIF de l Atlas RAW — une entrée qui nomme une FICHE (docs/raw) est vue elle aussi', () => {
+  const f = 'scripts/raw/reanchor-low-stock.json'
+  assert.equal(estPorteurDeStock(f), true)
+  const entree = (fiche, ref) => [
+    '    {',
+    `      "fichier": "${fiche}",`,
+    `      "ref": "${ref}",`,
+    '      "occurrence": 1,',
+    '      "lot": "#1711",',
+    '      "date": "2026-09-12"',
+    '    }',
+  ]
+  const enveloppe = (corps) => ['{', '  "quoi": "fixture",', '  "entrees": [', ...corps, '  ]', '}', ''].join('\n')
+  const ajoutee = entree('docs/raw/bestiaire.md', 'ZI 13 l.954')
+  const avant = enveloppe(entree('docs/raw/combat.md', 'LDB 46 l.12'))
+  const apres = enveloppe([...entree('docs/raw/combat.md', 'LDB 46 l.12').map((l, i) => (i === 6 ? '    },' : l)), ...ajoutee])
+  const [c] = croissanceDesStocks(
+    diffAuxLignes(f, 10, ajoutee, []),
+    { lirePostImage: () => apres, lirePreImage: () => avant },
+  )
+  assert.equal(c.fichier, f)
+  assert.equal(c.net, 1, 'une fiche de l’Atlas est un chemin de dépôt : la porte de plage compte l’entrée ajoutée')
+  assert.equal(
+    ajoutee.map((l) => l.trim()).includes(c.exemples[0]), true,
+    `l’exemple cité doit APPARTENIR à l’entrée ajoutée — reçu : ${c.exemples[0]}`,
   )
 })
 
