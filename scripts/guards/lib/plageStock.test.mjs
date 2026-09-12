@@ -192,6 +192,82 @@ test('C : un tableau de RACINES passé en ARGUMENT ne fait grandir aucun stock, 
   }
 })
 
+// #1720 — un renommage pur est un DÉPLACEMENT : chaque entrée retirée sous le chemin SOURCE
+// s'apparie à son identique ajoutée sous le chemin CIBLE, et la plage rend net 0. Le témoin de
+// non-cécité vit dans le même test : renommer ET ajouter une entrée vaut `+1`, sur le NOUVEAU chemin.
+test('C : un `git mv` de porteur rend net 0 ; renommé PLUS une entrée reste +1', () => {
+  const ancien = 'scripts/ancien.test.mjs'
+  const nouveau = 'scripts/nouveau.test.mjs'
+  const source = (entrees) => `export const STOCK = [\n${entrees.join('\n')}\n]\n`
+  for (const [nom, ajoutees] of [['renommage pur', []], ['renommage + 1 entrée', [D]]]) {
+    const { racine: repo, sha } = instanceDeDepot({ fichiers: { [ancien]: source([A, B, C]) }, message: 'socle' })
+    const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    try {
+      git('mv', ancien, nouveau)
+      if (ajoutees.length) writeFileSync(join(repo, nouveau), source([A, B, C, ...ajoutees]), 'utf8')
+      git('add', '-A')
+      git('commit', '-q', '--no-verify', '-m', 'refactor: le porteur change de nom')
+      const { refus } = croissancesDeLaPlage({ cwd: repo, avant: sha, apres: git('rev-parse', 'HEAD').trim() })
+      assert.deepEqual(
+        refus.map((r) => [r.fichier, r.net]),
+        ajoutees.length ? [[nouveau, 1]] : [],
+        `${nom} : verdict de plage`,
+      )
+      if (ajoutees.length) assert.deepEqual(refus[0].exemples, [D.trim()], `${nom} : l'exemple est l'entrée AJOUTÉE`)
+    } finally {
+      rmSync(repo, { recursive: true, force: true })
+    }
+  }
+})
+
+test('C : un porteur SCINDÉ en deux ne grandit pas ; renommé MOINS une entrée non plus', () => {
+  const ancien = 'scripts/ancien.test.mjs'
+  const source = (entrees) => `export const STOCK = [\n${entrees.join('\n')}\n]\n`
+  const cas = {
+    'scission en deux porteurs neufs': { 'scripts/gauche.test.mjs': [A, B], 'scripts/droite.test.mjs': [C] },
+    // Une DÉCROISSANCE ne se crédite nulle part : la porte ne rend que les croissances nettes, et
+    // l'entrée perdue au passage n'ouvre aucun droit à en ajouter une ailleurs.
+    'renommage moins une entrée': { 'scripts/nouveau.test.mjs': [A, B] },
+  }
+  for (const [nom, porteurs] of Object.entries(cas)) {
+    const { racine: repo, sha } = instanceDeDepot({ fichiers: { [ancien]: source([A, B, C]) }, message: 'socle' })
+    const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    try {
+      rmSync(join(repo, ancien))
+      for (const [chemin, entrees] of Object.entries(porteurs)) writeFileSync(join(repo, chemin), source(entrees), 'utf8')
+      git('add', '-A')
+      git('commit', '-q', '--no-verify', '-m', 'refactor: le porteur se redistribue')
+      const { refus } = croissancesDeLaPlage({ cwd: repo, avant: sha, apres: git('rev-parse', 'HEAD').trim() })
+      assert.deepEqual(refus.map((r) => [r.fichier, r.net]), [], `${nom} : aucune entrée de plus`)
+    } finally {
+      rmSync(repo, { recursive: true, force: true })
+    }
+  }
+})
+
+// `--- ` n'est un EN-TÊTE que hors d'un hunk : DANS un hunk, une ligne de CONTENU retirée qui
+// commence par `-- ` s'écrit `--- …` et reste un RETRAIT, qui garde son porteur comme les suivants.
+// Le diff est PRODUIT PAR GIT, jamais fabriqué : la forme exacte fait le cas.
+test('C : une ligne de contenu `-- …` retirée n\'est pas un en-tête de diff', async () => {
+  const { croissanceDesStocks } = await import('./stocksNominatifs.mjs')
+  const avant = `export const STOCK = [\n-- sentinelle\n${A}\n${B}\n]\n`
+  const apres = "export const STOCK = [\n  'src/zz.ts',\n]\n"
+  const { racine: repo } = instanceDeDepot({ fichiers: { [PORTEUR]: avant }, message: 'socle' })
+  const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  try {
+    writeFileSync(join(repo, PORTEUR), apres, 'utf8')
+    git('add', '-A')
+    const diff = git('diff', '--cached', '-U0', '--no-renames')
+    assert.match(diff, /^-{3} sentinelle$/m, 'le diff doit bien porter la ligne retirée `--- sentinelle`')
+    assert.deepEqual(
+      croissanceDesStocks(diff, { lirePostImage: () => apres, lirePreImage: () => avant }),
+      [], 'deux entrées retirées pour une ajoutée : le stock a MAIGRI',
+    )
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
 // ÉQUIVALENCE DES DEUX VOIES. Le garde de solde (au commit, images de l'arbre de travail) et la
 // porte de plage (au push, images `git show <sha>:<f>`) doivent rendre le MÊME compte sur le MÊME
 // contenu : c'est leur divergence APPARENTE qui a fait payer des cliquets mensongers.

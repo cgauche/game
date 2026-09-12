@@ -1585,22 +1585,29 @@ export function estFichierEcran(path) {
  * (`diffDuCommit`). La refaire ici avec un matcheur de chemins MAISON aveuglait la garde sur la
  * forme la plus courante — `git commit -- .` : `.` n'égale aucun chemin et ne préfixe aucun, donc
  * tout le lot était jeté (mesuré 2026-09-04). Un seul matcheur de pathspec dans ce fichier, et
- * c'est celui de git. */
-export function analyzeDiffDuCommit(raw) {
-  let touchesSrc = false
-  let touchesUi = false
+ * c'est celui de git.
+ *
+ * `chemins` (facultatif) REMPLACE les chemins du `--numstat` pour `fichiers`/`touchesSrc`/`touchesUi` :
+ * un renommage s'y replie en `src/ui/{Ancien.tsx => Nouveau.tsx}`, qui ne nomme aucun fichier — il
+ * n'égale aucun site cité par un solde et ne se lit comme aucun ÉCRAN (mesuré).
+ * `totalLines` reste celui du `--numstat` REPLIÉ dans les deux cas : c'est le VOLUME écrit, et un
+ * renommage n'écrit rien. */
+export function analyzeDiffDuCommit(raw, chemins = null) {
   let totalLines = 0
-  const fichiers = []
+  const duNumstat = []
   for (const line of String(raw ?? '').split('\n')) {
     if (!line.trim()) continue
     const [ins, del, ...pathParts] = line.split('\t')
-    const path = pathParts.join('\t')
-    fichiers.push(path)
+    duNumstat.push(pathParts.join('\t'))
     totalLines += (Number.parseInt(ins, 10) || 0) + (Number.parseInt(del, 10) || 0)
-    if (/^src\//.test(path)) touchesSrc = true
-    if (estFichierEcran(path)) touchesUi = true
   }
-  return { touchesSrc, touchesUi, totalLines, fichiers }
+  const fichiers = chemins ?? duNumstat
+  return {
+    touchesSrc: fichiers.some((f) => /^src\//.test(f)),
+    touchesUi: fichiers.some(estFichierEcran),
+    totalLines,
+    fichiers,
+  }
 }
 
 // ── Le diff que le commit va RÉELLEMENT produire ──────────────────────────────────────────────────
@@ -1628,8 +1635,16 @@ export function formeDuCommit(command) {
 
 /**
  * Lectures du contenu que `command` va committer dans `dir` : `numstat()` (le stat d'ensemble),
+ * `cheminsSansRenommage()` (les chemins du lot, un RENOMMAGE déplié en ses DEUX bouts),
  * `fichier(f)` (le `-U0` d'un fichier), `contenu(f)`/`avant(f)` (le fichier APRÈS et AVANT le
  * commit). Toute erreur git rend `''`/`null` — le garde se tait, il ne refuse pas hors dépôt.
+ *
+ * `cheminsSansRenommage()` rend les DEUX bouts d'un renommage, parce que `--numstat` le replie en UN
+ * chemin de la forme `scripts/guards/lib/{aStock.mjs => bStock.mjs}` (mesuré) qui ne nomme aucun
+ * fichier et n'égale aucun pathspec : c'est par ces deux bouts que la porte des stocks voit le
+ * porteur source ET le porteur cible, qu'un solde prouve sa correction au NOUVEAU chemin, et qu'un
+ * `.tsx` renommé reste un ÉCRAN (#1720). `numstat()` garde la lecture repliée : c'est elle qui donne
+ * le VOLUME du lot aux portes de preuve, et un renommage n'y ajoute pas de lignes écrites.
  * Le `HEAD` n'est interrogé que si la forme l'exige (un dépôt sans premier commit n'a que l'index).
  *
  * `contenu(f)` suit la forme JUSQU'AU FICHIER, et c'est là que se règle la porte de FERMETURE : sous
@@ -1666,6 +1681,9 @@ export function diffDuCommit(command, dir = process.cwd()) {
     forme,
     pathspecs,
     numstat: () => lire(['diff', ...rev(), '--numstat', ...borne]) ?? '',
+    cheminsSansRenommage: () =>
+      (lire(['diff', ...rev(), '--numstat', '--no-renames', ...borne]) ?? '')
+        .split('\n').map((l) => l.split('\t').slice(2).join('\t').trim()).filter(Boolean),
     fichier: (f) => lire(['diff', ...rev(), '-U0', '--', f]) ?? '',
     contenu,
     avant: (f) => (aHead() ? lire(['show', `HEAD:${f}`]) : null),
@@ -2023,7 +2041,12 @@ if (isMain) {
   // Le contenu jugé est celui que le commit va EMPORTER, pas l'index : la forme de la commande le
   // décide (`diffDuCommit`), et toutes les évaluations lisent par cette même porte.
   const commit = diffDuCommit(command, targetDir)
-  const { touchesSrc, touchesUi, totalLines, fichiers } = analyzeDiffDuCommit(commit.numstat())
+  // Un renommage se replie en `{ancien => nouveau}` dans le `--numstat` : ce chemin ne nomme aucun
+  // fichier, n'égale aucun site cité par un solde et ne se lit comme aucun écran. La relecture
+  // DÉPLIÉE ne se paie que là où elle change quelque chose.
+  const numstat = commit.numstat()
+  const { touchesSrc, touchesUi, totalLines, fichiers } =
+    analyzeDiffDuCommit(numstat, numstat.includes(' => ') ? commit.cheminsSansRenommage() : null)
 
   // Message `-F <chemin>` : résolu dans le répertoire où le `git commit` s'exécute RÉELLEMENT
   // (targetDir), jamais dans celui d'où part la commande — un `cd wt && git commit -F m.txt`

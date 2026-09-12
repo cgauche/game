@@ -131,6 +131,102 @@ test('DRIVER : un stock nominatif qui GRANDIT dans l\'index est refusé, sauf CL
   }
 })
 
+// #1720 — DÉPLACEMENT : `git mv` d'un porteur ne fait grandir aucun stock, et la croissance qui
+// accompagne le renommage reste vue, au compte près et sur le NOUVEAU chemin. Deux coutures se
+// mesurent ici d'un coup : la lecture des porteurs par les DEUX bouts du renommage, et
+// l'appariement des entrées parties d'un porteur disparu.
+test('DRIVER : un `git mv` de porteur ne grandit pas ; renommé PLUS une entrée vaut +1', () => {
+  const entrees = ["  'src/state/combatFlow.ts',", "  'src/ui/RollShell.tsx',", "  'src/ui/Tabs.tsx',"]
+  const source = (lignes) => `export const STOCK = [\n${lignes.join('\n')}\n]\n`
+  const ancien = 'scripts/guards/lib/ancienStock.mjs'
+  const nouveau = 'scripts/guards/lib/nouveauStock.mjs'
+  for (const [nom, ajout] of [['renommage pur', []], ['renommage + 1 entrée', ["  'src/ui/Band.tsx',"]]]) {
+    const { racine: repo } = instanceDeDepot({ fichiers: { [ancien]: source(entrees) }, message: 'socle' })
+    try {
+      const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+      git('mv', ancien, nouveau)
+      if (ajout.length) writeFileSync(join(repo, nouveau), source([...entrees, ...ajout]), 'utf8')
+      git('add', '-A')
+      const vu = decisionOf('git commit -m "refactor: le porteur change de nom"', repo)
+      if (ajout.length === 0) {
+        assert.doesNotMatch(
+          vu?.reason ?? '', /STOCK NOMINATIF/,
+          `${nom} : trois entrées déménagent, le stock n'a pas grandi d'une seule`,
+        )
+      } else {
+        assert.match(vu?.reason ?? '', /STOCK NOMINATIF qui NAÎT ou GRANDIT/, `${nom} : la croissance reste vue`)
+        assert.match(vu.reason, /nouveauStock\.mjs : \+1 entrée\(s\) nette\(s\)/, `${nom} : compte et chemin`)
+        assert.match(vu.reason, /src\/ui\/Band\.tsx/, `${nom} : l'exemple est l'entrée AJOUTÉE`)
+      }
+    } finally {
+      rmSync(repo, { recursive: true, force: true })
+    }
+  }
+})
+
+test('DRIVER : un porteur SCINDÉ en deux ne grandit pas ; renommé MOINS une entrée non plus', () => {
+  const entrees = ["  'src/state/combatFlow.ts',", "  'src/ui/RollShell.tsx',", "  'src/ui/Tabs.tsx',"]
+  const source = (lignes) => `export const STOCK = [\n${lignes.join('\n')}\n]\n`
+  const ancien = 'scripts/guards/lib/ancienStock.mjs'
+  const cas = {
+    'scission en deux porteurs neufs': {
+      'scripts/guards/lib/gaucheStock.mjs': entrees.slice(0, 2),
+      'scripts/guards/lib/droiteStock.mjs': entrees.slice(2),
+    },
+    // Une DÉCROISSANCE ne se crédite nulle part : elle ne rend aucun droit d'ajouter ailleurs.
+    'renommage moins une entrée': { 'scripts/guards/lib/nouveauStock.mjs': entrees.slice(0, 2) },
+  }
+  for (const [nom, porteurs] of Object.entries(cas)) {
+    const { racine: repo } = instanceDeDepot({ fichiers: { [ancien]: source(entrees) }, message: 'socle' })
+    try {
+      const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+      rmSync(join(repo, ancien))
+      for (const [chemin, lignes] of Object.entries(porteurs)) writeFileSync(join(repo, chemin), source(lignes), 'utf8')
+      git('add', '-A')
+      const vu = decisionOf('git commit -m "refactor: le porteur se redistribue"', repo)
+      assert.doesNotMatch(vu?.reason ?? '', /STOCK NOMINATIF/, `${nom} : aucune entrée de plus`)
+    } finally {
+      rmSync(repo, { recursive: true, force: true })
+    }
+  }
+})
+
+// #1720 — le lot d'un commit de RENOMMAGE est ses DEUX chemins, pour TOUTES les portes du driver :
+// un solde prouve sa correction au NOUVEAU chemin, et un `.tsx` de `src/ui/**` renommé reste un
+// ÉCRAN. Le chemin replié `src/ui/{Ancien.tsx => Nouveau.tsx}` du `--numstat`, lui, ne nomme aucun
+// fichier : aucune porte ne le cite.
+test('DRIVER : sur un renommage, le lot porte les DEUX chemins (solde au site, écran)', () => {
+  const { racine: repo } = instanceDeDepot({
+    fichiers: { 'src/ui/Ancien.tsx': 'export const A = 1\n' }, message: 'socle',
+  })
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    git('mv', 'src/ui/Ancien.tsx', 'src/ui/Nouveau.tsx')
+    const aujourdhui = new Date()
+    const jour = `${aujourdhui.getFullYear()}-${String(aujourdhui.getMonth() + 1).padStart(2, '0')}-${String(aujourdhui.getDate()).padStart(2, '0')}`
+    mkdirSync(join(repo, '.claude', 'soldes'), { recursive: true })
+    writeFileSync(join(repo, '.claude', 'soldes', '1720.md'), [
+      'VERIFIE: histoire git du dépôt cible relue commit par commit, fichiers touchés recoupés au numstat.',
+      '', '## Restes', '- le composant changeait de nom -> corrigé dans ce commit src/ui/Nouveau.tsx:1',
+      '', '## Réfutation', 'verdict: CONFIRMÉ',
+      'Un juge a rejoué le diff contre le DoD, tenté deux contournements, aucun ne passe sur ce lot.',
+      '', `(${jour})`, '',
+    ].join('\n'), 'utf8')
+    git('add', '--force', '-A')
+
+    const vu = decisionOf('git commit -m "refactor: le composant change de nom (corrige #1720)"', repo)
+    assert.doesNotMatch(
+      vu?.reason ?? '', /ABSENT de ce que ce commit emporte/,
+      'le site cité est le NOUVEAU chemin : il EST dans le lot',
+    )
+    assert.doesNotMatch(vu?.reason ?? '', /\{Ancien\.tsx => Nouveau\.tsx\}/, 'aucune porte ne cite un chemin replié')
+    // Un `.tsx` de `src/ui/**` renommé reste un ÉCRAN : la preuve visuelle est réclamée.
+    assert.match(vu?.reason ?? '', /JUGE-VISION|[Rr]ecette visuelle|capture/, 'la porte d’écran doit voir le renommage')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
 // Le diff jugé suit la FORME de la commande, pas l'index. `git commit -- <chemins>` et
 // `git commit <chemins>` commitent l'ARBRE DE TRAVAIL de ces chemins, `git commit -a` tout le
 // modifié suivi : sans `git add`, le garde ne lisait qu'un index VIDE et se taisait. C'est par là

@@ -309,13 +309,57 @@ function lignesDEntrees(lire, fichier) {
   } catch { return null; }
 }
 
-/** En-têtes de diff qui ne portent ni contenu ni numérotation. */
+/** En-têtes de diff qui ne portent ni contenu ni numérotation. Ceux qui en portent sont lus AVANT :
+ *  `diff --git ` (drapeau de zone d'en-tête) et `--- `/`+++ ` (les chemins pré et post). */
 const ENTETE_INERTE =
-  /^(?:diff --git |--- |index |old mode |new mode |similarity |dissimilarity |rename |copy |new file mode |deleted file mode |Binary files |GIT binary patch|\\)/;
+  /^(?:index |old mode |new mode |similarity |dissimilarity |rename |copy |new file mode |deleted file mode |Binary files |GIT binary patch|\\)/;
+
+/**
+ * DÉPLACEMENT : une entrée qui QUITTE un porteur DISPARU et reparaît À L'IDENTIQUE ailleurs dans le
+ * même diff. Le stock ne grandit pas — c'est le même élément, sous un autre toit —, donc
+ * `git mv aStock.mjs bStock.mjs` d'un porteur de six entrées vaut net 0 (#1720). Un `CLIQUET: +6`
+ * y serait faux par construction : `+N` compte les entrées du stock, pas un déménagement.
+ *
+ * BORNE : la source doit DISPARAÎTRE (son post-chemin est `/dev/null`). Sa raison est un
+ * CONSERVATISME fail-closed, pas une doctrine du compte — entre deux porteurs VIVANTS, le retrait
+ * reste créditable à SON site (le porteur source décroît de 1 et le reste plus tard), et une
+ * redistribution délibérée se DIT par `CLIQUET:` chez le receveur. D'un porteur supprimé, rien ne
+ * reste à créditer : ses entrées ont déménagé, la porte le lit sans avoir à deviner une intention.
+ * L'appariement se fait sur le TEXTE de l'entrée, un pour un.
+ *
+ * CE QU'IL NE VOIT PAS, mesuré : une entrée RÉÉCRITE en chemin n'est plus la même (c'est le but),
+ * mais une entrée seulement REFORMATÉE non plus — guillemets doubles, ou déplacement accompagné
+ * d'une retouche — et elle se recompte `+1` chez le receveur (mesuré `+2` sur un renommage de deux
+ * entrées dont une requotée). La RÉINDENTATION, elle, n'y échappe pas : le texte est comparé
+ * `trim()` (mesuré `[]`).
+ * @param {{ fichier: string, disparu: boolean, retenues: string[], perdues: string[] }[]} parFichier
+ *   muté sur place : les entrées appariées quittent `retenues`.
+ */
+function apparierLesDeplacements(parFichier) {
+  /** @type {Map<string, number>} texte d'entrée → combien de fois il a quitté un porteur disparu. */
+  const partantes = new Map();
+  for (const f of parFichier) {
+    if (!f.disparu) continue;
+    for (const texte of f.perdues) partantes.set(texte, (partantes.get(texte) ?? 0) + 1);
+  }
+  if (partantes.size === 0) return;
+  for (const f of parFichier) {
+    if (f.disparu) continue;
+    f.retenues = f.retenues.filter((texte) => {
+      const reste = partantes.get(texte) ?? 0;
+      if (reste === 0) return true;
+      partantes.set(texte, reste - 1);
+      return false;
+    });
+  }
+}
 
 /**
  * Croissance NETTE des stocks nominatifs d'un diff unifié (`-U0` ou non : seuls les `+`/`-`
  * comptent). Un fichier n'est rendu que si ses entrées AJOUTÉES dépassent ses entrées RETIRÉES.
+ *
+ * Une entrée DÉPLACÉE d'un porteur DISPARU vers un autre porteur ne compte nulle part
+ * (`apparierLesDeplacements`, qui porte la borne et sa raison).
  *
  * Les lignes AJOUTÉES se lisent sur le POST-IMAGE (`lirePostImage(chemin)`), les RETIRÉES sur le
  * PRÉ-IMAGE (`lirePreImage(chemin)`) — sans quoi le retrait d'une fixture locale compenserait
@@ -352,17 +396,45 @@ export function croissanceDesStocks(diffU0, images) {
     );
   }
   const { lirePostImage, lirePreImage = null } = images;
-  /** @type {Map<string, { ajoutees: { texte: string, ligne: number }[], retirees: number[] }>} */
+  /** @type {Map<string, { ajoutees: { texte: string, ligne: number }[],
+   *    retirees: { texte: string, ligne: number }[], disparu: boolean }>} */
   const parFichier = new Map();
-  let courant = null;
+  const suivi = (chemin) => {
+    if (!parFichier.has(chemin)) parFichier.set(chemin, { ajoutees: [], retirees: [], disparu: false });
+    return parFichier.get(chemin);
+  };
+  const porteurOuNull = (brut) => {
+    const chemin = brut.trim();
+    return chemin !== '/dev/null' && estPorteurDeStock(chemin) ? chemin.replace(/\\/g, '/') : null;
+  };
+  // Les AJOUTS vivent sous le post-chemin, les RETRAITS sous le PRÉ-chemin : ils coïncident sur une
+  // modification, et divergent sur une SUPPRESSION, dont le post-chemin est `/dev/null`. C'est ce
+  // qui rend visibles les entrées que perd un porteur supprimé, et fait d'un renommage un
+  // DÉPLACEMENT plutôt qu'un porteur neuf de N entrées (#1720).
+  let ancien = null;
+  let nouveau = null;
   let numAncien = 0;
   let numNouveau = 0;
+  // `--- `/`+++ ` ne sont des EN-TÊTES que hors d'un hunk : DANS un hunk, une ligne de CONTENU
+  // retirée qui commence par `-- ` s'écrit `--- …` et n'est qu'un retrait. Le drapeau de zone la
+  // laisse donc à sa branche, et le pré-chemin tient pour TOUS les retraits du fichier — `@@` ne le
+  // réarme pas, un stock qui MAIGRIT se lit jusqu'au bout.
+  let dansHunk = false;
   for (const brute of diffU0.split('\n')) {
     const ligne = brute.replace(/\r$/, '');
-    const entete = /^\+\+\+ (?:b\/)?(.+)$/.exec(ligne);
+    if (ligne.startsWith('diff --git ')) {
+      dansHunk = false;
+      continue;
+    }
+    const entetePre = dansHunk ? null : /^--- (?:a\/)?(.+)$/.exec(ligne);
+    if (entetePre) {
+      ancien = porteurOuNull(entetePre[1]);
+      continue;
+    }
+    const entete = dansHunk ? null : /^\+\+\+ (?:b\/)?(.+)$/.exec(ligne);
     if (entete) {
-      const chemin = entete[1].trim();
-      courant = chemin !== '/dev/null' && estPorteurDeStock(chemin) ? chemin.replace(/\\/g, '/') : null;
+      nouveau = porteurOuNull(entete[1]);
+      if (ancien && entete[1].trim() === '/dev/null') suivi(ancien).disparu = true;
       numAncien = 0;
       numNouveau = 0;
       continue;
@@ -371,10 +443,10 @@ export function croissanceDesStocks(diffU0, images) {
     if (hunk) {
       numAncien = Number(hunk[1]);
       numNouveau = Number(hunk[2]);
+      dansHunk = true;
       continue;
     }
     if (ENTETE_INERTE.test(ligne)) continue;
-    if (!courant) continue;
     const ajout = ligne.startsWith('+');
     const retrait = ligne.startsWith('-');
     if (!ajout && !retrait) {
@@ -383,30 +455,37 @@ export function croissanceDesStocks(diffU0, images) {
       numNouveau += 1;
       continue;
     }
+    const porteur = ajout ? nouveau : ancien;
     const numero = ajout ? numNouveau++ : numAncien++;
+    if (!porteur) continue;
     const touchee = { texte: ligne.slice(1).trim(), ligne: numero };
-    if (!parFichier.has(courant)) parFichier.set(courant, { ajoutees: [], retirees: [] });
-    const compte = parFichier.get(courant);
+    const compte = suivi(porteur);
     if (ajout) compte.ajoutees.push(touchee);
     else compte.retirees.push(touchee);
   }
-  return [...parFichier]
-    .map(([fichier, { ajoutees, retirees }]) => {
+  const lus = [...parFichier]
+    .map(([fichier, { ajoutees, retirees, disparu }]) => {
       const surPost = lignesDEntrees(lirePostImage, fichier);
       const surPre = lignesDEntrees(lirePreImage, fichier);
       const estEntree = (entrees) => (t) => (entrees ? entrees.has(t.ligne) : estEntreeDeStock(t.texte));
-      const retenues = ajoutees.filter(estEntree(surPost)).map((t) => t.texte);
-      const perdues = retirees.filter(estEntree(surPre)).length;
       return {
         fichier,
-        ajoutees: retenues.length,
-        retirees: perdues,
-        net: retenues.length - perdues,
-        exemples: retenues.slice(0, 3),
+        disparu,
+        retenues: ajoutees.filter(estEntree(surPost)).map((t) => t.texte),
+        perdues: retirees.filter(estEntree(surPre)).map((t) => t.texte),
       };
     })
-    .filter((c) => c.net > 0)
     .sort((a, b) => parUnitesDeCode(a.fichier, b.fichier));
+  apparierLesDeplacements(lus);
+  return lus
+    .map(({ fichier, retenues, perdues }) => ({
+      fichier,
+      ajoutees: retenues.length,
+      retirees: perdues.length,
+      net: retenues.length - perdues.length,
+      exemples: retenues.slice(0, 3),
+    }))
+    .filter((c) => c.net > 0);
 }
 
 /** Longueur minimale d'un motif de cliquet : sous ce seuil, c'est un tampon, pas une raison. */
