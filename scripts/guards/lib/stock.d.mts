@@ -23,6 +23,13 @@ export function champsAveugles<E extends Record<string, unknown>>(
   champs: readonly (keyof E & string)[],
 ): string[];
 
+export function couvertureDuBalayage(p: {
+  nom: string;
+  stock: Iterable<string>;
+  balayes: Iterable<string>;
+  gisements: Iterable<string>;
+}): { gisementsMuets: string[]; entreesDeStockAbsentes: string[] };
+
 export function lignesMalQualifiees(
   stock: Iterable<readonly [string, { lot?: string; date?: string }]>,
   opts?: { lotsConnus?: Iterable<string> },

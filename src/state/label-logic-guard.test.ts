@@ -13,7 +13,18 @@ import {
 } from '../../scripts/guards/lib/labelLogic.mjs';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { LABEL_RESOLVER_CALL_STOCK } from '../../scripts/guards/lib/labelResolverCallStock.mjs';
-import { champsAveugles, ecartsDeStock } from '../../scripts/guards/lib/stock.mjs';
+import { champsAveugles, couvertureDuBalayage, ecartsDeStock } from '../../scripts/guards/lib/stock.mjs';
+
+/** NON-VACUITÉ d'un cliquet, à jouer EN TÊTE du `it` qu'elle protège (patron `props-volumiques.test.ts`,
+ *  `2639287cd`) : le cliquet ne juge que ce que le balayage lui présente — un gisement muet ou une
+ *  entrée de stock hors corpus le rendrait vert sans que rien n'ait été lu. Les deux listes sont
+ *  NOMMÉES par le socle (`couvertureDuBalayage`, `scripts/guards/lib/stock.mjs`) ; les `gisements`
+ *  sont ceux que CE volet balaie, jamais ceux d'un volet voisin. */
+function attendCouverture(p: { nom: string; stock: Record<string, unknown>; balayes: Iterable<string>; gisements: readonly string[] }): void {
+  const c = couvertureDuBalayage({ nom: p.nom, stock: Object.keys(p.stock), balayes: p.balayes, gisements: p.gisements });
+  expect(c.gisementsMuets, c.gisementsMuets.join('\n')).toEqual([]);
+  expect(c.entreesDeStockAbsentes, c.entreesDeStockAbsentes.join('\n')).toEqual([]);
+}
 
 /**
  * Garde-fou « logique par LABEL interdite » (#142, doctrine CLAUDE.md bloc agents) : toute LOGIQUE est
@@ -82,25 +93,36 @@ const corpusTotal = (): { rel: string; text: string }[] => [...corpus(STRICT_DIR
 let _idParamFns: ReturnType<typeof collectIdParamFnsAcrossDirs> | null = null;
 const ID_PARAM_FNS = () => (_idParamFns ??= collectIdParamFnsAcrossDirs(ROOT, ALL_DIRS));
 
-/** Sites des deux détecteurs `.label` sur un jeu de dossiers — mémoïsé : trois `it` (STRICT, RATCHET,
- *  CLIQUET des exceptions) demandent le MÊME scan. */
-const _findings = new Map<string, { rel: string; line: number; detail: string }[]>();
-function findingsIn(dirs: string[]): { rel: string; line: number; detail: string }[] {
+/** Sites des deux détecteurs `.label` sur un jeu de dossiers, ET les fichiers réellement ITÉRÉS pour
+ *  les produire — mémoïsés ensemble : trois `it` (STRICT, RATCHET, CLIQUET des exceptions) demandent
+ *  le MÊME scan, et la couverture doit porter sur la collection PARCOURUE, pas sur un second appel
+ *  de `corpus(...)` qui pourrait diverger. */
+const _scans = new Map<string, { sites: { rel: string; line: number; detail: string }[]; fichiers: string[] }>();
+function scanDe(dirs: string[]): { sites: { rel: string; line: number; detail: string }[]; fichiers: string[] } {
   const cle = dirs.join('|');
-  const cached = _findings.get(cle);
+  const cached = _scans.get(cle);
   if (cached) return cached;
-  const out: { rel: string; line: number; detail: string }[] = [];
+  const sites: { rel: string; line: number; detail: string }[] = [];
+  const fichiers: string[] = [];
   for (const { rel, text } of corpus(dirs)) {
-    for (const finding of scanLabelLogic(rel, text)) out.push({ rel, line: finding.line, detail: finding.detail });
-    for (const finding of scanLabelAsIdArg(rel, text, effectiveIdParamFns(text, ID_PARAM_FNS()))) out.push({ rel, line: finding.line, detail: finding.detail });
+    fichiers.push(rel);
+    for (const finding of scanLabelLogic(rel, text)) sites.push({ rel, line: finding.line, detail: finding.detail });
+    for (const finding of scanLabelAsIdArg(rel, text, effectiveIdParamFns(text, ID_PARAM_FNS()))) sites.push({ rel, line: finding.line, detail: finding.detail });
   }
-  _findings.set(cle, out);
-  return out;
+  const scan = { sites, fichiers };
+  _scans.set(cle, scan);
+  return scan;
 }
+const findingsIn = (dirs: string[]): { rel: string; line: number; detail: string }[] => scanDe(dirs).sites;
 
 describe('garde-fou « logique par label interdite » (#142)', () => {
   it('src/engine + src/state : TOLÉRANCE ZÉRO, aucune carte/comparaison par label', () => {
-    const offenders = findingsIn(STRICT_DIRS).map((f) => `${f.rel}:${f.line}: ${f.detail}`);
+    // Volet à tolérance ZÉRO, donc sans stock : c'est la non-vacuité par GISEMENT qui porte seule le
+    // contrôle — son `offenders == []` est satisfait par un corpus évaporé. (Le volet RATCHET jumeau,
+    // lui, est déjà tenu par le cliquet des exceptions périmées ci-dessous.)
+    const scan = scanDe(STRICT_DIRS);
+    attendCouverture({ nom: '#142 STRICT', stock: {}, balayes: scan.fichiers, gisements: STRICT_DIRS });
+    const offenders = scan.sites.map((f) => `${f.rel}:${f.line}: ${f.detail}`);
     expect(
       offenders,
       'Logique par LABEL détectée dans src/engine ou src/state — doctrine : `id` stable pour la logique, ' +
@@ -335,9 +357,9 @@ describe('garde-fou « logique par label interdite » (#142)', () => {
  * strict dans les deux sens — pas une liste de sites exemptés.
  */
 describe('garde-fou « logique par LIBELLÉ hors du champ label » (#142 LOT 7)', () => {
-  const literalFindings = () => {
+  const literalFindings = (fichiers: { rel: string; text: string }[]) => {
     const counts = new Map<string, number>();
-    for (const { rel, text } of corpusTotal()) {
+    for (const { rel, text } of fichiers) {
       const n = scanLabelLiteralCompare(rel, text).length;
       if (n > 0 || rel in LABEL_LITERAL_STOCK) counts.set(rel, n);
     }
@@ -345,7 +367,9 @@ describe('garde-fou « logique par LIBELLÉ hors du champ label » (#142 LOT 7)'
   };
 
   it('CLIQUET : aucune logique par libellé NEUVE, aucune dette soldée non retirée du stock', () => {
-    const drift = labelLiteralStockDrift(literalFindings());
+    const fichiers = corpusTotal();
+    attendCouverture({ nom: 'LABEL_LITERAL_STOCK', stock: LABEL_LITERAL_STOCK, balayes: fichiers.map(({ rel }) => rel), gisements: ALL_DIRS });
+    const drift = labelLiteralStockDrift(literalFindings(fichiers));
     expect(
       drift,
       'Logique par LIBELLÉ (champ hors `label`) hors stock — toute LOGIQUE est keyée par `id` STABLE, le\n' +
@@ -415,8 +439,12 @@ describe('garde-fou « logique par LIBELLÉ hors du champ label » (#142 LOT 7)'
  */
 describe('garde-fou « retour d’APPEL comparé à un LIBELLÉ » (#1694 B3)', () => {
   it('CLIQUET src/engine + src/state : aucun site neuf, aucune dette soldée non retirée du stock', () => {
+    // Gisements = `STRICT_DIRS` SEULS : ce volet ne balaie que la zone à tolérance zéro, exiger la
+    // zone ratchet ici réclamerait une couverture que le cliquet ne prétend pas tenir.
+    const fichiers = corpus(STRICT_DIRS);
+    attendCouverture({ nom: 'LABEL_CALL_LITERAL_STOCK', stock: LABEL_CALL_LITERAL_STOCK, balayes: fichiers.map(({ rel }) => rel), gisements: STRICT_DIRS });
     const counts = new Map<string, number>();
-    for (const { rel, text } of corpus(STRICT_DIRS)) {
+    for (const { rel, text } of fichiers) {
       const n = scanCallResultLiteralCompare(rel, text).length;
       if (n > 0 || rel in LABEL_CALL_LITERAL_STOCK) counts.set(rel, n);
     }
@@ -476,8 +504,13 @@ describe('garde-fou « index keyé par un LIBELLÉ, construit dans le moteur » 
   });
 
   it('CLIQUET : aucun index par libellé NEUF dans src/engine + src/state, aucune dette soldée non retirée', () => {
+    // Même périmètre que le volet précédent : `STRICT_DIRS` seuls. Le stock est VIDE (cliquet tenu à
+    // zéro) — sa liste d'entrées absentes l'est donc aussi, et c'est la non-vacuité par GISEMENT qui
+    // porte seule le contrôle : c'est elle qui tomberait si le balayage s'évaporait.
+    const fichiers = corpus(STRICT_DIRS);
+    attendCouverture({ nom: 'LABEL_KEYED_INDEX_STOCK', stock: LABEL_KEYED_INDEX_STOCK, balayes: fichiers.map(({ rel }) => rel), gisements: STRICT_DIRS });
     const counts = new Map<string, number>();
-    for (const { rel, text } of corpus(STRICT_DIRS)) {
+    for (const { rel, text } of fichiers) {
       const n = scanLabelKeyedIndex(rel, text).length;
       if (n > 0 || rel in LABEL_KEYED_INDEX_STOCK) counts.set(rel, n);
     }
@@ -509,9 +542,9 @@ describe('garde-fou « index keyé par un LIBELLÉ, construit dans le moteur » 
 describe('garde-fou « appel à un résolveur d’entité par LIBELLÉ » (#909)', () => {
   const RESOLVER_NAMES = labelEntityResolverNames(ROOT);
 
-  function resolverCallCounts(): Map<string, number> {
+  function resolverCallCounts(fichiers: { rel: string; text: string }[]): Map<string, number> {
     const counts = new Map<string, number>();
-    for (const { rel, text } of corpus(STRICT_DIRS)) {
+    for (const { rel, text } of fichiers) {
       const n = scanLabelResolverCalls(rel, text, RESOLVER_NAMES).length;
       if (n > 0 || rel in LABEL_RESOLVER_CALL_STOCK) counts.set(rel, n);
     }
@@ -542,8 +575,12 @@ describe('garde-fou « appel à un résolveur d’entité par LIBELLÉ » (#909)
   const stockEntries = Object.entries(LABEL_RESOLVER_CALL_STOCK).map(([rel, n]) => ({ rel, n }));
 
   it('CLIQUET : aucun appel NEUF à un résolveur par libellé, aucune dette soldée non retirée du stock', () => {
+    // Même trou que les trois volets précédents : `resolverCallCounts` ne retient un fichier que s'il
+    // porte un finding OU s'il est au stock — un balayage évaporé rend zéro compte, donc zéro écart.
+    const fichiers = corpus(STRICT_DIRS);
+    attendCouverture({ nom: 'LABEL_RESOLVER_CALL_STOCK', stock: LABEL_RESOLVER_CALL_STOCK, balayes: fichiers.map(({ rel }) => rel), gisements: STRICT_DIRS });
     const ecarts = ecartsDeStock({
-      observe: [...resolverCallCounts()].filter(([, n]) => n > 0).map(([rel, n]) => ({ rel, n })),
+      observe: [...resolverCallCounts(fichiers)].filter(([, n]) => n > 0).map(([rel, n]) => ({ rel, n })),
       stock: stockEntries,
       cle: CLE_APPELS,
       remede: {

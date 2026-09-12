@@ -1,5 +1,6 @@
-// PRIMITIVE DE CLIQUET : les trois calculs que chaque garde à stock refaisait à la main — l'ÉCART au
-// stock (entrées neuves / entrées périmées), les CHAMPS que la clé n'observe pas, les LIGNES sans
+// PRIMITIVE DE CLIQUET : les quatre calculs que chaque garde à stock refaisait à la main — l'ÉCART au
+// stock (entrées neuves / entrées périmées), les CHAMPS que la clé n'observe pas, la COUVERTURE du
+// balayage qui alimente le cliquet (gisements muets, entrées de stock hors corpus), les LIGNES sans
 // échéance lisible.
 //
 // FRONTIÈRE (la même que `sourceCorpus.mjs`) : cette lib CALCULE, le VERDICT appartient à l'appelant.
@@ -72,6 +73,56 @@ export function champsAveugles(stock, cle, champs) {
     );
     return empreinte(mutees) === base;
   });
+}
+
+/**
+ * COUVERTURE d'un stock nominatif PAR LE BALAYAGE qui l'alimente, en deux listes NOMMÉES — ce que
+ * `ecartsDeStock` (et tout cliquet à la main) ne peut pas dire : un écart se calcule sur ce qui est
+ * PRÉSENTÉ, et un balayage amputé présente moins d'entrées, donc moins d'écarts, donc un vert. Même
+ * trou que le REFUS DU VIDE de `sourceCorpus.mjs`, une marche plus bas : le balayage peut être NON
+ * vide et pourtant avoir perdu un GISEMENT entier (un des dossiers que le cliquet prétend juger) ou
+ * le fichier même d'une entrée de stock — la moitié RATCHET de `LABEL_LITERAL_STOCK` a vécu ainsi,
+ * ses entrées `src/ui/**` hors du balayage et le verdict vert (#1723).
+ *
+ * Non-vacuité par GISEMENT et non sur le total (patron `props-volumiques.test.ts`, `2639287cd`) :
+ * sur un total agrégé, une moitié de balayage qui s'évapore reste muette derrière l'autre. Aucun
+ * CARDINAL n'est attendu — un dossier peuplé, une entrée de stock présente, rien de plus.
+ *
+ * Les GISEMENTS attendus sont ceux que LE CLIQUET APPELANT juge, jamais tous les dossiers d'une
+ * garde voisine : un volet qui ne balaie que la zone à tolérance zéro n'a pas à exiger la zone
+ * ratchet. Hors périmètre par nature, un balayage de contenu STAGÉ (hook pre-commit) : un commit ne
+ * touche qu'une partie du corpus, et la porte de vérité d'une couverture est la SUITE.
+ *
+ * GRAPHIE des `gisements` : le séparateur est exigé (`src/ui` peuple sur `src/ui/…`, jamais sur
+ * `src/uix/…`), et la comparaison est littérale — un gisement mal graphié (`'src/ui/'`, séparateur
+ * Windows `\`) n'est peuplé par rien et sort ÉTERNELLEMENT muet. Fail-loud assumé : le rouge nomme le
+ * dossier, sa correction est sa graphie.
+ *
+ * ANGLE MORT : cette couverture prouve qu'un fichier a été PRÉSENTÉ au cliquet, jamais qu'il a été LU
+ * utilement — un gisement réduit à un fichier non représentatif passe. Neutraliser un détecteur sur
+ * un fichier de stock PRÉSENT fait bouger son compte, donc rougir la dérive ; le commit qui
+ * neutralise le détecteur ET met le stock à jour reste vert, et c'est au message de commit de le
+ * dire (credo, « détecteur modifié dans le même commit »), pas à ce calcul de le voir.
+ *
+ * @param {{ nom: string, stock: Iterable<string>, balayes: Iterable<string>, gisements: Iterable<string> }} p
+ *   `nom` = le stock nommé dans les phrases rendues ; `stock` = ses clés de FICHIER ; `balayes` =
+ *   les chemins de TOUS les fichiers balayés (le corpus, pas les seuls porteurs de findings) ;
+ *   `gisements` = les dossiers que ce cliquet juge, chacun attendu peuplé.
+ * @returns {{ gisementsMuets: string[], entreesDeStockAbsentes: string[] }} phrases prêtes à afficher.
+ */
+export function couvertureDuBalayage({ nom, stock, balayes, gisements }) {
+  const vus = new Set(balayes);
+  const dossiers = [...gisements];
+  const peuples = new Set();
+  for (const rel of vus) for (const dir of dossiers) if (rel.startsWith(`${dir}/`)) peuples.add(dir);
+  return {
+    gisementsMuets: dossiers
+      .filter((dir) => !peuples.has(dir))
+      .map((dir) => `${dir} : gisement MUET — aucun fichier balayé, le cliquet ${nom} ne juge plus ce dossier (il rendrait vert par vacuité).`),
+    entreesDeStockAbsentes: [...stock]
+      .filter((rel) => !vus.has(rel))
+      .map((rel) => `${rel} : entrée de ${nom} ABSENTE du balayage — son compte n'est plus mesuré ; brancher le fichier au corpus, ou retirer l'entrée s'il a disparu de l'arbre.`),
+  };
 }
 
 /**

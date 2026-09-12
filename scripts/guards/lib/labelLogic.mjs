@@ -495,8 +495,9 @@ export const LABEL_LITERAL_STOCK = {
 };
 
 /** Écarts au stock pour un jeu de comptes MESURÉS (`fichier` → nombre de findings) : chaque écart est
- *  une phrase prête à afficher. `measured` ne contient que les fichiers scannés — les fichiers du
- *  stock absents de `measured` ne sont donc PAS jugés (scan partiel du hook pre-commit).
+ *  une phrase prête à afficher. Le cliquet ne juge que ce qui lui est PRÉSENTÉ : ce qui manque à
+ *  `measured` ne rend aucun écart — c'est `couvertureDuBalayage` (`stock.mjs`) qui NOMME ce manque
+ *  (gisement muet, entrée de stock hors corpus), et l'appelant qui joue les deux.
  *  @param {Map<string, number>|Record<string, number>} measured @returns {string[]} */
 export function labelLiteralStockDrift(measured) {
   const entries = measured instanceof Map ? [...measured] : Object.entries(measured);

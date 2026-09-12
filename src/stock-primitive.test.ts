@@ -1,12 +1,12 @@
 /**
- * PRIMITIVE DE CLIQUET (`scripts/guards/lib/stock.mjs`) — les trois calculs partagés par les gardes
+ * PRIMITIVE DE CLIQUET (`scripts/guards/lib/stock.mjs`) — les quatre calculs partagés par les gardes
  * à stock. Ce fichier mesure la primitive elle-même sur des collections FORGÉES : les gardes qui la
  * composent mesurent, elles, le dépôt réel.
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { champsAveugles, ecartsDeStock, lignesMalQualifiees } from '../scripts/guards/lib/stock.mjs';
+import { champsAveugles, couvertureDuBalayage, ecartsDeStock, lignesMalQualifiees } from '../scripts/guards/lib/stock.mjs';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 
@@ -77,6 +77,45 @@ describe('champsAveugles — un champ hors de la clé laisse la garde verte quoi
 
   it('un stock VIDE n’offre aucune entrée à muter — la clause ne mesure rien et le dit par une liste vide', () => {
     expect(champsAveugles([], (e: { a: string }) => e.a, ['a'])).toEqual([]);
+  });
+});
+
+describe('couvertureDuBalayage — gisement muet, entrée de stock hors corpus, appariement EXACT', () => {
+  const appel = (p: { stock?: string[]; balayes: string[]; gisements: string[] }) =>
+    couvertureDuBalayage({ nom: 'STOCK_TÉMOIN', stock: p.stock ?? [], balayes: p.balayes, gisements: p.gisements });
+
+  it('un gisement PEUPLÉ ne dit rien ; un gisement sans un seul fichier balayé sort NOMMÉ', () => {
+    const c = appel({ balayes: ['src/engine/a.ts'], gisements: ['src/engine', 'src/state'] });
+    expect(c.gisementsMuets.join('\n')).toContain('src/state');
+    expect(c.gisementsMuets.join('\n')).not.toContain('src/engine');
+    expect(c.gisementsMuets).toHaveLength(1);
+  });
+
+  it('une entrée de stock PRÉSENTE au balayage ne dit rien ; une entrée ABSENTE sort NOMMÉE, avec le nom du stock', () => {
+    const c = appel({ stock: ['src/engine/a.ts', 'src/engine/disparu.ts'], balayes: ['src/engine/a.ts'], gisements: ['src/engine'] });
+    expect(c.entreesDeStockAbsentes).toHaveLength(1);
+    expect(c.entreesDeStockAbsentes[0]).toContain('src/engine/disparu.ts');
+    expect(c.entreesDeStockAbsentes[0]).toContain('STOCK_TÉMOIN');
+    expect(c.gisementsMuets).toEqual([]);
+  });
+
+  it('PIÈGE DU PRÉFIXE : un dossier VOISIN de même préfixe ne PEUPLE pas le gisement (le séparateur est exigé)', () => {
+    // `src/uix/a.ts` commence par `src/ui` — un préfixe nu le compterait comme peuplant `src/ui`, et
+    // la disparition du vrai dossier resterait muette. Le gisement lui-même (`src/ui`, sans fichier
+    // sous `src/ui/`) n'est pas peuplé non plus par son propre nom.
+    const c = appel({ balayes: ['src/uix/a.ts', 'src/ui'], gisements: ['src/ui'] });
+    expect(c.gisementsMuets.join('\n')).toContain('src/ui');
+  });
+
+  it('l’appariement d’une entrée de stock est EXACT : un chemin voisin ne la couvre pas', () => {
+    const c = appel({ stock: ['src/engine/a.ts'], balayes: ['src/engine/a.tsx', 'src/engine/aa.ts'], gisements: ['src/engine'] });
+    expect(c.entreesDeStockAbsentes.join('\n')).toContain('src/engine/a.ts ');
+  });
+
+  it('un balayage COMPLET ne rend rien — les deux listes vides', () => {
+    const c = appel({ stock: ['src/state/b.ts'], balayes: ['src/engine/a.ts', 'src/state/b.ts'], gisements: ['src/engine', 'src/state'] });
+    expect(c.gisementsMuets).toEqual([]);
+    expect(c.entreesDeStockAbsentes).toEqual([]);
   });
 });
 
