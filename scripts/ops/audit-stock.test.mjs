@@ -6,9 +6,11 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { comparerAudit, paquetsJuges, ghsaDe, CHEMIN_STOCK } from './audit-stock.mjs'
 
-/** Plafond du stock : il vit ICI, jamais dans le JSON ni dans la lib — sans lui, le chemin le plus
- *  court pour « solder » une vulnérabilité neuve resterait d'ajouter une entrée, canari vert. */
-const PLAFOND = 7
+/** Compte EXACT du stock : il vit ICI, jamais dans le JSON ni dans la lib — sans lui, le chemin le plus
+ *  court pour « solder » une vulnérabilité neuve resterait d'ajouter une entrée, canari vert. L'égalité
+ *  (et non `<=`) fait descendre ce nombre DANS LE GESTE qui éteint une entrée : un plafond resté au-dessus
+ *  du compte rouvre en silence la place d'une entrée neuve. */
+const PLAFOND = 5
 
 const STOCK = JSON.parse(readFileSync(CHEMIN_STOCK, 'utf8'))
 
@@ -86,8 +88,8 @@ test('le paquet PUREMENT transitif (aucune advisory propre) est comparé sur sa 
   assert.equal(jaunes.length, 1)
 })
 
-test('CLIQUET : le stock RÉEL ne dépasse pas son plafond et chaque entrée est complète', () => {
-  assert.ok(STOCK.entrees.length <= PLAFOND, `stock d’audit en HAUSSE : ${STOCK.entrees.length} entrées pour un plafond de ${PLAFOND} — une vulnérabilité neuve se TRAITE, elle ne s’inscrit pas.`)
+test('CLIQUET : le stock RÉEL vaut EXACTEMENT son compte déclaré et chaque entrée est complète', () => {
+  assert.equal(STOCK.entrees.length, PLAFOND, `stock d’audit à ${STOCK.entrees.length} entrées pour un compte déclaré de ${PLAFOND} — en HAUSSE : une vulnérabilité neuve se TRAITE, elle ne s’inscrit pas ; en BAISSE : le compte descend dans le même geste que l’entrée éteinte.`)
   for (const e of STOCK.entrees) {
     for (const champ of ['paquet', 'cible', 'severite', 'plage', 'fix', 'date', 'motif', 'echeance']) {
       assert.ok(String(e[champ] ?? '').trim(), `entrée ${e.paquet} sans ${champ}`)
