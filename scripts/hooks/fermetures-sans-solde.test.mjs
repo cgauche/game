@@ -4,7 +4,7 @@
 // fermés par message de commit depuis le 2026-08-01 n'ont AUCUN `.claude/soldes/<N>.md` suivi par
 // git : le contrôle a été contourné à l'échelle (fermeture hors commit, message packé, arbre neuf).
 // Le stock est figé NOMINATIVEMENT et ne peut que DÉCROÎTRE — un nom neuf est une fermeture qui vient
-// d'échapper au garde. La mesure lit le MÊME motif que le closer (`scripts/ops/fermer-depuis-main.mjs`).
+// d'échapper au garde. La grammaire lue est celle de `scripts/guards/lib/fermetures.mjs`.
 // Lancé par `npm run test:hooks`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
@@ -12,10 +12,10 @@ import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { numerosFermes } from '../guards/lib/fermetures.mjs'
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const DEPUIS = '2026-08-01'
-const FERMETURE_RE = /(fixes|closes|corrige|ferme)\s+#(\d+)/gi
 /** Séparateur de messages posé par `--pretty=format:%B%x00` (un message contient des lignes vides). */
 const SEPARATEUR_MESSAGES = '\0'
 
@@ -56,8 +56,7 @@ function mesure() {
   const vus = new Set()
   const sans = []
   for (const message of journal.split(SEPARATEUR_MESSAGES)) {
-    for (const m of message.matchAll(FERMETURE_RE)) {
-      const n = m[2]
+    for (const n of numerosFermes(message)) {
       if (vus.has(n)) continue
       vus.add(n)
       if (!suivis.has(n)) sans.push(n)

@@ -64,6 +64,7 @@ import { dirname, join, resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { croissancesNonCouvertes, estPorteurDeStock, raisonDeRefus } from '../guards/lib/stocksNominatifs.mjs'
 import { GitIndisponible, estDansHead } from '../guards/lib/gitPorte.mjs'
+import { numerosFermes } from '../guards/lib/fermetures.mjs'
 import {
   DOSSIERS_DE_SUBSTANCE, estCheminDeSubstance, fenetreDeRevue, memeSha, mesureDuPalier,
   nomDArchiveDeRevue, problemesDeRevue, revuesNeuves,
@@ -623,11 +624,10 @@ export function extractCommitPathspecs(command) {
   return pathspecsDuCommit(command).chemins
 }
 
-// Motif de fermeture repris du closer de publication (`scripts/ops/fermer-depuis-main.mjs`) : mêmes
-// mots-clefs, mais capturés ICI sur le texte ENTIER de la commande (couvre les here-strings/heredocs
+// La grammaire de fermeture est celle de `scripts/guards/lib/fermetures.mjs` ; ce qui est propre à la
+// porte est le TEXTE où elle se lit : la commande ENTIÈRE (couvre les here-strings/heredocs
 // `git commit -m "$(cat <<EOF ... EOF)"` où le message est packé dans la commande shell elle-même,
 // ET le texte étendu par `extractMessageSources` quand le message est passé par `-F`).
-const CLOSE_KEYWORD_RE = /(corrige|fixe?s?|closes?|ferme)\s+#(\d+)/gi
 
 /** Texte où chercher les mots-clefs : la commande TELLE QU'ÉCRITE, plus ses segments profonds
  *  recomposés — un message qui n'apparaît qu'après déroulage (`-EncodedCommand` en base64) resterait
@@ -640,9 +640,7 @@ function texteProfond(command) {
  *  `git commit`, ou si aucun mot-clef de fermeture n'apparaît. */
 export function extractClosedIssues(command) {
   if (!command || !isGitCommitCommand(command)) return []
-  const nums = new Set()
-  for (const m of texteProfond(command).matchAll(CLOSE_KEYWORD_RE)) nums.add(Number(m[2]))
-  return [...nums].sort((a, b) => a - b)
+  return numerosFermes(texteProfond(command)).map(Number).sort((a, b) => a - b)
 }
 
 const VERIFIE_RE = /VERIFIE\s*:\s*(.+)/i

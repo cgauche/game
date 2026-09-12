@@ -31,7 +31,8 @@ import { croissancesDeLaPlage } from '../guards/lib/plageStock.mjs'
 import { tenter } from '../guards/lib/gitPorte.mjs'
 import { coursesCiDeMain } from '../guards/lib/coursesCi.mjs'
 import { cheminJustificatifs } from '../guards/lib/justificatif.mjs'
-import { FERMETURE_RE, soldesSuivis } from './fermetures-non-citees.mjs'
+import { soldesSuivis } from './fermetures-non-citees.mjs'
+import { numerosFermes } from '../guards/lib/fermetures.mjs'
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -97,7 +98,6 @@ export function marquerSubstance(commits, shasDeSubstance) {
 
 /**
  * Fermetures citées par les messages de la fenêtre, croisées avec les soldes SUIVIS par git. PUR.
- * Le motif est celui du closer (`FERMETURE_RE`) — jamais une seconde graphie.
  * @returns {{ numero: string, sha: string, sujet: string, solde: boolean }[]}
  */
 export function fermeturesDesCommits(commits, soldes) {
@@ -105,9 +105,7 @@ export function fermeturesDesCommits(commits, soldes) {
   const out = []
   for (const c of commits ?? []) {
     const message = `${c.sujet}\n${c.corps ?? ''}`
-    for (const m of message.matchAll(new RegExp(FERMETURE_RE.source, 'gi'))) {
-      const numero = m[2]
-      if (out.some((f) => f.numero === numero && f.sha === c.sha)) continue
+    for (const numero of numerosFermes(message)) {
       out.push({ numero, sha: c.sha, sujet: c.sujet, solde: suivis.has(numero) })
     }
   }

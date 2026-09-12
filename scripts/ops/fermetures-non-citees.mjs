@@ -4,8 +4,8 @@
 // à la main le 2026-09-02, `commit_id` nul sur l'événement `closed`).
 //
 // Ici la mesure part de l'API : issues FERMÉES dans la fenêtre, croisées avec les commits fermants
-// (`corrige|fixes|closes|ferme #N`) et avec les soldes SUIVIS par git. Le verdict porte sur l'ÉCART à
-// la baseline nominative datée `fermetures-non-citees.json` :
+// (grammaire de `scripts/guards/lib/fermetures.mjs`) et avec les soldes SUIVIS par git. Le verdict
+// porte sur l'ÉCART à la baseline nominative datée `fermetures-non-citees.json` :
 //   - fermeture NEUVE hors baseline, non citée, sans solde suivi, sans label `duplicate` -> ROUGE ;
 //   - entrée de baseline qui a depuis un solde suivi ou un commit fermant -> ROUGE « entrée périmée » ;
 //   - `state_reason: not_planned` N'EXEMPTE PAS (une fermeture « pas prévu » sans solde est exactement
@@ -20,13 +20,11 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { ecartsDeStock } from '../guards/lib/stock.mjs'
+import { numerosFermes } from '../guards/lib/fermetures.mjs'
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 export const CHEMIN_BASELINE = join(RACINE, 'scripts', 'ops', 'fermetures-non-citees.json')
 export const DEPOT = 'cgauche/game'
-
-/** Le MÊME motif que le closer et que `fermetures-sans-solde.test.mjs` — jamais une seconde graphie. */
-export const FERMETURE_RE = /(fixes|closes|corrige|ferme)\s+#(\d+)/gi
 
 /** Label qui EXEMPTE : le doublon n'a pas de solde propre, c'est le survivant qui le porte. */
 export const LABEL_EXEMPTANT = 'duplicate'
@@ -161,7 +159,7 @@ export const reculeDe = (date, jours) =>
 /** Numéros cités par un commit fermant depuis `depuis`, marge de bord comprise. */
 export function citesDepuis(depuis) {
   const journal = git(['log', `--since=${reculeDe(depuis, MARGE_CITATION_JOURS)}`, '--pretty=format:%B%x00'])
-  return new Set([...journal.matchAll(FERMETURE_RE)].map((m) => m[2]))
+  return new Set(numerosFermes(journal))
 }
 
 /** Numéros dont le solde est SUIVI par git (jamais un fichier seulement présent sur le disque).

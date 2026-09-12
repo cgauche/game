@@ -11,6 +11,9 @@ import {
   avertissementRapportee, motifDePlageIllisible,
 } from './fermer-depuis-main.mjs'
 import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
+import { extractClosedIssues } from '../hooks/solde-ticket-guard.mjs'
+import { fermeturesDesCommits } from './faits-de-palier.mjs'
+import { numerosFermes } from '../guards/lib/fermetures.mjs'
 
 test('un ticket cité par plusieurs commits est rattaché au PREMIER qui le cite', () => {
   const r = fermeturesDeLaPlage([
@@ -23,6 +26,43 @@ test('un ticket cité par plusieurs commits est rattaché au PREMIER qui le cite
 test('les quatre verbes de fermeture sont reconnus, et rien d’autre', () => {
   const r = fermeturesDeLaPlage([{ sha: 'a', message: 'fixes #1 closes #2 corrige #3 ferme #4 refs #5 voir #6' }])
   assert.deepEqual(r.map((x) => x.numero), ['1', '2', '3', '4'])
+})
+
+// Les QUATRE lecteurs de la grammaire de fermeture, sur la même table : porte de commit, closer de
+// publication, objet de faits de palier, primitive. L'attendu est ÉCRIT par message — quatre lecteurs
+// tous d'accord sur un ensemble FAUX resteraient verts si le test ne comparait qu'eux entre eux.
+const TABLE_DE_FERMETURE = [
+  ['corrige #1709 #1708', ['1709']],
+  ['corrige #12, #13 et #14', ['12']],
+  ['refs #5', []],
+  ['CORRIGE #7', ['7']],
+  ['fix #8', ['8']],
+  ['fixes #8', ['8']],
+  ['fixed #8', []],
+  ['close #9', ['9']],
+  ['closed #9', []],
+  ['ferme #4', ['4']],
+  ['de fixe #939', []],
+  ['resolves #11', []],
+  ['corrige #0012', ['12']],
+]
+
+test('les QUATRE lecteurs de la grammaire rendent le MÊME ensemble, et celui qui est attendu', () => {
+  for (const [message, attendu] of TABLE_DE_FERMETURE) {
+    const lectures = {
+      porte: extractClosedIssues(`git commit -m ${JSON.stringify(message)}`).map(String),
+      closer: fermeturesDeLaPlage([{ sha: 'a', message }]).map((f) => f.numero),
+      palier: fermeturesDesCommits([{ sha: 'a', sujet: message, corps: '' }], []).map((f) => f.numero),
+      primitive: numerosFermes(message),
+    }
+    for (const [nom, lu] of Object.entries(lectures)) {
+      assert.deepEqual(
+        [...lu].sort(), [...attendu].sort(),
+        `« ${message} » : ${nom} ferme ${JSON.stringify(lu)} au lieu de ${JSON.stringify(attendu)} — ` +
+        'un solde exigé au commit doit fermer son ticket à la publication, et pas un autre.',
+      )
+    }
+  }
 })
 
 test('issue OUVERTE → on ferme', () => {

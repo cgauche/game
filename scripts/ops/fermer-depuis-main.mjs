@@ -12,12 +12,10 @@ import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { estAncetre } from '../guards/lib/gitPorte.mjs'
+import { numerosFermes } from '../guards/lib/fermetures.mjs'
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 export const DEPOT = 'cgauche/game'
-
-/** Le MÊME motif que `fermetures-sans-solde.test.mjs` et que `fermetures-non-citees.mjs`. */
-export const FERMETURE_RE = /(fixes|closes|corrige|ferme)\s+#(\d+)/gi
 
 /** Marque d'IDEMPOTENCE posée dans le commentaire de fermeture : elle porte le sha qui a soldé. */
 export const marqueDe = (sha) => `<!-- ferme-depuis-main: ${sha} -->`
@@ -30,8 +28,8 @@ export const marqueDe = (sha) => `<!-- ferme-depuis-main: ${sha} -->`
 export function fermeturesDeLaPlage(commits) {
   const vus = new Map()
   for (const c of commits) {
-    for (const m of String(c.message).matchAll(FERMETURE_RE)) {
-      if (!vus.has(m[2])) vus.set(m[2], c.sha)
+    for (const numero of numerosFermes(c.message)) {
+      if (!vus.has(numero)) vus.set(numero, c.sha)
     }
   }
   return [...vus].map(([numero, sha]) => ({ numero, sha }))
