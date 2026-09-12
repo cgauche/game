@@ -15,12 +15,12 @@ import { listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { fileURLToPath } from 'node:url'
 import { fieldBlockMask } from './build-implemente.mjs'
 import { otherAbbrAlternation, bookOf, folioRange, chapterBoundaryRiskFor, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve, readText } from './_lib.mjs'
-import { countsByFile, assertAgainstBaseline, readBaseline as readBaselineFile } from './check-code-refs.mjs'
+import { ecartDuVolet, readStock as readStockFile } from './check-code-refs.mjs'
 
 export const SRC_DIR = 'src'
 export const EXTS = ['.ts', '.tsx', '.json']
 export const RAWDIR = 'docs/raw'
-export const BASELINE_PATH = join(dirname(fileURLToPath(import.meta.url)), 'graphy-baseline.json')
+export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'graphy-stock.json')
 
 // Fiches EXCLUES des scans docs/raw (rapports générés / épreuves de ré-ancrage — graphies libres).
 // Source UNIQUE _lib.mjs (#454 DoD, #585 lot A) — jamais un Set dupliqué à la main ici.
@@ -335,7 +335,7 @@ export function scanImplProseViolations(rawDir = RAWDIR) {
 }
 
 /** Scan (e) : `ch.` cosmétique — src/** (.ts/.tsx/.json) ET docs/raw/*.md (mêmes fiches que (b)/(c)).
- *  Retourne `{ file, row, text }[]`, UNE entrée par occurrence (cliqueté par fichier, cf. `countsByFile`). */
+ *  Retourne `{ file, row, text }[]`, UNE entrée par OCCURRENCE — cliquet par SITE (cf. `ecartDuVolet`). */
 export function scanChDotViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
   return scanTout(srcDir, exts, rawDir).chDot
 }
@@ -359,17 +359,33 @@ export function scanUnknownAbbrViolations(srcDir = SRC_DIR, exts = EXTS, rawDir 
   return scanTout(srcDir, exts, rawDir).unknownAbbr
 }
 
-/** Baseline gelée si `graphy-baseline.json` existe, sinon `{}` (une famille absente = `{}`). */
-export function readBaseline(path = BASELINE_PATH) {
-  return readBaselineFile(path)
+/** Les ENTRÉES de `graphy-stock.json` (fichier absent, ou stock vide : aucune entrée). La FAMILLE
+ *  est un champ de l'entrée, jamais une rubrique : un seul stock, une seule forme, et la porte de
+ *  plage compte une ligne ajoutée où qu'elle tombe. */
+export function readStock(path = STOCK_PATH) {
+  return readStockFile(path)
 }
 
-// Compare une famille de violations à sa baseline — mêmes sémantiques que check-code-refs.mjs
-// (hausse ET péremption sont des anomalies). `family` = clé de premier niveau de graphy-baseline.json.
-function checkFamily(label, family, violations, baseline) {
-  const counts = countsByFile(violations)
-  const { over, stale } = assertAgainstBaseline(counts, baseline[family] ?? {})
-  return { label, family, violations, counts, over, stale }
+/** RÉF NOMINATIVE d'un site, par famille : ce qui identifie la citation fautive indépendamment de sa
+ *  ligne. Les familles de graphie n'ont que le TEXTE de la citation ; la famille folio-en-fin-de-
+ *  chapitre porte la réf elle-même. */
+const REF_DU_SITE = {
+  chDot: (v) => v.text.trim(),
+  bareFolio: (v) => v.text.trim(),
+  bookNoChapterSrc: (v) => v.text.trim(),
+  chapterBoundaryFolio: (v) => `${v.abbr} ${v.ch} p.${v.folio}`,
+}
+
+// Écart d'une famille à son stock — les deux sens échouent (site neuf, entrée soldée). Le stock est
+// filtré sur la famille : la clé la porte, l'écart ne juge que les entrées qui la nomment.
+function checkFamily(label, family, violations, stock) {
+  const { neuves, perimees } = ecartDuVolet({
+    sites: violations.map((v) => ({ file: v.file, ref: REF_DU_SITE[family](v) })),
+    stock: stock.filter((e) => e.famille === family),
+    famille: family,
+    ou: 'graphy-stock.json',
+  })
+  return { label, family, violations, neuves, perimees }
 }
 
 function main() {
@@ -377,13 +393,13 @@ function main() {
   const src = passe.graphy
   const docs = passe.docsRaw
   const implProse = passe.implProse
-  const baseline = readBaseline()
-  const chDot = checkFamily('ch. cosmétique', 'chDot', passe.chDot, baseline)
-  const bareFolio = checkFamily('folio nu', 'bareFolio', passe.bareFolio, baseline)
-  const bookNoChapterSrc = checkFamily('réf sans chapitre (src+docs/raw)', 'bookNoChapterSrc', passe.bookNoChapterSrc, baseline)
+  const stock = readStock()
+  const chDot = checkFamily('ch. cosmétique', 'chDot', passe.chDot, stock)
+  const bareFolio = checkFamily('folio nu', 'bareFolio', passe.bareFolio, stock)
+  const bookNoChapterSrc = checkFamily('réf sans chapitre (src+docs/raw)', 'bookNoChapterSrc', passe.bookNoChapterSrc, stock)
   const unknownAbbr = passe.unknownAbbr
   const multiFolioSplit = passe.multiFolioSplit
-  const chapterBoundaryFolio = checkFamily('folio en fin de chapitre (AVERTISSEMENT)', 'chapterBoundaryFolio', passe.chapterBoundaryFolio, baseline)
+  const chapterBoundaryFolio = checkFamily('folio en fin de chapitre (AVERTISSEMENT)', 'chapterBoundaryFolio', passe.chapterBoundaryFolio, stock)
 
   if (src.length) {
     console.log(`citation-graphy-guard : ${src.length} graphie(s) chapitre-relative(s) (src/) :`)
@@ -404,18 +420,18 @@ function main() {
     console.log('citation-graphy-guard : 0 prose d\'état d\'implémentation (docs/raw/) — classe verrouillée à zéro.')
   }
 
-  let baselineFail = false
-  for (const { label, violations, over, stale } of [chDot, bareFolio, bookNoChapterSrc]) {
-    console.log(`citation-graphy-guard (#585) : ${label} — ${violations.length} occurrence(s) mesurée(s).`)
-    if (over.length) {
-      baselineFail = true
-      console.log(`  RÉGRESSION — hausse par fichier :`)
-      for (const o of over) console.log(`    ${o}`)
+  let stockFail = false
+  for (const { label, violations, neuves, perimees } of [chDot, bareFolio, bookNoChapterSrc]) {
+    console.log(`citation-graphy-guard (#585) : ${label} — ${violations.length} site(s) mesuré(s).`)
+    if (neuves.length) {
+      stockFail = true
+      console.log(`  RÉGRESSION — site(s) hors du stock :`)
+      for (const o of neuves) console.log(`    ${o}`)
     }
-    if (stale.length) {
-      baselineFail = true
-      console.log(`  Baseline(s) PÉRIMÉE(s) (à ABAISSER dans graphy-baseline.json) :`)
-      for (const s of stale) console.log(`    ${s}`)
+    if (perimees.length) {
+      stockFail = true
+      console.log(`  Entrée(s) SOLDÉE(s) :`)
+      for (const s of perimees) console.log(`    ${s}`)
     }
   }
 
@@ -439,26 +455,26 @@ function main() {
   // (#454 juge adversarial) AVERTISSEMENT cliqueté, PAS bloquant à l'aveugle sur le stock existant :
   // un candidat structurel (dernier folio de N, N+1 s'ouvre sur X/X+1) n'est PAS une preuve verbatim
   // — le signal/bruit mesuré sur le repo entier est trop faible pour un zéro-tolérance (cas prouvé
-  // unique `LDB 48 p.255` sur 48 candidats structurels du repo). Baseline = le stock ACTUEL exact
-  // (`chapterBoundaryFolio` dans `graphy-baseline.json`) : toute HAUSSE ou péremption échoue quand
-  // même (même mécanique de cliquet que chDot/bareFolio/bookNoChapterSrc), mais le stock gelé
-  // lui-même ne fait PAS échouer le run — seule une dérive future le ferait.
-  console.log(`citation-graphy-guard (#454) : ${chapterBoundaryFolio.violations.length} candidat(s) folio-en-fin-de-chapitre (AVERTISSEMENT, cliqueté, non bloquant sur le stock gelé) :`)
+  // unique `LDB 48 p.255` sur 48 candidats structurels du repo). Stock = les sites ACTUELS exacts
+  // (entrées `chapterBoundaryFolio` de `graphy-stock.json`) : un site NEUF ou une entrée SOLDÉE
+  // échoue quand même (même mécanique de cliquet que chDot/bareFolio/bookNoChapterSrc), mais les
+  // sites déjà déclarés ne font PAS échouer le run — seule une dérive future le ferait.
+  console.log(`citation-graphy-guard (#454) : ${chapterBoundaryFolio.violations.length} candidat(s) folio-en-fin-de-chapitre (AVERTISSEMENT, cliqueté, non bloquant sur les sites déclarés) :`)
   for (const { file, row, abbr, ch, folio } of chapterBoundaryFolio.violations) {
     console.log(`  ${file}:${row}  [${abbr} ${ch} p.${folio}]`)
   }
-  if (chapterBoundaryFolio.over.length) {
-    baselineFail = true
-    console.log(`  RÉGRESSION — hausse par fichier :`)
-    for (const o of chapterBoundaryFolio.over) console.log(`    ${o}`)
+  if (chapterBoundaryFolio.neuves.length) {
+    stockFail = true
+    console.log(`  RÉGRESSION — site(s) hors du stock :`)
+    for (const o of chapterBoundaryFolio.neuves) console.log(`    ${o}`)
   }
-  if (chapterBoundaryFolio.stale.length) {
-    baselineFail = true
-    console.log(`  Baseline(s) PÉRIMÉE(s) (à ABAISSER dans graphy-baseline.json) :`)
-    for (const s of chapterBoundaryFolio.stale) console.log(`    ${s}`)
+  if (chapterBoundaryFolio.perimees.length) {
+    stockFail = true
+    console.log(`  Entrée(s) SOLDÉE(s) :`)
+    for (const s of chapterBoundaryFolio.perimees) console.log(`    ${s}`)
   }
 
-  if (src.length || docs.length || implProse.length || baselineFail || unknownAbbr.length || multiFolioSplit.length) process.exitCode = 1
+  if (src.length || docs.length || implProse.length || stockFail || unknownAbbr.length || multiFolioSplit.length) process.exitCode = 1
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)

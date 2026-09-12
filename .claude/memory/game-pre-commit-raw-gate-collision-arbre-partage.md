@@ -29,7 +29,7 @@ commit raw.
 2. Vérifier que régénérer ne CAPTURE PAS le WIP d'autrui : `grep` les refs RAW dans leurs fichiers `M`
    non committés — s'ils n'en ont pas, régénérer reflète le code committé (sûr).
    ⚠ **Variante SANS issue (vécue 2026-08-09)** : quand le WIP étranger porte LUI-MÊME des refs RAW —
-   pire, quand il a déjà régénéré des fiches dans l'arbre (9 fiches `M` + `graphy-baseline.json`, chantier
+   pire, quand il a déjà régénéré des fiches dans l'arbre (9 fiches `M` + `graphy-stock.json`, chantier
    « enjeux ») — le `chore(raw)` du point 3 est IMPOSSIBLE : régénérer committerait leur travail. Aucune
    chirurgie d'index ne sauve : elle produit un index propre (vérifié : HEAD + mes 4 lignes de prose, zéro
    ligne `Implémente`), mais le hook régénère depuis le **WORKING TREE**, pas depuis l'index — il mord quand

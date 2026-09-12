@@ -321,8 +321,8 @@ export const ECRIT_LU = {
     ecrit: [],
     lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs'],
     raison:
-      'aucune écriture dans les scripts atteints ; LIT Source/ (134 chapitres mesurés) et sa baseline ' +
-      'scripts/raw/empty-line-code-refs-baseline.json',
+      'aucune écriture dans les scripts atteints ; LIT Source/ (134 chapitres mesurés) et son stock ' +
+      'scripts/raw/empty-line-code-refs-stock.json',
   },
   'raw:check-folio-continuity': {
     ecrit: [],

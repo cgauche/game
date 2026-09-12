@@ -10,11 +10,11 @@ import { join } from 'node:path'
 import {
   scanGraphyViolations, scanDocsRawViolations, scanImplProseViolations, BOOK_NO_CHAPTER_RE,
   scanChDotViolations, scanBareFolioViolations, scanBookNoChapterSrcViolations, scanUnknownAbbrViolations,
-  scanMultiFolioSplitViolations, scanChapterBoundaryFolioViolations, readBaseline, BASELINE_PATH,
+  scanMultiFolioSplitViolations, scanChapterBoundaryFolioViolations, readStock, STOCK_PATH,
   scanTout,
 } from './citation-graphy-guard.mjs'
 import { otherAbbrAlternation, chapterBoundaryRisk } from './_lib.mjs'
-import { countsByFile, assertAgainstBaseline } from './check-code-refs.mjs'
+import { ecartDuVolet } from './check-code-refs.mjs'
 
 function withTempSrcDir(content, fn) {
   const dir = mkdtempSync(join(tmpdir(), 'graphy-guard-'))
@@ -536,32 +536,41 @@ test('(i) scan : forme multi-folio (LDB 64 p.301/303) hors périmètre (déjà c
   )
 })
 
-// --- (#585 lot A) baseline PAR FICHIER, cliquetée (patron check-code-refs.mjs) ---
-test('baseline graphy : hausse détectée, baisse détectée comme périmée (assertAgainstBaseline réutilisé)', () => {
-  const counts = countsByFile([{ file: 'src/a.ts' }, { file: 'src/a.ts' }, { file: 'src/b.ts' }])
-  const { over, stale } = assertAgainstBaseline(counts, { 'src/a.ts': 1, 'src/b.ts': 1, 'src/c.ts': 5 })
-  assert.equal(over.length, 1)
-  assert.equal(stale.length, 1)
-})
+// --- (#585 lot A) stock NOMINATIF par SITE, cliqueté dans les deux sens (patron check-code-refs.mjs) ---
 
-test('non-régression : les 4 familles cliquetées (#585, #454) du VRAI repo sont alignées sur graphy-baseline.json', () => {
-  const baseline = readBaseline()
-  const families = [
-    ['chDot', scanChDotViolations()],
-    ['bareFolio', scanBareFolioViolations()],
-    ['bookNoChapterSrc', scanBookNoChapterSrcViolations()],
-    ['chapterBoundaryFolio', scanChapterBoundaryFolioViolations()],
-  ]
-  for (const [family, violations] of families) {
-    const counts = countsByFile(violations)
-    const { over, stale } = assertAgainstBaseline(counts, baseline[family] ?? {})
-    assert.deepEqual(over, [], `${family} — hausse par fichier :\n${over.join('\n')}`)
-    assert.deepEqual(stale, [], `${family} — baseline(s) périmée(s) :\n${stale.join('\n')}`)
+/** RÉF nominative d'un site, par famille — même lecture que la garde. Une famille de plus ici sans
+ *  entrée correspondante dans la garde ferait un cliquet muet : les deux tables se lisent ensemble. */
+const FAMILLES = () => [
+  ['chDot', scanChDotViolations(), (v) => v.text.trim()],
+  ['bareFolio', scanBareFolioViolations(), (v) => v.text.trim()],
+  ['bookNoChapterSrc', scanBookNoChapterSrcViolations(), (v) => v.text.trim()],
+  ['chapterBoundaryFolio', scanChapterBoundaryFolioViolations(), (v) => `${v.abbr} ${v.ch} p.${v.folio}`],
+]
+
+test('non-régression : les 4 familles cliquetées (#585, #454) du VRAI repo sont exactement les sites de graphy-stock.json', () => {
+  const stock = readStock()
+  assert.ok(stock.length > 0, 'la dette de graphie est encore ouverte : un stock vide ici serait une perte de mesure')
+  for (const [famille, violations, ref] of FAMILLES()) {
+    const { neuves, perimees } = ecartDuVolet({
+      sites: violations.map((v) => ({ file: v.file, ref: ref(v) })),
+      stock: stock.filter((e) => e.famille === famille),
+      famille,
+      ou: 'graphy-stock.json',
+    })
+    assert.deepEqual(neuves, [], `${famille} — site(s) NEUF(s) :\n${neuves.join('\n')}`)
+    assert.deepEqual(perimees, [], `${famille} — entrée(s) SOLDÉE(s) :\n${perimees.join('\n')}`)
   }
 })
 
-test('graphy-baseline.json existe (#585 lot A)', () => {
-  assert.equal(existsSync(BASELINE_PATH), true)
+test('graphy-stock.json existe, et chaque entrée nomme sa famille, son fichier, sa réf et son échéance', () => {
+  assert.equal(existsSync(STOCK_PATH), true)
+  const familles = new Set(FAMILLES().map(([f]) => f))
+  for (const e of readStock()) {
+    assert.equal(familles.has(e.famille), true, `famille inconnue de la garde : ${e.famille}`)
+    for (const champ of ['fichier', 'ref', 'occurrence', 'lot', 'date']) {
+      assert.ok(e[champ] !== undefined && e[champ] !== '', `entrée sans ${champ} : ${JSON.stringify(e)} — sans lot ni date, une ligne de stock est un régime, pas un cliquet`)
+    }
+  }
 })
 
 // --- (#925) la PASSE UNIQUE nourrit les neuf classes : un corpus jouet portant UNE ligne fautive

@@ -9,13 +9,25 @@
 // avec quel message et sous quelle dérogation.
 //
 // PÉRIMÈTRE : les fichiers où un stock vit dans ce dépôt — tests de `src/**`, libs de garde
-// `scripts/guards/lib/**`, tests de `scripts/**`, tables JSON de `scripts/hooks/`, et les stocks
-// NOMMÉS de l'Atlas RAW (`scripts/raw/*-stock.json`, #1709 D2). Ce dernier motif nomme la FAMILLE,
-// pas le dossier : les `scripts/raw/*-baseline.json` voisines gèlent un COMPTE PAR FICHIER (patron
-// `assertAgainstBaseline`), pas une dette nominative — le cliquet de plage compte des ENTRÉES
-// nommées, et un compte n'en est pas une. Il est exprimé
+// `scripts/guards/lib/**`, tests de `scripts/**`, tables JSON de `scripts/hooks/`, de
+// `scripts/guards/` et de `scripts/guards/lib/`, le gel d'exports `knip-exports-baseline.json` de la
+// RACINE, les stocks NOMMÉS de l'Atlas RAW (`scripts/raw/*-stock.json`, #1709 D2) et les BASELINES
+// de compte qui les voisinent (`scripts/raw/*-baseline.json` — #1711 T1). Ces motifs nomment
+// des FAMILLES, pas des dossiers, et le test de périmètre les CONFRONTE à une dérivation : tout JSON
+// suivi dont la racine est un objet à CLÉS-CHEMINS, ou qui porte une liste d'entrées à champ
+// `fichier`, doit tomber sous l'un d'eux — sans quoi le rouge le NOMME. Il est exprimé
 // en EXPRESSIONS RÉGULIÈRES et non en littéraux de chemin : un tableau de chemins écrit ici serait
 // lui-même vu comme un stock par la règle qu'il sert.
+//
+// CE QU'UNE BASELINE DE COMPTE DÉCLARE, ET CE QU'ELLE TAIT (#1711 T1, le filet). Une baseline gèle
+// un COMPTE PAR FICHIER (patron `assertAgainstBaseline`) : `{ "src/x.ts": 3 }`. La porte compte des
+// ENTRÉES nommées, et la CLÉ en est une — un fichier qui entre au gel est donc vu, déclarable par
+// `CLIQUET:`. Le NOMBRE, lui, n'en est pas une : relever `2 → 3` est `-1/+1` sur la même ligne, net
+// 0, invisible aux deux portes ; et une entrée qui ne nomme AUCUN fichier (`{ "chapitre": "LDB 8",
+// "folio": 12 }`, les gels par chapitre) n'est vue par aucune porte non plus. La forme qui rend un
+// relèvement déclarable est le stock NOMINATIF — une entrée par occurrence, comme
+// `scripts/raw/reconciliation-stock.json` : l'ajout y est une LIGNE de plus. Le filet couvre les
+// clés neuves ; migrer les baselines vers la forme nominative est le reste de #1711 (T2-T4).
 //
 // DÉFINITION. Un PORTEUR est un littéral de TABLEAU ou d'OBJET atteignable depuis une liaison de
 // MODULE — `export const X = …`, `const X = …` de module, IIFE, fonction déclarée puis exportée.
@@ -88,13 +100,21 @@ import { createRequire } from 'node:module'
 import { parUnitesDeCode } from './lister.mjs'
 import { scriptKindDe } from './dialecte.mjs'
 
-/** Fichiers susceptibles de porter un stock nominatif. */
+/** Fichiers susceptibles de porter un stock nominatif. Les BASELINES de COMPTE
+ *  (`scripts/raw/*-baseline.json`, et `scripts/guards/raw-blind-refs-baseline.json` que
+ *  `rawRefIntegrity.mjs` gèle hors du dossier `raw/`) n'y entrent que pour leurs CLÉS — limite
+ *  écrite en tête de ce module. Les JSON de `scripts/guards/lib/` (`decisions-baseline.json`) et le
+ *  gel d'exports de la racine (`knip-exports-baseline.json`) sont, eux, NOMINATIFS de bout en bout. */
 const PORTEURS = [
   /^src\/.+\.test\.tsx?$/,
   /^scripts\/guards\/lib\/.+\.mjs$/,
   /^scripts\/.+\.test\.mjs$/,
   /^scripts\/hooks\/[^/]+\.json$/,
   /^scripts\/raw\/[^/]+-stock\.json$/,
+  /^scripts\/raw\/[^/]+-baseline\.json$/,
+  /^scripts\/guards\/[^/]+\.json$/,
+  /^scripts\/guards\/lib\/[^/]+\.json$/,
+  /^knip-exports-baseline\.json$/,
 ];
 
 /** Chemin de dépôt : une racine suivie, puis tout sauf des espaces. */

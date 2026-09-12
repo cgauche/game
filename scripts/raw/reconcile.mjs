@@ -15,7 +15,7 @@
 //   crédit folio (`atlasOnly`) — sont confrontés au STOCK NOMINATIF `reconciliation-stock.json` : une
 //   entrée neuve OU une entrée du stock devenue caduque pose `process.exitCode = 1` (double sens).
 //   Les mesures fines (trous de ligne, `(non implémenté)`, folios ignorés, réfs sans chapitre) restent
-//   IMPRIMÉES et jamais assertées. Lecteur = `readBaseline` (check-code-refs.mjs), écart = `ecartsDeStock`
+//   IMPRIMÉES et jamais assertées. Lecteur = `lireStockJson` (check-code-refs.mjs), écart = `ecartsDeStock`
 //   (guards/lib/stock.mjs) — jamais un troisième.
 // Sortie : docs/raw/reconciliation.md  ·  Re-run : node scripts/raw/reconcile.mjs
 import { readFileSync } from 'node:fs'
@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url'
 import { parUnitesDeCode, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { ecartsDeStock } from '../guards/lib/stock.mjs'
 import { ldbRe, otherRe, ldbFolioRe, otherFolioRe, folioSpan, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED, readText, PIVOT_ABBR } from './_lib.mjs'
-import { readBaseline } from './check-code-refs.mjs'
+import { lireStockJson } from './check-code-refs.mjs'
 import { loadAbbrMap, folioCitationsFromJson } from './build-implemente.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 
@@ -388,10 +388,10 @@ export function trousDurs({ hardA = [], hardAOther = [], atlasOnly = [] }) {
 
 /** Stock committé des trous durs : `{ cle: { sites, lot, date, quoi } }` — chaque entrée nomme ses
  *  SITES (le cliquet de plage `stocksNominatifs.mjs` ne voit une entrée que si son sous-arbre nomme
- *  un fichier), son LOT et sa DATE. Fichier absent = `{}` (tolérance ZÉRO, `readBaseline` de
+ *  un fichier), son LOT et sa DATE. Fichier absent = `{}` (tolérance ZÉRO, `lireStockJson` de
  *  check-code-refs.mjs — même lecteur que les autres cliquets de `scripts/raw/`). */
 export function lireStock(path = STOCK_PATH) {
-  return readBaseline(path).trous ?? {}
+  return lireStockJson(path).trous ?? {}
 }
 
 /** Écart NOMINATIF des trous durs mesurés à leur stock, dans les deux sens (`ecartsDeStock`), PLUS

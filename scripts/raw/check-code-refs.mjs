@@ -5,30 +5,33 @@
 // périmètre que le générateur `build-implemente`), résout le fichier-chapitre (`chapterFile`, _lib.mjs)
 // et signale la réf dont la borne haute dépasse le nombre de lignes du chapitre, OU dont le chapitre
 // est introuvable. Regex de réfs RÉUTILISÉES (`ldbRe`/`otherRe`/`span`/`bookOf`) — jamais réécrites.
-// Cliquet PAR FICHIER (`scripts/raw/dead-code-refs-baseline.json`, patron `assertAgainstBaseline` de
-// check-refs.mjs) : toute HAUSSE échoue ; une baseline devenue trop haute (réfs réparées) doit être
-// ABAISSÉE. Le stock gelé (dérive de ligne post-ré-extraction Marker) soldé (#583) : le fichier de
-// baseline est ABSENT en régime nominal → tolérance ZÉRO (toute réf morte échoue nominativement,
-// `readBaseline` traite un fichier absent comme `{}`). Si un résidu IRRÉDUCTIBLE réapparaît, la
-// baseline se recrée à sa mesure MINIMALE avec un diagnostic en commentaire — jamais un cliquet
-// tacite qui masque une future régression.
+// Cliquet NOMINATIF (`scripts/raw/dead-code-refs-stock.json`, écart calculé par `ecartsDeStock` de
+// `guards/lib/stock.mjs`, forme de `reconciliation-stock.json`) : une ENTRÉE par site, et les deux
+// sens échouent — un site NEUF est une régression à corriger ou à déclarer, une entrée dont le site
+// a disparu est une dette SOLDÉE à retirer. Un nombre relevé dans un fichier de compte est net 0 à la
+// porte de plage ; une entrée ajoutée est une croissance qui se déclare (`stocksNominatifs.mjs`).
+// Le stock gelé (dérive de ligne post-ré-extraction Marker) soldé (#583) : le fichier de stock est
+// ABSENT en régime nominal → tolérance ZÉRO (toute réf morte échoue nominativement, `readStock`
+// traite un fichier absent comme zéro entrée). Si un résidu IRRÉDUCTIBLE réapparaît, le stock se
+// recrée à sa mesure MINIMALE, chaque entrée portant son lot et sa date — jamais un cliquet tacite
+// qui masque une future régression.
 // DEUXIÈME contrôle, même parcours (#1457 G1) : la ligne citée doit être NON VIDE. Une réf dans les
 // bornes peut pointer sur du blanc après une ré-extraction / une restitution de folio (vécu : le folio
 // 88 de LDB 08 a décalé la fin du chapitre de +44 lignes, 7 réfs committées tombées sur du vide ou sur
-// un autre paragraphe). Cliquet PROPRE (`scripts/raw/empty-line-code-refs-baseline.json`, même
-// `assertAgainstBaseline`) pour ne pas diluer la tolérance ZÉRO du contrôle de bornes ci-dessus :
-// baseline nominative par fichier, toute hausse échoue, toute baisse doit l'ABAISSER.
+// un autre paragraphe). Stock PROPRE (`scripts/raw/empty-line-code-refs-stock.json`, même écart) pour
+// ne pas diluer la tolérance ZÉRO du contrôle de bornes ci-dessus.
 // Re-run : node scripts/raw/check-code-refs.mjs (npm run raw:check-code-refs).
 import { readFileSync } from 'node:fs'
 import { listerArbre } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ldbRe, otherRe, span, chapterFile, bookOf, readText, PIVOT_ABBR } from './_lib.mjs'
+import { ecartsDeStock } from '../guards/lib/stock.mjs'
 
 export const SRC_DIR = 'src'
 export const EXCLUDE_SRC_PREFIX = 'src/gameIso/rig/parts/tenues/defs/' // art de couverture, pas une règle (cf. build-implemente)
-export const BASELINE_PATH = join(dirname(fileURLToPath(import.meta.url)), 'dead-code-refs-baseline.json')
-export const EMPTY_LINE_BASELINE_PATH = join(dirname(fileURLToPath(import.meta.url)), 'empty-line-code-refs-baseline.json')
+export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'dead-code-refs-stock.json')
+export const EMPTY_LINE_STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'empty-line-code-refs-stock.json')
 
 // Réfs `LDB NN l.X…` et « autres livres » (AA/ZI/EDO…) d'une ligne — `{ abbr, nn, hi }` (borne haute
 // de la plage dépliée par `span`). Réfs de livre entier (sans numéro de chapitre) = hors sujet (aucun
@@ -123,33 +126,32 @@ export function scanEmptyLineCodeRefs(srcDir = SRC_DIR) {
   return vides
 }
 
-/** Groupe les réfs mortes par FICHIER src (unité du cliquet). */
-export function countsByFile(dead) {
-  const counts = {}
-  for (const d of dead) counts[d.file] = (counts[d.file] ?? 0) + 1
-  return counts
+/** CLÉ NOMINATIVE d'une entrée ou d'un site : la famille quand la garde en distingue, le fichier, la
+ *  réf, et l'OCCURRENCE. Jamais un numéro de ligne — il dérive à chaque édition du fichier et rendrait
+ *  la moitié du stock périmée à chaque commit. Même clé des deux côtés de `ecartsDeStock`. */
+export const cleDeSite = (e) => [e.famille ?? '', e.fichier, e.ref, e.occurrence].join(' :: ')
+
+/**
+ * Sites OBSERVÉS → entrées NOMINALES. L'occurrence est l'ordinal du site parmi ceux qui partagent la
+ * même (famille, fichier, réf), dans l'ordre du balayage.
+ * ANGLE MORT DIT : quand un fichier porte DEUX fois la même réf et que la PREMIÈRE se corrige, la
+ * seconde descend de l'occurrence 2 à la 1 — l'écart rend alors une périmée ET une neuve pour un seul
+ * geste. Le cliquet reste juste (le solde doit se déclarer), sa phrase est seulement plus bavarde.
+ * @param {{ file: string, ref: string }[]} sites @param {{ famille?: string }} [p]
+ */
+export function sitesEnEntrees(sites, { famille } = {}) {
+  const vus = new Map()
+  return sites.map(({ file, ref }) => {
+    const k = [famille ?? '', file, ref].join(' :: ')
+    const occurrence = (vus.get(k) ?? 0) + 1
+    vus.set(k, occurrence)
+    return { famille, fichier: file, ref, occurrence }
+  })
 }
 
-/** Compare des comptes mesurés à une baseline gelée : toute hausse ET toute baisse (baseline
- *  périmée) sont des anomalies — retourne `{ over, stale }` (listes de lignes-rapport). Repris tel
- *  quel du patron de check-refs.mjs (même sémantique de cliquet). */
-export function assertAgainstBaseline(counts, baseline) {
-  const over = []
-  for (const [k, n] of Object.entries(counts)) {
-    const b = baseline[k] ?? 0
-    if (n > b) over.push(`${k} : ${n} (baseline ${b})`)
-  }
-  const stale = []
-  for (const [k, b] of Object.entries(baseline)) {
-    const n = counts[k] ?? 0
-    if (n < b) stale.push(`${k} : baseline ${b}, réel ${n}`)
-  }
-  return { over, stale }
-}
-
-/** Baseline gelée si `dead-code-refs-baseline.json` existe, sinon `{}` (mode ZÉRO-TOLÉRANCE :
- *  fichier absent = aucune réf morte tolérée, `assertAgainstBaseline` fait le reste). */
-export function readBaseline(path = BASELINE_PATH) {
+/** Contenu JSON d'un fichier de stock, ou `{}` s'il est ABSENT (mode ZÉRO-TOLÉRANCE : rien de toléré,
+ *  l'écart fait le reste). Lecteur partagé : `reconcile.mjs` en tire ses `trous`. */
+export function lireStockJson(path = STOCK_PATH) {
   try {
     return JSON.parse(readFileSync(path, 'utf8'))
   } catch (err) {
@@ -158,23 +160,52 @@ export function readBaseline(path = BASELINE_PATH) {
   }
 }
 
+/** Les ENTRÉES d'un fichier de stock (fichier absent, ou stock vide : aucune entrée). */
+export function readStock(path = STOCK_PATH) {
+  return lireStockJson(path).entrees ?? []
+}
+
+/**
+ * VERDICT d'un volet à stock nominatif : les deux sens, en phrases prêtes à afficher. Le calcul est
+ * celui de `ecartsDeStock` ; ce qui vit ici est le REMÈDE — ce que le lecteur doit faire de chaque
+ * ligne. Le PLAFOND n'y est pas : il vit dans le test de la garde.
+ * ANGLE MORT DIT, À LA PORTE DE PLAGE : un ÉCHANGE EN PLACE à total constant — réécrire le `fichier`
+ * ou la `ref` d'une entrée existante pour couvrir un site neuf pendant qu'un autre est soldé, dans le
+ * MÊME commit — rend `[]` à `croissanceDesStocks` : le stock ne peut pas CROÎTRE ainsi, mais ce solde
+ * et ce neuf ne se déclarent pas. Cette garde-ci, elle, les voit toujours (la clé a changé des deux
+ * côtés) : c'est la SUITE qui tient ce cas, pas la porte de plage.
+ * @param {{ sites: {file: string, ref: string}[], stock: object[], famille?: string, ou?: string }} p
+ *   `ou` nomme le fichier de stock dans le remède.
+ */
+export function ecartDuVolet({ sites, stock, famille, ou }) {
+  return ecartsDeStock({
+    observe: sitesEnEntrees(sites, { famille }),
+    stock,
+    cle: cleDeSite,
+    remede: {
+      neuve: (k) => `${k} — site NEUF : corriger la réf, ou déclarer une entrée dans ${ou} et la porter au message par \`CLIQUET:\`.`,
+      perimee: (k) => `${k} — entrée SOLDÉE : le site a disparu, retirer cette entrée de ${ou}.`,
+    },
+  })
+}
+
 function main() {
   const dead = scanDeadCodeRefs()
-  const counts = countsByFile(dead)
-  const baseline = readBaseline()
-  const { over, stale } = assertAgainstBaseline(counts, baseline)
+  const { neuves, perimees } = ecartDuVolet({
+    sites: dead, stock: readStock(STOCK_PATH), ou: 'dead-code-refs-stock.json',
+  })
 
-  console.log(`réfs de code mortes (ligne hors borne du chapitre, ou chapitre introuvable) : ${dead.length} sur ${Object.keys(counts).length} fichier(s)`)
+  console.log(`réfs de code mortes (ligne hors borne du chapitre, ou chapitre introuvable) : ${dead.length} site(s)`)
 
-  if (over.length) {
-    console.log('RÉGRESSION — hausse de réfs mortes par fichier :')
-    for (const o of over) console.log(`  ${o}`)
+  if (neuves.length) {
+    console.log('RÉGRESSION — site(s) de réf morte hors du stock :')
+    for (const o of neuves) console.log(`  ${o}`)
   }
-  if (stale.length) {
-    console.log('Baseline(s) PÉRIMÉE(s) (réfs réparées) — à ABAISSER dans dead-code-refs-baseline.json :')
-    for (const s of stale) console.log(`  ${s}`)
+  if (perimees.length) {
+    console.log('Entrée(s) SOLDÉE(s) (réfs réparées) :')
+    for (const s of perimees) console.log(`  ${s}`)
   }
-  if (over.length || stale.length) {
+  if (neuves.length || perimees.length) {
     console.log('Détail (fichier:ligne — réf, cause) :')
     for (const d of dead) {
       const cause = d.kind === 'out-of-bounds' ? `${d.chapterFile} a ${d.chapterLines} lignes` : 'chapitre introuvable'
@@ -184,26 +215,26 @@ function main() {
   }
 
   const vides = scanEmptyLineCodeRefs()
-  const countsVides = countsByFile(vides)
-  const baselineVides = readBaseline(EMPTY_LINE_BASELINE_PATH)
-  const { over: overV, stale: staleV } = assertAgainstBaseline(countsVides, baselineVides)
+  const { neuves: neuvesV, perimees: perimeesV } = ecartDuVolet({
+    sites: vides, stock: readStock(EMPTY_LINE_STOCK_PATH), ou: 'empty-line-code-refs-stock.json',
+  })
 
-  console.log(`réfs de code sur ligne VIDE (dans les bornes, mais la ligne citée est blanche) : ${vides.length} sur ${Object.keys(countsVides).length} fichier(s)`)
-  if (overV.length) {
-    console.log('RÉGRESSION — hausse de réfs sur ligne vide par fichier :')
-    for (const o of overV) console.log(`  ${o}`)
+  console.log(`réfs de code sur ligne VIDE (dans les bornes, mais la ligne citée est blanche) : ${vides.length} site(s)`)
+  if (neuvesV.length) {
+    console.log('RÉGRESSION — site(s) de réf sur ligne vide hors du stock :')
+    for (const o of neuvesV) console.log(`  ${o}`)
   }
-  if (staleV.length) {
-    console.log('Baseline(s) PÉRIMÉE(s) (réfs repointées) — à ABAISSER dans empty-line-code-refs-baseline.json :')
-    for (const s of staleV) console.log(`  ${s}`)
+  if (perimeesV.length) {
+    console.log('Entrée(s) SOLDÉE(s) (réfs repointées) :')
+    for (const s of perimeesV) console.log(`  ${s}`)
   }
-  if (overV.length || staleV.length) {
+  if (neuvesV.length || perimeesV.length) {
     console.log('Détail (fichier:ligne — réf, chapitre) :')
     for (const v of vides) console.log(`${v.file}:${v.row} — ${v.ref} (${v.chapterFile} : ligne(s) blanche(s))`)
     process.exitCode = 1
   }
 
-  if (!over.length && !stale.length && !overV.length && !staleV.length) console.log('OK — cliquets alignés, aucune régression.')
+  if (!neuves.length && !perimees.length && !neuvesV.length && !perimeesV.length) console.log('OK — cliquets alignés, aucune régression.')
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)

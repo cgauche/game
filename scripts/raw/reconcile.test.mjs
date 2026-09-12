@@ -345,7 +345,7 @@ test('cliquet : chaque entrée du stock nomme ses SITES, son LOT et sa DATE (jam
   }
 })
 
-test('cliquet : le fichier de stock ABSENT vaut tolérance ZÉRO (readBaseline), jamais un stock ouvert', () => {
+test('cliquet : le fichier de stock ABSENT vaut tolérance ZÉRO (lireStockJson), jamais un stock ouvert', () => {
   assert.deepEqual(lireStock(join(tmpdir(), 'stock-qui-nexiste-pas.json')), {})
   assert.ok(STOCK_PATH.endsWith('reconciliation-stock.json'))
 })

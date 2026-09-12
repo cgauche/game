@@ -83,8 +83,8 @@ Le code porte déjà sa vérité terrain : **2927 réfs RAW canoniques** en comm
   (3 cas navals réels : survitesse, périls, détroits — écrits, jamais appelés).
 - ⚠ **Graphie non négociable** : une réf s'écrit `LIVRE NN l.X` — c'est la SEULE forme que `_lib.mjs`
   (`ldbRe`/`otherRe`) matche ; une réf en `ch.NN` est INVISIBLE de la dérivation, qui devient alors aveugle
-  sur la part de code concernée. Cliquet en place : la famille `chDot` de `scripts/raw/graphy-baseline.json`
-  est à **0** — toute nouvelle occurrence échoue la garde de graphie.
+  sur la part de code concernée. Cliquet en place : la famille `chDot` n'a AUCUNE entrée dans
+  `scripts/raw/graphy-stock.json` — toute occurrence échoue la garde de graphie, nommée par son site.
 
 Machinerie déjà présente, rien à inventer : `build-systemes.mjs` (closure transitive),
 `scripts/guards/lib/importGraph.mjs`, `reconcile.mjs` (map chapitre→réfs du code).

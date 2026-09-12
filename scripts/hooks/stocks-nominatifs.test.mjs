@@ -80,9 +80,133 @@ test('périmètre — les porteurs de stock, et eux seuls', () => {
   assert.equal(estPorteurDeStock('scripts/hooks/fermetures-sans-solde.test.mjs'), true)
   assert.equal(estPorteurDeStock('scripts/hooks/ecrans-ui.json'), true)
   assert.equal(estPorteurDeStock('scripts/raw/reconciliation-stock.json'), true, 'stock nominatif de l\'Atlas RAW (#1709 D2)')
-  assert.equal(estPorteurDeStock('scripts/raw/dead-code-refs-baseline.json'), false, 'une baseline gèle un COMPTE par fichier, pas une dette nommée')
+  assert.equal(estPorteurDeStock('scripts/raw/dead-refs-baseline.json'), true, 'baseline de COMPTE de l\'Atlas RAW : porteuse pour ses CLÉS (#1711 T1)')
+  assert.equal(estPorteurDeStock('scripts/guards/raw-blind-refs-baseline.json'), true, 'baseline gelée hors du dossier `raw/` par `rawRefIntegrity.mjs`')
+  assert.equal(estPorteurDeStock('scripts/guards/lib/decisions-baseline.json'), true, 'stock NOMINATIF de sites du détecteur de commentaires')
+  assert.equal(estPorteurDeStock('knip-exports-baseline.json'), true, 'gel d\'exports à clés-chemins, à la RACINE')
   assert.equal(estPorteurDeStock('src/state/combatFlow.ts'), false, 'un module de prod n\'est pas un stock')
   assert.equal(estPorteurDeStock('docs/architecture.md'), false)
+})
+
+/** Un JSON PORTE-T-IL un stock, lu sur sa STRUCTURE ? Deux formes, celles du dépôt : une racine
+ *  d'objet dont TOUTE clé est un chemin de dépôt ; une liste d'entrées (`entrees`/`sites`/`trous`)
+ *  dont au moins une nomme un `fichier`. Rien d'autre n'est réputé stock ici : la dérivation sert à
+ *  NOMMER un porteur oublié, jamais à requalifier une donnée de jeu. */
+function porteUnStockParSaForme(json) {
+  const estChemin = (s) => /^(?:src|scripts|docs)\/[^\s]+\.(?:ts|tsx|mjs|mts|json|md|css)$/.test(s)
+  if (!json || typeof json !== 'object' || Array.isArray(json)) return false
+  const cles = Object.keys(json)
+  if (cles.length > 0 && cles.every(estChemin)) return true
+  return ['entrees', 'sites', 'trous'].some((rubrique) => {
+    const v = json[rubrique]
+    const liste = Array.isArray(v) ? v : v && typeof v === 'object' ? Object.values(v) : []
+    return liste.some((e) => e && typeof e === 'object' && typeof e.fichier === 'string')
+  })
+}
+
+// NON-VACUITÉ DÉRIVÉE du périmètre : la liste `PORTEURS` est écrite à la main, et un stock neuf
+// posé hors de ses motifs sort MUET des deux portes (vécu : `decisions-baseline.json`, nominatif
+// depuis son contrat, invisible jusqu'à #1711). Ce test confronte la liste à la FORME réelle des
+// JSON suivis — un porteur oublié est nommé, avec le chemin à ajouter.
+test('périmètre — tout JSON suivi dont la FORME est un stock tombe sous un motif de PORTEURS', () => {
+  exigerHistoireComplete()
+  const suivis = git('ls-files', '--cached', '--', '*.json').split('\n').map((l) => l.trim()).filter(Boolean)
+  assert.ok(suivis.length > 0, 'aucun .json suivi listé — la dérivation jugerait vert par vacuité')
+  const oublies = []
+  let lus = 0
+  for (const rel of suivis) {
+    if (estPorteurDeStock(rel)) continue
+    // `docs/.sources-lues.json` a la FORME d'un stock (clés = les générateurs, valeurs = ce qu'ils
+    // lisent) et n'en est pas un : c'est un registre DÉRIVÉ, réécrit en entier à chaque
+    // `docs:build` (`scripts/docs/lib/empreinte-sources.mjs`). Le rendre porteur ferait de chaque
+    // régénération une croissance à déclarer — une dette ne se mesure pas sur un artefact généré.
+    if (rel === 'docs/.sources-lues.json') continue
+    let json
+    try { json = JSON.parse(readFileSync(join(RACINE, rel), 'utf8')) } catch { continue }
+    lus++
+    if (porteUnStockParSaForme(json)) oublies.push(`${rel} — sa FORME est un stock nominatif, mais aucun motif de \`PORTEURS\` ne le couvre : les deux portes le laissent croître MUET.`)
+  }
+  assert.ok(lus > 0, 'aucun .json non porteur lu — la dérivation jugerait vert par vacuité')
+  assert.deepEqual(oublies, [], oublies.join('\n'))
+})
+
+// ── BASELINES DE COMPTE (#1711 T1) : ce que le filet voit, et ce qu'il ne voit pas ───────────────
+
+const BASELINE = 'scripts/raw/dead-refs-baseline.json'
+/** Diff d'UN fichier, lignes ajoutées/retirées données telles quelles, avec le numéro de la
+ *  première ligne touchée : les images réelles sont fournies à côté, c'est elles qui font foi. */
+const diffAuxLignes = (fichier, debut, ajoutees, retirees = []) =>
+  [
+    `diff --git a/${fichier} b/${fichier}`, `--- a/${fichier}`, `+++ b/${fichier}`,
+    `@@ -${debut},${retirees.length} +${debut},${ajoutees.length} @@`,
+    ...retirees.map((l) => `-${l}`), ...ajoutees.map((l) => `+${l}`),
+  ].join('\n')
+
+test('baseline de compte — une CLÉ neuve est une croissance déclarable', () => {
+  const avant = '{\n  "src/engine/ops.ts": 2,\n  "src/engine/combat.ts": 1\n}\n'
+  const apres = '{\n  "src/engine/ops.ts": 2,\n  "src/x.ts": 3,\n  "src/engine/combat.ts": 1\n}\n'
+  const r = croissanceDesStocks(
+    diffAuxLignes(BASELINE, 3, ['  "src/x.ts": 3,']),
+    { lirePostImage: () => apres, lirePreImage: () => avant },
+  )
+  assert.deepEqual(r.map((x) => x.fichier), [BASELINE], `${BASELINE} n'est plus vue comme porteuse : la clé neuve passe muette`)
+  const [c] = r
+  assert.deepEqual([c.ajoutees, c.retirees, c.net], [1, 0, 1])
+  assert.deepEqual(c.exemples, ['"src/x.ts": 3,'])
+})
+
+test('baseline de compte — LIMITE dite : un NOMBRE relevé est invisible', () => {
+  const avant = '{\n  "src/engine/ops.ts": 2,\n  "src/engine/combat.ts": 1\n}\n'
+  const apres = '{\n  "src/engine/ops.ts": 3,\n  "src/engine/combat.ts": 1\n}\n'
+  const r = croissanceDesStocks(
+    diffAuxLignes(BASELINE, 2, ['  "src/engine/ops.ts": 3,'], ['  "src/engine/ops.ts": 2,']),
+    { lirePostImage: () => apres, lirePreImage: () => avant },
+  )
+  assert.deepEqual(
+    r, [],
+    'limite de (a) : un nombre relevé est invisible, seule la forme nominative le déclare',
+  )
+})
+
+test('porteur — une entrée qui ne NOMME aucun fichier n est vue par AUCUNE porte', () => {
+  const GEL = 'scripts/raw/folio-gaps-baseline.json'
+  const entree = '    { "chapitre": "LDB 8", "folio": 12 },'
+  const avant = `{\n  "entrees": [\n${entree}\n    { "chapitre": "LDB 8", "folio": 14 }\n  ]\n}\n`
+  const apres = `{\n  "entrees": [\n${entree}\n    { "chapitre": "LDB 8", "folio": 13 },\n    { "chapitre": "LDB 8", "folio": 14 }\n  ]\n}\n`
+  assert.deepEqual(entreesDeStock(avant, GEL), [], 'un chapitre et un folio ne nomment aucun fichier')
+  assert.deepEqual(
+    croissanceDesStocks(diffAuxLignes(GEL, 4, ['    { "chapitre": "LDB 8", "folio": 13 },']),
+      { lirePostImage: () => apres, lirePreImage: () => avant }),
+    [],
+    'un gel par CHAPITRE reste hors de vue des deux portes — il se rend déclarable en nommant son fichier',
+  )
+})
+
+test('stock NOMINATIF de l Atlas RAW — une entrée ajoutée est une croissance déclarable, exemple cité', () => {
+  const f = 'scripts/raw/empty-line-code-refs-stock.json'
+  assert.equal(estPorteurDeStock(f), true)
+  const entree = (ref) => [
+    '    {',
+    '      "fichier": "src/engine/ops.ts",',
+    `      "ref": "${ref}",`,
+    '      "occurrence": 1,',
+    '      "lot": "#1711",',
+    '      "date": "2026-09-12"',
+    '    }',
+  ]
+  const enveloppe = (corps) => ['{', '  "quoi": "fixture",', '  "entrees": [', ...corps, '  ]', '}', ''].join('\n')
+  const avant = enveloppe(entree('LDB 40 l.53'))
+  const apres = enveloppe([...entree('LDB 40 l.53').map((l, i) => (i === 6 ? '    },' : l)), ...entree('LDB 13 l.184')])
+  const [c] = croissanceDesStocks(
+    diffAuxLignes(f, 10, entree('LDB 13 l.184'), []),
+    { lirePostImage: () => apres, lirePreImage: () => avant },
+  )
+  assert.equal(c.fichier, f)
+  assert.equal(c.net, 1, 'une entrée MULTILIGNE compte pour UNE : la porte voit l’ajout, jamais ses lignes internes')
+  assert.equal(
+    entree('LDB 13 l.184').map((l) => l.trim()).includes(c.exemples[0]), true,
+    `l’exemple cité doit APPARTENIR à l’entrée ajoutée, quelle que soit la ligne à laquelle la porte la pose — reçu : ${c.exemples[0]}`,
+  )
 })
 
 test('entrée — élément de liste, clé d objet et balise commentée comptent', () => {
@@ -465,8 +589,9 @@ test('naissance — un `*-stock.json` qui naît compte ses entrées sur l’imag
 // La liste vit DANS le test : en portée de module, elle serait elle-même un stock nominatif qui naît
 // (mesuré — la porte a mordu ce fichier pour `+4 entrée(s)`). Une fixture est une donnée LOCALE.
 //
-// Elle est NOMMÉE plutôt que dérivée : `estPorteurDeStock` retient 1 786 fichiers suivis, dont la
-// plupart ne portent aucun stock (`image = 0`), et trois des dix plus gros ont `image < repli`
+// Elle est NOMMÉE plutôt que dérivée : `estPorteurDeStock` retient des FAMILLES de chemins (tests
+// de `src/**`, libs de garde, tests de `scripts/**`, tables et stocks JSON), et la plupart des
+// fichiers qui y tombent ne portent aucun stock (`image = 0`) ; parmi les plus gros, `image < repli`
 // (`structures-contrat.test.ts` 1 contre 9, `refs-migrated.test.ts` 0 contre 5) — le repli compte
 // toute LIGNE qui ressemble à une entrée, y compris dans une donnée locale, là où l'image ne compte
 // que les entrées d'un porteur de portée MODULE. L'invariant vaut pour les stocks réels, pas pour un
