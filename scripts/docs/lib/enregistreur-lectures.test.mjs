@@ -9,7 +9,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { installer } from './enregistreur-lectures.mjs'
 import { listerDossier } from '../../guards/lib/lister.mjs'
 import { instanceDeDepot } from '../../guards/lib/depotGabarit.mjs'
 import { tmpdir } from 'node:os'
@@ -86,6 +87,9 @@ test('un set vide ou minuscule ARRÊTE la génération, en nommant le générate
   assert.match(refusSourcesInsuffisantes('scripts/docs/build-x.mjs', 0), /build-x\.mjs.*0 source\(s\).*AVEUGLE/)
   assert.match(refusSourcesInsuffisantes('scripts/docs/build-x.mjs', 1), /1 source\(s\)/)
   assert.equal(refusSourcesInsuffisantes('scripts/docs/build-x.mjs', 2), null)
+  // Le refus dit AUSSI ce qui est sorti de la mesure : 0 source mesurée et 7 chemins écartés n'est pas
+  // le même défaut que 0 source mesurée tout court.
+  assert.match(refusSourcesInsuffisantes('scripts/docs/build-x.mjs', 0, 7), /7 chemin\(s\) lu\(s\) hors racine/)
 })
 
 test('un fichier AJOUTÉ à un dossier lu change l\'empreinte, sans qu\'aucun contenu ne soit lu', () => {
@@ -278,5 +282,68 @@ test('--empreinte sans aucun doc à juger sort 0, en le disant', () => {
     assert.match(seul, /aucun doc stagé/)
   } finally {
     rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+// #1721 : NTFS est INSENSIBLE à la casse. Tant que la décision « sous la racine » se prenait sur des
+// octets (`abs.startsWith(base + sep)`), une lecture dont le disque ou un segment ne portait pas la
+// casse de la racine sortait de la mesure, et rien ne le disait.
+test('casse : une lecture par un chemin à casse différente est COMPTÉE, une lecture hors racine est REJETÉE', (t) => {
+  const racine = realpathSync.native(mkdtempSync(path.join(tmpdir(), 'casse-')))
+  const dehors = realpathSync.native(mkdtempSync(path.join(tmpdir(), 'dehors-')))
+  try {
+    mkdirSync(path.join(racine, 'docs'))
+    writeFileSync(path.join(racine, 'docs', 'x.md'), '# x\n')
+    writeFileSync(path.join(dehors, 'y.md'), '# y\n')
+    // Le MÊME fichier, désigné avec la casse changée sur le disque ET sur un segment sous la racine.
+    const autreCasse = path.join(racine.replace(/^[A-Za-z]:/, (d) => d.toLowerCase()), 'DOCS', 'x.md')
+    let insensible = true
+    try {
+      readFileSync(autreCasse)
+    } catch {
+      insensible = false
+    }
+
+    const collecteur = installer({ racine })
+    try {
+      if (insensible) readFileSync(autreCasse)
+      readFileSync(path.join(dehors, 'y.md'))
+      // Le MÊME fichier hors racine, désigné par une autre casse : un seul chemin rejeté.
+      if (insensible) readFileSync(path.join(dehors, 'Y.md'))
+    } finally {
+      collecteur.restaurer()
+    }
+    const rendu = collecteur.rendu()
+
+    // Sur un système de fichiers SENSIBLE à la casse, `autreCasse` ne désigne aucun fichier : il n'y
+    // a pas de lecture à mesurer, et le contrat de rejet, lui, se juge sur les deux OS.
+    if (!insensible) t.diagnostic(`système de fichiers sensible à la casse : « ${autreCasse} » ne désigne aucun fichier`)
+    assert.deepEqual(
+      rendu.fichiers, insensible ? ['docs/x.md'] : [],
+      `lecture par « ${autreCasse} » : set rendu ${JSON.stringify(rendu.fichiers)} (attendu la casse du DISQUE)`,
+    )
+    assert.ok(!rendu.fichiers.some((f) => f.endsWith('y.md')), 'une lecture hors racine est entrée dans le set')
+    assert.equal(
+      rendu.cheminsRejetes, 1,
+      `chemins rejetés : ${rendu.cheminsRejetes} — attendu le seul « ${path.join(dehors, 'y.md')} », quelle que soit la casse et le nombre d'appels à « fs »`,
+    )
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+    rmSync(dehors, { recursive: true, force: true })
+  }
+})
+
+test('le compteur de rejets voyage avec la mesure fusionnée (un rejet muet = une absence de lecture)', () => {
+  const sortie = mkdtempSync(path.join(tmpdir(), 'fusion-'))
+  try {
+    writeFileSync(path.join(sortie, 'l.1.json'), JSON.stringify({ fichiers: ['a.ts'], dossiers: {}, ecrits: [], cheminsRejetes: 2 }))
+    writeFileSync(path.join(sortie, 'l.2.json'), JSON.stringify({ fichiers: ['b.ts'], dossiers: {}, ecrits: [], cheminsRejetes: 3 }))
+    const lues = fusionnerLectures(sortie)
+    // Des chemins distincts PAR PID, sommés : deux processus qui lisent le même chemin hors racine
+    // comptent 2.
+    assert.equal(lues.cheminsRejetes, 5)
+    assert.deepEqual(lues.fichiers, ['a.ts', 'b.ts'])
+  } finally {
+    rmSync(sortie, { recursive: true, force: true })
   }
 })

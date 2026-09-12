@@ -28,6 +28,11 @@ const ATTENDU = {
   'test:hooks': [
     'scripts/docs/build-all.mjs',
     'scripts/docs/lib/empreinte-sources.mjs',
+    // +1 le 2026-09-12 (#1721) : le test de contrat importe `installer` pour monter l'enveloppe de
+    // `fs` à nu (la casse d'un chemin lu se juge sans sous-processus). L'écriture de ce module est
+    // la sienne propre — `<WFRP_LECTURES_SORTIE>.<pid>.json`, derrière la porte d'environnement
+    // (enregistreur-lectures.mjs:151) —, et `build-all.mjs` pointe cette sortie sous os.tmpdir().
+    'scripts/docs/lib/enregistreur-lectures.mjs',
     'scripts/docs/lib/enregistreur-lectures.test.mjs',
     'scripts/gates/toutes.mjs',
     'scripts/gates/toutes.test.mjs',

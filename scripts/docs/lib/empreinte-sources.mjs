@@ -107,6 +107,11 @@ export function fusionnerLectures(dossier) {
   const fichiers = new Set()
   const ecrits = new Set()
   const dossiers = new Map()
+  // Chemins LUS hors racine, refusés par les enveloppes : sans ce compte, un rejet est indiscernable
+  // d'une absence de lecture. UNITÉ : des chemins canoniques distincts PAR PROCESSUS, sommés entre
+  // PID — un même fichier hors racine lu par deux processus compte 2. Le thread des hooks n'en rend
+  // aucun : il n'appende que ce qu'il retient.
+  let cheminsRejetes = 0
   for (const nom of listerDossier(dossier, { absent: 'vide' })) {
     if (nom.endsWith('.hooks.jsonl')) {
       for (const rel of readFileSync(path.join(dossier, nom), 'utf8').split('\n')) if (rel) fichiers.add(rel)
@@ -114,6 +119,7 @@ export function fusionnerLectures(dossier) {
     }
     if (!nom.endsWith('.json')) continue
     const lu = JSON.parse(readFileSync(path.join(dossier, nom), 'utf8'))
+    cheminsRejetes += lu.cheminsRejetes ?? 0
     for (const f of lu.fichiers ?? []) fichiers.add(f)
     for (const e of lu.ecrits ?? []) ecrits.add(e)
     // Un dossier listé par DEUX processus (un dumper et son parent) : le premier PID lu gagne, et
@@ -122,7 +128,7 @@ export function fusionnerLectures(dossier) {
     for (const [d, entrees] of Object.entries(lu.dossiers ?? {})) if (!dossiers.has(d)) dossiers.set(d, entrees)
   }
   for (const e of ecrits) fichiers.delete(e)
-  return { fichiers: [...fichiers].sort(), dossiers, ecrits: [...ecrits].sort() }
+  return { fichiers: [...fichiers].sort(), dossiers, ecrits: [...ecrits].sort(), cheminsRejetes }
 }
 
 /**

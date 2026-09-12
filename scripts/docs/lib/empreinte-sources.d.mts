@@ -19,6 +19,8 @@ export function fusionnerLectures(dossier: string): {
   fichiers: string[];
   dossiers: Map<string, string[]>;
   ecrits: string[];
+  /** Chemins LUS hors racine, refusés : distincts par processus, sommés entre PID. */
+  cheminsRejetes: number;
 };
 
 export function indexGit(racine: string): Map<string, string>;

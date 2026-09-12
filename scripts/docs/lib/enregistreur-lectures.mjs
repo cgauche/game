@@ -23,6 +23,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { register, syncBuiltinESMExports } from 'node:module'
+import { canoniser, relatifSousRacine } from './chemin-mesure.mjs'
 
 const MARQUE = Symbol.for('wfrp.enregistreur-lectures')
 const RACINE = process.env.WFRP_LECTURES_RACINE
@@ -33,13 +34,29 @@ const EXCLUS = /(^|\/)(?:node_modules|\.git|\.cache|dist)(?:\/|$)/
 
 /** Enveloppe `fs` et rend le collecteur — exporté pour que le test monte la mécanique à nu. */
 export function installer({ racine, cibles = [] } = {}) {
-  const base = path.resolve(racine)
+  const base = canoniser(racine)
   const exclues = new Set(cibles)
   const fichiers = new Set()
   const dossiers = new Map()
+  // Chemins LUS hors racine, refusés : un rejet muet est indiscernable d'une absence de lecture. Des
+  // CHEMINS CANONIQUES DISTINCTS, comme `fichiers` : une même lecture passe par plusieurs appels de
+  // `fs` enveloppés (`openSync` puis `readFileSync`), et deux casses désignent le même fichier.
+  const cheminsRejetes = new Set()
+  // Un `realpathSync.native` est un appel système (0,048 ms mesuré) et un générateur relit les mêmes
+  // chemins des milliers de fois : la canonisation se mémorise pour la durée de la mesure.
+  const canoniques = new Map()
+  const canoniserMemo = (p) => {
+    let c = canoniques.get(p)
+    if (c === undefined) canoniques.set(p, (c = canoniser(p)))
+    return c
+  }
 
-  /** Chemin RELATIF POSIX retenu, ou `null` (hors racine, exclu, cible, ou descripteur de fichier). */
-  const retenu = (p) => {
+  /**
+   * Chemin RELATIF POSIX retenu, ou `null` (hors racine, exclu, cible, ou descripteur de fichier).
+   * `rejets` reçoit les chemins HORS racine — fourni par les LECTURES seules, une écriture hors
+   * racine (le fichier de mesure lui-même) n'est pas une source refusée.
+   */
+  const retenu = (p, rejets) => {
     if (typeof p === 'number') return null
     const brut =
       typeof p === 'string' ? p
@@ -48,8 +65,11 @@ export function installer({ racine, cibles = [] } = {}) {
       : null
     if (!brut) return null
     const abs = path.resolve(base, brut)
-    if (abs !== base && !abs.startsWith(base + path.sep)) return null
-    const rel = path.relative(base, abs).split(path.sep).join('/')
+    const rel = relatifSousRacine(base, abs, canoniserMemo)
+    if (rel === null) {
+      rejets?.add(canoniserMemo(abs))
+      return null
+    }
     if (!rel || EXCLUS.test(rel) || exclues.has(rel)) return null
     return rel
   }
@@ -73,7 +93,7 @@ export function installer({ racine, cibles = [] } = {}) {
 
   const noterFichier = (p) => {
     try {
-      const rel = retenu(p)
+      const rel = retenu(p, cheminsRejetes)
       if (rel) fichiers.add(rel)
     } catch { /* une lecture non enregistrable ne casse jamais le générateur */ }
   }
@@ -85,7 +105,7 @@ export function installer({ racine, cibles = [] } = {}) {
   }
   const noterDossier = (p) => {
     try {
-      const rel = retenu(p)
+      const rel = retenu(p, cheminsRejetes)
       if (rel === null || dossiers.has(rel)) return
       // eslint-disable-next-line no-restricted-syntax -- lecture PRISTINE du crochet : passer par `listerDossier` rappellerait l'enveloppe
       dossiers.set(rel, brut.readdirSync(path.resolve(base, rel)).map(String).sort())
@@ -106,16 +126,33 @@ export function installer({ racine, cibles = [] } = {}) {
   fs.promises.writeFile = function (p, ...a) { return brut.promisesWriteFile.call(this, p, ...a).then((r) => { noterEcriture(p); return r }) }
   syncBuiltinESMExports()
 
+  /** Retire l'enveloppe posée : deux installations dans un même processus s'empileraient. */
+  const restaurer = () => {
+    fs.readFileSync = brut.readFileSync
+    // eslint-disable-next-line no-restricted-syntax -- crochet : il POSE le listing, il ne le consomme pas
+    fs.readdirSync = brut.readdirSync
+    fs.openSync = brut.openSync
+    fs.writeFileSync = brut.writeFileSync
+    fs.appendFileSync = brut.appendFileSync
+    fs.promises.readFile = brut.promisesReadFile
+    // eslint-disable-next-line no-restricted-syntax -- crochet : il POSE le listing, il ne le consomme pas
+    fs.promises.readdir = brut.promisesReaddir
+    fs.promises.writeFile = brut.promisesWriteFile
+    syncBuiltinESMExports()
+  }
+
   return {
     fichiers,
     dossiers,
     ecrits,
+    restaurer,
     // Un fichier ÉCRIT par le générateur n'est pas une de ses sources, même s'il l'a relu avant
     // (`build-implemente.mjs` réinjecte un champ dans les fiches docs/raw qu'il vient de lire).
     rendu: () => ({
       fichiers: [...fichiers].filter((p) => !ecrits.has(p)).sort(),
       dossiers: Object.fromEntries([...dossiers].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))),
       ecrits: [...ecrits].sort(),
+      cheminsRejetes: cheminsRejetes.size,
     }),
   }
 }

@@ -161,9 +161,9 @@ export const SEUIL_SOURCES = 2
  * « vérifiée » sur du vide. Sans les trois mécaniques (`syncBuiltinESMExports`, `NODE_OPTIONS`,
  * `tsx/esm`), 7 générateurs rendaient 10 chemins ou moins (mesure du juge, 2026-09-02).
  */
-export function refusSourcesInsuffisantes(script, nombre) {
+export function refusSourcesInsuffisantes(script, nombre, cheminsRejetes = 0) {
   return nombre < SEUIL_SOURCES
-    ? `docs:build — ARRÊT sur ${script} : ${nombre} source(s) mesurée(s), l'enregistreur de lectures est AVEUGLE sur ce générateur.`
+    ? `docs:build — ARRÊT sur ${script} : ${nombre} source(s) mesurée(s), l'enregistreur de lectures est AVEUGLE sur ce générateur — ${cheminsRejetes} chemin(s) lu(s) hors racine, écarté(s) de la mesure.`
     : null
 }
 
@@ -497,7 +497,12 @@ function main() {
       process.exit(1)
     }
     const lues = fusionnerLectures(dossier)
-    const aveugle = refusSourcesInsuffisantes(g.script, lues.fichiers.length)
+    // Un chemin lu hors racine sort de la mesure : dit ici, il cesse d'être indiscernable d'une
+    // absence de lecture (un générateur dont les sources vivent derrière une jonction, par exemple).
+    if (lues.cheminsRejetes > 0) {
+      process.stdout.write(`docs:build — ${g.script} : ${lues.cheminsRejetes} chemin(s) lu(s) hors racine, écarté(s) de la mesure.\n`)
+    }
+    const aveugle = refusSourcesInsuffisantes(g.script, lues.fichiers.length, lues.cheminsRejetes)
     if (aveugle) {
       process.stderr.write(`${aveugle}
 `)

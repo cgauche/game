@@ -19,9 +19,9 @@
 // Chaque chemin retenu est APPENDU (le thread des hooks n'a pas d'événement de sortie fiable) dans
 // `<sortie>.<pid>.hooks.jsonl` ; `fusionnerLectures` réunit ce fichier et ceux du thread principal.
 import fs from 'node:fs'
-import path from 'node:path'
 import { syncBuiltinESMExports } from 'node:module'
 import { fileURLToPath } from 'node:url'
+import { canoniser, relatifSousRacine } from './chemin-mesure.mjs'
 
 const EXCLUS = /(^|\/)(?:node_modules|\.git|\.cache|dist)(?:\/|$)/
 
@@ -42,7 +42,7 @@ const estLecture = (drapeaux) =>
   drapeaux === undefined || drapeaux === null || drapeaux === 0 || /^rs?\+?$/.test(String(drapeaux))
 
 export function initialize(donnees) {
-  racine = donnees.racine
+  racine = canoniser(donnees.racine)
   sortie = donnees.sortie
   cibles = new Set(donnees.cibles ?? [])
   fs.readFileSync = function (p, ...a) { const r = brut.readFileSync.call(this, p, ...a); noterChemin(p); return r }
@@ -68,9 +68,7 @@ function noterChemin(cible) {
       : cible instanceof URL && cible.protocol === 'file:' ? fileURLToPath(cible)
       : null
     if (!chemin) return
-    const abs = path.resolve(racine, chemin)
-    if (abs !== racine && !abs.startsWith(racine + path.sep)) return
-    const rel = path.relative(racine, abs).split(path.sep).join('/')
+    const rel = relatifSousRacine(racine, chemin)
     if (!rel || EXCLUS.test(rel) || cibles.has(rel) || vus.has(rel)) return
     vus.add(rel)
     brut.appendFileSync(`${sortie}.${process.pid}.hooks.jsonl`, `${rel}\n`)
