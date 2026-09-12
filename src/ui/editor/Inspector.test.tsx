@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
+import { monterRacine, demonterRacines } from '../../monterRacine.testkit';
 import { Inspector } from './Inspector';
 import { emptyScene, type Scene, type SceneEntity } from '../../state/scene';
 import { lightTones } from '../../data';
@@ -13,6 +13,8 @@ beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 });
 
+afterEach(demonterRacines);
+
 /** Harnais minimal : monte l'`Inspector` sur une scène à UNE entité sélectionnée, capture chaque
  *  `setScene` dans `latest` — assez pour vérifier qu'une saisie ATTERRIT dans la Scène, et qu'elle
  *  SURVIT à un aller-retour JSON (le Schéma de Scène est de la donnée pure, aucune sérialisation
@@ -20,11 +22,9 @@ beforeAll(() => {
 function mount(entity: SceneEntity) {
   const scene: Scene = { ...emptyScene(4, 4), entities: [entity] };
   let latest = scene;
-  const container = document.createElement('div');
-  document.body.appendChild(container);
-  const root: Root = createRoot(container);
+  const montage = monterRacine(null);
   const render = (s: Scene) => {
-    root.render(
+    montage.rendre(
       <Inspector
         scene={s}
         otherScenes={[]}
@@ -46,8 +46,7 @@ function mount(entity: SceneEntity) {
     );
   };
   return {
-    container,
-    root,
+    container: montage.container,
     mount: () => act(() => render(scene)),
     entOf: () => latest.entities[0],
     sceneOf: () => latest,
@@ -65,10 +64,8 @@ describe('Inspector — apparence visuelle des murs', () => {
       walls: [{ x: 1, y: 1, side: 'E', structure: 'mur-a-ossature-en-bois' }],
     };
     let latest = scene;
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-    const root: Root = createRoot(container);
-    const render = (next: Scene) => root.render(
+    const montage = monterRacine(null);
+    const render = (next: Scene) => montage.rendre(
       <Inspector
         scene={next}
         otherScenes={[]}
@@ -90,7 +87,7 @@ describe('Inspector — apparence visuelle des murs', () => {
     );
     await act(() => render(scene));
 
-    const appearance = Array.from(container.querySelectorAll('select'))
+    const appearance = Array.from(montage.container.querySelectorAll('select'))
       .find((el) => el.closest('label')?.textContent?.includes('Apparence visuelle')) as HTMLSelectElement;
     expect(appearance).toBeTruthy();
     await act(async () => {
@@ -106,9 +103,6 @@ describe('Inspector — apparence visuelle des murs', () => {
       appearance: 'cloison-basse-a-ossature-en-bois',
     });
     expect(roundTrip(latest).walls?.[0]).toEqual(latest.walls?.[0]);
-
-    await act(async () => root.unmount());
-    container.remove();
   });
 });
 
@@ -132,11 +126,6 @@ describe('Inspector — l’empreinte d’un décor n’est plus une propriété
     });
     expect(h.entOf().ref).toBe('tribune');
     expect(h.entOf()).not.toHaveProperty('foot');
-
-    await act(async () => {
-      h.root.unmount();
-    });
-    h.container.remove();
   });
 
   /**
@@ -161,11 +150,6 @@ describe('Inspector — l’empreinte d’un décor n’est plus une propriété
     });
     expect(h.entOf().facing).toBe('E');
     expect(ligne()).toBe('Empreinte 1×2 (1, 2) (1, 3)');
-
-    await act(async () => {
-      h.root.unmount();
-    });
-    h.container.remove();
   });
 
   /** La table MURALE a rejoint les meubles à deux cases par ré-authoring de ses cotes (#1509 L9′,
@@ -184,11 +168,6 @@ describe('Inspector — l’empreinte d’un décor n’est plus une propriété
       orientation.dispatchEvent(new Event('change', { bubbles: true }));
     });
     expect(ligne()).toBe('Empreinte 1×2 (0, 0) (0, 1)');
-
-    await act(async () => {
-      h.root.unmount();
-    });
-    h.container.remove();
   });
 });
 
@@ -212,11 +191,6 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
     });
     expect(h.entOf().light).toEqual({ radiusM: 6 });
     expect(roundTrip(h.sceneOf()).entities[0].light).toEqual({ radiusM: 6 });
-
-    await act(async () => {
-      h.root.unmount();
-    });
-    h.container.remove();
   });
 
   it('light.tone : le ton d’instance SURVIT au rayon, s’élit/se retire, et survit au round-trip', async () => {
@@ -251,11 +225,6 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
     });
     expect(h.entOf().light).toEqual({ radiusM: 6 });
     expect(roundTrip(h.sceneOf()).entities[0].light).toEqual({ radiusM: 6 });
-
-    await act(async () => {
-      h.root.unmount();
-    });
-    h.container.remove();
   });
 
   it('combat.skills[] : une compétence ajoutée atterrit dans la Scène et survit au round-trip', async () => {
@@ -270,11 +239,6 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
     expect(h.entOf().combat?.skills).toHaveLength(1);
     expect(h.entOf().combat!.skills![0].id).toBe(''); // réf NON élue à la création — l'auteur choisit
     expect(roundTrip(h.sceneOf()).entities[0].combat?.skills).toEqual(h.entOf().combat!.skills);
-
-    await act(async () => {
-      h.root.unmount();
-    });
-    h.container.remove();
   });
 
   it('presetId : le choix atterrit dans la Scène et survit au round-trip (picker BORNÉ, jamais un texte libre — #834 audit-2 défaut 7)', async () => {
@@ -289,11 +253,6 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
     });
     expect(h.entOf().presetId).toBe('preset-tavernier');
     expect(roundTrip(h.sceneOf()).entities[0].presetId).toBe('preset-tavernier');
-
-    await act(async () => {
-      h.root.unmount();
-    });
-    h.container.remove();
   });
 
   it('upgrades[] : une amélioration navale ajoutée atterrit dans la Scène et survit au round-trip', async () => {
@@ -308,11 +267,6 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
     expect(h.entOf().upgrades).toHaveLength(1);
     expect(h.entOf().upgrades![0].id).toBe(''); // réf NON élue à la création — l'auteur choisit
     expect(roundTrip(h.sceneOf()).entities[0].upgrades).toEqual(h.entOf().upgrades);
-
-    await act(async () => {
-      h.root.unmount();
-    });
-    h.container.remove();
   });
 
   it('upgrades[] : authorable sur une coque SANS emplacement d’artillerie (Blindage/Lissage seuls, MDG 12 — #834 audit-2 défaut 8)', async () => {
@@ -327,11 +281,6 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
     });
     expect(h.entOf().upgrades).toHaveLength(1);
     expect(roundTrip(h.sceneOf()).entities[0].upgrades).toEqual(h.entOf().upgrades);
-
-    await act(async () => {
-      h.root.unmount();
-    });
-    h.container.remove();
   });
 });
 
@@ -345,11 +294,9 @@ describe('Inspector — l’identifiant affiché est celui de la zone SÉLECTION
         { id: 'zone-X-z1', label: 'Galerie', presentation: 'interior', area: { kind: 'rect', x: 4, y: 4, w: 2, h: 2 }, z: 0 },
       ],
     };
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-    const root: Root = createRoot(container);
+    const { container, rendre } = monterRacine(null);
     const render = (idx: number, zoneFocusKey: string | null = null) =>
-      root.render(
+      rendre(
         <Inspector
           scene={scene}
           otherScenes={[]}
@@ -370,7 +317,6 @@ describe('Inspector — l’identifiant affiché est celui de la zone SÉLECTION
       (Array.from(container.querySelectorAll('label')).find((l) => l.textContent?.includes(libelle))?.querySelector('input') as HTMLInputElement | null);
     return {
       container,
-      root,
       select: (idx: number, zoneFocusKey: string | null = null) => act(() => render(idx, zoneFocusKey)),
       champ,
     };
@@ -385,11 +331,6 @@ describe('Inspector — l’identifiant affiché est celui de la zone SÉLECTION
     await h.select(1);
     expect(h.champ('Identifiant')?.value).toBe('zone-X-z1');
     expect(h.champ('Nom')?.value).toBe('Galerie');
-
-    await act(async () => {
-      h.root.unmount();
-    });
-    h.container.remove();
   });
 
   it('la saisie en cours sur la MÊME zone n’est pas écrasée (le pilote est l’id affiché, pas le rendu)', async () => {
@@ -404,11 +345,6 @@ describe('Inspector — l’identifiant affiché est celui de la zone SÉLECTION
     });
     await h.select(0); // re-rendu sur la même sélection (un simple mouvement de souris en produit)
     expect(h.champ('Identifiant')?.value).toBe('zone-V-z0-renommee');
-
-    await act(async () => {
-      h.root.unmount();
-    });
-    h.container.remove();
   });
 
   it('un défaut de ZONE mis en évidence AMÈNE le pinceau d’emprise dans le champ du panneau', async () => {
@@ -443,11 +379,6 @@ describe('Inspector — l’identifiant affiché est celui de la zone SÉLECTION
     panneau.scrollTop = 42;
     await h.select(1, 'zone-debordante:zone-X-z1');
     expect(panneau.scrollTop).toBe(42);
-
-    await act(async () => {
-      h.root.unmount();
-    });
-    h.container.remove();
   });
 });
 
@@ -466,11 +397,9 @@ describe('Inspector — l’appareil mécanique d’une zone suit ce que la zone
         },
       ],
     };
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-    const root: Root = createRoot(container);
+    const { container, rendre } = monterRacine(null);
     const render = (idx: number) =>
-      root.render(
+      rendre(
         <Inspector
           scene={scene}
           otherScenes={[]}
@@ -492,7 +421,7 @@ describe('Inspector — l’appareil mécanique d’une zone suit ce que la zone
       Array.from(container.querySelectorAll('details.insp-fold')).find((d) =>
         d.querySelector('summary')?.textContent?.includes(titre),
       ) as HTMLDetailsElement | undefined;
-    return { container, root, select: (idx: number) => act(() => render(idx)), section };
+    return { container, select: (idx: number) => act(() => render(idx)), section };
   }
 
   it('une PIÈCE présente sa section mécanique REPLIÉE — armable en un clic, jamais déployée d’office', async () => {
@@ -502,11 +431,6 @@ describe('Inspector — l’appareil mécanique d’une zone suit ce que la zone
     const mecanique = h.section('Piège / zone d’effet') ?? h.section("Piège / zone d'effet");
     expect(mecanique).toBeTruthy();
     expect(mecanique!.open).toBe(false);
-
-    await act(async () => {
-      h.root.unmount();
-    });
-    h.container.remove();
   });
 
   it('une zone qui PORTE un effet présente sa section mécanique DÉPLOYÉE', async () => {
@@ -515,11 +439,6 @@ describe('Inspector — l’appareil mécanique d’une zone suit ce que la zone
     const mecanique = h.section('Piège / zone d’effet') ?? h.section("Piège / zone d'effet");
     expect(mecanique).toBeTruthy();
     expect(mecanique!.open).toBe(true);
-
-    await act(async () => {
-      h.root.unmount();
-    });
-    h.container.remove();
   });
 });
 
@@ -538,11 +457,9 @@ describe('Inspector — places assises d’un décor', () => {
       ],
     };
     let latest = scene;
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-    const root: Root = createRoot(container);
+    const { container, rendre } = monterRacine(null);
     const render = (s: Scene) =>
-      root.render(
+      rendre(
         <Inspector
           scene={s}
           otherScenes={[]}
@@ -648,10 +565,8 @@ describe('Inspector — le profil de toiture est nommé par le NŒUD, une seule 
 
   function profilOptions(sel: Sel) {
     const scene: Scene = { ...emptyScene(4, 4), architecture: [body] };
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-    const root = createRoot(container);
-    return { scene, container, root, sel };
+    const { container, rendre } = monterRacine(null);
+    return { scene, container, rendre, sel };
   }
 
   it('les DEUX selects de profil (défauts du corps, masse posée) rendent les libellés du nœud', async () => {
@@ -665,7 +580,7 @@ describe('Inspector — le profil de toiture est nommé par le NŒUD, une seule 
     ] as Sel[]) {
       const h = profilOptions(sel);
       await act(() => {
-        h.root.render(
+        h.rendre(
           <Inspector
             scene={h.scene}
             otherScenes={[]}
@@ -687,8 +602,6 @@ describe('Inspector — le profil de toiture est nommé par le NŒUD, une seule 
         .find((el) => el.closest('label')?.textContent?.trim().startsWith('Profil')) as HTMLSelectElement;
       expect(select).toBeTruthy();
       lu.push(Array.from(select.options).map((o) => [o.value, o.textContent ?? ''] as [string, string]));
-      await act(async () => h.root.unmount());
-      h.container.remove();
     }
 
     // Le select du CORPS ouvre sur une case VIDE (#1715 : profil non posé = la PORTÉE tranche) ; les
@@ -720,11 +633,9 @@ describe("Inspector — le type d'un ornement de façade est nommé par le NŒUD
         masses: [],
       }],
     };
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-    const root = createRoot(container);
+    const { container, rendre } = monterRacine(null);
     await act(() => {
-      root.render(
+      rendre(
         <Inspector
           scene={scene}
           otherScenes={[]}
@@ -747,7 +658,5 @@ describe("Inspector — le type d'un ornement de façade est nommé par le NŒUD
     expect(select).toBeTruthy();
     expect(Array.from(select.options).map((o) => [o.value, o.textContent ?? ''])).toEqual(attendu);
     expect(select.value).toBe('belfry');
-    await act(async () => root.unmount());
-    container.remove();
   });
 });

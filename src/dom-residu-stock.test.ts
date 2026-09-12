@@ -9,8 +9,9 @@ import { existsSync } from 'node:fs';
 import { residusDom, cleFichierTest, messageResiduDom } from './test-setup';
 import { DOM_RESIDU_STOCK } from '../scripts/guards/lib/domResiduStock.mjs';
 
-/** Population mesurée le 2026-09-01 sur les 299 fichiers de test jsdom. Ne peut que DÉCROÎTRE. */
-const MAX_DOM_RESIDU = 12;
+/** Population mesurée le 2026-09-01 sur les 299 fichiers de test jsdom, moins les cinq fuites
+ *  éteintes par la barrière des racines montées (#1724). Ne peut que DÉCROÎTRE. */
+const MAX_DOM_RESIDU = 7;
 
 // Lecteur ASSEMBLÉ à l'exécution : patron de `src/portable-paths-guard.test.ts:51`.
 const LECTEUR = 'C' + ':';
@@ -32,7 +33,7 @@ describe('barrière de fuite DOM — verdict', () => {
   });
 
   it('se tait pour un fichier du stock d’extinction, et pour un body vide', () => {
-    expect(messageResiduDom('src/ui/CharacterSheet.test.tsx', ['<div>'], DOM_RESIDU_STOCK)).toBeNull();
+    expect(messageResiduDom('src/ui/CampaignView.test.tsx', ['<div>'], DOM_RESIDU_STOCK)).toBeNull();
     expect(messageResiduDom('src/ui/JouetQuiFuit.test.tsx', [], new Set())).toBeNull();
     expect(residusDom(document.body)).toEqual([]);
   });
@@ -44,11 +45,11 @@ describe('barrière de fuite DOM — verdict', () => {
 });
 
 describe('stock d’extinction — cliquet', () => {
-  it('ne CROÎT pas', () => {
+  it('vaut EXACTEMENT sa population mesurée — une fuite neuve se démonte, une fuite éteinte quitte la liste', () => {
     expect(
       DOM_RESIDU_STOCK.size,
-      `DOM_RESIDU_STOCK a GONFLÉ (${DOM_RESIDU_STOCK.size} > ${MAX_DOM_RESIDU}) — une fuite neuve se DÉMONTE, jamais ne se stocke.`,
-    ).toBeLessThanOrEqual(MAX_DOM_RESIDU);
+      `DOM_RESIDU_STOCK ne vaut plus sa population mesurée (${DOM_RESIDU_STOCK.size} pour ${MAX_DOM_RESIDU}) — une fuite neuve se DÉMONTE (jamais ne se stocke), une ligne soldée descend ce compte.`,
+    ).toBe(MAX_DOM_RESIDU);
   });
 
   it('ne porte que des fichiers existants (une ligne morte se retire)', () => {

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
+import { monterRacine, demonterRacines } from '../monterRacine.testkit';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Combatant } from '../engine/types';
 import { AdvancementPanel, CharacterSheet } from './CharacterSheet';
@@ -90,18 +90,11 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   });
   let container: HTMLDivElement;
-  let root: Root;
-  function mount(node: React.ReactElement) {
-    container = document.createElement('div');
-    document.body.appendChild(container);
-    root = createRoot(container);
-    act(() => { root.render(node); });
+  const mount = (node: React.ReactElement) => {
+    container = monterRacine(node).container;
     return container.innerHTML;
-  }
-  afterEach(() => {
-    act(() => { root.unmount(); });
-    container.remove();
-  });
+  };
+  afterEach(demonterRacines);
 
   it('la colonne rend la figurine en pied + Blessures, sans compagnie/caracs/ressources', () => {
     const h = hero();
@@ -287,19 +280,8 @@ describe('Onglet Possessions — registre `Band`/`PlaqueRow` (#492 lot POSSESSIO
   beforeAll(() => {
     (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   });
-  let container: HTMLDivElement;
-  let root: Root;
-  function mount(node: React.ReactElement) {
-    container = document.createElement('div');
-    document.body.appendChild(container);
-    root = createRoot(container);
-    act(() => { root.render(node); });
-    return container;
-  }
-  afterEach(() => {
-    act(() => { root.unmount(); });
-    container.remove();
-  });
+  const mount = (node: React.ReactElement) => monterRacine(node).container;
+  afterEach(demonterRacines);
 
   /** Héros avec un sac (Armes/Armures/Divers), un contenant + objet imbriqué, et une prothèse portée
    *  (crochet non maîtrisé) — de quoi peupler les 3 groupes ET vérifier le sort des prothèses. */

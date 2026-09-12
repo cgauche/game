@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
+import { monterRacine, demonterRacines } from '../../monterRacine.testkit';
 import { SeatAssignmentsField } from './SeatAssignmentsField';
 import { emptyScene, type Scene } from '../../state/scene';
 import { PARTY_MAX } from '../../state/combatants';
@@ -9,6 +9,8 @@ import { PARTY_MAX } from '../../state/combatants';
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 });
+
+afterEach(demonterRacines);
 
 /** Table ronde en (2,2) cap `N` → abords : nord (2,1), est (3,2), sud (2,3), ouest (1,2). */
 function sceneWithTableAndNpc(): Scene {
@@ -22,11 +24,9 @@ function sceneWithTableAndNpc(): Scene {
 
 function mount(scene: Scene, propId = 'table-1') {
   let latest = scene;
-  const container = document.createElement('div');
-  document.body.appendChild(container);
-  const root: Root = createRoot(container);
+  const { container, rendre } = monterRacine(null);
   const render = (s: Scene) =>
-    root.render(<SeatAssignmentsField scene={s} propId={propId} onChange={(next) => { latest = next; render(next); }} />);
+    rendre(<SeatAssignmentsField scene={s} propId={propId} onChange={(next) => { latest = next; render(next); }} />);
   act(() => render(scene));
   const selects = () => [...container.querySelectorAll('select')] as HTMLSelectElement[];
   return {
@@ -72,10 +72,7 @@ describe('SeatAssignmentsField — authoring des places assises (id-only)', () =
   it('« — personne — » sur une place DÉJÀ vide ne publie RIEN — aucun cran d’undo à vide', () => {
     const depart = sceneWithTableAndNpc();
     let publications = 0;
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-    const root: Root = createRoot(container);
-    act(() => root.render(<SeatAssignmentsField scene={depart} propId="table-1" onChange={() => { publications += 1; }} />));
+    const { container } = monterRacine(<SeatAssignmentsField scene={depart} propId="table-1" onChange={() => { publications += 1; }} />);
     const sel = [...container.querySelectorAll('label')].find((l) => l.textContent?.startsWith('place-3'))!.querySelector('select') as HTMLSelectElement;
     act(() => { sel.value = ''; sel.dispatchEvent(new Event('change', { bubbles: true })); });
     expect(publications).toBe(0);

@@ -69,6 +69,13 @@
  *    `src/dom-residu-stock.test.ts` ; re-mesure : variable `WFRP_DOM_RESIDU_COLLECTE`). Le passage de
  *    CHAQUE fichier (fui / propre) se note au registre `WFRP_DOM_RESIDU_REGISTRE` : c'est lui qui rend
  *    une entrée PÉRIMÉE du stock visible à la fin d'une suite complète (`entreesPerimees`).
+ *
+ * 4. BARRIÈRE DES RACINES MONTÉES ET DES `act()` EN VOL (`instrumenterRacines`/`messageRacineMontee`/
+ *    `messageActEnVol`, `afterEach`). Le nœud resté dans `document.body` n'est qu'un SYMPTÔME : une
+ *    racine montée sur un conteneur DÉTACHÉ ne laisse aucun nœud et reste pourtant au planificateur
+ *    react-dom du worker. Le compte est pris sur le PROTOTYPE des racines (`render` inscrit le fichier
+ *    courant, `unmount` le retire) : chaque fichier est jugé sur ce QU'IL a rendu, et la fuite se dit
+ *    chez lui, jamais chez la victime qui lève « Should not already be working » plus loin (#1724).
  */
 import { afterEach, beforeEach, expect, vi } from 'vitest';
 import { appendFileSync } from 'node:fs';
@@ -187,6 +194,108 @@ export function messageResiduDom(
   );
 }
 
+/** Racine react-dom telle que la barrière l'observe : les deux gestes qui ouvrent et ferment un
+ *  montage. */
+type RacineReact = { render(children: unknown): void; unmount(): void };
+
+/** Racines RENDUES et non démontées, chacune associée au fichier de test qui l'a rendue.
+ *  La barrière de nœuds ci-dessus ne voit qu'un enfant resté dans `document.body` : une racine
+ *  montée sur un conteneur DÉTACHÉ y est invisible, alors qu'elle reste inscrite au planificateur
+ *  react-dom du worker (`isolate:false`) et se réveille — abonnement au store remis à plat en
+ *  `beforeEach`, minuteur, promesse — pendant un fichier SUIVANT, qui lève alors « Should not
+ *  already be working » sous son propre `act()` (#1724). */
+const racinesRendues = new Map<RacineReact, string>();
+let racinesInstrumentees = false;
+/** File d'`act()` de react (`ReactCurrentActQueue`) : `current` reste non nulle tant qu'un `act()`
+ *  n'a pas rendu la main — un `act()` asynchrone jamais attendu la laisse ouverte. */
+let fileAct: { current: unknown } | null = null;
+/** File déjà DITE : une file ouverte reste ouverte aux tests suivants, elle ne se redit pas. */
+let fileActSignalee: unknown = null;
+
+/** Vrai tant que la file d'`act()` de react n'est pas rendue — le lecteur que les bancs mesurent. */
+export function fileActOuverte(): boolean {
+  return fileAct !== null && fileAct.current !== null;
+}
+
+/**
+ * Pose le compte des racines sur le PROTOTYPE des racines react-dom : `createRoot` rend toujours une
+ * instance de ce prototype, donc TOUT montage du worker y passe, quel que soit le fichier et sans
+ * qu'il ait rien à déclarer. La racine-sonde qui sert à atteindre le prototype n'est jamais RENDUE :
+ * elle n'entre pas au registre. Chargement paresseux : la partition `node` n'évalue pas react-dom.
+ *
+ * Angles morts DITS :
+ * - `hydrateRoot` rend une instance d'un AUTRE prototype (`ReactDOMHydrationRoot`), non couverte —
+ *   aucun appel dans `src/` à ce jour ; un premier usage se couvre ICI, pas au site.
+ * - une racine rendue au corps du MODULE d'un fichier de test, ou dans un `beforeAll`, l'est avant
+ *   le premier teardown : sur le PREMIER fichier du worker elle précède la pose du filet et n'est pas
+ *   comptée, ailleurs elle est effacée par le vidage du registre au teardown suivant — ce verdict-là
+ *   dépend de l'ordre des fichiers, un montage de test appartient à un `it`.
+ */
+export async function instrumenterRacines(): Promise<void> {
+  if (racinesInstrumentees || typeof document === 'undefined') return;
+  racinesInstrumentees = true;
+  const [{ createRoot }, react] = await Promise.all([import('react-dom/client'), import('react')]);
+  const internes = (react as unknown as {
+    __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED?: { ReactCurrentActQueue?: { current: unknown } };
+  }).__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+  fileAct = internes?.ReactCurrentActQueue ?? null;
+  // FAIL-LOUD : sans cette file, le volet « act() en vol » rendrait vert pour toujours sans que rien
+  // ne le dise. React 19 déplace l'interne (`__CLIENT_INTERNALS_…`, `ReactSharedInternals.actQueue`) :
+  // le recâblage se fait ici, il ne se devine pas au silence d'un banc.
+  if (fileAct === null) {
+    throw new Error(
+      `Barrière des act() : file d'act introuvable dans react ${(react as { version?: string }).version ?? '(version inconnue)'}`
+      + ` — recâbler \`fileAct\` sur l'interne de cette version (18 : __SECRET_INTERNALS_… puis ReactCurrentActQueue).`,
+    );
+  }
+  const proto = Object.getPrototypeOf(
+    createRoot(document.createElement('div')) as unknown as RacineReact,
+  ) as RacineReact;
+  const rendre = proto.render;
+  const demonter = proto.unmount;
+  proto.render = function (this: RacineReact, children: unknown) {
+    racinesRendues.set(this, cleFichierTest(expect.getState().testPath));
+    return rendre.call(this, children);
+  };
+  proto.unmount = function (this: RacineReact) {
+    racinesRendues.delete(this);
+    return demonter.call(this);
+  };
+}
+
+/** Fichiers dont une racine est RENDUE et non démontée à cet instant, dans l'ordre de montage. */
+export function fichiersDesRacinesRendues(): string[] {
+  return [...racinesRendues.values()];
+}
+
+/** Verdict de la barrière des racines : message d'échec nommant le fichier qui a RENDU la racine
+ *  restée montée, ou `null` s'il n'y a rien à dire. */
+export function messageRacineMontee(fichiers: readonly string[]): string | null {
+  if (!fichiers.length) return null;
+  return (
+    `Racine(s) react-dom laissée(s) MONTÉE(S), rendue(s) par : ${[...new Set(fichiers)].join(' ')}\n`
+    + `Sous test.isolate:false, react-dom est partagé par tout le worker : une racine encore montée se met à jour `
+    + `hors act() pendant les fichiers SUIVANTS, qui lèvent « Should not already be working » (#1724) ou rendent le vide (#1619).\n`
+    + `Démonter ce que le test rend (act(() => root.unmount()) en afterEach) — un conteneur détaché de document.body ne dispense pas du démontage.`
+  );
+}
+
+/** Verdict de la barrière des `act()` : message d'échec nommant le fichier où la file OUVERTE est
+ *  constatée, ou `null` s'il n'y a rien à dire.
+ *  Portée MESURÉE : ce volet ne sait nommer que le fichier COURANT — l'objet de module `react` est un
+ *  espace de noms ESM que vitest rend non redéfinissable (« Cannot redefine property: act »), donc
+ *  aucune enveloppe ne peut retenir qui a OUVERT la file. La file ouverte le restant aux tests
+ *  suivants, elle se dit UNE fois (identité de `fileAct.current` mémorisée) : le premier accusé est le
+ *  plus proche de l'ouvreur, jamais toute la file d'attente derrière lui. */
+export function messageActEnVol(fichier: string, enVol: boolean): string | null {
+  if (!enVol) return null;
+  return (
+    `act() encore EN VOL à la fin d'un test de ${fichier} (file d'act de react non rendue).\n`
+    + `Un act() asynchrone s'attend (await act(async () => …)) : sans quoi son travail s'écoule pendant le test SUIVANT, `
+    + `hors de son act() à lui (#1724).`
+  );
+}
+
 /** Fichier d'inventaire de la re-mesure (`WFRP_DOM_RESIDU_COLLECTE`) : la barrière n'échoue plus et
  *  écrit `fichier<TAB>nombre<TAB>nœuds` — c'est ainsi que le stock d'extinction se re-établit. */
 const COLLECTE_RESIDU = process.env.WFRP_DOM_RESIDU_COLLECTE;
@@ -210,6 +319,14 @@ const noterPassage = (fichier: string, aFui: boolean) => {
     /* registre concurrent ou tenu : le verdict de péremption se rendra au run suivant */
   }
 };
+
+// Compte des racines react-dom (cf. `instrumenterRacines`) : posé au premier test qui dispose d'un
+// DOM, une seule fois par worker. Hook à part, et ENREGISTRÉ EN PREMIER (les hooks jouent dans leur
+// ordre d'enregistrement) : le filet est en place avant le moindre montage, et la remise à plat des
+// singletons ci-dessous reste synchrone.
+beforeEach(async () => {
+  await instrumenterRacines();
+});
 
 beforeEach(() => {
   useGame.setState(JSON.parse(PRISTINE_STATE) as Partial<GameState>);
@@ -241,6 +358,15 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  // LECTURE des fuites de racines et de la file d'`act()`, EN TÊTE et INCONDITIONNELLE : le registre
+  // est vidé ici même, avant toute barrière qui puisse `throw`. Une inscription qui survivrait à un
+  // teardown interrompu se dirait au test SUIVANT, d'un autre fichier s'il n'en reste pas ici : le
+  // fautif est alors innocenté et sa victime accusée — l'inverse de ce que cette barrière promet.
+  const racinesFuites = fichiersDesRacinesRendues();
+  racinesRendues.clear();
+  const fileOuverte = fileAct !== null && fileAct.current !== null;
+  const fileNeuve = fileOuverte && fileAct!.current !== fileActSignalee;
+  if (fileOuverte) fileActSignalee = fileAct!.current;
   // REGISTRE DES SCÈNES (`state/store`) : rendu à ses scènes `campaign` par défaut APRÈS CHAQUE test —
   // aucune scène enregistrée par un test (`registerScene`/`loadProject`) ne traverse vers un autre
   // fichier du worker (`isolate:false`). Portée exacte : en-tête §1 + `state/scene-registry-isolation.test.ts`.
@@ -268,6 +394,13 @@ afterEach(() => {
       }
     }
   }
+  // VERDICT des lectures prises en tête : une racine rendue et non démontée, ou une file d'`act()`
+  // laissée ouverte — invisibles à la barrière de nœuds ci-dessus dès que le conteneur est détaché de
+  // `document.body`, et pourtant partagées par tout le worker (`isolate:false`). Chaque fuite se dit
+  // UNE fois, chez le fichier qui l'a ouverte, jamais chez la victime qui la subit ensuite.
+  const msgRacine = messageRacineMontee(racinesFuites)
+    ?? messageActEnVol(cleFichierTest(expect.getState().testPath), fileNeuve);
+  if (msgRacine) throw new Error(msgRacine);
   // Dérive d'un registre d'ART laissée par CE test : elle fuirait vers tous les fichiers suivants du
   // worker (`isolate: false`). On échoue ICI, au site fautif, plutôt que dans une victime éloignée.
   const now = rigArtRegistrySignatures();

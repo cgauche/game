@@ -12,27 +12,14 @@
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
+import { monterRacine, demonterRacines } from '../monterRacine.testkit';
 import { RollLine, PendingRollLine } from './RollLine';
 import type { RollBreakdown } from '../engine/combat';
 import type { PendingRoll } from './RollLine';
 
-let root: Root | undefined;
-let container: HTMLDivElement | undefined;
+const mount = (node: React.ReactElement): HTMLDivElement => monterRacine(node).container;
 
-const mount = (node: React.ReactElement): HTMLDivElement => {
-  container = document.createElement('div');
-  document.body.appendChild(container);
-  root = createRoot(container);
-  act(() => { root!.render(node); });
-  return container;
-};
-
-afterEach(() => {
-  act(() => { root?.unmount(); });
-  container?.remove();
-  root = undefined; container = undefined;
-});
+afterEach(demonterRacines);
 
 /** Les lignes `.rm-roll` rendues, dans l'ordre : la principale puis, s'il y en a une, la seconde. */
 const lignes = (el: HTMLElement): string[] => [...el.querySelectorAll('.rm-roll')].map((n) => (n.textContent ?? '').replace(/\s+/g, ' ').trim());
@@ -58,8 +45,8 @@ describe('Seconde lecture — ce que la fenêtre PEINT', () => {
       difficulty: 'accessible',
       second: { ...SECONDE, sl: 1, success: true },
     };
-    const el = mount(<RollLine d={d} />);
-    const rendu = lignes(el);
+    const montage = monterRacine(<RollLine d={d} />);
+    const rendu = lignes(montage.container);
     expect(rendu).toHaveLength(2);
     expect(rendu[1]).toContain('Initiative');
     expect(rendu[1], 'verdict de CETTE lecture').toContain('✓');
@@ -67,8 +54,8 @@ describe('Seconde lecture — ce que la fenêtre PEINT', () => {
     expect(rendu[1], 'un seul jet de pourcentage (l.206)').toContain('même dé');
     // L'échec de la seconde lecture se peint aussi, sous une première réussie — c'est le cas que le
     // joueur ne voyait qu'en le subissant (« son Initiative lâche »).
-    act(() => { root!.render(<RollLine d={{ ...d, second: { ...SECONDE, sl: -2, success: false } }} />); });
-    const rate = lignes(container!);
+    act(() => { montage.rendre(<RollLine d={{ ...d, second: { ...SECONDE, sl: -2, success: false } }} />); });
+    const rate = lignes(montage.container);
     expect(rate[1]).toContain('✗');
     expect(rate[1]).toContain('−2 DR');
   });

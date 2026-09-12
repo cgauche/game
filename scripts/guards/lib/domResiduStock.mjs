@@ -60,13 +60,8 @@ export const DOM_RESIDU_STOCK = new Set([
   // fichiers à docblock jsdom hors `src/ui` : 12 fuites. Lot d'extinction #1619. Le nœud noté est
   // celui resté enfant de `document.body`.
   'src/ui/CampaignView.test.tsx', // <div>
-  'src/ui/CharacterSheet.test.tsx', // <div>
-  'src/ui/RollLine-second-read.test.tsx', // <div>
   'src/ui/compendium/codex-edit-cases-a-cocher.test.tsx', // <div class="codex-edit-form">
   'src/ui/creator/creator-step-scroll-cue.test.tsx', // <div class="master-detail creator-step">
-  'src/ui/editor/Inspector.test.tsx', // <div>
-  'src/ui/editor/SeatAssignmentsField.test.tsx', // <div>
-  'src/ui/editor/editor-enregistre-repasse-parseProject.test.tsx', // <div>
   'src/ui/editor/useEditorView.test.ts', // <main>
   'src/ui/editor/useEditorView.test.tsx', // <main>
   'src/ui/jetProps/defense-forcage-annule.test.tsx', // <div>

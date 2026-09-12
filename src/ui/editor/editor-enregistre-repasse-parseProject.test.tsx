@@ -8,7 +8,7 @@
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
+import { monterRacine, demonterRacines } from '../../monterRacine.testkit';
 import { __setIdbBackendForTest, __resetLibraryForTest, initLibrary, type IdbBackend, type SavedProject } from '../../state/projectLibrary';
 import { parseProject, CURRENT_PROJECT_SCHEMA } from '../../state/worldMap';
 import { emptyScene, type Scene } from '../../state/scene';
@@ -17,6 +17,7 @@ import { Editor } from './Editor';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 afterEach(async () => {
+  demonterRacines();
   await __resetLibraryForTest();
   __setIdbBackendForTest(null);
   localStorage.clear();
@@ -35,11 +36,9 @@ async function enregistreEtCapture(): Promise<SavedProject> {
   __setIdbBackendForTest(idb);
 
   const initialScene: Scene = { ...emptyScene(4, 4), id: 'scene-round-trip', label: 'Round-trip' };
-  const container = document.createElement('div');
-  document.body.appendChild(container);
-  const root: Root = createRoot(container);
+  const { container, rendre } = monterRacine(null);
   await act(async () => {
-    root.render(<Editor initialScene={initialScene} />);
+    rendre(<Editor initialScene={initialScene} />);
   });
 
   const byText = (label: string) =>
@@ -49,9 +48,6 @@ async function enregistreEtCapture(): Promise<SavedProject> {
   const saveBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Enregistrer')!;
   await act(async () => { saveBtn.click(); });
   await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
-
-  await act(async () => { root.unmount(); });
-  container.remove();
 
   expect(ecrits).toHaveLength(1);
   return ecrits[0];
@@ -113,11 +109,9 @@ async function ouvreLaPremiereEntree(entrees: SavedProject[]): Promise<{ refus: 
   __setIdbBackendForTest(idb);
   await initLibrary();
 
-  const container = document.createElement('div');
-  document.body.appendChild(container);
-  const root: Root = createRoot(container);
+  const { container, rendre } = monterRacine(null);
   await act(async () => {
-    root.render(<Editor initialScene={{ ...emptyScene(4, 4), id: 'scene-vierge', label: 'Vierge' }} />);
+    rendre(<Editor initialScene={{ ...emptyScene(4, 4), id: 'scene-vierge', label: 'Vierge' }} />);
   });
   const byText = (label: string) =>
     Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.includes(label))!;
@@ -137,8 +131,6 @@ async function ouvreLaPremiereEntree(entrees: SavedProject[]): Promise<{ refus: 
     const saveBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Enregistrer')!;
     await act(async () => { saveBtn.click(); });
     await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
-    await act(async () => { root.unmount(); });
-    container.remove();
   };
   return { refus, texte, ecrits, enregistre };
 }
@@ -206,11 +198,9 @@ async function importePuisEnregistre(docJson: string): Promise<SavedProject[]> {
   __setIdbBackendForTest(idb);
   await initLibrary();
 
-  const container = document.createElement('div');
-  document.body.appendChild(container);
-  const root: Root = createRoot(container);
+  const { container, rendre } = monterRacine(null);
   await act(async () => {
-    root.render(<Editor initialScene={{ ...emptyScene(4, 4), id: 'scene-vierge', label: 'Vierge' }} />);
+    rendre(<Editor initialScene={{ ...emptyScene(4, 4), id: 'scene-vierge', label: 'Vierge' }} />);
   });
   const byText = (label: string) =>
     Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.includes(label))!;
@@ -230,8 +220,6 @@ async function importePuisEnregistre(docJson: string): Promise<SavedProject[]> {
   const saveBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Enregistrer')!;
   await act(async () => { saveBtn.click(); });
   await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
-  await act(async () => { root.unmount(); });
-  container.remove();
   return ecrits;
 }
 
