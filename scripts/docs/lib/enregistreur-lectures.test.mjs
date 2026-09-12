@@ -292,11 +292,11 @@ test('casse : une lecture par un chemin à casse différente est COMPTÉE, une l
   const racine = realpathSync.native(mkdtempSync(path.join(tmpdir(), 'casse-')))
   const dehors = realpathSync.native(mkdtempSync(path.join(tmpdir(), 'dehors-')))
   try {
-    mkdirSync(path.join(racine, 'docs'))
-    writeFileSync(path.join(racine, 'docs', 'x.md'), '# x\n')
+    mkdirSync(path.join(racine, 'notes'))
+    writeFileSync(path.join(racine, 'notes', 'x.md'), '# x\n')
     writeFileSync(path.join(dehors, 'y.md'), '# y\n')
     // Le MÊME fichier, désigné avec la casse changée sur le disque ET sur un segment sous la racine.
-    const autreCasse = path.join(racine.replace(/^[A-Za-z]:/, (d) => d.toLowerCase()), 'DOCS', 'x.md')
+    const autreCasse = path.join(racine.replace(/^[A-Za-z]:/, (d) => d.toLowerCase()), 'NOTES', 'x.md')
     let insensible = true
     try {
       readFileSync(autreCasse)
@@ -319,7 +319,7 @@ test('casse : une lecture par un chemin à casse différente est COMPTÉE, une l
     // a pas de lecture à mesurer, et le contrat de rejet, lui, se juge sur les deux OS.
     if (!insensible) t.diagnostic(`système de fichiers sensible à la casse : « ${autreCasse} » ne désigne aucun fichier`)
     assert.deepEqual(
-      rendu.fichiers, insensible ? ['docs/x.md'] : [],
+      rendu.fichiers, insensible ? ['notes/x.md'] : [],
       `lecture par « ${autreCasse} » : set rendu ${JSON.stringify(rendu.fichiers)} (attendu la casse du DISQUE)`,
     )
     assert.ok(!rendu.fichiers.some((f) => f.endsWith('y.md')), 'une lecture hors racine est entrée dans le set')

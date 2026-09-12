@@ -4979,4 +4979,4 @@ pèse **2950** slots sur 3314.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: c0f102a6a38f69cc912f4b41b4226e31fea59c32 (374 fichiers, 10 dossiers) corps: 1709ac46024d3e4ddd5efeb62d81d7b5da59c3e5 -->
+<!-- sources-empreinte: 847128b4b843719a7698f3719ab71970bd86f475 (374 fichiers, 10 dossiers) corps: 1709ac46024d3e4ddd5efeb62d81d7b5da59c3e5 -->
