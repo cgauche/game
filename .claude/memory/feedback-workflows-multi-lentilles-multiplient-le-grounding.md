@@ -12,6 +12,8 @@ Verbatim utilisateur (2026-09-05, soir) : « Le but des workflows au point de d�
 
 Mesuré le même soir (#1679 L3b) : `juge-design-socle` = 7 agents, 0,79 M tokens, 49 min (11 runs sur L3 ≈ 9,9 M) ; `revue-palier` = 16 agents, 2,22 M tokens, 57 min ; contre UN agent juge sur un diff ≈ 0,17 M et un lecteur de grounding ≈ 0,22 M.
 
+Récidive le 2026-09-11 : le workflow `revue-palier` relancé par réflexe (palier de 25 commits, pre-commit bloqué) — verbatim : « Oula arrete avec ce workflow, je n'ai pas assez d'utilisation pour survivre a ca ». Arrêté par `TaskStop`. Le fichier `.claude/workflows/revue-palier.js` existe encore : son existence n'est PAS une autorisation de le jouer. Les faits de palier font 399 Ko (`faits-de-palier.mjs`) — un réducteur (`faits-reduire.mjs`, textes tronqués avec renvoi au fichier complet) les ramène à 33 Ko ; inutile si UN juge lit le fichier complet lui-même.
+
 **Why:** chaque lentille refait de son côté TOUT le grounding (mêmes fichiers lus, mêmes sondes rejouées), puis chaque réfutateur refait celui de la lentille qu'il juge : 8 lentilles + 8 réfutateurs = 16 groundings du même dépôt. Le workflow ne supprime pas les allers-retours, il les multiplie ; ce qu'il épargne, c'est le contexte de l'orchestrateur (rendus lus en résumé), ce qui n'est pas la consommation.
 
 **How to apply:**

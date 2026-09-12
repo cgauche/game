@@ -7,9 +7,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { isAbsolute, join } from 'node:path'
 import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import {
   ATTENTE_VERROU,
@@ -26,6 +26,7 @@ import {
   lanesAJouer,
   limiteDe,
   photoArbre,
+  prerequisAbsents,
   principal,
   queue,
   spawnBorne,
@@ -333,6 +334,10 @@ function depotDeGates(gatesFactices) {
     join(racine, '.github', 'workflows', 'ci.yml'),
     ['name: CI', 'jobs:', '  build:', '    steps:', ...gatesFactices.map((g) => `      - run: npm run ${g.nom}`), ''].join('\n'),
   )
+  // Le lanceur écrit ses sorties et ses durées sous `node_modules/.cache/gates/` (toutes.mjs:435,450) :
+  // sans cet ignore, tout run réel finirait sur « l'arbre a CHANGÉ », et le code du lanceur ne
+  // discriminerait plus rien.
+  writeFileSync(join(racine, '.gitignore'), 'node_modules/\n')
   const scripts = { gen: 'node gen.mjs' }
   writeFileSync(join(racine, 'gen.mjs'), '\n')
   for (const g of gatesFactices) {
@@ -482,5 +487,127 @@ test('un doc committé PÉRIME les gates à clé pleine — le lanceur les redon
     assert.match(sortie, /\[gates\] lint — déjà justifiée sur ce contenu/, 'une gate hors table reste justifiée')
   } finally {
     rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+/**
+ * PRÉREQUIS (#1708 geste 2) : une gate dont le prérequis manque ne mesure rien — `server:typecheck`
+ * sans `server/node_modules` rend un TS2688 brut, qui ne nomme ni le dossier absent ni la commande
+ * qui le pose. Le dépôt jetable porte une gate qui écrit un TÉMOIN HORS de l'arbre : sa présence dit
+ * si elle a été spawnée, et l'arbre reste propre dans les deux cas.
+ */
+function depotATemoin() {
+  const hors = mkdtempSync(join(tmpdir(), 'gates-prerequis-'))
+  const temoin = join(hors, 'temoin.txt')
+  const { racine, git } = depotDeGates([
+    {
+      nom: 'serveur',
+      corps: `import { writeFileSync } from 'node:fs'\nwriteFileSync(${JSON.stringify(temoin)}, 'jouee')\n`,
+    },
+  ])
+  return { racine, git, hors, temoin }
+}
+
+// `argv` vient du CORPS du test : un littéral de module qui nomme un fichier serait une entrée de
+// stock nominatif de plus (scripts/guards/lib/stocksNominatifs.mjs) — ici c'est une donnée de cas.
+const jouerAvecPrerequis = (racine, prerequis, lignes, argv) =>
+  principal({
+    racine,
+    argv,
+    journal: (t) => lignes.push(t),
+    lanes: [{ nom: 'a', gates: ['serveur'] }],
+    avant: [],
+    ecritLu: { serveur: { ecrit: [], lit: ['deps/'], prerequis } },
+  })
+
+test('un PRÉREQUIS absent rend un ROUGE qui NOMME le chemin et la commande qui le pose — sans rien jouer', async () => {
+  const { racine, hors, temoin } = depotATemoin()
+  try {
+    const lignes = []
+    const code = await jouerAvecPrerequis(racine, [{ chemin: 'deps/absent', pose: 'cmd qui pose' }], lignes, ['node', 'toutes.mjs'])
+    const sortie = lignes.join('')
+    assert.match(sortie, /prérequis absent : `deps\/absent` \(le pose : `cmd qui pose`\)/)
+    assert.equal(existsSync(temoin), false, 'la gate a été SPAWNÉE : son erreur brute aurait remplacé le refus')
+    assert.match(sortie, /\[gates\] serveur — ROUGE \(exit 1\)/)
+    assert.equal(code, 1, 'un prérequis absent est un ROUGE')
+    // Le fichier de sortie porte le même refus : c'est lui que le résumé imprime en queue.
+    const fichier = join(racine, 'node_modules', '.cache', 'gates', fichierDeSortie('serveur', process.pid))
+    assert.match(readFileSync(fichier, 'utf8'), /`deps\/absent` \(le pose : `cmd qui pose`\)/)
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+    rmSync(hors, { recursive: true, force: true })
+  }
+})
+
+test('un PRÉREQUIS présent ne change RIEN : la gate est jouée et rend son verdict réel', async () => {
+  const { racine, git, hors, temoin } = depotATemoin()
+  try {
+    mkdirSync(join(racine, 'deps', 'present'), { recursive: true })
+    writeFileSync(join(racine, 'deps', 'present', 'marqueur.txt'), 'posé\n')
+    git('add', '-A')
+    git('commit', '-qm', 'prérequis posé')
+    const lignes = []
+    const code = await jouerAvecPrerequis(racine, [{ chemin: 'deps/present', pose: 'cmd qui pose' }], lignes, ['node', 'toutes.mjs'])
+    const sortie = lignes.join('')
+    assert.equal(code, 0, 'un prérequis présent ne coûte aucun verdict')
+    assert.match(sortie, /\[gates\] serveur — vert \(exit 0\)/)
+    assert.doesNotMatch(sortie, /prérequis absent/)
+    assert.equal(readFileSync(temoin, 'utf8'), 'jouee', 'la gate n’a pas été jouée')
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+    rmSync(hors, { recursive: true, force: true })
+  }
+})
+
+/** Un prérequis est un chemin RELATIF à la racine, et la gate qui l'exige le LIT (sinon il ne la
+ *  concerne pas) — chaque entrée porte aussi la commande qui le pose, sans quoi le refus est muet. */
+const incoherencesDePrerequis = (ecritLu) => {
+  const refus = []
+  for (const [nom, e] of Object.entries(ecritLu))
+    for (const p of e.prerequis ?? []) {
+      if (!p.chemin || isAbsolute(p.chemin) || p.chemin.startsWith('..'))
+        refus.push(`${nom} : « ${p.chemin} » n’est pas un chemin relatif à la racine`)
+      else if (!(e.lit ?? []).some((lu) => p.chemin.startsWith(lu)))
+        refus.push(`${nom} : exige « ${p.chemin} » sans déclarer le LIRE — le prérequis ne la concerne pas`)
+      if (!p.pose) refus.push(`${nom} : « ${p.chemin} » est exigé sans dire la commande qui le pose`)
+    }
+  return refus
+}
+
+test('tout PRÉREQUIS de la table est relatif, posé par une commande, et LU par sa gate', () => {
+  assert.deepEqual(incoherencesDePrerequis(ECRIT_LU), [])
+  const exiges = Object.values(ECRIT_LU).flatMap((e) => e.prerequis ?? [])
+  assert.ok(exiges.length, 'aucun prérequis déclaré : ce contrat ne mesure plus rien')
+  assert.deepEqual(
+    ECRIT_LU['server:typecheck'].prerequis,
+    [{ chemin: 'server/node_modules', pose: 'npm --prefix server ci' }],
+    'le sous-projet serveur a ses propres dépendances (.github/workflows/ci.yml:86)',
+  )
+  // Le détecteur VOIT : un chemin absolu, un chemin hors des lectures, une pose absente.
+  assert.match(
+    incoherencesDePrerequis({ g: { lit: ['server/'], prerequis: [{ chemin: join(tmpdir(), 'x'), pose: 'c' }] } }).join('\n'),
+    /n’est pas un chemin relatif/,
+  )
+  assert.match(
+    incoherencesDePrerequis({ g: { lit: ['server/'], prerequis: [{ chemin: 'autre/dep', pose: 'c' }] } }).join('\n'),
+    /sans déclarer le LIRE/,
+  )
+  assert.match(
+    incoherencesDePrerequis({ g: { lit: ['server/'], prerequis: [{ chemin: 'server/node_modules' }] } }).join('\n'),
+    /sans dire la commande qui le pose/,
+  )
+})
+
+test('`prerequisAbsents` ne rend que ce qui MANQUE sous la racine', () => {
+  const base = mkdtempSync(join(tmpdir(), 'gates-prereq-unite-'))
+  try {
+    const entree = { lit: ['server/'], prerequis: [{ chemin: 'server/node_modules', pose: 'npm --prefix server ci' }] }
+    assert.deepEqual(prerequisAbsents(entree, base), entree.prerequis)
+    mkdirSync(join(base, 'server', 'node_modules'), { recursive: true })
+    assert.deepEqual(prerequisAbsents(entree, base), [])
+    assert.deepEqual(prerequisAbsents({ lit: [] }, base), [], 'une gate sans prérequis n’en a aucun d’absent')
+    assert.deepEqual(prerequisAbsents(undefined, base), [], 'une gate hors table ne fait pas lever le lanceur')
+  } finally {
+    rmSync(base, { recursive: true, force: true })
   }
 })

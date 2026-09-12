@@ -44,7 +44,7 @@
 // écrit le justificatif au vert, et lui seul. Quand un script `<gate>:brut` existe, c'est LUI qui est
 // joué : sans quoi `npm run <gate>` rentrerait dans une deuxième enveloppe et écrirait deux fois.
 import { spawn, spawnSync } from 'node:child_process'
-import { closeSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs'
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join, resolve } from 'node:path'
 import { enteteArbre } from '../guards/lib/enteteArbre.mjs'
@@ -87,6 +87,12 @@ const ICI = fileURLToPath(new URL('.', import.meta.url))
  * Un chemin qui finit par `/` désigne le dossier et tout ce qu'il contient.
  * Ce qui vit HORS de l'arbre n'est pas déclaré : `node_modules/.cache/…` est nommé par PID, `dist/`
  * n'est lu par aucune gate, et les fixtures de test se fabriquent sous `os.tmpdir()`.
+ *
+ * `prerequis` (optionnel) dit ce que la gate exige d'AVOIR sous la racine pour mesurer quoi que ce
+ * soit, et la commande qui le pose : sans lui, elle rend l'erreur brute de son outil, qui ne nomme
+ * ni ce qui manque ni ce qu'il faut lancer. Ce que le contrôle prouve : l'ABSENCE FRANCHE du
+ * chemin, rien d'autre — un `server/node_modules` présent mais VIDE ou PÉRIMÉ passe, et la gate
+ * rend de nouveau son erreur brute ; la fraîcheur des dépendances n'est mesurée nulle part ici.
  *
  * DEUX champs d'écriture, et la différence est le sujet : `ecrit` = ce que la gate écrit à CHAQUE
  * run — interdit à toute autre lane de le lire ; `ecritFerme` = un chemin que la gate PEUT écrire,
@@ -340,7 +346,15 @@ export const ECRIT_LU = {
       'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT le registre ' +
       'de livres, le normaliseur de références et sa baseline scripts/raw/reanchor-low-baseline.json',
   },
-  'server:typecheck': { ecrit: [], lit: ['server/'], raison: '`tsc` du sous-projet serveur, sans émission' },
+  'server:typecheck': {
+    ecrit: [],
+    lit: ['server/'],
+    prerequis: [{ chemin: 'server/node_modules', pose: 'npm --prefix server ci' }],
+    raison:
+      '`tsc` du sous-projet serveur, sans émission ; PRÉREQUIS : le sous-projet a ses PROPRES dépendances, ' +
+      'posées par la commande de .github/workflows/ci.yml:86 — sans elles `tsc` rend un TS2688 brut sur ' +
+      '@cloudflare/workers-types, que rien ne rattache au dossier manquant',
+  },
 }
 
 /**
@@ -451,6 +465,21 @@ function lireDurees(racine) {
     return {}
   }
 }
+
+/**
+ * PRÉREQUIS ABSENTS d'une gate : les entrées de son `prerequis` (ECRIT_LU) dont le `chemin`, relatif
+ * à `racine`, n'existe pas. Une gate dont le prérequis manque ne mesure RIEN — elle rend l'erreur
+ * brute de son outil, à la place de la commande qui pose ce qui manque.
+ * REND `[{ chemin, pose }]`, vide quand tout est là (le cas courant : aucune lecture de plus).
+ */
+export const prerequisAbsents = (entree, racine) =>
+  (entree?.prerequis ?? []).filter(({ chemin }) => !existsSync(join(racine, chemin)))
+
+/** Ce qu'un refus de prérequis écrit dans la sortie de la gate — c'est cette queue que le résumé imprime. */
+const refusDePrerequis = (nom, absents) =>
+  `${absents
+    .map(({ chemin, pose }) => `[gates] ${nom} — prérequis absent : \`${chemin}\` (le pose : \`${pose}\`)`)
+    .join('\n')}\n`
 
 /** Deux chemins déclarés se RECOUVRENT quand l'un préfixe l'autre : une fiche de `docs/raw/` est
  *  sous `docs/`, donc l'écrire c'est écrire dans ce que lit quiconque lit `docs/`. */
@@ -804,6 +833,20 @@ export async function principal({
 
   /** Joue UNE gate, sortie dans son fichier, bornée par son plafond, rejouée si elle n'a pas démarré. */
   const jouerUneFois = async (gate, coeurs) => {
+    const fichier = join(dossierSorties(racine), fichierDeSortie(gate.nom, process.pid))
+    // PRÉREQUIS D'ABORD : jouer une gate dont le prérequis manque rend l'erreur brute de son outil
+    // (un TS2688 pour `server:typecheck`), qui ne nomme ni le dossier absent ni la commande qui le
+    // pose. Le verdict est le même ROUGE, mais il DIT quoi faire — et rien n'est spawné, donc aucun
+    // justificatif n'est écrit : seul `justifie.mjs` en écrit, et il n'est pas appelé. Le refus ne
+    // pèse que sur CE run : les clés de justificatif sont des `git ls-tree` (justificatif.mjs:47,77),
+    // qu'un dossier gitignoré ne change pas — un justificatif vert d'avant la suppression des
+    // dépendances reste donc valable, et la gate n'est pas même redonnée à jouer.
+    const absents = prerequisAbsents(ecritLu[gate.nom], racine)
+    if (absents.length) {
+      const sortie = refusDePrerequis(gate.nom, absents)
+      writeFileSync(fichier, sortie)
+      return { code: 1, expiree: false, fichier, sortie, limiteMs: limiteDe(gate.nom) }
+    }
     const commande = scripts[`${gate.nom}:brut`] ? `npm run ${gate.nom}:brut` : gate.commande
     const env = { ...process.env }
     if (coeurs && !process.env.WFRP_TEST_COEURS) env.WFRP_TEST_COEURS = String(coeurs)
@@ -813,7 +856,7 @@ export async function principal({
     env.WFRP_GATES_RACINE = racine
     const r = await spawnBorne({
       argv: [join(ICI, 'justifie.mjs'), gate.nom, '--', ...commande.split(' ')],
-      fichier: join(dossierSorties(racine), fichierDeSortie(gate.nom, process.pid)),
+      fichier,
       limiteMs: limiteDe(gate.nom),
       cwd: racine,
       env,

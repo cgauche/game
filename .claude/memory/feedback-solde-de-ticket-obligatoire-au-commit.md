@@ -49,3 +49,15 @@ arbitrage utilisateur qui change le plan d'un ticket OUVERT se poste en commenta
 ticket DANS LE MÊME GESTE que le dispatch à l'agent (verbatim + date + conséquence),
 jamais « à la fin ». Précédent : les 2 réfutations de la rose (#409) et le « 7 races »
 (#393) tracés avec des heures de retard, plans périmés sur GitHub entre-temps.
+
+**Complément 2026-09-11 (actions α et ε de la revue de palier `6382c792d..fd660c8b8`, réponses
+à AskUserQuestion, posté sur #1679) :** (α) option retenue, verbatim : « Tout commit de substance
+cite un ticket — un commit qui touche src/ ou scripts/ sans `refs #N`/`corrige #N` est refusé par
+le pre-commit ; le ticket est l'unité de travail, même pour un fix d'une ligne. » → la porte du
+ticket PRÉCÈDE le garde de solde (critère de substance = `commitsDeSubstanceDepuis`, source
+unique) ; les commits de docs dérivés et de mémoire passent sans ticket ; le périmètre #591
+(« un commit sans ticket n'entre jamais dans le mécanisme ») est caduc. (ε) verbatim : « Je ne
+comprends pas, en toute logique ce qui est important c'est que le tout soit vert, pas chaque
+commit indépendant non ? » → un push de N commits est jugé par sa TÊTE ; la revue de palier ne
+compte plus « pas de run CI à son sha » comme un défaut. Train R1 de #1709 porte les deux dans
+les portes et au CLAUDE.md § Commandes.
