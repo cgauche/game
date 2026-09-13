@@ -16,7 +16,7 @@
 // comprises), son texte normalisé re-comparé à la desc normalisée ; une divergence est rapportée en
 // `verification` (bug de la chaîne, jamais un verdict silencieux).
 import { readFileSync } from 'node:fs'
-import { join, dirname } from 'node:path'
+import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   cellRefFor, estErreur, findCells, findRuns, joinNorm, normText, resoudreAdresse,
@@ -62,8 +62,13 @@ function verifier(chapitre, ref, D) {
   return normText(res.md) === D ? undefined : 'texte re-résolu != desc'
 }
 
-/** Juge une entrée. @returns {{ verdict: string, ref?: object, reason?: string, verification?: string }} */
-function judge(entry) {
+/**
+ * Juge une entrée : SEULE définition du verdict d'adressabilité du dépôt — le rapport de dérivation
+ * ci-dessous et la migration `scripts/migrations/2026-09-05-1389-psychology-desc-vers-descref.mjs`
+ * en jugent par elle, jamais par un second chemin.
+ * @returns {{ verdict: string, ref?: object, reason?: string, verification?: string }}
+ */
+export function judge(entry) {
   const book = entry?.source?.book
   if (!book || !ABBR_BY_BOOK_ID[book]) {
     return { verdict: 'SANS-SOURCE', reason: book ? `livre sans dir: ${book}` : 'source.book absent' }
@@ -123,34 +128,41 @@ function judge(entry) {
   }
 }
 
-const dataset = process.argv[2]
-if (!dataset) {
-  console.error('usage: node scripts/source/derive-decoupes.mjs <dataset>   (nom sans .json)')
-  process.exit(2)
-}
-const data = JSON.parse(readFileSync(join(ROOT, 'src', 'data', `${dataset}.json`), 'utf8'))
-if (!Array.isArray(data)) { console.error(`${dataset}.json n'est pas un tableau d'entrées`); process.exit(2) }
+/** Rapport de dérivation d'un dataset, sur la sortie standard (JSON) et son résumé sur l'erreur. */
+function main() {
+  const dataset = process.argv[2]
+  if (!dataset) {
+    console.error('usage: node scripts/source/derive-decoupes.mjs <dataset>   (nom sans .json)')
+    process.exit(2)
+  }
+  const data = JSON.parse(readFileSync(join(ROOT, 'src', 'data', `${dataset}.json`), 'utf8'))
+  if (!Array.isArray(data)) { console.error(`${dataset}.json n'est pas un tableau d'entrées`); process.exit(2) }
 
-const entries = data.map((e) => ({ id: e.id ?? e.label ?? '(sans id)', ...judge(e) }))
-const count = (v) => entries.filter((e) => e.verdict === v).length
-const report = {
-  dataset,
-  total: entries.length,
-  exact: count('EXACT'),
-  exactMultiSections: count('EXACT-MULTI-SECTIONS'),
-  montage: count('MONTAGE'),
-  cellule: count('CELLULE'),
-  celluleAmbigue: count('CELLULE-AMBIGUE'),
-  echec: count('ECHEC'),
-  sansSource: count('SANS-SOURCE'),
-  descVide: entries.filter((e) => e.reason === 'desc-vide').length,
-  verifications: entries.filter((e) => e.verification).map((e) => ({ id: e.id, verification: e.verification })),
-  entries,
+  const entries = data.map((e) => ({ id: e.id ?? e.label ?? '(sans id)', ...judge(e) }))
+  const count = (v) => entries.filter((e) => e.verdict === v).length
+  const report = {
+    dataset,
+    total: entries.length,
+    exact: count('EXACT'),
+    exactMultiSections: count('EXACT-MULTI-SECTIONS'),
+    montage: count('MONTAGE'),
+    cellule: count('CELLULE'),
+    celluleAmbigue: count('CELLULE-AMBIGUE'),
+    echec: count('ECHEC'),
+    sansSource: count('SANS-SOURCE'),
+    descVide: entries.filter((e) => e.reason === 'desc-vide').length,
+    verifications: entries.filter((e) => e.verification).map((e) => ({ id: e.id, verification: e.verification })),
+    entries,
+  }
+  console.log(JSON.stringify(report, null, 1))
+  console.error(
+    `${dataset}: total=${report.total} EXACT=${report.exact} EXACT-MULTI-SECTIONS=${report.exactMultiSections}` +
+    ` MONTAGE=${report.montage} CELLULE=${report.cellule} CELLULE-AMBIGUE=${report.celluleAmbigue}` +
+    ` ECHEC=${report.echec} (dont desc vide ${report.descVide})` +
+    ` SANS-SOURCE=${report.sansSource} | verifications KO=${report.verifications.length}`,
+  )
 }
-console.log(JSON.stringify(report, null, 1))
-console.error(
-  `${dataset}: total=${report.total} EXACT=${report.exact} EXACT-MULTI-SECTIONS=${report.exactMultiSections}` +
-  ` MONTAGE=${report.montage} CELLULE=${report.cellule} CELLULE-AMBIGUE=${report.celluleAmbigue}` +
-  ` ECHEC=${report.echec} (dont desc vide ${report.descVide})` +
-  ` SANS-SOURCE=${report.sansSource} | verifications KO=${report.verifications.length}`,
-)
+
+// Le module est IMPORTABLE (la migration du pilote monte `judge`) : le rapport ne part que si ce
+// fichier est le point d'entrée du process — patron de `scripts/migrations/replay.mjs:262`.
+if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) main()

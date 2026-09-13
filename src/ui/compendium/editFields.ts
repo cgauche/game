@@ -5,6 +5,7 @@
  */
 import { LIBELLES_ENVELOPPE, type CleEnveloppe } from '../../data/schemas/grammaire/document';
 import { valeursDe, type MetaChamp } from '../../data/schemas/grammaire/meta';
+import { adresseUnPassage } from '../../data/schemas/grammaire/valeurs';
 import { defDe } from '../../data/schemas/grammaire/slots';
 
 export type FieldKind = 'text' | 'textarea' | 'number' | 'checkbox' | 'stringList' | 'numberList' | 'source' | 'descRef' | 'recordNumber' | 'recordText' | 'object' | 'json' | 'select';
@@ -54,6 +55,35 @@ function kindOf(key: string, v: unknown): FieldKind {
     return 'object';
   }
   return 'text';
+}
+
+/**
+ * Le champ `cle` est-il DÉRIVÉ d'un autre champ de CETTE entrée ? Un champ dérivé ne s'offre pas à
+ * l'édition : sa valeur ne vient pas de l'auteur, et la saisir serait écrite nulle part (la porte de
+ * sérialisation la retire) tout en donnant à l'écran deux surfaces pour un même texte.
+ *
+ * SEUL cas aujourd'hui — la PROSE ADRESSÉE (#1389) : quand l'entrée porte `descRef`, sa `desc` est le
+ * texte que l'adresse RÉSOUT, injecté au chargement du module par `wfrp:prose-source` et retiré au
+ * save par `versDisque` (`grammaire/prose.ts`). Le champ d'adresse prend sa place, à SA position
+ * (l'ordre des champs suit la donnée : le `desc` matérialisé s'y pose là où `descRef` vit).
+ *
+ * GESTE « DÉTACHER » : l'auteur qui remet le livre de l'adresse à vide fait rendre `undefined` à
+ * `DescRefField` — l'entrée ne porte plus d'adresse, et `desc` redevient éditable, avec la prose
+ * matérialisée pour valeur initiale. Reprendre la prose à la main est donc UN geste, pas une saisie
+ * en double.
+ *
+ * SEUIL : une adresse ne dérive la prose que quand elle ADRESSE un passage — `adresseUnPassage`
+ * (`grammaire/valeurs.ts`), qui lit le seuil `MIN_FRAGMENTS` que `descRefSchema` pose lui-même sur
+ * `parts`. L'état INTERMÉDIAIRE de la composition (livre choisi, chapitre et fragments à venir :
+ * `{ book, ch: '', parts: [] }`, ce que `DescRefField` rend dès le choix du livre) garde donc
+ * « Description » éditable, avec la prose matérialisée — sans ce seuil, l'aller-retour vide→livre
+ * laisse l'écran sans prose ni message tant que chapitre + section + blocs ne sont pas ressaisis
+ * (recette 2026-09-14). Aucune surface en double n'apparaît pour autant : une adresse incomplète est
+ * refusée à la sauvegarde par `descRefSchema` (`parts` `.min(MIN_FRAGMENTS)`, `grammaire/valeurs.ts`),
+ * et une adresse complète fait passer `versDisque`, qui retire `desc`.
+ */
+export function estDerive(entree: Record<string, unknown>, cle: string): boolean {
+  return cle === 'desc' && adresseUnPassage(entree.descRef);
 }
 
 /**

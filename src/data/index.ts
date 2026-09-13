@@ -7,7 +7,7 @@ import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { PlayerText } from '../i18n/playerText';
 import { t } from '../i18n';
 import type { RigSpeciesId } from '../gameIso/rig/appearance';
-import type { SourceRef, SecondaryRef, RaceKey, RefCareerId } from './schemas/grammaire/valeurs';
+import type { SourceRef, SecondaryRef, RaceKey, RefCareerId, DescRef } from './schemas/grammaire/valeurs';
 import type { TypeEntite } from './schemas/grammaire/ref';
 import { symptomSeveritySchema } from './schemas/grammaire/valeurs';
 import { libelleDeValeur } from './schemas/grammaire/meta';
@@ -148,6 +148,16 @@ export interface GrappleRule {
   source?: SourceRef;
 }
 export const GRAPPLE = grappleJson as GrappleRule;
+
+/**
+ * Dataset dont la prose est ADRESSÉE (`descRef`, #1389) : sur le DISQUE, l'entrée porte son adresse
+ * et PAS de `desc` — c'est la forme que TypeScript voit du module JSON. Le module CHARGÉ, lui, est
+ * toujours MATÉRIALISÉ : le plugin `wfrp:prose-source` (`scripts/source/prose-source-plugin.mjs`,
+ * pendant Vite de `materialiser`) injecte dans chaque nœud adressé la `desc` que son adresse résout,
+ * au build comme en dev et sous vitest — c'est la SEULE porte de chargement des `src/data/*.json`.
+ * Ce helper NOMME cet écart à UN endroit, au lieu d'un `as unknown as` recopié par famille migrée.
+ */
+const adressee = <T>(json: unknown): T[] => json as T[];
 
 /** Mode d'exposition hydrique (MSRC 16 p.91) : ingestion volontaire (« boit de l'eau de rivière sans
  *  la faire bouillir ») ou immersion (chute/nage — « uniquement à l'immersion » pour le tableau 2). */
@@ -1420,6 +1430,11 @@ export interface StatusData {
   type: 'etats';
   label: string;
   desc: string;
+  /** ADRESSE du passage quand la prose n'est pas recopiée (#1389). Elle vit À CÔTÉ de la `desc` dans
+   *  la vue TS parce qu'un module CHARGÉ porte les deux : l'adresse authorée, et le texte que le
+   *  plugin en matérialise (`adressee`, plus bas). Sur le DISQUE, l'une exclut l'autre (V1 du refine
+   *  `grammaire/prose.ts`). */
+  descRef?: DescRef;
   source: SourceRef;
   /** Modificateurs PASSIFS continus (pénalité de Test, `incomingAttackMod`, `sbBonus`…) en `GameOp[]`, lus
    *  par `passiveMods` (kind `etat` : pool non-cumul, le pire seul, LDB 16 l.13). MÊME éditeur GameOpEditor. */
@@ -2913,9 +2928,9 @@ export function findConditionById(id: string): EtatData | undefined {
   return etatParId(id);
 }
 
-/** États PSYCHOLOGIQUES (LDB 21) — base app-owned éditable au Codex. Données de Frénésie aujourd'hui ;
- *  Peur/Terreur/Animosité/Haine à migrer (chantier psychologie data-driven). */
-export const psychologies = psychologyJson as PsychologyData[];
+/** États PSYCHOLOGIQUES (LDB 21) — base app-owned éditable au Codex, prose ADRESSÉE au `Source/`
+ *  (`descRef`, #1389 : première famille migrée). */
+export const psychologies = adressee<PsychologyData>(psychologyJson);
 const psychologieParId = indexParId('psychologies', psychologies);
 /** Résout un état psychologique par son `id` STABLE (`PsychType`). Absent → undefined (folding inerte). */
 export function findPsychologyById(id: string): PsychologyData | undefined {

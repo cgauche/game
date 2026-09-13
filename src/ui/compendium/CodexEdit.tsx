@@ -13,7 +13,7 @@ import type { SteamBreakdownEntry } from '../../engine/shipBuild';
 import { serializeDataset } from '../../data/serialize';
 import { validateDataset, metaPourFichier, chargeDiscriminee, brouillonNeuf, noeudDuChamp, noeudObjet, schemaForFile } from '../../data/schemas/validate';
 import * as fs from '../../data/fsPersist';
-import { inferFields, type FieldDesc } from './editFields';
+import { estDerive, inferFields, type FieldDesc } from './editFields';
 import { libelleDeValeur, valeursDe } from '../../data/schemas/grammaire/meta';
 import { entryKey, invalidateCodexLookup } from './registry';
 import { ACTIVITY_RESOLVERS, RESOLVER_OWNER, resolversOwnedBy } from '../../engine/activities';
@@ -587,9 +587,12 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   const fields = useMemo(() => {
     const handled = dedicatedFieldKeys(categoryKey);
     return allFields
-      .filter((f) => !handled.has(f.key) && (!charge || f.key === charge.champ || charge.duCas.includes(f.key) || !charge.toutes.includes(f.key)))
+      // Un champ DÉRIVÉ de l'entrée ÉDITÉE ne s'offre pas à la saisie (`estDerive`, `editFields.ts`) :
+      // le filtre est sur `entry`, pas sur l'échantillon du dataset — une entrée à la prose ADRESSÉE
+      // n'expose pas son `desc` matérialisé, sa voisine à prose inline garde le sien.
+      .filter((f) => !handled.has(f.key) && !estDerive(entry, f.key) && (!charge || f.key === charge.champ || charge.duCas.includes(f.key) || !charge.toutes.includes(f.key)))
       .map((f) => (typeFige && f.key === 'type' ? { ...f, fige: true } : f));
-  }, [allFields, categoryKey, charge, typeFige]);
+  }, [allFields, categoryKey, charge, entry, typeFige]);
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); setSchemaError(null); };
   // Erreurs BLOQUANTES avant persist (identité + refs résolvables) — pas de validation des
   // datasets-objet (`details`, fiches de règle : pas d'identité par entrée).

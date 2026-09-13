@@ -215,6 +215,25 @@ export const fragmentCelluleSchema = z.strictObject({
 });
 
 /**
+ * Nombre de fragments qu'une adresse doit porter pour ADRESSER quelque chose. En dessous, il n'y a
+ * pas d'adresse : il y a un livre choisi, et un passage encore à désigner. SEUIL UNIQUE — le schéma
+ * `descRefSchema` le pose (`.min`), et `adresseUnPassage` le lit : l'écran et le disque tranchent pareil.
+ */
+export const MIN_FRAGMENTS = 1;
+
+/**
+ * L'adresse portée par une entrée DÉSIGNE-t-elle effectivement un passage ? C'est la définition
+ * d'une adresse COMPLÈTE côté écran : en cours de composition (`{ book, ch: '', parts: [] }`, ce que
+ * `DescRefField` rend dès le choix du livre), l'adresse ne résout rien — la prose appartient encore à
+ * l'auteur. Accepte de l'`unknown` : l'appelant édite des objets de donnée non typés (`estDerive`,
+ * `src/ui/compendium/editFields.ts`).
+ */
+export function adresseUnPassage(ref: unknown): boolean {
+  const parts = (ref as { parts?: unknown } | null | undefined)?.parts;
+  return Array.isArray(parts) && parts.length >= MIN_FRAGMENTS;
+}
+
+/**
  * ADRESSE DE PROSE (#1389, épique #1388 §2.2) — ce qu'une entrée porte À LA PLACE de la prose
  * recopiée du livre : le livre, le chapitre, et jusqu'à TROIS fragments d'un même chapitre.
  *
@@ -229,7 +248,7 @@ export const descRefSchema = z
     book: z.string().min(1),
     /** Numéro de chapitre tel que le nomme le fichier d'extraction (`07`, `21`) — deux chiffres. */
     ch: z.string().regex(/^\d{2}$/),
-    parts: z.array(z.discriminatedUnion('kind', [fragmentBlocsSchema, fragmentCelluleSchema])).min(1).max(3),
+    parts: z.array(z.discriminatedUnion('kind', [fragmentBlocsSchema, fragmentCelluleSchema])).min(MIN_FRAGMENTS).max(3),
   })
   .superRefine((v, ctx) => {
     v.parts.forEach((p, i) => {

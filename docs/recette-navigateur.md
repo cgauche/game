@@ -139,6 +139,7 @@ sinon elle est déclarée aveugle (exit 1). Exit ≠ 0 avec la liste des défaut
 | `gotoScreen` | navigue vers un écran via `__wfrp.screen` |
 | `shot` | capture PNG nommée dans un dossier donné (créé si absent) ; `{ancre}` fait DÉFILER un sélecteur en vue avant la capture — à 360 px les écrans s'empilent et le sujet passe sous le pli ; NEUTRALISE par défaut ce qui signe une capture — `Escape` si le focus est sur un `<select>` (son popup est NATIF et restait ouvert), puis `blur`. `{neutraliser:false}` pour photographier un contrôle focalisé |
 | `consoleGuard` | collecte erreurs/warnings/exceptions, filtrés sur LA session courante (piège du buffer partagé, § « Pièges vécus » ci-dessous) |
+| `espionReseau` ⚠ à POSER AVANT le geste mesuré | les URL que la page DEMANDE : patch `fetch`/`XMLHttpRequest` DANS la page **et** `Network.requestWillBeSent` (CDP), réunis. `await esp.urls()` rend tout, `await esp.correspondant('/source/')` filtre. C'est la preuve d'une requête ABSENTE (« la fiche du Codex ne charge aucun chapitre »). **Jamais l'inventaire de ressources de l'API `performance`** : son tampon est BORNÉ (250 entrées) et l'app le sature à l'amorçage — il a rendu un faux « aucune requête » en recette C5 |
 | `freezeTimeout` / `unfreezeTimeout` | monkey-patch `setTimeout` pour figer/dégeler une durée d'animation avant capture |
 | `emulateReducedMotion` | force `prefers-reduced-motion: reduce` (CDP `Emulation.setEmulatedMedia`) |
 | `setViewport` / `setMobileViewport` | viewport explicite / mobile canon 360×740 (charte-ui.md — testable dès 360px) |
@@ -191,6 +192,11 @@ node scripts/recette/arreter-dev.mjs 5233
 et `process.kill` dessus laisse l'écoutant vivant — le port reste pris. Le script lit l'ÉCOUTANT sur
 la table TCP du système puis tue son ARBRE (`taskkill /T` sous Windows, seul geste fiable ; `taskkill`
 lancé par un script `.mjs` n'est pas soumis à l'allowlist du shell de l'agent).
+
+> **Un script de recette écrit au SCRATCHPAD importe le kit par une URL `file:///`.** Le scratchpad est
+> hors de l'arbre : `import { openApp } from 'C:\\…\\scripts/recette/lib.mjs'` échoue (`ERR_UNSUPPORTED_ESM_URL_SCHEME`
+> — un chemin Windows absolu est lu comme un schéma d'URL). La forme qui passe est
+> `import('file:///C:/Users/…/scripts/recette/lib.mjs')`, slashs compris.
 
 > **Toute expression passée à `evaluate` EN CHAÎNE s'écrit en `String.raw`** — ou passe par `evaluerFn`.
 > Le template literal de Node consomme les antislashs AVANT que la page ne voie l'expression : `/\s+/`
@@ -1250,6 +1256,35 @@ fichier de données. Chemins vérifiés au registre (`src/ui/compendium/registry
 
 Les deux niches éditent le MÊME fichier (`src/data/weather.json`) sous deux catégories Codex : une
 recette qui vérifie l'édition d'une météo doit dire LAQUELLE des deux elle a ouverte.
+
+**Prose ADRESSÉE (`descRef`, #1389)** — la première famille dont la prose n'est plus recopiée dans la
+donnée mais adressée au `Source/` est `psychology.json` (9 entrées, LDB 21). La niche s'ouvre sans
+naviguer :
+
+```js
+window.__wfrp.store.getState().openCodex({ category: 'psychologies', id: 'terreur' })
+```
+
+L'adresse livrée pour Terreur est la section `terreur-indice#1` (« Terreur (Indice) » au chapitre),
+blocs **0 à 1** — le titre de section porte l'Indice, et la prose tient sur deux blocs.
+
+Ce que la recette vérifie sur cette fiche : (1) l'onglet **Description** affiche la prose du chapitre
+21 du Livre de base, entière et formatée (emphases `*Terreur*`/`*Peur*`) ; (2) sur ce chemin, aucune
+requête de CHAPITRE (`/source/<livre>/<NN>.md`) ni de MANIFESTE (`/source/manifest.json`) n'est émise
+— la prose est MATÉRIALISÉE au build dans le bundle de données, les chapitres ne sont servis qu'en
+DEV et pour l'atelier. Mesure : l'espion `espionReseau` filtré par son `correspondant` sur
+l'expression `/^\/source\//` — le motif NU `/source/` attrape aussi, en dev, les modules de l'app
+(`src/data/source/*.ts`, servis par Vite) et rendrait un faux positif ; (3) 0 erreur console
+(`window.__wfrp.errors`). En Atelier, le champ d'édition de l'adresse (`DescRefField`) remplace la
+zone de saisie de prose — et le `textarea` « Description » n'existe PAS sur une entrée adressée (un
+champ DÉRIVÉ ne s'offre pas à l'édition, `estDerive` de `src/ui/compendium/editFields.ts`) :
+remettre le livre de l'adresse à vide le fait réapparaître, garni de la prose matérialisée (geste
+« détacher »).
+
+ÉTAT INTERMÉDIAIRE — re-choisir un livre ensuite ne masque PAS « Description » : tant que l'adresse
+ne porte aucun fragment (`{ book, ch: '', parts: [] }`), elle n'adresse rien, donc elle ne dérive
+rien, et la prose reste éditable avec son texte matérialisé jusqu'à ce que chapitre + section + blocs
+soient posés (seuil `adresseUnPassage` / `MIN_FRAGMENTS`, `src/data/schemas/grammaire/valeurs.ts`).
 
 **Éditer une fiche du Codex commence par la bascule « Atelier »** (`CompendiumScreen.tsx:164-171`,
 bouton `.btn small` à `aria-pressed` dans l'en-tête — pas un onglet). Tant qu'elle est éteinte, les

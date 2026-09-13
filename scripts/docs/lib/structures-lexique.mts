@@ -326,6 +326,35 @@ export const CONCEPTS: readonly Concept[] = [
     ],
     noyau: ['n', 'sides'],
   },
+  // Les deux formes de l'ADRESSE de prose (#1389) passent AVANT `formule` et `source`, et l'ordre
+  // décide : un fragment porte `sum` (l'empreinte du passage résolu, `sumOf` de
+  // `src/data/source/decoupe.ts`) que le concept `formule` réclamerait, et l'adresse porte `book`
+  // que le concept `source` réclamerait. Ni l'une ni l'autre n'est une divergence : c'est la forme
+  // que le parseur PRODUIT et que `descRefSchema` (`grammaire/valeurs.ts`) refuse autrement.
+  // Les deux noyaux sont EXHAUSTIFS (aucun `noyauMin`), donc rien d'autre ne s'y range : `book`,
+  // `ch` et `parts` ne coexistent que sur une adresse, et `secOcc` ne vit que sur un fragment.
+  {
+    id: 'adresse',
+    label: 'adresse d’un passage du Source (`descRef`)',
+    strate: 'Valeur',
+    signatures: [
+      { sig: 'book,ch,parts', statut: 'cible', note: 'livre + chapitre + fragments — `descRefSchema`, épique #1388 §2.2' },
+    ],
+    noyau: ['book', 'ch', 'parts'],
+  },
+  {
+    id: 'fragment',
+    label: 'fragment d’une adresse de prose (suite de blocs, ou cellule de table)',
+    strate: 'Valeur',
+    signatures: [
+      // Le discriminant `kind` reste HORS du vocabulaire du concept (c'est lui, le `+…`) : `CLES_DE_VALEUR`
+      // en dérive, et l'y verser retirerait `kind` de la charge utile des TELLS de document — 44 pions de
+      // scène `{id, kind, label, pos, ref}` changeraient de tell (mesure de la sonde C, #1633).
+      { sig: 'b0,b1,sec,secOcc,sum+…', statut: 'cible', note: 'suite contiguë `b0..b1` des blocs d’une section (`FragmentBlocs`)' },
+      { sig: 'col,row,sec,secOcc,sum+…', statut: 'cible', note: 'case d’une table adressée par CLÉ de ligne × en-tête de colonne (`FragmentCellule`)' },
+    ],
+    noyau: ['sec', 'secOcc', 'sum'],
+  },
   // Le noyau est BORNÉ à `sum`/`sinPoints` — les deux clés qui, MESURÉES sur les 2 racines, ne
   // nomment QUE la composition d'une `Formula`. `dice` et `times` en sont EXCLUS : `dice` est aussi
   // la clé d'un `DiseaseTime` (`{dice, unit}`, 37 occurrences de `maladies.json`), d'un pot de jeu de

@@ -567,6 +567,59 @@ export function consoleGuard(session) {
 }
 
 /**
+ * ESPION RÉSEAU — la liste des URL que la page DEMANDE, à poser AVANT le geste mesuré.
+ *
+ * Deux voies, réunies : le patch de `fetch`/`XMLHttpRequest` DANS la page (il voit l'URL telle que
+ * l'app la demande, même servie par un cache) et l'événement CDP `Network.requestWillBeSent` (il voit
+ * ce que le réseau porte, y compris les requêtes qu'aucun script n'émet). Les deux se recoupent : une
+ * URL vue par l'une seule est rendue quand même.
+ *
+ * POURQUOI PAS `performance.getEntriesByType('resource')` : son tampon est BORNÉ (250 entrées par
+ * défaut) et l'app le sature à l'amorçage — la mesure y rendait « aucune requête » alors que la page
+ * en avait émis (faux vert vécu en recette C5). Un espion se POSE avant le geste, il ne se relit pas
+ * après coup.
+ *
+ * @param {object} session @param {{ filtre?: (url: string) => boolean }} [options]
+ * @returns {Promise<{ urls: () => Promise<string[]>, correspondant: (motif: string|RegExp) => Promise<string[]>, stop: () => void }>}
+ */
+export async function espionReseau(session, { filtre } = {}) {
+  const vues = [];
+  const ajouter = (url) => { if (typeof url === 'string' && url && !vues.includes(url)) vues.push(url); };
+  const handler = (m) => {
+    if (m.sessionId !== session.sessionId) return;
+    if (m.method === 'Network.requestWillBeSent') ajouter(m.params?.request?.url);
+  };
+  session.listeners.add(handler);
+  await session.rpc('Network.enable', {});
+  // Le patch de page : posé une seule fois, il empile dans un tableau que l'espion relit.
+  await evaluate(session, `(() => {
+    if (window.__recetteReseau) return;
+    window.__recetteReseau = [];
+    const note = (u) => { try { window.__recetteReseau.push(String(u && u.url ? u.url : u)); } catch { /* URL illisible */ } };
+    const fetchOrig = window.fetch.bind(window);
+    window.fetch = (entree, init) => { note(entree); return fetchOrig(entree, init); };
+    const ouvrirOrig = window.XMLHttpRequest.prototype.open;
+    window.XMLHttpRequest.prototype.open = function (methode, url, ...reste) {
+      note(url);
+      return ouvrirOrig.call(this, methode, url, ...reste);
+    };
+  })()`);
+  const urls = async () => {
+    const dePage = await evaluate(session, 'JSON.stringify(window.__recetteReseau || [])');
+    for (const u of JSON.parse(dePage || '[]')) ajouter(u);
+    return filtre ? vues.filter(filtre) : [...vues];
+  };
+  return {
+    urls,
+    correspondant: async (motif) => {
+      const re = motif instanceof RegExp ? motif : new RegExp(motif);
+      return (await urls()).filter((u) => re.test(u));
+    },
+    stop: () => session.listeners.delete(handler),
+  };
+}
+
+/**
  * Monkey-patch `setTimeout` pour figer une animation le temps d'une capture : les délais fournis
  * (`delays`, dans l'ordre d'appel) remplacent ceux demandés par l'app, le dernier de la liste étant
  * réutilisé pour tout appel excédentaire — passer `[0]` fige tout à l'instantané.

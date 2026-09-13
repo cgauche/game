@@ -721,8 +721,24 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
     const { [cle]: _retire, ...reste } = entree;
     if (cle === 'source') return { ...reste, maison: 'sonde d’exigence — provenance satisfaite pour isoler `exiges`' };
     if (cle === 'maison') return { ...reste, source: SOURCE_TEMOIN };
+    if (cle === 'desc') {
+      const { descRef: _adresse, ...sansProse } = reste;
+      return sansProse;
+    }
     return reste;
   };
+
+  /**
+   * La clé est-elle PORTÉE par l'entrée ? `desc` désigne la PROSE, pas l'un de ses deux porteurs
+   * (`document.ts:185` : « `desc` EXIGÉE = PROSE exigée, quel qu'en soit le PORTEUR ») : une entrée
+   * qui ADRESSE son texte (`descRef`, #1389) porte bien la prose, et son amputation retire les deux
+   * porteurs. Sans cela, une famille migrée vers l'adresse sortirait de la population MESURÉE sans
+   * qu'aucun compte ne bouge — le verrou se tairait au lieu de mordre.
+   */
+  const portee = (entree: Record<string, unknown>, cle: Cle): boolean =>
+    cle === 'desc'
+      ? entree.desc !== undefined || entree.descRef !== undefined
+      : entree[cle] !== undefined;
 
   /** Paires (fichier, clé) mesurées REFUSÉES à l'amputation, sur la population dérivée du registre. */
   const mesurees = (): { paires: string[]; temoins: string[] } => {
@@ -736,7 +752,7 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
       const avec = (remplacante: Record<string, unknown>) => [remplacante, ...liste.slice(1)];
       if (!def.schema.safeParse(avec(entree)).success) temoins.push(`${def.file} : la 1ʳᵉ entrée RÉELLE est refusée par son propre schéma`);
       for (const cle of CLES) {
-        if (entree[cle] === undefined) continue;
+        if (!portee(entree, cle)) continue;
         if (!def.schema.safeParse(avec(ampute(entree, cle))).success) paires.push(`${def.file} · ${cle}`);
       }
     }

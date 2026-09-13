@@ -653,7 +653,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // AUCUN étalement (`sea-cargo › offerPrice {sum+…}` reste divergent au stock), et le noyau du
       // concept est borné aux deux clés qui ne nomment QU'une formule — `dice`/`times` en sont exclus,
       // ils nomment aussi un `DiseaseTime` et le COMPTE d'une réf de Talent (motif mesuré au lexique).
-      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 36],
+      // Cliquet REMONTÉ 36 → 39 (#1389, épique #1388) : deux concepts NEUFS du lexique, trois
+      // signatures cibles — l'ADRESSE d'un passage du Source (`book,ch,parts`) et ses deux FRAGMENTS
+      // (suite de blocs, cellule de table). Elles ne blanchissent AUCUN étalement : ces objets
+      // n'existaient nulle part avant la migration du pilote (`psychology.json`), et `descRefSchema`
+      // (`grammaire/valeurs.ts`) refuse toute autre graphie — il n'y a pas d'ancienne forme à
+      // éteindre. Sans elles, `book` les rangeait sous `source` et `sum` sous `formule`.
+      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 39],
       // Cliquet DESCENDU 671 → 670 (#1467 L1b V-P7) : le statbloc à `size` d'`arene-projet.json` quitte
       // ce stock — le profil embarqué s'ANNONCE (`type: 'statblock'`) et sa forme est déclarée champ par
       // champ (`defs-scenes/communs.ts`), donc sa signature n'est plus lue comme une référence non

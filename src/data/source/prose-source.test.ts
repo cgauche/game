@@ -11,16 +11,19 @@ import { describe, it, expect, afterAll } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
 import { parseChapitre, empreinteDe, type ChapitreParse, type FragmentBlocs } from './decoupe.ts';
 // @ts-expect-error - plugin ESM JS (pas de types) — même convention que `vite.config.ts`
 import { proseSource, titreDeChapitre } from '../../../scripts/source/prose-source-plugin.mjs';
 // @ts-expect-error - résolveur ESM JS (pas de types) — même convention que `vite.config.ts`
-import { cheminChapitre, materialiser } from '../../../scripts/source/resoudre.mjs';
+import { cheminChapitre, materialiser, resoudreProse } from '../../../scripts/source/resoudre.mjs';
 // @ts-expect-error - lecteur ESM JS (pas de types) — même convention que `vite.config.ts`
 import { chapitresDe } from '../../../scripts/source/lecteur-fs.mjs';
 // @ts-expect-error - bibliothèque RAW ESM JS (pas de types) — même convention que `vite.config.ts`
 import { readText } from '../../../scripts/raw/_lib.mjs';
+// Primitive de listage ESM JS, TYPÉE par son JSDoc (`lister.mjs`) — aucun `@ts-expect-error` ici.
+import { listerArbre } from '../../../scripts/guards/lib/lister.mjs';
 
 const CHAPITRE = `# Peur
 
@@ -319,6 +322,63 @@ describe('plugin `wfrp:prose-source` — manifeste du corpus RÉEL du dépôt', 
     expect(corps, `chapitre(s) dont le texte servi diverge du fichier \`Source/\` :\n${corps.join('\n')}`).toEqual([]);
     expect(comptes, 'aucun chapitre émis — le corpus du dépôt n’a pas été lu').toBeGreaterThan(0);
     expect(titres, 'aucun chapitre nommé — l’éditeur retomberait sur les noms de fichiers Word').toBeGreaterThan(0);
+  });
+});
+
+/**
+ * Ce que le TRANSFORM fait des modules RÉELS du dépôt. Les cas ci-dessus éprouvent le CÂBLAGE sur une
+ * fixture ; celui-ci éprouve la MATÉRIALISATION sur la donnée livrée et le `Source/` livré — c'est
+ * l'invariant sur lequel `src/data/index.ts` s'appuie pour typer une entrée adressée avec sa `desc`
+ * REQUISE (`adressee<T>`, `index.ts`) : hors Vite la forme est celle du disque (l'adresse, sans prose),
+ * dans le module chargé la prose est là. Aucun cardinal en dur : la population est IMPRIMÉE, et ce qui
+ * est asserté est l'IDENTITÉ texte-résolu ⇄ texte-injecté, entrée par entrée.
+ */
+describe('plugin `wfrp:prose-source` — modules RÉELS du dépôt', () => {
+  /** Les `.json` des deux racines qui portent au moins une adresse, sur le DISQUE. */
+  function modulesAdresses(): { id: string; code: string }[] {
+    const out: { id: string; code: string }[] = [];
+    for (const racine of ['data', 'scenes']) {
+      const dir = fileURLToPath(new URL(`../../${racine}/`, import.meta.url));
+      // Marche par la primitive d'ORDRE TOTAL (#1709 L3b) : la marche brute `readdirSync` est murée
+      // dans les tests de `src` (eslint.config.js, `VERROU_LISTAGE`) — son ordre suit le système de
+      // fichiers et rendrait la population imprimée différente d'un OS à l'autre.
+      for (const rel of listerArbre(dir, { filtre: (r: string) => r.endsWith('.json') })) {
+        const p = join(dir, rel);
+        const code = readFileSync(p, 'utf8');
+        if (code.includes('"descRef"')) out.push({ id: p, code });
+      }
+    }
+    return out.sort((a, b) => a.id.localeCompare(b.id));
+  }
+
+  it('chaque `desc` du module SERVI est le texte que l’adresse résout — et le DISQUE n’en porte aucune', () => {
+    const plugin = proseSource();
+    const modules = modulesAdresses();
+    const divergentes: string[] = [];
+    const surLeDisque: string[] = [];
+    let adresses = 0;
+    for (const { id, code } of modules) {
+      const disque = JSON.parse(code) as Record<string, unknown>[];
+      for (const e of disque) {
+        if (e.descRef === undefined) continue;
+        adresses += 1;
+        // Une entrée ADRESSÉE ne porte pas sa prose sur le disque : les deux ensemble sont refusés au
+        // parse (V1), et la copie serait la duplication que l'adressage existe pour supprimer.
+        if (e.desc !== undefined) surLeDisque.push(`${id} ${String(e.id)}`);
+      }
+      const servi = JSON.parse((plugin.transform.call(contexte().hook, code, id) as { code: string }).code) as Record<string, unknown>[];
+      servi.forEach((e, i) => {
+        const ref = e.descRef;
+        if (ref === undefined) return;
+        const attendu = (resoudreProse({ descRef: ref }) as { md: string }).md;
+        if (e.desc !== attendu) divergentes.push(`${id} ${String(e.id ?? i)} — le module servi ne porte pas le texte de son adresse`);
+      });
+    }
+    console.log(`PROSE MATÉRIALISÉE — ${modules.length} module(s) adressé(s), ${adresses} adresse(s) sur le disque.`);
+    expect(surLeDisque, `entrée(s) portant À LA FOIS l’adresse et sa copie :\n${surLeDisque.join('\n')}`).toEqual([]);
+    expect(divergentes, `entrée(s) dont la prose SERVIE diverge de son adresse :\n${divergentes.join('\n')}`).toEqual([]);
+    // Le détecteur ne prouve rien sur un périmètre vide : la donnée DOIT porter des adresses.
+    expect(adresses, 'aucune adresse dans les deux racines — la sonde mesurerait le vide').toBeGreaterThan(0);
   });
 });
 

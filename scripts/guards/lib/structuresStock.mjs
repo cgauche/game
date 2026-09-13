@@ -106,6 +106,13 @@ export const STRUCTURES_CIBLES = [
   { concept: "monnaie", signature: "brass,gold", date: "2026-09-01" },
   { concept: "monnaie", signature: "brass,silver", date: "2026-09-01" },
   { concept: "monnaie", signature: "gold,silver", date: "2026-09-01" },
+  // #1389 (épique #1388, 2026-09-07) — l'ADRESSE de prose et son FRAGMENT naissent CIBLES : ce sont
+  // les formes que le parseur `src/data/source/decoupe.ts` PRODUIT et que `descRefSchema`
+  // (`grammaire/valeurs.ts`) est seul à accepter — il n'y a rien à migrer vers une autre graphie.
+  // Sans ces trois lignes, `book` les ferait classer `source` et `sum` `formule`, par MISCLASSEMENT.
+  { concept: "adresse", signature: "book,ch,parts", date: "2026-09-07" },
+  { concept: "fragment", signature: "b0,b1,sec,secOcc,sum+…", date: "2026-09-07" },
+  { concept: "fragment", signature: "col,row,sec,secOcc,sum+…", date: "2026-09-07" },
   { concept: "de", signature: "n,sides", date: "2026-08-23" },
   { concept: "de", signature: "n,plus,sides", date: "2026-08-23" },
   // #1463 L-de-1 : la COMPOSITION d'une `Formula` (`formulaSchema`, `grammaire/valeurs.ts`) et le

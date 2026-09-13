@@ -10,11 +10,24 @@ import { readFileSync, existsSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { sortieOutilLocal } from '../lancer-local.mjs'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
+import { FOLIO_RATCHET } from '../guards/lib/folioRatchetStock.mjs'
 
 const DATA_DIR = 'src/data'
 const DEFS_DIR = 'src/data/schemas/defs'
 
 const MANIFEST = JSON.parse(readFileSync('src/data/donnees.manifest.json', 'utf8'))
+
+/**
+ * Taille du stock CLIQUET des folios réfutés — le seul nombre de folio que ce doc écrit : il vient
+ * d'un MODULE (gratuit, stable, déjà dans le graphe des sources lues).
+ *
+ * Les deux autres cardinaux (entrées scannées, irrésolues) ne s'écrivent PAS ici : les MESURER
+ * ferait entrer les ~300 chapitres du `Source/` dans l'empreinte de ce doc dérivé (mesuré :
+ * `docs/.sources-lues.json` 358 → 651 fichiers, +4 s par génération), si bien que toute réparation
+ * de chapitre périmerait `donnees.md` — un doc dérivé ne porte pas un cardinal vivant qui dépend
+ * d'un autre corpus. Le doc renvoie à la commande qui les rend, `node scripts/data/audit-folios.mjs`.
+ */
+const FOLIO = { cliquetees: FOLIO_RATCHET.size }
 
 const errors = []
 
@@ -173,19 +186,23 @@ out += `  avec leur folio de début.\n`
 out += `  **Enforced** (#536) par \`src/data/book-source-integrity.test.ts\`, volet « intégrité du folio », par DEUX\n`
 out += `  voies : (A) **hors-livre** — le folio dépasse le dernier folio ATTESTÉ du livre (\`bookMaxFolio\` : dernier\n`
 out += `  marqueur \`data-folio\` et dernière page citée par \`00 - Index.md\`), réfutation qui se passe de la \`desc\`\n`
-out += `  ; (B) **encadrement** — la \`desc\` étant verbatim (règle 5), elle LOCALISE l'entrée dans le \`Source/\` du livre\n`
-out += `  déclaré, et l'encadrement \`data-folio\` de l'occurrence réfute le folio qui ment. Défauts fondateurs :\n`
+out += `  ; (B) **encadrement** — la prose de l'entrée étant verbatim (règle 5), elle LOCALISE l'entrée dans le \`Source/\`\n`
+out += `  du livre déclaré, et l'encadrement \`data-folio\` de l'occurrence réfute le folio qui ment. La garde consomme la\n`
+out += `  prose sous SES DEUX porteurs (#1389) : la \`desc\` inline, ou le texte que \`materialiser\` (\`scripts/source/resoudre.mjs\`)\n`
+out += `  résout d'une \`descRef\` — une famille qui ADRESSE sa prose reste donc mesurée. Défauts fondateurs :\n`
 out += `  \`redoutable\` (ZI) déclarait \`page: 11\` pour un texte en folio 134 ; \`activities.json:duel\` déclarait\n`
 out += `  \`page: 223\` dans un ADE II qui compte 98 pages. Mécanique : \`scripts/guards/lib/folioIntegrity.mjs\` ;\n`
 out += `  rapport de solde (donne le folio RÉEL) : \`node scripts/data/audit-folios.mjs\`.\n`
-out += `  ⚠ **Ce que la garde NE voit PAS** — elle ne réfute que ce qu'elle PROUVE et se tait sur le reste : sur les\n`
-out += `  2082 entrées citées scannées, 1135 échappent à tout verdict d'encadrement (desc reformulée donc\n`
-out += `  introuvable, desc trop courte pour localiser, chapitre sans marqueur, livre sans extraction FR). Une entrée\n`
+out += `  ⚠ **Ce que la garde NE voit PAS** — elle ne réfute que ce qu'elle PROUVE et se tait sur le reste : une part des\n`
+out += `  entrées citées échappe à TOUT verdict, de la desc comme du titre (prose reformulée donc introuvable, prose trop\n`
+out += `  courte pour localiser, chapitre sans marqueur, livre sans extraction FR) — les deux cardinaux se LISENT au run\n`
+out += `  (\`node scripts/data/audit-folios.mjs\`, lignes « Entrées citées scannées » et « irrésolues ») et ne sont pas écrits\n`
+out += `  ici : ils dépendent du \`Source/\`, qu'un doc dérivé de la DONNÉE n'a pas à prendre dans son empreinte. Une entrée\n`
 out += `  neuve à desc NON verbatim et à folio faux mais PLAUSIBLE passe encore : seule la règle 5 la rattrape. Le\n`
 out += `  stock n'est donc pas « les défauts du dépôt », c'est « les défauts que ces deux voies prouvent ».\n`
 out += `  Si une desc se retrouve sur PLUSIEURS folios (définition ET récapitulatif d'annexe), cite la **DÉFINITION** ;\n`
 out += `  le rapport les signale (rubrique « À ARBITRER ») car la garde ne les départage pas.\n`
-out += `  **Mode CLIQUET** : le stock de 140 entrées déjà fausses est gelé dans \`scripts/guards/lib/folioRatchetStock.mjs\`\n`
+out += `  **Mode CLIQUET** : le stock des ${FOLIO.cliquetees} entrées déjà fausses est gelé dans \`scripts/guards/lib/folioRatchetStock.mjs\`\n`
 out += `  et ne peut que DÉCROÎTRE — toute entrée NEUVE au folio réfuté échoue la CI, toute clé soldée qui y traîne\n`
 out += `  aussi, et sa TAILLE est plafonnée par la garde (\`FOLIO_RATCHET_MAX\`) pour qu'« ajouter une ligne au stock »\n`
 out += `  ne soit jamais le chemin le plus court. \`node scripts/data/audit-folios.mjs --stock\` re-rend le stock et\n`

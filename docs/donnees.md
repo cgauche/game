@@ -205,19 +205,23 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
   **Enforced** (#536) par `src/data/book-source-integrity.test.ts`, volet « intégrité du folio », par DEUX
   voies : (A) **hors-livre** — le folio dépasse le dernier folio ATTESTÉ du livre (`bookMaxFolio` : dernier
   marqueur `data-folio` et dernière page citée par `00 - Index.md`), réfutation qui se passe de la `desc`
-  ; (B) **encadrement** — la `desc` étant verbatim (règle 5), elle LOCALISE l'entrée dans le `Source/` du livre
-  déclaré, et l'encadrement `data-folio` de l'occurrence réfute le folio qui ment. Défauts fondateurs :
+  ; (B) **encadrement** — la prose de l'entrée étant verbatim (règle 5), elle LOCALISE l'entrée dans le `Source/`
+  du livre déclaré, et l'encadrement `data-folio` de l'occurrence réfute le folio qui ment. La garde consomme la
+  prose sous SES DEUX porteurs (#1389) : la `desc` inline, ou le texte que `materialiser` (`scripts/source/resoudre.mjs`)
+  résout d'une `descRef` — une famille qui ADRESSE sa prose reste donc mesurée. Défauts fondateurs :
   `redoutable` (ZI) déclarait `page: 11` pour un texte en folio 134 ; `activities.json:duel` déclarait
   `page: 223` dans un ADE II qui compte 98 pages. Mécanique : `scripts/guards/lib/folioIntegrity.mjs` ;
   rapport de solde (donne le folio RÉEL) : `node scripts/data/audit-folios.mjs`.
-  ⚠ **Ce que la garde NE voit PAS** — elle ne réfute que ce qu'elle PROUVE et se tait sur le reste : sur les
-  2082 entrées citées scannées, 1135 échappent à tout verdict d'encadrement (desc reformulée donc
-  introuvable, desc trop courte pour localiser, chapitre sans marqueur, livre sans extraction FR). Une entrée
+  ⚠ **Ce que la garde NE voit PAS** — elle ne réfute que ce qu'elle PROUVE et se tait sur le reste : une part des
+  entrées citées échappe à TOUT verdict, de la desc comme du titre (prose reformulée donc introuvable, prose trop
+  courte pour localiser, chapitre sans marqueur, livre sans extraction FR) — les deux cardinaux se LISENT au run
+  (`node scripts/data/audit-folios.mjs`, lignes « Entrées citées scannées » et « irrésolues ») et ne sont pas écrits
+  ici : ils dépendent du `Source/`, qu'un doc dérivé de la DONNÉE n'a pas à prendre dans son empreinte. Une entrée
   neuve à desc NON verbatim et à folio faux mais PLAUSIBLE passe encore : seule la règle 5 la rattrape. Le
   stock n'est donc pas « les défauts du dépôt », c'est « les défauts que ces deux voies prouvent ».
   Si une desc se retrouve sur PLUSIEURS folios (définition ET récapitulatif d'annexe), cite la **DÉFINITION** ;
   le rapport les signale (rubrique « À ARBITRER ») car la garde ne les départage pas.
-  **Mode CLIQUET** : le stock de 140 entrées déjà fausses est gelé dans `scripts/guards/lib/folioRatchetStock.mjs`
+  **Mode CLIQUET** : le stock des 109 entrées déjà fausses est gelé dans `scripts/guards/lib/folioRatchetStock.mjs`
   et ne peut que DÉCROÎTRE — toute entrée NEUVE au folio réfuté échoue la CI, toute clé soldée qui y traîne
   aussi, et sa TAILLE est plafonnée par la garde (`FOLIO_RATCHET_MAX`) pour qu'« ajouter une ligne au stock »
   ne soit jamais le chemin le plus court. `node scripts/data/audit-folios.mjs --stock` re-rend le stock et
@@ -489,4 +493,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: 0404e6e3bfe3ae2248d6fff0cea85f7b34a33aa5 (361 fichiers, 2 dossiers) corps: e315bc03e1e0beb4fae5d0dd0368ad48e432b799 -->
+<!-- sources-empreinte: 8bf8b4fa2c1f4818448989de38f825e86a3728e7 (362 fichiers, 2 dossiers) corps: ca19264e6341fe01dc8c5a5ea1ae33971057581c -->

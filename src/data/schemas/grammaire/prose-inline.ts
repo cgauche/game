@@ -90,7 +90,6 @@ export const PROSE_INLINE_TOLEREE: Readonly<Record<string, LigneProseInline>> = 
   'mass-battle': { entrees: 10, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` de rangée (`hazards[]`) — refus au parse à la migration de la famille, Lot C' },
   peripeties: { entrees: 10, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` d’entrée, à adresser au Lot C' },
   classes: { entrees: 9, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` d’entrée, à adresser au Lot C' },
-  psychology: { entrees: 9, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` d’entrée, à adresser au Lot C' },
   'reseau-routier': { entrees: 9, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` d’entrée, à adresser au Lot C' },
   'sea-shanties': { entrees: 7, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` d’entrée, à adresser au Lot C' },
   'steam-breakdown': { entrees: 6, lot: LOT, date: DATE, motif: 'prose du livre recopiée en `desc` d’entrée, à adresser au Lot C' },
