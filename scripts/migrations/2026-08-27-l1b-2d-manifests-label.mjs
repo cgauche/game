@@ -8,7 +8,8 @@
  * impriment (`docs/systemes.md`, `docs/donnees.md`) doivent sortir byte-stables.
  *
  * PORTEURS ET CHEMINS (mesurés, 0 champ `label` préexistant sur ces chemins — donc 0 collision) :
- *  - `primitives.manifest.json` : 28 entrées de premier niveau ;
+ *  - `primitives.manifest.json` : 30 entrées de premier niveau (28 → 30, #1728 : `itemIcon` et
+ *    `mediaSelect` entrent au manifeste, de la MÊME forme que les 28 autres) ;
  *  - `systemes.manifest.json`   : 16 entrées de premier niveau ;
  *  - `donnees.manifest.json`    : 11 entrées de `rubriques` (document de famille `config` — il n'a
  *    PAS de `nom` de premier niveau ; les `mot`/`desc`/`lecon` des homonymes sont d'autres champs).
@@ -34,7 +35,9 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
 /** Les 3 porteurs : fichier, sélecteur des entrées PORTEUSES du libellé, et compte ATTENDU. */
 const PORTEURS = [
-  { fichier: 'src/data/primitives.manifest.json', entrees: (d) => d, attendu: 28 },
+  // 28 → 30 (#1728) : les primitives `itemIcon` et `mediaSelect` entrent au manifeste, de la MÊME
+  // forme que les 28 autres — le périmètre mesuré suit, à l'ÉGALITÉ.
+  { fichier: 'src/data/primitives.manifest.json', entrees: (d) => d, attendu: 30 },
   { fichier: 'src/data/systemes.manifest.json', entrees: (d) => d, attendu: 16 },
   { fichier: 'src/data/donnees.manifest.json', entrees: (d) => d.rubriques, attendu: 11 },
 ];

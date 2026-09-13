@@ -75,7 +75,9 @@ const CARDINAUX = {
   'locations.json': 55,
   'mutations.json': 116,
   'mutationTables.json': 17,
-  'primitives.manifest.json': 28,
+  // 28 → 30 (#1728) : les primitives `itemIcon` et `mediaSelect` entrent au manifeste, de la MÊME
+  // forme que les 28 autres.
+  'primitives.manifest.json': 30,
   'qualities.json': 59,
   'regles.json': 85, // +1 `critiques-de-bateau` (#1657 B3-2)
   'stars.json': 23,
@@ -86,7 +88,8 @@ const CARDINAUX = {
   'weaponGroups.json': 38,
 };
 // Puis 801→802 : +1 table d'effets `mendier-ennuis` (#1612).
-const TOTAL_ATTENDU = 802;
+// Puis 802→804 (#1728) : +2 primitives `itemIcon` et `mediaSelect` au manifeste des primitives.
+const TOTAL_ATTENDU = 804;
 
 const echecs = [];
 const rapport = [];
