@@ -54,6 +54,25 @@ src/data/                   NOTRE base APP-OWNED (JSON commité, éditable dans 
                               SEUL éditeur d'adresse (`src/ui/compendium/DescRefField.tsx`)
   hash.ts                     Hachage déterministe partagé (`hash32` FNV-1a, `seedStream`) : empreinte
                               de découpe ET seeds du rendu (`src/gameIso`)
+scripts/source/             Le côté NODE de la chaîne d'adressage de prose — entrées/sorties seulement,
+                            le parsing vit dans `src/data/source/decoupe.ts` (PUR). `lecteur-fs.mjs` lit
+                            et mémorise un chapitre du `Source/` ; `resoudre.mjs` porte les deux portes
+                            FAIL-CLOSED (`resoudreProse` pour UNE entrée, `materialiser` pour une racine
+                            de document) et `cheminChapitre` ; `derive-decoupes.mjs` DÉRIVE une adresse
+                            d'une `desc` existante et rend le verdict d'adressabilité (`judge`, consommé
+                            par les migrations) ; `adresses.mjs` est L'INVENTAIRE des adresses du dépôt
+                            (walk unique des deux racines par `listerArbre`, lu par la garde de
+                            re-résolution, par la sonde de matérialisation et par l'outil de réparation) ;
+                            `reecriture-ancree.mjs` remplace un fragment de TEXTE à sa place exacte
+                            (`remplacerAncre`/`compterAncre` — indentation et ordre des clés du document
+                            authoré préservés, ancre non unique = refus), consommé par les migrations et
+                            par `reparer-adresses.mjs` ; `reparer-adresses.mjs` relocalise une adresse
+                            cassée par son texte d'origine (`git show <ref>:<chapitre>`) et n'écrit que
+                            ses `RECALÉE` (geste humain : `docs/ajouter-un-livre-source.md` §7) ;
+                            `mesurer-prose-inline.mjs` et `inventaire-consommateurs-prose.mjs` mesurent
+                            le stock qui reste à adresser et ses consommateurs Node ; `decoupe-cli.mjs`
+                            inspecte un chapitre à la main ; `prose-source-plugin.mjs` est le plugin Vite
+                            `wfrp:prose-source` (matérialisation au build, service des chapitres en dev)
 scripts/migrations/         Migrations de donnée REJOUABLES (une par lot, datée) : rejouées sur l'arbre
                             courant elles ne réécrivent RIEN. `npm run migrations:replay` (replay.mjs)
                             les rejoue dans l'ordre lexical, EN PLACE, et mesure l'arbre par git diff

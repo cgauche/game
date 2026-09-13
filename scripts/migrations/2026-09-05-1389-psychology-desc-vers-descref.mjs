@@ -30,8 +30,10 @@
  *
  * FORMATAGE PRÉSERVÉ : la réécriture est TEXTUELLE et ancrée sur le couple `"desc": <chaîne JSON>`
  * exact de l'entrée, remplacé PAR SA PLACE par `"descRef": <objet>` à l'indentation du fichier ; le
- * document n'est jamais re-sérialisé. Le compte TEXTUEL (remplacements) est confronté au compte
- * STRUCTUREL (entrées jugées) — divergence = sortie 1.
+ * document n'est jamais re-sérialisé. Le geste vient de la primitive PARTAGÉE `remplacerAncre`
+ * (`scripts/source/reecriture-ancree.mjs`), que l'outil de réparation d'adresse consomme aussi. Le
+ * compte TEXTUEL (remplacements) est confronté au compte STRUCTUREL (entrées jugées) — divergence =
+ * sortie 1.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -39,6 +41,7 @@ import { fileURLToPath } from 'node:url';
 import { ABBR_BY_BOOK_ID } from '../source/lecteur-fs.mjs';
 import { resoudreProse } from '../source/resoudre.mjs';
 import { judge } from '../source/derive-decoupes.mjs';
+import { jsonIndente, remplacerAncre } from '../source/reecriture-ancree.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const FICHIER = 'src/data/psychology.json';
@@ -138,16 +141,12 @@ let remplacements = 0;
 if (echecs.length === 0) {
   for (const geste of gestes) {
     const ancre = `"desc": ${JSON.stringify(geste.desc)}`;
-    const vues = out.split(ancre).length - 1;
-    if (vues !== 1) {
-      echecs.push(`${FICHIER} ${geste.id} : ancre textuelle ${vues === 0 ? 'introuvable' : `vue ${vues} fois`}`);
+    const pose = remplacerAncre(out, ancre, ({ indentation }) => `"descRef": ${jsonIndente(geste.ref, indentation)}`);
+    if (pose.erreur) {
+      echecs.push(`${FICHIER} ${geste.id} : ${pose.erreur}`);
       continue;
     }
-    const debut = out.indexOf(ancre);
-    const ligne = out.lastIndexOf('\n', debut) + 1;
-    const indentation = out.slice(ligne, debut);
-    const objet = JSON.stringify(geste.ref, null, 2).split('\n').join(`\n${indentation}`);
-    out = `${out.slice(0, debut)}"descRef": ${objet}${out.slice(debut + ancre.length)}`;
+    out = pose.texte;
     remplacements += 1;
   }
 }

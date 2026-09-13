@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
-import { fileURLToPath } from 'node:url';
+// Inventaire des adresses : la DÉFINITION unique du walk (`scripts/source/adresses.mjs`), que la
+// sonde de matérialisation et l'outil de réparation prennent au même endroit — un second walk local
+// ici et le périmètre des trois divergerait en silence.
+import { RACINES_PAR_DEFAUT, adressesDuDepot, fichiersJsonDe } from '../../scripts/source/adresses.mjs';
 // @ts-expect-error - résolveur ESM JS (pas de types) — même convention que `vite.config.ts`
 import { resoudreProse } from '../../scripts/source/resoudre.mjs';
 import { empreinteDe, parseChapitre, type ChapitreParse, type Fragment, type FragmentBlocs } from './source/decoupe';
@@ -46,48 +46,11 @@ const GARDE = {
   ticket: '#1389 (épique #1388)',
 } as const;
 
-/** Une adresse rencontrée dans la donnée, et d'où elle vient. */
+/** Une adresse rencontrée dans la donnée, telle que l'inventaire la rend. */
 interface AdresseVue {
-  cle: string;
+  fichier: string;
+  id: string;
   noeud: { descRef?: { book: string; ch: string } };
-}
-
-const RACINES = ['data', 'scenes'].map((r) => fileURLToPath(new URL(`../${r}/`, import.meta.url)));
-
-/** Tous les `.json` d'une racine, à toute profondeur. */
-const fichiersJson = (dir: string): string[] =>
-  listerArbre(dir, { filtre: (rel) => rel.endsWith('.json') }).map((rel) => join(dir, rel));
-
-/** Nœuds porteurs d'une `descRef`, à toute profondeur des deux racines. Clé = `id` STABLE quand il
- *  existe, sinon le chemin JSON — jamais un libellé (doctrine 2026-07-09). */
-function adressesDuDepot(): AdresseVue[] {
-  const out: AdresseVue[] = [];
-  for (const racine of RACINES) {
-    for (const fichier of fichiersJson(racine)) {
-      let data: unknown;
-      try {
-        data = JSON.parse(readFileSync(fichier, 'utf8'));
-      } catch {
-        continue;
-      }
-      const nomCourt = fichier.slice(fichier.lastIndexOf('src')).split('\\').join('/');
-      const walk = (node: unknown, path: string): void => {
-        if (!node || typeof node !== 'object') return;
-        if (Array.isArray(node)) {
-          node.forEach((x, i) => walk(x, `${path}[${i}]`));
-          return;
-        }
-        const rec = node as Record<string, unknown>;
-        if (rec.descRef !== undefined) {
-          const id = typeof rec.id === 'string' ? rec.id : path || '?';
-          out.push({ cle: `${nomCourt}:${id}`, noeud: rec as AdresseVue['noeud'] });
-        }
-        for (const [k, v] of Object.entries(rec)) walk(v, path ? `${path}.${k}` : k);
-      };
-      walk(data, '');
-    }
-  }
-  return out;
 }
 
 /** Chargeur de chapitre injecté dans le résolveur (la fixture en fournit un ; la donnée réelle prend
@@ -110,16 +73,18 @@ function echecDe(noeud: unknown, lecteur?: Lecteur): { code: string; message: st
 const CODES_B = new Set(['empreinte-divergente']);
 const CODES_D = new Set(['fragment-trop-court', 'fragment-ambigu', 'fragments-chevauchants', 'montage-hors-plafond']);
 
-const ADRESSES = adressesDuDepot();
+const ADRESSES: AdresseVue[] = adressesDuDepot();
 const ECHECS = ADRESSES.map((a) => ({ ...a, echec: echecDe(a.noeud) }));
 const chapitres = new Set(ADRESSES.map((a) => `${a.noeud.descRef?.book}|${a.noeud.descRef?.ch}`));
 
 const lignes = (volet: (code: string) => boolean): string[] =>
-  ECHECS.filter((e) => e.echec && volet(e.echec.code)).map((e) => `${e.cle} → ${e.echec!.message}`).sort();
+  ECHECS.filter((e) => e.echec && volet(e.echec.code))
+    .map((e) => `${e.fichier}:${e.id} → ${e.echec!.message}`)
+    .sort();
 
 describe('résolution de la prose ADRESSÉE — toute `descRef` rend son texte, aujourd’hui (#1389)', () => {
   it('PÉRIMÈTRE : chaque racine est réellement balayée, et ce qu’elle porte est DIT', () => {
-    const balayees = RACINES.map((r) => ({ racine: r.slice(r.lastIndexOf('src')).split('\\').join('/'), fichiers: fichiersJson(r).length }));
+    const balayees = RACINES_PAR_DEFAUT.map((r) => ({ racine: r, fichiers: fichiersJsonDe(r).length }));
     console.log(
       `PROSE ADRESSÉE — ${ADRESSES.length} adresse(s) sur ${balayees.map((b) => `${b.racine} (${b.fichiers} .json)`).join(' + ')}, ` +
         `${ADRESSES.length === 0 ? 'périmètre vide' : `${chapitres.size} chapitre(s) distinct(s) : ${[...chapitres].sort().join(', ')}`}` +
@@ -138,7 +103,7 @@ describe('résolution de la prose ADRESSÉE — toute `descRef` rend son texte, 
     expect(
       rouges,
       'Adresse(s) que le `Source/` courant ne résout plus — relever le passage et corriger l’adresse ' +
-        `(\`node scripts/source/reparer-adresses.mjs\` quand il existera) :\n${rouges.join('\n')}`,
+        `(\`node scripts/source/reparer-adresses.mjs\` relocalise et propose, \`--apply\` écrit) :\n${rouges.join('\n')}`,
     ).toEqual([]);
   });
 

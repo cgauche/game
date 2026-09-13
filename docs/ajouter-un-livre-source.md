@@ -169,6 +169,51 @@ node scripts/raw/reconcile.mjs            # code ↔ Atlas : Sens A (règle cod�
   pour les autres livres (dont un nouveau livre comme MDG), il ne fait qu'un comptage global des
   mentions par livre (section *Autres livres* du rapport), sans le calcul de trou fin par ligne.
 
+## 7. Corriger un défaut d'extraction (table cassée, césure, chapitre mal titré, page perdue)
+
+Un `.md` de `Source/` n'est pas figé : une table recollée de travers, un paragraphe coupé par une
+césure, une page que Marker a sautée se corrigent **à la main**, au PDF. Ce geste **déplace du
+texte**, donc il déplace ce qui le cite : les numéros de ligne des réfs de l'Atlas et du code, et les
+**adresses** `descRef` de la donnée. Tout se rejoue en une passe, et **tout part dans le MÊME
+commit** (Source corrigée + réfs recalées + adresses recalées + fiches `Implémente` régénérées).
+
+1. **Éditer** `Source/<livre>/NN - X.md`, la page PDF ouverte à côté — verbatim, y compris les
+   coquilles du livre. Les marqueurs `<span … data-folio="N">` sont l'ancrage de page : on les
+   déplace avec leur texte, on n'en invente pas.
+2. `node scripts/raw/reanchor.mjs --apply --remap` — **avant** de committer la Source. La clause de
+   `--remap` est écrite plus haut (§6, « Ne jamais lancer `--remap` sur une Source déjà committée ») :
+   la carte de recalage se lit du diff `git HEAD`↔arbre, elle n'existe donc que tant que la
+   correction n'est pas commitée.
+3. `npx vitest run src/data/prose-resolution.test.ts` — la garde de re-résolution liste **exactement**
+   les entrées dont l'adresse ne rend plus son texte, avec le code de la rupture
+   (`bornes-hors-limites`, `empreinte-divergente`, `ligne-introuvable`…). C'est l'inventaire des
+   consommateurs impactés : ni plus, ni moins.
+4. `node scripts/source/reparer-adresses.mjs` puis `--apply` — relocalise chaque adresse cassée par
+   son **texte d'origine** (la même adresse résolue sur la version `--depuis`, lue par `git show`) et
+   propose l'adresse corrigée. Quatre verdicts : `RECALÉE` (un seul emplacement, et l'adresse neuve
+   re-rend le texte d'origine à l'octet), `AMBIGUË` (plusieurs emplacements, listés), `PERDUE` (le
+   texte n'est plus là), `IRRÉCUPÉRABLE` (l'adresse ne résolvait déjà pas à `--depuis`). Sur un
+   montage, c'est le verdict le plus coûteux qui gouverne : un fragment `PERDUE` rend l'adresse
+   entière `PERDUE`, même si un autre fragment n'était qu'`AMBIGUË`. **`--apply` n'écrit que les
+   `RECALÉE`** ; les trois autres se règlent à la main, au PDF.
+5. `node scripts/raw/anchor-fill.mjs <ABBR> --ch NN --pdf <chemin> --apply` s'il reste des blocs sans
+   folio : il pose des ancres `data-folio` **ciblées**, et saute tout candidat absent, multiple ou
+   hors bornes.
+6. `npm run gates && git commit` — tout dans le même commit.
+
+Ce que chaque outil voit, et ce qu'il ne voit **pas** :
+
+| Outil | Ce qu'il juge | Son angle mort |
+|---|---|---|
+| `scripts/raw/check-code-refs.mjs` | qu'une réf `<ABRÉV> NN l.X` du code tient dans les bornes du chapitre, et que la ligne citée n'est pas vide | le **contenu** : une réf qui tombe sur un autre paragraphe de la bonne longueur passe |
+| `scripts/raw/reanchor.mjs` | les citations verbatim de l'Atlas, retrouvées à l'identique dans la Source courante | les réfs de *synthèse* (sans citation) — d'où `--remap`, et sa clause d'antériorité au commit |
+| `src/data/prose-resolution.test.ts` | que toute `descRef` du dépôt rend son texte AUJOURD'HUI (empreintes comprises) | il nomme la rupture, il ne la répare pas |
+| `scripts/source/reparer-adresses.mjs` | où le texte d'origine a atterri, et le re-prouve à l'octet | il n'écrit que les `RECALÉE` — une source **réécrite** n'est pas un déplacement |
+
+Deux précédents exécutés de bout en bout : `850ae3199` (le folio 88 du livre de base restitué — la
+page du Juriste revenue à la vérité citable, la donnée suivant le livre) et `8d7465698` (20
+lignes-titres de carrières restituées au chapitre 08, `careers.json` repassé au folio imprimé).
+
 ## Piège des PDF sources faillibles
 
 Un écart entre `src/data/*.json` et la Source `.md` **n'implique pas que le JSON est faux** — les
@@ -188,3 +233,6 @@ sert d'arbitre — jamais comme source de la donnée affichée, qui reste recoll
 - `node scripts/raw/reanchor.mjs` (+ `--apply`, one-shot `--remap` avant commit de la Source) —
   citations verbatim de l'Atlas alignées sur la Source courante.
 - `npx vitest run src/data/no-html-in-prose.test.ts` — aucune description collée en HTML.
+- `node scripts/source/reparer-adresses.mjs` (+ `--apply`, `--dataset <nom>`, `--depuis <ref-git>`) —
+  adresses `descRef` recalées après une correction d'extraction ; sortie 1 tant qu'une adresse reste
+  cassée. La garde qui les JUGE est `src/data/prose-resolution.test.ts`.

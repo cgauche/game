@@ -444,13 +444,26 @@ function runEnFragments(
 }
 
 /**
- * Cherche dans UN chapitre le premier run contigu de blocs dont la concaténation normalisée vaut
+ * TOUS les runs contigus de blocs du chapitre dont la concaténation normalisée vaut `targetNorm`,
+ * chacun rendu en fragments prêts à adresser (un fragment par section traversée). `[]` si rien ne
+ * correspond.
+ *
+ * L'ambiguïté d'un texte dans son chapitre devient ainsi OBSERVABLE : c'est ce que le relocaliseur
+ * (`scripts/source/reparer-adresses.mjs`) doit voir pour refuser de poser au jugé — `findCells` rend
+ * déjà tous ses hits, les blocs les rendent maintenant aussi.
+ */
+export function findAllRuns(chapitre: ChapitreParse, targetNorm: string): FragmentBlocs[][] {
+  const blocks = blocsPlats(chapitre);
+  return runsBruts(blocks, targetNorm).map((run) => runEnFragments(chapitre, blocks, run));
+}
+
+/**
+ * Cherche dans UN chapitre le PREMIER run contigu de blocs dont la concaténation normalisée vaut
  * `targetNorm`, et le rend en fragments prêts à adresser. `null` si rien ne correspond.
  */
 export function findRuns(chapitre: ChapitreParse, targetNorm: string): FragmentBlocs[] | null {
-  const blocks = blocsPlats(chapitre);
-  const runs = runsBruts(blocks, targetNorm);
-  return runs.length ? runEnFragments(chapitre, blocks, runs[0]) : null;
+  const runs = findAllRuns(chapitre, targetNorm);
+  return runs.length ? runs[0] : null;
 }
 
 /** Cellule d'un chapitre portant le texte cherché. */
