@@ -6,8 +6,7 @@
 //   - REFUS : une création de ticket SANS aucun label, par sa porte CLI (`gh issue create|new`),
 //     REST (`gh api … POST /repos/<o>/<r>/issues`) ou GraphQL (`gh api graphql` portant
 //     `createIssue`) ; et tout corps/titre passé en ligne de commande qui porte un backtick ou un
-//     `$(` — le shell l'EXÉCUTE avant que gh le voie (récidive ×3, fiche mémoire
-//     `env-backticks-executes-dans-contenu-interpole`), le corps se passe en `--body-file`.
+//     `$(` — le shell l'EXÉCUTE avant que gh le voie (récidive ×3), le corps se passe en `--body-file`.
 //   - CONTEXTE, jamais un refus : les familles `sev:`/`type:`/`domaine:` qui MANQUENT, et un titre
 //     au-delà de 200 caractères. Mesure du 2026-09-02 : 10/50 tickets récents portent les trois
 //     familles (31/400 sur le corpus entier) ; titres médiane 168 sur les 100 récents, 26/100 au-delà

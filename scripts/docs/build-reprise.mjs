@@ -274,6 +274,12 @@ const NON_VERSIONNES = [
     acces: `régénérables par les scripts \`scripts/qc/\` ; l'exception \`${motif('!public/qc/baseline-affine/')}\` reste VERSIONNÉE`,
   },
   {
+    quoi: `Journaux de chantier des sessions agent (\`${motif('.superpowers/')}\`)`,
+    pourquoi: 'traces locales de session (état tâche par tâche, briefs/rapports, diffs de revue) — pas du source',
+    acces:
+      "non régénérable : reprendre un chantier mené par une session morte se lit dans `.superpowers/sdd/progress.md` puis les `task-<N>-brief.md`/`-report.md` des tâches en cours, AVANT tout plan de `docs/plans/` — et le code seul fait foi",
+  },
+  {
     quoi: `Réglages Claude Code personnels (\`${motif('.claude/*')}\`)`,
     pourquoi: 'environnement local',
     acces: `exceptions VERSIONNÉES : ${listeCode(

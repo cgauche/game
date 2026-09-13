@@ -7,7 +7,8 @@ de `SceneEl` et les champs de `GP`/`MaterialRef`/`Face`/`ElBase`/`ElStates`
 (`src/gameIso/builders/types.ts`), les 7 builders exportés sous `src/gameIso/builders/` avec leur type
 de sortie, les 9 sous-dossiers de `src/gameIso/` et leur nombre de modules directs, les
 6 clés d'ambiance de `src/data/ambiance.json`, les 7 sections d'une
-`DetailRecipe`, la couverture RÉELLE de la garde anti-couleur (lue dans la garde) et la population
+`DetailRecipe`, les 9 appendices du registre du rig avec leurs références par id, la
+couverture RÉELLE de la garde anti-couleur (lue dans la garde) et la population
 des 3 catalogues de matériaux. **Angles morts** : ce doc décrit la FORME du
 pipeline, pas le RÉSULTAT — aucune mesure ici ne dit qu'une scène est belle ou juste (c'est le rôle
 de la QC visuelle et des oracles de parité) ; le comptage de modules est NON récursif (un
@@ -113,6 +114,30 @@ La vérité de VUE (estompe d'occlusion, révélation, assombrissement d'un éta
 | `src/gameIso/rig/` | 20 | 25 | art des sujets (bestiaire, équipement, véhicules) — hors périmètre de la garde anti-couleur |
 | `src/gameIso/stage/` | 50 | 0 | hôtes de montage : le monde et ses surcouches React, le plan de station, le tri des objets |
 
+### Appendices du rig — UN registre, 9 ids, une seule résolution
+
+Cornes et queues ne sont pas de l'art posé au cas par cas : `src/gameIso/rig/parts/appendages/` est le registre UNIQUE, et
+**1 appendice = 1 def `defs/<id>.ts` qui porte SON art** (`front` + `profile` dédié, `back` = `front` par
+défaut) — aucune string SVG de corne ou de queue hors des defs. Les consommateurs les référencent **PAR ID**
+et la résolution passe par la primitive unique `pickView` (`src/gameIso/rig/parts/types.ts:14`), appelée
+sur un appendice par `src/gameIso/rig/composeRig.tsx`, `src/gameIso/rig/parts/monstrous.ts`, `src/gameIso/rig/parts/traitVisuals.ts`.
+
+| Appendice | id | Def | Dos propre | Référencé par |
+|---|---|---|---|---|
+| Cornes caprines | `cornes-caprin` | `src/gameIso/rig/parts/appendages/defs/cornes-caprin.ts` | = face | 3 — `src/gameIso/rig/creatures/defs/Prophete-gris.ts`, `src/gameIso/rig/parts/monster/defs/caprin.ts`, `src/gameIso/rig/parts/monster/defs/gobelin.ts` |
+| Cornes de démon | `cornes-demon` | `src/gameIso/rig/parts/appendages/defs/cornes-demon.ts` | = face | 2 — `src/gameIso/rig/parts/elements/defs/cornes-demon.ts`, `src/gameIso/rig/parts/monster/defs/demon.ts` |
+| Cornes (générique) | `cornes-generique` | `src/gameIso/rig/parts/appendages/defs/cornes-generique.ts` | = face | 3 — `src/gameIso/rig/creatures/defs/Furie-du-chaos.ts`, `src/gameIso/rig/parts/monstrous.ts`, `src/gameIso/rig/parts/traitVisuals.ts` |
+| Cornes de Gor | `cornes-gor` | `src/gameIso/rig/parts/appendages/defs/cornes-gor.ts` | = face | 5 — `src/gameIso/rig/creatures/defs/Chamane-Brey.ts`, `src/gameIso/rig/creatures/defs/Gor.ts`, `src/gameIso/rig/creatures/defs/Homme-bete-de-Khorne.ts`, `src/gameIso/rig/creatures/defs/Homme-bete.ts`, `src/gameIso/rig/creatures/defs/Urzo.ts` |
+| Cornes de taureau | `cornes-taureau` | `src/gameIso/rig/parts/appendages/defs/cornes-taureau.ts` | = face | 2 — `src/gameIso/rig/parts/elements/defs/cornes-taureau.ts`, `src/gameIso/rig/parts/monster/defs/taureau.ts` |
+| Cornes vestigiales | `cornes-vestigiales` | `src/gameIso/rig/parts/appendages/defs/cornes-vestigiales.ts` | = face | 3 — `src/gameIso/rig/creatures/defs/Bete-imperiale.ts`, `src/gameIso/rig/creatures/defs/Jumeaux.ts`, `src/gameIso/rig/creatures/defs/Ungor.ts` |
+| Queue-fouet | `queue-fouet` | `src/gameIso/rig/parts/appendages/defs/queue-fouet.ts` | = face | 1 — `src/gameIso/rig/parts/traitVisuals.ts` |
+| Queue (générique) | `queue-generique` | `src/gameIso/rig/parts/appendages/defs/queue-generique.ts` | = face | 3 — `src/gameIso/rig/parts/elements/defs/queue.ts`, `src/gameIso/rig/parts/monster/defs/singe.ts`, `src/gameIso/rig/parts/monstrous.ts` |
+| Queue de rat | `queue-rat` | `src/gameIso/rig/parts/appendages/defs/queue-rat.ts` | = face | 2 — `src/gameIso/rig/parts/elements/defs/queue-rat.ts`, `src/gameIso/rig/parts/monster/defs/rat.ts` |
+
+Un **0** en « Référencé par » est une PISTE, pas une preuve de mort : la colonne compte les fichiers de
+`src/gameIso/` (hors tests et hors registre) qui citent l'id — un id choisi en donnée de scène ou au Codex n'y
+apparaît pas. Ajouter un type d'appendice = déposer un def + `npm run gen` ; jamais un 4ᵉ mécanisme d'art.
+
 ## 4. Détail de surface — la recette (`src/gameIso/detail/types.ts:19`)
 
 Une `DetailRecipe` est une donnée PURE portée par les defs d'apparence ; ses dimensions sont en
@@ -174,4 +199,4 @@ relancer, comparer : une migration donnée-neutre doit rester identique.
 - **un TYPE d'élément** (au-delà des 5 membres de `SceneEl`) : ajouter le variant au pivot,
   son builder, sa cuisson dans le monde volumique, et — s'il doit se voir à l'authoring — son peintre
   SVG avec sa profondeur de tri.
-<!-- sources-empreinte: 565ba4d4036194d7f7203da89fe24f10b39f839d (23 fichiers, 10 dossiers) corps: 03898c2044a2021c15d2aa03f01d36fafc04622c -->
+<!-- sources-empreinte: 0a330bd6827dafded86772e14eac5b833dfb3b9e (1007 fichiers, 92 dossiers) corps: f8a5b47f5e29e8300f0ef76835fa081a4c5692e8 -->

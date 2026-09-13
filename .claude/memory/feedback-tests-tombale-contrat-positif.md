@@ -1,25 +1,22 @@
 ---
 name: feedback-tests-tombale-contrat-positif
-description: "Un test qui affirme l'ABSENCE d'un élément retiré = pierre tombale (règle 6c étendue aux tests) — la forme saine est le contrat structurel POSITIF ou l'absence-RÈGLE de classe"
-metadata: 
+description: "Un test porte le CONTRAT : jamais l'absence d'un élément retiré (pierre tombale), jamais la mécanique d'avant une refonte"
+metadata:
   node_type: memory
   type: feedback
-  originSessionId: fe239011-bf46-4e5d-b120-539f4c477f25
 ---
 
-Question user (2026-07-17, chantier fiche #492) : « les tests unitaires qui vérifient qu'on a
-retiré un élément de l'interface (tombstone), c'est normal ? » — Non.
+Un test verrouille le CONTRAT, jamais une implémentation. Deux formes interdites : l'assertion qui
+commémore une suppression (`not.toContain('<classe retirée>')` — règle 6c en exécutable) et le test
+qui verrouille l'ancienne MÉCANIQUE après refonte. Un rouge post-refonte s'ATTRIBUE d'abord :
+contrat (RAW, invariant du ticket, design jugé) → il se respecte ; ancienne mécanique → il se RÉÉCRIT
+depuis le nouveau contrat. Jamais adapter le flux aux tests, jamais un hack (skip, mock, timeout).
 
-**Pourquoi** : la règle 6c (CLAUDE.md) interdit le commentaire-pierre-tombale parce que git porte
-l'histoire. Un test `expect(html).not.toContain('equip-doll')` est le même poison en exécutable :
-il commémore une suppression (keyé sur les classes MORTES d'une implémentation défunte), ne teste
-aucun comportement, et cassera pour rien quand un design légitime réoccupera la place.
+**Why:** utilisateur (2026-08-23, verbatim) : « dès qu'on fait une refonte, on a les tests qui nous
+pousse a revenir a l'ancien comportement ou faire des hacks » — et un test-tombale casse pour rien
+quand un design légitime réoccupe la place.
 
-**Comment l'appliquer** :
-- Absence-RÈGLE = légitime : l'absence est un invariant PERMANENT de classe (« zéro bouton par
-  rangée non élue », « aucune réf livre hors Codex », « onglet sans objet ABSENT, jamais grisé »).
-- Verrouiller un arbitrage user contre la régression d'un agent = contrat structurel **POSITIF**
-  (« l'aside contient EXACTEMENT : cadre, nom, identité, barres, alarmes, Soins ») — même
-  protection, sens permanent, zéro mémorial. Jamais une liste de noms de classes défuntes.
-- À la revue d'un rendu d'agent : toute assertion `not.toContain(<classe/élément retiré ce jour>)`
-  se convertit dans le geste. Le retrait lui-même est déjà gardé par les cliquets de classes + git.
+**How to apply:** l'absence-RÈGLE reste légitime quand elle est un invariant PERMANENT de classe
+(« aucune réf livre hors Codex ») ; un arbitrage se verrouille par un contrat structurel POSITIF
+(« l'aside contient EXACTEMENT : … ») ; le pilotage d'un mécanisme transverse vit dans UN helper de
+test partagé, jamais recopié dans N tests.

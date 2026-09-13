@@ -445,7 +445,9 @@ const ORPHELINS: string[] = [
   "donnees.manifest.json#0 (11)",
   "lieux-services.json#0 (7)",
   "miscast.json#0 (5)",
-  "primitives.manifest.json#0 (28)",
+  // 28 → 30 (#1728) : `itemIcon` et `mediaSelect` entrent au manifeste — manifeste d'outillage,
+  // aucune catégorie Codex ne l'expose ; la charge du document orphelin suit sa mesure.
+  "primitives.manifest.json#0 (30)",
   "qualityTypes.json#0 (2)",
   // +1 dette « Colère des dieux » #1653, +1 dette « sabre Taillade » #1661 — entrées de manifeste sans
   // catégorie Codex (même angle mort : dette de règle, jamais une fiche).

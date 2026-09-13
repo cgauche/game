@@ -37,6 +37,17 @@ function dir(id) {
   return `${b.dir}/`
 }
 
+/** Chemin `Source/…/` d'un livre dont `books.json` porte le dossier sous `extractionDir` (forme du
+ *  livre fan `frenchy-bzh`) — même fail-fast que `dir`, jamais de chemin deviné. */
+function dirExtraction(id) {
+  const b = book(id)
+  if (!b.extractionDir) {
+    console.error(`build-sources-vf — livre "${id}" (${b.label}) n'a pas de champ "extractionDir" dans books.json`)
+    process.exit(1)
+  }
+  return `${b.extractionDir}/`
+}
+
 const abbr = (id) => book(id).abbr
 const extractedCount = BOOKS.filter((b) => b.dir).length
 
@@ -88,11 +99,21 @@ CC/CT/F/E…). Au moindre doute, **lire le \`.md\` et citer** \`LDB <chap> l.<li
   **85 Traits de créature**. Index : \`00 - Index.md\`.
 - **${abbr('archives-de-l-empire-1')}** = \`${dir('archives-de-l-empire-1')}\`.
 - **${abbr('archives-de-l-empire-2')}** = \`${dir('archives-de-l-empire-2')}\`.
-- **${abbr('ennemi-dans-l-ombre')}** (L'Ennemi dans l'Ombre, T1) = \`${dir('ennemi-dans-l-ombre')}\` — inclus
-  2026-06-11 : sorts de Tzeentch, créatures du Chaos (Horreurs, Furie), 3 talents + 3 traits ;
+- **${abbr('ennemi-dans-l-ombre')}** (L'Ennemi dans l'Ombre, T1) = \`${dir('ennemi-dans-l-ombre')}\` — périmètre
+  RE-VÉRIFIÉ au \`Source/\` (2026-09-13) : le livre ne porte **aucun bloc de Sort** (zéro \`**NI :**\` sur ses
+  13 chapitres) **ni de Talent** ; ses seuls blocs de créature sont **Horreur rose / Horreur bleue de
+  Tzeentch** (\`EDO 09 l.556-570\`, folio 114) — les **Furies du Chaos**, les 3 Talents de culte et les Sorts du
+  Chaos que l'on croisait attribués « EDO p.7X-8X » sont en réalité **EDOC ch.9** (voir l'entrée suivante).
+  Nouvelles règles propres à EDO = **Appendice 2** (folios 145-149) : PNJ, portes & serrures, fièvre cérébrale
+  pourpre + symptômes, 6 Traits de créature et 5 Mutations (folios 147-148), Anneau d'Opsianon.
   2026-07-11 (#309) : Calendrier Impérial (Annexe 3, folios 149-150 — mois/jours/intercalaires ;
   la table est INTROUVABLE au LDB, l'ancienne attribution « LDB » des datasets calendrier était fausse).
-- **${abbr('ennemi-dans-l-ombre-compagnon')}** (Compagnon T1) = \`${dir('ennemi-dans-l-ombre-compagnon')}\` — 9 véhicules.
+- **${abbr('ennemi-dans-l-ombre-compagnon')}** (Compagnon T1) = \`${dir('ennemi-dans-l-ombre-compagnon')}\` — 9 véhicules ;
+  **ch.9 « La Main pourpre »** = la source RÉELLE de la matière Tzeentch (folios 75-85) : 3 Talents de culte
+  (\`EDOC 13 l.85-101\` — Bénédiction de Tzeentch, Disciple du changement, Double vie, folio 75), les Sorts du
+  Chaos avec leurs blocs NI/Portée (folios 79-83), Marque de Tzeentch (folio 83), **Furies du Chaos** (folio 84),
+  **Horreurs de Tzeentch** (folio 85). Avant de taguer \`book\`+\`page\` sur une entrée « Chaos T1 », vérifier au
+  \`Source/\` de quel des deux volumes vient le bloc.
 - **Middenheim** = \`${dir('middenheim')}\` — 3 origines humaines + carrière Frère Loup.
 - **${abbr('aux-armes')}** (Aux Armes / *Up in Arms*) = \`${dir('aux-armes')}\` — supplément combat & armes (autorisé 2026-06-14 ;
   source des talents que frenchy.bzh référence : Fusilier, Officier de Siège, etc.).
@@ -131,6 +152,16 @@ CC/CT/F/E…). Au moindre doute, **lire le \`.md\` et citer** \`LDB <chap> l.<li
   élémentaires incarnés, Fabriqués, familiers jouables) ; **sites, lignes de force & saturation
   environnementale** (ch.14). Ch.1 (histoire de la magie) & ch.15 (némésis/aventures) = majoritairement
   cadre. Curation \`src/data\` à la main (tag \`source.book: "${book('vents-de-la-magie').id}"\`), comme AA/ZI/MDG.
+- **${abbr('frenchy-bzh')}** (fan — *Habitants & Créatures du Vieux-Monde*, « version 4.5 ») = \`${dirExtraction('frenchy-bzh')}\` —
+  **complète** le bestiaire et les PNJ, ne remplace rien ; chaque entrée vit dans le JSON app-owned de son
+  domaine, taguée \`source.book: "${book('frenchy-bzh').id}"\`. Deux règles d'IMPORT, lues à son Avertissement :
+  les profils sont écrits avec des **PA doublés** — « *les Points d'Armure sont doublés et on ignore le Bonus
+  d'Endurance pour diminuer les dégâts* […] *il suffit de diviser par deux les Points d'Armures des PNJ et des
+  Créatures et de rajouter le Bonus d'Endurance !* » (\`frenchy.bzh 01 l.19\`) → **÷2 à l'import**, notre moteur
+  étant RAW ; et les noms sont des **traductions personnelles**, à résoudre par les **annexes** qui donnent
+  « *les équivalences entre les noms d'origine en VO, les traductions officielles de l'éditeur français (Khaos
+  Projet) et les traductions personnelles* » (\`frenchy.bzh 01 l.8\`) — la colonne VO est le pivot quand la
+  traduction personnelle diverge de l'officielle.
 - **Tomes de campagne (règles ponctuelles)** : **${abbr('mort-sur-le-reik')}** (T2 base) — 1 statbloc (\`creatures.json\`) ;
   **${abbr('pouvoir-derriere-le-trone')}** (T3 base) — 1 entrée de compétence (\`skills.json\`). Admis par l'arbitrage 2026-07-10, chaque
   entrée taguée à sa \`source\`.

@@ -525,7 +525,7 @@ le résout inline. Garde de ré-entrance : ce FM ne ré-émet jamais le trigger 
 Cette cadence n'est PAS spécifique au combat : **toute résolution de dés animée** (`RollShell` et ses
 modales — Test de scène, Activité d'interlude, jet composite…) tourne sur la même animation de dés ;
 attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUELLE modale de jet
-(cf. `game-browser-verif-tempo`, closure-sync ci-dessous).
+(cf. le piège du *closure-sync* ci-dessous).
 
 ## Chute du gréement — les 3 gestes (#1508)
 
@@ -1145,7 +1145,7 @@ boundary inchangé, y compris la reprise `onRetry`/rechargement). Buffer borné 
 ## Piège du *closure-sync*
 
 Lire le DOM dans le **même** `evaluate` que `talk()` lit l'état AVANT le re-rendu React —
-séparer en deux appels (cf. `game-browser-verif-tempo`). Plus généralement : cliquer un bouton
+séparer en deux appels. Plus généralement : cliquer un bouton
 qui change un état React PUIS agir dans le MÊME `evaluate` lit l'ANCIEN état (React n'a pas
 re-rendu). Séparer en deux appels, ou utiliser un `ref` côté composant pour la logique de drag.
 

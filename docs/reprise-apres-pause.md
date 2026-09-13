@@ -118,6 +118,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 | Staging Marker (`Source/_marker/`) | intermédiaire de pipeline ; seuls les chapitres curés `Source/<Livre>/NN - *.md` sont committés | régénéré par le pipeline `scripts/raw/marker-*` |
 | Images extraites des PDF (`/art-ref/`) | droits Cubicle 7, ce sont des sorties ; le pipeline lui-même reste tracké sous `scripts/art-ref/` | régénérables via `scripts/art-ref/extract.py`, `scripts/art-ref/ldb_extract.py`, `scripts/art-ref/ldb_map.py`, `scripts/art-ref/probe.py` + les PDFs locaux |
 | Sorties de QC (`public/qc/*`) | planches de revue régénérables — pas du source | régénérables par les scripts `scripts/qc/` ; l'exception `!public/qc/baseline-affine/` reste VERSIONNÉE |
+| Journaux de chantier des sessions agent (`.superpowers/`) | traces locales de session (état tâche par tâche, briefs/rapports, diffs de revue) — pas du source | non régénérable : reprendre un chantier mené par une session morte se lit dans `.superpowers/sdd/progress.md` puis les `task-<N>-brief.md`/`-report.md` des tâches en cours, AVANT tout plan de `docs/plans/` — et le code seul fait foi |
 | Réglages Claude Code personnels (`.claude/*`) | environnement local | exceptions VERSIONNÉES : `.claude/settings.json`, `.claude/credo.md`, `.claude/skills/`, `.claude/agents/`, `.claude/workflows/`, `.claude/memory/`, `.claude/soldes/` |
 
 Ne sont pas non plus dans le clone, parce que ce ne sont pas des fichiers :
@@ -182,4 +183,4 @@ refaire `npm install`.
 
 Vérifier qu'elles tournent : onglet Actions du dépôt, ou `gh run list --workflow=canari.yml`. La
 porte à chaque push est `.github/workflows/ci.yml` (« CI », push, pull_request).
-<!-- sources-empreinte: cd78b588834d1bf1312a9e90b03b7c1e81c23226 (13 fichiers, 9 dossiers) corps: 0530c581653c7edb2082d62bd7026c920e883058 -->
+<!-- sources-empreinte: 2a32da1062560c6f18fa7903be570ea9215430e6 (13 fichiers, 9 dossiers) corps: 622c11009348f7ed1779fd69315662a386151a45 -->

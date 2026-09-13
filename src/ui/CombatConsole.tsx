@@ -49,8 +49,7 @@ import { ItemIcon } from './ItemIcon';
 import type { IconIdInput } from './icons';
 
 /** Nombre de cases de chaque travée — GÉOMÉTRIE IMMUABLE (arbitrage utilisateur 2026-08-16 :
- *  « je ne veux pas que la taille de l'interface ou les boutons bougent » —
- *  `.claude/memory/game-arbitrage-hud-console-rt-2026-08-16.md:22`). Le contenu varie,
+ *  « je ne veux pas que la taille de l'interface ou les boutons bougent »). Le contenu varie,
  *  le compte de cases JAMAIS : une case sans contenu se DESSINE vide. Les trois zones ADRESSABLES
  *  tiennent leur taille de `TAILLE_ZONE` : c'est la même mesure qui borne la disposition du porteur. */
 const LEFT_CELLS = TAILLE_ZONE.arsenal; // travée gauche : 2×3 — les gestes déduits du set (§1a) puis les cases LIBRES

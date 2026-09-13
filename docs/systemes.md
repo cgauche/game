@@ -81,10 +81,13 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `Prose` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `resolveRender/tokenBodyKind` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `MasterDetail` |  |  |  |  | U |  | U |  |  | U |  |  |  |  | U | U |
+| `ItemIcon` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `MediaSelect` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U |  |
 | `gen-registry (_registry.generated)` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 
 ## Primitives jamais adoptées par un système déclaré
 
+- `ItemIcon` (src/ui/ItemIcon.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `gen-registry (_registry.generated)` (scripts/gen-registry.mjs) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 
 ## Modules `src/state`/`src/engine` non rattachés à un système déclaré
@@ -112,4 +115,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: 9ea6d4f2ad5a9bb2708dbbb6f77b51ea86b265cf (1808 fichiers, 2 dossiers) corps: 7762a5d540bda3f2460c3c5a1aaccadf3664091a -->
+<!-- sources-empreinte: ed9a8add8be42813c277113f88c918b3ab6d670d (1808 fichiers, 2 dossiers) corps: 3042c872a0606c5a69ad6dab330baa708e6b3f61 -->

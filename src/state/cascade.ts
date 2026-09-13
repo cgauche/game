@@ -706,8 +706,8 @@ function rollBatchParticipants(step: CascadeStep, autoResolved = false) {
  * surface, jamais deux (#1291).
  *
  * Là où il l'est, le journal est la SEULE surface de ces jets — le cas nominatif que la doctrine #295
- * réserve (cf. `cascade-consequence-guard.test.ts`). `game-trigger-cadence-aware-no-silent` : moins
- * d'interruptions, jamais moins de traces.
+ * réserve (cf. `cascade-consequence-guard.test.ts`). Règle de CADENCE : une cadence qui réduit les
+ * interruptions ne réduit jamais les TRACES.
  */
 function unwitnessedTraceLines(get: Get, step: CascadeStep, unwitnessed: boolean, rowSurface?: RowSurface): string[] {
   const out: string[] = [];

@@ -1,50 +1,12 @@
 ---
 name: feedback-jamais-de-demi-migration
-description: "Arbitrage user 2026-08-09 : pas de travail à moitié ni de demi-migration — une migration s'achève DANS son chantier, sinon chaque site non migré devient un bug à redécouvrir un mois plus tard"
-metadata: 
-  node_type: memory
+description: "Pas de travail à moitié ni de demi-migration : un chantier liste ses sites exhaustivement et ne ferme que la liste à zéro ; murer le neuf en laissant le stock EST la demi-migration."
+metadata:
   type: feedback
-  originSessionId: 032f0876-8eb3-421a-bddc-50a550c9bc09
-  modified: 2026-08-23T09:56:20.718Z
 ---
 
-Verbatim utilisateur (2026-08-09) : « En tout cas je n'aime pas le travail fait a moitié et les
-demi-migrations, c'est a cause de cela qu'aujourd'hui on en est a revenir sur du travail fait il y
-a un mois pour corriger un a un les éléments »
+Verbatims utilisateur : « je n'aime pas le travail fait a moitié et les demi-migrations » ; « murer le neuf c'est valider du legacy qui vivra eternellement » ; « Pas de demi-migration ou de guard qui valident l'existent et empeche les nouvelles apparitions ».
 
-Contexte : chantier #1153 (départage sur la Compétence nue). La famille de bugs LDB 12 l.160
-entière (#1149/#1150/#1151/#1153, 8+ copies) est née d'une migration antérieure du système de jet
-arrêtée en chemin : les sites non migrés ont chacun re-codé leur dérivation artisanale, et un mois
-plus tard on les corrige UN PAR UN.
+**Why:** un site non migré est un bug en incubation plus un précédent que le code voisin copie ; finir coûte toujours moins que redécouvrir les sites un incident à la fois.
 
-**Why:** un site non migré n'est pas un « reste déclaré » neutre : c'est un bug en incubation
-(mixte nu/fondu, divergence écran/verdict, chip anonyme…) plus un précédent que le code voisin
-copie. Le coût de finir la migration dans le chantier est TOUJOURS inférieur au coût de
-redécouvrir les sites un mois après, un incident à la fois. Durcit
-[[feedback-migrer-l-existant-listes-doivent-decroitre]] et
-[[feedback-ne-pas-livrer-complet-si-connu-incomplet]].
-
-Second verbatim (2026-08-09, même chantier, adressé à L'ORCHESTRATEUR) : « Donc tu prefere
-modifier 18 sites plusieurs fois, autant de fois que necessaire a chaque erreur, que régler le
-problème a la racine ? » — j'avais fait repasser un codeur sur les MÊMES 18 sites au lieu de faire
-déléguer les 4 monteurs locaux au monteur canonique du seam. La règle « 2 passes même classe =
-remonter d'un niveau » s'applique au DÉCOUPAGE DES LOTS de l'orchestrateur, pas seulement au code :
-quand N sites exigent la même retouche, le lot juste est le SOCLE (monteur/porte partagé) qui rend
-les N sites déclaratifs — jamais N retouches.
-
-Troisième verbatim (2026-08-14, #1313, adressé à l'orchestrateur qui proposait « murer le neuf + migrer le stock au fil de l'eau ») : « Nan, j'ai deja dit que je ne voulais pas de demi-migration et tu devrais le savoir, **murer le neuf c'est valider du legacy qui vivra eternellement** » — la voie médiane cliquet-pour-le-neuf/stock-lazy N'EST JAMAIS une option à proposer : c'est LA définition de la demi-migration.
-
-Quatrième verbatim (2026-08-16, #1318, en réponse au programme de prévention) : « **Pas de demi-migration ou de guard qui valident l'existent et empeche les nouvelles apparitions, on est bien d'accord ?** » — une garde à baseline gelée qui ne bloque que le NEUF est la même demi-migration sous forme d'outillage. Toute baseline posée par un verrou est un ÉCHAFAUDAGE : nominative, datée, et son LOT D'EXTINCTION planifié au programme (stock → 0, la baseline meurt avec). Un verrou sans lot d'extinction du stock = refusé.
-
-Cinquième verbatim (2026-08-23, #1463 « grammaire de document unique », au moment du découpage en lots) : « **Et surtout pas de demi-migration, ca nous a couté très chère que de faire les choses a moitié** » — avec, le même jour : « Il me faut une base solide pour évite toute nouvelle dérive » et « Suis bien le credo, surtout la régle 1 » (zéro rétro-compat, zéro différé). Conséquence de DÉCOUPAGE : un lot de structure = **un CONCEPT sur TOUS ses porteurs** (datasets, ops, tables, scènes, instances/saves, éditeur, Codex) dans un seul état cohérent — jamais un lot « par dataset » ni « données d'abord, ops plus tard » (laisser `skillId`+`spec` à plat dans les ops pendant que les catalogues portent `{id, spec}` EST une demi-migration). Et jamais un schéma qui accepte l'ancienne ET la nouvelle forme (double lecture = rétro-compat).
-
-**How to apply:**
-1. Un chantier de migration liste ses sites EXHAUSTIVEMENT au démarrage (grounding mesuré, pas
-   d'échantillon) et ne se FERME que la liste à zéro — les « restes déclarés » d'un lot sont un
-   état INTERMÉDIAIRE entre deux lots du même chantier, jamais une sortie de chantier.
-2. Un reste routé vers un ticket séparé n'est acceptable QUE si le geste y est d'une AUTRE nature
-   (autre design, autre arbitrage à prendre) — jamais « la même migration, plus tard ».
-3. Au moment de fermer un chantier : re-balayer (le balayage initial peut avoir des angles morts,
-   cf. [[feedback-un-detecteur-ne-mesure-que-sa-couverture]]) et prouver que le motif ancien ne
-   compile plus / échoue en garde (cliquet structurel), pas seulement « les sites connus sont
-   migrés ».
+**How to apply:** un lot de structure = UN concept sur TOUS ses porteurs (datasets, ops, tables, scènes, saves, éditeur, Codex), jamais « par dataset » ni « données d'abord, ops plus tard », et aucun schéma qui accepte l'ancienne ET la nouvelle forme ; toute baseline posée par un verrou porte son lot d'extinction, sinon le verrou est refusé ; quand N sites exigent la même retouche, le lot juste est le SOCLE qui les rend déclaratifs. La fermeture se prouve par un motif qui ne compile plus ou une garde rouge, pas par « les sites connus sont migrés ».

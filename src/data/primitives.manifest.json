@@ -243,6 +243,24 @@
     "verrou": "—"
   },
   {
+    "id": "itemIcon",
+    "type": "primitives.manifest",
+    "label": "ItemIcon",
+    "fichier": "src/ui/ItemIcon.tsx",
+    "concept": "icône d'OBJET (silhouette de rig arme/armure/bouclier, sinon glyphe de catégorie)",
+    "perimetre": "sac, onglet Combat de la fiche, pickers MediaSelect, hotbar de combat",
+    "verrou": "src/ui/no-emoji-affordance.test.ts"
+  },
+  {
+    "id": "mediaSelect",
+    "type": "primitives.manifest",
+    "label": "MediaSelect",
+    "fichier": "src/ui/MediaSelect.tsx",
+    "concept": "sélecteur visuel (déclencheur + popover de rangées média + texte) là où un <select> natif ne peut pas porter d'icône",
+    "perimetre": "sélecteurs d'arme/armure de la fiche, menu « Donner »",
+    "verrou": "—"
+  },
+  {
     "id": "genRegistry",
     "type": "primitives.manifest",
     "label": "gen-registry (_registry.generated)",

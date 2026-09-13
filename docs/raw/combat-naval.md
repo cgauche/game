@@ -6,7 +6,7 @@
 > **Voir aussi** + **Implémente** (module `src/`) + **État du code** (✅ fait · ⚠️ partiel · ❌ faux · ⬜ manquant).
 >
 > ⚠️ **Cette fiche est née d'un constat** : les implémentations naval ont répété des violations RAW faute
-> d'avoir lu le mécanisme COMPLET d'abord (cf. mémoire `feedback-raw-reference-doc-before-impl`). Elle est la
+> d'avoir lu le mécanisme COMPLET d'abord — une fiche RAW se lit AVANT d'implémenter. Elle est la
 > **référence** ; on implémente CONTRE elle, plus de mémoire. Abréviation `MDG` = CLAUDE.md (à inscrire dans
 > `sources.md`). Combat à pied / qualités d'arme génériques → [`combat.md`](combat.md).
 > ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.

@@ -1,7 +1,7 @@
 /**
  * Garde-fou INVARIANT (multilangue) : les champs de référence migrés ne contiennent QUE des refs
  * STRUCTURÉES (par id), jamais de libellé brut, et les ids de catalogue résolvent. Toute régression
- * (un libellé qui se faufile, un id fantôme) casse ici. Cf. [[game-ids-internes-libelles-display-multilangue]].
+ * (un libellé qui se faufile, un id fantôme) casse ici. Cf. `CLAUDE.md` § Pour TOUT agent.
  */
 import { describe, it, expect } from 'vitest';
 import {
@@ -1009,7 +1009,7 @@ describe('careerLevels.trappings — cliquet anti-régression {text} (#622)', ()
 // species.json (espèces jouables) ∪ ids de def rig (creatureSpeciesOptions) ∪ ids de raceAppearance.json
 // (races d'apparence, sortie de `raceById`/`DEFAULT_RACE_ID`) ∪ formes de nuée (clés de SWARM_FORMS, lues
 // par composeSwarm). `species` absent = OK (défaut Humain documenté).
-// Cf. [[game-ids-internes-libelles-display-multilangue]].
+// Cf. `CLAUDE.md` § Pour TOUT agent (« Toute LOGIQUE est keyée par id STABLE »).
 describe('appearance.species — id stable (species.json ∪ defs rig ∪ raceAppearance ∪ formes de nuée), jamais un libellé', () => {
   const VALID_SPECIES = new Set<string>([
     ...species.map((s) => s.id),

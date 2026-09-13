@@ -12,9 +12,8 @@
 // suite d'une phrase repliée, jamais un chapeau. Les mêmes mots DANS une phrase relèvent du vécu
 // daté légitime (49 lignes pour le premier mot, 28 pour « désormais », 43 pour le troisième) : les
 // scanner ferait 84 fiches touchées sur 362, soit un garde qui crie sur du récit — l'en-tête, lui,
-// touche 2 lignes du stock entier (`game-collision-livres-identique-vs-divergent.md:10`,
-// `game-refonte-rendu-builders-backends.md:10` ; les deux autres lignes du motif large sont des
-// REPLIS de phrase). `PORTÉ PAR <garde>` est admis : nommer la garde qui porte l'invariant est une
+// touche 2 lignes du stock entier (les deux autres lignes du motif large sont des REPLIS de
+// phrase). `PORTÉ PAR <garde>` est admis : nommer la garde qui porte l'invariant est une
 // réécriture au présent, pas une tombale.
 //
 // LIGNES AJOUTÉES seulement : un Edit se juge sur `new_string` privé de ce que portait déjà

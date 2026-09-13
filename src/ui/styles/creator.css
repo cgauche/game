@@ -543,7 +543,8 @@
   color: var(--parchment2);
 }
 /* Séparateur « ou » entre deux radios de talent de race « A ou B » (mock6) — le mot nu, pas de
-   pointillé (arbitrage talents « ou », doc mémoire game-charte-talents-ou-chips-codex-lisibles).
+   pointillé (arbitrage utilisateur 2026-07-14 : « évite vraiment le style pouitillé + texte gris sur
+   noir, ce n'est pas lisible … un talent ou doit afficher les différents talents séparé de ou »).
    Valeurs `.orword` de la planche : italique gravé, jamais des petites capitales. */
 .talent-option-ou {
   display: block;

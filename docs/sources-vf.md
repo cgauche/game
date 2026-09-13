@@ -46,11 +46,21 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
   **85 Traits de créature**. Index : `00 - Index.md`.
 - **ADE I** = `Source/Warhammer v4 - Les archives de l'Empire volume 1/`.
 - **ADE II** = `Source/Warhammer v4 - Les archives de l'Empire volume 2/`.
-- **EDO** (L'Ennemi dans l'Ombre, T1) = `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/` — inclus
-  2026-06-11 : sorts de Tzeentch, créatures du Chaos (Horreurs, Furie), 3 talents + 3 traits ;
+- **EDO** (L'Ennemi dans l'Ombre, T1) = `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/` — périmètre
+  RE-VÉRIFIÉ au `Source/` (2026-09-13) : le livre ne porte **aucun bloc de Sort** (zéro `**NI :**` sur ses
+  13 chapitres) **ni de Talent** ; ses seuls blocs de créature sont **Horreur rose / Horreur bleue de
+  Tzeentch** (`EDO 09 l.556-570`, folio 114) — les **Furies du Chaos**, les 3 Talents de culte et les Sorts du
+  Chaos que l'on croisait attribués « EDO p.7X-8X » sont en réalité **EDOC ch.9** (voir l'entrée suivante).
+  Nouvelles règles propres à EDO = **Appendice 2** (folios 145-149) : PNJ, portes & serrures, fièvre cérébrale
+  pourpre + symptômes, 6 Traits de créature et 5 Mutations (folios 147-148), Anneau d'Opsianon.
   2026-07-11 (#309) : Calendrier Impérial (Annexe 3, folios 149-150 — mois/jours/intercalaires ;
   la table est INTROUVABLE au LDB, l'ancienne attribution « LDB » des datasets calendrier était fausse).
-- **EDOC** (Compagnon T1) = `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/` — 9 véhicules.
+- **EDOC** (Compagnon T1) = `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/` — 9 véhicules ;
+  **ch.9 « La Main pourpre »** = la source RÉELLE de la matière Tzeentch (folios 75-85) : 3 Talents de culte
+  (`EDOC 13 l.85-101` — Bénédiction de Tzeentch, Disciple du changement, Double vie, folio 75), les Sorts du
+  Chaos avec leurs blocs NI/Portée (folios 79-83), Marque de Tzeentch (folio 83), **Furies du Chaos** (folio 84),
+  **Horreurs de Tzeentch** (folio 85). Avant de taguer `book`+`page` sur une entrée « Chaos T1 », vérifier au
+  `Source/` de quel des deux volumes vient le bloc.
 - **Middenheim** = `Source/Warhammer v4 - Middenheim la cité du Loup Blanc/` — 3 origines humaines + carrière Frère Loup.
 - **AA** (Aux Armes / *Up in Arms*) = `Source/WH - V4 - Aux Armes/` — supplément combat & armes (autorisé 2026-06-14 ;
   source des talents que frenchy.bzh référence : Fusilier, Officier de Siège, etc.).
@@ -89,6 +99,16 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
   élémentaires incarnés, Fabriqués, familiers jouables) ; **sites, lignes de force & saturation
   environnementale** (ch.14). Ch.1 (histoire de la magie) & ch.15 (némésis/aventures) = majoritairement
   cadre. Curation `src/data` à la main (tag `source.book: "vents-de-la-magie"`), comme AA/ZI/MDG.
+- **frenchy.bzh** (fan — *Habitants & Créatures du Vieux-Monde*, « version 4.5 ») = `Source/Warhammer - Habitants & Créatures  du Vieux-Monde (Discord) PDF/` —
+  **complète** le bestiaire et les PNJ, ne remplace rien ; chaque entrée vit dans le JSON app-owned de son
+  domaine, taguée `source.book: "frenchy-bzh"`. Deux règles d'IMPORT, lues à son Avertissement :
+  les profils sont écrits avec des **PA doublés** — « *les Points d'Armure sont doublés et on ignore le Bonus
+  d'Endurance pour diminuer les dégâts* […] *il suffit de diviser par deux les Points d'Armures des PNJ et des
+  Créatures et de rajouter le Bonus d'Endurance !* » (`frenchy.bzh 01 l.19`) → **÷2 à l'import**, notre moteur
+  étant RAW ; et les noms sont des **traductions personnelles**, à résoudre par les **annexes** qui donnent
+  « *les équivalences entre les noms d'origine en VO, les traductions officielles de l'éditeur français (Khaos
+  Projet) et les traductions personnelles* » (`frenchy.bzh 01 l.8`) — la colonne VO est le pivot quand la
+  traduction personnelle diverge de l'officielle.
 - **Tomes de campagne (règles ponctuelles)** : **MSR** (T2 base) — 1 statbloc (`creatures.json`) ;
   **PDT** (T3 base) — 1 entrée de compétence (`skills.json`). Admis par l'arbitrage 2026-07-10, chaque
   entrée taguée à sa `source`.
@@ -105,4 +125,4 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
 - Suppléments VF dispo : `Altdorf — La Couronne de l'Empire`, `Aventures à Ubersreik I`,
   `Middenheim — La Cité du Loup Blanc`, `Nuits Agitées & Dures Journées`,
   `Boîte d'Initiation` (+ `WH4_FR_BI_Livre_Aventure` / `…_Ubersreik`).
-<!-- sources-empreinte: b686ffc5d467ea76b27fd2e72c41017d90d9f660 (5 fichiers, 0 dossiers) corps: d25094c607bdf16a10d69bc55c01640bafdc72d8 -->
+<!-- sources-empreinte: 0b704d244ae28c602e2609582505292d9bedf918 (5 fichiers, 0 dossiers) corps: 614517cfd374a113acd37a45462b72a3b55825ca -->

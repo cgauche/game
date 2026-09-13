@@ -56,9 +56,9 @@ troncature se COMPTE ici, elle ne se tait pas.
 
 ### 1bis. Index des ids (le cœur du détecteur)
 
-Identités indexées : **5890** (entrées de racine + documents embarqués) ; libellés
-normalisés : **5128**. Un id vu dans PLUSIEURS datasets rend la résolution
-AMBIGUË (jamais fausse) : **402** collisions, et **3412** ids
+Identités indexées : **5892** (entrées de racine + documents embarqués) ; libellés
+normalisés : **5130**. Un id vu dans PLUSIEURS datasets rend la résolution
+AMBIGUË (jamais fausse) : **402** collisions, et **3414** ids
 sont aussi le libellé d’une entité (faux positif possible sur la résolvabilité d’un `{text}`).
 
 | Id | Datasets |
@@ -598,7 +598,7 @@ nombre d’entrées qui la portent.
 | `src/data/oups.json` | array | liste | table | 8 | `id`:string(8) `kind`:string(8) `label`:string(8) `max`:number(7) `min`:number(7) `source`:object(8) `type`:string(8) |
 | `src/data/peripeties.json` | array | liste | entité | 10 | `desc`:string(10) `id`:string(10) `kind`:string(10) `label`:string(10) `roll`:number(10) `source`:object(10) `type`:string(10) |
 | `src/data/pregens.json` | array | liste | entité | 8 | `ambitionLong`:string(8) `ambitionShort`:string(8) `build`:number(2) `career`:string(8) `careerTalent`:string(2) `id`:string(8) `label`:string(8) `motivation`:string(8) `pettySpells`:array(1) `seed`:number(8) `sex`:string(2) `species`:string(8) `type`:string(8) |
-| `src/data/primitives.manifest.json` | array | liste | entité | 28 | `concept`:string(28) `fichier`:string(28) `id`:string(28) `label`:string(28) `perimetre`:string(28) `type`:string(28) `verrou`:string(28) |
+| `src/data/primitives.manifest.json` | array | liste | entité | 30 | `concept`:string(30) `fichier`:string(30) `id`:string(30) `label`:string(30) `perimetre`:string(30) `type`:string(30) `verrou`:string(30) |
 | `src/data/problemes-vehicule.json` | object | pipe à la racine | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
 | `src/data/progression-schemas.derived.json` | object | pipe à la racine | config | 1 | `id`:string(1) `label`:string(1) `livres`:array(1) `schemas`:array(1) `type`:string(1) |
 | `src/data/props.json` | array | liste | entité | 123 | `cover`:string(32) `foot`:object(25) `id`:string(123) `label`:string(123) `light`:object(10) `maison`:string(41) `opaque`:boolean(5) `seatSlots`:array(2) `solid`:boolean(91) `type`:string(123) `volume`:object(22) |
@@ -688,7 +688,7 @@ Signatures distinctes d’entrée de document : **620**. Les 40 plus fréquentes
 | `appearance,char,desc,folder,followsCharacterRules,id,label,named,optionals,skills,source,spells,talents,title,traits,trappings,type` | 33 |
 | `availability,categorie,desc,enc,id,label,price,qualities,source,subType,type` | 33 |
 | `flow,form,id,label,phase,rule,ruleCategory,source,template,type` | 32 |
-| `concept,fichier,id,label,perimetre,type,verrou` | 28 |
+| `concept,fichier,id,label,perimetre,type,verrou` | 30 |
 | `appearance,char,desc,folder,id,label,optionals,skills,source,spells,talents,title,traits,trappings,type` | 27 |
 | `capabilities,desc,id,label,source,type` | 27 |
 | `acces,characteristic,desc,id,label,source,specs,type` | 26 |
@@ -744,7 +744,7 @@ dans le MÊME commit :
 | source | clé absente | 42 |
 
 Documents dont AUCUNE ENTRÉE DE RACINE ne porte `source` : **42** (lot `L1d #1469`) —
-`ambiance.json`(1) `arcane-phenomena.json`(1) `books.json`(29) `breath-types.json`(6) `calendarPhases.json`(7) `crew-test-types.json`(1) `damage-types.json`(4) `details.json`(1) `disponibilite.json`(1) `donnees.manifest.json`(1) `groups.json`(38) `land-cargo.json`(1) `lieux-services.json`(7) `lightLevels.json`(5) `lightTones.json`(4) `localisation.json`(1) `mass-battle.json`(1) `materials.json`(15) `merchantFamilies.json`(7) `merchants.json`(6) `names.json`(7) `naval-progression.json`(1) `pregens.json`(8) `primitives.manifest.json`(28) `progression-schemas.derived.json`(1) `qualitySubtypes.json`(3) `qualityTypes.json`(2) `raceAppearance.json`(21) `raw.manifest.json`(11) `renduMonte.json`(1) `river-perils.json`(1) `sea-cargo.json`(1) `sea-events.json`(1) `sea-navigation.json`(1) `sea-perils.json`(1) `sea-weather.json`(1) `ship-construction.json`(1) `sizes.json`(1) `speciesRace.json`(1) `structureAppearance.json`(18) `systemes.manifest.json`(16) `weather.json`(1)
+`ambiance.json`(1) `arcane-phenomena.json`(1) `books.json`(29) `breath-types.json`(6) `calendarPhases.json`(7) `crew-test-types.json`(1) `damage-types.json`(4) `details.json`(1) `disponibilite.json`(1) `donnees.manifest.json`(1) `groups.json`(38) `land-cargo.json`(1) `lieux-services.json`(7) `lightLevels.json`(5) `lightTones.json`(4) `localisation.json`(1) `mass-battle.json`(1) `materials.json`(15) `merchantFamilies.json`(7) `merchants.json`(6) `names.json`(7) `naval-progression.json`(1) `pregens.json`(8) `primitives.manifest.json`(30) `progression-schemas.derived.json`(1) `qualitySubtypes.json`(3) `qualityTypes.json`(2) `raceAppearance.json`(21) `raw.manifest.json`(11) `renduMonte.json`(1) `river-perils.json`(1) `sea-cargo.json`(1) `sea-events.json`(1) `sea-navigation.json`(1) `sea-perils.json`(1) `sea-weather.json`(1) `ship-construction.json`(1) `sizes.json`(1) `speciesRace.json`(1) `structureAppearance.json`(18) `systemes.manifest.json`(16) `weather.json`(1)
 
 Le DoD ajouté de #1465 annonçait « 13 datasets sans `source` » : la mesure en trouve
 **42** — le chiffre de 13 n’a pas de porteur dans l’arbre, il ne se recopie pas.
@@ -1149,10 +1149,10 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **870** (cible 399 · declaree 6 · historique 127 · divergente 338). Objets JSON parcourus : **49432**, dont **32305** portent une forme
+Lignes concept × dataset × champ × forme : **870** (cible 399 · declaree 6 · historique 127 · divergente 338). Objets JSON parcourus : **49434**, dont **32305** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **89**.
 
-Entrées de racine sans concept de valeur : **4065** sur **4152** —
+Entrées de racine sans concept de valeur : **4067** sur **4154** —
 un document n’est ni orphelin ni hors strate : ce compte est le seul porteur de ce qu’aucun concept ne revendique.
 Dont, NOMMÉES, celles qu’un concept de valeur revendiquerait sans la clause `horsDesignation` du lexique : `activities.json` 52.
 
@@ -2497,7 +2497,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13205** objets sur **49432** ne sont portés par AUCUNE
+Au-delà des orphelines, **13205** objets sur **49434** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -4979,4 +4979,4 @@ pèse **2950** slots sur 3314.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: 847128b4b843719a7698f3719ab71970bd86f475 (374 fichiers, 10 dossiers) corps: 1709ac46024d3e4ddd5efeb62d81d7b5da59c3e5 -->
+<!-- sources-empreinte: 1363c96b31374b4f666f436131a8ad562114ff34 (374 fichiers, 10 dossiers) corps: dad94e0961d75a4a91fcb9ce03d5a2f47fa9f35a -->

@@ -30,7 +30,8 @@ import type { Combatant, DispositionConsole, EntreeBarre, ZoneBarre } from '../e
 
 export type { DispositionConsole, EntreeBarre, ZoneBarre } from '../engine/types';
 
-/** GÉOMÉTRIE IMMUABLE de la console — `.claude/memory/game-arbitrage-hud-console-rt-2026-08-16.md:22`.
+/** GÉOMÉTRIE IMMUABLE de la console — arbitrage utilisateur 2026-08-16 : « je ne veux pas que la
+ *  taille de l'interface ou les boutons bougent ».
  *  Le contenu varie, le compte de cases JAMAIS : une case sans contenu se DESSINE vide.
  *  arsenal = 2×3 · accès rapide = 2×2 · capacités = 2×6. */
 export const TAILLE_ZONE: Record<ZoneBarre, number> = { arsenal: 6, accesRapide: 4, capacites: 12 };

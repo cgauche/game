@@ -4,7 +4,8 @@
 // croisant deux invariants déjà posés par le dépôt :
 //   1. règle stricte 5 (CLAUDE.md) — une `desc` est un copié/collé VERBATIM de la source, donc elle
 //      DOIT se retrouver telle quelle dans le `Source/` du livre déclaré ;
-//   2. `source.page` est le folio IMPRIMÉ (`game-source-page-is-printed-folio`), et l'extraction
+//   2. `source.page` est le folio IMPRIMÉ du livre — JAMAIS l'index de la ré-extraction Marker
+//      (`sourceRefSchema`, `src/data/schemas/grammaire/valeurs.ts`) —, et l'extraction
 //      Marker sème des marqueurs `<span data-folio="N">` au fil du texte.
 // La `desc` sert donc de LOCALISATEUR : on la retrouve dans le livre, on relève l'encadrement
 // `data-folio` de l'occurrence, on le compare au folio déclaré. Le défaut fondateur : `redoutable`

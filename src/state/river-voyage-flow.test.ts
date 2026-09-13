@@ -877,8 +877,7 @@ describe('Navigation du jour — base NUE + Soutien NOMMÉ, cible invariante (#1
  * donc AUCUNE fenêtre ne montre les dés. Avant ce lot, ces jets mono étaient MUETS au journal (seule
  * une bande en laissait trace, #1281). Le dériveur les rend, une fois chacun.
  *
- * `game-trigger-cadence-aware-no-silent` : la cadence commandée supprime des INTERRUPTIONS, jamais des
- * TRACES.
+ * Règle de CADENCE : la cadence commandée supprime des INTERRUPTIONS, jamais des TRACES.
  */
 describe('#1262 V3 Lj — journée fluviale COMMANDÉE : chaque jet mono laisse SA ligne de dé (aucune fenêtre)', () => {
   /** Lignes du journal au patron du dériveur (`{qui —} libellé : dé/cible → issue`). */
