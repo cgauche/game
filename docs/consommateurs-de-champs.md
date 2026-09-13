@@ -57,15 +57,15 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 62 | `src/data/index.ts:2960` |
-| `spec` | 18 | `src/data/index.ts:3482` |
+| `id` | 62 | `src/data/index.ts:2975` |
+| `spec` | 18 | `src/data/index.ts:3497` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 5 | `src/data/index.ts:3494` |
-| `value` | 4 | `src/data/index.ts:3495` |
+| `id` | 5 | `src/data/index.ts:3509` |
+| `value` | 4 | `src/data/index.ts:3510` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -85,8 +85,8 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `fixed` | 4 | `src/data/index.ts:3563` |
-| `roll` | 3 | `src/data/index.ts:3563` |
+| `fixed` | 4 | `src/data/index.ts:3578` |
+| `roll` | 3 | `src/data/index.ts:3578` |
 
 ### `TrappingRef` (src/data/index.ts)
 
@@ -94,27 +94,27 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 |---|---|---|
 | `id` | 8 | `src/engine/items.ts:307` |
 | `spec` | 2 | `src/engine/items.ts:309` |
-| `count` | 10 | `src/data/index.ts:3563` |
-| `qualities` | 4 | `src/data/index.ts:3566` |
-| `qualityChoice` | 6 | `src/data/index.ts:3564` |
-| `text` | 2 | `src/data/index.ts:3557` |
-| `vehicleId` | 5 | `src/data/index.ts:3559` |
+| `count` | 10 | `src/data/index.ts:3578` |
+| `qualities` | 4 | `src/data/index.ts:3581` |
+| `qualityChoice` | 6 | `src/data/index.ts:3579` |
+| `text` | 2 | `src/data/index.ts:3572` |
+| `vehicleId` | 5 | `src/data/index.ts:3574` |
 | `label` | 7 | `src/engine/possessionGrants.ts:25` |
-| `creatureId` | 5 | `src/data/index.ts:3561` |
-| `choice` | 5 | `src/data/index.ts:3554` |
-| `wildcard` | 3 | `src/data/index.ts:3555` |
+| `creatureId` | 5 | `src/data/index.ts:3576` |
+| `choice` | 5 | `src/data/index.ts:3569` |
+| `wildcard` | 3 | `src/data/index.ts:3570` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 8 | `src/data/index.ts:3536` |
+| `id` | 8 | `src/data/index.ts:3551` |
 | `spec` | 2 | `src/engine/careerSlots.ts:170` |
-| `choix` | 7 | `src/data/index.ts:2960` |
-| `pick` | 2 | `src/data/index.ts:3539` |
-| `of` | 6 | `src/data/index.ts:3538` |
+| `choix` | 7 | `src/data/index.ts:2975` |
+| `pick` | 2 | `src/data/index.ts:3554` |
+| `of` | 6 | `src/data/index.ts:3553` |
 | `table` | — | *absent du type TS* |
-| `random` | 3 | `src/data/index.ts:3541` |
+| `random` | 3 | `src/data/index.ts:3556` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -188,7 +188,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 |---|---|---|
 | `min` | 1 | `src/ui/compendium/registry.ts:802` |
 | `max` | 1 | `src/ui/compendium/registry.ts:802` |
-| `id` | 3 | `src/data/index.ts:484` |
+| `id` | 3 | `src/data/index.ts:494` |
 | `label` | 2 | `src/engine/shipCritical.ts:107` |
 | `ops` | 3 | `src/engine/riverNavigation.ts:213` |
 | `shrapnel` | 3 | `src/engine/shipCritical.ts:110` |
@@ -215,7 +215,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `cover` | 3 | `src/data/props.types.ts:582` |
 | `light` | 3 | `src/data/props.types.ts:591` |
 | `foot` | 2 | `src/data/props.types.ts:372` |
-| `volume` | 18 | `src/data/index.ts:2736` |
+| `volume` | 18 | `src/data/index.ts:2751` |
 | `seatSlots` | 4 | `src/data/props.types.ts:400` |
 
 ### `PropVolumeRecipe` (src/data/props.types.ts)
@@ -299,4 +299,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: 1eb41fb811d0839425b8dcce5471de0d4332181b (2078 fichiers, 169 dossiers) corps: 065fe10b2dea0799733c4aef9a433ffbf3bc2e4d -->
+<!-- sources-empreinte: f5b13b54ef47fca018b5d31e18d6be0c0e09f0bf (2078 fichiers, 169 dossiers) corps: 77cd51e96d7f4435a2d86dfa3144b3c709ec95e6 -->
