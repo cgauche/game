@@ -446,8 +446,8 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // `FigTile`/`frames.css` ; ne reste qu'un modificateur ADDITIF `.creator-race-grid .fig-tile.rolled`.
   // +3 : pastilles de suivi 5a (`.creator-skill-quota-gauges` + descendant `.notch-gauge`, compose
   // `.row-flex` en JSX — LOT clôture pieds étape 5) et séparateur « ou » des talents de race
-  // (`.talent-option-ou` : arbitrage utilisateur 2026-07-14, chips SÉPARÉES codex-liées et jamais de
-  // pointillé gris-sur-noir — `src/ui/styles/creator.css` porte le verbatim).
+  // (`.talent-option-ou` : le mot nu, chips SÉPARÉES codex-liées et jamais de pointillé gris-sur-noir —
+  // `src/ui/styles/creator.css` porte le verbatim au site de la classe).
   // #393 P5 (Possessions/Détails/Présentation, DERNIER lot du programme #393) : +18 — étend le
   // gabarit deux-zones aux étapes 6/7 (`.creator-trappings-(screen|shell|main)`,
   // `.creator-details-(screen|shell|main|toolbar)`) ; identité (`.identity-(grid|field|sex-toggle)`) ;
