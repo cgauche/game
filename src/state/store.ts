@@ -3024,8 +3024,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!b || !poste) return;
     // Le poste est PARTAGÉ par référence avec `mannedPoste` du chef (serveChef) → muter la même instance
     // suffit ; le `set` re-render (pattern combat : mutation + refresh).
-    // La munition se fixe au CHARGEMENT — arbitrage utilisateur 2026-08-16 par AskUserQuestion, consigné
-    // `.claude/memory/game-arbitrage-hud-console-rt-2026-08-16.md:39-42`, verbatim de la demande qui
+    // La munition se fixe au CHARGEMENT — arbitrage utilisateur 2026-08-16 par AskUserQuestion, verbatim de la demande qui
     // l'ouvre : « on doit pouvoir choisir ses munitions avec nos armes de tir facilement depuis sa barre
     // d'action ». Changer celle d'une pièce CHARGÉE la DÉCHARGE — Test étendu de
     // recharge à refaire (LDB 62 l.335) ; re-sélectionner la même est sans effet ; rien n'est détruit (décompte

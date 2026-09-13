@@ -1,40 +1,11 @@
 ---
 name: env-coordination-arbre-partage-sessions
-description: "Protocole VÉCU de coexistence de 2 sessions orchestratrices dans le MÊME arbre (nuit du 2026-08-30/31, L2 #1548 × convoi d'audit) : trains annoncés, staging par hunks, gardes-au-disque = otages croisés, JAMAIS de reset sans l'inventaire du gelé, SendMessage comme canal ; V3 2026-09-01 : pre-commit = ARBRE → commit depuis un worktree à npm ci + ff, bench export contaminé pour les gardes qui listent par git, gel d'écritures pendant une recette."
-metadata: 
+description: "La porte pre-commit mesure l'ARBRE, jamais l'index : un WIP voisin prend un train propre en otage — livrer depuis un worktree à npm ci, puis fusion en avance rapide"
+metadata:
   node_type: memory
   type: project
-  originSessionId: 39a8970a-cba9-474a-be43-12bdf0b366e7
-  modified: 2026-08-31T06:43:51.659Z
 ---
 
-Vécu d'une nuit à deux sessions orchestratrices dans le même arbre (game-d6 vague L2 #1548 ⇄ audit-workflow, convois entrelacés). Ce qui marche et ce qui a failli coûter cher :
+**Why:** les gardes de porte (`docs:check`, `raw:implemente`, gardes qui listent leurs documents par git) balaient le DISQUE : quand l'arbre porte le WIP d'une autre session, un train propre sur l'index est refusé, et deux gardes peuvent être structurellement contradictoires.
 
-**Ce qui marche** :
-- **SendMessage direct entre sessions** (ListAgents → nom ; répondre au `from` exact d'un message entrant). Annoncer ses TRAINS (fichiers × ordre) avant de committer ; l'autre gèle son staging pendant le passage et le dit.
-- **Staging CHIRURGICAL par hunks** sur les fichiers mixtes (générés compris) : `git diff -U2 > patch`, filtre par index de hunks (script de colle `filtre-hunks.mjs`), `git apply --cached --recount -C1`. Un commit reste cohérent sans les hunks du voisin SI ses fichiers sources ne sont pas commités non plus (_ids.generated sans le def voisin = cohérent).
-- **Docs générés pour le commit** : les générer sur l'INDEX, pas sur l'arbre — `git checkout-index -a --prefix=.tmp/` puis lancer les générateurs DANS .tmp (la résolution ESM remonte au node_modules racine), copier les docs, purger. Le garde `docs-vs-commit` l'exige dès que l'arbre ≠ l'index.
-- Se signaler mutuellement les rouges de SES fichiers (graphies, labels, liens mémoire) : chaque aller-retour a attrapé un vrai défaut avant main.
-
-**Ce qui a failli coûter cher** :
-- **JAMAIS de reset/snapshot sans l'INVENTAIRE du codeur gelé** : 4 fichiers `M` ont été présumés « à mon codeur en vol » — son accusé de gel a révélé qu'il n'avait RIEN écrit : les fichiers étaient LA PRÉPARATION DE CONVOI DU VOISIN. Le protocole de remise à HEAD annoncé les aurait détruits. Un fichier sale n'a pas de propriétaire évident.
-- **Vérifier les trains ANNONCÉS du voisin avant de dispatcher un codeur sur des fichiers communs** (le 4bis est parti pendant que le convoi voisin démarrait sur les mêmes fichiers — gel d'urgence).
-- **Les gardes pre-commit balaient le DISQUE, pas l'index** : chaque session est OTAGE des défauts du WIP de l'autre (3 graphies `ch.`, un label de manifest, une fiche périmée ont bloqué 4 tentatives de commit). Deux gardes peuvent être structurellement CONTRADICTOIRES quand arbre ≠ index (docs-vs-commit veut l'index, raw:implemente veut le disque) — se démêle en distinguant qui génère quoi (reconcile ≠ implemente).
-- Un message inter-session peut être RETENU pour approbation user (delivery notice) — ne jamais attendre une réponse, prévoir le repli.
-- Adresser la BONNE session : vérifier avec l'user au doute (un message de coordination parti vers une session morte depuis 14 h).
-
-**V2 (journée du 2026-08-31, vague L2 #1548 × trains pneumonie/#684 — 5 commits entrelacés sans un seul écrasement)** :
-- **L'ORDRE des trains se NÉGOCIE à chaque fenêtre** (« ton 5 est imminent ? sinon j'inverse ») — l'inversion a gagné 2 fois : le train PRÊT passe devant le train en chantier, et le suivant repart sur une base plus propre.
-- **Un gel n'existe qu'avec son ACCUSÉ + inventaire** (fichiers écrits/restants, état exact) — deux gels propres ; l'accusé a chaque fois révélé un état différent du présumé (travail déjà FINI une fois, un site restauré à l'octet l'autre).
-- **Agrégats/cliquets à 2 lots en vol : le commit porte les valeurs SOLO-depuis-HEAD posées dans l'INDEX** (éditer→add→restaurer les combinés dans l'arbre) ; le commit suivant pose la remontée combinée avec SES motifs. L'attribution des rouges se prouve par 2 MÉTHODES indépendantes (lignes nominatives du stock × racines synthétiques).
-- **Docs générés pour le commit : régénérer sur l'INDEX exige d'ISOLER la résolution de racine** — `git rev-parse --show-toplevel` dans un sous-dossier remonte à l'ARBRE (1re passe polluée, détectée par sonde) ; le repli = `git init` JETABLE dans le `.tmp` (+ un commit jetable si un générateur appelle git status). Pièges du script de colle : `git show` sans `maxBuffer` explose (ENOBUFS) sur un doc >1 Mo ; purger le `.tmp` en FIN de script et vérifier qu'il est parti (un résidu a traîné).
-- **Un bump de version committé emporte SES tests dans le MÊME train** — saves-flow.test.ts mal classé « voisin » au staging du 4bis = base ROUGE entre deux commits, vue par le juge suivant. Le classement d'un fichier M se vérifie par git log/diff du CONTENU, jamais par intuition de propriétaire.
-- **Se signaler les faux-procès aussi** : la voisine a retiré son accusation (« ton staging a avalé mon bloc ») après relecture — annoncer une erreur de lecture vaut autant qu'annoncer un défaut.
-- **SÉRIALISER les suites complètes** (protocole accepté 2026-08-31 après-midi) : deux `npm test` complets simultanés sur la machine = effondrement de contention côté jsdom (245 rouges « monde volumique doit être monté » sur 50 fichiers chez l'une, flake cascade chez l'autre — rejeux isolés verts partout). UN seul rejeu lourd à la fois, ping avant lancement.
-
-**V3 (2026-09-01, vague reference #1463 × B2/B3 #1457 × trains game-66 — 6 commits entrelacés, zéro conflit)** :
-- **Le pre-commit mesure l'ARBRE, jamais l'index** : quand l'arbre porte le WIP du voisin (3 JSON en M), `docs:check` y voit un doc « périmé » et refuse un train pourtant propre sur l'index. Remède éprouvé : `git worktree add --detach <dir> HEAD` + `git diff --cached --binary > patch` + `git apply --index` dans le worktree + **`npm ci` dedans** (sans node_modules propres, vitest remonte cache/setupFiles/binaires à l'arbre principal — vu par game-66, 47 suites mortes en collecte) + commit sous hooks là + `git merge --ff-only <sha>` dans l'arbre principal (l'index identique au commit passe sans heurt) + push. `git worktree move` hors dépôt refusé par un verrou Windows : le worktree DANS le dépôt marche dès qu'il a SES node_modules (mesuré : `RUN … Game-wt-commit` comme racine, 13 tests exécutés). Le dossier reste `??` un moment (verrou « Device or resource busy ») — jamais stagé, `git worktree prune` + rm quand il lâche.
-- **Le bench « export d'index » est CONTAMINÉ pour les gardes qui listent leurs documents par git** (`slots-contrat`, `structures-contrat` : `listerDocuments` via `git ls-files`/toplevel → l'arbre principal et son WIP) : un rouge mesuré dans `.exp-X/` peut venir du WIP voisin — la preuve de ces gardes-là est la CI du push ou le worktree à `npm ci`, pas l'export.
-- **Gel d'écritures pendant une recette navigateur** : demander « GEL » 2 min avant, exiger l'ACCUSÉ avec l'état des fichiers (« 3 JSON propres, aucun HMR de mon fait »), lever par « RECETTE FINIE » ; le voisin suspend son codeur ENTRE deux gestes, pas au milieu d'une migration.
-- **Le hook post-merge régénère les docs SUR L'ARBRE** (avec le WIP voisin dedans) : après un `pull`/`ff`, les docs M qui apparaissent appartiennent au propriétaire du WIP — les nommer dans le message inter-session, ne pas les stager.
-- **Un trou de gate se paie en CI** : `slots-contrat` absent du set de L-ref-2 → 3 runs rouges pour 2 entrées de stock périmées. Règle re-mordue : le set de gates d'un lot = TOUS les consommateurs du registre touché ([[feedback-gate-de-lot-couvre-tous-les-consommateurs-du-registre]]).
+**How to apply:** livrer depuis un worktree détaché à HEAD (patch de l'index appliqué dedans, **`npm ci` DANS le worktree** — sans node_modules propres, vitest remonte à l'arbre principal), puis fusion en avance rapide dans l'arbre principal ; les docs générés se régénèrent sur l'INDEX, pas sur l'arbre ; un fichier modifié n'a pas de propriétaire évident — il se classe par son CONTENU (historique, diff), jamais par intuition, et aucune remise à l'état HEAD ne se fait sans l'inventaire de l'autre session.

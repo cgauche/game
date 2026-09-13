@@ -9,7 +9,7 @@
  *  - `vocab`    : `<input list>` + `<datalist>` des valeurs DISTINCTES d'un champ (refChar/refCareer/subType…)
  *                 → pioche OU saisie libre (mais la LISTE elle-même vient d'un champ, pas d'ids de dataset).
  * On stocke partout l'`id` (ou la valeur de `valueKey`) — multilangue-safe (cf.
- * [[game-ids-internes-libelles-display-multilangue]]). Le composant est « bête » : il reçoit sa `cfg`.
+ * `CLAUDE.md` § Pour TOUT agent). Le composant est « bête » : il reçoit sa `cfg`.
  */
 import { useMemo } from 'react';
 import { datasetArray, type DatasetKey } from '../../data/overrides';

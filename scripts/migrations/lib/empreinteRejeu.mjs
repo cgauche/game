@@ -16,7 +16,7 @@
 // Coût mesuré sur le périmètre réel (528 fichiers) : 0,13 à 0,17 s — un seul `git hash-object
 // --stdin-paths` et un seul `git ls-tree -r -z`.
 //
-// DÉTERMINISME CROSS-OS (fiche `env-doc-derive-determinisme-cross-os`) : les chemins sont rendus en
+// DÉTERMINISME CROSS-OS : les chemins sont rendus en
 // `/` et triés en UNITÉS DE CODE — `readdirSync` rend l'ordre du système de fichiers (NTFS trié,
 // ext4 par hash), qui ne décide de rien ici.
 import { execFileSync, spawnSync } from 'node:child_process'

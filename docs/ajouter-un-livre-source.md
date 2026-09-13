@@ -25,7 +25,7 @@ Long (~45 min pour un livre dense) — lancer en arrière-plan. `--config_json m
 active `paginate_output=true` : le markdown de sortie porte des séparateurs `{N}----` (N = page
 PDF **0-indexée**).
 
-**Piège connu** (mémoire `game-atlas-raw-doc`) : Marker **gate par mise en page** — un livre
+**Piège connu** : Marker **gate par mise en page** — un livre
 saturé d'illustrations en zones « figure » peut perdre une grosse part du texte en `--disable_ocr`
 (vécu sur *Le Zoo Impérial* : -70 %, ré-extrait en OCR classique, seul livre du corpus dans ce cas).
 Vérifier après coup que le `.md` produit fait une taille plausible (comparer au nombre de pages du

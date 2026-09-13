@@ -1,15 +1,12 @@
 ---
 name: feedback-bug-existant-trouve-se-traite-pas-juste-ticketise
-description: "Un bug existant trouvé se TRAITE, pas seulement se ticketise — surtout s'il est adjacent au geste courant."
-metadata: 
+description: "Un bug existant trouvé se ticketise ET se corrige — le ticket ne dispense pas du traitement"
+metadata:
   node_type: memory
   type: feedback
-  originSessionId: fe865f02-512f-45e7-8886-1a0ed51e079b
-  modified: 2026-07-23T22:49:29.161Z
 ---
 
-Quand un grounding / un juge / une recette met au jour un bug EXISTANT (même hors du périmètre initial), le ticketiser ne suffit PAS : il faut aussi le CORRIGER. Le ticket sert à ne rien perdre ; il ne dispense pas de traiter.
-
-**Why:** verbatim user 2026-07-24, après que j'aie ouvert #788 (débordement étiquette) et #790 (coupe-de-coin cross-couche) puis les aie parqués sans les corriger : « Si tu vois des bugs existant, faut les mettre en ticket et les traiter non ? ». Un bug logué-mais-non-traité, surtout adjacent au code qu'on vient de modifier, est de la dette qu'on avait sous la main.
-
-**How to apply:** un bug trouvé → ticket (gabarit + labels) ET fix dans la foulée, prioritairement s'il touche la fonction/le fichier du geste courant (coût marginal faible, contexte chaud). Ne différer QUE le vraiment subjectif (arbitrage de goût, à caler sur un vrai cas) ou le hors-sujet lourd — et le dire explicitement, pas par omission. Complète [[feedback-jamais-de-constat-silencieux]] (qui exigeait le ticket) : la barre est ticket + traitement, pas ticket seul.
+Verbatim utilisateur (2026-07-24) : « Si tu vois des bugs existant, faut les mettre en ticket et les traiter non ? ».
+**Règle :** un bug existant mis au jour par un grounding, un juge ou une recette reçoit son ticket ET son correctif, prioritairement s'il touche le fichier du geste courant.
+**Why:** le ticket sert à ne rien perdre ; un bug logué et non traité, adjacent au code qu'on vient de modifier, est de la dette qu'on avait sous la main.
+**How to apply:** ne différer que le vraiment subjectif (goût, à caler sur un vrai cas) ou le hors-sujet lourd — et le dire explicitement, jamais par omission.

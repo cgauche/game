@@ -20,7 +20,7 @@
  *   node scripts/docs/build-rendu-pipeline.mjs
  */
 import { readFileSync, existsSync, statSync } from 'node:fs'
-import { listerDossier } from '../guards/lib/lister.mjs'
+import { listerDossier, listerArbre } from '../guards/lib/lister.mjs'
 import ts from 'typescript'
 import { emitOrCheck, loadSource, firstSentence, jsdocBody } from './lib/jsdocUnion.mjs'
 import { fileExports } from './lib/engineExports.mjs'
@@ -219,6 +219,51 @@ const CATALOGUES = ['structureAppearance', 'materials', 'decorPalette']
   })
 if (CATALOGUES.length < 3) abandon(`moins de 3 catalogues de matériaux trouvés sous src/data/ — les noms ont changé`)
 
+// ── APPENDICES du rig : le registre, ses defs, et qui les référence PAR ID ─────────────────────
+
+const APPENDAGES = ancre(`${ISO}/rig/parts/appendages`, 'registre des appendices')
+const APPENDAGES_DEFS = ancre(`${APPENDAGES}/defs`, 'defs du registre des appendices')
+
+/** 1 appendice = 1 def qui porte SON art : l'id est LU au def et confronté au nom de fichier. */
+const APPENDICES = listerDossier(APPENDAGES_DEFS)
+  .filter((f) => f.endsWith('.ts') && !f.includes('.test.'))
+  .map((f) => {
+    const fichier = `${APPENDAGES_DEFS}/${f}`
+    const t = readFileSync(fichier, 'utf8')
+    const id = t.match(/\bid:\s*'([^']+)'/)?.[1]
+    const label = t.match(/\blabel:\s*'([^']+)'/)?.[1]
+    if (!id || !label) abandon(`def d'appendice \`${fichier}\` sans \`id\`/\`label\` lisible`)
+    if (id !== f.replace(/\.ts$/, '')) abandon(`def d'appendice \`${fichier}\` : id « ${id} » ≠ nom de fichier`)
+    return { id, label, fichier, dos: /^\s*back:/m.test(t), profil: /^\s*profile:/m.test(t) }
+  })
+if (APPENDICES.length < 3) abandon(`moins de 3 defs sous ${APPENDAGES_DEFS}/ — le registre a changé de forme`)
+
+/** Références PAR ID hors du paquet registre : c'est la mesure du « référencé partout par id ». */
+const CONSOMMATEURS = (() => {
+  const fichiers = listerArbre(ISO, { filtre: (rel) => /\.tsx?$/.test(rel) && !rel.includes('.test.') })
+    .map((rel) => `${ISO}/${rel}`)
+    .filter((f) => !f.startsWith(`${APPENDAGES}/`))
+  const parId = new Map(APPENDICES.map((a) => [a.id, new Set()]))
+  for (const f of fichiers) {
+    const t = readFileSync(f, 'utf8')
+    for (const a of APPENDICES) if (t.includes(`'${a.id}'`)) parId.get(a.id).add(f)
+  }
+  return parId
+})()
+
+/** La primitive UNIQUE de résolution vue→art, et les coutures qui l'appellent sur un appendice. */
+const PICKVIEW = (() => {
+  const p = ancre(`${ISO}/rig/parts/types.ts`, 'primitive de résolution par vue')
+  const { sf, text } = loadSource(p)
+  const i = text.indexOf('export function pickView')
+  if (i < 0) abandon(`\`pickView\` introuvable dans ${p} — la résolution des appendices ne se dérive plus`)
+  return { fichier: p, ligne: ligne(sf, i) }
+})()
+const COUTURES = listerArbre(ISO, { filtre: (rel) => /\.tsx?$/.test(rel) && !rel.includes('.test.') })
+  .map((rel) => `${ISO}/${rel}`)
+  .filter((f) => !f.startsWith(`${APPENDAGES}/`) && readFileSync(f, 'utf8').includes('appendageArt('))
+if (!COUTURES.length) abandon(`aucune couture n'appelle \`appendageArt(\` hors du registre — forme changée`)
+
 const CAPTURE = ancre('scripts/qc/capture-jeu.mjs', 'capture QC du jeu')
 
 // ── Rendu ────────────────────────────────────────────────────────────────────────────────────────
@@ -235,7 +280,8 @@ de \`SceneEl\` et les champs de \`GP\`/\`MaterialRef\`/\`Face\`/\`ElBase\`/\`ElS
 (\`${TYPES}\`), les ${BUILDERS_MESURES.length} builders exportés sous \`${BUILDERS}/\` avec leur type
 de sortie, les ${SOUS_DOSSIERS.length} sous-dossiers de \`${ISO}/\` et leur nombre de modules directs, les
 ${CLES_AMB.length} clés d'ambiance de \`${AMBIANCE}\`, les ${RECETTE.rows.length} sections d'une
-\`DetailRecipe\`, la couverture RÉELLE de la garde anti-couleur (lue dans la garde) et la population
+\`DetailRecipe\`, les ${APPENDICES.length} appendices du registre du rig avec leurs références par id, la
+couverture RÉELLE de la garde anti-couleur (lue dans la garde) et la population
 des ${CATALOGUES.length} catalogues de matériaux. **Angles morts** : ce doc décrit la FORME du
 pipeline, pas le RÉSULTAT — aucune mesure ici ne dit qu'une scène est belle ou juste (c'est le rôle
 de la QC visuelle et des oracles de parité) ; le comptage de modules est NON récursif (un
@@ -293,6 +339,23 @@ ${table(BUILDERS_MESURES, ['Builder', 'Sortie', 'Site', 'Rôle (JSDoc)'], (b) =>
 ## 3. L'arborescence de \`${ISO}/\`
 
 ${table(SOUS_DOSSIERS, ['Dossier', 'Modules directs', 'Sous-dossiers', 'Rôle'], (d) => `| \`${ISO}/${d.nom}/\` | ${d.n} | ${d.sous} | ${ROLES[d.nom]} |`)}
+
+### Appendices du rig — UN registre, ${APPENDICES.length} ids, une seule résolution
+
+Cornes et queues ne sont pas de l'art posé au cas par cas : \`${APPENDAGES}/\` est le registre UNIQUE, et
+**1 appendice = 1 def \`defs/<id>.ts\` qui porte SON art** (\`front\` + \`profile\` dédié, \`back\` = \`front\` par
+défaut) — aucune string SVG de corne ou de queue hors des defs. Les consommateurs les référencent **PAR ID**
+et la résolution passe par la primitive unique \`pickView\` (\`${PICKVIEW.fichier}:${PICKVIEW.ligne}\`), appelée
+sur un appendice par ${COUTURES.map((f) => `\`${f}\``).join(', ')}.
+
+${table(APPENDICES, ['Appendice', 'id', 'Def', 'Dos propre', 'Référencé par'], (a) => {
+  const c = [...CONSOMMATEURS.get(a.id)]
+  return `| ${a.label} | \`${a.id}\` | \`${a.fichier}\` | ${a.dos ? 'oui' : '= face'} | ${c.length ? `${c.length} — ${c.map((f) => `\`${f}\``).join(', ')}` : '**0**'} |`
+})}
+
+Un **0** en « Référencé par » est une PISTE, pas une preuve de mort : la colonne compte les fichiers de
+\`${ISO}/\` (hors tests et hors registre) qui citent l'id — un id choisi en donnée de scène ou au Codex n'y
+apparaît pas. Ajouter un type d'appendice = déposer un def + \`npm run gen\` ; jamais un 4ᵉ mécanisme d'art.
 
 ## 4. Détail de surface — la recette (\`${DETAIL}:${RECETTE.l}\`)
 

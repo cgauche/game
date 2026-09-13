@@ -1,23 +1,11 @@
 ---
 name: env-git-show-ordre-commit-avant-paths
-description: git show --stat avec le commit APRÈS le séparateur -- rend silencieusement le même résultat pour tous les commits — le commit se place AVANT --
-metadata: 
+description: "git show : la révision se place AVANT le séparateur de pathspec ; après, elle est traitée comme un chemin et la sonde rend le même résultat pour toutes les révisions"
+metadata:
   node_type: memory
   type: reference
-  originSessionId: 581b89eb-a389-4f97-87c2-713104a0fbca
-  modified: 2026-08-26T05:22:03.882Z
 ---
 
-**Piège mesuré (2026-08-26, juge d'audit DoD #1466)** : dans une boucle d'attribution par
-commit, `git show --stat --format= -- src/data src/scenes <commit>` (le commit APRÈS `--`)
-rend **silencieusement le même résultat pour tous les commits** — 9 lignes identiques
-« aucun .json touché » alors qu'un commit changeait bien `arene-projet.json` (42 l.).
-Aucune erreur, aucun avertissement : tout ce qui suit `--` est traité comme pathspec.
+**Why:** avec la révision placée après le séparateur, la commande ne lève aucune erreur et rend silencieusement N résultats identiques sur N révisions — une attribution par révision y devient fausse sans le moindre signal.
 
-**Forme correcte** : `git show --stat --format= <commit> -- <paths>` — le commit AVANT `--`.
-
-**Portée** : toute sonde d'attribution « quel commit du lot a touché quoi » (audits de DoD,
-case « aucune donnée ne change », partage d'arbre entre sessions — voir
-[[game-index-git-partage-entre-sessions]]). Une boucle qui rend N résultats IDENTIQUES sur
-N commits différents est suspecte par construction : re-vérifier l'ordre des arguments avant
-de conclure.
+**How to apply:** forme correcte `git show --stat --format= <révision> -- <chemins>` ; une boucle d'attribution qui rend des résultats IDENTIQUES sur des révisions différentes est suspecte par construction — re-vérifier l'ordre des arguments avant de conclure.

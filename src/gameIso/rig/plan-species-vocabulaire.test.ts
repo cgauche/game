@@ -2,7 +2,7 @@
  * VOLET 1 — l'espace d'espèces DÉCLARÉ par les gabarits corporels est un sous-ensemble du
  * vocabulaire d'ids DÉRIVÉ des registres. `speciesNames()` d'un plan expose des `appearance.species`
  * (ids stables) : un libellé d'affichage y est une valeur qui ne résout dans aucun registre exact.
- * Cf. [[game-ids-internes-libelles-display-multilangue]] ; garde jumelle sur la DONNÉE :
+ * Cf. `CLAUDE.md` § Pour TOUT agent (id stable ≠ label) ; garde jumelle sur la DONNÉE :
  * `src/data/refs-migrated.test.ts` (« appearance.species — id stable »).
  * Périmètre : l'espace DÉCLARÉ. L'espace ÉMIS au runtime (resolveRender/rigSpeciesId) est le volet 2.
  *

@@ -116,7 +116,8 @@ const FRONTIERE = [
  * Le gate est BIDIRECTIONNEL (`fossileAudit`) : un tag `@fossile` sans entrée ici est ROUGE — sinon
  * le tag serait un canal d'évasion, un champ NEUF tagué sortant du périmètre sans que rien ne rougisse
  * (mesuré, sonde `scratchprobe/1463/lotA-juge/j10-hatch-reel.mjs` cas B) ; une entrée sans tag est
- * ROUGE aussi (toute transition se tient au registre, `feedback-registre-fossiles-transition`).
+ * ROUGE aussi (tout compromis de TRANSITION se tient au REGISTRE DES FOSSILES du ticket-mère avec la
+ * phase qui le tue — `.claude/skills/orchestrer-des-agents/SKILL.md` § Brief).
  * Clé = `<nom du export const>.<champ>` pour un shape zod, `<Type>.<champ>` pour un corps manuscrit.
  */
 export const FOSSILES = ['sceneEntitySchema.foot'];

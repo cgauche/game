@@ -13,4 +13,12 @@ export const MEMORY_DIR: string;
 export const MEMORY_INDEX: string;
 export function liveNotes(root: string): string[];
 export function scanMemoryLinks(root: string): MemoryLinkProblem[];
+export const RACINES_HORS_MEMOIRE: string[];
+export const HORS_SCAN: string[];
+export function fichiersHorsMemoire(root: string): string[];
+export function nomsDeFichesConnues(root: string): Set<string>;
+export function scanRepoMemoryLinks(
+  root: string,
+  options?: { fichiers?: string[]; vocabulaire?: Iterable<string> },
+): MemoryLinkProblem[];
 export function formatMemoryLinkProblems(problems: MemoryLinkProblem[]): string;

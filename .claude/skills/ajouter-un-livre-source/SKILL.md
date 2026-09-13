@@ -7,6 +7,6 @@ description: À utiliser quand on intègre un nouveau livre ou supplément WFRP 
 
 Lire **`docs/ajouter-un-livre-source.md`** — pipeline complet : extraction Marker, découpe en
 chapitres `Source/<Livre>/NN - Titre.md`, enregistrement dans `scripts/raw/_lib.mjs` (BOOKS),
-intégration Atlas `docs/raw/`, curation MANUELLE de la donnée taguée `source` (build:data est
-retiré), gardes `coverage.mjs`/`reconcile.mjs`. ⚠ Seuls les livres FR autorisés (règle stricte 1) ;
-les PDFs sont faillibles — vérifier cas par cas.
+intégration Atlas `docs/raw/`, curation MANUELLE de la donnée taguée `source`, gardes
+`coverage.mjs`/`reconcile.mjs`. ⚠ Seuls les livres FR autorisés (règle stricte 1) ; les PDFs sont
+faillibles — vérifier cas par cas.

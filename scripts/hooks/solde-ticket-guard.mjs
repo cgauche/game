@@ -1034,7 +1034,7 @@ export function validateRevuePalier(content, today) {
 /**
  * Revues neuves STAGÉES croisées avec ce que le commit EMPORTE. PUR.
  * Une revue peut être dans l'index sans partir avec le commit : `git commit -- <chemins>` n'emporte
- * QUE ces chemins-là (forme recommandée en arbre partagé, fiche `git-commits-propres-wip-parallele`),
+ * QUE ces chemins-là (forme recommandée en arbre PARTAGÉ : le WIP d'une session voisine ne part pas),
  * et `--amend` a le même angle mort. C'est exactement la règle du solde, qui se lit déjà par
  * `commit.contenu` : la preuve doit PARTIR avec le commit, pas rester dans l'index.
  * @returns {{ emportees: object[], omises: string[] }}

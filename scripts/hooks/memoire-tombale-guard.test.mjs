@@ -95,7 +95,7 @@ test('SILENCE : `PORTÉ PAR <garde>` nomme le porteur actuel — une réécritur
 test('SILENCE : le frontmatter, même quand le NOM de la fiche porte le mot', () => {
   const contenu = [
     '---',
-    'name: game-presets-pnj-supersede-customstatblock',
+    'name: game-fiche-temoin-supersede-exemple',
     '---',
     '',
     'Le préset porte la statblock.',

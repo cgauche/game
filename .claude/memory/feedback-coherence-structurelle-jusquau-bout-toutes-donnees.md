@@ -1,15 +1,12 @@
 ---
 name: feedback-coherence-structurelle-jusquau-bout-toutes-donnees
-description: "Rappel 2026-08-23 : le credo (réutiliser le canonique, zéro duplication) vaut pour les STRUCTURES DE DONNÉE — l'inventaire d'un lot se fait par CONCEPT sur tous les datasets, jamais par fichier du ticket"
-metadata: 
+description: "L'inventaire d'un lot de FORME se fait par CONCEPT sur tous les datasets, jamais par fichier du ticket"
+metadata:
   node_type: memory
   type: feedback
-  originSessionId: 032f0876-8eb3-421a-bddc-50a550c9bc09
-  modified: 2026-08-23T08:16:51.376Z
 ---
 
-Verbatim utilisateur (2026-08-23) : « Ca serait bien que l'application soit cohérente dans sa structure non et jusqu'au bout, que ce soit les carrières que les races, les creatures, etc ... » — « Cette remarque ce n'est pas seulement pour les spécialisations par contre » — « Tu sais c'est deja dans le credo ... » — « il n'y a aucune raison d'avoir autant de structure différente, même entre type. Il faudrait fournir une structure type partagé avec tout le monde et l'imposé comme structure obligatoire pour tout json de l'application ».
-
-**Why :** ce n'est PAS une règle nouvelle (credo : réutiliser le canonique, zéro duplication ; [[feedback-jamais-de-demi-migration]] ; [[game-doctrine-une-entite-n-livres-n-variantes]]). Le défaut était le mien : j'ai traité le concept « choix de spécialisation » sur le dataset du ticket (créatures, 53 textes) alors que carrières (`specOptions` en libellés), talents/signes astraux (littéral dans une op), créateur (regex sur le libellé) et traits (args « deux au choix ») portaient le même concept sous d'autres formes — et le même schéma (`advancementRefSchema`) existait déjà.
-
-**How to apply :** l'inventaire d'un lot de forme se fait par CONCEPT (grep du concept dans tous les `src/data/*.json` + schémas + moteur), jamais par fichier ; la forme cible est le schéma partagé existant (`schemas/common.ts`), et le lot va jusqu'au moteur (une porte). Cible tranchée par l'utilisateur : UNE référence GÉNÉRIQUE `entityRefSchema {id, spec?, choix?, value?}` pour TOUTE entité (compétence, talent, trait, objet, sort…), variantes par COMPOSITION seulement, IMPOSÉE à tout JSON par une garde structurelle sur les defs. Chantier : #1463.
+Verbatim utilisateur (2026-08-23) : « il n'y a aucune raison d'avoir autant de structure différente, même entre type. Il faudrait fournir une structure type partagé […] et l'imposé comme structure obligatoire pour tout json de l'application ».
+**Règle :** un lot de forme s'inventorie par CONCEPT (grep du concept dans tous les `src/data/*.json`, les schémas et le moteur), jamais sur le seul dataset nommé par le ticket.
+**Why:** le même concept vit ailleurs sous d'autres formes (libellés, littéral dans une op, regex sur un label) ; ne traiter que le dataset du ticket fabrique une demi-migration.
+**How to apply:** la forme cible est le schéma partagé existant (`src/data/schemas/grammaire/reference.ts` — référence générique `{id, spec?, choix?, value?}`, variantes par COMPOSITION seulement), le lot va jusqu'au moteur, et une garde structurelle sur les defs l'impose à tout JSON.

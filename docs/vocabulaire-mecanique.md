@@ -30,10 +30,55 @@ La colonne « Résolveurs » dit où ça se joue vraiment — c'est elle qui tra
 **Colonne « Donnée »** — occurrences dans `src/data` : `fichier:id-de-l-entrée`. Un **0** signale une op qu'AUCUNE donnée
 n'emploie — candidate au code mort, à instruire (elle peut être employée par du code, cf. « Résolveurs »).
 
-**Périmètre mesuré / angles morts** — « Résolveurs » et « Donnée » sont des mesures TEXTUELLES bornées :
+**Périmètre mesuré / angles morts** — la table des TROIS CANAUX est dérivée des déclarations de champs ;
+« Résolveurs » et « Donnée » sont des mesures TEXTUELLES bornées :
 hors périmètre, donc invisibles ici, les ops construites dynamiquement dans `src/engine`/`src/state` (`engine/miscast`,
 `engine/polymorph`… fabriquent des `GameOp` en code), les JSON de campagne hors `src/data`, les tests, et `src/ui`
 (affichage, jamais résolution). Un **0** en « Donnée » n'est donc pas une preuve de mort : c'est une PISTE.
+
+## Les trois canaux de mécanique en donnée
+
+`GameOp` est la langue de l'axe EFFET/MODIFICATEUR — une op s'APPLIQUE à une cible (`applyOps(target, ops)`).
+Ce n'est pas le seul canal par lequel une entité porte sa mécanique en donnée ; la table ci-dessous est
+DÉRIVÉE des DÉCLARATIONS de champs (AST) des sources de `src/data`, `src/engine`, `src/state`, jamais des commentaires :
+
+- **`passive: GameOp[]`** — modificateurs de VALEUR, exécutés par `applyOps` (collecteur `passiveMods`) ;
+- **`effects: TriggeredEffect[]`** — effets DÉCLENCHÉS sur un `EffectTrigger`, dispatchés par `fireTriggers` ;
+- **`capabilities` / `combat`** — DRAPEAUX sans cible, lus par des dispatchers génériques qui ne nomment
+  aucune entité. Un drapeau n'est pas une op inachevée : n'ayant AUCUNE cible, il n'est pas un effet
+  appliqué mais une propriété que la règle consulte — le porter en `GameOp` fabriquerait une op que seul
+  son dispatcher lirait.
+
+Un champ ne compte pour un canal que si son TYPE le porte : `SpellData.effects: Flow` (flux authored) et
+`WeaponGroupData.combat: 'melee' \| 'ranged'` (étiquette) n'y figurent pas.
+
+| Entité | Déclarée | `passive` | `effects` | Drapeaux |
+|---|---|---|---|---|
+| `DomainData` | `src/data/index.ts:1967` | — | `effects: TriggeredEffect[]` | — |
+| `ManeuverDef` | `src/data/index.ts:1595` | — | `effects: TriggeredEffect[]` | — |
+| `Mutation` | `src/engine/corruption.ts:58` | `passive: GameOp[]` | `effects: TriggeredEffect[]` | — |
+| `NavalTraitData` | `src/data/index.ts:2500` | `passive: GameOp[]` | — | — |
+| `QualityData` | `src/data/index.ts:1882` | `passive: GameOp[]` | `effects: TriggeredEffect[]` | `capabilities: QualityCapabilities` |
+| `StatusData` | `src/data/index.ts:1417` | `passive: GameOp[]` | `effects: TriggeredEffect[]` | — |
+| `SymptomData` | `src/data/index.ts:1925` | `passive: GameOp[]` | `effects: TriggeredEffect[]` | `capabilities: SymptomCapabilities` |
+| `TalentData` | `src/data/index.ts:1022` | `passive: GameOp[]` | `effects: TriggeredEffect[]` | `combat: CombatFeature` |
+| `TraitData` | `src/data/index.ts:1765` | `passive: GameOp[]` | `effects: TriggeredEffect[]` | `capabilities: TraitCapabilities` |
+| `TrappingData` | `src/data/index.ts:1138` | `passive: GameOp[]` | — | `capabilities: ItemCapabilities` |
+| `Weapon` | `src/engine/types.ts:375` | `passive: GameOp[]` | — | — |
+| `WeaponEnchant` | `src/engine/types.ts:538` | `passive: GameOp[]` | — | — |
+
+_12 entités déclarant au moins un canal. Une entité qui étend une autre HÉRITE de ses canaux — la
+table ne montre que les champs DÉCLARÉS (`EtatData`/`PsychologyData` tiennent les leurs de `StatusData`)._
+
+### Le vocabulaire des drapeaux (5 types)
+
+| Type | Site | Drapeaux déclarés |
+|---|---|---|
+| `CombatFeature` | `src/engine/combatFeatures/types.ts:27` | 51 — `offHandPenalty`, `attackModes`, `meleeDamageBonus`, `rangedDamageBonus`, `brawlDamageBonus`, `chargeDamageBonus`, `slayer`, `damageReduction`, `critExtraWounds`, `rangedAPIgnore`, `ignoreCalledShotHead`, `ignoreCalledShotRanged`, `ignoreSizeRangedMods`, `sniper`, `initiativeBonus`, `strikeFirstRanged`, `surpriseSave`, `reloadDR`, `runBonus`, `fleeBonus`, `pursuitTargetBonus`, `shieldAdvantage`, `advantageDefenseReaction`, `counterOnDefenseWin`, `counterRequiresFastParry`, `stealAdvantage`, `stealOne`, `transferWeight`, `reloadAssessAdvantage`, `fearSizeAsMount`, `retreatCost`, `keepAdvantageOnDisengage`, `disengageWithLessAdvantage`, `battement`, `distraire`, `outnumberCount`, `braveheart`, `fearImmune`, `bleedIgnore`, `focusNoMiscastOnDouble`, `castNoMiscastOnDouble`, `causesFear`, `reverseFailed`, `bargainBonus`, `encumbranceBonus`, `corruptionThreshold`, `surgery`, `castingKind`, `commandTeam`, `seaShanty`, `critRollTwice` |
+| `ItemCapabilities` | `src/data/index.ts:1095` | 12 — `preventForcedDrop`, `weatherProtection`, `isShelter`, `isRations`, `isGrimoire`, `lockpicks`, `scurvyGuard`, `sealskin`, `shipParts`, `disarmImmune`, `ropeMode`, `waterContainer` |
+| `QualityCapabilities` | `src/data/index.ts:1844` | 26 — `fastStrike`, `slowStrike`, `fumbleOn9`, `fumbleDigits`, `pushback`, `bladeTrap`, `damagesArmour`, `firearm`, `canFireWhileEngaged`, `magazine`, `salvo`, `areaFire`, `explosion`, `crewedTeam`, `parryAP`, `encDelta`, `layerable`, `critImmuneOdd`, `apIgnoredOnEven`, `apIgnoredOnImpaleCrit`, `siege`, `ram`, `unbreakable`, `magic`, `withheldOnRestraint`, `beats` |
+| `SymptomCapabilities` | `src/data/index.ts:1911` | 6 — `blocksHealing`, `amputation`, `contagious`, `nausea`, `endTest`, `persistentActive` |
+| `TraitCapabilities` | `src/data/index.ts:1646` | 43 — `bonusWoundsBE`, `mutationAtSpawn`, `markMutations`, `swarm`, `naturalWeapon`, `spellcaster`, `undead`, `wardSave`, `damageImmunity`, `spellDomainImmunity`, `counterOnDefenseWin`, `counterRequiresFastParry`, `unstable`, `painless`, `freeTrample`, `psychImmuneIfAhead`, `psychType`, `psychImmune`, `psychIndice`, `psychCible`, `grantGroups`, `frenzyCapable`, `mindless`, `woundsUseForce`, `bestial`, `coldBlooded`, `stupid`, `rage`, `territorial`, `skittishMount`, `structResistant`, `structImpenetrable`, `fly`, `leap`, `stride`, `autoClimb`, `climbFullSpeed`, `noRun`, `seesInDark`, `darkSightTiles`, `wakelessBite`, `encumbranceFactor`, `consumptionFactor` |
 
 ## GameOp — index par concept (français)
 
@@ -310,4 +355,4 @@ Valeurs du champ `on` d'un `TriggeredEffect`.
 | `{ pick … }` | `sizeAtMost?`, `max` | — |
 
 _6 entrées — dérivées de `src/engine/flowCore.ts`._
-<!-- sources-empreinte: 290a046ad8cd9a165287687f8204b266b6474c28 (657 fichiers, 16 dossiers) corps: 0d080ea7a0f6ac9fd07d0de2ae2978016f1faca0 -->
+<!-- sources-empreinte: b1b21409934e344f4ce142df59fc168aab52217d (658 fichiers, 16 dossiers) corps: 826c07661a8c968f91f8a275565a2e0dfcc12339 -->

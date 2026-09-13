@@ -39,7 +39,7 @@ image → grille ».
   scène : dimensions + murs/portes témoins ; `unreachableDescriptiveZones(scene, startOf(scene))` **vide**
   (chaque pièce nommée atteignable, BFS `reachableCells`/`walkNeighbors`) ; `reachedFloors` couvre tous les
   étages habités (connexité verticale par `stair`).
-- **Jugement visuel** : planche par étage aux **4 rotations**, plan source en regard (script resvg, patron
-  `scripts/qc/render-walls.mts`), jugé en RÉFUTATION — jamais une auto-certification.
+- **Jugement visuel** : capture de jeu (patron `scripts/qc/capture-jeu.mjs`) → planche par étage aux
+  **4 rotations**, plan source en regard, jugée en RÉFUTATION — jamais une auto-certification.
 - Attendus commités DANS les tests, jamais dépendants d'un fichier hors git. Exemple vivant :
   `src/scenes/test-scenarios/zones-pieces.ts`.

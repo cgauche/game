@@ -145,8 +145,8 @@ export const stakeFormSchema = z.enum(STAKE_FORMS);
  * Réf de source récurrente `{ book, page }` — vue sur 2-3 datasets (`characteristics.json`,
  * `species.json`/`SpeciesData.source`, `careers.json`/`CareerData.source` dans `src/data/index.ts`) :
  * même forme partout. `book` = id de `books.json` (id-pur, cf. commit `21aa4881`) ; `page` = folio
- * IMPRIMÉ du livre, JAMAIS l'index de la ré-extraction Marker (piège documenté :
- * `game-source-page-is-printed-folio`).
+ * IMPRIMÉ du livre, JAMAIS l'index de la ré-extraction Marker (piège prouvé par la garde
+ * `scripts/guards/lib/folioIntegrity.mjs`, qui recoupe la `desc` verbatim et les `data-folio`).
  */
 export const sourceRefSchema = z.strictObject({
   book: z.string(),

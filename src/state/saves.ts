@@ -3,7 +3,8 @@
  *
  * Snapshot ZÉRO-MAINTENANCE : on copie les clés de DONNÉES de `getInitialState()` depuis l'état
  * courant (toute nouvelle donnée d'état future est sauvée gratis — même principe que le reset de
- * partie, cf. game-newgame-reset-pattern) ; les actions (fonctions zustand) sont ignorées.
+ * partie, qui repart de `useGame.getInitialState()` — JAMAIS d'une liste de champs tenue à la main) ;
+ * les actions (fonctions zustand) sont ignorées.
  * La scène vivante (mutée : fouilles consommées, entités retirées…), les flags, l'inventaire,
  * l'horloge et le groupe voyagent donc dans la save.
  *

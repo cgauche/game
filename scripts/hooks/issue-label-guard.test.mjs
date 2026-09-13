@@ -91,7 +91,7 @@ test('isGhApiIssueCreate / isGhGraphqlIssueCreate (unités)', () => {
   assert.equal(isGhGraphqlIssueCreate(['gh', 'api', 'graphql', '-f', 'query=query{viewer}']), false)
 })
 
-// ── Texte INTERPOLÉ par le shell (fiche `env-backticks-executes-dans-contenu-interpole`, ×3) ──────
+// ── Texte INTERPOLÉ par le shell : il EXÉCUTE backtics et `$( )` avant que gh les voie (×3) ─────
 test('DENY : un corps/titre porteur d’un backtick ou d’un $( ) part en --body-file', () => {
   const backtick = String.fromCharCode(96)
   assert.ok(denies('gh issue comment 42 --body "état : ' + backtick + 'npm test' + backtick + '"'))

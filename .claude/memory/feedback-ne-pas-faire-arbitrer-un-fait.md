@@ -1,85 +1,13 @@
 ---
 name: feedback-ne-pas-faire-arbitrer-un-fait
-description: "User 2026-07-26 + 2026-09-05 : ne JAMAIS demander à l'utilisateur de trancher une question de FAIT (ça se mesure) NI une question que la DOCTRINE tranche déjà (ça se déduit, on le dit, on avance) ; il n'arbitre que le produit et le goût, là où les principes connus ne suffisent pas."
-metadata: 
-  node_type: memory
+description: "Ne jamais faire trancher à l'utilisateur une question de FAIT (ça se mesure) ni une question que la DOCTRINE tranche déjà ; il n'arbitre que le produit et le goût"
+metadata:
   type: feedback
-  originSessionId: 28c99d31-0f31-42bf-b192-e530e82d7635
-  modified: 2026-09-07T04:52:25.357Z
 ---
 
-**User 2026-07-26 (verbatim)** : « Moi je n'en sais rien, c'est tes relevés »
+Verbatims utilisateur : « Moi je n'en sais rien, c'est tes relevés » ; « Je ne fais pas vraiment de choix, j'ai juste cliqué sur "Recommander", tu connais les grands principes de l application » ; « en quoi ca demande une décision de ma part ? ».
 
-**Contexte** : chantier éditeur. J'avais posé une question à choix multiples sur la Disponibilité « ND » de 7 objets — en lui annonçant au passage que le livre n'en portait que 2. Il ne pouvait pas répondre : le chiffre venait de MES agents, pas de sa connaissance. Même dérive plus tôt dans la session sur la cadence de voyage, où il a répondu « C'est une décision qui demande de voir pourquoi c'est comme cela. Ticket, RAW ? » — c'est-à-dire *va instruire d'abord*.
+**Why:** faire arbitrer un fait transfère MA vérification et fabrique un faux « arbitrage utilisateur » ; une réponse ainsi obtenue est une décision d'ingénierie révisable, jamais un verbatim de doctrine.
 
-**Why** : lui faire arbitrer un fait, c'est lui transférer un travail de vérification qui m'incombe, et fabriquer un faux « arbitrage utilisateur » sur une base que personne n'a contrôlée. Le RAW et le code sont des sources OBSERVABLES : il n'y a rien à décider tant qu'on ne les a pas lus. Une question posée trop tôt coûte un aller-retour et pollue l'historique des décisions (cf. la règle du dépôt : un « arbitrage utilisateur » sans citation verbatim se traite comme une évaluation d'ingénierie, révisable).
-
-**How to apply** : avant toute question, classer.
-- **FAIT** (« le RAW dit-il X ? », « ce champ a-t-il un lecteur ? », « combien d'entrées ? », « pourquoi le code est-il ainsi ? ») → on MESURE : Atlas `docs/raw/` puis `Source/` (FR uniquement) pour citer, `grep`/AST pour le code, `git log -S` pour l'histoire. On ne demande pas.
-- **PRODUIT / GOÛT / RISQUE ASSUMÉ** (casser les saves des joueurs, quelle ergonomie d'auteur, quel comportement quand le RAW est SILENCIEUX après vérification, quelle priorité) → là seulement on demande, et on présente les options avec ce que chacune coûte.
-Corollaire : quand une question mixte se présente, on instruit la part factuelle D'ABORD et on ne soumet que le résidu. Une lacune RAW ne se déclare qu'APRÈS lecture — précédent du même jour : l'Allonge « Variable » semblait exiger un arbitrage maison ; `LDB 62 l.163-164` donnait en fait la valeur par défaut (« 4 mètres plutôt que 2 »), donc rien à trancher.
-
-**Corollaire 2 (2026-08-04, Faveurs/interludes)** : une question née de la STRUCTURE APPLICATIVE se
-présente RAW-d'abord, jamais habillée en question de règle. Précédent : « consécutives » (LDB 23
-l.149) traduit dans notre découpage en interludes avait fait naître « que devient la chaîne entre
-deux interludes ? » — j'ai failli faire re-trancher ça en opposant RAW et moteur, alors que relue
-RAW-d'abord (« consécutives » = rien d'intercalé), l'implémentation existante était la traduction
-fidèle et il n'y avait RIEN à décider. User : « tu me parlais des activités et interlude, puis tu
-m'as parlé du moteur applicatif en opposant le raw ». Le moteur ne définit pas la règle ; il la
-traduit — présenter sa structure comme le cadre de la décision fabrique de faux arbitrages.
-
-**Corollaire 3 (2026-08-10, Peur d'invocateur, #1202)** : proposer des OPTIONS MAISON à côté d'un
-texte explicite EST une variante du même défaut — l'AskUserQuestion « RAW strict / exemption du
-contrôleur (maison) / exemption de camp (maison) » mettait en scène un choix là où le livre avait
-tranché (« chez les autres créatures », aucune exemption écrite). L'utilisateur a choisi « RAW
-strict » puis rectifié : « ce n'est pas "mon arbitrage" et je ne veux pas le voir dans le code.
-C'est le RAW ». Quand le texte est explicite, il n'y a AUCUNE question à poser — on implémente avec
-la réf nue, sans tag de décision (poison famille 4) ; une règle maison ne se propose qu'après avoir
-établi un vrai silence (et vit alors en règle OPTIONNELLE éditable, cf.
-[[game-preference-vs-regle-optionnelle]]).
-
-**Corollaire 4 (2026-08-24, #1479)** : une DOCTRINE DÉJÀ RENDUE ne se re-arbitre pas non plus — la
-re-poser force l'utilisateur à re-trancher ce qu'il a déjà tranché et ouvre la porte à un arbitrage
-contradictoire. Précédent : j'ai demandé « un Test subi par un héros possédé s'affiche-t-il ? »
-alors que la chaîne #942 (« on nourrit l'hôte, on ne le duplique jamais »), la forme canonique
-(2026-08-20) et le contrat d'affichage (2026-08-04) répondaient déjà. User : « Si tu te pose cette
-question c'est que notre objectif n'est pas clair » puis « pourquoi aujourd'hui tu me demande un
-arbitrage qui va a l'encontre même du système qui a des bases solides ». CAUSE AMONT : le ticket
-#1479, écrit par MOI à la clôture de #1426, avait classé la branche `subi` « décision produit » sans
-la confronter aux doctrines — la classification de périmètre a fabriqué une question ouverte, puis
-le ticket a gagné l'autorité d'un brief. VERROUS : (a) avant tout AskUserQuestion d'arbitrage,
-confronter la question à la chaîne d'invariants (tickets-programmes #942/#939 + fiches doctrine) —
-si une doctrine répond, on ÉNONCE et on avance ; (b) tout ticket que J'ÉCRIS sur un socle (dont les
-« restes » de clôture) porte `## Invariant` verbatim, comme les briefs de codeur — un reste ticketé
-sans sa chaîne d'invariants fabrique la question ouverte de demain.
-
-Lié : [[feedback-arbitrage-agent-source-en-main]], [[feedback-questions-stop-loop]],
-[[feedback-deleguer-grounding-pas-que-code]], [[game-preference-vs-regle-optionnelle]],
-[[feedback-invariant-cite-verbatim-jamais-depuis-un-rendu-de-juge]],
-[[user-doctrine-forme-canonique-unique-jets]].
-
-**Corollaire 3 (2026-09-05, #1686 lot 3)** : une question dont CHAQUE option est déjà tranchée par une
-doctrine connue n'est pas une question. J'avais posé quatre AskUserQuestion (recalcul des ids en mémoire
-ou `gen` d'abord ; libellés de valeurs en socle + migration des ~20 Records ou Record UI ; pastille de
-catégorie ou 8ᵉ onglet ; purge d'un champ mort ou lui inventer un consommateur) — chacune se déduisait de
-« rien en dur, tout éditable », « jamais de demi-migration », « primitives existantes avant socle neuf »,
-« zéro code mort ». User (verbatim) : « Je ne fais pas vraiment de choix, j'ai juste cliqué sur
-"Recommander", tu connais les grands principes de l application ». Ces quatre réponses sont donc des
-DÉCISIONS D'INGÉNIERIE (révisables, consignées comme telles — jamais en fiche `user-*` ni en verbatim
-d'arbitrage). Test avant de poser une question : « si je retire le bouton Recommandé, l'utilisateur
-peut-il répondre autrement sans contredire une doctrine écrite ? » — non → on décide, on écrit
-l'hypothèse dans le rendu, on continue. Oui (goût, produit, risque assumé, RAW silencieux) → on demande.
-
-**Corollaire 5 (2026-09-07, #1650)** : le FAIT le moins cher à mesurer est celui qui est DÉJÀ DANS MON
-PROPRE FIL — et c'est celui que j'ai fait arbitrer. L'utilisateur m'avait demandé d'informer « la session
-Project passation Phaneslight » ; `ListAgents` ne portait aucun nom exact, j'ai donc posé un
-AskUserQuestion à trois cibles. Or la session `game-53` s'était PRÉSENTÉE dans ce même fil quelques tours
-plus tôt (« Je suis game-53, la session orchestratrice du ticket #1700 : c'est moi qui ai préparé ta
-branche ab/phanes-c […] et qui recueillerai ton commit final »). User (verbatim) : « question idiote,
-biensur que c'était 53, il s'est présenté lui même ». Le défaut n'est pas d'avoir cherché — c'est d'avoir
-cherché dans l'outil (une liste de noms) sans relire le CONTEXTE que je portais déjà. VERROU : avant tout
-AskUserQuestion de désambiguïsation (quelle session, quel ticket, quel fichier, quelle branche), balayer
-d'abord son propre fil et les messages reçus dans la session — une entité qui s'est nommée elle-même est
-une mesure, pas une hypothèse. Un nom approximatif donné par l'utilisateur (« Project passation
-Phaneslight » pour `game-53`) n'invalide pas l'identification : il la désigne de mémoire, c'est à moi de
-la résoudre.
+**How to apply:** classer avant de demander — FAIT (le RAW dit-il X ? ce champ a-t-il un lecteur ? quelle session est-ce ?) ⇒ mesurer (Atlas puis `Source/`, grep/AST, historique), y compris en relisant son propre fil ; PRODUIT / GOÛT / RISQUE ASSUMÉ ⇒ demander, avec le coût de chaque option. Test : « en retirant le bouton Recommandé, peut-il répondre autrement sans contredire une doctrine écrite ? ». Quand le texte du livre est explicite il n'y a AUCUNE question à poser ; une question nécessaire se pose tout de suite, groupée, jamais parquée dans une spec ; un ticket que J'ÉCRIS sur un socle porte sa section Invariant.
+**Corollaire :** « le code ne fait pas ce que le livre dit » est une dette de FIDÉLITÉ à corriger (train dédié, tests réécrits depuis le contrat) — « ça change le RNG » n'est jamais un motif de renvoi, l'invariance RNG n'étant l'invariant que des trains de FORME et ne protégeant jamais un comportement faux.

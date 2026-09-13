@@ -43,7 +43,7 @@ function spellId(id) {
   throw new Error(`campagne : sort introuvable « ${id} » — attendu un id de spells.json (Compendium → Sorts).`);
 }
 // Vocabulaire d'`appearance.species` : ids STABLES de species.json (espèces jouables) ∪ ids de def rig
-// (DEF_BY_ID, monstres/races non-jouables). Un LIBELLÉ n'est PAS un id — cf. [[game-ids-internes-libelles-display-multilangue]].
+// (DEF_BY_ID, monstres/races non-jouables). Un LIBELLÉ n'est PAS un id — cf. `CLAUDE.md` § Pour TOUT agent.
 const SPECIES_IDS = new Set(SPECIES_CATALOG.map((s) => s.id));
 const RIG_DEF_IDS = new Set(creatureSpeciesOptions().map((o) => o.id));
 /** `appearance.species` : id STABLE (species.json OU def rig). Valide → passe ; tout le reste → throw. */

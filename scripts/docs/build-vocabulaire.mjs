@@ -22,6 +22,7 @@ import { readFileSync } from 'node:fs'
 import { parLibelle, listerArbre } from '../guards/lib/lister.mjs'
 import { basename } from 'node:path'
 import { loadSource, findAlias, aliasDoc, readUnionMembers, renderFields, emitOrCheck } from './lib/jsdocUnion.mjs'
+import { mesurerCanaux } from './lib/canauxMecaniques.mjs'
 
 const OPS_SRC = 'src/engine/ops.ts'
 const FLOW_SRC = 'src/engine/flowCore.ts'
@@ -200,6 +201,27 @@ const OP_NAMES = opRows.map((r) => r.name)
 const RESOLVERS = measureResolvers(OP_NAMES)
 const DATA_USAGE = measureDataUsage(OP_NAMES)
 
+// --- les TROIS canaux de mécanique en donnée (déclarations de champs, AST) ---
+// Périmètre : les racines qui déclarent les entités mécaniques. Pré-filtre textuel pour ne parser
+// que les fichiers qui peuvent porter un canal (l'AST sur toute la racine coûterait sans rien rendre).
+// ANGLE MORT : ce pré-filtre BORNE la mesure — une déclaration de canal écrite hors de ces motifs
+// (champ renommé, canal déclaré par un type intermédiaire) n'est JAMAIS parsée, et le garde ci-dessous
+// ne mord que sur le zéro absolu, jamais sur une entité manquante.
+const CANAUX_ROOTS = [DATA_ROOT, ...RESOLVER_ROOTS]
+const CANAUX = mesurerCanaux(
+  CANAUX_ROOTS.flatMap((r) => fichiersSources(r, ['.ts'])).filter((f) => /^\s*(passive|effects|capabilities|combat)\??:|interface\s+\w*(Capabilities|CombatFeature)\b/m.test(readFileSync(f, 'utf8'))),
+)
+if (!CANAUX.entites.length || !CANAUX.typesDrapeaux.length) {
+  console.error(`${TOOL} — aucun canal mesuré sous ${CANAUX_ROOTS.join(', ')} (les champs \`passive\`/\`effects\`/\`capabilities\` ont changé de forme).`)
+  process.exit(1)
+}
+for (const t of CANAUX.typesDrapeaux) {
+  if (!t.fichier || !t.champs.length) {
+    console.error(`${TOOL} — type de drapeaux « ${t.nom} » référencé mais introuvable (hors périmètre ${CANAUX_ROOTS.join(', ')}) : la carte mentirait par omission.`)
+    process.exit(1)
+  }
+}
+
 // --- index inversé concept → ops, et garde d'exhaustivité ---
 const conceptOf = new Map(OP_NAMES.map((n) => [n, []]))
 const opsOfConcept = new Map(CONCEPTS.map(([label]) => [label, []]))
@@ -269,10 +291,39 @@ out += `La colonne « Résolveurs » dit où ça se joue vraiment — c'est elle
 out += `**Colonne « Résolveurs »** — modules de \`src/engine\`/\`src/state\` (hors tests, hors \`ops.ts\`) qui nomment l'op.\n`
 out += `**Colonne « Donnée »** — occurrences dans \`src/data\` : \`fichier:id-de-l-entrée\`. Un **0** signale une op qu'AUCUNE donnée\n`
 out += `n'emploie — candidate au code mort, à instruire (elle peut être employée par du code, cf. « Résolveurs »).\n\n`
-out += `**Périmètre mesuré / angles morts** — « Résolveurs » et « Donnée » sont des mesures TEXTUELLES bornées :\n`
+out += `**Périmètre mesuré / angles morts** — la table des TROIS CANAUX est dérivée des déclarations de champs ;\n`
+out += `« Résolveurs » et « Donnée » sont des mesures TEXTUELLES bornées :\n`
 out += `hors périmètre, donc invisibles ici, les ops construites dynamiquement dans \`src/engine\`/\`src/state\` (\`engine/miscast\`,\n`
 out += `\`engine/polymorph\`… fabriquent des \`GameOp\` en code), les JSON de campagne hors \`src/data\`, les tests, et \`src/ui\`\n`
 out += `(affichage, jamais résolution). Un **0** en « Donnée » n'est donc pas une preuve de mort : c'est une PISTE.\n\n`
+
+out += `## Les trois canaux de mécanique en donnée\n\n`
+out += `\`GameOp\` est la langue de l'axe EFFET/MODIFICATEUR — une op s'APPLIQUE à une cible (\`applyOps(target, ops)\`).\n`
+out += `Ce n'est pas le seul canal par lequel une entité porte sa mécanique en donnée ; la table ci-dessous est\n`
+out += `DÉRIVÉE des DÉCLARATIONS de champs (AST) des sources de \`${CANAUX_ROOTS.join('`, `')}\`, jamais des commentaires :\n\n`
+out += `- **\`passive: GameOp[]\`** — modificateurs de VALEUR, exécutés par \`applyOps\` (collecteur \`passiveMods\`) ;\n`
+out += `- **\`effects: TriggeredEffect[]\`** — effets DÉCLENCHÉS sur un \`EffectTrigger\`, dispatchés par \`fireTriggers\` ;\n`
+out += `- **\`capabilities\` / \`combat\`** — DRAPEAUX sans cible, lus par des dispatchers génériques qui ne nomment\n`
+out += `  aucune entité. Un drapeau n'est pas une op inachevée : n'ayant AUCUNE cible, il n'est pas un effet\n`
+out += `  appliqué mais une propriété que la règle consulte — le porter en \`GameOp\` fabriquerait une op que seul\n`
+out += `  son dispatcher lirait.\n\n`
+out += `Un champ ne compte pour un canal que si son TYPE le porte : \`SpellData.effects: Flow\` (flux authored) et\n`
+out += `\`WeaponGroupData.combat: 'melee' \\| 'ranged'\` (étiquette) n'y figurent pas.\n\n`
+out += `| Entité | Déclarée | \`passive\` | \`effects\` | Drapeaux |\n|---|---|---|---|---|\n`
+for (const e of CANAUX.entites) {
+  // `import('…').X[]` → `X[]` : le chemin d'import est du bruit de rendu, le TYPE reste mesuré.
+  const c = (id) => (e.canaux[id] ? `\`${e.canaux[id].champ}: ${esc(e.canaux[id].type.replace(/import\('[^']+'\)\./g, ''))}\`` : '—')
+  const herite = e.heritage.length ? ` (étend ${e.heritage.map((h) => `\`${h}\``).join(', ')})` : ''
+  out += `| \`${e.entite}\`${herite} | \`${e.fichier}:${e.ligne}\` | ${c('passive')} | ${c('effects')} | ${c('drapeaux')} |\n`
+}
+out += `\n_${CANAUX.entites.length} entités déclarant au moins un canal. Une entité qui étend une autre HÉRITE de ses canaux — la\ntable ne montre que les champs DÉCLARÉS (\`EtatData\`/\`PsychologyData\` tiennent les leurs de \`StatusData\`)._\n\n`
+
+out += `### Le vocabulaire des drapeaux (${CANAUX.typesDrapeaux.length} types)\n\n`
+out += `| Type | Site | Drapeaux déclarés |\n|---|---|---|\n`
+for (const t of CANAUX.typesDrapeaux) {
+  out += `| \`${t.nom}\` | \`${t.fichier}:${t.ligne}\` | ${t.champs.length} — ${t.champs.map((n) => `\`${n}\``).join(', ')} |\n`
+}
+out += `\n`
 
 out += `## GameOp — index par concept (français)\n\n`
 out += `Les noms d'ops sont en anglais, le projet et ses sources sont en français : cette table est l'entrée par le SENS.\n`
