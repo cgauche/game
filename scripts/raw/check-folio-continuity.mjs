@@ -13,18 +13,19 @@
 // la page tout de même PERDUE — deux ancres adjacentes sans un octet utile entre elles (LDB 08,
 // folios 88/89 collés : la carrière de Juriste manque). Cf. `emptyFolioAnchorsInText` et son stock
 // nominatif trié au PDF `empty-folios-baseline.json` (généré par `lib/empty-folios-stock.mjs`).
-// Cliquet PAR fichier-chapitre (`scripts/raw/folio-gaps-baseline.json`, `countsByChapterRef` et
-// `assertAgainstBaseline` de `check-refs.mjs`) : le stock déjà présent (mesuré, pas 0) est GELÉ — toute HAUSSE
-// échoue ; une baseline devenue trop haute (extraction réparée) doit être ABAISSÉE.
+// Stock NOMINATIF des sauts (`scripts/raw/folio-gaps-stock.json`, écart `ecartDuVolet` de
+// `stockNominatif.mjs`, clé `chapitre extrait :: '<ABBR NN> <from>→<to>' :: occurrence`) : un saut
+// MESURÉ hors du stock échoue, une entrée sans saut mesuré (extraction réparée) échoue aussi et se
+// retire. Les folios de la clé sont ceux du PDF, stables là où un numéro de ligne dériverait.
 // Re-run : node scripts/raw/check-folio-continuity.mjs
 import { readFileSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, readText } from './_lib.mjs'
-import { countsByChapterRef, assertAgainstBaseline } from './check-refs.mjs'
+import { ecartDuVolet, readStock } from './stockNominatif.mjs'
 
-export const BASELINE_PATH = join(dirname(fileURLToPath(import.meta.url)), 'folio-gaps-baseline.json')
+export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'folio-gaps-stock.json')
 export const EMPTY_STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'empty-folios-baseline.json')
 const CHAPTER_FILE_RE = /^(\d+) - .*\.md$/
 const HEADER_RE = /^\*Pages PDF (\d+)(?:-(\d+))?\*/
@@ -69,8 +70,10 @@ export function chapterTexts(dir) {
   return new Map(files.map((f) => [f, readText(join(dir, f))]))
 }
 
-// Balaie un dossier de livre (fichiers `NN - *.md`) → `[{ abbr, nn, file, from, to, delta, kind, ref }]`.
-// `ref` = clé du cliquet (`ABBR NN`, patron `check-refs.mjs`). Deux familles :
+// Balaie un dossier de livre (fichiers `NN - *.md`) → `[{ abbr, nn, file, path, from, to, delta, kind, ref }]`.
+// `ref` = le chapitre cité (`ABBR NN`) ; `path` = le CHEMIN du chapitre extrait depuis la racine du
+// dépôt (`Source/<livre>/NN - X.md`, POSIX), le seul nom que le stock et la porte de plage
+// partagent — le nom NU à espaces ne nomme aucun fichier pour `stocksNominatifs.mjs`. Deux familles :
 //   `kind:'saut'` — trou ENTRE deux ancres du fichier (`folioGapsInText`) ;
 //   `kind:'fin'`  — folios attendus APRÈS la dernière ancre du fichier, et ancrés NULLE PART dans le
 //                   livre. Un folio de fin ancré dans le fichier SUIVANT est une page partagée entre
@@ -87,15 +90,21 @@ export function scanBookDir(abbr, dir) {
     const nn = Number(file.match(CHAPTER_FILE_RE)[1])
     const text = texts.get(file)
     const ref = `${abbr} ${nn}`
-    for (const gap of folioGapsInText(text)) out.push({ abbr, nn, file, ...gap, kind: 'saut', ref })
+    const path = `${String(dir).split('\\').join('/').replace(/\/$/, '')}/${file}`
+    for (const gap of folioGapsInText(text)) out.push({ abbr, nn, file, path, ...gap, kind: 'saut', ref })
     const span = chapterFolioSpan(text)
     if (!span) continue
     const orphans = []
     for (let f = span.last + 1; f <= span.expectedHi; f++) if (!bookFolios.has(f)) orphans.push(f)
-    if (orphans.length) out.push({ abbr, nn, file, from: span.last, to: orphans[orphans.length - 1], delta: orphans.length, kind: 'fin', ref })
+    if (orphans.length) out.push({ abbr, nn, file, path, from: span.last, to: orphans[orphans.length - 1], delta: orphans.length, kind: 'fin', ref })
   }
   return out
 }
+
+/** Sauts mesurés → sites du stock : le CHAPITRE EXTRAIT et le saut lui-même (`<ABBR NN> <from>→<to>`,
+ *  des folios du PDF). Un chapitre porte souvent plusieurs sauts — c'est le saut, pas le chapitre,
+ *  qui est l'unité du cliquet. */
+export const sitesDeSauts = (gaps) => gaps.map((g) => ({ file: g.path, ref: `${g.ref} ${g.from}→${g.to}` }))
 
 /** Balaie tous les livres de `books` (BOOKS par défaut) → sauts de folios agrégés. */
 export function scanAllBooks(books = BOOKS) {
@@ -188,24 +197,24 @@ export function assertEmptyFoliosAgainstStock(measured, stock) {
   return { inconnues, restituees, benignesDisparues, malClassees }
 }
 
-// Passe 1 — séquence de folios (cliquet par chapitre-réf). Retourne `true` si anomalie.
+// Passe 1 — séquence de folios (stock nominatif des sauts). Retourne `true` si anomalie.
 function reportGaps() {
   const gaps = scanAllBooks()
-  const counts = countsByChapterRef(gaps)
-  const baseline = JSON.parse(readFileSync(BASELINE_PATH, 'utf8'))
-  const { over, stale } = assertAgainstBaseline(counts, baseline)
+  const { neuves, perimees } = ecartDuVolet({
+    sites: sitesDeSauts(gaps), stock: readStock(STOCK_PATH), ou: 'folio-gaps-stock.json',
+  })
 
-  console.log(`sauts de folio (data-folio non consécutif) : ${gaps.length} sur ${Object.keys(counts).length} chapitre(s)-réf`)
+  console.log(`sauts de folio (data-folio non consécutif) : ${gaps.length} site(s) sur ${new Set(gaps.map((g) => g.ref)).size} chapitre(s)-réf`)
 
-  if (over.length) {
-    console.log('RÉGRESSION — hausse de sauts de folio par chapitre-réf :')
-    for (const o of over) console.log(`  ${o}`)
+  if (neuves.length) {
+    console.log('RÉGRESSION — saut(s) de folio hors du stock :')
+    for (const o of neuves) console.log(`  ${o}`)
   }
-  if (stale.length) {
-    console.log('Baseline(s) PÉRIMÉE(s) (sauts réparés) — à ABAISSER dans folio-gaps-baseline.json :')
-    for (const s of stale) console.log(`  ${s}`)
+  if (perimees.length) {
+    console.log('Entrée(s) SOLDÉE(s) (sauts réparés) :')
+    for (const s of perimees) console.log(`  ${s}`)
   }
-  if (!over.length && !stale.length) {
+  if (!neuves.length && !perimees.length) {
     console.log('OK — cliquet aligné, aucune régression.')
     return false
   }

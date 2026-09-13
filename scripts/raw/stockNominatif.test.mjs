@@ -59,6 +59,22 @@ test('écart : un site hors du stock est NEUF, une entrée sans site est SOLDÉE
   assert.match(perimees[0], /entrée SOLDÉE/)
 })
 
+// Une entrée dont AUCUN champ ne nomme (faute de saisie, champ renommé) rend une clé réduite à ses
+// séparateurs : le refus désigne alors une entrée que le lecteur ne peut pas retrouver dans son
+// fichier de stock. Le remède la CITE en JSON — le seul texte qui la localise.
+test('écart : une entrée périmée qui ne NOMME rien est citée en JSON, jamais par une clé vide', () => {
+  const bidon = { occurrence: 1, lot: '#1711', date: '2026-09-12' }
+  const { perimees } = ecartDuVolet({ sites: [], stock: [bidon], ou: 'x-stock.json' })
+  assert.equal(perimees.length, 1)
+  assert.ok(
+    perimees[0].startsWith(JSON.stringify(bidon)),
+    `le refus doit citer l’entrée elle-même, il dit : ${perimees[0]}`,
+  )
+  assert.match(perimees[0], /entrée SOLDÉE/)
+  const nommee = ecartDuVolet({ sites: [], stock: [{ fichier: 'src/a.ts', ref: 'LDB 6 l.2', occurrence: 1 }], ou: 'x-stock.json' })
+  assert.match(nommee.perimees[0], /^ :: src\/a\.ts :: LDB 6 l\.2 :: 1 —/, 'une entrée qui nomme garde sa CLÉ')
+})
+
 test('écart : un stock qui décrit EXACTEMENT les sites observés ne dit rien', () => {
   const { neuves, perimees } = ecartDuVolet({
     sites: [{ file: 'src/a.ts', ref: 'LDB 6 l.2' }, { file: 'src/a.ts', ref: 'LDB 6 l.2' }],

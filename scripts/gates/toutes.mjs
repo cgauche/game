@@ -328,8 +328,9 @@ export const ECRIT_LU = {
     ecrit: [],
     lit: ['docs/raw/', 'Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs'],
     raison:
-      'aucune écriture dans les scripts atteints ; LIT le registre de livres, le normaliseur de références ' +
-      'et ses deux baselines (scripts/raw/empty-folios-baseline.json, folio-gaps-baseline.json)',
+      'aucune écriture dans les scripts atteints ; LIT le registre de livres, le normaliseur de références, ' +
+      'le stock NOMINATIF des sauts de folio (scripts/raw/folio-gaps-stock.json) et le gel des ancres sans ' +
+      'contenu (scripts/raw/empty-folios-baseline.json)',
   },
   'raw:reanchor': {
     ecrit: [],

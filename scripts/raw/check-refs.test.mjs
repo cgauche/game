@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { scanDeadRefs, sitesMorts, countsByChapterRef, assertAgainstBaseline, STOCK_PATH } from './check-refs.mjs'
+import { scanDeadRefs, sitesMorts, STOCK_PATH } from './check-refs.mjs'
 import { ecartDuVolet, readStock } from './stockNominatif.mjs'
 
 // LDB 06 (Source/Warhammer v4 - Livre de base version corrigée/06 - Classes.md) fait 6 lignes
@@ -93,24 +93,4 @@ test('stock ABSENT → tolérance ZÉRO : tout site mort est neuf, et l’Atlas 
   })
   assert.deepEqual(neuves, [], `site(s) de réf morte dans docs/raw :\n${neuves.join('\n')}`)
   assert.deepEqual(perimees, [], `entrée(s) SOLDÉE(s) :\n${perimees.join('\n')}`)
-})
-
-// `countsByChapterRef`/`assertAgainstBaseline` servent `check-folio-continuity.mjs`, dont le cliquet
-// de folios est un COMPTE par fichier-chapitre : leur contrat se vérifie ici, là où ils vivent.
-test('countsByChapterRef + assertAgainstBaseline : hausse détectée, baisse détectée comme périmée', () => {
-  const counts = countsByChapterRef([{ ref: 'LDB 6' }, { ref: 'LDB 6' }, { ref: 'AA 1' }])
-  assert.deepEqual(counts, { 'LDB 6': 2, 'AA 1': 1 })
-
-  const { over, stale } = assertAgainstBaseline(counts, { 'LDB 6': 1, 'AA 1': 1, 'ZI 1': 5 })
-  assert.equal(over.length, 1) // LDB 6 : 2 > baseline 1
-  assert.match(over[0], /LDB 6/)
-  assert.equal(stale.length, 1) // ZI 1 : baseline 5, réel 0
-  assert.match(stale[0], /ZI 1/)
-})
-
-test('conforme à la baseline exacte → ni hausse ni péremption', () => {
-  const counts = { 'LDB 6': 3 }
-  const { over, stale } = assertAgainstBaseline(counts, { 'LDB 6': 3 })
-  assert.equal(over.length, 0)
-  assert.equal(stale.length, 0)
 })

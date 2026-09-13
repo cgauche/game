@@ -32,7 +32,7 @@ retirer ses lignes.
 **Inventaire mesuré le 2026-07-26** (nombre d'entrées ; à faire décroître, jamais croître) :
 `scripts/guards/lib/paletteLiteralStock.mjs` **1268** (`PALETTE_LITERAL_RATCHET`) ·
 `folioRatchetStock.mjs` **121** (`FOLIO_RATCHET`) · `rigPartViewStock.mjs` **76** (`PART_VIEW_RATCHET`)
-**+3** (`PART_VIEW_ALIAS_RATCHET`) · `scripts/raw/folio-gaps-baseline.json` **46** ·
+**+3** (`PART_VIEW_ALIAS_RATCHET`) · `scripts/raw/folio-gaps-stock.json` **76 sites** répartis sur 46 chapitres (#1711 T4) ·
 `fleshGradientStock.mjs` **44** (`FLESH_GRADIENT_RATCHET`) · `rollSeamWhitelist.mjs` **27**
 (`ROLL_SEAM_FILE_WHITELIST`) · `battleRngEngineLeakWhitelist.mjs` **3** en propre
 (`combatSlice.ts`/`portFlow.ts`/`tavernFlow.ts`, le reste de ses 30 lignes venant du spread de
@@ -51,7 +51,7 @@ jamais par une liste de coupables.
 **How to apply** : dès qu'un geste touche un système non conforme, la migration fait partie du geste, pas
 d'un ticket de suite. Concrètement — (1) élargir une garde ⇒ migrer ce qu'elle révèle, pas seulement le
 rapporter ; (2) toucher un fichier présent dans une baseline (`src/ui/ui-ratchets.test.ts`,
-`*-baseline.json`, `*Stock.mjs`, `*Whitelist.mjs`, `folio-gaps-baseline.json`) ⇒ faire BAISSER sa ligne,
+`*-baseline.json`, `*-stock.json`, `*Stock.mjs`, `*Whitelist.mjs`) ⇒ faire BAISSER sa ligne,
 idéalement à 0, et supprimer l'entrée ; (3) le rendu de fin de lot annonce le delta CHIFFRÉ de chaque
 liste touchée (avant → après), pas un « rien de nouveau ». Ce qui reste ouvert se dit sans euphémisme, avec
 la raison — jamais par omission. Précédent du 2026-07-26 : les 5 rangées de liste recopiées de l'inspecteur

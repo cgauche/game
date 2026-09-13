@@ -13,7 +13,7 @@ export function ecartsDeStock<O, S>(p: {
   cle: (entree: O | S) => string;
   remede?: {
     neuve?: (cle: string, entree: O) => string;
-    perimee?: (cle: string) => string;
+    perimee?: (cle: string, entree: S) => string;
   };
 }): EcartsDeStock;
 

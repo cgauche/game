@@ -8,7 +8,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import {
@@ -81,7 +81,7 @@ test('périmètre — les porteurs de stock, et eux seuls', () => {
   assert.equal(estPorteurDeStock('scripts/hooks/ecrans-ui.json'), true)
   assert.equal(estPorteurDeStock('scripts/raw/reconciliation-stock.json'), true, 'stock nominatif de l\'Atlas RAW (#1709 D2)')
   assert.equal(estPorteurDeStock('scripts/raw/empty-folios-baseline.json'), true, 'gel de folios de l\'Atlas RAW : porteur par son motif `scripts/raw/*-baseline.json` (#1711 T1)')
-  assert.equal(estPorteurDeStock('scripts/guards/raw-blind-refs-baseline.json'), true, 'baseline gelée hors du dossier `raw/` par `rawRefIntegrity.mjs`')
+  assert.equal(estPorteurDeStock('scripts/guards/raw-blind-refs-stock.json'), true, 'stock nominatif tenu hors du dossier `raw/` par `rawRefIntegrity.mjs`')
   assert.equal(estPorteurDeStock('scripts/guards/lib/decisions-baseline.json'), true, 'stock NOMINATIF de sites du détecteur de commentaires')
   assert.equal(estPorteurDeStock('knip-exports-baseline.json'), true, 'gel d\'exports à clés-chemins, à la RACINE')
   assert.equal(estPorteurDeStock('src/state/combatFlow.ts'), false, 'un module de prod n\'est pas un stock')
@@ -169,7 +169,7 @@ test('baseline de compte — LIMITE dite : un NOMBRE relevé est invisible', () 
 })
 
 test('porteur — une entrée qui ne NOMME aucun fichier n est vue par AUCUNE porte', () => {
-  const GEL = 'scripts/raw/folio-gaps-baseline.json'
+  const GEL = 'scripts/raw/empty-folios-baseline.json'
   const entree = '    { "chapitre": "LDB 8", "folio": 12 },'
   const avant = `{\n  "entrees": [\n${entree}\n    { "chapitre": "LDB 8", "folio": 14 }\n  ]\n}\n`
   const apres = `{\n  "entrees": [\n${entree}\n    { "chapitre": "LDB 8", "folio": 13 },\n    { "chapitre": "LDB 8", "folio": 14 }\n  ]\n}\n`
@@ -197,15 +197,18 @@ test('stock NOMINATIF de l Atlas RAW — une entrée ajoutée est une croissance
   const enveloppe = (corps) => ['{', '  "quoi": "fixture",', '  "entrees": [', ...corps, '  ]', '}', ''].join('\n')
   const avant = enveloppe(entree('LDB 40 l.53'))
   const apres = enveloppe([...entree('LDB 40 l.53').map((l, i) => (i === 6 ? '    },' : l)), ...entree('LDB 13 l.184')])
+  // L'entrée ajoutée VIT à la ligne 11 du post-image (enveloppe de 3 lignes + 7 lignes de la
+  // première entrée) : le hunk part de là, sans quoi la porte lirait le diff à une autre hauteur que
+  // l'image et citerait la ligne voisine.
   const [c] = croissanceDesStocks(
-    diffAuxLignes(f, 10, entree('LDB 13 l.184'), []),
+    diffAuxLignes(f, 11, entree('LDB 13 l.184'), []),
     { lirePostImage: () => apres, lirePreImage: () => avant },
   )
   assert.equal(c.fichier, f)
   assert.equal(c.net, 1, 'une entrée MULTILIGNE compte pour UNE : la porte voit l’ajout, jamais ses lignes internes')
   assert.equal(
-    entree('LDB 13 l.184').map((l) => l.trim()).includes(c.exemples[0]), true,
-    `l’exemple cité doit APPARTENIR à l’entrée ajoutée, quelle que soit la ligne à laquelle la porte la pose — reçu : ${c.exemples[0]}`,
+    c.exemples[0], '"fichier": "src/engine/ops.ts",',
+    'l’exemple cité est la ligne qui NOMME le fichier — une accolade ouvrante n’apprend rien au lecteur du refus',
   )
 })
 
@@ -226,14 +229,171 @@ test('stock NOMINATIF de l Atlas RAW — une entrée qui nomme une FICHE (docs/r
   const avant = enveloppe(entree('docs/raw/combat.md', 'LDB 46 l.12'))
   const apres = enveloppe([...entree('docs/raw/combat.md', 'LDB 46 l.12').map((l, i) => (i === 6 ? '    },' : l)), ...ajoutee])
   const [c] = croissanceDesStocks(
-    diffAuxLignes(f, 10, ajoutee, []),
+    diffAuxLignes(f, 11, ajoutee, []),
     { lirePostImage: () => apres, lirePreImage: () => avant },
   )
   assert.equal(c.fichier, f)
   assert.equal(c.net, 1, 'une fiche de l’Atlas est un chemin de dépôt : la porte de plage compte l’entrée ajoutée')
   assert.equal(
-    ajoutee.map((l) => l.trim()).includes(c.exemples[0]), true,
-    `l’exemple cité doit APPARTENIR à l’entrée ajoutée — reçu : ${c.exemples[0]}`,
+    c.exemples[0], '"fichier": "docs/raw/bestiaire.md",',
+    'l’exemple cité est la ligne qui NOMME la fiche',
+  )
+})
+
+// ── RACINE `Source/` : le chapitre EXTRAIT, nom à ESPACES (#1711 T4) ─────────────────────────────
+
+// Trois chapitres, VRAIS chemins du dépôt, pris à trois familles de répertoires : sans apostrophe
+// ASCII (LDB), et avec (ADE I, ACE — sept répertoires de `Source/` en portent une, et 36 des 76
+// entrées du stock des sauts de folio tombent sous elles). Trois CONSTANTES de chaîne plutôt qu'un
+// tableau : en portée de module, un tableau de chemins serait lui-même un stock nominatif de trois
+// entrées — la règle que ce fichier mesure.
+const CHAPITRE = 'Source/Warhammer v4 - Livre de base version corrigée/08 - Statut.md'
+const CHAPITRE_ADE = "Source/Warhammer v4 - Les archives de l'Empire volume 1/01 - LES GRANDES PROVINCES.md"
+const CHAPITRE_ACE = "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/12 - Activités.md"
+
+const casDuChapitre = (chapitre) => {
+  test(`stock NOMINATIF de l Atlas RAW — l entrée qui nomme « ${chapitre.split('/')[1]} » est vue (espaces et apostrophe admis)`, () => {
+    const f = 'scripts/raw/folio-gaps-stock.json'
+    assert.equal(estPorteurDeStock(f), true)
+    const entree = (ref) => [
+      '    {',
+      `      "fichier": ${JSON.stringify(chapitre)},`,
+      `      "ref": "${ref}",`,
+      '      "occurrence": 1,',
+      '      "lot": "#1711",',
+      '      "date": "2026-09-12"',
+      '    }',
+    ]
+    const enveloppe = (corps) => ['{', '  "quoi": "fixture",', '  "entrees": [', ...corps, '  ]', '}', ''].join('\n')
+    const ajoutee = entree('LDB 8 69→71')
+    const avant = enveloppe(entree('LDB 8 65→67'))
+    const apres = enveloppe([...entree('LDB 8 65→67').map((l, i) => (i === 6 ? '    },' : l)), ...ajoutee])
+    assert.equal(
+      entreesDeStock(apres, f).length, 2,
+      'les deux entrées sont lues : un nom de chapitre à espaces — apostrophe ASCII comprise — nomme un fichier',
+    )
+    const [c] = croissanceDesStocks(
+      diffAuxLignes(f, 11, ajoutee, []),
+      { lirePostImage: () => apres, lirePreImage: () => avant },
+    )
+    assert.ok(c, `un saut de folio ajouté sous « ${chapitre} » doit être une croissance rendue`)
+    assert.equal(c.fichier, f)
+    assert.equal(c.net, 1, 'un saut de folio déclaré est une entrée de plus, visible à la porte de plage')
+    assert.equal(
+      c.exemples[0], ajoutee[1].trim(),
+      'l’exemple cité est la ligne qui NOMME le chapitre',
+    )
+  })
+}
+casDuChapitre(CHAPITRE)
+casDuChapitre(CHAPITRE_ADE)
+casDuChapitre(CHAPITRE_ACE)
+
+test('racine `Source/` — ce qui n en est PAS : prose à espaces, dossier sans `.md`, extension étrangère', () => {
+  const f = 'scripts/raw/folio-gaps-stock.json'
+  const stock = (valeur) => ['{', '  "entrees": [', `    { "fichier": ${JSON.stringify(valeur)}, "occurrence": 1 }`, '  ]', '}', ''].join('\n')
+  assert.equal(entreesDeStock(stock(CHAPITRE), f).length, 1, 'témoin : le chapitre extrait EST une entrée')
+  for (const valeur of [
+    'le chapitre du Statut dans Source',
+    'Source/Warhammer v4 - Livre de base version corrigée',
+    'Source/Warhammer v4 - Livre de base version corrigée/08 - Statut.pdf',
+  ]) {
+    assert.deepEqual(entreesDeStock(stock(valeur), f), [], `« ${valeur} » ne nomme aucun fichier`)
+  }
+})
+
+// ── L'entrée MULTILIGNE qui ne CROÎT PAS : trois gestes qui valent `net 0` ──────────────────
+//
+// Sonde du juge de diff (2026-09-12) promue. Les témoins de CROISSANCE vivent plus haut (une entrée
+// ajoutée → net 1, exemple nommant) ; ces trois-là tiennent l'autre bord — ce qu'une entrée-objet
+// de sept lignes ne doit PAS rendre, là où un compte de lignes naïf verrait des croissances.
+// Chaque cas ANCRE ses hunks : il affirme d'abord où `entreesDeStock` pose les entrées de chaque
+// image, sans quoi un numéro de hunk faux rendrait un vert qui ne mesure rien.
+const FOLIO = 'scripts/raw/folio-gaps-stock.json'
+
+const entreeFolio = (chapitre, ref, date = '2026-09-12') => [
+  '    {',
+  `      "fichier": ${JSON.stringify(chapitre)},`,
+  `      "ref": "${ref}",`,
+  '      "occurrence": 1,',
+  '      "lot": "#1711",',
+  `      "date": "${date}"`,
+  '    }',
+]
+/** Les blocs mis bout à bout sous l'enveloppe du stock — virgule posée sur tous sauf le dernier. */
+const stockFolio = (...blocs) => [
+  '{', '  "quoi": "fixture",', '  "entrees": [',
+  ...blocs.flatMap((b, i) => b.map((l, j) => (j === b.length - 1 && i < blocs.length - 1 ? `${l},` : l))),
+  '  ]', '}', '',
+].join('\n')
+/** Le bloc tel qu'il s'écrit quand une autre entrée le SUIT. */
+const suivi = (bloc) => bloc.map((l, j) => (j === bloc.length - 1 ? `${l},` : l))
+/** Diff unifié à PLUSIEURS hunks : un déplacement s'écrit en deux (le retrait à sa hauteur du
+ *  PRÉ-image, l'ajout à la sienne du POST-image). */
+const diffHunks = (fichier, hunks) => [
+  `diff --git a/${fichier} b/${fichier}`, `--- a/${fichier}`, `+++ b/${fichier}`,
+  ...hunks.flatMap(({ pre, post, retirees = [], ajoutees = [] }) => [
+    `@@ -${pre},${retirees.length} +${post},${ajoutees.length} @@`,
+    ...retirees.map((l) => `-${l}`), ...ajoutees.map((l) => `+${l}`),
+  ]),
+].join('\n')
+const lignesDEntree = (image) => entreesDeStock(image, FOLIO).map((e) => e.ligne)
+
+test('entrée MULTILIGNE — une entrée DÉPLACÉE dans son stock ne rend RIEN', () => {
+  const a = entreeFolio(CHAPITRE, 'LDB 8 65→67')
+  const b = entreeFolio(CHAPITRE_ACE, 'ACE 12 3→5')
+  const c = entreeFolio(CHAPITRE, 'LDB 8 90→92')
+  const avant = stockFolio(a, b, c)
+  const apres = stockFolio(b, a, c)
+  assert.deepEqual(lignesDEntree(avant), [4, 11, 18], 'ancrage : enveloppe de 3 lignes, puis trois entrées de 7')
+  assert.deepEqual(lignesDEntree(apres), [4, 11, 18], 'ancrage : le déplacement laisse les mêmes hauteurs')
+  const diff = diffHunks(FOLIO, [
+    { pre: 4, post: 3, retirees: suivi(a) },
+    { pre: 17, post: 11, ajoutees: suivi(a) },
+  ])
+  assert.deepEqual(
+    croissanceDesStocks(diff, { lirePostImage: () => apres, lirePreImage: () => avant }), [],
+    'une entrée retirée d’une hauteur et reposée à une autre est `+1/-1` : le stock ne CROÎT pas',
+  )
+})
+
+test('entrée MULTILIGNE — un champ NON nommant modifié (la date) ne rend RIEN', () => {
+  const a = entreeFolio(CHAPITRE, 'LDB 8 65→67')
+  const b = entreeFolio(CHAPITRE_ACE, 'ACE 12 3→5')
+  const avant = stockFolio(a, b)
+  const apres = stockFolio(entreeFolio(CHAPITRE, 'LDB 8 65→67', '2026-10-01'), b)
+  assert.deepEqual(lignesDEntree(avant), [4, 11], 'ancrage : la première entrée vit à la ligne 4, sa date à la 9')
+  assert.deepEqual(lignesDEntree(apres), [4, 11])
+  const diff = diffHunks(FOLIO, [
+    { pre: 9, post: 9, retirees: ['      "date": "2026-09-12"'], ajoutees: ['      "date": "2026-10-01"'] },
+  ])
+  assert.deepEqual(
+    croissanceDesStocks(diff, { lirePostImage: () => apres, lirePreImage: () => avant }), [],
+    'la date vit DANS une entrée sans en OUVRIR une : ni ajout ni retrait à compter (0/0)',
+  )
+})
+
+// LIMITE dite ici et non ailleurs : l'ÉCHANGE EN PLACE — réécrire le `fichier` d'une entrée pour
+// couvrir un AUTRE site — touche la ligne NOMMANTE, qui n'OUVRE aucune entrée (l'entrée vit à son
+// accolade) : la porte ne compte ni ajout ni retrait, et le stock ne peut pas CROÎTRE ainsi. Ce qui
+// voit l'échange est la garde du volet (`ecartDuVolet`), dont la clé change des deux côtés : une
+// périmée ET une neuve.
+test('entrée MULTILIGNE — la ligne `fichier` REMPLACÉE ne rend RIEN (échange en place)', () => {
+  const a = entreeFolio(CHAPITRE, 'LDB 8 65→67')
+  const b = entreeFolio(CHAPITRE_ACE, 'ACE 12 3→5')
+  const avant = stockFolio(a, b)
+  const apres = stockFolio(entreeFolio(CHAPITRE_ACE, 'LDB 8 65→67'), b)
+  assert.deepEqual(lignesDEntree(avant), [4, 11], 'ancrage : la ligne NOMMANTE de la première entrée est la 5')
+  assert.deepEqual(lignesDEntree(apres), [4, 11])
+  const diff = diffHunks(FOLIO, [{
+    pre: 5,
+    post: 5,
+    retirees: [`      "fichier": ${JSON.stringify(CHAPITRE)},`],
+    ajoutees: [`      "fichier": ${JSON.stringify(CHAPITRE_ACE)},`],
+  }])
+  assert.deepEqual(
+    croissanceDesStocks(diff, { lirePostImage: () => apres, lirePreImage: () => avant }), [],
+    'la ligne NOMMANTE n’ouvre aucune entrée (0/0) : la porte de plage se tait, la garde du volet parle',
   )
 })
 
@@ -643,6 +803,43 @@ test('porteurs réels — l’image lit des entrées, et jamais moins que le rep
       parImage >= parRepli,
       `${rel} : l’image voit MOINS que le repli (image ${parImage}, repli ${parRepli}) — la porte se `
       + 'contournerait en changeant la graphie du littéral',
+    )
+  }
+})
+
+// STOCKS NOMINATIFS DE L'ATLAS RAW : la porte les voit-elle EN ENTIER ? Un stock à moitié vu est
+// pire qu'un stock invisible — il donne un compte qui a l'air juste (sans `CHEMIN_SOURCE`, 36 des 76
+// entrées des sauts de folio seraient muettes à la porte de plage, sous les seuls répertoires de
+// `Source/` à apostrophe ASCII, et y ajouter un saut vaudrait `net 0`). Le corpus est un GLOB,
+// jamais une liste : un stock neuf tombe sous la mesure le jour où il naît.
+// `empty-folios-baseline.json` n'en est pas (son nom ne finit pas par `-stock.json`) : gel par
+// CHAPITRE, il nomme ses entrées par un nom NU à espaces que `CHEMIN_SOURCE` ne couvre pas, et
+// c'est `assertEmptyFoliosAgainstStock` qui les tient — limite écrite en tête de
+// `stocksNominatifs.mjs`.
+test('stocks de `scripts/raw` — la porte voit CHAQUE entrée déclarée (corpus par GLOB)', (t) => {
+  const dossier = join(RACINE, 'scripts', 'raw')
+  const stocks = readdirSync(dossier).filter((nom) => nom.endsWith('-stock.json'))
+  assert.ok(stocks.length >= 4, `corpus vide ou tronqué : ${stocks.length} stock(s) trouvé(s) sous scripts/raw`)
+  for (const nom of stocks) {
+    const rel = `scripts/raw/${nom}`
+    const contenu = readFileSync(join(dossier, nom), 'utf8')
+    const json = JSON.parse(contenu)
+    // Deux formes de stock dans `scripts/raw`, et chacune dit son UNITÉ : la liste `entrees` (une
+    // entrée par occurrence, un objet par entrée), et la table `trous` de la réconciliation (une
+    // entrée par TROU, dont les sites tiennent sur UNE ligne — plusieurs jetons sur une ligne n'en
+    // font qu'un pour la porte, sous-comptage assumé dit en tête de `stocksNominatifs.mjs`). Une
+    // troisième forme ARRÊTE la mesure au lieu de la laisser compter zéro.
+    let declarees
+    if (Array.isArray(json.entrees)) declarees = json.entrees.length
+    else if (json.trous) declarees = Object.keys(json.trous).length
+    else { assert.fail(`${rel} : forme de stock inconnue — la mesure ne sait pas compter ses entrées`) }
+    const vues = (entreesDeStock(contenu, rel) ?? []).length
+    t.diagnostic(`${rel} — ${vues} vue(s) / ${declarees} déclarée(s)`)
+    assert.equal(estPorteurDeStock(rel), true, `${rel} : hors des motifs de porteur, aucune porte ne le lit`)
+    assert.equal(
+      vues, declarees,
+      `${rel} : la porte voit ${vues} entrée(s) sur ${declarees} déclarée(s) — y ajouter une entrée `
+      + 'muette serait `net 0`, donc sans `CLIQUET:` à porter au message',
     )
   }
 })

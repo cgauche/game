@@ -8,9 +8,10 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
-  scanMissingEntities, scanAll, countsByEntry, assertAgainstBaseline, readBaseline,
-  normalizeLoose, stripArticles, entityNameFromHeader, BASELINE_PATH,
+  scanMissingEntities, scanAll, sitesEntites, STOCK_PATH,
+  normalizeLoose, stripArticles, entityNameFromHeader,
 } from './check-entity-in-chapter.mjs'
+import { ecartDuVolet, readStock } from './stockNominatif.mjs'
 
 // LDB 06 (Source/…/06 - Classes.md) : chapitre réel, court et stable, contient le mot « Classes ».
 function withTempDoc(content, fn) {
@@ -75,26 +76,29 @@ test('stripArticles : tolère « Empreint de la Magie » vs « Empreint de Magie
   assert.equal(stripArticles(normalizeLoose("Empreint d'Ulgu")), stripArticles(normalizeLoose("Empreint d'Ulgu")))
 })
 
-test('countsByEntry + assertAgainstBaseline : hausse détectée, baisse détectée comme périmée', () => {
-  const counts = countsByEntry([
-    { doc: 'a.md', name: 'X' }, { doc: 'a.md', name: 'X' }, { doc: 'a.md', name: 'Y' },
+test('sitesEntites : un site = le DOC et le NOM de l’entité, deux homonymes → deux occurrences', () => {
+  const sites = sitesEntites([
+    { doc: 'docs/raw/talents.md', row: 12, name: 'X' },
+    { doc: 'docs/raw/talents.md', row: 40, name: 'X' },
+    { doc: 'docs/raw/talents.md', row: 51, name: 'Y' },
   ])
-  assert.deepEqual(counts, { 'a.md::X': 2, 'a.md::Y': 1 })
-  const { over, stale } = assertAgainstBaseline(counts, { 'a.md::X': 1, 'a.md::Y': 1, 'a.md::Z': 5 })
-  assert.equal(over.length, 1)
-  assert.match(over[0], /a\.md::X/)
-  assert.equal(stale.length, 1)
-  assert.match(stale[0], /a\.md::Z/)
+  assert.deepEqual(sites, [
+    { file: 'docs/raw/talents.md', ref: 'X' },
+    { file: 'docs/raw/talents.md', ref: 'X' },
+    { file: 'docs/raw/talents.md', ref: 'Y' },
+  ], 'la ligne du doc ne fait pas partie du site')
+  const { neuves } = ecartDuVolet({ sites, stock: [], ou: 'entity-in-chapter-stock.json' })
+  assert.equal(neuves.length, 3)
+  assert.ok(neuves.some((n) => n.startsWith(' :: docs/raw/talents.md :: X :: 2')), `les homonymes se distinguent par leur occurrence :\n${neuves.join('\n')}`)
 })
 
-test('readBaseline : fichier absent → {} (zéro-tolérance nominale)', () => {
-  assert.deepEqual(readBaseline(join(tmpdir(), 'inexistant-entity-in-chapter.json')), {})
-})
-
-test('non-régression : la VRAIE docs/raw/talents.md du repo est alignée sur sa baseline (#600 solde)', () => {
-  assert.equal(BASELINE_PATH.endsWith('entity-in-chapter-baseline.json'), true)
-  const counts = countsByEntry(scanAll())
-  const { over, stale } = assertAgainstBaseline(counts, readBaseline())
-  assert.deepEqual(over, [], `entrées dont le nom est absent du chapitre cité (tolérance baseline) :\n${over.join('\n')}`)
-  assert.deepEqual(stale, [], `baseline(s) périmée(s) à abaisser :\n${stale.join('\n')}`)
+test('stock ABSENT → tolérance ZÉRO : la VRAIE docs/raw/talents.md ne porte aucune entité hors chapitre (#600 solde)', () => {
+  assert.equal(STOCK_PATH.endsWith('entity-in-chapter-stock.json'), true)
+  assert.deepEqual(readStock(STOCK_PATH), [], 'le régime nominal est le stock ABSENT (ou vide)')
+  assert.deepEqual(readStock(join(tmpdir(), 'inexistant-entity-in-chapter.json')), [], 'fichier absent = zéro entrée tolérée')
+  const { neuves, perimees } = ecartDuVolet({
+    sites: sitesEntites(scanAll()), stock: readStock(STOCK_PATH), ou: 'entity-in-chapter-stock.json',
+  })
+  assert.deepEqual(neuves, [], `entité(s) dont le nom est absent du chapitre cité :\n${neuves.join('\n')}`)
+  assert.deepEqual(perimees, [], `entrée(s) SOLDÉE(s) à retirer :\n${perimees.join('\n')}`)
 })

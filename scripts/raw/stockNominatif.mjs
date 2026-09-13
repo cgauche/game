@@ -23,6 +23,12 @@ import { ecartsDeStock } from '../guards/lib/stock.mjs'
  *  EN BLOC (N périmées + N neuves pour zéro dette de plus) et se déclare comme tel. */
 export const cleDeSite = (e) => [e.famille ?? '', e.fichier, e.ref, e.occurrence].join(' :: ')
 
+/** La clé d'une entrée, ou l'entrée elle-même en JSON compact quand cette clé ne NOMME rien. Une
+ *  entrée sans `fichier` ni `ref` (faute de saisie, champ renommé, entrée bidon) rend une clé réduite
+ *  à ses séparateurs (` ::  ::  :: `) : le refus désigne alors une entrée que le lecteur ne peut pas
+ *  retrouver dans son stock. Le JSON de l'entrée est ce qui la localise. */
+const cleOuEntree = (cle, entree) => (entree?.fichier || entree?.ref ? cle : JSON.stringify(entree))
+
 /**
  * Sites OBSERVÉS → entrées NOMINALES. L'occurrence est l'ordinal du site parmi ceux qui partagent la
  * même (famille, fichier, réf), dans l'ordre du balayage.
@@ -81,7 +87,7 @@ export function ecartDuVolet({ sites, stock, famille, ou }) {
     cle: cleDeSite,
     remede: {
       neuve: (k) => `${k} — site NEUF : corriger la réf, ou déclarer une entrée dans ${ou} et la porter au message par \`CLIQUET:\`.`,
-      perimee: (k) => `${k} — entrée SOLDÉE : le site a disparu, retirer cette entrée de ${ou}.`,
+      perimee: (k, e) => `${cleOuEntree(k, e)} — entrée SOLDÉE : le site a disparu, retirer cette entrée de ${ou}.`,
     },
   })
 }

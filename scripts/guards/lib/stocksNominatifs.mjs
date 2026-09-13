@@ -20,14 +20,18 @@
 // lui-même vu comme un stock par la règle qu'il sert.
 //
 // CE QU'UNE BASELINE DE COMPTE DÉCLARE, ET CE QU'ELLE TAIT (#1711 T1, le filet). Une baseline gèle
-// un COMPTE PAR FICHIER (patron `assertAgainstBaseline`) : `{ "src/x.ts": 3 }`. La porte compte des
+// un COMPTE PAR FICHIER : `{ "src/x.ts": 3 }`. La porte compte des
 // ENTRÉES nommées, et la CLÉ en est une — un fichier qui entre au gel est donc vu, déclarable par
 // `CLIQUET:`. Le NOMBRE, lui, n'en est pas une : relever `2 → 3` est `-1/+1` sur la même ligne, net
 // 0, invisible aux deux portes ; et une entrée qui ne nomme AUCUN fichier (`{ "chapitre": "LDB 8",
 // "folio": 12 }`, les gels par chapitre) n'est vue par aucune porte non plus. La forme qui rend un
 // relèvement déclarable est le stock NOMINATIF — une entrée par occurrence, comme
 // `scripts/raw/reconciliation-stock.json` : l'ajout y est une LIGNE de plus. Le filet couvre les
-// clés neuves ; migrer les baselines vers la forme nominative est le reste de #1711 (T2-T4).
+// clés neuves ; les baselines de compte de `scripts/raw` sont, elles, passées à la forme nominative
+// (#1711 T2-T4). Reste sous ce filet `empty-folios-baseline.json` : déjà nominal par son contrat
+// (`perdues`/`benignes`, `assertEmptyFoliosAgainstStock` refuse toute entrée inconnue), il nomme ses
+// chapitres par leur nom NU à espaces (`"05 - Amibe.md"`), que `CHEMIN_SOURCE` ne couvre pas — ses
+// entrées restent donc hors de vue des deux portes, et c'est sa propre garde qui les tient.
 //
 // DÉFINITION. Un PORTEUR est un littéral de TABLEAU ou d'OBJET atteignable depuis une liaison de
 // MODULE — `export const X = …`, `const X = …` de module, IIFE, fonction déclarée puis exportée.
@@ -100,11 +104,11 @@ import { createRequire } from 'node:module'
 import { parUnitesDeCode } from './lister.mjs'
 import { scriptKindDe } from './dialecte.mjs'
 
-/** Fichiers susceptibles de porter un stock nominatif. Les BASELINES de COMPTE
- *  (`scripts/raw/*-baseline.json`, et `scripts/guards/raw-blind-refs-baseline.json` que
- *  `rawRefIntegrity.mjs` gèle hors du dossier `raw/`) n'y entrent que pour leurs CLÉS — limite
- *  écrite en tête de ce module. Les JSON de `scripts/guards/lib/` (`decisions-baseline.json`) et le
- *  gel d'exports de la racine (`knip-exports-baseline.json`) sont, eux, NOMINATIFS de bout en bout. */
+/** Fichiers susceptibles de porter un stock nominatif. Une BASELINE de COMPTE
+ *  (`scripts/raw/*-baseline.json`, `scripts/guards/*.json`) n'y entre que pour ses CLÉS — limite
+ *  écrite en tête de ce module ; les deux motifs restent, une baseline de compte pouvant renaître.
+ *  Les JSON de `scripts/guards/lib/` (`decisions-baseline.json`) et le gel d'exports de la racine
+ *  (`knip-exports-baseline.json`) sont, eux, NOMINATIFS de bout en bout. */
 const PORTEURS = [
   /^src\/.+\.test\.tsx?$/,
   /^scripts\/guards\/lib\/.+\.mjs$/,
@@ -119,23 +123,49 @@ const PORTEURS = [
 
 /** Chemin de dépôt : une racine suivie, puis tout sauf des espaces. */
 const CHEMIN = String.raw`(?:src|scripts|docs)\/[^'"\`\s]+`;
+/** Chemin d'un CHAPITRE EXTRAIT : la racine `Source/` puis un `.md` dont le nom porte des ESPACES
+ *  (`"Source/Warhammer v4 - Livre de base version corrigée/08 - Statut.md"`). Racine ajoutée pour
+ *  `scripts/raw/folio-gaps-stock.json` (#1711 T4), dont chaque entrée nomme le chapitre où vit le
+ *  saut de folio : les dossiers de `Source/` et les fichiers-chapitre portent des espaces par
+ *  nature, et `CHEMIN`/`NOM_NU` les excluent tous deux — sans cette racine, le stock resterait hors
+ *  de vue des deux portes. BORNES : la chaîne COMMENCE par `Source/` et FINIT par `.md`, ESPACES et
+ *  APOSTROPHE ASCII admis au milieu (sept répertoires de `Source/` en portent une : « Les archives
+ *  de l'Empire volume 1 », « Aldorf la Couronne de l'Empire », « 1.0 L'ennemi dans l'Ombre
+ *  Compagnon »…, et 36 des 76 entrées de `scripts/raw/folio-gaps-stock.json` resteraient hors de
+ *  vue sans elle) ; aucune quote DOUBLE ni backtick au milieu. Une prose citée à espaces sans
+ *  extension, ou un `Source/` sans `.md`, n'en est pas une.
+ *  SUR-COMPTAGE DIT : une phrase entière qui commencerait par `Source/` et s'achèverait sur un `.md`
+ *  compte pour une entrée — la porte majore, elle n'aveugle pas (même sens que les autres écarts
+ *  listés en tête). */
+const CHEMIN_SOURCE = String.raw`Source\/[^"\`]+\.md`;
+/** Le même chapitre là où une quote SIMPLE peut le FERMER — dans `JETON`, qui lit le TEXTE SOURCE
+ *  d'un littéral. Y admettre l'apostrophe ferait franchir la quote fermante à la classe de
+ *  caractères (`log('Source/x', 'y.md')` deviendrait un jeton) : la borne reste ici l'apostrophe
+ *  exclue, et le chapitre à apostrophe se lit par la branche à quote DOUBLE ou backtick de `JETON`,
+ *  la seule graphie qu'un stock JSON emploie. */
+const CHEMIN_SOURCE_SIMPLE = String.raw`Source\/[^'"\`]+\.md`;
 /** Nom de fichier NU, extension de code ou de donnée : la clé `'criticals.json'` du registre
  *  `AUTO_RESOLUS` (src/state/flowtest-derived-stake.test.ts) est une entrée de stock au même titre
  *  qu'un chemin — l'exiger complet laisserait passer le cas FONDATEUR de cette porte. */
 const NOM_NU = String.raw`[\w.-]+\.(?:ts|tsx|mjs|mts|json|md|css)`;
-/** Un jeton d'entrée entre quotes : `:ligne`/`:symbole` et balise commentée DANS la chaîne
- *  (`'src/ui/X.test.tsx // div'`) tolérés. Sans espace dans le chemin : une PROSE qui cite un
- *  chemin au milieu d'une phrase entre quotes n'est pas une entrée. */
-const JETON = String.raw`['"\`](?:${CHEMIN}|${NOM_NU})(?::[\w.|:-]+)?(?:\s+\/\/\s*[^'"\`]*)?['"\`]`;
+/** Le suffixe toléré DANS la chaîne d'un jeton : `:ligne`/`:symbole`, et balise commentée
+ *  (`'src/ui/X.test.tsx // div'`). */
+const SUFFIXE_JETON = String.raw`(?::[\w.|:-]+)?(?:\s+\/\/\s*[^'"\`]*)?`;
+/** Un jeton d'entrée entre quotes, DEUX branches — la quote fermante décide de ce que le chemin
+ *  peut porter : toute quote admet un chemin sans espace ni apostrophe ; la quote DOUBLE et le
+ *  backtick admettent en plus un chapitre de `Source/` à apostrophe. Sans espace dans le chemin —
+ *  hors `CHEMIN_SOURCE`, seule racine à espaces : une PROSE qui cite un chemin au milieu d'une
+ *  phrase entre quotes n'est pas une entrée. */
+const JETON = String.raw`(?:['"\`](?:${CHEMIN}|${NOM_NU}|${CHEMIN_SOURCE_SIMPLE})${SUFFIXE_JETON}['"\`]|["\`]${CHEMIN_SOURCE}${SUFFIXE_JETON}["\`])`;
 /** Le MÊME jeton, sur le TEXTE d'un littéral de chaîne déjà déquoté par l'AST. */
-const NOMME = new RegExp(String.raw`^(?:${CHEMIN}|${NOM_NU})(?::[\w.|:-]+)?(?:\s+\/\/\s*[^'"\`]*)?$`);
+const NOMME = new RegExp(String.raw`^(?:${CHEMIN}|${NOM_NU}|${CHEMIN_SOURCE})${SUFFIXE_JETON}$`);
 
 /** Le même jeton, resserré sur ce qui nomme un FICHIER : un chemin qui porte une EXTENSION (suivie
  *  au besoin de `:ligne`/`:symbole`), ou un nom de fichier nu. `'src/ui'`, `'src/ui/styles'`,
  *  `'scripts/migrations'` n'en sont pas : ce sont des RACINES de scan. Ce motif ne sert QU'À décider
  *  si un littéral en position d'ARGUMENT reste un porteur — partout ailleurs, `NOMME` fait foi. */
 const CHEMIN_FICHIER = String.raw`(?:src|scripts|docs)\/[^'"\`\s]*\.(?:ts|tsx|mjs|mts|json|md|css)`;
-const NOMME_FICHIER = new RegExp(String.raw`^(?:${CHEMIN_FICHIER}|${NOM_NU})(?::[\w.|:-]+)?(?:\s+\/\/\s*[^'"\`]*)?$`);
+const NOMME_FICHIER = new RegExp(String.raw`^(?:${CHEMIN_FICHIER}|${NOM_NU}|${CHEMIN_SOURCE})${SUFFIXE_JETON}$`);
 
 /**
  * Une ENTRÉE littérale de stock, DEUX formes — la ligne entière fait foi dans les deux cas :
@@ -225,27 +255,34 @@ export function porteeDeModule(source, chemin) {
   return (ligne) => !locales.has(ligne);
 }
 
-/** Le sous-arbre porte-t-il un littéral de chaîne qui NOMME un fichier ? La CLÉ d'une propriété en
- *  fait partie : c'est elle que porte le registre `AUTO_RESOLUS` (`'criticals.json': …`). */
-function nommeUnFichier(ts, node, motif = NOMME) {
-  let vu = false;
+/** Le littéral de chaîne du sous-arbre qui NOMME un fichier, ou `null`. La CLÉ d'une propriété en
+ *  fait partie : c'est elle que porte le registre `AUTO_RESOLUS` (`'criticals.json': …`). Rendre le
+ *  NŒUD, et pas un booléen, donne à l'appelant la LIGNE où le fichier est nommé — celle qu'une
+ *  entrée multiligne doit citer en exemple. */
+function noeudQuiNomme(ts, node, motif = NOMME) {
+  let trouve = null;
   const visiter = (n) => {
-    if (vu) return;
+    if (trouve) return;
     if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) {
-      if (motif.test(n.text)) vu = true;
+      if (motif.test(n.text)) trouve = n;
       return;
     }
     // Gabarit à SUBSTITUTION (`` `src/${n}.test.ts` ``) : sa tête suffit à le nommer. La ligne, elle,
     // est bien vue par le REPLI — ne juger que les littéraux nus rendait l'image AVEUGLE là où la
     // lecture de secours voyait (mesuré : 2 entrées comptées par le repli, 0 par l'image).
     if (ts.isTemplateExpression(n)) {
-      if (motif.test(n.head.text) || motif.test(texteDeGabarit(ts, n))) vu = true;
+      if (motif.test(n.head.text) || motif.test(texteDeGabarit(ts, n))) trouve = n;
       return;
     }
     ts.forEachChild(n, visiter);
   };
   visiter(node);
-  return vu;
+  return trouve;
+}
+
+/** Le sous-arbre nomme-t-il un fichier ? */
+function nommeUnFichier(ts, node, motif = NOMME) {
+  return noeudQuiNomme(ts, node, motif) !== null;
 }
 
 /** Le texte d'un gabarit, ses substitutions ÔTÉES (`` `src/${n}.test.ts` `` → `src/.test.ts`) : ce
@@ -285,8 +322,13 @@ function cleDe(ts, prop) {
  * Les ENTRÉES de stock d'une IMAGE de fichier, par ligne croissante — ou `null` si le dialecte n'a
  * pas d'AST ici (le REPLI de ligne juge alors seul). Voir la DÉFINITION en tête de module.
  * Deux entrées sur une même ligne n'en font qu'une (sous-comptage assumé).
+ *
+ * Chaque entrée porte DEUX lignes : `ligne`, où elle vit (son premier caractère — l'accolade
+ * ouvrante d'une entrée-objet JSON), et `nomme`, celle du littéral qui NOMME le fichier. Les deux
+ * coïncident sur une entrée d'une seule ligne ; sur une entrée multiligne, c'est `nomme` qui porte
+ * l'information, et c'est elle que la porte cite en exemple.
  * @param {string} source @param {string} chemin
- * @returns {{ ligne: number }[] | null}
+ * @returns {{ ligne: number, nomme: number }[] | null}
  */
 export function entreesDeStock(source, chemin) {
   const img = imageParsee(source, chemin);
@@ -294,7 +336,12 @@ export function entreesDeStock(source, chemin) {
   const { ts, sf } = img;
   const locales = lignesLocales(img);
   const ligneDe = (node) => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
-  const lignes = new Set();
+  /** @type {Map<number, number>} ligne de l'entrée → ligne où elle nomme son fichier. */
+  const lignes = new Map();
+  const poser = (porteur, nommant) => {
+    const ligne = ligneDe(porteur);
+    if (!lignes.has(ligne)) lignes.set(ligne, nommant ? ligneDe(nommant) : ligne);
+  };
   const litteral = (n) => n && (ts.isArrayLiteralExpression(n) || ts.isObjectLiteralExpression(n));
   const parcourir = (node) => {
     if (!litteral(node) || locales.has(ligneDe(node)) || estParametreDAppel(ts, node)) {
@@ -302,22 +349,27 @@ export function entreesDeStock(source, chemin) {
       return;
     }
     if (ts.isArrayLiteralExpression(node)) {
-      for (const element of node.elements) if (nommeUnFichier(ts, element)) lignes.add(ligneDe(element));
+      for (const element of node.elements) {
+        const nommant = noeudQuiNomme(ts, element);
+        if (nommant) poser(element, nommant);
+      }
       return;
     }
     for (const prop of node.properties) {
       const cle = cleDe(ts, prop);
-      if (cle !== null && NOMME.test(cle)) { lignes.add(ligneDe(prop)); continue; }
+      if (cle !== null && NOMME.test(cle)) { poser(prop, prop.name ?? prop); continue; }
       if (litteral(prop.initializer)) { parcourir(prop.initializer); continue; }
-      if (nommeUnFichier(ts, prop)) lignes.add(ligneDe(prop));
+      const nommant = noeudQuiNomme(ts, prop);
+      if (nommant) poser(prop, nommant);
     }
   };
   ts.forEachChild(sf, parcourir);
-  return [...lignes].sort((a, b) => a - b).map((ligne) => ({ ligne }));
+  return [...lignes].sort((a, b) => a[0] - b[0]).map(([ligne, nomme]) => ({ ligne, nomme }));
 }
 
-/** Lignes d'entrées d'une image de fichier, ou `null` quand l'image ne se lit pas (lecteur absent,
- *  fichier supprimé, binaire, dialecte inconnu) : le REPLI de ligne juge alors, et l'entrée COMPTE. */
+/** Entrées d'une image de fichier, `ligne` → `nomme`, ou `null` quand l'image ne se lit pas (lecteur
+ *  absent, fichier supprimé, binaire, dialecte inconnu) : le REPLI de ligne juge alors, et l'entrée
+ *  COMPTE. */
 function lignesDEntrees(lire, fichier) {
   if (typeof lire !== 'function') return null;
   let source;
@@ -325,7 +377,7 @@ function lignesDEntrees(lire, fichier) {
   if (typeof source !== 'string') return null;
   try {
     const entrees = entreesDeStock(source, fichier);
-    return entrees && new Set(entrees.map((e) => e.ligne));
+    return entrees && new Map(entrees.map((e) => [e.ligne, e.nomme]));
   } catch { return null; }
 }
 
@@ -375,6 +427,19 @@ function apparierLesDeplacements(parFichier) {
 }
 
 /**
+ * Le TEXTE qui représente une entrée touchée : la ligne où elle NOMME son fichier quand le diff la
+ * porte, sinon la ligne de l'entrée elle-même. Une entrée-objet JSON vit à son accolade ouvrante :
+ * la citer telle quelle rendrait un exemple `"{"`, sans information, et apparierait deux déplacements
+ * sur une accolade. La ligne nommante est ce qui distingue une entrée d'une autre.
+ * @param {{ texte: string, ligne: number }[]} touchees
+ * @param {Map<number, number> | null} entrees ligne d'entrée → ligne nommante de l'image
+ */
+function texteDEntree(touchees, entrees) {
+  const parLigne = new Map(touchees.map((t) => [t.ligne, t.texte]));
+  return (t) => parLigne.get(entrees?.get(t.ligne)) ?? t.texte;
+}
+
+/**
  * Croissance NETTE des stocks nominatifs d'un diff unifié (`-U0` ou non : seuls les `+`/`-`
  * comptent). Un fichier n'est rendu que si ses entrées AJOUTÉES dépassent ses entrées RETIRÉES.
  *
@@ -390,7 +455,8 @@ function apparierLesDeplacements(parFichier) {
  * @param {{ lirePostImage: (chemin: string) => string | null,
  *           lirePreImage?: (chemin: string) => string | null }} images
  * @returns {{ fichier: string, ajoutees: number, retirees: number, net: number, exemples: string[] }[]}
- *   trié par fichier ; `exemples` = jusqu'à 3 entrées ajoutées, telles qu'écrites.
+ *   trié par fichier ; `exemples` = jusqu'à 3 entrées ajoutées, citées par leur ligne NOMMANTE
+ *   (`texteDEntree`) telle qu'écrite.
  * @throws {TypeError} si le diff n'est pas une CHAÎNE : la signature est POSITIONNELLE, et un appel
  *   en objet (`croissanceDesStocks({ diff })`) stringifiait `[object Object]` — donc `[]` sur TOUS
  *   les commits, y compris sur des croissances réelles. Un juge a publié ce faux zéro le 2026-09-04
@@ -491,8 +557,8 @@ export function croissanceDesStocks(diffU0, images) {
       return {
         fichier,
         disparu,
-        retenues: ajoutees.filter(estEntree(surPost)).map((t) => t.texte),
-        perdues: retirees.filter(estEntree(surPre)).map((t) => t.texte),
+        retenues: ajoutees.filter(estEntree(surPost)).map(texteDEntree(ajoutees, surPost)),
+        perdues: retirees.filter(estEntree(surPre)).map(texteDEntree(retirees, surPre)),
       };
     })
     .sort((a, b) => parUnitesDeCode(a.fichier, b.fichier));

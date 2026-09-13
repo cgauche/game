@@ -12,7 +12,7 @@
 //     --check` — zéro tolérance, il suffit de lancer --apply.
 //   - 🟡 MEDIUM : c'est CE verdict qui a produit le bug réel (ZI 13 l.954 auto-résolu vers le
 //     candidat le plus proche, alors que le vrai texte vivait en ZI 2 l.68) — zéro tolérance
-//     (baseline mesurée à 0 aujourd'hui), jamais d'auto-résolution.
+//     (seuil ZÉRO : aucun ambigu toléré, mesure à 0 aujourd'hui), jamais d'auto-résolution.
 //   - ❌ LOW : la réf MENT (citation introuvable à la ligne annoncée) — cliquet NOMINATIF PAR SITE
 //     (`scripts/raw/reanchor-low-stock.json`, écart `ecartDuVolet` de `stockNominatif.mjs`, clé
 //     `fiche :: réf citée :: occurrence`) : un site NEUF est une régression à corriger ou à déclarer,

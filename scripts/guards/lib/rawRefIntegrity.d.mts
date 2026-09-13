@@ -23,7 +23,14 @@ export interface EmptyLineRef {
   files: Set<string>;
 }
 
-export type BlindBaseline = Record<string, Record<string, number>>;
+export interface EntreeDeStock {
+  famille?: string;
+  fichier: string;
+  ref: string;
+  occurrence: number;
+  lot?: string;
+  date?: string;
+}
 
 export const SRC_DIR: string;
 export const EXCLUDE_SRC_PREFIX: string;
@@ -32,7 +39,8 @@ export const MIN_WORD_LEN: number;
 export const STEM_LEN: number;
 export const SELF_FILES: string[];
 export const SITE_EXEMPTIONS: SiteExemption[];
-export const BASELINE_PATH: URL;
+export const STOCK_NOM: string;
+export const STOCK_PATH: URL;
 
 export function chapterFile(abbr: string, nn: string, range?: { from: string; to?: string }):
   { path: string; file: string; dir: string; text?: string } | null;
@@ -48,9 +56,11 @@ export function refsInLine(ln: string): Generator<{ abbr: string; nn: string; lo
 export function isExcludedSrc(rel: string): boolean;
 export function scanBlindRefs(srcDir?: string): BlindRef[];
 export function scanEmptyLineRefs(srcDir?: string): EmptyLineRef[];
-export function countsByFileRef(blind: BlindRef[]): BlindBaseline;
-export function assertAgainstBaseline(
-  counts: BlindBaseline, baseline: BlindBaseline,
-): { over: string[]; stale: string[] };
-export function readBaseline(path?: URL | string): BlindBaseline;
-export function serializeBaseline(counts: BlindBaseline): string;
+export function sitesAveugles(blind: BlindRef[]): { file: string; ref: string }[];
+export function ecartDesRefsAveugles(
+  blind: BlindRef[], stock: EntreeDeStock[],
+): { neuves: string[]; perimees: string[] };
+export function ecartDuVolet(p: {
+  sites: { file: string; ref: string }[]; stock: EntreeDeStock[]; famille?: string; ou?: string;
+}): { neuves: string[]; perimees: string[] };
+export function readStock(path: URL | string): EntreeDeStock[];

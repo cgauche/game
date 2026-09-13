@@ -32,8 +32,10 @@ const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
  * Écart d'une collection OBSERVÉE à son STOCK, dans les DEUX sens.
  * @template O, S
  * @param {{ observe: Iterable<O>, stock: Iterable<S>, cle: (entree: O | S) => string,
- *   remede?: { neuve?: (cle: string, entree: O) => string, perimee?: (cle: string) => string } }} p
- *   `remede` décore les lignes rendues (défaut : la clé nue).
+ *   remede?: { neuve?: (cle: string, entree: O) => string, perimee?: (cle: string, entree: S) => string } }} p
+ *   `remede` décore les lignes rendues (défaut : la clé nue). Les DEUX remèdes reçoivent l'entrée en
+ *   second argument : une clé peut ne rien nommer (tous ses champs vides), et le remède est alors le
+ *   seul endroit d'où l'entrée fautive se cite.
  * @returns {{ neuves: string[], perimees: string[], taille: number }} `taille` = clés DISTINCTES du
  *   stock — de quoi confronter un plafond, que l'appelant seul détient.
  */
@@ -43,14 +45,14 @@ export function ecartsDeStock({ observe, stock, cle, remede = {} }) {
     const k = cle(e);
     if (!vues.has(k)) vues.set(k, e);
   }
-  const tenues = new Set();
-  for (const e of stock) tenues.add(cle(e));
+  const tenues = new Map();
+  for (const e of stock) { const k = cle(e); if (!tenues.has(k)) tenues.set(k, e); }
   const neuves = [...vues]
     .filter(([k]) => !tenues.has(k))
     .map(([k, e]) => (remede.neuve ? remede.neuve(k, e) : k));
   const perimees = [...tenues]
-    .filter((k) => !vues.has(k))
-    .map((k) => (remede.perimee ? remede.perimee(k) : k));
+    .filter(([k]) => !vues.has(k))
+    .map(([k, e]) => (remede.perimee ? remede.perimee(k, e) : k));
   return { neuves, perimees, taille: tenues.size };
 }
 

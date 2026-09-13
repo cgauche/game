@@ -11,17 +11,20 @@
 // préfixe (radical distinct, synonyme, vocabulaire de code étranger) ne recouvre PAS : une dérive de
 // ligne post-ré-extraction Marker n'est donc innocentée QUE si son sujet reste à ±`WINDOW` ET s'écrit
 // pareil — mesure du 2026-08-16 : sans le préfixe, 161 sites gelés dont 84 avaient déjà leur sujet à
-// ±6 lignes ; avec le préfixe, 108 à cette date. Le stock gelé COURANT se lit dans la baseline, jamais ici.
+// ±6 lignes ; avec le préfixe, 108 à cette date. Le stock COURANT se lit dans
+// `scripts/guards/raw-blind-refs-stock.json`, jamais ici — il est ABSENT, régime de tolérance zéro.
 //
 // Vocabulaire RÉUTILISÉ de `scripts/raw/_lib.mjs` (source unique) : `ldbRe`/`otherRe`/`span`/
 // `bookOf`/`chapterFile`/`readText`. Périmètre src/ aligné sur `check-code-refs.mjs`.
 import { readFileSync } from 'node:fs'
 import { listerArbre } from './lister.mjs'
 import { ldbRe, otherRe, span, refNums, isRangeSuffix, chapterFile, bookOf, readText } from '../../raw/_lib.mjs'
+import { ecartDuVolet, readStock } from '../../raw/stockNominatif.mjs'
 
-// Réexport des DEUX résolveurs de `_lib.mjs` dont les consommateurs TypeScript ont besoin : une
-// seule couture typée (`rawRefIntegrity.d.mts`) au lieu d'un second `.d.mts` sur `_lib.mjs`.
-export { chapterFile, readText }
+// Réexport des résolveurs de `_lib.mjs` et des primitives de stock nominatif de `stockNominatif.mjs`
+// dont les consommateurs TypeScript ont besoin : une seule couture typée
+// (`rawRefIntegrity.d.mts`) au lieu d'un `.d.mts` par module de `scripts/raw/`.
+export { chapterFile, readText, ecartDuVolet, readStock }
 
 export const SRC_DIR = 'src'
 export const EXCLUDE_SRC_PREFIX = 'src/gameIso/rig/parts/tenues/defs/' // art de couverture (cf. check-code-refs)
@@ -37,42 +40,27 @@ export const SELF_FILES = ['src/raw-ref-integrity.test.ts']
  *  nomme la ligne EXACTE du code citant + la réf — un déplacement de site la périme (fail-closed). */
 export const SITE_EXEMPTIONS = []
 
-/** Registre gelé du STOCK hérité : `{ "<fichier src>": { "<réf>": <nb de sites aveugles> } }`.
- *  Cliquet à double sens (patron `check-code-refs.mjs`) : toute HAUSSE échoue (réf aveugle NEUVE),
- *  toute baisse échoue aussi tant que le registre n'est pas ABAISSÉ (réf réparée = ligne à retirer).
- *  Régime cible : fichier vide `{}` (tolérance zéro) — chaque entrée est une dette à solder en
- *  lisant le `Source/` et en réancrant la réf sur la ligne qui porte VRAIMENT le passage.
+/** Stock NOMINATIF des sites aveugles : `{ quoi, entrees: [{ fichier, ref, occurrence, lot, date }] }`,
+ *  clé `fichier src :: réf :: occurrence` (écart `ecartDuVolet` de `scripts/raw/stockNominatif.mjs`).
+ *  Les deux sens échouent : un site NEUF est une régression à corriger ou à déclarer, une entrée dont
+ *  le site a disparu est une dette SOLDÉE à retirer. Le fichier est ABSENT en régime nominal →
+ *  tolérance ZÉRO : chaque entrée serait une dette à solder en lisant le `Source/` et en réancrant la
+ *  réf sur la ligne qui porte VRAIMENT le passage.
  *  Les formes COMPACTES (`l.A/B/C`, `_lib.mjs`) comptent chaque ancre SÉPARÉMENT : une seule d'entre
  *  elles pointant une ligne vide suffit à rougir la réf entière. */
-export const BASELINE_PATH = new URL('../raw-blind-refs-baseline.json', import.meta.url)
+export const STOCK_NOM = 'raw-blind-refs-stock.json'
+export const STOCK_PATH = new URL(`../${STOCK_NOM}`, import.meta.url)
 
-/** Comptes mesurés `{ fichier: { réf: n } }` à partir d'une liste de réfs aveugles. */
-export function countsByFileRef(blind) {
-  const out = {}
-  for (const b of blind) {
-    out[b.file] = out[b.file] || {}
-    out[b.file][b.ref] = (out[b.file][b.ref] ?? 0) + 1
-  }
-  return out
-}
+/** Sites aveugles observés → sites du stock : le fichier de `src/` et la réf citée. Jamais `row` :
+ *  la ligne du code citant dérive à chaque édition du fichier (c'est l'affaire des exemptions AU
+ *  SITE, qui la nomment à dessein pour périmer au déplacement). */
+export const sitesAveugles = (blind) => blind.map((b) => ({ file: b.file, ref: b.ref }))
 
-/** Compare comptes mesurés et registre gelé → `{ over, stale }` (lignes-rapport `fichier — réf`). */
-export function assertAgainstBaseline(counts, baseline) {
-  const over = []
-  for (const [file, refs] of Object.entries(counts)) {
-    for (const [ref, n] of Object.entries(refs)) {
-      const b = baseline[file]?.[ref] ?? 0
-      if (n > b) over.push(`${file} — ${ref} : ${n} site(s) aveugle(s) (gelé ${b})`)
-    }
-  }
-  const stale = []
-  for (const [file, refs] of Object.entries(baseline)) {
-    for (const [ref, b] of Object.entries(refs)) {
-      const n = counts[file]?.[ref] ?? 0
-      if (n < b) stale.push(`${file} — ${ref} : gelé ${b}, réel ${n} — ABAISSER/retirer`)
-    }
-  }
-  return { over, stale }
+/** Écart du volet : `{ neuves, perimees }`, phrases prêtes à afficher. */
+export function ecartDesRefsAveugles(blind, stock) {
+  // `STOCK_NOM` est hissé au module : dans une lib de garde, la porte de commit compte tout
+  // objet-argument qui NOMME un fichier comme une entrée de stock nominatif.
+  return ecartDuVolet({ sites: sitesAveugles(blind), stock, ou: STOCK_NOM })
 }
 
 /** Radicaux signifiants d'un texte : mots ≥ `minLen` lettres (accents repliés, minuscules), réduits
@@ -169,26 +157,6 @@ export function scanBlindRefs(srcDir = SRC_DIR) {
     })
   }
   return blind
-}
-
-/** Registre gelé (`{}` si le fichier est absent — régime de tolérance zéro). */
-export function readBaseline(path = BASELINE_PATH) {
-  try {
-    return JSON.parse(readFileSync(path, 'utf8'))
-  } catch (err) {
-    if (err.code === 'ENOENT') return {}
-    throw err
-  }
-}
-
-/** Sérialise des comptes en registre (clés triées — diff stable). */
-export function serializeBaseline(counts) {
-  const out = {}
-  for (const file of Object.keys(counts).sort()) {
-    out[file] = {}
-    for (const ref of Object.keys(counts[file]).sort()) out[file][ref] = counts[file][ref]
-  }
-  return `${JSON.stringify(out, null, 2)}\n`
 }
 
 /** File d'AUDIT (non gatée) : réfs pointant une ligne vide, groupées par réf, comptées par sites. */

@@ -13,15 +13,21 @@
 // élidés OU non (« Empreint de la Magie » data vs « Empreint de Magie » EDOC 13 l.254) retirés des
 // DEUX côtés avant comparaison. Réf sans chapitre NUMÉRIQUE résoluble (« AA Annexe III »,
 // « ADE II ch. Les Ogres ») = hors sujet (rien à chapitrer) : périmètre de check-refs/check-code-refs.
-// Cliquet PAR (doc, nom) — patron `assertAgainstBaseline` de check-code-refs.mjs.
+// Cliquet NOMINATIF PAR SITE (`scripts/raw/entity-in-chapter-stock.json`, écart `ecartDuVolet` de
+// `stockNominatif.mjs`, clé `doc :: nom :: occurrence`) : un site NEUF est une régression à corriger
+// ou à déclarer, une entrée dont le site a disparu est une dette SOLDÉE à retirer. Le stock est
+// ABSENT en régime nominal → tolérance ZÉRO (`readStock` traite un fichier absent comme zéro entrée).
 // Re-run : node scripts/raw/check-entity-in-chapter.mjs (npm run raw:check-entity-in-chapter).
-import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chapterFile, otherAbbrAlternation, readText } from './_lib.mjs'
+import { ecartDuVolet, readStock } from './stockNominatif.mjs'
 
 export const TARGETS = ['docs/raw/talents.md']
-export const BASELINE_PATH = resolve(dirname(fileURLToPath(import.meta.url)), 'entity-in-chapter-baseline.json')
+export const STOCK_PATH = resolve(dirname(fileURLToPath(import.meta.url)), 'entity-in-chapter-stock.json')
+// Sites observés → sites du stock : le DOC de l'Atlas où l'entrée est lue (chemin depuis la racine du
+// dépôt) et le NOM de l'entité. Jamais `row` : la ligne du doc dérive à chaque édition de la fiche.
+export const sitesEntites = (violations) => violations.map((v) => ({ file: v.doc, ref: v.name }))
 
 // `<ABBR> <N>` en tête de ligne Source (LDB inclus, alternation _lib.mjs partagée — jamais réécrite).
 // Chapitre = premier groupe de chiffres qui suit l'abréviation (`ch.` optionnel devant) ; une réf
@@ -99,53 +105,23 @@ export function scanAll(targets = TARGETS) {
   return targets.flatMap((t) => scanMissingEntities(t))
 }
 
-/** Compte par (doc, nom) — unité du cliquet. */
-export function countsByEntry(violations) {
-  const counts = {}
-  for (const v of violations) counts[`${v.doc}::${v.name}`] = (counts[`${v.doc}::${v.name}`] ?? 0) + 1
-  return counts
-}
-
-export function assertAgainstBaseline(counts, baseline) {
-  const over = []
-  for (const [k, n] of Object.entries(counts)) {
-    const b = baseline[k] ?? 0
-    if (n > b) over.push(`${k} : ${n} (baseline ${b})`)
-  }
-  const stale = []
-  for (const [k, b] of Object.entries(baseline)) {
-    const n = counts[k] ?? 0
-    if (n < b) stale.push(`${k} : baseline ${b}, réel ${n}`)
-  }
-  return { over, stale }
-}
-
-export function readBaseline(path = BASELINE_PATH) {
-  try {
-    return JSON.parse(readFileSync(path, 'utf8'))
-  } catch (err) {
-    if (err.code === 'ENOENT') return {}
-    throw err
-  }
-}
-
 function main() {
   const violations = scanAll()
-  const counts = countsByEntry(violations)
-  const baseline = readBaseline()
-  const { over, stale } = assertAgainstBaseline(counts, baseline)
+  const { neuves, perimees } = ecartDuVolet({
+    sites: sitesEntites(violations), stock: readStock(STOCK_PATH), ou: 'entity-in-chapter-stock.json',
+  })
 
   console.log(`check-entity-in-chapter : ${violations.length} entrée(s) dont le nom est ABSENT du chapitre cité, sur ${TARGETS.join(', ')}`)
 
-  if (over.length) {
-    console.log('RÉGRESSION — hausse de réfs fausses par entrée :')
-    for (const o of over) console.log(`  ${o}`)
+  if (neuves.length) {
+    console.log('RÉGRESSION — entrée(s) à réf fausse hors du stock :')
+    for (const o of neuves) console.log(`  ${o}`)
   }
-  if (stale.length) {
-    console.log('Baseline(s) PÉRIMÉE(s) (réfs réparées) — à ABAISSER dans entity-in-chapter-baseline.json :')
-    for (const s of stale) console.log(`  ${s}`)
+  if (perimees.length) {
+    console.log('Entrée(s) SOLDÉE(s) (réfs réparées) :')
+    for (const s of perimees) console.log(`  ${s}`)
   }
-  if (!over.length && !stale.length) {
+  if (!neuves.length && !perimees.length) {
     console.log('OK — cliquet aligné, aucune régression.')
     return
   }

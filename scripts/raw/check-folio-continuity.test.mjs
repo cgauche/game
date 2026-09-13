@@ -7,10 +7,11 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
-  folioGapsInText, chapterFolioSpan, scanBookDir, scanAllBooks,
+  folioGapsInText, chapterFolioSpan, scanBookDir, scanAllBooks, sitesDeSauts, STOCK_PATH,
   emptyFolioAnchorsInText, scanEmptyFoliosInBook, scanAllEmptyFolios,
   assertEmptyFoliosAgainstStock, emptyFolioKey, EMPTY_STOCK_PATH, chapterTexts,
 } from './check-folio-continuity.mjs'
+import { ecartDuVolet, readStock, sitesEnEntrees } from './stockNominatif.mjs'
 import { BOOKS } from './_lib.mjs'
 
 function span(folio) { return `<span id="page-x-0" data-folio="${folio}"></span>` }
@@ -124,6 +125,71 @@ test('scanBookDir : la séquence SEULE est aveugle en fin de fichier — le seco
     assert.deepEqual(folioGapsInText(text), [], 'aucun delta ≠ 1 : le trou est APRÈS la dernière ancre')
     assert.equal(scanBookDir('TEST', dir).length, 1)
   })
+})
+
+// ---------- passe 1 : le STOCK NOMINATIF des sauts (#1711 T4) ----------
+
+test('sitesDeSauts : un site = le CHAPITRE EXTRAIT et le saut lui-même, jamais le chapitre seul', () => {
+  withTempBookDir({ '01 - Chapitre.md': `${span(1)} ${span(4)} ${span(8)}` }, (dir) => {
+    const gaps = scanBookDir('TEST', dir)
+    assert.equal(gaps.length, 2, 'deux sauts dans le MÊME chapitre')
+    const sites = sitesDeSauts(gaps)
+    assert.deepEqual(sites.map((s) => s.ref), ['TEST 1 1→4', 'TEST 1 4→8'], 'chaque saut a sa propre clé')
+    for (const s of sites) assert.equal(s.file, `${dir.split('\\').join('/')}/01 - Chapitre.md`, 'le site nomme le chapitre par son CHEMIN')
+  })
+})
+
+test('scanBookDir : `path` est le chemin POSIX du chapitre, celui que la porte de plage reconnaît', () => {
+  const [abbr, dir] = BOOKS[0]
+  const gap = scanBookDir(abbr, dir)[0]
+  assert.ok(gap, 'le premier livre porte au moins un saut mesuré')
+  assert.equal(gap.path, `${dir}/${gap.file}`)
+  assert.match(gap.path, /^Source\/[^\\]+\.md$/, 'racine `Source/`, séparateurs POSIX, extension `.md`')
+})
+
+test('stock COMMITTÉ : chaque saut mesuré y a son entrée, et aucune entrée n’est soldée', () => {
+  const { neuves, perimees } = ecartDuVolet({
+    sites: sitesDeSauts(scanAllBooks()), stock: readStock(STOCK_PATH), ou: 'folio-gaps-stock.json',
+  })
+  assert.deepEqual(neuves, [], `saut(s) de folio hors du stock :\n${neuves.join('\n')}`)
+  assert.deepEqual(perimees, [], `entrée(s) SOLDÉE(s) à retirer :\n${perimees.join('\n')}`)
+})
+
+test('stock COMMITTÉ : PLAFOND de la dette d’extraction — 76 sauts, aucun de plus (le relever exige de changer CE test)', () => {
+  const entrees = readStock(STOCK_PATH)
+  assert.equal(entrees.length, 76)
+  for (const e of entrees) {
+    assert.match(e.fichier, /^Source\/.+\.md$/, `entrée sans chapitre extrait : ${JSON.stringify(e)}`)
+    assert.match(e.ref, /^.+ \d+→\d+$/, `entrée sans saut de folio : ${JSON.stringify(e)}`)
+  }
+})
+
+// AUCUN GÉNÉRATEUR COMMITTÉ pour ce stock — comme pour les autres stocks nominatifs de l'Atlas. Sa
+// régénération (après une ré-extraction Marker, qui déplace les folios) est le rendu de
+// `sitesEnEntrees(sitesDeSauts(scanAllBooks()))`, écrit à `STOCK_PATH` sous la clé `entrees` : ce
+// test le NOMME et le vérifie à la clé ET à l'ORDRE, là où `ecartDuVolet` ci-dessus ne juge que les
+// ensembles. Un stock ré-ordonné à la main rougit ici.
+test('stock COMMITTÉ : le rendu EXACT et ORDONNÉ des sites mesurés sur l’arbre', () => {
+  const attendu = sitesEnEntrees(sitesDeSauts(scanAllBooks()))
+  const stock = readStock(STOCK_PATH)
+  const cle = (e) => `${e.fichier} :: ${e.ref} :: ${e.occurrence}`
+  assert.deepEqual(stock.map(cle), attendu.map(cle))
+})
+
+test('stock TRUQUÉ : une entrée retirée rend son site NEUF, une entrée sans site est SOLDÉE', () => {
+  const sites = sitesDeSauts(scanAllBooks())
+  const stock = readStock(STOCK_PATH)
+  const ampute = ecartDuVolet({ sites, stock: stock.slice(1), ou: 'folio-gaps-stock.json' })
+  assert.equal(ampute.neuves.length, 1)
+  assert.match(ampute.neuves[0], /site NEUF/)
+  assert.ok(ampute.neuves[0].includes(stock[0].ref), `le rouge NOMME le saut : ${ampute.neuves[0]}`)
+  assert.deepEqual(ampute.perimees, [])
+
+  const fantome = { ...stock[0], ref: `${stock[0].ref}0` }
+  const gonfle = ecartDuVolet({ sites, stock: [...stock, fantome], ou: 'folio-gaps-stock.json' })
+  assert.deepEqual(gonfle.neuves, [])
+  assert.equal(gonfle.perimees.length, 1)
+  assert.match(gonfle.perimees[0], /entrée SOLDÉE/)
 })
 
 // ---------- passe 2 : ancre SANS CONTENU (#1457 lot A1) ----------

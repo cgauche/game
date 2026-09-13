@@ -17,7 +17,7 @@
  *   • CIBLE : `{}` — zéro entrée.
  *   • ÉCHÉANCE : le LOT BRANCHEMENTS de ce même chantier (spec zone 12, ordre des lots (2)) —
  *     jamais « plus tard ». Chaque lot en retire des lignes.
- *   • CLIQUET STRICT DÉCROISSANT (patron `raw-blind-refs-baseline`) : une action nouvellement sans
+ *   • CLIQUET STRICT DÉCROISSANT (patron `raw-blind-refs-stock`) : une action nouvellement sans
  *     surface qui n'est pas listée = ROUGE ; une entrée listée qui a retrouvé sa surface = ROUGE
  *     « périmée » (elle se retire dans le MÊME commit que le branchement).
  *   • RÉGIME PERMANENT — le marqueur `CHANTIER_BRANCHEMENTS_OUVERT` ferme la boucle : la baseline

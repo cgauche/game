@@ -65,31 +65,6 @@ export function scanDeadRefs(rawDir = RAWDIR, exclude = EXCLUDE) {
   return dead
 }
 
-/** Groupe des lignes-réf par clé `ABBR NN`. Servi à `check-folio-continuity.mjs`, dont le cliquet
- *  de folios est encore un COMPTE par fichier-chapitre. */
-export function countsByChapterRef(dead) {
-  const counts = {}
-  for (const d of dead) counts[d.ref] = (counts[d.ref] ?? 0) + 1
-  return counts
-}
-
-/** Compare des comptes mesurés à une baseline gelée : toute hausse ET toute baisse (baseline
- *  périmée) sont des anomalies — retourne `{ over, stale }` (listes de lignes-rapport). Seul
- *  consommateur : `check-folio-continuity.mjs`, sur `folio-gaps-baseline.json`. */
-export function assertAgainstBaseline(counts, baseline) {
-  const over = []
-  for (const [k, n] of Object.entries(counts)) {
-    const b = baseline[k] ?? 0
-    if (n > b) over.push(`${k} : ${n} (baseline ${b})`)
-  }
-  const stale = []
-  for (const [k, b] of Object.entries(baseline)) {
-    const n = counts[k] ?? 0
-    if (n < b) stale.push(`${k} : baseline ${b}, réel ${n}`)
-  }
-  return { over, stale }
-}
-
 function main() {
   const dead = scanDeadRefs()
   const { neuves, perimees } = ecartDuVolet({
