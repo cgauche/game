@@ -192,6 +192,10 @@ export function verifierExtraction(pages, { pdfPath, restitutions, seuil, extrai
  *  supprimée avec son contenu et l'espace qui suit. Cette position SEULE — ailleurs, `h` est du texte. */
 const SUP_RANG = /^(#{1,6} |- )?<sup>h<\/sup> (?=\*\*)/gm
 
+/** `<sup>0</sup>` : puce d'item (glyphe de police symbole), supprimée avec son contenu et
+ *  l'espace qui suit s'il y en a un, à TOUTE position. */
+const SUP_PUCE = /<sup>0<\/sup> ?/g
+
 /**
  * Déballe le HTML `<sup>` d'une extraction Marker — et RIEN d'autre.
  *
@@ -209,9 +213,22 @@ const SUP_RANG = /^(#{1,6} |- )?<sup>h<\/sup> (?=\*\*)/gm
  * (`#### <sup>h</sup> **Hanté – Bronze 1**`, `- <sup>h</sup> **Recruit Brass 5**`) = icône de rang
  * (glyphe de police symbole), SUPPRIMER avec son contenu et l'espace qui suit, uniquement à cette
  * position (début de ligne, ou après `#+ ` ou `- `, suivi de ` **`) ;
- * (f) `<sup>0</sup>` (30 sites, EDOC ch.16 et ZI ch.14, entre deux phrases d'un même item) et
- * `<sup>~</sup>` (1, ZI ch.01) : NON TRANCHÉS, à vérifier au PDF lors de la ré-extraction de
- * ZI/EDOC — jusque-là déballés par défaut.
+ * (f) `<sup>0</sup>` (30 occurrences sur 25 lignes : ZI ch.14 = 20 lignes, EDOC ch.16 = 5 ;
+ * `grep -rl '<sup>0</sup>' Source` ne rend que ces deux fichiers) = PUCE d'item. Mesure au PDF
+ * (pypdf, `scripts/raw/lib/pdf-extract.py`, 2026-09-14) : le flux texte porte un `0` ISOLÉ dans
+ * une police symbole, servant de MARQUEUR d'item — ZI p.125 (index pypdf) : `SECRETS … Vous
+ * commencez avec 1d10 pistoles d'argent en plus par secret supplémentaire choisi.\n 0 Grand
+ * secret : vous êtes un pacifiste convaincu…` (case à cocher devant chaque Secret des prétirés) ;
+ * EDOC p.115 : `Si d'autres halflings le découvraient, Harbull serait rejeté.\n 0 Harbull
+ * considère Malmir comme une âme sœur…` (ornement devant chaque paragraphe de PNJ). C'est un
+ * GLYPHE, pas du texte — même classe que l'icône de rang (e) : SUPPRIMER avec son contenu et
+ * l'espace qui suit, à TOUTE position (aucun vrai exposant zéro dans le corpus, cf. mesure
+ * ci-dessus) : `…sans jamais attaquer. <sup>0</sup> Vous appartenez…` laisse UN seul espace,
+ * `- <sup>0</sup> **Grand secret :**` donne `- **Grand secret :**` ;
+ * (g) `<sup>~</sup>` (1 site, `Source/WH - V4 - Le zoo imperial/01 - TROIS EXPEDITIONS.md:7` :
+ * `<sup>~</sup> UN RAPPORT ~ DU SCRIBE`) = CONTENU, déballer : au PDF (ZI p.7) le flux texte lit
+ * `– EN QUÊTE DE –` puis `~ UN RAPPORT ~DU SCRIBE`, le tilde est un CARACTÈRE du texte (ornement
+ * typographique, dont le second `~` est sorti nu chez Marker).
  *
  * Après passage : zéro `<sup>` résiduel. Dépendance ANNONCÉE (pas dans cet arbre) : la gate
  * `raw:check-source-format` (#1739, train H-0) comptera le HTML résiduel de `Source/`.
@@ -222,5 +239,6 @@ const SUP_RANG = /^(#{1,6} |- )?<sup>h<\/sup> (?=\*\*)/gm
  */
 export function deballerSup(texte) {
   return texte.replace(SUP_RANG, (_m, prefixe) => prefixe || '')
+    .replace(SUP_PUCE, '')
     .replace(/<sup>([^<]*)<\/sup>/g, '$1')
 }

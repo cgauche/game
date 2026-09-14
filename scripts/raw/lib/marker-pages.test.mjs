@@ -68,9 +68,18 @@ test('deballerSup (e) `<sup>h</sup>` en MILIEU de phrase : pas une icône de ran
   assert.equal(deballerSup('#### <sup>h</sup> Hanté sans gras'), '#### h Hanté sans gras')
 })
 
-test('deballerSup (f) `<sup>0</sup>` et `<sup>~</sup>` NON TRANCHÉS : déballés par défaut', () => {
-  assert.equal(deballerSup('Une phrase.<sup>0</sup> Une autre.'), 'Une phrase.0 Une autre.')
-  assert.equal(deballerSup('un tarif<sup>~</sup>'), 'un tarif~')
+test('deballerSup (f) puce `<sup>0</sup>` : SUPPRIMÉE avec l\'espace qui suit, en milieu de ligne', () => {
+  assert.equal(deballerSup('…sans jamais attaquer. <sup>0</sup> Vous appartenez…'),
+    '…sans jamais attaquer. Vous appartenez…')
+})
+
+test('deballerSup (f) puce `<sup>0</sup>` en TÊTE d\'item : `- <sup>0</sup> **X**` → `- **X**`', () => {
+  assert.equal(deballerSup('- <sup>0</sup> **Grand secret :** vous êtes un pacifiste'),
+    '- **Grand secret :** vous êtes un pacifiste')
+})
+
+test('deballerSup (g) `<sup>~</sup>` : CONTENU, déballé', () => {
+  assert.equal(deballerSup('<sup>~</sup> UN RAPPORT ~ DU SCRIBE'), '~ UN RAPPORT ~ DU SCRIBE')
 })
 
 test('deballerSup : zéro `<sup>` résiduel sur un texte mêlant toutes les classes', () => {
