@@ -55,11 +55,13 @@ const EXEMPTS = [
 const FORMES: readonly { motif: RegExp; quoi: string; cible: string }[] = [
   { motif: /type:\s*'(?:journal|document|setObjective)'[^\n]*?,\s*text:/g, quoi: "effet `journal`/`document`/`setObjective` à `text`", cible: 'desc' },
   { motif: /choices:\s*\[\s*\{\s*text:/g, quoi: '`DialogueChoice.text`', cible: 'label' },
-  // La lookbehind écarte deux voisinages qui ne sont JAMAIS une propriété d'objet : le backtick
-  // (mention en prose de JSDoc, `` `description:` ``) et l'ancre `^` d'un littéral d'expression
+  // La lookbehind écarte trois voisinages qui ne sont JAMAIS une propriété d'objet : le backtick
+  // (mention en prose de JSDoc, `` `description:` ``), l'ancre `^` d'un littéral d'expression
   // régulière (`/^description:\s*(.+)$/m`) — c'est sous ces deux formes que les générateurs de docs
-  // lisent le frontmatter YAML d'un `SKILL.md`, sans rapport avec un document de scène.
-  { motif: /(?<![A-Za-z0-9_$`^])description:/g, quoi: '`description` de scène/projet', cible: 'desc' },
+  // lisent le frontmatter YAML d'un `SKILL.md` —, et la QUOTE ouvrante : une chaîne qui COMMENCE par
+  // `description:` est une ligne YAML de fiche citée, jamais une clé de scène (un document de scène
+  // écrirait `'description': x`, la quote se plaçant ENTRE la clé et le deux-points).
+  { motif: /(?<![A-Za-z0-9_$`^'"])description:/g, quoi: '`description` de scène/projet', cible: 'desc' },
   // Propriété RACCOURCIE : ancrée sur le `type:` de l'effet, donc aveugle aux `text` LÉGITIMES
   // (`narrative.text`, `TrappingRef.text`) que le lot #1467 L1b a laissés intacts.
   { motif: /type:\s*'(?:journal|document|setObjective)'[^\n]*?,\s*text\s*[,})]/g, quoi: "effet `journal`/`document`/`setObjective` à `text` RACCOURCI", cible: 'desc' },
@@ -127,8 +129,12 @@ describe('graphie de la prose de scène — aucun producteur ne réécrit la for
       '].join(SAUT);',
     ].join('\n');
     const documentDeScene = "const scene = { id: 'a', description: 'une scène' };";
+    // Forme RÉELLE d'un test de lecteur de frontmatter : la ligne YAML ATTENDUE, citée entre quotes
+    // (`scripts/guards/budget-contexte.test.mjs:63`) — hors de tout bloc `---`, donc jamais masquée.
+    const ligneYamlCitee = "assert.equal(ligneDeDescription(doc), 'description: d');";
     const mord = (src: string) => new RegExp(FORMES[2].motif.source, 'g').test(masquerFrontmatter(src));
     expect(mord(fixtureDeFiche), 'un en-tête de fiche est lu comme un document de scène').toBe(false);
+    expect(mord(ligneYamlCitee), 'une ligne YAML CITÉE est lue comme un document de scène').toBe(false);
     expect(mord(documentDeScene), 'un `description:` HORS frontmatter doit rester attrapé').toBe(true);
     // Le masque ne DÉCALE aucune ligne : la garde cite des `fichier:ligne`.
     expect(masquerFrontmatter(fixtureDeFiche).split('\n')).toHaveLength(fixtureDeFiche.split('\n').length);
