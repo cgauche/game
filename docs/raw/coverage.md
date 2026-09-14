@@ -24,46 +24,46 @@
 | 04 | Cités et villes | ✅ | 7 (creation.md ×7) |
 | 05 | Points de vue | ✅ | 90 (creation.md ×52) |
 | 06 | *(artefact OCR)* | ➖ | |
-| 07 | Carrières | ✅ | 83 (avancement.md ×61) |
+| 07 | Carrieres | ✅ | 83 (avancement.md ×61) |
 | 08 | Statut | ✅ | 26 (carrieres.md ×22) |
-| 09 | Compétences | ✅ | 146 (competences.md ×137) |
+| 09 | Competences | ✅ | 146 (competences.md ×137) |
 | 10 | Talents | ✅ | 200 (talents.md ×138) |
 | 11 | Sixième sens | ✅ | 31 (talents.md ×30) |
 | 12 | Tests | ✅ | 50 (tests.md ×45) |
 | 13 | Combat | ✅ | 132 (combat.md ×122) |
 | 14 | OPTION : FRAPPE MORTELLE | ✅ | 141 (combat.md ×136) |
-| 15 | Déplacement | ✅ | 70 (combat.md ×62) |
-| 16 | États | ✅ | 56 (etats.md ×31) |
-| 17 | Destin et Résistance | ✅ | 52 (destin.md ×31) |
+| 15 | Deplacement | ✅ | 70 (combat.md ×62) |
+| 16 | Etats | ✅ | 56 (etats.md ×31) |
+| 17 | Destin et Resistance | ✅ | 52 (destin.md ×31) |
 | 18 | Traumatisme | ✅ | 103 (traumatisme.md ×68) |
 | 19 | Corruption | ✅ | 35 (corruption.md ×29) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
 | 21 | Psychologie | ✅ | 53 (psychologie.md ×29) |
-| 22 | Événements | ✅ | 4 (activites.md ×4) |
-| 23 | Activités | ✅ | 41 (activites.md ×36) |
+| 22 | Evenements | ✅ | 4 (activites.md ×4) |
+| 23 | Activites | ✅ | 41 (activites.md ×36) |
 | 24 | Les dieux | 📖 | catalogue (catalogue-*.md) |
 | 25 | Les cultes | ✅ | 3 (religion.md ×3) |
 | 26 | Le culte de Manaan, dieu de la mer | 📖 | catalogue (catalogue-*.md) |
 | 27 | Le culte de Morr, Dieu de la Mort | 📖 | catalogue (catalogue-*.md) |
-| 28 | Le culte de Myrmidia, déesse de la Stratégie | 📖 | catalogue (catalogue-*.md) |
+| 28 | Le culte de Myrmidia, deesse de la Strategie | 📖 | catalogue (catalogue-*.md) |
 | 29 | Le culte de Ranald, Dieu de la ruse | 📖 | catalogue (catalogue-*.md) |
-| 30 | Le culte de Rhya, déesse de la Fertilité | 📖 | catalogue (catalogue-*.md) |
-| 31 | Le culte de Shallya, déesse de la Miséricorde | 📖 | catalogue (catalogue-*.md) |
-| 32 | Le culte de Sigmar, dieu de l’Empire | 📖 | catalogue (catalogue-*.md) |
+| 30 | Le culte de Rhya, deesse de la Fertilite | 📖 | catalogue (catalogue-*.md) |
+| 31 | Le culte de Shallya, deesse de la Misericorde | 📖 | catalogue (catalogue-*.md) |
+| 32 | Le culte de Sigmar, dieu de l'Empire | 📖 | catalogue (catalogue-*.md) |
 | 33 | Le culte de Taal, dieu de la Nature | 📖 | catalogue (catalogue-*.md) |
-| 34 | Le culte d’Ulric, dieu de la Guerre | 📖 | catalogue (catalogue-*.md) |
-| 35 | Le culte de Verena, déesse de la sagesse | 📖 | catalogue (catalogue-*.md) |
-| 36 | Les dieux ancêtres nains | 📖 | catalogue (catalogue-*.md) |
+| 34 | Le culte d'Ulric, dieu de la Guerre | 📖 | catalogue (catalogue-*.md) |
+| 35 | Le culte de Verena, deesse de la sagesse | 📖 | catalogue (catalogue-*.md) |
+| 36 | Les dieux ancetres nains | 📖 | catalogue (catalogue-*.md) |
 | 37 | Les dieux elfes | 📖 | catalogue (catalogue-*.md) |
 | 38 | Les dieux halflings | 📖 | catalogue (catalogue-*.md) |
 | 39 | Les dieux du Chaos | 📖 | catalogue (catalogue-*.md) |
-| 40 | Les prières | ✅ | 48 (religion.md ×24) |
-| 41 | Bénédictions | ✅ | 12 (religion.md ×7) |
+| 40 | Les prieres | ✅ | 48 (religion.md ×24) |
+| 41 | Benedictions | ✅ | 12 (religion.md ×7) |
 | 42 | Miracles | 📖 | 4 (magie.md ×2) |
 | 43 | Miracles de Rhya | 📖 | catalogue (catalogue-*.md) |
-| 44 | L’Aethyr | ✅ | 10 (magie.md ×10) |
+| 44 | L'Aethyr | ✅ | 10 (magie.md ×10) |
 | 45 | • MAGIE • | ➖ hors-règle | |
-| 46 | Les règles magiques | ✅ | 91 (magie.md ×51) |
+| 46 | Les regles magiques | ✅ | 91 (magie.md ×51) |
 | 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
 | 48 | Magie des Couleurs | ✅ | 18 (magie.md ×18) |
 | 49 | Sorcellerie | ✅ | 4 (magie.md ×3) |
@@ -76,33 +76,33 @@
 | 56 | Sites anciens et ruines terrifiantes | ➖ hors-règle | |
 | 57 | La monnaie | 📖 | 1 (economie.md ×1) |
 | 58 | •GUIDE DE L'ÉQUIPEMENT • | ➖ hors-règle | |
-| 59 | Faire son marché | ✅ | 19 (economie.md ×19) |
+| 59 | Faire son marche | ✅ | 19 (economie.md ×19) |
 | 60 | Fabrication | ✅ | 16 (economie.md ×13) |
 | 61 | Encombrement | ✅ | 40 (equipement.md ×18) |
 | 62 | Les armes | ✅ | 118 (combat.md ×111) |
 | 63 | Armures | ✅ | 28 (combat.md ×27) |
 | 64 | Sacs et contenants | 📖 | catalogue (catalogue-*.md) |
-| 65 | Vêtements et accessoires | 📖 | 1 (traumatisme.md ×1) |
-| 66 | Nourriture, boisson et hébergement | 📖 | catalogue (catalogue-*.md) |
-| 67 | Outils et nécessaires | ✅ | 5 (equipement.md ×5) |
+| 65 | Vetements et accessoires | 📖 | 1 (traumatisme.md ×1) |
+| 66 | Nourriture, boisson et hebergement | 📖 | catalogue (catalogue-*.md) |
+| 67 | Outils et necessaires | ✅ | 5 (equipement.md ×5) |
 | 68 | Livres et documents | 📖 | catalogue (catalogue-*.md) |
 | 69 | Outils professionnels et Ateliers | 📖 | catalogue (catalogue-*.md) |
-| 70 | Animaux et véhicules | 📖 | 1 (deplacement.md ×1) |
+| 70 | Animaux et vehicules | 📖 | 1 (deplacement.md ×1) |
 | 71 | Drogues et poisons | 📖 | 2 (equipement.md ×2) |
 | 72 | Herbes et potions | ✅ | 8 (equipement.md ×8) |
-| 73 | Prothèses | ✅ | 5 (equipement.md ×5) |
+| 73 | Protheses | ✅ | 5 (equipement.md ×5) |
 | 74 | Possessions diverses | ✅ | 13 (equipement.md ×12) |
 | 75 | Mercenaires | 📖 | catalogue (catalogue-*.md) |
-| 76 | Point d’Impact des Créatures | ✅ | 53 (combat.md ×29) |
+| 76 | Point d'Impact des Creatures | ✅ | 53 (combat.md ×29) |
 | 77 | Les populations du Reikland | ✅ | 9 (combat.md ×5) |
-| 78 | Les Bêtes du Reikland | 📖 | catalogue (catalogue-*.md) |
-| 79 | Les bêtes monstrueuses du Reikland | 📖 | catalogue (catalogue-*.md) |
+| 78 | Les Betes du Reikland | 📖 | catalogue (catalogue-*.md) |
+| 79 | Les betes monstrueuses du Reikland | 📖 | catalogue (catalogue-*.md) |
 | 80 | Les hordes de peaux-vertes | 📖 | catalogue (catalogue-*.md) |
 | 81 | Vouivre | ⬜ |  |
 | 82 | Les morts sans repos | 📖 | catalogue (catalogue-*.md) |
-| 83 | Esclaves des Ténèbres | 📖 | catalogue (catalogue-*.md) |
+| 83 | Esclaves des Tenebres | 📖 | catalogue (catalogue-*.md) |
 | 84 | Guerrier du Chaos | 📖 | catalogue (catalogue-*.md) |
-| 85 | Traits de créature | ✅ | 299 (combat.md ×205) |
+| 85 | Traits de creature | ✅ | 299 (combat.md ×205) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
@@ -149,17 +149,17 @@
   - 📖 l.3834-3843 « Doyen – Argent 2 » — transcrit en catalogue, jamais traité, 0 réf
 - **LDB 11** (_3znysh7) :
   - 🔻 enfoui l.207-241 « RÈGLES » — titre orné rétrogradé par l'extraction, 13 réf
-- **LDB 15** (Déplacement) :
+- **LDB 15** (Deplacement) :
   - ⬜ l.113-120 « OPTION : COMPLICATIONS DE POURSUITE » — candidat trou de règle, 0 réf
 - **LDB 21** (Psychologie) :
   - 🔻 enfoui l.98-111 « ENTRE DEUX AVENTURES » — titre orné rétrogradé par l'extraction, 2 réf
-- **LDB 23** (Activités) :
+- **LDB 23** (Activites) :
   - 🔻 enfoui l.251-256 « RELIGIONS ET CROYANCES » — titre orné rétrogradé par l'extraction, 0 réf
 - **LDB 24** (Les dieux) :
   - 📖 l.23-56 « Les dieux provinciaux » — transcrit en catalogue, jamais traité, 0 réf
 - **LDB 38** (Les dieux halflings) :
   - 📖 l.36-44 « PRINCIPAUX DIEUX HALFLINGS » — transcrit en catalogue, jamais traité, 0 réf
-- **LDB 41** (Bénédictions) :
+- **LDB 41** (Benedictions) :
   - 📖 l.192-218 « Bénédiction de Vigueur » — transcrit en catalogue, jamais traité, 0 réf
 - **LDB 42** (Miracles) :
   - 📖 l.17-95 « Encalminé » — transcrit en catalogue, jamais traité, 0 réf
@@ -183,13 +183,13 @@
   - 📖 l.226-254 « Hurlement du loup » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.255-290 « Peau de loup d'hiver » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.291-316 « La Vérité éclatera » — transcrit en catalogue, jamais traité, 0 réf
-- **LDB 44** (L’Aethyr) :
+- **LDB 44** (L'Aethyr) :
   - ⬜ l.42-50 « Domaine des Cieux » — candidat trou de règle, 0 réf
   - ⬜ l.51-58 « Domaine du Feu » — candidat trou de règle, 0 réf
   - ⬜ l.59-75 « Domaine de la Lumière » — candidat trou de règle, 0 réf
   - ⬜ l.76-83 « Domaine de la Mort » — candidat trou de règle, 0 réf
   - ⬜ l.84-91 « Domaine des Ombres » — candidat trou de règle, 0 réf
-- **LDB 46** (Les règles magiques) :
+- **LDB 46** (Les regles magiques) :
   - ⬜ l.179-191 « OPTION : VENTS TOURBILLONNANTS » — candidat trou de règle, 0 réf
 - **LDB 47** (Listes des sorts) :
   - 📖 l.63-88 « Bruits » — transcrit en catalogue, jamais traité, 0 réf
@@ -241,8 +241,8 @@
 | 00 | Index | ➖ hors-règle | |
 | 01 | LES GRANDES PROVINCES | ➖ hors-règle | |
 | 02 | CLANS HALFLING DU REIKLAND | ➖ hors-règle | |
-| 03 | GUIDE DU GRAND COMTÉ DU MOOTLAND | ➖ hors-règle | |
-| 04 | Les nains impériaux | ➖ hors-règle | |
+| 03 | GUIDE DU GRAND COMTE DU MOOTLAND | ➖ hors-règle | |
+| 04 | Les nains imperiaux | ➖ hors-règle | |
 | 05 | Guide de Karak Azgaraz | ➖ hors-règle | |
 | 06 | Guide de la Laurelorn | ➖ hors-règle | |
 | 07 | Annexe I | 📖 | 3 (competences.md ×2) |
@@ -267,10 +267,10 @@
 | 02 | Les ogres | ✅ | 51 (combat.md ×43) |
 | 03 | Des signes dans le ciel | 📖 | catalogue (catalogue-*.md) |
 | 04 | Un peu de magie | ✅ | 28 (combat.md ×24) |
-| 05 | L’hospice | ➖ hors-règle | |
+| 05 | L'hospice | ➖ hors-règle | |
 | 06 | Le personnel | ➖ hors-règle | |
 | 07 | Les patients | ➖ hors-règle | |
-| 08 | Le théâtre de la guerre | ✅ | 70 (combat.md ×69) |
+| 08 | Le theatre de la guerre | ✅ | 70 (combat.md ×69) |
 | 09 | Annexe I | 📖 | 1 (activites.md ×1) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H2) :
@@ -366,23 +366,23 @@
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | CRÉDITS | 📖 | 1 (combat.md ×1) |
+| 01 | CREDITS | 📖 | 1 (combat.md ×1) |
 | 02 | INTRODUCTION | 📖 | 2 (competences.md ×2) |
 | 03 | LES CHEVALIERS DE L'EMPIRE | ✅ | 3 (competences.md ×3) |
 | 04 | LES CHIENS DE GUERRE | 📖 | catalogue (catalogue-*.md) |
-| 05 | LA TILÉE ET LES PERSONNAGES TILÉENS | 📖 | 1 (competences.md ×1) |
+| 05 | LA TILEE ET LES PERSONNAGES TILEENS | 📖 | 1 (competences.md ×1) |
 | 06 | LE CULTE DE MYRMIDIA | ✅ | 25 (combat.md ×24) |
-| 07 | MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE | ✅ | 46 (combat.md ×41) |
-| 08 | LA RÉSERVE DE L'INTENDANT | ✅ | 101 (combat.md ×100) |
-| 09 | LE COMBAT MONTÉ | ✅ | 24 (combat.md ×23) |
-| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 97 (combat.md ×92) |
+| 07 | MISES A JOUR DE L'ETAT HEMORRAGIQUE | ✅ | 46 (combat.md ×41) |
+| 08 | LA RESERVE DE L'INTENDANT | ✅ | 101 (combat.md ×100) |
+| 09 | LE COMBAT MONTE | ✅ | 24 (combat.md ×23) |
+| 10 | L'ARTILLERIE ET LES DEGATS INFLIGES AUX STRUCTURES | ✅ | 97 (combat.md ×92) |
 | 11 | ANNEXE I AVANTAGES DE GROUPE | ✅ | 12 (combat.md ×12) |
-| 12 | ANNEXE II ACTIVITÉS DE GUERRIER | ✅ | 21 (combat.md ×20) |
-| 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR | ✅ | 17 (combat.md ×17) |
+| 12 | ANNEXE II ACTIVITES DE GUERRIER | ✅ | 21 (combat.md ×20) |
+| 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS A JOUR | ✅ | 17 (combat.md ×17) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H2) :
 
-- **AA 01** (CRÉDITS) :
+- **AA 01** (CREDITS) :
   - 📖 l.34-65 « SOMMAIRE » — transcrit en catalogue, jamais traité, 0 réf
 - **AA 02** (INTRODUCTION) :
   - 🔻 enfoui l.26-666 « DES SOLDATS EN TOUT GENRE » — titre orné rétrogradé par l'extraction, 2 réf
@@ -411,7 +411,7 @@
   - 📖 l.186-254 « Évolution de Carrière » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.255-268 « SPÉCIALISTE DE SIÈGE » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.269-338 « Évolution de Carrière » — transcrit en catalogue, jamais traité, 0 réf
-- **AA 05** (LA TILÉE ET LES PERSONNAGES TILÉENS) :
+- **AA 05** (LA TILEE ET LES PERSONNAGES TILEENS) :
   - 📖 l.5-29 « LA TILÉE, SES TERRES ET SON PEUPLE » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.30-93 « INDEX GÉOGRAPHIQUE DE TILÉE » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.94-103 « TABLEAU DES PRIX DE BASE » — transcrit en catalogue, jamais traité, 0 réf
@@ -452,20 +452,20 @@
   - 📖 l.352-372 « Les zélotes de Myrmidia » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.373-399 « Les temples » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.400-431 « Les reliques sacrées » — transcrit en catalogue, jamais traité, 0 réf
-- **AA 07** (MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE) :
+- **AA 07** (MISES A JOUR DE L'ETAT HEMORRAGIQUE) :
   - 📖 l.13-16 « BLESSURES, BLESSURES CRITIQUES ET MORT » — transcrit en catalogue, jamais traité, 0 réf
-- **AA 08** (LA RÉSERVE DE L'INTENDANT) :
+- **AA 08** (LA RESERVE DE L'INTENDANT) :
   - 📖 l.63-66 « OPTIONS D'ARME » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.392-401 « LES ARMES À POUDRE À CANON » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.402-407 « Les modèles affinés » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.408-413 « Les innovations ultérieures » — transcrit en catalogue, jamais traité, 0 réf
-- **AA 09** (LE COMBAT MONTÉ) :
+- **AA 09** (LE COMBAT MONTE) :
   - 🔻 enfoui l.191-502 « LES INTÉRIMAIRES DE L'AVENTURE » — titre orné rétrogradé par l'extraction, 1 réf
   - 📖 l.108-111 « MA PROVINCE POUR UN CHEVAL ! » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.138-141 « LES MONTURES EXOTIQUES » — transcrit en catalogue, jamais traité, 0 réf
-- **AA 10** (L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES) :
+- **AA 10** (L'ARTILLERIE ET LES DEGATS INFLIGES AUX STRUCTURES) :
   - 🔻 enfoui l.280-435 « LA POURSUITE DE L'EXCELLENCE » — titre orné rétrogradé par l'extraction, 21 réf
-- **AA 13** (ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR) :
+- **AA 13** (ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS A JOUR) :
   - 📖 l.101-344 « INDEX » — transcrit en catalogue, jamais traité, 0 réf
 
 ## ZI — ✅ 4 · 📖 10 · 🟡 0 · ⬜ 0
@@ -473,24 +473,24 @@
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | TROIS EXPÉDITIONS | ✅ | 3 (combat.md ×3) |
+| 01 | TROIS EXPEDITIONS | ✅ | 3 (combat.md ×3) |
 | 02 | Griffon | ✅ | 8 (combat.md ×5) |
 | 03 | Dragon | 📖 | catalogue (catalogue-*.md) |
-| 04 | « L'abominable » Halagrundsor | 📖 | 1 (etats.md ×1) |
+| 04 | L'abominable Halagrundsor | 📖 | 1 (etats.md ×1) |
 | 05 | Amibe | 📖 | 1 (etats.md ×1) |
 | 06 | Cockatrice | 📖 | catalogue (catalogue-*.md) |
-| 07 | Chimère | 📖 | catalogue (catalogue-*.md) |
+| 07 | Chimere | 📖 | catalogue (catalogue-*.md) |
 | 08 | Grand taurus | 📖 | catalogue (catalogue-*.md) |
-| 09 | Trégara | 📖 | catalogue (catalogue-*.md) |
-| 10 | Macareux à bec tranchant | 📖 | catalogue (catalogue-*.md) |
+| 09 | Tregara | 📖 | catalogue (catalogue-*.md) |
+| 10 | Macareux a bec tranchant | 📖 | catalogue (catalogue-*.md) |
 | 11 | Chat sauvage | 📖 | catalogue (catalogue-*.md) |
 | 12 | Il Potente Granchio | 📖 | catalogue (catalogue-*.md) |
-| 13 | Sirène | ✅ | 5 (etats.md ×3) |
-| 14 | Expéditions prévues | ✅ | 26 (combat.md ×22) |
+| 13 | Sirene | ✅ | 5 (etats.md ×3) |
+| 14 | Expeditions prevues | ✅ | 26 (combat.md ×22) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
-- **ZI 01** (TROIS EXPÉDITIONS) :
+- **ZI 01** (TROIS EXPEDITIONS) :
   - 📖 l.3-31 « TROIS EXPÉDITIONS » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.198-253 « Loup géant » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.254-296 « Razorgor » — transcrit en catalogue, jamais traité, 0 réf
@@ -501,7 +501,7 @@
 - **ZI 03** (Dragon) :
   - 📖 l.3-58 « Dragon » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.59-95 « Vouivre » — transcrit en catalogue, jamais traité, 0 réf
-- **ZI 04** (« L'abominable » Halagrundsor) :
+- **ZI 04** (L'abominable Halagrundsor) :
   - 📖 l.3-52 « « L'abominable » Halagrundsor » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.53-87 « Brochet du Stir » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.131-235 « Le premier incident Le griffon et les hommes-rats » — transcrit en catalogue, jamais traité, 0 réf
@@ -516,21 +516,21 @@
   - 📖 l.315-404 « Preyton » — transcrit en catalogue, jamais traité, 0 réf
 - **ZI 06** (Cockatrice) :
   - 📖 l.3-39 « Cockatrice » — transcrit en catalogue, jamais traité, 0 réf
-- **ZI 07** (Chimère) :
+- **ZI 07** (Chimere) :
   - 📖 l.3-64 « Chimère » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.65-153 « Le second incident Ce qui se passe à Wheburg » — transcrit en catalogue, jamais traité, 0 réf
 - **ZI 08** (Grand taurus) :
   - 📖 l.3-39 « Grand taurus » — transcrit en catalogue, jamais traité, 0 réf
-- **ZI 09** (Trégara) :
+- **ZI 09** (Tregara) :
   - 📖 l.3-34 « Trégara » — transcrit en catalogue, jamais traité, 0 réf
-- **ZI 10** (Macareux à bec tranchant) :
+- **ZI 10** (Macareux a bec tranchant) :
   - 📖 l.3-33 « Macareux à bec tranchant » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.34-96 « Créatures fantastiques des Terres du Sud » — transcrit en catalogue, jamais traité, 0 réf
 - **ZI 11** (Chat sauvage) :
   - 📖 l.3-57 « Chat sauvage » — transcrit en catalogue, jamais traité, 0 réf
 - **ZI 12** (Il Potente Granchio) :
   - 📖 l.3-51 « Il Potente Granchio » — transcrit en catalogue, jamais traité, 0 réf
-- **ZI 13** (Sirène) :
+- **ZI 13** (Sirene) :
   - 📖 l.35-68 « Wyrm des mers » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.69-136 « Dragon barbelé » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.251-275 « Précieuses entrailles » — transcrit en catalogue, jamais traité, 0 réf
@@ -545,7 +545,7 @@
   - 📖 l.753-758 « Armes et armures » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.862-871 « Objets magiques » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.872-974 « Armes » — transcrit en catalogue, jamais traité, 0 réf
-- **ZI 14** (Expéditions prévues) :
+- **ZI 14** (Expeditions prevues) :
   - 📖 l.3-218 « Expéditions prévues » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.219-385 « JORUNN GROMSDOTTIR » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.386-699 « LYNATHRYN CHANTENUIT » — transcrit en catalogue, jamais traité, 0 réf
@@ -559,9 +559,9 @@
 | 00 | Index | ➖ hors-règle | |
 | 01 | MIDDENHEIM | ➖ hors-règle | |
 | 02 | Guide du visiteur | ➖ hors-règle | |
-| 03 | Au-delà des murs | ➖ hors-règle | |
+| 03 | Au-dela des murs | ➖ hors-règle | |
 | 04 | Bestiaire | 📖 | catalogue (catalogue-*.md) |
-| 05 | Le Grand-Duché | ➖ hors-règle | |
+| 05 | Le Grand-Duche | ➖ hors-règle | |
 | 06 | Les Petits Rois | ➖ hors-règle | |
 | 07 | Cultes du Chaos de Middenheim | 📖 | catalogue (catalogue-*.md) |
 | 08 | ANNEXE I | 📖 | catalogue (catalogue-*.md) |
@@ -668,20 +668,20 @@
 | 00 | Index | ➖ hors-règle | |
 | 01 | Chapitre 1 - On recherche - aventuriers courageux | ➖ hors-règle | |
 | 02 | Chapitre 2 - Erreur sur la personne | ➖ hors-règle | |
-| 03 | Chapitre 3 - Le cœur de l’Empire | ➖ hors-règle | |
-| 04 | Chapitre 4 - Sur la route de Bögenhafen… | ➖ hors-règle | |
-| 05 | Chapitre 5 - Le faux héritage | ➖ hors-règle | |
+| 03 | Chapitre 3 - Le coeur de l'Empire | ➖ hors-règle | |
+| 04 | Chapitre 4 - Sur la route de Bogenhafen... | ➖ hors-règle | |
+| 05 | Chapitre 5 - Le faux heritage | ➖ hors-règle | |
 | 06 | Chapitre 6 - La Schaffenfest | ➖ hors-règle | |
-| 07 | Chapitre 7 - Dans les ténèbres | ✅ | 3 (combat.md ×3) |
+| 07 | Chapitre 7 - Dans les tenebres | ✅ | 3 (combat.md ×3) |
 | 08 | Chapitre 8 - Chasser les ombres | ➖ hors-règle | |
-| 09 | Chapitre 9 - L’heure fatidique | ✅ | 3 (combat.md ×3) |
-| 10 | APPENDICE 1 - Un guide de Bögenhafen | ➖ hors-règle | |
-| 11 | APPENDICE 2 - Nouvelles règles | ✅ | 19 (combat.md ×19) |
+| 09 | Chapitre 9 - L'heure fatidique | ✅ | 3 (combat.md ×3) |
+| 10 | APPENDICE 1 - Un guide de Bogenhafen | ➖ hors-règle | |
+| 11 | APPENDICE 2 - Nouvelles regles | ✅ | 19 (combat.md ×19) |
 | 12 | Annexe 3 - Documents et aides de jeux | ➖ hors-règle | |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H2) :
 
-- **EDO 07** (Chapitre 7 - Dans les ténèbres) :
+- **EDO 07** (Chapitre 7 - Dans les tenebres) :
   - ⬜ l.9-14 « ENTRER DANS LES ÉGOUTS » — bruit de scénario, 0 réf
   - ⬜ l.15-20 « PENDANT CE TEMPS-LÀ, AILLEURS… » — bruit de scénario, 0 réf
   - ⬜ l.21-30 « S'AVENTURER DANS LES ÉGOUTS » — bruit de scénario, 0 réf
@@ -704,7 +704,7 @@
   - ⬜ l.292-293 « CONCLUSION » — bruit de scénario, 0 réf
   - ⬜ l.294-306 « Récompenses » — bruit de scénario, 0 réf
   - ⬜ l.307-308 « PNJ » — bruit de scénario, 0 réf
-- **EDO 09** (Chapitre 9 - L’heure fatidique) :
+- **EDO 09** (Chapitre 9 - L'heure fatidique) :
   - ⬜ l.7-12 « DÉCLENCHER LE RITUEL » — bruit de scénario, 0 réf
   - ⬜ l.13-28 « Une visite inattendue » — bruit de scénario, 0 réf
   - ⬜ l.29-59 « LE MESSAGE » — bruit de scénario, 0 réf
@@ -739,7 +739,7 @@
   - ⬜ l.415-416 « PNJ » — bruit de scénario, 0 réf
   - ⬜ l.417-467 « L'Entrepôt 17 » — bruit de scénario, 0 réf
   - ⬜ l.574-750 « CHRONOLOGIE DE BÖGENHAFEN » — bruit de scénario, 0 réf
-- **EDO 11** (APPENDICE 2 - Nouvelles règles) :
+- **EDO 11** (APPENDICE 2 - Nouvelles regles) :
   - 📖 l.7-16 « PNJ » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.17-22 « Créez le vôtre » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.23-47 « Doktor Langstrasse » — transcrit en catalogue, jamais traité, 0 réf
@@ -755,21 +755,21 @@
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | INTRODUCTION | ➖ hors-règle | |
-| 02 | Commentaires des invités | ➖ hors-règle | |
-| 03 | CHAPITRE 1 - « Easter eggs » | ➖ hors-règle | |
+| 02 | Commentaires des invites | ➖ hors-règle | |
+| 03 | CHAPITRE 1 - Easter eggs | ➖ hors-règle | |
 | 04 | ORGANISATIONS ET LIEUX | ➖ hors-règle | |
-| 05 | CHAPITRE 2 - L’Empire | ➖ hors-règle | |
+| 05 | CHAPITRE 2 - L'Empire | ➖ hors-règle | |
 | 06 | Chapitre 3 - Les routes et grandes routes | 🟡 | 1 (deplacement.md ×1) |
-| 07 | Chapitre 4 - Montures et véhicules | ✅ | 19 (deplacement.md ×19) |
+| 07 | Chapitre 4 - Montures et vehicules | ✅ | 19 (deplacement.md ×19) |
 | 08 | CHAPITRE 5 - Voyager | ✅ | 16 (deplacement.md ×7) |
 | 09 | OÙ EST MON TABLEAU DE RENCONTRES ALÉATOIRES ? | ➖ hors-règle | |
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |
-| 11 | CHAPITRE 7 - Toutes les routes mènent à Bögenhafen | ➖ hors-règle | |
-| 12 | CHAPITRE 8 - Les mutants dans l’Empire | ✅ | 3 (corruption.md ×3) |
+| 11 | CHAPITRE 7 - Toutes les routes menent a Bogenhafen | ➖ hors-règle | |
+| 12 | CHAPITRE 8 - Les mutants dans l'Empire | ✅ | 3 (corruption.md ×3) |
 | 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ✅ | 6 (talents.md ×6) |
 | 14 | CHAPITRE 10 - Sur la route | ➖ hors-règle | |
-| 15 | CHAPITRE 11 - L’Affaire du joyau caché - Un mélodrame à l’intrigue complexe | ➖ hors-règle | |
-| 16 | CHAPITRE 12 - LE CARNAVAL DU PANDÉMONIUM | ➖ hors-règle | |
+| 15 | CHAPITRE 11 - L'Affaire du joyau cache - Un melodrame a l'intrigue complexe | ➖ hors-règle | |
+| 16 | CHAPITRE 12 - LE CARNAVAL DU PANDEMONIUM | ➖ hors-règle | |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
@@ -783,7 +783,7 @@
   - ⬜ l.53-62 « Les Lignes Rochet » — candidat trou de règle, 0 réf
   - ⬜ l.63-68 « Auberges relais » — candidat trou de règle, 0 réf
   - ⬜ l.69-74 « ACCROCHE D'AVENTURE UN CARROSSE TROP LOIN » — candidat trou de règle, 0 réf
-- **EDOC 07** (Chapitre 4 - Montures et véhicules) :
+- **EDOC 07** (Chapitre 4 - Montures et vehicules) :
   - 📖 l.3-6 « CHAPITRE 4 : MONTURES ET VÉHICULES » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.7-94 « ANIMAUX DE TRAIT ET MONTURES » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.132-137 « CONDUIRE ET CHEVAUCHER » — transcrit en catalogue, jamais traité, 0 réf
@@ -809,7 +809,7 @@
   - ⬜ l.186-200 « RENCONTRES POSITIVES » — candidat trou de règle, 0 réf
   - ⬜ l.201-218 « RENCONTRES FORTUITES » — candidat trou de règle, 0 réf
   - ⬜ l.219-234 « RENCONTRES DANGEREUSES » — candidat trou de règle, 0 réf
-- **EDOC 12** (CHAPITRE 8 - Les mutants dans l’Empire) :
+- **EDOC 12** (CHAPITRE 8 - Les mutants dans l'Empire) :
   - 📖 l.3-18 « CHAPITRE 8 : » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.19-22 « SOCIÉTÉ MUTANTE » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.23-32 « Mutants secrets » — transcrit en catalogue, jamais traité, 0 réf
@@ -853,21 +853,21 @@
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | PRÉFACE - Un peu d’histoire | ➖ hors-règle | |
+| 01 | PREFACE - Un peu d'histoire | ➖ hors-règle | |
 | 02 | INTRODUCTION | ➖ hors-règle | |
-| 03 | CHAPITRE 1 - De Bögenhafen à Altdorf | ➖ hors-règle | |
-| 04 | CHAPITRE 2 - D’Altdorf à Kemperbad | ➖ hors-règle | |
-| 05 | CHAPITRE 3 - De Kemperbad aux Crêtes noires | ➖ hors-règle | |
-| 06 | CHAPITRE 4 - De Grissenwald aux Collines stériles | ➖ hors-règle | |
-| 07 | CHAPITRE 5 - D’Unterbaum à Wittgendorf | ➖ hors-règle | |
+| 03 | CHAPITRE 1 - De Bogenhafen a Altdorf | ➖ hors-règle | |
+| 04 | CHAPITRE 2 - D'Altdorf a Kemperbad | ➖ hors-règle | |
+| 05 | CHAPITRE 3 - De Kemperbad aux Cretes noires | ➖ hors-règle | |
+| 06 | CHAPITRE 4 - De Grissenwald aux Collines steriles | ➖ hors-règle | |
+| 07 | CHAPITRE 5 - D'Unterbaum a Wittgendorf | ➖ hors-règle | |
 | 08 | CHAPITRE 6 - Wittgendorf | ➖ hors-règle | |
-| 09 | CHAPITRE 7 - Château von Wittgenstein | ➖ hors-règle | |
+| 09 | CHAPITRE 7 - Chateau von Wittgenstein | ➖ hors-règle | |
 | 10 | CHAPITRE 8 - Une halte en chemin | ➖ hors-règle | |
-| 11 | APPENDICE I - L’entraînement et les mentors | 📖 | catalogue (catalogue-*.md) |
+| 11 | APPENDICE I - L'entrainement et les mentors | 📖 | catalogue (catalogue-*.md) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
-- **MSR 11** (APPENDICE I - L’entraînement et les mentors) :
+- **MSR 11** (APPENDICE I - L'entrainement et les mentors) :
   - 📖 l.7-25 « Josef Quartjin » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.26-101 « LE SORCIER » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.102-140 « LE MÉDECIN » — transcrit en catalogue, jamais traité, 0 réf
@@ -879,24 +879,24 @@
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | PRÉFACE - UN PEU D’HISTOIRE | ➖ hors-règle | |
+| 01 | PREFACE - UN PEU D'HISTOIRE | ➖ hors-règle | |
 | 02 | Commentaires des Auteurs | ➖ hors-règle | |
-| 03 | CHAPITRE 1 - « EASTER EGGS » | ➖ hors-règle | |
+| 03 | CHAPITRE 1 - EASTER EGGS | ➖ hors-règle | |
 | 04 | CHAPITRE 2 - Les herbes et leurs usages | ✅ | 4 (maladies.md ×4) |
-| 05 | CHAPITRE 3 - Scènes coupées | ➖ hors-règle | |
-| 06 | CHAPITRE 4 - Les fleuves de l’Empire | ➖ hors-règle | |
+| 05 | CHAPITRE 3 - Scenes coupees | ➖ hors-règle | |
+| 06 | CHAPITRE 4 - Les fleuves de l'Empire | ➖ hors-règle | |
 | 07 | CHAPITRE 5 - Navigation fluviale | 📖 | catalogue (catalogue-*.md) |
-| 08 | CHAPITRE 6 - La Patrouille fluviale impériale | ➖ hors-règle | |
+| 08 | CHAPITRE 6 - La Patrouille fluviale imperiale | ➖ hors-règle | |
 | 09 | CHAPITRE 7 - Compagnons de voyage | 📖 | catalogue (catalogue-*.md) |
 | 10 | CHAPITRE 8 - LES RIVERAINS | ➖ hors-règle | |
-| 11 | CHAPITRE 9 - Le service des tours impériales à signaux | ➖ hors-règle | |
+| 11 | CHAPITRE 9 - Le service des tours imperiales a signaux | ➖ hors-règle | |
 | 12 | CHAPITRE 10 - Personnalisation | 🟡 | 2 (combat.md ×2) |
-| 13 | CHAPITRE 11 - Règles du commerce | 📖 | catalogue (catalogue-*.md) |
+| 13 | CHAPITRE 11 - Regles du commerce | 📖 | catalogue (catalogue-*.md) |
 | 14 | CHAPITRE 12 - Naufrageurs, contrebandiers et pirates | 📖 | catalogue (catalogue-*.md) |
 | 15 | CHAPITRE 13 - Bestiaire fluvial | ✅ | 14 (combat.md ×14) |
-| 16 | CHAPITRE 14 - Maladies transmises par l’eau | ✅ | 16 (maladies.md ×16) |
+| 16 | CHAPITRE 14 - Maladies transmises par l'eau | ✅ | 16 (maladies.md ×16) |
 | 17 | CHAPITRE 15 - La Couronne Rouge Guide du Meneur de Jeu | ➖ hors-règle | |
-| 18 | CHAPITRE 16 - L’Empereur Luitpold | ➖ hors-règle | |
+| 18 | CHAPITRE 16 - L'Empereur Luitpold | ➖ hors-règle | |
 | 19 | CHAPITRE 17 - La vengeance du Roi des tombes | ➖ hors-règle | |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
@@ -977,7 +977,7 @@
   - ⬜ l.237-238 « PROPULSION » — candidat trou de règle, 0 réf
   - ⬜ l.239-246 « Magique » — candidat trou de règle, 0 réf
   - ⬜ l.247-268 « Vapeur » — candidat trou de règle, 0 réf
-- **MSRC 13** (CHAPITRE 11 - Règles du commerce) :
+- **MSRC 13** (CHAPITRE 11 - Regles du commerce) :
   - 📖 l.3-10 « CHAPITRE 11 RÈGLES DU COMMERCE » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.11-14 « LA VIE DE MARCHAND » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.15-21 « ACHAT » — transcrit en catalogue, jamais traité, 0 réf
@@ -1030,15 +1030,15 @@
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | En route vers Middenheim | ➖ hors-règle | |
 | 04 | Middenheim | ➖ hors-règle | |
-| 05 | LE PLAN MACHIAVÉLIQUE | ➖ hors-règle | |
-| 06 | Enquêtes préliminaires | ➖ hors-règle | |
+| 05 | LE PLAN MACHIAVELIQUE | ➖ hors-règle | |
+| 06 | Enquetes preliminaires | ➖ hors-règle | |
 | 07 | LE CARNAVAL | ➖ hors-règle | |
 | 08 | Les pouvoirs en place | ➖ hors-règle | |
-| 09 | LE TRAÎTRE DÉMASQUÉ | ➖ hors-règle | |
+| 09 | LE TRAITRE DEMASQUE | ➖ hors-règle | |
 | 10 | Fiches de PNJ | 📖 | catalogue (catalogue-*.md) |
-| 11 | dopplegänger | 📖 | catalogue (catalogue-*.md) |
+| 11 | doppleganger | 📖 | catalogue (catalogue-*.md) |
 | 12 | HYPNOTISME | ✅ | 6 (competences.md ×6) |
-| 13 | POINTS D’EXPÉRIENCE | ✅ | 6 (avancement.md ×6) |
+| 13 | POINTS D'EXPERIENCE | ✅ | 6 (avancement.md ×6) |
 | 14 | CALENDRIER DES ATTRACTIONS PRINCIPALES | ➖ hors-règle | |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
@@ -1165,11 +1165,11 @@
   - 📖 l.1405-1412 « Objectifs » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.1413-1442 « Les autres PNJ » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.1443-1448 « Secret mortel : La Main Pourpre » — transcrit en catalogue, jamais traité, 0 réf
-- **PDT 11** (dopplegänger) :
+- **PDT 11** (doppleganger) :
   - 📖 l.5-23 « MAL DANS TA PEAU » — transcrit en catalogue, jamais traité, 0 réf
 - **PDT 12** (HYPNOTISME) :
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
-- **PDT 13** (POINTS D’EXPÉRIENCE) :
+- **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
 
 ## ACE — ✅ 1 · 📖 2 · 🟡 0 · ⬜ 0
@@ -1177,22 +1177,22 @@
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | La Couronne de l’Empire | ➖ hors-règle | |
-| 02 | Le gouvernement d’Altdorf | ➖ hors-règle | |
-| 03 | Les gangs d’Altdorf | ➖ hors-règle | |
+| 01 | La Couronne de l'Empire | ➖ hors-règle | |
+| 02 | Le gouvernement d'Altdorf | ➖ hors-règle | |
+| 03 | Les gangs d'Altdorf | ➖ hors-règle | |
 | 04 | La Grande Puanteur | ➖ hors-règle | |
 | 05 | La rive sud | ➖ hors-règle | |
 | 06 | Le Quartier est | ➖ hors-règle | |
 | 07 | La Ville Nord | ➖ hors-règle | |
-| 08 | La Cité souterraine | ➖ hors-règle | |
-| 09 | Au-delà des murs | ➖ hors-règle | |
-| 10 | L’Espionnage à Altdorf | 📖 | catalogue (catalogue-*.md) |
-| 11 | Cultes interdits et groupes extrémistes | 📖 | catalogue (catalogue-*.md) |
-| 12 | Activités | ✅ | 17 (activites.md ×17) |
+| 08 | La Cite souterraine | ➖ hors-règle | |
+| 09 | Au-dela des murs | ➖ hors-règle | |
+| 10 | L'Espionnage a Altdorf | 📖 | catalogue (catalogue-*.md) |
+| 11 | Cultes interdits et groupes extremistes | 📖 | catalogue (catalogue-*.md) |
+| 12 | Activites | ✅ | 17 (activites.md ×17) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
-- **ACE 10** (L’Espionnage à Altdorf) :
+- **ACE 10** (L'Espionnage a Altdorf) :
   - 📖 l.27-32 « Objectifs » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.33-39 « Préoccupations Actuelles » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.40-52 « Personnalités clés » — transcrit en catalogue, jamais traité, 0 réf
@@ -1237,14 +1237,14 @@
   - 📖 l.286-289 « Une toile ne peut jamais être trop emmêlée » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.290-295 « Les complots font naître d'étranges tandems » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.296-299 « EXEMPLE D'AVENTURE » — transcrit en catalogue, jamais traité, 0 réf
-- **ACE 11** (Cultes interdits et groupes extrémistes) :
+- **ACE 11** (Cultes interdits et groupes extremistes) :
   - 📖 l.27-52 « UN TIENS VAUT MIEUX QUE DEUX TU L'AURAS » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.53-83 « TENTEZ VOTRE CHANCE ! » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.84-97 « KATARINA BRIESACH - CHAMPION DU CHAOS MUTANT » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.98-146 « BOUTON BRÛLANT » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.147-163 « Gridli Ahlquist, Cultiste » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.164-174 « SORTS » — transcrit en catalogue, jamais traité, 0 réf
-- **ACE 12** (Activités) :
+- **ACE 12** (Activites) :
   - 📖 l.165-206 « F » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.207-343 « H Haffenstadt..............................................194 » — transcrit en catalogue, jamais traité, 0 réf
 
@@ -1255,28 +1255,28 @@
 | 00 | Index | ➖ hors-règle | |
 | 01 | introduction | ➖ hors-règle | |
 | 02 | Si un regard pouvait tuer | ➖ hors-règle | |
-| 03 | pour étoffer un peu | ➖ hors-règle | |
-| 04 | Ça fait beaucoup de Traits ! | ✅ | 7 (combat.md ×7) |
+| 03 | pour etoffer un peu | ➖ hors-règle | |
+| 04 | Ca fait beaucoup de Traits ! | ✅ | 7 (combat.md ×7) |
 | 05 | *(artefact OCR)* | ➖ | |
 | 06 | LES FOUS DE GOTHEIM | ➖ hors-règle | |
 | 07 | Wilhelm Kreigrisch, le bourgmestre | ➖ hors-règle | |
 | 08 | *(artefact OCR)* | ➖ | |
-| 09 | Démarrer l’aventure | ➖ hors-règle | |
-| 10 | CŒUR DE VERRE | ➖ hors-règle | |
+| 09 | Demarrer l'aventure | ➖ hors-règle | |
+| 10 | COEUR DE VERRE | ➖ hors-règle | |
 | 11 | *(artefact OCR)* | ➖ | |
-| 12 | Démarrer l’Aventure | ➖ hors-règle | |
+| 12 | Demarrer l'Aventure | ➖ hors-règle | |
 | 13 | LA TOUR DES VENTS | ➖ hors-règle | |
-| 14 | MASSACRE À SPITTLEFELD | ➖ hors-règle | |
+| 14 | MASSACRE A SPITTLEFELD | ➖ hors-règle | |
 | 15 | *(artefact OCR)* | ➖ | |
-| 16 | Comment commencer l’aventure | ➖ hors-règle | |
+| 16 | Comment commencer l'aventure | ➖ hors-règle | |
 | 17 | *(section sans titre)* | ➖ hors-règle | |
-| 18 | D’Appâts et de Sorciers | ➖ hors-règle | |
+| 18 | D'Appats et de Sorciers | ➖ hors-règle | |
 | 19 | *(artefact OCR)* | ➖ | |
-| 20 | Débuter l’Aventure | ➖ hors-règle | |
+| 20 | Debuter l'Aventure | ➖ hors-règle | |
 | 21 | *(section sans titre)* | ➖ hors-règle | |
 | 22 | Les coupables | ➖ hors-règle | |
 | 23 | *(artefact OCR)* | ➖ | |
-| 24 | Comment commencer l’Aventure | ➖ hors-règle | |
+| 24 | Comment commencer l'Aventure | ➖ hors-règle | |
 | 25 | Index des PNJ | ➖ hors-règle | |
 | 26 | *(section sans titre)* | ➖ hors-règle | |
 
@@ -1287,17 +1287,17 @@
 | 00 | Index | ➖ hors-règle | |
 | 01 | Avant-propos | ➖ hors-règle | |
 | 02 | Introduction | ➖ hors-règle | |
-| 03 | Une nuit agitée aux Trois Plumes | ➖ hors-règle | |
+| 03 | Une nuit agitee aux Trois Plumes | ➖ hors-règle | |
 | 04 | Les autres invités | ➖ hors-règle | |
 | 05 | 22h00 | ✅ | 6 (combat.md ×4) |
-| 06 | Une journée au tribunal | ✅ | 13 (combat.md ×13) |
+| 06 | Une journee au tribunal | ✅ | 13 (combat.md ×13) |
 | 07 | Les dignitaires du tribunal | ➖ hors-règle | |
-| 08 | Une nuit à l’Opéra | ✅ | 3 (combat.md ×3) |
+| 08 | Une nuit a l'Opera | ✅ | 3 (combat.md ×3) |
 | 09 | Le répurgateur | ➖ hors-règle | |
 | 10 | le mariage de nastassia | ➖ hors-règle | |
 | 11 | Le joyau volé | ✅ | 6 (combat.md ×6) |
 | 12 | *(artefact OCR)* | ➖ | |
-| 13 | SEIGNEUR D’UBERSREIK - | ➖ hors-règle | |
+| 13 | SEIGNEUR D'UBERSREIK - | ➖ hors-règle | |
 | 14 | appendice I - Gnomes | ➖ hors-règle | |
 | 15 | LE PEUPLE DES LANDES | ✅ | 4 (talents.md ×3) |
 | 16 | JEUX DE TAVERNE | ✅ | 17 (tests.md ×14) |
@@ -1339,7 +1339,7 @@
   - ⬜ l.457-458 « Le personnel des Trois Plumes » — candidat trou de règle, 0 réf
   - ⬜ l.459-464 « Le propriétaire et son personnel » — candidat trou de règle, 0 réf
   - ⬜ l.465-472 « AUBERGES À PROBLÈMES » — candidat trou de règle, 0 réf
-- **NADJ 06** (Une journée au tribunal) :
+- **NADJ 06** (Une journee au tribunal) :
   - ⬜ l.7-10 « LE LIEU » — candidat trou de règle, 0 réf
   - ⬜ l.11-14 « Y ARRIVER » — candidat trou de règle, 0 réf
   - ⬜ l.15-20 « Suite de la campagne » — candidat trou de règle, 0 réf
@@ -1387,7 +1387,7 @@
   - ⬜ l.418-421 « Ursula Kopfgeld » — candidat trou de règle, 0 réf
   - ⬜ l.422-423 « Le voleur opportuniste » — candidat trou de règle, 0 réf
   - ⬜ l.424-427 « Glimbrin Drol'detype » — candidat trou de règle, 0 réf
-- **NADJ 08** (Une nuit à l’Opéra) :
+- **NADJ 08** (Une nuit a l'Opera) :
   - ⬜ l.7-10 « LE LIEU » — candidat trou de règle, 0 réf
   - ⬜ l.11-14 « Y ARRIVER » — candidat trou de règle, 0 réf
   - ⬜ l.15-21 « Suite de la campagne » — candidat trou de règle, 0 réf
@@ -1478,30 +1478,30 @@
 | 00 | Index | ➖ hors-règle | |
 | 01 | La Mer des Griffes | ➖ hors-règle | |
 | 02 | La Bretonnie et le Wasteland | ✅ | 4 (magie.md ×4) |
-| 03 | La côte du Nordland | ➖ hors-règle | |
-| 04 | La côte de l'Ostland | ➖ hors-règle | |
+| 03 | La cote du Nordland | ➖ hors-règle | |
+| 04 | La cote de l'Ostland | ➖ hors-règle | |
 | 05 | Le Pays des Trolls | ➖ hors-règle | |
 | 06 | Kraka Ravnsvake | ➖ hors-règle | |
-| 07 | La côte des Skaelings | ✅ | 24 (carrieres.md ×24) |
-| 08 | La côte des Bjornlings | ➖ hors-règle | |
-| 09 | La classe Côtier | ✅ | 32 (carrieres.md ×32) |
+| 07 | La cote des Skaelings | ✅ | 24 (carrieres.md ×24) |
+| 08 | La cote des Bjornlings | ➖ hors-règle | |
+| 09 | La classe Cotier | ✅ | 32 (carrieres.md ×32) |
 | 10 | Le culte de Manann | 📖 | 2 (religion.md ×2) |
 | 11 | Le culte de Stromfels | 📖 | 1 (religion.md ×1) |
 | 12 | Navires et construction navale | ✅ | 130 (equipement.md ×60) |
 | 13 | Navigation maritime | ✅ | 143 (combat.md ×83) |
-| 14 | Navigation à bord de grands vaisseaux | ✅ | 52 (maladies.md ×19) |
+| 14 | Navigation a bord de grands vaisseaux | ✅ | 52 (maladies.md ×19) |
 | 15 | Longs voyages | ✅ | 45 (deplacement.md ×23) |
 | 16 | Bestiaire | ✅ | 10 (bestiaire.md ×10) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
-- **MDG 07** (La côte des Skaelings) :
+- **MDG 07** (La cote des Skaelings) :
   - ⬜ l.38-41 « MÉCHANTS OU MARCHANDS ? » — candidat trou de règle, 0 réf
   - ⬜ l.42-100 « SUR LA GLACE » — candidat trou de règle, 0 réf
   - ⬜ l.101-112 « SNAEGRS EXALTÉS » — candidat trou de règle, 0 réf
   - ⬜ l.113-145 « TOUT A UN PRIX » — candidat trou de règle, 0 réf
   - ⬜ l.146-188 « LE MARIN IVRE » — candidat trou de règle, 0 réf
-- **MDG 09** (La classe Côtier) :
+- **MDG 09** (La classe Cotier) :
   - 📖 l.639-644 « JOURNAL DU CAPITAINE » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.645-651 « L'AMIRAUTÉ DE BRETONNIE » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.808-821 « L'HOMME D'ALGUES » — transcrit en catalogue, jamais traité, 0 réf
@@ -1531,23 +1531,23 @@
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | Contes de sorcellerie | ➖ hors-règle | |
-| 02 | Révisions des règles d'incantation | ✅ | 61 (magie.md ×61) |
+| 02 | Revisions des regles d'incantation | ✅ | 61 (magie.md ×61) |
 | 03 | Travaux arcaniques | ✅ | 128 (competences.md ×76) |
-| 04 | Hysh — Domaine de la Lumière | 📖 | catalogue (catalogue-*.md) |
-| 05 | Chamon — Domaine du Métal | 📖 | catalogue (catalogue-*.md) |
-| 06 | Ghyran — Domaine de la Vie | 📖 | catalogue (catalogue-*.md) |
-| 07 | Azyr — Domaine des Cieux | 📖 | catalogue (catalogue-*.md) |
-| 08 | Ulgu — Domaine des Ombres | 📖 | catalogue (catalogue-*.md) |
-| 09 | Shyish — Domaine de la Mort | 📖 | catalogue (catalogue-*.md) |
-| 10 | Aqshy — Domaine du Feu | 📖 | catalogue (catalogue-*.md) |
-| 11 | Ghur — Domaine de la Bête | 📖 | catalogue (catalogue-*.md) |
+| 04 | Hysh - Domaine de la Lumiere | 📖 | catalogue (catalogue-*.md) |
+| 05 | Chamon - Domaine du Metal | 📖 | catalogue (catalogue-*.md) |
+| 06 | Ghyran - Domaine de la Vie | 📖 | catalogue (catalogue-*.md) |
+| 07 | Azyr - Domaine des Cieux | 📖 | catalogue (catalogue-*.md) |
+| 08 | Ulgu - Domaine des Ombres | 📖 | catalogue (catalogue-*.md) |
+| 09 | Shyish - Domaine de la Mort | 📖 | catalogue (catalogue-*.md) |
+| 10 | Aqshy - Domaine du Feu | 📖 | catalogue (catalogue-*.md) |
+| 11 | Ghur - Domaine de la Bete | 📖 | catalogue (catalogue-*.md) |
 | 12 | Artefacts magiques | 📖 | catalogue (catalogue-*.md) |
-| 13 | Créatures magiques | ✅ | 9 (magie.md ×9) |
-| 14 | Les Vents à l'œuvre | ✅ | 24 (magie.md ×24) |
-| 15 | Némésis et aventures magiques | 📖 | catalogue (catalogue-*.md) |
+| 13 | Creatures magiques | ✅ | 9 (magie.md ×9) |
+| 14 | Les Vents a l'oeuvre | ✅ | 24 (magie.md ×24) |
+| 15 | Nemesis et aventures magiques | 📖 | catalogue (catalogue-*.md) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H2) :
 
-- **VDM 09** (Shyish — Domaine de la Mort) :
+- **VDM 09** (Shyish - Domaine de la Mort) :
   - 📖 l.375-536 « Le Labyrinthe de Cristal » — transcrit en catalogue, jamais traité, 0 réf
-<!-- sources-empreinte: 15afd7c89c3caacbde5433a999e815bd0f764178 (349 fichiers, 17 dossiers) corps: 799f244195f2d6733804e14a6ada29155f866f67 -->
+<!-- sources-empreinte: c11b9a5a71c2327976a084293ea00404bd4f864a (349 fichiers, 17 dossiers) corps: c7f44722210622bbf1a9bd59fa5a9610601c0174 -->
