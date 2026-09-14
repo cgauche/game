@@ -79,7 +79,7 @@ const CARDINAUX = {
   // que les 30 autres — primitives EXISTANTES, aucune donnée neuve.
   'primitives.manifest.json': 62,
   'qualities.json': 59,
-  'regles.json': 85, // +1 `critiques-de-bateau` (#1657 B3-2)
+  'regles.json': 86, // +1 `critiques-de-bateau` (#1657 B3-2), +1 `activites-en-mer` (#1392 T0)
   'stars.json': 23,
   'systemes.manifest.json': 16,
   // 20→21 : la table MAISON `mendier-ennuis` (Échec Stupéfiant à Mendier, LDB 09 l.97), #1612.
@@ -90,7 +90,9 @@ const CARDINAUX = {
 // Puis 801→802 : +1 table d'effets `mendier-ennuis` (#1612).
 // Puis 802→836 (#1728) : le manifeste des primitives passe de 28 à 62 entrées (table CLAUDE.md
 // portée au manifeste — primitives EXISTANTES).
-const TOTAL_ATTENDU = 836;
+// Puis 836→837 (#1392) : regles.json +1 — l'intro « ACTIVITÉS EN MER » (MDG 15) devient une entrée
+// adressée au lieu d'une constante d'écran.
+const TOTAL_ATTENDU = 837;
 
 const echecs = [];
 const rapport = [];
