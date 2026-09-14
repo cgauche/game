@@ -3,7 +3,7 @@
 > ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-ajouter-donnee.mjs` (`npm run docs:ajouter-donnee`) — NE PAS ÉDITER À LA MAIN.
 
 **Périmètre mesuré / angles morts** — sont MESURÉS à chaque génération : les 122 fichiers
-de `src/data/*.json`, les 29 entrées de `src/data/books.json` (dont 18 en VF) et le nom
+de `src/data/*.json`, les 29 entrées de `src/data/books.json` (dont 19 en VF) et le nom
 RÉEL de leur clé d'abréviation (`abbr`), les 11 clés d'ENVELOPPE et leurs libellés FR
 lus par AST dans `src/data/schemas/grammaire/document.ts`, les 3 familles de document, les 5 skills de domaine (existence
 sur disque + `description` lue au frontmatter de leur `SKILL.md`) et les 6 gardes (chemin
@@ -62,8 +62,8 @@ commit / l'issue. ⚠ Le n° de ligne a dérivé (ré-extraction Marker) ET les 
 sont **non fiables** : n'en déduis jamais une `source.page`.
 
 Le champ `book` d'une entrée porte l'**`abbr`** de `src/data/books.json` — 29 livres
-enregistrés, dont 18 en VF : `LDB`, `VDM`, `ADE I`, `ADE II`, `MCLB`, `ACE`, `ZI`, `MDG`, `EDOC`, `MSRC`, `BI`, `AU1`, `AU2`, `NADJ`, `EDO`, `MSR`, `PDT`, `frenchy.bzh`.
-Les 11 autres entrées sont en VO — hors périmètre citable ici (règle 1 de `CLAUDE.md`).
+enregistrés, dont 19 en VF : `LDB`, `AA`, `VDM`, `ADE I`, `ADE II`, `MCLB`, `ACE`, `ZI`, `MDG`, `EDOC`, `MSRC`, `BI`, `AU1`, `AU2`, `NADJ`, `EDO`, `MSR`, `PDT`, `frenchy.bzh`.
+Les 10 autres entrées sont en VO — hors périmètre citable ici (règle 1 de `CLAUDE.md`).
 
 ## 4. L'ENVELOPPE est posée par la fabrique — ne la redéclare jamais
 
@@ -125,4 +125,4 @@ JAMAIS un choix d'agent silencieux enterré. Avant de conclure « le moteur ne s
 | `src/data/data-atlas-complete.test.ts` | atlas des données (docs/donnees.md) — complétude |
 | `src/data/maison-sans-source.test.ts` | cliquet « maison sans source » — le régime d’arbitrage ne dérive pas (#1467 L1b) |
 | `src/data/data-wellformed.test.ts` | Intégrité des données src/data/*.json |
-<!-- sources-empreinte: a0b4305cb288705c299e3aed3af3fca27088b717 (18 fichiers, 1 dossiers) corps: 924dafd72863711cbd879d922dc627276490c259 -->
+<!-- sources-empreinte: 6a55c43e5a3ae8f89dd94a2853d395b97ee7ceef (18 fichiers, 1 dossiers) corps: eff5ffd4c5e6de73649eb3aac5072ab749222cc3 -->
