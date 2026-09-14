@@ -119,10 +119,12 @@ const ATTENDU = {
     //   sous os.tmpdir() (fixture partagée + mkdtemp), jetés en finally — aucune écriture DANS
     //   l'arbre. `chantier.mjs`/`worktrees.mjs` écrivent, eux, dans l'arbre PRINCIPAL en usage réel
     //   (git worktree add/remove), jamais depuis la gate.
-    // · `publier.mjs` est atteint par `publier.test.mjs`, qui ne joue QUE ses fonctions PURES
-    //   (options, journal en mémoire, verdicts, mise en forme). Ses écritures réelles sont son
-    //   journal `node_modules/.cache/publication/` et le commit des docs DÉRIVÉS — toutes deux
-    //   derrière sa porte `estMain` (scripts/ops/publier.mjs, dernière ligne), jamais depuis la gate.
+    // · `publier.mjs` est atteint par `publier.test.mjs`, qui joue ses fonctions PURES (options,
+    //   journal en mémoire, verdicts, mise en forme) et `prerequisDesGates` sur une racine jetable
+    //   (mkdtemp sous os.tmpdir(), rmSync en finally — d'où ses imports d'écriture, +1 le 2026-09-14,
+    //   4ᵉ train réel). Les écritures réelles de `publier.mjs` sont son journal
+    //   `node_modules/.cache/publication/` et le commit des docs DÉRIVÉS — toutes deux derrière sa
+    //   porte `estMain` (scripts/ops/publier.mjs, dernière ligne), jamais depuis la gate.
     // · `build-all.mjs`, `empreinte-sources.mjs`, `toutes.mjs`, `purgerPerimes.mjs` et `verrou.mjs`
     //   sont atteints PAR `publier.mjs`, qui n'en importe que des CONSTANTES et des fonctions pures
     //   (`GENERATORS`, `SOURCES_LUES`, `fichierDurees`) ; leurs écritures vivent derrière leurs
@@ -135,6 +137,7 @@ const ATTENDU = {
     'scripts/guards/lib/purgerPerimes.mjs',
     'scripts/ops/chantier.test.mjs',
     'scripts/ops/publier.mjs',
+    'scripts/ops/publier.test.mjs',
     'scripts/ops/worktrees.test.mjs',
     'scripts/test/verrou.mjs',
     // +2 le 2026-09-04 (#1679 L2bis) : `faits-de-palier.mjs` écrit le JSON des faits (`--sortie`,
