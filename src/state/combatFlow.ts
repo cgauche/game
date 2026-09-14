@@ -274,7 +274,7 @@ import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY
 import { registerCascadeApplier, registerCascadeTableFold, runCascadeImmediate, registerTableStep, rollTableStep, poserCurseurCascade, lireEnSeuil, etapesDeLaFenetre } from './cascade';
 import { nightBands, splitBandRows } from './nightBands';
 import { combatEndBands, combatEndRowMeta } from './combatEndBands';
-import type { CascadeStepMeta, EnchainementDuCoup, SeuilDeSauvegarde, SauvegardeSuite, SuiteDeCoup, ToucheDeProjectile } from './pendings';
+import type { CascadeStepMeta, EnchainementDuCoup, RebondDeChaine, SeuilDeSauvegarde, SauvegardeSuite, SuiteDeCoup, ToucheDeProjectile } from './pendings';
 import {
   freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, monoStep, pousseSi,
   hostStep, openSequence, openBand, pushHost, pushTableDone, pushTable, pushChoice, pushDisplay, pushDie, tableStep, makeBandFactory,
@@ -2267,7 +2267,12 @@ registerCascadeApplier('sauvegarde', (get, set, step, porteur) => {
  *  fenêtre SUIVANTE (Déviation Critique), qui repasse par le registre sans rejouer de dé. */
 function reprendreApresSauvegarde(get: Get, set: SetFn, suite: SauvegardeSuite, sauve: boolean): string[] {
   if (suite.mode === 'projectile') {
-    return appliquerToucheDeProjectile(get, set, suite.touche, { sauve });
+    const appliquee = appliquerToucheDeProjectile(get, set, suite.touche, { sauve });
+    // La reprise JOUE ce que l'appelant avait DÉCLARÉ : le rebond relit les PB FRAIS de la cible — un
+    // coup IGNORÉ par la sauvegarde (`LDB 85 l.98`) n'a réduit personne, il ne rebondit pas. Une
+    // Déviation Critique enchaînée ici le remporte dans SA charge : c'est elle qui le jouera.
+    if (appliquee.issue !== 'appliquee') return appliquee.lignes;
+    return [...appliquee.lignes, ...jouerLeRebond(get, set, suite.touche)];
   }
   resumeMeleeAfterSuspension(get, set, suite.attackerId, suite.targetId, suite.weapon,
     { ...suite.res, sauvegarde: { sauve } }, suite.deviated, undefined, suite.suite);
@@ -2505,7 +2510,7 @@ export function applyAttackResult(
     const loc = res.location ?? 'corps';
     // Réouverture d'une plaie critique (LDB 18 / AA 07) : un nouveau Dégât à CETTE Localisation octroie ses
     // États Hémorragique (la plaie qui l'a posée est stampée APRÈS ce coup, elle ne se déclenche donc pas
-    // elle-même). Point d'application des Dégâts localisés — jumeau du Projectile magique (applyMissileHit).
+    // elle-même). Point d'application des Dégâts localisés — jumeau du Projectile magique (appliquerTouchePourCible).
     const reinj = reinjuryBleed(target, loc);
     if (reinj > 0) { addCondition(target, COND.hemorragique, reinj); critLog.push(tr('cf.reinjuryBleed', { name: target.label, n: reinj, loc: locationLabel(loc, target.bodyShape) })); }
     if (res.critical) breakBacleArmour(target, loc, critLog); // armure Bâclée brisée par le Critique (LDB 60 l.50)
@@ -3987,6 +3992,9 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
     clearPsychOf(get().battle?.combatants ?? [], target.id);
       refreshAllDefendedPsych(get().battle?.combatants ?? []); // l’Amour ne se clôt pas à la chute d’UN aimé (l.75) : verdict re-mesuré
   }
+  // Le rebond d'« Attaques en chaîne » (`LDB 47 l.340`) que la touche suspendue ici DÉCLARAIT : c'est
+  // cette reprise qui le joue, sur les PB que Subir/Dévier vient de fixer.
+  if (dev.touche) log.push(...jouerLeRebond(get, set, dev.touche));
   if (log.length) {
     const b = get().battle;
     if (b) set({ battle: { ...b, log: [...b.log, ...evLines(log, 'crit', dev.attackerId, dev.targetId)] } }); // acteur = attaquant, sujet = cible (parité mode melee)
@@ -5314,6 +5322,16 @@ function runCastFlow(get: Get, set: SetFn, target: Combatant, caster: Combatant,
   return drainPendingLog(get, set).map((e) => e.text);
 }
 
+/** L'ÉTAT DE FENÊTRE d'une touche de Projectile (#1508) — ce que l'appelant doit savoir pour décider
+ *  s'il joue MAINTENANT ce qui suit la touche (le rebond d'« Attaques en chaîne ») ou s'il le laisse à
+ *  la reprise. `appliquee` = la touche est close (y compris « rien à appliquer » : immunité de Domaine,
+ *  DR retombé sous le NI, coup ignoré par une sauvegarde) ; les deux `suspendue-*` NOMMENT la fenêtre
+ *  qui rendra la main, et chacune porte la touche dans SA charge. */
+type IssueDeTouche = 'appliquee' | 'suspendue-sauvegarde' | 'suspendue-deviation' | 'cible-absente';
+
+/** Ce que rend l'application d'une touche : ses lignes de journal ET son état de fenêtre. */
+interface ToucheAppliquee { issue: IssueDeTouche; lignes: string[] }
+
 /**
  * LA TOUCHE d'un Projectile magique, APPLIQUÉE (#1508) — HISSÉE hors de la closure d'`applyCast` pour
  * être RÉ-ENTRANTE : la sauvegarde « 1d10 ≥ Indice » se joue à la porte (étape par cible, push SYNCHRONE :
@@ -5323,15 +5341,19 @@ function runCastFlow(get: Get, set: SetFn, target: Combatant, caster: Combatant,
  *
  * RAMENE ses lignes de journal : l'appelant les place INLINE dans son `logLines` (application immédiate),
  * l'applier en fait les conséquences de l'étape (reprise). Aucune mutation avant la sauvegarde.
+ *
+ * Elle rend AUSSI son `issue` : une touche SUSPENDUE n'a rien appliqué (ou pas tout), et ce que
+ * l'appelant fait APRÈS elle (le rebond d'« Attaques en chaîne ») ne se joue qu'à la reprise.
  */
-function appliquerToucheDeProjectile(get: Get, set: SetFn, ch: ToucheDeProjectile, sauvegarde?: { sauve: boolean }): string[] {
+function appliquerToucheDeProjectile(get: Get, set: SetFn, ch: ToucheDeProjectile, sauvegarde?: { sauve: boolean }): ToucheAppliquee {
   const lignes: string[] = [];
+  let suspenduParDeviation = false;
   // `actorIn` (combat OU groupe) et non `inBattleId` : un Projectile se lance aussi HORS COMBAT
   // (couture D d'`applyCast`, `battle == null`) — les protagonistes y vivent dans le groupe.
   const caster = actorIn(get(), ch.casterId);
   const cible = actorIn(get(), ch.targetId);
   // Protagoniste disparu entre l'ouverture du dé et sa reprise : la conséquence se DIT (patron `opsDe`).
-  if (!caster || !cible) return [tr('cascade.cibleDisparue', { label: ch.spell.label })];
+  if (!caster || !cible) return { issue: 'cible-absente', lignes: [tr('cascade.cibleDisparue', { label: ch.spell.label })] };
   const spell = ch.spell;
   let mres = ch.mres;
   // Sauvegardes « après la touche » — MÊME registre ordonné que le coup physique
@@ -5353,10 +5375,10 @@ function appliquerToucheDeProjectile(get: Get, set: SetFn, ch: ToucheDeProjectil
     ouvrirSauvegarde: (seuils) => { pousserSauvegarde(set, cible.id, seuils, { mode: 'projectile', touche: ch }); },
   });
   const apresSaves = apresModifiers.res;
-  if (apresModifiers.suspendu) return lignes; // suspendu AVANT toute mutation : cette cible reprendra par l'applier
+  if (apresModifiers.suspendu) return { issue: 'suspendue-sauvegarde', lignes }; // suspendu AVANT toute mutation : cette cible reprendra par l'applier
   if (apresSaves.log) lignes.push(apresSaves.log);
   mres = { ...mres, woundsLost: apresSaves.woundsLost, damage: apresSaves.damage };
-  if (!mres.hit || !mres.woundsLost) return lignes;
+  if (!mres.hit || !mres.woundsLost) return { issue: 'appliquee', lignes };
   const currentBefore = cible.wounds.current;
   const overkill = mres.woundsLost - currentBefore;
   cible.wounds.current = Math.max(0, currentBefore - mres.woundsLost);
@@ -5376,7 +5398,6 @@ function appliquerToucheDeProjectile(get: Get, set: SetFn, ch: ToucheDeProjectil
     // parité avec la mêlée — pourvu que l'armure ABSORBE réellement (`magicDeviationEligible` : PA déviatable,
     // pas de bypass de Domaine Ombres/Métal/Cieux, sort qui n'ignore pas les PA).
     const elig = magicDeviationEligible(caster, cible, loc, spell, mres, mres.woundsLost ?? 0, ch.overcastDamageSteps);
-    let suspended = false;
     // MÊME prédicat que la mêlée et l'opposé (#1426) : l'automate ne tranche que pour un porteur
     // qu'aucun siège humain ne tient ; tenu, il choisit — quel que soit son kind.
     const tenu = tenuParUnHumain(get(), cible.id);
@@ -5392,14 +5413,15 @@ function appliquerToucheDeProjectile(get: Get, set: SetFn, ch: ToucheDeProjectil
         mode: 'self', attackerId: caster.id, targetId: cible.id, location: loc, crit: cr2,
         isCoupCritique: critWound, overkill: ovk, deflectExtraWounds: elig.extraWounds, woundsBefore: currentBefore,
         reveal: previewCritEntry(cible, cr2, { attackerId: caster.id, weapon: spell.label }), resumeAfter: true, ctx: c2,
+        touche: ch, // la suite DÉCLARÉE par l'appelant (rebond) voyage dans la charge de CETTE fenêtre
       } });
-      suspended = true;
+      suspenduParDeviation = true;
     } else {
       applyCritAndFinalize(get, set, cible, loc, critWound, ovk, lignes, c2, currentBefore);
     }
     // 0 PB → À Terre (LDB 18 l.15) — SAUF si suspendu (le Critique du héros n'est pas encore résolu :
     // resolveDeviation `self` s'en charge). Parité avec la mêlée et resolveDeviation.
-    if (!suspended && cible.wounds.current <= 0 && !cible.dead && !hasCondition(cible, COND.inconscient)) applyZeroWounds(cible);
+    if (!suspenduParDeviation && cible.wounds.current <= 0 && !cible.dead && !hasCondition(cible, COND.inconscient)) applyZeroWounds(cible);
   } else if (cible.wounds.current <= 0) {
     applyZeroWounds(cible);
   }
@@ -5410,7 +5432,7 @@ function appliquerToucheDeProjectile(get: Get, set: SetFn, ch: ToucheDeProjectil
     const rounds = spell.duration?.kind === 'rounds' ? resolveFormula(spell.duration.value, caster, battleRng()) : null;
     const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
     lignes.push(...runCastFlow(get, set, cible, caster, spellFlowFor(spell.effects, 'target'), {
-      rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: ch.sl,
+      rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: spellSLFor(mres.sl, cible, ch.zoneTalentMod),
       overcastDurationSteps: ch.overcastDurationSteps, chosenTableRolls: ch.chosenTableRolls,
       ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
       ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
@@ -5431,6 +5453,88 @@ function appliquerToucheDeProjectile(get: Get, set: SetFn, ch: ToucheDeProjectil
   // Interruption de Focalisation : un Projectile magique blesse aussi un focaliseur (LDB 46 l.144).
   lignes.push(...checkFocusInterruption(get, set, cible));
   if (isOutOfAction(cible)) lignes.push(tr('cf.outOfAction', { name: cible.label }));
+  return { issue: suspenduParDeviation ? 'suspendue-deviation' : 'appliquee', lignes };
+}
+
+/**
+ * UNE touche de Projectile POUR UNE CIBLE (#1508) — ÉCRITURE UNIQUE des pré-traitements qui précèdent
+ * l'application : immunité de Domaine (Middenheim, #18), re-localisation d'un Coup Critique
+ * (`LDB 18 l.53-55`), Résistance à la Magie (`LDB 85 l.302` / `LDB 10 l.1026`). HISSÉE hors de la closure
+ * d'`applyCast` pour être RÉ-ENTRANTE, comme `appliquerToucheDeProjectile` qu'elle appelle : la cible
+ * initiale, une cible supplémentaire de Surincantation et un maillon de rebond passent tous par ICI.
+ */
+function appliquerTouchePourCible(get: Get, set: SetFn, cible: Combatant, touche: ToucheDeProjectile): ToucheAppliquee {
+  const caster = actorIn(get(), touche.casterId);
+  if (!caster) return { issue: 'cible-absente', lignes: [tr('cascade.cibleDisparue', { label: touche.spell.label })] };
+  const spell = touche.spell;
+  // Manifestation de Ghur (Middenheim, #18) : un Projectile du Domaine de la Bête n'affecte PAS le
+  // porteur — ses Dégâts ET ses effets (effets négatifs du Sort de la Bête) sont sautés sur cette cible.
+  if (immuneToSpellDomain(cible.traits, spell.domainId)) return { issue: 'appliquee', lignes: [tr('cf.spellDomainImmune', { name: cible.label, spell: spell.label })] };
+  const lignes: string[] = [];
+  let mres = touche.mres;
+  // LDB 18 l.53/55 : un Projectile Coup Critique re-tire la Localisation (1d100 frais, MÊME primitive
+  // que la mêlée — pas le dé inversé) et RÉ-ÉVALUE ses Dégâts à cette loc AVANT les atténuations
+  // magiques ci-dessous (Résistance/Dôme/Martyr).
+  if (touche.critWound) mres = evaluateMissile(caster, cible, spell, mres, critWoundLocation(battleRng(), cible.bodyShape), 0, touche.overcastDamageSteps);
+  // Résistance à la Magie (LDB 85 l.302 / LDB 10 l.1026) : le DR du Sort est réduit CONTRE cette
+  // cible — les Dégâts en découlent (`evaluateMissile`), le plancher de 1 Blessure reste celui du
+  // RAW (LDB 13 l.155-163). Le jet figé (roll/Surincantation) n'est pas rejoué : seul le DR change.
+  const drMod = spellDRModFor(cible, touche.zoneTalentMod);
+  if (drMod !== 0) {
+    lignes.push(tr('cf.resistMagic', { name: cible.label, mr: -drMod }));
+    if (!spellLandsOn(mres, cible, touche.zoneTalentMod)) {
+      lignes.push(tr('cf.resistMagicNI', { name: cible.label, spell: spell.label, dr: spellSLFor(mres.sl, cible, touche.zoneTalentMod), ni: mres.niRequired ?? 0 }));
+      return { issue: 'appliquee', lignes };
+    }
+    mres = evaluateMissile(caster, cible, spell, { ...mres, zoneSpellDRMod: touche.zoneTalentMod }, mres.location, 0, touche.overcastDamageSteps);
+  }
+  const appliquee = appliquerToucheDeProjectile(get, set, { ...touche, mres });
+  return { issue: appliquee.issue, lignes: [...lignes, ...appliquee.lignes] };
+}
+
+/**
+ * LE REBOND d'« Attaques en chaîne » (`LDB 47 l.340`), JOUÉ depuis la touche qui le DÉCLARE — l'appelant
+ * DÉCLARE, la reprise JOUE. Relit `get().battle` à CHAQUE maillon : « réduit la cible à 0 Blessure » se
+ * juge sur l'état FRAIS, jamais sur celui d'avant une fenêtre en vol (sauvegarde, Déviation Critique).
+ * Un maillon qui SUSPEND rend la main — sa charge porte le rebond RESTANT (`bounce`/`hitIds` avancés),
+ * et c'est la reprise de CETTE fenêtre qui rappellera cette fonction : jamais deux fois le même maillon.
+ */
+function jouerLeRebond(get: Get, set: SetFn, touche: ToucheDeProjectile): string[] {
+  const rebond = touche.rebond;
+  if (!rebond) return [];
+  const spell = touche.spell;
+  const lignes: string[] = [];
+  let prevId = touche.targetId;
+  let hitIds = rebond.hitIds;
+  for (let bounce = rebond.bounce; bounce < rebond.maxBounces; bounce++) {
+    const battle = get().battle;
+    if (!battle) break;
+    const caster = inBattleId(battle, touche.casterId);
+    const prev = inBattleId(battle, prevId);
+    if (!caster?.pos || !prev) break;
+    if (!(prev.wounds.current <= 0 || prev.dead)) break; // « réduit la cible à 0 Blessure »
+    // La cible du maillon suivant (`LDB 47 l.340`).
+    const next = battle.combatants
+      .filter((c) => c.kind !== caster.kind && !hitIds.includes(c.id) && !isOutOfAction(c) && c.pos
+        && combatDistance(prev, c) <= rebond.hopTiles
+        && (rebond.initialRange == null || combatDistance(caster, c) <= rebond.initialRange))
+      .sort((a, b) => combatDistance(prev, a) - combatDistance(prev, b))[0];
+    if (!next) break;
+    // « infligeant de nouveau les mêmes Dégâts » : le jet ORIGINAL du lancement, ré-évalué CONTRE cette
+    // cible — le résultat déjà atténué de la précédente (Résistance à la Magie, loc de Critique) la
+    // contaminerait. La cible d'un rebond est HORS de la zone du lancement : elle est SA propre zone.
+    const r2 = evaluateMissile(caster, next, spell, rebond.res, undefined, 0, touche.overcastDamageSteps);
+    lignes.push(tr('cf.spellBounces', { spell: spell.label, name: next.label }), r2.log);
+    hitIds = [...hitIds, next.id];
+    const maillon = appliquerTouchePourCible(get, set, next, {
+      ...touche, targetId: next.id, mres: r2, zoneTalentMod: talentSpellDRMod(next),
+      rebond: { ...rebond, bounce: bounce + 1, hitIds },
+    });
+    lignes.push(...maillon.lignes);
+    bus.emit(EVT.ANIM_ATTACK, { from: prev.id, to: next.id, result: r2, kind: 'spell', spell: spell.label, defense: 'none' });
+    if (maillon.issue !== 'appliquee') return lignes; // la reprise de cette fenêtre jouera le reste
+    prevId = next.id;
+  }
   return lignes;
 }
 
@@ -5577,36 +5681,33 @@ export function applyCast(
   if (missile) {
     // Touche d'un Projectile : application des Blessures + Critique (choix/overkill).
     const missileSpec = spell;
-    const applyMissileHit = (t: Combatant, mres: CastResult & Partial<MissileResult>) => {
-      // Manifestation de Ghur (Middenheim, #18) : un Projectile du Domaine de la Bête n'affecte PAS le
-      // porteur — ses Dégâts ET ses effets (effets négatifs du Sort de la Bête) sont sautés sur cette cible.
-      if (immuneToSpellDomain(t.traits, spell.domainId)) { logLines.push(tr('cf.spellDomainImmune', { name: t.label, spell: spell.label })); return; }
-      // LDB 18 l.53/55 : un Projectile Coup Critique re-tire la Localisation (1d100 frais, MÊME primitive
-      // que la mêlée — pas le dé inversé) et RÉ-ÉVALUE ses Dégâts à cette loc AVANT les atténuations
-      // magiques ci-dessous (Résistance/Dôme/Martyr). `crit` = double d'Incantation, `choice` = Incantation Critique.
-      if (crit && choice === 'critique') mres = evaluateMissile(caster, t, spell, mres, critWoundLocation(battleRng(), t.bodyShape), 0, overcastDamageSteps);
-      // Résistance à la Magie (LDB 85 l.302 / LDB 10 l.1026) : le DR du Sort est réduit CONTRE cette
-      // cible — les Dégâts en découlent (`evaluateMissile`), le plancher de 1 Blessure reste celui du
-      // RAW (LDB 13 l.155-163). Le jet figé (roll/Surincantation) n'est pas rejoué : seul le DR change.
-      const drMod = spellDRModFor(t, zoneMod(t));
-      if (drMod !== 0) {
-        logLines.push(tr('cf.resistMagic', { name: t.label, mr: -drMod }));
-        if (!spellLandsOn(res, t, zoneMod(t))) {
-          logLines.push(tr('cf.resistMagicNI', { name: t.label, spell: spell.label, dr: slFor(t), ni: res.niRequired ?? 0 }));
-          return;
-        }
-        mres = evaluateMissile(caster, t, spell, { ...mres, zoneSpellDRMod: zoneMod(t) }, mres.location, 0, overcastDamageSteps);
+    /** LA TOUCHE telle qu'elle voyage — bâtie ICI pour les trois sites de cible (initiale, cible
+     *  supplémentaire de Surincantation, maillon de rebond), jamais recomposée à la reprise. */
+    const toucheDe = (t: Combatant, mres: CastResult & Partial<MissileResult>, rebond?: RebondDeChaine): ToucheDeProjectile => ({
+      casterId: caster.id, targetId: t.id, spell, mres, zoneTalentMod: zoneMod(t),
+      // `crit` = double d'Incantation, `choice` = Incantation Critique (LDB 46 l.30).
+      critWound: !!(crit && choice === 'critique'),
+      overcastDamageSteps, overcastDurationSteps,
+      ...(chosenTableRolls != null ? { chosenTableRolls } : {}),
+      ...(extras?.conjureForm ? { conjureForm: extras.conjureForm } : {}),
+      ...(sourceSpell ? { sourceSpell } : {}),
+      ...(rebond ? { rebond } : {}),
+    });
+    // Attaques en chaîne (LDB 47 l.340) : « Si [le Projectile] réduit la cible à 0 Blessure, il
+    // rebondit sur une autre cible » — DÉCLARÉ ici sur la touche initiale (max BFM rebonds, saut de
+    // BFM m, portée INITIALE du sort), JOUÉ par `jouerLeRebond` une fois la touche close.
+    const chainOp = spellOps(spell.effects, 'caster').find((o): o is Extract<GameOp, { op: 'chain' }> => o.op === 'chain');
+    const rebond: RebondDeChaine | undefined = chainOp && res.cast && battle && caster.pos
+      ? {
+        hitIds: [target.id, ...extraTargets.map((t) => t.id)], bounce: 0,
+        maxBounces: Math.max(0, resolveFormula(chainOp.maxBounces, caster, battleRng())),
+        hopTiles: Math.max(1, Math.ceil(Math.max(0, resolveFormula(chainOp.hopMeters, caster, battleRng())) / 2)),
+        initialRange: spellRangeTiles(spell.range, caster), res,
       }
-      logLines.push(...appliquerToucheDeProjectile(get, set, {
-        casterId: caster.id, targetId: t.id, spell, mres, sl: slFor(t),
-        critWound: !!(crit && choice === 'critique'),
-        overcastDamageSteps, overcastDurationSteps,
-        ...(chosenTableRolls != null ? { chosenTableRolls } : {}),
-        ...(extras?.conjureForm ? { conjureForm: extras.conjureForm } : {}),
-        ...(sourceSpell ? { sourceSpell } : {}),
-      }));
-    };
-    applyMissileHit(target, res);
+      : undefined;
+    const toucheInitiale = toucheDe(target, res, rebond);
+    const initiale = appliquerTouchePourCible(get, set, target, toucheInitiale);
+    logLines.push(...initiale.lignes);
     // Nerveux (effet déclenché onStartled : magie → +3 Brisé) — dispatcher générique (state/triggeredEffects).
     // Cause 'magic' (présence de magie) → exemption Dressé (Magie) lue par la Condition Flow `startleCause`.
     for (const t of [target, ...extraTargets]) {
@@ -5617,38 +5718,12 @@ export function applyCast(
       if (!res.cast) break;
       const r2 = evaluateMissile(caster, t2, spell, res, undefined, 0, overcastDamageSteps);
       logLines.push(r2.log);
-      applyMissileHit(t2, r2);
+      logLines.push(...appliquerTouchePourCible(get, set, t2, toucheDe(t2, r2)).lignes);
       if (battle) bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: t2.id, result: r2, kind: 'spell', spell: spell.label, defense: 'none' });
     }
-    // Attaques en chaîne (LDB 47 — L13) : « Si [le Projectile] réduit la cible à 0 Blessure, il
-    // rebondit sur une autre cible » — ennemi du lanceur le plus proche de la cible précédente
-    // (≤ BFM m), dans la portée INITIALE du sort, jamais re-touché ; mêmes Dégâts (même jet) ;
-    // max BFM rebonds. S'arrête dès qu'une cible survit.
-    const chainOp = spellOps(spell.effects, 'caster').find((o): o is Extract<GameOp, { op: 'chain' }> => o.op === 'chain');
-    if (chainOp && res.cast && battle && caster.pos) {
-      const maxBounces = Math.max(0, resolveFormula(chainOp.maxBounces, caster, battleRng()));
-      const hopTiles = Math.max(1, Math.ceil(Math.max(0, resolveFormula(chainOp.hopMeters, caster, battleRng())) / 2));
-      const initialRange = spellRangeTiles(spell.range, caster);
-      const hitIds = new Set([target.id, ...extraTargets.map((t) => t.id)]);
-      let prev = target;
-      for (let bounce = 0; bounce < maxBounces; bounce++) {
-        // La condition d'itération lit l'ÉTAT COURANT de `prev` : si une fenêtre est EN VOL sur elle
-        // (Déviation Critique, sauvegarde), la valeur lue est celle d'AVANT sa résolution. #1508 T3b-3
-        if (!(prev.wounds.current <= 0 || prev.dead)) break; // « réduit la cible à 0 Blessure »
-        const next = battle.combatants
-          .filter((c) => c.kind !== caster.kind && !hitIds.has(c.id) && !isOutOfAction(c) && c.pos
-            && combatDistance(prev, c) <= hopTiles
-            && (initialRange == null || combatDistance(caster, c) <= initialRange))
-          .sort((a, b) => combatDistance(prev, a) - combatDistance(prev, b))[0];
-        if (!next) break;
-        const r2 = evaluateMissile(caster, next, spell, res, undefined, 0, overcastDamageSteps);
-        logLines.push(tr('cf.spellBounces', { spell: spell.label, name: next.label }), r2.log);
-        applyMissileHit(next, r2);
-        bus.emit(EVT.ANIM_ATTACK, { from: prev.id, to: next.id, result: r2, kind: 'spell', spell: spell.label, defense: 'none' });
-        hitIds.add(next.id);
-        prev = next;
-      }
-    }
+    // Le rebond DÉCLARÉ plus haut ne se joue ICI que si la touche initiale est CLOSE : suspendue
+    // (sauvegarde, Déviation Critique), c'est SA reprise qui le jouera, sur des PB frais.
+    if (rebond && initiale.issue === 'appliquee') logLines.push(...jouerLeRebond(get, set, toucheInitiale));
     // Zone persistante d'un Projectile (Grands feux d'U'Zhul : « le feu continue de brûler
     // dans la Zone d'Effet pour la durée du Sort ») — posée autour de la cible touchée.
     if (res.cast) placeSpellZone(get, caster, target, spell, missileSpec, slFor(target), durationMult, logLines);

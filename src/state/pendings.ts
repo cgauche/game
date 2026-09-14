@@ -802,6 +802,10 @@ export type PendingDeviation =
       reveal: RevealEntry;
       resumeAfter: boolean;
       ctx: DeviationCtx;
+      /** LA TOUCHE de Projectile magique que cette fenêtre suspend (#1508) — présente pour le seul
+       *  chemin du Projectile. Ce que l'appelant fera APRÈS la touche (son `rebond`) voyage ainsi
+       *  jusqu'à la reprise : c'est la DERNIÈRE fenêtre fermée qui le joue, sur des PB frais. */
+      touche?: ToucheDeProjectile;
     };
 
 /** FENÊTRE de POSE du d100 de SÉVÉRITÉ d'une Blessure Critique (#942 L4) : le dé de la table de
@@ -820,19 +824,46 @@ export interface PendingCritSeverity {
   suite?: SuiteDeCoup; // ce que l'appelant fera APRÈS le coup (#1508) : le PLI post-dé la reconduit dans la `PendingDeviation` qu'il forme
 }
 /**
+ * LE REBOND d'un Projectile « Attaques en chaîne » (op `chain`, `LDB 47 l.340`) en DONNÉE (#1508) : ce
+ * que l'appelant fera APRÈS la touche, porté PAR la touche. Une fenêtre ouverte sur la cible (sauvegarde
+ * `LDB 85 l.98`, Déviation Critique `LDB 63 l.30`) l'emporte dans sa charge, et c'est la reprise qui le
+ * JOUE — sur les PB que cette fenêtre vient de fixer, jamais sur ceux d'avant elle.
+ *
+ * `res` est le jet ORIGINAL du lancement : chaque maillon RÉ-ÉVALUE ses Dégâts depuis lui
+ * (`evaluateMissile`), jamais depuis le résultat déjà atténué de la cible précédente (Résistance à la
+ * Magie, re-localisation d'un Critique). `prev` n'est pas un champ : c'est le `targetId` de la touche
+ * qui porte ce rebond. `hopTiles`/`initialRange` sont en CASES (résolues à l'ouverture). Tout est
+ * JSON-sérialisable : le rebond voyage sur l'étape.
+ */
+export interface RebondDeChaine {
+  /** Cibles déjà touchées par ce lancement — « il rebondit sur une AUTRE cible ». */
+  hitIds: string[];
+  /** Rebonds DÉJÀ joués (0 pour la touche initiale). */
+  bounce: number;
+  maxBounces: number;
+  hopTiles: number;
+  initialRange: number | null;
+  res: CastResult & Partial<MissileResult>;
+}
+
+/**
  * LA TOUCHE d'un Projectile magique, en DONNÉE (#1508) — tout ce que l'application d'une touche de sort
  * lit APRÈS la sauvegarde. Calquée sur `PendingCritSeverity` ci-dessus : le sort y voyage entier (comme
  * l'arme y voyage), parce qu'un lancement peut porter un sort qui n'est dans aucun dataset (Souffle de
- * créature, sort monté par un test). `sl` est le DR du Sort TEL QUE LA CIBLE LE SUBIT, PRÉ-CALCULÉ à
- * l'ouverture (`applyCast.slFor`) : sans lui, la reprise devrait rebâtir la zone de Résistance à la Magie
- * du lancement, qui n'est pas une donnée de la cible.
+ * créature, sort monté par un test). `zoneTalentMod` est le modificateur de DR du TALENT Résistance à la
+ * Magie de la ZONE du lancement (`LDB 10 l.1026`), figé à l'ouverture : sans lui, la reprise devrait
+ * rebâtir cette zone, qui n'est pas une donnée de la cible. Le DR subi (`spellSLFor`) s'en dérive.
  */
 export interface ToucheDeProjectile {
   casterId: string;
   targetId: string;
   spell: SpellData;
   mres: CastResult & Partial<MissileResult>;
-  sl: number;
+  /** Modificateur de DR du TALENT de la zone du lancement. Une cible touchée HORS de cette zone
+   *  (rebond d'« Attaques en chaîne ») est SA propre zone : elle porte alors son propre Talent. */
+  zoneTalentMod: number;
+  /** Le REBOND qui suit CETTE touche (#1508) — absent si le Sort n'enchaîne pas. */
+  rebond?: RebondDeChaine;
   /** Blessure Critique choisie par le lanceur (LDB 46 l.30) — `crit && choice === 'critique'`, tranché à l'ouverture. */
   critWound: boolean;
   overcastDamageSteps: number;

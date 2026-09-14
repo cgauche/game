@@ -3,7 +3,7 @@
  * `roundHooks`/`turnHooks` (module FEUILLE peuplé par effet de bord à l'import). Les sauvegardes
  * SYNCHRONES « après la touche » vivent ICI, chacune étant un modifier ordonné par `order` qui TESTE
  * une condition et TRANSFORME `res` (l'`AttackResult`). SITE UNIQUE des deux chemins de touche :
- * le coup physique (`applyAttackResult`) et le Projectile magique (`applyCast`/`applyMissileHit`),
+ * le coup physique (`applyAttackResult`) et le Projectile magique (`applyCast`/`appliquerTouchePourCible`),
  * qui n'a pas d'arme — la nature du coup se lit sur `ctx.attaque`, jamais sur `weapon.type`.
  *
  * N'importe RIEN de combatFlow (qui le ré-exporte via le baril) → pas de cycle. Les helpers propres

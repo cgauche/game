@@ -1,6 +1,6 @@
 /**
  * Déviation Critique RAW-complète sur les TROIS chemins de Blessure Critique (LDB 63 l.30 + LDB 18 l.53) :
- * mêlée (`applyAttackResult`), Test opposé (`applyOpposedCritical`) et Projectile magique (`applyMissileHit`
+ * mêlée (`applyAttackResult`), Test opposé (`applyOpposedCritical`) et Projectile magique (`appliquerTouchePourCible`
  * dans `applyCast`). Vérifie la mutualisation : l'ENNEMI dévie AUTO (rule-gated), le HÉROS blindé CHOISIT
  * (étape `self` Dévier/Subir), l'overkill (dépassement) est couvert sur la mêlée ET la magie (RAW complet,
  * LDB 63 l.30 : toute Blessure Critique en zone blindée est déviable), et l'éligibilité magique respecte
@@ -103,7 +103,7 @@ describe('magicDeviationEligible — éligibilité d\'un Projectile (LDB 63 l.30
   });
 
   // Régression : `magicDeviationEligible` doit recalculer PA−1 avec le MÊME `overcastDamageSteps`
-  // que celui déjà reflété dans `woundsAtFullPA` par l'appelant (`combatFlow.ts` applyMissileHit) —
+  // que celui déjà reflété dans `woundsAtFullPA` par l'appelant (`combatFlow.ts` appliquerTouchePourCible) —
   // sinon le pas de Dégâts alloué (Surincantation VDM, `VDM 02 l.198`) annule à tort l'écart PA−1.
   it('avec des pas de Dégâts alloués (Surincantation VDM) → même extraWounds qu\'à 0 pas', () => {
     setRule('magic-vdm-incantation', true);

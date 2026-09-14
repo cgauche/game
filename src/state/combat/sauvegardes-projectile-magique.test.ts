@@ -1,5 +1,5 @@
 /**
- * SAUVEGARDES DE TOUCHE au chemin du PROJECTILE MAGIQUE (`applyCast` → `applyMissileHit`).
+ * SAUVEGARDES DE TOUCHE au chemin du PROJECTILE MAGIQUE (`applyCast` → `appliquerTouchePourCible`).
  *
  * Le trait Démoniaque (`LDB 85 l.98`) sauve après chaque coup reçu : un Projectile magique en est un.
  * Le chemin du Projectile ré-implémentait le Dôme et le Martyr et n'appelait JAMAIS le collecteur de
