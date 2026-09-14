@@ -2,7 +2,8 @@
 // de ce clone, le verdict VERT de chacune des gates de `ci.yml` ?
 //
 // C'est une MESURE d'ops, pas un test : elle interroge l'HISTOIRE RÉELLE (les courses CI du dépôt) et
-// le répertoire git COMMUN (`<git-common-dir>/wfrp-justificatifs/`, partagé par tous les worktrees).
+// le `.git` de l'ARBRE PRINCIPAL (`<arbre principal>/.git/wfrp-justificatifs/`, partagé par tous les
+// worktrees).
 // Ce que la porte au push garantit à l'instant du push (`scripts/git-hooks/pre-push.mjs`), cette
 // mesure le RELIT après coup, tête par tête : un régime qui tient se lit `22/22` sur chaque ligne.
 //

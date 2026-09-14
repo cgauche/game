@@ -123,7 +123,8 @@ const ATTENDU = {
   ],
   'test:ops': [
     // +1 le 2026-09-04 : `pushes-justifies.mjs` LIT les justificatifs de gate, donc atteint le module
-    // qui les écrit ; ses écritures visent `<git-common-dir>/wfrp-justificatifs/`, hors de l'arbre.
+    // qui les écrit ; ses écritures visent `wfrp-justificatifs/` dans le `.git` de l'arbre principal,
+    // hors de l'arbre de travail.
     // +1 le 2026-09-07 (#1709 B1) : `fermer-depuis-main.test.mjs` et `faits-de-palier.test.mjs`
     // prennent leurs dépôts jetables à la fixture partagée, qui n'écrit que sous `os.tmpdir()`.
     // +8 le 2026-09-14 (#1736) : le train de publication entre dans `test:ops`.

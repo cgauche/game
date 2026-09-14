@@ -204,14 +204,27 @@ test('npm ci rouge dans server/ : la racine reste faite, et le refus NOMME le so
   } finally { jeter() }
 })
 
-test('lancé depuis un WORKTREE : refus, jamais un worktree imbriqué', () => {
+// Une session travaille DANS son worktree : c'est de là qu'elle ouvre le chantier suivant. La cible
+// ne se calcule donc pas sur le `racine` reçu mais sur l'ARBRE PRINCIPAL résolu par git — le worktree
+// neuf se pose À CÔTÉ des autres, jamais SOUS celui d'où part l'appel.
+test('lancé depuis un WORKTREE : la cible se pose sous l’ARBRE PRINCIPAL, à côté des autres', () => {
   const { racine, jeter } = depotAvecOrigin()
   try {
     assert.equal(creerChantier({ racine, nom: '44', sansCi: true }).ok, true)
-    const dansLeWorktree = creerChantier({ racine: cibleDe(racine, '44'), nom: '45', sansCi: true })
-    assert.equal(dansLeWorktree.ok, false)
-    assert.match(dansLeWorktree.refus, /arbre principal/)
-    assert.equal(existsSync(join(cibleDe(racine, '44'), '.wt-45')), false, 'rien n’a été posé sous le worktree')
+    const depuisLeWorktree = cibleDe(racine, '44')
+
+    const vu = creerChantier({ racine: depuisLeWorktree, nom: '45', sansCi: true })
+    assert.equal(vu.ok, true, vu.refus)
+    assert.equal(vu.cible, cibleDe(racine, '45'), 'la cible est calculée sur l’arbre principal, pas sur le cwd')
+    assert.equal(existsSync(cibleDe(racine, '45')), true, 'le worktree neuf est posé là')
+    assert.equal(existsSync(join(depuisLeWorktree, '.wt-45')), false, 'rien n’est posé SOUS le worktree appelant')
+    assert.equal(execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: cibleDe(racine, '45'), encoding: 'utf8' }).trim(),
+      'chantier/45')
+    // Et git le compte comme un arbre du MÊME dépôt, à plat : trois worktrees, aucun imbriqué.
+    const listes = execFileSync('git', ['worktree', 'list', '--porcelain'], { cwd: racine, encoding: 'utf8' })
+    const chemins = listes.split(/\r?\n/).filter((l) => l.startsWith('worktree ')).map((l) => l.slice('worktree '.length))
+    assert.equal(chemins.length, 3, listes)
+    assert.equal(chemins.filter((c) => c.replace(/\\/g, '/').includes('/.wt-44/')).length, 0, 'aucun arbre sous .wt-44')
   } finally { jeter() }
 })
 

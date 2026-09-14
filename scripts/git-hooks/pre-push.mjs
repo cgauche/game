@@ -34,7 +34,7 @@
 //   · `sans-ancetre` — aucun commit de l'histoire de HEAD n'est porté par une course VERTE.
 //   Les trois derniers se franchissent par `WFRP_PUSH_CI_NON_CONSULTABLE=1`, qui ne franchit JAMAIS
 //   un rouge LU. Les deux leviers exigent `WFRP_DEROGATION` (20 caractères au moins) et écrivent une
-//   ligne JSON dans `<git-common-dir>/wfrp-justificatifs/derogations.log`, relue par la revue de
+//   ligne JSON dans `wfrp-justificatifs/derogations.log` du `.git` de l'arbre principal, relue par la revue de
 //   palier. Ce journal enregistre une TENTATIVE de push : le hook s'exécute AVANT le transfert et ne
 //   sait pas s'il aboutit — deux lignes identiques peuvent nommer un seul push abouti (mesuré le
 //   2026-09-04 sur `c3692d0f9`, 07:49:58 puis 07:54:50 pour une unique course CI). Un comptage de

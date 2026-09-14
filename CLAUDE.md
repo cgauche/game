@@ -111,7 +111,7 @@ npm run typecheck      # tsc --noEmit (la porte de vérité des gates)
 npm run typecheck:fast # typecheck incrémental (~7-10 s)
 npm run gates          # gates de ci.yml manquantes ; `--serie` pour le diagnostic
 npm run galleries      # galeries QC -> public/galeries.html
-npm run ops:chantier -- <N> · ops:publier -- --detache · ops:worktrees   # ouvrir un chantier (.wt-<N>), publier le train entier détaché, inventorier
+npm run ops:chantier -- <N> · ops:publier -- --detache · ops:worktrees   # depuis N'IMPORTE QUEL worktree : ouvrir un chantier (.wt-<N>, à côté de l'arbre principal), publier le train entier détaché (verrou machine sondé, log rotationné), inventorier/purger (jamais un worktree TENU)
 npm run relay:dev      # relay coop local ; relay:deploy pour publier
 gh workflow run deploy.yml --ref main   # prod — sur demande explicite SEULEMENT
 ```

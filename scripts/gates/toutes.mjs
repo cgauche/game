@@ -146,12 +146,12 @@ export const ECRIT_LU = {
       'écrirait la baseline, l.94-96), `ruleset-evaluate.mjs` (le corps du ruleset part par un fichier de ' +
       'os.tmpdir(), l.90-97), `fermer-depuis-main.test.mjs` (dépôts jetables de os.tmpdir()) et ' +
       '`justificatif.mjs`, atteint depuis 2026-09-04 par `pushes-justifies.mjs` : ses seules écritures ' +
-      'visent `<git-common-dir>/wfrp-justificatifs/` (justificatif.mjs:136,239-243,277,286-289), soit `.git/`, ' +
+      'visent le `.git` de l’arbre principal (`wfrp-justificatifs/`, justificatif.mjs:136,239-243,277,286-289), ' +
       'hors de l’arbre — et `pushes-justifies.test.mjs` n’éprouve que des fonctions PURES, sans disque ; LIT ' +
       '.github/workflows/ parce que `canari.test.mjs:17` et `ruleset-evaluate.test.mjs:13` lisent les ' +
       'workflows RÉELS, et scripts/guards/lib/ par le stock de `fermetures-non-citees.mjs` ; depuis ' +
       '2026-09-04, `faits-de-palier.mjs` écrit le JSON des faits à `--sortie`, sous `os.tmpdir()` par ' +
-      'défaut (`sortieParDefaut`), et crée `<git-common-dir>/wfrp-justificatifs/` par `cheminJustificatifs` ' +
+      'défaut (`sortieParDefaut`), et crée `wfrp-justificatifs/` dans le `.git` de l’arbre principal par `cheminJustificatifs` ' +
       '— `.git/`, hors de l’arbre ; depuis 2026-09-07 (#1709 B1), `depotGabarit.mjs` fabrique les dépôts ' +
       'jetables de `fermer-depuis-main.test.mjs` et `faits-de-palier.test.mjs` : ses seules écritures ' +
       '(`mkdtempSync`, `cpSync`, `rmSync` — depotGabarit.mjs:62,82,99-100) visent `os.tmpdir()` ; ' +

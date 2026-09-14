@@ -4,14 +4,15 @@
 // Rien ici ne touche l'arbre : le moteur reçoit des étapes FACTICES et un journal EN MÉMOIRE, les
 // verdicts reçoivent des listes de courses littérales. Ce que ce fichier ne couvre pas est dit :
 // les `jouer` réels (rebase, build-all, gates, push, gh) ne sont jugés que par le train joué.
-import test, { describe } from 'node:test'
+import test, { after, describe } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   ETAPES,
   RACINE,
+  VERROU_TIMEOUT_MIN,
   commandeInterdite,
   corpsDePilotage,
   correspondGlob,
@@ -25,15 +26,19 @@ import {
   marquePublication,
   messageDeDerives,
   modeDuLog,
+  motifDeRotation,
   nomDeJournal,
+  nomDeRotation,
   optionsDe,
   partitionSales,
   plageDeCitations,
   planDeReprise,
   prerequisDesGates,
+  rotationnerLog,
   sansOptionsGlobales,
   synchroniserAgents,
   titreDeCommit,
+  verdictDeSondeDuVerrou,
   verdictDesRuns,
 } from './publier.mjs'
 
@@ -42,7 +47,14 @@ const NOMS = ETAPES.map((e) => e.nom)
 // ── optionsDe ──────────────────────────────────────────────────────────────────────────
 
 test('optionsDe : les drapeaux et l’option à valeur, sans grammaire empruntée', () => {
-  assert.deepEqual(optionsDe([]), { detache: false, reprendre: false, etapes: false, ciTimeoutMin: 40, inconnus: [] })
+  assert.deepEqual(optionsDe([]), {
+    detache: false,
+    reprendre: false,
+    etapes: false,
+    ciTimeoutMin: 40,
+    verrouTimeoutMin: VERROU_TIMEOUT_MIN,
+    inconnus: [],
+  })
   assert.equal(optionsDe(['--detache']).detache, true)
   assert.equal(optionsDe(['--reprendre']).reprendre, true)
   assert.equal(optionsDe(['--etapes']).etapes, true)
@@ -52,6 +64,18 @@ test('optionsDe : les drapeaux et l’option à valeur, sans grammaire emprunté
   // Une valeur absurde ne DÉGRADE pas la borne : le défaut tient.
   assert.equal(optionsDe(['--ci-timeout-min', 'zero']).ciTimeoutMin, 40)
   assert.deepEqual(optionsDe(['--force']).inconnus, ['--force'])
+})
+
+test('optionsDe : la borne de la SONDE DU VERROU a son option, son défaut et son parse', () => {
+  assert.equal(VERROU_TIMEOUT_MIN, 60)
+  assert.equal(optionsDe([]).verrouTimeoutMin, VERROU_TIMEOUT_MIN)
+  assert.equal(optionsDe(['--verrou-timeout-min', '5']).verrouTimeoutMin, 5)
+  assert.deepEqual(optionsDe(['--verrou-timeout-min', '5']).inconnus, [])
+  assert.equal(optionsDe(['--verrou-timeout-min', 'zero']).verrouTimeoutMin, VERROU_TIMEOUT_MIN)
+  // Les deux bornes sont INDÉPENDANTES : l'une ne mange pas la valeur de l'autre.
+  const deux = optionsDe(['--ci-timeout-min', '12', '--verrou-timeout-min', '5'])
+  assert.equal(deux.ciTimeoutMin, 12)
+  assert.equal(deux.verrouTimeoutMin, 5)
 })
 
 // ── nomDeJournal ───────────────────────────────────────────────────────────────────────
@@ -67,8 +91,8 @@ test('nomDeJournal : une branche devient un NOM DE FICHIER légal', () => {
 // ── planDeReprise / etatDeLEtape ───────────────────────────────────────────────────────
 
 test('planDeReprise : journal vide → la première étape', () => {
-  assert.equal(planDeReprise(journalVide('b'), NOMS), NOMS[0])
-  assert.equal(planDeReprise(undefined, NOMS), NOMS[0])
+  assert.equal(planDeReprise(journalVide('b'), NOMS, 'aaa'), NOMS[0])
+  assert.equal(planDeReprise(undefined, NOMS, 'aaa'), NOMS[0])
 })
 
 test('planDeReprise : la première étape NON verte', () => {
@@ -76,19 +100,48 @@ test('planDeReprise : la première étape NON verte', () => {
     tete: 'aaa',
     etapes: { preflight: { etat: 'vert', tete: 'aaa' }, derives: { etat: 'vert', tete: 'aaa' }, rebase: { etat: 'rouge', tete: 'aaa' } },
   }
-  assert.equal(planDeReprise(journal, NOMS), 'rebase')
+  assert.equal(planDeReprise(journal, NOMS, 'aaa'), 'rebase')
 })
 
 test('planDeReprise : tout vert POUR CETTE TÊTE → rien à jouer', () => {
   const journal = { tete: 'aaa', etapes: Object.fromEntries(NOMS.map((n) => [n, { etat: 'vert', tete: 'aaa' }])) }
-  assert.equal(planDeReprise(journal, NOMS), null)
+  assert.equal(planDeReprise(journal, NOMS, 'aaa'), null)
 })
 
 test('planDeReprise : une étape verte pour une AUTRE tête est À FAIRE (2ᵉ lot sur la même branche)', () => {
   const journal = { tete: 'bbb', etapes: Object.fromEntries(NOMS.map((n) => [n, { etat: 'vert', tete: 'aaa' }])) }
-  assert.equal(planDeReprise(journal, NOMS), NOMS[0])
-  assert.equal(etatDeLEtape(journal, 'ci'), 'à faire (verte pour une autre tête)')
-  assert.equal(etatDeLEtape({ tete: 'aaa', etapes: {} }, 'ci'), 'à faire')
+  assert.equal(planDeReprise(journal, NOMS, 'bbb'), NOMS[0])
+  assert.equal(etatDeLEtape(journal, 'ci', 'bbb'), 'à faire (verte pour une autre tête)')
+  assert.equal(etatDeLEtape({ tete: 'aaa', etapes: {} }, 'ci', 'aaa'), 'à faire')
+})
+
+test('planDeReprise : la règle de tête porte sur la tête VIVANTE, et une étape SANS estampille est à faire', () => {
+  // La tête PUBLIÉE du journal ne décide de rien : seule la tête vivante est comparée.
+  const publie = { tete: 'aaa', etapes: Object.fromEntries(NOMS.map((n) => [n, { etat: 'vert', tete: 'aaa' }])) }
+  assert.equal(planDeReprise(publie, NOMS, 'bbb'), NOMS[0])
+  assert.equal(planDeReprise(publie, NOMS, 'aaa'), null)
+  // Une étape estampillée `null` (journal d'avant la règle) N'est PAS verte pour toute tête.
+  const sansEstampille = {
+    tete: 'aaa',
+    etapes: Object.fromEntries(NOMS.map((n) => [n, { etat: 'vert', tete: n === 'preflight' ? null : 'aaa' }])),
+  }
+  assert.equal(planDeReprise(sansEstampille, NOMS, 'aaa'), 'preflight')
+  assert.equal(etatDeLEtape(sansEstampille, 'preflight', 'aaa'), 'à faire (verte pour une autre tête)')
+  assert.equal(etatDeLEtape(publie, 'ci', 'aaa'), 'vert')
+})
+
+test('planDeReprise / etatDeLEtape : une étape SANS estampille est à faire, MÊME sans tête vivante', () => {
+  // L'échappatoire fermée : `null !== null` est FAUX — une étape estampillée `null` jugée alors que
+  // la tête vivante n'a pas pu être mesurée se déclarait verte. L'ABSENCE d'estampille décide seule.
+  const sansEstampille = {
+    tete: 'aaa',
+    etapes: Object.fromEntries(NOMS.map((n) => [n, { etat: 'vert', tete: n === 'preflight' ? null : 'aaa' }])),
+  }
+  assert.equal(planDeReprise(sansEstampille, NOMS, null), 'preflight')
+  assert.equal(etatDeLEtape(sansEstampille, 'preflight', null), 'à faire (verte pour une autre tête)')
+  // Et avec une tête vivante NOMMÉE, le verdict est le même.
+  assert.equal(planDeReprise(sansEstampille, NOMS, 'aaa'), 'preflight')
+  assert.equal(etatDeLEtape(sansEstampille, 'preflight', 'aaa'), 'à faire (verte pour une autre tête)')
 })
 
 // ── jouerLeTrain (étapes factices) ─────────────────────────────────────────────────────
@@ -130,6 +183,27 @@ test('jouerLeTrain : saute ce que dejaFaite déclare', () => {
   const journal = journalVide('b')
   jouerLeTrain({}, [factice('un', { ok: true }, { joues, deja: true }), factice('deux', { ok: true }, { joues })], journal)
   assert.deepEqual(joues, ['deux'])
+})
+
+test('jouerLeTrain : une étape DÉJÀ FAITE s’ENREGISTRE, estampillée à la tête VIVANTE du ctx', () => {
+  const sauves = []
+  const journal = journalVide('b')
+  jouerLeTrain({ tete: 'vivante' }, [factice('un', { ok: true }, { deja: true }), factice('deux', { ok: true })], journal, {
+    sauver: (j) => sauves.push(Object.keys(j.etapes).join('+')),
+  })
+  const vue = journal.etapes.un
+  assert.equal(vue.etat, 'vert')
+  assert.equal(vue.detail.dejaFaite, true)
+  assert.equal(vue.tete, 'vivante')
+  assert.ok(vue.debut && vue.fin, 'une étape enregistrée porte ses bornes de temps')
+  // Elle est SAUVÉE comme une étape jouée — le journal du disque la porte.
+  assert.deepEqual(sauves, ['un', 'un+deux'])
+  // Une étape JOUÉE s’estampille à la même tête vivante, jamais à la tête publiée du journal.
+  assert.equal(journal.etapes.deux.tete, 'vivante')
+  // Le détail PRÉCÉDENT survit : `ci.dejaFaite` relit `detail.etat`, l’écraser resonderait la course.
+  const repris = { ...journalVide('b'), etapes: { ci: { etat: 'vert', tete: 'vivante', detail: { etat: 'verte' } } } }
+  jouerLeTrain({ tete: 'vivante' }, [factice('ci', { ok: true }, { deja: true })], repris)
+  assert.deepEqual(repris.etapes.ci.detail, { etat: 'verte', dejaFaite: true })
 })
 
 test('jouerLeTrain : le journal est écrit APRÈS CHAQUE étape', () => {
@@ -410,6 +484,91 @@ test('modeDuLog : l’ENFANT de `--detache` n’ouvre JAMAIS en troncature — l
   assert.equal(modeDuLog({ reprendre: false, enfant: true }), 'a')
   assert.equal(modeDuLog({ reprendre: true, enfant: true }), 'a')
   assert.equal(modeDuLog(), 'w')
+})
+
+// ── sonde du verrou ───────────────────────────────────────────────────────────────────
+
+test('verdictDeSondeDuVerrou : les cinq cas de la sonde du verrou machine', () => {
+  const debut = 1_000_000
+  const tenant = { pid: 4242, cwd: 'C:\\arbre', date: '2026-09-14T10:00:00.000Z' }
+  // 1. Aucun refus du verrou (rien joué encore, ou série jouée) : on (re)joue la série.
+  assert.equal(verdictDeSondeDuVerrou({ status: null, tenantVivant: null, debut, maintenant: debut, timeoutMin: 60 }), 'rejouer')
+  assert.equal(verdictDeSondeDuVerrou({ status: 0, tenantVivant: null, debut, maintenant: debut, timeoutMin: 60 }), 'rejouer')
+  assert.equal(verdictDeSondeDuVerrou({ status: 1, tenantVivant: null, debut, maintenant: debut, timeoutMin: 60 }), 'rejouer')
+  // 2. Refus 2, tenant VIVANT, sous la borne : on sonde.
+  assert.equal(
+    verdictDeSondeDuVerrou({ status: 2, tenantVivant: tenant, debut, maintenant: debut + 59 * 60_000, timeoutMin: 60 }),
+    'sonder',
+  )
+  // 3. Refus 2 SANS tenant vivant, sous la borne : rouge ORPHELIN (le 2 ne vient que du verrou).
+  assert.equal(
+    verdictDeSondeDuVerrou({ status: 2, tenantVivant: null, debut, maintenant: debut, timeoutMin: 60 }),
+    'rouge-orphelin',
+  )
+  // 4. Borne atteinte, tenant vivant : rouge BORNE.
+  assert.equal(
+    verdictDeSondeDuVerrou({ status: 2, tenantVivant: tenant, debut, maintenant: debut + 60 * 60_000, timeoutMin: 60 }),
+    'rouge-borne',
+  )
+  // 5. Borne atteinte ET tenant mort au MÊME tour : la borne PRIME — on a bien attendu 60 min, et le
+  //    refus doit dire « sondé 60 min », pas « aucun tenant vivant ».
+  assert.equal(
+    verdictDeSondeDuVerrou({ status: 2, tenantVivant: null, debut, maintenant: debut + 60 * 60_000, timeoutMin: 60 }),
+    'rouge-borne',
+  )
+})
+
+// ── rotation du log ───────────────────────────────────────────────────────────────────
+
+test('nomDeRotation : `<nom>.log` devient `<nom>.<AAAAMMJJ-HHMMSS>.log`', () => {
+  const date = new Date(2026, 8, 14, 3, 7, 9) // 14 septembre 2026, 03:07:09 — heure LOCALE
+  assert.equal(
+    nomDeRotation('/c/cache/publication/chantier_1751-ops-partout.log', date),
+    '/c/cache/publication/chantier_1751-ops-partout.20260914-030709.log',
+  )
+  assert.equal(nomDeRotation('main.log', new Date(2026, 11, 1, 23, 59, 59)), 'main.20261201-235959.log')
+})
+
+describe('rotationnerLog', () => {
+  // Fixture LOCALE : un dossier de cache jetable, jamais `node_modules/.cache` de l'arbre.
+  const dossier = mkdtempSync(join(tmpdir(), 'publier-rotation-'))
+  const log = join(dossier, 'chantier_1751.log')
+  after(() => rmSync(dossier, { recursive: true, force: true }))
+
+  test('un log NON VIDE est tourné ; le log courant libéré ; un log vide ou absent ne l’est pas', () => {
+    assert.equal(rotationnerLog(log, new Date(2026, 8, 14, 3, 7, 9)), null, 'log absent : rien à tourner')
+    writeFileSync(log, '')
+    assert.equal(rotationnerLog(log, new Date(2026, 8, 14, 3, 7, 9)), null, 'log vide : rien à tourner')
+    writeFileSync(log, 'PUBLICATION: vert abc\n')
+    const tourne = rotationnerLog(log, new Date(2026, 8, 14, 3, 7, 9))
+    assert.equal(tourne, join(dossier, 'chantier_1751.20260914-030709.log'))
+    assert.equal(readFileSync(tourne, 'utf8'), 'PUBLICATION: vert abc\n')
+    assert.equal(existsSync(log), false, 'le log courant est libéré — le run neuf le recrée vide')
+  })
+
+  test('le bornage est par PÉREMPTION d’ÂGE, et il ne touche QUE les logs tournés', () => {
+    const vieux = join(dossier, 'chantier_1751.20250101-000000.log')
+    const recent = join(dossier, 'chantier_1751.20260914-030710.log')
+    const voisin = join(dossier, 'chantier_1751.json.31448.tmp')
+    const autre = join(dossier, 'chantier_1751.log')
+    for (const f of [vieux, recent, voisin, autre]) writeFileSync(f, 'x')
+    const perime = Date.now() / 1000 - 8 * 24 * 60 * 60
+    utimesSync(vieux, perime, perime)
+    utimesSync(voisin, perime, perime)
+    rotationnerLog(autre, new Date(2026, 8, 14, 4, 0, 0))
+    assert.equal(existsSync(vieux), false, 'un log tourné de plus de 7 jours part')
+    assert.equal(existsSync(recent), true, 'un log tourné récent reste')
+    assert.equal(existsSync(voisin), true, 'le tmp du JOURNAL n’est pas un log tourné')
+  })
+})
+
+test('motifDeRotation : il ne prend QUE les logs tournés — ni le log courant, ni le tmp du journal', () => {
+  const motif = motifDeRotation('/c/cache/publication/chantier_1751.log')
+  assert.equal(motif.test('chantier_1751.20260914-030709.log'), true)
+  assert.equal(motif.test('chantier_1751.log'), false)
+  assert.equal(motif.test('chantier_1751.json.31448.tmp'), false)
+  // Le point du nom de branche est un POINT, jamais un joker : un autre log ne tombe pas dedans.
+  assert.equal(motifDeRotation('a.b.log').test('axb.20260914-030709.log'), false)
 })
 
 // ── dejaFaite de l'étape `docs` ──────────────────────────────────────────────

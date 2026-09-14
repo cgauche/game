@@ -1,13 +1,15 @@
 // OUVERTURE D'UN CHANTIER — le geste que chaque session recodait au scratchpad : poser un worktree
 // lié `.wt-<nom>` sur une branche `chantier/<nom>` issue d'`origin/main`, puis l'équiper.
 //
-// Pourquoi un outil du dépôt et pas trois lignes de shell : les trois façons de se tromper sont
-// TOUJOURS les mêmes, et aucune ne se voit tout de suite — poser le worktree DEPUIS un worktree (il
-// devient imbriqué, `scripts/guards/lib/arbreImbrique.mjs` refuse alors le commit qui le stage),
-// partir de `HEAD` au lieu d'`origin/main` (le chantier naît en retard), et réutiliser un nom déjà
-// pris (la branche existe : `git worktree add -b` rend un message que personne ne relit).
-// Chaque refus est donc NOMMÉ ici, une fois, et le cas « cible déjà là » se distingue du cas
-// « branche déjà là » : ce ne sont pas les mêmes gestes de sortie.
+// Pourquoi un outil du dépôt et pas trois lignes de shell : les façons de se tromper sont TOUJOURS
+// les mêmes, et aucune ne se voit tout de suite — partir de `HEAD` au lieu d'`origin/main` (le
+// chantier naît en retard) et réutiliser un nom déjà pris (la branche existe : `git worktree add -b`
+// rend un message que personne ne relit). Chaque refus est donc NOMMÉ ici, une fois, et le cas
+// « cible déjà là » se distingue du cas « branche déjà là » : ce ne sont pas les mêmes gestes de sortie.
+//
+// La troisième — poser le worktree SOUS un worktree, que `scripts/guards/lib/arbreImbrique.mjs`
+// refuse ensuite au commit — est hors de portée : la cible et tous les gestes git partent de l'arbre
+// PRINCIPAL résolu par git (`arbrePrincipal`), d'où que l'outil soit lancé.
 //
 // Rien n'est jamais détruit : ni `--force`, ni suppression. Un `npm ci` rouge LAISSE le worktree et
 // le dit — c'est un équipement qui manque, pas un chantier à défaire.
@@ -17,8 +19,8 @@ import { spawnSync } from 'node:child_process'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ECRIT_LU } from '../gates/toutes.mjs'
-import { fetchOrigin, lireGit, natureDuChemin, sortieOuNull } from '../guards/lib/gitPorte.mjs'
-import { estArbrePrincipal, portDev, urlDev } from '../port-dev.mjs'
+import { arbrePrincipal, fetchOrigin, lireGit, natureDuChemin, sortieOuNull } from '../guards/lib/gitPorte.mjs'
+import { portDev, urlDev } from '../port-dev.mjs'
 
 /** Racine de l'arbre qui porte CE script. */
 export const RACINE = fileURLToPath(new URL('../..', import.meta.url))
@@ -150,18 +152,16 @@ export function creerChantier({ racine = RACINE, nom, sansCi = false, git = lire
   if (!nomValide(nom)) {
     return { ok: false, refus: `nom de chantier invalide : « ${nom} » — forme attendue : ${FORME_DITE}` }
   }
-  if (!estArbrePrincipal(racine)) {
-    return {
-      ok: false,
-      refus: `lance depuis l'arbre principal, pas depuis un worktree (${racine}) — ` +
-        'un worktree posé sous un worktree est imbriqué, et le hook de commit le refuse.',
-    }
-  }
+  // L'ouverture se joue depuis N'IMPORTE QUEL worktree : la cible et tous les gestes git partent de
+  // l'ARBRE PRINCIPAL, résolu par git (`arbrePrincipal`) — `.wt-<nom>` ne peut se poser que là.
+  const vuPrincipal = arbrePrincipal(racine)
+  if (!vuPrincipal.disponible) return { ok: false, refus: `arbre principal introuvable : ${vuPrincipal.raison}` }
+  const principal = vuPrincipal.valeur
 
-  const cible = cibleDe(racine, nom)
+  const cible = cibleDe(principal, nom)
   const branche = brancheDe(nom)
 
-  const vuBranche = git(['rev-parse', '--verify', '--quiet', `refs/heads/${branche}`], { cwd: racine, site: 'git rev-parse' })
+  const vuBranche = git(['rev-parse', '--verify', '--quiet', `refs/heads/${branche}`], { cwd: principal, site: 'git rev-parse' })
   if (!vuBranche.disponible) return { ok: false, refus: `branche illisible : ${vuBranche.raison}` }
   const brancheExiste = !vuBranche.absent && vuBranche.valeur.status === 0
   const cibleExiste = natureDuChemin(cible) !== 'absent'
@@ -169,18 +169,18 @@ export function creerChantier({ racine = RACINE, nom, sansCi = false, git = lire
   const refus = refusDeCreation({ cibleExiste, brancheExiste, nom, cible })
   if (refus) return { ok: false, refus, cible, branche }
 
-  const vuFetch = fetch({ cwd: racine })
+  const vuFetch = fetch({ cwd: principal })
   if (!vuFetch.disponible) {
     return { ok: false, refus: `origin non consultable, le chantier ne peut pas partir d'origin/main : ${vuFetch.raison}` }
   }
 
-  const vuAdd = git(['worktree', 'add', '-b', branche, cible, 'origin/main'], { cwd: racine, site: 'git worktree add' })
+  const vuAdd = git(['worktree', 'add', '-b', branche, cible, 'origin/main'], { cwd: principal, site: 'git worktree add' })
   if (!vuAdd.disponible) return { ok: false, refus: `git worktree add a échoué : ${vuAdd.raison}`, cible, branche }
   if (vuAdd.absent || vuAdd.valeur.status !== 0) {
     return { ok: false, refus: `git worktree add a échoué (code ${vuAdd.absent ? 'objet absent' : vuAdd.valeur.status})`, cible, branche }
   }
 
-  const base = (sortieOuNull(git(['rev-parse', '--short', 'origin/main'], { cwd: racine, site: 'git rev-parse' })) ?? '').trim() || 'inconnue'
+  const base = (sortieOuNull(git(['rev-parse', '--short', 'origin/main'], { cwd: principal, site: 'git rev-parse' })) ?? '').trim() || 'inconnue'
   const resume = resumeDeChantier({ cible, branche, base, port: portDev(cible), url: urlDev(cible) })
 
   if (sansCi) return { ok: true, cible, branche, base, resume, npmJoue: false }

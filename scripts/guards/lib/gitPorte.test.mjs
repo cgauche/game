@@ -9,7 +9,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { STATUS_DLL_INIT_FAILED } from './spawnResilient.mjs'
-import { classer, commitsDe, estAncetre, estRepertoire, fetchOrigin, lireGit, natureDuChemin, raisonCourte, sortieOuNull } from './gitPorte.mjs'
+import { arbrePrincipal, classer, commitsDe, estAncetre, estRepertoire, fetchOrigin, lireGit, natureDuChemin, raisonCourte, sortieOuNull } from './gitPorte.mjs'
 import { instanceDeDepot } from './depotGabarit.mjs'
 
 const ZERO = '0'.repeat(40)
@@ -200,6 +200,81 @@ test('fetchOrigin : une origine LOCALE réelle met `origin/main` à jour ; sans 
     jeter(amont.racine)
     jeter(aval)
   }
+})
+
+// L'ARBRE PRINCIPAL : la résolution que trois outils re-posaient à la main. Les formes de réponse
+// sont jouées avec un `git` INJECTÉ (aucun sous-module à fabriquer sur le disque pour cela), puis le
+// fait qui compte est mesuré contre git RÉEL : depuis un WORKTREE, la réponse est l'arbre principal.
+test('arbrePrincipal : le PARENT du .git commun, séparateurs POSIX, casse CONSERVÉE', () => {
+  const gitQuiRend = (stdout) => (args) => {
+    assert.deepEqual(args, ['rev-parse', '--path-format=absolute', '--git-common-dir'])
+    return { disponible: true, valeur: { status: 0, stdout, stderr: '' } }
+  }
+  assert.deepEqual(arbrePrincipal('C:/x/Game/.wt-42', gitQuiRend('C:/x/Game/.git\n')),
+    { disponible: true, valeur: 'C:/x/Game' })
+  // La casse rendue sert de `cwd` et de préfixe de cible : l'abaisser casserait un chemin
+  // case-sensible (les fixtures `mkdtemp` de ce dépôt en portent, et `test:ops` tourne sur ubuntu).
+  assert.deepEqual(arbrePrincipal('/tmp/depot-Ab9Z/.wt-42', gitQuiRend('/tmp/depot-Ab9Z/.git')),
+    { disponible: true, valeur: '/tmp/depot-Ab9Z' })
+  assert.deepEqual(arbrePrincipal('C:\\x\\Game', gitQuiRend('C:\\x\\Game\\.git\n')),
+    { disponible: true, valeur: 'C:/x/Game' })
+})
+
+test('arbrePrincipal : deux refus NOMMÉS, jamais un repli sur le cwd', () => {
+  const gitQuiRend = (stdout) => () => ({ disponible: true, valeur: { status: 0, stdout, stderr: '' } })
+
+  // Git MUET : la seule forme que le premier refus garde, et elle s'injecte (git ne la produit pas).
+  for (const vide of ['', '   ']) {
+    const vu = arbrePrincipal('/x/nu.git', gitQuiRend(vide))
+    assert.equal(vu.disponible, false, `« ${JSON.stringify(vide)} » : rien ne se déduit d'une réponse vide`)
+    assert.match(vu.raison, /rend une réponse vide/)
+    assert.equal(vu.valeur, undefined, 'aucune valeur : surtout pas le cwd')
+  }
+
+  // Le DÉPÔT NU est mesuré contre git RÉEL : sous `--path-format=absolute` il rend son chemin ABSOLU
+  // (`…/depot.git`), jamais `.` — c'est le second refus qui le NOMME.
+  const base = mkdtempSync(join(tmpdir(), 'nu-'))
+  const nu = join(base, 'depot.git')
+  try {
+    execFileSync('git', ['init', '-q', '--bare', nu], { encoding: 'utf8' })
+    const vuNu = arbrePrincipal(nu)
+    assert.equal(vuNu.disponible, false, "un dépôt nu n'a pas d'arbre principal")
+    assert.match(vuNu.raison, /hors d'un arbre/)
+    assert.match(vuNu.raison, /dépôt nu/, 'le refus NOMME le dépôt nu')
+    assert.equal(vuNu.valeur, undefined, 'aucune valeur : surtout pas le cwd')
+  } finally { jeter(base) }
+
+  const sousModule = arbrePrincipal('/x/Game/sub', gitQuiRend('/x/Game/.git/modules/sub\n'))
+  assert.equal(sousModule.disponible, false)
+  assert.match(sousModule.raison, /hors d'un arbre/)
+  assert.match(sousModule.raison, /sous-module ou --separate-git-dir/)
+  assert.match(sousModule.raison, /modules\/sub/, 'le refus porte ce que git a rendu')
+
+  const enPanne = arbrePrincipal('/x', () => ({ disponible: false, raison: 'cwd inexistant : /x' }))
+  assert.equal(enPanne.disponible, false)
+  assert.match(enPanne.raison, /cwd inexistant : \/x/)
+
+  const horsDepot = arbrePrincipal('/x', () => ({ disponible: true, absent: true }))
+  assert.equal(horsDepot.disponible, false)
+  assert.match(horsDepot.raison, /git n'y connaît pas de dépôt/)
+
+  const code = arbrePrincipal('/x', () => ({ disponible: true, valeur: { status: 128, stdout: '', stderr: '' } }))
+  assert.equal(code.disponible, false)
+  assert.match(code.raison, /rend 128/)
+})
+
+test('arbrePrincipal : depuis un WORKTREE RÉEL, la réponse est l’arbre PRINCIPAL (git réel)', () => {
+  const { racine, g } = depot()
+  const lie = join(racine, '.wt-sonde')
+  try {
+    g('worktree', 'add', '-q', '-b', 'sonde', lie)
+    const depuisLie = arbrePrincipal(lie)
+    const depuisPrincipal = arbrePrincipal(racine)
+    assert.equal(depuisLie.disponible, true, depuisLie.raison)
+    assert.equal(depuisLie.valeur, depuisPrincipal.valeur, 'le worktree et le principal répondent le MÊME arbre')
+    assert.equal(depuisLie.valeur.toLowerCase(), racine.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase())
+    assert.equal(natureDuChemin(depuisLie.valeur), 'repertoire', 'la valeur est utilisable comme cwd')
+  } finally { jeter(racine) }
 })
 
 test('classer : la RAISON est la première ligne significative, bornée à 200 caractères', () => {

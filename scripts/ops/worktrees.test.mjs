@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import {
-  CLASSES, classerWorktree, comptesParClasse, inventaire, ligneDInventaire, parseWorktrees, purger,
+  CLASSES, arbresTenus, classerWorktree, comptesParClasse, inventaire, ligneDInventaire, parseWorktrees, purger,
 } from './worktrees.mjs'
 
 const PORCELAIN = [
@@ -65,9 +65,14 @@ test('parseWorktrees d’une sortie VIDE ne rend rien (et ne jette pas)', () => 
   assert.deepEqual(parseWorktrees(null), [])
 })
 
+// `tenus` est l'ensemble NORMALISÉ des arbres que le processus courant tient : il est INJECTÉ ici
+// (fixture locale), jamais lu du disque — le classement reste pur.
+const TENUS = new Set(['/dep/.wt-tenu', '/dep/.wt-script'])
+
 test('classerWorktree : l’ordre du RISQUE est total, une combinaison ne rend qu’une classe', () => {
   const cas = [
     [{ principal: true, sale: true, absent: true, verrouille: true, fusionne: true }, 'principal'],
+    [{ chemin: '/dep/.wt-tenu', absent: true, sale: true, verrouille: true, fusionne: true }, 'tenu'],
     [{ absent: true, sale: true, verrouille: true, fusionne: true }, 'absent'],
     [{ verrouille: true, sale: true, fusionne: true }, 'verrouillé'],
     [{ sale: true, fusionne: true }, 'sale'],
@@ -78,9 +83,53 @@ test('classerWorktree : l’ordre du RISQUE est total, une combinaison ne rend q
     [{ fusionne: true }, 'propre+fusionné'],
   ]
   for (const [etat, attendu] of cas) {
-    assert.equal(classerWorktree(etat), attendu, `${JSON.stringify(etat)} → ${attendu}`)
+    assert.equal(classerWorktree(etat, { tenus: TENUS }), attendu, `${JSON.stringify(etat)} → ${attendu}`)
   }
+  assert.equal(CLASSES.length, 7, 'sept classes, et le verdict vit à UN endroit')
   assert.deepEqual([...new Set(cas.map(([, c]) => c))].sort(), [...CLASSES].sort())
+})
+
+// Un arbre TENU par ce processus est second dans l'ordre du risque : il passe devant `sale` comme
+// devant `propre+fusionné`. La question « que perdrait-on à le retirer ? » a ici une réponse propre :
+// le retrait se joue sous le processus qui l'occupe, et git le refuse ou le laisse à moitié fait.
+test('classerWorktree : un arbre TENU par ce processus n’est JAMAIS purgeable, et la raison le dit', () => {
+  const tenu = { chemin: '/dep/.wt-tenu', fusionne: true }
+  assert.equal(classerWorktree(tenu, { tenus: TENUS }), 'tenu')
+  assert.equal(classerWorktree(tenu), 'propre+fusionné', 'sans `tenus`, rien ne le distingue — c’est CE processus qui le sait')
+  // La casse et les séparateurs ne changent pas le verdict (Windows rend les deux formes).
+  assert.equal(classerWorktree({ chemin: 'C:\\dep\\.wt-tenu', fusionne: true }, { tenus: new Set(['c:/dep/.wt-tenu']) }), 'tenu')
+
+  const ligne = ligneDInventaire({ ...tenu, classe: 'tenu', branche: 'chantier/tenu' })
+  assert.deepEqual(ligne.split('\t').slice(0, 3), ['tenu', '/dep/.wt-tenu', 'chantier/tenu'])
+  assert.match(ligne.split('\t')[3], /tenu par ce processus \(script ou cwd\)/)
+  assert.match(ligne.split('\t')[3], /rejouer depuis un autre worktree/)
+  assert.deepEqual(comptesParClasse([{ classe: 'tenu' }, { classe: 'principal' }, { classe: 'tenu' }]),
+    { principal: 1, tenu: 2 }, 'il se COMPTE comme les autres, à sa place dans l’ordre')
+
+  // Et la purge ne le voit pas : elle ne retire que `propre+fusionné`.
+  const vus = []
+  const gestes = purger({
+    principal: '/dep',
+    worktrees: [{ classe: 'tenu', chemin: '/dep/.wt-tenu', branche: 'chantier/tenu' }],
+    git: (args) => { vus.push(args.join(' ')); return { disponible: true, valeur: { status: 0, stderr: '' } } },
+  })
+  assert.deepEqual(vus, [])
+  assert.deepEqual(gestes, [])
+})
+
+test('arbresTenus : l’arbre du SCRIPT et celui qui contient le cwd — le plus PROCHE, pas l’englobant', () => {
+  const worktrees = [{ chemin: '/dep' }, { chemin: '/dep/.wt-42' }, { chemin: '/dep/.wt-43' }]
+  // Le cwd est SOUS `.wt-42` : c'est cet arbre-là qui est tenu, pas `/dep` qui le préfixe aussi.
+  assert.deepEqual([...arbresTenus({ worktrees, racine: '/dep/.wt-43', cwd: '/dep/.wt-42/scripts/ops' })].sort(),
+    ['/dep/.wt-42', '/dep/.wt-43'])
+  assert.deepEqual([...arbresTenus({ worktrees, racine: '/dep', cwd: '/dep' })], ['/dep'])
+  // Un cwd hors du dépôt ne tient rien de plus que l'arbre du script.
+  assert.deepEqual([...arbresTenus({ worktrees, racine: '/dep/.wt-42', cwd: '/ailleurs' })], ['/dep/.wt-42'])
+  // Le préfixe se compare par SEGMENT : `/dep/.wt-42x` n'est pas dans `.wt-42` — c'est l'arbre
+  // principal qui le contient.
+  assert.deepEqual([...arbresTenus({ worktrees, racine: '/dep/.wt-42', cwd: '/dep/.wt-42x' })].sort(),
+    ['/dep', '/dep/.wt-42'])
+  assert.deepEqual([...arbresTenus({ worktrees, racine: 'C:\\Dep\\.WT-42', cwd: 'C:\\Dep' })], ['c:/dep/.wt-42'])
 })
 
 test('un verdict de fusion INCONNU ne rend JAMAIS purgeable', () => {
@@ -123,7 +172,7 @@ test('purger : un worktree ABSENT seul suffit à jouer `git worktree prune` (git
   }
   // Aucun `propre+fusionné` : sans le déclencheur `absent`, la taille ne se jouait pas et
   // l'inventaire répétait le worktree disparu à chaque passage.
-  const gestes = purger({ racine: '/dep', worktrees: [{ classe: 'absent', chemin: '/dep/.wt-perdu', branche: 'chantier/perdu' }], git })
+  const gestes = purger({ principal: '/dep', worktrees: [{ classe: 'absent', chemin: '/dep/.wt-perdu', branche: 'chantier/perdu' }], git })
   assert.deepEqual(vus, ['worktree prune'])
   assert.deepEqual(gestes.map((g) => g.geste), ['git worktree prune'])
   assert.equal(gestes[0].ok, true)
@@ -135,7 +184,7 @@ test('purger : sans absent NI fusionné, aucun geste — la taille ne se joue pa
     vus.push(args.join(' '))
     return { disponible: true, absent: false, valeur: { status: 0, stderr: '' } }
   }
-  const gestes = purger({ racine: '/dep', worktrees: [{ classe: 'sale', chemin: '/dep/.wt-sale' }, { classe: 'principal', chemin: '/dep' }], git })
+  const gestes = purger({ principal: '/dep', worktrees: [{ classe: 'sale', chemin: '/dep/.wt-sale' }, { classe: 'principal', chemin: '/dep' }], git })
   assert.deepEqual(vus, [])
   assert.deepEqual(gestes, [])
 })
@@ -169,7 +218,7 @@ test('inventaire RÉEL puis --purger : le fusionné PROPRE part, le SALE reste e
     assert.equal(parNom(vu.worktrees, '.wt-sale').classe, 'sale', 'même fusionné, un arbre SALE n’est pas purgeable')
     assert.match(ligneDInventaire(parNom(vu.worktrees, '.wt-sale')), /modifications non commitées/)
 
-    const gestes = purger({ racine, worktrees: vu.worktrees })
+    const gestes = purger({ principal: racine, worktrees: vu.worktrees })
     assert.deepEqual(gestes.filter((g) => !g.ok), [], JSON.stringify(gestes))
     assert.deepEqual(gestes.map((g) => g.geste.split(' ').slice(0, 3).join(' ')),
       ['git worktree remove', 'git branch -d', 'git worktree prune'])
@@ -195,7 +244,7 @@ test('un worktree dont le RÉPERTOIRE a disparu se classe absent, et la purge le
     const perdu = parNom(vu.worktrees, '.wt-perdu')
     assert.equal(perdu.classe, 'absent')
     assert.match(ligneDInventaire(perdu), /git worktree prune/)
-    const gestes = purger({ racine, worktrees: vu.worktrees })
+    const gestes = purger({ principal: racine, worktrees: vu.worktrees })
     assert.deepEqual(gestes.map((g) => g.geste), ['git worktree prune'], 'la taille se joue, et ELLE SEULE')
     assert.deepEqual(gestes.filter((g) => !g.ok), [], JSON.stringify(gestes))
     // Ni retrait ni suppression de branche : seule l'INSCRIPTION du worktree disparu est taillée.
@@ -213,8 +262,91 @@ test('origin non lu : l’inventaire s’imprime SANS verdict de fusion, et rien
     const propre = parNom(vu.worktrees, '.wt-propre')
     assert.equal(propre.fusionne, null)
     assert.equal(propre.classe, 'propre+hors-main', 'sans origin/main lu, on ne purge pas sur rien')
-    assert.deepEqual(purger({ racine, worktrees: vu.worktrees }), [])
+    assert.deepEqual(purger({ principal: racine, worktrees: vu.worktrees }), [])
     assert.equal(existsSync(join(racine, '.wt-propre')), true)
+  } finally { jeter() }
+})
+
+// Le `remove` qui ÉCHOUE laisse un dossier sur le disque (EPERM d'un arbre tenu par un autre
+// processus, mesuré sur `.wt-1736`). Sans re-mesure, la sortie annonçait le retrait et personne ne
+// savait qu'il restait un dossier à retirer à la main. `git` et la sonde de disque sont INJECTÉS.
+test('purger : un remove ROUGE dont le dossier RESTE se dit, avec le geste à la main et la branche', () => {
+  const vus = []
+  const git = (args) => {
+    vus.push(args.join(' '))
+    return args[1] === 'remove'
+      ? { disponible: true, valeur: { status: 1, stderr: 'fatal: failed to delete: Permission denied' } }
+      : { disponible: true, valeur: { status: 0, stderr: '' } }
+  }
+  const gestes = purger({
+    principal: '/dep',
+    worktrees: [{ classe: 'propre+fusionné', chemin: '/dep/.wt-bloque', branche: 'chantier/bloque' }],
+    git,
+    nature: (chemin) => (chemin === '/dep/.wt-bloque' ? 'repertoire' : 'absent'),
+  })
+  // La branche n'est PAS supprimée (le remove a échoué) ; la taille se joue ; puis la re-mesure parle.
+  assert.deepEqual(vus, ['worktree remove /dep/.wt-bloque', 'worktree prune'])
+  assert.deepEqual(gestes.map((g) => [g.geste, g.ok]), [
+    ['git worktree remove /dep/.wt-bloque', false],
+    ['git worktree prune', true],
+    ['re-mesure /dep/.wt-bloque', false],
+  ])
+  assert.match(gestes[2].detail, /dossier présent : à retirer à la main \(`rm -rf \/dep\/\.wt-bloque`\)/)
+  assert.match(gestes[2].detail, /branche `chantier\/bloque` conservée/)
+})
+
+// Le `remove` VERT qui laisse le dossier : git a désenregistré le worktree et rendu 0, mais un
+// fichier tenu par un autre processus a survécu à la suppression. La re-mesure porte donc sur TOUS
+// les chemins tentés, verts compris — sinon la sortie est « ok » et le dossier reste, muet.
+test('purger : un remove VERT dont le dossier RESTE est nommé lui aussi', () => {
+  const gestes = purger({
+    principal: '/dep',
+    worktrees: [{ classe: 'propre+fusionné', chemin: '/dep/.wt-reste', branche: 'chantier/reste' }],
+    git: () => ({ disponible: true, valeur: { status: 0, stderr: '' } }),
+    nature: (chemin) => (chemin === '/dep/.wt-reste' ? 'repertoire' : 'absent'),
+  })
+  assert.deepEqual(gestes.map((g) => [g.geste, g.ok]), [
+    ['git worktree remove /dep/.wt-reste', true],
+    ['git branch -d chantier/reste', true],
+    ['git worktree prune', true],
+    ['re-mesure /dep/.wt-reste', false],
+  ])
+  assert.match(gestes[3].detail, /retiré par git, dossier présent : à retirer à la main \(`rm -rf \/dep\/\.wt-reste`\)/)
+})
+
+test('purger : un remove rouge dont le dossier a bel et bien DISPARU ne dit rien de plus', () => {
+  const gestes = purger({
+    principal: '/dep',
+    worktrees: [{ classe: 'propre+fusionné', chemin: '/dep/.wt-parti', branche: 'chantier/parti' }],
+    git: (args) => ({ disponible: true, valeur: { status: args[1] === 'remove' ? 1 : 0, stderr: '' } }),
+    nature: () => 'absent',
+  })
+  assert.deepEqual(gestes.map((g) => g.geste), ['git worktree remove /dep/.wt-parti', 'git worktree prune'])
+  assert.equal(gestes.some((g) => g.geste.startsWith('re-mesure')), false)
+})
+
+// La classe `tenu` sur un dépôt RÉEL : le `cwd` du processus vit dans un worktree fusionné, donc
+// purgeable en tout point — sauf qu'il se scierait la branche. C'est le contrat de l'outil joué
+// depuis un worktree.
+test('inventaire RÉEL depuis un WORKTREE : cet arbre-là est `tenu`, et la purge ne le touche pas', () => {
+  const { racine, git, jeter } = depotAvecOrigin()
+  try {
+    git('worktree', 'add', '-q', '-b', 'chantier/ici', join(racine, '.wt-ici'), 'origin/main')
+    git('worktree', 'add', '-q', '-b', 'chantier/la', join(racine, '.wt-la'), 'origin/main')
+
+    // Lancé DEPUIS `.wt-ici` : c'est le `cwd` du processus qui désigne l'arbre tenu.
+    const vu = inventaire({ racine: join(racine, '.wt-ici'), cwd: join(racine, '.wt-ici', 'scripts') })
+    assert.equal(vu.ok, true, vu.refus)
+    assert.equal(vu.principal.replace(/\\/g, '/'), racine.replace(/\\/g, '/'), 'les gestes partent de l’arbre principal')
+    assert.equal(vu.worktrees[0].classe, 'principal')
+    assert.equal(parNom(vu.worktrees, '.wt-ici').classe, 'tenu')
+    assert.equal(parNom(vu.worktrees, '.wt-la').classe, 'propre+fusionné', 'l’autre reste purgeable')
+
+    const gestes = purger({ principal: vu.principal, worktrees: vu.worktrees })
+    assert.deepEqual(gestes.filter((g) => !g.ok), [], JSON.stringify(gestes))
+    assert.equal(existsSync(join(racine, '.wt-ici')), true, 'l’arbre tenu est intact')
+    assert.equal(existsSync(join(racine, '.wt-la')), false, 'l’autre est parti')
+    assert.match(git('branch', '--list', 'chantier/ici'), /chantier\/ici/, 'et sa branche avec')
   } finally { jeter() }
 })
 

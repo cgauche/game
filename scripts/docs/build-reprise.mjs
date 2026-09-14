@@ -365,10 +365,14 @@ npm run dev     # http://localhost:5173 (un CLONE garde le port historique)
 \`\`\`
 
 **Chantier et publication.** \`npm run ops:chantier -- <N>\` (\`${script('ops:chantier')}\`) ouvre le
-chantier du ticket \`<N>\` : il pose le worktree lié \`.wt-<N>\` sur \`origin/main\`, crée la branche
+chantier du ticket \`<N>\` depuis n'importe quel worktree du dépôt (le chantier se pose à côté de
+l'arbre principal) : il pose le worktree lié \`.wt-<N>\` sur \`origin/main\`, crée la branche
 \`chantier/<N>\`, y joue \`npm ci\` et imprime le port dev dérivé. \`npm run ops:publier -- --detache\`
 (\`${script('ops:publier')}\`) joue ensuite le train de publication ENTIER depuis ce worktree, détaché
-du harnais, et imprime son \`pid\` et son \`log\`.
+du harnais, et imprime son \`pid\` et son \`log\`. Une série tierce qui tient le verrou machine s'attend
+(sonde toutes les 30 s, bornée à 60 min, \`--verrou-timeout-min\`) ; un run neuf rotationne le log
+précédent en \`<branche>.<AAAAMMJJ-HHMMSS>.log\` (péremption 7 jours) — ce n'est pas une archive, le
+\`npm ci\` d'\`ops:chantier\` efface \`node_modules/.cache/\`.
 
 Le port n'est historique QUE pour un arbre principal ou un clone : un **worktree lié** en dérive un
 autre (5174-5272, \`scripts/port-dev.mjs\`) pour que deux arbres servis en même temps ne se recouvrent

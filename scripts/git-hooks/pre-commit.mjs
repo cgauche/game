@@ -42,6 +42,7 @@ import { porteAuPushManquante } from '../guards/lib/portePush.mjs';
 import { codeDePanne, docsDePorte, paquetsDArgv } from '../guards/lib/porteSpawn.mjs';
 import { cheminsMalNormalises, raisonDeRefusEol } from '../guards/lib/eolStage.mjs';
 import { defautsDeForme, familleDe, raisonDeRefusDeForme } from '../guards/memoire-forme.mjs';
+import { arbrePrincipal } from '../guards/lib/gitPorte.mjs';
 
 const DEBUT_MS = Date.now();
 
@@ -54,14 +55,12 @@ const DEBUT_MS = Date.now();
 //    (githooks(5)), donc process.cwd() la porte ; `rev-parse --show-toplevel` la normalise.
 //  - HOOK_TREE = arbre PRINCIPAL, seul garanti `npm install`é (un worktree d'agent ne porte souvent
 //    qu'un node_modules de caches). Il ne sert QU'À retrouver l'outillage installé, jamais à juger, et
-//    se calcule par `git rev-parse --git-common-dir` (rend le `.git` de l'arbre principal depuis
-//    n'importe quel worktree) ; à défaut, le dossier qui héberge ce fichier.
+//    se résout par `arbrePrincipal` (scripts/guards/lib/gitPorte.mjs, primitive UNIQUE : elle rend
+//    l'arbre principal depuis n'importe quel worktree) ; à défaut, le dossier qui héberge ce fichier.
 const DOSSIER_DU_HOOK = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const HOOK_TREE = (() => {
-  try {
-    const commun = execFileSync('git', ['rev-parse', '--git-common-dir'], { cwd: DOSSIER_DU_HOOK, encoding: 'utf8' }).trim();
-    return commun ? resolve(DOSSIER_DU_HOOK, commun, '..') : DOSSIER_DU_HOOK;
-  } catch { return DOSSIER_DU_HOOK; }
+  const vu = arbrePrincipal(DOSSIER_DU_HOOK);
+  return vu.disponible ? resolve(vu.valeur) : DOSSIER_DU_HOOK;
 })();
 const ROOT = (() => {
   try {

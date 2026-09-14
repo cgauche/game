@@ -10,7 +10,7 @@
 // commit qui casse `docs/raw/combat.md` réutiliserait un `docs:check` vert, la classe exacte de
 // l'incident 17926d5de.
 //
-// OÙ ILS VIVENT : `<git-common-dir>/wfrp-justificatifs/<cleTree>/<gate>.<cle>.<propre|sale>.json` —
+// OÙ ILS VIVENT : `<arbre principal>/.git/wfrp-justificatifs/<cleTree>/<gate>.<cle>.<propre|sale>.json` —
 // partagé par l'arbre principal et tous ses worktrees, et hors de `node_modules` (que `npm ci`
 // efface). Ce partage est JUSTE ici, parce que la clé est le CONTENU jugé : un justificatif écrit
 // depuis un worktree vaut pour le même contenu où qu'il soit. Il ne l'était pas pour le palier, qui
@@ -30,7 +30,8 @@
 // non stagé — 11 lignes mesurées sur l'arbre principal — refuserait tout push.
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { join } from 'node:path'
+import { arbrePrincipal } from './gitPorte.mjs'
 import { listerDossier } from './lister.mjs'
 
 /** L'accès disque INJECTABLE (paramètre `fs`) : les seuls membres que ce module appelle, jamais le
@@ -145,10 +146,13 @@ export function perimetreSale({ cwd = process.cwd() } = {}) {
   return lignes
 }
 
-/** `<git-common-dir>/wfrp-justificatifs/`, créé au besoin. */
+/** `<arbre principal>/.git/wfrp-justificatifs/`, créé au besoin. L'arbre principal est résolu par la
+ *  primitive UNIQUE (`arbrePrincipal`, gitPorte.mjs) : un worktree et son principal visent ainsi le
+ *  MÊME magasin. Une résolution indisponible JETTE — écrire un justificatif ailleurs le perdrait. */
 export function cheminJustificatifs({ cwd = process.cwd(), fs = FS } = {}) {
-  const commun = execFileSync('git', ['rev-parse', '--git-common-dir'], { cwd, encoding: 'utf8' }).trim()
-  const dossier = join(resolve(cwd, commun), 'wfrp-justificatifs')
+  const vu = arbrePrincipal(cwd)
+  if (!vu.disponible) throw new Error(`magasin de justificatifs introuvable : ${vu.raison}`)
+  const dossier = join(vu.valeur, '.git', 'wfrp-justificatifs')
   fs.mkdirSync(dossier, { recursive: true })
   return dossier
 }

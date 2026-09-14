@@ -34,7 +34,7 @@ import {
   cheminsGlobSuspects,
 } from './partition.mjs'
 import { refusOutillageLocal } from '../outillage-local.mjs'
-import { prendreVerrou, verrouRequis } from './verrou.mjs'
+import { estPidVivant, prendreVerrou, verrouRequis } from './verrou.mjs'
 import { ecrireJustificatif, nomDeGate, suiteComplete } from '../guards/lib/justificatif.mjs'
 import { PEREMPTION_MS, purgerPerimes } from '../guards/lib/purgerPerimes.mjs'
 import { entreesPerimees, messagePeremption } from '../guards/lib/domResiduStock.mjs'
@@ -67,21 +67,12 @@ const supprimer = (cible) => {
   }
 }
 
-const estVivant = (pid) => {
-  try {
-    process.kill(pid, 0)
-    return true
-  } catch {
-    return false
-  }
-}
-
 /** Ateliers des lanceurs morts (suppression refusée sur le coup, machine éteinte en plein run) :
  *  le lanceur suivant les balaie, ceux des lanceurs vivants restent intacts. */
 const balayerAteliersMorts = () => {
   for (const nom of fs.existsSync(ATELIERS) ? fs.readdirSync(ATELIERS) : []) {
     const pid = Number(nom)
-    if (!Number.isInteger(pid) || pid === process.pid || estVivant(pid)) continue
+    if (!Number.isInteger(pid) || pid === process.pid || estPidVivant(pid)) continue
     supprimer(path.join(ATELIERS, nom))
   }
 }
@@ -106,7 +97,7 @@ const verrou = !verrouRequis(filtres, estFichier)
   : prendreVerrou({
       commande: [process.execPath, ...process.argv.slice(1)].join(' '),
       cwd: RACINE,
-      estVivant,
+      estVivant: estPidVivant,
     })
 if (verrou.etat === 'refus') {
   console.error(verrou.message)

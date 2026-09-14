@@ -8,7 +8,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { refusOutillageLocal } from '../outillage-local.mjs'
-import { avecVerrouMachine, JETON_REENTRANCE, prendreVerrou, verrouRequis } from './verrou.mjs'
+import { avecVerrouMachine, JETON_REENTRANCE, lireTenant, prendreVerrou, tenantVivant, verrouRequis } from './verrou.mjs'
 
 test('entrée absente de l’arbre : refus qui NOMME l’arbre, l’outil et la cause', () => {
   const refus = refusOutillageLocal('/arbres/.wt-42', 'vitest', '/arbres/.wt-42/node_modules/vitest/vitest.mjs', () => false)
@@ -258,4 +258,23 @@ test('opt-out WFRP_SUITE_LOCK=0 : verrou IGNORÉ, mais l’avertissement le dit'
   assert.equal(hors.liberer, undefined)
   // Aucun fichier touché : l'opt-out ne dérange pas la suite qui tient le verrou.
   assert.equal(JSON.parse(fs.boite.contenu).pid, 1234)
+})
+
+// ── lecture du tenant : le seul lecteur du JSON, partagé par la prise et par la SONDE ────────────
+
+test('lireTenant : le contenu du verrou, ou `null` quand il est illisible ou sans PID', () => {
+  const tenant = { pid: 1234, commande: 'npm test', cwd: '/arbres/Game', date: '2026-09-14T10:00:00.000Z' }
+  assert.deepEqual(lireTenant(fsFactice(JSON.stringify(tenant)), '/tmp/wfrp-suite.lock'), tenant)
+  assert.equal(lireTenant(fsFactice('{pas du json'), '/tmp/wfrp-suite.lock'), null)
+  assert.equal(lireTenant(fsFactice(JSON.stringify({ commande: 'npm test' })), '/tmp/wfrp-suite.lock'), null)
+  assert.equal(lireTenant(fsFactice(), '/tmp/wfrp-suite.lock'), null)
+})
+
+test('tenantVivant : le tenant s’il VIT — un verrou de PID mort ne tient personne', () => {
+  const ecrit = JSON.stringify({ pid: 1234, cwd: '/arbres/Game', date: '2026-09-14T10:00:00.000Z' })
+  const vivant = tenantVivant({ chemin: '/tmp/wfrp-suite.lock', fs: fsFactice(ecrit), estVivant: () => true })
+  assert.equal(vivant.pid, 1234)
+  assert.equal(vivant.cwd, '/arbres/Game')
+  assert.equal(tenantVivant({ chemin: '/tmp/wfrp-suite.lock', fs: fsFactice(ecrit), estVivant: () => false }), null)
+  assert.equal(tenantVivant({ chemin: '/tmp/wfrp-suite.lock', fs: fsFactice(), estVivant: () => true }), null)
 })

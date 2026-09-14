@@ -24,6 +24,7 @@
 // partagent pas un hôte « fail-closed » sans que l'appelant sache laquelle il a jouée.
 import { spawnSync } from 'node:child_process'
 import { statSync } from 'node:fs'
+import { normaliserRacine } from '../../port-dev.mjs'
 import { BACKOFFS_MS, MARQUE_REJEU, attendreSync, estEchecDeChargement, rejeux } from './spawnResilient.mjs'
 
 /** Longueur maximale d'une `raison` : elle est DITE dans un refus de hook, une fois. */
@@ -214,6 +215,52 @@ export function commitsDe(ref, n, opts = {}) {
   if (!vu.disponible || vu.absent) return vu
   if (vu.valeur.status !== 0) return absent()
   return fait(vu.valeur.stdout.split(/\r?\n/).map((l) => l.trim()).filter(Boolean))
+}
+
+/**
+ * L'ARBRE PRINCIPAL du dépôt qui contient `cwd` — la racine des GESTES git d'un outil, depuis
+ * n'importe quel worktree (`ops:chantier`, `ops:worktrees`, les justificatifs, le pre-commit). Source
+ * UNIQUE de cette résolution : trois copies manuscrites la re-posaient, chacune avec son repli.
+ *
+ * `git rev-parse --path-format=absolute --git-common-dir` rend le `.git` COMMUN — celui de l'arbre
+ * principal, quel que soit le worktree d'où on demande (forme déjà mesurée contre git réel :
+ * `scripts/hooks/git-destructive-guard.test.mjs:284`). Son PARENT est l'arbre principal.
+ *
+ * DEUX REFUS NOMMÉS, jamais un repli sur `cwd` : un repli ferait poser un worktree SOUS un worktree,
+ * exactement le cas que les outils doivent rendre inexprimable.
+ *   - réponse VIDE : git n'a rien rendu, aucun chemin à interpréter ;
+ *   - chemin qui ne finit pas par `/.git` : dépôt NU, sous-module ou `--separate-git-dir` — le parent
+ *     n'est alors pas un arbre. Sous `--path-format=absolute`, un dépôt nu rend son chemin ABSOLU
+ *     (mesuré 2026-09-14 sur `git init --bare` : `C:/…/nu.git`), jamais `.`.
+ *
+ * VALEUR RENDUE : le chemin absolu, séparateurs POSIX, sans slash final — la CASSE est CONSERVÉE,
+ * parce que cette valeur sert de `cwd` et de préfixe de cible. `normaliserRacine` (qui abaisse la
+ * casse) ne sert ici qu'aux COMPARAISONS ; l'employer sur la valeur casserait tout chemin
+ * case-sensible (mesure du 2026-09-14 : `mkdtempSync` rend 8/8 suffixes porteurs d'une majuscule, et
+ * `test:ops` tourne sur `ubuntu-latest`, .github/workflows/ci.yml:10,35).
+ * @param {string} cwd @param {typeof lireGit} [git]
+ * @returns {{disponible:true, valeur:string}|{disponible:false, raison:string}}
+ */
+export function arbrePrincipal(cwd, git = lireGit) {
+  const vu = git(['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd, site: 'git rev-parse' })
+  if (!vu.disponible) return indisponible(`arbre principal non résolu depuis ${cwd} : ${vu.raison}`)
+  if (vu.absent) return indisponible(`arbre principal non résolu depuis ${cwd} : git n'y connaît pas de dépôt`)
+  if (vu.valeur.status !== 0) {
+    return indisponible(`arbre principal non résolu depuis ${cwd} : git rev-parse --git-common-dir rend ${vu.valeur.status}`)
+  }
+  const brut = String(vu.valeur.stdout).trim()
+  const compare = normaliserRacine(brut)
+  if (!compare) {
+    return indisponible(`arbre principal non résolu depuis ${cwd} : git rev-parse --git-common-dir rend une réponse vide`)
+  }
+  if (!compare.endsWith('/.git')) {
+    return indisponible(
+      `le répertoire git de ${cwd} est hors d'un arbre (${brut}) — dépôt nu (« …/x.git »), sous-module ` +
+        "ou --separate-git-dir : aucun arbre principal ne s'en déduit",
+    )
+  }
+  const chemin = brut.replace(/\\/g, '/').replace(/\/+$/, '')
+  return fait(chemin.slice(0, -'/.git'.length))
 }
 
 /** Le dépôt de ce projet, en https comme en ssh. Notion d'ORIGINE, donc hôte des lectures git : la

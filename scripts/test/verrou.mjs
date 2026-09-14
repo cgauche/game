@@ -22,6 +22,16 @@ export const CHEMIN_VERROU = path.join(os.tmpdir(), 'wfrp-suite.lock')
  *  l'environnement ne se propage qu'aux ENFANTS. */
 export const JETON_REENTRANCE = 'WFRP_SUITE_LOCK_TENU'
 
+/** Ce PID tourne-t-il ? `process.kill(pid, 0)` ne tue rien : il teste l'existence. */
+export function estPidVivant(pid) {
+  try {
+    process.kill(pid, 0)
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** Message de refus : qui tient le verrou, et les DEUX sorties (attendre, ou tuer / opt-out). */
 export function refusVerrou({ chemin, tenant }) {
   return [
@@ -49,14 +59,7 @@ export function prendreVerrou({
   cwd = '',
   env = process.env,
   fs = fsReel,
-  estVivant = (p) => {
-    try {
-      process.kill(p, 0)
-      return true
-    } catch {
-      return false
-    }
-  },
+  estVivant = estPidVivant,
   maintenant = () => new Date().toISOString(),
 } = {}) {
   if (env.WFRP_SUITE_LOCK === '0') {
@@ -161,12 +164,28 @@ export function verrouRequis(filtres, estFichier) {
   return filtres.length === 0 || !filtres.every((f) => estFichier(f))
 }
 
-/** Contenu du verrou, ou `null` s'il est illisible / sans PID exploitable. */
-function lireTenant(fs, chemin) {
+/**
+ * Contenu du verrou, ou `null` s'il est illisible / sans PID exploitable. SEUL lecteur du JSON
+ * `{ pid, commande, cwd, date }` — `prendreVerrou` et la sonde du verrou (`scripts/ops/publier.mjs`)
+ * passent tous deux par ici.
+ * @param {typeof fsReel} fs @param {string} chemin
+ */
+export function lireTenant(fs = fsReel, chemin = CHEMIN_VERROU) {
   try {
     const brut = JSON.parse(fs.readFileSync(chemin, 'utf8'))
     return Number.isInteger(brut?.pid) ? brut : null
   } catch {
     return null
   }
+}
+
+/**
+ * Le tenant du verrou s'il est VIVANT, sinon `null` — un verrou laissé par un PID mort ne tient
+ * personne (`prendreVerrou` le reprend). Mêmes deux primitives que la prise : `lireTenant` pour le
+ * contenu, `estPidVivant` pour la vie du PID.
+ * @param {{chemin?:string, fs?:typeof fsReel, estVivant?:(pid:number)=>boolean}} p
+ */
+export function tenantVivant({ chemin = CHEMIN_VERROU, fs = fsReel, estVivant = estPidVivant } = {}) {
+  const tenant = lireTenant(fs, chemin)
+  return tenant && estVivant(tenant.pid) ? tenant : null
 }

@@ -28,8 +28,9 @@
 // Un rebase INTERROMPU trouvé sur disque à la préflight est NOMMÉ, jamais avorté d'office.
 //
 // Usage : node scripts/ops/publier.mjs [--detache] [--reprendre] [--etapes] [--ci-timeout-min <n>]
+//                                      [--verrou-timeout-min <n>]
 import { spawnSync, spawn } from 'node:child_process'
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, writeFileSync, writeSync } from 'node:fs'
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, statSync, writeFileSync, writeSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -42,6 +43,8 @@ import { GENERATORS, SOURCES_LUES } from '../docs/build-all.mjs'
 import { MANAGED_ROOTS } from '../agents/compat-core.mjs'
 import { touchesDocSources } from '../git-hooks/docs-rebuild.mjs'
 import { ECRIT_LU, fichierDurees, prerequisAbsents, refusDePrerequis } from '../gates/toutes.mjs'
+import { PEREMPTION_MS, purgerPerimes } from '../guards/lib/purgerPerimes.mjs'
+import { CHEMIN_VERROU, lireTenant, tenantVivant } from '../test/verrou.mjs'
 import { resoudreOutilLocal } from '../lancer-local.mjs'
 
 /** L'arbre où VIT ce script — jamais `process.cwd()` : le train publie SON worktree. */
@@ -50,7 +53,14 @@ export const RACINE = fileURLToPath(new URL('../..', import.meta.url))
 /** Délai par défaut, en minutes, de la sonde de course CI. */
 export const CI_TIMEOUT_MIN = 40
 
-/** Période de la sonde CI, en millisecondes. */
+/**
+ * Délai par défaut, en minutes, de la sonde du VERROU MACHINE (`scripts/test/verrou.mjs`) : le temps
+ * qu'on accorde à une suite tierce avant de refuser. Mesuré (#1736, trains réels du 2026-09-14) :
+ * une série de gates dure de 689 à 1 434 s — deux séries tierces enchaînées tiennent sous 60 min.
+ */
+export const VERROU_TIMEOUT_MIN = 60
+
+/** Période de la sonde CI — et de la sonde du verrou — en millisecondes. */
 export const PERIODE_SONDE_MS = 30_000
 
 /** Nom du workflow que la sonde reconnaît (`.github/workflows/ci.yml`, `name: CI`). */
@@ -66,18 +76,18 @@ export const marquePublication = (sha) => `<!-- publier: ${sha} -->`
  * valeur) : `separerInvocation` lit `<positionnel> [--opt val]* -- reste`, une grammaire qui n'est
  * pas la nôtre.
  * @param {string[]} argv arguments APRÈS `node publier.mjs`
- * @returns {{detache:boolean, reprendre:boolean, etapes:boolean, ciTimeoutMin:number, inconnus:string[]}}
+ * @returns {{detache:boolean, reprendre:boolean, etapes:boolean, ciTimeoutMin:number, verrouTimeoutMin:number, inconnus:string[]}}
  */
 export function optionsDe(argv) {
   const args = (argv ?? []).map(String)
-  const connus = new Set(['--detache', '--reprendre', '--etapes', '--ci-timeout-min'])
-  let ciTimeoutMin = CI_TIMEOUT_MIN
+  const connus = new Set(['--detache', '--reprendre', '--etapes', '--ci-timeout-min', '--verrou-timeout-min'])
+  const valeurs = { '--ci-timeout-min': CI_TIMEOUT_MIN, '--verrou-timeout-min': VERROU_TIMEOUT_MIN }
   const inconnus = []
   for (let i = 0; i < args.length; i += 1) {
     const a = args[i]
-    if (a === '--ci-timeout-min') {
+    if (Object.hasOwn(valeurs, a)) {
       const n = Number(args[i + 1])
-      if (Number.isFinite(n) && n > 0) ciTimeoutMin = n
+      if (Number.isFinite(n) && n > 0) valeurs[a] = n
       i += 1
       continue
     }
@@ -87,7 +97,8 @@ export function optionsDe(argv) {
     detache: args.includes('--detache'),
     reprendre: args.includes('--reprendre'),
     etapes: args.includes('--etapes'),
-    ciTimeoutMin,
+    ciTimeoutMin: valeurs['--ci-timeout-min'],
+    verrouTimeoutMin: valeurs['--verrou-timeout-min'],
     inconnus,
   }
 }
@@ -138,15 +149,61 @@ export const modeDuLog = ({ reprendre = false, enfant = false } = {}) => (repren
 export const ligneDeDetachement = ({ pid, log, args }) =>
   `[publier] détaché — pid=${pid} log=${log} args=${(args ?? []).join(' ')}\n`
 
+/** Nom de ROTATION du log d'un run précédent : `<nom>.<AAAAMMJJ-HHMMSS>.log`, horodaté en heure locale
+ *  (celle que l'opérateur lit). PURE. @param {string} chemin log courant @param {Date} date */
+export function nomDeRotation(chemin, date) {
+  const d = (n, l = 2) => String(n).padStart(l, '0')
+  const horodatage =
+    `${d(date.getFullYear(), 4)}${d(date.getMonth() + 1)}${d(date.getDate())}` +
+    `-${d(date.getHours())}${d(date.getMinutes())}${d(date.getSeconds())}`
+  return `${String(chemin).replace(/\.log$/, '')}.${horodatage}.log`
+}
+
+/** Motif des logs de ROTATION d'un log courant — il ne matche NI `<nom>.log`, NI le `<nom>.json.<pid>.tmp`
+ *  de `sauverJournal`. PURE. @param {string} chemin log courant @returns {RegExp} sur le NOM de fichier */
+export function motifDeRotation(chemin) {
+  const nom = String(chemin).split(/[\\/]/).pop().replace(/\.log$/, '')
+  return new RegExp(`^${nom.replace(/[.+^${}()|[\]\\*?]/g, '\\$&')}\\.\\d{8}-\\d{6}\\.log$`)
+}
+
+/**
+ * ROTATION du log : un log NON VIDE est renommé (`nomDeRotation`) avant qu'un run neuf ne reparte —
+ * la trace du run précédent survit, et le log courant repart vide, donc la veille `^PUBLICATION:`
+ * reste valide sans offset. Le bornage est par PÉREMPTION d'ÂGE, par la source unique
+ * `purgerPerimes` — aucune constante de compte ici. Ce n'est PAS une archive :
+ * `node_modules/.cache/` est effacé par le `npm ci` d'`ops:chantier` — le log est une trace de
+ * travail, la PREUVE d'une publication est sa sortie collée au ticket.
+ * @param {string} chemin log courant @param {Date} date
+ * @returns {string|null} le chemin du log tourné, `null` si rien n'a été tourné
+ */
+export function rotationnerLog(chemin, date = new Date()) {
+  let tourne = null
+  try {
+    if (statSync(chemin).size > 0) {
+      tourne = nomDeRotation(chemin, date)
+      renameSync(chemin, tourne)
+    }
+  } catch {
+    /* log absent, ou tenu par un autre processus : le run neuf repart vide de toute façon */
+    tourne = null
+  }
+  purgerPerimes({ dossier: join(chemin, '..'), motif: motifDeRotation(chemin), ageMs: PEREMPTION_MS })
+  return tourne
+}
+
 /**
  * Ouvre le log dans le mode décidé par `modeDuLog`. Le fd rendu est TOUJOURS en `'a'` : en mode
  * détaché, le MÊME fichier porte deux écrivains (le fd hérité comme stdout/stderr de l'enfant, et
  * le fd que l'enfant ouvre pour `journaliser`) — deux fds à offset propre se piétineraient, deux
- * fds en append jamais. Le `'w'` se joue donc par une TRONCATURE explicite, une seule fois.
+ * fds en append jamais. Le `'w'` se joue donc par une ROTATION puis une TRONCATURE explicite, une
+ * seule fois.
  * @param {string} chemin @param {'w'|'a'} mode
  */
 function ouvrirLog(chemin, mode) {
-  if (mode === 'w') writeFileSync(chemin, '')
+  if (mode === 'w') {
+    rotationnerLog(chemin)
+    writeFileSync(chemin, '')
+  }
   return openSync(chemin, 'a')
 }
 
@@ -159,24 +216,30 @@ export const gatesRejouees = (journal) =>
  * Première étape NON VERTE du journal — le point de reprise. Une étape verte POUR UNE AUTRE TÊTE est
  * « à faire » : sans cela, un 2ᵉ lot sur la même branche sauterait la sonde CI et le pilotage et
  * s'annoncerait vert. PURE.
- * @param {{tete?:string|null, etapes?:object}} journal @param {string[]} noms ordre de `ETAPES`
+ *
+ * RÈGLE DE TÊTE, une seule : la comparaison porte sur la TÊTE VIVANTE (`git rev-parse HEAD` au
+ * moment où l'on juge), jamais sur `journal.tete` (la tête PUBLIÉE, posée par `derives`/`rebase`), et
+ * une étape SANS estampille est « à faire ». Sans cela, une étape estampillée `null` (`preflight` et
+ * `derives` d'un journal d'avant cette règle) restait verte pour TOUTE tête, à jamais.
+ * @param {{etapes?:object}} journal @param {string[]} noms ordre de `ETAPES`
+ * @param {string|null} teteVivante `HEAD` mesuré maintenant
  * @returns {string|null} `null` = tout est vert pour cette tête
  */
-export function planDeReprise(journal, noms) {
+export function planDeReprise(journal, noms, teteVivante) {
   const etapes = journal?.etapes ?? {}
   for (const nom of noms) {
     const vue = etapes[nom]
     if (!vue || vue.etat !== 'vert') return nom
-    if (vue.tete && journal?.tete && vue.tete !== journal.tete) return nom
+    if (vue.tete == null || vue.tete !== teteVivante) return nom
   }
   return null
 }
 
-/** État affiché d'une étape au journal (`--etapes`). PURE. */
-export const etatDeLEtape = (journal, nom) => {
+/** État affiché d'une étape au journal (`--etapes`), sous la MÊME règle de tête que `planDeReprise`. PURE. */
+export const etatDeLEtape = (journal, nom, teteVivante) => {
   const vue = journal?.etapes?.[nom]
   if (!vue) return 'à faire'
-  if (vue.etat === 'vert' && vue.tete && journal?.tete && vue.tete !== journal.tete) return 'à faire (verte pour une autre tête)'
+  if (vue.etat === 'vert' && (vue.tete == null || vue.tete !== teteVivante)) return 'à faire (verte pour une autre tête)'
   return vue.etat
 }
 
@@ -196,6 +259,20 @@ export function jouerLeTrain(ctx, etapes, journal, { sauver = () => {}, journali
     let relance = null
     for (const etape of etapes) {
       if (etape.dejaFaite(ctx, journal)) {
+        // Une étape déjà faite s'ENREGISTRE, estampillée comme une étape jouée : sans cela, le journal
+        // d'un run repris ne portait AUCUNE trace machine des étapes constatées, et `--etapes` les
+        // rendait « à faire » après coup. Le détail précédent est CONSERVÉ : `ci.dejaFaite` (:800) le
+        // relit (`detail.etat === 'verte'`), l'écraser ferait resonder la course à chaque reprise.
+        const vu = journal.etapes[etape.nom]
+        const instant = new Date().toISOString()
+        journal.etapes[etape.nom] = {
+          etat: 'vert',
+          debut: instant,
+          fin: instant,
+          detail: { ...(vu?.detail ?? {}), dejaFaite: true },
+          tete: ctx.tete ?? null,
+        }
+        sauver(journal)
         journaliser(`[publier] ${etape.nom} — déjà faite\n`)
         continue
       }
@@ -208,7 +285,7 @@ export function jouerLeTrain(ctx, etapes, journal, { sauver = () => {}, journali
         debut: new Date(debut).toISOString(),
         fin: new Date().toISOString(),
         detail: vu.detail ?? null,
-        tete: journal.tete ?? null,
+        tete: ctx.tete ?? null,
       }
       sauver(journal)
       if (vu.ok) {
@@ -254,6 +331,24 @@ export function verdictDesRuns(courses, sha, { workflow = WORKFLOW } = {}) {
   // `ROUGES` nomme les trois échecs connus ; toute AUTRE conclusion (`neutral`, `skipped`, une
   // valeur neuve de GitHub) n'est pas verte non plus — elle rougit, et le journal la porte.
   return { etat: 'rouge', course, inattendue: !ROUGES.has(conclusion) }
+}
+
+/**
+ * Que faire de la série de gates, vu le dernier code rendu et l'état du verrou machine ? PURE —
+ * la sonde du verrou est une INSTANCE de la sonde CI (`attendre(PERIODE_SONDE_MS)` en boucle bornée).
+ *  - `'rejouer'`        : (re)jouer la série — aucun run encore joué, ou le verrou n'a rien refusé ;
+ *  - `'sonder'`         : le verrou est tenu par un PID VIVANT et la borne n'est pas atteinte ;
+ *  - `'rouge-borne'`    : la borne de sonde est ATTEINTE — elle PRIME, même si le tenant vient de
+ *    mourir au même tour : ce qu'on a vécu est une attente bornée, et le refus doit le dire ;
+ *  - `'rouge-orphelin'` : refus 2 SANS tenant vivant avant la borne (le 2 ne vient que du verrou).
+ * @param {{status:number|null, tenantVivant:object|null, debut:number, maintenant:number, timeoutMin:number}} p
+ * @returns {'rejouer'|'sonder'|'rouge-borne'|'rouge-orphelin'}
+ */
+export function verdictDeSondeDuVerrou({ status, tenantVivant, debut, maintenant, timeoutMin }) {
+  if (status !== 2) return 'rejouer'
+  if (maintenant - debut >= timeoutMin * 60_000) return 'rouge-borne'
+  if (!tenantVivant) return 'rouge-orphelin'
+  return 'sonder'
 }
 
 /** `motif` de glob SIMPLE (`*` = un segment sans `/`) appliqué à un chemin POSIX. PURE. */
@@ -731,12 +826,40 @@ export const ETAPES = [
     },
     jouer(ctx) {
       const { racine } = ctx
-      const vu = spawnSync(process.execPath, [join(racine, 'scripts/gates/toutes.mjs'), '--serie'], {
-        cwd: racine,
-        env: { ...process.env, WFRP_TEST_COEURS: process.env.WFRP_TEST_COEURS ?? '4' },
-        stdio: ['ignore', ctx.fdLog, ctx.fdLog],
-      })
-      if (vu.status === 2) return { ok: false, raison: 'verrou machine TENU par un autre processus (code 2) — une autre suite tourne, attendre puis `--reprendre`' }
+      const timeoutMin = ctx.options?.verrouTimeoutMin ?? VERROU_TIMEOUT_MIN
+      const debut = Date.now()
+      let vu = { status: null }
+      // SONDE DU VERROU : le code 2 ne vient que du verrou machine (`avecVerrouMachine`, aucun autre
+      // `return 2` dans `scripts/gates/toutes.mjs`). Une suite tierce s'attend — elle ne se subit pas.
+      for (let sonde = 1; ; sonde += 1) {
+        const vivant = vu.status === 2 ? tenantVivant({ chemin: CHEMIN_VERROU }) : null
+        const verdict = verdictDeSondeDuVerrou({ status: vu.status, tenantVivant: vivant, debut, maintenant: Date.now(), timeoutMin })
+        if (verdict === 'rouge-orphelin') {
+          const mort = lireTenant(undefined, CHEMIN_VERROU)
+          return {
+            ok: false,
+            raison: `gates refusées (code 2) mais AUCUN tenant vivant dans ${CHEMIN_VERROU}${mort ? ` (PID ${mort.pid} mort)` : ' (verrou absent ou illisible)'} — relancer`,
+          }
+        }
+        if (verdict === 'rouge-borne')
+          return {
+            ok: false,
+            raison: `verrou machine TENU par un autre processus (code 2) — une autre suite tourne, attendre puis \`--reprendre\` : sondé ${timeoutMin} min${vivant ? ` (PID ${vivant.pid}, ${vivant.cwd || 'arbre inconnu'})` : ' (le tenant a disparu au dernier tour)'}`,
+          }
+        if (verdict === 'sonder') {
+          const restant = Math.max(0, Math.round((timeoutMin * 60_000 - (Date.now() - debut)) / 60_000))
+          ctx.journaliser(
+            `[publier] gates — verrou tenu par PID ${vivant.pid} (${vivant.cwd || 'arbre inconnu'}) depuis ${vivant.date ?? 'date inconnue'} : sonde ${sonde}, ${restant} min avant refus\n`,
+          )
+          attendre(PERIODE_SONDE_MS)
+        }
+        vu = spawnSync(process.execPath, [join(racine, 'scripts/gates/toutes.mjs'), '--serie'], {
+          cwd: racine,
+          env: { ...process.env, WFRP_TEST_COEURS: process.env.WFRP_TEST_COEURS ?? '4' },
+          stdio: ['ignore', ctx.fdLog, ctx.fdLog],
+        })
+        if (vu.status !== 2) break
+      }
       if (vu.status !== 0) {
         const manquantes = gatesManquantes(racine, 'HEAD')
         return {
@@ -893,7 +1016,7 @@ export function cheminsSales(racine) {
 function main() {
   const options = optionsDe(process.argv.slice(2))
   if (options.inconnus.length) {
-    process.stderr.write(`[publier] option inconnue : ${options.inconnus.join(' ')}\n  usage : node scripts/ops/publier.mjs [--detache] [--reprendre] [--etapes] [--ci-timeout-min <n>]\n`)
+    process.stderr.write(`[publier] option inconnue : ${options.inconnus.join(' ')}\n  usage : node scripts/ops/publier.mjs [--detache] [--reprendre] [--etapes] [--ci-timeout-min <n>] [--verrou-timeout-min <n>]\n`)
     process.exit(1)
   }
   const toplevel = lu(['rev-parse', '--show-toplevel'], RACINE)
@@ -906,13 +1029,16 @@ function main() {
   mkdirSync(chemins.dossier, { recursive: true })
   const surDisque = existsSync(chemins.json) ? lireJournal(chemins.json, branche) : null
 
+  // La TÊTE VIVANTE : la seule contre laquelle une étape verte se juge (`planDeReprise`).
+  const teteVivante = lu(['rev-parse', 'HEAD'], RACINE)
+
   if (options.etapes) {
     const journal = surDisque ?? journalVide(branche)
-    const reprise = planDeReprise(journal, ETAPES.map((e) => e.nom))
+    const reprise = planDeReprise(journal, ETAPES.map((e) => e.nom), teteVivante)
     process.stdout.write(
       `publication ${branche} — journal ${chemins.json}\n` +
-        `base=${journal.base ?? '—'} tete=${journal.tete ?? '—'} reprises=${journal.reprises ?? 0}\n` +
-        ETAPES.map((e) => `  ${e.nom.padEnd(10)} ${etatDeLEtape(journal, e.nom)}`).join('\n') +
+        `base=${journal.base ?? '—'} tete=${journal.tete ?? '—'} (publiée) · HEAD=${teteVivante ?? '—'} (vivante) reprises=${journal.reprises ?? 0}\n` +
+        ETAPES.map((e) => `  ${e.nom.padEnd(10)} ${etatDeLEtape(journal, e.nom, teteVivante)}`).join('\n') +
         `\nreprise : ${reprise ?? 'rien à jouer (tout est vert pour cette tête)'}\n`,
     )
     return 0
@@ -950,7 +1076,7 @@ function main() {
   journaliser(`[publier] ${new Date().toISOString()} — branche ${branche}${options.reprendre ? ' (--reprendre)' : ''}\n`)
   journaliser(`[publier] ${repris ? `journal repris (${vertes} étape(s) verte(s))` : 'journal neuf'}\n`)
   if (repris) {
-    const reprise = planDeReprise(journal, ETAPES.map((e) => e.nom))
+    const reprise = planDeReprise(journal, ETAPES.map((e) => e.nom), ctx.tete)
     journaliser(`[publier] reprise : ${reprise ?? 'rien à jouer (tout est vert pour cette tête)'}\n`)
   }
   let verdict
