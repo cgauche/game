@@ -93,7 +93,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 
 - `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
 - `src/data/` — données app-owned (122 fichiers JSON commités, éditables au Compendium).
-- Les gardes de données : `scripts/guards/validate-data.mts` + 104 modules
+- Les gardes de données : `scripts/guards/validate-data.mts` + 105 modules
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
   `scripts/guards/lib/labelLogic.mjs`).
@@ -183,4 +183,4 @@ refaire `npm install`.
 
 Vérifier qu'elles tournent : onglet Actions du dépôt, ou `gh run list --workflow=canari.yml`. La
 porte à chaque push est `.github/workflows/ci.yml` (« CI », push, pull_request).
-<!-- sources-empreinte: 6b1eccf76bd5b1639b9f2ff77f2d00d2450deeaa (13 fichiers, 9 dossiers) corps: 0cd2ed6c6c3d166352fd70cdb96ed5e9c3ac7a2b -->
+<!-- sources-empreinte: 4ed6c12caf5ba848da4e8e4b92581139d9d78a24 (13 fichiers, 9 dossiers) corps: 5da5434c065cbbf6b5f7ee196870d35ec785ed7e -->
