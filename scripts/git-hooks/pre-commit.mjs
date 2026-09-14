@@ -339,12 +339,11 @@ if (rawFicheStaged) {
   }
 }
 
-// #1679 L1b — le bloc « Doctrines utilisateur » de CLAUDE.md est DÉRIVÉ des fiches
-// `.claude/memory/user-*.md` : le --check tourne dès qu'une fiche user-* ou CLAUDE.md est stagé
-// (même patron borné que #487 ci-dessus).
+// #1679 L1b — `docs/doctrines.md` est DÉRIVÉ des fiches `.claude/memory/user-*.md` : le --check
+// tourne dès qu'une fiche user-* ou le doc lui-même est stagé (même patron borné que #487 ci-dessus).
 const doctrineStaged = staged.some((f) => {
   const r = f.replace(/\\/g, '/');
-  return r === 'CLAUDE.md' || /^\.claude\/memory\/user-[^/]+\.md$/.test(r);
+  return r === 'docs/doctrines.md' || /^\.claude\/memory\/user-[^/]+\.md$/.test(r);
 });
 if (doctrineStaged) {
   try {
@@ -353,7 +352,7 @@ if (doctrineStaged) {
     const panne = codeDePanne(e);
     offenders.push(panne
       ? `build-doctrines — porte en PANNE : ${panne} (le garde n'a pas tourné : c'est le LANCEMENT qui a échoué)`
-      : 'build-doctrines --check en échec (bloc « Doctrines utilisateur » périmé ou édité à la main — relancer `node scripts/docs/build-doctrines.mjs` puis `npm run agents:sync`)');
+      : 'build-doctrines --check en échec (docs/doctrines.md périmé ou édité à la main — relancer `npm run docs:doctrines` et committer le résultat)');
   }
 }
 
