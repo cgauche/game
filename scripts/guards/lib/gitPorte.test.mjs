@@ -26,9 +26,9 @@ function depot() {
 
 const jeter = (racine) => rmSync(racine, { recursive: true, force: true })
 
-// Les DEUX ENOENT du spawn (#1729) : node écrit le même « spawnSync git ENOENT » quand le binaire
-// manque et quand le `cwd` demandé n'existe pas. Le second est le cas RÉEL mesuré : une porte y
-// renvoyait « rejouer depuis un arbre où git répond » alors que git répondait.
+// Le SPAWN QUI N'A PAS DÉMARRÉ (#1729) : node écrit le même « spawnSync git ENOENT » quand le
+// binaire manque et quand le `cwd` demandé n'existe pas. Le second est le cas RÉEL mesuré : une
+// porte y renvoyait « rejouer depuis un arbre où git répond » alors que git répondait.
 test('lireGit : un cwd INEXISTANT se nomme, il ne se confond pas avec un git absent', () => {
   const jamais = join(tmpdir(), `cwd-absent-${process.pid}`)
   const vu = lireGit(['rev-parse', 'HEAD'], { cwd: jamais })
@@ -46,10 +46,35 @@ test('lireGit : un cwd qui EXISTE sans être un répertoire se nomme pour ce qu�
     assert.equal(natureDuChemin(fichier), 'fichier')
     assert.equal(estRepertoire(fichier), false)
     assert.equal(estRepertoire(racine), true)
+    // MÊME verdict sur les deux plateformes, où l'OS ne rend PAS le même code (ENOENT sur win32,
+    // ENOTDIR sur POSIX — rouge de CI Linux mesuré sur le run 34815975288).
     const vu = lireGit(['rev-parse', 'HEAD'], { cwd: fichier })
     assert.equal(vu.disponible, false)
     assert.equal(vu.raison, `cwd qui n'est pas un répertoire : ${fichier}`)
   } finally { jeter(racine) }
+})
+
+// Le CODE de l'erreur de spawn ne décide de rien : c'est la NATURE du cwd qui parle. Les trois
+// natures sont jouées contre le MÊME couple de codes, sonde injectée (`nature`) donc sans disque.
+test('classer : le verdict d’un spawn échoué ne dépend PAS du code (ENOENT win32 / ENOTDIR POSIX)', () => {
+  const echec = (code) => ({ error: Object.assign(new Error(`spawnSync git ${code}`), { code }), status: null })
+  const sonde = (quoi) => () => quoi
+  for (const code of ['ENOENT', 'ENOTDIR']) {
+    assert.equal(
+      classer(echec(code), { cwd: '/x/a.txt', nature: sonde('fichier') }).raison,
+      "cwd qui n'est pas un répertoire : /x/a.txt",
+      `code ${code} : un cwd-FICHIER se nomme pour ce qu'il est`,
+    )
+    assert.equal(classer(echec(code), { cwd: '/x/jamais', nature: sonde('absent') }).raison, 'cwd inexistant : /x/jamais')
+    assert.match(
+      classer(echec(code), { cwd: '/x', nature: sonde('repertoire') }).raison,
+      /git introuvable/,
+      `code ${code} : cwd répertoire → il ne reste que le binaire`,
+    )
+  }
+  // Une erreur de spawn qui se nomme elle-même garde SON message : « git introuvable » serait faux.
+  const acces = classer({ error: new Error('spawnSync git EACCES'), status: null }, { cwd: '/x', nature: sonde('repertoire') })
+  assert.equal(acces.raison, 'spawnSync git EACCES')
 })
 
 test('lireGit : status 0 rend un FAIT porteur de la sortie', () => {

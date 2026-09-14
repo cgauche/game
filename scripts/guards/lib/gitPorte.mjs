@@ -122,27 +122,32 @@ export function natureDuChemin(chemin) {
 export const estRepertoire = (chemin) => natureDuChemin(chemin) === 'repertoire'
 
 /**
- * ENOENT du spawn : TROIS causes que le message de node confond sous un seul texte
- * (`spawnSync git ENOENT`) — le `cwd` demandé est absent du disque (cible d'un `git worktree add`,
- * que git crée lui-même ; chemin porteur d'une variable non expansée), il existe sans être un
- * répertoire, ou le binaire git manque au PATH. Le `cwd` se SONDE ici, une seule fois : sans cette
- * distinction, une porte renvoie « rejouer depuis un arbre où git répond » alors que git répondait,
- * et que c'est le répertoire qui manquait (#1729).
+ * Un SPAWN QUI N'A PAS DÉMARRÉ (`error` posé, `status` nul) : TROIS causes, que le message de node
+ * confond — le `cwd` demandé est absent du disque (cible d'un `git worktree add`, que git crée
+ * lui-même ; chemin porteur d'une variable non expansée), il existe sans être un répertoire, ou le
+ * binaire git manque au PATH.
+ *
+ * LE VERDICT PART DE LA NATURE DU `cwd`, JAMAIS DU CODE D'ERREUR : un cwd-FICHIER rend
+ * `spawnSync git ENOENT` sur Windows et `spawnSync git ENOTDIR` sur POSIX (mesuré sur la CI Linux,
+ * run 34815975288, #1729) — classer sur `ENOENT` seul rendait le message brut sur l'un des deux.
+ * « git introuvable » ne se dit donc que si le `cwd` est un RÉPERTOIRE existant : là, il ne reste que
+ * le binaire. Sans cette sonde, une porte renvoie « rejouer depuis un arbre où git répond » alors que
+ * git répondait, et que c'est le répertoire qui manquait.
  * @param {string} message @param {string|undefined} cwd @param {(p:string)=>'repertoire'|'fichier'|'absent'} nature
  */
 function raisonDuSpawn(message, cwd, nature) {
-  if (!/ENOENT/.test(message)) return message
-  if (cwd) {
-    const quoi = nature(cwd)
-    if (quoi === 'absent') return `cwd inexistant : ${cwd}`
-    if (quoi === 'fichier') return `cwd qui n'est pas un répertoire : ${cwd}`
-  }
-  return `git introuvable (binaire absent du PATH) — ${message}`
+  if (!cwd) return message
+  const quoi = nature(cwd)
+  if (quoi === 'absent') return `cwd inexistant : ${cwd}`
+  if (quoi === 'fichier') return `cwd qui n'est pas un répertoire : ${cwd}`
+  // Le cwd est un répertoire réel : le démarrage n'a pu échouer que sur l'EXÉCUTABLE. Toute autre
+  // erreur de spawn (permissions, limites) garde son message, qui la nomme déjà.
+  return /ENOENT|ENOTDIR/.test(message) ? `git introuvable (binaire absent du PATH) — ${message}` : message
 }
 
 /**
  * Classement d'un résultat de `spawnSync` en union à trois issues. PURE hors la SONDE du `cwd`
- * (injectable par `nature`), qui distingue les trois ENOENT.
+ * (injectable par `nature`), qui distingue les trois causes d'un spawn qui n'a pas démarré.
  * @param {{cwd?:string, nature?:(p:string)=>'repertoire'|'fichier'|'absent'}} [opts]
  * @returns {{disponible:true, valeur:{status:number, stdout:string, stderr:string}}
  *   | {disponible:true, absent:true} | {disponible:false, raison:string}}
