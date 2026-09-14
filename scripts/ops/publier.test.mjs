@@ -22,6 +22,7 @@ import {
   modeDuLog,
   nomDeJournal,
   optionsDe,
+  partitionSales,
   planDeReprise,
   sansOptionsGlobales,
   titreDeCommit,
@@ -229,6 +230,31 @@ describe('estDocDerive', () => {
     assert.equal(estDocDerive('docs/architecture.md', GEN), false)
     assert.equal(estDocDerive('src/state/cascade.ts', GEN), false)
     assert.equal(estDocDerive('', GEN), false)
+  })
+
+  // Le cas MESURÉ (2026-09-14) : le hook `post-rewrite` d'un rebase manuel laisse des dérivés sales.
+  // La préflight doit les distinguer d'un manuscrit — l'étape `docs` sait committer les premiers.
+  test('partitionSales : des DÉRIVÉS seuls — aucun manuscrit à refuser', () => {
+    const vu = partitionSales(['docs/systemes.md', 'docs/raw/00-index.md'], GEN)
+    assert.deepEqual(vu.derives, ['docs/systemes.md', 'docs/raw/00-index.md'])
+    assert.deepEqual(vu.manuscrits, [])
+  })
+
+  test('partitionSales : des MANUSCRITS seuls', () => {
+    const vu = partitionSales(['src/state/cascade.ts', 'docs/architecture.md'], GEN)
+    assert.deepEqual(vu.derives, [])
+    assert.deepEqual(vu.manuscrits, ['src/state/cascade.ts', 'docs/architecture.md'])
+  })
+
+  test('partitionSales : MIXTE — chaque chemin dans son tas, l’ordre conservé', () => {
+    const vu = partitionSales(['docs/systemes.md', 'src/state/cascade.ts', 'CLAUDE.md', 'docs/architecture.md'], GEN)
+    assert.deepEqual(vu.derives, ['docs/systemes.md', 'CLAUDE.md'])
+    assert.deepEqual(vu.manuscrits, ['src/state/cascade.ts', 'docs/architecture.md'])
+  })
+
+  test('partitionSales : rien de sale — deux tas vides (et `undefined` ne jette pas)', () => {
+    assert.deepEqual(partitionSales([], GEN), { derives: [], manuscrits: [] })
+    assert.deepEqual(partitionSales(undefined, GEN), { derives: [], manuscrits: [] })
   })
 })
 

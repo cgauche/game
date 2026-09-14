@@ -7,7 +7,9 @@
 // `jouer(ctx)`, `dejaFaite(ctx)`), rien d'autre. »
 //
 // RÉGIME (CLAUDE.md § Commandes) : commit FINAL → gates → push. Le train le joue dans l'ordre de
-// `ci.yml` : preflight, rebase sur origin/main, docs dérivés régénérés et committés, gates en
+// `ci.yml` : preflight (une saleté faite UNIQUEMENT de docs DÉRIVÉS ne refuse pas : l'étape `docs`
+// la commet — cas du hook `post-rewrite` après un rebase manuel), rebase sur origin/main, docs
+// dérivés régénérés — la plage sans source de doc saute la RÉGÉNÉRATION, jamais le COMMIT — gates en
 // SÉRIE, push `HEAD:main` par la porte pre-push, sonde de la course CI, pilotage des tickets cités.
 //
 // INTERDITS, gravés — `commandeInterdite` les refuse AVANT tout spawn, et ce fichier ne porte aucun
@@ -260,6 +262,21 @@ export function estDocDerive(chemin, generators = GENERATORS, { sourcesLues = SO
 }
 
 /**
+ * Partage des chemins SALES en deux tas : ce que l'étape `docs` sait committer (`estDocDerive`) et
+ * le reste. PURE. Mesuré (2026-09-14, premier train réel) : après un rebase MANUEL, le hook
+ * `post-rewrite` régénère les docs dérivés SANS les committer (`scripts/git-hooks/docs-rebuild.mjs`)
+ * — sans ce partage, la préflight refusait le train pour une saleté que l'étape `docs` commet.
+ * @param {string[]} chemins
+ * @returns {{derives:string[], manuscrits:string[]}}
+ */
+export function partitionSales(chemins, ...reste) {
+  const derives = []
+  const manuscrits = []
+  for (const c of chemins ?? []) (estDocDerive(c, ...reste) ? derives : manuscrits).push(c)
+  return { derives, manuscrits }
+}
+
+/**
  * Options GLOBALES de git, posées AVANT le sous-commande (`git -c k=v push …`, `git -C dir add …`).
  * Les sauter est la condition pour que `commandeInterdite` lise le vrai sous-commande : sans cela,
  * `['-c','x=y','add','-A']` passait pour un sous-commande `-c` inconnu, donc AUTORISÉ. PURE.
@@ -460,12 +477,14 @@ export const ETAPES = [
       }
       if (lu(['symbolic-ref', '--quiet', 'HEAD'], racine) === null)
         return { ok: false, raison: 'HEAD DÉTACHÉ : le train publie une branche, pas un sha errant' }
-      const brut = sortieOuNull(lireGit(['status', '--porcelain', '-z'], { cwd: racine }))
-      const sales = String(brut ?? '').split('\0').filter(Boolean)
-      if (sales.length)
+      const { derives, manuscrits } = partitionSales(cheminsSales(racine))
+      if (manuscrits.length)
         return {
           ok: false,
-          raison: `arbre NON COMMITÉ (${sales.length}) — on ne publie que du committé :\n${sales.map((s) => `    ${s}`).join('\n')}`,
+          raison:
+            `arbre NON COMMITÉ (${manuscrits.length}) — on ne publie que du committé :\n` +
+            `${manuscrits.map((s) => `    ${s}`).join('\n')}` +
+            (derives.length ? `\n  (et ${derives.length} doc(s) dérivé(s) régénéré(s) que l’étape docs aurait commis)` : ''),
         }
       const origine = lu(['remote', 'get-url', 'origin'], racine)
       if (!urlOrigineAcceptee(origine)) return { ok: false, raison: `origin étranger au dépôt : ${origine ?? 'illisible'}` }
@@ -473,7 +492,10 @@ export const ETAPES = [
       if (!vuFetch.disponible) return { ok: false, raison: `origin non consultable : ${vuFetch.raison}` }
       const outil = resoudreOutilLocal(racine, 'vitest', 'vitest')
       if (outil.refus) return { ok: false, raison: outil.refus }
-      return { ok: true, dit: 'arbre propre, origin consultable, outillage local posé' }
+      const reste = derives.length
+        ? `${derives.length} doc(s) dérivé(s) régénéré(s) non commités (post-rewrite) : l’étape docs les commet`
+        : 'arbre propre'
+      return { ok: true, detail: { derivesSales: derives }, dit: `${reste}, origin consultable, outillage local posé` }
     },
   },
   {
@@ -511,20 +533,28 @@ export const ETAPES = [
     jouer(ctx, journal) {
       const { racine } = ctx
       const touches = (lu(['diff', '--name-only', `${journal.base}..${journal.tete}`], racine) ?? '').split('\n').filter(Boolean)
-      if (!touchesDocSources(touches)) return { ok: true, dit: 'aucune source de doc dans la plage : docs inchangés' }
-      const check = spawnSync(process.execPath, [join(racine, 'scripts/docs/build-all.mjs'), '--check'], {
-        cwd: racine, stdio: ['ignore', ctx.fdLog, ctx.fdLog],
-      })
-      if (check.status !== 0) {
-        ctx.journaliser('[publier] docs — `--check` non vert : passe COMPLÈTE de build-all\n')
-        const passe = spawnSync(process.execPath, [join(racine, 'scripts/docs/build-all.mjs'), '--quiet'], {
+      // La saleté est lue AVANT toute décision de saut : le hook `post-rewrite` d'un rebase MANUEL a
+      // pu régénérer des dérivés sans les committer, alors que la plage ne touche aucune source de
+      // doc. `touchesDocSources` ne court-circuite donc que la RÉGÉNÉRATION, jamais le COMMIT —
+      // sauter celui-ci laisserait l'arbre sale jusqu'aux gates, qui le refusent.
+      const salesAvant = cheminsSales(racine)
+      const regenerer = touchesDocSources(touches)
+      if (!regenerer && !salesAvant.length) return { ok: true, dit: 'aucune source de doc dans la plage, arbre propre : docs inchangés' }
+      if (regenerer) {
+        const check = spawnSync(process.execPath, [join(racine, 'scripts/docs/build-all.mjs'), '--check'], {
           cwd: racine, stdio: ['ignore', ctx.fdLog, ctx.fdLog],
         })
-        if (passe.status !== 0)
-          return {
-            ok: false,
-            raison: `build-all a rendu ${passe.status} : docs/ possiblement incohérent — \`git checkout -- docs/\` puis corriger la cause (rien n'a été staged ni commité)`,
-          }
+        if (check.status !== 0) {
+          ctx.journaliser('[publier] docs — `--check` non vert : passe COMPLÈTE de build-all\n')
+          const passe = spawnSync(process.execPath, [join(racine, 'scripts/docs/build-all.mjs'), '--quiet'], {
+            cwd: racine, stdio: ['ignore', ctx.fdLog, ctx.fdLog],
+          })
+          if (passe.status !== 0)
+            return {
+              ok: false,
+              raison: `build-all a rendu ${passe.status} : docs/ possiblement incohérent — \`git checkout -- docs/\` puis corriger la cause (rien n'a été staged ni commité)`,
+            }
+        }
       }
       // `agents:sync` se déclenche sur un `agents:check` ROUGE, jamais sur la saleté de `CLAUDE.md` :
       // un commit de la plage qui touche `.claude/skills/**` ou `.claude/credo.md` sans resynchroniser
@@ -537,7 +567,7 @@ export const ETAPES = [
         if (sync.status !== 0) return { ok: false, raison: `\`npm run agents:sync\` a rendu ${sync.status} : le pre-commit jouerait \`agents:check\` et refuserait le commit` }
       }
       const chemins = cheminsSales(racine)
-      const manuscrits = chemins.filter((c) => !estDocDerive(c))
+      const { manuscrits } = partitionSales(chemins)
       if (manuscrits.length)
         return { ok: false, raison: `doc MANUSCRIT modifié par la régénération :\n${manuscrits.map((c) => `    ${c}`).join('\n')}` }
       if (!chemins.length) return { ok: true, dit: 'docs dérivés déjà à jour : rien à committer' }
