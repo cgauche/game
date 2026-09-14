@@ -9,7 +9,8 @@
 // RÉGIME (CLAUDE.md § Commandes) : commit FINAL → gates → push. Le train le joue dans l'ordre de
 // `ci.yml`, en NEUF étapes — preflight, derives, rebase, docs, gates, push, ci, pilotage, fin :
 // preflight (une saleté faite UNIQUEMENT de docs DÉRIVÉS ne refuse pas : l'étape `derives` la
-// commet), derives (les docs dérivés laissés non commités par le hook `post-rewrite` d'un rebase
+// commet ; les PRÉREQUIS de toutes les gates de `ci.yml` y sont mesurés AVANT de payer la série),
+// derives (les docs dérivés laissés non commités par le hook `post-rewrite` d'un rebase
 // MANUEL sont commis AVANT le rebase — mesuré le 2026-09-14 : `git rebase origin/main` refuse de
 // DÉMARRER sur un arbre sale, « cannot rebase: You have unstaged changes »), rebase sur
 // origin/main, docs dérivés régénérés — la plage sans source de doc saute la RÉGÉNÉRATION, jamais
@@ -40,7 +41,7 @@ import { DEPOT, commitsDeLaPlage, marqueDe } from './fermer-depuis-main.mjs'
 import { GENERATORS, SOURCES_LUES } from '../docs/build-all.mjs'
 import { MANAGED_ROOTS } from '../agents/compat-core.mjs'
 import { touchesDocSources } from '../git-hooks/docs-rebuild.mjs'
-import { fichierDurees } from '../gates/toutes.mjs'
+import { ECRIT_LU, fichierDurees, prerequisAbsents, refusDePrerequis } from '../gates/toutes.mjs'
 import { resoudreOutilLocal } from '../lancer-local.mjs'
 
 /** L'arbre où VIT ce script — jamais `process.cwd()` : le train publie SON worktree. */
@@ -513,6 +514,27 @@ export function contexteDe({ racine, branche, options, journaliser, fdLog }) {
   }
 }
 
+/**
+ * PRÉREQUIS ABSENTS de TOUTES les gates requises par `ci.yml`, une ligne par manque, dans le TEXTE
+ * de la gate (`refusDePrerequis`, scripts/gates/toutes.mjs:500) — aucune reformulation ici.
+ * Pourquoi à la PRÉFLIGHT : un prérequis absent ne se voit sinon qu'au moment où la gate est jouée,
+ * c'est-à-dire APRÈS la série — mesuré le 2026-09-14 (3ᵉ train réel,
+ * node_modules/.cache/publication/chantier_1736-publier.log) : 881 s de gates, puis
+ * `server:typecheck` rouge sur un `server/node_modules` absent, et le train perdu.
+ * `resoudreOutilLocal(racine, 'vitest', …)` RESTE : la table `ECRIT_LU` ne déclare qu'UN prérequis
+ * (`server/node_modules`, scripts/gates/toutes.mjs:373) — l'outillage de la RACINE n'y est pas.
+ * @param {string} racine arbre mesuré
+ * @returns {string[]} lignes de refus, vide quand tout est là
+ */
+export function prerequisDesGates(racine, { gates = gatesRequises({ cwd: racine }), ecritLu = ECRIT_LU } = {}) {
+  const lignes = []
+  for (const gate of gates) {
+    const absents = prerequisAbsents(ecritLu[gate.nom], racine)
+    if (absents.length) lignes.push(...refusDePrerequis(gate.nom, absents).trimEnd().split('\n'))
+  }
+  return lignes
+}
+
 /** La table des ÉTAPES : nom, `jouer(ctx, journal)`, `dejaFaite(ctx, journal)`. Ajouter une étape,
  *  c'est ajouter UNE entrée ici — rien d'autre. */
 export const ETAPES = [
@@ -544,10 +566,20 @@ export const ETAPES = [
       if (!vuFetch.disponible) return { ok: false, raison: `origin non consultable : ${vuFetch.raison}` }
       const outil = resoudreOutilLocal(racine, 'vitest', 'vitest')
       if (outil.refus) return { ok: false, raison: outil.refus }
+      const manquants = prerequisDesGates(racine)
+      if (manquants.length)
+        return {
+          ok: false,
+          raison: `prérequis de gate ABSENTS — les poser avant la série :\n${manquants.map((l) => `    ${l}`).join('\n')}`,
+        }
       const reste = derives.length
         ? `${derives.length} doc(s) dérivé(s) régénéré(s) non commités (post-rewrite) : l’étape derives les commet`
         : 'arbre propre'
-      return { ok: true, detail: { derivesSales: derives }, dit: `${reste}, origin consultable, outillage local posé` }
+      return {
+        ok: true,
+        detail: { derivesSales: derives },
+        dit: `${reste}, origin consultable, outillage local posé, prérequis de gates présents`,
+      }
     },
   },
   {

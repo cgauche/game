@@ -6,9 +6,12 @@
 // les `jouer` réels (rebase, build-all, gates, push, gh) ne sont jugés que par le train joué.
 import test, { describe } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import {
   ETAPES,
+  RACINE,
   commandeInterdite,
   corpsDePilotage,
   correspondGlob,
@@ -26,6 +29,7 @@ import {
   partitionSales,
   plageDeCitations,
   planDeReprise,
+  prerequisDesGates,
   sansOptionsGlobales,
   titreDeCommit,
   verdictDesRuns,
@@ -463,4 +467,32 @@ test('corpsDePilotage : des gates NON rejouées ne montrent aucune durée, et le
 test('titreDeCommit : première ligne, bornée à 120 caractères', () => {
   assert.equal(titreDeCommit('un titre\n\ncorps'), 'un titre')
   assert.equal(titreDeCommit(`${'x'.repeat(200)}`).length, 120)
+})
+
+// ── prerequisDesGates ──────────────────────────────────────────────────────────────────
+// La table des gates et celle des prérequis sont INJECTÉES : ce qui se juge ici est la LECTURE du
+// disque (le chemin est-il là ?) et le TEXTE rendu — celui de la gate, jamais une reformulation.
+
+test('prerequisDesGates : rien à dire quand le chemin déclaré est là, une ligne quand il manque', () => {
+  const racine = mkdtempSync(join(tmpdir(), 'prerequis-'))
+  try {
+    const gates = [{ nom: 'server:typecheck' }, { nom: 'lint' }]
+    const ecritLu = {
+      'server:typecheck': { prerequis: [{ chemin: 'server/node_modules', pose: 'npm --prefix server ci' }] },
+      lint: { lit: [] },
+    }
+    assert.deepEqual(prerequisDesGates(racine, { gates, ecritLu }), [
+      '[gates] server:typecheck — prérequis absent : `server/node_modules` (le pose : `npm --prefix server ci`)',
+    ], 'le refus est MOT POUR MOT celui que la gate écrirait — après 881 s de série (3ᵉ train réel)')
+
+    mkdirSync(join(racine, 'server', 'node_modules'), { recursive: true })
+    assert.deepEqual(prerequisDesGates(racine, { gates, ecritLu }), [],
+      'prérequis posé : la préflight ne dit plus rien, et le train paie la série')
+  } finally { rmSync(racine, { recursive: true, force: true }) }
+})
+
+test('prerequisDesGates : les gates requises RÉELLES de ci.yml, mesurées sur l’arbre de ce dépôt', () => {
+  // Pas d'attendu figé sur le CONTENU (l'arbre est équipé ou non selon la machine) : ce qui est
+  // jugé est que la sonde tourne sur la table réelle et ne rend que des lignes de gate.
+  for (const ligne of prerequisDesGates(RACINE)) assert.match(ligne, /^\[gates] \S+ — prérequis absent : `/)
 })

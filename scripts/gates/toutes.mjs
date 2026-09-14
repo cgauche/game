@@ -496,8 +496,9 @@ function lireDurees(racine) {
 export const prerequisAbsents = (entree, racine) =>
   (entree?.prerequis ?? []).filter(({ chemin }) => !existsSync(join(racine, chemin)))
 
-/** Ce qu'un refus de prérequis écrit dans la sortie de la gate — c'est cette queue que le résumé imprime. */
-const refusDePrerequis = (nom, absents) =>
+/** Ce qu'un refus de prérequis écrit dans la sortie de la gate — c'est cette queue que le résumé
+ *  imprime, et le MÊME texte que la préflight de `scripts/ops/publier.mjs` rend AVANT la série. PURE. */
+export const refusDePrerequis = (nom, absents) =>
   `${absents
     .map(({ chemin, pose }) => `[gates] ${nom} — prérequis absent : \`${chemin}\` (le pose : \`${pose}\`)`)
     .join('\n')}\n`

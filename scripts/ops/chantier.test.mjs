@@ -123,7 +123,46 @@ test('npm ci ROUGE : le worktree RESTE, et le refus dit quoi relancer où', () =
     assert.match(appels[0].cmd, /^npm(\.cmd)?$/)
     assert.equal(existsSync(cibleDe(racine, '43')), true, 'un npm ci rouge ne défait pas le worktree')
     assert.match(vu.refus, /worktree posé, npm ci rouge/)
+    assert.doesNotMatch(vu.refus, /server/, 'la racine est en cause : ne pas nommer le sous-projet')
     assert.match(vu.refus, /\.wt-43/)
+  } finally { jeter() }
+})
+
+// Le sous-projet `server/` a ses PROPRES dépendances, et `server:typecheck` les déclare en prérequis
+// (`scripts/gates/toutes.mjs:373`) : un chantier équipé de la seule racine rend cette gate ROUGE
+// après la série entière (mesuré le 2026-09-14, 3ᵉ train réel). L'ordre est le sujet : `npm --prefix
+// server ci` ne peut pas précéder le `npm ci` de la racine.
+test('équipement : npm ci à la RACINE puis dans server/, dans cet ordre, tous deux DANS le worktree', () => {
+  const { racine, jeter } = depotAvecOrigin()
+  try {
+    const appels = []
+    const vu = creerChantier({ racine, nom: '47', npm: (cmd, args, opts) => { appels.push({ cmd, args, cwd: opts.cwd }); return { status: 0 } } })
+    assert.equal(vu.ok, true, vu.refus)
+    assert.equal(vu.npmJoue, true)
+    assert.deepEqual(appels.map((a) => a.args), [
+      ['ci', '--no-audit', '--no-fund'],
+      ['--prefix', 'server', 'ci', '--no-audit', '--no-fund'],
+    ])
+    assert.deepEqual([...new Set(appels.map((a) => a.cwd))], [cibleDe(racine, '47')],
+      'les deux se jouent DANS le worktree neuf (le sous-projet par --prefix, jamais par un cwd)')
+  } finally { jeter() }
+})
+
+test('npm ci rouge dans server/ : la racine reste faite, et le refus NOMME le sous-projet', () => {
+  const { racine, jeter } = depotAvecOrigin()
+  try {
+    const appels = []
+    const vu = creerChantier({
+      racine,
+      nom: '48',
+      npm: (cmd, args, opts) => { appels.push(args); return { status: args.includes('--prefix') ? 1 : 0, cwd: opts.cwd } },
+    })
+    assert.equal(vu.ok, false)
+    assert.equal(appels.length, 2, 'la racine a été équipée avant que server/ ne tombe')
+    assert.match(vu.refus, /npm ci rouge dans server\//)
+    assert.match(vu.refus, /npm --prefix server ci/, 'le refus porte la commande qui rejoue CE ci')
+    assert.match(vu.refus, /\.wt-48/)
+    assert.equal(existsSync(cibleDe(racine, '48')), true, 'un npm ci rouge ne défait pas le worktree')
   } finally { jeter() }
 })
 

@@ -66,6 +66,19 @@ export function refusDeCreation({ cibleExiste, brancheExiste, nom, cible }) {
   return null
 }
 
+/**
+ * ÉQUIPEMENT d'un chantier neuf, dans l'ordre : la racine, PUIS le sous-projet `server/`. Le relay
+ * Cloudflare a ses PROPRES dépendances (`server/package.json`), et la gate `server:typecheck` les
+ * déclare en prérequis (`scripts/gates/toutes.mjs:373` : `{ chemin: 'server/node_modules',
+ * pose: 'npm --prefix server ci' }`). Un worktree équipé de la seule racine rend donc cette gate
+ * ROUGE — mesuré le 2026-09-14 (3ᵉ train réel, après 881 s de gates en série).
+ * `ou` et `relance` sont ce que le refus DIT : où c'est rouge, et la commande qui le rejoue.
+ */
+export const EQUIPEMENTS = [
+  { args: ['ci', '--no-audit', '--no-fund'], ou: '', relance: 'npm ci' },
+  { args: ['--prefix', 'server', 'ci', '--no-audit', '--no-fund'], ou: ' dans server/', relance: 'npm --prefix server ci' },
+]
+
 /** Nom de branche d'un chantier. PURE. */
 export const brancheDe = (nom) => `chantier/${nom}`
 
@@ -134,16 +147,18 @@ export function creerChantier({ racine = RACINE, nom, sansCi = false, git = lire
   // `shell: true` MESURÉ nécessaire : `spawnSync('npm.cmd', …, { shell: false })` rend
   // `EINVAL` sous Node v22.20.0 / win32 (mesure du 2026-09-14). Aucun argument ne porte d'espace,
   // et le `cwd` ne passe pas par la ligne de commande — il n'y a donc rien à citer.
-  const vuNpm = npm(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['ci', '--no-audit', '--no-fund'], {
-    cwd: cible, stdio: 'inherit', shell: true,
-  })
-  if (vuNpm?.error || vuNpm?.status !== 0) {
-    return {
-      ok: false,
-      cible,
-      branche,
-      refus: `worktree posé, npm ci rouge — relancer npm ci dans ${cible}` +
-        (vuNpm?.error ? ` (${vuNpm.error.message})` : ` (code ${vuNpm?.status})`),
+  for (const { args, ou, relance } of EQUIPEMENTS) {
+    const vuNpm = npm(process.platform === 'win32' ? 'npm.cmd' : 'npm', args, {
+      cwd: cible, stdio: 'inherit', shell: true,
+    })
+    if (vuNpm?.error || vuNpm?.status !== 0) {
+      return {
+        ok: false,
+        cible,
+        branche,
+        refus: `worktree posé, npm ci rouge${ou} — relancer \`${relance}\` dans ${cible}` +
+          (vuNpm?.error ? ` (${vuNpm.error.message})` : ` (code ${vuNpm?.status})`),
+      }
     }
   }
   return { ok: true, cible, branche, base, resume, npmJoue: true }
