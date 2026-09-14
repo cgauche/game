@@ -1,5 +1,5 @@
 ---
-name: env-veille-machine-gates-expirees-monitor-muet
+name: env-veille-machine
 description: "Gate EXPIRÉE à durée absurde (heures) ou Monitor muet pendant des heures : vérifier D'ABORD la veille de la machine (journal System, Kernel-Power 506/507) avant de chercher une contention ou un processus pendu."
 metadata:
   node_type: memory
