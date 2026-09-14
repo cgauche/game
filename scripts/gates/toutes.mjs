@@ -335,7 +335,9 @@ export const ECRIT_LU = {
     lit: ['docs/raw/', 'scripts/raw/', 'scripts/guards/lib/', 'Source/', 'src/'],
     raison:
       'harnais de l’Atlas : il lit les fiches que les trois rapports écrivent ; éprouvant les scripts ' +
-      'eux-mêmes, il LIT ce qu’ils lisent — Source/ et src/ (4 105 lectures mesurées)',
+      'eux-mêmes, il LIT ce qu’ils lisent — Source/ et src/ (4 105 lectures mesurées) ; ses deux bancs ' +
+      'écrivains (`check-source-format.test.mjs`, `lib/marker-pages.test.mjs`) ne posent que des dossiers ' +
+      'JETABLES sous `os.tmpdir()`, retirés par `rmSync` — aucune écriture dans l’arbre',
   },
   'raw:check-refs': {
     ecrit: [],

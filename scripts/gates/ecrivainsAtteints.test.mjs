@@ -235,6 +235,11 @@ const ATTENDU = {
     // committés ; elle rend un TEXTE. Le seul `writeFileSync` du module vit dans `main()`, sous
     // `isMain`, et exige les PDF gitignorés — déclaré en `ecritFerme` de `test:raw` (ECRIT_LU).
     'scripts/raw/lib/empty-folios-stock.mjs',
+    // +1 le 2026-09-14 (#1739 Lot H) : le banc de la lib de lecture des extractions Marker fabrique
+    // des dossiers de tranches JETABLES sous `os.tmpdir()` (`mkdtempSync`/`mkdirSync`/`writeFileSync`,
+    // retirés par `rmSync`) pour éprouver `mdsDeMarker`/`mdsDeRestitutions` sur le disque. Aucune
+    // écriture DANS l'arbre : même classe que `check-source-format.test.mjs` ci-dessus.
+    'scripts/raw/lib/marker-pages.test.mjs',
     'scripts/raw/reanchor-split.mjs',
     'scripts/raw/reanchor.mjs',
     'scripts/raw/reanchor.test.mjs',

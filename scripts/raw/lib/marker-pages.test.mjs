@@ -14,8 +14,7 @@ import {
 // Deux tranches contiguës, séparateurs à index ABSOLU 0-based (tranche 2 ouvre à {2}).
 const TRANCHE_A = '{0}--------------------------------------------------\nPage un\n\n{1}----------\nPage deux\n'
 const TRANCHE_B = '{2}----------\nPage trois\n'
-const CORPUS = { 'a.md': TRANCHE_A, 'b.md': TRANCHE_B }
-const lire = (p) => CORPUS[p]
+const lire = (p) => (p === 'a.md' ? TRANCHE_A : TRANCHE_B)
 
 test('pagesDeMarker : deux tranches → pages 1-based continues', () => {
   const pages = pagesDeMarker(['a.md', 'b.md'], lire)
