@@ -6,18 +6,18 @@
  * MOTIF AU SOURCE — les tables de Sorts du livre `frenchy-bzh` impriment, dans les colonnes
  * « Portée » et « Cible », le NOM DU LANCEUR du chapitre courant, là où le Livre de base imprime
  * « Vous » :
- *   `Source/Warhammer - Habitants & Créatures  du Vieux-Monde (Discord) PDF/71 - Nécromanciens.md`
+ *   `Source/Warhammer - Habitants & Creatures  du Vieux-Monde (Discord) PDF/71 - Necromanciens.md`
  *   l.249 : « |**Armure**<br>**d’AEthyr**|_AEthyric_<br>_Armour_|0|Sorcier|Sorcier|7 Rounds|Le PJ
  *   bénéficie de 2 Points d’Armure sur tout le corps. » — le bénéficiaire EST le lanceur ;
  *   `57 - Clan Eshin.md` l.264 « |Poids Plume|…|6|Skaven|Skaven|40 Minutes|le sorcier semble aussi
- *   léger que du liège. » ; `50 - Démons de Nurgle.md` l.214 « |Furoncle<br>Infecté|…|5|Démon|Démon| »
- *   ; `51 - Démons de Tzeentch.md` l.188 « |Langue des<br>Tzaangors|…|0|démon|démon| » (minuscule) ;
- *   `26 - Services Ruraux Fréquents & Usuels.md` l.385 « |Position|_Bearings_|0|Rebouteux|Rebouteux|
+ *   léger que du liège. » ; `50 - Demons de Nurgle.md` l.214 « |Furoncle<br>Infecté|…|5|Démon|Démon| »
+ *   ; `51 - Demons de Tzeentch.md` l.188 « |Langue des<br>Tzaangors|…|0|démon|démon| » (minuscule) ;
+ *   `26 - Services Ruraux Frequents & Usuels.md` l.385 « |Position|_Bearings_|0|Rebouteux|Rebouteux|
  *   Instantané|Le PJ sait où est le nord » et l.575 « |Vol|_Flight_|Sorcière|Sorcière|30 minutes| » ;
  *   `43 - Ungors, Gors & Bestigors.md` l.584 « |Flamme|_Magic Flame_|0|Shaman|Shaman|6 Rounds|Une
  *   flamme apparaît dans la paume du Shaman. » et l.804 « |Secousse<br>Tellurique|…|6|Mage|Zone
- *   Diamètre 8 mètres| » ; `49 - Démons de Slaanesh.md` l.79 « |Langue des<br>Slaangors|…|0|Mage|Mage| » ;
- *   `61 - Prophète Gris.md` l.97 « |Faveur du Rat<br>Cornu|…|0|Mage|Mage|13 heures|Le Mage gagne
+ *   Diamètre 8 mètres| » ; `49 - Demons de Slaanesh.md` l.79 « |Langue des<br>Slaangors|…|0|Mage|Mage| » ;
+ *   `61 - Prophete Gris.md` l.97 « |Faveur du Rat<br>Cornu|…|0|Mage|Mage|13 heures|Le Mage gagne
  *   +1 Point de Détermination. » ; `67 - Orcs.md` l.605 « |**WAAAGH !**|…|11|Mage|Zone Diamètre 85 Mètres| ».
  * Le même Sort s'imprime « Vampire|Vampire » au chapitre des Vampires, et « Sorcier|Shaman » au
  * ch. 46 (l.70, Bélier) : c'est la DÉSIGNATION du porteur de la table, pas une cible tierce. La

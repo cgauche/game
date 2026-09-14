@@ -17,7 +17,7 @@
 *(Page 48 partagée avec un chapitre voisin — le contenu de cette section figure dans le chapitre adjacent de l'extraction Marker.)*
 
 
-## [LDB 7] Carrières
+## [LDB 7] Carrieres
 
 *Pages PDF 48-50*
 
@@ -5660,7 +5660,7 @@ Le Morrspark ................................. 91 Le Temple de Myrmidia.........
 Prix de vente : 20,00 €
 
 
-## [MDG 9] La classe Côtier
+## [MDG 9] La classe Cotier
 
 *Folio 64+*
 
@@ -6713,4 +6713,4 @@ Vous vous concentrez sur un navire endommagé et vous exercez votre volonté pou
 Vous invoquez les vents pour qu'ils soufflent avec davantage de force dans les voiles d'un navire. Augmentez l'intensité du vent d'un cran pendant toute la durée du Miracle (voir page 107). La direction du vent n'est pas affectée.
 
 <span id="page-95-0" data-folio="92"></span>
-<!-- sources-empreinte: 7c66fb26f303e20ae53c03ddd006e61253d44c06 (129 fichiers, 16 dossiers) corps: 4b389781608228dc163b5512dcf9fa0f627246a9 -->
+<!-- sources-empreinte: c883f30366a114f49d027ed6b4cccc6ab51363ed (129 fichiers, 16 dossiers) corps: 5789cd654d5f4bf43754813afa7989cddd3c4a40 -->

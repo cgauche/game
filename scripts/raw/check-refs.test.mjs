@@ -8,7 +8,7 @@ import { join } from 'node:path'
 import { scanDeadRefs, sitesMorts, STOCK_PATH } from './check-refs.mjs'
 import { ecartDuVolet, readStock } from './stockNominatif.mjs'
 
-// LDB 06 (Source/Warhammer v4 - Livre de base version corrigée/06 - Classes.md) fait 6 lignes
+// LDB 06 (Source/Warhammer v4 - Livre de base version corrigee/06 - Classes.md) fait 6 lignes
 // (split('\n').length) — chapitre réel, court, stable : sert d'ancrage pour planter une réf hors
 // borne sans toucher au vrai docs/raw/.
 function withTempRawDir(content, fn) {

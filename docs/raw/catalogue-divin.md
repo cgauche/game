@@ -214,7 +214,7 @@ Les pénitences de Morr impliquent en général la chasse aux nécromants et la 
 - Ne jamais être complice d'une résurrection des morts, sauf avec la permission de Morr.
 
 
-## [LDB 28] Le culte de Myrmidia, déesse de la Stratégie
+## [LDB 28] Le culte de Myrmidia, deesse de la Strategie
 
 *Pages PDF 209*
 
@@ -306,7 +306,7 @@ Les pénitences de Ranald impliquent généralement un vol dans des endroits ver
 - Il n'y a pas d'honneur parmi les voleurs, mais il y en a parmi les ranaldiens.
 
 
-## [LDB 30] Le culte de Rhya, déesse de la Fertilité
+## [LDB 30] Le culte de Rhya, deesse de la Fertilite
 
 *Pages PDF 211*
 
@@ -351,7 +351,7 @@ Les pénitences de Rhya peuvent impliquer de replanter des zones dévastées, d'
 - Interrompre l'œuvre du Prince des excès partout où il intervient.
 
 
-## [LDB 31] Le culte de Shallya, déesse de la Miséricorde
+## [LDB 31] Le culte de Shallya, deesse de la Misericorde
 
 *Pages PDF 212*
 
@@ -394,7 +394,7 @@ Les pénitences établies par Shallya impliquent toujours d'aider les malades, l
 - Ne jamais prendre les armes ; un bâton de marche et du courage suffiront.
 
 
-## [LDB 32] Le culte de Sigmar, dieu de l’Empire
+## [LDB 32] Le culte de Sigmar, dieu de l'Empire
 
 *Pages PDF 213*
 
@@ -478,7 +478,7 @@ Les pénitences de Taal impliquent en général l'élimination des monstres mala
 - Ne jamais blesser un animal, sauf en cas de légitime défense, pour se nourrir ou pour un sacrifice.
 
 
-## [LDB 34] Le culte d’Ulric, dieu de la Guerre
+## [LDB 34] Le culte d'Ulric, dieu de la Guerre
 
 *Pages PDF 215*
 
@@ -525,7 +525,7 @@ Les pénitences établies par Ulric sont presque toujours des Tests de force, de
 - La Poudre noire, les heaumes, les arbalètes et la technologie ne font pas partie des voies d'Ulric.
 
 
-## [LDB 35] Le culte de Verena, déesse de la sagesse
+## [LDB 35] Le culte de Verena, deesse de la sagesse
 
 *Pages PDF 216*
 
@@ -564,7 +564,7 @@ Les pénitences établies par Verena impliquent en général la récupération o
 - Ne jamais devenir un outil d'injustice ou d'hérésie.
 
 
-## [LDB 36] Les dieux ancêtres nains
+## [LDB 36] Les dieux ancetres nains
 
 *Pages PDF 217*
 
@@ -662,7 +662,7 @@ La plupart des gens connaîtront la plus puissante de ces forces à travers des 
 Il semblerait qu'il y ait des factions rivales dédiées à différents aspects de la Ruine, aussi ennemis les uns des autres que du reste du Vieux Monde. Mais quand, à de rares occasions, ils coopèrent comme ils le firent il y a plus de deux cents ans pendant la Grande Guerre contre le Chaos, le monde tremble. Certains affirment que des cultes dédiés aux dieux du Chaos ont infiltré l'Empire. La plupart des gens trouvent cette idée absurde, car aucun individu sensé ne serait assez stupide pour vénérer l'une des Puissances de la Ruine.
 
 
-## [LDB 40] Les prières
+## [LDB 40] Les prieres
 
 *Pages PDF 219-221*
 
@@ -766,7 +766,7 @@ Les Serviteurs divins sont des séides surnaturels du dieu dans le royaume maté
 Certains résultats de la Colère des dieux nécessitent une Pénitence. Le MJ peut décider d'une pénitence appropriée en fonction de votre faute, ou préférer que vous la choisissiez, avec des châtiments supplémentaires si vous n'êtes pas assez repentant. Des exemples typiques sont listés dans la description de chaque culte. Les Pénitences peuvent être révélées sous la forme de visions, d'inspiration divine ou, très rarement, d'un message direct de votre divinité. Si vous n'êtes pas digne d'un tel contact, une Pénitence peut être transmise par un autre membre de votre culte. Autrement, un Serviteur divin du culte pourrait se manifester – un professeur défunt, une figure légendaire ou un animal approprié – et vous informer de ce qui est requis. Votre MJ devrait considérer les péchés impliqués, et décider comment le dieu en question réagirait à ceux-ci.
 
 
-## [LDB 41] Bénédictions
+## [LDB 41] Benedictions
 
 *Pages PDF 222-223*
 
@@ -1841,7 +1841,7 @@ Les Nouveaux Millénaristes ont récemment lancé une campagne de financement af
 **Traits :** Craintif (créanciers), Préjugés (aristocrates, réactionnaires, miliciens, nantis, utilisateurs de mystracine)
 
 
-## [ACE 11] Cultes interdits et groupes extrémistes
+## [ACE 11] Cultes interdits et groupes extremistes
 
 *Pages PDF 217-221*
 
@@ -2555,4 +2555,4 @@ Vous vous concentrez sur un navire endommagé et vous exercez votre volonté pou
 Vous invoquez les vents pour qu'ils soufflent avec davantage de force dans les voiles d'un navire. Augmentez l'intensité du vent d'un cran pendant toute la durée du Miracle (voir page 107). La direction du vent n'est pas affectée.
 
 <span id="page-95-0" data-folio="92"></span>
-<!-- sources-empreinte: 7c66fb26f303e20ae53c03ddd006e61253d44c06 (129 fichiers, 16 dossiers) corps: 8f5508bf25d045a3d137c2cf730a41c2679549e7 -->
+<!-- sources-empreinte: c883f30366a114f49d027ed6b4cccc6ab51363ed (129 fichiers, 16 dossiers) corps: 09e1a9697fb887ad4f01aff6f60138a6eb924478 -->

@@ -6,10 +6,10 @@ cd "$(dirname "$0")/../.." || exit 1
 CFG="scripts/raw/marker-paginate.json"
 PDFS=(
 "WH - V4 - Aux Armes.pdf"
-"WH - V4 - Le zoo impérial.pdf"
+"WH - V4 - Le zoo imperial.pdf"
 "Warhammer v4 - Les archives de l'Empire volume 1.pdf"
 "Warhammer v4 - Les archives de l'Empire volume 2.pdf"
-"Warhammer v4 - Middenheim la cité du Loup Blanc.pdf"
+"Warhammer v4 - Middenheim la cite du Loup Blanc.pdf"
 "Warhammer v4 - 1.0 L'ennemi dans l'Ombre.pdf"
 "Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon.pdf"
 "Warhammer v4 - 2.0 Mort sur le Reik.pdf"
@@ -17,7 +17,7 @@ PDFS=(
 "Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone.pdf"
 "Warhammer v4 - Aldorf la Couronne de l'Empire.pdf"
 "Warhammer v4 - Aventures a Ubersreik.pdf"
-"Warhammer v4 - Nuits agitees & dures journées.pdf"
+"Warhammer v4 - Nuits agitees & dures journees.pdf"
 )
 i=0
 for pdf in "${PDFS[@]}"; do

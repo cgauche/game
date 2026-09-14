@@ -2,9 +2,9 @@
 
 - [MIDDENHEIM](<01 - MIDDENHEIM.md>) — p. 9-32
 - [Guide du visiteur](<02 - Guide du visiteur.md>) — p. 33-113
-- [Au-delà des murs](<03 - Au-delà des murs.md>) — p. 114-117
+- [Au-delà des murs](<03 - Au-dela des murs.md>) — p. 114-117
 - [Bestiaire](<04 - Bestiaire.md>) — p. 118-121
-- [Le Grand-Duché](<05 - Le Grand-Duché.md>) — p. 122-132
+- [Le Grand-Duché](<05 - Le Grand-Duche.md>) — p. 122-132
 - [Les Petits Rois](<06 - Les Petits Rois.md>) — p. 133-136
 - [Cultes du Chaos de Middenheim](<07 - Cultes du Chaos de Middenheim.md>) — p. 137-145
 - [ANNEXE I](<08 - ANNEXE I.md>) — p. 146-150

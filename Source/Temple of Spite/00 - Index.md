@@ -29,11 +29,11 @@
 - [Dark Magic](<27 - Dark Magic.md>) — p. 62-63
 - [The Lore Of Dark Magic](<28 - The Lore Of Dark Magic.md>) — p. 64-67
 - [Gifts of Khaine](<29 - Gifts of Khaine.md>) — p. 68
-- [Valerion’s Blackswords](<30 - Valerion’s Blackswords.md>) — p. 69
+- [Valerion’s Blackswords](<30 - Valerion's Blackswords.md>) — p. 69
 - [Born In Betrayal](<31 - Born In Betrayal.md>) — p. 69-75
 - [The Fell Brethren](<32 - The Fell Brethren.md>) — p. 76-82
 - [The Glass Thorn](<33 - The Glass Thorn.md>) — p. 83-90
-- [Khaine’s Eyes](<34 - Khaine’s Eyes.md>) — p. 91-98
+- [Khaine’s Eyes](<34 - Khaine's Eyes.md>) — p. 91-98
 - [The Scaleflayer Menagerie](<35 - The Scaleflayer Menagerie.md>) — p. 99-104
 - [A Tour of the Beast Pens](<36 - A Tour of the Beast Pens.md>) — p. 105
 - [The Companyof the Nightwake](<37 - The Companyof the Nightwake.md>) — p. 106-111

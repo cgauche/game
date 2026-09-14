@@ -1,7 +1,7 @@
 /**
  * Garde-fou « Schéma de Progression incomplet » (cliquet, patron `obtainability-guard.test.ts`).
  *
- * Vérifiable au LDB : `Source/Warhammer v4 - Livre de base version corrigée/08 - Statut.md`
+ * Vérifiable au LDB : `Source/Warhammer v4 - Livre de base version corrigee/08 - Statut.md`
  * l.2380-2384 (Sorcier) n'imprime que `CC / Int / FM`, alors que `careerLevels.json` porte en plus
  * `Ag`, `I` et `Soc` aux niveaux 2-4 — ces trois-là viennent de la maquette, pas du Markdown.
  *

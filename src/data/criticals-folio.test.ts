@@ -11,7 +11,7 @@ import type { SourceRef } from './schemas/grammaire/valeurs';
  * Le dataset a longtemps porté une NOTE LIBRE `_source` annonçant « p.≈118-124 » : ce sont des pages
  * PDF, pas des folios imprimés. Elle est morte, remplacée par un `source: {book:'aux-armes', page}`
  * PAR ENTRÉE — et, depuis #1657 B2a, par document-table aussi. Les folios sont relevés sur les ancres
- * `data-folio` de `Source/WH - V4 - Aux Armes/07 - MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE.md` : 83 juste
+ * `data-folio` de `Source/WH - V4 - Aux Armes/07 - MISES A JOUR DE L'ETAT HEMORRAGIQUE.md` : 83 juste
  * avant « TABLEAU DES BLESSURES CRITIQUES À LA TÊTE », 84 « … AU BRAS », 85 « … AU TORSE », 86
  * « … À LA JAMBE ». Ce test est ce qui rend ce relevé VÉRIFIABLE plutôt que déclaré.
  *

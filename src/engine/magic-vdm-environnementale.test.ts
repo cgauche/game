@@ -4,7 +4,7 @@
  * d'Incantation / de Focalisation / de Dissipation.
  *
  * Les attendus chiffrés ci-dessous sont relus au Source (`Source/Warhammer v4 - Les Vents de
- * Magie/14 - Les Vents à l'œuvre.md`), folios 189-207.
+ * Magie/14 - Les Vents a l'oeuvre.md`), folios 189-207.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { OPTIONAL_RULES, setRule, resetRule, ruleDef } from './policy';

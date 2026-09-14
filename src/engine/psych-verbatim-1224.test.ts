@@ -1,6 +1,6 @@
 /**
  * #1224 — les quatre écarts mécaniques révélés par la remise au VERBATIM de `psychology.json` (#1200),
- * re-mesurés au Source (`Warhammer v4 - Livre de base version corrigée/21 - Psychologie.md`) :
+ * re-mesurés au Source (`Warhammer v4 - Livre de base version corrigee/21 - Psychologie.md`) :
  *
  * · l.87 (Phobie) : « Traitez l'objet de la *Phobie* comme causant *Peur 1*. Vous pouvez vouloir
  *   augmenter l'*Indice* de *Peur* si la *Phobie* est particulièrement forte. »

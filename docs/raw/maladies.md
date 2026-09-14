@@ -357,7 +357,7 @@ La créature est porteuse de la maladie *Type*. Les héros blessés doivent test
 
 ## Suppléments — EDO : Fièvre Cérébrale Pourpre + 2 symptômes + Contagieux
 
-**Sources RAW** : `EDO App.2 l.99-223` (fichier `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/11 - APPENDICE 2 - Nouvelles règles.md`)
+**Sources RAW** : `EDO App.2 l.99-223` (fichier `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/11 - APPENDICE 2 - Nouvelles regles.md`)
 
 > « Cette section ajoute une nouvelle maladie et quelques symptômes supplémentaires pour faciliter vos créations personnelles. »
 

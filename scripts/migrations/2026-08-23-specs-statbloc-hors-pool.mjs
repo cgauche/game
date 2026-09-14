@@ -14,7 +14,7 @@
  *
  * Entrées : `src/data/skills.json` (écrit), `src/data/careerLevels.json`, `src/data/species.json`,
  * `src/data/stars.json`, `src/data/creatures.json` (les quatre critères re-mesurés) et le RAW
- * `Source/Warhammer v4 - Livre de base version corrigée/09 - Compétences.md` (liste imprimée).
+ * `Source/Warhammer v4 - Livre de base version corrigee/09 - Competences.md` (liste imprimée).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -63,7 +63,7 @@ const TABLE = [
 ];
 
 const skills = J('src/data/skills.json');
-const LDB09 = path.join(ROOT, 'Source/Warhammer v4 - Livre de base version corrigée/09 - Compétences.md');
+const LDB09 = path.join(ROOT, 'Source/Warhammer v4 - Livre de base version corrigee/09 - Competences.md');
 const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 
 // ── Critère 1 : les listes « Spécialisations : » / « Exemples de Spécialisations : » du LDB 09,

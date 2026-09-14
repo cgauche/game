@@ -1,16 +1,16 @@
 # Warhammer v4 - 2.0 Mort sur le Reik — Index
 
-- [PRÉFACE - Un peu d’histoire](<01 - PRÉFACE - Un peu d’histoire.md>) — folio 4
+- [PRÉFACE - Un peu d’histoire](<01 - PREFACE - Un peu d'histoire.md>) — folio 4
 - [INTRODUCTION](<02 - INTRODUCTION.md>) — folio 5
-- [CHAPITRE 1 - De Bögenhafen à Altdorf](<03 - CHAPITRE 1 - De Bögenhafen à Altdorf.md>) — folio 10
-- [CHAPITRE 2 - D’Altdorf à Kemperbad](<04 - CHAPITRE 2 - D’Altdorf à Kemperbad.md>) — folio 25
-- [CHAPITRE 3 - De Kemperbad aux Crêtes noires](<05 - CHAPITRE 3 - De Kemperbad aux Crêtes noires.md>) — folio 40
-- [CHAPITRE 4 - De Grissenwald aux Collines stériles](<06 - CHAPITRE 4 - De Grissenwald aux Collines stériles.md>) — folio 55
-- [CHAPITRE 5 - D’Unterbaum à Wittgendorf](<07 - CHAPITRE 5 - D’Unterbaum à Wittgendorf.md>) — folio 65
+- [CHAPITRE 1 - De Bögenhafen à Altdorf](<03 - CHAPITRE 1 - De Bogenhafen a Altdorf.md>) — folio 10
+- [CHAPITRE 2 - D’Altdorf à Kemperbad](<04 - CHAPITRE 2 - D'Altdorf a Kemperbad.md>) — folio 25
+- [CHAPITRE 3 - De Kemperbad aux Crêtes noires](<05 - CHAPITRE 3 - De Kemperbad aux Cretes noires.md>) — folio 40
+- [CHAPITRE 4 - De Grissenwald aux Collines stériles](<06 - CHAPITRE 4 - De Grissenwald aux Collines steriles.md>) — folio 55
+- [CHAPITRE 5 - D’Unterbaum à Wittgendorf](<07 - CHAPITRE 5 - D'Unterbaum a Wittgendorf.md>) — folio 65
 - [CHAPITRE 6 - Wittgendorf](<08 - CHAPITRE 6 - Wittgendorf.md>) — folio 69
-- [CHAPITRE 7 - Château von Wittgenstein](<09 - CHAPITRE 7 - Château von Wittgenstein.md>) — folio 84
+- [CHAPITRE 7 - Château von Wittgenstein](<09 - CHAPITRE 7 - Chateau von Wittgenstein.md>) — folio 84
 - [CHAPITRE 8 - Une halte en chemin](<10 - CHAPITRE 8 - Une halte en chemin.md>) — folio 127
-- [APPENDICE I - L’entraînement et les mentors](<11 - APPENDICE I - L’entraînement et les mentors.md>) — folio 142
+- [APPENDICE I - L’entraînement et les mentors](<11 - APPENDICE I - L'entrainement et les mentors.md>) — folio 142
 
 ---
 

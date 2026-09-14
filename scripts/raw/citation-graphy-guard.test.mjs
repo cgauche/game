@@ -137,7 +137,7 @@ test('docs/raw : LDB sans chapitre HORS périmètre (b) ; EDO/EDOC & MSR/MSRC d�
 
 test('docs/raw (c) : nom de fichier de chapitre en backticks (`08 - Titre.md` l.89) → détecté ; réf nue → silence', () => {
   withTempRawDir({
-    'a.md': '**Source :** ADE II `08 - Le théâtre de la guerre.md` l.89-131.\n',
+    'a.md': '**Source :** ADE II `08 - Le theatre de la guerre.md` l.89-131.\n',
     'b.md': '**Source :** ADE II `09 - Annexe I.md` l.32-33.\n',
     'ok.md': 'forme canonique `ADE II 8 l.89-131`.\n',
   }, (raw) => {
@@ -588,7 +588,7 @@ const JOUET_SRC = [
 const JOUET_FICHE = [
   `Faim (${spec(18, '417–422')}) plage à tiret cadratin`,                  // 1  docsRaw emdash-range
   'ogres : Langue Magick (ADE II l.653)',                                // 2  docsRaw book-no-chapter + bookNoChapterSrc
-  '**Source :** ADE II `08 - Le théâtre de la guerre.md` l.89-131.',      // 3  docsRaw backtick-file
+  '**Source :** ADE II `08 - Le theatre de la guerre.md` l.89-131.',      // 3  docsRaw backtick-file
   "Ce passage n'est pas implémenté.",                                    // 4  implProse
   'Voir RAW 16 l.105 : abréviation inconnue en fiche',                    // 5  unknownAbbr
 ].join('\n') + '\n'

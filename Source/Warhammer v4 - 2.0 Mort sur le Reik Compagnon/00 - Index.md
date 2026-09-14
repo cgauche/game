@@ -1,23 +1,23 @@
 # Warhammer v4 - 2.0 Mort sur le Reik Compagnon — Index
 
-- [PRÉFACE - UN PEU D’HISTOIRE](<01 - PRÉFACE - UN PEU D’HISTOIRE.md>) — folio 4
+- [PRÉFACE - UN PEU D’HISTOIRE](<01 - PREFACE - UN PEU D'HISTOIRE.md>) — folio 4
 - [Commentaires des Auteurs](<02 - Commentaires des Auteurs.md>) — folio 7
-- [CHAPITRE 1 - « EASTER EGGS »](<03 - CHAPITRE 1 - « EASTER EGGS ».md>) — folio 8
+- [CHAPITRE 1 - « EASTER EGGS »](<03 - CHAPITRE 1 - EASTER EGGS.md>) — folio 8
 - [CHAPITRE 2 - Les herbes et leurs usages](<04 - CHAPITRE 2 - Les herbes et leurs usages.md>) — folio 9
-- [CHAPITRE 3 - Scènes coupées](<05 - CHAPITRE 3 - Scènes coupées.md>) — folio 18
-- [CHAPITRE 4 - Les fleuves de l’Empire](<06 - CHAPITRE 4 - Les fleuves de l’Empire.md>) — folio 24
+- [CHAPITRE 3 - Scènes coupées](<05 - CHAPITRE 3 - Scenes coupees.md>) — folio 18
+- [CHAPITRE 4 - Les fleuves de l’Empire](<06 - CHAPITRE 4 - Les fleuves de l'Empire.md>) — folio 24
 - [CHAPITRE 5 - Navigation fluviale](<07 - CHAPITRE 5 - Navigation fluviale.md>) — folio 29
-- [CHAPITRE 6 - La Patrouille fluviale impériale](<08 - CHAPITRE 6 - La Patrouille fluviale impériale.md>) — folio 35
+- [CHAPITRE 6 - La Patrouille fluviale impériale](<08 - CHAPITRE 6 - La Patrouille fluviale imperiale.md>) — folio 35
 - [CHAPITRE 7 - Compagnons de voyage](<09 - CHAPITRE 7 - Compagnons de voyage.md>) — folio 39
 - [CHAPITRE 8 - LES RIVERAINS](<10 - CHAPITRE 8 - LES RIVERAINS.md>) — folio 51
-- [CHAPITRE 9 - Le service des tours impériales à signaux](<11 - CHAPITRE 9 - Le service des tours impériales à signaux.md>) — folio 61
+- [CHAPITRE 9 - Le service des tours impériales à signaux](<11 - CHAPITRE 9 - Le service des tours imperiales a signaux.md>) — folio 61
 - [CHAPITRE 10 - Personnalisation](<12 - CHAPITRE 10 - Personnalisation.md>) — folio 65
-- [CHAPITRE 11 - Règles du commerce](<13 - CHAPITRE 11 - Règles du commerce.md>) — folio 71
+- [CHAPITRE 11 - Règles du commerce](<13 - CHAPITRE 11 - Regles du commerce.md>) — folio 71
 - [CHAPITRE 12 - Naufrageurs, contrebandiers et pirates](<14 - CHAPITRE 12 - Naufrageurs, contrebandiers et pirates.md>) — folio 80
 - [CHAPITRE 13 - Bestiaire fluvial](<15 - CHAPITRE 13 - Bestiaire fluvial.md>) — folio 86
-- [CHAPITRE 14 - Maladies transmises par l’eau](<16 - CHAPITRE 14 - Maladies transmises par l’eau.md>) — folio 92
+- [CHAPITRE 14 - Maladies transmises par l’eau](<16 - CHAPITRE 14 - Maladies transmises par l'eau.md>) — folio 92
 - [CHAPITRE 15 - La Couronne Rouge Guide du Meneur de Jeu](<17 - CHAPITRE 15 - La Couronne Rouge Guide du Meneur de Jeu.md>) — folio 95
-- [CHAPITRE 16 - L’Empereur Luitpold](<18 - CHAPITRE 16 - L’Empereur Luitpold.md>) — folio 103
+- [CHAPITRE 16 - L’Empereur Luitpold](<18 - CHAPITRE 16 - L'Empereur Luitpold.md>) — folio 103
 - [CHAPITRE 17 - La vengeance du Roi des tombes](<19 - CHAPITRE 17 - La vengeance du Roi des tombes.md>) — folio 114
 
 ---

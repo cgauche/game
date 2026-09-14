@@ -8,7 +8,7 @@
 - [The Black Mountain Boyz](<06 - The Black Mountain Boyz.md>) — p. 42-51
 - [The Stone Snakes](<07 - The Stone Snakes.md>) — p. 52-61
 - [The Wolfboyz of Oglah Khan](<08 - The Wolfboyz of Oglah Khan.md>) — p. 62-71
-- [Matthogg’s Payswords](<09 - Matthogg’s Payswords.md>) — p. 72-83
+- [Matthogg’s Payswords](<09 - Matthogg's Payswords.md>) — p. 72-83
 - [Trolls in Several Forms](<10 - Trolls in Several Forms.md>) — p. 84-93
 - [WAAAGH! MAGIC](<11 - WAAAGH! MAGIC.md>) — p. 94-101
 - [Orc and Goblin Nemeses](<12 - Orc and Goblin Nemeses.md>) — p. 102-109

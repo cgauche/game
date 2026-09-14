@@ -23,7 +23,7 @@
  * voisines de statbloc déjà migrées (jeune araignée `arme 3` = « Dégâts DR + 3 », ch.40 l.52).
  *
  * Entrées : `src/data/books.json` (écrit : pose de l'`extractionDir`), le dossier d'extraction
- * `Source/Warhammer - Habitants & Créatures  du Vieux-Monde (Discord) PDF` (chapitres `NN - ….md`),
+ * `Source/Warhammer - Habitants & Creatures  du Vieux-Monde (Discord) PDF` (chapitres `NN - ….md`),
  * `src/data/skills.json` (catalogue, écrit) et les trois porteurs
  * `src/data/{creatures,careerLevels,species}.json`.
  *
@@ -44,7 +44,7 @@ const J = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
 const serializeDataset = (value) => JSON.stringify(value, null, 2);
 
 const BOOK = 'frenchy-bzh';
-const DIR_FRENCHY = 'Source/Warhammer - Habitants & Créatures  du Vieux-Monde (Discord) PDF';
+const DIR_FRENCHY = 'Source/Warhammer - Habitants & Creatures  du Vieux-Monde (Discord) PDF';
 
 /** Entrées de catalogue à créer, par id de Compétence. `note` = citation à la ligne (chapitre du
  *  fichier d'extraction), `page` = folio imprimé au pied de page qui gouverne cette ligne.

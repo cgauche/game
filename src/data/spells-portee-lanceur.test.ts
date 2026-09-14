@@ -6,11 +6,11 @@
  * `{kind:'self'}`. Le mot change avec le chapitre (le ch. 46 l.70 imprime même « Sorcier|Shaman »
  * pour le seul Bélier) : c'est le PORTEUR de la table, jamais une cible tierce.
  *
- * `Source/Warhammer - Habitants & Créatures  du Vieux-Monde (Discord) PDF/71 - Nécromanciens.md`
- * l.249 ; `57 - Clan Eshin.md` l.264 ; `50 - Démons de Nurgle.md` l.214 ;
- * `51 - Démons de Tzeentch.md` l.188 ; `26 - Services Ruraux Fréquents & Usuels.md` l.385 et l.575 ;
- * `43 - Ungors, Gors & Bestigors.md` l.584 et l.804 ; `49 - Démons de Slaanesh.md` l.79 ;
- * `61 - Prophète Gris.md` l.97 ; `67 - Orcs.md` l.605.
+ * `Source/Warhammer - Habitants & Creatures  du Vieux-Monde (Discord) PDF/71 - Necromanciens.md`
+ * l.249 ; `57 - Clan Eshin.md` l.264 ; `50 - Demons de Nurgle.md` l.214 ;
+ * `51 - Demons de Tzeentch.md` l.188 ; `26 - Services Ruraux Frequents & Usuels.md` l.385 et l.575 ;
+ * `43 - Ungors, Gors & Bestigors.md` l.584 et l.804 ; `49 - Demons de Slaanesh.md` l.79 ;
+ * `61 - Prophete Gris.md` l.97 ; `67 - Orcs.md` l.605.
  *
  * L'échappatoire `special` reste entière pour ce qui n'a pas de forme (« Spécial », « Voir texte »,
  * « 1 voilier dans la Ligne de vue ») : ce contrat ne parle QUE des désignations de lanceur, et sa

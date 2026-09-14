@@ -22,7 +22,7 @@
 //   - `qualities.json` ×8 ne relevait d'AUCUN arbitrage de convention : le folio 286 du LDB est dans
 //     `55 - Colonies.md`, il n'y porte aucune table de Qualités ; les 8 Atouts/Défauts d'objet vivent
 //     en folio 292 (`60 - Fabrication.md`), ce que l'index du livre confirme entrée par entrée
-//     (`85 - Traits de créature.md` l.581-700 : « Léger 292 », « Peu fiable 292 »…).
+//     (`85 - Traits de creature.md` l.581-700 : « Léger 292 », « Peu fiable 292 »…).
 // Ce stock ne peut que DÉCROÎTRE : une clé neuve est une régression à corriger au Source.
 //
 // `node scripts/data/audit-folios.mjs --stock-titres` re-rend ce fichier et REFUSE de l'agrandir.

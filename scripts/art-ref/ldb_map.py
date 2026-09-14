@@ -26,7 +26,7 @@ from pathlib import Path
 import fitz
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PDF = ROOT / "Source" / "Warhammer v4 - Livre de base version corrigée.pdf"
+DEFAULT_PDF = ROOT / "Source" / "Warhammer v4 - Livre de base version corrigee.pdf"
 DEFAULT_OUT = ROOT / "art-ref" / "ldb"
 
 MIN_SIDE, MIN_SHORT, REPEAT_MAX = 200, 60, 4

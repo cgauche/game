@@ -10,9 +10,9 @@
 //
 // 43 au relevé initial, 41 après les deux soldes du MÊME lot (folios pleinement faux, relevés au
 // `Source/`) : `combat-stakes.json#combat-aa-bleed` 61 → 80 (sommaire imprimé d'Aux Armes,
-// `01 - CRÉDITS.md` : « Blessures, Blessures Critiques et mort 80 ») et
+// `01 - CREDITS.md` : « Blessures, Blessures Critiques et mort 80 ») et
 // `flow-stakes.json#fate-save-choice` 34 → 170 (« Dépenser du Destin » sous l'ancre
-// `data-folio="170"` de `17 - Destin et Résistance.md` ; le folio 34 est celui de la CRÉATION de
+// `data-folio="170"` de `17 - Destin et Resistance.md` ; le folio 34 est celui de la CRÉATION de
 // personnage, où le Destin est attribué, pas celui de son sacrifice).
 export const FOLIO_LINE_ALIGN_RATCHET = new Set([
   // careers.json (2)

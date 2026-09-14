@@ -224,7 +224,7 @@ test('un fichier NON SUIVI dans un dossier lu écarte l\'empreinte du disque de 
 
 test('indexGit rend les chemins NON-ASCII tels quels (core.quotepath neutralisé)', () => {
   const blobs = indexGit(RACINE)
-  const accentue = 'Source/WH - V4 - Aux Armes/01 - CRÉDITS.md'
+  const accentue = 'Source/WH - V4 - Aux Armes/01 - CREDITS.md'
   assert.ok(blobs.has(accentue), `« ${accentue} » absent de l'index lu : git l'a rendu échappé en octal`)
   assert.ok([...blobs.keys()].every((p) => !p.startsWith('"')), 'un chemin est rendu entre guillemets')
   assert.match(blobs.get(accentue), /^[0-9a-f]{40}$/)

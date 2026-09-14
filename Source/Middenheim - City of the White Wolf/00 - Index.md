@@ -3,7 +3,7 @@
 - [Contents](<01 - Contents.md>) — p. 2
 - [Credits](<02 - Credits.md>) — p. 3-5
 - [Chapter 1: City of the White Wolf](<03 - Chapter 1- City of the White Wolf.md>) — p. 6-29
-- [Chapter 2: A Visitor’s guide](<04 - Chapter 2- A Visitor’s guide.md>) — p. 30-110
+- [Chapter 2: A Visitor’s guide](<04 - Chapter 2- A Visitor's guide.md>) — p. 30-110
 - [Chapter 3: Beyond the Walls](<05 - Chapter 3- Beyond the Walls.md>) — p. 111-114
 - [Chapter 4: Bestiary](<06 - Chapter 4- Bestiary.md>) — p. 115-117
 - [From the desk at the Oberfast Inn](<07 - From the desk at the Oberfast Inn.md>) — p. 118

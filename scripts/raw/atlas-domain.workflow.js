@@ -41,12 +41,12 @@ const DOMAINS = {
 const MAXLOOPS = 3
 
 const BOOKS = [
-  { ab: 'LDB',        dir: "Source/Warhammer v4 - Livre de base version corrigée" },
+  { ab: 'LDB',        dir: "Source/Warhammer v4 - Livre de base version corrigee" },
   { ab: 'ADE I',      dir: "Source/Warhammer v4 - Les archives de l'Empire volume 1" },
   { ab: 'ADE II',     dir: "Source/Warhammer v4 - Les archives de l'Empire volume 2" },
   { ab: 'AA',         dir: "Source/WH - V4 - Aux Armes" },
-  { ab: 'ZI',         dir: "Source/WH - V4 - Le zoo impérial" },
-  { ab: 'MCLB'      , dir: "Source/Warhammer v4 - Middenheim la cité du Loup Blanc" },
+  { ab: 'ZI',         dir: "Source/WH - V4 - Le zoo imperial" },
+  { ab: 'MCLB'      , dir: "Source/Warhammer v4 - Middenheim la cite du Loup Blanc" },
   { ab: 'EDO',        dir: "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre" },
   { ab: 'EDOC',       dir: "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon" },
   { ab: 'MSR',         dir: "Source/Warhammer v4 - 2.0 Mort sur le Reik" },
@@ -54,7 +54,7 @@ const BOOKS = [
   { ab: 'PDT',         dir: "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone" },
   { ab: 'ACE',        dir: "Source/Warhammer v4 - Aldorf la Couronne de l'Empire" },
   { ab: 'AU1',  dir: "Source/Warhammer v4 - Aventures a Ubersreik" },
-  { ab: 'NADJ',      dir: "Source/Warhammer v4 - Nuits agitees & dures journées" },
+  { ab: 'NADJ',      dir: "Source/Warhammer v4 - Nuits agitees & dures journees" },
 ]
 const dirOf = (ab) => (BOOKS.find((b) => b.ab === ab) || {}).dir
 const bookMap = BOOKS.map((b) => '- ' + b.ab + ' = ' + b.dir).join('\n')

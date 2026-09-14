@@ -37,7 +37,7 @@ from pathlib import Path
 import fitz
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PDF = ROOT / "Source" / "Warhammer v4 - Livre de base version corrigée.pdf"
+DEFAULT_PDF = ROOT / "Source" / "Warhammer v4 - Livre de base version corrigee.pdf"
 DEFAULT_OUT = ROOT / "art-ref" / "ldb"
 
 MIN_SIDE = 200   # px: illustration threshold (>=200 on at least one side)

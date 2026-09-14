@@ -3,7 +3,7 @@
 - [Contents](<01 - Contents.md>) — p. 2
 - [Preface: A Bit of History](<02 - Preface- A Bit of History.md>) — p. 3
 - [Introduction](<03 - Introduction.md>) — p. 4-8
-- [Chapter 1 BÖGENHAFEN TO ALTDORF](<04 - Chapter 1 BÖGENHAFEN TO ALTDORF.md>) — p. 9-23
+- [Chapter 1 BÖGENHAFEN TO ALTDORF](<04 - Chapter 1 BOGENHAFEN TO ALTDORF.md>) — p. 9-23
 - [Chapter 2 Altdorf to Kemperbad](<05 - Chapter 2 Altdorf to Kemperbad.md>) — p. 24-38
 - [Chapter 3 Kemperbad to Black Peaks](<06 - Chapter 3 Kemperbad to Black Peaks.md>) — p. 39-53
 - [Chapter 4 Grissenwald to the Barren Hills](<07 - Chapter 4 Grissenwald to the Barren Hills.md>) — p. 54-63

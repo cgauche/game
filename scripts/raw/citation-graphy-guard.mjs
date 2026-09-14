@@ -41,7 +41,7 @@ export const EMDASH_RANGE_RE = () => /l\.\d+[–—]/g
 // `reconcile`, pas une graphie « livre-sans-chapitre » au sens de cette garde).
 export const BOOK_NO_CHAPTER_RE = () => new RegExp(`\\b(${otherAbbrAlternation()}) l\\.\\d`, 'g')
 // (c) Nom de FICHIER de chapitre en backticks entre le livre et les lignes : `` `NN - Titre.md` l.X ``
-// (ex. `ADE II \`08 - Le théâtre de la guerre.md\` l.89-131`) — invisible d'`otherRe` (numéro de
+// (ex. `ADE II \`08 - Le theatre de la guerre.md\` l.89-131`) — invisible d'`otherRe` (numéro de
 // chapitre attendu NU, pas un nom de fichier). Forme canonique : `<ABRÉV> NN l.X`.
 export const BACKTICK_FILE_RE = () => /`\d{1,2} - [^`]*\.md` l\.\d/g
 

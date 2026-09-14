@@ -247,9 +247,9 @@ test('stock NOMINATIF de l Atlas RAW — une entrée qui nomme une FICHE (docs/r
 // entrées du stock des sauts de folio tombent sous elles). Trois CONSTANTES de chaîne plutôt qu'un
 // tableau : en portée de module, un tableau de chemins serait lui-même un stock nominatif de trois
 // entrées — la règle que ce fichier mesure.
-const CHAPITRE = 'Source/Warhammer v4 - Livre de base version corrigée/08 - Statut.md'
+const CHAPITRE = 'Source/Warhammer v4 - Livre de base version corrigee/08 - Statut.md'
 const CHAPITRE_ADE = "Source/Warhammer v4 - Les archives de l'Empire volume 1/01 - LES GRANDES PROVINCES.md"
-const CHAPITRE_ACE = "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/12 - Activités.md"
+const CHAPITRE_ACE = "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/12 - Activites.md"
 
 const casDuChapitre = (chapitre) => {
   test(`stock NOMINATIF de l Atlas RAW — l entrée qui nomme « ${chapitre.split('/')[1]} » est vue (espaces et apostrophe admis)`, () => {
@@ -295,8 +295,8 @@ test('racine `Source/` — ce qui n en est PAS : prose à espaces, dossier sans 
   assert.equal(entreesDeStock(stock(CHAPITRE), f).length, 1, 'témoin : le chapitre extrait EST une entrée')
   for (const valeur of [
     'le chapitre du Statut dans Source',
-    'Source/Warhammer v4 - Livre de base version corrigée',
-    'Source/Warhammer v4 - Livre de base version corrigée/08 - Statut.pdf',
+    'Source/Warhammer v4 - Livre de base version corrigee',
+    'Source/Warhammer v4 - Livre de base version corrigee/08 - Statut.pdf',
   ]) {
     assert.deepEqual(entreesDeStock(stock(valeur), f), [], `« ${valeur} » ne nomme aucun fichier`)
   }

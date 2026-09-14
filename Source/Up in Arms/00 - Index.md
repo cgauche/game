@@ -8,9 +8,9 @@
 - [Tilea and Tilean Characters](<06 - Tilea and Tilean Characters.md>) — p. 50-60
 - [The Cult of Myrmidia](<07 - The Cult of Myrmidia.md>) — p. 61-79
 - [An Alternative Approach to Injury](<08 - An Alternative Approach to Injury.md>) — p. 80-86
-- [The Quartermaster’s Store](<09 - The Quartermaster’s Store.md>) — p. 87-104
+- [The Quartermaster’s Store](<09 - The Quartermaster's Store.md>) — p. 87-104
 - [Mounted Combat](<10 - Mounted Combat.md>) — p. 105-109
-- [Hire ‘em and Fire ‘Em](<11 - Hire ‘em and Fire ‘Em.md>) — p. 110-117
+- [Hire ‘em and Fire ‘Em](<11 - Hire 'em and Fire 'Em.md>) — p. 110-117
 - [Artillery and Damage to structures](<12 - Artillery and Damage to structures.md>) — p. 118-120
 - [Structure Critical Damage](<13 - Structure Critical Damage.md>) — p. 121-126
 - [Pursuits of Excellence](<14 - Pursuits of Excellence.md>) — p. 127-132

@@ -398,7 +398,7 @@ test('folioCitationsFromJson : slug hors Atlas / folio introuvable → 0 match (
 })
 
 test('folioCitationsFromJson : le symbole est l\'entité PORTEUSE, jamais un id de ref emboîtée', () => {
-  // Résolution réelle : AA folio 109 existe (Source/WH - V4 - Aux Armes/09 - LE COMBAT MONTÉ.md → ch 9).
+  // Résolution réelle : AA folio 109 existe (Source/WH - V4 - Aux Armes/09 - LE COMBAT MONTE.md → ch 9).
   const content = [
     '[',
     '  { "id": "entree",',

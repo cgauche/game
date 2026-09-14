@@ -1868,7 +1868,7 @@ Récompenser les Joueurs par des Points de Destin ou de Résilience est égaleme
 | Exceptionnelle | 125              | Exceptionnelle | 200              | Exceptionnelle  | 250              |
 
 
-## [EDO 11] APPENDICE 2 - Nouvelles règles
+## [EDO 11] APPENDICE 2 - Nouvelles regles
 
 *Folio 145+*
 
@@ -2232,7 +2232,7 @@ Ce Sort est une variante d'une création du seigneur astromancien Wilfried-Gotth
 <span id="page-19-0" data-folio="16"></span>
 
 
-## [VDM 4] Hysh — Domaine de la Lumière
+## [VDM 4] Hysh - Domaine de la Lumiere
 
 *Pages PDF 58-70*
 
@@ -2767,7 +2767,7 @@ Vous invoquez une aura protectrice de pure lumière sacrée. Les créatures impi
 Vos yeux deviennent blancs tandis que vous percevez les Vents de Magie encore plus nettement que la réalité physique. Vous subissez un malus de −2 DR pour les Tests de Perception basés sur la vue, à moins que vous n'utilisiez le Talent *Seconde vue* pour voir les vents, auquel cas vous bénéficiez d'un bonus de +20. Vous pouvez voir la corruption et reconnaître des mutations chez les humains et autres races civilisées, mais pas chez les animaux et les plantes. Une mutation cachée sous des vêtements peut toujours passer inaperçue. En regardant simplement une cible, vous pouvez savoir combien de Points de Corruption elle a ou si elle possède le Trait de créature *Corruption*.
 
 
-## [VDM 5] Chamon — Domaine du Métal
+## [VDM 5] Chamon - Domaine du Metal
 
 *Pages PDF 70-82*
 
@@ -3289,7 +3289,7 @@ L'objet doit être chimiquement simple et il ne peut pas être utilisé en tant 
 Vous arrachez *Chamon* de la terre et des métaux portés par vos ennemis, transformant brièvement leur chair en métal. Il s'agit d'un *Projectile magique* affectant tout ce qui se trouve dans la Zone d'Effet, avec une valeur de Dégâts égale à votre Bonus de Force Mentale. Le Sort ignore le Bonus d'Endurance et inflige +1 États *Aveuglé*, *Assourdi* et *Sonné*, qui persistent pendant toute sa Durée. Toutes les cibles affectées gagnent +1 PA issu de l'or qui entoure leur corps, mais souffrent également de Suffocation (**WFJDR**, page 181). Si les cibles meurent pendant que le Sort est actif, elles sont enfermées de façon permanente dans une carapace de métaux communs, un macabre rappel des risques de la sorcellerie.
 
 
-## [VDM 6] Ghyran — Domaine de la Vie
+## [VDM 6] Ghyran - Domaine de la Vie
 
 *Pages PDF 82-94*
 
@@ -3811,7 +3811,7 @@ En puisant dans les flux de la magie tellurique, vous obtenez une carte mentale 
 Votre groupe se déplace sans effort dans les forêts. Tous ceux qui se trouvent à l'intérieur de la Zone d'Effet gagnent le Talent Bon marcheur (Régions boisées) (**WFJDR**, page 133). S'ils possèdent déjà ce Talent, ils peuvent ajouter +1 niveau temporaire, et un autre niveau temporaire pour chaque +2 DR. De plus, si vous obtenez +4 DR, votre groupe peut progresser sans laisser de trace, rendant impossible le suivi de vos déplacements. Le Sort prend fin si votre groupe traverse un autre chemin ou blesse un arbre vivant.
 
 
-## [VDM 7] Azyr — Domaine des Cieux
+## [VDM 7] Azyr - Domaine des Cieux
 
 *Pages PDF 94-106*
 
@@ -4314,7 +4314,7 @@ Vous invoquez une tornade qui provoque de violents dégâts. Les cibles qui se t
 Vous gagnez +1 Point de Destin. Si ce Point de Destin n'a pas été utilisé à la fin de la Durée du Sort, il est perdu.
 
 
-## [VDM 8] Ulgu — Domaine des Ombres
+## [VDM 8] Ulgu - Domaine des Ombres
 
 *Pages PDF 106-118*
 
@@ -4866,7 +4866,7 @@ Vous forcez un ennemi à changer d'allégeance. Si la cible échoue à un Test o
 Lorsque ce Sort est lancé sur une cible neutre, vous gagnez +2 DR à tous les Tests basés sur la Sociabilité et qui impliquent la cible neutre. Ce Sort n'a pas d'effet sur les cibles alliées.
 
 
-## [VDM 9] Shyish — Domaine de la Mort
+## [VDM 9] Shyish - Domaine de la Mort
 
 *Pages PDF 118-130*
 
@@ -5405,7 +5405,7 @@ De plus, vous retirez tous les États *Exténué* dont vous souffrez actuellemen
 Vous projetez une balle chatoyante de *Shyish* qui explose en un tourbillon de flammes violettes, composées de visages fantomatiques, la bouche ouverte en une terreur silencieuse. Les cibles à l'intérieur de la Zone d'Effet reçoivent +1 État *Brisé*. Celles qui possèdent le Trait de créature *Mort-vivant*  sont frappées par un *Projectile magique* avec Dégâts +10 qui ignore le Bonus d'Endurance et les PA.
 
 
-## [VDM 10] Aqshy — Domaine du Feu
+## [VDM 10] Aqshy - Domaine du Feu
 
 *Pages PDF 130-142*
 
@@ -5965,7 +5965,7 @@ la limite de la Portée du Sort.
 Les frappes sont des *Projectiles magiques* de Dégâts +4 (ou +0, si la cible réussit un Test d'**Esquive Intermédiaire (+0)**). Tous ceux que la tête enflammée touche reçoivent 1 État *En flammes*. Les cibles qui ont perdu au moins 1 Blessure considèrent que vous possédez le Trait de créature *Peur 1*.
 
 
-## [VDM 11] Ghur — Domaine de la Bête
+## [VDM 11] Ghur - Domaine de la Bete
 
 *Pages PDF 142-155*
 
@@ -6529,4 +6529,4 @@ Oui, à moins que la Description du Sort n'indique autre chose. Notez que les po
 #### **Bénéficie-t-on des Augmentations de Caractéristiques sous Forme bestiale ?**
 
 Non, le profil de base de la bête concernée devient votre profil principal, peu importe le nombre de PX investis pour améliorer vos Caractéristiques. En revanche, les Augmentations de Compétences peuvent être appliquées.
-<!-- sources-empreinte: 7c66fb26f303e20ae53c03ddd006e61253d44c06 (129 fichiers, 16 dossiers) corps: 20afcdec86f26d8aa177c93b37e29ce5207baa37 -->
+<!-- sources-empreinte: c883f30366a114f49d027ed6b4cccc6ab51363ed (129 fichiers, 16 dossiers) corps: d6f7c991f2f867b80037fa3aefd8155e9d5fcea2 -->

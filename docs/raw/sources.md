@@ -17,12 +17,12 @@ donc une ref de l'Atlas pointe le **même** endroit que le code.
 
 | Abrév. | Livre | Dossier `Source/` | Rôle |
 |---|---|---|---|
-| **LDB** | Livre de base (version corrigée) | `Warhammer v4 - Livre de base version corrigée/` | Cœur des règles (85 chapitres) |
+| **LDB** | Livre de base (version corrigée) | `Warhammer v4 - Livre de base version corrigee/` | Cœur des règles (85 chapitres) |
 | **ADE I** | Les Archives de l'Empire, vol. 1 | `Warhammer v4 - Les archives de l'Empire volume 1/` | Carrières, talents, objets, créatures |
 | **ADE II** | Les Archives de l'Empire, vol. 2 | `Warhammer v4 - Les archives de l'Empire volume 2/` | Ogres, carrières, talents, créatures |
 | **AA** | Aux Armes (*Up in Arms*) | `WH - V4 - Aux Armes/` | Combat & armes, talents, sièges, montures |
-| **ZI** | Le Zoo Impérial (*The Imperial Zoo*) | `WH - V4 - Le zoo impérial/` | Créatures exotiques, trait Redoutable, objets |
-| **MCLB** | Middenheim, la cité du Loup Blanc | `Warhammer v4 - Middenheim la cité du Loup Blanc/` | 3 origines humaines, carrière Frère Loup |
+| **ZI** | Le Zoo Impérial (*The Imperial Zoo*) | `WH - V4 - Le zoo imperial/` | Créatures exotiques, trait Redoutable, objets |
+| **MCLB** | Middenheim, la cité du Loup Blanc | `Warhammer v4 - Middenheim la cite du Loup Blanc/` | 3 origines humaines, carrière Frère Loup |
 | **EDO** | T1 — L'Ennemi dans l'Ombre | `Warhammer v4 - 1.0 L'ennemi dans l'Ombre/` | Sorts Tzeentch, créatures du Chaos, talents/traits |
 | **EDOC** | T1 — Compagnon | `Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/` | Véhicules, règles add. |
 | **MSR** | T2 — Mort sur le Reik | `Warhammer v4 - 2.0 Mort sur le Reik/` | Créatures, règles spéciales (eau, navires…) |
@@ -30,7 +30,7 @@ donc une ref de l'Atlas pointe le **même** endroit que le code.
 | **PDT** | T3 — Le Pouvoir derrière le Trône | `Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/` | Créatures, règles spéciales |
 | **ACE** | Aldorf, la Couronne de l'Empire | `Warhammer v4 - Aldorf la Couronne de l'Empire/` | Objets magiques, gangs, règles de cadre |
 | **AU1** | Aventures à Ubersreik | `Warhammer v4 - Aventures a Ubersreik/` | Contenu de cadre (peu de règles de combat) |
-| **NADJ** | Nuits agitées & dures journées (*Rough Nights & Hard Days*) | `Warhammer v4 - Nuits agitees & dures journées/` | Créatures, jeux de taverne, règles spéciales |
+| **NADJ** | Nuits agitées & dures journées (*Rough Nights & Hard Days*) | `Warhammer v4 - Nuits agitees & dures journees/` | Créatures, jeux de taverne, règles spéciales |
 | **MDG** | La Mer des Griffes (*Sea of Claws*) | `WH - V4 - La Mer de Griffe/` | Cadre côtier + règles navales : navires & artillerie, navigation/combat naval, carrières Côtier, cultes Manann/Stromfels, magie des mers, bestiaire marin |
 | **VDM** | Les Vents de Magie (*Winds of Magic*) | `Warhammer v4 - Les Vents de Magie/` | Magie des 8 Collèges : règles d'incantation révisées + rituels, sorts par domaine, carrières de sorcier, artefacts magiques, créatures magiques (élémentaires/familiers), sites & lignes de force |
 
@@ -40,7 +40,7 @@ donc une ref de l'Atlas pointe le **même** endroit que le code.
 
 ## EXCLU des règles
 
-**Boîte d'Initiation WFRP 4e** (`Boîte d'Initiation WFRP 4e Edition VF/`, `WH4_FR_BI_Livre_Aventure/`,
+**Boîte d'Initiation WFRP 4e** (`Boite d'Initiation WFRP 4e Edition VF/`, `WH4_FR_BI_Livre_Aventure/`,
 `WH4_FR_BI_Livre_Ubersreik/`) — **Starter Set à ruleset simplifié divergent** du LDB.
 **JAMAIS** une source de règles ni de stats.
 

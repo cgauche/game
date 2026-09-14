@@ -2,15 +2,15 @@
 
 - [Chapitre 1 - On recherche - aventuriers courageux](<01 - Chapitre 1 - On recherche - aventuriers courageux.md>) — folio 12
 - [Chapitre 2 - Erreur sur la personne](<02 - Chapitre 2 - Erreur sur la personne.md>) — folio 25
-- [Chapitre 3 - Le cœur de l’Empire](<03 - Chapitre 3 - Le cœur de l’Empire.md>) — folio 33
-- [Chapitre 4 - Sur la route de Bögenhafen…](<04 - Chapitre 4 - Sur la route de Bögenhafen….md>) — folio 44
-- [Chapitre 5 - Le faux héritage](<05 - Chapitre 5 - Le faux héritage.md>) — folio 53
+- [Chapitre 3 - Le cœur de l’Empire](<03 - Chapitre 3 - Le coeur de l'Empire.md>) — folio 33
+- [Chapitre 4 - Sur la route de Bögenhafen…](<04 - Chapitre 4 - Sur la route de Bogenhafen....md>) — folio 44
+- [Chapitre 5 - Le faux héritage](<05 - Chapitre 5 - Le faux heritage.md>) — folio 53
 - [Chapitre 6 - La Schaffenfest](<06 - Chapitre 6 - La Schaffenfest.md>) — folio 56
-- [Chapitre 7 - Dans les ténèbres](<07 - Chapitre 7 - Dans les ténèbres.md>) — folio 71
+- [Chapitre 7 - Dans les ténèbres](<07 - Chapitre 7 - Dans les tenebres.md>) — folio 71
 - [Chapitre 8 - Chasser les ombres](<08 - Chapitre 8 - Chasser les ombres.md>) — folio 81
-- [Chapitre 9 - L’heure fatidique](<09 - Chapitre 9 - L’heure fatidique.md>) — folio 101
-- [APPENDICE 1 - Un guide de Bögenhafen](<10 - APPENDICE 1 - Un guide de Bögenhafen.md>) — folio 119
-- [APPENDICE 2 - Nouvelles règles](<11 - APPENDICE 2 - Nouvelles règles.md>) — folio 145
+- [Chapitre 9 - L’heure fatidique](<09 - Chapitre 9 - L'heure fatidique.md>) — folio 101
+- [APPENDICE 1 - Un guide de Bögenhafen](<10 - APPENDICE 1 - Un guide de Bogenhafen.md>) — folio 119
+- [APPENDICE 2 - Nouvelles règles](<11 - APPENDICE 2 - Nouvelles regles.md>) — folio 145
 - [Annexe 3 - Documents et aides de jeux](<12 - Annexe 3 - Documents et aides de jeux.md>) — folio 150
 
 ---

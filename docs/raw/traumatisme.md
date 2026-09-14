@@ -2,7 +2,7 @@
 
 > Référentiel **scoped** des règles WFRP4 (RAW) du **chapitre 18 — Traumatisme** du Livre de base,
 > à usage d'agent (vérifier que le code respecte le RAW). Chaque règle cite `LDB 18 l.X-Y`
-> (l = lignes du fichier `Source/Warhammer v4 - Livre de base version corrigée/18 - Traumatisme.md`).
+> (l = lignes du fichier `Source/Warhammer v4 - Livre de base version corrigee/18 - Traumatisme.md`).
 > Abréviations : [`sources.md`](sources.md). Index : [`00-index.md`](00-index.md).
 >
 > ⚠️ **Tables de Critiques** (Tête / Bras / Torse / Jambe, `LDB 18 l.56-187`) — déjà transcrites verbatim dans

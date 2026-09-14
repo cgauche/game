@@ -104,7 +104,7 @@ describe('parseChapitre — blocs, folios, sections', () => {
     expect(sec.blocks[clotilda + 1].md.startsWith('**Exemple :** *Ebba')).toBe(true);
   });
 
-  // `09 - Compétences.md:26-30` : discrimine la SEULE règle de ponctuation sous habillage — le bloc
+  // `09 - Competences.md:26-30` : discrimine la SEULE règle de ponctuation sous habillage — le bloc
   // suivant est de la prose nue, seul un `…l'Agilité.*` vu comme terminé empêche la soudure.
   it('D1 : ponctuation terminale sous emphase — coupe même quand le suivant est de la prose nue', () => {
     const sec = sectionOf('09', 'competences-de-base-et-avancees');

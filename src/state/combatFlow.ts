@@ -3449,7 +3449,7 @@ export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, targe
 }
 
 // ---------------------------------------------------------------------------
-// Piétinement — action gratuite à 1 Avantage (LDB 85 - Traits de créature.md l.387)
+// Piétinement — action gratuite à 1 Avantage (LDB 85 - Traits de creature.md l.387)
 // ---------------------------------------------------------------------------
 
 /** Arme abstraite du Piétinement : Corps à corps (Bagarre), Dégâts = Bonus de Force (+0). */

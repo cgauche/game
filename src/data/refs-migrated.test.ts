@@ -767,7 +767,7 @@ describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#13
     // Trois extractions FR sur disque qu'aucun livre de `books.json` ne porte — mesure du
     // 2026-08-23, extinction #1459.
     const NON_RECLAMES = new Set<string>([
-      'Source/Boîte d\'Initiation WFRP 4e Edition VF',
+      'Source/Boite d\'Initiation WFRP 4e Edition VF',
       'Source/WH4_FR_BI_Livre_Aventure',
       'Source/WH4_FR_BI_Livre_Ubersreik',
     ]);

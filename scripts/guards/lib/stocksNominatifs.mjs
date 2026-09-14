@@ -124,7 +124,7 @@ const PORTEURS = [
 /** Chemin de dépôt : une racine suivie, puis tout sauf des espaces. */
 const CHEMIN = String.raw`(?:src|scripts|docs)\/[^'"\`\s]+`;
 /** Chemin d'un CHAPITRE EXTRAIT : la racine `Source/` puis un `.md` dont le nom porte des ESPACES
- *  (`"Source/Warhammer v4 - Livre de base version corrigée/08 - Statut.md"`). Racine ajoutée pour
+ *  (`"Source/Warhammer v4 - Livre de base version corrigee/08 - Statut.md"`). Racine ajoutée pour
  *  `scripts/raw/folio-gaps-stock.json` (#1711 T4), dont chaque entrée nomme le chapitre où vit le
  *  saut de folio : les dossiers de `Source/` et les fichiers-chapitre portent des espaces par
  *  nature, et `CHEMIN`/`NOM_NU` les excluent tous deux — sans cette racine, le stock resterait hors

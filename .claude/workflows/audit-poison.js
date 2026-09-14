@@ -14,11 +14,11 @@ const input = typeof args === 'string' ? JSON.parse(args || '{}') : (args || {})
 const SCOPE = input.paths || ['src']
 
 const MAPPING = `Correspondance réf -> dossier Source/ (cwd = racine du projet Game) :
-   LDB -> "Source/Warhammer v4 - Livre de base version corrigée/" (chapitres "NN - Titre.md")
+   LDB -> "Source/Warhammer v4 - Livre de base version corrigee/" (chapitres "NN - Titre.md")
    ADE I/II -> "Source/Warhammer v4 - Les archives de l'Empire volume 1/" et "... volume 2/"
    EDO -> "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/" ; EDOC -> "... Compagnon/"
-   MDG -> "Source/WH - V4 - La Mer de Griffe/" ; AA -> "Source/WH - V4 - Aux Armes/" ; ZI -> "Source/WH - V4 - Le zoo impérial/"
-   ACE -> "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/" ; Middenheim -> "Source/Warhammer v4 - Middenheim la cité du Loup Blanc/"
+   MDG -> "Source/WH - V4 - La Mer de Griffe/" ; AA -> "Source/WH - V4 - Aux Armes/" ; ZI -> "Source/WH - V4 - Le zoo imperial/"
+   ACE -> "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/" ; Middenheim -> "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/"
    ATTENTION : les numéros de ligne des réfs ont DÉRIVÉ (ré-extraction Marker 2026-06-22) : le CHAPITRE est bon, localise la règle PAR CONCEPT (Grep de mots-clés). Un écart de numéro de ligne seul n'est PAS une trouvaille.`
 
 const FINDINGS = {

@@ -78,6 +78,12 @@ const ATTENDU = {
     'scripts/hooks/solde-ticket-guard-driver.test.mjs',
     'scripts/hooks/solde-ticket-guard.test.mjs',
     'scripts/hooks/typecheck-fast-wrapper.test.mjs',
+    // +2 le 2026-09-14 (#1699) : la migration des chemins de `Source/` en ASCII et son banc. La
+    // migration ÉCRIT (git mv, réécritures) UNIQUEMENT sous `--apply`, que le banc ne lui donne que
+    // sur des dépôts JETABLES (`instanceDeDepot`, sous `os.tmpdir()`) ; jouée sans argument — ce que
+    // fait `migrations:replay` — elle est en `--dry` et n'écrit rien. L'arbre n'est jamais touché.
+    'scripts/migrations/2026-09-14-1699-source-chemins-ascii.mjs',
+    'scripts/migrations/lib/1699-source-chemins-ascii.test.mjs',
     // +3 le 2026-09-05 : morsure des portes des trois migrations #1686 (lot 1 ids composés, lot 2
     // fusion des matières, lot 3a-2 purge de `structureAppearance.material`) ; leur dépôt jetable vit
     // sous `os.tmpdir()`, l'arbre n'est jamais écrit.

@@ -31,7 +31,9 @@ export function resoudreProse(entree, lecteur = lireChapitre) {
 /**
  * Chemin du fichier de chapitre d'un livre, ou `null` — l'adresse d'un `descRef` ramenée au disque.
  * RELATIF à la racine du dépôt, tel que `chapterFile` le compose depuis le `dir` de `books.json`
- * (`Source\Warhammer v4 - …\21 - Psychologie.md`) : c'est cette forme que chokidar rend, et c'est elle
+ * — `path.join`, donc au SÉPARATEUR DE LA PLATEFORME :
+ * `Source/Warhammer v4 - Livre de base version corrigee/21 - Psychologie.md` sous POSIX, le même
+ * chemin à l'antislash sous Windows. C'est cette forme que chokidar rend, et c'est elle
  * qui sert de clé à l'index de dépendance du plugin Vite. `fichierChapitre` (`lecteur-fs.mjs`) ne rend
  * que le NOM du fichier.
  * @param {string} bookId @param {string|number} ch @returns {string|null}

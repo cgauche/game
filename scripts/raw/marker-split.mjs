@@ -7,9 +7,12 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { join } from 'node:path'
 import { readText } from './_lib.mjs'
+import { nomAscii } from '../source/nom-ascii.mjs'
 
-const [bookDir, markerMd, outDir] = process.argv.slice(2)
-if (!bookDir || !markerMd || !outDir) { console.error('args: <book-dir> <marker.md> <out-dir>'); process.exit(1) }
+const [bookDir, markerMd, outDirArg] = process.argv.slice(2)
+if (!bookDir || !markerMd || !outDirArg) { console.error('args: <book-dir> <marker.md> <out-dir>'); process.exit(1) }
+// Tout nom ÉCRIT sous `Source/` passe par `nomAscii` (#1699) : un chemin non ASCII ne naît pas ici.
+const outDir = nomAscii(outDirArg)
 
 const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
   .replace(/[*_`#]/g, '').replace(/[^a-z0-9]+/g, ' ').trim()
@@ -70,7 +73,7 @@ for (let i = 0; i < byOff.length; i++) {
     empties.push(c.nn)
     body = `# ${c.title}\n\n*(Page ${c.start} partagée avec un chapitre voisin — le contenu de cette section figure dans le chapitre adjacent de l'extraction Marker.)*`
   }
-  writeFileSync(join(outDir, c.file), `*Pages PDF ${span}*\n\n${body}\n`)
+  writeFileSync(join(outDir, nomAscii(c.file)), `*Pages PDF ${span}*\n\n${body}\n`)
 }
 const miss = chapters.filter((c) => !c.matched).map((c) => c.nn)
 console.log(`${byOff.length} chapitres écrits dans ${outDir}`)

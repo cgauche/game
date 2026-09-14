@@ -9,7 +9,7 @@
 - [Quick Description Table](<07 - Quick Description Table.md>) — p. 7
 - [Quirks Table](<08 - Quirks Table.md>) — p. 8-9
 - [Exotic Quirks Table](<09 - Exotic Quirks Table.md>) — p. 10-11
-- [A Venue’s Vital Statistics](<10 - A Venue’s Vital Statistics.md>) — p. 12
+- [A Venue’s Vital Statistics](<10 - A Venue's Vital Statistics.md>) — p. 12
 - [Staff](<11 - Staff.md>) — p. 13
 - [Landlords](<12 - Landlords.md>) — p. 14
 - [Servants](<13 - Servants.md>) — p. 14

@@ -35,7 +35,7 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
 > standard partout (verbatim citable `l.<ligne>`, extraction FR dans `Source/` obligatoire — un livre sans
 > extraction ne peut pas fournir de mécanique vérifiable). La VO reste interdite.
 
-- **LDB** = `Source/Warhammer v4 - Livre de base version corrigée/` — chapitres `NN - Titre.md` ;
+- **LDB** = `Source/Warhammer v4 - Livre de base version corrigee/` — chapitres `NN - Titre.md` ;
   les commentaires de code `LDB <n> l.<ligne>` pointent ces fichiers. Chapitres clés :
   06 Classes · 07 Carrières · 08 Statut · 09 Compétences · 10 Talents · 12 Tests · **13 Combat** ·
   15 Déplacement · **16 États** · **17 Destin et Résistance** (« Résilience/Détermination ») ·
@@ -61,10 +61,10 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
   Chaos avec leurs blocs NI/Portée (folios 79-83), Marque de Tzeentch (folio 83), **Furies du Chaos** (folio 84),
   **Horreurs de Tzeentch** (folio 85). Avant de taguer `book`+`page` sur une entrée « Chaos T1 », vérifier au
   `Source/` de quel des deux volumes vient le bloc.
-- **Middenheim** = `Source/Warhammer v4 - Middenheim la cité du Loup Blanc/` — 3 origines humaines + carrière Frère Loup.
+- **Middenheim** = `Source/Warhammer v4 - Middenheim la cite du Loup Blanc/` — 3 origines humaines + carrière Frère Loup.
 - **AA** (Aux Armes / *Up in Arms*) = `Source/WH - V4 - Aux Armes/` — supplément combat & armes (autorisé 2026-06-14 ;
   source des talents que frenchy.bzh référence : Fusilier, Officier de Siège, etc.).
-- **ZI** (Zoo Impérial / *The Imperial Zoo*) = `Source/WH - V4 - Le zoo impérial/` — créatures exotiques + le trait
+- **ZI** (Zoo Impérial / *The Imperial Zoo*) = `Source/WH - V4 - Le zoo imperial/` — créatures exotiques + le trait
   **Redoutable** (*Grim*) (autorisé 2026-06-14). Donnée **curée à la main directement dans
   `src/data/*.json`** (commitée, éditable au Codex), chaque entrée taguée à sa `source`.
 - **MDG** (La Mer des Griffes / *Sea of Claws*) = `Source/WH - V4 - La Mer de Griffe/` — **cadre côtier + règles navales**
@@ -84,7 +84,7 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
   `naval-traits.json` : bouteur, murs blindés, coque de course, safran, plat-bord, allègement, gréement de
   course, fourquines), **ch.13 « Bestiaire fluvial »** (créatures), **ch.14 « Maladies transmises par
   l'eau »** (maladies/symptômes/états, `water-exposure.json`), véhicules fluviaux. Curation à la main.
-- **NADJ** (Nuits agitées & dures journées) = `Source/Warhammer v4 - Nuits agitees & dures journées/` —
+- **NADJ** (Nuits agitées & dures journées) = `Source/Warhammer v4 - Nuits agitees & dures journees/` —
   autorisé 2026-07-10 (arbitrage par-passage). Périmètre constaté : **appendice I « Gnomes »**
   (espèce jouable, `species.json`), **« Jeux de taverne »** (`tavernGames.json`), 3 entrées `gods.json`,
   1 talent, 1 trapping.
@@ -99,7 +99,7 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
   élémentaires incarnés, Fabriqués, familiers jouables) ; **sites, lignes de force & saturation
   environnementale** (ch.14). Ch.1 (histoire de la magie) & ch.15 (némésis/aventures) = majoritairement
   cadre. Curation `src/data` à la main (tag `source.book: "vents-de-la-magie"`), comme AA/ZI/MDG.
-- **frenchy.bzh** (fan — *Habitants & Créatures du Vieux-Monde*, « version 4.5 ») = `Source/Warhammer - Habitants & Créatures  du Vieux-Monde (Discord) PDF/` —
+- **frenchy.bzh** (fan — *Habitants & Créatures du Vieux-Monde*, « version 4.5 ») = `Source/Warhammer - Habitants & Creatures  du Vieux-Monde (Discord) PDF/` —
   **complète** le bestiaire et les PNJ, ne remplace rien ; chaque entrée vit dans le JSON app-owned de son
   domaine, taguée `source.book: "frenchy-bzh"`. Deux règles d'IMPORT, lues à son Avertissement :
   les profils sont écrits avec des **PA doublés** — « *les Points d'Armure sont doublés et on ignore le Bonus
@@ -125,4 +125,4 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
 - Suppléments VF dispo : `Altdorf — La Couronne de l'Empire`, `Aventures à Ubersreik I`,
   `Middenheim — La Cité du Loup Blanc`, `Nuits Agitées & Dures Journées`,
   `Boîte d'Initiation` (+ `WH4_FR_BI_Livre_Aventure` / `…_Ubersreik`).
-<!-- sources-empreinte: 0b704d244ae28c602e2609582505292d9bedf918 (5 fichiers, 0 dossiers) corps: 614517cfd374a113acd37a45462b72a3b55825ca -->
+<!-- sources-empreinte: a3c74490476b6d943351c29330084ab0d280a4b9 (5 fichiers, 0 dossiers) corps: 2c14863ad5bb44999a0125b20871c205c86b3038 -->

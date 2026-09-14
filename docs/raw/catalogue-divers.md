@@ -682,7 +682,7 @@ Convalescence .........................92
 Dortoirs, Les ...........................72 Dragomas le Dragon ...............41 Duel.........................................88
 
 
-## [MSR 11] APPENDICE I - L’entraînement et les mentors
+## [MSR 11] APPENDICE I - L'entrainement et les mentors
 
 *Folio 142+*
 
@@ -1945,7 +1945,7 @@ Sorte de vilain petit canard de sa famille, Sophie est issue de l'illustre (et e
 <span id="page-84-0" data-folio="85"></span>
 
 
-## [ACE 10] L’Espionnage à Altdorf
+## [ACE 10] L'Espionnage a Altdorf
 
 *Pages PDF 212-216*
 
@@ -2247,7 +2247,7 @@ Alors que les Marshalls de la Bannière Secrète soutiennent une campagne d'unif
 Les Personnages sont engagés par un agent de Naggaroth qui se fait passer pour un amateur de livres rares : ils doivent voler le Volume VII du *Nouvel Apocryphe* à un collectionneur privé de Karnevalsplatz. Mais le collectionneur privé est en fait un agent du Untersuchung, qui répand des rumeurs sur le livre pour attirer les personnes intéressées par la littérature hérétique. Malheureusement pour toutes les personnes impliquées, des agents de Cendrus Laeoc ont également pour mission de s'emparer du livre : ils doivent empêcher les informations qu'il contient de tomber dans des mains humaines. Pris pour des agents de Naggaroth par Laeoc et par des hérétiques potentiels par le Untersuchung, les Personnages seront-ils capables de satisfaire leurs poursuivants en détournant leur attention vers leur employeur ? Que feront-ils quand un marchand des Marcheurs de Brume, content de semer la discorde à Altdorf, leur proposera un véritable exemplaire du livre ?
 
 
-## [ACE 12] Activités
+## [ACE 12] Activites
 
 *Pages PDF 222-227*
 
@@ -2593,7 +2593,7 @@ Société impériale
 # **Index des PNJ** Andreas Brohne.........................................32
 
 
-## [EDOC 12] CHAPITRE 8 - Les mutants dans l’Empire
+## [EDOC 12] CHAPITRE 8 - Les mutants dans l'Empire
 
 *Pages PDF 65-72*
 
@@ -2841,4 +2841,4 @@ saleté
 | 93-94              | 88-92  | 93-97  | 91-94    | 89-93    | Totalement déséquilibré | -20 Sociabilité, +10 Force Mentale                                                                              |
 | 95-97              | 93-97  | -      | 95-98    | 94-97    | Infinie malveillance    | -10 à tous les Tests ne blessant personne ;<br>+10 sur les Tests visant à blesser                               |
 | 98-00              | 98-00  | 98-00  | 99-00    | 98-00    | Affreusement nerveux    | +5 Agilité, -5 Sociabilité                                                                                      |
-<!-- sources-empreinte: 7c66fb26f303e20ae53c03ddd006e61253d44c06 (129 fichiers, 16 dossiers) corps: 08c4c197ed22007e3dd45ded4b040dc2ba910458 -->
+<!-- sources-empreinte: c883f30366a114f49d027ed6b4cccc6ab51363ed (129 fichiers, 16 dossiers) corps: 5881250580596920c1e9f6bdb35c4878d2cac091 -->

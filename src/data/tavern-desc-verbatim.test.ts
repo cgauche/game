@@ -17,7 +17,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { TAVERN_GAMES } from '../engine/tavernGame';
 
-const CHAPITRE = 'Source/Warhammer v4 - Nuits agitees & dures journées/16 - JEUX DE TAVERNE.md';
+const CHAPITRE = 'Source/Warhammer v4 - Nuits agitees & dures journees/16 - JEUX DE TAVERNE.md';
 
 /** Les blocs « Jeu : » du chapitre, étiquette retirée. Deux formes : la ligne telle quelle, et la
  *  ligne RECOLLÉE par-dessus les ancres de folio qui la coupent (`<span … data-folio>` en tête de la

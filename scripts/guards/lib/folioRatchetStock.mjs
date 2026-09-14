@@ -36,8 +36,8 @@
 //
 // Déjà SOLDÉS à la pose, donc absents de la liste : le trio de Psychologie `amour`/`camaraderie`/
 // `phobie` (190 → 191, LDB — attesté par la table de renvoi du LDB lui-même,
-// `85 - Traits de créature.md:511/538/675`), `redoutable` (11 → 134, ZI — folio 11 sans contenu, seule
-// définition en `14 - Expéditions prévues.md:1043`) et `fouissement` (13 → 134, ZI). Le ZI définit
+// `85 - Traits de creature.md:511/538/675`), `redoutable` (11 → 134, ZI — folio 11 sans contenu, seule
+// définition en `14 - Expeditions prevues.md:1043`) et `fouissement` (13 → 134, ZI). Le ZI définit
 // Fouissement DEUX fois, en toutes lettres : folio 23 (`02 - Griffon.md:66-70`, marqueurs 23 l.47 /
 // 24 l.72), amorce « **Fouissement :** cette créature… » ; et folio 134 (`14 - Expéditions
 // prévues.md:1047-1051`, marqueurs 134 l.1010 / 135 l.1053), amorce « Cette créature… », sous la même

@@ -3,7 +3,7 @@
  * socle : le terme `{sl}` d'une `Formula`, l'op `money` (bourse PERSONNELLE), et le dé de MONDE
  * attaché à une Activité (`worldRolls`).
  *
- * RAW verbatim (`Source/Warhammer v4 - Livre de base version corrigée/09 - Compétences.md:97`) :
+ * RAW verbatim (`Source/Warhammer v4 - Livre de base version corrigee/09 - Competences.md:97`) :
  * « Un Test réussi vous vaudra un nombre de sous de cuivre égal à votre Bonus de Sociabilité x DR par
  * heure de la part des passants […] Si vous n'obtenez pas de DR, mais que vous réussissez quand même
  * le Test, vous ne réussissez à glaner qu'un sou. Un Échec Stupéfiant (-6) signifie que vous vous êtes

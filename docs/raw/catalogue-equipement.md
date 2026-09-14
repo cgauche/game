@@ -74,7 +74,7 @@ Des escrocs peuvent découper des fragments de métal précieux sur le contour d
 Altdorf est peut-être la capitale actuelle du Reikland et de l'Empire, mais les monnaies standard ont été définies dans la cité-État de Nuln au Sud. Nuln était la capitale de l'Empire jusqu'à ce que la Maison Holswig-Schliestein, il y a un siècle, n'installe le trône à Altdorf, et de nombreuses institutions impériales y siègent toujours. Le standard Nuln ne régit que le poids et la métallurgie des pièces, et non l'image estampée, qui varie considérablement d'une province à l'autre.
 
 
-## [LDB 59] Faire son marché
+## [LDB 59] Faire son marche
 
 *Pages PDF 292*
 
@@ -763,7 +763,7 @@ dos.
 **Tonneau :** Capacité : 45 litres de liquide.
 
 
-## [LDB 65] Vêtements et accessoires
+## [LDB 65] Vetements et accessoires
 
 *Pages PDF 304*
 
@@ -813,7 +813,7 @@ Les styles de vêtements varient beaucoup dans l'Empire. En règle générale, l
 **Sceptre :** les plus hauts responsables juridiques portent des sceptres pour indiquer leur statut.
 
 
-## [LDB 66] Nourriture, boisson et hébergement
+## [LDB 66] Nourriture, boisson et hebergement
 
 *Pages PDF 304*
 
@@ -848,7 +848,7 @@ Les chambres et les repas de piètre qualité coûtent la moitié des prix list�
 <span id="page-304-0" data-folio="303"></span>
 
 
-## [LDB 67] Outils et nécessaires
+## [LDB 67] Outils et necessaires
 
 *Pages PDF 305*
 
@@ -1008,7 +1008,7 @@ Les Outils professionnels sont nécessaires si vous souhaitez utiliser un Test d
 **Navigateur :** quadrant, astrolabe, cartes et compas, sablier et ligne de sonde.
 
 
-## [LDB 70] Animaux et véhicules
+## [LDB 70] Animaux et vehicules
 
 *Pages PDF 308*
 
@@ -1128,7 +1128,7 @@ Les herbes médicinales peuvent être achetées ou cueillies dans la nature (voi
 **Tonique digestif :** octroie +20 aux Tests pour se remettre des maux d'estomacs tels que la Courante galopante ou le Flux sanglant (voir Maladies et Infections page 186).
 
 
-## [LDB 73] Prothèses
+## [LDB 73] Protheses
 
 *Pages PDF 310*
 
@@ -1253,7 +1253,7 @@ Les Hommes de main sont des Mercenaires, des compagnons, des amis, des animaux f
 | Scribe                 | 2/–            | 6/–               | 2CO 8/–           | Traduit également 1-2 autres langues courantes                        |
 
 
-## [AA 1] CRÉDITS
+## [AA 1] CREDITS
 
 *Folio 3+*
 
@@ -2819,7 +2819,7 @@ Pendant sa campagne de conquête, Borgio l'Assiégeant voulait un nouveau modèl
 50
 
 
-## [AA 5] LA TILÉE ET LES PERSONNAGES TILÉENS
+## [AA 5] LA TILEE ET LES PERSONNAGES TILEENS
 
 *Folio 51+*
 
@@ -3795,7 +3795,7 @@ Ce chapitre présente une approche optionnelle des Blessures, des Blessures Crit
 Le but de ce système alternatif est de réduire la complexité de celui de base pour gérer les blessures et la mort, et d'ajouter des choix tactiques concernant les Localisations sur lesquelles diriger les coups ou porter des pièces d'armure plus lourdes.
 
 
-## [AA 7] MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE
+## [AA 7] MISES A JOUR DE L'ETAT HEMORRAGIQUE
 
 *Folio 81+*
 
@@ -3984,7 +3984,7 @@ Les Blessures Critiques sont toujours invalidantes pour un Personnage, mais elle
 <span id="page-89-0" data-folio="87"></span>
 
 
-## [AA 8] LA RÉSERVE DE L'INTENDANT
+## [AA 8] LA RESERVE DE L'INTENDANT
 
 *Folio 88+*
 
@@ -4534,7 +4534,7 @@ Si vous envisagez d'avoir recours à un grappin pour vous faufiler discrètement
 <span id="page-107-0" data-folio="105"></span>
 
 
-## [AA 9] LE COMBAT MONTÉ
+## [AA 9] LE COMBAT MONTE
 
 *Folio 106+*
 
@@ -5039,7 +5039,7 @@ Les mercenaires peuvent se révéler un peu excentriques et difficiles à vivre,
 <span id="page-120-0" data-folio="118"></span>
 
 
-## [AA 10] L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES
+## [AA 10] L'ARTILLERIE ET LES DEGATS INFLIGES AUX STRUCTURES
 
 *Folio 119+*
 
@@ -5581,7 +5581,7 @@ Charger vous confère à présent un bonus de +10 sur le premier Test de **Corps
 <span id="page-139-0" data-folio="137"></span>
 
 
-## [AA 12] ANNEXE II ACTIVITÉS DE GUERRIER
+## [AA 12] ANNEXE II ACTIVITES DE GUERRIER
 
 *Folio 138+*
 
@@ -5732,7 +5732,7 @@ Pour obtenir l'objet, faites un jet dans le Tableau de lieu pour savoir où vous
 <span id="page-142-0" data-folio="140"></span>
 
 
-## [AA 13] ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR
+## [AA 13] ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS A JOUR
 
 *Folio 141+*
 
@@ -7485,4 +7485,4 @@ L'apparition est soudaine, en 1 ou 2 jours, et le plus souvent dans un cadre pub
 | 5–7  | Courante galopante                 |
 | 8–9  | Vérole du Tanneur                  |
 | 10   | Flux sanglant                      |
-<!-- sources-empreinte: 7c66fb26f303e20ae53c03ddd006e61253d44c06 (129 fichiers, 16 dossiers) corps: e1ad871e9ed2e0f0faf8429eb50a9314f7d102cb -->
+<!-- sources-empreinte: c883f30366a114f49d027ed6b4cccc6ab51363ed (129 fichiers, 16 dossiers) corps: 94802787bc8f763eaf53f338a18b7a74ecf3ceeb -->

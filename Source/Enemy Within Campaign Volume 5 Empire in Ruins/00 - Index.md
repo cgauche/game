@@ -12,7 +12,7 @@
 - [Chapter 7 - The Emergency Conclave](<10 - Chapter 7 - The Emergency Conclave.md>) — p. 93-101
 - [Chapter 8 - Wanted Bold Adventurers!](<11 - Chapter 8 - Wanted Bold Adventurers!.md>) — p. 102-111
 - [Chapter 9 - Altdorf to Black Fire Pass](<12 - Chapter 9 - Altdorf to Black Fire Pass.md>) — p. 112-129
-- [Chapter 10 - In Sigmar’s Footsteps](<13 - Chapter 10 - In Sigmar’s Footsteps.md>) — p. 130-146
+- [Chapter 10 - In Sigmar’s Footsteps](<13 - Chapter 10 - In Sigmar's Footsteps.md>) — p. 130-146
 - [Chapter 11 - Caves of Chaos](<14 - Chapter 11 - Caves of Chaos.md>) — p. 147-161
 - [Chapter 12 - Black Fire Pass to Altdorf](<15 - Chapter 12 - Black Fire Pass to Altdorf.md>) — p. 162-176
 - [Chapter 13 - The Empire Saved](<16 - Chapter 13 - The Empire Saved.md>) — p. 177-197

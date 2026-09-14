@@ -11,7 +11,7 @@
 - [Chapter 6 The Powers that be](<09 - Chapter 6 The Powers that be.md>) — p. 77-95
 - [Chapter 7 The Traitor Unmasked](<10 - Chapter 7 The Traitor Unmasked.md>) — p. 96-113
 - [APPENDIX I NPC Summary Sheets](<11 - APPENDIX I NPC Summary Sheets.md>) — p. 114-147
-- [APPENDIX II Doppelgängers](<12 - APPENDIX II Doppelgängers.md>) — p. 148
+- [APPENDIX II Doppelgängers](<12 - APPENDIX II Doppelgangers.md>) — p. 148
 - [APPENDIX III Hypnotism](<13 - APPENDIX III Hypnotism.md>) — p. 149
 - [APPENDIX IV Experience Awards](<14 - APPENDIX IV Experience Awards.md>) — p. 150
 - [Appendix IV: Master Attractions Calendar](<15 - Appendix IV- Master Attractions Calendar.md>) — p. 151-158

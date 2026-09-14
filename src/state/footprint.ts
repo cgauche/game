@@ -1,5 +1,5 @@
 /**
- * Empreinte de grille des créatures par Taille — LDB `15 - Déplacement.md` l.12 :
+ * Empreinte de grille des créatures par Taille — LDB `15 - Deplacement.md` l.12 :
  * « 1 case = 2 mètres … Les créatures plus grandes peuvent occuper 2, 4 ou même plus de cases
  * sur la carte, en fonction de leur trait Taille (voir page 342). » Le canon n'imprime AUCUNE barre
  * par catégorie : les 7 valeurs sont une extrapolation MAISON, sortie en donnée éditable

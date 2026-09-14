@@ -5,7 +5,7 @@ import type { Combatant, Weapon } from './types';
 import type { TriggeredEffect } from './flowCore';
 
 /**
- * « Retenir vos coups » — Aux Armes (`Source/WH - V4 - Aux Armes/07 - MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE.md` l.59-61) :
+ * « Retenir vos coups » — Aux Armes (`Source/WH - V4 - Aux Armes/07 - MISES A JOUR DE L'ETAT HEMORRAGIQUE.md` l.59-61) :
  *  l.59 « … vous devez déclarer que vous Retenez vos coups avant de faire le jet pour toucher … vous
  *        infligez tout de même des Blessures, mais vous n'infligez de Blessure Critique que si votre
  *        adversaire tombe à 0 Blessure. »

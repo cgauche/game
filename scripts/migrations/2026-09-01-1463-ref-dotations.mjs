@@ -5,7 +5,7 @@
  * (`src/data/schemas/grammaire/reference.ts`) accepte déjà `{id, spec?, count?}` et `{choice:[…]}`.
  *
  * MOTIF AU SOURCE — la tête de parenthèse est la POSSESSION, la parenthèse sa spécialisation :
- *   `Source/Warhammer v4 - Livre de base version corrigée/08 - Statut.md` l.1130 : « **Possessions :**
+ *   `Source/Warhammer v4 - Livre de base version corrigee/08 - Statut.md` l.1130 : « **Possessions :**
  *   veste en cuir, chemise de mailles, cheval de selle avec selle et harnais, bouclier, outils de la
  *   profession (Maréchal-ferrant) » — la possession est « Outils professionnels » (catalogue,
  *   `trappings.json › outils-professionnels`), « Maréchal-ferrant » en désigne la déclinaison.
@@ -29,7 +29,7 @@
  *   - « Bougies » / « Epingles » → `bougie` / `epingle` (l.3325 « bougies, craie, poupée, épingles » ;
  *     `{id:'bougie'}` est déjà posé par la classe `roublards`) ;
  *   - « Carreaux » → `carreau` (l.1435 « arbalète avec dix carreaux » ; l.1543 et
- *     `WH - V4 - La Mer de Griffe/09 - La classe Côtier.md` l.401 « arbalète et dix carreaux » ;
+ *     `WH - V4 - La Mer de Griffe/09 - La classe Cotier.md` l.401 « arbalète et dix carreaux » ;
  *     l.2826, l.3239, l.3396 « arbalète de poing avec dix carreaux ») — HOMONYMIE tranchée : deux
  *     entrées de `trappings.json` portent le libellé « Carreau », `carreau` (munition d'arbalète,
  *     LDB folio 296) et `carreau-de-baliste` (munition de siège, MDG folio 106, que MDG

@@ -41,12 +41,12 @@ Exemples par livre
 -------------------
   Zoo Impérial (créatures ciblées, ex. bestiaire en attente) :
     python scripts/art-ref/extract.py \
-      --pdf "Source/WH - V4 - Le zoo impérial.pdf" --out art-ref/zi \
+      --pdf "Source/WH - V4 - Le zoo imperial.pdf" --out art-ref/zi \
       --targets-json art-ref/zi/targets.json
 
   Nuits agitées & dures journées (repérage de lieux, l'Opéra) :
     python scripts/art-ref/extract.py \
-      --pdf "Source/Warhammer v4 - Nuits agitees & dures journées.pdf" --out art-ref/opera \
+      --pdf "Source/Warhammer v4 - Nuits agitees & dures journees.pdf" --out art-ref/opera \
       --keywords "staatsoper,loge royale,coursive,galerie,escaliers jumeaux,une nuit à l,auditorium,vestiaires,coulisses" \
       --min-px 200 --dpi 140 --prefix opera_p --sized-names
 

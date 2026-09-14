@@ -53,6 +53,11 @@ Deux scripts selon que le livre a ou non une structure `Source/` **préexistante
   Sortie : `Source/<Livre>/NN - Titre.md` (garde l'en-tête `*Pages PDF X*` ou `*Pages PDF X-Y*`,
   séparateurs `{N}----` retirés) + `00 - Index.md` récapitulatif.
 
+Les noms de dossier et de chapitre sont **ASCII** : les scripts de découpe écrivent par `nomAscii`
+(`scripts/source/nom-ascii.mjs`, la seule translittération du dépôt) et la garde
+`src/source-hygiene-guard.test.ts` refuse le reste — un caractère hors de sa table s'y déclare, il ne
+s'absorbe pas en silence.
+
 Après découpe : vérifier qu'aucun chapitre n'est un stub vide/mal replié (grep `Page .* partagée`),
 puis committer le dossier `Source/<Livre>/` (le PDF et `Source/_marker/` restent gitignorés).
 

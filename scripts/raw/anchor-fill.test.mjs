@@ -121,7 +121,7 @@ const NADJ_PAGE_HEADS = {
   31: '30\nIV\nWARHAMMER FANTASY\n« Oyez ! Oyez ! » crie-t-il. « Dans l’affaire du noble baron Eberhardt \nvon Dammenblatz de Wissenberg contre la noble gravin Maria \nUlrike von Liebwitz d’Ambosstein, concernant la mort de feu le \nnoble baron Otto von Dammenblatz, seigneur de Wissenberg, que \nles champions s’avancent et que le jugement commence ! »',
   32: '31\nUNE JOURNÉE AU TRIBUNAL\nIV\nRechtshandler pousse un cri de désarroi et agrippe son cou, \nretirant le dard et le montrant à la Gravin, qui se lève et \napproche les magistrats. Le combat est encore une fois arrêté \nsous les railleries et les huées de la foule pendant que le dard \nest examiné.',
 }
-const NADJ_FILE = '06 - Une journée au tribunal.md'
+const NADJ_FILE = '06 - Une journee au tribunal.md'
 
 test('NADJ 06 (cas réel #833) : les folios encadrés par des ancres EXISTANTES sont posés, le filigrane est refusé', () => {
   const dir = new Map(BOOKS).get('NADJ')

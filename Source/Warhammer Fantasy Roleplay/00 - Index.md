@@ -13,7 +13,7 @@
 - [Magic](<11 - Magic.md>) — p. 229-257
 - [The Gamemaster](<12 - The Gamemaster.md>) — p. 258-265
 - [Glorious Reikland](<13 - Glorious Reikland.md>) — p. 266-287
-- [The Consumers’ Guide](<14 - The Consumers’ Guide.md>) — p. 288-309
+- [The Consumers’ Guide](<14 - The Consumers' Guide.md>) — p. 288-309
 - [Bestiary](<15 - Bestiary.md>) — p. 310-343
 - [Character Sheet](<16 - Character Sheet.md>) — p. 344-345
 - [Index](<17 - Index.md>) — p. 346

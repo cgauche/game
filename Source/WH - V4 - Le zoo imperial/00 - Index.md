@@ -1,19 +1,19 @@
 # WH - V4 - Le zoo impérial — Index
 
-- [TROIS EXPÉDITIONS](<01 - TROIS EXPÉDITIONS.md>) — folio 6
+- [TROIS EXPÉDITIONS](<01 - TROIS EXPEDITIONS.md>) — folio 6
 - [Griffon](<02 - Griffon.md>) — folio 21
 - [Dragon](<03 - Dragon.md>) — folio 31
-- [« L'abominable » Halagrundsor](<04 - « L'abominable » Halagrundsor.md>) — folio 35
+- [« L'abominable » Halagrundsor](<04 - L'abominable Halagrundsor.md>) — folio 35
 - [Amibe](<05 - Amibe.md>) — folio 45
 - [Cockatrice](<06 - Cockatrice.md>) — folio 65
-- [Chimère](<07 - Chimère.md>) — folio 67
+- [Chimère](<07 - Chimere.md>) — folio 67
 - [Grand taurus](<08 - Grand taurus.md>) — folio 75
-- [Trégara](<09 - Trégara.md>) — folio 77
-- [Macareux à bec tranchant](<10 - Macareux à bec tranchant.md>) — folio 78
+- [Trégara](<09 - Tregara.md>) — folio 77
+- [Macareux à bec tranchant](<10 - Macareux a bec tranchant.md>) — folio 78
 - [Chat sauvage](<11 - Chat sauvage.md>) — folio 83
 - [Il Potente Granchio](<12 - Il Potente Granchio.md>) — folio 85
-- [Sirène](<13 - Sirène.md>) — folio 87
-- [Expéditions prévues](<14 - Expéditions prévues.md>) — folio 121
+- [Sirène](<13 - Sirene.md>) — folio 87
+- [Expéditions prévues](<14 - Expeditions prevues.md>) — folio 121
 
 ---
 

@@ -1191,7 +1191,7 @@ Si vous obtenez un 9 à un Test d'Incantation ou de Focalisation effectué dans 
 
 ### NADJ --- Nuits Agitées & Dures Journées
 
-> Source : `Source/Warhammer v4 - Nuits agitees & dures journées/15 - _GoBack.md` (section Gnomes, Nouveau Talent)
+> Source : `Source/Warhammer v4 - Nuits agitees & dures journees/15 - _GoBack.md` (section Gnomes, Nouveau Talent)
 
 #### Empreint d'Ulgu
 **Source :** NADJ 15 p.88 l.47 (section Peuple des Landes / Sorciers Gnomes)  

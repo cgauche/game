@@ -10,10 +10,10 @@
 - [Curd Your Enthusiasm](<08 - Curd Your Enthusiasm.md>) — p. 24
 - [Curd Your](<09 - Curd Your.md>) — p. 24
 - [Enthusiasm](<10 - Enthusiasm.md>) — p. 24-29
-- [A Sheep in Wolf’s Clothing](<11 - A Sheep in Wolf’s Clothing.md>) — p. 30
-- [￼](<12 - ￼.md>) — p. 30
+- [A Sheep in Wolf’s Clothing](<11 - A Sheep in Wolf's Clothing.md>) — p. 30
+- [￼](<12 - Sans titre.md>) — p. 30
 - [Adventure Summary](<13 - Adventure Summary.md>) — p. 30
 - [Part One: Caught in a (von) Trapp￼](<14 - Part One- Caught in a (von) Trapp￼.md>) — p. 31-32
-- [Part Two: Howl if You Need Me￼](<15 - Part Two- Howl if You Need Me￼.md>) — p. 33
-- [Part Three: Sniffing Out the Truth￼](<16 - Part Three- Sniffing Out the Truth￼.md>) — p. 34
-- [NPCs:￼](<17 - NPCs-￼.md>) — p. 35-38
+- [Part Two: Howl if You Need Me￼](<15 - Part Two- Howl if You Need Me.md>) — p. 33
+- [Part Three: Sniffing Out the Truth￼](<16 - Part Three- Sniffing Out the Truth.md>) — p. 34
+- [NPCs:￼](<17 - NPCs-.md>) — p. 35-38

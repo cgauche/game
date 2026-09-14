@@ -4,9 +4,11 @@
 import { writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { readText } from './_lib.mjs'
+import { nomAscii } from '../source/nom-ascii.mjs'
 
 const SRC = 'Source/_marker/full/WH - V4 - La Mer de Griffe/WH - V4 - La Mer de Griffe/WH - V4 - La Mer de Griffe.md'
-const OUT = 'Source/WH - V4 - La Mer de Griffe'
+// Tout nom ÉCRIT sous `Source/` passe par `nomAscii` (#1699) : un chemin non ASCII ne naît pas ici.
+const OUT = nomAscii('Source/WH - V4 - La Mer de Griffe')
 
 const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
   .replace(/[*_`#]/g, '').replace(/[^a-z0-9]+/g, ' ').trim()
@@ -60,8 +62,9 @@ for (let c = 0; c < CHAPTERS.length; c++) {
   const body = lines.slice(from, to).filter((l) => !PAGE_RE.test(l)).join('\n').trim()
   const span = endPage > startPage ? `${startPage}-${endPage}` : `${startPage}`
   const nn = String(c + 1).padStart(2, '0')
-  writeFileSync(join(OUT, `${nn} - ${title}.md`), `*Pages PDF ${span}*\n\n${body}\n`)
-  idxRows.push(`- [${nn} - ${title}](<${nn} - ${title}.md>) — p.${span}`)
+  const nom = nomAscii(`${nn} - ${title}.md`)
+  writeFileSync(join(OUT, nom), `*Pages PDF ${span}*\n\n${body}\n`)
+  idxRows.push(`- [${nom.replace(/\.md$/, '')}](<${nom}>) — p.${span}`)
   console.log(`${nn} - ${title}  (p.${span}, ${to - from} lignes)`)
 }
 writeFileSync(join(OUT, '00 - Index.md'), `# La Mer des Griffes — Index\n\n${idxRows.join('\n')}\n`)

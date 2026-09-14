@@ -2,18 +2,18 @@
 
 - [La Mer des Griffes](<01 - La Mer des Griffes.md>) — folio 5
 - [La Bretonnie et le Wasteland](<02 - La Bretonnie et le Wasteland.md>) — folio 9
-- [La côte du Nordland](<03 - La côte du Nordland.md>) — folio 19
-- [La côte de l'Ostland](<04 - La côte de l'Ostland.md>) — folio 30
+- [La côte du Nordland](<03 - La cote du Nordland.md>) — folio 19
+- [La côte de l'Ostland](<04 - La cote de l'Ostland.md>) — folio 30
 - [Le Pays des Trolls](<05 - Le Pays des Trolls.md>) — folio 35
 - [Kraka Ravnsvake](<06 - Kraka Ravnsvake.md>) — folio 41
-- [La côte des Skaelings](<07 - La côte des Skaelings.md>) — folio 49
-- [La côte des Bjornlings](<08 - La côte des Bjornlings.md>) — folio 59
-- [La classe Côtier](<09 - La classe Côtier.md>) — folio 64
+- [La côte des Skaelings](<07 - La cote des Skaelings.md>) — folio 49
+- [La côte des Bjornlings](<08 - La cote des Bjornlings.md>) — folio 59
+- [La classe Côtier](<09 - La classe Cotier.md>) — folio 64
 - [Le culte de Manann](<10 - Le culte de Manann.md>) — folio 81
 - [Le culte de Stromfels](<11 - Le culte de Stromfels.md>) — folio 89
 - [Navires et construction navale](<12 - Navires et construction navale.md>) — folio 93
 - [Navigation maritime](<13 - Navigation maritime.md>) — folio 104
-- [Navigation à bord de grands vaisseaux](<14 - Navigation à bord de grands vaisseaux.md>) — folio 122
+- [Navigation à bord de grands vaisseaux](<14 - Navigation a bord de grands vaisseaux.md>) — folio 122
 - [Longs voyages](<15 - Longs voyages.md>) — folio 129
 - [Bestiaire](<16 - Bestiaire.md>) — folio 141
 

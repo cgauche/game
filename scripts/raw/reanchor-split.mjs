@@ -16,6 +16,9 @@ import { RAWDIR, EXCLUDE } from './check-refs.mjs'
 
 // Commit qui a éclaté ces 2 livres (bloc unique numéroté « 01 ») en fichiers-chapitres.
 export const SPLIT_SOURCE_SHA = '77dab03c'
+// Ces `path` sont des chemins DANS L'HISTOIRE (`git show ${SPLIT_SOURCE_SHA}^:<path>`), pas des
+// chemins du disque d'aujourd'hui : ils portent le nom qu'avait le fichier À CE COMMIT et ne suivent
+// AUCUN renommage postérieur — le passage des chemins de `Source/` en ASCII (#1699) ne les touche pas.
 export const SPLIT_SOURCES = [
   { abbr: 'AA', oldNN: '01', path: 'Source/WH - V4 - Aux Armes/01 - WH - V4 - Aux Armes.md' },
   { abbr: 'ZI', oldNN: '01', path: "Source/WH - V4 - Le zoo impérial/01 - WH - V4 - Le zoo impérial.md" },

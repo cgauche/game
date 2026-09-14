@@ -28,7 +28,7 @@
 //     puces `•`/`-`), et un cliquet bâti sur ce signal figerait du bruit — cf. le faux ami
 //     `reconcile` (157 dettes, CI verte). La règle 5 garde sa propre voie.
 //   - encadrement à borne haute INCONNUE (aucun marqueur ne suit dans le chapitre — l'extraction est
-//     CREUSE par endroits : `09 - Compétences.md` n'a que 2 marqueurs (117, 118) pour les folios
+//     CREUSE par endroits : `09 - Competences.md` n'a que 2 marqueurs (117, 118) pour les folios
 //     117-131) → borne ouverte : tout folio ≥ borne basse ET ≤ `bookMaxFolio` reste irréfutable.
 // Un écart de la voie B n'est donc jamais un artefact de découpage : il est encadré des DEUX côtés
 // par des marqueurs qui, eux, sont ancrés dans le texte.

@@ -1,5 +1,5 @@
 /**
- * Tableau des Événements « Entre deux aventures » (LDB `22 - Événements.md`, d100) — manuscrit
+ * Tableau des Événements « Entre deux aventures » (LDB `22 - Evenements.md`, d100) — manuscrit
  * VERBATIM (résumés fidèles). La DONNÉE vit dans `interludeEvents.json` (éditable, comme
  * `creatures.json`) ; ce module = types + chargement. `fx` ne porte QUE les effets mécaniques sans
  * ambiguïté du texte ; tout le reste est narratif (journalisé, rien d'inventé). Ajouter/régler un

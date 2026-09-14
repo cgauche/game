@@ -12,12 +12,12 @@
 // CONVENTIONS DE PARSING, mesurées sur l'extraction Marker réelle :
 //  - HEADINGS : seuls les headings ATX (`#`..`######`) ouvrent une section. Les lignes en gras seul
 //    (`**Agitateur – Bronze 2**`) NE sont PAS traitées comme des headings : mesure sur le livre de
-//    base — `16 - États.md`, `21 - Psychologie.md`, `10 - Talents.md` en comptent 0 ; `08 - Statut.md`
+//    base — `16 - Etats.md`, `21 - Psychologie.md`, `10 - Talents.md` en comptent 0 ; `08 - Statut.md`
 //    en compte 44 pour 282 headings ATX, et il s'agit de noms de niveau de carrière ouvrant un
 //    paragraphe, pas de titres de rubrique. Les prendre pour des headings fragmenterait les sections
 //    sans gain d'adressage (les blocs, eux, restent identiques).
 //  - Un heading peut être précédé sur SA ligne d'un marqueur de folio
-//    (`<span id="page-169-0" data-folio="168"></span>### **Brisé**`, `16 - États.md:59`).
+//    (`<span id="page-169-0" data-folio="168"></span>### **Brisé**`, `16 - Etats.md:59`).
 //  - SLUG : translittéré ASCII (accents retirés) — un slug se tape en ligne de commande et se pose
 //    dans un JSON ; `occ` (rang 1-based parmi les slugs identiques du chapitre) lève l'ambiguïté des
 //    titres répétés (« Évolution de Carrière » ×31 dans `08 - Statut.md`).

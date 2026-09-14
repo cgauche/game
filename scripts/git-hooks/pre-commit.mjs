@@ -39,6 +39,7 @@ import { scanArbresImbriques } from '../guards/lib/arbreImbrique.mjs';
 import { fichiersALinter, lancerLint } from '../guards/lib/lintStage.mjs';
 import { generateursArmes } from '../guards/lib/empreinteStage.mjs';
 import { porteAuPushManquante } from '../guards/lib/portePush.mjs';
+import { codeDePanne, docsDePorte, paquetsDArgv } from '../guards/lib/porteSpawn.mjs';
 
 const DEBUT_MS = Date.now();
 
@@ -191,13 +192,20 @@ for (const f of emojiJsonStaged) {
 const dataStaged = staged.filter((f) => /^src\/data\/[^/]+\.json$/.test(f.replace(/\\/g, '/')));
 if (dataStaged.length) {
   try {
-    execFileSync(
-      process.execPath,
-      [TSX_CLI, join(ROOT, 'scripts', 'guards', 'validate-data.mts'), ...dataStaged],
-      { cwd: ROOT, stdio: 'inherit' },
-    );
-  } catch {
-    offenders.push('contrat de donnée VIOLÉ (schéma zod, rapport ci-dessus) — corriger la donnée, jamais le contourner');
+    // Le consommateur EXIGE ses chemins en arguments et aucune sélection ne les borne : on le rejoue
+    // par PAQUETS tenant sous les 32 k caractères d'argv de Windows (classe : `porteSpawn.mjs`).
+    for (const paquet of paquetsDArgv(dataStaged)) {
+      execFileSync(
+        process.execPath,
+        [TSX_CLI, join(ROOT, 'scripts', 'guards', 'validate-data.mts'), ...paquet],
+        { cwd: ROOT, stdio: 'inherit' },
+      );
+    }
+  } catch (e) {
+    const panne = codeDePanne(e);
+    offenders.push(panne
+      ? `contrat de donnée — porte en PANNE : ${panne} (le garde n'a pas tourné : c'est le LANCEMENT qui a échoué)`
+      : 'contrat de donnée VIOLÉ (schéma zod, rapport ci-dessus) — corriger la donnée, jamais le contourner');
   }
 }
 
@@ -224,20 +232,30 @@ if (staged.some((f) => f.replace(/\\/g, '/') === 'package-lock.json')) {
   }
 }
 
-const docsStaged = staged.some((f) => /^docs\/(?:raw\/|plans\/)?[^/]+\.(?:md|html)$/.test(f.replace(/\\/g, '/')));
-if (docsStaged) {
+// Les chemins passés au garde sont SA sélection (`docsDePorte`), jamais le diff entier : 32 k caractères
+// d'argv sous Windows, un gros renommage dépasse — `execFileSync` part alors en `ENAMETOOLONG` et le
+// `catch` rendrait un verdict de doc pour une porte qui n'a jamais tourné (classe nommée et mesurée dans
+// `scripts/guards/lib/porteSpawn.mjs`).
+const docsPourLaPorte = docsDePorte(staged);
+if (docsPourLaPorte.length) {
   try {
     execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'check-doc-refs.mjs')], { cwd: ROOT, stdio: 'inherit' });
-  } catch {
-    offenders.push('docs:check en échec (référence vivante qui ment — corriger le doc ou le code, jamais commiter le mensonge)');
+  } catch (e) {
+    const panne = codeDePanne(e);
+    offenders.push(panne
+      ? `docs:check — porte en PANNE : ${panne} (le garde n'a pas tourné : c'est le LANCEMENT qui a échoué, pas le doc)`
+      : 'docs:check en échec (référence vivante qui ment — corriger le doc ou le code, jamais commiter le mensonge)');
   }
   // Un doc GÉNÉRÉ stagé doit décrire l'arbre QUI PART au commit, pas le WIP d'une session voisine :
   // ses `fichier:ligne` et ses comptes d'inventaire sont confrontés à l'INDEX. Cette garde reste HORS
   // `docs:check` (qui tourne légitimement sur un arbre en vol) — c'est une porte de COMMIT.
   try {
-    execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'check-docs-vs-head.mjs'), ...staged], { cwd: ROOT, stdio: 'inherit' });
-  } catch {
-    offenders.push('docs-vs-commit en échec (doc généré qui décrit un arbre absent du commit — régénérer sur l’arbre stagé, ou stager le code décrit)');
+    execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'check-docs-vs-head.mjs'), ...docsPourLaPorte], { cwd: ROOT, stdio: 'inherit' });
+  } catch (e) {
+    const panne = codeDePanne(e);
+    offenders.push(panne
+      ? `docs-vs-commit — porte en PANNE : ${panne} (le garde n'a pas tourné : c'est le LANCEMENT qui a échoué, pas le doc)`
+      : 'docs-vs-commit en échec (doc généré qui décrit un arbre absent du commit — régénérer sur l’arbre stagé, ou stager le code décrit)');
   }
 }
 
@@ -256,9 +274,15 @@ const armes = (() => {
 })();
 if (armes.length) {
   try {
+    // `armes` est une liste de NOMS de générateurs (bornée par `docs/.sources-lues.json`), pas le diff :
+    // elle ne peut pas faire dépasser les 32 k caractères d'argv — le `catch` distingue quand même la
+    // PANNE de spawn du verdict, pour ne jamais accuser un doc à la place d'un lancement raté.
     execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'build-all.mjs'), '--empreinte', '--only', ...armes], { cwd: ROOT, stdio: 'inherit' });
-  } catch {
-    offenders.push('empreinte de sources en échec (un doc GÉNÉRÉ stagé a été fabriqué sur un arbre ≠ index — stage les sources nommées ci-dessus, ou régénère le doc après les avoir stagées)');
+  } catch (e) {
+    const panne = codeDePanne(e);
+    offenders.push(panne
+      ? `empreinte de sources — porte en PANNE : ${panne} (le garde n'a pas tourné : c'est le LANCEMENT qui a échoué)`
+      : 'empreinte de sources en échec (un doc GÉNÉRÉ stagé a été fabriqué sur un arbre ≠ index — stage les sources nommées ci-dessus, ou régénère le doc après les avoir stagées)');
   }
 }
 
@@ -290,11 +314,14 @@ const citeUnMort = () => {
   } catch { return false; }
   return ajoutees.some((l) => registre.some((mort) => l.includes(mort)));
 };
-if (docsStaged || citePlan || citeUnMort()) {
+if (docsPourLaPorte.length || citePlan || citeUnMort()) {
   try {
     execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'check-plans-anchors.mjs')], { cwd: ROOT, stdio: 'inherit' });
-  } catch {
-    offenders.push("docs:check-plans en échec (plan daté sans ancre `Ticket:`/`Instrument:`, ou citation d'un plan supprimé — chemin ou nom nu)");
+  } catch (e) {
+    const panne = codeDePanne(e);
+    offenders.push(panne
+      ? `docs:check-plans — porte en PANNE : ${panne} (le garde n'a pas tourné : c'est le LANCEMENT qui a échoué)`
+      : "docs:check-plans en échec (plan daté sans ancre `Ticket:`/`Instrument:`, ou citation d'un plan supprimé — chemin ou nom nu)");
   }
 }
 
@@ -304,8 +331,11 @@ const rawFicheStaged = staged.some((f) => /^docs\/raw\/[^/]+\.md$/.test(f.replac
 if (rawFicheStaged) {
   try {
     execFileSync(process.execPath, [join(ROOT, 'scripts', 'raw', 'build-implemente.mjs'), '--check'], { cwd: ROOT, stdio: 'inherit' });
-  } catch {
-    offenders.push('raw:implemente --check en échec (champ Implémente périmé — relancer `npm run raw:implemente` et committer)');
+  } catch (e) {
+    const panne = codeDePanne(e);
+    offenders.push(panne
+      ? `raw:implemente — porte en PANNE : ${panne} (le garde n'a pas tourné : c'est le LANCEMENT qui a échoué)`
+      : 'raw:implemente --check en échec (champ Implémente périmé — relancer `npm run raw:implemente` et committer)');
   }
 }
 
@@ -319,8 +349,11 @@ const doctrineStaged = staged.some((f) => {
 if (doctrineStaged) {
   try {
     execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'build-doctrines.mjs'), '--check'], { cwd: ROOT, stdio: 'inherit' });
-  } catch {
-    offenders.push('build-doctrines --check en échec (bloc « Doctrines utilisateur » périmé ou édité à la main — relancer `node scripts/docs/build-doctrines.mjs` puis `npm run agents:sync`)');
+  } catch (e) {
+    const panne = codeDePanne(e);
+    offenders.push(panne
+      ? `build-doctrines — porte en PANNE : ${panne} (le garde n'a pas tourné : c'est le LANCEMENT qui a échoué)`
+      : 'build-doctrines --check en échec (bloc « Doctrines utilisateur » périmé ou édité à la main — relancer `node scripts/docs/build-doctrines.mjs` puis `npm run agents:sync`)');
   }
 }
 
@@ -338,8 +371,11 @@ if (atelierQuadStaged) {
       [TSX_CLI, join(ROOT, 'scripts', 'rig', 'compile-dessin-quad.mts'), '--check'],
       { cwd: ROOT, stdio: 'inherit' },
     );
-  } catch {
-    offenders.push("compile-dessin-quad --check en échec (dessin d'atelier et compilé désynchronisés — relancer `npx tsx scripts/rig/compile-dessin-quad.mts` et committer les deux)");
+  } catch (e) {
+    const panne = codeDePanne(e);
+    offenders.push(panne
+      ? `compile-dessin-quad — porte en PANNE : ${panne} (le garde n'a pas tourné : c'est le LANCEMENT qui a échoué)`
+      : "compile-dessin-quad --check en échec (dessin d'atelier et compilé désynchronisés — relancer `npx tsx scripts/rig/compile-dessin-quad.mts` et committer les deux)");
   }
 }
 
@@ -353,8 +389,11 @@ const rawInfraStaged = staged.some((f) => {
 if (rawInfraStaged) {
   try {
     execFileSync('npm', ['run', 'test:raw'], { cwd: ROOT, stdio: 'inherit', shell: process.platform === 'win32' });
-  } catch {
-    offenders.push('npm run test:raw en échec (suite de couverture Atlas rouge — corriger, jamais committer le rouge)');
+  } catch (e) {
+    const panne = codeDePanne(e);
+    offenders.push(panne
+      ? `test:raw — porte en PANNE : ${panne} (le garde n'a pas tourné : c'est le LANCEMENT qui a échoué)`
+      : 'npm run test:raw en échec (suite de couverture Atlas rouge — corriger, jamais committer le rouge)');
   }
 }
 
@@ -364,8 +403,11 @@ const recetteInfraStaged = staged.some((f) => /^scripts\/recette\//.test(f.repla
 if (recetteInfraStaged) {
   try {
     execFileSync('npm', ['run', 'test:recette'], { cwd: ROOT, stdio: 'inherit', shell: process.platform === 'win32' });
-  } catch {
-    offenders.push('npm run test:recette en échec (kit de recette rouge — corriger, jamais committer le rouge)');
+  } catch (e) {
+    const panne = codeDePanne(e);
+    offenders.push(panne
+      ? `test:recette — porte en PANNE : ${panne} (le garde n'a pas tourné : c'est le LANCEMENT qui a échoué)`
+      : 'npm run test:recette en échec (kit de recette rouge — corriger, jamais committer le rouge)');
   }
 }
 
@@ -383,8 +425,11 @@ try {
     stdio: 'inherit',
     shell: process.platform === 'win32',
   });
-} catch {
-  offenders.push('agents:check en échec (adaptateurs Claude/Codex divergents — lancer `npm run agents:sync`)');
+} catch (e) {
+  const panne = codeDePanne(e);
+  offenders.push(panne
+    ? `agents:check — porte en PANNE : ${panne} (le garde n'a pas tourné : c'est le LANCEMENT qui a échoué)`
+    : 'agents:check en échec (adaptateurs Claude/Codex divergents — lancer `npm run agents:sync`)');
 }
 
 // Canal non bloquant : la baseline nominative sépare le DÉJÀ TRANCHÉ (compact, une ligne par site)

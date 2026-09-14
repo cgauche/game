@@ -109,7 +109,7 @@ function densiteFR(dir) {
 }
 
 /** Dossiers d'extraction FR présents sous `Source/`, reconnus au CONTENU (le nom ne dit pas la
- *  langue : `Warhammer - Habitants & Créatures  du Vieux-Monde (Discord) PDF` est FR sans porter
+ *  langue : `Warhammer - Habitants & Creatures  du Vieux-Monde (Discord) PDF` est FR sans porter
  *  aucun préfixe du dépôt). */
 export function frenchSourceDirs(root) {
   try {
@@ -117,9 +117,6 @@ export function frenchSourceDirs(root) {
       .filter((e) => e.isDirectory())
       .map((e) => `Source/${e.name}`)
       .filter((d) => aDesChapitres(join(root, d)) && densiteFR(join(root, d)) >= FR_SEUIL)
-      // NFC EN DERNIER : le disque rend « Boîte » en décomposé (o + U+0302) et `books.json` en
-      // composé — normaliser AVANT le `filter` donnerait un chemin que `readdirSync` ne trouve pas.
-      .map((d) => d.normalize('NFC'))
       .sort();
   } catch { return []; }
 }

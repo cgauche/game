@@ -9,7 +9,7 @@ import type { Combatant } from '../engine/types';
 import type { BattleState } from './store';
 
 // ---------------------------------------------------------------------------
-// Piétinement — action gratuite à 1 Avantage (LDB 85 - Traits de créature.md l.320-321)
+// Piétinement — action gratuite à 1 Avantage (LDB 85 - Traits de creature.md l.320-321)
 // ---------------------------------------------------------------------------
 
 const at = (kind: 'hero' | 'enemy', id: string, x: number, y: number, over: Partial<Combatant> = {}): Combatant =>

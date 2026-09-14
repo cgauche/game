@@ -77,7 +77,7 @@ const ICI = fileURLToPath(new URL('.', import.meta.url))
  * Repassée le 2026-09-08 (#1709 E) à l'ENREGISTREUR DE LECTURES (`scripts/docs/lib/enregistreur-lectures.mjs`
  * posé en `--import` sur la commande de chaque gate) : `lit` déclare désormais aussi le CODE que la
  * gate exécute — le changer change son verdict, donc c'est une lecture. Angles morts de la sonde,
- * nommés : ce qu'un sous-processus NON-node lit (`git ls-files` de src/source-eol-guard.test.ts:50,
+ * nommés : ce qu'un sous-processus NON-node lit (`git ls-files` de src/source-hygiene-guard.test.ts:76,
  * `tsc`/`eslint` binaires) lui échappe, et un chemin RELATIF écrit par un enfant dont le `cwd` est un
  * dépôt jetable lui apparaît sous la racine (vérifié fichier par fichier avant d'être écrit ici).
  * `lit` est ce qui décide de la CLÉ : une entrée touchant `docs/` ou `.claude/` exige la gate dans
@@ -233,7 +233,7 @@ export const ECRIT_LU = {
       'et résolution de prose : src/data/psychology-verbatim.test.ts:24, tavern-desc-verbatim.test.ts:20, ' +
       'variants-integrity.test.ts:234, vdm-objets-maudits.test.ts:154, prose-resolution.test.ts:142, ' +
       'src/oversize-search-blindspot.test.ts:121) ; LIT .gitattributes parce que le verdict de ' +
-      'src/source-eol-guard.test.ts:45 tient à la colonne `-text` que `git ls-files --eol` en tire',
+      'src/source-hygiene-guard.test.ts:58 tient à la colonne `-text` que `git ls-files --eol` en tire',
   },
   build: {
     ecrit: [],

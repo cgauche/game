@@ -1,5 +1,5 @@
 /**
- * Trait de créature **Taille** (LDB `85 - Traits de créature.md` l.279-280 : 7 catégories,
+ * Trait de créature **Taille** (LDB `85 - Traits de creature.md` l.279-280 : 7 catégories,
  * Minuscule → Monstrueuse). Modélisé en INDEX ordinal (0..6) car la mécanique est une
  * COMPARAISON d'écart entre combattants, pas une valeur testée. Mod d'à-toucher au TIR selon
  * la Taille de la CIBLE : `14 - _GoBack.md` l.118-131 (folio 162). « Moyenne » = standard implicite

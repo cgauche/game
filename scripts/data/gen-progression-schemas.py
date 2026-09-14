@@ -59,13 +59,13 @@ CHAR_KEY = {
 
 # Livres FR de `Source/` portant des Carrières (mesuré sur `src/data/careers.json`).
 BOOKS = [
-    {"id": "livre-de-base", "pdf": "Source/Warhammer v4 - Livre de base version corrigée.pdf"},
+    {"id": "livre-de-base", "pdf": "Source/Warhammer v4 - Livre de base version corrigee.pdf"},
     {"id": "vents-de-la-magie", "pdf": "Source/les Vents de Magie.pdf"},
     {"id": "aux-armes", "pdf": "Source/WH - V4 - Aux Armes.pdf"},
     {"id": "mer-des-griffes", "pdf": "Source/WH - V4 - La Mer de Griffe.pdf"},
     {"id": "archives-de-l-empire-1", "pdf": "Source/Warhammer v4 - Les archives de l'Empire volume 1.pdf"},
     {"id": "archives-de-l-empire-2", "pdf": "Source/Warhammer v4 - Les archives de l'Empire volume 2.pdf"},
-    {"id": "middenheim", "pdf": "Source/Warhammer v4 - Middenheim la cité du Loup Blanc.pdf"},
+    {"id": "middenheim", "pdf": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc.pdf"},
 ]
 
 

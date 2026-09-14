@@ -8,7 +8,7 @@
 ---
 
 
-## [LDB 76] Point d’Impact des Créatures
+## [LDB 76] Point d'Impact des Creatures
 
 *Pages PDF 312*
 
@@ -171,7 +171,7 @@ Pol pensait qu'il suivrait les traces de ses parents, dirigeant la boulangerie B
 Cette méthode peut aussi être utilisée pour créer des PJ à partir de races généralement réservées aux PNJ, en utilisant les Caractéristiques aléatoires et en ajoutant une Carrière appropriée, créant, par exemple, un Soldat ogre, un Ingénieur skaven ou un Noble vampire. Cela demandera bien sûr une petite adaptation des règles pour fonctionner, mais si vous désirez jouer avec ce genre de personnages, ce n'est pas bien difficile à faire.
 
 
-## [LDB 78] Les Bêtes du Reikland
+## [LDB 78] Les Betes du Reikland
 
 *Pages PDF 316-318*
 
@@ -279,7 +279,7 @@ On trouve des serpents dans tout l'Empire, en particulier dans les forêts profo
 **Traits :** À Sang-froid, Arme +5, Armure 1, Bestial, Rapide, Taille (Petite) **Facultatif :** Constricteur, Limicole, Nuée, Taille (de Minuscule à Énorme), Venin (Très Facile – Très Difficile)
 
 
-## [LDB 79] Les bêtes monstrueuses du Reikland
+## [LDB 79] Les betes monstrueuses du Reikland
 
 *Pages PDF 319-326*
 
@@ -721,7 +721,7 @@ Perturbant, Territorial
 Toutes les créatures mortes-vivantes avec le Trait Fabriqué sont magiquement maintenues « en vie » par des forces sombres magiques. Il s'agit soit d'automates décérébrés, réanimés par un nécromancien, soit de ceux ramenés à la non-vie quelque part par *Shyish*, le Vent magique de la Mort, ou *Dhar*, la vile Magie noire. Ils se rassemblent et végètent, transformant la mort en quelque chose de nouveau.
 
 
-## [LDB 83] Esclaves des Ténèbres
+## [LDB 83] Esclaves des Tenebres
 
 *Pages PDF 333-335*
 
@@ -924,7 +924,7 @@ Les combattants d'élite des skavens sont les vermines de choc : plus grands, pl
 **Traits :** Arme +8, Armure 4, Infecté, Vision nocturne **Facultatif :** Maladie (Fièvre du rongeur), Mutation, Pisteur
 
 
-## [LDB 85] Traits de créature
+## [LDB 85] Traits de creature
 
 *Pages PDF 340-355*
 
@@ -1763,7 +1763,7 @@ Pisteur, Taille (Grande),Vision nocturne **Options :** Belliqueux, Béni (Ulric)
 Furtif, Increvable, Rapide
 
 
-## [ZI 1] TROIS EXPÉDITIONS
+## [ZI 1] TROIS EXPEDITIONS
 
 *Folio 6+*
 
@@ -2346,7 +2346,7 @@ Le venin de vouivre est difficile à extraire. Pas seulement parce que ces bête
 <span id="page-36-0" data-folio="34"></span>
 
 
-## [ZI 4] « L'abominable » Halagrundsor
+## [ZI 4] L'abominable Halagrundsor
 
 *Folio 35+*
 
@@ -3033,7 +3033,7 @@ Les cendres d'une cockatrice brûlée sont particulièrement prisées des alchim
 <span id="page-68-0" data-folio="66"></span>
 
 
-## [ZI 7] Chimère
+## [ZI 7] Chimere
 
 *Folio 67+*
 
@@ -3231,7 +3231,7 @@ Les karak des Montagnes du Bord du Monde ont énormément souffert à cause des 
 <span id="page-78-0" data-folio="76"></span>
 
 
-## [ZI 9] Trégara
+## [ZI 9] Tregara
 
 *Folio 77+*
 
@@ -3268,7 +3268,7 @@ Les trégaras sont, comme j'ai fini par l'apprendre, les plus gros insectes dont
 <span id="page-79-0" data-folio="77"></span>
 
 
-## [ZI 10] Macareux à bec tranchant
+## [ZI 10] Macareux a bec tranchant
 
 *Folio 78+*
 
@@ -3481,7 +3481,7 @@ s'y déplacer avec un Mouvement de 8.
 <span id="page-88-0" data-folio="86"></span>
 
 
-## [ZI 13] Sirène
+## [ZI 13] Sirene
 
 *Folio 87+*
 
@@ -4517,7 +4517,7 @@ Baron Tobias « Theo » Ulster von Loningbruck
 <span id="page-122-0" data-folio="120"></span>
 
 
-## [ZI 14] Expéditions prévues
+## [ZI 14] Expeditions prevues
 
 *Folio 121+*
 
@@ -7146,7 +7146,7 @@ Perception de la Magie
 Les bouchers ogres sont choisis dès leur plus jeune âge pour être éveillés aux mystères de la Gueule. Ils gagnent souvent le Grand Nom de Quêtegueule à un moment dans leur vie. Le pouvoir et la faim dévorante de la Gueule coulent dans leurs veines. Grâce à leurs accomplissements, ils rappellent à tous les ogres que le désir de dévorer et de consommer est au cœur de leur nature profonde. Peu d'entre eux quittent les Montagnes des Larmes, mais comme tous les ogres, certains ont envie de voyager. Ils sont très respectés par les autres ogres, qui les considèrent avec un mélange de crainte et d'appréhension. Si la notion de magie ogre est largement perçue comme une plaisanterie par les érudits, ceux qui se familiarisent avec les
 
 
-## [EDO 11] APPENDICE 2 - Nouvelles règles
+## [EDO 11] APPENDICE 2 - Nouvelles regles
 
 *Folio 145+*
 
@@ -7415,7 +7415,7 @@ Malheureusement, comme l'anneau est maintenant, et depuis de nombreuses années,
 <span id="page-148-0" data-folio="149"></span>
 
 
-## [EDOC 7] Chapitre 4 - Montures et véhicules
+## [EDOC 7] Chapitre 4 - Montures et vehicules
 
 *Pages PDF 23-31*
 
@@ -7774,7 +7774,7 @@ Tout Personnage peut tenter des réparations en utilisant la Compétence Métier
 La plupart des auberges relais ont un forgeron à résidence ou à proximité qui peut remplacer les fers. Il pourrait éventuellement posséder assez de Compétence en charpenterie pour rafistoler un véhicule afin qu'il puisse rejoindre une ville voisine, où l'on pourra trouver un Charron ou un Charpentier plus compétent. Tout Personnage peut tenter d'effectuer des réparations en utilisant les Compétences Métier (Charpentier) ou les compétences similaires que le MJ juge appropriées.
 
 
-## [MSRC 13] CHAPITRE 11 - Règles du commerce
+## [MSRC 13] CHAPITRE 11 - Regles du commerce
 
 *Folio 71+*
 
@@ -9534,7 +9534,7 @@ Wasmeier est Magister Magistri de la Main Pourpre, dont le Cercle intérieur inc
 Jarmund et Kalzbad savent seulement que tous les membres du culte doivent soutenir les taxes avec enthousiasme. Ils ne savent pas que Wasmeier a élaboré un plan pour s'emparer de Middenheim.
 
 
-## [PDT 11] dopplegänger
+## [PDT 11] doppleganger
 
 *Pages PDF 151*
 
@@ -10173,7 +10173,7 @@ Les Seigneurs des mers impériaux ... 19
 <span id="page-163-0" data-folio="160"></span>
 
 
-## [VDM 13] Créatures magiques
+## [VDM 13] Creatures magiques
 
 *Pages PDF 177-193*
 
@@ -10802,7 +10802,7 @@ Maniement de deux armes
 **Compétences :** Langue (au choix), Savoir (au choix) **Talents :** Effrayant, Mains agiles, Mage de guerre, Sorcier !
 
 
-## [VDM 15] Némésis et aventures magiques
+## [VDM 15] Nemesis et aventures magiques
 
 *Pages PDF 212-228*
 
@@ -11487,4 +11487,4 @@ La présente licence, une fois publiée, ne peut être amendée. La présente li
  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . Signé ce jour
 
 Magister-Secrétaire Wilhelm Van Der Rijn, Tour de Volans
-<!-- sources-empreinte: 7c66fb26f303e20ae53c03ddd006e61253d44c06 (129 fichiers, 16 dossiers) corps: cf1304e68594b57d1a5c403e6899f483b30d0cbd -->
+<!-- sources-empreinte: c883f30366a114f49d027ed6b4cccc6ab51363ed (129 fichiers, 16 dossiers) corps: 90681c949b8571a110617cb1367bb9c784530741 -->

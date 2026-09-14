@@ -6,5 +6,5 @@
 - [One Shots of the Reikland](<04 - One Shots of the Reikland.md>) — p. 47-80
 - [Monuments of the Reikland](<05 - Monuments of the Reikland.md>) — p. 81-93
 - [Shrines of Sigmar](<06 - Shrines of Sigmar.md>) — p. 94-106
-- [Sullasara’s Spells of Unrivalled Utility](<07 - Sullasara’s Spells of Unrivalled Utility.md>) — p. 107-115
+- [Sullasara’s Spells of Unrivalled Utility](<07 - Sullasara's Spells of Unrivalled Utility.md>) — p. 107-115
 - [Blood and Bramble](<08 - Blood and Bramble.md>) — p. 116-143

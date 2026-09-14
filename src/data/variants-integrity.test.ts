@@ -232,7 +232,7 @@ describe('garde-fou « deux variantes jamais actives ensemble » (#564)', () => 
 
 // ── Couverture du « Maxi » republié par Aux Armes, Annexe III (#564) ──────────────────────────────
 const AA_ANNEXE_III = fileURLToPath(
-  new URL('../../Source/WH - V4 - Aux Armes/13 - ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR.md', import.meta.url),
+  new URL('../../Source/WH - V4 - Aux Armes/13 - ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS A JOUR.md', import.meta.url),
 );
 
 /** `label → ligne « Maxi » imprimée` de l'Annexe III, LUE dans le Source (jamais une liste recopiée). */
