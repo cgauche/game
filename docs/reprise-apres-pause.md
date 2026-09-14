@@ -28,6 +28,12 @@ npm test        # suite du moteur — deux processus Vitest (node + jsdom) si �
 npm run dev     # http://localhost:5173 (un CLONE garde le port historique)
 ```
 
+**Chantier et publication.** `npm run ops:chantier -- <N>` (`node scripts/ops/chantier.mjs`) ouvre le
+chantier du ticket `<N>` : il pose le worktree lié `.wt-<N>` sur `origin/main`, crée la branche
+`chantier/<N>`, y joue `npm ci` et imprime le port dev dérivé. `npm run ops:publier -- --detache`
+(`node scripts/ops/publier.mjs`) joue ensuite le train de publication ENTIER depuis ce worktree, détaché
+du harnais, et imprime son `pid` et son `log`.
+
 Le port n'est historique QUE pour un arbre principal ou un clone : un **worktree lié** en dérive un
 autre (5174-5272, `scripts/port-dev.mjs`) pour que deux arbres servis en même temps ne se recouvrent
 jamais. `npm run dev` imprime celui qu'il sert.
@@ -93,7 +99,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 
 - `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
 - `src/data/` — données app-owned (122 fichiers JSON commités, éditables au Compendium).
-- Les gardes de données : `scripts/guards/validate-data.mts` + 105 modules
+- Les gardes de données : `scripts/guards/validate-data.mts` + 106 modules
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
   `scripts/guards/lib/labelLogic.mjs`).
@@ -183,4 +189,7 @@ refaire `npm install`.
 
 Vérifier qu'elles tournent : onglet Actions du dépôt, ou `gh run list --workflow=canari.yml`. La
 porte à chaque push est `.github/workflows/ci.yml` (« CI », push, pull_request).
-<!-- sources-empreinte: 59becfd0cb3190df7c7ebe4c6d57b50dd42a3c96 (13 fichiers, 9 dossiers) corps: 5da5434c065cbbf6b5f7ee196870d35ec785ed7e -->
+
+La publication locale suit le même ordre que `ci.yml` : `npm run ops:publier` joue rebase, docs
+dérivés, gates, push, sonde CI et pilotage, et refuse à la première étape rouge en la nommant.
+<!-- sources-empreinte: fddb26598dc5a3e7d44028528f6ce057512d1522 (13 fichiers, 9 dossiers) corps: cd023beaa56f8e82d083fd92c0ec590f617bda44 -->
