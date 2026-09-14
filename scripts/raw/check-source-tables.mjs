@@ -12,7 +12,7 @@
 // jamais dans un remède au parsing.
 //
 // STOCK NOMINATIF (`scripts/raw/source-tables-stock.json`, régime #1711) : une ENTRÉE par SITE,
-// clé `famille :: fichier :: ref :: occurrence` (`stockNominatif.mjs`, `cleDeSite`). La clé ne porte
+// clé `famille :: fichier :: ref :: occurrence` (`guards/lib/stock.mjs`, `cleDeSite` — seule définition, #1727). La clé ne porte
 // JAMAIS une position : ni la ligne du `.md` (elle dérive à chaque correction), ni l'ordinal de la
 // table dans sa section (26 % des tables bougeraient à la moindre insertion). Elle porte le
 // CONTENU : la section et les en-têtes normalisés, l'`occurrence` départageant deux tables de mêmes
@@ -26,7 +26,8 @@ import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { BOOKS, readText } from './_lib.mjs'
-import { ecartDuVolet, readStock, sitesEnEntrees } from './stockNominatif.mjs'
+import { ecartDuVolet, sitesEnEntrees } from '../guards/lib/stock.mjs'
+import { readStock } from './stockNominatif.mjs'
 import { parseChapitre, tablesOf, normText, estCleDePlage } from '../../src/data/source/decoupe.ts'
 
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'source-tables-stock.json')
