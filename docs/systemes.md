@@ -93,7 +93,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `PanneauParametre` |  |  |  |  | U |  |  | U | U |  |  | U |  |  |  |  |
 | `LifeBar` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `TradeTable` |  |  |  |  |  |  |  |  |  |  | U |  |  |  |  |  |
-| `ParchmentCard` |  |  |  |  | U |  | U |  | U | U |  |  |  |  |  | U |
+| `ParchmentCard` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `ActivityPane` |  |  |  |  |  |  |  |  |  | U |  |  |  |  |  |  |
 | `QtyStepper` |  | U | U |  | U |  | U | U | U | U | U | U | U |  | U | U |
 | `NumberField` |  | U | U |  | U |  | U | U | U | U | U | U | U |  | U | U |
@@ -106,7 +106,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `GatedAction` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `RoseAxes` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `MetalStatus` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-| `WaxSeal/SealedPlaque` |  |  |  |  | U |  | U |  | U | U |  |  |  |  |  | U |
+| `WaxSeal/SealedPlaque` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `CareerPath` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `FigTile` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `GroupedPickGrid` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
@@ -160,4 +160,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: b299294706532d75a03bdd1f6794ffb0484b4a65 (1809 fichiers, 2 dossiers) corps: 9daa2bd4b49ff304d9253bc41447e115ea76e647 -->
+<!-- sources-empreinte: 4b5a591d5a5403df36b6bbac3a75aef8f7971f85 (1811 fichiers, 2 dossiers) corps: 5f0cd074d5e3277762003c6dce22f4f5826a5dcc -->
