@@ -10,6 +10,70 @@ déjà listé au § *Sources VF* du `CLAUDE.md` racine du dossier `Game`, en **V
 WFRP 4e est explicitement **exclue** (`docs/raw/sources.md` § *Exclu des règles* — ruleset simplifié
 divergent, jamais une source de règles ni de stats).
 
+## 0. Format canonique (la forme UNE de toute extraction)
+
+Toutes les extractions de `Source/` ont **UN** format, décrit ici et mesuré par
+`scripts/raw/check-source-format.mjs`. **Le geste, un seul** : rejouer la chaîne canonique sur le
+livre — re-découpe depuis la sortie Marker conservée sous `Source/_marker/`, ou ré-extraction quand
+cette sortie manque. Jamais un rafistolage chapitre par chapitre (arbitrage utilisateur du
+2026-09-14, verbatim : « Il faut un format unifié pour toutes les extractions, donc s'il faut
+rééxtraire, on rééxtrait » ; fiche
+`.claude/memory/user-doctrine-format-unifie-reextraction-permise.md`). La clause de l'épique #1388
+« un livre en service ne se ré-extrait plus » est levée par cet arbitrage ; « FORME jamais SENS »
+reste.
+
+**La chaîne JOUABLE aujourd'hui** — c'est exactement celle des §1 et §2, et rien d'autre n'est
+committé :
+
+- `marker-pdf` (CPU), config `scripts/raw/marker-paginate.json` (`paginate_output: true`, inchangée
+  depuis `09b30a7b8`) : le markdown de sortie porte des séparateurs `{N}----`, N = page PDF
+  **0-indexée**.
+- Une passe **PLEINE** par livre (§1), ou le driver `scripts/raw/reextract-all.sh` qui boucle les 13
+  suppléments vers le staging `Source/_marker/split/<dir>/` sans jamais écraser `Source/`.
+- Découpe par `scripts/raw/marker-split.mjs` : il pose lui-même la ligne 1 `*Pages PDF …*` et passe
+  chaque nom de fichier par `nomAscii`. Il s'**aligne sur la structure `Source/` préexistante** —
+  il lit les anciens `NN - X.md` et leur marqueur `Pages PDF` pour retrouver les frontières. Un
+  dossier qui n'en porte pas (les 6 livres en `*Folio N+*`, les 4 dossiers pré-pipeline) ne lui
+  donne aucun chapitre : sa structure cible se pose d'abord (§2).
+- Folios ensuite : `scripts/raw/folio-bootstrap.mjs` puis `scripts/raw/anchor-fill.mjs`.
+
+**Découpage en tranches (reste de #1739).** La session d'extraction produit le PDF par tranches de
+40 pages ; le séparateur `{N}----` portant l'index **absolu** de page quelle que soit la tranche,
+les tranches s'unissent **par page** (une page en double ou un texte hors pagination doivent être
+refusés). **Cet outil d'union n'est pas encore committé** : `marker-split.mjs` prend UN seul `.md`
+et n'unit rien ; il arrivera avec le premier livre ré-extrait (AU1). Les contraintes de machine
+citées avec — MAX_PATH (260) dépassé par `<out>/<nom du PDF>/<nom du PDF>.md` et l'échec **après**
+conversion, ~7 Go de pointe, 15-20 s par page CPU, un seul Marker à la fois — sont un **témoignage
+relevé le 2026-09-14** par la session d'extraction, non mesuré ici.
+
+**La forme CIBLE**, telle que la garde la mesure — **aucune extraction ne l'atteint aujourd'hui**
+(20 dossiers sur 20 hors format, LDB compris) :
+
+| Trait | Forme canonique | Famille d'écart |
+|---|---|---|
+| Ligne 1 d'un chapitre | `*Pages PDF a-b*` (ou `*Pages PDF a*` pour une page unique) | `ligne1-hors-format` |
+| Folios | au moins une ancre `data-folio` par chapitre | `sans-folio` |
+| Ancres | `<span id="page-N-0" data-folio="F"></span>` **inline**, préfixe du texte qu'elle ouvre — jamais seule sur sa ligne | `ancre-seule` |
+| Nom de fichier | `NN - Titre imprimé.md` par `nomAscii` — jamais un signet Word (`_GoBack`, `_gjdgxs`, `Sans titre`) | `nom-de-signet` |
+| HTML | aucun, hors ancres et `<br>` | `html-residuel` |
+| `00 - Index.md` | liens relatifs tous vivants | `index-mort` |
+| Tables | chaque bloc a sa ligne de séparateur `\|---\|` | `table-sans-separateur` |
+
+**La garde et son stock.** `node scripts/raw/check-source-format.mjs` balaie les **20 dossiers FR
+suivis** — les 16 livres à `dir` de `src/data/books.json` plus les 4 dossiers antérieurs au pipeline,
+atteints par balayage des préfixes `Warhammer v4 - `, `WH - V4 - `, `WH4_FR_`, `Boite d'Initiation`,
+`Warhammer - Habitants` — et compare ce qu'elle mesure au stock nominatif
+`scripts/raw/source-format-stock.json` : une entrée par (famille, dossier, détail). Les deux sens
+sont rouges — un écart hors du stock (rejouer la chaîne sur le livre, ou déclarer l'entrée au
+message par `CLIQUET:`), une entrée sans écart mesuré (la chaîne a été rejouée : l'entrée se
+retire). `--ecrire-stock` régénère le stock. Comme la `ref` d'une entrée porte un **compte**
+(« ×N »), **tout geste non canonique se voit** : corriger une occurrence sur N déplace la clé et
+rougit la garde — c'est voulu. **Comment le stock décroît** : un livre repassé par la chaîne en sort
+dans le train qui l'intègre — remplacement du dossier suivi, `node scripts/raw/reanchor.mjs --apply
+--remap`, `node scripts/source/reparer-adresses.mjs --apply`, stocks régénérés, le tout dans le
+MÊME commit. L'ordre de ré-extraction vit sur le ticket #1739. Le stock ne remonte jamais sans un
+`CLIQUET:` porté au message.
+
 ## 1. Extraction Marker (PDF → markdown paginé)
 
 Le PDF est gitignoré ; l'extraction passe par `marker-pdf` (CPU), avec la couche texte exacte
@@ -182,6 +246,12 @@ texte**, donc il déplace ce qui le cite : les numéros de ligne des réfs de l'
 **adresses** `descRef` de la donnée. Tout se rejoue en une passe, et **tout part dans le MÊME
 commit** (Source corrigée + réfs recalées + adresses recalées + fiches `Implémente` régénérées).
 
+**Frontière avec le §0** : ce geste manuel ne vaut que pour un défaut de **CONTENU** — ce que la
+bonne chaîne, rejouée, produirait de la même façon. Un défaut de **FORMAT** (l'une des sept familles
+de `scripts/raw/check-source-format.mjs`) ne se corrige JAMAIS à la main : on rejoue la chaîne
+canonique sur le livre entier (§0). Corriger une seule occurrence d'une famille déplace la clé du
+stock et rougit la garde — c'est ainsi qu'un geste non canonique se voit.
+
 1. **Éditer** `Source/<livre>/NN - X.md`, la page PDF ouverte à côté — verbatim, y compris les
    coquilles du livre. Les marqueurs `<span … data-folio="N">` sont l'ancrage de page : on les
    déplace avec leur texte, on n'en invente pas.
@@ -268,6 +338,10 @@ sert d'arbitre — jamais comme source de la donnée affichée, qui reste recoll
 - `node scripts/raw/check-source-tables.mjs` — tables cassées du `Source/` (cinq familles, stock
   nominatif décroissant `scripts/raw/source-tables-stock.json`) ; le geste est le tableau
   « défaut de table → geste » du §7. `--ecrire-stock` régénère le stock après une correction.
+- `node scripts/raw/check-source-format.mjs` — écart de FORME des 20 dossiers FR au format canonique
+  (sept familles, stock nominatif décroissant `scripts/raw/source-format-stock.json`) ; le geste est
+  de REJOUER la chaîne canonique sur le livre (§0), jamais une correction manuelle.
+  `--ecrire-stock` régénère le stock après ce passage.
 - `node scripts/source/reparer-adresses.mjs` (+ `--apply`, `--dataset <nom>`, `--depuis <ref-git>`) —
   adresses `descRef` recalées après une correction d'extraction ; sortie 1 tant qu'une adresse reste
   cassée. La garde qui les JUGE est `src/data/prose-resolution.test.ts`.

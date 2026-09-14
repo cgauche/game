@@ -1,0 +1,461 @@
+{
+  "quoi": "Écart de FORME des extractions de `Source/` au format canonique (#1739, épique #1388) : une ENTRÉE par (famille, dossier, détail), clé `famille :: fichier :: ref :: occurrence` (régime #1711). Format DÉFINI par `docs/ajouter-un-livre-source.md` § « Format canonique ». 20 dossier(s) FR balayé(s). Compte par famille à la naissance : ligne1-hors-format 10, sans-folio 8, ancre-seule 14, nom-de-signet 6, html-residuel 14, index-mort 2, table-sans-separateur 3. LE GESTE, UN SEUL — REJOUER la chaîne canonique sur le livre : re-découpe depuis la sortie Marker conservée sous `Source/_marker/`, ou ré-extraction quand cette sortie manque. Jamais un remède de chapitre (arbitrage utilisateur 2026-09-14 : « Il faut un format unifié pour toutes les extractions, donc s’il faut rééxtraire, on rééxtrait »). DÉCROISSANCE : un livre repassé par la chaîne sort du stock dans le train qui l’intègre — ses entrées se retirent dans le MÊME commit que le dossier remplacé, et la garde refuse alors toute entrée sans écart mesuré. L’ORDRE de ré-extraction vit sur #1739. LIMITE DITE, et VOULUE — le DÉTAIL est un COMPTE : `ref` porte « ×N », donc tout geste NON CANONIQUE (corriger une occurrence sur N à la main) déplace la clé et ROUGIT cette garde. C’est exactement ce qu’on veut : un geste non canonique se voit. La porte de PLAGE (`croissanceDesStocks`), elle, n’y verrait qu’un −1/+1 net 0 sur la même ligne — c’est la SUITE qui tient ce cas, pas la porte de plage. CE QUE LE `fichier` NOMME — le PREMIER chapitre fautif de la famille dans ce dossier, jamais le dossier nu : un chemin sans `.md` ne tombe sous aucun motif de `scripts/guards/lib/stocksNominatifs.mjs` (`CHEMIN_SOURCE` exige `.md`) et laisserait les 57 entrées hors de vue des deux portes de croissance (mesuré le 2026-09-14 : la garde `stocks-nominatifs` refusait « 0 entrée(s) vue(s) sur 57 déclarée(s) »). COUVERTURE DITE — les familles `ligne1-hors-format`, `sans-folio`, `ancre-seule` et `nom-de-signet` ne jugent que les fichiers au motif `NN - X.md`, `00 - Index.md` exclu ; un `.md` hors motif leur est INVISIBLE (mesuré le 2026-09-14 : 0 fichier hors motif sur les 20 dossiers). `html-residuel` et `table-sans-separateur` balaient, eux, TOUS les `.md` du dossier. COUVERTURE DITE — `html-residuel` ne compte PAS les ancres de page : une ancre sans `data-folio` est déjà nommée par `sans-folio`, et la compter deux fois dirait deux réparations là où il n’y en a qu’une.",
+  "entrees": [
+    {
+      "famille": "ligne1-hors-format",
+      "fichier": "Source/Boite d'Initiation WFRP 4e Edition VF/01 - Coffre de Demarrage WFRP 4e Edition VF.md",
+      "ref": "# Titre ×2",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ligne1-hors-format",
+      "fichier": "Source/WH - V4 - Aux Armes/01 - CREDITS.md",
+      "ref": "*Folio N+* ×13",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ligne1-hors-format",
+      "fichier": "Source/WH - V4 - La Mer de Griffe/01 - La Mer des Griffes.md",
+      "ref": "*Folio N+* ×16",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ligne1-hors-format",
+      "fichier": "Source/WH - V4 - Le zoo imperial/01 - TROIS EXPEDITIONS.md",
+      "ref": "*Folio N+* ×14",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ligne1-hors-format",
+      "fichier": "Source/WH4_FR_BI_Livre_Aventure/01 - _GoBack.md",
+      "ref": "# Titre ×6",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ligne1-hors-format",
+      "fichier": "Source/WH4_FR_BI_Livre_Ubersreik/01 - Bienvenue a Ubersreik.md",
+      "ref": "# Titre ×8",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ligne1-hors-format",
+      "fichier": "Source/Warhammer - Habitants & Creatures  du Vieux-Monde (Discord) PDF/01 - Avertissement.md",
+      "ref": "# Titre ×84",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ligne1-hors-format",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/01 - Chapitre 1 - On recherche - aventuriers courageux.md",
+      "ref": "*Folio N+* ×12",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ligne1-hors-format",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/01 - PREFACE - Un peu d'histoire.md",
+      "ref": "*Folio N+* ×11",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ligne1-hors-format",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/01 - PREFACE - UN PEU D'HISTOIRE.md",
+      "ref": "*Folio N+* ×19",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "sans-folio",
+      "fichier": "Source/Boite d'Initiation WFRP 4e Edition VF/01 - Coffre de Demarrage WFRP 4e Edition VF.md",
+      "ref": "2 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "sans-folio",
+      "fichier": "Source/WH4_FR_BI_Livre_Aventure/01 - _GoBack.md",
+      "ref": "6 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "sans-folio",
+      "fichier": "Source/WH4_FR_BI_Livre_Ubersreik/01 - Bienvenue a Ubersreik.md",
+      "ref": "8 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "sans-folio",
+      "fichier": "Source/Warhammer - Habitants & Creatures  du Vieux-Monde (Discord) PDF/01 - Avertissement.md",
+      "ref": "84 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "sans-folio",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/03 - CHAPITRE 1 - Easter eggs.md",
+      "ref": "1 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "sans-folio",
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/01 - introduction.md",
+      "ref": "26 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "sans-folio",
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/03 - _GoBack.md",
+      "ref": "8 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "sans-folio",
+      "fichier": "Source/Warhammer v4 - Nuits agitees & dures journees/12 - _GoBack.md",
+      "ref": "1 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ancre-seule",
+      "fichier": "Source/WH - V4 - Aux Armes/01 - CREDITS.md",
+      "ref": "142 ancres seules / 142",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ancre-seule",
+      "fichier": "Source/WH - V4 - La Mer de Griffe/01 - La Mer des Griffes.md",
+      "ref": "156 ancres seules / 156",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ancre-seule",
+      "fichier": "Source/WH - V4 - Le zoo imperial/01 - TROIS EXPEDITIONS.md",
+      "ref": "139 ancres seules / 139",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ancre-seule",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/01 - Chapitre 1 - On recherche - aventuriers courageux.md",
+      "ref": "153 ancres seules / 153",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ancre-seule",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/02 - Commentaires des invites.md",
+      "ref": "6 ancres seules / 102",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ancre-seule",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/01 - PREFACE - Un peu d'histoire.md",
+      "ref": "157 ancres seules / 157",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ancre-seule",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/01 - PREFACE - UN PEU D'HISTOIRE.md",
+      "ref": "125 ancres seules / 125",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ancre-seule",
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/01 - Avant-propos.md",
+      "ref": "15 ancres seules / 139",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ancre-seule",
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/01 - La Couronne de l'Empire.md",
+      "ref": "25 ancres seules / 205",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ancre-seule",
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "8 ancres seules / 72",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ancre-seule",
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/02 - Les ogres.md",
+      "ref": "8 ancres seules / 82",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ancre-seule",
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/08 - Statut.md",
+      "ref": "15 ancres seules / 315",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ancre-seule",
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/01 - MIDDENHEIM.md",
+      "ref": "16 ancres seules / 151",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "ancre-seule",
+      "fichier": "Source/Warhammer v4 - Nuits agitees & dures journees/05 - _GoBack.md",
+      "ref": "5 ancres seules / 62",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "nom-de-signet",
+      "fichier": "Source/WH4_FR_BI_Livre_Aventure/01 - _GoBack.md",
+      "ref": "3 fichier(s) : 01 - _GoBack.md, 03 - _GoBack.md, 05 - _GoBack.md",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "nom-de-signet",
+      "fichier": "Source/WH4_FR_BI_Livre_Ubersreik/04 - _GoBack.md",
+      "ref": "3 fichier(s) : 04 - _GoBack.md, 05 - _GoBack.md, 07 - _GoBack.md",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "nom-de-signet",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/04 - _GoBack.md",
+      "ref": "2 fichier(s) : 04 - _GoBack.md, 09 - _GoBack.md",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "nom-de-signet",
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/05 - _GoBack.md",
+      "ref": "6 fichier(s) : 05 - _GoBack.md, 07 - _GoBack.md, 13 - _GoBack.md, 17 - _GoBack.md, 21 - _GoBack.md, 26 - _GoBack.md",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "nom-de-signet",
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/01 - _GoBack.md",
+      "ref": "11 fichier(s) : 01 - _GoBack.md, 03 - _GoBack.md, 04 - _GoBack.md, 05 - _gjdgxs.md, 11 - _3znysh7.md, 14 - _GoBack.md, 45 - _GoBack.md, 53 - _GoBack.md, 58 - _GoBack.md, 81 - _GoBack.md, 84 - _GoBack.md",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "nom-de-signet",
+      "fichier": "Source/Warhammer v4 - Nuits agitees & dures journees/04 - _Hlk18182212.md",
+      "ref": "7 fichier(s) : 04 - _Hlk18182212.md, 05 - _GoBack.md, 07 - _GoBack.md, 09 - _GoBack.md, 11 - _GoBack.md, 12 - _GoBack.md, 15 - _GoBack.md",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "html-residuel",
+      "fichier": "Source/WH - V4 - Aux Armes/02 - INTRODUCTION.md",
+      "ref": "<sup> ×27",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "html-residuel",
+      "fichier": "Source/WH - V4 - La Mer de Griffe/01 - La Mer des Griffes.md",
+      "ref": "<sup> ×14",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "html-residuel",
+      "fichier": "Source/WH - V4 - Le zoo imperial/01 - TROIS EXPEDITIONS.md",
+      "ref": "<sup> ×45",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "html-residuel",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/02 - Chapitre 2 - Erreur sur la personne.md",
+      "ref": "<sup> ×5",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "html-residuel",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/07 - Chapitre 4 - Montures et vehicules.md",
+      "ref": "<sup> ×9",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "html-residuel",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/02 - INTRODUCTION.md",
+      "ref": "<sup> ×6",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "html-residuel",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/16 - CHAPITRE 14 - Maladies transmises par l'eau.md",
+      "ref": "<sup> ×2",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "html-residuel",
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/01 - La Couronne de l'Empire.md",
+      "ref": "<sup> ×3",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "html-residuel",
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/02 - Si un regard pouvait tuer.md",
+      "ref": "<sup> ×13",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "html-residuel",
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/02 - Revisions des regles d'incantation.md",
+      "ref": "<sup> ×42",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "html-residuel",
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "<sup> ×14",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "html-residuel",
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/01 - Mercenaires ogres dans le Vieux Monde.md",
+      "ref": "<sup> ×6",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "html-residuel",
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/08 - Statut.md",
+      "ref": "<sup> ×9",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "html-residuel",
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/01 - MIDDENHEIM.md",
+      "ref": "<sup> ×1",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "index-mort",
+      "fichier": "Source/Warhammer - Habitants & Creatures  du Vieux-Monde (Discord) PDF/00 - Index.md",
+      "ref": "2 lien(s)",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "index-mort",
+      "fichier": "Source/Warhammer v4 - Nuits agitees & dures journees/00 - Index.md",
+      "ref": "1 lien(s)",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "table-sans-separateur",
+      "fichier": "Source/Boite d'Initiation WFRP 4e Edition VF/01 - Coffre de Demarrage WFRP 4e Edition VF.md",
+      "ref": "13/33 tables",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "table-sans-separateur",
+      "fichier": "Source/Warhammer - Habitants & Creatures  du Vieux-Monde (Discord) PDF/13 - Hommes du Guet (Villes).md",
+      "ref": "438/1195 tables",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "table-sans-separateur",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/06 - Chapitre 6 - La Schaffenfest.md",
+      "ref": "1/91 tables",
+      "occurrence": 1,
+      "lot": "#1739 H-0",
+      "date": "2026-09-14"
+    }
+  ]
+}

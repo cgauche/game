@@ -193,6 +193,15 @@ const ATTENDU = {
     // l'unique écriture (régénération du stock) est fermée par `--ecrire-stock` sous `isMain`
     // (check-source-tables.mjs:194) — déclarée en `ecritFerme` de `test:raw` (ECRIT_LU).
     'scripts/raw/check-source-tables.mjs',
+    // +1 le 2026-09-14 (#1739 H-0) : `check-source-format.test.mjs` importe le détecteur du format
+    // des extractions, dont l'unique écriture (régénération du stock) est fermée par `--ecrire-stock`
+    // sous `isMain` (check-source-format.mjs:396) — déclarée en `ecritFerme` de `test:raw` (ECRIT_LU).
+    'scripts/raw/check-source-format.mjs',
+    // +1 le même jour : le banc lui-même écrit — il fabrique des dossiers de livre JETABLES sous
+    // `os.tmpdir()` (`mkdtempSync`/`mkdirSync`/`writeFileSync`, retirés par `rmSync`) pour éprouver
+    // le chemin DISQUE du détecteur. Aucune écriture DANS l'arbre : même classe que
+    // `scripts/guards/lib/depotGabarit.mjs` (test:docs) et les dépôts jetables de `scripts/ops/`.
+    'scripts/raw/check-source-format.test.mjs',
     'scripts/raw/check-refs.test.mjs',
     'scripts/raw/citation-graphy-guard.test.mjs',
     'scripts/raw/folio-bootstrap.mjs',
@@ -215,6 +224,11 @@ const ATTENDU = {
   // `--ecrire-stock` (check-source-tables.mjs:194) que ci.yml ne passe pas ; déclarée en
   // `ecritFerme` sur `scripts/raw/source-tables-stock.json` (ECRIT_LU, scripts/gates/toutes.mjs).
   'raw:check-source-tables': ['scripts/raw/check-source-tables.mjs'],
+  // +1 le 2026-09-14 (#1739 H-0) : la gate neuve est le détecteur du FORMAT des extractions, qui
+  // porte UN `writeFileSync` — la régénération de son stock nominatif, fermée par la porte
+  // `--ecrire-stock` (check-source-format.mjs:396) que ci.yml ne passe pas ; déclarée en
+  // `ecritFerme` sur `scripts/raw/source-format-stock.json` (ECRIT_LU, scripts/gates/toutes.mjs).
+  'raw:check-source-format': ['scripts/raw/check-source-format.mjs'],
   'raw:reanchor': ['scripts/docs/lib/empreinte-sources.mjs', 'scripts/raw/reanchor.mjs'],
   'server:typecheck': [],
 }

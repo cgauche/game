@@ -310,6 +310,11 @@ export const ECRIT_LU = {
         '`check-source-tables.test.mjs` IMPORTE le détecteur des tables cassées, dont l’unique écriture ' +
         '(la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ' +
         '(scripts/raw/check-source-tables.mjs:194) ; le banc ne fait que LIRE le stock (`readStock`)',
+      'scripts/raw/source-format-stock.json':
+        '`check-source-format.test.mjs` IMPORTE le détecteur du format des extractions, dont l’unique ' +
+        'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ' +
+        '(scripts/raw/check-source-format.mjs:396) ; le banc ne fait que LIRE le stock (`readStock`), ' +
+        'ses dossiers JETABLES vivant sous `os.tmpdir()`',
     },
     lit: ['docs/raw/', 'scripts/raw/', 'scripts/guards/lib/', 'Source/', 'src/'],
     raison:
@@ -351,6 +356,21 @@ export const ECRIT_LU = {
       'LIT le registre de livres, le parseur de tables (src/data/source/decoupe.ts), les 16 dossiers de ' +
       'Source/ et son stock nominatif scripts/raw/source-tables-stock.json ; le seul module écrivain ' +
       'atteint est le détecteur lui-même, dont l’écriture est fermée par sa porte `--ecrire-stock`',
+  },
+  'raw:check-source-format': {
+    ecrit: [],
+    ecritFerme: {
+      'scripts/raw/source-format-stock.json':
+        'le stock NOMINATIF des écarts de format ne se réécrit que sous `--ecrire-stock` ' +
+        '(scripts/raw/check-source-format.mjs:396), option que la commande de .github/workflows/ci.yml ' +
+        'ne passe pas ; sans elle la gate COMPARE le stock à sa mesure et ne touche à rien',
+    },
+    lit: ['Source/', 'src/data/books.json', 'scripts/raw/', 'scripts/guards/lib/'],
+    raison:
+      'LIT le registre de livres et les 20 dossiers FR de Source/ (les 16 à `dir` plus les 4 ' +
+      'pré-pipeline atteints par balayage), ainsi que son stock nominatif ' +
+      'scripts/raw/source-format-stock.json ; le seul module écrivain atteint est le détecteur ' +
+      'lui-même, dont l’écriture est fermée par sa porte `--ecrire-stock`',
   },
   'raw:reanchor': {
     ecrit: [],
@@ -433,7 +453,8 @@ export const LANES = [
     nom: 'docs',
     gates: [
       'docs:check', 'docs:empreinte', 'test:raw', 'raw:check-refs', 'raw:check-code-refs',
-      'raw:check-folio-continuity', 'raw:check-source-tables', 'test:docs', 'agents:check', 'build',
+      'raw:check-folio-continuity', 'raw:check-source-tables', 'raw:check-source-format', 'test:docs',
+      'agents:check', 'build',
     ],
     raison:
       'tous les LECTEURS de docs/ et docs/raw/ — leurs trois écrivains ont déjà tourné, en série, avant que ' +

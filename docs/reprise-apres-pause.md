@@ -192,4 +192,4 @@ porte à chaque push est `.github/workflows/ci.yml` (« CI », push, pull_reques
 
 La publication locale suit le même ordre que `ci.yml` : `npm run ops:publier` joue rebase, docs
 dérivés, gates, push, sonde CI et pilotage, et refuse à la première étape rouge en la nommant.
-<!-- sources-empreinte: ade1630d916c3913d39282920f37c89dc529577f (13 fichiers, 9 dossiers) corps: 39e185d15beed1a69def5b045f86a6dda0c3adbb -->
+<!-- sources-empreinte: fa401067e5743d21ed94b02059290e543a8b0b38 (13 fichiers, 9 dossiers) corps: 39e185d15beed1a69def5b045f86a6dda0c3adbb -->
