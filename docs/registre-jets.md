@@ -59,8 +59,8 @@ seam (`ROLL_SEAM_CORE`) sont hors périmètre — leur pending EST le foyer.
 | Fichier | Sites | Nature | Lignes | Justification |
 |---|---|---|---|---|
 | `src/state/combatEffects.ts` | 1 | canonique | 990 | canonique : le corps d'`openSkillTest` (combatEffects.ts:326) — LA fabrique du `pendingTest` de la famille Flow authorée, le pending y est monté UNE fois pour tous ses appelants. |
-| `src/state/combatFlow.ts` | 2 | mixte | 3260, 7622 | 1 gate de main (`pendingHandGate`, `openAttackCascade`) monté à la main -> #1064 ; 1 `PendingReload` d'ennemi construit APRÈS un `rollSansPilote` déjà scellé — canonique : objet de RENDU (journal/popin), aucun jet à ouvrir. |
-| `src/state/combatSlice.ts` | 5 | dette | 2020, 2066, 2175, 2627, 3035 | 2 `pendingReload` (pièce servie / poste de navire), 1 `pendingStateRecovery`, 1 `pendingHandGate` (2ᵉ main), 1 `pendingHeal` -> #1064 (le lot d'affichage les re-route ; 6 -> 5 : le `pendingTest` de `battleGainAdvantage` passe par `openSkillTest`). |
+| `src/state/combatFlow.ts` | 2 | mixte | 3338, 7805 | 1 gate de main (`pendingHandGate`, `openAttackCascade`) monté à la main -> #1064 ; 1 `PendingReload` d'ennemi construit APRÈS un `rollSansPilote` déjà scellé — canonique : objet de RENDU (journal/popin), aucun jet à ouvrir. |
+| `src/state/combatSlice.ts` | 5 | dette | 2020, 2066, 2175, 2640, 3053 | 2 `pendingReload` (pièce servie / poste de navire), 1 `pendingStateRecovery`, 1 `pendingHandGate` (2ᵉ main), 1 `pendingHeal` -> #1064 (le lot d'affichage les re-route ; 6 -> 5 : le `pendingTest` de `battleGainAdvantage` passe par `openSkillTest`). |
 | `src/state/interludeFlow.ts` | 1 | dette | 748 | `pendingActivity` du catalogue d'Activités (`openCatalogActivity`) — fabrique UNIQUE de toutes les Activités à jet d'interlude -> #1064. |
 | `src/state/massBattleFlow.ts` | 1 | dette | 348 | `openBattleActivity` — fabrique PARTAGÉE, atteinte par 6 call-sites (prep ×3/round ×2/resistance) -> #1067 (surfaçage massBattle). |
 | `src/state/medicFlow.ts` | 2 | dette | 176, 202 | `pendingHeal` et `pendingSurgery` du soigneur PNJ hors combat -> #1064. |
@@ -138,7 +138,6 @@ Périmètre : hors `src/engine/**` et hors `ROLL_SEAM_CORE`.
 | `src/data/pregens.ts` | 1 | dette | `rollInitialWealth` | mesuré : rollInitialWealth×1. C (fortune de départ) -> #1508 T5. |
 | `src/state/activityWorldRolls.ts` | 1 | dette | `applyOps` | mesuré : applyOps×1 — celui de l'APPLIER des issues (`registerCascadeApplier(ACTIVITY_WORLD_ROLL_KIND)`), qui applique `wr.ops` une fois le seuil tombé. Le dé de MONDE lui-même passe par la porte (`worldStep`, évaluation `seuil`) et sa CIBLE se LIT sans rng (`formulaExpectation`) : AUCUN dé ne se tire ici aujourd'hui — la seule issue authorée est `statusMod` (`activities.json › mendier.worldRolls`), sans magnitude. L'entrée reste au stock parce que le détecteur compte `applyOps` comme SURFACE de dé, pas parce qu'un dé y roule. B (magnitudes d'`applyOps`) -> #1508 T2. |
 | `src/state/aiSpellValue.ts` | 1 | dette | `applyOps` | mesuré : applyOps×1. B (`applyOps` en ÉVALUATION d'IA) -> #1508 T2. |
-| `src/state/combat/hitModifiers.ts` | 1 | dette | `d10` | 2 -> 1 (#1508 T3 G0 : le Dôme cesse d'être une sauvegarde à part — il OCTROIE un Trait (LDB 47 l.410), donc son Indice rejoint le collecteur unique `wardSaves` et son dé rejoint le SITE UNIQUE de la sauvegarde 1d10 ≥ Indice). mesuré : d10×1. D (sauvegarde d'un HÉROS roulée en silence : Démoniaque/Protection/Dôme) -> #1508 T3. |
 | `src/state/combat/roundHooks.ts` | 3 | dette | `bleedDeathRoll`, `rollTest`, `rollWindsOfMagic` | mesuré : bleedDeathRoll×1, rollTest×1, rollWindsOfMagic×1. B + Hémorragie mortelle roulée en fin de ronde -> #1508 T2/T3. |
 | `src/state/combat/turnHooks.ts` | 6 | dette | `resolveCalmeSimple`, `resolveFrenzyEntry`, `resolvePeurTest`, `resolveTerreurTest` | mesuré : resolveCalmeSimple×2, resolvePeurTest×2, resolveFrenzyEntry×1, resolveTerreurTest×1. psychologie de début de tour roulée en direct -> #1508 T3. |
 | `src/state/combatEffects.ts` | 23 | dette | `applyFaimTest`, `applyManannFactor`, `applyOps`, `applySoifTest`, `d10`, `d100`, `drawWaterDisease`, `resolveFormula`, `rng.int`, `roll`, `traumaOnImpossibleAmbition` | mesuré : applyOps×7, resolveFormula×6, rng.int×2, applyFaimTest×1, applyManannFactor×1, applySoifTest×1, d10×1, d100×1, drawWaterDisease×1, roll×1, traumaOnImpossibleAmbition×1. Cardinal INCHANGÉ pour une raison dite (#1508 T2) : `applyFall×1` a QUITTÉ le compte (la chute ne tire plus son 1d10 — il lui arrive de la porte, `ouvrirChute`/`OpsCtx.des`), et l'`applyOps` de l'applier `opsDe` (celui qui applique la feuille APRÈS les dés) l'a remplacé. B (magnitudes d'`applyOps`/`resolveFormula`), C (magnitudes d'applier) -> #1508 T2/T5. |
@@ -180,7 +179,7 @@ Périmètre : hors `src/engine/**` et hors `ROLL_SEAM_CORE`.
 | `src/ui/creator/CharacterCreator.tsx` | 2 | dette | `generateName`, `rng.int` | mesuré : generateName×1, rng.int×1. cérémonie du créateur — pose sous « Dés fixés » à instruire -> #1508 T6. |
 | `src/ui/creator/draft.ts` | 13 | dette | `rng.int`, `rollAge`, `rollCareer`, `rollEyes`, `rollHair`, `rollHeight`, `rollInitialWealth`, `rollSpecies`, `rollStar` | mesuré : rollCareer×4, rollStar×2, rng.int×1, rollAge×1, rollEyes×1, rollHair×1, rollHeight×1, rollInitialWealth×1, rollSpecies×1. cérémonie du créateur (`CreatorDice`) — la pose sous « Dés fixés » reste à instruire -> #1508 T6. |
 
-_302 dés mesurés dans 46 fichiers, pour 118 exports de `src/engine` derrière lesquels un dé tombe sans franchir d'autre frontière exportée — par nature : 302 dette._
+_301 dés mesurés dans 45 fichiers, pour 118 exports de `src/engine` derrière lesquels un dé tombe sans franchir d'autre frontière exportée — par nature : 301 dette._
 
 ## Population AUTHORÉE (donnée, pas code)
 
@@ -250,4 +249,4 @@ reste `ROLL_SEAM_PHASE2_STOCK`. 29 sites dans 14 fichiers.
 | `src/state/travelPostes.ts` | 1 |
 | `src/state/triggeredEffects.ts` | 1 |
 
-<!-- sources-empreinte: 8ecc70c896a7b5ba2b901ecdf6ca366c6ecad919 (2082 fichiers, 134 dossiers) corps: ad04f7fa2d772eb7d1f6187cc8843febb70924d9 -->
+<!-- sources-empreinte: 40fafccf0a3258ccfa8b6862afb1dd1d36f60af9 (2082 fichiers, 134 dossiers) corps: 2afb4f8f1b13cf46fd057e21b3d0a71dc4b44eaa -->

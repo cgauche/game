@@ -154,7 +154,7 @@ _Aucune._
 - l.113 — `src/state/riverVoyageFlow.ts:876` — // Réparateur de SUBSTITUTION (`MSRC 5 l.113-117`) : le −10 est DÉJÀ fondu dans la valeur jetée,
 
 ### NADJ 16 — 1/19 ligne(s) code hors couverture
-- l.119 — `src/engine/combat.ts:898` — *  (Middenball NADJ 16 l.119 : « en utilisant les règles habituelles relatives à l'Avantage »).
+- l.119 — `src/engine/combat.ts:903` — *  (Middenball NADJ 16 l.119 : « en utilisant les règles habituelles relatives à l'Avantage »).
 
 ## A3-AUTRES — Réfs de CODE sans chapitre (`<ABRÉV> l.X`, pas d'unité chapitre à couvrir)
 
@@ -179,4 +179,4 @@ LDB 38
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, EDO, EDOC, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: f0aa2b86b90530cc78d2af74db979c7ab5a0d5c9 (4079 fichiers, 150 dossiers) corps: b18fecc653697966d3b5ec351ac29bc7dbdf8aa6 -->
+<!-- sources-empreinte: abc12fc128dfe7bf8fef52ce6bf7406b8bc48006 (4081 fichiers, 150 dossiers) corps: 69ddb1c000f94e2c61ad158a7c69757c4e4abb50 -->

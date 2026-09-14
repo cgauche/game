@@ -70,6 +70,10 @@ const ATTENDU = {
     // (`mkdtempSync` + `writeFileSync`, puis `rmSync`) sous `os.tmpdir()` — l'arbre versionné n'est
     // jamais écrit, et la lib mesurée (`sourceCorpus.mjs`) ne fait que LIRE.
     'scripts/guards/lib/sourceCorpus.test.mjs',
+    // +1 le 2026-09-14 (#1754) : le banc du garde `[entériné]` pose ses fichiers-CIBLES (`mkdtempSync`
+    // + `writeFileSync`, puis `rmSync`) sous `os.tmpdir()` — c'est l'état SUR DISQUE que le hook lit
+    // désormais pour ne demander que sur un tag NEUF ; l'arbre versionné n'est jamais écrit.
+    'scripts/hooks/enterine-guard.test.mjs',
     'scripts/hooks/git-destructive-guard.test.mjs',
     'scripts/hooks/inject-project-credo.test.mjs',
     'scripts/hooks/new-src-file-guard.mjs',

@@ -1,6 +1,8 @@
 // Hook PreToolUse(Write|Edit) : le tag `[entériné AAAA-MM-JJ]` est RÉSERVÉ à l'utilisateur (credo,
 // règle 6b) — toute écriture qui l'INTRODUIT exige sa confirmation explicite : ce dialogue EST la
 // validation. Opposable aux sessions ET aux sous-agents (aucune mémoire/discipline requise).
+import { readFileSync } from 'node:fs'
+
 let raw = ''
 process.stdin.setEncoding('utf8')
 for await (const chunk of process.stdin) raw += chunk
@@ -9,10 +11,34 @@ let input = null
 try { input = JSON.parse(raw)?.tool_input ?? null } catch { /* stdin illisible → silence */ }
 
 const TAG = /\[entériné[^\]]*\]/i
-// Write : tout `content` qui porte le tag. Edit : seulement si new_string l'INTRODUIT (absent
-// d'old_string) — re-sauver un fichier qui portait déjà un tag validé ne redemande rien.
+const tags = (s) => String(s ?? '').match(/\[entériné[^\]]*\]/gi) ?? []
+
+/** Tags du fichier CIBLE tel qu'il est sur disque — inexistant ou illisible : aucun (tout tag du
+ *  contenu écrit est alors NEUF). */
+function tagsSurDisque(file) {
+  if (typeof file !== 'string' || file === '') return []
+  try { return tags(readFileSync(file, 'utf8')) } catch { return [] }
+}
+
+/** Write : seuls comptent les tags que `content` porte EN PLUS de ceux déjà sur disque (comparaison
+ *  par multiensemble : une 2ᵉ occurrence du même tag est un tag de plus). */
+function writeIntroduit(input) {
+  if (typeof input.content !== 'string') return false
+  const ecrits = tags(input.content)
+  if (ecrits.length === 0) return false
+  const reste = tagsSurDisque(input.file_path)
+  return ecrits.some((t) => {
+    const i = reste.indexOf(t)
+    if (i < 0) return true
+    reste.splice(i, 1)
+    return false
+  })
+}
+
+// Write : un tag que le fichier sur disque ne portait pas. Edit : un tag que new_string INTRODUIT
+// (absent d'old_string) — re-sauver un fichier qui portait déjà un tag validé ne redemande rien.
 const introduces = input && (
-  (typeof input.content === 'string' && TAG.test(input.content)) ||
+  writeIntroduit(input) ||
   (typeof input.new_string === 'string' && TAG.test(input.new_string) && !TAG.test(String(input.old_string ?? '')))
 )
 
