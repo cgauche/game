@@ -7,7 +7,8 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, basename } from 'node:path'
-import { ecartDuVolet, readStock } from './stockNominatif.mjs'
+import { ecartDuVolet } from '../guards/lib/stock.mjs'
+import { readStock } from './stockNominatif.mjs'
 import { buildIndex, classifyQuote, scan, sitesLow, RAWDIR, LOW_STOCK_PATH } from './reanchor.mjs'
 
 function withTempRawDir(content, fn) {

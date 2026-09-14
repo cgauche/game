@@ -14,7 +14,7 @@
 // folios 88/89 collés : la carrière de Juriste manque). Cf. `emptyFolioAnchorsInText` et son stock
 // nominatif trié au PDF `empty-folios-baseline.json` (généré par `lib/empty-folios-stock.mjs`).
 // Stock NOMINATIF des sauts (`scripts/raw/folio-gaps-stock.json`, écart `ecartDuVolet` de
-// `stockNominatif.mjs`, clé `chapitre extrait :: '<ABBR NN> <from>→<to>' :: occurrence`) : un saut
+// `scripts/guards/lib/stock.mjs`, clé `chapitre extrait :: '<ABBR NN> <from>→<to>' :: occurrence`) : un saut
 // MESURÉ hors du stock échoue, une entrée sans saut mesuré (extraction réparée) échoue aussi et se
 // retire. Les folios de la clé sont ceux du PDF, stables là où un numéro de ligne dériverait.
 // Re-run : node scripts/raw/check-folio-continuity.mjs
@@ -23,7 +23,8 @@ import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, readText } from './_lib.mjs'
-import { ecartDuVolet, readStock } from './stockNominatif.mjs'
+import { ecartDuVolet } from '../guards/lib/stock.mjs'
+import { readStock } from './stockNominatif.mjs'
 
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'folio-gaps-stock.json')
 export const EMPTY_STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'empty-folios-baseline.json')

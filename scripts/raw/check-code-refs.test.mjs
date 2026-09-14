@@ -12,7 +12,8 @@ import { join } from 'node:path'
 import {
   scanDeadCodeRefs, scanEmptyLineCodeRefs, isExcludedSrc, STOCK_PATH, EMPTY_LINE_STOCK_PATH,
 } from './check-code-refs.mjs'
-import { readStock, ecartDuVolet } from './stockNominatif.mjs'
+import { ecartDuVolet } from '../guards/lib/stock.mjs'
+import { readStock } from './stockNominatif.mjs'
 
 // LDB 06 (Source/…/06 - Classes.md) fait 6 lignes (split('\n').length) — chapitre réel, court, stable :
 // sert d'ancrage pour planter une réf hors borne sans toucher au vrai src/.

@@ -17,6 +17,28 @@ export function ecartsDeStock<O, S>(p: {
   };
 }): EcartsDeStock;
 
+/** Une ENTRÉE de stock nominatif : ce qu'un stock GRAVE (la clé, elle, se calcule). */
+export interface EntreeNominative {
+  famille?: string;
+  fichier: string;
+  ref: string;
+  occurrence: number;
+}
+
+export function cleDeSite(e: EntreeNominative): string;
+
+export function sitesEnEntrees(
+  sites: readonly { file: string; ref: string }[],
+  p?: { famille?: string },
+): EntreeNominative[];
+
+export function ecartDuVolet(p: {
+  sites: readonly { file: string; ref: string }[];
+  stock: Iterable<Partial<EntreeNominative>>;
+  famille?: string;
+  ou?: string;
+}): EcartsDeStock;
+
 export function champsAveugles<E extends Record<string, unknown>>(
   stock: Iterable<E>,
   cle: (entree: E) => string,

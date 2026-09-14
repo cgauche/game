@@ -19,9 +19,11 @@
 import { readFileSync } from 'node:fs'
 import { listerArbre } from './lister.mjs'
 import { ldbRe, otherRe, span, refNums, isRangeSuffix, chapterFile, bookOf, readText } from '../../raw/_lib.mjs'
-import { ecartDuVolet, readStock } from '../../raw/stockNominatif.mjs'
+import { ecartDuVolet } from './stock.mjs'
+import { readStock } from '../../raw/stockNominatif.mjs'
 
-// Réexport des résolveurs de `_lib.mjs` et des primitives de stock nominatif de `stockNominatif.mjs`
+// Réexport des résolveurs de `_lib.mjs`, de la primitive d'écart `ecartDuVolet` de
+// `scripts/guards/lib/stock.mjs` et du lecteur de stock `readStock` de `scripts/raw/stockNominatif.mjs`
 // dont les consommateurs TypeScript ont besoin : une seule couture typée
 // (`rawRefIntegrity.d.mts`) au lieu d'un `.d.mts` par module de `scripts/raw/`.
 export { chapterFile, readText, ecartDuVolet, readStock }
@@ -41,7 +43,7 @@ export const SELF_FILES = ['src/raw-ref-integrity.test.ts']
 export const SITE_EXEMPTIONS = []
 
 /** Stock NOMINATIF des sites aveugles : `{ quoi, entrees: [{ fichier, ref, occurrence, lot, date }] }`,
- *  clé `fichier src :: réf :: occurrence` (écart `ecartDuVolet` de `scripts/raw/stockNominatif.mjs`).
+ *  clé `fichier src :: réf :: occurrence` (écart `ecartDuVolet` de `scripts/guards/lib/stock.mjs`).
  *  Les deux sens échouent : un site NEUF est une régression à corriger ou à déclarer, une entrée dont
  *  le site a disparu est une dette SOLDÉE à retirer. Le fichier est ABSENT en régime nominal →
  *  tolérance ZÉRO : chaque entrée serait une dette à solder en lisant le `Source/` et en réancrant la

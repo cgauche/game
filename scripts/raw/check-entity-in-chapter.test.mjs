@@ -11,7 +11,8 @@ import {
   scanMissingEntities, scanAll, sitesEntites, STOCK_PATH,
   normalizeLoose, stripArticles, entityNameFromHeader,
 } from './check-entity-in-chapter.mjs'
-import { ecartDuVolet, readStock } from './stockNominatif.mjs'
+import { ecartDuVolet } from '../guards/lib/stock.mjs'
+import { readStock } from './stockNominatif.mjs'
 
 // LDB 06 (Source/…/06 - Classes.md) : chapitre réel, court et stable, contient le mot « Classes ».
 function withTempDoc(content, fn) {

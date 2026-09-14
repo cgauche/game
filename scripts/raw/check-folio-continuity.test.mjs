@@ -11,7 +11,8 @@ import {
   emptyFolioAnchorsInText, scanEmptyFoliosInBook, scanAllEmptyFolios,
   assertEmptyFoliosAgainstStock, emptyFolioKey, EMPTY_STOCK_PATH, chapterTexts,
 } from './check-folio-continuity.mjs'
-import { ecartDuVolet, readStock, sitesEnEntrees } from './stockNominatif.mjs'
+import { ecartDuVolet, sitesEnEntrees } from '../guards/lib/stock.mjs'
+import { readStock } from './stockNominatif.mjs'
 import { BOOKS } from './_lib.mjs'
 
 function span(folio) { return `<span id="page-x-0" data-folio="${folio}"></span>` }

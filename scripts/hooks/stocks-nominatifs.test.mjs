@@ -9,7 +9,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { readFileSync, readdirSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, join } from 'node:path'
 import {
   croissanceDesStocks, croissancesNonCouvertes, cliquetsDuMessage, entreesDeStock, estEntreeDeStock,
@@ -842,6 +842,80 @@ test('stocks de `scripts/raw` — la porte voit CHAQUE entrée déclarée (corpu
       + 'muette serait `net 0`, donc sans `CLIQUET:` à porter au message',
     )
   }
+})
+
+// STOCKS NOMINATIFS `.mjs` DE GARDE (#1727) : même mesure que ci-dessus, même raison — un stock à
+// moitié vu donne un compte qui a l'air juste. Le corpus est un GLOB sur les porteurs de
+// `scripts/guards/lib`, RESSERRÉ à ceux qui portent déjà la forme nominative, lue sur la VALEUR
+// EXPORTÉE (un tableau dont au moins une entrée nomme un `fichier`) et jamais sur la graphie du
+// littéral : `{ fichier: "…" }`, `{fichier:` ou une entrée posée par une fonction resteraient du
+// corpus. Ce qui EST une condition d'entrée, c'est le NOM DE CHAMP `fichier` (graphie canonique de
+// `stock.d.mts`) : un tableau d'entrées à graphie autre (`{ file, ref }`…) n'est pas un stock
+// nominatif pour ce test et reste hors corpus, silencieusement.
+// Les stocks encore à CLÉ AVEUGLE (`rigViewStock`, `fleshGradientStock`…) n'ont rien à
+// prouver ici tant qu'ils ne sont pas convertis — le jour où ils le sont, ils tombent sous la mesure
+// sans qu'on écrive une ligne.
+test('stocks `.mjs` de garde à la forme NOMINATIVE — la porte voit CHAQUE entrée déclarée (corpus par GLOB)', async (t) => {
+  const dossier = join(RACINE, 'scripts', 'guards', 'lib')
+  /** Les entrées NOMINATIVES exportées par un module de stock, toutes collections confondues. */
+  const entreesExportees = (mod) => Object.values(mod)
+    .filter((v) => Array.isArray(v))
+    .flatMap((liste) => liste.filter((e) => e && typeof e.fichier === 'string'))
+  const modules = new Map()
+  for (const nom of readdirSync(dossier).filter((n) => n.endsWith('Stock.mjs'))) {
+    modules.set(nom, await import(pathToFileURL(join(dossier, nom)).href))
+  }
+  const convertis = [...modules].filter(([, mod]) => entreesExportees(mod).length > 0).map(([nom]) => nom)
+  assert.ok(
+    convertis.includes('paletteLiteralStock.mjs'),
+    'le stock converti par #1727 est hors du corpus : la mesure serait verte par vacuité — conversion défaite, ou module renommé hors du motif `*Stock.mjs`',
+  )
+  for (const nom of convertis) {
+    const rel = `scripts/guards/lib/${nom}`
+    const contenu = readFileSync(join(dossier, nom), 'utf8')
+    const declarees = entreesExportees(modules.get(nom)).length
+    const vues = (entreesDeStock(contenu, rel) ?? []).length
+    t.diagnostic(`${rel} — ${vues} vue(s) / ${declarees} déclarée(s)`)
+    assert.equal(estPorteurDeStock(rel), true, `${rel} : hors des motifs de porteur, aucune porte ne le lit`)
+    assert.equal(
+      vues, declarees,
+      `${rel} : la porte voit ${vues} entrée(s) sur ${declarees} déclarée(s) — y ajouter une entrée `
+      + 'muette serait `net 0`, donc sans `CLIQUET:` à porter au message',
+    )
+  }
+})
+
+// L'APPEND sur un stock `.mjs` nominatif : ce que la clé AVEUGLE rendait gratuit. Sonde du juge de
+// design (2026-09-14) promue : la même ligne ajoutée vaut `[]` quand la clé ne nomme aucun fichier
+// (`'apothicaire:tete:back#0'`), et `net 1` dès que l'entrée porte son def. Le cas ANCRE ses hunks :
+// il affirme d'abord où `entreesDeStock` pose les entrées de chaque image.
+test('stock `.mjs` nominatif — une entrée AJOUTÉE est vue par la porte de plage (net 1, exemple nommant)', () => {
+  const f = 'scripts/guards/lib/paletteLiteralStock.mjs'
+  const entree = (occ) => `  { fichier: 'src/gameIso/rig/parts/tenues/defs/Bailli.ts', ref: 'bailli:torse:front', occurrence: ${occ} },`
+  const image = (...lignes) => [
+    "/** @type {import('./stock.mjs').EntreeNominative[]} */",
+    'export const PALETTE_LITERAL_RATCHET = [', ...lignes, ']', '',
+  ].join('\n')
+  const avant = image(entree(1))
+  const apres = image(entree(1), entree(2))
+  assert.deepEqual(entreesDeStock(avant, f).map((e) => e.ligne), [3], 'ancrage : la première entrée vit à la ligne 3')
+  assert.deepEqual(entreesDeStock(apres, f).map((e) => e.ligne), [3, 4], 'ancrage : la seconde entrée vit à la ligne 4')
+  const diff = [`diff --git a/${f} b/${f}`, `--- a/${f}`, `+++ b/${f}`, '@@ -4,0 +4,1 @@', `+${entree(2)}`].join('\n')
+  assert.deepEqual(
+    croissanceDesStocks(diff, { lirePostImage: () => apres, lirePreImage: () => avant }),
+    [{ fichier: f, ajoutees: 1, retirees: 0, net: 1, exemples: [entree(2).trim()] }],
+    "l'entrée nomme son def : la porte la compte, et l'exemple qu'elle cite EST l'entrée ajoutée",
+  )
+  // Le témoin NEGATIF : la même dette écrite en clé aveugle (ni chemin, ni extension) n'est vue par
+  // AUCUNE des deux portes — c'est la mesure qui a fondé la conversion #1727.
+  const aveugle = (occ) => `  'bailli:torse:front#${occ}',`
+  const imageAveugle = (...lignes) => ['/** @type {ReadonlySet<string>} */', 'export const PALETTE_LITERAL_RATCHET = new Set([', ...lignes, '])', ''].join('\n')
+  const diffAveugle = [`diff --git a/${f} b/${f}`, `--- a/${f}`, `+++ b/${f}`, '@@ -4,0 +4,1 @@', `+${aveugle(2)}`].join('\n')
+  assert.deepEqual(entreesDeStock(imageAveugle(aveugle(1), aveugle(2)), f), [], 'une clé qui ne nomme aucun fichier n’est pas une entrée pour la porte')
+  assert.deepEqual(
+    croissanceDesStocks(diffAveugle, { lirePostImage: () => imageAveugle(aveugle(1), aveugle(2)), lirePreImage: () => imageAveugle(aveugle(1)) }),
+    [], 'clé aveugle : allonger le stock reste GRATUIT et MUET — la raison d’être de la forme nominative',
+  )
 })
 
 // ── Les FENÊTRES : ce que la porte aveugle ratait, et ce qu'elle voit ─────────────────────────

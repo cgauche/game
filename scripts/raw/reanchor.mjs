@@ -14,7 +14,7 @@
 //     candidat le plus proche, alors que le vrai texte vivait en ZI 2 l.68) — zéro tolérance
 //     (seuil ZÉRO : aucun ambigu toléré, mesure à 0 aujourd'hui), jamais d'auto-résolution.
 //   - ❌ LOW : la réf MENT (citation introuvable à la ligne annoncée) — cliquet NOMINATIF PAR SITE
-//     (`scripts/raw/reanchor-low-stock.json`, écart `ecartDuVolet` de `stockNominatif.mjs`, clé
+//     (`scripts/raw/reanchor-low-stock.json`, écart `ecartDuVolet` de `scripts/guards/lib/stock.mjs`, clé
 //     `fiche :: réf citée :: occurrence`) : un site NEUF est une régression à corriger ou à déclarer,
 //     une entrée dont le site a disparu est une dette SOLDÉE à retirer. L'entrée nomme sa fiche
 //     `docs/raw/<x>.md` : l'ajouter est une croissance que la porte de plage compte.
@@ -27,7 +27,8 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { BOOKS, esc, chapterFile, normalize, ELLIPSIS_SENTINEL as SENT, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve, readText } from './_lib.mjs'
-import { ecartDuVolet, readStock } from './stockNominatif.mjs'
+import { ecartDuVolet } from '../guards/lib/stock.mjs'
+import { readStock } from './stockNominatif.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 
 const APPLY = process.argv.includes('--apply')

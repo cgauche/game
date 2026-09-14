@@ -103,6 +103,10 @@ const ATTENDU = {
     'scripts/migrations/lib/idempotence-ordre-des-cles.test.mjs',
     'scripts/migrations/replay-head.mjs',
     'scripts/raw/build-implemente.mjs',
+    // +1 le 2026-09-14 (#1727) : le test du LECTEUR de stock nominatif pose ses fixtures
+    // (`mkdtempSync` + `writeFileSync`, puis `rmSync`) sous `os.tmpdir()` — l'arbre n'est jamais
+    // écrit, et le module mesuré (`stockNominatif.mjs`) ne fait que LIRE.
+    'scripts/raw/stockNominatif.test.mjs',
     'scripts/test/verrou.mjs',
   ],
   'test:ops': [

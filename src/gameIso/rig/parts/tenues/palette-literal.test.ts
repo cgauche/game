@@ -15,51 +15,51 @@
  *
  * La MESURE vit dans `scripts/guards/lib/paletteLiteralAudit.ts` — partagée avec le régénérateur
  * `scripts/rig/regen-palette-literal-stock.mts`, pour qu'aucun des deux n'ait sa propre lecture.
+ *
+ * STOCK NOMINATIF (#1727) : une entrée `{ fichier, ref, occurrence }` par occurrence, comparée par
+ * `ecartDuVolet` (`scripts/guards/lib/stock.mjs`) — la forme d'entrée de TOUT stock du dépôt. Aucun
+ * PLAFOND de taille ne vit ici : ce que l'entrée NOMMANTE rend impossible, c'est d'allonger le stock
+ * sans que la porte de plage le voie (`croissanceDesStocks`, mesurée sur ce stock même par
+ * `scripts/hooks/stocks-nominatifs.test.mjs`).
  */
 import { describe, it, expect } from 'vitest';
-import { auditPaletteLiteral } from '../../../../../scripts/guards/lib/paletteLiteralAudit';
+import { fichierDeTenue, refusDeCroissance, sitesPaletteLiteral } from '../../../../../scripts/guards/lib/paletteLiteralAudit';
 import { PALETTE_LITERAL_RATCHET } from '../../../../../scripts/guards/lib/paletteLiteralStock.mjs';
+import { ecartDuVolet, sitesEnEntrees } from '../../../../../scripts/guards/lib/stock.mjs';
+import type { TenueDef } from './types';
 import { TENUE_DEFS } from './_registry.generated';
 
-/** PLAFOND gelé (#583). Baissé à chaque migration soldée ; jamais relevé — solder = remplacer le
- *  littéral par son jeton, pas allonger le stock. `regen-palette-literal-stock.mts` le rabaisse
- *  tout seul. */
-const MAX_PALETTE_LITERAL = 1268;
+const STOCK = 'scripts/guards/lib/paletteLiteralStock.mjs';
 
-function ratchet(found: ReadonlySet<string>, stock: ReadonlySet<string>) {
-  return {
-    neuves: [...found].filter((k) => !stock.has(k)).sort(),
-    perimees: [...stock].filter((k) => !found.has(k)).sort(),
-  };
+/** L'écart du volet, dans les deux sens et en phrases de remède (site NEUF / entrée SOLDÉE). */
+function ecart(defs: readonly TenueDef[] = TENUE_DEFS) {
+  return ecartDuVolet({ sites: sitesPaletteLiteral(defs), stock: PALETTE_LITERAL_RATCHET, ou: STOCK });
 }
 
-describe('littéral == jeton : aucune tenue neuve ne recopie une valeur de SA palette (cliquet #583)', () => {
-  it('aucune occurrence NEUVE, et le stock ne peut que DÉCROÎTRE', () => {
-    const found = auditPaletteLiteral();
-    const { neuves, perimees } = ratchet(found, PALETTE_LITERAL_RATCHET);
-    expect(neuves, `Occurrences NEUVES d'un littéral == valeur de sa PROPRE palette — peindre avec\n` +
-      `le jeton @<clé> déclaré (peu importe la matière : chair, cuir, tissu, plume…) :\n  ${neuves.join('\n  ')}`).toEqual([]);
-    expect(perimees, `Clés de PALETTE_LITERAL_RATCHET qui ne recopient plus (migrées ou disparues) — les\n` +
-      `RETIRER du stock (ou : npx tsx scripts/rig/regen-palette-literal-stock.mts), sinon il ment :\n  ${perimees.join('\n  ')}`).toEqual([]);
-  });
+/** La clé d'un site telle que le remède l'imprime — `<famille vide> :: fichier :: ref :: occurrence`. */
+const cle = (fichier: string, ref: string, occurrence: number) => ` :: ${fichier} :: ${ref} :: ${occurrence}`;
 
-  it('le stock ne GONFLE pas : sa taille est plafonnée ICI, la baisser est le seul geste permis', () => {
-    expect(PALETTE_LITERAL_RATCHET.size, `PALETTE_LITERAL_RATCHET a GONFLÉ (${PALETTE_LITERAL_RATCHET.size} > ${MAX_PALETTE_LITERAL}).\n` +
-      `Une tenue recopie son littéral en jeton, jamais en allongeant le stock. Après une migration,\n` +
-      `BAISSER MAX_PALETTE_LITERAL dans cette garde.`).toBeLessThanOrEqual(MAX_PALETTE_LITERAL);
+describe('littéral == jeton : aucune tenue neuve ne recopie une valeur de SA palette (cliquet #583)', () => {
+  it('aucun site NEUF, et aucune entrée SOLDÉE ne traîne au stock', () => {
+    const { neuves, perimees } = ecart();
+    expect(neuves, `Sites NEUFS d'un littéral == valeur de sa PROPRE palette — peindre avec le jeton\n`
+      + `@<clé> déclaré (peu importe la matière : chair, cuir, tissu, plume…) :\n  ${neuves.join('\n  ')}`).toEqual([]);
+    expect(perimees, `Entrées de ${STOCK} dont le site ne recopie plus (migré ou disparu) — les RETIRER\n`
+      + `(ou : npx tsx scripts/rig/regen-palette-literal-stock.mts), sinon le stock ment :\n  ${perimees.join('\n  ')}`).toEqual([]);
   });
 });
 
 /**
  * MORSURE — la garde rougit-elle vraiment sur un littéral neuf == jeton ? Réintroduit un littéral
- * hex identique à une valeur de palette sur un slot aujourd'hui propre, vérifie que la clé ressort
- * en `neuves`, puis restaure. Vérifie aussi le cas insensible-casse/guillemets (piège `Marchand`).
+ * hex identique à une valeur de palette sur un slot aujourd'hui propre, vérifie que le site ressort
+ * en `neuves` EN NOMMANT son def, puis restaure. Vérifie aussi le cas insensible-casse/guillemets
+ * (piège `Marchand`).
  */
 describe('morsure : un littéral neuf == jeton du même def rougit (#583)', () => {
   /** Premier def À PALETTE dont AUCUN slot n'est déjà au stock — la mutation ne peut pas se
    *  confondre avec une violation existante. */
   const target = (() => {
-    const stocked = new Set([...PALETTE_LITERAL_RATCHET].map((k) => k.slice(0, k.indexOf(':'))));
+    const stocked = new Set(PALETTE_LITERAL_RATCHET.map((e) => e.ref.slice(0, e.ref.indexOf(':'))));
     for (const def of TENUE_DEFS) {
       if (!def.palette || Object.keys(def.palette).length === 0) continue;
       const id = def.id;
@@ -69,61 +69,58 @@ describe('morsure : un littéral neuf == jeton du même def rougit (#583)', () =
         if (typeof art === 'string' || (art && typeof art === 'object' && art.front)) return { def, id, slot };
       }
     }
-    throw new Error('aucun def À PALETTE hors-stock avec un slot exploitable — le corpus a changé, la morsure n\'a plus de support');
+    throw new Error("aucun def À PALETTE hors-stock avec un slot exploitable — le corpus a changé, la morsure n'a plus de support");
   })();
+  const fichier = fichierDeTenue(target.def);
 
-  it('un littéral == jeton (guillemets doubles) rougit la garde', () => {
+  /** Peint un littéral == jeton dans la vue `front` du slot cible, rend l'écart, restaure. */
+  const sousLitteral = (peindre: (hex: string, art: string) => string) => {
     const saved = target.def.set[target.slot]!;
-    const front = typeof saved === 'string' ? saved : saved.front;
+    const front = typeof saved === 'string' ? saved : saved.front!;
     const [, hex] = Object.entries(target.def.palette!)[0];
     try {
-      target.def.set[target.slot] = `<path d="M0 0 L1 1" fill="${hex}"/>${front}`;
-      const found = auditPaletteLiteral();
-      const { neuves } = ratchet(found, PALETTE_LITERAL_RATCHET);
-      expect(neuves).toContain(`${target.id}:${target.slot}:front#0`);
+      target.def.set[target.slot] = peindre(hex, front);
+      return ecart();
     } finally {
       target.def.set[target.slot] = saved;
     }
+  };
+
+  it('un littéral == jeton (guillemets doubles) rougit la garde, et le site neuf NOMME son def', () => {
+    const { neuves } = sousLitteral((hex, art) => `<path d="M0 0 L1 1" fill="${hex}"/>${art}`);
+    expect(neuves.join('\n')).toContain(cle(fichier, `${target.id}:${target.slot}:front`, 1));
   });
 
   it('un littéral == jeton (guillemets simples, CASSE différente) rougit aussi la garde', () => {
-    const saved = target.def.set[target.slot]!;
-    const front = typeof saved === 'string' ? saved : saved.front;
-    const [, hex] = Object.entries(target.def.palette!)[0];
-    try {
-      target.def.set[target.slot] = `<path d='M0 0 L1 1' fill='${hex.toUpperCase()}'/>${front}`;
-      const found = auditPaletteLiteral();
-      const { neuves } = ratchet(found, PALETTE_LITERAL_RATCHET);
-      expect(neuves).toContain(`${target.id}:${target.slot}:front#0`);
-    } finally {
-      target.def.set[target.slot] = saved;
-    }
+    const { neuves } = sousLitteral((hex, art) => `<path d='M0 0 L1 1' fill='${hex.toUpperCase()}'/>${art}`);
+    expect(neuves.join('\n')).toContain(cle(fichier, `${target.id}:${target.slot}:front`, 1));
   });
 
-  it('restaurée, la même tenue redevient verte (aucune clé neuve résiduelle)', () => {
-    const found = auditPaletteLiteral();
-    const { neuves } = ratchet(found, PALETTE_LITERAL_RATCHET);
-    expect(neuves.filter((k) => k.startsWith(`${target.id}:`))).toEqual([]);
+  it("le remède d'un site NEUF dit le geste : corriger, ou déclarer l'entrée par `CLIQUET:`", () => {
+    const { neuves } = sousLitteral((hex, art) => `<path d="M0 0 L1 1" fill="${hex}"/>${art}`);
+    expect(neuves[0]).toContain('site NEUF');
+    expect(neuves[0]).toContain(STOCK);
+    expect(neuves[0]).toContain('CLIQUET:');
   });
 
-  it('GONFLER le stock rougit : une clé de plus dépasse le plafond', () => {
-    expect(new Set([...PALETTE_LITERAL_RATCHET, 'gonflement:bras:front']).size).toBeGreaterThan(MAX_PALETTE_LITERAL);
+  it('restaurée, la même tenue redevient verte (aucun site neuf résiduel)', () => {
+    const { neuves } = ecart();
+    expect(neuves.filter((l) => l.includes(` :: ${target.id}:`))).toEqual([]);
   });
 });
 
 /**
  * MORSURE — le contournement exact du juge (2026-07-18) : injecter DES DIZAINES de littéraux
- * NEUFS dans un slot:vue DÉJÀ stocké (au lieu d'un slot vierge). Avant la clé au grain de
- * l'occurrence, `break` à la 1ʳᵉ correspondance rendait ce cas invisible (0 clé neuve, garde
- * verte à tort) — la clé UNIQUE `slot:vue` était déjà dans le stock, donc rien à ajouter.
+ * NEUFS dans un slot:vue DÉJÀ stocké (au lieu d'un slot vierge). Sans le grain de l'OCCURRENCE,
+ * ce cas est invisible (0 site neuf, garde verte à tort) : le `slot:vue` était déjà au stock, donc
+ * rien à y ajouter.
  */
 describe('morsure : 40 littéraux NEUFS dans un slot déjà stocké rougissent (#583, contournement du juge)', () => {
-  const stockedKey = [...PALETTE_LITERAL_RATCHET][0];
-  const [stockedId, stockedSlot, stockedViewRaw] = stockedKey.split(':') as [string, 'torse' | 'jambes' | 'bras' | 'tete', string];
-  const stockedView = stockedViewRaw.slice(0, stockedViewRaw.indexOf('#'));
+  const stockee = PALETTE_LITERAL_RATCHET[0];
+  const [stockedId, stockedSlot, stockedView] = stockee.ref.split(':') as [string, 'torse' | 'jambes' | 'bras' | 'tete', string];
   const target = TENUE_DEFS.find((d) => d.id === stockedId)!;
 
-  it('40 littéraux neufs ajoutés dans un slot déjà fautif produisent 40 clés neuves', () => {
+  it('40 littéraux neufs ajoutés dans un slot déjà fautif produisent 40 sites neufs', () => {
     const saved = target.set[stockedSlot]!;
     const viewsObj = typeof saved === 'string' ? { front: saved } : { ...saved };
     const original = (viewsObj as Record<string, string>)[stockedView]!;
@@ -132,18 +129,58 @@ describe('morsure : 40 littéraux NEUFS dans un slot déjà stocké rougissent (
     try {
       (viewsObj as Record<string, string>)[stockedView] = injected + original;
       target.set[stockedSlot] = typeof saved === 'string' ? (viewsObj as Record<string, string>).front : (viewsObj as typeof saved);
-      const found = auditPaletteLiteral();
-      const { neuves } = ratchet(found, PALETTE_LITERAL_RATCHET);
-      const freshKeys = neuves.filter((k) => k.startsWith(`${stockedId}:${stockedSlot}:${stockedView}#`));
-      expect(freshKeys.length).toBeGreaterThanOrEqual(40);
+      const { neuves } = ecart();
+      const fraiches = neuves.filter((l) => l.includes(` :: ${stockee.fichier} :: ${stockedId}:${stockedSlot}:${stockedView} :: `));
+      expect(fraiches.length).toBeGreaterThanOrEqual(40);
     } finally {
       target.set[stockedSlot] = saved;
     }
   });
 
-  it('restaurée, aucune clé neuve résiduelle sur ce def', () => {
-    const found = auditPaletteLiteral();
-    const { neuves } = ratchet(found, PALETTE_LITERAL_RATCHET);
-    expect(neuves.filter((k) => k.startsWith(`${stockedId}:`))).toEqual([]);
+  it('restaurée, aucun site neuf résiduel sur ce def', () => {
+    const { neuves } = ecart();
+    expect(neuves.filter((l) => l.includes(` :: ${stockedId}:`))).toEqual([]);
+  });
+});
+
+describe("l'autre sens du cliquet : une entrée que plus aucun site ne porte est SOLDÉE", () => {
+  it('une entrée fantôme ressort en `perimees`, avec le geste (la retirer du stock)', () => {
+    const fantome = { fichier: PALETTE_LITERAL_RATCHET[0].fichier, ref: 'tenue-qui-n-existe-plus:torse:front', occurrence: 1 };
+    const { perimees } = ecartDuVolet({
+      sites: sitesPaletteLiteral(), stock: [...PALETTE_LITERAL_RATCHET, fantome], ou: STOCK,
+    });
+    expect(perimees).toHaveLength(1);
+    expect(perimees[0]).toContain('entrée SOLDÉE');
+    expect(perimees[0]).toContain(fantome.ref);
+    expect(perimees[0]).toContain(STOCK);
+  });
+});
+
+/**
+ * MORSURE DU RÉGÉNÉRATEUR (`scripts/rig/regen-palette-literal-stock.mts`, #1727) — son refus
+ * DÉCROISSANT-SEULEMENT se juge site par site (`refusDeCroissance`), jamais sur un total. Un ÉCHANGE
+ * à taille CONSTANTE (une entrée du stock retirée pendant qu'un site mesuré n'est plus couvert)
+ * laisse les deux longueurs égales : un refus qui compare des nombres écrirait le stock et
+ * entérinerait le site neuf en silence, la garde ci-dessus verte ensuite. Forgé EN MÉMOIRE (le stock
+ * du disque n'est jamais touché) sur la mesure RÉELLE du corpus.
+ */
+describe('régénérateur : un échange à taille constante est REFUSÉ, en nommant le site (#1727)', () => {
+  const mesurees = () => sitesEnEntrees(sitesPaletteLiteral());
+
+  it("une entrée retirée + une entrée fantôme (même longueur) : refus qui NOMME le site découvert", () => {
+    const [decouvert, ...reste] = PALETTE_LITERAL_RATCHET;
+    const echange = [...reste, {
+      fichier: 'src/gameIso/rig/parts/tenues/defs/TenueQuiNExistePlus.ts',
+      ref: 'tenue-qui-n-existe-plus:torse:front', occurrence: 1,
+    }];
+    expect(echange, 'la forge doit rester à TAILLE CONSTANTE, sinon elle ne prouve rien')
+      .toHaveLength(PALETTE_LITERAL_RATCHET.length);
+    const refus = refusDeCroissance(mesurees(), echange);
+    expect(refus, 'un site mesuré hors du stock doit refuser même à taille constante').not.toBeNull();
+    expect(refus).toContain(cle(decouvert.fichier, decouvert.ref, decouvert.occurrence));
+  });
+
+  it('le stock en place couvre la mesure : aucun refus, le régénérateur peut écrire', () => {
+    expect(refusDeCroissance(mesurees(), PALETTE_LITERAL_RATCHET)).toBeNull();
   });
 });

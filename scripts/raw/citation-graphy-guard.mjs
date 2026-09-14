@@ -15,7 +15,8 @@ import { listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { fileURLToPath } from 'node:url'
 import { fieldBlockMask } from './build-implemente.mjs'
 import { otherAbbrAlternation, bookOf, folioRange, chapterBoundaryRiskFor, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve, readText } from './_lib.mjs'
-import { ecartDuVolet, readStock as readStockFile } from './stockNominatif.mjs'
+import { ecartDuVolet } from '../guards/lib/stock.mjs'
+import { readStock as readStockFile } from './stockNominatif.mjs'
 
 export const SRC_DIR = 'src'
 export const EXTS = ['.ts', '.tsx', '.json']

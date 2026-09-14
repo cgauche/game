@@ -14,14 +14,15 @@
 // DEUX côtés avant comparaison. Réf sans chapitre NUMÉRIQUE résoluble (« AA Annexe III »,
 // « ADE II ch. Les Ogres ») = hors sujet (rien à chapitrer) : périmètre de check-refs/check-code-refs.
 // Cliquet NOMINATIF PAR SITE (`scripts/raw/entity-in-chapter-stock.json`, écart `ecartDuVolet` de
-// `stockNominatif.mjs`, clé `doc :: nom :: occurrence`) : un site NEUF est une régression à corriger
+// `scripts/guards/lib/stock.mjs`, clé `doc :: nom :: occurrence`) : un site NEUF est une régression à corriger
 // ou à déclarer, une entrée dont le site a disparu est une dette SOLDÉE à retirer. Le stock est
 // ABSENT en régime nominal → tolérance ZÉRO (`readStock` traite un fichier absent comme zéro entrée).
 // Re-run : node scripts/raw/check-entity-in-chapter.mjs (npm run raw:check-entity-in-chapter).
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chapterFile, otherAbbrAlternation, readText } from './_lib.mjs'
-import { ecartDuVolet, readStock } from './stockNominatif.mjs'
+import { ecartDuVolet } from '../guards/lib/stock.mjs'
+import { readStock } from './stockNominatif.mjs'
 
 export const TARGETS = ['docs/raw/talents.md']
 export const STOCK_PATH = resolve(dirname(fileURLToPath(import.meta.url)), 'entity-in-chapter-stock.json')

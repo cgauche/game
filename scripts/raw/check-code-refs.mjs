@@ -6,7 +6,7 @@
 // et signale la réf dont la borne haute dépasse le nombre de lignes du chapitre, OU dont le chapitre
 // est introuvable. Regex de réfs RÉUTILISÉES (`ldbRe`/`otherRe`/`span`/`bookOf`) — jamais réécrites.
 // Cliquet NOMINATIF (`scripts/raw/dead-code-refs-stock.json`, écart calculé par `ecartDuVolet` de
-// `stockNominatif.mjs`, forme de `reconciliation-stock.json`) : une ENTRÉE par site, et les deux
+// `scripts/guards/lib/stock.mjs`, forme de `reconciliation-stock.json`) : une ENTRÉE par site, et les deux
 // sens échouent — un site NEUF est une régression à corriger ou à déclarer, une entrée dont le site
 // a disparu est une dette SOLDÉE à retirer. Un nombre relevé dans un fichier de compte est net 0 à la
 // porte de plage ; une entrée ajoutée est une croissance qui se déclare (`stocksNominatifs.mjs`).
@@ -26,7 +26,8 @@ import { listerArbre } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ldbRe, otherRe, span, chapterFile, bookOf, readText, PIVOT_ABBR } from './_lib.mjs'
-import { ecartDuVolet, readStock } from './stockNominatif.mjs'
+import { ecartDuVolet } from '../guards/lib/stock.mjs'
+import { readStock } from './stockNominatif.mjs'
 
 export const SRC_DIR = 'src'
 export const EXCLUDE_SRC_PREFIX = 'src/gameIso/rig/parts/tenues/defs/' // art de couverture, pas une règle (cf. build-implemente)

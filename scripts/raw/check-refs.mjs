@@ -4,7 +4,7 @@
 // de lignes du fichier. Un livre/chapitre INTROUVABLE n'est pas le sujet ici (Sens A de
 // reconcile.mjs) — seul un chapitre TROUVÉ dont la ligne est HORS BORNE est une réf morte.
 // Cliquet NOMINATIF PAR SITE (`scripts/raw/dead-refs-stock.json`, écart `ecartDuVolet` de
-// `stockNominatif.mjs`, clé `fiche :: réf citée :: occurrence`) : un site NEUF est une régression à
+// `scripts/guards/lib/stock.mjs`, clé `fiche :: réf citée :: occurrence`) : un site NEUF est une régression à
 // corriger ou à déclarer, une entrée dont le site a disparu est une dette SOLDÉE à retirer. Le stock
 // est ABSENT en régime nominal → tolérance ZÉRO (`readStock` traite un fichier absent comme zéro
 // entrée). S'il renaît, il se recrée à sa mesure MINIMALE, chaque entrée portant son lot et sa date.
@@ -13,7 +13,8 @@ import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ldbRe, otherRe, span, chapterFile, bookOf, RAWDOC_META_GENERATED, readText, PIVOT_ABBR } from './_lib.mjs'
-import { ecartDuVolet, readStock } from './stockNominatif.mjs'
+import { ecartDuVolet } from '../guards/lib/stock.mjs'
+import { readStock } from './stockNominatif.mjs'
 
 export const RAWDIR = 'docs/raw'
 export const EXCLUDE = RAWDOC_META_GENERATED // (#454 DoD, #585 lot A) — source unique _lib.mjs
