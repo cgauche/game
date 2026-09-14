@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url';
 import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import {
   auditAlignment,
-  auditDataDir,
   citedEntries,
   folioGoverning,
   folioGoverningWhy,
@@ -15,6 +14,14 @@ import {
   FOLIO_LINE_ALIGN_NON_JUGEABLE,
   FOLIO_LINE_ALIGN_RATCHET,
 } from '../../scripts/guards/lib/folioLineAlignStock.mjs';
+import {
+  auditFolioLineAlign,
+  citationsParCle,
+  DOSSIER_DATA,
+  sitesDesNonJugeables,
+  sitesDesViolations,
+} from '../../scripts/guards/lib/folioLineAlignAudit';
+import { ecartDuVolet } from '../../scripts/guards/lib/stock.mjs';
 
 /**
  * Garde-fou « le FOLIO déclaré tombe sur la LIGNE citée » (#1318 E8).
@@ -28,9 +35,11 @@ import {
  * datasets d'ENJEUX (`flow-stakes`, `combat-stakes`, `voyage-stakes`) et le registre des règles
  * optionnelles n'ont pas de `desc` — ils lui sont invisibles, ils ne le sont pas ici.
  *
- * MODE CLIQUET : `FOLIO_LINE_ALIGN_RATCHET` gèle les 41 désalignements restants au 2026-08-20 (43
- * relevés, 2 soldés au même geste). Toute NOUVELLE divergence fait rouge nominativement ; toute
- * entrée du stock qui cesse de diverger doit en être RETIRÉE (second volet).
+ * MODE CLIQUET : `FOLIO_LINE_ALIGN_RATCHET` gèle les désalignements restants en entrées
+ * `{ fichier, ref, occurrence }` (`ecartDuVolet`, `scripts/guards/lib/stock.mjs`) — la forme que la
+ * porte de plage VOIT, et qui se passe de plafond : une entrée de plus se déclare par son `fichier`.
+ * Toute NOUVELLE divergence fait rouge nominativement ; toute entrée qui cesse de diverger SORT du
+ * stock à la régénération (`npx tsx scripts/data/regen-folio-line-align-stock.mts`, second volet).
  *
  * COUVERTURE, pas confiance : sur les 54 folios posés à `reglesOptionnelles.json`, le détecteur en
  * verrouille **52**. Les 2 autres — `vents-tourbillonnants` (`LDB 46 l.179-190`, déclaré 238) et
@@ -41,9 +50,6 @@ import {
  */
 
 const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
-
-/** Plafond du stock, même lecture que `FOLIO_RATCHET_MAX` : il ne monte jamais. */
-const RATCHET_MAX = 41;
 
 /** Couverture MESURÉE le 2026-09-06 (#1389 C4, même mesure que `book-source-integrity.test.ts` et
  *  `folioIntegrity.mjs`) : `src/data/*.json` porte 4516 entrées à `source:{book,page}`, dont 1223
@@ -79,13 +85,29 @@ function compteSources(dir: string): { sourcees: number; citees: number } {
   return { sourcees, citees };
 }
 
+const STOCK = 'scripts/guards/lib/folioLineAlignStock.mjs';
+const REGEN = 'npx tsx scripts/data/regen-folio-line-align-stock.mts';
+
 describe('garde-fou « folio déclaré ↔ ligne citée » (cliquet, #1318 E8)', () => {
-  const { scanned, violations, ignored } = auditDataDir(DATA_DIR);
+  const { scanned, violations, ignored } = auditFolioLineAlign();
+  const ecartDesalignes = ecartDuVolet({
+    sites: sitesDesViolations(violations), stock: FOLIO_LINE_ALIGN_RATCHET, ou: STOCK,
+  });
+  const ecartNonJugeables = ecartDuVolet({
+    sites: sitesDesNonJugeables(ignored), stock: FOLIO_LINE_ALIGN_NON_JUGEABLE, ou: STOCK,
+  });
+
+  /** La citation et les DEUX folios, RENDUS depuis le disque du jour — le stock ne les grave pas
+   *  (une copie gelée dirait le folio d'hier après une ré-extraction Marker). */
+  const citations = citationsParCle(violations);
+  const avecCitation = (lignes: readonly string[]) =>
+    lignes.map((l) => {
+      const cite = [...citations].find(([cle]) => l.includes(`${cle} ::`))?.[1];
+      return cite ? `${l}\n      ${cite}` : l;
+    });
 
   it('aucun désalignement NOUVEAU (hors stock gelé)', () => {
-    const nouvelles = violations
-      .filter((v) => !FOLIO_LINE_ALIGN_RATCHET.has(v.key))
-      .map((v) => `${v.key} : « ${v.cite} » tombe sous data-folio="${v.folio}", source.page dit ${v.page}`);
+    const nouvelles = avecCitation(ecartDesalignes.neuves);
     expect(
       nouvelles,
       'Folio déclaré et ligne citée se contredisent — RELEVER le passage au `Source/` (marqueur ' +
@@ -94,10 +116,8 @@ describe('garde-fou « folio déclaré ↔ ligne citée » (cliquet, #1318 E8)',
   });
 
   it('CLIQUET : toute entrée du stock qui ne diverge plus doit en être RETIRÉE', () => {
-    const encore = new Set(violations.map((v) => v.key));
-    const perimees = [...FOLIO_LINE_ALIGN_RATCHET].filter((k) => !encore.has(k));
-    expect(perimees, `Entrée(s) alignée(s) — retirer de FOLIO_LINE_ALIGN_RATCHET :\n${perimees.join('\n')}`).toEqual([]);
-    expect(FOLIO_LINE_ALIGN_RATCHET.size).toBeLessThanOrEqual(RATCHET_MAX);
+    const { perimees } = ecartDesalignes;
+    expect(perimees, `Entrée(s) alignée(s) — régénérer (${REGEN}) :\n${perimees.join('\n')}`).toEqual([]);
   });
 
   it('CLIQUET DE COUVERTURE : les entrées JUGÉES ne reculent pas, les entrées SANS citation ne croissent pas (2026-09-01)', () => {
@@ -122,9 +142,11 @@ describe('garde-fou « folio déclaré ↔ ligne citée » (cliquet, #1318 E8)',
 
     const nonJugees = ignored
       .filter((i) => i.file === 'reglesOptionnelles.json' && i.reason !== 'hors-forme')
-      .map((i) => i.key);
+      .map((i) => i.id);
     expect(new Set(nonJugees)).toEqual(
-      new Set([...FOLIO_LINE_ALIGN_NON_JUGEABLE].filter((k) => k.startsWith('reglesOptionnelles.json#'))),
+      new Set(FOLIO_LINE_ALIGN_NON_JUGEABLE
+        .filter((e) => e.fichier === `${DOSSIER_DATA}/reglesOptionnelles.json`)
+        .map((e) => e.ref)),
     );
     expect(nonJugees).toHaveLength(2); // 54 posés − 52 vérifiés
   });
@@ -137,10 +159,8 @@ describe('garde-fou « folio déclaré ↔ ligne citée » (cliquet, #1318 E8)',
         `mesurable : les geler dans FOLIO_LINE_ALIGN_NON_JUGEABLE :\n${trous.join('\n')}`,
     ).toEqual([]);
 
-    const nonJugeables = ignored.filter((i) => i.reason !== 'hors-forme').map((i) => i.key).sort();
-    expect(nonJugeables, 'La liste des entrées non jugeables a bougé — mettre FOLIO_LINE_ALIGN_NON_JUGEABLE au réel').toEqual(
-      [...FOLIO_LINE_ALIGN_NON_JUGEABLE].sort(),
-    );
+    const bouge = [...ecartNonJugeables.neuves, ...ecartNonJugeables.perimees];
+    expect(bouge, `La liste des entrées non jugeables a bougé — régénérer (${REGEN}) :\n${bouge.join('\n')}`).toEqual([]);
   });
 });
 

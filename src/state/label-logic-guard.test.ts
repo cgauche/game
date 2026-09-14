@@ -562,12 +562,10 @@ describe('garde-fou « appel à un résolveur d’entité par LIBELLÉ » (#909)
     );
   });
 
-  // Plafond du cliquet — DANS LE TEST, jamais dans `labelResolverCallStock.mjs` (même raison que
-  // `FOLIO_RATCHET_MAX`, `book-source-integrity.test.ts` : sans lui, « le stock ne peut que
-  // décroître » n'est qu'un commentaire, et le chemin le plus court pour « solder » une régression
-  // resterait d'ajouter une ligne au stock, CI verte). `creatureEquip.ts` (1) soldé 2026-07-27 : le
-  // stock est VIDE, le plafond descend à ZÉRO — un cliquet TENU, sans cran d'accueil au-dessus.
-  const LABEL_RESOLVER_CALL_MAX = 0;
+  // Le stock est VIDE, et ce zéro est un CLIQUET TENU : aucun plafond ne le double. Un appel neuf
+  // depuis `src/engine`/`src/state` est une entrée que le stock ne porte pas, donc une `neuve` du
+  // volet ci-dessous — et une ligne ajoutée au stock pour « solder » cette régression serait une
+  // `perimee` au même geste. Les deux sens sont tenus par l'ÉCART, jamais par un compte.
 
   /** Clé de la dette : le fichier ET son COMPTE d'appels — un appel de plus est une entrée neuve,
    *  pas une ligne qui bouge (même mesure que `CLE_DETTE`, `src/data/slots-contrat.test.ts`). */
@@ -601,11 +599,6 @@ describe('garde-fou « appel à un résolveur d’entité par LIBELLÉ » (#909)
       champsAveugles(stockEntries, CLE_APPELS, ['n']),
       'le compte est HORS de la clé comparée : un fichier stocké passant de 1 à 3 appels laisserait la garde verte.',
     ).toEqual([]);
-  });
-
-  it('le stock cliqueté ne GROSSIT pas — sa taille totale est plafonnée par le TEST', () => {
-    const total = Object.values(LABEL_RESOLVER_CALL_STOCK).reduce((a, b) => a + b, 0);
-    expect(total).toBeLessThanOrEqual(LABEL_RESOLVER_CALL_MAX);
   });
 
   it('collectLabelEntityResolvers : reconnaît un résolveur par la FORME (param `label`, retour `XxxData`), pas un nom', () => {

@@ -878,6 +878,7 @@ test('stocks `.mjs` de garde à la forme NOMINATIVE — la porte voit CHAQUE ent
     'tableConsumerStock.mjs',
     'jambesGabaritStock.mjs',
     'quadDecoStock.mjs',
+    'folioLineAlignStock.mjs',
   ]) {
     assert.ok(
       convertis.includes(nom),

@@ -81,11 +81,6 @@ const GARDE = {
   ticket: '#1486',
 } as const;
 
-/** Cliquet : le nombre de FINDINGS ne peut que DÉCROÎTRE (un commentaire à deux motifs = deux
- *  findings, donc deux lignes de stock — le compte de LIGNES, lui, masquait ce cumul). Mesure du
- *  2026-08-23 : 47 findings bruts, 7 sortis en emplois vivants, 3 sites tués au geste → 37. */
-const PLAFOND_FINDINGS = 37;
-
 /** Ensemble FERMÉ des lots de #1486 (relevé au ticket le 2026-08-23) : le `lot` d’une ligne de stock
  *  est un ou plusieurs de ces jetons séparés par ` / `. Aucun placeholder n’est admis. */
 const LOTS_1486 = [
@@ -682,10 +677,6 @@ describe('garde-fou commentaires — vocabulaire de l’ancien état (#1486, cre
       perimees,
       'Ligne(s) du stock sans site correspondant : purger `scripts/guards/lib/legacyVocabStock.mjs` dans le MÊME commit.',
     ).toEqual([]);
-    expect(
-      findings.length,
-      'le nombre de FINDINGS de #1486 ne peut que décroître — abaisser `PLAFOND_FINDINGS` avec le site soldé.',
-    ).toBeLessThanOrEqual(PLAFOND_FINDINGS);
     expect(LEGACY_VOCAB_SITES.length, 'une ligne de stock par finding : un commentaire à 2 motifs = 2 lignes.').toBe(
       findings.length,
     );

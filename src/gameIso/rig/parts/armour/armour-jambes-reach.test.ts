@@ -6,6 +6,16 @@
  * du pied, atteint y≈50 dans tout le rig). Verrouille la CLASSE sur les 4 défs `defs/*.ts` :
  * chaque vue disponible de `set.jambes` doit descendre au moins jusqu'à la cheville, et les
  * vues ne doivent pas diverger entre elles.
+ *
+ * `MAX_VIEW_SPREAD` est un CRITÈRE D'INSTRUMENT, pas une dette : c'est la TOLÉRANCE géométrique de
+ * la mesure (les Y sont lus sur les commandes de path, deux vues d'une même grève ne tombent pas à
+ * l'unité près), et aucune def n'en est exemptée — les 4 sont jugées. Il ne se relève pas : un écart
+ * qui dépasse 2 est un art à corriger, jamais un cran à ouvrir.
+ *
+ * VACUITÉ À ÉCARTER AVANT DE MESURER : `pickView` (`parts/types.ts`) replie `art[view] ?? art.front`.
+ * Une def à `jambes` front-only rendrait donc le MÊME fragment pour les deux vues, `spread = 0`, et
+ * le seuil serait tenu sans que rien de la vue de profil n'ait été jugé. Chaque def doit donc
+ * DÉCLARER un profil distinct de son front pour que l'écart mesure quelque chose.
  */
 import { describe, it, expect } from 'vitest';
 import { ARMOUR_DEFS } from './_registry.generated';
@@ -41,6 +51,10 @@ describe('armure : la grève (jambes) atteint la cheville dans toutes les vues',
     it(`${def.id} : front ≥ y${MIN_FRONT_Y}, écart front/profile ≤ ${MAX_VIEW_SPREAD}`, () => {
       const front = pickView(jambes, 'front');
       const profile = pickView(jambes, 'profile');
+
+      expect(profile, `${def.id}:jambes — le profil est REPLIÉ sur le front par \`pickView\` : l'écart ` +
+        `mesuré ci-dessous serait 0 sans qu'aucune vue de profil n'ait été jugée. Déclarer \`profile\` ` +
+        `dans l'art de la part, ou le DISTINGUER du front.`).not.toBe(front);
       const maxYFront = maxYOfSvg(front);
       const maxYProfile = maxYOfSvg(profile);
       const spread = Math.abs(maxYFront - maxYProfile);
