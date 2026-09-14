@@ -15,6 +15,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { gatesRequises, commandeEffective } from '../guards/lib/justificatif.mjs'
+import { GATES, listerTests, testsDe } from './testsParGate.mjs'
 
 /** Appels qui ÉCRIVENT sur le disque. Le `\b` évite `outputFile` dans une liste de drapeaux. */
 const ECRITURE =
@@ -23,11 +24,17 @@ const ECRITURE =
 /** Une ligne de commentaire ou d'import ne prouve aucune écriture. */
 const inerte = (ligne) => /^\s*(?:\/\/|\*|\/\*)/.test(ligne) || /^\s*import\s/.test(ligne)
 
-/** Chemins de script d'une commande npm dépliée, tels que la racine les porte. */
-function fichiersDe(commande, racine) {
+/** Le lanceur des tests `node --test` : sa liste de fichiers n'est PAS dans la commande. */
+const LANCEUR_TESTS = 'scripts/test/node-tests.mjs'
+
+/** Chemins de script d'une commande npm dépliée, tels que la racine les porte. Une gate qui passe
+ *  par le lanceur des tests prend ses graines à `testsParGate` — la table qui décide, par
+ *  répertoire, des tests de cette gate — puisque la commande ne nomme plus un seul fichier. */
+function fichiersDe(commande, racine, gate) {
   const out = []
   for (const jeton of commande.split(/\s+/))
     if (/^[\w./-]+\.(?:mjs|mts|js|ts)$/.test(jeton) && existsSync(join(racine, jeton))) out.push(jeton)
+  if (out.includes(LANCEUR_TESTS) && GATES.includes(gate)) out.push(...testsDe(gate, () => listerTests(racine)))
   return out
 }
 
@@ -82,7 +89,7 @@ export function ecrivainsParGate(racine = process.cwd()) {
     let commande = commandeEffective(scripts, gate.nom) || gate.commande
     for (let i = 0; i < 4; i += 1)
       commande = commande.replace(/npm run ([A-Za-z0-9:_.-]+)/g, (tel, nom) => (scripts[nom] ? `(${scripts[nom]})` : tel))
-    par[gate.nom] = transitif(fichiersDe(commande, racine), racine)
+    par[gate.nom] = transitif(fichiersDe(commande, racine, gate.nom), racine)
       .filter((f) => porteUneEcriture(f, racine))
       .sort()
   }

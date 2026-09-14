@@ -122,20 +122,27 @@ export const ECRIT_LU = {
         'deux clés de contenu et ne salit pas l’arbre ; aucune gate ne le lit',
     },
     lit: [
-      '.claude/', '.codex/', '.github/workflows/', 'docs/', 'scripts/', 'src/', 'Source/',
-      'CLAUDE.md', 'eslint.config.js', 'package.json', 'tsconfig.json',
+      '.claude/', '.codex/', '.github/workflows/', 'docs/', 'public/', 'scripts/', 'server/', 'src/', 'Source/',
+      'CLAUDE.md', 'eslint.config.js', 'knip.json', 'package.json', 'package-lock.json', 'tsconfig.json',
     ],
     raison:
       'le registre d’écrans que `new-src-file-guard.test.mjs` éprouve est INJECTABLE (`WFRP_REGISTRE_ECRANS`, ' +
       'scripts/hooks/new-src-file-guard.mjs:42) et le test en écrit une COPIE sous os.tmpdir() ; ' +
-      'le reste des fixtures vit sous os.tmpdir() ; LIT docs/ et src/ parce que `enregistreur-lectures.test.mjs` ' +
-      'joue de VRAIS générateurs en `--check` (build-index-moteur, build-donnees, build-structures), qui comparent ' +
-      'sans écrire ; LIT Source/ parce que `idempotence-ordre-des-cles.test.mjs` copie le corpus (Source/ moins les ' +
+      'le reste des fixtures vit sous os.tmpdir() ; LIT src/ massivement (3 888 chemins) — les gardes de la ' +
+      'gate balaient l’arbre réel (stocks nominatifs, garde des nouveaux fichiers, budget de contexte) ; ' +
+      'LIT docs/ sur deux sites seulement (docs/decisions/issues.json, et le listing de docs/raw) ; ' +
+      'LIT Source/ parce que `idempotence-ordre-des-cles.test.mjs` copie le corpus (Source/ moins les ' +
       '`.pdf`, écartés par extension : sans les extractions quatre migrations sortent 1 faute de livres) sous ' +
-      'os.tmpdir() avant de rejouer les 89 migrations ; LIT .codex/hooks.json et .claude/settings.json ' +
+      'os.tmpdir() avant de rejouer les 89 migrations — cette copie passe par `cpSync`, que l’enveloppe de la ' +
+      'sonde n’enregistre pas : la déclaration tient de la LECTURE du code, et une sur-déclaration ne peut ' +
+      'que RESSERRER les lanes ; LIT .codex/hooks.json et .claude/settings.json ' +
       '(parité des canaux), .github/workflows/ci.yml, CLAUDE.md, eslint.config.js et package.json — ' +
-      'sonde 2026-09-08, 4 117 lectures. Le retrait des trois fichiers les plus lents ne la sortirait PAS ' +
-      'de src/ : 3 715 lectures y subsistent sans eux (mesuré)',
+      'sonde 2026-09-14 (#1759, après le départ d’`enregistreur-lectures.test.mjs` vers test:docs), ' +
+      '4 425 chemins lus ; +4 chemins la même sonde (public/, server/, knip.json, package-lock.json) : ' +
+      '`stocks-nominatifs.test.mjs:113-129` dérive les stocks OUBLIÉS par la FORME — il prend TOUT `.json` ' +
+      'suivi par git (`git ls-files --cached -- *.json`), saute les porteurs connus et PARSE le reste, ' +
+      'donc public/qc/*.json, server/package.json, server/package-lock.json, server/tsconfig.json, ' +
+      'knip.json et package-lock.json ; il n’en écrit aucun, et aucune gate n’écrit sous public/ ni server/',
   },
   'test:ops': {
     ecrit: [],
@@ -173,14 +180,17 @@ export const ECRIT_LU = {
   'test:docs': {
     ecrit: [],
     lit: [
-      'docs/', '.claude/memory/', 'scripts/docs/', 'scripts/guards/lib/', 'scripts/test/partition.mjs',
+      'docs/', 'src/', '.claude/memory/', 'scripts/docs/', 'scripts/guards/lib/', 'scripts/test/partition.mjs',
       'scripts/lancer-local.mjs', 'scripts/outillage-local.mjs',
     ],
     raison:
       'fixtures sous os.tmpdir() ; lit les docs et la mémoire réels (RAISON_CLE_COMPLETE, justificatif.mjs:93) ' +
       'et scripts/guards/lib/ (`check-plans-anchors.test.mjs` lit le code de `lister.mjs` et importe ' +
       '`depotGabarit.mjs`), sans rien y écrire ; LIT les trois modules du lanceur local que `build-all.mjs` ' +
-      'ramène (sonde 2026-09-08, 50 lectures)',
+      'ramène (sonde 2026-09-08, 50 lectures) ; LIT src/ et docs/ depuis le 2026-09-14 (#1759) : ' +
+      '`enregistreur-lectures.test.mjs`, venu de test:hooks avec sa racine `scripts/docs`, joue de VRAIS ' +
+      'générateurs en `--check` (build-index-moteur, build-donnees, build-structures) sur l’arbre réel — ils ' +
+      'COMPARENT sans écrire, et leurs lectures passent par la sortie de mesure du test, sous os.tmpdir()',
   },
   'deps:unused': {
     ecrit: [],

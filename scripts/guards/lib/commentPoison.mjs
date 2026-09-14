@@ -251,6 +251,13 @@ const CODE_TOMBSTONE_RETIRE_RX = new RegExp(
 // « `usable` retiré de chaque entité à places », « `«` `»` SUPPRIMÉS avec l'espace adjacent ») — du
 // contrat au présent, pas du code disparu. Aucun discriminant syntaxique ne sépare les deux sens, et
 // une famille qui exigerait 130 exemptions serait un stock nominatif : la forme reste hors garde.
+// ANGLE MORT MESURÉ (#1759, 2026-09-14) : le DÉPLACEMENT « X est passé à/vers Y » n'entre PAS dans
+// les familles. Mesure sur `src/**`+`scripts/**` : 98 sites pour la forme nue, 14 en exigeant
+// l'auxiliaire — et la MAJORITÉ des deux populations dit le PASSAGE D'UN ARGUMENT au présent
+// (« la valeur passée à `buildScene` », « l'acteur est passé à `InfluenceRow` », « les lookups sont
+// passés à `findTableEntry` »), soit le contrat COURANT du site. Les deux discriminants essayés
+// échouent : l'artefact back-tiqué est présent des DEUX côtés, et l'auxiliaire laisse 8 contrats au
+// présent sur 14. Aucune forme propre ne sépare les deux sens : la famille n'est pas posée.
 
 // Apostrophe (droite ou typographique), bâtie par ÉCHAPPEMENT : aucun caractère apostrophe littéral
 // dans les motifs de ce fichier, qui déséquilibrerait le balayage de chaînes d'`extractComments`.

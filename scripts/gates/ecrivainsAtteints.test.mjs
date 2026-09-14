@@ -28,12 +28,11 @@ const ATTENDU = {
   'test:hooks': [
     'scripts/docs/build-all.mjs',
     'scripts/docs/lib/empreinte-sources.mjs',
-    // +1 le 2026-09-12 (#1721) : le test de contrat importe `installer` pour monter l'enveloppe de
-    // `fs` à nu (la casse d'un chemin lu se juge sans sous-processus). L'écriture de ce module est
-    // la sienne propre — `<WFRP_LECTURES_SORTIE>.<pid>.json`, derrière la porte d'environnement
-    // (enregistreur-lectures.mjs:151) —, et `build-all.mjs` pointe cette sortie sous os.tmpdir().
-    'scripts/docs/lib/enregistreur-lectures.mjs',
-    'scripts/docs/lib/enregistreur-lectures.test.mjs',
+    // +1 le 2026-09-14 (#1759) : la garde de couverture des tests `scripts/**` éprouve la parité
+    // « joué = suivi par git » sur un dépôt JETABLE (`mkdtempSync` + `git init` + `writeFileSync`,
+    // `rmSync` en finally, sous `os.tmpdir()`) — un fichier NON suivi ne se fabrique pas autrement,
+    // et l'arbre du dépôt n'est jamais écrit.
+    'scripts/gates/testsParGate.test.mjs',
     'scripts/gates/toutes.mjs',
     'scripts/gates/toutes.test.mjs',
     'scripts/git-hooks/arbre-imbrique.test.mjs',
@@ -78,6 +77,11 @@ const ATTENDU = {
     // (`mkdtempSync` + `writeFileSync`, puis `rmSync`) sous `os.tmpdir()` — l'arbre versionné n'est
     // jamais écrit, et la lib mesurée (`sourceCorpus.mjs`) ne fait que LIRE.
     'scripts/guards/lib/sourceCorpus.test.mjs',
+    // +1 le 2026-09-14 (#1759) : le banc du rejeu de spawn ENTRE dans la gate — il était né le
+    // 2026-09-04 hors de toute liste écrite à la main, donc jamais joué. Ses écritures sont ses
+    // fixtures : des scripts jetables sous `os.tmpdir()` (`mkdtempSync` + `writeFileSync`, `rmSync`
+    // en sortie) qui sortent avec le code du loader ; l'arbre n'est jamais écrit.
+    'scripts/guards/lib/spawnResilient.test.mjs',
     // +1 le 2026-09-14 (#1754) : le banc du garde `[entériné]` pose ses fichiers-CIBLES (`mkdtempSync`
     // + `writeFileSync`, puis `rmSync`) sous `os.tmpdir()` — c'est l'état SUR DISQUE que le hook lit
     // désormais pour ne demander que sur un tag NEUF ; l'arbre versionné n'est jamais écrit.
@@ -115,10 +119,6 @@ const ATTENDU = {
     'scripts/migrations/lib/idempotence-ordre-des-cles.test.mjs',
     'scripts/migrations/replay-head.mjs',
     'scripts/raw/build-implemente.mjs',
-    // +1 le 2026-09-14 (#1727) : le test du LECTEUR de stock nominatif pose ses fixtures
-    // (`mkdtempSync` + `writeFileSync`, puis `rmSync`) sous `os.tmpdir()` — l'arbre n'est jamais
-    // écrit, et le module mesuré (`stockNominatif.mjs`) ne fait que LIRE.
-    'scripts/raw/stockNominatif.test.mjs',
     'scripts/test/verrou.mjs',
   ],
   'test:ops': [
@@ -172,7 +172,18 @@ const ATTENDU = {
     'scripts/docs/build-all-check.test.mjs',
     'scripts/docs/build-all.mjs',
     'scripts/docs/check-plans-anchors.test.mjs',
+    // +1 le 2026-09-14 (#1759) : `canauxMecaniques.test.mjs` ENTRE dans la gate — né le 2026-09-13
+    // hors de toute liste écrite à la main, donc jamais joué. Il forge ses sources (`mkdtempSync` +
+    // `writeFileSync`) sous `os.tmpdir()` ; l'arbre n'est jamais écrit.
+    'scripts/docs/lib/canauxMecaniques.test.mjs',
     'scripts/docs/lib/empreinte-sources.mjs',
+    // +2 le 2026-09-14 (#1759) : le test de contrat importe `installer` pour
+    // monter l'enveloppe de `fs` à nu (la casse d'un chemin lu se juge sans sous-processus).
+    // L'écriture de ce module est la sienne propre — `<WFRP_LECTURES_SORTIE>.<pid>.json`, derrière la
+    // porte d'environnement (enregistreur-lectures.mjs:160) —, et `build-all.mjs` pointe cette sortie
+    // sous os.tmpdir().
+    'scripts/docs/lib/enregistreur-lectures.mjs',
+    'scripts/docs/lib/enregistreur-lectures.test.mjs',
     // +1 le 2026-09-07 (#1709 B1) : `build-all-check.test.mjs` et `check-plans-anchors.test.mjs`
     // prennent leurs dépôts jetables à la fixture partagée, qui n'écrit que sous `os.tmpdir()`.
     'scripts/guards/lib/depotGabarit.mjs',
@@ -223,6 +234,11 @@ const ATTENDU = {
     'scripts/raw/reanchor.mjs',
     'scripts/raw/reanchor.test.mjs',
     'scripts/raw/reconcile.test.mjs',
+    // +1 le 2026-09-14 (#1759) : le test du LECTEUR de stock nominatif vit sous `scripts/raw`,
+    // racine de cette gate. Il pose ses fixtures (`mkdtempSync` + `writeFileSync`,
+    // puis `rmSync`) sous `os.tmpdir()` — l'arbre n'est jamais écrit, et le module mesuré
+    // (`stockNominatif.mjs`) ne fait que LIRE.
+    'scripts/raw/stockNominatif.test.mjs',
   ],
   'raw:check-refs': [],
   // +1 le 2026-09-11 (#925) : la gate enchaîne `citation-graphy-guard.mjs`, qui IMPORTE
