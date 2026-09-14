@@ -1,15 +1,17 @@
-// Test de la garde `check-source-tables` (node --test, joué par `npm run test:raw`). Les cinq
+// Test de la garde `check-source-tables` (node --test, joué par `npm run test:raw`). Les quatre
 // familles MORDENT sur des chapitres synthétiques (le détecteur est PUR au grain du chapitre), la
-// clé de site ne porte aucune position, et le stock COMMITTÉ est exactement le rendu des sites
-// mesurés sur l'arbre — dans les deux sens.
+// clé de site ne porte aucune position, la `preuve` d'une entrée est un fait daté (jamais une
+// dispense), et le stock COMMITTÉ est exactement le rendu des sites mesurés sur l'arbre — dans les
+// deux sens.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   sitesDuChapitre, scanAllBooks, scanBookDir, refDeTable, cleDeLigne, entreesDe, ecartDuStock,
-  comptesParFamille, FAMILLES, STOCK_PATH,
+  comptesParFamille, verdictDesPreuves, comptesDeTri, FAMILLES, STOCK_PATH,
 } from './check-source-tables.mjs'
 import { readStock } from './stockNominatif.mjs'
 import { BOOKS } from './_lib.mjs'
+import { parseChapitre, tablesOf } from '../../src/data/source/decoupe.ts'
 
 const FICHIER = 'Source/Livre/01 - Fixture.md'
 const familles = (texte) => sitesDuChapitre(texte, FICHIER).map((s) => s.famille).sort()
@@ -26,7 +28,10 @@ test('br-litteral : un `<br>` dans une CELLULE est un site ; sans lui, rien', ()
   assert.deepEqual(familles(avec.replace('<br>', ' ')), [])
 })
 
-test('span-colle : un marqueur de folio COLLÉ à une ligne de table est un site, et sa réf est le FOLIO', () => {
+test('un marqueur de folio COLLÉ à une ligne de table n’est PAS un site : la lib l’absorbe', () => {
+  // Contrat POSITIF de l'absorption (#1384 B2) : `toBlocks` applique `stripSpans` AVANT `parseTable`,
+  // la ligne ouvre donc bien par `|` et la table se lit ENTIÈREMENT. Rien à réparer dans `Source/` :
+  // l'ancre reste où la page coupe.
   const texte = [
     '## Tables',
     '',
@@ -34,11 +39,11 @@ test('span-colle : un marqueur de folio COLLÉ à une ligne de table est un site
     '| --- | --- |',
     '| 01-10 | Rien |',
   ].join('\n')
-  const sites = sitesDuChapitre(texte, FICHIER)
-  assert.deepEqual(sites.map((s) => s.famille), ['span-colle'])
-  assert.equal(sites[0].ref, 'folio 7')
-  // Le marqueur SEUL sur sa ligne (la forme réparée) n'est plus un site.
-  assert.deepEqual(familles(texte.replace('></span>|', '></span>\n|')), [])
+  assert.deepEqual(familles(texte), [])
+  const section = parseChapitre(texte).sections.find((s) => s.slug === 'tables')
+  const [{ table }] = tablesOf(section)
+  assert.deepEqual(table.headers, ['Lancer', 'Effet'])
+  assert.deepEqual(table.rows, [['01-10', 'Rien']])
 })
 
 test('donnee-en-tete : une continuation de table dont les « en-têtes » sont une fourchette est un site', () => {
@@ -122,6 +127,10 @@ test('la réf d’une table NEUTRALISE le `<br>` : la clé survit à la réparat
   assert.equal(refDeTable('s', 1, ['Nombre de sorts<br>connus']), refDeTable('s', 1, ['Nombre de sorts connus']))
 })
 
+test('cleDeLigne NEUTRALISE le `<br>` de la même façon : une clé imprimée sur deux lignes est UNE clé', () => {
+  assert.equal(cleDeLigne(['Batterie tonnerre<br>de feu']), cleDeLigne(['Batterie tonnerre de feu']))
+})
+
 test('cleDeLigne : la première cellule NON VIDE, normalisée', () => {
   // `normText` replie la casse et les espaces, jamais les ACCENTS (le match français doit être exact).
   assert.equal(cleDeLigne(['', '  Bouche Explosée ', 'x']), 'bouche explosée')
@@ -153,9 +162,29 @@ test('stock COMMITTÉ : le rendu EXACT et ORDONNÉ des sites mesurés sur l’ar
 // PLAFOND de la dette (jamais dans la lib de stock : il vit ICI, cf. `scripts/guards/lib/stock.mjs`).
 // Il ne monte QUE par une édition de cette ligne, sous `CLIQUET:` — il n'est pas le compte du jour,
 // il est la borne que le jour ne doit pas franchir.
-const PLAFOND = 687
+// 687 → 664 au lot B2 (#1384) : −25 `span-colle` (famille RETIRÉE — la lib absorbe le marqueur de
+// folio collé, 25 lignes sur 25 mesurées) et +2 `cle-de-ligne-ambigue` NEUVES, NOMMÉES : sous
+// `sansBr`, `Batterie tonnerre<br>de feu` (AA 10 l.185) et `CANON À RÉPÉTITION FEU D'ENFER` (l.210)
+// rejoignent leurs homonymes d'une autre table de la même section — une FUSION de clés, donc une
+// ambiguïté de résolution RÉELLE que le détecteur nomme désormais (4 autres clés se réécrivent sans
+// leur `<br>`, à total constant).
+const PLAFOND = 664
 
-test('stock COMMITTÉ : PLAFOND de la dette de forme — le relever exige de changer CE test', () => {
+// PLAFOND de la DETTE, distinct du précédent : le fichier de stock est un INVENTAIRE des sites
+// mesurés (il ne décroît qu'en corrigeant `Source/`), la dette est ce qui reste À TRIER — les entrées
+// sans `preuve`. Celle-là descend à CHAQUE preuve lue au PDF, et ne monte que sous `CLIQUET:`.
+const PLAFOND_A_TRIER = 664
+
+test('stock COMMITTÉ : PLAFOND de la DETTE — « à trier » (entrées sans preuve) ne remonte jamais', () => {
+  const { aTrier, verifies } = comptesDeTri(readStock(STOCK_PATH))
+  assert.ok(
+    aTrier <= PLAFOND_A_TRIER,
+    `${aTrier} entrée(s) à trier pour un plafond de ${PLAFOND_A_TRIER} : une dette ne grossit pas`,
+  )
+  assert.equal(aTrier + verifies, readStock(STOCK_PATH).length, 'toute entrée est soit à trier, soit vérifiée')
+})
+
+test('stock COMMITTÉ : PLAFOND de l’INVENTAIRE — le relever exige de changer CE test', () => {
   const entrees = readStock(STOCK_PATH)
   assert.ok(
     entrees.length <= PLAFOND,
@@ -196,6 +225,51 @@ test('l’écart est jugé FAMILLE PAR FAMILLE : le stock d’une famille ne sol
   assert.equal(neuves.length, 1, 'la famille NON couverte reste neuve')
   assert.match(neuves[0], /^donnee-en-tete ::/)
   assert.deepEqual(perimees, [], 'la famille couverte n’est pas déclarée soldée pour autant')
+})
+
+// La PREUVE (« PDF p.N : … » + `date`) vit sur l'entrée EXISTANTE : exempter, c'est ÉDITER sa ligne,
+// jamais ajouter un fichier d'exemptions. Trois cas, tous mesurés sur un chapitre synthétique.
+const SITE_FIXTURE = ['## Tables', '', '| Lancer | Effet |', '| --- | --- |', '| 01-10 | Gagnez 3 États<br>Assourdi |'].join('\n')
+
+test('preuve VALIDE : l’entrée est comptée « vérifiée », et aucun verdict ne la rougit', () => {
+  const sites = sitesDuChapitre(SITE_FIXTURE, FICHIER)
+  const stock = entreesDe(sites, { lot: 'x', date: '2026-09-14' })
+    .map((e) => ({ ...e, preuve: 'PDF p.42 : les deux États sont imprimés en colonne, pas de césure.' }))
+  assert.deepEqual(comptesDeTri(stock), { aTrier: 0, verifies: 1 })
+  assert.deepEqual(verdictDesPreuves(sites, stock), { vides: [], perimees: [] })
+  // Une entrée prouvée reste un SITE du stock : elle n'est ni neuve ni soldée.
+  assert.deepEqual(ecartDuStock(sites, stock), { neuves: [], perimees: [] })
+})
+
+test('preuve VIDE : une exemption sans fait est ROUGE (et ne compte pas comme vérifiée)', () => {
+  const sites = sitesDuChapitre(SITE_FIXTURE, FICHIER)
+  const stock = entreesDe(sites, { lot: 'x', date: '2026-09-14' }).map((e) => ({ ...e, preuve: '   ' }))
+  assert.deepEqual(comptesDeTri(stock), { aTrier: 1, verifies: 0 })
+  const { vides, perimees } = verdictDesPreuves(sites, stock)
+  assert.equal(vides.length, 1)
+  assert.match(vides[0], /preuve` VIDE/)
+  assert.deepEqual(perimees, [])
+})
+
+test('preuve PÉRIMÉE : une entrée prouvée dont le site n’est plus mesuré est ROUGE', () => {
+  const sites = sitesDuChapitre(SITE_FIXTURE, FICHIER)
+  const stock = entreesDe(sites, { lot: 'x', date: '2026-09-14' })
+    .map((e) => ({ ...e, ref: `${e.ref} (fantôme)`, preuve: 'PDF p.42 : lu.' }))
+  const { vides, perimees } = verdictDesPreuves(sites, stock)
+  assert.deepEqual(vides, [])
+  assert.equal(perimees.length, 1)
+  assert.match(perimees[0], /preuve PÉRIMÉE/)
+})
+
+test('--ecrire-stock CONSERVE la preuve et l’échéance d’une entrée existante, à clé identique', () => {
+  const sites = sitesDuChapitre(SITE_FIXTURE, FICHIER)
+  const ancien = entreesDe(sites, { lot: '#1384 B2', date: '2026-09-14' })
+    .map((e) => ({ ...e, preuve: 'PDF p.42 : lu.' }))
+  const rendu = entreesDe(sites, { lot: '#9999 Z', date: '2030-01-01', ancien })
+  assert.deepEqual(rendu, ancien, 'une régénération ne rajeunit ni n’efface une entrée inchangée')
+  // Un site NEUF (aucune entrée ancienne) prend le lot et la date du run — et AUCUNE preuve.
+  const neuf = entreesDe(sites, { lot: '#9999 Z', date: '2030-01-01', ancien: [] })
+  assert.deepEqual(neuf.map((e) => [e.lot, e.date, 'preuve' in e]), [['#9999 Z', '2030-01-01', false]])
 })
 
 test('comptesParFamille nomme TOUTES les familles, même à zéro (une famille muette resterait invisible)', () => {

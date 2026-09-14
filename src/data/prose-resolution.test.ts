@@ -32,8 +32,11 @@ const GARDE = {
     'de fichiers. Il est MESURÉ au run et imprimé (nombre d’adresses, nombre de chapitres distincts).',
   angleMort:
     'L’empreinte `sum` est calculée sur le texte NORMALISÉ (`normText` : emphase, guillemets, tirets, ' +
-    'casse, espaces) — une ré-extraction qui ne change QUE l’habillage markdown passe le volet B sans ' +
-    'rien dire. Les `desc` INLINE ne sont pas le sujet de cette garde — `maison` COMPRISES : le champ ' +
+    'casse, espaces, et depuis #1384 B2 le `<br>` de cellule via `sansBr`) — une ré-extraction qui ne ' +
+    'change QUE l’habillage markdown passe le volet B sans rien dire, et `sumOf` ne voit PLUS un ' +
+    '`<br>` gagné ou perdu dans une cellule (la coupure imprimée change, l’empreinte non : c’est le ' +
+    'prix de l’adressage stable d’une clé coupée par l’extraction). ' +
+    'Les `desc` INLINE ne sont pas le sujet de cette garde — `maison` COMPRISES : le champ ' +
     '`maison` ne dispense pas d’adresser (`grammaire/prose.ts` V3), et ces nœuds sont déjà au ' +
     'dénominateur décroissant du stock `PROSE_INLINE_TOLEREE` ' +
     '(`src/data/schemas/grammaire/prose-inline.ts`), que le refine de parse tient. Un second stock ici ' +
@@ -143,11 +146,11 @@ describe('résolution de la prose ADRESSÉE — toute `descRef` rend son texte, 
       .filter((r) => r.md != null && HTML_TAG.test(r.md))
       .map((r) => `${r.a.fichier}:${r.a.id} → ${HTML_TAG.exec(r.md!)?.[0]}`)
       .sort();
-    // EFFET RÉEL À LA LIVRAISON (#1384 B1) : ZÉRO rouge — les adresses posées n'atteignent aucune
-    // table ni aucun `<br>`. C'est un cliquet PRÉVENTIF, dit tel quel : il ne solde rien aujourd'hui,
-    // il interdit qu'une adresse future fasse entrer du HTML dans la prose du joueur par la porte du
-    // `Source/`, que les 391 sites `br-litteral` de `scripts/raw/source-tables-stock.json` tiennent
-    // grande ouverte.
+    // EFFET RÉEL À LA LIVRAISON (#1384 B2) : ZÉRO rouge — et la porte par laquelle un `<br>` pouvait
+    // entrer est désormais FERMÉE PAR LA LIB : une cellule résolue rend le saut de ligne IMPRIMÉ
+    // (`brEnSaut`), un fragment de blocs recolle le `<br>` de ses lignes de table en espace
+    // (`decoupe.ts`, `mdAffichable`). Le cliquet reste PRÉVENTIF pour les 40 autres balises que
+    // `HTML_TAG` couvre, que l'extraction Marker peut semer ailleurs qu'en cellule.
     expect(
       rouges,
       'Texte(s) résolu(s) portant une balise HTML — la règle 5 vaut pour la prose ADRESSÉE comme pour ' +
@@ -184,14 +187,19 @@ const TEXTE_FIXTURE = [
   '',
   "Les créatures les plus perturbantes de l'Empire glacent le sang de quiconque croise leur route.",
   '',
-  // Le cas du volet E : une cellule que l'extraction Marker a rendue avec un `<br>` LITTÉRAL — la
-  // forme exacte des 391 sites `br-litteral` du `Source/` (`scripts/raw/source-tables-stock.json`).
+  // Deux cas du volet E, dans la même table :
+  //  - `Bras` : une cellule que l'extraction Marker a rendue avec un `<br>` LITTÉRAL — la forme
+  //    exacte des 391 sites `br-litteral` du `Source/` (`scripts/raw/source-tables-stock.json`). La
+  //    lib l'ABSORBE (saut imprimé → `\n`) : c'est le contrat POSITIF ci-dessous.
+  //  - `Torse` : une balise `<b>` — du HTML que RIEN n'absorbe, et sur lequel le volet E garde sa
+  //    MORSURE (un volet qu'aucune fixture ne fait rougir ne prouve rien).
   '### Sequelle',
   '',
   '| Zone | Effet |',
   '| --- | --- |',
   '| Bras | Gagnez 2 États<br>Hémorragique |',
   '| Jambe | Gagnez 1 État Sonné |',
+  '| Torse | Gagnez <b>2</b> États Sonné |',
   '',
 ].join('\n');
 
@@ -291,16 +299,22 @@ describe('les trois volets MORDENT — fixture synthétique', () => {
     expect(echecDe(adresse(f, f, f, f), LECTEUR)?.code).toBe('montage-hors-plafond');
   });
 
-  it('E — un texte résolu qui porte une balise HTML est vu ; la cellule voisine, propre, passe', () => {
+  it('E — une balise HTML résolue est vue ; un `<br>` de cellule, lui, est ABSORBÉ en saut de ligne', () => {
     const cellule = (row: string): Fragment => {
       const brut: Fragment = { kind: 'cellule', sec: 'sequelle', secOcc: 1, row, col: 'Effet', sum: '' };
       const sum = empreinteDe(CHAPITRE, brut);
       if (typeof sum !== 'string') throw new Error(`fixture illisible : ${JSON.stringify(sum)}`);
       return { ...brut, sum };
     };
-    const avec = texteResolu(adresse(cellule('Bras')), LECTEUR);
-    expect(avec, 'la cellule de fixture rend bien son `<br>` littéral').toContain('<br>');
-    expect(HTML_TAG.test(avec!), 'le volet E MORD sur le texte résolu').toBe(true);
+    // MORSURE du volet E, sur une balise que RIEN n'absorbe.
+    const html = texteResolu(adresse(cellule('Torse')), LECTEUR);
+    expect(html, 'la cellule de fixture rend bien sa balise `<b>`').toContain('<b>');
+    expect(HTML_TAG.test(html!), 'le volet E MORD sur le texte résolu').toBe(true);
+
+    // CONTRAT POSITIF du `<br>` (#1384 B2) : le saut IMPRIMÉ est rendu, la balise ne l'est jamais.
+    const br = texteResolu(adresse(cellule('Bras')), LECTEUR);
+    expect(br, 'une cellule à `<br>` rend le saut de ligne qu’elle imprime').toBe('Gagnez 2 États\nHémorragique');
+    expect(HTML_TAG.test(br!), 'et ne rougit plus le volet E : ce n’est plus du HTML').toBe(false);
 
     const sans = texteResolu(adresse(cellule('Jambe')), LECTEUR);
     expect(HTML_TAG.test(sans!), 'une cellule sans balise ne rougit pas').toBe(false);

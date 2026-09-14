@@ -2841,4 +2841,4 @@ saleté
 | 93-94              | 88-92  | 93-97  | 91-94    | 89-93    | Totalement déséquilibré | -20 Sociabilité, +10 Force Mentale                                                                              |
 | 95-97              | 93-97  | -      | 95-98    | 94-97    | Infinie malveillance    | -10 à tous les Tests ne blessant personne ;<br>+10 sur les Tests visant à blesser                               |
 | 98-00              | 98-00  | 98-00  | 99-00    | 98-00    | Affreusement nerveux    | +5 Agilité, -5 Sociabilité                                                                                      |
-<!-- sources-empreinte: 72b634c60bbbed36f8f6389d91094d5ccdc1ebf5 (129 fichiers, 16 dossiers) corps: 5881250580596920c1e9f6bdb35c4878d2cac091 -->
+<!-- sources-empreinte: 3adaf40e74757a366a97c2cf881cb7a83808d5d2 (129 fichiers, 16 dossiers) corps: 5881250580596920c1e9f6bdb35c4878d2cac091 -->

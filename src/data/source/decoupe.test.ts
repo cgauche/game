@@ -460,3 +460,47 @@ describe('parseTable — la bannière de table, absorbée SOUS GARDE', () => {
     }
   });
 });
+
+/* Le `<br>` de cellule (#1384 B2), sur le SITE RÉEL `07 - Carrieres.md:49`, section
+ * « Coût des changements de Carrière et de Talent » : UNE seule table (donc aucune ambiguïté de clé),
+ * et elle porte les deux formes à la fois — une CLÉ coupée (`Quitter une Carrière<br>Achevée`) et une
+ * CELLULE non-clé coupée (`100 PX +100 PX par fois où<br>le Talent a déjà été pris`). Mesuré le
+ * 2026-09-14 sur les 16 livres : 149 clés et 1267 cellules non-clé à `<br>` vivent dans une section à
+ * une seule table — aucune fixture n'est nécessaire. */
+const SEC_BR = 'cout-des-changements-de-carriere-et-de-talent';
+
+describe('`<br>` de cellule — saut de ligne IMPRIMÉ : absorbé à l’adressage, rendu en `\\n`', () => {
+  const chapitre = () => chapitreDe(LDB, '07');
+  const frag = (row: string, col: string) =>
+    resoudreFragment(
+      chapitre(),
+      estampille<FragmentCellule>(chapitre(), { kind: 'cellule', sec: SEC_BR, secOcc: 1, row, col }),
+    );
+
+  it('une CLÉ de ligne coupée par un `<br>` est adressable telle qu’elle se LIT', () => {
+    // L'adresse porte la clé IMPRIMÉE (« Quitter une Carrière Achevée »), jamais la balise d'extraction.
+    const res = frag('Quitter une Carrière Achevée', 'Coût en PX');
+    expect(estErreur(res)).toBe(false);
+    expect((res as Resolu).md).toBe('100 PX');
+    expect((res as Resolu).folios).toContain(49);
+  });
+
+  it('une CELLULE à `<br>` rend le SAUT qu’elle imprime, jamais la balise (règle 5)', () => {
+    const res = frag('+1 Augmentation de Talent', 'Coût en PX');
+    expect(estErreur(res)).toBe(false);
+    expect((res as Resolu).md).toBe('100 PX +100 PX par fois où\nle Talent a déjà été pris');
+    expect((res as Resolu).md).not.toContain('<br>');
+  });
+
+  it('le md d’un fragment de BLOCS ne porte plus de `<br>` sur ses lignes de table (rendu GFM)', () => {
+    const res = blocs('07', SEC_BR, 0, 0);
+    expect(estErreur(res)).toBe(false);
+    expect((res as Resolu).md).not.toContain('<br>');
+    expect((res as Resolu).md).toContain('Quitter une Carrière Achevée');
+  });
+
+  it('ANGLE MORT DIT : `normText` (donc `sumOf`) est AVEUGLE au `<br>` — les deux formes ont la même empreinte', () => {
+    expect(normText('Quitter une Carrière<br>Achevée')).toBe(normText('Quitter une Carrière Achevée'));
+    expect(sumOf('| a<br>b |')).toBe(sumOf('| a b |'));
+  });
+});

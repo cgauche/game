@@ -1,5 +1,5 @@
 {
-  "quoi": "Tables du `Source/` que leur FORME rend inadressables (#1384, épique #1388) : une ENTRÉE par SITE, clé `famille :: fichier :: ref :: occurrence` (régime #1711). Compte par famille à la naissance : br-litteral 391, span-colle 25, donnee-en-tete 13, banniere-suspecte 113, cle-de-ligne-ambigue 145. PLAN de résorption — B2 : `br-litteral` et `span-colle` se soldent par UNE migration rejouable (le `<br>` d'une cellule devient une espace ; le `<span data-folio>` collé passe seul sur la ligne précédente), soit −(br-litteral + span-colle) entrées. B3 et suivants : une ZONE par train, corrigée à la main au PDF (geste `docs/ajouter-un-livre-source.md` §7) — `18 - Traumatisme`, `10 - Talents`, `61 - Encombrement`, `62 - Les armes`, `85 - Traits`, `08 - Statut`, `14 - _GoBack`, `40 - Les prières`, `46 - Les règles magiques`, `05 - _gjdgxs` du Livre de base ; zones portées par tickets existants : #1707 (table de Talents dupliquée), #1519 (`51 - Magie du Chaos` mal titré), #678 (EDOC `09 - _GoBack.md`, en-têtes orphelins). Le résidu de SCÉNARIO (hors donnée de règle) est porté par #1731. COUVERTURE DITE de `cle-de-ligne-ambigue` : elle nomme les clés partagées ENTRE tables d'une section — le périmètre d'UN geste (restituer les headings imprimés). Les clés dupliquées DANS une même table et les valeurs non-clés répétées rendent aussi `ligne-ambigue` et restent HORS de cette famille : mesuré le 2026-09-14, 145 ici, 220 au grain « clé dupliquée dans la section », 2 289 au prédicat réel de `rowsMatching` (toute valeur de cellule répétée). LIMITE DITE : `banniere-suspecte` est le résidu que la garde du parseur n'absorbe PAS. Il se ventile (mesure du 2026-09-14) en texte NON majuscule 51, bandeau MAJUSCULE sans rangée de donnée 49 (pour l'essentiel des titres de statbloc de PNJ et leurs rubriques : « ISABELLA — PROPHÈTE (BRONZE 4) », « COMPÉTENCES DE BASE »), une seule lettre 11, aucune lettre 1, et bandeau MAJUSCULE devant une table SANS en-têtes 1 (fourchette en `headers[0]`). Chacun se tranche au PDF, un par un, jamais par un élargissement de la garde qui sauterait un en-tête réel.",
+  "quoi": "Tables du `Source/` que leur FORME rend inadressables (#1384, épique #1388) : une ENTRÉE par SITE, clé `famille :: fichier :: ref :: occurrence` (régime #1711). Compte par famille à la naissance : br-litteral 391, donnee-en-tete 13, banniere-suspecte 113, cle-de-ligne-ambigue 147. CE FICHIER EST UN INVENTAIRE des sites mesurés, PLAFONNÉ en nombre d'entrées : il ne décroît que quand un site disparaît du `Source/`. La DETTE, elle, est le compte « à trier » — les entrées SANS `preuve` — et celle-là décroît vers zéro, sous son propre plafond (`PLAFOND_A_TRIER`, `check-source-tables.test.mjs`) : une entrée reçoit sa `preuve` (« PDF p.N : … ») + sa `date` le jour où sa forme est lue au PDF et jugée conforme au livre, et elle RESTE (le site existe, il est jugé). PLAN de résorption — B2 : AUCUNE migration de `Source/`. Un `<br>` de cellule est un saut de ligne IMPRIMÉ (GFM n'a pas d'autre forme) : la lib l'absorbe pour l'ADRESSAGE (`sansBr`) et le rend en `\\n` pour une cellule (`brEnSaut`), donc il ne bloque plus une adresse. Son SENS, lui, se lit AU PDF, site par site : une CÉSURE typographique se corrige en espace dans `Source/`, une liste d'items imprimée en colonne se garde telle quelle et se solde par une `preuve` sur son entrée (« PDF p.N : … » + `date`). B3 et suivants : une ZONE par train, corrigée à la main au PDF (geste `docs/ajouter-un-livre-source.md` §7) — `18 - Traumatisme`, `10 - Talents`, `61 - Encombrement`, `62 - Les armes`, `85 - Traits`, `08 - Statut`, `14 - _GoBack`, `40 - Les prières`, `46 - Les règles magiques`, `05 - _gjdgxs` du Livre de base ; zones portées par tickets existants : #1707 (table de Talents dupliquée), #1519 (`51 - Magie du Chaos` mal titré), #678 (EDOC `09 - _GoBack.md`, en-têtes orphelins). Le résidu de SCÉNARIO (hors donnée de règle) est porté par #1731. COUVERTURE DITE de `cle-de-ligne-ambigue` : elle nomme les clés partagées ENTRE tables d'une section — le périmètre d'UN geste (restituer les headings imprimés). Les clés dupliquées DANS une même table et les valeurs non-clés répétées rendent aussi `ligne-ambigue` et restent HORS de cette famille : mesuré le 2026-09-14, 145 ici, 220 au grain « clé dupliquée dans la section », 2 289 au prédicat réel de `rowsMatching` (toute valeur de cellule répétée). LIMITE DITE : `banniere-suspecte` est le résidu que la garde du parseur n'absorbe PAS. Il se ventile (mesure du 2026-09-14) en texte NON majuscule 51, bandeau MAJUSCULE sans rangée de donnée 49 (pour l'essentiel des titres de statbloc de PNJ et leurs rubriques : « ISABELLA — PROPHÈTE (BRONZE 4) », « COMPÉTENCES DE BASE »), une seule lettre 11, aucune lettre 1, et bandeau MAJUSCULE devant une table SANS en-têtes 1 (fourchette en `headers[0]`). Chacun se tranche au PDF, un par un, jamais par un élargissement de la garde qui sauterait un en-tête réel.",
   "entrees": [
     {
       "famille": "br-litteral",
@@ -3130,206 +3130,6 @@
       "date": "2026-09-14"
     },
     {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/05 - _gjdgxs.md",
-      "ref": "folio 40",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/10 - Talents.md",
-      "ref": "folio 143",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/18 - Traumatisme.md",
-      "ref": "folio 175",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/18 - Traumatisme.md",
-      "ref": "folio 176",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/18 - Traumatisme.md",
-      "ref": "folio 177",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/18 - Traumatisme.md",
-      "ref": "folio 178",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/40 - Les prieres.md",
-      "ref": "folio 219",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/62 - Les armes.md",
-      "ref": "folio 294",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/62 - Les armes.md",
-      "ref": "folio 295",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/85 - Traits de creature.md",
-      "ref": "folio 345",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/02 - Les ogres.md",
-      "ref": "folio 29",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/08 - ANNEXE I.md",
-      "ref": "folio 146",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/07 - Chapitre 4 - Montures et vehicules.md",
-      "ref": "folio 24",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/14 - CALENDRIER DES ATTRACTIONS PRINCIPALES.md",
-      "ref": "folio 152",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/14 - CALENDRIER DES ATTRACTIONS PRINCIPALES.md",
-      "ref": "folio 154",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/12 - Activites.md",
-      "ref": "folio 222",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/12 - Activites.md",
-      "ref": "folio 223",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Les Vents de Magie/02 - Revisions des regles d'incantation.md",
-      "ref": "folio 25",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Les Vents de Magie/02 - Revisions des regles d'incantation.md",
-      "ref": "folio 30",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Les Vents de Magie/03 - Travaux arcaniques.md",
-      "ref": "folio 51",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Les Vents de Magie/12 - Artefacts magiques.md",
-      "ref": "folio 156",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Les Vents de Magie/12 - Artefacts magiques.md",
-      "ref": "folio 157",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Les Vents de Magie/15 - Nemesis et aventures magiques.md",
-      "ref": "folio 220",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Les Vents de Magie/15 - Nemesis et aventures magiques.md",
-      "ref": "folio 221",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
-      "famille": "span-colle",
-      "fichier": "Source/Warhammer v4 - Les Vents de Magie/15 - Nemesis et aventures magiques.md",
-      "ref": "folio 222",
-      "occurrence": 1,
-      "lot": "#1384 B1",
-      "date": "2026-09-14"
-    },
-    {
       "famille": "donnee-en-tete",
       "fichier": "Source/Warhammer v4 - Livre de base version corrigee/14 - _GoBack.md",
       "ref": "dispersion#1 :: 1|2|3",
@@ -4612,9 +4412,25 @@
     {
       "famille": "cle-de-ligne-ambigue",
       "fichier": "Source/WH - V4 - Aux Armes/10 - L'ARTILLERIE ET LES DEGATS INFLIGES AUX STRUCTURES.md",
+      "ref": "les-armes-de-siege#1 :: batterie tonnerre de feu",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "cle-de-ligne-ambigue",
+      "fichier": "Source/WH - V4 - Aux Armes/10 - L'ARTILLERIE ET LES DEGATS INFLIGES AUX STRUCTURES.md",
       "ref": "les-armes-de-siege#1 :: canon à répétition",
       "occurrence": 1,
       "lot": "#1384 B1",
+      "date": "2026-09-14"
+    },
+    {
+      "famille": "cle-de-ligne-ambigue",
+      "fichier": "Source/WH - V4 - Aux Armes/10 - L'ARTILLERIE ET LES DEGATS INFLIGES AUX STRUCTURES.md",
+      "ref": "les-armes-de-siege#1 :: canon à répétition feu d'enfer",
+      "occurrence": 1,
+      "lot": "#1384 B2",
       "date": "2026-09-14"
     },
     {
@@ -4884,17 +4700,17 @@
     {
       "famille": "cle-de-ligne-ambigue",
       "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/12 - CHAPITRE 8 - Les mutants dans l'Empire.md",
-      "ref": "mutations-physiques#1 :: toute<br>puissance",
+      "ref": "mutations-physiques#1 :: toute puissance",
       "occurrence": 1,
-      "lot": "#1384 B1",
+      "lot": "#1384 B2",
       "date": "2026-09-14"
     },
     {
       "famille": "cle-de-ligne-ambigue",
       "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/12 - CHAPITRE 8 - Les mutants dans l'Empire.md",
-      "ref": "mutations-mentales#1 :: toute<br>puissance",
+      "ref": "mutations-mentales#1 :: toute puissance",
       "occurrence": 1,
-      "lot": "#1384 B1",
+      "lot": "#1384 B2",
       "date": "2026-09-14"
     },
     {
@@ -5020,9 +4836,9 @@
     {
       "famille": "cle-de-ligne-ambigue",
       "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/14 - CALENDRIER DES ATTRACTIONS PRINCIPALES.md",
-      "ref": "calendrier-des-attractions-principales#1 :: collège royal de<br>musique",
+      "ref": "calendrier-des-attractions-principales#1 :: collège royal de musique",
       "occurrence": 1,
-      "lot": "#1384 B1",
+      "lot": "#1384 B2",
       "date": "2026-09-14"
     },
     {
@@ -5076,9 +4892,9 @@
     {
       "famille": "cle-de-ligne-ambigue",
       "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/14 - CALENDRIER DES ATTRACTIONS PRINCIPALES.md",
-      "ref": "pnj-principaux-presents#3 :: collège royal de<br>musique",
+      "ref": "pnj-principaux-presents#3 :: collège royal de musique",
       "occurrence": 1,
-      "lot": "#1384 B1",
+      "lot": "#1384 B2",
       "date": "2026-09-14"
     },
     {

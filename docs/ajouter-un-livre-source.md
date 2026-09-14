@@ -212,12 +212,16 @@ Les tables sont là où Marker casse le plus, et une table cassée est une table
 `descRef` de cellule vise une ligne par sa CLÉ et une colonne par son EN-TÊTE). L'inventaire est
 MESURÉ et cliqueté : `node scripts/raw/check-source-tables.mjs` — une entrée par site dans
 `scripts/raw/source-tables-stock.json`, un site hors stock comme une entrée sans site sont rouges.
-Corriger un site le fait disparaître du stock ; **retirer son entrée est le geste qui le solde.**
+Le fichier de stock est l'**INVENTAIRE** des sites mesurés ; la **dette** est le compte `à trier`
+(entrées sans `preuve`), qui décroît vers zéro. Deux gestes soldent donc un site : **corriger** le
+`.md` (le site disparaît, on retire son entrée), ou **prouver au PDF** que la forme est celle du livre
+(`"preuve": "PDF p.N : …"` + `"date"` sur l'entrée, qui RESTE — le site existe toujours, il est
+jugé). Une `preuve` vide, ou posée sur un site qui n'est plus mesuré, est rouge.
 
 | Défaut (famille du détecteur) | À quoi ça ressemble | Geste au `.md` |
 |---|---|---|
-| `br-litteral` | `\| Gagnez 3 États<br>Assourdi \|` | le `<br>` devient une **espace** (jamais ` ; ` ni ` — `) : c'est la seule lecture recollable au PDF, qui imprime une simple césure de cellule |
-| `span-colle` | `<span … data-folio="7"></span>\| Lancer \| …` | le marqueur passe **seul sur la ligne précédente** (ordre des folios conservé) — collé, il fait manquer la ligne à la table entière |
+| `br-litteral` | `\| Gagnez 3 États<br>Assourdi \|` | **RIEN par réflexe** : la lib absorbe la FORME (adressage `sansBr`, rendu de cellule `brEnSaut` → saut de ligne), le site n'est plus inadressable. Son SENS se **lit au PDF, site par site** : une simple **césure** typographique se recolle en espace dans `Source/` ; une **liste d'items** réellement imprimée en colonne se garde telle quelle et se solde par une `preuve` (« PDF p.N : … ») + `date` sur son entrée de stock |
+| marqueur de folio collé à une ligne de table — **PAS un défaut** | `<span … data-folio="7"></span>\| Lancer \| …` | **RIEN** : `toBlocks` retire les `<span>` AVANT `parseTable`, la table se lit entièrement (25 lignes sur 25 mesurées le 2026-09-14). L'ancre **reste où la page coupe** — la déplacer réécrirait `Source/` pour un défaut déjà absorbé |
 | `donnee-en-tete` | une table dont les « en-têtes » sont `\| 81-85 \| Bouche explosée \|` | c'est la **continuation** de la table précédente coupée par un saut de page : **fusionner** les deux blocs sous les en-têtes réels |
 | `cle-de-ligne-ambigue` | deux tables d'une même section partagent la clé `01-10` | restituer les **headings IMPRIMÉS** qui séparent les tables au livre (une section par localisation, par domaine…) — jamais inventer un titre |
 | catégorie en mauvaise colonne | `ARMES D'HAST` en 5ᵉ colonne | la ramener en **colonne 1**, comme le bandeau intérieur du PDF — la table reste **UNE et entière**, jamais découpée en headings |

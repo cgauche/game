@@ -143,10 +143,18 @@ const FOLIO_TITLE_RATCHET_MAX = 0;
 // titre-introuvable. Leur `desc` recolle une CELLULE de tableau MDG 13 que l'extraction coupe par des
 // `<br>` (« se trouve sur le pont, il<br>doit réussir », l.730 ; « se trouve<br>dans le gréement »,
 // l.714 ; « se trouve aux<br>avirons », l.751) : la voie DESC cherche le verbatim d'un seul tenant et
-// ne le retrouve pas. Les garder AVEC leurs `<br>` est exclu — c'est du HTML, que la règle 5 interdit
-// et que `no-html-in-prose.test.ts` refuse (`HTML_TAG` couvre `br`). Les 3 autres entrées du lot
-// (`nid-de-pie` MDG 12 l.303, station `cale` et Trait `cale` MSRC 07 l.94) citent de la PROSE continue
-// et sont RÉSOLUES. Le cliquet est un PLAFOND : le compte réel à l'arbre précédent était sous 775.
+// ne le retrouve pas. Les 3 autres entrées du lot (`nid-de-pie` MDG 12 l.303, station `cale` et Trait
+// `cale` MSRC 07 l.94) citent de la PROSE continue et sont RÉSOLUES. Le cliquet est un PLAFOND : le
+// compte réel à l'arbre précédent était sous 775.
+//
+// ÉTAT DU MATCHER après #1384 B2 : `normMap` (`scripts/guards/lib/folioIntegrity.mjs:90`) ne compose
+// PAS `sansBr`, là où l'adressage (`normText`) le compose. Mesure du 2026-09-14, les deux branches
+// jouées sur le corpus : la composition ferait tomber les irrésolues de 775 à 538 (les 3 stations
+// ci-dessus résolvent) et convertirait 66 sites en réfutations NEUVES sur ce volet à tolérance zéro —
+// 55 `criticals.json` (LDB, p.174 déclarée, desc encadrée en 175-178), 10 `mass-battle.json` (ADE2,
+// p.88 → 90+), 1 `traits.json:destabilisant` (ZI, p.82 → 135). C'est la classe « ambiguïté prose/table »
+// de `folioRatchetStock.mjs:31-35` : elle se tranche au PDF, site par site, au train B3 de #1384
+// (relever `FOLIO_RATCHET_MAX` de 109 à 175 serait l'inverse du cliquet).
 const UNRESOLVED_MAX = 776;
 
 describe('intégrité du folio — voie TITRE de section, et skip BRUYANT de ce qui reste (#1200)', () => {

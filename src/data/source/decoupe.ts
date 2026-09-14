@@ -33,7 +33,7 @@
 //    testée SOUS l'habillage markdown, un `…une autre.*` fermant une emphase étant bel et bien
 //    terminé (`05 - _gjdgxs.md:438`) — et que le bloc suivant n'ouvre pas un paragraphe logique
 //    (emphase `*`/`**`, puce, table).
-import { normalize as normalizeCitation } from './normalize.ts';
+import { normalize as normalizeCitation, sansBr, brEnSaut } from './normalize.ts';
 import { hash32 } from '../hash.ts';
 
 /** Bloc d'affichage : le markdown rendu, le folio courant à son ouverture, ses marqueurs internes. */
@@ -152,11 +152,13 @@ function slugify(titre: string): string {
 /**
  * Normalisation de COMPARAISON (verbatim tolérant à l'habillage) : délègue au normaliseur de
  * citations de l'Atlas (`normalize` : emphase, guillemets, apostrophes, tirets, casse, espaces
- * insécables, accents CONSERVÉS) après retrait des balises `<span>`, puis aplatit la ponctuation de
+ * insécables, accents CONSERVÉS) après retrait des balises `<span>` et absorption du `<br>` de
+ * cellule (`sansBr` : un saut imprimé compte pour une espace — une clé de ligne ou un en-tête
+ * coupé par l'extraction reste ADRESSABLE tel qu'il se lit), puis aplatit la ponctuation de
  * table (espaces autour des `|`, tirets de la ligne de séparation).
  */
 export function normText(s: string): string {
-  return normalizeCitation(stripSpans(s))
+  return normalizeCitation(sansBr(stripSpans(s)))
     .replace(/\s*\|\s*/g, '|')
     .replace(/-{2,}/g, '-')
     .trim();
@@ -394,6 +396,17 @@ const ouDe = (frag: Fragment): string =>
     ? `§${frag.sec}#${frag.secOcc} [${frag.row}]×[${frag.col}]`
     : `§${frag.sec}#${frag.secOcc} blocs ${frag.b0}-${frag.b1}`;
 
+/**
+ * Md de BLOCS rendu AFFICHABLE : sur une ligne de TABLE seulement, le `<br>` compte pour une espace.
+ * GFM n'a aucune façon de montrer un saut de ligne DANS une cellule (une rangée tient sur UNE ligne),
+ * et `<Prose>` ne monte que `remarkGfm` (`src/ui/Prose.tsx:87`) — un `\n` de cellule y serait rendu
+ * en espace de toute façon. La forme imprimée reste portée par la CHAÎNE d'une cellule adressée
+ * (`brEnSaut`, `celluleBrute`) ; hors table, le md n'est pas touché — sans risque : le corpus VF
+ * (16 livres de `BOOKS`) ne porte AUCUN `<br>` hors ligne de table, mesuré le 2026-09-14.
+ */
+const mdAffichable = (md: string): string =>
+  md.split('\n').map((l) => (TABLE_LINE.test(l) ? sansBr(l) : l)).join('\n');
+
 /** Résout un fragment de BLOCS (suite contiguë de blocs d'une section), empreinte NON vérifiée. */
 function blocsBruts(chapitre: ChapitreParse, frag: FragmentBlocs): Resolu | ErreurResolution {
   const section = sectionDe(chapitre, frag);
@@ -406,7 +419,7 @@ function blocsBruts(chapitre: ChapitreParse, frag: FragmentBlocs): Resolu | Erre
     };
   }
   const blocks = section.blocks.slice(b0, b1 + 1);
-  return { md: blocks.map((b) => b.md).join('\n\n'), folios: foliosOf(blocks) };
+  return { md: mdAffichable(blocks.map((b) => b.md).join('\n\n')), folios: foliosOf(blocks) };
 }
 
 /**
@@ -425,7 +438,9 @@ function celluleBrute(chapitre: ChapitreParse, frag: FragmentCellule): Resolu | 
   const want = normText(String(frag.col ?? ''));
   const c = hit.headers.findIndex((h) => normText(h) === want);
   if (c < 0) return { error: 'colonne-inconnue', detail: `${ou} : en-têtes = ${hit.headers.join(' / ')}` };
-  return { md: (hit.row[c] ?? '').trim(), folios: foliosOf([hit.block]) };
+  // Le `<br>` de la cellule REDEVIENT le saut de ligne qu'il imprime (`brEnSaut`) : la chaîne
+  // rendue garde la coupure du livre sans porter de HTML (règle 5).
+  return { md: brEnSaut(hit.row[c] ?? ''), folios: foliosOf([hit.block]) };
 }
 
 /** Texte d'un fragment, empreinte NON vérifiée. */

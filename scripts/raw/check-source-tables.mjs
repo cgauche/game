@@ -1,9 +1,14 @@
 // Garde des TABLES CASSÉES du `Source/` (#1384, épique #1388). L'extraction Marker rend les tables
 // imprimées avec des défauts de FORME qui les laissent inadressables (`descRef` de cellule) : un
-// `<br>` littéral dans une cellule, un marqueur de folio collé à la première ligne de table, une
-// continuation de table après saut de page dont les « en-têtes » sont une fourchette de données, un
-// bandeau de titre non absorbable, et des clés de ligne partagées entre deux tables d'une même
-// section (qui rendent `ligne-ambigue` à la résolution).
+// `<br>` littéral dans une cellule, une continuation de table après saut de page dont les
+// « en-têtes » sont une fourchette de données, un bandeau de titre non absorbable, et des clés de
+// ligne partagées entre deux tables d'une même section (qui rendent `ligne-ambigue` à la résolution).
+//
+// CE QUI N'EST PAS UN DÉFAUT ICI : un marqueur de folio (`<span data-folio>`) collé à la première
+// ligne d'une table. La LIB l'absorbe (`toBlocks` applique `stripSpans` AVANT `parseTable`) — mesuré
+// le 2026-09-14 : 25 lignes sur 25 ouvrent bien par `|` une fois les `<span>` retirés, et aucun
+// lecteur ne lit ces lignes à l'état brut. Il ne bloque donc AUCUNE adresse, et l'ancre reste où la
+// page coupe : `Source/` ne se réécrit pas pour un défaut que la lib absorbe déjà.
 //
 // QUI POSSÈDE QUOI : le PARSEUR (`src/data/source/decoupe.ts`) définit la table — ce script importe
 // `parseChapitre`, `tablesOf`, `normText` et `estCleDePlage` (et lit, par `tablesOf`, ce que
@@ -26,7 +31,7 @@ import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { BOOKS, readText } from './_lib.mjs'
-import { ecartDuVolet, sitesEnEntrees } from '../guards/lib/stock.mjs'
+import { ecartDuVolet, sitesEnEntrees, cleDeSite } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
 import { parseChapitre, tablesOf, normText, estCleDePlage } from '../../src/data/source/decoupe.ts'
 
@@ -37,20 +42,20 @@ const CHAPTER_FILE_RE = /^(\d+) - .*\.md$/
  *  (cf. le tableau « défaut de table → geste » de `docs/ajouter-un-livre-source.md` §7). */
 export const FAMILLES = [
   'br-litteral',
-  'span-colle',
   'donnee-en-tete',
   'banniere-suspecte',
   'cle-de-ligne-ambigue',
 ]
 
 /** RÉF d'une table : sa section et ses en-têtes NORMALISÉS — du contenu, jamais une position.
- *  Le `<br>` littéral y compte pour une ESPACE : c'est exactement le geste que la migration du lot
- *  B2 appliquera, et une clé qui changerait sous sa propre réparation ferait passer chaque table
- *  voisine pour un site neuf le jour où la sienne se solde. */
+ *  Le `<br>` littéral y compte pour une ESPACE sans aucun traitement local : `normText` compose
+ *  `sansBr` (`src/data/source/normalize.ts`, définition UNIQUE de la forme), donc une clé ne bouge
+ *  pas le jour où le site se corrige à la main dans `Source/`. */
 export const refDeTable = (sec, occ, headers) =>
-  `${sec}#${occ} :: ${headers.map((h) => normText(h.replace(/<br\s*\/?>/gi, ' '))).join('|')}`
+  `${sec}#${occ} :: ${headers.map((h) => normText(h)).join('|')}`
 
-/** Clé de LIGNE d'une rangée : sa première cellule non vide, normalisée (`''` si la rangée est vide). */
+/** Clé de LIGNE d'une rangée : sa première cellule non vide, normalisée (`''` si la rangée est vide,
+ *  `<br>` absorbé par `normText` comme dans la réf ci-dessus). */
 export const cleDeLigne = (row) => normText(row.find((c) => c.trim()) ?? '')
 
 /**
@@ -94,15 +99,6 @@ export function sitesDuChapitre(texte, file) {
       }
     }
   }
-  // `span-colle` se mesure sur le texte BRUT : `stripSpans` retire les balises avant les blocs, le
-  // marqueur de folio collé à la première ligne de table y est donc INVISIBLE — alors qu'il fait
-  // manquer cette ligne à `TABLE_LINE` (elle n'ouvre plus par `|`). La réf est le FOLIO porté, la
-  // seule identité stable d'une ligne de `Source/`.
-  for (const l of texte.split('\n')) {
-    if (!/data-folio/.test(l) || !/<\/span>\s*\|/.test(l)) continue
-    const folio = /data-folio="(-?\d+)"/.exec(l)?.[1] ?? '?'
-    out.push({ famille: 'span-colle', file, ref: `folio ${folio}` })
-  }
   return out
 }
 
@@ -129,11 +125,62 @@ export function scanAllBooks(books = BOOKS) {
 export const comptesParFamille = (sites) =>
   Object.fromEntries(FAMILLES.map((f) => [f, sites.filter((s) => s.famille === f).length]))
 
-/** Les ENTRÉES du stock, dans l'ordre du balayage — c'est CE rendu que le fichier de stock porte. */
-export const entreesDe = (sites, { lot, date }) =>
-  FAMILLES.flatMap((famille) =>
-    sitesEnEntrees(sites.filter((s) => s.famille === famille), { famille }).map((e) => ({ ...e, lot, date })),
+/**
+ * Les ENTRÉES du stock, dans l'ordre du balayage — c'est CE rendu que le fichier de stock porte.
+ * `ancien` (les entrées déjà committées) fait SURVIVRE à une régénération, à CLÉ IDENTIQUE, ce qu'un
+ * humain a posé sur l'entrée : sa `preuve` (le site a été tranché au PDF) et son échéance (`lot`,
+ * `date` — un site inchangé garde la date à laquelle il a été qualifié, une régénération ne
+ * rajeunit pas une dette). Un site NEUF prend le lot et la date du run.
+ * @param {{famille: string, file: string, ref: string}[]} sites
+ * @param {{ lot: string, date: string, ancien?: Iterable<object> }} p
+ */
+export const entreesDe = (sites, { lot, date, ancien = [] }) => {
+  const parCle = new Map()
+  for (const e of ancien) parCle.set(cleDeSite(e), e)
+  return FAMILLES.flatMap((famille) =>
+    sitesEnEntrees(sites.filter((s) => s.famille === famille), { famille }).map((e) => {
+      const vieux = parCle.get(cleDeSite(e))
+      const garde = vieux ? { lot: vieux.lot ?? lot, date: vieux.date ?? date } : { lot, date }
+      return vieux?.preuve === undefined ? { ...e, ...garde } : { ...e, ...garde, preuve: vieux.preuve }
+    }),
   )
+}
+
+/** Les clés des sites MESURÉS (même occurrence que le stock : le calcul d'occurrence est celui de
+ *  `sitesEnEntrees`, jamais un second comptage). */
+export const clesMesurees = (sites) =>
+  new Set(entreesDe(sites, { lot: '', date: '' }).map(cleDeSite))
+
+/**
+ * VERDICT des `preuve` du stock — une preuve est un FAIT daté (« PDF p.N : … »), pas une dispense :
+ *   - `vides` : une entrée qui porte le champ `preuve` sans rien prouver (chaîne vide ou non-chaîne) ;
+ *     exempter par un champ vide serait un cliquet percé ;
+ *   - `perimees` : une entrée PROUVÉE dont le site n'est plus mesuré — la preuve parle d'un site qui
+ *     n'existe plus (`Source/` a bougé), elle se re-lit au PDF ou l'entrée se retire.
+ * @returns {{ vides: string[], perimees: string[] }}
+ */
+export function verdictDesPreuves(sites, stock) {
+  const mesurees = clesMesurees(sites)
+  const vides = []
+  const perimees = []
+  for (const e of stock) {
+    if (!('preuve' in e)) continue
+    if (typeof e.preuve !== 'string' || !e.preuve.trim()) {
+      vides.push(`${cleDeSite(e)} — \`preuve\` VIDE : une preuve est un fait lu au PDF (« PDF p.N : … »), ou rien.`)
+      continue
+    }
+    if (!mesurees.has(cleDeSite(e))) {
+      perimees.push(`${cleDeSite(e)} — preuve PÉRIMÉE : ce site n'est plus mesuré, la preuve ne parle plus de rien.`)
+    }
+  }
+  return { vides, perimees }
+}
+
+/** Comptes de la dette : ce qui reste À TRIER (aucune preuve) et ce qui est VÉRIFIÉ (preuve lue au PDF). */
+export const comptesDeTri = (stock) => {
+  const verifies = [...stock].filter((e) => typeof e.preuve === 'string' && e.preuve.trim()).length
+  return { aTrier: [...stock].length - verifies, verifies }
+}
 
 /**
  * ÉCART au stock, famille par famille (le stock d'une famille ne juge que ses sites : mêlés, tous
@@ -161,9 +208,17 @@ const QUOI = (comptes) =>
   `clé \`famille :: fichier :: ref :: occurrence\` (régime #1711). Compte par famille à la naissance : ${
     FAMILLES.map((f) => `${f} ${comptes[f]}`).join(', ')
   }. ` +
-  'PLAN de résorption — B2 : `br-litteral` et `span-colle` se soldent par UNE migration rejouable ' +
-  '(le `<br>` d\'une cellule devient une espace ; le `<span data-folio>` collé passe seul sur la ligne ' +
-  'précédente), soit −(br-litteral + span-colle) entrées. B3 et suivants : une ZONE par train, ' +
+  'CE FICHIER EST UN INVENTAIRE des sites mesurés, PLAFONNÉ en nombre d\'entrées : il ne décroît que ' +
+  'quand un site disparaît du `Source/`. La DETTE, elle, est le compte « à trier » — les entrées SANS ' +
+  '`preuve` — et celle-là décroît vers zéro, sous son propre plafond (`PLAFOND_A_TRIER`, ' +
+  '`check-source-tables.test.mjs`) : une entrée reçoit sa `preuve` (« PDF p.N : … ») + sa `date` le jour ' +
+  'où sa forme est lue au PDF et jugée conforme au livre, et elle RESTE (le site existe, il est jugé). ' +
+  'PLAN de résorption — B2 : AUCUNE migration de `Source/`. Un `<br>` de cellule est un saut de ' +
+  'ligne IMPRIMÉ (GFM n\'a pas d\'autre forme) : la lib l\'absorbe pour l\'ADRESSAGE (`sansBr`) et le ' +
+  'rend en `\\n` pour une cellule (`brEnSaut`), donc il ne bloque plus une adresse. Son SENS, lui, se ' +
+  'lit AU PDF, site par site : une CÉSURE typographique se corrige en espace dans `Source/`, une ' +
+  'liste d\'items imprimée en colonne se garde telle quelle et se solde par une `preuve` sur son ' +
+  'entrée (« PDF p.N : … » + `date`). B3 et suivants : une ZONE par train, ' +
   'corrigée à la main au PDF (geste `docs/ajouter-un-livre-source.md` §7) — `18 - Traumatisme`, ' +
   '`10 - Talents`, `61 - Encombrement`, `62 - Les armes`, `85 - Traits`, `08 - Statut`, ' +
   '`14 - _GoBack`, `40 - Les prières`, `46 - Les règles magiques`, `05 - _gjdgxs` du Livre de base ; ' +
@@ -184,28 +239,32 @@ const QUOI = (comptes) =>
   'en-tête réel.'
 
 /** Rend le CONTENU du fichier de stock pour des sites mesurés (source unique de sa forme). */
-export const stockDe = (sites, { lot, date }) =>
-  `${JSON.stringify({ quoi: QUOI(comptesParFamille(sites)), entrees: entreesDe(sites, { lot, date }) }, null, 2)}\n`
+export const stockDe = (sites, { lot, date, ancien = [] }) =>
+  `${JSON.stringify({ quoi: QUOI(comptesParFamille(sites)), entrees: entreesDe(sites, { lot, date, ancien }) }, null, 2)}\n`
 
 function main() {
   const args = process.argv.slice(2)
   const sites = scanAllBooks()
   const comptes = comptesParFamille(sites)
+  const stock = readStock(STOCK_PATH)
 
   if (args.includes('--ecrire-stock')) {
-    const lot = '#1384 B1'
+    const lot = '#1384 B2'
     const date = new Date().toISOString().slice(0, 10)
-    writeFileSync(STOCK_PATH, stockDe(sites, { lot, date }))
-    console.log(`stock écrit : ${STOCK_PATH} — ${entreesDe(sites, { lot, date }).length} entrée(s)`)
+    writeFileSync(STOCK_PATH, stockDe(sites, { lot, date, ancien: stock }))
+    console.log(`stock écrit : ${STOCK_PATH} — ${entreesDe(sites, { lot, date, ancien: stock }).length} entrée(s)`)
     return
   }
 
+  const tri = comptesDeTri(stock)
   console.log(
     `tables cassées du Source/ : ${sites.length} site(s) sur ${new Set(sites.map((s) => s.file)).size} chapitre(s), ` +
       `${BOOKS.length} livre(s) — ${FAMILLES.map((f) => `${f} ${comptes[f]}`).join(', ')}`,
   )
+  console.log(`stock : ${tri.aTrier} à trier (aucune preuve), ${tri.verifies} vérifié(s) au PDF.`)
 
-  const { neuves, perimees } = ecartDuStock(sites, readStock(STOCK_PATH))
+  const { neuves, perimees } = ecartDuStock(sites, stock)
+  const preuves = verdictDesPreuves(sites, stock)
   if (neuves.length) {
     console.log('RÉGRESSION — site(s) hors du stock :')
     for (const o of neuves) console.log(`  ${o}`)
@@ -214,7 +273,11 @@ function main() {
     console.log('Entrée(s) SOLDÉE(s) (défaut réparé) :')
     for (const s of perimees) console.log(`  ${s}`)
   }
-  if (!neuves.length && !perimees.length) {
+  if (preuves.vides.length || preuves.perimees.length) {
+    console.log('PREUVE(s) en défaut :')
+    for (const s of [...preuves.vides, ...preuves.perimees]) console.log(`  ${s}`)
+  }
+  if (!neuves.length && !perimees.length && !preuves.vides.length && !preuves.perimees.length) {
     console.log('OK — cliquet aligné, aucune régression.')
     return
   }
