@@ -520,7 +520,7 @@ export async function gotoScreen(session, name, { settleMs = 600 } = {}) {
 export async function shot(session, name, dir = process.cwd(), { ancre, neutraliser = true } = {}) {
   if (neutraliser) {
     const surSelect = await evaluate(session, `!!document.activeElement && document.activeElement.tagName === 'SELECT'`);
-    if (surSelect) await realKey(session, 'Escape');
+    if (surSelect) await realKey(session, { key: 'Escape' });
     await evaluate(session, `(() => { const a = document.activeElement; if (a && a.blur) a.blur(); return true; })()`);
     await sleep(80);
   }
@@ -913,15 +913,41 @@ const KEY_CODES = {
 };
 
 /**
+ * La TOUCHE, forme UNIQUE d'argument de la famille `realKey*` : `{ key, code?, windowsVirtualKeyCode?,
+ * modifiers? }` — seul `key` est requis, `code` et le code virtuel se déduisent de lui quand l'appelant
+ * ne les impose pas (`ALT` les impose, une touche nommée comme `Escape` non). C'est cette forme qui porte
+ * les MODIFICATEURS, donc c'est elle que prennent les trois helpers : un recetteur qui lit l'un déduit
+ * juste pour les deux autres.
+ * @param {{ key: string, code?: string, windowsVirtualKeyCode?: number, modifiers?: number }} touche
+ */
+function champsCDP(touche) {
+  // Le refus de FORME se NOMME : sans ce contrôle, une chaîne nue déréférence `.key` et le recetteur
+  // lit une panne de propriété au lieu de la forme attendue.
+  if (!touche || typeof touche !== 'object' || typeof touche.key !== 'string' || touche.key === '')
+    throw new Error(
+      'realKey* : la forme attendue est la TOUCHE { key, code?, windowsVirtualKeyCode?, modifiers? } — ' +
+        `reçu ${JSON.stringify(touche)} (ex. { key: 'Escape' }).`,
+    );
+  const vk = touche.windowsVirtualKeyCode ?? KEY_CODES[touche.key] ?? (touche.key.length === 1 ? touche.key.toUpperCase().charCodeAt(0) : 0);
+  return {
+    key: touche.key,
+    code: touche.code ?? (touche.key.length === 1 ? `Key${touche.key.toUpperCase()}` : touche.key),
+    windowsVirtualKeyCode: vk,
+    nativeVirtualKeyCode: vk,
+    ...(touche.modifiers === undefined ? {} : { modifiers: touche.modifiers }),
+  };
+}
+
+/**
  * Envoie une frappe RÉELLE (`Input.dispatchKeyEvent`, keyDown puis keyUp) — traverse les mêmes
  * handlers que le clavier physique (`keybindings.ts`), contrairement à un `KeyboardEvent` JS
  * synthétique (souvent ignoré par les listeners posés en natif sur `window`).
+ * @param {{ key: string, code?: string, windowsVirtualKeyCode?: number, modifiers?: number }} touche
  */
-export async function realKey(session, key) {
-  const code = KEY_CODES[key] ?? (key.length === 1 ? key.toUpperCase().charCodeAt(0) : 0);
-  const common = { key, code: key.length === 1 ? `Key${key.toUpperCase()}` : key, windowsVirtualKeyCode: code, nativeVirtualKeyCode: code };
+export async function realKey(session, touche) {
+  const common = champsCDP(touche);
   await session.rpc('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...common });
-  if (key.length === 1) await session.rpc('Input.dispatchKeyEvent', { type: 'char', text: key, ...common });
+  if (touche.key.length === 1) await session.rpc('Input.dispatchKeyEvent', { type: 'char', text: touche.key, ...common });
   await session.rpc('Input.dispatchKeyEvent', { type: 'keyUp', ...common });
 }
 
@@ -937,18 +963,12 @@ export const MOD_ALT = 1;
  * émis déclareraient la touche relâchée et l'état tenu ne serait plus celui de l'écran.
  */
 export async function realKeyDown(session, touche) {
-  const vk = touche.windowsVirtualKeyCode ?? 0;
-  await session.rpc('Input.dispatchKeyEvent', {
-    type: 'rawKeyDown', key: touche.key, code: touche.code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk,
-    ...(touche.modifiers === undefined ? {} : { modifiers: touche.modifiers }),
-  });
+  await session.rpc('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...champsCDP(touche) });
 }
 
 export async function realKeyUp(session, touche) {
-  const vk = touche.windowsVirtualKeyCode ?? 0;
-  await session.rpc('Input.dispatchKeyEvent', {
-    type: 'keyUp', key: touche.key, code: touche.code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk,
-  });
+  // Le relâchement ne porte aucun modificateur : c'est l'événement qui déclare la touche relâchée.
+  await session.rpc('Input.dispatchKeyEvent', { type: 'keyUp', ...champsCDP({ ...touche, modifiers: undefined }) });
 }
 
 /**

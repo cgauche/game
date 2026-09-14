@@ -15,6 +15,7 @@ import type { BattleState } from './store';
 import type { Combatant, ShipPoste } from '../engine/types';
 import type { WorldMap } from './worldMap';
 import { builtinCampaigns } from '../scenes/campaign';
+import { testScenarios, type TestScenario } from '../scenes/test-scenarios';
 
 describe('__wfrp.killEnemies — commande de recette (élimine les ennemis, victoire normale)', () => {
   beforeEach(() => {
@@ -540,10 +541,37 @@ describe('__wfrp.resumeLastScenario — reprise du dernier scénario après un r
     expect(JSON.parse(store.get('wfrp.dev.lastScenario')!)).toEqual({ id: 'entrainement', seed: 7 });
   });
 
-  it('id inconnu : rien n’est mémorisé (le refus ne pollue pas la reprise)', () => {
+  it('id inconnu : REFUS NOMMÉ qui JETTE (id demandé + ids disponibles), et rien n’est mémorisé (#1734)', () => {
     buildApi().scenario('entrainement', 3);
-    expect(buildApi().scenario('scenario-inexistant')).toContain('✗');
+    // Un plateau muet ferait attribuer le rouge de la recette au geste suivant : le refus interrompt.
+    expect(() => buildApi().scenario('scenario-inexistant')).toThrowError(/scenario-inexistant/);
+    expect(() => buildApi().scenario('scenario-inexistant')).toThrowError(/entrainement/); // les ids disponibles
     expect(JSON.parse(store.get('wfrp.dev.lastScenario')!)).toEqual({ id: 'entrainement', seed: 3 });
+  });
+
+  it('scène qui charge VIDE : REFUS NOMMÉ qui JETTE, et rien n’est mémorisé (pas de reprise en boucle, #1734)', () => {
+    // Scénario FORGÉ : sa scène n'a aucune entité (`emptyScene`), donc aucun `heroStart` sous le groupe.
+    // Il est servi par le SEAM de registre de `buildApi` — le chemin que lit `runScenario` — dans une
+    // liste LOCALE dérivée du registre réel : le tableau importé, que d'autres tests comptent, est intact.
+    const vide: TestScenario = {
+      id: 'plateau-vide-1734',
+      order: 9999,
+      category: 'combat',
+      icon: 'scenario/bestiary',
+      title: 'Plateau vide (garde du refus nommé)',
+      tests: 'le refus de plateau vide',
+      partyNote: 'pré-tirés',
+      makeParty: () => makePregens().slice(0, 1),
+      scene: emptyScene(),
+    };
+    const api = () => buildApi([...testScenarios, vide]); // registre LOCAL : le tableau importé n'est pas touché
+    api().scenario('entrainement', 5); // mémoire d'onglet posée par un lancement QUI ABOUTIT
+    expect(() => api().scenario('plateau-vide-1734', 11)).toThrowError(/VIDE/);
+    expect(() => api().scenario('plateau-vide-1734', 11)).toThrowError(/plateau-vide-1734/);
+    // La mémoire d'onglet porte toujours le DERNIER lancement abouti : `resumeLastScenario()` ne
+    // rejouera jamais le scénario qui jette.
+    expect(JSON.parse(store.get('wfrp.dev.lastScenario')!)).toEqual({ id: 'entrainement', seed: 5 });
+    expect(testScenarios.some((s) => s.id === 'plateau-vide-1734')).toBe(false); // registre partagé intact
   });
 });
 

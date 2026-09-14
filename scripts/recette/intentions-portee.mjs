@@ -162,7 +162,7 @@ async function main() {
     await shot(session, 'intention-course-overlay', args.out);
 
     // ── 2. Échap ANNULE ─────────────────────────────────────────────────────────────────────────
-    await frapperTouche(session, 'Escape');
+    await frapperTouche(session, { key: 'Escape' });
     await sleep(350);
     e = await etat(session);
     dire(e.intent === null, 'Échap dissout l’intention');

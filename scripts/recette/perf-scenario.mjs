@@ -63,7 +63,7 @@ async function runCadence(session, args) {
 
   const rot = evaluate(session, SAMPLER(2500));
   await sleep(200);
-  for (let i = 0; i < 3; i++) { await realKey(session, 'KeyE'); await sleep(600); }
+  for (let i = 0; i < 3; i++) { await realKey(session, { key: 'e' }); await sleep(600); }
   console.log(stats('ROTATION', await rot));
 
   const walk = evaluate(session, SAMPLER(3000));

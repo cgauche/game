@@ -57,7 +57,7 @@ import { battleRng } from './battleRng';
 import { applyOps } from '../engine/ops';
 import { parseQualityInstance } from '../engine/qualities/normalize';
 import { formatImperial } from '../engine/clock';
-import { testScenarios } from '../scenes/test-scenarios';
+import { testScenarios, type TestScenario } from '../scenes/test-scenarios';
 import { builtinCampaigns } from '../scenes/campaign';
 import { makeShowcaseParty } from '../data/pregens';
 import { hoverTargeting } from './targeting';
@@ -437,15 +437,19 @@ function recallScenario(): LastScenario | null {
   }
 }
 
-export function buildApi() {
+/**
+ * @param scenarios REGISTRE des scénarios de test lu par `scenario()`/`resumeLastScenario()` — le
+ *  registre réel par défaut ; un appelant qui doit éprouver un scénario PARTICULIER passe SA liste
+ *  (`[...testScenarios, forge]`), au lieu de muter le tableau importé que d'autres modules comptent.
+ */
+export function buildApi(scenarios: readonly TestScenario[] = testScenarios) {
   const g = () => useGame.getState();
   const find = (id: string) => g().scene?.entities.find((e) => e.id === id);
 
   const runScenario = (id?: string, seed?: number) => {
-    if (!id) return testScenarios.map((sc) => `${sc.id} — ${sc.title}`);
-    const sc = testScenarios.find((t) => t.id === id);
-    if (!sc) return `✗ « ${id} » introuvable — ids : ${testScenarios.map((t) => t.id).join(', ')}`;
-    rememberScenario(seed != null ? { id: sc.id, seed } : { id: sc.id });
+    if (!id) return scenarios.map((sc) => `${sc.id} — ${sc.title}`);
+    const sc = scenarios.find((t) => t.id === id);
+    if (!sc) throw new Error(`__wfrp.scenario : « ${id} » introuvable — ids : ${scenarios.map((t) => t.id).join(', ')}`);
     clearAiTurnLog(); // trace IA vierge pour ce scénario
     const s = g();
     if (seed != null) s.seedRng(seed);
@@ -453,6 +457,21 @@ export function buildApi() {
     s.setParty(sc.makeParty());
     if (sc.extraScenes?.length || sc.worldMap || sc.narratif) s.loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null, sc.narratif);
     else s.startScene(sc.scene);
+    // Un plateau VIDE est un refus, jamais un silence : la recette qui continue dessus attribue son
+    // rouge au geste suivant. « Vide » se mesure sur la scène ACTIVE du store après chargement —
+    // aucune scène (`scene` nul) ou aucune entité peuplée (`scene.entities`, la population que lisent
+    // le rendu comme les sondes `__wfrp.entities`/`visibleCount`). Le groupe n'y change rien : `setParty`
+    // ne pose que `state.party` (`store.ts:2155`), et c'est `startScene` qui cherche son point de départ
+    // DANS `scene.entities` (`store.ts:2159`, entité `heroStart`) — 0 entité = aucun sol sous le groupe.
+    const chargee = g().scene;
+    if (!chargee || chargee.entities.length === 0)
+      throw new Error(
+        `__wfrp.scenario : « ${id} » a chargé une scène VIDE (${chargee ? `scène « ${chargee.id} », 0 entité` : 'aucune scène active'}) — ` +
+          `plateau inexploitable : le groupe posé par setParty ne vit pas dans scene.entities, aucune entité = aucun point de départ (heroStart) ni décor.`,
+      );
+    // La MÉMOIRE d'onglet ne retient qu'un lancement qui a passé les deux refus : mémoriser avant le
+    // chargement ferait rejouer en boucle un scénario qui jette à `resumeLastScenario()`.
+    rememberScenario(seed != null ? { id: sc.id, seed } : { id: sc.id });
     const scLead = g().party[0];
     if (sc.money && scLead) creditBourse(g, useGame.setState, scLead.id, sc.money); // seed de bourse du scénario (après le reset du lancement)
     if (sc.vessel) useGame.setState({ vessel: sc.vessel }); // navire de campagne (voyage/combat maritime)
@@ -800,8 +819,10 @@ export function buildApi() {
 
     /** Lance un SCÉNARIO DE TEST sans passer par le menu : __wfrp.scenario('entrainement', 42).
      *  Sans argument : liste les ids. `seed` (optionnel) rend l'initiative DÉTERMINISTE. Le combat
-     *  démarre PRÊT (la pause d'ouverture du Round 1 est acquittée). Tout lancement d'un id connu est
-     *  mémorisé par onglet pour `resumeLastScenario()`. */
+     *  démarre PRÊT (la pause d'ouverture du Round 1 est acquittée). Un lancement qui aboutit est
+     *  mémorisé par onglet pour `resumeLastScenario()` — un refus n'écrit rien.
+     *  Un id inconnu ou une scène qui charge VIDE JETTENT une `Error` NOMMÉE (#1734) : l'id inconnu
+     *  porte l'id demandé et la liste des ids, la scène vide porte son id et son compte d'entités. */
     scenario: runScenario,
 
     /** Relance le DERNIER `scenario(id, seed)` lancé DANS CET ONGLET (mémorisé en sessionStorage,

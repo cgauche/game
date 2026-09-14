@@ -5,8 +5,14 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  ALT,
   DELAI_EVALUATE,
+  MOD_ALT,
   checkServer,
+  frapperTouche,
+  realKey,
+  realKeyDown,
+  realKeyUp,
   empreinteArbre,
   evaluate,
   expressionRestaurerStockage,
@@ -354,4 +360,61 @@ test('evaluate : une erreur de scénario AVANT le plafond remonte telle quelle',
   const origine = err('ReferenceError: machin is not defined')
   const session = { rpc: async () => { throw origine } }
   await assert.rejects(() => evaluate(session, 'machin', { timeoutMs: 5000 }), (e) => e === origine)
+})
+
+// ---------------------------------------------------------------- famille realKey* (#1734)
+
+/** Session factice qui COLLECTIONNE les payloads `Input.dispatchKeyEvent` émis. */
+function sessionClavier() {
+  const emis = []
+  return { emis, rpc: async (methode, params) => { if (methode === 'Input.dispatchKeyEvent') emis.push(params); return { result: { value: true } } } }
+}
+
+test('realKey* : UNE forme d’argument — la TOUCHE, la même pour les trois helpers', async () => {
+  const s = sessionClavier()
+  await realKey(s, { key: 'Escape' })
+  assert.deepEqual(s.emis.map((e) => e.type), ['rawKeyDown', 'keyUp'])
+  assert.equal(s.emis[0].key, 'Escape')
+  assert.equal(s.emis[0].code, 'Escape')
+  assert.equal(s.emis[0].windowsVirtualKeyCode, 27) // déduit de `key` (table KEY_CODES)
+
+  const t = sessionClavier()
+  await realKeyDown(t, { key: 'Escape' })
+  await realKeyUp(t, { key: 'Escape' })
+  // Le geste SÉPARÉ émet les mêmes champs que le geste d'un seul tenant : même forme, même déduction.
+  assert.deepEqual(t.emis.map((e) => e.type), ['rawKeyDown', 'keyUp'])
+  assert.deepEqual(t.emis[0], s.emis[0])
+  assert.deepEqual(t.emis[1], s.emis[1])
+})
+
+test('realKey : une touche d’un seul caractère émet aussi le `char`, et le code se déduit', async () => {
+  const s = sessionClavier()
+  await realKey(s, { key: 'e' })
+  assert.deepEqual(s.emis.map((e) => e.type), ['rawKeyDown', 'char', 'keyUp'])
+  assert.equal(s.emis[1].text, 'e')
+  assert.equal(s.emis[0].code, 'KeyE')
+  assert.equal(s.emis[0].windowsVirtualKeyCode, 'E'.charCodeAt(0))
+})
+
+test('realKey* : `code` et code virtuel IMPOSÉS par l’appelant priment (`ALT`), et `modifiers` ne suit que l’APPUI', async () => {
+  const s = sessionClavier()
+  await realKeyDown(s, { ...ALT, modifiers: MOD_ALT })
+  await realKeyUp(s, ALT)
+  assert.equal(s.emis[0].code, 'AltLeft')
+  assert.equal(s.emis[0].windowsVirtualKeyCode, 18)
+  assert.equal(s.emis[0].modifiers, MOD_ALT)
+  assert.equal('modifiers' in s.emis[1], false) // le relâchement déclare la touche relâchée
+})
+
+test('realKey* : la CHAÎNE nue est refusée par un message qui NOMME la forme attendue', async () => {
+  // Un refus anonyme (déréférencement d'une propriété absente) ferait chercher la panne dans le CDP.
+  await assert.rejects(() => realKey(sessionClavier(), 'Escape'), /TOUCHE/)
+  await assert.rejects(() => realKeyDown(sessionClavier(), 'Escape'), /TOUCHE/)
+  await assert.rejects(() => realKeyUp(sessionClavier(), 'Escape'), /TOUCHE/)
+  await assert.rejects(() => realKey(sessionClavier(), { code: 'Escape' }), /TOUCHE/) // objet SANS `key`
+  await assert.rejects(() => realKey(sessionClavier(), undefined), /TOUCHE/)
+})
+
+test('frapperTouche : l’alias français EST `realKey` (même geste, même forme)', () => {
+  assert.equal(frapperTouche, realKey)
 })
