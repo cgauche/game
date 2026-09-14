@@ -477,6 +477,40 @@ export const finDeSortie = (texte, max = 400) => {
   return t.slice(-max)
 }
 
+/**
+ * Ce que git a IMPRIMÉ dans une union de `scripts/guards/lib/gitPorte.mjs` : la `raison` d'une
+ * indisponibilité, puis `stderr`, puis `stdout` — chaque morceau retenu sur son CONTENU, jamais par
+ * un repli `??` (une chaîne vide n'est pas nullish : `classer` rend `{status, stdout, stderr:''}`
+ * quand git n'écrit que sur stdout, `scripts/guards/lib/gitPorte.mjs:164`). PURE.
+ * @param {object} vu union git @param {number} [max] borne de `finDeSortie`
+ * @returns {string} '' quand git n'a rien imprimé
+ */
+export const sortieDe = (vu, max = 400) =>
+  finDeSortie(
+    [vu?.raison, vu?.valeur?.stderr, vu?.valeur?.stdout]
+      .map((t) => String(t ?? '').trim())
+      .filter(Boolean)
+      .join('\n'),
+    max,
+  )
+
+/** Ce que DIT un échec de git, jamais vide : sa sortie, ou son code de sortie nommé. PURE. */
+export const refusDeGit = (vu, max = 400) => sortieDe(vu, max) || `(status ${vu?.valeur?.status ?? '?'}) — git n'a rien imprimé`
+
+/** Refus du train quand le tronc bouge une SECONDE fois — une seule formulation, deux sites de lecture. */
+export const REFUS_DEUX_FOIS = 'origin/main a bougé DEUX fois pendant le train — relancer `npm run ops:publier`'
+
+/**
+ * Le tronc a-t-il bougé sous le train ? PURE — UNE comparaison et UNE borne, lues AVANT le push et
+ * APRÈS un push refusé (origin/main peut recevoir des commits entre les deux).
+ * @param {{distant:string|null, base:string|null, reprises?:number}} p
+ * @returns {'inchangé'|'relancer'|'rouge-deux-fois'}
+ */
+export function verdictDuTronc({ distant, base, reprises = 0 }) {
+  if (distant === base) return 'inchangé'
+  return (reprises ?? 0) >= 1 ? 'rouge-deux-fois' : 'relancer'
+}
+
 /** Première ligne d'un message de commit, bornée. PURE. */
 export const titreDeCommit = (message, max = 120) => {
   const ligne = String(message ?? '').split('\n')[0].trim()
@@ -584,14 +618,27 @@ function commettreDerives(ctx, { chemins, numeros, motif, journal }) {
     if (!add.disponible || add.absent || add.valeur.status !== 0) return { ok: false, raison: `\`git add\` a échoué sur ${chemins.length} chemin(s)` }
     const commit = ctx.git(['commit', '-F', fichier, '--', ...chemins])
     if (!commit.disponible || commit.absent || commit.valeur.status !== 0) {
-      const brut = String(commit.raison ?? '').trim() || String(commit.valeur?.stderr ?? '').trim() || String(commit.valeur?.stdout ?? '')
-      return { ok: false, raison: `\`git commit\` des docs a échoué : ${finDeSortie(brut)}` }
+      return { ok: false, raison: `\`git commit\` des docs a échoué : ${refusDeGit(commit)}` }
     }
   } finally {
     rmSync(fichier, { force: true })
   }
   journal.tete = ctx.tete
   return { ok: true, detail: { chemins, numeros }, dit: `${chemins.length} doc(s) dérivé(s) commis — tête ${journal.tete.slice(0, 9)}` }
+}
+
+/**
+ * Le verdict d'étape que porte un tronc MESURÉ, ou `null` s'il n'a pas bougé. Seul site qui
+ * incrémente `journal.reprises` : la décision, elle, est la pure `verdictDuTronc`.
+ * @param {object} journal @param {string|null} distant sha lu d'`origin/main` @param {string} phrase
+ * @returns {{ok:boolean, relancer?:string[], dit?:string, raison?:string}|null}
+ */
+function jugerLeTronc(journal, distant, phrase) {
+  const verdict = verdictDuTronc({ distant, base: journal.base, reprises: journal.reprises })
+  if (verdict === 'inchangé') return null
+  if (verdict === 'rouge-deux-fois') return { ok: false, raison: REFUS_DEUX_FOIS }
+  journal.reprises = (journal.reprises ?? 0) + 1
+  return { ok: true, relancer: ['rebase', 'docs', 'gates'], dit: `${phrase} (${distant?.slice(0, 9)}) : le train reprend au rebase` }
 }
 
 /** Gates requises encore SANS justificatif pour `sha`, avec leur motif. */
@@ -643,6 +690,16 @@ export function contexteDe({ racine, branche, options, journaliser, fdLog }) {
     },
     get tete() {
       return lu(['rev-parse', 'HEAD'], racine)
+    },
+    /**
+     * Le TRONC distant, fetché puis relu — la seule porte d'`origin/main` des étapes qui doivent le
+     * mesurer À CHAUD (`push`), donc le seul point d'injection en test.
+     * @returns {{disponible:true, sha:string|null}|{disponible:false, raison:string}}
+     */
+    tronc() {
+      const vu = fetchOrigin({ cwd: racine })
+      if (!vu.disponible) return { disponible: false, raison: vu.raison }
+      return { disponible: true, sha: lu(['rev-parse', 'origin/main'], racine) }
     },
     git(args) {
       const interdit = commandeInterdite(args)
@@ -903,21 +960,20 @@ export const ETAPES = [
       return vu.disponible && !vu.absent && vu.valeur === true
     },
     jouer(ctx, journal) {
-      const { racine } = ctx
-      const vuFetch = fetchOrigin({ cwd: racine })
-      if (!vuFetch.disponible) return { ok: false, raison: `origin non consultable avant le push : ${vuFetch.raison}` }
-      const distant = lu(['rev-parse', 'origin/main'], racine)
-      if (distant !== journal.base) {
-        if ((journal.reprises ?? 0) >= 1)
-          return { ok: false, raison: 'origin/main a bougé DEUX fois pendant le train — relancer `npm run ops:publier`' }
-        journal.reprises = (journal.reprises ?? 0) + 1
-        return { ok: true, relancer: ['rebase', 'docs', 'gates'], dit: `origin/main a bougé (${distant?.slice(0, 9)}) : le train reprend au rebase` }
-      }
+      const avant = ctx.tronc()
+      if (!avant.disponible) return { ok: false, raison: `origin non consultable avant le push : ${avant.raison}` }
+      const vuAvant = jugerLeTronc(journal, avant.sha, 'origin/main a bougé')
+      if (vuAvant) return vuAvant
       ctx.journaliser('[publier] push — porte pre-push en cours (rejeu des migrations sur export ~17 s + lecture CI)\n')
       const vu = ctx.git(['push', 'origin', 'HEAD:main'])
       if (!vu.disponible || vu.absent || vu.valeur.status !== 0) {
-        const brut = String(vu.raison ?? vu.valeur?.stderr ?? '').split('\n').slice(-40).join('\n')
-        return { ok: false, raison: `push REFUSÉ :\n${brut}` }
+        // Le tronc se REMESURE après un refus : origin/main peut recevoir des commits entre la
+        // lecture d'amont et le push, et git refuse alors en `non-fast-forward` — c'est la MÊME
+        // relance, jugée par la MÊME décision, pas une panne.
+        const apres = ctx.tronc()
+        const vuApres = apres.disponible ? jugerLeTronc(journal, apres.sha, 'origin/main a bougé pendant le push') : null
+        if (vuApres) return vuApres
+        return { ok: false, raison: `push REFUSÉ :\n${refusDeGit(vu)}` }
       }
       return { ok: true, dit: `${journal.tete.slice(0, 9)} poussé sur main` }
     },

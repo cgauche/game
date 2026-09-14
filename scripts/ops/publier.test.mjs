@@ -16,6 +16,7 @@ import {
   MOTIF_APRES_REBASE,
   MOTIF_POST_REWRITE,
   RACINE,
+  REFUS_DEUX_FOIS,
   VERROU_TIMEOUT_MIN,
   commandeInterdite,
   corpsDePilotage,
@@ -39,10 +40,13 @@ import {
   plageDeCitations,
   planDeReprise,
   prerequisDesGates,
+  refusDeGit,
   rotationnerLog,
   sansOptionsGlobales,
+  sortieDe,
   synchroniserAgents,
   titreDeCommit,
+  verdictDuTronc,
   verdictDeSondeDuVerrou,
   verdictDesRuns,
 } from './publier.mjs'
@@ -729,4 +733,81 @@ test('prerequisDesGates : les gates requises RÉELLES de ci.yml, mesurées sur l
   // Pas d'attendu figé sur le CONTENU (l'arbre est équipé ou non selon la machine) : ce qui est
   // jugé est que la sonde tourne sur la table réelle et ne rend que des lignes de gate.
   for (const ligne of prerequisDesGates(RACINE)) assert.match(ligne, /^\[gates] \S+ — prérequis absent : `/)
+})
+
+// ── verdictDuTronc / sortieDe / refusDeGit / étape `push` ──────────────────────────────
+
+test('verdictDuTronc : inchangé, bougé (relance), bougé une SECONDE fois (rouge)', () => {
+  assert.equal(verdictDuTronc({ distant: 'aaa', base: 'aaa', reprises: 0 }), 'inchangé')
+  assert.equal(verdictDuTronc({ distant: 'aaa', base: 'aaa', reprises: 1 }), 'inchangé')
+  assert.equal(verdictDuTronc({ distant: 'bbb', base: 'aaa', reprises: 0 }), 'relancer')
+  assert.equal(verdictDuTronc({ distant: 'bbb', base: 'aaa' }), 'relancer')
+  assert.equal(verdictDuTronc({ distant: 'bbb', base: 'aaa', reprises: 1 }), 'rouge-deux-fois')
+  assert.equal(verdictDuTronc({ distant: 'bbb', base: 'aaa', reprises: 2 }), 'rouge-deux-fois')
+})
+
+test('sortieDe / refusDeGit : la sortie d’un git en échec, jamais vide', () => {
+  // `stderr` VIDE n'est pas nullish : il ne peut pas servir de repli à `??` — `stdout` est lu.
+  assert.equal(sortieDe({ disponible: true, valeur: { status: 1, stderr: '', stdout: 'tout sur stdout' } }), 'tout sur stdout')
+  // Les deux portent quelque chose : les deux sont dits.
+  assert.equal(sortieDe({ disponible: true, valeur: { status: 1, stderr: 'err', stdout: 'out' } }), 'err\nout')
+  assert.equal(sortieDe({ disponible: false, raison: 'git absent' }), 'git absent')
+  // Rien d'imprimé : `sortieDe` rend '', et `refusDeGit` NOMME le code de sortie.
+  assert.equal(sortieDe({ disponible: true, valeur: { status: 1, stderr: '', stdout: '' } }), '')
+  assert.match(refusDeGit({ disponible: true, valeur: { status: 1, stderr: '', stdout: '' } }), /status 1/)
+  assert.match(refusDeGit({ disponible: true, absent: true }), /status \?/)
+})
+
+/** L'étape `push`, jouée avec un `ctx` FACTICE : `tronc()` et `git()` sont ses deux seules portes. */
+const etapePush = ETAPES.find((e) => e.nom === 'push')
+const ctxPush = ({ sha, push }) => ({
+  racine: RACINE,
+  tete: 'ttttttttt',
+  journaliser: () => {},
+  tronc: () => ({ disponible: true, sha }),
+  git: () => push,
+})
+const REFUS_PUSH = { disponible: true, valeur: { status: 1, stderr: '! [rejected] main -> main (non-fast-forward)', stdout: '' } }
+const journalPush = (reprises) => ({ ...journalVide('b'), base: 'aaa', tete: 'ttttttttt', reprises })
+
+test('push : un refus de git sur un tronc qui a BOUGÉ rend la relance, pas une panne', () => {
+  const journal = journalPush(0)
+  // Le tronc est mesuré DEUX fois : intact avant le push, bougé après (origin/main a reçu des commits).
+  let tour = 0
+  const ctx = { ...ctxPush({ sha: 'aaa', push: REFUS_PUSH }), tronc: () => ({ disponible: true, sha: tour++ === 0 ? 'aaa' : 'bbbbbbbbb' }) }
+  const vu = etapePush.jouer(ctx, journal)
+  assert.equal(vu.ok, true)
+  assert.deepEqual(vu.relancer, ['rebase', 'docs', 'gates'])
+  assert.equal(vu.dit, 'origin/main a bougé pendant le push (bbbbbbbbb) : le train reprend au rebase')
+  assert.equal(journal.reprises, 1)
+})
+
+test('push : un refus de git sur un tronc INCHANGÉ est rouge, et DIT ce que git a imprimé', () => {
+  const journal = journalPush(0)
+  const vu = etapePush.jouer(ctxPush({ sha: 'aaa', push: REFUS_PUSH }), journal)
+  assert.equal(vu.ok, false)
+  assert.match(vu.raison, /non-fast-forward/)
+  assert.equal(journal.reprises, 0)
+})
+
+test('push : un refus SANS sortie nomme le code de sortie', () => {
+  const journal = journalPush(0)
+  const vu = etapePush.jouer(ctxPush({ sha: 'aaa', push: { disponible: true, valeur: { status: 1, stderr: '', stdout: '' } } }), journal)
+  assert.equal(vu.ok, false)
+  assert.match(vu.raison, /status 1/)
+})
+
+test('push : un tronc bougé une SECONDE fois est rouge — avant comme après le push', () => {
+  const avant = journalPush(1)
+  assert.deepEqual(etapePush.jouer(ctxPush({ sha: 'bbb', push: REFUS_PUSH }), avant), { ok: false, raison: REFUS_DEUX_FOIS })
+  const apres = journalPush(1)
+  let tour = 0
+  const ctx = { ...ctxPush({ sha: 'aaa', push: REFUS_PUSH }), tronc: () => ({ disponible: true, sha: tour++ === 0 ? 'aaa' : 'bbb' }) }
+  assert.deepEqual(etapePush.jouer(ctx, apres), { ok: false, raison: REFUS_DEUX_FOIS })
+  assert.equal(apres.reprises, 1)
+})
+
+test('push : tronc intact et push accepté → vert', () => {
+  const vu = etapePush.jouer(ctxPush({ sha: 'aaa', push: { disponible: true, valeur: { status: 0, stdout: '', stderr: '' } } }), journalPush(0))
+  assert.deepEqual(vu, { ok: true, dit: 'ttttttttt poussé sur main' })
 })
