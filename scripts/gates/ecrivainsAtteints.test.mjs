@@ -230,6 +230,11 @@ const ATTENDU = {
     'scripts/raw/citation-graphy-guard.test.mjs',
     'scripts/raw/folio-bootstrap.mjs',
     'scripts/raw/folio-bootstrap.test.mjs',
+    // +1 le 2026-09-14 (#1727 T2) : `check-folio-continuity.test.mjs` importe la fonction d'ÉCRITURE
+    // du générateur des ancres sans contenu (`stocksEnTexte`) pour comparer son rendu aux deux stocks
+    // committés ; elle rend un TEXTE. Le seul `writeFileSync` du module vit dans `main()`, sous
+    // `isMain`, et exige les PDF gitignorés — déclaré en `ecritFerme` de `test:raw` (ECRIT_LU).
+    'scripts/raw/lib/empty-folios-stock.mjs',
     'scripts/raw/reanchor-split.mjs',
     'scripts/raw/reanchor.mjs',
     'scripts/raw/reanchor.test.mjs',

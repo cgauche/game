@@ -324,6 +324,13 @@ export const ECRIT_LU = {
         'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ' +
         '(scripts/raw/check-source-format.mjs:396) ; le banc ne fait que LIRE le stock (`readStock`), ' +
         'ses dossiers JETABLES vivant sous `os.tmpdir()`',
+      'scripts/raw/empty-folios-perdues-stock.json':
+        '`check-folio-continuity.test.mjs` IMPORTE la fonction d’ÉCRITURE du générateur des ancres sans ' +
+        'contenu (`stocksEnTexte`, scripts/raw/lib/empty-folios-stock.mjs) pour comparer son rendu au ' +
+        'fichier committé ; elle rend un TEXTE et n’écrit rien — le seul `writeFileSync` du module vit ' +
+        'dans `main()`, sous sa porte `isMain`, et exige les PDF gitignorés',
+      'scripts/raw/empty-folios-benignes-stock.json':
+        'même porte, même module : les deux stocks sont écrits par le même `main()` derrière `isMain`',
     },
     lit: ['docs/raw/', 'scripts/raw/', 'scripts/guards/lib/', 'Source/', 'src/'],
     raison:
@@ -349,8 +356,8 @@ export const ECRIT_LU = {
     lit: ['docs/raw/', 'Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs'],
     raison:
       'aucune écriture dans les scripts atteints ; LIT le registre de livres, le normaliseur de références, ' +
-      'le stock NOMINATIF des sauts de folio (scripts/raw/folio-gaps-stock.json) et le gel des ancres sans ' +
-      'contenu (scripts/raw/empty-folios-baseline.json)',
+      'le stock NOMINATIF des sauts de folio (scripts/raw/folio-gaps-stock.json) et les deux stocks des ancres ' +
+      'sans contenu (scripts/raw/empty-folios-perdues-stock.json, scripts/raw/empty-folios-benignes-stock.json)',
   },
   'raw:check-source-tables': {
     ecrit: [],

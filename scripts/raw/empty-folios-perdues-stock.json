@@ -1,0 +1,143 @@
+{
+  "quoi": "Ancres sans contenu dont la page PORTE du texte au PDF : la vérité citable manque au corpus. Une ENTRÉE par folio perdu (`<ABBR NN> folio <F>`), sous le chapitre extrait qui le porte. `pdfChars` = les caractères utiles mesurés au PDF par scripts/raw/lib/empty-folios-stock.mjs, une fois : AUCUN PDF n'est suivi par le dépôt, l'observé de la classe n'est donc PAS rejouable en CI — la garde ne confronte cette mesure qu'au seuil SEUIL_UTILE du code. Une entrée se solde en restituant la page au `.md` (l'ancre cesse alors d'être vide, et scripts/raw/check-folio-continuity.mjs réclame le retrait). Passer une entrée d'ici vers empty-folios-benignes-stock.json est une CROISSANCE nette de l'autre fichier : elle se déclare par `CLIQUET:` au message.",
+  "entrees": [
+    {
+      "fichier": "Source/WH - V4 - Aux Armes/00 - Index.md",
+      "ref": "AA 0 folio -2",
+      "occurrence": 1,
+      "pdfChars": 1706
+    },
+    {
+      "fichier": "Source/WH - V4 - Aux Armes/00 - Index.md",
+      "ref": "AA 0 folio 0",
+      "occurrence": 1,
+      "pdfChars": 430
+    },
+    {
+      "fichier": "Source/WH - V4 - Aux Armes/03 - LES CHEVALIERS DE L'EMPIRE.md",
+      "ref": "AA 3 folio 39",
+      "occurrence": 1,
+      "pdfChars": 1498
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/00 - Index.md",
+      "ref": "EDO 0 folio 1",
+      "occurrence": 1,
+      "pdfChars": 1105
+    },
+    {
+      "fichier": "Source/WH - V4 - La Mer de Griffe/00 - Index.md",
+      "ref": "MDG 0 folio -3",
+      "occurrence": 1,
+      "pdfChars": 1526
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/00 - Index.md",
+      "ref": "MSRC 0 folio 1",
+      "occurrence": 1,
+      "pdfChars": 1083
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/00 - Index.md",
+      "ref": "ZI 0 folio -1",
+      "occurrence": 1,
+      "pdfChars": 418
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/00 - Index.md",
+      "ref": "ZI 0 folio 0",
+      "occurrence": 1,
+      "pdfChars": 1339
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/01 - TROIS EXPEDITIONS.md",
+      "ref": "ZI 1 folio 9",
+      "occurrence": 1,
+      "pdfChars": 809
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/01 - TROIS EXPEDITIONS.md",
+      "ref": "ZI 1 folio 11",
+      "occurrence": 1,
+      "pdfChars": 1276
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/10 - Macareux a bec tranchant.md",
+      "ref": "ZI 10 folio 81",
+      "occurrence": 1,
+      "pdfChars": 415
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/13 - Sirene.md",
+      "ref": "ZI 13 folio 87",
+      "occurrence": 1,
+      "pdfChars": 1000
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/13 - Sirene.md",
+      "ref": "ZI 13 folio 89",
+      "occurrence": 1,
+      "pdfChars": 1184
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/13 - Sirene.md",
+      "ref": "ZI 13 folio 97",
+      "occurrence": 1,
+      "pdfChars": 437
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/02 - Griffon.md",
+      "ref": "ZI 2 folio 21",
+      "occurrence": 1,
+      "pdfChars": 810
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/04 - L'abominable Halagrundsor.md",
+      "ref": "ZI 4 folio 40",
+      "occurrence": 1,
+      "pdfChars": 1652
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/04 - L'abominable Halagrundsor.md",
+      "ref": "ZI 4 folio 42",
+      "occurrence": 1,
+      "pdfChars": 875
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/04 - L'abominable Halagrundsor.md",
+      "ref": "ZI 4 folio 43",
+      "occurrence": 1,
+      "pdfChars": 835
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/05 - Amibe.md",
+      "ref": "ZI 5 folio 53",
+      "occurrence": 1,
+      "pdfChars": 894
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/05 - Amibe.md",
+      "ref": "ZI 5 folio 57",
+      "occurrence": 1,
+      "pdfChars": 263
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/05 - Amibe.md",
+      "ref": "ZI 5 folio 62",
+      "occurrence": 1,
+      "pdfChars": 2136
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/07 - Chimere.md",
+      "ref": "ZI 7 folio 72",
+      "occurrence": 1,
+      "pdfChars": 1800
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/07 - Chimere.md",
+      "ref": "ZI 7 folio 73",
+      "occurrence": 1,
+      "pdfChars": 608
+    }
+  ]
+}

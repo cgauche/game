@@ -80,7 +80,8 @@ test('périmètre — les porteurs de stock, et eux seuls', () => {
   assert.equal(estPorteurDeStock('scripts/hooks/fermetures-sans-solde.test.mjs'), true)
   assert.equal(estPorteurDeStock('scripts/hooks/ecrans-ui.json'), true)
   assert.equal(estPorteurDeStock('scripts/raw/reconciliation-stock.json'), true, 'stock nominatif de l\'Atlas RAW (#1709 D2)')
-  assert.equal(estPorteurDeStock('scripts/raw/empty-folios-baseline.json'), true, 'gel de folios de l\'Atlas RAW : porteur par son motif `scripts/raw/*-baseline.json` (#1711 T1)')
+  assert.equal(estPorteurDeStock('scripts/raw/empty-folios-perdues-stock.json'), true, 'ancres sans contenu PERDUES : porteur par son motif `scripts/raw/*-stock.json` (#1727 T2)')
+  assert.equal(estPorteurDeStock('scripts/raw/empty-folios-benignes-stock.json'), true, 'et son pendant bénin — DEUX fichiers, pour qu\'un reclassement soit une croissance nette (#1727 T2)')
   assert.equal(estPorteurDeStock('scripts/guards/raw-blind-refs-stock.json'), true, 'stock nominatif tenu hors du dossier `raw/` par `rawRefIntegrity.mjs`')
   assert.equal(estPorteurDeStock('scripts/guards/lib/decisions-baseline.json'), true, 'stock NOMINATIF de sites du détecteur de commentaires')
   assert.equal(estPorteurDeStock('knip-exports-baseline.json'), true, 'gel d\'exports à clés-chemins, à la RACINE')
@@ -169,7 +170,10 @@ test('baseline de compte — LIMITE dite : un NOMBRE relevé est invisible', () 
 })
 
 test('porteur — une entrée qui ne NOMME aucun fichier n est vue par AUCUNE porte', () => {
-  const GEL = 'scripts/raw/empty-folios-baseline.json'
+  // Chemin de FIXTURE : le motif `scripts/raw/*-baseline.json` reste un porteur (une baseline de
+  // compte peut renaître), alors qu'aucun fichier suivi ne le porte plus — c'est la FORME de
+  // l'entrée, pas le fichier, que ce banc mesure.
+  const GEL = 'scripts/raw/gel-par-chapitre-baseline.json'
   const entree = '    { "chapitre": "LDB 8", "folio": 12 },'
   const avant = `{\n  "entrees": [\n${entree}\n    { "chapitre": "LDB 8", "folio": 14 }\n  ]\n}\n`
   const apres = `{\n  "entrees": [\n${entree}\n    { "chapitre": "LDB 8", "folio": 13 },\n    { "chapitre": "LDB 8", "folio": 14 }\n  ]\n}\n`
@@ -209,6 +213,56 @@ test('stock NOMINATIF de l Atlas RAW — une entrée ajoutée est une croissance
   assert.equal(
     c.exemples[0], '"fichier": "src/engine/ops.ts",',
     'l’exemple cité est la ligne qui NOMME le fichier — une accolade ouvrante n’apprend rien au lecteur du refus',
+  )
+})
+
+// CAS B (#1727 T2) — un RECLASSEMENT entre deux classes de dette. La porte compte PAR FICHIER : sous
+// UN seul toit (deux rubriques `perdues`/`benignes` d'un même JSON), retirer ici et ajouter là vaut
+// net 0, et le compte des pages PERDUES baisse sans un mot. En DEUX fichiers, le receveur croît :
+// c'est la porte EXISTANTE qui exige alors le `CLIQUET:`, sans une ligne de garde de plus.
+test('CAS B — reclasser une entrée d’un stock vers un AUTRE est une croissance NETTE du receveur', () => {
+  const source = 'scripts/raw/empty-folios-perdues-stock.json'
+  const receveur = 'scripts/raw/empty-folios-benignes-stock.json'
+  const entree = (folio) => [
+    '    {',
+    '      "fichier": "Source/WH - V4 - Le zoo imperial/05 - Amibe.md",',
+    `      "ref": "ZI 5 folio ${folio}",`,
+    '      "occurrence": 1,',
+    '      "pdfChars": 2136',
+    '    }',
+  ]
+  const enveloppe = (corps) => ['{', '  "quoi": "fixture",', '  "entrees": [', ...corps, '  ]', '}', ''].join('\n')
+  const virgule = (lignes) => lignes.map((l, i) => (i === lignes.length - 1 ? '    },' : l))
+  const images = {
+    [source]: { avant: enveloppe([...virgule(entree(62)), ...entree(55)]), apres: enveloppe(entree(55)) },
+    [receveur]: { avant: enveloppe(entree(58)), apres: enveloppe([...virgule(entree(58)), ...entree(62)]) },
+  }
+  const diff = [
+    diffAuxLignes(source, 4, [], virgule(entree(62))),
+    diffAuxLignes(receveur, 10, entree(62), []),
+  ].join('\n')
+  const r = croissanceDesStocks(diff, {
+    lirePostImage: (f) => images[f]?.apres ?? null,
+    lirePreImage: (f) => images[f]?.avant ?? null,
+  })
+  assert.deepEqual(r.map((c) => [c.fichier, c.net]), [[receveur, 1]],
+    'le receveur croît de 1 — le fichier source, lui, décroît et ne se déclare pas')
+  assert.equal(r[0].exemples[0], '"fichier": "Source/WH - V4 - Le zoo imperial/05 - Amibe.md",',
+    'l’exemple cité nomme le chapitre reclassé')
+
+  // Le MÊME geste sous UN seul toit : net 0, invisible — la raison d'être des DEUX fichiers.
+  const seul = 'scripts/raw/empty-folios-stock.json'
+  const unToit = (perdues, benignes) => ['{', '  "perdues": [', ...perdues, '  ],', '  "benignes": [', ...benignes, '  ]', '}', ''].join('\n')
+  assert.deepEqual(
+    croissanceDesStocks(
+      [diffAuxLignes(seul, 3, [], virgule(entree(62))), diffAuxLignes(seul, 11, entree(62), [])].join('\n'),
+      {
+        lirePostImage: () => unToit(entree(55), [...virgule(entree(58)), ...entree(62)]),
+        lirePreImage: () => unToit([...virgule(entree(62)), ...entree(55)], entree(58)),
+      },
+    ),
+    [],
+    'deux rubriques d’un même fichier : `-1` et `+1` sous le même toit, net 0 — le reclassement passerait muet',
   )
 })
 
@@ -811,11 +865,9 @@ test('porteurs réels — l’image lit des entrées, et jamais moins que le rep
 // pire qu'un stock invisible — il donne un compte qui a l'air juste (sans `CHEMIN_SOURCE`, 36 des 76
 // entrées des sauts de folio seraient muettes à la porte de plage, sous les seuls répertoires de
 // `Source/` à apostrophe ASCII, et y ajouter un saut vaudrait `net 0`). Le corpus est un GLOB,
-// jamais une liste : un stock neuf tombe sous la mesure le jour où il naît.
-// `empty-folios-baseline.json` n'en est pas (son nom ne finit pas par `-stock.json`) : gel par
-// CHAPITRE, il nomme ses entrées par un nom NU à espaces que `CHEMIN_SOURCE` ne couvre pas, et
-// c'est `assertEmptyFoliosAgainstStock` qui les tient — limite écrite en tête de
-// `stocksNominatifs.mjs`.
+// jamais une liste : un stock neuf tombe sous la mesure le jour où il naît. Les ancres sans contenu
+// y sont entrées par ce chemin (#1727 T2) : `empty-folios-perdues-stock.json` et son pendant bénin
+// nomment leur chapitre par `Source/…md`, et ce corpus les compte sans qu'une ligne ait à les citer.
 test('stocks de `scripts/raw` — la porte voit CHAQUE entrée déclarée (corpus par GLOB)', (t) => {
   const dossier = join(RACINE, 'scripts', 'raw')
   const stocks = readdirSync(dossier).filter((nom) => nom.endsWith('-stock.json'))

@@ -28,10 +28,14 @@
 // relèvement déclarable est le stock NOMINATIF — une entrée par occurrence, comme
 // `scripts/raw/reconciliation-stock.json` : l'ajout y est une LIGNE de plus. Le filet couvre les
 // clés neuves ; les baselines de compte de `scripts/raw` sont, elles, passées à la forme nominative
-// (#1711 T2-T4). Reste sous ce filet `empty-folios-baseline.json` : déjà nominal par son contrat
-// (`perdues`/`benignes`, `assertEmptyFoliosAgainstStock` refuse toute entrée inconnue), il nomme ses
-// chapitres par leur nom NU à espaces (`"05 - Amibe.md"`), que `CHEMIN_SOURCE` ne couvre pas — ses
-// entrées restent donc hors de vue des deux portes, et c'est sa propre garde qui les tient.
+// (#1711 T2-T4, puis les ancres sans contenu #1727 T2 : leurs entrées nomment désormais le chapitre
+// par son CHEMIN `Source/…md`, donc 51 entrées vues sur 51 là où le nom NU à espaces
+// (`"05 - Amibe.md"`) n'en donnait AUCUNE à voir). Plus aucun porteur suivi n'est sous ce filet.
+// UNE CLASSE RESTE, et c'est la FORME qui la tient : deux RUBRIQUES d'un même fichier entre
+// lesquelles une entrée se DÉPLACE sont net 0 (`-1` et `+1` sous le même toit). C'est pourquoi les
+// deux classes d'ancres sans contenu vivent en DEUX FICHIERS
+// (`empty-folios-perdues-stock.json` / `…-benignes-stock.json`) : le déclassement d'une page perdue y
+// est une croissance nette du fichier receveur, donc un `CLIQUET:` à porter au message.
 //
 // DÉFINITION. Un PORTEUR est un littéral de TABLEAU ou d'OBJET atteignable depuis une liaison de
 // MODULE — `export const X = …`, `const X = …` de module, IIFE, fonction déclarée puis exportée.

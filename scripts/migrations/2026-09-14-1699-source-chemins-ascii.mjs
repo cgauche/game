@@ -29,12 +29,13 @@
  *  5. RÉÉCRITURE TEXTUELLE par CHEMIN COMPLET (jamais par basename), anciens chemins triés du plus
  *     long au plus court, dans tous les fichiers TEXTE suivis hors `Source/**` et hors archives
  *     datées, sous TROIS formes : POSIX, Windows (`\`), et ÉCHAPPÉE de littéral (`\'`).
- *  6. `scripts/raw/empty-folios-baseline.json` — son cliquet est keyé par BASENAME
- *     (`emptyFolioKey = ref|file|folio`, `scripts/raw/check-folio-continuity.mjs:167`), donc le pas 5
- *     ne le couvre pas : `nomAscii` s'applique à son champ `file`. C'est EXACTEMENT ce qu'un scan du
- *     disque rendrait après le renommage — la régénération par le PDF (`lib/empty-folios-stock.mjs`)
- *     exigerait les PDF gitignorés, absents d'un worktree lié, et VIDERAIT le stock.
- *     (`scripts/raw/folio-gaps-stock.json`, lui, porte des chemins COMPLETS : le pas 5 le couvre.)
+ *  6. Un stock keyé par BASENAME — `STOCK_ANCRES_VIDES` : le pas 5, qui réécrit par CHEMIN COMPLET,
+ *     ne couvre pas un champ `file` NU, donc `nomAscii` s'y applique directement. C'est EXACTEMENT ce
+ *     qu'un scan du disque rendrait après le renommage — une régénération par le PDF exigerait les PDF
+ *     gitignorés, absents d'un worktree lié, et VIDERAIT le stock. Le pas rend 0 geste quand ce fichier
+ *     est ABSENT de l'arbre — c'est le cas depuis que les ancres sans contenu vivent en deux stocks
+ *     nominatifs à chemins COMPLETS (`empty-folios-perdues-stock.json`, `…-benignes-stock.json`),
+ *     couverts par le pas 5 comme `scripts/raw/folio-gaps-stock.json` l'est déjà.
  *
  * `--dry` PAR DÉFAUT (rien n'est écrit, le plan est imprimé) ; `--apply` écrit.
  * PÉRIMÈTRE DU REJEU : `scripts/migrations/replay.mjs:110` (`PERIMETRE`) ne couvre PAS `Source/` — l'idempotence de
@@ -56,8 +57,8 @@
  *
  * ENTRÉES : `Source/**` (les chemins suivis, jamais le contenu des chapitres), les fichiers TEXTE
  * suivis hors `Source/**`, hors archives datées (`docs/decisions/`, `docs/plans/`,
- * `docs/superpowers/`, `.claude/soldes/`) et hors `PORTEURS_DE_NOMS_FIGES`, plus
- * `scripts/raw/empty-folios-baseline.json`.
+ * `docs/superpowers/`, `.claude/soldes/`) et hors `PORTEURS_DE_NOMS_FIGES`, plus le stock keyé par
+ * basename `STOCK_ANCRES_VIDES`.
  */
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
@@ -441,7 +442,8 @@ export function migrer({ racine = ROOT, apply = false, ecrire = console.log } = 
   ecrire(`  cibles de liens relatifs réécrites sous Source/ : ${liens} dans ${fichiersALiens.length} fichier(s)`);
   ecrire(`  basenames réécrits en citation nue : ${couplesBasenames.length} unique(s) ; ${ambigus.length} AMBIGU(S), à corriger à la main :`);
   for (const [a, b] of ambigus) ecrire(`    ${a} -> ${b} (basename porté par plusieurs livres)`);
-  ecrire(`  empty-folios-baseline.json : ${stock ? 'champ `file` migré' : 'inchangé'}`);
+  const etatDuStock = existsSync(cheminStock) ? 'inchangé' : 'absent de l\'arbre';
+  ecrire(`  ${STOCK_ANCRES_VIDES} : ${stock ? 'champ `file` migré' : etatDuStock}`);
   const gestes = gestesDossiers.length + gestesFichiers.length + pdf.length + textes.length + fichiersALiens.length + stock;
   ecrire(`  BILAN : ${gestes} geste(s)${apply ? ' APPLIQUÉ(S)' : ' (--dry : rien écrit ; --apply pour écrire)'}`);
   return {
