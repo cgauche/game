@@ -21,7 +21,7 @@
  *    Entraînement au combat, Invention !, Recherche de savoir, Semer la dissension + entraînements
  *    d'Aux Armes !) : « à condition que des installations et des instructeurs adaptés soient
  *    disponibles » — arbitrage sans-MJ : ni installations ni instructeurs sur le navire de campagne
- *    → non proposées en mer (le verbatim est affiché dans la modale, `SEA_ACTIVITIES_INTRO`).
+ *    → non proposées en mer (le verbatim est affiché dans la modale, fiche `regles/activites-en-mer`).
  *  - Entretien du navire (l.302-306) : DÉJÀ câblé au Test d'équipage d'ENTRETIEN nocturne du voyage
  *    (MDG 14 l.116-124) — pas de doublon en Activité.
  *
@@ -52,13 +52,6 @@ import { composeRollLabel, effectiveTarget, monoStep, openSequence, pousseSi, fr
 import { registerCascadeApplier, registerExtendedTestOutcome } from './cascade';
 import { noteSeaLine, patchSea } from './seaVoyageFlow';
 import { actorIn } from './combatants';
-
-/** VERBATIM MDG 15 l.266-272 (règle 5 : recollable dans Source/) — affiché en tête de la modale. */
-export const SEA_ACTIVITIES_INTRO = `Pour chaque semaine (8 jours) de voyage en mer, chaque Personnage a l'occasion d'effectuer une Activité. Comme elles ont lieu sur les flots, ces Activités ne sont pas soumises aux règles *Argent à gaspiller*, *Avec le pouvoir*… et *Amélioration elfique* (voir page de **WFJDR**, page 195).
-
-Les Activités suivantes peuvent être entreprises, à condition que des installations et des instructeurs adaptés soient disponibles : *Apprentissage particulier, Artisanat, Entraînement, Entraînement au combat, Invention !, Recherche de savoir, Semer la dissension* et toutes les Activités impliquant un entraînement du supplément **Aux Armes !**.
-
-Une Activité *Semer la dissension* réussie cause une perte de 2d10 de Moral si elle est dirigée contre les officiers du navire.`;
 
 /** Choix d'un héros pour la semaine : une Activité du catalogue 'mer' (+ mise du Commerce d'opportunité). */
 export interface SeaActivityPick {

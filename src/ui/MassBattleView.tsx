@@ -209,7 +209,9 @@ function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Sta
           </span>
         )}
       </div>
-      {sc.desc && <div className="mb-scene-desc"><Prose md={sc.desc} /></div>}
+      {/* Une Scène de Round EST une Activité (`battleSceneById` → `activityById`) : sa desc est le
+          champ `desc` de son entrée d'`activities.json`. */}
+      {sc.desc && <div className="mb-scene-desc"><Prose md={sc.desc} porteur={{ type: 'activities', id: sc.id, chemin: 'desc' }} /></div>}
       {isCombat ? (
         <p className="mb-detail">Tout le groupe engage le combat.</p>
       ) : (

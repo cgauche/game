@@ -77,7 +77,7 @@ import { ACTIVITIES } from '../../engine/activities';
 import type { OutcomeBand } from '../../engine/activities';
 import { traitLabels, optionalLabels, traitArgSkeleton } from '../../engine/traits/dispatch';
 import { resolveQualities } from '../../engine/qualities/dispatch';
-import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
+import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type CharKey, type HitLocation } from '../../engine/types';
 import { SIZE_LABEL, SIZE_ORDER, effectiveSize, woundsForSize, type SizeCategory } from '../../engine/size';
 import { bonus, effectiveChar } from '../../engine/characteristics';
 import { skillBaseValue } from '../../engine/skills';
@@ -133,15 +133,35 @@ export interface CodexFact {
    *  (profil M+carac+B) devient cliquable quand le fait référence une entité du Codex. */
   kref?: { category: string; id: string; label: string };
 }
+/**
+ * PORTEUR d'une rangée de prose : le champ d'où sort son texte, VERBATIM. `type`/`id` NOMMENT
+ * l'entrée quand la rangée rend le champ d'une AUTRE entrée que la fiche qui l'affiche (fiche de
+ * Race rendant les textes d'âge/taille/nom de `details.json`) ; absents, `CodexRowView` les complète
+ * avec l'entrée affichée. Un porteur désigne le champ RÉEL, jamais la fiche où on le lit.
+ */
+export interface PorteurDeRangee {
+  type?: string;
+  id?: string;
+  chemin: string;
+}
 /** Une ligne d'une section. */
 export type CodexRow =
-  | { t: 'text'; text: string }
+  /** Prose en rangée. `porteur` (cf. `PorteurDeRangee`) = le champ d'où sort `text`, VERBATIM
+   *  (notation `scripts/source/adresses.mjs`) — `CodexRowView` le complète et le passe à `<Prose>`.
+   *  ABSENT = texte SYNTHÉTISÉ ou DÉCORÉ : aucune mention n'y est liée (#1392 Lot E). */
+  | { t: 'text'; text: string; porteur?: PorteurDeRangee }
   | { t: 'kv'; k: string; v: string; kref?: { category: string; id: string; label: string } }
   /** Lien vers une autre fiche. `id` = identité STABLE de la cible (navigation) ; `label` reste la clé
    *  de résolution (base, affichage/repli) ; `show` = libellé affiché, qui PORTE les Indices
    *  (« 8 Tentacules +8 ») et est transmis au Codex/popover comme instance.
    *  `badge` = annotation de fin NON cliquable (rang « N2 », « facultatif », « Bénédiction »…). */
   | { t: 'ref'; category: string; id: string; label: string; show: string; badge?: string }
+  /** Pastille NUE : un libellé qui ne désigne AUCUNE entité du Codex (nom d'objet authoré en clair,
+   *  libellé composite « A ou B »/« au choix »). Même boîte qu'un `t:'ref'` — la borne d'objet se
+   *  voit — mais ni lien, ni popover, ni auto-liage : ce n'est pas de la prose de règle (#1392 Lot E,
+   *  verdict juge vision : une Possession rendue en PARAGRAPHE inversait la hiérarchie de la section
+   *  et fondait « Presse à imprimer » et « Chapeau impressionnant » en un seul objet). */
+  | { t: 'chip'; label: string; badge?: string }
   /** CHOIX « A ou B » : chaque option est un lien cross-réf cliquable, séparées par « ou ». */
   | { t: 'choice'; category: string; options: { id: string; label: string; show: string }[] }
   /** Mini sous-en-tête à l'intérieur d'une section (« Compétences », « Talents »…). */
@@ -187,9 +207,6 @@ export interface CodexItem {
    *  clair, d'une valeur qu'aucun folio n'imprime. Projetée par `depuisEnveloppe` et rendue UNE fois
    *  par `CodexEntry` — c'est la provenance des documents SANS livre (CLAUDE.md règle 7). */
   maison?: string;
-  /** Exergue Markdown VERBATIM (extrait de la desc, jamais reformulé) : citation/tract mis en tête de
-   *  fiche sur `ParchmentCard` (bande parchemin). Optionnel — item sans exergue = fiche telle quelle. */
-  exergue?: string;
   source?: CodexSource | null;
   /** Apparence (rig) à prévisualiser dans la fiche : créature, difformité de mutation, trait à visuel. */
   appearance?: EntityAppearance;
@@ -224,6 +241,10 @@ export interface CodexCategory {
   items: CodexItem[];
   /** Facettes de filtre — DÉRIVÉES des items dans la même re-projection (livre partout, groupe là où porté). */
   facets?: CodexFacet[];
+  /** La prose de cette catégorie suit la convention d'ÉPIGRAPHE WFRP (`careers`, LDB 2 : citation
+   *  `« … »` + attribution) — `<Prose exergues>` les rend en carte-parchemin à leur place. DONNÉE de
+   *  catégorie, jamais un test de catégorie au rendu. */
+  exergues?: boolean;
 }
 
 const src = (s: { book?: string; page?: number } | null | undefined): CodexSource | null =>
@@ -325,6 +346,11 @@ const refRow = (category: string, raw: string): CodexRow => {
   return { t: 'ref', category, id: refId(category, label), label, show: raw.trim() };
 };
 const refRows = (category: string, items?: string[] | null): CodexRow[] => (items ?? []).map((s) => refRow(category, s));
+/** Rangées de référence d'une liste de Caractéristiques : `CharKey` EST l'id de `characteristics.json`
+ *  (`charKeySchema`, `grammaire/valeurs.ts`) — aucun round-trip par libellé, même patron
+ *  qu'`opRows.ts` (`case 'charMod'`). */
+const charRefRows = (keys: readonly CharKey[]): CodexRow[] =>
+  keys.map((k) => ({ t: 'ref', category: 'characteristics', id: k, label: CHAR_LABELS[k], show: CHAR_LABELS[k] }));
 /** Lien cross-réf par `id` STABLE DÉJÀ CONNU (skip le round-trip par libellé de `refRow` — patron
  *  `critEntryItem`/traumas) : compétence/talent référencé par un axe de forces (axes.json, #409). */
 const idRefRow = (category: 'skills' | 'talents', id: string, spec?: string): CodexRow => {
@@ -345,7 +371,12 @@ const chips = (title: string, category: string, items?: string[] | null): CodexS
  *  `choice`/`wildcard` restent un texte composite (pas de `t:'choice'` multi-catégorie ici). */
 const trappingRefRow = (ref: TrappingRef): CodexRow => {
   const show = trappingRefLabel(ref);
-  if ('text' in ref || 'choice' in ref || 'wildcard' in ref) return { t: 'text', text: show };
+  // PASTILLE NUE, jamais de la prose : `{text}` est un NOM D'OBJET (« Grand hôtel particulier avec
+  // jardins » y ferait lier « Grand »), et `choice`/`wildcard` sont des libellés composites. Aucune
+  // entité du Codex n'est désignée — donc pas de `t:'ref'` non plus, et aucun porteur : le libellé
+  // rendu n'est même pas toujours le champ (`trappingRefLabel`, `src/data/index.ts:3573-3589`, le
+  // DÉCORE du compte `ref.count` — « Pamphlétaire (3) »). Même boîte que ses voisines de section.
+  if ('text' in ref || 'choice' in ref || 'wildcard' in ref) return { t: 'chip', label: show };
   if ('creatureId' in ref) return { t: 'ref', category: 'creatures', id: ref.creatureId, label: findCreatureById(ref.creatureId)?.label ?? ref.creatureId, show };
   if ('vehicleId' in ref) return { t: 'ref', category: 'vehicles', id: ref.vehicleId, label: findVehicleById(ref.vehicleId)?.label ?? ref.vehicleId, show };
   return { t: 'ref', category: 'trappings', id: ref.id, label: findTrappingById(ref.id)?.label ?? ref.id, show };
@@ -368,12 +399,15 @@ const ritualSection = (r: SpellData['ritual']): CodexSection | null =>
     ? {
         title: 'Rituel',
         layout: 'list',
+        // Un sous-en-tête SYNTHÉTISÉ (nu) par rubrique, puis le CHAMP seul — le texte rendu est
+        // alors le verbatim du champ, adressable (`ritual.<champ>`). Un `**Composants :** …` inline
+        // mêlait libellé fabriqué et verbatim : pas un champ, donc pas un porteur.
         rows: [
-          { t: 'text', text: `**Type :** ${r.type}` },
-          { t: 'text', text: `**Composants :** ${r.components}` },
-          { t: 'text', text: `**Conditions :** ${r.conditions}` },
-          { t: 'text', text: `**Sacrifices :** ${r.sacrifices}` },
-          { t: 'text', text: `**Conséquences :** ${r.consequences}` },
+          { t: 'sub', label: 'Type' }, { t: 'text', text: r.type, porteur: { chemin: 'ritual.type' } },
+          { t: 'sub', label: 'Composants' }, { t: 'text', text: r.components, porteur: { chemin: 'ritual.components' } },
+          { t: 'sub', label: 'Conditions' }, { t: 'text', text: r.conditions, porteur: { chemin: 'ritual.conditions' } },
+          { t: 'sub', label: 'Sacrifices' }, { t: 'text', text: r.sacrifices, porteur: { chemin: 'ritual.sacrifices' } },
+          { t: 'sub', label: 'Conséquences' }, { t: 'text', text: r.consequences, porteur: { chemin: 'ritual.consequences' } },
         ],
       }
     : null;
@@ -444,14 +478,14 @@ const QUALITY_CAP_LABEL: Record<string, string> = {
 function outcomeBandsSection(bands?: OutcomeBand[]): CodexSection | null {
   if (!bands?.length) return null;
   const rows: CodexRow[] = [];
-  for (const b of bands) {
+  for (const [i, b] of bands.entries()) {
     const head = [
       b.on ? libelleDeValeur(outcomeOnSchema, b.on) : 'Toute issue',
       b.minSL != null || b.maxSL != null ? `DR ${b.minSL ?? '−∞'} … ${b.maxSL ?? '+∞'}` : null,
       b.when ? libelleDeValeur(battleCondSchema, b.when) : null,
     ].filter(Boolean).join(' · ');
     rows.push({ t: 'sub', label: head });
-    if (b.note) rows.push({ t: 'text', text: b.note });
+    if (b.note) rows.push({ t: 'text', text: b.note, porteur: { chemin: `outcomes[${i}].note` } });
     if (b.resolver) rows.push({ t: 'kv', k: 'Résolveur', v: b.resolver });
     if (b.payoutPct != null) rows.push({ t: 'kv', k: 'Rendu', v: `${b.payoutPct} %` });
     // Les ops de la bande se RENDENT (primitive `opRows` — chips codex-liées, phrase humanisée, et un
@@ -540,14 +574,20 @@ export function raceDetailSection(s: (typeof species)[number]): CodexSection {
     { t: 'sub', label: 'Âge' },
     { t: 'text', text: `${details.ageBase[ref] ?? details.ageBase.humain} + ${Math.round(details.ageRoll[ref] ?? 1)}d10 ans` },
   ];
-  if (txt.age.bySpecies[ref]) rows.push({ t: 'text', text: txt.age.bySpecies[ref]! });
+  // Les textes d'âge/taille/noms sont des champs de `details.json` — la fiche de Race les AFFICHE,
+  // elle ne les porte pas : le porteur nomme l'entrée réelle. Âge/taille FORMATÉS (`base + Nd10`) et
+  // les couleurs JOINTES sont, eux, fabriqués : nus.
+  const dTxt = (chemin: string) => ({ type: 'details', id: 'details', chemin });
+  if (txt.age.bySpecies[ref]) rows.push({ t: 'text', text: txt.age.bySpecies[ref]!, porteur: dTxt(`texts.age.bySpecies.${ref}`) });
   rows.push({ t: 'sub', label: 'Taille' }, { t: 'text', text: `${details.heightBase[ref] ?? details.heightBase.humain} + ${Math.round(details.heightRoll[ref] ?? 1)}d10 cm` });
+  const tailleChemin = txt.taille.bySpecies[ref] ? `texts.taille.bySpecies.${ref}` : 'texts.taille.all';
   const tailleTxt = txt.taille.bySpecies[ref] ?? txt.taille.all;
-  if (tailleTxt) rows.push({ t: 'text', text: tailleTxt });
+  if (tailleTxt) rows.push({ t: 'text', text: tailleTxt, porteur: dTxt(tailleChemin) });
   if (eyeColors.length) rows.push({ t: 'sub', label: 'Yeux' }, { t: 'text', text: eyeColors.join(', ') });
   if (hairColors.length) rows.push({ t: 'sub', label: 'Cheveux' }, { t: 'text', text: hairColors.join(', ') });
+  const nomChemin = txt.nom.bySpecies[ref] ? `texts.nom.bySpecies.${ref}` : 'texts.nom.bySpecies.humain';
   const namesTxt = txt.nom.bySpecies[ref] ?? txt.nom.bySpecies.humain;
-  if (namesTxt) rows.push({ t: 'sub', label: 'Noms' }, { t: 'text', text: namesTxt });
+  if (namesTxt) rows.push({ t: 'sub', label: 'Noms' }, { t: 'text', text: namesTxt, porteur: dTxt(nomChemin) });
   return { title: 'Âge, taille & apparence', layout: 'list', rows };
 }
 
@@ -668,6 +708,8 @@ interface CodexCategorySpec {
   cluster?: string;
   /** Réf de source de la table (« LDB 18 ») — hors du libellé, cf. `CodexCategory.sourceRef`. */
   sourceRef?: string;
+  /** cf. `CodexCategory.exergues`. */
+  exergues?: boolean;
   build: () => CodexItem[];
 }
 
@@ -690,6 +732,7 @@ function makeCategory(spec: CodexCategorySpec): CodexCategory {
     group: spec.group,
     cluster: spec.cluster,
     sourceRef: spec.sourceRef,
+    exergues: spec.exergues,
     get items() { return fresh(); },
     get facets() { fresh(); return facets; },
   };
@@ -852,28 +895,6 @@ function waterModifiersSection(mods: WaterExposureModifier[]): CodexSection | nu
   return { title: 'Modificateurs', layout: 'list', rows };
 }
 
-/** Exergue d'une fiche : SÉLECTION STRUCTURELLE (pas d'heuristique fragile) de la citation/tract d'une
- *  desc. Les desc de Carrière (LDB 2) suivent la convention d'épigraphe WFRP — un paragraphe
- *  ENTIÈREMENT cité `« … »` (parfois en italique `*« … »*`) SUIVI d'un paragraphe d'attribution (tiret
- *  `–`/`—`/`-`, parfois échappé `\-`) — sur 93/96 carrières. On lève ce couple VERBATIM (règle stricte 5)
- *  et on le retire du corps (pas de doublon visuel entre l'exergue et l'onglet Description) ; une desc
- *  sans épigraphe (ex. Chevalier Errant : citation sans attribution suivante) reste entière, exergue absent. */
-const QUOTE_PARA = /^\s*\*?\s*«/;
-const ATTRIB_PARA = /^\s*\*?\s*\\?\s*[–—-]/;
-export function extractEpigraph(desc: string): { epigraph?: string; body: string } {
-  const paras = desc.split(/\n\n+/);
-  for (let i = 0; i < paras.length - 1; i++) {
-    const q = paras[i].trim();
-    if (QUOTE_PARA.test(q) && q.includes('»') && ATTRIB_PARA.test(paras[i + 1].trim())) {
-      return {
-        epigraph: `${q}\n\n${paras[i + 1].trim()}`,
-        body: paras.filter((_, j) => j !== i && j !== i + 1).join('\n\n'),
-      };
-    }
-  }
-  return { body: desc };
-}
-
 // ── LOT 1 #422 : famille NAVALE (MDG 12/13/15) — Ports, Progression, Navigation, Périls, Météo,
 //    Construction navale. Ports & sous-tableaux de construction restent des CATÉGORIES-tableau (une
 //    fiche par entité, patron `criticalsTete`) ; Navigation/Périls/Météo sont des FICHES DE RÈGLE
@@ -890,7 +911,9 @@ function portCargoRow(id: string, qty?: number): CodexRow {
   const label = entry?.label ?? id;
   const nom = entry && !isEchangeable(entry) && entry.hint ? `${label} (${entry.hint})` : label;
   const show = qty != null ? `${nom} (${qty})` : nom;
-  return entry && isEchangeable(entry) ? { t: 'ref', category: 'seaCargo', id: entry.id, label, show } : { t: 'text', text: show };
+  // Repli : une cargaison NON échangeable n'a pas de fiche à ouvrir — pastille NUE, jamais un
+  // paragraphe de prose au milieu des pastilles voisines (même classe que les Possessions).
+  return entry && isEchangeable(entry) ? { t: 'ref', category: 'seaCargo', id: entry.id, label, show } : { t: 'chip', label: show };
 }
 
 /** Libellés FR des 4 Traits de CONSTRUCTION (`ship-construction.json::constructionTraits`, sans champ
@@ -1152,7 +1175,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
           sub: w.environments.join(', '),
           sections: sections(
             { title: 'Effets de Saturation', layout: 'list', rows: w.effects.map((e) => ({ t: 'kv', k: libelleDeValeur(saturationTierSchema, e.tier), v: e.label } as CodexRow)) },
-            w.surnoms.length ? { title: 'Surnoms', layout: 'chips', rows: w.surnoms.map((s) => ({ t: 'text', text: s } as CodexRow)) } : null,
+            // Surnoms : des ÉTIQUETTES (un surnom par rangée), aucune entité désignée → pastille nue.
+            w.surnoms.length ? { title: 'Surnoms', layout: 'chips', rows: w.surnoms.map((s) => ({ t: 'chip', label: s } as CodexRow)) } : null,
           ),
         })),
         ...d.phenomena.map((p) => depuisEnveloppe(p, {
@@ -1388,7 +1412,9 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'careers', label: 'Carrières', group: 'Personnage',
+    // Les desc de Carrière (LDB 2) suivent la convention d'épigraphe WFRP : leurs couples
+    // citation+attribution se rendent en carte-parchemin, à LEUR place dans le corps.
+    key: 'careers', label: 'Carrières', group: 'Personnage', exergues: true,
     build: () => careers.map((c) => {
       const levels = levelsForCareer(c.id);
       const className = findClassById(c.class)?.label ?? c.class;
@@ -1398,17 +1424,16 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         title: `Niveau ${lv.level} : ${lv.label} — ${lv.status}`,
         layout: 'chips' as const,
         rows: [
-          ...(lv.characteristics.length ? [{ t: 'sub', label: 'Caractéristiques avancées' } as CodexRow, { t: 'text', text: lv.characteristics.map((k) => CHAR_LABELS[k]).join(', ') } as CodexRow] : []),
+          // Les Caractéristiques avancées sont des IDS (`CharKey` = id de `characteristics.json`) :
+          // elles sortent en rangées de référence, jamais en phrase jointe re-appariée par libellé.
+          ...(lv.characteristics.length ? [{ t: 'sub', label: 'Caractéristiques avancées' } as CodexRow, ...charRefRows(lv.characteristics)] : []),
           ...(lv.skills.length ? [{ t: 'sub', label: 'Compétences' } as CodexRow, ...refRows('skills', lv.skills.map((a) => advancementLabel('skills', a)))] : []),
           ...(lv.talents.length ? [{ t: 'sub', label: 'Talents' } as CodexRow, ...refRows('talents', lv.talents.map((a) => advancementLabel('talents', a)))] : []),
           ...(lv.trappings.length ? [{ t: 'sub', label: 'Possessions' } as CodexRow, ...trappingRefRows(lv.trappings)] : []),
         ],
       }));
-      // Citation/tract levée en tête de fiche (`ParchmentCard`) — c'est le flavor qui « vend » la
-      // carrière ; le corps restant garde la desc verbatim moins ce couple (pas de doublon).
-      const { epigraph, body } = extractEpigraph(c.desc);
       return depuisEnveloppe(c, {
-        sub: className, group: className, desc: body, exergue: epigraph,
+        sub: className, group: className,
         // Faits-clés en en-tête (comme les Races portent M/Destin/Résilience) : Classe + fourchette de Statut social.
         meta: facts(fact('Classe', className), fact('Statut', careerStatusRange(levels))),
         tabs: [
@@ -1432,7 +1457,9 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         c.options?.length
           ? {
             title: 'Dépenses', layout: 'list' as const,
-            rows: c.options.flatMap((o) => [{ t: 'sub', label: o.label } as CodexRow, { t: 'text', text: optionBody(o) } as CodexRow]),
+            // PORTEUR licite malgré le dédoublonnage : `optionBody` ne réécrit rien — il RETRANCHE le
+            // libellé répété en tête, donc le rendu est un SOUS-TEXTE CONTIGU de `options[i].desc`.
+            rows: c.options.flatMap((o, i) => [{ t: 'sub', label: o.label } as CodexRow, { t: 'text', text: optionBody(o), porteur: { chemin: `options[${i}].desc` } } as CodexRow]),
           }
           : null,
         ...reverseSections('characteristics', c.id),
@@ -1519,7 +1546,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'siegeEngines', label: 'Engins de siège', group: 'Équipement',
-    // Engins de siège = Possessions portant l'art d'affût `siegeRig` (les 12 mêmes que la Palette de
+    // Engins de siège = Possessions portant l'art d'affût `siegeRig` (les mêmes que la Palette de
     // l'éditeur, `siegeEngines`). Miroir de « Créatures » pour l'aperçu rig (l'affût est rendu par le
     // MÊME chemin — appearance.species = siegeRig) ET de « Possessions » pour les faits d'arme
     // (Portée/Dégâts) + Atouts (l'Indice « Arme d'équipe N » = équipage requis).
@@ -1740,7 +1767,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
                 { t: 'kv', k: 'Rareté', v: c.harvest.rarity },
                 { t: 'kv', k: 'Dangerosité', v: c.harvest.danger },
                 { t: 'kv', k: 'Valeur (1 Enc, conservé)', v: formatMoney(costPerEnc(c.harvest)) },
-                { t: 'text', text: c.harvest.uses },
+                { t: 'text', text: c.harvest.uses, porteur: { chemin: 'harvest.uses' } },
               ],
             }
           : null,
@@ -1787,7 +1814,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       label: entryKey(lv as unknown as Record<string, unknown>),
       sub: lv.status, group: findCareerById(lv.career)?.label ?? lv.career,
       sections: sections(
-        lv.characteristics.length ? { title: 'Caractéristiques avancées', layout: 'chips', rows: [{ t: 'text', text: lv.characteristics.map((k) => CHAR_LABELS[k]).join(', ') }] } : null,
+        lv.characteristics.length ? { title: 'Caractéristiques avancées', layout: 'chips', rows: charRefRows(lv.characteristics) } : null,
         chips('Compétences', 'skills', lv.skills.map((a) => advancementLabel('skills', a))),
         chips('Talents', 'talents', lv.talents.map((a) => advancementLabel('talents', a))),
         trappingChips('Possessions', lv.trappings),
@@ -1964,6 +1991,9 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       id: pool.id, label: pool.label,
       sub: `${pool.maleFirstNames.length}♂ · ${pool.femaleFirstNames.length}♀ · ${pool.lastNames.length} noms`,
       sections: sections(
+        // RESTE ASSUMÉ : une rangée porte la LISTE entière (`join(', ')`), pas un nom — en pastille
+        // elle ferait une pastille géante. Éclater la donnée en une pastille par nom est un chantier
+        // de DONNÉES, hors #1392 Lot E.
         pool.maleFirstNames.length ? { title: 'Prénoms masculins', layout: 'chips', rows: [{ t: 'text', text: pool.maleFirstNames.join(', ') }] } : null,
         pool.femaleFirstNames.length ? { title: 'Prénoms féminins', layout: 'chips', rows: [{ t: 'text', text: pool.femaleFirstNames.join(', ') }] } : null,
         pool.lastNames.length ? { title: 'Noms de famille', layout: 'chips', rows: [{ t: 'text', text: pool.lastNames.join(', ') }] } : null,
@@ -2453,7 +2483,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
           },
           {
             title: 'Vents', layout: 'chips',
-            rows: w.vents.map((v) => ({ t: 'text', text: v.label } as CodexRow)),
+            // Libellés d'état de vent : des ÉTIQUETTES → pastille nue, comme leurs voisines.
+            rows: w.vents.map((v) => ({ t: 'chip', label: v.label } as CodexRow)),
           },
         ),
       }];

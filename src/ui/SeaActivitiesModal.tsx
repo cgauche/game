@@ -5,10 +5,10 @@ import { CharFrame } from './CharFrame';
 import { OptionChooser } from './OptionChooser';
 import { Prose } from './Prose';
 import {
-  SEA_ACTIVITIES_INTRO, seaActivitiesCatalog, seaActivityBlocked,
+  seaActivitiesCatalog, seaActivityBlocked,
   type SeaActivityPick,
 } from '../state/seaActivities';
-import { findVehicleById } from '../data';
+import { findVehicleById, findRegleById } from '../data';
 import { cargoTotalEnc } from '../engine/seaVoyage';
 import { toBrass, PA_PER_CO } from '../engine/money';
 import { partyMoneyTotal, bourseOf } from '../state/bourseFlow';
@@ -34,6 +34,8 @@ export function SeaActivitiesModal() {
     ? Math.max(0, (findVehicleById(vessel.vehicleId)?.ship?.capacity ?? 0) - cargoTotalEnc(vessel.cargo ?? []))
     : 0;
   const catalog = useMemo(() => seaActivitiesCatalog(), []);
+  // Le texte d'ouverture est une fiche de Règle ADRESSÉE (`regles.json`), pas une constante de code.
+  const intro = findRegleById('activites-en-mer');
   const [picks, setPicks] = useState<Record<string, SeaActivityPick | null>>({});
   if (!pending) return null;
   const heroes = party.filter((h) => !h.dead && !h.outOfRencontre);
@@ -42,11 +44,16 @@ export function SeaActivitiesModal() {
 
   return (
     <Modal title={<><Icon id="travel/anchor" size="sm" /> Activités en mer — semaine écoulée</>} variant="plain" className="sea-activities">
-      <div className="sea-act-intro"><Prose md={SEA_ACTIVITIES_INTRO} /></div>
+      {intro?.desc && (
+        <div className="sea-act-intro">
+          <Prose md={intro.desc} porteur={{ type: 'regles', id: intro.id, chemin: 'desc' }} />
+        </div>
+      )}
       <div className="panel-grid">
         {heroes.map((h) => {
           const pick = picks[h.id];
           const chosen = pick?.activityId ?? '';
+          const chosenDef = chosen ? catalog.find((d) => d.id === chosen) : undefined;
           // Planque de la Cartographie : DÉBIT solo du cartographe (soloPayer, seaActivities.ts) —
           // le plafond est SA bourse, pas le total du groupe (le Commerce d'opportunité, lui, est
           // un investissement de GROUPE plafonné par `investCap`).
@@ -72,7 +79,7 @@ export function SeaActivitiesModal() {
               />
               {chosen && (
                 <div className="sea-act-detail">
-                  <Prose md={catalog.find((d) => d.id === chosen)?.desc ?? ''} />
+                  <Prose md={chosenDef?.desc ?? ''} porteur={chosenDef && { type: 'activities', id: chosenDef.id, chemin: 'desc' }} />
                   {catalog.find((d) => d.id === chosen)?.resolver === 'opportunityTrade' && (
                     <label className="sea-act-invest">
                       Mise (CO, max {investCap})

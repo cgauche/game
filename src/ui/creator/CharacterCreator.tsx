@@ -95,6 +95,7 @@ import { DiceRoll, DieFace } from '../DiceRoll';
 import { d100Faces, d10Face } from '../Dice';
 import { CelestialWheel } from './CelestialWheel';
 import { DetailFrame } from '../DetailFrame';
+import type { Porteur } from '../liage';
 import { WaxSeal } from '../WaxSeal';
 import { GroupedPickGrid, type PickGridSection } from '../GroupedPickGrid';
 import { MetalStatus } from '../MetalStatus';
@@ -435,10 +436,11 @@ export function careerLevelTalentsTitle(level: number): string {
   return level === 1 ? 'Talents — un au choix' : `Talents — Niveau ${level}`;
 }
 
-/** Rendu Markdown des textes de données (descriptions — verbatim de la source, via la primitive Prose). */
-function LoreText({ md }: { md: string | null | undefined }) {
+/** Rendu Markdown des textes de données (descriptions — verbatim de la source, via la primitive Prose).
+ *  `porteur` = le champ d'où sort `md` — transmis tel quel à `<Prose>` (sans lui, rien n'est lié). */
+function LoreText({ md, porteur }: { md: string | null | undefined; porteur?: Porteur }) {
   if (!md?.trim()) return null;
-  return <div className="lore-text"><Prose md={md} /></div>;
+  return <div className="lore-text"><Prose md={md} porteur={porteur} /></div>;
 }
 
 // ════ 1) Race (LDB 04 l.87-101) — charte « Atelier du scribe » (#393 P2, correction structurelle
@@ -664,8 +666,7 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
         </>
       }
       prose={sp.desc}
-      proseSelfLabel={sp.label}
-      proseSelfCategory="races"
+      porteur={{ type: 'races', id: sp.id, chemin: 'desc' }}
     />
   );
 
@@ -889,8 +890,7 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
         </>
       }
       prose={career.desc}
-      proseSelfLabel={career.label}
-      proseSelfCategory="careers"
+      porteur={{ type: 'careers', id: career.id, chemin: 'desc' }}
     />
   );
 
@@ -1422,8 +1422,7 @@ export function StarScreen({ d, setD }: StepProps) {
               </>
             }
             prose={sign.desc ?? undefined}
-            proseSelfLabel={sign.label}
-            proseSelfCategory="stars"
+            porteur={{ type: 'stars', id: sign.id, chemin: 'desc' }}
           />
         ) : (
           <p className="hint">
@@ -2139,7 +2138,7 @@ export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
       })}
 
       <div className="mini-title">La classe — {klass?.label ?? '—'}</div>
-      <LoreText md={klass?.desc} />
+      <LoreText md={klass?.desc} porteur={klass && { type: 'classes', id: klass.id, chemin: 'desc' }} />
 
       {/* Note de PIED (planche `finale-mock7`, `.c-note` en bas de zone) : où atterrit le butin de départ. */}
       <p className="hint">Tout objet va sur le héros — il se retrouvera dans son inventaire dès l'engagement.</p>

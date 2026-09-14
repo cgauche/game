@@ -3,6 +3,7 @@ import { Icon } from './Icon';
 import { Prose } from './Prose';
 import { PendingRollLine, type PendingRoll } from './RollLine';
 import { StakeNote } from './StakeNote';
+import type { Porteur } from './liage';
 
 /**
  * Gabarit UNIQUE d'un panneau d'Activité/Service (#371) : en-tête (icône du registre + titre),
@@ -18,7 +19,7 @@ import { StakeNote } from './StakeNote';
  */
 export const idBlocage = (paneId: string) => `${paneId}-blocked`;
 
-export function ActivityPane({ id, icon, title, lead, desc, blocked, prejet, cost, note, actions, children }: {
+export function ActivityPane({ id, icon, title, lead, desc, porteur, blocked, prejet, cost, note, actions, children }: {
   /** Id STABLE du volet — ancre de la bannière de blocage (cf. `idBlocage`). */
   id: string;
   icon: string;
@@ -27,6 +28,8 @@ export function ActivityPane({ id, icon, title, lead, desc, blocked, prejet, cos
   lead?: ReactNode;
   /** Description VERBATIM (Markdown) de la source — rendue par `<Prose>` (règle 5). */
   desc?: string;
+  /** Champ d'où sort `desc` (`{ type, id, chemin }`) — sans lui, aucune mention n'est liée (#1392). */
+  porteur?: Porteur;
   /** Raison d'indisponibilité (gate d'affordance) — l'action du pied est alors désactivée. */
   blocked?: ReactNode;
   /** Ligne de test AVANT d'entreprendre (compétence en chip + Difficulté + cible). */
@@ -45,7 +48,7 @@ export function ActivityPane({ id, icon, title, lead, desc, blocked, prejet, cos
       <header className="activity-pane-head"><Icon id={icon} /> <b>{title}</b></header>
       <div className="activity-pane-body">
         {lead}
-        {desc && <div className="activity-pane-desc"><Prose md={desc} /></div>}
+        {desc && <div className="activity-pane-desc"><Prose md={desc} porteur={porteur} /></div>}
         {blocked && <p className="activity-pane-blocked" id={idBlocage(id)}>{blocked}</p>}
         {children}
       </div>

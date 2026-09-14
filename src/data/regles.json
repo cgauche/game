@@ -933,5 +933,29 @@
       "page": 71,
       "note": "MSRC 13 l.22-26"
     }
+  },
+  {
+    "id": "activites-en-mer",
+    "type": "regles",
+    "label": "Activités en mer",
+    "descRef": {
+      "book": "mer-des-griffes",
+      "ch": "15",
+      "parts": [
+        {
+          "kind": "blocs",
+          "sec": "activites-en-mer",
+          "secOcc": 1,
+          "b0": 0,
+          "b1": 2,
+          "sum": "344731d707104a9c"
+        }
+      ]
+    },
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 134,
+      "note": "MDG 15 « ACTIVITÉS EN MER »"
+    }
   }
 ]

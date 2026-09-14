@@ -197,7 +197,7 @@ export function WorldMapPlacePanel({ place, scenes, updPlace }: {
                     <div className="ed-hint">
                       Résolu du catalogue : Taille {def.taille}, Richesse {def.richesse}
                       {def.dirigeant ? ` — ${def.dirigeant}` : ''}
-                      {def.desc ? <> — <Prose md={def.desc} /></> : null}
+                      {def.desc ? <> — <Prose md={def.desc} porteur={{ type: 'navalPorts', id: def.id, chemin: 'desc' }} /></> : null}
                     </div>
                   ) : null;
                 })()}

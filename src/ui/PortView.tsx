@@ -44,7 +44,7 @@ export function PortHeader({ pp, catalogue }: { pp: PortProfile; catalogue?: Nav
         <span><b>Surplus</b> {indiceList(pp.surplus) || '—'}</span>
         <span><b>Demande</b> {indiceList(pp.demande) || '—'}</span>
       </div>
-      {catalogue?.desc && <Prose md={catalogue.desc} />}
+      {catalogue?.desc && <Prose md={catalogue.desc} porteur={{ type: 'navalPorts', id: catalogue.id, chemin: 'desc' }} />}
     </div>
   );
 }
@@ -232,7 +232,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                         btnClassName="small"
                       />
                     </div>
-                    <Prose md={def.desc} />
+                    <Prose md={def.desc} porteur={{ type: 'navalTraits', id: def.id, chemin: 'desc' }} />
                   </div>
                 ))}
               </div>

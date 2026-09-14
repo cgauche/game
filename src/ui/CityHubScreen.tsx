@@ -132,6 +132,9 @@ export function CityHubScreen({
    *  Services ET pour un POI de plan ciblant un `serviceKind` (#345 : zéro copie du renderer). */
   const renderServiceDetail = (svc: ResolvedPlaceService | undefined): React.ReactNode => {
     if (!svc) return <p className="city-hub-empty">Ce lieu n’offre encore aucun service.</p>;
+    // `svc.desc` vient TOUJOURS du catalogue `lieux-services.json` (`placeServices`,
+    // `state/worldMap.ts:317-348` : `desc: def?.desc`), où `svc.id` EST l'id de l'entrée.
+    const porteurSvc = { type: 'lieux-services', id: svc.id, chemin: 'desc' };
     if (svc.category === 'auberge') {
       return (
         <ActivityPane
@@ -140,6 +143,7 @@ export function CityHubScreen({
           title={svc.label}
           lead={<SpeakerBanner label="L’aubergiste" variant="boniment">{svc.hostLine}</SpeakerBanner>}
           desc={svc.desc}
+          porteur={porteurSvc}
           actions={
             <>
               {svc.rest && <button type="button" className="btn btn-primary" onClick={() => openRest({ places: svc.rest, quality: rest?.quality })}>Dormir</button>}
@@ -214,6 +218,7 @@ export function CityHubScreen({
           icon={serviceIcon(svc)}
           title={svc.label}
           desc={svc.desc}
+          porteur={porteurSvc}
           actions={
             <button
               type="button" className="btn btn-primary"
@@ -236,6 +241,7 @@ export function CityHubScreen({
           icon={serviceIcon(svc)}
           title={svc.label}
           desc={svc.desc}
+          porteur={porteurSvc}
           actions={
             <GatedAction
               id={`city-hub-${svc.id}-enter`}
@@ -251,7 +257,7 @@ export function CityHubScreen({
     // Service de catalogue sans écran dédié (temple/guilde) : desc si le catalogue la porte (état HONNÊTE,
     // pas de promesse ni de roadmap-speak, #375), sinon un constat FACTUEL (règle 1/7).
     return (
-      <ActivityPane id={`pane-svc-${svc.id}`} icon={serviceIcon(svc)} title={svc.label} desc={svc.desc}>
+      <ActivityPane id={`pane-svc-${svc.id}`} icon={serviceIcon(svc)} title={svc.label} desc={svc.desc} porteur={porteurSvc}>
         {!svc.desc && <p className="city-hub-empty">Ce service n’a pas encore d’écran dédié.</p>}
       </ActivityPane>
     );

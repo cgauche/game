@@ -14,6 +14,17 @@ import { z } from 'zod';
 import { descRefSchema } from './valeurs';
 import { estExtrait } from './livres-extraits';
 import { PROSE_INLINE_TOLEREE } from './prose-inline';
+import type { CheminProseDeScene } from './champs-prose-de-scene';
+
+/**
+ * DÉCLARE un champ de prose de scène : `z.string()` NOMMÉ par son chemin. Le type du paramètre est le
+ * catalogue fermé `CHAMPS_PROSE_DE_SCENE` (`./champs-prose-de-scene`) — un champ de prose déclaré
+ * sans être inventorié ne compile pas, et un chemin inventorié sans site de déclaration ici est
+ * rouge à la garde de câblage (`src/ui/compendium/liens-du-catalogue.test.tsx`, qui balaie les defs).
+ */
+export function proseDeScene(_chemin: CheminProseDeScene) {
+  return z.string();
+}
 
 /**
  * Les deux porteurs de prose, TOUJOURS optionnels au type : « exiger la prose » ne dit pas SOUS

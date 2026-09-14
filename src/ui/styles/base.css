@@ -859,6 +859,18 @@ h3 {
 .entity-chip .codex-ref {
   color: inherit;
 }
+/* Variante NUE (`PlainChip`) : rien à survoler — ni curseur d'aide ni réaction dorée, qui
+   promettraient un popover `CodexRef` absent. La BOÎTE, elle, est la même (aucune mise en forme de
+   `.entity-chip` ne dépend d'un enfant `.codex-ref` : seule sa couleur est héritée, ci-dessus). */
+.entity-chip.plain {
+  cursor: default;
+}
+.entity-chip.plain:hover,
+.entity-chip.plain:focus-within {
+  border-color: var(--atelier-wood-etch);
+  color: var(--atelier-brass-etch);
+  background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-mid));
+}
 /* badge de fin (carac+valeur, +avancées, ×N) — discret. */
 .entity-badge {
   font-style: normal;

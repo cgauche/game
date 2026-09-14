@@ -215,8 +215,8 @@ const CONTRATS_CAS = (() => {
   })
 })()
 
-/** Épigraphes de Carrière : compte et périmètre de SOURCE, dumpés par le code lui-même
- *  (`extractEpigraph` + `careers`) — jamais une re-implémentation de la sélection ici. */
+/** Exergues de Carrière : compte et périmètre de SOURCE, dumpés par le code lui-même (le plugin
+ *  `exergues` de `<Prose>` monté sur les `careers` réelles) — jamais une re-implémentation ici. */
 const EPIGRAPHES = JSON.parse(
   sortieOutilLocal(process.cwd(), 'tsx', 'tsx', ['scripts/docs/lib/dump-epigraphes.mts']),
 )
@@ -288,8 +288,8 @@ const out = `# Codex — couche relationnelle (références inverses, index, aut
 \`cluster\`), et l'\`exposition\` DÉCLARÉE par les ${NB_DEFS} defs de \`src/data/schemas/defs/\`
 (dumpée par \`scripts/docs/lib/dump-exposition.mts\`), les cas NOMMÉS par \`${CONTRATS}\`, les fonctions
 exportées de \`${DESCRIBE}\` et \`${HUMANIZE}\`, et le compte d'épigraphes de Carrière dumpé par
-\`scripts/docs/lib/dump-epigraphes.mts\` (\`extractEpigraph\` appliqué aux \`careers\` réelles — aucune
-re-implémentation de la sélection ici). **Angles morts** : la catégorie RÉFÉRANTE
+\`scripts/docs/lib/dump-epigraphes.mts\` (le plugin \`exergues\` de \`<Prose>\` monté sur les \`careers\`
+réelles — aucune re-implémentation de la détection ici). **Angles morts** : la catégorie RÉFÉRANTE
 est lue au \`const by\` en portée ou au littéral inline — une arête posée autrement (helper, boucle
 sur une variable calculée) casserait le script plutôt que de mentir, mais aucune n'existe
 aujourd'hui ; le CONTENU réel de chaque relation (combien de créatures portent tel trait) dépend de
@@ -392,13 +392,14 @@ Regrouper une catégorie = poser \`cluster: '…'\` sur son littéral dans \`COD
   un titre dans \`REVERSE_TITLE\` si besoin, et \`...reverseSections(cat, id)\` dans la catégorie du registre.
 - **Nouveau champ de fiche** : enrichir l'\`item\` dans \`${REGISTRY}\` (méta \`fact(...)\` ou section via les
   helpers de \`${DESCRIBE}\` : ${HELPERS_DESCRIBE.map((n) => `\`${n}\``).join(', ')}).
-- **Exergue de fiche** (\`CodexItem.exergue\`, Markdown verbatim) : citation/tract levé en tête de fiche sur
-  \`ParchmentCard\`. Pour les Carrières, \`extractEpigraph(desc)\` sélectionne MÉCANIQUEMENT le couple
-  citation \`« … »\` (ou \`*« … »*\`) + attribution (tiret) et le retire du corps — convention
+- **Exergue de fiche** : PRÉSENTATION, jamais un champ. La \`desc\` reste ENTIÈRE et UNE ; c'est le plugin
+  \`exergues\` de \`<Prose>\` (\`src/ui/Prose.tsx\`), activé par la DONNÉE de catégorie
+  (\`CodexCategory.exergues\`, \`careers\`), qui rend en \`.prose-exergue\` (matière \`ParchmentCard\`)
+  TOUT couple citation \`« … »\` + attribution (tiret), À SA PLACE dans le corps — convention
   typographique OBSERVÉE dans les sources : ${EPIGRAPHES.avecEpigraphe} des ${EPIGRAPHES.total} carrières
-  curées la portent (folios ${EPIGRAPHES.folios[0]}–${EPIGRAPHES.folios[1]} de ${EPIGRAPHES.livres.length} livres :
-  ${EPIGRAPHES.livres.map((b) => `\`${b}\``).join(', ')}). Aucun champ JSON ajouté : extraction
-  structurelle depuis la desc verbatim.
+  curées en portent au moins un (${EPIGRAPHES.couples} couples au total ; folios ${EPIGRAPHES.folios[0]}–${EPIGRAPHES.folios[1]} de ${EPIGRAPHES.livres.length} livres :
+  ${EPIGRAPHES.livres.map((b) => `\`${b}\``).join(', ')}). Une catégorie SANS la donnée (\`species\` et ses
+  « Points de vue ») garde ses citations en paragraphes : aucun \`if (category === …)\` au rendu.
 - **Riders / effets / formules de sort en clair** : les sections rendent d'abord la phrase JOUEUR
   (\`${HUMANIZE}\` — switchs EXHAUSTIFS, zéro id brut : ${HELPERS_HUMANIZE.map((n) => `\`${n}\``).join(', ')}),
   la forme technique d'atelier restant dépliée dans un bloc « Détail technique » (primitive \`.fold\`).

@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { sourceRefSchema, entityAppearanceSchema } from '../grammaire/valeurs';
 import { conditionCondCtxSchema } from './worldmap';
 import { idDe } from '../grammaire/ref';
+import { proseDeScene } from '../grammaire/prose';
 import { entreePartielle as creatureEntreePartielle, type CreatureProfilPartiel } from '../defs/creatures';
 import { findCreatureById, findTrappingById, byId, findTalentById, specResolves } from '../../index';
 import type { TrappingData } from '../../index';
@@ -18,7 +19,7 @@ import type { TrappingData } from '../../index';
 export const indiceStadeSchema = z.strictObject({
   /** id STABLE du stade, unique DANS l'indice. */
   id: z.string().min(1, 'indices[].stades[].id : id vide.'),
-  prose: z.string(),
+  prose: proseDeScene('narratif.indices[].stades[].prose'),
   source: sourceRefSchema.optional(),
 });
 
@@ -61,7 +62,7 @@ export const ouvertureSchema = z.strictObject({
   titre: z.string().min(1, 'narratif.ouverture.titre : titre vide.'),
   sousTitre: z.string().optional(),
   chapitre: z.string().optional(),
-  pitch: z.string().min(1, 'narratif.ouverture.pitch : pitch vide.'),
+  pitch: proseDeScene('narratif.ouverture.pitch').min(1, 'narratif.ouverture.pitch : pitch vide.'),
   source: sourceRefSchema.optional(),
   ambiance: z.enum(['veillee', 'parchemin']).optional(),
 });

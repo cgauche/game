@@ -193,6 +193,11 @@
 /* Le corps du parchemin est CLAIR — tout texte générique posé dedans (ex. `.rm-log`, taré pour un
    fond de modale sombre) doit rester lisible sur `--parchment`, jamais son `--muted` d'origine. */
 .parchment-card-body p { color: var(--ink); }
+/* EXERGUE d'une prose (plugin `<Prose exergues>`) : la carte-parchemin posée DANS le fil du texte,
+   à la place qu'elle occupe dans la source — simple respiration verticale, la matière est celle de
+   `.parchment-card`. */
+.prose-exergue { margin: 12px 0; }
+.prose-exergue > .parchment-card { margin: 0; }
 
 /* ── CHAMP de formulaire (libellé AU-DESSUS du contrôle) ── `.ed-field` (éditeur) = même primitive. */
 .field,

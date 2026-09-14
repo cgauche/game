@@ -1,13 +1,13 @@
 /** Rendu d'une fiche du Codex (détail) : en-tête + faits + prose + SECTIONS riches (statbloc,
  *  niveaux de carrière, bénédictions…) dont les entités citées sont des liens `CodexRef`. */
 import type { CodexItem, CodexRow, CodexSection } from './registry';
-import { EntityRef, ChoiceChips } from '../EntityChip';
+import { EntityRef, ChoiceChips, PlainChip } from '../EntityChip';
 import { CodexRef } from './CodexRef';
 import { CreaturePreview } from './CreaturePreview';
 import { TabbedEntry, type EntryTab } from '../TabbedEntry';
 import { OrnateFrame } from '../Ornaments';
-import { ParchmentCard } from '../ParchmentCard';
 import { Prose } from '../Prose';
+import type { Porteur } from '../liage';
 import { libelleDuChamp } from './editFields';
 import { uniqueSlugId } from '../../data/slug';
 
@@ -20,7 +20,19 @@ export function CodexSourceBadge({ source }: { source: CodexItem['source'] }) {
   );
 }
 
-function CodexRowView({ row }: { row: CodexRow }) {
+/**
+ * Porteur d'une rangée : la rangée dit SON `chemin` (et, si le champ vit dans une AUTRE entrée, son
+ * `type`/`id`) ; la fiche dit QUI elle rend. Ni l'un ni l'autre seul ne suffit — sans les deux, la
+ * rangée est nue et ne lie rien (#1392 Lot E).
+ */
+export function porteurDeRangee(row: CodexRow, entree?: { type: string; id: string }): Porteur | undefined {
+  if (row.t !== 'text' || !row.porteur) return undefined;
+  const type = row.porteur.type ?? entree?.type;
+  const id = row.porteur.id ?? entree?.id;
+  return type && id ? { type, id, chemin: row.porteur.chemin } : undefined;
+}
+
+function CodexRowView({ row, entree }: { row: CodexRow; entree?: { type: string; id: string } }) {
   switch (row.t) {
     case 'sub':
       return <div className="codex-rowsub">{row.label}</div>;
@@ -45,7 +57,10 @@ function CodexRowView({ row }: { row: CodexRow }) {
         </div>
       );
     case 'text':
-      return <div className="codex-rowtext"><Prose md={row.text} /></div>;
+      return <div className="codex-rowtext"><Prose md={row.text} porteur={porteurDeRangee(row, entree)} /></div>;
+    case 'chip':
+      // Pastille NUE : même boîte que ses voisines `t:'ref'`, sans popover ni lien (rien à résoudre).
+      return <PlainChip label={row.label} badge={row.badge} />;
     case 'ref':
       return <EntityRef category={row.category} id={row.id} label={row.label} show={row.show} instance={row.show} badge={row.badge} />;
     case 'choice':
@@ -64,31 +79,37 @@ function CodexRowView({ row }: { row: CodexRow }) {
   }
 }
 
-function CodexSectionView({ section }: { section: CodexSection }) {
+function CodexSectionView({ section, entree }: { section: CodexSection; entree?: { type: string; id: string } }) {
   return (
     <section className="codex-sec">
       <h3 className="codex-sec-title section-label">{section.title}</h3>
       <div className={`codex-sec-body codex-${section.layout ?? 'list'}`}>
         {section.rows.map((row, i) => (
-          <CodexRowView key={i} row={row} />
+          <CodexRowView key={i} row={row} entree={entree} />
         ))}
       </div>
     </section>
   );
 }
 
-/** Rendu PARTAGÉ d'une liste de sections (fiche Codex ET statbloc d'inspection en combat). */
-export function CodexSections({ sections }: { sections: CodexSection[] }) {
+/** Rendu PARTAGÉ d'une liste de sections (fiche Codex ET statbloc d'inspection en combat).
+ *  `entree` = l'entrée affichée (`{ type, id }`), qui complète le `chemin` des rangées en PORTEUR.
+ *  Absente (statbloc d'un combattant, sections du créateur) : les rangées sont nues — un combattant
+ *  n'est pas une entrée, il n'y a aucun champ à nommer. */
+export function CodexSections({ sections, entree }: { sections: CodexSection[]; entree?: { type: string; id: string } }) {
   return (
     <>
       {sections.map((sec, i) => (
-        <CodexSectionView key={i} section={sec} />
+        <CodexSectionView key={i} section={sec} entree={entree} />
       ))}
     </>
   );
 }
 
-export function CodexEntry({ item, instance, category }: { item: CodexItem; instance?: string; category?: string }) {
+export function CodexEntry({ item, instance, category, exergues }: { item: CodexItem; instance?: string; category?: string; exergues?: boolean }) {
+  // L'entrée AFFICHÉE : ce que la fiche sait d'elle-même, et qui fait d'un `chemin` de rangée un
+  // PORTEUR complet. Sans `category` (appel hors navigation Codex) : rangées nues.
+  const entree = category ? { type: category, id: item.id } : undefined;
   // ONGLETS data-driven : CHAQUE section de la fiche (statbloc, compétences, niveaux de carrière,
   // bénédictions…) devient un onglet → les onglets reflètent les données PROPRES de l'entité (une
   // créature, un sort et une race n'exposent pas les mêmes). La CHARTE (figurine + onglets) est, elle,
@@ -103,7 +124,7 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
         label: t.title,
         content: (
           <div className="codex-tabpane">
-            <CodexSections sections={t.sections} />
+            <CodexSections sections={t.sections} entree={entree} />
           </div>
         ),
       }))
@@ -114,7 +135,7 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
         content: (
           <div className={`codex-tabpane codex-sec-body codex-${sec.layout ?? 'list'}`}>
             {sec.rows.map((row, j) => (
-              <CodexRowView key={j} row={row} />
+              <CodexRowView key={j} row={row} entree={entree} />
             ))}
           </div>
         ),
@@ -125,7 +146,7 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
       id: 'desc',
       label: 'Description',
       content: (
-        <div className="codex-tabpane codex-body"><Prose md={item.desc} selfLabel={item.label} selfId={item.id} selfCategory={category} /></div>
+        <div className="codex-tabpane codex-body"><Prose md={item.desc} porteur={entree && { ...entree, chemin: 'desc' }} exergues={exergues} /></div>
       ),
     });
   }
@@ -158,11 +179,7 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
         blurb={item.sub}
         meta={meta}
         tabs={tabs}
-        band={item.exergue ? (
-          // Exergue en tête de fiche (bande parchemin) : la citation/tract qui « vend » l'entité, mise
-          // en avant plutôt que noyée dans la prose. Réutilise la primitive `ParchmentCard`.
-          <ParchmentCard><Prose md={item.exergue} /></ParchmentCard>
-        ) : item.statblock && (
+        band={item.statblock && (
           <div className="codex-statblock tx-parchment">
             <table className="codex-statblock-profile">
               <thead>
@@ -176,7 +193,7 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
             </table>
             {item.statblock.traits.length > 0 && (
               <div className="codex-sec-body codex-chips">
-                {item.statblock.traits.map((row, i) => <CodexRowView key={i} row={row} />)}
+                {item.statblock.traits.map((row, i) => <CodexRowView key={i} row={row} entree={entree} />)}
               </div>
             )}
           </div>
@@ -187,7 +204,7 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
         // de livre d'une entrée sourcée (`CodexSourceBadge`). Rendu UNE fois ici, jamais par catégorie.
         <section className="codex-sec">
           <h3 className="codex-sec-title section-label">{libelleDuChamp('maison')}</h3>
-          <div className="codex-sec-body codex-body"><Prose md={item.maison} /></div>
+          <div className="codex-sec-body codex-body"><Prose md={item.maison} porteur={entree && { ...entree, chemin: 'maison' }} /></div>
         </section>
       )}
     </article>

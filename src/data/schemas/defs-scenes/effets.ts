@@ -13,6 +13,7 @@
  * `test` vient de la fabrique `noeudTest` de la grammaire, aucune structure n'est recopiée.
  */
 import { z } from 'zod';
+import { proseDeScene } from '../grammaire/prose';
 import { chaosAlignSchema, enumNomme, exposureLevelSchema, hitLocationSchema, moneyPartialSchema, refTestDeCorruption } from '../grammaire/valeurs';
 import { conditionSchema, effectOpSchema, extendedTestSchema, gameOpSchema, noeudTest } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
@@ -73,7 +74,7 @@ export const massBattleSpecSchema = z.strictObject({
   enemyMight: z.number(),
   /** Rounds prévus (défaut 1 = escarmouche). */
   plannedRounds: z.number().optional(),
-  terrain: z.string().optional(),
+  terrain: proseDeScene('massBattle.terrain').optional(),
   /** Catalogue de Scènes (défaut : tout le catalogue) — la pioche des situations. */
   scenes: z.array(z.string()).optional(),
   /** Situations authorées par Round (l.128) : chacune un ENSEMBLE de Scènes du moment. */

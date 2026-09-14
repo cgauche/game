@@ -77,7 +77,7 @@ const CLES: Record<string, string> = {
   "flowStakes": '5991b421e4d718b4',
   "combatStakes": 'db6c17396c10c31b',
   "races": '0728d04812275962',
-  "careers": '482f179346c5e761',
+  "careers": '128ef2031ede96cd',
   "characteristics": '532e47bfff4a9328',
   "classes": '67fd1dcccf18c04c',
   "stars": '4603d87c66f77bb2',
@@ -209,7 +209,7 @@ const CLES: Record<string, string> = {
   "crewMoraleFactors": '91a12d65f9274e14',
   "crewMoraleBands": '817ce48b209e1729',
   "steamBreakdowns": '0241598713ede3cd',
-  "regles": 'b26d715609ca1d9a',
+  "regles": 'e56e2e1f0a37237f',
 };
 
 /** Union des clés PRÉSENTES par catégorie (diagnostic lisible — un item isolé qui gagne une clé que
@@ -232,7 +232,7 @@ const FORME: Record<string, string> = {
   "flowStakes": 'desc id label source sub',
   "combatStakes": 'desc id label source sub',
   "races": 'appearance desc group id label meta source tabs',
-  "careers": 'desc exergue group id label meta source sub tabs',
+  "careers": 'desc group id label meta source sub tabs',
   "characteristics": 'desc id label meta sections source sub',
   "classes": 'desc id label sections source',
   "stars": 'desc id label meta sections source sub',

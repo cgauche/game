@@ -2304,7 +2304,14 @@ export interface RegleData {
   desc: string;
   source: SourceRef;
 }
-export const regles = reglesJson as RegleData[];
+export const regles = adressee<RegleData>(reglesJson);
+/** Index par `id` STABLE — patron des datasets HORS seam `ARRAYS` d'`overrides.ts` (même forme que
+ *  `lieuServiceById`) : `regles` n'y est pas routé, `indexParId` ne peut donc pas le clefer. */
+const regleParId = new Map(regles.map((r) => [r.id, r]));
+/** Résout une fiche de Règle par son `id` STABLE. */
+export function findRegleById(id: string): RegleData | undefined {
+  return regleParId.get(id);
+}
 /** Tables numériques de Disponibilité & de Troc (LDB 59 « Faire son marché » p.290-291) — app-owned
  *  éditable ; consommé par `engine/disponibilite` (mêmes références). */
 export interface DispoPctRow { availability: TestedAvailability; pct: Record<'village' | 'ville' | 'cite', number>; source: SourceRef }

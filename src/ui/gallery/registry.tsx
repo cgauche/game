@@ -497,8 +497,7 @@ function DetailFrameDemo() {
       label={carriereExemple().label}
       meta={<MetalStatus status={niveauxDeLaCarriereExemple()[0]?.status ?? 'Bronze 1'} />}
       prose={carriereExemple().desc}
-      proseSelfLabel={carriereExemple().label}
-      proseSelfCategory="career"
+      porteur={{ type: 'careers', id: carriereExemple().id, chemin: 'desc' }}
     />
   );
 }
@@ -734,7 +733,7 @@ function ProseDemo() {
   // `DetailFrame` autour de la démo est ASSUMÉ (galerie DEV, aucun écran joueur) : c'est le contexte
   // réel de lecture de cette prose.
   return (
-    <DetailFrame prose={carriereExemple().desc} proseSelfLabel={carriereExemple().label} proseSelfCategory="career" />
+    <DetailFrame prose={carriereExemple().desc} porteur={{ type: 'careers', id: carriereExemple().id, chemin: 'desc' }} />
   );
 }
 

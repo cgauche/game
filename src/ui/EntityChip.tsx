@@ -47,6 +47,22 @@ export function EntityRef({
   );
 }
 
+/**
+ * Pastille NUE : la MÊME boîte `.entity-chip` (matière, badge) pour un libellé qui ne désigne AUCUNE
+ * entité du Codex — un nom d'objet authoré en clair (`TrappingRef {text}`, « A ou B » composite).
+ * Aucun `CodexRef`, donc aucun lookup par LIBELLÉ : la borne d'objet se voit, sans promettre une
+ * fiche qui n'existe pas. La variante `plain` retire le curseur d'aide et la réaction dorée, qui
+ * annonceraient un popover (affordance morte).
+ */
+export function PlainChip({ label, badge }: { label: string; badge?: ReactNode }) {
+  return (
+    <span className="entity-chip plain">
+      {label}
+      {badge != null && badge !== '' && <em className="entity-badge">{badge}</em>}
+    </span>
+  );
+}
+
 /** Groupe de CHOIX « A ou B » avec options DÉJÀ séparées : un chip cliquable par option + « ou ». */
 export function ChoiceChips({ category, options }: { category: string; options: { id?: string; label: string; show: string }[] }) {
   return (

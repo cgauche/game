@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Prose } from './Prose';
+import type { Porteur } from './liage';
 
 /**
  * DetailFrame — cadre de détail de l'élue (en-tête nom + chips méta + rubriques de plein rang +
@@ -7,7 +8,7 @@ import { Prose } from './Prose';
  * « Atelier du scribe » (#412). Aucun slot d'actions — « Suivant » fait déjà ça (le pied de l'étape
  * porte la progression, jamais dupliquée ici).
  */
-export function DetailFrame({ topper, label, sub, meta, sections, prose, proseSelfLabel, proseSelfCategory }: {
+export function DetailFrame({ topper, label, sub, meta, sections, prose, porteur }: {
   /** Rangée d'en-tête AVANT le nom (ex. chips de variante/lignée) — le cadre en devient le seul
    *  porteur visuel, plus de bloc sibling posé à côté (#393 P3, correction structurelle Race). */
   topper?: ReactNode;
@@ -23,8 +24,8 @@ export function DetailFrame({ topper, label, sub, meta, sections, prose, proseSe
   sections?: ReactNode;
   /** Description sourcée (Markdown verbatim) — rendue via `Prose`, scroll interne. */
   prose?: string;
-  proseSelfLabel?: string;
-  proseSelfCategory?: string;
+  /** Champ d'où sort `prose` (`{ type, id, chemin }`) — sans lui, aucune mention n'est liée (#1392). */
+  porteur?: Porteur;
 }) {
   return (
     <div className="detail-frame">
@@ -33,7 +34,7 @@ export function DetailFrame({ topper, label, sub, meta, sections, prose, proseSe
       {sections}
       {prose != null && (
         <div className="detail-frame-prose">
-          <Prose md={prose} selfLabel={proseSelfLabel} selfCategory={proseSelfCategory} />
+          <Prose md={prose} porteur={porteur} />
         </div>
       )}
     </div>
