@@ -13,9 +13,10 @@ import { listerDossier } from '../guards/lib/lister.mjs'
 import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { fraicheurDesGenerateurs, motifRejeuComplet, SOURCES_LUES } from './build-all.mjs'
+import { fraicheurDesGenerateurs, motifRejeuComplet, SOURCES_LUES, verdictDuPied } from './build-all.mjs'
 import {
   avecPied,
+  lirePied,
   empreinteDuDisque,
   ignoresGit,
   indexGit,
@@ -194,10 +195,32 @@ test('motifDeRejeu : les deux moitiés de la signature sont NÉCESSAIRES', () =>
   assert.ok(signe.includes(`corps: ${sha1Corps(signe)}`))
 })
 
+test('verdictDuPied : corps identique ne dit RIEN des sources — le pied périmé est rouge, nommé', () => {
+  const empreinte = 'b'.repeat(40)
+  const signe = avecPied('# doc\n', { empreinte: 'a'.repeat(40), fichiers: 1, dossiers: 1 })
+  assert.equal(
+    verdictDuPied({ pied: lirePied(signe), empreinte: 'a'.repeat(40), cible: DOC_A }),
+    null,
+    'un pied qui signe les sources mesurées est à jour',
+  )
+  assert.equal(
+    verdictDuPied({ pied: lirePied(signe), empreinte, cible: DOC_A }),
+    `pied PÉRIMÉ sur ${DOC_A} : sources aaaaaaaaaaaa ≠ bbbbbbbbbbbb, corps identique`,
+  )
+  assert.equal(
+    verdictDuPied({ pied: lirePied('# doc\n'), empreinte, cible: DOC_A }),
+    `pied ABSENT sur ${DOC_A} : sources bbbbbbbbbbbb non signées, corps identique`,
+  )
+})
+
 test('le mode `--check` de build-all.mjs PASSE par ces deux décideurs', () => {
   const source = readFileSync(path.join(ICI, 'build-all.mjs'), 'utf8')
   assert.match(source, /const complet = motifRejeuComplet\(auCommit\(cwd, SOURCES_LUES\), surDisque\)/)
   assert.match(source, /fraicheurDesGenerateurs\(cwd, indexGit\(cwd\), lireSourcesLues\(cwd\), ignores\)/)
   assert.match(source, /if \(frais\.has\(g\.script\)\) \{/, 'la boucle doit SAUTER un générateur frais')
   assert.match(source, /if \(check && !tout\)/, '`--tout` doit court-circuiter la fraîcheur')
+  // Câblage du verdict du pied : un générateur rejoué au corps identique fait juger SON pied.
+  assert.match(source, /const raison = verdictDuPied\(\{ pied: lirePied\(readFileSync\(chemin, 'utf8'\)\), empreinte, cible \}\)/)
+  assert.match(source, /if \(raison\) piedsPerimes\.push\(/)
+  assert.match(source, /if \(piedsPerimes\.length\) \{\n\s+process\.stderr\.write/, 'un pied périmé doit rendre `--check` ROUGE')
 })

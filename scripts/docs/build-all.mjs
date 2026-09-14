@@ -362,6 +362,19 @@ export function motifRejeuComplet(auCommitTexte, surDisqueTexte) {
 }
 
 /**
+ * Verdict du PIED d'une cible que `--check` vient de rejouer avec un corps identique : `null` si le
+ * pied signe bien `empreinte`, sinon la raison NOMMÉE. Un corps inchangé ne dit rien des sources —
+ * un commentaire ajouté à une source lue ne bouge aucun doc, mais périme tous leurs pieds.
+ * REND la raison sans préfixe ni remède : l'appelant nomme le générateur et la commande.
+ */
+export function verdictDuPied({ pied, empreinte, cible }) {
+  if (!pied) return `pied ABSENT sur ${cible} : sources ${empreinte.slice(0, 12)} non signées, corps identique`
+  if (pied.empreinte !== empreinte)
+    return `pied PÉRIMÉ sur ${cible} : sources ${pied.empreinte.slice(0, 12)} ≠ ${empreinte.slice(0, 12)}, corps identique`
+  return null
+}
+
+/**
  * Générateurs que `--check` peut SAUTER, et pourquoi les autres sont rejoués. Un générateur est
  * FRAIS quand TOUTES ses cibles portent un pied qui signe les mêmes sources ET leur propre corps.
  * L'empreinte des sources est exigée ÉGALE DES DEUX CÔTÉS — le DISQUE (ce que le générateur relirait)
@@ -464,6 +477,7 @@ function main() {
   const racineLectures = path.join(cwd, 'node_modules', '.cache', 'lectures-docs', String(process.pid))
   rmSync(racineLectures, { recursive: true, force: true })
   const parGenerateur = {}
+  const piedsPerimes = []
   let sautes = 0
   // Fail-fast : un générateur rouge laisse docs/ à moitié régénéré ; enchaîner les suivants
   // fabriquerait un lot incohérent que le hook annoncerait « à committer ».
@@ -517,7 +531,19 @@ function main() {
       }
     }
     parGenerateur[g.script] = { cibles: signees, fichiers: lues.fichiers, dossiers: [...lues.dossiers.keys()] }
-    if (check) continue
+    if (check) {
+      // Un doc est à jour quand son CORPS **et** son PIED le sont. `run` vient de juger le corps ;
+      // le pied se juge ici contre l'empreinte des sources telles que le DISQUE les porte — le MÊME
+      // calcul que la pose du pied ci-dessous. C'est le verdict que rend `--empreinte`.
+      const { empreinte } = empreinteDuDisque(cwd, lues, ignores)
+      for (const cible of signees) {
+        const chemin = path.join(cwd, cible)
+        if (!existeFichier(chemin)) continue
+        const raison = verdictDuPied({ pied: lirePied(readFileSync(chemin, 'utf8')), empreinte, cible })
+        if (raison) piedsPerimes.push(`docs:check — ${g.script} — ${raison} — npm run docs:build`)
+      }
+      continue
+    }
     // Le pied se pose AVANT le générateur suivant : un doc signé plus tard serait lu SANS son pied par
     // les suivants, et leur empreinte suivrait la génération PRÉCÉDENTE — mesuré sur `coverage.mjs`,
     // qui lit les `catalogue-*.md` que `build-catalogs.mjs` signe.
@@ -527,6 +553,10 @@ function main() {
       const chemin = path.join(cwd, cible)
       if (existeFichier(chemin)) writeFileSync(chemin, avecPied(readFileSync(chemin, 'utf8'), pied))
     }
+  }
+  if (piedsPerimes.length) {
+    process.stderr.write(`${piedsPerimes.join('\n')}\n`)
+    process.exit(1)
   }
   const nonSignees = ciblesNonSignees(cwd, parGenerateur)
   if (nonSignees.length) {
