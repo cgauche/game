@@ -38,6 +38,7 @@ import { estAncetre, fetchOrigin, lireGit, raisonCourte, sortieOuNull, urlOrigin
 import { ANNULEE, ROUGES, coursesCiDeMain } from '../guards/lib/coursesCi.mjs'
 import { clesDeContenu, gatesRequises, lireJustificatif, motifDeRefus } from '../guards/lib/justificatif.mjs'
 import { numerosCites, numerosFermes } from '../guards/lib/fermetures.mjs'
+import { refusDeSujet } from '../guards/lib/sujetDeCommit.mjs'
 import { DEPOT, commitsDeLaPlage, marqueDe } from './fermer-depuis-main.mjs'
 import { GENERATORS, SOURCES_LUES } from '../docs/build-all.mjs'
 import { MANAGED_ROOTS } from '../agents/compat-core.mjs'
@@ -451,8 +452,30 @@ export const REFUS_SANS_TICKET =
 export const plageDeCitations = (journal) =>
   journal?.base && journal?.tete ? `${journal.base}..${journal.tete}` : 'origin/main..HEAD'
 
-/** Message du commit de docs dérivés. PURE — une seule forme pour les deux étapes qui commettent. */
-export const messageDeDerives = (numeros, motif) => `chore(docs): ${numeros.map((n) => `refs #${n}`).join(' ')} — ${motif}\n`
+/**
+ * Message du commit de docs dérivés. PURE — une seule forme pour les deux étapes qui commettent.
+ * Le SUJET tient la règle du dépôt (`scripts/guards/lib/sujetDeCommit.mjs`, mesurée ici par
+ * `refusDeSujet`, jamais par un compte recopié) ; le MOTIF va au CORPS. Quand les `refs` d'une plage
+ * chargée feraient déborder le sujet, elles descendent au corps : `numerosCites` lit le message
+ * ENTIER (`scripts/guards/lib/fermetures.mjs:63`), corps compris.
+ */
+export const messageDeDerives = (numeros, motif) => {
+  const refs = numeros.map((n) => `refs #${n}`).join(' ')
+  const avecRefs = `chore(docs): ${refs} — docs dérivés\n\n${motif}\n`
+  if (refs && refusDeSujet(avecRefs) === null) return avecRefs
+  return `chore(docs): docs dérivés\n\n${motif}\n${refs ? `\n${refs}\n` : ''}`
+}
+
+/**
+ * La FIN d'une sortie de commande — là où une porte imprime son verdict. PURE : les lignes `⛔` si
+ * la sortie en porte, sinon ses `max` DERNIERS caractères.
+ */
+export const finDeSortie = (texte, max = 400) => {
+  const t = String(texte ?? '').trim()
+  const refus = t.split(/\r?\n/).filter((l) => l.includes('⛔'))
+  if (refus.length) return refus.join('\n').slice(-max)
+  return t.slice(-max)
+}
 
 /** Première ligne d'un message de commit, bornée. PURE. */
 export const titreDeCommit = (message, max = 120) => {
@@ -560,8 +583,10 @@ function commettreDerives(ctx, { chemins, numeros, motif, journal }) {
     const add = ctx.git(['add', '--', ...chemins])
     if (!add.disponible || add.absent || add.valeur.status !== 0) return { ok: false, raison: `\`git add\` a échoué sur ${chemins.length} chemin(s)` }
     const commit = ctx.git(['commit', '-F', fichier, '--', ...chemins])
-    if (!commit.disponible || commit.absent || commit.valeur.status !== 0)
-      return { ok: false, raison: `\`git commit\` des docs a échoué : ${(commit.raison ?? commit.valeur?.stderr ?? '').toString().trim().slice(0, 400)}` }
+    if (!commit.disponible || commit.absent || commit.valeur.status !== 0) {
+      const brut = String(commit.raison ?? '').trim() || String(commit.valeur?.stderr ?? '').trim() || String(commit.valeur?.stdout ?? '')
+      return { ok: false, raison: `\`git commit\` des docs a échoué : ${finDeSortie(brut)}` }
+    }
   } finally {
     rmSync(fichier, { force: true })
   }

@@ -9,8 +9,12 @@ import assert from 'node:assert/strict'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { numerosCites } from '../guards/lib/fermetures.mjs'
+import { refusDeSujet, sujetDuMessage } from '../guards/lib/sujetDeCommit.mjs'
 import {
   ETAPES,
+  MOTIF_APRES_REBASE,
+  MOTIF_POST_REWRITE,
   RACINE,
   VERROU_TIMEOUT_MIN,
   commandeInterdite,
@@ -18,6 +22,7 @@ import {
   correspondGlob,
   estDocDerive,
   etatDeLEtape,
+  finDeSortie,
   gatesRejouees,
   jouerLeTrain,
   journalInitial,
@@ -422,12 +427,28 @@ test('la table des ÉTAPES nomme les neuf étapes, dans l’ordre de ci.yml', ()
 
 // ── messageDeDerives / plageDeCitations ──────────────────────────────────────────
 
-test('messageDeDerives : UNE forme de message pour les deux étapes qui commettent des dérivés', () => {
-  assert.equal(messageDeDerives(['1736'], 'un motif'), 'chore(docs): refs #1736 — un motif\n')
-  // Plusieurs tickets cités par la plage : chacun porte son `refs`, la porte de commit les lit tous.
-  assert.equal(messageDeDerives(['1736', '1384'], 'un motif'), 'chore(docs): refs #1736 refs #1384 — un motif\n')
-  // Le MOTIF est le seul écart entre les deux appelants.
-  assert.match(messageDeDerives(['1'], 'docs dérivés laissés non commités'), / — docs dérivés laissés non commités\n$/)
+test('messageDeDerives : un SUJET que la règle du dépôt accepte, le motif au CORPS, pour les deux étapes', () => {
+  const douze = Array.from({ length: 12 }, (_, i) => String(1700 + i))
+  for (const motif of [MOTIF_POST_REWRITE, MOTIF_APRES_REBASE])
+    for (const numeros of [['1751'], ['1736', '1384'], douze]) {
+      const message = messageDeDerives(numeros, motif)
+      const dit = `${numeros.length} numéro(s), motif « ${motif} »`
+      assert.equal(refusDeSujet(message), null, dit)
+      assert.ok(sujetDuMessage(message).startsWith('chore(docs):'), dit)
+      assert.ok(message.split(/\r?\n/).slice(1).join('\n').includes(motif), `le motif est au CORPS — ${dit}`)
+      for (const n of numeros) assert.match(message, new RegExp(`#${n}\\b`), `#${n} cité — ${dit}`)
+    }
+  // Les `#N` descendus au corps restent CITÉS : `numerosCites` lit le message entier.
+  assert.deepEqual(numerosCites(messageDeDerives(douze, MOTIF_POST_REWRITE)), douze)
+})
+
+test('finDeSortie : la FIN de la sortie — les lignes `⛔` si la sortie en porte', () => {
+  assert.equal(finDeSortie(`${'docs:check — OK\n'.repeat(40)}⛔ refus`), '⛔ refus')
+  const mille = 'a'.repeat(1000)
+  assert.equal(finDeSortie(mille), 'a'.repeat(400))
+  assert.equal(finDeSortie(`${'b'.repeat(900)}${'c'.repeat(100)}`).endsWith('c'.repeat(100)), true)
+  assert.equal(finDeSortie(''), '')
+  assert.equal(finDeSortie(null), '')
 })
 
 test('plageDeCitations : le journal quand il PORTE la plage, `origin/main..HEAD` avant le rebase', () => {
