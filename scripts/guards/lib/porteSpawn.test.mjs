@@ -63,7 +63,8 @@ test('paquets : quand le consommateur EXIGE les chemins, aucun paquet ne dépass
   assert.deepEqual(paquetsDArgv([]), [])
   // Un chemin plus long que le plafond part seul : la porte tranche, elle ne le fait pas disparaître.
   const enorme = 'x'.repeat(PLAFOND_SUR_ARGV + 10)
-  assert.deepEqual(paquetsDArgv([enorme]), [[enorme]])
+  const seul = [enorme]
+  assert.deepEqual(paquetsDArgv(seul), [seul])
 })
 
 test('un VERDICT (`status`) et une PANNE (`code`) ne se confondent pas', () => {
