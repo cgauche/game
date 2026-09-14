@@ -17,6 +17,14 @@ export function ecartsDeStock<O, S>(p: {
   };
 }): EcartsDeStock;
 
+/** Un SITE MESURÉ : le FICHIER fautif et la RÉF qui l'identifie dedans. C'est l'entrée de
+ *  `sitesEnEntrees`, donc la forme que TOUT audit de garde rend — elle appartient à la primitive de
+ *  cliquet, pas à l'un de ses audits. */
+export interface Site {
+  file: string;
+  ref: string;
+}
+
 /** Une ENTRÉE de stock nominatif : ce qu'un stock GRAVE (la clé, elle, se calcule). */
 export interface EntreeNominative {
   famille?: string;

@@ -6,14 +6,12 @@ import {
   champDuPath,
   champsJoints,
   champsSansSlot,
-  defsDeDocument,
   estTypeDuRegistre,
   idsDuType,
   slotsDeclares,
   valeursAuPath,
 } from '../../scripts/docs/lib/slots-registre.mjs';
-import { listerDocuments, scannerDonnees } from '../../scripts/docs/lib/structures-scan.mjs';
-import { choixDeclares, introspecterDefs } from '../../scripts/docs/lib/zod-introspect.mjs';
+import { listerDocuments, scanDuCorpus } from '../../scripts/docs/lib/structures-scan.mjs';
 import { ANGLES_MORTS_SLOTS, MANDAT_SLOTS } from '../../scripts/docs/lib/structures-lexique.mjs';
 import { SLOTS_INTERNES, SLOTS_SANS_DECLARATION } from '../../scripts/guards/lib/slotsStock.mjs';
 import { champsAveugles, ecartsDeStock, lignesMalQualifiees } from '../../scripts/guards/lib/stock.mjs';
@@ -46,10 +44,10 @@ const GARDE = {
 } as const;
 
 const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
-const DEFS = defsDeDocument();
+/** La composition defs → familles/enums → scan vit dans `scanDuCorpus` (`structures-scan.mts`) : la
+ *  MÊME que lisent `structures-contrat.test.ts`, `build-structures.mts` et `horsStrateAudit.ts`. */
+const { defs: DEFS, scan } = scanDuCorpus(ROOT);
 const SLOTS = slotsDeclares(DEFS);
-const DECLARES = introspecterDefs(DEFS);
-const scan = scannerDonnees(ROOT, new Map(DECLARES.map((d) => [d.file, d.famille])), choixDeclares(DEFS));
 const DOCUMENTS = new Map(listerDocuments(ROOT).map((d) => [d.nom, JSON.parse(readFileSync(join(ROOT, d.chemin), 'utf8')) as unknown]));
 
 /** Clé de la dette d'ADOPTION : le couple (dataset, champ) ET son compte d'occurrences — une

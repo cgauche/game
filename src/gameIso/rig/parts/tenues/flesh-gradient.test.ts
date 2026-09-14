@@ -17,7 +17,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { auditFleshGradient } from '../../../../../scripts/guards/lib/fleshGradientAudit';
-import type { Site } from '../../../../../scripts/guards/lib/partViewAudit';
+import type { Site } from '../../../../../scripts/guards/lib/stock.mjs';
 import { FLESH_GRADIENT_RATCHET } from '../../../../../scripts/guards/lib/fleshGradientStock.mjs';
 import { ecartDuVolet, type EntreeNominative } from '../../../../../scripts/guards/lib/stock.mjs';
 import { TENUE_DEFS } from './_registry.generated';

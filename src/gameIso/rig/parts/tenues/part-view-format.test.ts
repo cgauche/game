@@ -24,7 +24,8 @@
 import { describe, it, expect } from 'vitest';
 import { TENUE_DEFS } from './_registry.generated';
 import { ARMOUR_DEFS } from '../armour/_registry.generated';
-import { auditPartViews, SLOTS, type Audit, type Bearer, type BodySlot, type Site } from '../../../../../scripts/guards/lib/partViewAudit';
+import { auditPartViews, SLOTS, type Audit, type Bearer, type BodySlot } from '../../../../../scripts/guards/lib/partViewAudit';
+import type { Site } from '../../../../../scripts/guards/lib/stock.mjs';
 import type { PartArt } from '../types';
 import {
   PART_VIEW_RATCHET,

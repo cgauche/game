@@ -16,7 +16,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { listerDossier } from './lister.mjs';
-import type { Site } from './partViewAudit';
+import type { Site } from './stock.mjs';
 
 const RACINE = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 /** Dossier des defs de tenue, et le préfixe de chemin que portent les entrées du stock. */

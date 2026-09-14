@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { listerDossier } from './lister.mjs';
 import { readCorpus } from './sourceCorpus.mjs';
 import { effectTables } from '../../../src/data/index';
-import type { Site } from './partViewAudit';
+import type { Site } from './stock.mjs';
 
 const RACINE = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 /** Dossier des données, et le dataset que NOMMENT les entrées du stock. */

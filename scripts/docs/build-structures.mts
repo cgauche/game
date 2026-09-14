@@ -14,7 +14,7 @@ import { emitOrCheck } from './lib/jsdocUnion.mjs';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  scannerDonnees,
+  scanDuCorpus,
   scannerRedeclarations,
   listerDocuments,
   empreintesDefs,
@@ -30,12 +30,10 @@ import {
   ROLES_ENVELOPPE,
   clesDuRole,
 } from './lib/structures-lexique.mjs';
-import { choixDeclares, introspecterDefs } from './lib/zod-introspect.mjs';
 import {
   champDuPath,
   champsJoints,
   champsSansSlot,
-  defsDeDocument,
   estTypeDuRegistre,
   idsDuType,
   slotsDeclares,
@@ -47,11 +45,10 @@ import { defDe, enfantsDe } from '../../src/data/schemas/grammaire/slots';
 const OUT = 'docs/structures-donnees.md';
 const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
 
-/** Le DÉCLARÉ couvre les DEUX racines (#1466 L1a) — jointure par BASENAME, comme le scan key. */
-const DEFS = defsDeDocument();
-const declares = introspecterDefs(DEFS);
+/** Le DÉCLARÉ couvre les DEUX racines (#1466 L1a) — jointure par BASENAME, comme le scan key.
+ *  La composition defs → familles/enums → scan vit dans `scanDuCorpus` (`structures-scan.mts`). */
+const { defs: DEFS, declares, scan } = scanDuCorpus(ROOT);
 const parFichierDeclare = new Map(declares.map((d) => [d.file, d]));
-const scan = scannerDonnees(ROOT, new Map(declares.map((d) => [d.file, d.famille])), choixDeclares(DEFS));
 const { redeclarations, totalLitteraux } = scannerRedeclarations(ROOT);
 
 /** Numérotation des sous-sections de §3 — table UNIQUE : titres ET renvois s'y lisent. */

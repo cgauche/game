@@ -21,7 +21,7 @@ import { quadDecoCouples, quadLayersSvg, DECO_VIEWS } from '../../../src/gameIso
 import type { QuadBoneId, QuadProps } from '../../../src/gameIso/rig/quadruped/quadSkeleton';
 import type { View } from '../../../src/gameIso/rig/facing';
 import { REGISTRE_CREATURES, fichierDeDef } from './registreDeDefs';
-import type { Site } from './partViewAudit';
+import type { Site } from './stock.mjs';
 
 /** Les defs du registre qui portent un `quad` — la population des trois mesures. */
 const quadDefs = CREATURES.filter((c) => c.quad);

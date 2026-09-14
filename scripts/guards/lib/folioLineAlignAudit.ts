@@ -23,7 +23,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { auditDataDir } from './folioLineAlign.mjs';
 import type { AlignReport, AlignViolation, IgnoredEntry } from './folioLineAlign.mjs';
-import type { Site } from './partViewAudit';
+import type { Site } from './stock.mjs';
 
 const RACINE = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 

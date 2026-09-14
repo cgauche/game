@@ -54,8 +54,16 @@ export function marcherMemoise(
   descendre(schema, 0);
 }
 
-/** Borne de la marche mémoïsée de `choixDeclares` (les schémas de scène descendent moins loin ici :
- *  la mémo par identité coupe la récursion avant la borne). */
+/**
+ * Borne de la marche mémoïsée de `choixDeclares`. Elle est ATTEIGNANTE sur les schémas de scène —
+ * mesure du 2026-09-14, `marcherMemoise` sur la def `arene-projet.json` : 482 nœuds visités à 8,
+ * 1253 à 12, 1783 à 20, 1816 à 40 (à comparer à `spells.json`, 462 à 12 contre 474 à 20 et au-delà,
+ * où la mémo referme l'arbre avant la borne). La borne MORD donc, et comme la mémo est par
+ * IDENTITÉ, le PREMIER chemin qui atteint un nœud décide s'il est vu : une retouche de schéma qui
+ * change l'ordre de visite déplace des littéraux sous ou hors de la borne, sans qu'un octet de
+ * donnée bouge. Conséquence mesurée et stockée : `scripts/guards/lib/horsStrateStock.mjs`, dont
+ * l'en-tête nomme ce défaut ; sa levée est #1687.
+ */
 const PROFONDEUR_MEMO = 12;
 
 /**

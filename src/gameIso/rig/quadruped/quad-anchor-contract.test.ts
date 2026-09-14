@@ -5,7 +5,7 @@ import { ANCRES_OEIL_ABSENTES_GELEES, PLAFOND_ANCRES_OEIL_ABSENTES } from './dec
 import { DECOS_MORTS_RATCHET, REPERES_ART_PROPRES_RATCHET } from '../../../../scripts/guards/lib/quadDecoStock.mjs';
 import { ecartDuVolet, type EntreeNominative } from '../../../../scripts/guards/lib/stock.mjs';
 import { mesureDesReperes, fichierDeEspece } from '../../../../scripts/guards/lib/quadDecoAudit';
-import type { Site } from '../../../../scripts/guards/lib/partViewAudit';
+import type { Site } from '../../../../scripts/guards/lib/stock.mjs';
 import { applyEyes } from '../parts/eyes';
 import type { QuadBoneId, QuadProps } from './quadSkeleton';
 import type { View } from '../facing';

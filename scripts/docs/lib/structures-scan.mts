@@ -25,6 +25,8 @@
 import { readFileSync, statSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
 import { parUnitesDeCode, listerArbre, listerDossier } from '../../guards/lib/lister.mjs';
+import { defsDeDocument } from './slots-registre.mjs';
+import { choixDeclares, introspecterDefs } from './zod-introspect.mjs';
 import ts from 'typescript';
 import {
   CLES_IDENTITE,
@@ -1049,6 +1051,24 @@ export function scannerDonnees(
       })
       .sort((a, b) => b.occurrences - a.occurrences || parUnitesDeCode(a.dataset, b.dataset)),
   };
+}
+
+/**
+ * LE scan du corpus : l'UNIQUE composition `defs du registre → familles + enums DÉCLARÉS →
+ * `scannerDonnees``. Ses trois consommateurs — la garde `src/data/structures-contrat.test.ts`, le
+ * générateur `scripts/docs/build-structures.mts` et l'audit `scripts/guards/lib/horsStrateAudit.ts`
+ * — la lisent ICI : une composition recopiée ferait mesurer à l'un ce que l'autre ne mesure pas
+ * (sans `familles`, le régime d'entrées se déduit de la racine JSON ; sans `choix`, aucun enum n'est
+ * fermé et des discriminants comptent comme références), et aucune garde ne verrait la divergence.
+ * Tout est rendu — `defs`, `declares`, `familles`, `choix`, `scan` — parce que chaque consommateur
+ * en lit une part différente et qu'aucun ne doit refabriquer la sienne.
+ */
+export function scanDuCorpus(root: string) {
+  const defs = defsDeDocument();
+  const declares = introspecterDefs(defs);
+  const familles = new Map(declares.map((d) => [d.file, d.famille]));
+  const choix = choixDeclares(defs);
+  return { defs, declares, familles, choix, scan: scannerDonnees(root, familles, choix) };
 }
 
 /**

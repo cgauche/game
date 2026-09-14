@@ -19,7 +19,7 @@ import type { TenueDef } from '../../../src/gameIso/rig/parts/tenues/types';
 import type { PartArt } from '../../../src/gameIso/rig/parts/types';
 import { slugId } from '../../../src/data/slug';
 import { fichierDeDef, REGISTRE_TENUES } from './registreDeDefs';
-import type { Site } from './partViewAudit';
+import type { Site } from './stock.mjs';
 
 export const BODY_SLOTS = ['torse', 'jambes', 'bras', 'tete'] as const;
 export type BodySlot = (typeof BODY_SLOTS)[number];

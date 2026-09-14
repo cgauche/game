@@ -7,10 +7,13 @@ import { join } from 'node:path';
 import {
   classerValeur,
   mesurerEnveloppe,
+  scanDuCorpus,
   scannerDonnees,
   scannerRedeclarations,
-  MARQUE_HORS_STRATE,
 } from '../../scripts/docs/lib/structures-scan.mjs';
+import { sitesHorsStrate } from '../../scripts/guards/lib/horsStrateAudit';
+import { HORS_STRATE_RATCHET } from '../../scripts/guards/lib/horsStrateStock.mjs';
+import { ecartDuVolet } from '../../scripts/guards/lib/stock.mjs';
 import {
   ANGLES_MORTS,
   CLES_DE_VALEUR,
@@ -23,7 +26,6 @@ import {
   RX_CLE_REFERENCE,
   signature,
 } from '../../scripts/docs/lib/structures-lexique.mjs';
-import { choixDeclares, introspecterDefs } from '../../scripts/docs/lib/zod-introspect.mjs';
 import { CLES_ENVELOPPE } from './schemas/grammaire/document';
 
 /**
@@ -38,7 +40,6 @@ import { CLES_ENVELOPPE } from './schemas/grammaire/document';
  * `talents` (12), `traits` (0/131, dette réelle).
  */
 const CLES_POSEES_INCONDITIONNELLEMENT: readonly string[] = (CLES_ENVELOPPE as readonly string[]).filter((k) => k !== 'variants');
-import { defsDeDocument } from '../../scripts/docs/lib/slots-registre.mjs';
 import {
   STRUCTURES_CIBLES,
   STRUCTURES_DEFAUT,
@@ -79,13 +80,11 @@ const GARDE = {
 } as const;
 
 const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
-/** Le DÉCLARÉ couvre les DEUX racines (#1466 L1a) — jointure par BASENAME, comme le scan key. */
-const DEFS = defsDeDocument();
-/** UN seul scan pour tout le fichier : le test consomme la mesure, il ne relit jamais les JSON. */
-const DECLARES = introspecterDefs(DEFS);
-const FAMILLES = new Map(DECLARES.map((d) => [d.file, d.famille]));
-const CHOIX = choixDeclares(DEFS);
-const scan = scannerDonnees(ROOT, FAMILLES, CHOIX);
+/** Le DÉCLARÉ couvre les DEUX racines (#1466 L1a) — jointure par BASENAME, comme le scan key.
+ *  UN seul scan pour tout le fichier : le test consomme la mesure, il ne relit jamais les JSON. La
+ *  composition defs → familles/enums → scan vit dans `scanDuCorpus` (`structures-scan.mts`), et
+ *  c'est la MÊME que lisent `build-structures.mts` et `horsStrateAudit.ts`. */
+const { declares: DECLARES, familles: FAMILLES, choix: CHOIX, scan } = scanDuCorpus(ROOT);
 const { redeclarations } = scannerRedeclarations(ROOT);
 
 /** Un ensemble de lignes en texte, trié — les diffs de vitest restent lisibles. */
@@ -154,230 +153,16 @@ const siteOrpheline = (o: { dataset: string; champ: string; signature: string })
 const pilotageOrpheline = new Map(STRUCTURES_ORPHELINES.map((o) => [siteOrpheline(o), { lot: o.lot, date: o.date }]));
 const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrpheline({ ...o, ...pilotageOrpheline.get(siteOrpheline(o)) });
 /**
- * CLIQUET des signatures hors strate (#1465) : elles ne sont pas au stock — la table EXHAUSTIVE
- * de `docs/structures-donnees.md` EST la liste de référence, et ce plafond garde son COMPTE.
+ * CLIQUET des signatures HORS STRATE (#1465, nominatif depuis #1727 T0d) : chaque signature que le
+ * lexique fermé ne classe dans aucune strate est une ENTRÉE de
+ * `scripts/guards/lib/horsStrateStock.mjs`, GÉNÉRÉE par
+ * `npx tsx scripts/data/regen-hors-strate-stock.mts` depuis la mesure `scan.invisibles` que ce
+ * fichier consomme. La traduction en sites est UNIQUE (`horsStrateAudit.ts`), l'écart est jugé par
+ * `ecartDuVolet` ci-dessous, et le DÉFAUT D'INSTRUMENT qui fait bouger ce stock sans qu'un octet de
+ * donnée change (`PROFONDEUR_MEMO`, `zod-introspect.mts`) est dit en tête du stock.
+ * Le COMPTE d'occurrences de chaque signature vit dans `docs/structures-donnees.md` (table bornée
+ * par `MARQUE_HORS_STRATE`), que `build-structures.mts` rend depuis le disque du jour.
  */
-// Vague console #1411/#1426 distante, réconciliation post-rebase : `actions.json` gagne une entrée
-// et le champ `hote` — la donnée est committée, le cliquet la rattrape (1116→1118).
-// #1466 L1a volet A (1118→1119) : le DÉCLARÉ couvre désormais `src/scenes`, donc les discriminants
-// des 4 projets se FERMENT — `loup-et-saumure-projet.json › threat {camp,tier}` cesse d'être compté
-// comme référence `tier+…` (sa valeur est un littéral d'enum du schéma) et tombe hors strate. C'est
-// le MÊME objet qui change de classement, pas une structure neuve : le dénominateur des formes
-// décroît de 8 lignes dans le même geste.
-// #1467 L1b V-P1 (1119→1120) : `donnees.manifest.json › rubriques` passe `nom` → `label`, donc sa
-// signature `entrees,nom` (divergente, au stock) devient `entrees,label` (forme CIBLE du lexique,
-// hors strate). MÊME objet, nouveau classement — le stock perd 12 lignes dans le même geste
-// (identité+libellé `nom` des 3 manifestes, `id` de careerLevels/calendarPhases/raw.manifest,
-// `key` de calendarPhases, `label` absent de primitives/systemes).
-// L2 #1548, commit 3c (1120→1135) : AUCUNE structure neuve — les 334 références de Compétence qui
-// s'emboîtent en `skill: { id, spec? }` posent chacune un OBJET là où il n'y avait qu'une chaîne, et
-// ces objets sont à la forme CIBLE (`id` / `id,spec`) : ils sont HORS STRATE par construction. Les
-// signatures nommées par la garde (`bonus,op,skill`, `mod,op,skill`, `blocked,op,skill`…) sont les
-// PAYLOADS D'OP qui, ayant perdu leur `spec` frère ou leur `skill` chaîne, rejoignent la table hors
-// strate. Le dénominateur À ÉTEINDRE, lui, décroît de 16 lignes dans le même geste (cf. cliquets).
-// L2 #1548, commit 3d (1135→1137) : AUCUNE structure neuve — `talents.json › reverseFailed` porte
-// désormais une LISTE nommée `skills` là où `skill` désignait tantôt une réf, tantôt une liste. La
-// clé cessant d'être un nom de concept RÉSERVÉ, ses deux signatures (`skills`, `capDR,skills`)
-// quittent le dénominateur à éteindre (`STRUCTURES_ORPHELINES` 106→104) et rejoignent la table hors
-// strate. MÊMES objets, nouveau classement.
-// L2 #1548, commit 4 (1137→1139) : AUCUNE structure neuve — l'avancement quitte ses quatre graphies
-// enveloppantes, et le « A ou B » des listes s'écrit `{pick, of}`, une signature CIBLE du lexique.
-// Les trois signatures NOMMÉES par la garde sont ce re-classement : `careerLevels.json › skills
-// {of,pick}`, `careerLevels.json › talents {of,pick}`, `species.json › talents {of,pick}` — les
-// MÊMES 45 objets qui s'écrivaient `{choice}`. +3 donc, et −1 : `species.json › choice
-// {specOptions,wildcard}` MEURT (le joker à options bornées s'écrit `{id, choix: [ids]}`, forme
-// CIBLE, et ne pose plus d'objet sous `choice`). +2 net, 1137 → 1139. Le dénominateur À ÉTEINDRE,
-// lui, perd 19 lignes dans le même geste (cf. les cliquets par lot ci-dessous).
-// #862 (1139→1142) : AUCUNE structure neuve — `mutations.json` porte pour la première fois un
-// `effects` de déclencheur (Haine sporadique, `onDayStart`), et ses TROIS objets d'enveloppe sont les
-// formes CIBLES déjà écrites par `traits.json`/`talents.json` : `effects {flow,on,trigger}`,
-// `flow {effect,kind}`, `effect {on,ops,type}` — mesurées une par une contre la table du doc.
-// #674 (1142→1144) : AUCUNE structure neuve — la RÉ-EXPOSITION (EDOC 08 l.122 : « Les Personnages
-// atteints du rhume qui sont à nouveau exposés à la pluie ou à la neige voient la durée de la maladie
-// prolongée de 1d10 jours ») devient une propriété de `maladies.json`, et son temps s'écrit à la
-// graphie DÉJÀ posée par `incubation`/`duration` : `reExposition {prolonge}` + `prolonge {dice,unit}`
-// (le `DiseaseTime` du fichier). Les deux signatures NOMMÉES par la garde sont ces deux enveloppes.
-// #684 L4 (1144ⅆ1146) : AUCUNE structure neuve — le premier tronçon de carte du chapitre 1 pose deux
-// objets aux formes DÉJÀ déclarées par le schéma de carte (`defs-scenes/worldmap.ts`) : le gating de
-// nœud `when {expr,kind}` (l'algèbre `Condition` du moteur) et le Déplacement d'auteur par mode
-// `speed {diligence}` (`MapRoute.speed`). Les deux signatures NOMMÉES par la garde sont ces deux-là.
-// #717 (1146→1147) : AUCUNE structure neuve — le CADRE du chapitre pose deux objets aux formes DÉJÀ
-// déclarées par le schéma du narratif (`defs-scenes/narratif.ts`) : `cloture {sousTitre,titre,when}`,
-// dont le `when` est l'algèbre `Condition` déjà comptée pour le gating de carte, et l'enveloppe
-// `narratif` qui gagne ses deux clés OPTIONNELLES. Solde net +1 (la signature `narratif` précédente,
-// sans cadre, disparaît au profit de celle-ci).
-// #684+#717 sur « La Barge du Sel » (1147→1149) : AUCUNE structure neuve — les MÊMES formes, portées
-// par un second paquet. Signatures nommées par la garde : `when {expr,kind}` (l'algèbre `Condition`
-// du moteur, portée par le lieu, la route et la clôture), `ouverture {ambiance,pitch,sousTitre,titre}`
-// (`ouvertureSchema`), `cloture {sousTitre,titre,when}` (`clotureSchema`) et l'enveloppe `narratif`
-// qui gagne ses deux clés optionnelles (`defs-scenes/narratif.ts`, #717) — solde net +2, la signature
-// `narratif` sans cadre de ce paquet disparaissant au profit de celle-ci. Ces deux bumps (1146→1147
-// et 1147→1149) sont SOLDÉS par #1633 ci-dessous : les formes qu'ils comptaient hors strate sont
-// désormais DÉCLARÉES, porte par porte.
-// #1463 L-monnaie-3 (1149→1152) : AUCUNE structure neuve — l'effet `giveMoney` cesse d'ÉTALER ses
-// dénominations et porte sa charge sous `montant` (`giveMoneySchema`, `defs-scenes/effets.ts`), comme
-// `giveXp.amount`. Les 3 signatures NOMMÉES par la garde sont la MEME enveloppe `{montant, type}`, une
-// par projet porteur ; ce qu'elles remplacent (`{gold,type}`, `{silver,type}`, `{gold,silver,type}`)
-// était compté DIVERGENT au stock des formes, d'où la hausse ici et la baisse de 8 lignes là-bas.
-// #1463 L-monnaie-4 (1152→1157) : AUCUNE structure neuve — le nom `cost` rend son type. Sept formes
-// quittent `STRUCTURES_ORPHELINES` (elles n'y étaient QUE parce que le NOM `cost` est réservé) et
-// rejoignent le hors-strate à l'identique : `install {installation}` / `{installation,weightEnc}`,
-// `flow {advantageCost,…}`, `advantageDefenseReaction {avantage}`, `prosthesisTraining` ×3 — d'où la
-// hausse ici et la baisse de 7 lignes (29 occurrences) là-bas. Trois autres sont des RENOMMAGES 1:1
-// (`cost|bands` → `installation|bands`, `cost|bands,per`, `ops {cost,…}` → `ops {advantageOrMovement,…}`),
-// et DEUX enveloppes à clef unique DISPARAISSENT, aplaties sur leur porteur (`qualities cost {advantage}`,
-// `talents cost {advantageOrMovement}`). Solde net +7 − 2 = +5.
-// #1633 (1157→1145) : la strate `Document` du lexique se PEUPLE — quatre concepts d'ENVELOPPE
-// (`ouverture`, `cloture`, `narratif`, `condition`), reconnus à leur NOYAU de clés requises et non au
-// nom du champ porteur, et chacun adossé à sa PORTE zod (cf. `STRUCTURES_CIBLES`). DOUZE lignes
-// quittent le hors-strate, et ce sont EXACTEMENT celles que les bumps #717/#684 ci-dessus
-// annonçaient : `narratif` ×4 (arene, barge, diligence, loup), `ouverture` ×1 (barge), `cloture` ×2
-// (barge, diligence), `{expr,kind}` ×5 (`when` d'arene/barge/diligence/loup + `cond` de loup — une
-// Condition sous `cond` EST une Condition, débordement légitime et nommé). La donnée n'est pas
-// touchée : c'est le lexique qui reconnaît des formes déjà posées, et le cliquet SUIT la baisse.
-// Cliquet DESCENDU 1145 → 1141 (#1463 L-de-1, 2026-09-01) : le lexique NOMME la composition d'une
-// `Formula` (concept `formule`, signatures `sum` et `sinPoints`), et 7 signatures quittent le hors
-// strate pour la strate Valeur — `criticals › durationRounds | sum` (les deux jeux),
-// `etats › amount | sum`, `miscast › amount|rounds|value | sum` et `miscast › sum | sinPoints` —,
-// tandis qu'une 8ᵉ entre au stock des FORMES comme divergente (`sea-cargo › offerPrice | sum+…`).
-// Les 10 termes de Péché de la Colère des dieux sont à la forme CIBLE : ils ne pèsent nulle part.
-// Cliquet DESCENDU 1141 → 1136 (#1659 L-1659-1, 2026-09-01) : la candidature `plage` cesse d'être
-// POSITIONNELLE (`candidatureHorsTableau` au lexique) — un `{min,max}` numérique porté par un CHAMP
-// est la MÊME fourchette que celui d'un élément de tableau. AUCUNE donnée n'est touchée : les CINQ
-// signatures qui quittent le hors-strate sont exactement les cinq `{min,max}` hors tableau des deux
-// racines, et elles rejoignent la strate Valeur à la forme CIBLE — `sea-events.json › impressed` et
-// `› wrathful` (`manannD10,max,min` → `plage max,min+…`), `tavernGames.json › targetRange` et
-// `› libre` (`max,min` → `plage max,min`), `water-exposure.json › auto` (`kind,max,min,op` →
-// `plage max,min+…`). Le stock des FORMES à éteindre ne bouge pas (ces cinq étaient hors strate, pas
-// divergentes) ; les lignes de forme montent de 855 à 860 (cible 388 → 393) et le concept `plage`
-// passe de 66 à 71 lignes / 1454 à 1459 occurrences.
-// Cliquet MONTÉ 1136 → 1137 (#1659 L-1659-3, 2026-09-01), et c'est le SEUL cran de hausse de la
-// vague : les 7 longueurs de coque passent du TUPLE à la fourchette, 6 entrent à la forme CIBLE
-// (`ship-construction.json › lengthM | max,min`) et la 7ᵉ — la bande FINALE, que MDG 12 l.129
-// imprime « 81+ » — porte `max: null`. Or l'ANGLE MORT déclaré du lexique dit que la candidature
-// `plage` est bornée au TYPE : « une borne non numérique (`null` d'une bande ouverte comprise)
-// n'ouvre pas la plage » (`scripts/docs/lib/structures-lexique.mts`). Une bande ouverte tombe donc
-// hors strate — précédents MESURÉS et déjà au doc : `advancementCosts.json › (racine)` et
-// `sea-cargo.json › offerPrice`. Ce cran n'est pas une structure neuve : c'est une fourchette rendue
-// VISIBLE, sur un type que la candidature du lexique exclut. Solde de la vague : 1141 → 1136
-// (L-1659-1) → 1137, net −4. Ce que ce +1 nomme : la candidature `plage` exclut `plageOuverteSchema`,
-// pourtant nœud DÉCLARÉ de la grammaire — l'y admettre sortirait les TROIS bandes ouvertes du
-// hors-strate d'un coup (le plafond qui en résulte est à MESURER, pas à prédire ici).
-// 1137 → 1140 (#1657 B3-2b-a) : cinq signatures NEUVES à la forme CIBLE, toutes nommées —
-// `ship-criticals.json | crewHit | crewTarget,test` et `| crewTarget | poste` (la cible d'un coup
-// devient REQUISE et fermée), `river-criticals.json | crewTarget | role` (MSRC 07 l.86 nomme le
-// timonier), et les deux `replisSansExpose` (`cible` maritime, RAW MDG 13 l.584 ; `cible,maison`
-// fluvial, arbitrage du choix que MSRC 07 l.70 laissait au MJ). Deux signatures de `crewHit` du
-// stock partent avec (`crewTarget` textuel).
-// 1140 → 1145 (#1657 B3-2b-c) : cinq signatures NEUVES, toutes à la forme CIBLE, toutes MESURÉES —
-// `ship-criticals.json | ops | hauteur,op` (5, l'op `fall` des rangées du gréement),
-// `| hauteur | table` (5, la réf `{id}` de la table de hauteurs), `| bandes | hauteurs,tailles` (3),
-// `| hauteurs | greement,nid-de-pie` (3) et `| greement | dice` (3) — la table « Tomber du gréement »
-// (MDG 13 l.684-688). DETTE NOMMÉE : les deux dernières sont indexées sur des IDS DE STATION
-// (`ship-stations.json`) — leur signature s'allonge, et leur compte croît, à chaque station qui
-// gagne une colonne de hauteur ; c'est le prix de la lecture PAR CLÉ (aucun `if` par station dans
-// le moteur), pas une dérive à migrer.
-// 1145 → 1148 (#1661) : trois signatures NEUVES, toutes MESURÉES, toutes portées par l'Atout Taillade
-// (`AA 08 l.87`, « Vous pouvez dépenser X Avantages pour que votre opposant subisse 1 État Hémorragique
-// supplémentaire ») — `qualities.json | indice | label,unite` (l'UNITÉ imprimée par le livre avec la
-// valeur, « (1A) », qui pilote `qualityRefLabel`), `| steps | advantageCost,icon,kind,no,prompt,yes`
-// et `| yes | effect,kind` (le nœud `choice` de la grammaire, jusqu'ici vu au seul TOP-LEVEL de
-// Déstabilisante : le mettre dans un `seq` derrière l'État automatique EXPOSE ses deux signatures).
-// Aucune n'est une graphie neuve : ce sont les nœuds DÉCLARÉS de `flowSchema` (`grammaire/mecanique.ts`),
-// que la mesure voit ici à une PROFONDEUR inédite dans `qualities.json` (un `choice` sous un `seq`).
-// 1148 → 1156 (#1690, mesuré APRÈS rebase sur 6a30233aa) : les formes de `terrains.json` entrent dans la
-// mesure des deux racines pour la première fois — le registre TS des 25 sols devient un dataset. Dix
-// signatures neuves NOMMÉES par la mesure, +8 net au compte : deux de la rampe de dégradé passée en Record
-// (`stops | 0%,100%` et `| 0%,100%,45%`), quatre nœuds DÉCLARÉS de `detailRecipeSchema`
-// (`detail | courses,seedScope`, `| seedScope,speckle,tintVar`, `| seedScope,tintVar`,
-// `| seedScope,tintVar,tufts`) et quatre recettes (`courses | blockWM,edgeWobble,hM,joint,jointW,
-// paletteVar,stagger`, `courses | blockWM,hM,joint,jointW,paletteVar,stagger`, `speckle | colors,perM2,rM`,
-// `tufts | colors,hM,perM2`) que plus aucun autre document ne porte à l'identique depuis la purge de
-// `structureAppearance.material` (#1686). Aucune graphie neuve : toutes sont la forme CIBLE du lexique.
-// 1148 → 1166 (#1612, 2026-09-06) : dix-huit signatures NEUVES, toutes MESURÉES, toutes portées par
-// l'Activité Mendier (`LDB 09 l.97/l.99`) et sa table MAISON. Aucune n'est une graphie neuve : ce sont
-// les nœuds DÉCLARÉS de `formulaSchema`/`conditionSchema`/`gameOpSchema`, que la mesure voit à une
-// profondeur inédite dans ces deux datasets. Quatorze côté `activities.json` :
-//   `| brass | times` · `| times | factor,of` · `| of | times` · `| of | bonusOf` · `| factor | sl` —
-//   la formule RAW « Bonus de Sociabilité x DR par heure », terme par terme ;
-//   `| ops | montant,op` et `| montant | brass` — l'op `money`, qui porte sa charge sous `montant`
-//   comme `giveMoney` depuis L-monnaie-3 (la garde `monnaie-forme-unique`, sonde A, l'EXIGE) ;
-//   `| outcomes | minSL,on,ops` et `| outcomes | maxSL,on,ops` — les deux bandes de réussite, les
-//   bandes d'`activities.json` n'ayant jusqu'ici jamais porté d'`ops` NUES (elles portaient `note`,
-//   `payoutPct` ou `resolver`) ;
-//   `| testMods | label,mod` et `| testMods | label,mod,when` — les deux modificateurs de situation ;
-//   `| when | kind,who` et `| unless | kind,of` · `| of | atLeast,kind,who` — les Conditions du gate
-//   d'apparence et de l'exemption de Statut.
-// Quatre côté `tables.json`, où l'amende des gardes locaux (`mendier-ennuis.maison`) pose une op
-// `money` à `Formula` : `| ops | montant,op`, `| montant | brass`, `| brass | times` et
-// `| times | factor,of` — signatures déjà connues d'`activities.json`, neuves dans CE dataset.
-// L'op `wounds` de la rangée « autres mendiants », elle, n'ajoute AUCUNE ligne : ses deux mitigations
-// déclarées la rangent sous la signature commune de `tables.json` (5 → 6 occurrences).
-// 1174 → 1175 (#1687, 2026-09-10) : UNE signature neuve, mesurée —
-// `diligence-projet.json | usable | ` (signature VIDE, 5 occurrences) : l'activation d'un décor par
-// l'auteur est une ENVELOPPE sans clé (`usable: z.strictObject({})`, `sceneEntitySchema`) — un
-// drapeau posé sur l'instance, aucune graphie neuve.
-// 1175 → 1177 (#1687 lot 3-I, 2026-09-11) : le champ `interact` des instances de décor MEURT au
-// profit de `usable.{assise,actions}` — mesure ligne à ligne, 5 lignes SORTENT, 7 ENTRENT, occurrences
-// 13201 → 13205. Sortent : `arene-projet.json | interact | flow` (28) et `| interact | consume,flow` (1),
-// `loup-et-saumure-projet.json | interact | flow` (2), `barge-du-sel-projet.json | interact | flow` (1),
-// `diligence-projet.json | usable | ` (5, la signature VIDE de la ligne ci-dessus). Entrent, aux MÊMES
-// comptes : `usable | actions` (29 / 2 / 1) et `usable | assise` (5) — un champ porteur de plus, la même
-// donnée. La hausse NETTE (+2) a une autre cause, MESURÉE par quatre scans {defs} × {données} : les
-// 4 objets `effect` des graphies `arene-projet.json › lodging,type` (1), `phase,type` (2) et `type+…` (1)
-// ne vivent PAS sous `interact` (ils vivent sous `.scenes[].dialogues[].nodes[].choices[].flow.steps[]`
-// et `.scenes[].triggers[].flow.steps[]`, et leur donnée n'a pas bougé d'un octet) ; c'est la
-// DÉCLARATION qui a changé, et ce n'est PAS un enum neuf : `effectSchema` déclare `phase` (aube…nuit)
-// et `lodging` (auberge/maison/camp) DÉJÀ à HEAD (`schemas/defs-scenes/effets.ts`, fichier intouché par
-// ce lot). Ce qui bouge est la PORTÉE de l'INSTRUMENT : `choixDeclares` (`scripts/docs/lib/zod-introspect.mts`)
-// marche en DFS mémoïsé PAR IDENTITÉ, borné à `PROFONDEUR_MEMO = 12` — borne ATTEIGNANTE sur ce schéma,
-// mesurée : 452 clés visitées à 12, 488 à 20 et au-delà. Le PREMIER chemin qui atteint un nœud décide
-// donc s'il est vu : `interact` (chemin COURT vers le flux) meurt au profit de `usable → refine →
-// actions[] → flow` (plus profond), l'ordre de visite change, et avec lui les littéraux tenus sous la
-// borne. `ouvreReference` (`structures-scan.mts:501`) refusant comme FK toute valeur qui EST un littéral
-// d'enum déclaré, ces 4 objets cessent d'être des références et passent hors strate (comptés, pas
-// perdus ; le dataset déclare en tout 47 clés / 348 littéraux dans l'arbre de ce lot). Qu'un instrument
-// classe une valeur selon la PROFONDEUR d'un chemin de schéma est un DÉFAUT, nommé sur #1687 et hors de
-// ce lot. Mesure : defs HEAD → 873 formes /
-// 1175 hors strate, que les données soient HEAD ou celles de ce lot ; defs de ce lot → 870 / 1178 sur les
-// données HEAD et 870 / 1177 sur les siennes (le −1 restant vient de la donnée). Le reclassement est
-// JUSTE (un discriminant déclaré n'est pas une clé étrangère), et il ne migre rien : ces 4 objets
-// changent de dénominateur, cf. `STRUCTURES_FORMES` 394 → 391 pour le lot L3 #1463.
-// 1177 → 1176 (#1508 T3, 2026-09-07) : la signature `spells.json | ops | op,radius` MEURT — les auras
-// de garde (Dôme, Bouclier anti-flèches) lisent leur zone dans la ligne « Cible » de leur sort
-// (`OpsCtx.sourceSpell.zde` ; une ZdE est un DIAMÈTRE, `LDB 47 l.28`, `l.356`, `l.408`) ; `arrowWard`
-// porte la signature `ops | op`, `domeWard` est TYPÉE (`ops | indice,op,traitId`).
-// `spells.json | radius | bonusOf` reste VIVANTE : c'est celle de `castWard`, dont le sort porteur n'a
-// pas de ZdE (`target.kind === 'special'`).
-const PLAFOND_HORS_STRATE = 1176;
-const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
-  `${o.dataset} | ${o.champ} | ${o.signature}`;
-
-/** La table hors strate du doc COMMITTÉ (HEAD), bornée par `MARQUE_HORS_STRATE`. */
-const horsStrateDuDoc = (): Set<string> => {
-  const chemin = 'docs/structures-donnees.md';
-  const versions: string[] = [];
-  try {
-    versions.push(execFileSync('git', ['show', `HEAD:${chemin}`], { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 28 }));
-  } catch {
-    /* pas de HEAD lisible (worktree neuf) : la version de travail fait référence. */
-  }
-  versions.push(readFileSync(join(ROOT, chemin), 'utf8'));
-  const cles = new Set<string>();
-  for (const md of versions) {
-    const debut = md.indexOf(MARQUE_HORS_STRATE.debut);
-    const fin = md.indexOf(MARQUE_HORS_STRATE.fin);
-    if (debut < 0 || fin <= debut) continue;
-    for (const ligne of md.slice(debut, fin).split('\n')) {
-      const cellules = ligne.split('|').map((c) => c.trim().replace(/^`|`$/g, '').replace(/\\\|/g, '|'));
-      if (cellules.length !== 6 || !/^\d+$/.test(cellules[4])) continue;
-      cles.add(`${cellules[1]} | ${cellules[2]} | ${cellules[3]}`);
-    }
-    if (cles.size) break;
-  }
-  return cles;
-};
-
 const cleOp = (o: { op: string; signature: string; dataset: string; occurrences: number } & Trace) =>
   `${o.op} | ${o.signature} | ${o.dataset} | ${o.occurrences}` + trace(o, 'L1c #1468');
 
@@ -419,20 +204,24 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
     ).toEqual(lignes(STRUCTURES_ORPHELINES.map(cleOrpheline)));
   });
 
-  it('cliquet HORS STRATE : le COMPTE de signatures ne fait que décroître, les neuves sont NOMMÉES', () => {
-    const reference = horsStrateDuDoc();
+  it('signatures HORS STRATE : observé == stock nominatif, les neuves ET les périmées sont NOMMÉES', () => {
+    const { neuves, perimees } = ecartDuVolet({
+      sites: sitesHorsStrate(scan.invisibles, scan.documents),
+      stock: HORS_STRATE_RATCHET,
+      ou: '`scripts/guards/lib/horsStrateStock.mjs`',
+    });
     expect(
-      reference.size,
-      'la table EXHAUSTIVE des signatures hors strate est introuvable dans `docs/structures-donnees.md` ' +
-        '(bornes `MARQUE_HORS_STRATE`) — sans elle le cliquet n’a plus de liste de référence : régénérer le doc.',
-    ).toBeGreaterThan(0);
-    const neuves = lignes(scan.invisibles.filter((o) => !reference.has(cleInvisible(o))).map(cleInvisible));
+      lignes(neuves),
+      'signature(s) HORS STRATE NEUVE(s) — une structure neuve se pose à la forme CIBLE du lexique ' +
+        '(`scripts/docs/lib/structures-lexique.mts`), elle n’entre pas au stock. Une paire périmée/neuve d’un ' +
+        'MÊME dataset sans un octet de donnée changé est le bruit d’instrument dit en tête du stock.',
+    ).toEqual([]);
     expect(
-      scan.invisibles.length,
-      `signatures HORS STRATE en HAUSSE (${scan.invisibles.length} > ${PLAFOND_HORS_STRATE}) — une structure neuve ` +
-        'se pose à la forme CIBLE du lexique. Signature(s) NEUVE(s), absentes de la table du doc de référence :\n' +
-        (neuves.join('\n') || '(aucune : la hausse vient d’occurrences reventilées, comparer la table du doc)'),
-    ).toBeLessThanOrEqual(PLAFOND_HORS_STRATE);
+      lignes(perimees),
+      'entrée(s) SOLDÉE(s) au stock hors strate : régénérer par ' +
+        '`npx tsx scripts/data/regen-hors-strate-stock.mts` — un stock qui garde une ligne morte fait ' +
+        'passer une dette éteinte pour vivante.',
+    ).toEqual([]);
   });
 
   it('signatures d’OPS : observé == stock (dénominateur du lot L1c #1468)', () => {
@@ -1209,8 +998,8 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // 452 clés à 12 contre 488 à 20), donc le chemin par lequel un nœud est atteint décide s'il est vu —
       // et `interact` (court) cède à `usable → refine → actions[] → flow` (profond). `ouvreReference`
       // (`structures-scan.mts:501`) ne tenant pas un littéral d'enum DÉCLARÉ pour une clé étrangère, ces 4
-      // objets cessent d'être des références et passent au dénominateur HORS STRATE (cf.
-      // `PLAFOND_HORS_STRATE`, qui porte la mesure chiffrée ; le défaut d'instrument y est nommé).
+      // objets cessent d'être des références et passent au dénominateur HORS STRATE (ils y sont
+      // quatre ENTRÉES de `scripts/guards/lib/horsStrateStock.mjs`, dont l'en-tête nomme ce défaut).
       'L3 #1463': 391,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.

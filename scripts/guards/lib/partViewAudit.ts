@@ -20,6 +20,7 @@ import type { ElementOverlay } from '../../../src/gameIso/rig/parts/elements/typ
 import { appendageArt } from '../../../src/gameIso/rig/parts/appendages';
 import type { View } from '../../../src/gameIso/rig/facing';
 import type { EquipCtx } from '../../../src/gameIso/rig/parts/equipment';
+import type { Site } from './stock.mjs';
 import type { ItemInstance, HitLocation } from '../../../src/engine/types';
 import { slugId } from '../../../src/data/slug';
 import { fichierDeDef, REGISTRE_TENUES, REGISTRE_ARMURES, REGISTRE_PARTS_MONSTRUEUSES, REGISTRE_ELEMENTS } from './registreDeDefs';
@@ -72,10 +73,6 @@ function geometryOrThrow(svg: string, where: string): string {
       `le relevé est aveugle sur cet art, la comparaison d'alias serait ''==='' . Fragment :\n${svg.slice(0, 300)}`);
   return g;
 }
-
-/** Un SITE mesuré : le FICHIER de def fautif et la réf qui l'identifie dedans — la forme que
- *  `sitesEnEntrees` (`guards/lib/stock.mjs`) ordinalise en entrées `{ fichier, ref, occurrence }`. */
-export interface Site { file: string; ref: string }
 
 export interface Audit {
   /** Slots fournis en `string` front-only, réf `<porteur>:<slot>`. */

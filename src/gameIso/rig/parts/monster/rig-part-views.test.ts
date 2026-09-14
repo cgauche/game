@@ -27,7 +27,8 @@ import { fileURLToPath } from 'node:url';
 import { MONSTER_PARTS } from './_registry.generated';
 import { ELEMENT_DEFS } from '../elements/_registry.generated';
 import type { ElementOverlay } from '../elements/types';
-import { auditRigPartViews, isTransformDerived, type Site } from '../../../../../scripts/guards/lib/partViewAudit';
+import { auditRigPartViews, isTransformDerived } from '../../../../../scripts/guards/lib/partViewAudit';
+import type { Site } from '../../../../../scripts/guards/lib/stock.mjs';
 import {
   RIG_VIEW_FORMAT_RATCHET,
   RIG_VIEW_ALIAS_RATCHET,
