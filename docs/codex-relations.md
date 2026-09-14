@@ -9,8 +9,8 @@
 `cluster`), et l'`exposition` DÉCLARÉE par les 122 defs de `src/data/schemas/defs/`
 (dumpée par `scripts/docs/lib/dump-exposition.mts`), les cas NOMMÉS par `src/data/schemas/exposition-contrats.test.ts`, les fonctions
 exportées de `src/ui/compendium/describe.ts` et `src/ui/compendium/humanize.ts`, et le compte d'épigraphes de Carrière dumpé par
-`scripts/docs/lib/dump-epigraphes.mts` (`extractEpigraph` appliqué aux `careers` réelles — aucune
-re-implémentation de la sélection ici). **Angles morts** : la catégorie RÉFÉRANTE
+`scripts/docs/lib/dump-epigraphes.mts` (le plugin `exergues` de `<Prose>` monté sur les `careers`
+réelles — aucune re-implémentation de la détection ici). **Angles morts** : la catégorie RÉFÉRANTE
 est lue au `const by` en portée ou au littéral inline — une arête posée autrement (helper, boucle
 sur une variable calculée) casserait le script plutôt que de mentir, mais aucune n'existe
 aujourd'hui ; le CONTENU réel de chaque relation (combien de créatures portent tel trait) dépend de
@@ -267,7 +267,7 @@ Le JSDoc est rapporté en ENTIER : le contrat d'une couture relationnelle tient 
 | `tokenizeLinks` | function | `src/ui/compendium/relations.ts:502` | Tokenise une prose en alternant texte brut et mentions d'entité à LIER (auto-liage du Codex, façon `dev.html`). PUR & locale-scoped (matcher dérivé des libellés de la locale active, jamais une chaîne FR en dur → multilingue de principe). Écarte les liens vers SOI et les libellés inconnus/courts — la comparaison est 100 % id-based (`selfId` si l'appelant le connaît, sinon résolu depuis `selfLabel` via `idByLabelCached`, repli des appelants non encore migrés). `selfCategory` (catégorie de la fiche affichante) tranche les homonymes en priorité — cf. `resolveLink`/`PRIORITY_CAT_ORDER`. Seul le vocabulaire de RÈGLES est lié. |
 
 `bookContents` est projeté DANS le `build` (paresseux) de la catégorie Livres
-(`src/ui/compendium/registry.ts:1773`) : il ne lit que l'identité STATIQUE des catégories, jamais leurs
+(`src/ui/compendium/registry.ts:1800`) : il ne lit que l'identité STATIQUE des catégories, jamais leurs
 items — aucun cycle de projection.
 
 ## Barre de catégories — sous-groupes repliables (`cluster`)
@@ -297,13 +297,14 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
   un titre dans `REVERSE_TITLE` si besoin, et `...reverseSections(cat, id)` dans la catégorie du registre.
 - **Nouveau champ de fiche** : enrichir l'`item` dans `src/ui/compendium/registry.ts` (méta `fact(...)` ou section via les
   helpers de `src/ui/compendium/describe.ts` : `passiveSection`, `careerGrantSection`, `effectsSection`, `capabilitySection`, `spellFlowSection`).
-- **Exergue de fiche** (`CodexItem.exergue`, Markdown verbatim) : citation/tract levé en tête de fiche sur
-  `ParchmentCard`. Pour les Carrières, `extractEpigraph(desc)` sélectionne MÉCANIQUEMENT le couple
-  citation `« … »` (ou `*« … »*`) + attribution (tiret) et le retire du corps — convention
+- **Exergue de fiche** : PRÉSENTATION, jamais un champ. La `desc` reste ENTIÈRE et UNE ; c'est le plugin
+  `exergues` de `<Prose>` (`src/ui/Prose.tsx`), activé par la DONNÉE de catégorie
+  (`CodexCategory.exergues`, `careers`), qui rend en `.prose-exergue` (matière `ParchmentCard`)
+  TOUT couple citation `« … »` + attribution (tiret), À SA PLACE dans le corps — convention
   typographique OBSERVÉE dans les sources : 105 des 108 carrières
-  curées la portent (folios 10–154 de 7 livres :
-  `livre-de-base`, `archives-de-l-empire-2`, `archives-de-l-empire-1`, `middenheim`, `aux-armes`, `mer-des-griffes`, `vents-de-la-magie`). Aucun champ JSON ajouté : extraction
-  structurelle depuis la desc verbatim.
+  curées en portent au moins un (176 couples au total ; folios 10–154 de 7 livres :
+  `livre-de-base`, `archives-de-l-empire-2`, `archives-de-l-empire-1`, `middenheim`, `aux-armes`, `mer-des-griffes`, `vents-de-la-magie`). Une catégorie SANS la donnée (`species` et ses
+  « Points de vue ») garde ses citations en paragraphes : aucun `if (category === …)` au rendu.
 - **Riders / effets / formules de sort en clair** : les sections rendent d'abord la phrase JOUEUR
   (`src/ui/compendium/humanize.ts` — switchs EXHAUSTIFS, zéro id brut : `humanizeFormula`, `deFormule`, `humanizeQuantite`, `humanizeCondition`, `humanizePerSL`, `coutAvantageTexte`, `flowMuet`, `replieCausesPersistantes`, `humanizeResolveWindow`, `humanizeOp`, `humanizeFlow`, `humanizeFlowSentence`, `humanizeCastBonus`),
   la forme technique d'atelier restant dépliée dans un bloc « Détail technique » (primitive `.fold`).
@@ -317,4 +318,4 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
 - `npx vitest run src/ui/compendium/humanize.test.ts`
 - `npx vitest run src/data/schemas/exposition-contrats.test.ts`
 - `npx vitest run src/data/serialize.test.ts`
-<!-- sources-empreinte: e3f31a5bc6be8c55271e900ea70febcb2ec97c27 (533 fichiers, 0 dossiers) corps: 075d1740885278e8904e918b4bfd803f2bad9b29 -->
+<!-- sources-empreinte: 2482433a67820f87e37bcd85cc667a10426de053 (758 fichiers, 0 dossiers) corps: 2700e7fca63e44384ec95d40d7436989d26aa2d5 -->
