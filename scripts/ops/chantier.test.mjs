@@ -1,0 +1,149 @@
+// CLIQUET de l'ouverture de chantier (node --test) : les décisions sont PURES, et le geste réel se
+// joue sur un dépôt JETABLE sous `os.tmpdir()` — avec un VRAI `origin` nu, parce que « le chantier
+// part d'origin/main » est justement ce qu'un test à `HEAD` ne verrait pas tomber.
+// `npm ci` n'est JAMAIS joué : l'appelant injecte un `npm` qui enregistre l'appel.
+// Lancé par `npm run test:ops`.
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
+import { argumentsDe, brancheDe, cibleDe, creerChantier, nomValide, refusDeCreation, resumeDeChantier } from './chantier.mjs'
+
+test('un nom de chantier est un numéro de ticket, avec un slug optionnel en minuscules', () => {
+  for (const bon of ['1736', '42', '1732-1734-outillage', '1736-publication', '12-a', '12-a1-b2']) {
+    assert.equal(nomValide(bon), true, `« ${bon} » est une forme valide`)
+  }
+  for (const mauvais of ['', 'publication', '1736-', '-1736', '1736-Publication', '1736 publication',
+    '1736/publication', '1736--a', '../evade', undefined, 42]) {
+    assert.equal(nomValide(mauvais), false, `« ${mauvais} » n’est PAS une forme valide`)
+  }
+})
+
+test('argumentsDe : le nom est le premier argument NON drapeau, --sans-ci se lit où qu’il soit', () => {
+  assert.deepEqual(argumentsDe(['1736']), { nom: '1736', sansCi: false })
+  assert.deepEqual(argumentsDe(['1736', '--sans-ci']), { nom: '1736', sansCi: true })
+  assert.deepEqual(argumentsDe(['--sans-ci', '1736']), { nom: '1736', sansCi: true })
+  assert.equal(argumentsDe([]), null, 'sans nom, il n’y a rien à ouvrir')
+  assert.equal(argumentsDe(['--sans-ci']), null)
+})
+
+test('refusDeCreation dit DISTINCTEMENT la cible et la branche : ce ne sont pas les mêmes sorties', () => {
+  const base = { nom: '42', cible: '/dep/.wt-42' }
+  assert.equal(refusDeCreation({ ...base, cibleExiste: false, brancheExiste: false }), null)
+
+  const surCible = refusDeCreation({ ...base, cibleExiste: true, brancheExiste: false })
+  assert.match(surCible, /\/dep\/\.wt-42 existe déjà/)
+  assert.doesNotMatch(surCible, /chantier\/42/, 'la branche n’est pas en cause : ne pas la nommer')
+
+  const surBranche = refusDeCreation({ ...base, cibleExiste: false, brancheExiste: true })
+  assert.match(surBranche, /la branche chantier\/42 existe déjà/)
+  assert.match(surBranche, /git worktree add \/dep\/\.wt-42 chantier\/42/, 'le refus porte le geste de reprise')
+
+  const lesDeux = refusDeCreation({ ...base, cibleExiste: true, brancheExiste: true })
+  assert.match(lesDeux, /déjà ouvert/)
+  assert.match(lesDeux, /\.wt-42/)
+  assert.match(lesDeux, /chantier\/42/)
+})
+
+test('resumeDeChantier imprime les quatre faits, un par ligne', () => {
+  const vu = resumeDeChantier({ cible: '/dep/.wt-42', branche: 'chantier/42', base: 'abc1234', port: 5200, url: 'http://localhost:5200/' })
+  assert.deepEqual(vu.split('\n'), [
+    'worktree=/dep/.wt-42',
+    'branche=chantier/42',
+    'base=abc1234',
+    'port=5200 (http://localhost:5200/)',
+  ])
+})
+
+test('nom invalide : refus NOMMÉ, et aucun git n’est joué', () => {
+  let joue = 0
+  const vu = creerChantier({ racine: '/dep', nom: 'Publication', git: () => { joue += 1 }, fetch: () => { joue += 1 } })
+  assert.equal(vu.ok, false)
+  assert.match(vu.refus, /nom de chantier invalide/)
+  assert.match(vu.refus, /numéro de ticket/)
+  assert.equal(joue, 0, 'un nom refusé ne déclenche aucune commande')
+})
+
+/** Dépôt jetable + son `origin` NU, avec `origin/main` réellement posé. */
+function depotAvecOrigin() {
+  const nu = mkdtempSync(join(tmpdir(), 'origin-nu-'))
+  execFileSync('git', ['init', '--bare', '-q', '-b', 'main', nu], { encoding: 'utf8' })
+  const { racine } = instanceDeDepot({ fichiers: { 'a.txt': 'a' }, message: 'fondation' })
+  const git = (...args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8' }).trim()
+  git('remote', 'add', 'origin', nu)
+  git('push', '-q', 'origin', 'main')
+  return { racine, nu, git, jeter: () => { for (const d of [racine, nu]) rmSync(d, { recursive: true, force: true }) } }
+}
+
+test('création RÉELLE : worktree .wt-42 sur chantier/42 issue d’ORIGIN/main, puis refus du second appel', () => {
+  const { racine, git, jeter } = depotAvecOrigin()
+  try {
+    // HEAD local DIVERGE d'origin/main (un commit non poussé) : un chantier parti de HEAD
+    // emporterait ce commit, et le test ne le verrait pas si les deux shas étaient égaux.
+    writeFileSync(join(racine, 'a.txt'), 'local non poussé')
+    git('add', '-A'); git('commit', '-q', '-m', 'travail local non poussé')
+    const teteLocale = git('rev-parse', 'HEAD')
+    assert.notEqual(teteLocale, git('rev-parse', 'origin/main'))
+
+    let npmVu = null
+    const vu = creerChantier({ racine, nom: '42', sansCi: true, npm: (...a) => { npmVu = a; return { status: 0 } } })
+
+    assert.equal(vu.ok, true, vu.refus)
+    assert.equal(npmVu, null, '--sans-ci : npm n’est jamais appelé')
+    const cible = cibleDe(racine, '42')
+    assert.equal(existsSync(cible), true, 'le worktree est posé sur le disque')
+    assert.equal(vu.branche, 'chantier/42')
+    assert.equal(execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: cible, encoding: 'utf8' }).trim(), 'chantier/42')
+    assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: cible, encoding: 'utf8' }).trim(),
+      git('rev-parse', 'origin/main'), 'le chantier part d’origin/main')
+    assert.notEqual(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: cible, encoding: 'utf8' }).trim(), teteLocale,
+      'et surtout PAS de HEAD local')
+    assert.match(vu.resume, new RegExp(`branche=${brancheDe('42')}`))
+    assert.match(vu.resume, /^port=\d+ \(http:\/\/localhost:\d+\/\)$/m)
+
+    const second = creerChantier({ racine, nom: '42', sansCi: true })
+    assert.equal(second.ok, false)
+    assert.match(second.refus, /déjà ouvert/, 'cible ET branche : le refus les nomme toutes les deux')
+    assert.match(second.refus, /\.wt-42/)
+  } finally { jeter() }
+})
+
+test('npm ci ROUGE : le worktree RESTE, et le refus dit quoi relancer où', () => {
+  const { racine, jeter } = depotAvecOrigin()
+  try {
+    const appels = []
+    const vu = creerChantier({ racine, nom: '43', npm: (cmd, args, opts) => { appels.push({ cmd, args, cwd: opts.cwd }); return { status: 1 } } })
+    assert.equal(vu.ok, false)
+    assert.equal(appels.length, 1)
+    assert.deepEqual(appels[0].args, ['ci', '--no-audit', '--no-fund'])
+    assert.equal(appels[0].cwd, cibleDe(racine, '43'), 'npm ci se joue DANS le worktree neuf')
+    assert.match(appels[0].cmd, /^npm(\.cmd)?$/)
+    assert.equal(existsSync(cibleDe(racine, '43')), true, 'un npm ci rouge ne défait pas le worktree')
+    assert.match(vu.refus, /worktree posé, npm ci rouge/)
+    assert.match(vu.refus, /\.wt-43/)
+  } finally { jeter() }
+})
+
+test('lancé depuis un WORKTREE : refus, jamais un worktree imbriqué', () => {
+  const { racine, jeter } = depotAvecOrigin()
+  try {
+    assert.equal(creerChantier({ racine, nom: '44', sansCi: true }).ok, true)
+    const dansLeWorktree = creerChantier({ racine: cibleDe(racine, '44'), nom: '45', sansCi: true })
+    assert.equal(dansLeWorktree.ok, false)
+    assert.match(dansLeWorktree.refus, /arbre principal/)
+    assert.equal(existsSync(join(cibleDe(racine, '44'), '.wt-45')), false, 'rien n’a été posé sous le worktree')
+  } finally { jeter() }
+})
+
+test('origin injoignable : refus qui NOMME la raison, et aucun worktree posé', () => {
+  const { racine, jeter } = depotAvecOrigin()
+  try {
+    const vu = creerChantier({ racine, nom: '46', sansCi: true, fetch: () => ({ disponible: false, raison: 'réseau coupé' }) })
+    assert.equal(vu.ok, false)
+    assert.match(vu.refus, /réseau coupé/)
+    assert.equal(existsSync(cibleDe(racine, '46')), false)
+  } finally { jeter() }
+})

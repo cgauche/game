@@ -735,6 +735,14 @@ test('extractRefIssues : "ref #N" et "refs #N" reconnus, dédupliqués/triés', 
   assert.deepEqual(extractRefIssues('git commit -m "feat: truc, ref #371 refs #371 ref #393"'), [371, 393])
 })
 
+test('extractRefIssues : la CHAÎNE `refs #A #B #C` rend TOUS ses numéros, en nombres triés', () => {
+  assert.deepEqual(extractRefIssues('git commit -m "fix(guards): refs #1699 #1388 — le banc"'), [1388, 1699])
+  assert.deepEqual(extractRefIssues('git commit -m "chore: refs #12, #13"'), [12, 13])
+  // Le ticket rattaché par une chaîne exige son solde comme un `refs #N` seul : sans cela, #1388
+  // passait sous la porte dès qu'il était cité en 2ᵉ position.
+  assert.deepEqual(extractRefIssues('git commit -m "corrige #7 — refs #8 #9"'), [8, 9])
+})
+
 test('extractRefIssues : aucun mot-clef → vide', () => {
   assert.deepEqual(extractRefIssues('git commit -m "feat: truc"'), [])
 })

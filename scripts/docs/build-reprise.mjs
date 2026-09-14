@@ -320,6 +320,12 @@ npm test        # suite du moteur — deux processus Vitest (node + jsdom) si �
 npm run dev     # http://localhost:5173 (un CLONE garde le port historique)
 \`\`\`
 
+**Chantier et publication.** \`npm run ops:chantier -- <N>\` (\`${script('ops:chantier')}\`) ouvre le
+chantier du ticket \`<N>\` : il pose le worktree lié \`.wt-<N>\` sur \`origin/main\`, crée la branche
+\`chantier/<N>\`, y joue \`npm ci\` et imprime le port dev dérivé. \`npm run ops:publier -- --detache\`
+(\`${script('ops:publier')}\`) joue ensuite le train de publication ENTIER depuis ce worktree, détaché
+du harnais, et imprime son \`pid\` et son \`log\`.
+
 Le port n'est historique QUE pour un arbre principal ou un clone : un **worktree lié** en dérive un
 autre (5174-5272, \`scripts/port-dev.mjs\`) pour que deux arbres servis en même temps ne se recouvrent
 jamais. \`npm run dev\` imprime celui qu'il sert.
@@ -427,6 +433,9 @@ ${lignesWorkflows}
 
 Vérifier qu'elles tournent : onglet Actions du dépôt, ou \`gh run list --workflow=canari.yml\`. La
 porte à chaque push est \`.github/workflows/ci.yml\` (« ${CI.nom} », ${CI.declencheurs.join(', ')}).
+
+La publication locale suit le même ordre que \`ci.yml\` : \`npm run ops:publier\` joue rebase, docs
+dérivés, gates, push, sonde CI et pilotage, et refuse à la première étape rouge en la nommant.
 `
 
 emitOrCheck({

@@ -20,8 +20,9 @@ import {
   segmentDeGate,
 } from '../guards/lib/justificatif.mjs'
 import { exportsDuProcessus } from '../migrations/replay-head.mjs'
-import { armeLeRejeu, jugerPush, refsAPousser, urlOrigineAcceptee, verdictCi } from './pre-push.mjs'
+import { armeLeRejeu, jugerPush, refsAPousser, verdictCi } from './pre-push.mjs'
 import { reinitialiserStub } from '../guards/lib/coursesCi.mjs'
+import { urlOrigineAcceptee } from '../guards/lib/gitPorte.mjs'
 
 const ICI = dirname(fileURLToPath(import.meta.url))
 

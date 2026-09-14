@@ -114,8 +114,29 @@ const ATTENDU = {
     // qui les écrit ; ses écritures visent `<git-common-dir>/wfrp-justificatifs/`, hors de l'arbre.
     // +1 le 2026-09-07 (#1709 B1) : `fermer-depuis-main.test.mjs` et `faits-de-palier.test.mjs`
     // prennent leurs dépôts jetables à la fixture partagée, qui n'écrit que sous `os.tmpdir()`.
+    // +8 le 2026-09-14 (#1736) : le train de publication entre dans `test:ops`.
+    // · `chantier.test.mjs` et `worktrees.test.mjs` posent de VRAIS worktrees et un origin nu, tous
+    //   sous os.tmpdir() (fixture partagée + mkdtemp), jetés en finally — aucune écriture DANS
+    //   l'arbre. `chantier.mjs`/`worktrees.mjs` écrivent, eux, dans l'arbre PRINCIPAL en usage réel
+    //   (git worktree add/remove), jamais depuis la gate.
+    // · `publier.mjs` est atteint par `publier.test.mjs`, qui ne joue QUE ses fonctions PURES
+    //   (options, journal en mémoire, verdicts, mise en forme). Ses écritures réelles sont son
+    //   journal `node_modules/.cache/publication/` et le commit des docs DÉRIVÉS — toutes deux
+    //   derrière sa porte `estMain` (scripts/ops/publier.mjs, dernière ligne), jamais depuis la gate.
+    // · `build-all.mjs`, `empreinte-sources.mjs`, `toutes.mjs`, `purgerPerimes.mjs` et `verrou.mjs`
+    //   sont atteints PAR `publier.mjs`, qui n'en importe que des CONSTANTES et des fonctions pures
+    //   (`GENERATORS`, `SOURCES_LUES`, `fichierDurees`) ; leurs écritures vivent derrière leurs
+    //   propres portes `isMain`, ou sous `node_modules/.cache`.
+    'scripts/docs/build-all.mjs',
+    'scripts/docs/lib/empreinte-sources.mjs',
+    'scripts/gates/toutes.mjs',
     'scripts/guards/lib/depotGabarit.mjs',
     'scripts/guards/lib/justificatif.mjs',
+    'scripts/guards/lib/purgerPerimes.mjs',
+    'scripts/ops/chantier.test.mjs',
+    'scripts/ops/publier.mjs',
+    'scripts/ops/worktrees.test.mjs',
+    'scripts/test/verrou.mjs',
     // +2 le 2026-09-04 (#1679 L2bis) : `faits-de-palier.mjs` écrit le JSON des faits (`--sortie`,
     // défaut sous os.tmpdir()) pour qu'un workflow n'ait pas à le recopier dans chaque prompt, et son
     // test fabrique un dépôt jetable sous os.tmpdir() — aucune écriture DANS l'arbre.

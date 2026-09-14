@@ -57,8 +57,8 @@ import { appendFileSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { enteteArbre } from '../guards/lib/enteteArbre.mjs'
-import { commitsDe, estAncetre, fetchOrigin, lireGit, sortieOuNull } from '../guards/lib/gitPorte.mjs'
-import { coursesCiDeMain } from '../guards/lib/coursesCi.mjs'
+import { commitsDe, estAncetre, fetchOrigin, lireGit, sortieOuNull, urlOrigineAcceptee } from '../guards/lib/gitPorte.mjs'
+import { ANNULEE, ROUGES, coursesCiDeMain } from '../guards/lib/coursesCi.mjs'
 import { attendreSync } from '../guards/lib/spawnResilient.mjs'
 import { PERIMETRE } from '../migrations/replay.mjs'
 import { rejeuSurExport } from '../migrations/replay-head.mjs'
@@ -99,9 +99,6 @@ export const armeLeRejeu = (chemins) =>
     return CHEMINS_QUI_ARMENT_LE_REJEU.some((p) => c === p || c.startsWith(`${p}/`))
   })
 
-/** Le dépôt de ce projet, en https comme en ssh. */
-export const urlOrigineAcceptee = (url) => /github\.com[:/]cgauche\/game(?:\.git)?$/.test(String(url ?? '').trim())
-
 /** Le levier de dérogation de chaque motif. `rouge` a le SIEN, et il ne franchit que lui. */
 export const LEVIER_DU_MOTIF = {
   rouge: 'WFRP_PUSH_SUR_ROUGE',
@@ -115,15 +112,6 @@ export const RAISON_MINIMALE = 20
 
 /** Une course TERMINÉE ? Un stub qui ne dit rien du statut décrit une course finie. */
 const estTerminee = (course) => String(course?.status ?? 'completed') === 'completed'
-
-/** Les conclusions qui disent une course ÉCHOUÉE. `failure` n'est pas la seule : GitHub rend aussi
- *  `timed_out` (le job a dépassé sa borne) et `startup_failure` (le runner n'a pas démarré). Les
- *  omettre laissait passer le push sur une CI qui n'est PAS verte — mesuré : refus=0 sur les deux. */
-export const ROUGES = new Set(['failure', 'timed_out', 'startup_failure'])
-
-/** `cancelled` n'est ni vert ni rouge : personne n'a jugé ce contenu. Le refus vient alors de la
- *  règle de l'ancêtre vert, pas d'un échec qu'on lui prêterait — et la NOTE le dit. */
-export const ANNULEE = 'cancelled'
 
 /**
  * VERDICT sur la CI de `main`. PUR — `relire(limite)` est la seule lecture, injectée.

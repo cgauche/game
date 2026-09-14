@@ -216,6 +216,10 @@ export function commitsDe(ref, n, opts = {}) {
   return fait(vu.valeur.stdout.split(/\r?\n/).map((l) => l.trim()).filter(Boolean))
 }
 
+/** Le dépôt de ce projet, en https comme en ssh. Notion d'ORIGINE, donc hôte des lectures git : la
+ *  porte au push et la préflight de publication refusent l'une comme l'autre un `origin` étranger. */
+export const urlOrigineAcceptee = (url) => /github\.com[:/]cgauche\/game(?:\.git)?$/.test(String(url ?? '').trim())
+
 /**
  * MUTATION de refs : met `refs/remotes/origin/<branche>` à jour. Une panne RÉSEAU rend
  * `indisponible` — la porte qui l'appelle dit « CI non consultable », elle ne conclut pas.

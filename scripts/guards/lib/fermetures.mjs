@@ -34,3 +34,38 @@ export function numerosFermes(texte) {
   for (const m of String(texte ?? '').matchAll(motifFermeture())) vus.add(String(Number(m[2])))
   return [...vus]
 }
+
+/** Les verbes de RATTACHEMENT (`ref #N`/`refs #N`) : un commit qui CITE un ticket sans le fermer.
+ *  Même hôte que la fermeture, et pour la même raison — deux graphies pour un concept rendent deux
+ *  ensembles : la porte de commit exigeait un solde sur un `refs #N` que le pilotage de publication
+ *  n'aurait pas vu. Une instance NEUVE par lecture (`lastIndex` mutable d'un motif global).
+ *
+ *  Le motif capture la CHAÎNE ENTIÈRE (`refs #A #B #C`, `refs #A, #B`) : c'est la graphie dominante
+ *  du dépôt (72 des 300 derniers sujets de commit). Chaque correspondance porte donc N numéros, que
+ *  ses lecteurs extraient par `#\d+` — jamais un seul groupe. La FERMETURE, elle, garde sa grammaire
+ *  documentée « un mot-clef PAR ticket » (en-tête de ce fichier). */
+export const motifRattachement = () => /\brefs?\s+#\d+(?:\s*,?\s*#\d+)*/gi
+
+/** Numéros CANONIQUES portés par une correspondance de rattachement (`refs #1699 #1388` → `['1699',
+ *  '1388']`), zéros de tête absorbés, dans l'ordre d'apparition. PURE. */
+export const numerosDeLaChaine = (chaine) => [...String(chaine ?? '').matchAll(/#(\d+)/g)].map((m) => String(Number(m[1])))
+
+/**
+ * Numéros de ticket qu'un texte CITE — rattachés ∪ fermés —, dans l'ordre d'apparition,
+ * dédupliqués, zéros de tête absorbés. PUR. Même contrat de sortie que `numerosFermes` : des
+ * chaînes canoniques, jamais des nombres.
+ *
+ * Ce que la grammaire ne lit pas se lit chez `numerosFermes` et vaut ici, à une réserve près : la
+ * CHAÎNE de rattachement est lue en entier (`refs #1699 #1388` rend `['1699','1388']`), tandis
+ * qu'un `#N` nu SANS chaîne ouverte n'est jamais cité (`voir #1736` rend `[]`).
+ * @param {string} texte @returns {string[]}
+ */
+export function numerosCites(texte) {
+  const t = String(texte ?? '')
+  const trouves = []
+  for (const m of t.matchAll(motifRattachement()))
+    for (const [i, numero] of numerosDeLaChaine(m[0]).entries()) trouves.push({ rang: (m.index ?? 0) + i / 1000, numero })
+  for (const m of t.matchAll(motifFermeture())) trouves.push({ rang: m.index ?? 0, numero: String(Number(m[2])) })
+  trouves.sort((a, b) => a.rang - b.rang)
+  return [...new Set(trouves.map((t2) => t2.numero))]
+}

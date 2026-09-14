@@ -64,7 +64,7 @@ import { dirname, join, resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { croissancesNonCouvertes, estPorteurDeStock, raisonDeRefus } from '../guards/lib/stocksNominatifs.mjs'
 import { GitIndisponible, estDansHead, estRepertoire } from '../guards/lib/gitPorte.mjs'
-import { numerosFermes } from '../guards/lib/fermetures.mjs'
+import { motifRattachement, numerosDeLaChaine, numerosFermes } from '../guards/lib/fermetures.mjs'
 import {
   DOSSIERS_DE_SUBSTANCE, estCheminDeSubstance, fenetreDeRevue, memeSha, mesureDuPalier,
   nomDArchiveDeRevue, problemesDeRevue, revuesNeuves,
@@ -1300,7 +1300,6 @@ export function evaluatePorteDuTicket({ command, fichiersEmportes = [] }) {
 // et « ref #N » devient l'esquive mécanique. Le mécanisme REFUTATION porte sur le ticket
 // EXPLICITEMENT rattaché ; le commit de substance qui n'en cite AUCUN est refusé en amont par
 // `evaluatePorteDuTicket`.
-const REF_KEYWORD_RE = /\brefs?\s+#(\d+)/gi
 const REFUTATION_LINE_RE = /REFUTATION\s*:\s*(.+)/i
 const MIN_REFUTATION_LINE_LEN = 40
 const SUBSTANTIVE_MIN_LINES = 10
@@ -1309,7 +1308,9 @@ const SUBSTANTIVE_MIN_LINES = 10
 export function extractRefIssues(command) {
   if (!command || !isGitCommitCommand(command)) return []
   const nums = new Set()
-  for (const m of texteProfond(command).matchAll(REF_KEYWORD_RE)) nums.add(Number(m[1]))
+  // Une correspondance porte la CHAÎNE ENTIÈRE (`refs #A #B #C`) : on en extrait TOUS les numéros.
+  for (const m of texteProfond(command).matchAll(motifRattachement()))
+    for (const n of numerosDeLaChaine(m[0])) nums.add(Number(n))
   return [...nums].sort((a, b) => a - b)
 }
 

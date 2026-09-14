@@ -171,6 +171,11 @@ export function validateHookParity(claudeSettings, codexHooks) {
   return diagnostics;
 }
 
+/** Les racines que `agents:sync` POSSÈDE — source unique, lue ici (`managedRoots`) et par le train
+ *  de publication (`scripts/ops/publier.mjs`, `estDocDerive`) : ces chemins sont DÉRIVÉS de
+ *  `CLAUDE.md` et des fiches, donc committables avec les docs. */
+export const MANAGED_ROOTS = ['AGENTS.md', '.agents/skills', '.codex/credo.md'];
+
 export function buildExpectedOutputs(snapshot) {
   const files = new Map();
   const diagnostics = [];
@@ -186,7 +191,7 @@ export function buildExpectedOutputs(snapshot) {
   for (const [destination, bytes] of transformSkillTree(snapshot)) files.set(destination, bytes);
   const credo = snapshot.get('.claude/credo.md');
   if (credo) files.set('.codex/credo.md', Buffer.from(`${GENERATED_PREFIX}.claude/credo.md -->\n${adapt(utf8.decode(credo))}`));
-  return { files, managedRoots: new Set(['AGENTS.md', '.agents/skills', '.codex/credo.md']), diagnostics };
+  return { files, managedRoots: new Set(MANAGED_ROOTS), diagnostics };
 }
 
 function withoutBanner(value) {

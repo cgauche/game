@@ -24,6 +24,16 @@ import { parUnitesDeCode } from './lister.mjs'
 /** Champs demandés à `gh` : l'union de ce que les trois consommateurs lisent, une seule fois. */
 export const CHAMPS = 'conclusion,createdAt,databaseId,headSha,status,workflowName'
 
+/** Les conclusions qui disent une course ÉCHOUÉE. `failure` n'est pas la seule : GitHub rend aussi
+ *  `timed_out` (le job a dépassé sa borne) et `startup_failure` (le runner n'a pas démarré). Les
+ *  omettre laissait passer le push sur une CI qui n'est PAS verte — mesuré : refus=0 sur les deux.
+ *  Notion de COURSE, donc hôte des courses : la porte au push et la sonde de publication la lisent. */
+export const ROUGES = new Set(['failure', 'timed_out', 'startup_failure'])
+
+/** `cancelled` n'est ni vert ni rouge : personne n'a jugé ce contenu. Le refus vient alors de la
+ *  règle de l'ancêtre vert, pas d'un échec qu'on lui prêterait — et la NOTE le dit. */
+export const ANNULEE = 'cancelled'
+
 /** Appels déjà servis par un fichier de stub, par chemin. */
 const appelsServis = new Map()
 
