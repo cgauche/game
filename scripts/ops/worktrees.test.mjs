@@ -97,7 +97,7 @@ test('classerWorktree : un arbre TENU par ce processus n’est JAMAIS purgeable,
   assert.equal(classerWorktree(tenu, { tenus: TENUS }), 'tenu')
   assert.equal(classerWorktree(tenu), 'propre+fusionné', 'sans `tenus`, rien ne le distingue — c’est CE processus qui le sait')
   // La casse et les séparateurs ne changent pas le verdict (Windows rend les deux formes).
-  assert.equal(classerWorktree({ chemin: 'C:\\dep\\.wt-tenu', fusionne: true }, { tenus: new Set(['c:/dep/.wt-tenu']) }), 'tenu')
+  assert.equal(classerWorktree({ chemin: '\\Dep\\.wt-tenu', fusionne: true }, { tenus: new Set(['/dep/.wt-tenu']) }), 'tenu')
 
   const ligne = ligneDInventaire({ ...tenu, classe: 'tenu', branche: 'chantier/tenu' })
   assert.deepEqual(ligne.split('\t').slice(0, 3), ['tenu', '/dep/.wt-tenu', 'chantier/tenu'])
@@ -129,7 +129,8 @@ test('arbresTenus : l’arbre du SCRIPT et celui qui contient le cwd — le plus
   // principal qui le contient.
   assert.deepEqual([...arbresTenus({ worktrees, racine: '/dep/.wt-42', cwd: '/dep/.wt-42x' })].sort(),
     ['/dep', '/dep/.wt-42'])
-  assert.deepEqual([...arbresTenus({ worktrees, racine: 'C:\\Dep\\.WT-42', cwd: 'C:\\Dep' })], ['c:/dep/.wt-42'])
+  // Séparateurs `\` et casse : les deux formes que Windows rend entrent dans le MÊME espace comparable.
+  assert.deepEqual([...arbresTenus({ worktrees, racine: '\\Dep\\.WT-42', cwd: '\\Dep' })].sort(), ['/dep', '/dep/.wt-42'])
 })
 
 test('un verdict de fusion INCONNU ne rend JAMAIS purgeable', () => {

@@ -210,14 +210,14 @@ test('arbrePrincipal : le PARENT du .git commun, séparateurs POSIX, casse CONSE
     assert.deepEqual(args, ['rev-parse', '--path-format=absolute', '--git-common-dir'])
     return { disponible: true, valeur: { status: 0, stdout, stderr: '' } }
   }
-  assert.deepEqual(arbrePrincipal('C:/x/Game/.wt-42', gitQuiRend('C:/x/Game/.git\n')),
-    { disponible: true, valeur: 'C:/x/Game' })
+  assert.deepEqual(arbrePrincipal('/x/Game/.wt-42', gitQuiRend('/x/Game/.git\n')),
+    { disponible: true, valeur: '/x/Game' })
   // La casse rendue sert de `cwd` et de préfixe de cible : l'abaisser casserait un chemin
   // case-sensible (les fixtures `mkdtemp` de ce dépôt en portent, et `test:ops` tourne sur ubuntu).
   assert.deepEqual(arbrePrincipal('/tmp/depot-Ab9Z/.wt-42', gitQuiRend('/tmp/depot-Ab9Z/.git')),
     { disponible: true, valeur: '/tmp/depot-Ab9Z' })
-  assert.deepEqual(arbrePrincipal('C:\\x\\Game', gitQuiRend('C:\\x\\Game\\.git\n')),
-    { disponible: true, valeur: 'C:/x/Game' })
+  assert.deepEqual(arbrePrincipal('\\x\\Game', gitQuiRend('\\x\\Game\\.git\n')),
+    { disponible: true, valeur: '/x/Game' })
 })
 
 test('arbrePrincipal : deux refus NOMMÉS, jamais un repli sur le cwd', () => {

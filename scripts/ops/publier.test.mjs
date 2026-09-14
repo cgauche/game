@@ -490,7 +490,7 @@ test('modeDuLog : l’ENFANT de `--detache` n’ouvre JAMAIS en troncature — l
 
 test('verdictDeSondeDuVerrou : les cinq cas de la sonde du verrou machine', () => {
   const debut = 1_000_000
-  const tenant = { pid: 4242, cwd: 'C:\\arbre', date: '2026-09-14T10:00:00.000Z' }
+  const tenant = { pid: 4242, cwd: '/arbre', date: '2026-09-14T10:00:00.000Z' }
   // 1. Aucun refus du verrou (rien joué encore, ou série jouée) : on (re)joue la série.
   assert.equal(verdictDeSondeDuVerrou({ status: null, tenantVivant: null, debut, maintenant: debut, timeoutMin: 60 }), 'rejouer')
   assert.equal(verdictDeSondeDuVerrou({ status: 0, tenantVivant: null, debut, maintenant: debut, timeoutMin: 60 }), 'rejouer')
