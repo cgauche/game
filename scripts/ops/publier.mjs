@@ -7,10 +7,14 @@
 // `jouer(ctx)`, `dejaFaite(ctx)`), rien d'autre. »
 //
 // RÉGIME (CLAUDE.md § Commandes) : commit FINAL → gates → push. Le train le joue dans l'ordre de
-// `ci.yml` : preflight (une saleté faite UNIQUEMENT de docs DÉRIVÉS ne refuse pas : l'étape `docs`
-// la commet — cas du hook `post-rewrite` après un rebase manuel), rebase sur origin/main, docs
-// dérivés régénérés — la plage sans source de doc saute la RÉGÉNÉRATION, jamais le COMMIT — gates en
-// SÉRIE, push `HEAD:main` par la porte pre-push, sonde de la course CI, pilotage des tickets cités.
+// `ci.yml`, en NEUF étapes — preflight, derives, rebase, docs, gates, push, ci, pilotage, fin :
+// preflight (une saleté faite UNIQUEMENT de docs DÉRIVÉS ne refuse pas : l'étape `derives` la
+// commet), derives (les docs dérivés laissés non commités par le hook `post-rewrite` d'un rebase
+// MANUEL sont commis AVANT le rebase — mesuré le 2026-09-14 : `git rebase origin/main` refuse de
+// DÉMARRER sur un arbre sale, « cannot rebase: You have unstaged changes »), rebase sur
+// origin/main, docs dérivés régénérés — la plage sans source de doc saute la RÉGÉNÉRATION, jamais
+// le COMMIT — gates en SÉRIE, push `HEAD:main` par la porte pre-push, sonde de la course CI,
+// pilotage des tickets cités, fin.
 //
 // INTERDITS, gravés — `commandeInterdite` les refuse AVANT tout spawn, et ce fichier ne porte aucun
 // `gh issue close` (la fermeture appartient au job `fermetures` de la CI) :
@@ -28,7 +32,7 @@ import { closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, r
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { estAncetre, fetchOrigin, lireGit, sortieOuNull, urlOrigineAcceptee } from '../guards/lib/gitPorte.mjs'
+import { estAncetre, fetchOrigin, lireGit, raisonCourte, sortieOuNull, urlOrigineAcceptee } from '../guards/lib/gitPorte.mjs'
 import { ANNULEE, ROUGES, coursesCiDeMain } from '../guards/lib/coursesCi.mjs'
 import { clesDeContenu, gatesRequises, lireJustificatif, motifDeRefus } from '../guards/lib/justificatif.mjs'
 import { numerosCites, numerosFermes } from '../guards/lib/fermetures.mjs'
@@ -321,6 +325,27 @@ export function commandeInterdite(args) {
   return null
 }
 
+/** Motif du commit de dérivés de l'étape `derives` — ceux que le hook `post-rewrite` a laissés. */
+export const MOTIF_POST_REWRITE = 'docs dérivés laissés non commités par le hook post-rewrite d’un rebase manuel'
+
+/** Motif du commit de dérivés de l'étape `docs` — ceux que la régénération du train vient d'écrire. */
+export const MOTIF_APRES_REBASE = 'docs dérivés régénérés après rebase sur origin/main (post-rewrite)'
+
+/** Refus commun aux deux commits de dérivés : sans `#N`, la porte de commit refuserait le message. */
+export const REFUS_SANS_TICKET =
+  'aucun `#N` cité par la plage : le commit `chore(docs)` n’aurait aucun ticket, et la porte de commit le refuse — cite un ticket dans un commit de la plage'
+
+/**
+ * La PLAGE dont les `#N` légitiment un commit de dérivés. PURE. Le journal la porte dès que l'étape
+ * `rebase` a rendu ; AVANT elle (étape `derives`), `origin/main..HEAD` la remplace — `origin/main`
+ * vient d'être fetché par la préflight.
+ */
+export const plageDeCitations = (journal) =>
+  journal?.base && journal?.tete ? `${journal.base}..${journal.tete}` : 'origin/main..HEAD'
+
+/** Message du commit de docs dérivés. PURE — une seule forme pour les deux étapes qui commettent. */
+export const messageDeDerives = (numeros, motif) => `chore(docs): ${numeros.map((n) => `refs #${n}`).join(' ')} — ${motif}\n`
+
 /** Première ligne d'un message de commit, bornée. PURE. */
 export const titreDeCommit = (message, max = 120) => {
   const ligne = String(message ?? '').split('\n')[0].trim()
@@ -409,6 +434,33 @@ function fichierTemporaire(prefixe, contenu) {
   return chemin
 }
 
+/** Les `#N` cités par la plage de `journal` (ou `origin/main..HEAD` avant le rebase), dédupliqués. */
+function numerosDeLaPlage(racine, journal) {
+  return [...new Set(commitsDeLaPlage(plageDeCitations(journal), racine).flatMap((c) => numerosCites(c.message)))]
+}
+
+/**
+ * COMMIT de docs DÉRIVÉS : stage des chemins EXPLICITES, message qui cite les tickets de la plage,
+ * `journal.tete` avancé. UNE implémentation, deux appelants (`derives` avant le rebase, `docs`
+ * après) — le geste est le même, seul le MOTIF change.
+ * @param {object} ctx @param {{chemins:string[], numeros:string[], motif:string, journal:object}} p
+ * @returns {{ok:boolean, raison?:string, detail?:object, dit?:string}}
+ */
+function commettreDerives(ctx, { chemins, numeros, motif, journal }) {
+  const fichier = fichierTemporaire('msg', messageDeDerives(numeros, motif))
+  try {
+    const add = ctx.git(['add', '--', ...chemins])
+    if (!add.disponible || add.absent || add.valeur.status !== 0) return { ok: false, raison: `\`git add\` a échoué sur ${chemins.length} chemin(s)` }
+    const commit = ctx.git(['commit', '-F', fichier, '--', ...chemins])
+    if (!commit.disponible || commit.absent || commit.valeur.status !== 0)
+      return { ok: false, raison: `\`git commit\` des docs a échoué : ${(commit.raison ?? commit.valeur?.stderr ?? '').toString().trim().slice(0, 400)}` }
+  } finally {
+    rmSync(fichier, { force: true })
+  }
+  journal.tete = ctx.tete
+  return { ok: true, detail: { chemins, numeros }, dit: `${chemins.length} doc(s) dérivé(s) commis — tête ${journal.tete.slice(0, 9)}` }
+}
+
 /** Gates requises encore SANS justificatif pour `sha`, avec leur motif. */
 function gatesManquantes(racine, sha) {
   const cles = clesDeContenu(sha, { cwd: racine })
@@ -484,7 +536,7 @@ export const ETAPES = [
           raison:
             `arbre NON COMMITÉ (${manuscrits.length}) — on ne publie que du committé :\n` +
             `${manuscrits.map((s) => `    ${s}`).join('\n')}` +
-            (derives.length ? `\n  (et ${derives.length} doc(s) dérivé(s) régénéré(s) que l’étape docs aurait commis)` : ''),
+            (derives.length ? `\n  (et ${derives.length} doc(s) dérivé(s) régénéré(s) que l’étape derives aurait commis)` : ''),
         }
       const origine = lu(['remote', 'get-url', 'origin'], racine)
       if (!urlOrigineAcceptee(origine)) return { ok: false, raison: `origin étranger au dépôt : ${origine ?? 'illisible'}` }
@@ -493,9 +545,34 @@ export const ETAPES = [
       const outil = resoudreOutilLocal(racine, 'vitest', 'vitest')
       if (outil.refus) return { ok: false, raison: outil.refus }
       const reste = derives.length
-        ? `${derives.length} doc(s) dérivé(s) régénéré(s) non commités (post-rewrite) : l’étape docs les commet`
+        ? `${derives.length} doc(s) dérivé(s) régénéré(s) non commités (post-rewrite) : l’étape derives les commet`
         : 'arbre propre'
       return { ok: true, detail: { derivesSales: derives }, dit: `${reste}, origin consultable, outillage local posé` }
+    },
+  },
+  {
+    // Les docs DÉRIVÉS sales sont commis ICI, AVANT le rebase. Mesuré (2026-09-14, 2ᵉ train réel) :
+    // `git rebase origin/main` REFUSE de démarrer sur un arbre sale (« cannot rebase: You have
+    // unstaged changes ») — tolérer la saleté à la préflight sans la committer avant le rebase ne
+    // faisait que déplacer le refus d'une étape.
+    nom: 'derives',
+    dejaFaite(ctx) {
+      return partitionSales(cheminsSales(ctx.racine)).derives.length === 0
+    },
+    jouer(ctx, journal) {
+      const { racine } = ctx
+      const { derives, manuscrits } = partitionSales(cheminsSales(racine))
+      if (manuscrits.length)
+        return {
+          ok: false,
+          raison:
+            `MANUSCRIT(S) sale(s) que la préflight venait de refuser — l’arbre a bougé depuis :\n` +
+            manuscrits.map((c) => `    ${c}`).join('\n'),
+        }
+      if (!derives.length) return { ok: true, dit: 'aucun doc dérivé sale' }
+      const numeros = numerosDeLaPlage(racine, journal)
+      if (!numeros.length) return { ok: false, raison: REFUS_SANS_TICKET }
+      return commettreDerives(ctx, { chemins: derives, numeros, motif: MOTIF_POST_REWRITE, journal })
     },
   },
   {
@@ -508,11 +585,22 @@ export const ETAPES = [
       const teteAvant = ctx.tete
       const vu = ctx.git(['rebase', 'origin/main'])
       if (!vu.disponible || vu.absent || vu.valeur.status !== 0) {
-        const conflits = lu(['diff', '--name-only', '--diff-filter=U'], racine) ?? ''
+        const conflits = (lu(['diff', '--name-only', '--diff-filter=U'], racine) ?? '').split('\n').filter(Boolean)
+        const entame = ['rebase-merge', 'rebase-apply'].some((nom) => {
+          const chemin = lu(['rev-parse', '--git-path', nom], racine)
+          return Boolean(chemin) && existsSync(resolve(racine, chemin))
+        })
+        // Un rebase qui REFUSE DE DÉMARRER (arbre sale, HEAD détaché…) n'a rien entamé : `--abort`
+        // y rendrait « No rebase in progress » et masquerait la vraie raison. Mesuré (2026-09-14) :
+        // tout échec était classé CONFLIT, sans un seul fichier à nommer.
+        if (!conflits.length && !entame) {
+          const brut = vu.disponible && !vu.absent ? `${vu.valeur.stderr ?? ''}\n${vu.valeur.stdout ?? ''}` : vu.raison
+          return { ok: false, raison: `rebase sur origin/main REFUSÉ (aucun rebase entamé) : ${raisonCourte(brut)}` }
+        }
         ctx.git(['rebase', '--abort'])
         return {
           ok: false,
-          raison: `rebase sur origin/main en CONFLIT (abandonné)${conflits ? ` — fichiers :\n${conflits.split('\n').map((f) => `    ${f}`).join('\n')}` : ''}`,
+          raison: `rebase sur origin/main en CONFLIT (abandonné)${conflits.length ? ` — fichiers :\n${conflits.map((f) => `    ${f}`).join('\n')}` : ''}`,
         }
       }
       journal.base = lu(['rev-parse', 'origin/main'], racine)
@@ -571,22 +659,9 @@ export const ETAPES = [
       if (manuscrits.length)
         return { ok: false, raison: `doc MANUSCRIT modifié par la régénération :\n${manuscrits.map((c) => `    ${c}`).join('\n')}` }
       if (!chemins.length) return { ok: true, dit: 'docs dérivés déjà à jour : rien à committer' }
-      const numeros = [...new Set(commitsDeLaPlage(`${journal.base}..${journal.tete}`, racine).flatMap((c) => numerosCites(c.message)))]
-      if (!numeros.length)
-        return { ok: false, raison: 'aucun `#N` cité par la plage : le commit `chore(docs)` n’aurait aucun ticket, et la porte de commit le refuse — cite un ticket dans un commit de la plage' }
-      const message = `chore(docs): ${numeros.map((n) => `refs #${n}`).join(' ')} — docs dérivés régénérés après rebase sur origin/main (post-rewrite)\n`
-      const fichier = fichierTemporaire('msg', message)
-      try {
-        const add = ctx.git(['add', '--', ...chemins])
-        if (!add.disponible || add.absent || add.valeur.status !== 0) return { ok: false, raison: `\`git add\` a échoué sur ${chemins.length} chemin(s)` }
-        const commit = ctx.git(['commit', '-F', fichier, '--', ...chemins])
-        if (!commit.disponible || commit.absent || commit.valeur.status !== 0)
-          return { ok: false, raison: `\`git commit\` des docs a échoué : ${(commit.raison ?? commit.valeur?.stderr ?? '').toString().trim().slice(0, 400)}` }
-      } finally {
-        rmSync(fichier, { force: true })
-      }
-      journal.tete = ctx.tete
-      return { ok: true, detail: { chemins, numeros }, dit: `${chemins.length} doc(s) dérivé(s) commité(s) — tête ${journal.tete.slice(0, 9)}` }
+      const numeros = numerosDeLaPlage(racine, journal)
+      if (!numeros.length) return { ok: false, raison: REFUS_SANS_TICKET }
+      return commettreDerives(ctx, { chemins, numeros, motif: MOTIF_APRES_REBASE, journal })
     },
   },
   {

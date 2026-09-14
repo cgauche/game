@@ -19,10 +19,12 @@ import {
   journalInitial,
   journalVide,
   marquePublication,
+  messageDeDerives,
   modeDuLog,
   nomDeJournal,
   optionsDe,
   partitionSales,
+  plageDeCitations,
   planDeReprise,
   sansOptionsGlobales,
   titreDeCommit,
@@ -64,7 +66,10 @@ test('planDeReprise : journal vide → la première étape', () => {
 })
 
 test('planDeReprise : la première étape NON verte', () => {
-  const journal = { tete: 'aaa', etapes: { preflight: { etat: 'vert', tete: 'aaa' }, rebase: { etat: 'rouge', tete: 'aaa' } } }
+  const journal = {
+    tete: 'aaa',
+    etapes: { preflight: { etat: 'vert', tete: 'aaa' }, derives: { etat: 'vert', tete: 'aaa' }, rebase: { etat: 'rouge', tete: 'aaa' } },
+  }
   assert.equal(planDeReprise(journal, NOMS), 'rebase')
 })
 
@@ -328,8 +333,29 @@ test('la SOURCE du train ne porte AUCUN geste de fermeture — la CI ferme', () 
   assert.equal(/issue\s+close/.test(src.replace(/^\s*(\/\/|\*|\/\*).*$/gm, '')), false)
 })
 
-test('la table des ÉTAPES nomme les huit étapes, dans l’ordre de ci.yml', () => {
-  assert.deepEqual(NOMS, ['preflight', 'rebase', 'docs', 'gates', 'push', 'ci', 'pilotage', 'fin'])
+test('la table des ÉTAPES nomme les neuf étapes, dans l’ordre de ci.yml', () => {
+  // `derives` vient AVANT `rebase` : mesuré le 2026-09-14, `git rebase origin/main` refuse de
+  // démarrer sur un arbre sale, donc les dérivés laissés par le hook `post-rewrite` se commettent
+  // avant lui — les tolérer à la préflight ne suffisait pas.
+  assert.deepEqual(NOMS, ['preflight', 'derives', 'rebase', 'docs', 'gates', 'push', 'ci', 'pilotage', 'fin'])
+})
+
+// ── messageDeDerives / plageDeCitations ──────────────────────────────────────────
+
+test('messageDeDerives : UNE forme de message pour les deux étapes qui commettent des dérivés', () => {
+  assert.equal(messageDeDerives(['1736'], 'un motif'), 'chore(docs): refs #1736 — un motif\n')
+  // Plusieurs tickets cités par la plage : chacun porte son `refs`, la porte de commit les lit tous.
+  assert.equal(messageDeDerives(['1736', '1384'], 'un motif'), 'chore(docs): refs #1736 refs #1384 — un motif\n')
+  // Le MOTIF est le seul écart entre les deux appelants.
+  assert.match(messageDeDerives(['1'], 'docs dérivés laissés non commités'), / — docs dérivés laissés non commités\n$/)
+})
+
+test('plageDeCitations : le journal quand il PORTE la plage, `origin/main..HEAD` avant le rebase', () => {
+  assert.equal(plageDeCitations({ base: 'b'.repeat(40), tete: 'a'.repeat(40) }), `${'b'.repeat(40)}..${'a'.repeat(40)}`)
+  // L'étape `derives` joue AVANT `rebase` : le journal n'a encore ni base ni tête.
+  assert.equal(plageDeCitations(journalVide('c')), 'origin/main..HEAD')
+  assert.equal(plageDeCitations({ base: 'b'.repeat(40), tete: null }), 'origin/main..HEAD')
+  assert.equal(plageDeCitations(undefined), 'origin/main..HEAD')
 })
 
 // ── journalInitial / gatesRejouees ───────────────────────────────────────────────
