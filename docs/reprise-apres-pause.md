@@ -99,7 +99,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 
 - `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
 - `src/data/` — données app-owned (122 fichiers JSON commités, éditables au Compendium).
-- Les gardes de données : `scripts/guards/validate-data.mts` + 106 modules
+- Les gardes de données : `scripts/guards/validate-data.mts` + 108 modules
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
   `scripts/guards/lib/labelLogic.mjs`).
@@ -192,4 +192,4 @@ porte à chaque push est `.github/workflows/ci.yml` (« CI », push, pull_reques
 
 La publication locale suit le même ordre que `ci.yml` : `npm run ops:publier` joue rebase, docs
 dérivés, gates, push, sonde CI et pilotage, et refuse à la première étape rouge en la nommant.
-<!-- sources-empreinte: fddb26598dc5a3e7d44028528f6ce057512d1522 (13 fichiers, 9 dossiers) corps: cd023beaa56f8e82d083fd92c0ec590f617bda44 -->
+<!-- sources-empreinte: ade1630d916c3913d39282920f37c89dc529577f (13 fichiers, 9 dossiers) corps: 39e185d15beed1a69def5b045f86a6dda0c3adbb -->

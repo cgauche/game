@@ -25,9 +25,9 @@ mesure du canal label (qui n'est PAS la cause) : en-tête de `scripts/docs/build
 
 ## Catalogues MESURÉS
 
-> Le stock cliqueté groupe les masses par LIVRE (`ENTITY_ORPHAN_FAMILIES`) ; ce rapport, lui,
-> reste NOMINATIF entrée par entrée — une orpheline câblée et une autre créée laissent le plafond
-> de famille inchangé, mais se voient au DIFF des listes ci-dessous.
+> Le stock cliqueté (`ENTITY_ORPHAN_RATCHET`) porte les MÊMES entrées, sous la forme
+> `{ fichier, ref, occurrence }` ; ce rapport en est la LECTURE, jamais la garde — un `.md`
+> généré ne rougit pas.
 
 | Catalogue | Entités | Orphelines | Taux |
 |---|---|---|---|
@@ -421,4 +421,4 @@ mesure du canal label (qui n'est PAS la cause) : en-tête de `scripts/docs/build
 - `p-tarix-celui-qui-ecrit` — P'tarix, Celui qui écrit
 - `xirat-p-celui-qui-lit` — Xirat'p, Celui qui lit
 
-<!-- sources-empreinte: 41846d6e12645bea94cf5353ec2a5eb62529989e (2079 fichiers, 134 dossiers) corps: a8ef7ace89c49c3c1ac36d0fcd1e20e9ed51c4d5 -->
+<!-- sources-empreinte: 8511f0c33fc2264c7f9a7a0b600552fb5a14281a (2079 fichiers, 134 dossiers) corps: b40f37203a41cb4a0c801225da39879943323e87 -->
