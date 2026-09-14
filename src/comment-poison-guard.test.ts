@@ -10,6 +10,7 @@ import {
   tombstonesIn,
   scanTombstones,
   untaggedExcuseMatch,
+  scanExcuses,
   legacyVocabIn,
   scanLegacyVocab,
   scanRawClaims,
@@ -453,6 +454,52 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
     expect(untaggedExcuseMatch('// arbitrage utilisateur 2026-08-24 : la raison vit au survol.')).toBeNull();
     // Le report ASSUMÉ par l'utilisateur reste admis, comme tout le volet excuses.
     expect(untaggedExcuseMatch("// en attente d'arbitrage [entériné 2026-09-02]")).toBeNull();
+  });
+
+  it('site d’ORIGINE (#1732) : la phrase est vue À CHEVAL sur deux lignes d’un bloc enroulé', () => {
+    // VERBATIM des lignes 16-17 de `src/gameIso/stage/AreteOverlay.tsx` au commit 2a27b8b60 : le bloc
+    // s'enroule à ~100 colonnes, donc la phrase porte son marqueur sur la ligne SUIVANTE, derrière le
+    // préfixe de continuation. C'est l'unité PHRASE qui la rend visible, pas la ligne.
+    const bloc = [
+      '/**',
+      " * et non par la cible. Une seule chaîne d'activation, donc, et le nom lisible en attendant l'infobulle",
+      ' * partagée (lot 3).',
+      ' */',
+    ].join('\n');
+    const trouve = scanExcuses('src/gameIso/stage/AreteOverlay.tsx', bloc);
+    expect(trouve).toHaveLength(1);
+    expect(trouve[0].line).toBe(2); // la ligne de la LOCUTION, pas celle du marqueur
+    expect(trouve[0].detail).toContain('en attendant');
+  });
+
+  it('locution d’ATTENTE + MARQUEUR DE DETTE = excuse ; le vocabulaire de FLUX reste hors motif (#1732)', () => {
+    expect(untaggedExcuseMatch("// rendu ici en attendant la primitive partagée")).not.toBeNull();
+    expect(untaggedExcuseMatch("// champ figé dans l'attente du registre canonique")).not.toBeNull();
+    expect(untaggedExcuseMatch("// champ figé dans l’attente de la migration")).not.toBeNull();
+    // Le marqueur est vu OÙ QU'IL TOMBE DANS LA PHRASE : derrière une virgule, derrière une
+    // subordonnée, derrière un retour de ligne préfixé.
+    expect(untaggedExcuseMatch('// rendu ici en attendant, la primitive partagée arrive au lot 3.')).not.toBeNull();
+    expect(untaggedExcuseMatch("// `<title>` natif en attendant qu'une infobulle partagée existe.")).not.toBeNull();
+    expect(untaggedExcuseMatch("// rendu ici dans l'attente d'avoir la primitive partagée.")).not.toBeNull();
+    expect(untaggedExcuseMatch('// rendu ici en attendant la\n// primitive partagée.')).not.toBeNull();
+    // Le report ASSUMÉ par l'utilisateur reste admis, comme tout le volet excuses.
+    expect(untaggedExcuseMatch('// rendu ici en attendant la primitive partagée [entériné 2026-09-14]')).toBeNull();
+    // Contrôles négatifs (1) — le VOCABULAIRE DE FLUX du jeu : la chose attendue est une pièce d'état de
+    // partie (un jet, un tour, un Round, un résultat), jamais un artefact de chantier.
+    expect(untaggedExcuseMatch('// la cible reste GELÉE en attendant le jet adverse.')).toBeNull();
+    expect(untaggedExcuseMatch('// on ne purge rien en attendant la fin du round.')).toBeNull();
+    expect(untaggedExcuseMatch("// le pending vit dans l'attente du résultat du frappeur.")).toBeNull();
+    expect(untaggedExcuseMatch('// le combattant garde sa posture en attendant son tour.')).toBeNull();
+    expect(untaggedExcuseMatch("// l'ancre est jetée en attendant l'accalmie.")).toBeNull();
+    expect(untaggedExcuseMatch('// le groupe refait à neuf ne laisse aucun jumeau orphelin en attendant les corps suivants.')).toBeNull();
+    // Contrôle négatif (2) — la fenêtre est la PHRASE : un marqueur de la phrase SUIVANTE ne fait pas
+    // d'une phrase de flux une dette (c'est ce que coûterait le bloc entier comme fenêtre).
+    expect(untaggedExcuseMatch('// la cible reste GELÉE en attendant le jet adverse. La primitive partagée arrive au lot 3.')).toBeNull();
+    expect(untaggedExcuseMatch('// le pending vit dans l’attente du résultat ; la migration viendra avec son lot 3.')).toBeNull();
+    // Contrôles négatifs (3) — les 3 sites légitimes du corpus mesurés le 2026-09-14 (verbatims).
+    expect(untaggedExcuseMatch('/** Enregistre une relève et rend le matériau nu en attendant. */')).toBeNull();
+    expect(untaggedExcuseMatch("// c'est son PÉRIMÈTRE : il ne doit pas s'étendre à un septième document en attendant.")).toBeNull();
+    expect(untaggedExcuseMatch('// `dominos` tient la place en attendant, et ce n’est PAS le même Test.')).toBeNull();
   });
 
   it('faux positif écarté : une phrase de DONNÉE qui dit « séparément »/« ailleurs » décrit le découpage RÉEL', () => {

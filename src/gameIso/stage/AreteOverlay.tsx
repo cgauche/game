@@ -13,8 +13,8 @@
  * survol, qu'un élément sans hit-test ne montrerait jamais — le seul trait qui le porte est donc
  * hit-testable (`pointerEvents="visibleStroke"`), sans handler : l'événement bulle jusqu'au SVG racine
  * du stage (`gameIso/SurcoucheIso.tsx`, porteur de `useStagePointer.handlers`), qui résout par le PIXEL
- * et non par la cible. Une seule chaîne d'activation, donc, et le nom lisible en attendant l'infobulle
- * partagée (lot 3).
+ * et non par la cible. Une seule chaîne d'activation, donc, et le nom de l'arête lisible au survol, rendu
+ * par ce `<title>` natif.
  *
  * Sa population EST celle du dériveur (`state/aretes.ts:aretesUtilisables`) : il ne refiltre ni la
  * couche active ni le brouillard, sinon peintre et chaîne offriraient deux gestes différents.

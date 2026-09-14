@@ -491,6 +491,39 @@ const ALIBI_PERIMETRE = '(était|étaient) hors périmètre|hors périmètre le 
 // légitimes mesurés le 2026-09-02). Comme les familles ci-dessus, la forme LITTÉRALE n'est pas
 // écrite ici (elle mordrait sur ce commentaire même) : elle est plantée dans le test (#828).
 const ATTENTE_ARBITRAGE = 'en attente d' + APOS + '\\s*(un )?arbitrage';
+// Dette laissée à une LOCUTION D'ATTENTE qui NOMME la chose future (#1732, site
+// `src/gameIso/stage/AreteOverlay.tsx`, muet pendant deux paliers) : le commentaire décrit un état à
+// venir au lieu de ce que le code rend — excuse au sens de 6b.
+// CE QUE LE MOTIF FAIT, exactement : une des trois locutions d'attente (plantées en littéral dans le
+// test, #828 — ce module est scanné par sa propre garde) suivie, DANS LA MÊME PHRASE, d'un MARQUEUR DE
+// DETTE (`MARQUEUR_ATTENTE` ci-dessous) — la chose future est un artefact de chantier : une primitive,
+// une mutualisation, une forme canonique, une factorisation, un lot numéroté, un ticket, une migration,
+// une refonte.
+// L'UNITÉ EST LA PHRASE, ni la ligne ni le bloc : un bloc s'enroule à ~100 colonnes, donc une phrase y
+// tombe couramment sur deux lignes (c'est le cas du site d'origine, planté en littéral dans le test) ;
+// la fenêtre traverse donc le retour de ligne ET le préfixe de continuation (` * ` d'un bloc, `//` de
+// deux lignes jointes par `extractComments`), mais s'arrête au premier `.` `;` `!` `?`. Le bloc ENTIER
+// comme fenêtre rapporterait des faux positifs de flux (une phrase d'état de partie suivie, phrase
+// suivante, d'un mot de chantier) : contrôle négatif planté dans le test.
+// POURQUOI LE MARQUEUR et pas la locution seule : sur le corpus MESURÉ (les deux racines, 2026-09-14),
+// ces locutions servent massivement le vocabulaire de FLUX du jeu — un pending, un effet gelé, un jet
+// adverse, une offre de prolongation — et la chose attendue y est une pièce d'état de partie, jamais un
+// artefact de chantier. C'est le test de CORPUS qui tient ce constat (aucun cardinal ici : il mentirait
+// dès le prochain commit).
+// ANGLE MORT (1) : une dette dont la chose future n'est PAS nommée avec ces mots (un renvoi à un nom
+// propre de module, une périphrase) passe — le motif ne mesure qu'un vocabulaire.
+// ANGLE MORT (2) : la frontière de phrase est LEXICALE, donc toute ponctuation de CODE rencontrée entre
+// la locution et le marqueur ferme la fenêtre — le point d'un chemin de fichier ou d'une abréviation, le
+// point d'un décimal, le point-virgule qui sépare deux propositions d'une même phrase. Une dette qui
+// nomme son artefact APRÈS une telle ponctuation passe : mesuré le 2026-09-14, 4 dettes forgées sur 7.
+// La frontière de phrase SYNTAXIQUE est un geste de design à part, qui a son ticket dédié.
+const MARQUEUR_ATTENTE =
+  '(primitives?|partagée?s?|mutualis\\w*|canoniqu\\w*|factoris\\w*|lots?\\s+\\d|#\\d+|migration|refonte)';
+const LOCUTION_ATTENTE = '(en attendant|dans l' + APOS + 'attente d|en attente d)';
+// Fenêtre-PHRASE : tout sauf une ponctuation forte, et le saut de ligne n'est franchi qu'avec son
+// préfixe de continuation de commentaire.
+const SUITE_DE_PHRASE = '(?:[^.;!?\\n]|\\n[ \\t]*(?:\\*|//)?[ \\t]*){0,80}?';
+const ATTENTE_DE_X = LOCUTION_ATTENTE + SUITE_DE_PHRASE + MARQUEUR_ATTENTE;
 export const EXCUSE_RX = new RegExp(
   "(assume|épargn[ée]\\w*(?!\\w)(?!\\s+(par|pour)\\s)|pour l'instant|" +
     REPORT_AILLEURS +
@@ -500,6 +533,8 @@ export const EXCUSE_RX = new RegExp(
     ALIBI_PERIMETRE +
     '|' +
     ATTENTE_ARBITRAGE +
+    '|' +
+    ATTENTE_DE_X +
     '|pas encore (?!' +
     GAME_STATE_PARTICIPLE +
     ')|(?<!\\b(accordée?s?|prime|insensible)\\s)temporairement(?!\\s+(insensible|accordé|accordée|accordées|prime)))',
