@@ -206,6 +206,26 @@ commit** (Source corrigée + réfs recalées + adresses recalées + fiches `Impl
    hors bornes.
 6. `npm run gates && git commit` — tout dans le même commit.
 
+### Défaut de table → geste
+
+Les tables sont là où Marker casse le plus, et une table cassée est une table **inadressable** (une
+`descRef` de cellule vise une ligne par sa CLÉ et une colonne par son EN-TÊTE). L'inventaire est
+MESURÉ et cliqueté : `node scripts/raw/check-source-tables.mjs` — une entrée par site dans
+`scripts/raw/source-tables-stock.json`, un site hors stock comme une entrée sans site sont rouges.
+Corriger un site le fait disparaître du stock ; **retirer son entrée est le geste qui le solde.**
+
+| Défaut (famille du détecteur) | À quoi ça ressemble | Geste au `.md` |
+|---|---|---|
+| `br-litteral` | `\| Gagnez 3 États<br>Assourdi \|` | le `<br>` devient une **espace** (jamais ` ; ` ni ` — `) : c'est la seule lecture recollable au PDF, qui imprime une simple césure de cellule |
+| `span-colle` | `<span … data-folio="7"></span>\| Lancer \| …` | le marqueur passe **seul sur la ligne précédente** (ordre des folios conservé) — collé, il fait manquer la ligne à la table entière |
+| `donnee-en-tete` | une table dont les « en-têtes » sont `\| 81-85 \| Bouche explosée \|` | c'est la **continuation** de la table précédente coupée par un saut de page : **fusionner** les deux blocs sous les en-têtes réels |
+| `cle-de-ligne-ambigue` | deux tables d'une même section partagent la clé `01-10` | restituer les **headings IMPRIMÉS** qui séparent les tables au livre (une section par localisation, par domaine…) — jamais inventer un titre |
+| catégorie en mauvaise colonne | `ARMES D'HAST` en 5ᵉ colonne | la ramener en **colonne 1**, comme le bandeau intérieur du PDF — la table reste **UNE et entière**, jamais découpée en headings |
+| bandeau de titre en MAJUSCULES | `\| \| TABLEAU DES MOUVEMENTS \| \|` devant les en-têtes | **RIEN** : le parseur l'absorbe (`parseTable` → `titre`), les en-têtes réels remontent tout seuls |
+| `banniere-suspecte`, bandeau **non majuscule** ou d'**une seule lettre** | `\| Effet \| \|` (en-tête réel d'une table à UNE colonne), `\| A \| \|` (séparateur d'index), `\| \| \| 159 \|` (folio capté) | **trier au PDF, un par un** : en-tête réel → on n'y touche pas ; folio capté ou séparateur d'index → se retire ou se sort de la table. Jamais d'élargissement de la garde, qui sauterait un en-tête réel |
+| `banniere-suspecte`, bandeau **MAJUSCULE sans rangée de donnée** (titres de statbloc PNJ et leurs rubriques) | `\| \| ISABELLA — PROPHÈTE (BRONZE 4) \| \| \|`, `\| COMPÉTENCES DE BASE \| \| \|` | si le livre imprime ce libellé comme un **TITRE** au-dessus du bloc, il devient un **heading `####` tel qu'imprimé**, au-dessus de la table — jamais un titre inventé. Le corpus le prouve pour une partie d'entre eux : `ZI 14 - Expéditions prévues.md:66` porte déjà `#### COMPÉTENCES DE BASE` là où `:234` rend le même libellé en rangée (14 des 63 bandeaux à ≤ 2 rangées sont dans ce cas, mesuré). Pour les autres (`ISABELLA — PROPHÈTE…`, jamais heading ailleurs) : **trier au PDF** |
+| `banniere-suspecte`, bandeau **MAJUSCULE devant une table SANS en-têtes** | `46 - Les règles magiques.md:34-36` : `TABLEAU DES INCANTATIONS IMPARFAITES MINEURES` puis directement `\| 01-05 \| Signe de Sorcière… \|` | **restituer la rangée d'en-têtes telle qu'imprimée au PDF**, entre le bandeau et la première donnée. Le parseur REFUSE d'absorber ce bandeau (`estCleDePlage(headers[0])`) : l'absorber promouvrait la fourchette `01-05` en en-tête et ferait perdre une rangée à la table |
+
 Ce que chaque outil voit, et ce qu'il ne voit **pas** :
 
 | Outil | Ce qu'il juge | Son angle mort |
@@ -237,7 +257,13 @@ sert d'arbitre — jamais comme source de la donnée affichée, qui reste recoll
   toute extension de `src/engine`/`src/data` qui cite le nouveau livre.
 - `node scripts/raw/reanchor.mjs` (+ `--apply`, one-shot `--remap` avant commit de la Source) —
   citations verbatim de l'Atlas alignées sur la Source courante.
-- `npx vitest run src/data/no-html-in-prose.test.ts` — aucune description collée en HTML.
+- `npx vitest run src/data/no-html-in-prose.test.ts` — aucune description collée en HTML. Son prédicat
+  `HTML_TAG` vit dans `src/data/source/normalize.ts` et sert AUSSI au volet E de
+  `src/data/prose-resolution.test.ts` : la prose **adressée** ne rend pas plus de HTML que la prose
+  copiée — un `<br>` resté dans une cellule du `Source/` ne peut donc pas atteindre le joueur.
+- `node scripts/raw/check-source-tables.mjs` — tables cassées du `Source/` (cinq familles, stock
+  nominatif décroissant `scripts/raw/source-tables-stock.json`) ; le geste est le tableau
+  « défaut de table → geste » du §7. `--ecrire-stock` régénère le stock après une correction.
 - `node scripts/source/reparer-adresses.mjs` (+ `--apply`, `--dataset <nom>`, `--depuis <ref-git>`) —
   adresses `descRef` recalées après une correction d'extraction ; sortie 1 tant qu'une adresse reste
   cassée. La garde qui les JUGE est `src/data/prose-resolution.test.ts`.

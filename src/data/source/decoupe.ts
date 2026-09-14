@@ -286,21 +286,86 @@ function checkSum(frag: Fragment, md: string, ou: string): ErreurResolution | nu
   return { error: 'empreinte-divergente', detail: `${ou} : sum=${frag.sum} attendu, texte résolu=${got}` };
 }
 
-/** Parse un bloc-table markdown. Rend `null` si le bloc n'est pas une table. */
-function parseTable(md: string): { headers: string[]; rows: string[][] } | null {
-  const lignes = md.split('\n').filter((l) => TABLE_LINE.test(l));
-  if (lignes.length < 2) return null;
-  const cells = (l: string) =>
-    l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
-  const isSeparator = (l: string) => cells(l).every((c) => /^:?-{2,}:?$/.test(c));
-  const headers = cells(lignes[0]);
-  const rows = lignes.slice(1).filter((l) => !isSeparator(l)).map(cells);
-  return { headers, rows };
+/** Cellules d'une ligne de table markdown (barres de bord retirées, cellules détourées). */
+const cellulesDe = (l: string): string[] =>
+  l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
+
+/** Texte d'une rangée-BANNIÈRE — ≥ 2 cellules dont exactement UNE est non vide —, ou `null`. */
+function texteDeBanniere(cells: string[]): string | null {
+  const pleines = cells.filter((c) => c !== '');
+  return cells.length >= 2 && pleines.length === 1 ? pleines[0] : null;
 }
 
+/** Texte TOUT EN MAJUSCULES d'au moins deux lettres (l'habillage markdown ne compte pas). */
+function estMajuscule(s: string): boolean {
+  const lettres = [...cleanTitle(s)].filter((c) => /\p{L}/u.test(c));
+  return lettres.length >= 2 && lettres.every((c) => c === c.toUpperCase() && c !== c.toLowerCase());
+}
+
+/** Cette clé de ligne est-elle trop POSITIONNELLE pour adresser (fourchette d100, numéro nu) ?
+ *  Prédicat UNIQUE : `cellRefFor` s'en sert pour reléguer ces clés en dernier recours, `parseTable`
+ *  pour refuser d'absorber une bannière devant une table SANS en-têtes, et le détecteur de tables
+ *  cassées pour reconnaître une continuation de table après saut de page (une telle clé en
+ *  `headers[0]` n'est pas un en-tête). */
+export const estCleDePlage = (s: string): boolean => RANGE_KEY.test(s);
+
+/** Une table parsée : ses en-têtes, ses rangées de données, et ce que sa PREMIÈRE ligne portait. */
+export interface TableParse {
+  headers: string[];
+  rows: string[][];
+  /** Bannière ABSORBÉE : le titre imprimé en bandeau devant les en-têtes. */
+  titre?: string;
+  /** Bannière RECONNUE mais NON absorbée (texte non majuscule, ou table sans donnée après le saut) :
+   *  la première ligne reste les en-têtes, exactement comme avant. C'est un résidu à trier au PDF —
+   *  `scripts/raw/check-source-tables.mjs` le NOMME (famille `banniere-suspecte`). */
+  banniereRefusee?: string;
+}
+
+/**
+ * Parse un bloc-table markdown. Rend `null` si le bloc n'est pas une table.
+ *
+ * BANNIÈRE : l'extraction Marker rend le titre imprimé EN BANDEAU d'une table comme une rangée de
+ * plus, devant les en-têtes (`| | TABLEAU DE PROGRESSION D'UN PERSONNAGE | | |`). Sans absorption,
+ * les en-têtes RÉELS tombent en première rangée de données et la table entière est inadressable.
+ * Elle est ABSORBÉE (sautée, gardée en `titre`) SOUS GARDE, précédent `recollable` : texte en
+ * MAJUSCULES d'au moins deux lettres, ET au moins une rangée de données restante après le saut.
+ * Sans la garde, un folio capté (`| | | 159 | |`), un séparateur d'index (`| A | |`) et l'en-tête
+ * RÉEL d'une table à une seule colonne (`| Effet | |`) seraient sautés à tort.
+ * Le bandeau porte son PROPRE séparateur (`| | TABLEAU DES MOUVEMENTS | |` puis `|--|--|--|` puis
+ * `| Mouvement | … |`, `15 - Déplacement.md:18-20`) : le saut passe donc la bannière ET les
+ * séparateurs qui la suivent, sans quoi les en-têtes seraient la ligne de tirets.
+ * TROISIÈME volet de la garde : une bannière suivie DIRECTEMENT de données, sans rangée d'en-têtes
+ * (`46 - Les règles magiques.md:34-36`, « TABLEAU DES INCANTATIONS IMPARFAITES MINEURES » puis
+ * `| 01-05 | Signe de Sorcière… |`) n'est pas absorbable : la sauter promeut une FOURCHETTE en
+ * en-tête et fait perdre à la table sa première rangée. `estCleDePlage` le reconnaît.
+ * LATENCE CONNUE du seuil « ≥ 2 lettres » : un `II`, un `AI`, un `X-Y` de cellule serait pris pour
+ * un titre. Aucun cas dans le corpus (le plus court titre absorbé mesuré est `URZO`) — à trancher
+ * sur le premier cas réel, jamais en durcissant à l'aveugle un seuil que rien ne dément.
+ */
+export function parseTable(md: string): TableParse | null {
+  const lignes = md.split('\n').filter((l) => TABLE_LINE.test(l));
+  if (lignes.length < 2) return null;
+  const isSeparator = (l: string) => cellulesDe(l).every((c) => /^:?-{2,}:?$/.test(c));
+  const corps = (from: number) => ({
+    headers: cellulesDe(lignes[from]),
+    rows: lignes.slice(from + 1).filter((l) => !isSeparator(l)).map(cellulesDe),
+  });
+  const banniere = texteDeBanniere(cellulesDe(lignes[0]));
+  if (banniere == null) return corps(0);
+  let apresBandeau = 1;
+  while (apresBandeau < lignes.length && isSeparator(lignes[apresBandeau])) apresBandeau++;
+  const apres = apresBandeau < lignes.length ? corps(apresBandeau) : null;
+  if (apres && estMajuscule(banniere) && apres.rows.length >= 1 && !estCleDePlage(apres.headers[0] ?? '')) {
+    return { ...apres, titre: banniere };
+  }
+  return { ...corps(0), banniereRefusee: banniere };
+}
+
+/** Une table d'une section : le bloc qui la porte, et sa lecture. */
+export interface TableDeSection { block: Bloc; table: TableParse }
+
 /** Tables d'une section, dans l'ordre du document. */
-type TableDeSection = { block: Bloc; table: { headers: string[]; rows: string[][] } };
-const tablesOf = (section: Section): TableDeSection[] =>
+export const tablesOf = (section: Section): TableDeSection[] =>
   section.blocks
     .map((b) => ({ block: b, table: parseTable(b.md) }))
     .filter((t): t is TableDeSection => t.table != null);
@@ -496,7 +561,7 @@ export function cellRefFor(chapitre: ChapitreParse, hit: CelluleTrouvee): Fragme
   const candidates = hit.row
     .map((c, i) => ({ c: c.trim(), i }))
     .filter(({ c, i }) => c && i !== hit.col)
-    .sort((a, b) => Number(RANGE_KEY.test(a.c)) - Number(RANGE_KEY.test(b.c)));
+    .sort((a, b) => Number(estCleDePlage(a.c)) - Number(estCleDePlage(b.c)));
   for (const { c } of candidates) {
     if (rowsMatching(section, normText(c)).length !== 1) continue;
     const frag: FragmentCellule = { kind: 'cellule', sec: hit.sec, secOcc: hit.secOcc, row: c, col, sum: '' };

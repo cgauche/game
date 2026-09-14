@@ -13,8 +13,9 @@ import { chapterFile } from '../../../scripts/guards/lib/rawRefIntegrity.mjs';
 import { listerDossier } from '../../../scripts/guards/lib/lister.mjs';
 import {
   type ChapitreParse, type Fragment, type FragmentBlocs, type FragmentCellule, type Resolu,
-  blocsCouverts, blocsPlats, empreinteDe, estErreur, findCells, normText, parseChapitre,
-  resoudreAdresse, resoudreFragment, sumOf,
+  type Section, type TableParse,
+  blocsCouverts, blocsPlats, cellRefFor, empreinteDe, estErreur, findCells, normText, parseChapitre,
+  parseTable, resoudreAdresse, resoudreFragment, sumOf, tablesOf,
 } from './decoupe.ts';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
@@ -345,5 +346,117 @@ describe('chargement SOUS NODE NU', () => {
     expect(r.stderr).toBe('');
     expect(r.status).toBe(0);
     expect(r.stdout.trim()).toBe('function');
+  });
+});
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * La BANNIÈRE de table (#1384 B1) : l'extraction Marker rend le titre imprimé en
+ * BANDEAU comme une rangée devant les en-têtes. `parseTable` l'absorbe SOUS GARDE.
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+/** Première table d'un chapitre dont le markdown porte `motif`. */
+function tableAvec(bookId: string, ch: string, motif: string): TableParse {
+  for (const s of chapitreDe(bookId, ch).sections) {
+    for (const b of s.blocks) {
+      if (!b.md.includes(motif)) continue;
+      const t = parseTable(b.md);
+      if (t) return t;
+    }
+  }
+  throw new Error(`aucun bloc-table portant ${JSON.stringify(motif)} dans ${bookId} ch.${ch}`);
+}
+
+/** Lecture d'AVANT l'absorption : la bannière passée en MINUSCULES, que la garde refuse alors — le
+ *  parseur lui-même rend donc son comportement d'avant, sans qu'aucune définition ne soit recopiée
+ *  ici. Les en-têtes NORMALISÉS sont identiques (`normText` replie la casse) : la mesure ci-dessous
+ *  compare bien les deux lectures du MÊME chapitre. */
+function sansAbsorption(chapitre: ChapitreParse): ChapitreParse {
+  const sansTitre = (s: Section): Section => ({
+    ...s,
+    blocks: s.blocks.map((b) => {
+      if (!parseTable(b.md)?.titre) return b;
+      const lignes = b.md.split('\n');
+      const i = lignes.findIndex((l) => /^\s*\|/.test(l));
+      return { ...b, md: lignes.map((l, k) => (k === i ? l.toLowerCase() : l)).join('\n') };
+    }),
+  });
+  return { sections: chapitre.sections.map(sansTitre) };
+}
+
+/** Part des cellules de DONNÉE d'un chapitre que `cellRefFor` sait adresser (en %, arrondi). Le
+ *  `hit` est bâti à la position exacte de la cellule — c'est la forme que `findCells` rend. */
+function pctAdressable(chapitre: ChapitreParse): number {
+  let n = 0;
+  let ok = 0;
+  for (const s of chapitre.sections) {
+    for (const { table } of tablesOf(s)) {
+      for (const row of table.rows) {
+        row.forEach((c, col) => {
+          if (!c.trim()) return;
+          n++;
+          if (cellRefFor(chapitre, { sec: s.slug, secOcc: s.occ, headers: table.headers, row, col })) ok++;
+        });
+      }
+    }
+  }
+  return Math.round((ok / n) * 100);
+}
+
+describe('parseTable — la bannière de table, absorbée SOUS GARDE', () => {
+  it('`15 - Déplacement.md:18` : le bandeau `TABLEAU DES MOUVEMENTS` est absorbé, les en-têtes RÉELS remontent', () => {
+    const t = tableAvec(LDB, '15', 'TABLEAU DES MOUVEMENTS');
+    expect(t.titre).toBe('TABLEAU DES MOUVEMENTS');
+    expect(t.headers).toEqual(['Mouvement', 'Marche (mètres)', 'Course (mètres)']);
+    expect(t.rows[0]).toEqual(['0', '0', '0']);
+    expect(t.banniereRefusee).toBeUndefined();
+  });
+
+  it('`MDG 16 - Bestiaire.md:606` : un FOLIO capté en rangée n’est pas un titre — rien n’est sauté', () => {
+    const t = tableAvec('mer-des-griffes', '16', '| 159 |');
+    expect(t.titre).toBeUndefined();
+    expect(t.banniereRefusee).toBe('159');
+    expect(t.headers).toContain('159');
+  });
+
+  it('`AA 13 … :103` : le séparateur d’index `A` (une seule lettre) n’est pas un titre', () => {
+    const t = tableAvec('aux-armes', '13', 'Actions de la monture');
+    expect(t.titre).toBeUndefined();
+    expect(t.banniereRefusee).toBe('A');
+    expect(t.headers[0]).toBe('A');
+  });
+
+  it('`AA 10 … :337` : `| Effet | |` est l’en-tête RÉEL d’une table à UNE colonne — jamais sauté', () => {
+    const t = tableAvec('aux-armes', '10', 'Le Personnage pique un sprint');
+    expect(t.titre).toBeUndefined();
+    expect(t.banniereRefusee).toBe('Effet');
+    expect(t.headers[0]).toBe('Effet');
+    expect(t.rows[0][0]).toContain('pique un sprint');
+  });
+
+  it('`46 - Les règles magiques.md:34` : un bandeau devant une table SANS en-têtes n’est pas absorbé', () => {
+    // La bannière est en MAJUSCULES et la table a des rangées : les deux premiers volets de la garde
+    // l'absorberaient. Le troisième la refuse, parce que la ligne suivante est une DONNÉE (fourchette
+    // d100) et non des en-têtes — l'absorber promouvrait `01-05` en en-tête et volerait une rangée.
+    const t = tableAvec(LDB, '46', 'TABLEAU DES INCANTATIONS IMPARFAITES MINEURES');
+    expect(t.titre).toBeUndefined();
+    expect(t.banniereRefusee).toBe('TABLEAU DES INCANTATIONS IMPARFAITES MINEURES');
+    expect(t.rows[0][0]).toBe('01-05');
+    expect(t.headers[0]).toBe('');
+  });
+
+  it('CONTRAT POSITIF : l’absorption rend adressables des cellules qui ne l’étaient pas', () => {
+    // Chiffres MESURÉS sur l'arbre à la livraison de #1384 B1 (jamais un « ≥ 90 % » complaisant) :
+    // les deux lectures du même chapitre sont imprimées, et toutes deux épinglées.
+    for (const m of [
+      { ch: '15', fichier: '15 - Déplacement.md', avant: 28, apres: 64 },
+      { ch: '61', fichier: '61 - Encombrement.md', avant: 65, apres: 93 },
+    ]) {
+      const chapitre = chapitreDe(LDB, m.ch);
+      const avant = pctAdressable(sansAbsorption(chapitre));
+      const apres = pctAdressable(chapitre);
+      console.log(`BANNIÈRE — ${m.fichier} : ${avant} % → ${apres} % des cellules de donnée adressables`);
+      expect(avant, `${m.fichier} : lecture d’AVANT l’absorption`).toBe(m.avant);
+      expect(apres, `${m.fichier} : lecture COURANTE`).toBe(m.apres);
+    }
   });
 });

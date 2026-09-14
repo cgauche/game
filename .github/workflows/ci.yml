@@ -81,6 +81,8 @@ jobs:
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:check-folio-continuity
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run raw:check-source-tables
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:reanchor
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm --prefix server ci

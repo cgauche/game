@@ -332,6 +332,15 @@ export const ECRIT_LU = {
       'le stock NOMINATIF des sauts de folio (scripts/raw/folio-gaps-stock.json) et le gel des ancres sans ' +
       'contenu (scripts/raw/empty-folios-baseline.json)',
   },
+  'raw:check-source-tables': {
+    ecrit: [],
+    lit: ['Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/'],
+    raison:
+      'aucune écriture dans les scripts atteints (le stock ne se réécrit que sous `--ecrire-stock`, que ' +
+      'la commande de .github/workflows/ci.yml ne passe pas) ; LIT le registre de livres, le parseur de ' +
+      'tables (src/data/source/decoupe.ts), les 16 dossiers de Source/ et son stock NOMINATIF ' +
+      'scripts/raw/source-tables-stock.json',
+  },
   'raw:reanchor': {
     ecrit: [],
     ecritFerme: {
@@ -413,7 +422,7 @@ export const LANES = [
     nom: 'docs',
     gates: [
       'docs:check', 'docs:empreinte', 'test:raw', 'raw:check-refs', 'raw:check-code-refs',
-      'raw:check-folio-continuity', 'test:docs', 'agents:check', 'build',
+      'raw:check-folio-continuity', 'raw:check-source-tables', 'test:docs', 'agents:check', 'build',
     ],
     raison:
       'tous les LECTEURS de docs/ et docs/raw/ — leurs trois écrivains ont déjà tourné, en série, avant que ' +

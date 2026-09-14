@@ -22,3 +22,14 @@ export function normalize(s: string): string {
 }
 
 export const ELLIPSIS_SENTINEL = SENT;
+
+/**
+ * Une vraie balise HTML NOMMÉE (`<br>`, `<b>`, `<div>`…) — jamais un simple « < » (les formules
+ * « PV < 5 » n'en sont pas). DÉFINITION UNIQUE de la règle 5 (« prose en Markdown, jamais en
+ * HTML ») : la garde des datasets app-owned (`src/data/no-html-in-prose.test.ts`) et le volet E de
+ * la garde de résolution des `descRef` (`src/data/prose-resolution.test.ts`) la lisent ICI — deux
+ * définitions divergeraient, et la prose ADRESSÉE échapperait à la moitié de la règle.
+ * Sans drapeau `/g` : le prédicat est SANS ÉTAT, partageable entre appelants.
+ */
+export const HTML_TAG =
+  /<(\/?)(b|i|em|strong|br|p|ul|ol|li|table|thead|tbody|tr|td|th|span|div|h[1-6]|a|code|pre|blockquote|sup|sub|hr)\b[^>]*>/i;

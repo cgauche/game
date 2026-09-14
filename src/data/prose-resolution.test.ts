@@ -6,6 +6,8 @@ import { RACINES_PAR_DEFAUT, adressesDuDepot, fichiersJsonDe } from '../../scrip
 // @ts-expect-error - résolveur ESM JS (pas de types) — même convention que `vite.config.ts`
 import { resoudreProse } from '../../scripts/source/resoudre.mjs';
 import { empreinteDe, parseChapitre, type ChapitreParse, type Fragment, type FragmentBlocs } from './source/decoupe';
+// Le prédicat de la règle 5, là où il est DÉFINI (partagé avec `no-html-in-prose.test.ts`).
+import { HTML_TAG } from './source/normalize';
 
 /**
  * EN-TÊTE STRUCTURÉ de la garde (#1475).
@@ -17,7 +19,8 @@ const GARDE = {
     'de table trouvées) ? ' +
     'B — l’empreinte `sum` de chaque fragment colle-t-elle au texte que l’adresse résout AUJOURD’HUI ? ' +
     'D — un MONTAGE (2 ou 3 fragments) a-t-il des fragments d’au moins 40 caractères normalisés, chacun ' +
-    'unique dans son chapitre, DISJOINTS entre eux, et pas plus de trois ?',
+    'unique dans son chapitre, DISJOINTS entre eux, et pas plus de trois ? ' +
+    'E — le texte RÉSOLU est-il exempt de balise HTML (règle 5 : prose en Markdown, jamais en HTML) ?',
   primitive:
     '`resoudreProse` (`scripts/source/resoudre.mjs`) — le résolveur FAIL-CLOSED, qui compose le parseur ' +
     'PUR `src/data/source/decoupe.ts` et le lecteur fs `scripts/source/lecteur-fs.mjs`. Aucun second ' +
@@ -65,6 +68,16 @@ function echecDe(noeud: unknown, lecteur?: Lecteur): { code: string; message: st
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     return { code: message.split(' : ')[0], message };
+  }
+}
+
+/** Texte RÉSOLU d'une adresse, ou `null` si elle ne résout pas (les volets A/B/D la tiennent déjà :
+ *  le volet E ne juge que ce qui rend effectivement un texte au joueur). */
+function texteResolu(noeud: unknown, lecteur?: Lecteur): string | null {
+  try {
+    return resoudreProse(noeud, lecteur).md as string;
+  } catch {
+    return null;
   }
 }
 
@@ -124,10 +137,27 @@ describe('résolution de la prose ADRESSÉE — toute `descRef` rend son texte, 
         `la première ré-extraction :\n${rouges.join('\n')}`,
     ).toEqual([]);
   });
+
+  it('E — le texte RÉSOLU ne porte aucune balise HTML (règle 5)', () => {
+    const rouges = ADRESSES.map((a) => ({ a, md: texteResolu(a.noeud) }))
+      .filter((r) => r.md != null && HTML_TAG.test(r.md))
+      .map((r) => `${r.a.fichier}:${r.a.id} → ${HTML_TAG.exec(r.md!)?.[0]}`)
+      .sort();
+    // EFFET RÉEL À LA LIVRAISON (#1384 B1) : ZÉRO rouge — les adresses posées n'atteignent aucune
+    // table ni aucun `<br>`. C'est un cliquet PRÉVENTIF, dit tel quel : il ne solde rien aujourd'hui,
+    // il interdit qu'une adresse future fasse entrer du HTML dans la prose du joueur par la porte du
+    // `Source/`, que les 391 sites `br-litteral` de `scripts/raw/source-tables-stock.json` tiennent
+    // grande ouverte.
+    expect(
+      rouges,
+      'Texte(s) résolu(s) portant une balise HTML — la règle 5 vaut pour la prose ADRESSÉE comme pour ' +
+        `les datasets : réparer le \`Source/\` (geste \`docs/ajouter-un-livre-source.md\` §7), jamais l'adresse :\n${rouges.join('\n')}`,
+    ).toEqual([]);
+  });
 });
 
 /* ─────────────────────────────────────────────────────────────────────────────
- * Les trois volets, PROUVÉS sur une fixture synthétique — la donnée ne porte
+ * Les QUATRE volets, PROUVÉS sur une fixture synthétique — la donnée ne porte
  * aujourd'hui aucune adresse, et une garde qu'aucun cas ne fait rougir ne prouve rien.
  * Le chapitre est injecté par le paramètre `lecteur` de `resoudreProse` : aucun fichier
  * temporaire, aucun `Source/` touché.
@@ -153,6 +183,15 @@ const TEXTE_FIXTURE = [
   '### Peur',
   '',
   "Les créatures les plus perturbantes de l'Empire glacent le sang de quiconque croise leur route.",
+  '',
+  // Le cas du volet E : une cellule que l'extraction Marker a rendue avec un `<br>` LITTÉRAL — la
+  // forme exacte des 391 sites `br-litteral` du `Source/` (`scripts/raw/source-tables-stock.json`).
+  '### Sequelle',
+  '',
+  '| Zone | Effet |',
+  '| --- | --- |',
+  '| Bras | Gagnez 2 États<br>Hémorragique |',
+  '| Jambe | Gagnez 1 État Sonné |',
   '',
 ].join('\n');
 
@@ -250,6 +289,21 @@ describe('les trois volets MORDENT — fixture synthétique', () => {
   it('D — un montage de plus de trois fragments est REFUSÉ', () => {
     const f = fragment('terreur', 1, 1);
     expect(echecDe(adresse(f, f, f, f), LECTEUR)?.code).toBe('montage-hors-plafond');
+  });
+
+  it('E — un texte résolu qui porte une balise HTML est vu ; la cellule voisine, propre, passe', () => {
+    const cellule = (row: string): Fragment => {
+      const brut: Fragment = { kind: 'cellule', sec: 'sequelle', secOcc: 1, row, col: 'Effet', sum: '' };
+      const sum = empreinteDe(CHAPITRE, brut);
+      if (typeof sum !== 'string') throw new Error(`fixture illisible : ${JSON.stringify(sum)}`);
+      return { ...brut, sum };
+    };
+    const avec = texteResolu(adresse(cellule('Bras')), LECTEUR);
+    expect(avec, 'la cellule de fixture rend bien son `<br>` littéral').toContain('<br>');
+    expect(HTML_TAG.test(avec!), 'le volet E MORD sur le texte résolu').toBe(true);
+
+    const sans = texteResolu(adresse(cellule('Jambe')), LECTEUR);
+    expect(HTML_TAG.test(sans!), 'une cellule sans balise ne rougit pas').toBe(false);
   });
 
   it('EXCLUSIVITÉ — `desc` et `descRef` ensemble LÈVENT (deux vérités pour un texte)', () => {

@@ -17,12 +17,15 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import TurndownService from 'turndown';
 import { gfm } from 'turndown-plugin-gfm';
+// Le prédicat de la règle 5 vient de sa DÉFINITION UNIQUE (module feuille en syntaxe effaçable,
+// chargé tel quel par Node nu — même convention que `scripts/raw/_lib.mjs`). Ce qui décide qu'une
+// chaîne EST du HTML doit être le même ici, dans `src/data/no-html-in-prose.test.ts` et dans le
+// volet E de `src/data/prose-resolution.test.ts` : trois copies auraient dérivé balise par balise.
+import { HTML_TAG } from '../../src/data/source/normalize.ts';
 
 const DATA_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'src', 'data');
 const APPLY = process.argv.includes('--apply');
 
-// Détecte un vrai tag HTML (et pas un « < » de formule) : balise nommée connue.
-const HTML_TAG = /<(\/?)(b|i|em|strong|br|p|ul|ol|li|table|thead|tbody|tr|td|th|span|div|h[1-6]|a|code|pre|blockquote|sup|sub|hr)\b[^>]*>/i;
 const hasHtml = (s) => HTML_TAG.test(s);
 
 const td = new TurndownService({

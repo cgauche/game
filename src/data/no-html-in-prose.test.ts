@@ -10,11 +10,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
+// La balise HTML se DÉFINIT une seule fois, dans le module feuille du `Source/` : le volet E de
+// `prose-resolution.test.ts` juge la prose ADRESSÉE avec exactement ce prédicat.
+import { HTML_TAG } from './source/normalize.ts';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
 const files = listerDossier(DIR).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
-
-const HTML_TAG = /<(\/?)(b|i|em|strong|br|p|ul|ol|li|table|thead|tbody|tr|td|th|span|div|h[1-6]|a|code|pre|blockquote|sup|sub|hr)\b[^>]*>/i;
 
 /** Chemins de toutes les strings contenant une balise HTML (chemin lisible → string fautive). */
 function htmlStrings(value: unknown, path: string, out: string[]): void {
