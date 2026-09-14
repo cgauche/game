@@ -67,7 +67,7 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 // de coque passé par la porte. `applyBoatCritical` (fleuve) et `applyVesselCritical` (mer) reflètent
 // chacun la mutation du groupe DEUX fois : après la conséquence CERTAINE (MSRC 07 l.82, appliquée par
 // `applyCrewHit`) et après les lignes de la voie INLINE drainées dans le journal du voyage.
-const BASELINE = { totalCalls: 751, totalAdHocResets: 302 }; // +1 (#1117 L3 : `registerNightBandApplier` — le set() de persistance du groupe après la boucle PAR RANGÉE, écrit UNE fois pour les 13 kinds de nuit au lieu d'un par applier) // +1/+1 (#1042/#1059 : `counterspellDeclare` RÉÉCRIT les rangées de `pendingCounterspell` — la déclaration de phase 1 vit sur le participant, comme son `result` ; le « reset » compté est cette repose du pending entier, pas une purge) ; +1/+1 (#1029 : `routeCounterspell` MARQUE le moment du Contre-sort — `pendingCast.counterspellRouted` — pour que la fenêtre s'ouvre UNE fois, au jet ou après le choix de Critique ; le reset compté est la purge de `pendingCounterspell` par `castCancel` pré-jet, #1031 : plus de fenêtre orpheline) ; +4/+3 (#989 surfaçage de la défense : `openSurfacedDefense` POSE la fenêtre — une branche mêlée, une branche tir ; `runCleaveChain` accroche la chaîne de balayage PARQUÉE sur la fenêtre ; `defenseConfirm` rend l'attaque figée à `attackConfirm`) ; +1 (#352 innFlow.ts : set() du party après Exténué) ; +1 (#474a : coût Mouvement Se cabrer, aiCreatureFreeAttacks) ; +1/+1 (#476 : toggle harpoonRopeCut, set + reset du pendingAttack) ; +1/+1 (#558 : castSetChosenTableRolls) ; +1 (#508 : purgeAdventureEffects, upkeep.ts — même patron que purgeClockEffects) ; +1 (#491 : rerollWindsOfMagic, combatFlow.ts) ; +2 (#508/#510 : interludeFlow.ts — débit d'argent des résolveurs Réputation/Punchausen) ; +2 (#508 : interludeFlow.ts entrainementStart — débit du tuteur + application de l'Augmentation) ; +6 (#509 : favorFlow.ts — grantFavor/settleFavorActivity/resetInterruptedFavorProgress/breakFavor, nouveau flux) ; +1 reset ad hoc (#942 L2 : `rollCascadeTable` POSE le tirage sur table de l'étape courante dans `pendingCascade` — jumeau exact de `setCascadeChoice`, déjà compté) ; +1/+1 (#942 L3 : `setCascadeTableForcedRoll` POSE le dé de l'étape à table — seam UNIQUE des deux affordances du mode table, jumeau de `rollCascadeTable`) ; totalCalls RESSERRÉ 722 → 717 au passage de #942 L2 : le juge de design du lot a mesuré 5 de mou (des set() comptés à la pose de la baseline ont disparu depuis) — un cliquet qui garde du mou ne borne plus rien ; resets ad hoc RESSERRÉS à la mesure EXACTE au passage de #1135 (baseline 294 pour 293 réels = 1 de mou, plus les 4 sites `hoverDelta` documentés ci-dessus → 297)
+const BASELINE = { totalCalls: 748, totalAdHocResets: 300 }; // +1 (#1117 L3 : `registerNightBandApplier` — le set() de persistance du groupe après la boucle PAR RANGÉE, écrit UNE fois pour les 13 kinds de nuit au lieu d'un par applier) // +1/+1 (#1042/#1059 : `counterspellDeclare` RÉÉCRIT les rangées de `pendingCounterspell` — la déclaration de phase 1 vit sur le participant, comme son `result` ; le « reset » compté est cette repose du pending entier, pas une purge) ; +1/+1 (#1029 : `routeCounterspell` MARQUE le moment du Contre-sort — `pendingCast.counterspellRouted` — pour que la fenêtre s'ouvre UNE fois, au jet ou après le choix de Critique ; le reset compté est la purge de `pendingCounterspell` par `castCancel` pré-jet, #1031 : plus de fenêtre orpheline) ; +4/+3 (#989 surfaçage de la défense : `openSurfacedDefense` POSE la fenêtre — une branche mêlée, une branche tir ; `runCleaveChain` accroche la chaîne de balayage PARQUÉE sur la fenêtre ; `defenseConfirm` rend l'attaque figée à `attackConfirm`) ; +1 (#352 innFlow.ts : set() du party après Exténué) ; +1 (#474a : coût Mouvement Se cabrer, aiCreatureFreeAttacks) ; +1/+1 (#476 : toggle harpoonRopeCut, set + reset du pendingAttack) ; +1/+1 (#558 : castSetChosenTableRolls) ; +1 (#508 : purgeAdventureEffects, upkeep.ts — même patron que purgeClockEffects) ; +1 (#491 : rerollWindsOfMagic, combatFlow.ts) ; +2 (#508/#510 : interludeFlow.ts — débit d'argent des résolveurs Réputation/Punchausen) ; +2 (#508 : interludeFlow.ts entrainementStart — débit du tuteur + application de l'Augmentation) ; +6 (#509 : favorFlow.ts — grantFavor/settleFavorActivity/resetInterruptedFavorProgress/breakFavor, nouveau flux) ; +1 reset ad hoc (#942 L2 : `rollCascadeTable` POSE le tirage sur table de l'étape courante dans `pendingCascade` — jumeau exact de `setCascadeChoice`, déjà compté) ; +1/+1 (#942 L3 : `setCascadeTableForcedRoll` POSE le dé de l'étape à table — seam UNIQUE des deux affordances du mode table, jumeau de `rollCascadeTable`) ; totalCalls RESSERRÉ 722 → 717 au passage de #942 L2 : le juge de design du lot a mesuré 5 de mou (des set() comptés à la pose de la baseline ont disparu depuis) — un cliquet qui garde du mou ne borne plus rien ; resets ad hoc RESSERRÉS à la mesure EXACTE au passage de #1135 (baseline 294 pour 293 réels = 1 de mou, plus les 4 sites `hoverDelta` documentés ci-dessus → 297)
 // −1/−1 (#1143 : les DEUX purges du télégraphe d'intention — `set({ actorAim: null })` de
 // `attackThenAdvance` et du `case 'cast'` de `runEnemyAI` — sont remplacées par la couture UNIQUE
 // `clearActorAim` de `combatFlow.ts`. Elle est désormais ancrée au SEAM de résolution d'attaque
@@ -151,6 +151,37 @@ const BASELINE = { totalCalls: 751, totalAdHocResets: 302 }; // +1 (#1117 L3 : `
 // réécriture du document de scène au profit d'un drapeau (`set` désormais INCONDITIONNEL là où il
 // était dans un `else`) : même nombre de `set` écrits, un de plus qu'à HEAD. Aucun reset ad hoc de
 // plus (302 inchangé).
+// #1508 T3b — 751 → 749 et 302 → 300, MESURÉ (`runSetScan` sur l'arbre du lot). Ce que l'appelant fera
+// APRÈS le coup est une DONNÉE d'entrée (`SuiteDeCoup`) qui voyage dans la charge de chaque fenêtre :
+// elle n'ajoute aucune écriture. Le solde, PAR APPEL :
+//  - RETIRÉS face à HEAD : `combatSlice.attackConfirm` ne pose plus `pendingDualStrike` (l'ouverture de
+//    la 2ᵉ frappe est dans la queue partagée) ; `combatSlice.defenseConfirm` ne rend plus l'Action d'une
+//    frappe gratuite (idem) ; `combatFlow.applyFreeAttack` et `combatFlow.applyTalentFreeAttack` perdent
+//    chacun leur `set({ acted: prevActed })` inline, remplacé par l'appel à la queue — soit QUATRE ;
+//  - AJOUTÉS : les DEUX `set` de `combatFlow.jouerLaSuiteDuCoup` (l'Action rendue à une frappe gratuite
+//    après le `markActed` de l'application ; l'ouverture de la 2ᵉ frappe du Maniement de deux armes),
+//    ÉCRITURE UNIQUE appelée par `attackConfirm`, `defenseConfirm`, la reprise de suspension et les deux
+//    résolveurs de frappe gratuite.
+// Net −2 (751 → 749). Le `switch` sur `SuiteDeCoup.enchainement` n'écrit rien : il ROUTE.
+// Resets ad hoc 302 → 300 : −1 pour la mesure qui portait 1 de mou depuis #1135 (301 réels), −1 parce
+// que la fermeture de la cascade-hôte du Tir rapide d'INTERRUPTION n'est plus un `pendingCascade: null`
+// littéral et inconditionnel — elle est CONDITIONNÉE au fait que le coup n'ait pas été suspendu (une
+// sauvegarde poussée DANS cette cascade y serait détruite avec le coup). La baseline se RESSERRE sur la
+// mesure EXACTE : un cliquet qui garde du mou ne borne plus rien.
+// #1508 T3b-1 — baseline INCHANGÉE (749/300), solde NET NUL, mesuré par `runSetScan` sur l'arbre du lot
+// (`src/state/combatFlow.ts` 110 `set` · `src/state/combatLog.ts` 1) :
+//  - AJOUTÉ : le `set({ battle: { …log } })` de `combatLog.journaliser`, ÉCRITURE UNIQUE du routage
+//    « en combat → `battle.log`, sinon `state.journal` » (consommateurs : `cascade.commitStep`,
+//    `combatFlow.finishPlayerAction`, `combatFlow.castRefused`) ;
+//  - RETIRÉ : le `set({ battle: { …log } })` à la main de `combatFlow.castRefused`, qui devient un appel
+//    au helper. `finishPlayerAction` est à SOLDE NUL : son `set` restant ne porte plus que la
+//    consommation de l'Action (`action: null` / `selectedSpellId: null`) — le journal part au helper, le
+//    drain de `pendingLogQueue` reste au site et lui est passé en `extra`.
+// Aucun reset ad hoc de plus (300 inchangé) : le helper n'écrit aucun champ `pending*`.
+// — puis 749 → 748, MESURÉ (`runSetScan` sur l'arbre du lot) : `corruptionFlow.resolveRenounce` route
+//   la conséquence de « Je te renie ! » (LDB 17 l.67) par `combatLog.journaliser` au lieu de réécrire
+//   à la main le couple `if (battle) set({ battle: {…log} }) else get().log(…)` — un `set` littéral de
+//   moins, et le routage n'a plus qu'UNE définition. BASELINE = la mesure (748/300), sans mou.
 
 describe('garde-fou set() bruts des flows (agrégat)', () => {
   it("le nombre total de set() littéraux détectés dans src/state/*.ts ne dépasse pas la baseline", () => {

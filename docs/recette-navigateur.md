@@ -282,7 +282,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | `net()` | vue RÉSEAU du siège local `{mode, mySeat, roomCode, gmSeat, ownership, seatNames, presence}` (`state()` n'expose rien de `net`) | lecture seule (copies) ; `gmSeat` `undefined` = camp ennemi à l'IA ; `presence` n'est peuplée QUE côté hôte. Pour AGIR sur le réseau (héberger, rejoindre, attribuer), passer par `store.getState()` — `net()` n'a aucun effet de bord |
 | `entities()` | cartographie des entités de la scène `{id,label,kind,pos,access}` | exclut les entités `hiddenUntilCombat` |
 | `screenPos('id')` | bounding box ÉCRAN (`{x,y,width,height}`) du nœud `[data-cid="id"]` | lecture seule. ⚠ **CADUC pour les JETONS depuis le monde volumique** (#1176, C5a ; mesuré en recette 2026-08-14, cf. #1296) : les corps sont peints dans le canevas WebGL et ne portent plus AUCUN `data-cid` (`stage/spritePicker.ts`, `stage/GameStage3D.tsx`) — `screenPos` y rend `null` pour un combattant ou une entité. Restent adressables par ce canal : les STRUCTURES de siège, dont l'arête porte le `data-cid` du Combattant-mur (`stage/AreteOverlay.tsx`, peuplement `state/aretes.ts`) — l'arête est ancrée sur la case du MUR (sa prise suit le lift du mur), et n'est offerte que PENDANT mon tour : hors tour, aucun contrôleur, donc `screenPos` rend `null`. Pour armer le siège d'un coup de main, `quality('id', 'Siège')` pose l'Atout sur l'arme active (table des tricheurs ci-dessous) ; pour vérifier ce qu'un 1er clic a ARMÉ, lire `battle().preview`. En **vue du DESSUS** (#1176, P3-5c), les pions redeviennent du SVG : chaque jeton y porte un groupe `[data-pion-cid="id"]` (et, dans les deux vues, son chrome porte `[data-chrome-cid="id"]`) — ces nœuds-là sont mesurables, et le pion est CENTRÉ sur sa case (viser le centre de la bbox, pas son bas). **Replis** : (a) agir par les BOUTONS réels de l'UI (HUD, ordre de tour, panneaux) ; (b) pour les raccourcis liés à `e.code`, passer par la voie CDP `realKey` (§ manette/clavier) ; (c) pour viser une CASE, `tileScreenPos` (ci-dessous), qui ne dépend d'aucun `data-cid`. Le repère de clic historique reste valable là où un `data-cid` existe : **viser `{x: x+width/2, y: y+height}` (le BAS de la bbox, pied du token)** plutôt que le centre géométrique — une bbox de créature haute est étirée vers le haut, le centre tombe hors silhouette (résidu #199). Port du serveur de dev : celui de `.claude/launch.json` (5191), pas le défaut Vite |
-| `tileScreenPos({x,y,z?})` | même bounding box ÉCRAN pour une CASE, vide comprise — projetée par `diamondCorners` (`src/geometry/iso.ts`, la géométrie du rendu) puis passée par la CTM du groupe caméra, donc zoom/panoramique/rotation viennent du DOM | lecture seule ; `null` hors scène ou tant que le stage n'est pas monté. Pour un clic, viser le CENTRE (`{x: x+width/2, y: y+height/2}`) : contrairement à un token, une case n'a pas de pied. Vérifié aux 8 crans de caméra contre `screenPos` du jeton du groupe (écart ≤ 6px sur une tuile de 93px = l'ancrage propre du sprite) |
+| `tileScreenPos({x,y,z?})` | **un SEUL argument, un OBJET** (`tileScreenPos(tile: { x, y, z? })`, `state/devtools.ts`) — ex. `__wfrp.tileScreenPos({ x: 2, y: 5 })`, ou `{ x: 2, y: 5, z: 1 }` pour un étage. ⚠ **piège mesuré** : `tileScreenPos(2, 5)` (deux nombres) ne lève RIEN — le second argument est ignoré, `tile.x`/`tile.y` sont `undefined` et la bbox rendue est un rectangle de `NaN`, que `browser_evaluate` sérialise en `{"x":null,"y":null,"width":null,"height":null}` : un `null` de forme, pas un « hors scène ». Même bounding box ÉCRAN pour une CASE, vide comprise — projetée par `diamondCorners` (`src/geometry/iso.ts`, la géométrie du rendu) puis passée par la CTM du groupe caméra, donc zoom/panoramique/rotation viennent du DOM | lecture seule ; `null` hors scène ou tant que le stage n'est pas monté. Pour un clic, viser le CENTRE (`{x: x+width/2, y: y+height/2}`) : contrairement à un token, une case n'a pas de pied. Vérifié aux 8 crans de caméra contre `screenPos` du jeton du groupe (écart ≤ 6px sur une tuile de 93px = l'ancrage propre du sprite) |
 | `pickTileAt({x,y})` | l'INVERSE de `tileScreenPos` : ce que le PICKING RÉEL résoudrait sous ce PIXEL D'ÉCRAN — `{tile:{x,y,z}|null, cid, via:'sprite'|'decor'|'meuble'|'pas-etage'|'sol'|'aucune', nature:'case'|'combattant'|'entite', geste:{entId?}}`, plus `entId` quand `nature` vaut `'entite'`. **`geste.entId` = l'entité qu'un CLIC à ce pixel traiterait vraiment** (dialogue, marchand, place à s'asseoir) : le verdict dit ce que le pixel FRAPPE, `geste` dit ce que le geste SERT — un PNJ ancré sur la case rend `nature:'case'` (aucun rayon ne nomme un personnage hors combat) et ouvre pourtant son dialogue. Les deux sortent de la fonction que le hook appelle (`stage/geste.ts:entiteDuGeste`), jamais d'une copie : `geste.entId` absent = le clic ne traite aucune entité. La CHAÎNE ENTIÈRE est PARTAGÉE par construction avec le geste (`stage/pickResolve.ts:resoudrePixel`, appelé par `stage/useStagePointer` comme par `stage/pickProbe`) : inversion du pixel (`stage/pickResolve.ts:pointStageSousPixel`) → rayon → meuble dessiné → pas inter-étages → case marchable → sol cross-couche ; la sonde n'a AUCUN étage propre, et la pose qu'elle inverse (projection, caméra du rendu, zoom) est celle que l'hôte a publiée (`stage/spritePicker.ts:CadreRendu`), jamais le store | lecture seule, ne clique RIEN. **L'outil du clic « qui ne fait rien »** : le `via` NOMME l'étage qui a tranché : `'decor'` = le rayon a touché un décor volumique, le clic part sur SA case d'ancrage ; `'meuble'` = aucun rayon ne l'a touché (plateau fin) mais c'est bien la case du meuble DESSINÉE sous le pixel ; `'pas-etage'` = un franchissement vertical voisin du groupe ; `via:'sprite'` avec un `cid` inattendu = un CORPS couvre la case visée (engin 2×2, créature haute) et le clic part sur l'ENTITÉ, pas sur le sol ; `tile:null` = aucune surface résolue à ce pixel (hors carte, ou étage sans surface). Vérifier AVANT de conclure à un bouton/overlay mort, et TOUJOURS relire après un geste de caméra. **Ne rend QUE la bbox de la CASE** : pour viser un CORPS dressé, voir « Cibler un sprite HAUT » (Pièges vécus) |
 | `talk('id')` | téléporte le groupe à côté de l'entité + l'interpelle (dialogue/marchand) | rien si l'entité n'a ni dialogue ni marchand ; ⚠ un marchand-PNJ de scène n'a PAS de bande de décor (`ScreenShell` slot `backdrop`) — cette ambiance n'existe QUE par le chemin service-de-lieu (`openPlaceMerchant`, hub de ville) qui la porte en donnée. Ne pas conclure à une régression de décor en interpellant un PNJ |
 | `goto('id'\|{x,y,z?})` | place le groupe sur une case (déclenche portes/triggers au pas) | — |
@@ -569,16 +569,34 @@ loin, ARMÉ d'un arc par la scène (hors du dôme, c'est la condition « provena
 __wfrp.scenario('dome', 11)              // lancement (combat direct)
 // 1. Ilyanwe a un arsenal COURT (4 sorts, en donnée de la scène) : chaque sort est SA PROPRE alvéole
 //    de la console (`sort-<id>`, libellé = le nom du sort) — il n'existe aucune entrée « Sorts ».
-//    Cliquer l'alvéole « Dôme », puis se cibler soi-même (Portée « Vous »).
+//    Cliquer l'alvéole « Dôme » ouvre DIRECTEMENT la modale d'Incantation (aucun ciblage préalable) ;
+//    après « Lancer », le bouton devient « Poser la zone » → CLIQUER SA PROPRE CASE (Portée « Vous »,
+//    gabarit 3×3 annoncé par la modale). Le sort est NI 7 : un jet moyen rend DR 4 (« Réussite trop
+//    faible ») — prévoir jusqu'à 3 clics de « Chance : +1 DR » pour le poser.
 //    Grimoire manquant ? __wfrp.spell('sorciere', 'dome') MÉMORISE le sort (il ne le lance pas).
 // 2. l'aura se pose ; la ZONE se dit UNE fois, sur la ligne du lanceur — « Ilyanwe érige un dôme sur
 //    N m de diamètre : il octroie Protection (6+) contre les attaques magiques ou à distance venant de
 //    l'extérieur » ; chaque autre couvert n'a qu'une ligne courte (« Berta est sous le dôme : … »).
 //    L'Indice vient de la DONNÉE de l'op ; la ZdE, de la ligne « Cible » du sort (un seul endroit).
-// 3. laisser le TIREUR gobelin tirer sur Berta : CHAQUE coup reçu écrit sa sauvegarde, réussie —
-//    « Berta ignore le coup — sauvegarde 1d10 : 7 ≥ Protection (6+) du Dôme. » — ou RATÉE —
-//    « Berta n'ignore pas le coup — sauvegarde 1d10 : 3 < Protection (6+) du Dôme. » Jamais rien.
-//    Puis laisser l'ORC frapper au contact : AUCUNE ligne de sauvegarde (le dôme ne couvre pas la mêlée).
+// 3. laisser le TIREUR gobelin tirer sur Berta : CHAQUE coup reçu SUSPEND la résolution et ouvre une
+//    ÉTAPE DE DÉ « Sauvegarde » (1d10) dans la cascade, AVANT toute perte de PB — la modale nomme le
+//    porteur en sous-titre (avant le lancer COMME après, `stepSubtitle`) et la rangée annonce son seuil
+//    « ≥ Protection (6+) du Dôme » AVANT le lancer.
+//    « Lancer » (ou poser le dé) → la rangée devient « 6 ≥ … » / « 5 < … », puis « Terminer » applique
+//    la suite (Blessures, Critique si double). Le PANNEAU « Journal de combat » écrit
+//    « Berta ignore le coup — sauvegarde 1d10 : 6 ≥ Protection (6+) du Dôme. » — ou RATÉE —
+//    « Berta n'ignore pas le coup — sauvegarde 1d10 : 5 < Protection (6+) du Dôme. » Jamais rien.
+//    Le BANDEAU (toast) ne reprend que les temps forts (`attack`/`shoot`…) : il montre donc ENCORE la
+//    ligne d'attaque « … : N dégâts − M = K Blessures », qui annonce des Blessures ne tombant PAS quand
+//    le coup est ignoré — défaut de forme connu et ticketé (#1740) : lire l'issue sur la ligne de
+//    sauvegarde, jamais sur celle du coup.
+//    Le tireur porte **Tir rapide** (`creatures.json` › `archer-gobelin`, talent `tir-rapide`) : il tire HORS de
+//    l'ordre d'Initiative à l'ouverture d'un Round (`runPreemptShots`, `confirmRoundStart`), son tour
+//    normal étant alors épuisé. Le combat s'ouvre donc sur un tir gobelin DÉJÀ résolu (relevé
+//    2026-09-14 : Ilyanwe à 15/18 avant le geste 1), et chaque ouverture de Round peut apporter une
+//    étape de sauvegarde de plus — en tenir compte dans le budget de clics de la recette.
+//    Puis laisser l'ORC frapper au contact : AUCUNE ÉTAPE de sauvegarde et AUCUNE ligne (le dôme ne
+//    couvre pas la mêlée).
 ```
 
 Ce qui se lit à l'écran : le Trait qui a **réellement** sauvé est nommé (jamais un
@@ -587,9 +605,17 @@ sépare** : le STATBLOC écrit `Protection 6+` (`LDB 84 l.28` — puce de Trait 
 `formatTrait`), la PROSE d'un sort écrit `Protection (6+)` (`LDB 47 l.410` — journal de sauvegarde,
 `op.domeWard`, humanize, résumé d'op, `formatWardSave`). Ne pas « uniformiser » l'une sur l'autre.
 
+**Poser le dé de sauvegarde** : l'option « Dés fixés » vit dans ☰ → **Options** → onglet **Confort**
+(case à cocher du registre `PREFERENCES`, persistée ; `__wfrp.prefs('des-fixes', null)` la remet). Elle
+allumée et le siège tenu, l'étape « Sauvegarde » offre son champ « Fixer le dé » (1-10, Entrée valide) à
+côté de « Lancer » ; la ligne de journal porte alors « (dé fixé) ». A11y de l'étape : Tab atteint
+« Lancer », Entrée lance.
+
 Rejeu MOTEUR (headless) de ces trois gestes : `src/scenes/test-scenarios/22-dome.test.ts` — l'aura est
-posée par le VRAI lancer (`applyCast`), le tireur TIRE dès son premier tour, chaque coup reçu écrit sa
-sauvegarde (réussie OU ratée), la mêlée n'en ouvre aucune.
+posée par le VRAI lancer (`applyCast`), le tireur TIRE dès son premier tour, le TIR ouvre son étape de
+sauvegarde (suspension AVANT toute Blessure), la MÊLÉE n'en ouvre aucune. Les contrats du socle sont
+ailleurs : la porte qui suspend et rend la main (`src/state/combat/sauvegarde-a-la-porte.test.ts`,
+`pousserSauvegarde`), la lecture en seuil du dé (`src/state/cascade-seuil.test.ts`, `lireEnSeuil`).
 
 Hors combat, la fiche (**Magie & Foi**) garde ses boutons « Lancer » / « Focaliser » ; **pendant** un
 combat ils sont gatés, avec leur raison au survol (« En combat, les sorts se lancent depuis la
@@ -600,6 +626,10 @@ console. ») — les verbes `ooc*` sont des lanceurs HORS combat et ne produisai
 - **Compendium/Atelier : ouvrir le `<summary>` du groupe AVANT de cliquer la sous-catégorie** (vécu
   2026-09-05, recette #1508 — 5 essais perdus) : les rubriques sont des `<details>` repliés, et un clic
   sur une sous-catégorie encore masquée ne porte pas. Ouvrir le groupe, relire la bbox, puis cliquer.
+- **Menu système : `Escape` ne ferme pas depuis un sous-écran des Options** (vécu 2026-09-14, recette
+  #1508) : depuis un onglet des Options, un premier `Escape` ramène bien au menu racine ; un second
+  `Escape` n'y fait rien — sortir par « Reprendre ». Friction clavier relevée, pas un comportement
+  voulu : ne pas la contourner en silence dans un scénario, la signaler.
 - **Les heredocs du shell mangent un antislash** (même recette) : `<<'EOF'` a rendu `\\` en `\` et cassé
   des scripts de sonde. Écrire les scripts de recette par `Write`/`ctx_patch`, jamais par heredoc.
 - **Le délai d'amorçage de l'app est RÉGLABLE** : l'option `timeoutMs` du kit

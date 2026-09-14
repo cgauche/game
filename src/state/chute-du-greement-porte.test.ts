@@ -43,6 +43,10 @@ function coqueMoyenne(): Combatant {
   return { ...c, upgrades: [{ id: 'nid-de-pie' }] };
 }
 
+/** CE QUE LE JOUEUR LIT : une chute jouée COMBAT OUVERT va au journal de COMBAT
+ *  (`combatLog.journaliser`, seule surface ouverte alors) ; hors combat, au journal d'exploration. */
+const lu = (): string[] => [...(get().battle?.log ?? []).map((e) => e.text), ...get().journal];
+
 /** Le nœud RÉEL de « Mât brisé » (MDG 13 l.718) — jamais un littéral. */
 const noeudMatBrise = () => rollShipCritical('greement', makeRNG(1), 10, SHIP_CRIT_SET).crewHit!.test!;
 
@@ -163,7 +167,7 @@ describe('#1657 B3-2b-c — la chute du gréement traverse la porte avec SA coqu
     expect(ouverte, 'aucun dé de chute : la coque de la FILE n’a pas été retrouvée').toBeTruthy();
     expect(ouverte!.de!.spec, 'coque Moyenne au gréement').toEqual({ n: 2, sides: 10 });
     draineCascade(get);
-    expect(JSON.stringify(get().journal)).toMatch(/chute de [0-9]+ m/);
+    expect(JSON.stringify(lu())).toMatch(/chute de [0-9]+ m/);
     const tombe = get().battle!.combatants.find((c) => c.id === gabier.id)!;
     expect(tombe.wounds.current, 'le gabier n’est pas tombé').toBeLessThan(tombe.wounds.max);
     useGame.setState({ battle: null } as never);
@@ -225,8 +229,8 @@ describe('#1657 B3-2b-c — la chute du gréement traverse la porte avec SA coqu
     expect(hauteur!.de!.unite).toBe('m');
     expect(hauteur!.de!.result, 'aucun siège ne le tient : le socle le tire à l’ouverture').not.toBeNull();
 
-    const lignes = [...draineCascade(get), ...get().journal];
-    const chute = get().journal.find((l) => /Tomber du gréement/.test(l));
+    const lignes = [...draineCascade(get), ...lu()];
+    const chute = lu().find((l) => /Tomber du gréement/.test(l));
     expect(chute, `la voie inline n’a rien dit de la chute : ${lignes.join(' | ')}`).toBeTruthy();
     expect(chute).toMatch(/[0-9]+ m/);
     const apres = get().battle!.combatants.find((c) => c.id === 'gabier')!;

@@ -6,6 +6,10 @@
  * déjà composé. L'icône et l'importance se déduisent du `kind` (plus aucun devinage par mots-clés).
  */
 import { conditionIdInText, conditionSeverity } from '../engine/conditions';
+import { fixedJetOpen, markFixedDie } from './fixedDieMark';
+// Alias LOCAL du `set` de Zustand : ce fichier déclare déjà un `Set<CombatEventKind>` (le Set global),
+// que le nom importé masquerait.
+import type { Get, Set as SetFn } from './flowTypes';
 
 export type CombatEventKind =
   | 'charge' | 'attack' | 'shoot' | 'cast' | 'item' | 'heal' | 'move' | 'flee'
@@ -51,6 +55,40 @@ export function evLines(
     actorId,
     targetId,
   }));
+}
+
+/**
+ * ROUTAGE UNIQUE d'une conséquence écrite : EN COMBAT elle va au `battle.log` — la surface que le
+ * joueur regarde (panneau « Journal de combat » + toast) —, HORS combat au `journal` d'exploration.
+ *
+ * Pourquoi ici et une seule fois : une ligne jouée pendant un combat qui n'atterrit que dans
+ * `state.journal` « finit en rien » (le journal d'exploration n'est pas ouvrable en combat).
+ *
+ * Consommateurs : `cascade.ts` `commitStep`, `corruptionFlow.ts` `resolveRenounce`, et les deux
+ * sorties de `state/combatFlow.ts` — `finishPlayerAction` (qui garde `markActed` / `action:null` au
+ * site et passe le drain de `pendingLogQueue` en `extra`) et `castRefused`.
+ *
+ * MARQUE « dé fixé » sur les DEUX branches : `store.log` la pose pour le journal, `markFixedDie` la
+ * pose ici pour le `battle.log` — une conséquence de dé POSÉ garde sa provenance, combat ouvert ou
+ * non. Le DRAIN de `pendingLogQueue` n'est PAS fait ici (il vit dans `state/combatEffects.ts`,
+ * module lourd) : le site qui en a besoin le passe en `extra`.
+ */
+export function journaliser(
+  get: Get,
+  set: SetFn,
+  lines: string[],
+  kind: CombatEventKind = 'info',
+  opts?: { actorId?: string; extra?: CombatEvent[] },
+): void {
+  const extra = opts?.extra ?? [];
+  if (!lines.length && !extra.length) return;
+  const b = get().battle;
+  if (!b) {
+    get().log(lines);
+    return;
+  }
+  const dites = fixedJetOpen(get()) ? lines.map(markFixedDie) : lines;
+  set({ battle: { ...b, log: [...b.log, ...evLines(dites, kind, opts?.actorId), ...extra] } });
 }
 
 /**

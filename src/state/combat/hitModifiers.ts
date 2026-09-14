@@ -27,9 +27,8 @@ import type { Get, Set as SetFn } from '../flowTypes';
 import type { Combatant, Weapon } from '../../engine/types';
 import type { TraitList } from '../../engine/statEntry';
 import type { AttackResult } from '../../engine/combat';
-import { d10 } from '../../engine/dice';
-import { battleRng } from '../battleRng';
-import { wardSaves, traitCapability, formatWardSave } from '../../engine/traits/dispatch';
+import type { SeuilDeSauvegarde } from '../pendings';
+import { wardSaves, traitCapability } from '../../engine/traits/dispatch';
 import { canPushback } from '../../engine/qualities/dispatch';
 import { isOutOfAction, loseWounds, applyZeroWounds, isMagicallyAsleep, wakeSleeper } from '../../engine/conditions';
 import { bonus, effectiveChar } from '../../engine/characteristics';
@@ -129,6 +128,23 @@ export function seuilsDeSauvegarde(
   return [...meilleur.values()];
 }
 
+/**
+ * CE QUE SAUVER FAIT À UNE TOUCHE — « le coup est ignoré, même s'il s'agit d'un critique » (LDB 85
+ * l.98, LDB 85 l.278). ÉCRITURE UNIQUE lue par TOUS les sites qui jugent la touche : le registre à la
+ * ré-entrée, les effets d'une attaque gratuite, la reprise d'un maillon de balayage. PURE.
+ *
+ * CE QUI EST IGNORÉ est ce que le livre nomme : les Dégâts, les Blessures, le Critique — et le coup de
+ * grâce d'un Inconscient (LDB 16 l.113), qui est lui aussi « un coup reçu ».
+ *
+ * CE QUI RESTE VRAI : la touche a bien EU LIEU (`hit`). Le livre lie le gain d'Avantage au Test, pas
+ * aux Blessures — « Si vous remportez le Test, vous touchez votre adversaire et gagnez +1 Avantage »
+ * (LDB 13 l.123), « Sur un succès, vous touchez votre adversaire et gagnez +1 Avantage » (LDB 13
+ * l.125) : un coup sauvé garde donc son Avantage, son Engagement et sa ligne de journal.
+ */
+export function toucheSauvee(res: AttackResult): AttackResult {
+  return { ...res, woundsLost: 0, damage: 0, critical: false, autoKill: false };
+}
+
 /** Projectile « constitué de matière organique » (Bouclier anti-flèches, LDB 47) — flag maison
  *  éditable, keyé par id (`Weapon.organicProjectile`). */
 export function organicProjectile(w: Weapon): boolean {
@@ -154,6 +170,10 @@ export interface HitModifierCtx {
   attaque: TypeDAttaque;
   res: AttackResult;
   sink: (line: string) => void;
+  /** LA PORTE des dés d'une SAUVEGARDE (#1508) : un modifier ne ROULE pas, il DÉCLARE ses seuils et la
+   *  touche telle qu'il la voit — l'appelant pousse l'étape de dé (`pousserSauvegarde`) et SUSPEND sa
+   *  résolution avant toute mutation. Canal REQUIS : c'est la seule façon d'obtenir un dé ici. */
+  ouvrirSauvegarde: (seuils: SeuilDeSauvegarde[], res: AttackResult) => void;
   /** Un TIERS a encaissé à la place de la cible (Martyr) — l'appelant en tire ce qui ne relève pas du
    *  registre (l'interruption de Focalisation vit dans `combatFlow`, que ce module n'importe pas). */
   encaisse?: (c: Combatant, pb: number) => void;
@@ -165,7 +185,8 @@ export type TypeDAttaque = 'melee' | 'ranged' | 'magique';
 
 /** Un modifier de touche = une sauvegarde NOMMÉE qui TRANSFORME `res`. `order` fixe sa position dans
  *  la séquence (l'ordre RAW est encodé par `order`). `apply` RE-TESTE `ctx.res` et renvoie le `res`
- *  (inchangé ou transformé). Ne SUSPEND jamais (pas de pending). */
+ *  (inchangé ou transformé). Un modifier ne suspend RIEN : quand il lui faut un dé, il le DÉCLARE
+ *  (`ouvrirSauvegarde`) — c'est l'appelant qui pousse l'étape et suspend, et la chaîne s'arrête là. */
 export interface HitModifier {
   id: string;
   order: number;
@@ -183,12 +204,36 @@ export function registerHitModifier(h: HitModifier): void {
   MODIFIERS.sort((a, b) => a.order - b.order);
 }
 
+/**
+ * CE QUE LA CHAÎNE REND : la touche threadée, et le fait qu'un dé ait été DÉCLARÉ — auquel cas la
+ * chaîne s'est ARRÊTÉE là. Champ de RETOUR, jamais un drapeau sur `AttackResult` : la suspension est
+ * un fait de FLUX, pas une propriété de la touche — posé sur `res`, il voyagerait dans la charge
+ * sérialisée de l'étape et reviendrait VRAI à la ré-entrée. Le type oblige chaque appelant à le voir.
+ */
+export interface ToucheApresModifiers {
+  res: AttackResult;
+  suspendu: boolean;
+}
+
 /** Enchaîne les modifiers dans l'ordre `order` : pour chacun, `ctx.res = modifier.apply(ctx)` (thread
  *  `res`). Chaque modifier re-teste l'état courant de `res` — un modifier qui annule déjà les Dégâts
- *  fait no-oper les suivants via leur propre garde. Renvoie le `res` final. */
-export function runHitModifiers(ctx: HitModifierCtx): AttackResult {
-  for (const h of MODIFIERS) ctx.res = h.apply(ctx);
-  return ctx.res;
+ *  fait no-oper les suivants via leur propre garde.
+ *
+ *  UN DÉ DÉCLARÉ ARRÊTE LA CHAÎNE (#1508) : tant que la sauvegarde n'est pas tombée, la touche n'est
+ *  pas connue — un modifier d'ordre supérieur qui muterait l'état (Martyr `loseWounds`, Perturbante
+ *  `pushBackTiles`) le ferait AVANT le dé, puis une SECONDE fois à la ré-entrée. L'arrêt vit ICI, dans
+ *  le socle : aucun appelant ne peut l'oublier, et la porte est interceptée à la source (le canal
+ *  `ouvrirSauvegarde` est enveloppé) plutôt que sur la foi d'un drapeau rendu par le modifier.
+ *  À la ré-entrée (`res.sauvegarde` posée), `ward-saves` est TRAVERSANT et la chaîne tourne UNE fois. */
+export function runHitModifiers(ctx: HitModifierCtx): ToucheApresModifiers {
+  let suspendu = false;
+  const ouvrir = ctx.ouvrirSauvegarde;
+  const surveille: HitModifierCtx = { ...ctx, ouvrirSauvegarde: (seuils, res) => { suspendu = true; ouvrir(seuils, res); } };
+  for (const h of MODIFIERS) {
+    surveille.res = h.apply(surveille);
+    if (suspendu) break;
+  }
+  return { res: surveille.res, suspendu };
 }
 
 /** Modifiers enregistrés (diagnostic / garde-fou de test). */
@@ -216,26 +261,23 @@ registerHitModifier({
 
 registerHitModifier({
   // SITE UNIQUE de la sauvegarde « 1d10 ≥ Indice » (Démoniaque LDB 85 l.98, Protection LDB 85 l.278,
-  // et le Trait qu'un Dôme octroie, LDB 47 l.410) : un seul dé, quelle que soit la provenance de
-  // l'Indice. (Les héros n'ont pas ces traits → pas de double-jet sur les reprises de déviation.)
+  // et le Trait qu'un Dôme octroie, LDB 47 l.410) : un seul collecteur d'Indices, quelle que soit la
+  // provenance. Ce modifier ne ROULE RIEN (#1508) : il DÉCLARE ses seuils à la porte, qui pousse l'étape
+  // de dé pour TOUT porteur (`combatFlow.pousserSauvegarde`) ; la touche revient ici avec sa sauvegarde
+  // DÉCIDÉE (`res.sauvegarde`), et c'est ce champ qui interdit un second dé quand le même coup repasse
+  // par le registre après une autre fenêtre (Déviation Critique).
   id: 'ward-saves',
   order: 10,
-  apply: ({ get, attacker, target, attaque, res }) => {
+  apply: ({ get, attacker, target, attaque, res, ouvrirSauvegarde }) => {
     if (!res.hit || !res.woundsLost) return res;
-    // Le journal NOMME le Trait qui a réellement sauvé (ou manqué), et d'où il vient — jamais un
-    // « Démoniaque/Protection » à deviner. Graphie du seuil : `formatWardSave`, la seule. Un dé JETÉ
-    // s'ÉCRIT, qu'il sauve ou non : sans la ligne du RATÉ, le joueur voit ses Blessures tomber sous
-    // sa propre protection sans que rien ne le lui explique.
-    const rates: string[] = [];
-    for (const { thr, trait, dome } of seuilsDeSauvegarde(get().battle?.combatants ?? [], attacker, target, attaque, sceneMetresPerTile(get().scene))) {
-      const d = d10(battleRng());
-      const args = { name: target.label, roll: d, trait: formatWardSave(trait.id, thr), src: dome ? t('cf.wardFromDome') : '' };
-      if (d < thr) { rates.push(t('cf.wardFailed', args)); continue; }
-      // La réussite N'EFFACE PAS les dés déjà jetés : deux Traits (le sien + celui d'un Dôme) font deux
-      // dés, et les deux s'écrivent, dans l'ordre où ils sont tombés.
-      return { ...res, woundsLost: 0, damage: 0, critical: false, log: [...rates, t('cf.wardSaved', args)].join(' ') };
-    }
-    if (rates.length) res = { ...res, log: [res.log, ...rates].filter(Boolean).join(' ') };
+    // Sauvegarde déjà tombée : on APPLIQUE son issue. « le coup est ignoré, même s'il s'agit d'un
+    // critique » (LDB 85 l.98) — la ligne du dé, elle, est écrite par la porte (`cascade.lireEnSeuil`).
+    if (res.sauvegarde) return res.sauvegarde.sauve ? toucheSauvee(res) : res;
+    const seuils = seuilsDeSauvegarde(get().battle?.combatants ?? [], attacker, target, attaque, sceneMetresPerTile(get().scene))
+      .map(({ thr, trait, dome }) => ({ indice: thr, traitId: trait.id, dome }));
+    // GRAPPE DÉPENDANTE : les seuils partent ENSEMBLE à la porte, qui n'en ouvre qu'UN à la fois — le
+    // suivant n'existe que si le précédent a raté, aucun dé n'est minté d'avance.
+    if (seuils.length) ouvrirSauvegarde(seuils, res);
     return res;
   },
 });

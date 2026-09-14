@@ -5,6 +5,7 @@ import { applyAttackResult, runEnemyAI, applyCast } from '../../state/combatFlow
 import { findSpellById } from '../../data';
 import type { CastResult } from '../../engine/magic';
 import { seedBattleRng } from '../../state/battleRng';
+import { draineEtLit } from '../../state/cascadeTestKit';
 import type { Combatant, Weapon } from '../../engine/types';
 import type { AttackResult } from '../../engine/combat';
 
@@ -66,15 +67,17 @@ describe('Dôme — la sauvegarde qu’une zone OCTROIE (LDB 47 l.410)', () => {
     expect(lignes.some((l) => l.kind === 'shoot'), `premier acte du tireur : ${lignes.map((l) => l.text).join(' | ')}`).toBe(true);
   });
 
-  it('TIR de l’extérieur sur la protégée : la sauvegarde s’ouvre et le journal NOMME le Trait', () => {
+  it('TIR de l’extérieur sur la protégée : la sauvegarde s’ouvre À LA PORTE et nomme le Trait', () => {
     const { protegee, archer } = startDome();
     const avant = protegee.wounds.current;
     let sauve = false;
     // Le dé peut rater : on rejoue jusqu'à voir la sauvegarde tomber — c'est SA ligne qu'on vient lire.
     for (let i = 0; i < 40 && !sauve; i++) {
       protegee.wounds.current = avant;
-      applyAttackResult(useGame.getState, useGame.setState, archer, protegee, arc, tir());
-      sauve = useGame.getState().battle!.log.some((l) => /sauvegarde 1d10 : \d+ ≥ Protection \(6\+\) du Dôme\./.test(l.text));
+      // Depuis #1508 le coup est SUSPENDU sur l'étape de dé : c'est la fenêtre qui jette le 1d10.
+      const suspendu = applyAttackResult(useGame.getState, useGame.setState, archer, protegee, arc, tir());
+      expect(suspendu, 'le coup doit être suspendu sur sa sauvegarde, jamais résolu en silence').toBe(true);
+      sauve = draineEtLit(useGame.getState).some((x) => /sauvegarde 1d10 : \d+ ≥ Protection \(6\+\) du Dôme\./.test(x));
     }
     expect(sauve, 'aucune sauvegarde du Dôme en 40 tirs : elle ne s’ouvre pas').toBe(true);
   });
@@ -83,26 +86,33 @@ describe('Dôme — la sauvegarde qu’une zone OCTROIE (LDB 47 l.410)', () => {
     // Le défaut vécu : la ratée ne s'écrivait pas, et le joueur voyait ses Blessures tomber sous sa
     // propre protection sans une ligne pour l'expliquer.
     const { protegee, archer } = startDome();
+    // Les étapes s'APPENDENT à la séquence de l'arène (doctrine du slot) : ce qu'un tir ajoute se lit
+    // donc en DELTA de ce que le joueur a lu, jamais en valeur absolue.
+    let vues = 0;
     for (let i = 0; i < 20; i++) {
-      const avant = useGame.getState().battle!.log.length;
       protegee.wounds.current = 30;
       applyAttackResult(useGame.getState, useGame.setState, archer, protegee, arc, tir());
-      const lignes = useGame.getState().battle!.log.slice(avant).map((l) => l.text);
+      const lignes = draineEtLit(useGame.getState);
+      const total = lignes.filter((x) => /sauvegarde 1d10 : \d+ [≥<] Protection \(6\+\) du Dôme\./.test(x)).length;
       expect(
-        lignes.filter((x) => /sauvegarde 1d10 : \d+ [≥<] Protection \(6\+\) du Dôme\./.test(x)).length,
+        total - vues,
         `tir ${i + 1} — une ligne de sauvegarde et une seule : ${lignes.join(' | ')}`,
       ).toBe(1);
+      vues = total;
     }
   });
 
   it('MÊLÉE sous la voûte : « magiques ou à distance » — aucune sauvegarde ne répond', () => {
     const { protegee, orc } = startDome();
+    const lues: string[] = [];
     for (let i = 0; i < 40; i++) {
       protegee.wounds.current = 20;
-      applyAttackResult(useGame.getState, useGame.setState, orc, protegee, epee, tir());
+      const suspendu = applyAttackResult(useGame.getState, useGame.setState, orc, protegee, epee, tir());
+      expect(suspendu, 'aucune étape de sauvegarde ne s’ouvre en mêlée sous la voûte').toBe(false);
+      lues.push(...draineEtLit(useGame.getState));
     }
     expect(
-      useGame.getState().battle!.log.some((l) => l.text.includes('du Dôme')),
+      [...useGame.getState().battle!.log.map((l) => l.text), ...lues].some((x) => x.includes('du Dôme')),
       'le dôme ne couvre pas le corps à corps',
     ).toBe(false);
   });

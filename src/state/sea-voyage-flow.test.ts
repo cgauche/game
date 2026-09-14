@@ -726,7 +726,12 @@ describe('Périls d’AUTEUR lus au fil des jours en mer — C.22 (route.perils)
     for (let i = 0; i < 30 && get().pendingCascade && !get().battle; i++) stepCascade();
     expect(get().travelPlan!.interrupted).toBe(true); // la traversée s’arrête sur le combat d’auteur
     expect(get().battle).toBeTruthy();
-    expect(get().journal.some((l) => l.includes('Péripétie : Kraken'))).toBe(true);
+    // La ligne du péril est la CONSÉQUENCE de son étape, écrite par le routage unique
+    // (`combatLog.journaliser`) : le combat d'auteur étant OUVERT à cet instant, elle va au `battle.log`
+    // — la surface que le joueur regarde en combat — et non au journal d'exploration, non ouvrable là.
+    // On lit donc UNE surface, NOMMÉE : le journal du combat ouvert.
+    const lues = get().battle!.log.map((e) => e.text);
+    expect(lues.some((l) => l.includes('Péripétie : Kraken'))).toBe(true);
   });
 });
 

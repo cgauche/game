@@ -256,7 +256,11 @@ describe('#1117 L4 — RAFALE de seuils de Corruption (LDB 19 l.70) : une file, 
 describe('#1281 — une rangée RÉSOLUE D’OFFICE laisse SA ligne de dé (zéro jet silencieux)', () => {
   /** Ligne de trace du socle : « porteur — libellé : dé/cible → issue (DR ±n). » */
   const TRACE = /^(.+) — (.+) : (\d+)\/(\d+) → (réussi|échec) \(DR [+-]\d+\)\.$/;
-  const traces = () => g().journal.filter((l) => TRACE.test(l));
+  /** CE QUE LE JOUEUR LIT : la bande de fin de combat se joue COMBAT OUVERT — ses lignes vont donc au
+   *  journal de COMBAT (`combatLog.journaliser`), la seule surface ouverte alors ; `state.journal`
+   *  reste lu pour le cas où le combat serait déjà refermé. */
+  const lu = (): string[] => [...(g().battle?.log ?? []).map((e) => e.text), ...g().journal];
+  const traces = () => lu().filter((l) => TRACE.test(l));
 
   it('cadence RAPIDE, fin de combat : chaque rangée auto-résolue porte SA ligne de dé au journal', () => {
     const { H, E } = setupCoop({ heros: 2 });
@@ -293,7 +297,7 @@ describe('#1281 — une rangée RÉSOLUE D’OFFICE laisse SA ligne de dé (zér
 
     openCombatEndCascade(g, useGame.setState);
 
-    const journal = g().journal;
+    const journal = lu();
     const iDe = journal.findIndex((l) => TRACE.test(l));
     const iGain = journal.findIndex((l) => l.includes('Point de Corruption'));
     expect(iDe, 'la ligne de dé EXISTE (elle disparaissait entièrement avant #1281)').toBeGreaterThanOrEqual(0);

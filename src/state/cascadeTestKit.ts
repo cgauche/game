@@ -94,9 +94,12 @@ export function draineCascade(get: () => GameState, max = 200): string[] {
 }
 
 /**
- * DRAINE la séquence active et RASSEMBLE tout ce que le joueur a LU : le journal ENTIER (les lignes
- * d'avant la séquence comptent — un flux en écrit avant d'ouvrir) ET celles que portent ses ÉTAPES — conséquences (`outcome`) et charge de
- * révélation (`reveal.lines`). Ce qu'une fenêtre montre ne passe pas par le journal : une révélation
+ * DRAINE la séquence active et RASSEMBLE tout ce que le joueur a LU : LES DEUX SURFACES DE JOURNAL —
+ * le `journal` d'exploration ET le `battle.log` (un combat ouvert route là ses conséquences,
+ * `combatLog.journaliser` : c'est la surface que le joueur regarde en combat, le journal d'exploration
+ * n'y étant pas ouvrable) — ENTIERS (les lignes d'avant la séquence comptent : un flux en écrit avant
+ * d'ouvrir), ET celles que portent ses ÉTAPES — conséquences (`outcome`) et charge de révélation
+ * (`reveal.lines`). Ce qu'une fenêtre montre ne passe pas par le journal : une révélation
  * porte SES lignes sur SON étape, et les lire au journal ne prouverait rien de ce que le joueur voit.
  *
  * Les étapes sont relues à CHAQUE pas (une étape apparaît en cours de route, une autre reçoit sa
@@ -114,7 +117,7 @@ export function draineEtLit(get: () => GameState, max = 200): string[] {
   };
   capte();
   for (let i = 0; i < max && get().pendingCascade; i++) { avanceEtapeCascade(get); capte(); }
-  return [...get().journal, ...[...parEtape.values()].flat()];
+  return [...get().journal, ...(get().battle?.log ?? []).map((e) => e.text), ...[...parEtape.values()].flat()];
 }
 
 /**

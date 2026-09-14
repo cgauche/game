@@ -12,6 +12,7 @@ import { useGame, type BattleState } from '../store';
 import { applyCast } from '../combatFlow';
 import { evaluateMissile, type CastResult } from '../../engine/magic';
 import { seedBattleRng, battleRng } from '../battleRng';
+import { draineEtLit } from '../cascadeTestKit';
 import { emptyScene } from '../scene';
 import type { Combatant } from '../../engine/types';
 
@@ -43,11 +44,14 @@ function setBattle(combatants: Combatant[]): void {
 const cr = (sl: number): CastResult =>
   ({ cast: true, roll: 44, target: 60, sl, isCritical: false, isFumble: false, log: '' });
 
-/** Lance le Projectile par le VRAI chemin (`applyCast`). */
-function castMissile(caster: Combatant, target: Combatant): void {
+/** Lance le Projectile par le VRAI chemin (`applyCast`) PUIS JOUE LA PORTE : depuis #1508 la sauvegarde
+ *  naît en ÉTAPE de dé NON RÉSOLUE (une par cible, poussée avant toute mutation) et c'est la fenêtre qui
+ *  la jette — le drainage tient ici le rôle du joueur. Rend ce que celui-ci a LU. */
+function castMissile(caster: Combatant, target: Combatant): string[] {
   const spell = missileSpell();
   const mres = evaluateMissile(caster, target, spell, cr(4));
   applyCast(useGame.getState, useGame.setState, caster, target, spell, mres, true, false, undefined, undefined);
+  return draineEtLit(useGame.getState);
 }
 
 /** Aura de Dôme portée par `warden`, d'Indice `indice` (la DONNÉE du sort, op `domeWard`). */
@@ -132,14 +136,31 @@ describe('LDB 47 l.410 — le Dôme couvre contre les attaques MAGIQUES, et son 
     const cible = mk('hero', 'couvert', { pos: { x: 6, y: 5 }, traits: [{ id: 'demoniaque', value: 11 }] as never });
     const mage = mk('enemy', 'mage', { pos: { x: 20, y: 5 } });
     setBattle([warden, cible, mage]);
-    castMissile(mage, cible);
-    const lignes = useGame.getState().battle!.log.map((l) => l.text);
+    const lignes = castMissile(mage, cible);
     const rate = lignes.findIndex((x) => /n’ignore pas le coup — sauvegarde 1d10 : \d+ < Démoniaque \(11\+\)\./.test(x));
     const sauve = lignes.findIndex((x) => /ignore le coup — sauvegarde 1d10 : \d+ ≥ Protection \(1\+\) du Dôme\./.test(x));
     expect(rate, `la RATÉE du Trait propre manque : ${lignes.join(' | ')}`).toBeGreaterThanOrEqual(0);
     expect(sauve, `la RÉUSSIE du Dôme manque : ${lignes.join(' | ')}`).toBeGreaterThanOrEqual(0);
     expect(rate, 'les deux dés se lisent dans l’ordre où ils sont tombés').toBeLessThanOrEqual(sauve);
     expect(cible.wounds.current, 'le Dôme a sauvé : aucune Blessure').toBe(30);
+  });
+
+  /**
+   * F2 — la REPRISE d'une sauvegarde RATÉE (`reprendreApresSauvegarde` → `appliquerToucheDeProjectile`)
+   * rend ses lignes en `string[]` : jouées EN COMBAT, elles doivent atterrir dans le journal de COMBAT,
+   * la seule surface que le joueur regarde alors (`combatLog.journaliser`). Sinon le dénouement de la
+   * touche « finit en rien » — le journal d'exploration n'est pas ouvrable pendant un combat.
+   */
+  it('F2 — sauvegarde RATÉE : le journal de la touche (Blessures) est dans `battle.log`, pas dans `journal`', () => {
+    const mage = mk('hero', 'mage');
+    const demon = mk('enemy', 'demon', { traits: [{ id: 'demoniaque', value: 11 }] as never });
+    setBattle([mage, demon]);
+    castMissile(mage, demon);
+    const lu = useGame.getState().battle!.log.map((e) => e.text).join(' | ');
+    expect(demon.wounds.current, 'aucun 1d10 n’atteint 11 : le coup porte').toBeLessThan(30);
+    expect(lu, 'le dé raté se lit').toContain('n’ignore pas le coup');
+    expect(lu, 'et le dénouement de la touche AUSSI — la reprise ne le perd pas').toMatch(/Blessure/);
+    expect(useGame.getState().journal, 'rien ne part au journal d’exploration pendant un combat').toEqual([]);
   });
 
   it('Dôme d’Indice 1, lanceur DEDANS : « provenant de l’extérieur » — rien n’est dévié', () => {

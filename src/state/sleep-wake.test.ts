@@ -23,6 +23,7 @@ const run = (attacker: Combatant, target: Combatant, autoKill = true): AttackRes
     attacker, target, weapon: { type: 'melee', name: 'Épée' } as never, attaque: 'melee',
     res: { hit: true, autoKill } as unknown as AttackResult,
     get: (() => ({ battle: { combatants: [] } })) as never, set: (() => {}) as never, sink: () => {},
+    ouvrirSauvegarde: () => {}, // aucune sauvegarde ici : ce dormeur n'a aucun Trait à Indice
   });
 
 describe('isMagicallyAsleep — dormeur ≠ KO', () => {

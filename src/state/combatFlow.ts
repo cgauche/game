@@ -11,7 +11,7 @@ import { toRecapLines } from './recapLine';
 import { Combatant, HitLocation, Weapon, Difficulty, type ShipPoste, type EffectSource } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
-import { ev, evLines, type CombatEventKind } from './combatLog';
+import { ev, evLines, journaliser, type CombatEventKind } from './combatLog';
 import { t as tr } from '../i18n'; // alias : `t` est un identifiant local très fréquent ici (cibles/jets)
 import { TEMPO } from './tempo';
 import { beatHold, approachMs, afterApproach } from './combatDirector';
@@ -246,7 +246,7 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
-import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, drainPendingLog, registerCastSpellEffect, registerSuiteCombat, ouvrirChute, cloturer, registerCloture } from './combatEffects';
+import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, drainPendingLog, registerCastSpellEffect, registerSuiteCombat, ouvrirChute, cloturer, registerCloture, revealPurpose } from './combatEffects';
 import { teamCommandMod } from './commandTeam';
 // --- Manœuvres de créature (énumération + résolveurs roll/apply) extraites → combatManeuvers.ts (baril) ---
 export * from './combatManeuvers';
@@ -262,8 +262,8 @@ export * from './combat/triggeredTest'; // baril : enregistre l'applier de casca
 import { runCombatFlow, routeTriggeredTest, bandeTriggeredTest, rollFrozenOpposedAttacker, frozenOpposedBatchStep, simpleBatchTestStep } from './combat/triggeredTest'; // usage interne (applyCast : exécuteur de Flow de sort EN COMBAT, after-aware → canal de journal unique ; Surprise : opposition figée + bande de guetteurs)
 export { aiMaybeFrenzy, resolvePsychAI, fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // baril : enregistre les hooks de début de tour ennemi (effet de bord) + ré-export pour frenzy*.test / psych*.test + effets de bord de tour + gate d'action
 // Sauvegardes post-touche en registre `HitModifier` ordonné (state/combat/hitModifiers, module FEUILLE).
-import { runHitModifiers } from './combat/hitModifiers'; // usage interne (applyAttackResult + applyCast : SITE UNIQUE des sauvegardes de touche)
-export { runHitModifiers, registerHitModifier, martyrGuardOf, wardedAgainst, organicProjectile } from './combat/hitModifiers'; // baril : enregistre les modifiers (effet de bord) + ré-export pour applyCast / les tests (l11-sorts-zones, etc.)
+import { runHitModifiers, toucheSauvee } from './combat/hitModifiers'; // usage interne (applyAttackResult + applyCast : SITE UNIQUE des sauvegardes de touche)
+export { runHitModifiers, registerHitModifier, martyrGuardOf, wardedAgainst, organicProjectile, toucheSauvee } from './combat/hitModifiers'; // baril : enregistre les modifiers (effet de bord) + ré-export pour applyCast / les tests (l11-sorts-zones, etc.)
 import {
   trampleTarget, bestDefenseMode,
   rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver, availableFreeAttackOps,
@@ -271,13 +271,13 @@ import {
   setManeuverPostHitHook,
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type FlowTest, type EffectTrigger } from './flow';
-import { registerCascadeApplier, registerCascadeTableFold, runCascadeImmediate, registerTableStep, rollTableStep, poserCurseurCascade } from './cascade';
+import { registerCascadeApplier, registerCascadeTableFold, runCascadeImmediate, registerTableStep, rollTableStep, poserCurseurCascade, lireEnSeuil, etapesDeLaFenetre } from './cascade';
 import { nightBands, splitBandRows } from './nightBands';
 import { combatEndBands, combatEndRowMeta } from './combatEndBands';
-import type { CascadeStepMeta } from './pendings';
+import type { CascadeStepMeta, EnchainementDuCoup, SeuilDeSauvegarde, SauvegardeSuite, SuiteDeCoup, ToucheDeProjectile } from './pendings';
 import {
   freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, monoStep, pousseSi,
-  hostStep, openSequence, openBand, pushHost, pushTableDone, pushTable, pushChoice, pushDisplay, tableStep, makeBandFactory,
+  hostStep, openSequence, openBand, pushHost, pushTableDone, pushTable, pushChoice, pushDisplay, pushDie, tableStep, makeBandFactory,
   type Consequence, type TableSpec,
 } from './rollSeam';
 import { revealToStep } from './revealStep';
@@ -2129,7 +2129,7 @@ registerCascadeTableFold('deviation', (step, get) => {
   const reveal = previewCritEntry(target, crit, { attackerId: p.attackerId, weapon: p.weapon?.label });
   const dev: PendingDeviation = {
     mode: 'melee', attackerId: p.attackerId, targetId: p.targetId, weapon: p.weapon, res: p.res,
-    crit, reveal, resumeAfter: true,
+    crit, reveal, resumeAfter: true, ...(p.suite ? { suite: p.suite } : {}),
   };
   return { ...step, deviation: dev, ...(step.options ? { reveal } : {}) };
 });
@@ -2217,6 +2217,63 @@ export function siegeBlastRadiusTiles(gunner: Combatant, weapon: Weapon, scene: 
   return blastRadiusTiles(eff, sceneMetresPerTile(scene));
 }
 
+/**
+ * POUSSE l'étape de SAUVEGARDE « 1d10 ≥ Indice » (#1508) — FABRIQUE UNIQUE des deux chemins de touche
+ * (coup physique et Projectile magique) : même étape, même lecture, un seul endroit à changer.
+ *
+ * AUCUNE gate de possession sur le TIRAGE, comme pour la table d'un Critique : l'étape est poussée pour
+ * TOUT porteur (héros, PNJ, démon) et c'est le SOCLE qui décide de la fenêtre — un porteur qu'aucun siège
+ * humain ne tient voit son dé résolu D'OFFICE et franchi, visible au bilan.
+ *
+ * GRAPPE : un seul dé ouvert à la fois (`seuils[0]`), le suivant n'étant poussé par l'applier que si
+ * celui-ci a RATÉ (LDB 85 l.98 / l.278 : chaque Trait offre SA sauvegarde, aucune n'est mintée d'avance).
+ */
+function pousserSauvegarde(set: SetFn, porteurId: string, seuils: SeuilDeSauvegarde[], suite: SauvegardeSuite): void {
+  pushDie(set, {
+    id: `sauvegarde-${porteurId}`,
+    kind: 'sauvegarde',
+    label: tr('step.sauvegarde'),
+    icon: 'journal/critical',
+    spec: { n: 1, sides: 10 },
+    actorId: porteurId,
+    seuil: seuils[0],
+    wardSave: { seuils, suite },
+  }, revealPurpose('sequence', false));
+}
+
+/**
+ * APPLIER de l'étape de SAUVEGARDE (#1508) : le dé est tombé (lancé ou POSÉ). La lecture est celle du
+ * socle (`cascade.lireEnSeuil`), qui écrit AUSSI la ligne — un dé jeté s'écrit, qu'il sauve ou non.
+ *  - RATÉ et un seuil reste → le dé suivant de la grappe s'ouvre (patron `ouvrirDesDOps`) ;
+ *  - sinon → la suite du coup RÉ-ENTRE à son site d'origine avec la sauvegarde décidée, jamais une
+ *    application parallèle (patron de l'applier `deviation`, qui rejoue `applyAttackResult`).
+ */
+registerCascadeApplier('sauvegarde', (get, set, step, porteur) => {
+  const ws = step.wardSave;
+  if (!ws || !step.de?.result) return;
+  // Porteur introuvable = conséquence PERDUE : elle se DIT (patron `opsDe`/`chuteDe`).
+  if (!porteur) return { consequences: freeCons([tr('cascade.cibleDisparue', { label: step.label ?? '' })]) };
+  const { sauve, ligne } = lireEnSeuil(ws.seuils[0], step.de.result, porteur.label);
+  const reste = ws.seuils.slice(1);
+  if (!sauve && reste.length) {
+    pousserSauvegarde(set, porteur.id, reste, ws.suite);
+    return { consequences: freeCons([ligne]) };
+  }
+  return { consequences: freeCons([ligne, ...reprendreApresSauvegarde(get, set, ws.suite, sauve)]) };
+});
+
+/** RÉ-ENTRE dans le site que la sauvegarde avait suspendu, avec son issue. La décision voyage sur la
+ *  TOUCHE elle-même (`AttackResult.sauvegarde`, jumeau de `prerolledCrit`) : elle survit ainsi à la
+ *  fenêtre SUIVANTE (Déviation Critique), qui repasse par le registre sans rejouer de dé. */
+function reprendreApresSauvegarde(get: Get, set: SetFn, suite: SauvegardeSuite, sauve: boolean): string[] {
+  if (suite.mode === 'projectile') {
+    return appliquerToucheDeProjectile(get, set, suite.touche, { sauve });
+  }
+  resumeMeleeAfterSuspension(get, set, suite.attackerId, suite.targetId, suite.weapon,
+    { ...suite.res, sauvegarde: { sauve } }, suite.deviated, undefined, suite.suite);
+  return [];
+}
+
 export function applyAttackResult(
   get: Get,
   set: SetFn,
@@ -2226,9 +2283,14 @@ export function applyAttackResult(
   res: AttackResult,
   deviated?: boolean,
   prerolledCrit?: CriticalResolved, // « Subir » après déviation : applique CE Critique (déjà montré) sans re-tirer
-  deferAttackerAdvantage?: boolean, // Maniement de deux armes (LDB 10 l.767-773) : l'Avantage de l'attaquant est accordé à part (si les deux touchent)
-  grapple?: boolean, // Empoignade (LDB 14 l.159) : « Au lieu d'infliger des Dégâts » — sur une touche, pose l'Empoignade + Empêtré au lieu de blesser
+  // CE QUE L'APPELANT FERA APRÈS CE COUP (#1508) — les drapeaux qui font de ce coup CE coup (Avantage
+  // différé du Maniement de deux armes, Empoignade) et ce qui reste à jouer derrière lui (maillon de
+  // balayage, attaque gratuite). Donnée d'ENTRÉE : toute fenêtre ouverte ici l'emporte dans sa charge et
+  // la rend à la reprise, si bien qu'une fenêtre de plus (sauvegarde PUIS Déviation) ne la perd pas.
+  suite?: SuiteDeCoup,
 ): boolean {
+  const deferAttackerAdvantage = suite?.deferAttackerAdvantage;
+  const grapple = suite?.grapple;
   // SEAM du télégraphe (#1143) : cette fonction est l'entonnoir UNIQUE de résolution d'une attaque —
   // toutes ses sorties écrivent la ligne de journal du geste, que le bandeau prend alors. Le réticule
   // d'intention n'a donc plus lieu d'être ici, quel que soit le chemin qui a mené à l'application.
@@ -2243,16 +2305,32 @@ export function applyAttackResult(
   // 5 réveil d'un dormeur → 8 Bouclier anti-flèches → 10 sauvegarde « 1d10 ≥ Indice », UNIQUE (traits
   // propres ET Trait octroyé par un Dôme, RNG) → 40 Martyr → 50 Perturbante.
   // Chaque modifier RE-TESTE l'état courant de `res` et le TRANSFORME — ordre encodé par `order`.
-  // AUCUN ne SUSPEND (pas de pending) ; autoKill et l'offre de Déviation Critique restent INLINE
+  // Un modifier ne suspend RIEN lui-même : il DÉCLARE (`ouvrirSauvegarde`), c'est ICI que l'étape est
+  // poussée et la résolution suspendue ; autoKill et l'offre de Déviation Critique restent INLINE
   // ci-dessous. Les saves posent leur ligne dans `res.log` (journalisé par l'`ev(evKind, res.log, …)`
   // final) → `sink` no-op ici. `encaisse` : ce qu'un TIERS a pris (Martyr) — l'interruption de
   // Focalisation du prêtre vit ici, le registre n'important rien de ce module.
   const tiersLog: string[] = [];
-  res = runHitModifiers({
+  // La SAUVEGARDE « 1d10 ≥ Indice » (LDB 85 l.98 / l.278, LDB 47 l.410) ne se roule plus ici : le registre
+  // la DÉCLARE, la porte la joue, et la résolution du coup est SUSPENDUE jusque-là — AUCUNE mutation de la
+  // cible avant (ni Empoignade, ni mort-auto, ni Critique), exactement comme la fenêtre de Déviation
+  // ci-dessous. L'applier de l'étape RÉ-ENTRE ici avec la décision portée par la touche (`res.sauvegarde`).
+  const apresModifiers = runHitModifiers({
     get, set, attacker, target, weapon, res, sink: () => {},
     attaque: weapon.type === 'melee' ? 'melee' : 'ranged',
     encaisse: (c) => { tiersLog.push(...checkFocusInterruption(get, set, c)); },
+    ouvrirSauvegarde: (seuils, courant) => {
+      pousserSauvegarde(set, target.id, seuils, {
+        mode: 'melee', attackerId: attacker.id, targetId: target.id, weapon, res: courant,
+        ...(deviated !== undefined ? { deviated } : {}),
+        ...(suite ? { suite } : {}),
+      });
+    },
   });
+  res = apresModifiers.res;
+  // Un dé déclaré a ARRÊTÉ la chaîne : aucun modifier d'ordre supérieur n'a muté quoi que ce soit. La
+  // résolution repart de l'applier 'sauvegarde', qui rejouera la chaîne ENTIÈRE une fois la touche connue.
+  if (apresModifiers.suspendu) return true;
   // Empoignade (LDB 14 l.159) : « Au lieu d'infliger des Dégâts ». Sur une touche, on NEUTRALISE Dégâts,
   // Critique et mort-auto de CE coup (les branches Surpris/Engagé/Avantage/journal restent intactes) ; la
   // pose de l'Empoignade + de l'État *Empêtré* se fait après l'Engagement, plus bas.
@@ -2346,7 +2424,7 @@ export function applyAttackResult(
           targetId: target.id, offerte,
           severite: {
             decl: critSeverityDecl(target, cloc, overkill0, twice),
-            charge: { attackerId: attacker.id, targetId: target.id, weapon, res, location: cloc, overkill: overkill0, twice },
+            charge: { attackerId: attacker.id, targetId: target.id, weapon, res, location: cloc, overkill: overkill0, twice, ...(suite ? { suite } : {}) },
             label: stepPrecision(tr('step.blessureCritique'), locationLabel(cloc, target.bodyShape)),
           },
         });
@@ -2359,7 +2437,7 @@ export function applyAttackResult(
         const reveal = previewCritEntry(target, crit, { attackerId: attacker.id, weapon: weapon?.label });
         pushDeviationStep(set, {
           targetId: target.id, offerte: true,
-          pretire: { mode: 'melee', attackerId: attacker.id, targetId: target.id, weapon, res, crit, reveal, resumeAfter: true },
+          pretire: { mode: 'melee', attackerId: attacker.id, targetId: target.id, weapon, res, crit, reveal, resumeAfter: true, ...(suite ? { suite } : {}) },
         });
         return true; // suspendu — la résolution part de l'applier 'deviation'
       }
@@ -3361,7 +3439,11 @@ function runCleaveChain(get: Get, set: SetFn, attacker: Combatant, chain: Cleave
     }
     const r = resolveAttack(get, attacker, next);
     if (!r) continue; // hors de portée (ne devrait pas : déjà filtré adjacent) — borne consommée tout de même
-    applyAttackResult(get, set, attacker, r.victim ?? next, r.weapon, r.res, false); // enchaînement : pas de modale de déviation imbriquée
+    // Le maillon SUIVANT entre AVEC le coup (même forme que la chaîne portée par `pendingDefense`
+    // ci-dessus) : toute fenêtre ouverte ici l'emporte, la reprise repart de là, et la case libérée ne se
+    // lit qu'APRÈS l'application (`resumeCleaveChain`).
+    if (applyAttackResult(get, set, attacker, r.victim ?? next, r.weapon, r.res, false, undefined,
+      { enchainement: { mode: 'chaine', hitIds, n: n + 1, bcc: chain.bcc, fm: chain.fm } })) return;
     const killed = isOutOfAction(next);
     if (killed && next.pos) {
       placeCombatant(attacker, get().scene, next.pos); // se déplace sur la case libérée
@@ -3448,6 +3530,50 @@ export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, targe
   }
 }
 
+/**
+ * CE QU'ON FAIT APRÈS UN COUP APPLIQUÉ (#1508) — ÉCRITURE UNIQUE de la queue d'un coup, jouée par le
+ * site d'origine quand rien ne l'a suspendu, et par la DERNIÈRE reprise sinon (`resumeMeleeAfterSuspension`).
+ * Tout ce qu'elle joue DÉPEND de l'issue du coup : le jouer avant le dé de sauvegarde, c'est le juger
+ * sur une touche dont l'effet sera peut-être ignoré (LDB 85 l.98).
+ *
+ * La touche est lue TELLE QU'ELLE A SURVÉCU (`hitModifiers.toucheSauvee`) : le coup a bien eu lieu
+ * (LDB 13 l.123), seul son effet est ignoré.
+ *
+ * Les deux premières branches sont MUTUELLEMENT EXCLUSIVES par construction du site d'origine
+ * (`dualMain` exige la main directrice ; `freeAttack` exige une manœuvre) — leur ordre interne n'a donc
+ * aucun effet observable, et l'enchaînement `hero` exige de n'être ni l'une ni l'autre.
+ * L'ENCHAÎNEMENT est une DÉCLARATION du site d'origine (`SuiteDeCoup.enchainement`), jamais un défaut
+ * muet : les deux portes du balayage ne sont PAS exclusives pour un héros conduit par l'Auto-combat
+ * (`tenuParUnHumain` vrai ET `aiDriven` vrai), et un fall-through en aurait ouvert une que le site
+ * d'origine avait écartée. Un coup qui ne déclare RIEN est un coup de la machine : il enchaîne comme
+ * `autoCleave` l'a toujours fait à la reprise (gardé par `aiDriven`).
+ */
+export function jouerLaSuiteDuCoup(get: Get, set: SetFn, attacker: Combatant, target: Combatant, res: AttackResult, suite?: SuiteDeCoup): void {
+  const touche = res.sauvegarde?.sauve ? toucheSauvee(res) : res;
+  if (suite?.freeAttack) {
+    applyFreeAttackEffects(get, attacker, target, suite.freeAttack.kind, touche);
+    set({ battle: { ...get().battle!, acted: suite.freeAttack.prevActed } }); // gratuite : l'Action rendue APRÈS le `markActed` de l'application
+  }
+  // Maniement de deux armes (LDB 10 l.767-773) : la main directrice a touché → sélection de la 2ᵉ cible.
+  if (suite?.dualMain && touche.hit) {
+    // Exception Critique : la 2ᵉ frappe utilise la valeur du tableau des Critiques — lue sur l'ÉTAPE de
+    // Critique que l'application vient d'appender à la séquence (elle n'existe qu'après le coup). Jouée
+    // depuis un APPLIER (reprise d'une sauvegarde), cette poussée vit encore dans la FENÊTRE d'insertion
+    // et pas dans `participants` : les deux se lisent, la fenêtre en dernier (elle est la plus récente).
+    const critValue = touche.critical
+      ? [...(get().pendingCascade?.participants ?? []), ...etapesDeLaFenetre()].reverse().find((s) => s.kind === 'critical')?.reveal?.dice
+      : undefined;
+    set({ pendingDualStrike: { attackerId: attacker.id, offWeaponUid: suite.dualMain.offWeaponUid, mainRoll: suite.dualMain.mainRoll, critValue } });
+  }
+  const enchainement: EnchainementDuCoup = suite?.enchainement ?? { mode: 'auto' };
+  switch (enchainement.mode) {
+    case 'hero': maybeHeroCleave(get, set, attacker, target, touche, enchainement.wasChain); break;
+    case 'chaine': resumeCleaveChain(get, set, attacker, target, enchainement); break; // la chaîne reprend où elle s'est arrêtée
+    case 'auto': autoCleave(get, set, attacker, target, touche); break; // balayage d'un attaquant conduit par l'IA
+    case 'aucun': break; // le site d'origine a tranché : aucun balayage ne suit ce coup
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Piétinement — action gratuite à 1 Avantage (LDB 85 - Traits de creature.md l.387)
 // ---------------------------------------------------------------------------
@@ -3529,8 +3655,13 @@ function applyTalentFreeAttack(get: Get, set: SetFn, actor: Combatant, op: Extra
   // (patron `applyFreeAttack`) — suspendue ici, appliquée à `defenseConfirm` (Action restaurée).
   if (maybeOpenDefense(get, set, actor, target, actor.weapons[0], { kind: fa.key, prevActed })) return;
   const r = resolveAttack(get, actor, target);
-  if (r) applyAttackResult(get, set, actor, r.victim ?? target, r.weapon, r.res, false);
-  set({ battle: { ...get().battle!, acted: prevActed } });
+  // L'Action entre AVEC le coup (même donnée `{kind, prevActed}` que la fenêtre de défense ci-dessus) :
+  // toute fenêtre la porte, et la reprise rend l'Action APRÈS son `markActed`.
+  const suite: SuiteDeCoup = { freeAttack: { kind: fa.key, prevActed } };
+  if (!r) return;
+  if (applyAttackResult(get, set, actor, r.victim ?? target, r.weapon, r.res, false, undefined, suite)) return;
+  // MÊME écriture de queue que la reprise ; enchaînement absent = `auto` (LDB 85 l.362).
+  jouerLaSuiteDuCoup(get, set, actor, r.victim ?? target, r.res, suite);
 }
 
 /** HOOK `freeAttack` (injecté dans la brique `combat/triggeredTest` par `createCombatSlice`) : pont
@@ -3627,9 +3758,14 @@ function applyFreeAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
   const weapon = freeAttackWeapon(kind, bonus);
   if (maybeOpenDefense(get, set, attacker, target, weapon, { kind, prevActed })) return true; // suspendu : resolve via défense
   const res = resolveMelee(attacker, target, weapon, battleRng(), { defense: cannotDefend(target) ? 'none' : bestDefenseMode(target) });
-  applyAttackResult(get, set, attacker, target, weapon, res, false);
-  set({ battle: { ...get().battle!, acted: prevActed } }); // gratuite : ne consomme pas l'Action
-  applyFreeAttackEffects(get, attacker, target, kind, res);
+  // La manœuvre entre AVEC sa suite (#1508) : ses effets authored attendent la touche RÉELLE et se jouent
+  // à la reprise sur la touche telle qu'elle a survécu (`toucheSauvee`) — le coup a bien eu lieu (LDB 13
+  // l.123), seul son EFFET est ignoré (LDB 85 l.98) ; l'Action, gratuite, est rendue par la reprise.
+  const suite: SuiteDeCoup = { freeAttack: { kind, prevActed } };
+  if (applyAttackResult(get, set, attacker, target, weapon, res, false, undefined, suite)) return true;
+  // La queue NON suspendue est LA MÊME écriture que celle de la reprise (effets de la manœuvre, Action
+  // rendue) — et l'enchaînement absent y vaut `auto` (LDB 85 l.362).
+  jouerLaSuiteDuCoup(get, set, attacker, target, res, suite);
   return false;
 }
 
@@ -3794,15 +3930,22 @@ function aiDistraire(get: Get, set: SetFn, enemy: Combatant, foe: Combatant): bo
 function resumeMeleeAfterSuspension(
   get: Get, set: SetFn, attackerId: string, targetId: string, weapon: Weapon, res: AttackResult,
   deviated: boolean | undefined, crit: CriticalResolved | undefined,
+  // Ce que la fenêtre de SAUVEGARDE (#1508) suspend EN PLUS du Critique : les drapeaux du coup que
+  // l'applier doit rendre à l'identique (une Empoignade reprise sans son drapeau infligerait des
+  // Dégâts, LDB 14 l.159), et la chaîne de balayage parquée par le maillon suspendu.
+  opts?: SuiteDeCoup,
 ): void {
   const battle = get().battle;
   if (!battle) return;
   const attacker = inBattleId(battle, attackerId);
   const target = inBattleId(battle, targetId);
   if (!attacker || !target) return;
-  if (applyAttackResult(get, set, attacker, target, weapon, res, deviated, crit)) return; // re-suspendu (fenêtre suivante)
-  autoCleave(get, set, attacker, target, res); // balayage de l'ennemi plus grand sur les AUTRES héros
-  // Maladresse du défenseur héros (parade/esquive active ratée sur un double, LDB 14 l.13).
+  // RE-SUSPENDU par la fenêtre SUIVANTE (sauvegarde ratée → Critique à dévier) : la suite lui est
+  // REPASSÉE, elle voyage dans SA charge, et c'est la DERNIÈRE reprise qui la joue — une fois.
+  if (applyAttackResult(get, set, attacker, target, weapon, res, deviated, crit, opts)) return;
+  // Maladresse du défenseur héros (parade/esquive active ratée sur un double, LDB 14 l.19) : DUE dès ce
+  // jet, et poussée AVANT la queue du coup — l'enchaînement que la queue joue peut rouvrir une fenêtre de
+  // défense sur la cible SUIVANTE, et la Maladresse de CE défenseur s'intercalerait alors dans ce coup-là.
   if (target.kind === 'hero' && defenderFumbled(res, target.weapons[0], target) && !isOutOfAction(target)) {
     // Maladresse = étape APPENDUE à la cascade, et le SEUL jet hôte dont la donnée vit SUR l'étape
     // (`fumble` : arme + Oups ! à tirer) — la branche `jet:'fumble'` du mint l'exige, il n'y a pas de
@@ -3810,6 +3953,9 @@ function resumeMeleeAfterSuspension(
     // (fumbleConfirm → cascadeNext).
     pushHost(get, set, { id: `cons-fumble-${target.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: target.id, fumble: { weapon: target.weapons[0], result: null } });
   }
+  // La queue du coup — ÉCRITURE UNIQUE partagée avec les sites d'origine (`attackConfirm`,
+  // `defenseConfirm`) : la reprise ne rejoue pas SA version de ce qui suit un coup.
+  jouerLaSuiteDuCoup(get, set, attacker, target, res, opts);
 }
 
 /** Résout une Déviation Critique — invoquée par l'applier de l'étape de séquence 'deviation' (la reprise
@@ -3821,7 +3967,7 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
   const battle = get().battle;
   if (!battle) return;
   if (dev.mode === 'melee') {
-    resumeMeleeAfterSuspension(get, set, dev.attackerId, dev.targetId, dev.weapon, dev.res, deviate, deviate ? undefined : dev.crit);
+    resumeMeleeAfterSuspension(get, set, dev.attackerId, dev.targetId, dev.weapon, dev.res, deviate, deviate ? undefined : dev.crit, dev.suite);
     return;
   }
   // mode 'self' (opposé/tir/magie) : auto-contenu — pas de ré-entrée d'attaque, pas de tail.
@@ -3860,7 +4006,7 @@ registerCascadeApplier('deviation', (get, set, step) => {
   const dev = step.deviation;
   if (!dev) return;
   if (!step.options && dev.mode === 'melee') {
-    resumeMeleeAfterSuspension(get, set, dev.attackerId, dev.targetId, dev.weapon, dev.res, undefined, dev.crit);
+    resumeMeleeAfterSuspension(get, set, dev.attackerId, dev.targetId, dev.weapon, dev.res, undefined, dev.crit, dev.suite);
     return;
   }
   resolveDeviation(get, set, dev, step.chosen === 'devier');
@@ -4251,16 +4397,17 @@ export function finishPlayerAction(get: Get, set: SetFn, lines: string[], kind: 
   if (battle) {
     // Filet de sécurité (cf. applyAttackResult) : un hook profond (ex. `onGainCondition` d'un ennemi
     // touché par les ops d'un sort de soutien, OU un rider de Domaine) a pu pousser des lignes dans la
-    // file différée APRÈS les drains inline d'`applyCast` → on les folde dans le MÊME `log` réécrit,
-    // avant que ce `set` ne le clobbere. File vide (cas commun heal/focus) → no-op.
+    // file différée APRÈS les drains inline d'`applyCast` → on les DRAINE ici et on les passe en `extra`
+    // au routage unique, qui les écrit dans le MÊME `log` que `lines`. File vide (heal/focus) → no-op.
     const b = markActed(get, set, battle); // scellé AVANT la copie du journal : les lignes du Test d'approche en font partie
-    const log = [...b.log, ...evLines(lines, kind), ...drainPendingLog(get, set)];
-    set({ battle: { ...b, action: null, selectedSpellId: null, log } });
+    const extra = drainPendingLog(get, set);
+    set({ battle: { ...b, action: null, selectedSpellId: null } });
+    journaliser(get, set, lines, kind, { extra });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
   } else {
     set({ party: [...get().party] });
-    get().log(lines);
+    journaliser(get, set, lines, kind);
     bus.emit(EVT.SCENE_DIRTY);
   }
 }
@@ -4291,9 +4438,7 @@ export function castTargetBlock(get: Get, caster: Combatant, spell: SpellData, t
 }
 
 export function castRefused(get: Get, set: SetFn, actor: Combatant, msg: string): void {
-  const battle = get().battle;
-  if (battle) set({ battle: { ...battle, log: [...battle.log, ev('cast', msg, actor.id)] } });
-  else get().log(msg);
+  journaliser(get, set, [msg], 'cast', { actorId: actor.id });
 }
 
 /** Incante un sort/prière sur une cible (résolution via src/engine/magic). */
@@ -5169,6 +5314,126 @@ function runCastFlow(get: Get, set: SetFn, target: Combatant, caster: Combatant,
   return drainPendingLog(get, set).map((e) => e.text);
 }
 
+/**
+ * LA TOUCHE d'un Projectile magique, APPLIQUÉE (#1508) — HISSÉE hors de la closure d'`applyCast` pour
+ * être RÉ-ENTRANTE : la sauvegarde « 1d10 ≥ Indice » se joue à la porte (étape par cible, push SYNCHRONE :
+ * la boucle multi-cibles de l'appelant continue), et l'applier de l'étape RAPPELLE cette fonction avec la
+ * décision — exactement comme `resolveDeviation` rappelle `applyAttackResult` avec le Critique construit.
+ * Sa charge est de la DONNÉE (`ToucheDeProjectile`) : elle voyage sur l'étape.
+ *
+ * RAMENE ses lignes de journal : l'appelant les place INLINE dans son `logLines` (application immédiate),
+ * l'applier en fait les conséquences de l'étape (reprise). Aucune mutation avant la sauvegarde.
+ */
+function appliquerToucheDeProjectile(get: Get, set: SetFn, ch: ToucheDeProjectile, sauvegarde?: { sauve: boolean }): string[] {
+  const lignes: string[] = [];
+  // `actorIn` (combat OU groupe) et non `inBattleId` : un Projectile se lance aussi HORS COMBAT
+  // (couture D d'`applyCast`, `battle == null`) — les protagonistes y vivent dans le groupe.
+  const caster = actorIn(get(), ch.casterId);
+  const cible = actorIn(get(), ch.targetId);
+  // Protagoniste disparu entre l'ouverture du dé et sa reprise : la conséquence se DIT (patron `opsDe`).
+  if (!caster || !cible) return [tr('cascade.cibleDisparue', { label: ch.spell.label })];
+  const spell = ch.spell;
+  let mres = ch.mres;
+  // Sauvegardes « après la touche » — MÊME registre ordonné que le coup physique
+  // (`state/combat/hitModifiers`), et c'est SON site unique : Démoniaque/Protection (LDB 85 l.98),
+  // Dôme (LDB 47 l.410, qui nomme les attaques magiques), Martyr.
+  // La touche est exprimée dans le vocabulaire partagé des touches (`AttackResult`) ; l'attaque
+  // est MAGIQUE, elle n'a pas d'arme.
+  const touche: AttackResult = {
+    hit: !!mres.hit, attackerRoll: mres.roll ?? 0, netSL: 0, critical: false,
+    advantageTo: null, defenderDefeated: false, log: '',
+    ...(mres.location ? { location: mres.location } : {}),
+    ...(mres.damage != null ? { damage: mres.damage } : {}),
+    ...(mres.woundsLost != null ? { woundsLost: mres.woundsLost } : {}),
+    ...(sauvegarde ? { sauvegarde } : {}),
+  };
+  const apresModifiers = runHitModifiers({
+    get, set, attacker: caster, target: cible, res: touche, attaque: 'magique', sink: () => {},
+    encaisse: (c) => { lignes.push(...checkFocusInterruption(get, set, c)); },
+    ouvrirSauvegarde: (seuils) => { pousserSauvegarde(set, cible.id, seuils, { mode: 'projectile', touche: ch }); },
+  });
+  const apresSaves = apresModifiers.res;
+  if (apresModifiers.suspendu) return lignes; // suspendu AVANT toute mutation : cette cible reprendra par l'applier
+  if (apresSaves.log) lignes.push(apresSaves.log);
+  mres = { ...mres, woundsLost: apresSaves.woundsLost, damage: apresSaves.damage };
+  if (!mres.hit || !mres.woundsLost) return lignes;
+  const currentBefore = cible.wounds.current;
+  const overkill = mres.woundsLost - currentBefore;
+  cible.wounds.current = Math.max(0, currentBefore - mres.woundsLost);
+  // Réouverture d'une plaie critique (LDB 18 / AA 07) : jumeau du coup physique (applyAttackResult) —
+  // un Projectile qui frappe une Localisation déjà porteuse d'une plaie non recousue y ajoute ses États Hémorragique.
+  const mloc = mres.location ?? 'corps';
+  const mReinj = reinjuryBleed(cible, mloc);
+  if (mReinj > 0) { addCondition(cible, COND.hemorragique, mReinj); lignes.push(tr('cf.reinjuryBleed', { name: cible.label, n: mReinj, loc: locationLabel(mloc, cible.bodyShape) })); }
+  // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.30), ou overkill.
+  const critWound = ch.critWound;
+  if (critWound || overkill > 0) {
+    const loc = mres.location ?? 'corps'; // double → loc re-tirée (#80) ; dépassement → loc de touche
+    const ovk = Math.max(0, overkill);
+    const c2: DeviationCtx = { attackerId: caster.id, attackerKind: caster.kind, weapon: spell.label, critTwice: critRollTwiceFor(caster) };
+    const heroConcerned = cible.kind === 'hero' || caster.kind === 'hero';
+    // Déviation Critique (LDB 63 l.30) : sur double (`critWound`) OU dépassement (`overkill`) — RAW complet,
+    // parité avec la mêlée — pourvu que l'armure ABSORBE réellement (`magicDeviationEligible` : PA déviatable,
+    // pas de bypass de Domaine Ombres/Métal/Cieux, sort qui n'ignore pas les PA).
+    const elig = magicDeviationEligible(caster, cible, loc, spell, mres, mres.woundsLost ?? 0, ch.overcastDamageSteps);
+    let suspended = false;
+    // MÊME prédicat que la mêlée et l'opposé (#1426) : l'automate ne tranche que pour un porteur
+    // qu'aucun siège humain ne tient ; tenu, il choisit — quel que soit son kind.
+    const tenu = tenuParUnHumain(get(), cible.id);
+    if (elig.eligible && !tenu && autoDeviate(set, cible, loc, elig.extraWounds, { attackerId: caster.id, weapon: spell.label }, mres.roll ?? 0, lignes, heroConcerned)) {
+      // déviation AUTO réussie (rule on + PA sacrifiable) → Critique ignoré. Sinon (règle OFF / pas
+      // de PA), `autoDeviate` retourne false → on TOMBE sur `applyCritAndFinalize` (Critique subi).
+    } else if (rule('combat-critical-deflect') && elig.eligible && tenu) {
+      // Porteur blindé TENU : SUSPEND son choix (étape `self`, push SYNCHRONE — la boucle multi-cibles continue,
+      // chaque cible porte SON propre step indépendant). Le Critique pré-tiré PORTE l'overkill (−20 table si
+      // > BE, LDB 18 l.30) → un double qui dépasse garde sa sévérité au Subir.
+      const cr2 = resolveCritSeverity(cible, loc, ovk, c2.critTwice).crit; // dé de sévérité par l'étape à table (seam UNIQUE)
+      pushDeviationStep(set, { targetId: cible.id, offerte: true, pretire: {
+        mode: 'self', attackerId: caster.id, targetId: cible.id, location: loc, crit: cr2,
+        isCoupCritique: critWound, overkill: ovk, deflectExtraWounds: elig.extraWounds, woundsBefore: currentBefore,
+        reveal: previewCritEntry(cible, cr2, { attackerId: caster.id, weapon: spell.label }), resumeAfter: true, ctx: c2,
+      } });
+      suspended = true;
+    } else {
+      applyCritAndFinalize(get, set, cible, loc, critWound, ovk, lignes, c2, currentBefore);
+    }
+    // 0 PB → À Terre (LDB 18 l.15) — SAUF si suspendu (le Critique du héros n'est pas encore résolu :
+    // resolveDeviation `self` s'en charge). Parité avec la mêlée et resolveDeviation.
+    if (!suspended && cible.wounds.current <= 0 && !cible.dead && !hasCondition(cible, COND.inconscient)) applyZeroWounds(cible);
+  } else if (cible.wounds.current <= 0) {
+    applyZeroWounds(cible);
+  }
+  // Effets ADDITIONNELS d'un Projectile sur la cible (« Grands feux d'U'Zhul » : +2 En flammes, À
+  // Terre ; « Drain » : soigne le lanceur) — lus depuis `spell.effects` (Flow éditable, feuilles
+  // `on:'target'`). Réservé aux sorts CURÉS : un sort sans spec n'a pas d'effet missile parsé (iso-POC).
+  if (spell.curated && spellOps(spell.effects, 'target').length) {
+    const rounds = spell.duration?.kind === 'rounds' ? resolveFormula(spell.duration.value, caster, battleRng()) : null;
+    const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
+    lignes.push(...runCastFlow(get, set, cible, caster, spellFlowFor(spell.effects, 'target'), {
+      rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: ch.sl,
+      overcastDurationSteps: ch.overcastDurationSteps, chosenTableRolls: ch.chosenTableRolls,
+      ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
+      ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
+      ...(ch.sourceSpell ? { sourceSpell: ch.sourceSpell } : {}), sourceSpellId: spell.id,
+      ...(ch.conjureForm ? { conjureForm: ch.conjureForm } : {}),
+      onCorruption: followsCharacterRules(cible) ? (n, align) => gainCorruption(get, set, cible, n, align) : undefined, // #143 : personnage, pas un proxy `kind`
+    }));
+  }
+  // Vol de vie (LDB 48 — Mort : Caresse de Laniph, Vol de vie) : op `lifeSteal` du Flow (on:'caster')
+  // — le lanceur récupère une fraction des Blessures RÉELLEMENT infligées (`ctx.woundsDealt`, jamais
+  // plus que les PB perdus par la cible). Le missile ne joue pas le sous-Flow `caster`, on applique
+  // donc la/les op(s) lifeSteal directement avec les Blessures infligées en contexte.
+  if (mres.woundsLost) {
+    const dealt = Math.min(mres.woundsLost, currentBefore);
+    const lifeStealOps = spellOps(spell.effects, 'caster').filter((o) => o.op === 'lifeSteal');
+    if (lifeStealOps.length) lignes.push(...applyOps(caster, lifeStealOps, { rng: battleRng(), caster, label: spell.label, woundsDealt: dealt, source: { kind: 'spell', id: spell.id } }));
+  }
+  // Interruption de Focalisation : un Projectile magique blesse aussi un focaliseur (LDB 46 l.144).
+  lignes.push(...checkFocusInterruption(get, set, cible));
+  if (isOutOfAction(cible)) lignes.push(tr('cf.outOfAction', { name: cible.label }));
+  return lignes;
+}
+
 /** Applique un résultat d'incantation DÉJÀ obtenu (mute caster/cible, consomme l'Action). */
 export function applyCast(
   get: Get,
@@ -5332,98 +5597,14 @@ export function applyCast(
         }
         mres = evaluateMissile(caster, t, spell, { ...mres, zoneSpellDRMod: zoneMod(t) }, mres.location, 0, overcastDamageSteps);
       }
-      // Sauvegardes « après la touche » — MÊME registre ordonné que le coup physique
-      // (`state/combat/hitModifiers`), et c'est SON site unique : Démoniaque/Protection (LDB 85 l.98),
-      // Dôme (LDB 47 l.410, qui nomme les attaques magiques), Martyr.
-      // La touche est exprimée dans le vocabulaire partagé des touches (`AttackResult`) ; l'attaque
-      // est MAGIQUE, elle n'a pas d'arme.
-      const touche: AttackResult = {
-        hit: !!mres.hit, attackerRoll: mres.roll ?? 0, netSL: 0, critical: false,
-        advantageTo: null, defenderDefeated: false, log: '',
-        ...(mres.location ? { location: mres.location } : {}),
-        ...(mres.damage != null ? { damage: mres.damage } : {}),
-        ...(mres.woundsLost != null ? { woundsLost: mres.woundsLost } : {}),
-      };
-      const apresSaves = runHitModifiers({
-        get, set, attacker: caster, target: t, res: touche, attaque: 'magique', sink: () => {},
-        encaisse: (c) => { logLines.push(...checkFocusInterruption(get, set, c)); },
-      });
-      if (apresSaves.log) logLines.push(apresSaves.log);
-      mres = { ...mres, woundsLost: apresSaves.woundsLost, damage: apresSaves.damage };
-      if (!mres.hit || !mres.woundsLost) return;
-      const currentBefore = t.wounds.current;
-      const overkill = mres.woundsLost - currentBefore;
-      t.wounds.current = Math.max(0, currentBefore - mres.woundsLost);
-      // Réouverture d'une plaie critique (LDB 18 / AA 07) : jumeau du coup physique (applyAttackResult) —
-      // un Projectile qui frappe une Localisation déjà porteuse d'une plaie non recousue y ajoute ses États Hémorragique.
-      const mloc = mres.location ?? 'corps';
-      const mReinj = reinjuryBleed(t, mloc);
-      if (mReinj > 0) { addCondition(t, COND.hemorragique, mReinj); logLines.push(tr('cf.reinjuryBleed', { name: t.label, n: mReinj, loc: locationLabel(mloc, t.bodyShape) })); }
-      // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.30), ou overkill.
-      const critWound = crit && choice === 'critique';
-      if (critWound || overkill > 0) {
-        const loc = mres.location ?? 'corps'; // double → loc re-tirée (#80) ; dépassement → loc de touche
-        const ovk = Math.max(0, overkill);
-        const c2: DeviationCtx = { attackerId: caster.id, attackerKind: caster.kind, weapon: spell.label, critTwice: critRollTwiceFor(caster) };
-        const heroConcerned = t.kind === 'hero' || caster.kind === 'hero';
-        // Déviation Critique (LDB 63 l.30) : sur double (`critWound`) OU dépassement (`overkill`) — RAW complet,
-        // parité avec la mêlée — pourvu que l'armure ABSORBE réellement (`magicDeviationEligible` : PA déviatable,
-        // pas de bypass de Domaine Ombres/Métal/Cieux, sort qui n'ignore pas les PA).
-        const elig = magicDeviationEligible(caster, t, loc, spell, mres, mres.woundsLost ?? 0, overcastDamageSteps);
-        let suspended = false;
-        // MÊME prédicat que la mêlée et l'opposé (#1426) : l'automate ne tranche que pour un porteur
-        // qu'aucun siège humain ne tient ; tenu, il choisit — quel que soit son kind.
-        const tenu = tenuParUnHumain(get(), t.id);
-        if (elig.eligible && !tenu && autoDeviate(set, t, loc, elig.extraWounds, { attackerId: caster.id, weapon: spell.label }, mres.roll ?? 0, logLines, heroConcerned)) {
-          // déviation AUTO réussie (rule on + PA sacrifiable) → Critique ignoré. Sinon (règle OFF / pas
-          // de PA), `autoDeviate` retourne false → on TOMBE sur `applyCritAndFinalize` (Critique subi).
-        } else if (rule('combat-critical-deflect') && elig.eligible && tenu) {
-          // Porteur blindé TENU : SUSPEND son choix (étape `self`, push SYNCHRONE — la boucle multi-cibles continue,
-          // chaque cible porte SON propre step indépendant). Le Critique pré-tiré PORTE l'overkill (−20 table si
-          // > BE, LDB 18 l.30) → un double qui dépasse garde sa sévérité au Subir.
-          const cr2 = resolveCritSeverity(t, loc, ovk, c2.critTwice).crit; // dé de sévérité par l'étape à table (seam UNIQUE)
-          pushDeviationStep(set, { targetId: t.id, offerte: true, pretire: {
-            mode: 'self', attackerId: caster.id, targetId: t.id, location: loc, crit: cr2,
-            isCoupCritique: critWound, overkill: ovk, deflectExtraWounds: elig.extraWounds, woundsBefore: currentBefore,
-            reveal: previewCritEntry(t, cr2, { attackerId: caster.id, weapon: spell.label }), resumeAfter: true, ctx: c2,
-          } });
-          suspended = true;
-        } else {
-          applyCritAndFinalize(get, set, t, loc, critWound, ovk, logLines, c2, currentBefore);
-        }
-        // 0 PB → À Terre (LDB 18 l.15) — SAUF si suspendu (le Critique du héros n'est pas encore résolu :
-        // resolveDeviation `self` s'en charge). Parité avec la mêlée et resolveDeviation.
-        if (!suspended && t.wounds.current <= 0 && !t.dead && !hasCondition(t, COND.inconscient)) applyZeroWounds(t);
-      } else if (t.wounds.current <= 0) {
-        applyZeroWounds(t);
-      }
-      // Effets ADDITIONNELS d'un Projectile sur la cible (« Grands feux d'U'Zhul » : +2 En flammes, À
-      // Terre ; « Drain » : soigne le lanceur) — lus depuis `spell.effects` (Flow éditable, feuilles
-      // `on:'target'`). Réservé aux sorts CURÉS : un sort sans spec n'a pas d'effet missile parsé (iso-POC).
-      if (missileSpec.curated && spellOps(spell.effects, 'target').length) {
-        const rounds = missileSpec.duration?.kind === 'rounds' ? resolveFormula(missileSpec.duration.value, caster, battleRng()) : null;
-        const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
-        logLines.push(...runCastFlow(get, set, t, caster, spellFlowFor(spell.effects, 'target'), {
-          rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: slFor(t), overcastDurationSteps, chosenTableRolls,
-          ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
-          ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
-          ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
-          ...(extras?.conjureForm ? { conjureForm: extras.conjureForm } : {}),
-          onCorruption: followsCharacterRules(t) ? (n, align) => gainCorruption(get, set, t, n, align) : undefined, // #143 : personnage, pas un proxy `kind`
-        }));
-      }
-      // Vol de vie (LDB 48 — Mort : Caresse de Laniph, Vol de vie) : op `lifeSteal` du Flow (on:'caster')
-      // — le lanceur récupère une fraction des Blessures RÉELLEMENT infligées (`ctx.woundsDealt`, jamais
-      // plus que les PB perdus par la cible). Le missile ne joue pas le sous-Flow `caster`, on applique
-      // donc la/les op(s) lifeSteal directement avec les Blessures infligées en contexte.
-      if (mres.woundsLost) {
-        const dealt = Math.min(mres.woundsLost, currentBefore);
-        const lifeStealOps = spellOps(spell.effects, 'caster').filter((o) => o.op === 'lifeSteal');
-        if (lifeStealOps.length) logLines.push(...applyOps(caster, lifeStealOps, { rng: battleRng(), caster, label: spell.label, woundsDealt: dealt, source: { kind: 'spell', id: spell.id } }));
-      }
-      // Interruption de Focalisation : un Projectile magique blesse aussi un focaliseur (LDB 46 l.144).
-      logLines.push(...checkFocusInterruption(get, set, t));
-      if (isOutOfAction(t)) logLines.push(tr('cf.outOfAction', { name: t.label }));
+      logLines.push(...appliquerToucheDeProjectile(get, set, {
+        casterId: caster.id, targetId: t.id, spell, mres, sl: slFor(t),
+        critWound: !!(crit && choice === 'critique'),
+        overcastDamageSteps, overcastDurationSteps,
+        ...(chosenTableRolls != null ? { chosenTableRolls } : {}),
+        ...(extras?.conjureForm ? { conjureForm: extras.conjureForm } : {}),
+        ...(sourceSpell ? { sourceSpell } : {}),
+      }));
     };
     applyMissileHit(target, res);
     // Nerveux (effet déclenché onStartled : magie → +3 Brisé) — dispatcher générique (state/triggeredEffects).
@@ -5451,6 +5632,8 @@ export function applyCast(
       const hitIds = new Set([target.id, ...extraTargets.map((t) => t.id)]);
       let prev = target;
       for (let bounce = 0; bounce < maxBounces; bounce++) {
+        // La condition d'itération lit l'ÉTAT COURANT de `prev` : si une fenêtre est EN VOL sur elle
+        // (Déviation Critique, sauvegarde), la valeur lue est celle d'AVANT sa résolution. #1508 T3b-3
         if (!(prev.wounds.current <= 0 || prev.dead)) break; // « réduit la cible à 0 Blessure »
         const next = battle.combatants
           .filter((c) => c.kind !== caster.kind && !hitIds.has(c.id) && !isOutOfAction(c) && c.pos

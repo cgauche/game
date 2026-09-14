@@ -10,13 +10,13 @@ import type { Pt } from './path';
 import type { Dir8 } from './dir8';
 import type { Effect, Dialogue } from './scene';
 import type { Flow } from './flow';
-import type { GameOp, OpsCtxGele, PairedSense } from '../engine/ops';
+import type { GameOp, OpsCtx, OpsCtxGele, PairedSense } from '../engine/ops';
 import type { TestResult, OpposedResult } from '../engine/tests';
 import type { AttackResult, DefenseMode, DifficultyComposition, ModLine } from '../engine/combat';
 import type { AttackKind } from '../engine/creatureAttacks';
 import type { CriticalResolved } from '../engine/critical';
 import type { OupsResolved } from '../engine/oups';
-import type { StakeRef } from '../data';
+import type { StakeRef, SpellData } from '../data';
 import type { CastResult, MissileResult, FocusResult, CounterspellOutcome } from '../engine/magic';
 import type { HealMode } from '../engine/healing';
 import type { PsychType } from '../engine/psychology';
@@ -384,7 +384,7 @@ export interface PendingAttack {
   withhold?: boolean;
   /** « Empoignade » (LDB 14 l.159) : déclarée AVANT le lancer pour toucher — sur une touche, « au lieu
    *  d'infliger des Dégâts », pose l'Empoignade (les deux) + l'État *Empêtré* (cible), sans Dégâts. MAINS
-   *  NUES seulement (cf. `applyAttackResult(..., grapple)`). */
+   *  NUES seulement (cf. `SuiteDeCoup.grapple`). */
   grapple?: boolean;
   /** La défense SURFACÉE du défenseur a déjà été jouée (fenêtre `pendingDefense` refermée, `defenseConfirm`
    *  rend la main à `attackConfirm` avec le résultat OPPOSÉ) : l'interposition ne se repose pas. */
@@ -784,6 +784,10 @@ export type PendingDeviation =
       crit: CriticalResolved;
       reveal: RevealEntry;
       resumeAfter: boolean;
+      /** Ce que l'appelant fera APRÈS le coup (#1508) : la DÉVIATION est une fenêtre DE PLUS sur le même
+       *  coup, et cette donnée porte jusqu'à la reprise d'après-déviation la chaîne de balayage en cours
+       *  et l'Action d'une frappe gratuite. */
+      suite?: SuiteDeCoup;
     }
   | {
       mode: 'self';
@@ -813,7 +817,107 @@ export interface PendingCritSeverity {
   location: HitLocation; // loc du Critique : re-tirée pour un double, loc de touche pour un dépassement
   overkill: number; // dépassement (−20 à la table si > BE, LDB 18 l.17) — porté en `mod` par la déclaration
   twice?: boolean; // LDB 41 l.170 — pose `keepHighest: 2` sur la déclaration et garde la bifurcation AA
+  suite?: SuiteDeCoup; // ce que l'appelant fera APRÈS le coup (#1508) : le PLI post-dé la reconduit dans la `PendingDeviation` qu'il forme
 }
+/**
+ * LA TOUCHE d'un Projectile magique, en DONNÉE (#1508) — tout ce que l'application d'une touche de sort
+ * lit APRÈS la sauvegarde. Calquée sur `PendingCritSeverity` ci-dessus : le sort y voyage entier (comme
+ * l'arme y voyage), parce qu'un lancement peut porter un sort qui n'est dans aucun dataset (Souffle de
+ * créature, sort monté par un test). `sl` est le DR du Sort TEL QUE LA CIBLE LE SUBIT, PRÉ-CALCULÉ à
+ * l'ouverture (`applyCast.slFor`) : sans lui, la reprise devrait rebâtir la zone de Résistance à la Magie
+ * du lancement, qui n'est pas une donnée de la cible.
+ */
+export interface ToucheDeProjectile {
+  casterId: string;
+  targetId: string;
+  spell: SpellData;
+  mres: CastResult & Partial<MissileResult>;
+  sl: number;
+  /** Blessure Critique choisie par le lanceur (LDB 46 l.30) — `crit && choice === 'critique'`, tranché à l'ouverture. */
+  critWound: boolean;
+  overcastDamageSteps: number;
+  overcastDurationSteps: number;
+  chosenTableRolls?: number;
+  conjureForm?: ConjureForm;
+  /** IDENTITÉ du Sort source pour la dissipation (LDB 46 l.158-160), composée à l'ouverture du
+   *  lancement (`applyCast`) : donnée pure, elle voyage telle quelle plutôt que d'être recomposée à la
+   *  reprise — une 2ᵉ composition serait une 2ᵉ vérité. */
+  sourceSpell?: OpsCtx['sourceSpell'];
+}
+
+/**
+ * L'ENCHAÎNEMENT qui suit un coup appliqué (#1508) — une DÉCLARATION du site d'origine, jamais un
+ * défaut muet : chaque site dit LEQUEL des balayages il a tranché, y compris « aucun ». Qui pose quoi :
+ *  - `hero` : Frappe Mortelle du héros interactif (LDB 14 l.9), posée par `attackConfirm` SEUL, et
+ *    seulement quand ce site l'aurait appelée (ni Maniement de deux armes, ni manœuvre gratuite, ni
+ *    Maladresse de l'attaquant). `wasChain` = ce coup était-il déjà un maillon d'un balayage en cours.
+ *    Jugée sur la touche RÉELLE : l'enchaînement EXIGE une cible TUÉE, donc il se décide APRÈS le dé
+ *    de sauvegarde, qui décide de la mort ;
+ *  - `chaine` : maillon de balayage encore à jouer (même forme que `pendingDefense.cleaveChain`), posé
+ *    par `runCleaveChain` et par la fenêtre de défense qui l'a parqué ;
+ *  - `auto` : balayage de la MACHINE (LDB 85 l.362 : « Toutes les frappes réussies activent la règle
+ *    optionnelle Frappe Mortelle »), gardé par `aiDriven` dans `autoCleave` ;
+ *  - `aucun` : le site d'origine a tranché qu'AUCUN balayage ne suit ce coup — Maladresse de
+ *    l'attaquant, frappe du Maniement de deux armes, manœuvre gratuite d'un héros.
+ */
+export type EnchainementDuCoup =
+  | { mode: 'hero'; wasChain: boolean }
+  | { mode: 'chaine'; hitIds: string[]; n: number; bcc: number; fm: boolean }
+  | { mode: 'auto' }
+  | { mode: 'aucun' };
+
+/**
+ * CE QUE L'APPELANT FERA APRÈS LE COUP (#1508) — une DONNÉE, pas un geste d'après-coup. Elle entre PAR
+ * LE HAUT (paramètre d'`applyAttackResult`) et voyage dans TOUTE charge de suspension (sauvegarde
+ * `SauvegardeSuite`, Déviation `PendingDeviation`/`PendingCritSeverity`), si bien qu'une fenêtre de plus
+ * ne la perd pas : la dernière reprise la joue UNE fois. La fenêtre qui s'ouvre n'a jamais à deviner
+ * laquelle vient de s'ouvrir — elle reçoit la suite dans sa propre charge.
+ *
+ * Les champs sont ceux que la reprise lit déjà : deux DRAPEAUX DU COUP (l'Avantage différé du
+ * Maniement de deux armes LDB 10 l.767-773, l'Empoignade LDB 14 l.159 — un coup repris sans eux ne
+ * serait plus le même coup), l'attaque GRATUITE dont les effets attendent la touche et dont l'Action
+ * doit être rendue (même donnée `{kind, prevActed}` que la fenêtre de défense), l'ouverture de la 2ᵉ
+ * frappe du HÉROS, et l'ENCHAÎNEMENT (ci-dessous). Tous JSON-sérialisables : la suite voyage sur l'étape.
+ */
+export interface SuiteDeCoup {
+  deferAttackerAdvantage?: boolean;
+  grapple?: boolean;
+  freeAttack?: { kind: string; prevActed: boolean };
+  /** L'enchaînement d'après CE coup — DÉCLARÉ par le site d'origine, jamais déduit à la reprise. */
+  enchainement?: EnchainementDuCoup;
+  /** Ouverture de la 2ᵉ frappe du Maniement de deux armes (LDB 10 l.767-773) : posée seulement pour la
+   *  main directrice d'un héros dont l'off-hand existe. `mainRoll` = le jet de la main directrice, que la
+   *  2ᵉ frappe reprend. La valeur de Critique, elle, se lit sur l'ÉTAPE de Critique que l'application
+   *  appende — elle n'existe donc qu'APRÈS le coup, jamais à l'ouverture. */
+  dualMain?: { offWeaponUid: string; mainRoll: number };
+}
+
+/** LA SUITE d'un coup dont la sauvegarde reste à jouer — union par SITE DE REPRISE, patron
+ *  `PendingDeviation.mode` (`'melee'` ré-entre dans l'applier d'attaque, l'autre est auto-contenu).
+ *  JSON-sérialisable : elle voyage sur l'étape. */
+export type SauvegardeSuite =
+  | {
+    mode: 'melee';
+    attackerId: string;
+    targetId: string;
+    weapon: Weapon;
+    res: AttackResult;
+    /** La valeur de `deviated` du coup suspendu : elle dit d'où vient la reprise (attaque standard,
+     *  enchaînement, attaque gratuite) — elle ne se devine pas à la ré-entrée. */
+    deviated?: boolean;
+    /** Ce que l'appelant fera APRÈS le coup — entrée par le haut, jamais parquée après coup. */
+    suite?: SuiteDeCoup;
+  }
+  | { mode: 'projectile'; touche: ToucheDeProjectile };
+
+/** CHARGE d'une étape de SAUVEGARDE « 1d10 ≥ Indice » (#1508) : les seuils RESTANT à jouer (grappe
+ *  dépendante — le N+1 ne s'ouvre que si le N a raté, `hitModifiers.seuilsDeSauvegarde`), le premier
+ *  étant celui de CETTE étape, et la suite du coup, suspendue avant toute mutation de la cible. */
+export interface PendingWardSave {
+  seuils: SeuilDeSauvegarde[];
+  suite: SauvegardeSuite;
+}
+
 /** Contexte SÉRIALISABLE des tirages CHAÎNÉS d'une mutation de Corruption (#942 L5, LDB 19 l.73-83) :
  *  nature (corps ou esprit) → Tableau de Corruption → sous-table éventuelle (« Tête bestiale », EDOC 12).
  *  `tableId` = la table de CETTE étape (absent sur l'étape de nature) ; `kind`/`natureRoll` = l'issue de
@@ -1592,6 +1696,20 @@ export interface CascadeDeTirage {
  *  donc `CascadeDeTirage` en paramètre partout où il ROULE, jamais la déclaration complète). */
 export interface CascadeDeDecl extends CascadeDeTirage {
   result?: CascadeDeResult | null;
+  /** LECTURE EN SEUIL de ce tirage (#1508) — troisième lecture du MÊME dé, à côté de la nue (le total EST
+   *  la conséquence) et de la table : le total est comparé à un INDICE. Déclaré SUR l'étape, comme
+   *  `tableId` l'est pour une table, pour que la rangée MONTRE contre quoi le dé est tombé. */
+  seuil?: SeuilDeSauvegarde;
+}
+
+/** LE SEUIL d'une sauvegarde « 1d10 ≥ Indice » (Démoniaque `LDB 85 l.98`, Protection `LDB 85 l.278`, et
+ *  le Trait qu'un Dôme octroie `LDB 47 l.410`) : l'Indice à atteindre, le TRAIT qui l'offre (id stable —
+ *  la graphie est rendue par `formatWardSave`) et sa PROVENANCE (le porteur, ou la zone qui le lui
+ *  octroie). JSON-sérialisable : il voyage sur l'étape. */
+export interface SeuilDeSauvegarde {
+  indice: number;
+  traitId: string;
+  dome: boolean;
 }
 
 /** Issue d'un dé NU (posée par `roulerDe`) : le dé NATUREL (celui qu'un siège pose, celui que la
@@ -1774,6 +1892,10 @@ export interface CascadeStepBase extends Omit<RollParticipant, 'interactive'> {
   /** Étape à TABLE « sévérité du Critique » (#942 L4) : le d100 de la table de Blessures est resté à
    *  poser ; l'applier construit le Critique sur le dé posé et rejoue `applyAttackResult`. */
   critSeverity?: PendingCritSeverity;
+  /** Étape de SAUVEGARDE « 1d10 ≥ Indice » (#1508) : les seuils restants + la suite du coup suspendu.
+   *  L'applier lit le dé (`cascade.lireEnSeuil`) puis RÉ-ENTRE dans le site d'origine — patron de
+   *  `critSeverity`, dont la charge rejoue `applyAttackResult` avec le Critique construit. */
+  wardSave?: PendingWardSave;
   /** Étapes à TABLE de la MUTATION de Corruption (#942 L5) : les d100 des tirages chaînés (nature →
    *  Tableau → sous-table) sont restés à poser ; l'applier de chaque étape lit le dé posé, INSÈRE
    *  l'étape suivante s'il en reste une, et applique la mutation au dernier niveau. */

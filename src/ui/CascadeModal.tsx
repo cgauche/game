@@ -27,6 +27,8 @@ import type { ModLine } from '../engine/combat';
 import { Icon } from './Icon';
 import { stepInteraction, stepReady, secondReadOf, tableStepDef, tableStepNaturalRange, naturalRollForTableRow, liveTableDecl, specDeEtape } from '../state/cascade';
 import { formatDice } from '../engine/dice';
+import { formatWardSave } from '../engine/traits/dispatch';
+import { t } from '../i18n';
 import { opposedAttackerLabel } from '../state/rollSeam';
 import { useOwns } from './ownership';
 import { pursuitOf } from '../state/pursuitFlow';
@@ -34,7 +36,7 @@ import { SequencePanel } from './SequencePanel';
 import { stepForcedDie } from './forcedDieRow';
 import { opposedResponded } from './opposedFrozen';
 import { frozenOpposedRow, tableRow, witnessRow, buildRollRow, type BuiltRollRow } from './rollRowBuild';
-import type { CascadeStep, CascadeRollStep, CascadeRoll, BatchParticipant } from '../state/pendings';
+import type { CascadeStep, CascadeRollStep, CascadeRoll, BatchParticipant, SeuilDeSauvegarde } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
 
@@ -60,6 +62,13 @@ export function fourchette(min: number, max: number, dieMax: number): string {
   return min === max ? pad(min) : `${pad(min)}-${pad(max)}`;
 }
 
+/** GRAPHIE UNIQUE du seuil d'un dé (#1508) : le Trait à son Indice, et sa PROVENANCE quand une zone
+ *  l'octroie (« Protection (6+) du Dôme »). Dite AVANT le lancer, dans la cellule centrale de la
+ *  rangée — celle qui, sur une rangée de Test, porte le « contre quoi » (`RollCalc`) — comme APRÈS
+ *  le lancer (`totalLabel`, qui la préfixe du total et de sa comparaison). Une seule écriture. */
+export const seuilLabel = (seuil: SeuilDeSauvegarde): string =>
+  `${formatWardSave(seuil.traitId, seuil.indice)}${seuil.dome ? t('cf.wardFromDome') : ''}`;
+
 /** Sous-titre d'étape — SOURCE UNIQUE des six branches de la cascade (table / affichage riche /
  *  affichage / choix / batch / jet) : la POSITION dans la séquence, et elle seule. Le libellé de
  *  l'étape et son renvoi de règle sont portés par le TITRE de la fenêtre (`CascadeBody.titleNode`,
@@ -67,10 +76,17 @@ export function fourchette(min: number, max: number, dieMax: number): string {
  *  `undefined` quand il n'y a rien à situer (séquence à une étape) : un fragment JSX vide n'est pas
  *  `null`, la coquille rendrait un `<p>` vide, soit une bande de marge sans contenu sous le titre.
  *  `count` porte le rang de l'étape par défaut (`n/m`), ou le compte de JETS RÉELS pour la branche
- *  jet (`prefix: 'jet '`, `total` = `totalJets`, arbitrage user 2026-07-11). */
-export function stepSubtitle(count: { cursor: number; total: number; prefix?: string }): ReactNode {
-  if (count.total <= 1) return undefined;
-  return `${count.prefix ?? ''}${count.cursor + 1}/${count.total}`;
+ *  jet (`prefix: 'jet '`, `total` = `totalJets`, arbitrage user 2026-07-11).
+ *
+ *  `porteur` — POUR QUI le dé tombe (précédent `jetProps/useFumbleJetProps.tsx`, Z1 = l'acteur et le
+ *  fait qui ouvre la fenêtre) : une rangée de dé NU n'a pas de portrait avant le lancer, son porteur
+ *  n'a donc aucune autre surface. Il ne REDIT jamais le libellé du pas (celui-là titre la fenêtre —
+ *  arbitrage user 2026-08-06 #1117, verrouillé par `cascade-subtitle.test.tsx`) : les deux se
+ *  composent à la même graphie que le précédent (`X — Y`). */
+export function stepSubtitle(count: { cursor: number; total: number; prefix?: string }, porteur?: string): ReactNode {
+  const position = count.total <= 1 ? undefined : `${count.prefix ?? ''}${count.cursor + 1}/${count.total}`;
+  if (!porteur) return position;
+  return position ? `${porteur} — ${position}` : porteur;
 }
 
 /** Nom de table de la rangée de tirage : rendu SEULEMENT s'il apporte autre chose que ce qui est déjà
@@ -161,6 +177,13 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   if (!p) return null;
   const pool: Combatant[] = battle?.combatants ?? party;
   const actorOf = (s: CascadeStep) => (s.actorId ? pool.find((c) => c.id === s.actorId) : undefined);
+  /** POUR QUI le dé tombe — écrit UNE fois, servi par les DEUX phases d'une étape à dé NU (branche
+   *  `de` avant le lancer, branche `affichage` une fois `de.result` posé). Z1 est la seule surface
+   *  qui puisse le dire avant le tirage (une rangée de dé nu n'a pas de portrait), et le nom ne
+   *  disparaît pas à l'instant où on lit le résultat et où l'on clique « Terminer ». Une étape à
+   *  TABLE n'en prend pas : sa fenêtre pré-tirage ne le dit pas non plus, Z1 changerait de contenu
+   *  entre les deux phases. */
+  const porteurZ1 = (s: CascadeStep): string | undefined => (s.de ? actorOf(s)?.label : undefined);
 
   // Base AFFICHÉE + lignes de mod NOMMÉES d'une étape QUI LANCE (`CascadeRollStep` : cible ET libellé
   // de ligne par le TYPE) : le libellé est la COMPÉTENCE lancée (« Résistance », « Calme »…), comme
@@ -220,8 +243,15 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   /** Libellé de la rangée d'un DÉ NU : ce qui se tire ET les dés qui le tirent (« Hauteur de chute
    *  (2d10) ») — sans table à nommer, c'est l'étape et son `DiceSpec` qui disent le tirage. */
   const dieLineLabel = (s: CascadeStep): string => `${s.label ?? ''} (${formatDice(specDeEtape(s.de!))})`.trim();
-  /** Le TOTAL avec son unité déclarée (« 13 m ») — la valeur qui fait la conséquence. */
-  const totalLabel = (s: CascadeStep, total: number): string => (s.de?.unite ? `${total} ${s.de.unite}` : String(total));
+  /** Le TOTAL du dé, dit dans la LECTURE de l'étape (#1508) : nue, c'est la valeur qui fait la
+   *  conséquence, avec son unité déclarée (« 13 m ») ; EN SEUIL (`cascade.lireEnSeuil`), c'est le total
+   *  confronté à l'Indice, à la graphie unique du seuil (« 8 ≥ Protection (6+) ») et avec sa PROVENANCE
+   *  quand une zone l'octroie. MÊME rangée de tirage dans les deux cas. */
+  const totalLabel = (s: CascadeStep, total: number): string => {
+    const seuil = s.de?.seuil;
+    if (seuil) return `${total} ${total >= seuil.indice ? '≥' : '<'} ${seuilLabel(seuil)}`;
+    return s.de?.unite ? `${total} ${s.de.unite}` : String(total);
+  };
   const rowOf = (s: CascadeStep): PanelRow | null => {
     const a = actorOf(s);
     // Étape BATCH committée : sa conséquence (resultLine, #331) se lit SUR PLACE — note SEULE (pas de
@@ -538,6 +568,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // « Lancer », même sélecteur de pose : un dé de la porte, pas une fenêtre de plus.
   if (interaction === 'de') {
     const aff = affordancesDuDe(cur);
+    // CE QU'ON JOUE, AVANT DE LANCER : le SEUIL dans la cellule centrale de la rangée — exactement là
+    // où une rangée de Test pré-jet dit « contre quoi » (`RollCalc`, `RollLine.PendingRollLine`) — et le
+    // PORTEUR en Z1. La fenêtre annonce le seuil et le porteur AVANT le lancer : la donnée est sur
+    // l'étape dès sa déclaration (`rollSeam.dieStep`).
     const dieActions: RollAction[] = [
       { key: 'roll', label: <><Icon id="nav/dice" size="sm" /> Lancer</>, onClick: () => dieRoll(cur.id), when: 'pre' },
       ...(!isLast ? [{ key: 'all', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: () => resolveAll(), title: "Résoudre d'un coup tous les jets restants (sans influence)", when: 'always' } as RollAction] : []),
@@ -545,10 +579,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     return (
       <RollShell
         title={titleNode}
-        subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
+        subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length }, porteurZ1(cur))}
         rolled={false}
         rows={aff.rows}
-        extra={<TableRollLine table={dieLineLabel(cur)} />}
+        extra={<TableRollLine table={dieLineLabel(cur)} result={cur.de?.seuil ? `≥ ${seuilLabel(cur.de.seuil)}` : undefined} />}
         actions={dieActions}
         disableEscClose
         embedded={embedded}
@@ -590,7 +624,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     return (
       <RollShell
         title={titleNode}
-        subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
+        subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length }, porteurZ1(cur))}
         rolled
         /* La marque « dé fixé » n'a qu'UNE surface : l'étiquette du sélecteur quand il est servi,
            la pastille de rangée sinon (siège voisin, option éteinte). */

@@ -13,8 +13,11 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useGame } from '../state/store';
+import { createHero } from '../engine/character';
+import { makeRNG } from '../engine/dice';
 import { startCascade, registerCascadeApplier } from '../state/cascade';
 import { dieStep } from '../state/rollSeam';
+import type { SeuilDeSauvegarde } from '../state/pendings';
 import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
 import { CascadeBody } from './CascadeModal';
 
@@ -125,6 +128,13 @@ describe('Étape à DÉ NU en fenêtre (#1508) — la même coquille qu’une ta
     expect(step().de!.result).toEqual({ roll: 4, total: 4 });
   });
 
+  it('(E2) un dé nu SANS seuil ne montre aucune comparaison — il n’y a rien à battre', () => {
+    openDie();
+    render();
+    expect(host.querySelector('.rm-roll.table .rm-table-result')?.textContent ?? '').toBe('');
+    expect(host.textContent, 'une chute se lit en mètres, pas contre un Indice').not.toContain('≥');
+  });
+
   it('aucune classe CSS neuve : le dé nu réutilise les sélecteurs de la table (`.rm-roll.table`, `.rm-die-pick`)', () => {
     setDesFixes(true);
     openDie();
@@ -135,5 +145,58 @@ describe('Étape à DÉ NU en fenêtre (#1508) — la même coquille qu’une ta
       .flatMap((el) => [...el.classList])
       .filter((c) => /^(rm-de|de-|die-)/.test(c));
     expect(inconnues, 'aucune classe propre au dé nu n’a été inventée').toEqual([]);
+  });
+});
+
+/**
+ * E — UN DÉ SE LIT COMME TOUT JET : ce qu'on joue, CONTRE QUOI, POUR QUI, AVANT de lancer.
+ *
+ * Une rangée de Test pré-jet dit sa cible dans sa cellule CENTRALE (`RollCalc`,
+ * `RollLine.PendingRollLine`) ; une rangée de dé à SEUIL dit son Indice dans la MÊME cellule
+ * (`TableRollLine.result`), et son porteur en Z1 (`stepSubtitle`, précédent
+ * `jetProps/useFumbleJetProps.tsx`). La fenêtre de Sauvegarde annonce donc le seuil
+ * et le porteur AVANT le lancer : la donnée est sur l'étape dès sa déclaration (`rollSeam.dieStep`).
+ */
+describe('Dé à SEUIL en fenêtre (#1508) — la rangée dit ce qu’on joue AVANT le lancer', () => {
+  const DOME: SeuilDeSauvegarde = { indice: 6, traitId: 'protection', dome: true };
+  const NOM = 'Ilyanwe la Voilée';
+
+  /** Ouvre la sauvegarde d'un héros NOMMÉ, telle que la porte la pousse (`combatFlow.pousserSauvegarde`). */
+  function openSauvegarde() {
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: NOM, rng: makeRNG(1) });
+    useGame.setState({
+      battle: null, party: [hero], suspendedCascades: [], journal: [], pendingCascade: null,
+      net: { mode: 'local', mySeat: 0, roomCode: null, seatNames: {}, presence: {}, ownership: {} } as never,
+    });
+    startCascade(useGame.getState, useGame.setState, {
+      title: 'Sauvegarde', purpose: 'test',
+      steps: [dieStep({
+        id: 'sv', kind: 'uiDieSpy', label: fixtureText('Sauvegarde'), icon: 'journal/critical',
+        spec: { n: 1, sides: 10 }, actorId: hero.id, seuil: DOME,
+      })!],
+    });
+  }
+
+  const lu = () => (host.textContent ?? '').replace(/\s+/g, ' ');
+
+  it('(E1) AVANT le lancer : le PORTEUR et le SEUIL sont à l’écran, seuil dans la cellule centrale', () => {
+    openSauvegarde();
+    render();
+    expect(lu(), 'pour QUI le dé tombe').toContain(NOM);
+    expect(host.querySelector('.rm-roll.table .rm-table-result')?.textContent, 'contre QUOI — la cellule qui, sur une rangée de Test, porte la cible')
+      .toBe('≥ Protection (6+) du Dôme');
+    expect(lu(), 'et ce qu’on joue, avec quels dés').toContain('Sauvegarde (1d10)');
+  });
+
+  it('(E1) APRÈS le lancer : la MÊME cellule porte le total confronté, et Z1 nomme ENCORE le porteur', () => {
+    openSauvegarde();
+    useGame.getState().cascadeDieSetForcedRoll('sv', 6);
+    render();
+    expect(host.querySelector('.rm-roll.table .rm-table-result')?.textContent).toBe('6 ≥ Protection (6+) du Dôme');
+    // Le nom ne disparaît pas à l'instant où l'on LIT le résultat et où l'on clique « Terminer » :
+    // c'est la MÊME zone Z1 (`stepSubtitle`) qu'avant le lancer, servie par la branche qui rend
+    // l'étape de dé RÉSOLUE (`stepInteraction` → `'affichage'`), pas une seconde surface.
+    expect(host.querySelector('.rm-subtitle')?.textContent, 'pour QUI le dé est tombé, après comme avant').toBe(NOM);
+    expect(lu()).toContain(NOM);
   });
 });

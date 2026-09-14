@@ -16,6 +16,8 @@ import { useGame } from '../state/store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { CascadeBody } from './CascadeModal';
+import { dieStep } from '../state/rollSeam';
+import { fixtureText } from '../i18n/fixtureText';
 import type { CascadeStep } from '../state/pendings';
 
 beforeAll(() => {
@@ -115,6 +117,30 @@ describe('sous-titre d’étape — il porte la POSITION, jamais le libellé', (
     expect(titleText()).toContain(LIBELLE);
     expect(subtitleEl()).toBeNull();
     expect(occurrences('Nuit à l’auberge'), 'la fenêtre est titrée par le pas JOUÉ').toBe(0);
+  });
+
+  /**
+   * Branche DÉ (#1508) : une étape à dé NU n'a pas de portrait avant le lancer, son PORTEUR entre donc
+   * en Z1 (`stepSubtitle(count, porteur)`). L'arbitrage #1117 y vaut comme ailleurs : Z1 dit POUR QUI
+   * le dé tombe et OÙ l'on en est — jamais ce qu'on joue, que le TITRE porte.
+   */
+  const pasDeDe = (id: string, actorId: string, label: string): CascadeStep => dieStep({
+    id, kind: 'uiDieSpy', actorId, label: fixtureText(label), icon: 'journal/critical',
+    spec: { n: 1, sides: 10 }, seuil: { indice: 6, traitId: 'protection', dome: true },
+  })!;
+
+  it('branche DÉ : sous-titre = « porteur — 2/2 », puis le porteur SEUL à une étape', () => {
+    openSteps('Défense', (id) => [jetStep('a', id, 'Veille'), pasDeDe('sv', id, 'Sauvegarde')], 1);
+    render();
+    expect(subtitleText(), 'POUR QUI le dé tombe, et où l’on en est').toBe('Gunnar — 2/2');
+    expect(subtitleText(), 'le sous-titre ne redit pas le libellé du pas').not.toContain('Sauvegarde');
+    expect(titleText(), 'c’est le TITRE qui porte le libellé du pas courant').toContain('Sauvegarde');
+
+    // Séquence à UNE étape : plus rien à situer, Z1 ne garde que le porteur.
+    act(() => { openSteps('Défense', (id) => [pasDeDe('sv', id, 'Sauvegarde')], 0); });
+    render();
+    expect(subtitleText(), 'rien à situer : le porteur seul').toBe('Gunnar');
+    expect(subtitleText(), 'toujours pas le libellé du pas').not.toContain('Sauvegarde');
   });
 });
 

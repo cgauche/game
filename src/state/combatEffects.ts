@@ -97,7 +97,7 @@ import type { SceneEntity } from './scene';
  *  - slot libre EN COMBAT : `'combat'`, la séquence de l'arène (inchangé) ;
  *  - sinon : le `site` déclaré par l'appelant (l'entretien quotidien a le sien), à défaut `'affichage'`.
  */
-const revealPurpose = (site: PendingCascade['purpose'], own: boolean) => (s: GameState): PendingCascade['purpose'] =>
+export const revealPurpose = (site: PendingCascade['purpose'], own: boolean) => (s: GameState): PendingCascade['purpose'] =>
   own ? site : (s.pendingCascade?.purpose ?? (s.battle ? 'combat' : site));
 
 /** Empile une révélation en étape d'AFFICHAGE de cascade (`pushStep` : append à la séquence d'accueil,

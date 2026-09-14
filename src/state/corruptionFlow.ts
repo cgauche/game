@@ -48,7 +48,7 @@ import { rollTest } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { pushReveal } from './combatFlow';
 import { checkPartyWiped } from './partyWipe';
-import { evLines } from './combatLog';
+import { journaliser } from './combatLog';
 import { tenuParUnHumain } from './netOwnership';
 import { followsCharacterRules } from '../engine/relations';
 import { resultLine, freeCons, tableStep, type BuiltCascadeStep } from './rollSeam';
@@ -324,9 +324,7 @@ export function resolveRenounce(get: Get, set: Set, renounce: boolean): void {
   } else {
     lines.push(...applyMutation(get, set, hero, { roll: pr.testRoll, target: pr.testTarget }, pr.align));
   }
-  const b = get().battle;
-  if (b) set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', hero.id)] } });
-  else get().log(lines);
+  journaliser(get, set, lines, 'info', { actorId: hero.id });
   releaseCorruptionSlot(get, set);
 }
 

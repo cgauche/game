@@ -20,7 +20,9 @@ import type { GameState } from './store';
 import type { Combatant, Difficulty } from '../engine/types';
 import { roll, d100, type RNG, type DiceSpec } from '../engine/dice';
 import { findTableEntry } from '../engine/tables';
-import type { CascadeStep, CascadeStepMeta, PendingCascade, CascadeRoll, BatchParticipant, CascadeAggregate, CascadeSecondRead, CascadeDeDecl, CascadeDeTirage, CascadeDeResult, CascadeTableDecl, CascadeTableResult, OpposedRowFreeze, StepEvaluation } from './pendings';
+import type { CascadeStep, CascadeStepMeta, PendingCascade, CascadeRoll, BatchParticipant, CascadeAggregate, CascadeSecondRead, CascadeDeDecl, CascadeDeTirage, CascadeDeResult, CascadeTableDecl, CascadeTableResult, OpposedRowFreeze, StepEvaluation, SeuilDeSauvegarde } from './pendings';
+import { formatWardSave } from '../engine/traits/dispatch';
+import { t } from '../i18n';
 import type { StakeRef } from '../data';
 import type { Consequence } from './rollSeam';
 import type { BuiltCascadeStep } from './stepBrand';
@@ -33,6 +35,7 @@ import { battleRng } from './battleRng';
 import { traceLineOf, traceDieLineOf } from '../engine/traceLine';
 import { dataLabel } from '../data';
 import { scheduleFlowTimer } from './combatTimers';
+import { journaliser } from './combatLog';
 
 /**
  * ENCHAÎNEMENT d'une étape depuis l'applier de la PRÉCÉDENTE — le séquenceur est la maison de ce
@@ -392,6 +395,29 @@ export function lireEnTable(decl: CascadeTableDecl, de: CascadeDeResult, ctx?: T
   }
   const row = findTableEntry(def.rows, die);
   return { roll: de.roll, die, id: row.id, lines: def.lines(die, ctx) };
+}
+
+/**
+ * LA LECTURE EN SEUIL d'un dé déjà tombé (#1508) — JUMELLE de `lireEnTable` : même tirage (`roulerDe`),
+ * troisième lecture. Ici le total est confronté à un INDICE déclaré SUR l'étape (`CascadeDeDecl.seuil`) :
+ * `total ≥ indice` → sauvé (`LDB 85 l.98`, `LDB 85 l.278`, `LDB 47 l.410`). Le TOTAL est le dé EFFECTIF,
+ * comme il l'est pour le lookup d'une table — la même convention pour les trois lectures.
+ *
+ * La LIGNE de journal est rendue ICI, à l'unique graphie du seuil (`formatWardSave`) : un dé JETÉ s'ÉCRIT,
+ * qu'il sauve ou non — sans la ligne du raté, le porteur voit ses Blessures tomber sous sa propre
+ * protection sans que rien ne le lui explique. PURE (aucun état lu).
+ */
+export function lireEnSeuil(seuil: SeuilDeSauvegarde, de: CascadeDeResult, nom: string): { sauve: boolean; ligne: string } {
+  const sauve = de.total >= seuil.indice;
+  return {
+    sauve,
+    ligne: t(sauve ? 'cf.wardSaved' : 'cf.wardFailed', {
+      name: nom,
+      roll: de.total,
+      trait: formatWardSave(seuil.traitId, seuil.indice),
+      src: seuil.dome ? t('cf.wardFromDome') : '',
+    }),
+  };
 }
 
 /**
@@ -1179,7 +1205,7 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, pilote:
   // TRACE des jets qu'aucune SURFACE n'a montrés — AVANT la conséquence : le dé se lit d'abord, l'effet
   // ensuite, comme dans la fenêtre qui ne s'est pas ouverte.
   const traces = unwitnessedTraceLines(get, step, unwitnessed, rowSurface);
-  for (const l of traces) get().log(l);
+  journaliser(get, set, traces, 'info', { actorId: step.actorId });
   // FENÊTRE D'INSERTION (#1508) ouverte le temps que l'applier — et la continuation qui le suit —
   // tournent : une étape poussée pendant ce temps est la SUITE IMMÉDIATE de celle-ci, pas la fin de la
   // séquence. Rendue à sa valeur précédente ensuite (un applier peut en déclencher un autre).
@@ -1199,9 +1225,10 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, pilote:
   try {
     out = cascadeAppliers[step.kind]?.apply(get, set, step, hero, { steps, index: i });
     // `consequences` (#295 Lot 0) : rendu en LIGNES STRUCTURÉES (#349, `resultLines`) — seule voie de
-    // dénouement. Le journal texte (`get().log`) reste alimenté depuis le même texte (`l.text`).
+    // dénouement. Le journal texte reste alimenté depuis le même texte (`l.text`), par le routage
+    // UNIQUE `journaliser` : combat ouvert → `battle.log`, sinon `journal`.
     lines = out?.consequences ? resultLines(out.consequences) : [];
-    for (const l of lines) get().log(l.text);
+    journaliser(get, set, lines.map((l) => l.text), 'info', { actorId: step.actorId });
     // La CONSÉQUENCE est dite ; la CONTINUATION que l'étape porte (#1508 — le reste du lot/de la pile que
     // son dé a fait attendre) se joue MAINTENANT, jamais avant : c'est ce qui garde l'ordre de l'auteur
     // dans le journal, et ce qui laisse la conséquence se mesurer sur l'état qu'elle a elle-même produit.
@@ -1223,7 +1250,7 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, pilote:
     ? batchOwnTestFailedLines(get, step)
     : ((interaction === 'jet' && step.result && !step.result.success && !step.result.statuQuo && hero && !step.meta?.noOwnTestFailed)
       ? (ownTestFailedEmitter?.(get, hero, step.result.sl) ?? []) : []);
-  for (const l of ownTestFailedLines) get().log(l);
+  journaliser(get, set, ownTestFailedLines, 'info', { actorId: step.actorId });
   // L'étape VALIDÉE garde sa conséquence (`outcome`) pour rester LISIBLE dans la pile à l'écran. Une
   // étape d'AFFICHAGE porte son contenu d'avance (`outcome` pré-rempli) avec un applier muet → on le
   // PRÉSERVE (sinon le journal vide l'effacerait à la validation).

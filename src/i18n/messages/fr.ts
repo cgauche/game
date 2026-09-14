@@ -1199,6 +1199,7 @@ export const fr = {
   'step.critDevier': 'Coup Critique — dévier ?',
   'step.paradePiegerLame': 'Parade — piéger la lame ?',
   'step.blessureCritique': 'Blessure critique',
+  'step.sauvegarde': 'Sauvegarde',
   'step.miscastMajeure': 'Incantation Imparfaite Majeure',
   'step.miscastMineure': 'Incantation Imparfaite Mineure',
   'step.colereDesDieux': 'Colère des dieux',

@@ -40,7 +40,7 @@ import type { PairedSense, GameOp } from '../engine/ops';
 import type {
   CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate, CascadeSecondRead, PendingCascade, CascadeTableDecl, CascadeTableResult, RevealEntry,
   PendingDeviation, PendingBladeTrap, PendingCritSeverity, PendingMiscastStep, PendingMutationStep,
-  StepEvaluation,
+  StepEvaluation, SeuilDeSauvegarde, PendingWardSave,
 } from './pendings';
 import type { BuiltCascadeStep } from './stepBrand';
 import type { PlayerText } from '../i18n/playerText';
@@ -1718,6 +1718,12 @@ export interface DieStepSpec {
   forcedRoll?: number;
   /** Unité du total, pour la rangée qui le montre (« m », « jours »). */
   unite?: string;
+  /** LECTURE EN SEUIL du tirage (#1508, `cascade.lireEnSeuil`) : l'Indice contre lequel le total se lit.
+   *  Déclaré à l'étape — c'est lui que la rangée MONTRE (« 1d10 : 8 ≥ Protection (6+) »). */
+  seuil?: SeuilDeSauvegarde;
+  /** CHARGE de l'étape de sauvegarde (#1508) : les seuils restants + la suite du coup suspendu, que
+   *  l'applier ré-entre (patron de la charge `fumble` d'une étape hôte — la donnée vit SUR l'étape). */
+  wardSave?: PendingWardSave;
   stake?: StakeRef;
   meta?: CascadeStepMeta;
 }
@@ -1750,7 +1756,9 @@ export function dieStep(spec: DieStepSpec): BuiltCascadeStep | undefined {
       ...(spec.keepHighest != null ? { keepHighest: spec.keepHighest } : {}),
       ...(spec.forcedRoll != null ? { forcedRoll: spec.forcedRoll } : {}),
       ...(spec.unite ? { unite: spec.unite } : {}),
+      ...(spec.seuil ? { seuil: spec.seuil } : {}),
     },
+    ...(spec.wardSave ? { wardSave: spec.wardSave } : {}),
     ...(spec.stake ? { stake: spec.stake } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),
   } as BuiltCascadeStep;

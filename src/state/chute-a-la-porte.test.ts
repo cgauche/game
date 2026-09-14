@@ -1000,7 +1000,9 @@ describe('(xii) ROUTE RÉELLE : la chute d’un Test RATÉ passe par la porte, d
     ouvrirLaBande([ott], 'combat');
     raterLeTest();
     draineCascade(useGame.getState); // les deux dés de chute sont LANCÉS, jamais posés
-    const ligne = useGame.getState().journal.find((l) => l.includes('Blessure'));
+    // La chute est jouée EN COMBAT : sa ligne se lit au journal de COMBAT (`combatLog.journaliser`),
+    // seule surface ouverte au joueur pendant un combat — pas au journal d'exploration.
+    const ligne = useGame.getState().battle!.log.map((e) => e.text).find((l) => l.includes('Blessure'));
     expect(ligne, 'la chute a bien été dite').toBeDefined();
     expect(ligne, 'aucun dé de LA CHUTE n’a été saisi : la mention serait un mensonge').not.toContain('dé fixé');
   });

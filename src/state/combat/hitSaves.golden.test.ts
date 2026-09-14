@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame, type BattleState } from '../store';
 import { applyAttackResult } from '../combatFlow';
 import { seedBattleRng, battleRng } from '../battleRng';
+import { draineEtLit } from '../cascadeTestKit';
 import type { Combatant, Weapon } from '../../engine/types';
 import type { AttackResult } from '../../engine/combat';
 import { emptyScene } from '../scene';
@@ -10,9 +11,14 @@ import { emptyScene } from '../scene';
  * GOLDEN des SAUVEGARDES POST-TOUCHE (filet anti-régression Phase 2) : `applyAttackResult` applique,
  * après une touche, une SUITE de sauvegardes synchrones (Démoniaque/Protection `wardSaves` → Bouclier
  * anti-flèches → Dôme → Martyr → Perturbante). On fige, pour deux cas À RNG (Démoniaque et Dôme),
- * l'état observable de la cible (PB perdus / journal) + une sonde RNG post-résolution. La migration de
- * ces `if` successifs vers un registre `HitModifier` ordonné DOIT garder ce snapshot byte-pour-byte
- * (ordre + tirages préservés).
+ * l'état observable de la cible (PB perdus / journal) + une sonde RNG post-résolution.
+ *
+ * RECAPTURÉ à #1508 T3b, et la raison de changer est DITE : le 1d10 « ≥ Indice » ne se roule plus dans
+ * le registre, il naît en ÉTAPE de dé à la porte — `applyAttackResult` rend donc `true` (SUSPENDU, aucune
+ * mutation), le dé tombe quand la fenêtre est jouée (ici le drainage), et la ligne du dé est la
+ * CONSÉQUENCE de l'étape, plus une ligne du journal de bataille. La sonde RNG se décale d'autant : le dé
+ * quitte le flux d'aléa de la bataille au point où il était tiré pour être tiré par le pilote de la porte.
+ * L'ÉTAT OBSERVABLE, lui, ne bouge pas — c'est ce que ce golden garde.
  */
 
 const CHARS = { 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 40, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
@@ -67,18 +73,26 @@ describe('GOLDEN — sauvegardes post-touche (applyAttackResult)', () => {
     setBattle([atk, demon]);
     const before = useGame.getState().battle!.combatants.find((c) => c.id === 'e1')!.wounds.current;
     const suspended = applyAttackResult(useGame.getState, useGame.setState, atk, demon, atk.weapons?.[0] ?? ({ label: 'Griffes', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as Weapon), meleeHit());
+    const lues = draineEtLit(useGame.getState); // la fenêtre est jouée : c'est LÀ que le 1d10 tombe
     const after = useGame.getState().battle!;
     const e = after.combatants.find((c) => c.id === 'e1')!;
     const lines = after.log.map((l) => `${l.kind}:${l.text}`);
     const rngProbe = battleRng().int(1, 100);
-    expect({ suspended, before, woundsAfter: e.wounds.current, lines, rngProbe }).toMatchInlineSnapshot(`
+    expect({ suspended, before, woundsAfter: e.wounds.current, lines, lues, rngProbe }).toMatchInlineSnapshot(`
       {
         "before": 20,
         "lines": [
-          "attack:Démon ignore le coup — sauvegarde 1d10 : 8 ≥ Démoniaque (8+).",
+          "info:Démon — Sauvegarde : dé 8 → 8.",
+          "attack:Hardi touche le Démon.",
+          "info:Démon ignore le coup — sauvegarde 1d10 : 8 ≥ Démoniaque (8+).",
+        ],
+        "lues": [
+          "Démon — Sauvegarde : dé 8 → 8.",
+          "Hardi touche le Démon.",
+          "Démon ignore le coup — sauvegarde 1d10 : 8 ≥ Démoniaque (8+).",
         ],
         "rngProbe": 33,
-        "suspended": false,
+        "suspended": true,
         "woundsAfter": 20,
       }
     `);
@@ -94,18 +108,24 @@ describe('GOLDEN — sauvegardes post-touche (applyAttackResult)', () => {
     setBattle([warden, target, shooter]);
     const before = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!.wounds.current;
     const suspended = applyAttackResult(useGame.getState, useGame.setState, shooter, target, bow, meleeHit());
+    const lues = draineEtLit(useGame.getState); // la fenêtre est jouée : c'est LÀ que le 1d10 tombe
     const after = useGame.getState().battle!;
     const t = after.combatants.find((c) => c.id === 'h1')!;
     const lines = after.log.map((l) => `${l.kind}:${l.text}`);
     const rngProbe = battleRng().int(1, 100);
-    expect({ suspended, before, woundsAfter: t.wounds.current, lines, rngProbe }).toMatchInlineSnapshot(`
+    expect({ suspended, before, woundsAfter: t.wounds.current, lines, lues, rngProbe }).toMatchInlineSnapshot(`
       {
         "before": 15,
         "lines": [
-          "shoot:Couvert ignore le coup — sauvegarde 1d10 : 7 ≥ Protection (6+) du Dôme.",
+          "shoot:Hardi touche le Démon.",
+          "info:Couvert ignore le coup — sauvegarde 1d10 : 7 ≥ Protection (6+) du Dôme.",
+        ],
+        "lues": [
+          "Hardi touche le Démon.",
+          "Couvert ignore le coup — sauvegarde 1d10 : 7 ≥ Protection (6+) du Dôme.",
         ],
         "rngProbe": 1,
-        "suspended": false,
+        "suspended": true,
         "woundsAfter": 15,
       }
     `);

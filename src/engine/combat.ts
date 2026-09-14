@@ -450,6 +450,11 @@ export interface AttackResult {
    *  l.55), où seule l'ignorance de PA (Partielle / Points faibles) dépend de la localisation. */
   apExternal?: number;
   critical: boolean;
+  /** SAUVEGARDE « 1d10 ≥ Indice » de CE coup, DÉCIDÉE (LDB 85 l.98, LDB 85 l.278, LDB 47 l.410) — posée
+   *  par la porte (étape de dé), jamais par le moteur. Sa présence dit que le dé est tombé : le registre
+   *  de touche APPLIQUE l'issue au lieu d'en redemander un, et un coup qui repasse par le registre après
+   *  une autre fenêtre (Déviation) ne rejoue pas la sauvegarde. */
+  sauvegarde?: { sauve: boolean };
   /** +1 Avantage gagné par l'attaquant (true) ou le défenseur (false), null = aucun. */
   advantageTo: 'attacker' | 'defender' | null;
   defenderDefeated: boolean;
