@@ -73,7 +73,7 @@ const GARDE = {
     raison:
       'Le stock est le dénominateur des COMMENTAIRES de #1486 (credo règle 1) : chaque ligne se solde par la mort du site ' +
       'dans le commit de son lot. Il ne couvre PAS les sites de #1486 portés par du CODE — identifiants et chaînes : ' +
-      '`charKeyLegacy.mjs`, les budgets `legacy:` de `gameOpRefFk.mjs`, `LEGACY_KEY` (`saves.ts`), `labelLogic.mjs:765`, ' +
+      '`charKeyLegacy.mjs`, `LEGACY_KEY` (`saves.ts`), `labelLogic.mjs:874`, ' +
       '`scripts/agents/compat-core.mjs` — invisibles à `extractComments` par construction : ceux-là meurent avec leurs lots, ' +
       'listés au ticket, jamais par cette garde. Une ligne neuve est une dérive, jamais une exception à inscrire — seul le ' +
       'tag `[entériné AAAA-MM-JJ]` de l’utilisateur soustrait un commentaire à la famille.',
@@ -604,7 +604,7 @@ describe('garde-fou commentaires — vocabulaire de l’ancien état (#1486, cre
   });
 
   it('faux positifs écartés : l’IDENTIFIANT et le NOM DE FICHIER cités en commentaire ne sont pas des sites', () => {
-    expect(legacyVocabIn('// `legacyCounts` compte les entrées non résolues')).toEqual([]);
+    expect(legacyVocabIn('// `legacyVocabIn` rend les motifs portés par un commentaire')).toEqual([]);
     expect(legacyVocabIn('// scanner `charKeyLegacy.mjs` (clés de caractéristique)')).toEqual([]);
     expect(legacyVocabIn('// stock nominatif : `legacyVocabStock.mjs`')).toEqual([]);
     expect(legacyVocabIn('// Message du joueur par CAUSE de rejet (`ObsoleteCause`)')).toEqual([]);

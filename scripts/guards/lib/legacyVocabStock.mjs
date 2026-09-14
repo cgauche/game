@@ -33,13 +33,6 @@ export const LEGACY_VOCAB_SITES = [
     date: "2026-08-23",
   },
   {
-    fichier: "scripts/guards/lib/gameOpRefFk.mjs",
-    motif: "legacy",
-    ancre: "- `{ registry, legacy: N }` — référence dure assortie d'un CLIQUET : `N` valeurs ne résolvent pas",
-    lot: "L1c #1468 / #1473",
-    date: "2026-08-23",
-  },
-  {
     fichier: "src/engine/ops.ts",
     motif: "rétro-compat",
     ancre: "jamais forcé), borné à `overcastDurationSteps`. Absent = tous les pas alloués (défaut, IA/rétrocompat). */",

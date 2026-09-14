@@ -6,7 +6,7 @@ export interface GameOpField {
 }
 
 export type GameOpFieldTarget =
-  | { registry: string; self?: true; legacy?: number }
+  | { registry: string; self?: true }
   | { nonRef: string }
   | { coveredBy: string };
 
@@ -27,7 +27,6 @@ export interface JsonSource {
 
 export interface ScanResult {
   offenders: GameOpRefOffender[];
-  legacyCounts: Record<string, number>;
   missingResolvers: string[];
 }
 
@@ -43,5 +42,4 @@ export function gameOpStringFields(root: string): GameOpField[];
 export function auditFieldCoverage(root: string): { derived: GameOpField[]; unclassified: string[]; stale: string[] };
 export function collectJsonFiles(dir: string, root: string): JsonSource[];
 export function scanGameOpRefs(input: { sources: JsonSource[]; resolvers: Record<string, (id: string) => boolean> }): ScanResult;
-export function slackRatchets(legacyCounts: Record<string, number>): { key: string; baseline: number; actual: number }[];
 export function formatOffender(o: GameOpRefOffender): string;

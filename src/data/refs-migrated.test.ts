@@ -38,7 +38,7 @@ import { readFileSync } from 'node:fs';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import {
-  GAMEOP_FIELD_TARGETS, auditFieldCoverage, collectJsonFiles, scanGameOpRefs, slackRatchets, formatOffender,
+  GAMEOP_FIELD_TARGETS, auditFieldCoverage, collectJsonFiles, scanGameOpRefs, formatOffender,
 } from '../../scripts/guards/lib/gameOpRefFk.mjs';
 import { extractedBooks, frenchSourceDirs, isSentinel, sourceDirOf, walkSkillRefs } from '../../scripts/data/lib/skillSpecWalk.mjs';
 
@@ -1328,16 +1328,35 @@ describe('GameOp — toute référence de la donnée committée résout dans son
     expect(scan.missingResolvers, scan.missingResolvers.join(', ')).toEqual([]);
   });
 
-  it('src/data/*.json + src/scenes/**.json : toute ref d’op résout (hors cliquets déclarés)', () => {
+  it('src/data/*.json + src/scenes/**.json : toute ref d’op résout', () => {
     expect(sources.length, 'aucun document scanné').toBeGreaterThan(50);
     const lines = scan.offenders.map(formatOffender);
     expect(lines, lines.join('\n')).toEqual([]);
   });
 
-  it('les cliquets ne dépassent pas leur baseline — une dette résorbée se solde en abaissant le chiffre', () => {
-    const slack = slackRatchets(scan.legacyCounts);
-    const detail = slack.map((s) => `${s.key} : baseline ${s.baseline}, réel ${s.actual} → abaisser à ${s.actual}`);
-    expect(detail, detail.join('\n')).toEqual([]);
+  // Le format d'une cible est un ensemble FERMÉ (`gameOpRefFk.mjs`, doc de `GAMEOP_FIELD_TARGETS`) :
+  // `{ registry, self? }` | `{ nonRef }` | `{ coveredBy }`. Une clé hors de cet ensemble serait lue par
+  // PERSONNE dans `scanGameOpRefs` — donc une tolérance muette, ou un champ tenu pour gardé sans l'être.
+  it('le format d’une cible est fermé : aucune clé hors registry/self/nonRef/coveredBy', () => {
+    const CLES = new Set(['registry', 'self', 'nonRef', 'coveredBy']);
+    const anomalies: string[] = [];
+    for (const [cible, decl] of Object.entries(GAMEOP_FIELD_TARGETS as Record<string, Record<string, unknown>>)) {
+      for (const cle of Object.keys(decl)) {
+        if (!CLES.has(cle)) anomalies.push(`${cible} : clé « ${cle} » hors du format fermé`);
+      }
+      const formes = ['registry', 'nonRef', 'coveredBy'].filter((k) => k in decl);
+      if (formes.length !== 1) {
+        anomalies.push(`${cible} : ${formes.length} forme(s) déclarée(s) [${formes.join(', ')}] — il en faut une et une seule`);
+      }
+      if ('self' in decl) {
+        if (decl.self !== true) anomalies.push(`${cible} : « self » vaut ${JSON.stringify(decl.self)} au lieu de true`);
+        if (!('registry' in decl)) anomalies.push(`${cible} : « self » sans « registry » — le mot réservé ne se tolère que sur une référence dure`);
+      }
+      for (const k of ['registry', 'nonRef', 'coveredBy']) {
+        if (k in decl && (typeof decl[k] !== 'string' || !decl[k])) anomalies.push(`${cible} : « ${k} » n’est pas un texte non vide`);
+      }
+    }
+    expect(anomalies, anomalies.join('\n')).toEqual([]);
   });
 
   it('la garde n’est pas vacante — une op à référence fantôme est REFUSÉE (contre-épreuve)', () => {

@@ -68,10 +68,10 @@ export const TOLERATED = {
  * Cible de CHAQUE champ `string`/`string[]` de l'union `GameOp`, par clé `op.champ` :
  *   - `{ registry }`            — référence DURE : la valeur doit résoudre dans ce registre.
  *   - `{ registry, self }`      — idem, plus le mot réservé `'self'`.
- *   - `{ registry, legacy: N }` — référence dure assortie d'un CLIQUET : `N` valeurs ne résolvent pas
- *                                 aujourd'hui, une de plus fait rougir, et `N` doit décroître.
  *   - `{ nonRef }`              — la valeur n'est la clé d'aucun registre ; le texte dit quoi et qui la lit.
  *   - `{ coveredBy }`           — champ de référence gardé AILLEURS (garde nommée), pas ré-vérifié ici.
+ * Ces trois formes sont l'ensemble FERMÉ du format : `src/data/refs-migrated.test.ts` refuse toute clé
+ * hors `registry`/`self`/`nonRef`/`coveredBy`, et toute valeur non résolue est un offenseur.
  */
 export const GAMEOP_FIELD_TARGETS = {
   // ── États (etats.json) ──
@@ -261,8 +261,8 @@ const isGameOp = (o) => typeof o.op === 'string' && !('kind' in o);
  * Scan des références d'ops d'un corpus de documents.
  * `sources` : `[{ file, data }]`. `resolvers` : `{ <registre>: (id) => boolean }` — un registre visé
  * par la table sans résolveur fourni est rapporté en `missingResolvers` (jamais ignoré en silence).
- * Retourne `{ offenders, legacyCounts, missingResolvers }` ; `offenders` exclut déjà les valeurs
- * couvertes par un cliquet à concurrence de sa baseline (le SURPLUS, lui, sort en offender).
+ * Retourne `{ offenders, missingResolvers }` : TOUTE valeur d'un champ à `registry` qui ne résout pas,
+ * hors vocabulaire `TOLERATED`, est un offenseur — la garde n'accorde aucun budget.
  */
 export function scanGameOpRefs({ sources, resolvers }) {
   const missingResolvers = new Set();
@@ -294,28 +294,7 @@ export function scanGameOpRefs({ sources, resolvers }) {
   };
   for (const s of sources) walk(s.data, s.file, s.file);
 
-  const legacyCounts = {};
-  const offenders = [];
-  const budget = new Map();
-  for (const [key, t] of Object.entries(GAMEOP_FIELD_TARGETS)) if (t.legacy) budget.set(key, t.legacy);
-  for (const f of found) {
-    legacyCounts[f.key] = (legacyCounts[f.key] ?? 0) + 1;
-    const left = budget.get(f.key);
-    if (left != null && left > 0) { budget.set(f.key, left - 1); continue; }
-    offenders.push(f);
-  }
-  return { offenders, legacyCounts, missingResolvers: [...missingResolvers].sort() };
-}
-
-/** Cliquets dont la baseline est SUPÉRIEURE au compte réel : la dette a été résorbée, la baisser. */
-export function slackRatchets(legacyCounts) {
-  const out = [];
-  for (const [key, t] of Object.entries(GAMEOP_FIELD_TARGETS)) {
-    if (!t.legacy) continue;
-    const actual = legacyCounts[key] ?? 0;
-    if (actual < t.legacy) out.push({ key, baseline: t.legacy, actual });
-  }
-  return out;
+  return { offenders: found, missingResolvers: [...missingResolvers].sort() };
 }
 
 /** Rendu d'un offender en une ligne actionnable. */

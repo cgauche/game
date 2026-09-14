@@ -17,9 +17,9 @@ manquante est une **erreur de compile**, plus jamais un `?? art.front` silencieu
 armes, boucliers, appendices, têtes de race, injections monstrueuses — servis par `pickView` ;
 elle n'est **plus** la porte de sortie des slots de corps.)
 
-Les **defs** (tenues/armures) portent encore un `PartArt` legacy (souvent une `string` front-only,
-ou un objet à vues partielles). Un **shim P1** — `toViewSet(slot, art, opts)` (`parts/derive.ts`,
-**retiré en P3**) — les enrobe en `ViewSet` total **au point d'ingestion** par `resolveParts` :
+Les **defs** de tenues/armures déclarent un `PartArt` partiel (`string` front-only, ou objet à vues
+partielles) ; `resolveParts` (`parts/resolve.ts`) les totalise en `ViewSet` **au point d'ingestion**,
+par `toViewSet(slot, art, opts)` (`parts/derive.ts`) :
 
 | Vue du slot | Source |
 |---|---|

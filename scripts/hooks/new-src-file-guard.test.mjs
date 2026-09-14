@@ -214,7 +214,7 @@ test('le registre est trié, sans doublon SUR LA CLEF NORMALISÉE, et ne cite qu
 test('CLIQUET : le stock d’entrées en CHAÎNE (207 mesurées le 2026-08-16) décroît, jamais l’inverse', () => {
   const { ecrans } = JSON.parse(readFileSync(REGISTRE_DEFAUT, 'utf8'))
   const chaines = ecrans.filter((e) => typeof e === 'string').length
-  assert.ok(chaines <= 207, `stock legacy en hausse : ${chaines} > 207 — un écran NEUF s'inscrit en objet {fichier, maquette}`)
+  assert.ok(chaines <= 207, `stock d'entrées en CHAÎNE en hausse : ${chaines} > 207 — un écran NEUF s'inscrit en objet { fichier, maquette }`)
 })
 
 test('le tri sur la clef normalisée MORD sur un registre mixte désordonné (cas planté)', () => {
