@@ -165,6 +165,10 @@ const ATTENDU = {
     'scripts/raw/check-code-refs.test.mjs',
     'scripts/raw/check-entity-in-chapter.test.mjs',
     'scripts/raw/check-folio-continuity.test.mjs',
+    // +1 le 2026-09-14 (#1384 B1) : `check-source-tables.test.mjs` importe le détecteur, dont
+    // l'unique écriture (régénération du stock) est fermée par `--ecrire-stock` sous `isMain`
+    // (check-source-tables.mjs:194) — déclarée en `ecritFerme` de `test:raw` (ECRIT_LU).
+    'scripts/raw/check-source-tables.mjs',
     'scripts/raw/check-refs.test.mjs',
     'scripts/raw/citation-graphy-guard.test.mjs',
     'scripts/raw/folio-bootstrap.mjs',
@@ -182,6 +186,11 @@ const ATTENDU = {
   // 4 137 lectures, ZÉRO écriture.
   'raw:check-code-refs': ['scripts/raw/build-implemente.mjs'],
   'raw:check-folio-continuity': [],
+  // +1 le 2026-09-14 (#1384 B1) : la gate neuve est le détecteur des tables cassées de `Source/`,
+  // qui porte UN `writeFileSync` — la régénération de son stock nominatif, fermée par la porte
+  // `--ecrire-stock` (check-source-tables.mjs:194) que ci.yml ne passe pas ; déclarée en
+  // `ecritFerme` sur `scripts/raw/source-tables-stock.json` (ECRIT_LU, scripts/gates/toutes.mjs).
+  'raw:check-source-tables': ['scripts/raw/check-source-tables.mjs'],
   'raw:reanchor': ['scripts/docs/lib/empreinte-sources.mjs', 'scripts/raw/reanchor.mjs'],
   'server:typecheck': [],
 }

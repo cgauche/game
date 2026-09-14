@@ -305,6 +305,12 @@ export const ECRIT_LU = {
   },
   'test:raw': {
     ecrit: [],
+    ecritFerme: {
+      'scripts/raw/source-tables-stock.json':
+        '`check-source-tables.test.mjs` IMPORTE le détecteur des tables cassées, dont l’unique écriture ' +
+        '(la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ' +
+        '(scripts/raw/check-source-tables.mjs:194) ; le banc ne fait que LIRE le stock (`readStock`)',
+    },
     lit: ['docs/raw/', 'scripts/raw/', 'scripts/guards/lib/', 'Source/', 'src/'],
     raison:
       'harnais de l’Atlas : il lit les fiches que les trois rapports écrivent ; éprouvant les scripts ' +
@@ -334,12 +340,17 @@ export const ECRIT_LU = {
   },
   'raw:check-source-tables': {
     ecrit: [],
+    ecritFerme: {
+      'scripts/raw/source-tables-stock.json':
+        'le stock NOMINATIF des tables cassées ne se réécrit que sous `--ecrire-stock` ' +
+        '(scripts/raw/check-source-tables.mjs:194), option que la commande de .github/workflows/ci.yml ' +
+        'ne passe pas ; sans elle la gate COMPARE le stock à sa mesure et ne touche à rien',
+    },
     lit: ['Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/'],
     raison:
-      'aucune écriture dans les scripts atteints (le stock ne se réécrit que sous `--ecrire-stock`, que ' +
-      'la commande de .github/workflows/ci.yml ne passe pas) ; LIT le registre de livres, le parseur de ' +
-      'tables (src/data/source/decoupe.ts), les 16 dossiers de Source/ et son stock NOMINATIF ' +
-      'scripts/raw/source-tables-stock.json',
+      'LIT le registre de livres, le parseur de tables (src/data/source/decoupe.ts), les 16 dossiers de ' +
+      'Source/ et son stock nominatif scripts/raw/source-tables-stock.json ; le seul module écrivain ' +
+      'atteint est le détecteur lui-même, dont l’écriture est fermée par sa porte `--ecrire-stock`',
   },
   'raw:reanchor': {
     ecrit: [],
