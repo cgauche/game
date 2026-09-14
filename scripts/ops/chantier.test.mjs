@@ -3,14 +3,15 @@
 // part d'origin/main » est justement ce qu'un test à `HEAD` ne verrait pas tomber.
 // `npm ci` n'est JAMAIS joué : l'appelant injecte un `npm` qui enregistre l'appel.
 // Lancé par `npm run test:ops`.
-import { test } from 'node:test'
+import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
-import { argumentsDe, brancheDe, cibleDe, creerChantier, nomValide, refusDeCreation, resumeDeChantier } from './chantier.mjs'
+import { ECRIT_LU } from '../gates/toutes.mjs'
+import { EQUIPEMENTS, argumentsDe, brancheDe, cibleDe, creerChantier, equipementsDesPrerequis, nomValide, refusDeCreation, resumeDeChantier } from './chantier.mjs'
 
 test('un nom de chantier est un numéro de ticket, avec un slug optionnel en minuscules', () => {
   for (const bon of ['1736', '42', '1732-1734-outillage', '1736-publication', '12-a', '12-a1-b2']) {
@@ -128,10 +129,47 @@ test('npm ci ROUGE : le worktree RESTE, et le refus dit quoi relancer où', () =
   } finally { jeter() }
 })
 
+// La table `EQUIPEMENTS` est DÉRIVÉE des `prerequis` d'`ECRIT_LU` : ce qu'une gate exige est posé
+// par l'ouverture sans second geste.
+describe('equipementsDesPrerequis', () => {
+  // Fixture LOCALE au describe : deux gates portant le MÊME pose, plus un sous-projet de plus.
+  const ECRIT_LU_FIXTURE = {
+    'a:gate': { prerequis: [{ chemin: 'server/node_modules', pose: 'npm --prefix server ci' }] },
+    'b:gate': { prerequis: [{ chemin: 'server/node_modules', pose: 'npm --prefix server ci' }] },
+    'c:gate': { prerequis: [{ chemin: 'outil/node_modules', pose: 'npm --prefix outil ci' }] },
+    'd:gate': { ecrit: [], lit: ['src/'] },
+  }
+
+  test('sur la table RÉELLE : la racine, puis le seul prérequis déclaré (server/)', () => {
+    assert.deepEqual(EQUIPEMENTS, [
+      { args: ['ci', '--no-audit', '--no-fund'], ou: '', relance: 'npm ci' },
+      { args: ['--prefix', 'server', 'ci', '--no-audit', '--no-fund'], ou: ' dans server/', relance: 'npm --prefix server ci' },
+    ])
+  })
+
+  test('un pose PARTAGÉ ne se pose qu’une fois ; un sous-projet de plus arrive en DERNIER', () => {
+    const vu = [{ args: ['ci', '--no-audit', '--no-fund'], ou: '', relance: 'npm ci' }, ...equipementsDesPrerequis(ECRIT_LU_FIXTURE)]
+    assert.equal(vu.length, 3)
+    assert.deepEqual(vu.map((e) => e.relance), ['npm ci', 'npm --prefix server ci', 'npm --prefix outil ci'])
+    assert.deepEqual(vu[2], { args: ['--prefix', 'outil', 'ci', '--no-audit', '--no-fund'], ou: ' dans outil/', relance: 'npm --prefix outil ci' })
+  })
+
+  test('un pose qui n’est pas du npm est REFUSÉ en nommant la gate et le pose', () => {
+    assert.throws(
+      () => equipementsDesPrerequis({ 'z:gate': { prerequis: [{ chemin: 'z/node_modules', pose: 'pnpm i' }] } }),
+      (e) => /prérequis non posable/.test(e.message) && /z:gate/.test(e.message) && /pnpm i/.test(e.message),
+    )
+  })
+
+  test('la table réelle ne déclare que des poses npm (aucun refus au chargement)', () => {
+    assert.doesNotThrow(() => equipementsDesPrerequis(ECRIT_LU))
+  })
+})
+
 // Le sous-projet `server/` a ses PROPRES dépendances, et `server:typecheck` les déclare en prérequis
-// (`scripts/gates/toutes.mjs:373`) : un chantier équipé de la seule racine rend cette gate ROUGE
-// après la série entière (mesuré le 2026-09-14, 3ᵉ train réel). L'ordre est le sujet : `npm --prefix
-// server ci` ne peut pas précéder le `npm ci` de la racine.
+// (`prerequis` d'`ECRIT_LU`, scripts/gates/toutes.mjs) : un chantier équipé de la seule racine rend
+// cette gate ROUGE après la série entière (mesuré le 2026-09-14, 3ᵉ train réel). L'ordre est le
+// sujet : `npm --prefix server ci` ne peut pas précéder le `npm ci` de la racine.
 test('équipement : npm ci à la RACINE puis dans server/, dans cet ordre, tous deux DANS le worktree', () => {
   const { racine, jeter } = depotAvecOrigin()
   try {

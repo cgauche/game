@@ -21,6 +21,7 @@ import {
   jouerLeTrain,
   journalInitial,
   journalVide,
+  ligneDeDetachement,
   marquePublication,
   messageDeDerives,
   modeDuLog,
@@ -31,6 +32,7 @@ import {
   planDeReprise,
   prerequisDesGates,
   sansOptionsGlobales,
+  synchroniserAgents,
   titreDeCommit,
   verdictDesRuns,
 } from './publier.mjs'
@@ -421,6 +423,58 @@ test('étape `docs` : déjà faite sur la tête ENREGISTRÉE, pas sur `journal.t
   assert.equal(docs.dejaFaite(ctx, { tete: ctx.tete, etapes: { docs: { etat: 'vert', tete: 'b'.repeat(40) } } }), false)
   assert.equal(docs.dejaFaite(ctx, { tete: ctx.tete, etapes: { docs: { etat: 'rouge', tete: ctx.tete } } }), false)
   assert.equal(docs.dejaFaite(ctx, journalVide('c')), false)
+})
+
+// ── synchroniserAgents ─────────────────────────────────────────────────────────────────
+// La décision passe par la porte `ctx.npm` du contexte : ce qui est joué, et dans quel ordre, se
+// mesure sans lancer npm.
+
+describe('synchroniserAgents', () => {
+  const ctxFactice = (codes) => {
+    const joues = []
+    const dits = []
+    return {
+      joues,
+      dits,
+      npm(script) {
+        joues.push(script)
+        return { status: codes[script] ?? 0 }
+      },
+      journaliser: (t) => dits.push(t),
+    }
+  }
+
+  test('`agents:check` VERT : `agents:check` est le seul script joué, et l’étape continue', () => {
+    const ctx = ctxFactice({})
+    assert.deepEqual(synchroniserAgents(ctx), { ok: true })
+    assert.deepEqual(ctx.joues, ['agents:check'])
+    assert.deepEqual(ctx.dits, [])
+  })
+
+  test('`agents:check` ROUGE : `agents:sync` est joué APRÈS lui, et l’étape continue', () => {
+    const ctx = ctxFactice({ 'agents:check': 1 })
+    assert.deepEqual(synchroniserAgents(ctx), { ok: true })
+    assert.deepEqual(ctx.joues, ['agents:check', 'agents:sync'])
+    assert.match(ctx.dits.join(''), /agents:check` rendu 1 : `npm run agents:sync`/)
+  })
+
+  test('`agents:sync` ROUGE : refus qui NOMME le script, son code et ce que le pre-commit ferait', () => {
+    const ctx = ctxFactice({ 'agents:check': 1, 'agents:sync': 7 })
+    const vu = synchroniserAgents(ctx)
+    assert.equal(vu.ok, false)
+    assert.equal(vu.raison, '`npm run agents:sync` a rendu 7 : le pre-commit jouerait `agents:check` et refuserait le commit')
+    assert.deepEqual(ctx.joues, ['agents:check', 'agents:sync'])
+  })
+})
+
+// ── ligneDeDetachement ─────────────────────────────────────────────────────────────────
+
+test('ligneDeDetachement : la trace MACHINE que le parent laisse dans le log', () => {
+  assert.equal(
+    ligneDeDetachement({ pid: 4242, log: '/c/.cache/publication/chantier_1736-publier.log', args: ['--reprendre'] }),
+    '[publier] détaché — pid=4242 log=/c/.cache/publication/chantier_1736-publier.log args=--reprendre\n',
+  )
+  assert.equal(ligneDeDetachement({ pid: 7, log: 'x.log', args: [] }), '[publier] détaché — pid=7 log=x.log args=\n')
 })
 
 // ── corpsDePilotage ────────────────────────────────────────────────────────────────────

@@ -127,6 +127,18 @@ export function journalInitial({ reprendre, lu, branche }) {
 export const modeDuLog = ({ reprendre = false, enfant = false } = {}) => (reprendre || enfant ? 'a' : 'w')
 
 /**
+ * La ligne que le PARENT laisse dans le log quand il détache l'enfant. PURE.
+ * Sans elle, `--detache` ne laisse aucune trace MACHINE : le pid et le log ne sont écrits que sur le
+ * stdout du parent, que personne ne conserve (mesuré le 2026-09-14 :
+ * `grep -c -E "tach|pid=|log=" node_modules/.cache/publication/chantier_1736-publier.log` → 0 sur
+ * 446 lignes, trois trains réels). L'enfant n'y touche pas : il est né après.
+ * @param {{pid: number, log: string, args: string[]}} p
+ * @returns {string} ligne terminée par un saut
+ */
+export const ligneDeDetachement = ({ pid, log, args }) =>
+  `[publier] détaché — pid=${pid} log=${log} args=${(args ?? []).join(' ')}\n`
+
+/**
  * Ouvre le log dans le mode décidé par `modeDuLog`. Le fd rendu est TOUJOURS en `'a'` : en mode
  * détaché, le MÊME fichier porte deux écrivains (le fd hérité comme stdout/stderr de l'enfant, et
  * le fd que l'enfant ouvre pour `journaliser`) — deux fds à offset propre se piétineraient, deux
@@ -494,7 +506,8 @@ function attendre(ms) {
 
 /**
  * Le contexte que les étapes partagent. `git` est la SEULE porte de mutation, gardée par
- * `commandeInterdite` : un geste interdit JETTE avant tout spawn.
+ * `commandeInterdite` : un geste interdit JETTE avant tout spawn. `npm` est la SEULE porte des
+ * `npm run <script>` des étapes — une porte, donc une décision mesurable en test.
  */
 export function contexteDe({ racine, branche, options, journaliser, fdLog }) {
   return {
@@ -503,6 +516,11 @@ export function contexteDe({ racine, branche, options, journaliser, fdLog }) {
     options,
     journaliser,
     fdLog,
+    npm(script) {
+      // `shell: true` : sous win32, `npm` est un `.cmd`, que `spawnSync` ne sait lancer autrement.
+      const binaire = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+      return spawnSync(binaire, ['run', script], { cwd: racine, stdio: ['ignore', fdLog, fdLog], shell: true })
+    },
     get tete() {
       return lu(['rev-parse', 'HEAD'], racine)
     },
@@ -533,6 +551,24 @@ export function prerequisDesGates(racine, { gates = gatesRequises({ cwd: racine 
     if (absents.length) lignes.push(...refusDePrerequis(gate.nom, absents).trimEnd().split('\n'))
   }
   return lignes
+}
+
+/**
+ * Remet les miroirs d'agents en phase AVANT le commit des dérivés, par la porte `ctx.npm`.
+ * `agents:sync` se déclenche sur un `agents:check` ROUGE, jamais sur la saleté de `CLAUDE.md` : un
+ * commit de la plage qui touche `.claude/skills/**` ou `.claude/credo.md` sans resynchroniser laisse
+ * `agents:check` rouge au pre-commit, et le commit des docs échouerait sans nommer la cause.
+ * @param {{npm: Function, journaliser: Function}} ctx
+ * @returns {{ok: true} | {ok: false, raison: string}}
+ */
+export function synchroniserAgents(ctx) {
+  const verif = ctx.npm('agents:check')
+  if (verif.status === 0) return { ok: true }
+  ctx.journaliser(`[publier] docs — \`agents:check\` rendu ${verif.status} : \`npm run agents:sync\`\n`)
+  const sync = ctx.npm('agents:sync')
+  if (sync.status !== 0)
+    return { ok: false, raison: `\`npm run agents:sync\` a rendu ${sync.status} : le pre-commit jouerait \`agents:check\` et refuserait le commit` }
+  return { ok: true }
 }
 
 /** La table des ÉTAPES : nom, `jouer(ctx, journal)`, `dejaFaite(ctx, journal)`. Ajouter une étape,
@@ -676,16 +712,8 @@ export const ETAPES = [
             }
         }
       }
-      // `agents:sync` se déclenche sur un `agents:check` ROUGE, jamais sur la saleté de `CLAUDE.md` :
-      // un commit de la plage qui touche `.claude/skills/**` ou `.claude/credo.md` sans resynchroniser
-      // laisse `agents:check` rouge au pre-commit, et le commit des docs échouerait sans nommer la cause.
-      const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-      const verif = spawnSync(npm, ['run', 'agents:check'], { cwd: racine, stdio: ['ignore', ctx.fdLog, ctx.fdLog], shell: true })
-      if (verif.status !== 0) {
-        ctx.journaliser(`[publier] docs — \`agents:check\` rendu ${verif.status} : \`npm run agents:sync\`\n`)
-        const sync = spawnSync(npm, ['run', 'agents:sync'], { cwd: racine, stdio: ['ignore', ctx.fdLog, ctx.fdLog], shell: true })
-        if (sync.status !== 0) return { ok: false, raison: `\`npm run agents:sync\` a rendu ${sync.status} : le pre-commit jouerait \`agents:check\` et refuserait le commit` }
-      }
+      const agents = synchroniserAgents(ctx)
+      if (!agents.ok) return agents
       const chemins = cheminsSales(racine)
       const { manuscrits } = partitionSales(chemins)
       if (manuscrits.length)
@@ -894,7 +922,8 @@ function main() {
     // Le PARENT décide du mode (et tronque le cas échéant) AVANT de spawner : l'enfant héritera de
     // ce fd comme stdout/stderr et ouvrira le sien en append.
     const fdLog = ouvrirLog(chemins.log, modeDuLog({ reprendre: options.reprendre }))
-    const enfant = spawn(process.execPath, [fileURLToPath(import.meta.url), ...process.argv.slice(2).filter((a) => a !== '--detache')], {
+    const argsEnfant = process.argv.slice(2).filter((a) => a !== '--detache')
+    const enfant = spawn(process.execPath, [fileURLToPath(import.meta.url), ...argsEnfant], {
       cwd: RACINE,
       detached: true,
       stdio: ['ignore', fdLog, fdLog],
@@ -902,6 +931,10 @@ function main() {
       env: { ...process.env, WFRP_PUBLIER_ENFANT: '1' },
     })
     enfant.unref()
+    // Le détachement est écrit DANS le log, par le parent : c'est la seule trace machine qu'un train
+    // a été lancé détaché, et sur quels arguments.
+    writeSync(fdLog, ligneDeDetachement({ pid: enfant.pid, log: chemins.log, args: argsEnfant }))
+    closeSync(fdLog)
     process.stdout.write(`pid=${enfant.pid}\nlog=${chemins.log}\n`)
     return 0
   }

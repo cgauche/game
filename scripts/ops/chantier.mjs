@@ -16,6 +16,7 @@
 import { spawnSync } from 'node:child_process'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { ECRIT_LU } from '../gates/toutes.mjs'
 import { fetchOrigin, lireGit, natureDuChemin, sortieOuNull } from '../guards/lib/gitPorte.mjs'
 import { estArbrePrincipal, portDev, urlDev } from '../port-dev.mjs'
 
@@ -66,18 +67,58 @@ export function refusDeCreation({ cibleExiste, brancheExiste, nom, cible }) {
   return null
 }
 
+/** Drapeaux de silence joués sur CHAQUE `npm ci` d'équipement : ni audit, ni quête de financement. */
+const FLAGS_CI = ['--no-audit', '--no-fund']
+
+/** L'équipement de la RACINE, fixe : aucune gate ne déclare `node_modules` racine en prérequis
+ *  (c'est `resoudreOutilLocal` qui le mesure), et il précède tout sous-projet. */
+const EQUIPEMENT_RACINE = { args: ['ci', ...FLAGS_CI], ou: '', relance: 'npm ci' }
+
 /**
- * ÉQUIPEMENT d'un chantier neuf, dans l'ordre : la racine, PUIS le sous-projet `server/`. Le relay
- * Cloudflare a ses PROPRES dépendances (`server/package.json`), et la gate `server:typecheck` les
- * déclare en prérequis (`scripts/gates/toutes.mjs:373` : `{ chemin: 'server/node_modules',
- * pose: 'npm --prefix server ci' }`). Un worktree équipé de la seule racine rend donc cette gate
- * ROUGE — mesuré le 2026-09-14 (3ᵉ train réel, après 881 s de gates en série).
- * `ou` et `relance` sont ce que le refus DIT : où c'est rouge, et la commande qui le rejoue.
+ * Les ÉQUIPEMENTS d'un prérequis déclaré. PURE.
+ * Un `pose` est une commande `npm …` : ses mots après `npm` deviennent l'`args` (plus `FLAGS_CI`),
+ * `ou` se déduit de `--prefix <dossier>`, et `relance` est le `pose` VERBATIM — ce que le refus dit
+ * de rejouer. Deux gates qui déclarent le MÊME `pose` ne posent qu'UNE fois, dans l'ordre
+ * d'apparition. Un `pose` qui ne commence pas par `npm ` JETTE : l'équipement ne sait jouer que npm,
+ * et une commande normalisée en silence poserait autre chose que ce que la gate exige.
+ * @param {Record<string, {prerequis?: {chemin: string, pose: string}[]}>} ecritLu table mesurée
+ * @returns {{args: string[], ou: string, relance: string}[]}
  */
-export const EQUIPEMENTS = [
-  { args: ['ci', '--no-audit', '--no-fund'], ou: '', relance: 'npm ci' },
-  { args: ['--prefix', 'server', 'ci', '--no-audit', '--no-fund'], ou: ' dans server/', relance: 'npm --prefix server ci' },
-]
+export function equipementsDesPrerequis(ecritLu) {
+  const parPose = new Map()
+  for (const [gate, entree] of Object.entries(ecritLu ?? {})) {
+    for (const prerequis of entree?.prerequis ?? []) {
+      const pose = prerequis?.pose
+      if (typeof pose !== 'string' || !pose.startsWith('npm ')) {
+        throw new Error(
+          `prérequis non posable : la gate « ${gate} » déclare \`pose: ${JSON.stringify(pose)}\`, ` +
+            "qui ne commence pas par `npm ` — l'ouverture d'un chantier ne joue que npm.",
+        )
+      }
+      const mots = pose.slice('npm '.length).trim().split(/\s+/)
+      const prefixe = mots.indexOf('--prefix')
+      parPose.set(pose, {
+        args: [...mots, ...FLAGS_CI],
+        ou: prefixe >= 0 && mots[prefixe + 1] ? ` dans ${mots[prefixe + 1]}/` : '',
+        relance: pose,
+      })
+    }
+  }
+  return [...parPose.values()]
+}
+
+/**
+ * ÉQUIPEMENT d'un chantier neuf, dans l'ordre : la racine, PUIS ce que les gates exigent.
+ * Trois termes, une frontière — dite ICI et nulle part ailleurs : un PRÉREQUIS est ce qu'une gate
+ * déclare devoir trouver sous la racine (`prerequis` de `ECRIT_LU`, scripts/gates/toutes.mjs) ; un
+ * ÉQUIPEMENT est le geste qui le pose ; l'OUTILLAGE LOCAL est ce que `resoudreOutilLocal`
+ * (scripts/lancer-local.mjs) mesure à la racine, hors de cette table.
+ * La liste est DÉRIVÉE d'`ECRIT_LU` : un prérequis ajouté là est posé ici sans second geste — sans
+ * quoi la préflight du train (`prerequisDesGates`, scripts/ops/publier.mjs) refuserait un chantier
+ * que `ops:chantier` ne sait pas équiper (mesuré le 2026-09-14, 3ᵉ train réel : `server:typecheck`
+ * rouge sur `server/node_modules` absent, après 881 s de gates en série).
+ */
+export const EQUIPEMENTS = [EQUIPEMENT_RACINE, ...equipementsDesPrerequis(ECRIT_LU)]
 
 /** Nom de branche d'un chantier. PURE. */
 export const brancheDe = (nom) => `chantier/${nom}`
