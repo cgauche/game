@@ -2,8 +2,14 @@
 //   node --test scripts/guards/lib/spawnResilient.test.mjs
 //
 // Le cas visé n'est pas simulable à volonté (le loader Windows rend `STATUS_DLL_INIT_FAILED` sous
-// pression, pas sur commande) : chaque morsure fabrique donc un processus qui SORT avec ce code-là,
-// puis vérifie que le rejeu s'arrête au bon endroit — et qu'un AUTRE code ne déclenche rien.
+// pression, pas sur commande) : chaque morsure force donc ce code-là par l'injection du lanceur
+// (`executer` / `lancer`), puis vérifie que le rejeu s'arrête au bon endroit — et qu'un AUTRE code ne
+// déclenche rien.
+//
+// ANGLE MORT DÉCLARÉ : la morsure à processus RÉEL (`process.exit(3221225794)`) ne vaut que sous
+// Windows — un code de sortie POSIX tient sur 8 bits, 0xC0000142 y devient 66, le rejeu ne part pas.
+// Elle est donc `skip`ée hors win32 (raison dite dans le test) ; le contrat de la boucle, lui, est
+// tenu sur TOUTES les plateformes par la morsure à lanceur injecté.
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from 'node:fs'
@@ -100,26 +106,55 @@ test('`lancer` est rappelé À CHAQUE essai : ce qu’un essai consomme est re-c
   }
 })
 
-test('execFileResilient : un processus qui SORT avec le code du loader est rejoué, puis remonte', () => {
-  const base = mkdtempSync(join(tmpdir(), 'resilient-sync-'))
-  try {
-    const journal = journalDeTest()
-    const script = join(base, 'loader.mjs')
-    writeFileSync(script, `process.exit(${STATUS_DLL_INIT_FAILED})\n`)
-    const avant = rejeux.total
-    assert.throws(
-      () => execFileResilient(process.execPath, [script], { cwd: base, encoding: 'utf8', stdio: 'ignore' }, {
-        site: 'sonde-sync',
-        journal,
-      }),
-      /Command failed/,
-    )
-    assert.equal(rejeux.total - avant, BACKOFFS_MS.length, 'deux rejeux avant de laisser remonter')
-    assert.equal(journal.lignes.length, BACKOFFS_MS.length)
-  } finally {
-    rmSync(base, { recursive: true, force: true })
+/** Erreur d'`execFileSync` : le code de sortie y vit dans `status` (lu par `codeDeLErreur`). */
+const erreurDeLancement = (status) => Object.assign(new Error('Command failed'), { status })
+
+test('execFileResilient : un lancement qui rend le code du loader est rejoué, puis remonte', () => {
+  const journal = journalDeTest()
+  const avant = rejeux.total
+  const essais = []
+  const executer = () => {
+    essais.push(essais.length)
+    throw erreurDeLancement(STATUS_DLL_INIT_FAILED)
   }
+  assert.throws(
+    () => execFileResilient('peu-importe', [], {}, { site: 'sonde-sync', journal, executer }),
+    /Command failed/,
+  )
+  assert.equal(essais.length, BACKOFFS_MS.length + 1, 'un essai initial et deux rejeux')
+  assert.equal(rejeux.total - avant, BACKOFFS_MS.length, 'deux rejeux avant de laisser remonter')
+  assert.equal(journal.lignes.length, BACKOFFS_MS.length)
+  for (const l of journal.lignes) assert.match(l, /^\[spawn\] rejeu — le processus n’a pas démarré : sonde-sync/)
 })
+
+test(
+  'execFileResilient : un processus RÉEL qui SORT avec le code du loader est rejoué, puis remonte',
+  {
+    skip:
+      process.platform !== 'win32' &&
+      'un code de sortie 32 bits n’existe que sous Windows (POSIX tronque à 8 bits : 0xC0000142 → 66)',
+  },
+  () => {
+    const base = mkdtempSync(join(tmpdir(), 'resilient-sync-'))
+    try {
+      const journal = journalDeTest()
+      const script = join(base, 'loader.mjs')
+      writeFileSync(script, `process.exit(${STATUS_DLL_INIT_FAILED})\n`)
+      const avant = rejeux.total
+      assert.throws(
+        () => execFileResilient(process.execPath, [script], { cwd: base, encoding: 'utf8', stdio: 'ignore' }, {
+          site: 'sonde-sync',
+          journal,
+        }),
+        /Command failed/,
+      )
+      assert.equal(rejeux.total - avant, BACKOFFS_MS.length, 'deux rejeux avant de laisser remonter')
+      assert.equal(journal.lignes.length, BACKOFFS_MS.length)
+    } finally {
+      rmSync(base, { recursive: true, force: true })
+    }
+  },
+)
 
 test('execFileResilient : un succès passe sans rejeu, un autre rouge remonte immédiatement', () => {
   const base = mkdtempSync(join(tmpdir(), 'resilient-ok-'))

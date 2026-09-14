@@ -51,11 +51,18 @@ const codeDeLErreur = (e) => (typeof e?.status === 'number' ? e.status : null)
 /**
  * `execFileSync` qui REJOUE quand le processus n'a pas démarré. Même signature, même valeur de
  * retour, mêmes exceptions pour tout autre échec. `site` nomme l'appelant dans la marque de rejeu.
+ * `executer` est le lanceur injectable (défaut : `execFileSync`) — même patron que l'`attendre` de
+ * `reessayerAuChargement` : il rend la boucle de rejeu vérifiable sans fabriquer de processus réel.
  */
-export function execFileResilient(commande, args, options = {}, { site = '?', journal = process.stderr } = {}) {
+export function execFileResilient(
+  commande,
+  args,
+  options = {},
+  { site = '?', journal = process.stderr, executer = execFileSync } = {},
+) {
   for (let essai = 0; ; essai += 1) {
     try {
-      return execFileSync(commande, args, options)
+      return executer(commande, args, options)
     } catch (e) {
       if (!estEchecDeChargement(codeDeLErreur(e)) || essai >= BACKOFFS_MS.length) throw e
       rejeux.total += 1
