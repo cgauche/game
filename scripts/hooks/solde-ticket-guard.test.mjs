@@ -53,6 +53,8 @@ import {
   cibleDeLaCommande,
   avecCibleIgnoree,
   gesteJuge,
+  evaluateBudgetContexte,
+  listeurDImage,
 } from './solde-ticket-guard.mjs'
 import { tombalesDansSource, evaluateTombale, EXEMPTIONS_TOMBALE } from './solde-tombale.mjs'
 import { GitIndisponible, estDansHead } from '../guards/lib/gitPorte.mjs'
@@ -2351,4 +2353,50 @@ test('problemesDeRevueNeuve SANS lecteur d’ascendance : le contrôle est DIT n
     problemesDeRevueNeuve(revue, { today: TODAY, palier: PALIER_MESURE, dansHead: () => true }),
     [],
   )
+})
+
+// ── LISTAGE PAR IMAGE des postes du budget (#1728) ──────────────────────────────────────────────
+
+test('un poste SUPPRIMÉ par le commit sort de la mesure et reste dans la RÉFÉRENCE', () => {
+  const { racine } = instanceDeDepot({
+    fichiers: {
+      '.claude/skills/a/SKILL.md': '---\nname: a\ndescription: aaa\n---\n',
+      '.claude/skills/b/SKILL.md': '---\nname: b\ndescription: bbb\n---\n',
+      '.claude/agents/c.md': '---\nname: c\ndescription: ccc\n---\n',
+    },
+    message: 'socle',
+  })
+  try {
+    execFileSync('git', ['rm', '-q', '-r', '--cached', '.claude/skills/b'], { cwd: racine, stdio: ['ignore', 'pipe', 'ignore'] })
+    const image = listeurDImage(['ls-files', '--cached'], racine)
+    const preImage = listeurDImage(['ls-tree', '--name-only', 'HEAD'], racine)
+    assert.deepEqual(image('.claude/skills'), ['a'], 'la skill retirée de l’index sort de la MESURE')
+    assert.deepEqual(preImage('.claude/skills'), ['a', 'b'], 'la pré-image la porte encore — sans quoi « aucun poste ne grossit »')
+    assert.deepEqual(image('.claude/agents'), ['c.md'])
+    assert.deepEqual(image('.claude/absent'), [])
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('hors dépôt, le listeur d’image rend [] — comme le listeur de disque devant un dossier absent', () => {
+  const vide = mkdtempSync(join(tmpdir(), 'hors-depot-'))
+  try {
+    assert.deepEqual(listeurDImage(['ls-files', '--cached'], vide)('.claude/skills'), [])
+  } finally {
+    rmSync(vide, { recursive: true, force: true })
+  }
+})
+
+// ── BUDGET du contexte permanent (#1728) ────────────────────────────────────────────────────────
+
+test('le budget qui grandit sans CLIQUET est refusé, avec CLIQUET il passe, et hors commit il se tait', () => {
+  const reference = { postes: [{ nom: 'CLAUDE.md', octets: 9127 }], total: 9127 }
+  const mesure = { postes: [{ nom: 'CLAUDE.md', octets: 10151 }], total: 10151 }
+  const sans = evaluateBudgetContexte({ command: 'git commit -m "docs: une ligne"', mesure, reference, plafond: 9127 })
+  assert.equal(sans.decision, 'deny')
+  assert.match(sans.reason, /CLAUDE\.md \+1024 octets/)
+  const avec = 'git commit -m "docs: une ligne\n\nCLIQUET: scripts/guards/budget-contexte.mjs +1024 — une règle de routage neuve"'
+  assert.equal(evaluateBudgetContexte({ command: avec, mesure, reference, plafond: 9127 }), null)
+  assert.equal(evaluateBudgetContexte({ command: 'git status', mesure, reference, plafond: 9127 }), null)
 })

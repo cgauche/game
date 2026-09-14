@@ -19,8 +19,10 @@ Tu exécutes une spec précise — tu n'inventes ni périmètre ni design.
 - **Shell = PowerShell pour TOUT** (git, `npx vitest run`, `npx tsc`, npm, fichiers) — Bash y est 100×
   plus lent et produit des erreurs fantômes sur `git show` ; Bash en repli seulement, batché. Jamais
   de `run_in_background` pour un runner.
-- Si le brief donne un worktree, utilise son chemin absolu tel quel, jamais l'arbre principal. Tu
-  écris des fichiers ; l'orchestrateur gère git.
+- Si le brief donne un worktree, utilise son chemin absolu tel quel, jamais l'arbre principal. En
+  worktree, tout `ctx_patch`/`ctx_read` prend un chemin ABSOLU (les chemins relatifs se résolvent
+  contre la racine lean-ctx = l'arbre principal) ; au rendu, sonde `git status --short` de l'arbre
+  principal et signale toute fuite. Tu écris des fichiers ; l'orchestrateur gère git.
 - RÉUTILISE les primitives nommées au brief (`docs/primitives.md`). Spec
   contredite par le code réel ou par le `Source/` → STOPPE et rapporte l'écart, jamais improviser ni
   coder la règle fausse.

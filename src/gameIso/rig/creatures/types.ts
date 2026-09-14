@@ -57,12 +57,11 @@ export interface CreatureDef {
   /** Libellé canonique d'AFFICHAGE (p.ex. « Cheval », « Griffon », « Skaven »). N'est PAS la clé. */
   label: string;
   /** id d'espèce STABLE (slug, clé de rig) — explicite et OBLIGATOIRE, jamais dérivé du `label`
-   *  (affichage multilangue) au runtime (cf. #637). Unicité garantie par un test au build. */
+   *  (affichage multilangue) au runtime (cf. #637). Unicité garantie par un test au build.
+   *  La résolution de rendu passe par le lookup EXACT `defById(id)`. */
   id: string;
   /** Gabarit corporel. `winged` = quadrupède + ailes (mêmes props `quad`). */
   plan: CreatureBodyPlan;
-  // (de-POC P5/5d) `aliases`/`aliasOnly`/`matchPriority` RETIRÉS : la résolution de rendu se fait
-  // par l'id d'espèce explicite / le record / le lookup EXACT `defById(id)` — plus aucun match flou.
   /** Props de rendu du gabarit quad/ailé (requis si plan = quadruped | winged). */
   quad?: QuadProps;
   /** Race d'apparence (défauts tenue/monster/sex/parts/colors/scale). Défaut = baseSpeciesOf(id).

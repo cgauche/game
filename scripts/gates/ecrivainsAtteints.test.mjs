@@ -37,6 +37,10 @@ const ATTENDU = {
     'scripts/gates/toutes.mjs',
     'scripts/gates/toutes.test.mjs',
     'scripts/git-hooks/arbre-imbrique.test.mjs',
+    // +1 le 2026-09-14 (#1728 train B) : la porte au MESSAGE se mesure sur un dépôt JETABLE et un
+    // dossier de hooks jetable (`mkdtempSync` + `writeFileSync` sous os.tmpdir()) — un `git commit`
+    // réel ne se joue pas autrement, et l'arbre du dépôt n'est jamais écrit.
+    'scripts/git-hooks/commit-msg.test.mjs',
     'scripts/git-hooks/merge-docs.mjs',
     'scripts/git-hooks/merge-docs.test.mjs',
     'scripts/git-hooks/pre-push.mjs',
@@ -51,6 +55,10 @@ const ATTENDU = {
     'scripts/guards/lib/depotGabarit.mjs',
     'scripts/guards/lib/depotGabarit.test.mjs',
     'scripts/guards/lib/enteteArbre.test.mjs',
+    // +1 le 2026-09-14 (#1728 train B) : la porte CRLF de l'index se mesure sur un dépôt JETABLE
+    // (`mkdtempSync` + `writeFileSync` sous os.tmpdir(), `git init` local) — le patch CRLF appliqué à
+    // l'index ne peut pas se fabriquer autrement, et l'arbre du dépôt n'est jamais écrit.
+    'scripts/guards/lib/eolStage.test.mjs',
     'scripts/guards/lib/gitPorte.test.mjs',
     'scripts/guards/lib/importGraph.test.mjs',
     'scripts/guards/lib/justificatif.mjs',

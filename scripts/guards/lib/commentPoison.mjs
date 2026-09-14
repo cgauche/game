@@ -245,6 +245,12 @@ const CODE_TOMBSTONE_RETIRE_RX = new RegExp(
   '(ancien\\w*|' + BT + '[^' + BT + ']+' + BT + '|«[^»]+»)[\\s\\S]{0,200}?a été (retiré|supprimé|renommé)',
   'i',
 );
+// ANGLE MORT MESURÉ (#1728, 2026-09-14) : le PARTICIPE NU derrière un artefact back-tiqué
+// (« `x` retiré », sans « a été ») n'entre PAS dans la famille. Mesure sur `src/**`+`scripts/**` :
+// 132 sites, dont la quasi-totalité décrit une OPÉRATION COURANTE (« `type` retiré des deux côtés »,
+// « `usable` retiré de chaque entité à places », « `«` `»` SUPPRIMÉS avec l'espace adjacent ») — du
+// contrat au présent, pas du code disparu. Aucun discriminant syntaxique ne sépare les deux sens, et
+// une famille qui exigerait 130 exemptions serait un stock nominatif : la forme reste hors garde.
 
 // Apostrophe (droite ou typographique), bâtie par ÉCHAPPEMENT : aucun caractère apostrophe littéral
 // dans les motifs de ce fichier, qui déséquilibrerait le balayage de chaînes d'`extractComments`.
@@ -333,6 +339,11 @@ const ANCIEN_IDENT_EOL_RX = new RegExp(
   '\\b[Aa]ncien(?:ne|s|nes)?\\s+' + IDENT_CODE + '[ \\t]*(?:\\*+/)?[ \\t]*$',
   'm',
 );
+// ANGLE MORT MESURÉ (#1728, 2026-09-14) : le QUANTIFIEUR de vacuité (« plus aucun match », « plus
+// aucune entrée ») est EXCLU de la famille. Mesure sur `src/**`+`scripts/**` : 120 sites, presque
+// tous des CONTRATS AU PRÉSENT (« plus AUCUN match par libellé », « plus aucune liste `specs[]`
+// maintenue à la main ») — la forme « plus AUCUN X » affirme ce que le code NE FAIT PLUS par
+// conception, quand « plus de X », en incise, rappelle un ÉTAT RÉVOLU. Deux sens, deux formes.
 const NAMED_ARTIFACT_TOMBSTONE_RX = new RegExp(
   QUANTITE_AVANT + '\\bplus' + GAP + 'd(?:e' + GAP + '|' + APOS + ')' +
     CODE_ARTIFACT_NOUN + 's?(?![\\wÀ-ÿ-])(?!' + GAP + 'que\\b)',

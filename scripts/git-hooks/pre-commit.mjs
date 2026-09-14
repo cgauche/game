@@ -40,6 +40,8 @@ import { fichiersALinter, lancerLint } from '../guards/lib/lintStage.mjs';
 import { generateursArmes } from '../guards/lib/empreinteStage.mjs';
 import { porteAuPushManquante } from '../guards/lib/portePush.mjs';
 import { codeDePanne, docsDePorte, paquetsDArgv } from '../guards/lib/porteSpawn.mjs';
+import { cheminsMalNormalises, raisonDeRefusEol } from '../guards/lib/eolStage.mjs';
+import { defautsDeForme, familleDe, raisonDeRefusDeForme } from '../guards/memoire-forme.mjs';
 
 const DEBUT_MS = Date.now();
 
@@ -353,6 +355,37 @@ if (doctrineStaged) {
     offenders.push(panne
       ? `build-doctrines — porte en PANNE : ${panne} (le garde n'a pas tourné : c'est le LANCEMENT qui a échoué)`
       : 'build-doctrines --check en échec (docs/doctrines.md périmé ou édité à la main — relancer `npm run docs:doctrines` et committer le résultat)');
+  }
+}
+
+// FORME DU STOCK PERMANENT (scripts/guards/memoire-forme.mjs) : jugée sur ce que l'INDEX porte, pas
+// sur l'arbre — même discipline que tous les scans ci-dessus. Périmètre borné par `familleDe`.
+const formeStaged = staged.map((f) => f.replace(/\\/g, '/')).filter(familleDe);
+if (formeStaged.length) {
+  const parFichier = [];
+  for (const rel of formeStaged) {
+    let texte;
+    try {
+      texte = argFiles.length ? readFileSync(join(ROOT, rel), 'utf8') : execFileSync('git', ['show', `:${rel}`], { cwd: ROOT, encoding: 'utf8' });
+    } catch { continue; }
+    const defauts = defautsDeForme(rel, texte);
+    if (defauts.length) parFichier.push({ chemin: rel, defauts });
+  }
+  const raison = raisonDeRefusDeForme(parFichier);
+  if (raison) offenders.push(raison);
+}
+
+// FINS DE LIGNE DE L'INDEX : un blob stagé porteur de `\r` sur un chemin que `.gitattributes` déclare
+// `eol=lf` (scripts/guards/lib/eolStage.mjs). Lu sur l'INDEX (`--cached`), jamais sur le disque.
+if (staged.length) {
+  try {
+    const sortie = paquetsDArgv(staged)
+      .map((paquet) => execFileSync('git', ['ls-files', '--eol', '--cached', '--', ...paquet], { cwd: ROOT, encoding: 'utf8' }))
+      .join('\n');
+    const raison = raisonDeRefusEol(cheminsMalNormalises(sortie));
+    if (raison) offenders.push(raison);
+  } catch (e) {
+    offenders.push(`fins de ligne de l'index — porte en PANNE : ${codeDePanne(e) ?? e.message} (le garde n'a pas tourné)`);
   }
 }
 

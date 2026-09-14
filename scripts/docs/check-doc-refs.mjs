@@ -254,6 +254,10 @@ const HOOKS_DIRS = ['scripts/git-hooks', 'scripts/hooks']
 /** Nom de fichier dont le RADICAL fait un seul caractère (`src/ui/X.tsx`, `src/x.ts`, `scripts/x.mjs`) :
  *  la métavariable de prose du dépôt, jamais un fichier réel. */
 const estMetavariable = (tok) => /(^|\/)[A-Za-z](\.[A-Za-z0-9]+)?$/.test(tok)
+/** Un jeton porteur d'un JOKER (`*`, `?`, `[`) est un MOTIF de prose (`scripts/_tmp-qc-*.mts`,
+ *  `*-guard.test.ts`), pas un chemin : il ne se confronte pas au disque. SEULE définition — les sens
+ *  6 et 7 la partagent. */
+const estMotif = (tok) => /[*?[]/.test(String(tok ?? ''))
 // Exemptions AU SITE (`fichier:ligne|jeton`), jamais au fichier : une occurrence de plus du même
 // jeton AILLEURS dans le fichier reste jugée. Une exemption qui ne matche plus se voit — son site
 // redevient rouge dès que la ligne bouge, et c'est le moment de la re-mesurer.
@@ -277,10 +281,38 @@ for (const dir of HOOKS_DIRS) {
       if (!pathExists(tok)) problems.push({ file: f, line: ligne, kind: 'chemin cité par un hook, absent du disque', tok })
     }
     while ((m = NOM_DE_TEST_RE.exec(text))) {
-      if (text.slice(Math.max(0, m.index - 2), m.index).includes('*')) continue // motif, pas un nom
+      if (estMotif(text.slice(Math.max(0, m.index - 2), m.index))) continue // motif, pas un nom
       if (text[m.index - 1] === '/') continue // queue d'un CHEMIN, déjà jugé au sens 6
       if (TESTS_SRC.has(m[0])) continue
       problems.push({ file: f, line: lineAt(text, m.index), kind: 'test nommé par un hook, absent de src/', tok: m[0] })
+    }
+  }
+}
+
+// 7. LE CONTEXTE PERMANENT CITE DU CODE — le credo, les défs d'agents et les skills sont chargés à
+// chaque session et pointent vers `src/`/`scripts/`/`docs/` ; un renommage les laissait mentir
+// jusqu'à ce qu'un agent suive le pointeur (deux chemins morts ont vécu des mois). MÊME résolution
+// que les sens 1 et 6 — aucune seconde définition de « ce chemin existe-t-il ».
+// PÉRIMÈTRE dit : le credo, `.claude/agents/*.md`, `.claude/skills/*/SKILL.md`, et leurs jumeaux
+// Codex maintenus À LA MAIN (`.codex/agents/*.toml`, `.codex/credo.md`). Hors périmètre, dit aussi :
+// `.claude/memory/**` (les fiches citent l'état d'un jour, pas un pointeur à suivre) et
+// `.claude/settings.json` (les hooks qu'il déclare sont déjà jugés par la parité des canaux).
+const CONTEXTE_FICHIERS = [
+  '.claude/credo.md',
+  '.codex/credo.md',
+  ...listerArbre('.claude/agents', { filtre: (r) => r.endsWith('.md') }).map((r) => `.claude/agents/${r}`),
+  ...listerArbre('.claude/skills', { filtre: (r) => r.endsWith('/SKILL.md') }).map((r) => `.claude/skills/${r}`),
+  ...listerArbre('.codex/agents', { filtre: (r) => r.endsWith('.toml') }).map((r) => `.codex/agents/${r}`),
+]
+for (const f of CONTEXTE_FICHIERS) {
+  if (!existsSync(f)) continue
+  const text = readFileSync(f, 'utf8')
+  let m
+  while ((m = CHEMIN_RE.exec(text))) {
+    const tok = cheminCite(text, m)
+    if (estMetavariable(tok) || estMotif(tok)) continue
+    if (!pathExists(tok)) {
+      problems.push({ file: f, line: lineAt(text, m.index), kind: 'chemin cité par le contexte permanent, absent du disque', tok })
     }
   }
 }

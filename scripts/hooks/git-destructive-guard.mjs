@@ -3,8 +3,11 @@
 // une confirmation humaine explicite, comme partout où l'arbre visé n'est pas PROUVÉ ; dans un
 // worktree LIÉ dont la commande (ou le canal) prouve le répertoire, les gestes qui ne touchent que
 // le WIP local passent en SILENCE. Tout LIEN posé sur un `node_modules` est REFUSÉ (#1679 L1c).
-// Même arbitrage pour une SUPPRESSION RÉCURSIVE (`rm -r`, `Remove-Item -Recurse`) dont la cible
-// n'est pas jetable (dépendances, artefacts, scratchpad de session).
+// Même arbitrage pour une SUPPRESSION dont la cible n'est pas jetable (dépendances, artefacts,
+// scratchpad de session), sous DEUX formes qui perdent la même chose : rÉCURSIVE (`rm -r`,
+// `Remove-Item -Recurse`), et désignée par un JOKER (`*`, `?`, `[`) — récursive ou non. Le joker
+// emporte ce que l'auteur n'a pas lu : `rm scratch/tri-*.md` échappait entièrement à cette porte tant
+// qu'elle ne jugeait que la récursivité.
 //
 // Un volet ne garde pas le WIP mais la MESURE : `git show ... -- <sha>` (le commit APRÈS le
 // séparateur) est REFUSÉ — git y voit un pathspec et rend le même résultat pour tous les commits,
@@ -132,23 +135,41 @@ const PARAMS_VALEUR_REMOVE_ITEM = [
 /** Ce token est-il un paramètre à valeur (préfixe non ambigu accepté, comme l'hôte) ? */
 const prendValeur = (token) => PARAMS_VALEUR_REMOVE_ITEM.some((n) => indexParametre([token], n, PARAMS_REMOVE_ITEM) === 0)
 
-/** Cibles d'une SUPPRESSION RÉCURSIVE portée par ce segment (`[]` s'il n'en est pas une). Deux
- *  graphies, une seule règle : `rm -r|-rf` (POSIX) et `Remove-Item -Recurse` (PowerShell). */
-function ciblesSuppressionRecursive(segment) {
+/** Métacaractère de GLOB : la cible n'est plus un chemin mais un MOTIF — ce qu'il emporte n'a pas
+ *  été lu. Les trois du shell POSIX comme de PowerShell. */
+const JOKER_RE = /[*?[]/
+
+/** Cibles de suppression portées par ce segment, et si la suppression est RÉCURSIVE. Deux graphies,
+ *  une seule lecture : `rm` (POSIX) et `Remove-Item`/`ri`/`rd`/`rmdir` (PowerShell). */
+function suppressionDuSegment(segment) {
   const { exe, args } = executableDe(segment)
   if (exe === 'rm') {
-    const recursif = hasShortFlag(args, 'rR') || args.includes('--recursive')
-    return recursif ? args.filter((a) => !a.startsWith('-')) : []
+    return {
+      recursif: hasShortFlag(args, 'rR') || args.includes('--recursive'),
+      cibles: args.filter((a) => !a.startsWith('-')),
+    }
   }
   if (exe === 'remove-item' || exe === 'ri' || exe === 'rd' || exe === 'rmdir') {
-    if (indexParametre(args, 'Recurse', PARAMS_REMOVE_ITEM) === -1) return []
     const nommees = ['Path', 'LiteralPath'].map((p) => valeurParametre(args, p, PARAMS_REMOVE_ITEM)).filter(Boolean)
     // Un paramètre SWITCH (`-Force`, `-Recurse`) ne consomme pas le token suivant : sans cette
     // distinction, la cible d'un `Remove-Item -Recurse -Force src/x` passait pour la valeur de -Force.
     const positionnelles = args.filter((a, i) => !a.startsWith('-') && !prendValeur(args[i - 1] ?? ''))
-    return [...new Set([...nommees, ...positionnelles])]
+    return {
+      recursif: indexParametre(args, 'Recurse', PARAMS_REMOVE_ITEM) !== -1,
+      cibles: [...new Set([...nommees, ...positionnelles])],
+    }
   }
-  return []
+  return { recursif: false, cibles: [] }
+}
+
+/**
+ * Cibles d'une suppression que cette porte ARBITRE (`[]` sinon) : celles d'une suppression RÉCURSIVE
+ * (la cible part entière), et celles qui portent un JOKER, récursivité ou non — c'est la MÊME perte,
+ * et un `rm scratch/tri-*.md` n'est pas plus lu qu'un `rm -rf scratch`.
+ */
+export function ciblesSuppressionArbitree(segment) {
+  const { recursif, cibles } = suppressionDuSegment(segment)
+  return recursif ? cibles : cibles.filter((c) => JOKER_RE.test(c))
 }
 
 /** Le SHA passé APRÈS le séparateur `--` d'un `git show`, ou `null`. Tout ce qui suit `--` est un
@@ -215,16 +236,17 @@ export function evaluate(command, { cwd = null } = {}) {
           `Poser un "npm ci" PROPRE dans l'arbre.`,
       }
     }
-    const cibles = ciblesSuppressionRecursive(segment)
+    const cibles = ciblesSuppressionArbitree(segment)
     const aArbitrer = cibles.filter((c) => !CIBLES_JETABLES.some((re) => re.test(c)))
     if (aArbitrer.length > 0) {
       return {
         decision: 'ask',
         reason:
-          `⚠ Suppression RÉCURSIVE dans un arbre partagé : ${aArbitrer.join(', ')}. Une cible qui n'est ` +
-          `ni node_modules, ni .cache, ni dist, ni public/qc, ni le scratchpad de session peut porter ` +
-          `du WIP vivant (le tien ou celui d'une autre session) — et un joker y emporte ce qui n'était ` +
-          `pas visé. Vérifier le contenu (git status, ls) avant de confirmer.`,
+          `⚠ Suppression RÉCURSIVE ou à JOKER dans un arbre partagé : ${aArbitrer.join(', ')}. Une cible ` +
+          `qui n'est ni node_modules, ni .cache, ni dist, ni public/qc, ni le scratchpad de session peut ` +
+          `porter du WIP vivant (le tien ou celui d'une autre session) — et un joker emporte ce qui n'a ` +
+          `pas été lu, récursivité ou non. Nommer les chemins EXACTS, ou vérifier le contenu ` +
+          `(git status, ls) avant de confirmer.`,
       }
     }
     const git = gitSubcommand(segment)

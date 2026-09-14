@@ -63,7 +63,10 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { croissancesNonCouvertes, estPorteurDeStock, raisonDeRefus } from '../guards/lib/stocksNominatifs.mjs'
-import { GitIndisponible, estDansHead, estRepertoire } from '../guards/lib/gitPorte.mjs'
+import {
+  PORTEUR_DU_PLAFOND, estCheminDuBudget, importsDe, mesurerBudget, plafondDeLaSource, refusDeBudget,
+} from '../guards/budget-contexte.mjs'
+import { GitIndisponible, estDansHead, estRepertoire, lireGit, sortieOuNull } from '../guards/lib/gitPorte.mjs'
 import { motifRattachement, numerosDeLaChaine, numerosFermes } from '../guards/lib/fermetures.mjs'
 import {
   DOSSIERS_DE_SUBSTANCE, estCheminDeSubstance, fenetreDeRevue, memeSha, mesureDuPalier,
@@ -2148,6 +2151,44 @@ export function evaluateStocksQuiGrandissent({ command, diff, images }) {
   return restantes.length ? { decision: 'deny', reason: raisonDeRefus(restantes) } : null
 }
 
+/**
+ * Le refus d'un commit qui fait GRANDIR le contexte permanent au-delà du plafond de sa pré-image sans
+ * le DIRE (`CLIQUET:`). La mesure vient de ce que le commit EMPORTE, la référence et le plafond de sa
+ * pré-image : c'est la même discipline de lecture que `evaluateStocksQuiGrandissent`.
+ * @returns {{ decision: 'deny', reason: string } | null}
+ */
+export function evaluateBudgetContexte({ command, mesure, reference, plafond }) {
+  if (!command || !isGitCommitCommand(command)) return null
+  return refusDeBudget({ mesure, reference, plafond, message: command })
+}
+
+/**
+ * Les entrées DIRECTES d'un dossier telles qu'une IMAGE git les porte — noms simples, triés,
+ * dédupliqués, le contrat de `readdirSync` qu'attend `mesurerBudget`. Le LISTAGE est par image comme
+ * la lecture : `['ls-files', '--cached']` dit ce que le commit emporte, `['ls-tree', '--name-only',
+ * 'HEAD']` ce que sa pré-image portait. Un listage de DISQUE commun aux deux rendait une skill
+ * SUPPRIMÉE par le commit absente de la référence elle-même — la porte concluait alors « aucun poste
+ * ne grossit ». `ls-files` rend les FEUILLES et `ls-tree` les enfants directs : le premier segment
+ * sous `<dossier>/` est la même notion pour les deux. Git muet (dépôt sans HEAD, hors dépôt) → `[]`,
+ * comme le listeur de disque devant un dossier absent.
+ * @param {string[]} args @param {string} dir @returns {(dossier: string) => string[]}
+ */
+export function listeurDImage(args, dir) {
+  return (dossier) => {
+    const prefixe = `${dossier}/`
+    const sortie = sortieOuNull(lireGit([...args, prefixe], { cwd: dir }))
+    if (sortie === null) return []
+    const noms = new Set()
+    for (const ligne of sortie.split(/\r?\n/)) {
+      const rel = ligne.trim().replace(/\\/g, '/')
+      if (!rel.startsWith(prefixe)) continue
+      const nom = rel.slice(prefixe.length).split('/')[0]
+      if (nom) noms.add(nom)
+    }
+    return [...noms].sort()
+  }
+}
+
 /** Décision d'ensemble d'un cumul de refus (patron de driver partagé avec `git-destructive-guard` :
  *  la décision est PORTÉE par l'évaluateur, `deny` à défaut). `null` si aucun refus, sinon la PLUS
  *  STRICTE — un seul `deny` fait basculer tout le cumul — et les raisons jointes. */
@@ -2320,9 +2361,26 @@ if (isMain) {
     diff: porteursDeStock.map((f) => commit.fichier(f)).join('\n'),
     images: { lirePostImage: commit.contenu, lirePreImage: commit.avant },
   })
+  // BUDGET DU CONTEXTE PERMANENT : mesuré seulement si le commit touche un chemin du périmètre —
+  // sinon aucune lecture n'est payée au-delà de l'image de `CLAUDE.md`, qui dit les fichiers IMPORTÉS
+  // (`@<chemin>`) et donc le périmètre lui-même : post-image si le commit l'emporte, pré-image sinon.
+  // La mesure porte sur ce que le commit EMPORTE (`commit.contenu`), la référence et le plafond sur sa
+  // PRÉ-IMAGE (`commit.avant`) : relever la ligne du plafond dans le même commit ne suffit donc pas à
+  // faire passer une accrétion. Le LISTAGE des skills/agents se lit PAR IMAGE lui aussi — l'index pour
+  // ce que le commit emporte, `HEAD` pour la référence — sans quoi un poste SUPPRIMÉ par le commit
+  // disparaîtrait des DEUX côtés et le refus dirait « aucun poste ne grossit ».
+  const importsDuContexte = importsDe(commit.contenu('CLAUDE.md') ?? commit.avant('CLAUDE.md'))
+  const budget = fichiers.some((f) => estCheminDuBudget(f, importsDuContexte))
+    ? evaluateBudgetContexte({
+      command: text,
+      mesure: mesurerBudget(targetDir, { lire: commit.contenu, lister: listeurDImage(['ls-files', '--cached'], targetDir) }),
+      reference: mesurerBudget(targetDir, { lire: commit.avant, lister: listeurDImage(['ls-tree', '--name-only', 'HEAD'], targetDir) }),
+      plafond: plafondDeLaSource(commit.avant(PORTEUR_DU_PLAFOND)),
+    })
+    : null
   const rendu = rendre(decisionCumulee([
     decision, porteDuTicket, antiEsquive, juge, amendInvisible, manifestClosure,
-    horsCommit, tombale, arbrePrincipal, hunks?.decision ? hunks : null, stocks,
+    horsCommit, tombale, arbrePrincipal, hunks?.decision ? hunks : null, stocks, budget,
   ]))
   if (!rendu && hunks?.contexte) {
     console.log(JSON.stringify({

@@ -179,6 +179,30 @@ test('PÉRIMÈTRE DIT : une cible venue de stdin ou d\'un autre programme n\'est
   assert.equal(evaluate('xargs rm -rf src/engine')?.decision, 'ask')
 })
 
+// ── Suppression à JOKER, récursivité ou non (#1728 train B) ───────────────────────────────────────
+test('ASK : une suppression NON récursive à JOKER, POSIX comme PowerShell', () => {
+  for (const cmd of [
+    'rm scratch/tri-*.md',
+    'rm tmp/plan-?.md',
+    'rm src/ui/[AB]*.tsx',
+    'Remove-Item .claude/soldes/*.md',
+    'Remove-Item -Path docs/plans/*.md -Force',
+  ]) {
+    const d = evaluate(cmd)
+    assert.ok(d, `silence sur ${cmd}`)
+    assert.equal(d.decision, 'ask')
+    assert.match(d.reason, /JOKER/)
+  }
+})
+
+test('SILENCE : un chemin EXACT sans joker, et un joker sur une cible JETABLE', () => {
+  assert.ok(silent('rm scratch/tri-01.md'))
+  assert.ok(silent('rm tmp/plan-a.md tmp/plan-b.md'))
+  assert.ok(silent('Remove-Item .claude/soldes/1728.md'))
+  assert.ok(silent('rm dist/*.js'))
+  assert.ok(silent('rm node_modules/.cache/*'))
+})
+
 // ── Répertoire PROUVÉ : le worktree lié est libre, l'arbre principal ne l'est pas ─────────────────
 // Question utilisateur 2026-09-03 : « Pour les git destructif, on devrait pouvoir les faire sur les
 // worktree, tu ne pense pas ? ». Gestes mesurés en dépôt jetable (sonde du juge, rejouée ici) :
