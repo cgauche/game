@@ -51,6 +51,16 @@ out += `soit un écran inscrit à \`scripts/hooks/ecrans-ui.json\`.\n\n`
 out += `Colonnes : **Besoin** = le motif · **Primitive** = le ou les symboles exportés · **Fichier** = la\n`
 out += `source unique · **Périmètre** = où elle est composée · **Verrou** = la garde ou la clause qui la\n`
 out += `tient (\`—\` : aucune garde mécanique, la revue seule).\n\n`
+out += `**Périmètre mesuré / angles morts** — ce doc RENDS le manifeste \`${SOURCE}\`, il ne mesure pas le\n`
+out += `code : une primitive existe ici parce qu'un humain l'y a DÉCLARÉE. Ce qui est vérifié à la\n`
+out += `génération : chaque entrée porte un \`type\` \`primitives.manifest\`, un \`id\` unique, des champs non\n`
+out += `vides, et un \`fichier\` qui EXISTE sur disque (sinon exit 1, entrée nommée) ; \`check-doc-refs\` résout\n`
+out += `en plus chaque symbole du \`label\` contre un export réel. Ce qui ne l'est PAS : les colonnes\n`
+out += `**Périmètre** et **Verrou** sont ÉDITORIALES — aucune garde ne vérifie qu'elles décrivent l'usage\n`
+out += `réel, ni qu'un \`—\` de Verrou dise vrai. Angle mort principal : une primitive du code ABSENTE du\n`
+out += `manifeste est invisible ici, et rien ne la révèle sauf le hook \`new-src-file-guard.mjs\`, qui ne\n`
+out += `mord qu'à la CRÉATION d'un \`.tsx\` de \`src/ui\`/\`src/gameIso\` — un module \`.ts\`, un fichier antérieur\n`
+out += `au hook, ou une primitive née ailleurs n'y passent jamais.\n\n`
 out += `${lignes.length} primitives.\n\n`
 out += `| Besoin | Primitive | Fichier | Périmètre | Verrou |\n|---|---|---|---|---|\n`
 for (const p of lignes) {

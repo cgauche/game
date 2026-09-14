@@ -15,6 +15,17 @@ Colonnes : **Besoin** = le motif · **Primitive** = le ou les symboles exportés
 source unique · **Périmètre** = où elle est composée · **Verrou** = la garde ou la clause qui la
 tient (`—` : aucune garde mécanique, la revue seule).
 
+**Périmètre mesuré / angles morts** — ce doc RENDS le manifeste `src/data/primitives.manifest.json`, il ne mesure pas le
+code : une primitive existe ici parce qu'un humain l'y a DÉCLARÉE. Ce qui est vérifié à la
+génération : chaque entrée porte un `type` `primitives.manifest`, un `id` unique, des champs non
+vides, et un `fichier` qui EXISTE sur disque (sinon exit 1, entrée nommée) ; `check-doc-refs` résout
+en plus chaque symbole du `label` contre un export réel. Ce qui ne l'est PAS : les colonnes
+**Périmètre** et **Verrou** sont ÉDITORIALES — aucune garde ne vérifie qu'elles décrivent l'usage
+réel, ni qu'un `—` de Verrou dise vrai. Angle mort principal : une primitive du code ABSENTE du
+manifeste est invisible ici, et rien ne la révèle sauf le hook `new-src-file-guard.mjs`, qui ne
+mord qu'à la CRÉATION d'un `.tsx` de `src/ui`/`src/gameIso` — un module `.ts`, un fichier antérieur
+au hook, ou une primitive née ailleurs n'y passent jamais.
+
 62 primitives.
 
 | Besoin | Primitive | Fichier | Périmètre | Verrou |
@@ -81,4 +92,4 @@ tient (`—` : aucune garde mécanique, la revue seule).
 | appui long 450 ms tactile et souris, geste secondaire d’une alvéole | `useLongPress` | `src/ui/useLongPress.ts` | alvéoles de la console de combat | réflexe avant tout minuteur de pression recodé |
 | en-tête A→B d'une modale de combat/opposition | `VsHeader` | `src/ui/VsHeader.tsx` | toute confrontation à 2 camps | — |
 | sceau de cire et plaque d’élu scellée | `WaxSeal/SealedPlaque` | `src/ui/WaxSeal.tsx` | tuiles de sélection, plaques d’élu | — |
-<!-- sources-empreinte: ad75b94b17143977c8d473c75ff8ee612ef4995e (5 fichiers, 0 dossiers) corps: efb09dae0f4d4882f431ad866059fa3b8cf2a3ff -->
+<!-- sources-empreinte: 793132c69d2af9d5ee6d9981b07e36d2bd5b141d (5 fichiers, 0 dossiers) corps: bd894bfac6bd75594b8ebb42be99f7927c3186c4 -->

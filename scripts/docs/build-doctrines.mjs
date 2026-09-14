@@ -43,6 +43,19 @@ const CHAPEAU =
   'mémoire, ticket) porte sa CITATION verbatim + date. » (CLAUDE.md § Pour TOUT agent).'
 const MIN_VERBATIM = 40
 const MAX_VERBATIM = 240
+/** Le doc dit ce qu'il ne couvre PAS : sans ça, un généré se lit comme exhaustif (#908). Les bornes
+ *  citées sont les CONSTANTES ci-dessus — jamais un nombre recopié à la main. */
+const PERIMETRE = () =>
+  '**Périmètre mesuré / angles morts** — mesuré : les fiches `.claude/memory/user-*.md` SUIVIES par ' +
+  'git (`git ls-files`), une ligne par fiche. Une fiche neuve NON stagée n’y est donc pas, et elle y ' +
+  'entre au commit qui la suit ; une doctrine qui vit ailleurs qu’en fiche `user-*` (ticket, fil de ' +
+  'session) est invisible ici. Chaque ligne porte UN extrait, jamais tous les verbatims de la fiche ' +
+  `— la citation la plus longue parmi les PRESCRIPTIVES, tronquée à ${MAX_VERBATIM} caractères sur une fin de ` +
+  `phrase, les citations de moins de ${MIN_VERBATIM} caractères étant écartées tant qu’une plus longue existe : ` +
+  'le compte de verbatims dit quand la fiche en porte d’autres, et la FICHE fait foi. La DATE est ' +
+  'celle du paragraphe du verbatim, à défaut celle de l’en-tête, à défaut la date d’AJOUT git de la ' +
+  'fiche — dite comme telle, parce qu’elle date le fichier et non la parole. Rien ici ne vérifie que ' +
+  'la fiche dit vrai, ni qu’elle est à jour du code.'
 
 export function abandon(msg) {
   console.error(`${OUTIL} — ${msg}`)
@@ -172,7 +185,7 @@ export function construireDoc(fiches, { dateAjout = () => '' } = {}) {
   const lignes = [...fiches]
     .sort((a, b) => parUnitesDeCode(a.fichier, b.fichier))
     .map((f) => ligneDe(f, dateAjout))
-  return [TITRE, '', AVERTISSEMENT, '', CHAPEAU, '', ...lignes, ''].join('\n')
+  return [TITRE, '', AVERTISSEMENT, '', PERIMETRE(), '', CHAPEAU, '', ...lignes, ''].join('\n')
 }
 
 /** Fiches `user-*.md` SUIVIES par git (aucun listing de disque ici : `ls-files` trie). */
