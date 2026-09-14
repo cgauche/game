@@ -105,17 +105,40 @@ manuelle après revue.
 Deux scripts selon que le livre a ou non une structure `Source/` **préexistante** à réaligner :
 
 - **Livre déjà présent sous `Source/`** (ré-extraction) : `marker-split.mjs "<ancien-dossier>"
-  "<marker-paginé.md>" "<dossier-sortie>"`. Aligne les nouveaux chapitres sur les noms de fichiers
+  "<marker-paginé.md>" "<dossier-sortie>" [--pdf <chemin.pdf>]` — `--pdf` (par défaut
+  `Source/<nom du dossier du livre>.pdf`) est la référence des vérifications de pages perdues
+  (ci-dessous) ; le 2ᵉ argument accepte un `.md` d'un tenant **ou un
+  dossier de tranches `--page_range`** (`slices/<a>-<b>/<pdf>/<pdf>.md`, union des tranches par la lib
+  `scripts/raw/lib/marker-pages.mjs`, parseur `{N}----` UNIQUE du dépôt). Aligne les nouveaux chapitres sur les noms de fichiers
   et pages de début des anciens `.md` (marqueur `Pages PDF X` en tête de chaque ancien chapitre),
   frontière **titre-d'abord** (cherche l'en-tête markdown au/après la page de début), repli sur
   l'offset de page si le titre ne matche pas (gère les chapitres qui partagent une page — génère
   alors un stub `*(Page X partagée avec un chapitre voisin…)*`, à vérifier).
+  **Nommage** : un titre d'ancien fichier qui est un nom de **signet Word** (`_gjdgxs`, `Sans titre`)
+  ne se recopie pas — le fichier de sortie prend le **titre imprimé** (texte de l'en-tête Marker qui a
+  matché, réduit par `nomAscii`) ; si aucun en-tête n'a matché pour ce chapitre, le script **échoue**
+  en le nommant (jamais un `Sans titre` écrit sous `Source/`).
 - **Livre neuf, sans structure à réaligner** : écrire un splitter dédié sur le patron de
   `scripts/raw/split-mdg.mjs` — liste ordonnée `[titre de fichier, clé normalisée du titre]` tirée
   du **sommaire** du livre, recherche **séquentielle** de chaque en-tête `#…` (gère les titres
   dupliqués ailleurs dans le texte), page PDF déduite du dernier séparateur `{N}----` rencontré + 1.
   Sortie : `Source/<Livre>/NN - Titre.md` (garde l'en-tête `*Pages PDF X*` ou `*Pages PDF X-Y*`,
   séparateurs `{N}----` retirés) + `00 - Index.md` récapitulatif.
+
+**Pages perdues** — Marker gate PAR MISE EN PAGE : une page saturée de planches ou d'encadrés peut
+sortir **vide** (son seul contenu est un saut de ligne) alors que la couche texte du PDF en porte
+des milliers de caractères. Une page vide est INVISIBLE pour un simple inventaire des pages
+absentes : les deux découpeurs la mesurent (`pagesPerdues` de `scripts/raw/lib/marker-pages.mjs` —
+page vide ou absente chez Marker **et** plus de 200 caractères lus par pypdf) et **refusent de
+découper** en imprimant, pour chaque page, la commande de **ré-extraction ciblée** à jouer
+(`--disable_ocr --force_layout_block Text --page_range <k>` sur cette page seule, sortie dans
+`restitutions/<k>/` à côté des tranches). Au run suivant, `restituerPages` fusionne ces restitutions
+dans l'extraction de base — une restitution ne remplace QU'une page vide ou absente ; sur une page
+déjà pleine, elle lève. Mesuré sur le *WFRP 5e Core Rulebook* : pages PDF 17, 19 et 126 (1806 / 1461 /
+2070 caractères chez pypdf, `'\n'` chez Marker — la page entière classée `Figure` par la mise en page).
+`--force_ocr` n'y change RIEN (même page vide) : c'est la mise en page qui gate, pas la couche texte ;
+`--force_layout_block Text` la saute et rend le texte à plat (titres et paragraphes non séparés, à
+recoller au PDF si la page est citée).
 
 Les noms de dossier et de chapitre sont **ASCII** : les scripts de découpe écrivent par `nomAscii`
 (`scripts/source/nom-ascii.mjs`, la seule translittération du dépôt) et la garde

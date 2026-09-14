@@ -2,15 +2,30 @@
 // `NN - Titre.md`, alignés sur la structure des ANCIENS .md (mêmes noms de fichier + page de début).
 // Frontières : TITRE-d'abord (on trouve l'en-tête de chapitre dans le markdown Marker au/après sa page
 // de début) avec REPLI sur l'offset de page → gère les chapitres qui partagent une page.
-// Usage : node scripts/raw/marker-split.mjs "<ancien-book-dir>" "<marker-paginé.md>" "<out-dir>"
-import { writeFileSync, mkdirSync } from 'node:fs'
+// NOMMAGE : un titre d'ancien fichier qui est un nom de SIGNET Word (`_gjdgxs`, `Sans titre`) ne se
+// recopie pas — le fichier de sortie prend le TITRE IMPRIMÉ (texte de l'en-tete Marker qui a
+// matché) ; sans en-tête matché pour ce chapitre, le script ÉCHOUE en le nommant.
+// Déballe aussi le HTML `<sup>` de Marker (`lib/marker-pages.mjs`, CONSIGNE de `deballerSup`).
+// CONTRAT du parseur partagé : la lib LÈVE sur du texte avant le premier séparateur de page et sur
+// une page extraite deux fois (l'ancien parseur local ignorait le premier et concaténait le second) ;
+// et une page VIDE chez Marker mais PLEINE chez pypdf (page perdue) arrête le découpage.
+// Usage : node scripts/raw/marker-split.mjs "<ancien-book-dir>" "<marker-paginé.md | dossier de tranches>" "<out-dir>" [--pdf <chemin.pdf>]
+import { existsSync, writeFileSync, mkdirSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import { readText } from './_lib.mjs'
+import { mdsDeMarker, mdsDeRestitutions, pagesDeMarker, deballerSup, verifierExtraction, commandeRestitution } from './lib/marker-pages.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
 
-const [bookDir, markerMd, outDirArg] = process.argv.slice(2)
-if (!bookDir || !markerMd || !outDirArg) { console.error('args: <book-dir> <marker.md> <out-dir>'); process.exit(1) }
+const argv = process.argv.slice(2)
+const iPdf = argv.indexOf('--pdf')
+const pdfArg = iPdf >= 0 ? argv[iPdf + 1] : null
+const [bookDir, markerMd, outDirArg] = iPdf >= 0 ? argv.filter((_, i) => i !== iPdf && i !== iPdf + 1) : argv
+if (!bookDir || !markerMd || !outDirArg) { console.error('args: <book-dir> <marker.md | dossier de tranches> <out-dir> [--pdf <chemin.pdf>]'); process.exit(1) }
+// Le PDF est la référence des VÉRIFICATIONS d'extraction (couche texte pypdf des pages vides) :
+// `--pdf` explicite, sinon le PDF homonyme du dossier du livre — jamais de vérification muette.
+const pdfPath = pdfArg || `Source/${basename(bookDir)}.pdf`
+if (!existsSync(pdfPath)) { console.error(`PDF INTROUVABLE « ${pdfPath} » — passer --pdf <chemin.pdf> (les pages perdues se mesurent contre la couche texte du PDF)`); process.exit(1) }
 // Tout nom ÉCRIT sous `Source/` passe par `nomAscii` (#1699) : un chemin non ASCII ne naît pas ici.
 const outDir = nomAscii(outDirArg)
 
@@ -29,14 +44,34 @@ const chapters = listerDossier(bookDir)
   .filter((c) => c.start != null)
   .sort((a, b) => a.start - b.start || Number(a.nn) - Number(b.nn))
 
-// 2. markdown Marker → pages (le nº du séparateur est 0-indexé → page PDF = N+1), concaténé + index d'offset
-const segs = readText(markerMd).split(/^\{(\d+)\}-{5,}\s*$/m) // [pre, num, contenu, num, contenu, …]
-const pageText = new Map()
-for (let i = 1; i < segs.length; i += 2) { const pg = Number(segs[i]) + 1; pageText.set(pg, (pageText.get(pg) || '') + segs[i + 1]) }
+// 2. markdown Marker → pages par la lib partagée (parseur UNIQUE, aussi consommé par
+// `split-wfrp5.mjs`) : un `.md` d'un tenant OU un dossier de tranches `--page_range`.
+let pageText, verif
+try {
+  pageText = pagesDeMarker(mdsDeMarker(markerMd))
+  // MÊME vigilance que `split-wfrp5.mjs` (bloc partagé `verifierExtraction`) : restitutions ciblées
+  // fusionnées, pages manquantes averties, pages perdues refusées.
+  const restitutions = pagesDeMarker(mdsDeRestitutions(markerMd))
+  verif = verifierExtraction(pageText, { pdfPath, restitutions })
+  pageText = verif.pages
+} catch (e) { console.error(e.message); process.exit(1) }
+for (const pg of verif.manquantes) console.warn(`page ${pg} absente de l'extraction (page sans texte ?)`)
+if (verif.perdues.length) {
+  console.error(`PAGES PERDUES : ${verif.perdues.length} page(s) vide(s) chez Marker alors que le PDF en porte du texte — ré-extraire CHACUNE avant de découper :`)
+  for (const { page, pypdf } of verif.perdues) {
+    console.error(`  page ${page} (pypdf : ${pypdf} caractères)`)
+    console.error(`    ${commandeRestitution(pdfPath, markerMd, page)}`)
+  }
+  process.exit(1)
+}
 const orderedPages = [...pageText.keys()].sort((a, b) => a - b)
 const lastPage = orderedPages[orderedPages.length - 1] || 0
 let concat = ''; const pageOff = new Map()
 for (const pg of orderedPages) { pageOff.set(pg, concat.length); concat += pageText.get(pg) }
+if (chapters.length && chapters[chapters.length - 1].start > lastPage) {
+  console.error(`DERNIER CHAPITRE HORS EXTRACTION : ${chapters[chapters.length - 1].file} ouvre p.${chapters[chapters.length - 1].start} (${lastPage} pages extraites)`)
+  process.exit(1)
+}
 const offsetOfPage = (p) => { // offset du début de la 1re page ≥ p
   for (const pg of orderedPages) if (pg >= p) return pageOff.get(pg)
   return concat.length
@@ -44,7 +79,7 @@ const offsetOfPage = (p) => { // offset du début de la 1re page ≥ p
 
 // 3. tous les en-têtes du markdown Marker (offset + texte normalisé)
 const heads = []
-{ const re = /^#{1,6}\s+(.*\S)\s*$/gm; let m; while ((m = re.exec(concat))) heads.push({ off: m.index, h: norm(m[1]) }) }
+{ const re = /^#{1,6}\s+(.*\S)\s*$/gm; let m; while ((m = re.exec(concat))) heads.push({ off: m.index, h: norm(m[1]), texte: m[1] }) }
 
 // 4. offset de chaque chapitre : 1er en-tête (au/après sa page) qui matche son titre ; sinon repli page
 for (const c of chapters) {
@@ -52,10 +87,28 @@ for (const c of chapters) {
   let best = null
   for (const hd of heads) {
     if (hd.off < from) continue
-    if (hd.h === c.ntitle || (c.ntitle.length > 4 && (hd.h.includes(c.ntitle) || c.ntitle.includes(hd.h)))) { best = hd.off; break }
+    if (hd.h === c.ntitle || (c.ntitle.length > 4 && (hd.h.includes(c.ntitle) || c.ntitle.includes(hd.h)))) { best = hd; break }
   }
-  c.offset = best != null ? best : offsetOfPage(c.start)
+  c.offset = best ? best.off : offsetOfPage(c.start)
   c.matched = best != null
+  c.headTexte = best ? best.texte : null
+}
+
+// 4bis. nom de sortie : le titre de l'ancien fichier, SAUF quand c'est un nom de signet Word — le
+// fichier prend alors le titre IMPRIMÉ de l'en-tête Marker qui a matché (jamais « Sans titre »).
+const estSignet = (t) => /^_/.test(t) || /^Sans titre$/i.test(t)
+// Les pastilles `•` des titres imprimés (`# • **RULES** •`) partent AVEC les étoiles : sinon le nom
+// de fichier porte U+2022 et `nomAscii` lève en désignant sa table fermée.
+const titreImprime = (s) => s.replace(/<[^>]*>/g, '').replace(/[#*`•]/g, '').replace(/\s+/g, ' ').trim()
+for (const c of chapters) {
+  if (!estSignet(c.title)) { c.outFile = c.file; continue }
+  const imprime = c.headTexte ? titreImprime(c.headTexte) : ''
+  if (!imprime) {
+    console.error(`CHAPITRE ${c.nn} : titre de signet Word « ${c.title} » et AUCUN en-tête Marker matché — nommage impossible`)
+    process.exit(1)
+  }
+  c.outFile = `${c.nn} - ${imprime}.md`
+  console.log(`nommage : ${c.file} → ${c.outFile} (titre imprimé)`)
 }
 
 // 5. fin de page (pour le marqueur) par ordre de page de début
@@ -67,13 +120,13 @@ mkdirSync(outDir, { recursive: true })
 const empties = []
 for (let i = 0; i < byOff.length; i++) {
   const c = byOff[i], next = byOff[i + 1]
-  let body = concat.slice(c.offset, next ? next.offset : undefined).trim()
+  let body = deballerSup(concat.slice(c.offset, next ? next.offset : undefined).trim())
   const span = c.endPage > c.start ? `${c.start}-${c.endPage}` : `${c.start}`
   if (body.replace(/[#*\s]/g, '').length < 80) { // vide réel (artefact ou chapitre même-page absorbé par le voisin)
     empties.push(c.nn)
-    body = `# ${c.title}\n\n*(Page ${c.start} partagée avec un chapitre voisin — le contenu de cette section figure dans le chapitre adjacent de l'extraction Marker.)*`
+    body = `# ${c.outFile.replace(/^\d+ - /, '').replace(/\.md$/, '')}\n\n*(Page ${c.start} partagée avec un chapitre voisin — le contenu de cette section figure dans le chapitre adjacent de l'extraction Marker.)*`
   }
-  writeFileSync(join(outDir, nomAscii(c.file)), `*Pages PDF ${span}*\n\n${body}\n`)
+  writeFileSync(join(outDir, nomAscii(c.outFile)), `*Pages PDF ${span}*\n\n${body}\n`)
 }
 const miss = chapters.filter((c) => !c.matched).map((c) => c.nn)
 console.log(`${byOff.length} chapitres écrits dans ${outDir}`)
