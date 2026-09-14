@@ -852,9 +852,10 @@ test('stocks de `scripts/raw` — la porte voit CHAQUE entrée déclarée (corpu
 // corpus. Ce qui EST une condition d'entrée, c'est le NOM DE CHAMP `fichier` (graphie canonique de
 // `stock.d.mts`) : un tableau d'entrées à graphie autre (`{ file, ref }`…) n'est pas un stock
 // nominatif pour ce test et reste hors corpus, silencieusement.
-// Les stocks encore à CLÉ AVEUGLE (`rigViewStock`, `fleshGradientStock`…) n'ont rien à
-// prouver ici tant qu'ils ne sont pas convertis — le jour où ils le sont, ils tombent sous la mesure
-// sans qu'on écrive une ligne.
+// Les stocks encore à CLÉ AVEUGLE n'ont rien à prouver ici tant qu'ils ne sont pas convertis — le
+// jour où ils le sont, ils tombent sous la mesure sans qu'on écrive une ligne. `domResiduStock.mjs`
+// n'y tombera PAS, et c'est cohérent : sa clé EST un chemin de fichier, la porte de plage le voit
+// déjà — lui inventer une `ref` serait une donnée sans mesure.
 test('stocks `.mjs` de garde à la forme NOMINATIVE — la porte voit CHAQUE entrée déclarée (corpus par GLOB)', async (t) => {
   const dossier = join(RACINE, 'scripts', 'guards', 'lib')
   /** Les entrées NOMINATIVES exportées par un module de stock, toutes collections confondues. */
@@ -866,10 +867,23 @@ test('stocks `.mjs` de garde à la forme NOMINATIVE — la porte voit CHAQUE ent
     modules.set(nom, await import(pathToFileURL(join(dossier, nom)).href))
   }
   const convertis = [...modules].filter(([, mod]) => entreesExportees(mod).length > 0).map(([nom]) => nom)
-  assert.ok(
-    convertis.includes('paletteLiteralStock.mjs'),
-    'le stock converti par #1727 est hors du corpus : la mesure serait verte par vacuité — conversion défaite, ou module renommé hors du motif `*Stock.mjs`',
-  )
+  // Une assertion PAR stock converti : sans elles, la mesure serait verte par VACUITÉ le jour où une
+  // conversion se défait (le module sort du corpus sans un mot).
+  for (const nom of [
+    'paletteLiteralStock.mjs',
+    'rigPartViewStock.mjs',
+    'rigViewStock.mjs',
+    'fleshGradientStock.mjs',
+    'entityOrphanStock.mjs',
+    'tableConsumerStock.mjs',
+    'jambesGabaritStock.mjs',
+    'quadDecoStock.mjs',
+  ]) {
+    assert.ok(
+      convertis.includes(nom),
+      `${nom} : stock converti à la forme nominative par #1727, mais hors du corpus — la mesure serait verte par vacuité (conversion défaite, ou module renommé hors du motif \`*Stock.mjs\`)`,
+    )
+  }
   for (const nom of convertis) {
     const rel = `scripts/guards/lib/${nom}`
     const contenu = readFileSync(join(dossier, nom), 'utf8')

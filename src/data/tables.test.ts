@@ -2,10 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
-import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { fileURLToPath } from 'node:url';
 import { effectTables, findEffectTableById, mutationTables } from './index';
 import { TABLE_ORPHAN_RATCHET } from '../../scripts/guards/lib/tableConsumerStock.mjs';
+import { ecartDuVolet, type EntreeNominative } from '../../scripts/guards/lib/stock.mjs';
+import { MOTIF_DECLARATION, sitesTableOrpheline } from '../../scripts/guards/lib/tableConsumerAudit';
 
 /**
  * Intégrité de `tables.json` (tables d'effets référençables) + BIEN-FORMATION des ops `rollTable`/
@@ -76,44 +77,15 @@ describe('bien-formation des ops rollTable / rollMutation (tous les datasets)', 
 });
 
 describe('cliquet — toute table d’effets a un CONSOMMATEUR (donnée écrite, non tirée = dette)', () => {
-  const MAX_TABLE_ORPHAN = 1;
+  const STOCK = 'scripts/guards/lib/tableConsumerStock.mjs';
 
-  /** Corpus des consommateurs : `tables.json` privé de ses seules DÉCLARATIONS d'id (pour que les
-   *  `tableId` d'une table vers une autre comptent), les autres données `src/data/*.json`, + le code
-   *  de prod `src/**` (hors tests, COMMENTAIRES retirés — sinon un id cité en commentaire « solde »
-   *  une orpheline sans câblage réel ; hors `*.generated.ts` — un INDEX généré de la donnée
-   *  énumère tous les ids sans en consommer aucun, cf. `schemas/_ids.generated.ts`). */
-  /** DÉCLARATION d'une table dans `tables.json` : `"id"`, la clé d'ENVELOPPE `"type"`, puis `"label"`.
-   *  Retirée du corpus pour qu'une table ne se compte pas elle-même. `type` reste OPTIONNEL dans le
-   *  motif : le fichier a vécu sans lui, et un motif qui l'exigerait mentirait sur l'historique. */
-  const MOTIF_DECLARATION = /"id":\s*"[^"]*"\s*,\s*(?:"type":\s*"[^"]*"\s*,\s*)?(?="label")/g;
-
-  function consumerCorpus(): string {
-    let corpus = '';
-    for (const f of files) {
-      const raw = readFileSync(join(DIR, f), 'utf8');
-      // La DÉCLARATION d'une table, c'est `"id"` puis la clé d'ENVELOPPE `"type"` (#1467 L1b
-      // V-FLIP-ENTITE-b), puis `"label"`. Sans le maillon `type`, le retrait ne mordait plus : la
-      // déclaration RESTAIT dans le corpus et chaque table s'y comptait comme sa propre
-      // consommatrice. Le danger mesuré n'était PAS un vert global — l'assertion `neuves` devenait
-      // faussement verte, mais `soldees` sortait ROUGE et invitait à retirer de
-      // `tableConsumerStock.mjs` la ligne de `vdm-siphonnage-de-sort`, seule orpheline du stock :
-      // un solde à tort d'une dette qui n'a jamais bougé. Le motif est verrouillé ci-dessous.
-      corpus += f === 'tables.json' ? raw.replace(MOTIF_DECLARATION, '') : raw;
-    }
-    const stripComments = (src: string): string =>
-      src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
-    for (const { rel, text } of readCorpus(['src'])) {
-      if (rel.endsWith('.generated.ts')) continue;
-      corpus += stripComments(text);
-    }
-    return corpus;
-  }
-
-  /** Un id compte comme consommé s'il apparaît comme jeton de chaîne CITÉ complet (`"<id>"` ou
-   *  `'<id>'`) — jamais une sous-chaîne nue (prose, id plus long, mention non citée). */
-  const isConsumed = (corpus: string, id: string): boolean =>
-    corpus.includes(`"${id}"`) || corpus.includes(`'${id}'`);
+  /** Les orphelines MESURÉES en SITES `{ file, ref }` — `file` = le dataset où la table est
+   *  DÉCLARÉE —, confrontées au stock par la primitive partagée, dans les deux sens. La MESURE
+   *  (corpus des consommateurs, motif de déclaration, jeton cité) vit dans
+   *  `scripts/guards/lib/tableConsumerAudit.ts` : la garde et le régénérateur
+   *  `scripts/data/regen-table-orphan-stock.mts` en partagent la SEULE lecture. */
+  const ecartOrphelines = (stock: Iterable<EntreeNominative> = TABLE_ORPHAN_RATCHET) =>
+    ecartDuVolet({ sites: sitesTableOrpheline(), stock, ou: STOCK });
 
   // #1467 L1b V-FLIP-ENTITE-b — le MOTIF de retrait est ce qui tient tout le cliquet : s'il rate
   // une déclaration, la table qui la porte devient sa propre consommatrice et sort du décompte des
@@ -129,21 +101,36 @@ describe('cliquet — toute table d’effets a un CONSOMMATEUR (donnée écrite,
   });
 
   it('le stock d’orphelines est INCLUS dans les orphelines mesurées — un solde à tort est impossible', () => {
-    const corpus = consumerCorpus();
-    const orphans = effectTables.map((t) => t.id).filter((id) => !isConsumed(corpus, id));
-    const absentes = [...TABLE_ORPHAN_RATCHET].filter((id) => !orphans.includes(id));
-    expect(absentes, `id(s) du stock qui ne sont PLUS mesurés orphelins — vérifier le MOTIF avant de solder :\n${absentes.join('\n')}`).toEqual(
+    const { perimees } = ecartOrphelines();
+    expect(perimees, `entrée(s) du stock qui ne sont PLUS mesurées orphelines — vérifier le MOTIF avant de solder :\n${perimees.join('\n')}`).toEqual(
       [],
     );
   });
 
-  it('chaque table est portée par une donnée ou le code de prod — les orphelines vivent dans le stock, qui ne gonfle jamais', () => {
-    const corpus = consumerCorpus();
-    const orphans = effectTables.map((t) => t.id).filter((id) => !isConsumed(corpus, id));
-    const neuves = orphans.filter((id) => !TABLE_ORPHAN_RATCHET.has(id));
+  /** Les deux sens, par la primitive PARTAGÉE du dépôt (`ecartDuVolet`, `scripts/guards/lib/stock.mjs`).
+   *  Aucun PLAFOND : ce qu'une dette ne peut pas faire, c'est croître SANS SE DÉCLARER, et c'est
+   *  l'entrée `{ fichier, ref, occurrence }` — qui NOMME `src/data/tables.json` — que la porte de
+   *  plage (`croissanceDesStocks`) voit à l'append. Un compte, lui, lui est invisible. */
+  it('chaque table est portée par une donnée ou le code de prod — les orphelines vivent dans le stock nominatif', () => {
+    const { neuves, perimees } = ecartOrphelines();
     expect(neuves, `table(s) NEUVE(s) sans consommateur — câbler, jamais stocker :\n${neuves.join('\n')}`).toEqual([]);
-    const soldees = [...TABLE_ORPHAN_RATCHET].filter((id) => !orphans.includes(id));
-    expect(soldees, `id(s) du stock désormais consommés — retirer leur ligne de tableConsumerStock.mjs :\n${soldees.join('\n')}`).toEqual([]);
-    expect(TABLE_ORPHAN_RATCHET.size, `TABLE_ORPHAN_RATCHET a GONFLÉ (${TABLE_ORPHAN_RATCHET.size} > ${MAX_TABLE_ORPHAN}) — une orpheline neuve se câble, jamais ne se stocke.`).toBeLessThanOrEqual(MAX_TABLE_ORPHAN);
+    expect(perimees, `entrée(s) du stock désormais consommées — retirer leur ligne de tableConsumerStock.mjs :\n${perimees.join('\n')}`).toEqual([]);
+  });
+
+  it('chaque entrée NOMME le dataset où la table est déclarée — c’est ce que la porte de plage voit', () => {
+    const muettes = TABLE_ORPHAN_RATCHET.filter((e) => e.fichier !== 'src/data/tables.json');
+    expect(muettes, `Entrées dont le \`fichier\` n'est pas le dataset des tables : elles seraient INVISIBLES\n` +
+      `à \`croissanceDesStocks\` :\n  ${JSON.stringify(muettes)}`).toEqual([]);
+  });
+
+  /** ALLONGER le stock ne s'échange plus contre un plafond relevé : une entrée de plus se DÉCLARE,
+   *  parce qu'elle nomme un fichier — la garde la voit PÉRIMÉE, la porte de plage la voit à l'append. */
+  it('ALLONGER le stock rougit : une entrée que plus aucune orpheline ne porte est PÉRIMÉE', () => {
+    const gonfle = [...TABLE_ORPHAN_RATCHET, {
+      fichier: 'src/data/tables.json', ref: 'table-qui-n-existe-pas', occurrence: 1,
+    }];
+    const { perimees } = ecartOrphelines(gonfle);
+    expect(perimees.some((l) => l.includes(' :: table-qui-n-existe-pas :: 1'))).toBe(true);
+    expect(perimees.some((l) => l.includes('entrée SOLDÉE'))).toBe(true);
   });
 });

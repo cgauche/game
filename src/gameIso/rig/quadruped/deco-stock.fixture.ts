@@ -1,8 +1,15 @@
 /**
- * STOCKS GELÉS du canal `deco` du gabarit quadrupède (#1082) — un seul DÉTECTEUR, deux gardes :
- * le CONTRAT (`quad-anchor-contract.test.ts` : une clé qui vise une vue sans art rougit, sauf le
- * stock ci-dessous) et les CLIQUETS (`quad-vues-ratchet.test.ts` : les plafonds ne peuvent que
- * décroître, la population applicable ne se blanchit pas).
+ * DÉTECTEUR du canal `deco` du gabarit quadrupède (#1082), et les deux listes qui vivent encore ICI
+ * — un seul détecteur (`quadDecoCouples`), deux gardes : le CONTRAT
+ * (`quad-anchor-contract.test.ts` : une clé qui vise une vue sans art rougit ; c'est lui qui
+ * consomme `ANCRES_OEIL_ABSENTES_GELEES`) et le CLIQUET (`quad-vues-ratchet.test.ts` : la
+ * population APPLICABLE `APPLICABLES_GELES` ne se blanchit pas — un couple n'en sort que par un art
+ * émis).
+ *
+ * Les TROIS stocks nominatifs `{ fichier, ref, occurrence }` vivent dans
+ * `scripts/guards/lib/quadDecoStock.mjs` (`DECOS_MORTS_RATCHET`, `DECOS_SANS_PLAN_RATCHET`,
+ * `REPERES_ART_PROPRES_RATCHET`) : la garde les juge par l'ÉCART NOMINATIF (`ecartDuVolet` —
+ * neuves ET périmées), sans aucun plafond.
  *
  * Un COUPLE s'écrit `<espèce> <vue> <clé deco>` : c'est l'unité de mesure de tout ce fichier.
  * Ce module est un FIXTURE de test (jamais importé par le rendu) : il vit sous `src/` pour lire
@@ -70,93 +77,11 @@ export function quadDecoCouples(): DecoCouples {
 }
 
 /**
- * Stock GELÉ des ART-DEFS qui portent leur PROPRE repère (mesuré le 2026-08-05 sur le périmètre
- * ÉLARGI : l'art de tête de TOUTES les defs du registre, `deco` ou non, + tout os visé par une clé
- * `deco`) : un `<g transform=…>` enveloppant l'art de la part que `quadAnchor` ne reproduit PAS —
- * un décor authoré sur les coordonnées de cet art atterrirait dans un autre repère. Une entrée
- * s'écrit `<espèce> <vue> <os>`, suivie du transform mesuré. Ne peut que rétrécir, et ne peut pas
- * contenir d'entrée périmée : toute def à repère propre absente d'ici rougit, toute entrée d'ici
- * qui ne diverge plus rougit aussi.
- *  · les 18 entrées restantes sont TOUTES des ROTATIONS : un mouvement RIGIDE, donc l'unité de la
- *    part reste celle de l'os (le décor y arriverait tourné, jamais redimensionné). C'est le port
- *    de tête de profil, cuit dans l'art faute d'axe de squelette qui le porte.
- *  · plus AUCUNE échelle : `boeuf profile tete` portait `translate(2 5) rotate(6) scale(0.84)` —
- *    son art valait 1,31 quand son décor de tête valait 1,56, 19 % d'écart d'unité entre une part
- *    et son propre raccord (mesure du juge de design, #1082). Le lot B2 a réécrit les coordonnées
- *    de cet art dans le repère de l'OS, port de tête compris : la def n'enveloppe plus rien et
- *    l'entrée SORT du stock — 20 → 19. C'est le patron que les autres suivront ; `cheval profile
- *    tete` (rotate(8), la bride) l'a suivi le 2026-08-06 avec le profil équin dessiné d'un
- *    trait — 19 → 18.
- */
-export const REPERES_ART_PROPRES_GELES = [
-  'basilic profile tete',    // rotate(6)
-  'blaireau profile tete',   // rotate(6)
-  'chat-sauvage profile tete', // rotate(4)
-  'chien profile tete',      // rotate(6)
-  'crapaud profile tete',    // rotate(2)
-  'grand-cerf profile tete', // rotate(8)
-  'griffon profile tete',    // rotate(5)
-  'hippogriffe profile tete', // rotate(5)
-  'lion-de-guerre-de-chrace profile tete', // rotate(6)
-  'loup profile tete',       // rotate(4)
-  'manticore profile tete',  // rotate(6)
-  'ours profile tete',       // rotate(6)
-  'pegase profile tete',     // rotate(8)
-  'rat-geant profile tete',  // rotate(16)
-  'rat-loup profile tete',   // rotate(16)
-  'sanglier profile tete',   // rotate(10)
-  'stegadon profile tete',   // rotate(8)
-  'varghulf profile tete',   // rotate(16)
-];
-export const PLAFOND_REPERES_ART_PROPRES = REPERES_ART_PROPRES_GELES.length;
-
-/**
- * Stock GELÉ des couples MORTS (mesuré le 2026-08-05, amendé le 2026-08-06). Deux voies de solde
- * étaient ouvertes : (a) réaffectation MÉCANIQUE à un os émis, (b) art de bout à créer. Les 8
- * relèvent de (b), chacun pour la raison notée : leur art est authoré dans les COORDONNÉES et la
- * SILHOUETTE du profil (festons, bandes le long de l'axe du cou, dents de scie de la ligne de dos)
- * — reporté tel quel sur le tronc ou la tête vus de bout, il peindrait une vue de côté sur une vue
- * de face. Le solde appartient donc à la phase d'ART (P1b). Ne peut que rétrécir.
- *
- * SORTIS le 2026-08-06 — `boeuf back/front encolure`, puis `cheval back/front encolure` (vague
- * P1b-MASSE) : MÊME cas dans les deux lots. La clé `deco` qui les portait (fanon bovin de profil ;
- * TACK équin — selle, caparaçon, croupière, crinière, tous authorés dans les coordonnées du tronc
- * de PROFIL) n'existe plus, ces deux profils étant désormais des dessins entiers compilés par os.
- * Ces quatre couples n'ont jamais rien peint : l'os `encolure` ne porte d'art qu'en profil, et un
- * décor visant un os que la vue n'émet pas est SILENCIEUSEMENT perdu.
- *
- * SOLDÉS le 2026-08-06 (#1128 L5), 8 → 4 : le collier du pégase et le gorgerin du chien sont passés
- * à des SETS d'équipement (`collier-dore-pegase`, `harnais-de-guerre-canin`) dont la clé vise
- * `encolure#profile` — la seule vue où l'os porte un art. Une clé qui ne réclame plus les vues de
- * bout n'y perd plus rien : ce n'est pas un blanchiment mais un RÉTRÉCISSEMENT DE PORTÉE, mesuré
- * byte-neutre sur les trois vues (describe « le stock des MORTS est une dette MESURÉE » ci-dessous).
- * La clé se ré-ouvrira le jour où l'art de bout existera — le stock ne cache pas la dette, il la
- * déplace où elle se voit : un collier absent de face, plutôt qu'une clé qui prétend le peindre.
- *
- * LA PREUVE EST COMMITTÉE, plus une mesure d'atelier : `quad-vues-ratchet.test.ts`, describe
- * « canal `deco` : un décor ne vit que sur un os que la vue ÉMET », qui pose un témoin sur le
- * chemin de rendu RÉEL dans les DEUX sens — contrôle négatif (os non émis → témoin absent du
- * markup, ~80 couples) et contrôle positif sur la même population (os émis → témoin présent, pour
- * que le négatif ne puisse pas passer à vide). Retirer un couple d'ici sur ce motif est donc un
- * SOLDE rejouable, pas un blanchiment de stock : la loi invoquée rougit si elle cesse de tenir.
- */
-export const DECOS_MORTS_GELES = [
-  // (b) FANON du grand cerf : frange de toison dentelée le long du DEVANT de l'encolure tendue
-  // (pose de brame) — la pose elle-même est refigée de bout (quadSkeletonForView).
-  'grand-cerf back encolure',
-  'grand-cerf front encolure',
-  // (b) CRÊTE de soies du sanglier : dents de scie qui courent garrot→croupe le long de la ligne
-  // de dos, contre-calculées sur le tronc de profil — de dos, une crête vue en enfilade.
-  'sanglier back encolure',
-  'sanglier front encolure',
-];
-export const PLAFOND_DECOS_MORTS = DECOS_MORTS_GELES.length;
-
-/**
  * Population GELÉE (mesurée le 2026-08-05, re-mesurée le 2026-08-06) : les 66 couples APPLICABLES,
  * dénominateur du stock des morts. Un couple ne quitte cette liste que par un art émis (solde réel)
  * — ou, nommément, par la preuve qu'il ne peignait RIEN. Sorties du 2026-08-06 : `boeuf back/front
- * encolure` sur la mesure du témoin (cf. `DECOS_MORTS_GELES` ci-dessus) ; puis les cinq clés `deco`
+ * encolure` sur la mesure du témoin (cf. `DECOS_MORTS_RATCHET`,
+ * `scripts/guards/lib/quadDecoStock.mjs`) ; puis les cinq clés `deco`
  * bovines qui n'existent plus dans la def — `tete#back`, `tete#front` (l'art de tête est une part,
  * `quadruped/heads/defs/boeuf.ts`), `encolure`, `tete#profile`, `tronc#profile` (le PROFIL bovin est
  * un dessin entier compilé par os, `viewArt`). Restent les deux calques de modelé de bout.
@@ -250,72 +175,6 @@ export const APPLICABLES_GELES = [
   'varghulf profile aileG',
   'varghulf profile tronc#profile',
 ];
-
-/**
- * Stock GELÉ des couples VIVANTS sans `plan` déclaré (mesuré le 2026-08-05, transition N2 de la
- * spec P1 v2) : le défaut « calque apposé par-dessus l'art de l'os » reste TOLÉRÉ sur l'existant,
- * mais il est COMPTÉ et son plafond ne peut que décroître. Un couple hors de cette liste doit
- * déclarer son plan — toute NOUVELLE def sans plan rougit.
- *
- * SOLDE du 2026-08-06 (#1128 L5), 56 → 51 : les quatre couples CANINS et le couple PÉGASE portaient
- * l'équipement de la bête. Devenu l'art des sets `harnais-de-guerre-canin` et
- * `collier-dore-pegase`, il DIT désormais son plan (`plan: 0`) — le plan de l'os, celui-là même que
- * le défaut lui donnait tacitement, d'où un rendu byte-identique pour le record qui porte le set.
- */
-export const DECOS_SANS_PLAN_GELES = [
-  'blaireau back tete#back',
-  'blaireau front tete#front',
-  'blaireau front tronc#front',
-  'blaireau profile tete#profile',
-  'blaireau profile tronc#profile',
-  'grand-cerf back tete',
-  'grand-cerf front tete',
-  'grand-cerf profile encolure',
-  'grand-cerf profile tete',
-  'grand-cerf profile tete#profile',
-  'griffon back basAvD',
-  'griffon back basAvG',
-  'griffon back hautArD',
-  'griffon back hautArG',
-  'griffon back hautAvD',
-  'griffon back hautAvG',
-  'griffon front basAvD',
-  'griffon front basAvG',
-  'griffon front hautArD',
-  'griffon front hautArG',
-  'griffon front hautAvD',
-  'griffon front hautAvG',
-  'griffon profile basAvD',
-  'griffon profile basAvG',
-  'griffon profile hautArD',
-  'griffon profile hautArG',
-  'griffon profile hautAvD',
-  'griffon profile hautAvG',
-  'lion-de-guerre-de-chrace profile piedAvD#profile',
-  'manticore back tete',
-  'manticore front tete',
-  'manticore profile queue#profile',
-  'manticore profile tete',
-  'preyton back tronc',
-  'preyton front tronc',
-  'preyton profile tronc',
-  'rat-geant back tete',
-  'rat-geant front tete',
-  'rat-geant profile tete',
-  'sanglier back tete#back',
-  'sanglier front tete#front',
-  'sanglier profile encolure',
-  'sanglier profile tete#profile',
-  'sanglier profile tronc#profile',
-  'varghulf back aileD',
-  'varghulf back aileG',
-  'varghulf front aileD',
-  'varghulf front aileG',
-  'varghulf profile aileD',
-  'varghulf profile aileG',
-  'varghulf profile tronc#profile',
-];
-export const PLAFOND_DECOS_SANS_PLAN = DECOS_SANS_PLAN_GELES.length;
 
 /**
  * Stock GELÉ des arts de VUE dont la tête ne porte PAS l'ancre d'œil `data-eye`/`data-ec`

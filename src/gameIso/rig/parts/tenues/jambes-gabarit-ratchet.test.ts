@@ -1,121 +1,103 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-import { listerDossier } from '../../../../../scripts/guards/lib/lister.mjs';
+import { DOSSIER_DEFS, sitesJambeInline } from '../../../../../scripts/guards/lib/jambesGabaritAudit';
+import { JAMBE_INLINE_RATCHET, JAMBE_SILHOUETTE_OVERRIDES } from '../../../../../scripts/guards/lib/jambesGabaritStock.mjs';
+import { ecartDuVolet, type EntreeNominative } from '../../../../../scripts/guards/lib/stock.mjs';
 
 /**
  * CLIQUET — migration de la jambe vers le GABARIT partagé (#633 Lot 0).
  *
- * Chaque tenue redessinait sa jambe INLINE (~195 fois), recopiant le défaut de galbe genou/mollet.
- * Le gabarit `jambeVetue` (`parts/bodies/jambe-gabarit.ts`) porte désormais le contour + le galbe
- * lissé UNE fois ; une tenue le consomme (ou compose le corps via `BODIES.`). Ce cliquet scanne les
- * SOURCES `defs/*.ts` : un `jambes:` qui n'appelle NI `jambeVetue(` NI `BODIES.` est encore INLINE.
+ * Chaque tenue redessinait sa jambe INLINE, recopiant le défaut de galbe genou/mollet. Le gabarit
+ * `jambeVetue` (`parts/bodies/jambe-gabarit.ts`) porte le contour + le galbe lissé UNE fois ; une
+ * tenue le consomme (ou compose le corps via `BODIES.`).
  *
- *   1. `JAMBE_INLINE` — les defs dont la jambe est encore inline. Ce stock ne peut que DÉCROÎTRE
- *      (cible 0, plafond `PLAFOND_INLINE`) : un def migré en SORT dans le même commit (sinon `perimees`).
- *   2. `JAMBE_SILHOUETTE_OVERRIDES` — silhouettes ASSUMÉES (jambe volontairement hors gabarit) :
- *      plafond `MAX_OVERRIDES = 8`, vide au départ.
+ * La MESURE vit dans `scripts/guards/lib/jambesGabaritAudit.ts` — partagée avec le régénérateur
+ * `scripts/rig/regen-jambes-gabarit-stock.mts`, pour qu'aucun des deux n'ait sa propre lecture du
+ * corpus. Le STOCK vit dans `scripts/guards/lib/jambesGabaritStock.mjs`, en entrées
+ * `{ fichier, ref, occurrence }` : la forme UNIQUE du dépôt, celle que la porte de plage
+ * (`croissanceDesStocks`) VOIT — un id nu (`'apothicaire'`) lui est invisible, un append ne coûte
+ * alors rien.
  *
- * Une jambe inline NEUVE hors des deux stocks échoue (`neuves`). Un id retiré d'un stock alors qu'il
- * est TOUJOURS inline échoue (il « traîne » : `neuves` le reprend). Un id gardé au stock alors qu'il
- * est migré échoue (`perimees` : le stock ment). Solder = migrer PUIS retirer du stock.
+ * DEUX sens, aucun PLAFOND : une jambe inline hors des deux collections échoue (`neuves`) ; une
+ * entrée que plus aucun def ne porte échoue (`perimees`). Solder = migrer PUIS régénérer.
  */
+const STOCK = 'scripts/guards/lib/jambesGabaritStock.mjs';
 
-// Les defs dont la jambe est encore INLINE : un `jambes:` sans `jambeVetue(` ni `BODIES.`.
-const JAMBE_INLINE: ReadonlySet<string> = new Set([
-  'agitateur', 'apothicaire', 'archer', 'arquebusier', 'artilleur', 'artilleur-de-navire', 'artisan',
-  'artiste', 'bailli', 'batelier', 'boucher-ogre', 'bourgeois', 'cartographe', 'cavalier',
-  'cavalier-leger', 'chansonnier', 'chasseur', 'chasseur-de-primes',
-  'chevalier-du-loup-blanc', 'chevalier-du-soleil-flamboyant', 'chevalier-errant', 'chevalier-panthere',
-  'cocher', 'colporteur', 'conseiller', 'contrebandier', 'coureur-d-egout',
-  'cultiste', 'debardeur', 'duelliste', 'eclaireur', 'emissaire', 'enqueteur', 'entremetteur',
-  'erudit', 'esclave-skaven', 'espion', 'femme-du-fleuve', 'flagellant', 'frere-loup', 'garde',
-  'gardechamps', 'gardien-de-troupeaux-de-rhinox', 'gladiateur', 'guerrier-du-chaos', 'hallebardier',
-  'herboriste', 'hors-la-loi', 'ingenieur', 'intendant', 'joueur-d-epee', 'juriste',
-  'mangeur-d-hommes', 'marchand', 'marin', 'medecin', 'mendiant', 'messager', 'milicien', 'mineur',
-  'mystique', 'naufrageur', 'nautonier', 'noble', 'nonne', 'officier', 'ogre', 'patrouilleur-des-karak',
-  'patrouilleur-fluvial', 'patrouilleur-routier', 'pilleur-de-tombes', 'piquier', 'pretre',
-  'pretre-de-myrmidia', 'pretre-de-stromfels', 'pretre-guerrier', 'pretre-marin-de-manann',
-  'prophete-gris', 'ranconneur', 'ratier', 'ratisseur-de-plages', 'receleur', 'repurgateur',
-  'rodeur-fantome', 'saltimbanque', 'serviteur', 'skaven', 'sorcier-de-village',
-  'sorcier-dissident', 'spadassin', 'specialiste-de-siege', 'squelette', 'suiveur-de-camp', 'tueur',
-  'vampire', 'vermine-de-choc', 'voleur',
-]);
-// Plafond du stock : il ne peut que BAISSER — migrer une jambe l'abaisse, rien ne le relève.
-const PLAFOND_INLINE = 103;
+/** Les deux collections réunies : la dette mesurée, et les silhouettes ASSUMÉES (décision, non
+ *  mesurable — elle s'écrit à la main, et reste un cliquet même tenue à zéro). */
+const stockComplet = (): EntreeNominative[] => [...JAMBE_INLINE_RATCHET, ...JAMBE_SILHOUETTE_OVERRIDES];
 
-// Silhouettes ASSUMÉES hors gabarit — vide au départ ; plafond gelé ICI (la baisse est le seul geste).
-const JAMBE_SILHOUETTE_OVERRIDES: ReadonlySet<string> = new Set<string>([]);
-const MAX_OVERRIDES = 8;
+const ecart = (stock: Iterable<EntreeNominative> = stockComplet(), dossier?: string) =>
+  ecartDuVolet({ sites: sitesJambeInline(dossier), stock, ou: STOCK });
 
-const DEFS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'defs');
-
-/** Extrait le TEXTE de la valeur `jambes:` d'une source (jusqu'à la virgule/fermeture de rang 0). */
-function jambesRegion(src: string): string {
-  const m = src.match(/jambes:\s*/);
-  if (!m || m.index == null) return '';
-  let depth = 0, tick = false, out = '';
-  for (let i = m.index + m[0].length; i < src.length; i++) {
-    const c = src[i];
-    if (c === '`') { tick = !tick; out += c; continue; }
-    if (tick) { out += c; continue; }
-    if ('{(['.includes(c)) depth++;
-    else if ('})]'.includes(c)) { if (depth === 0) break; depth--; }
-    else if (c === ',' && depth === 0) break;
-    out += c;
-  }
-  return out;
-}
-
-function idOf(src: string, file: string): string {
-  const m = src.match(/\bid:\s*["']([^"']+)["']/);
-  if (!m) throw new Error(`def sans id STABLE : ${file}`);
-  return m[1];
-}
-
-/** ids des defs dont la jambe est encore INLINE (ni `jambeVetue(` ni `BODIES.`). */
-function inlineJambeIds(): Set<string> {
-  const found = new Set<string>();
-  for (const file of listerDossier(DEFS_DIR).filter((f) => f.endsWith('.ts'))) {
-    const src = readFileSync(join(DEFS_DIR, file), 'utf8');
-    if (!/jambes:/.test(src)) continue;
-    const migrated = /jambeVetue\s*\(/.test(src) || /BODIES\./.test(jambesRegion(src));
-    if (!migrated) found.add(idOf(src, file));
-  }
-  return found;
-}
-
-function ratchet(found: ReadonlySet<string>, stock: ReadonlySet<string>) {
-  return {
-    neuves: [...found].filter((k) => !stock.has(k)).sort(),
-    perimees: [...stock].filter((k) => !found.has(k)).sort(),
-  };
-}
+/** Une ligne de remède CONTIENT-elle cette clé ? (le remède décore la clé d'une phrase) */
+const porte = (lignes: readonly string[], cle: string) => lignes.some((l) => l.includes(cle));
 
 describe('jambe : migration vers le gabarit partagé (cliquet #633 Lot 0)', () => {
-  const found = inlineJambeIds();
-  const stock = new Set([...JAMBE_INLINE, ...JAMBE_SILHOUETTE_OVERRIDES]);
-
   it('aucune jambe inline NEUVE, et un id soldé ne traîne pas hors stock', () => {
-    const { neuves } = ratchet(found, stock);
+    const { neuves } = ecart();
     expect(neuves, `Jambe(s) INLINE hors stock — consommer \`jambeVetue(\`/\`BODIES.\`, ou (silhouette\n` +
-      `assumée) inscrire dans JAMBE_SILHOUETTE_OVERRIDES. Un id retiré de JAMBE_INLINE encore inline\n` +
-      `RETOMBE ici :\n  ${neuves.join('\n  ')}`).toEqual([]);
+      `assumée) inscrire dans JAMBE_SILHOUETTE_OVERRIDES. Une entrée retirée de JAMBE_INLINE_RATCHET\n` +
+      `alors que le def est encore inline RETOMBE ici :\n  ${neuves.join('\n  ')}`).toEqual([]);
   });
 
-  it('le stock ne MENT pas : un id migré en sort', () => {
-    const { perimees } = ratchet(found, stock);
-    expect(perimees, `Clés de stock qui ne sont plus inline (migrées) — les RETIRER de JAMBE_INLINE /\n` +
-      `JAMBE_SILHOUETTE_OVERRIDES, sinon le stock surestime ce qui reste à migrer :\n  ${perimees.join('\n  ')}`).toEqual([]);
+  it('le stock ne MENT pas : un def migré en sort', () => {
+    const { perimees } = ecart();
+    expect(perimees, `Entrées de stock dont le def n'est plus inline (migré) — les RETIRER (ou :\n` +
+      `npx tsx scripts/rig/regen-jambes-gabarit-stock.mts), sinon le stock surestime ce qui reste à\n` +
+      `migrer :\n  ${perimees.join('\n  ')}`).toEqual([]);
   });
 
-  it('le stock des jambes inline ne peut que DÉCROÎTRE (cible 0)', () => {
-    expect(JAMBE_INLINE.size, `JAMBE_INLINE a GONFLÉ (${JAMBE_INLINE.size} > ${PLAFOND_INLINE}). Solder une jambe\n` +
-      `= la migrer au gabarit et la retirer du stock — jamais allonger la liste.`).toBeLessThanOrEqual(PLAFOND_INLINE);
+  it("chaque entrée NOMME le def à ouvrir — c'est ce que la porte de plage voit", () => {
+    const muettes = stockComplet()
+      .filter((e) => !new RegExp(`^${DOSSIER_DEFS}/.+\\.ts$`).test(e.fichier));
+    expect(muettes, `Entrées dont le \`fichier\` n'est pas un chemin de def : elles seraient INVISIBLES à\n` +
+      `\`croissanceDesStocks\`, et un append ne coûterait rien :\n  ${JSON.stringify(muettes)}`).toEqual([]);
   });
 
-  it('les silhouettes assumées restent plafonnées', () => {
-    expect(JAMBE_SILHOUETTE_OVERRIDES.size).toBeLessThanOrEqual(MAX_OVERRIDES);
+  /** ALLONGER le stock ne s'échange plus contre un plafond relevé : une entrée de plus se DÉCLARE,
+   *  parce qu'elle nomme un fichier — la garde la voit PÉRIMÉE, la porte de plage la voit à l'append. */
+  it('ALLONGER le stock rougit : une entrée que plus aucun def ne porte est PÉRIMÉE', () => {
+    const gonfle = [...stockComplet(), {
+      fichier: `${DOSSIER_DEFS}/TenueQuiNExistePas.ts`, ref: 'gonflement:jambes:inline', occurrence: 1,
+    }];
+    const { perimees } = ecart(gonfle);
+    expect(porte(perimees, ' :: gonflement:jambes:inline :: 1')).toBe(true);
+    expect(porte(perimees, 'entrée SOLDÉE')).toBe(true);
+  });
+});
+
+/**
+ * MORSURE — la garde rougit-elle vraiment ? Le corpus de defs est COPIÉ sous `os.tmpdir()`, la
+ * migration (`jambeVetue(`) est forgée sur la copie, et la mesure porte sur ce dossier
+ * (`sitesJambeInline(dossier)`) : l'ARBRE n'est JAMAIS écrit — un def d'art réel, partagé avec
+ * d'autres sessions, ne peut pas rester corrompu si la morsure est interrompue, et aucun test ne
+ * dépend du `finally` d'un autre. La copie porte TOUT le corpus : seul le def forgé sort de la
+ * mesure, donc seule SON entrée de stock devient PÉRIMÉE — les deux sens sont prouvés à la fois.
+ */
+describe('morsure : migrer un def le rend PÉRIMÉ au stock (#633 Lot 0)', () => {
+  const RACINE = fileURLToPath(new URL('../../../../../', import.meta.url));
+
+  it('un def du stock qui migre ressort en `perimees`, en NOMMANT son fichier', () => {
+    const cible = JAMBE_INLINE_RATCHET[0];
+    expect(cible, 'le stock doit porter au moins une entrée pour ce contrat').toBeDefined();
+    const tmp = mkdtempSync(join(tmpdir(), 'jambes-gabarit-morsure-'));
+    try {
+      cpSync(`${RACINE}${DOSSIER_DEFS}`, tmp, { recursive: true });
+      const copie = join(tmp, cible.fichier.slice(`${DOSSIER_DEFS}/`.length));
+      writeFileSync(copie, `${readFileSync(copie, 'utf8')}\n// jambeVetue( — migration forgée par la morsure\n`);
+      const { perimees } = ecart(stockComplet(), tmp);
+      expect(porte(perimees, ` :: ${cible.ref} :: ${cible.occurrence}`)).toBe(true);
+      expect(porte(perimees, cible.fichier)).toBe(true);
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  it("l'arbre n'a pas été écrit : le corpus RÉEL ne porte aucune périmée", () => {
+    expect(ecart().perimees).toEqual([]);
   });
 });

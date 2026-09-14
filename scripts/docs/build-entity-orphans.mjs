@@ -36,12 +36,11 @@
 // `state/merchantFlow.ts:132`, bétail du Maquignon). Ce qui n'en est PAS un : la palette d'ATELIER de
 // l'éditeur de scène — cf. la SÉMANTIQUE DE « ORPHELINE » en en-tête de `entityConsumers.mjs`, qui
 // écrit cette exclusion pour qu'une extension future de MODE 2 ne la « corrige » pas en consommateur.
-// Mesure d'entrée : 351 orphelines / 493 entités, dont 333 groupées en 4 FAMILLES par livre au stock
-// cliqueté (`entityOrphanStock.mjs#ENTITY_ORPHAN_FAMILIES` — un supplement entier curé sans scène :
-// frenchy-bzh 244, middenheim 37, zoo-imperial 37, mer-des-griffes 15) et 18 en lignes NOMINATIVES.
-// Le rapport ci-dessous, lui, reste NOMINATIF entrée par entrée sur TOUT le périmètre (familles
-// comprises) : c'est lui qui atténue le fail-open du plafond de famille — la SUBSTITUTION d'une
-// orpheline par une autre à compte constant laisse la garde verte mais apparaît AU DIFF de ce doc.
+// Le stock cliqueté (`entityOrphanStock.mjs#ENTITY_ORPHAN_RATCHET`) est NOMINATIF entrée par entrée
+// sur TOUT le périmètre, dans la forme `{ fichier, ref, occurrence }` : c'est LUI qui rougit sur une
+// orpheline neuve comme sur une SUBSTITUTION à compte constant, et c'est son entrée nommée que la
+// porte de plage voit à l'append. Ce rapport en est la LECTURE, pas la garde : un `.md` généré ne
+// rougit pas.
 //
 // DÉFINITION D'UN CONSOMMATEUR — DEUX modes indépendants, un id compte comme consommé s'il satisfait
 // L'UN OU L'AUTRE (détail complet, grammaire, angles morts : en-tête de `entityConsumers.mjs`) :
@@ -101,7 +100,7 @@ import { join } from 'node:path'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 import {
   CATEGORY_FILES, EXCLUDED_CATEGORY_FILES, loadCategoryIds, buildConsumerCorpus, isConsumed,
-  computeFieldPredicateConsumers, META_CATALOG_ENTRIES,
+  predicatDeConsommation,
 } from '../guards/lib/entityConsumers.mjs'
 
 const DATA_DIR = 'src/data'
@@ -113,11 +112,11 @@ function labelOf(dataDir, file, id) {
   return arr.find((e) => e.id === id)?.label ?? null
 }
 
-const corpus = buildConsumerCorpus(DATA_DIR, SRC_DIR)
 const ids = loadCategoryIds(DATA_DIR)
-const { consumed: fieldConsumed } = computeFieldPredicateConsumers(DATA_DIR, SRC_DIR)
-const isEntityConsumed = (cat, id) =>
-  isConsumed(corpus, id) || fieldConsumed.get(cat)?.has(id) || META_CATALOG_ENTRIES.has(`${cat}:${id}`)
+// LE prédicat de consommation vient de `entityConsumers.mjs` (`predicatDeConsommation`), celui-là
+// même dont vit `orphelinesMesurees` (garde + stock) : ce rapport en est la LECTURE, il ne
+// reclassifie pas.
+const isEntityConsumed = predicatDeConsommation(DATA_DIR, SRC_DIR)
 
 let out = `# Orphelines de données — GÉNÉRÉ\n\n`
 out += `> ⚠️ Fichier GÉNÉRÉ par \`node scripts/docs/build-entity-orphans.mjs\` (\`npm run docs:orphelines\`) — NE PAS ÉDITER À LA MAIN.\n`
@@ -152,9 +151,9 @@ out += `PRÉDICAT sur des catégories déclarées en donnée (\`state/merchantFl
 out += `— #1631). \`creatures\` a quitté cette table pour les catalogues MESURÉS (#1553 L3). Détail et\n`
 out += `mesure du canal label (qui n'est PAS la cause) : en-tête de \`scripts/docs/build-entity-orphans.mjs\`.\n\n`
 out += `## Catalogues MESURÉS\n\n`
-out += `> Le stock cliqueté groupe les masses par LIVRE (\`ENTITY_ORPHAN_FAMILIES\`) ; ce rapport, lui,\n`
-out += `> reste NOMINATIF entrée par entrée — une orpheline câblée et une autre créée laissent le plafond\n`
-out += `> de famille inchangé, mais se voient au DIFF des listes ci-dessous.\n\n`
+out += `> Le stock cliqueté (\`ENTITY_ORPHAN_RATCHET\`) porte les MÊMES entrées, sous la forme\n`
+out += `> \`{ fichier, ref, occurrence }\` ; ce rapport en est la LECTURE, jamais la garde — un \`.md\`\n`
+out += `> généré ne rougit pas.\n\n`
 out += `| Catalogue | Entités | Orphelines | Taux |\n|---|---|---|---|\n`
 
 let totalEntities = 0

@@ -96,25 +96,51 @@ export const EXCLUDED_CATEGORY_FILES = {
   trappings: 'trappings.json',
 };
 
+/**
+ * Les ORPHELINES MESURÉES, en SITES `{ file, ref }` : `file` = le dataset où l'entité est déclarée
+ * (c'est lui que la porte de plage voit, et lui que l'auteur doit ouvrir), `ref` = l'id de l'entité.
+ * UN assemblage de la mesure pour ses consommateurs — la garde `src/data/entity-orphans.test.ts` et
+ * le régénérateur `scripts/data/regen-entity-orphan-stock.mts` : deux lectures divergentes de
+ * « orpheline » laisseraient l'une écrire ce que l'autre refuse.
+ * @param {string} dataDir @param {string} srcDir
+ * @returns {{ file: string, ref: string }[]} dans l'ordre des catégories puis des ids du dataset.
+ */
+export function orphelinesMesurees(dataDir, srcDir) {
+  const estConsommee = predicatDeConsommation(dataDir, srcDir);
+  const ids = loadCategoryIds(dataDir);
+  const sites = [];
+  for (const [cat, catIds] of Object.entries(ids)) {
+    for (const id of catIds) {
+      if (estConsommee(cat, id)) continue;
+      sites.push({ file: `src/data/${CATEGORY_FILES[cat]}`, ref: id });
+    }
+  }
+  return sites;
+}
+
+/**
+ * LE prédicat « cette entité est-elle consommée ? » — définition UNIQUE, les trois canaux réunis :
+ * MODE 1 (id cité en toutes lettres), MODE 2 (sélection par prédicat de champ) et les entités MÉTA.
+ * Le corpus et les consommateurs par prédicat sont scannés UNE fois, à la construction.
+ * Consommé par `orphelinesMesurees` (garde + régénérateur) ET par le rapport
+ * `scripts/docs/build-entity-orphans.mjs` : deux recopies du même test laisseraient le doc et le
+ * stock diverger sur ce qu'est une orpheline.
+ * @param {string} dataDir @param {string} srcDir
+ * @returns {(cat: string, id: string) => boolean}
+ */
+export function predicatDeConsommation(dataDir, srcDir) {
+  const corpus = buildConsumerCorpus(dataDir, srcDir);
+  const { consumed } = computeFieldPredicateConsumers(dataDir, srcDir);
+  return (cat, id) =>
+    isConsumed(corpus, id) || !!consumed.get(cat)?.has(id) || META_CATALOG_ENTRIES.has(`${cat}:${id}`);
+}
+
 /** `{ [category]: string[] }` — tous les ids de chaque catalogue de `files` (retenus par défaut). */
 export function loadCategoryIds(dataDir, files = CATEGORY_FILES) {
   const out = {};
   for (const [cat, file] of Object.entries(files)) {
     const arr = JSON.parse(readFileSync(join(dataDir, file), 'utf8'));
     out[cat] = arr.map((e) => e.id);
-  }
-  return out;
-}
-
-/** `{ [category]: Map<id, source.book|null> }` — le LIVRE de chaque entité, seul champ dont les
- *  contrats de FAMILLE du stock (`entityOrphanStock.mjs#ENTITY_ORPHAN_FAMILIES`) ont besoin pour
- *  décider à quelle famille une orpheline appartient. Lecture DIRECTE de la donnée : la famille est
- *  un prédicat sur `(catégorie, source.book)`, jamais une liste d'ids à tenir. */
-export function loadCategoryBooks(dataDir, files = CATEGORY_FILES) {
-  const out = {};
-  for (const [cat, file] of Object.entries(files)) {
-    const arr = JSON.parse(readFileSync(join(dataDir, file), 'utf8'));
-    out[cat] = new Map(arr.map((e) => [e.id, e.source?.book ?? null]));
   }
   return out;
 }

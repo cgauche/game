@@ -1,6 +1,7 @@
 // STOCK CLIQUETÉ des entités de catalogue SANS CONSOMMATEUR (« curée, jamais atteinte = dette ») —
-// consommé par `src/data/entity-orphans.test.ts`. Patron whitelist-en-lib du dépôt
-// (`tableConsumerStock.mjs`, `manualDocsStock.mjs`).
+// consommé par `src/data/entity-orphans.test.ts`, GÉNÉRÉ par
+// `npx tsx scripts/data/regen-entity-orphan-stock.mts` depuis la mesure de `entityConsumers.mjs`
+// (`orphelinesMesurees`) — la MÊME que celle du rapport `docs/orphelines-donnees.md`.
 //
 // Une entrée de `traits.json`/`talents.json`/`qualities.json`/`maneuvers.json`/`skills.json`/
 // `props.json`/`vehicles.json`/`creatures.json` (périmètre retenu, cf. `build-entity-orphans.mjs`) dont
@@ -12,94 +13,426 @@
 // ci-dessous, ni l'id ni le LABEL n'apparaissent ailleurs que dans leur propre déclaration (vérifié à
 // la main avant bootstrap, #entity-orphans).
 //
-// Bootstrap = état MESURÉ au moment de l'ajout de la garde (`node scripts/docs/build-entity-orphans.mjs`),
-// 19 entrées. Descendu à 17 (2026-07) : `qualities:laid` est couverte par MODE 2 (sélection par
-// prédicat de champ `type`/`subType`, résultat exploité PAR ID — `ui/InterludeScreen.tsx:52-53`) ;
-// `talents:talent-aleatoire` par `META_CATALOG_ENTRIES` (entrée MÉTA structurelle, jamais un Talent
-// possédable — même source que `src/data/obtainability-guard.test.ts`). `qualities:filet-barbele`/
-// `deroutante` restent DUES : `state/interludeFlow.ts:1069` (`falseQualities()`) les sélectionne par
-// champ mais ne les exploite QUE par LABEL (rumeurs de Particularité fausses, ADE II — jamais la
-// qualité elle-même) — MODE 2 les rejette (résultat non exploité par id). Descendu à 15 (2026-07-27) :
-// la grammaire MODE 2 étendue à la véracité de champ (`x.champ`)/sa négation (`!x.champ`, cf. en-tête
-// `entityConsumers.mjs`) fait sortir `vehicles:petite-litiere`/`grande-litiere` — `vehicles.filter((v)
-// => v.purchase && !v.ship).map((v) => v.id)` (`state/merchantFlow.ts:130`, `unitIdsOfKind`) est un
-// chemin d'achat réel au stock du Maquignon (`merchants.json` `unitKinds:['vehicule-terrestre']`).
+// FORME DES ENTRÉES — `{ fichier, ref, occurrence }`, la forme UNIQUE de tout stock nominatif du
+// dépôt (`cleDeSite`, `scripts/guards/lib/stock.mjs`) : `fichier` = le dataset où l'entité est
+// DÉCLARÉE (constant par catégorie, et c'est juste — c'est ce fichier que la porte de plage voit, et
+// celui que l'auteur ouvre pour câbler), `ref` = l'id de l'entité. Une orpheline neuve est une ligne
+// de plus qui NOMME son dataset ; une clé nue (`'traits:marque-de-tzeentch'`) est INVISIBLE à
+// `croissanceDesStocks`, et un append n'y coûte rien. Toute prose posée ENTRE les entrées est mangée
+// à la régénération — les dispositions vivent dans cet en-tête.
 //
-// Clé = `catégorie:id` (les ids peuvent collisionner entre catégories, cf. `id-collisions.test.ts`).
+// UN SEUL CONTRAT : l'ensemble EXACT, dans les deux sens (`ecartDuVolet` — une orpheline hors stock
+// échoue, une entrée que plus aucune orpheline ne porte échoue). Aucun PLAFOND, et aucune
+// ligne-FAMILLE `(catégorie, livre) + compte` : un compte de famille laisse passer la SUBSTITUTION
+// (une orpheline câblée, une autre créée — compte inchangé, garde verte), et surtout il est
+// INVISIBLE à la porte de plage, qui ne lit pas les docs et ne voit qu'une entrée qui nomme un
+// fichier. Le rapport `docs/orphelines-donnees.md` reste nominatif, mais un `.md` généré ne rougit
+// pas : un doc n'est pas une garde. Une famille compte des ENTITÉS nommées, qui se câblent une à
+// une : la dette est PAR ENTITÉ, et elle s'écrit entité par entité.
+//
 // Une entrée se solde en CÂBLANT l'entité (citation dans une donnée qui l'utilise réellement, ou
-// dans le code de prod) puis en retirant sa ligne ici — jamais en la laissant traîner.
+// dans le code de prod) puis en relançant le régénérateur — jamais en retirant la ligne à la main.
 //
-// DEUX CONTRATS depuis l'entrée de `creatures` au périmètre (#1553 L3) :
-//  — NOMINATIF (`ENTITY_ORPHAN_RATCHET`, ci-dessous) : ensemble EXACT, dans les deux sens — une
-//    orpheline hors stock échoue, une ligne de stock qui n'est plus orpheline échoue.
-//  — PAR FAMILLE (`ENTITY_ORPHAN_FAMILIES`) : un PRÉDICAT `(catégorie, source.book)` + un COMPTE
-//    plafond décroissant. Réservé aux masses où le manque n'est PAS entité par entité mais
-//    LIVRE par LIVRE : un supplement entier curé dont aucune scène n'existe encore. 333 des 351
-//    orphelines de `creatures` sont dans ce cas (2026-09) ; les énumérer une à une ferait 333 lignes
-//    de bruit qui camoufleraient les 18 vraies dettes nominatives.
-//
-// FAIL-OPEN ASSUMÉ du contrat de famille, et son ATTÉNUATION : un plafond à 244 laisse passer la
-// SUBSTITUTION (une orpheline câblée, une autre créée — compte inchangé, garde verte). Elle n'est pas
-// invisible pour autant : `docs/orphelines-donnees.md` reste NOMINATIF entrée par entrée sur TOUT le
-// périmètre (familles comprises) et il est gardé à jour par `--check` — toute substitution apparaît
-// au DIFF du doc généré, dans le même commit. C'est le doc, pas le plafond, qui porte la nominativité.
+// DISPOSITIONS (ce que chaque groupe attend pour se solder ; la ligne, elle, est générée) :
+//   — `traits:marque-de-tzeentch`, `talents:benediction-de-tzeentch`/`disciple-du-changement`/
+//     `double-vie`/`empreint-de-la-magie` : bloqué par #676 — porteur attendu = carrière « Magus du
+//     Culte de Tzeentch », absente de `careers.json` (EDOC 9).
+//   — `traits:absorption`, `traits:contagieux` : bloqué par #921 (cause A) — mécanique `effects`
+//     COMPLÈTE (et testée, `src/state/contagieux.test.ts`), aucune créature EDO ne porte le Trait.
+//   — `traits:amorphe`, `traits:decerebre`, `traits:voleur-de-chair` : bloqué par #921 (cause B) —
+//     prose seule, vocabulaire moteur absent (réduction de Blessures par type de dégâts et immunité
+//     aux Critiques ; « joue toujours en dernier » et substitution BF/BFM ; possession de cadavre
+//     avec prérequis Trait Démoniaque).
+//   — `traits:aura-de-mort` : bloqué par #920 — vocabulaire d'aura sans paramètre de domaine de
+//     sort, et porteur « Colosse Necrofex » absent de `creatures.json`.
+//   — `talents:sang-neuf` : bloqué par #744 — lignage éonir toriour absent de `species.json`.
+//   — `qualities:filet-barbele`, `qualities:deroutante` : qualités d'ARME (`subType: 'arme'`) ;
+//     aucun trapping ne les porte, cf. `assommante`/`defensive` sur les armes de base.
+//     `state/interludeFlow.ts` (`falseQualities()`) les sélectionne par champ mais ne les exploite
+//     que par LABEL (rumeurs de Particularité fausses, ADE II) — MODE 2 les rejette.
+//   — `skills:hypnotisme` : bloqué par #915 — le RAW ouvre 9 Carrières sans fixer de niveau, et
+//     `CareerLevelData` n'a aucun champ pour une Compétence optionnelle de supplément.
+//   — `creatures` HORS bestiaires de livre : 7 PNJ `named` (`pol-dankels`, `isrogdal-lempresse`,
+//     `ugrik-legaree`, `nazzaalta-affabule`, `artur-piedmarteau`, `p-tarix-celui-qui-ecrit`,
+//     `xirat-p-celui-qui-lit`) — un personnage de scénario n'a de chemin que par la scène qui le
+//     pose ; et 11 entrées de bestiaire isolé (`elfe-haut-et-sylvain` profil de peuple absent de
+//     `speciesRace.json` ; `hyppogriffe`/`demigriffon-adulte` absentes de `montures.json` donc
+//     jamais montables ; `chauve-souris-vampire-varghulf` absente de `groups.json` ;
+//     `brochet-du-stir-fluvial` doublon de libellé de `brochet-du-stir` (seul l'exemplaire ZI a un
+//     chemin) ; `sangsue-geante`/`sangsue-des-arbres`/`naiade` du « Bestiaire fluvial », qu'aucune
+//     rencontre fluviale ne tire ; `familier-de-combat`/`familier-de-pouvoir`/`familier-de-sorts`
+//     sans `appearance` et jamais citées par un Talent ou un sort).
+//   — `creatures` des QUATRE bestiaires de livre entièrement curés, qu'aucune scène ne convoque :
+//     `frenchy-bzh` (bloqué par #1636), `middenheim` (#1637), `zoo-imperial` (#1638), et la faune
+//     `mer-des-griffes` hors des événements de mer (#1639). Elles sont ÉNUMÉRÉES comme les autres :
+//     une dette de plusieurs centaines qui se cache derrière quatre lignes reste une dette de
+//     plusieurs centaines, et une créature NEUVE de ces livres serait orpheline gratuitement et
+//     invisiblement sous un prédicat de livre.
 
-/** Familles d'orphelines PAR LIVRE — prédicat `(category, book)` + plafond DÉCROISSANT. Une famille
- *  VIDÉE (compte 0) voit sa LIGNE SUPPRIMÉE, jamais laissée à zéro (garde : `entity-orphans.test.ts`).
- *  `note` = la disposition, avec le COMPTE, 3 ids d'exemple et le ticket de câblage qui la bloque.
- * @type {ReadonlyArray<{ category: string, book: string, max: number, note: string }>} */
-export const ENTITY_ORPHAN_FAMILIES = [
-  // bloqué par #1636 — bestiaire du supplément maison `frenchy-bzh` (gardes de ville,
-  // gardes de village, milices…), entièrement curé : aucune scène ni rencontre ne le convoque.
-  // Ex. `jeune-recrue-du-guet`, `homme-du-guet`, `sergent-du-guet`.
-  { category: 'creatures', book: 'frenchy-bzh', max: 243, note: 'bestiaire frenchy-bzh curé, aucune scène porteuse — bloqué par #1636' },
-  // bloqué par #1637 — bestiaire de Middenheim, curé sans scène middenheimoise.
-  // Ex. `spectre-middenheim`, `loup-blanc`, `babrakkos`.
-  { category: 'creatures', book: 'middenheim', max: 37, note: 'bestiaire Middenheim curé, aucune scène porteuse — bloqué par #1637' },
-  // bloqué par #1638 — Zoo Impérial : bestiaire de référence curé, sans rencontre ni scène.
-  // Ex. `l-ombre-du-fleuve`, `arachnarok`, `gobelin-des-forets`.
-  { category: 'creatures', book: 'zoo-imperial', max: 37, note: 'bestiaire Zoo Impérial curé, aucune scène porteuse — bloqué par #1638' },
-  // bloqué par #1639 — faune marine MdG : le voyage en mer existe (`sea-events.json` en
-  // cite 4), ces 15-là n'y sont pas. Ex. `baudroye`, `crabe-boxeur`, `elementaire-de-mer`.
-  { category: 'creatures', book: 'mer-des-griffes', max: 15, note: 'faune MdG curée hors des événements de mer — bloqué par #1639' },
+export const ENTITY_ORPHAN_RATCHET = [
+  { fichier: 'src/data/creatures.json', ref: 'affreuse-vieille-sorciere-troll-des-marais', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'agna-lottrisdottir', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'alfric-demi-nez-brisenclume', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'amphisbaena', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'ancien', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'andrea-bruhn', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'apprenti-technomage', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'arachnarok', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'araignee-geante-adulte', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'araignee-geante-impitoyable', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'archer-orc', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'architechnomage', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'artisan-services-ruraux-frequents-usuels', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'artisan-services-urbains-frequents-usuels', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'artur-piedmarteau', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'assassin', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'athlete', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'avocat', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'babrakkos', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'batonnier', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'baudroye', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'beate-moser', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'bestigor-chef-de-guerre', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'bestigor-chef-de-harde', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'bestigor-combattant', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'bouc-maudit', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'bourgmestre', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'brigitte-schleigel', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'brise-krag', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'brochet-du-stir-fluvial', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'buveur-de-sang-de-khorne', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'buveur-de-sang-exalte-de-khorne', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'caledair-la-faux-de-feu', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'capitaine-du-guet', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'capitaine-patrouilleurs-fluviaux', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'capitaine-patrouilleurs-ruraux', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chamane-gobelin-des-forets', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'charognard', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chasseresse-des-ombres', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chauve-souris-vampire-varghulf', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chef-contrebandier', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chef-d-escadron', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chef-de-bande', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chef-de-clan', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chef-de-clan-gobelin', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chef-de-clan-orc', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chef-de-guerre-gobelin', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chef-de-guerre-orc', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chef-de-la-garde-du-village', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chef-de-meute', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chef-de-meute-du-clan-moulder', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chef-de-portee', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chef-de-section', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chef-veteran-de-la-garde-du-village', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chevalier-des-tombes', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chevalier-mort-vivant-revenant', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chien-de-chasse', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chien-de-compagnie-chiens', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chien-de-compagnie-ii-a-animaux-domestiques', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chien-de-garde', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'chien-de-ratier', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'citadin', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'cobaye-mutile', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'comte-vampire', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'coureur-d-egouts', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'coureur-nocturne', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'coursier', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'crabe-boxeur', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'cultiste-de-la-lune-imprevisible', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'daemonette-de-slaanesh', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'demigriffon-adulte', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'destrier-squelettique', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'detective', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'doktor', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'dragon-barbele', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'dragon-de-la-foret', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'druide-de-la-foi-antique', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'eclaireur-gobelin', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'eclaireur-orc', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'elementaire-de-mer', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'elfe-haut-et-sylvain', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'emmille-munzstatter', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'enqueteur-chevronne', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'erudit-de-renom', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'esclave', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'esclave-faible', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'escroc', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'esprit-faible', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'experience-unique-du-clan-moulder', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'familier-de-combat', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'familier-de-pouvoir', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'familier-de-sorts', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'fanatique-gobelin', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'faussaire', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'fongus-de-gork', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'fongus-de-mork', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'fourgue', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'frere-bengt', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'furie-exaltee-du-chaos', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'garde-chiourme', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'gardien-des-secrets-de-slaanesh', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'gardien-des-secrets-exalte-de-slaanesh', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'gargantuan', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'gerdon-salzwed', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'gnawretch-skrray', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'gobelin-de-la-nuit', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'gobelin-des-forets', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'gor-chasseur', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'gor-chef-de-guerre', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'gor-chef-de-harde', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'gor-combattant', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'gor-eclaireur', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grain-d-achillee', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grand-immonde-de-nurgle', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grand-immonde-exalte-de-nurgle', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grand-incendiaire-de-tzeentch', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grand-inquisiteur', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grand-maitre-des-hybridations', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grand-moine-de-la-peste', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grand-sanglier-ombrageux', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grand-shaman-gobelin', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grand-shaman-orc', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grand-squig', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grand-taurus', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grand-troll-sanguinaire', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grand-vizir-bhar', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'grande-pretresse-de-rhya', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'griffon-zoo-imperial', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'guerrier-du-chaos-chef-de-bande', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'guerrier-du-chaos-chef-de-guerre', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'guerrier-gobelin', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'guerrier-orc', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'gueule-d-effroi', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'guide-racoleur', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'hasso-schroeter', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'haut-druide-de-la-foi-antique', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'haut-juge', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'haut-pretre-rodeur-de-taal', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'helmut-beckenbauer', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'heraut-de-khorne', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'heraut-de-nurgle', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'heraut-de-slaanesh', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'heraut-de-tzeentch', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'heraut-exalte-de-khorne', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'heraut-exalte-de-nurgle', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'heraut-exalte-de-slaanesh', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'heraut-exalte-de-tzeentch', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'homme-du-guet', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'horde-de-zombies', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'horreur-des-profondeurs', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'horreur-du-clan-moulder', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'horreur-rose-de-tzeentch', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'hugo-vallonvert', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'hydre-d-os', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'hyppogriffe', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'incendiaire-de-tzeentch', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'inquisiteur', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'isrogdal-lempresse', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jacopo-schmidt', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jaego-roth', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jetsam-la-gelee-intelligente', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-araignee-geante', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-brigand', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-citadin-citadins', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-citadin-i-b-habitants-des-villes', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-contrebandier', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-contremaitre', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-delinquant', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-gobelin', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-gor', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-goule', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-interrogateur', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-loup', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-moine-de-la-peste', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-naufrageur', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-orc', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-ours', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-rat-geant', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-recrue-de-la-garde-du-village', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-recrue-du-guet', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-recrue-patrouilleurs-fluviaux', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-recrue-patrouilleurs-ruraux', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-recrue-soldats-mercenaires', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-recrue-vermines-de-choc', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-sanglier', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-skaven', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-squig', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-troll', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-ungor', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'jeune-villageois', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'johen', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'juge', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'kanker-flett', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'kapo', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'kat-sperber', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'kharibde', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'l-abominable-halagrundsor', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'l-ombre-du-fleuve', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'la-bete-de-l-oblast', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'le-fantasma', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'le-vieil-otto', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'le-vieux-dos-de-pus', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'leviathan-noir', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'leviathan-phare', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'long-drong-silver', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'loup-adulte', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'loup-blanc', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'magister-mortis', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'maistre-apothicaire', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'maistre-artisan-services-ruraux-frequents-usuels', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'maistre-artisan-services-urbains-frequents-usuels', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'maistre-faussaire', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'maistre-herboriste', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'maistre-marchand-services-ruraux-frequents-usuels', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'maistre-marchand-services-urbains-frequents-usuels', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'maitre-assassin', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'maitre-des-egouts', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'maitre-des-hybridation', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'maitre-des-taillis', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'maitre-moulder-skree', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'mangeuse-d-hommes-de-la-drakwald-araignee-geante', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'maraudeur-du-chaos-chef-de-bande', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'maraudeur-du-chaos-chef-de-guerre', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'marchand-services-ruraux-frequents-usuels', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'marchand-services-urbains-frequents-usuels', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'marta-gerbenshreiber', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'moine-d-ulric', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'moine-de-la-peste', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'moine-de-sigmar', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'moine-de-taal', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'moine-novice-de-taal', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'monture-decharne', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'moritz-valgeir', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'naiade', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'nazzaalta-affabule', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'necromancien', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'necromancien-puissant', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'necrophage', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'notable', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'nuee-d-araignees-infantiles', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'nuee-de-jeunes-squigs', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'nuee-de-marcassins', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'nuee-de-nurglings', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'nuee-de-rats', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'nuee-de-snotlings', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'nuee-de-squigs-des-cavernes', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'ombre-vengeresse', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'ours-2', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'ours-adulte', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'p-tarix-celui-qui-ecrit', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'patre-de-la-nuit', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'patrouilleur-rural', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'pegase-noir', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'pilleur-de-cryptes', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'plongeur-de-la-mort', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'pol-dankels', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'porte-peste-de-nurgle', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'poulain', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'predicateur-de-la-peste', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'pretre-d-ulric', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'pretre-rodeur-de-taal', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'pretre-voleur-de-ranald-i-c-criminalite-urbaine', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'pretresse-de-rhya', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'pretresse-de-shallya', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'pretresse-de-verena', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'prophete-gris-ancien', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'protagoniste', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'prototype-du-clan-skryre', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'quadrilleur-gobelin', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'racketteur', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'racoleur', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'rat-geant-2', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'rat-ogre-augmente', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'rat-ogre-briseur-d-os', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'rat-ogre-fonctionnel', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'raukos', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'razorgor', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'reine-des-cryptes', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'religieuse-de-rhya', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'religieuse-de-shallya', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'religieuse-de-verena', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'religieuse-novice-de-rhya', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'ritta', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'riverain', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'riverain-respecte', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'roi-du-trafic', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sanglier-adulte', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sanglier-feroce', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sangsue-cameleon', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sangsue-des-abysses', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sangsue-des-arbres', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sangsue-geante', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'seigneur-du-changement-de-tzeentch', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'seigneur-du-changement-exalte-de-tzeentch', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'seigneur-pirate', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'seigneur-vampire', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sergent-du-guet', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sergent-patrouilleurs-fluviaux', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sergent-patrouilleurs-ruraux', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'shaman-gobelin', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'shaman-gor', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'shaman-orc', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'soldat-mercenaire-aguerri', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sommier', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sorcier-du-chaos', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sorcier-du-chaos-effroyable', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sorcier-du-chaos-terrifiant', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sorciere-troll-des-marais', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sorciere-troll-des-rivieres', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'sous-officier', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'spectre-middenheim', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'squelette-vigoureux', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'squig-monstrueux', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'stefan-hochen', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'stylet', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'syrene-bleue', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'technomage', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'technomage-du-clan-skryre', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'technomage-experimente', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'theresia-kleist', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'traqueur-impitoyable', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'traudl-bauer', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'troll-des-rivieres', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'troll-veteran', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'tueur-a-gages', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'ugrik-legaree', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'ungor-adulte', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'venerable', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'ver-des-marais', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'vermine-de-choc-2', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'vhargulf', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'vieil-ours-mal-leche', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'vieille-sorciere-troll-des-marais', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'volee-de-noctecorbes', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'voleur-aguerri', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'vouivre-zoo-imperial', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'voyou', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'vrisk-gratte-le-fer', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'waldtraud-blass', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'walpurga-wurklich', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'wereburga-krotpreffer', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'wolfgard-hohmann', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'wulfric-tore', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'wulfrik', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'wulfrum-viert', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'wyrm-des-mers', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'xirat-p-celui-qui-lit', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'yanni-weber', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'zombie-faible', occurrence: 1 },
+  { fichier: 'src/data/creatures.json', ref: 'zombie-gardien', occurrence: 1 },
+  { fichier: 'src/data/qualities.json', ref: 'deroutante', occurrence: 1 },
+  { fichier: 'src/data/qualities.json', ref: 'filet-barbele', occurrence: 1 },
+  { fichier: 'src/data/skills.json', ref: 'hypnotisme', occurrence: 1 },
+  { fichier: 'src/data/talents.json', ref: 'benediction-de-tzeentch', occurrence: 1 },
+  { fichier: 'src/data/talents.json', ref: 'disciple-du-changement', occurrence: 1 },
+  { fichier: 'src/data/talents.json', ref: 'double-vie', occurrence: 1 },
+  { fichier: 'src/data/talents.json', ref: 'empreint-de-la-magie', occurrence: 1 },
+  { fichier: 'src/data/talents.json', ref: 'sang-neuf', occurrence: 1 },
+  { fichier: 'src/data/traits.json', ref: 'absorption', occurrence: 1 },
+  { fichier: 'src/data/traits.json', ref: 'amorphe', occurrence: 1 },
+  { fichier: 'src/data/traits.json', ref: 'aura-de-mort', occurrence: 1 },
+  { fichier: 'src/data/traits.json', ref: 'contagieux', occurrence: 1 },
+  { fichier: 'src/data/traits.json', ref: 'decerebre', occurrence: 1 },
+  { fichier: 'src/data/traits.json', ref: 'marque-de-tzeentch', occurrence: 1 },
+  { fichier: 'src/data/traits.json', ref: 'voleur-de-chair', occurrence: 1 },
 ]
-
-/** @type {ReadonlySet<string>} */
-export const ENTITY_ORPHAN_RATCHET = new Set([
-  'traits:marque-de-tzeentch', // bloqué par #676 : porteur attendu = carrière « Magus du Culte de Tzeentch », absente de careers.json (EDOC 9)
-  'traits:absorption', // bloqué par #921 (cause A) : mécanique `effects` COMPLÈTE, aucune créature EDO ne porte le Trait
-  'traits:amorphe', // bloqué par #921 (cause B) : prose seule, vocabulaire moteur absent (réduction de Blessures par type de dégâts, immunité aux Critiques)
-  'traits:contagieux', // bloqué par #921 (cause A) : mécanique `effects` COMPLÈTE et testée (`src/state/contagieux.test.ts`), aucune créature EDO ne porte le Trait
-  'traits:decerebre', // bloqué par #921 (cause B) : prose seule, vocabulaire moteur absent (« joue toujours en dernier », substitution BF/BFM)
-  'traits:voleur-de-chair', // bloqué par #921 (cause B) : prose seule, vocabulaire moteur absent (possession de cadavre, prérequis Trait Démoniaque)
-  'traits:aura-de-mort', // bloqué par #920 : vocabulaire d'aura sans paramètre de domaine de sort + porteur « Colosse Necrofex » absent de creatures.json
-  'talents:benediction-de-tzeentch', // bloqué par #676 : porteur attendu = carrière « Magus du Culte de Tzeentch », absente de careers.json (EDOC 9)
-  'talents:disciple-du-changement', // bloqué par #676 : porteur attendu = carrière « Magus du Culte de Tzeentch », absente de careers.json (EDOC 9)
-  'talents:double-vie', // bloqué par #676 : porteur attendu = carrière « Magus du Culte de Tzeentch », absente de careers.json (EDOC 9)
-  'talents:empreint-de-la-magie', // bloqué par #676 : porteur attendu = carrière « Magus du Culte de Tzeentch », absente de careers.json (EDOC 9)
-  'talents:sang-neuf', // bloqué par #744 : lignage éonir toriour absent de species.json (`grep -i eonir src/data/species.json` → 0 match)
-  'qualities:filet-barbele', // Filet barbelé — qualité d'ARME (subType 'arme') ; aucun trapping ne la porte, cf. `assommante`/`defensive` sur les armes de base
-  'qualities:deroutante', // Déroutante — qualité d'ARME (subType 'arme') ; aucun trapping ne la porte, cf. `assommante`/`defensive` sur les armes de base
-  'skills:hypnotisme', // bloqué par #915 : le RAW ouvre 9 Carrières sans fixer de niveau ; `CareerLevelData` n'a aucun champ pour une Compétence optionnelle de supplément
-  // --- `creatures`, entrées au périmètre #1553 L3 (2026-09) : les 18 orphelines HORS des 4 familles
-  // par livre ci-dessus. Sept d'entre elles sont des PNJ `named: true` (un personnage de scénario
-  // n'a de chemin que par la scène qui le pose) ; les onze autres sont du bestiaire isolé.
-  'creatures:elfe-haut-et-sylvain', // LDB p.311 — profil de peuple (`folder: 'Les peuples du Reikland'`) ; `speciesRace.json` cite 16 créatures, pas celle-ci
-  'creatures:pol-dankels', // LDB p.313 — PNJ `named` (`tenue: 'sorcier'`), aucune scène ne le pose
-  'creatures:hyppogriffe', // LDB p.321 — bête monstrueuse, `appearance.species: 'hippogriffe'` ; ni `montures.json` (11 créatures citées) ni une rencontre ne la convoque
-  'creatures:chauve-souris-vampire-varghulf', // LDB p.327 — mort-vivant à `grantGroups`, aucune scène ni `groups.json` (8 créatures citées) ne l'appelle
-  'creatures:demigriffon-adulte', // AA p.109 — `folder: 'Montures de guerre'` ; absente de `montures.json`, donc jamais montable
-  'creatures:brochet-du-stir-fluvial', // MSR-C p.88 — HOMONYME de `creatures:brochet-du-stir` (ZI p.36, MÊME `label`, consommée et rigguée `gameIso/rig/creatures/defs/BrochetDuStir.ts`) : un doublon de libellé dont seul l'exemplaire ZI a un chemin
-  'creatures:sangsue-geante', // MSR-C p.86 — `folder: 'Bestiaire fluvial'` ; le voyage fluvial ne tire aucune rencontre de ce dossier
-  'creatures:sangsue-des-arbres', // MSR-C p.86 — idem `sangsue-geante` (même dossier, même absence de tirage)
-  'creatures:naiade', // MSR-C p.87 — `folder: 'Bestiaire fluvial'`, aucune rencontre fluviale ne la cite
-  'creatures:isrogdal-lempresse', // ADE II p.14 — PNJ `named` du dossier « Ogres (ADE II) », aucune scène ne le pose
-  'creatures:ugrik-legaree', // ADE II p.14 — PNJ `named` du dossier « Ogres (ADE II) », aucune scène ne le pose
-  'creatures:nazzaalta-affabule', // ADE II p.26 — PNJ `named` du dossier « Ogres (ADE II) », aucune scène ne le pose
-  'creatures:artur-piedmarteau', // ADE II p.26 — PNJ `named` du dossier « Ogres (ADE II) », aucune scène ne le pose
-  'creatures:familier-de-combat', // VDM p.181 — dossier « Créatures magiques » ; SANS `appearance` (aucun rig), et aucun Talent/sort de `spells.json`/`talents.json` ne cite son id
-  'creatures:familier-de-pouvoir', // VDM p.182 — idem `familier-de-combat` (sans `appearance`, jamais citée)
-  'creatures:familier-de-sorts', // VDM p.182 — idem `familier-de-combat` (sans `appearance`, jamais citée)
-  'creatures:p-tarix-celui-qui-ecrit', // VDM p.212 — PNJ `named` du dossier « Némésis magiques », aucune scène ne le pose
-  'creatures:xirat-p-celui-qui-lit', // VDM p.213 — PNJ `named` du dossier « Némésis magiques », aucune scène ne le pose
-])

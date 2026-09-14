@@ -23,9 +23,9 @@
  * `scripts/hooks/stocks-nominatifs.test.mjs`).
  */
 import { describe, it, expect } from 'vitest';
-import { fichierDeTenue, refusDeCroissance, sitesPaletteLiteral } from '../../../../../scripts/guards/lib/paletteLiteralAudit';
+import { MOTIF_PALETTE_LITERAL, fichierDeTenue, sitesPaletteLiteral } from '../../../../../scripts/guards/lib/paletteLiteralAudit';
 import { PALETTE_LITERAL_RATCHET } from '../../../../../scripts/guards/lib/paletteLiteralStock.mjs';
-import { ecartDuVolet, sitesEnEntrees } from '../../../../../scripts/guards/lib/stock.mjs';
+import { ecartDuVolet, refusDeCroissance, sitesEnEntrees } from '../../../../../scripts/guards/lib/stock.mjs';
 import type { TenueDef } from './types';
 import { TENUE_DEFS } from './_registry.generated';
 
@@ -166,6 +166,7 @@ describe("l'autre sens du cliquet : une entrée que plus aucun site ne porte est
  */
 describe('régénérateur : un échange à taille constante est REFUSÉ, en nommant le site (#1727)', () => {
   const mesurees = () => sitesEnEntrees(sitesPaletteLiteral());
+  const REFUS = { nom: 'PALETTE_LITERAL_RATCHET', motif: MOTIF_PALETTE_LITERAL };
 
   it("une entrée retirée + une entrée fantôme (même longueur) : refus qui NOMME le site découvert", () => {
     const [decouvert, ...reste] = PALETTE_LITERAL_RATCHET;
@@ -175,12 +176,12 @@ describe('régénérateur : un échange à taille constante est REFUSÉ, en nomm
     }];
     expect(echange, 'la forge doit rester à TAILLE CONSTANTE, sinon elle ne prouve rien')
       .toHaveLength(PALETTE_LITERAL_RATCHET.length);
-    const refus = refusDeCroissance(mesurees(), echange);
+    const refus = refusDeCroissance(mesurees(), echange, REFUS);
     expect(refus, 'un site mesuré hors du stock doit refuser même à taille constante').not.toBeNull();
     expect(refus).toContain(cle(decouvert.fichier, decouvert.ref, decouvert.occurrence));
   });
 
   it('le stock en place couvre la mesure : aucun refus, le régénérateur peut écrire', () => {
-    expect(refusDeCroissance(mesurees(), PALETTE_LITERAL_RATCHET)).toBeNull();
+    expect(refusDeCroissance(mesurees(), PALETTE_LITERAL_RATCHET, REFUS)).toBeNull();
   });
 });

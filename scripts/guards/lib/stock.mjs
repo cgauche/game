@@ -131,6 +131,31 @@ export function ecartDuVolet({ sites, stock, famille, ou }) {
 }
 
 /**
+ * REFUS d'un RÉGÉNÉRATEUR de stock : la phrase à afficher quand la MESURE porte un site que le stock
+ * en place ne couvre pas, `null` quand elle n'en porte aucun. C'est la BARRIÈRE
+ * DÉCROISSANT-SEULEMENT, en UNE lecture pour les quatre régénérateurs (`scripts/rig/regen-*-stock.mts`) :
+ * deux lectures divergentes de « ce qui est neuf » laisseraient l'une écrire ce que l'autre refuse.
+ * Le critère est l'ÉCART, jamais un TOTAL : à taille constante — une entrée soldée pendant qu'un site
+ * neuf apparaît — les deux longueurs restent égales et le régénérateur entérinerait le site neuf en
+ * silence, stock réécrit, garde verte (mesuré le 2026-09-14 sur le corpus réel :
+ * `src/gameIso/rig/parts/tenues/defs/Apothicaire.ts :: apothicaire:torse:front :: 1`).
+ * Ce n'est PAS un verdict au sens de l'en-tête : aucun `expect`, aucun `throw`, aucun exit — la
+ * phrase est rendue, l'appelant décide ce qu'il en fait, comme des lignes de `ecartDuVolet`.
+ * @param {Iterable<*>} mesurees ce que la mesure porte AUJOURD'HUI
+ * @param {Iterable<*>} stock le stock EN PLACE
+ * @param {{ cle?: (entree: *) => string, nom: string, motif: string }} p `cle` défaut `cleDeSite`
+ *   (un stock à clé nue fournit la sienne) ; `nom` = la collection nommée dans la phrase ; `motif` =
+ *   la dernière phrase, propre au volet — ce que le lecteur doit faire du site neuf.
+ * @returns {string | null}
+ */
+export function refusDeCroissance(mesurees, stock, { cle = cleDeSite, nom, motif }) {
+  const { neuves, taille } = ecartsDeStock({ observe: mesurees, stock, cle });
+  if (neuves.length === 0) return null;
+  return `REFUS : ${nom} porte ${neuves.length} site(s) MESURÉ(s) hors du stock en place (${taille} entrée(s)).\n`
+    + `Cet outil ne peut qu'écrire un stock PLUS PETIT :\n  ${[...neuves].sort().join('\n  ')}\n\n${motif}`;
+}
+
+/**
  * Champs d'entrée que la CLÉ n'observe pas : les muter laisse le jeu de clés IDENTIQUE, donc la
  * garde verte quoi qu'on écrive dans ces champs. Un stock VIDE n'offre aucune entrée à muter et
  * rend `[]` — mesurer la vacuité appartient à l'appelant.

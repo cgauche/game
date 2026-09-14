@@ -39,6 +39,17 @@ export function ecartDuVolet(p: {
   ou?: string;
 }): EcartsDeStock;
 
+export function refusDeCroissance<M, S>(
+  mesurees: Iterable<M>,
+  stock: Iterable<S>,
+  p: { cle: (entree: M | S) => string; nom: string; motif: string },
+): string | null;
+export function refusDeCroissance(
+  mesurees: Iterable<EntreeNominative>,
+  stock: Iterable<Partial<EntreeNominative>>,
+  p: { cle?: (entree: EntreeNominative) => string; nom: string; motif: string },
+): string | null;
+
 export function champsAveugles<E extends Record<string, unknown>>(
   stock: Iterable<E>,
   cle: (entree: E) => string,

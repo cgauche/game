@@ -7,7 +7,7 @@
 // sont tenus par `src/stock-primitive.test.ts` (vitest).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { cleDeSite, ecartDuVolet, sitesEnEntrees } from './stock.mjs'
+import { cleDeSite, ecartDuVolet, refusDeCroissance, sitesEnEntrees } from './stock.mjs'
 
 test('sitesEnEntrees : deux sites de la MÊME réf dans le MÊME fichier se distinguent par leur OCCURRENCE', () => {
   const entrees = sitesEnEntrees([
@@ -82,6 +82,42 @@ test('écart : une entrée périmée qui ne NOMME rien est citée en JSON, jamai
   assert.match(perimees[0], /entrée SOLDÉE/)
   const nommee = ecartDuVolet({ sites: [], stock: [{ fichier: 'src/a.ts', ref: 'LDB 6 l.2', occurrence: 1 }], ou: 'x-stock.json' })
   assert.match(nommee.perimees[0], /^ :: src\/a\.ts :: LDB 6 l\.2 :: 1 —/, 'une entrée qui nomme garde sa CLÉ')
+})
+
+// BARRIÈRE DÉCROISSANT-SEULEMENT des régénérateurs. La fixture est SYNTHÉTIQUE : le contrat doit
+// survivre au solde du dernier stock réel du dépôt. Le cas qui compte est l'ÉCHANGE À TAILLE
+// CONSTANTE — une entrée du stock qui ne couvre plus rien pendant qu'un site mesuré se découvre :
+// les deux longueurs restent égales, et un refus qui compare des nombres écrirait le stock.
+test('refusDeCroissance : un ÉCHANGE à taille CONSTANTE est refusé, et le refus NOMME le site découvert', () => {
+  const mesurees = sitesEnEntrees([{ file: 'src/a.ts', ref: 'r1' }, { file: 'src/b.ts', ref: 'r2' }])
+  const echange = [
+    { fichier: 'src/a.ts', ref: 'r1', occurrence: 1 },
+    { fichier: 'src/disparu.ts', ref: 'r9', occurrence: 1 },
+  ]
+  assert.equal(echange.length, mesurees.length, 'la fixture doit rester à taille constante')
+  const refus = refusDeCroissance(mesurees, echange, { nom: 'X_RATCHET', motif: 'Ça se corrige, ça ne s’entérine pas ici.' })
+  assert.ok(refus, 'un site mesuré hors du stock refuse même à taille constante')
+  assert.match(refus, /^REFUS : X_RATCHET porte 1 site\(s\) MESURÉ\(s\) hors du stock en place \(2 entrée\(s\)\)\./)
+  assert.match(refus, / :: src\/b\.ts :: r2 :: 1/)
+  assert.match(refus, /Ça se corrige, ça ne s’entérine pas ici\.$/)
+})
+
+test('refusDeCroissance : un stock PLUS GRAND que la mesure ne refuse rien — le solde est le geste servi', () => {
+  const mesurees = sitesEnEntrees([{ file: 'src/a.ts', ref: 'r1' }])
+  const plusGrand = [
+    { fichier: 'src/a.ts', ref: 'r1', occurrence: 1 },
+    { fichier: 'src/a.ts', ref: 'r1', occurrence: 2 },
+    { fichier: 'src/c.ts', ref: 'r3', occurrence: 1 },
+  ]
+  assert.equal(refusDeCroissance(mesurees, plusGrand, { nom: 'X_RATCHET', motif: 'm' }), null)
+})
+
+// La CLÉ est un paramètre : un stock à clé NUE (chemins, ids) passe la sienne et la barrière est la
+// même — une seule lecture de « croître » pour tous les régénérateurs du dépôt.
+test('refusDeCroissance : une clé NUE fournie par l’appelant sert la même barrière', () => {
+  const p = { cle: (k) => k, nom: 'Y_RATCHET', motif: 'm' }
+  assert.equal(refusDeCroissance(['a', 'b'], ['a', 'b', 'c'], p), null)
+  assert.match(refusDeCroissance(['a', 'z'], ['a', 'b'], p), /\bz\b/)
 })
 
 test('écart : un stock qui décrit EXACTEMENT les sites observés ne dit rien', () => {

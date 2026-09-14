@@ -9,7 +9,13 @@
 // `if (ov.view && ov.view !== view) continue` (`composeRig.tsx`) émet un overlay SANS `view` à
 // l'identique dans les trois vues. Aucun cliquet ne les mesurait.
 //
-// TROIS dimensions, clé `<famille>:<clé>:<vue>` (`monstre:<slot>:<clé>:<vue>` / `element:<clé>:<vue>`) :
+// FORME DES ENTRÉES — `{ fichier, ref, occurrence }`, la forme UNIQUE de tout stock nominatif du
+// dépôt (`cleDeSite`, `scripts/guards/lib/stock.mjs`) : le `fichier` est le def de la part ou de
+// l'élément (résolu par identité d'objet sur l'index généré, `registreDeDefs.ts`), la `ref` est la
+// clé de vue ci-dessous. C'est le `fichier` que la porte de plage (`croissanceDesStocks`) voit : une
+// clé nue lui est INVISIBLE, un append ne coûte alors rien.
+//
+// TROIS dimensions, réf `<famille>:<clé>:<vue>` (`monstre:<slot>:<clé>:<vue>` / `element:<clé>:<vue>`) :
 //   - RIG_VIEW_FORMAT_RATCHET    : la vue n'est DÉCLARÉE nulle part (repli sur le front) ;
 //   - RIG_VIEW_ALIAS_RATCHET     : vue déclarée, géométrie IDENTIQUE au front (`geometry`, pas la
 //     chaîne : un espace, un commentaire, un `<g>` inerte ou un simple recolorage ne s'en échappent pas) ;
@@ -22,9 +28,12 @@
 // divergeraient.
 //
 // CLIQUET, pas absolution : la garde échoue (a) sur toute violation ABSENTE de ces listes ; (b) sur
-// toute clé qui ne viole PLUS ; (c) si la TAILLE d'un stock dépasse son plafond — plafonds gelés dans
-// la GARDE, jamais ici (un stock qui porte son plafond le relève d'une ligne). Une entrée se solde en
-// DESSINANT la vue puis en baissant le plafond, jamais en allongeant la liste.
+// toute entrée qui ne viole PLUS. Aucun PLAFOND : une entrée se solde en DESSINANT la vue, jamais en
+// allongeant la liste — et l'allonger se voit à la porte de plage, parce que l'entrée nomme son def.
+// La dimension TRANSFORM est un stock VIDE servi par la MÊME primitive : un cliquet tenu à zéro est
+// un cliquet (`stock.mjs`), il rend ses `neuves` sans assertion d'absence particulière.
+// Corps des trois listes GÉNÉRÉ par `npx tsx scripts/rig/regen-rig-view-stock.mts` : toute prose
+// posée ENTRE les entrées est mangée à la régénération, l'explication vit dans cet en-tête.
 //
 // Ampleur à la pose (2026-08-04) : MONSTRE — 24 defs (20 têtes, 2 bras, 2 jambes), 8 vues non
 // déclarées portées par 4 defs front-only (chèvre, fauve, griffe, tentacule = la totalité des slots
@@ -33,142 +42,138 @@
 // taureau, queue de rat, queue : le `back` du registre APPENDAGES retombe sur le front, cf.
 // `parts/appendages/index.ts`). Dimension TRANSFORM : 0 sur les deux familles.
 
-/** @type {ReadonlySet<string>} */
-export const RIG_VIEW_FORMAT_RATCHET = new Set([
-  'monstre:bras:griffe:back', // Pince (griffe de crabe)
-  'monstre:bras:griffe:profile', // Pince (griffe de crabe)
-  'monstre:bras:tentacule:back', // Tentacule
-  'monstre:bras:tentacule:profile', // Tentacule
-  'monstre:jambe:chevre:back', // Pattes de chèvre
-  'monstre:jambe:chevre:profile', // Pattes de chèvre
-  'monstre:jambe:fauve:back', // Pattes de lion (fauve)
-  'monstre:jambe:fauve:profile', // Pattes de lion (fauve)
-  'element:articulation-supplementaire-aux-jambes:back', // Articulation supplémentaire aux jambes
-  'element:articulation-supplementaire-aux-jambes:profile', // Articulation supplémentaire aux jambes
-  'element:barbe-naine:back', // Barbe naine
-  'element:beaute-surnaturelle:back', // Beauté surnaturelle
-  'element:beaute-surnaturelle:profile', // Beauté surnaturelle
-  'element:bec:back', // Bec
-  'element:bec:profile', // Bec
-  'element:bicephale:back', // Bicéphale
-  'element:bicephale:profile', // Bicéphale
-  'element:bouche-supplementaire:back', // Bouche supplémentaire
-  'element:bouche-supplementaire:profile', // Bouche supplémentaire
-  'element:branchies:back', // Branchies
-  'element:branchies:profile', // Branchies
-  'element:bras-elastiques:back', // Bras élastiques
-  'element:bras-elastiques:profile', // Bras élastiques
-  'element:bras-multiples:back', // Bras multiples
-  'element:bras-multiples:profile', // Bras multiples
-  'element:cornes-asymetriques:back', // Cornes asymétriques
-  'element:cornes-asymetriques:profile', // Cornes asymétriques
-  'element:crane-pointu:back', // Crâne pointu
-  'element:crane-pointu:profile', // Crâne pointu
-  'element:crete-sur-la-tete:back', // Crête sur la tête
-  'element:crete-sur-la-tete:profile', // Crête sur la tête
-  'element:crocs:back', // Crocs
-  'element:crocs:profile', // Crocs
-  'element:doigts-distendus:back', // Doigts distendus
-  'element:doigts-distendus:profile', // Doigts distendus
-  'element:ecailles-epineuses:back', // Écailles épineuses
-  'element:ecailles-epineuses:profile', // Écailles épineuses
-  'element:ecailles:back', // Écailles
-  'element:ecailles:profile', // Écailles
-  'element:exophtalmie:back', // Exophtalmie
-  'element:exophtalmie:profile', // Exophtalmie
-  'element:extremites-armees:back', // Extrémités armées
-  'element:extremites-armees:profile', // Extrémités armées
-  'element:griffes:back', // Griffes
-  'element:griffes:profile', // Griffes
-  'element:groin-poilu:back', // Groin poilu
-  'element:groin-poilu:profile', // Groin poilu
-  'element:jambes-multiples:back', // Jambes multiples
-  'element:jambes-multiples:profile', // Jambes multiples
-  'element:langue-pendante:back', // Langue pendante
-  'element:langue-pendante:profile', // Langue pendante
-  'element:long-cou:back', // Long cou
-  'element:long-cou:profile', // Long cou
-  'element:longs-bras:back', // Longs bras
-  'element:longs-bras:profile', // Longs bras
-  'element:mains-et-pieds-a-ventouses:back', // Mains et pieds à ventouses
-  'element:mains-et-pieds-a-ventouses:profile', // Mains et pieds à ventouses
-  'element:mauvais-oeil:back', // Mauvais œil
-  'element:mauvais-oeil:profile', // Mauvais œil
-  'element:membres-rouges:back', // Membres rouges (démon)
-  'element:membres-rouges:profile', // Membres rouges (démon)
-  'element:muscles-torse:back', // Musculature marquée
-  'element:muscles-torse:profile', // Musculature marquée
-  'element:museau-chien:back', // Tête de chien
-  'element:museau-chien:profile', // Tête de chien
-  'element:nuage-de-mouches:back', // Nuage de mouches
-  'element:nuage-de-mouches:profile', // Nuage de mouches
-  'element:oeil-pedoncule:back', // Œil pédonculé
-  'element:oeil-pedoncule:profile', // Œil pédonculé
-  'element:oeil-unique:back', // Œil unique
-  'element:oeil-unique:profile', // Œil unique
-  'element:pattes-d-oiseau:back', // Pattes d’oiseau
-  'element:pattes-d-oiseau:profile', // Pattes d’oiseau
-  'element:pattes-danimaux:back', // Pattes d’animaux
-  'element:pattes-danimaux:profile', // Pattes d’animaux
-  'element:peau-ardente:back', // Peau ardente
-  'element:peau-ardente:profile', // Peau ardente
-  'element:peau-brillante:back', // Peau brillante
-  'element:peau-brillante:profile', // Peau brillante
-  'element:peau-herissee-de-pointes:back', // Peau hérissée de pointes
-  'element:peau-herissee-de-pointes:profile', // Peau hérissée de pointes
-  'element:pelage-massif:back', // Pelage massif
-  'element:pelage-massif:profile', // Pelage massif
-  'element:pelage:back', // Pelage
-  'element:pelage:profile', // Pelage
-  'element:pieds-palmes:back', // Pieds palmés
-  'element:pieds-palmes:profile', // Pieds palmés
-  'element:plaie:back', // Plaie ouverte
-  'element:plaie:profile', // Plaie ouverte
-  'element:plumage:back', // Peau de plumes
-  'element:plumage:profile', // Peau de plumes
-  'element:plumes-eparses:back', // Plumes éparses
-  'element:plumes-eparses:profile', // Plumes éparses
-  'element:sans-tete:back', // Sans tête
-  'element:sans-tete:profile', // Sans tête
-  'element:suintement-de-pus:back', // Suintement de pus
-  'element:suintement-de-pus:profile', // Suintement de pus
-  'element:tentacule-epais:back', // Tentacule épais
-  'element:tentacule-epais:profile', // Tentacule épais
-  'element:tete-bestiale-aigle:back', // Tête bestiale (Aigle)
-  'element:tete-bestiale-aigle:profile', // Tête bestiale (Aigle)
-  'element:tete-bestiale-araignee-geante:back', // Tête bestiale (Araignée géante)
-  'element:tete-bestiale-araignee-geante:profile', // Tête bestiale (Araignée géante)
-  'element:tete-bestiale-chevre:back', // Tête bestiale (Chèvre)
-  'element:tete-bestiale-chevre:profile', // Tête bestiale (Chèvre)
-  'element:tete-bestiale-ours:back', // Tête bestiale (Ours)
-  'element:tete-bestiale-ours:profile', // Tête bestiale (Ours)
-  'element:tete-bestiale-rat:back', // Tête bestiale (Rat)
-  'element:tete-bestiale-rat:profile', // Tête bestiale (Rat)
-  'element:tete-bestiale-sanglier:back', // Tête bestiale (Sanglier)
-  'element:tete-bestiale-sanglier:profile', // Tête bestiale (Sanglier)
-  'element:tete-bestiale-serpent:back', // Tête bestiale (Serpent)
-  'element:tete-bestiale-serpent:profile', // Tête bestiale (Serpent)
-  'element:tete-de-mort:back', // Tête de mort
-  'element:tete-de-mort:profile', // Tête de mort
-  'element:trois-yeux:back', // Trois yeux
-  'element:trois-yeux:profile', // Trois yeux
-  'element:verrues:back', // Verrues
-  'element:verrues:profile', // Verrues
-  'element:visage-difforme:back', // Visage difforme
-  'element:visage-difforme:profile', // Visage difforme
-  'element:visage-sans-traits:back', // Visage sans traits
-  'element:visage-sans-traits:profile', // Visage sans traits
-])
+export const RIG_VIEW_FORMAT_RATCHET = [
+  { fichier: 'src/gameIso/rig/parts/elements/defs/articulation-supplementaire-aux-jambes.ts', ref: 'element:articulation-supplementaire-aux-jambes:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/articulation-supplementaire-aux-jambes.ts', ref: 'element:articulation-supplementaire-aux-jambes:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/barbe-naine.ts', ref: 'element:barbe-naine:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/beaute-surnaturelle.ts', ref: 'element:beaute-surnaturelle:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/beaute-surnaturelle.ts', ref: 'element:beaute-surnaturelle:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/bec.ts', ref: 'element:bec:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/bec.ts', ref: 'element:bec:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/bicephale.ts', ref: 'element:bicephale:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/bicephale.ts', ref: 'element:bicephale:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/bouche-supplementaire.ts', ref: 'element:bouche-supplementaire:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/bouche-supplementaire.ts', ref: 'element:bouche-supplementaire:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/branchies.ts', ref: 'element:branchies:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/branchies.ts', ref: 'element:branchies:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/bras-elastiques.ts', ref: 'element:bras-elastiques:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/bras-elastiques.ts', ref: 'element:bras-elastiques:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/bras-multiples.ts', ref: 'element:bras-multiples:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/bras-multiples.ts', ref: 'element:bras-multiples:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/cornes-asymetriques.ts', ref: 'element:cornes-asymetriques:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/cornes-asymetriques.ts', ref: 'element:cornes-asymetriques:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/crane-pointu.ts', ref: 'element:crane-pointu:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/crane-pointu.ts', ref: 'element:crane-pointu:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/crete-sur-la-tete.ts', ref: 'element:crete-sur-la-tete:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/crete-sur-la-tete.ts', ref: 'element:crete-sur-la-tete:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/crocs.ts', ref: 'element:crocs:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/crocs.ts', ref: 'element:crocs:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/doigts-distendus.ts', ref: 'element:doigts-distendus:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/doigts-distendus.ts', ref: 'element:doigts-distendus:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/ecailles-epineuses.ts', ref: 'element:ecailles-epineuses:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/ecailles-epineuses.ts', ref: 'element:ecailles-epineuses:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/ecailles.ts', ref: 'element:ecailles:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/ecailles.ts', ref: 'element:ecailles:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/exophtalmie.ts', ref: 'element:exophtalmie:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/exophtalmie.ts', ref: 'element:exophtalmie:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/extremites-armees.ts', ref: 'element:extremites-armees:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/extremites-armees.ts', ref: 'element:extremites-armees:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/griffes.ts', ref: 'element:griffes:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/griffes.ts', ref: 'element:griffes:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/groin-poilu.ts', ref: 'element:groin-poilu:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/groin-poilu.ts', ref: 'element:groin-poilu:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/jambes-multiples.ts', ref: 'element:jambes-multiples:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/jambes-multiples.ts', ref: 'element:jambes-multiples:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/langue-pendante.ts', ref: 'element:langue-pendante:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/langue-pendante.ts', ref: 'element:langue-pendante:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/long-cou.ts', ref: 'element:long-cou:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/long-cou.ts', ref: 'element:long-cou:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/longs-bras.ts', ref: 'element:longs-bras:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/longs-bras.ts', ref: 'element:longs-bras:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/mains-et-pieds-a-ventouses.ts', ref: 'element:mains-et-pieds-a-ventouses:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/mains-et-pieds-a-ventouses.ts', ref: 'element:mains-et-pieds-a-ventouses:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/mauvais-oeil.ts', ref: 'element:mauvais-oeil:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/mauvais-oeil.ts', ref: 'element:mauvais-oeil:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/membres-rouges.ts', ref: 'element:membres-rouges:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/membres-rouges.ts', ref: 'element:membres-rouges:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/muscles-torse.ts', ref: 'element:muscles-torse:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/muscles-torse.ts', ref: 'element:muscles-torse:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/museau-chien.ts', ref: 'element:museau-chien:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/museau-chien.ts', ref: 'element:museau-chien:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/nuage-de-mouches.ts', ref: 'element:nuage-de-mouches:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/nuage-de-mouches.ts', ref: 'element:nuage-de-mouches:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/oeil-pedoncule.ts', ref: 'element:oeil-pedoncule:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/oeil-pedoncule.ts', ref: 'element:oeil-pedoncule:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/oeil-unique.ts', ref: 'element:oeil-unique:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/oeil-unique.ts', ref: 'element:oeil-unique:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/pattes-d-oiseau.ts', ref: 'element:pattes-d-oiseau:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/pattes-d-oiseau.ts', ref: 'element:pattes-d-oiseau:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/pattes-danimaux.ts', ref: 'element:pattes-danimaux:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/pattes-danimaux.ts', ref: 'element:pattes-danimaux:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/peau-ardente.ts', ref: 'element:peau-ardente:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/peau-ardente.ts', ref: 'element:peau-ardente:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/peau-brillante.ts', ref: 'element:peau-brillante:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/peau-brillante.ts', ref: 'element:peau-brillante:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/peau-herissee-de-pointes.ts', ref: 'element:peau-herissee-de-pointes:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/peau-herissee-de-pointes.ts', ref: 'element:peau-herissee-de-pointes:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/pelage-massif.ts', ref: 'element:pelage-massif:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/pelage-massif.ts', ref: 'element:pelage-massif:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/pelage.ts', ref: 'element:pelage:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/pelage.ts', ref: 'element:pelage:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/pieds-palmes.ts', ref: 'element:pieds-palmes:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/pieds-palmes.ts', ref: 'element:pieds-palmes:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/plaie.ts', ref: 'element:plaie:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/plaie.ts', ref: 'element:plaie:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/plumage.ts', ref: 'element:plumage:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/plumage.ts', ref: 'element:plumage:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/plumes-eparses.ts', ref: 'element:plumes-eparses:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/plumes-eparses.ts', ref: 'element:plumes-eparses:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/sans-tete.ts', ref: 'element:sans-tete:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/sans-tete.ts', ref: 'element:sans-tete:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/suintement-de-pus.ts', ref: 'element:suintement-de-pus:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/suintement-de-pus.ts', ref: 'element:suintement-de-pus:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tentacule-epais.ts', ref: 'element:tentacule-epais:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tentacule-epais.ts', ref: 'element:tentacule-epais:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-bestiale-aigle.ts', ref: 'element:tete-bestiale-aigle:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-bestiale-aigle.ts', ref: 'element:tete-bestiale-aigle:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-bestiale-araignee-geante.ts', ref: 'element:tete-bestiale-araignee-geante:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-bestiale-araignee-geante.ts', ref: 'element:tete-bestiale-araignee-geante:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-bestiale-chevre.ts', ref: 'element:tete-bestiale-chevre:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-bestiale-chevre.ts', ref: 'element:tete-bestiale-chevre:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-bestiale-ours.ts', ref: 'element:tete-bestiale-ours:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-bestiale-ours.ts', ref: 'element:tete-bestiale-ours:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-bestiale-rat.ts', ref: 'element:tete-bestiale-rat:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-bestiale-rat.ts', ref: 'element:tete-bestiale-rat:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-bestiale-sanglier.ts', ref: 'element:tete-bestiale-sanglier:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-bestiale-sanglier.ts', ref: 'element:tete-bestiale-sanglier:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-bestiale-serpent.ts', ref: 'element:tete-bestiale-serpent:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-bestiale-serpent.ts', ref: 'element:tete-bestiale-serpent:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-de-mort.ts', ref: 'element:tete-de-mort:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/tete-de-mort.ts', ref: 'element:tete-de-mort:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/trois-yeux.ts', ref: 'element:trois-yeux:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/trois-yeux.ts', ref: 'element:trois-yeux:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/verrues.ts', ref: 'element:verrues:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/verrues.ts', ref: 'element:verrues:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/visage-difforme.ts', ref: 'element:visage-difforme:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/visage-difforme.ts', ref: 'element:visage-difforme:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/visage-sans-traits.ts', ref: 'element:visage-sans-traits:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/visage-sans-traits.ts', ref: 'element:visage-sans-traits:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/monster/defs/chevre.ts', ref: 'monstre:jambe:chevre:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/monster/defs/chevre.ts', ref: 'monstre:jambe:chevre:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/monster/defs/fauve.ts', ref: 'monstre:jambe:fauve:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/monster/defs/fauve.ts', ref: 'monstre:jambe:fauve:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/monster/defs/griffe.ts', ref: 'monstre:bras:griffe:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/monster/defs/griffe.ts', ref: 'monstre:bras:griffe:profile', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/monster/defs/tentacule.ts', ref: 'monstre:bras:tentacule:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/monster/defs/tentacule.ts', ref: 'monstre:bras:tentacule:profile', occurrence: 1 },
+]
 
-/** @type {ReadonlySet<string>} */
-export const RIG_VIEW_ALIAS_RATCHET = new Set([
-  'element:cornes-demon:back', // Cornes de démon
-  'element:cornes-taureau:back', // Cornes de taureau
-  'element:queue-rat:back', // Queue de rat
-  'element:queue:back', // Queue
-])
+export const RIG_VIEW_ALIAS_RATCHET = [
+  { fichier: 'src/gameIso/rig/parts/elements/defs/cornes-demon.ts', ref: 'element:cornes-demon:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/cornes-taureau.ts', ref: 'element:cornes-taureau:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/queue-rat.ts', ref: 'element:queue-rat:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/elements/defs/queue.ts', ref: 'element:queue:back', occurrence: 1 },
+]
 
-/** @type {ReadonlySet<string>} */
-export const RIG_VIEW_TRANSFORM_RATCHET = new Set([
-
-])
+export const RIG_VIEW_TRANSFORM_RATCHET = [
+]

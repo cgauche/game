@@ -22,6 +22,7 @@ import type { View } from '../../../src/gameIso/rig/facing';
 import type { EquipCtx } from '../../../src/gameIso/rig/parts/equipment';
 import type { ItemInstance, HitLocation } from '../../../src/engine/types';
 import { slugId } from '../../../src/data/slug';
+import { fichierDeDef, REGISTRE_TENUES, REGISTRE_ARMURES, REGISTRE_PARTS_MONSTRUEUSES, REGISTRE_ELEMENTS } from './registreDeDefs';
 
 export const SLOTS = ['tete', 'bras', 'torse', 'jambes', 'pied', 'main', 'cou'] as const;
 export type BodySlot = (typeof SLOTS)[number];
@@ -72,16 +73,19 @@ function geometryOrThrow(svg: string, where: string): string {
   return g;
 }
 
+/** Un SITE mesuré : le FICHIER de def fautif et la réf qui l'identifie dedans — la forme que
+ *  `sitesEnEntrees` (`guards/lib/stock.mjs`) ordinalise en entrées `{ fichier, ref, occurrence }`. */
+export interface Site { file: string; ref: string }
+
 export interface Audit {
-  /** `<porteur>:<slot>` fournis en `string` front-only. */
-  format: Set<string>;
-  /** `<porteur>:<slot>:<vue>` dont le DESSIN servi est celui du front. */
-  alias: Set<string>;
-  /** Libellé humain par clé de porteur (`<tenueId>` / `armure:<materiau>`) — commentaires du stock. */
-  labels: Map<string, string>;
+  /** Slots fournis en `string` front-only, réf `<porteur>:<slot>`. */
+  format: Site[];
+  /** Vues déclarées dont le DESSIN servi est celui du front, réf `<porteur>:<slot>:<vue>`. */
+  alias: Site[];
 }
 
 function auditBearer(
+  file: string,
   key: string,
   bearer: Bearer,
   serve: (view: 'front' | 'profile' | 'back') => Record<string, { svg: string } | null>,
@@ -92,12 +96,12 @@ function auditBearer(
   for (const slot of SLOTS) {
     const art = bearer.set[slot];
     if (art == null) continue;
-    if (!hasProfileView(art) || !hasBackView(art)) { acc.format.add(`${key}:${slot}`); continue; }
+    if (!hasProfileView(art) || !hasBackView(art)) { acc.format.push({ file, ref: `${key}:${slot}` }); continue; }
     // Vues DÉCLARÉES : le pipeline sert l'art du def — vérifier que le DESSIN diffère du front.
     const ref = geometryOrThrow(front[slot]?.svg ?? '', `${key}:${slot}:front`);
     for (const view of ['profile', 'back'] as const)
       if (geometryOrThrow(views[view][slot]?.svg ?? '', `${key}:${slot}:${view}`) === ref)
-        acc.alias.add(`${key}:${slot}:${view}`);
+        acc.alias.push({ file, ref: `${key}:${slot}:${view}` });
   }
 }
 
@@ -109,18 +113,18 @@ const armourItem = (mat: string): ItemInstance =>
 
 /** Mesure les violations de format sur les DEUX registres de slots de corps (tenues + armures). */
 export function auditPartViews(): Audit {
-  const acc: Audit = { format: new Set(), alias: new Set(), labels: new Map() };
+  const acc: Audit = { format: [], alias: [] };
   for (const def of TENUE_DEFS) {
     const id = slugId(def.label);
-    acc.labels.set(id, def.label);
-    auditBearer(id, def, (view) => resolveParts('Humain', 'M', id, NO_EQUIP, {}, 1, view), acc);
+    auditBearer(fichierDeDef(REGISTRE_TENUES, def), id, def,
+      (view) => resolveParts('Humain', 'M', id, NO_EQUIP, {}, 1, view), acc);
   }
   for (const def of ARMOUR_DEFS) {
     const key = `armure:${def.id}`;
-    acc.labels.set(key, def.id.charAt(0).toUpperCase() + def.id.slice(1));
     const equip: EquipCtx = { weapons: [], armour: [armourItem(def.id)] };
     // Sans tenue : l'armure couvre les 4 slots et PRIME de toute façon (`armed ?? tenuePart`).
-    auditBearer(key, def, (view) => resolveParts('Humain', 'M', undefined, equip, {}, 1, view), acc);
+    auditBearer(fichierDeDef(REGISTRE_ARMURES, def), key, def,
+      (view) => resolveParts('Humain', 'M', undefined, equip, {}, 1, view), acc);
   }
   return acc;
 }
@@ -183,21 +187,12 @@ export function isTransformDerived(front: string, view: string): boolean {
 }
 
 export interface RigViewAudit {
-  /** `<famille>:<clé>:<vue>` dont la vue n'est déclarée nulle part. */
-  format: Set<string>;
-  /** `<famille>:<clé>:<vue>` déclarée dont la géométrie est celle du front. */
-  alias: Set<string>;
-  /** `<famille>:<clé>:<vue>` déclarée dont le contenu est le front sous un transform. */
-  transform: Set<string>;
-  labels: Map<string, string>;
-}
-
-/** Clés MESURÉES absentes du stock en place. Critère UNIQUE du cliquet et de la barrière du
- *  régénérateur (`scripts/rig/regen-rig-view-stock.mts`) : une clé neuve suffit, quelle que soit la
- *  taille des deux ensembles — deux lectures divergentes de « ce qui est neuf » laisseraient l'une
- *  écrire ce que l'autre refuse. */
-export function clesNeuves(found: ReadonlySet<string>, stock: ReadonlySet<string>): string[] {
-  return [...found].filter((k) => !stock.has(k)).sort();
+  /** Vue déclarée nulle part, réf `<famille>:<clé>:<vue>`. */
+  format: Site[];
+  /** Vue déclarée dont la géométrie est celle du front. */
+  alias: Site[];
+  /** Vue déclarée dont le contenu est le front sous un transform. */
+  transform: Site[];
 }
 
 const OTHER_VIEWS = ['profile', 'back'] as const;
@@ -206,6 +201,7 @@ const OTHER_VIEWS = ['profile', 'back'] as const;
  *  Une déclaration dont l'art SERVI est vide compte comme FORMAT : la vue est annoncée, le rendu de
  *  cette vue ne montre rien du def — le joueur voit exactement ce qu'il verrait sans déclaration. */
 function classifyView(
+  file: string,
   key: string,
   view: 'profile' | 'back',
   declared: boolean,
@@ -213,22 +209,23 @@ function classifyView(
   served: string,
   acc: RigViewAudit,
 ) {
-  if (!declared || norm(served) === '') { acc.format.add(`${key}:${view}`); return; }
-  if (geometry(served) === geometry(front)) { acc.alias.add(`${key}:${view}`); return; }
-  if (isTransformDerived(front, served)) acc.transform.add(`${key}:${view}`);
+  const site = { file, ref: `${key}:${view}` };
+  if (!declared || norm(served) === '') { acc.format.push(site); return; }
+  if (geometry(served) === geometry(front)) { acc.alias.push(site); return; }
+  if (isTransformDerived(front, served)) acc.transform.push(site);
 }
 
 /** Mesure les trois dimensions sur MONSTER_PARTS et ELEMENT_DEFS. */
 export function auditRigPartViews(): RigViewAudit {
-  const acc: RigViewAudit = { format: new Set(), alias: new Set(), transform: new Set(), labels: new Map() };
+  const acc: RigViewAudit = { format: [], alias: [], transform: [] };
 
   for (const part of MONSTER_PARTS) {
     const key = `monstre:${part.slot}:${part.key}`;
-    acc.labels.set(key, part.label);
+    const file = fichierDeDef(REGISTRE_PARTS_MONSTRUEUSES, part);
     const front = pickView(part.art, 'front');
     const has = { profile: hasProfileView(part.art), back: hasBackView(part.art) };
     for (const view of OTHER_VIEWS)
-      classifyView(key, view, has[view], front, pickView(part.art, view), acc);
+      classifyView(file, key, view, has[view], front, pickView(part.art, view), acc);
   }
 
   // GRANULARITÉ de la mesure des éléments — le runtime décide par OVERLAY : `composeRig.tsx:267`
@@ -243,7 +240,7 @@ export function auditRigPartViews(): RigViewAudit {
     const overlays = el.overlays ?? [];
     if (overlays.length === 0) continue; // élément purement morpho (build/legs/skin/faceFlip) : aucun art
     const key = `element:${el.key}`;
-    acc.labels.set(key, el.label);
+    const file = fichierDeDef(REGISTRE_ELEMENTS, el);
     const hasView = (art: PartArt, view: 'profile' | 'back') =>
       (view === 'profile' ? hasProfileView : hasBackView)(art);
     const artOf = (view: View) => overlays
@@ -262,7 +259,7 @@ export function auditRigPartViews(): RigViewAudit {
       && !overlays.some((o) => fuiteVersVue(o, view));
     const front = artOf('front');
     for (const view of OTHER_VIEWS)
-      classifyView(key, view, declaredIn(view), front, artOf(view), acc);
+      classifyView(file, key, view, declaredIn(view), front, artOf(view), acc);
   }
   return acc;
 }

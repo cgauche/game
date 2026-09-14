@@ -2,7 +2,7 @@
  * FORMAT DE PART — garde de cliquet (#551).
  *
  * Un slot de CORPS se résout en `ViewSet` TOTAL `{front, profile, back}`. Un def en `string` est
- * front-only : le shim `toViewSet` (`parts/derive.ts`) DÉRIVE alors ses vues manquantes (silhouette
+ * front-only : la couture `toViewSet` (`parts/derive.ts`) DÉRIVE alors ses vues manquantes (silhouette
  * générique en tokens pour torse/jambes/tete, vraie silhouette pour `bras`). Ce cliquet compte les
  * DEFS BRUTS front-only (ceux restant à solder en DESSINANT leurs 3 vues). Contrat : `rig/PART-CONTRACT.md`.
  *
@@ -15,33 +15,29 @@
  * qu'aucun des deux n'ait sa propre lecture du pipeline. Ici : les trois invariants du cliquet.
  *   1. FORMAT — un slot déclare ses 3 vues.
  *   2. ANTI-ALIAS — une vue déclarée n'est pas le front redessiné à l'identique.
- *   3. PLAFOND — les deux stocks ne peuvent que DÉCROÎTRE : leur taille max est gelée ICI, dans la
- *      garde, et non dans le fichier de stock — une donnée qui porte son propre plafond le relève
- *      d'une ligne. Gonfler exige de toucher les DEUX fichiers, dans le même commit.
+ * Les deux se jugent par l'ÉCART NOMINATIF au stock (`ecartDuVolet`, `scripts/guards/lib/stock.mjs`),
+ * dans les DEUX sens : `neuves = []` (aucune violation hors stock) ET `perimees = []` (aucune entrée
+ * qui ne viole plus). Aucun PLAFOND de taille ici : ce qu'une dette ne peut pas faire, c'est croître
+ * SANS SE DÉCLARER, et c'est l'entrée `{ fichier, ref, occurrence }` — qui NOMME le def à ouvrir —
+ * que la porte de plage (`croissanceDesStocks`) voit à l'append.
  */
 import { describe, it, expect } from 'vitest';
 import { TENUE_DEFS } from './_registry.generated';
 import { ARMOUR_DEFS } from '../armour/_registry.generated';
-import { auditPartViews, SLOTS, type Audit, type Bearer, type BodySlot } from '../../../../../scripts/guards/lib/partViewAudit';
+import { auditPartViews, SLOTS, type Audit, type Bearer, type BodySlot, type Site } from '../../../../../scripts/guards/lib/partViewAudit';
 import type { PartArt } from '../types';
 import {
   PART_VIEW_RATCHET,
   PART_VIEW_ALIAS_RATCHET,
 } from '../../../../../scripts/guards/lib/rigPartViewStock.mjs';
+import { ecartDuVolet, type EntreeNominative } from '../../../../../scripts/guards/lib/stock.mjs';
 
-/** PLAFONDS gelés (#551). Baissés à CHAQUE slot soldé ; jamais relevés — solder = dessiner la vue.
- *  Ils vivent dans la GARDE, pas dans le stock : un stock qui porte son plafond ne cliquette rien.
- *  `scripts/rig/regen-part-view-stock.mts` les rabaisse tout seul après un solde. */
-const MAX_FORMAT = 76;
-const MAX_ALIAS = 3;
+const STOCK = 'scripts/guards/lib/rigPartViewStock.mjs';
 
-/** Cliquet générique : violations hors stock = neuves (échec) ; clés du stock qui ne violent plus = périmées (échec). */
-function ratchet(found: ReadonlySet<string>, stock: ReadonlySet<string>) {
-  return {
-    neuves: [...found].filter((k) => !stock.has(k)).sort(),
-    perimees: [...stock].filter((k) => !found.has(k)).sort(),
-  };
-}
+/** Cliquet générique : sites hors stock = neuves (échec) ; entrées que plus aucun site ne porte =
+ *  périmées (échec). La primitive PARTAGÉE du dépôt, jamais une comparaison locale. */
+const ratchet = (sites: readonly Site[], stock: Iterable<EntreeNominative>) =>
+  ecartDuVolet({ sites, stock, ou: STOCK });
 
 describe('format de part : 3 vues par slot de corps (cliquet #551)', () => {
   const { format, alias } = auditPartViews();
@@ -57,8 +53,8 @@ describe('format de part : 3 vues par slot de corps (cliquet #551)', () => {
     const { neuves, perimees } = ratchet(format, PART_VIEW_RATCHET);
     expect(neuves, `Slots front-only NEUFS — fournir {front, profile, back} (cf. rig/PART-CONTRACT.md).\n` +
       `Une string fait DÉRIVER ses vues (silhouette générique torse/jambes/tete, vraie silhouette bras) :\n  ${neuves.join('\n  ')}`).toEqual([]);
-    expect(perimees, `Clés de PART_VIEW_RATCHET qui ne violent plus (soldées ou disparues) — les RETIRER de\n` +
-      `scripts/guards/lib/rigPartViewStock.mjs (ou : npx tsx scripts/rig/regen-part-view-stock.mts),\n` +
+    expect(perimees, `Entrées de PART_VIEW_RATCHET qui ne violent plus (soldées ou disparues) — les RETIRER de\n` +
+      `${STOCK} (ou : npx tsx scripts/rig/regen-part-view-stock.mts),\n` +
       `sinon le stock ment :\n  ${perimees.join('\n  ')}`).toEqual([]);
   });
 
@@ -66,16 +62,15 @@ describe('format de part : 3 vues par slot de corps (cliquet #551)', () => {
     const { neuves, perimees } = ratchet(alias, PART_VIEW_ALIAS_RATCHET);
     expect(neuves, `Vues DÉCLARÉES dont le DESSIN est celui du front — le format est satisfait, le rendu\n` +
       `reste l'art de face plaqué. Dessiner la vue :\n  ${neuves.join('\n  ')}`).toEqual([]);
-    expect(perimees, `Clés de PART_VIEW_ALIAS_RATCHET qui ne violent plus — les RETIRER de\n` +
-      `scripts/guards/lib/rigPartViewStock.mjs :\n  ${perimees.join('\n  ')}`).toEqual([]);
+    expect(perimees, `Entrées de PART_VIEW_ALIAS_RATCHET qui ne violent plus — les RETIRER de\n` +
+      `${STOCK} :\n  ${perimees.join('\n  ')}`).toEqual([]);
   });
 
-  it('les stocks ne GONFLENT pas : leur taille est plafonnée ICI, la baisser est le seul geste permis', () => {
-    expect(PART_VIEW_RATCHET.size, `PART_VIEW_RATCHET a GONFLÉ (${PART_VIEW_RATCHET.size} > ${MAX_FORMAT}).\n` +
-      `Un slot se solde en DESSINANT ses vues, jamais en allongeant le stock. Après un solde, BAISSER\n` +
-      `MAX_FORMAT dans cette garde.`).toBeLessThanOrEqual(MAX_FORMAT);
-    expect(PART_VIEW_ALIAS_RATCHET.size, `PART_VIEW_ALIAS_RATCHET a GONFLÉ (${PART_VIEW_ALIAS_RATCHET.size} > ${MAX_ALIAS}).\n` +
-      `Après un solde, BAISSER MAX_ALIAS dans cette garde.`).toBeLessThanOrEqual(MAX_ALIAS);
+  it("chaque entrée NOMME le fichier de def à ouvrir — c'est ce que la porte de plage voit", () => {
+    const muettes = [...PART_VIEW_RATCHET, ...PART_VIEW_ALIAS_RATCHET]
+      .filter((e) => !/^src\/gameIso\/rig\/parts\/(tenues|armour)\/defs\/.+\.ts$/.test(e.fichier));
+    expect(muettes, `Entrées dont le \`fichier\` n'est pas un chemin de def : elles seraient INVISIBLES à\n` +
+      `\`croissanceDesStocks\`, et un append ne coûterait rien :\n  ${JSON.stringify(muettes)}`).toEqual([]);
   });
 });
 
@@ -99,12 +94,12 @@ describe('morsure : les évasions connues rougissent (#551)', () => {
 
   /** Premier slot de TENUE conforme (3 vues, dessin distinct du front) — le support des mutations. */
   const target = (() => {
-    const { alias } = auditPartViews();
+    const refsAliasees = new Set(auditPartViews().alias.map((s) => s.ref));
     for (const def of TENUE_DEFS) {
       const id = def.id;
       for (const slot of SLOTS) {
         const art = def.set[slot];
-        if (art && typeof art === 'object' && art.profile && art.back && !alias.has(`${id}:${slot}:back`))
+        if (art && typeof art === 'object' && art.profile && art.back && !refsAliasees.has(`${id}:${slot}:back`))
           return { def: def as Bearer, slot, id, front: art.front, art };
       }
     }
@@ -114,24 +109,27 @@ describe('morsure : les évasions connues rougissent (#551)', () => {
   /** La garde rougirait-elle ? = la violation attendue est NEUVE au regard du stock RÉEL. */
   const aliasNeuves = (back: string) =>
     ratchet(withArt(target.def, target.slot, { ...target.art, back }, auditPartViews).alias, PART_VIEW_ALIAS_RATCHET).neuves;
-  const KEY = `${target.id}:${target.slot}:back`;
+  /** La violation attendue, telle que le remède l'imprime : la CLÉ nominative du site. */
+  const KEY = ` :: ${target.id}:${target.slot}:back :: 1`;
+  /** Une ligne de remède CONTIENT-elle la clé attendue ? (le remède décore la clé d'une phrase) */
+  const porte = (lignes: string[], cle: string) => lignes.some((l) => l.includes(cle));
 
   it('un alias enveloppé dans un <g> inerte rougit (le <g> ne porte aucune géométrie)', () => {
-    expect(aliasNeuves(`<g>${target.front}</g>`)).toContain(KEY);
+    expect(porte(aliasNeuves(`<g>${target.front}</g>`), KEY)).toBe(true);
   });
 
   it('un alias maquillé par un espace final rougit', () => {
-    expect(aliasNeuves(`${target.front} `)).toContain(KEY);
+    expect(porte(aliasNeuves(`${target.front} `), KEY)).toBe(true);
   });
 
   it('un alias maquillé par un commentaire SVG rougit', () => {
-    expect(aliasNeuves(`<!-- dos --> ${target.front}`)).toContain(KEY);
+    expect(porte(aliasNeuves(`<!-- dos --> ${target.front}`), KEY)).toBe(true);
   });
 
   it('un alias RECOLORÉ (géométrie du front, autre remplissage) rougit — la comparaison de chaînes le ratait', () => {
     const recolore = target.front.replace(/fill=("|')@(\w+)("|')/g, 'fill=$1@$2O$3');
     expect(recolore, 'le support de morsure ne porte aucun token de remplissage').not.toBe(target.front);
-    expect(aliasNeuves(recolore)).toContain(KEY);
+    expect(porte(aliasNeuves(recolore), KEY)).toBe(true);
   });
 
   it('un slot d\'ARMURE front-only NEUF rougit (le registre des armures est bien dans le périmètre)', () => {
@@ -139,11 +137,22 @@ describe('morsure : les évasions connues rougissent (#551)', () => {
     const torse = plaque.set.torse!;
     const front = typeof torse === 'object' ? torse.front : torse;
     const { format } = withArt(plaque, 'torse', front, auditPartViews); // 3 vues -> string front-only
-    expect(ratchet(format, PART_VIEW_RATCHET).neuves).toContain('armure:plaque:torse');
+    const neuves = ratchet(format, PART_VIEW_RATCHET).neuves;
+    expect(porte(neuves, ' :: armure:plaque:torse :: 1')).toBe(true);
+    // Et le site neuf NOMME le def d'armure à ouvrir, pas seulement la clé de slot.
+    expect(porte(neuves, 'src/gameIso/rig/parts/armour/defs/Plaque.ts')).toBe(true);
   });
 
-  it('GONFLER le stock rougit : une clé de plus dépasse le plafond', () => {
-    expect(new Set([...PART_VIEW_RATCHET, 'gonflement:bras']).size).toBeGreaterThan(MAX_FORMAT);
-    expect(new Set([...PART_VIEW_ALIAS_RATCHET, 'gonflement:bras:back']).size).toBeGreaterThan(MAX_ALIAS);
+  /** ALLONGER le stock ne s'échange plus contre un plafond relevé : une entrée de plus se DÉCLARE,
+   *  parce qu'elle nomme un fichier — la garde la voit PÉRIMÉE (aucun site ne la porte) et la porte
+   *  de plage la voit à l'append. C'est ce que le plafond mort faisait, sans compter. */
+  it('ALLONGER le stock rougit : une entrée que plus aucun site ne porte est PÉRIMÉE', () => {
+    const { format } = auditPartViews();
+    const gonfle = [...PART_VIEW_RATCHET, {
+      fichier: 'src/gameIso/rig/parts/tenues/defs/TenueQuiNExistePas.ts', ref: 'gonflement:bras', occurrence: 1,
+    }];
+    const { perimees } = ratchet(format, gonfle);
+    expect(porte(perimees, ' :: gonflement:bras :: 1')).toBe(true);
+    expect(porte(perimees, 'entrée SOLDÉE')).toBe(true);
   });
 });

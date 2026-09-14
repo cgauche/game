@@ -2,109 +2,63 @@ import { describe, it, expect } from 'vitest';
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import {
-  loadCategoryIds, loadCategoryBooks, buildConsumerCorpus, isConsumed, computeFieldPredicateConsumers,
-  META_CATALOG_ENTRIES, sceneConsumerCorpus, EXCLUDED_CATEGORY_FILES,
+  orphelinesMesurees, buildConsumerCorpus, isConsumed, sceneConsumerCorpus, EXCLUDED_CATEGORY_FILES,
 } from '../../scripts/guards/lib/entityConsumers.mjs';
-import { ENTITY_ORPHAN_RATCHET, ENTITY_ORPHAN_FAMILIES, type EntityOrphanFamily } from '../../scripts/guards/lib/entityOrphanStock.mjs';
+import { ENTITY_ORPHAN_RATCHET } from '../../scripts/guards/lib/entityOrphanStock.mjs';
+import { ecartDuVolet } from '../../scripts/guards/lib/stock.mjs';
 
 /**
  * Cliquet décroissant des entités de catalogue SANS CONSOMMATEUR (généralise `tables.json`/#734 à
  * `traits`/`talents`/`qualities`/`maneuvers`/`skills`/`props`/`vehicles`/`creatures` — périmètre
  * retenu/écarté, définition d'un consommateur, angles morts déclarés : cf. l'en-tête de
  * `scripts/docs/build-entity-orphans.mjs`). Rapport généré : `docs/orphelines-donnees.md`.
+ *
+ * UN SEUL contrat, dans les DEUX sens : l'écart nominatif au stock (`ecartDuVolet`,
+ * `scripts/guards/lib/stock.mjs`). Aucun PLAFOND, aucun compte de FAMILLE par livre : ce qu'une
+ * dette ne peut pas faire, c'est croître SANS SE DÉCLARER, et c'est l'entrée `{ fichier, ref,
+ * occurrence }` — qui NOMME le dataset à ouvrir — que la porte de plage (`croissanceDesStocks`) voit
+ * à l'append. Un compte, lui, lui est invisible, et laisse en plus passer la SUBSTITUTION.
  */
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const DATA_DIR = `${ROOT}src/data`;
 const SRC_DIR = `${ROOT}src`;
+const STOCK = 'scripts/guards/lib/entityOrphanStock.mjs';
 
-/** Plafond du stock cliqueté (même patron que `MANUAL_DOCS_MAX`, `src/data/manual-docs-ratchet.test.ts`) :
- *  vit ICI, dans le test, jamais dans `entityOrphanStock.mjs` — sans lui, le chemin le plus court
- *  pour « solder » une orpheline neuve resterait d'ajouter une ligne au stock, CI verte. Il plafonne
- *  les LIGNES DE STOCK, nominatives ET familles réunies : sinon la famille deviendrait l'échappatoire
- *  que la ligne nominative n'est plus.
- *
- *  RECOMPTÉ à l'entrée de `creatures` au périmètre (#1553 L3, 2026-09) — jamais un chiffre nu :
- *    EXISTANT (7 catalogues)          : 15 lignes nominatives
- *    ENTRÉE AU PÉRIMÈTRE (`creatures`) : 18 lignes nominatives + 4 lignes-familles
- *                                        (351 orphelines mesurées = 333 en familles + 18 nominatives)
- *    -------------------------------------------------------------------------------------------
- *    TOTAL                             : 37 lignes de stock */
-const MAX_ENTITY_ORPHANS = 37;
+/** Une ligne de remède CONTIENT-elle cette clé ? (le remède décore la clé d'une phrase) */
+const porte = (lignes: readonly string[], cle: string) => lignes.some((l) => l.includes(cle));
 
 describe('cliquet — toute entité de catalogue retenu a un CONSOMMATEUR (curée, non atteinte = dette)', () => {
-  const corpus = buildConsumerCorpus(DATA_DIR, SRC_DIR);
-  const ids = loadCategoryIds(DATA_DIR);
-  const { consumed: fieldConsumed } = computeFieldPredicateConsumers(DATA_DIR, SRC_DIR);
-  const isEntityConsumed = (cat: string, id: string) =>
-    isConsumed(corpus, id) || fieldConsumed.get(cat)?.has(id) || META_CATALOG_ENTRIES.has(`${cat}:${id}`);
-
-  const books = loadCategoryBooks(DATA_DIR);
-  const families = ENTITY_ORPHAN_FAMILIES;
-  /** La famille d'une orpheline = le PRÉDICAT `(catégorie, source.book)` qui la capture (au plus un :
-   *  les lignes-familles sont disjointes par construction, cf. l'assertion d'unicité plus bas). */
-  const familyOf = (cat: string, id: string) =>
-    families.find((f) => f.category === cat && f.book === books[cat]?.get(id));
-
-  const orphans: string[] = [];
-  const inFamily = new Map<EntityOrphanFamily, string[]>(families.map((f) => [f, []]));
-  for (const [cat, catIds] of Object.entries(ids)) {
-    for (const id of catIds) {
-      if (isEntityConsumed(cat, id)) continue;
-      const fam = familyOf(cat, id);
-      if (fam) inFamily.get(fam)!.push(`${cat}:${id}`);
-      else orphans.push(`${cat}:${id}`);
-    }
-  }
+  const sites = orphelinesMesurees(DATA_DIR, SRC_DIR);
+  const { neuves, perimees } = ecartDuVolet({ sites, stock: ENTITY_ORPHAN_RATCHET, ou: STOCK });
 
   it('aucune entité NEUVE sans consommateur hors du stock — câbler, jamais stocker', () => {
-    const neuves = orphans.filter((key) => !ENTITY_ORPHAN_RATCHET.has(key));
     expect(neuves, `entité(s) NEUVE(s) sans consommateur — câbler (donnée qui la référence, ou code) :\n${neuves.join('\n')}`).toEqual([]);
   });
 
   it('le stock cliqueté ne peut que DÉCROÎTRE — toute entrée désormais consommée en sort', () => {
-    const soldees = [...ENTITY_ORPHAN_RATCHET].filter((key) => !orphans.includes(key));
-    expect(soldees, `entrée(s) du stock désormais consommée(s) — retirer leur ligne de entityOrphanStock.mjs :\n${soldees.join('\n')}`).toEqual([]);
+    expect(perimees, `entrée(s) du stock désormais consommée(s) — retirer leur ligne (ou :\n` +
+      `npx tsx scripts/data/regen-entity-orphan-stock.mts) :\n${perimees.join('\n')}`).toEqual([]);
   });
 
-  it('le stock cliqueté ne GROSSIT pas — lignes nominatives ET familles réunies', () => {
-    const lignes = ENTITY_ORPHAN_RATCHET.size + families.length;
-    expect(
-      lignes,
-      `le stock a GONFLÉ (${ENTITY_ORPHAN_RATCHET.size} nominatives + ${families.length} familles = ${lignes} > ${MAX_ENTITY_ORPHANS}) — une orpheline neuve se câble, jamais ne se stocke (ni en ligne, ni en famille).`,
-    ).toBeLessThanOrEqual(MAX_ENTITY_ORPHANS);
+  it("chaque entrée NOMME le dataset où l'entité est déclarée — c'est ce que la porte de plage voit", () => {
+    const muettes = ENTITY_ORPHAN_RATCHET.filter((e) => !/^src\/data\/[a-z]+\.json$/.test(e.fichier));
+    expect(muettes, `Entrées dont le \`fichier\` n'est pas un chemin de dataset : elles seraient INVISIBLES\n` +
+      `à \`croissanceDesStocks\`, et un append ne coûterait rien :\n  ${JSON.stringify(muettes)}`).toEqual([]);
   });
 
-  it('chaque FAMILLE ne peut que DÉCROÎTRE — son compte mesuré tient sous son plafond', () => {
-    const gonflees = families
-      .filter((f) => inFamily.get(f)!.length > f.max)
-      .map((f) => `${f.category} / ${f.book} : ${inFamily.get(f)!.length} orphelines mesurées > plafond ${f.max}`);
-    expect(
-      gonflees,
-      `famille(s) GONFLÉE(s) — une orpheline neuve d'un livre déjà en famille se CÂBLE ; le plafond ne se relève jamais :\n${gonflees.join('\n')}`,
-    ).toEqual([]);
-  });
-
-  it('un plafond de famille DÉPASSÉ par le bas se RESSERRE — le cliquet suit la mesure', () => {
-    const laches = families
-      .filter((f) => inFamily.get(f)!.length < f.max)
-      .map((f) => `${f.category} / ${f.book} : plafond ${f.max}, ${inFamily.get(f)!.length} mesurées`);
-    expect(
-      laches,
-      `plafond(s) de famille devenu(s) LÂCHE(s) — abaisser à la valeur mesurée dans entityOrphanStock.mjs (sinon la marge accueille la prochaine orpheline en silence) :\n${laches.join('\n')}`,
-    ).toEqual([]);
-  });
-
-  it('une famille VIDÉE voit sa LIGNE SUPPRIMÉE — jamais un plafond à zéro qui traîne', () => {
-    const vides = families.filter((f) => inFamily.get(f)!.length === 0).map((f) => `${f.category} / ${f.book}`);
-    expect(
-      vides,
-      `famille(s) VIDÉE(s) — retirer leur ligne de ENTITY_ORPHAN_FAMILIES :\n${vides.join('\n')}`,
-    ).toEqual([]);
-  });
-
-  it('les prédicats de famille sont DISJOINTS — deux lignes ne capturent jamais la même entité', () => {
-    const cles = families.map((f) => `${f.category}/${f.book}`);
-    expect(cles, 'deux lignes-familles portent le MÊME prédicat (catalogue, livre) — en fusionner').toEqual([...new Set(cles)]);
+  /** SUBSTITUTION à compte constant — une orpheline câblée pendant qu'une autre naît. Un contrat qui
+   *  COMPTE (plafond, ligne-famille `(catalogue, livre) + max`) rend VERT sur ce cas ; l'écart
+   *  nominatif le voit des DEUX côtés. Forgé EN MÉMOIRE, le stock du disque n'est jamais touché. */
+  it('une SUBSTITUTION à compte CONSTANT rougit : la découverte est neuve, la bidon est périmée', () => {
+    const substitue = [
+      ...ENTITY_ORPHAN_RATCHET.slice(1),
+      { fichier: 'src/data/creatures.json', ref: 'creature-qui-n-existe-pas', occurrence: 1 },
+    ];
+    expect(substitue, 'la forge doit rester à taille CONSTANTE, sinon elle ne prouve rien')
+      .toHaveLength(ENTITY_ORPHAN_RATCHET.length);
+    const ecart = ecartDuVolet({ sites, stock: substitue, ou: STOCK });
+    expect(porte(ecart.neuves, ` :: ${ENTITY_ORPHAN_RATCHET[0].ref} :: `), 'la découverte doit ressortir NEUVE').toBe(true);
+    expect(porte(ecart.perimees, ' :: creature-qui-n-existe-pas :: 1'), "l'entrée bidon doit ressortir SOLDÉE").toBe(true);
   });
 });
 

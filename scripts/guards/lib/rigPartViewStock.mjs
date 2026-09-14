@@ -11,12 +11,18 @@
 // tenue (`resolve.ts`, `armed ?? tenuePart`) : hors périmètre, elle laissait le format vert sur une
 // tenue conforme pendant qu'un personnage en plaque recevait un bras de face plaqué.
 //
+// FORME DES ENTRÉES — `{ fichier, ref, occurrence }`, la forme UNIQUE de tout stock nominatif du
+// dépôt (`cleDeSite`, `scripts/guards/lib/stock.mjs`). Chaque entrée NOMME le fichier de def à
+// ouvrir pour solder, et c'est ce que la porte de plage (`croissanceDesStocks`) voit : une clé nue
+// (`'apothicaire:jambes'`) lui est INVISIBLE, un append ne coûte alors rien. Aucun PLAFOND ne vit
+// ici ni dans la garde : ce qu'une dette ne peut pas faire, c'est croître SANS SE DÉCLARER, et c'est
+// l'entrée nommée qui le dit — la garde compare par `ecartDuVolet` (neuves ET périmées).
+//
 // --- PART_VIEW_RATCHET : slots fournis en `string` FRONT-ONLY ---
-// Corps du Set GÉNÉRÉ par `npx tsx scripts/rig/regen-part-view-stock.mts` (DÉCROISSANT-SEULEMENT :
-// il refuse d'écrire un stock plus grand). Toute prose posée ENTRE les clés est mangée à la
-// régénération — l'explication vit dans cet en-tête. Le générateur rabaisse aussi `MAX_FORMAT`.
-// Le commentaire de fin de ligne porte le dégât MESURÉ par `resolveParts` (le chemin réel), pas supposé.
-// Deux mécanismes distincts, selon le slot :
+// Corps GÉNÉRÉ par `npx tsx scripts/rig/regen-part-view-stock.mts` (DÉCROISSANT-SEULEMENT : il
+// refuse SITE PAR SITE, `refusDeCroissance`). Toute prose posée ENTRE les entrées est mangée à la
+// régénération — l'explication vit dans cet en-tête.
+// Le dégât MESURÉ par `resolveParts` (le chemin réel), pas supposé, tient à deux mécanismes selon le slot :
 //   - `bras` (78 clés) : `resolve.ts` ne substitue RIEN sur ce slot — `pickView` retombe sur `front`,
 //     donc l'art de FACE est servi VERBATIM de profil et de dos (« FRONT PLAQUE »).
 //   - `torse`/`jambes`/`tete` (89 clés) : `resolve.ts` invente une silhouette générique
@@ -30,11 +36,19 @@
 // égalité de chaînes se contourne par un espace, un commentaire ou un `<g>` inerte, et rate le front
 // simplement RECOLORÉ (cf. `nonne:jambes:back`, trouvé par le passage à la géométrie).
 //
+// ENQUÊTE des trois entrées d'ALIAS (elle vit ici, la génération mangeant toute prose interne) :
+//   - `ogre:jambes:profile` et `ogre:jambes:back` — l'ogre a reçu ses 3 vues de jambe au fix des
+//     jambes olive (`394f2b29`, #538) : le MÊME fragment `JAMBE` est servi aux 3 vues. La chair
+//     cesse d'être olive (le défaut visé est bien mort), mais le profil garde la largeur et la
+//     lanière de la vue de face — genou et botte de côté restent à dessiner.
+//   - `nonne:jambes:back` — le dos de la Nonne est son art de FACE au trait près, repeint `@cuir` ->
+//     `@cuirO` (assombri) : géométrie identique (paths byte-pour-byte), seul le remplissage change.
+//     La comparaison de CHAÎNES le tenait pour un vrai dos ; la géométrie le voit. Genou/talon de
+//     dos restent à dessiner.
+//
 // CLIQUET, pas absolution : la garde échoue (a) sur toute violation ABSENTE de ces listes — une
-// tenue neuve fournit ses 3 vues ; (b) sur toute clé qui ne viole PLUS ; (c) si la TAILLE d'un stock
-// dépasse son plafond — `MAX_FORMAT`/`MAX_ALIAS`, gelés dans la GARDE (`part-view-format.test.ts`)
-// et non ici : un stock qui porte son propre plafond le relève d'une ligne. Un slot se solde en
-// DESSINANT la vue puis en BAISSANT le plafond, jamais en allongeant la liste.
+// tenue neuve fournit ses 3 vues ; (b) sur toute entrée qui ne viole PLUS. Un slot se solde en
+// DESSINANT la vue, jamais en allongeant la liste — et l'allonger se voit à la porte de plage.
 //
 // Ampleur à la pose (2026-07-17) : 171 slots front-only / 426 fournis (40,1 %) sur 121 porteurs
 // (117 tenues + 4 armures). Tenues : 167/410 (40,7 %) ; 93 des 117 defs (79,5 %) portent au moins un
@@ -45,95 +59,87 @@
 // Clé = `<id de tenue>:<slot>` (id STABLE `slugId(def.name)`, jamais le libellé) ou
 // `armure:<materiau>:<slot>` ; le libellé est en commentaire.
 
-/** @type {ReadonlySet<string>} */
-export const PART_VIEW_RATCHET = new Set([
-  'apothicaire:jambes', // Apothicaire — manque profile+back ; servi : silhouette generique
-  'artiste:jambes', // Artiste — manque profile+back ; servi : silhouette generique
-  'bailli:jambes', // Bailli — manque profile+back ; servi : silhouette generique
-  'boucher-ogre:bras', // Boucher Ogre — manque profile+back ; servi : FRONT PLAQUE
-  'cavalier:jambes', // Cavalier — manque profile+back ; servi : silhouette generique
-  'chasseur-de-primes:jambes', // Chasseur de primes — manque profile+back ; servi : silhouette generique
-  'chasseur:jambes', // Chasseur — manque profile+back ; servi : silhouette generique
-  'chevaucheur-de-blaireau:bras', // Chevaucheur de blaireau — manque profile+back ; servi : FRONT PLAQUE
-  'cocher:jambes', // Cocher — manque profile+back ; servi : silhouette generique
-  'colporteur:jambes', // Colporteur — manque profile+back ; servi : silhouette generique
-  'conseiller:jambes', // Conseiller — manque profile+back ; servi : silhouette generique
-  'contrebandier:jambes', // Contrebandier — manque profile+back ; servi : silhouette generique
-  'coureur-d-egout:jambes', // Coureur d'égout — manque profile+back ; servi : silhouette generique
-  'coureur-d-egout:tete', // Coureur d'égout — manque profile+back ; servi : silhouette generique
-  'coureur-d-egout:torse', // Coureur d'égout — manque profile+back ; servi : silhouette generique
-  'debardeur:jambes', // Débardeur — manque profile+back ; servi : silhouette generique
-  'duelliste:jambes', // Duelliste — manque profile+back ; servi : silhouette generique
-  'eclaireur:jambes', // Éclaireur — manque profile+back ; servi : silhouette generique
-  'emissaire:jambes', // Émissaire — manque profile+back ; servi : silhouette generique
-  'enqueteur:jambes', // Enquêteur — manque profile+back ; servi : silhouette generique
-  'entremetteur:jambes', // Entremetteur — manque profile+back ; servi : silhouette generique
-  'erudit:jambes', // Érudit — manque profile+back ; servi : silhouette generique
-  'esclave-skaven:jambes', // Esclave skaven — manque profile+back ; servi : silhouette generique
-  'esclave-skaven:torse', // Esclave skaven — manque profile+back ; servi : silhouette generique
-  'espion:jambes', // Espion — manque profile+back ; servi : silhouette generique
-  'femme-du-fleuve:jambes', // Femme du fleuve — manque profile+back ; servi : silhouette generique
-  'garde:jambes', // Garde — manque profile+back ; servi : silhouette generique
-  'gardien-de-troupeaux-de-rhinox:bras', // Gardien de troupeaux de rhinox — manque profile+back ; servi : FRONT PLAQUE
-  'gladiateur:jambes', // Gladiateur — manque profile+back ; servi : silhouette generique
-  'herboriste:jambes', // Herboriste — manque profile+back ; servi : silhouette generique
-  'hors-la-loi:jambes', // Hors-la-loi — manque profile+back ; servi : silhouette generique
-  'ingenieur:jambes', // Ingénieur — manque profile+back ; servi : silhouette generique
-  'intendant:jambes', // Intendant — manque profile+back ; servi : silhouette generique
-  'juriste:jambes', // Juriste — manque profile+back ; servi : silhouette generique
-  'mangeur-d-hommes:bras', // Mangeur d'hommes — manque profile+back ; servi : FRONT PLAQUE
-  'marchand:jambes', // Marchand — manque profile+back ; servi : silhouette generique
-  'marin:jambes', // Marin — manque profile+back ; servi : silhouette generique
-  'medecin:jambes', // Médecin — manque profile+back ; servi : silhouette generique
-  'messager:jambes', // Messager — manque profile+back ; servi : silhouette generique
-  'milicien:jambes', // Milicien — manque profile+back ; servi : silhouette generique
-  'mineur:jambes', // Mineur — manque profile+back ; servi : silhouette generique
-  'mystique:jambes', // Mystique — manque profile+back ; servi : silhouette generique
-  'naufrageur:jambes', // Naufrageur — manque profile+back ; servi : silhouette generique
-  'nautonier:jambes', // Nautonier — manque profile+back ; servi : silhouette generique
-  'ogre:bras', // Ogre — manque profile+back ; servi : FRONT PLAQUE
-  'patrouilleur-fluvial:bras', // Patrouilleur fluvial — manque profile+back ; servi : FRONT PLAQUE
-  'patrouilleur-fluvial:jambes', // Patrouilleur fluvial — manque profile+back ; servi : silhouette generique
-  'patrouilleur-routier:bras', // Patrouilleur routier — manque profile+back ; servi : FRONT PLAQUE
-  'patrouilleur-routier:jambes', // Patrouilleur routier — manque profile+back ; servi : silhouette generique
-  'pilleur-de-tombes:bras', // Pilleur de tombes — manque profile+back ; servi : FRONT PLAQUE
-  'pilleur-de-tombes:jambes', // Pilleur de tombes — manque profile+back ; servi : silhouette generique
-  'pretre-guerrier:jambes', // Prêtre guerrier — manque profile+back ; servi : silhouette generique
-  'pretre:jambes', // Prêtre — manque profile+back ; servi : silhouette generique
-  'prophete-gris:bras', // Prophète gris — manque profile+back ; servi : FRONT PLAQUE
-  'prophete-gris:jambes', // Prophète gris — manque profile+back ; servi : silhouette generique
-  'prophete-gris:torse', // Prophète gris — manque profile+back ; servi : silhouette generique
-  'ranconneur:jambes', // Rançonneur — manque profile+back ; servi : silhouette generique
-  'ratier:bras', // Ratier — manque profile+back ; servi : FRONT PLAQUE
-  'ratier:jambes', // Ratier — manque profile+back ; servi : silhouette generique
-  'receleur:jambes', // Receleur — manque profile+back ; servi : silhouette generique
-  'repurgateur:jambes', // Répurgateur — manque profile+back ; servi : silhouette generique
-  'rodeur-fantome:bras', // Rôdeur fantôme — manque profile+back ; servi : FRONT PLAQUE
-  'saltimbanque:jambes', // Saltimbanque — manque profile+back ; servi : silhouette generique
-  'serviteur:jambes', // Serviteur — manque profile+back ; servi : silhouette generique
-  'sorcier-de-village:jambes', // Sorcier de village — manque profile+back ; servi : silhouette generique
-  'sorcier-dissident:jambes', // Sorcier dissident — manque profile+back ; servi : silhouette generique
-  'spadassin:jambes', // Spadassin — manque profile+back ; servi : silhouette generique
-  'tueur:jambes', // Tueur — manque profile+back ; servi : silhouette generique
-  'vermine-de-choc:bras', // Vermine de choc — manque profile+back ; servi : FRONT PLAQUE
-  'vermine-de-choc:jambes', // Vermine de choc — manque profile+back ; servi : silhouette generique
-  'vermine-de-choc:tete', // Vermine de choc — manque profile+back ; servi : silhouette generique
-  'vermine-de-choc:torse', // Vermine de choc — manque profile+back ; servi : silhouette generique
-  'armure:cuir:bras', // Cuir — manque profile+back ; servi : FRONT PLAQUE
-  'armure:maille:bras', // Maille — manque profile+back ; servi : FRONT PLAQUE
-  'armure:plaque:bras', // Plaque — manque profile+back ; servi : FRONT PLAQUE
-  'armure:rembourre:bras', // Rembourre — manque profile+back ; servi : FRONT PLAQUE
-])
+export const PART_VIEW_RATCHET = [
+  { fichier: 'src/gameIso/rig/parts/armour/defs/Cuir.ts', ref: 'armure:cuir:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/armour/defs/Maille.ts', ref: 'armure:maille:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/armour/defs/Plaque.ts', ref: 'armure:plaque:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/armour/defs/Rembourre.ts', ref: 'armure:rembourre:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Apothicaire.ts', ref: 'apothicaire:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Artiste.ts', ref: 'artiste:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Bailli.ts', ref: 'bailli:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Boucher-ogre.ts', ref: 'boucher-ogre:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Cavalier.ts', ref: 'cavalier:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Chasseur-de-primes.ts', ref: 'chasseur-de-primes:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Chasseur.ts', ref: 'chasseur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Chevaucheur-de-blaireau.ts', ref: 'chevaucheur-de-blaireau:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Cocher.ts', ref: 'cocher:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Colporteur.ts', ref: 'colporteur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Conseiller.ts', ref: 'conseiller:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Contrebandier.ts', ref: 'contrebandier:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Coureur-d-egout.ts', ref: 'coureur-d-egout:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Coureur-d-egout.ts', ref: 'coureur-d-egout:tete', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Coureur-d-egout.ts', ref: 'coureur-d-egout:torse', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Debardeur.ts', ref: 'debardeur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Duelliste.ts', ref: 'duelliste:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Eclaireur.ts', ref: 'eclaireur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Emissaire.ts', ref: 'emissaire:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Enqueteur.ts', ref: 'enqueteur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Entremetteur.ts', ref: 'entremetteur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Erudit.ts', ref: 'erudit:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Esclave-skaven.ts', ref: 'esclave-skaven:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Esclave-skaven.ts', ref: 'esclave-skaven:torse', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Espion.ts', ref: 'espion:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Femme-du-fleuve.ts', ref: 'femme-du-fleuve:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Garde.ts', ref: 'garde:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Gardien-de-troupeaux-de-rhinox.ts', ref: 'gardien-de-troupeaux-de-rhinox:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Gladiateur.ts', ref: 'gladiateur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Herboriste.ts', ref: 'herboriste:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Hors-la-loi.ts', ref: 'hors-la-loi:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Ingenieur.ts', ref: 'ingenieur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Intendant.ts', ref: 'intendant:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Juriste.ts', ref: 'juriste:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Mangeur-d-hommes.ts', ref: 'mangeur-d-hommes:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Marchand.ts', ref: 'marchand:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Marin.ts', ref: 'marin:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Medecin.ts', ref: 'medecin:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Messager.ts', ref: 'messager:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Milicien.ts', ref: 'milicien:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Mineur.ts', ref: 'mineur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Mystique.ts', ref: 'mystique:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Naufrageur.ts', ref: 'naufrageur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Nautonier.ts', ref: 'nautonier:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Ogre.ts', ref: 'ogre:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Patrouilleur-fluvial.ts', ref: 'patrouilleur-fluvial:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Patrouilleur-fluvial.ts', ref: 'patrouilleur-fluvial:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Patrouilleur-routier.ts', ref: 'patrouilleur-routier:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Patrouilleur-routier.ts', ref: 'patrouilleur-routier:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Pilleur-de-tombes.ts', ref: 'pilleur-de-tombes:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Pilleur-de-tombes.ts', ref: 'pilleur-de-tombes:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Pretre-guerrier.ts', ref: 'pretre-guerrier:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Pretre.ts', ref: 'pretre:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Prophete-gris.ts', ref: 'prophete-gris:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Prophete-gris.ts', ref: 'prophete-gris:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Prophete-gris.ts', ref: 'prophete-gris:torse', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Ranconneur.ts', ref: 'ranconneur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Ratier.ts', ref: 'ratier:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Ratier.ts', ref: 'ratier:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Receleur.ts', ref: 'receleur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Repurgateur.ts', ref: 'repurgateur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Rodeur-fantome.ts', ref: 'rodeur-fantome:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Saltimbanque.ts', ref: 'saltimbanque:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Serviteur.ts', ref: 'serviteur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Sorcier-de-village.ts', ref: 'sorcier-de-village:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Sorcier-dissident.ts', ref: 'sorcier-dissident:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Spadassin.ts', ref: 'spadassin:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Tueur.ts', ref: 'tueur:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Vermine-de-choc.ts', ref: 'vermine-de-choc:bras', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Vermine-de-choc.ts', ref: 'vermine-de-choc:jambes', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Vermine-de-choc.ts', ref: 'vermine-de-choc:tete', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Vermine-de-choc.ts', ref: 'vermine-de-choc:torse', occurrence: 1 },
+]
 
-/** @type {ReadonlySet<string>} */
-export const PART_VIEW_ALIAS_RATCHET = new Set([
-  // L'ogre a reçu ses 3 vues de jambe au fix des jambes olive (`394f2b29`, #538) : le MÊME fragment
-  // `JAMBE` est servi aux 3 vues. La chair cesse d'être olive (le défaut visé est bien mort), mais le
-  // profil garde la largeur et la lanière de la vue de face — genou et botte de côté restent à dessiner.
-  'ogre:jambes:profile', // Ogre
-  'ogre:jambes:back', // Ogre
-  // Le dos de la Nonne est son art de FACE au trait près, repeint `@cuir` -> `@cuirO` (assombri) :
-  // géométrie identique (paths byte-pour-byte), seul le remplissage change. La comparaison de
-  // CHAÎNES le tenait pour un vrai dos ; la géométrie le voit. Genou/talon de dos restent à dessiner.
-  'nonne:jambes:back', // Nonne
-])
+export const PART_VIEW_ALIAS_RATCHET = [
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Nonne.ts', ref: 'nonne:jambes:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Ogre.ts', ref: 'ogre:jambes:back', occurrence: 1 },
+  { fichier: 'src/gameIso/rig/parts/tenues/defs/Ogre.ts', ref: 'ogre:jambes:profile', occurrence: 1 },
+]

@@ -15,9 +15,11 @@
  * (#583). Étendre le périmètre si une armure en gagne une.
  */
 import { TENUE_DEFS } from '../../../src/gameIso/rig/parts/tenues/_registry.generated';
-import type { TenueSet } from '../../../src/gameIso/rig/parts/tenues/types';
+import type { TenueDef } from '../../../src/gameIso/rig/parts/tenues/types';
 import type { PartArt } from '../../../src/gameIso/rig/parts/types';
 import { slugId } from '../../../src/data/slug';
+import { fichierDeDef, REGISTRE_TENUES } from './registreDeDefs';
+import type { Site } from './partViewAudit';
 
 export const BODY_SLOTS = ['torse', 'jambes', 'bras', 'tete'] as const;
 export type BodySlot = (typeof BODY_SLOTS)[number];
@@ -30,18 +32,23 @@ function viewsOf(art: PartArt): Partial<Record<View, string>> {
   return typeof art === 'string' ? { front: art } : art;
 }
 
-/** `<tenueId>:<slot>:<vue>` pour toute vue dont l'art contient `fill="…url(#g_flesh)…"`. */
-export function auditFleshGradient(defs: readonly { label: string; set: TenueSet }[] = TENUE_DEFS): Set<string> {
-  const found = new Set<string>();
+/**
+ * Un SITE par vue dont l'art contient `fill="…url(#g_flesh)…"` :
+ * `{ file: <le def qui grave>, ref: '<tenueId>:<slot>:<vue>' }`. Le FICHIER est dans le site parce
+ * qu'un stock ne se relit pas sans lui : c'est lui que la porte de plage voit, et lui que l'artiste
+ * doit ouvrir pour migrer vers `@peau*`. `sitesEnEntrees` (`stock.mjs`) l'ordinalise en entrée.
+ */
+export function auditFleshGradient(defs: readonly TenueDef[] = TENUE_DEFS): Site[] {
+  const sites: Site[] = [];
   for (const def of defs) {
     const id = slugId(def.label);
     for (const slot of BODY_SLOTS) {
       const art = def.set[slot];
       if (art == null) continue;
       for (const [view, svg] of Object.entries(viewsOf(art))) {
-        if (svg && G_FLESH.test(svg)) found.add(`${id}:${slot}:${view}`);
+        if (svg && G_FLESH.test(svg)) sites.push({ file: fichierDeDef(REGISTRE_TENUES, def), ref: `${id}:${slot}:${view}` });
       }
     }
   }
-  return found;
+  return sites;
 }

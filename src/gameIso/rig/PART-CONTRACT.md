@@ -87,9 +87,12 @@ Une vue **recopiée** sur le front satisfait la lettre du format mais produit le
 tuer : refusée au même titre (**anti-alias**). La garde compare des **géométries**, donc l'espace
 ajouté, le commentaire, le `<g>` enveloppant et le simple **recoloriage** du front sont refusés eux
 aussi. Deux stocks gelés dans `scripts/guards/lib/rigPartViewStock.mjs` (`PART_VIEW_RATCHET` =
-slots front-only, `PART_VIEW_ALIAS_RATCHET` = vues recopiées) ; toute entrée NEUVE échoue, une clé
-soldée qui y traîne échoue aussi, et la **taille** de chaque stock est plafonnée (`MAX_FORMAT`/
-`MAX_ALIAS`, dans la garde) — un stock **ne peut que décroître**. La garde exerce le chemin RÉEL
+slots front-only, `PART_VIEW_ALIAS_RATCHET` = vues recopiées), en entrées `{ fichier, ref,
+occurrence }` régénérées par `npx tsx scripts/rig/regen-part-view-stock.mts` (`--check`). Le
+mécanisme est l'**ÉCART NOMINATIF** (`ecartDuVolet`, `scripts/guards/lib/stock.mjs`), **aucun
+plafond** : un site hors stock échoue (*neuves*), une entrée que plus aucun site ne porte échoue
+(*périmées*) — une dette ne peut pas croître **sans se déclarer**, et c'est l'entrée qui NOMME son
+fichier que la porte de plage (`croissanceDesStocks`) voit à l'append. La garde exerce le chemin RÉEL
 (`resolveParts` + le discriminant de format `hasProfileView`/`hasBackView`, `parts/types.ts`), jamais
 une réplique, et ses évasions connues sont testées (`describe('morsure')`). **Se solde en DESSINANT
 la vue, jamais en allongeant la liste.**

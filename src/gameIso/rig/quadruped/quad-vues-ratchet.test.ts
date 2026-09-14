@@ -27,10 +27,10 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { CREATURES, QUAD_SPECIES, WINGED_SPECIES } from '../creatures';
 import { QUAD_Z, quadZOrder, QUAD_DECO_PLAN_MAX } from './quadZ';
-import {
-  quadDecoCouples, APPLICABLES_GELES, PLAFOND_DECOS_MORTS, DECOS_MORTS_GELES, quadDecoDefs,
-  DECOS_SANS_PLAN_GELES, PLAFOND_DECOS_SANS_PLAN, quadLayersSvg, DECO_VIEWS,
-} from './deco-stock.fixture';
+import { quadDecoCouples, APPLICABLES_GELES, quadDecoDefs, quadLayersSvg, DECO_VIEWS } from './deco-stock.fixture';
+import { DECOS_MORTS_RATCHET, DECOS_SANS_PLAN_RATCHET } from '../../../../scripts/guards/lib/quadDecoStock.mjs';
+import { ecartDuVolet, type EntreeNominative } from '../../../../scripts/guards/lib/stock.mjs';
+import { fichierDeEspece } from '../../../../scripts/guards/lib/quadDecoAudit';
 import { resolveQuad, resolveQuadFromProps } from './composeQuad';
 import { buildQuadSkeleton, quadSkeletonForView, type QuadBoneId, type QuadProps } from './quadSkeleton';
 import { quadParts, quadDecoFragments, quadAnchor } from './quadParts';
@@ -46,12 +46,31 @@ const quadDefs = CREATURES.filter((c) => c.quad).map((c) => ({ id: c.id, quad: c
 
 /** Plan de fragment HORS du voisinage admis de son os : au-delà de la borne, ou non fini
  *  (`NaN`/`±Infinity` — toute comparaison avec `NaN` est fausse, la valeur passerait sinon). */
+const STOCK = 'scripts/guards/lib/quadDecoStock.mjs';
+/** Les couples du stock, en clés `<espèce> <vue> <clé>` — la forme que les sondes de rendu lisent. */
+const MORTS = DECOS_MORTS_RATCHET.map((e) => e.ref);
+
+/** Cliquet générique par la primitive PARTAGÉE du dépôt : sites hors stock = neuves, entrées que
+ *  plus aucun couple ne porte = périmées. Aucun PLAFOND — ce qu'une dette ne peut pas faire, c'est
+ *  croître SANS SE DÉCLARER, et c'est l'entrée `{ fichier, ref, occurrence }`, qui NOMME la def de
+ *  créature, que la porte de plage voit à l'append. */
+const ratchet = (couples: readonly string[], stock: Iterable<EntreeNominative>) =>
+  ecartDuVolet({ sites: couples.map((c) => ({ file: fichierDeEspece(c.split(' ')[0]), ref: c })), stock, ou: STOCK });
+
+/** Une ligne de remède CONTIENT-elle cette clé ? (le remède décore la clé d'une phrase) */
+const porte = (lignes: readonly string[], cle: string) => lignes.some((l) => l.includes(cle));
+
 const planHorsBorne = (plan: number): boolean =>
   !Number.isFinite(plan) || Math.abs(plan) > QUAD_DECO_PLAN_MAX;
 
 // ── (a) DÉCORS MORTS, PLANS NON DÉCLARÉS ────────────────────────────────────────────────────
-// Le détecteur et les stocks GELÉS vivent dans `deco-stock.fixture.ts` (source unique, partagée
-// avec le CONTRAT `quad-anchor-contract.test.ts` qui, lui, rougit sur tout couple mort NOUVEAU).
+// Le DÉTECTEUR (`quadDecoCouples`) vit dans `deco-stock.fixture.ts` — source unique, partagée avec
+// le CONTRAT `quad-anchor-contract.test.ts` qui, lui, rougit sur tout couple mort NOUVEAU ; le
+// fixture porte aussi les deux listes GELÉES que les gardes lisent telles quelles
+// (`APPLICABLES_GELES`, la population applicable ; `ANCRES_OEIL_ABSENTES_GELEES`, au CONTRAT).
+// Les trois stocks nominatifs `{ fichier, ref, occurrence }` vivent dans
+// `scripts/guards/lib/quadDecoStock.mjs` (`DECOS_MORTS_RATCHET`, `DECOS_SANS_PLAN_RATCHET`,
+// `REPERES_ART_PROPRES_RATCHET`), importés ci-dessus — jugés par l'ÉCART NOMINATIF (`ecartDuVolet`).
 
 /** L'os d'un couple porte-t-il un art dans cette vue ? (art émis = le décor n'est plus perdu) */
 function artEmis(couple: string): boolean {
@@ -69,9 +88,22 @@ describe('décors MORTS : le stock gelé ne peut que décroître (#1082)', () =>
     expect(applicables.length).toBeGreaterThan(50);
   });
 
-  it('le stock reste sous son plafond', () => {
-    const { morts } = quadDecoCouples();
-    expect(morts.length).toBeLessThanOrEqual(PLAFOND_DECOS_MORTS);
+  it('aucun couple mort NEUF, et aucune entrée PÉRIMÉE — le stock est nominatif, sans plafond', () => {
+    const { neuves, perimees } = ratchet(quadDecoCouples().morts, DECOS_MORTS_RATCHET);
+    expect(neuves, `décor NEUF peint nulle part — câbler l'os ou créer l'art, jamais stocker :\n  ${neuves.join('\n  ')}`).toEqual([]);
+    expect(perimees, `entrée du stock des morts dont l'os est désormais émis — la retirer\n` +
+      `(npx tsx scripts/rig/regen-quad-deco-stock.mts) :\n  ${perimees.join('\n  ')}`).toEqual([]);
+  });
+
+  /** ALLONGER le stock ne s'échange plus contre un plafond relevé : une entrée de plus se DÉCLARE,
+   *  parce qu'elle nomme un fichier — la garde la voit PÉRIMÉE, la porte de plage la voit à l'append. */
+  it('ALLONGER le stock rougit : une entrée que plus aucun couple ne porte est PÉRIMÉE', () => {
+    const gonfle = [...DECOS_MORTS_RATCHET, {
+      fichier: 'src/gameIso/rig/creatures/defs/BeteQuiNExistePas.ts', ref: 'gonflement back encolure', occurrence: 1,
+    }];
+    const { perimees } = ratchet(quadDecoCouples().morts, gonfle);
+    expect(porte(perimees, ' :: gonflement back encolure :: 1')).toBe(true);
+    expect(porte(perimees, 'entrée SOLDÉE')).toBe(true);
   });
 
   it('aucun couple applicable GELÉ n\'a disparu sans que son art soit émis', () => {
@@ -168,7 +200,7 @@ describe('stock des MORTS : chaque entrée est une dette soldable BYTE-NEUTRE (#
     const defs = parId();
     const ecarts: string[] = [];
     let mesures = 0;
-    for (const couple of DECOS_MORTS_GELES) {
+    for (const couple of MORTS) {
       const [id, vue, cle] = couple.split(' ') as [string, View, string];
       const quad = defs.get(id);
       expect(quad, `${couple} : def introuvable — entrée périmée du stock`).toBeTruthy();
@@ -178,14 +210,14 @@ describe('stock des MORTS : chaque entrée est une dette soldable BYTE-NEUTRE (#
         if (rendu(quad!, v) !== rendu(etroite, v)) ecarts.push(`${couple} → ${v}`);
       }
     }
-    expect(DECOS_MORTS_GELES.length, 'stock vide : la mesure passerait à vide').toBeGreaterThan(0);
-    expect(mesures).toBe(DECOS_MORTS_GELES.length * 3);
+    expect(MORTS.length, 'stock vide : la mesure passerait à vide').toBeGreaterThan(0);
+    expect(mesures).toBe(MORTS.length * 3);
     expect(ecarts, 'couple déclaré MORT dont le retrait change le rendu : il peignait quelque chose').toEqual([]);
   });
 
   it('la sonde MORD : retirer un couple VIVANT change le rendu (témoin inversé)', () => {
     const defs = parId();
-    const vivants = quadDecoCouples().applicables.filter((c) => !DECOS_MORTS_GELES.includes(c));
+    const vivants = quadDecoCouples().applicables.filter((c) => !MORTS.includes(c));
     const muets: string[] = [];
     for (const couple of vivants) {
       const [id, vue, cle] = couple.split(' ') as [string, View, string];
@@ -200,16 +232,18 @@ describe('stock des MORTS : chaque entrée est une dette soldable BYTE-NEUTRE (#
 });
 
 // ── (a bis) PLANS DE DÉCOR NON DÉCLARÉS (transition N2) ─────────────────────────────────────
-describe('décors SANS plan déclaré : stock gelé, plafond décroissant (#1082)', () => {
-  it('aucun couple sans plan HORS du stock gelé', () => {
-    const { sansPlan } = quadDecoCouples();
-    const nouveaux = sansPlan.filter((c) => !DECOS_SANS_PLAN_GELES.includes(c));
-    expect(nouveaux, 'décor authoré sans `plan` : le canal de calques attend un plan RELATIF à l\'os').toEqual([]);
+describe('décors SANS plan déclaré : stock nominatif, sans plafond (#1082)', () => {
+  it('aucun couple sans plan HORS du stock, et aucune entrée PÉRIMÉE', () => {
+    const { neuves, perimees } = ratchet(quadDecoCouples().sansPlan, DECOS_SANS_PLAN_RATCHET);
+    expect(neuves, `décor authoré sans \`plan\` : le canal de calques attend un plan RELATIF à l'os :\n  ${neuves.join('\n  ')}`).toEqual([]);
+    expect(perimees, `entrée du stock qui déclare désormais son plan — la retirer\n` +
+      `(npx tsx scripts/rig/regen-quad-deco-stock.mts) :\n  ${perimees.join('\n  ')}`).toEqual([]);
   });
 
-  it('le stock reste sous son plafond', () => {
-    const { sansPlan } = quadDecoCouples();
-    expect(sansPlan.length).toBeLessThanOrEqual(PLAFOND_DECOS_SANS_PLAN);
+  it("chaque entrée NOMME la def de créature à ouvrir — c'est ce que la porte de plage voit", () => {
+    const muettes = DECOS_SANS_PLAN_RATCHET.filter((e) => !/^src\/gameIso\/rig\/creatures\/defs\/.+\.ts$/.test(e.fichier));
+    expect(muettes, `Entrées dont le \`fichier\` n'est pas un chemin de def : elles seraient INVISIBLES à\n` +
+      `\`croissanceDesStocks\` :\n  ${JSON.stringify(muettes)}`).toEqual([]);
   });
 
   it('tout plan déclaré tient dans le voisinage de son os', () => {

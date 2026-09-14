@@ -8,10 +8,7 @@ import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import { residusDom, cleFichierTest, messageResiduDom } from './test-setup';
 import { DOM_RESIDU_STOCK } from '../scripts/guards/lib/domResiduStock.mjs';
-
-/** Population mesurée le 2026-09-01 sur les 299 fichiers de test jsdom, moins les cinq fuites
- *  éteintes par la barrière des racines montées (#1724). Ne peut que DÉCROÎTRE. */
-const MAX_DOM_RESIDU = 7;
+import { ecartsDeStock } from '../scripts/guards/lib/stock.mjs';
 
 // Lecteur ASSEMBLÉ à l'exécution : patron de `src/portable-paths-guard.test.ts:51`.
 const LECTEUR = 'C' + ':';
@@ -44,16 +41,28 @@ describe('barrière de fuite DOM — verdict', () => {
   });
 });
 
+/**
+ * CLIQUET du stock, en deux sens et sans AUCUN compte. La forme reste un `Set` de CHEMINS : la clé
+ * EST le fichier (`src/test-setup.ts` la consomme par `.has` à l'exécution), et c'est ce chemin que
+ * la porte de plage (`croissanceDesStocks`) voit — lui inventer une `ref` serait une donnée sans
+ * mesure. D'où la disparition du plafond : allonger ce stock se DÉCLARE déjà, ligne par ligne.
+ * UNE lecture de « périmée » par module : ici la ligne MORTE (fichier disparu), et à la fin d'une
+ * suite complète verte celle d'`entreesPerimees` (le fichier a JOUÉ et n'a PAS fui) — la seconde
+ * exige d'avoir joué, ce que cette suite-ci ne fait pas.
+ */
 describe('stock d’extinction — cliquet', () => {
-  it('vaut EXACTEMENT sa population mesurée — une fuite neuve se démonte, une fuite éteinte quitte la liste', () => {
-    expect(
-      DOM_RESIDU_STOCK.size,
-      `DOM_RESIDU_STOCK ne vaut plus sa population mesurée (${DOM_RESIDU_STOCK.size} pour ${MAX_DOM_RESIDU}) — une fuite neuve se DÉMONTE (jamais ne se stocke), une ligne soldée descend ce compte.`,
-    ).toBe(MAX_DOM_RESIDU);
+  it('ne porte que des fichiers existants (une ligne morte se retire)', () => {
+    const { perimees } = ecartsDeStock({
+      observe: [...DOM_RESIDU_STOCK].filter((f) => existsSync(f)),
+      stock: DOM_RESIDU_STOCK,
+      cle: (f) => f,
+    });
+    expect(perimees, `ligne(s) du stock sans fichier — retirer de domResiduStock.mjs :\n${perimees.join('\n')}`).toEqual([]);
   });
 
-  it('ne porte que des fichiers existants (une ligne morte se retire)', () => {
-    const fantomes = [...DOM_RESIDU_STOCK].filter((f) => !existsSync(f));
-    expect(fantomes, `ligne(s) du stock sans fichier — retirer de domResiduStock.mjs :\n${fantomes.join('\n')}`).toEqual([]);
+  it('chaque ligne est un CHEMIN de fichier de test — c’est ce que la porte de plage voit', () => {
+    const muettes = [...DOM_RESIDU_STOCK].filter((f) => !/^src\/.+\.test\.tsx?$/.test(f));
+    expect(muettes, `ligne(s) dont la graphie n’est pas un chemin POSIX sous \`src/\` : elles seraient\n` +
+      `INVISIBLES à \`croissanceDesStocks\`, et un append ne coûterait rien :\n${muettes.join('\n')}`).toEqual([]);
   });
 });
