@@ -1,5 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { signalerEntreeEnScene, entreeEnScene, attendreEntreeEnScene } from './entreeEnScene';
+import { signalerEntreeEnScene, entreeEnScene, attendreEntreeEnScene, EntreeEnSceneNonAtteinte } from './entreeEnScene';
+
+/** Le refus est une DONNÉE : on juge l'INSTANCE et ses champs, jamais une phrase (la prose de
+ *  `__wfrp.ready` vit dans `devtools.ts`, seule surface FR de ce refus). */
+async function refus(p: Promise<unknown>): Promise<EntreeEnSceneNonAtteinte | 'résolu'> {
+  return p.then(() => 'résolu' as const, (e: unknown) => {
+    expect(e).toBeInstanceOf(EntreeEnSceneNonAtteinte);
+    return e as EntreeEnSceneNonAtteinte;
+  });
+}
 
 describe('entreeEnScene (#1478) — le rendez-vous « monde prêt » de la recette', () => {
   beforeEach(() => {
@@ -27,30 +36,25 @@ describe('entreeEnScene (#1478) — le rendez-vous « monde prêt » de la recet
     await expect(p).resolves.toMatchObject({ sceneId: 'opera-plan' });
   });
 
-  it('ne résout PAS sur une AUTRE scène — et le refus nomme les deux ids', async () => {
-    const p = attendreEntreeEnScene(() => 'opera-plan', 1000);
-    const verdict = p.then(() => 'résolu', (e: Error) => e.message);
+  it('ne résout PAS sur une AUTRE scène — et le refus porte les deux ids', async () => {
+    const verdict = refus(attendreEntreeEnScene(() => 'opera-plan', 1000));
     await vi.advanceTimersByTimeAsync(0);
     signalerEntreeEnScene('arene-zone1', false);
     await vi.advanceTimersByTimeAsync(1200);
-    const msg = await verdict;
-    expect(msg).toContain('scène attendue « opera-plan »');
-    expect(msg).toContain('montée « arene-zone1 »');
+    expect(await verdict).toMatchObject({ cause: 'scene-differente', attendu: 'opera-plan', montee: 'arene-zone1', timeoutMs: 1000 });
   });
 
   it('rejette au timeout quand AUCUN monde n\'a signalé', async () => {
-    const p = attendreEntreeEnScene(() => 'opera-plan', 800);
-    const verdict = p.then(() => 'résolu', (e: Error) => e.message);
+    const verdict = refus(attendreEntreeEnScene(() => 'opera-plan', 800));
     await vi.advanceTimersByTimeAsync(1000);
-    expect(await verdict).toContain('aucun monde monté après 800 ms');
+    expect(await verdict).toMatchObject({ cause: 'aucun-monde', attendu: 'opera-plan', montee: null, timeoutMs: 800 });
   });
 
   it('rejette au timeout quand le VOILE reste levé sur la bonne scène', async () => {
-    const p = attendreEntreeEnScene(() => 'opera-plan', 800);
-    const verdict = p.then(() => 'résolu', (e: Error) => e.message);
+    const verdict = refus(attendreEntreeEnScene(() => 'opera-plan', 800));
     await vi.advanceTimersByTimeAsync(0);
     signalerEntreeEnScene('opera-plan', true);
     await vi.advanceTimersByTimeAsync(1000);
-    expect(await verdict).toContain('voile encore levé sur « opera-plan » après 800 ms');
+    expect(await verdict).toMatchObject({ cause: 'voile-leve', attendu: 'opera-plan', montee: 'opera-plan', timeoutMs: 800 });
   });
 });

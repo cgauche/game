@@ -80,7 +80,8 @@ import { t } from '../i18n';
 import { diamondCorners, type Dims } from '../geometry/iso';
 import { chebyshev } from '../engine/grid';
 import { actionsDe } from './usable';
-import { attendreEntreeEnScene } from './entreeEnScene';
+import { attendreEntreeEnScene, EntreeEnSceneNonAtteinte } from './entreeEnScene';
+import { scheduleFlowTimer } from './combatTimers';
 import { editeur } from './editeurBridge';
 
 /** Trace du DERNIER Test résolu (`resolveTest`, `EVT.TEST_RESOLVED`) — observation pure pour la
@@ -438,6 +439,18 @@ function recallScenario(): LastScenario | null {
   } catch {
     return null;
   }
+}
+
+/** Le refus de `ready()` DIT au recetteur ce que l'attente a mesuré : la couche `state`
+ *  (`entreeEnScene.ts`) rend la cause et les ids, la console de recette en fait sa phrase. */
+function refusDeReady(e: EntreeEnSceneNonAtteinte): string {
+  if (e.cause === 'aucun-monde') {
+    return `✗ __wfrp.ready : aucun monde monté après ${e.timeoutMs} ms — aucune scène volumique n'a signalé son entrée en scène`;
+  }
+  if (e.cause === 'scene-differente') {
+    return `✗ __wfrp.ready : scène attendue « ${e.attendu ?? 'aucune'} » vs montée « ${e.montee} » après ${e.timeoutMs} ms`;
+  }
+  return `✗ __wfrp.ready : voile encore levé sur « ${e.montee} » après ${e.timeoutMs} ms`;
 }
 
 /**
@@ -864,7 +877,8 @@ export function buildApi(scenarios: readonly TestScenario[] = testScenarios) {
      *  l'armement du voile (`GameStage3D.tsx`, effet keyé `[scene.id]`) — `ready()` résout alors
      *  pendant la re-cuisson. Changer de scénario, ou recharger la page. */
     ready: (timeoutMs = 15000) => attendreEntreeEnScene(() => g().scene?.id ?? null, timeoutMs)
-      .then(({ sceneId, ms }) => `✓ monde prêt — scène « ${sceneId} », voile tombé après ${ms} ms`),
+      .then(({ sceneId, ms }) => `✓ monde prêt — scène « ${sceneId} », voile tombé après ${ms} ms`)
+      .catch((e: unknown) => { throw e instanceof EntreeEnSceneNonAtteinte ? new Error(refusDeReady(e)) : e; }),
 
     /** Ouvre un document dans l'ÉDITEUR sans passer par la modale « Ouvrir » (#1478) — donc sans le
      *  dialogue de fichier de l'OS, qu'aucun pilote navigateur ne sait fermer. Sans id : rend les
@@ -886,7 +900,7 @@ export function buildApi(scenarios: readonly TestScenario[] = testScenarios) {
         if (Date.now() - t0 > montageMs) {
           throw new Error(`✗ __wfrp.editorOpen : l'éditeur ne s'est pas monté après ${montageMs} ms — écran « ${g().screen} »`);
         }
-        await new Promise((r) => setTimeout(r, 50));
+        await new Promise<void>((r) => { scheduleFlowTimer(() => r(), 50); });
       }
       return editeur.ouvrir(id);
     },

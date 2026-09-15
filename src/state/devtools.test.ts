@@ -17,6 +17,7 @@ import type { WorldMap } from './worldMap';
 import { builtinCampaigns } from '../scenes/campaign';
 import { testScenarios, type TestScenario } from '../scenes/test-scenarios';
 import { editeur } from './editeurBridge';
+import { signalerEntreeEnScene } from './entreeEnScene';
 
 describe('__wfrp.killEnemies — commande de recette (élimine les ennemis, victoire normale)', () => {
   beforeEach(() => {
@@ -641,5 +642,34 @@ describe('__wfrp.visibleCount / __wfrp.walls — sondes de brouillard et d’ar�
     useGame.setState((s) => ({ scene: setDoorOpen(s.scene!, p.x, p.y, p.side, 0, false) }));
     const relue = portes().find((q) => q.x === p.x && q.y === p.y && q.side === p.side)!;
     expect(relue.closed).toBe(true);
+  });
+});
+
+describe('__wfrp.ready — la PROSE du refus est composée ICI (#1478)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    signalerEntreeEnScene(null, false); // état de module de `entreeEnScene` : remis à neuf
+    useGame.setState({ scene: null });
+  });
+  afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+    signalerEntreeEnScene(null, false);
+  });
+
+  it('aucun monde signalé : le rejet porte le texte FR de la console de recette', async () => {
+    const verdict = buildApi().ready(800).then(() => 'résolu', (e: Error) => e.message);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(await verdict).toBe(
+      '✗ __wfrp.ready : aucun monde monté après 800 ms — aucune scène volumique n\'a signalé son entrée en scène',
+    );
+  });
+
+  it('monde monté, voile tombé : le ✓ nomme la scène', async () => {
+    useGame.setState({ scene: { ...emptyScene(4, 4), id: 'opera-plan' } });
+    const p = buildApi().ready(800);
+    await vi.advanceTimersByTimeAsync(0);
+    signalerEntreeEnScene('opera-plan', false);
+    expect(await p).toContain('✓ monde prêt — scène « opera-plan »');
   });
 });
