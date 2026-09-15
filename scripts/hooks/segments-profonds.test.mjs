@@ -32,6 +32,7 @@ import {
   evaluate as evaluateSolde,
 } from './solde-ticket-guard.mjs'
 import { evaluate as evaluateLabel } from './issue-label-guard.mjs'
+import { evaluate as evaluateGates } from './codeur-gates-guard.mjs'
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 // Lecteurs Windows et racines de profil ASSEMBLÉS à l'exécution : ce fichier ne porte aucun chemin
@@ -101,6 +102,17 @@ for (const { nom, git, gh } of FORMES_VUES) {
     assert.ok(evaluateLabel(gh), `gh issue create sans label invisible derrière « ${nom} »`)
   })
 }
+
+// ── Troisième consommateur du socle : le verrou des gates du train (#1768) ────────────────────────
+// `codeur-gates-guard` décide sur les MÊMES segments profonds. Deux formes suffisent à le dire : un
+// enrobeur (la chaîne d'un `sh -c` est re-tokenisée) et la RÉSOLUTION npm (`npm run gates` n'est pas
+// une clé du train, son corps `node scripts/gates/toutes.mjs` l'est).
+test('consommateur — codeur-gates-guard voit la gate derrière un enrobeur ET derrière `npm run`', () => {
+  const pourCodeur = (commande) => evaluateGates({ agentType: 'codeur', commande })
+  assert.ok(pourCodeur('sh -c "npm run lint"'), 'gate invisible derrière `sh -c`')
+  assert.ok(pourCodeur('npm run gates'), 'le corps du script npm n’a pas été résolu')
+  assert.equal(pourCodeur('node --test scripts/hooks/segments-profonds.test.mjs'), null)
+})
 
 // ── Hors portée : ce que le socle ne prétend PAS voir ─────────────────────────────────────────────
 // L'exécutable réel n'est pas dans la commande (fichier, variable d'environnement, substitution) :

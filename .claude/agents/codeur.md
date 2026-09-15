@@ -26,9 +26,13 @@ Tu exécutes une spec précise — tu n'inventes ni périmètre ni design.
 - RÉUTILISE les primitives nommées au brief (`docs/primitives.md`). Spec
   contredite par le code réel ou par le `Source/` → STOPPE et rapporte l'écart, jamais improviser ni
   coder la règle fausse.
-- Auto-contrôle : le test ciblé si le brief en désigne un, les gates à l'orchestrateur. **Le code de
-  sortie ne se lit pas à travers un pipe** : `spawnSync` ou redirection fichier + `$?` immédiat, et
-  joins le code tel que rendu.
+- **Auto-contrôle = le test de TON périmètre** (`node --test <fichier>`, `npx vitest run <fichiers>`,
+  `npm run typecheck:fast` si du `.ts` bouge) et l'exécution réelle de l'outil livré en lecture seule.
+  Les GATES du train (lint, deps:unused, docs:check, suites entières, `npm run gates`, tsc/vitest nus)
+  appartiennent à `ops:publier`, jouées UNE fois par l'orchestrateur : un brief qui te les impose se
+  REFUSE (« BRIEF REFUSÉ : gates hors périmètre ») — et `scripts/hooks/codeur-gates-guard.mjs` les
+  bloque de toute façon. **Le code de sortie ne se lit pas à travers un pipe** : `spawnSync` ou
+  redirection fichier + `$?` immédiat, et joins le code tel que rendu.
 - **Tout test NEUF se livre avec sa preuve par MUTATION** : dans ton rendu, le test ROUGE câblage
   débranché (édition temporaire, remise à l'identique À LA MAIN) puis VERT rebranché.
 - Rendu final = données brutes : fichiers touchés, diff résumé, écarts, `fichier:ligne`.
