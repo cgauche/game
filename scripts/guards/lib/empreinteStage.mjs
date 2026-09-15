@@ -9,6 +9,9 @@
 // diverge (`fraicheurDesGenerateurs`, scripts/docs/build-all.mjs). Armer sur les sources coûterait un
 // `docs:build` complet à 59,3 % des commits (3 893 des 6 563 fichiers suivis sont une source
 // mesurée ; `src/engine/combat.ts` en arme 13) pour une divergence de blob qui ne ment sur rien.
+// Le pied qu'une source périme est re-signé UNE fois par train, à l'étape docs de `ops:publier`, qui
+// juge désormais aussi les pieds des cibles `check: false` (`piedsDesNonVerifiables`, #1773) ; la
+// gate `docs:empreinte` reste la porte.
 
 /** Scripts de `docs/.sources-lues.json` dont un doc STAGÉ est à confronter à l'index, triés. */
 export function generateursArmes(sourcesLues, stages) {
@@ -17,4 +20,9 @@ export function generateursArmes(sourcesLues, stages) {
     .filter(([, e]) => e.cibles.some((c) => staged.has(c)))
     .map(([script]) => script)
     .sort()
+}
+
+/** Les cibles des générateurs armés, triées et dédupliquées — ce qu'un refus doit NOMMER. */
+export function ciblesDesArmes(sourcesLues, armes) {
+  return [...new Set(armes.flatMap((script) => sourcesLues[script]?.cibles ?? []))].sort()
 }

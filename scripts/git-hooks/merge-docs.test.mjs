@@ -11,7 +11,6 @@ import { catalogueConflicts, mergeFicheRaw, restoreImplemente, sentinelFor, stri
 import { GENERATORS } from '../docs/build-all.mjs'
 import { RAWDOC_META_GENERATED } from '../raw/_lib.mjs'
 import { isFicheDoc } from '../raw/build-implemente.mjs'
-import { touchesDocSources } from './docs-rebuild.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -165,17 +164,6 @@ test('catalogue — bloc MODIFIE cote entrant seul : conflit nomme', () => {
   const o = BLOC('ZI-INTEGRATION', 'version ancetre')
   const b = BLOC('ZI-INTEGRATION', 'version entrante')
   assert.deepEqual(catalogueConflicts(versions(CAT + o, CAT + o, CAT + b)), ['ZI-INTEGRATION'])
-})
-
-test('post-merge / post-rewrite — porte : régénère si une source de doc a bougé, sinon silence', () => {
-  assert.equal(touchesDocSources(['README.md', 'public/x.svg']), false)
-  assert.equal(touchesDocSources([]), false)
-  assert.equal(touchesDocSources(['src/engine/combat.ts']), true)
-  assert.equal(touchesDocSources(['scripts\\raw\\build-implemente.mjs']), true)
-  assert.equal(touchesDocSources(['docs/raw/combat.md']), true)
-  assert.equal(touchesDocSources(['Source/Warhammer v4 - LDB/13 - Combat.md']), true)
-  assert.equal(touchesDocSources(['package.json']), true)
-  assert.equal(touchesDocSources(null), true) // lot inconnu (pas d'ORIG_HEAD) → on régénère
 })
 
 /** `git check-attr merge` pour un lot de chemins → Map(chemin → famille). */

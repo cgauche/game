@@ -13,7 +13,7 @@ import { listerDossier } from '../guards/lib/lister.mjs'
 import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { fraicheurDesGenerateurs, motifRejeuComplet, SOURCES_LUES, verdictDuPied } from './build-all.mjs'
+import { fraicheurDesGenerateurs, motifRejeuComplet, piedsDesNonVerifiables, SOURCES_LUES, verdictDuPied } from './build-all.mjs'
 import {
   avecPied,
   lirePied,
@@ -34,15 +34,18 @@ const ICI = path.dirname(fileURLToPath(import.meta.url))
 const doc = (nom) => ['docs', `${nom}.md`].join('/')
 const DOC_A = doc('a')
 const DOC_B = doc('b')
+const DOC_C = doc('c')
 
-/** Trois générateurs FICTIFS : deux qui signent un doc, un qui n'injecte qu'un bloc. */
+/** Quatre générateurs FICTIFS : deux qui signent un doc, un qui n'injecte qu'un bloc, et un
+ *  `check: false` — il écrit toujours, donc `--check` ne le joue pas et seul son PIED le juge. */
 const GENERATEURS = [
   { runner: 'node', script: 'g/a.mjs', targets: [DOC_A] },
   { runner: 'node', script: 'g/b.mjs', targets: [DOC_B] },
   { runner: 'node', script: 'g/bloc.mjs', targets: [], injecte: ['MANUSCRIT.md'] },
+  { runner: 'node', script: 'g/c.mjs', targets: [DOC_C], check: false },
 ]
 
-const SOURCES = { 'g/a.mjs': ['src/a.ts'], 'g/b.mjs': ['src/b.ts'], 'g/bloc.mjs': ['src/a.ts'] }
+const SOURCES = { 'g/a.mjs': ['src/a.ts'], 'g/b.mjs': ['src/b.ts'], 'g/bloc.mjs': ['src/a.ts'], 'g/c.mjs': ['src/b.ts'] }
 
 /** Empreinte des sources d'un générateur, telle que le DISQUE les porte — ce que le pied signe. */
 function empreinteDe(racine, script) {
@@ -68,18 +71,21 @@ function depot() {
       'src/b.ts': 'export const b = 1\n',
       [DOC_A]: '# a\n',
       [DOC_B]: '# b\n',
+      [DOC_C]: '# c\n',
       'MANUSCRIT.md': '# manuscrit\n',
     },
   })
   const git = (...args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8' })
   signer(racine, 'g/a.mjs')
   signer(racine, 'g/b.mjs')
+  signer(racine, 'g/c.mjs')
   writeFileSync(
     path.join(racine, SOURCES_LUES),
     serialiserSourcesLues({
       'g/a.mjs': { cibles: [DOC_A], fichiers: ['src/a.ts'], dossiers: ['src'] },
       'g/b.mjs': { cibles: [DOC_B], fichiers: ['src/b.ts'], dossiers: ['src'] },
       'g/bloc.mjs': { cibles: [], fichiers: ['src/a.ts'], dossiers: ['src'] },
+      'g/c.mjs': { cibles: [DOC_C], fichiers: ['src/b.ts'], dossiers: ['src'] },
     }),
   )
   git('add', '-A')
@@ -213,14 +219,63 @@ test('verdictDuPied : corps identique ne dit RIEN des sources — le pied périm
   )
 })
 
+test('`check: false` : le PIED de sa cible est confronté à l’index, même si son script n’est jamais joué', () => {
+  const { racine, git } = depot()
+  try {
+    const lues = () => JSON.parse(readFileSync(path.join(racine, SOURCES_LUES), 'utf8'))
+    // Pied JUSTE : rien à rejouer, et `fraicheurDesGenerateurs` ne dit RIEN de ce générateur (il le saute).
+    assert.deepEqual(piedsDesNonVerifiables(racine, indexGit(racine), lues(), GENERATEURS), [])
+    const { frais, motifs } = mesurer(racine)
+    assert.ok(!frais.has('g/c.mjs') && !motifs.has('g/c.mjs'), '`--check` ne juge pas un `check: false` par son script')
+    // Une source STAGÉE sans re-signature : le pied décrit un arbre que l'index ne porte plus. C'est
+    // la classe qui sortait l'étape docs de `publier` VERTE, pour un refus 7 min plus tard (#1773).
+    writeFileSync(path.join(racine, 'src', 'b.ts'), 'export const b = 2\n')
+    git('add', 'src/b.ts')
+    const refus = piedsDesNonVerifiables(racine, indexGit(racine), lues(), GENERATEURS)
+    assert.equal(refus.length, 1, `un seul refus attendu, reçu ${JSON.stringify(refus)}`)
+    // MÊME rédaction que `--empreinte` (`refusDuPiedAuCommit`) : la classe n'a qu'un message.
+    assert.match(refus[0], new RegExp(`^docs:check — g/c\\.mjs — à rejouer : ${DOC_C} : doc régénéré depuis un arbre ≠ index \\(sources [0-9a-f]{12} au pied, [0-9a-f]{12} mesurées\\)\\n`))
+    assert.match(refus[0], /→ régénérer \(npm run docs:build\) et stager le doc/)
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('`check: false` : une cible ABSENTE de l’index ne refuse pas (première génération)', () => {
+  const { racine, git } = depot()
+  try {
+    git('rm', '--cached', '-q', DOC_C)
+    const lues = JSON.parse(readFileSync(path.join(racine, SOURCES_LUES), 'utf8'))
+    assert.deepEqual(piedsDesNonVerifiables(racine, indexGit(racine), lues, GENERATEURS), [])
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('`check: false` jamais mesuré : rejoué, et le dit — jamais un vert sur une absence de mesure', () => {
+  const { racine } = depot()
+  try {
+    const lues = JSON.parse(readFileSync(path.join(racine, SOURCES_LUES), 'utf8'))
+    delete lues['g/c.mjs']
+    const refus = piedsDesNonVerifiables(racine, indexGit(racine), lues, GENERATEURS)
+    assert.deepEqual(refus, [`docs:check — g/c.mjs — jamais mesuré dans ${SOURCES_LUES} — npm run docs:build`])
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
 test('le mode `--check` de build-all.mjs PASSE par ces deux décideurs', () => {
   const source = readFileSync(path.join(ICI, 'build-all.mjs'), 'utf8')
   assert.match(source, /const complet = motifRejeuComplet\(auCommit\(cwd, SOURCES_LUES\), surDisque\)/)
-  assert.match(source, /fraicheurDesGenerateurs\(cwd, indexGit\(cwd\), lireSourcesLues\(cwd\), ignores\)/)
+  assert.match(source, /const blobs = check \? indexGit\(cwd\) : null/)
+  assert.match(source, /fraicheurDesGenerateurs\(cwd, blobs, lireSourcesLues\(cwd\), ignores\)/)
+  // Les `check: false` ne sont pas JOUÉS, mais leur pied est jugé — et il alimente le MÊME rouge.
+  assert.match(source, /const piedsPerimes = check \? piedsDesNonVerifiables\(cwd, blobs, lireSourcesLues\(cwd\)\) : \[\]/)
+  assert.match(source, /if \(dejaDits\) process\.stderr\.write/, 'un pied périmé se dit AVANT la boucle')
   assert.match(source, /if \(frais\.has\(g\.script\)\) \{/, 'la boucle doit SAUTER un générateur frais')
   assert.match(source, /if \(check && !tout\)/, '`--tout` doit court-circuiter la fraîcheur')
   // Câblage du verdict du pied : un générateur rejoué au corps identique fait juger SON pied.
   assert.match(source, /const raison = verdictDuPied\(\{ pied: lirePied\(readFileSync\(chemin, 'utf8'\)\), empreinte, cible \}\)/)
   assert.match(source, /if \(raison\) piedsPerimes\.push\(/)
-  assert.match(source, /if \(piedsPerimes\.length\) \{\n\s+process\.stderr\.write/, 'un pied périmé doit rendre `--check` ROUGE')
+  assert.match(source, /if \(piedsPerimes\.length\) \{\n\s+const restants[\s\S]{0,200}?process\.exit\(1\)/, 'un pied périmé doit rendre `--check` ROUGE')
 })

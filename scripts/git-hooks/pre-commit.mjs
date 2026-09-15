@@ -37,7 +37,7 @@ import { battleRngEngineLeakExcluded } from '../guards/lib/battleRngEngineLeakWh
 import { scanNpmLockHoisted } from '../guards/lib/npmLockHoisted.mjs';
 import { scanArbresImbriques } from '../guards/lib/arbreImbrique.mjs';
 import { fichiersALinter, lancerLint } from '../guards/lib/lintStage.mjs';
-import { generateursArmes } from '../guards/lib/empreinteStage.mjs';
+import { ciblesDesArmes, generateursArmes } from '../guards/lib/empreinteStage.mjs';
 import { porteAuPushManquante } from '../guards/lib/portePush.mjs';
 import { codeDePanne, docsDePorte, paquetsDArgv } from '../guards/lib/porteSpawn.mjs';
 import { cheminsMalNormalises, raisonDeRefusEol } from '../guards/lib/eolStage.mjs';
@@ -262,16 +262,22 @@ if (docsPourLaPorte.length) {
 
 // #1679 L1b — EMPREINTE DE SOURCES des docs dérivés. UN déclencheur : un doc GÉNÉRÉ est stagé. Pour
 // ce doc-là, les blobs figés dans son pied doivent être ceux de l'INDEX — sinon il décrit un arbre
-// que ce commit n'embarque pas. Une SOURCE stagée sans régénération n'arme rien ici (le pied qu'elle
-// périme porte un doc qui ne part pas dans ce commit) : c'est `docs:check` qui la juge en CI, sur le
-// CONTENU régénéré. Ce qui est joué ici ne régénère RIEN (recalcul sur l'index, `git ls-files -s`),
-// contre 49,8 s pour la régénération des 13 générateurs qu'un `src/data/*.json` arme (mesuré 2026-09-02).
+// que ce commit n'embarque pas. Une SOURCE stagée sans régénération n'arme rien ici : le pied qu'elle
+// périme porte un doc qui ne part pas dans ce commit, et armer sur les sources coûterait un
+// `docs:build` à 59,3 % des commits (mesuré 2026-09-02) pour un pied re-signé UNE fois par train, à
+// l'étape docs de `ops:publier` — qui juge désormais aussi les pieds des cibles `check: false`
+// (`piedsDesNonVerifiables`, #1773). La gate `docs:empreinte` reste la porte. Ce qui est joué ici ne
+// régénère RIEN (recalcul sur l'index, `git ls-files -s`), contre 49,8 s pour la régénération des 13
+// générateurs qu'un `src/data/*.json` arme (mesuré 2026-09-02).
 // CHAÎNE DE CONFIANCE : `docs/.sources-lues.json` est lu ici dans l'ARBRE (il ne sert qu'à CHOISIR
 // les générateurs), SANS être revérifié ; le VERDICT, lui, ne sort que de l'INDEX. Sa fraîcheur est
 // gatée en CI par `docs:check`, qui le REGÉNÈRE et le compare comme tout dérivé. DÉFAUT CONNU : s'il
 // est illisible, la sélection rend une liste vide et la porte se tait ici — la CI reste le filet.
+const sourcesLues = (() => {
+  try { return JSON.parse(readFileSync(join(ROOT, 'docs', '.sources-lues.json'), 'utf8')); } catch { return {}; }
+})();
 const armes = (() => {
-  try { return generateursArmes(JSON.parse(readFileSync(join(ROOT, 'docs', '.sources-lues.json'), 'utf8')), staged); } catch { return []; }
+  try { return generateursArmes(sourcesLues, staged); } catch { return []; }
 })();
 if (armes.length) {
   try {
@@ -281,9 +287,10 @@ if (armes.length) {
     execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'build-all.mjs'), '--empreinte', '--only', ...armes], { cwd: ROOT, stdio: 'inherit' });
   } catch (e) {
     const panne = codeDePanne(e);
+    const cibles = ciblesDesArmes(sourcesLues, armes);
     offenders.push(panne
       ? `empreinte de sources — porte en PANNE : ${panne} (le garde n'a pas tourné : c'est le LANCEMENT qui a échoué)`
-      : 'empreinte de sources en échec (un doc GÉNÉRÉ stagé a été fabriqué sur un arbre ≠ index — stage les sources nommées ci-dessus, ou régénère le doc après les avoir stagées)');
+      : `empreinte de sources en échec — ${cibles.join(', ')} décrit un arbre ≠ index : \`npm run docs:build\`, puis stage le(s) doc(s) avec les sources nommées ci-dessus`);
   }
 }
 

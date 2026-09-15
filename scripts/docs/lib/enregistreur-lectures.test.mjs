@@ -21,7 +21,7 @@ import {
   indexGit, lirePied, retirerPied, serialiserSourcesLues, sha1Corps,
 } from './empreinte-sources.mjs'
 import { ciblesNonSignees, refusSourcesInsuffisantes } from '../build-all.mjs'
-import { generateursArmes } from '../../guards/lib/empreinteStage.mjs'
+import { ciblesDesArmes, generateursArmes } from '../../guards/lib/empreinteStage.mjs'
 
 const ICI = path.dirname(fileURLToPath(import.meta.url))
 const RACINE = path.resolve(ICI, '..', '..', '..')
@@ -271,6 +271,21 @@ test('le hook n\'arme QUE les générateurs dont un DOC est stagé — jamais un
   // Le dérivé des sets stagé SEUL non plus (il n'est la cible d'aucun générateur).
   assert.deepEqual(generateursArmes(lues, ['docs/.sources-lues.json']), [])
   assert.deepEqual(generateursArmes(lues, ['src/ui/Prose.tsx']), [])
+})
+
+test('le refus NOMME les cibles des générateurs armés — un sha1 nu ne dit pas quoi régénérer', () => {
+  const lues = {
+    'scripts/docs/build-index-moteur.mjs': { cibles: ['docs/index-moteur.md'], fichiers: [], dossiers: [] },
+    'scripts/raw/build-catalogs.mjs': { cibles: ['docs/raw/catalogue-sorts.md', 'docs/index-moteur.md'], fichiers: [], dossiers: [] },
+  }
+  // Triées, dédupliquées (deux générateurs peuvent nommer la même cible dans un refus).
+  assert.deepEqual(
+    ciblesDesArmes(lues, ['scripts/raw/build-catalogs.mjs', 'scripts/docs/build-index-moteur.mjs']),
+    ['docs/index-moteur.md', 'docs/raw/catalogue-sorts.md'],
+  )
+  // Un générateur que la mesure ne porte pas ne fabrique pas de cible fantôme.
+  assert.deepEqual(ciblesDesArmes(lues, ['scripts/docs/build-inconnu.mjs']), [])
+  assert.deepEqual(ciblesDesArmes(lues, []), [])
 })
 
 test('--empreinte sans aucun doc à juger sort 0, en le disant', () => {

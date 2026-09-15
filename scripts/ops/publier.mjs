@@ -42,7 +42,7 @@ import { refusDeSujet } from '../guards/lib/sujetDeCommit.mjs'
 import { DEPOT, commitsDeLaPlage, marqueDe } from './fermer-depuis-main.mjs'
 import { GENERATORS, SOURCES_LUES } from '../docs/build-all.mjs'
 import { MANAGED_ROOTS } from '../agents/compat-core.mjs'
-import { touchesDocSources } from '../git-hooks/docs-rebuild.mjs'
+import { sourcesMesurees, touchesDocSources } from '../git-hooks/docs-rebuild.mjs'
 import { ECRIT_LU, fichierDurees, prerequisAbsents, refusDePrerequis } from '../gates/toutes.mjs'
 import { PEREMPTION_MS, purgerPerimes } from '../guards/lib/purgerPerimes.mjs'
 import { CHEMIN_VERROU, lireTenant, tenantVivant } from '../test/verrou.mjs'
@@ -871,7 +871,7 @@ export const ETAPES = [
       // doc. `touchesDocSources` ne court-circuite donc que la RÉGÉNÉRATION, jamais le COMMIT —
       // sauter celui-ci laisserait l'arbre sale jusqu'aux gates, qui le refusent.
       const salesAvant = cheminsSales(racine)
-      const regenerer = touchesDocSources(touches)
+      const regenerer = touchesDocSources(touches, sourcesMesurees(racine))
       if (!regenerer && !salesAvant.length) return { ok: true, dit: 'aucune source de doc dans la plage, arbre propre : docs inchangés' }
       if (regenerer) {
         const check = spawnSync(process.execPath, [join(racine, 'scripts/docs/build-all.mjs'), '--check'], {

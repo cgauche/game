@@ -41,7 +41,9 @@ import {
  *  EN ENTIER (glob toléré, cf. la garde de taxonomie de scripts/git-hooks/merge-docs.test.mjs), et
  *  seuls eux reçoivent le pied « sources-empreinte » ; `injecte` = fichiers dont le générateur ne
  *  réécrit QU'UN BLOC (il les relit, ils ne sont donc pas ses sources) ;
- *  `check: false` = pas de mode `--check` (le script écrit toujours), donc sauté par `--check`.
+ *  `check: false` = pas de mode `--check` (le script écrit toujours) : `--check` ne le JOUE pas, mais
+ *  il confronte le PIED de ses cibles à l'index (`piedsDesNonVerifiables`, #1773) — sans quoi leur
+ *  péremption n'était dite que par la gate `docs:empreinte`, 7 min plus tard dans `ops:publier`.
  *  Ordre = ordre d'exécution. */
 export const GENERATORS = [
   { runner: 'node', script: 'scripts/raw/build-catalogs.mjs', targets: ['docs/raw/catalogue-*.md'], check: false },
@@ -251,6 +253,29 @@ function auCommit(cwd, chemin) {
   try { return execFileSync('git', ['show', `:${chemin}`], { cwd, encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'pipe'] }) } catch { return null }
 }
 
+/** Remède UNIQUE d'un pied qui ne décrit pas l'index : le doc se régénère, il ne se retouche pas. */
+const REMEDE_DU_PIED = '      → régénérer (npm run docs:build) et stager le doc, ou stager les sources qu’il décrit'
+
+/**
+ * Le refus que porte le PIED d'une cible TELLE QUE L'INDEX LA PORTE, ou `null` — UNE rédaction pour
+ * la classe, partagée par `--empreinte` (`verifierEmpreintes`) et par le jugement des cibles
+ * `check: false` (`piedsDesNonVerifiables`). `juge` dit si un pied a pu être confronté : une cible que
+ * l'index ne porte pas (première génération) n'a rien à mentir. `cause` est appelée SEULEMENT quand
+ * ce sont les sources qui ont bougé : nommer la cause coûte un hash du disque par source lue.
+ */
+export function refusDuPiedAuCommit(cwd, empreinte, cible, cause = null) {
+  const texte = auCommit(cwd, cible)
+  if (texte === null) return { juge: false, refus: null }
+  const motif = motifDeRejeu(texte, empreinte)
+  if (!motif) return { juge: true, refus: null }
+  if (!motif.startsWith('sources ')) return { juge: true, refus: `${cible} : ${motif}\n${REMEDE_DU_PIED}` }
+  const detail = cause ? `\n      source(s) qui diffèrent de l'index : ${cause()}` : ''
+  return {
+    juge: true,
+    refus: `${cible} : doc régénéré depuis un arbre ≠ index (${motif})${detail}\n${REMEDE_DU_PIED}`,
+  }
+}
+
 /** Sources du générateur dont le DISQUE et l'INDEX divergent — la cause à nommer, jamais un sha1 nu. */
 function sourcesDivergentes(cwd, blobs, fichiers) {
   const divergentes = []
@@ -302,37 +327,17 @@ function verifierEmpreintes(cwd, seulement) {
     })
     for (const chemin of manquants)
       refus.push(`${script} : source non suivie « ${chemin} » — l'index ne la porte pas, elle ne peut pas être vérifiée`)
-    for (const cible of entree.cibles) {
-      const texte = auCommit(cwd, cible)
-      if (texte === null) continue
-      docsJuges += 1
-      const pied = lirePied(texte)
-      if (!pied) {
-        refus.push(`${cible} : pied « sources-empreinte » absent de l'index — régénérer (npm run docs:build) et stager`)
-        continue
-      }
-      if (pied.corps === null) {
-        refus.push(`${cible} : pied SANS « corps: » (graphie d'avant #1679 T1d) — régénérer (npm run docs:build) et stager`)
-        continue
-      }
-      // Le CORPS que le pied signe contre le corps que l'index porte : un dérivé retouché à la main
-      // a des sources intactes, donc rien d'autre ici ne le verrait.
-      const corps = sha1Corps(texte)
-      if (pied.corps !== corps) {
-        refus.push(
-          `${cible} : CORPS DIVERGENT (pied ${pied.corps.slice(0, 12)}, doc de l'index ${corps.slice(0, 12)}) — ` +
-            'ce dérivé a été édité hors de son générateur\n' +
-            '      → régénérer (npm run docs:build) ; un doc dérivé ne se retouche pas à la main',
-        )
-        continue
-      }
-      if (pied.empreinte === empreinte) continue
+    // La CAUSE coûte un hash du disque par source lue : elle ne se calcule que si le pied est refusé.
+    const cause = () => {
       const divergentes = sourcesDivergentes(cwd, blobs, entree.fichiers)
-      refus.push(
-        `${cible} : doc régénéré depuis un arbre ≠ index (pied ${pied.empreinte.slice(0, 12)}, index ${empreinte.slice(0, 12)})\n` +
-          `      source(s) qui diffèrent de l'index : ${divergentes.length ? divergentes.join(', ') : "aucune sur ce disque — le pied vient d'un autre arbre, ou un dossier lu a changé de listing"}\n` +
-          '      → stage la source, ou régénère après avoir stagé',
-      )
+      return divergentes.length
+        ? divergentes.join(', ')
+        : "aucune sur ce disque — le pied vient d'un autre arbre, ou un dossier lu a changé de listing"
+    }
+    for (const cible of entree.cibles) {
+      const verdict = refusDuPiedAuCommit(cwd, empreinte, cible, cause)
+      if (verdict.juge) docsJuges += 1
+      if (verdict.refus) refus.push(verdict.refus)
     }
   }
   if (refus.length) {
@@ -440,6 +445,40 @@ export function fraicheurDesGenerateurs(cwd, blobs, lues, ignores, generateurs =
   return { frais, motifs }
 }
 
+/**
+ * Pieds des cibles que `--check` ne peut PAS juger en rejouant leur générateur : celles déclarées
+ * `check: false` dans `GENERATORS` (leur script écrit toujours, il n'a pas de mode de vérification).
+ * Le pied reste jugeable, lui, et par le MÊME calcul que `--empreinte` (`refusDuPiedAuCommit`).
+ * Sans cela, l'étape docs de `ops:publier` sortait VERTE (`--check` vert) sur un `reconciliation.md`
+ * périmé, et la gate `docs:empreinte` refusait 7 min plus tard (#1773) ; désormais son `--check` rouge
+ * déclenche la passe COMPLÈTE, qui re-signe. REND les messages de refus, chacun NOMMANT sa cible.
+ * Les cibles sont celles que la MESURE porte (`entree.cibles`, globs déjà résolus), comme `--empreinte`.
+ */
+export function piedsDesNonVerifiables(cwd, blobs, lues, generateurs = GENERATORS) {
+  const refus = []
+  for (const g of generateurs) {
+    if (g.check !== false) continue
+    const entree = lues[g.script]
+    if (!entree) {
+      refus.push(`docs:check — ${g.script} — jamais mesuré dans ${SOURCES_LUES} — npm run docs:build`)
+      continue
+    }
+    const { empreinte, manquants } = empreinteDeLIndex(blobs, {
+      fichiers: entree.fichiers,
+      dossiers: new Map(entree.dossiers.map((d) => [d, []])),
+    })
+    if (manquants.length) {
+      refus.push(`docs:check — ${g.script} — source(s) que l'index ne porte pas : ${manquants.slice(0, 3).join(', ')} — npm run docs:build`)
+      continue
+    }
+    for (const cible of entree.cibles) {
+      const verdict = refusDuPiedAuCommit(cwd, empreinte, cible)
+      if (verdict.refus) refus.push(`docs:check — ${g.script} — à rejouer : ${verdict.refus}`)
+    }
+  }
+  return refus
+}
+
 function main() {
   const quiet = process.argv.includes('--quiet')
   const check = process.argv.includes('--check')
@@ -462,6 +501,9 @@ function main() {
   // d'une régénération — c'est la même comparaison, payée en un hash au lieu d'un générateur.
   // `--tout` la court-circuite : même verdict, coût plein (morsure de déterminisme).
   const frais = new Map()
+  // L'INDEX, lu UNE fois : il sert la fraîcheur des générateurs vérifiables ET le pied de ceux qui ne
+  // le sont pas.
+  const blobs = check ? indexGit(cwd) : null
   if (check && !tout) {
     let surDisque
     try { surDisque = readFileSync(path.join(cwd, SOURCES_LUES), 'utf8') } catch { surDisque = null }
@@ -469,7 +511,7 @@ function main() {
     if (complet) {
       console.log(`docs:check — REJEU COMPLET : ${complet}.`)
     } else {
-      const mesure = fraicheurDesGenerateurs(cwd, indexGit(cwd), lireSourcesLues(cwd), ignores)
+      const mesure = fraicheurDesGenerateurs(cwd, blobs, lireSourcesLues(cwd), ignores)
       for (const [script, empreinte] of mesure.frais) frais.set(script, empreinte)
       for (const [script, motif] of mesure.motifs) console.log(`docs:check — ${script} — rejoué : ${motif}`)
     }
@@ -477,11 +519,19 @@ function main() {
   const racineLectures = path.join(cwd, 'node_modules', '.cache', 'lectures-docs', String(process.pid))
   rmSync(racineLectures, { recursive: true, force: true })
   const parGenerateur = {}
-  const piedsPerimes = []
+  // Les cibles des générateurs `check: false` : leur script n'est pas joué ci-dessous, leur PIED est
+  // jugé ici. `--tout` ne le court-circuite pas — c'est un hash, pas une régénération.
+  const piedsPerimes = check ? piedsDesNonVerifiables(cwd, blobs, lireSourcesLues(cwd)) : []
+  // IMPRIMÉS TOUT DE SUITE : l'exit attend la fin de la boucle, mais un générateur rouge avant elle
+  // les emporterait sans les dire, et coûterait un passage de plus pour l'apprendre.
+  const dejaDits = piedsPerimes.length
+  if (dejaDits) process.stderr.write(`${piedsPerimes.join('\n')}\n`)
   let sautes = 0
   // Fail-fast : un générateur rouge laisse docs/ à moitié régénéré ; enchaîner les suivants
   // fabriquerait un lot incohérent que le hook annoncerait « à committer ».
   for (const [rang, g] of GENERATORS.entries()) {
+    // Pas de mode `--check` à jouer (il écrit toujours) : c'est son PIED qui le juge, déjà confronté
+    // à l'index au-dessus (`piedsDesNonVerifiables`).
     if (check && g.check === false) continue
     // `--only` ne restreint QUE la vérification : un `docs:build` partiel réécrirait
     // `.sources-lues.json` avec les seuls générateurs joués, et effacerait la mesure des autres.
@@ -555,7 +605,8 @@ function main() {
     }
   }
   if (piedsPerimes.length) {
-    process.stderr.write(`${piedsPerimes.join('\n')}\n`)
+    const restants = piedsPerimes.slice(dejaDits)
+    if (restants.length) process.stderr.write(`${restants.join('\n')}\n`)
     process.exit(1)
   }
   const nonSignees = ciblesNonSignees(cwd, parGenerateur)
