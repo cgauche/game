@@ -110,6 +110,7 @@ import {
   type BillboardSubject,
 } from '../backends/webgl/sceneMeshes';
 import { memoByRefDeps } from '../../state/sceneMemo';
+import { signalerEntreeEnScene, entreeEnScene } from '../../state/entreeEnScene';
 import {
   AUCUN_CHROME,
   DPR_PLAFOND,
@@ -860,6 +861,17 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       plafondEntréeRef.current = null;
     };
   }, [scene.id]);
+
+  // La RECETTE apprend le même état par le rendez-vous de la couche state (#1478, `__wfrp.ready`).
+  // Il lit la RÉF, pas l'état : au commit qui change `scene.id`, l'armement ci-dessus a déjà reposé
+  // `entréeRef.current = true` alors que l'état `entréeEnScène` porte encore la valeur du rendu
+  // précédent — signaler l'état ferait passer la scène neuve pour « voile tombé ».
+  useEffect(() => {
+    signalerEntreeEnScene(scene.id, entréeRef.current);
+    // Le démontage n'efface QUE son propre état : un second stage monté depuis (éditeur, planche QC)
+    // a déjà posé le sien, et un effacement aveugle le rendrait « aucun monde monté ».
+    return () => { if (entreeEnScene().sceneId === scene.id) signalerEntreeEnScene(null, false); };
+  }, [scene.id, entréeEnScène]);
 
   // L'hôte apprend l'état du voile par ce seul canal (il en est le seul rendu, `VolumetricWorld`).
   useEffect(() => {

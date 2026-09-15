@@ -27,6 +27,16 @@ export interface CommandesEditeur {
   /** Décale la sélection d'une case dans le sens écran donné. */
   deplacer: (dx: number, dy: number) => void;
   deselectionner: () => void;
+  /**
+   * Ouvre PAR ID un projet enregistré (`projectsLoad`), une campagne du jeu (`allBuiltinCampaigns`)
+   * ou un scénario de test (`testScenarios`) — la MÊME voie que la modale « Ouvrir »
+   * (`loadSaved`/`loadBuiltin`/`loadScenario`), jamais une reconstruction parallèle. Rend
+   * `✓ …` ou `✗ « id » introuvable — …` avec les ids des trois familles.
+   *
+   * L'id est un ARGUMENT D'INTENTION, pas une donnée d'état (comme `deplacer(dx, dy)`) : le pont
+   * reste state-clean — rien de l'état de l'éditeur ne le traverse.
+   */
+  ouvrir: (id: string) => string;
   fermerMenuFichier: () => void;
 }
 

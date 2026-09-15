@@ -16,6 +16,7 @@ import type { Combatant, ShipPoste } from '../engine/types';
 import type { WorldMap } from './worldMap';
 import { builtinCampaigns } from '../scenes/campaign';
 import { testScenarios, type TestScenario } from '../scenes/test-scenarios';
+import { editeur } from './editeurBridge';
 
 describe('__wfrp.killEnemies — commande de recette (élimine les ennemis, victoire normale)', () => {
   beforeEach(() => {
@@ -167,6 +168,31 @@ describe('__wfrp — autres commandes de recette', () => {
     expect(out).toContain('✗');
     expect(out).not.toContain('✓');
     expect(useGame.getState().partyPos).toEqual(before);
+  });
+
+  it('roofCut (#1478) : pose le lève-toit à false, le repose à true', () => {
+    expect(useGame.getState().debugRoofCut).toBe(true); // défaut = comportement de jeu
+    const off = buildApi().roofCut();
+    expect(useGame.getState().debugRoofCut).toBe(false);
+    expect(off).toContain('lève-toit OFF');
+    const on = buildApi().roofCut(true);
+    expect(useGame.getState().debugRoofCut).toBe(true);
+    expect(on).toBe('lève-toit ON');
+  });
+
+  it('editorOpen (#1478) sans id : rend les trois familles ouvrables', async () => {
+    const out = await buildApi().editorOpen() as { projets: string[]; campagnes: string[]; scenarios: string[] };
+    expect(Array.isArray(out.projets)).toBe(true);
+    expect(out.campagnes.length).toBeGreaterThan(0);
+    expect(out.scenarios.some((s) => s.startsWith(`${testScenarios[0].id} —`))).toBe(true);
+  });
+
+  it('editorOpen (#1478) avec un pont VIDE : rejet NOMMÉ (l\'éditeur ne s\'est pas monté)', async () => {
+    expect(editeur.ouvrir).toBeUndefined(); // aucun Editor monté dans ce banc
+    const p = buildApi().editorOpen('opera', 120);
+    const verdict = p.then(() => 'résolu', (e: Error) => e.message);
+    await vi.advanceTimersByTimeAsync(400);
+    expect(await verdict).toContain("l'éditeur ne s'est pas monté");
   });
 });
 

@@ -58,7 +58,8 @@ import { applyOps } from '../engine/ops';
 import { parseQualityInstance } from '../engine/qualities/normalize';
 import { formatImperial } from '../engine/clock';
 import { testScenarios, type TestScenario } from '../scenes/test-scenarios';
-import { builtinCampaigns } from '../scenes/campaign';
+import { builtinCampaigns, allBuiltinCampaigns } from '../scenes/campaign';
+import { projectsLoad } from './projectLibrary';
 import { makeShowcaseParty } from '../data/pregens';
 import { hoverTargeting } from './targeting';
 import { maneuverShip } from './shipManeuver';
@@ -79,6 +80,8 @@ import { t } from '../i18n';
 import { diamondCorners, type Dims } from '../geometry/iso';
 import { chebyshev } from '../engine/grid';
 import { actionsDe } from './usable';
+import { attendreEntreeEnScene } from './entreeEnScene';
+import { editeur } from './editeurBridge';
 
 /** Trace du DERNIER Test résolu (`resolveTest`, `EVT.TEST_RESOLVED`) — observation pure pour la
  *  recette navigateur (`__wfrp.lastRoll()`), JAMAIS dans l'état de jeu persisté (module DEV seul,
@@ -720,6 +723,21 @@ export function buildApi(scenarios: readonly TestScenario[] = testScenarios) {
       return on ? 'brouillard ON' : 'brouillard OFF — toute la carte révélée';
     },
 
+    /** Lève-toit ON/OFF (recette, #1478) — symétrique de `fog(false)` : `roofCut(false)` ou `roofCut()`
+     *  débraye le dégagement de la pièce occupée, donc toits, façades et décors de toit RESTENT peints
+     *  (voir un décor de façade ou de toiture depuis l'intérieur de l'empreinte) ; `roofCut(true)`
+     *  rétablit le comportement de jeu. Bascule GLOBALE : la remettre à `true` avant de juger un flux
+     *  de vue normal.
+     *  PORTÉE : le dégagement de PIÈCE seul. Le PERÇAGE local par occlusion (#1176 M3,
+     *  `gameIso/stage/percage.ts`) reste ACTIF — un disque reste percé dans la nappe autour de chaque
+     *  héros qu'elle cache à l'écran. */
+    roofCut: (on = false) => {
+      useGame.setState({ debugRoofCut: on });
+      return on
+        ? 'lève-toit ON'
+        : 'lève-toit OFF — toits, façades et décors de toit restent en place, hors le disque local de perçage autour de chaque héros';
+    },
+
     /** DEBUG carte (recette) : overlay d'annotation partagé sur IsoStage — coordonnées `x,y` (+`z{n}`)
      *  centrées par case, teinte par étage (z1 cyan / z2 violet), pastilles de rôle de structure
      *  (courtine rouge / tour orange / porte jaune / escalier bleu) + légende. Pour pointer la MÊME case
@@ -833,6 +851,44 @@ export function buildApi(scenarios: readonly TestScenario[] = testScenarios) {
       const last = recallScenario();
       if (!last) return '✗ aucun scénario mémorisé dans cet onglet — lancer __wfrp.scenario(id, seed) d\'abord';
       return runScenario(last.id, last.seed);
+    },
+
+    /** ATTEND la fin de l'entrée en scène du monde volumique (#1478) : après `scenario()`, `goto()` ou
+     *  `campaign()`, `await __wfrp.ready()` AVANT toute capture — sinon le cliché fige le voile
+     *  (« Chargement... ») ou un monde à moitié cuit. Résout quand la scène du store est montée ET
+     *  son voile tombé ; rejette en NOMMANT le cas (aucun monde monté / mauvaise scène / voile encore
+     *  levé). La borne par défaut (15 000 ms) est très au-dessus du plafond d'entrée en scène
+     *  (`AMBIANCE.entreeEnScene.plafondMs` = 2000, `src/data/ambiance.json`) : le voile tombe de
+     *  lui-même à ce plafond, un dépassement signale donc un monde qui n'a jamais monté.
+     *  LIMITE CONNUE : rejouer le MÊME id de scène (`scenario('x')` deux fois) ne relance pas
+     *  l'armement du voile (`GameStage3D.tsx`, effet keyé `[scene.id]`) — `ready()` résout alors
+     *  pendant la re-cuisson. Changer de scénario, ou recharger la page. */
+    ready: (timeoutMs = 15000) => attendreEntreeEnScene(() => g().scene?.id ?? null, timeoutMs)
+      .then(({ sceneId, ms }) => `✓ monde prêt — scène « ${sceneId} », voile tombé après ${ms} ms`),
+
+    /** Ouvre un document dans l'ÉDITEUR sans passer par la modale « Ouvrir » (#1478) — donc sans le
+     *  dialogue de fichier de l'OS, qu'aucun pilote navigateur ne sait fermer. Sans id : rend les
+     *  trois familles ouvrables (`{ projets, campagnes, scenarios }`). Avec id : bascule sur l'écran
+     *  `editor`, attend que l'éditeur ait publié sa commande au pont (`state/editeurBridge`, borne
+     *  3000 ms, refus NOMMÉ sinon) puis l'appelle. SETUP seulement : une campagne built-in s'y ouvre
+     *  en COPIE, exactement comme par la modale. */
+    editorOpen: async (id?: string, montageMs = 3000) => {
+      if (!id) {
+        return {
+          projets: projectsLoad().map((p) => `${p.id} — ${p.label}`),
+          campagnes: allBuiltinCampaigns.map((c) => `${c.id} — ${c.label}`),
+          scenarios: testScenarios.map((s) => `${s.id} — ${s.title}`),
+        };
+      }
+      g().setScreen('editor');
+      const t0 = Date.now();
+      while (!editeur.ouvrir) {
+        if (Date.now() - t0 > montageMs) {
+          throw new Error(`✗ __wfrp.editorOpen : l'éditeur ne s'est pas monté après ${montageMs} ms — écran « ${g().screen} »`);
+        }
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      return editeur.ouvrir(id);
     },
 
     /** Charge une CAMPAGNE BUILT-IN sans dérouler le character creator ×4 à la main :

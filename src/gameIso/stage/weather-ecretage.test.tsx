@@ -130,6 +130,9 @@ afterAll(() => {
   setRevealAll(false);
 });
 afterEach(() => {
+  // Le drapeau de recette est un SINGLETON d'état que la suite partage : un cas qui le débraye le
+  // rend ici, jamais en dernière ligne d'un `it` (une assertion qui lève avant sauterait la remise).
+  useGame.setState({ debugRoofCut: true });
   if (root) { act(() => root!.unmount()); root = null; }
   if (conteneur) { conteneur.remove(); conteneur = null; }
 });
@@ -185,6 +188,32 @@ describe('Météo volumique — écrêtage au cutaway (#1247)', () => {
     expect(après.count).toBe(compteAvant);
     // …et le geste a bien eu lieu sur ce MÊME semis.
     expect(particules(après, sceneMetresPerTile(scene)).filter((p) => sousLeToit(p) && p.rendue).length).toBe(0);
+  });
+
+  it('roofCut(false) (#1478) : le lève-toit DÉBRAYÉ laisse la nappe qui coiffe le groupe PEINTE', () => {
+    const scene = scèneCouverte();
+    // Témoin — lève-toit ACTIF (défaut de jeu) : la nappe qui coiffe le groupe est retirée, et la
+    // pluie de ses colonnes est écrêtée (c'est le cas mesuré ci-dessus).
+    poser(scene, SOUS_TOIT);
+    useGame.setState({ debugRoofCut: true });
+    monter();
+    expect(
+      particules(semisMonté(), sceneMetresPerTile(scene)).filter((p) => sousLeToit(p) && p.rendue).length,
+      'témoin : lève-toit ACTIF, la nappe est retirée — rien ne s’arrête dessus',
+    ).toBe(0);
+    act(() => root!.unmount());
+    root = null;
+    conteneur!.remove();
+    conteneur = null;
+
+    // Lève-toit DÉBRAYÉ, même scène, même position : la nappe revient au monde cuit, et la pluie
+    // s'arrête de nouveau dessus — c'est ce qu'on va juger à l'écran.
+    poser(scene, SOUS_TOIT);
+    useGame.setState({ debugRoofCut: false });
+    monter();
+    const dessus = particules(semisMonté(), sceneMetresPerTile(scene)).filter(sousLeToit);
+    expect(dessus.length, 'témoin : des particules occupent bien ces colonnes').toBeGreaterThan(0);
+    expect(dessus.every((p) => p.rendue), 'toit peint : ce qui s’arrête dessus se voit').toBe(true);
   });
 
   it('la NAPPE de brume ne se rebâtit pas au pas du groupe : le MÊME mesh d’un pas à l’autre', () => {

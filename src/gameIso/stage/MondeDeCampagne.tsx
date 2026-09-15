@@ -125,6 +125,7 @@ function CorpsDuMonde() {
   const localIntent = useGame((s) => s.localIntent); // intention ARMÉE : sa portée est une marque de cases
   const hovered = useGame((s) => s.hovered); // tireur SURVOLÉ (frise ou token) : ses bandes de portée sont des marques de cases
   const viewMode = useGame((s) => s.viewMode);
+  const debugRoofCut = useGame((s) => s.debugRoofCut); // recette #1478 : lève-toit débrayable (`__wfrp.roofCut`)
   // CAP du groupe, lu SEULEMENT sous le regard de première personne : `setFacing` reforge la table à
   // chaque pas et à chaque attaque, et un abonnement à la table entière re-rendrait tout l'hôte. Le
   // sélecteur rend une valeur PRIMITIVE, constante hors POV.
@@ -364,7 +365,7 @@ function CorpsDuMonde() {
     () => scene ? roomFocusAt(scene, { x: Math.round(visualPartyPos.x), y: Math.round(visualPartyPos.y), z: visualPartyPos.z }) : null,
     [scene, visualPartyPos.x, visualPartyPos.y, visualPartyPos.z],
   );
-  const cutawayAllies = roomCutawayAllies(roomFocus, visualAllies);
+  const cutawayAllies = debugRoofCut ? roomCutawayAllies(roomFocus, visualAllies) : undefined;
   // Le monde glisse dans la boucle de rendu et React ne rend plus rien entre deux pas — ni pendant un
   // glisser-caméra, ni pendant l'approche d'une focale. Ce que l'hôte écrit HORS de React suit donc
   // le BATTEMENT (`stage/stageFrames`) : la caméra que lisent les handlers du pointeur (`camRef` —
@@ -457,8 +458,8 @@ function CorpsDuMonde() {
   // À hauteur d'œil, RIEN n'est dégagé (`keepEl` y rend tout) : la résolution du dégagement — la
   // passe la plus chère de la chaîne, rejouée à chaque pas — n'aurait aucun lecteur.
   const cleared = useMemo(
-    () => (scene && !pov ? clearedSpace(scene, visualAllies, exploredSet) : NO_CLEARED_SPACE),
-    [scene, visualAllies, exploredSet, pov],
+    () => (scene && !pov && debugRoofCut ? clearedSpace(scene, visualAllies, exploredSet) : NO_CLEARED_SPACE),
+    [scene, visualAllies, exploredSet, pov, debugRoofCut],
   );
   // DÉCOUPE LOCALE PAR OCCLUSION (#1176, M3) : ce que la boucle de rendu volumique reprend à la CLÉ
   // (pas franchi, quart de tour, étage) pour percer un trou dans la masse qui cache un héros à

@@ -4,8 +4,11 @@ import type { SceneEntity } from '../../state/scene';
 /**
  * Meublage FIDÈLE du Théâtre Staatsoper d'après le plan officiel (NADJ 8 p.40 rez / p.41 étage) — la
  * géométrie vit dans `opera/floorplan.ts`, ce module ne porte que le MOBILIER posé pièce par pièce.
- * Donnée de QC (rendu/comparaison au plan) consommée par les scripts `scripts/qc/opera-*.mts` ; la
- * LOGIQUE de la soirée vit, elle, dans le scénario jouable « Opéra » (`test-scenarios/opera`).
+ * Consommateurs du jour : le scénario de recette `test-scenarios/opera-plan.ts` (rendu EN JEU de ce
+ * meublage), `scripts/qc/opera-furniture-check.mts` (placement contre la géométrie) et les deux gardes
+ * de population (`src/gameIso/catalog/props-volumiques.test.ts`, `src/data/prop-foot-migration.test.ts`).
+ * La LOGIQUE de la soirée vit, elle, dans le scénario jouable « Opéra » (`test-scenarios/opera`), qui a
+ * sa propre carte et ses propres entités.
  *
  * Repère (cf. floorplan.ts) : y croissant = du FOND (scène, y bas) vers le FOYER (façade, y haut) ;
  * axe x=21.5. Le public regarde la scène, vers le HAUT. `facing:'N'` = tourné vers la scène (y bas) ;

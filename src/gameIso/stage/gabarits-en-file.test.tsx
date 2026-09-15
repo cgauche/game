@@ -36,6 +36,7 @@ import { GameStage3D, setStageRendererFactory, type StageFrame, type StageWalkAn
 import { BancRenderer, PLAFOND_ATTENTE_MS, PLAFOND_HORS_ATTEINTE_MS, attendreEntréeFinie, attendreQue, brancherArdoise, caméras, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures, type Rasterisation } from './banc-volumique';
 import type { ActorPose, KeepEl, SceneBillboardEls, TintAt } from '../backends/webgl/sceneMeshes';
 import type { BillboardPropEl } from '../builders/types';
+import { entreeEnScene } from '../../state/entreeEnScene';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -264,6 +265,21 @@ describe('#1399 — le VOILE d’entrée en scène attend les gabarits du monde'
       await respirer(40);
     }
     expect(canevas().dataset.voile, 'le voile n’est jamais tombé sur la texture servie').toBeUndefined();
+  });
+
+  it('#1478 — la RECETTE lit le même voile par le rendez-vous de la couche state', async () => {
+    froidsSauf(FROIDS);
+    monterSync();
+    expect(entreeEnScene(), 'au montage : la scène est nommée et son voile est LEVÉ')
+      .toEqual({ sceneId: SCENE.id, voile: true });
+
+    await attendreEntréeFinie(hôte!, PLAFOND_ATTENTE_MS, () => battre?.());
+    expect(entreeEnScene(), 'le voile tombé à l’écran est tombé pour la recette')
+      .toEqual({ sceneId: SCENE.id, voile: false });
+
+    act(() => root!.unmount());
+    root = null;
+    expect(entreeEnScene().sceneId, 'plus aucun monde monté').toBeNull();
   });
 });
 

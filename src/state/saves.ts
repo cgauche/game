@@ -159,6 +159,28 @@ function storage(): Storage | null {
   }
 }
 
+/**
+ * Les clés de DONNÉES qui ne partent PAS en save — l'ensemble NOMMÉ, une raison par clé. Le contrat
+ * du snapshot est POSITIF (tout champ de données de l'état initial entre), donc une exclusion qui
+ * n'est pas ici n'existe pas : c'est le seul endroit à lire et à amender.
+ *
+ * La même couture sert la sauvegarde locale ET le snapshot réseau (`state/netFlow.ts`
+ * `netSnapshot`) : ce qui sort d'ici ne traverse pas non plus vers un invité coop.
+ */
+const HORS_SAVE: Record<string, string> = {
+  // #767 — couche runtime posée par `loadProject` ; sa persistance (forme + golden + bump
+  // `SAVE_VERSION`) est le périmètre de #766.
+  campaignNarratif: 'couche runtime de projet, repostée au chargement',
+  // #1687 — état de la TOUCHE Alt à l'instant, pas une préférence : une save qui le porterait
+  // rechargerait une partie aux utilisables révélés, touche relâchée.
+  reveler: 'geste clavier en cours, jamais un état de partie',
+  // #1478 — drapeaux de RECETTE (`__wfrp.labels`, `__wfrp.roofCut`), jamais une préférence de
+  // partie : une save prise en recette rechargerait la carte annotée ou le lève-toit débrayé, et
+  // l'invité coop en hériterait par `netSnapshot`.
+  debugLabels: 'drapeau de recette (overlay de debug)',
+  debugRoofCut: 'drapeau de recette (lève-toit débrayé)',
+};
+
 /** Snapshot des clés de DONNÉES de l'état courant (les fonctions/actions sont ignorées). */
 export function snapshotSave(
   state: Record<string, unknown>,
@@ -168,12 +190,7 @@ export function snapshotSave(
 ): SaveGame {
   const data: Record<string, unknown> = {};
   for (const k of Object.keys(initial)) {
-    // `campaignNarratif` (#767) = couche runtime posée par `loadProject`, non embarquée au snapshot :
-    // sa persistance (forme + golden + bump `SAVE_VERSION`) est le périmètre de #766.
-    if (k === 'campaignNarratif') continue;
-    // `reveler` (#1687) = état de la TOUCHE Alt à l'instant, pas une préférence : une save qui le
-    // porterait rechargerait une partie aux utilisables révélés, touche relâchée.
-    if (k === 'reveler') continue;
+    if (k in HORS_SAVE) continue; // exclusions NOMMÉES, avec leur raison, ci-dessus
     const v = state[k];
     if (typeof v === 'function') continue;
     data[k] = v === undefined ? null : v;

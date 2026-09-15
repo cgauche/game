@@ -121,13 +121,22 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     expect(champsDeDonnees.length, 'témoin : l’état initial porte bien des données').toBeGreaterThan(20);
     const data = snapshotSave(useGame.getState() as unknown as Record<string, unknown>, initial, 'maintenant').data;
     const absents = champsDeDonnees.filter((k) => !(k in data));
-    expect(absents.sort(), 'un champ de données hors save sans exclusion nommée').toEqual(['campaignNarratif', 'reveler']);
+    expect(absents.sort(), 'un champ de données hors save sans exclusion nommée')
+      .toEqual(['campaignNarratif', 'debugLabels', 'debugRoofCut', 'reveler']);
   });
 
   it('`reveler` (Alt maintenu) n’entre dans AUCUNE save : c’est un état de TOUCHE', () => {
     useGame.setState({ reveler: true } as never);
     expect(useGame.getState().saveGame(1), 'témoin : la save est bien écrite').toBe(true);
     expect('reveler' in readSlot(1)!.data, 'une partie rechargée aurait ses utilisables révélés, touche relâchée').toBe(false);
+  });
+
+  it('les drapeaux de RECETTE (#1478) n’entrent dans AUCUNE save : ni l’overlay, ni le lève-toit', () => {
+    useGame.setState({ debugLabels: true, debugRoofCut: false });
+    expect(useGame.getState().saveGame(1), 'témoin : la save est bien écrite').toBe(true);
+    const data = readSlot(1)!.data;
+    expect('debugLabels' in data, 'une partie rechargée aurait la carte annotée de debug').toBe(false);
+    expect('debugRoofCut' in data, 'une partie rechargée aurait le lève-toit débrayé — et l’invité coop avec').toBe(false);
   });
 
   it('en combat : sauvegarde refusée, le slot reste vide', () => {

@@ -4,7 +4,7 @@ import {
   __setAutosaveBackendForTest, __resetAutosaveForTest, autosaveSave,
   type EditorAutosaveBackend, type EditorAutosaveRecord,
 } from '../../state/editorAutosave';
-import { __setIdbBackendForTest, type IdbBackend, type SavedProject } from '../../state/projectLibrary';
+import { __setIdbBackendForTest, __resetLibraryForTest, initLibrary, type IdbBackend, type SavedProject } from '../../state/projectLibrary';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -20,6 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { useGame } from '../../state/store';
 import { useGameKeyboard } from '../useGameKeyboard';
+import { editeur } from '../../state/editeurBridge';
 
 /** Le hook de raccourcis est monté par `App`, AU-DESSUS des écrans : le monter avec l'éditeur
  *  reproduit l'application réelle (registre unique, section `editeur` gardée par `screen`). */
@@ -113,6 +114,80 @@ describe('Editor v2 — « Ouvrir » une campagne built-in ouvre une COPIE (#367
       root.unmount();
     });
     container.remove();
+  });
+});
+
+describe('Editor v2 — `editeur.ouvrir` : ouvrir par id sans la modale (#1478)', () => {
+  it('publie la commande au montage, ouvre un scénario de test par id, refuse un id inconnu, et se retire au démontage', async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    expect(editeur.ouvrir).toBeUndefined(); // rien de publié tant que l'éditeur n'est pas monté
+    await act(async () => {
+      root.render(<Editor />);
+    });
+    expect(typeof editeur.ouvrir).toBe('function');
+
+    let verdict = '';
+    await act(async () => {
+      verdict = editeur.ouvrir!('opera-plan');
+    });
+    expect(verdict).toContain('✓');
+    expect(verdict).toContain('Opéra — plan meublé (Staatsoper)');
+    // La scène ACTIVE est bien celle du scénario : le sélecteur de scènes porte son id/label.
+    const select = container.querySelector('select[aria-label="Scène active"]') as HTMLSelectElement;
+    expect(select.value).toBe('opera-staatsoper');
+    expect(container.querySelector('h2')!.getAttribute('title')).toBe('Opéra — plan meublé (Staatsoper)');
+
+    let refus = '';
+    await act(async () => {
+      refus = editeur.ouvrir!('scene-qui-nexiste-pas');
+    });
+    expect(refus).toContain('✗');
+    expect(refus).toContain('projets :');
+    expect(refus).toContain('campagnes :');
+    expect(refus).toContain('scénarios :');
+
+    await act(async () => {
+      root.unmount();
+    });
+    expect(editeur.ouvrir).toBeUndefined(); // retirée au démontage
+    container.remove();
+  });
+
+  it('un projet enregistré que la porte `parseProject` REFUSE rend ✗ avec le motif, jamais ✓', async () => {
+    // Une entrée de bibliothèque dont le document n'a AUCUNE identité : la porte unique la refuse.
+    const entree = { id: 'proj-casse', label: 'Projet cassé', startSceneId: 's', savedAt: 0, published: false, project: { scenes: [] } } as unknown as SavedProject;
+    const idb: IdbBackend = {
+      async getAll() { return [entree]; },
+      async put() { /* non exercé */ },
+      async delete() { /* non exercé */ },
+      async clear() { /* non exercé */ },
+    };
+    __setIdbBackendForTest(idb);
+    await initLibrary();
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    await act(async () => {
+      root.render(<Editor />);
+    });
+
+    let verdict = '';
+    await act(async () => {
+      verdict = editeur.ouvrir!('proj-casse');
+    });
+    expect(verdict, 'un ✓ sur un document refusé ferait croire la scène chargée').not.toContain('✓');
+    expect(verdict).toContain('✗');
+    expect(verdict).toContain('Projet cassé');
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+    await __resetLibraryForTest();
+    __setIdbBackendForTest(null);
   });
 });
 

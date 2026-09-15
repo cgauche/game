@@ -16,11 +16,11 @@ import { LogicDock, LogicTab } from './LogicDock';
 import { WorldMapEditor } from './WorldMapEditor';
 import { NarratifEditor } from './NarratifEditor';
 import { OpenProjectModal, SaveProjectModal, refusDOuverture, type RefusOuverture } from './ProjectModals';
-import { projectSave, SavedProject } from '../../state/projectLibrary';
+import { projectSave, projectsLoad, SavedProject } from '../../state/projectLibrary';
 import { downloadText } from '../../state/fileIo';
 import { sceneToAscii, type SceneAsciiExport } from '../../state/sceneToAscii';
-import type { TestScenario } from '../../scenes/test-scenarios';
-import type { BuiltinCampaign } from '../../scenes/campaign';
+import { testScenarios, type TestScenario } from '../../scenes/test-scenarios';
+import { allBuiltinCampaigns, type BuiltinCampaign } from '../../scenes/campaign';
 import { WorldMap, parseProject, CURRENT_PROJECT_SCHEMA, MAISON_PROJET_AUTHORE, type ProjectIdentite } from '../../state/worldMap';
 import { type NarratifBlock, emptyNarratif } from '../../state/campaignNarratif';
 import { nextEntityId } from '../../state/entityId';
@@ -461,6 +461,24 @@ export function Editor({
           if (p) setScene(moveSel(scene, sel, { x: p.x + dx, y: p.y + dy }));
         },
         deselectionner: () => setSel(null),
+        // Recette #1478 : ouvrir par id sans passer par la modale (donc sans dialogue OS).
+        ouvrir: (id: string) => {
+          const projets = projectsLoad();
+          const p = projets.find((x) => x.id === id);
+          if (p) {
+            const refus = loadSaved(p);
+            return refus
+              ? `✗ projet « ${p.label} » refusé — ${refus.message}`
+              : `✓ projet enregistré « ${p.label} » ouvert`;
+          }
+          const bc = allBuiltinCampaigns.find((x) => x.id === id);
+          if (bc) { loadBuiltin(bc); return `✓ campagne « ${bc.label} » ouverte (copie)`; }
+          const sc = testScenarios.find((x) => x.id === id);
+          if (sc) { loadScenario(sc); return `✓ scénario de test « ${sc.title} » ouvert`; }
+          return `✗ « ${id} » introuvable — projets : ${projets.map((x) => x.id).join(', ') || '(aucun)'}`
+            + ` | campagnes : ${allBuiltinCampaigns.map((x) => x.id).join(', ')}`
+            + ` | scénarios : ${testScenarios.map((x) => x.id).join(', ')}`;
+        },
       }),
     [scene, sel, clip, undo, redo, setScene],
   );
@@ -653,7 +671,10 @@ export function Editor({
       ...(doc.versionContenu === undefined ? { versionContenu: 0 } : {}),
     };
   }
-  function loadSaved(p: SavedProject) {
+  /** Rend le REFUS quand le document ne s'ouvre pas (porte de schéma, document sans scène), `null`
+   *  quand la scène est posée. La modale ignore cette valeur (elle lit `loadError`) ; le pont de
+   *  recette (`editeur.ouvrir`, #1478) en fait son verdict — un `✓` sur un document refusé mentirait. */
+  function loadSaved(p: SavedProject): RefusOuverture | null {
     let scenes: Scene[];
     let wm: WorldMap | undefined;
     let aa: string[] | undefined;
@@ -662,11 +683,12 @@ export function Editor({
     try {
       ({ scenes, worldMap: wm, activeAxes: aa, narratif: na, ...ident } = parseProject(documentDeLEntree(p))); // même validation/migration que l'import JSON
     } catch (e) {
-      setLoadError(refusDOuverture(e));
-      return;
+      const refus = refusDOuverture(e);
+      setLoadError(refus);
+      return refus;
     }
     setLoadError(null);
-    if (!scenes.length) return;
+    if (!scenes.length) return { message: 'document sans aucune scène' };
     setOtherScenes(scenes.slice(1).map(clone));
     setWorldMap(wm ? JSON.parse(JSON.stringify(wm)) : null);
     setActiveAxes(aa);
@@ -678,6 +700,7 @@ export function Editor({
     setSel(null);
     resetScene(clone(scenes[0]));
     setOpenOpen(false);
+    return null;
   }
   /** #811 : le résultat de `projectSave` est CONSULTÉ — un échec (quota, écriture refusée…) est
    *  rendu visible à l'auteur (`saveError`, modale conservée ouverte) au lieu d'être jeté. */

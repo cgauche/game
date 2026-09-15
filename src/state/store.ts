@@ -396,6 +396,9 @@ export interface GameState extends RollFlowActionsMap {
   /** DEBUG (recette `__wfrp.labels`) : overlay d'annotation de la carte sur IsoStage — coordonnées par
    *  case (+`z{n}`), teinte par étage et pastilles de rôle de structure. false par défaut (zéro coût off). */
   debugLabels: boolean;
+  /** DEBUG (recette `__wfrp.roofCut`) : lève-toit du monde volumique — dégagement de la pièce occupée
+   *  (toits, façades et décors de toit retirés). true par défaut (comportement de jeu). */
+  debugRoofCut: boolean;
   /** Décalage manuel de la caméra (caméra libre tactique) ; remis à zéro au refocus (changement de tour). */
   camPan: { x: number; y: number };
   setCamPan: (x: number, y: number) => void;
@@ -1941,6 +1944,7 @@ export const useGame = create<GameState>((set, get) => ({
   povActive: false,
   togglePov: () => set((s) => ({ povActive: !s.povActive })),
   debugLabels: false,
+  debugRoofCut: true,
   camPan: { x: 0, y: 0 },
   // ABSOLU, jamais relatif : le geste qui l'écrit vit hors de React (`state/stagePan`) et commet SA
   // valeur au relâchement. Un incrément appliqué à un `camPan` qu'un recentrage a remis à zéro entre

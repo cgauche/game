@@ -1,5 +1,6 @@
 /**
- * QC (assertions) — vérifie le placement du MOBILIER de `22-opera-plan` contre la géométrie : aucun prop
+ * QC (assertions) — vérifie le placement du MOBILIER de `opera/furnished` (`scenarioEntities`) contre la
+ * géométrie `opera/floorplan` : aucun prop
  * (z=0) ne doit tomber DANS un mur (case non marchable), sur le PARTERRE (sièges, hors props 'siege'),
  * ni hors de la grille. Liste les anomalies. Exit 0 si propre.  npx tsx scripts/qc/opera-furniture-check.mts
  */
