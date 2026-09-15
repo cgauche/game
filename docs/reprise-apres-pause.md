@@ -127,7 +127,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 | PDFs de `Source/*.pdf` (`*.pdf`) | droits Cubicle 7, taille (limite GitHub 100 Mo/fichier) | conservés LOCALEMENT ; ré-extraction via `bash scripts/raw/reextract-all.sh` (Marker, staging `Source/_marker/split/`, **ne promeut pas** — revue manuelle avant d'écraser `Source/`) |
 | Staging Marker (`Source/_marker/`) | intermédiaire de pipeline ; seuls les chapitres curés `Source/<Livre>/NN - *.md` sont committés | régénéré par le pipeline `scripts/raw/marker-*` |
 | Images extraites des PDF (`/art-ref/`) | droits Cubicle 7, ce sont des sorties ; le pipeline lui-même reste tracké sous `scripts/art-ref/` | régénérables via `scripts/art-ref/extract.py`, `scripts/art-ref/ldb_extract.py`, `scripts/art-ref/ldb_map.py`, `scripts/art-ref/probe.py` + les PDFs locaux |
-| Sorties de QC (`public/qc/*`) | planches de revue régénérables — pas du source | régénérables par les scripts `scripts/qc/` ; l'exception `!public/qc/baseline-affine/` reste VERSIONNÉE |
+| Sorties de QC (`public/qc/*`) | planches de revue régénérables — pas du source | régénérables par les scripts `scripts/qc/` ; deux exceptions restent VERSIONNÉES : `!public/qc/baseline-affine/` (baseline affine, #1176 C3) et `!public/qc/soldes/` (les captures que cite le champ `capture:` d'un solde — la porte `verifierCapture` de `scripts/hooks/solde-ticket-guard.mjs` refuse une capture ignorée par git) |
 | Journaux de chantier des sessions agent (`.superpowers/`) | traces locales de session (état tâche par tâche, briefs/rapports, diffs de revue) — pas du source | non régénérable : reprendre un chantier mené par une session morte se lit dans `.superpowers/sdd/progress.md` puis les `task-<N>-brief.md`/`-report.md` des tâches en cours, AVANT tout plan de `docs/plans/` — et le code seul fait foi |
 | Réglages Claude Code personnels (`.claude/*`) | environnement local | exceptions VERSIONNÉES : `.claude/settings.json`, `.claude/credo.md`, `.claude/skills/`, `.claude/agents/`, `.claude/workflows/`, `.claude/memory/`, `.claude/soldes/` |
 
@@ -227,4 +227,4 @@ sans place dans ce plan fait REFUSER le run, avec son nom.
 `scripts/guards/lib/npmLockHoisted.mjs` — npx --yes npm@10.9.3 install --package-lock-only, puis valider avec npx npm@10.9.3 ci --dry-run. npm 11 ampute les entrées hoistées
 `@emnapi/*` que `npm ci` exige en CI ; la garde (pre-commit +
 `src/npm-lock-hoisted-guard.test.ts`) refuse un lock amputé.
-<!-- sources-empreinte: 4aadadb7236899a1b1e5ed8ca6119b4a42c59362 (23 fichiers, 9 dossiers) corps: 832f9e440c3ab9379d125a01384a1f24a2fa5c1e -->
+<!-- sources-empreinte: c7633d27c3314c9e4bfadfdf3afd06238aff713d (23 fichiers, 9 dossiers) corps: 7ed5e5905e4394a74a3a012d6037ce240361a573 -->
