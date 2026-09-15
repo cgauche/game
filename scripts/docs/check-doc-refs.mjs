@@ -227,6 +227,7 @@ const DOC_REF_RE = /\bdocs\/[A-Za-z0-9_./-]*\.md\b/g
 // JETABLE monté par un test n'a pas vocation à exister dans celui-ci.
 const DOC_REF_SITES_EXEMPTS = new Set([
   'scripts/docs/check-plans-anchors.test.mjs|docs/note.md', // fixture du dépôt jetable de la garde des plans
+  'scripts/git-hooks/docs-rebuild.test.mjs|docs/a.md', // cible d'une MESURE forgée (`touchesDocSources`, #1773) : aucun doc à exister
 ])
 // Ce fichier-ci est hors du sens 5 : il ÉNONCE les jetons exemptés ci-dessus (même patron que
 // `FICHIERS_DE_LA_GARDE` dans check-plans-anchors.mjs), il ne les cite pas comme documentation.
