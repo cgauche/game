@@ -374,7 +374,7 @@ test('la mesure NOMME le worktree détaché et la branche sans ticket, et les ti
       ok: true,
       worktrees: [
         { chemin: '/dep', principal: true, branche: 'main' },
-        { chemin: '/home/.codex/worktrees/914b/Game', principal: false, branche: null, classe: 'propre+hors-main' },
+        { chemin: '/dep/.codex/worktrees/914b/Game', principal: false, branche: null, classe: 'propre+hors-main' },
       ],
     }),
     issues: () => ({ issues: new Map(), anomalies: [] }),
