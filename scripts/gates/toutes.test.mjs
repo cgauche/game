@@ -354,10 +354,12 @@ function depotDeGates(gatesFactices) {
 
 const LENTE = "setTimeout(() => { console.log('fini'); process.exit(0) }, 2500)\n"
 
-test('un ROUGE rapide n’empêche pas les lanes en cours de FINIR, et le résumé les nomme toutes', async () => {
+const ROUGE = (mot, code) => `console.error(${JSON.stringify(mot)})\nprocess.exit(${code})\n`
+
+test('un ROUGE ne coupe RIEN : ce qui le suit dans sa lane est JOUÉ, et le résumé les nomme tous', async () => {
   const { racine } = depotDeGates([
     { nom: 'lente', corps: LENTE },
-    { nom: 'rouge', corps: "console.error('ce rouge est le sujet')\nprocess.exit(4)\n" },
+    { nom: 'rouge', corps: ROUGE('ce rouge est le sujet', 4) },
     { nom: 'apres', corps: LENTE },
     { nom: 'lente2', corps: LENTE },
   ])
@@ -367,8 +369,8 @@ test('un ROUGE rapide n’empêche pas les lanes en cours de FINIR, et le résum
       racine,
       argv: ['node', 'toutes.mjs'],
       journal: (t) => lignes.push(t),
-      // `rouge` et `apres` dans la MÊME lane : la première tombe, la seconde est SAUTÉE ; les deux
-      // autres lanes tournaient déjà et doivent aller au bout.
+      // `rouge` et `apres` dans la MÊME lane : la première tombe, la seconde lit le MÊME arbre propre
+      // et rend donc un verdict JUSTE — la payer maintenant évite un passage de plus (#1772).
       lanes: [
         { nom: 'a', gates: ['lente'] },
         { nom: 'b', gates: ['rouge', 'apres'] },
@@ -382,11 +384,105 @@ test('un ROUGE rapide n’empêche pas les lanes en cours de FINIR, et le résum
     assert.match(sortie, /——— résumé ———/)
     // Le code de sortie de CHAQUE gate est imprimé : `build` a rendu ROUGE sans une ligne exploitable.
     assert.match(sortie, /\[gates\] rouge — ROUGE \(exit 4\) — /)
-    assert.match(sortie, /\[gates\] lente — vert \(exit 0\) — /, 'la lane a a été coupée par un rouge d’ailleurs')
-    assert.match(sortie, /\[gates\] lente2 — vert \(exit 0\) — /, 'la lane c a été coupée par un rouge d’ailleurs')
-    assert.match(sortie, /\[gates\] apres — sautée — 0\.0 s — rouge ROUGE \(exit 4\) — coût inconnu/)
+    assert.match(sortie, /\[gates\] lente — vert \(exit 0\) — /)
+    assert.match(sortie, /\[gates\] lente2 — vert \(exit 0\) — /)
+    assert.match(sortie, /\[gates\] apres — vert \(exit 0\) — /, '`apres` suit un rouge dans SA lane : elle est jouée')
+    assert.doesNotMatch(sortie, /sautée/, 'un rouge ordinaire ne fait sauter aucune gate')
     assert.match(sortie, /ce rouge est le sujet/, 'la queue du rouge doit être imprimée')
     assert.match(sortie, /0 spawn rejoué/)
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('DEUX rouges dans DEUX lanes distinctes sont rendus par UN SEUL run', async () => {
+  const { racine } = depotDeGates([
+    { nom: 'rouge1', corps: ROUGE('premier rouge', 4) },
+    { nom: 'rouge2', corps: ROUGE('second rouge', 7) },
+    { nom: 'lente', corps: LENTE },
+  ])
+  try {
+    const lignes = []
+    const code = await principal({
+      racine,
+      argv: ['node', 'toutes.mjs'],
+      journal: (t) => lignes.push(t),
+      lanes: [
+        { nom: 'a', gates: ['rouge1'] },
+        { nom: 'b', gates: ['lente', 'rouge2'] },
+      ],
+      avant: [],
+      ecritLu: Object.fromEntries(['rouge1', 'rouge2', 'lente'].map((n) => [n, { ecrit: [], lit: [] }])),
+    })
+    const sortie = lignes.join('')
+    assert.equal(code, 1)
+    assert.match(sortie, /\[gates\] rouge1 — ROUGE \(exit 4\) — /)
+    assert.match(sortie, /\[gates\] rouge2 — ROUGE \(exit 7\) — /)
+    assert.match(sortie, /premier rouge/)
+    assert.match(sortie, /second rouge/)
+    assert.doesNotMatch(sortie, /sautée/)
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('--serie rend les MÊMES verdicts que les lanes : deux rouges, deux lignes, exit 1', async () => {
+  // La morsure de `lanesAJouer` (l.139) ne mesure que l'ensemble et l'ORDRE des gates ; elle ne dit
+  // rien des VERDICTS. Ici c'est `principal` entier qui est rejoué en `--serie` sur le même cas que
+  // le test des deux lanes distinctes : `--serie` ne change que la COMPOSITION des lanes.
+  const { racine } = depotDeGates([
+    { nom: 'rouge1', corps: ROUGE('premier rouge', 4) },
+    { nom: 'rouge2', corps: ROUGE('second rouge', 7) },
+    { nom: 'lente', corps: LENTE },
+  ])
+  try {
+    const lignes = []
+    const code = await principal({
+      racine,
+      argv: ['node', 'toutes.mjs', '--serie'],
+      journal: (t) => lignes.push(t),
+      lanes: [
+        { nom: 'a', gates: ['rouge1'] },
+        { nom: 'b', gates: ['lente', 'rouge2'] },
+      ],
+      avant: [],
+      ecritLu: Object.fromEntries(['rouge1', 'rouge2', 'lente'].map((n) => [n, { ecrit: [], lit: [] }])),
+    })
+    const sortie = lignes.join('')
+    assert.equal(code, 1)
+    assert.match(sortie, /\[gates\] rouge1 — ROUGE \(exit 4\) — /)
+    assert.match(sortie, /\[gates\] rouge2 — ROUGE \(exit 7\) — /)
+    assert.match(sortie, /\[gates\] lente — vert \(exit 0\) — /)
+    assert.match(sortie, /premier rouge/)
+    assert.match(sortie, /second rouge/)
+    assert.doesNotMatch(sortie, /sautée/, 'une lane unique ne dispense pas de jouer ce qui suit un rouge')
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('DEUX rouges dans la MÊME lane sont tous deux JOUÉS et rendus', async () => {
+  const { racine } = depotDeGates([
+    { nom: 'rouge1', corps: ROUGE('premier rouge', 3) },
+    { nom: 'rouge2', corps: ROUGE('second rouge', 5) },
+  ])
+  try {
+    const lignes = []
+    const code = await principal({
+      racine,
+      argv: ['node', 'toutes.mjs'],
+      journal: (t) => lignes.push(t),
+      lanes: [{ nom: 'a', gates: ['rouge1', 'rouge2'] }],
+      avant: [],
+      ecritLu: Object.fromEntries(['rouge1', 'rouge2'].map((n) => [n, { ecrit: [], lit: [] }])),
+    })
+    const sortie = lignes.join('')
+    assert.equal(code, 1)
+    assert.match(sortie, /\[gates\] rouge1 — ROUGE \(exit 3\) — /)
+    assert.match(sortie, /\[gates\] rouge2 — ROUGE \(exit 5\) — /)
+    assert.match(sortie, /premier rouge/)
+    assert.match(sortie, /second rouge/)
+    assert.doesNotMatch(sortie, /sautée/)
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
@@ -421,6 +517,7 @@ test('le RÉSUMÉ s’imprime même si la photo de fin devient impossible', asyn
 test('une gate de la phase SÉRIE qui réécrit l’arbre est REFUSÉE, en nommant le fichier', async () => {
   const { racine } = depotDeGates([
     { nom: 'ecrivain', corps: `import { writeFileSync } from 'node:fs'\nwriteFileSync('rapport.md', 'périmé\\n')\n` },
+    { nom: 'ecrivain2', corps: LENTE },
     { nom: 'lecteur', corps: LENTE },
   ])
   try {
@@ -433,8 +530,13 @@ test('une gate de la phase SÉRIE qui réécrit l’arbre est REFUSÉE, en nomma
       argv: ['node', 'toutes.mjs'],
       journal: (t) => lignes.push(t),
       lanes: [{ nom: 'a', gates: ['lecteur'] }],
-      avant: ['ecrivain'],
-      ecritLu: { ecrivain: { ecrit: ['rapport.md'], lit: [] }, lecteur: { ecrit: [], lit: ['rapport.md'] } },
+      // DEUX écrivains en série : le second ne doit pas être joué, et surtout pas passé pour justifié.
+      avant: ['ecrivain', 'ecrivain2'],
+      ecritLu: {
+        ecrivain: { ecrit: ['rapport.md'], lit: [] },
+        ecrivain2: { ecrit: ['rapport.md'], lit: [] },
+        lecteur: { ecrit: [], lit: ['rapport.md'] },
+      },
     })
     const sortie = lignes.join('')
     assert.equal(code, 1)
@@ -443,6 +545,10 @@ test('une gate de la phase SÉRIE qui réécrit l’arbre est REFUSÉE, en nomma
     assert.match(sortie, /——— résumé ———/)
     // Le lecteur n'a jamais démarré : l'écrivain a tranché AVANT les lanes, pas sept minutes plus tard.
     assert.match(sortie, /\[gates\] lecteur — sautée/)
+    // L'écrivain RESTANT porte le même verdict, avec sa cause et son coût — jamais « déjà justifiée »,
+    // qui serait FAUX : elle n'a pas été jouée, donc elle ne justifie rien.
+    assert.match(sortie, /\[gates\] ecrivain2 — sautée — 0\.0 s — ecrivain a réécrit l'arbre — coût inconnu/)
+    assert.doesNotMatch(sortie, /ecrivain2 — déjà justifiée/)
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
@@ -536,6 +642,47 @@ test('un PRÉREQUIS absent rend un ROUGE qui NOMME le chemin et la commande qui 
   } finally {
     rmSync(racine, { recursive: true, force: true })
     rmSync(hors, { recursive: true, force: true })
+  }
+})
+
+test('un PRÉREQUIS absent ne fait sauter AUCUNE gate — ni sa lane, ni les autres', async () => {
+  // #1772 : le refus de prérequis est un ROUGE comme un autre. Il ne concerne que la gate qui LIT ce
+  // chemin — `prerequisAbsents` est appelé PAR GATE (toutes.mjs, `jouerUneFois`) — donc les autres
+  // lisent le même arbre propre et leur verdict est JUSTE. Les faire sauter coûtait un passage entier.
+  const { racine } = depotDeGates([
+    { nom: 'serveur', corps: "console.log('jamais spawnée')\nprocess.exit(0)\n" },
+    { nom: 'suivante', corps: LENTE },
+    { nom: 'voisine', corps: ROUGE('la voisine a son propre rouge', 9) },
+  ])
+  try {
+    const lignes = []
+    const code = await principal({
+      racine,
+      argv: ['node', 'toutes.mjs'],
+      journal: (t) => lignes.push(t),
+      // `serveur` (prérequis absent) et `suivante` dans la MÊME lane ; `voisine` dans une AUTRE.
+      lanes: [
+        { nom: 'a', gates: ['serveur', 'suivante'] },
+        { nom: 'b', gates: ['voisine'] },
+      ],
+      avant: [],
+      ecritLu: {
+        serveur: { ecrit: [], lit: ['deps/'], prerequis: [{ chemin: 'deps/absent', pose: 'cmd qui pose' }] },
+        suivante: { ecrit: [], lit: [] },
+        voisine: { ecrit: [], lit: [] },
+      },
+    })
+    const sortie = lignes.join('')
+    assert.equal(code, 1)
+    // Le refus NOMME encore le chemin et la commande : le sujet du test l.529 est intact.
+    assert.match(sortie, /prérequis absent : `deps\/absent` \(le pose : `cmd qui pose`\)/)
+    assert.match(sortie, /\[gates\] serveur — ROUGE \(exit 1\) — /)
+    assert.match(sortie, /\[gates\] suivante — vert \(exit 0\) — /, 'la MÊME lane continue après un refus de prérequis')
+    assert.match(sortie, /\[gates\] voisine — ROUGE \(exit 9\) — /, 'une AUTRE lane rend son verdict réel')
+    assert.match(sortie, /la voisine a son propre rouge/, 'les DEUX rouges sont rendus par un seul run')
+    assert.doesNotMatch(sortie, /sautée/)
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
   }
 })
 

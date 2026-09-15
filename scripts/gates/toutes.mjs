@@ -14,6 +14,13 @@
 //   3. le RÉSUMÉ, puis la photo de l'arbre. Dans cet ordre : un résumé est ce qu'on vient de payer,
 //      il s'imprime AVANT tout ce qui pourrait encore échouer.
 //
+// UN ROUGE NE COUPE RIEN (#1772) : la tête doit être verte sur TOUTES les gates, donc ce qu'un rouge
+// ferait sauter serait payé au passage suivant — avec un commit de plus et des clés de contenu de
+// plus. Une gate rouge pose son verdict, fait rendre 1 au run, et les lanes continuent : le résumé
+// rend TOUS les rouges de la tête en un seul mur. Un prérequis absent est un rouge comme un autre :
+// il ne concerne que la gate qui LIT ce chemin (chacune teste les SIENS). Ne sautent ce qui suit que
+// les DEUX cas où un verdict de plus serait FAUX : un signal, un écrivain qui a RÉÉCRIT l'arbre.
+//
 // L'ARBRE DOIT ÊTRE PROPRE AVANT LE PREMIER SPAWN : une gate jouée sur un arbre sale ne justifie
 // rien (le pre-push la refusera), et la découvrir après dix minutes de gates est le pire moment.
 //
@@ -878,6 +885,13 @@ export async function principal({
   const aJouerParNom = new Map(aJouer.map((g) => [g.nom, g]))
   const verdicts = new Map()
   const vivants = new Map()
+  // LISTE FERMÉE, deux causes (#1772), et chacune rend FAUX ce qui suivrait :
+  //   1. `arreterSurSignal` — les arbres en cours sont tués, rien ne peut plus rendre de verdict ;
+  //   2. un écrivain de la phase série qui a RÉÉCRIT l'arbre — les lecteurs liraient un arbre qui
+  //      n'est pas le commit, donc des verdicts qui ne justifient pas le sha poussé.
+  // AUCUN verdict de gate n'en est une instance, pas même un refus de prérequis : les autres gates
+  // lisent le même arbre propre, et chacune teste SES PROPRES prérequis (`prerequisAbsents`), donc
+  // leur verdict est juste. Un rouge ne pose jamais `arret`.
   let arret = null
 
   const arreterSurSignal = (signal) => {
@@ -951,25 +965,19 @@ export async function principal({
     }
   }
 
-  /** Pose le verdict d'une gate et, si c'est un rouge, ARME l'arrêt des lanes. Le rejeu de
-   *  `spawnResilient` est déjà ÉPUISÉ quand on arrive ici : un processus qui n'a pas démarré ne fait
-   *  donc plus sauter les gates suivantes. */
+  /** Pose le verdict d'une gate. Aucun verdict n'ARME quoi que ce soit : le résumé compte tout
+   *  verdict non vert, et les lanes vont au bout (voir la liste fermée de `arret`). */
   const poser = (nom, r) => {
     const secondes = secondesDepuis(r.debut)
     const statut = r.expiree ? 'EXPIRÉE' : r.code === 0 ? 'vert' : 'ROUGE'
     verdicts.set(nom, { statut, code: r.code, secondes, fichier: r.fichier, sortie: r.sortie, limiteMs: r.limiteMs })
     journal(`[gates] ${nom} — ${statut} (exit ${r.code}) en ${secondes.toFixed(1)} s · ${r.fichier}\n`)
-    if (statut !== 'vert' && !arret) arret = `${nom} ${statut} (exit ${r.code})`
     return statut
   }
 
   const jouerLane = async (lane) => {
     const debut = Date.now()
     for (const nom of lane.gates) {
-      if (arret) {
-        verdicts.set(nom, { statut: 'sautée', secondes: 0, raison: `${arret} — ${coutEstime(durees, nom)}` })
-        continue
-      }
       const debutGate = Date.now()
       // `--serie` ne borne PAS la suite : c'est le mode DIAGNOSTIC, rien ne tourne à côté d'elle, et
       // la brider fausserait la seule mesure de référence dont dispose le lanceur.
@@ -1003,8 +1011,11 @@ export async function principal({
           `[gates] REFUS — « ${nom} » a RÉÉCRIT l'arbre : son rendu n'est pas celui du commit.\n` +
           `${bouges.map((l) => `  ${l}`).join('\n')}\n` +
           '[gates] régénère et committe ces fichiers, puis rejoue les gates.\n'
+        // PAS de `break` : les écrivains RESTANTS doivent être marqués « sautée » par la garde en tête
+        // de boucle. Sortir ici les laisserait sans verdict, et le résumé les imprimerait « déjà
+        // justifiée » — un verdict FAUX pour une gate jamais jouée. `refusEcriture` n'est donc posé
+        // qu'ICI, par le PREMIER fautif : les suivantes n'atteignent plus la comparaison de photos.
         arret = `${nom} a réécrit l'arbre`
-        break
       }
     }
   }
@@ -1020,6 +1031,8 @@ export async function principal({
     for (const lane of lanes)
       for (const nom of lane.gates)
         verdicts.set(nom, { statut: 'sautée', secondes: 0, raison: `${arret} — ${coutEstime(durees, nom)}` })
+  // Les lanes n'ont pas à relire `arret` : elles ne tournent QUE s'il n'y a pas de refus d'écriture
+  // (ci-dessous), et un signal sort par `process.exit`. Un rouge, lui, ne l'arme jamais.
   const dureesLanes = refusEcriture ? [] : await Promise.all(lanes.map(jouerLane))
   const mur = secondesDepuis(debutTotal)
 
