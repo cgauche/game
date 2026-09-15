@@ -34,11 +34,11 @@ import { fileURLToPath } from 'node:url'
 import { cliquetsDuMessage } from './lib/stocksNominatifs.mjs'
 
 /**
- * Plafond du contexte permanent, en OCTETS. MESURE du 2026-09-14 sur l'index de `wt-1728-L2` après le
- * train A. Il ne se relève qu'en le DISANT au message de commit
+ * Plafond du contexte permanent, en OCTETS. MESURE du 2026-09-15 sur l'index de `chantier/1768-board` après
+ * `ops:board` (67019ea36, +88). Il ne se relève qu'en le DISANT au message de commit
  * (`CLIQUET: scripts/guards/budget-contexte.mjs +N — <motif>`), et il s'abaisse à chaque allègement.
  */
-export const PLAFOND_OCTETS = 26271
+export const PLAFOND_OCTETS = 26359
 
 /** Le fichier qui PORTE le plafond : c'est lui que le `CLIQUET:` d'un message de commit nomme. */
 export const PORTEUR_DU_PLAFOND = 'scripts/guards/budget-contexte.mjs'
