@@ -103,11 +103,11 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 
 - `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
 - `src/data/` — données app-owned (122 fichiers JSON commités, éditables au Compendium).
-- Les gardes de données : `scripts/guards/validate-data.mts` + 112 modules
+- Les gardes de données : `scripts/guards/validate-data.mts` + 113 modules
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
   `scripts/guards/lib/labelLogic.mjs`).
-- Les gardes de SESSION : 15 scripts sous `scripts/hooks/`, déclarés dans
+- Les gardes de SESSION : 16 scripts sous `scripts/hooks/`, déclarés dans
   `.claude/settings.json` (versionné) — détail au § 5.
 - Les schémas de données : `src/data/schemas/` (`src/data/schemas/types.ts`,
   `src/data/schemas/validate.ts`, `src/data/schemas/_registry.generated.ts`,
@@ -175,6 +175,7 @@ refaire `npm install`.
 | `PreToolUse` | Bash \| PowerShell \| mcp__lean-ctx__ctx_shell | `scripts/hooks/solde-ticket-guard.mjs` | Fermeture de ticket au commit = solde écrit obligatoire |
 | `PreToolUse` | Bash \| PowerShell \| mcp__lean-ctx__ctx_shell | `scripts/hooks/issue-label-guard.mjs` | Ticket sans label refusé (index du backlog) |
 | `PreToolUse` | Bash \| PowerShell \| mcp__lean-ctx__ctx_shell | `scripts/hooks/runner-fast-reminder.mjs` | Rappel typecheck:fast (tsc nu ~42 s) |
+| `PreToolUse` | Bash \| PowerShell \| mcp__lean-ctx__ctx_shell | `scripts/hooks/codeur-gates-guard.mjs` | Un codeur ne joue pas les gates du train |
 | `PreToolUse` | Bash \| PowerShell \| mcp__lean-ctx__ctx_shell | `scripts/hooks/runner-capture-guard.mjs` | Runner sans capture : sortie complète en fichier |
 | `PreToolUse` | Agent | `scripts/hooks/agent-dispatch-design-reminder.mjs` | Rappel altitude de design (dispatch d'agent) |
 | `PostToolUse` | Write \| Edit | `scripts/hooks/poison-postcheck.mjs` | Garde anti-poison au stylo (tombstone/excuse/label) |
@@ -226,4 +227,4 @@ sans place dans ce plan fait REFUSER le run, avec son nom.
 `scripts/guards/lib/npmLockHoisted.mjs` — npx --yes npm@10.9.3 install --package-lock-only, puis valider avec npx npm@10.9.3 ci --dry-run. npm 11 ampute les entrées hoistées
 `@emnapi/*` que `npm ci` exige en CI ; la garde (pre-commit +
 `src/npm-lock-hoisted-guard.test.ts`) refuse un lock amputé.
-<!-- sources-empreinte: 5477a4944ad4b0c84e0c3ad37e5b831a9d90f678 (23 fichiers, 9 dossiers) corps: 9063d74a960cb6dde9de646583e03ae73f9d8c8c -->
+<!-- sources-empreinte: 4aadadb7236899a1b1e5ed8ca6119b4a42c59362 (23 fichiers, 9 dossiers) corps: 832f9e440c3ab9379d125a01384a1f24a2fa5c1e -->
