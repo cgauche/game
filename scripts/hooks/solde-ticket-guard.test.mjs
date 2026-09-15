@@ -1990,6 +1990,26 @@ test('verifierCapture : une capture PLAUSIBLE passe ; les six défauts sont NOMM
   }
 })
 
+test('verifierCapture : une capture IGNORÉE par git est refusée, la même sous public/qc/soldes/ passe', () => {
+  const base = mkdtempSync(join(tmpdir(), 'solde-capture-ignore-'))
+  try {
+    execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: base, encoding: 'utf8' })
+    writeFileSync(join(base, '.gitignore'), 'public/qc/*\n!public/qc/soldes/\n', 'utf8')
+    mkdirSync(join(base, 'public', 'qc', 'soldes'), { recursive: true })
+    writeFileSync(join(base, 'public', 'qc', 'ignoree.png'), pngDe(1280, 720, 4096))
+    writeFileSync(join(base, 'public', 'qc', 'soldes', 'ok.png'), pngDe(1280, 720, 4096))
+
+    // Le fichier EXISTE, est un PNG plausible et vient d'être écrit : seul son sort au commit le refuse.
+    assert.match(
+      verifierCapture('public/qc/ignoree.png', { racine: base }).problemes[0],
+      /IGNORÉE par git/,
+    )
+    assert.equal(verifierCapture('public/qc/soldes/ok.png', { racine: base }).ok, true)
+  } finally {
+    rmSync(base, { recursive: true, force: true })
+  }
+})
+
 test('validateSolde : un commit qui touche un ÉCRAN exige « ## Recette visuelle » et sa capture', () => {
   const sansSection = validateSolde(solde(), TODAY, { touchesUi: true })
   assert.equal(sansSection.ok, false)

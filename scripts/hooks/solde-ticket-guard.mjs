@@ -851,8 +851,8 @@ export function lignesDeHunks(diffU0) {
 /**
  * Contrôle d'une capture de recette visuelle : sous `public/qc/`, présente, d'un poids d'image, PNG
  * ou JPEG à ses octets de tête, aux dimensions lisibles (PNG : l'en-tête IHDR porte largeur et
- * hauteur), et pas plus ANCIENNE que le dernier fichier d'écran stagé (`mtimeMin`, millisecondes).
- * `racine` = arbre où le chemin se résout.
+ * hauteur), non IGNORÉE par git, et pas plus ANCIENNE que le dernier fichier d'écran stagé
+ * (`mtimeMin`, millisecondes). `racine` = arbre où le chemin se résout.
  *
  * CE QUE CETTE PORTE PROUVE : qu'une image d'écran plausible existe et vient d'être produite —
  * garde-fou d'ÉTOURDERIE (chemin périmé, fichier vide, capture d'avant le geste), PAS de
@@ -863,6 +863,15 @@ export function verifierCapture(chemin, { racine = process.cwd(), mtimeMin = 0 }
   const norm = String(chemin ?? '').replace(/\\/g, '/').replace(/^\.\//, '')
   if (!norm.startsWith(DOSSIER_CAPTURES)) {
     problemes.push(`capture "${chemin}" hors de ${DOSSIER_CAPTURES} (les captures de recette y vivent, cf. scripts/qc/capture-jeu.mjs)`)
+    return { ok: false, problemes }
+  }
+  // Une capture qu'un `.gitignore` retient ne part PAS avec le commit : le palier suivant lit un
+  // solde qui cite une preuve inouvrable. Le refus vient AVANT la lecture du disque — exister sur la
+  // machine du geste ne la rend pas opposable. Hors dépôt, la porte ne juge que le disque : le banc
+  // de `verifierCapture` travaille hors git.
+  const ignore = lireGit(['check-ignore', '-q', '--no-index', norm], { cwd: racine })
+  if (ignore.disponible && !ignore.absent && ignore.valeur.status === 0) {
+    problemes.push(`capture "${norm}" IGNORÉE par git (.gitignore) — un solde ne cite qu'une preuve versionnée : la poser sous public/qc/soldes/`)
     return { ok: false, problemes }
   }
   let info

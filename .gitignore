@@ -28,6 +28,10 @@ dist/
 # code producteur (voir le README du dossier : ce qui est écarté, et comment tout se régénère).
 public/qc/*
 !public/qc/baseline-affine/
+# `public/qc/soldes/` est VERSIONNÉ : les captures citées par le champ `capture:` d'un solde
+# (`.claude/soldes/<N>.md`) y vivent, une par preuve — une preuve que le palier suivant ne peut pas
+# ouvrir n'en est pas une (revue de palier 2026-09-14, trouvaille 1).
+!public/qc/soldes/
 
 # Rapports JSON régénérables des lentilles d'audit (#321 — obtainability-graph.mts, set-scan.mjs…)
 scripts/data/.out/
