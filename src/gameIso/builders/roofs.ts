@@ -837,17 +837,16 @@ const wallCellIndexOf = memoByRef((scene: Scene) => {
 /** Apparence RÉSOLUE d'un segment de mur — LA MÊME loi que `wallGeometry` (`walls.ts`) : la façade
  *  authorée sur l'arête l'emporte (sauf structure ou override posé), sinon `wallApp`. Une seule loi, jamais deux
  *  qui pourraient diverger. */
-function segAppearance(scene: Scene, facades: ReadonlyMap<string, FacadeEdge>, seg: WallSeg): string {
+function segAppearance(facades: ReadonlyMap<string, FacadeEdge>, seg: WallSeg): string {
   const facade = facades.get(edgeKey(seg));
   return facade && !seg.structure && !seg.appearance
     ? facadeStructureAppearance(facade.appearance).id
-    : wallApp(seg, heightAt(scene, seg.x, seg.y, seg.z ?? 0)).id;
+    : wallApp(seg).id;
 }
 
 /** Apparence DOMINANTE des murs bordant un ensemble de cases `x,y,z` (ordre d'id à égalité : verdict
  *  déterministe, jamais dépendant de l'ordre d'itération). */
 function dominantAppearance(
-  scene: Scene,
   facades: ReadonlyMap<string, FacadeEdge>,
   index: { byCell: Map<string, WallSeg[]> },
   space: Iterable<string>,
@@ -858,7 +857,7 @@ function dominantAppearance(
     for (const seg of index.byCell.get(key) ?? []) {
       if (seen.has(seg)) continue;
       seen.add(seg);
-      const id = segAppearance(scene, facades, seg);
+      const id = segAppearance(facades, seg);
       tally.set(id, (tally.get(id) ?? 0) + 1);
     }
   return [...tally].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))[0]?.[0];
@@ -887,10 +886,10 @@ export function closureAppearance(
   }
   for (const edge of edges) {
     const seg = aretesA(scene, edge.x, edge.y, edge.side, edge.z)[0];
-    if (seg) return segAppearance(scene, facades, seg);
+    if (seg) return segAppearance(facades, seg);
   }
-  return dominantAppearance(scene, facades, index, space)
-    ?? dominantAppearance(scene, facades, index, bodySpace);
+  return dominantAppearance(facades, index, space)
+    ?? dominantAppearance(facades, index, bodySpace);
 }
 
 /** Vérité de JEU pilotant le cutaway (PAS une caméra) : positions des ALLIÉS, ÉTAGE COMPRIS. Le `z`

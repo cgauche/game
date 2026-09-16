@@ -582,7 +582,7 @@ function wallGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
     if (view && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
     const baseH = heightAt(scene, w.x, w.y, z);
     const facade = authoredEdges.get(edgeKey(w));
-    const physicalApp = wallApp(w, baseH);
+    const physicalApp = wallApp(w);
     const app = facade && !w.structure && !w.appearance
       ? facadeStructureAppearance(facade.appearance)
       : physicalApp;

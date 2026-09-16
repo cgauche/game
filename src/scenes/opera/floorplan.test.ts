@@ -3,9 +3,10 @@ import { buildOperaFloorplan, ZONES_REZ, ZONES_ETAGE } from './floorplan';
 import { tileAt, heightAt, isWalkable, wallBetween } from '../../state/scene';
 import { reachable, type Pt } from '../../state/path';
 import { effectiveArchitecture } from '../../state/sceneEdit';
-import { clearedSpace } from '../../gameIso/builders/roofs';
 import { unreachableDescriptiveZones, reachedFloors } from '../../state/mapQC';
 import { METRES_PER_LEVEL } from '../../state/relief';
+import { buildWalls } from '../../gameIso/builders/walls';
+import { buildRoofs, clearedSpace } from '../../gameIso/builders/roofs';
 
 /**
  * Le plan de l'Opéra (Théâtre Staatsoper) est COMPILÉ par `buildScene(MapSpec)` depuis l'ASCII box-drawing
@@ -188,5 +189,35 @@ describe('plan de l’Opéra — corps architectural et loi de dégagement', () 
       expect(declarees.length, `l’étage ${storey.id} porte des pièces`).toBeGreaterThan(0);
       expect([...storey.roomZoneIds].sort(), `pièces de ${storey.id}`).toEqual([...declarees].sort());
     }
+ * #1180 — l'apparence d'un mur est une DONNÉE de la carte, la hauteur est de la géométrie. L'opéra
+ * n'authore AUCUNE structure ni apparence d'arête (`walled` sans `wallStructures`) : tout son bâti
+ * doit donc rendre le mur nu `plain`, y compris les arêtes de l'étage assises à 4 m.
+ *
+ * La garde porte sur les ÉLÉMENTS RENDUS (`buildWalls` + `buildRoofs`), jamais sur `scene.walls` :
+ * `wallApp` a un TROISIÈME chemin, transitif — les coutures de nappes `seam:` (`walls.ts`
+ * `roofSeamGeometry`) prennent leur matière de `closureAppearance` → `segAppearance` → `wallApp`.
+ */
+describe('plan de l’Opéra — apparence des murs (#1180)', () => {
+  const s = buildOperaFloorplan();
+  const els = [...buildWalls(s), ...buildRoofs(s)].filter((el) => el.kind === 'wall');
+  const aretes = els.filter((el) => el.key.startsWith('wall:'));
+  const coutures = els.filter((el) => el.key.startsWith('seam:'));
+
+  it('la garde VOIT toute la population rendue : arêtes + coutures de nappes', () => {
+    expect(aretes.length).toBe(983);
+    // L'opéra ne porte AUCUNE masse d'architecture : zéro nappe de toit, donc zéro couture à fermer.
+    expect(coutures.length).toBe(0);
+    expect(aretes.length + coutures.length).toBe(els.length);
+  });
+
+  it('les arêtes NUES assises en hauteur sont la population que la cote fortifiait', () => {
+    const nuesHautes = (s.walls ?? []).filter((w) => !w.structure && !w.appearance && heightAt(s, w.x, w.y, w.z ?? 0) > 1);
+    expect(nuesHautes.length).toBe(420);
+    expect(new Set(nuesHautes.map((w) => w.z ?? 0))).toEqual(new Set([1]));
+  });
+
+  it('AUCUN élément de mur ne rend `mur-en-pierre` : l’étage est du mur nu, pas un rempart', () => {
+    expect(els.filter((el) => el.appearance === 'mur-en-pierre').map((el) => el.key)).toEqual([]);
+    expect(new Set(els.map((el) => el.appearance))).toEqual(new Set(['plain']));
   });
 });

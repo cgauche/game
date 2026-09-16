@@ -120,15 +120,27 @@ describe('buildWalls — hauteur visuelle portée par l’apparence', () => {
 });
 
 describe('buildWalls — hauteur de base MÉTRIQUE (heightAt, vérité partagée iso/POV)', () => {
-  it('un mur sur une case à 4 m part de 4 m ; sans structure il devient rempart (wallApp base > 1 m)', () => {
-    const s = sceneWith([{ x: 2, y: 2, side: 'E' }]);
+  /** Une case à 4 m porte la GÉOMÉTRIE du mur (il part de 4 m) et RIEN de son apparence (#1180) :
+   *  nu il reste `plain`, fortifié il le DIT en donnée. */
+  const scene4m = (seg: WallSeg): Scene => {
+    const s = sceneWith([seg]);
     s.layers[0].height = new Array(36).fill(0);
     s.layers[0].height[2 * 6 + 2] = 4;
-    const el = one(s);
-    expect(el.appearance).toBe('mur-en-pierre');
+    return s;
+  };
+
+  it('un mur sur une case à 4 m part de 4 m ; sans structure il RESTE un mur nu', () => {
+    const el = one(scene4m({ x: 2, y: 2, side: 'E' }));
+    expect(el.appearance).toBe('plain');
     expect(el.ends[0].h).toBe(4);
     const face = facesOf(el, 'face')[0];
     expect(face.poly.map((p) => p.h)).toEqual([4 + WALL_H_M, 4 + WALL_H_M, 4, 4]);
+  });
+
+  it('LE MÊME mur à 4 m avec `structure: mur-en-pierre` rend la pierre — la DONNÉE décide', () => {
+    const el = one(scene4m({ x: 2, y: 2, side: 'E', structure: 'mur-en-pierre' }));
+    expect(el.appearance).toBe('mur-en-pierre');
+    expect(el.ends[0].h).toBe(4);
   });
 });
 

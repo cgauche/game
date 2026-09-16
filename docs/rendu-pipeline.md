@@ -96,7 +96,7 @@ La vérité de VUE (estompe d'occlusion, révélation, assombrissement d'un éta
 | `buildHighlights` | `HighlightEl[]` | `src/gameIso/builders/highlights.ts:64` | — |
 | `buildPropVolumes` | `Face[]` | `src/gameIso/builders/propVolumes.ts:52` | Les faces MONDE d'un décor volumique : recette locale × cap × ancre, posées sur `baseHeightM`. |
 | `buildProps` | `PropEl[]` | `src/gameIso/builders/props.ts:123` | Éléments `prop` de la scène. |
-| `buildRoofs` | `RoofEl[]` | `src/gameIso/builders/roofs.ts:1397` | Éléments `roof` de la scène. |
+| `buildRoofs` | `RoofEl[]` | `src/gameIso/builders/roofs.ts:1396` | Éléments `roof` de la scène. |
 | `buildTokens` | `TokenEl[]` | `src/gameIso/builders/tokens.ts:80` | Éléments `token` de la scène — figurants (toujours), puis combattants (si `battle`). |
 | `buildWalls` | `WallEl[]` | `src/gameIso/builders/walls.ts:631` | Éléments `wall` de la scène. |
 
@@ -199,4 +199,4 @@ relancer, comparer : une migration donnée-neutre doit rester identique.
 - **un TYPE d'élément** (au-delà des 5 membres de `SceneEl`) : ajouter le variant au pivot,
   son builder, sa cuisson dans le monde volumique, et — s'il doit se voir à l'authoring — son peintre
   SVG avec sa profondeur de tri.
-<!-- sources-empreinte: a46d717c1f0fcb13b81d343fd10aa3dc58b03c8a (1007 fichiers, 92 dossiers) corps: f8a5b47f5e29e8300f0ef76835fa081a4c5692e8 -->
+<!-- sources-empreinte: 5a496d8bbe3b7d7f7fb2abf790e823a057f05b35 (1007 fichiers, 92 dossiers) corps: 924b6e78136fa288f6e9f12e0c7649758aace25e -->
