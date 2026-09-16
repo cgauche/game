@@ -81,7 +81,7 @@ export function motifDeRejeu(texte, empreinteSources) {
  *
  * N'ÉCRIT QUE SI LE RENDU DIFFÈRE. Les trois rapports d'Atlas réécrivaient leur `.md` à CHAQUE run
  * (`coverage.mjs:422`, `reconcile.mjs:367`, `reanchor.mjs:344`) pendant que la suite lit ce même
- * dossier (`src/oversize-search-blindspot.test.ts:86`, `src/data/manual-docs-ratchet.test.ts:30`) :
+ * dossier (`src/oversize-search-blindspot.test.ts:86`, `scripts/docs/manual-docs-ratchet.test.mjs:32`) :
  * jouées en LANES parallèles (`scripts/gates/toutes.mjs`), c'était un lecteur sur un fichier en
  * cours d'écriture. Patron : `scripts/gen-registry.mjs:417,702` (`if (changed) writeFileSync`).
  */

@@ -62,9 +62,15 @@ test('la couverture est un DÉTECTEUR : une gate déplacée hors de toute place 
     refusDeCouverture(['vigie'], [{ nom: 'seule', gates: ['vigie'] }], {}, []).join('\n'),
     /vigie : aucune entrée ÉCRIT\/LU/,
   )
+  // `lit` VIDE est un refus à part : c'est `lit` qui décide si la gate est sautable sur un push
+  // documentaire (`gatesSautables`, scripts/gates/classerPush.mjs).
+  assert.match(
+    refusDeCouverture(['muette'], [{ nom: 'seule', gates: ['muette'] }], { muette: { ecrit: [], lit: [] } }, []).join('\n'),
+    /muette : entrée ÉCRIT\/LU sans « lit »/,
+  )
   // Une gate à la fois en lane ET en phase série serait jouée deux fois.
   assert.match(
-    refusDeCouverture(['x'], [{ nom: 'l', gates: ['x'] }], { x: { ecrit: [], lit: [] } }, ['x']).join('\n'),
+    refusDeCouverture(['x'], [{ nom: 'l', gates: ['x'] }], { x: { ecrit: [], lit: ['src/'] } }, ['x']).join('\n'),
     /x : placée deux fois/,
   )
 })
@@ -337,7 +343,7 @@ test('un ROUGE ne coupe RIEN : ce qui le suit dans sa lane est JOUÉ, et le rés
         { nom: 'c', gates: ['lente2'] },
       ],
       avant: [],
-      ecritLu: Object.fromEntries(['lente', 'rouge', 'apres', 'lente2'].map((n) => [n, { ecrit: [], lit: [] }])),
+      ecritLu: Object.fromEntries(['lente', 'rouge', 'apres', 'lente2'].map((n) => [n, { ecrit: [], lit: ['src/'] }])),
     })
     const sortie = lignes.join('')
     assert.equal(code, 1, 'un rouge doit rendre 1')
@@ -372,7 +378,7 @@ test('DEUX rouges dans DEUX lanes distinctes sont rendus par UN SEUL run', async
         { nom: 'b', gates: ['lente', 'rouge2'] },
       ],
       avant: [],
-      ecritLu: Object.fromEntries(['rouge1', 'rouge2', 'lente'].map((n) => [n, { ecrit: [], lit: [] }])),
+      ecritLu: Object.fromEntries(['rouge1', 'rouge2', 'lente'].map((n) => [n, { ecrit: [], lit: ['src/'] }])),
     })
     const sortie = lignes.join('')
     assert.equal(code, 1)
@@ -406,7 +412,7 @@ test('--serie rend les MÊMES verdicts que les lanes : deux rouges, deux lignes,
         { nom: 'b', gates: ['lente', 'rouge2'] },
       ],
       avant: [],
-      ecritLu: Object.fromEntries(['rouge1', 'rouge2', 'lente'].map((n) => [n, { ecrit: [], lit: [] }])),
+      ecritLu: Object.fromEntries(['rouge1', 'rouge2', 'lente'].map((n) => [n, { ecrit: [], lit: ['src/'] }])),
     })
     const sortie = lignes.join('')
     assert.equal(code, 1)
@@ -434,7 +440,7 @@ test('DEUX rouges dans la MÊME lane sont tous deux JOUÉS et rendus', async () 
       journal: (t) => lignes.push(t),
       lanes: [{ nom: 'a', gates: ['rouge1', 'rouge2'] }],
       avant: [],
-      ecritLu: Object.fromEntries(['rouge1', 'rouge2'].map((n) => [n, { ecrit: [], lit: [] }])),
+      ecritLu: Object.fromEntries(['rouge1', 'rouge2'].map((n) => [n, { ecrit: [], lit: ['src/'] }])),
     })
     const sortie = lignes.join('')
     assert.equal(code, 1)
@@ -462,7 +468,7 @@ test('le RÉSUMÉ s’imprime même si la photo de fin devient impossible', asyn
       journal: (t) => lignes.push(t),
       lanes: [{ nom: 'a', gates: ['saborde'] }],
       avant: [],
-      ecritLu: { saborde: { ecrit: [], lit: [] } },
+      ecritLu: { saborde: { ecrit: [], lit: ['src/'] } },
     })
     const sortie = lignes.join('')
     assert.match(sortie, /——— résumé ———/, 'le résumé doit être imprimé AVANT la photo de fin')
@@ -493,8 +499,8 @@ test('une gate de la phase SÉRIE qui réécrit l’arbre est REFUSÉE, en nomma
       // DEUX écrivains en série : le second ne doit pas être joué, et surtout pas passé pour justifié.
       avant: ['ecrivain', 'ecrivain2'],
       ecritLu: {
-        ecrivain: { ecrit: ['rapport.md'], lit: [] },
-        ecrivain2: { ecrit: ['rapport.md'], lit: [] },
+        ecrivain: { ecrit: ['rapport.md'], lit: ['src/'] },
+        ecrivain2: { ecrit: ['rapport.md'], lit: ['src/'] },
         lecteur: { ecrit: [], lit: ['rapport.md'] },
       },
     })
@@ -586,8 +592,8 @@ test('un PRÉREQUIS absent ne fait sauter AUCUNE gate — ni sa lane, ni les aut
       avant: [],
       ecritLu: {
         serveur: { ecrit: [], lit: ['deps/'], prerequis: [{ chemin: 'deps/absent', pose: 'cmd qui pose' }] },
-        suivante: { ecrit: [], lit: [] },
-        voisine: { ecrit: [], lit: [] },
+        suivante: { ecrit: [], lit: ['src/'] },
+        voisine: { ecrit: [], lit: ['src/'] },
       },
     })
     const sortie = lignes.join('')
@@ -686,7 +692,7 @@ const lanceParGates = async (racine, argv, lignes) =>
     journal: (t) => lignes.push(t),
     lanes: [{ nom: 'a', gates: ['alpha', 'beta'] }],
     avant: [],
-    ecritLu: { alpha: { ecrit: [], lit: [] }, beta: { ecrit: [], lit: [] } },
+    ecritLu: { alpha: { ecrit: [], lit: ['src/'] }, beta: { ecrit: [], lit: ['src/'] } },
   })
 
 test('--gates ne joue QUE les gates nommées, et le dit avec le total', async () => {

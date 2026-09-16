@@ -21,6 +21,9 @@ export const CI_SEULEMENT = {
     'appellent tous deux `genAll()` et écriraient les mêmes fichiers en même temps',
   "npm run raw:catalogs && git diff --exit-code -- 'docs/raw/catalogue-*.md'":
     'mutant : régénère puis git diff — `npm run gates` le couvre par la même phase préalable',
+  'node scripts/gates/classerPush.mjs >> "$GITHUB_OUTPUT"':
+    'classe le push (documentaire / produit, #1738) et ne mesure rien du contenu : il décide QUELS ' +
+    'steps jouent, il n’est pas lui-même une gate — localement `npm run gates` rejoue TOUT, sans classement',
 }
 
 /**
@@ -55,7 +58,10 @@ const cheminCi = ({ cwd = process.cwd(), fichier } = {}) =>
  * jointes par ` ; ` — une forme, donc, qui doit être classée comme les autres au lieu de disparaître.
  * `cles` porte les AUTRES clés du step (`working-directory`, `env`, `shell`…) : une gate locale ne
  * les reproduit pas, donc leur présence doit LEVER plutôt que créditer la commande racine.
- * REND `[{ job, commande, cles }]`.
+ * `si` rend la VALEUR de la clé `if` (ou `null`) — c'est la DÉCISION que `ci.yml` écrit sur le step,
+ * celle que la garde du classement confronte à la MESURE `lit` (scripts/gates/classerPush.test.mjs) ;
+ * `if` reste dans `cles`, où il est INERTE pour le rejeu local.
+ * REND `[{ job, commande, cles, si }]`.
  */
 export function stepsCi({ cwd = process.cwd(), fichier } = {}) {
   const lignes = readFileSync(cheminCi({ cwd, fichier }), 'utf8').split(/\r?\n/)
@@ -78,9 +84,10 @@ export function stepsCi({ cwd = process.cwd(), fichier } = {}) {
     const cle = /^\s*-?\s*([A-Za-z][A-Za-z0-9_-]*):\s*(.*?)\s*$/.exec(ligne)
     if (!cle) continue
     const [, nomCle, valeur] = cle
-    if (!courant) courant = { job, commande: null, cles: [] }
+    if (!courant) courant = { job, commande: null, cles: [], si: null }
     if (nomCle !== 'run') {
       courant.cles.push(nomCle)
+      if (nomCle === 'if') courant.si = valeur
       continue
     }
     if (!/^[|>]/.test(valeur)) {
@@ -106,12 +113,13 @@ export function stepsCi({ cwd = process.cwd(), fichier } = {}) {
  * nom n'est recopié ici : un step ajouté à la CI devient rejouable localement sans qu'on touche au
  * lanceur. Un step qui n'est ni `npm test`/`npm run <x>` ni une entrée de `CI_SEULEMENT`, ou qui
  * porte une clé non inerte, LÈVE : le classement est une décision, pas un silence.
- * REND `[{ nom, commande, job }]`.
+ * `si` est la condition `if` écrite sur le step, telle quelle — la porte du classement du push la lit.
+ * REND `[{ nom, commande, job, si }]`.
  */
 export function gatesDeCi({ cwd = process.cwd(), fichier } = {}) {
   const gates = []
   const vus = new Set()
-  for (const { job, commande, cles } of stepsCi({ cwd, fichier })) {
+  for (const { job, commande, cles, si } of stepsCi({ cwd, fichier })) {
     if (job in JOBS_HORS_REJEU_LOCAL) continue
     const nom = nomDeGate(commande)
     const parasites = cles.filter((c) => !CLES_DE_STEP_INERTES.includes(c))
@@ -129,7 +137,7 @@ export function gatesDeCi({ cwd = process.cwd(), fichier } = {}) {
     }
     if (vus.has(nom)) continue
     vus.add(nom)
-    gates.push({ nom, commande, job })
+    gates.push({ nom, commande, job, si })
   }
   return gates
 }

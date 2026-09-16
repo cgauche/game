@@ -21,6 +21,8 @@ import { listerDossier } from '../guards/lib/lister.mjs'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 import { repartitionWorkers } from '../test/partition.mjs'
 import { AVANT_LES_LANES, LANES, ECRIT_LU } from '../gates/toutes.mjs'
+import { gatesDeCi } from '../gates/gatesDeCi.mjs'
+import { DOCUMENTAIRE, gatesSautables } from '../gates/classerPush.mjs'
 import { REGEN_RECIPE } from '../guards/lib/npmLockHoisted.mjs'
 
 const OUTIL = 'build-reprise'
@@ -237,6 +239,14 @@ if (!NB_REFUS_PREPUSH) abandon('scripts/git-hooks/pre-push.mjs ne numérote plus
 readFileSync(chemin('scripts/guards/lib/npmLockHoisted.mjs'), 'utf8')
 const NPM_LOCK = (REGEN_RECIPE.match(/npm@[\d.]+/) ?? [])[0]
 if (!NPM_LOCK) abandon('REGEN_RECIPE (npmLockHoisted.mjs) ne nomme plus de version de npm')
+
+// Le classement du push (#1738) est DÉRIVÉ, jamais recopié : `lit` (ECRIT_LU) décide, la liste
+// `DOCUMENTAIRE` (classerPush.mjs) est la référence, et `ci.yml` porte la condition par step.
+const GATES_CI = gatesDeCi({ cwd: chemin('.') })
+const SAUTABLES = gatesSautables({ gates: GATES_CI, ecritLu: ECRIT_LU })
+const GATES_TOUJOURS = GATES_CI.filter((g) => !SAUTABLES.has(g.nom)).map((g) => g.nom)
+const NB_GATES_TOUJOURS = GATES_TOUJOURS.length
+const NB_GATES_SAUTABLES = SAUTABLES.size
 
 const lignesLanes = LANES.map((l) => `| \`${l.nom}\` | ${listeCode(l.gates)} |`).join('\n')
 const NB_GATES_CLASSEES = AVANT_LES_LANES.length + LANES.reduce((n, l) => n + l.gates.length, 0)
@@ -478,9 +488,12 @@ ${lignesHooksSession}
 ${lignesWorkflows}
 
 Vérifier qu'elles tournent : onglet Actions du dépôt, ou \`gh run list --workflow=canari.yml\`. LA
-PORTE est \`.github/workflows/ci.yml\` (« ${CI.nom} », ${CI.declencheurs.join(', ')}) : elle joue
-TOUTES les gates sur CHAQUE branche \`chantier/**\`, et c'est son verdict — jamais un artefact local —
-qui autorise une tête à entrer dans \`main\`.
+PORTE est \`.github/workflows/ci.yml\` (« ${CI.nom} », ${CI.declencheurs.join(', ')}) : elle joue les
+gates sur CHAQUE branche \`chantier/**\`, et c'est son verdict — jamais un artefact local — qui
+autorise une tête à entrer dans \`main\`. Elle CLASSE d'abord le push
+(\`scripts/gates/classerPush.mjs\`) : un push dont tous les fichiers changés tombent sous
+${listeCode(Object.keys(DOCUMENTAIRE))} ne joue que les ${NB_GATES_TOUJOURS} gates qui LISENT un de
+ces chemins (${listeCode(GATES_TOUJOURS)}) ; les ${NB_GATES_SAUTABLES} autres sont sautées.
 
 \`npm run ops:publier\` joue le train : rebase, docs dérivés, push de la BRANCHE, attente du run CI de
 cette branche, fast-forward de \`main\`, pilotage. Il refuse à la première étape rouge en la nommant,

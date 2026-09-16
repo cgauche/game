@@ -125,4 +125,4 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
 - Suppléments VF dispo : `Altdorf — La Couronne de l'Empire`, `Aventures à Ubersreik I`,
   `Middenheim — La Cité du Loup Blanc`, `Nuits Agitées & Dures Journées`,
   `Boîte d'Initiation` (+ `WH4_FR_BI_Livre_Aventure` / `…_Ubersreik`).
-<!-- sources-empreinte: d071fa3e87fe393dd4463a533ef1976fb2d41512 (5 fichiers, 0 dossiers) corps: 2c14863ad5bb44999a0125b20871c205c86b3038 -->
+<!-- sources-empreinte: 82d19c2e28a55e5379c332930c93a8891a12b562 (5 fichiers, 0 dossiers) corps: 2c14863ad5bb44999a0125b20871c205c86b3038 -->

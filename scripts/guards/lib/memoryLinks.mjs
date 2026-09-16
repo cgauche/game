@@ -40,7 +40,7 @@
 //     invisible. Le CHEMIN et le `[[…]]`, eux, sont vus toujours, fiche connue ou non.
 //   - hors racines et exclusions : `HORS_SCAN`, chacune motivée à son entrée.
 //
-// Module ESM pur — consommé par `src/memory-links-guard.test.ts`.
+// Module ESM pur — consommé par `scripts/guards/lib/memoryLinks.test.mjs`.
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { parUnitesDeCode, listerDossier } from './lister.mjs';
@@ -113,7 +113,7 @@ const EXTENSIONS_LUES = new Set(['.ts', '.tsx', '.mts', '.mjs', '.js', '.jsx', '
  * aucun n'est une RÉFÉRENCE VIVANTE vers la mémoire.
  *   - `docs/plans/`, `docs/superpowers/` : artefacts DATÉS (politique `docs/` de `docs/architecture.md`) — leur
  *     texte fige l'état d'un jour, il ne se recâble pas.
- *   - `src/memory-links-guard.test.ts` : le banc du garde FORGE des fiches qui n'existent pas
+ *   - `scripts/guards/lib/memoryLinks.test.mjs` : le banc du garde FORGE des fiches qui n'existent pas
  *     (cibles `fiche-jamais-ecrite`, `fiche-close`…) ; un garde ne se scanne pas lui-même.
  *   - `scripts/ops/sondes/audit-2026-09-01/` : sondes d'un audit DATÉ ; les noms de fiches qu'elles
  *     énumèrent sont la MESURE d'un jour (leur donnée d'entrée), pas des liens à recâbler.
@@ -121,7 +121,7 @@ const EXTENSIONS_LUES = new Set(['.ts', '.tsx', '.mts', '.mjs', '.js', '.jsx', '
 export const HORS_SCAN = [
   'docs/plans/',
   'docs/superpowers/',
-  'src/memory-links-guard.test.ts',
+  'scripts/guards/lib/memoryLinks.test.mjs',
   'scripts/ops/sondes/audit-2026-09-01/',
 ];
 

@@ -21,8 +21,8 @@ import { GATES, listerTests, testsDe } from './testsParGate.mjs'
 const ECRITURE =
   /\b(?:writeFileSync|writeFile|createWriteStream|appendFileSync|appendFile|mkdirSync|mkdir|rmSync|rmdirSync|unlinkSync|renameSync|rename|cpSync|copyFileSync|truncateSync)\s*\(/
 
-/** Une ligne de commentaire ou d'import ne prouve aucune écriture. */
-const inerte = (ligne) => /^\s*(?:\/\/|\*|\/\*)/.test(ligne) || /^\s*import\s/.test(ligne)
+/** Une ligne de commentaire ou d'import ne prouve rien du corps du module. */
+export const inerte = (ligne) => /^\s*(?:\/\/|\*|\/\*)/.test(ligne) || /^\s*import\s/.test(ligne)
 
 /** Le lanceur des tests `node --test` : sa liste de fichiers n'est PAS dans la commande. */
 const LANCEUR_TESTS = 'scripts/test/node-tests.mjs'
@@ -81,17 +81,24 @@ export function porteUneEcriture(chemin, racine) {
   return texte.split('\n').some((l) => !inerte(l) && ECRITURE.test(l))
 }
 
-/** `{ [gate]: [scripts écrivains atteints, triés] }` pour toutes les gates de `ci.yml`. */
-export function ecrivainsParGate(racine = process.cwd()) {
+/** `{ [gate]: [scripts LOCAUX atteints, triés] }` — le CORPUS de chaque gate de `ci.yml` : ses
+ *  graines de commande (tests `node --test` compris) et leur fermeture transitive d'imports. */
+export function corpusParGate(racine = process.cwd()) {
   const scripts = JSON.parse(readFileSync(join(racine, 'package.json'), 'utf8')).scripts ?? {}
   const par = {}
   for (const gate of gatesDeCi({ cwd: racine })) {
     let commande = scripts[gate.nom] || gate.commande
     for (let i = 0; i < 4; i += 1)
       commande = commande.replace(/npm run ([A-Za-z0-9:_.-]+)/g, (tel, nom) => (scripts[nom] ? `(${scripts[nom]})` : tel))
-    par[gate.nom] = transitif(fichiersDe(commande, racine, gate.nom), racine)
-      .filter((f) => porteUneEcriture(f, racine))
-      .sort()
+    par[gate.nom] = transitif(fichiersDe(commande, racine, gate.nom), racine).sort()
   }
+  return par
+}
+
+/** `{ [gate]: [scripts écrivains atteints, triés] }` pour toutes les gates de `ci.yml`. */
+export function ecrivainsParGate(racine = process.cwd()) {
+  const par = {}
+  for (const [gate, corpus] of Object.entries(corpusParGate(racine)))
+    par[gate] = corpus.filter((f) => porteUneEcriture(f, racine))
   return par
 }

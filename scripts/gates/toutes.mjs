@@ -89,8 +89,13 @@ export const ECRIT_LU = {
   },
   'test:agents': {
     ecrit: [],
-    lit: ['scripts/agents/'],
-    raison: 'les écritures sont INJECTÉES et comptées, jamais faites (scripts/agents/compat.test.mjs:65)',
+    lit: ['.claude/', '.codex/', 'scripts/agents/', 'AGENTS.md', 'CLAUDE.md'],
+    raison:
+      'les écritures sont INJECTÉES et comptées, jamais faites (scripts/agents/compat.test.mjs:65) ; ' +
+      'LIT les DEUX côtés de la compat sur l’arbre RÉEL, racine `new URL("../../", import.meta.url)` — ' +
+      '.claude/settings.json et .codex/hooks.json (compat.test.mjs:160,161), CLAUDE.md (l.166, contrat ' +
+      'sur la ligne `@.claude/credo.md` l.167) et AGENTS.md (l.180) — sonde `fs` du 2026-09-16 sur ' +
+      '`node --test scripts/agents/compat.test.mjs`',
   },
   'test:hooks': {
     ecrit: [],
@@ -157,7 +162,7 @@ export const ECRIT_LU = {
     ecrit: [],
     lit: [
       'docs/', 'src/', '.claude/memory/', 'scripts/docs/', 'scripts/guards/lib/', 'scripts/test/partition.mjs',
-      'scripts/lancer-local.mjs', 'scripts/outillage-local.mjs',
+      'scripts/lancer-local.mjs', 'scripts/outillage-local.mjs', 'CLAUDE.md',
     ],
     raison:
       'fixtures sous os.tmpdir() ; lit les docs et la mémoire RÉELS (les gardes de liens et de références les ' +
@@ -167,7 +172,9 @@ export const ECRIT_LU = {
       'ramène (sonde 2026-09-08, 50 lectures) ; LIT src/ et docs/ depuis le 2026-09-14 (#1759) : ' +
       '`enregistreur-lectures.test.mjs`, venu de test:hooks avec sa racine `scripts/docs`, joue de VRAIS ' +
       'générateurs en `--check` (build-index-moteur, build-donnees, build-structures) sur l’arbre réel — ils ' +
-      'COMPARENT sans écrire, et leurs lectures passent par la sortie de mesure du test, sous os.tmpdir()',
+      'COMPARENT sans écrire, et leurs lectures passent par la sortie de mesure du test, sous os.tmpdir() ; ' +
+      'LIT CLAUDE.md sur l’arbre RÉEL : `manual-docs-ratchet.test.mjs:190,194` ancre la table de routage ' +
+      '(`## Table de routage`) et en dérive les docs à plat atteignables (l.231)',
   },
   'deps:unused': {
     ecrit: [],
@@ -209,14 +216,16 @@ export const ECRIT_LU = {
         '(scripts/gen-registry.mjs:435,662) — `toutes.mjs` joue `npm run gen` AVANT les lanes et REFUSE si un ' +
         'registre bouge, donc il ne reste rien à écrire',
     },
-    lit: ['src/', 'server/src/', 'scripts/map/', 'docs/', '.claude/memory/', 'Source/', '.gitattributes', 'vite.config.ts'],
+    lit: ['src/', 'server/src/', 'scripts/map/', 'docs/', 'Source/', '.gitattributes', 'vite.config.ts'],
     raison:
-      'LIT docs/ ET docs/raw/ — 9 fichiers de la suite, 12 sites (mesuré 2026-09-08) : la famille des ' +
+      'LIT docs/ ET docs/raw/ — 43 chemins (sonde `fs` du 2026-09-16, #1738) : la famille des ' +
       'CLIQUETS ET CONTRATS qui confrontent le code à un doc DÉRIVÉ (data-atlas-complete, ' +
       'index-moteur-ratchet, slots-contrat, structures-contrat, roll-seam-exclusivity-guard, ' +
-      'scene-field-editability-guard, ui-ratchets, oversize-search-blindspot) plus le balayage de docs/ à ' +
-      'plat de manual-docs-ratchet:30 — d’où la lane SÉPARÉE des trois écrivains de docs/raw ; ' +
-      'LIT .claude/memory/ (src/memory-links-guard.test.ts:81 balaie l’arbre RÉEL) ; LIT Source/ (verbatims ' +
+      'scene-field-editability-guard, ui-ratchets, oversize-search-blindspot) — d’où la lane ' +
+      'SÉPARÉE des trois écrivains de docs/raw ; AUCUNE lecture sous .claude/ ni de CLAUDE.md ' +
+      '(même sonde, 24 200 chemins) : les deux gardes documentaires qui les balayaient vivent ' +
+      'désormais en node:test (scripts/guards/lib/memoryLinks.test.mjs dans test:hooks, ' +
+      'scripts/docs/manual-docs-ratchet.test.mjs dans test:docs) ; LIT Source/ (verbatims ' +
       'et résolution de prose : src/data/psychology-verbatim.test.ts:24, tavern-desc-verbatim.test.ts:20, ' +
       'variants-integrity.test.ts:234, vdm-objets-maudits.test.ts:154, prose-resolution.test.ts:142, ' +
       'src/oversize-search-blindspot.test.ts:121) ; LIT .gitattributes parce que le verdict de ' +
@@ -257,13 +266,15 @@ export const ECRIT_LU = {
   'docs:empreinte': {
     ecrit: [],
     lit: [
-      'docs/', 'scripts/docs/', 'scripts/guards/lib/', 'scripts/test/partition.mjs',
+      'docs/', '.claude/memory/', 'scripts/docs/', 'scripts/guards/lib/', 'scripts/test/partition.mjs',
       'scripts/lancer-local.mjs', 'scripts/outillage-local.mjs',
     ],
     raison:
       '`--empreinte` sort avant toute génération (build-all.mjs, branche `--empreinte` de `main`) : les 9 ' +
       'lectures mesurées sont `docs/.sources-lues.json` et son propre code — les BLOBS qu’il compare sortent ' +
-      'de l’INDEX (`indexGit`), jamais du disque',
+      'de l’INDEX (`indexGit`, `git ls-files -s`, empreinte-sources.mjs:143), jamais du disque : angle mort ' +
+      'de la sonde (sous-processus git), d’où `.claude/memory/` déclaré par LECTURE — les fiches `user-*.md` ' +
+      'sont des sources de `docs/doctrines.md` (docs/.sources-lues.json) et leur blob entre dans le verdict (#1738)',
   },
   'raw:coverage': {
     ecrit: [],
@@ -560,6 +571,11 @@ export function refusDeCouverture(noms, lanes = LANES, ecritLu = ECRIT_LU, avant
     if (!placees.has(nom))
       refus.push(`${nom} : gate de ci.yml sans place — la mettre dans LANES ou AVANT_LES_LANES, avec ce qu'elle ÉCRIT et LIT`)
     if (!ecritLu[nom]) refus.push(`${nom} : aucune entrée ÉCRIT/LU — la mesurer avant de la placer`)
+    // `lit` NON VIDE, pas seulement l'entrée : c'est `lit` qui décide si la gate est sautable sur un
+    // push documentaire (`gatesSautables`, scripts/gates/classerPush.mjs) — une gate sans lecture
+    // mesurée jouerait toujours, en silence.
+    else if (!ecritLu[nom].lit?.length)
+      refus.push(`${nom} : entrée ÉCRIT/LU sans « lit » — mesure ce qu'elle lit, ou elle jouera sur tout push`)
   }
   return refus
 }

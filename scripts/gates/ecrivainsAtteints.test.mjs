@@ -28,6 +28,12 @@ const ATTENDU = {
   'test:hooks': [
     'scripts/docs/build-all.mjs',
     'scripts/docs/lib/empreinte-sources.mjs',
+    // +2 le 2026-09-16 (#1738) : la garde du classement de push fabrique des dépôts JETABLES
+    // (`mkdtempSync` + `git init` + `writeFileSync` sous os.tmpdir(), `rmSync` en finally) pour
+    // éprouver `merge-base` et le CLI ; la garde des liens de mémoire, venue de `src/` en node:test,
+    // forge ses fiches sous un `mkdtempSync` de os.tmpdir() — l'arbre du dépôt n'est jamais écrit.
+    'scripts/gates/classerPush.test.mjs',
+    'scripts/guards/lib/memoryLinks.test.mjs',
     // +1 le 2026-09-14 (#1759) : la garde de couverture des tests `scripts/**` éprouve la parité
     // « joué = suivi par git » sur un dépôt JETABLE (`mkdtempSync` + `git init` + `writeFileSync`,
     // `rmSync` en finally, sous `os.tmpdir()`) — un fichier NON suivi ne se fabrique pas autrement,

@@ -104,7 +104,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 
 - `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
 - `src/data/` — données app-owned (122 fichiers JSON commités, éditables au Compendium).
-- Les gardes de données : `scripts/guards/validate-data.mts` + 109 modules
+- Les gardes de données : `scripts/guards/validate-data.mts` + 110 modules
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
   `scripts/guards/lib/labelLogic.mjs`).
@@ -188,9 +188,12 @@ refaire `npm install`.
 | `.github/workflows/deps-report.yml` | Rapport de dépendances | schedule, workflow_dispatch (cron `0 6 1 * *`) |
 
 Vérifier qu'elles tournent : onglet Actions du dépôt, ou `gh run list --workflow=canari.yml`. LA
-PORTE est `.github/workflows/ci.yml` (« CI », push, pull_request) : elle joue
-TOUTES les gates sur CHAQUE branche `chantier/**`, et c'est son verdict — jamais un artefact local —
-qui autorise une tête à entrer dans `main`.
+PORTE est `.github/workflows/ci.yml` (« CI », push, pull_request) : elle joue les
+gates sur CHAQUE branche `chantier/**`, et c'est son verdict — jamais un artefact local — qui
+autorise une tête à entrer dans `main`. Elle CLASSE d'abord le push
+(`scripts/gates/classerPush.mjs`) : un push dont tous les fichiers changés tombent sous
+`.claude/`, `.agents/`, `.codex/`, `AGENTS.md`, `CLAUDE.md` ne joue que les 8 gates qui LISENT un de
+ces chemins (`agents:check`, `test:agents`, `test:hooks`, `test:ops`, `test:docs`, `deps:unused`, `docs:check`, `docs:empreinte`) ; les 16 autres sont sautées.
 
 `npm run ops:publier` joue le train : rebase, docs dérivés, push de la BRANCHE, attente du run CI de
 cette branche, fast-forward de `main`, pilotage. Il refuse à la première étape rouge en la nommant,
@@ -232,4 +235,4 @@ sans place dans ce plan fait REFUSER le run, avec son nom.
 `scripts/guards/lib/npmLockHoisted.mjs` — npx --yes npm@10.9.3 install --package-lock-only, puis valider avec npx npm@10.9.3 ci --dry-run. npm 11 ampute les entrées hoistées
 `@emnapi/*` que `npm ci` exige en CI ; la garde (pre-commit +
 `src/npm-lock-hoisted-guard.test.ts`) refuse un lock amputé.
-<!-- sources-empreinte: 992115356e93537c509b1c2efaff1ecd9d85f443 (22 fichiers, 8 dossiers) corps: 95cf7c1d181bfb04eb68a63a9d2d745e53921a1a -->
+<!-- sources-empreinte: 508475e8ff9c0d0e81e26ee8ac6f130e15dcd5d5 (23 fichiers, 8 dossiers) corps: 608f7dcc7e9d389f40b6e6caa61340791ab48c68 -->

@@ -19,7 +19,8 @@ jobs:
     steps:
       # `fetch-depth: 0` : `test:hooks` interroge l’HISTOIRE (soldes de fermeture depuis le
       # 2026-08-01, commit fondateur d’un solde « corrigé par <sha> »). Dans le clone superficiel
-      # par défaut (depth 1) `git log --since` est vide et les shas anciens sont absents.
+      # par défaut (depth 1) `git log --since` est vide et les shas anciens sont absents. Le
+      # classement du push (#1738) exige la même profondeur : `merge-base origin/main`.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -27,6 +28,19 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      # #1738 — le CLASSEMENT du push, AVANT `npm ci` : le module n'importe que `node:*`. Un push
+      # dont TOUS les fichiers changés (contre ce qui ENTRERA dans `main`) tombent sous
+      # `DOCUMENTAIRE` (scripts/gates/classerPush.mjs) sort `produit=false`. POLARITÉ FAIL-CLOSED :
+      # chaque step conditionné teste `!= 'false'`, donc un output vide, absent ou en erreur fait
+      # JOUER. Un step joue toujours dès que ce qu'il LIT (`ECRIT_LU`, scripts/gates/toutes.mjs)
+      # chevauche un chemin documentaire ; `scripts/gates/classerPush.test.mjs` confronte cette
+      # DÉCISION à cette MESURE, dans les deux sens.
+      - id: classer
+        env:
+          REF: ${{ github.ref }}
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: node scripts/gates/classerPush.mjs >> "$GITHUB_OUTPUT"
       - id: install
         run: npm ci
       # Chaque gate ci-dessous se joue même si une précédente est ROUGE : sans cette condition, le
@@ -41,32 +55,32 @@ jobs:
         run: npm run test:hooks
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run test:ops
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run test:runner
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run test:docs
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run deps:unused
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run test:recette
       # src/data/*.json sont la SOURCE app-owned (commitée) — plus de régénération build:data.
       - name: Dérive des registres générés
         # Glob sur TOUS les fichiers générés, pas les seuls `_registry` : `_ids.generated.ts`,
         # `_registry-scenes.generated.ts` et `qualityId.generated.ts` en tombaient dehors, si bien
         # qu'une recette ajoutée sans `npm run gen` périmait le registre en silence (#1680).
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run gen && git diff --exit-code -- '*.generated.ts'
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run typecheck
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run lint
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm test
       # Pas de step `test:map` : `scripts/map/**/*.test.ts` est dans le `test.include` de
       # `vite.config.ts` (l.69), donc `npm test` joue déjà `scripts/map/check.test.ts` (18 tests), et
       # `src/vi-mock-isolate-guard.test.ts:75-79` verrouille ce miroir DANS LES DEUX SENS. Le script
       # `test:map` reste dans package.json : il sert à jouer CE dossier seul.
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run build
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run docs:check
@@ -74,43 +88,56 @@ jobs:
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run docs:empreinte
       - name: Fraîcheur des catalogues Atlas RAW
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:catalogs && git diff --exit-code -- 'docs/raw/catalogue-*.md'
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:coverage
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:reconcile
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run test:raw
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:check-refs
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:check-code-refs
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:check-folio-continuity
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:check-source-tables
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:check-source-format
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:reanchor
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm --prefix server ci
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run server:typecheck
 
   # Les migrations de donnée sont REJOUABLES : rejouées sur l'arbre courant, elles ne réécrivent
-  # RIEN. Job DÉDIÉ (il écrit dans l'arbre du runner, jamais dans celui du job `build`).
+  # RIEN. Job DÉDIÉ (il écrit dans l'arbre du runner, jamais dans celui du job `build`). JAMAIS de
+  # `needs: build` : c'est un check REQUIS du ruleset `main`, et un check `skipped` bloque le
+  # fast-forward — le job tourne TOUJOURS et classe le push pour lui-même (#1738).
   migrations:
     runs-on: ubuntu-latest
     steps:
+      # `fetch-depth: 0` : le classement du push lit `merge-base origin/main`.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-      - run: npm ci
+      - id: classer
+        env:
+          REF: ${{ github.ref }}
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: node scripts/gates/classerPush.mjs >> "$GITHUB_OUTPUT"
+      - id: install
+        run: npm ci
       - name: Rejeu des migrations (idempotence de la donnée)
+        if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run migrations:replay
 
   # Un ticket se ferme quand son correctif est PUBLIÉ, jamais au commit local : AUCUN hook local ne

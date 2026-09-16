@@ -57,7 +57,7 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 
 /**
  * Plafond du cliquet — const du TEST, jamais dans `slotsStock.mjs` (même patron que `MANUAL_DOCS_MAX`,
- * `src/data/manual-docs-ratchet.test.ts`) : sans lui, le chemin le plus court pour « solder » une
+ * `scripts/docs/manual-docs-ratchet.test.mjs`) : sans lui, le chemin le plus court pour « solder » une
  * dette neuve resterait d'ajouter une ligne au stock, CI verte. Il ne descend qu'en faisant ADOPTER
  * la fabrique de référence par le schéma du champ (L2/L3, #1473).
  *

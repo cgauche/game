@@ -92,4 +92,4 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | appui long 450 ms tactile et souris, geste secondaire d’une alvéole | `useLongPress` | `src/ui/useLongPress.ts` | alvéoles de la console de combat | réflexe avant tout minuteur de pression recodé |
 | en-tête A→B d'une modale de combat/opposition | `VsHeader` | `src/ui/VsHeader.tsx` | toute confrontation à 2 camps | — |
 | sceau de cire et plaque d’élu scellée | `WaxSeal/SealedPlaque` | `src/ui/WaxSeal.tsx` | tuiles de sélection, plaques d’élu | — |
-<!-- sources-empreinte: 793132c69d2af9d5ee6d9981b07e36d2bd5b141d (5 fichiers, 0 dossiers) corps: bd894bfac6bd75594b8ebb42be99f7927c3186c4 -->
+<!-- sources-empreinte: 090d1b0468c3e64d547e9cbc9bf4112b55c179c0 (5 fichiers, 0 dossiers) corps: bd894bfac6bd75594b8ebb42be99f7927c3186c4 -->

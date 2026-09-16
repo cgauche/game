@@ -125,4 +125,4 @@ JAMAIS un choix d'agent silencieux enterré. Avant de conclure « le moteur ne s
 | `src/data/data-atlas-complete.test.ts` | atlas des données (docs/donnees.md) — complétude |
 | `src/data/maison-sans-source.test.ts` | cliquet « maison sans source » — le régime d’arbitrage ne dérive pas (#1467 L1b) |
 | `src/data/data-wellformed.test.ts` | Intégrité des données src/data/*.json |
-<!-- sources-empreinte: 6a55c43e5a3ae8f89dd94a2853d395b97ee7ceef (18 fichiers, 1 dossiers) corps: eff5ffd4c5e6de73649eb3aac5072ab749222cc3 -->
+<!-- sources-empreinte: 29b07124e246ff206bfc4eaa3bc454ef7c952379 (18 fichiers, 1 dossiers) corps: eff5ffd4c5e6de73649eb3aac5072ab749222cc3 -->
