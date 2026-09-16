@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import {
-  ACTEUR_ACTIONS, corpsDuRuleset, contextesRequis, JOBS_NON_VERIFIANTS, NOM, executer, refusGh,
+  corpsDuRuleset, contextesRequis, JOBS_NON_VERIFIANTS, NOM, executer, refusGh,
 } from './ruleset-main.mjs'
 import { jobsCi } from '../gates/gatesDeCi.mjs'
 
@@ -58,11 +58,12 @@ test('le ruleset est ACTIF sur main : checks requis, non-fast-forward, suppressi
   assert.deepEqual(corps.rules[0].parameters.required_status_checks, [{ context: 'build' }, { context: 'migrations' }])
 })
 
-test('GitHub Actions est le SEUL acteur qui contourne (le bot d’export-issues, #1713)', () => {
+test('le corps ne porte AUCUN bypass : personne n’entre dans `main` hors de la porte', () => {
   const corps = corpsDuRuleset(['build'])
-  assert.deepEqual(corps.bypass_actors, [
-    { actor_id: ACTEUR_ACTIONS, actor_type: 'Integration', bypass_mode: 'always' },
-  ])
+  assert.equal('bypass_actors' in corps, false,
+    'l’intégration GitHub Actions n’est pas exonérable sur un dépôt personnel (HTTP 422 du 2026-09-16) : '
+    + 'le corps ne doit pas même porter la clé, sans quoi le serveur refuse tout le ruleset')
+  assert.deepEqual(Object.keys(corps).sort(), ['conditions', 'enforcement', 'name', 'rules', 'target'])
 })
 
 test('`--dry-run` n’émet AUCUN appel `gh` — ni lecture, ni écriture', () => {

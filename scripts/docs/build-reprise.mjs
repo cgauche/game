@@ -431,7 +431,9 @@ C'est le signal qu'un geste manuel a dévié de ce que \`npm install\` pose seul
   tracké, ses SORTIES (images) ne le sont pas (§ 3).
 - \`docs/decisions/\` (${listeCode(DECISIONS)}) — les issues GitHub EXPORTÉES par
   \`.github/workflows/export-issues.yml\` (${EXPORT.declencheurs.join(' + ')}, cron
-  \`${EXPORT.crons.join('`, `')}\`) via \`${script('issues:export')}\`, commit auto si diff.
+  \`${EXPORT.crons.join('`, `')}\`) via \`${script('issues:export')}\`, commit auto si diff — son push
+  sur \`main\` est REFUSÉ par le ruleset depuis le 2026-09-16 (aucun bypass n'est posable sur un dépôt
+  personnel), #1713.
 
 ## 3. Ce que le clone NE contient PAS — et où ça vit
 

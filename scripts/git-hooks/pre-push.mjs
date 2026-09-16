@@ -19,8 +19,10 @@
 //   4. le sha poussé doit porter un run CI TERMINÉ et VERT. Miroir lisible du ruleset `main`
 //      (`scripts/ops/ruleset-main.mjs`), qui est LA porte : il dit ici, en une phrase et avec la
 //      commande pour voir le run, ce que GitHub refuserait à la seconde d'après. Un push sur une
-//      branche de travail ne le rencontre jamais. `GITHUB_ACTIONS === 'true'` le saute : le bot
-//      d'`export-issues.yml` commet sur `main` et contourne le ruleset par `bypass_actors` (#1713).
+//      branche de travail ne le rencontre jamais. AUCUNE exonération, pas même sous
+//      `GITHUB_ACTIONS` : le ruleset n'en porte aucune (l'intégration Actions n'est pas exonérable
+//      sur un dépôt personnel, HTTP 422 du 2026-09-16), donc le bot d'`export-issues.yml` est
+//      refusé par le SERVEUR (#1713, ouvert) — un saut local ne ferait que mentir sur son sort.
 //
 // STDIN (githooks(5)) : une ligne `<ref locale> <sha local> <ref distante> <sha distant>` par ref.
 // `git push --dry-run` joue AUSSI ce hook (mesuré : 2 invocations par push réel, 1 par dry-run) :
@@ -144,10 +146,6 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
 
     if (refDistante !== REF_PROTEGEE) {
       notes.push(`${refDistante} : push libre — c’est la CI de cette branche qui juge le contenu`)
-      continue
-    }
-    if (env.GITHUB_ACTIONS === 'true') {
-      notes.push(`${refDistante} : push depuis un workflow — le ruleset le laisse passer par bypass_actors (#1713)`)
       continue
     }
     const vu = coursesCi({ cwd, env, commit: shaLocal, limit: 30 })

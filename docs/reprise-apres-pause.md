@@ -119,7 +119,9 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
   tracké, ses SORTIES (images) ne le sont pas (§ 3).
 - `docs/decisions/` (`issues.json`, `issues.md`) — les issues GitHub EXPORTÉES par
   `.github/workflows/export-issues.yml` (schedule + workflow_dispatch, cron
-  `0 6 * * 2`) via `node scripts/ops/export-issues.mjs`, commit auto si diff.
+  `0 6 * * 2`) via `node scripts/ops/export-issues.mjs`, commit auto si diff — son push
+  sur `main` est REFUSÉ par le ruleset depuis le 2026-09-16 (aucun bypass n'est posable sur un dépôt
+  personnel), #1713.
 
 ## 3. Ce que le clone NE contient PAS — et où ça vit
 
@@ -236,4 +238,4 @@ sans place dans ce plan fait REFUSER le run, avec son nom.
 `scripts/guards/lib/npmLockHoisted.mjs` — npx --yes npm@10.9.3 install --package-lock-only, puis valider avec npx npm@10.9.3 ci --dry-run. npm 11 ampute les entrées hoistées
 `@emnapi/*` que `npm ci` exige en CI ; la garde (pre-commit +
 `src/npm-lock-hoisted-guard.test.ts`) refuse un lock amputé.
-<!-- sources-empreinte: 61e6b38f91e076048bee2d908b188c70887c73de (23 fichiers, 9 dossiers) corps: 7e104d4f5e976d00ba3c382f18d1da67d3ba189d -->
+<!-- sources-empreinte: 1d8c85362980f344cbdea50b5d5180eca0b11703 (23 fichiers, 9 dossiers) corps: eae9a3523e68f4219cdc9812bbbaaf10de6e1361 -->

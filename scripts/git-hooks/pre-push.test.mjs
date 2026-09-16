@@ -227,20 +227,6 @@ test('une ref distante NEUVE n’écrase aucune histoire : fast-forward non jug�
   }
 })
 
-// ── Le bot d'`export-issues.yml` (#1713) ───────────────────────────────────────────────────────
-
-test('sous GITHUB_ACTIONS, le push sur main passe : le ruleset le laisse par bypass_actors', () => {
-  const racine = depot()
-  try {
-    const env = { ...stubCi(racine, []), GITHUB_ACTIONS: 'true' }
-    const { refus, notes } = jugerPush({ cwd: racine, stdin: pousse(racine), env })
-    assert.deepEqual(refus, [], 'le bot n’a pas de run CI sur son propre commit, et le ruleset le sait')
-    assert.match(notes.join('\n'), /bypass_actors \(#1713\)/)
-  } finally {
-    jeter(racine)
-  }
-})
-
 // ── Origine ────────────────────────────────────────────────────────────────────────────────────
 
 test('un origin ÉTRANGER est refusé, et le refus le cite', () => {
