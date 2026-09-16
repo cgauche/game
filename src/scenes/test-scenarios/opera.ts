@@ -98,25 +98,24 @@ const ents: SceneEntity[] = [
   // Lustre suspendu au-dessus du parterre (prop sur le vide z1 → flotte plus haut).
   { id: 'lustre', kind: 'prop', ref: 'lustre-opera', pos: { x: 10, y: 8 }, z: 1 },
 
-  // Loges gauche (z1) : balustrade côté parterre, fauteuils, applique, un spectateur.
-  { id: 'bal-g', kind: 'prop', ref: 'balustrade-loge', pos: { x: 3, y: 6 }, facing: 'E', z: 1 },
+  // Loges gauche (z1) : balustrade côté parterre, fauteuils, applique, un spectateur. Le garde-corps se
+  // pose à la CASE (`props.json`) : une travée par case du bord de loge, cap sur le vide du parterre.
+  ...[5, 6, 7].map((y): SceneEntity => ({ id: `bal-g-${y}`, kind: 'prop', ref: 'balustrade-loge', pos: { x: 3, y }, facing: 'E', z: 1 })),
   { id: 'ft-g1', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 1, y: 6 }, z: 1 },
   { id: 'ft-g2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 1, y: 8 }, z: 1 },
   { id: 'app-g', kind: 'prop', ref: 'applique-murale', pos: { x: 1, y: 5 }, z: 1 },
   { id: 'spect-g', kind: 'personnage', ref: 'villageois', label: 'Spectatrice', pos: { x: 2, y: 7 }, z: 1, facing: 'E' },
 
   // Loges droite (z1).
-  { id: 'bal-d', kind: 'prop', ref: 'balustrade-loge', pos: { x: 17, y: 6 }, facing: 'O', z: 1 },
+  ...[5, 6, 7].map((y): SceneEntity => ({ id: `bal-d-${y}`, kind: 'prop', ref: 'balustrade-loge', pos: { x: 17, y }, facing: 'O', z: 1 })),
   { id: 'ft-d1', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 19, y: 6 }, z: 1 },
   { id: 'ft-d2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 19, y: 8 }, z: 1 },
   { id: 'app-d', kind: 'prop', ref: 'applique-murale', pos: { x: 19, y: 5 }, z: 1 },
   { id: 'spect-d', kind: 'personnage', ref: 'villageois', label: 'Spectateur', pos: { x: 18, y: 7 }, z: 1, facing: 'O' },
 
   // LOGE ROYALE (z1, fond-centre de la galerie) : balustrade face à la scène, fauteuil, la Comtesse, appliques.
-  // Les deux volées de balustrade tiennent 3 cases chacune (`props.json` `balustrade-loge`) : ancrées en
-  // 6 et 12, elles couvrent 6-8 et 12-14 et laissent 9-11 ouvert au centre de la loge.
-  { id: 'bal-royale-g', kind: 'prop', ref: 'balustrade-loge', pos: { x: 6, y: 13 }, facing: 'N', z: 1 },
-  { id: 'bal-royale-d', kind: 'prop', ref: 'balustrade-loge', pos: { x: 12, y: 13 }, facing: 'N', z: 1 },
+  // Les deux volées couvrent 6-8 et 12-14, une travée par case, et laissent 9-11 ouvert au centre de la loge.
+  ...[6, 7, 8, 12, 13, 14].map((x): SceneEntity => ({ id: `bal-royale-${x}`, kind: 'prop', ref: 'balustrade-loge', pos: { x, y: 13 }, facing: 'N', z: 1 })),
   { id: 'fauteuil-royal', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 10, y: 14 }, z: 1 },
   { id: 'comtesse', kind: 'personnage', ref: 'villageois', label: 'Comtesse Emmanuelle', pos: { x: 10, y: 13 }, z: 1, facing: 'N', dialogueId: 'dlg-comtesse' },
   { id: 'app-royale-g', kind: 'prop', ref: 'applique-murale', pos: { x: 7, y: 14 }, z: 1 },

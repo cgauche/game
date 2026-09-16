@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { buildOperaFloorplan, ZONES_REZ, ZONES_ETAGE } from './floorplan';
-import { tileAt, heightAt, isWalkable, wallBetween } from '../../state/scene';
-import { reachable, type Pt } from '../../state/path';
+import { buildOperaFloorplan, puitsRim, ZONES_REZ, ZONES_ETAGE } from './floorplan';
+import { scenarioEntities } from './furnished';
+import { scenario as operaPlan } from '../test-scenarios/opera-plan';
+import { tileAt, heightAt, isWalkable, wallBetween, type Scene } from '../../state/scene';
+import { reachable, walkComponentAt, type Pt } from '../../state/path';
 import { effectiveArchitecture } from '../../state/sceneEdit';
 import { unreachableDescriptiveZones, reachedFloors } from '../../state/mapQC';
 import { scenePlanDefects } from '../../state/planDefects';
@@ -9,12 +11,20 @@ import { METRES_PER_LEVEL } from '../../state/relief';
 import { buildWalls } from '../../gameIso/builders/walls';
 import { buildRoofs, clearedSpace } from '../../gameIso/builders/roofs';
 
+/** Case TÉMOIN au cœur du PUITS (l'ovale du folio 39, qui court du MUR DE FOND DE SCÈNE — rangée 1, sous le
+ *  mur nord, au NORD des coulisses — au bas de la salle)
+ *  — lue par la garde « PUITS CENTRAL OVALE » ET par la composante connexe de vide du dernier describe :
+ *  UNE seule ancre, faute de quoi un recalage du puits n'en déplacerait qu'une des deux. */
+const PUITS_TEMOIN = { x: 22, y: 28 };
+
 /**
  * Le plan de l'Opéra (Théâtre Staatsoper) est COMPILÉ par `buildScene(MapSpec)` depuis l'ASCII box-drawing
  * (`floorplan.ascii.ts`) via `MapSpec.walled` (2 grilles = rez z0 + étage z1) + `MapSpec.relief` (l'ÉLÉVATION
  * MÉTRIQUE, seule donnée non portée par l'ASCII) : deux COUCHES (`layers`), scène surélevée (+1 m) et fosse
  * en contrebas (−1 m) portées par `Layer.height`, parterre en ÉVENTAIL bloquant, salles latérales desservies
- * par des portes, puits central OVALE vide à l'étage, loges en anneau + loge royale dans l'axe. L'étage (loges
+ * par des portes, puits central OVALE vide à l'étage (il monte jusqu'au mur NORD, que ferme le MUR DE FOND
+ * DE SCÈNE : l'axe de la scène ne porte aucun plancher à l'étage),
+ * loges de flanc en quatre bandes et balcons en fer à cheval. L'étage (loges
  * assises à `ETAGE_M`) se rejoint par DEUX RAMPES d'angle (cases de hauteur croissante, puits TROUÉ dans l'ASCII même) —
  * AUCUN escalier explicite : la connectivité verticale s'auto-dérive du dénivelé (`surfaceLink`).
  */
@@ -45,7 +55,7 @@ describe('plan de l’Opéra — géométrie (relief unifié)', () => {
 
   it('l’ÉTAGE (galerie de loges) se pose un PLEIN NIVEAU au-dessus du point HAUT du rez (la scène)', () => {
     const scene = heightAt(s, AX, 8, 0); // planches de la scène, le plancher le plus haut du rez
-    expect(heightAt(s, AX, 2, 1)).toBe(scene + METRES_PER_LEVEL); // loge royale, z1
+    expect(heightAt(s, 8, 3, 1)).toBe(scene + METRES_PER_LEVEL); // 30 Loge royale, z1
   });
 
   it('PARTERRE en ÉVENTAIL : plus étroit près de la scène que vers le fond', () => {
@@ -66,12 +76,44 @@ describe('plan de l’Opéra — géométrie (relief unifié)', () => {
   });
 
   it('PUITS CENTRAL OVALE : le cœur du parterre est VIDE au premier étage (ouvert sur le rez)', () => {
-    expect(tileAt(s, AX, 28, 1)).toBe('vide');     // centre du puits ovale
-    expect(tileAt(s, AX, 28, 0)).toBe('plancher'); // parterre en dessous
+    expect(tileAt(s, PUITS_TEMOIN.x, PUITS_TEMOIN.y, 1)).toBe('vide');     // centre du puits ovale
+    expect(tileAt(s, PUITS_TEMOIN.x, PUITS_TEMOIN.y, 0)).toBe('plancher'); // parterre en dessous
   });
 
-  it('LOGE ROYALE (marbre) à l’étage, dans l’axe de la scène', () => {
-    expect(tileAt(s, AX, 2, 1)).toBe('marbre');
+  it('LOGE ROYALE (marbre) à l’étage : HORS de l’axe, contre l’antichambre ducale du coin nord-ouest', () => {
+    // NADJ 08 folio 39 : l'axe de la scène est le PUITS (cage de scène ouverte sur le parterre) ; 30 Loge
+    // royale est au flanc GAUCHE, entre 32 Antichambre ducale et le puits.
+    expect(tileAt(s, 8, 3, 1)).toBe('marbre');
+  });
+
+  it('AXE de la scène : du mur nord au bas du puits, l’étage n’y porte AUCUN terrain marchable', () => {
+    // NADJ 08 folio 39 : sous le mur nord, la cage de scène est fermée par le MUR DE FOND DE SCÈNE ('#'), puis
+    // s'ouvre en PUITS sur le parterre — un seul point de l'axe suffirait à rendre les deux flancs
+    // communicants par le haut. Le contrat court donc sur TOUTE la colonne, sans cardinal : il s'arrête au
+    // premier plancher rencontré, et doit avoir dépassé la case témoin du puits.
+    const axe: string[] = [];
+    for (let y = 1; y < H && !isWalkable(s, AX, y, 1); y++) axe.push(`${AX},${y}=${tileAt(s, AX, y, 1)}`);
+    expect(tileAt(s, AX, 1, 1), 'contre le mur nord : la masse du fond de scène').toBe('mur');
+    expect(axe.filter((c) => !c.endsWith('=mur') && !c.endsWith('=vide')),
+      `l’axe ne porte que maçonnerie et puits : ${axe.join(' ')}`).toEqual([]);
+    expect(axe.length, `course non marchable de l’axe : ${axe.join(' ')}`).toBeGreaterThan(PUITS_TEMOIN.y);
+    expect(tileAt(s, AX, PUITS_TEMOIN.y, 1), 'la course englobe le cœur du puits').toBe('vide');
+  });
+
+  it('SALONS de l’étage : les deux refends de la façade courbe s’ouvrent à la MÊME rangée', () => {
+    // NADJ 08 folio 39 : deux portes blanches SYMÉTRIQUES, une par refend (38|37 et 37|39), au même
+    // niveau. Le contrat lit le refend de gauche et son MIROIR autour de l'axe — il ne nomme aucune
+    // rangée, si bien que recaler la porte au plan la déplace des deux côtés ou rougit.
+    const mir = (x: number) => W - 1 - x;
+    const ouvertures = (a: number, b: number) => {
+      const out: number[] = [];
+      for (let y = 50; y < H; y++) if (tileAt(s, a, y, 1) !== 'vide' && !wallBetween(s, a, y, b, y, 1)) out.push(y);
+      return out;
+    };
+    const gauche = ouvertures(12, 13);
+    const droite = ouvertures(mir(13), mir(12));
+    expect(gauche.length, `le refend 38|37 ne s’ouvre nulle part (droite : ${droite.join(',')})`).toBeGreaterThan(0);
+    expect(gauche, `rangées ouvertes — 38|37 : ${gauche.join(',')} · 37|39 : ${droite.join(',')}`).toEqual(droite);
   });
 
   it('ENTRÉES : portes d’honneur (façade) + entrée des artistes, débouchant à l’intérieur', () => {
@@ -113,6 +155,7 @@ describe('plan de l’Opéra — corps architectural et loi de dégagement', () 
   // La carte n'a pas de `heroStart` (`startOf` rend `null`) : les scénarios posent le groupe. Le départ
   // de QC est donc le seuil d'honneur, l'entrée par laquelle un joueur entre.
   const start = { ...s.entryPoints!['entree-principale'], z: 0 };
+  const W = s.dimensions.w, H = s.dimensions.h;
 
   it('CONSTRUCTION : un corps unique NON BORNÉ ne déclenche aucun résiduel (`validateArchitectureResiduals`)', () => {
     expect(() => buildOperaFloorplan()).not.toThrow();
@@ -125,16 +168,33 @@ describe('plan de l’Opéra — corps architectural et loi de dégagement', () 
     expect([...reachedFloors(s, start)].sort()).toEqual(expect.arrayContaining([0, 1]));
   });
 
-  it('TOITURE DÉRIVÉE : le corps porte ses masses, toutes dérivées (aucune authorée)', () => {
+  it('TOITURE DÉRIVÉE : les masses coiffent le plancher RÉEL et rien que lui — aucune sur le vide', () => {
+    // Contrat POSITIF, la forme va au MESSAGE : une masse est une conséquence du bâti, pas un cardinal à
+    // figer. Ce qui est exigible : (a) tout est dérivé du corps, (b) aucune masse ne coiffe une case que
+    // les DEUX niveaux laissent `vide` — une poche fantôme close par des arêtes d'angle (cases comptées
+    // par `interiorCells`, `realFloorAt(0)`, `sceneEdit.ts`) se toiturerait alors au-dessus du dehors —,
+    // (c) tout plancher d'étage est coiffé, sans quoi un allié de l'étage resterait à ciel ouvert.
     const masses = effectiveArchitecture(s).flatMap((b) => b.masses);
     const cases = (m: (typeof masses)[number]) => m.footprint.reduce((n, r) => n + r.w * r.h, 0);
-    // FORME MESURÉE, pas un plancher : deux composantes 4-connexes du plancher réel — le corps principal
-    // (les deux niveaux, dont la masse du z1 fait le COUVERCLE au-dessus d'un allié du rez) et le foyer,
-    // qui n'a pas d'étage. Croupe (`hip`) des deux côtés : la portée dépasse `ROOF_GABLE_SPAN_MAX_M`.
-    expect(masses.map((m) => [m.z, m.levels, m.profile, cases(m), !!m.derived])).toEqual([
-      [1, 2, 'hip', 2100, true],
-      [0, 1, 'hip', 336, true],
-    ]);
+    const forme = masses.map((m) => `z${m.z} ${m.levels}niv ${m.profile} ${cases(m)} cases`).join(' · ');
+    expect(masses.length, `le corps porte au moins une masse : ${forme}`).toBeGreaterThan(0);
+    expect(masses.filter((m) => !m.derived).map((m) => `z${m.z} ${m.profile}`),
+      `masse(s) AUTHORÉE(s) alors que la dérivation fait foi — ${forme}`).toEqual([]);
+    const couvertes = new Set<string>();
+    const surVide: string[] = [];
+    for (const m of masses)
+      for (const r of m.footprint)
+        for (let y = r.y; y < r.y + r.h; y++)
+          for (let x = r.x; x < r.x + r.w; x++) {
+            couvertes.add(`${x},${y}`);
+            if (tileAt(s, x, y, 0) === 'vide' && tileAt(s, x, y, 1) === 'vide') surVide.push(`${x},${y}`);
+          }
+    expect(surVide, `masse(s) coiffant une case VIDE aux deux niveaux — ${forme}`).toEqual([]);
+    const decouvert: string[] = [];
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++)
+        if (tileAt(s, x, y, 1) !== 'vide' && !couvertes.has(`${x},${y}`)) decouvert.push(`${x},${y}`);
+    expect(decouvert, `plancher d’étage NON coiffé — ${forme}`).toEqual([]);
   });
 
   it('LÉGENDES de zone : les chars du rez et de l’étage sont DISJOINTS', () => {
@@ -151,6 +211,14 @@ describe('plan de l’Opéra — corps architectural et loi de dégagement', () 
     expect(cleared.roomlessCells.size, 'aucun repli sur l’emprise : la pièce a tranché').toBe(0);
     // COUVERCLE : la case (3,9) au niveau STRICTEMENT au-dessus du sien.
     expect(cleared.overheadCells.has('3,9,1'), 'la couche d’étage qui le surplombe se lève').toBe(true);
+  });
+
+  it('DÉGAGEMENT en LOGE de flanc (5,13,z1) : l’allié ne dégage QUE sa loge, pas l’anneau entier', () => {
+    // DoD #1780 : les loges du folio 39 sont des pièces CLOSES, une par bande — un allié en loge ne doit
+    // pas ouvrir la bande voisine ni les balcons. C'est `roomZoneIds` de l'étage qui le tient.
+    const cleared = clearedSpace(s, [{ x: 5, y: 13, z: 1 }]);
+    expect([...cleared.zoneIds]).toEqual(['loge-gauche-1']);
+    expect(cleared.roomlessCells.size, 'aucun repli sur l’emprise : la loge a tranché').toBe(0);
   });
 
   it('chaque PIÈCE est d’UN SEUL TENANT : aucun pas de son aire ne traverse un mur', () => {
@@ -204,8 +272,10 @@ describe('plan de l’Opéra — corps architectural et loi de dégagement', () 
  *    (`roofSeamGeometry` → `closureAppearance`), matière lue sur `el.appearance` ;
  *  - `buildRoofs` — les PIGNONS de comble, `kind:'roof'` (`gableEnds` → `closureAppearance`), dont la
  *    matière de mur ne vit PAS dans `el.appearance` mais dans la face `material.domain === 'structure'`.
- * L'opéra ne coiffe aujourd'hui que des CROUPES (`profile: 'hip'`, cf. « TOITURE DÉRIVÉE » ci-dessus),
- * qui n'ont aucune fermeture de comble : la famille des pignons est lue, son compte va au message.
+ * L'opéra coiffe son corps d'une CROUPE (`profile: 'hip'`, cf. « TOITURE DÉRIVÉE » ci-dessus) : une croupe
+ * n'a aucune fermeture de comble, et une nappe seule n'a aucune couture avec une voisine. Ces deux familles
+ * sont LUES quand même et leur compte va au MESSAGE (`diag`) : le contrat de matière porte sur la population
+ * effectivement rendue, quelle que soit la famille qui la porte.
  */
 describe('plan de l’Opéra — apparence des murs (#1180)', () => {
   const s = buildOperaFloorplan();
@@ -221,15 +291,12 @@ describe('plan de l’Opéra — apparence des murs (#1180)', () => {
     // Un élément de mur d'une AUTRE famille de clé échapperait au contrat sans que rien ne bronche.
     expect(murs.filter((el) => !el.key.startsWith('wall:') && !el.key.startsWith('seam:')).map((el) => el.key),
       `famille de clé non couverte (${diag})`).toEqual([]);
-    // TÉMOINS NOMMÉS, un par famille peuplée : la garde ne peut pas devenir vide en silence.
+    // TÉMOIN NOMMÉ de la famille PEUPLÉE : la garde ne peut pas devenir vide en silence — les familles
+    // dépeuplées (coutures, pignons) disent leur zéro par `diag`, qui accompagne chaque assertion.
     const arete = rendus.find((el) => el.key === 'wall:0,1,E,1'); // z1, assise en hauteur, nue
-    // La clé d'une couture porte des ids de masse DÉRIVÉS (`sceneEdit.ts` : `-auto-z…-l…-…`) — une masse
-    // de plus les renomme : la garde nomme la FAMILLE, pas un id que la dérivation peut rebaptiser.
-    const couture = rendus.find((el) => el.key.startsWith('seam:'));
     expect(arete, `arête témoin de l’étage absente du rendu (${diag})`).toBeDefined();
-    expect(couture, `aucune couture de nappe rendue (${diag})`).toBeDefined();
     expect(arete!.appearance).toBe('plain');
-    expect(couture!.appearance).toBe('plain');
+    expect(rendus.length, `aucun élément de mur rendu — le contrat de matière ne mesurerait rien (${diag})`).toBeGreaterThan(0);
   });
 
   it('les arêtes NUES assises en hauteur rendent le mur nu — la cote ne fortifie plus', () => {
@@ -258,7 +325,6 @@ describe('plan de l’Opéra — apparence des murs (#1180)', () => {
 describe('plan de l’Opéra — l’ovale de l’étage est fermé (#1179)', () => {
   const s = buildOperaFloorplan();
   const W = s.dimensions.w, H = s.dimensions.h;
-  const AXE = Math.round((W - 1) / 2);
   const impasses = (z: number) => scenePlanDefects(s)
     .filter((d) => d.family === 'mur-en-impasse' && d.at.z === z)
     .map((d) => (d.at.kind === 'edge' ? `${d.at.x},${d.at.y}${d.at.side}` : d.at.kind));
@@ -275,9 +341,8 @@ describe('plan de l’Opéra — l’ovale de l’étage est fermé (#1179)', ()
    *  vide du dehors, qui borde l'enveloppe du bâtiment et EXIGE ses murs, en est exclu par
    *  construction : il ne communique pas avec le puits. */
   const puits = (() => {
-    const centre = `${AXE},28`;
-    const set = new Set([centre]);
-    const pile = [[AXE, 28]];
+    const set = new Set([`${PUITS_TEMOIN.x},${PUITS_TEMOIN.y}`]);
+    const pile = [[PUITS_TEMOIN.x, PUITS_TEMOIN.y]];
     while (pile.length) {
       const [cx, cy] = pile.pop()!;
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
@@ -291,7 +356,7 @@ describe('plan de l’Opéra — l’ovale de l’étage est fermé (#1179)', ()
   })();
 
   it('le PUITS est OUVERT : aucune arête entre une case du puits et sa voisine de plancher', () => {
-    expect(tileAt(s, AXE, 28, 1), 'le centre du puits est bien vide').toBe('vide');
+    expect(tileAt(s, PUITS_TEMOIN.x, PUITS_TEMOIN.y, 1), 'le centre du puits est bien vide').toBe('vide');
     const offenseurs: string[] = [];
     let paires = 0;
     for (const key of puits) {
@@ -308,9 +373,127 @@ describe('plan de l’Opéra — l’ovale de l’étage est fermé (#1179)', ()
   });
 
   it('un refend de loge qui MEURT sur le vide reste posé, et n’est PAS un défaut : l’à-pic exempte', () => {
-    const temoin = (s.walls ?? []).find((w) => w.x === 12 && w.y === 19 && w.side === 'N' && w.z === 1);
-    expect(temoin, 'refend témoin (12,19)N absent de la grille').toBeDefined();
-    expect(tileAt(s, 13, 19, 1), 'le quadrant est du coin (13,19) est bien le puits').toBe('vide');
-    expect(impasses(1)).not.toContain('12,19N');
+    const temoin = (s.walls ?? []).find((w) => w.x === 9 && w.y === 16 && w.side === 'N' && w.z === 1);
+    expect(temoin, 'refend témoin (9,16)N absent de la grille').toBeDefined();
+    expect(tileAt(s, 10, 16, 1), 'le quadrant est du coin (10,16) est bien le puits').toBe('vide');
+    expect(impasses(1)).not.toContain('9,16N');
+  });
+});
+
+/**
+ * #1780 — le mobilier app-owned se pose SUR le plan compilé : ce que le folio ne montre pas (statues du
+ * foyer, lustres) reste éditable, mais aucune de ses cases ne peut tomber hors d'une pièce, sur une
+ * RAMPE (dont la pente est le seul chemin vers l'étage) ni dans une cage d'escalier.
+ */
+describe('plan de l’Opéra — mobilier posé sur le plan (#1780)', () => {
+  const s = buildOperaFloorplan();
+  const zonesAt = (x: number, y: number, z: number) => (s.effectZones ?? [])
+    .filter((zone) => (zone.z ?? 0) === z && (zone.tiles ?? []).some((t) => t.x === x && t.y === y))
+    .map((zone) => zone.id);
+  // CAGES DÉRIVÉES de la légende (les pièces dont le `label` verbatim du folio commence par « Escalier ») :
+  // une liste littérale redoublerait des ids et se tairait au premier renommage de pièce.
+  const CAGES = new Set(Object.values({ ...ZONES_REZ, ...ZONES_ETAGE })
+    .filter((p) => p.label?.startsWith('Escalier')).map((p) => p.id));
+  // DÉCOR SUSPENDU : le seul qui pend au-dessus du puits, NOMMÉ — toute autre case `vide` sous un décor est
+  // un défaut de pose (un fauteuil de loge au-dessus du parterre), jamais une exemption tacite.
+  const SUSPENDUS_AU_PUITS = ['lustre'];
+
+  it('tout décor POSÉ sur le plancher de l’étage tombe dans une pièce ; seul le lustre surplombe le vide', () => {
+    // Deux populations, aucune exemption au fichier : ce qui repose sur la dalle DOIT avoir sa pièce
+    // (sinon la loi de dégagement ne le trouve pas) ; ce qui pend au-dessus du puits est NOMMÉ un par un
+    // (`SUSPENDUS_AU_PUITS`), et n'a par construction aucun plancher ni aucune pièce sous lui.
+    const etage = scenarioEntities.filter((e) => (e.z ?? 0) === 1);
+    const surPlancher = etage.filter((e) => tileAt(s, e.pos.x, e.pos.y, 1) !== 'vide');
+    const surPuits = etage.filter((e) => tileAt(s, e.pos.x, e.pos.y, 1) === 'vide');
+    expect(surPlancher.length, 'l’étage porte bien du décor posé').toBeGreaterThan(0);
+    const horsPiece = surPlancher
+      .filter((e) => zonesAt(e.pos.x, e.pos.y, 1).length === 0)
+      .map((e) => `${e.id} (${e.pos.x},${e.pos.y})`);
+    expect(horsPiece, `décor(s) posé(s) à l’étage hors de toute pièce : ${horsPiece.join(' ')}`).toEqual([]);
+    // TÉMOINS NOMMÉS : les deux lustres du foyer sont POSÉS (ils coiffent les salons), pas suspendus au puits.
+    for (const id of ['foy-lustre-g', 'foy-lustre-d']) {
+      const l = surPlancher.find((e) => e.id === id);
+      expect(l, `${id} absent du décor posé de l’étage`).toBeDefined();
+      expect(zonesAt(l!.pos.x, l!.pos.y, 1), `${id} (${l!.pos.x},${l!.pos.y}) hors pièce`).not.toEqual([]);
+    }
+    expect(surPuits.map((e) => e.id).sort(),
+      `décor(s) au-dessus du VIDE : ${surPuits.map((e) => `${e.id} (${e.pos.x},${e.pos.y})`).join(' ')}`)
+      .toEqual([...SUSPENDUS_AU_PUITS].sort());
+    expect(surPuits.flatMap((e) => zonesAt(e.pos.x, e.pos.y, 1).map((id) => `${e.id}→${id}`)),
+      'un décor suspendu n’appartient à aucune pièce').toEqual([]);
+  });
+
+  it('GARDE-CORPS : chaque case de RIVE du puits porte une balustrade, et aucune autre case du plan', () => {
+    // Contrat de COUVERTURE, sans cardinal : l'ensemble des cases balustradées EST celui de la rive que
+    // `puitsRim` dérive de l'ASCII — recreuser l'ovale déplace les deux ensembles du même geste.
+    const cle = (x: number, y: number) => `${x},${y}`;
+    const balustrades = scenarioEntities.filter((e) => e.ref === 'balustrade-loge');
+    const posees = balustrades.map((e) => `${cle(e.pos.x, e.pos.y)}z${e.z ?? 0}`);
+    const rive = puitsRim();
+    expect(rive.length, 'la rive du puits n’est pas vide').toBeGreaterThan(0);
+    expect([...new Set(posees)].sort(), `${balustrades.length} balustrade(s) pour ${rive.length} case(s) de rive — doublon(s) : ${posees.filter((p, i) => posees.indexOf(p) !== i).join(' ')}`)
+      .toEqual(rive.map((c) => `${cle(c.x, c.y)}z1`).sort());
+    expect(posees.length, 'une seule balustrade par case').toBe(new Set(posees).size);
+    // CAP : la voisine visée par chaque travée est le VIDE du puits — le garde-corps regarde le dénivelé.
+    const VERS: Record<string, [number, number]> = { N: [0, -1], S: [0, 1], E: [1, 0], O: [-1, 0] };
+    const malCapees = balustrades
+      .filter((e) => { const [dx, dy] = VERS[e.facing as string]; return tileAt(s, e.pos.x + dx, e.pos.y + dy, 1) !== 'vide'; })
+      .map((e) => `${e.id} cap ${e.facing}`);
+    expect(malCapees, `balustrade(s) qui ne regardent pas le puits : ${malCapees.join(' ')}`).toEqual([]);
+  });
+
+  it('BALUSTRADES : elles ne retirent QUE les cases de rive, et n’enclavent aucune case de l’étage', () => {
+    // La balustrade est un décor SOLIDE (`props.json` `balustrade-loge`) : elle MURE sa case pour la
+    // marche (`isWalkable` → `entityBlockedAt`, `src/state/scene.ts:540`). Connexité lue à la SOURCE
+    // UNIQUE (`walkComponentAt`, `src/state/path.ts:175`) : 8-connexe et cross-couche, donc plus
+    // permissive qu'un flood 4-connexe — une case enclavée y reste une composante de plus.
+    const meuble = operaPlan.scene; // la scène RÉELLE du scénario (plan + mobilier)
+    const sansGardeCorps = { ...meuble, entities: meuble.entities.filter((e) => e.ref !== 'balustrade-loge') };
+    const cle = (x: number, y: number) => `${x},${y}`;
+    const { w, h } = meuble.dimensions;
+    const marchablesEtage = (sc: Scene) => {
+      const out = new Set<string>();
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (isWalkable(sc, x, y, 1)) out.add(cle(x, y));
+      return out;
+    };
+    const composantesEtage = (sc: Scene) => {
+      const ids = new Set<number>();
+      for (const k of marchablesEtage(sc)) {
+        const [x, y] = k.split(',').map(Number);
+        ids.add(walkComponentAt(sc, x, y, 1)!);
+      }
+      return ids;
+    };
+    const avec = marchablesEtage(meuble);
+    const sans = marchablesEtage(sansGardeCorps);
+    const rive = puitsRim().map((c) => cle(c.x, c.y)).sort();
+    expect(rive.length, 'la rive du puits n’est pas vide').toBeGreaterThan(0);
+    expect(sans.size, 'l’étage sans garde-corps porte des cases marchables').toBeGreaterThan(rive.length);
+    // (a) ENSEMBLES, pas cardinaux : ce que les balustrades ferment EST la rive, ni plus ni moins.
+    const fermees = [...sans].filter((k) => !avec.has(k)).sort();
+    const horsRive = fermees.filter((k) => !rive.includes(k));
+    const riveOuverte = rive.filter((k) => !fermees.includes(k));
+    expect(fermees, `case(s) fermée(s) hors rive : ${horsRive.join(' ')} — case(s) de rive restées marchables : ${riveOuverte.join(' ')}`)
+      .toEqual(rive);
+    const ouvertes = [...avec].filter((k) => !sans.has(k));
+    expect(ouvertes, `retirer les balustrades ne peut rien OUVRIR : ${ouvertes.join(' ')}`).toEqual([]);
+    // (b) AUCUNE ENCLAVE : poser les garde-corps ne crée pas une composante marchable de plus.
+    const compAvec = composantesEtage(meuble), compSans = composantesEtage(sansGardeCorps);
+    expect(compAvec.size, `les balustrades découpent l’étage : ${compSans.size} composante(s) marchable(s) sans elles, ${compAvec.size} avec`)
+      .toBe(compSans.size);
+  });
+
+  it('aucun décor ne se pose sur une RAMPE ni dans une cage d’escalier 8/9', () => {
+    expect([...CAGES], 'la légende déclare des cages d’escalier — sinon ce contrat ne mesure rien').not.toEqual([]);
+    // La RAMPE se lit à la SEULE chose qui la distingue : son plancher est en pente (`heightAt` ≠ la cote
+    // du foyer). Aucun cardinal de colonnes ici — la pente bouge avec `PENTE_RAMPE_M`, pas ce contrat.
+    const fautifs = scenarioEntities
+      .filter((e) => {
+        const z = e.z ?? 0;
+        const surRampe = z === 0 && heightAt(s, e.pos.x, e.pos.y, 0) > 0 && tileAt(s, e.pos.x, e.pos.y, 0) === 'marbre';
+        return surRampe || zonesAt(e.pos.x, e.pos.y, z).some((id) => CAGES.has(id));
+      })
+      .map((e) => `${e.id} (${e.pos.x},${e.pos.y},z${e.z ?? 0})`);
+    expect(fautifs, `décor(s) posé(s) sur une rampe ou dans une cage : ${fautifs.join(' ')}`).toEqual([]);
   });
 });

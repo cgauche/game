@@ -2,7 +2,7 @@ import type { PropViz } from '../../types';
 import { P } from '../../decorPalette';
 import { woodBalustradeSvg } from '../woodwork';
 
-// Balustrade de loge (3×1) : main courante dorée, balustres en pommeau doré, et tenture de velours rouge
+// Balustrade de loge (à la CASE) : main courante dorée, balustres en pommeau doré, et tenture de velours rouge
 // festonnée à clous dorés tendue sur le devant — la version d'apparat du garde-corps de bois.
 export const prop: PropViz = {
   id: 'balustrade-loge',

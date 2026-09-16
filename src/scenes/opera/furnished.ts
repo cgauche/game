@@ -1,4 +1,4 @@
-import { parterreSeatCells } from './floorplan';
+import { parterreSeatCells, puitsRim } from './floorplan';
 import type { SceneEntity } from '../../state/scene';
 
 /**
@@ -63,8 +63,10 @@ const ents: SceneEntity[] = [
 
   // ═══════════════ FOYER (7 Salon, z=0, marbre rangées 46-52) ═══════════════
   // Grand hall d'accueil sobre : statues d'honneur encadrant l'entrée du parterre, urnes, plantes, appliques.
-  { id: 'foy-statue-g', kind: 'prop', ref: 'statue', pos: { x: 8, y: 47 } },
-  { id: 'foy-statue-d', kind: 'prop', ref: 'statue', pos: { x: 35, y: 47 } },
+  // Statues HORS des cages 8/9 et de leurs colonnes de rampe (`RAMP_X`), symétriques sur l'axe 21,5 : le
+  // folio 38 n'en montre aucune au foyer 7, leur position est app-owned.
+  { id: 'foy-statue-g', kind: 'prop', ref: 'statue', pos: { x: 11, y: 47 } },
+  { id: 'foy-statue-d', kind: 'prop', ref: 'statue', pos: { x: 32, y: 47 } },
   { id: 'foy-urne-g', kind: 'prop', ref: 'urne', pos: { x: 14, y: 47 } },
   { id: 'foy-urne-d', kind: 'prop', ref: 'urne', pos: { x: 29, y: 47 } },
   { id: 'foy-plante-1', kind: 'prop', ref: 'plante-pot', pos: { x: 11, y: 50 } },
@@ -202,39 +204,45 @@ const ents: SceneEntity[] = [
   ...seatCol('et-Rring2', 36, 18, 30, 'O', 1),
   ...seatRow('et-balc-43', 43, 11, 19, 'N', 1), ...seatRow('et-balc-43b', 43, 23, 31, 'N', 1),
   ...seatRow('et-balc-45', 45, 9, 19, 'N', 1), ...seatRow('et-balc-45b', 45, 23, 33, 'N', 1),
+  // GARDE-CORPS du puits (NADJ 08 folio 39 : le bord de balcon court tout autour de l'ovale) : une
+  // travée de `balustrade-loge` par case de RIVE, cap sur le puits — la liste vient de `puitsRim`, seule
+  // lecture de l'ovale, et l'id de chaque travée est celui de sa case.
+  ...puitsRim().map(({ x, y, facing }): SceneEntity => ({ id: `bal-${x}-${y}`, kind: 'prop', ref: 'balustrade-loge', pos: { x, y }, facing, z: 1 })),
   { id: 'et-app-Lg1', kind: 'prop', ref: 'applique-murale', pos: { x: 2, y: 20 }, z: 1 },
   { id: 'et-app-Lg2', kind: 'prop', ref: 'applique-murale', pos: { x: 2, y: 28 }, z: 1 },
   { id: 'et-app-Rg1', kind: 'prop', ref: 'applique-murale', pos: { x: 41, y: 20 }, z: 1 },
   { id: 'et-app-Rg2', kind: 'prop', ref: 'applique-murale', pos: { x: 41, y: 28 }, z: 1 },
 
-  // 30 LOGE ROYALE (fond-centre) + 29 LOGE DES NOBLES.
-  { id: 'royale-canape-g', kind: 'prop', ref: 'canape', pos: { x: 19, y: 3 }, facing: 'S', z: 1 },
-  { id: 'royale-canape-d', kind: 'prop', ref: 'canape', pos: { x: 23, y: 3 }, facing: 'S', z: 1 },
-  { id: 'royale-fauteuil', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 21, y: 2 }, facing: 'S', z: 1 },
-  { id: 'royale-app-g', kind: 'prop', ref: 'applique-murale', pos: { x: 18, y: 1 }, z: 1 },
-  { id: 'royale-app-d', kind: 'prop', ref: 'applique-murale', pos: { x: 24, y: 1 }, z: 1 },
-  { id: 'noble-g-1', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 16, y: 15 }, facing: 'S', z: 1 },
-  { id: 'noble-g-2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 14, y: 16 }, facing: 'S', z: 1 },
-  { id: 'noble-d-1', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 26, y: 15 }, facing: 'S', z: 1 },
-  { id: 'noble-d-2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 28, y: 16 }, facing: 'S', z: 1 },
+  // 30 LOGE ROYALE (flanc GAUCHE, contre 32 Antichambre ducale) + 29 LOGE DES NOBLES (un flanc chacune).
+  { id: 'royale-canape-g', kind: 'prop', ref: 'canape', pos: { x: 7, y: 3 }, facing: 'E', z: 1 },
+  { id: 'royale-canape-d', kind: 'prop', ref: 'canape', pos: { x: 11, y: 3 }, facing: 'E', z: 1 },
+  { id: 'royale-fauteuil', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 9, y: 2 }, facing: 'E', z: 1 },
+  { id: 'royale-app-g', kind: 'prop', ref: 'applique-murale', pos: { x: 6, y: 1 }, z: 1 },
+  { id: 'royale-app-d', kind: 'prop', ref: 'applique-murale', pos: { x: 12, y: 1 }, z: 1 },
+  { id: 'noble-g-1', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 10, y: 7 }, facing: 'E', z: 1 },
+  // Second fauteuil de chaque loge des nobles : la loge ne couvre PAS tout son rectangle (le puits en
+  // mange le flanc) : il se pose sur une case de PLANCHER de la pièce, jamais sur le vide du puits.
+  { id: 'noble-g-2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 9, y: 9 }, facing: 'E', z: 1 },
+  { id: 'noble-d-1', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 33, y: 7 }, facing: 'O', z: 1 },
+  { id: 'noble-d-2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 34, y: 9 }, facing: 'O', z: 1 },
 
   // ═══════════════ GALERIE / BARS / SALONS de l'étage (z=1, débordent sur le foyer) ═══════════════
   // Les quatre comptoirs de l'étage font face au SUD : desserte au nord (étagères, tonneaux de la
   // rangée 46), buveurs au sud, du côté des tables, canapés et fauteuils.
-  { id: 'salon-d-comptoir', kind: 'prop', ref: 'comptoir-droit', pos: { x: 4, y: 48 }, facing: 'S', z: 1 },
+  { id: 'salon-d-comptoir', kind: 'prop', ref: 'comptoir-droit', pos: { x: 4, y: 52 }, facing: 'S', z: 1 },
   { id: 'salon-d-table', kind: 'prop', ref: 'table', pos: { x: 6, y: 50 }, z: 1 },
-  { id: 'salon-d-ft', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 5, y: 49 }, z: 1 },
+  { id: 'salon-d-ft', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 5, y: 53 }, z: 1 },
   { id: 'salon-d-plante', kind: 'prop', ref: 'plante-pot', pos: { x: 3, y: 50 }, z: 1 },
-  { id: 'bar-g-comptoir', kind: 'prop', ref: 'comptoir-droit', pos: { x: 9, y: 47 }, facing: 'S', z: 1 },
-  { id: 'bar-g-etag', kind: 'prop', ref: 'etagere', pos: { x: 5, y: 46 }, facing: 'S', z: 1 },
-  { id: 'bar-g-tonneau', kind: 'prop', ref: 'tonneau', pos: { x: 11, y: 46 }, z: 1 },
-  { id: 'salon-s-comptoir', kind: 'prop', ref: 'comptoir-droit', pos: { x: 39, y: 48 }, facing: 'S', z: 1 },
+  { id: 'bar-g-comptoir', kind: 'prop', ref: 'comptoir-droit', pos: { x: 16, y: 52 }, facing: 'S', z: 1 },
+  { id: 'bar-g-etag', kind: 'prop', ref: 'etagere', pos: { x: 14, y: 50 }, facing: 'S', z: 1 },
+  { id: 'bar-g-tonneau', kind: 'prop', ref: 'tonneau', pos: { x: 18, y: 50 }, z: 1 },
+  { id: 'salon-s-comptoir', kind: 'prop', ref: 'comptoir-droit', pos: { x: 39, y: 52 }, facing: 'S', z: 1 },
   { id: 'salon-s-table', kind: 'prop', ref: 'table', pos: { x: 37, y: 50 }, z: 1 },
-  { id: 'salon-s-canape', kind: 'prop', ref: 'canape', pos: { x: 38, y: 49 }, facing: 'N', z: 1 },
+  { id: 'salon-s-canape', kind: 'prop', ref: 'canape', pos: { x: 38, y: 53 }, facing: 'N', z: 1 },
   { id: 'salon-s-plante', kind: 'prop', ref: 'plante-pot', pos: { x: 40, y: 50 }, z: 1 },
-  { id: 'bar-d-comptoir', kind: 'prop', ref: 'comptoir-droit', pos: { x: 34, y: 47 }, facing: 'S', z: 1 },
-  { id: 'bar-d-etag', kind: 'prop', ref: 'etagere', pos: { x: 38, y: 46 }, facing: 'S', z: 1 },
-  { id: 'bar-d-tonneau', kind: 'prop', ref: 'tonneau', pos: { x: 32, y: 46 }, z: 1 },
+  { id: 'bar-d-comptoir', kind: 'prop', ref: 'comptoir-droit', pos: { x: 27, y: 52 }, facing: 'S', z: 1 },
+  { id: 'bar-d-etag', kind: 'prop', ref: 'etagere', pos: { x: 29, y: 50 }, facing: 'S', z: 1 },
+  { id: 'bar-d-tonneau', kind: 'prop', ref: 'tonneau', pos: { x: 25, y: 50 }, z: 1 },
 
   // Deux lustres du foyer (z=1, flottant au-dessus du foyer du rez).
   { id: 'foy-lustre-g', kind: 'prop', ref: 'lustre-opera', pos: { x: 14, y: 49 }, z: 1 },

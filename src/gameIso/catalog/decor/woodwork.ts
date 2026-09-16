@@ -31,7 +31,8 @@ export function woodStairSvg(opts: { railColor: string; knobColor: string }): st
   );
 }
 
-/** Garde-corps (3×1) : balustres à pommeaux + main courante dans les tons fournis. `tenture` optionnelle
+/** Garde-corps (tracé d'une travée, l'empreinte étant celle que `props.json` donne au décor qui l'appelle) :
+ *  balustres à pommeaux + main courante dans les tons fournis. `tenture` optionnelle
  *  ajoute le velours festonné à clous de la loge. `knobHi` = liseré clair de la main courante (défaut =
  *  `knobColor`, donc aucun reflet visible sur un bois sobre ; la loge y passe son reflet doré).
  *  `balusterColor` = ton des fuseaux (défaut `railColor`, la loge garde ses fuseaux dorés) ; `balusterBottom`

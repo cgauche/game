@@ -12,7 +12,8 @@
 import type { Scene, Terrain } from '../../state/scene';
 import { buildScene, type MapSpec } from '../../state/mapSpec';
 import { METRES_PER_LEVEL } from '../../state/relief';
-import { walledRowsOf, zonesFromSeeds, type ZoneSeed } from '../../state/asciiMap';
+import { parseWalledAscii, walledRowsOf, zonesFromSeeds, type ZoneSeed } from '../../state/asciiMap';
+import { terrainWalkable } from '../../state/terrain';
 import { REZ_ASCII, ETAGE_ASCII } from './floorplan.ascii';
 
 const W = 44, H = 60;
@@ -83,6 +84,59 @@ export function parterreSeatCells(): { x: number; y: number }[] {
   return out;
 }
 
+/** Cap d'un garde-corps de rive : la face qui regarde le puits. */
+type Cap = 'N' | 'S' | 'E' | 'O';
+
+/** Les quatre voisines d'une case, avec le cap qui les vise. */
+const VOISINES: readonly (readonly [Cap, number, number])[] = [['N', 0, -1], ['S', 0, 1], ['O', -1, 0], ['E', 1, 0]];
+
+/** Cases de la RIVE du PUITS à l'étage, avec le cap de leur garde-corps — DÉRIVÉES de l'ASCII (source
+ *  unique : recreuser l'ovale déplace les balustrades avec lui, cf. `furnished.ts`). Le PUITS est la plus
+ *  grande composante 4-connexe de `vide` de l'étage qui ne touche AUCUN bord de grille : le hors-bâtiment,
+ *  lui, borde la grille, et les trémies des deux rampes n'en sont que des lucarnes. La RIVE = toute case
+ *  FOULABLE 4-adjacente à cette composante (la maçonnerie du mur de fond de scène n'en est donc pas) ; son cap
+ *  vise, parmi ses voisines vides, celle du côté du CENTRE de l'ovale — ce qui tranche les cases d'angle,
+ *  que l'ovale borde en marches d'escalier sur deux côtés. */
+export function puitsRim(): { x: number; y: number; facing: Cap }[] {
+  const { w, h, tiles } = parseWalledAscii(walledRowsOf(ETAGE_ASCII, W), BASE, LEGEND);
+  const dedans = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h;
+  const vu = new Uint8Array(w * h);
+  let puits: number[] = [];
+  for (let depart = 0; depart < w * h; depart++) {
+    if (vu[depart] || tiles[depart] !== BASE) continue;
+    const pile = [depart];
+    const composante: number[] = [];
+    let borde = false;
+    vu[depart] = 1;
+    while (pile.length) {
+      const i = pile.pop()!;
+      composante.push(i);
+      const x = i % w, y = (i - x) / w;
+      if (x === 0 || y === 0 || x === w - 1 || y === h - 1) borde = true;
+      for (const [, dx, dy] of VOISINES) {
+        const nx = x + dx, ny = y + dy;
+        if (!dedans(nx, ny) || vu[ny * w + nx] || tiles[ny * w + nx] !== BASE) continue;
+        vu[ny * w + nx] = 1;
+        pile.push(ny * w + nx);
+      }
+    }
+    if (!borde && composante.length > puits.length) puits = composante;
+  }
+  const vide = new Set(puits);
+  const cx = puits.reduce((s, i) => s + (i % w), 0) / puits.length;
+  const cy = puits.reduce((s, i) => s + Math.floor(i / w), 0) / puits.length;
+  const rive: { x: number; y: number; facing: Cap }[] = [];
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      if (!terrainWalkable(tiles[y * w + x])) continue;
+      const caps = VOISINES.filter(([, dx, dy]) => dedans(x + dx, y + dy) && vide.has((y + dy) * w + x + dx));
+      if (!caps.length) continue;
+      const [facing] = caps.reduce((a, b) => (b[1] * (cx - x) + b[2] * (cy - y) > a[1] * (cx - x) + a[2] * (cy - y) ? b : a));
+      rive.push({ x, y, facing });
+    }
+  return rive;
+}
+
 /** Type d'une entrée de `MapSpec.zoneLegend` — une PIÈCE du plan, avec les GRAINES d'où son calque se
  *  DÉRIVE (`zonesFromSeeds` : le cloisonnement de l'ASCII est la seule source du contour). Une pièce
  *  coupée par une PORTE interne porte une graine par morceau ; `clip` borne une aire que le plan ne
@@ -137,7 +191,45 @@ export const ZONES_REZ: Record<string, Piece> = {
  *  seul char (`mapSpec.ts` : `zoneLegend[b.char].id`), un char partagé donnerait la même pièce aux deux
  *  niveaux. Tenu par un test (`floorplan.test.ts`), pas par ce commentaire. */
 export const ZONES_ETAGE: Record<string, Piece> = {
-  a: { id: 'loge-royale', label: 'Loge royale', presentation: 'interior', seeds: [[18, 1]] }, // 30
+  a: { id: 'antichambre-ducale', label: 'Antichambre ducale', presentation: 'interior', seeds: [[2, 3]] },            // 32
+  b: { id: 'loge-royale', label: 'Loge royale', presentation: 'interior', seeds: [[8, 3]] },                          // 30
+  // `clip` : au folio 39, 31 et 29 partagent UNE aire sans aucun trait entre elles (31 côté couloir, 29 côté
+  // salle) — la colonne de partage est un choix d’authoring MAISON, révisable, faute de frontière au plan. Même
+  // raison pour les balcons 33/34/35, fer à cheval de gradins continu, et pour les aires que le plan ouvre
+  // l'une sur l'autre sans porte (couloirs 10 ↔ salon/galerie, galerie 36 ↔ bar 37).
+  c: { id: 'salon-de-la-loge-gauche', label: 'Salon de la loge', presentation: 'interior', seeds: [[2, 9]], clip: { x1: 5, y1: 10 } },   // 31
+  d: { id: 'loge-des-nobles-gauche', label: 'Loge des nobles', presentation: 'interior', seeds: [[8, 8]], clip: { x0: 6 } },             // 29
+  e: { id: 'loge-gauche-1', label: 'Loge', presentation: 'interior', seeds: [[5, 13]] },                              // 28
+  f: { id: 'loge-gauche-2', label: 'Loge', presentation: 'interior', seeds: [[5, 18]] },                              // 28
+  g: { id: 'loge-des-nobles-droite-1', label: 'Loge des nobles', presentation: 'interior', seeds: [[35, 3]], clip: { x1: 37 } }, // 29
+  h: { id: 'salon-de-la-loge-droite-1', label: 'Salon de la loge', presentation: 'interior', seeds: [[40, 3]], clip: { x0: 38 } },       // 31
+  i: { id: 'loge-des-nobles-droite-2', label: 'Loge des nobles', presentation: 'interior', seeds: [[35, 8]], clip: { x1: 37 } },         // 29
+  j: { id: 'salon-de-la-loge-droite-2', label: 'Salon de la loge', presentation: 'interior', seeds: [[40, 8]], clip: { x0: 38, y1: 10 } }, // 31
+  k: { id: 'loge-droite-1', label: 'Loge', presentation: 'interior', seeds: [[38, 13]] },                             // 28
+  l: { id: 'loge-droite-2', label: 'Loge', presentation: 'interior', seeds: [[38, 18]] },                             // 28
+  m: { id: 'passage-gauche', label: 'Passage', presentation: 'interior', seeds: [[1, 20]], clip: { x1: 2, y0: 11, y1: 41 } },  // 10
+  n: { id: 'passage-droit', label: 'Passage', presentation: 'interior', seeds: [[42, 20]], clip: { x0: 41, y0: 11, y1: 41 } }, // 10
+  o: { id: 'balcons-de-gauche', label: 'Balcons de gauche', presentation: 'interior', seeds: [[5, 30]], clip: { x1: 14, y1: 41 } },   // 33
+  p: { id: 'balcons-centraux', label: 'Balcons centraux', presentation: 'interior', seeds: [[21, 39]], clip: { x0: 15, x1: 28, y1: 41 } }, // 34
+  q: { id: 'balcons-de-droite', label: 'Balcons de droite', presentation: 'interior', seeds: [[38, 30]], clip: { x0: 29, y1: 41 } },  // 35
+  // La galerie court sur DEUX bandes (pleine largeur au droit des balcons, puis resserrée entre les deux
+  // cages d'escalier) ; elle s'ouvre sans porte sur le bar par la trouée centrale de la rangée 50 (marches,
+  // folio 39) — `clip` : la frontière 36|37 est un choix d’authoring MAISON, le plan n'en dessine aucune.
+  r: { id: 'galerie', label: 'Galerie', presentation: 'interior', seeds: [[21, 44]], clip: { y0: 42, y1: 49 } },      // 36
+  // Cages 8/9 à l'étage : le palier d'arrivée des rampes, clos entre le mur haut (rangée 46) et le mur bas
+  // (rangée 50) que perce leur seule PORTE — `clip` : cette porte ferait déborder la graine sur le salon.
+  // Le PUITS de rampe coupe chaque palier sur toute sa profondeur : deux paliers 4-connexes DISTINCTS
+  // par cage (on passe de l'un à l'autre par la rampe, jamais à plat) — donc deux pièces, même `label`
+  // verbatim, id suffixé par le côté, comme les deux « Vestiaire » du rez.
+  v: { id: 'escalier-des-dames-etage-ouest', label: 'Escalier des Dames', presentation: 'interior', seeds: [[2, 47]], clip: { y1: 49 } },        // 8
+  x: { id: 'escalier-des-dames-etage-est', label: 'Escalier des Dames', presentation: 'interior', seeds: [[11, 47]], clip: { y1: 49 } },         // 8
+  w: { id: 'escalier-des-seigneurs-etage-est', label: 'Escalier des Seigneurs', presentation: 'interior', seeds: [[41, 47]], clip: { y1: 49 } },     // 9
+  y: { id: 'escalier-des-seigneurs-etage-ouest', label: 'Escalier des Seigneurs', presentation: 'interior', seeds: [[32, 47]], clip: { y1: 49 } },   // 9
+  // 38 | 37 | 39 occupent la façade COURBE du sud (rangées 50-57) — `clip` : `y0: 50` tient la frontière
+  // maison avec la galerie ; `x1: 30`/`x0: 31`, celle que la porte 37↔39 de la rangée 53 franchirait.
+  s: { id: 'bar-des-balcons', label: 'Bar des balcons', presentation: 'interior', seeds: [[21, 52]], clip: { y0: 50, x1: 30 } }, // 37
+  t: { id: 'salon-des-dames', label: 'Salon des Dames', presentation: 'interior', seeds: [[2, 52]], clip: { y0: 50 } },  // 38
+  u: { id: 'salon-des-seigneurs', label: 'Salon des Seigneurs', presentation: 'interior', seeds: [[41, 52]], clip: { y0: 50, x0: 31 } }, // 39
 };
 
 /** GRAINES du calque de zones par étage — la donnée que `scripts/map/registry.ts` cite quand un défaut
@@ -177,7 +269,7 @@ export function buildOperaFloorplan(): Scene {
     id: 'opera-staatsoper',
     label: 'Théâtre Staatsoper',
     desc:
-      'Opéra d’Altdorf — rez-de-chaussée (parterre en éventail, scène surélevée +1 m, fosse d’orchestre −1 m, salles latérales en colonnes subdivisées, foyer à rampes d’angle) et premier étage (loges en anneau autour du puits central ovale, à 4 m, galerie, loge royale dans l’axe de la scène). GÉNÉRÉ depuis une carte ASCII éditable (floorplan.ascii.ts) ; l’étage se rejoint par deux RAMPES (cases de hauteur croissante, plus aucun escalier).',
+      'Opéra d’Altdorf — rez-de-chaussée (parterre en éventail, scène surélevée +1 m, fosse d’orchestre −1 m, salles latérales en colonnes subdivisées, foyer à rampes d’angle) et premier étage (loges en anneau autour du puits central ovale, à 4 m, galerie, bar des balcons et salons des Dames et des Seigneurs sur la façade, loge royale au flanc GAUCHE contre l’antichambre ducale — l’axe de la scène, lui, est le puits, fermé au nord par le mur de fond de scène). GÉNÉRÉ depuis une carte ASCII éditable (floorplan.ascii.ts) ; l’étage se rejoint par deux RAMPES (cases de hauteur croissante, plus aucun escalier).',
     ambiance: 'interieur',
     size: [W, H],
     terrain: BASE,

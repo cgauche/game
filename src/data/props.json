@@ -83,7 +83,7 @@
     "label": "Balustrade de loge",
     "solid": true,
     "foot": {
-      "w": 3,
+      "w": 1,
       "h": 1
     }
   },

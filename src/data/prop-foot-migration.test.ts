@@ -14,12 +14,15 @@ import type { AreneSceneFactory } from '../../scripts/arene/scenes.d.mts';
 /**
  * Empreintes de TYPE portées par le catalogue de décor (`props.json` `foot`), figées à la valeur
  * qu'elles avaient dans les defs de vignette avant leur migration — plus les trois variantes longues
- * de mobilier d'Opéra créées par cette même migration.
+ * de mobilier d'Opéra créées par cette même migration, et celles qu'un MODÈLE a depuis recalées, chacune
+ * motivée à sa ligne.
  */
 const LEGACY_PROP_FOOT_TABLE: [string, number, number][] = [
   ['abreuvoir', 2, 1],
   ['balustrade-bois', 3, 1],
-  ['balustrade-loge', 3, 1],
+  // `balustrade-loge` se pose désormais à la CASE (une travée par case de rive de puits,
+  // `opera/floorplan.ts` `puitsRim`) : son empreinte de type a suivi le modèle, pas la migration.
+  ['balustrade-loge', 1, 1],
   ['barque', 2, 1],
   ['bureau-2x1', 2, 1],
   ['canon-de-pont', 1, 1],
