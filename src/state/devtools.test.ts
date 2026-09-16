@@ -18,6 +18,8 @@ import { builtinCampaigns } from '../scenes/campaign';
 import { testScenarios, type TestScenario } from '../scenes/test-scenarios';
 import { editeur } from './editeurBridge';
 import { signalerEntreeEnScene } from './entreeEnScene';
+import { t } from '../i18n';
+import { findSpellById } from '../data';
 
 describe('__wfrp.killEnemies — commande de recette (élimine les ennemis, victoire normale)', () => {
   beforeEach(() => {
@@ -101,7 +103,13 @@ describe('__wfrp — autres commandes de recette', () => {
 
   it('spell : mémorise un sort au grimoire par l’EFFET MOTEUR (jamais une écriture parallèle)', () => {
     const hero = useGame.getState().party[0];
+    // Sans Talent de lanceur, l'effet REFUSE (LDB 46 l.14, #1702) : la console le dit, le journal le nomme.
     useGame.setState({ party: [{ ...hero, spells: [] }] });
+    expect(buildApi().spell(hero.id, 'sommeil')).toContain('✗');
+    expect(useGame.getState().party[0].spells, 'rien n’a été écrit sans le Talent').toEqual([]);
+    expect(useGame.getState().journal).toContain(t('pf.spellCannotLearn', { name: hero.label, spell: findSpellById('sommeil')!.label }));
+    // Magie mineure au Talent (talents.json:2926) → `sommeil` devient mémorisable.
+    useGame.setState({ party: [{ ...hero, spells: [], talents: [...hero.talents, { talentId: 'magie-mineure', times: 1 }] }] });
     const out = buildApi().spell(hero.id, 'sommeil');
     expect(out, 'la commande DIT ce qu’elle a fait').toContain('✓');
     expect(useGame.getState().party[0].spells, 'le grimoire porte l’ID du sort').toContain('sommeil');

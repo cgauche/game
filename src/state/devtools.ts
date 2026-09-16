@@ -1351,7 +1351,7 @@ export function buildApi(scenarios: readonly TestScenario[] = testScenarios) {
       const who = actorIn(useGame.getState(), heroId);
       return who && (who.spells ?? []).includes(spellId)
         ? `✓ ${who.label} mémorise « ${spellId} »`
-        : `✗ sort « ${spellId} » non mémorisé (héros ou sort inconnu)`;
+        : `✗ sort « ${spellId} » non mémorisé — voir le journal`;
     },
 
     /** RECETTE : octroie un Talent à un combattant (par id) — ex. Mâchoires d'acier pour tester son trigger.

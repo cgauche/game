@@ -12,7 +12,7 @@ import { applyOps, resolveFormula, demandesDeDes, gelerOpsCtx, D10_CHUTE, OPS_CT
   type OpsCtx, type OpsCtxGele, type DemandeDe, type GameOp } from '../engine/ops';
 import { rule } from '../engine/policy';
 import { gainCorruption, corruptionTarget, poseCorruptionPending, testDeCorruption } from './corruptionFlow';
-import { eligibleTalent } from '../engine/grimoire';
+import { spellCost } from '../engine/grimoire';
 import { applyFall } from '../engine/movement';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { sceneNpc } from './sceneNpc';
@@ -1454,12 +1454,18 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       if (!sp) return;
       // `c.spells` = IDS de sort (résolus par findSpellById dans la console/IA/grimoire) ; le libellé
       // ne sert qu'à l'affichage (log ci-dessous). Même convention que pregens/buySpell/Béni.
+      // LDB 46 l.14 — #1702 : MÊME garde que `buySpell` (`spellCost` null = déjà connu ou Talent
+      // manquant), héros NOMMÉ ou repli ; `mutateHero` rend l'ORIGINAL, d'où la relecture du prédicat.
+      const learnable = (h: Combatant) => spellCost(h, sp) != null;
       const who = env.mutateHero(
         e.heroId,
-        (h) => ((h.spells ?? []).includes(sp.id) ? h : { ...h, spells: [...(h.spells ?? []), sp.id] }),
-        (party) => party.findIndex((h) => !!eligibleTalent(h, sp) && !(h.spells ?? []).includes(sp.id)),
+        (h) => (learnable(h) ? { ...h, spells: [...(h.spells ?? []), sp.id] } : h),
+        (party) => party.findIndex(learnable),
       );
-      if (who) env.log(t('eff.learnSpell', { name: who.label, spell: sp.label }));
+      // `heroId` authoré hors du groupe : le motif est l'ID, jamais l'éligibilité du groupe.
+      if (!who) env.log(e.heroId ? t('eff.heroUnknown', { id: e.heroId }) : t('eff.learnSpellNoOne', { spell: sp.label }));
+      else if (!learnable(who)) env.log(t('pf.spellCannotLearn', { name: who.label, spell: sp.label }));
+      else env.log(t('eff.learnSpell', { name: who.label, spell: sp.label }));
     },
   },
   petitePriere: {

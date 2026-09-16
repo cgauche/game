@@ -482,6 +482,9 @@ export const fr = {
   'countdown.soon': 'imminent',
   'countdown.due': 'échéance atteinte',
   'eff.learnSpell': '{name} apprend {spell}.',
+  // Refus d'un `learnSpell` sans héros désigné : même clause que `pf.spellCannotLearn`, cardinalité GROUPE
+  // (aucun nom à nommer — le repli n'a retenu personne).
+  'eff.learnSpellNoOne': 'Personne ne peut apprendre {spell} (déjà connu ou Talent manquant).',
   'eff.restoreFortune': 'Début de session : Points de Chance regagnés (jusqu’au maximum).',
   'eff.setVessel': 'Le groupe prend possession du navire : {name}.',
   'eff.blast': 'Souffle de zone : {lines}.',
@@ -1362,6 +1365,8 @@ export const fr = {
   'eff.vesselProvisions': 'vivres {n} j',
   'eff.vesselCrew': 'équipage {n}',
   'eff.vesselHull': 'coque {cur}/{max}',
+  // Référence `heroId` d'un Effet authoré qui ne désigne aucun héros du groupe (générique, tout Effet).
+  'eff.heroUnknown': 'Effet : héros « {id} » introuvable dans le groupe.',
   'eff.castCasterMissing': 'Effet Incanter : lanceur « {id} » introuvable (en combat, ou héros du groupe hors combat).',
   'eff.castSpellMissing': 'Effet Incanter : sort « {id} » introuvable.',
   'eff.medicNoNpc': 'Soins impossibles : aucun PNJ « {id} » dans cette scène.',

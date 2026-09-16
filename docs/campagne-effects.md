@@ -57,7 +57,7 @@ câblé côté `src/state`, ou n'être jamais posé dans aucun JSON de campagne 
 | `giveSin` | `amount?`, `heroId?` | Points de Péché (`LDB 40 l.30-36`) : l'auteur/MJ sanctionne une infraction aux commandements du dieu d'un Bienheureux — 1 à 3 selon la gravité (l.36). |
 | `corruptionExposure` | `level`, `skill?`, `align?`, `heroId?` | Exposition à une Influence corruptrice (`LDB 19 l.23-75`) : Test de Résistance (Influence physique) ou de Calme (spirituelle) par MODALE ; Points de Corruption selon le niveau et le DR. |
 | `waterExposure` | `mode`, `source?`, `target?`, `heroId?` | Exposition HYDRIQUE (`MSRC 16` p.91 — « Maladies transmises par l'eau ») : Test de **Résistance Intermédiaire (+0)** modifié (tableau 1 « Source d'eau » = `source`, choix d'auteur de la zone d'eau ; tableau 2 « Blessures et États » DÉRIVÉ du héros, immersion seule) ; raté → d100 « +10 pour chaque DR négatif » → maladie CONTRACTÉE directement (le Test d'exposition EST le test — jamais un second Test de Contraction). |
-| `learnSpell` | `spell`, `heroId?` | Enseigne un sort SANS coût en PX (trouvaille de campagne : grimoire d'un maître, parchemin…). |
+| `learnSpell` | `spell`, `heroId?` | Enseigne un sort SANS coût en PX (trouvaille de campagne : grimoire d'un maître, parchemin…) au héros que son Talent de lanceur rend éligible, désigné ou non — sinon refus NOMMÉ au journal (`LDB 46 l.14`). |
 | `castSpell` | `casterId`, `spellId`, `targetId?`, `mode?` | Incantation SCRIPTÉE (#98) : rituel scénique, piège magique, PNJ qui lance à un beat précis (dialogue, trigger, effet différé). |
 | `petitePriere` | `heroId?`, `reward` | « Petites Prières » (`LDB 25 l.22-24`, option `prayer-petites`) : posé sur un SITE SACRÉ (autel, sanctuaire). |
 | `sessionEnd` | — | FIN DE SÉANCE (`LDB 05` Ambitions l.793-841 + Détermination `LDB 17 l.81`) : ouvre l'écran de fin de séance EXISTANT (`SessionEndModal`) où le MJ/les joueurs cochent les Ambitions accomplies et les Motivations suivies — l'octroi (PX +50/+500, Détermination, Chance restaurée) passe par `endSession` (state/partyFlow), déjà câblé derrière cette modale. |
@@ -73,4 +73,4 @@ câblé côté `src/state`, ou n'être jamais posé dans aucun JSON de campagne 
 | `endDialogue` | — | — |
 
 _58 Effects — dérivés de `src/data/schemas/defs-scenes/effets.ts`._
-<!-- sources-empreinte: 8fec3908f35538b3ee0ba467c6d2030b4475eb2b (6 fichiers, 0 dossiers) corps: e5fc347e8ccb8fc5fbc825f582faa532363b7682 -->
+<!-- sources-empreinte: bbcb48dc5b71a2245c0701525eb308d735ff5a60 (6 fichiers, 0 dossiers) corps: 1bc45ca49cfff1bb7375131e969bb93d4fbc40ed -->

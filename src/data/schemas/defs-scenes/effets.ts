@@ -455,9 +455,11 @@ export const waterExposureSchema = z.strictObject({
   heroId: z.string().optional(),
 });
 
-/** Enseigne un sort SANS coût en PX (trouvaille de campagne : grimoire d'un maître, parchemin…).
- *  Cible : héros désigné, sinon le premier dont un Talent rend le sort apprenable. L'apprentissage
- *  PAYANT passe par l'onglet Avancement (buySpell, `LDB 46 l.44-47`). */
+/** Enseigne un sort SANS coût en PX (trouvaille de campagne : grimoire d'un maître, parchemin…) au
+ *  héros que son Talent de lanceur rend éligible, désigné ou non — sinon refus NOMMÉ au journal
+ *  (`LDB 46 l.14`). Cible : héros désigné, sinon le premier dont un Talent rend le sort apprenable ;
+ *  la garde est celle de l'achat (`spellCost`). L'apprentissage PAYANT passe par l'onglet Avancement
+ *  (buySpell, `LDB 46 l.44-47`). */
 export const learnSpellSchema = z.strictObject({
   type: z.literal('learnSpell'),
   spell: z.string(),
