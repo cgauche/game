@@ -1,17 +1,18 @@
-// Hook PreToolUse (canaux shell) : un sous-agent `codeur` ne joue PAS les gates du train.
+// Hook PreToolUse (canaux shell) : un sous-agent `codeur` ne joue PAS les gates de la CI.
 // POURQUOI — verbatims utilisateur du 2026-09-15 :
 //   « C'est absurde ... on a dépêché un agent pour créer un fichier (+ son test, + le lien pour
 //     l'appeler) et ça va nous prendre 25 min ? »
 //   « La mémoire c'est cool mais ça n'empêche pas de réitérer la même erreur plus tard »
 // Mesuré sur #1768 : ~12 min de code + test verts, puis ~13 min de gates (lint, knip, docs:check,
-// test:ops) imposées au codeur par son BRIEF, que `npm run ops:publier` rejoue de toute façon UNE
-// fois sur la tête. `.claude/agents/codeur.md` le disait déjà — une consigne, pas un verrou : le
+// test:ops) imposées au codeur par son BRIEF. Le run CI de la branche les joue TOUTES, UNE fois, sur
+// la tête poussée (`.github/workflows/ci.yml`, #1776) : les payer aussi en local, par agent, c'est
+// les payer deux fois. `.claude/agents/codeur.md` le disait déjà — une consigne, pas un verrou : le
 // brief l'a écrasée. D'où ce hook, qui refuse le geste au lieu de le déconseiller.
 //
-// Le TRAIN est déclaré UNE fois dans le dépôt (`ECRIT_LU` de `scripts/gates/toutes.mjs`, dont les
-// clés sont des noms de scripts npm) et ce hook le LIT : ajouter une gate au train = une ligne dans
-// `ECRIT_LU`, zéro ligne ici (#1750 : « un geste du régime qu'une session doit encore savoir par
-// cœur est un défaut d'outillage »).
+// Les gates sont déclarées UNE fois dans le dépôt (`ECRIT_LU` de `scripts/gates/toutes.mjs`, dont
+// les clés sont des noms de scripts npm) et ce hook les LIT : ajouter une gate = une ligne dans
+// `ci.yml` et une dans `ECRIT_LU`, zéro ligne ici (#1750 : « un geste du régime qu'une session doit
+// encore savoir par cœur est un défaut d'outillage »).
 //
 // Le champ `agent_type` du payload PreToolUse nomme le type du sous-agent appelant (doc Claude Code,
 // hooks.md § Subagent Behavior) et n'existe pas depuis la session principale : l'orchestrateur n'est
@@ -27,16 +28,16 @@ import { ECRIT_LU } from '../gates/toutes.mjs'
 const TYPES_VISES = new Set(['codeur'])
 
 /**
- * Gates du train qu'un codeur joue LÉGITIMEMENT : lecture seule, coût quasi nul, et elles portent
- * sur son propre livrable (la parité des définitions d'agent se vérifie au site qui l'édite).
+ * Gates qu'un codeur joue LÉGITIMEMENT : lecture seule, coût quasi nul, et elles portent sur son
+ * propre livrable (la parité des définitions d'agent se vérifie au site qui l'édite).
  */
 const HORS_VERROU = new Set(['agents:check'])
 
 /**
- * `npm test` est la suite ENTIÈRE sous son nom npm canonique — du train même si la liste de gates
- * ne la nomme pas —, ET le seul script du train qui porte aussi une forme de PÉRIMÈTRE :
+ * `npm test` est la suite ENTIÈRE sous son nom npm canonique — une gate même si la liste ne la
+ * nomme pas —, ET le seul script de gate qui porte aussi une forme de PÉRIMÈTRE :
  * `npm test -- <chemins>` est le lanceur RESTREINT que le dépôt recommande (capture en fichier +
- * bornes de charge). Sans chemin, c'est la suite entière, donc le train.
+ * bornes de charge). Sans chemin, c'est la suite entière, donc la gate.
  */
 const SUITE_ENTIERE_NPM = new Set(['test'])
 
@@ -105,8 +106,8 @@ function nomScriptNpm(tokens) {
   return RACCOURCIS_NPM.has(sub) ? sub : null
 }
 
-/** Noms de scripts npm qui composent le train, tirés de la table `ECRIT_LU` du dépôt. */
-export const gatesDuTrain = (ecritLu = ECRIT_LU) =>
+/** Noms de scripts npm que la CI joue, tirés de la table `ECRIT_LU` du dépôt. */
+export const gatesDeLaCi = (ecritLu = ECRIT_LU) =>
   Object.keys(ecritLu).filter((nom) => !HORS_VERROU.has(nom))
 
 /**
@@ -126,20 +127,20 @@ const gesteNomme = (segment, commande) => (commande.includes(segment) ? segment 
  * @returns {string}
  */
 const raisonDuRefus = (geste) =>
-  `[codeur] « ${geste} » est une gate du TRAIN — \`ops:publier\` la joue une fois sur la tête, ` +
-  `l'orchestrateur la porte. Joue le test de TON périmètre (\`node --test <fichier>\`, ` +
+  `[codeur] « ${geste} » est une gate de la CI — le run de la branche la joue une fois sur la tête ` +
+  `poussée, et c'est lui la porte. Joue le test de TON périmètre (\`node --test <fichier>\`, ` +
   `\`npx vitest run <fichiers>\`, \`npm run typecheck:fast\`). Un brief qui te l'impose se REFUSE : ` +
   `« BRIEF REFUSÉ : gates hors périmètre ».`
 
 /**
  * Décision PURE du hook.
  * @param {{ agentType?: string|null, commande?: string, gates?: string[] }} entree
- *   `gates` = les noms de scripts npm du train (défaut : lus dans `ECRIT_LU`).
+ *   `gates` = les noms de scripts npm que la CI joue (défaut : lus dans `ECRIT_LU`).
  * @returns {{ decision: 'deny', reason: string }|null} `null` = rien à dire (exit 0, aucune sortie).
  */
-export function evaluate({ agentType = null, commande = '', gates = gatesDuTrain(), options } = {}) {
+export function evaluate({ agentType = null, commande = '', gates = gatesDeLaCi(), options } = {}) {
   if (!TYPES_VISES.has(String(agentType ?? ''))) return null
-  const duTrain = new Set(gates)
+  const deLaCi = new Set(gates)
   const brute = String(commande)
 
   // Le sous-projet `server/` est retiré AVANT la segmentation profonde : ses scripts se résoudraient
@@ -151,19 +152,18 @@ export function evaluate({ agentType = null, commande = '', gates = gatesDuTrain
 
   // Segmentation PROFONDE (socle partagé) : sous-shells, enrobeurs de tête, et RÉSOLUTION d'un
   // `npm run <x>` vers le corps lu dans `package.json` — c'est elle qui fait tomber `npm run gates`
-  // (résolu en `node scripts/gates/toutes.mjs`) et les sept enrobages mesurés.
+  // (résolu en `node scripts/gates/toutes.mjs`, le rejeu local) et les sept enrobages mesurés.
   for (const tokens of segmentsProfonds(aAnalyser, 0, options)) {
     const segment = tokens.join(' ')
     if (!segment || LECTEURS.test(segment)) continue
 
-    // 1. Un script npm du train, sous son nom ou sa variante `:brut`.
+    // 1. Un script npm que la CI joue, sous son nom.
     const script = nomScriptNpm(tokens)
     if (script) {
-      const nu = script.replace(/:brut$/, '')
-      const duTrainCeScript = SUITE_ENTIERE_NPM.has(nu) || duTrain.has(script) || duTrain.has(nu)
+      const estUneGate = SUITE_ENTIERE_NPM.has(script) || deLaCi.has(script)
       const restreintAUnPerimetre =
-        SUITE_ENTIERE_NPM.has(nu) && argumentsPositionnels(segment, /^\S+/).some(designeUnChemin)
-      if (duTrainCeScript && !restreintAUnPerimetre) {
+        SUITE_ENTIERE_NPM.has(script) && argumentsPositionnels(segment, /^\S+/).some(designeUnChemin)
+      if (estUneGate && !restreintAUnPerimetre) {
         return { decision: 'deny', reason: raisonDuRefus(gesteNomme(segment, brute)) }
       }
     }

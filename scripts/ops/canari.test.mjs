@@ -4,7 +4,7 @@
 // Ce que ces tests empêchent, mesuré sur les 5 derniers canaris (tous rouges) : un step de mesure qui
 // COUPE le job — 17 à 22 steps skippés par run, un verdict sur 27 ; et un step qui joue sans être
 // relu par le résumé — mesure muette, donc mesure inutile.
-// Le YAML est lu par regex, comme `gatesRequises` lit `ci.yml` : le contrat porte sur des lignes.
+// Le YAML est lu par regex, comme `gatesDeCi` lit `ci.yml` : le contrat porte sur des lignes.
 // Lancé par `npm run test:ops`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
@@ -121,8 +121,8 @@ test('aucun `npm audit` brut ne fait échouer le canari : c’est `audit-stock.m
   assert.match(execute, /node scripts\/ops\/audit-stock\.mjs/)
 })
 
-test('les trois mesures d’ÉTAT sont jouées par le canari', () => {
-  for (const script of ['audit-stock.mjs', 'fermetures-non-citees.mjs', 'rule-suites.mjs']) {
+test('les deux mesures d’ÉTAT sont jouées par le canari', () => {
+  for (const script of ['audit-stock.mjs', 'fermetures-non-citees.mjs']) {
     assert.match(TEXTE, new RegExp(`node scripts/ops/${script.replace('.', '\\.')}`), `${script} absent du canari`)
   }
 })

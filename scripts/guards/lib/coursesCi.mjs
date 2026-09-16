@@ -1,13 +1,13 @@
-// COURSES CI DE `main` — l'unique lecture `gh run list` de ce dépôt (hors sondes).
+// COURSES CI — l'unique lecture `gh run list` de ce dépôt (hors sondes).
 //
-// Une COURSE est une exécution de workflow. Trois portes la lisent, chacune avec sa fenêtre : la
-// porte au push (30, puis 300 dans le cas rare où aucune course verte d'un ancêtre n'est dans les
-// 30), les faits de palier (300, tous workflows), la mesure des pushes justifiés (200). La FENÊTRE
-// est le seul réglage : `gh run list` n'a pas de fenêtre de dates, la limite EST la fenêtre.
+// Une COURSE est une exécution de workflow. Deux QUESTIONS, une seule lecture : « les courses de
+// telle BRANCHE » (les faits de palier, la sonde de publication) et « les courses de tel COMMIT »
+// (la porte au push, qui juge le sha qu'elle laisse entrer dans `main`, #1776). `commit` prime sur
+// `branche` : `gh run list --commit <sha>` ne dépend d'aucune branche.
 //
 // COÛT MESURÉ (2026-09-05, ce dépôt, médiane de trois passes) : `--limit 1` = 985 ms,
-// `--limit 30` = 1 583 ms, `--limit 300` = 10 732 ms. La lecture en deux temps du pre-push tient à
-// cet écart : passer de 30 à 300 coûte ~9 s à CHAQUE push.
+// `--limit 30` = 1 583 ms, `--limit 300` = 10 732 ms. La limite EST la fenêtre : `gh run list` n'a
+// pas de fenêtre de dates.
 //
 // La sortie est TRIÉE par `createdAt` décroissant ICI : un consommateur qui prend `courses[0]` prend
 // la plus récente sans avoir à le savoir, et deux consommateurs ne trient pas différemment.
@@ -21,7 +21,7 @@ import { readFileSync } from 'node:fs'
 import { classer, fait, indisponible } from './gitPorte.mjs'
 import { parUnitesDeCode } from './lister.mjs'
 
-/** Champs demandés à `gh` : l'union de ce que les trois consommateurs lisent, une seule fois. */
+/** Champs demandés à `gh` : l'union de ce que les consommateurs lisent, une seule fois. */
 export const CHAMPS = 'conclusion,createdAt,databaseId,headSha,status,workflowName'
 
 /** Les conclusions qui disent une course ÉCHOUÉE. `failure` n'est pas la seule : GitHub rend aussi
@@ -65,14 +65,20 @@ export function triees(courses) {
 }
 
 /**
- * Les courses CI de `main`, en union à trois issues (jamais `absent` : une liste vide EST un fait).
- * @param {{cwd?:string, env?:object, limit?:number, workflow?:string|null, spawn?:Function}} [p]
+ * Les courses CI d'une branche ou d'un commit, en union à trois issues (jamais `absent` : une liste
+ * vide EST un fait).
+ * @param {{cwd?:string, env?:object, limit?:number, workflow?:string|null, branche?:string|null,
+ *          commit?:string|null, spawn?:Function}} [p]
  * @returns {{disponible:true, valeur:object[]}|{disponible:false, raison:string}}
  */
-export function coursesCiDeMain({ cwd = process.cwd(), env = process.env, limit = 30, workflow = 'ci.yml', spawn = spawnSync } = {}) {
+export function coursesCi({
+  cwd = process.cwd(), env = process.env, limit = 30, workflow = 'ci.yml',
+  branche = 'main', commit = null, spawn = spawnSync,
+} = {}) {
   if (env.WFRP_GH_STUB) return listeDuStub(env.WFRP_GH_STUB)
   const args = [
-    'run', 'list', '--branch', 'main',
+    'run', 'list',
+    ...(commit ? ['--commit', commit] : branche ? ['--branch', branche] : []),
     ...(workflow ? ['--workflow', workflow] : []),
     '--limit', String(limit), '--json', CHAMPS,
   ]

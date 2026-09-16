@@ -1,13 +1,11 @@
-// REJEU D'UN PROCESSUS QUI N'A PAS DÉMARRÉ (#1679 L2 T1d) — module UNIQUE, jamais recopié : quatre
-// sites de spawn en dépendent (`scripts/gates/toutes.mjs` pour les gates et la photo de l'arbre,
-// `scripts/gates/justifie.mjs` pour `git rev-parse`, `scripts/docs/build-all.mjs` pour chaque
-// générateur).
+// REJEU D'UN PROCESSUS QUI N'A PAS DÉMARRÉ (#1679 L2 T1d) — module UNIQUE, jamais recopié : deux
+// sites de spawn en dépendent, `scripts/gates/toutes.mjs:50` (les gates du rejeu local et la photo
+// de l'arbre) et `scripts/docs/build-all.mjs:34` (chaque générateur de doc dérivée).
 //
 // LE CAS, MESURÉ le 2026-09-04 (première exécution des lanes, `gates --tout` sur b939ddfe7) : sous
 // quatre lanes parallèles, le loader Windows a refusé d'initialiser des processus NEUFS et rendu
 // `3221225794` = `STATUS_DLL_INIT_FAILED` (0xC0000142). Quatre victimes dans le même run :
 // `build-all.mjs` n'a pas pu démarrer `build-implemente.mjs` (docs:check ROUGE à 48,6 s),
-// `justifie.mjs` n'a pas pu démarrer `git rev-parse HEAD` (typecheck VERT mais SANS justificatif),
 // `build` a perdu son `tsc -b` (ROUGE, 43 lignes sans une erreur), et 47 tests de la suite ont
 // échoué sur `expected 3221225794`. Aucun de ces rouges ne disait quoi que ce soit du contenu poussé.
 //
@@ -15,8 +13,7 @@
 // n'exécute la moindre instruction de son `main` — il n'a rien lu, rien écrit, rien verrouillé.
 // Rejouer est donc idempotent PAR CONSTRUCTION, quel que soit l'effet de bord du programme visé.
 // La porte est NOMINATIVE (ce seul code, deux essais, avec attente) : tout autre code de sortie est
-// un VRAI verdict et remonte tel quel. `justifie.mjs` n'écrit qu'au vert, donc un rejeu n'y fabrique
-// aucun justificatif de complaisance.
+// un VRAI verdict et remonte tel quel : un rejeu ne peut donc pas transformer un rouge en vert.
 //
 // CE QUI SE MESURE : chaque rejeu imprime `MARQUE_REJEU` sur stderr. C'est le compteur de PRESSION
 // du lanceur — la mémoire système, elle, ne discrimine rien (100 % à 15 workers comme à 9).

@@ -6,62 +6,54 @@
 // "l'étape N+1 coûte une ligne" : ajouter une étape = une entrée dans la table `ETAPES` (nom,
 // `jouer(ctx)`, `dejaFaite(ctx)`), rien d'autre. »
 //
-// RÉGIME (CLAUDE.md § Commandes) : commit FINAL → gates → push. Le train le joue dans l'ordre de
-// `ci.yml`, en NEUF étapes — preflight, derives, rebase, docs, gates, push, ci, pilotage, fin :
+// RÉGIME (#1776) : commit FINAL → push de la BRANCHE → la CI juge → fast-forward de `main`. Aucune
+// gate ne se joue ici : `.github/workflows/ci.yml` les joue toutes sur la branche, et le ruleset
+// `main` (`scripts/ops/ruleset-main.mjs`) refuse côté SERVEUR tout ce qui n'est pas un fast-forward
+// d'une tête verte. NEUF étapes — preflight, derives, rebase, docs, push-branche, ci, ff-main,
+// pilotage, fin :
 // preflight (une saleté faite UNIQUEMENT de docs DÉRIVÉS ne refuse pas : l'étape `derives` la
-// commet ; les PRÉREQUIS de toutes les gates de `ci.yml` y sont mesurés AVANT de payer la série),
-// derives (les docs dérivés laissés non commités par le hook `post-rewrite` d'un rebase
+// commet), derives (les docs dérivés laissés non commités par le hook `post-rewrite` d'un rebase
 // MANUEL sont commis AVANT le rebase — mesuré le 2026-09-14 : `git rebase origin/main` refuse de
 // DÉMARRER sur un arbre sale, « cannot rebase: You have unstaged changes »), rebase sur
 // origin/main, docs dérivés régénérés — la plage sans source de doc saute la RÉGÉNÉRATION, jamais
-// le COMMIT — gates en SÉRIE, push `HEAD:main` par la porte pre-push, sonde de la course CI,
-// pilotage des tickets cités, fin.
+// le COMMIT —, push de la branche, attente bornée du verdict CI de la TÊTE, fast-forward de `main`,
+// pilotage des tickets cités, fin. Un tronc qui a bougé pendant l'attente RELANCE rebase → docs →
+// push-branche → ci (#1751), borné par le compteur `reprises`.
 //
 // INTERDITS, gravés — `commandeInterdite` les refuse AVANT tout spawn, et ce fichier ne porte aucun
 // `gh issue close` (la fermeture appartient au job `fermetures` de la CI) :
 //   · `git add -A` / `--all` / `.`      — le commit des docs stage des chemins EXPLICITES ;
 //   · `git stash`                        — rien ne se met de côté ;
-//   · `git push --force` / `-f` / `--force-with-lease`, et aucun levier de dérogation du pre-push ;
+//   · `git push --force` / `-f` sous toute forme, et `--force-with-lease` VERS `main` ;
 //   · `git reset --hard`, `git branch -D`, `git worktree remove --force` ;
 //   · `git commit` sans `--` de chemins explicites ;
 //   · `git checkout` / `git restore`     — le train ne restaure jamais un fichier.
 // Un rebase INTERROMPU trouvé sur disque à la préflight est NOMMÉ, jamais avorté d'office.
 //
 // Usage : node scripts/ops/publier.mjs [--detache] [--reprendre] [--etapes] [--ci-timeout-min <n>]
-//                                      [--verrou-timeout-min <n>]
 import { spawnSync, spawn } from 'node:child_process'
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, statSync, writeFileSync, writeSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { estAncetre, fetchOrigin, lireGit, raisonCourte, sortieOuNull, urlOrigineAcceptee } from '../guards/lib/gitPorte.mjs'
-import { ANNULEE, ROUGES, coursesCiDeMain } from '../guards/lib/coursesCi.mjs'
-import { clesDeContenu, gatesRequises, lireJustificatif, motifDeRefus } from '../guards/lib/justificatif.mjs'
+import { ANNULEE, ROUGES, coursesCi } from '../guards/lib/coursesCi.mjs'
 import { numerosCites, numerosFermes } from '../guards/lib/fermetures.mjs'
 import { refusDeSujet } from '../guards/lib/sujetDeCommit.mjs'
 import { DEPOT, commitsDeLaPlage, marqueDe } from './fermer-depuis-main.mjs'
 import { GENERATORS, SOURCES_LUES } from '../docs/build-all.mjs'
 import { MANAGED_ROOTS } from '../agents/compat-core.mjs'
 import { sourcesMesurees, touchesDocSources } from '../git-hooks/docs-rebuild.mjs'
-import { ECRIT_LU, fichierDurees, prerequisAbsents, refusDePrerequis } from '../gates/toutes.mjs'
 import { PEREMPTION_MS, purgerPerimes } from '../guards/lib/purgerPerimes.mjs'
-import { CHEMIN_VERROU, lireTenant, tenantVivant } from '../test/verrou.mjs'
 import { resoudreOutilLocal } from '../lancer-local.mjs'
 
 /** L'arbre où VIT ce script — jamais `process.cwd()` : le train publie SON worktree. */
 export const RACINE = fileURLToPath(new URL('../..', import.meta.url))
 
-/** Délai par défaut, en minutes, de la sonde de course CI. */
-export const CI_TIMEOUT_MIN = 40
+/** Délai par défaut, en minutes, de l'attente du verdict CI de la tête (#1776). */
+export const CI_TIMEOUT_MIN = 30
 
-/**
- * Délai par défaut, en minutes, de la sonde du VERROU MACHINE (`scripts/test/verrou.mjs`) : le temps
- * qu'on accorde à une suite tierce avant de refuser. Mesuré (#1736, trains réels du 2026-09-14) :
- * une série de gates dure de 689 à 1 434 s — deux séries tierces enchaînées tiennent sous 60 min.
- */
-export const VERROU_TIMEOUT_MIN = 60
-
-/** Période de la sonde CI — et de la sonde du verrou — en millisecondes. */
+/** Période de la sonde CI, en millisecondes. */
 export const PERIODE_SONDE_MS = 30_000
 
 /** Nom du workflow que la sonde reconnaît (`.github/workflows/ci.yml`, `name: CI`). */
@@ -77,12 +69,12 @@ export const marquePublication = (sha) => `<!-- publier: ${sha} -->`
  * valeur) : `separerInvocation` lit `<positionnel> [--opt val]* -- reste`, une grammaire qui n'est
  * pas la nôtre.
  * @param {string[]} argv arguments APRÈS `node publier.mjs`
- * @returns {{detache:boolean, reprendre:boolean, etapes:boolean, ciTimeoutMin:number, verrouTimeoutMin:number, inconnus:string[]}}
+ * @returns {{detache:boolean, reprendre:boolean, etapes:boolean, ciTimeoutMin:number, inconnus:string[]}}
  */
 export function optionsDe(argv) {
   const args = (argv ?? []).map(String)
-  const connus = new Set(['--detache', '--reprendre', '--etapes', '--ci-timeout-min', '--verrou-timeout-min'])
-  const valeurs = { '--ci-timeout-min': CI_TIMEOUT_MIN, '--verrou-timeout-min': VERROU_TIMEOUT_MIN }
+  const connus = new Set(['--detache', '--reprendre', '--etapes', '--ci-timeout-min'])
+  const valeurs = { '--ci-timeout-min': CI_TIMEOUT_MIN }
   const inconnus = []
   for (let i = 0; i < args.length; i += 1) {
     const a = args[i]
@@ -99,7 +91,6 @@ export function optionsDe(argv) {
     reprendre: args.includes('--reprendre'),
     etapes: args.includes('--etapes'),
     ciTimeoutMin: valeurs['--ci-timeout-min'],
-    verrouTimeoutMin: valeurs['--verrou-timeout-min'],
     inconnus,
   }
 }
@@ -208,10 +199,9 @@ function ouvrirLog(chemin, mode) {
   return openSync(chemin, 'a')
 }
 
-/** Les gates ont-elles été REJOUÉES pour la tête du journal (et non simplement justifiées d'avance) ?
- *  PURE — la trace vit sur l'ÉTAPE, jamais en drapeau top-level qui survivrait au lot suivant. */
-export const gatesRejouees = (journal) =>
-  journal?.etapes?.gates?.detail?.joue === true && journal.etapes.gates.tete === journal.tete
+/** Secondes d'ATTENTE de la CI, telles que l'étape `ci` les a mesurées — le journal sépare le temps
+ *  machine LOCALE du temps où l'on n'a fait qu'attendre GitHub (#1776). PURE. */
+export const attenteCiSecondes = (journal) => journal?.etapes?.ci?.detail?.attenteCiSecondes ?? null
 
 /**
  * Première étape NON VERTE du journal — le point de reprise. Une étape verte POUR UNE AUTRE TÊTE est
@@ -315,7 +305,7 @@ export function jouerLeTrain(ctx, etapes, journal, { sauver = () => {}, journali
 // ── Purs : verdicts et mise en forme ───────────────────────────────────────────────────
 
 /**
- * Verdict de la CI pour un sha, lu dans les courses TRIÉES (`coursesCiDeMain` trie `createdAt`
+ * Verdict de la CI pour un sha, lu dans les courses TRIÉES (`coursesCi` trie `createdAt`
  * décroissant). PUR. Une conclusion inconnue n'est PAS verte : elle rougit, et se nomme.
  * @returns {{etat:'absente'|'en-vol'|'verte'|'rouge'|'annulee', course?:object}}
  */
@@ -332,24 +322,6 @@ export function verdictDesRuns(courses, sha, { workflow = WORKFLOW } = {}) {
   // `ROUGES` nomme les trois échecs connus ; toute AUTRE conclusion (`neutral`, `skipped`, une
   // valeur neuve de GitHub) n'est pas verte non plus — elle rougit, et le journal la porte.
   return { etat: 'rouge', course, inattendue: !ROUGES.has(conclusion) }
-}
-
-/**
- * Que faire de la série de gates, vu le dernier code rendu et l'état du verrou machine ? PURE —
- * la sonde du verrou est une INSTANCE de la sonde CI (`attendre(PERIODE_SONDE_MS)` en boucle bornée).
- *  - `'rejouer'`        : (re)jouer la série — aucun run encore joué, ou le verrou n'a rien refusé ;
- *  - `'sonder'`         : le verrou est tenu par un PID VIVANT et la borne n'est pas atteinte ;
- *  - `'rouge-borne'`    : la borne de sonde est ATTEINTE — elle PRIME, même si le tenant vient de
- *    mourir au même tour : ce qu'on a vécu est une attente bornée, et le refus doit le dire ;
- *  - `'rouge-orphelin'` : refus 2 SANS tenant vivant avant la borne (le 2 ne vient que du verrou).
- * @param {{status:number|null, tenantVivant:object|null, debut:number, maintenant:number, timeoutMin:number}} p
- * @returns {'rejouer'|'sonder'|'rouge-borne'|'rouge-orphelin'}
- */
-export function verdictDeSondeDuVerrou({ status, tenantVivant, debut, maintenant, timeoutMin }) {
-  if (status !== 2) return 'rejouer'
-  if (maintenant - debut >= timeoutMin * 60_000) return 'rouge-borne'
-  if (!tenantVivant) return 'rouge-orphelin'
-  return 'sonder'
 }
 
 /** `motif` de glob SIMPLE (`*` = un segment sans `/`) appliqué à un chemin POSIX. PURE. */
@@ -426,7 +398,12 @@ export function commandeInterdite(args) {
   if (sous === 'stash') return '`git stash` : le train ne met rien de côté'
   if (sous === 'checkout' || sous === 'restore') return `\`git ${sous}\` : le train ne restaure aucun fichier`
   if (sous === 'add' && porte('-A', '--all', '.')) return '`git add` global : le commit des docs stage des chemins EXPLICITES'
-  if (sous === 'push' && porte('--force', '-f', '--force-with-lease')) return '`git push` FORCÉ : jamais, sous aucune forme'
+  // `--force-with-lease` est ACCEPTÉ sur une branche de travail, et là seulement (#1776) : le rebase
+  // réécrit l'histoire de la branche à chaque tour, et le bail n'écrase que ce qu'on vient de lire.
+  // `main` n'entre jamais autrement qu'en fast-forward — la règle `non_fast_forward` du ruleset l'exige.
+  if (sous === 'push' && porte('--force', '-f')) return '`git push --force` : jamais, sous aucune forme'
+  if (sous === 'push' && porte('--force-with-lease') && a.some((x) => /(^|:)(main|refs\/heads\/main)$/.test(String(x))))
+    return '`git push --force-with-lease` vers `main` : main n’entre qu’en fast-forward'
   if (sous === 'reset' && porte('--hard')) return '`git reset --hard` : le train ne détruit aucun travail'
   if (sous === 'branch' && porte('-D')) return '`git branch -D` : le train ne supprime aucune branche'
   if (sous === 'worktree' && a[1] === 'remove' && porte('--force', '-f')) return '`git worktree remove --force` : jamais'
@@ -520,10 +497,10 @@ export const titreDeCommit = (message, max = 120) => {
 /**
  * Corps du commentaire de pilotage d'UN ticket. PURE — la marque est TOUJOURS la dernière ligne.
  * @param {{numero:string, base:string, tete:string, commits:{sha:string,message:string}[],
- *   gates:{nom:string, secondes?:number}[], gatesJouees:boolean, ci:{etat:string, course?:object},
+ *   ci:{etat:string, course?:object, attenteCiSecondes?:number},
  *   ferme:boolean, fermeParCi?:boolean, fermeAutrement?:boolean}} p
  */
-export function corpsDePilotage({ numero, base, tete, commits, gates, gatesJouees, ci, ferme, fermeParCi = false, fermeAutrement = false }) {
+export function corpsDePilotage({ numero, base, tete, commits, ci, ferme, fermeParCi = false, fermeAutrement = false }) {
   const court = (sha) => String(sha ?? '').slice(0, 9)
   const lignes = [
     `## Publication ${court(tete)}`,
@@ -533,23 +510,16 @@ export function corpsDePilotage({ numero, base, tete, commits, gates, gatesJouee
     `### Commits (${commits.length})`,
     ...commits.map((c) => `- \`${court(c.sha)}\` ${titreDeCommit(c.message)}`),
     '',
-    '### Gates',
+    '### CI',
   ]
-  if (!gatesJouees) {
-    lignes.push('- gates déjà justifiées pour ce contenu (non rejouées).')
-  } else {
-    lignes.push(
-      `- jouées par \`npm run gates -- --serie\`, bridées à \`WFRP_TEST_COEURS=4\` : les durées ci-dessous ne sont PAS comparables à la référence série.`,
-      ...gates.map((g) => `- ${g.nom}${typeof g.secondes === 'number' ? ` — ${g.secondes.toFixed(1)} s` : ' — durée non mesurée'}`),
-    )
-  }
-  lignes.push('', '### CI')
   const course = ci?.course
   lignes.push(
     course
       ? `- ${ci.etat} — course \`${course.databaseId}\` : https://github.com/${DEPOT}/actions/runs/${course.databaseId}`
       : `- ${ci?.etat ?? 'non lue'} — aucune course rattachée à cette tête.`,
   )
+  if (typeof ci?.attenteCiSecondes === 'number')
+    lignes.push(`- attente du verdict CI : ${(ci.attenteCiSecondes / 60).toFixed(1)} min (temps d’attente, pas de machine locale).`)
   lignes.push('')
   if (fermeAutrement) lignes.push(`#${numero} était déjà FERMÉ par un autre geste que cette publication.`)
   else if (fermeParCi) lignes.push(`#${numero} a été FERMÉ par la CI (job \`fermetures\`) sur cette publication.`)
@@ -638,23 +608,10 @@ function jugerLeTronc(journal, distant, phrase) {
   if (verdict === 'inchangé') return null
   if (verdict === 'rouge-deux-fois') return { ok: false, raison: REFUS_DEUX_FOIS }
   journal.reprises = (journal.reprises ?? 0) + 1
-  return { ok: true, relancer: ['rebase', 'docs', 'gates'], dit: `${phrase} (${distant?.slice(0, 9)}) : le train reprend au rebase` }
-}
-
-/** Gates requises encore SANS justificatif pour `sha`, avec leur motif. */
-function gatesManquantes(racine, sha) {
-  const cles = clesDeContenu(sha, { cwd: racine })
-  return gatesRequises({ cwd: racine })
-    .map((gate) => ({ gate, motif: motifDeRefus(lireJustificatif({ cwd: racine, gate: gate.nom, cles }), gate) }))
-    .filter((v) => v.motif !== null)
-}
-
-/** Durées du dernier run de gates (`durees.json`), ou `{}`. */
-function lireDurees(racine) {
-  try {
-    return JSON.parse(readFileSync(fichierDurees(racine), 'utf8'))
-  } catch {
-    return {}
+  return {
+    ok: true,
+    relancer: ['rebase', 'docs', 'push-branche', 'ci'],
+    dit: `${phrase} (${distant?.slice(0, 9)}) : le train reprend au rebase`,
   }
 }
 
@@ -710,27 +667,6 @@ export function contexteDe({ racine, branche, options, journaliser, fdLog }) {
 }
 
 /**
- * PRÉREQUIS ABSENTS de TOUTES les gates requises par `ci.yml`, une ligne par manque, dans le TEXTE
- * de la gate (`refusDePrerequis`, scripts/gates/toutes.mjs:500) — aucune reformulation ici.
- * Pourquoi à la PRÉFLIGHT : un prérequis absent ne se voit sinon qu'au moment où la gate est jouée,
- * c'est-à-dire APRÈS la série — mesuré le 2026-09-14 (3ᵉ train réel,
- * node_modules/.cache/publication/chantier_1736-publier.log) : 881 s de gates, puis
- * `server:typecheck` rouge sur un `server/node_modules` absent, et le train perdu.
- * `resoudreOutilLocal(racine, 'vitest', …)` RESTE : la table `ECRIT_LU` ne déclare qu'UN prérequis
- * (`server/node_modules`, scripts/gates/toutes.mjs:373) — l'outillage de la RACINE n'y est pas.
- * @param {string} racine arbre mesuré
- * @returns {string[]} lignes de refus, vide quand tout est là
- */
-export function prerequisDesGates(racine, { gates = gatesRequises({ cwd: racine }), ecritLu = ECRIT_LU } = {}) {
-  const lignes = []
-  for (const gate of gates) {
-    const absents = prerequisAbsents(ecritLu[gate.nom], racine)
-    if (absents.length) lignes.push(...refusDePrerequis(gate.nom, absents).trimEnd().split('\n'))
-  }
-  return lignes
-}
-
-/**
  * Remet les miroirs d'agents en phase AVANT le commit des dérivés, par la porte `ctx.npm`.
  * `agents:sync` se déclenche sur un `agents:check` ROUGE, jamais sur la saleté de `CLAUDE.md` : un
  * commit de la plage qui touche `.claude/skills/**` ou `.claude/credo.md` sans resynchroniser laisse
@@ -779,19 +715,13 @@ export const ETAPES = [
       if (!vuFetch.disponible) return { ok: false, raison: `origin non consultable : ${vuFetch.raison}` }
       const outil = resoudreOutilLocal(racine, 'vitest', 'vitest')
       if (outil.refus) return { ok: false, raison: outil.refus }
-      const manquants = prerequisDesGates(racine)
-      if (manquants.length)
-        return {
-          ok: false,
-          raison: `prérequis de gate ABSENTS — les poser avant la série :\n${manquants.map((l) => `    ${l}`).join('\n')}`,
-        }
       const reste = derives.length
         ? `${derives.length} doc(s) dérivé(s) régénéré(s) non commités (post-rewrite) : l’étape derives les commet`
         : 'arbre propre'
       return {
         ok: true,
         detail: { derivesSales: derives },
-        dit: `${reste}, origin consultable, outillage local posé, prérequis de gates présents`,
+        dit: `${reste}, origin consultable, outillage local posé`,
       }
     },
   },
@@ -902,58 +832,66 @@ export const ETAPES = [
     },
   },
   {
-    nom: 'gates',
-    dejaFaite(ctx) {
-      return gatesManquantes(ctx.racine, 'HEAD').length === 0
+    // PUSH DE LA BRANCHE : c'est lui qui DÉCLENCHE la CI, et la CI est la porte (#1776). Le rebase a
+    // réécrit l'histoire de la branche, donc `--force-with-lease` : il n'écrase que ce qu'on a lu.
+    nom: 'push-branche',
+    dejaFaite(ctx, journal) {
+      if (!journal.tete) return false
+      return lu(['rev-parse', `origin/${ctx.branche}`], ctx.racine) === journal.tete
     },
-    jouer(ctx) {
-      const { racine } = ctx
-      const timeoutMin = ctx.options?.verrouTimeoutMin ?? VERROU_TIMEOUT_MIN
-      const debut = Date.now()
-      let vu = { status: null }
-      // SONDE DU VERROU : le code 2 ne vient que du verrou machine (`avecVerrouMachine`, aucun autre
-      // `return 2` dans `scripts/gates/toutes.mjs`). Une suite tierce s'attend — elle ne se subit pas.
-      for (let sonde = 1; ; sonde += 1) {
-        const vivant = vu.status === 2 ? tenantVivant({ chemin: CHEMIN_VERROU }) : null
-        const verdict = verdictDeSondeDuVerrou({ status: vu.status, tenantVivant: vivant, debut, maintenant: Date.now(), timeoutMin })
-        if (verdict === 'rouge-orphelin') {
-          const mort = lireTenant(undefined, CHEMIN_VERROU)
-          return {
-            ok: false,
-            raison: `gates refusées (code 2) mais AUCUN tenant vivant dans ${CHEMIN_VERROU}${mort ? ` (PID ${mort.pid} mort)` : ' (verrou absent ou illisible)'} — relancer`,
-          }
-        }
-        if (verdict === 'rouge-borne')
-          return {
-            ok: false,
-            raison: `verrou machine TENU par un autre processus (code 2) — une autre suite tourne, attendre puis \`--reprendre\` : sondé ${timeoutMin} min${vivant ? ` (PID ${vivant.pid}, ${vivant.cwd || 'arbre inconnu'})` : ' (le tenant a disparu au dernier tour)'}`,
-          }
-        if (verdict === 'sonder') {
-          const restant = Math.max(0, Math.round((timeoutMin * 60_000 - (Date.now() - debut)) / 60_000))
-          ctx.journaliser(
-            `[publier] gates — verrou tenu par PID ${vivant.pid} (${vivant.cwd || 'arbre inconnu'}) depuis ${vivant.date ?? 'date inconnue'} : sonde ${sonde}, ${restant} min avant refus\n`,
-          )
-          attendre(PERIODE_SONDE_MS)
-        }
-        vu = spawnSync(process.execPath, [join(racine, 'scripts/gates/toutes.mjs'), '--serie'], {
-          cwd: racine,
-          env: { ...process.env, WFRP_TEST_COEURS: process.env.WFRP_TEST_COEURS ?? '4' },
-          stdio: ['ignore', ctx.fdLog, ctx.fdLog],
-        })
-        if (vu.status !== 2) break
-      }
-      if (vu.status !== 0) {
-        const manquantes = gatesManquantes(racine, 'HEAD')
-        return {
-          ok: false,
-          raison: `gates rouges (code ${vu.status})${manquantes.length ? ` — sans justificatif pour HEAD :\n${manquantes.map((m) => `    ${m.motif}`).join('\n')}` : ' — toutes les gates sont pourtant justifiées : lire le log'}`,
-        }
-      }
-      return { ok: true, detail: { joue: true, coeurs: process.env.WFRP_TEST_COEURS ?? '4' }, dit: 'toutes les gates requises sont justifiées pour HEAD' }
+    jouer(ctx, journal) {
+      const vu = ctx.git(['push', '--force-with-lease', 'origin', `HEAD:refs/heads/${ctx.branche}`])
+      if (!vu.disponible || vu.absent || vu.valeur.status !== 0)
+        return { ok: false, raison: `push de la branche REFUSÉ :\n${refusDeGit(vu)}` }
+      return { ok: true, dit: `${journal.tete.slice(0, 9)} poussé sur ${ctx.branche} — la CI de la branche juge` }
     },
   },
   {
-    nom: 'push',
+    // ATTENTE DU VERDICT CI sur la TÊTE, lue par son COMMIT : c'est ce sha-là que le ruleset exigera
+    // vert au fast-forward. Le temps passé ici est du temps d'ATTENTE, pas du temps machine local —
+    // le journal les sépare (`attenteCiSecondes`).
+    nom: 'ci',
+    dejaFaite(ctx, journal) {
+      const vue = journal.etapes.ci
+      return vue?.etat === 'vert' && vue.tete === ctx.tete && vue.detail?.etat === 'verte'
+    },
+    jouer(ctx, journal) {
+      const debut = Date.now()
+      const fin = debut + ctx.options.ciTimeoutMin * 60_000
+      const attendu = (v) => ({ ...v, detail: { ...(v.detail ?? {}), attenteCiSecondes: (Date.now() - debut) / 1000 } })
+      let dernier = { etat: 'absente' }
+      while (Date.now() < fin) {
+        const vu = coursesCi({ cwd: ctx.racine, commit: journal.tete, limit: 30 })
+        if (!vu.disponible) ctx.journaliser(`[publier] ci — courses non lues : ${vu.raison}\n`)
+        else {
+          dernier = verdictDesRuns(vu.valeur, journal.tete)
+          const id = dernier.course?.databaseId
+          const url = id ? `https://github.com/${DEPOT}/actions/runs/${id}` : null
+          ctx.journaliser(`[publier] ci — ${dernier.etat}${url ? ` — ${url}` : ''}\n`)
+          if (dernier.etat === 'verte') return attendu({ ok: true, detail: dernier, dit: `course ${id} verte` })
+          if (dernier.etat === 'rouge' || dernier.etat === 'annulee')
+            return attendu({
+              ok: false,
+              detail: dernier,
+              raison:
+                `course CI ${dernier.etat}${id ? ` (${id})` : ''} sur ${journal.tete.slice(0, 9)} — RIEN n'est entré `
+                + `dans main. Lire le job/step rouge : ${url ?? `gh run list --commit ${journal.tete.slice(0, 12)}`}`,
+            })
+        }
+        attendre(PERIODE_SONDE_MS)
+      }
+      return attendu({
+        indetermine: true,
+        detail: dernier,
+        raison: `aucun verdict de la CI en ${ctx.options.ciTimeoutMin} min sur ${journal.tete.slice(0, 9)} — rien n'est entré dans main`,
+      })
+    },
+  },
+  {
+    // FAST-FORWARD de `main` sur une tête dont la CI est VERTE. Le ruleset `main` refuse tout le
+    // reste côté serveur ; ici on ne fait que le geste, et on RELANCE quand le tronc a bougé pendant
+    // l'attente CI (patron #1751) — la tête rebasée devra repasser par sa propre course.
+    nom: 'ff-main',
     dejaFaite(ctx, journal) {
       if (!journal.tete) return false
       const vu = estAncetre(journal.tete, 'origin/main', { cwd: ctx.racine })
@@ -961,10 +899,9 @@ export const ETAPES = [
     },
     jouer(ctx, journal) {
       const avant = ctx.tronc()
-      if (!avant.disponible) return { ok: false, raison: `origin non consultable avant le push : ${avant.raison}` }
-      const vuAvant = jugerLeTronc(journal, avant.sha, 'origin/main a bougé')
+      if (!avant.disponible) return { ok: false, raison: `origin non consultable avant le fast-forward : ${avant.raison}` }
+      const vuAvant = jugerLeTronc(journal, avant.sha, 'origin/main a bougé pendant l’attente CI')
       if (vuAvant) return vuAvant
-      ctx.journaliser('[publier] push — porte pre-push en cours (rejeu des migrations sur export ~17 s + lecture CI)\n')
       const vu = ctx.git(['push', 'origin', 'HEAD:main'])
       if (!vu.disponible || vu.absent || vu.valeur.status !== 0) {
         // Le tronc se REMESURE après un refus : origin/main peut recevoir des commits entre la
@@ -973,34 +910,9 @@ export const ETAPES = [
         const apres = ctx.tronc()
         const vuApres = apres.disponible ? jugerLeTronc(journal, apres.sha, 'origin/main a bougé pendant le push') : null
         if (vuApres) return vuApres
-        return { ok: false, raison: `push REFUSÉ :\n${refusDeGit(vu)}` }
+        return { ok: false, raison: `fast-forward de main REFUSÉ :\n${refusDeGit(vu)}` }
       }
-      return { ok: true, dit: `${journal.tete.slice(0, 9)} poussé sur main` }
-    },
-  },
-  {
-    nom: 'ci',
-    dejaFaite(ctx, journal) {
-      const vue = journal.etapes.ci
-      return vue?.etat === 'vert' && vue.tete === ctx.tete && vue.detail?.etat === 'verte'
-    },
-    jouer(ctx, journal) {
-      const fin = Date.now() + ctx.options.ciTimeoutMin * 60_000
-      let dernier = { etat: 'absente' }
-      while (Date.now() < fin) {
-        const vu = coursesCiDeMain({ cwd: ctx.racine, limit: 30 })
-        if (!vu.disponible) ctx.journaliser(`[publier] ci — courses non lues : ${vu.raison}\n`)
-        else {
-          dernier = verdictDesRuns(vu.valeur, journal.tete)
-          const id = dernier.course?.databaseId
-          ctx.journaliser(`[publier] ci — ${dernier.etat}${id ? ` (course ${id})` : ''}\n`)
-          if (dernier.etat === 'verte') return { ok: true, detail: dernier, dit: `course ${id} verte` }
-          if (dernier.etat === 'rouge' || dernier.etat === 'annulee')
-            return { ok: false, detail: dernier, raison: `course CI ${dernier.etat}${id ? ` (${id})` : ''} — le push est FAIT : corriger sur main` }
-        }
-        attendre(PERIODE_SONDE_MS)
-      }
-      return { indetermine: true, detail: dernier, raison: `aucun verdict de la CI en ${ctx.options.ciTimeoutMin} min — le push est FAIT` }
+      return { ok: true, dit: `${journal.tete.slice(0, 9)} entré dans main en fast-forward` }
     },
   },
   {
@@ -1016,8 +928,6 @@ export const ETAPES = [
       const commits = commitsDeLaPlage(`${journal.base}..${journal.tete}`, racine)
       const numeros = [...new Set(commits.flatMap((c) => numerosCites(c.message)))]
       const fermes = new Set(commits.flatMap((c) => numerosFermes(c.message)))
-      const durees = lireDurees(racine)
-      const gates = gatesRequises({ cwd: racine }).map((g) => ({ nom: g.nom, secondes: durees[g.nom] }))
       const ci = journal.etapes.ci?.detail ?? { etat: 'non lue' }
       const rates = []
       const poses = []
@@ -1045,8 +955,6 @@ export const ETAPES = [
           base: journal.base,
           tete: journal.tete,
           commits,
-          gates,
-          gatesJouees: gatesRejouees(journal),
           ci,
           ferme: fermes.has(numero),
           fermeParCi,
@@ -1097,7 +1005,7 @@ export function cheminsSales(racine) {
 function main() {
   const options = optionsDe(process.argv.slice(2))
   if (options.inconnus.length) {
-    process.stderr.write(`[publier] option inconnue : ${options.inconnus.join(' ')}\n  usage : node scripts/ops/publier.mjs [--detache] [--reprendre] [--etapes] [--ci-timeout-min <n>] [--verrou-timeout-min <n>]\n`)
+    process.stderr.write(`[publier] option inconnue : ${options.inconnus.join(' ')}\n  usage : node scripts/ops/publier.mjs [--detache] [--reprendre] [--etapes] [--ci-timeout-min <n>]\n`)
     process.exit(1)
   }
   const toplevel = lu(['rev-parse', '--show-toplevel'], RACINE)

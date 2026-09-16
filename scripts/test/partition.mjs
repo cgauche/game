@@ -239,3 +239,21 @@ export function bilanDiagnostic(
     '',
   ].join('\n')
 }
+
+/** Drapeaux de Vitest qui RESTREIGNENT ce qui est joué : sous l'un d'eux, un vert ne dit rien de la
+ *  suite entière. `--bail` n'en est pas : il ARRÊTE au premier rouge, donc un run VERT sous `--bail`
+ *  a tout joué. */
+export const DRAPEAUX_RESTRICTIFS = [
+  '--changed',
+  '-t',
+  '--testNamePattern',
+  '--shard',
+  '--project',
+  '--dir',
+  '--related',
+  '--exclude',
+]
+
+/** Une suite est COMPLÈTE quand aucun fichier ne la filtre et qu'aucun drapeau ne la restreint. */
+export const suiteComplete = (filtres, argv) =>
+  filtres.length === 0 && !argv.some((a) => DRAPEAUX_RESTRICTIFS.includes(a.split('=')[0]))

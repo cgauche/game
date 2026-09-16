@@ -33,8 +33,9 @@ chantier du ticket `<N>` depuis n'importe quel worktree du dépôt (le chantier 
 l'arbre principal) : il pose le worktree lié `.wt-<N>` sur `origin/main`, crée la branche
 `chantier/<N>`, y joue `npm ci` et imprime le port dev dérivé. `npm run ops:publier -- --detache`
 (`node scripts/ops/publier.mjs`) joue ensuite le train de publication ENTIER depuis ce worktree, détaché
-du harnais, et imprime son `pid` et son `log`. Une série tierce qui tient le verrou machine s'attend
-(sonde toutes les 30 s, bornée à 60 min, `--verrou-timeout-min`) ; un run neuf rotationne le log
+du harnais, et imprime son `pid` et son `log`. Le train rebase sur `origin/main`, régénère les docs
+dérivées, POUSSE la branche de chantier, attend le run CI de cette branche (borné par
+`--ci-timeout-min`) et, sur vert, fait entrer `main` en FAST-FORWARD ; un run neuf rotationne le log
 précédent en `<branche>.<AAAAMMJJ-HHMMSS>.log` (péremption 7 jours) — ce n'est pas une archive, le
 `npm ci` d'`ops:chantier` efface `node_modules/.cache/`.
 
@@ -103,7 +104,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 
 - `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
 - `src/data/` — données app-owned (122 fichiers JSON commités, éditables au Compendium).
-- Les gardes de données : `scripts/guards/validate-data.mts` + 113 modules
+- Les gardes de données : `scripts/guards/validate-data.mts` + 109 modules
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
   `scripts/guards/lib/labelLogic.mjs`).
@@ -128,7 +129,6 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 | Staging Marker (`Source/_marker/`) | intermédiaire de pipeline ; seuls les chapitres curés `Source/<Livre>/NN - *.md` sont committés | régénéré par le pipeline `scripts/raw/marker-*` |
 | Images extraites des PDF (`/art-ref/`) | droits Cubicle 7, ce sont des sorties ; le pipeline lui-même reste tracké sous `scripts/art-ref/` | régénérables via `scripts/art-ref/extract.py`, `scripts/art-ref/ldb_extract.py`, `scripts/art-ref/ldb_map.py`, `scripts/art-ref/probe.py` + les PDFs locaux |
 | Sorties de QC (`public/qc/*`) | planches de revue régénérables — pas du source | régénérables par les scripts `scripts/qc/` ; deux exceptions restent VERSIONNÉES : `!public/qc/baseline-affine/` (baseline affine, #1176 C3) et `!public/qc/soldes/` (les captures que cite le champ `capture:` d'un solde — la porte `verifierCapture` de `scripts/hooks/solde-ticket-guard.mjs` refuse une capture ignorée par git) |
-| Journaux de chantier des sessions agent (`.superpowers/`) | traces locales de session (état tâche par tâche, briefs/rapports, diffs de revue) — pas du source | non régénérable : reprendre un chantier mené par une session morte se lit dans `.superpowers/sdd/progress.md` puis les `task-<N>-brief.md`/`-report.md` des tâches en cours, AVANT tout plan de `docs/plans/` — et le code seul fait foi |
 | Réglages Claude Code personnels (`.claude/*`) | environnement local | exceptions VERSIONNÉES : `.claude/settings.json`, `.claude/credo.md`, `.claude/skills/`, `.claude/agents/`, `.claude/workflows/`, `.claude/memory/`, `.claude/soldes/` |
 
 Ne sont pas non plus dans le clone, parce que ce ne sont pas des fichiers :
@@ -191,21 +191,30 @@ refaire `npm install`.
 | `.github/workflows/deps-report.yml` | Rapport de dépendances | schedule, workflow_dispatch (cron `0 6 1 * *`) |
 | `.github/workflows/export-issues.yml` | Export des issues | schedule, workflow_dispatch (cron `0 6 * * 2`) |
 
-Vérifier qu'elles tournent : onglet Actions du dépôt, ou `gh run list --workflow=canari.yml`. La
-porte à chaque push est `.github/workflows/ci.yml` (« CI », push, pull_request).
+Vérifier qu'elles tournent : onglet Actions du dépôt, ou `gh run list --workflow=canari.yml`. LA
+PORTE est `.github/workflows/ci.yml` (« CI », push, pull_request) : elle joue
+TOUTES les gates sur CHAQUE branche `chantier/**`, et c'est son verdict — jamais un artefact local —
+qui autorise une tête à entrer dans `main`.
 
-La publication locale suit le même ordre que `ci.yml` : `npm run ops:publier` joue rebase, docs
-dérivés, gates, push, sonde CI et pilotage, et refuse à la première étape rouge en la nommant.
+`npm run ops:publier` joue le train : rebase, docs dérivés, push de la BRANCHE, attente du run CI de
+cette branche, fast-forward de `main`, pilotage. Il refuse à la première étape rouge en la nommant,
+et son journal sépare le temps machine LOCAL du temps d'ATTENTE de GitHub.
 
 ## 6. Gates et livraison
 
-**Régime** (porté par `scripts/git-hooks/pre-push.mjs`, arbitrage utilisateur 2026-09-01) :
-« suite complète + tsc avant push, pas de push sur CI rouge ». L'ordre est donc **commit FINAL → `npm run gates` → `git push`** : le hook
-`pre-push` LIT des justificatifs, il ne joue rien, et refuse toute gate de `ci.yml` sans
-justificatif vert et propre pour le CONTENU poussé. Un push de PLUSIEURS commits est jugé par sa
-**TÊTE** — c'est la seule unité que la CI joue.
+**Régime** (arbitrage utilisateur 2026-09-16 : « Oui, ruleset actif ») : une branche `chantier/**` se
+pousse **LIBREMENT**, aussi souvent qu'on veut — c'est le push qui déclenche la CI, et la CI joue les
+mêmes gates que sur `main`. `main` ne reçoit qu'un **fast-forward** d'une tête dont le run CI est
+VERT, et c'est le SERVEUR qui le tient : le ruleset `main` (`node scripts/ops/ruleset-main.mjs`, mode
+`active`) exige les checks requis, refuse le non-fast-forward et la suppression. Un push de
+PLUSIEURS commits est jugé par sa **TÊTE** — c'est la seule unité que la CI joue.
 
-**Plan de `npm run gates`** (`node scripts/gates/toutes.mjs`) : 24 gates classées, d'abord
+Le hook `scripts/git-hooks/pre-push.mjs` est le MIROIR LISIBLE de ce ruleset, jamais la porte : il
+nomme 4 refus, et celui qui exige un run vert ne vaut que pour la ref `main`.
+Ajouter une gate, c'est ajouter UN step à `ci.yml` — rien d'autre ne la récite.
+
+**Rejeu LOCAL `npm run gates`** (`node scripts/gates/toutes.mjs`), un confort de diagnostic, jamais une porte :
+24 gates classées, d'abord
 une phase SÉRIE `AVANT_LES_LANES` (`raw:coverage`, `raw:reconcile`, `raw:reanchor`) — les gates qui ÉCRIVENT dans
 l'arbre, jouées seules pour qu'aucun lecteur ne tombe sur un fichier à moitié écrit — puis
 3 lanes parallèles de LECTEURS :
@@ -220,11 +229,11 @@ Les deux tables vivent dans `scripts/gates/toutes.mjs` : `LANES` pour la répart
 `ECRIT_LU` pour ce que CHAQUE gate écrit et lit (24 gates mesurées, dont
 9 écrivain(s) — écriture de chaque run ou écriture POSSIBLE à porte nommée) ; c'est elle
 qui rend le classement vérifiable plutôt que déclaratif. La suite est BORNÉE par `WFRP_TEST_COEURS`
-pendant que les autres lanes tournent. Options : `--liste`, `--serie`, `--tout`. Une gate de `ci.yml`
+pendant que les autres lanes tournent. Options : `--gates`, `--liste`, `--serie`. Une gate de `ci.yml`
 sans place dans ce plan fait REFUSER le run, avec son nom.
 
 **`package-lock.json`** : le régénérer TOUJOURS avec npm@10.9.3, recette exacte de
 `scripts/guards/lib/npmLockHoisted.mjs` — npx --yes npm@10.9.3 install --package-lock-only, puis valider avec npx npm@10.9.3 ci --dry-run. npm 11 ampute les entrées hoistées
 `@emnapi/*` que `npm ci` exige en CI ; la garde (pre-commit +
 `src/npm-lock-hoisted-guard.test.ts`) refuse un lock amputé.
-<!-- sources-empreinte: 31c058017977165a259b293087a6068549eaca6f (23 fichiers, 9 dossiers) corps: 7ed5e5905e4394a74a3a012d6037ce240361a573 -->
+<!-- sources-empreinte: 61e6b38f91e076048bee2d908b188c70887c73de (23 fichiers, 9 dossiers) corps: 7e104d4f5e976d00ba3c382f18d1da67d3ba189d -->

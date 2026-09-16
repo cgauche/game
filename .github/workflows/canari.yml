@@ -151,7 +151,7 @@ jobs:
         if: ${{ !cancelled() && steps.server-install.outcome == 'success' }}
         run: npm run server:typecheck
 
-      # Les trois mesures d'ÉTAT (le dépôt npm, les fermetures GitHub, le ruleset en évaluation)
+      # Les deux mesures d'ÉTAT (le dépôt npm, les fermetures GitHub)
       # écrivent leur rapport dans `$RUNNER_TEMP/canari` : le résumé les recolle dans le commentaire.
       # `set -o pipefail` est le défaut du shell bash des runners — le `tee` ne masque aucun exit.
       - name: Stock d'audit (racine + server)
@@ -170,15 +170,6 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/canari"
           node scripts/ops/fermetures-non-citees.mjs 2>&1 | tee "$RUNNER_TEMP/canari/fermetures.md"
-      - name: Ruleset en évaluation — pushes qui auraient été refusés
-        id: rule-suites
-        continue-on-error: true
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mkdir -p "$RUNNER_TEMP/canari"
-          node scripts/ops/rule-suites.mjs 2>&1 | tee "$RUNNER_TEMP/canari/rule-suites.txt"
 
       # VERDICT AGRÉGÉ : la seule place où `continue-on-error` se paie — le rapport est posté et le
       # job rougit si une mesure est rouge. `RESULTATS` nomme CHAQUE step de mesure : un step sans
@@ -215,7 +206,6 @@ jobs:
             server-typecheck=${{ steps.server-typecheck.outcome }}
             audit-stock=${{ steps.audit-stock.outcome }}
             fermetures=${{ steps.fermetures.outcome }}
-            rule-suites=${{ steps.rule-suites.outcome }}
         run: |
           ROUGES="$(printf '%s\n' "$RESULTATS" | grep -E '=(failure|cancelled)$' || true)"
           SKIPPES="$(printf '%s\n' "$RESULTATS" | grep -E '=skipped$' || true)"

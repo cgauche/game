@@ -34,11 +34,12 @@ import { fileURLToPath } from 'node:url'
 import { cliquetsDuMessage } from './lib/stocksNominatifs.mjs'
 
 /**
- * Plafond du contexte permanent, en OCTETS. MESURE du 2026-09-16 sur l'index de `chantier/1771` après la fiche
- * `env-playwright-mcp-verrou-machine-kit-cdp` (+152). Il ne se relève qu'en le DISANT au message de commit
- * (`CLIQUET: scripts/guards/budget-contexte.mjs +N — <motif>`), et il s'abaisse à chaque allègement.
+ * Plafond du contexte permanent, en OCTETS. MESURE du 2026-09-16 sur `chantier/1776` rebasé sur #1771 : le
+ * § Commandes de `CLAUDE.md` dit le régime de push en 56 octets de moins. Il ne se relève qu'en le DISANT au
+ * message de commit (`CLIQUET: scripts/guards/budget-contexte.mjs +N — <motif>`), et il s'abaisse à chaque
+ * allègement.
  */
-export const PLAFOND_OCTETS = 26511
+export const PLAFOND_OCTETS = 26455
 
 /** Le fichier qui PORTE le plafond : c'est lui que le `CLIQUET:` d'un message de commit nomme. */
 export const PORTEUR_DU_PLAFOND = 'scripts/guards/budget-contexte.mjs'

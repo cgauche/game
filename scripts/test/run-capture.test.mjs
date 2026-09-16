@@ -15,9 +15,9 @@ const RACINE = fileURLToPath(new URL('../..', import.meta.url)).replace(/[\\/]$/
 
 /** Modules à copier dans le faux dépôt : la CLÔTURE d'imports RELATIFS de `run.mjs`, CALCULÉE
  *  (`clotureDImports`, `scripts/guards/lib/importGraph.mjs`) — jamais une liste tenue à la main. Une
- *  liste à tenir ne dit rien quand elle périme : au premier module partagé neuf (`lister.mjs` sous le
- *  lib de justificatif, #1679 L3b) l'enfant mourait en `ERR_MODULE_NOT_FOUND` AVANT d'écrire sa
- *  capture, et les sept cas rougissaient sur un `scandir ENOENT` qui ne nommait pas la cause. */
+ *  liste à tenir ne dit rien quand elle périme : au premier module partagé neuf (#1679 L3b) l'enfant
+ *  mourait en `ERR_MODULE_NOT_FOUND` AVANT d'écrire sa capture, et les sept cas rougissaient sur un
+ *  `scandir ENOENT` qui ne nommait pas la cause. */
 function modulesDuLanceur() {
   const precedent = process.cwd()
   process.chdir(RACINE)
@@ -32,10 +32,9 @@ function modulesDuLanceur() {
  *  qui refuserait la vraie suite d'à côté. L'opt-out lui-même est mesuré par `run-isolation.test.mjs`. */
 const SANS_VERROU = { WFRP_SUITE_LOCK: '0' }
 
-/** Faux dépôt : le lanceur et TOUT ce qu'il importe, plus un Vitest de substitution.
- *  Le lanceur pose le justificatif de la gate `test` (#1679 L2) : sa lib fait partie de lui. Le faux
- *  dépôt n'est pas un dépôt git — l'écriture y échoue et le lanceur le DIT, sans changer son verdict
- *  ni sa capture (c'est le contrat de `scripts/gates/justifie.mjs`). */
+/** Faux dépôt : le lanceur et TOUT ce qu'il importe (sa lib en fait partie), plus un Vitest de
+ *  substitution. Ce que ces cas mesurent : la CAPTURE du lanceur — il rend le code de Vitest tel
+ *  quel et écrit la sortie complète, même hors d'un dépôt git. */
 function fauxDepot(sourceDuFauxVitest) {
   const base = mkdtempSync(join(tmpdir(), 'vitest-run-'))
   const modules = modulesDuLanceur()

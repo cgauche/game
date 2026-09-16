@@ -1,6 +1,6 @@
-// Contrat de la grammaire d'invocation partagée : les cas des DEUX consommateurs (`justifie.mjs`
-// avec `--capture`, `lancer-local.mjs` sans option puis avec `--cwd`) sont joués ici, sur la même
-// fonction — une forme refusée par l'un l'est par l'autre.
+// Contrat de la grammaire d'invocation partagée : les cas de son consommateur (`lancer-local.mjs`,
+// sans option puis avec `--cwd`) et les formes REFUSÉES sont joués ici, sur la même fonction — la
+// grammaire est une, quel que soit le lanceur qui s'y branchera.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { separerInvocation } from './invocation.mjs'

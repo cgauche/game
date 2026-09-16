@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { CHAMPS, coursesCiDeMain, reinitialiserStub, triees } from './coursesCi.mjs'
+import { CHAMPS, coursesCi, reinitialiserStub, triees } from './coursesCi.mjs'
 
 const dossier = () => mkdtempSync(join(tmpdir(), 'courses-ci-'))
 const jeter = (d) => rmSync(d, { recursive: true, force: true })
@@ -18,7 +18,7 @@ function stub(d, contenu) {
 
 test('la commande porte la branche, le workflow, la limite et TOUS les champs des consommateurs', () => {
   let vus = null
-  coursesCiDeMain({
+  coursesCi({
     env: {},
     limit: 300,
     spawn: (cmd, args) => { vus = { cmd, args }; return { status: 0, stdout: '[]', stderr: '' } },
@@ -31,12 +31,12 @@ test('la commande porte la branche, le workflow, la limite et TOUS les champs de
 
 test('`workflow: null` lit TOUS les workflows (les faits de palier en dépendent)', () => {
   let vus = null
-  coursesCiDeMain({ env: {}, workflow: null, spawn: (cmd, args) => { vus = args; return { status: 0, stdout: '[]', stderr: '' } } })
+  coursesCi({ env: {}, workflow: null, spawn: (cmd, args) => { vus = args; return { status: 0, stdout: '[]', stderr: '' } } })
   assert.ok(!vus.includes('--workflow'))
 })
 
 test('la sortie est TRIÉE par createdAt décroissant — `courses[0]` est la plus récente', () => {
-  const lu = coursesCiDeMain({
+  const lu = coursesCi({
     env: {},
     spawn: () => ({
       status: 0,
@@ -52,15 +52,15 @@ test('la sortie est TRIÉE par createdAt décroissant — `courses[0]` est la pl
 })
 
 test('gh muet, en échec ou illisible : INDISPONIBLE nommé, jamais une liste vide', () => {
-  const muet = coursesCiDeMain({ env: {}, spawn: () => ({ error: new Error('spawnSync gh ENOENT'), status: null }) })
+  const muet = coursesCi({ env: {}, spawn: () => ({ error: new Error('spawnSync gh ENOENT'), status: null }) })
   assert.equal(muet.disponible, false)
   assert.match(muet.raison, /ENOENT/)
 
-  const echec = coursesCiDeMain({ env: {}, spawn: () => ({ status: 4, stdout: '', stderr: 'gh: jeton expiré' }) })
+  const echec = coursesCi({ env: {}, spawn: () => ({ status: 4, stdout: '', stderr: 'gh: jeton expiré' }) })
   assert.equal(echec.disponible, false)
   assert.match(echec.raison, /jeton expiré/)
 
-  const illisible = coursesCiDeMain({ env: {}, spawn: () => ({ status: 0, stdout: '{ tronqué', stderr: '' }) })
+  const illisible = coursesCi({ env: {}, spawn: () => ({ status: 0, stdout: '{ tronqué', stderr: '' }) })
   assert.equal(illisible.disponible, false)
 })
 
@@ -68,8 +68,8 @@ test('stub : un TABLEAU sert la même liste à chaque appel', () => {
   const d = dossier()
   try {
     const env = { WFRP_GH_STUB: stub(d, [{ headSha: 'a', createdAt: '2026-09-05T10:00:00Z' }]) }
-    assert.deepEqual(coursesCiDeMain({ env }).valeur.map((c) => c.headSha), ['a'])
-    assert.deepEqual(coursesCiDeMain({ env }).valeur.map((c) => c.headSha), ['a'])
+    assert.deepEqual(coursesCi({ env }).valeur.map((c) => c.headSha), ['a'])
+    assert.deepEqual(coursesCi({ env }).valeur.map((c) => c.headSha), ['a'])
   } finally { jeter(d) }
 })
 
@@ -77,16 +77,36 @@ test('stub : `appels` sert UNE LISTE PAR APPEL, la dernière se répète (liste 
   const d = dossier()
   try {
     const env = { WFRP_GH_STUB: stub(d, { appels: [[{ headSha: 'perimee' }], [{ headSha: 'fraiche' }]] }) }
-    assert.deepEqual(coursesCiDeMain({ env }).valeur.map((c) => c.headSha), ['perimee'])
-    assert.deepEqual(coursesCiDeMain({ env }).valeur.map((c) => c.headSha), ['fraiche'])
-    assert.deepEqual(coursesCiDeMain({ env }).valeur.map((c) => c.headSha), ['fraiche'])
+    assert.deepEqual(coursesCi({ env }).valeur.map((c) => c.headSha), ['perimee'])
+    assert.deepEqual(coursesCi({ env }).valeur.map((c) => c.headSha), ['fraiche'])
+    assert.deepEqual(coursesCi({ env }).valeur.map((c) => c.headSha), ['fraiche'])
   } finally { jeter(d) }
 })
 
 test('stub illisible : INDISPONIBLE (le cas hors-ligne des fixtures)', () => {
   const d = dossier()
   try {
-    const lu = coursesCiDeMain({ env: { WFRP_GH_STUB: join(d, 'jamais-ecrit.json') } })
+    const lu = coursesCi({ env: { WFRP_GH_STUB: join(d, 'jamais-ecrit.json') } })
     assert.equal(lu.disponible, false)
   } finally { jeter(d) }
+})
+
+// ── `--commit` : la question que pose la porte au push (#1776) ─────────────────────────────────
+
+test('`commit` interroge le SHA, jamais une branche — c’est ce sha-là qui entre dans main', () => {
+  let vus = null
+  coursesCi({
+    env: {},
+    commit: 'a'.repeat(40),
+    spawn: (cmd, args) => { vus = args; return { status: 0, stdout: '[]', stderr: '' } },
+  })
+  assert.deepEqual(vus, ['run', 'list', '--commit', 'a'.repeat(40), '--workflow', 'ci.yml', '--limit', '30', '--json', CHAMPS])
+  assert.ok(!vus.includes('--branch'), 'un run de branche `chantier/**` juge le MÊME sha : la branche ne discrimine rien')
+})
+
+test('`branche: null` sans `commit` n’impose aucun filtre de ref', () => {
+  let vus = null
+  coursesCi({ env: {}, branche: null, spawn: (cmd, args) => { vus = args; return { status: 0, stdout: '[]', stderr: '' } } })
+  assert.ok(!vus.includes('--branch'))
+  assert.ok(!vus.includes('--commit'))
 })

@@ -14,7 +14,7 @@
 // de la table, qui restent une MESURE, pas une déduction.
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
-import { gatesRequises, commandeEffective } from '../guards/lib/justificatif.mjs'
+import { gatesDeCi } from './gatesDeCi.mjs'
 import { GATES, listerTests, testsDe } from './testsParGate.mjs'
 
 /** Appels qui ÉCRIVENT sur le disque. Le `\b` évite `outputFile` dans une liste de drapeaux. */
@@ -85,8 +85,8 @@ export function porteUneEcriture(chemin, racine) {
 export function ecrivainsParGate(racine = process.cwd()) {
   const scripts = JSON.parse(readFileSync(join(racine, 'package.json'), 'utf8')).scripts ?? {}
   const par = {}
-  for (const gate of gatesRequises({ cwd: racine })) {
-    let commande = commandeEffective(scripts, gate.nom) || gate.commande
+  for (const gate of gatesDeCi({ cwd: racine })) {
+    let commande = scripts[gate.nom] || gate.commande
     for (let i = 0; i < 4; i += 1)
       commande = commande.replace(/npm run ([A-Za-z0-9:_.-]+)/g, (tel, nom) => (scripts[nom] ? `(${scripts[nom]})` : tel))
     par[gate.nom] = transitif(fichiersDe(commande, racine, gate.nom), racine)

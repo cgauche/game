@@ -116,9 +116,9 @@ export function equipementsDesPrerequis(ecritLu) {
  * ÉQUIPEMENT est le geste qui le pose ; l'OUTILLAGE LOCAL est ce que `resoudreOutilLocal`
  * (scripts/lancer-local.mjs) mesure à la racine, hors de cette table.
  * La liste est DÉRIVÉE d'`ECRIT_LU` : un prérequis ajouté là est posé ici sans second geste — sans
- * quoi la préflight du train (`prerequisDesGates`, scripts/ops/publier.mjs) refuserait un chantier
- * que `ops:chantier` ne sait pas équiper (mesuré le 2026-09-14, 3ᵉ train réel : `server:typecheck`
- * rouge sur `server/node_modules` absent, après 881 s de gates en série).
+ * quoi un rejeu local (`npm run gates`) rendrait l'erreur brute de son outil sur un chantier que
+ * `ops:chantier` ne sait pas équiper (mesuré le 2026-09-14 : `server:typecheck` rouge sur un
+ * `server/node_modules` absent, après 881 s de gates en série).
  */
 export const EQUIPEMENTS = [EQUIPEMENT_RACINE, ...equipementsDesPrerequis(ECRIT_LU)]
 

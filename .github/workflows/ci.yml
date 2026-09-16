@@ -2,8 +2,16 @@ name: CI
 
 on:
   push:
-    branches: [main, 'feat/**']
+    branches: [main, 'chantier/**', 'feat/**']
   pull_request:
+
+# Un run par ref. Sur une branche de travail, un push qui en suit un autre ANNULE le run en vol :
+# seule la tête compte, et c'est elle que le fast-forward vers `main` exige verte. Sur `main`, rien
+# n'est annulé — le job `fermetures` de la plage précédente ferme des tickets et ne se rejoue pas
+# (#1776).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build:

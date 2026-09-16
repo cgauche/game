@@ -211,20 +211,28 @@ const listeCode = (xs) => xs.map((x) => `\`${x}\``).join(', ')
 
 const SRC_GATES = readFileSync(chemin('scripts/gates/toutes.mjs'), 'utf8')
 const SRC_PREPUSH = readFileSync(chemin('scripts/git-hooks/pre-push.mjs'), 'utf8')
+const SRC_RULESET = readFileSync(chemin('scripts/ops/ruleset-main.mjs'), 'utf8')
 
-/** Options de `npm run gates`, DÉRIVÉES des `argv.includes('--x')` du lanceur. */
-const OPTIONS_GATES = [...new Set([...SRC_GATES.matchAll(/argv\.includes\('(--[\w-]+)'\)/g)].map((m) => m[1]))].sort()
+/** Options de `npm run gates`, DÉRIVÉES du lanceur : `argv.includes` (drapeau) ET `argv.indexOf`
+ *  (option à valeur, comme `--gates a,b`) — ne lire que le premier en oubliait la moitié. */
+const OPTIONS_GATES = [...new Set(
+  [...SRC_GATES.matchAll(/argv\.(?:includes|indexOf)\('(--[\w-]+)'\)/g)].map((m) => m[1]),
+)].sort()
 if (!OPTIONS_GATES.length) abandon('scripts/gates/toutes.mjs ne lit plus aucune option `--x` — le runbook en annonce')
 
 /** Variable qui borne la suite pendant les lanes (nommée par le lanceur lui-même). */
 const BORNE_SUITE = (SRC_GATES.match(/\bWFRP_[A-Z_]+COEURS\b/) ?? [])[0]
 if (!BORNE_SUITE) abandon('scripts/gates/toutes.mjs ne borne plus la suite par une variable `WFRP_*COEURS`')
 
-/** Régime utilisateur porté par le hook `pre-push` : sa date et son verbatim, lus au hook. */
-const REGIME = /régime utilisateur\s*(\d{4}-\d{2}-\d{2})\s*«\s*([^»]+?)\s*»/.exec(
-  SRC_PREPUSH.replace(/^\/\/ ?/gm, '').replace(/\s*\n\s*/g, ' '),
+/** Régime de push : sa date et son verbatim, lus AU RULESET — c'est lui la porte (#1776). */
+const REGIME = /Décision utilisateur du (\d{4}-\d{2}-\d{2}), verbatim : «\s*([^»]+?)\s*»/.exec(
+  SRC_RULESET.replace(/^\/\/ ?/gm, '').replace(/\s*\n\s*/g, ' '),
 )
-if (!REGIME) abandon('scripts/git-hooks/pre-push.mjs ne porte plus le régime utilisateur daté en verbatim')
+if (!REGIME) abandon('scripts/ops/ruleset-main.mjs ne porte plus la décision utilisateur datée en verbatim')
+
+/** Nombre de refus que le hook `pre-push` NOMME — lu au hook, jamais recopié. */
+const NB_REFUS_PREPUSH = (SRC_PREPUSH.match(/^\/\/\s+\d\.\s/gm) ?? []).length
+if (!NB_REFUS_PREPUSH) abandon('scripts/git-hooks/pre-push.mjs ne numérote plus ses refus')
 
 /** Version de npm exigée pour régénérer le lock — lue DANS la recette, jamais écrite deux fois.
  *  Le module est aussi LU sur disque, pour que l'empreinte des sources du doc le couvre. */
@@ -318,12 +326,6 @@ const NON_VERSIONNES = [
     acces: `régénérables par les scripts \`scripts/qc/\` ; deux exceptions restent VERSIONNÉES : \`${motif('!public/qc/baseline-affine/')}\` (baseline affine, #1176 C3) et \`${motif('!public/qc/soldes/')}\` (les captures que cite le champ \`capture:\` d'un solde — la porte \`verifierCapture\` de \`scripts/hooks/solde-ticket-guard.mjs\` refuse une capture ignorée par git)`,
   },
   {
-    quoi: `Journaux de chantier des sessions agent (\`${motif('.superpowers/')}\`)`,
-    pourquoi: 'traces locales de session (état tâche par tâche, briefs/rapports, diffs de revue) — pas du source',
-    acces:
-      "non régénérable : reprendre un chantier mené par une session morte se lit dans `.superpowers/sdd/progress.md` puis les `task-<N>-brief.md`/`-report.md` des tâches en cours, AVANT tout plan de `docs/plans/` — et le code seul fait foi",
-  },
-  {
     quoi: `Réglages Claude Code personnels (\`${motif('.claude/*')}\`)`,
     pourquoi: 'environnement local',
     acces: `exceptions VERSIONNÉES : ${listeCode(
@@ -369,8 +371,9 @@ chantier du ticket \`<N>\` depuis n'importe quel worktree du dépôt (le chantie
 l'arbre principal) : il pose le worktree lié \`.wt-<N>\` sur \`origin/main\`, crée la branche
 \`chantier/<N>\`, y joue \`npm ci\` et imprime le port dev dérivé. \`npm run ops:publier -- --detache\`
 (\`${script('ops:publier')}\`) joue ensuite le train de publication ENTIER depuis ce worktree, détaché
-du harnais, et imprime son \`pid\` et son \`log\`. Une série tierce qui tient le verrou machine s'attend
-(sonde toutes les 30 s, bornée à 60 min, \`--verrou-timeout-min\`) ; un run neuf rotationne le log
+du harnais, et imprime son \`pid\` et son \`log\`. Le train rebase sur \`origin/main\`, régénère les docs
+dérivées, POUSSE la branche de chantier, attend le run CI de cette branche (borné par
+\`--ci-timeout-min\`) et, sur vert, fait entrer \`main\` en FAST-FORWARD ; un run neuf rotationne le log
 précédent en \`<branche>.<AAAAMMJJ-HHMMSS>.log\` (péremption 7 jours) — ce n'est pas une archive, le
 \`npm ci\` d'\`ops:chantier\` efface \`node_modules/.cache/\`.
 
@@ -479,21 +482,30 @@ ${lignesHooksSession}
 |---|---|---|
 ${lignesWorkflows}
 
-Vérifier qu'elles tournent : onglet Actions du dépôt, ou \`gh run list --workflow=canari.yml\`. La
-porte à chaque push est \`.github/workflows/ci.yml\` (« ${CI.nom} », ${CI.declencheurs.join(', ')}).
+Vérifier qu'elles tournent : onglet Actions du dépôt, ou \`gh run list --workflow=canari.yml\`. LA
+PORTE est \`.github/workflows/ci.yml\` (« ${CI.nom} », ${CI.declencheurs.join(', ')}) : elle joue
+TOUTES les gates sur CHAQUE branche \`chantier/**\`, et c'est son verdict — jamais un artefact local —
+qui autorise une tête à entrer dans \`main\`.
 
-La publication locale suit le même ordre que \`ci.yml\` : \`npm run ops:publier\` joue rebase, docs
-dérivés, gates, push, sonde CI et pilotage, et refuse à la première étape rouge en la nommant.
+\`npm run ops:publier\` joue le train : rebase, docs dérivés, push de la BRANCHE, attente du run CI de
+cette branche, fast-forward de \`main\`, pilotage. Il refuse à la première étape rouge en la nommant,
+et son journal sépare le temps machine LOCAL du temps d'ATTENTE de GitHub.
 
 ## 6. Gates et livraison
 
-**Régime** (porté par \`scripts/git-hooks/pre-push.mjs\`, arbitrage utilisateur ${REGIME[1]}) :
-« ${REGIME[2]} ». L'ordre est donc **commit FINAL → \`npm run gates\` → \`git push\`** : le hook
-\`pre-push\` LIT des justificatifs, il ne joue rien, et refuse toute gate de \`ci.yml\` sans
-justificatif vert et propre pour le CONTENU poussé. Un push de PLUSIEURS commits est jugé par sa
-**TÊTE** — c'est la seule unité que la CI joue.
+**Régime** (arbitrage utilisateur ${REGIME[1]} : « ${REGIME[2]} ») : une branche \`chantier/**\` se
+pousse **LIBREMENT**, aussi souvent qu'on veut — c'est le push qui déclenche la CI, et la CI joue les
+mêmes gates que sur \`main\`. \`main\` ne reçoit qu'un **fast-forward** d'une tête dont le run CI est
+VERT, et c'est le SERVEUR qui le tient : le ruleset \`main\` (\`${script('ops:ruleset')}\`, mode
+\`active\`) exige les checks requis, refuse le non-fast-forward et la suppression. Un push de
+PLUSIEURS commits est jugé par sa **TÊTE** — c'est la seule unité que la CI joue.
 
-**Plan de \`npm run gates\`** (\`${script('gates')}\`) : ${NB_GATES_CLASSEES} gates classées, d'abord
+Le hook \`scripts/git-hooks/pre-push.mjs\` est le MIROIR LISIBLE de ce ruleset, jamais la porte : il
+nomme ${NB_REFUS_PREPUSH} refus, et celui qui exige un run vert ne vaut que pour la ref \`main\`.
+Ajouter une gate, c'est ajouter UN step à \`ci.yml\` — rien d'autre ne la récite.
+
+**Rejeu LOCAL \`npm run gates\`** (\`${script('gates')}\`), un confort de diagnostic, jamais une porte :
+${NB_GATES_CLASSEES} gates classées, d'abord
 une phase SÉRIE \`AVANT_LES_LANES\` (${listeCode(AVANT_LES_LANES)}) — les gates qui ÉCRIVENT dans
 l'arbre, jouées seules pour qu'aucun lecteur ne tombe sur un fichier à moitié écrit — puis
 ${LANES.length} lanes parallèles de LECTEURS :

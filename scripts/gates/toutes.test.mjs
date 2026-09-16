@@ -1,8 +1,9 @@
-// Contrat des LANES de `npm run gates` (#1679 L2 T1d) : les gates de `ci.yml` sont toutes placées,
-// aucune lane n'écrit ce qu'une autre lit, `--serie` joue les mêmes, un enfant qui dépasse son
-// plafond tombe AVEC SON ARBRE, le refus du verrou de suite se reconnaît à sa sortie — et la
-// POLITIQUE D'ARRÊT comme le RÉSUMÉ se mesurent pour de bon, sur un dépôt jetable à trois gates
-// factices (c'est ce que `principal({ racine, lanes, avant, ecritLu, journal })` rend possible).
+// Contrat des LANES du REJEU LOCAL `npm run gates` (#1776) : les gates de `ci.yml` sont toutes
+// placées, aucune lane n'écrit ce qu'une autre lit, `--serie` joue les mêmes, `--gates a,b` n'en
+// joue que les nommées, un enfant qui dépasse son plafond tombe AVEC SON ARBRE, le refus du verrou
+// de suite se reconnaît à sa sortie — et la POLITIQUE D'ARRÊT comme le RÉSUMÉ se mesurent pour de
+// bon, sur un dépôt jetable à trois gates factices (c'est ce que
+// `principal({ racine, lanes, avant, ecritLu, journal })` rend possible).
 //   node --test scripts/gates/toutes.test.mjs
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -10,6 +11,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { isAbsolute, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import {
   ATTENTE_VERROU,
@@ -33,55 +35,13 @@ import {
   refusDeCouverture,
   tuerArbre,
 } from './toutes.mjs'
-import {
-  RAISON_CLE_COMPLETE,
-  clesDeContenu,
-  ecrireJustificatif,
-  gatesRequises,
-  horsCle,
-} from '../guards/lib/justificatif.mjs'
+import { gatesDeCi } from './gatesDeCi.mjs'
 import { refusVerrou } from '../test/verrou.mjs'
 import { coeurs, repartitionWorkers } from '../test/partition.mjs'
 
-const NOMS = gatesRequises().map((g) => g.nom)
+const RACINE = fileURLToPath(new URL('../..', import.meta.url))
+const NOMS = gatesDeCi({ cwd: RACINE }).map((g) => g.nom)
 const gate = (nom) => ({ nom, commande: `npm run ${nom}` })
-
-/**
- * COHÉRENCE DES DEUX DÉCLARATIONS : `ECRIT_LU.lit` dit ce que la gate lit, `horsCle`
- * (justificatif.mjs:43, source UNIQUE du périmètre — il n'est pas recopié ici) dit ce que la clé
- * PARTIELLE laisse tomber. Une gate qui lit ce que sa clé ne voit pas réutilise un justificatif
- * écrit sur un AUTRE contenu : mesuré par `clesDeContenu` sur les 40 dernières têtes d'origin/main
- * (2026-09-08), 7 des 39 paires partagent la `cleTree` de leur parent alors que la `cleComplete`
- * diffère — 6 ne portent que des fichiers `docs/`, la 7ᵉ (28a23356f) que deux fichiers
- * `.claude/memory/`.
- *
- * CE QUE CE TEST PROUVE : que les deux TABLES s'accordent. CE QU'IL NE PROUVE PAS : que `lit` soit
- * VRAI. Retirer de concert la ligne de `RAISON_CLE_COMPLETE` et la ligne de `lit` d'une même gate
- * le laisse vert alors que la gate lit toujours (vérifié sur `test:ops`, qui lit
- * `.claude/workflows/` en place — scripts/ops/workflows.test.mjs:33, workflows-joues.test.mjs:25).
- * La seule porte vers l'invariant reste la MESURE : rejouer la gate sous l'enregistreur de lectures
- * (`scripts/docs/lib/enregistreur-lectures.mjs` en `--import`) et confronter le rendu à `lit`.
- * L'équivalence se lit dans les DEUX sens : une clé complète sans lecture déclarée est un coût sans
- * cause déclarée.
- */
-test('clé COMPLÈTE ⟺ la gate DÉCLARE lire docs/ ou .claude/ — les deux tables se tiennent', () => {
-  for (const nom of NOMS) {
-    const lues = (ECRIT_LU[nom]?.lit ?? []).filter(horsCle)
-    const sousCleComplete = nom in RAISON_CLE_COMPLETE
-    if (lues.length)
-      assert.ok(
-        sousCleComplete,
-        `« ${nom} » LIT ${lues.join(', ')} — hors de la clé partielle : l'inscrire dans RAISON_CLE_COMPLETE ` +
-          '(scripts/guards/lib/justificatif.mjs) avec sa raison, sinon son justificatif vaut pour un autre contenu',
-      )
-    else
-      assert.ok(
-        !sousCleComplete,
-        `« ${nom} » est sous la clé COMPLÈTE alors qu'aucune de ses lectures mesurées ne touche docs/ ni ` +
-          '.claude/ — soit ECRIT_LU.lit sous-déclare, soit la ligne de RAISON_CLE_COMPLETE coûte sans cause',
-      )
-  }
-})
 
 test('toute gate de ci.yml a une place — une lane, ou la phase série des écrivains', () => {
   assert.deepEqual(refusDeCouverture(NOMS), [], 'LANES / AVANT_LES_LANES / ECRIT_LU ne couvrent pas ci.yml')
@@ -276,7 +236,7 @@ test('le refus du VERROU DE SUITE se reconnaît sur le message RÉEL, pas sur le
     tenant: { pid: 4242, commande: 'node scripts/test/run.mjs', cwd: join(tmpdir(), 'autre-arbre') },
   })
   assert.equal(estRefusDuVerrou(2, `${message}\n`), true, 'le message de scripts/test/verrou.mjs n’est pas reconnu')
-  assert.equal(estRefusDuVerrou(2, '[gate] usage : node scripts/gates/justifie.mjs <gate> …\n'), false)
+  assert.equal(estRefusDuVerrou(2, '[gates] usage : node scripts/gates/toutes.mjs [--gates a,b] [--serie]\n'), false)
   assert.equal(estRefusDuVerrou(1, `${message}\n`), false, 'seul l’exit 2 du lanceur dit « rien joué »')
   assert.equal(
     estRefusDuVerrou(2, `[verrou] verrou disputé (${verrouFictif}) : un autre lanceur le reprend en boucle — relancer.\n`),
@@ -554,48 +514,6 @@ test('une gate de la phase SÉRIE qui réécrit l’arbre est REFUSÉE, en nomma
   }
 })
 
-test('un doc committé PÉRIME les gates à clé pleine — le lanceur les redonne à jouer, pas les autres', async () => {
-  // Défaut mesuré sur fdf62479e : `npm run gates` disait « rien à jouer » pour 22 gates, et le
-  // pre-push en refusait 11 (« gate « docs:check » jouée sur un AUTRE arbre »). Le lanceur ne
-  // connaissait que la clé PARTIELLE, qu'un commit de `docs/` ne change pas.
-  const { racine, git } = depotDeGates([
-    { nom: 'docs:check', corps: '\n' },
-    { nom: 'lint', corps: '\n' },
-  ])
-  try {
-    for (const nom of ['docs:check', 'lint']) ecrireJustificatif({ cwd: racine, gate: nom, sha: 'HEAD' })
-    // Un commit qui ne touche QUE `docs/` : la clé partielle ne bouge pas, la clé complète oui.
-    mkdirSync(join(racine, 'docs'), { recursive: true })
-    writeFileSync(join(racine, 'docs', 'note.md'), 'régénéré\n')
-    git('add', '-A')
-    git('commit', '-qm', 'docs seuls')
-    const avant = clesDeContenu('HEAD~1', { cwd: racine })
-    const apres = clesDeContenu('HEAD', { cwd: racine })
-    assert.equal(apres.cleTree, avant.cleTree, 'la clé partielle doit être la même')
-    assert.notEqual(apres.cleComplete, avant.cleComplete, 'la clé complète doit avoir bougé')
-
-    const lignes = []
-    const code = await principal({
-      racine,
-      argv: ['node', 'toutes.mjs', '--liste'],
-      journal: (t) => lignes.push(t),
-      lanes: [{ nom: 'a', gates: ['docs:check', 'lint'] }],
-      avant: [],
-      ecritLu: { 'docs:check': { ecrit: [], lit: [] }, lint: { ecrit: [], lit: [] } },
-    })
-    const sortie = lignes.join('')
-    assert.equal(code, 0)
-    assert.match(
-      sortie,
-      /\[gates\] docs:check — gate « docs:check » jouée sur un AUTRE arbre : elle lit docs\/[^\n]*— la rejouer : npm run docs:check/,
-      'une gate de RAISON_CLE_COMPLETE doit être redonnée à jouer, en se nommant',
-    )
-    assert.match(sortie, /\[gates\] lint — déjà justifiée sur ce contenu/, 'une gate hors table reste justifiée')
-  } finally {
-    rmSync(racine, { recursive: true, force: true })
-  }
-})
-
 /**
  * PRÉREQUIS (#1708 geste 2) : une gate dont le prérequis manque ne mesure rien — `server:typecheck`
  * sans `server/node_modules` rend un TS2688 brut, qui ne nomme ni le dossier absent ni la commande
@@ -756,5 +674,69 @@ test('`prerequisAbsents` ne rend que ce qui MANQUE sous la racine', () => {
     assert.deepEqual(prerequisAbsents(undefined, base), [], 'une gate hors table ne fait pas lever le lanceur')
   } finally {
     rmSync(base, { recursive: true, force: true })
+  }
+})
+
+// ── `--gates a,b` : rejouer le rouge d'un run CI sans repayer les vingt autres (#1776) ──────────
+
+const lanceParGates = async (racine, argv, lignes) =>
+  principal({
+    racine,
+    argv,
+    journal: (t) => lignes.push(t),
+    lanes: [{ nom: 'a', gates: ['alpha', 'beta'] }],
+    avant: [],
+    ecritLu: { alpha: { ecrit: [], lit: [] }, beta: { ecrit: [], lit: [] } },
+  })
+
+test('--gates ne joue QUE les gates nommées, et le dit avec le total', async () => {
+  const { racine } = depotDeGates([
+    { nom: 'alpha', corps: "console.log('alpha')\n" },
+    { nom: 'beta', corps: "console.log('beta')\n" },
+  ])
+  const lignes = []
+  try {
+    const code = await lanceParGates(racine, ['node', 'toutes.mjs', '--gates', 'beta', '--serie'], lignes)
+    const sortie = lignes.join('')
+    assert.equal(code, 0, sortie)
+    assert.match(sortie, /1 gate\(s\) lues dans ci\.yml \(sur 2\)/)
+    assert.match(sortie, /\[gates\] beta — vert \(exit 0\)/)
+    assert.doesNotMatch(sortie, /\[gates\] alpha —/, 'une gate non nommée ne se joue ni ne se résume')
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('--gates sur un nom que ci.yml ne porte PAS est un REFUS nommé, jamais un run vide', async () => {
+  const { racine } = depotDeGates([
+    { nom: 'alpha', corps: '\n' },
+    { nom: 'beta', corps: '\n' },
+  ])
+  const lignes = []
+  try {
+    const code = await lanceParGates(racine, ['node', 'toutes.mjs', '--gates', 'beta,gamma'], lignes)
+    const sortie = lignes.join('')
+    assert.equal(code, 1, 'une faute de frappe qui jouerait zéro gate en s’annonçant verte est le pire verdict')
+    assert.match(sortie, /REFUS — ci\.yml ne porte aucune gate nommée gamma/)
+    assert.match(sortie, /gates lisibles : alpha, beta/)
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('sans --gates, TOUTES les gates de ci.yml sont à jouer', async () => {
+  const { racine } = depotDeGates([
+    { nom: 'alpha', corps: '\n' },
+    { nom: 'beta', corps: '\n' },
+  ])
+  const lignes = []
+  try {
+    await lanceParGates(racine, ['node', 'toutes.mjs', '--liste'], lignes)
+    const sortie = lignes.join('')
+    assert.match(sortie, /2 gate\(s\) lues dans ci\.yml\n/, 'sans restriction, aucun « (sur N) »')
+    assert.match(sortie, /\[gates\] alpha — à jouer : npm run alpha/)
+    assert.match(sortie, /\[gates\] beta — à jouer : npm run beta/)
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
   }
 })

@@ -14,14 +14,15 @@ l'intégration triviale et les gates. Violer la lettre de cette règle EST viole
 - **La vague tient sa TODO dans le task-tracker** (`TaskCreate`/`TaskUpdate`/`TaskList`) : un dispatch
   crée sa tâche, un retour la solde, une suite découverte devient une tâche avec ses `blockedBy` — **la
   prochaine action se LIT dans la liste**, jamais dans ma mémoire ; une annonce en prose n'est pas une
-  ligne de suivi. Sans task tools : `TODO-vague-<ticket>.md` au scratchpad.
+  ligne de suivi. Sans task tools, la liste vit au commentaire de PILOTAGE du ticket de vague, re-posté
+  à chaque transition — un ticket GitHub, jamais un fichier au scratchpad.
 - **Planification et pilotage vivent sur GitHub** : l'épique porte le design validé en commentaire daté
   VERBATIM et un commentaire de PILOTAGE re-posté (jamais édité en silence) à chaque transition de lot
   — fait / arbitrages / séquence des restes avec propriétaires ; un ticket par lot (gabarit #101+,
   labels, Bloqué par / Débloque, DoD mesurable).
 - **Jamais `superpowers:writing-plans` / `executing-plans` / `subagent-driven-development`** ici ;
-  `brainstorming` sert l'altitude, sa sortie va au TICKET. Les briefs de codeur vivent dans
-  `.superpowers/sdd/<chantier>/` (gitignoré), jamais sous `docs/`.
+  `brainstorming` sert l'altitude, sa sortie va au TICKET. Un brief de codeur est un commentaire DATÉ
+  du ticket du chantier, jamais un fichier sous `docs/`.
 
 ## Cycle
 
@@ -82,8 +83,8 @@ jugement** (design, diff, palier) : les lentilles tiennent dans un seul prompt n
 déjà écrit, il ne re-mesure que ce qu'il conteste ; un workflow multi-agents ne se justifie que sur des
 travaux DIFFÉRENTS aux entrées différentes, jamais pour multiplier les regards sur la même entrée.
 **Un train = 4 ou 5 gestes au plus** : le codeur rend le diff → je committe sur la branche du worktree
-→ gates détachées (`npm run gates` refuse un arbre non committé) → juge de diff en parallèle →
-corrections en train court.
+→ je pousse la branche, dont le run CI joue les gates → juge de diff en parallèle → corrections en
+train court.
 
 **4. Isolation.** Agent qui MUTE des fichiers pendant qu'une session // est active →
 `isolation: "worktree"` (créé sur `origin/main`, `npm ci` + `npm --prefix server ci`) ; à défaut
@@ -95,11 +96,12 @@ lire ni tester son WIP. Avant de relancer un agent mort, vérifier le CONTENU du
 la garde, le slot existe-t-il ?), jamais `git status` — un arbre propre confond « rien fait », « déjà
 committé » et « fait dans un autre worktree » ; le brief de relance porte l'état VÉRIFIÉ et daté et dit
 « si le livrable existe déjà, PIVOTE en revue ». Tout geste POSTÉRIEUR à une mesure la périme : le
-rendu d'un agent repris (stall, watchdog) porte des gates PÉRIMÉES, je rejoue tsc FULL + la suite du
+rendu d'un agent repris (stall, watchdog) porte des TESTS de périmètre PÉRIMÉS, je rejoue les tests du
 périmètre avant de committer.
 
-**6. Vérification — par MOI, jamais sur la foi du rapport.** Typecheck complet et suite COMPLÈTE avant
-commit, revue du diff, UI → skill `recette-navigateur`. Deux suites complètes simultanées sur la
+**6. Vérification — par MOI, jamais sur la foi du rapport.** Typecheck complet et tests du PÉRIMÈTRE
+avant commit — la suite complète est jouée UNE fois par le run CI de la branche, jamais en local avant
+commit ; revue du diff, UI → skill `recette-navigateur`. Deux suites complètes simultanées sur la
 machine = effondrement de contention : les suites lourdes se SÉRIALISENT, ping inter-session avant
 lancement.
 - ⚠ **Les portes machine sont un PLANCHER, jamais un signal de correction** : sur une session mesurée,
@@ -126,12 +128,15 @@ lancement.
   refusé relance `node C:/Users/gauch/.claude/fix-leanctx-settings.mjs`.
 
 **7. Push.** Le verdict d'une suite en fond se LIT puis se DÉCIDE — jamais un `tail … && git push` (le
-tail sort 0 quel que soit le rouge). Gates CI-only : `npm run migrations:replay:head` sur un EXPORT de
-HEAD (le `pre-push` le joue dès que la plage touche le périmètre des migrations). **Après CHAQUE push,
-sonder la CI du sha** (`gh run list --branch main --json headSha,status,conclusion`) AVANT de dépêcher
-un juge ou d'entrer dans une attente longue : sous « pas de push sur rouge », un rouge non traité
-bloque le pre-push de toutes les sessions ; un peer qui signale un rouge sur mon sha reçoit une réponse
-dans le quart d'heure. Au retour de chaque agent, vérifier qu'il ne laisse aucun processus derrière lui.
+tail sort 0 quel que soit le rouge). La branche `chantier/**` se pousse LIBREMENT : son run CI
+(`.github/workflows/ci.yml`, `push.branches`) joue les mêmes gates que `main`, une fois. **Après CHAQUE
+push de branche, sonder son run** (`gh run list --branch chantier/<N> --json
+headSha,status,conclusion`) AVANT de dépêcher un juge ou d'entrer dans une attente longue ; un rouge de
+branche ne bloque que cette branche, et se rejoue localement gate par gate (`npm run gates -- --gates
+<noms>`). `main` n'entre que par le fast-forward d'`ops:publier` (étape `ff-main`) sur une tête dont le
+run est vert, et le ruleset serveur refuse tout le reste. Migrations : le job `migrations` de `ci.yml`
+les joue sur la branche, aucun rejeu local. Au retour de chaque agent, vérifier qu'il ne laisse aucun
+processus derrière lui.
 
 **8. Fermeture.** Toute vague qui ferme des tickets se termine par une **passe de réfutation NON
 demandée** (« tente de réfuter cette fermeture sur pièces ») AVANT toute annonce ; l'annonce porte les

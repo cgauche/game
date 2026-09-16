@@ -60,14 +60,11 @@ const ATTENDU = {
     'scripts/guards/lib/eolStage.test.mjs',
     'scripts/guards/lib/gitPorte.test.mjs',
     'scripts/guards/lib/importGraph.test.mjs',
-    'scripts/guards/lib/justificatif.mjs',
-    'scripts/guards/lib/justificatif.test.mjs',
     'scripts/guards/lib/lintStage.test.mjs',
     // +1 le 2026-09-05 (#1679 L3b) : la porte de rôle du lecteur à ordre total pose ses dossiers-fixtures
     // (`mkdtempSync` + `writeFileSync`) sous `os.tmpdir()` — l'arbre n'est jamais écrit.
     'scripts/guards/lib/lister.test.mjs',
     'scripts/guards/lib/plageStock.test.mjs',
-    'scripts/guards/lib/portePush.test.mjs',
     // +2 le 2026-09-06 (#1679 L3b) : la purge des dossiers de CACHE (`node_modules/.cache`,
     // `node_modules/.cache/gates`) est une source unique — elle EFFACE, par construction ; son test
     // pose et efface ses fichiers sous `os.tmpdir()`. Ni l'une ni l'autre ne touche l'arbre versionné.
@@ -122,9 +119,6 @@ const ATTENDU = {
     'scripts/test/verrou.mjs',
   ],
   'test:ops': [
-    // +1 le 2026-09-04 : `pushes-justifies.mjs` LIT les justificatifs de gate, donc atteint le module
-    // qui les écrit ; ses écritures visent `wfrp-justificatifs/` dans le `.git` de l'arbre principal,
-    // hors de l'arbre de travail.
     // +1 le 2026-09-07 (#1709 B1) : `fermer-depuis-main.test.mjs` et `faits-de-palier.test.mjs`
     // prennent leurs dépôts jetables à la fixture partagée, qui n'écrit que sous `os.tmpdir()`.
     // +8 le 2026-09-14 (#1736) : le train de publication entre dans `test:ops`.
@@ -133,20 +127,19 @@ const ATTENDU = {
     //   l'arbre. `chantier.mjs`/`worktrees.mjs` écrivent, eux, dans l'arbre PRINCIPAL en usage réel
     //   (git worktree add/remove), jamais depuis la gate.
     // · `publier.mjs` est atteint par `publier.test.mjs`, qui joue ses fonctions PURES (options,
-    //   journal en mémoire, verdicts, mise en forme) et `prerequisDesGates` sur une racine jetable
-    //   (mkdtemp sous os.tmpdir(), rmSync en finally — d'où ses imports d'écriture, +1 le 2026-09-14,
-    //   4ᵉ train réel). Les écritures réelles de `publier.mjs` sont son journal
-    //   `node_modules/.cache/publication/` et le commit des docs DÉRIVÉS — toutes deux derrière sa
-    //   porte `estMain` (scripts/ops/publier.mjs, dernière ligne), jamais depuis la gate.
-    // · `build-all.mjs`, `empreinte-sources.mjs`, `toutes.mjs`, `purgerPerimes.mjs` et `verrou.mjs`
-    //   sont atteints PAR `publier.mjs`, qui n'en importe que des CONSTANTES et des fonctions pures
-    //   (`GENERATORS`, `SOURCES_LUES`, `fichierDurees`) ; leurs écritures vivent derrière leurs
-    //   propres portes `isMain`, ou sous `node_modules/.cache`.
+    //   journal en mémoire, verdicts, mise en forme) et ses étapes sur des `ctx` FACTICES, dans des
+    //   racines jetables (mkdtemp sous os.tmpdir(), rmSync en finally — d'où ses imports d'écriture).
+    //   Les écritures réelles de `publier.mjs` sont son journal `node_modules/.cache/publication/` et
+    //   le commit des docs DÉRIVÉS — toutes deux derrière sa porte `estMain` (scripts/ops/publier.mjs,
+    //   dernière ligne), jamais depuis la gate.
+    // · `build-all.mjs`, `empreinte-sources.mjs` et `purgerPerimes.mjs` sont atteints PAR
+    //   `publier.mjs`, qui n'en importe que des CONSTANTES et des fonctions pures (`GENERATORS`,
+    //   `SOURCES_LUES`) ; leurs écritures vivent derrière leurs propres portes `isMain`, ou sous
+    //   `node_modules/.cache`.
     'scripts/docs/build-all.mjs',
     'scripts/docs/lib/empreinte-sources.mjs',
     'scripts/gates/toutes.mjs',
     'scripts/guards/lib/depotGabarit.mjs',
-    'scripts/guards/lib/justificatif.mjs',
     'scripts/guards/lib/purgerPerimes.mjs',
     'scripts/ops/chantier.test.mjs',
     'scripts/ops/publier.mjs',
@@ -160,7 +153,6 @@ const ATTENDU = {
     'scripts/ops/faits-de-palier.test.mjs',
     'scripts/ops/fermer-depuis-main.test.mjs',
     'scripts/ops/knip-exports-ratchet.mjs',
-    'scripts/ops/ruleset-evaluate.mjs',
   ],
   'test:runner': [
     'scripts/lancer-local.test.mjs',
@@ -195,7 +187,6 @@ const ATTENDU = {
   // +1 le 2026-09-06 (#1679 L3b) : la purge des captures périmées du lanceur est passée en source
   // unique — elle efface dans `node_modules/.cache`, jamais dans l'arbre versionné.
   test: [
-    'scripts/guards/lib/justificatif.mjs',
     'scripts/guards/lib/purgerPerimes.mjs',
     'scripts/test/run.mjs',
     'scripts/test/verrou.mjs',

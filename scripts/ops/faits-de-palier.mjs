@@ -7,14 +7,13 @@
 // elle ne se devine pas.
 //
 // Aucune mesure n'est réécrite : ce script COMPOSE les hôtes existants (`revuePalier.mjs`,
-// `plageStock.mjs`, `fermetures-non-citees.mjs`, `audit-stock.mjs`, le journal de dérogations du
-// pre-push) — un hôte n'est jamais dupliqué.
+// `plageStock.mjs`, `fermetures-non-citees.mjs`, `audit-stock.mjs`) — un hôte n'est jamais dupliqué.
 //
 // Usage : `npm run ops:faits-de-palier -- --base <sha> --tete <sha>`, plus :
 //   `--hors-ligne`            saute ce qui appelle GitHub et l'audit de dépendances ;
 //   `--revue-precedente <p>`  impose le texte de la revue précédente au lieu de celui de HEAD ;
-//   `--cwd <dossier>`         l'arbre MESURÉ (défaut : la racine de ce script) — git, soldes suivis et
-//                             journal de dérogations sont tous lus dans CET arbre, jamais mélangés ;
+//   `--cwd <dossier>`         l'arbre MESURÉ (défaut : la racine de ce script) — git et soldes suivis
+//                             y sont tous deux lus, jamais mélangés ;
 //   `--sortie <chemin>`       où le JSON complet est aussi ÉCRIT (défaut sous `os.tmpdir()`) : le
 //                             brief du juge n'embarque alors que les champs dont il a besoin et
 //                             donne ce chemin pour le reste ;
@@ -22,15 +21,14 @@
 //                             précédente n'est pas exigé). Le JSON le DIT (`chainage`), et le texte
 //                             de revue porte alors sa marque de banc.
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DOSSIERS_DE_SUBSTANCE, ascendanceDansHead, derniereRevueArchivee, memeSha } from '../guards/lib/revuePalier.mjs'
 import { croissancesDeLaPlage } from '../guards/lib/plageStock.mjs'
 import { tenter } from '../guards/lib/gitPorte.mjs'
-import { coursesCiDeMain } from '../guards/lib/coursesCi.mjs'
-import { cheminJustificatifs } from '../guards/lib/justificatif.mjs'
+import { coursesCi } from '../guards/lib/coursesCi.mjs'
 import { soldesSuivis } from './fermetures-non-citees.mjs'
 import { numerosFermes } from '../guards/lib/fermetures.mjs'
 
@@ -113,64 +111,7 @@ export function fermeturesDesCommits(commits, soldes) {
 }
 
 /**
- * Dérogations journalisées par le pre-push. PUR. Le journal porte UNE ligne JSON par tentative
- * (`{ horodatage, etat, motif, sha, shaCause, raison }`) : une ligne qui n'est pas un objet JSON n'est
- * pas devinée, elle est rendue `{ etat: 'illisible', ligne }` et comptée à part.
- * `sha` est le commit POUSSÉ (c'est par lui que la fenêtre retrouve la dérogation) ; `shaCause` est le
- * commit qui a causé le refus (tête de `main`, commit de la course rouge) — souvent hors fenêtre.
- * `shas` MARQUE (`dansLaFenetre`) sans filtrer — le tri revient à `derogationsDeLaFenetre`.
- * @returns {{ horodatage: string, etat: string, motif: string, sha: string, shaCause: string,
- *   raison: string, dansLaFenetre: boolean }[] }
- */
-export function derogationsDuJournal(texte, shas = null) {
-  const fenetre = shas ? new Set([...shas].map(String)) : null
-  return String(texte ?? '')
-    .split('\n')
-    .map((l) => l.replace(/\r$/, ''))
-    .filter(Boolean)
-    .map((ligne) => {
-      let lu
-      try {
-        lu = JSON.parse(ligne)
-      } catch {
-        return { etat: 'illisible', ligne, dansLaFenetre: false }
-      }
-      if (!lu || typeof lu !== 'object' || Array.isArray(lu)) return { etat: 'illisible', ligne, dansLaFenetre: false }
-      const sha = String(lu.sha ?? '')
-      return {
-        horodatage: String(lu.horodatage ?? ''),
-        etat: String(lu.etat ?? ''),
-        motif: String(lu.motif ?? ''),
-        sha,
-        shaCause: String(lu.shaCause ?? ''),
-        raison: String(lu.raison ?? ''),
-        dansLaFenetre: fenetre ? fenetre.has(sha) : true,
-      }
-    })
-}
-
-/**
- * Ce que la fenêtre porte VRAIMENT en dérogations. PUR. Une revue juge SA fenêtre : servir le journal
- * entier fait juger des pushes d'un autre palier (6 lignes hors fenêtre servies sur 6, mesuré
- * 2026-09-04). Le NOMBRE des autres reste rendu : leur existence est un fait, leur contenu non. Les
- * lignes ILLISIBLES sont comptées à part : les noyer dans « hors fenêtre » ferait passer un journal
- * corrompu pour un journal d'un autre palier.
- * @returns {{ dansLaFenetre: object[], horsFenetre: number, illisibles: number }}
- */
-export function derogationsDeLaFenetre(texte, shas) {
-  const toutes = derogationsDuJournal(texte, shas)
-  const illisibles = toutes.filter((d) => d.etat === 'illisible')
-  const lisibles = toutes.filter((d) => d.etat !== 'illisible')
-  const retenues = lisibles.filter((d) => d.dansLaFenetre)
-  return {
-    dansLaFenetre: retenues,
-    horsFenetre: lisibles.length - retenues.length,
-    illisibles: illisibles.length,
-  }
-}
-
-/**
- * Courses CI par commit, depuis la liste servie par `coursesCiDeMain`. PUR.
+ * Courses CI par commit, depuis la liste servie par `coursesCi`. PUR.
  * Un sha sans course est rendu avec `conclusion: null` : « pas de course » est un fait, et pas un
  * défaut — un push de plusieurs commits est jugé par sa TÊTE (régime du 2026-09-11, CLAUDE.md
  * § Commandes) : la CI ne joue que le sha poussé.
@@ -253,18 +194,11 @@ function main() {
   // plage dont le plus ancien commit sort des 300 dernières courses de `main` rend `courses: []` —
   // indiscernable d'un commit jamais couru, et c'est ce que le lecteur doit savoir.
   // `workflow: null` : TOUS les workflows, pas seulement `ci.yml`.
-  const coursesCi = (() => {
+  const coursesDeLaFenetre = (() => {
     if (horsLigne) return { disponible: false, raison: '`--hors-ligne` : courses CI non consultées' }
-    const vu = coursesCiDeMain({ cwd, limit: 300, workflow: null })
+    const vu = coursesCi({ cwd, limit: 300, workflow: null })
     return vu.disponible ? { disponible: true, valeur: coursesParCommit(vu.valeur, shas) } : vu
   })()
-
-  const derogations = tenter(() => {
-    const journal = join(cheminJustificatifs({ cwd }), 'derogations.log')
-    return existsSync(journal)
-      ? derogationsDeLaFenetre(readFileSync(journal, 'utf8'), shas)
-      : { dansLaFenetre: [], horsFenetre: 0, illisibles: 0 }
-  })
 
   const texteDeRevue = tenter(() => (revuePrecedente
     ? readFileSync(revuePrecedente, 'utf8')
@@ -282,8 +216,7 @@ function main() {
     stocks,
     fermeturesHorsCommit,
     auditStock,
-    derogations,
-    coursesCi,
+    coursesCi: coursesDeLaFenetre,
     revuePrecedente: { chemin: revuePrecedente ?? derniere.chemin, ...texteDeRevue },
     provenance: {
       commits: 'script',
@@ -292,7 +225,6 @@ function main() {
       chainage: 'script',
       fermeturesHorsCommit: 'gh',
       auditStock: 'npm audit',
-      derogations: 'journal local du pre-push',
       coursesCi: 'gh',
       revuePrecedente: 'git',
     },

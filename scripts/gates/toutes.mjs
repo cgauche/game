@@ -1,10 +1,13 @@
 #!/usr/bin/env node
-// `npm run gates` (#1679 L2) — joue les gates de `ci.yml` en LANES PARALLÈLES et rend, DANS L'ORDRE
-// DE `ci.yml`, le verdict de chacune. C'est la commande que le refus du pre-push nomme : le régime
-// « suite complète + tsc avant push » a un prix, et ce prix s'imprime ici, gate par gate.
+// `npm run gates` (#1776) — REJEU LOCAL des gates de `ci.yml`, en LANES PARALLÈLES, avec le verdict
+// de chacune DANS L'ORDRE DE `ci.yml`. C'est un confort de diagnostic, jamais une porte : la porte
+// est le run CI de la branche, et `main` ne reçoit qu'un fast-forward d'une tête verte (ruleset
+// `main`, `scripts/ops/ruleset-main.mjs`).
 //
-// T1d change le MUR, jamais le VERDICT : `--serie` joue exactement les mêmes gates en une lane
+// `--serie` change le MUR, jamais le VERDICT : il joue exactement les mêmes gates en une lane
 // unique, dans l'ordre de ci.yml (morsure d'équivalence, `scripts/gates/toutes.test.mjs`).
+// `--gates a,b` n'en joue que celles-là — c'est ainsi qu'on rejoue le rouge d'un run CI sans
+// repayer les vingt autres.
 //
 // TROIS PHASES, et l'ordre est la garantie :
 //   1. `npm run gen`, puis les gates qui ÉCRIVENT dans l'arbre (`AVANT_LES_LANES`) — EN SÉRIE. Ce
@@ -15,56 +18,30 @@
 //      il s'imprime AVANT tout ce qui pourrait encore échouer.
 //
 // UN ROUGE NE COUPE RIEN (#1772) : la tête doit être verte sur TOUTES les gates, donc ce qu'un rouge
-// ferait sauter serait payé au passage suivant — avec un commit de plus et des clés de contenu de
-// plus. Une gate rouge pose son verdict, fait rendre 1 au run, et les lanes continuent : le résumé
-// rend TOUS les rouges de la tête en un seul mur. Un prérequis absent est un rouge comme un autre :
-// il ne concerne que la gate qui LIT ce chemin (chacune teste les SIENS). Ne sautent ce qui suit que
-// les DEUX cas où un verdict de plus serait FAUX : un signal, un écrivain qui a RÉÉCRIT l'arbre.
-//
-// L'ARBRE DOIT ÊTRE PROPRE AVANT LE PREMIER SPAWN : une gate jouée sur un arbre sale ne justifie
-// rien (le pre-push la refusera), et la découvrir après dix minutes de gates est le pire moment.
+// ferait sauter serait payé au passage suivant. Une gate rouge pose son verdict, fait rendre 1 au
+// run, et les lanes continuent : le résumé rend TOUS les rouges de la tête en un seul mur. Un
+// prérequis absent est un rouge comme un autre : il ne concerne que la gate qui LIT ce chemin
+// (chacune teste les SIENS). Ne sautent ce qui suit que les DEUX cas où un verdict de plus serait
+// FAUX : un signal, un écrivain qui a RÉÉCRIT l'arbre.
 //
 // SOUS CHARGE, UN PROCESSUS PEUT NE PAS DÉMARRER : le 2026-09-04, quatre lanes en parallèle ont fait
 // rendre `3221225794` (STATUS_DLL_INIT_FAILED) au loader Windows sur quatre spawns d'un même run —
-// `docs:check` ROUGE à 48,6 s, `build` ROUGE sans une ligne d'erreur, un justificatif de `typecheck`
-// jamais écrit, 47 tests de la suite en `expected 3221225794`. Tout spawn passe donc par
-// `scripts/guards/lib/spawnResilient.mjs`, qui REJOUE ce cas-là (et lui seul) ; le nombre de rejeux
-// est imprimé au résumé — c'est LE compteur de pression, la mémoire système ne discriminant rien
-// (100 % à 15 workers comme à 9).
+// `docs:check` ROUGE à 48,6 s, `build` ROUGE sans une ligne d'erreur, 47 tests de la suite en
+// `expected 3221225794`. Tout spawn passe donc par `scripts/guards/lib/spawnResilient.mjs`, qui
+// REJOUE ce cas-là (et lui seul) ; le nombre de rejeux est imprimé au résumé — c'est LE compteur de
+// pression, la mémoire système ne discriminant rien (100 % à 15 workers comme à 9).
 //
-// PAS DE VERROU DE PUSH, et c'est mesuré (juge de design T1d, 2026-09-04) : le PID qui écrirait ce
-// verrou est MORT au moment du push — le processus de gates a rendu la main — donc la session
-// suivante le reprend (patron « pid vivant » de `scripts/test/verrou.mjs`) et celle qui a PAYÉ les
-// gates est refusée : effet inversé. Modèle mesuré, 3 sessions et un push toutes les 45 min :
-// p(rebase forcé) ≈ 2 × durée-des-gates / 45, soit 53 % à 12 min et 19 % à 4,3 min. RACCOURCIR les
-// gates fait davantage que ne ferait le verrou, et ne fait attendre personne.
+// AUCUN VERROU : ce lanceur ne prend rien et n'attend personne. Ce qu'il rend est un DIAGNOSTIC
+// local ; deux runs concurrents se gênent, et c'est au lanceur de choisir son moment.
 //
-// VERROU MACHINE POUR TOUTE LA DURÉE (#1679 L3b) : ce lanceur prend le verrou de suite
-// (`scripts/test/verrou.mjs`, même hôte) avant de jouer quoi que ce soit et le rend à la fin — trois
-// lanes chargent la machine autant qu'une suite. Un second run de gates est REFUSÉ (exit 2) en
-// nommant le PID tenant ; la suite lancée par la lane `suite` ne le reprend pas (jeton de réentrance).
-//
-// `--tout` rejoue tout, justificatif ou pas (mesure du coût plein) ; `--liste` n'imprime que le plan
-// (ce qui serait joué, et pourquoi) sans rien jouer ; `--serie` joue tout en une lane.
-//
-// Chaque gate passe par `scripts/gates/justifie.mjs`, jamais par la commande nue : c'est lui qui
-// écrit le justificatif au vert, et lui seul. Quand un script `<gate>:brut` existe, c'est LUI qui est
-// joué : sans quoi `npm run <gate>` rentrerait dans une deuxième enveloppe et écrirait deux fois.
+// `--liste` n'imprime que le plan (ce qui serait joué) sans rien jouer ; `--serie` joue tout en une
+// lane ; `--gates a,b` restreint la liste.
 import { spawn, spawnSync } from 'node:child_process'
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join, resolve } from 'node:path'
 import { enteteArbre } from '../guards/lib/enteteArbre.mjs'
-import {
-  clesDeContenu,
-  gatesRequises,
-  justificatifsSousDAutresCles,
-  lireJustificatif,
-  migrerAncienneGraphie,
-  motifDeRefus,
-  perimetreSale,
-  segmentDeGate,
-} from '../guards/lib/justificatif.mjs'
+import { gatesDeCi } from './gatesDeCi.mjs'
 import {
   compterRejeux,
   execFileResilient,
@@ -73,10 +50,7 @@ import {
 } from '../guards/lib/spawnResilient.mjs'
 import { codeEnfant } from '../test/partition.mjs'
 import { PEREMPTION_MS, purgerPerimes } from '../guards/lib/purgerPerimes.mjs'
-import { avecVerrouMachine } from '../test/verrou.mjs'
 const RACINE = fileURLToPath(new URL('../..', import.meta.url))
-/** Dossier de CE script : l'enveloppe `justifie.mjs` vit ici, pas dans l'arbre mesuré. */
-const ICI = fileURLToPath(new URL('.', import.meta.url))
 
 /**
  * Ce que chaque gate ÉCRIT et LIT dans l'ARBRE, MESURÉ (sonde d'écritures transitives sur les
@@ -87,8 +61,6 @@ const ICI = fileURLToPath(new URL('.', import.meta.url))
  * nommés : ce qu'un sous-processus NON-node lit (`git ls-files` de src/source-hygiene-guard.test.ts:76,
  * `tsc`/`eslint` binaires) lui échappe, et un chemin RELATIF écrit par un enfant dont le `cwd` est un
  * dépôt jetable lui apparaît sous la racine (vérifié fichier par fichier avant d'être écrit ici).
- * `lit` est ce qui décide de la CLÉ : une entrée touchant `docs/` ou `.claude/` exige la gate dans
- * `RAISON_CLE_COMPLETE` (garde dérivée, `toutes.test.mjs`).
  * C'est cette table, et rien d'autre, qui autorise deux gates à tourner EN MÊME TEMPS : un écrivain
  * et son lecteur dans deux lanes différentes, c'est un lecteur sur un fichier à moitié écrit.
  * Un chemin qui finit par `/` désigne le dossier et tout ce qu'il contient.
@@ -155,24 +127,20 @@ export const ECRIT_LU = {
     ecrit: [],
     lit: ['src/', 'scripts/ops/', 'scripts/guards/lib/', 'scripts/hooks/', '.claude/workflows/', '.github/workflows/', 'knip.json', 'knip-exports-baseline.json'],
     raison:
-      'sept modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
+      'cinq modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
       '`knip-exports-ratchet.mjs` (`main()` gardé par `import.meta.url === argv[1]`, l.121 ; seul `--sync` ' +
-      'écrirait la baseline, l.94-96), `ruleset-evaluate.mjs` (le corps du ruleset part par un fichier de ' +
-      'os.tmpdir(), l.90-97), `fermer-depuis-main.test.mjs` (dépôts jetables de os.tmpdir()) et ' +
-      '`justificatif.mjs`, atteint depuis 2026-09-04 par `pushes-justifies.mjs` : ses seules écritures ' +
-      'visent le `.git` de l’arbre principal (`wfrp-justificatifs/`, justificatif.mjs:136,239-243,277,286-289), ' +
-      'hors de l’arbre — et `pushes-justifies.test.mjs` n’éprouve que des fonctions PURES, sans disque ; LIT ' +
-      '.github/workflows/ parce que `canari.test.mjs:17` et `ruleset-evaluate.test.mjs:13` lisent les ' +
-      'workflows RÉELS, et scripts/guards/lib/ par le stock de `fermetures-non-citees.mjs` ; depuis ' +
-      '2026-09-04, `faits-de-palier.mjs` écrit le JSON des faits à `--sortie`, sous `os.tmpdir()` par ' +
-      'défaut (`sortieParDefaut`), et crée `wfrp-justificatifs/` dans le `.git` de l’arbre principal par `cheminJustificatifs` ' +
-      '— `.git/`, hors de l’arbre ; depuis 2026-09-07 (#1709 B1), `depotGabarit.mjs` fabrique les dépôts ' +
-      'jetables de `fermer-depuis-main.test.mjs` et `faits-de-palier.test.mjs` : ses seules écritures ' +
-      '(`mkdtempSync`, `cpSync`, `rmSync` — depotGabarit.mjs:62,82,99-100) visent `os.tmpdir()` ; ' +
-      'LIT .claude/workflows/ (`workflows.test.mjs` les parse, `workflows-joues.test.mjs` les joue) ' +
-      'et scripts/hooks/ (`validateRevuePalier` de solde-ticket-guard.mjs), sans rien y écrire ; LIT knip.json ' +
-      '(le cliquet d’exports le relit) ; les 3 fichiers de .claude/workflows/ sont lus EN PLACE, sur l’arbre ' +
-      'réel — c’est cette lecture qui met la gate sous la clé COMPLÈTE (sonde 2026-09-08, deux passes). ' +
+      'écrirait la baseline, l.94-96), `ruleset-main.mjs` (le corps du ruleset part par un fichier de ' +
+      'os.tmpdir(), ruleset-main.mjs:117-120, et son `executer` n’est jamais appelé par les tests), ' +
+      '`fermer-depuis-main.test.mjs` (dépôts jetables de os.tmpdir()), `faits-de-palier.mjs` (le JSON des ' +
+      'faits va à `--sortie`, sous os.tmpdir() par défaut — `sortieParDefaut`, faits-de-palier.mjs:72-73,236) ' +
+      'et `depotGabarit.mjs`, qui fabrique les dépôts jetables de `fermer-depuis-main.test.mjs` et ' +
+      '`faits-de-palier.test.mjs` : ses seules écritures (`mkdtempSync`, `cpSync`, `rmSync` — ' +
+      'depotGabarit.mjs:62,82,99-100) visent `os.tmpdir()` ; LIT .github/workflows/ parce que ' +
+      '`canari.test.mjs:17` et `ruleset-main.test.mjs:27` lisent les workflows RÉELS, et ' +
+      'scripts/guards/lib/ par le stock de `fermetures-non-citees.mjs` ; LIT .claude/workflows/ ' +
+      '(`workflows.test.mjs` les parse, `workflows-joues.test.mjs` les joue) et scripts/hooks/ ' +
+      '(`validateRevuePalier` de solde-ticket-guard.mjs), sans rien y écrire ; LIT knip.json (le cliquet ' +
+      'd’exports le relit) ; les 3 fichiers de .claude/workflows/ sont lus EN PLACE, sur l’arbre réel. ' +
       'Ce que `soldesSuivis()` lirait de .claude/soldes/ n’est atteint que par le `main()` du script, ' +
       'gardé par `import.meta.url === argv[1]` (fermetures-non-citees.mjs:195) : les tests passent leurs ' +
       'PROPRES dépôts jetables, et la sonde n’a mesuré aucune lecture sous .claude/soldes/',
@@ -191,7 +159,8 @@ export const ECRIT_LU = {
       'scripts/lancer-local.mjs', 'scripts/outillage-local.mjs',
     ],
     raison:
-      'fixtures sous os.tmpdir() ; lit les docs et la mémoire réels (RAISON_CLE_COMPLETE, justificatif.mjs:93) ' +
+      'fixtures sous os.tmpdir() ; lit les docs et la mémoire RÉELS (les gardes de liens et de références les ' +
+      'parcourent en place) ' +
       'et scripts/guards/lib/ (`check-plans-anchors.test.mjs` lit le code de `lister.mjs` et importe ' +
       '`depotGabarit.mjs`), sans rien y écrire ; LIT les trois modules du lanceur local que `build-all.mjs` ' +
       'ramène (sonde 2026-09-08, 50 lectures) ; LIT src/ et docs/ depuis le 2026-09-14 (#1759) : ' +
@@ -518,8 +487,8 @@ export const dossierSorties = (racine) => join(racine, 'node_modules', '.cache',
 /** Durées du dernier run, par gate — la seule source du COÛT ESTIMÉ d'une gate sautée. */
 export const fichierDurees = (racine) => join(dossierSorties(racine), 'durees.json')
 
-/** Nom de FICHIER de la sortie d'une gate, encodé par `segmentDeGate` (justificatif.mjs). */
-export const fichierDeSortie = (gate, pid) => `${segmentDeGate(gate)}-${pid}.txt`
+/** Nom de FICHIER de la sortie d'une gate : le nom de gate porte des `:`, que Windows refuse. */
+export const fichierDeSortie = (gate, pid) => `${encodeURIComponent(gate)}-${pid}.txt`
 
 /** Motif de nom d'une sortie de gate : `<segment>-<pid>.txt` (`fichierDeSortie`). */
 const MOTIF_SORTIE = /-\d+\.txt$/
@@ -597,7 +566,7 @@ export function refusDeCouverture(noms, lanes = LANES, ecritLu = ECRIT_LU, avant
 /**
  * Le refus du VERROU DE SUITE (`scripts/test/verrou.mjs`) : quand une autre session joue déjà une
  * suite complète, `npm test` sort en 2 SANS avoir rien joué. Reconnu par sa SORTIE, jamais par le
- * code seul — un 2 est aussi ce que rend une invocation mal formée de `justifie.mjs`.
+ * code seul — un 2 est aussi ce que rend une invocation mal formée du lanceur.
  */
 export const estRefusDuVerrou = (code, sortie) =>
   code === 2 && /^\[verrou\] (?:une suite complète tourne déjà|verrou disputé)/m.test(sortie)
@@ -684,7 +653,7 @@ export const limiteDe = (gate) => (TIMEOUTS[gate] ?? TIMEOUTS.defaut) * 1000
 /**
  * Lanes RÉELLEMENT jouées. `--serie` en rend UNE, portant les mêmes gates dans l'ordre de ci.yml :
  * c'est ici, et nulle part ailleurs, que les deux modes se séparent — le reste du lanceur (commande,
- * enveloppe `justifie.mjs`, plafond, verdict) est commun, donc le verdict l'est aussi.
+ * commande, plafond, verdict) est commun, donc le verdict l'est aussi.
  */
 export function lanesAJouer(aJouer, { serie = false, lanes = LANES } = {}) {
   const noms = new Set(aJouer.map((g) => g.nom))
@@ -701,14 +670,16 @@ export function lanesAJouer(aJouer, { serie = false, lanes = LANES } = {}) {
  * atteint les enfants EN COURS, dont la promesse se résoudra plus tard.
  * REND `{ code, expiree, fichier, sortie, limiteMs, pid }`.
  */
-export function spawnBorne({ argv, fichier, limiteMs, cwd, env = process.env, surPid, site }) {
+export function spawnBorne({ commande, argv, fichier, limiteMs, cwd, env = process.env, surPid, site }) {
   const unEssai = () =>
     new Promise((resoudre) => {
       const fd = openSync(fichier, 'w')
-      const enfant = spawn(process.execPath, argv, {
+      // `npm` est un SCRIPT sous Windows (`npm.cmd`) : sans `shell`, le loader ne le démarre pas.
+      const enfant = spawn(commande ?? process.execPath, argv, {
         cwd,
         env,
         stdio: ['ignore', fd, fd],
+        shell: commande === 'npm' && process.platform === 'win32',
         detached: process.platform !== 'win32',
       })
       surPid?.(enfant.pid)
@@ -786,37 +757,33 @@ export async function principal({
   avant = AVANT_LES_LANES,
   ecritLu = ECRIT_LU,
 } = {}) {
-  const TOUT = argv.includes('--tout')
   const LISTE = argv.includes('--liste')
   const SERIE = argv.includes('--serie')
+  // `--gates a,b` : la liste NOMMÉE, dans l'ordre de ci.yml. Un nom inconnu du fichier fait REFUSER
+  // — une faute de frappe qui jouerait zéro gate en s'annonçant verte serait le pire des verdicts.
+  const iGates = argv.indexOf('--gates')
+  const demandees = iGates === -1 ? null : String(argv[iGates + 1] ?? '').split(',').map((s) => s.trim()).filter(Boolean)
 
   journal(`[gates] ${enteteArbre(racine)}\n`)
 
-  const salis = perimetreSale({ cwd: racine })
-  if (salis.length && !LISTE) {
-    journal(
-      `[gates] REFUS — l'arbre porte ${salis.length} chemin(s) non committé(s) au périmètre de la clé :\n` +
-        `${salis.map((s) => `  ${s}`).join('\n')}\n` +
-        `[gates] committer d'abord : une gate jouée sur cet arbre ne justifiera aucun push.\n`,
-    )
-    return 1
-  }
-
   const scripts = JSON.parse(readFileSync(join(racine, 'package.json'), 'utf8')).scripts ?? {}
-  // Le magasin passe à la graphie courante AVANT toute lecture : sinon les justificatifs de
-  // l'ancienne (un fichier par gate, sans clé ni propreté dans le nom) seraient invisibles et
-  // chaque gate serait redonnée à jouer.
-  migrerAncienneGraphie({ cwd: racine, journal })
-  // DEUX clés, comme le pre-push (scripts/git-hooks/pre-push.mjs) : les 15 gates de
-  // `RAISON_CLE_COMPLETE` lisent `docs/` ou `.claude/`, hors de la clé partielle. Sans la clé
-  // complète ici, le lanceur déclare « déjà justifiée » ce que le push refuse ensuite (mesuré sur
-  // fdf62479e : 22 gates sautées, 11 refusées au push).
-  const cles = clesDeContenu('HEAD', { cwd: racine })
-  const cle = cles.cleTree
-  const gates = gatesRequises({ cwd: racine })
-  journal(`[gates] ${gates.length} gate(s) lues dans ci.yml · contenu ${cle.slice(0, 12)}\n`)
+  const toutesLesGates = gatesDeCi({ cwd: racine })
+  if (demandees) {
+    const inconnues = demandees.filter((n) => !toutesLesGates.some((g) => g.nom === n))
+    if (inconnues.length) {
+      journal(
+        `[gates] REFUS — ci.yml ne porte aucune gate nommée ${inconnues.join(', ')}.\n` +
+          `[gates] gates lisibles : ${toutesLesGates.map((g) => g.nom).join(', ')}\n`,
+      )
+      return 1
+    }
+  }
+  const gates = demandees ? toutesLesGates.filter((g) => demandees.includes(g.nom)) : toutesLesGates
+  journal(`[gates] ${gates.length} gate(s) lues dans ci.yml${demandees ? ` (sur ${toutesLesGates.length})` : ''}\n`)
 
-  const manques = refusDeCouverture(gates.map((g) => g.nom), lanesDeclarees, ecritLu, avant)
+  // La couverture se juge sur ci.yml ENTIER, jamais sur le sous-ensemble de `--gates` : la table des
+  // lanes doit couvrir le fichier, et une gate écartée d'un run ne la rend pas fautive.
+  const manques = refusDeCouverture(toutesLesGates.map((g) => g.nom), lanesDeclarees, ecritLu, avant)
   if (manques.length) {
     journal(
       `[gates] REFUS — la table des lanes ne couvre pas ci.yml :\n${manques.map((m) => `  ${m}`).join('\n')}\n` +
@@ -830,24 +797,11 @@ export async function principal({
     return 1
   }
 
-  // À JOUER, dans l'ordre de ci.yml : celles dont le justificatif manque, est rouge, ou fut pris sur
-  // un arbre sale.
-  const aJouer = []
-  for (const gate of gates) {
-    const vue = lireJustificatif({ cwd: racine, gate: gate.nom, cles })
-    const motif = motifDeRefus(vue, gate, {
-      autresCles: justificatifsSousDAutresCles({ cwd: racine, gate: gate.nom, cles }),
-    })
-    if (!TOUT && !motif) {
-      journal(`[gates] ${gate.nom} — déjà justifiée sur ce contenu\n`)
-      continue
-    }
-    journal(`[gates] ${gate.nom} — ${TOUT ? 'rejeu demandé' : motif}\n`)
-    aJouer.push(gate)
-  }
+  const aJouer = gates
+  for (const gate of aJouer) journal(`[gates] ${gate.nom} — à jouer : ${gate.commande}\n`)
   if (LISTE) return 0
   if (!aJouer.length) {
-    journal('[gates] rien à jouer : tout est justifié sur ce contenu.\n')
+    journal('[gates] rien à jouer.\n')
     return 0
   }
 
@@ -888,7 +842,7 @@ export async function principal({
   // LISTE FERMÉE, deux causes (#1772), et chacune rend FAUX ce qui suivrait :
   //   1. `arreterSurSignal` — les arbres en cours sont tués, rien ne peut plus rendre de verdict ;
   //   2. un écrivain de la phase série qui a RÉÉCRIT l'arbre — les lecteurs liraient un arbre qui
-  //      n'est pas le commit, donc des verdicts qui ne justifient pas le sha poussé.
+  //      n'est pas le commit, donc des verdicts qui ne valent pas pour le contenu jugé.
   // AUCUN verdict de gate n'en est une instance, pas même un refus de prérequis : les autres gates
   // lisent le même arbre propre, et chacune teste SES PROPRES prérequis (`prerequisAbsents`), donc
   // leur verdict est juste. Un rouge ne pose jamais `arret`.
@@ -911,26 +865,28 @@ export async function principal({
     const fichier = join(dossierSorties(racine), fichierDeSortie(gate.nom, process.pid))
     // PRÉREQUIS D'ABORD : jouer une gate dont le prérequis manque rend l'erreur brute de son outil
     // (un TS2688 pour `server:typecheck`), qui ne nomme ni le dossier absent ni la commande qui le
-    // pose. Le verdict est le même ROUGE, mais il DIT quoi faire — et rien n'est spawné, donc aucun
-    // justificatif n'est écrit : seul `justifie.mjs` en écrit, et il n'est pas appelé. Le refus ne
-    // pèse que sur CE run : les clés de justificatif sont des `git ls-tree` (justificatif.mjs:47,77),
-    // qu'un dossier gitignoré ne change pas — un justificatif vert d'avant la suppression des
-    // dépendances reste donc valable, et la gate n'est pas même redonnée à jouer.
+    // pose. Le verdict est le même ROUGE, mais il DIT quoi faire — et rien n'est spawné. Ce refus ne
+    // pèse que sur CE rejeu local : la gate reste jouée, elle, par le run CI de la branche.
     const absents = prerequisAbsents(ecritLu[gate.nom], racine)
     if (absents.length) {
       const sortie = refusDePrerequis(gate.nom, absents)
       writeFileSync(fichier, sortie)
       return { code: 1, expiree: false, fichier, sortie, limiteMs: limiteDe(gate.nom) }
     }
-    const commande = scripts[`${gate.nom}:brut`] ? `npm run ${gate.nom}:brut` : gate.commande
+    // La commande est celle de `ci.yml`, TELLE QUELLE : ce qui se rejoue ici est ce que la CI joue.
+    // Un script absent de `package.json` est un rouge NOMMÉ, pas un `npm` qui se plaint tout seul.
+    const script = gate.nom === 'test' ? 'test' : gate.nom
+    if (!scripts[script]) {
+      const sortie = `[gates] ${gate.nom} — aucun script « ${script} » dans package.json (step de ci.yml : ${gate.commande})\n`
+      writeFileSync(fichier, sortie)
+      return { code: 1, expiree: false, fichier, sortie, limiteMs: limiteDe(gate.nom) }
+    }
     const env = { ...process.env }
     if (coeurs && !process.env.WFRP_TEST_COEURS) env.WFRP_TEST_COEURS = String(coeurs)
-    // L'enveloppe est celle de CET outil, jamais celle de l'arbre mesuré : c'est `WFRP_GATES_RACINE`
-    // qui lui dit sur quel arbre écrire son justificatif (sans quoi une mesure sur un dépôt jetable
-    // écrirait dans le dépôt réel).
-    env.WFRP_GATES_RACINE = racine
+    const [commande, ...args] = gate.commande.split(' ')
     const r = await spawnBorne({
-      argv: [join(ICI, 'justifie.mjs'), gate.nom, '--', ...commande.split(' ')],
+      commande,
+      argv: args,
       fichier,
       limiteMs: limiteDe(gate.nom),
       cwd: racine,
@@ -1013,7 +969,7 @@ export async function principal({
           '[gates] régénère et committe ces fichiers, puis rejoue les gates.\n'
         // PAS de `break` : les écrivains RESTANTS doivent être marqués « sautée » par la garde en tête
         // de boucle. Sortir ici les laisserait sans verdict, et le résumé les imprimerait « déjà
-        // justifiée » — un verdict FAUX pour une gate jamais jouée. `refusEcriture` n'est donc posé
+        // jouée » — un verdict FAUX pour une gate jamais jouée. `refusEcriture` n'est donc posé
         // qu'ICI, par le PREMIER fautif : les suivantes n'atteignent plus la comparaison de photos.
         arret = `${nom} a réécrit l'arbre`
       }
@@ -1026,7 +982,7 @@ export async function principal({
     { serie: SERIE, lanes: lanesDeclarees },
   )
   // Un refus d'écriture tranche AVANT les lanes : ce qu'elles auraient joué est SAUTÉ, avec son coût,
-  // et le résumé le nomme au lieu de le passer pour « déjà justifié ».
+  // et le résumé le nomme au lieu de le passer pour « déjà joué ».
   if (refusEcriture)
     for (const lane of lanes)
       for (const nom of lane.gates)
@@ -1042,10 +998,7 @@ export async function principal({
   let code = 0
   for (const gate of gates) {
     const v = verdicts.get(gate.nom)
-    if (!v) {
-      journal(`[gates] ${gate.nom} — déjà justifiée — 0.0 s\n`)
-      continue
-    }
+    if (!v) continue
     const exit = typeof v.code === 'number' ? ` (exit ${v.code})` : ''
     journal(`[gates] ${gate.nom} — ${v.statut}${exit} — ${v.secondes.toFixed(1)} s — ${v.fichier ?? v.raison}\n`)
     if (v.statut === 'vert') continue
@@ -1097,7 +1050,7 @@ export async function principal({
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 if (isMain) {
   process.exit(
-    await avecVerrouMachine(() => principal(), { cwd: RACINE, journal: (t) => process.stderr.write(t) }).catch((e) => {
+    await principal().catch((e) => {
       process.stderr.write(`[gates] ARRÊT INATTENDU : ${e?.stack ?? e}\n`)
       return 1
     }),

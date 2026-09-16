@@ -1,7 +1,6 @@
 // GRAMMAIRE D'INVOCATION des lanceurs du dépôt (#1679 L3) — une seule, partagée :
-// `<positionnel> [--<option> <valeur>]* -- <reste…>`. Les deux consommateurs sont
-// `scripts/gates/justifie.mjs` (`<gate> [--capture <fichier>] -- <cmd> [args…]`) et
-// `scripts/lancer-local.mjs` (`<paquet> [--cwd <dossier>] -- <bin> [args…]`).
+// `<positionnel> [--<option> <valeur>]* -- <reste…>`. UN consommateur aujourd'hui :
+// `scripts/lancer-local.mjs:21` (`<paquet> [--cwd <dossier>] -- <bin> [args…]`).
 //
 // Le séparateur est cherché par `indexOf`, jamais à une position fixe : c'est ce qui laisse les
 // options s'intercaler entre le positionnel et `--` sans réécrire le découpage à chaque option

@@ -219,7 +219,7 @@ export function commitsDe(ref, n, opts = {}) {
 
 /**
  * L'ARBRE PRINCIPAL du dépôt qui contient `cwd` — la racine des GESTES git d'un outil, depuis
- * n'importe quel worktree (`ops:chantier`, `ops:worktrees`, les justificatifs, le pre-commit). Source
+ * n'importe quel worktree (`ops:chantier`, `ops:worktrees`, le pre-commit). Source
  * UNIQUE de cette résolution : trois copies manuscrites la re-posaient, chacune avec son repli.
  *
  * `git rev-parse --path-format=absolute --git-common-dir` rend le `.git` COMMUN — celui de l'arbre

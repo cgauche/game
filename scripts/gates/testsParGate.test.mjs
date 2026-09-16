@@ -12,7 +12,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { gatesRequises } from '../guards/lib/justificatif.mjs'
+import { gatesDeCi } from './gatesDeCi.mjs'
 import { GATES, RACINES, couverture, gateDe, listerTests, testsDe } from './testsParGate.mjs'
 
 const RACINE = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
@@ -77,7 +77,7 @@ test('propriété = EXÉCUTION : la table, package.json et ci.yml nomment le MÊ
     'une gate de RACINES sans script `node scripts/test/node-tests.mjs <gate>` dans package.json (ou l’inverse) : ' +
       'une table qui répartit des tests que personne ne lance ne prouve rien',
   )
-  const enCi = gatesRequises({ cwd: RACINE })
+  const enCi = gatesDeCi({ cwd: RACINE })
     .map((g) => g.nom)
     .filter((nom) => nom.startsWith('test:'))
   assert.deepEqual(

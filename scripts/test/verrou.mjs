@@ -120,42 +120,6 @@ export function prendreVerrou({
 }
 
 /**
- * Joue `jouer()` en TENANT le verrou pour toute sa durée. C'est par ici que passe le lanceur de gates
- * (`scripts/gates/toutes.mjs`) : ses trois lanes chargent la machine autant qu'une suite, et deux runs
- * concurrents se volaient cœurs et mémoire sans qu'aucune porte ne le dise. La suite lancée PAR une
- * lane ne se bloque pas elle-même : le jeton `JETON_REENTRANCE` posé ici la rend réentrante, et il ne
- * vit que le temps de ce processus et de ses enfants.
- * REND 2 sur refus — rien n'a été joué, aucun verdict n'est à lire.
- */
-export async function avecVerrouMachine(
-  jouer,
-  { env = process.env, journal = (t) => process.stderr.write(t), cwd = process.cwd(), prendre = prendreVerrou } = {},
-) {
-  const verrou = prendre({ commande: [process.execPath, ...process.argv.slice(1)].join(' '), cwd, env })
-  if (verrou.etat === 'refus') {
-    journal(`${verrou.message}\n[verrou] rien n'a été joué.\n`)
-    return 2
-  }
-  if (verrou.avertissement) journal(`${verrou.avertissement}\n`)
-  const avant = env[JETON_REENTRANCE]
-  env[JETON_REENTRANCE] = String(process.pid)
-  // DEUX rendus, parce qu'aucun ne couvre l'autre : `process.exit()` déroule les crochets `'exit'` mais
-  // AUCUN `finally` (c'est par là que sort le lanceur de gates) ; un `finally` couvre le retour normal
-  // et l'exception. Un arrêt par SIGNAL, lui, ne déroule ni l'un ni l'autre — le verrou reste alors sur
-  // le disque, et le lanceur suivant le reprend comme verrou d'un PID MORT (`prendreVerrou`).
-  const rendre = () => verrou.liberer?.()
-  process.on('exit', rendre)
-  try {
-    return await jouer()
-  } finally {
-    if (avant === undefined) delete env[JETON_REENTRANCE]
-    else env[JETON_REENTRANCE] = avant
-    process.off('exit', rendre)
-    rendre()
-  }
-}
-
-/**
  * Le verrou est-il REQUIS pour ce run ? Un positionnel qui désigne un DOSSIER est une suite (`npm
  * test src` énumère 1 580 fichiers) : seul un run dont CHAQUE filtre nomme un FICHIER s'en passe.
  * `estFichier` est injecté pour la mesure ; le lanceur y met un `statSync().isFile()`.

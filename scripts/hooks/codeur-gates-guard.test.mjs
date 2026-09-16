@@ -1,9 +1,9 @@
-// Contrat du verrou « un `codeur` ne joue pas les gates du train ».
+// Contrat du verrou « un `codeur` ne joue pas les gates de la CI ».
 // POURQUOI — verbatims utilisateur du 2026-09-15 :
 //   « C'est absurde ... on a dépêché un agent pour créer un fichier (+ son test, + le lien pour
 //     l'appeler) et ça va nous prendre 25 min ? »
 //   « La mémoire c'est cool mais ça n'empêche pas de réitérer la même erreur plus tard »
-// Le sujet est la FRONTIÈRE : le test du PÉRIMÈTRE passe, la gate du TRAIN est refusée. Les cas
+// Le sujet est la FRONTIÈRE : le test du PÉRIMÈTRE passe, la gate que la CI joue est refusée. Les cas
 // jouent la fonction PURE avec une liste de gates INJECTÉE — un test qui lirait `ECRIT_LU` mesurerait
 // un cardinal vivant. UN cas, nommé, prouve séparément que le hook lit bien cette table réelle.
 import { test } from 'node:test'
@@ -11,7 +11,7 @@ import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { evaluate, gatesDuTrain } from './codeur-gates-guard.mjs'
+import { evaluate, gatesDeLaCi } from './codeur-gates-guard.mjs'
 import { ECRIT_LU } from '../gates/toutes.mjs'
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -39,15 +39,14 @@ const GATES = ['lint', 'deps:unused', 'docs:check', 'test:ops', 'typecheck', 'ra
 /** La décision du hook pour un `codeur` (la liste de gates est injectée, jamais lue du dépôt). */
 const pourCodeur = (commande) => evaluate({ agentType: 'codeur', commande, gates: GATES })
 
-/** Commandes REFUSÉES : la gate appartient au train, jouée une fois par l'orchestrateur. */
+/** Commandes REFUSÉES : la gate est jouée une fois par le run CI de la branche. */
 const REFUSEES = [
   'npm run lint',
-  'npm run lint:brut',
   'npm test',
   'npm run docs:check',
   'npm run deps:unused',
   // Gate dont la RÉSOLUTION n'est refusée par aucune autre règle (`node scripts/raw/coverage.mjs`) :
-  // seul son NOM, déclaré au train, la refuse — c'est le chemin que `ECRIT_LU` porte.
+  // seul son NOM, déclaré à `ECRIT_LU`, la refuse — c'est le chemin que la table porte.
   'npm run raw:coverage',
   'npx vitest run',
   'npx tsc --noEmit',
@@ -57,7 +56,7 @@ const REFUSEES = [
   'node scripts/gates/toutes.mjs',
   // Décision par SEGMENT : la gate cachée derrière un enchaînement est la même gate.
   'echo ok && npm run docs:check',
-  // Le TRAIN ENTIER, nommément : `gates` n'est pas une clé d'ECRIT_LU, c'est sa RÉSOLUTION
+  // Le REJEU LOCAL ENTIER : `gates` n'est pas une clé d'ECRIT_LU, c'est sa RÉSOLUTION
   // (`node scripts/gates/toutes.mjs`) qui le refuse — la promesse de `codeur.md` tient.
   'npm run gates',
   'npm run gates -- --serie',
@@ -75,7 +74,7 @@ const REFUSEES = [
   'cd src && npm run lint',
 ]
 
-/** Commandes PASSANTES : test du périmètre, porte incrémentale, lecture, outil hors train. */
+/** Commandes PASSANTES : test du périmètre, porte incrémentale, lecture, outil hors gates. */
 const PASSANTES = [
   'npm run typecheck:fast',
   'npx vitest run src/a.test.ts',
@@ -84,8 +83,8 @@ const PASSANTES = [
   'npm run ops:board -- --liste',
   'npm run agents:check',
   'npm test -- src/a.test.ts',
-  // Le sous-projet `server/` a son propre tsconfig et ses propres scripts : le train de la RACINE
-  // n'y répond pas, et son typecheck est le périmètre du codeur dépêché dessus.
+  // Le sous-projet `server/` a son propre tsconfig et ses propres scripts : les gates de la RACINE
+  // n'y répondent pas, et son typecheck est le périmètre du codeur dépêché dessus.
   'cd server && npm run typecheck',
   'cd server; npm run lint',
   'npm --prefix server run typecheck',
@@ -118,7 +117,7 @@ test('un agent qui n’est PAS un codeur n’est jamais visé', () => {
 test('la raison NOMME la commande refusée et le geste de remplacement', () => {
   const { reason } = pourCodeur('npm run lint')
   assert.match(reason, /« npm run lint »/)
-  assert.match(reason, /ops:publier/)
+  assert.match(reason, /le run de la branche la joue une fois sur la tête poussée/)
   assert.match(reason, /typecheck:fast/)
 })
 
@@ -141,18 +140,15 @@ test('DRIVER : silence (aucune sortie) hors du cas visé, et jamais une sortie n
   assert.equal(sortieDriver('{pas du json').trim(), '', 'stdin illisible')
 })
 
-test('le train est LU dans ECRIT_LU (une gate ajoutée là est couverte sans toucher au hook)', () => {
-  const train = gatesDuTrain()
+test('la liste est LUE dans ECRIT_LU (une gate ajoutée là est couverte sans toucher au hook)', () => {
+  const lues = gatesDeLaCi()
   for (const gate of ['lint', 'docs:check', 'test:ops']) {
-    assert.ok(
-      train.includes(gate),
-      `« ${gate} » est une clé d’ECRIT_LU mais le hook ne la voit pas dans le train`,
-    )
+    assert.ok(lues.includes(gate), `« ${gate} » est une clé d’ECRIT_LU mais le hook ne la voit pas`)
     assert.ok(gate in ECRIT_LU, `« ${gate} » a quitté ECRIT_LU : le verrou perd sa source`)
   }
   assert.equal(
     evaluate({ agentType: 'codeur', commande: 'npm run docs:check' })?.decision,
     'deny',
-    'sans liste injectée, le hook doit refuser en lisant le train réel',
+    'sans liste injectée, le hook doit refuser en lisant la table réelle',
   )
 })

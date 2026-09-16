@@ -108,16 +108,16 @@ grille/murs/pions/chrome en surcouches SVG React. **Zustand** (store), **Vitest*
 npm install            # pose les hooks git et les pilotes de fusion des docs
 npm run dev            # dev (port dérivé en worktree lié, imprimé au lancement)
 npm test               # tests Vitest
-npm run typecheck      # tsc --noEmit (la porte de vérité des gates)
+npm run typecheck      # tsc --noEmit
 npm run typecheck:fast # typecheck incrémental (~7-10 s)
-npm run gates          # gates de ci.yml manquantes ; `--serie` pour le diagnostic
+npm run gates          # rejeu local de gates de ci.yml (--gates a,b, --serie)
 npm run galleries      # galeries QC -> public/galeries.html
-npm run ops:chantier -- <N> · ops:publier -- --detache · ops:worktrees · ops:board [-- --liste|--creer]   # ouvrir un chantier (.wt-<N>), publier le train entier détaché, inventorier, projeter l'état des chantiers sur le Project GitHub
+npm run ops:chantier -- <N> · ops:publier -- --detache · ops:worktrees · ops:board [-- --liste|--creer]   # ouvrir un chantier (.wt-<N>), publier le train détaché, inventorier, projeter l'état des chantiers sur le Project GitHub
 npm run relay:dev      # relay coop local ; relay:deploy pour publier
 gh workflow run deploy.yml --ref main   # prod — sur demande explicite SEULEMENT
 ```
 
-Gates, régime de livraison, `package-lock` : `docs/reprise-apres-pause.md`.
+Régime de push, `package-lock` : `docs/reprise-apres-pause.md`.
 
 ## Architecture
 

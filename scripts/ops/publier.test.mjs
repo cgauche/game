@@ -3,28 +3,28 @@
 //
 // Rien ici ne touche l'arbre : le moteur reçoit des étapes FACTICES et un journal EN MÉMOIRE, les
 // verdicts reçoivent des listes de courses littérales. Ce que ce fichier ne couvre pas est dit :
-// les `jouer` réels (rebase, build-all, gates, push, gh) ne sont jugés que par le train joué.
+// les `jouer` réels (rebase, build-all, push, gh) ne sont jugés que par le train joué.
 import test, { after, describe } from 'node:test'
 import assert from 'node:assert/strict'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { numerosCites } from '../guards/lib/fermetures.mjs'
 import { refusDeSujet, sujetDuMessage } from '../guards/lib/sujetDeCommit.mjs'
+import { reinitialiserStub } from '../guards/lib/coursesCi.mjs'
 import {
   ETAPES,
   MOTIF_APRES_REBASE,
   MOTIF_POST_REWRITE,
   RACINE,
   REFUS_DEUX_FOIS,
-  VERROU_TIMEOUT_MIN,
+  attenteCiSecondes,
   commandeInterdite,
   corpsDePilotage,
   correspondGlob,
   estDocDerive,
   etatDeLEtape,
   finDeSortie,
-  gatesRejouees,
   jouerLeTrain,
   journalInitial,
   journalVide,
@@ -39,7 +39,6 @@ import {
   partitionSales,
   plageDeCitations,
   planDeReprise,
-  prerequisDesGates,
   refusDeGit,
   rotationnerLog,
   sansOptionsGlobales,
@@ -47,7 +46,6 @@ import {
   synchroniserAgents,
   titreDeCommit,
   verdictDuTronc,
-  verdictDeSondeDuVerrou,
   verdictDesRuns,
 } from './publier.mjs'
 
@@ -60,8 +58,7 @@ test('optionsDe : les drapeaux et l’option à valeur, sans grammaire emprunté
     detache: false,
     reprendre: false,
     etapes: false,
-    ciTimeoutMin: 40,
-    verrouTimeoutMin: VERROU_TIMEOUT_MIN,
+    ciTimeoutMin: 30,
     inconnus: [],
   })
   assert.equal(optionsDe(['--detache']).detache, true)
@@ -71,20 +68,8 @@ test('optionsDe : les drapeaux et l’option à valeur, sans grammaire emprunté
   // La valeur d'une option n'est JAMAIS lue comme un drapeau inconnu.
   assert.deepEqual(optionsDe(['--ci-timeout-min', '12']).inconnus, [])
   // Une valeur absurde ne DÉGRADE pas la borne : le défaut tient.
-  assert.equal(optionsDe(['--ci-timeout-min', 'zero']).ciTimeoutMin, 40)
+  assert.equal(optionsDe(['--ci-timeout-min', 'zero']).ciTimeoutMin, 30)
   assert.deepEqual(optionsDe(['--force']).inconnus, ['--force'])
-})
-
-test('optionsDe : la borne de la SONDE DU VERROU a son option, son défaut et son parse', () => {
-  assert.equal(VERROU_TIMEOUT_MIN, 60)
-  assert.equal(optionsDe([]).verrouTimeoutMin, VERROU_TIMEOUT_MIN)
-  assert.equal(optionsDe(['--verrou-timeout-min', '5']).verrouTimeoutMin, 5)
-  assert.deepEqual(optionsDe(['--verrou-timeout-min', '5']).inconnus, [])
-  assert.equal(optionsDe(['--verrou-timeout-min', 'zero']).verrouTimeoutMin, VERROU_TIMEOUT_MIN)
-  // Les deux bornes sont INDÉPENDANTES : l'une ne mange pas la valeur de l'autre.
-  const deux = optionsDe(['--ci-timeout-min', '12', '--verrou-timeout-min', '5'])
-  assert.equal(deux.ciTimeoutMin, 12)
-  assert.equal(deux.verrouTimeoutMin, 5)
 })
 
 // ── nomDeJournal ───────────────────────────────────────────────────────────────────────
@@ -363,8 +348,10 @@ test('commandeInterdite : chaque geste interdit rend sa RAISON', () => {
     ['stash', 'push'],
     ['push', 'origin', 'HEAD:main', '--force'],
     ['push', '-f', 'origin', 'HEAD:main'],
-    ['push', 'origin', 'HEAD:main', '--force-with-lease'],
-    ['push', 'origin', 'HEAD:main', '--force-with-lease=main:abc'],
+    ['push', '-f', 'origin', 'HEAD:refs/heads/chantier/1776'],
+    // `--force-with-lease` est ACCEPTÉ sur une branche de travail, jamais vers `main` (#1776).
+    ['push', '--force-with-lease', 'origin', 'HEAD:main'],
+    ['push', '--force-with-lease', 'origin', 'HEAD:refs/heads/main'],
     ['reset', '--hard', 'origin/main'],
     ['branch', '-D', 'chantier/1736'],
     ['worktree', 'remove', '--force', '.wt-1736'],
@@ -422,11 +409,13 @@ test('la SOURCE du train ne porte AUCUN geste de fermeture — la CI ferme', () 
   assert.equal(/issue\s+close/.test(src.replace(/^\s*(\/\/|\*|\/\*).*$/gm, '')), false)
 })
 
-test('la table des ÉTAPES nomme les neuf étapes, dans l’ordre de ci.yml', () => {
+test('la table des ÉTAPES nomme les neuf étapes, dans l’ordre du régime', () => {
   // `derives` vient AVANT `rebase` : mesuré le 2026-09-14, `git rebase origin/main` refuse de
   // démarrer sur un arbre sale, donc les dérivés laissés par le hook `post-rewrite` se commettent
   // avant lui — les tolérer à la préflight ne suffisait pas.
-  assert.deepEqual(NOMS, ['preflight', 'derives', 'rebase', 'docs', 'gates', 'push', 'ci', 'pilotage', 'fin'])
+  // `push-branche` → `ci` → `ff-main` : le push de la branche DÉCLENCHE la CI, la CI JUGE, et `main`
+  // ne reçoit qu'un fast-forward d'une tête verte (#1776).
+  assert.deepEqual(NOMS, ['preflight', 'derives', 'rebase', 'docs', 'push-branche', 'ci', 'ff-main', 'pilotage', 'fin'])
 })
 
 // ── messageDeDerives / plageDeCitations ──────────────────────────────────────────
@@ -489,11 +478,10 @@ test('journalInitial : --reprendre sans journal sur disque part d’un journal N
   assert.equal(vu.vertes, 0)
 })
 
-test('gatesRejouees : la trace vit sur l’ÉTAPE, et seulement pour la tête courante', () => {
-  assert.equal(gatesRejouees({ tete: 't', etapes: { gates: { etat: 'vert', tete: 't', detail: { joue: true } } } }), true)
-  assert.equal(gatesRejouees({ tete: 't', etapes: { gates: { etat: 'vert', tete: 'autre', detail: { joue: true } } } }), false)
-  assert.equal(gatesRejouees({ tete: 't', etapes: { gates: { etat: 'vert', tete: 't', detail: null } } }), false)
-  assert.equal(gatesRejouees(journalVide('c')), false)
+test('attenteCiSecondes : le temps d’ATTENTE de la CI vit sur l’étape `ci`, séparé du temps local', () => {
+  assert.equal(attenteCiSecondes({ etapes: { ci: { etat: 'vert', detail: { attenteCiSecondes: 312.5 } } } }), 312.5)
+  assert.equal(attenteCiSecondes({ etapes: { ci: { etat: 'vert', detail: {} } } }), null)
+  assert.equal(attenteCiSecondes(journalVide('c')), null)
 })
 
 // ── modeDuLog ─────────────────────────────────────────────────────────────────────
@@ -512,36 +500,6 @@ test('modeDuLog : l’ENFANT de `--detache` n’ouvre JAMAIS en troncature — l
 })
 
 // ── sonde du verrou ───────────────────────────────────────────────────────────────────
-
-test('verdictDeSondeDuVerrou : les cinq cas de la sonde du verrou machine', () => {
-  const debut = 1_000_000
-  const tenant = { pid: 4242, cwd: '/arbre', date: '2026-09-14T10:00:00.000Z' }
-  // 1. Aucun refus du verrou (rien joué encore, ou série jouée) : on (re)joue la série.
-  assert.equal(verdictDeSondeDuVerrou({ status: null, tenantVivant: null, debut, maintenant: debut, timeoutMin: 60 }), 'rejouer')
-  assert.equal(verdictDeSondeDuVerrou({ status: 0, tenantVivant: null, debut, maintenant: debut, timeoutMin: 60 }), 'rejouer')
-  assert.equal(verdictDeSondeDuVerrou({ status: 1, tenantVivant: null, debut, maintenant: debut, timeoutMin: 60 }), 'rejouer')
-  // 2. Refus 2, tenant VIVANT, sous la borne : on sonde.
-  assert.equal(
-    verdictDeSondeDuVerrou({ status: 2, tenantVivant: tenant, debut, maintenant: debut + 59 * 60_000, timeoutMin: 60 }),
-    'sonder',
-  )
-  // 3. Refus 2 SANS tenant vivant, sous la borne : rouge ORPHELIN (le 2 ne vient que du verrou).
-  assert.equal(
-    verdictDeSondeDuVerrou({ status: 2, tenantVivant: null, debut, maintenant: debut, timeoutMin: 60 }),
-    'rouge-orphelin',
-  )
-  // 4. Borne atteinte, tenant vivant : rouge BORNE.
-  assert.equal(
-    verdictDeSondeDuVerrou({ status: 2, tenantVivant: tenant, debut, maintenant: debut + 60 * 60_000, timeoutMin: 60 }),
-    'rouge-borne',
-  )
-  // 5. Borne atteinte ET tenant mort au MÊME tour : la borne PRIME — on a bien attendu 60 min, et le
-  //    refus doit dire « sondé 60 min », pas « aucun tenant vivant ».
-  assert.equal(
-    verdictDeSondeDuVerrou({ status: 2, tenantVivant: null, debut, maintenant: debut + 60 * 60_000, timeoutMin: 60 }),
-    'rouge-borne',
-  )
-})
 
 // ── rotation du log ───────────────────────────────────────────────────────────────────
 
@@ -668,9 +626,7 @@ const PILOTAGE = {
   base: 'b'.repeat(40),
   tete: 'a'.repeat(40),
   commits: [{ sha: 'c'.repeat(40), message: 'feat(ops): corrige #1736 — le train\n\ncorps' }],
-  gates: [{ nom: 'test', secondes: 120.5 }, { nom: 'lint' }],
-  gatesJouees: true,
-  ci: { etat: 'verte', course: { databaseId: 42 } },
+  ci: { etat: 'verte', course: { databaseId: 42 }, attenteCiSecondes: 312.5 },
   ferme: true,
 }
 
@@ -678,8 +634,6 @@ test('corpsDePilotage : un ticket FERMÉ par la plage l’annonce, la marque est
   const corps = corpsDePilotage(PILOTAGE)
   assert.match(corps, /Ce commit FERME #1736/)
   assert.match(corps, /course `42`/)
-  assert.match(corps, /test — 120\.5 s/)
-  assert.match(corps, /lint — durée non mesurée/)
   assert.equal(corps.trimEnd().split('\n').at(-1), marquePublication(PILOTAGE.tete))
 })
 
@@ -694,48 +648,16 @@ test('corpsDePilotage : fermé par la CI avant le rendu de l’étape `ci`, et f
   assert.match(corpsDePilotage({ ...PILOTAGE, fermeAutrement: true }), /déjà FERMÉ par un autre geste/)
 })
 
-test('corpsDePilotage : des gates NON rejouées ne montrent aucune durée, et le bridage est DIT', () => {
-  const rejoue = corpsDePilotage(PILOTAGE)
-  assert.match(rejoue, /WFRP_TEST_COEURS=4/)
-  const saute = corpsDePilotage({ ...PILOTAGE, gatesJouees: false })
-  assert.match(saute, /déjà justifiées pour ce contenu \(non rejouées\)/)
-  assert.doesNotMatch(saute, /120\.5 s/)
+test('corpsDePilotage : le temps d’ATTENTE de la CI est dit COMME TEL, jamais comme du temps machine', () => {
+  assert.match(corpsDePilotage(PILOTAGE), /attente du verdict CI : 5\.2 min \(temps d’attente, pas de machine locale\)/)
+  // Une course jamais lue n'invente pas de durée.
+  assert.doesNotMatch(corpsDePilotage({ ...PILOTAGE, ci: { etat: 'non lue' } }), /attente du verdict CI/)
 })
 
 test('titreDeCommit : première ligne, bornée à 120 caractères', () => {
   assert.equal(titreDeCommit('un titre\n\ncorps'), 'un titre')
   assert.equal(titreDeCommit(`${'x'.repeat(200)}`).length, 120)
 })
-
-// ── prerequisDesGates ──────────────────────────────────────────────────────────────────
-// La table des gates et celle des prérequis sont INJECTÉES : ce qui se juge ici est la LECTURE du
-// disque (le chemin est-il là ?) et le TEXTE rendu — celui de la gate, jamais une reformulation.
-
-test('prerequisDesGates : rien à dire quand le chemin déclaré est là, une ligne quand il manque', () => {
-  const racine = mkdtempSync(join(tmpdir(), 'prerequis-'))
-  try {
-    const gates = [{ nom: 'server:typecheck' }, { nom: 'lint' }]
-    const ecritLu = {
-      'server:typecheck': { prerequis: [{ chemin: 'server/node_modules', pose: 'npm --prefix server ci' }] },
-      lint: { lit: [] },
-    }
-    assert.deepEqual(prerequisDesGates(racine, { gates, ecritLu }), [
-      '[gates] server:typecheck — prérequis absent : `server/node_modules` (le pose : `npm --prefix server ci`)',
-    ], 'le refus est MOT POUR MOT celui que la gate écrirait — après 881 s de série (3ᵉ train réel)')
-
-    mkdirSync(join(racine, 'server', 'node_modules'), { recursive: true })
-    assert.deepEqual(prerequisDesGates(racine, { gates, ecritLu }), [],
-      'prérequis posé : la préflight ne dit plus rien, et le train paie la série')
-  } finally { rmSync(racine, { recursive: true, force: true }) }
-})
-
-test('prerequisDesGates : les gates requises RÉELLES de ci.yml, mesurées sur l’arbre de ce dépôt', () => {
-  // Pas d'attendu figé sur le CONTENU (l'arbre est équipé ou non selon la machine) : ce qui est
-  // jugé est que la sonde tourne sur la table réelle et ne rend que des lignes de gate.
-  for (const ligne of prerequisDesGates(RACINE)) assert.match(ligne, /^\[gates] \S+ — prérequis absent : `/)
-})
-
-// ── verdictDuTronc / sortieDe / refusDeGit / étape `push` ──────────────────────────────
 
 test('verdictDuTronc : inchangé, bougé (relance), bougé une SECONDE fois (rouge)', () => {
   assert.equal(verdictDuTronc({ distant: 'aaa', base: 'aaa', reprises: 0 }), 'inchangé')
@@ -758,10 +680,11 @@ test('sortieDe / refusDeGit : la sortie d’un git en échec, jamais vide', () =
   assert.match(refusDeGit({ disponible: true, absent: true }), /status \?/)
 })
 
-/** L'étape `push`, jouée avec un `ctx` FACTICE : `tronc()` et `git()` sont ses deux seules portes. */
-const etapePush = ETAPES.find((e) => e.nom === 'push')
+/** L'étape `ff-main`, jouée avec un `ctx` FACTICE : `tronc()` et `git()` sont ses deux seules portes. */
+const etapePush = ETAPES.find((e) => e.nom === 'ff-main')
 const ctxPush = ({ sha, push }) => ({
   racine: RACINE,
+  branche: 'chantier/1776',
   tete: 'ttttttttt',
   journaliser: () => {},
   tronc: () => ({ disponible: true, sha }),
@@ -770,19 +693,21 @@ const ctxPush = ({ sha, push }) => ({
 const REFUS_PUSH = { disponible: true, valeur: { status: 1, stderr: '! [rejected] main -> main (non-fast-forward)', stdout: '' } }
 const journalPush = (reprises) => ({ ...journalVide('b'), base: 'aaa', tete: 'ttttttttt', reprises })
 
-test('push : un refus de git sur un tronc qui a BOUGÉ rend la relance, pas une panne', () => {
+test('ff-main : un refus de git sur un tronc qui a BOUGÉ rend la relance, pas une panne', () => {
   const journal = journalPush(0)
   // Le tronc est mesuré DEUX fois : intact avant le push, bougé après (origin/main a reçu des commits).
   let tour = 0
   const ctx = { ...ctxPush({ sha: 'aaa', push: REFUS_PUSH }), tronc: () => ({ disponible: true, sha: tour++ === 0 ? 'aaa' : 'bbbbbbbbb' }) }
   const vu = etapePush.jouer(ctx, journal)
   assert.equal(vu.ok, true)
-  assert.deepEqual(vu.relancer, ['rebase', 'docs', 'gates'])
+  // La relance repasse par le PUSH DE BRANCHE et par la CI : la tête rebasée est un contenu NEUF,
+  // et c'est son PROPRE run que le fast-forward exigera vert (#1776, patron #1751).
+  assert.deepEqual(vu.relancer, ['rebase', 'docs', 'push-branche', 'ci'])
   assert.equal(vu.dit, 'origin/main a bougé pendant le push (bbbbbbbbb) : le train reprend au rebase')
   assert.equal(journal.reprises, 1)
 })
 
-test('push : un refus de git sur un tronc INCHANGÉ est rouge, et DIT ce que git a imprimé', () => {
+test('ff-main : un refus de git sur un tronc INCHANGÉ est rouge, et DIT ce que git a imprimé', () => {
   const journal = journalPush(0)
   const vu = etapePush.jouer(ctxPush({ sha: 'aaa', push: REFUS_PUSH }), journal)
   assert.equal(vu.ok, false)
@@ -790,14 +715,14 @@ test('push : un refus de git sur un tronc INCHANGÉ est rouge, et DIT ce que git
   assert.equal(journal.reprises, 0)
 })
 
-test('push : un refus SANS sortie nomme le code de sortie', () => {
+test('ff-main : un refus SANS sortie nomme le code de sortie', () => {
   const journal = journalPush(0)
   const vu = etapePush.jouer(ctxPush({ sha: 'aaa', push: { disponible: true, valeur: { status: 1, stderr: '', stdout: '' } } }), journal)
   assert.equal(vu.ok, false)
   assert.match(vu.raison, /status 1/)
 })
 
-test('push : un tronc bougé une SECONDE fois est rouge — avant comme après le push', () => {
+test('ff-main : un tronc bougé une SECONDE fois est rouge — avant comme après le push', () => {
   const avant = journalPush(1)
   assert.deepEqual(etapePush.jouer(ctxPush({ sha: 'bbb', push: REFUS_PUSH }), avant), { ok: false, raison: REFUS_DEUX_FOIS })
   const apres = journalPush(1)
@@ -807,7 +732,107 @@ test('push : un tronc bougé une SECONDE fois est rouge — avant comme après l
   assert.equal(apres.reprises, 1)
 })
 
-test('push : tronc intact et push accepté → vert', () => {
+test('ff-main : tronc intact et fast-forward accepté → vert', () => {
   const vu = etapePush.jouer(ctxPush({ sha: 'aaa', push: { disponible: true, valeur: { status: 0, stdout: '', stderr: '' } } }), journalPush(0))
-  assert.deepEqual(vu, { ok: true, dit: 'ttttttttt poussé sur main' })
+  assert.deepEqual(vu, { ok: true, dit: 'ttttttttt entré dans main en fast-forward' })
+})
+
+// ── étapes `push-branche` et `ci` ───────────────────────────────────────────────
+
+const etapeBranche = ETAPES.find((e) => e.nom === 'push-branche')
+
+test('push-branche : pousse la TÊTE sur SA branche, par un bail — c’est lui qui déclenche la CI', () => {
+  let vus = null
+  const ctx = {
+    racine: RACINE,
+    branche: 'chantier/1776',
+    tete: 'ttttttttt',
+    journaliser: () => {},
+    git: (args) => { vus = args; return { disponible: true, valeur: { status: 0, stdout: '', stderr: '' } } },
+  }
+  const vu = etapeBranche.jouer(ctx, journalPush(0))
+  assert.deepEqual(vus, ['push', '--force-with-lease', 'origin', 'HEAD:refs/heads/chantier/1776'])
+  assert.equal(vu.ok, true)
+  assert.match(vu.dit, /poussé sur chantier\/1776 — la CI de la branche juge/)
+  // Le bail vers la branche passe la porte des interdits ; vers `main`, non.
+  assert.equal(commandeInterdite(vus), null)
+})
+
+test('push-branche : un refus de git est ROUGE et porte ce que git a imprimé', () => {
+  const ctx = {
+    racine: RACINE,
+    branche: 'chantier/1776',
+    tete: 'ttttttttt',
+    journaliser: () => {},
+    git: () => ({ disponible: true, valeur: { status: 1, stderr: '! [rejected] stale info', stdout: '' } }),
+  }
+  const vu = etapeBranche.jouer(ctx, journalPush(0))
+  assert.equal(vu.ok, false)
+  assert.match(vu.raison, /push de la branche REFUSÉ/)
+  assert.match(vu.raison, /stale info/)
+})
+
+const etapeCi = ETAPES.find((e) => e.nom === 'ci')
+
+/** Les courses servies à l'étape `ci` : elle lit `coursesCi`, que `WFRP_GH_STUB` alimente. */
+function avecCourses(courses, jouer) {
+  const fichier = join(mkdtempSync(join(tmpdir(), 'publier-ci-')), 'gh.json')
+  writeFileSync(fichier, JSON.stringify(courses))
+  reinitialiserStub()
+  const avant = process.env.WFRP_GH_STUB
+  process.env.WFRP_GH_STUB = fichier
+  try {
+    return jouer()
+  } finally {
+    if (avant === undefined) delete process.env.WFRP_GH_STUB
+    else process.env.WFRP_GH_STUB = avant
+    rmSync(fichier, { force: true })
+  }
+}
+
+const ctxCi = () => ({
+  racine: RACINE,
+  branche: 'chantier/1776',
+  tete: 'ttttttttt',
+  options: { ciTimeoutMin: 30 },
+  journaliser: () => {},
+})
+
+test('ci : un run VERT sur la tête rend vert, et le journal porte le temps d’ATTENTE', () => {
+  const vu = avecCourses(
+    [{ headSha: 'ttttttttt', status: 'completed', conclusion: 'success', databaseId: 7, workflowName: 'CI' }],
+    () => etapeCi.jouer(ctxCi(), journalPush(0)),
+  )
+  assert.equal(vu.ok, true)
+  assert.equal(vu.detail.etat, 'verte')
+  assert.equal(typeof vu.detail.attenteCiSecondes, 'number',
+    'le temps d’attente de GitHub se compte à part du temps machine locale (#1776)')
+})
+
+test('ci : un run ROUGE rend le job et l’URL du run — et RIEN n’est entré dans main', () => {
+  const vu = avecCourses(
+    [{ headSha: 'ttttttttt', status: 'completed', conclusion: 'failure', databaseId: 33691303703, workflowName: 'CI' }],
+    () => etapeCi.jouer(ctxCi(), journalPush(0)),
+  )
+  assert.equal(vu.ok, false)
+  assert.match(vu.raison, /course CI rouge \(33691303703\)/)
+  assert.match(vu.raison, /RIEN n'est entré dans main/)
+  assert.match(vu.raison, /https:\/\/github\.com\/cgauche\/game\/actions\/runs\/33691303703/)
+  assert.equal(typeof vu.detail.attenteCiSecondes, 'number')
+})
+
+test('ci : une course ANNULÉE n’est pas un vert — elle rougit, en se nommant', () => {
+  const vu = avecCourses(
+    [{ headSha: 'ttttttttt', status: 'completed', conclusion: 'cancelled', databaseId: 9, workflowName: 'CI' }],
+    () => etapeCi.jouer(ctxCi(), journalPush(0)),
+  )
+  assert.equal(vu.ok, false)
+  assert.match(vu.raison, /course CI annulee \(9\)/)
+})
+
+test('ci : la borne ÉCOULÉE rend INDÉTERMINÉ, jamais un vert — et le dit', () => {
+  const vu = avecCourses([], () => etapeCi.jouer({ ...ctxCi(), options: { ciTimeoutMin: 0 } }, journalPush(0)))
+  assert.equal(vu.indetermine, true)
+  assert.match(vu.raison, /aucun verdict de la CI en 0 min sur ttttttttt/)
+  assert.match(vu.raison, /rien n'est entré dans main/)
 })

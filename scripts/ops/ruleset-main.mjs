@@ -1,28 +1,39 @@
-// RULESET `main-evaluate` — la protection serveur de `main`, décrite en mode ÉVALUATION.
+// RULESET `main` — LA protection serveur de `main` (#1776). C'est elle, et rien de local, qui tient
+// l'invariant « `main` n'est jamais rouge » : la preuve est le run CI GitHub du sha lui-même.
 //
-// Décision utilisateur 3 du plan approuvé (AskUserQuestion 2026-09-01, question « protéger main côté
-// serveur ? »), verbatim : « Aucune protection serveur pour l'instant » [entériné 2026-09-01]. D'où `enforcement: "evaluate"` :
-// GitHub mesure ce que la règle AURAIT refusé sans jamais refuser, et le passage en `active` est une
-// redécision utilisateur, quand la CI tient.
+// Décision utilisateur du 2026-09-16, verbatim : « Oui, ruleset actif ». Elle RE-DÉCIDE « Aucune
+// protection serveur pour l'instant » [entériné 2026-09-01]. Le mode `evaluate` n'existe pas sur le
+// plan de ce dépôt (HTTP 422 « Enforcement evaluate option is not supported on this plan », mesuré
+// le 2026-09-04) : les modes offerts sont `active` et `disabled`, et c'est `active`.
 //
-// MESURE du 2026-09-04 : GitHub REFUSE ce mode sur le plan de ce dépôt — l'appel rend HTTP 422
-// « Enforcement evaluate option is not supported on this plan. Please upgrade to Enterprise to enable
-// it. ». Les seuls modes offerts ici sont `active` (qui BLOQUE) et `disabled` : la voie « mesurer
-// d'abord, décider ensuite » n'existe pas sur ce plan, et le choix entre les deux appartient à
-// l'utilisateur. Ce refus est NOMMÉ par `refusGh` — il ne remonte jamais en exception brute.
-// Ce que la règle mesure se lit dans `scripts/ops/rule-suites.mjs`.
+// TROIS RÈGLES :
+//   · `required_status_checks` — les jobs VÉRIFIANTS de `ci.yml` (`JOBS_NON_VERIFIANTS` nomme les
+//     autres). `strict_required_status_checks_policy: false` : la tête verte sur sa branche est
+//     acceptée telle quelle, c'est le FAST-FORWARD qui garantit que le sha jugé est celui qui entre ;
+//   · `non_fast_forward` — `main` n'est jamais réécrite ;
+//   · `deletion` — `main` ne se supprime pas.
+//
+// BYPASS : GitHub Actions (`actor_id: 15368`, `Integration`) — il vaut pour TOUT workflow de ce dépôt
+// qui pousse sur `main`, quel qu'il soit. Un seul le fait aujourd'hui : `export-issues.yml`, dont le
+// bot commet sous `docs/decisions/` (#1713) ; sans ce bypass, il serait bloqué par les checks requis
+// de sa propre poussée, qui n'existent pas encore à la seconde où il pousse. (`deploy.yml:49` pousse
+// sur le dépôt de PROD, pas sur `main` : le ruleset ne le voit jamais.)
 //
 // Usage : `npm run ops:ruleset -- --dry-run` (imprime le corps, n'écrit rien) ou `npm run ops:ruleset`
 // (crée ou met à jour le ruleset — geste de l'orchestrateur, jamais d'un agent).
 import { execFileSync } from 'node:child_process'
-import { readFileSync, writeFileSync, rmSync } from 'node:fs'
+import { writeFileSync, rmSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
+import { jobsCi } from '../gates/gatesDeCi.mjs'
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 export const DEPOT = 'cgauche/game'
-export const NOM = 'main-evaluate'
+export const NOM = 'main'
+
+/** Id d'installation de l'app GitHub Actions — l'acteur qui pousse depuis un workflow. */
+export const ACTEUR_ACTIONS = 15368
 
 /**
  * Jobs de `ci.yml` qui ne VÉRIFIENT pas le contenu poussé, chacun avec sa raison : ils ne peuvent pas
@@ -34,20 +45,9 @@ export const JOBS_NON_VERIFIANTS = {
     'réussite avant de laisser entrer le push serait circulaire',
 }
 
-/** Noms des jobs de `.github/workflows/ci.yml`, dans l'ordre du fichier — jamais recopiés à la main :
- *  un job renommé change le nom de son check, et la règle doit suivre le fichier. */
-export function jobsCi(texte) {
-  const lignes = texte.split(/\r?\n/)
-  const iJobs = lignes.findIndex((l) => /^jobs:\s*$/.test(l))
-  if (iJobs === -1) throw new Error('ci.yml sans bloc `jobs:` — le ruleset ne peut pas nommer ses checks')
-  return lignes.slice(iJobs + 1)
-    .map((l) => /^ {2}([A-Za-z0-9_-]+):\s*$/.exec(l)?.[1])
-    .filter(Boolean)
-}
-
 /** Contextes de check requis = les jobs VÉRIFIANTS de `ci.yml`. */
-export function contextesRequis(texte) {
-  return jobsCi(texte).filter((j) => !(j in JOBS_NON_VERIFIANTS))
+export function contextesRequis({ cwd = RACINE, fichier } = {}) {
+  return jobsCi({ cwd, fichier }).filter((j) => !(j in JOBS_NON_VERIFIANTS))
 }
 
 /** Corps du ruleset. PUR. */
@@ -55,15 +55,20 @@ export function corpsDuRuleset(contextes) {
   return {
     name: NOM,
     target: 'branch',
-    enforcement: 'evaluate',
+    enforcement: 'active',
+    bypass_actors: [{ actor_id: ACTEUR_ACTIONS, actor_type: 'Integration', bypass_mode: 'always' }],
     conditions: { ref_name: { include: ['refs/heads/main'], exclude: [] } },
-    rules: [{
-      type: 'required_status_checks',
-      parameters: {
-        strict_required_status_checks_policy: false,
-        required_status_checks: contextes.map((context) => ({ context })),
+    rules: [
+      {
+        type: 'required_status_checks',
+        parameters: {
+          strict_required_status_checks_policy: false,
+          required_status_checks: contextes.map((context) => ({ context })),
+        },
       },
-    }],
+      { type: 'non_fast_forward' },
+      { type: 'deletion' },
+    ],
   }
 }
 
@@ -72,25 +77,18 @@ export function corpsDuRuleset(contextes) {
 const gh = (args) =>
   execFileSync('gh', args, { cwd: RACINE, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] })
 
-/** Id du ruleset `main-evaluate` s'il existe, `null` sinon (l'écriture est donc IDEMPOTENTE). */
+/** Id du ruleset `main` s'il existe, `null` sinon (l'écriture est donc IDEMPOTENTE). */
 export function idExistant(runner = gh) {
   const liste = JSON.parse(runner(['api', `repos/${DEPOT}/rulesets`]))
   return liste.find((r) => r.name === NOM)?.id ?? null
 }
 
-/** Refus de GitHub sur `enforcement: evaluate` : le plan du dépôt ne l'offre pas (mesuré 2026-09-04). */
-export const REFUS_EVALUATE =
-  '[ruleset] GitHub refuse `enforcement: evaluate` sur ce plan (Enterprise seulement) : les seuls modes ' +
-  'possibles sont `active` (bloque) et `disabled` — la voie « mesurer par evaluate » de la décision 3 ' +
-  'est impossible ici, la re-décision est à l’utilisateur'
-
-/** Ce qu'un échec de `gh` DIT. PUR. Un refus de plan est NOMMÉ ; tout autre échec rend son corps. */
+/** Ce qu'un échec de `gh` DIT. PUR — il rend le corps de l'erreur, jamais une exception brute. */
 export function refusGh(erreur) {
   const corps = [erreur?.stdout, erreur?.stderr, erreur?.message]
     .filter(Boolean)
     .map((p) => String(p))
     .join('\n')
-  if (/not supported on this plan/i.test(corps)) return REFUS_EVALUATE
   return `[ruleset] échec de l’appel gh : ${corps.trim()}`
 }
 
@@ -108,8 +106,7 @@ export function executer({
   journal = (s) => process.stderr.write(s),
 } = {}) {
   const dryRun = argv.includes('--dry-run')
-  const ci = readFileSync(join(RACINE, '.github', 'workflows', 'ci.yml'), 'utf8')
-  const corps = corpsDuRuleset(contextesRequis(ci))
+  const corps = corpsDuRuleset(contextesRequis({ cwd: RACINE }))
   sortie(`${JSON.stringify(corps, null, 2)}\n`)
   if (dryRun) {
     sortie('[ruleset] --dry-run : rien n’a été écrit sur GitHub\n')
@@ -123,7 +120,7 @@ export function executer({
     writeFileSync(fichier, JSON.stringify(corps))
     const cible = id === null ? `repos/${DEPOT}/rulesets` : `repos/${DEPOT}/rulesets/${id}`
     runner(['api', '-X', id === null ? 'POST' : 'PUT', cible, '--input', fichier])
-    sortie(`[ruleset] ${NOM} ${id === null ? 'créé' : `mis à jour (id ${id})`} en mode evaluate\n`)
+    sortie(`[ruleset] ${NOM} ${id === null ? 'créé' : `mis à jour (id ${id})`} en mode active\n`)
     return 0
   } catch (erreur) {
     journal(`${refusGh(erreur)}\n`)

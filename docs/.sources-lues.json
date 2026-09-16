@@ -9843,18 +9843,18 @@
       "scripts/docs/build-reprise.mjs",
       "scripts/docs/lib/empreinte-sources.mjs",
       "scripts/docs/lib/jsdocUnion.mjs",
+      "scripts/gates/gatesDeCi.mjs",
       "scripts/gates/toutes.mjs",
       "scripts/git-hooks/pre-push.mjs",
       "scripts/guards/lib/enteteArbre.mjs",
       "scripts/guards/lib/gitPorte.mjs",
-      "scripts/guards/lib/justificatif.mjs",
       "scripts/guards/lib/lister.mjs",
       "scripts/guards/lib/npmLockHoisted.mjs",
       "scripts/guards/lib/purgerPerimes.mjs",
       "scripts/guards/lib/spawnResilient.mjs",
+      "scripts/ops/ruleset-main.mjs",
       "scripts/port-dev.mjs",
-      "scripts/test/partition.mjs",
-      "scripts/test/verrou.mjs"
+      "scripts/test/partition.mjs"
     ],
     "dossiers": [
       ".github/workflows",

@@ -13,7 +13,7 @@ import os from 'node:os'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { execFileSync, spawn, spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import {
   argumentsEnfant,
   bilanDiagnostic,
@@ -32,10 +32,10 @@ import {
   cotesRequis,
   separerArguments,
   cheminsGlobSuspects,
+  suiteComplete,
 } from './partition.mjs'
 import { refusOutillageLocal } from '../outillage-local.mjs'
 import { estPidVivant, prendreVerrou, verrouRequis } from './verrou.mjs'
-import { ecrireJustificatif, nomDeGate, suiteComplete } from '../guards/lib/justificatif.mjs'
 import { PEREMPTION_MS, purgerPerimes } from '../guards/lib/purgerPerimes.mjs'
 import { entreesPerimees, messagePeremption } from '../guards/lib/domResiduStock.mjs'
 
@@ -355,23 +355,6 @@ process.stdout.write(
   }),
 )
 ecrireCapture(`status: ${code}\n`)
-// #1679 L2 — justificatif de gate : SEULE une suite COMPLÈTE verte dit quelque chose du contenu
-// poussé, un run filtré n'en couvre qu'une tranche. Le nom de la gate vient du même endroit que
-// celui qu'exige le pre-push : la commande `npm test` de `ci.yml`, traduite par `nomDeGate`.
-if (code === 0 && suiteComplete(filtres, ARGV)) {
-  try {
-    const sha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: RACINE, encoding: 'utf8' }).trim()
-    const { fichier } = ecrireJustificatif({
-      cwd: RACINE,
-      gate: nomDeGate('npm test'),
-      sha,
-      capture: CAPTURE,
-    })
-    process.stdout.write(`justificatif : ${fichier}\n`)
-  } catch (e) {
-    process.stderr.write(`[test] justificatif non écrit : ${e.message}\n`)
-  }
-}
 if (fdCapture !== null) {
   try {
     fs.closeSync(fdCapture)

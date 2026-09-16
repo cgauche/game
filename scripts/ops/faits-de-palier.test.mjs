@@ -12,8 +12,6 @@ import {
   CHAMP,
   ENREGISTREMENT,
   analyserArguments,
-  derogationsDeLaFenetre,
-  derogationsDuJournal,
   fermeturesDesCommits,
   marquerSubstance,
   parserJournal,
@@ -83,67 +81,6 @@ test('fermeturesDesCommits : les fermetures citées, croisées avec les soldes S
 test('fermeturesDesCommits : un numéro cité deux fois par le MÊME commit ne compte qu’une fois', () => {
   const commits = [{ sha: 'aaa', sujet: 'feat: x corrige #7', corps: 'feat: x corrige #7\n\ncorrige #7' }];
   assert.equal(fermeturesDesCommits(commits, []).length, 1);
-});
-
-/** Le séparateur d'enregistrements du journal — une ligne par tentative. */
-const NL = '\n';
-
-test('derogationsDuJournal : chaque tentative journalisée est rendue, la fenêtre est marquée', () => {
-  const journal = [
-    JSON.stringify({ horodatage: '2026-09-03T10:00:00.000Z', etat: 'tentative', motif: 'rouge', sha: 'aaa', raison: 'correctif de la CI rouge elle-même' }),
-    JSON.stringify({ horodatage: '2026-09-04T10:00:00.000Z', etat: 'tentative', motif: 'non-consultable', sha: 'zzz', raison: 'une autre raison de vingt caractères' }),
-    '',
-  ].join(NL);
-  const lues = derogationsDuJournal(journal, ['aaa']);
-  assert.equal(lues.length, 2);
-  assert.deepEqual(lues.map((d) => d.dansLaFenetre), [true, false]);
-  assert.equal(lues[0].raison, 'correctif de la CI rouge elle-même');
-  assert.equal(lues[0].etat, 'tentative');
-  assert.deepEqual(lues.map((d) => d.motif), ['rouge', 'non-consultable']);
-});
-
-// La fenêtre d'une revue est faite des commits POUSSÉS : une dérogation attribuée au commit qui l'a
-// CAUSÉE (tête de main, course rouge — un ancêtre déjà publié) sortait de toute fenêtre (#1679 L3b).
-test('derogationsDuJournal : la fenêtre retrouve la dérogation par le commit POUSSÉ, pas par sa cause', () => {
-  const journal = JSON.stringify({
-    horodatage: '2026-09-05T10:00:00.000Z',
-    etat: 'tentative',
-    motif: 'rouge',
-    sha: 'pousse111',
-    shaCause: 'rouge999',
-    raison: 'correctif de la CI rouge elle-même',
-  });
-  const [lue] = derogationsDuJournal(journal, ['pousse111']);
-  assert.equal(lue.dansLaFenetre, true);
-  assert.equal(lue.shaCause, 'rouge999');
-  assert.equal(derogationsDuJournal(journal, ['rouge999'])[0].dansLaFenetre, false);
-});
-
-// Une ligne qui n'est pas un objet JSON n'est pas DEVINÉE : un lecteur qui devine une graphie
-// fabrique des dérogations à partir de n'importe quoi.
-test('derogationsDuJournal : une ligne non JSON est rendue ILLISIBLE, jamais interprétée', () => {
-  const journal = [
-    '2026-09-04T12:02:57.887Z	f3d23dfedd1131b8868584a8ddc53b52bc517ff8	corrige le rouge de main (banc météo)',
-    '["pas un objet"]',
-  ].join(NL);
-  const lues = derogationsDuJournal(journal, ['f3d23dfedd1131b8868584a8ddc53b52bc517ff8']);
-  assert.deepEqual(lues.map((d) => d.etat), ['illisible', 'illisible']);
-  assert.equal(lues[0].ligne.startsWith('2026-09-04T12:02:57.887Z'), true);
-  assert.deepEqual(lues.map((d) => d.dansLaFenetre), [false, false]);
-});
-
-test('derogationsDeLaFenetre : la revue ne reçoit QUE sa fenêtre ; hors-fenêtre et ILLISIBLES se comptent à part', () => {
-  const journal = [
-    JSON.stringify({ horodatage: '2026-09-03T10:00:00.000Z', etat: 'tentative', motif: 'rouge', sha: 'aaaaaaaaa', raison: 'correctif de la CI rouge elle-même' }),
-    JSON.stringify({ horodatage: '2026-09-04T10:00:00.000Z', etat: 'tentative', motif: 'perimee', sha: 'zzzzzzzzz', raison: 'une autre raison de vingt caractères' }),
-    JSON.stringify({ horodatage: '2026-09-04T11:00:00.000Z', etat: 'tentative', motif: 'rouge', sha: 'yyyyyyyyy', raison: 'encore une autre raison journalisée' }),
-    'ligne corrompue, ni JSON ni rien',
-  ].join(NL);
-  const lues = derogationsDeLaFenetre(journal, ['aaaaaaaaa']);
-  assert.equal(lues.dansLaFenetre.length, 1);
-  assert.equal(lues.dansLaFenetre[0].sha, 'aaaaaaaaa');
-  assert.equal(lues.horsFenetre, 2);
-  assert.equal(lues.illisibles, 1);
 });
 
 test('coursesParCommit : un commit sans course est rendu VIDE, jamais omis', () => {
