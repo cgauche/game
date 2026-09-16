@@ -114,4 +114,4 @@ mécanique (un terrain bien agencé, des mannequins bien placés).
 
 Un scénario peut embarquer **plusieurs scènes** (`extraScenes`) et une **carte du monde** (`worldMap`) :
 il est alors chargé comme un projet (`loadProject`).
-<!-- sources-empreinte: 87c5cb1c16d2a086c0abee1384af76080fa8714e (44 fichiers, 1 dossiers) corps: 39da1c954108d32d15b53ceb4dc9377509666014 -->
+<!-- sources-empreinte: 0aa822ff9506f32a9e7b211a1d92905415c9f787 (44 fichiers, 1 dossiers) corps: 39da1c954108d32d15b53ceb4dc9377509666014 -->

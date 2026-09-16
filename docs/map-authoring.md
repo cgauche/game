@@ -233,10 +233,19 @@ Spec de relief EN COORDONNÉES (repli bas niveau ; préférer `elevate` piloté 
    attendu de test).
 5. **Recalage z0↔z1 par ANCRES** : les cages d'escalier (`cells.stair`) et l'enveloppe commune. La
    compilation ÉCHOUE si les grilles sont décalées — le recalage est vérifié par construction.
+   Un mur se déclare **par COUCHE** : un pas ne voit que l'arête de la couche la plus HAUTE qu'il engage
+   (`Math.max(z, nz)`, `src/state/path.ts`, « un mur n'arrête le pas qu'à la HAUTEUR où on le franchit »).
+   Une cloison qui monte jusqu'à l'étage se pose donc dans les DEUX grilles `walled` : déclarée au seul
+   rez, elle passe sous les pieds et devient franchissable au niveau du plancher supérieur.
 6. **Vides & hauteurs** : trémies/balcons ; la validation de trémie d'une volée couvre les surfaces
    fantômes.
 7. **Zones nommées** : le calque `zoneMap` + `zoneLegend` recopie la légende du plan. Un char = une
-   pièce.
+   pièce. Le calque se **DÉRIVE du bâti** (`zonesFromSeeds`, `src/state/asciiMap.ts`) : une GRAINE par
+   pièce — plusieurs quand une porte interne la coupe —, dont le remplissage 4-connexe s'arrête à toute
+   arête murale (mur, porte, fenêtre, structure) et à toute case que le pas ne foule pas ; un calque
+   écrit à la main se met à mentir dès qu'on bouge un mur. `clip` borne une aire OUVERTE que le plan
+   partage entre n pièces sans trait entre elles : c'est un arbitrage MAISON, révisable, à motiver au
+   site qui le déclare.
 8. **Mobilier par marqueurs** (`bind`) — en DERNIER, jamais avant validation structurelle.
    Vocabulaire d'auberge déjà catalogué (`src/data/props.json`) : `escalier-bois`, `balustrade-bois`, `enclume`, `foyer-de-forge`, `cuve-brasserie`, `stalle-ecurie` ;
    murs à colombage via l'apparence `mur-a-ossature-en-bois`
@@ -318,4 +327,4 @@ Sur les 35 documents de `src/scenes/` qui exposent un littéral `MapSpec` :
 | `stations?` | 1 | `src/scenes/test-scenarios/13-bataille-de-masse.ts` |
 
 Champs sans aucun exemple mesuré dans `src/scenes/` : `music?`, `wallStructures?`, `edgeWalls?`, `knownUnsupportedFloor?`, `seatAssignments?`, `restZones?` — leur seule démonstration vit dans `src/state/mapSpec.test.ts`.
-<!-- sources-empreinte: 2365398ac96f1dcfb4307493d54f6681dc439ae9 (61 fichiers, 7 dossiers) corps: e57eee762b08df8d4f845fab1ddee39605eebeaf -->
+<!-- sources-empreinte: 07caab61a488c2e8b501960fef2500805933cc22 (61 fichiers, 7 dossiers) corps: 8b37e76bec788db1c75932e17faa06b139ee10b6 -->
