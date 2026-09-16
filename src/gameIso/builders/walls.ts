@@ -3,7 +3,7 @@
  * scène, les FACES MONDE (GP : grille + MÈTRES) de son assemblage — courtine/panneau de face, plinthe/
  * bandes/arase, parapet + merlons, montants d'extrémité, ouverture/linteau de porte, barreaux +
  * traverses de herse, tas de gravats d'une structure ABATTUE — et les VÉRITÉS DE SCÈNE (visible/down/
- * open). TOUT vient des CHAMPS de l'apparence partagée (`wallApp`, def JSON iso+POV) : parapet/porte/
+ * open). TOUT vient des CHAMPS de l'apparence d'arête partagée (`edgeAppearance`, def JSON iso+POV) : parapet/porte/
  * bois routés par la PRÉSENCE des champs, jamais par un id/type en dur. PUR et projection-agnostique :
  * SOURCE UNIQUE de l'assemblage pour les DEUX backends (iso et POV) — ils dessinent ces mêmes faces,
  * chacun à sa résolution.
@@ -13,15 +13,15 @@ import { interiorCells } from '../../state/planDefects';
 import { memoByRef } from '../../state/sceneMemo';
 import { viewedBuilder, type Viewed } from './viewTruth';
 import { effectiveArchitecture } from '../../state/sceneEdit';
-import { wallApp, structureAppearance, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
-import { facadeStructureAppearance, facadeWallFeatureAppearance } from '../catalog/facades';
+import { structureAppearance, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
+import { facadeWallFeatureAppearance } from '../catalog/facades';
 import { WALL_H_M, isoPxToM } from '../iso';
 import { METRES_PER_LEVEL, gradeBetween } from '../../state/relief';
 import { DIR4_ORDER, type Dir4 } from '../../state/dir8';
 import type { Face, GP, WallEl } from './types';
 import type { FloorView } from './floors';
 import {
-  closureAppearance, edgeKey, facadeEdges, fieldHeightAt, massFootprintCells, massSpaceCells, nappeKey, resolveNappes,
+  closureAppearance, edgeAppearance, edgeKey, facadeEdges, fieldHeightAt, massFootprintCells, massSpaceCells, nappeKey, resolveNappes,
   WALL_NB, type FacadeEdge, type RoofField,
 } from './roofs';
 
@@ -582,10 +582,7 @@ function wallGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
     if (view && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
     const baseH = heightAt(scene, w.x, w.y, z);
     const facade = authoredEdges.get(edgeKey(w));
-    const physicalApp = wallApp(w);
-    const app = facade && !w.structure && !w.appearance
-      ? facadeStructureAppearance(facade.appearance)
-      : physicalApp;
+    const app = edgeAppearance(facade, w);
     const wallHeightM = app.wallHeightM ?? WALL_H_M;
     const down = !!w.structure && structureIsDown(scene, w);
     const open = !!w.door && doorIsOpen(scene, w);

@@ -73,7 +73,6 @@ describe('apparence de structure (JSON partagé iso/POV)', () => {
     expect(wallApp({ x: 0, y: 0, side: 'N', appearance: 'mur-en-pierre', structure: 'porte-de-ville' } as WallSeg).id).toBe('mur-en-pierre');
     expect(wallApp({ x: 0, y: 0, side: 'N', structure: 'porte-de-ville' } as WallSeg).id).toBe('porte-de-ville');
     expect(wallApp({ x: 0, y: 0, side: 'N' } as WallSeg).id).toBe('plain');
-    expect(wallApp.length, 'wallApp ne prend QUE l’arête : aucune cote ne peut y entrer').toBe(1);
   });
 
   it('le pipeline murs (buildWalls + backend affine) consomme la donnée : la face du JSON apparaît dans le SVG', () => {

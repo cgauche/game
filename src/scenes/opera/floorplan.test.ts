@@ -14,7 +14,7 @@ import { buildRoofs, clearedSpace } from '../../gameIso/builders/roofs';
  * MÉTRIQUE, seule donnée non portée par l'ASCII) : deux COUCHES (`layers`), scène surélevée (+1 m) et fosse
  * en contrebas (−1 m) portées par `Layer.height`, parterre en ÉVENTAIL bloquant, salles latérales desservies
  * par des portes, puits central OVALE vide à l'étage, loges en anneau + loge royale dans l'axe. L'étage (loges
- * à 4 m) se rejoint par DEUX RAMPES d'angle (cases de hauteur croissante, puits TROUÉ dans l'ASCII même) —
+ * assises à `ETAGE_M`) se rejoint par DEUX RAMPES d'angle (cases de hauteur croissante, puits TROUÉ dans l'ASCII même) —
  * AUCUN escalier explicite : la connectivité verticale s'auto-dérive du dénivelé (`surfaceLink`).
  */
 describe('plan de l’Opéra — géométrie (relief unifié)', () => {
@@ -189,35 +189,61 @@ describe('plan de l’Opéra — corps architectural et loi de dégagement', () 
       expect(declarees.length, `l’étage ${storey.id} porte des pièces`).toBeGreaterThan(0);
       expect([...storey.roomZoneIds].sort(), `pièces de ${storey.id}`).toEqual([...declarees].sort());
     }
+  });
+});
+
+/**
  * #1180 — l'apparence d'un mur est une DONNÉE de la carte, la hauteur est de la géométrie. L'opéra
  * n'authore AUCUNE structure ni apparence d'arête (`walled` sans `wallStructures`) : tout son bâti
- * doit donc rendre le mur nu `plain`, y compris les arêtes de l'étage assises à 4 m.
+ * doit donc rendre le mur nu `plain`, y compris les arêtes de l'étage assises en hauteur.
  *
- * La garde porte sur les ÉLÉMENTS RENDUS (`buildWalls` + `buildRoofs`), jamais sur `scene.walls` :
- * `wallApp` a un TROISIÈME chemin, transitif — les coutures de nappes `seam:` (`walls.ts`
- * `roofSeamGeometry`) prennent leur matière de `closureAppearance` → `segAppearance` → `wallApp`.
+ * La garde porte sur les ÉLÉMENTS RENDUS, jamais sur `scene.walls`, et sa population est TOUT ce dont
+ * la matière sort de la loi d'apparence d'arête (`edgeAppearance`, `gameIso/builders/roofs.ts`) :
+ *  - `buildWalls` — les ARÊTES `wall:` (`wallGeometry`) et les COUTURES de nappes `seam:`
+ *    (`roofSeamGeometry` → `closureAppearance`), matière lue sur `el.appearance` ;
+ *  - `buildRoofs` — les PIGNONS de comble, `kind:'roof'` (`gableEnds` → `closureAppearance`), dont la
+ *    matière de mur ne vit PAS dans `el.appearance` mais dans la face `material.domain === 'structure'`.
+ * L'opéra ne coiffe aujourd'hui que des CROUPES (`profile: 'hip'`, cf. « TOITURE DÉRIVÉE » ci-dessus),
+ * qui n'ont aucune fermeture de comble : la famille des pignons est lue, son compte va au message.
  */
 describe('plan de l’Opéra — apparence des murs (#1180)', () => {
   const s = buildOperaFloorplan();
-  const els = [...buildWalls(s), ...buildRoofs(s)].filter((el) => el.kind === 'wall');
-  const aretes = els.filter((el) => el.key.startsWith('wall:'));
-  const coutures = els.filter((el) => el.key.startsWith('seam:'));
+  const murs = buildWalls(s);
+  const aretes = murs.filter((el) => el.key.startsWith('wall:'));
+  const coutures = murs.filter((el) => el.key.startsWith('seam:'));
+  const pignons = buildRoofs(s).flatMap((el) =>
+    el.faces.filter((f) => f.material.domain === 'structure').map((f) => ({ key: el.key, appearance: f.material.id })));
+  const rendus = [...aretes, ...coutures].map((el) => ({ key: el.key, appearance: el.appearance })).concat(pignons);
+  const diag = `${aretes.length} arêtes, ${coutures.length} coutures, ${pignons.length} pignons`;
 
-  it('la garde VOIT toute la population rendue : arêtes + coutures de nappes', () => {
-    expect(aretes.length).toBe(983);
-    // L'opéra ne porte AUCUNE masse d'architecture : zéro nappe de toit, donc zéro couture à fermer.
-    expect(coutures.length).toBe(0);
-    expect(aretes.length + coutures.length).toBe(els.length);
+  it('la garde VOIT toute la population rendue : arêtes, coutures de nappes, pignons', () => {
+    // Un élément de mur d'une AUTRE famille de clé échapperait au contrat sans que rien ne bronche.
+    expect(murs.filter((el) => !el.key.startsWith('wall:') && !el.key.startsWith('seam:')).map((el) => el.key),
+      `famille de clé non couverte (${diag})`).toEqual([]);
+    // TÉMOINS NOMMÉS, un par famille peuplée : la garde ne peut pas devenir vide en silence.
+    const arete = rendus.find((el) => el.key === 'wall:0,1,E,1'); // z1, assise en hauteur, nue
+    // La clé d'une couture porte des ids de masse DÉRIVÉS (`sceneEdit.ts` : `-auto-z…-l…-…`) — une masse
+    // de plus les renomme : la garde nomme la FAMILLE, pas un id que la dérivation peut rebaptiser.
+    const couture = rendus.find((el) => el.key.startsWith('seam:'));
+    expect(arete, `arête témoin de l’étage absente du rendu (${diag})`).toBeDefined();
+    expect(couture, `aucune couture de nappe rendue (${diag})`).toBeDefined();
+    expect(arete!.appearance).toBe('plain');
+    expect(couture!.appearance).toBe('plain');
   });
 
-  it('les arêtes NUES assises en hauteur sont la population que la cote fortifiait', () => {
-    const nuesHautes = (s.walls ?? []).filter((w) => !w.structure && !w.appearance && heightAt(s, w.x, w.y, w.z ?? 0) > 1);
-    expect(nuesHautes.length).toBe(420);
-    expect(new Set(nuesHautes.map((w) => w.z ?? 0))).toEqual(new Set([1]));
+  it('les arêtes NUES assises en hauteur rendent le mur nu — la cote ne fortifie plus', () => {
+    const nuesHautes = new Set((s.walls ?? [])
+      .filter((w) => !w.structure && !w.appearance && heightAt(s, w.x, w.y, w.z ?? 0) > 1)
+      .map((w) => `wall:${w.x},${w.y},${w.side},${w.z ?? 0}`));
+    expect(nuesHautes.has('wall:0,1,E,1'), 'l’arête témoin est bien nue ET assise en hauteur').toBe(true);
+    const offenseurs = rendus.filter((el) => nuesHautes.has(el.key) && el.appearance !== 'plain');
+    expect(offenseurs.map((el) => el.key),
+      `arête(s) nue(s) en hauteur fortifiée(s) par leur cote — ${nuesHautes.size} arêtes nues en hauteur`).toEqual([]);
   });
 
-  it('AUCUN élément de mur ne rend `mur-en-pierre` : l’étage est du mur nu, pas un rempart', () => {
-    expect(els.filter((el) => el.appearance === 'mur-en-pierre').map((el) => el.key)).toEqual([]);
-    expect(new Set(els.map((el) => el.appearance))).toEqual(new Set(['plain']));
+  it('AUCUN élément rendu ne rend `mur-en-pierre` : l’étage est du mur nu, pas un rempart', () => {
+    const offenseurs = rendus.filter((el) => el.appearance !== 'plain');
+    expect(offenseurs.map((el) => `${el.key} → ${el.appearance}`),
+      `élément(s) rendu(s) hors du mur nu alors qu’aucune arête n’authore d’apparence (${diag})`).toEqual([]);
   });
 });
