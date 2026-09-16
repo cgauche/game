@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseAsciiRows, parseWalledAscii, scanMarkers } from './asciiMap';
+import { parseAsciiRows, parseWalledAscii, scanMarkers, walledRowsOf, zonesFromSeeds, type ZoneSeed } from './asciiMap';
 
 describe('parseAsciiRows', () => {
   it('mappe les chars → terrains, `.`/espace = base', () => {
@@ -86,5 +86,116 @@ describe('scanMarkers', () => {
   it('clé par marqueur même absent (→ [])', () => {
     const { positions } = scanMarkers(['...'], '@X');
     expect(positions).toEqual({ '@': [], X: [] });
+  });
+});
+
+describe('zonesFromSeeds (calque de zones DÉRIVÉ du box-drawing)', () => {
+  // 6×4 cases. Pièce gauche x0..x2 / pièce droite x3..x5, séparées à l'arête E de x2 par un mur (y0),
+  // une PORTE (y1) et une FENÊTRE (y2). Un refend N sur y2 coupe la pièce gauche en deux, franchi par
+  // une porte interne. (1,3) porte une cloison DIAGONALE, (5,0) est du vide.
+  const GRID = [
+    '-------------',
+    '|, , ,|, ,  |',
+    '             ',
+    '|, , ,:, , ,|',
+    ' - : -       ',
+    '|, , ,o, , ,|',
+    ' -           ',
+    '|, / ,|, , ,|',
+    '-------------',
+  ];
+  /** Même lecture que `buildScene` : base = hors-bâtiment, `,` = sol praticable. */
+  const calque = (seeds: ZoneSeed[], rows = GRID, opts = {}) =>
+    zonesFromSeeds(rows, 'vide', { ',': 'dalle' }, seeds, opts).split('\n');
+  const at = (rows: string[], x: number, y: number) => rows[y][x];
+
+  it('rend un calque dense H×W, `.` hors zone', () => {
+    const rows = calque([{ char: 'P', at: [[0, 0]] }]);
+    expect(rows).toHaveLength(4);
+    expect(rows.every((r) => r.length === 6)).toBe(true);
+    expect(rows[0]).toBe('PPP...');
+  });
+
+  it('une PORTE borne la pièce (elle ne fuit pas chez la voisine)', () => {
+    const rows = calque([{ char: 'P', at: [[0, 1]] }]);
+    expect(at(rows, 2, 1)).toBe('P'); // case à gauche de la porte
+    expect(at(rows, 3, 1)).toBe('.'); // case à droite de la porte
+  });
+
+  it('une FENÊTRE borne la pièce', () => {
+    const rows = calque([{ char: 'P', at: [[0, 2]] }]);
+    expect(at(rows, 2, 2)).toBe('P');
+    expect(at(rows, 3, 2)).toBe('.');
+  });
+
+  it('une cloison DIAGONALE borne la pièce (angle mort des arêtes)', () => {
+    const rows = calque([{ char: 'P', at: [[0, 2]] }]);
+    expect(at(rows, 1, 3)).toBe('.'); // la case diagonale elle-même
+    expect(at(rows, 0, 3)).toBe('.'); // au-delà : seul chemin = la diagonale
+  });
+
+  it('le VIDE n’est jamais rempli', () => {
+    const rows = calque([{ char: 'Q', at: [[3, 0]] }]);
+    expect(at(rows, 4, 0)).toBe('Q');
+    expect(at(rows, 5, 0)).toBe('.');
+  });
+
+  it('deux GRAINES d’un même char (porte interne) rendent UNE seule zone', () => {
+    const rows = calque([{ char: 'P', at: [[0, 0], [0, 2]] }]);
+    const cells = rows.join('').split('').filter((c) => c === 'P');
+    expect(cells).toHaveLength(10);
+    expect(at(rows, 0, 0)).toBe('P');
+    expect(at(rows, 2, 3)).toBe('P');
+  });
+
+  it('deux chars qui atteignent la même case LÈVENT, en nommant la case et les deux chars', () => {
+    expect(() => calque([{ char: 'P', at: [[0, 0]] }, { char: 'Q', at: [[2, 0]] }]))
+      .toThrow(/\(2,0\).*P.*Q|\(2,0\).*Q.*P/);
+  });
+
+  it('la CLIP partitionne une aire ouverte (arbitrage d’auteur : aucun trait au plan)', () => {
+    const rows = calque([
+      { char: 'Q', at: [[3, 1]], clip: { x1: 4 } },
+      { char: 'R', at: [[5, 1]], clip: { x0: 5 } },
+    ]);
+    expect(rows[1]).toBe('...QQR');
+    expect(rows[3]).toBe('...QQR');
+  });
+
+  // Les trois contrats suivants tiennent la lecture UNIQUE : le calque se dérive de ce que
+  // `parseWalledAscii` a lu (murs ET terrains), jamais d'un second décodage du box-drawing.
+  it('une STRUCTURE d’arête (herse) borne la pièce comme un mur', () => {
+    const HERSE = ['+-+-+', '|,H,|', '+-+-+'];
+    expect(calque([{ char: 'P', at: [[0, 0]] }], HERSE, { structures: { H: 'porte-de-ville' } })[0]).toBe('P.');
+    // CONTRE-ÉPREUVE : sans la déclaration de structure, `H` n'est plus une arête — la pièce fuit.
+    expect(calque([{ char: 'P', at: [[0, 0]] }], HERSE)[0]).toBe('PP');
+  });
+
+  it('un TERRAIN que le pas ne foule pas (mur, eau, fosse) ne se remplit pas et borne la pièce', () => {
+    const BARRE = ['-----------', '|, # ~ _ ,|', '-----------'];
+    expect(calque([{ char: 'P', at: [[0, 0]] }], BARRE)[0]).toBe('P....');
+    // CONTRE-ÉPREUVE : les mêmes cases en sol praticable, sans toucher une seule arête, se remplissent.
+    const SOL = ['-----------', '|, , , , ,|', '-----------'];
+    expect(calque([{ char: 'P', at: [[0, 0]] }], SOL)[0]).toBe('PPPPP');
+  });
+
+  it('une largeur de rangée incohérente lève la MÊME erreur que `parseWalledAscii`', () => {
+    const TRONQUE = ['-----------', '|, , , , ,|', '-------'];
+    expect(() => calque([{ char: 'P', at: [[0, 0]] }], TRONQUE)).toThrow(/largeur/);
+  });
+
+  it('une graine posée sur une case infranchissable lève, en nommant le terrain', () => {
+    const BARRE = ['-----------', '|, # ~ _ ,|', '-----------'];
+    expect(() => calque([{ char: 'P', at: [[1, 0]] }], BARRE)).toThrow(/P@1,0.*mur/);
+  });
+});
+
+describe('walledRowsOf', () => {
+  it('ne retire QU’UNE ligne vide de tête et de queue (les rangées d’arêtes internes sont du plan)', () => {
+    expect(walledRowsOf('\n+-+\n\n+-+\n')).toEqual(['+-+', '', '+-+']);
+  });
+
+  it('recomplète chaque rangée à 2w+1 quand la largeur de carte est donnée (jamais de troncature)', () => {
+    expect(walledRowsOf('\n|,\n|, , ,|\n', 3)).toEqual(['|,     ', '|, , ,|']);
   });
 });

@@ -84,7 +84,7 @@ export interface TraverseCapability {
 
 /** Voisins MARCHABLES d'une case : pour chacune des 8 cases adjacentes, la/les couche(s) où elle forme
  *  une SURFACE réelle reliée à pied — `surfaceLink` flat/ramp (|Δhauteur| ≤ STEP_MAX), une arête murée
- *  (à la couche de départ OU d'arrivée) coupant le passage. C'est l'auto-connexion du relief : un même
+ *  à la couche la PLUS HAUTE du pas coupant le passage. C'est l'auto-connexion du relief : un même
  *  pas peut changer de couche là où une rampe rejoint un tablier (hauteurs coïncidentes) — plus aucun
  *  escalier explicite. Une falaise (Δhauteur > STEP_MAX) n'est PAS un voisin à pied (chute/Escalade),
  *  SAUF une arête `WallSeg.climb` que `traverse` (Grimpant) autorise à franchir au pas normal. */
@@ -96,14 +96,16 @@ function neighborsOf(scene: Scene, p: Pt, edges: Set<string>, swim?: ReadonlySet
     for (const layer of scene.layers) {
       const nz = layer.z;
       if (!isWalkable(scene, nx, ny, nz, swim)) continue; // pas de surface réelle sur cette couche ici
-      // Les DEUX COUCHES qu'engage ce pas — départ `z` et arrivée `nz` — et elles seules : un pas ne
-      // convoque aucun autre étage. Toute décision de franchissement se prend sur cette PAIRE, qui est
-      // la même quel que soit le SENS de parcours (l'aller {z,nz} et le retour {nz,z} sont le même
-      // ensemble) ⇒ marchabilité d'arête symétrique par construction.
+      // Les DEUX COUCHES qu'engage ce pas — départ `z` et arrivée `nz` — et elles seules : cet ensemble,
+      // où `flankOn` cherche le flanc d'une diagonale, est le même quel que soit le SENS de parcours
+      // (l'aller {z,nz} et le retour {nz,z} sont le même ensemble) ⇒ flanc symétrique par construction.
       const layersOfStep: number[] = nz === z ? [z] : [z, nz];
-      /** Une arête barre dès qu'elle est murée sur L'UNE des deux couches du pas (union ; `z === nz` = la seule couche). */
+      /** Un mur n'arrête le pas qu'à la HAUTEUR où on le franchit : l'arête qui borne la couche la PLUS
+       *  HAUTE du pas. Celle de la couche du dessous passe SOUS les pieds — une rampe qui atteint la cote
+       *  de l'étage enjambe la cloison du rez qu'elle survole, comme une passerelle enjambe un mur de
+       *  cour. Le `max` est symétrique : monter et descendre voient la même arête. */
       const barred = (ax: number, ay: number, bx: number, by: number) =>
-        layersOfStep.some((lz) => walled(edges, ax, ay, bx, by, lz));
+        walled(edges, ax, ay, bx, by, Math.max(z, nz));
       // Pas DIAGONAL : garde anti coupe-de-coin — les DEUX chemins en L (p→A→D et p→B→D) doivent être
       // ouverts : case flanquante marchable, et les deux arêtes du L (départ→flanc, flanc→cible) non
       // barrées. Un flanc de diagonale INTER-COUCHES n'a pas d'étage propre (le sommet d'une rampe jouxte

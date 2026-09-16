@@ -12,7 +12,8 @@
 import type { Scene, Terrain } from '../../state/scene';
 import { buildScene, type MapSpec } from '../../state/mapSpec';
 import { METRES_PER_LEVEL } from '../../state/relief';
-import { REZ_ASCII, ETAGE_ASCII, REZ_ZONES_ASCII, ETAGE_ZONES_ASCII } from './floorplan.ascii';
+import { walledRowsOf, zonesFromSeeds, type ZoneSeed } from '../../state/asciiMap';
+import { REZ_ASCII, ETAGE_ASCII } from './floorplan.ascii';
 
 const W = 44, H = 60;
 const AX = (W - 1) / 2;        // axe de symétrie (21.5)
@@ -37,14 +38,13 @@ const PENTE_RAMPE_M = 1;
 /** Longueur d'une rampe en RANGÉES : elle descend de `ETAGE_M` à 1 m par pas de `PENTE_RAMPE_M`. */
 const RAMPE_RANGEES = (ETAGE_M - 1) / PENTE_RAMPE_M + 1;
 
-/** Légende des cases de l'ASCII (cf. floorplan.ascii.ts). base = `vide` (espace = hors-bâtiment / puits). */
+/** Légende des cases de l'ASCII (cf. floorplan.ascii.ts). */
 const LEGEND: Record<string, Terrain> = { ',': 'dalle', P: 'plancher', M: 'marbre', S: 'planches', s: 'planches' };
 
-/** Découpe une chaîne ASCII (template) en lignes de grille, recomplétées à la largeur 2W+1 (les espaces
- *  de fin ont été retirés à la génération pour la lisibilité ; on les remet pour le scan). */
-function rowsOf(ascii: string): string[] {
-  return ascii.split('\n').slice(1, -1).map((r) => r.padEnd(2 * W + 1, ' '));
-}
+/** Terrain de BASE des deux grilles : l'espace de l'ASCII est le HORS-BÂTIMENT (et, à l'étage, le puits),
+ *  pas de l'herbe. `buildScene` le lit en `MapSpec.terrain` ; la dérivation du calque de zones doit lire
+ *  le MÊME — une seule constante, jamais deux littéraux à tenir d'accord. */
+const BASE: Terrain = 'vide';
 
 /** Colonnes des 2 PUITS de rampe (angles du foyer, anciens escaliers du plan NADJ) : la couche 0 y monte
  *  du foyer à la cote de la galerie (les cases sont déjà TROUÉES à l'étage dans l'ASCII). */
@@ -71,7 +71,7 @@ function operaRelief(): NonNullable<MapSpec['relief']> {
  *  de circulation entre les rangs), fine allée centrale de 2 cases (axe 21.5). Source unique → le scénario
  *  pose un `siege` 1×1 par case (cf. furnished.ts). Éditer l'éventail dans l'ASCII met les sièges à jour. */
 export function parterreSeatCells(): { x: number; y: number }[] {
-  const rows = rowsOf(REZ_ASCII);
+  const rows = walledRowsOf(REZ_ASCII, W);
   const out: { x: number; y: number }[] = [];
   for (let y = 0; y < H; y++) {
     if (y % 2 !== 0) continue; // un rang sur deux
@@ -83,46 +83,73 @@ export function parterreSeatCells(): { x: number; y: number }[] {
   return out;
 }
 
-/** Type d'une entrée de `MapSpec.zoneLegend` — une PIÈCE du plan. */
-type Piece = NonNullable<MapSpec['zoneLegend']>[string] & { id: string };
+/** Type d'une entrée de `MapSpec.zoneLegend` — une PIÈCE du plan, avec les GRAINES d'où son calque se
+ *  DÉRIVE (`zonesFromSeeds` : le cloisonnement de l'ASCII est la seule source du contour). Une pièce
+ *  coupée par une PORTE interne porte une graine par morceau ; `clip` borne une aire que le plan ne
+ *  cloisonne pas. */
+type Piece = NonNullable<MapSpec['zoneLegend']>[string] & {
+  id: string;
+  seeds: readonly (readonly [number, number])[];
+  clip?: ZoneSeed['clip'];
+};
+
+/** Légende de pièces → graines de `zonesFromSeeds` (le char du calque EST la clé de la légende). */
+function seedsOf(pieces: Record<string, Piece>): ZoneSeed[] {
+  return Object.entries(pieces).map(([char, p]) => ({ char, at: p.seeds, ...(p.clip ? { clip: p.clip } : {}) }));
+}
 
 /** LÉGENDE du plan officiel, char du calque → pièce. `label` VERBATIM de l'encart « LÉGENDE » du plan
  *  (NADJ 08 folio 39 — légende du plan (image)), le NUMÉRO de l'entrée en commentaire ; `id` kebab STABLE
  *  dérivé du libellé (la logique ne lit que lui, cf. doctrine ids stables). `interior` : ce sont des
  *  pièces INTÉRIEURES — leur nom se cuit au centre et se révèle en cutaway. */
 export const ZONES_REZ: Record<string, Piece> = {
-  A: { id: 'salle-verte', label: 'Salle verte', presentation: 'interior' },                                             // 14
-  B: { id: 'vestiaire', label: 'Vestiaire', presentation: 'interior' },                                                 // 13
-  C: { id: 'zone-de-stockage-des-decors', label: 'Zone de stockage des décors', presentation: 'interior' },             // 20
-  D: { id: 'coulisses', label: 'Coulisses', presentation: 'interior' },                                                 // 16
-  E: { id: 'scene', label: 'Scène', presentation: 'interior' },                                                         // 19
-  F: { id: 'fosse-d-orchestre', label: 'Fosse d’orchestre', presentation: 'interior' },                                 // 18
-  G: { id: 'orchestre', label: 'Orchestre', presentation: 'interior' },                                                 // 17
-  H: { id: 'vestiaires-des-choeurs-feminin', label: 'Vestiaires des chœurs (Féminin)', presentation: 'interior' },      // 12
-  I: { id: 'vestiaires-des-choeurs-masculin', label: 'Vestiaires des chœurs (Masculin)', presentation: 'interior' },    // 11
-  J: { id: 'bureau-du-regisseur', label: 'Bureau du régisseur', presentation: 'interior' },                             // 15
-  K: { id: 'passage', label: 'Passage', presentation: 'interior' },                                                     // 10
-  L: { id: 'rangements-des-costumes', label: 'Rangements des costumes', presentation: 'interior' },                     // 24
-  M: { id: 'couturieres', label: 'Couturières', presentation: 'interior' },                                             // 25
-  N: { id: 'charpenterie-et-decors', label: 'Charpenterie et décors', presentation: 'interior' },                       // 26
-  O: { id: 'reserve-generale', label: 'Réserve générale', presentation: 'interior' },                                   // 27
-  P: { id: 'bureau-du-concierge', label: 'Bureau du concierge', presentation: 'interior' },                             // 22
-  Q: { id: 'bureau-du-gestionnaire-des-accessoires', label: 'Bureau du gestionnaire des accessoires', presentation: 'interior' }, // 23
-  R: { id: 'salon', label: 'Salon', presentation: 'interior' },                                                         // 7
-  S: { id: 'escalier-des-dames', label: 'Escalier des Dames', presentation: 'interior' },                               // 8
-  T: { id: 'escalier-des-seigneurs', label: 'Escalier des Seigneurs', presentation: 'interior' },                       // 9
+  A: { id: 'salle-verte', label: 'Salle verte', presentation: 'interior', seeds: [[1, 5]] },                                               // 14
+  B: { id: 'bureau-du-regisseur', label: 'Bureau du régisseur', presentation: 'interior', seeds: [[7, 5]] },                              // 15
+  C: { id: 'zone-de-stockage-des-decors', label: 'Zone de stockage des décors', presentation: 'interior', seeds: [[30, 1]] },             // 20
+  D: { id: 'coulisses', label: 'Coulisses', presentation: 'interior', seeds: [[13, 1]] },                                                 // 16
+  E: { id: 'scene', label: 'Scène', presentation: 'interior', seeds: [[13, 5]] },                                                         // 19
+  F: { id: 'fosse-d-orchestre', label: 'Fosse d’orchestre', presentation: 'interior', seeds: [[17, 15]] },                                 // 18
+  G: { id: 'orchestre', label: 'Orchestre', presentation: 'interior', seeds: [[17, 20]] },                                                 // 17
+  // 13 apparaît DEUX fois (deux vestiaires empilés sous 15) : même `label`, id suffixé par le rang.
+  H: { id: 'vestiaire-1', label: 'Vestiaire', presentation: 'interior', seeds: [[1, 15]] },                                                // 13
+  Z: { id: 'vestiaire-2', label: 'Vestiaire', presentation: 'interior', seeds: [[1, 19]] },                                                // 13
+  I: { id: 'vestiaires-des-choeurs-feminin', label: 'Vestiaires des chœurs (Féminin)', presentation: 'interior', seeds: [[1, 24]] },      // 12
+  J: { id: 'vestiaires-des-choeurs-masculin', label: 'Vestiaires des chœurs (Masculin)', presentation: 'interior', seeds: [[1, 34]] },    // 11
+  K: { id: 'passage', label: 'Passage', presentation: 'interior', seeds: [[1, 40]] },                                                     // 10
+  L: { id: 'rangements-des-costumes', label: 'Rangements des costumes', presentation: 'interior', seeds: [[28, 15]] },                     // 24
+  M: { id: 'couturieres', label: 'Couturières', presentation: 'interior', seeds: [[29, 24]] },                                             // 25
+  N: { id: 'charpenterie-et-decors', label: 'Charpenterie et décors', presentation: 'interior', seeds: [[32, 31]] },                       // 26
+  O: { id: 'reserve-generale', label: 'Réserve générale', presentation: 'interior', seeds: [[33, 35]] },                                   // 27
+  P: { id: 'bureau-du-concierge', label: 'Bureau du concierge', presentation: 'interior', seeds: [[38, 1]] },                             // 22
+  Q: { id: 'bureau-du-gestionnaire-des-accessoires', label: 'Bureau du gestionnaire des accessoires', presentation: 'interior', seeds: [[38, 10]] }, // 23
+  W: { id: 'stockage-des-accessoires', label: 'Stockage des accessoires', presentation: 'interior', seeds: [[38, 5]] },              // 21
+  R: { id: 'salon', label: 'Salon', presentation: 'interior', seeds: [[1, 44]] },                                                         // 7
+  S: { id: 'escalier-des-dames', label: 'Escalier des Dames', presentation: 'interior', seeds: [[6, 46]] },                               // 8
+  T: { id: 'escalier-des-seigneurs', label: 'Escalier des Seigneurs', presentation: 'interior', seeds: [[36, 46]] },                       // 9
   // 6 apparaît DEUX fois (un guichet par angle de façade) : même `label`, id suffixé par la position.
-  X: { id: 'vestiaire-et-vente-des-billets-gauche', label: 'Vestiaire et vente des billets', presentation: 'interior' }, // 6
-  Y: { id: 'vestiaire-et-vente-des-billets-droit', label: 'Vestiaire et vente des billets', presentation: 'interior' },  // 6
-  U: { id: 'commodites-des-dames', label: 'Commodités des Dames', presentation: 'interior' },                           // 4
-  V: { id: 'commodites-des-seigneurs', label: 'Commodités des Seigneurs', presentation: 'interior' },                   // 5
+  X: { id: 'vestiaire-et-vente-des-billets-gauche', label: 'Vestiaire et vente des billets', presentation: 'interior', seeds: [[2, 56]] }, // 6
+  Y: { id: 'vestiaire-et-vente-des-billets-droit', label: 'Vestiaire et vente des billets', presentation: 'interior', seeds: [[39, 56]] },  // 6
+  U: { id: 'commodites-des-dames', label: 'Commodités des Dames', presentation: 'interior', seeds: [[13, 51]] },                           // 4
+  V: { id: 'commodites-des-seigneurs', label: 'Commodités des Seigneurs', presentation: 'interior', seeds: [[28, 51]] },                   // 5
 };
 
 /** Légende de l'ÉTAGE — même contrat, chars DISJOINTS de ceux du rez : `zoneLegend` est indexé par le
  *  seul char (`mapSpec.ts` : `zoneLegend[b.char].id`), un char partagé donnerait la même pièce aux deux
  *  niveaux. Tenu par un test (`floorplan.test.ts`), pas par ce commentaire. */
 export const ZONES_ETAGE: Record<string, Piece> = {
-  Z: { id: 'loge-royale', label: 'Loge royale', presentation: 'interior' }, // 30
+  a: { id: 'loge-royale', label: 'Loge royale', presentation: 'interior', seeds: [[18, 1]] }, // 30
+};
+
+/** GRAINES du calque de zones par étage — la donnée que `scripts/map/registry.ts` cite quand un défaut
+ *  de zone tombe sur une case (le calque étant DÉRIVÉ, il n'a aucune ligne de fichier à montrer). */
+export const OPERA_ZONE_SEEDS: Record<string, readonly ZoneSeed[]> = { z0: seedsOf(ZONES_REZ), z1: seedsOf(ZONES_ETAGE) };
+
+/** CALQUE de zones DÉRIVÉ, par étage — la donnée que `buildScene` consomme ET celle que `map:check`
+ *  interroge pour dire dans quelle pièce tombe un défaut : une seule dérivation, faite ici, où vivent la
+ *  grille, la `base` et la `legend`. La redériver côté outil rouvrirait deux lectures à tenir d'accord. */
+export const OPERA_ZONE_LAYERS: Record<string, string> = {
+  z0: zonesFromSeeds(walledRowsOf(REZ_ASCII, W), BASE, LEGEND, OPERA_ZONE_SEEDS.z0),
+  z1: zonesFromSeeds(walledRowsOf(ETAGE_ASCII, W), BASE, LEGEND, OPERA_ZONE_SEEDS.z1),
 };
 
 /** CORPS architectural du théâtre — la donnée SANS laquelle aucune masse n'est dérivée (`buildScene` §9
@@ -153,11 +180,11 @@ export function buildOperaFloorplan(): Scene {
       'Opéra d’Altdorf — rez-de-chaussée (parterre en éventail, scène surélevée +1 m, fosse d’orchestre −1 m, salles latérales en colonnes subdivisées, foyer à rampes d’angle) et premier étage (loges en anneau autour du puits central ovale, à 4 m, galerie, loge royale dans l’axe de la scène). GÉNÉRÉ depuis une carte ASCII éditable (floorplan.ascii.ts) ; l’étage se rejoint par deux RAMPES (cases de hauteur croissante, plus aucun escalier).',
     ambiance: 'interieur',
     size: [W, H],
-    terrain: 'vide', // base z0 = hors-bâtiment (espace ASCII), pas 'herbe' (intérieur)
+    terrain: BASE,
     legend: LEGEND,
     walled: { z0: REZ_ASCII, z1: ETAGE_ASCII },
     architecture: [OPERA_BODY],
-    zoneMap: { z0: REZ_ZONES_ASCII, z1: ETAGE_ZONES_ASCII },
+    zoneMap: OPERA_ZONE_LAYERS,
     zoneLegend: { ...ZONES_REZ, ...ZONES_ETAGE },
     relief: operaRelief(),
     entryPoints: { 'entree-principale': [Math.round(AX), FACY], 'entree-artistes': [BX1, 0] },

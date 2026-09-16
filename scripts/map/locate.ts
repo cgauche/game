@@ -1,7 +1,8 @@
 /**
  * Retrouve la LIGNE/COLONNE exacte dans le fichier source d'une grille ASCII authorée (`String.raw`),
  * pour une case ou une arête. Ne DEVINE jamais un décalage : la grille du fichier est retrouvée par
- * ÉGALITÉ de contenu avec la chaîne effectivement passée à `buildScene` (`MapSpec.walled`/`zoneMap`).
+ * ÉGALITÉ de contenu avec la chaîne effectivement passée à `buildScene` (`MapSpec.walled`). Un calque
+ * de zones n'a, lui, aucun littéral à localiser : il est DÉRIVÉ de la grille par `zonesFromSeeds`.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -19,20 +20,16 @@ function lineNumberAt(text: string, charIndex: number): number {
   return n;
 }
 
-/** Retire l'artefact de gabarit (ligne vide immédiatement après le backtick d'ouverture / avant celui
- *  de fermeture). `single` (grilles `walled` box-drawing, cf. `walledRowsOf` de `mapSpec.ts`) ne retire
- *  qu'UNE ligne de chaque côté — les rangées vides INTERNES d'une grille `walled` sont significatives.
- *  `multi` (grilles `zoneMap`, cf. `rowsOf`) retire TOUTES les lignes vides de tête/queue. */
-function stripArtifact(rows: string[], mode: 'single' | 'multi'): { rows: string[]; lead: number } {
+/** Retire l'ARTEFACT de gabarit — la ligne vide immédiatement après le backtick d'ouverture et celle
+ *  qui précède le backtick de fermeture, UNE de chaque côté et pas une de plus : dans une grille
+ *  box-drawing `walled`, une rangée vide INTERNE (ou de tête/queue) est une rangée d'ARÊTES sans aucun
+ *  mur, parfaitement significative. Même découpe que `walledRowsOf` (`src/state/asciiMap.ts`), qui la
+ *  fait sur la chaîne compilée — ici c'est sur le littéral du fichier, pour en compter les LIGNES. */
+function stripArtifact(rows: string[]): { rows: string[]; lead: number } {
   let start = 0;
   let end = rows.length;
-  if (mode === 'single') {
-    if (rows.length && rows[0].trim() === '') start = 1;
-    if (end > start && rows[end - 1].trim() === '') end -= 1;
-  } else {
-    while (start < end && rows[start].trim() === '') start++;
-    while (end > start && rows[end - 1].trim() === '') end--;
-  }
+  if (rows.length && rows[0].trim() === '') start = 1;
+  if (end > start && rows[end - 1].trim() === '') end -= 1;
   return { rows: rows.slice(start, end), lead: start };
 }
 
@@ -41,7 +38,7 @@ function stripArtifact(rows: string[], mode: 'single' | 'multi'): { rows: string
  *  JETTE si ≥2 blocs correspondent (deux ailes symétriques, deux étages jumeaux, un `export const` recopié)
  *  — ne devine JAMAIS lequel des deux corriger : une position devinée à tort fait éditer le mauvais bloc,
  *  une carte juste devient fausse en silence (#823 défaut 3). */
-export function locateGrid(dir: string, raw: string, mode: 'single' | 'multi'): GridLocation {
+export function locateGrid(dir: string, raw: string): GridLocation {
   const files = readdirSync(dir).filter((f) => f.endsWith('.ts'));
   const re = /export const (\w+)\s*=\s*String\.raw`([\s\S]*?)`/g;
   const matches: { file: string; name: string; loc: GridLocation }[] = [];
@@ -54,7 +51,7 @@ export function locateGrid(dir: string, raw: string, mode: 'single' | 'multi'): 
       if (m[2] !== raw) continue;
       const backtickIdx = m.index + m[0].indexOf('`') + 1;
       const backtickLine = lineNumberAt(text, backtickIdx);
-      const { rows, lead } = stripArtifact(m[2].split('\n'), mode);
+      const { rows, lead } = stripArtifact(m[2].split('\n'));
       matches.push({ file: path, name: m[1], loc: { file: path, rows, lineOf: (row) => backtickLine + lead + row } });
     }
   }
@@ -99,11 +96,6 @@ const EDGE_RC: Record<CellSide, (x: number, y: number) => [number, number]> = {
 export function wallEdgePos(loc: GridLocation, x: number, y: number, side: CellSide): SourcePos {
   const [row, col] = EDGE_RC[side](x, y);
   return { file: loc.file, line: loc.lineOf(row), col: col + 1, char: charAt(loc, row, col) };
-}
-
-/** Position d'une CASE (x,y) dans une grille `zoneMap` (1 char = 1 case, pas de box-drawing). */
-export function zoneCellPos(loc: GridLocation, x: number, y: number): SourcePos {
-  return { file: loc.file, line: loc.lineOf(y), col: x + 1, char: charAt(loc, y, x) };
 }
 
 /** Extrait de 3 lignes centré sur `row`, curseur `^` sous la colonne fautive. */

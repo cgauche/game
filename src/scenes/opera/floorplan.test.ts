@@ -144,13 +144,13 @@ describe('plan de l’Opéra — corps architectural et loi de dégagement', () 
     expect(communs, `char(s) de zone partagé(s) entre les deux niveaux : ${communs.join(' ')}`).toEqual([]);
   });
 
-  it('DÉGAGEMENT en salle verte (3,4,z0) : la PIÈCE se dégage, le couvercle se lève', () => {
-    const cleared = clearedSpace(s, [{ x: 3, y: 4, z: 0 }]);
+  it('DÉGAGEMENT en salle verte (3,9,z0) : la PIÈCE se dégage, le couvercle se lève', () => {
+    const cleared = clearedSpace(s, [{ x: 3, y: 9, z: 0 }]);
     // L'allié occupe une PIÈCE déclarée : la loi dégage son aire ENTIÈRE, pas l'emprise du bâtiment.
     expect([...cleared.zoneIds]).toContain('salle-verte');
     expect(cleared.roomlessCells.size, 'aucun repli sur l’emprise : la pièce a tranché').toBe(0);
-    // COUVERCLE : la case (3,4) au niveau STRICTEMENT au-dessus du sien.
-    expect(cleared.overheadCells.has('3,4,1'), 'la couche d’étage qui le surplombe se lève').toBe(true);
+    // COUVERCLE : la case (3,9) au niveau STRICTEMENT au-dessus du sien.
+    expect(cleared.overheadCells.has('3,9,1'), 'la couche d’étage qui le surplombe se lève').toBe(true);
   });
 
   it('chaque PIÈCE est d’UN SEUL TENANT : aucun pas de son aire ne traverse un mur', () => {
@@ -267,10 +267,8 @@ describe('plan de l’Opéra — l’ovale de l’étage est fermé (#1179)', ()
     expect(impasses(1), `${(s.walls ?? []).filter((w) => w.z === 1).length} arêtes à l’étage`).toEqual([]);
   });
 
-  it('REZ : les seules impasses restantes sont les deux CAGES 8/9 du foyer, nommées — le reste est chaîné', () => {
-    // Les quatre bouts appartiennent à l'enceinte des cages d'escalier du foyer (x6-8 / x35-37,
-    // y46-50), que l'ASCII n'a jamais close — #1780.
-    expect(impasses(0)).toEqual(['5,46E', '34,46N', '5,48E', '34,49N']);
+  it('REZ : plus AUCUN mur en impasse — les cages 8/9 du foyer sont closes, tout est chaîné', () => {
+    expect(impasses(0), `${(s.walls ?? []).filter((w) => (w.z ?? 0) === 0).length} arêtes au rez`).toEqual([]);
   });
 
   /** Composante connexe de vide qui contient le CENTRE du puits (cf. « PUITS CENTRAL OVALE ») — le

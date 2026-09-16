@@ -47,7 +47,7 @@ import type { Flow } from './flow';
 import type { FireArc } from '../engine/types';
 import type { ThreatTier } from '../engine/advantagePool';
 import type { Dir8 } from './dir8';
-import { parseAsciiRows, parseWalledAscii, scanMarkers } from './asciiMap';
+import { parseAsciiRows, parseWalledAscii, scanMarkers, walledRowsOf } from './asciiMap';
 import { buildEncounter, type AuthoredEnemy } from './encounterAuthoring';
 import { chebyshev } from '../engine/grid';
 import { seatAssignmentDefects, type SeatAssignments } from './seating';
@@ -289,17 +289,6 @@ function copyArchitecture(bodies: ArchitectureBody[]): ArchitectureBody[] {
       footprint: mass.footprint.map((rect) => ({ ...rect })),
     })),
   }));
-}
-
-/** Découpe une grille BOX-DRAWING (`walled`) en lignes, en ne retirant QUE l'ARTEFACT de littéral de gabarit
- *  (une seule ligne vide de tête + une seule de queue autour du `String.raw`). Contrairement à `rowsOf`, les
- *  lignes vides INTERNES (bord `vide` inséré d'un bâti, cf. l'opéra) sont des rangées de grille SIGNIFICATIVES
- *  et PRÉSERVÉES : une grille (2H+1)×(2W+1) ne doit jamais perdre de rangée. */
-function walledRowsOf(str: string): string[] {
-  const rows = str.split('\n');
-  if (rows.length && rows[0].trim() === '') rows.shift();
-  if (rows.length && rows[rows.length - 1].trim() === '') rows.pop();
-  return rows;
 }
 
 /** Applique une `ReliefSpec` (cellule par cellule) via `paintHeight`. */
@@ -682,7 +671,7 @@ export function buildScene(spec: MapSpec): Scene {
     for (const [key, rows] of Object.entries(spec.walled)) {
       const z = parseInt(key.replace('z', ''), 10);
       const base: Terrain = z === 0 ? (spec.terrain ?? 'herbe') : 'vide';
-      const padded = walledRowsOf(rows).map((r) => r.padEnd(2 * w + 1, ' '));
+      const padded = walledRowsOf(rows, w);
       const parsed = parseWalledAscii(padded, base, effLegend, { structures: spec.wallStructures });
       s = putLayer(s, z, parsed.tiles);
       for (const seg of parsed.walls) walledWalls.push({ x: seg.x, y: seg.y, side: seg.side, ...(z ? { z } : {}), ...(seg.door ? { door: true } : {}), ...(seg.window ? { window: true } : {}), ...(seg.structure ? { structure: seg.structure } : {}) });

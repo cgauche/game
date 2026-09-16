@@ -11,9 +11,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { auditFacade, auditUnsupportedFloor, auditZoneCoverage, floorPairs, groundTerrains, PLAN_DEFECT_FAMILIES, type Defect, type PlanDefectFamilyDef } from '../../src/state/planDefects';
+import { auditFacade, auditUnsupportedFloor, auditZoneCoverage, floorPairs, scenePlanDefects, groundTerrains, PLAN_DEFECT_FAMILIES, type Defect, type PlanDefectFamilyDef } from '../../src/state/planDefects';
 import { locateGrid } from './locate';
-import { findMap, findMaps } from './registry';
+import { codedSites } from './sites';
+import { zonesFromSeeds, type ZoneSeed } from '../../src/state/asciiMap';
+import { findMap, findMaps, type MapSource } from './registry';
 import { DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS, type Scene, type SceneEffectZone, type WallSeg } from '../../src/state/scene';
 
 /** « La Diligence » — paquet ÉDITEUR (`src/scenes/diligence/diligence-projet.json`) : la Scène y est
@@ -119,20 +121,22 @@ describe('auditFacade — critère GÉOMÉTRIQUE (#823 défauts 1+2)', () => {
   });
 });
 
-describe('locateGrid — jamais de position devinée (#823 défaut 3)', () => {
-  function withTempDir(fn: (dir: string) => void): void {
-    const dir = mkdtempSync(join(tmpdir(), 'map-locate-test-'));
-    try { fn(dir); } finally { rmSync(dir, { recursive: true, force: true }); }
-  }
+/** Dossier jetable où poser une grille ASCII source : `locateGrid` cherche par ÉGALITÉ de contenu dans
+ *  les `.ts` d'un dossier, il lui en faut donc un vrai. */
+function withTempDir(fn: (dir: string) => void): void {
+  const dir = mkdtempSync(join(tmpdir(), 'map-locate-test-'));
+  try { fn(dir); } finally { rmSync(dir, { recursive: true, force: true }); }
+}
 
+describe('locateGrid — jamais de position devinée (#823 défaut 3)', () => {
   it('jette une erreur AMBIGUË (jamais le premier choisi au hasard) quand deux blocs identiques existent', () => {
     withTempDir((dir) => {
       const raw = 'AAA\nBBB';
       writeFileSync(join(dir, 'aile-ouest.ts'), `export const AILE_OUEST = String.raw\`${raw}\`;\n`);
       writeFileSync(join(dir, 'aile-est.ts'), `export const AILE_EST = String.raw\`${raw}\`;\n`);
-      expect(() => locateGrid(dir, raw, 'single')).toThrow(/AMBIGU/);
+      expect(() => locateGrid(dir, raw)).toThrow(/AMBIGU/);
       try {
-        locateGrid(dir, raw, 'single');
+        locateGrid(dir, raw);
         expect.unreachable();
       } catch (e) {
         expect(String(e)).toContain('AILE_OUEST');
@@ -145,7 +149,7 @@ describe('locateGrid — jamais de position devinée (#823 défaut 3)', () => {
     withTempDir((dir) => {
       const raw = 'CCC\nDDD';
       writeFileSync(join(dir, 'unique.ts'), `export const UNIQUE = String.raw\`${raw}\`;\n`);
-      const loc = locateGrid(dir, raw, 'single');
+      const loc = locateGrid(dir, raw);
       expect(loc.rows).toEqual(['CCC', 'DDD']);
     });
   });
@@ -153,7 +157,7 @@ describe('locateGrid — jamais de position devinée (#823 défaut 3)', () => {
   it('jette une erreur INTROUVABLE (distincte de AMBIGUË) quand rien ne correspond', () => {
     withTempDir((dir) => {
       writeFileSync(join(dir, 'autre.ts'), 'export const AUTRE = String.raw`XYZ`;\n');
-      expect(() => locateGrid(dir, 'introuvable', 'single')).toThrow(/introuvable/);
+      expect(() => locateGrid(dir, 'introuvable')).toThrow(/introuvable/);
     });
   });
 });
@@ -387,6 +391,56 @@ describe('RAPPORT — ce qui n\'a pas été mesuré ne se totalise pas', () => {
       }
       expect(out).toMatch(/TOTAL défauts : \d+/);
       expect(out).not.toContain('NON APPLICABLES');
+    });
+  });
+});
+
+describe('site d’un défaut de CALQUE — le calque est DÉRIVÉ, la correction se fait à la GRAINE', () => {
+  // 3×3 cases, toutes en sol praticable sauf (2,2) que deux arêtes (N et O) isolent du reste : la graine
+  // A@(0,0) inonde 8 cases, la 9ᵉ reste hors pièce. C'est exactement la forme que prend un défaut de
+  // zone sur une carte à calque dérivé — aucune ligne de fichier ne porte le char fautif.
+  const GRILLE = ['-------', '|, , ,|', '       ', '|, , ,|', '     - ', '|, ,|,|', '-------'];
+  const SEEDS: ZoneSeed[] = [{ char: 'A', at: [[0, 0]] }];
+
+  function fixtureSource(dir: string): MapSource {
+    const raw = `\n${GRILLE.join('\n')}\n`;
+    writeFileSync(join(dir, 'fixture.ts'), `export const GRILLE = String.raw\`${raw}\`;\n`);
+    return {
+      sourceDir: dir,
+      walledGrids: { z0: raw },
+      zoneLayers: { z0: zonesFromSeeds(GRILLE, 'vide', { ',': 'dalle' }, SEEDS) },
+      zoneSeeds: { z0: SEEDS },
+    };
+  }
+
+  /** Défaut de CALQUE (grille `zone`) à une case donnée, pris au point d'entrée réel du contrôle. */
+  const calqueDefaut = (scene: Scene, x: number, y: number) =>
+    scenePlanDefects(scene).find((d) => d.grid === 'zone' && d.at.kind === 'cell' && d.at.x === x && d.at.y === y);
+
+  /** Scène 3×3 à deux étages dont l'emprise de la pièce A n'a PAS suivi le calque : `auditZoneCoverage`
+   *  rend alors un vrai `case-sans-zone` par case découverte, sur la grille `zone`. */
+  const fixtureScene = (): Scene => {
+    const sol = new Array(9).fill('dalle');
+    return makeScene(3, 3, sol, [...sol], [], [
+      { id: 'piece-a', label: 'Pièce A', presentation: 'interior', area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 }, z: 0 },
+    ]);
+  };
+
+  it('cite la CASE et la GRAINE de la pièce que le calque y a posée', () => {
+    withTempDir((dir) => {
+      const sites = codedSites(fixtureSource(dir));
+      const scene = fixtureScene();
+      const d = calqueDefaut(scene, 2, 0);
+      expect(d?.family, 'la fixture doit bien provoquer un défaut de zone en (2,0)').toBe('case-sans-zone');
+      expect(sites.of(d!)?.where).toBe('calque z0 (2,0)  graine A@0,0');
+    });
+  });
+
+  it('CONTRE-ÉPREUVE : une case qu’aucune graine n’atteint le DIT, au lieu de citer une pièce au hasard', () => {
+    withTempDir((dir) => {
+      const sites = codedSites(fixtureSource(dir));
+      const d = calqueDefaut(fixtureScene(), 2, 2);
+      expect(sites.of(d!)?.where).toBe('calque z0 (2,2)  hors pièce : aucune graine n’atteint cette case');
     });
   });
 });

@@ -12,9 +12,10 @@ import { readFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Scene } from '../../src/state/scene';
+import type { ZoneSeed } from '../../src/state/asciiMap';
 import { parseProject } from '../../src/state/worldMap';
-import { buildOperaFloorplan } from '../../src/scenes/opera/floorplan';
-import { REZ_ASCII, ETAGE_ASCII, REZ_ZONES_ASCII, ETAGE_ZONES_ASCII } from '../../src/scenes/opera/floorplan.ascii';
+import { buildOperaFloorplan, OPERA_ZONE_LAYERS, OPERA_ZONE_SEEDS } from '../../src/scenes/opera/floorplan';
+import { REZ_ASCII, ETAGE_ASCII } from '../../src/scenes/opera/floorplan.ascii';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const sceneDir = (name: string) => join(HERE, '../../src/scenes', name);
@@ -25,8 +26,11 @@ export interface MapSource {
   sourceDir: string;
   /** Grilles `walled` (box-drawing) par étage — MÊME chaîne que `MapSpec.walled[z]`. */
   walledGrids: Record<string, string>;
-  /** Grilles `zoneMap` (denses, 1 char = 1 case) par étage, si la carte en authore. */
-  zoneGrids?: Record<string, string>;
+  /** CALQUE de zones par étage, TEL QUE la scène l'a dérivé (`zonesFromSeeds`), et les GRAINES dont il
+   *  vient. Le calque n'est écrit dans AUCUN fichier : un défaut de zone se cite en case + graine de la
+   *  pièce, jamais en ligne de fichier. Les deux se prennent à la scène — l'outil ne redérive rien. */
+  zoneLayers?: Record<string, string>;
+  zoneSeeds?: Record<string, readonly ZoneSeed[]>;
   /** Chars de case (grille `walled` de l'étage source) qui posent une volée d'escalier légitime
    *  (`MapSpec.cells[c].stair`) — un « trou » de plancher d'étage sur ces chars est une TRÉMIE voulue. */
   stairChars?: Set<string>;
@@ -56,7 +60,8 @@ export const MAP_REGISTRY: MapEntry[] = [
     source: {
       sourceDir: sceneDir('opera'),
       walledGrids: { z0: REZ_ASCII, z1: ETAGE_ASCII },
-      zoneGrids: { z0: REZ_ZONES_ASCII, z1: ETAGE_ZONES_ASCII },
+      zoneLayers: OPERA_ZONE_LAYERS,
+      zoneSeeds: OPERA_ZONE_SEEDS,
     },
     floorTerrain: 'plancher',
   },

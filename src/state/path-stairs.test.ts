@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, type Scene, type Terrain } from './scene';
-import { pathTo, reachable } from './path';
+import { pathTo, reachable, walkNeighbors } from './path';
 
 /**
  * Pathfinding VERTICAL auto-dérivé du RELIEF (plus d'escaliers explicites) : la traversée d'une couche
@@ -71,5 +71,36 @@ describe('path — non-régression à z=0 (clés « x,y » sans suffixe)', () =>
     expect(path).not.toBeNull();
     expect(path!.map((p) => p.x)).toEqual([0, 1, 2, 3]);
     expect(path!.every((p) => (p.z ?? 0) === 0)).toBe(true);
+  });
+});
+
+/**
+ * UN MUR N'ARRÊTE LE PAS QU'À LA HAUTEUR OÙ ON LE FRANCHIT (#1780). Le pas inter-couches se juge sur
+ * l'arête de la couche la PLUS HAUTE : celle du dessous passe sous les pieds. Sans cette règle, une
+ * rampe qui atteint la cote de l'étage bute sur la cloison du rez qu'elle SURVOLE — affordance morte.
+ */
+describe('path — un pas qui change de couche ne voit que l’arête de la couche SUPÉRIEURE', () => {
+  const empty = new Set<string>();
+  /** Rampe de `twoLayer`, plus un mur sur l'arête entre (1,2) et (2,2) — la marche haute et le tablier. */
+  const avecMur = (z: number): Scene => {
+    const s = twoLayer(true);
+    s.walls = [{ x: 1, y: 2, side: 'E', ...(z ? { z } : {}) }];
+    return s;
+  };
+
+  it('la cloison du REZ sous la rampe laisse passer : la rampe l’enjambe', () => {
+    const path = pathTo(avecMur(0), { x: 0, y: 2, z: 0 }, { x: 2, y: 2, z: 1 }, { blocked: empty });
+    expect(path).not.toBeNull();
+  });
+
+  it('CONTRE-ÉPREUVE : la même arête murée à l’ÉTAGE barre le pas, dans les deux sens', () => {
+    expect(pathTo(avecMur(1), { x: 1, y: 2, z: 0 }, { x: 2, y: 2, z: 1 }, { blocked: empty })).toBeNull();
+    expect(pathTo(avecMur(1), { x: 2, y: 2, z: 1 }, { x: 1, y: 2, z: 0 }, { blocked: empty })).toBeNull();
+  });
+
+  it('le pas à PLAT reste barré par l’arête de sa propre couche (la règle ne perce rien d’horizontal)', () => {
+    const s = avecMur(0);
+    expect(pathTo(s, { x: 1, y: 3, z: 0 }, { x: 2, y: 3, z: 0 }, { blocked: empty })).not.toBeNull(); // pas de mur en y3
+    expect(walkNeighbors(s, { x: 1, y: 2, z: 0 }).some((n) => n.x === 2 && n.y === 2 && (n.z ?? 0) === 0)).toBe(false);
   });
 });
