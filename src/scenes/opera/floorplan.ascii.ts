@@ -20,7 +20,7 @@ export const REZ_ASCII = String.raw`
   |, , , , , ,|, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,|, , , , ,|
 
   |, , , , , ,|, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,|, , , , ,|
-   - - : - -               - - - - - - - - - - - - - - - - - -
+   - - : - - -             - - - - - - - - - - - - - - - - - -
   |, , , , , ,|, , , , , ,|S S S S S S S S S S S S S S S S S S:, , , , , , ,|, , , , ,|
 
   |, , , , , ,|, , , , , ,|S S S S S S S S S S S S S S S S S S|, , , , , , ,|, , , , ,|
@@ -30,7 +30,7 @@ export const REZ_ASCII = String.raw`
   |, , , , , ,|, , , , , ,|S S S S S S S S S S S S S S S S S S|, , , , , , ,|, , , , ,|
 
   |, , , , , ,|, , , , , ,|S S S S S S S S S S S S S S S S S S|, , , , , , ,|, , , , ,|
-                                                                           - : - - - -
+                                                                             : - - - -
   |, , , , , ,|, , , , , ,|S S S S S S S S S S S S S S S S S S|, , , , , , ,|, , , , ,|
 
   |, , , , , ,|, , , , , ,|S S S S S S S S S S S S S S S S S S|, , , , , , ,|, , , , ,|
@@ -99,7 +99,7 @@ export const REZ_ASCII = String.raw`
 
   |, , , , , , , ,|P P P P P P P P P P P P P P P P P P P P P P P P P P P|, , , , , , ,|
    - - : - - - - - : - - - - - - - - - - - - - - - - - - - - - - - - - : - - - - : - -
-  |, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,|
+  |, , , , , , , , , , , ,|, , , , , , , , , , , , , , , , , ,|, , , , , , , , , , , ,|
 
   |M M M M M M M M M M M M|M M M M M M M M M M M M M M M M M M|M M M M M M M M M M M M|
                                                                      -
@@ -165,62 +165,62 @@ export const ETAGE_ASCII = String.raw`
 
   |P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P|
 
-  |P P P P P P P P P P P P P P P P P P|             |P P P P P P P P P P P P P P P P P|
+  |P P P P P P P P P P P P P P P P P P               P P P P P P P P P P P P P P P P P|
+     - - - - - - - - - - - - - - -                       - - - - - - - - - - - - - -
+  |P|P P P P P P P P P P P P P P P                       P P P P P P P P P P P P P P|P|
 
-  |P|P P P P P P P P P P P P P P P|                     |P P P P P P P P P P P P P P|P|
+  |P:P P P P P P P P P P P P P                               P P P P P P P P P P P P:P|
 
-  |P:P P P P P P P P P P P P P|                             |P P P P P P P P P P P P:P|
-
-  |P|P P P P P P P P P P P P|                                 |P P P P P P P P P P P|P|
+  |P|P P P P P P P P P P P P                                   P P P P P P P P P P P|P|
      - - - - - - - - - - -                                       - - - - - - - - - -
-  |P|P P P P P P P P P P P|                                     |P P P P P P P P P P|P|
+  |P|P P P P P P P P P P P                                       P P P P P P P P P P|P|
 
-  |P|P P P P P P P P P P|                                         |P P P P P P P P P|P|
+  |P|P P P P P P P P P P                                           P P P P P P P P P|P|
 
-  |P:P P P P P P P P P|                                             |P P P P P P P P:P|
+  |P:P P P P P P P P P                                               P P P P P P P P:P|
 
-  |P|P P P P P P P P P|                                             |P P P P P P P P|P|
+  |P|P P P P P P P P P                                               P P P P P P P P|P|
      - - - - - - - -                                                   - - - - - - -
-  |P|P P P P P P P P|                                                 |P P P P P P P|P|
+  |P|P P P P P P P P                                                   P P P P P P P|P|
 
-  |P|P P P P P P P P|                                                 |P P P P P P P|P|
+  |P|P P P P P P P P                                                   P P P P P P P|P|
 
-  |P:P P P P P P P|                                                     |P P P P P P:P|
+  |P:P P P P P P P                                                       P P P P P P:P|
 
-  |P|P P P P P P P|                                                     |P P P P P P|P|
+  |P|P P P P P P P                                                       P P P P P P|P|
      - - - - - - -                                                       - - - - - -
-  |P|P P P P P P P|                                                     |P P P P P P|P|
+  |P|P P P P P P P                                                       P P P P P P|P|
 
-  |P|P P P P P P P|                                                     |P P P P P P|P|
+  |P|P P P P P P P                                                       P P P P P P|P|
 
-  |P:P P P P P P P|                                                     |P P P P P P:P|
+  |P:P P P P P P P                                                       P P P P P P:P|
 
-  |P|P P P P P P P|                                                     |P P P P P P|P|
+  |P|P P P P P P P                                                       P P P P P P|P|
      - - - - - - -                                                       - - - - - -
-  |P|P P P P P P P|                                                     |P P P P P P|P|
+  |P|P P P P P P P                                                       P P P P P P|P|
 
-  |P|P P P P P P P|                                                     |P P P P P P|P|
+  |P|P P P P P P P                                                       P P P P P P|P|
 
-  |P:P P P P P P P P|                                                 |P P P P P P P:P|
+  |P:P P P P P P P P                                                   P P P P P P P:P|
 
-  |P|P P P P P P P P|                                                 |P P P P P P P|P|
-     - - - - - - - - -                                               - - - - - - - -
-  |P|P P P P P P P P P|                                             |P P P P P P P P|P|
+  |P|P P P P P P P P                                                   P P P P P P P|P|
+     - - - - - - - -                                                   - - - - - - -
+  |P|P P P P P P P P P                                               P P P P P P P P|P|
 
-  |P|P P P P P P P P P|                                             |P P P P P P P P|P|
+  |P|P P P P P P P P P                                               P P P P P P P P|P|
 
-  |P:P P P P P P P P P P|                                         |P P P P P P P P P:P|
+  |P:P P P P P P P P P P                                           P P P P P P P P P:P|
 
-  |P|P P P P P P P P P P P|                                     |P P P P P P P P P P|P|
-     - - - - - - - - - - - -                                   - - - - - - - - - - -
-  |P|P P P P P P P P P P P P|                                 |P P P P P P P P P P P|P|
+  |P|P P P P P P P P P P P                                       P P P P P P P P P P|P|
+     - - - - - - - - - - -                                       - - - - - - - - - -
+  |P|P P P P P P P P P P P P                                   P P P P P P P P P P P|P|
 
-  |P|P P P P P P P P P P P P P|                             |P P P P P P P P P P P P|P|
+  |P|P P P P P P P P P P P P P                               P P P P P P P P P P P P|P|
 
-  |P:P P P P P P P P P P P P P P P|                     |P P P P P P P P P P P P P P:P|
+  |P:P P P P P P P P P P P P P P P                       P P P P P P P P P P P P P P:P|
 
-  |P|P P P P P P P P P P P P P P P P P|             |P P P P P P P P P P P P P P P P|P|
-                                       - - - - - - -
+  |P|P P P P P P P P P P P P P P P P P               P P P P P P P P P P P P P P P P|P|
+     - - - - - - - - - - - - - - - - -               - - - - - - - - - - - - - - - -
   |P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P|
 
   |P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P|

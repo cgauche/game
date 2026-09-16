@@ -4,8 +4,9 @@
  */
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS, type Scene, type SceneEffectZone, type WallSeg } from './scene';
-import { auditFacade, auditStairwells, auditUnsupportedFloor, auditZoneCoverage, groundTerrains, interiorCells, outdoorCells, PLAN_DEFECT_FAMILIES, scenePlanDefects, stairFlightCells, supportedFloorCells, zoneOutsideBuildingTiles, type PlanDefectFamily } from './planDefects';
+import { auditFacade, auditStairwells, auditUnsupportedFloor, auditWallDeadEndsInside, auditZoneCoverage, groundTerrains, interiorCells, outdoorCells, PLAN_DEFECT_FAMILIES, scenePlanDefects, stairFlightCells, supportedFloorCells, zoneOutsideBuildingTiles, type PlanDefectFamily } from './planDefects';
 import { perimeterWallSegs } from './sceneEdit.testkit';
+import { terrainWalkable } from './terrain';
 import { validateScene } from './validateScene';
 
 function makeScene(w: number, h: number, layers: { z: number; tiles: string[]; height?: number[] }[], zones: SceneEffectZone[], walls: WallSeg[] = []): Scene {
@@ -185,14 +186,23 @@ function sceneEnceinteAuRas(): Scene {
 }
 
 /** Plain-pied 8×8 entier de plancher dont le SEUL segment de mur est une porte, plantée loin de tout :
- *  ni enceinte, ni extrémité sur le bord — le plan n'a que ce défaut-là à rendre. */
+ *  ni enceinte, ni extrémité sur le bord. L'arête est isolée EN PLEIN PLANCHER : elle rend la porte
+ *  orpheline (famille 10) et, par ses deux coins libres, le mur en impasse (famille 11). */
 function scenePorteOrpheline(): Scene {
   const w = 8, h = 8;
   return makeScene(w, h, [{ z: 0, tiles: new Array(w * h).fill('plancher') }], [], [{ x: 5, y: 5, side: 'N', door: true }]);
 }
 
+/** Plain-pied 9×9 entier de plancher, une pièce 5×5 CLOSE en (1,1), et dedans un refend qui part du
+ *  mur ouest et s'arrête en plein plancher au coin (4,3) : l'impasse, et rien d'autre. */
+function sceneCloisonEnImpasse(): Scene {
+  const w = 9, h = 9;
+  const refend: WallSeg[] = [1, 2, 3].map((x) => ({ x, y: 3, side: 'N' as const }));
+  return makeScene(w, h, [{ z: 0, tiles: new Array(w * h).fill('plancher') }], [], [...perimeterWallSegs([{ x: 1, y: 1, w: 5, h: 5 }]), ...refend]);
+}
+
 describe('validateScene — AUCUNE famille ne peut cesser d’atteindre l’éditeur', () => {
-  const warnings = [scenePerFamily(), sceneEnceinteAuRas(), scenePorteOrpheline()]
+  const warnings = [scenePerFamily(), sceneEnceinteAuRas(), scenePorteOrpheline(), sceneCloisonEnImpasse()]
     .flatMap((scene) => validateScene([scene]))
     .filter((wa) => wa.scope === 'plan');
 
@@ -586,5 +596,77 @@ describe('BORD DE LA CARTE — le dehors s’amorce PAR le bord, et un plan qui 
       const corrigee: Scene = { ...avec, walls: [] };
       expect(scenePlanDefects(corrigee)).toEqual([]);
     });
+  });
+});
+
+describe('MUR EN IMPASSE — une cloison qui ne rejoint rien ne ferme rien (famille 11)', () => {
+  /** Grille 9×9 entièrement plancheiée, sauf les cases citées, mises au `terrain` donné : SEULS les
+   *  murs et l'obstacle varient d'une épreuve à l'autre. */
+  const grille = (walls: WallSeg[], obstacles: string[] = [], terrain = 'vide'): Scene => {
+    const w = 9, h = 9;
+    const tiles = new Array(w * h).fill('plancher');
+    for (const key of obstacles) { const [x, y] = key.split(',').map(Number); tiles[y * w + x] = terrain; }
+    return makeScene(w, h, [{ z: 0, tiles }], [], walls);
+  };
+  const impasses = (scene: Scene) =>
+    auditWallDeadEndsInside(scene, 0).map((d) => (d.at.kind === 'edge' ? `${d.at.x},${d.at.y}${d.at.side}` : d.at.kind));
+  const close = perimeterWallSegs([{ x: 1, y: 1, w: 5, h: 5 }]);
+  /** Refend parti du mur ouest de la pièce close, arrêté au coin (x+1,3). */
+  const refend = (jusqua: number): WallSeg[] =>
+    Array.from({ length: jusqua }, (_, i) => ({ x: 1 + i, y: 3, side: 'N' as const }));
+
+  it('une cloison qui s’arrête AU MILIEU de la pièce nomme son seul bout libre, et le geste de correction', () => {
+    const defects = auditWallDeadEndsInside(grille([...close, ...refend(3)]), 0);
+    expect(defects.map((d) => (d.at.kind === 'edge' ? `${d.at.x},${d.at.y}${d.at.side}` : d.at.kind))).toEqual(['3,3N']);
+    expect(defects[0].message).toContain('finit au coin (4,3)');
+    expect(defects[0].message).toContain("Prolonge-la jusqu'au mur qu'elle devait rejoindre");
+  });
+
+  it('CONTRE-ÉPREUVE : la MÊME cloison PROLONGÉE jusqu’au mur d’en face fait une jonction en T à chaque bout — plus un mot', () => {
+    expect(impasses(grille([...close, ...refend(5)]))).toEqual([]);
+  });
+
+  it('un segment dont les DEUX coins sont libres est ISOLÉ — deux défauts, un par bout, et le message le dit', () => {
+    const defects = auditWallDeadEndsInside(grille([{ x: 4, y: 4, side: 'N' }]), 0);
+    expect(defects).toHaveLength(2);
+    expect(defects.every((d) => d.message.includes('est ISOLÉ'))).toBe(true);
+    expect(defects[0].at).toEqual({ kind: 'edge', x: 4, y: 4, side: 'N', z: 0 });
+  });
+
+  it('un bout libre posé sur le BORD de la carte n’est PAS une impasse : c’est l’amorce du dehors, et la famille 9 le dit déjà', () => {
+    const adossee: WallSeg[] = [
+      ...[0, 1, 2].map((y) => ({ x: 2, y, side: 'E' as const })),
+      ...[0, 1, 2].map((x) => ({ x, y: 3, side: 'N' as const })),
+    ];
+    const scene = grille(adossee);
+    expect(impasses(scene)).toEqual([]);
+    expect(scenePlanDefects(scene).filter((d) => d.family === 'mur-arrete-au-bord')).toHaveLength(2);
+  });
+
+  it('un refend qui meurt sur un quadrant que le pas ne FOULE PAS n’est pas une impasse — le vide comme l’eau, et quel que soit le quadrant', () => {
+    for (const terrain of ['vide', 'eau']) {
+      expect(terrainWalkable(terrain), `${terrain} doit être infranchissable au dataset`).toBe(false);
+      for (const quadrant of ['4,3', '4,2', '3,3', '3,2']) // les quatre cases qui touchent le coin (4,3)
+        expect(impasses(grille([...close, ...refend(3)], [quadrant], terrain)), `${terrain} en ${quadrant}`).toEqual([]);
+    }
+  });
+
+  it('CONTRE-ÉPREUVE : le MÊME obstacle déplacé HORS des quadrants du coin rend l’impasse — c’est bien le quadrant infranchissable qui exempte, pas sa présence sur la carte', () => {
+    for (const terrain of ['vide', 'eau'])
+      expect(impasses(grille([...close, ...refend(3)], ['5,4'], terrain)), terrain).toEqual(['3,3N']);
+  });
+
+  it('un terrain bâti mais FRANCHISSABLE ne dispense de rien : seul le pas tranche, jamais la matière', () => {
+    expect(terrainWalkable('dalle')).toBe(true);
+    expect(impasses(grille([...close, ...refend(3)], ['4,3'], 'dalle'))).toEqual(['3,3N']);
+  });
+
+  it('une porte percée dans une cloison CLOSE ne crée aucune impasse — c’est la jonction aux coins qui tranche', () => {
+    const percee = close.map((seg, i) => (i === 0 ? { ...seg, door: true } : seg));
+    expect(impasses(grille(percee))).toEqual([]);
+  });
+
+  it('une DIAGONALE n’est pas jugée ici : elle ne s’accroche à aucun coin de la trame', () => {
+    expect(impasses(grille([{ x: 5, y: 5, side: '\\' } as WallSeg]))).toEqual([]);
   });
 });

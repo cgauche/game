@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 import type { Scene } from '../../src/state/scene';
 import { parseProject } from '../../src/state/worldMap';
 import { buildOperaFloorplan } from '../../src/scenes/opera/floorplan';
-import { REZ_ASCII, ETAGE_ASCII } from '../../src/scenes/opera/floorplan.ascii';
+import { REZ_ASCII, ETAGE_ASCII, REZ_ZONES_ASCII, ETAGE_ZONES_ASCII } from '../../src/scenes/opera/floorplan.ascii';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const sceneDir = (name: string) => join(HERE, '../../src/scenes', name);
@@ -46,18 +46,18 @@ export interface MapEntry {
 }
 
 export const MAP_REGISTRY: MapEntry[] = [
-  // `zoneGrids` : IMPOSSIBLE sans inventer une donnée — `opera/floorplan.ts`/`opera/floorplan.ascii.ts`
-  // n'authorent aucun `zoneMap` (aucune zone descriptive nommée). `auditFacade`/`auditZoneCoverage`
-  // refusent donc de rendre un verdict pour ce plan (garde `descriptiveZoneIndex(scene).size === 0`) —
-  // c'est ASSUMÉ, pas décoratif : jamais de verdict géométrique sans corroboration d'auteur (#823 défaut 1).
-  // `stairChars` : IMPOSSIBLE aussi, mais pour une autre raison — l'étage se rejoint par 2 RAMPES
-  // (`operaRelief`, cf. `opera/floorplan.ts`), AUCUN escalier n'existe sur ce plan (`MapSpec.cells` n'est pas
-  // authoré). Sans recette `stair`, `auditStairwells` classe donc tout trou de plancher `SUSPECT` — correct.
+  // `stairChars` : IMPOSSIBLE — l'étage se rejoint par 2 RAMPES (`operaRelief`, cf. `opera/floorplan.ts`),
+  // AUCUN escalier n'existe sur ce plan (`MapSpec.cells` n'est pas authoré). Sans recette `stair`,
+  // `auditStairwells` classe donc tout trou de plancher `SUSPECT` — correct.
   {
     key: 'opera',
     label: 'Théâtre Staatsoper',
     build: buildOperaFloorplan,
-    source: { sourceDir: sceneDir('opera'), walledGrids: { z0: REZ_ASCII, z1: ETAGE_ASCII } },
+    source: {
+      sourceDir: sceneDir('opera'),
+      walledGrids: { z0: REZ_ASCII, z1: ETAGE_ASCII },
+      zoneGrids: { z0: REZ_ZONES_ASCII, z1: ETAGE_ZONES_ASCII },
+    },
     floorTerrain: 'plancher',
   },
 ];

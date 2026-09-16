@@ -4,6 +4,7 @@ import { tileAt, heightAt, isWalkable, wallBetween } from '../../state/scene';
 import { reachable, type Pt } from '../../state/path';
 import { effectiveArchitecture } from '../../state/sceneEdit';
 import { unreachableDescriptiveZones, reachedFloors } from '../../state/mapQC';
+import { scenePlanDefects } from '../../state/planDefects';
 import { METRES_PER_LEVEL } from '../../state/relief';
 import { buildWalls } from '../../gameIso/builders/walls';
 import { buildRoofs, clearedSpace } from '../../gameIso/builders/roofs';
@@ -245,5 +246,73 @@ describe('plan de l’Opéra — apparence des murs (#1180)', () => {
     const offenseurs = rendus.filter((el) => el.appearance !== 'plain');
     expect(offenseurs.map((el) => `${el.key} → ${el.appearance}`),
       `élément(s) rendu(s) hors du mur nu alors qu’aucune arête n’authore d’apparence (${diag})`).toEqual([]);
+  });
+});
+
+/**
+ * #1179 — le pourtour du PUITS n'est pas un mur : le plan (NADJ 08 folio 39) y montre un bord de balcon
+ * OUVERT sur la salle, donc la seule frontière `plancher | vide`, sans arête. Les refends de loge qui
+ * meurent sur ce bord ne sont pas des impasses — un quadrant infranchissable n'offre aucun bout à
+ * contourner (`auditWallDeadEndsInside`, famille 11).
+ */
+describe('plan de l’Opéra — l’ovale de l’étage est fermé (#1179)', () => {
+  const s = buildOperaFloorplan();
+  const W = s.dimensions.w, H = s.dimensions.h;
+  const AXE = Math.round((W - 1) / 2);
+  const impasses = (z: number) => scenePlanDefects(s)
+    .filter((d) => d.family === 'mur-en-impasse' && d.at.z === z)
+    .map((d) => (d.at.kind === 'edge' ? `${d.at.x},${d.at.y}${d.at.side}` : d.at.kind));
+
+  it('ÉTAGE : plus AUCUN mur en impasse — aucun bout libre, aucun segment isolé', () => {
+    expect(impasses(1), `${(s.walls ?? []).filter((w) => w.z === 1).length} arêtes à l’étage`).toEqual([]);
+  });
+
+  it('REZ : les seules impasses restantes sont les deux CAGES 8/9 du foyer, nommées — le reste est chaîné', () => {
+    // Les quatre bouts appartiennent à l'enceinte des cages d'escalier du foyer (x6-8 / x35-37,
+    // y46-50), que l'ASCII n'a jamais close — #1780.
+    expect(impasses(0)).toEqual(['5,46E', '34,46N', '5,48E', '34,49N']);
+  });
+
+  /** Composante connexe de vide qui contient le CENTRE du puits (cf. « PUITS CENTRAL OVALE ») — le
+   *  vide du dehors, qui borde l'enveloppe du bâtiment et EXIGE ses murs, en est exclu par
+   *  construction : il ne communique pas avec le puits. */
+  const puits = (() => {
+    const centre = `${AXE},28`;
+    const set = new Set([centre]);
+    const pile = [[AXE, 28]];
+    while (pile.length) {
+      const [cx, cy] = pile.pop()!;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = cx + dx, ny = cy + dy;
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H || set.has(`${nx},${ny}`) || tileAt(s, nx, ny, 1) !== 'vide') continue;
+        set.add(`${nx},${ny}`);
+        pile.push([nx, ny]);
+      }
+    }
+    return set;
+  })();
+
+  it('le PUITS est OUVERT : aucune arête entre une case du puits et sa voisine de plancher', () => {
+    expect(tileAt(s, AXE, 28, 1), 'le centre du puits est bien vide').toBe('vide');
+    const offenseurs: string[] = [];
+    let paires = 0;
+    for (const key of puits) {
+      const [x, y] = key.split(',').map(Number);
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H || tileAt(s, nx, ny, 1) === 'vide') continue;
+        paires++;
+        if (wallBetween(s, x, y, nx, ny, 1)) offenseurs.push(`${x},${y}|${nx},${ny}`);
+      }
+    }
+    expect(paires, 'le puits borde bien du plancher de balcon').toBeGreaterThan(0);
+    expect(offenseurs, `${puits.size} cases de puits, ${paires} paires puits|plancher`).toEqual([]);
+  });
+
+  it('un refend de loge qui MEURT sur le vide reste posé, et n’est PAS un défaut : l’à-pic exempte', () => {
+    const temoin = (s.walls ?? []).find((w) => w.x === 12 && w.y === 19 && w.side === 'N' && w.z === 1);
+    expect(temoin, 'refend témoin (12,19)N absent de la grille').toBeDefined();
+    expect(tileAt(s, 13, 19, 1), 'le quadrant est du coin (13,19) est bien le puits').toBe('vide');
+    expect(impasses(1)).not.toContain('12,19N');
   });
 });

@@ -6,7 +6,7 @@
  */
 import { heightAt, isDescriptiveZone, type Scene, type SceneEffectZone } from './scene';
 import { sceneZoneTiles } from './zones';
-import { tousLesTerrains } from './terrain';
+import { terrainWalkable, tousLesTerrains } from './terrain';
 import { gradeBetween, METRES_PER_LEVEL } from './relief';
 import { memoByRef, memoByRefDeps } from './sceneMemo';
 import type { CellSide } from './scene';
@@ -67,7 +67,7 @@ export type PlanDefectFamily =
   | 'facade-decalee' | 'mur-manquant' | 'etage-sur-exterior'
   | 'case-sans-zone' | 'etage-sans-appui'
   | 'zone-hors-bati' | 'zone-debordante'
-  | 'enceinte-au-bord' | 'mur-arrete-au-bord' | 'porte-orpheline';
+  | 'enceinte-au-bord' | 'mur-arrete-au-bord' | 'mur-en-impasse' | 'porte-orpheline';
 
 /** OÙ se corrige le défaut — l'éditeur en fait une sélection, le CLI une coordonnée. */
 export type PlanDefectAt =
@@ -114,12 +114,13 @@ export const PLAN_DEFECT_FAMILIES: readonly PlanDefectFamilyDef[] = [
   { id: 'zone-debordante', title: 'Zone débordant hors des murs', scope: 'zone' },
   { id: 'enceinte-au-bord', title: 'Enceinte collée au bord de la carte', scope: 'floor' },
   { id: 'mur-arrete-au-bord', title: 'Mur arrêté sur le bord de la carte', scope: 'floor' },
+  { id: 'mur-en-impasse', title: 'Mur en impasse à l’intérieur de la carte', scope: 'floor' },
   { id: 'porte-orpheline', title: 'Porte posée sur une arête isolée', scope: 'floor' },
 ];
 
 /** Familles scannées par PAIRE d'étages (`floorPairs`) — les familles de zone et celles de grille de
  *  murs en sont exclues : une scène de plain-pied a des zones et des murs, donc un sujet. */
-export type FloorPairFamily = Exclude<PlanDefectFamily, 'zone-hors-bati' | 'zone-debordante' | 'enceinte-au-bord' | 'mur-arrete-au-bord' | 'porte-orpheline'>;
+export type FloorPairFamily = Exclude<PlanDefectFamily, 'zone-hors-bati' | 'zone-debordante' | 'enceinte-au-bord' | 'mur-arrete-au-bord' | 'mur-en-impasse' | 'porte-orpheline'>;
 
 export interface Defect {
   family: FloorPairFamily;
@@ -602,7 +603,7 @@ export function floorPairs(scene: Scene): [number, number][] {
 
 /** Segments d'arête CARDINAUX d'un étage — les seuls qui ferment un périmètre : une diagonale
  *  (`'\\'`/`'/'`) traverse une case sans s'accrocher à deux coins de la trame. */
-function cardinalWalls(scene: Scene, z: number): { x: number; y: number; side: 'N' | 'E' }[] {
+function cardinalWalls(scene: Scene, z: number): WallSegment[] {
   return (scene.walls ?? [])
     .filter((w) => (w.z ?? 0) === z && (w.side === 'N' || w.side === 'E'))
     .map((w) => ({ x: w.x, y: w.y, side: w.side as 'N' | 'E' }));
@@ -610,7 +611,7 @@ function cardinalWalls(scene: Scene, z: number): { x: number; y: number; side: '
 
 /** Les deux COINS de trame qu'un segment relie : `N` de (x,y) va de (x,y) à (x+1,y), `E` de (x,y) va
  *  de (x+1,y) à (x+1,y+1). Deux segments qui partagent un coin sont chaînés. */
-function wallVertices(seg: { x: number; y: number; side: 'N' | 'E' }): [string, string] {
+function wallVertices(seg: WallSegment): [string, string] {
   return seg.side === 'N'
     ? [`${seg.x},${seg.y}`, `${seg.x + 1},${seg.y}`]
     : [`${seg.x + 1},${seg.y}`, `${seg.x + 1},${seg.y + 1}`];
@@ -631,24 +632,36 @@ export function auditEnclosureAtBorder(scene: Scene, z: number): PlanDefect[] {
   }];
 }
 
+type WallSegment = { x: number; y: number; side: 'N' | 'E' };
+
+/** Graphe des murs d'un étage : les segments CARDINAUX et le DEGRÉ de chaque coin de trame (nombre de
+ *  segments qui s'y accrochent). Foyer unique des familles qui raisonnent sur les EXTRÉMITÉS de mur —
+ *  un coin de degré 1 est un bout libre, un coin de degré 3 une jonction en T. */
+function wallGraph(scene: Scene, z: number): { segs: WallSegment[]; degree: Map<string, number> } {
+  const segs = cardinalWalls(scene, z);
+  const degree = new Map<string, number>();
+  for (const seg of segs) for (const v of wallVertices(seg)) degree.set(v, (degree.get(v) ?? 0) + 1);
+  return { segs, degree };
+}
+
+/** Coin de trame posé sur le BORD de la grille — l'amorce du dehors, pas un mur (famille 9). */
+function vertexOnBorder(scene: Scene, v: string): boolean {
+  const { w, h } = scene.dimensions;
+  const [vx, vy] = v.split(',').map(Number);
+  return vx === 0 || vy === 0 || vx === w || vy === h;
+}
+
 /** Famille 9 — mur dont une extrémité s'arrête sur le BORD de la carte sans rencontrer d'autre
  *  segment. Le bord n'est pas un mur : c'est l'amorce du dehors. Une pièce adossée au bord et close
  *  par ses seuls murs internes reste donc OUVERTE — elle ne porte ni plancher réel, ni enveloppe, ni
  *  toiture. Un coin de degré 3 (jonction en T d'une cloison) n'est pas une extrémité : seul le
  *  degré 1 l'est. */
 export function auditWallDeadEndsAtBorder(scene: Scene, z: number): PlanDefect[] {
-  const { w, h } = scene.dimensions;
-  const segs = cardinalWalls(scene, z);
-  const degree = new Map<string, number>();
-  for (const seg of segs) for (const v of wallVertices(seg)) degree.set(v, (degree.get(v) ?? 0) + 1);
-  const onBorder = (v: string) => {
-    const [vx, vy] = v.split(',').map(Number);
-    return vx === 0 || vy === 0 || vx === w || vy === h;
-  };
+  const { segs, degree } = wallGraph(scene, z);
   const out: PlanDefect[] = [];
   for (const seg of segs) {
     for (const v of wallVertices(seg)) {
-      if (degree.get(v) !== 1 || !onBorder(v)) continue;
+      if (degree.get(v) !== 1 || !vertexOnBorder(scene, v)) continue;
       out.push({
         family: 'mur-arrete-au-bord',
         at: { kind: 'edge', x: seg.x, y: seg.y, side: seg.side, z },
@@ -668,8 +681,7 @@ export function auditWallDeadEndsAtBorder(scene: Scene, z: number): PlanDefect[]
  *  La partition PAR ÉTAGE est déjà portée par la clé de coin (`wallVertices` y met le `z`) : aucun mur
  *  d'un autre étage n'y rattache une porte. Mesuré : 0 porte orpheline sur les 4 paquets livrés. */
 export function auditOrphanDoors(scene: Scene, z: number): PlanDefect[] {
-  const degree = new Map<string, number>();
-  for (const seg of cardinalWalls(scene, z)) for (const v of wallVertices(seg)) degree.set(v, (degree.get(v) ?? 0) + 1);
+  const { degree } = wallGraph(scene, z);
   const out: PlanDefect[] = [];
   for (const wall of scene.walls ?? []) {
     if (!wall.door || (wall.z ?? 0) !== z || (wall.side !== 'N' && wall.side !== 'E')) continue;
@@ -681,6 +693,43 @@ export function auditOrphanDoors(scene: Scene, z: number): PlanDefect[] {
       grid: 'walled',
       message: `Porte posée sur une arête isolée — la porte ${seg.side} de (${seg.x},${seg.y}) à l'étage ${z} ne touche aucun autre mur par ses coins : elle n'ouvre sur rien, se contourne des deux côtés et se dresse seule au rendu. Rattache-la au mur qu'elle devait percer, ou retire-la.`,
     });
+  }
+  return out;
+}
+
+/** Famille 11 (#1179) — mur dont une extrémité s'arrête EN PLEIN PLANCHER, sans rencontrer d'autre
+ *  segment : une cloison qui ne rejoint rien ne ferme rien, elle se contourne par son bout. Symétrique
+ *  intérieure de la famille 9 — même graphe, même critère de degré 1 —, avec la même forme d'exemption :
+ *  un coin dont l'un des 4 QUADRANTS (les quatre cases qui le touchent) n'est pas CONTOURNABLE n'est pas
+ *  une extrémité. Hors grille, c'est le bord, l'amorce du dehors ; sinon c'est le terrain qui tranche,
+ *  par le seul critère du pas (`terrainWalkable`) : vide, eau, masse de maçonnerie, fosse, lave. Une
+ *  cloison qui meurt là ne laisse aucun bout à contourner — garde-corps de galerie sur un puits interne
+ *  (`exteriorVoidCells`), refend qui meurt au bord d'un balcon, cloison qui bute sur un rocher. Quand
+ *  les DEUX coins d'un segment sont libres, le message le dit isolé. Un coin de degré 3 (jonction en T)
+ *  n'est pas une extrémité. */
+export function auditWallDeadEndsInside(scene: Scene, z: number): PlanDefect[] {
+  const { segs, degree } = wallGraph(scene, z);
+  /** Le bout du mur se CONTOURNE-t-il ? Vrai quand les 4 quadrants du coin se foulent au pas. */
+  const contournable = (v: string) => {
+    if (vertexOnBorder(scene, v)) return false;
+    const [vx, vy] = v.split(',').map(Number);
+    return [[vx - 1, vy - 1], [vx, vy - 1], [vx - 1, vy], [vx, vy]]
+      .every(([cx, cy]) => terrainWalkable(terrainAt(scene, cx, cy, z)));
+  };
+  const out: PlanDefect[] = [];
+  for (const seg of segs) {
+    const libres = wallVertices(seg).filter((v) => degree.get(v) === 1 && contournable(v));
+    const isole = libres.length === 2;
+    for (const v of libres) {
+      out.push({
+        family: 'mur-en-impasse',
+        at: { kind: 'edge', x: seg.x, y: seg.y, side: seg.side, z },
+        grid: 'walled',
+        message: isole
+          ? `Mur en impasse à l’intérieur de la carte — le mur ${seg.side} de (${seg.x},${seg.y}) à l'étage ${z} est ISOLÉ : ses deux coins (dont ${v}) sont libres, en plein plancher. Il ne ferme aucune pièce et se contourne des deux bouts. Chaîne-le aux murs qu'il devait rejoindre, ou retire-le.`
+          : `Mur en impasse à l’intérieur de la carte — le mur ${seg.side} de (${seg.x},${seg.y}) à l'étage ${z} finit au coin (${v}) sans rencontrer d'autre mur, en plein plancher : ni bord de grille, ni à-pic n'arrêtent la cloison là. Elle ne ferme aucune pièce — le pas contourne son bout. Prolonge-la jusqu'au mur qu'elle devait rejoindre, ou retire-la.`,
+      });
+    }
   }
   return out;
 }
@@ -718,6 +767,6 @@ function buildPlanDefects(scene: Scene): PlanDefect[] {
     for (const d of perFloor) out.push({ family: d.family, at: defectAt(d), grid: d.grid, message: d.message });
   }
   out.push(...auditZoneFootprint(scene));
-  for (const z of scenesZ(scene)) out.push(...auditEnclosureAtBorder(scene, z), ...auditWallDeadEndsAtBorder(scene, z), ...auditOrphanDoors(scene, z));
+  for (const z of scenesZ(scene)) out.push(...auditEnclosureAtBorder(scene, z), ...auditWallDeadEndsAtBorder(scene, z), ...auditWallDeadEndsInside(scene, z), ...auditOrphanDoors(scene, z));
   return out;
 }

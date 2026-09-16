@@ -180,11 +180,19 @@ describe('mesures INFORMATIVES sur les scènes réelles (non contractuelles — 
     }
   });
 
-  it('Théâtre Staatsoper — aucune zone descriptive authorée, `auditFacade` ne rend plus 83 faux positifs mais 0 (#823 défaut 1)', () => {
-    const entry = findMap('opera');
-    const scene = entry.build();
+  it('Théâtre Staatsoper — la façade de l’étage est D’APLOMB sur celle du rez, et ce zéro est un verdict : la famille a de quoi mesurer, et le dit dès qu’on ouvre le périmètre', () => {
+    const scene = findMap('opera').build();
     const [[aboveZ, belowZ]] = floorPairs(scene);
-    expect(auditFacade(scene, aboveZ, belowZ)).toHaveLength(0);
+    const murs = (scene.walls ?? []).filter((w) => (w.z ?? 0) === aboveZ);
+    // `auditFacade` refuse tout verdict sans corroboration d'AUTEUR (`descriptiveZoneIndex`, #823
+    // défaut 1) : la scène porte ses zones ET une grille de murs à l'étage, le scan a donc bien lieu.
+    expect(scene.effectZones?.length, 'zones descriptives du plan').toBeGreaterThan(0);
+    expect(murs.length, 'arêtes de l’étage').toBeGreaterThan(0);
+    expect(auditFacade(scene, aboveZ, belowZ)).toEqual([]);
+
+    // CONTRE-ÉPREUVE : UNE arête de périmètre d'étage retirée, et la famille la nomme.
+    const trouee = { ...scene, id: `${scene.id}-trouee`, walls: (scene.walls ?? []).filter((w) => w !== murs[0]) };
+    expect(auditFacade(trouee, aboveZ, belowZ).map((d) => d.family)).toEqual(['mur-manquant']);
   });
 });
 
