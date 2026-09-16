@@ -3,6 +3,7 @@ import { startOf, unreachableDescriptiveZones } from './mapQC';
 import { footprintTiles, sizeFootprint } from './footprint';
 import { entitySize, refEntiteResolue } from './spawn';
 import { METRES_PER_LEVEL } from './relief';
+import { realFloorAt } from './sceneEdit';
 import { CHAR_KEYS } from '../engine/types';
 import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, carriedFlows, EMPTY_FLOW } from './flow';
 import { refEstVolumique, stakeSpeaks, REF_DECOR_DEFAUT, matieresCouvrantes } from '../data';
@@ -153,6 +154,7 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
 
     // Couches (`Scene.layers`) : ids d'étage valides pour rattacher les entités posées en hauteur.
     const layerZs = new Set(s.layers.map((l) => l.z));
+    const realFloor = realFloorAt(s); // plancher RÉEL par étage — la vérité partagée avec la dérivation
     for (const e of s.entities) {
       if (e.dialogueId && !dlgIds.has(e.dialogueId)) add('error', 'entity', e.id, `${e.label ?? e.id} → dialogue inexistant « ${e.dialogueId} »`);
       if (!within(e.pos.x, e.pos.y)) add('warn', 'entity', e.id, `${e.label ?? e.id} hors carte (${e.pos.x},${e.pos.y})`);
@@ -298,11 +300,17 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
         // l'étage du dessous traverse le plancher du dessus — et le toit posé dessus descend dedans.
         // Cas nommé par la garde : une couche d'étage laissée SANS cote (`layer.height` absent) — ses
         // planchers, ses murs et sa toiture retombent tous au rez sans un mot.
+        // L'invariant ne porte QUE là où l'étage a un PLANCHER RÉEL (`realFloorAt`, la même vérité que la
+        // dérivation et `validateBuildingMasses`) : une masse couvre aussi les colonnes OUVERTES qu'elle
+        // adopte — trémie de volée, puits de rampe — où il n'y a rien à empiler, et où la case du dessous
+        // rejoint précisément la cote du dessus : c'est par là qu'on MONTE.
         if (mass.z > 0 && layerZs.has(mass.z - 1)) {
+          const plancherHaut = realFloor(mass.z);
           const tropBas = (mass.footprint ?? []).flatMap((rect) => {
             const out: { x: number; y: number; h: number; sous: number }[] = [];
             for (let y = rect.y; y < rect.y + rect.h; y++)
               for (let x = rect.x; x < rect.x + rect.w; x++) {
+                if (!plancherHaut.has(`${x},${y}`)) continue;
                 const h = heightAt(s, x, y, mass.z);
                 const sous = heightAt(s, x, y, mass.z - 1);
                 if (h - sous < METRES_PER_LEVEL - 1e-6) out.push({ x, y, h, sous });

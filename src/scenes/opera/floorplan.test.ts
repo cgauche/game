@@ -1,7 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { buildOperaFloorplan } from './floorplan';
+import { buildOperaFloorplan, ZONES_REZ, ZONES_ETAGE } from './floorplan';
 import { tileAt, heightAt, isWalkable, wallBetween } from '../../state/scene';
 import { reachable, type Pt } from '../../state/path';
+import { effectiveArchitecture } from '../../state/sceneEdit';
+import { clearedSpace } from '../../gameIso/builders/roofs';
+import { unreachableDescriptiveZones, reachedFloors } from '../../state/mapQC';
+import { METRES_PER_LEVEL } from '../../state/relief';
 
 /**
  * Le plan de l'Opéra (Théâtre Staatsoper) est COMPILÉ par `buildScene(MapSpec)` depuis l'ASCII box-drawing
@@ -37,8 +41,9 @@ describe('plan de l’Opéra — géométrie (relief unifié)', () => {
     expect(heightAt(s, AX, 17, 0)).toBeLessThan(0);
   });
 
-  it('l’ÉTAGE (galerie de loges) est une couche surélevée (hauteur = un plein niveau, 4 m)', () => {
-    expect(heightAt(s, AX, 2, 1)).toBe(4); // loge royale, z1
+  it('l’ÉTAGE (galerie de loges) se pose un PLEIN NIVEAU au-dessus du point HAUT du rez (la scène)', () => {
+    const scene = heightAt(s, AX, 8, 0); // planches de la scène, le plancher le plus haut du rez
+    expect(heightAt(s, AX, 2, 1)).toBe(scene + METRES_PER_LEVEL); // loge royale, z1
   });
 
   it('PARTERRE en ÉVENTAIL : plus étroit près de la scène que vers le fond', () => {
@@ -91,5 +96,97 @@ describe('plan de l’Opéra — géométrie (relief unifié)', () => {
       for (let x = 0; x < W; x++)
         if (isWalkable(s, x, y, 1) && !R.has(key(x, y, 1))) sealedUpper++;
     expect(sealedUpper, 'toute case de l’étage (loges) est atteignable depuis le foyer par la rampe').toBe(0);
+  });
+});
+
+/**
+ * Le théâtre est un CORPS architectural (`MapSpec.architecture`) : sans lui, `buildScene` ne dérive
+ * AUCUNE masse (`deriveArchitectureMasses` n'itère que `scene.architecture`) et la loi de dégagement
+ * (`clearedSpace`, `gameIso/builders/roofs.ts`) ne trouve, autour d'un allié posé au rez, ni pièce ni
+ * emprise : elle le déclare à ciel ouvert et ne lève rien — le groupe reste en silhouette sous une
+ * couche d'étage qui le coiffe (#1771).
+ */
+describe('plan de l’Opéra — corps architectural et loi de dégagement', () => {
+  const s = buildOperaFloorplan();
+  // La carte n'a pas de `heroStart` (`startOf` rend `null`) : les scénarios posent le groupe. Le départ
+  // de QC est donc le seuil d'honneur, l'entrée par laquelle un joueur entre.
+  const start = { ...s.entryPoints!['entree-principale'], z: 0 };
+
+  it('CONSTRUCTION : un corps unique NON BORNÉ ne déclenche aucun résiduel (`validateArchitectureResiduals`)', () => {
+    expect(() => buildOperaFloorplan()).not.toThrow();
+    expect(s.architecture?.map((b) => b.id)).toEqual(['opera-staatsoper']);
+    expect(s.architecture?.[0].storeys.map((st) => st.z)).toEqual([0, 1]);
+  });
+
+  it('QC de plan : aucune zone descriptive inatteignable, les deux étages habités sont atteints', () => {
+    expect(unreachableDescriptiveZones(s, start)).toEqual([]);
+    expect([...reachedFloors(s, start)].sort()).toEqual(expect.arrayContaining([0, 1]));
+  });
+
+  it('TOITURE DÉRIVÉE : le corps porte ses masses, toutes dérivées (aucune authorée)', () => {
+    const masses = effectiveArchitecture(s).flatMap((b) => b.masses);
+    const cases = (m: (typeof masses)[number]) => m.footprint.reduce((n, r) => n + r.w * r.h, 0);
+    // FORME MESURÉE, pas un plancher : deux composantes 4-connexes du plancher réel — le corps principal
+    // (les deux niveaux, dont la masse du z1 fait le COUVERCLE au-dessus d'un allié du rez) et le foyer,
+    // qui n'a pas d'étage. Croupe (`hip`) des deux côtés : la portée dépasse `ROOF_GABLE_SPAN_MAX_M`.
+    expect(masses.map((m) => [m.z, m.levels, m.profile, cases(m), !!m.derived])).toEqual([
+      [1, 2, 'hip', 2100, true],
+      [0, 1, 'hip', 336, true],
+    ]);
+  });
+
+  it('LÉGENDES de zone : les chars du rez et de l’étage sont DISJOINTS', () => {
+    // `zoneLegend` est indexé par le SEUL char (`mapSpec.ts` : `zoneLegend[b.char].id`) : un char partagé
+    // donnerait la pièce d'un niveau à l'autre, en silence, à la fusion `{ ...ZONES_REZ, ...ZONES_ETAGE }`.
+    const communs = Object.keys(ZONES_REZ).filter((ch) => ch in ZONES_ETAGE);
+    expect(communs, `char(s) de zone partagé(s) entre les deux niveaux : ${communs.join(' ')}`).toEqual([]);
+  });
+
+  it('DÉGAGEMENT en salle verte (3,4,z0) : la PIÈCE se dégage, le couvercle se lève', () => {
+    const cleared = clearedSpace(s, [{ x: 3, y: 4, z: 0 }]);
+    // L'allié occupe une PIÈCE déclarée : la loi dégage son aire ENTIÈRE, pas l'emprise du bâtiment.
+    expect([...cleared.zoneIds]).toContain('salle-verte');
+    expect(cleared.roomlessCells.size, 'aucun repli sur l’emprise : la pièce a tranché').toBe(0);
+    // COUVERCLE : la case (3,4) au niveau STRICTEMENT au-dessus du sien.
+    expect(cleared.overheadCells.has('3,4,1'), 'la couche d’étage qui le surplombe se lève').toBe(true);
+  });
+
+  it('chaque PIÈCE est d’UN SEUL TENANT : aucun pas de son aire ne traverse un mur', () => {
+    // Le calque de zones est LIBRE, l'ASCII porte les murs : rien ne les tient ensemble sinon ce test.
+    // Une pièce morcelée est une pièce fausse — la loi de dégagement dégage l'aire ENTIÈRE de la zone
+    // occupée (`clearedSpace` → `interiorZoneTilesById`), donc un allié enfermé dans l'îlot A ouvrirait
+    // aussi l'îlot B, de l'autre côté d'un mur qu'il n'a pas franchi.
+    const morcelees: string[] = [];
+    for (const zone of s.effectZones ?? []) {
+      const z = zone.z ?? 0;
+      const cells = new Set((zone.tiles ?? []).map((t) => `${t.x},${t.y}`));
+      if (!cells.size) continue;
+      const [x0, y0] = [...cells][0].split(',').map(Number);
+      const vus = new Set([`${x0},${y0}`]);
+      const q = [[x0, y0] as [number, number]];
+      while (q.length) {
+        const [cx, cy] = q.pop()!;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+          const k = `${cx + dx},${cy + dy}`;
+          if (!cells.has(k) || vus.has(k) || wallBetween(s, cx, cy, cx + dx, cy + dy, z)) continue;
+          vus.add(k);
+          q.push([cx + dx, cy + dy]);
+        }
+      }
+      if (vus.size !== cells.size)
+        morcelees.push(`« ${zone.id} » (z${z}) : ${vus.size}/${cells.size} cases jointes — îlot(s) séparé(s) par un mur : ${[...cells].filter((k) => !vus.has(k)).join(' ')}`);
+    }
+    expect(morcelees, `pièce(s) morcelée(s) par un mur de l’ASCII :\n${morcelees.join('\n')}`).toEqual([]);
+  });
+
+  it('les `roomZoneIds` d’un étage COUVRENT exactement les pièces de son niveau', () => {
+    // ÉGALITÉ, pas inclusion : une pièce oubliée au corps n'est plus coiffée par sa nappe
+    // (`massRoomZoneIds`/`cutawayForSection`) alors que la loi de dégagement, elle, la connaît encore par
+    // `effectZones` — un trou qu'une simple vérification d'existence laisse passer en silence.
+    for (const storey of s.architecture![0].storeys) {
+      const declarees = (s.effectZones ?? []).filter((zone) => (zone.z ?? 0) === storey.z).map((zone) => zone.id);
+      expect(declarees.length, `l’étage ${storey.id} porte des pièces`).toBeGreaterThan(0);
+      expect([...storey.roomZoneIds].sort(), `pièces de ${storey.id}`).toEqual([...declarees].sort());
+    }
   });
 });

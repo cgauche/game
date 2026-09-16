@@ -3,8 +3,10 @@
  *
  * Le corpus de `effets.test.ts` scanne les documents JSON ; celui-ci prend l'autre moitié du réel :
  * les scènes fabriquées EN TYPESCRIPT (`arena`/`buildScene`/littéraux) par les scénarios du menu
- * Tests. Même patron de contrat : registre GÉNÉRÉ parcouru en entier, compte EXACT asserté (un vert
- * vide passerait sinon), zéro KO, chaque refus NOMMANT le scénario et le chemin zod.
+ * Tests. Même patron de contrat : registre GÉNÉRÉ parcouru en entier, PLANCHER de corpus asserté (un
+ * vert vide reste impossible ; le compte RÉEL s'imprime en diagnostic — un cardinal vivant qu'un lot
+ * ÉTRANGER fait croître ne rougit pas ce fichier), zéro KO, chaque refus NOMMANT le scénario et le
+ * chemin zod.
  *
  * Chemin RÉEL : `SCENARIOS` (registre `scripts/gen-registry.mjs`) est ce que `test-scenarios/index.ts`
  * trie pour le menu ; chaque entrée porte ses scènes DÉJÀ construites (`scene`, `extraScenes`) —
@@ -31,8 +33,8 @@ describe('sceneSchema — les scènes CONSTRUITES par les scénarios de test', (
   const scenes = SCENARIOS.flatMap(scenesDe);
 
   it('le contrat VOIT le corpus qu’il prétend mesurer', () => {
-    expect(SCENARIOS.length).toBe(40); // 39 -> 40 (#1478/#1644 : « opera-plan », scène de recette du meublage de l'opéra)
-    expect(scenes.length).toBe(89); // 88 -> 89 (#1478/#1644 : la scène du scénario « opera-plan »)
+    expect(SCENARIOS.length, `scénarios au registre : ${SCENARIOS.length}`).toBeGreaterThanOrEqual(40);
+    expect(scenes.length, `scènes construites (scene + extraScenes) : ${scenes.length}`).toBeGreaterThanOrEqual(89);
     expect(new Set(SCENARIOS.map((s) => s.id)).size).toBe(SCENARIOS.length);
   });
 

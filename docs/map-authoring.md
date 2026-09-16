@@ -304,18 +304,18 @@ Sur les 35 documents de `src/scenes/` qui exposent un littéral `MapSpec` :
 | `walls?` | 5 | `src/scenes/test-scenarios/19-grimpant.ts`, `src/scenes/test-scenarios/42-belier-porte.ts`, `src/scenes/test-scenarios/99-revisit.ts`, `src/scenes/test-scenarios/zones-pieces.ts` … |
 | `relief?` | 4 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/19-grimpant.ts`, `src/scenes/test-scenarios/opera.ts`, `src/scenes/test-scenarios/pont-vitrine.ts` |
 | `terrainRects?` | 2 | `src/scenes/test-scenarios/zones-pieces.ts`, `src/scenes/vitrine-batiments.ts` |
-| `architecture?` | 2 | `src/scenes/test-scenarios/zones-pieces.ts`, `src/scenes/vitrine-batiments.ts` |
+| `architecture?` | 3 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/zones-pieces.ts`, `src/scenes/vitrine-batiments.ts` |
 | `bind?` | 1 | `src/scenes/test-scenarios/siege-enceinte.ts` |
 | `entities?` | 19 | `src/scenes/test-scenarios/18-effets-scriptes.ts`, `src/scenes/test-scenarios/21-chute-du-greement.ts`, `src/scenes/test-scenarios/43-pastilles-entite.ts`, `src/scenes/test-scenarios/96-presets-edo.ts` … |
 | `heroStart?` | 32 | `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, `src/scenes/test-scenarios/15-commerce-fluvial.ts`, `src/scenes/test-scenarios/16-embuscade-fluviale.ts` … |
 | `entryPoints?` | 1 | `src/scenes/opera/floorplan.ts` |
 | `effectZones?` | 1 | `src/scenes/vitrine-batiments.ts` |
-| `zoneMap?` | 1 | `src/scenes/test-scenarios/zones-pieces.ts` |
-| `zoneLegend?` | 1 | `src/scenes/test-scenarios/zones-pieces.ts` |
+| `zoneMap?` | 2 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/zones-pieces.ts` |
+| `zoneLegend?` | 2 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/zones-pieces.ts` |
 | `triggers?` | 13 | `src/scenes/test-scenarios/17-metamorphose-ulric.ts`, `src/scenes/test-scenarios/18-effets-scriptes.ts`, `src/scenes/test-scenarios/95-poursuite-terrestre.ts`, `src/scenes/test-scenarios/97-enquete-carnet.ts` … |
 | `dialogues?` | 10 | `src/scenes/test-scenarios/18-effets-scriptes.ts`, `src/scenes/test-scenarios/96-presets-edo.ts`, `src/scenes/test-scenarios/97-enquete-carnet.ts`, `src/scenes/test-scenarios/98-conditions-etendues.ts` … |
 | `encounters?` | 15 | `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/16-embuscade-fluviale.ts`, `src/scenes/test-scenarios/17-metamorphose-ulric.ts`, `src/scenes/test-scenarios/21-chute-du-greement.ts` … |
 | `stations?` | 1 | `src/scenes/test-scenarios/13-bataille-de-masse.ts` |
 
 Champs sans aucun exemple mesuré dans `src/scenes/` : `music?`, `wallStructures?`, `edgeWalls?`, `knownUnsupportedFloor?`, `seatAssignments?`, `restZones?` — leur seule démonstration vit dans `src/state/mapSpec.test.ts`.
-<!-- sources-empreinte: ad75df8513984b4cce4036ba98154b3eb89885ce (61 fichiers, 7 dossiers) corps: 0232c47b5c03fe88ab406992785c7d81c56a8568 -->
+<!-- sources-empreinte: 223db9d6c18be6850cee3572cf63dd31159f61df (61 fichiers, 7 dossiers) corps: e57eee762b08df8d4f845fab1ddee39605eebeaf -->
