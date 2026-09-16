@@ -40,9 +40,7 @@
 //   - Le back-lien d'un `Instrument:` est mesuré par SIMPLE PRÉSENCE du chemin du plan dans le
 //     fichier instrument ; il ne juge pas que l'outil le LIT vraiment.
 //   - Les fichiers binaires et les extensions hors liste (`.txt`, `.svg`, `.sh`…) ne sont pas scannés.
-//   - `docs/decisions/` est HORS scan (export des issues GitHub : des corps historiques ont le droit
-//     de citer un chemin mort — même doctrine que scripts/docs/check-doc-refs.mjs l.46-49).
-//   - Le SENS 3 étend cette doctrine du corps historique à `CORPUS_HISTORIQUES` : un rapport DATÉ
+//   - Le SENS 3 porte la doctrine du corps historique dans `CORPUS_HISTORIQUES` : un rapport DATÉ
 //     ADRESSE ses constats par le document audité (`### <doc>:<ligne>`) — requalifier ces adresses
 //     falsifierait le rapport, qui décrit l'arbre à SA date, pas l'arbre d'aujourd'hui.
 //   - Le SENS 3 ne juge que des noms de FICHIERS de `docs/plans/` : un basename trop commun
@@ -50,7 +48,7 @@
 //   - AUTO-RÉFÉRENCE : les deux fichiers de la garde elle-même (`FICHIERS_DE_LA_GARDE`) sont hors
 //     des SENS 2 et 3 — les fixtures du test citent des plans fictifs par construction ; le script
 //     cite la fixture d'un autre garde. Exemption AU SITE, bornée à ces DEUX chemins (même patron
-//     que `docs/decisions/` et `.claude/soldes/`) ; sans elle, la garde rougit dès qu'elle est suivie.
+//     que `.claude/soldes/`) ; sans elle, la garde rougit dès qu'elle est suivie.
 //   - Ne sont PAS des citations vivantes, donc non mesurées : la mention du DOSSIER `docs/plans/`
 //     seul, un chemin MÉTAVARIABLE (`docs/plans/AAAA-MM-JJ-…`), et un chemin cité dans une commande
 //     de RÉCUPÉRATION d'historique (`git log --diff-filter=D -- <plan supprimé>`), qui vise
@@ -102,9 +100,9 @@ const OPEN_ISSUES = onlineArg === -1 ? null
 /** Un basename trop commun désignerait n'importe quoi (un `README.md` supprimé sous les plans ferait
  *  rougir tous les README du dépôt) : mesuré 1 faux positif de cette classe. */
 const BASENAMES_GENERIQUES = new Set(['README.md', 'readme.md', 'index.md', 'notes.md', 'plan.md'])
-/** CORPUS HISTORIQUES — un corps DATÉ a le droit de nommer ce qui vivait à sa date (même doctrine
- *  que `docs/decisions/` au SENS 2) : soldes de tickets. */
-const CORPUS_HISTORIQUES = ['docs/decisions/', '.claude/soldes/']
+/** CORPUS HISTORIQUES — un corps DATÉ a le droit de nommer ce qui vivait à sa date : les soldes de
+ *  tickets, qui décrivent l'arbre à LEUR date. */
+const CORPUS_HISTORIQUES = ['.claude/soldes/']
 
 /** Basenames des plans SUPPRIMÉS, lus dans l'historique du dossier des plans. Un nom repris par un
  *  fichier SUIVI en sort (il redevient citable), d'où un registre décroissant sans entretien. */
@@ -231,9 +229,6 @@ const FICHIERS_DE_LA_GARDE = new Set([
 
 for (const file of tracked) {
   if (!SCAN_EXTS.some((x) => file.endsWith(x))) continue
-  // docs/decisions/ = export des issues GitHub : des corps HISTORIQUES qui ont le droit de citer un
-  // chemin mort (même doctrine que scripts/docs/check-doc-refs.mjs l.46-49).
-  if (file.startsWith('docs/decisions/')) continue
   if (FICHIERS_DE_LA_GARDE.has(file)) continue
   const text = read(file)
   if (text === null) continue

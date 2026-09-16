@@ -2,8 +2,8 @@
 // GÉNÉRÉE depuis le code, jamais écrite à la main). Patron whitelist-en-lib du dépôt
 // (`folioRatchetStock.mjs`, `rollSeamWhitelist.mjs`).
 //
-// Périmètre : `docs/*.md` À PLAT (hors sous-dossiers — `docs/plans/`, `docs/raw/`, `docs/decisions/`,
-// `docs/retours/`, `docs/superpowers/`…), même frontière que `scripts/docs/check-doc-refs.mjs`
+// Périmètre : `docs/*.md` À PLAT (hors sous-dossiers — `docs/plans/`, `docs/raw/`, `docs/retours/`,
+// `docs/superpowers/`…), même frontière que `scripts/docs/check-doc-refs.mjs`
 // (`listerDossier(DOCS_DIR)` non récursif). Un doc est GÉNÉRÉ quand son ouverture porte, dans ses
 // premières lignes, un marqueur `GÉNÉRÉ par` (deux formes mesurées dans le dépôt : « ⚠️ Fichier
 // GÉNÉRÉ par … » et « GÉNÉRÉ par `npx tsx …` ») — cf. `src/data/manual-docs-ratchet.test.ts`.

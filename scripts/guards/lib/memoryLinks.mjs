@@ -113,8 +113,6 @@ const EXTENSIONS_LUES = new Set(['.ts', '.tsx', '.mts', '.mjs', '.js', '.jsx', '
  * aucun n'est une RÉFÉRENCE VIVANTE vers la mémoire.
  *   - `docs/plans/`, `docs/superpowers/` : artefacts DATÉS (politique `docs/` de `docs/architecture.md`) — leur
  *     texte fige l'état d'un jour, il ne se recâble pas.
- *   - `docs/decisions/issues.json` : MIROIR du texte des tickets GitHub ; un `[[…]]` y est une
- *     CITATION de ce qu'une issue disait, pas un lien du dépôt — le corriger falsifierait l'archive.
  *   - `src/memory-links-guard.test.ts` : le banc du garde FORGE des fiches qui n'existent pas
  *     (cibles `fiche-jamais-ecrite`, `fiche-close`…) ; un garde ne se scanne pas lui-même.
  *   - `scripts/ops/sondes/audit-2026-09-01/` : sondes d'un audit DATÉ ; les noms de fiches qu'elles
@@ -123,7 +121,6 @@ const EXTENSIONS_LUES = new Set(['.ts', '.tsx', '.mts', '.mjs', '.js', '.jsx', '
 export const HORS_SCAN = [
   'docs/plans/',
   'docs/superpowers/',
-  'docs/decisions/issues.json',
   'src/memory-links-guard.test.ts',
   'scripts/ops/sondes/audit-2026-09-01/',
 ];

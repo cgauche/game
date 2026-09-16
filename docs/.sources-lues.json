@@ -9837,7 +9837,6 @@
       ".github/workflows/ci.yml",
       ".github/workflows/deploy.yml",
       ".github/workflows/deps-report.yml",
-      ".github/workflows/export-issues.yml",
       ".gitignore",
       "package.json",
       "scripts/docs/build-reprise.mjs",
@@ -9858,7 +9857,6 @@
     ],
     "dossiers": [
       ".github/workflows",
-      "docs/decisions",
       "scripts/art-ref",
       "scripts/git-hooks",
       "scripts/guards/lib",

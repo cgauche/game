@@ -20,9 +20,8 @@
 //      (`scripts/ops/ruleset-main.mjs`), qui est LA porte : il dit ici, en une phrase et avec la
 //      commande pour voir le run, ce que GitHub refuserait à la seconde d'après. Un push sur une
 //      branche de travail ne le rencontre jamais. AUCUNE exonération, pas même sous
-//      `GITHUB_ACTIONS` : le ruleset n'en porte aucune (l'intégration Actions n'est pas exonérable
-//      sur un dépôt personnel, HTTP 422 du 2026-09-16), donc le bot d'`export-issues.yml` est
-//      refusé par le SERVEUR (#1713, ouvert) — un saut local ne ferait que mentir sur son sort.
+//      `GITHUB_ACTIONS` : le ruleset n'en porte aucune (HTTP 422 du 2026-09-16) — un saut local ne
+//      ferait que mentir sur le sort du push.
 //
 // STDIN (githooks(5)) : une ligne `<ref locale> <sha local> <ref distante> <sha distant>` par ref.
 // `git push --dry-run` joue AUSSI ce hook (mesuré : 2 invocations par push réel, 1 par dry-run) :

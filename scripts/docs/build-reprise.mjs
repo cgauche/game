@@ -193,12 +193,10 @@ const NB_DEFS = listerDossier(chemin('src/data/schemas/defs')).filter((f) => f.e
 const NB_DEFS_SCENES = listerDossier(chemin('src/data/schemas/defs-scenes')).filter((f) => f.endsWith('.ts')).length
 const NB_DATA_JSON = listerDossier(chemin('src/data')).filter((f) => f.endsWith('.json')).length
 const ART_REF = listerDossier(chemin('scripts/art-ref')).filter((f) => f.endsWith('.py'))
-const DECISIONS = listerDossier(chemin('docs/decisions'))
 
 const CANARI = workflow('canari.yml')
 const CI = workflow('ci.yml')
 const DEPLOY = workflow('deploy.yml')
-const EXPORT = workflow('export-issues.yml')
 
 const listeCode = (xs) => xs.map((x) => `\`${x}\``).join(', ')
 
@@ -429,11 +427,6 @@ C'est le signal qu'un geste manuel a dévié de ce que \`npm install\` pose seul
   \`src/data/schemas/defs-scenes/\` : ${NB_DEFS_SCENES} fichiers pour les documents de scène).
 - \`scripts/art-ref/\` — le PIPELINE d'extraction d'images (${listeCode(ART_REF)}) : le code est
   tracké, ses SORTIES (images) ne le sont pas (§ 3).
-- \`docs/decisions/\` (${listeCode(DECISIONS)}) — les issues GitHub EXPORTÉES par
-  \`.github/workflows/export-issues.yml\` (${EXPORT.declencheurs.join(' + ')}, cron
-  \`${EXPORT.crons.join('`, `')}\`) via \`${script('issues:export')}\`, commit auto si diff — son push
-  sur \`main\` est REFUSÉ par le ruleset depuis le 2026-09-16 (aucun bypass n'est posable sur un dépôt
-  personnel), #1713.
 
 ## 3. Ce que le clone NE contient PAS — et où ça vit
 

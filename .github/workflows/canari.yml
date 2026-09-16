@@ -100,7 +100,7 @@ jobs:
       # Le seul volet des plans datés qui exige le réseau : un `Ticket:` dont TOUTES les issues sont
       # fermées = plan exécuté que la politique `docs/` veut SUPPRIMÉ. `gh issue list --limit N` impose
       # un plafond numérique à re-relever quand le stock grossit (849 ouvertes pour un `--limit 1000`) :
-      # on passe par la pagination réelle de l'API REST, même forme que scripts/ops/export-issues.mjs.
+      # on passe par la pagination réelle de l'API REST.
       # L'API `issues` renvoie aussi les pull requests — sans importance ici : la garde ne fait que
       # tester l'APPARTENANCE d'un numéro d'issue à l'ensemble des ouvertes.
       - name: Plans datés — ancre Ticket encore OUVERTE

@@ -17,10 +17,9 @@
 // en `bypass_actors` est REFUSÉ par le serveur. `gh api -X POST repos/cgauche/game/rulesets --input
 // <corps>` → HTTP 422, verbatim : « Actor GitHub Actions integration must be part of the ruleset
 // source or owner organization ». Sur un dépôt PERSONNEL, cette intégration n'est pas un acteur
-// exonérable. Conséquence portée, jamais contournée : le bot d'`export-issues.yml`, qui commet sous
-// `docs/decisions/`, est refusé par le SERVEUR — #1713 reste ouvert : un `DeployKey` posé en bypass
-// (une clé et un secret), ou un export qui ne commet plus sur `main` — décision utilisateur, hors de
-// ce lot. (`deploy.yml:49` pousse sur le dépôt de PROD, pas sur `main` : le ruleset ne le voit jamais.)
+// exonérable. Le ruleset n'exonère donc AUCUN acteur, et rien dans le dépôt n'en a besoin : aucun
+// workflow ne commet sur `main`. (`deploy.yml:49` pousse sur le dépôt de PROD, pas sur `main` : le
+// ruleset ne le voit jamais.)
 //
 // Usage : `npm run ops:ruleset -- --dry-run` (imprime le corps, n'écrit rien) ou `npm run ops:ruleset`
 // (crée ou met à jour le ruleset — geste de l'orchestrateur, jamais d'un agent).

@@ -26,8 +26,8 @@ import {
  *    (backtics, prose, `name: slug`) des fichiers de `src/`, `scripts/` et `docs/` VIVANTS — c'est
  *    là que vivaient les 30 liens morts laissés par la refonte de mémoire de #1728, invisibles à la
  *    portée 1. Exclusions motivées au site (`HORS_SCAN` : artefacts datés `docs/plans/`+
- *    `docs/superpowers/`, miroir de tickets `docs/decisions/issues.json`, sondes d'audit datées, et
- *    CE fichier, dont le banc forge des fiches inexistantes).
+ *    `docs/superpowers/`, sondes d'audit datées, et CE fichier, dont le banc forge des fiches
+ *    inexistantes).
  *
  * ANGLES MORTS de la portée 2, dits ici comme au module : un fichier IGNORÉ par git n'est pas vu
  * (l'énumération est `git ls-files --cached --others --exclude-standard`), un `[[…]]` dont la
