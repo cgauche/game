@@ -11,36 +11,11 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { SIGNALEUR, stepsDu } from '../gates/workflowsDuDepot.mjs'
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 export const CHEMIN = join(RACINE, '.github', 'workflows', 'canari.yml')
 const TEXTE = readFileSync(CHEMIN, 'utf8')
-
-/** Steps du job, un bloc par tiret de 6 espaces. PUR. */
-export function stepsDu(texte) {
-  const lignes = texte.split(/\r?\n/)
-  const steps = []
-  let courant = null
-  for (const ligne of lignes) {
-    if (/^ {6}- /.test(ligne)) {
-      if (courant) steps.push(courant)
-      courant = { lignes: [] }
-    }
-    if (courant) courant.lignes.push(ligne)
-  }
-  if (courant) steps.push(courant)
-  return steps.map((s) => {
-    const bloc = s.lignes.join('\n')
-    return {
-      bloc,
-      nom: /^\s*-?\s*name:\s*(.+)$/m.exec(bloc)?.[1]?.trim() ?? null,
-      id: /^\s*-?\s*id:\s*([A-Za-z0-9_-]+)\s*$/m.exec(bloc)?.[1] ?? null,
-      tolerant: /^\s*continue-on-error:\s*true\s*$/m.test(bloc),
-      commande: /^\s*-?\s*(run|uses):/m.test(bloc),
-      run: /^\s*-?\s*run:/m.test(bloc),
-    }
-  })
-}
 
 /** Ids nommés par le bloc `RESULTATS` du résumé. PUR. */
 export function idsDuResume(texte) {
@@ -91,25 +66,15 @@ test('le résumé joue MÊME après un rouge, ne se blanchit pas, et ÉCHOUE sur
   assert.match(RESUME.bloc, /exit 1/, 'le résumé doit rougir le job quand une mesure est rouge')
 })
 
-test('le label `canari` est créé de façon IDEMPOTENTE (mesuré : il n’existe pas sur le dépôt)', () => {
-  assert.match(RESUME.bloc, /gh label create canari .*--force/)
-})
-
-test('l’issue SURVIVANTE est la plus ANCIENNE ouverte, commentée et non re-créée', () => {
-  assert.match(RESUME.bloc, /gh issue list --state open --search 'Canari rouge in:title'/)
-  assert.match(RESUME.bloc, /sort_by\(\.createdAt\)/)
-  assert.match(RESUME.bloc, /gh issue comment "\$SURVIVANTE"/)
-  assert.match(RESUME.bloc, /if \[ -n "\$SURVIVANTE" \]/,
-    'la création ne doit avoir lieu QUE si aucune issue Canari n’est ouverte (6 doublons mesurés)')
-})
-
-test('un run VERT FERME la survivante ; un run ROUGE la laisse ouverte', () => {
-  // Sans fermeture, l'issue vivait pour toujours : elle recevait un commentaire « tout est vert »
-  // chaque semaine, et plus rien ne distinguait un canari sain d'un canari cassé.
-  assert.match(RESUME.bloc, /gh issue close "\$SURVIVANTE" --reason completed/)
-  const ferme = RESUME.bloc.split('\n').findIndex((l) => /gh issue close "\$SURVIVANTE"/.test(l))
-  const garde = RESUME.bloc.split('\n').slice(Math.max(0, ferme - 2), ferme).join('\n')
-  assert.match(garde, /if \[ -z "\$ROUGES" \]/, 'la fermeture doit être gardée par l’ABSENCE de rouge')
+test('le résumé délègue le signalement au script, avec le RAPPORT et le verdict tiré de $ROUGES', () => {
+  // Le geste de signalement (label, survivante, commentaire, fermeture) vit dans
+  // `scripts/ops/signaler-rouge.mjs` et s'y mesure ; ici, le contrat est l'APPEL.
+  assert.match(RESUME.bloc, new RegExp(`node ${SIGNALEUR.replace(/[./]/g, '\\$&')}`))
+  assert.match(RESUME.bloc, /--titre "Canari rouge — environnement ou suite cassés"/)
+  assert.match(RESUME.bloc, /--prefixe "Canari rouge"/)
+  assert.match(RESUME.bloc, /--label canari/)
+  assert.match(RESUME.bloc, /--corps "\$RAPPORT"/)
+  assert.match(RESUME.bloc, /--verdict "\$\(\[ -n "\$ROUGES" \] && echo rouge \|\| echo vert\)"/)
 })
 
 test('aucun `npm audit` brut ne fait échouer le canari : c’est `audit-stock.mjs` qui juge', () => {
@@ -124,15 +89,5 @@ test('aucun `npm audit` brut ne fait échouer le canari : c’est `audit-stock.m
 test('les deux mesures d’ÉTAT sont jouées par le canari', () => {
   for (const script of ['audit-stock.mjs', 'fermetures-non-citees.mjs']) {
     assert.match(TEXTE, new RegExp(`node scripts/ops/${script.replace('.', '\\.')}`), `${script} absent du canari`)
-  }
-})
-
-test('chaque `gh` du résumé ferme son stdin (un runner ne le ferme pas pour lui)', () => {
-  const appels = [...RESUME.bloc.matchAll(/^\s*(?:[A-Z_]+="\$\()?gh [^\n]*$/gm)].map((m) => m[0])
-  const suites = RESUME.bloc.split('\n')
-  for (const appel of appels) {
-    const i = suites.indexOf(appel)
-    const fenetre = suites.slice(i, i + 4).join('\n')
-    assert.match(fenetre, /< \/dev\/null/, `appel gh sans « < /dev/null » : ${appel.trim()}`)
   }
 })

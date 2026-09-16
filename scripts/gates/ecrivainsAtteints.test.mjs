@@ -41,6 +41,11 @@ const ATTENDU = {
     'scripts/gates/testsParGate.test.mjs',
     'scripts/gates/toutes.mjs',
     'scripts/gates/toutes.test.mjs',
+    // +1 le 2026-09-16 (#1779) : la garde du registre des workflows joue ses mutations (workflow neuf
+    // sans entrée, step signaleur retiré, `on: push` ajouté) sur une COPIE jetable de
+    // `.github/workflows/` (`mkdtempSync` + `cpSync` sous os.tmpdir(), `rmSync` en finally) — muter le
+    // YAML ne se fabrique pas autrement, et l'arbre du dépôt n'est jamais écrit.
+    'scripts/gates/workflowsDuDepot.test.mjs',
     'scripts/git-hooks/arbre-imbrique.test.mjs',
     // +1 le 2026-09-14 (#1728 train B) : la porte au MESSAGE se mesure sur un dépôt JETABLE et un
     // dossier de hooks jetable (`mkdtempSync` + `writeFileSync` sous os.tmpdir()) — un `git commit`
@@ -170,6 +175,10 @@ const ATTENDU = {
     // Même mesure que la raison `test:ops` d'`ECRIT_LU` (scripts/gates/toutes.mjs:129-150).
     'scripts/ops/ruleset-main.mjs',
     'scripts/ops/ruleset-main.test.mjs',
+    // +1 le 2026-09-16 (#1779) : le banc du signaleur pose le CORPS du rapport (`--body-file` de `gh`)
+    // sous os.tmpdir() (`mkdtempSync` + `writeFileSync`, `rmSync` en finally) ; `signaler-rouge.mjs`
+    // ne fait que LIRE ce fichier, et son `gh` est INJECTÉ — l'arbre n'est jamais écrit.
+    'scripts/ops/signaler-rouge.test.mjs',
   ],
   'test:runner': [
     'scripts/lancer-local.test.mjs',

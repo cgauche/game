@@ -22,6 +22,7 @@ import { emitOrCheck } from './lib/jsdocUnion.mjs'
 import { repartitionWorkers } from '../test/partition.mjs'
 import { AVANT_LES_LANES, LANES, ECRIT_LU } from '../gates/toutes.mjs'
 import { gatesDeCi } from '../gates/gatesDeCi.mjs'
+import { ETATS as ETATS_PORTE, PORTE, WORKFLOWS as REGISTRE_WORKFLOWS, corpsRun } from '../gates/workflowsDuDepot.mjs'
 import { DOCUMENTAIRE, gatesSautables } from '../gates/classerPush.mjs'
 import { REGEN_RECIPE } from '../guards/lib/npmLockHoisted.mjs'
 
@@ -103,31 +104,6 @@ function bloc(texte, cle) {
   return suite
 }
 
-/** Corps SHELL de chaque étape `run:` d'un workflow — valeur inline OU bloc scalaire (`run: |`).
- *  Une porte npm posée dans un bloc multi-ligne est aussi réelle qu'une inline : ne lire que la forme
- *  inline faisait sous-compter les portes du runbook. */
-function corpsRun(texte) {
-  const lignes = texte.split('\n')
-  const corps = []
-  for (let i = 0; i < lignes.length; i += 1) {
-    const m = lignes[i].match(/^(\s*)(-\s+)?run:(.*)$/)
-    if (!m) continue
-    const indentCle = m[1].length + (m[2] ? m[2].length : 0)
-    const valeur = m[3].trim()
-    if (valeur && !/^[|>][-+\d]*$/.test(valeur)) {
-      corps.push(valeur)
-      continue
-    }
-    for (let j = i + 1; j < lignes.length; j += 1) {
-      if (lignes[j].trim() === '') continue
-      const indent = lignes[j].length - lignes[j].trimStart().length
-      if (indent <= indentCle) break
-      corps.push(lignes[j].trim())
-    }
-  }
-  return corps
-}
-
 /** Une invocation `npm` COMPLÈTE : sous-projet (`--prefix <dir>`) optionnel, verbe
  *  (`ci`/`install`/`test`/`audit`/`run <script>`), options longues comprises. */
 const NPM = /\bnpm\s+(?:--prefix\s+\S+\s+)?(?:ci|install|test|audit|run\s+[\w:-]+)(?:\s+--[\w-]+(?:=\S+)?)*/g
@@ -137,7 +113,6 @@ const NPM = /\bnpm\s+(?:--prefix\s+\S+\s+)?(?:ci|install|test|audit|run\s+[\w:-]
 function portesNpm(fichier, texte) {
   const portes = []
   for (const ligne of corpsRun(texte)) {
-    if (ligne.startsWith('#')) continue
     const vues = [...ligne.matchAll(NPM)].map((m) => m[0].replace(/\s+/g, ' '))
     const mots = (ligne.match(/\bnpm\b/g) ?? []).length
     if (vues.length !== mots) {
@@ -159,7 +134,16 @@ const WORKFLOWS = listerDossier(chemin('.github/workflows')).filter((f) => f.end
     .map((l) => l.trim().replace(/:$/, ''))
   const crons = [...texte.matchAll(/cron:\s*'([^']+)'/g)].map((m) => m[1])
   const portes = portesNpm(f, texte)
-  return { fichier: f, nom, declencheurs, crons, portes }
+  // Comment un rouge de CE workflow est-il vu ? Le registre le DÉCLARE, et sa garde le MESURE sur le
+  // YAML (scripts/gates/workflowsDuDepot.mjs, scripts/gates/workflowsDuDepot.test.mjs, #1779).
+  const etat = REGISTRE_WORKFLOWS[f]
+  if (!etat) {
+    abandon(
+      `.github/workflows/${f} n'a pas d'entrée au registre des workflows (scripts/gates/workflowsDuDepot.mjs) : ` +
+        `donne-lui son état (${Object.keys(ETATS_PORTE).join(', ')}) et sa raison.`,
+    )
+  }
+  return { fichier: f, nom, declencheurs, crons, portes, etat: etat.etat, raison: etat.raison }
 })
 
 function workflow(fichier) {
@@ -197,7 +181,7 @@ const NB_DATA_JSON = listerDossier(chemin('src/data')).filter((f) => f.endsWith(
 const ART_REF = listerDossier(chemin('scripts/art-ref')).filter((f) => f.endsWith('.py'))
 
 const CANARI = workflow('canari.yml')
-const CI = workflow('ci.yml')
+const CI = workflow(PORTE)
 const DEPLOY = workflow('deploy.yml')
 
 const listeCode = (xs) => xs.map((x) => `\`${x}\``).join(', ')
@@ -307,8 +291,12 @@ const lignesWorkflows = WORKFLOWS.map(
   (w) =>
     `| \`.github/workflows/${w.fichier}\` | ${w.nom} | ${w.declencheurs.join(', ')}${
       w.crons.length ? ` (cron \`${w.crons.join('`, `')}\`)` : ''
-    } |`,
+    } | **${w.etat}** — ${w.raison} |`,
 ).join('\n')
+
+const lignesEtatsPorte = Object.entries(ETATS_PORTE)
+  .map(([etat, definition]) => `- **${etat}** — ${definition}`)
+  .join('\n')
 
 /** Non-versionnés : motif de `.gitignore` (DÉRIVÉ) × pourquoi/regénération (ÉDITORIAL). */
 const NON_VERSIONNES = [
@@ -483,9 +471,14 @@ ${lignesHooksSession}
 
 **CI GitHub Actions** :
 
-| Fichier | Nom | Déclencheurs |
-|---|---|---|
+| Fichier | Nom | Déclencheurs | État |
+|---|---|---|---|
 ${lignesWorkflows}
+
+La colonne « État » vient du registre \`scripts/gates/workflowsDuDepot.mjs\`, et chaque état y est
+MESURÉ sur le YAML (garde \`scripts/gates/workflowsDuDepot.test.mjs\`) :
+
+${lignesEtatsPorte}
 
 Vérifier qu'elles tournent : onglet Actions du dépôt, ou \`gh run list --workflow=canari.yml\`. LA
 PORTE est \`.github/workflows/ci.yml\` (« ${CI.nom} », ${CI.declencheurs.join(', ')}) : elle joue les

@@ -20,6 +20,7 @@ import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { classer, fait, indisponible } from './gitPorte.mjs'
 import { parUnitesDeCode } from './lister.mjs'
+import { PORTE } from '../../gates/workflowsDuDepot.mjs'
 
 /** Champs demandés à `gh` : l'union de ce que les consommateurs lisent, une seule fois. */
 export const CHAMPS = 'conclusion,createdAt,databaseId,headSha,status,workflowName'
@@ -72,7 +73,7 @@ export function triees(courses) {
  * @returns {{disponible:true, valeur:object[]}|{disponible:false, raison:string}}
  */
 export function coursesCi({
-  cwd = process.cwd(), env = process.env, limit = 30, workflow = 'ci.yml',
+  cwd = process.cwd(), env = process.env, limit = 30, workflow = PORTE,
   branche = 'main', commit = null, spawn = spawnSync,
 } = {}) {
   if (env.WFRP_GH_STUB) return listeDuStub(env.WFRP_GH_STUB)

@@ -24,3 +24,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run deps:report
+
+      # Ce workflow n'a pas de porte : il se NOMME en rougissant, comme le canari — registre
+      # scripts/gates/workflowsDuDepot.mjs (#1779). Le step joue MÊME si `npm ci` a rougi : le
+      # signaleur est posé par `actions/checkout` ci-dessus et n'importe que `node:*`.
+      - name: Se nommer en rougissant
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          STATUT: ${{ job.status }}
+        run: |
+          RAPPORT="$RUNNER_TEMP/deps-report-rapport.md"
+          echo "Run $RUN_URL : job \`$STATUT\`" > "$RAPPORT"
+          node scripts/ops/signaler-rouge.mjs \
+            --titre "Rapport de dépendances rouge" \
+            --label canari \
+            --corps "$RAPPORT" \
+            --verdict "$([ "$STATUT" = success ] && echo vert || echo rouge)"

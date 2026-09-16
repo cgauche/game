@@ -238,32 +238,15 @@ jobs:
           } > "$RAPPORT"
           cat "$RAPPORT"
 
-          # Label idempotent : `--force` crée le label s'il manque et le met à jour sinon (mesuré
-          # 2026-09-04 : `canari` n'existe PAS sur le dépôt, et les `--label canari` des runs passés
-          # échouaient donc en silence, repli sur une création SANS label).
-          gh label create canari --description "Rapport hebdomadaire du canari" --color B60205 --force < /dev/null
-
-          # Issue SURVIVANTE = la plus ANCIENNE issue OUVERTE dont le titre commence par « Canari
-          # rouge ». Le rapport y est COMMENTÉ tant qu'elle est ouverte ; une issue n'est CRÉÉE que
-          # s'il n'y en a aucune, et un run tout VERT la FERME : un rapport hebdomadaire vit dans un
-          # fil unique, et le fil se clot quand la mesure ne dit plus rien.
-          SURVIVANTE="$(gh issue list --state open --search 'Canari rouge in:title' \
-            --json number,createdAt,title --jq '[.[] | select(.title | startswith("Canari rouge"))]
-              | sort_by(.createdAt) | .[0].number // empty' < /dev/null)"
-          if [ -n "$SURVIVANTE" ]; then
-            gh issue comment "$SURVIVANTE" --body-file "$RAPPORT" < /dev/null
-            if [ -z "$ROUGES" ]; then
-              gh issue close "$SURVIVANTE" --reason completed < /dev/null
-              echo "canari VERT : rapport posté puis #$SURVIVANTE fermée"
-            else
-              echo "rapport posté sur #$SURVIVANTE"
-            fi
-          elif [ -n "$ROUGES" ]; then
-            gh issue create --title "Canari rouge — environnement ou suite cassés" \
-              --body-file "$RAPPORT" --label canari < /dev/null
-          else
-            echo "canari vert et aucune issue ouverte : rien à ouvrir"
-          fi
+          # Le canari se NOMME en rougissant : le signalement (label idempotent, issue survivante,
+          # commentaire, fermeture sur vert) est le geste COMMUN à tout workflow sans porte, tenu par
+          # un seul script — registre scripts/gates/workflowsDuDepot.mjs (#1779).
+          node scripts/ops/signaler-rouge.mjs \
+            --titre "Canari rouge — environnement ou suite cassés" \
+            --prefixe "Canari rouge" \
+            --label canari \
+            --corps "$RAPPORT" \
+            --verdict "$([ -n "$ROUGES" ] && echo rouge || echo vert)"
 
           if [ -n "$ROUGES" ]; then
             echo "canari ROUGE : $(printf '%s\n' "$ROUGES" | wc -l) mesure(s)" >&2
