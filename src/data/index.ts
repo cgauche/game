@@ -1607,7 +1607,9 @@ export interface DetailsData {
 export interface SemencesDeSceneData {
   ambiance: NonNullable<Scene['ambiance']>;
   metresPerTile: number;
-  ambientLight: NonNullable<Scene['ambientLight']>;
+  /** ABSENT = `auto` : l’éclairage suit l’horloge via `ambiance` — la sentinelle est l’absence,
+   *  jamais une valeur du champ typé (`idDe('lightLevel')`, `schemas/defs/semences-de-scene.ts`). */
+  ambientLight?: Scene['ambientLight'];
   terrain: Terrain;
   reliefDefaults: ReliefDefaults;
   roofDefaults: SceneRoofDefaults;

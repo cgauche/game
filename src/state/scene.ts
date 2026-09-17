@@ -797,7 +797,9 @@ export const DEFAULT_TERRAIN: Terrain = semencesDeScene.terrain;
  *  laisserait l'auteur deviner (#841 FU-A). `environment` reste absent : « non spécifié » (aucun bonus de
  *  Domaine) est une valeur légitime à part entière, pas un défaut caché.
  *  Tout ce que la scène reçoit ici vient de la SEMENCE éditable (`semences-de-scene.json`, #1716) :
- *  ce module ne choisit plus ni matière, ni terrain, ni échelle. */
+ *  ce module ne choisit plus ni matière, ni terrain, ni échelle. `ambientLight` ABSENT de la semence
+ *  vaut `auto` — la sentinelle est l’absence côté semence (champ typé `idDe('lightLevel')`), et la
+ *  scène produite la porte EN CLAIR, comme avant #1716. */
 export function emptyScene(w = 20, h = 15): Scene {
   return {
     type: 'scene',
@@ -806,7 +808,7 @@ export function emptyScene(w = 20, h = 15): Scene {
     dimensions: { w, h },
     ambiance: semencesDeScene.ambiance,
     metresPerTile: semencesDeScene.metresPerTile,
-    ambientLight: semencesDeScene.ambientLight,
+    ambientLight: semencesDeScene.ambientLight ?? 'auto',
     reliefDefaults: { ...semencesDeScene.reliefDefaults },
     roofDefaults: { ...semencesDeScene.roofDefaults },
     layers: [{ z: 0, tiles: new Array(w * h).fill(semencesDeScene.terrain) }],

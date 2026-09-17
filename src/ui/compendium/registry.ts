@@ -1994,7 +1994,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         rows: [
           { t: 'kv', k: 'Ambiance', v: semencesDeScene.ambiance },
           { t: 'kv', k: 'Mètres par case', v: `${semencesDeScene.metresPerTile} m` },
-          { t: 'kv', k: 'Éclairage', v: semencesDeScene.ambientLight },
+          // Absent = `auto` : l’éclairage suit l’horloge (même convention que `Scene.ambientLight`).
+          { t: 'kv', k: 'Éclairage', v: semencesDeScene.ambientLight ?? 'automatique (suit l’horloge)' },
           { t: 'kv', k: 'Sol de départ', v: semencesDeScene.terrain },
           { t: 'kv', k: 'Matières de relief', v: Object.entries(semencesDeScene.reliefDefaults).map(([part, mat]) => `${part} : ${mat}`).join(' · ') },
           { t: 'kv', k: 'Toiture', v: `${semencesDeScene.roofDefaults.material} · ${semencesDeScene.roofDefaults.pitchDeg}° · comble ${semencesDeScene.roofDefaults.riseMaxStoreys} étage(s)` },

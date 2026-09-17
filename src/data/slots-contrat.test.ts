@@ -187,7 +187,15 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // DÉCLARÉ de la référence ENVELOPPÉE — `[].features[].id` projette sur `id`, jamais sur le champ
 // porteur — celui-là même que `structures.json | traits`, `vehicles.json | traits` et
 // `ship-stations.json | requiresTrait` portent déjà : il meurt avec le dériveur d'un niveau (L3 #1473).
-const DETTE_ADOPTION_MAX = 346;
+// Cliquet REMONTÉ 346 → 348 (#1716, 2026-09-18) : `semences-de-scene.json | reliefDefaults` et
+// `| roofDefaults` ENTRENT, et pour la MÊME raison que `buildings.json | features` ci-dessus — la
+// fabrique est ADOPTÉE, pas absente. La semence d'une scène neuve compose les schémas PARTAGÉS de la
+// scène (`reliefDefaultsSchema`, `sceneRoofDefaultsSchema` de `defs-scenes/scene.ts`) : MESURÉ, les 5
+// slots `idDe('material', …)` sont déclarés pour ce dataset et résolvent 5/5 au volet RÉSOLUTION.
+// Ce qui laisse ces deux lignes est la PROJECTION sur le dernier segment (`cliff`, `material`), face
+// au champ PORTEUR que le scan observe : les 8 lignes jumelles des quatre projets de scène sont au
+// stock depuis #1691/#1715, et les dix meurent ensemble avec le dériveur d'un niveau (L3 #1473).
+const DETTE_ADOPTION_MAX = 348;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {

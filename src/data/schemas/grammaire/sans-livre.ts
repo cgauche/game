@@ -40,6 +40,8 @@ export const SANS_LIVRE: Readonly<Record<string, string>> = {
   terrains:
     'catalogue des SOLS de la grille — le DOCUMENT est de l’art (teinte, rampe de dégradé, recette de surface, décor posé) ; aucun folio n’imprime de catalogue de sols. Quatre de ses CHAMPS sont des règles et ne sont pas couverts par cette exemption : `walkable`, `priority`, `opaque` et `built` — les 25 entrées les portent toutes et EXIGENT `maison` (`exiges` de `schemas/defs/terrains.ts`)',
   teintesJeu: 'configuration de rendu — palette de teintes de l’interface de jeu',
+  'semences-de-scene':
+    'configuration d’AUTHORING (#1716) — les DÉFAUTS d’une scène NEUVE (`emptyScene`, `state/scene.ts`) : échelle de case, ambiance, éclairage, sol de départ, matières de relief, toiture. Aucun folio n’imprime le défaut d’un éditeur de scène. Le document EST son entrée (famille `config`) et EXIGE `maison` à sa racine (`exiges` de `schemas/defs/semences-de-scene.ts`) : ce qu’une scène neuve reçoit est un arbitrage, et il se dit là',
   'donnees.manifest': 'manifeste d’outillage — rubriques de la carte des données, décrit le dépôt',
   'primitives.manifest': 'manifeste d’outillage — primitives partagées, décrit le dépôt',
   'raw.manifest': 'manifeste d’outillage — dette/blocage par id de topic RAW, décrit le dépôt',

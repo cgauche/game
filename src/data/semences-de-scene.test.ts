@@ -3,8 +3,9 @@
  * CHAQUE scène créée ensuite.
  *
  * Trois portes, chacune tenue par la grammaire partagée et non par un contrôle local : un TERRAIN
- * hors du registre (`idDe('terrain')`), un ÉCLAIRAGE qui n'est ni `auto` ni un palier réel
- * (`idDe('lightLevel')` — plus strict que `Scene.ambientLight`, chaîne libre), une PENTE hors de
+ * hors du registre (`idDe('terrain')`), un ÉCLAIRAGE qui n'est pas un palier réel
+ * (`idDe('lightLevel')` — plus strict que `Scene.ambientLight`, chaîne libre ; ABSENT = `auto`, la
+ * sentinelle est l'absence du champ), une PENTE hors de
  * `PENTE_TOIT_DEG` (`sceneRoofDefaultsSchema`, le schéma de la scène lui-même, jamais une copie).
  *
  * Le document LIVRÉ est validé en premier : sans lui, les trois refus ne prouveraient rien (un
@@ -13,15 +14,15 @@
 import { describe, expect, it } from 'vitest';
 import { validateDataset } from './schemas/validate';
 import { semencesDeScene } from './index';
+import { emptyScene } from '../state/scene';
 
 const FICHIER = 'semences-de-scene.json';
 /** Le document livré, tel qu'il est sur disque (enveloppe comprise) — base de chaque mutation. */
 const LIVRE = {
-  id: 'semences-de-scene', type: 'semencesDeScene', label: 'Semences de scène',
+  id: 'semences-de-scene', type: 'semences-de-scene', label: 'Semences de scène',
   maison: 'fixture de test — la raison réelle vit au dataset',
   ambiance: semencesDeScene.ambiance,
   metresPerTile: semencesDeScene.metresPerTile,
-  ambientLight: semencesDeScene.ambientLight,
   terrain: semencesDeScene.terrain,
   reliefDefaults: { ...semencesDeScene.reliefDefaults },
   roofDefaults: { ...semencesDeScene.roofDefaults },
@@ -38,10 +39,12 @@ describe('semences-de-scene.json — le schéma refuse une semence qui mentirait
     expect(erreur).toContain('lave-de-nulle-part');
   });
 
-  it('un ÉCLAIRAGE qui n’est ni `auto` ni un palier de `lightLevels.json` est refusé', () => {
+  it('un ÉCLAIRAGE qui n’est pas un palier de `lightLevels.json` est refusé — `auto` COMPRIS', () => {
     expect(validateDataset(FICHIER, { ...LIVRE, ambientLight: 'plein-jour-inconnu' })).toContain('ambientLight');
-    // `auto` (l'éclairage suit l'horloge) et un palier RÉEL passent tous les deux.
-    expect(validateDataset(FICHIER, { ...LIVRE, ambientLight: 'auto' })).toBeNull();
+    // La sentinelle « suit l'horloge » est l'ABSENCE du champ, jamais une valeur : `auto` n'est pas un
+    // palier de `lightLevels.json`, et un champ typé `idDe('lightLevel')` le refuse comme tout autre
+    // id mort — `emptyScene` rend `auto` sur la SCÈNE, dont le champ est une chaîne libre.
+    expect(validateDataset(FICHIER, { ...LIVRE, ambientLight: 'auto' })).toContain('ambientLight');
     expect(validateDataset(FICHIER, { ...LIVRE, ambientLight: 'nuit' })).toBeNull();
   });
 
@@ -57,5 +60,13 @@ describe('semences-de-scene.json — le schéma refuse une semence qui mentirait
 
   it('une AMBIANCE hors du vocabulaire de la scène est refusée (même énumération que `Scene.ambiance`)', () => {
     expect(validateDataset(FICHIER, { ...LIVRE, ambiance: 'souterrain' })).toContain('ambiance');
+  });
+
+  it('ÉCLAIRAGE absent de la semence → la scène neuve porte `auto` EN CLAIR (#841 FU-A tenu)', () => {
+    // Le câblage de la SENTINELLE : côté semence l’absence dit « suit l’horloge » (champ typé
+    // `idDe('lightLevel')`, qui ne connaît aucun `auto`) ; côté SCÈNE le défaut reste ÉCRIT, pour que
+    // l’inspecteur affiche la valeur réellement effective au lieu d’un vide à deviner.
+    expect(semencesDeScene.ambientLight, 'la semence livrée ne doit nommer AUCUN palier').toBeUndefined();
+    expect(emptyScene().ambientLight).toBe('auto');
   });
 });

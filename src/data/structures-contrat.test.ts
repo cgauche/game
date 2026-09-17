@@ -607,7 +607,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // (`activeAxes`, `auteur`) redeviennent mesurables. Mesure du doc §2.4 : 370 → 621 clés
       // déclarées-jamais-observées, dont 243 posées d'office par la fabrique, hors dénominateur ici
       // (`CLES_POSEES_INCONDITIONNELLEMENT`) — ces 8-là sont les seules à entrer au stock.
-      ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 27],
+      // Cliquet REMONTÉ 27 → 28 (#1716, 2026-09-18) : `semences-de-scene.json › ambientLight`, le
+      // réglage OPTIONNEL de la semence d'une scène neuve, que la donnée livrée n'écrit pas — son
+      // ABSENCE EST la valeur de départ (`auto`, l'éclairage suit l'horloge), à l'identique de la
+      // scène elle-même, dont l'inspecteur écrit `undefined` pour « Automatique ». Même nature que
+      // `merchants.json › buyMarkup` et `psychology.json › gating` déjà stockés, même solde : la ligne
+      // meurt quand l'auteur nomme un palier de départ, ou quand le champ quitte le def.
+      ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 28],
       // Cliquet DESCENDU 6 → 5 : le stock est à 5 depuis un lot antérieur et la marge n'avait pas été
       // reprise. Aucune raison de garder un cran libre : il servirait à absorber un homonyme neuf.
       // … et 5 → 4 (L2 #1548, commit 3d) : l'homonyme `skill` MEURT — la clé n'a plus qu'UNE classe
@@ -1000,7 +1006,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // (`structures-scan.mts:501`) ne tenant pas un littéral d'enum DÉCLARÉ pour une clé étrangère, ces 4
       // objets cessent d'être des références et passent au dénominateur HORS STRATE (ils y sont
       // quatre ENTRÉES de `scripts/guards/lib/horsStrateStock.mjs`, dont l'en-tête nomme ce défaut).
-      'L3 #1463': 391,
+      // #1716 (2026-09-18) : 391 → 394 — TROIS lignes de référence NEUVES, posant en DONNÉE ce que
+      // `emptyScene` (`state/scene.ts`) choisissait en littéraux : `semences-de-scene.json › terrain`
+      // (id nu du sol dont la couche 0 est remplie), `› reliefDefaults` et `› roofDefaults` (les deux
+      // records que la semence compose par les schémas PARTAGÉS de la scène). MÊME graphie que leurs
+      // sœurs des quatre projets (#1691, #1715) : elles s'éteindront avec elles, d'un seul geste.
+      'L3 #1463': 394,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en

@@ -92,8 +92,17 @@ const TOTAL_GELE = 50;
  * exempté au dataset, et chaque entrée dit ce que CE bâtiment arbitre (son empreinte de pose, sa
  * couverture, son ornement) — `maison` y est EXIGÉE (`exiges` de `schemas/defs/buildings.ts`). Ces
  * arbitrages vivaient NON TAGUÉS dans 7 modules TS : le stock ne croît pas, il devient visible.
+ *
+ * `semences-de-scene.json` (1) ENTRE le 2026-09-18 (#1716) par le MÊME chemin, à une différence
+ * près : le document est à racine UNIQUE (famille `config`), sa seule entrée EST sa racine, et le
+ * masqué vaut donc 1. Ce qu'une scène NEUVE reçoit à sa création n'a pas de folio — aucun livre
+ * n'imprime le défaut d'un éditeur de scène — et le régime `source: {book, page}` n'admet AUCUNE
+ * forme pour un arbitrage d'authoring : `source` est une RÉFÉRENCE de livre, et une chaîne y est
+ * interdite par le second volet de ce fichier (« AUCUN champ `source` de type CHAÎNE »). Ces valeurs
+ * vivaient NON TAGUÉES en littéraux de `state/scene.ts` : le stock ne croît pas, il devient visible,
+ * et `TOTAL_GELE` ne bouge pas.
  */
-const MASQUES_GELES: Record<string, number> = { 'actions.json': 29, 'buildings.json': 7, 'props.json': 41, 'terrains.json': 25 };
+const MASQUES_GELES: Record<string, number> = { 'actions.json': 29, 'buildings.json': 7, 'props.json': 41, 'semences-de-scene.json': 1, 'terrains.json': 25 };
 
 const lire = (dir: string, f: string): unknown => JSON.parse(readFileSync(join(dir, f), 'utf8'));
 
@@ -187,7 +196,7 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
       'lightTones', 'localisation', 'materials', 'merchantFamilies', 'merchants', 'names', 'pregens',
       'primitives.manifest', 'progression-schemas.derived', 'props',
       'qualitySubtypes', 'qualityTypes', 'raceAppearance', 'raw.manifest',
-      'renduMonte', 'sizes', 'speciesRace', 'structureAppearance',
+      'renduMonte', 'semences-de-scene', 'sizes', 'speciesRace', 'structureAppearance',
       'systemes.manifest', 'teintesJeu', 'terrains',
     ]);
     // Les deux régimes sont DISJOINTS : une clé dans les deux rendrait l'union ambiguë.
@@ -201,7 +210,9 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
     // règle par entrée sont couverts, eux, par un `maison` EXIGÉ au def.
     // 47 → 48 : `buildings` entre (#1715) — 7 types de bâtiment qu'aucun folio n'imprime, chacun
     // portant son `maison` EXIGÉ au def.
-    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(48);
+    // 48 → 49 : `semences-de-scene` entre (#1716) — un document `config` à racine unique dont le
+    // `maison` EXIGÉ au def dit ce qu'une scène neuve reçoit ; aucun folio n'imprime ce défaut.
+    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(49);
   });
 
   it('`maison` est TOUJOURS une chaîne — zéro drapeau booléen, à TOUTE profondeur des deux racines', () => {

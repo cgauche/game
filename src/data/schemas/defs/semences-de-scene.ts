@@ -14,9 +14,13 @@
  * projets utilisateur aujourd'hui valides.
  *
  * `ambientLight` est ici plus STRICT que le champ qu'il alimente (`Scene.ambientLight` est une
- * `z.string()` libre) : une semence nomme soit `auto` (l'éclairage suit l'horloge via `ambiance`),
- * soit un palier RÉEL de `lightLevels.json` — une semence qui nommerait un palier inexistant
- * poserait le défaut faux sur CHAQUE scène créée ensuite.
+ * `z.string()` libre) : une semence nomme un palier RÉEL de `lightLevels.json` — une semence qui
+ * nommerait un palier inexistant poserait le défaut faux sur CHAQUE scène créée ensuite. ABSENT =
+ * `auto`, l'éclairage suit l'horloge via `ambiance` : la sentinelle n'est pas une VALEUR du champ,
+ * c'est son absence, et `emptyScene` (`state/scene.ts`) la rend en clair sur la scène produite. Un
+ * champ typé `idDe(…)` ne se mêle pas d'une chaîne hors registre — une union « sentinelle | idDe »
+ * n'existe nulle part au dépôt (mesuré), et elle poserait au registre des slots une valeur qui ne
+ * résout pas.
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
@@ -27,20 +31,20 @@ export const file = 'semences-de-scene.json';
 export const famille = 'config';
 
 const doc = document(
-  'semencesDeScene',
+  'semences-de-scene',
   famille,
   {
     ambiance: ambianceSchema,
     metresPerTile: z.number().positive(),
-    ambientLight: z.union([z.literal('auto'), idDe('lightLevel')]),
+    ambientLight: idDe('lightLevel').optional(),
     terrain: idDe('terrain'),
     reliefDefaults: reliefDefaultsSchema,
     roofDefaults: sceneRoofDefaultsSchema,
   },
   {
     ambiance: { label: 'Ambiance', hint: 'Dedans ou dehors — c’est elle qui fait suivre l’horloge à l’éclairage' },
-    metresPerTile: { label: 'Mètres par case', hint: 'Échelle métrique d’une case (2 m) ; ≥ 4 = Scène MER' },
-    ambientLight: { label: 'Éclairage', hint: '« auto » = suit l’horloge via l’ambiance, ou un palier de `lightLevels.json`' },
+    metresPerTile: { label: 'Mètres par case', hint: 'Échelle métrique d’une case (2 m) ; 4 et plus = Scène MER' },
+    ambientLight: { label: 'Éclairage', hint: 'Absent = suit l’horloge via l’ambiance ; sinon un palier de `lightLevels.json`' },
     terrain: { label: 'Sol de départ', hint: 'Terrain dont la couche du sol est remplie à la création' },
     reliefDefaults: { label: 'Matières de relief', hint: 'Falaise, rampe, dalle de tablier, pilier' },
     roofDefaults: { label: 'Toiture par défaut', hint: 'Couverture, pente de référence (degrés) et borne de comble' },

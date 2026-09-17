@@ -622,7 +622,7 @@ nombre d’entrées qui la portent.
 | `src/data/sea-perils.json` | object | pipe à la racine | config | 1 | `detroits`:array(1) `echouer`:object(1) `gestionDesPerils`:array(1) `hazards`:array(1) `hazardsWeightNote`:string(1) `id`:string(1) `label`:string(1) `tourbillonSwim`:object(1) `tourbillons`:array(1) `type`:string(1) |
 | `src/data/sea-shanties.json` | array | liste | entité | 7 | `captainOps`:array(1) `crewOps`:array(6) `desc`:string(7) `id`:string(7) `label`:string(7) `note`:string(4) `source`:object(7) `type`:string(7) |
 | `src/data/sea-weather.json` | object | pipe à la racine | config | 1 | `affaler`:object(1) `effetDuVent`:object(1) `effetDuVentClinfoc`:object(1) `effetDuVentGreementDelta`:object(1) `encalmine`:object(1) `id`:string(1) `label`:string(1) `precipitations`:array(1) `roseDesVents`:array(1) `seasonMod`:object(1) `table`:array(1) `temperatures`:array(1) `type`:string(1) `vents`:array(1) `visibilites`:array(1) `warmSeaMod`:number(1) |
-| `src/data/semences-de-scene.json` | object | pipe à la racine | config | 1 | `ambiance`:string(1) `ambientLight`:string(1) `id`:string(1) `label`:string(1) `maison`:string(1) `metresPerTile`:number(1) `reliefDefaults`:object(1) `roofDefaults`:object(1) `terrain`:string(1) `type`:string(1) |
+| `src/data/semences-de-scene.json` | object | pipe à la racine | config | 1 | `ambiance`:string(1) `id`:string(1) `label`:string(1) `maison`:string(1) `metresPerTile`:number(1) `reliefDefaults`:object(1) `roofDefaults`:object(1) `terrain`:string(1) `type`:string(1) |
 | `src/data/ship-construction.json` | object | pipe à la racine | config | 1 | `constructionTraits`:array(1) `id`:string(1) `label`:string(1) `manoeuvrability`:array(1) `propulsion`:object(1) `speedTraits`:array(1) `standard`:array(1) `type`:string(1) |
 | `src/data/ship-criticals.json` | object | pipe à la racine | config | 1 | `die`:string(1) `id`:string(1) `label`:string(1) `replisSansExpose`:object(1) `shrapnelHit`:array(1) `source`:object(1) `tables`:object(1) `tablesDeChute`:array(1) `type`:string(1) |
 | `src/data/ship-stations.json` | array | liste | entité | 5 | `desc`:string(5) `id`:string(5) `label`:string(5) `requiresTrait`:object(2) `source`:object(5) `type`:string(5) |
@@ -905,7 +905,7 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 
 #### A. Par défaut — sans lot de peuplement (stock `STRUCTURES_DEFAUT`)
 
-**125** documents portent au moins une clé déclarée jamais observée, **740** clés en tout
+**125** documents portent au moins une clé déclarée jamais observée, **741** clés en tout
 (stock `STRUCTURES_DEFAUT`, `scripts/guards/lib/structuresStock.mjs`, garde `src/data/structures-contrat.test.ts`).
 
 | Document | Clés | Détail |
@@ -1001,7 +1001,7 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 | `sea-perils.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
 | `sea-shanties.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
 | `sea-weather.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
-| `semences-de-scene.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `source` |
+| `semences-de-scene.json` | 7 | `alsoIn` `ambientLight` `desc` `descRef` `icon` `labelF` `source` |
 | `ship-construction.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
 | `ship-criticals.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
 | `ship-stations.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
@@ -4396,7 +4396,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `sea-cargo.json` | `opportunite.test.skill.id` | `id` | `skill` | un | 1 | 1 / 1 |
 | `sea-perils.json` | `hazards[].freeTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `sea-perils.json` | `tourbillonSwim.skill.id` | `id` | `skill` | un | 1 | 1 / 1 |
-| `semences-de-scene.json` | `ambientLight\|1` | `ambientLight` | `lightLevel` | un | 1 | 0 / 1 |
+| `semences-de-scene.json` | `ambientLight` | `ambientLight` | `lightLevel` | un | 0 | 0 / 0 |
 | `semences-de-scene.json` | `terrain` | `terrain` | `terrain` | un | 1 | 1 / 1 |
 | `semences-de-scene.json` | `reliefDefaults.cliff` | `cliff` | `material` | un | 1 | 1 / 1 |
 | `semences-de-scene.json` | `reliefDefaults.ramp` | `ramp` | `material` | un | 1 | 1 / 1 |
@@ -5017,4 +5017,4 @@ pèse **2950** slots sur 3321.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: 7b2b4804d8757f9b71ca88c324df735ebe056541 (377 fichiers, 10 dossiers) corps: e79883fc139eb2a15a7019fca0dd19adea043f59 -->
+<!-- sources-empreinte: 5d945e7141556585e12db03076e77d4f7253d2c2 (377 fichiers, 10 dossiers) corps: b5c202f000cb313167b1ec9770dffb7875dd95bf -->

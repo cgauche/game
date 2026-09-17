@@ -142,9 +142,11 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // fabrique, retrouvée à 3 paths du même dialecte (`ops`, `test.onFail`, `test.onFailHard.ops`).
       "idDe('etat')",
       // +1 site ADOPTÉ (#1716) : `defs/semences-de-scene.ts › ambientLight` — l'éclairage d'une scène
-      // NEUVE est soit `auto` (il suit l'horloge), soit un palier RÉEL de `lightLevels.json` : la
-      // semence est plus stricte que le champ qu'elle alimente (`Scene.ambientLight`, chaîne libre),
-      // parce qu'une semence fausse poserait le défaut faux sur CHAQUE scène créée ensuite.
+      // NEUVE nomme un palier RÉEL de `lightLevels.json`, ou RIEN (absent = `auto`, il suit
+      // l'horloge) : la semence est plus stricte que le champ qu'elle alimente
+      // (`Scene.ambientLight`, chaîne libre), parce qu'une semence fausse poserait le défaut faux sur
+      // CHAQUE scène créée ensuite. La sentinelle est l'ABSENCE, jamais une valeur du champ typé :
+      // une union « `auto` | idDe » poserait au registre des slots une valeur qui ne résout pas.
       "idDe('lightLevel')",
       "idDe('maladie')",
       // +4 sites ADOPTÉS (#1686 lot 3a-1, 2026-09-05) — les premiers d'un dataset DISCRIMINÉ : la

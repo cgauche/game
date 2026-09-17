@@ -16,7 +16,17 @@
 //   - `SLOTS_INTERNES` — un slot d'espèce `id` dont le `type` est INCONNU du registre
 //     `_ids.generated` : il vise une entité INTERNE à une scène, que ce volet ne sait pas résoudre.
 //     Il se solde par `typedRef` en L2 (#1473).
-// Les deux ne font que DÉCROÎTRE : une ligne neuve est une dérive, jamais une exception à inscrire.
+// Les deux ne font que DÉCROÎTRE, à UNE exception NOMMÉE : une ligne dont la fabrique de référence est
+// DÉJÀ ADOPTÉE au schéma du champ et dont les slots RÉSOLVENT, et que seule la PROJECTION sur le
+// dernier segment-clé (angle mort ci-dessous) laisse hors jointure. Celle-là s'INSCRIT, parce qu'il
+// n'y a rien à adopter : elle ne meurt qu'avec le dériveur descendu d'un niveau (L3 #1473), avec
+// toute sa famille. Elle porte donc, à sa ligne, le path DÉCLARÉ et le champ OBSERVÉ qui divergent.
+// Mesuré le 2026-09-18 : DIX lignes relèvent de cette exception — `reliefDefaults` et `roofDefaults`
+// des quatre projets de scène et de `semences-de-scene.json`, tous servis par les MÊMES schémas de
+// `defs-scenes/scene.ts` (`slotsStock.mjs:84-248` et ci-dessous) ; s'y ajoutent les références
+// ENVELOPPÉES du même angle mort inverse (`buildings.json | features`, `ship-stations.json |
+// requiresTrait`, `structures.json`/`vehicles.json | traits`).
+// Tout autre cas reste une DÉRIVE : une référence neuve s'ADOPTE, elle ne s'inscrit pas.
 //
 // ANGLES MORTS — SOURCE UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`),
 // rendus aussi au doc §6.3 ; la garde compare les trois :
@@ -323,6 +333,17 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "sea-shanties.json", champ: "skill", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "sea-weather.json", champ: "skills", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "sea-weather.json", champ: "spec", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // #1716 : `semences-de-scene.json › reliefDefaults` / `› roofDefaults` — la SEMENCE d'une scène neuve
+  // porte les deux MÊMES records que les quatre projets de scène ci-dessus, et par les MÊMES schémas :
+  // `defs/semences-de-scene.ts` compose `reliefDefaultsSchema` et `sceneRoofDefaultsSchema` de
+  // `defs-scenes/scene.ts`, jamais une copie. Les slots sont donc DÉCLARÉS et ils RÉSOLVENT (mesuré :
+  // `reliefDefaults.cliff|ramp|deck|pilier` et `roofDefaults.material`, 5 slots `material` au volet
+  // RÉSOLUTION) — la fabrique EST adoptée, il n'y a rien à adopter de plus. Ces deux lignes sont
+  // l'ANGLE MORT déclaré en tête, celui de `buildings.json | features` (#1715) : le path projette sur
+  // le DERNIER segment (`cliff`, `material`), jamais sur le champ PORTEUR que le scan observe. Elles
+  // meurent avec le dériveur d'un niveau (L3 #1473), avec les huit lignes des quatre projets.
+  { dataset: "semences-de-scene.json", champ: "reliefDefaults", occurrences: 1, lot: "L2/L3 #1473", date: "2026-09-18" },
+  { dataset: "semences-de-scene.json", champ: "roofDefaults", occurrences: 1, lot: "L2/L3 #1473", date: "2026-09-18" },
   { dataset: "ship-construction.json", champ: "constructionTraits", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "ship-criticals.json", champ: "ops", occurrences: 11, lot: "L2/L3 #1473", date: "2026-09-04" }, // 5 → 11 (#1657 B3-2b-a) : 6 rangées MDG en prose gagnent leur `crewHit` (MDG 13 l.730/734/736/738/751/756)
   { dataset: "ship-criticals.json", champ: "skill", occurrences: 12, lot: "L2/L3 #1473", date: "2026-09-04" }, // NEUF (#1657 B3-2b-a) : les 6 nœuds MDG + « Canon détaché » nomment l’Athlétisme de leur `note` verbatim ; 7 → 12 (#1657 B3-2b-c) : les 5 rangées du gréement (MDG 13 l.711/714/715/717/718)

@@ -473,6 +473,15 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "sea-shanties.json", champ: "captainOps", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "sea-shanties.json", champ: "crewOps", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "sea-weather.json", champ: "spec", signature: "projectiles", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
+  // #1716 : `semences-de-scene.json` — ce qu'une scène NEUVE reçoit à sa création porte les MÊMES
+  // formes que les scènes qu'elle sème, par les MÊMES schémas (`reliefDefaultsSchema`,
+  // `sceneRoofDefaultsSchema` de `defs-scenes/scene.ts`) : les deux records d'ids nus se mesurent en
+  // référence divergente, comme leurs jumelles des quatre projets (#1691, #1715). `terrain` est un
+  // id nu SCALAIRE (le sol dont `layers[0]` est rempli), forme HISTORIQUE de la référence, même
+  // solde que `arene-projet.json › material`. Les trois lignes meurent au lot L3, avec les leurs.
+  { concept: "reference", dataset: "semences-de-scene.json", champ: "reliefDefaults", signature: "cliff,deck,pilier,ramp", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-09-18" },
+  { concept: "reference", dataset: "semences-de-scene.json", champ: "roofDefaults", signature: "material+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-09-18" },
+  { concept: "reference", dataset: "semences-de-scene.json", champ: "terrain", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-09-18" },
   { concept: "reference", dataset: "ship-construction.json", champ: "constructionTraits", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "ship-criticals.json", champ: "ops", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 11, lot: "L3 #1463", date: "2026-08-23" }, // 5 → 11 (#1657 B3-2b-a) : 6 rangées MDG dont le Test ne vivait qu'en prose `note` gagnent leur `crewHit` (MDG 13 l.730/734/736/738/751/756, échec = État À Terre)
   { concept: "reference", dataset: "skills.json", champ: "altChar", signature: "gatedByRule+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
@@ -744,6 +753,12 @@ export const STRUCTURES_DEFAUT = [
   { dataset: "barge-du-sel-projet.json", cle: "activeAxes", date: "2026-08-26" },
   { dataset: "diligence-projet.json", cle: "activeAxes", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", cle: "activeAxes", date: "2026-08-26" },
+  // `semences-de-scene.json › ambientLight` (#1716, 2026-09-18) : même nature que `merchants.json ›
+  // buyMarkup` ou `psychology.json › gating` — un réglage OPTIONNEL que la donnée livrée n'écrit pas.
+  // L'ABSENCE y est la valeur de départ (`auto` : l'éclairage d'une scène neuve suit l'horloge via
+  // `ambiance`, comme `Scene.ambientLight` absente — `ui/editor/Inspector.tsx:2012` écrit `undefined`
+  // pour « Automatique »), et la ligne se solde le jour où l'auteur nomme un palier de départ.
+  { dataset: "semences-de-scene.json", cle: "ambientLight", date: "2026-09-18" },
   { dataset: "arene-projet.json", cle: "auteur", date: "2026-08-28" },
   { dataset: "barge-du-sel-projet.json", cle: "auteur", date: "2026-08-28" },
   { dataset: "diligence-projet.json", cle: "auteur", date: "2026-08-28" },
