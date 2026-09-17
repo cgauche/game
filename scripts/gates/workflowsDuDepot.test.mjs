@@ -19,7 +19,7 @@ import { DOSSIER, ETATS, PORTE, SIGNALEUR, WORKFLOWS, corpsRun, lireWorkflows, m
 
 /** Un workflow d'une seule ligne de `run`, sous la condition `si`. PUR — aucun disque. */
 const workflowAvec = (si, ligneRun) =>
-  `name: Banc\non:\n  schedule:\n    - cron: '0 6 * * 2'\njobs:\n  x:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Signaler\n        if: \${{ ${si} }}\n        run: |\n          ${ligneRun}\n`
+  `name: Banc\non:\n  schedule:\n    - cron: '0 6 * * 2'\njobs:\n  banc:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Signaler\n        if: \${{ ${si} }}\n        run: |\n          ${ligneRun}\n`
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -116,7 +116,7 @@ test('le LECTEUR de `ci.yml` (`gatesDeCi`) lit bien le fichier que PORTE nomme',
 test('un workflow NEUF sans entrée au registre fait rougir la garde', () => {
   const racine = depotJetable()
   try {
-    ecrire(racine, 'neuf.yml', 'name: Neuf\non:\n  schedule:\n    - cron: \'0 6 * * 2\'\njobs:\n  x:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n')
+    ecrire(racine, 'neuf.yml', 'name: Neuf\non:\n  schedule:\n    - cron: \'0 6 * * 2\'\njobs:\n  banc:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n')
     const constats = verdict({ cwd: racine })
     assert.equal(constats.length, 1, constats.join('\n'))
     assert.match(constats[0], /neuf\.yml n’est déclaré dans AUCUN état/)
