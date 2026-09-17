@@ -1154,7 +1154,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **877** (cible 403 · declaree 6 · historique 128 · divergente 340). Objets JSON parcourus : **49490**, dont **32330** portent une forme
+Lignes concept × dataset × champ × forme : **877** (cible 403 · declaree 6 · historique 128 · divergente 340). Objets JSON parcourus : **49481**, dont **32330** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **90**.
 
 Entrées de racine sans concept de valeur : **4101** sur **4188** —
@@ -2525,7 +2525,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13203** objets sur **49490** ne sont portés par AUCUNE
+Au-delà des orphelines, **13194** objets sur **49481** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -2676,7 +2676,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `loup-et-saumure-projet.json` | `effect` | `type` | 11 |
 | `qualities.json` | `effect` | `on,ops,type` | 11 |
 | `sea-cargo.json` | `avail` | `automne,ete,hiver,printemps` | 11 |
-| `spells.json` | `durationRounds` | `bonusOf` | 11 |
 | `spells.json` | `valuePerSL` | `amount,every` | 11 |
 | `spells.json` | `amount` | `bonusOf` | 11 |
 | `spells.json` | `of` | `charOf` | 11 |
@@ -3079,6 +3078,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `sea-weather.json` | `arriere` | `affaler` | 2 |
 | `sea-weather.json` | `lateral` | `pctSail,virement` | 2 |
 | `skills.json` | `combatSubstitute` | `gate,role` | 2 |
+| `spells.json` | `durationRounds` | `bonusOf` | 2 |
 | `spells.json` | `damage` | `bonusOf` | 2 |
 | `spells.json` | `indicePerSL` | `amount,every` | 2 |
 | `spells.json` | `metersFormula` | `bonusOf` | 2 |
@@ -3791,11 +3791,11 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `sea-perils.ts` | 57 | `evasion` | test | divergente | `difficulty+…` | — |
 | `sea-perils.ts` | 68 | `tourbillonSwim` | test | divergente | `difficulty,skill+…` | — |
 | `sea-weather.ts` | 108 | `affaler` | test | divergente | `difficulty+…` | — |
-| `spells.ts` | 19 | — | — | hors lexique | `kind` | `conditionSchema` |
-| `spells.ts` | 20 | — | — | hors lexique | `kind` | `conditionSchema` |
-| `spells.ts` | 28 | — | — | hors lexique | `kind` | `conditionSchema` |
-| `spells.ts` | 37 | — | — | hors lexique | `kind` | `conditionSchema` |
-| `spells.ts` | 40 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 29 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 30 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 38 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 47 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 50 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `steam-breakdown.ts` | 28 | `restart` | test | divergente | `char,difficulty,skill+…` | — |
 | `talents.ts` | 74 | `max` | — | hors lexique | `bonusOf` | `formulaSchema` |
 | `tavernGames.ts` | 76 | `options` | test | divergente | `char,difficulty,skill+…` | — |
@@ -3814,7 +3814,7 @@ Conditions dont l’`op` est un COMPARATEUR (`kind` reconnu par `conditionSchema
 **252** Conditions au total, dont **194** sans `op` :
 celles-là n’ont jamais été comptées en op — le retrait des Conditions du compte d’ops vaut
 2279 → 2221, jamais 2279 → 2027.
-Noms d’op distincts : **106**, signatures distinctes : **237**.
+Noms d’op distincts : **106**, signatures distinctes : **238**.
 
 | `kind` de Condition | Avec `op` | Sans `op` |
 |---|---|---|
@@ -3922,7 +3922,7 @@ union discriminée générée d’`OP_DEFS`, à refs EMBOÎTÉES (`skill: {id, s
 | `condition` | `id,op,value` | `miscast.json` | 40 | — |
 | `condition` | `id,op,unlockBy,value` | `criticals.json` | 12 | — |
 | `condition` | `id,op,value` | `ship-criticals.json` | 11 | — |
-| `condition` | `durationRounds,id,op` | `spells.json` | 9 | — |
+| `condition` | `carried,id,op` | `spells.json` | 9 | — |
 | `condition` | `id,op` | `maneuvers.json` | 8 | — |
 | `condition` | `id,op,value` | `spells.json` | 8 | — |
 | `condition` | `id,op,value` | `trappings.json` | 7 | — |
@@ -5017,4 +5017,4 @@ pèse **2950** slots sur 3321.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: 5d945e7141556585e12db03076e77d4f7253d2c2 (377 fichiers, 10 dossiers) corps: b5c202f000cb313167b1ec9770dffb7875dd95bf -->
+<!-- sources-empreinte: 3d257e0ccbb796e4beda0d0eeabfdcd5d8dbb92e (377 fichiers, 10 dossiers) corps: 4b8e5b0237ecd4609604cd3adac57eb2f18a5f6d -->

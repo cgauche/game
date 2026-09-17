@@ -54,6 +54,7 @@ Un champ ne compte pour un canal que si son TYPE le porte : `SpellData.effects: 
 
 | Entité | Déclarée | `passive` | `effects` | Drapeaux |
 |---|---|---|---|---|
+| `ActiveEffect` | `src/engine/types.ts:759` | `passive: GameOp[]` | — | — |
 | `DomainData` | `src/data/index.ts:2002` | — | `effects: TriggeredEffect[]` | — |
 | `ManeuverDef` | `src/data/index.ts:1630` | — | `effects: TriggeredEffect[]` | — |
 | `Mutation` | `src/engine/corruption.ts:58` | `passive: GameOp[]` | `effects: TriggeredEffect[]` | — |
@@ -67,7 +68,7 @@ Un champ ne compte pour un canal que si son TYPE le porte : `SpellData.effects: 
 | `Weapon` | `src/engine/types.ts:375` | `passive: GameOp[]` | — | — |
 | `WeaponEnchant` | `src/engine/types.ts:538` | `passive: GameOp[]` | — | — |
 
-_12 entités déclarant au moins un canal. Une entité qui étend une autre HÉRITE de ses canaux — la
+_13 entités déclarant au moins un canal. Une entité qui étend une autre HÉRITE de ses canaux — la
 table ne montre que les champs DÉCLARÉS (`EtatData`/`PsychologyData` tiennent les leurs de `StatusData`)._
 
 ### Le vocabulaire des drapeaux (5 types)
@@ -147,7 +148,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `charDamage` | `char`, `amount` | exécutée | — | 6 — `spells.json:poids-des-annees`, `spells.json:poids-des-annees` … | Perte PERMANENTE de Caractéristique (Vers de carie « −1d10 Initiative… », MSRC 16 l.94-97) : décrémente la Caractéristique de BASE (`c.characteristics`), jamais sous 0 — irréversible « sauf par des moyens magiques ou miraculeux » (l.103). |
 | `charDRBonus` | `char`, `bonus` | exécutée | — | 17 — `sea-shanties.json:camarades-d-equipage-rassemblez-vous`, `tables.json:vdm-marques-arcaniques-lumiere` … | +N DR aux Tests d'une CARACTÉRISTIQUE (chanson « Camarades d'équipage » : +1 DR sur tout Test de Sociabilité, MDG 09 l.236) — variante par carac de `skillDRBonus`. |
 | `charMod` | `char`, `mod`, `durationRounds?`, `durationMinutes?`, `durationHours?` | exécutée | `engine/polymorph.ts`, `engine/talentEffects.ts`, `engine/traits/dispatch.ts` +2 | 238 — `criticals.json:bleus-aux-cotes`, `criticals.json:orteil-contusionne` … | Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus + pire pénalité sans cumul, LDB l.168). |
-| `condition` | `id`, `value?`, `durationRounds?`, `perRound?`, `valuePerSL?`, `onlyGroups?`, `onlyIfCondition?`, `unlessCondition?`, `escapeStrength?`, `escapeThreshold?`, `entangleOnFail?`, `struggleDamage?`, `lockedUntil?`, `resolveWindow?`, `unlockBy?`, `grapple?`, `durationMinutes?`, `durationHours?` | exécutée | `engine/conditions.ts`, `engine/critical.ts`, `engine/disease.ts` +11 | 440 — `activities.json:extenue`, `criticals.json:hemorragique` … | Ajout d'un État nommé (LDB 16). |
+| `condition` | `id`, `value?`, `durationRounds?`, `perRound?`, `valuePerSL?`, `onlyGroups?`, `onlyIfCondition?`, `unlessCondition?`, `escapeStrength?`, `escapeThreshold?`, `entangleOnFail?`, `struggleDamage?`, `lockedUntil?`, `resolveWindow?`, `unlockBy?`, `grapple?`, `durationMinutes?`, `durationHours?`, `carried?` | exécutée | `engine/conditions.ts`, `engine/critical.ts`, `engine/disease.ts` +12 | 440 — `activities.json:extenue`, `criticals.json:hemorragique` … | Ajout d'un État nommé (LDB 16). |
 | `contractDisease` | `disease` | exécutée | `engine/disease.ts`, `state/aiSpellValue.ts` | 10 — `criticals.json:blessure-au-ventre`, `criticals.json:hemorragie-interne` … | CONTRACTE instantanément une Maladie (`disease` = id) — incubation 0, durée tirée. |
 | `corruption` | `amount`, `perSL?`, `align?` | exécutée | `engine/miscast.ts`, `state/aiSpellValue.ts`, `state/targetingModes.ts` | 15 — `miscast.json:mineure-murmures-mortels`, `miscast.json:mineure-malediction-de-corruption` … | Points de Corruption (LDB 19). |
 | `corruptionExposure` | `level?`, `skill?`, `easeSteps?` | exécutée | — | 9 — `activities.json:tester-objets-magiques`, `spells.json:bouclier-en-acier-dore` … | EXPOSITION à une Influence corruptrice (LDB 19 l.23-75) : Test différé par MODALE (pendingCorruption) — op IMPURE résolue par la couche state via `ctx.onCorruptionExposure` (même patron que `ctx.onCorruption`) ; sans contexte (moteur pur), journalisée sans jet. |
@@ -355,4 +356,4 @@ Valeurs du champ `on` d'un `TriggeredEffect`.
 | `{ pick … }` | `sizeAtMost?`, `max` | — |
 
 _6 entrées — dérivées de `src/engine/flowCore.ts`._
-<!-- sources-empreinte: f894b3f2df025d1cf448f9829433258d593a8b73 (662 fichiers, 16 dossiers) corps: 4304a1fbb1d092a69bd38a8528a88e8fe7d55ebf -->
+<!-- sources-empreinte: 340b4acf82830a624602678b3802e5f4f0ef4af5 (662 fichiers, 16 dossiers) corps: 089e8a3bf8138544d8d8c4b4ecf69a6fcf321570 -->

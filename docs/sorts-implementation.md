@@ -512,7 +512,7 @@
 | Réfraction prismatique de Habermas | 🟡 | oui | Réfraction prismatique de Habermas : tous les Tests de Focalisation et d'Incantation dans la Zone d'Effet subissent −1 DR ; à la fin du Sort, une couleur de magie au choix devient un fluide aethyrique qui ajoute +1 DR à un seul Test d'Incantation du Domaine lié, et s'évapore au bout de 2 rounds s'il n'est pas utilisé — arbitrage MJ. |
 | Réparer du métal | 📜 | oui | Réparer du métal : l'objet en métal abîmé est restauré dans son état d'origine (trois quarts de l'objet requis) ; autrement, le Sort fritte deux objets en métal — aide aux Tests de Métier (Forgeron), ou fusion des pièces d'armure d'un ennemi qui gagnent les Défauts Peu fiable et Volumineux — arbitrage MJ. |
 | Reproduction de Levorg | 📜 | oui | Reproduction de Levorg : vous invoquez un objet non magique et inanimé d'Encombrement 4 au maximum (+1 par +2 DR), qui disparaît à la fin du Sort ; au lieu d'un objet, 1d10 Couronnes (+1d10 par +2 DR), formule interdite par le Collège Doré — arbitrage MJ. |
-| Transmutation de Chamon | 🟡 | oui | Transmutation de Chamon : une cible qui meurt pendant le Sort est enfermée dans une carapace de métal — arbitrage MJ. |
+| Transmutation de Chamon | 🟡 | oui | Si les cibles meurent pendant que le Sort est actif, elles sont enfermées de façon permanente dans une carapace de métaux communs, un macabre rappel des risques de la sorcellerie. |
 
 ## Magie des Arcanes — Mort (24)
 
@@ -834,4 +834,4 @@
 | Vol | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | WAAAGH ! | 🟡 | repli | Non curé : desc journalisée telle quelle. |
 | Z’Oeils de Mork | 📜 | repli | Non curé : desc journalisée telle quelle. |
-<!-- sources-empreinte: 36210abf9a38cabdb346e82a0014b610821aff61 (211 fichiers, 0 dossiers) corps: 630f03980d4dff09c9d9d6ea1d69628ffb1a9ffb -->
+<!-- sources-empreinte: 3b8e97b8a803a342cf49bc3570e0208033761c5f (211 fichiers, 0 dossiers) corps: 57339bd26972a9f6c7b187ddec8028b3552b357f -->

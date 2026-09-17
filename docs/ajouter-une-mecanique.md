@@ -3,7 +3,7 @@
 > ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-mecanique.mjs` (`npm run docs:mecanique`) — NE PAS ÉDITER À LA MAIN.
 
 **Périmètre mesuré / angles morts** — sont DÉRIVÉS à chaque génération : le SITE réel du lecteur de
-chaque canal (`src/engine/trauma.ts:983`, `src/state/triggeredEffects.ts:463`, `src/engine/capabilities.ts:45`), les
+chaque canal (`src/engine/trauma.ts:983`, `src/state/triggeredEffects.ts:471`, `src/engine/capabilities.ts:45`), les
 20 membres d'`EffectTrigger` et les 6 formes d'`EffectTargeting`
 (`src/engine/flowCore.ts`), les 7 champs de `TriggeredEffect`, les 8 kinds
 de source réunis par `effectSourcesOf`, les 4 interfaces de capacités et leur nombre de
@@ -24,7 +24,7 @@ Toute mécanique — trait de créature, talent, atout d'arme/armure, mutation, 
 | Canal | Ce qu’il porte | Lu par |
 |---|---|---|
 | `passive: GameOp[]` | modificateur CONTINU, sans déclencheur | `passiveMods` (`src/engine/trauma.ts:983`) |
-| `effects: TriggeredEffect[]` | effet sur ÉVÉNEMENT (à la touche, en fin de Round…) | `fireTriggers` (`src/state/triggeredEffects.ts:463`) |
+| `effects: TriggeredEffect[]` | effet sur ÉVÉNEMENT (à la touche, en fin de Round…) | `fireTriggers` (`src/state/triggeredEffects.ts:471`) |
 | `capabilities` | drapeau IRRÉDUCTIBLE que le moteur INTERROGE (aucune valeur numérique ni formule) | `hasCapability` (`src/engine/capabilities.ts:45`) |
 
 Chaque champ est du **`GameOp[]`** ou du **`TriggeredEffect[]`** — jamais un type propre à
@@ -104,7 +104,7 @@ produit — le MÊME Flow que les sorts, jamais un handler en dur par nom d'enti
 
 ### Le dispatcher unique — `fireTriggers`
 
-`fireTriggers` (`src/state/triggeredEffects.ts:463`) est le **SEUL** point d'entrée pour jouer les effets
+`fireTriggers` (`src/state/triggeredEffects.ts:471`) est le **SEUL** point d'entrée pour jouer les effets
 déclenchés d'un combattant. Il réunit ses sources via `effectSourcesOf` (`src/state/triggeredEffects.ts:102`), qui
 énumère aujourd'hui **8 kinds** dans un ordre FIGÉ (déroulé RNG déterministe) :
 `trapping` → `trait` → `quality` → `talent` → `symptom` → `mutation` → `condition` → `psychology`.
@@ -220,4 +220,4 @@ primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autr
 | `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
 | `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
 | `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |
-<!-- sources-empreinte: 7ae2de68a1014367e9dad9f0245281971f6f35fe (157 fichiers, 1 dossiers) corps: d6a06ada70cb95a06884fa0ac55a8cca3c54a62e -->
+<!-- sources-empreinte: 2f40c0ccf71d87df51daee56ed161563f64735a5 (157 fichiers, 1 dossiers) corps: aa4b6136b9222b95462c29b941c5ca1667e8e266 -->
