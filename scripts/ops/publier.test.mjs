@@ -19,15 +19,18 @@ import {
   RACINE,
   REFUS_DEUX_FOIS,
   attenteCiSecondes,
+  citerArgv,
   commandeInterdite,
   corpsDePilotage,
   correspondGlob,
   estDocDerive,
   etatDeLEtape,
+  filetDuTrainEnfant,
   finDeSortie,
   jouerLeTrain,
   journalInitial,
   journalVide,
+  lancerDetache,
   ligneDeDetachement,
   marquePublication,
   messageDeDerives,
@@ -617,6 +620,153 @@ test('ligneDeDetachement : la trace MACHINE que le parent laisse dans le log', (
     '[publier] détaché — pid=4242 log=/c/.cache/publication/chantier_1736-publier.log args=--reprendre\n',
   )
   assert.equal(ligneDeDetachement({ pid: 7, log: 'x.log', args: [] }), '[publier] détaché — pid=7 log=x.log args=\n')
+})
+
+// ── citerArgv ──────────────────────────────────────────────────────────────────────────
+
+test('citerArgv : un token que `CommandLineToArgvW` relit comme UN argument', () => {
+  // Contrat : TOUJOURS entouré de guillemets — un token unique, quelles que soient ses espaces.
+  assert.equal(citerArgv('--reprendre'), '"--reprendre"')
+  assert.equal(citerArgv('arg avec espace'), '"arg avec espace"')
+  assert.equal(citerArgv('C:/dossier avec espace/publier.mjs'), '"C:/dossier avec espace/publier.mjs"')
+  // Guillemet interne : échappé par un backslash.
+  assert.equal(citerArgv('dit "oui"'), '"dit \\"oui\\""')
+  // Backslashes AVANT un guillemet : doublés, sinon ils échapperaient le guillemet.
+  assert.equal(citerArgv('a\\\\"b'), '"a\\\\\\\\\\"b"')
+  // Backslash FINAL : doublé, sinon il échapperait le guillemet fermant du token.
+  assert.equal(citerArgv('C:\\dep\\'), '"C:\\dep\\\\"')
+  // L'apostrophe n'est PAS l'affaire de Win32 : elle traverse (c'est la citation PowerShell qui la double).
+  assert.equal(citerArgv("d'ops"), '"d\'ops"')
+})
+
+// ── lancerDetache ──────────────────────────────────────────────────────────────────────
+
+const LANCEMENT = { script: '/dep/scripts/ops/publier.mjs', args: ['--reprendre'], cwd: '/dep', fdLog: 9, node: '/bin/node' }
+
+test('lancerDetache : sous win32, le train reçoit une console CACHÉE (dont ses enfants héritent)', () => {
+  const appels = []
+  const pid = lancerDetache({
+    ...LANCEMENT,
+    plateforme: 'win32',
+    envSupplementaire: { WFRP_PUBLIER_ENFANT: '1' },
+    executerSync: (exe, args, options) => {
+      appels.push({ exe, args, options })
+      return { status: 0, stdout: '4242\r\n', stderr: '' }
+    },
+    detacher: () => assert.fail('aucun spawn direct sous win32 : il donnerait au train un DETACHED_PROCESS sans console'),
+  })
+  assert.equal(pid, 4242)
+  assert.equal(appels.length, 1)
+  assert.equal(appels[0].exe, 'powershell.exe')
+  assert.deepEqual(appels[0].args.slice(0, 3), ['-NoProfile', '-NonInteractive', '-Command'])
+  // FRAGMENTS, pas une chaîne figée : ce qui est SOUS CONTRAT est la console cachée, le pid rendu,
+  // l'exécutable et la citation de CHAQUE argument.
+  const commande = appels[0].args[3]
+  assert.ok(commande.includes(' -WindowStyle Hidden'), commande)
+  assert.ok(commande.includes(' -PassThru'), commande)
+  assert.ok(commande.includes("-FilePath '/bin/node'"), commande)
+  assert.ok(commande.includes(`-ArgumentList '"/dep/scripts/ops/publier.mjs"','"--reprendre"'`), commande)
+  assert.equal(appels[0].options.cwd, '/dep')
+  assert.equal(appels[0].options.windowsHide, true)
+  assert.equal(appels[0].options.env.WFRP_PUBLIER_ENFANT, '1')
+})
+
+test('lancerDetache : sous win32, une apostrophe du chemin est CITÉE, jamais interpolée', () => {
+  let commande = ''
+  lancerDetache({
+    ...LANCEMENT,
+    script: "/dep d'ops/publier.mjs",
+    plateforme: 'win32',
+    executerSync: (_exe, args) => {
+      commande = args[3]
+      return { stdout: '7', stderr: '' }
+    },
+  })
+  assert.match(commande, /-ArgumentList '"\/dep d''ops\/publier\.mjs"','"--reprendre"'/)
+})
+
+test('lancerDetache : sous win32, un chemin de script à ESPACE reste UN argument du train', () => {
+  // `Start-Process -ArgumentList` joint ses éléments par des espaces SANS les re-citer : mesuré le
+  // 2026-09-17, un script sous `dossier avec espace/` rendait un pid et un journal VIDE.
+  let commande = ''
+  lancerDetache({
+    ...LANCEMENT,
+    script: 'C:/dep/dossier avec espace/publier.mjs',
+    args: ['--ci-timeout-min', '30', 'arg avec espace'],
+    plateforme: 'win32',
+    executerSync: (_exe, args) => {
+      commande = args[3]
+      return { stdout: '7', stderr: '' }
+    },
+  })
+  assert.ok(
+    commande.includes(`-ArgumentList '"C:/dep/dossier avec espace/publier.mjs"','"--ci-timeout-min"','"30"','"arg avec espace"'`),
+    commande,
+  )
+})
+
+test('lancerDetache : sous win32, un pid illisible ARRÊTE le lancement au lieu d’annoncer un train fantôme', () => {
+  assert.throws(
+    () => lancerDetache({ ...LANCEMENT, plateforme: 'win32', executerSync: () => ({ stdout: '', stderr: 'Start-Process : refus' }) }),
+    /détachement manqué.*Start-Process : refus/s,
+  )
+})
+
+test('lancerDetache : hors win32, le détachement reste `detached` + le fd du journal en stdio', () => {
+  const appels = []
+  const pid = lancerDetache({
+    ...LANCEMENT,
+    plateforme: 'linux',
+    envSupplementaire: { WFRP_PUBLIER_ENFANT: '1' },
+    detacher: (exe, args, options) => {
+      appels.push({ exe, args, options })
+      return { pid: 31, unref: () => appels.push('unref') }
+    },
+    executerSync: () => assert.fail('hors win32, aucun intermédiaire : le détachement est celui de libuv'),
+  })
+  assert.equal(pid, 31)
+  assert.equal(appels[0].exe, '/bin/node')
+  assert.deepEqual(appels[0].args, ['/dep/scripts/ops/publier.mjs', '--reprendre'])
+  assert.equal(appels[0].options.detached, true)
+  assert.deepEqual(appels[0].options.stdio, ['ignore', 9, 9])
+  assert.equal(appels[0].options.env.WFRP_PUBLIER_ENFANT, '1')
+  assert.equal(appels[1], 'unref')
+})
+
+// ── filetDuTrainEnfant ───────────────────────────────────────────────────────
+
+const processusFactice = () => {
+  const branches = {}
+  const sorties = []
+  return { branches, sorties, on: (nom, f) => { branches[nom] = f }, exit: (code) => sorties.push(code) }
+}
+
+test('filetDuTrainEnfant : la chute d’un train détaché va DANS son journal, avec sa ligne PUBLICATION', () => {
+  const processus = processusFactice()
+  const ecrits = []
+  filetDuTrainEnfant({ chemin: '/c/.cache/publication/chantier_1784.log', processus, ecrire: (chemin, texte) => ecrits.push({ chemin, texte }) })
+  assert.deepEqual(Object.keys(processus.branches).sort(), ['uncaughtException', 'unhandledRejection'])
+
+  const boum = new Error('ENOENT: dossier de journal introuvable')
+  boum.stack = 'Error: ENOENT: dossier de journal introuvable\n    at main (publier.mjs:1)'
+  processus.branches.uncaughtException(boum)
+  assert.equal(ecrits.length, 1)
+  assert.equal(ecrits[0].chemin, '/c/.cache/publication/chantier_1784.log')
+  assert.match(ecrits[0].texte, /^\[publier\] ARRÊT INATTENDU hors train : Error: ENOENT/)
+  assert.match(ecrits[0].texte, /at main \(publier\.mjs:1\)/)
+  // La veille d'un train détaché attend `PUBLICATION:` : une chute la relâche, en ROUGE.
+  assert.match(ecrits[0].texte, /\nPUBLICATION: rouge moteur — Error: ENOENT: dossier de journal introuvable\n$/)
+  assert.deepEqual(processus.sorties, [1])
+})
+
+test('filetDuTrainEnfant : une promesse rompue tombe par le MÊME filet', () => {
+  const processus = processusFactice()
+  const ecrits = []
+  filetDuTrainEnfant({ chemin: 'x.log', processus, ecrire: (chemin, texte) => ecrits.push({ chemin, texte }) })
+  processus.branches.unhandledRejection('rupture nue')
+  assert.equal(ecrits[0].chemin, 'x.log')
+  assert.match(ecrits[0].texte, /ARRÊT INATTENDU hors train : rupture nue\nPUBLICATION: rouge moteur — rupture nue\n/)
+  assert.deepEqual(processus.sorties, [1])
 })
 
 // ── corpsDePilotage ────────────────────────────────────────────────────────────────────

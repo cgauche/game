@@ -32,7 +32,7 @@
 //
 // Usage : node scripts/ops/publier.mjs [--detache] [--reprendre] [--etapes] [--ci-timeout-min <n>]
 import { spawnSync, spawn } from 'node:child_process'
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, statSync, writeFileSync, writeSync } from 'node:fs'
+import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, statSync, writeFileSync, writeSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -140,6 +140,111 @@ export const modeDuLog = ({ reprendre = false, enfant = false } = {}) => (repren
  */
 export const ligneDeDetachement = ({ pid, log, args }) =>
   `[publier] détaché — pid=${pid} log=${log} args=${(args ?? []).join(' ')}\n`
+
+/**
+ * Un token de ligne de commande Win32 : ce que `CommandLineToArgvW` (donc `node`, donc tout
+ * exécutable C) relira comme UN argument. PURE. `Start-Process -ArgumentList` JOINT ses éléments par
+ * des espaces SANS les re-citer : sans ce passage, `['arg avec espace']` arrive au train en trois
+ * arguments (mesuré le 2026-09-17), et un script dont le CHEMIN porte un espace n'est pas trouvé.
+ * Règle Win32 : le token est entouré de guillemets doubles ; les backslashes qui PRÉCÈDENT un
+ * guillemet — ou la fin du token — se doublent ; le guillemet interne s'échappe en `\\"`.
+ * @param {string} valeur
+ * @returns {string} token cité
+ */
+export function citerArgv(valeur) {
+  const texte = String(valeur)
+  let token = '"'
+  let backslashes = 0
+  for (const caractere of texte) {
+    if (caractere === '\\') {
+      backslashes += 1
+      continue
+    }
+    if (caractere === '"') {
+      token += '\\'.repeat(backslashes * 2 + 1) + '"'
+      backslashes = 0
+      continue
+    }
+    token += '\\'.repeat(backslashes) + caractere
+    backslashes = 0
+  }
+  return `${token}${'\\'.repeat(backslashes * 2)}"`
+}
+
+/**
+ * Le seul site de détachement du TRAIN (#1784) — `scripts/gates/toutes.mjs:700` en détache aussi ses
+ * gates, mais sous POSIX seulement (`detached: process.platform !== 'win32'`) : sous win32 elles
+ * héritent de la console de l'appelant. Sous win32, `spawn({ detached: true })` pose
+ * `DETACHED_PROCESS` (libuv) : le train n'a AUCUNE console, et chacun de ses enfants console
+ * (`git`, `gh`, `npm`, `node`) en ALLOUE une, visible au premier plan — mesuré le 2026-09-17 sur 15
+ * commandes : 9 consoles neuves, contre 1 (celle du train, CACHÉE, dont ses enfants héritent) par
+ * `Start-Process -WindowStyle Hidden`. Le pid rendu est celui du NODE du train (`-PassThru`), jamais
+ * celui du `powershell` intermédiaire, qui rend la main aussitôt (mesuré : 253 ms) et meurt sans
+ * emporter le train. Aucune redirection n'est demandée à `Start-Process` : le train ouvre LUI-MÊME
+ * son journal (`modeDuLog`) et le passe en stdio à ses enfants, et `-RedirectStandard*` retiendrait
+ * le `powershell` jusqu'à la fin du train (mesuré : 16,14 s au lieu de 253 ms).
+ * @param {{script:string, args:string[], cwd:string, fdLog:number, envSupplementaire?:Record<string,string>,
+ *          plateforme?:string, node?:string, detacher?:Function, executerSync?:Function}} p
+ * @returns {number|undefined} pid du processus NODE du train
+ */
+export function lancerDetache({
+  script,
+  args,
+  cwd,
+  fdLog,
+  envSupplementaire = {},
+  plateforme = process.platform,
+  node = process.execPath,
+  detacher = spawn,
+  executerSync = spawnSync,
+}) {
+  const env = { ...process.env, ...envSupplementaire }
+  if (plateforme !== 'win32') {
+    const enfant = detacher(node, [script, ...args], { cwd, detached: true, stdio: ['ignore', fdLog, fdLog], env })
+    enfant.unref()
+    return enfant.pid
+  }
+  const cite = (valeur) => `'${String(valeur).replace(/'/g, "''")}'`
+  const liste = [script, ...args].map((a) => cite(citerArgv(a))).join(',')
+  const vu = executerSync(
+    'powershell.exe',
+    [
+      '-NoProfile',
+      '-NonInteractive',
+      '-Command',
+      `(Start-Process -FilePath ${cite(node)} -ArgumentList ${liste} -WindowStyle Hidden -PassThru).Id`,
+    ],
+    { cwd, env, encoding: 'utf8', windowsHide: true },
+  )
+  const pid = Number(String(vu?.stdout ?? '').trim().split(/\s+/).pop())
+  if (!Number.isInteger(pid) || pid <= 0) {
+    throw new Error(
+      `[publier] détachement manqué : powershell a rendu « ${String(vu?.stdout ?? '').trim()} » ${String(vu?.stderr ?? '').trim()}`,
+    )
+  }
+  return pid
+}
+
+/**
+ * Le filet de l'enfant détaché (#1784). Détaché, le train n'a plus de stdio redirigé : sa console est
+ * CACHÉE, donc tout ce qu'il écrit hors du journal est perdu, et un train né puis MORT avant
+ * `ouvrirLog` serait invisible (pid annoncé, journal vide). Ce filet écrit la chute DANS le journal,
+ * avec la ligne `PUBLICATION:` que les veilles attendent, puis sort en 1. Le script détaché étant
+ * `fileURLToPath(import.meta.url)`, un « module introuvable » n'est atteignable que par un défaut de
+ * citation du lancement (`citerArgv`).
+ * @param {{chemin:string, processus?:NodeJS.Process, ecrire?:Function}} p
+ * @returns {(e:unknown) => void} le gestionnaire branché, rendu pour le test
+ */
+export function filetDuTrainEnfant({ chemin, processus = process, ecrire = appendFileSync }) {
+  const tomber = (e) => {
+    const trace = e?.stack ?? String(e)
+    ecrire(chemin, `[publier] ARRÊT INATTENDU hors train : ${trace}\nPUBLICATION: rouge moteur — ${trace.split('\n')[0]}\n`)
+    processus.exit(1)
+  }
+  processus.on('uncaughtException', tomber)
+  processus.on('unhandledRejection', tomber)
+  return tomber
+}
 
 /** Nom de ROTATION du log d'un run précédent : `<nom>.<AAAAMMJJ-HHMMSS>.log`, horodaté en heure locale
  *  (celle que l'opérateur lit). PURE. @param {string} chemin log courant @param {Date} date */
@@ -1003,6 +1108,10 @@ export function cheminsSales(racine) {
 }
 
 function main() {
+  // L'enfant détaché tend son filet AVANT tout geste faillible : son journal est sa seule voix.
+  if (process.env.WFRP_PUBLIER_ENFANT === '1' && process.env.WFRP_PUBLIER_LOG) {
+    filetDuTrainEnfant({ chemin: process.env.WFRP_PUBLIER_LOG })
+  }
   const options = optionsDe(process.argv.slice(2))
   if (options.inconnus.length) {
     process.stderr.write(`[publier] option inconnue : ${options.inconnus.join(' ')}\n  usage : node scripts/ops/publier.mjs [--detache] [--reprendre] [--etapes] [--ci-timeout-min <n>]\n`)
@@ -1034,23 +1143,22 @@ function main() {
   }
 
   if (options.detache) {
-    // Le PARENT décide du mode (et tronque le cas échéant) AVANT de spawner : l'enfant héritera de
-    // ce fd comme stdout/stderr et ouvrira le sien en append.
+    // Le PARENT décide du mode (et tronque le cas échéant) AVANT de détacher : l'enfant ouvre
+    // TOUJOURS le sien en append.
     const fdLog = ouvrirLog(chemins.log, modeDuLog({ reprendre: options.reprendre }))
     const argsEnfant = process.argv.slice(2).filter((a) => a !== '--detache')
-    const enfant = spawn(process.execPath, [fileURLToPath(import.meta.url), ...argsEnfant], {
+    const pid = lancerDetache({
+      script: fileURLToPath(import.meta.url),
+      args: argsEnfant,
       cwd: RACINE,
-      detached: true,
-      stdio: ['ignore', fdLog, fdLog],
-      windowsHide: true,
-      env: { ...process.env, WFRP_PUBLIER_ENFANT: '1' },
+      fdLog,
+      envSupplementaire: { WFRP_PUBLIER_ENFANT: '1', WFRP_PUBLIER_LOG: chemins.log },
     })
-    enfant.unref()
     // Le détachement est écrit DANS le log, par le parent : c'est la seule trace machine qu'un train
     // a été lancé détaché, et sur quels arguments.
-    writeSync(fdLog, ligneDeDetachement({ pid: enfant.pid, log: chemins.log, args: argsEnfant }))
+    writeSync(fdLog, ligneDeDetachement({ pid, log: chemins.log, args: argsEnfant }))
     closeSync(fdLog)
-    process.stdout.write(`pid=${enfant.pid}\nlog=${chemins.log}\n`)
+    process.stdout.write(`pid=${pid}\nlog=${chemins.log}\n`)
     return 0
   }
 
