@@ -1095,7 +1095,7 @@ export const STRUCTURES_OPS = [
   { op: "condition", signature: "id,op,value", dataset: "criticals.json", occurrences: 190, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op", dataset: "spells.json", occurrences: 58, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op,value", dataset: "miscast.json", occurrences: 40, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "condition", signature: "durationRounds,id,op", dataset: "spells.json", occurrences: 9, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "condition", signature: "carried,id,op", dataset: "spells.json", occurrences: 9, lot: "L1c #1468", date: "2026-08-23" }, // #1695 lot 1 (LDB 48 l.495)
   { op: "condition", signature: "id,op", dataset: "maneuvers.json", occurrences: 8, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op,value", dataset: "spells.json", occurrences: 8, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op,value", dataset: "trappings.json", occurrences: 7, lot: "L1c #1468", date: "2026-08-23" },
