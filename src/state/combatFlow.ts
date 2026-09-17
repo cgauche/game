@@ -5429,8 +5429,15 @@ function appliquerToucheDeProjectile(get: Get, set: SetFn, ch: ToucheDeProjectil
   // Terre ; « Drain » : soigne le lanceur) — lus depuis `spell.effects` (Flow éditable, feuilles
   // `on:'target'`). Réservé aux sorts CURÉS : un sort sans spec n'a pas d'effet missile parsé (iso-POC).
   if (spell.curated && spellOps(spell.effects, 'target').length) {
-    const rounds = spell.duration?.kind === 'rounds' ? resolveFormula(spell.duration.value, caster, battleRng()) : null;
-    const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
+    // Surincantation de DURÉE sur un PROJECTILE (#1695) : la touche transporte les pas alloués
+    // (`ch.overcastDurationSteps`) — la règle se relit à sa SOURCE UNIQUE (`overcastDurationParts`),
+    // comme la branche non-projectile (`rounds = base × mult + bonus`, plus bas). Sans elle, les effets
+    // durables d'un Projectile (dont ses États PORTÉS) ignoraient les DR dépensés sur la Durée.
+    const { mult: ocMult, bonusRounds: ocBonus } = overcastDurationParts(overcastSourceOf(spell), ch.overcastDurationSteps ?? 0);
+    const baseRounds = spell.duration?.kind === 'rounds' ? resolveFormula(spell.duration.value, caster, battleRng()) : null;
+    const rounds = baseRounds != null ? baseRounds * ocMult + ocBonus : null;
+    const baseClockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
+    const clockMin = baseClockMin != null ? baseClockMin * ocMult : null;
     lignes.push(...runCastFlow(get, set, cible, caster, spellFlowFor(spell.effects, 'target'), {
       rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: spellSLFor(mres.sl, cible, ch.zoneTalentMod),
       overcastDurationSteps: ch.overcastDurationSteps, chosenTableRolls: ch.chosenTableRolls,
@@ -5899,8 +5906,11 @@ export function applyCast(
     // Effets sur le LANCEUR (feuilles `on:'caster'` de `spell.effects` — Vol de vie « retirez tout État
     // Exténué dont vous souffrez », buffs de soi d'un sort offensif) : appliqués UNE seule fois par lancement.
     if (spellOps(spell.effects, 'caster').length) {
-      const baseRounds = castSpec.duration?.kind === 'rounds' ? resolveFormula(castSpec.duration.value, caster, battleRng()) : null;
-      const clockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
+      // MÊME règle de Durée surincantée que les feuilles `on:'target'` (#1695) : `base × mult + bonus`.
+      const base = castSpec.duration?.kind === 'rounds' ? resolveFormula(castSpec.duration.value, caster, battleRng()) : null;
+      const baseRounds = base != null ? base * durationMult + durationBonusRounds : null;
+      const brutClockMin = base == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
+      const clockMin = brutClockMin != null ? brutClockMin * durationMult : null;
       logLines.push(...runCastFlow(get, set, caster, caster, spellFlowFor(spell.effects, 'caster'), {
         rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: slFor(caster), overcastDurationSteps, chosenTableRolls,
         ...(baseRounds != null ? { defaultDurationRounds: baseRounds } : {}),

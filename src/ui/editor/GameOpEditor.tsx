@@ -12,7 +12,10 @@ import { Formula, GameOp, type ResolveWindow } from '../../engine/ops';
 import { ChaosAlign, ExposureLevel } from '../../engine/corruption';
 import { libelleDeValeur, valeursDe } from '../../data/schemas/grammaire/meta';
 import { chaosAlignSchema, exposureLevelSchema } from '../../data/schemas/grammaire/valeurs';
-import { CHAR_LABELS, CharKey, ArmourBypass } from '../../engine/types';
+import { CHAR_LABELS, CharKey, ArmourBypass, type ConditionUnlock } from '../../engine/types';
+import { SUJETS_DE_VERROU, CHAMPS_EXCLUS_DE_CARRIED } from '../../data/schemas/grammaire/mecanique';
+import { ConditionEditor } from './ConditionEditor';
+import type { Condition } from '../../engine/flowCore';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
 import { etats, talentConcrete, qualityRefLabel, refLabel, findCrewTestTypeById, charAbr, effectTables, mutationTables, conditionLabel, lightTones, memoParVersion } from '../../data';
 import { findFallTable, fallTables } from '../../data/shipCriticals';
@@ -36,6 +39,9 @@ const NATURE_INFLUENCE: Record<TestDeCorruption, string> = { resistance: 'Influe
 const SIZES = Object.keys(SIZE_LABEL) as SizeCategory[];
 
 const CHARS = Object.keys(CHAR_LABELS) as CharKey[];
+
+/** Actes de soin qui LÈVENT un verrou d'État (`ConditionUnlock`, LDB 18) — union FERMÉE du moteur. */
+const UNLOCK_LABELS: [ConditionUnlock, string][] = [['medicalAid', 'Aide Médicale'], ['surgery', 'Chirurgie'], ['magic', 'Soin magique']];
 
 // ---------------------------------------------------------------------------
 // Vocabulaire COMPLET — libellé + menu groupé par intention
@@ -843,6 +849,40 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
                 {/* Ce que la Détermination fait à l'État quand cette op le porte en PASSIF (LDB 17 l.61) :
                     DIT en donnée, jamais déduit du porteur. Inerte hors canal passif. */}
                 <ResolveWindowField value={o.resolveWindow} onChange={(resolveWindow) => upd({ resolveWindow })} />
+                {/* État PORTÉ (#1695, LDB 48 l.495) : cocher « porté » EFFACE les champs que le canal
+                    passif ne transporte pas (même patron d'exclusivité que Force d'évasion / Seuil de DR
+                    ci-dessus), depuis la MÊME liste close que le refus au parse (`CHAMPS_EXCLUS_DE_CARRIED`)
+                    — la donnée ne peut donc pas naître dans la forme que `refusLoose` refuse. */}
+                <label className="dr"><input type="checkbox" checked={!!o.carried} onChange={(e) => upd(e.target.checked
+                  ? { carried: true, ...Object.fromEntries(CHAMPS_EXCLUS_DE_CARRIED.map((k) => [k, undefined])) }
+                  : { carried: undefined })}
+                /> porté par la source (durée du Sort)</label>
+                {o.carried
+                  ? <span className="dr">— la durée et le verrou de l’État sont ceux de l’effet actif de la source : il part avec elle.</span>
+                  : (
+                    <>
+                      {/* Les trois échelles de durée PROPRE sont exclusives entre elles (JSDoc de l'op). */}
+                      <label className="dr"><input type="checkbox" checked={o.durationRounds != null} onChange={(e) => upd({ durationRounds: e.target.checked ? 1 : undefined, durationMinutes: undefined, durationHours: undefined })} /> dure N Rounds</label>
+                      {o.durationRounds != null && <FormulaField label="Durée (Rounds)" value={o.durationRounds} min={1} onChange={(durationRounds) => upd({ durationRounds })} />}
+                      <label className="dr"><input type="checkbox" checked={o.durationMinutes != null} onChange={(e) => upd({ durationMinutes: e.target.checked ? 1 : undefined, durationRounds: undefined, durationHours: undefined })} /> dure N minutes</label>
+                      {o.durationMinutes != null && <FormulaField label="Durée (minutes)" value={o.durationMinutes} min={1} onChange={(durationMinutes) => upd({ durationMinutes })} />}
+                      <label className="dr"><input type="checkbox" checked={o.durationHours != null} onChange={(e) => upd({ durationHours: e.target.checked ? 1 : undefined, durationRounds: undefined, durationMinutes: undefined })} /> dure N heures</label>
+                      {o.durationHours != null && <FormulaField label="Durée (heures)" value={o.durationHours} min={1} onChange={(durationHours) => upd({ durationHours })} />}
+                      {/* VERROUS de Critique (LDB 18) : prédicat d'état (`lockedUntil`) et acte de soin (`unlockBy`). */}
+                      <label className="dr"><input type="checkbox" checked={o.lockedUntil != null} onChange={(e) => upd({ lockedUntil: e.target.checked ? { kind: 'always' } : undefined })} /> verrouillé tant que (LDB 18)</label>
+                      {o.lockedUntil != null && (
+                        // `kinds` = les seuls sujets que le contexte de verrou GARANTIT (`conditionLockCtx`) :
+                        // SOURCE UNIQUE partagée avec le refus au parse (`SUJETS_DE_VERROU`, mecanique.ts:159).
+                        <ConditionEditor cond={o.lockedUntil as Condition} kinds={SUJETS_DE_VERROU as ReadonlySet<Condition['kind']>} onChange={(lockedUntil) => upd({ lockedUntil })} />
+                      )}
+                      <label className="dr">Retiré par{/* LDB 18 : « ne peut être retiré que par [acte] » */}
+                        <select value={o.unlockBy ?? ''} onChange={(e) => upd({ unlockBy: (e.target.value || undefined) as ConditionUnlock | undefined })}>
+                          <option value="">— aucun acte requis —</option>
+                          {UNLOCK_LABELS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+                        </select>
+                      </label>
+                    </>
+                  )}
               </>
             )}
           </>

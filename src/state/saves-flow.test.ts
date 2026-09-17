@@ -332,8 +332,17 @@ describe('parseSave — la version DOIT être la courante', () => {
     // son identité Codex (`ActiveEffect.suppressedSource`) là où une save de 47 porte un id de symptôme
     // nu (`suppressedSymptom`) : plus aucun lecteur ne la voit, le fait réémet ses passifs et l'État
     // qu'il portait revient — en silence. La save se jette.
-    expect(SAVE_VERSION).toBe(48);
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(48);
     expect(parseSave({ ...cur, version: 47 })).toBeNull();
+  });
+
+  it('MESURE du motif de bump 48 → 49 (#1695) : un État « pour la durée du Sort » est PORTÉ par son effet', () => {
+    // LDB 48 l.495 : les États de Transmutation de Chamon « persistent tous pour la durée du Sort » — ils
+    // vivent désormais en op PASSIVE sur l'`ActiveEffect` du sort (`passive`), matérialisés en pions
+    // DÉRIVÉS. Une save de 48 rouvre avec des pions à `roundsLeft` orphelins : aucune Dissipation ne les
+    // emporte, aucune source à suspendre pour la Détermination. La save se jette.
+    expect(SAVE_VERSION).toBe(49);
+    expect(parseSave({ ...cur, version: 48 })).toBeNull();
   });
 
   it('MESURE du motif de bump 33 → 34 : la spéc en LIBELLÉ ne couvre plus son emplacement', () => {

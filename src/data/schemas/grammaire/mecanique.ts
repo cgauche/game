@@ -116,16 +116,42 @@ export const OPS_NON_TYPEES: readonly string[] = [
   'weatherWard', 'wounds', 'zone',
 ];
 
+/** Champs de l'op `condition` qu'un État PORTÉ (#1695) ne peut PAS tenir — LISTE CLOSE, alignée sur ce
+ *  que la branche `carried` d'`applyOps` transporte réellement (`id`/`value`/`resolveWindow`) :
+ *  les DURÉES et la récurrence (l'effet porteur les tient), les VERROUS (la source EST le verrou), et
+ *  les champs de LUTTE, figés par `addCondition` à la pose — que la réconciliation appelle NU. */
+export const CHAMPS_EXCLUS_DE_CARRIED = [
+  'durationRounds', 'durationMinutes', 'durationHours', 'perRound', 'lockedUntil', 'unlockBy',
+  'escapeStrength', 'escapeThreshold', 'entangleOnFail', 'struggleDamage', 'grapple',
+] as const;
+
 /**
  * Refus qui portent sur une op encore LOOSE (`OPS_NON_TYPEES`) : ce que le payload strict dirait s'il
  * existait, dit AU PARSE plutôt qu'à l'application. Une entrée meurt avec le typage de son op.
  * — `condition` : `perRound` + durée d'HORLOGE, refusé mot pour mot comme `applyOps` le lève
  *   (`messageRecurrenceHorloge`, `engine/ops.ts`).
+ * — `condition` : `carried` + tout `CHAMPS_EXCLUS_DE_CARRIED`, refusé NOMINATIVEMENT (#1695).
  */
 function refusLoose(v: Record<string, unknown>, ctx: z.RefinementCtx): void {
   if (v.op !== 'condition') return;
   if (v.perRound === true && (v.durationMinutes != null || v.durationHours != null)) {
     ctx.addIssue({ code: 'custom', path: ['perRound'], message: messageRecurrenceHorloge(String(v.id ?? '')) });
+  }
+  // État PORTÉ (#1695, LDB 48 l.495) : le canal passif ne transporte que `id`/`value`/`resolveWindow`
+  // (`ops.ts`, branche `carried` d'`applyOps` → `syncDerivedConditions` → `addCondition` nu). Tout autre
+  // champ de l'op serait PERDU en silence — il est donc NOMMÉ au parse.
+  if (v.carried === true) {
+    for (const champ of CHAMPS_EXCLUS_DE_CARRIED) {
+      if (v[champ] == null) continue;
+      ctx.addIssue({
+        code: 'custom',
+        path: [champ],
+        message: `État « ${String(v.id ?? '')} » : « carried » (porté par l'effet actif de la source, #1695) est EXCLUSIF de « ${champ} » `
+          + "— un État porté ne tient ni durée, ni verrou, ni champ de lutte en propre : sa durée est celle de l'effet porteur "
+          + '(`durationFromCtx`), sa source EST son verrou (un `unlockBy` y serait inerte, `releaseConditionLocks`), et le canal '
+          + 'passif ne transporte que `id`/`value`/`resolveWindow` — le reste serait PERDU à la pose. Retirer l’un des deux champs.',
+      });
+    }
   }
   for (const kind of sujetsNonGarantis(v.lockedUntil)) {
     ctx.addIssue({
@@ -141,7 +167,7 @@ function refusLoose(v: Record<string, unknown>, ctx: z.RefinementCtx): void {
 /** Familles de `Condition` qu'un contexte de VERROU d'État GARANTIT — elles ne lisent que la vue
  *  d'acteur (`buildActorView`). Tout le reste (drapeaux de scène, horloge, bourse, inventaire de
  *  groupe, contexte de résolution d'une touche) est absent de ce contexte. */
-const SUJETS_DE_VERROU = new Set(['always', 'compare', 'capability', 'has', 'relation', 'casterChaosDomain', 'visiblePassive']);
+export const SUJETS_DE_VERROU = new Set(['always', 'compare', 'capability', 'has', 'relation', 'casterChaosDomain', 'visiblePassive'] as const);
 
 /** Les `kind` d'une Condition de verrou que le contexte ne garantit pas (récursif sur `all`/`any`/`not`). */
 function sujetsNonGarantis(cond: unknown): string[] {
@@ -149,7 +175,7 @@ function sujetsNonGarantis(cond: unknown): string[] {
   const c = cond as Record<string, unknown>;
   if (c.kind === 'all' || c.kind === 'any') return (Array.isArray(c.of) ? c.of : []).flatMap(sujetsNonGarantis);
   if (c.kind === 'not') return sujetsNonGarantis(c.of);
-  return typeof c.kind === 'string' && !SUJETS_DE_VERROU.has(c.kind) ? [c.kind] : [];
+  return typeof c.kind === 'string' && !(SUJETS_DE_VERROU as ReadonlySet<string>).has(c.kind) ? [c.kind] : [];
 }
 
 /**

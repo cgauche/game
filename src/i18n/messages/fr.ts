@@ -297,6 +297,7 @@ export const fr = {
   'op.condPerRoundUnless': "{name} regagnera l'État {cond} à chaque fin de Round, tant que dure {src} ({n} Rounds).",
   'op.condRegain': '{name} regagne {v} État {cond} : {src} le tient toujours.',
   'op.err.recurrenceHorloge': "op « condition » ({id}) : « perRound » ne se combine qu'avec « durationRounds » — la récurrence se compte en Rounds, une durée d'horloge n'a pas de frontière de Round.",
+  'op.err.porteSansDuree': "op « condition » ({id}) : « carried » exige une source à DURÉE — le contexte n'en déclare aucune, l'État serait porté à jamais. Aucun État posé.",
   'op.condTimed': '{name} reçoit {v} État {cond} ({roundsTxt}).',
   'op.cond': '{name} reçoit {v} État {cond}.',
   'op.removeCond': '{name} retire {what} {cond}.',

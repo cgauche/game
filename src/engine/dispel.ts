@@ -8,9 +8,11 @@
  * par `assistedTest`. Ici : ÉNUMÉRER les sorts permanents actifs (effets marqués `ActiveEffect.spell` à
  * l'incantation, cf. Stage 1) et les RETIRER proprement à la dissipation (réversion des octrois via
  * `removeActiveEffects`). NB : ne couvre que les imprints portés par `ActiveEffect` (buffs/débuffs, traits
- * octroyés, armes invoquées, ops `perRound`) — un État pur à durée (`Condition.roundsLeft`) n'est pas marqué.
+ * octroyés, armes invoquées, ops `perRound`, États PORTÉS `passive`/`carried` — #1695, LDB 48 l.495 : ils
+ * partent avec l'effet, par la réconciliation que `removeActiveEffects` clôt) — un État pur à durée
+ * (`Condition.roundsLeft`) n'est pas marqué.
  */
-import { Combatant, ActiveEffect } from './types';
+import { Combatant, ActiveEffect, type ConditionEmit } from './types';
 import { removeActiveEffects } from './conditions';
 
 /** Un Sort PERMANENT actif et dissipable : identité + NI (le DR à atteindre) + porteurs de ses effets. */
@@ -48,11 +50,13 @@ export function isFromSpell(e: ActiveEffect, spellId: string, casterId: string):
 }
 
 /** Retire de TOUS les combattants les effets actifs d'un Sort DISSIPÉ (réversion propre des octrois via
- *  `removeActiveEffects`, comme l'expiration naturelle). Renvoie le nombre de combattants nettoyés. */
-export function dissipateSpell(combatants: Combatant[], spellId: string, casterId: string): number {
+ *  `removeActiveEffects`, comme l'expiration naturelle). Renvoie le nombre de combattants nettoyés.
+ *  `log`/`emit` recueillent ce que la réconciliation dit des États PORTÉS qui partent avec le Sort
+ *  (#1695) : sans eux, trois États tomberaient sans une ligne ni une notification. */
+export function dissipateSpell(combatants: Combatant[], spellId: string, casterId: string, emit?: ConditionEmit, log?: string[]): number {
   let cleaned = 0;
   for (const c of combatants) {
-    if (removeActiveEffects(c, (e) => isFromSpell(e, spellId, casterId)).length) cleaned++;
+    if (removeActiveEffects(c, (e) => isFromSpell(e, spellId, casterId), emit, log).length) cleaned++;
   }
   return cleaned;
 }

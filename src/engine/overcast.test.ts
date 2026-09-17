@@ -12,7 +12,7 @@ import { setRule, resetRule } from './policy';
 import { VDM_OVERCAST } from './overcast';
 import {
   overcastSourceOf, overcastAxes, extraTargetCapacity,
-  effectiveDurationRounds, effectiveRangeMetres, overcastDurationParts, overcastStepCost,
+  effectiveRangeMetres, overcastDurationParts, overcastStepCost,
   zoneDiameterMultiplier, missileOvercastDamageBonus,
 } from './overcast';
 
@@ -75,27 +75,14 @@ describe('extraTargetCapacity — cibles SUPPLÉMENTAIRES par pas', () => {
   });
 });
 
-describe('effectiveDurationRounds — ×initial (arcane/miracle) vs +6 Rounds FIXE (bénédiction)', () => {
-  it('arcane/miracle : base × (1 + pas)', () => {
-    expect(effectiveDurationRounds('arcane', 4, 0)).toBe(4);
-    expect(effectiveDurationRounds('arcane', 4, 2)).toBe(12); // 4 × 3
-    expect(effectiveDurationRounds('miracle', 6, 1)).toBe(12); // 6 × 2
-  });
-  it('bénédiction : base + 6 × pas (FIXE) — diverge de ×initial dès que base ≠ 6', () => {
-    expect(effectiveDurationRounds('blessing', 6, 1)).toBe(12); // 6 + 6 (= ×2 par coïncidence)
-    expect(effectiveDurationRounds('blessing', 4, 1)).toBe(10); // 4 + 6 (PAS 8 = ×2)
-    expect(effectiveDurationRounds('blessing', 4, 2)).toBe(16); // 4 + 12
-  });
-});
-
-describe('overcastDurationParts — décomposition mult/bonus pour applyCast', () => {
+describe('overcastDurationParts — décomposition mult/bonus, SOURCE UNIQUE de la règle de Durée', () => {
   it('arcane/miracle : mult = 1+pas, bonus = 0 ; bénédiction : mult = 1, bonus = 6×pas', () => {
+    expect(overcastDurationParts('arcane', 0)).toEqual({ mult: 1, bonusRounds: 0 });
     expect(overcastDurationParts('arcane', 2)).toEqual({ mult: 3, bonusRounds: 0 });
     expect(overcastDurationParts('miracle', 1)).toEqual({ mult: 2, bonusRounds: 0 });
+    // Bénédiction : +6 Rounds FIXE par pas — diverge de ×initial dès que la base ≠ 6 (4 + 12 = 16, pas 12).
+    expect(overcastDurationParts('blessing', 1)).toEqual({ mult: 1, bonusRounds: 6 });
     expect(overcastDurationParts('blessing', 2)).toEqual({ mult: 1, bonusRounds: 12 });
-    // cohérence avec effectiveDurationRounds : base×mult + bonus
-    const p = overcastDurationParts('blessing', 2);
-    expect(4 * p.mult + p.bonusRounds).toBe(effectiveDurationRounds('blessing', 4, 2));
   });
 });
 
@@ -154,7 +141,7 @@ describe('Tableau de Surincantation (VDM) — les 7 paliers imprimés, lus de la
         expect(missileOvercastDamageBonus('arcane', dr), `${dr} DR → Dégât en plus`).toBe(degat);
         expect(effectiveRangeMetres('arcane', 10, dr), `${dr} DR → Portée étendue`).toBe(10 * portee);
         expect(zoneDiameterMultiplier('arcane', dr), `${dr} DR → ZdE étendue`).toBe(zde);
-        expect(effectiveDurationRounds('arcane', 4, dr), `${dr} DR → Durée prolongée`).toBe(4 * duree);
+        expect(overcastDurationParts('arcane', dr).mult, `${dr} DR → Durée prolongée`).toBe(duree);
       }
     } finally {
       resetRule('magic-vdm-incantation');

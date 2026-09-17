@@ -383,16 +383,22 @@ function retireEtatParDetermination(c: Combatant, conditionName: string, now: nu
   const src = c.conditions.find((x) => x.id === conditionName)?.derivedFrom?.src;
   const fenetre = src ? fenetreDetermination(c, conditionName, now) : undefined;
   if (src && fenetre) {
-    suspendSource(c, src, fenetre, 'Détermination (conscience)', DETERMINATION_CONSCIENCE_ID);
+    // GRANULAIRE (#1695) : « Retirez un État » (LDB 17 l.61) — une source qui en porte PLUSIEURS
+    // (Transmutation de Chamon : Aveuglé, Assourdi, Sonné) ne perd que celui que la dépense vise.
+    suspendSource(c, src, fenetre, 'Détermination (conscience)', determinationWindowId(conditionName), conditionName);
     syncDerivedConditions(c);
   }
   if (stacks(c, conditionName) >= avant) removeCondition(c, conditionName, 1); // « Retirez un État » (un pion), LDB 17 l.61
   return stacks(c, conditionName) < avant;
 }
 
-/** `effectId` de la fenêtre ci-dessus : une nouvelle dépense la REMPLACE (jamais deux fenêtres empilées
- *  sur le même porteur), et les tests la retrouvent par ce nom. */
+/** `effectId` de la fenêtre ci-dessus — PRÉFIXE commun, que les lecteurs retrouvent par ce nom. */
 export const DETERMINATION_CONSCIENCE_ID = 'determination-conscience';
+
+/** IDENTITÉ d'une fenêtre de Détermination : une par ÉTAT visé (#1695). Une nouvelle dépense sur le MÊME
+ *  État REMPLACE la sienne ; deux dépenses sur deux États d'une même source (LDB 17 l.61, « Retirez un
+ *  État » par point) ouvrent DEUX fenêtres — la seconde n'écrase plus la première. */
+export const determinationWindowId = (conditionId: string): string => `${DETERMINATION_CONSCIENCE_ID}:${conditionId}`;
 
 /** Actions de combat inline du store — déplacées VERBATIM. Spreadées EN TÊTE du `create`. */
 export function createCombatSlice(get: Get, set: Set) {
@@ -3696,7 +3702,10 @@ export function createCombatSlice(get: Get, set: Set) {
         // hors du `battle.combatants` courant (cible du groupe hors combat) → cible la BONNE liste.
         caster.dispel = undefined;
         const b = get().battle;
-        const n = dissipateSpell(b ? b.combatants : get().party, pd.spellId, pd.spellCasterId);
+        // Les États PORTÉS par le Sort partent à ce geste (#1695) : leurs lignes rejoignent CELLES de
+        // l'Action (`finishPlayerAction` ci-dessous). Pas de récepteur `ConditionEmit` ici : le canal
+        // déclaré du store (`pendingLogQueue.stateId`, `store.ts:676`) n'a encore AUCUN producteur.
+        const n = dissipateSpell(b ? b.combatants : get().party, pd.spellId, pd.spellCasterId, undefined, logLines);
         if (b) set({ battle: { ...b, combatants: [...b.combatants] } });
         logLines.push(t('cs.dispelDone', { spell: pd.label, extra: n > 1 ? t('cs.fragTargetsFreed', { n }) : '' }));
       } else {

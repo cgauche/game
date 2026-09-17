@@ -451,7 +451,20 @@ export type GameOp =
        *  heures » (LDB 72 l.18), Fleur de lune Inconscient « Durée : 1d10+5 heures » (LDB 71 l.29). Résolue
        *  à l'application → `ConditionInstance.untilTime`, purgée par `purgeClockEffects` (même patron que
        *  `castPenalty.minutes`). Exclusif de `durationRounds`/`perRound`. */
-      durationMinutes?: Formula; durationHours?: Formula }
+      durationMinutes?: Formula; durationHours?: Formula;
+      /** État PORTÉ par l'effet actif du contexte (#1695) — LDB 48 l.495 (Transmutation de Chamon) :
+       *  « qui persistent tous pour la durée du Sort ». L'op est posée en PASSIF sur un `ActiveEffect`
+       *  à `durationFromCtx(ctx)` (jamais une copie de durée sur le pion) ; le pion en est la
+       *  réconciliation (`derivedFrom`) et part avec l'effet : expiration, Dissipation, purge.
+       *  Le canal passif ne transporte que `id`, `value` et `resolveWindow` : `carried` est donc
+       *  EXCLUSIF des durées et de `perRound` (l'effet porteur les tient), des VERROUS (sa source EST
+       *  son verrou — `unlockBy` y serait inerte, `releaseConditionLocks`) et des champs de LUTTE
+       *  (`escapeStrength`/`escapeThreshold`/`entangleOnFail`/`struggleDamage`/`grapple`), que
+       *  `addCondition` fige à la pose et que la réconciliation appelle NU. Refus NOMINATIF au parse
+       *  (`CHAMPS_EXCLUS_DE_CARRIED`, `data/schemas/grammaire/mecanique.ts`).
+       *  `perRound` n'est PAS ce canal : il dit « l'État REVIENT chaque Round » (`estCausePersistante`),
+       *  quand `carried` dit « il ne part pas ». */
+      carried?: true }
   /** Retrait d'États : `id` absent = au choix de la cible (1er État porté). `valuePerSL` : échelle
    *  « +1 par +N DR » ajoutée à `value` (Mâchoires d'acier : « chaque DR supprime un État Sonné
    *  supplémentaire », LDB 10) — inerte si absent (calque op `condition`). */
@@ -1338,6 +1351,13 @@ export function messageRecurrenceHorloge(id: string): string {
   return t('op.err.recurrenceHorloge', { id });
 }
 
+/** Message UNIQUE du refus « État PORTÉ sans durée de contexte » (#1695) — rendu au PARSE du document
+ *  de Sort (`data/schemas/defs/spells.ts`, quand la Durée est instantanée ou absente) et à l'application
+ *  (`applyOps`, quand `durationFromCtx` rend `permanent`), mot pour mot. Jumeau de ci-dessus. */
+export function messagePorteSansDuree(id: string): string {
+  return t('op.err.porteSansDuree', { id });
+}
+
 /** Applique un effet actif sans cumul : un seul bonus (le meilleur) ET une seule
  *  pénalité (la pire) coexistent par caractéristique (Livre de base l.168). */
 /** Pose un effet actif porteur d'ops RÉCURRENTES (re-jouées chaque fin de Round par `endOfRound`).
@@ -1720,6 +1740,26 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           if (o.unlessCondition && hasCondition(target, o.unlessCondition)) break;
         }
         const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng, ctx.rolled, ctx.indice, ctx.stacks) + slBonus(ctx.sl, o.valuePerSL));
+        if (o.carried) {
+          // État PORTÉ (#1695, LDB 48 l.495) : UN effet porteur par op — deux lancers du même sort font
+          // deux effets, donc deux pions (LDB 16 l.11). L'op passive porte la valeur RÉSOLUE ; le pion,
+          // sa durée et son retrait sont l'affaire de la réconciliation (`syncDerivedConditions`, fin
+          // d'`applyOps`) — qui pousse AUSSI la ligne de journal et la notification de l'État.
+          const duree = durationFromCtx(ctx);
+          if (duree.scale === 'permanent') {
+            // « Porté » sans source DATÉE n'a aucun sens : le pion serait PERMANENT, anonyme et hors de
+            // portée de la Détermination. REFUS journalisé, aucun effet posé — même régime que le refus
+            // journalisé de `removeCondition` sans État à retirer (`op.noCondToRemove`, ci-dessous) :
+            // une donnée fautive se VOIT au journal, elle ne tue pas l'incantation en cours.
+            lines.push(messagePorteSansDuree(o.id));
+            break;
+          }
+          target.activeEffects = [...(target.activeEffects ?? []), {
+            label: ctx.label ?? conditionLabel(o.id), bonus: 0, duration: duree,
+            passive: [{ op: 'condition', id: o.id, value: v, ...(o.resolveWindow ? { resolveWindow: o.resolveWindow } : {}) }],
+          }];
+          break;
+        }
         // Force d'évasion (Empêtré « se libérer » — LDB 16 l.66) : résolue MAINTENANT contre le
         // référent (le lanceur pour un sort) et FIGÉE sur l'entrée d'État → le flux de récupération
         // l'opposera, même si le lanceur n'est plus en jeu.

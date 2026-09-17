@@ -805,6 +805,13 @@ export interface ActiveEffect {
    *  sans avoir besoin du lanceur. La durée (donc le nombre de répétitions) suit `duration`, qui
    *  intègre la Surincantation de Durée (LDB 47). */
   opsPerRound?: import('./ops').GameOp[];
+  /** Ops PASSIVES PORTÉES par cet effet, émises par `passiveMods` tant qu'il dure (#1695) — une op
+   *  `condition` y devient un pion DÉRIVÉ (`derivedFrom`, réconcilié par `syncDerivedConditions`) :
+   *  LDB 48 l.495, « qui persistent tous pour la durée du Sort ». L'effet EST la durée et le verrou du
+   *  pion ; il part avec lui (expiration, Dissipation, purge). Canal CANONIQUE des passifs d'effet —
+   *  les champs scalaires ci-dessus (`skillMods`, `moveScale`, `moveMod`, `maxWeaponHands`) sont un
+   *  repli antérieur, non migré. */
+  passive?: import('./ops').GameOp[];
   /** PA temporisés à TOUTES les localisations (Armure Aethyrique : « +1 PA à toutes les
    *  Localisations ») — lus par effectiveArmourAt à la mitigation des Dégâts. */
   apAll?: number;
@@ -931,6 +938,10 @@ export interface ActiveEffect {
    *  collecteur `passiveMods` et par les cycles de maladie (`symptomSuppressed`). Porteurs : op
    *  `suppressSymptom` (Racine de terre, LDB 72 l.28) et fenêtre de Détermination (LDB 17 l.61). */
   suppressedSource?: CodexTarget;
+  /** RESTREINT la suspension ci-dessus au SEUL État nommé (#1695) : « Retirez un État » (LDB 17 l.61)
+   *  n'écarte qu'UN pion, même quand la source en porte plusieurs (Transmutation de Chamon : Aveuglé,
+   *  Assourdi, Sonné). Absent = la source entière est suspendue (Racine de terre, LDB 72 l.28). */
+  suppressedCondition?: string;
   /** Symptôme ATTÉNUÉ d'un échelon (op `attenuateSymptom` — LDB 20 l.159, « pendant une journée ») :
    *  sa sévérité EFFECTIVE redescend tant que l'effet dure (`severiteEffective`), l'instance de
    *  symptôme n'est jamais mutée. Miroir de `suppressedSource`, nommé par instance de MALADIE. */

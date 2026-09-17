@@ -119,7 +119,12 @@ import type { Scene } from './scene';
 // avec des fenêtres de suspension (Racine de terre, fenêtre de Détermination) que plus aucun lecteur ne
 // voit : le symptôme réémet ses passifs et l'État qu'il porte revient, sans que rien ne le dise. La save
 // se jette (politique 2 ci-dessus).
-export const SAVE_VERSION = 48;
+// 48 → 49 (#1695) : un État « pour la durée du Sort » (LDB 48 l.495) est PORTÉ par l'effet actif du sort
+// (`ActiveEffect.passive`) au lieu d'être copié sur le pion (`ConditionInstance.roundsLeft`). Une save de
+// 48 prise en plein Transmutation de Chamon rouvre avec des pions à `roundsLeft` SANS effet porteur : ils
+// tiennent leur propre compte, la Dissipation ne les emporte plus et la Détermination n'a plus de source à
+// suspendre. La save se jette (politique 2 ci-dessus).
+export const SAVE_VERSION = 49;
 
 export interface SaveMeta {
   version: number;

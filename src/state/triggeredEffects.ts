@@ -121,7 +121,15 @@ export function effectSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSourc
     const d = findConditionById(cond.id);
     if (!d?.effects?.length) continue;
     const reduce = d.stacksReducedBy ? featureLevel(actor, d.stacksReducedBy as keyof CombatFeature) : 0; // Hémorragique − Endurci…
-    out.push({ effects: withSource(d.effects, { kind: 'condition', id: cond.id }), cap: 1, key: `cond:${cond.id}`, label: d.label ?? cond.id, stacks: Math.max(0, (cond.value ?? 1) - reduce) });
+    // Part DÉRIVÉE du pion (`derivedFrom.stacks`, socle #1599) : un fait passif vivant la porte, donc
+    // elle n'est ni récupérable ni dissipable (`retireEtat` y est déjà inerte). Un pion ENTIÈREMENT
+    // dérivé n'est donc PAS une source d'effets déclenchés : AUCUN de ses `effects` ne tire, quel que
+    // soit leur `trigger` — on ne roule pas un Test qui ne peut rien lever (#1695, LDB 48 l.495).
+    // MESURÉ (`etats.json`) : les 11 États porteurs d'`effects` ne déclarent que `onRoundEnd`.
+    // Un pion NATIF posé par-dessus reste, lui, pleinement joué, sur sa part native seule.
+    const derive = cond.derivedFrom?.stacks ?? 0;
+    if (derive >= (cond.value ?? 1)) continue;
+    out.push({ effects: withSource(d.effects, { kind: 'condition', id: cond.id }), cap: 1, key: `cond:${cond.id}`, label: d.label ?? cond.id, stacks: Math.max(0, (cond.value ?? 1) - derive - reduce) });
   }
   for (const p of actor.psychState ?? []) { const d = findPsychologyById(p.type); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'psychology', id: p.type }), cap: 1, key: `psy:${p.type}`, label: d.label ?? p.type, stacks: 1 }); }
   return out;

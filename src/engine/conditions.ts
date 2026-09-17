@@ -232,11 +232,13 @@ export function hasSurgeryLockedCondition(c: Combatant): boolean {
  * pion marqué, elle seule peut donc l'emporter. Tout autre retrait (sommeil, soin, Détermination,
  * dissipation) s'arrête à la part NATIVE du pion : un État qu'un fait passif toujours vivant porte ne
  * se retire pas à la main (`LDB 20 l.188` ; le fait le reposerait de toute façon à la réconciliation).
+ * Le VERROU (LDB 18) ne protège que des retraits NATIFS : un pion part avec sa source, verrouillé ou
+ * non (#1695) — sinon il survivrait au fait qui le porte.
  */
 function retireEtat(c: Combatant, name: string, value: number, parSaSource: boolean): void {
   const existing = c.conditions.find((x) => x.id === name);
   if (!existing) return;
-  if (isConditionLocked(existing, c)) return; // verrou de Critique (LDB 18) : ne part pas tant que sa Condition n'est pas remplie
+  if (!parSaSource && isConditionLocked(existing, c)) return; // verrou de Critique (LDB 18) : ne part pas tant que sa Condition n'est pas remplie
   const plancher = parSaSource ? 0 : existing.derivedFrom?.stacks ?? 0;
   const n = Math.min(value, Math.max(0, existing.value - plancher));
   if (n <= 0) return;
@@ -322,8 +324,8 @@ const reconciliationEnCours = new WeakSet<Combatant>();
  *
  * Ce que la réconciliation NE touche PAS : les pions NON marqués (un Inconscient de KO à 0 PB, LDB 16
  * l.94, coexiste avec celui d'une Fièvre (Grave), LDB 20 l.170 — la fièvre qui redescend n'emporte que
- * le sien) et les États VERROUILLÉS (LDB 18 : `removeCondition` y est inerte, le marquage reste alors
- * intact plutôt que d'orpheliner des pions).
+ * le sien). Un pion VERROUILLÉ (LDB 18) ne lui résiste PAS : le verrou arrête les retraits natifs, pas
+ * la source qui l'a posé (#1695).
  *
  * IDEMPOTENTE : rejouée sans changement du fait source, elle n'écrit rien et rend un journal vide.
  * Mute `c`, renvoie le journal ; `emit` reçoit l'appariement ligne↔id (`ConditionChange`).
@@ -381,10 +383,8 @@ function reconcilierEtatsDerives(c: Combatant, emit?: ConditionEmit): string[] {
       emit?.({ stateId: id, change: 'gain', targetId: c.id });
       continue;
     }
-    const avant = inst!.value;
-    retireEtat(c, id, porteN - cibleN, true); // la réconciliation EST la source du pion marqué
+    retireEtat(c, id, porteN - cibleN, true); // la réconciliation EST la source du pion marqué : rien ne l'arrête
     const apres = c.conditions.find((x) => x.id === id);
-    if ((apres?.value ?? 0) === avant) continue; // retrait INERTE (État verrouillé, LDB 18) : le marquage tient
     if (apres) apres.derivedFrom = cibleN > 0 ? { stacks: cibleN, ...(src ? { src } : {}) } : undefined;
     log.push(t('cond.derivedLoss', { name: c.label, cond: conditionLabel(id), src: source }));
     emit?.({ stateId: id, change: 'loss', targetId: c.id });
@@ -757,8 +757,11 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG, emit?: Condition
 /** Retire d'un combattant les ActiveEffect satisfaisant `pred`, en RÉVERSANT proprement leurs octrois
  *  (traits/ressources/armes accordés, Traits psy suspendus) — EXACTEMENT comme l'expiration naturelle.
  *  SOURCE UNIQUE du retrait d'effets actifs : expiration en Rounds (`tickDurations`), horloge, et
- *  DISSIPATION (LDB 46 l.158-162, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
-export function removeActiveEffects(c: Combatant, pred: (e: ActiveEffect) => boolean): ActiveEffect[] {
+ *  DISSIPATION (LDB 46 l.158-162, `engine/dispel`). Renvoie les effets retirés (pour le journal).
+ *  Un effet retiré emporte les États qu'il PORTAIT (`ActiveEffect.passive`, #1695, LDB 48 l.495) : la
+ *  réconciliation clôt donc CE point unique, jamais chaque appelant. `emit`/`log` recueillent ce
+ *  qu'elle dit — un appelant qui n'a pas de journal les omet (l'État part quand même). */
+export function removeActiveEffects(c: Combatant, pred: (e: ActiveEffect) => boolean, emit?: ConditionEmit, log?: string[]): ActiveEffect[] {
   if (!c.activeEffects?.length) return [];
   const removed = c.activeEffects.filter(pred);
   if (!removed.length) return [];
@@ -768,6 +771,10 @@ export function removeActiveEffects(c: Combatant, pred: (e: ActiveEffect) => boo
   dropExpiredGrantedWeapons(c, removed); // armes invoquées/naturelles accordées : loadout recomposé
   if (dropExpiredGrantedMutations(c, removed)) { recomputeLoadout(c); refreshWounds(c); } // mutation TEMPORISÉE (op rollMutation) détachée → loadout/PB dérivés recalculés
   restoreSuppressedPsych(c, removed); // Traits psy suspendus (Baume, LDB 42) restitués
+  // États PORTÉS par l'effet (#1695) : ils partent au MÊME geste. IDEMPOTENTE. La réconciliation est
+  // INCONDITIONNELLE — un `log?.push(...sync())` l'aurait court-circuitée chez tout appelant sans journal.
+  const portes = syncDerivedConditions(c, emit);
+  log?.push(...portes);
   return removed;
 }
 
@@ -797,8 +804,9 @@ export function resolvePlusExtension(c: Combatant, e: ActiveEffect, extended: bo
     e.duration = { scale: 'rounds', left: 1 };
     return [t('cond.effectExtended', { name: c.label, label: e.label })];
   }
-  const removed = removeActiveEffects(c, (x) => x === e);
-  return removed.map((x) => t('cond.effectExpire', { name: c.label, label: x.label }));
+  const porte: string[] = []; // États PORTÉS par l'effet gelé (#1695) : leur départ se dit au même journal
+  const removed = removeActiveEffects(c, (x) => x === e, undefined, porte);
+  return [...removed.map((x) => t('cond.effectExpire', { name: c.label, label: x.label })), ...porte];
 }
 
 export function tickDurations(c: Combatant, emit?: ConditionEmit): string[] {
@@ -815,8 +823,10 @@ export function tickDurations(c: Combatant, emit?: ConditionEmit): string[] {
     for (const e of c.activeEffects) {
       if (e.duration.scale === 'rounds' && e.duration.left <= 0 && !e.awaitingExtension && spellDurationPlusSource(e)) e.awaitingExtension = true;
     }
-    const expired = removeActiveEffects(c, (e) => e.duration.scale === 'rounds' && e.duration.left <= 0 && !e.awaitingExtension);
+    const porte: string[] = []; // l'effet se dissipe D'ABORD au journal, les États qu'il portait partent ENSUITE (#1695)
+    const expired = removeActiveEffects(c, (e) => e.duration.scale === 'rounds' && e.duration.left <= 0 && !e.awaitingExtension, emit, porte);
     for (const e of expired) log.push(t('cond.effectExpire', { name: c.label, label: e.label }));
+    log.push(...porte);
   }
   // États à DURÉE posés par un sort (« qui dure N Rounds ») : décrément, dissipation à 0.
   if (c.conditions.some((x) => x.roundsLeft != null)) {

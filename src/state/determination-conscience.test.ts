@@ -11,10 +11,12 @@
  * que l'op PORTEUSE déclare (`resolveWindow` en donnée) ; la réconciliation retire alors l'État, et
  * `purgeClockEffects` le lui rend à l'échéance.
  *
- * PORTÉE : le symptôme SOURCE, jamais le canal « maladie » tout entier. LDB 17 l.59-61 n'ouvre la
- * Détermination que sur la Psychologie, les modificateurs de Critique et le retrait d'UN État : rien
- * n'y lève les passifs d'une maladie. L'Exténué du Malaise (l.188, « dont vous ne pourrez vous défaire
- * qu'une fois votre maladie guérie ») en est le témoin — il survit à toutes les dépenses.
+ * PORTÉE : l'ÉTAT NOMMÉ chez le symptôme source — ni le canal « maladie », ni même le symptôme entier.
+ * LDB 17 l.61 : « Retirez un État : si vous retirez l'État à Terre, regagnez 1 Point de Blessure
+ * lorsque vous vous mettez debout. » — UN État, et rien d'autre. La fièvre et son −10 aux Tests
+ * Physiques et de Sociabilité (l.170, même ligne) tiennent pendant toute la fenêtre. L'Exténué du
+ * Malaise (l.188, « dont vous ne pourrez vous défaire qu'une fois votre maladie guérie ») en est le
+ * second témoin — il survit à toutes les dépenses.
  *
  * Le chemin est le VRAI : le store (`spendResolveCondition`), sur un héros dont la Fièvre est passée
  * (Grave) par le Test quotidien de la Pneumonie.
@@ -26,7 +28,7 @@ import { dailyDiseaseUpkeep } from '../engine/rest';
 import { syncDerivedConditions, derivedStacks, stacks, addCondition, raisonRefusDetermination, fenetreDetermination } from '../engine/conditions';
 import { passiveMods, poseDeterminationCanceller } from '../engine/trauma';
 import { purgeClockEffects } from './upkeep';
-import { DETERMINATION_CONSCIENCE_ID } from './combatSlice';
+import { determinationWindowId } from './combatSlice';
 import { rule, setRule, resetRule } from '../engine/policy';
 import { bus, EVT } from './bus';
 import type { Combatant } from '../engine/types';
@@ -73,14 +75,21 @@ describe('Détermination et État porté par un passif (LDB 20 l.170)', () => {
     const c0 = useGame.getState().battle!.combatants[0];
     expect(c0.resolve, 'le point de Détermination n’a pas été débité').toBe(1);
     expect(stacks(c0, 'inconscient'), 'le porteur n’est pas revenu à lui').toBe(0);
-    const fenetre = c0.activeEffects!.find((e) => e.effectId === DETERMINATION_CONSCIENCE_ID)!;
+    const fenetre = c0.activeEffects!.find((e) => e.effectId === determinationWindowId('inconscient'))!;
     expect(fenetre, 'aucune fenêtre de conscience posée').toBeTruthy();
     expect(fenetre.duration).toEqual({ scale: 'clock', until: 10_000 + (rule('maladie-conscience-determination-minutes') as number) });
-    // La fenêtre suspend le SYMPTÔME nommé par le marquage, pas un canal : la Fièvre est ignorée avec
-    // ses −10 (LDB 20 l.170 ne dit rien du sort des pénalités — même forme que l.159/l.190).
+    // La fenêtre nomme le SYMPTÔME source ET le seul ÉTAT qu'elle écarte : LDB 20 l.170 rend la
+    // CONSCIENCE, pas la santé — « Gagnez l'État *Inconscient*, même si la dépense de Points de
+    // Détermination peut vous ramener à la conscience pendant quelques minutes. » La fièvre reste, et
+    // son −10 aux Tests Physiques et de Sociabilité (même ligne) avec elle.
     expect(fenetre.suppressedSource, 'la fenêtre ne suspend pas la Fièvre').toEqual({ category: 'symptoms', id: 'fievre' });
-    expect(symptomSuppressed(c0, 'fievre')).toBe(true);
-    expect(diseasePassiveOps(c0).filter((m) => m.src?.id === 'fievre'), 'la Fièvre émet encore ses passifs').toEqual([]);
+    expect(fenetre.suppressedCondition, 'la fenêtre n’écarte pas QUE l’Inconscient').toBe('inconscient');
+    expect(symptomSuppressed(c0, 'fievre'), 'la Fièvre entière a été suspendue — LDB 20 l.170 ne lève que l’État').toBe(false);
+    // Le −10 de la Fièvre est porté par 7 `charMod` (`symptoms.json › fievre.passive`) : ils restent.
+    expect(diseasePassiveOps(c0).filter((m) => m.src?.id === 'fievre' && m.op.op === 'charMod').length, 'le −10 de la Fièvre a sauté avec la conscience').toBe(7);
+    // Seul l'État tombe, au collecteur unique : plus aucune op `condition` de la Fièvre n'est émise.
+    expect(passiveMods(c0).some((m) => m.op.op === 'condition' && m.src?.id === 'fievre'), 'la Fièvre porte encore son Inconscient').toBe(false);
+    expect(passiveMods(c0).filter((m) => m.op.op === 'charMod' && m.src?.id === 'fievre').length, 'le −10 de la Fièvre n’est plus émis').toBe(7);
   });
 
   it('à l’ÉCHÉANCE de la fenêtre, la fièvre le rendort (la réconciliation repose l’État)', () => {
@@ -116,7 +125,7 @@ describe('Détermination et État porté par un passif (LDB 20 l.170)', () => {
     bus.emit(EVT.TIME_ADVANCED, { minutes });
 
     const c0 = useGame.getState().party[0];
-    expect(c0.activeEffects?.some((e) => e.effectId === DETERMINATION_CONSCIENCE_ID) ?? false, 'la fenêtre a survécu à son échéance').toBe(false);
+    expect(c0.activeEffects?.some((e) => e.effectId === determinationWindowId('inconscient')) ?? false, 'la fenêtre a survécu à son échéance').toBe(false);
     expect(stacks(c0, 'inconscient'), 'l’Inconscient n’est pas revenu à l’échéance').toBe(1);
     expect(useGame.getState().journal.join(' | '), 'la dissipation n’est pas journalisée').toMatch(/Inconscient|Fièvre|Malade/);
   });
@@ -128,18 +137,26 @@ describe('Détermination et État porté par un passif (LDB 20 l.170)', () => {
     useGame.getState().spendResolveCondition(h.id, 'aveugle');
     const c0 = useGame.getState().battle!.combatants[0];
     expect(c0.conditions.find((x) => x.id === 'aveugle')!.value).toBe(1);
-    expect(c0.activeEffects?.some((e) => e.effectId === DETERMINATION_CONSCIENCE_ID) ?? false).toBe(false);
+    expect(c0.activeEffects?.some((e) => e.effectId === determinationWindowId('aveugle')) ?? false).toBe(false);
   });
 
-  it('à l’ÉCHÉANCE, la Fièvre reprend ses passifs (la suspension ne survit pas à la fenêtre)', () => {
+  it('la fenêtre n’emporte QUE l’État : le cycle de la maladie et ses pénalités ne s’arrêtent jamais', () => {
     const h = malade();
+    const avant = diseasePassiveOps(h).length;
     useGame.setState({ mode: 'battle', battle: mkBattle(h), party: [h], gameTime: 10_000 } as never);
     useGame.getState().spendResolveCondition(h.id, 'inconscient');
+    const pendant = useGame.getState().battle!.combatants[0];
+    // PENDANT la fenêtre : la Fièvre est toujours un symptôme ACTIF (donc son Test de cycle quotidien
+    // et ses `onTick` tombent comme d'habitude — `engine/disease.ts:712/741` les gatent sur
+    // `symptomSuppressed`), et elle émet exactement les mêmes passifs qu'avant la dépense.
+    expect(symptomSuppressed(pendant, 'fievre')).toBe(false);
+    expect(diseasePassiveOps(pendant).length, 'la dépense a rogné les passifs de la maladie').toBe(avant);
+    // À l'ÉCHÉANCE : la fenêtre tombe, la cause tient toujours, l'État revient (LDB 16 l.117).
     useGame.setState({ gameTime: 10_000 + (rule('maladie-conscience-determination-minutes') as number) } as never);
     purgeClockEffects(useGame.getState, useGame.setState);
-    const c0 = useGame.getState().battle!.combatants[0];
-    expect(symptomSuppressed(c0, 'fievre')).toBe(false);
-    expect(diseasePassiveOps(c0).length, 'la Fièvre n’a pas repris ses passifs').toBeGreaterThan(0);
+    const apres = useGame.getState().battle!.combatants[0];
+    expect(stacks(apres, 'inconscient'), 'l’Inconscient n’est pas revenu à l’échéance').toBe(1);
+    expect(diseasePassiveOps(apres).length).toBe(avant);
   });
 });
 

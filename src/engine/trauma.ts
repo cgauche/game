@@ -1051,11 +1051,16 @@ export function passiveMods(c: Combatant): PassiveMod[] {
     if (e.moveScale) out.push({ op: { op: 'moveScale', num: e.moveScale.num, den: e.moveScale.den }, kind: 'magique' });
     if (e.moveMod) out.push({ op: { op: 'moveMod', mod: e.moveMod }, kind: 'magique' });
     if (e.maxWeaponHands != null) out.push({ op: { op: 'maxWeaponHands', hands: e.maxWeaponHands }, kind: 'magique' });
+    // Canal CANONIQUE des passifs d'effet (#1695, `ActiveEffect.passive`) : une op `condition` y devient
+    // un pion DÉRIVÉ que la réconciliation pose et retire AVEC l'effet (LDB 48 l.495).
+    for (const op of e.passive ?? []) out.push({ op, kind: 'magique', src: effectRef(e), label: e.label });
   }
   // SUSPENSION d'une source (`engine/suspension.ts`) : tout ce qu'une source suspendue émet est écarté
   // ICI, au collecteur unique — aucun consommateur n'a à connaître le mécanisme. Les émetteurs SANS
   // `src` (séquelles, Faim, Soif, Ivresse) ne sont pas suspendables : rien ne les nomme.
-  return out.filter((m) => !sourceSuspended(c, m.src));
+  // (#1695) Une fenêtre de Détermination NOMME l'État qu'elle écarte (LDB 17 l.61, « Retirez un État ») :
+  // le mod interrogé porte son id quand c'est une op `condition`, et lui seul tombe.
+  return out.filter((m) => !sourceSuspended(c, m.src, m.op.op === 'condition' ? m.op.id : undefined));
 }
 
 /** Ops PASSIVES de type `op` collectées (kind aplati), filtrées par mode de combinaison quand il importe :

@@ -10,9 +10,19 @@ import { document } from '../grammaire/document';
 import { charKeySchema, formulaSchema } from '../grammaire/valeurs';
 import { flowSchema, conditionSchema } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
+import { messagePorteSansDuree } from '../../../engine/ops';
 
 export const file = 'spells.json';
 export const famille = 'entite';
+
+/** Toute op `condition { carried }` de l'arbre d'effets d'une entrée (#1695). */
+function* opsPortees(noeud: unknown): Generator<Record<string, unknown>> {
+  if (Array.isArray(noeud)) { for (const e of noeud) yield* opsPortees(e); return; }
+  if (noeud == null || typeof noeud !== 'object') return;
+  const n = noeud as Record<string, unknown>;
+  if (n.op === 'condition' && n.carried === true) yield n;
+  for (const v of Object.values(n)) yield* opsPortees(v);
+}
 
 /** `SpellRange` (`engine/spellRange.ts`). */
 const spellRangeSchema = z.discriminatedUnion('kind', [
@@ -192,10 +202,32 @@ const doc = document(
     codex: { keys: ['spells'] },
     edit: { dataset: 'spells' },
   },
-  { exiges: ['desc', 'source'], variantes: VARIANT_RESOLVED_FIELDS },
+  {
+    exiges: ['desc', 'source'],
+    variantes: VARIANT_RESOLVED_FIELDS,
+    /**
+     * Un État PORTÉ (`carried`, #1695 — LDB 48 l.495 « qui persistent tous pour la durée du Sort »)
+     * tient sa durée de l'effet actif du Sort. Un Sort à Durée INSTANTANÉE ou ABSENTE n'en pose
+     * aucun : l'État serait porté à jamais. Refus NOMINATIF au parse, MOT POUR MOT comme `applyOps`
+     * le journalise (`messagePorteSansDuree`) — patron du jumeau `messageRecurrenceHorloge`. Les
+     * Durées `special`/`untilDawn` ne se jugent PAS ici (leur échéance se résout au lancement) :
+     * c'est le refus À L'APPLICATION qui les couvre.
+     */
+    affinerEntree: (entree) =>
+      entree.superRefine((v, ctx) => {
+        const e = v as { duration?: { kind?: string } | null; effects?: unknown };
+        if (e.duration != null && e.duration.kind !== 'instant') return;
+        for (const op of opsPortees(e.effects)) {
+          ctx.addIssue({ code: 'custom', path: ['effects'], message: messagePorteSansDuree(String(op.id ?? '')) });
+        }
+      }),
+  },
 );
 
 export const schema = doc.schema;
+/** L'ENTRÉE scellée (un Sort), pour les lecteurs qui valident une entrée isolée — `schema` emballe le
+ *  FICHIER (`z.array`, famille `entite`). */
+export const entree = doc.entree;
 export const meta = doc.meta;
 export const exposition = doc.exposition;
 /** Clés top-level relevées AVANT le sceau — le nœud rendu n'a plus de `.shape`

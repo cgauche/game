@@ -6477,23 +6477,17 @@
               {
                 "op": "condition",
                 "id": "aveugle",
-                "durationRounds": {
-                  "bonusOf": "force-mentale"
-                }
+                "carried": true
               },
               {
                 "op": "condition",
                 "id": "assourdi",
-                "durationRounds": {
-                  "bonusOf": "force-mentale"
-                }
+                "carried": true
               },
               {
                 "op": "condition",
                 "id": "sonne",
-                "durationRounds": {
-                  "bonusOf": "force-mentale"
-                }
+                "carried": true
               },
               {
                 "op": "ap",
@@ -6504,7 +6498,7 @@
               },
               {
                 "op": "narrative",
-                "text": "Transmutation de Chamon : une cible qui meurt pendant le Sort est enfermée dans une carapace de métal — arbitrage MJ."
+                "text": "Si les cibles meurent pendant que le Sort est actif, elles sont enfermées de façon permanente dans une carapace de métaux communs, un macabre rappel des risques de la sorcellerie."
               }
             ]
           }
@@ -7376,23 +7370,17 @@
               {
                 "op": "condition",
                 "id": "aveugle",
-                "durationRounds": {
-                  "bonusOf": "force-mentale"
-                }
+                "carried": true
               },
               {
                 "op": "condition",
                 "id": "assourdi",
-                "durationRounds": {
-                  "bonusOf": "force-mentale"
-                }
+                "carried": true
               },
               {
                 "op": "condition",
                 "id": "extenue",
-                "durationRounds": {
-                  "bonusOf": "force-mentale"
-                }
+                "carried": true
               },
               {
                 "op": "narrative",
@@ -28841,23 +28829,17 @@
               {
                 "op": "condition",
                 "id": "aveugle",
-                "durationRounds": {
-                  "bonusOf": "force-mentale"
-                }
+                "carried": true
               },
               {
                 "op": "condition",
                 "id": "assourdi",
-                "durationRounds": {
-                  "bonusOf": "force-mentale"
-                }
+                "carried": true
               },
               {
                 "op": "condition",
                 "id": "extenue",
-                "durationRounds": {
-                  "bonusOf": "force-mentale"
-                }
+                "carried": true
               }
             ]
           }

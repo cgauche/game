@@ -111,16 +111,10 @@ export function zoneDiameterMultiplier(source: OvercastSource, steps: number): n
 /** Décomposition de la Durée surincantée pour l'application : `rounds = base × mult + bonusRounds`.
  *  Arcane/Miracle : mult = 1 + pas, bonus = 0 (×initial — le multiplicateur joue aussi sur une durée
  *  d'HORLOGE). Bénédiction : mult = 1, bonus = 6 Rounds × pas (FIXE, donc rounds-only). SOURCE UNIQUE
- *  de la règle de durée — `effectiveDurationRounds` et `applyCast` la consomment. */
+ *  de la règle de durée — `applyCast` la consomme. */
 export function overcastDurationParts(source: OvercastSource, steps: number): { mult: number; bonusRounds: number } {
   if (overcastModel(source) === 'vdm') return { mult: vdmRow(steps)?.duration ?? 1, bonusRounds: 0 };
   return source === 'blessing' ? { mult: 1, bonusRounds: BLESSING_STEP * steps } : { mult: 1 + steps, bonusRounds: 0 };
-}
-
-/** Durée EFFECTIVE (Rounds) après `steps` pas de Durée — dérive de `overcastDurationParts`. */
-export function effectiveDurationRounds(source: OvercastSource, baseRounds: number, steps: number): number {
-  const { mult, bonusRounds } = overcastDurationParts(source, steps);
-  return baseRounds * mult + bonusRounds;
 }
 
 /** Portée EFFECTIVE (mètres) après `steps` pas de Portée. Arcane/Miracle : base × (1 + pas) ;

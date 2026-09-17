@@ -214,8 +214,9 @@ export function endShanty(get: Get, singer: Combatant): string[] {
   if (!song) return [];
   delete singer.singingShanty;
   const combatants = get().battle?.combatants ?? get().party;
-  for (const c of combatants) removeActiveEffects(c, (e) => e.effectId === song.shantyId);
-  return [t('crew.shantyEnd', { name: singer.label })];
+  const porte: string[] = []; // États PORTÉS par la chanson (#1695) : ils partent avec elle, et ça se dit
+  for (const c of combatants) removeActiveEffects(c, (e) => e.effectId === song.shantyId, undefined, porte);
+  return [t('crew.shantyEnd', { name: singer.label }), ...porte];
 }
 
 /**
