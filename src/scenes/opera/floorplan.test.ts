@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { buildOperaFloorplan, puitsRim, ZONES_REZ, ZONES_ETAGE } from './floorplan';
+import {
+  buildOperaFloorplan, puitsRim, ZONES_REZ, ZONES_ETAGE,
+  OPERA_WALL_LEGEND, OPERA_ZONE_SEEDS, OPERA_ZONE_LAYERS, OPERA_BASE, OPERA_LEGEND,
+} from './floorplan';
+import { ETAGE_ASCII } from './floorplan.ascii';
+import { walledRowsOf, zonesFromSeeds } from '../../state/asciiMap';
 import { scenarioEntities } from './furnished';
 import { scenario as operaPlan } from '../test-scenarios/opera-plan';
 import { tileAt, heightAt, isWalkable, wallBetween, type Scene } from '../../state/scene';
@@ -263,8 +268,10 @@ describe('plan de l’Opéra — corps architectural et loi de dégagement', () 
 
 /**
  * #1180 — l'apparence d'un mur est une DONNÉE de la carte, la hauteur est de la géométrie. L'opéra
- * n'authore AUCUNE structure ni apparence d'arête (`walled` sans `wallStructures`) : tout son bâti
- * doit donc rendre le mur nu `plain`, y compris les arêtes de l'étage assises en hauteur.
+ * authore UNE apparence d'arête et une seule (`MapSpec.wallLegend` = `OPERA_WALL_LEGEND`, char `w`,
+ * sans structure ni PV) : les refends entre loges voisines des deux flancs de l'étage la rendent, et
+ * TOUT le reste du bâti — enveloppe, refends côté couloir, portes, rez entier — rend le mur nu
+ * `plain`, y compris les arêtes de l'étage assises en hauteur.
  *
  * La garde porte sur les ÉLÉMENTS RENDUS, jamais sur `scene.walls`, et sa population est TOUT ce dont
  * la matière sort de la loi d'apparence d'arête (`edgeAppearance`, `gameIso/builders/roofs.ts`) :
@@ -309,10 +316,33 @@ describe('plan de l’Opéra — apparence des murs (#1180)', () => {
       `arête(s) nue(s) en hauteur fortifiée(s) par leur cote — ${nuesHautes.size} arêtes nues en hauteur`).toEqual([]);
   });
 
-  it('AUCUN élément rendu ne rend `mur-en-pierre` : l’étage est du mur nu, pas un rempart', () => {
-    const offenseurs = rendus.filter((el) => el.appearance !== 'plain');
+  it('les arêtes du char `w` rendent l’apparence de la légende, toutes les autres rendent le mur nu', () => {
+    const bois = OPERA_WALL_LEGEND.w.appearance;
+    // ATTENDU dérivé de la carte compilée (le char `w` → `WallSeg.appearance`), jamais d'une liste tenue à
+    // la main : rebâtir l'ASCII déplace l'attendu avec le plan.
+    const authorees = (s.walls ?? []).filter((w) => w.appearance === bois)
+      .map((w) => `wall:${w.x},${w.y},${w.side},${w.z ?? 0}`).sort();
+    expect(authorees.length, `la carte n’authore aucune arête « ${bois} » — la garde ne mesurerait rien (${diag})`)
+      .toBeGreaterThan(0);
+    const enBois = rendus.filter((el) => el.appearance === bois).map((el) => el.key).sort();
+    expect(enBois, `arêtes rendues en « ${bois} » ≠ arêtes authorées (${authorees.length} authorées, ${diag})`)
+      .toEqual(authorees);
+    const offenseurs = rendus.filter((el) => el.appearance !== 'plain' && el.appearance !== bois);
     expect(offenseurs.map((el) => `${el.key} → ${el.appearance}`),
-      `élément(s) rendu(s) hors du mur nu alors qu’aucune arête n’authore d’apparence (${diag})`).toEqual([]);
+      `élément(s) rendu(s) hors du mur nu et hors de la légende d’arête (${diag})`).toEqual([]);
+  });
+
+  /**
+   * `OPERA_WALL_LEGEND` est PORTEUSE du cloisonnement, pas décorative : le char `w` ne vaut mur que pour
+   * le lecteur à qui la table est passée. Omise à un seul des lecteurs de la grille, la pièce fuit à
+   * travers le refend et deux graines se disputent la même case (`zonesFromSeeds`, `state/asciiMap.ts`).
+   */
+  it('la même légende va à TOUS les lecteurs de la grille : sans elle, le zonage de l’étage fuit', () => {
+    const rows = walledRowsOf(ETAGE_ASCII, s.dimensions.w);
+    expect(() => zonesFromSeeds(rows, OPERA_BASE, OPERA_LEGEND, OPERA_ZONE_SEEDS.z1))
+      .toThrow(/revendiquée/);
+    expect(zonesFromSeeds(rows, OPERA_BASE, OPERA_LEGEND, OPERA_ZONE_SEEDS.z1, { wallLegend: OPERA_WALL_LEGEND }))
+      .toBe(OPERA_ZONE_LAYERS.z1);
   });
 });
 

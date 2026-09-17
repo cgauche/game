@@ -339,7 +339,7 @@ describe('computeVisible — vue INCHANGÉE sur un plan complet (carte-fixture)'
 
   /** La carte-fixture : rez bâti + ÉTAGE au-dessus de l'aile est (x ≥ 5, y ≤ 3), à un niveau de haut. */
   const carteTemoin = (): Scene => {
-    const { w, h, tiles, walls } = parseWalledAscii(ROWS, 'plancher', {}, { structures: { '#': 'cloture-en-clayonnage' } });
+    const { w, h, tiles, walls } = parseWalledAscii(ROWS, 'plancher', {}, { wallLegend: { '#': { structure: 'cloture-en-clayonnage' } } });
     const surEtage = (x: number, y: number) => x >= 5 && y <= 3;
     const t1 = new Array(w * h).fill('vide');
     const h1 = new Array(w * h).fill(0);

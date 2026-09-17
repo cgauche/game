@@ -7,7 +7,9 @@
  *   mur nord — au rez, la rangée 1 est celle des COULISSES, au NORD de la scène — NADJ 08 folio 39 : le
  *   puits touche le mur nord, rien ne relie les deux flancs par le haut).
  *   Arêtes : '-'=mur (N) ·
- *   '|'=mur (E) · ':'=PORTE. Les 2 PUITS de rampe (angles du foyer, où la couche 0 monte 0→4 m rejoindre la
+ *   '|'=mur (E) · ':'=PORTE · 'w'=cloison de bois (`OPERA_WALL_LEGEND` de `floorplan.ts` : mur SANS
+ *   structure, apparence seule — les refends entre loges voisines des deux flancs de l'étage).
+ *   Les 2 PUITS de rampe (angles du foyer, où la couche 0 monte 0→4 m rejoindre la
  *   galerie) sont TROUÉS ici même à l'étage (cases ' ' aux cols 6-8 / 35-37, rangées 46-49) — plus aucun
  *   perçage en code. Seule l'ÉLÉVATION MÉTRIQUE (S/s + rampes + galerie à 4 m) est posée par `floorplan.ts`
  *   (via `MapSpec.relief`), la donnée non exprimable en 1 char.
@@ -141,18 +143,18 @@ export const ETAGE_ASCII = String.raw`
 
 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  |P P P P|M M M M M M M M M # # # # # # # # # # # # # # # # P P P P P P P P P P P P P|
+  |P P P PwM M M M M M M M M # # # # # # # # # # # # # # # # P P P P P P P P P P P P P|
 
-  |P P P P|M M M M M M M M M                                 P P P P P P P P P P P P P|
+  |P P P PwM M M M M M M M M                                 P P P P P P P P P P P P P|
 
   |P P P P:M M M M M M M M M                                 P P P P P P P P P P P P P|
 
-  |P P P P|M M M M M M M M M                                 P P P P P P P P P P P P P|
+  |P P P PwM M M M M M M M M                                 P P P P P P P P P P P P P|
 
-  |P P P P|M M M M M M M M                                     P P P P P P P P P P P P|
-           - - - - - - - -                                     - - - - - - - - - - : -
-  |P P P P|P P P P P P P P                                     P P P P P P P P P P P P|
-   - : - -
+  |P P P PwM M M M M M M M                                     P P P P P P P P P P P P|
+           w w w w w w w w                                     w w w w w w w w w w : w
+  |P P P PwP P P P P P P P                                     P P P P P P P P P P P P|
+   w : w w
   |P P P P P P P P P P P                                         P P P P P P P P P P P|
 
   |P P P P P P P P P P P                                         P P P P P P P P P P P|
@@ -160,7 +162,7 @@ export const ETAGE_ASCII = String.raw`
   |P P P P P P P P P P                                             P P P P P P P P P P|
 
   |P P P P P P P P P P                                             P P P P P P P P P P|
-       - - - - - - - -                                             - - - - - - - -
+       w w w w w w w w                                             w w w w w w w w
   |P P|P P P P P P P P                                             P P P P P P P P|P P|
 
   |P P|P P P P P P P P                                             P P P P P P P P|P P|
@@ -170,7 +172,7 @@ export const ETAGE_ASCII = String.raw`
   |P P|P P P P P P P                                                 P P P P P P P|P P|
 
   |P P|P P P P P P P                                                 P P P P P P P|P P|
-       - - - - - - -                                                 - - - - - - -
+       w w w w w w w                                                 w w w w w w w
   |P P|P P P P P P P                                                 P P P P P P P|P P|
 
   |P P|P P P P P P P                                                 P P P P P P P|P P|

@@ -9,7 +9,7 @@
  * que la loi de dégagement découvre l'espace du groupe. Éditer la carte = éditer l'ASCII (+ ce `relief`
  * si l'élévation change).
  */
-import type { Scene, Terrain } from '../../state/scene';
+import type { Scene, Terrain, WallOverlay } from '../../state/scene';
 import { buildScene, type MapSpec } from '../../state/mapSpec';
 import { METRES_PER_LEVEL } from '../../state/relief';
 import { parseWalledAscii, walledRowsOf, zonesFromSeeds, type ZoneSeed } from '../../state/asciiMap';
@@ -40,12 +40,20 @@ const PENTE_RAMPE_M = 1;
 const RAMPE_RANGEES = (ETAGE_M - 1) / PENTE_RAMPE_M + 1;
 
 /** Légende des cases de l'ASCII (cf. floorplan.ascii.ts). */
-const LEGEND: Record<string, Terrain> = { ',': 'dalle', P: 'plancher', M: 'marbre', S: 'planches', s: 'planches' };
+export const OPERA_LEGEND: Record<string, Terrain> = { ',': 'dalle', P: 'plancher', M: 'marbre', S: 'planches', s: 'planches' };
 
-/** Terrain de BASE des deux grilles : l'espace de l'ASCII est le HORS-BÂTIMENT (et, à l'étage, le puits),
+/** Terrain de BASE (`OPERA_BASE`) des deux grilles : l'espace de l'ASCII est le HORS-BÂTIMENT (et, à l'étage, le puits),
  *  pas de l'herbe. `buildScene` le lit en `MapSpec.terrain` ; la dérivation du calque de zones doit lire
  *  le MÊME — une seule constante, jamais deux littéraux à tenir d'accord. */
-const BASE: Terrain = 'vide';
+export const OPERA_BASE: Terrain = 'vide';
+
+/** Légende des ARÊTES de l'ASCII (`MapSpec.wallLegend`) : le char `w` vaut mur ET porte une APPARENCE de
+ *  rendu, sans structure ni PV — les refends entre loges voisines des deux flancs de l'étage sont en bois
+ *  (NADJ 08 folio 39 — plan (image) : aucun matériau n'y figure ; le bois est un choix d'authoring MAISON,
+ *  révisable, comme les frontières `clip` de `ZONES_ETAGE`). UNE table pour TOUS les lecteurs de ces deux
+ *  grilles, y compris `puitsRim`, dont le flood ne la lit pas : aucun lecteur sans table — cf.
+ *  `zonesFromSeeds`, `state/asciiMap.ts`. */
+export const OPERA_WALL_LEGEND = { w: { appearance: 'mur-en-bois' } } satisfies Record<string, WallOverlay>;
 
 /** Colonnes des 2 PUITS de rampe (angles du foyer, anciens escaliers du plan NADJ) : la couche 0 y monte
  *  du foyer à la cote de la galerie (les cases sont déjà TROUÉES à l'étage dans l'ASCII). */
@@ -98,12 +106,12 @@ const VOISINES: readonly (readonly [Cap, number, number])[] = [['N', 0, -1], ['S
  *  vise, parmi ses voisines vides, celle du côté du CENTRE de l'ovale — ce qui tranche les cases d'angle,
  *  que l'ovale borde en marches d'escalier sur deux côtés. */
 export function puitsRim(): { x: number; y: number; facing: Cap }[] {
-  const { w, h, tiles } = parseWalledAscii(walledRowsOf(ETAGE_ASCII, W), BASE, LEGEND);
+  const { w, h, tiles } = parseWalledAscii(walledRowsOf(ETAGE_ASCII, W), OPERA_BASE, OPERA_LEGEND, { wallLegend: OPERA_WALL_LEGEND });
   const dedans = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h;
   const vu = new Uint8Array(w * h);
   let puits: number[] = [];
   for (let depart = 0; depart < w * h; depart++) {
-    if (vu[depart] || tiles[depart] !== BASE) continue;
+    if (vu[depart] || tiles[depart] !== OPERA_BASE) continue;
     const pile = [depart];
     const composante: number[] = [];
     let borde = false;
@@ -115,7 +123,7 @@ export function puitsRim(): { x: number; y: number; facing: Cap }[] {
       if (x === 0 || y === 0 || x === w - 1 || y === h - 1) borde = true;
       for (const [, dx, dy] of VOISINES) {
         const nx = x + dx, ny = y + dy;
-        if (!dedans(nx, ny) || vu[ny * w + nx] || tiles[ny * w + nx] !== BASE) continue;
+        if (!dedans(nx, ny) || vu[ny * w + nx] || tiles[ny * w + nx] !== OPERA_BASE) continue;
         vu[ny * w + nx] = 1;
         pile.push(ny * w + nx);
       }
@@ -240,8 +248,8 @@ export const OPERA_ZONE_SEEDS: Record<string, readonly ZoneSeed[]> = { z0: seeds
  *  interroge pour dire dans quelle pièce tombe un défaut : une seule dérivation, faite ici, où vivent la
  *  grille, la `base` et la `legend`. La redériver côté outil rouvrirait deux lectures à tenir d'accord. */
 export const OPERA_ZONE_LAYERS: Record<string, string> = {
-  z0: zonesFromSeeds(walledRowsOf(REZ_ASCII, W), BASE, LEGEND, OPERA_ZONE_SEEDS.z0),
-  z1: zonesFromSeeds(walledRowsOf(ETAGE_ASCII, W), BASE, LEGEND, OPERA_ZONE_SEEDS.z1),
+  z0: zonesFromSeeds(walledRowsOf(REZ_ASCII, W), OPERA_BASE, OPERA_LEGEND, OPERA_ZONE_SEEDS.z0, { wallLegend: OPERA_WALL_LEGEND }),
+  z1: zonesFromSeeds(walledRowsOf(ETAGE_ASCII, W), OPERA_BASE, OPERA_LEGEND, OPERA_ZONE_SEEDS.z1, { wallLegend: OPERA_WALL_LEGEND }),
 };
 
 /** CORPS architectural du théâtre — la donnée SANS laquelle aucune masse n'est dérivée (`buildScene` §9
@@ -272,9 +280,10 @@ export function buildOperaFloorplan(): Scene {
       'Opéra d’Altdorf — rez-de-chaussée (parterre en éventail, scène surélevée +1 m, fosse d’orchestre −1 m, salles latérales en colonnes subdivisées, foyer à rampes d’angle) et premier étage (loges en anneau autour du puits central ovale, à 4 m, galerie, bar des balcons et salons des Dames et des Seigneurs sur la façade, loge royale au flanc GAUCHE contre l’antichambre ducale — l’axe de la scène, lui, est le puits, fermé au nord par le mur de fond de scène). GÉNÉRÉ depuis une carte ASCII éditable (floorplan.ascii.ts) ; l’étage se rejoint par deux RAMPES (cases de hauteur croissante, plus aucun escalier).',
     ambiance: 'interieur',
     size: [W, H],
-    terrain: BASE,
-    legend: LEGEND,
+    terrain: OPERA_BASE,
+    legend: OPERA_LEGEND,
     walled: { z0: REZ_ASCII, z1: ETAGE_ASCII },
+    wallLegend: OPERA_WALL_LEGEND,
     architecture: [OPERA_BODY],
     zoneMap: OPERA_ZONE_LAYERS,
     zoneLegend: { ...ZONES_REZ, ...ZONES_ETAGE },

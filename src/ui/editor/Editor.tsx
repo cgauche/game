@@ -1107,7 +1107,7 @@ export function Editor({
           backdropClose
         >
           <p className="hint">
-            Export PARTIEL : seules les grilles walled/zoneMap et les tables legend/wallStructures/zoneLegend/relief sont
+            Export PARTIEL : seules les grilles walled/zoneMap et les tables legend/wallLegend/zoneLegend/relief sont
             réémises. Ne remplacez QUE ces éléments dans le fichier <code>*.ascii.ts</code> source — le reste du <code>MapSpec</code>
             (marqueurs, recettes, entités, logique) reste à reporter à la main. Ce qui n'est PAS restitué :
           </p>

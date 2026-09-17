@@ -44,15 +44,27 @@ describe('parseWalledAscii (box-drawing : tuiles + murs sur arêtes)', () => {
     expect(() => parseWalledAscii(['+-+', '|A|'], 'sol')).toThrow(/2W\+1|2H\+1|attendue/);
   });
 
-  it('pose une STRUCTURE sur l\'arête via opts.structures (herse dans le mur)', () => {
+  it('pose une STRUCTURE sur l\'arête via opts.wallLegend (herse dans le mur)', () => {
     // 2×1 cases A | B ; arête E de (0,0) = herse `H` (mur + structure `porte-de-ville`).
-    const built = parseWalledAscii(['+-+-+', '|AHB|', '+-+-+'], 'sol', { A: 'sol', B: 'eau' }, { structures: { H: 'porte-de-ville' } });
+    const built = parseWalledAscii(['+-+-+', '|AHB|', '+-+-+'], 'sol', { A: 'sol', B: 'eau' }, { wallLegend: { H: { structure: 'porte-de-ville' } } });
     expect(built.walls).toContainEqual({ x: 0, y: 0, side: 'E', structure: 'porte-de-ville' });
     expect(built.tiles).toEqual(['sol', 'eau']);
   });
 
+  it('pose une APPARENCE SEULE sur l\'arête via opts.wallLegend (le char vaut mur, sans PV)', () => {
+    const built = parseWalledAscii(['+-+-+', '|AwB|', '+-+-+'], 'sol', { A: 'sol', B: 'eau' }, { wallLegend: { w: { appearance: 'mur-en-bois' } } });
+    expect(built.walls).toContainEqual({ x: 0, y: 0, side: 'E', appearance: 'mur-en-bois' });
+  });
+
+  it('pose structure ET apparence — les deux clés DÉFINIES de l\'overlay, jamais une clé à undefined', () => {
+    const built = parseWalledAscii(['+-+-+', '|AHB|', '+-+-+'], 'sol', { A: 'sol', B: 'eau' }, { wallLegend: { H: { structure: 'herse', appearance: 'herse' } } });
+    const seg = built.walls.find((s) => s.x === 0 && s.y === 0 && s.side === 'E')!;
+    expect(seg).toEqual({ x: 0, y: 0, side: 'E', structure: 'herse', appearance: 'herse' });
+    expect(Object.keys(seg).sort()).toEqual(['appearance', 'side', 'structure', 'x', 'y']);
+  });
+
   it('structure sur une arête PORTE (`:`) cumule door + structure', () => {
-    const built = parseWalledAscii(['+:+', '|A|', '+-+'], 'sol', { A: 'sol' }, { structures: { ':': 'herse' } });
+    const built = parseWalledAscii(['+:+', '|A|', '+-+'], 'sol', { A: 'sol' }, { wallLegend: { ':': { structure: 'herse' } } });
     expect(built.walls).toContainEqual({ x: 0, y: 0, side: 'N', door: true, structure: 'herse' });
   });
 
@@ -61,7 +73,7 @@ describe('parseWalledAscii (box-drawing : tuiles + murs sur arêtes)', () => {
     expect(built.walls).toContainEqual({ x: 0, y: 0, side: 'N', window: true });
   });
 
-  it('sans opts.structures : comportement byte-identique (non-régression)', () => {
+  it('sans opts.wallLegend : comportement byte-identique (non-régression)', () => {
     const a = parseWalledAscii(['+:+-+', '|A|B|', '+-+:+'], 'sol', { A: 'sol', B: 'eau' });
     const b = parseWalledAscii(['+:+-+', '|A|B|', '+-+:+'], 'sol', { A: 'sol', B: 'eau' }, {});
     expect(a).toEqual(b);
@@ -166,7 +178,7 @@ describe('zonesFromSeeds (calque de zones DÉRIVÉ du box-drawing)', () => {
   // `parseWalledAscii` a lu (murs ET terrains), jamais d'un second décodage du box-drawing.
   it('une STRUCTURE d’arête (herse) borne la pièce comme un mur', () => {
     const HERSE = ['+-+-+', '|,H,|', '+-+-+'];
-    expect(calque([{ char: 'P', at: [[0, 0]] }], HERSE, { structures: { H: 'porte-de-ville' } })[0]).toBe('P.');
+    expect(calque([{ char: 'P', at: [[0, 0]] }], HERSE, { wallLegend: { H: { structure: 'porte-de-ville' } } })[0]).toBe('P.');
     // CONTRE-ÉPREUVE : sans la déclaration de structure, `H` n'est plus une arête — la pièce fuit.
     expect(calque([{ char: 'P', at: [[0, 0]] }], HERSE)[0]).toBe('PP');
   });
@@ -177,6 +189,15 @@ describe('zonesFromSeeds (calque de zones DÉRIVÉ du box-drawing)', () => {
     // CONTRE-ÉPREUVE : les mêmes cases en sol praticable, sans toucher une seule arête, se remplissent.
     const SOL = ['-----------', '|, , , , ,|', '-----------'];
     expect(calque([{ char: 'P', at: [[0, 0]] }], SOL)[0]).toBe('PPPPP');
+  });
+
+  it('une APPARENCE d’arête borne la pièce, et sans la `wallLegend` de sa grille le char ne vaut pas mur', () => {
+    const BOIS = ['+-+-+', '|,w,|', '+-+-+'];
+    const deux: ZoneSeed[] = [{ char: 'A', at: [[0, 0]] }, { char: 'B', at: [[1, 0]] }];
+    // Sans la table : `w` n'est pas une arête, le remplissage fuit et les deux graines se disputent la case.
+    expect(() => calque(deux, BOIS)).toThrow(/revendiquée/);
+    // Avec la table : deux zones d'UNE case, sur le calque rendu.
+    expect(calque(deux, BOIS, { wallLegend: { w: { appearance: 'mur-en-bois' } } })).toEqual(['AB']);
   });
 
   it('une largeur de rangée incohérente lève la MÊME erreur que `parseWalledAscii`', () => {

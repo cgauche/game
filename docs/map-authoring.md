@@ -2,8 +2,10 @@
 
 > ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-map-authoring.mjs` (`npm run docs:map-authoring`) — NE PAS ÉDITER À LA MAIN.
 
-**Périmètre mesuré / angles morts** — sont LUS par AST à `src/state/mapSpec.ts` : les 39
-champs de `MapSpec` (nom, type, 1re phrase de JSDoc), ceux de `WallSpec` (9),
+**Périmètre mesuré / angles morts** — sont LUS par AST à `src/state/mapSpec.ts` : les 38
+champs de `MapSpec` (nom, type, 1re phrase de JSDoc), ceux de `WallSpec` (9, héritage
+`extends` SUIVI : un parent hors du fichier est résolu à `src/state/scene.ts`, et un parent `Pick<Cible, clés>`
+tire ses clés du tableau `as const` cité et leurs type/JSDoc du schéma zod de `src/data/schemas/defs-scenes/scene.ts`),
 `CellRecipe` (5) et `EncounterSpec` (11), les
 5 formes de `BindSpec` et les 3 de `ReliefSpec`, et les 10
 étapes de l'ordre de compilation citées au JSDoc de tête. Le harnais QC liste les fonctions
@@ -44,7 +46,7 @@ const scene = buildScene({ size: [16, 10], id: 'test-x', label: 'Bac à sable', 
 // → plateau plat 16×10 d'herbe + 1 départ héros.
 ```
 
-## Champs de `MapSpec` (39)
+## Champs de `MapSpec` (38)
 
 | Champ | Type | Rôle (JSDoc) |
 |---|---|---|
@@ -65,9 +67,8 @@ const scene = buildScene({ size: [16, 10], id: 'test-x', label: 'Bac à sable', 
 | `markerFill?` | `Record<string, string>` | Char LAISSÉ sous un marqueur nettoyé (marqueur → char de LÉGENDE, ex. `{ B:'W' }` pour poser une pièce SUR le chemin de ronde 'W' sans y percer un trou). |
 | `levels?` | `Record<string, string>` | Grilles ASCII par étage (`z0`/`z1`/…). |
 | `walled?` | `Record<string, string>` | Grilles BOX-DRAWING par étage (`z0`/`z1`/…) : arêtes DANS l'ASCII (`parseWalledAscii`, (2W+1)×(2H+1)). |
-| `wallStructures?` | `Record<string, string>` | Char d'arête → id de `structures.json` (structure destructible sur l'arête d'un étage `walled`, ex. herse). |
+| `wallLegend?` | `Record<string, WallOverlay>` | Char d'ARÊTE → ce qu'il ÉCRIT sur l'arête d'un étage `walled` (`WallOverlay`) : le char VAUT MUR, et porte une `structure` destructible (id de `structures.json`, ex. herse `porte-de-ville`), une `appearance` de rendu sans PV (id de `structureAppearance.json`, ex. cloison `mur-en-bois`), ou les deux. |
 | `elevate?` | `Record<string, number \| { height: number; parapet: string }>` | HAUTEUR (relief) pilotée par l'ASCII (coordonnée-free) : char de LÉGENDE → hauteur métrique, `number` seul (`{ '4': 4, '3': 3 }` pour une rampe), OU `{ height, parapet }` pour une ZONE REMPART solide crénelée (`{ W: { height: 4, parapet: 'mur-en-pierre' } }` → face de maçonnerie + crénelure de périmètre au rendu). |
-| `edgeWalls?` | `Record<string, { side: CellSide; structure?: string; door?: boolean }>` | MUR D'ARÊTE posé sur une case d'une grille `levels` (coordonnée-free, sans passer au `walled` box-drawing) : char de LÉGENDE → arête d'une case. |
 | `cells?` | `Record<string, CellRecipe>` | RECETTE par LETTRE de CASE COMPLÈTE (`CellRecipe`) : `wall` (enceinte pleine), `gate` (tunnel brèchable), `hero` (départ), `stair` (volée d'escalier, #780). |
 | `walls?` | `WallSpec[]` | — |
 | `relief?` | `ReliefSpec[]` | — |
@@ -120,10 +121,10 @@ Spec de relief EN COORDONNÉES (repli bas niveau ; préférer `elevate` piloté 
 | `side` | `CellSide \| '\\' \| '/'` | — |
 | `z?` | `number` | — |
 | `door?` | `boolean` | — |
-| `structure?` | `string` | Structure destructible posée sur l'arête (id de `structures.json`, ex. `porte-de-ville`). |
-| `appearance?` | `string` | Apparence de rendu indépendante de la structure mécanique (`structureAppearance.json`). |
 | `window?` | `boolean` | DÉCORATIF : l'arête porte une fenêtre au rendu (mur plein serti d'une vitre — ne change pas le combat). |
 | `climb?` | `WallClimb` | ESCALADABLE (LDB 15 l.53-57, cf. `WallSeg.climb`) : l'arête sépare deux surfaces de hauteurs différentes, franchissable en grimpant plutôt qu'à pied. |
+| `structure?` | `string` | Hérité de `WallOverlay` — Structure destructible posée SUR l'arête (id de `structures.json`, ex. `porte-de-ville`). |
+| `appearance?` | `string` | Hérité de `WallOverlay` — Apparence de rendu (`structureAppearance.json`) indépendante de `structure`. |
 
 ## `cells` — recette par LETTRE de case complète (`CellRecipe`)
 
@@ -189,14 +190,16 @@ Spec de relief EN COORDONNÉES (repli bas niveau ; préférer `elevate` piloté 
   8bis. masses  : `deriveArchitectureMasses` COMPLÈTE les masses déclarées (surcharges, #829) avec
                   celles dérivées du plancher réel — plus d'obligation de tout couvrir à la main.
   9. validation : masses de bâtiment (`validateBuildingMasses`, garde-fou des SURCHARGES) + support
-                   de plancher (`validateFloorSupport`) — fail-fast, une fois zones/plancher réel connus.
+                   de plancher (`validateFloorSupport`) + ids de catalogue authorés
+                   (`assertAuthoredIds`) — fail-fast, une fois zones/plancher réel connus.
 ```
 
 ## Pièges
 
 - **Deux modèles de mur** : une tuile `'mur'` (terrain, via `legend`) = bloc PLEIN opaque ; un
-  `WallSeg` d'**arête** (`walls`, `walled`, `edgeWalls`) = cloison fine qui peut porter `door`/`structure`
-  (brèchable). Choisis exprès. Portes & structures ⇒ arêtes.
+  `WallSeg` d'**arête** (`walls`, `walled` + `wallLegend`) = cloison fine qui peut porter `door`,
+  `structure` (brèchable) et/ou `appearance` (look seul, sans PV). Choisis exprès. Portes &
+  structures ⇒ arêtes.
 - **Marqueurs** : les chars de `bind` sont scannés PUIS nettoyés avant le parse terrain. Sur un
   terrain non-base (chemin de ronde), utilise `markerFill` pour ne pas laisser un trou `'vide'`.
 - **Verticalité** = `relief` (mètres). La connexité verticale reste TOUJOURS DÉRIVÉE des hauteurs,
@@ -308,6 +311,7 @@ Sur les 35 documents de `src/scenes/` qui exposent un littéral `MapSpec` :
 | `markerFill?` | 1 | `src/scenes/test-scenarios/siege-enceinte.ts` |
 | `levels?` | 7 | `src/scenes/test-scenarios/96-presets-edo.ts`, `src/scenes/test-scenarios/embuscade.ts`, `src/scenes/test-scenarios/entrainement.ts`, `src/scenes/test-scenarios/opera.ts` … |
 | `walled?` | 1 | `src/scenes/opera/floorplan.ts` |
+| `wallLegend?` | 1 | `src/scenes/opera/floorplan.ts` |
 | `elevate?` | 1 | `src/scenes/test-scenarios/siege-enceinte.ts` |
 | `cells?` | 1 | `src/scenes/test-scenarios/siege-enceinte.ts` |
 | `walls?` | 5 | `src/scenes/test-scenarios/19-grimpant.ts`, `src/scenes/test-scenarios/42-belier-porte.ts`, `src/scenes/test-scenarios/99-revisit.ts`, `src/scenes/test-scenarios/zones-pieces.ts` … |
@@ -326,5 +330,5 @@ Sur les 35 documents de `src/scenes/` qui exposent un littéral `MapSpec` :
 | `encounters?` | 15 | `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/16-embuscade-fluviale.ts`, `src/scenes/test-scenarios/17-metamorphose-ulric.ts`, `src/scenes/test-scenarios/21-chute-du-greement.ts` … |
 | `stations?` | 1 | `src/scenes/test-scenarios/13-bataille-de-masse.ts` |
 
-Champs sans aucun exemple mesuré dans `src/scenes/` : `music?`, `wallStructures?`, `edgeWalls?`, `knownUnsupportedFloor?`, `seatAssignments?`, `restZones?` — leur seule démonstration vit dans `src/state/mapSpec.test.ts`.
-<!-- sources-empreinte: 07caab61a488c2e8b501960fef2500805933cc22 (61 fichiers, 7 dossiers) corps: 8b37e76bec788db1c75932e17faa06b139ee10b6 -->
+Champs sans aucun exemple mesuré dans `src/scenes/` : `music?`, `knownUnsupportedFloor?`, `seatAssignments?`, `restZones?` — leur seule démonstration vit dans `src/state/mapSpec.test.ts`.
+<!-- sources-empreinte: bc0f5f0bbb6a4a06313c4b3add90c43ceecf12f8 (63 fichiers, 7 dossiers) corps: 52dc51c81e4e2787b6d029d3b9c281ec0025d956 -->

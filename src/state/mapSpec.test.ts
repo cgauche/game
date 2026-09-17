@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildScene } from './mapSpec';
+import { buildScene, type MapSpec } from './mapSpec';
 import { layerTiles, isWalkable, wallBetween, setStructureDown, heightAt, tileAt, type BuildingMass } from './scene';
 import { pathTo, reachable, walkNeighbors } from './path';
 import { edgeWallState } from '../ui/editor/editorState';
@@ -107,6 +107,83 @@ describe('buildScene — grille `walled` (box-drawing : tuiles + murs d’arête
   });
   it('reconnaît la PORTE `:` comme arête franchissable', () => {
     expect(edgeWallState(s, 0, 0, 'E')).toBe('door');
+  });
+});
+
+describe('buildScene — `walled` : `wallLegend`, ce qu’un char d’arête ÉCRIT (#1778)', () => {
+  // 4 cases en ligne ; arête E de (0,0) = structure seule, de (1,0) = apparence seule, de (2,0) = les deux.
+  const spec = (wallLegend: MapSpec['wallLegend']): MapSpec => ({
+    id: 'wleg', label: 'WLeg', size: [4, 1],
+    terrain: 'plancher',
+    walled: { z0: ['+ + + + +', '|.=.w.H.|', '+ + + + +'].join('\n') },
+    wallLegend,
+  });
+  const LEGENDE: MapSpec['wallLegend'] = {
+    '=': { structure: 'mur-en-pierre' },
+    w: { appearance: 'mur-en-bois' },
+    H: { structure: 'herse', appearance: 'herse' },
+  };
+
+  it('un char porte une STRUCTURE, une APPARENCE, ou les deux — et vaut mur dans les trois cas', () => {
+    const s = buildScene(spec(LEGENDE));
+    const interieures = (s.walls ?? []).filter((w) => w.side === 'E' && w.x >= 0);
+    expect(interieures).toEqual([
+      { x: 0, y: 0, side: 'E', structure: 'mur-en-pierre' },
+      { x: 1, y: 0, side: 'E', appearance: 'mur-en-bois' },
+      { x: 2, y: 0, side: 'E', structure: 'herse', appearance: 'herse' },
+      { x: 3, y: 0, side: 'E' }, // bord DROIT du bâti (`|` de périmètre) : mur NU, aucun overlay
+    ]);
+    for (const x of [0, 1, 2]) expect(edgeWallState(s, x, 0, 'E')).toBe('wall');
+  });
+
+  it('une APPARENCE seule ne pose AUCUNE structure (look sans PV) ; l’arête reste un mur nu au combat', () => {
+    const s = buildScene(spec({ w: { appearance: 'mur-en-bois' } }));
+    const seg = (s.walls ?? []).find((wl) => wl.x === 1 && wl.y === 0 && wl.side === 'E')!;
+    expect(seg.structure).toBeUndefined();
+    expect(seg.appearance).toBe('mur-en-bois');
+  });
+
+  it('`wallLegend` à l’id INCONNU → throw nommant le char, l’id et le catalogue', () => {
+    expect(() => buildScene(spec({ w: { appearance: 'mur-en-chocolat' } }))).toThrow(
+      /wallLegend\['w'\].*mur-en-chocolat.*structureAppearance\.json/s,
+    );
+    expect(() => buildScene(spec({ w: { structure: 'mur-en-chocolat' } }))).toThrow(
+      /wallLegend\['w'\].*mur-en-chocolat.*structures\.json/s,
+    );
+  });
+
+  it('un id faux POSÉ sur la grille est rapporté UNE fois, à la source la plus proche de l’auteur', () => {
+    let msg = '';
+    try {
+      buildScene(spec({ w: { appearance: 'mur-en-chocolat' } }));
+    } catch (e) {
+      msg = String(e);
+    }
+    expect(msg).toContain("wallLegend['w']");
+    expect(msg.match(/mur-en-chocolat/g) ?? []).toHaveLength(1); // jamais une 2e ligne pour l’arête compilée
+  });
+
+  it('un char de `wallLegend` DÉCLARÉ mais absent de la grille est validé lui aussi', () => {
+    expect(() => buildScene(spec({ ...LEGENDE, z: { structure: 'mur-en-chocolat' } }))).toThrow(
+      /wallLegend\['z'\].*mur-en-chocolat.*structures\.json/s,
+    );
+  });
+
+  it('`walls[]` à l’apparence INCONNUE → throw nommant l’arête et l’étage', () => {
+    expect(() =>
+      buildScene({ ...spec(LEGENDE), walls: [{ x: 3, y: 0, side: 'N', appearance: 'mur-en-chocolat' }] }),
+    ).toThrow(/arête \(3,0,N\) z0.*mur-en-chocolat/s);
+  });
+
+  it('`elevate[].parapet` à l’apparence INCONNUE → throw nommant le char', () => {
+    expect(() =>
+      buildScene({
+        id: 'par', label: 'Par', size: [2, 1], terrain: 'plancher',
+        levels: { z0: 'WW' },
+        legend: { W: 'pierre' },
+        elevate: { W: { height: 4, parapet: 'mur-en-chocolat' } },
+      }),
+    ).toThrow(/elevate\.W\.parapet.*mur-en-chocolat/s);
   });
 });
 

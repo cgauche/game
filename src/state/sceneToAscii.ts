@@ -4,7 +4,7 @@
  * dans un fichier source (`*.ascii.ts`, cf. `scenes/opera/floorplan.ascii.ts`). PUR, aucun import UI.
  *
  * PORTÉE (round-trip GARANTI, cf. `sceneToAscii.test.ts`) : tuiles (`walled`/`legend`), murs/portes/
- * fenêtres/matériaux (`walled`/`wallStructures`), hauteurs (`relief`, une entrée par case ≠ 0 — capture
+ * fenêtres/matériaux ET apparences (`walled`/`wallLegend`), hauteurs (`relief`, une entrée par case ≠ 0 — capture
  * BRUTE, fidèle même sous une volée d'escalier), zones DESCRIPTIVES de pièce (`zoneMap`/`zoneLegend`).
  *
  * PORTÉE HORS ATTEINTE (le format `walled`/`zoneMap` ne les représente pas) — listée dans `notRestored`,
@@ -16,10 +16,10 @@
  * crénelure de rendu (`Layer.crenellated`), arêtes ESCALADABLES (`WallSeg.climb`), portes FERMÉES par
  * défaut (`WallSeg.closed`). Réimporter ce texte SANS reporter le reste du `MapSpec` source ÉCRASERAIT
  * ce contenu — d'où l'avertissement explicite en tête de `text` et l'exigence de ne coller QUE les
- * grilles/legend/wallStructures/zoneLegend/relief dans le fichier `*.ascii.ts` + `*.ts` d'origine.
+ * grilles/legend/wallLegend/zoneLegend/relief dans le fichier `*.ascii.ts` + `*.ts` d'origine.
  */
-import type { Scene, SceneEffectZone, Terrain, WallSeg } from './scene';
-import { heightAt, isDescriptiveZone, tileAt } from './scene';
+import type { Scene, SceneEffectZone, Terrain, WallOverlay, WallSeg } from './scene';
+import { heightAt, isDescriptiveZone, tileAt, wallOverlayOf, WALL_OVERLAY_KEYS } from './scene';
 import { sceneZoneTiles } from './zones';
 
 /** Glyphes RÉSERVÉS par le vocabulaire d'arête (`docs` du format `walled`, cf. `asciiMap.ts`) —
@@ -57,7 +57,14 @@ function mostFrequentTerrain(scene: Scene, z: number): Terrain | null {
 
 const edgeKey = (x: number, y: number, side: 'N' | 'E', z: number) => `${x},${y},${side},z${z}`;
 const diagKey = (x: number, y: number, z: number) => `${x},${y},z${z}`;
-const wallCatKey = (door: boolean, window: boolean, structure?: string) => `${door ? 1 : 0}|${window ? 1 : 0}|${structure ?? ''}`;
+/** Catégorie d'arête = ce qu'un char de grille peut porter : porte, fenêtre, et TOUT l'overlay
+ *  (`WALL_OVERLAY_KEYS` — jamais une liste énumérée ici : N+1 propriété entre dans la clé toute seule). */
+const wallCatKey = (door: boolean, window: boolean, overlay: WallOverlay) =>
+  `${door ? 1 : 0}|${window ? 1 : 0}|${WALL_OVERLAY_KEYS.map((k) => overlay[k] ?? '').join('|')}`;
+/** L'overlay porte-t-il quoi que ce soit ? (un mur nu `-`/`|` n'en porte aucun). */
+const hasOverlay = (overlay: WallOverlay) => WALL_OVERLAY_KEYS.some((k) => overlay[k] !== undefined);
+/** Overlay lisible dans un avertissement d'outil d'édition (`structure=herse, appearance=mur-en-bois`). */
+const overlayLabel = (overlay: WallOverlay) => WALL_OVERLAY_KEYS.filter((k) => overlay[k] !== undefined).map((k) => `${k}=${overlay[k]}`).join(', ');
 
 export interface SceneAsciiExport {
   /** Grilles BOX-DRAWING par étage (`z0`/`z1`/…) — à coller dans `MapSpec.walled`. */
@@ -68,8 +75,9 @@ export interface SceneAsciiExport {
    *  Sans lui, toutes les cases de ce terrain se relisent au défaut de `buildScene` (perte SILENCIEUSE :
    *  382 cases `plancher` sur La Diligence). */
   terrain: Terrain;
-  /** Char d'arête → id de matériau/structure — à coller dans `MapSpec.wallStructures`. */
-  wallStructures: Record<string, string>;
+  /** Char d'arête → overlay (structure destructible et/ou apparence de rendu) — à coller dans
+   *  `MapSpec.wallLegend`. */
+  wallLegend: Record<string, WallOverlay>;
   /** Grilles de ZONES DESCRIPTIVES par étage — à coller dans `MapSpec.zoneMap`. */
   zoneMap: Record<string, string[]>;
   /** Légende des zones (char → libellé/id/présentation) — à coller dans `MapSpec.zoneLegend`. */
@@ -123,59 +131,61 @@ export function sceneToAscii(scene: Scene): SceneAsciiExport {
   if (lostClimb) warn(`${lostClimb} arête(s) escaladable(s) (\`WallSeg.climb\`) — non représentable en ASCII, à reporter à la main.`);
   if (lostClosed) warn(`${lostClosed} porte(s) FERMÉE(S) par défaut (\`WallSeg.closed\`) — le format walled pose toujours une porte ouverte, à reporter à la main.`);
 
-  // ── Glyphe par arête : catégorie (door, window, structure) → char (cf. commentaire d'en-tête) ─────
-  const catCount = new Map<string, { door: boolean; window: boolean; structure?: string; count: number }>();
+  // ── Glyphe par arête : catégorie (door, window, overlay) → char (cf. commentaire d'en-tête) ──────
+  const catCount = new Map<string, { door: boolean; window: boolean; overlay: WallOverlay; count: number }>();
   for (const seg of edgeAt.values()) {
-    const k = wallCatKey(!!seg.door, !!seg.window, seg.structure);
+    const overlay = wallOverlayOf(seg);
+    const k = wallCatKey(!!seg.door, !!seg.window, overlay);
     const cur = catCount.get(k);
     if (cur) cur.count++;
-    else catCount.set(k, { door: !!seg.door, window: !!seg.window, structure: seg.structure, count: 1 });
+    else catCount.set(k, { door: !!seg.door, window: !!seg.window, overlay, count: 1 });
   }
-  const wallStructures: Record<string, string> = {};
+  const wallLegend: Record<string, WallOverlay> = {};
   const catToGlyph = new Map<string, string>();
-  const structAlloc = makeAllocator('wallStructures');
+  const overlayAlloc = makeAllocator('wallLegend');
   const doorCats = [...catCount.values()].filter((c) => c.door).sort((a, b) => b.count - a.count);
   const windowCats = [...catCount.values()].filter((c) => !c.door && c.window).sort((a, b) => b.count - a.count);
   const plainCats = [...catCount.values()].filter((c) => !c.door && !c.window).sort((a, b) => b.count - a.count);
   if (doorCats.length) {
-    for (const c of doorCats) catToGlyph.set(wallCatKey(c.door, c.window, c.structure), ':');
-    const structured = doorCats.filter((c) => c.structure);
-    if (structured.length) {
-      wallStructures[':'] = structured[0].structure!;
-      const lostN = structured.slice(1).reduce((n, c) => n + c.count, 0);
-      if (lostN) warn(`${lostN} porte(s) avec un matériau distinct de « ${structured[0].structure} » — un seul matériau par glyphe ':' , les autres perdent leur \`structure\`.`);
+    for (const c of doorCats) catToGlyph.set(wallCatKey(c.door, c.window, c.overlay), ':');
+    const overlaid = doorCats.filter((c) => hasOverlay(c.overlay));
+    if (overlaid.length) {
+      wallLegend[':'] = overlaid[0].overlay;
+      const lostN = overlaid.slice(1).reduce((n, c) => n + c.count, 0);
+      if (lostN) warn(`${lostN} porte(s) avec un matériau/une apparence distincts de « ${overlayLabel(overlaid[0].overlay)} » — un seul overlay par glyphe ':' , les autres perdent leur \`structure\`/\`appearance\`.`);
     }
     const lostWindow = doorCats.filter((c) => c.window).reduce((n, c) => n + c.count, 0);
     if (lostWindow) warn(`${lostWindow} arête(s) à la fois porte ET fenêtre — le glyphe ':' ne porte que la porte, la fenêtre est perdue.`);
   }
   if (windowCats.length) {
-    for (const c of windowCats) catToGlyph.set(wallCatKey(c.door, c.window, c.structure), 'o');
-    const structured = windowCats.filter((c) => c.structure);
-    if (structured.length) {
-      wallStructures.o = structured[0].structure!;
-      const lostN = structured.slice(1).reduce((n, c) => n + c.count, 0);
-      if (lostN) warn(`${lostN} fenêtre(s) avec un matériau distinct de « ${structured[0].structure} » — un seul matériau par glyphe 'o', les autres perdent leur \`structure\`.`);
+    for (const c of windowCats) catToGlyph.set(wallCatKey(c.door, c.window, c.overlay), 'o');
+    const overlaid = windowCats.filter((c) => hasOverlay(c.overlay));
+    if (overlaid.length) {
+      wallLegend.o = overlaid[0].overlay;
+      const lostN = overlaid.slice(1).reduce((n, c) => n + c.count, 0);
+      if (lostN) warn(`${lostN} fenêtre(s) avec un matériau/une apparence distincts de « ${overlayLabel(overlaid[0].overlay)} » — un seul overlay par glyphe 'o', les autres perdent leur \`structure\`/\`appearance\`.`);
     }
   }
-  const noStructPlain = plainCats.find((c) => !c.structure);
-  if (noStructPlain) {
-    catToGlyph.set(wallCatKey(false, false, undefined), '-');
-    // '-'/'|' représentent le mur SANS matériau — jamais enregistrés dans `wallStructures`.
+  const nuPlain = plainCats.find((c) => !hasOverlay(c.overlay));
+  if (nuPlain) {
+    catToGlyph.set(wallCatKey(false, false, {}), '-');
+    // '-'/'|' représentent le mur NU (aucun overlay) — jamais enregistrés dans `wallLegend`.
   }
   for (const c of plainCats) {
-    if (!c.structure) continue; // déjà couvert par '-'/'|' ci-dessus
-    if (!noStructPlain && plainCats.indexOf(c) === 0) {
-      catToGlyph.set(wallCatKey(false, false, c.structure), '-');
-      wallStructures['-'] = c.structure;
-      wallStructures['|'] = c.structure;
+    if (!hasOverlay(c.overlay)) continue; // déjà couvert par '-'/'|' ci-dessus
+    const k = wallCatKey(false, false, c.overlay);
+    if (!nuPlain && plainCats.indexOf(c) === 0) {
+      catToGlyph.set(k, '-');
+      wallLegend['-'] = c.overlay;
+      wallLegend['|'] = c.overlay;
       continue;
     }
-    const ch = structAlloc(`plain:${c.structure}`);
-    catToGlyph.set(wallCatKey(false, false, c.structure), ch);
-    wallStructures[ch] = c.structure;
+    const ch = overlayAlloc(`plain:${overlayLabel(c.overlay)}`);
+    catToGlyph.set(k, ch);
+    wallLegend[ch] = c.overlay;
   }
   const wallGlyph = (seg: WallSeg, orientation: 'N' | 'E'): string => {
-    const k = wallCatKey(!!seg.door, !!seg.window, seg.structure);
+    const k = wallCatKey(!!seg.door, !!seg.window, wallOverlayOf(seg));
     const g = catToGlyph.get(k);
     if (g === '-' || g === undefined) return orientation === 'N' ? '-' : '|';
     return g;
@@ -206,6 +216,9 @@ export function sceneToAscii(scene: Scene): SceneAsciiExport {
         const diag = diagAt.get(diagKey(x, y, z));
         const t = tileAt(scene, x, y, z);
         if (diag) {
+          // Une DIAGONALE n'a pas de char de légende : `parseWalledAscii` ne lit `wallLegend` que sur les
+          // arêtes N/E, un `/`/`\` réimporté revient donc TOUJOURS nu. Perte nommée, jamais silencieuse.
+          if (hasOverlay(diag)) warn(`cloison diagonale (${x},${y},z${z}) : ${overlayLabel(diag)} — le glyphe '${diag.side}' ne porte ni structure ni apparence, perdu(e) au réimport.`);
           if (t === base) { row += diag.side; continue; }
           warn(`diagonale (${x},${y},z${z}) abandonnée : terrain « ${t} » ≠ base « ${base} » de l'étage (le glyphe diagonal force la base sous la cloison).`);
         }
@@ -270,10 +283,10 @@ export function sceneToAscii(scene: Scene): SceneAsciiExport {
   ];
 
   const header =
-    `// ATTENTION — EXPORT PARTIEL (state/sceneToAscii.ts) — grilles walled/zoneMap + legend/wallStructures/zoneLegend/relief SEULEMENT.\n` +
+    `// ATTENTION — EXPORT PARTIEL (state/sceneToAscii.ts) — grilles walled/zoneMap + legend/wallLegend/zoneLegend/relief SEULEMENT.\n` +
     `// Ne PAS écraser le fichier *.ts source avec ceci : ce texte ne restitue PAS ${notRestored.length} catégorie(s) de contenu\n` +
     `// (liste ci-dessous). Ne remplacez QUE les constantes de grilles (*_ASCII/*_ZONES) et les tables\n` +
-    `// (legend/wallStructures/zoneLegend/relief) dans le fichier source, en gardant intact tout le reste du MapSpec.\n` +
+    `// (legend/wallLegend/zoneLegend/relief) dans le fichier source, en gardant intact tout le reste du MapSpec.\n` +
     notRestored.map((n) => `// - ${n}`).join('\n') +
     '\n';
 
@@ -284,10 +297,10 @@ export function sceneToAscii(scene: Scene): SceneAsciiExport {
   const text =
     `${header}\n${gridConsts}\n\n` +
     `export const LEGEND = ${JSON.stringify(legend, null, 2)};\n\n` +
-    `export const WALL_STRUCTURES = ${JSON.stringify(wallStructures, null, 2)};\n\n` +
+    `export const WALL_LEGEND = ${JSON.stringify(wallLegend, null, 2)};\n\n` +
     `export const ZONE_LEGEND = ${JSON.stringify(zoneLegend, null, 2)};\n\n` +
     `export const RELIEF = ${JSON.stringify(relief, null, 2)};\n\n` +
     `export const TERRAIN = ${JSON.stringify(base0)};\n`;
 
-  return { walled, legend, terrain: base0, wallStructures, zoneMap, zoneLegend, relief, notRestored, warnings, text };
+  return { walled, legend, terrain: base0, wallLegend, zoneMap, zoneLegend, relief, notRestored, warnings, text };
 }

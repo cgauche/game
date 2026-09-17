@@ -580,6 +580,24 @@ export type WallSeg = z.infer<typeof wallSegSchema>;
 
 export type WallClimb = z.infer<typeof wallClimbSchema>;
 
+/** Les propriétés d'un `WallSeg` qu'un char de LÉGENDE d'arête peut ÉCRIRE (`MapSpec.wallLegend`) :
+ *  la MATIÈRE mécanique (`structure`, id de `structures.json`) et/ou le LOOK pur (`appearance`, id de
+ *  `structureAppearance.json`). Liste UNIQUE — parse (`state/asciiMap`), recopie (`state/mapSpec`) et
+ *  clé d'export (`state/sceneToAscii`) itèrent dessus, jamais sur une énumération locale.
+ *  N+1 propriété = DEUX lignes : ici, et dans `wallSegSchema` (`data/schemas/defs-scenes/scene.ts`). */
+export const WALL_OVERLAY_KEYS = ['structure', 'appearance'] as const;
+
+/** Ce qu'un char de légende d'arête écrit sur une arête — cf. `WALL_OVERLAY_KEYS`. */
+export type WallOverlay = Pick<WallSeg, (typeof WALL_OVERLAY_KEYS)[number]>;
+
+/** Les clés DÉFINIES d'un overlay, jamais une clé posée à `undefined` : `wallSegSchema` est un
+ *  `z.strictObject` et une clé explicite à `undefined` ferait diverger toute comparaison structurelle. */
+export function wallOverlayOf(src: WallOverlay): WallOverlay {
+  const out: WallOverlay = {};
+  for (const k of WALL_OVERLAY_KEYS) if (src[k] !== undefined) out[k] = src[k];
+  return out;
+}
+
 /** Le segment ESCALADABLE sur l'arête (x,y,side,z), ou undefined. */
 export function climbAt(scene: Pick<Scene, 'walls'>, x: number, y: number, side: WallSide, z = 0): WallSeg | undefined {
   return aretesA(scene, x, y, side, z).find((w) => !!w.climb);

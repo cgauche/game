@@ -1,4 +1,5 @@
-import type { Terrain, WallSeg } from './scene';
+import type { Terrain, WallOverlay, WallSeg } from './scene';
+import { wallOverlayOf } from './scene';
 import { terrainWalkable } from './terrain';
 
 /**
@@ -59,9 +60,9 @@ const WINDOW_EDGE = 'o';
 const DIAGONAL_CELLS = '/\\';
 
 /** Un char d'ARÊTE ferme-t-il le plan ? Table UNIQUE du box-drawing, lue par le seul `parseWalledAscii`
- *  — `structures` y ajoute les chars de STRUCTURE déclarés par la scène (herse, grille), qui valent mur. */
-function isWallEdge(ch: string, structures: Record<string, string> = {}): boolean {
-  return ch === '|' || ch === '-' || ch === DOOR_EDGE || ch === WINDOW_EDGE || ch in structures;
+ *  — `wallLegend` y ajoute les chars déclarés par la scène (herse, cloison de bois), qui valent mur. */
+function isWallEdge(ch: string, wallLegend: Record<string, WallOverlay> = {}): boolean {
+  return ch === '|' || ch === '-' || ch === DOOR_EDGE || ch === WINDOW_EDGE || ch in wallLegend;
 }
 
 /** Découpe une grille BOX-DRAWING en lignes, en ne retirant QUE l'ARTEFACT de littéral de gabarit (une
@@ -88,30 +89,32 @@ export function walledRowsOf(str: string, w?: number): string[] {
  * Les cases (slots impairs) utilisent la même légende que `parseAsciiRows` (`.`/espace = `base`).
  * Renvoie aussi les bords du bâtiment (murs périmétriques, en x=-1 / y=H — rendus, sans effet de jeu).
  *
- * `opts.structures` (char d'arête → id de `structures.json`) pose une STRUCTURE destructible sur l'arête
- * (ex. herse `porte-de-ville` dans le mur d'enceinte) : le char vaut mur, et le `WallSeg` porte
- * `structure: <id>` (en plus de `door` si le char est aussi `:`). Sans `structures`, comportement inchangé.
+ * `opts.wallLegend` (char d'arête → `WallOverlay`) déclare ce que le char ÉCRIT sur l'arête : une
+ * STRUCTURE destructible (`structure`, ex. herse `porte-de-ville` dans le mur d'enceinte) et/ou une
+ * APPARENCE de rendu (`appearance`, ex. cloison `mur-en-bois` sans PV). Le char vaut mur, et le
+ * `WallSeg` porte les clés DÉFINIES de l'overlay (en plus de `door` si le char est aussi `:`). Sans
+ * `wallLegend`, comportement inchangé.
  */
 export function parseWalledAscii(
   rows: string[],
   base: Terrain,
   legend: Record<string, Terrain> = {},
-  opts: { structures?: Record<string, string> } = {},
+  opts: { wallLegend?: Record<string, WallOverlay> } = {},
 ): { w: number; h: number; tiles: Terrain[]; walls: WallSeg[] } {
   const W = (rows[0].length - 1) / 2;
   const H = (rows.length - 1) / 2;
   if (!Number.isInteger(W) || !Number.isInteger(H) || W < 1 || H < 1) throw new Error('ascii murs : grille (2W+1)×(2H+1) attendue');
   rows.forEach((r, y) => { if (r.length !== 2 * W + 1) throw new Error(`ascii murs : ligne ${y} largeur ${r.length} ≠ ${2 * W + 1}`); });
   const lg = { ...BASE_LEGEND, ...legend };
-  const structures = opts.structures ?? {};
-  const isWall = (ch: string) => isWallEdge(ch, structures);
+  const wallLegend = opts.wallLegend ?? {};
+  const isWall = (ch: string) => isWallEdge(ch, wallLegend);
   const tiles: Terrain[] = [];
   const walls: WallSeg[] = [];
   const wall = (x: number, y: number, side: 'N' | 'E', ch: string) => {
     const seg: WallSeg = { x, y, side };
     if (ch === DOOR_EDGE) seg.door = true;
     if (ch === WINDOW_EDGE) seg.window = true;
-    if (structures[ch]) seg.structure = structures[ch];
+    if (wallLegend[ch]) Object.assign(seg, wallOverlayOf(wallLegend[ch]));
     walls.push(seg);
   };
   for (let y = 0; y < H; y++)
@@ -148,7 +151,9 @@ export type ZoneSeed = {
  * cloisonnement : un calque littéral se mettrait à mentir dès qu'on bouge un mur.
  *
  * La grille est lue UNE fois, par `parseWalledAscii` — la même lecture, les mêmes `base`/`legend`/
- * `structures` que `buildScene` : il n'y a donc aucun second lecteur de box-drawing à tenir synchrone.
+ * `wallLegend` que `buildScene` : il n'y a donc aucun second lecteur de box-drawing à tenir synchrone.
+ * L'appelant DOIT lui passer la MÊME `wallLegend` que son `MapSpec` : un char de légende omis ici ne
+ * vaudrait pas mur, et le remplissage fuirait à travers la cloison (deux graines pour une case).
  *
  * `sceneToAscii` produit lui aussi un `zoneMap`, d'un amont différent : une Scène DÉJÀ zonée, qu'il
  * re-sérialise ; ici l'amont est la grille + les graines, et le zonage n'existe pas encore.
@@ -161,7 +166,7 @@ export function zonesFromSeeds(
   base: Terrain,
   legend: Record<string, Terrain>,
   seeds: readonly ZoneSeed[],
-  opts: { structures?: Record<string, string> } = {},
+  opts: { wallLegend?: Record<string, WallOverlay> } = {},
 ): string {
   const { w: W, h: H, tiles, walls } = parseWalledAscii(rows, base, legend, opts);
   const blocked = tiles.map((t) => !terrainWalkable(t));

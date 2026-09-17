@@ -18,13 +18,17 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { listerArbre } from '../guards/lib/lister.mjs'
 import ts from 'typescript'
-import { emitOrCheck, loadSource, jsdocRole, findAlias, aliasDoc } from './lib/jsdocUnion.mjs'
+import { emitOrCheck, loadSource, jsdocRole, findAlias, aliasDoc, indexerConstantes } from './lib/jsdocUnion.mjs'
 import { fileExports } from './lib/engineExports.mjs'
 
 const OUTIL = 'build-map-authoring'
 const MAPSPEC = 'src/state/mapSpec.ts'
 const MAPQC = 'src/state/mapQC.ts'
 const SCENES = 'src/scenes'
+/** Où vivent les parents d'interface hérités par `mapSpec.ts` (`WallSpec extends WallOverlay`) et le
+ *  schéma zod d'où ces parents tirent leurs champs. */
+const SCENE = 'src/state/scene.ts'
+const SCENE_SCHEMA = 'src/data/schemas/defs-scenes/scene.ts'
 
 function abandon(msg) {
   console.error(`${OUTIL} — ${msg}`)
@@ -33,28 +37,144 @@ function abandon(msg) {
 
 if (!existsSync(MAPSPEC)) abandon(`${MAPSPEC} introuvable (déplacé/supprimé ?)`)
 const { text: SRC, sf: SF } = loadSource(MAPSPEC)
+for (const f of [SCENE, SCENE_SCHEMA]) if (!existsSync(f)) abandon(`${f} introuvable (déplacé/supprimé ?) — les champs HÉRITÉS y sont lus`)
+const { sf: SF_SCENE } = loadSource(SCENE)
 
 /** Aplati un fragment de type pour une cellule de table Markdown. */
 const plat = (s) => s.replace(/\s+/g, ' ').trim().replaceAll('|', '\\|')
 
-/** Champs d'une interface : nom (+ `?`), type aplati, 1re phrase du JSDoc juste au-dessus. */
-function champsInterface(nom) {
+/** Déclaration d'interface nommée d'un fichier parsé, ou undefined. */
+function interfaceDe(sf, nom) {
   let decl
-  SF.forEachChild((n) => {
+  sf.forEachChild((n) => {
     if (ts.isInterfaceDeclaration(n) && n.name.text === nom) decl = n
   })
-  if (!decl) abandon(`interface « ${nom} » introuvable dans ${MAPSPEC} (renommée ?)`)
+  return decl
+}
+
+/** Membres PROPRES d'une interface (héritage exclu) : nom (+ `?`), type aplati, 1re phrase de JSDoc. */
+function membresPropres(sf, src, decl) {
   const rows = []
   let prevEnd = decl.members.pos
   for (const m of decl.members) {
     if (!ts.isPropertySignature(m)) continue
     rows.push({
-      nom: m.name.getText(SF) + (m.questionToken ? '?' : ''),
-      type: m.type ? plat(m.type.getText(SF)) : '—',
-      role: jsdocRole(SRC.slice(prevEnd, m.getStart(SF))),
+      nom: m.name.getText(sf) + (m.questionToken ? '?' : ''),
+      type: m.type ? plat(m.type.getText(sf)) : '—',
+      role: jsdocRole(src.slice(prevEnd, m.getStart(sf))),
     })
     prevEnd = m.getEnd()
   }
+  return rows
+}
+
+/** Alias de type nommé d'un fichier parsé, ou undefined. */
+function aliasDe(sf, nom) {
+  let decl
+  sf.forEachChild((n) => {
+    if (ts.isTypeAliasDeclaration(n) && n.name.text === nom) decl = n
+  })
+  return decl
+}
+
+/** Littéraux d'un `const NOM = [...] as const` d'un fichier parsé. */
+function clesConst(sf, nom) {
+  let cles
+  sf.forEachChild((n) => {
+    if (!ts.isVariableStatement(n)) return
+    for (const d of n.declarationList.declarations) {
+      if (!ts.isIdentifier(d.name) || d.name.text !== nom || !d.initializer) continue
+      const e = ts.isAsExpression(d.initializer) ? d.initializer.expression : d.initializer
+      if (ts.isArrayLiteralExpression(e)) cles = e.elements.filter(ts.isStringLiteral).map((l) => l.text)
+    }
+  })
+  return cles
+}
+
+/** Déballe `X.optional()`, `X.superRefine(…)`… jusqu'à l'appel `z.strictObject`/`z.object`. */
+function objetZod(node) {
+  if (ts.isCallExpression(node)) {
+    const cible = node.expression
+    if (ts.isPropertyAccessExpression(cible)) {
+      if (/^(strictObject|object|looseObject)$/.test(cible.name.text)) return node
+      return objetZod(cible.expression)
+    }
+  }
+  return undefined
+}
+
+/** Type TS d'un membre zod PRIMITIF (`z.string()` → `string`) — au-delà, on casse bruyamment
+ *  plutôt que d'écrire un type faux dans la doc. */
+function typeZod(init, cle, schema) {
+  const m = init.getText().match(/^z\.(string|number|boolean)\(\)/)
+  if (!m) abandon(`clé héritée « ${cle} » de \`${schema}\` : type zod non primitif — étendre \`typeZod\` dans ${OUTIL}`)
+  return m[1]
+}
+
+/** Champs d'un `Pick<Cible, clés>` : les clés viennent du tableau `as const` cité (ex.
+ *  `WALL_OVERLAY_KEYS`), leurs type et JSDoc du schéma zod dont `Cible` est inférée
+ *  (`export type Cible = z.infer<typeof cibleSchema>`) — jamais d'énumération recopiée ici. */
+function champsPick(sfScene, alias) {
+  const t = alias.type
+  if (!ts.isTypeReferenceNode(t) || t.typeName.getText(sfScene) !== 'Pick' || t.typeArguments?.length !== 2) {
+    abandon(`parent « ${alias.name.text} » de ${SCENE} : seul \`Pick<Cible, clés>\` est résolu (forme changée ?)`)
+  }
+  const nomCles = (t.typeArguments[1].getText(sfScene).match(/typeof\s+([A-Za-z0-9_$]+)/) ?? [])[1]
+  if (!nomCles) abandon(`parent « ${alias.name.text} » : clés du \`Pick\` non dérivées d'un \`typeof <const>\``)
+  const cles = clesConst(sfScene, nomCles)
+  if (!cles?.length) abandon(`constante \`${nomCles}\` (clés de « ${alias.name.text} ») illisible dans ${SCENE}`)
+
+  const cible = t.typeArguments[0].getText(sfScene)
+  const aliasCible = aliasDe(sfScene, cible)
+  const nomSchema = aliasCible && (aliasCible.type.getText(sfScene).match(/z\.infer<\s*typeof\s+([A-Za-z0-9_$]+)\s*>/) ?? [])[1]
+  if (!nomSchema) abandon(`« ${cible} » (cible du \`Pick\` de « ${alias.name.text} ») n'est plus un \`z.infer<typeof …Schema>\` dans ${SCENE}`)
+  const entree = indexerConstantes([SCENE_SCHEMA]).get(nomSchema)
+  if (!entree) abandon(`schéma \`${nomSchema}\` introuvable dans ${SCENE_SCHEMA} (déplacé ?)`)
+  const objet = objetZod(entree.decl.initializer)
+  if (!objet || !ts.isObjectLiteralExpression(objet.arguments[0])) abandon(`\`${nomSchema}\` : forme d'objet zod illisible`)
+
+  const props = new Map()
+  let prevEnd = objet.arguments[0].properties.pos
+  for (const p of objet.arguments[0].properties) {
+    if (ts.isPropertyAssignment(p) && p.name) {
+      props.set(p.name.getText(entree.sf).replace(/^['"]|['"]$/g, ''), {
+        init: p.initializer,
+        role: jsdocRole(entree.text.slice(prevEnd, p.getStart(entree.sf))),
+      })
+    }
+    prevEnd = p.getEnd()
+  }
+  return cles.map((cle) => {
+    const p = props.get(cle)
+    if (!p) abandon(`clé « ${cle} » de \`${nomCles}\` absente de \`${nomSchema}\` (${SCENE_SCHEMA})`)
+    const optionnel = /\.optional\(\)/.test(p.init.getText())
+    return { nom: cle + (optionnel ? '?' : ''), type: typeZod(p.init, cle, nomSchema), role: p.role }
+  })
+}
+
+/** Champs HÉRITÉS par `extends` : parent déclaré dans le fichier lu (interface → récursion) ou dans
+ *  `src/state/scene.ts` (alias `Pick<…>` → `champsPick`). Chaque ligne dit de QUI elle est héritée. */
+function champsHerites(decl) {
+  const rows = []
+  for (const clause of decl.heritageClauses ?? []) {
+    if (clause.token !== ts.SyntaxKind.ExtendsKeyword) continue
+    for (const t of clause.types) {
+      const parent = t.expression.getText(SF)
+      const locale = interfaceDe(SF, parent)
+      const herites = locale
+        ? champsInterface(parent)
+        : champsPick(SF_SCENE, aliasDe(SF_SCENE, parent) ?? abandon(`parent « ${parent} » introuvable dans ${MAPSPEC} ni ${SCENE}`))
+      for (const c of herites) rows.push({ ...c, role: `Hérité de \`${parent}\` — ${c.role ?? '—'}` })
+    }
+  }
+  return rows
+}
+
+/** Champs d'une interface, HÉRITAGE COMPRIS : nom (+ `?`), type aplati, 1re phrase du JSDoc. */
+function champsInterface(nom) {
+  const decl = interfaceDe(SF, nom)
+  if (!decl) abandon(`interface « ${nom} » introuvable dans ${MAPSPEC} (renommée ?)`)
+  const rows = [...membresPropres(SF, SRC, decl), ...champsHerites(decl)]
   if (!rows.length) abandon(`interface « ${nom} » sans propriété lisible`)
   return rows
 }
@@ -235,7 +355,9 @@ const out = `# Authoring d'une map : le format \`MapSpec\`
 > ⚠️ Fichier GÉNÉRÉ par \`node scripts/docs/build-map-authoring.mjs\` (\`npm run docs:map-authoring\`) — NE PAS ÉDITER À LA MAIN.
 
 **Périmètre mesuré / angles morts** — sont LUS par AST à \`${MAPSPEC}\` : les ${MAP_FIELDS.length}
-champs de \`MapSpec\` (nom, type, 1re phrase de JSDoc), ceux de \`WallSpec\` (${WALL_FIELDS.length}),
+champs de \`MapSpec\` (nom, type, 1re phrase de JSDoc), ceux de \`WallSpec\` (${WALL_FIELDS.length}, héritage
+\`extends\` SUIVI : un parent hors du fichier est résolu à \`${SCENE}\`, et un parent \`Pick<Cible, clés>\`
+tire ses clés du tableau \`as const\` cité et leurs type/JSDoc du schéma zod de \`${SCENE_SCHEMA}\`),
 \`CellRecipe\` (${CELL_FIELDS.length}) et \`EncounterSpec\` (${ENC_FIELDS.length}), les
 ${BIND.rows.length} formes de \`BindSpec\` et les ${RELIEF.rows.length} de \`ReliefSpec\`, et les ${ETAPES}
 étapes de l'ordre de compilation citées au JSDoc de tête. Le harnais QC liste les fonctions
@@ -330,8 +452,9 @@ ${ORDRE}
 ## Pièges
 
 - **Deux modèles de mur** : une tuile \`'mur'\` (terrain, via \`legend\`) = bloc PLEIN opaque ; un
-  \`WallSeg\` d'**arête** (\`walls\`, \`walled\`, \`edgeWalls\`) = cloison fine qui peut porter \`door\`/\`structure\`
-  (brèchable). Choisis exprès. Portes & structures ⇒ arêtes.
+  \`WallSeg\` d'**arête** (\`walls\`, \`walled\` + \`wallLegend\`) = cloison fine qui peut porter \`door\`,
+  \`structure\` (brèchable) et/ou \`appearance\` (look seul, sans PV). Choisis exprès. Portes &
+  structures ⇒ arêtes.
 - **Marqueurs** : les chars de \`bind\` sont scannés PUIS nettoyés avant le parse terrain. Sur un
   terrain non-base (chemin de ronde), utilise \`markerFill\` pour ne pas laisser un trou \`'vide'\`.
 - **Verticalité** = \`relief\` (mètres). La connexité verticale reste TOUJOURS DÉRIVÉE des hauteurs,

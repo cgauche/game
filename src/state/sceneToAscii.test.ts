@@ -8,7 +8,7 @@ import { diligenceCampaign } from '../scenes/campaign';
 /** Scène réelle la plus riche du dépôt (paquet éditeur : 32×38, 2 niveaux). */
 const diligenceScene = () => diligenceCampaign.scenes[0];
 
-/** Reconstruit un `MapSpec` MINIMAL depuis un export (walled/legend/terrain/wallStructures/zoneMap/
+/** Reconstruit un `MapSpec` MINIMAL depuis un export (walled/legend/terrain/wallLegend/zoneMap/
  *  zoneLegend/relief SEULEMENT) — exactement ce que l'énoncé demande de « coller » dans un fichier source : aucune
  *  autre section du `MapSpec` d'origine (bind/cells/entities/architecture/…) n'est reportée. */
 function reimport(id: string, size: [number, number], exp: ReturnType<typeof sceneToAscii>): MapSpec {
@@ -19,7 +19,7 @@ function reimport(id: string, size: [number, number], exp: ReturnType<typeof sce
     walled: exp.walled,
     legend: exp.legend,
     terrain: exp.terrain,
-    wallStructures: exp.wallStructures,
+    wallLegend: exp.wallLegend,
     ...(Object.keys(exp.zoneMap).length ? { zoneMap: exp.zoneMap, zoneLegend: exp.zoneLegend } : {}),
     ...(exp.relief.length ? { relief: exp.relief } : {}),
   };
@@ -27,7 +27,7 @@ function reimport(id: string, size: [number, number], exp: ReturnType<typeof sce
 
 function normWalls(scene: Scene) {
   return (scene.walls ?? [])
-    .map((w) => ({ x: w.x, y: w.y, side: w.side, z: w.z ?? 0, door: !!w.door, window: !!w.window, structure: w.structure ?? null }))
+    .map((w) => ({ x: w.x, y: w.y, side: w.side, z: w.z ?? 0, door: !!w.door, window: !!w.window, structure: w.structure ?? null, appearance: w.appearance ?? null }))
     .sort((a, b) => a.z - b.z || a.x - b.x || a.y - b.y || a.side.localeCompare(b.side));
 }
 
@@ -84,17 +84,17 @@ describe('sceneToAscii — round-trip doré (buildScene → export → réimport
     const rebuilt = buildScene(reimport('la-diligence-rt', [original.dimensions.w, original.dimensions.h], exp));
     expectSurfacesEqual(original, rebuilt);
 
-    // Le grillage `walled` n'a qu'UN glyphe par ouverture : l'export déclare les matériaux de porte
+    // Le grillage `walled` n'a qu'UN glyphe par ouverture : l'export déclare les overlays de porte
     // et de fenêtre qu'il ne peut pas représenter.
     const before = normWalls(original);
     const after = normWalls(rebuilt);
-    const sansMateriauPerdu = (w: ReturnType<typeof normWalls>[number]) => (w.door || w.window ? { ...w, structure: null } : w);
-    expect(after.map(sansMateriauPerdu)).toEqual(before.map(sansMateriauPerdu));
-    const divergents = before.filter((w, i) => w.structure !== after[i].structure);
+    const sansOverlayPerdu = (w: ReturnType<typeof normWalls>[number]) => (w.door || w.window ? { ...w, structure: null, appearance: null } : w);
+    expect(after.map(sansOverlayPerdu)).toEqual(before.map(sansOverlayPerdu));
+    const divergents = before.filter((w, i) => w.structure !== after[i].structure || w.appearance !== after[i].appearance);
     expect(divergents.every((w) => w.door || w.window)).toBe(true);
     for (const w of divergents)
       expect(exp.warnings.join(' | ')).toMatch(
-        w.door ? /porte\(s\) avec un matériau distinct de « solide-porte-en-bois »/ : /fenêtre\(s\) avec un matériau distinct de « mur-a-ossature-en-bois »/,
+        w.door ? /porte\(s\) avec un matériau\/une apparence distincts de « structure=solide-porte-en-bois »/ : /fenêtre\(s\) avec un matériau\/une apparence distincts de « structure=mur-a-ossature-en-bois »/,
       );
   });
 
@@ -120,7 +120,7 @@ describe('sceneToAscii — round-trip doré (buildScene → export → réimport
 + + + + + + +
 `,
       },
-      wallStructures: { '=': 'mur-en-pierre' },
+      wallLegend: { '=': { structure: 'mur-en-pierre' } },
       relief: [
         { rect: [0, 0, 3, 2], height: 2, z: 0 },
         { ramp: [3, 0, 5, 0], from: 2, to: 0, z: 0 },
@@ -143,6 +143,59 @@ describe('sceneToAscii — round-trip doré (buildScene → export → réimport
     const exp = sceneToAscii(original);
     const rebuilt = buildScene(reimport('simple-rt', [6, 5], exp));
     expectGeometryEqual(original, rebuilt);
+  });
+
+  it('un OVERLAY d’arête survit dans ses TROIS formes : structure seule, apparence seule, les deux', () => {
+    // 4 cases en ligne ; arête E de (0,0) = structure seule, de (1,0) = apparence seule, de (2,0) = les deux.
+    const spec: MapSpec = {
+      id: 'overlay',
+      label: 'Overlay',
+      size: [4, 1],
+      terrain: 'plancher',
+      walled: { z0: ['+ + + + +', '|.=.w.H.|', '+ + + + +'].join('\n') },
+      wallLegend: {
+        '=': { structure: 'mur-en-pierre' },
+        w: { appearance: 'mur-en-bois' },
+        H: { structure: 'herse', appearance: 'herse' },
+      },
+    };
+    const original = buildScene(spec);
+    // Sonde AVANT : les trois arêtes portent bien les trois formes d'overlay.
+    expect(normWalls(original).filter((s) => s.side === 'E' && s.x >= 0)).toEqual([
+      { x: 0, y: 0, side: 'E', z: 0, door: false, window: false, structure: 'mur-en-pierre', appearance: null },
+      { x: 1, y: 0, side: 'E', z: 0, door: false, window: false, structure: null, appearance: 'mur-en-bois' },
+      { x: 2, y: 0, side: 'E', z: 0, door: false, window: false, structure: 'herse', appearance: 'herse' },
+      { x: 3, y: 0, side: 'E', z: 0, door: false, window: false, structure: null, appearance: null }, // bord droit, mur NU
+    ]);
+    const exp = sceneToAscii(original);
+    // Une catégorie = un char : la table réémise porte ces trois overlays, et RIEN d'autre (le mur nu
+    // du bord droit n'a pas d'overlay : il ne prend pas de char de légende).
+    const cle = (o: { structure?: string; appearance?: string }) => `${o.structure ?? ''}/${o.appearance ?? ''}`;
+    expect(Object.values(exp.wallLegend).sort((a, b) => (cle(a) < cle(b) ? -1 : 1))).toEqual([
+      { appearance: 'mur-en-bois' },
+      { structure: 'herse', appearance: 'herse' },
+      { structure: 'mur-en-pierre' },
+    ]);
+    expect(exp.text).toContain('export const WALL_LEGEND');
+    const rebuilt = buildScene(reimport('overlay-rt', [4, 1], exp));
+    expectGeometryEqual(original, rebuilt);
+  });
+
+  it('une DIAGONALE porteuse d’apparence est NOMMÉE perdue (warning) et l’est vraiment au réimport', () => {
+    const spec: MapSpec = {
+      id: 'diag',
+      label: 'Diag',
+      size: [2, 2],
+      terrain: 'plancher',
+      walled: { z0: ['+-+ +', '|. . ', '+ + +', ' . . ', '+ + +'].join('\n') },
+      walls: [{ x: 0, y: 0, side: '\\', appearance: 'mur-en-bois' }],
+    };
+    const exp = sceneToAscii(buildScene(spec));
+    expect(exp.warnings.join(' | ')).toContain('cloison diagonale (0,0,z0) : appearance=mur-en-bois');
+    // L'avertissement ne crie pas au loup : au réimport la cloison est bien là, mais NUE — c'est son
+    // `appearance` qui est réellement perdue.
+    const rebuilt = buildScene(reimport('diag-rt', [2, 2], exp));
+    expect((rebuilt.walls ?? []).filter((w) => w.side === '\\' || w.side === '/')).toEqual([{ x: 0, y: 0, side: '\\' }]);
   });
 });
 

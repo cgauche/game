@@ -65,7 +65,7 @@ const ENC = 'enc-fixture-clayonnage';
 
 /** La carte-fixture, neuve à chaque appel (le store pose des flags sur la scène qu'il charge). */
 function carte(): Scene {
-  const { w, h, tiles, walls } = parseWalledAscii(cleaned, 'plancher', {}, { structures: { c: CLAYONNAGE, M: OSSATURE } });
+  const { w, h, tiles, walls } = parseWalledAscii(cleaned, 'plancher', {}, { wallLegend: { c: { structure: CLAYONNAGE }, M: { structure: OSSATURE } } });
   const enc = buildEncounter({
     id: ENC,
     victoryCondition: { type: 'surviveRounds', rounds: 3 },

@@ -23,7 +23,8 @@
  *   8bis. masses  : `deriveArchitectureMasses` COMPLÈTE les masses déclarées (surcharges, #829) avec
  *                   celles dérivées du plancher réel — plus d'obligation de tout couvrir à la main.
  *   9. validation : masses de bâtiment (`validateBuildingMasses`, garde-fou des SURCHARGES) + support
- *                    de plancher (`validateFloorSupport`) — fail-fast, une fois zones/plancher réel connus.
+ *                    de plancher (`validateFloorSupport`) + ids de catalogue authorés
+ *                    (`assertAuthoredIds`) — fail-fast, une fois zones/plancher réel connus.
  */
 import type {
   Scene,
@@ -40,8 +41,10 @@ import type {
   ArchitectureBody,
   ArchitectureRect,
   CellSide,
+  WallOverlay,
 } from './scene';
-import { emptyScene, tileAt } from './scene';
+import { emptyScene, tileAt, wallOverlayOf } from './scene';
+import { findStructureById, structureAppearances } from '../data';
 import { planStairFlight, applyStairFlight } from './stairFlight';
 import type { Flow } from './flow';
 import type { FireArc } from '../engine/types';
@@ -89,19 +92,16 @@ const CELL_WALKWAY: Terrain = 'pierre';
  *  sol. Le moteur en dérive TOUTES ses faces (relief existant), y compris la PAROI du tunnel qu'il borde. */
 const CELL_MASS: Terrain = 'mur';
 
-/** Un segment de mur DÉCLARATIF : arête cardinale N/E/S/O (canonisée avant écriture) + door/structure,
- *  ou diagonale `\\`/`/` en travers de la case. Plus large que `scene.WallSeg` (qui n'admet que la forme
- *  CANONIQUE N/E) pour laisser l'auteur nommer n'importe quel côté d'une case. */
-export interface WallSpec {
+/** Un segment de mur DÉCLARATIF : arête cardinale N/E/S/O (canonisée avant écriture) + door/overlay
+ *  (`WallOverlay` : `structure` et/ou `appearance`), ou diagonale `\\`/`/` en travers de la case. Plus
+ *  large que `scene.WallSeg` (qui n'admet que la forme CANONIQUE N/E) pour laisser l'auteur nommer
+ *  n'importe quel côté d'une case. */
+export interface WallSpec extends WallOverlay {
   x: number;
   y: number;
   side: CellSide | '\\' | '/';
   z?: number;
   door?: boolean;
-  /** Structure destructible posée sur l'arête (id de `structures.json`, ex. `porte-de-ville`). */
-  structure?: string;
-  /** Apparence de rendu indépendante de la structure mécanique (`structureAppearance.json`). */
-  appearance?: string;
   /** DÉCORATIF : l'arête porte une fenêtre au rendu (mur plein serti d'une vitre — ne change pas le combat). */
   window?: boolean;
   /** ESCALADABLE (LDB 15 l.53-57, cf. `WallSeg.climb`) : l'arête sépare deux surfaces de hauteurs
@@ -157,7 +157,8 @@ export interface EncounterSpec {
 }
 
 /** RECETTE par LETTRE d'une CASE COMPLÈTE (sol + AU PLUS un rôle/structure dessus) — l'authoring unifié
- *  d'une enceinte : une lettre = la case entière, self-documentée (plus d'éparpillement `elevate`+`edgeWalls`).
+ *  d'une enceinte : une lettre = la case entière, self-documentée — sol, structure et rôle décrits
+ *  d'un seul tenant, à un seul endroit.
  *  - `wall` : ENCEINTE PLEINE. Auto-pose une ZONE REMPART sur la couche z+1 (bloc solide `height` m + chemin
  *    de ronde marchable + crénelure) → le z0 devient impassable (MASSE DE MUR) et le rendu (falaise + merlons)
  *    suit. `structure` = apparence crénelée (id `structureAppearance`). Le sol z0 = `terrain` (fondation).
@@ -205,23 +206,21 @@ export interface MapSpec {
    *  Chaque étage → `putLayer(z, tiles)` + les murs d'arête/portes RETOURNÉS (avec `z`). Coexiste avec `levels`
    *  (étages différents) ; MÊME base que `levels` (z0 = `terrain`, z>0 = `'vide'`). Traité à l'étape 2 (terrain). */
   walled?: Record<string, string>;
-  /** Char d'arête → id de `structures.json` (structure destructible sur l'arête d'un étage `walled`, ex. herse). */
-  wallStructures?: Record<string, string>;
+  /** Char d'ARÊTE → ce qu'il ÉCRIT sur l'arête d'un étage `walled` (`WallOverlay`) : le char VAUT MUR,
+   *  et porte une `structure` destructible (id de `structures.json`, ex. herse `porte-de-ville`), une
+   *  `appearance` de rendu sans PV (id de `structureAppearance.json`, ex. cloison `mur-en-bois`), ou
+   *  les deux. Ids validés contre les catalogues à la compilation (`assertAuthoredIds`). */
+  wallLegend?: Record<string, WallOverlay>;
   /** HAUTEUR (relief) pilotée par l'ASCII (coordonnée-free) : char de LÉGENDE → hauteur métrique, `number` seul
    *  (`{ '4': 4, '3': 3 }` pour une rampe), OU `{ height, parapet }` pour une ZONE REMPART solide crénelée
    *  (`{ W: { height: 4, parapet: 'mur-en-pierre' } }` → face de maçonnerie + crénelure de périmètre au rendu).
    *  Toute case portant le char (n'importe quel étage) prend cette hauteur — remplace les `relief` en coordonnées. */
   elevate?: Record<string, number | { height: number; parapet: string }>;
-  /** MUR D'ARÊTE posé sur une case d'une grille `levels` (coordonnée-free, sans passer au `walled` box-drawing) :
-   *  char de LÉGENDE → arête d'une case. `side` = l'arête portée (N/E/S/O, canonicalisée). Ex.
-   *  `{ M: { side: 'N', structure: 'mur-en-pierre' }, D: { side: 'N', structure: 'porte-de-ville' } }` pose une
-   *  ligne d'enceinte + porte en marquant la rangée du mur. Pour un plan complet (arêtes tous côtés) → `walled`. */
-  edgeWalls?: Record<string, { side: CellSide; structure?: string; door?: boolean }>;
   /** RECETTE par LETTRE de CASE COMPLÈTE (`CellRecipe`) : `wall` (enceinte pleine), `gate` (tunnel brèchable),
    *  `hero` (départ), `stair` (volée d'escalier, #780). Une lettre `cells` résout son `terrain` dans la
    *  légende ASCII, puis auto-pose sa structure/rôle (zone rempart z+1, herse, heroStart, rampe interpolée
-   *  reliant deux surfaces). Point d'entrée UNIFIÉ d'une muraille (remplace le couple `elevate`+`edgeWalls`)
-   *  — mécanisme GÉNÉRAL, toute forme/épaisseur. */
+   *  reliant deux surfaces). Point d'entrée UNIFIÉ d'une muraille — mécanisme GÉNÉRAL, toute
+   *  forme/épaisseur. */
   cells?: Record<string, CellRecipe>;
   walls?: WallSpec[];
   relief?: ReliefSpec[];
@@ -637,20 +636,18 @@ export function buildScene(spec: MapSpec): Scene {
   const cellTerrains: Record<string, Terrain> = {};
   for (const [ch, rec] of Object.entries(spec.cells ?? {})) cellTerrains[ch] = rec.terrain ?? spec.terrain ?? 'herbe';
   const effLegend = { ...spec.legend, ...cellTerrains };
-  // Cases repérées dans l'ASCII pour les char-maps coordonnée-free (`elevate` hauteur/rempart, `edgeWalls`
-  // mur d'arête, `cells` recette de case) — le char est de LÉGENDE (marqueurs déjà nettoyés → markerFill).
-  // `elevate` est appliqué à l'étape 3bis (APRÈS le relief) ; `cells` à l'étape 3ter ; `edgeWalls`/`cells`
-  // génèrent des `WallSpec` posés à l'étape 4.
+  // Cases repérées dans l'ASCII pour les char-maps coordonnée-free (`elevate` hauteur/rempart, `cells`
+  // recette de case) — le char est de LÉGENDE (marqueurs déjà nettoyés → markerFill).
+  // `elevate` est appliqué à l'étape 3bis (APRÈS le relief) ; `cells` à l'étape 3ter, et génère des
+  // `WallSpec` (herses) posés à l'étape 4.
   const elevateCells: { char: string; x: number; y: number; z: number }[] = [];
-  const edgeWallCells: { char: string; x: number; y: number; z: number }[] = [];
   const cellCells: { char: string; x: number; y: number; z: number }[] = [];
   const scanChars = (rows: string[], z: number, colAt: (r: string, x: number) => string) => {
-    if (!spec.elevate && !spec.edgeWalls && !spec.cells) return;
+    if (!spec.elevate && !spec.cells) return;
     for (let y = 0; y < rows.length; y++)
       for (let x = 0; x < w; x++) {
         const ch = colAt(rows[y], x);
         if (spec.elevate?.[ch] !== undefined) elevateCells.push({ char: ch, x, y, z });
-        if (spec.edgeWalls?.[ch]) edgeWallCells.push({ char: ch, x, y, z });
         if (spec.cells?.[ch]) cellCells.push({ char: ch, x, y, z });
       }
   };
@@ -672,9 +669,9 @@ export function buildScene(spec: MapSpec): Scene {
       const z = parseInt(key.replace('z', ''), 10);
       const base: Terrain = z === 0 ? (spec.terrain ?? 'herbe') : 'vide';
       const padded = walledRowsOf(rows, w);
-      const parsed = parseWalledAscii(padded, base, effLegend, { structures: spec.wallStructures });
+      const parsed = parseWalledAscii(padded, base, effLegend, { wallLegend: spec.wallLegend });
       s = putLayer(s, z, parsed.tiles);
-      for (const seg of parsed.walls) walledWalls.push({ x: seg.x, y: seg.y, side: seg.side, ...(z ? { z } : {}), ...(seg.door ? { door: true } : {}), ...(seg.window ? { window: true } : {}), ...(seg.structure ? { structure: seg.structure } : {}) });
+      for (const seg of parsed.walls) walledWalls.push({ x: seg.x, y: seg.y, side: seg.side, ...(z ? { z } : {}), ...(seg.door ? { door: true } : {}), ...(seg.window ? { window: true } : {}), ...wallOverlayOf(seg) });
       scanChars(padded.filter((_, i) => i % 2 === 1), z, (r, x) => r[2 * x + 1] ?? ' '); // tuiles aux slots impairs
     }
   }
@@ -737,14 +734,9 @@ export function buildScene(spec: MapSpec): Scene {
   // 3quater. stair : volées d'escalier — rampe interpolée entre deux surfaces + trémie (#780).
   s = applyStairs(s, spec, cellCells);
 
-  // 4. walls : arêtes extraites de `walled`, PUIS `edgeWalls` (chars posés dans une grille `levels`,
-  //    canonicalisés N/E), PUIS les herses de `cells`, PUIS les `walls` déclaratifs en coordonnées.
-  const asciiWalls: WallSpec[] = edgeWallCells.map((c) => {
-    const cfg = spec.edgeWalls![c.char];
-    const e = canonEdge(c.x, c.y, cfg.side);
-    return { x: e.x, y: e.y, side: e.side, ...(c.z ? { z: c.z } : {}), ...(cfg.door ? { door: true } : {}), ...(cfg.structure ? { structure: cfg.structure } : {}) };
-  });
-  const allWalls = [...walledWalls, ...asciiWalls, ...cellWalls, ...(spec.walls ?? [])];
+  // 4. walls : arêtes extraites de `walled`, PUIS les herses de `cells`, PUIS les `walls` déclaratifs
+  //    en coordonnées.
+  const allWalls = [...walledWalls, ...cellWalls, ...(spec.walls ?? [])];
   // Passe 1 : murs orthogonaux (N/E/S/O) — les diagonales lisent l'état des arêtes voisines pour leur
   // garde de coin (ci-dessous), elles doivent donc être TOUTES posées d'abord.
   for (const wall of allWalls) {
@@ -975,6 +967,57 @@ export function buildScene(spec: MapSpec): Scene {
   //    et les zones connus — une masse se valide contre le bâtiment RÉEL, jamais contre elle-même.
   if (spec.architecture?.length) validateBuildingMasses(s);
   validateFloorSupport(s, new Set((spec.knownUnsupportedFloor ?? []).map((c) => `${c.x},${c.y},${c.z}`)));
+  assertAuthoredIds(spec, s);
 
   return s;
+}
+
+/**
+ * Tous les ids de CATALOGUE authorés par un `MapSpec`, validés à la compilation contre `src/data` —
+ * un id faux ne produirait sinon qu'un `console.warn` DEV au rendu (`gameIso/catalog/missing.ts`) et la
+ * carte se construirait avec une arête sans matière. La garde porte sur TOUTES les sources d'id du
+ * spec, jamais sur la seule table la plus récente : `wallLegend` (y compris un char déclaré mais absent
+ * de la grille), les arêtes COMPILÉES (`walled`, `walls[]`, diagonales, herses de `cells`),
+ * `cells.wall/gate` et `elevate[].parapet`. Même politique fail-fast que la collision de graines de
+ * `zonesFromSeeds` : un plan faux ne se joue pas à moitié.
+ */
+function assertAuthoredIds(spec: MapSpec, scene: Scene): void {
+  const inconnus: { source: string; quoi: string; id: string; catalogue: string }[] = [];
+  const appearanceIds = new Set(structureAppearances.map((a) => a.id));
+  // Un MÊME id faux est atteint par plusieurs sources (le char de `wallLegend` ET chacune des arêtes
+  // qu'il a posées) : une faute = UNE ligne, nommée par la source la PLUS PROCHE de l'auteur — les
+  // tables du spec sont parcourues avant les arêtes compilées.
+  const vus = new Set<string>();
+  const signale = (quoi: string, id: string, catalogue: string, source: string) => {
+    const cle = `${quoi} « ${id} »`;
+    if (vus.has(cle)) return;
+    vus.add(cle);
+    inconnus.push({ source, quoi, id, catalogue });
+  };
+  const structure = (id: string | undefined, source: string) => {
+    if (id !== undefined && !findStructureById(id)) signale('structure', id, 'structures.json', source);
+  };
+  const appearance = (id: string | undefined, source: string) => {
+    if (id !== undefined && !appearanceIds.has(id)) signale('apparence', id, 'structureAppearance.json', source);
+  };
+  for (const [ch, overlay] of Object.entries(spec.wallLegend ?? {})) {
+    structure(overlay.structure, `wallLegend['${ch}']`);
+    appearance(overlay.appearance, `wallLegend['${ch}']`);
+  }
+  for (const seg of scene.walls ?? []) {
+    const source = `arête (${seg.x},${seg.y},${seg.side}) z${seg.z ?? 0}`;
+    structure(seg.structure, source);
+    appearance(seg.appearance, source);
+  }
+  for (const [ch, rec] of Object.entries(spec.cells ?? {})) {
+    appearance(rec.wall?.structure, `cells.${ch}.wall.structure`); // crénelure = APPARENCE (cf. `CellRecipe`)
+    structure(rec.gate?.structure, `cells.${ch}.gate.structure`);
+  }
+  for (const [ch, cfg] of Object.entries(spec.elevate ?? {}))
+    if (typeof cfg === 'object') appearance(cfg.parapet, `elevate.${ch}.parapet`);
+  if (inconnus.length)
+    throw new Error(
+      `buildScene « ${spec.id} » : id(s) de catalogue inconnu(s) —\n  ` +
+        inconnus.map((e) => `${e.source} : ${e.quoi} « ${e.id} » absent(e) de ${e.catalogue}`).join('\n  '),
+    );
 }
