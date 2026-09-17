@@ -10,7 +10,7 @@
  * l'INSPECTEUR, qui tient une instance, qui l'annonce au cap RÉEL (`Inspector.tsx`).
  */
 import { useState, type ReactNode } from 'react';
-import { sceneMetresPerTile, type Scene, type Terrain } from '../../state/scene';
+import { DEFAULT_TERRAIN, sceneMetresPerTile, type Scene, type Terrain } from '../../state/scene';
 import { CAP_IDENTITE_PROP, empreinteDuProp } from '../../data/props.types';
 import { Icon } from '../Icon';
 import { OptionChooser } from '../OptionChooser';
@@ -149,7 +149,7 @@ export function Palette({
   const architectureStorey = architectureBody?.storeys.find((storey) => storey.id === architectureStoreyId) ?? architectureBody?.storeys[0] ?? null;
   const [search, setSearch] = useState(''); // filtre partagé des catalogues (réinitialisé au changement d'outil)
   // Derniers choix par famille → re-cliquer l'icône retrouve l'outil précis.
-  const [lastTerrain, setLastTerrain] = useState<Terrain>('herbe');
+  const [lastTerrain, setLastTerrain] = useState<Terrain>(DEFAULT_TERRAIN);
   const [lastProp, setLastProp] = useState(REF_DECOR_DEFAUT);
   const [lastEngine, setLastEngine] = useState(siegeEngines()[0]?.id ?? 'baliste');
   // Matériau MÉMORISÉ par sous-mode (Cloison/Porte) — l'outil porte son matériau comme un pinceau porte

@@ -5,8 +5,8 @@
 **Périmètre mesuré / angles morts** — sont LUS aux fichiers réels : les 34 appels
 `addReverse(...)` de `src/ui/compendium/relations.ts` (catégorie référante, catégorie cible, titre FR de section,
 `fichier:ligne`), l'API publique du même module (AST + 1re phrase de JSDoc), le littéral
-`CODEX_SPECS` de `src/ui/compendium/registry.ts` (129 catégories, leurs groupes et sous-groupes
-`cluster`), et l'`exposition` DÉCLARÉE par les 122 defs de `src/data/schemas/defs/`
+`CODEX_SPECS` de `src/ui/compendium/registry.ts` (130 catégories, leurs groupes et sous-groupes
+`cluster`), et l'`exposition` DÉCLARÉE par les 123 defs de `src/data/schemas/defs/`
 (dumpée par `scripts/docs/lib/dump-exposition.mts`), les cas NOMMÉS par `src/data/schemas/exposition-contrats.test.ts`, les fonctions
 exportées de `src/ui/compendium/describe.ts` et `src/ui/compendium/humanize.ts`, et le compte d'épigraphes de Carrière dumpé par
 `scripts/docs/lib/dump-epigraphes.mts` (le plugin `exergues` de `<Prose>` monté sur les `careers`
@@ -70,14 +70,14 @@ par `src/data/schemas/exposition-contrats.test.ts`, dont voici les cas, tels que
 Un document neuf se pose donc en DEUX endroits du MÊME commit : son `exposition` au def, sa
 catégorie dans `CODEX_SPECS`.
 
-Sur 122 defs, 24 sont EXEMPTS d'exposition Codex :
+Sur 123 defs, 24 sont EXEMPTS d'exposition Codex :
 
 - `dette` — 2 fichier(s)
 - `vocabulaire-app-interne` — 22 fichier(s)
 
 ### Index INVERSE — catégorie Codex → document qui la déclare
 
-129 clés de catégorie sont déclarées par les defs. La colonne « Route d'édition »
+130 clés de catégorie sont déclarées par les defs. La colonne « Route d'édition »
 est celle du document porteur, telle que `document()` la déclare.
 
 | Clé de catégorie | Libellé (`CODEX_SPECS`) | Déclarée par | Route d'édition |
@@ -179,6 +179,7 @@ est celle du document porteur, telle que `document()` la déclare.
 | `seaPortEvents` | Événements de port (mer) | `src/data/sea-events.json` | niché (3 catégorie(s)) |
 | `seaShanties` | Chants de marins | `src/data/sea-shanties.json` | dataset `seaShanties` |
 | `seaWeather` | Météo de la Mer des Griffes | `src/data/sea-weather.json` | objet `single` |
+| `semencesDeScene` | Semences de scène | `src/data/semences-de-scene.json` | objet `single` |
 | `shipConstructionTraits` | Traits de construction (navire) | `src/data/ship-construction.json` | niché (3 catégorie(s)) |
 | `shipCriticalsAvirons` | Critiques de navire — Avirons | `src/data/ship-criticals.json` | niché (5 catégorie(s)) |
 | `shipCriticalsCargaison` | Critiques de navire — Cargaison | `src/data/ship-criticals.json` | niché (5 catégorie(s)) |
@@ -287,7 +288,7 @@ automatiquement si la catégorie active y vit. Les pastilles restent des `<butto
 | Effets | 30 | 12 | *Blessures critiques* (8), *Critiques de navire* (5), *Critiques fluviaux* (5) |
 | Magie | 8 | 8 | — |
 | Monde | 21 | 21 | — |
-| Tables | 53 | 16 | *Création de personnage* (7), *Voyage terrestre* (6), *Mer & rivière* (9), *Calendrier* (4), *Bataille de masse* (5), *Rencontres* (3), *Équipage & navire* (3) |
+| Tables | 54 | 17 | *Création de personnage* (7), *Voyage terrestre* (6), *Mer & rivière* (9), *Calendrier* (4), *Bataille de masse* (5), *Rencontres* (3), *Équipage & navire* (3) |
 
 Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_SPECS`, rien d'autre.
 
@@ -318,4 +319,4 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
 - `npx vitest run src/ui/compendium/humanize.test.ts`
 - `npx vitest run src/data/schemas/exposition-contrats.test.ts`
 - `npx vitest run src/data/serialize.test.ts`
-<!-- sources-empreinte: 59ba47bbee032fb1792c2c354e7d320a5761cc7e (758 fichiers, 0 dossiers) corps: 2700e7fca63e44384ec95d40d7436989d26aa2d5 -->
+<!-- sources-empreinte: 6d0559cf1872cb78fe4568415d39f4deafd24c83 (760 fichiers, 0 dossiers) corps: 6f901942eb1d88df694337164eedae39cae9fd79 -->

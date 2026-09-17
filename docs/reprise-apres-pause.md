@@ -62,7 +62,7 @@ Le partage de la suite (`node scripts/test/run.mjs`) est décidé par `repartiti
 variable d'environnement `WFRP_TEST_COEURS` force ce nombre (seule façon de jouer l'autre chemin sur
 une machine quelconque).
 
-`src/data/*.json` (122 fichiers) est la **SOURCE app-owned** : rien à régénérer après le clone.
+`src/data/*.json` (123 fichiers) est la **SOURCE app-owned** : rien à régénérer après le clone.
 
 Le canari (`.github/workflows/canari.yml`, schedule + workflow_dispatch, cron
 `0 6 * * 1`) rejoue exactement ce chemin en CI, sur un runner propre, en
@@ -103,7 +103,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 ## 2. Ce que le clone CONTIENT
 
 - `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
-- `src/data/` — données app-owned (122 fichiers JSON commités, éditables au Compendium).
+- `src/data/` — données app-owned (123 fichiers JSON commités, éditables au Compendium).
 - Les gardes de données : `scripts/guards/validate-data.mts` + 110 modules
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
@@ -113,7 +113,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 - Les schémas de données : `src/data/schemas/` (`src/data/schemas/types.ts`,
   `src/data/schemas/validate.ts`, `src/data/schemas/_registry.generated.ts`,
   `src/data/schemas/_ids.generated.ts`, `src/data/schemas/grammaire/` — le vocabulaire partagé —
-  `src/data/schemas/defs/` : 130 fichiers, un par catalogue, et
+  `src/data/schemas/defs/` : 131 fichiers, un par catalogue, et
   `src/data/schemas/defs-scenes/` : 17 fichiers pour les documents de scène).
 - `scripts/art-ref/` — le PIPELINE d'extraction d'images (`extract.py`, `ldb_extract.py`, `ldb_map.py`, `probe.py`) : le code est
   tracké, ses SORTIES (images) ne le sont pas (§ 3).
@@ -242,4 +242,4 @@ sans place dans ce plan fait REFUSER le run, avec son nom.
 `scripts/guards/lib/npmLockHoisted.mjs` — npx --yes npm@10.9.3 install --package-lock-only, puis valider avec npx npm@10.9.3 ci --dry-run. npm 11 ampute les entrées hoistées
 `@emnapi/*` que `npm ci` exige en CI ; la garde (pre-commit +
 `src/npm-lock-hoisted-guard.test.ts`) refuse un lock amputé.
-<!-- sources-empreinte: dc8c0e09b0e57969d0687b0344c11175fb664a0f (24 fichiers, 8 dossiers) corps: 68567a2079afc221df08e94a68bb72a8d73dfae7 -->
+<!-- sources-empreinte: a3c777842806fa9fc830718d0d8a9ccba56e18e9 (24 fichiers, 8 dossiers) corps: fed1022046964c6617c93039074f9b905fe433c1 -->

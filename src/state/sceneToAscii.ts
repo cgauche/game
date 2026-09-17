@@ -19,7 +19,7 @@
  * grilles/legend/wallLegend/zoneLegend/relief dans le fichier `*.ascii.ts` + `*.ts` d'origine.
  */
 import type { Scene, SceneEffectZone, Terrain, WallOverlay, WallSeg } from './scene';
-import { heightAt, isDescriptiveZone, tileAt, wallOverlayOf, WALL_OVERLAY_KEYS } from './scene';
+import { DEFAULT_TERRAIN, heightAt, isDescriptiveZone, tileAt, wallOverlayOf, WALL_OVERLAY_KEYS } from './scene';
 import { sceneZoneTiles } from './zones';
 
 /** Glyphes RÉSERVÉS par le vocabulaire d'arête (`docs` du format `walled`, cf. `asciiMap.ts`) —
@@ -107,7 +107,7 @@ export function sceneToAscii(scene: Scene): SceneAsciiExport {
   // ── Légende de terrain (partagée par toutes les couches) ─────────────────────────────────────────
   const terrainAlloc = makeAllocator('legend');
   const legend: Record<string, Terrain> = {};
-  const base0 = mostFrequentTerrain(scene, 0) ?? 'herbe';
+  const base0 = mostFrequentTerrain(scene, 0) ?? DEFAULT_TERRAIN;
   const baseOf = (z: number) => (z === 0 ? base0 : 'vide');
   const tileGlyph = (t: Terrain, base: Terrain): string => {
     if (t === base) return '.';

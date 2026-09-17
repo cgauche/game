@@ -43,8 +43,15 @@ import type {
   CellSide,
   WallOverlay,
 } from './scene';
-import { emptyScene, tileAt, wallOverlayOf } from './scene';
+import { DEFAULT_TERRAIN, emptyScene, tileAt, wallOverlayOf } from './scene';
 import { findStructureById, structureAppearances } from '../data';
+// PLAGE de pente : la source UNIQUE est le schéma de scène, qui en borne DÉJÀ le parse
+// (`sceneRoofDefaultsSchema`/`roofDefaultsSchema`) — deux littéraux ici la feraient diverger en
+// silence de la porte qui refuse une scène authorée.
+import { PENTE_TOIT_DEG } from '../data/schemas/defs-scenes/scene';
+// SOLS NUS : la primitive PARTAGÉE de l'audit de plan (`terrains.json › built`, complément) — la CLI
+// `map:check` (famille `etage-sans-appui`) et cette porte jugent le même appui sur le même ensemble.
+import { groundTerrains } from './planDefects';
 import { planStairFlight, applyStairFlight } from './stairFlight';
 import type { Flow } from './flow';
 import type { FireArc } from '../engine/types';
@@ -192,7 +199,7 @@ export interface MapSpec {
   startMessage?: string;
   rest?: Scene['rest'];
   flags?: Record<string, boolean>;
-  /** Terrain de base (z0 / couche unique). Défaut 'herbe'. */
+  /** Terrain de base (z0 / couche unique). Absent = la SEMENCE du dépôt (`DEFAULT_TERRAIN`). */
   terrain?: Terrain;
   /** Légende ASCII (char → terrain) partagée par tous les étages. */
   legend?: Record<string, Terrain>;
@@ -480,8 +487,8 @@ function validateBuildingMasses(scene: Scene): void {
     for (const mass of body.masses) {
       if (!Number.isInteger(mass.levels) || mass.levels < 1)
         throw new Error(`masse « ${mass.id} » (corps « ${body.id} ») : \`levels\` invalide (${mass.levels}) — entier ≥ 1 attendu`);
-      if (!Number.isFinite(mass.pitchDeg) || mass.pitchDeg < 5 || mass.pitchDeg > 75)
-        throw new Error(`masse « ${mass.id} » (corps « ${body.id} ») : pente ${mass.pitchDeg}° hors plage sensée [5°, 75°] — corrige \`pitchDeg\``);
+      if (!Number.isFinite(mass.pitchDeg) || mass.pitchDeg < PENTE_TOIT_DEG.min || mass.pitchDeg > PENTE_TOIT_DEG.max)
+        throw new Error(`masse « ${mass.id} » (corps « ${body.id} ») : pente ${mass.pitchDeg}° hors plage sensée [${PENTE_TOIT_DEG.min}°, ${PENTE_TOIT_DEG.max}°] — corrige \`pitchDeg\``);
       const cells = massCells(mass.footprint);
       if (!cells.size)
         throw new Error(`masse « ${mass.id} » (corps « ${body.id} ») : emprise vide — \`footprint\` doit contenir au moins un rectangle`);
@@ -577,10 +584,8 @@ function validateBuildingMasses(scene: Scene): void {
 }
 
 
-const BARE_GROUND: ReadonlySet<Terrain> = new Set(['herbe', 'terre', 'vide'] as Terrain[]);
-
 /** Une case d'étage (z>0) doit REPOSER sur quelque chose — plancher/pavé au sol, ou une masse de
- *  l'étage inférieur — jamais du vide ni de la terre nue (#825ter, mesuré : 5 cases de La Diligence
+ *  l'étage inférieur — jamais un sol NU, c.-à-d. tout terrain sans `built` (#825ter, mesuré : 5 cases de La Diligence
  *  posées sur l'herbe, rien ne le détectait). Portée aux SEULS étages qui portent une masse de
  *  bâtiment (`ArchitectureBody.masses`) : un chemin de ronde (`elevate`+parapet, hors masses) est un
  *  système DÉJÀ validé à part (#818) — sa surface porte sur la maçonnerie du rempart, jamais un
@@ -591,6 +596,10 @@ const BARE_GROUND: ReadonlySet<Terrain> = new Set(['herbe', 'terre', 'vide'] as 
 function validateFloorSupport(scene: Scene, tolerated: ReadonlySet<string>): void {
   if (!(scene.architecture ?? []).some((body) => body.masses.length)) return; // aucun bâtiment authoré
   const { w, h } = scene.dimensions;
+  // Sols NUS lus à la DONNÉE (`groundTerrains`, complément de `built`) : réciter trois ids laissait
+  // les 14 autres sols nus (`sable`, `boue`, `neige`, `eau`, `lave`…) hors de la règle — la même case
+  // d'étage levait sur « herbe » et passait en silence sur « sable ».
+  const solsNus = groundTerrains();
   for (const layer of scene.layers) {
     if (layer.z <= 0) continue;
     for (let y = 0; y < h; y++)
@@ -599,12 +608,12 @@ function validateFloorSupport(scene: Scene, tolerated: ReadonlySet<string>): voi
         if (tolerated.has(`${x},${y},${layer.z}`)) continue;
         const belowZ = layer.z - 1;
         const belowTerrain = tileAt(scene, x, y, belowZ);
-        if (!BARE_GROUND.has(belowTerrain)) continue;
+        if (!solsNus.has(belowTerrain)) continue;
         const built = (scene.architecture ?? []).some((body) =>
           body.masses.some((mass) => belowZ >= mass.z - mass.levels + 1 && belowZ <= mass.z
             && mass.footprint.some((r) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h)));
         if (built) continue;
-        throw new Error(`case d'étage (${x},${y},z${layer.z}) posée sur « ${belowTerrain} » — un plancher d'étage doit reposer sur un plancher/pavé ou une masse de l'étage inférieur, jamais du vide/de la terre nue (\`MapSpec.knownUnsupportedFloor\` pour tolérer un défaut de plan déjà mesuré)`);
+        throw new Error(`case d'étage (${x},${y},z${layer.z}) posée sur « ${belowTerrain} » — un plancher d'étage doit reposer sur une SURFACE BÂTIE (\`terrains.json › built\`) ou sur une masse de l'étage inférieur, jamais sur un sol nu (\`MapSpec.knownUnsupportedFloor\` pour tolérer un défaut de plan déjà mesuré)`);
       }
   }
 }
@@ -634,7 +643,7 @@ export function buildScene(spec: MapSpec): Scene {
   // LÉGENDE EFFECTIVE : les lettres `cells` résolvent leur `terrain` (fondation ; défaut = base d'étage) dans
   // l'ASCII, en surchargeant `legend`/BASE_LEGEND → un `#` d'enceinte tombe en 'pierre', pas en 'mur' ni 'herbe'.
   const cellTerrains: Record<string, Terrain> = {};
-  for (const [ch, rec] of Object.entries(spec.cells ?? {})) cellTerrains[ch] = rec.terrain ?? spec.terrain ?? 'herbe';
+  for (const [ch, rec] of Object.entries(spec.cells ?? {})) cellTerrains[ch] = rec.terrain ?? spec.terrain ?? DEFAULT_TERRAIN;
   const effLegend = { ...spec.legend, ...cellTerrains };
   // Cases repérées dans l'ASCII pour les char-maps coordonnée-free (`elevate` hauteur/rempart, `cells`
   // recette de case) — le char est de LÉGENDE (marqueurs déjà nettoyés → markerFill).
@@ -656,7 +665,7 @@ export function buildScene(spec: MapSpec): Scene {
       const z = parseInt(key.replace('z', ''), 10);
       const { positions, cleaned } = scanMarkers(rowsOf(rows), bindChars, spec.markerFill);
       for (const [ch, list] of Object.entries(positions)) for (const p of list) scanned.push({ char: ch, pos: p, z });
-      const base: Terrain = z === 0 ? (spec.terrain ?? 'herbe') : 'vide';
+      const base: Terrain = z === 0 ? (spec.terrain ?? DEFAULT_TERRAIN) : 'vide';
       const tiles = parseAsciiRows(cleaned, base, effLegend).tiles;
       s = putLayer(s, z, tiles);
       scanChars(cleaned, z, (r, x) => r[x] ?? ' ');
@@ -667,7 +676,7 @@ export function buildScene(spec: MapSpec): Scene {
     // recomplétée à 2W+1 (les ASCII éditables retirent les espaces de fin) ; les murs héritent du `z` de l'étage.
     for (const [key, rows] of Object.entries(spec.walled)) {
       const z = parseInt(key.replace('z', ''), 10);
-      const base: Terrain = z === 0 ? (spec.terrain ?? 'herbe') : 'vide';
+      const base: Terrain = z === 0 ? (spec.terrain ?? DEFAULT_TERRAIN) : 'vide';
       const padded = walledRowsOf(rows, w);
       const parsed = parseWalledAscii(padded, base, effLegend, { wallLegend: spec.wallLegend });
       s = putLayer(s, z, parsed.tiles);
@@ -676,7 +685,7 @@ export function buildScene(spec: MapSpec): Scene {
     }
   }
   if (!spec.levels && !spec.walled) {
-    s = putLayer(s, 0, new Array(w * h).fill(spec.terrain ?? 'herbe') as Terrain[]);
+    s = putLayer(s, 0, new Array(w * h).fill(spec.terrain ?? DEFAULT_TERRAIN) as Terrain[]);
   }
   for (const { rect: [x, y, rw, rh], terrain, z = 0 } of spec.terrainRects ?? []) {
     s = fillTerrainRect(s, { x, y, w: rw, h: rh }, terrain, z);

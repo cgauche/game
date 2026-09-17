@@ -136,6 +136,9 @@ const CLES: Record<string, string> = {
   "massBattleStructures": 'c285c8dec9f7b877',
   "massBattleHazards": 'e58c05b6a89d14d1',
   "details": '1d94d0c95e00ff48',
+  // #1716 : catégorie NEUVE — les semences d'une scène neuve (objet unique `semences-de-scene.json`),
+  // même projection que `details` (un item, ses sections). Empreinte MESURÉE à son entrée.
+  "semencesDeScene": 'b0f469f176864315',
   "names": '8ab7649e0daf9e50',
   // #1688 : `taille` + `maison` exigés sur les 24 structures (mesuré en donnée : `maison` 2 → 24,
   // `taille` 0 → 24). La clé projetée qui bouge est `maison`, désormais portée par TOUS les items —
@@ -281,6 +284,7 @@ const FORME: Record<string, string> = {
   "massBattleStructures": 'id label meta source',
   "massBattleHazards": 'desc id label source sub',
   "details": 'id label sections',
+  "semencesDeScene": 'id label sections',
   "names": 'id label sections sub',
   "structures": 'desc id label maison meta sections source sub',
   "terrains": 'id label maison meta sections',

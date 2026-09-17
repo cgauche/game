@@ -10,7 +10,13 @@
  */
 import { describe, expect, it } from 'vitest';
 import { parseProject, CURRENT_PROJECT_SCHEMA, PROJECT_MIGRATIONS } from './worldMap';
-import { DEFAULT_RELIEF_DEFAULTS } from './scene';
+
+/**
+ * ATTENDU GELÉ (#1716) — les matières que la migration 7 → 8 pose, écrites ICI en LITTÉRAL et non
+ * lues à la semence du jour (`semences-de-scene.json`, éditable au Codex) : une migration
+ * reconstitue ce qu'un projet AVAIT avant #1691, pas ce qu'une scène neuve recevrait aujourd'hui.
+ */
+const RELIEF_1691 = { cliff: 'terre', ramp: 'terre', deck: 'pierre', pilier: 'pilier' };
 
 /** Document schema 7 — FIGÉ. Ne pas y ajouter `reliefDefaults` : c'est le sujet de la mesure. */
 const PROJET_FORMAT_7 = {
@@ -42,7 +48,7 @@ describe('PROJECT_MIGRATIONS[7] — un projet format 7 se charge à travers la m
 
   it('il se charge VERT, et chaque scène ressort avec les matières de relief que le builder posait', () => {
     const doc = parseProject(structuredClone(PROJET_FORMAT_7));
-    expect(doc.scenes[0].reliefDefaults).toEqual(DEFAULT_RELIEF_DEFAULTS);
+    expect(doc.scenes[0].reliefDefaults).toEqual(RELIEF_1691);
     expect(doc.scenes[0].label).toBe('Le quai');
     expect(doc.scenes[0].entities![0].ref).toBe('tonneau');
   });
@@ -68,7 +74,7 @@ describe('PROJECT_MIGRATIONS[7] — un projet format 7 se charge à travers la m
     expect(migre.schema).toBe(8);
     const scene = (migre.scenes as Record<string, unknown>[])[0];
     expect(Object.keys(scene)).toEqual(['type', 'id', 'label', 'dimensions', 'reliefDefaults', 'layers', 'entities']);
-    expect(scene.reliefDefaults).toEqual(DEFAULT_RELIEF_DEFAULTS);
+    expect(scene.reliefDefaults).toEqual(RELIEF_1691);
     // La charge utile est INTACTE : le document d'après, dépouillé de la seule clé posée et rendu à
     // son numéro de forme, rend le document d'avant — ordre des clés compris.
     const { reliefDefaults: _pose, ...sansPose } = scene;

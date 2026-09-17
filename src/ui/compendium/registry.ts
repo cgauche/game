@@ -12,7 +12,7 @@ import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, siegeEngines, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
   stars, locations, findLocationById, books, bookAbr, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, advancementBaseId, weaponGroupLabel, qualitySubtypeLabel, qualityTypeLabel,
-  skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
+  skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, semencesDeScene, names,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms, symptomLabel, windsOfMagicTable,
@@ -1980,6 +1980,25 @@ const CODEX_SPECS: CodexCategorySpec[] = [
           t: 'kv', k: sp,
           v: `Âge ${details.ageBase[sp]}+${Math.round(details.ageRoll[sp] ?? 1)}d10 · Taille ${details.heightBase[sp]}+${Math.round(details.heightRoll[sp] ?? 1)}d10 cm`,
         } as CodexRow)),
+      }),
+    }],
+  },
+  {
+    key: 'semencesDeScene', label: 'Semences de scène', group: 'Tables',
+    // UNE seule entrée (objet `semences-de-scene.json`) — ce qu'une scène NEUVE reçoit à sa création
+    // (`emptyScene`, `state/scene.ts`). Les valeurs s'ÉDITENT ici (atelier, `edit.object: 'single'`).
+    build: () => [{
+      id: 'semences-de-scene', label: 'Semences de scène',
+      sections: sections({
+        title: 'Ce qu’une scène neuve reçoit', layout: 'list',
+        rows: [
+          { t: 'kv', k: 'Ambiance', v: semencesDeScene.ambiance },
+          { t: 'kv', k: 'Mètres par case', v: `${semencesDeScene.metresPerTile} m` },
+          { t: 'kv', k: 'Éclairage', v: semencesDeScene.ambientLight },
+          { t: 'kv', k: 'Sol de départ', v: semencesDeScene.terrain },
+          { t: 'kv', k: 'Matières de relief', v: Object.entries(semencesDeScene.reliefDefaults).map(([part, mat]) => `${part} : ${mat}`).join(' · ') },
+          { t: 'kv', k: 'Toiture', v: `${semencesDeScene.roofDefaults.material} · ${semencesDeScene.roofDefaults.pitchDeg}° · comble ${semencesDeScene.roofDefaults.riseMaxStoreys} étage(s)` },
+        ] as CodexRow[],
       }),
     }],
   },

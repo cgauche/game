@@ -268,6 +268,13 @@ export const reliefDefaultsSchema = z.strictObject(
   >,
 );
 /**
+ * AMBIANCE d'une scène — dedans/dehors, ce qui décide si l'éclairage suit l'horloge du monde.
+ * Source UNIQUE de la liste : le champ `Scene.ambiance` ci-dessous ET la semence d'une scène neuve
+ * (`schemas/defs/semences-de-scene.ts`) la lisent ici ; deux énumérations séparées laisseraient la
+ * semence admettre une ambiance que la scène refuse.
+ */
+export const ambianceSchema = z.enum(['interieur', 'exterieur']);
+/**
  * PLAGE de pente d'une toiture, en DEGRÉS — source UNIQUE des deux portes qui la tiennent : le PARSE
  * (`sceneRoofDefaultsSchema` et `roofDefaultsSchema` ci-dessous, une pente authorée hors plage est
  * refusée nommément) et la VALIDATION d'une masse matérialisée (`validateScene.ts`, qui SIGNALE au
@@ -703,7 +710,7 @@ export const sceneSchema = z.strictObject({
   dimensions: z.strictObject({ w: z.number(), h: z.number() }),
   /** Échelle métrique d'une CASE (m/case) — défaut 2 ; ≥ 4 = Scène MER (`isMerScene`). */
   metresPerTile: z.number().optional(),
-  ambiance: z.enum(['interieur', 'exterieur']).optional(),
+  ambiance: ambianceSchema.optional(),
   /** Classification écologique lue par les attributs de Domaine (`LDB 48 l.690`). */
   environment: z.enum(['rural', 'urbain', 'sauvage']).optional(),
   /** Météo (`LDB 14 l.68-82`) — défaut 'clair', lue par `sceneCombatModifiers`. */

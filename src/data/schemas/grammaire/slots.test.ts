@@ -141,6 +141,11 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // gate sa cause récurrente sur l'Inconscient qu'elle pose, `LDB 40 l.75`). UNE instance de
       // fabrique, retrouvée à 3 paths du même dialecte (`ops`, `test.onFail`, `test.onFailHard.ops`).
       "idDe('etat')",
+      // +1 site ADOPTÉ (#1716) : `defs/semences-de-scene.ts › ambientLight` — l'éclairage d'une scène
+      // NEUVE est soit `auto` (il suit l'horloge), soit un palier RÉEL de `lightLevels.json` : la
+      // semence est plus stricte que le champ qu'elle alimente (`Scene.ambientLight`, chaîne libre),
+      // parce qu'une semence fausse poserait le défaut faux sur CHAQUE scène créée ensuite.
+      "idDe('lightLevel')",
       "idDe('maladie')",
       // +4 sites ADOPTÉS (#1686 lot 3a-1, 2026-09-05) — les premiers d'un dataset DISCRIMINÉ : la
       // valeur passée à la fabrique NOMME la sous-liste contre laquelle l'id est refiné au parse
@@ -199,6 +204,9 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       ...Array.from({ length: 6 }, () => "idDe('talent')"),
       // +1 site ADOPTÉ (#1690) : `defs-scenes/scene.ts › layerSchema.tiles` résout CHAQUE case de la
       // grille contre `terrains.json` — 18 154 cellules sur les 4 projets livrés.
+      "idDe('terrain')",
+      // +1 site ADOPTÉ (#1716) : `defs/semences-de-scene.ts › terrain` — le SOL dont la couche 0 d'une
+      // scène neuve est remplie (`emptyScene`), résolu contre `terrains.json` AU PARSE.
       "idDe('terrain')",
       "idDe('trait')",
       "idDe('trapping')",

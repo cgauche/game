@@ -10,8 +10,8 @@
  * par jour + Effects), cible d'embuscade du « Attaqués ! », heures de voyage/jour et plafond de
  * marche forcée au niveau carte.
  */
-import type { Effect, Scene } from './scene';
-import { normalizeScene, DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS } from './scene';
+import type { Effect, ReliefDefaults, Scene, SceneRoofDefaults } from './scene';
+import { normalizeScene } from './scene';
 import type { TravelMode } from '../engine/travel';
 import type { PortProfile } from '../engine/seaVoyage';
 import type { LandMarketProfile } from '../engine/landCargo';
@@ -585,6 +585,25 @@ function migreChoix(scenes: unknown): unknown {
 }
 
 /**
+ * SEMENCES GELÉES des migrations 7 → 8 et 8 → 9 — les valeurs que le code posait EN DUR au moment de
+ * chaque lot (#1691 relief, #1715 toiture), figées ici avec leur migration.
+ *
+ * Elles ne lisent PAS la semence du jour (`semences-de-scene.json`, #1716) et ne doivent jamais le
+ * faire : une migration reconstitue ce qu'un projet de bibliothèque utilisateur AVAIT, pas ce qu'une
+ * scène neuve recevrait aujourd'hui — si l'auteur ré-édite sa semence, ses vieux projets doivent
+ * continuer à se rendre à l'identique. C'est aussi ce que mesurent la parité avec les scripts de
+ * dépôt (`scripts/migrations/2026-09-07-1691-…mjs`, `2026-09-09-1715-…mjs`), eux aussi gelés.
+ * La forme `as const satisfies …` est le SIGNAL que `matieres-en-donnee.test.ts` lit comme une
+ * semence d'authoring plutôt qu'une émission de matière.
+ */
+const SEMENCE_RELIEF_1691 = {
+  cliff: 'terre', ramp: 'terre', deck: 'pierre', pilier: 'pilier',
+} as const satisfies ReliefDefaults;
+const SEMENCE_TOITURE_1715 = {
+  material: 'toit-ardoise', pitchDeg: 45, riseMaxStoreys: 1,
+} as const satisfies SceneRoofDefaults;
+
+/**
  * Pose une clé de SCÈNE sur chaque scène d'un document, à la POSITION que `emptyScene` lui donne —
  * geste PARTAGÉ par les migrations qui EXIGENT un nouveau champ de scène (#1691 `reliefDefaults`,
  * #1715 `roofDefaults`) : c'est le même mouvement, pas deux.
@@ -798,7 +817,7 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
   /**
    * `7` pose les MATIÈRES DE RELIEF de chaque scène (#1691) : `reliefDefaults`, EXIGÉ par
    * `sceneSchema` depuis que `gameIso/builders/floors.ts` ne choisit plus aucune matière. Les valeurs
-   * posées sont `DEFAULT_RELIEF_DEFAULTS` — exactement ce que le builder choisissait en dur avant le
+   * posées sont `SEMENCE_RELIEF_1691` — exactement ce que le builder choisissait en dur avant le
    * lot, donc un projet de bibliothèque utilisateur se rend à l'identique après migration. La clé va
    * à la POSITION que la création lui donne (`emptyScene`) : juste avant `layers`. Une scène qui en
    * porte déjà un traverse INTACTE (un document hybride n'est pas réécrit par cette migration ; c'est
@@ -809,7 +828,7 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
   7: (doc) => ({
     ...doc,
     ...(doc.scenes !== undefined
-      ? { scenes: poseSurChaqueScene(doc.scenes, 'reliefDefaults', () => ({ ...DEFAULT_RELIEF_DEFAULTS }), { avant: 'layers' }) }
+      ? { scenes: poseSurChaqueScene(doc.scenes, 'reliefDefaults', () => ({ ...SEMENCE_RELIEF_1691 }), { avant: 'layers' }) }
       : {}),
     version: 8,
     schema: 8,
@@ -818,7 +837,7 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
    * `8` pose la TOITURE PAR DÉFAUT de chaque scène (#1715) : `roofDefaults`, EXIGÉ par `sceneSchema`
    * depuis que la dérivation des masses ne choisit plus ni couverture, ni pente de référence, ni
    * borne de comble (`toitureEffective`, `state/sceneEdit.ts`). Les valeurs posées sont
-   * `DEFAULT_ROOF_DEFAULTS` — exactement ce que la dérivation appliquait en dur avant le lot, donc un
+   * `SEMENCE_TOITURE_1715` — exactement ce que la dérivation appliquait en dur avant le lot, donc un
    * projet de bibliothèque utilisateur se rend à l'identique après migration. La clé va à la POSITION
    * que la création lui donne (`emptyScene`) : juste après `reliefDefaults`. Une scène qui en porte
    * déjà une traverse INTACTE.
@@ -828,7 +847,7 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
   8: (doc) => ({
     ...doc,
     ...(doc.scenes !== undefined
-      ? { scenes: poseSurChaqueScene(doc.scenes, 'roofDefaults', () => ({ ...DEFAULT_ROOF_DEFAULTS }), { apres: 'reliefDefaults' }) }
+      ? { scenes: poseSurChaqueScene(doc.scenes, 'roofDefaults', () => ({ ...SEMENCE_TOITURE_1715 }), { apres: 'reliefDefaults' }) }
       : {}),
     version: 9,
     schema: 9,

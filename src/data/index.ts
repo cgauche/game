@@ -12,6 +12,9 @@ import type { TypeEntite } from './schemas/grammaire/ref';
 import { symptomSeveritySchema } from './schemas/grammaire/valeurs';
 import { libelleDeValeur } from './schemas/grammaire/meta';
 import type { MerchantArchetypeDef } from '../state/merchants/types';
+// Types de la SCÈNE, en TYPE seul (aucun cycle runtime) : les semences d'une scène neuve portent
+// EXACTEMENT les types des champs qu'elles alimentent — les redéclarer ici en ferait une seconde vérité.
+import type { Scene, ReliefDefaults, SceneRoofDefaults, Terrain } from '../state/scene';
 import { slugId } from './slug';
 import { norm } from '../lib/normalize';
 import { effectiveEntry } from '../engine/variants';
@@ -79,6 +82,7 @@ import weatherJson from './weather.json';
 import ventsTourbillonnantsJson from './vents-tourbillonnants.json';
 import symptomsJson from './symptoms.json';
 import detailsJson from './details.json';
+import semencesDeSceneJson from './semences-de-scene.json';
 import starsJson from './stars.json';
 import astrologyJson from './astrology.json';
 import locationsJson from './locations.json';
@@ -1594,6 +1598,20 @@ export interface DetailsData {
     ambitionLong: DetailText;
   };
 }
+/**
+ * SEMENCES d'une scène NEUVE (#1716) — ce que `emptyScene` (`state/scene.ts`) pose à la création.
+ * Chaque champ porte le TYPE du champ de scène qu'il alimente : une semence n'est pas un vocabulaire
+ * parallèle, c'est la valeur de départ du champ homonyme. `terrain` est le seul sans homonyme —
+ * c'est le sol dont la couche 0 est remplie.
+ */
+export interface SemencesDeSceneData {
+  ambiance: NonNullable<Scene['ambiance']>;
+  metresPerTile: number;
+  ambientLight: NonNullable<Scene['ambientLight']>;
+  terrain: Terrain;
+  reliefDefaults: ReliefDefaults;
+  roofDefaults: SceneRoofDefaults;
+}
 /** MANŒUVRE de combat (attaque naturelle activée — LDB 85) — ENTITÉ ÉDITABLE de PREMIÈRE CLASSE (au
  *  même titre qu'un Sort) : son propre dataset `maneuvers.json`, sa catégorie Codex, ses effets
  *  AUTHORÉS en GameOp (`effects`). Un trait l'OCTROIE (`TraitData.grantsManeuvers`) ; le résolveur
@@ -2825,6 +2843,8 @@ export const weatherPhysicalTestChars = weatherData.physicalTestChars;
  *  Codex (`ventsTourbillonnants`, `ui/compendium/registry.ts`). */
 export const windsOfMagicTable = (ventsTourbillonnantsJson as { entries: { id: string; min: number; max: number; mod: number; label: string }[] }).entries;
 export const details = detailsJson as DetailsData;
+/** Semences d'une scène NEUVE (#1716) — lues par `emptyScene` (`state/scene.ts`), éditables au Codex. */
+export const semencesDeScene = semencesDeSceneJson as SemencesDeSceneData;
 export const stars = starsJson as StarData[];
 /** Les 5 demeures célestes (ADE II 3 l.502-512, « Déterminer les demeures célestes ») — ossature
  *  narrative du thème astral (flavor pur, aucun effet mécanique). `rand` = borne haute du 1d10. */

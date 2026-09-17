@@ -65,6 +65,9 @@ export const TYPES = {
   // chiffre pas se lit au registre, l'id résout donc AU PARSE comme toute autre référence.
   regleOptionnelle: { dataset: 'reglesOptionnelles.json', specsOpen: false },
   terrain: { dataset: 'terrains.json', specsOpen: false },
+  // PALIER D'ÉCLAIRAGE (#1716) : la semence d'éclairage d'une scène neuve (`semences-de-scene.json`)
+  // nomme un palier — l'id résout AU PARSE, là où `Scene.ambientLight` reste une chaîne libre.
+  lightLevel: { dataset: 'lightLevels.json', specsOpen: false },
   prop: { dataset: 'props.json', specsOpen: false },
   building: { dataset: 'buildings.json', specsOpen: false },
 } as const satisfies Record<string, CibleDeType>;

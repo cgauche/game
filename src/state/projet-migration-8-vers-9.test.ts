@@ -10,7 +10,15 @@
  */
 import { describe, expect, it } from 'vitest';
 import { parseProject, CURRENT_PROJECT_SCHEMA, PROJECT_MIGRATIONS } from './worldMap';
-import { DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS } from './scene';
+
+/**
+ * ATTENDU GELÉ (#1716) — la valeur que la migration 8 → 9 pose, écrite ICI en LITTÉRAL et non lue
+ * à la semence du jour (`semences-de-scene.json`, éditable au Codex) : une migration reconstitue ce
+ * qu'un projet AVAIT avant #1715, pas ce qu'une scène neuve recevrait aujourd'hui. Comparer la
+ * migration à une donnée que l'auteur peut changer ne prouverait plus rien.
+ */
+const TOITURE_1715 = { material: 'toit-ardoise', pitchDeg: 45, riseMaxStoreys: 1 };
+const RELIEF_1691 = { cliff: 'terre', ramp: 'terre', deck: 'pierre', pilier: 'pilier' };
 
 /** Document schema 8 — FIGÉ. Ne pas y ajouter `roofDefaults` : c'est le sujet de la mesure. */
 const PROJET_FORMAT_8 = {
@@ -27,7 +35,7 @@ const PROJET_FORMAT_8 = {
       id: 'quai',
       label: 'Le quai',
       dimensions: { w: 2, h: 2 },
-      reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS },
+      reliefDefaults: { ...RELIEF_1691 },
       layers: [{ z: 0, tiles: ['herbe', 'herbe', 'herbe', 'herbe'] }],
       entities: [{ id: 'tonneau', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'tonneau' }],
     },
@@ -43,7 +51,7 @@ describe('PROJECT_MIGRATIONS[8] — un projet format 8 se charge à travers la m
 
   it('il se charge VERT, et chaque scène ressort avec la toiture que la dérivation appliquait', () => {
     const doc = parseProject(structuredClone(PROJET_FORMAT_8));
-    expect(doc.scenes[0].roofDefaults).toEqual(DEFAULT_ROOF_DEFAULTS);
+    expect(doc.scenes[0].roofDefaults).toEqual(TOITURE_1715);
     expect(doc.scenes[0].label).toBe('Le quai');
     expect(doc.scenes[0].entities![0].ref).toBe('tonneau');
   });
@@ -69,7 +77,7 @@ describe('PROJECT_MIGRATIONS[8] — un projet format 8 se charge à travers la m
     expect(migre.schema).toBe(9);
     const scene = (migre.scenes as Record<string, unknown>[])[0];
     expect(Object.keys(scene)).toEqual(['type', 'id', 'label', 'dimensions', 'reliefDefaults', 'roofDefaults', 'layers', 'entities']);
-    expect(scene.roofDefaults).toEqual(DEFAULT_ROOF_DEFAULTS);
+    expect(scene.roofDefaults).toEqual(TOITURE_1715);
     // La charge utile est INTACTE : le document d'après, dépouillé de la seule clé posée et rendu à
     // son numéro de forme, rend le document d'avant — ordre des clés compris.
     const { roofDefaults: _pose, ...sansPose } = scene;

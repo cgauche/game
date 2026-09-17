@@ -41,7 +41,7 @@ import type { wallSideSchema } from '../data/schemas/defs-scenes/communs';
 // Seul import runtime de ce module vers `src/data` : l'opacité d'une arête est une propriété de sa
 // STRUCTURE, lue au dataset — même couture que `lineOfSight.ts`. `data/index.ts` ne dépend de `state`
 // qu'en TYPE, donc pas de cycle.
-import { findStructureById } from '../data';
+import { findStructureById, semencesDeScene } from '../data';
 import type { Dir8 } from './dir8';
 import type { Pt } from './path';
 import { terrainWalkable } from './terrain';
@@ -771,46 +771,45 @@ export function parapetTilesAbove(scene: Scene, seg: { x: number; y: number; sid
 }
 
 /**
- * Matières de relief d'une scène NEUVE (#1691) — le défaut d'AUTHORING, pas une règle : un talus et une
- * rampe de sol nu en terre, la dalle d'un tablier et son pilier en ouvrage. Chaque scène porte ensuite
- * SES valeurs (panneau de scène de l'inspecteur) ; le builder ne connaît que celles de la scène.
- * Il vit ICI, avec `emptyScene` qui le pose : ce défaut-ci est celui de la SCÈNE, matérialisé à sa
- * création — aucun builder, aucun panneau ne le lit.
+ * Matières de relief d'une scène NEUVE (#1691, en donnée #1716) — le défaut d'AUTHORING, pas une
+ * règle : DÉRIVÉE de la semence éditable (`semences-de-scene.json`). Chaque scène porte ensuite SES
+ * valeurs (panneau de scène de l'inspecteur) ; le builder ne connaît que celles de la scène.
  */
-export const DEFAULT_RELIEF_DEFAULTS = {
-  cliff: 'terre', ramp: 'terre', deck: 'pierre', pilier: 'pilier',
-} as const satisfies ReliefDefaults;
+export const DEFAULT_RELIEF_DEFAULTS: ReliefDefaults = semencesDeScene.reliefDefaults;
 
 /**
- * Toiture d'une scène NEUVE (#1715) — le défaut d'AUTHORING, pas une règle. `pitchDeg: 45` et
- * `riseMaxStoreys: 1` se lisent sur la planche officielle de La Diligence (`art-ref/page012_img3.png`,
- * son élévation en haut à gauche) : un long faîtage à deux pentes dont les pignons montent d'une
- * demi-portée environ (montée ≈ demi-portée ⇒ pente ≈ 45°), sur des combles d'un étage. Aucune source
- * ne cote de TOITURE (l'Atlas `docs/raw/` ne touche au bâti que par ses murs), donc c'est un arbitrage
- * maison — et il vit en DONNÉE : chaque scène porte ensuite SES valeurs (panneau de scène de
+ * Toiture d'une scène NEUVE (#1715, en donnée #1716) — le défaut d'AUTHORING, pas une règle,
+ * DÉRIVÉE de la semence éditable : chaque scène porte ensuite SES valeurs (panneau de scène de
  * l'inspecteur), un corps les surcharge, un type de bâtiment porte sa propre couverture.
- * Lu par `emptyScene` ci-dessous et par la migration 8 → 9 (`worldMap.ts`) UNIQUEMENT.
  */
-export const DEFAULT_ROOF_DEFAULTS = {
-  material: 'toit-ardoise', pitchDeg: 45, riseMaxStoreys: 1,
-} as const satisfies SceneRoofDefaults;
+export const DEFAULT_ROOF_DEFAULTS: SceneRoofDefaults = semencesDeScene.roofDefaults;
+
+/**
+ * SOL d'une scène NEUVE (#1716) — DÉRIVÉE de la même semence. Source UNIQUE du terrain de
+ * DÉPART/REMPLISSAGE de tout le dépôt : la création d'une scène (`emptyScene`), la compilation d'un
+ * `MapSpec` sans `terrain` déclaré, le redimensionnement de l'éditeur, le pinceau par défaut de la
+ * palette et le repli de la légende d'export ASCII le lisent ICI — jamais un `'…'` de leur cru.
+ */
+export const DEFAULT_TERRAIN: Terrain = semencesDeScene.terrain;
 
 /** Scène neuve — pose les défauts EXPLICITES au lieu de laisser `undefined` : le contrôle d'inspecteur
  *  affiche alors la valeur RÉELLEMENT effective (2 m, horloge) au lieu d'un simple placeholder vide qui
  *  laisserait l'auteur deviner (#841 FU-A). `environment` reste absent : « non spécifié » (aucun bonus de
- *  Domaine) est une valeur légitime à part entière, pas un défaut caché. */
+ *  Domaine) est une valeur légitime à part entière, pas un défaut caché.
+ *  Tout ce que la scène reçoit ici vient de la SEMENCE éditable (`semences-de-scene.json`, #1716) :
+ *  ce module ne choisit plus ni matière, ni terrain, ni échelle. */
 export function emptyScene(w = 20, h = 15): Scene {
   return {
     type: 'scene',
     id: `scene-${Date.now()}`,
     label: 'Nouvelle scène',
     dimensions: { w, h },
-    ambiance: 'exterieur',
-    metresPerTile: 2,
-    ambientLight: 'auto',
-    reliefDefaults: { ...DEFAULT_RELIEF_DEFAULTS },
-    roofDefaults: { ...DEFAULT_ROOF_DEFAULTS },
-    layers: [{ z: 0, tiles: new Array(w * h).fill('herbe') }],
+    ambiance: semencesDeScene.ambiance,
+    metresPerTile: semencesDeScene.metresPerTile,
+    ambientLight: semencesDeScene.ambientLight,
+    reliefDefaults: { ...semencesDeScene.reliefDefaults },
+    roofDefaults: { ...semencesDeScene.roofDefaults },
+    layers: [{ z: 0, tiles: new Array(w * h).fill(semencesDeScene.terrain) }],
     entities: [],
     dialogues: [],
     triggers: [],

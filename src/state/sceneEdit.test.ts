@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, type ArchitectureBody, type ArchitectureRect, type BuildingMass, type Scene, type Terrain } from './scene';
+import { DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS, DEFAULT_TERRAIN, emptyScene, type ArchitectureBody, type ArchitectureRect, type BuildingMass, type Scene, type Terrain } from './scene';
+import { semencesDeScene } from '../data';
 import { METRES_PER_LEVEL } from './relief';
 import {
   addArchitectureBody,
@@ -180,9 +181,40 @@ describe('deriveArchitectureMasses — un corps, UN toit (#930)', () => {
     for (const mass of massesOf(scene)) expect(mass.eaveSide).toBe('S');
   });
 
-  it('la SCÈNE porte la toiture par défaut, et une scène neuve suit la planche : pente raide, ardoise, un étage de comble', () => {
-    expect(emptyScene(8, 8).roofDefaults).toEqual({ material: 'toit-ardoise', pitchDeg: 45, riseMaxStoreys: 1 });
+  /**
+   * FORME COMPLÈTE d'une scène neuve (#1716) — l'attendu est un objet LITTÉRAL GELÉ, jamais la
+   * semence relue (`semencesDeScene`) : comparer `emptyScene()` au dataset qu'il vient de lire ne
+   * prouverait rien. Ce test est le témoin du passage des littéraux de code à la DONNÉE : la scène
+   * créée est byte-identique à celle d'avant le lot, `id` horodaté mis à part.
+   */
+  it('une scène NEUVE reçoit EXACTEMENT les semences d’aujourd’hui — forme complète, pente raide, ardoise, un étage de comble', () => {
+    const { id, ...scene } = emptyScene(8, 8);
+    expect(id).toMatch(/^scene-\d+$/);
+    expect(scene).toEqual({
+      type: 'scene',
+      label: 'Nouvelle scène',
+      dimensions: { w: 8, h: 8 },
+      ambiance: 'exterieur',
+      metresPerTile: 2,
+      ambientLight: 'auto',
+      reliefDefaults: { cliff: 'terre', ramp: 'terre', deck: 'pierre', pilier: 'pilier' },
+      roofDefaults: { material: 'toit-ardoise', pitchDeg: 45, riseMaxStoreys: 1 },
+      layers: [{ z: 0, tiles: new Array(64).fill('herbe') }],
+      entities: [],
+      dialogues: [],
+      triggers: [],
+      encounters: [],
+      flags: {},
+    });
     expect(ROOF_GABLE_SPAN_MAX_M).toBe(8);
+  });
+
+  /** Les deux DÉRIVÉES publiques sont la semence elle-même : onze modules les importent (fixtures de
+   *  scène, gardes de plan, panneaux) — elles doivent SUIVRE l'édition, pas figer une copie. */
+  it('`DEFAULT_RELIEF_DEFAULTS`/`DEFAULT_ROOF_DEFAULTS`/`DEFAULT_TERRAIN` sont les semences du dataset (#1716)', () => {
+    expect(DEFAULT_RELIEF_DEFAULTS).toEqual(semencesDeScene.reliefDefaults);
+    expect(DEFAULT_ROOF_DEFAULTS).toEqual(semencesDeScene.roofDefaults);
+    expect(DEFAULT_TERRAIN).toBe(semencesDeScene.terrain);
   });
 
   /** #1715 — la pente de RÉFÉRENCE est une donnée de la SCÈNE : la dérivation la lit, elle n'en

@@ -1,12 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { buildScene, type MapSpec } from './mapSpec';
-import { layerTiles, isWalkable, wallBetween, setStructureDown, heightAt, tileAt, type BuildingMass } from './scene';
+import { layerTiles, isWalkable, wallBetween, setStructureDown, heightAt, tileAt, type BuildingMass, type Terrain } from './scene';
 import { pathTo, reachable, walkNeighbors } from './path';
 import { edgeWallState } from '../ui/editor/editorState';
 import { sceneZoneTiles } from './zones';
 import { scenario as zonesPieces } from '../scenes/test-scenarios/zones-pieces';
 import { buildVitrineScene, vitrineSpec } from '../scenes/vitrine-batiments';
 import { perimeterEdges } from './sceneEdit.testkit';
+import { PENTE_TOIT_DEG } from '../data/schemas/defs-scenes/scene';
+import { builtTerrains, groundTerrains } from './planDefects';
+import { tousLesTerrains } from './terrain';
 
 /** GOLDEN = spécification exécutable du format `MapSpec`. Chaque bloc verrouille une section de la
  *  compilation `buildScene` (headless-editor). L'ordre de compilation est figé par ces attentes. */
@@ -911,9 +914,13 @@ describe('buildScene — validation FAIL-FAST des masses de bâtiment (#823)', (
     expect(() => buildScene(specWith([goodMass]))).not.toThrow(); // même emprise carrée, ridge déclaré
   });
 
-  it('règle 6 — pente hors de la plage sensée [5°, 75°] → lève', () => {
-    expect(() => buildScene(specWith([{ ...goodMass, pitchDeg: 2 }]))).toThrow(/pente .* hors plage sensée/);
-    expect(() => buildScene(specWith([{ ...goodMass, pitchDeg: 89 }]))).toThrow(/pente .* hors plage sensée/);
+  /** #1716 — la plage est celle du SCHÉMA de scène (`PENTE_TOIT_DEG`, source unique du parse et de la
+   *  validation) : le test la LIT, il ne la récite pas. Contrat : hors plage ⇒ lève, AUX BORNES ⇒ passe. */
+  it('règle 6 — pente hors de la plage sensée `PENTE_TOIT_DEG` → lève ; aux bornes → passe', () => {
+    expect(() => buildScene(specWith([{ ...goodMass, pitchDeg: PENTE_TOIT_DEG.min - 1 }]))).toThrow(/pente .* hors plage sensée/);
+    expect(() => buildScene(specWith([{ ...goodMass, pitchDeg: PENTE_TOIT_DEG.max + 1 }]))).toThrow(/pente .* hors plage sensée/);
+    expect(() => buildScene(specWith([{ ...goodMass, pitchDeg: PENTE_TOIT_DEG.min }]))).not.toThrow();
+    expect(() => buildScene(specWith([{ ...goodMass, pitchDeg: PENTE_TOIT_DEG.max }]))).not.toThrow();
   });
 
   it('profil `shed` sans `eaveSide` déclaré → lève', () => {
@@ -928,6 +935,26 @@ describe('buildScene — validation FAIL-FAST des masses de bâtiment (#823)', (
     });
     expect(() => buildScene(spec)).toThrow(/posée sur/);
     expect(() => buildScene({ ...spec, knownUnsupportedFloor: [{ x: 8, y: 8, z: 1 }] })).not.toThrow();
+  });
+
+  /** #1716 — l'ensemble des sols qui ne portent RIEN est dérivé de `terrains.json › built` (primitive
+   *  partagée `groundTerrains`, celle de `map:check`) : le test PARCOURT la donnée, il ne récite aucun
+   *  id. La liste récitée d'avant (`herbe`/`terre`/`vide`) laissait la même case passer en silence sur
+   *  `sable`, `boue`, `neige`, `eau`, `lave`… */
+  it('support de plancher — CHAQUE sol non bâti sous la case lève, CHAQUE surface bâtie porte (#1716)', () => {
+    const sur = (dessous: string) => specWith([goodMass], {
+      relief: [{ rect: [0, 0, 11, 11] as [number, number, number, number], height: 4, z: 1 }],
+      terrainRects: [
+        { rect: [8, 8, 1, 1] as [number, number, number, number], terrain: dessous as Terrain, z: 0 },
+        { rect: [8, 8, 1, 1] as [number, number, number, number], terrain: 'plancher' as Terrain, z: 1 },
+      ],
+    });
+    const leve = (id: string) => {
+      try { buildScene(sur(id)); return false; } catch (e) { return /posée sur/.test(String(e)); }
+    };
+    expect(groundTerrains().size, 'aucun sol nu au dataset : la règle mesure un vocabulaire mort').toBeGreaterThan(0);
+    expect(builtTerrains().size, 'aucune surface bâtie au dataset : le contrôle positif ne prouve rien').toBeGreaterThan(0);
+    expect(new Set(tousLesTerrains().map((t) => t.id).filter(leve))).toEqual(groundTerrains());
   });
 });
 

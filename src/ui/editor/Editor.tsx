@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useGame } from '../../state/store';
-import { Scene, emptyScene, Terrain, tileAt, heightAt } from '../../state/scene';
+import { DEFAULT_TERRAIN, Scene, emptyScene, Terrain, tileAt, heightAt } from '../../state/scene';
 import { validateScene, type Warning } from '../../state/validateScene';
 import { planFocusTiles, type PlanDefectAt, type PlanDefectFamily } from '../../state/planDefects';
 import { testScene } from '../../scenes/test-fixture';
@@ -772,7 +772,7 @@ export function Editor({
     // Re-tisse chaque couche à la nouvelle taille : tuiles ET hauteurs métriques recopiées dans la zone
     // commune (le reste = défaut). Le tableau `height` n'est conservé que s'il porte une valeur ≠ 0.
     const layers = scene.layers.map((layer) => {
-      const tiles: Terrain[] = new Array(w * h).fill('herbe');
+      const tiles: Terrain[] = new Array(w * h).fill(DEFAULT_TERRAIN);
       const height: number[] = new Array(w * h).fill(0);
       let hasHeight = false;
       for (let y = 0; y < Math.min(h, scene.dimensions.h); y++)
