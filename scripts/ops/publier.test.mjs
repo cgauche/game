@@ -628,13 +628,13 @@ test('citerArgv : un token que `CommandLineToArgvW` relit comme UN argument', ()
   // Contrat : TOUJOURS entouré de guillemets — un token unique, quelles que soient ses espaces.
   assert.equal(citerArgv('--reprendre'), '"--reprendre"')
   assert.equal(citerArgv('arg avec espace'), '"arg avec espace"')
-  assert.equal(citerArgv('C:/dossier avec espace/publier.mjs'), '"C:/dossier avec espace/publier.mjs"')
+  assert.equal(citerArgv('/dossier avec espace/publier.mjs'), '"/dossier avec espace/publier.mjs"')
   // Guillemet interne : échappé par un backslash.
   assert.equal(citerArgv('dit "oui"'), '"dit \\"oui\\""')
   // Backslashes AVANT un guillemet : doublés, sinon ils échapperaient le guillemet.
   assert.equal(citerArgv('a\\\\"b'), '"a\\\\\\\\\\"b"')
   // Backslash FINAL : doublé, sinon il échapperait le guillemet fermant du token.
-  assert.equal(citerArgv('C:\\dep\\'), '"C:\\dep\\\\"')
+  assert.equal(citerArgv('dep\\'), '"dep\\\\"')
   // L'apostrophe n'est PAS l'affaire de Win32 : elle traverse (c'est la citation PowerShell qui la double).
   assert.equal(citerArgv("d'ops"), '"d\'ops"')
 })
@@ -691,7 +691,7 @@ test('lancerDetache : sous win32, un chemin de script à ESPACE reste UN argumen
   let commande = ''
   lancerDetache({
     ...LANCEMENT,
-    script: 'C:/dep/dossier avec espace/publier.mjs',
+    script: '/dep/dossier avec espace/publier.mjs',
     args: ['--ci-timeout-min', '30', 'arg avec espace'],
     plateforme: 'win32',
     executerSync: (_exe, args) => {
@@ -700,7 +700,7 @@ test('lancerDetache : sous win32, un chemin de script à ESPACE reste UN argumen
     },
   })
   assert.ok(
-    commande.includes(`-ArgumentList '"C:/dep/dossier avec espace/publier.mjs"','"--ci-timeout-min"','"30"','"arg avec espace"'`),
+    commande.includes(`-ArgumentList '"/dep/dossier avec espace/publier.mjs"','"--ci-timeout-min"','"30"','"arg avec espace"'`),
     commande,
   )
 })
