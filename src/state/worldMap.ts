@@ -10,7 +10,7 @@
  * par jour + Effects), cible d'embuscade du « Attaqués ! », heures de voyage/jour et plafond de
  * marche forcée au niveau carte.
  */
-import type { Effect, ReliefDefaults, Scene, SceneRoofDefaults } from './scene';
+import type { Effect, Fige, ReliefDefaults, Scene, SceneRoofDefaults } from './scene';
 import { normalizeScene } from './scene';
 import type { TravelMode } from '../engine/travel';
 import type { PortProfile } from '../engine/seaVoyage';
@@ -593,15 +593,15 @@ function migreChoix(scenes: unknown): unknown {
  * scène neuve recevrait aujourd'hui — si l'auteur ré-édite sa semence, ses vieux projets doivent
  * continuer à se rendre à l'identique. C'est aussi ce que mesurent la parité avec les scripts de
  * dépôt (`scripts/migrations/2026-09-07-1691-…mjs`, `2026-09-09-1715-…mjs`), eux aussi gelés.
- * La forme `as const satisfies …` est le SIGNAL que `matieres-en-donnee.test.ts` lit comme une
- * semence d'authoring plutôt qu'une émission de matière.
+ * La forme `as const satisfies Fige<…Defaults>` est le SIGNAL que `matieres-en-donnee.test.ts` lit
+ * comme une semence d'authoring plutôt qu'une émission de matière.
  */
 const SEMENCE_RELIEF_1691 = {
   cliff: 'terre', ramp: 'terre', deck: 'pierre', pilier: 'pilier',
-} as const satisfies ReliefDefaults;
+} as const satisfies Fige<ReliefDefaults>;
 const SEMENCE_TOITURE_1715 = {
   material: 'toit-ardoise', pitchDeg: 45, riseMaxStoreys: 1,
-} as const satisfies SceneRoofDefaults;
+} as const satisfies Fige<SceneRoofDefaults>;
 
 /**
  * Pose une clé de SCÈNE sur chaque scène d'un document, à la POSITION que `emptyScene` lui donne —

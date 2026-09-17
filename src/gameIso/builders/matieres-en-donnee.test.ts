@@ -62,12 +62,13 @@ const duStore = (rel: string) => !/^(gameIso|ui)\//.test(rel);
  *    #1716 la semence VIVANTE est de la donnée (`semences-de-scene.json`, lue par `emptyScene`), et
  *    la forme ne subsiste qu'aux MIGRATIONS de projet (`worldMap.ts`), qui reconstituent la valeur
  *    d'avant leur lot — la matière y est écrite pour être POSÉE sur un vieux document, pas émise par
- *    un builder. Le `satisfies` est ce qui distingue la semence d'un littéral libre.
+ *    un builder. Le `satisfies` est ce qui distingue la semence d'un littéral libre ; la cible est
+ *    `Fige<…Defaults>` (#1789), et cette reconnaissance par REGEX passe au checker (#1789 train D).
  */
 const SIGNAUX_STRUCTURELS = [
   { nom: 'valeur TYPÉE `Terrain`', re: /:\s*(Readonly)?(Set|ReadonlySet)?<?\s*Terrain\b|\bas\s+Terrain(\[\])?\b/, portee: 'ligne' },
   { nom: 'clé `scope:` (portée d’un avertissement)', re: /\bscope:/, portee: 'ligne' },
-  { nom: 'SEMENCE `as const satisfies …Defaults`', re: /\bas const satisfies\s+\w*Defaults\b/, portee: 'bloc' },
+  { nom: 'SEMENCE `as const satisfies …Defaults`', re: /\bas const satisfies\s+(?:Fige<)?\w*Defaults>?\b/, portee: 'bloc' },
 ] as const;
 
 /** Les signaux de PORTÉE LIGNE, en une seule passe. */
@@ -75,7 +76,7 @@ const LIGNE_STRUCTURELLE = new RegExp(
   SIGNAUX_STRUCTURELS.filter((s) => s.portee === 'ligne').map((s) => s.re.source).join('|'),
 );
 /** La DÉCLARATION d'une semence, du `=` au `satisfies` : elle porte ses littéraux sur plusieurs lignes. */
-const SEMENCE_DECL = /=\s*\{[^{}]*\}\s*as const satisfies\s+\w*Defaults\b/g;
+const SEMENCE_DECL = /=\s*\{[^{}]*\}\s*as const satisfies\s+(?:Fige<)?\w*Defaults>?\b/g;
 
 /** Tous les fichiers du périmètre : la marche de l'arbre ET la lecture viennent de la primitive de
  *  corpus (`readCorpus`, une clé par base, `*.test.*` hors corpus). Le chemin rendu est celui que le

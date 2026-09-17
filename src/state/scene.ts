@@ -49,8 +49,13 @@ import { entityBlockedAt } from './sceneRules';
 import { type Grade, gradeBetween, metricToLift } from './relief';
 import { aretesA } from './wallIndex';
 
-/** Un terrain est un id de catalogue (cf. src/state/terrain.ts). */
-export type Terrain = string;
+/** Un terrain est un id de catalogue (cf. src/state/terrain.ts). L'intersection vide garde l'alias
+ *  VISIBLE au checker (type contextuel d'un littéral) sans rien refuser à `string` (#1789). */
+export type Terrain = string & {};
+
+/** Marque de TYPE d'une valeur GELÉE : ce qu'une migration REJOUE, jamais la semence du jour —
+ *  distinguable au checker par son alias, sans nom de symbole ni de fichier (#1789). */
+export type Fige<T> = T & { readonly __fige?: undefined };
 
 export type EntityKind = z.infer<typeof entityKindSchema>;
 
