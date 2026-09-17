@@ -218,7 +218,6 @@ describe('sumOf — empreinte 64 bits', () => {
   });
 
   it('aucune COLLISION sur les blocs des 16 livres extraits', () => {
-    const t0 = Date.now();
     const parSum = new Map<string, string>();
     let blocsVus = 0;
     let collisions = 0;
@@ -236,7 +235,7 @@ describe('sumOf — empreinte 64 bits', () => {
         }
       }
     }
-    console.log(`empreintes : ${blocsVus} blocs, ${parSum.size} empreintes, ${collisions} collisions, ${Date.now() - t0} ms`);
+    console.log(`empreintes : ${blocsVus} blocs, ${parSum.size} empreintes, ${collisions} collisions`);
     expect(blocsVus).toBeGreaterThan(20_000);
     expect(collisions).toBe(0);
   });

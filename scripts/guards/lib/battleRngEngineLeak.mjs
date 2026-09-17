@@ -35,6 +35,10 @@
 //    `resolveXxx` de `src/state/**` résolvent en un fichier direct (`../engine/<module>`), zéro barrel.
 import tsModule from 'typescript';
 import { scriptKindDe } from './dialecte.mjs';
+// Vue CODE SEUL du texte (primitive PARTAGÉE) : les IMPORTS sont parsés AVANT sur le texte brut, et
+// ce qui reste ne doit être QUE du code — un appel cité en commentaire ou en chaîne n'appelle rien,
+// et les lignes sont préservées, donc les numéros rapportés restent ceux de la source.
+import { codeSeul } from './codeSeul.mjs';
 
 // Liaison LOCALE de l'API du compilateur — même FAIT mesuré qu'en tête de `sceneMutation.mjs`
 // (2026-08-23) : sous Vitest, un `ts.x` de visiteur AST se relit sur l'objet d'import de vite-node.
@@ -44,20 +48,6 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-
-/** Retire commentaires (mais PAS les imports : on les parse avant), en CONSERVANT les retours-ligne
- *  d'un commentaire bloc — sinon les lignes rapportées dérivent d'autant (#918 lot B).
- *  @param {string} src @returns {string} */
-function stripCommentsOnly(src) {
-  return src
-    .replace(/\/\*[\s\S]*?\*\//g, (bloc) => bloc.replace(/[^\n]/g, ''))
-    .split('\n')
-    .map((l) => {
-      const i = l.indexOf('//');
-      return i >= 0 ? l.slice(0, i) : l;
-    })
-    .join('\n');
-}
 
 /** Échappe un nom pour usage en RegExp littérale. @param {string} s @returns {string} */
 function escapeRegex(s) {
@@ -182,13 +172,20 @@ function resolverAcceptsRng(fromRelPath, name, modulePath) {
  * commune (le hoisting `const rng = battleRng(); resolveX(rng)` contourne sinon la détection). Un
  * résolveur importé dont la signature ne prend PAS de `RNG` (`resolveOpposed`, `resolveTavernRound`)
  * ne produit AUCUNE violation, quelle que soit la coexistence de fichier.
+ *
+ * CONTRAT du texte scanné (#1788) : le scan porte sur la vue CODE SEUL (`codeSeul.mjs`) —
+ * commentaires ET littéraux de chaîne blanchis. Un appel écrit DANS une chaîne n'est donc PAS un
+ * appel : c'est une donnée, elle n'appelle rien, et le scan ne la voit pas. Le filtre de ligne
+ * `^\s*import` (:199) n'en souffre pas — il ne lit que le mot-clé, que le blanchiment laisse intact.
+ * Ce que ce contrat coûte et ce qu'il garde est mesuré par les deux cas #1788 de
+ * `src/state/roll-seam-exclusivity-guard.test.ts`.
  * @param {string} relPath @param {string} contenu
  * @returns {{ line: number, name: string, detail: string }[]}
  */
 export function scanBattleRngEngineLeak(relPath, contenu) {
   const engineImports = collectEngineImports(contenu);
   if (engineImports.length === 0) return [];
-  const stripped = stripCommentsOnly(contenu);
+  const stripped = codeSeul(contenu);
   if (!/\bbattleRng\s*\(/.test(stripped)) return [];
   const findings = [];
   const lines = stripped.split('\n');

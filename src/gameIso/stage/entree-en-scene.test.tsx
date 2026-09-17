@@ -193,6 +193,9 @@ afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
   battre = null;
+  // Les faux timers sont un SINGLETON de worker, comme l'ambiance : un banc qui simule le temps le
+  // rend, sinon le fichier voisin attend un réveil que plus personne ne déclenche.
+  vi.useRealTimers();
 });
 
 describe('Montage d’une scène — aucune rasterisation en rafale', () => {
@@ -310,27 +313,28 @@ describe('Voile d’entrée en scène — les PROCHES le tiennent, le lointain n
     expect(canevas().dataset.voile, 'le voile est tombé sans qu’un seul sujet soit entré en scène').toBe('1');
   });
 
-  it('PLAFOND : une texture qui n’arrive JAMAIS ne tient pas l’écran voilé pour autant', async () => {
+  it('PLAFOND : le voile tient jusqu’à la MILLISECONDE authorée, et tombe à celle-là', async () => {
     // Le plafond garde ici sa valeur AUTHORÉE : c'est lui qu'on mesure. Sa tombée n'a qu'une cause
     // possible — aucune image n'est servie de tout le banc (rasterisation retenue, zéro quad en scène
-    // au retour), donc aucun sujet ne peut déclarer son entrée. On ATTEND la tombée, on ne la date pas.
+    // au retour), donc aucun sujet ne peut déclarer son entrée.
+    //
+    // Le temps est SIMULÉ : le plafond de production est un `setTimeout` (`GameStage3D.tsx:852`,
+    // `setTimeout(finirEntrée, AMBIANCE.entreeEnScene.plafondMs)`), que les faux timers de vitest
+    // couvrent par DÉFAUT. On n'y ajoute NI `performance` NI `requestAnimationFrame` : la boucle
+    // d'images s'arme par rAF (`stageFrames.ts:90-97`) et se figerait. L'échéance devient ainsi une
+    // CONSTANTE d'avance, et la borne est EXACTE des deux côtés — plus rien à concéder à la machine.
+    vi.useFakeTimers();
     ras = simulerRasterisation('retenue');
-    const départ = Date.now();
     monterSync({ tokens: [], props: [décor('près', GROUPE.x + 1)] });
 
-    await attendre(() => !canevas().dataset.voile);
-    const tenu = Date.now() - départ;
+    await act(async () => { await vi.advanceTimersByTimeAsync(plafondNominal - 1); });
+    expect(canevas().dataset.voile, `le voile est tombé AVANT le plafond authoré de ${plafondNominal} ms`).toBe('1');
 
-    expect(canevas().dataset.voile, 'le voile n’est pas tombé au plafond : l’écran reste voilé').toBeUndefined();
+    await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+    expect(canevas().dataset.voile, `le voile n’est pas tombé AU plafond authoré de ${plafondNominal} ms`).toBeUndefined();
+
     expect(ras.enAttente.length, 'PRÉMISSE : une rasterisation doit être restée en vol, image jamais servie').toBeGreaterThan(0);
     expect(quads(), 'un sujet est entré en scène : la tombée ne serait plus celle du plafond').toHaveLength(0);
-    // LE PLAFOND AUTHORÉ EST BIEN CELUI QUI TIENT : sans cette borne, un voile qui tomberait à
-    // `plafondMs / 10` passerait ce banc comme il passerait celui d'à côté (où le plafond est poussé
-    // hors d'atteinte) — plus rien ne lierait la TENUE à la donnée. La borne est BASSE, et c'est un
-    // fait de calendrier du plafond lui-même : une machine lente ne fait qu'allonger `tenu`, jamais
-    // le raccourcir. Aucune prémisse de vitesse, donc, dans un `≥`.
-    expect(tenu, `le voile n’a tenu que ${tenu} ms pour un plafond authoré de ${plafondNominal} ms`)
-      .toBeGreaterThanOrEqual(plafondNominal * 0.5);
   });
 
   it('SVG en ÉCHEC dans le rayon : sa clé est SERVIE, le voile n’attend pas le plafond', async () => {

@@ -340,9 +340,12 @@ beforeEach(() => {
   // `seedBattleRng`/`store.seedRng`. Sans remise à zéro, un fichier qui a semé une graine fixe lègue au
   // suivant un flux à position ARBITRAIRE : les tests qui ne sèment pas (et lisent un dé « au hasard »)
   // deviennent dépendants de l'ordre des fichiers du worker — flake d'ordonnancement, comme les timers
-  // (#405) et « Dés fixés » ci-dessus. On repart de l'état d'un module FRAÎCHEMENT chargé : une graine
-  // d'horloge, que tout test déterministe écrase par son propre `seedBattleRng`.
-  seedBattleRng(Date.now() & 0xffff);
+  // (#405) et « Dés fixés » ci-dessus.
+  // GRAINE FIXE (#1788) : un harnais à l'horloge rend TOUS les tests à la fois irreproductibles — un
+  // rouge ne se rejoue pas, et un vert ne prouve que le tirage du jour. Un test qui dépend de la
+  // graine le dit en la posant lui-même (patron `state/dual-wield.test.ts:32`) ; les autres n'ont
+  // besoin que d'un point de départ IDENTIQUE d'un test à l'autre, et c'est ce que cette ligne pose.
+  seedBattleRng(1);
   resetOwnTestFailedGuard(); // drapeau de re-entrance onOwnTestFailed (auto-reset par try/finally ; filet doctrinal)
   // VERDICT « pas de contexte volumique » (`gameIso/stage/webglSupport`) : singleton de module, et
   // LATCHÉ par construction (le jeu ne revient jamais d'un contexte refusé). jsdom n'a aucun contexte

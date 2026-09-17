@@ -33,12 +33,13 @@ const PARTY0 = useGame.getState().party;
 const BANK0 = useGame.getState().bank;
 const ORDERS0 = useGame.getState().pendingOrders;
 // `isolate:false` (cf. `src/test-setup.ts`) : ce fichier joue le STORE et les SINGLETONS de module —
-// tout ce qu'il salit se rend ici, sinon la dérive fuit vers les fichiers suivants du worker. La graine
-// de combat revient à l'état d'un module fraîchement chargé, la MÊME valeur que le setup global pose
-// avant chaque test (`seedBattleRng(Date.now() & 0xffff)`).
+// tout ce qu'il salit se rend ici, sinon la dérive fuit vers les fichiers suivants du worker. La
+// graine de combat est reposée FIXE : l'état de module rendu ne dépend d'aucune horloge. Ce que le
+// test SUIVANT verra, c'est la graine du `beforeEach` global (`src/test-setup.ts`), qui repasse
+// derrière : ce hook-ci ne promet rien au-delà de sa propre sortie.
 afterEach(() => {
   resetCadence();
-  seedBattleRng(Date.now() & 0xffff);
+  seedBattleRng(1);
   useGame.setState({
     net: NET0, mode: MODE0, scene: SCENE0, party: PARTY0, bank: BANK0, pendingOrders: ORDERS0,
     battle: null, medic: null, interlude: null,

@@ -1,7 +1,7 @@
 /**
- * L'INDEX D'ARÊTES — contrat, identité, et le RATIO de temps qui justifie son existence.
+ * L'INDEX D'ARÊTES — contrat, identité, et le TRAVAIL ÉVITÉ qui justifie son existence.
  *
- * Le banc joue sur La Diligence (la carte la plus murée des campagnes livrées) : c'est là que le
+ * Le compte joue sur La Diligence (la carte la plus murée des campagnes livrées) : c'est là que le
  * profil CPU d'un tour d'IA montrait 61 % du temps propre dans le balayage `scene.walls` d'une
  * arête. Le contrat est DÉRIVÉ (chaque arête portant un mur est confrontée au balayage naïf, jamais
  * une poignée de cas cueillis) et il porte sur TOUTES les scènes livrées — scénarios du registre
@@ -12,8 +12,11 @@
  * balayage naïf — c'est ce qui rend `aretesA(...)[0]` (PREMIER) équivalent au DERNIER segment que
  * l'ancien `byEdge` de `roofs.closureAppearance` retenait.
  *
- * La borne de temps est un RATIO mesuré dans la MÊME passe (index vs balayage naïf du MÊME verdict)
- * et non un absolu de machine : débrancher l'index de `scene.ts` le fait tomber à ~1, donc rougir.
+ * Ce que l'index promet n'est pas une DURÉE — une durée mesure l'ordonnanceur de la machine qui
+ * joue le test — mais un TRAVAIL : après construction, plus une seule lecture de `scene.walls`. Le
+ * contrat se compte donc sur l'artefact, par un `Proxy` qui relève les accès au tableau : ZERO côté
+ * index, une touche par question et par mur côté balayage. Débrancher l'index de `scene.ts` fait
+ * passer le premier compteur à l'ordre du second, donc rougir.
  */
 import { describe, it, expect } from 'vitest';
 import { aretesA, wallIndexOf } from './wallIndex';
@@ -149,7 +152,7 @@ describe('wallIndex — identité', () => {
   });
 });
 
-describe('wallIndex — RATIO de temps', () => {
+describe('wallIndex — le TRAVAIL évité, compté', () => {
   /** 10 000 questions d'arête DÉTERMINISTES, balayant la carte (chaque pas de rayon d'une Ligne de
    *  Vue en pose une). */
   const paires = (): [number, number, number, number][] => {
@@ -162,8 +165,8 @@ describe('wallIndex — RATIO de temps', () => {
     return out;
   };
 
-  /** Le MÊME verdict que `areteOcculteEntre`, résolu par BALAYAGE de `scene.walls` — l'étalon de
-   *  temps, mesuré dans la même passe que l'index (même machine, même charge, même JIT). */
+  /** Le MÊME verdict que `areteOcculteEntre`, résolu par BALAYAGE de `scene.walls` — l'étalon du
+   *  travail que l'index doit éviter. */
   const areteOcculteEntreNaif = (scene: Scene, ax: number, ay: number, bx: number, by: number, z: number): boolean => {
     if (!scene.walls?.length) return false;
     const e = edgeOf(ax, ay, bx, by);
@@ -171,32 +174,47 @@ describe('wallIndex — RATIO de temps', () => {
     return scene.walls.some((w) => w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z && areteOcculte(scene, w));
   };
 
-  it('l’index répond à 10 000 `areteOcculteEntre` au moins 5× plus vite que le balayage naïf', () => {
+  /** Une scène dont `walls` COMPTE ses accès. `length` est exclu : c'est la garde de vacuité des deux
+   *  chemins (`if (!scene.walls?.length)`), pas une lecture de segment. Le compteur est l'ARTEFACT du
+   *  travail — déterministe, identique sur toute machine, là où une durée mesure l'ordonnanceur. */
+  const sceneEspionne = (): { scene: Scene; touches: () => number; remettre: () => void } => {
+    const vrais = murs();
+    let n = 0;
+    const espion = new Proxy(vrais as WallSeg[], {
+      get(cible, prop, recepteur) {
+        if (prop !== 'length') n++;
+        return Reflect.get(cible, prop, recepteur);
+      },
+    });
+    return { scene: { ...carte, walls: espion }, touches: () => n, remettre: () => { n = 0; } };
+  };
+
+  it('l’index lit `scene.walls` UNE fois, puis plus jamais : 10 000 questions, ZÉRO touche', () => {
     const q = paires();
-    let parIndex = 0, parNaif = 0;
-    const passeIndex = (): number => {
-      const t0 = performance.now();
-      parIndex = 0;
-      for (const [ax, ay, bx, by] of q) if (areteOcculteEntre(carte, ax, ay, bx, by, 0)) parIndex++;
-      return performance.now() - t0;
-    };
-    const passeNaif = (): number => {
-      const t0 = performance.now();
-      parNaif = 0;
-      for (const [ax, ay, bx, by] of q) if (areteOcculteEntreNaif(carte, ax, ay, bx, by, 0)) parNaif++;
-      return performance.now() - t0;
-    };
-    passeIndex(); passeNaif(); // chauffe (index bâti, JIT chaud des deux chemins)
-    // MEILLEURE de trois passes CHACUN : la machine partagée ajoute du bruit, jamais du travail —
-    // c'est le coût PLANCHER qu'on compare. Le ratio, mesuré dans la MÊME passe, ne dépend pas de la
-    // machine : il tombe à ~1 dès que `aretesA` redevient un balayage O(murs).
-    const msIndex = Math.min(passeIndex(), passeIndex(), passeIndex());
-    const msNaif = Math.min(passeNaif(), passeNaif(), passeNaif());
-    expect(parIndex).toBeGreaterThan(0);
-    expect(parNaif).toBe(parIndex); // même verdict des deux côtés — on compare bien le même travail
+    const { scene, touches, remettre } = sceneEspionne();
+
+    // Construction : l'index parcourt le tableau une seule fois (le mémo de `wallIndexOf` est keyé
+    // par l'identité de `scene.walls`, et ce proxy est neuf).
+    areteOcculteEntre(scene, q[0][0], q[0][1], q[0][2], q[0][3], 0);
+    const construction = touches();
+    expect(construction, 'la construction de l’index parcourt le tableau').toBeGreaterThan(0);
+    expect(construction, 'UNE passe sur les murs, pas davantage').toBeLessThan(murs().length * 2);
+
+    remettre();
+    let parIndex = 0;
+    for (const [ax, ay, bx, by] of q) if (areteOcculteEntre(scene, ax, ay, bx, by, 0)) parIndex++;
     expect(
-      msNaif / msIndex,
-      `${q.length} areteOcculteEntre sur ${murs().length} murs : index ${msIndex.toFixed(1)} ms, naïf ${msNaif.toFixed(1)} ms`,
-    ).toBeGreaterThan(5);
+      touches(),
+      `${q.length} areteOcculteEntre sur ${murs().length} murs : l’index ne doit RETOUCHER aucun segment`,
+    ).toBe(0);
+    expect(parIndex, 'les questions portent bien sur des arêtes occultées').toBeGreaterThan(0);
+
+    // Le MÊME verdict par balayage, et le travail qu'il coûte — mesuré, pas supposé : c'est ce que
+    // l'index supprime. Débrancher l'index de `scene.ts` ramène le compteur ci-dessus à cet ordre.
+    const balayage = sceneEspionne();
+    let parNaif = 0;
+    for (const [ax, ay, bx, by] of q) if (areteOcculteEntreNaif(balayage.scene, ax, ay, bx, by, 0)) parNaif++;
+    expect(parNaif, 'même verdict des deux côtés — on compare bien le même travail').toBe(parIndex);
+    expect(balayage.touches(), 'le balayage, lui, retouche le tableau à chaque question').toBeGreaterThan(q.length);
   });
 });

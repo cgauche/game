@@ -367,11 +367,30 @@ function vue(opts: OptsVue): JSX.Element {
   );
 }
 
+/** Ce que les faux timers de vitest remplacent PAR DÉFAUT — `performance` n'en est pas, et
+ *  `requestAnimationFrame` non plus (la boucle d'images s'arme par rAF, `stageFrames.ts:90-97` : la
+ *  faker la figerait). Un banc qui a besoin de l'horloge d'animation (`animNow()` =
+ *  `performance.now()`, `fx/animTracks.ts:39-40`) ajoute `'performance'` à cette liste. */
+const TIMERS_PAR_DÉFAUT = [
+  'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'setImmediate', 'clearImmediate', 'Date',
+] as const;
+
+/** UNE TRANCHE laissée à la file cadencée du cuiseur — le seul point de passage du temps de ce
+ *  fichier. Simulée quand le banc a posé de faux timers, réelle sinon : un banc qui veut un écoulé
+ *  EXACT n'a donc rien à réécrire, il pose ses faux timers et les tranches suivent. */
+let msSimulées = 0;
+const tranche = async (ms: number): Promise<void> => {
+  await act(async () => {
+    if (vi.isFakeTimers()) { msSimulées += ms; await vi.advanceTimersByTimeAsync(ms); }
+    else await new Promise((r) => setTimeout(r, ms));
+  });
+};
+
 /** Laisse la file CADENCÉE du cuiseur servir ses tâches (#1372 : les textures du montage y passent) —
  *  jusqu'à ce que `attendus` corps soient en scène, dans un budget BORNÉ. */
 async function attendreMontage(attendus: number): Promise<void> {
   for (let i = 0; i < 60 && corps().length < attendus; i++) {
-    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
+    await tranche(20);
     if (battre) act(() => battre!());
   }
 }
@@ -393,7 +412,7 @@ async function remonter(opts: OptsVue = {}): Promise<void> {
   await act(async () => {
     root!.render(vue({ ...opts, actors: [...(opts.actors ?? ACTEURS)] }));
   });
-  await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
+  await tranche(20);
 }
 
 /** Les corps de jeton de la dernière frame dessinée (les quads, pas leurs jumeaux). */
@@ -418,6 +437,9 @@ afterEach(() => {
   if (hôte) { hôte.remove(); hôte = null; }
   glissement = null;
   battre = null;
+  // Les faux timers sont un SINGLETON de worker : un banc qui simule le temps le rend, sinon le
+  // banc suivant attend un réveil que plus personne ne déclenche.
+  vi.useRealTimers();
 });
 
 describe('Boucle volumique — une image joue une frame, elle n’en cuit aucune (#1176 L3)', () => {
@@ -443,7 +465,7 @@ describe('Boucle volumique — une image joue une frame, elle n’en cuit aucune
     }));
     // PRÉMISSE — la sonde MORD : la pré-cuisson du montage, elle, rasterise bien par ce point-là.
     // Sans cette mesure, « zéro appel » ne dirait rien d'autre que « la sonde est branchée ailleurs ».
-    await act(async () => { await new Promise((r) => setTimeout(r, 40)); });
+    await tranche(40);
     expect(raster.mock.calls.length, 'la pré-cuisson doit passer par `rasterizeSvg`').toBeGreaterThan(0);
     raster.mockClear();
     // MARCHE : le sujet glisse, la boucle rejoue des images sans aucun rendu React.
@@ -552,11 +574,19 @@ function figurantEl(id: string, anim?: string): TokenEl {
 
 const cadre = (m: THREE.Mesh) => frameRectOf(m.material as THREE.Material)!.value.toArray().join(',');
 
-/** Laisse la file de cuisson tourner : `ms` de mur, par tranches, en battant la boucle d'image. */
-async function laisserCuire(ms: number): Promise<void> {
-  const fin = Date.now() + ms;
-  while (Date.now() < fin) {
-    await act(async () => { await new Promise((r) => setTimeout(r, 30)); });
+/**
+ * Laisse la file de cuisson tourner : un nombre BORNÉ de tranches, la boucle d'image battue à
+ * chacune. Jamais une fenêtre de MUR — la longueur d'une fenêtre ne dit rien du travail fait, et
+ * une machine chargée en sort autrement qu'une machine au repos.
+ *
+ * `jusquÀ` sort au FAIT accompli dès qu'il est vrai. Sans lui, les `tours` sont joués en entier :
+ * c'est le cas d'une ABSENCE à observer (aucune planche cuite), qu'aucune convergence ne peut
+ * annoncer — seule une borne d'itérations la borne.
+ */
+async function laisserCuire(tours: number, jusquÀ?: () => boolean): Promise<void> {
+  for (let i = 0; i < tours; i++) {
+    if (jusquÀ?.()) return;
+    await tranche(30);
     if (battre) act(() => battre!());
   }
 }
@@ -565,7 +595,7 @@ describe('Gabarits de créature — le flipbook n’est plus réservé aux bipè
   it('un gabarit est PRÉ-CUIT comme un rig — il n’est plus laissé à sa texture statique', async () => {
     const raster = vi.spyOn(svgTexture, 'rasterizeSvg');
     await monter({ actors: [{ c: bête('b1'), x: 3, y: 3, z: 0 }] });
-    await laisserCuire(300);
+    await laisserCuire(10, () => raster.mock.calls.length > 1);
     // Toutes ces rasterisations sont des CELLULES de planche : la texture statique d'un billboard
     // passe, elle, par `getBillboardTexture` (appel interne au module, hors de cette sonde). Avant ce
     // lot, un corps de gabarit n'en produisait AUCUNE — l'écran le sautait faute de couture de frame.
@@ -576,7 +606,7 @@ describe('Gabarits de créature — le flipbook n’est plus réservé aux bipè
 
   it('un gabarit qui MARCHE ne rasterise rien par image, et ne périme ni texture ni programme', async () => {
     await monter({ actors: [{ c: bête('h1'), x: 3, y: 3, z: 0 }] });
-    await laisserCuire(300);
+    await laisserCuire(10, () => quads().length > 0);
     const quad = quads();
     expect(quad.length, 'aucun board monté : rien à mesurer').toBeGreaterThan(0);
     const mats = quad.map((q) => q.material as THREE.MeshBasicMaterial);
@@ -599,7 +629,7 @@ describe('Ambiance authorée d’une entité — la donnée éditable joue en vo
     // La planche se cuit une cellule par tranche : on bat la boucle jusqu'à voir DEUX cellules
     // différentes, sous un budget borné (une planche de 12 frames ≈ 100 ms par cellule jouée).
     for (let i = 0; i < 24 && vus.size < 2; i++) {
-      await act(async () => { await new Promise((r) => setTimeout(r, 60)); });
+      await tranche(60);
       act(() => battre!());
       for (const q of quads()) vus.add(cadre(q));
     }
@@ -609,7 +639,9 @@ describe('Ambiance authorée d’une entité — la donnée éditable joue en vo
   it('sans `anim` : STATIQUE — cadre PLEIN, AUCUNE planche cuite, aucun coût nouveau', async () => {
     const raster = vi.spyOn(svgTexture, 'rasterizeSvg');
     await monter({ actors: [], els: { tokens: [figurantEl('f2')], props: [] } });
-    await laisserCuire(240);
+    // Aucune convergence à observer : ce banc prouve une ABSENCE de cuisson. Les tours sont donc
+    // joués en entier — c'est la borne d'itérations qui est le budget, pas une fenêtre de mur.
+    await laisserCuire(8);
     const quad = quads();
     expect(quad.length).toBeGreaterThan(0);
     for (const q of quad) expect(cadre(q), 'un figurant sans ambiance ne montre pas de cellule').toBe(FRAME_RECT_PLEIN.join(','));
@@ -635,7 +667,7 @@ describe('Palier du chemin STATIQUE — texture de montage et planches au MÊME 
     const statique = vi.spyOn(svgTexture, 'svgToTexture');
     const cellule = vi.spyOn(svgTexture, 'rasterizeSvg');
     await monter({ frame: AFFINE_ZOOM_MAX });
-    for (let i = 0; i < 10; i++) await act(async () => { await new Promise((r) => setTimeout(r, 30)); });
+    for (let i = 0; i < 10; i++) await tranche(30);
     const mesure = {
       statiques: statique.mock.calls.map((c) => c[2]),
       planches: cellule.mock.calls.map((c) => c[2]),
@@ -697,27 +729,35 @@ describe('Effondrement — la chute se compte depuis l’ENTRÉE AU SOL (#1176 L
   }
 
   it('REBUILD à mi-chute : la chute REPREND où elle en est ; après la fin, la dernière cellule TIENT', async () => {
+    // L'écoulé est SIMULÉ, donc EXACT — plus de tolérance à accorder à l'ordonnanceur. La cellule est
+    // lue par `animNow()` = `performance.now()` (`fx/animTracks.ts:39-40`), que les faux timers de
+    // vitest NE couvrent PAS par défaut : `performance` s'ajoute explicitement aux `toFake`. Jamais
+    // `requestAnimationFrame` : la boucle d'images s'arme par rAF (`stageFrames.ts:90-97`) et se
+    // figerait — c'est `battre()` qui la bat ici, à la main. Les faux timers sont posés AVANT le
+    // montage : l'origine de la piste d'animation doit être prise sur la MÊME horloge que la lecture.
+    vi.useFakeTimers({ toFake: [...TIMERS_PAR_DÉFAUT, 'performance'] });
     servirLesPlanches();
     const N = atlasFrames(planDyingDef('prone'));
     const acteurs: ActorPose[] = [{ c: àTerre('h1'), x: 2, y: 2, z: 0, heroIndex: 0 }];
+    const départ = msSimulées;
     await monter({ actors: acteurs });
-    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
-    const départ = Date.now();
+
+    await tranche(20);
     act(() => battre!());
-    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
+    await tranche(20);
     act(() => battre!());
     expect(celluleMontrée(N), 'PRÉMISSE : la planche d’effondrement doit être servie').not.toBeNull();
     // MI-CHUTE : les boards se rebâtissent (un pas commité) — la chute ne redémarre pas.
-    await act(async () => { await new Promise((r) => setTimeout(r, 150)); });
+    await tranche(150);
     await remonter({ actors: acteurs });
     act(() => battre!());
-    const écoulé = Date.now() - départ;
+    // L'écoulé est la SOMME des avances simulées depuis le montage — un compte, pas une horloge lue.
+    const écoulé = msSimulées - départ;
     const attendu = frameIndexAt(écoulé, COLLAPSE_MS, N, false);
-    const vu = celluleMontrée(N);
     expect(attendu, 'PRÉMISSE : la chute doit être ENGAGÉE au moment du rebuild').toBeGreaterThan(1);
-    expect(Math.abs((vu ?? -99) - attendu), `cellule ${vu} pour ${écoulé} ms écoulés (attendu ${attendu})`).toBeLessThanOrEqual(1);
+    expect(celluleMontrée(N), `cellule montrée à ${écoulé} ms simulés (attendu ${attendu})`).toBe(attendu);
     // APRÈS LA FIN : le cadavre reste au sol — un rebuild qui rejoue la chute le relèverait.
-    await act(async () => { await new Promise((r) => setTimeout(r, COLLAPSE_MS)); });
+    await tranche(COLLAPSE_MS);
     await remonter({ actors: acteurs });
     act(() => battre!());
     expect(celluleMontrée(N), 'la chute se rejoue à chaque rebuild de board').toBe(N - 1);
@@ -756,7 +796,7 @@ describe('Hors de combat — l’écrivain joue l’EFFONDREMENT et le TIENT (#1
     // Le store MUTE le combattant en place : c'est cet objet-là que le builder repasse à l'écran.
     const c = { ...combattant('e1', { x: 2, y: 2 }), kind: 'enemy' } as unknown as Combatant;
     await monter({ actors: [{ c, x: 2, y: 2, z: 0 }] });
-    await act(async () => { await new Promise((r) => setTimeout(r, 80)); });
+    await tranche(80);
     act(() => battre!());
     // PRÉMISSE : vivant, il joue un geste DEBOUT — aucun état au sol dans sa clé.
     expect(dernière(clés), 'PRÉMISSE : le vivant ne doit pas déjà jouer sa chute').toContain('|-|');
@@ -767,7 +807,7 @@ describe('Hors de combat — l’écrivain joue l’EFFONDREMENT et le TIENT (#1
     act(() => battre!());
     expect(dernière(clés), 'un hors de combat qui joue encore son repos reste DEBOUT à l’écran').toContain('|corpse|');
     // …et il y RESTE : deux secondes plus tard, toujours l'effondrement, jamais un retour au repos.
-    await act(async () => { await new Promise((r) => setTimeout(r, 500)); });
+    await tranche(500);
     act(() => battre!());
     expect(dernière(clés)).toContain('|corpse|');
   });
@@ -778,7 +818,7 @@ describe('Hors de combat — l’écrivain joue l’EFFONDREMENT et le TIENT (#1
     const acteurs: ActorPose[] = [{ c, x: 2, y: 2, z: 0 }];
     await monter({ actors: acteurs });
     // La chute (COLLAPSE_MS) est passée depuis longtemps : la cellule montrée est la DERNIÈRE.
-    await act(async () => { await new Promise((r) => setTimeout(r, COLLAPSE_MS + 200)); });
+    await tranche(COLLAPSE_MS + 200);
     act(() => battre!());
     const n = atlasFrames(planDyingDef('corpse'));
     const l = atlasLayout(24, 30, n);

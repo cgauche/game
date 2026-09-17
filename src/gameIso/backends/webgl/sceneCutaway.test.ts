@@ -1,9 +1,9 @@
 /**
  * SCISSION cuisson ⇄ DÉGAGEMENT (#1176, lot P2-2b) : le monde cuit ne se rejoue PAS quand le groupe se
  * déplace sous une masse. Le dégagement d'architecture est un MASQUE D'INDEX posé en place sur le bake,
- * jumeau de `applyVisibilityTint` — ce fichier tient ses cinq clauses : invariance du bake, PARITÉ de
- * rendu avec le bake filtré qu'il remplace, budget, idempotence, et accents de sol emportés par la
- * nappe qui les porte.
+ * jumeau de `applyVisibilityTint` — ce fichier tient ses quatre clauses : INVARIANCE du bake (aucun
+ * attribut de la cuisson n'est ré-écrit, l'index seul l'est), PARITÉ de rendu avec le bake filtré
+ * qu'il remplace, idempotence, et accents de sol emportés par la nappe qui les porte.
  */
 import { describe, expect, it } from 'vitest';
 import type * as THREE from 'three';
@@ -33,8 +33,8 @@ const mpt = sceneMetresPerTile(scene);
  *  de l'écran (`stage/GameStage3D.tsx`, `memoByRefDeps`) et du banc de teinte (`sceneTint.test.ts`).
  *  Le dégagement est un MASQUE D'INDEX posé EN PLACE qui se relit du bake (clause d'IDEMPOTENCE plus
  *  bas) : les cas de ce fichier rejouent les mêmes deux scènes, la cuisson se paie donc une fois par
- *  scène et par run. Le contrat de BUDGET, dont le SUJET est le coût de la cuisson, ne passe pas par
- *  ici. Un `it` qui MUTE une scène obtient une identité neuve, donc un bake frais. */
+ *  scène et par run. Le contrat de TRAVAIL, dont le SUJET est la géométrie cuite elle-même, cuit la
+ *  sienne et ne passe pas par ici. Un `it` qui MUTE une scène obtient une identité neuve, donc un bake frais. */
 const bakeRetenu = memoByRefDeps<Scene, BakedWorld>();
 const cuire = (scn: Scene): BakedWorld => {
   const m = sceneMetresPerTile(scn);
@@ -139,27 +139,57 @@ function masqué(scn: Scene, keepEl: KeepEl): BakedWorld {
 }
 
 describe('INVARIANCE — deux dégagements, UN seul bake', () => {
-  it('le masque n’écrit QUE l’index : même géométrie, mêmes sommets, mêmes couleurs', () => {
+  it('le masque n’écrit QUE l’index : aucun attribut de la cuisson ne bouge, tampon ni version', () => {
+    // CONTRAT DE TRAVAIL, jamais un chronomètre : ce que le masque doit refuser est la passe LOURDE
+    // (triangulation, uv, normales), et c'est la GÉOMÉTRIE qui le porte — pas une durée. Mesures
+    // fondatrices (#1176) : bake plein 437 ms sur l'arène, 1 601 ms sur l'opéra, quand `cleared`
+    // change à CHAQUE pas (identités `visualAllies`/`exploredSet`) ET à chaque cran de caméra
+    // (`dims` → `frontFacadeCutaway`) ; le re-bake par pas coûtait +700 ms mesurés au navigateur. Le
+    // rapport de deux durées qui tenait cette clause reste deux mesures d'horloge, et la CI est une
+    // machine partagée au débit variable (#1788).
     const baked = cuire(scene);
     applyVisibilityTint(baked, tint);
     const gA = applyCutawayMask(baked, LOIS['sans-toits']).geometry;
+    /** Relevé par LECTURE de la géométrie, jamais d'une liste écrite ici : un attribut ajouté au bake
+     *  entre de lui-même sous le contrat. */
+    const noms = Object.keys(gA.attributes).sort();
+    const attr = (n: string) => gA.getAttribute(n) as THREE.BufferAttribute;
+    const empreinteAttrs = () =>
+      noms.map((n) => ({ n, array: attr(n).array, version: attr(n).version, count: attr(n).count }));
+    // La cuisson pose position/color/uv/uv1/perçabilité et calcule `normal` : sans ces attributs le
+    // balayage ci-dessous serait vert par vacuité.
+    expect(noms).toEqual(expect.arrayContaining(['color', 'normal', 'position', 'uv', 'uv1']));
+    const avant = empreinteAttrs();
     const attrPos = gA.getAttribute('position');
-    const attrCol = gA.getAttribute('color');
     const posA = copie(gA, 'position');
     const colA = copie(gA, 'color');
     const comptesA = gA.groups.map((g) => g.count);
-    const versionDe = (g: THREE.BufferGeometry) => (g.getIndex() as THREE.BufferAttribute).version;
-    const versionA = versionDe(gA);
+    const index = gA.getIndex() as THREE.BufferAttribute;
+    const indexArray = index.array;
+    const versionA = index.version;
+
     const gB = applyCutawayMask(baked, LOIS['damier-murs']).geometry;
+
     // La géométrie rendue EST le bake — contrat de propriété de `BakedWorld`.
     expect(gB).toBe(gA);
-    expect(gB.getAttribute('position')).toBe(attrPos);
-    expect(gB.getAttribute('color')).toBe(attrCol);
+    const après = empreinteAttrs();
+    expect(après.map((a) => a.n)).toEqual(noms); // aucun attribut ajouté ni retiré par le masque
+    for (let k = 0; k < noms.length; k++) {
+      expect(après[k].array, `attribut \`${noms[k]}\` : tampon RÉALLOUÉ par le masque`).toBe(avant[k].array);
+      expect(après[k].count, `attribut \`${noms[k]}\` : nombre de sommets changé`).toBe(avant[k].count);
+      // Positions, couleurs, uv et normales sont INTOUCHÉES : une masse retirée cesse d'être RÉFÉRENCÉE
+      // par l'index, elle n'est pas re-cuite — aucune `version` ne monte donc de ce côté.
+      expect(après[k].version, `attribut \`${noms[k]}\` : version ${avant[k].version} → ${après[k].version}`)
+        .toBe(avant[k].version);
+    }
     expect(copie(gB, 'position')).toEqual(posA);
     expect(copie(gB, 'color')).toEqual(colA);
     // Seuls l'index et les plages de dessin bougent — et ils bougent VRAIMENT (la sonde mord).
     expect(gB.groups.map((g) => g.count)).not.toEqual(comptesA);
-    expect(versionDe(gB)).toBeGreaterThan(versionA);
+    // L'index est ré-écrit EN PLACE : le même attribut, le même tampon, une `version` de plus.
+    expect(gB.getIndex()).toBe(index);
+    expect(gB.getIndex()!.array).toBe(indexArray);
+    expect(gB.getIndex()!.version).toBe(versionA + 1);
     // Le tampon d'index n'est jamais retaillé : il porte tous les sommets, les gardés en tête.
     expect(gB.getIndex()!.count).toBe(attrPos.count);
   });
@@ -220,25 +250,6 @@ describe('PARITÉ — le masque rend EXACTEMENT les triangles du bake filtré qu
         }
         expect(fautes, 'les plages de dessin se chevauchent, trouent ou inversent l’ordre de cuisson').toEqual([]);
       });
-});
-
-describe('BUDGET — masquer coûte une passe d’index, pas un re-bake', () => {
-  it('le masque de l’arène tient sous le vingtième du bake', () => {
-    // Mesures FONDATRICES (#1176) : bake plein 437 ms sur l'arène, 1 601 ms sur l'opéra, quand
-    // `cleared` change à CHAQUE pas (identités `visualAllies`/`exploredSet`) ET à chaque cran de
-    // caméra (`dims` → `frontFacadeCutaway`) — le re-bake par pas coûtait +700 ms mesurés au
-    // navigateur. La borne porte sur le RAPPORT des deux mesures du MÊME run, jamais sur une horloge
-    // murale : une machine chargée ralentit les deux à la fois, une régression vers le re-bake ramène
-    // le rapport vers 1.
-    const t0 = performance.now();
-    const baked = bakeWorldGeometry(scene, mpt);
-    const msBake = performance.now() - t0;
-    applyCutawayMask(baked, LOIS['sans-toits']); // chauffe
-    const t1 = performance.now();
-    applyCutawayMask(baked, LOIS['damier-murs']);
-    const msMasque = performance.now() - t1;
-    expect(msMasque).toBeLessThanOrEqual(msBake / 20);
-  });
 });
 
 describe('IDEMPOTENCE — le masque se relit du bake, jamais de l’état précédent', () => {

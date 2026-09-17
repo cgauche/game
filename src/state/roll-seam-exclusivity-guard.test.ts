@@ -360,6 +360,33 @@ describe('garde-fou « rng vivant → résolveur moteur » — un flux state/** 
     ].join('\n');
     expect(scanBattleRngEngineLeak('src/state/x.ts', regressed).length).toBe(1);
   });
+
+  /* CONTRAT DU TEXTE SCANNÉ (#1788) : le scan lit la vue CODE SEUL (`codeSeul.mjs`), commentaires ET
+   * littéraux de chaîne blanchis. Ce qui est écrit dans une chaîne n'appelle rien : c'est une DONNÉE,
+   * et le scan ne la voit pas. Ce que ce choix laisse passer est MESURÉ ici, pas supposé. */
+  it('un appel écrit en CHAÎNE n’est pas un appel — et le voisin en CODE en est un', () => {
+    const donnee = [
+      "import { resolveCasting } from '../engine/magic';",
+      'const rng = battleRng();',
+      "const gabarit = 'resolveCasting(caster, spell, rng)';",
+    ].join('\n');
+    expect(scanBattleRngEngineLeak('src/state/x.ts', donnee).length).toBe(0);
+
+    const codeEtDonnee = [...donnee.split('\n'), 'const res = resolveCasting(caster, spell, rng);'].join('\n');
+    const trouve = scanBattleRngEngineLeak('src/state/x.ts', codeEtDonnee);
+    expect(trouve.map((f) => f.line)).toEqual([4]);
+  });
+
+  it('le blanchiment PRÉSERVE les lignes : le numéro rapporté est celui de la source (#1788)', () => {
+    const regressed = [
+      "import { resolveCasting } from '../engine/magic';",
+      '/* un bloc',
+      ' * de prose',
+      ' */',
+      'const res = resolveCasting(caster, spell, battleRng());',
+    ].join('\n');
+    expect(scanBattleRngEngineLeak('src/state/x.ts', regressed).map((f) => f.line)).toEqual([5]);
+  });
 });
 
 /**

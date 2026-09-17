@@ -34,7 +34,8 @@ const mpt = sceneMetresPerTile(scene);
  *  l'écran (`stage/GameStage3D.tsx`, `memoByRefDeps`). Ce banc rejoue la même scène d'un `it` à
  *  l'autre : la passe LOURDE se paie une fois, la TEINTE (`applyVisibilityTint`, en place) se
  *  recalcule à chaque appel. Un `it` qui MUTE la scène obtient une identité neuve, donc un bake frais.
- *  Le contrat de BUDGET ci-dessous, dont le SUJET est le coût de la cuisson, ne passe pas par ici. */
+ *  Le contrat de NON-RETRIANGULATION ci-dessous, dont le SUJET est la géométrie cuite elle-même, cuit
+ *  la sienne et ne passe pas par ici. */
 const bakeRetenu = memoByRefDeps<Scene, BakedWorld>();
 const cuire = (s: Scene, m: number): BakedWorld => bakeRetenu(s, worldBakeDeps(s, m), () => bakeWorldGeometry(s, m));
 
@@ -53,25 +54,66 @@ const couleurs = (g: { getAttribute(n: string): { array: ArrayLike<number> } }):
   (g.getAttribute('color').array as Float32Array).slice();
 
 describe('BAKE ⇄ TEINTE — la visibilité ne retriangule rien', () => {
-  it('la teinte écrit EN PLACE : un bake = UN consommateur, même géométrie, même attribut, seules les couleurs bougent', () => {
-    const baked = cuire(scene, mpt);
-    const g1 = applyVisibilityTint(baked, tintA).geometry;
-    const posA = (g1.getAttribute('position').array as Float32Array).slice();
-    const colA = couleurs(g1);
-    const versionDe = (g: typeof g1) => (g.getAttribute('color') as THREE.BufferAttribute).version;
-    const versionA = versionDe(g1);
-    const attrA = g1.getAttribute('color');
-    const g2 = applyVisibilityTint(baked, tintB).geometry;
-    // La géométrie RENDUE est celle du bake, et son attribut `color` est le même objet : c'est le contrat
-    // de propriété de `BakedWorld` — la seconde teinte remplace la première à l'écran, elle ne coexiste
-    // pas avec elle. Un second consommateur de teinte cuit SON bake.
-    expect(g2).toBe(g1); // la MÊME BufferGeometry, jamais une reconstruction
-    expect(g2.getAttribute('position').array as Float32Array).toEqual(posA);
-    expect(g2.getAttribute('color')).toBe(attrA); // ré-écrit EN PLACE, pas un attribut neuf
-    expect(couleurs(g2)).not.toEqual(colA);
-    // `needsUpdate = true` incrémente la `version` de l'attribut (three : accesseur en écriture seule) —
-    // sans ça le GPU garderait les couleurs de la frame précédente.
-    expect(versionDe(g2)).toBeGreaterThan(versionA);
+  it('repeindre la visibilité n’écrit que `color` : même géométrie rendue, aucun attribut ne bouge, aucune retriangulation', () => {
+    // CONTRAT DE TRAVAIL, jamais un chronomètre : ce qu'on refuse à la teinte, c'est de REFAIRE la
+    // passe lourde — triangulation, uv, normales, index. Cela se lit sur la géométrie elle-même (les
+    // tampons qu'elle porte et leur `version`), pas sur une durée : un rapport de deux durées reste
+    // deux mesures d'horloge, et la CI est une machine partagée au débit variable.
+    // Cuisson FRAÎCHE, jamais `cuire` : le SUJET est CE bake, que les passes de teinte ne doivent pas
+    // toucher — un bake retenu ferait dépendre l'empreinte d'avant d'un `it` voisin.
+    const baked = bakeWorldGeometry(scene, mpt);
+    const g = baked.geometry;
+    /** Tout ce que la cuisson a posé sur la géométrie — relevé par LECTURE de la géométrie, jamais
+     *  d'une liste écrite ici : un attribut ajouté au bake entre de lui-même sous le contrat. */
+    const noms = Object.keys(g.attributes).sort();
+    const attr = (n: string) => g.getAttribute(n) as THREE.BufferAttribute;
+    const empreinte = () =>
+      noms.map((n) => ({ n, array: attr(n).array, version: attr(n).version, count: attr(n).count, itemSize: attr(n).itemSize }));
+    // La cuisson pose position/color/uv/uv1/perçabilité et calcule `normal` : sans ces attributs le
+    // balayage ci-dessous serait vert par vacuité.
+    expect(noms).toEqual(expect.arrayContaining(['color', 'normal', 'position', 'uv', 'uv1']));
+    const avant = empreinte();
+    const index = g.getIndex() as THREE.BufferAttribute;
+    const indexArray = index.array;
+    const indexVersion = index.version;
+    const sommets = attr('position').count;
+    const triangles = index.count / 3;
+    const groupes = g.groups.map((gr) => ({ ...gr }));
+    const nu = couleurs(g);
+
+    const PASSES = 3;
+    const rendus = new Set<THREE.BufferGeometry>();
+    for (let i = 0; i < PASSES; i++) rendus.add(applyVisibilityTint(baked, i % 2 ? tintA : tintB).geometry);
+
+    // La géométrie RENDUE est celle du bake : c'est le contrat de propriété de `BakedWorld` — la
+    // seconde teinte remplace la première à l'écran, elle ne coexiste pas avec elle. Un second
+    // consommateur de teinte cuit SON bake.
+    expect([...rendus]).toEqual([g]);
+    const après = empreinte();
+    expect(après.map((a) => a.n)).toEqual(noms); // aucun attribut ajouté ni retiré en cours de teinte
+    for (let k = 0; k < noms.length; k++) {
+      const a = avant[k];
+      const b = après[k];
+      expect(b.array, `attribut \`${b.n}\` : tampon RÉALLOUÉ par la teinte`).toBe(a.array);
+      expect(b.count, `attribut \`${b.n}\` : nombre de sommets changé`).toBe(a.count);
+      expect(b.itemSize, `attribut \`${b.n}\``).toBe(a.itemSize);
+      // `needsUpdate = true` incrémente la `version` de l'attribut (three r1xx, `BufferAttribute` :
+      // accesseur en écriture seule) — mesuré ici à UNE unité par passe. Seul `color` la voit monter :
+      // sans ça le GPU garderait les couleurs de la frame précédente ; toute autre montée signalerait
+      // un attribut ré-écrit, donc une part de la cuisson rejouée.
+      expect(b.version, `attribut \`${b.n}\` : version ${a.version} → ${b.version} pour ${PASSES} passes`)
+        .toBe(b.n === 'color' ? a.version + PASSES : a.version);
+    }
+    // INDEX : le même objet, le même tampon, intouché — la teinte ne redessine aucun triangle.
+    expect(g.getIndex()).toBe(index);
+    expect(g.getIndex()!.array).toBe(indexArray);
+    expect(g.getIndex()!.version).toBe(indexVersion);
+    expect(attr('position').count).toBe(sommets);
+    expect(index.count / 3).toBe(triangles);
+    expect(g.groups.map((gr) => ({ ...gr }))).toEqual(groupes);
+    // …et la teinte a bien PEINT : sans ce volet, une teinte qui ne ferait rien du tout passerait tout
+    // ce qui précède.
+    expect(couleurs(g)).not.toEqual(nu);
   });
 
   it('la teinte se re-multiplie sur la couleur NUE, jamais sur la précédente (A → B → A)', () => {
@@ -83,28 +125,6 @@ describe('BAKE ⇄ TEINTE — la visibilité ne retriangule rien', () => {
     let ecart = 0;
     for (let i = 0; i < retour.length; i++) ecart = Math.max(ecart, Math.abs(retour[i] - premier[i]));
     expect(ecart).toBeLessThan(1e-9);
-  });
-
-  it('BUDGET : repeindre la visibilité de l’arène coûte une passe de teinte, pas un re-bake', () => {
-    // La borne porte sur le RAPPORT des deux mesures du MÊME run, jamais sur une horloge murale : une
-    // machine chargée ralentit les deux à la fois, alors qu'une régression vers le re-bake ramène le
-    // rapport vers 1. L'échantillonnage par sommet a un coût — c'est CE rapport qui le tient.
-    // Cuisson FRAÎCHE, jamais `cuire` : le SUJET de ce contrat est le coût de la passe lourde — un
-    // bake retenu rendrait `msBake` nul et le rapport ne mesurerait plus rien.
-    const t0 = performance.now();
-    const baked = bakeWorldGeometry(scene, mpt);
-    const msBake = performance.now() - t0;
-    applyVisibilityTint(baked, tintA); // chauffe
-    // MEILLEURE des trois passes : une machine chargée (suite complète, un seul worker) place un GC ou
-    // une préemption dans n'importe quelle passe prise seule, et c'est le coût de l'ORDONNANCEUR qu'on
-    // mesurerait alors, pas celui de la teinte. Trois passes alternées, on garde la plus rapide.
-    let msTeinte = Infinity;
-    for (let i = 0; i < 3; i++) {
-      const t1 = performance.now();
-      applyVisibilityTint(baked, i % 2 ? tintA : tintB);
-      msTeinte = Math.min(msTeinte, performance.now() - t1);
-    }
-    expect(msTeinte).toBeLessThanOrEqual(msBake / 20);
   });
 
   it('`buildWorldGeometry` reste la composition des deux (mêmes couleurs, même compte)', () => {

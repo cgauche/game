@@ -9,9 +9,11 @@ import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
  *     rasterisation stubbée ou une purge de singletons embarqués dans le bundle de jeu, c'est du code
  *     de test livré au joueur ;
  *  2. aucun fichier de PRODUCTION de `src/gameIso/**` n'importe `vitest` — le harnais est le seul, et
- *     il n'a pas de jumeau côté production. Ce fait ne dit RIEN d'un essaimage entre bancs : un
- *     deuxième harnais écrit dans un `.test.` importe `vitest` légitimement et lui échappe par
- *     construction — c'est le fait 3 qui mord là ;
+ *     il n'a pas de jumeau côté production. EST DE LA PRODUCTION ce que vitest ne joue pas : ni
+ *     `.test.` (`vitest run`) ni `.bench.` (`vitest bench`), qui importe l'API `bench` par
+ *     construction. Ce fait ne dit RIEN d'un essaimage entre bancs : un deuxième harnais écrit dans
+ *     un `.test.` importe `vitest` légitimement et lui échappe par construction — c'est le fait 3
+ *     qui mord là ;
  *  3. `implements StageRenderer` n'apparaît qu'UNE fois dans tout `src/`, `.test.` COMPRIS : le
  *     renderer de banc est unique, et un banc qui se réécrit le sien au lieu de composer
  *     `BancRenderer` est détecté ;
@@ -54,6 +56,12 @@ const SOI = 'src/gameIso/stage/banc-volumique.test.ts';
 
 const EST_TEST = /\.test\.(ts|tsx)$/;
 
+/** Un fichier JOUÉ PAR VITEST : un `.test.` (`vitest run`) ou un `.bench.` (`vitest bench`). Ni l'un
+ *  ni l'autre n'est de la PRODUCTION — un banc importe l'API `bench` de vitest par construction, et
+ *  aucun bundle de jeu ne l'embarque (`vite.config.ts:71` ne le joue même pas en suite). La FORME du
+ *  cliquet, jamais une liste de fichiers : le banc N+1 est couvert sans qu'on y revienne. */
+const EST_FICHIER_VITEST = /\.(test|bench)\.(ts|tsx)$/;
+
 /** Les sources TypeScript d'une racine, tests COMPRIS, avec leur texte : la primitive de corpus les
  *  lit UNE fois par clé, et les faits scannent les deux mêmes racines (`src/`, `src/gameIso/`). */
 const sources = (dir: string) => readCorpus([dir], { tests: true });
@@ -61,8 +69,8 @@ const sources = (dir: string) => readCorpus([dir], { tests: true });
 /** Le texte d'un fichier NOMMÉ de `src/`, pris au corpus. */
 const texte = (rel: string): string => sources(SRC).find((f) => f.rel === rel)!.text;
 
-/** Les fichiers de PRODUCTION (non-`.test.`) d'une racine, le harnais lui-même exclu. */
-const production = (dir: string) => sources(dir).filter(({ rel }) => !EST_TEST.test(rel) && rel !== HARNAIS);
+/** Les fichiers de PRODUCTION d'une racine : ni `.test.`, ni `.bench.`, et le harnais lui-même exclu. */
+const production = (dir: string) => sources(dir).filter(({ rel }) => !EST_FICHIER_VITEST.test(rel) && rel !== HARNAIS);
 
 /** Les lignes d'`import`/`export … from` d'une source, avec leur numéro (1-based). */
 export function lignesDImport(source: string): { n: number; texte: string }[] {

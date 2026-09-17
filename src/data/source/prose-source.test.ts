@@ -7,7 +7,7 @@
  * le CÂBLAGE du plugin (filtre d'id, injection, fail-closed, rechargement), pas le corpus. Les chemins
  * de chapitre y prennent la FORME DE PRODUCTION : relatifs à la racine, séparateurs Windows.
  */
-import { describe, it, expect, afterAll } from 'vitest';
+import { describe, it, expect, afterAll, vi } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname, relative, resolve } from 'node:path';
@@ -421,8 +421,14 @@ describe('plugin `wfrp:prose-source` — serveur de dev', () => {
       // passe par `resolve` parce que chokidar rend ses clés dans la forme qu'on lui a donnée.)
       const dossier = resolve(dirname(chapitre));
       const surveille = () => Object.keys(server.watcher.getWatched()).map((d) => resolve(d));
-      expect(await attendre(() => surveille().includes(dossier)),
-        `le plugin n’a pas mis le dossier du livre sous surveillance — surveillés : ${surveille().join(', ')}`).toBe(true);
+      await vi.waitFor(
+        () =>
+          expect(
+            surveille(),
+            `le plugin n’a pas mis le dossier du livre sous surveillance — surveillés : ${surveille().join(', ')}`,
+          ).toContain(dossier),
+        { timeout: 8_000, interval: 50 },
+      );
 
       writeFileSync(chapitre, CHAPITRE.replace('quelque chose d\'horrible', 'quelque chose de RÉÉCRIT'), 'utf8');
       server.watcher.emit('change', chapitre);
@@ -439,16 +445,6 @@ describe('plugin `wfrp:prose-source` — serveur de dev', () => {
     }
   });
 });
-
-/** Attend qu'une condition devienne vraie (prise de répertoire asynchrone), bornée. */
-async function attendre(condition: () => boolean, plafondMs = 8_000): Promise<boolean> {
-  const fin = Date.now() + plafondMs;
-  while (Date.now() < fin) {
-    if (condition()) return true;
-    await new Promise((r) => setTimeout(r, 50));
-  }
-  return condition();
-}
 
 describe('`materialiser` — pendant Node du transform', () => {
   it('une racine sans adresse traverse à l’IDENTIQUE (copie profonde, zéro matérialisation)', () => {
