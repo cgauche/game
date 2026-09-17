@@ -69,7 +69,8 @@ export function resetDismissLayers(): void {
  * @param kind libellé de DIAGNOSTIC (journal, tests) — il n'entre dans aucun rang : l'ordre de la
  *             pile est celui des ouvertures.
  * @param onDismiss `null` = couche BLOQUANTE (consomme l'appui sans rien faire) ; `false` en retour
- *                  = refus dynamique. Gratuit par contrat : il annule, il ne commet rien.
+ *                  = la couche RESTE à l'écran (refus, ou congédiement PARTIEL, #1752). Gratuit par
+ *                  contrat : il annule, il ne commet rien.
  * @param actif la couche n'existe que quand elle est réellement à l'écran.
  * @param onCouvert appelé quand une couche s'ouvre AU-DESSUS de celle-ci : une surface de survol
  *                  (infobulle) n'a plus rien à recouvrir et se retire d'elle-même. L'abonnement est
@@ -83,7 +84,7 @@ export function useDismissLayer(kind: string, onDismiss: OnDismiss | null, actif
   useEffect(() => {
     if (!actif) return;
     brancherPorte();
-    // Bloquante (`onDismiss: null`) → refus : l'appui est consommé, la pile ne bouge pas.
+    // Bloquante (`onDismiss: null`) → elle RESTE : l'appui est consommé, la pile ne bouge pas.
     const h = pushLayer({ kind, onDismiss: () => (dismissRef.current ? dismissRef.current() : false) });
     const desabonner = subscribeDismissStack((e) => { if (e.type === 'push' && e.handle !== h) couvertRef.current?.(); });
     return () => {

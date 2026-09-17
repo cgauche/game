@@ -17,6 +17,7 @@ import { RollRow } from './RollRow';
 import { RollShell } from './RollShell';
 import { buildRollRow } from './rollRowBuild';
 import { Modal } from './Modal';
+import { rendreVisible } from './layoutJsdom.testkit';
 import { testPending, testBreakdown } from './breakdown';
 import type { Combatant } from '../engine/types';
 
@@ -298,12 +299,6 @@ describe('« Dé fixé » PRÉ-jet — le champ écrit vraiment (option ON, hér
   });
 });
 
-/** jsdom ne calcule aucune géométrie : sans rect non nul, `Modal` juge le bouton primaire invisible
- *  et son raccourci Entrée ne partirait JAMAIS — le test passerait pour la mauvaise raison. */
-function makeVisible(el: HTMLElement) {
-  el.getClientRects = (() => [{ width: 80, height: 24 }] as unknown as DOMRectList) as HTMLElement['getClientRects'];
-}
-
 describe('« Dé fixé » PRÉ-jet — le champ DANS une vraie modale', () => {
   /** Le câblage complet : `Modal` (son écouteur Entrée au document) + la rangée + son sélecteur. */
   function mountInModal(onRoll: () => void, applies: string[]) {
@@ -327,7 +322,8 @@ describe('« Dé fixé » PRÉ-jet — le champ DANS une vraie modale', () => {
         </Modal>,
       );
     });
-    makeVisible(host.querySelector<HTMLElement>('.modal-actions .btn-primary')!);
+    // Sans boîte, `Modal` juge le bouton primaire invisible et son raccourci Entrée ne partirait JAMAIS.
+    rendreVisible(host.querySelector<HTMLElement>('.modal-actions .btn-primary')!);
     return dieInput()!;
   }
 

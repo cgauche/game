@@ -6,10 +6,12 @@
  * L'ordre est celui des `pushLayer` — LIFO PUR : la dernière ouverte se ferme la première. Le `kind`
  * est un LIBELLÉ DE DIAGNOSTIC (journal, tests) ; il n'entre dans aucun calcul de rang.
  *
- * Deux façons pour une couche de ne pas se fermer :
+ * Deux façons pour une couche de RESTER à l'écran :
  *  - `onDismiss: null` — couche BLOQUANTE : elle CONSOMME l'appui sans rien faire (l'équivalent du
  *    `closedBy="none"` natif : dialogue PNJ en cours, jet posé qui doit être résolu) ;
- *  - `onDismiss()` qui rend `false` — REFUS dynamique.
+ *  - `onDismiss()` qui rend `false` — la couche RESTE : refus pur, ou congédiement PARTIEL (#1752)
+ *    — une surface à SOUS-ÉCRANS descend d'un échelon interne (sous-écran → racine) et GARDE sa
+ *    couche, sans quoi elle serait à l'écran sans couche et l'appui suivant filerait au registre.
  * Dans les deux cas la résolution s'arrête là : UN APPUI = AU PLUS UNE FERMETURE, jamais de cascade
  * vers la couche suivante.
  *
@@ -19,7 +21,8 @@
  * Module FEUILLE (patron `combatants.ts`) : zéro import runtime — ni store, ni React, ni DOM.
  */
 
-/** Ce qu'une couche fait quand on la congédie. `void` = fermée ; `false` = refus (rien ne bouge). */
+/** Ce qu'une couche fait quand on la congédie. `void` = fermée (dépilée) ; `false` = elle RESTE à
+ *  l'écran, l'appui consommé — refus pur, ou congédiement PARTIEL (un échelon interne de moins). */
 export type OnDismiss = () => void | boolean;
 
 /** Jeton opaque rendu par `pushLayer` : la seule façon de désigner SA couche pour la retirer. */
@@ -31,8 +34,9 @@ interface Couche extends DismissHandle {
   readonly onDismiss: OnDismiss | null;
 }
 
-/** Résultat d'un appui : la couche du dessus s'est fermée, a refusé, ou il n'y avait aucune couche. */
-export type DismissResult = 'ferme' | 'refuse' | 'vide';
+/** Résultat d'un appui : la couche du dessus s'est fermée, est RESTÉE (bloquante, refus ou
+ *  congédiement partiel), ou il n'y avait aucune couche. */
+export type DismissResult = 'ferme' | 'reste' | 'vide';
 
 /** Mouvement de la pile, notifié aux abonnés (une surface de SURVOL se retire quand une couche
  *  s'ouvre AU-DESSUS d'elle : elle n'est plus la couche du dessus, elle n'a plus rien à recouvrir). */
@@ -68,8 +72,8 @@ export function popLayer(handle: DismissHandle): void {
 export function dismissTop(): DismissResult {
   const top = pile[pile.length - 1];
   if (!top) return 'vide';
-  if (!top.onDismiss) return 'refuse';
-  if (top.onDismiss() === false) return 'refuse';
+  if (!top.onDismiss) return 'reste';
+  if (top.onDismiss() === false) return 'reste';
   popLayer(top);
   return 'ferme';
 }

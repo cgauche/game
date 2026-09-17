@@ -14,7 +14,7 @@
  * Ce banc monte les composants PERMANENTS avec le hook clavier RÉEL : c'est le seul endroit où le
  * défaut se voit, une modale montée à la main ne le reproduit pas.
  */
-import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useGame } from '../state/store';
@@ -22,6 +22,7 @@ import { dismissStackKinds } from '../state/dismissStack';
 import { resetDismissLayers } from './useDismissLayer';
 import { useGameKeyboard } from './useGameKeyboard';
 import { GameMenu } from './GameMenu';
+import { poserLayoutJsdom } from './layoutJsdom.testkit';
 import { VictoryScreen } from './VictoryScreen';
 
 beforeAll(() => { (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true; });
@@ -75,5 +76,106 @@ describe('Échap — les composants PERMANENTS n’empilent rien tant qu’ils n
     echap();
     expect(useGame.getState().gameMenuOpen, 'Échap referme le menu ouvert').toBe(false);
     expect(dismissStackKinds(), 'refermé, il n’est plus une couche').toEqual([]);
+  });
+});
+
+/** Bouton du menu système désigné par son LIBELLÉ visible (ou son `aria-label`) — chemin du joueur :
+ *  on clique ce qui est à l'écran, jamais un état interne poussé en props. */
+const bouton = (libelle: string): HTMLButtonElement => {
+  const b = [...host.querySelectorAll('button')].find(
+    (x) => x.getAttribute('aria-label') === libelle || x.textContent?.replace(/\s+/g, ' ').trim() === libelle,
+  );
+  if (!b) throw new Error(`bouton « ${libelle} » absent de l’écran`);
+  return b;
+};
+const clic = (libelle: string) => act(() => { bouton(libelle).dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+const sousEcran = () => host.querySelector('.game-menu-sub');
+const racine = () => host.querySelector('.game-menu-card:not(.game-menu-sub)');
+
+describe('Échap depuis un SOUS-ÉCRAN du menu système (#1752) — la surface reste, sa couche AUSSI', () => {
+  beforeEach(() => {
+    act(() => root.render(<Ecran />));
+    act(() => { useGame.setState({ gameMenuOpen: true } as never); });
+  });
+
+  for (const [entree, titre] of [['Options', 'Options'], ['Coopération', 'Coopération']] as const) {
+    it(`sous-écran ${entree} : le 1ᵉʳ Échap remonte à la racine (couche CONSERVÉE), le 2ᵉ ferme`, () => {
+      clic(entree); // chemin RÉEL : l'entrée du menu racine, cliquée
+      expect(sousEcran()?.textContent, 'le sous-écran est à l’écran').toContain(titre);
+      expect(racine(), 'la racine a cédé la place').toBeNull();
+      expect(dismissStackKinds()).toEqual(['menu-systeme']);
+
+      echap();
+      expect(useGame.getState().gameMenuOpen, 'un appui = UN échelon : le menu reste ouvert').toBe(true);
+      expect(sousEcran(), 'le sous-écran est refermé').toBeNull();
+      expect(racine(), 'la carte racine est de retour').toBeTruthy();
+      expect(dismissStackKinds(), 'la surface est à l’écran : elle GARDE sa couche').toEqual(['menu-systeme']);
+
+      echap();
+      expect(useGame.getState().gameMenuOpen, 'le 2ᵉ appui ferme le menu').toBe(false);
+      expect(dismissStackKinds(), 'fermé, il n’est plus une couche').toEqual([]);
+    });
+  }
+
+  it('le ☰ annoncé « Fermer le menu » ferme le menu, y compris depuis un sous-écran', () => {
+    clic('Options');
+    expect(sousEcran(), 'on est bien dans le sous-écran').toBeTruthy();
+    clic('Fermer le menu'); // l'affordance annoncée par `aria-label`/`aria-expanded` se clique
+    expect(useGame.getState().gameMenuOpen, 'le ☰ ferme le menu').toBe(false);
+    expect(dismissStackKinds()).toEqual([]);
+  });
+});
+
+/**
+ * LE FOCUS ENTRE DANS LA BOÎTE, MÊME MONTÉE EN PERMANENCE (#1752, recette clavier pas 9).
+ *
+ * `GameMenu` vit toujours dans le HUD et ne rend sa boîte qu'à l'ouverture : au premier rendu son
+ * `ref` est vide. Les deux effets de focus d'`useModalA11y` dépendent donc d'`actif`, sans quoi ils
+ * sortent à vide une fois pour toutes et le joueur clavier reste sur `<body>` — menu ouvert comme
+ * après un retour de sous-écran (où c'est le SAUVETAGE par mutations qui replace le focus).
+ */
+describe('Menu système — le focus clavier entre dans la carte (#1752)', () => {
+  // Le focus est MESURÉ ici : sans layout, aucun focusable ne passerait le filtre de `Modal`.
+  let retirerLayout: () => void;
+  beforeAll(() => { retirerLayout = poserLayoutJsdom(); });
+  afterAll(() => retirerLayout());
+
+  const carte = () => host.querySelector('.game-menu-overlay') as HTMLElement;
+
+  /** Le SAUVETAGE du focus passe par un `MutationObserver` : son rappel est une micro-tâche, postée
+   *  après la mutation du rendu. On la laisse s'écouler avant de lire `activeElement`. */
+  const vider = () => act(async () => {});
+
+  it('à l’OUVERTURE, le focus est dans la carte — et il y revient après le retour de sous-écran', async () => {
+    act(() => root.render(<Ecran />));
+    act(() => { useGame.setState({ gameMenuOpen: true } as never); });
+    expect(carte().contains(document.activeElement), 'ouverture : le clavier a une prise').toBe(true);
+
+    clic('Options');
+    await vider();
+    expect(carte().contains(document.activeElement), 'sous-écran : le focus a suivi').toBe(true);
+
+    echap();
+    await vider();
+    expect(racine(), 'on est revenu à la carte racine').toBeTruthy();
+    expect(carte().contains(document.activeElement), 'retour au menu : le focus suit').toBe(true);
+  });
+
+  it('la CLASSE entière : l’écran de victoire, lui aussi monté en permanence, prend le focus à sa révélation', () => {
+    // Son `actif` est `over === 'victory' && revealed` : la boîte naît APRÈS le délai de tenue du coup
+    // fatal (`VICTORY_REVEAL_MS`, `VictoryScreen.tsx:41-46`), bien après le premier rendu.
+    vi.useFakeTimers();
+    try {
+      act(() => root.render(<Ecran />));
+      act(() => {
+        useGame.setState({ battle: { ...useGame.getState().battle!, over: 'victory' } } as never);
+      });
+      act(() => { vi.advanceTimersByTime(1000); });
+      const victoire = host.querySelector('.victory-screen') as HTMLElement | null;
+      expect(victoire, 'l’écran de victoire est révélé').toBeTruthy();
+      expect(victoire!.contains(document.activeElement), 'le clavier a une prise sur [Continuer]').toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

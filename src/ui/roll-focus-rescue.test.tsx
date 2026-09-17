@@ -8,6 +8,7 @@
  * Patron réel du repo pour les tests interactifs : `createRoot`/`act` (pas de `@testing-library`).
  */
 import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
+import { poserLayoutJsdom } from './layoutJsdom.testkit';
 import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { RollShell } from './RollShell';
@@ -18,17 +19,10 @@ beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 });
 
-// jsdom n'a AUCUN moteur de layout : `getClientRects()` y rend une liste vide pour tout élément, ce
-// qui rendrait invisible chaque focusable au filtre de `Modal`. On rend une boîte non nulle aux
-// éléments attachés au document — la seule chose que le filtre mesure vraiment en navigateur.
-const realRects = HTMLElement.prototype.getClientRects;
-beforeAll(() => {
-  HTMLElement.prototype.getClientRects = function () {
-    const rect = { x: 0, y: 0, width: 10, height: 10, top: 0, left: 0, right: 10, bottom: 10, toJSON: () => ({}) } as DOMRect;
-    return (this.isConnected ? [rect] : []) as unknown as DOMRectList;
-  };
-});
-afterAll(() => { HTMLElement.prototype.getClientRects = realRects; });
+// Le focus circule ici pour de vrai : sans layout, le filtre de `Modal` ne verrait aucun focusable.
+let retirerLayout: () => void;
+beforeAll(() => { retirerLayout = poserLayoutJsdom(); });
+afterAll(() => retirerLayout());
 
 let host: HTMLDivElement;
 let root: Root;

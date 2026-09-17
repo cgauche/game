@@ -41,8 +41,9 @@ export function GameMenu({ sceneName, time, onQuit, onSaveLoad, onEndSession, in
   const close = () => { setOpen(false); setView('root'); };
   // Une entrée qui délègue vers le haut FERME d'abord le menu (la modale/écran cible s'ouvre par-dessus la scène).
   const act = (fn?: () => void) => () => { close(); fn?.(); };
-  // Échap / bouton Retour : depuis un sous-écran on remonte au menu ; depuis le menu on ferme.
-  const back = () => { if (view !== 'root') setView('root'); else close(); };
+  // Échap / bouton Retour : UN APPUI = UN ÉCHELON — depuis un sous-écran on remonte au menu, et le
+  // menu RESTE à l'écran, donc sa couche reste empilée (`false`, #1752) ; à la racine, on ferme.
+  const back = (): boolean | void => { if (view !== 'root') { setView('root'); return false; } close(); };
   useModalA11y(boxRef, back, { kind: 'menu-systeme', actif: open }); // monté en PERMANENCE : fermé, il n'est aucune couche
 
   return (

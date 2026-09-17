@@ -114,7 +114,7 @@ describe('Échap — pile de couches LIFO', () => {
     expect(menuOuvert(), 'et la touche ne descend pas jusqu’au menu').toBe(false);
   });
 
-  it('REFUS DYNAMIQUE (`onDismiss` rend `false`) : aucune cascade vers la couche du dessous', () => {
+  it('LA COUCHE RESTE (`onDismiss` rend `false`) : aucune cascade vers la couche du dessous', () => {
     const dessous = vi.fn();
     const Deux = () => {
       useDismissLayer('dessous', dessous);

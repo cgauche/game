@@ -18,6 +18,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { createPortal } from 'react-dom';
 import { Modal } from './Modal';
+import { rendreVisible } from './layoutJsdom.testkit';
 import { useDismissLayer } from './useDismissLayer';
 
 beforeAll(() => {
@@ -27,12 +28,6 @@ beforeAll(() => {
 let host: HTMLDivElement;
 let root: Root;
 let clicks: number;
-
-/** jsdom ne calcule aucune géométrie : `getClientRects()` y est vide, donc le bouton primaire
- *  serait jugé invisible par la garde de `Modal`. On lui donne un rect non nul. */
-function makeVisible(el: HTMLElement) {
-  el.getClientRects = (() => [{ width: 80, height: 24 }] as unknown as DOMRectList) as HTMLElement['getClientRects'];
-}
 
 /** `swallow` = le champ CONSOMME Entrée chez lui (le geste du sélecteur de dé). */
 function mount(swallow = false) {
@@ -52,7 +47,7 @@ function mount(swallow = false) {
     ),
   );
   const primary = host.querySelector<HTMLElement>('.btn-primary')!;
-  makeVisible(primary);
+  rendreVisible(primary);
   return { input: host.querySelector<HTMLInputElement>('input.champ')!, primary };
 }
 
@@ -123,7 +118,7 @@ describe('Modal — un contrôle porté par PORTAL possède ses touches (fronti�
       ),
     );
     const primary = host.querySelector<HTMLElement>('.btn-primary')!;
-    makeVisible(primary);
+    rendreVisible(primary);
     return { primary, porte: document.querySelector<HTMLButtonElement>('button.porte')! };
   }
 

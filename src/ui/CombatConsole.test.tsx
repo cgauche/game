@@ -17,6 +17,7 @@ import { itemFromTrappingById, recomputeLoadout, loadoutLabel, loadedAmmo, selec
 import { weaponLoaded } from '../engine/weaponLoad';
 import { t } from '../i18n';
 import { visibleFocusables } from './Modal';
+import { sousLayoutJsdom } from './layoutJsdom.testkit';
 import { hotbar } from '../state/hotbarBridge';
 import { regles, findQualityById, findActionById, findVehicleById, ACTIONS, type ActionDef } from '../data/index';
 import { ActiveModal } from './ActiveModal';
@@ -3603,9 +3604,7 @@ describe('CombatConsole — la raison d’une case fermée s’atteint au clavie
     consoleGatee();
     // jsdom ne pose aucune boîte : on mesure le filtre `disabled` de la manette sur les alvéoles, en
     // neutralisant la seule autre condition (`getClientRects`), qui est un fait de navigateur.
-    const rects = HTMLElement.prototype.getClientRects;
-    HTMLElement.prototype.getClientRects = function fake() { return [{}] as unknown as DOMRectList; };
-    try {
+    sousLayoutJsdom(() => {
       const pont = host.querySelector('.combat-console') as HTMLElement;
       const focusables = visibleFocusables(pont);
       const gatees = [...host.querySelectorAll('button.cc-cell[aria-disabled="true"]')];
@@ -3613,9 +3612,7 @@ describe('CombatConsole — la raison d’une case fermée s’atteint au clavie
       for (const g of gatees) {
         expect(focusables, 'le pad ne peut pas se poser sur cette case, sa raison lui est invisible').toContain(g);
       }
-    } finally {
-      HTMLElement.prototype.getClientRects = rects;
-    }
+    });
   });
 
   it('TACTILE : un tap sur la case fermée MONTRE sa raison — et n’exécute rien', () => {

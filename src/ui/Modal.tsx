@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { useDismissLayer } from './useDismissLayer';
+import type { OnDismiss } from '../state/dismissStack';
 import { ModalSubject } from './ModalSubject';
 import type { Combatant } from '../engine/types';
 
@@ -61,22 +62,25 @@ function focusTarget(box: HTMLElement, mode: 'initial' | 'rescue'): HTMLElement 
  *   congédiement de toute la session. */
 export function useModalA11y(
   boxRef: RefObject<HTMLDivElement>,
-  onClose?: () => void,
+  onClose?: OnDismiss,
   { kind = 'modale', actif = true }: { kind?: string; actif?: boolean } = {},
 ) {
   // Focus initial UTILE (cf. `focusTarget`) : évite que le focus atterrisse sur un bouton sans intérêt
   // (« rien ne répond »).
   // RESTORE : à la fermeture, le focus revient à l'élément qui l'avait AVANT l'ouverture (déclencheur du
   // bouton/carte) — sinon un joueur clavier perd son point de navigation à chaque modale fermée.
+  // `actif` fait partie des DÉPENDANCES : une boîte qui n'existe qu'à l'ouverture (`{actif && <div
+  // ref=…>}`) n'a pas d'élément au premier rendu, et l'objet `ref` ne change jamais d'identité — sans
+  // cette dépendance l'effet sortirait à vide une fois pour toutes (#1752).
   useEffect(() => {
     const box = boxRef.current;
-    if (!box) return;
+    if (!actif || !box) return;
     const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     focusTarget(box, 'initial')?.focus();
     return () => {
       if (previouslyFocused && document.body.contains(previouslyFocused)) previouslyFocused.focus();
     };
-  }, [boxRef]);
+  }, [boxRef, actif]);
   // SAUVETAGE du focus : un contrôle focalisé que le rendu DÉMONTE (« Résilience » cède la place au
   // groupe de choix du dé, « Lancer » au résultat…) laisse le focus sur <body> — le piège Tab est
   // rompu et la tabulation suivante s'échappe vers l'arrière-plan. On le replace DANS la boîte, sur la
@@ -84,7 +88,7 @@ export function useModalA11y(
   // LOCAL d'une rangée, qui ne re-rend pas cette boîte — un effet d'ici ne serait pas rejoué.
   useEffect(() => {
     const box = boxRef.current;
-    if (!box) return;
+    if (!actif || !box) return;
     const had = { current: box.contains(document.activeElement) };
     const onFocusIn = () => { had.current = true; };
     box.addEventListener('focusin', onFocusIn);
@@ -100,12 +104,13 @@ export function useModalA11y(
     });
     obs.observe(box, { childList: true, subtree: true });
     return () => { obs.disconnect(); box.removeEventListener('focusin', onFocusIn); };
-  }, [boxRef]);
+  }, [boxRef, actif]);
   // CONGÉDIEMENT : le dialogue est une COUCHE de la pile (`dismissStack`, #1476) — Échap et le
   // bouton B de la manette y arrivent par la couture unique `resoudreEchap`, qui congédie la couche
   // du DESSUS (la dernière ouverte), jamais le dernier `[role=dialog]` de l'ordre du document — un
   // portal ajouté en fin de `body` mentait sur l'ordre d'ouverture. Sans `onClose`, la couche est
-  // BLOQUANTE : elle consomme la touche sans rien fermer (un jet posé doit être résolu).
+  // BLOQUANTE : elle consomme la touche sans rien fermer (un jet posé doit être résolu). Un `onClose`
+  // qui rend `false` garde la couche à l'écran (congédiement PARTIEL, #1752).
   useDismissLayer(kind, onClose ?? null, actif);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

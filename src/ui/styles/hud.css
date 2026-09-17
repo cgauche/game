@@ -831,6 +831,8 @@
   top: 10px;
   left: 10px;
   z-index: 60;
+  /* CONTEXTE D'EMPILEMENT (#1752) : `position: absolute` + `z-index: 60` — les rangs de ses enfants
+     (☰ 131 au-dessus du voile 130) se comparent ICI, jamais au rang racine où vivent les modales. */
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -862,8 +864,14 @@
 .game-menu {
   position: relative;
 }
-/* Le menu système garde SON coin (spécimen G) — même tôle vissée, liseré de laiton. */
+/* Le menu système garde SON coin (spécimen G) — même tôle vissée, liseré de laiton.
+   ATTEIGNABLE MENU OUVERT (#1752, même geste que `.wm-zoom` #1117) : le voile `.game-menu-overlay`
+   (z-index 130) est son FRÈRE dans le DOM et le recouvrait, alors qu'il annonce « Fermer le menu »
+   (`aria-label`, `aria-expanded`). Son rang passe devant ce voile DANS le contexte d'empilement de
+   `.hud-topbar` : rien ne change face aux modales, au-dessus de toute la barre. */
 .gm-btn {
+  position: relative;
+  z-index: 131;
   width: 42px;
   height: 42px;
   border-radius: 0;

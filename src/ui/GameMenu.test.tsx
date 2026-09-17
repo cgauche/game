@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readFileSync } from 'node:fs';
 import { GameMenu } from './GameMenu';
 import { campaignStart } from '../engine/clock';
 import { useGame } from '../state/store';
@@ -79,6 +80,44 @@ describe('GameMenu — menu système plein écran (pause)', () => {
     );
     expect(html).toContain('Coopération');
     expect(html).toContain('Retour');
+  });
+});
+
+/**
+ * ☰ ATTEIGNABLE MENU OUVERT (#1752) — le bouton annonce « Fermer le menu » (`aria-label`,
+ * `aria-expanded`) : l'affordance doit se cliquer alors que le voile du menu couvre l'écran. jsdom ne
+ * fait PAS de layout — on verrouille la RÈGLE qui le rend possible, comme `WorldMapView.test.tsx`
+ * pour les commandes de zoom (#1117) : la barre crée son contexte d'empilement (positionnée +
+ * `z-index`), et le ☰ y monte au-dessus du voile. Sans ce contexte, le rang du ☰ se comparerait au
+ * rang RACINE, où vivent les modales.
+ * Vérification NAVIGATEUR : menu ouvert, `document.elementFromPoint` au centre du ☰ rend CE bouton ;
+ * modale de jet ouverte (menu fermé), le même point rend le voile de la modale.
+ */
+describe('☰ du menu système — atteignable menu ouvert, jamais au-dessus des modales (#1752)', () => {
+  const hud = readFileSync(new URL('./styles/hud.css', import.meta.url), 'utf8');
+  const components = readFileSync(new URL('./styles/components.css', import.meta.url), 'utf8');
+  /** Bloc d'une règle CSS, désignée par son sélecteur ÉCHAPPÉ en entier (`.`, `[`, `-`…), COMMENTAIRES
+   *  RETIRÉS : ici les commentaires CITENT les rangs (`z-index 130`…) et une sonde qui les lit
+   *  mesurerait la prose au lieu de la déclaration. */
+  const sansCommentaires = (css: string): string => css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const bloc = (css: string, selecteur: string): string =>
+    new RegExp(`${selecteur.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&')}\\s*\\{[^}]*\\}`).exec(sansCommentaires(css))?.[0] ?? '';
+  const rang = (css: string, selecteur: string): number =>
+    Number(/z-index:\s*(\d+)/.exec(bloc(css, selecteur))?.[1] ?? NaN);
+
+  it('`.hud-topbar` crée son contexte d’empilement (position + z-index)', () => {
+    const barre = bloc(hud, '.hud-topbar');
+    expect(barre, 'la règle existe').toBeTruthy();
+    // Les DEUX conditions du contexte d'empilement : un élément positionné ET un `z-index` chiffré.
+    expect(barre, 'positionnée (jamais `static`)').toMatch(/position:\s*(?!static)(absolute|fixed|relative|sticky)/);
+    expect(rang(hud, '.hud-topbar'), 'et un z-index entier').toBeGreaterThan(0);
+  });
+
+  it('le ☰ porte un rang SUPÉRIEUR au voile du menu (sinon le voile mange son clic)', () => {
+    const btn = rang(hud, '.gm-btn');
+    const voile = rang(components, '.game-menu-overlay');
+    expect(voile, 'le voile porte bien un rang').toBeGreaterThan(0);
+    expect(btn, `☰ (${btn}) au-dessus du voile (${voile})`).toBeGreaterThan(voile);
   });
 });
 
