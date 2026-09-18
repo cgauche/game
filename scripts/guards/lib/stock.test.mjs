@@ -7,7 +7,7 @@
 // sont tenus par `src/stock-primitive.test.ts` (vitest).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { cleDeSite, ecartDuVolet, refusDeCroissance, sitesEnEntrees } from './stock.mjs'
+import { cleDeSite, ecartDuVolet, refusDeCroissance, sitesEnEntrees, survieDeLecheance } from './stock.mjs'
 
 test('sitesEnEntrees : deux sites de la MÊME réf dans le MÊME fichier se distinguent par leur OCCURRENCE', () => {
   const entrees = sitesEnEntrees([
@@ -130,4 +130,40 @@ test('écart : un stock qui décrit EXACTEMENT les sites observés ne dit rien',
     ou: 'x-stock.json',
   })
   assert.deepEqual([neuves, perimees], [[], []])
+})
+
+// SURVIE (#1820) : une régénération de stock ne rajeunit pas une dette. Contrat tenu ICI parce que
+// les deux régénérateurs datés du dépôt (`check-source-tables`, `check-source-format`) le partagent.
+const MESUREES = () => sitesEnEntrees([
+  { file: 'Source/L/01 - A.md', ref: 'r1' },
+  { file: 'Source/L/02 - B.md', ref: 'r2' },
+], { famille: 'f' })
+
+test('survie : une entrée CONNUE garde son lot, sa date et sa preuve ; une régénération ne la rajeunit pas', () => {
+  const ancien = survieDeLecheance(MESUREES(), { lot: '#1384 B2', date: '2026-09-14' })
+    .map((e, i) => (i === 0 ? { ...e, preuve: 'PDF p.42 : lu.' } : e))
+  const rendu = survieDeLecheance(MESUREES(), { lot: '#9999 Z', date: '2030-01-01', ancien })
+  assert.deepEqual(rendu, ancien)
+})
+
+test('survie : un site NEUF prend le lot et la date DU RUN, et ne porte aucune preuve', () => {
+  const ancien = survieDeLecheance(MESUREES().slice(0, 1), { lot: '#1384 B2', date: '2026-09-14' })
+  const rendu = survieDeLecheance(MESUREES(), { lot: '#9999 Z', date: '2030-01-01', ancien })
+  assert.deepEqual(rendu.map((e) => [e.fichier, e.lot, e.date, 'preuve' in e]), [
+    ['Source/L/01 - A.md', '#1384 B2', '2026-09-14', false],
+    ['Source/L/02 - B.md', '#9999 Z', '2030-01-01', false],
+  ])
+})
+
+// La survie suit la CLÉ, jamais le rang : une entrée ancienne dont la clé a changé (réf corrigée)
+// est un site NEUF, et l'entrée voisine ne lui prête ni sa date ni sa preuve.
+test('survie : la clé SEULE apparie — une réf qui bouge redate l’entrée', () => {
+  const ancien = survieDeLecheance(
+    sitesEnEntrees([{ file: 'Source/L/01 - A.md', ref: 'AUTRE' }], { famille: 'f' }),
+    { lot: '#1384 B2', date: '2026-09-14' },
+  ).map((e) => ({ ...e, preuve: 'PDF p.7 : lu.' }))
+  const rendu = survieDeLecheance(MESUREES().slice(0, 1), { lot: '#9999 Z', date: '2030-01-01', ancien })
+  assert.deepEqual(rendu, [
+    { famille: 'f', fichier: 'Source/L/01 - A.md', ref: 'r1', occurrence: 1, lot: '#9999 Z', date: '2030-01-01' },
+  ])
 })

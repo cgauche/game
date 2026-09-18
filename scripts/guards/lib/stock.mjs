@@ -100,6 +100,32 @@ export function sitesEnEntrees(sites, { famille } = {}) {
   });
 }
 
+/**
+ * SURVIE d'une ÉCHÉANCE à une RÉGÉNÉRATION de stock — seule définition du dépôt (#1820), consommée
+ * par les deux régénérateurs datés (`scripts/raw/check-source-tables.mjs`,
+ * `scripts/raw/check-source-format.mjs`).
+ * `ancien` (les entrées déjà committées) fait SURVIVRE, à CLÉ IDENTIQUE, ce qu'un humain a posé sur
+ * l'entrée : son échéance (`lot`, `date` — un site inchangé garde la date à laquelle il a été
+ * qualifié, une régénération ne rajeunit pas une dette) et sa `preuve` (le site a été tranché au
+ * PDF). Un site NEUF prend le lot et la date du run, et ne porte rien d'autre.
+ * L'ORDRE et la FORME rendus sont ceux de `mesurees` : la survie ne réordonne ni n'ajoute une clé
+ * que l'ancienne entrée ne portait pas (une `preuve` absente de `vieux` ne s'écrit pas).
+ * @template {Record<string, unknown>} E
+ * @param {Iterable<E>} mesurees entrées MESURÉES (clé nominative déjà posée par `sitesEnEntrees`)
+ * @param {{ lot: string, date: string, ancien?: Iterable<object> }} p
+ * @returns {(E & { lot: string, date: string })[]}
+ */
+export function survieDeLecheance(mesurees, { lot, date, ancien = [] }) {
+  const parCle = new Map();
+  for (const e of ancien) parCle.set(cleDeSite(e), e);
+  return [...mesurees].map((e) => {
+    const vieux = parCle.get(cleDeSite(e));
+    const sortie = { ...e, lot: vieux?.lot ?? lot, date: vieux?.date ?? date };
+    if (vieux?.preuve !== undefined) sortie.preuve = vieux.preuve;
+    return sortie;
+  });
+}
+
 /** La clé d'une entrée, ou l'entrée elle-même en JSON compact quand cette clé ne NOMME rien. Une
  *  entrée sans `fichier` ni `ref` (faute de saisie, champ renommé, entrée bidon) rend une clé réduite
  *  à ses séparateurs (` ::  ::  :: `) : le refus désigne alors une entrée que le lecteur ne peut pas

@@ -44,19 +44,24 @@ export function corpusRange(dir) {
   return lo <= hi ? { lo, hi } : null
 }
 
-// Folio IMPRIMÉ d'une page : nombre nu isolé sur sa ligne, dans les `EDGE_LINES` premières ou
-// dernières lignes non vides. `null` = page sans numéro lisible (planche pleine page, ouverture de
-// chapitre non foliotée) — jamais une valeur devinée.
+// Folio IMPRIMÉ d'une page : le SEUL nombre nu non nul (ligne réduite à des chiffres) de TOUTE la
+// page, à condition qu'il figure dans les `EDGE_LINES` premières ou dernières lignes non vides.
+// Deux nombres nus DISTINCTS sur la page (bandeau de double page, qui imprime les DEUX folios de la
+// planche sur chacune de ses pages ; cellule de table `d10`) rendent la lecture ambiguë : dans ce
+// cas, comme sur une planche pleine page, le retour est `null` — page non lue, jamais une valeur
+// devinée. Le même nombre lu en tête ET en pied reste univoque. `0` est écarté des candidats ET de
+// l'ensemble d'ambiguïté : une cellule `0` ne rend pas la page muette, une cellule `1` si.
+// La lecture d'une page SANS folio imprimé qui porte un unique nombre nu à ses bords est RENDUE
+// telle quelle (rien ne la distingue ici) ; c'est l'unicité de l'offset dans `resolveOffsetFromPdf`
+// qui la récuse.
 export function readPrintedFolio(pageText) {
   if (!pageText) return null
   const lines = pageText.split('\n').map((l) => l.trim()).filter(Boolean)
-  const head = lines.slice(0, EDGE_LINES)
-  const tail = lines.slice(-EDGE_LINES)
-  for (const l of [...head, ...tail]) {
-    const m = FOLIO_LINE_RE.exec(l)
-    if (m) return Number(m[1])
-  }
-  return null
+  const nus = (ls) => ls.map((l) => FOLIO_LINE_RE.exec(l)).filter(Boolean).map((m) => Number(m[1])).filter((n) => n > 0)
+  const distincts = [...new Set(nus(lines))]
+  if (distincts.length !== 1) return null
+  const bords = new Set(nus([...lines.slice(0, EDGE_LINES), ...lines.slice(-EDGE_LINES)]))
+  return bords.has(distincts[0]) ? distincts[0] : null
 }
 
 // Offset K−folio du livre. `ok:false` si aucune page folioée, ou si l'offset n'est pas unique

@@ -38,7 +38,9 @@ committé :
   il lit les anciens `NN - X.md` et leur marqueur `Pages PDF` pour retrouver les frontières. Un
   dossier qui n'en porte pas (les 6 livres en `*Folio N+*`, les 4 dossiers pré-pipeline) ne lui
   donne aucun chapitre : sa structure cible se pose d'abord (§2).
-- Folios ensuite : `scripts/raw/folio-bootstrap.mjs` puis `scripts/raw/anchor-fill.mjs`.
+- Folios ensuite : `scripts/raw/folio-bootstrap.mjs` puis `scripts/raw/anchor-fill.mjs`. Le bootstrap
+  ne retient comme folio imprimé que l'UNIQUE nombre nu non nul de la page, présent à ses bords :
+  deux nombres nus distincts (bandeau de double page, cellule `d10`) rendent la page non lue.
 
 **Découpage en tranches (reste de #1739).** La session d'extraction produit le PDF par tranches de
 40 pages ; le séparateur `{N}----` portant l'index **absolu** de page quelle que soit la tranche,
@@ -299,7 +301,8 @@ stock et rougit la garde — c'est ainsi qu'un geste non canonique se voit.
    `RECALÉE`** ; les trois autres se règlent à la main, au PDF.
 5. `node scripts/raw/anchor-fill.mjs <ABBR> --ch NN --pdf <chemin> --apply` s'il reste des blocs sans
    folio : il pose des ancres `data-folio` **ciblées**, et saute tout candidat absent, multiple ou
-   hors bornes.
+   hors bornes. Une page qui porte déjà une ancre nue Marker `<span id="page-K-0"></span>` est sautée
+   avec sa raison : poser la sienne ferait deux ancres de même `id`.
 6. `npm run gates && git commit` — tout dans le même commit.
 
 ### Défaut de table → geste

@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   sitesDuDossier, scanDossier, scanAll, dossiersFR, formeDeLigne1, estNomDeSignet, estSeparateur,
-  comptesDeTables, balisesResiduelles, liensDIndex, entreesDe, ecartDuStock, comptesParFamille,
+  comptesDeTables, balisesResiduelles, liensDIndex, entreesDe, stockDe, ecartDuStock, comptesParFamille,
   FAMILLES, STOCK_PATH, LIGNE1_CANONIQUE, PREFIXES_FR,
 } from './check-source-format.mjs'
 import { readStock } from './stockNominatif.mjs'
@@ -226,7 +226,9 @@ test('stock COMMITTÉ : le rendu EXACT et ORDONNÉ des écarts mesurés sur l’
 
 // PLAFOND de la dette (jamais dans la lib de stock : il vit ICI, cf. `scripts/guards/lib/stock.mjs`).
 // Il ne monte QUE par une édition de cette ligne, sous `CLIQUET:`.
-const PLAFOND = 57
+// 57 → 58 au train #1820 : +1 `sans-folio` pour le Core Rulebook 5e, enregistré SANS ancre de folio
+// (ses 18 chapitres) — l'entrée sort quand la chaîne canonique lui pose ses folios (#1739).
+const PLAFOND = 58
 
 test('stock COMMITTÉ : PLAFOND de la dette de format — le relever exige de changer CE test', () => {
   const entrees = readStock(STOCK_PATH)
@@ -281,4 +283,33 @@ test('familles() n’est pas AVEUGLE : un dossier tout-défaut les rend TOUTES',
     indexVivant(['99 - Absent.md']),
   ]
   assert.deepEqual([...new Set(familles(fichiers))].sort(), [...FAMILLES].sort())
+})
+
+// SURVIE de l'échéance (#1820) : régénérer pour ajouter UNE entrée ne redate pas les autres. La
+// règle est `survieDeLecheance` (`scripts/guards/lib/stock.mjs`) ; ce test-ci tient son CÂBLAGE —
+// `entreesDe`, puis `stockDe`, qui est ce que `--ecrire-stock` écrit sur le disque.
+test('--ecrire-stock CONSERVE l’échéance d’une entrée existante, à clé identique', () => {
+  const sites = sitesDuDossier(DIR, [{ nom: '01 - _GoBack.md', texte: '*Folio 3+*\n\n<span id="page-5-0" data-folio="3"></span>x\n' }])
+  const ancien = entreesDe(sites, { lot: '#1739 H-0', date: '2026-09-14' })
+  const rendu = entreesDe(sites, { lot: '#9999 Z', date: '2030-01-01', ancien })
+  assert.deepEqual(rendu, ancien, 'une régénération ne rajeunit pas une entrée inchangée')
+  assert.ok(
+    stockDe(sites, { lot: '#9999 Z', date: '2030-01-01', dossiers: 1, ancien }).includes('"date": "2026-09-14"'),
+    'le FICHIER écrit porte la date d’origine, pas celle du run',
+  )
+
+  // Une entrée NEUVE (aucune ancienne à sa clé) prend le lot et la date du run, l'autre garde les siens.
+  const neuve = entreesDe(sites, { lot: '#9999 Z', date: '2030-01-01', ancien: ancien.slice(0, 1) })
+  assert.deepEqual(neuve.map((e) => [e.famille, e.lot, e.date]), [
+    [ancien[0].famille, '#1739 H-0', '2026-09-14'],
+    ['nom-de-signet', '#9999 Z', '2030-01-01'],
+  ])
+})
+
+// La `preuve` est un champ HUMAIN : la survie la porte partout où elle existe, y compris sur ce
+// stock-ci, dont aucune entrée n'en porte aujourd'hui.
+test('survie : une `preuve` posée à la main sur une entrée de format lui survit', () => {
+  const sites = sitesDuDossier(DIR, [{ nom: '01 - X.md', texte: '*Folio 3+*\n\n<span id="page-5-0" data-folio="3"></span>x\n' }])
+  const ancien = entreesDe(sites, { lot: '#1739 H-0', date: '2026-09-14' }).map((e) => ({ ...e, preuve: 'PDF p.9 : lu.' }))
+  assert.deepEqual(entreesDe(sites, { lot: '#9999 Z', date: '2030-01-01', ancien }), ancien)
 })

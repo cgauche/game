@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { BOOKS, readText } from './_lib.mjs'
 import {
   buildCompactIndex, compactAnchor, extractContentHeads,
-  existingFolioLines, folioBounds, planChapter,
+  existingFolioLines, folioBounds, planChapter, nakedAnchorLines,
 } from './anchor-fill.mjs'
 
 // ---------- compactAnchor ----------
@@ -108,6 +108,48 @@ test('planChapter : le même candidat DANS les bornes est posé', () => {
   const pages = { 2: 'tete du folio deux, prose assez longue pour ancrer sans ambiguite' }
   const plan = planChapter('01 - X.md', lines.join('\n'), 0, (K) => pages[K])
   assert.deepEqual(plan.placed.map((p) => [p.folio, p.line]), [[2, 3]])
+})
+
+// ---------- ancres NUES de l'extraction Marker (#1739, cas CRB) ----------
+
+test('nakedAnchorLines : ancre SANS data-folio → K et sa ligne ; une ancre folioée n’y entre pas', () => {
+  // Formes réelles du CRB (`04 - Introduction.md` l.5 et l.65).
+  const text = [
+    '*Pages PDF 5-14*',
+    '# <span id="page-5-0"></span>*So, what’s drawn you to my door, wastrel?*',
+    '<span id="page-6-0"></span>I **Using This Book** explique comment le jeu fonctionne.',
+    '<span id="page-9-0" data-folio="10"></span>deja folioee',
+  ].join('\n')
+  const map = nakedAnchorLines(text)
+  assert.deepEqual([...map.entries()], [[5, 2], [6, 3]])
+})
+
+test('planChapter : une page à ancre NUE est SAUTÉE — jamais un second `id="page-K-0"`', () => {
+  const lines = [
+    '*Pages PDF 2-3*',                                        // folios 1 et 2 (offset 0)
+    '# <span id="page-2-0"></span>tete du folio deux, prose assez longue pour ancrer',
+    'tete du folio un, prose assez longue pour ancrer sans ambiguite',
+  ]
+  const pages = { 1: 'tete du folio un, prose assez longue pour ancrer sans ambiguite', 2: 'tete du folio deux, prose assez longue pour ancrer' }
+  const plan = planChapter('01 - X.md', lines.join('\n'), 0, (K) => pages[K])
+  assert.deepEqual(plan.placed.map((p) => p.folio), [1])
+  assert.deepEqual(plan.skipped.map((s) => s.folio), [2])
+  assert.match(plan.skipped[0].reason, /ancre nue Marker .*page-2-0.*\(l\.2\)/)
+  const texte = [...plan.edits.values()].flat().map((e) => e.span).join('')
+  assert.equal(texte.includes('id="page-2-0"'), false)
+})
+
+test('planChapter : second passage sur un chapitre déjà posé → aucune pose (idempotence)', () => {
+  const lines = [
+    '*Pages PDF 2-3*',
+    '<span id="page-1-0" data-folio="1"></span>tete du folio un, prose assez longue pour ancrer sans ambiguite',
+    '# <span id="page-2-0"></span>tete du folio deux, prose assez longue pour ancrer',
+  ]
+  const pages = { 1: 'tete du folio un, prose assez longue pour ancrer sans ambiguite', 2: 'tete du folio deux, prose assez longue pour ancrer' }
+  const plan = planChapter('01 - X.md', lines.join('\n'), 0, (K) => pages[K])
+  assert.deepEqual(plan.placed, [])
+  assert.equal(plan.edits.size, 0)
+  assert.deepEqual(plan.skipped.map((s) => s.folio), [2])
 })
 
 // ---------- non-régression du cas RÉEL NADJ 06 (#833) ----------

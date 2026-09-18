@@ -40,6 +40,15 @@ export function sitesEnEntrees(
   p?: { famille?: string },
 ): EntreeNominative[];
 
+export function survieDeLecheance<E extends Record<string, unknown>>(
+  mesurees: Iterable<E>,
+  p: {
+    lot: string;
+    date: string;
+    ancien?: Iterable<Record<string, unknown>>;
+  },
+): (E & { lot: string; date: string })[];
+
 export function ecartDuVolet(p: {
   sites: readonly { file: string; ref: string }[];
   stock: Iterable<Partial<EntreeNominative>>;

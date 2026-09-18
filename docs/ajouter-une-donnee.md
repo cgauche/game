@@ -3,7 +3,7 @@
 > ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-ajouter-donnee.mjs` (`npm run docs:ajouter-donnee`) — NE PAS ÉDITER À LA MAIN.
 
 **Périmètre mesuré / angles morts** — sont MESURÉS à chaque génération : les 124 fichiers
-de `src/data/*.json`, les 29 entrées de `src/data/books.json` (dont 19 en VF) et le nom
+de `src/data/*.json`, les 30 entrées de `src/data/books.json` (dont 19 en VF) et le nom
 RÉEL de leur clé d'abréviation (`abbr`), les 11 clés d'ENVELOPPE et leurs libellés FR
 lus par AST dans `src/data/schemas/grammaire/document.ts`, les 3 familles de document, les 5 skills de domaine (existence
 sur disque + `description` lue au frontmatter de leur `SKILL.md`) et les 6 gardes (chemin
@@ -61,9 +61,9 @@ Ouvrir le `Source/…` (FR, plus le Core Rulebook 5e — `CLAUDE.md` § *Sources
 Citer `<LIVRE> <chap> l.<ligne>` dans le message de commit / l'issue. ⚠ Le n° de ligne a dérivé
 (ré-extraction Marker) ET les ancres `<span id="page-N">` sont **non fiables** : n'en déduis jamais une `source.page`.
 
-Le champ `book` d'une entrée porte l'**`abbr`** de `src/data/books.json` — 29 livres
+Le champ `book` d'une entrée porte l'**`abbr`** de `src/data/books.json` — 30 livres
 enregistrés, dont 19 en VF : `LDB`, `AA`, `VDM`, `ADE I`, `ADE II`, `MCLB`, `ACE`, `ZI`, `MDG`, `EDOC`, `MSRC`, `BI`, `AU1`, `AU2`, `NADJ`, `EDO`, `MSR`, `PDT`, `frenchy.bzh`.
-Les 10 autres entrées sont en VO : seul le livre VO nommé au `CLAUDE.md` § *Sources VF* est citable.
+Les 11 autres entrées sont en VO : seul le livre VO nommé au `CLAUDE.md` § *Sources VF* est citable.
 
 ## 4. L'ENVELOPPE est posée par la fabrique — ne la redéclare jamais
 
@@ -125,4 +125,4 @@ JAMAIS un choix d'agent silencieux enterré. Avant de conclure « le moteur ne s
 | `src/data/data-atlas-complete.test.ts` | atlas des données (docs/donnees.md) — complétude |
 | `src/data/maison-sans-source.test.ts` | cliquet « maison sans source » — le régime d’arbitrage ne dérive pas (#1467 L1b) |
 | `src/data/data-wellformed.test.ts` | Intégrité des données src/data/*.json |
-<!-- sources-empreinte: 460e19679032d35f26b70eb7017bc307c834b00b (18 fichiers, 1 dossiers) corps: 5a822f0605bd79773ad3e3814a86adaf2169d143 -->
+<!-- sources-empreinte: a62c099144258cb36a81576515d6aaa3dc50ee66 (18 fichiers, 1 dossiers) corps: 2523c80a365c9477a00835647a730dd605a87cfa -->

@@ -132,7 +132,7 @@ function fichiersDuCode(dir) {
   }).map((rel) => `${dir}/${rel}`)
 }
 
-const _chapterLines = new Map() // path -> string[] (une lecture par chapitre, ~15 livres)
+const _chapterLines = new Map() // path -> string[] (une lecture par chapitre)
 function chapterLinesOf(path) {
   if (!_chapterLines.has(path)) _chapterLines.set(path, readText(path).split('\n'))
   return _chapterLines.get(path)

@@ -8,7 +8,7 @@
 
 **Périmètre mesuré / angles morts** — les chemins `Source/…` et abréviations ci-dessous sont LUS depuis
 `src/data/books.json` (`id`/`abbr`/`dir`) : un livre renommé/déplacé casse ce script au lieu de laisser le
-`.md` mentir. Le compte « 16 livres » (paragraphe Atlas) = nombre d'entrées de `books.json` portant
+`.md` mentir. Le compte « 17 livres » (paragraphe Atlas) = nombre d'entrées de `books.json` portant
 un champ `dir` (livre effectivement extrait sous `Source/`) ; un livre `language: "VF"` SANS `dir` (ex.
 Aventures à Ubersreik II, Compagnon du Pouvoir derrière le Trône) est une édition française CONNUE mais NON
 EXTRAITE — ce script ne peut pas distinguer « pas de VF » de « VF pas encore sourcé », il rapporte l'un ou
@@ -24,7 +24,7 @@ AUTORISÉ (`CLAUDE.md` § *Sources VF*). Au moindre doute, **lire le `.md` et ci
 `LDB <chap> l.<ligne>` / `ADE…`.
 
 > **Couche de lecture consolidée = l'Atlas [`docs/raw/`](raw/00-index.md)** : il agrège
-> ces 16 livres par domaine + catalogues de stats. Lis l'Atlas pour comprendre/vérifier ; n'ouvre `Source/`
+> ces 17 livres par domaine + catalogues de stats. Lis l'Atlas pour comprendre/vérifier ; n'ouvre `Source/`
 > que pour **citer** ou lever un doute. ⚠ **Source ré-extraite à Marker le 2026-06-22** (tables fiables,
 > remplace l'ancien OCR pymupdf4llm) → les **n° de ligne** des anciennes réfs `l.<ligne>` ont **dérivé**
 > (le **chapitre** reste juste, la **ligne** est approximative) ; pipeline `scripts/raw/marker-*` + `reextract-all.sh`.
@@ -102,6 +102,18 @@ AUTORISÉ (`CLAUDE.md` § *Sources VF*). Au moindre doute, **lire le `.md` et ci
   élémentaires incarnés, Fabriqués, familiers jouables) ; **sites, lignes de force & saturation
   environnementale** (ch.14). Ch.1 (histoire de la magie) & ch.15 (némésis/aventures) = majoritairement
   cadre. Curation `src/data` à la main (tag `source.book: "vents-de-la-magie"`), comme AA/ZI/MDG.
+- **CRB** (*Warhammer Fantasy Roleplay*, **5th Edition** — livre **VO**, l'exception
+  unique) = `Source/Warhammer Fantasy Roleplay 5e Core Rulebook/` — **cœur des règles de la 5e édition** (autorisé 2026-09-18,
+  épique #1816 ; arbitrages utilisateur du même jour : « Elle est en VO, mais ce n'est pas grave, ca sera
+  l'occasion d'éprouver notre système de langue VO/VF ! » et « Pas de traduction, on va gérer la VO dans
+  l'application. »). Extraction Marker, 18 chapitres, dont 13 de contenu : 04 Introduction ·
+  05 Character Building · 06 Class and Careers · 07 Skills and Talents · **08 Rules** (tests, combat,
+  blessures, maladies, psychologie, États, corruption) · 09 Between Adventures · 10 Religion and
+  Belief · 11 Magic · 12 The Gamemaster · 13 Glorious Reikland · 14 Consumer Guide · 15 Bestiary ·
+  16 Appendices ; les 5 autres sont l'appareil du livre : 01 Cover · 02 Contents · 03 Credits ·
+  17 Index · 18 Character Sheet.
+  Le texte reste en ANGLAIS, verbatim — **aucune traduction** dans `Source/`. Périmètre par passage et
+  curation `src/data` (tag `source.book: "core-rulebook-5e"`) : phases suivantes de #1816.
 - **frenchy.bzh** (fan — *Habitants & Créatures du Vieux-Monde*, « version 4.5 ») = `Source/Warhammer - Habitants & Creatures  du Vieux-Monde (Discord) PDF/` —
   **complète** le bestiaire et les PNJ, ne remplace rien ; chaque entrée vit dans le JSON app-owned de son
   domaine, taguée `source.book: "frenchy-bzh"`. Deux règles d'IMPORT, lues à son Avertissement :
@@ -128,4 +140,4 @@ AUTORISÉ (`CLAUDE.md` § *Sources VF*). Au moindre doute, **lire le `.md` et ci
 - Suppléments VF dispo : `Altdorf — La Couronne de l'Empire`, `Aventures à Ubersreik I`,
   `Middenheim — La Cité du Loup Blanc`, `Nuits Agitées & Dures Journées`,
   `Boîte d'Initiation` (+ `WH4_FR_BI_Livre_Aventure` / `…_Ubersreik`).
-<!-- sources-empreinte: 58bd3012d19e178e456c0df8946b6db271fa7234 (5 fichiers, 0 dossiers) corps: 1d2fee0558283696763edaad894841c265647cc3 -->
+<!-- sources-empreinte: 32ef17f2a4fcdae5f4d31845ec46d58274a753d0 (5 fichiers, 0 dossiers) corps: b325c68fd2eacb10c6198f52c9effdfb1297d721 -->

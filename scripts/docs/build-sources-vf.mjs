@@ -155,6 +155,18 @@ AUTORISÉ (\`CLAUDE.md\` § *Sources VF*). Au moindre doute, **lire le \`.md\` e
   élémentaires incarnés, Fabriqués, familiers jouables) ; **sites, lignes de force & saturation
   environnementale** (ch.14). Ch.1 (histoire de la magie) & ch.15 (némésis/aventures) = majoritairement
   cadre. Curation \`src/data\` à la main (tag \`source.book: "${book('vents-de-la-magie').id}"\`), comme AA/ZI/MDG.
+- **${abbr('core-rulebook-5e')}** (*Warhammer Fantasy Roleplay*, **5th Edition** — livre **VO**, l'exception
+  unique) = \`${dir('core-rulebook-5e')}\` — **cœur des règles de la 5e édition** (autorisé 2026-09-18,
+  épique #1816 ; arbitrages utilisateur du même jour : « Elle est en VO, mais ce n'est pas grave, ca sera
+  l'occasion d'éprouver notre système de langue VO/VF ! » et « Pas de traduction, on va gérer la VO dans
+  l'application. »). Extraction Marker, 18 chapitres, dont 13 de contenu : 04 Introduction ·
+  05 Character Building · 06 Class and Careers · 07 Skills and Talents · **08 Rules** (tests, combat,
+  blessures, maladies, psychologie, États, corruption) · 09 Between Adventures · 10 Religion and
+  Belief · 11 Magic · 12 The Gamemaster · 13 Glorious Reikland · 14 Consumer Guide · 15 Bestiary ·
+  16 Appendices ; les 5 autres sont l'appareil du livre : 01 Cover · 02 Contents · 03 Credits ·
+  17 Index · 18 Character Sheet.
+  Le texte reste en ANGLAIS, verbatim — **aucune traduction** dans \`Source/\`. Périmètre par passage et
+  curation \`src/data\` (tag \`source.book: "${book('core-rulebook-5e').id}"\`) : phases suivantes de #1816.
 - **${abbr('frenchy-bzh')}** (fan — *Habitants & Créatures du Vieux-Monde*, « version 4.5 ») = \`${dirExtraction('frenchy-bzh')}\` —
   **complète** le bestiaire et les PNJ, ne remplace rien ; chaque entrée vit dans le JSON app-owned de son
   domaine, taguée \`source.book: "${book('frenchy-bzh').id}"\`. Deux règles d'IMPORT, lues à son Avertissement :

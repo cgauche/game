@@ -31,7 +31,7 @@ import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { BOOKS, readText } from './_lib.mjs'
-import { ecartDuVolet, sitesEnEntrees, cleDeSite } from '../guards/lib/stock.mjs'
+import { ecartDuVolet, sitesEnEntrees, cleDeSite, survieDeLecheance } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
 import { parseChapitre, tablesOf, normText, estCleDePlage } from '../../src/data/source/decoupe.ts'
 
@@ -127,24 +127,15 @@ export const comptesParFamille = (sites) =>
 
 /**
  * Les ENTRÉES du stock, dans l'ordre du balayage — c'est CE rendu que le fichier de stock porte.
- * `ancien` (les entrées déjà committées) fait SURVIVRE à une régénération, à CLÉ IDENTIQUE, ce qu'un
- * humain a posé sur l'entrée : sa `preuve` (le site a été tranché au PDF) et son échéance (`lot`,
- * `date` — un site inchangé garde la date à laquelle il a été qualifié, une régénération ne
- * rajeunit pas une dette). Un site NEUF prend le lot et la date du run.
+ * `ancien` (les entrées déjà committées) porte la SURVIE : `survieDeLecheance`
+ * (`scripts/guards/lib/stock.mjs`), seule définition du dépôt.
  * @param {{famille: string, file: string, ref: string}[]} sites
  * @param {{ lot: string, date: string, ancien?: Iterable<object> }} p
  */
-export const entreesDe = (sites, { lot, date, ancien = [] }) => {
-  const parCle = new Map()
-  for (const e of ancien) parCle.set(cleDeSite(e), e)
-  return FAMILLES.flatMap((famille) =>
-    sitesEnEntrees(sites.filter((s) => s.famille === famille), { famille }).map((e) => {
-      const vieux = parCle.get(cleDeSite(e))
-      const garde = vieux ? { lot: vieux.lot ?? lot, date: vieux.date ?? date } : { lot, date }
-      return vieux?.preuve === undefined ? { ...e, ...garde } : { ...e, ...garde, preuve: vieux.preuve }
-    }),
+export const entreesDe = (sites, { lot, date, ancien = [] }) =>
+  FAMILLES.flatMap((famille) =>
+    survieDeLecheance(sitesEnEntrees(sites.filter((s) => s.famille === famille), { famille }), { lot, date, ancien }),
   )
-}
 
 /** Les clés des sites MESURÉS (même occurrence que le stock : le calcul d'occurrence est celui de
  *  `sitesEnEntrees`, jamais un second comptage). */

@@ -1,5 +1,5 @@
 // Registre de couverture de l'Atlas RAW — le backbone de « l'Atlas remplace la source ».
-// Déterministe : pour chaque chapitre des 15 livres autorisés, vérifie s'il est CITÉ (`ABBR NN l.`)
+// Déterministe : pour chaque chapitre des livres autorisés, vérifie s'il est CITÉ (`ABBR NN l.`)
 // par au moins une fiche docs/raw/*.md. Un chapitre non cité = trou (à couvrir ou à marquer hors-règle).
 // #454 défaut A/7 : granularité SECTION en sus du chapitre — un chapitre à sujets multiples peut être
 // ✅ au total (une section porte l'essentiel des refs) tout en enfouissant une section SANS AUCUNE réf.
@@ -42,6 +42,16 @@ const HORS_REGLE = new Set([
   'EDOC 2', 'EDOC 3', 'EDOC 5', 'EDOC 10', 'EDOC 11', 'EDOC 13', 'EDOC 14', 'EDOC 15', 'EDOC 16',
   'MSRC 2', 'MSRC 3', 'MSRC 5', 'MSRC 6', 'MSRC 8', 'MSRC 10', 'MSRC 11', 'MSRC 17', 'MSRC 18', 'MSRC 19',
   'MDG 1', 'MDG 3', 'MDG 4', 'MDG 5', 'MDG 6', 'MDG 8', // gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles
+  // CRB (Core Rulebook 5e) : chapitres SANS règle, relus un par un. `04 - Introduction` et
+  // `17 - Index` sont déjà écartés par `isFrontMatter` (titre). `13 - Glorious Reikland` n'est PAS
+  // ici : gazetteer, mais il porte une règle (CRB 13 l.317) — le taguer masquerait un vrai trou.
+  'CRB 1', // couverture : la seule accroche « A GRIM WORLD OF PERILOUS ADVENTURE » (3 lignes)
+  'CRB 2', // sommaire (tables de renvois de pages)
+  'CRB 3', // crédits d'édition
+  // feuille de personnage : rappels imprimés, chacun défini ailleurs — CRB 08 l.1306 (déplacement),
+  // CRB 08 l.1374 (localisations), CRB 08 l.2352 (corruption), CRB 05 l.146 (blessures),
+  // CRB 07 l.89 (compétence ↔ caractéristique), CRB 14 l.33 (monnaie), CRB 14 l.172 (encombrement)
+  'CRB 18',
   'VDM 1', // histoire de la magie (cadre, prose pure) ; ch.15 némésis = PNJ nommés STATBLOCKÉS → catalogue-creatures (comme PDT) ; 2-14 = règles/data
   // #1279 S4-a — chapitres RENDUS VISIBLES par la réparation de la garde d'artefact (ils étaient
   // écartés sur leur nom de fichier, jamais lus). Chacun RELU avant d'être tagué, motif par motif :
@@ -68,6 +78,11 @@ export const SECTION_LEVEL = new Map([
   ['LDB', 3], ['MCLB', 3], ['ACE', 3], ['EDOC', 3], ['MSRC', 3], ['MSR', 3],
   ['PDT', 3], ['NADJ', 3], ['MDG', 3], ['ZI', 3],
   ['AU1', 4],
+  // CRB (5e) : H2 quasi absent des chapitres de règles (0 à 9 titres par chapitre, mesuré) et H4
+  // y est la rubrique de statbloc (283 en `06 - Class and Careers`, 253 en `15 - Bestiary` — le
+  // piège de liste imbriquée décrit ci-dessus). H3 est le niveau SUJET : 111 compétences/talents en
+  // `07 - Skills and Talents`, 60 créatures en `15 - Bestiary`, 48 en `06 - Class and Careers`.
+  ['CRB', 3],
   // AA, ADE I, ADE II, EDO restent au défaut H2 (chapitres réellement structurés en H2).
 ])
 export const sectionLevelOf = (ab) => SECTION_LEVEL.get(ab) || 2
@@ -416,7 +431,16 @@ function main() {
   }
   const denom = gOk + gCat + gMid + gHole
   const gSecHoles = gSecHolesScenario + gSecHolesRegle
-  const summaryLine = `**Couverture (profondeur) : ✅ ${gOk} traités par une fiche · 📖 ${gCat} transcrits par un catalogue seul (jamais traités) · 🟡 ${gMid} effleurés · ⬜ ${gHole} trous** sur ${denom} chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur ${gSecCatalogue + gSecHorsRegle + gSecHoles} section(s) non couvertes par une fiche : **${gSecCatalogue} transcrite(s) en catalogue** (recopiées, pas traitées) · **${gSecHorsRegle} hors-règle** (chapitre explicitement exclu) · **${gSecHolesScenario} bruit de scénario** (livres \`SCENARIO_PUR\` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **${gSecHolesRegle} candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et ${gSecEnfoui} titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (\`ABBR NN p.X\`, #606) : ${gIgnoredFolios} ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : ${perBook.join(' · ')}.`
+  // Ventilation « Hn pour A/B/C » DÉRIVÉE de `SECTION_LEVEL` (#604) : un livre ajouté à la table s'y
+  // voit sans second geste — une liste recopiée à la main serait une garde de synchronisation.
+  const parNiveau = new Map()
+  for (const [ab] of BOOKS) {
+    const n = sectionLevelOf(ab)
+    if (!parNiveau.has(n)) parNiveau.set(n, [])
+    parNiveau.get(n).push(ab)
+  }
+  const niveauxTxt = [...parNiveau.entries()].sort((a, b) => a[0] - b[0]).map(([n, abs]) => `H${n} pour ${abs.join('/')}`).join(', ')
+  const summaryLine = `**Couverture (profondeur) : ✅ ${gOk} traités par une fiche · 📖 ${gCat} transcrits par un catalogue seul (jamais traités) · 🟡 ${gMid} effleurés · ⬜ ${gHole} trous** sur ${denom} chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — ${niveauxTxt}, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur ${gSecCatalogue + gSecHorsRegle + gSecHoles} section(s) non couvertes par une fiche : **${gSecCatalogue} transcrite(s) en catalogue** (recopiées, pas traitées) · **${gSecHorsRegle} hors-règle** (chapitre explicitement exclu) · **${gSecHolesScenario} bruit de scénario** (livres \`SCENARIO_PUR\` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **${gSecHolesRegle} candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et ${gSecEnfoui} titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (\`ABBR NN p.X\`, #606) : ${gIgnoredFolios} ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : ${perBook.join(' · ')}.`
   const summaryIdx = out.indexOf(SUMMARY_PLACEHOLDER)
   out[summaryIdx] = summaryLine
   ecrireDoc(join(rawDir, 'coverage.md'), out.join('\n'))

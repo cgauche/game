@@ -168,12 +168,16 @@ test('stock COMMITTÉ : le rendu EXACT et ORDONNÉ des sites mesurés sur l’ar
 // rejoignent leurs homonymes d'une autre table de la même section — une FUSION de clés, donc une
 // ambiguïté de résolution RÉELLE que le détecteur nomme désormais (4 autres clés se réécrivent sans
 // leur `<br>`, à total constant).
-const PLAFOND = 664
+// 664 → 811 au train #1820 : +147 sites du Core Rulebook 5e, livre ENREGISTRÉ par ce train (81
+// `br-litteral`, 47 `cle-de-ligne-ambigue`, 18 `banniere-suspecte`, 1 `donnee-en-tete`) —
+// l'inventaire d'un livre neuf entre en bloc, il ne décroîtra qu'en repassant le dossier par la
+// chaîne canonique (#1739).
+const PLAFOND = 811
 
 // PLAFOND de la DETTE, distinct du précédent : le fichier de stock est un INVENTAIRE des sites
 // mesurés (il ne décroît qu'en corrigeant `Source/`), la dette est ce qui reste À TRIER — les entrées
 // sans `preuve`. Celle-là descend à CHAQUE preuve lue au PDF, et ne monte que sous `CLIQUET:`.
-const PLAFOND_A_TRIER = 664
+const PLAFOND_A_TRIER = 811
 
 test('stock COMMITTÉ : PLAFOND de la DETTE — « à trier » (entrées sans preuve) ne remonte jamais', () => {
   const { aTrier, verifies } = comptesDeTri(readStock(STOCK_PATH))

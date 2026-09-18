@@ -22,11 +22,11 @@
 // LIVRE ré-extrait, pas le chapitre : d'où UNE entrée par famille et par dossier, dont la `ref`
 // porte le détail compté. Le `fichier` nomme le PREMIER chapitre fautif de ce dossier — un
 // chemin de DOSSIER nu (`Source/<livre>`) ne tombe sous aucun motif de
-// `scripts/guards/lib/stocksNominatifs.mjs` (`CHEMIN_SOURCE` exige `.md`) et laisserait les 57
-// entrées HORS DE VUE des deux portes de croissance (mesuré le 2026-09-14 : `stocks-nominatifs`
-// refusait « 0 entrée(s) vue(s) sur 57 déclarée(s) »). Les deux sens sont rouges : un écart
-// MESURÉ hors du stock (ré-extraire le livre, ou déclarer par `CLIQUET:`), une entrée SANS écart
-// mesuré (livre ré-extrait : la retirer).
+// `scripts/guards/lib/stocksNominatifs.mjs` (`CHEMIN_SOURCE` exige `.md`) et laisserait TOUTES les
+// entrées du stock HORS DE VUE des deux portes de croissance (mesuré le 2026-09-14 :
+// `stocks-nominatifs` refusait « 0 entrée(s) vue(s) sur 57 déclarée(s) »). Les deux sens sont
+// rouges : un écart MESURÉ hors du stock (ré-extraire le livre, ou déclarer par `CLIQUET:`), une
+// entrée SANS écart mesuré (livre ré-extrait : la retirer).
 //
 // Re-run    : node scripts/raw/check-source-format.mjs
 // Régénérer : node scripts/raw/check-source-format.mjs --ecrire-stock
@@ -35,7 +35,7 @@ import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { listerDossier, parUnitesDeCode } from '../guards/lib/lister.mjs'
 import { BOOKS, readText } from './_lib.mjs'
-import { ecartDuVolet, sitesEnEntrees } from '../guards/lib/stock.mjs'
+import { ecartDuVolet, sitesEnEntrees, survieDeLecheance } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
 
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'source-format-stock.json')
@@ -321,10 +321,16 @@ export const comptesParDossier = (sites) => {
   return out
 }
 
-/** Les ENTRÉES du stock, dans l'ordre du balayage — c'est CE rendu que le fichier de stock porte. */
-export const entreesDe = (sites, { lot, date }) =>
+/**
+ * Les ENTRÉES du stock, dans l'ordre du balayage — c'est CE rendu que le fichier de stock porte.
+ * `ancien` (les entrées déjà committées) porte la SURVIE : `survieDeLecheance`
+ * (`scripts/guards/lib/stock.mjs`), seule définition du dépôt.
+ * @param {{famille: string, file: string, ref: string}[]} sites
+ * @param {{ lot: string, date: string, ancien?: Iterable<object> }} p
+ */
+export const entreesDe = (sites, { lot, date, ancien = [] }) =>
   FAMILLES.flatMap((famille) =>
-    sitesEnEntrees(sites.filter((s) => s.famille === famille), { famille }).map((e) => ({ ...e, lot, date })),
+    survieDeLecheance(sitesEnEntrees(sites.filter((s) => s.famille === famille), { famille }), { lot, date, ancien }),
   )
 
 /**
@@ -380,8 +386,8 @@ const QUOI = ({ comptes, dossiers, entrees }) =>
   'là où il n’y en a qu’une.'
 
 /** Rend le CONTENU du fichier de stock pour des sites mesurés (source unique de sa forme). */
-export const stockDe = (sites, { lot, date, dossiers }) => {
-  const entrees = entreesDe(sites, { lot, date })
+export const stockDe = (sites, { lot, date, dossiers, ancien = [] }) => {
+  const entrees = entreesDe(sites, { lot, date, ancien })
   const quoi = QUOI({ comptes: comptesParFamille(sites), dossiers, entrees: entrees.length })
   return `${JSON.stringify({ quoi, entrees }, null, 2)}\n`
 }
@@ -391,12 +397,13 @@ function main() {
   const dossiers = dossiersFR()
   const sites = scanAll(dossiers)
   const comptes = comptesParFamille(sites)
+  const stock = readStock(STOCK_PATH)
 
   if (args.includes('--ecrire-stock')) {
     const lot = '#1739 H-0'
     const date = new Date().toISOString().slice(0, 10)
-    writeFileSync(STOCK_PATH, stockDe(sites, { lot, date, dossiers: dossiers.length }))
-    console.log(`stock écrit : ${STOCK_PATH} — ${entreesDe(sites, { lot, date }).length} entrée(s)`)
+    writeFileSync(STOCK_PATH, stockDe(sites, { lot, date, dossiers: dossiers.length, ancien: stock }))
+    console.log(`stock écrit : ${STOCK_PATH} — ${entreesDe(sites, { lot, date, ancien: stock }).length} entrée(s)`)
     return
   }
 
@@ -409,7 +416,7 @@ function main() {
     if (parDossier.has(dir)) console.log(`  ${dir} — ${parDossier.get(dir)} écart(s)`)
   }
 
-  const { neuves, perimees } = ecartDuStock(sites, readStock(STOCK_PATH))
+  const { neuves, perimees } = ecartDuStock(sites, stock)
   if (neuves.length) {
     console.log('RÉGRESSION — écart(s) hors du stock :')
     for (const o of neuves) console.log(`  ${o}`)

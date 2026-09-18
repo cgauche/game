@@ -1,6 +1,7 @@
 # Atlas RAW — Sources & conventions
 
-Le **RAW** du projet = ces **livres** (VF, convertis en `.md` sous `Source/`, table complète ci-dessous). Référence exacte
+Le **RAW** du projet = ces **livres** (VF — sauf le **CRB**, Core Rulebook 5e, en **VO** par arbitrage
+utilisateur du 2026-09-18 — convertis en `.md` sous `Source/`, table complète ci-dessous). Référence exacte
 dans [`../../CLAUDE.md`](../../CLAUDE.md) § *Sources VF*.
 
 ## Convention de référence
@@ -33,6 +34,7 @@ donc une ref de l'Atlas pointe le **même** endroit que le code.
 | **NADJ** | Nuits agitées & dures journées (*Rough Nights & Hard Days*) | `Warhammer v4 - Nuits agitees & dures journees/` | Créatures, jeux de taverne, règles spéciales |
 | **MDG** | La Mer des Griffes (*Sea of Claws*) | `WH - V4 - La Mer de Griffe/` | Cadre côtier + règles navales : navires & artillerie, navigation/combat naval, carrières Côtier, cultes Manann/Stromfels, magie des mers, bestiaire marin |
 | **VDM** | Les Vents de Magie (*Winds of Magic*) | `Warhammer v4 - Les Vents de Magie/` | Magie des 8 Collèges : règles d'incantation révisées + rituels, sorts par domaine, carrières de sorcier, artefacts magiques, créatures magiques (élémentaires/familiers), sites & lignes de force |
+| **CRB** | Warhammer Fantasy Roleplay *5th Edition* — **VO** | `Warhammer Fantasy Roleplay 5e Core Rulebook/` | Cœur des règles de la 5e édition : création de personnage, classes & carrières, compétences & talents, règles générales et de combat, entre-aventures, religion & miracles, magie, direction de jeu, Reikland, équipement, bestiaire |
 
 > **Règle 1 du projet** : toute règle vient de ces livres ; en cas de doute, **lire le `.md` et citer**.
 > Les tomes/suppléments sont des **sources de règles** (leur donnée mécanique = RAW) ; seule leur prose

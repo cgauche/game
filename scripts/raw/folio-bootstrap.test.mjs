@@ -38,6 +38,56 @@ test('readPrintedFolio : un nombre nu au MILIEU de la page est hors portée de l
   assert.equal(readPrintedFolio(page), null)
 })
 
+test('readPrintedFolio : bandeau de DOUBLE PAGE (deux folios imprimés) → null', () => {
+  // CRB K230 (offset réel −1, folio 231) : le bandeau de la planche imprime 230 ET 231 sur la page.
+  const page = ['VIII', 'WARHAMMER FANTASY ROLEPLAY', '230', 'MA gic', '231', 'The Lore of Light',
+    'The Lore of Light relates to Hysh, the White Wind.'].join('\n')
+  assert.equal(readPrintedFolio(page), null)
+})
+
+test('readPrintedFolio : cellule de table `d10` valant 0 → null (0 n’est pas un folio)', () => {
+  // CRB K269, pied de la table FELLOW TRAVELLERS.
+  const page = ['WARHAMMER FANTASY ROLEPLAY', '270 271', 'FELLOW TRAVELLERS', 'd10 Encounter',
+    'Salt of the Old World: Rustic folk such as a farmer driving a herd of sheep.',
+    '0', 'Travellers from Distant Lands: An Estalian diestro seeking a challenge.'].join('\n')
+  assert.equal(readPrintedFolio(page), null)
+})
+
+test('readPrintedFolio : second nombre nu AILLEURS dans la page → lecture ambiguë, null', () => {
+  // CRB K269 lu à 5 lignes de bord : la cellule `1` de la table devenait un folio.
+  const page = ['WARHAMMER FANTASY ROLEPLAY', '270 271', 'FELLOW TRAVELLERS', 'd10 Encounter', '1',
+    'Salt of the Old World: Rustic folk.', '272'].join('\n')
+  assert.equal(readPrintedFolio(page), null)
+})
+
+test('readPrintedFolio : folio imprimé + cellule `0` à côté → le folio est lu (0 hors ambiguïté)', () => {
+  const page = ['231', 'THE LORE OF LIGHT', 'd10 Effect', '0', 'Rien ne se produit.'].join('\n')
+  assert.equal(readPrintedFolio(page), 231)
+})
+
+test('readPrintedFolio : folio imprimé + cellule `1` au milieu → null (1 entre dans l’ambiguïté)', () => {
+  const page = ['231', 'THE LORE OF LIGHT', 'a', 'b', 'd10 Effect', '1', 'Un effet.', 'suite', 'fin'].join('\n')
+  assert.equal(readPrintedFolio(page), null)
+})
+
+test('readPrintedFolio : page SANS folio imprimé, un unique nombre nu aux bords → lecture RENDUE', () => {
+  // La fonction ne peut pas savoir que `48` est la légende d’une planche et non un folio : elle rend
+  // la lecture, et c’est l’unicité de l’offset (`resolveOffsetFromPdf` : « offset NON unique →
+  // abandon ») qui la récuse.
+  assert.equal(readPrintedFolio(['PLANCHE', 'Carte du Reikland', '48'].join('\n')), 48)
+})
+
+test('readPrintedFolio : le MÊME nombre en tête ET en pied reste univoque → lu', () => {
+  assert.equal(readPrintedFolio(['272', 'WARHAMMER FANTASY ROLEPLAY', 'texte de prose', '272'].join('\n')), 272)
+})
+
+test('readPrintedFolio : folio SEUL en pied, texte sans autre nombre nu → lu', () => {
+  // CRB K271 (folio 272) : `272 273` du bandeau n’est pas un nombre NU, il ne gêne pas.
+  const page = ['WARHAMMER FANTASY ROLEPLAY', '272 273', 'GLORIOUS REIKLAND',
+    'Standing proud in the heart of the Old World.', '272'].join('\n')
+  assert.equal(readPrintedFolio(page), 272)
+})
+
 // ---------- resolveOffsetFromPdf ----------
 
 test('resolveOffsetFromPdf : offset K−folio constant → accepté, avec ses lectures', () => {

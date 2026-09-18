@@ -5,8 +5,7 @@
 //
 // Principe :
 //   1. Livre → dossier `Source/<dir>/` (BOOKS de `_lib.mjs`) → PDF sibling `Source/<dir>.pdf`
-//      (dérivé, PAS recopié de `reextract-all.sh` : vérifié — le nommage `dir + '.pdf'` couvre les
-//      15 livres sans exception, cf. rapport de session).
+//      (dérivé, PAS recopié de `reextract-all.sh` ; un PDF nommé autrement se passe par `--pdf`).
 //   2. Offset id↔folio PAR LIVRE : chaque ancre existante `id="page-K-0" data-folio="F"` donne
 //      `offset = K - F` (K = index pypdf 0-based, identique au numéro d'id Marker). Vérifié CONSTANT
 //      sur TOUTES les ancres du livre (tous chapitres confondus) — s'il varie, le livre est SKIPPÉ
@@ -152,6 +151,20 @@ export function existingFolioLines(text) {
   return map
 }
 
+// Ancres NUES de l'extraction Marker — `<span id="page-K-0"></span>` SANS `data-folio` : Map(K ->
+// ligne 1-based). Elles portent l'`id` que la pose écrirait, et leur position n'est PAS une
+// frontière de page (#1739). Un second `id="page-K-0"` dans le même fichier ferait deux ancres de
+// même identité : la page est SAUTÉE et rapportée, jamais doublée.
+const NAKED_ANCHOR_RE = /<span id="page-(\d+)-0"\s*><\/span>/g
+export function nakedAnchorLines(text) {
+  const map = new Map()
+  const lines = text.split('\n')
+  for (let i = 0; i < lines.length; i++) {
+    for (const m of lines[i].matchAll(NAKED_ANCHOR_RE)) { const k = Number(m[1]); if (!map.has(k)) map.set(k, i + 1) }
+  }
+  return map
+}
+
 // Intervalle de lignes admissible pour un folio manquant : la ligne du folio ancré immédiatement
 // INFÉRIEUR et celle du folio ancré immédiatement SUPÉRIEUR. Sans voisin d'un côté, la borne est
 // ouverte (`0` / `Infinity`) — jamais une borne inventée. `known` = Map(folio -> ligne).
@@ -252,8 +265,10 @@ export function planChapter(file, text, offset, pageTextOf, folioOwner = new Map
   // « unique » sans être la bonne, ou filigrane de personnalisation du PDF, qui se répète hors de
   // toute page. Refusé : on essaie le candidat suivant, sinon la page est sautée et rapportée.
   const known = existingFolioLines(text)
+  const nues = nakedAnchorLines(text)
   for (const folio of missing) {
     const K = folio + offset
+    if (nues.has(K)) { skipped.push({ folio, reason: `ancre nue Marker \`id="page-${K}-0"\` déjà en place (l.${nues.get(K)})` }); continue }
     const pageText = pageTextOf(K)
     if (pageText === undefined || pageText === null) { skipped.push({ folio, reason: 'page hors PDF ou introuvable' }); continue }
     const heads = extractContentHeads(pageText)

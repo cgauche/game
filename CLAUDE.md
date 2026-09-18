@@ -92,7 +92,7 @@ script diffère du nom du doc, il est entre parenthèses.
 
 Tout est en **français** sous `Source/`, dossiers préfixés `Warhammer v4 - ` / `WH - V4 - ` ; ceux
 SANS ce préfixe sont la VO du dépôt parent — jamais lus, jamais cités ici. **Exception unique** :
-`Source/Warhammer Fantasy Roleplay 5e Core Rulebook/`, livre VO AUTORISÉ, cœur de l'édition 5e — fiche
+`Source/Warhammer Fantasy Roleplay 5e Core Rulebook/` (**CRB**), livre VO AUTORISÉ, cœur de la 5e — fiche
 `user-doctrine-edition-5e-coeur-remplace-ldb-raw-sauf-errata`. Livres : **LDB** ·
 **ADE I/II** · **EDO/EDOC** · **Middenheim** · **AA** · **ZI** · **MDG** · **ACE** · **T2C** ·
 **NADJ** · **VDM**, chacun pour son périmètre (tout livre FR peut fournir une règle, par PASSAGE) —
