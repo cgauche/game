@@ -116,6 +116,10 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `Band` |  |  |  |  | U |  | U |  | U | U |  |  |  |  | U |  |
 | `HeroSheet` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `DesignGallery` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `Stack/Row/Grid/Split` |  |  |  |  | U |  | U | U | U | U | U |  | U |  | U | U |
+| `Fleuron/RuleDivider/CornerFlourish/OrnateFrame` |  |  |  |  | U |  | U | U | U | U | U |  |  | U | U | U |
+| `NotchGauge` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
+| `WindRose` |  |  |  |  | U |  | U |  |  |  |  |  |  |  |  |  |
 
 ## Primitives jamais adoptées par un système déclaré
 
@@ -160,4 +164,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: 4cea6aea40bcdb0c374555e2441db4a4a39bab1b (1818 fichiers, 2 dossiers) corps: 68ef4f29931b5a104a894578a0276414427ce251 -->
+<!-- sources-empreinte: 354cd581103c759e75e830a499560e1bd7d451f6 (1819 fichiers, 2 dossiers) corps: 89df32e6c3e8dcc54431e4487afed6f6439a7f6d -->
