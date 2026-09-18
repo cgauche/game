@@ -23,7 +23,7 @@ sous-dossier, ou situé ailleurs (`src/ui`, `src/gameIso`, `src/data`…), n'y a
 | Voyage terrestre | partiel | `src/state/travelFlow.ts`, `src/engine/travel.ts`, `src/engine/travelStages.ts`, `src/engine/travelTables.ts`, `src/engine/travelEncounter.ts`, `src/ui/TravelRecapModal.tsx`, `src/ui/TravelRolesPanel.tsx` | #298 (openRoll TER : fourche forcedPaceDay dupliquée, travelFlow.ts:368-381) |
 | Voyage fluvial | partiel | `src/state/riverVoyageFlow.ts`, `src/engine/riverNavigation.ts` | #267/#268 (asymétrie naufrage fluvial sans checkPartyWiped, riverVoyageFlow.ts:649-651) |
 | Voyage maritime | partiel | `src/state/seaVoyageFlow.ts`, `src/engine/seaVoyage.ts`, `src/engine/seaNavigation.ts`, `src/engine/seaWeather.ts`, `src/engine/seaPerils.ts`, `src/ui/SeaVoyageScreen.tsx`, `src/ui/SeaActivitiesModal.tsx` | #298 (openRoll MER : scorbut/épuisement forcés inline, seaVoyageFlow.ts:900-905,968-973) |
-| Combat naval tactique | partiel | `src/engine/shipBuild.ts`, `src/engine/shipCritical.ts`, `src/engine/shipMelee.ts`, `src/state/shipManeuver.ts`, `src/state/shipBattery.ts`, `src/state/shipCollision.ts`, `src/state/shipDamage.ts`, `src/state/shipDeck.ts`, `src/state/shipPostes.ts`, `src/ui/ShipBatteryModal.tsx`, `src/ui/ShipManeuverModal.tsx`, `src/ui/ShipDossier.tsx`, `src/ui/ShipSheet.tsx` | #250, #267, #268 (Phase 8, gelé) |
+| Combat naval tactique | partiel | `src/engine/shipBuild.ts`, `src/engine/shipCritical.ts`, `src/engine/shipMelee.ts`, `src/state/shipManeuver.ts`, `src/state/shipBattery.ts`, `src/state/shipCollision.ts`, `src/state/shipDamage.ts`, `src/state/shipPostes.ts`, `src/ui/ShipBatteryModal.tsx`, `src/ui/ShipManeuverModal.tsx`, `src/ui/ShipDossier.tsx`, `src/ui/ShipSheet.tsx` | #250, #267, #268 (Phase 8, gelé) |
 | Bataille de masse / siège | complet | `src/engine/massBattle.ts`, `src/state/massBattleFlow.ts`, `src/engine/activities.ts`, `src/ui/MassBattleView.tsx` | — |
 | Interlude / entre-deux | partiel | `src/state/interludeFlow.ts`, `src/engine/activities.ts`, `src/ui/InterludeScreen.tsx` | — |
 | Marchand / négoce / cargaison | partiel | `src/state/merchantFlow.ts`, `src/state/portFlow.ts`, `src/state/landMarketFlow.ts`, `src/engine/bargain.ts`, `src/engine/cargo.ts`, `src/engine/landCargo.ts`, `src/ui/MerchantPanel.tsx`, `src/ui/LandMarketView.tsx`, `src/ui/PortView.tsx` | #298 (bargainPct forké portFlow.ts:126≡landMarketFlow.ts:157 ; Marchandage résolu hors modale portFlow.ts:12-14) |
@@ -160,4 +160,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: 3bf2eacad7427e021a60cf8db0fedcd7834bb903 (1817 fichiers, 2 dossiers) corps: 5f0cd074d5e3277762003c6dce22f4f5826a5dcc -->
+<!-- sources-empreinte: c093eccdc6e3bbe30fb0dc97c027cd1cc72a30cf (1818 fichiers, 2 dossiers) corps: 68ef4f29931b5a104a894578a0276414427ce251 -->

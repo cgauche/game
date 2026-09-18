@@ -136,10 +136,10 @@ un chiffre qui s'additionne.
 
 | Interface | Site | Drapeaux déclarés |
 |---|---|---|
-| `TraitCapabilities` | `src/data/index.ts:1681` | 43 |
-| `QualityCapabilities` | `src/data/index.ts:1879` | 26 |
-| `ItemCapabilities` | `src/data/index.ts:1109` | 12 |
-| `SymptomCapabilities` | `src/data/index.ts:1946` | 6 |
+| `TraitCapabilities` | `src/data/index.ts:1692` | 43 |
+| `QualityCapabilities` | `src/data/index.ts:1890` | 26 |
+| `ItemCapabilities` | `src/data/index.ts:1110` | 12 |
+| `SymptomCapabilities` | `src/data/index.ts:1957` | 6 |
 
 Lecture — un seul point d'entrée par portée, chaque canal restant disjoint par nom de capacité :
 
@@ -220,4 +220,4 @@ primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autr
 | `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
 | `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
 | `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |
-<!-- sources-empreinte: d2b90183566fe95ff2859240c8e77d31d5fc90f4 (157 fichiers, 1 dossiers) corps: aa4b6136b9222b95462c29b941c5ca1667e8e266 -->
+<!-- sources-empreinte: b8b46619a230fe7378858f7650ac63db5e574b04 (158 fichiers, 1 dossiers) corps: 73b1be73f22c0086c52ab8afea150a6f93cf7dea -->

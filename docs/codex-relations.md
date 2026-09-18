@@ -5,8 +5,8 @@
 **Périmètre mesuré / angles morts** — sont LUS aux fichiers réels : les 34 appels
 `addReverse(...)` de `src/ui/compendium/relations.ts` (catégorie référante, catégorie cible, titre FR de section,
 `fichier:ligne`), l'API publique du même module (AST + 1re phrase de JSDoc), le littéral
-`CODEX_SPECS` de `src/ui/compendium/registry.ts` (130 catégories, leurs groupes et sous-groupes
-`cluster`), et l'`exposition` DÉCLARÉE par les 123 defs de `src/data/schemas/defs/`
+`CODEX_SPECS` de `src/ui/compendium/registry.ts` (131 catégories, leurs groupes et sous-groupes
+`cluster`), et l'`exposition` DÉCLARÉE par les 124 defs de `src/data/schemas/defs/`
 (dumpée par `scripts/docs/lib/dump-exposition.mts`), les cas NOMMÉS par `src/data/schemas/exposition-contrats.test.ts`, les fonctions
 exportées de `src/ui/compendium/describe.ts` et `src/ui/compendium/humanize.ts`, et le compte d'épigraphes de Carrière dumpé par
 `scripts/docs/lib/dump-epigraphes.mts` (le plugin `exergues` de `<Prose>` monté sur les `careers`
@@ -70,14 +70,14 @@ par `src/data/schemas/exposition-contrats.test.ts`, dont voici les cas, tels que
 Un document neuf se pose donc en DEUX endroits du MÊME commit : son `exposition` au def, sa
 catégorie dans `CODEX_SPECS`.
 
-Sur 123 defs, 24 sont EXEMPTS d'exposition Codex :
+Sur 124 defs, 24 sont EXEMPTS d'exposition Codex :
 
 - `dette` — 2 fichier(s)
 - `vocabulaire-app-interne` — 22 fichier(s)
 
 ### Index INVERSE — catégorie Codex → document qui la déclare
 
-130 clés de catégorie sont déclarées par les defs. La colonne « Route d'édition »
+131 clés de catégorie sont déclarées par les defs. La colonne « Route d'édition »
 est celle du document porteur, telle que `document()` la déclare.
 
 | Clé de catégorie | Libellé (`CODEX_SPECS`) | Déclarée par | Route d'édition |
@@ -112,6 +112,7 @@ est celle du document porteur, telle que `document()` la déclare.
 | `criticalsCorps` | Critiques — Corps (Traumatisme) | `src/data/criticals.json` | niché (8 catégorie(s)) |
 | `criticalsJambe` | Critiques — Jambe (Traumatisme) | `src/data/criticals.json` | niché (8 catégorie(s)) |
 | `criticalsTete` | Critiques — Tête (Traumatisme) | `src/data/criticals.json` | niché (8 catégorie(s)) |
+| `defautsDeCompilation` | Défauts de compilation | `src/data/defauts-de-compilation.json` | objet `single` |
 | `details` | Détails de création | `src/data/details.json` | objet `single` |
 | `disponibilite` | Disponibilité & Troc | `src/data/disponibilite.json` | objet `single` |
 | `domains` | Domaines | `src/data/domains.json` | dataset `domains` |
@@ -288,7 +289,7 @@ automatiquement si la catégorie active y vit. Les pastilles restent des `<butto
 | Effets | 30 | 12 | *Blessures critiques* (8), *Critiques de navire* (5), *Critiques fluviaux* (5) |
 | Magie | 8 | 8 | — |
 | Monde | 21 | 21 | — |
-| Tables | 54 | 17 | *Création de personnage* (7), *Voyage terrestre* (6), *Mer & rivière* (9), *Calendrier* (4), *Bataille de masse* (5), *Rencontres* (3), *Équipage & navire* (3) |
+| Tables | 55 | 18 | *Création de personnage* (7), *Voyage terrestre* (6), *Mer & rivière* (9), *Calendrier* (4), *Bataille de masse* (5), *Rencontres* (3), *Équipage & navire* (3) |
 
 Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_SPECS`, rien d'autre.
 
@@ -319,4 +320,4 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
 - `npx vitest run src/ui/compendium/humanize.test.ts`
 - `npx vitest run src/data/schemas/exposition-contrats.test.ts`
 - `npx vitest run src/data/serialize.test.ts`
-<!-- sources-empreinte: 158a3e6bfa1433df87fa6602ff23001ba46789fc (760 fichiers, 0 dossiers) corps: 6f901942eb1d88df694337164eedae39cae9fd79 -->
+<!-- sources-empreinte: 8037abcc55f04d01ce858b762693b77581ce2d70 (763 fichiers, 0 dossiers) corps: c7389c0c0f236a4c391641cb9e57806e78b0cdf0 -->
