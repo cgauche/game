@@ -43,8 +43,10 @@ export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'source-
 /** Racine des extractions. */
 export const RACINE_SOURCE = 'Source'
 
-/** Préfixes des dossiers FRANÇAIS suivis de `Source/`. Le reste de `Source/` est la VO du dépôt
- *  parent MJ, hors périmètre citable (CLAUDE.md § Sources VF) — et hors de cette garde. */
+/** Préfixes des dossiers FRANÇAIS suivis de `Source/`. La garde couvre en plus tout livre à `dir`
+ *  de `books.json`, quel que soit son préfixe (`dossiersFR`). Le reste de `Source/` est la VO du
+ *  dépôt parent MJ, hors de cette garde ; son unique livre citable est nommé au CLAUDE.md
+ *  § Sources VF. */
 export const PREFIXES_FR = [
   'Warhammer v4 - ',
   'WH - V4 - ',

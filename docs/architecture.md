@@ -54,7 +54,7 @@ Sites trop divergents pour une source unique propre — ne pas « globaliser » 
 ## Arborescence
 
 ```
-Source/                     Livres WFRP4 en .md (vérité citable, FR uniquement)
+Source/                     Livres en .md (vérité citable : FR + Core Rulebook 5e, CLAUDE.md § Sources VF)
 src/data/                   NOTRE base APP-OWNED (JSON commité, éditable dans le Compendium) + index.ts (accès typé), pregens.ts
                             EXCEPTIONS manuscrites (tables verbatim sourcées) : criticals.ts, oups.ts,
                             mutations.ts (Tableaux de Corruption LDB 19). Les métadonnées de résolution

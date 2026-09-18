@@ -233,14 +233,14 @@ FICHIER (liste d'entrées, entrée seule, ou enveloppe + \`entries\`).
 
 ## 3. Vérifier la source RAW
 
-Ouvrir le \`Source/…\` (FR uniquement — jamais la VO), lire le **tableau ET son en-tête** (l'erreur #148 =
-la colonne « Équipe » lue comme « Encombrement »). Citer \`<LIVRE> <chap> l.<ligne>\` dans le message de
-commit / l'issue. ⚠ Le n° de ligne a dérivé (ré-extraction Marker) ET les ancres \`<span id="page-N">\`
-sont **non fiables** : n'en déduis jamais une \`source.page\`.
+Ouvrir le \`Source/…\` (FR, plus le Core Rulebook 5e — \`CLAUDE.md\` § *Sources VF*), lire le
+**tableau ET son en-tête** (l'erreur #148 = la colonne « Équipe » lue comme « Encombrement »).
+Citer \`<LIVRE> <chap> l.<ligne>\` dans le message de commit / l'issue. ⚠ Le n° de ligne a dérivé
+(ré-extraction Marker) ET les ancres \`<span id="page-N">\` sont **non fiables** : n'en déduis jamais une \`source.page\`.
 
 Le champ \`book\` d'une entrée porte l'**\`${CLE_ABBR}\`** de \`src/data/books.json\` — ${BOOKS.length} livres
 enregistrés, dont ${ABBR_VF.length} en VF : ${ABBR_VF.map((a) => `\`${a}\``).join(', ')}.
-${ABBRS.length > ABBR_VF.length ? `Les ${ABBRS.length - ABBR_VF.length} autres entrées sont en VO — hors périmètre citable ici (règle 1 de \`CLAUDE.md\`).\n` : ''}
+${ABBRS.length > ABBR_VF.length ? `Les ${ABBRS.length - ABBR_VF.length} autres entrées sont en VO : seul le livre VO nommé au \`CLAUDE.md\` § *Sources VF* est citable.\n` : ''}
 ## 4. L'ENVELOPPE est posée par la fabrique — ne la redéclare jamais
 
 Tout document passe par \`document(...)\` (\`${DOC}\`), qui pose SEULE les

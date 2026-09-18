@@ -56,14 +56,14 @@ FICHIER (liste d'entrées, entrée seule, ou enveloppe + `entries`).
 
 ## 3. Vérifier la source RAW
 
-Ouvrir le `Source/…` (FR uniquement — jamais la VO), lire le **tableau ET son en-tête** (l'erreur #148 =
-la colonne « Équipe » lue comme « Encombrement »). Citer `<LIVRE> <chap> l.<ligne>` dans le message de
-commit / l'issue. ⚠ Le n° de ligne a dérivé (ré-extraction Marker) ET les ancres `<span id="page-N">`
-sont **non fiables** : n'en déduis jamais une `source.page`.
+Ouvrir le `Source/…` (FR, plus le Core Rulebook 5e — `CLAUDE.md` § *Sources VF*), lire le
+**tableau ET son en-tête** (l'erreur #148 = la colonne « Équipe » lue comme « Encombrement »).
+Citer `<LIVRE> <chap> l.<ligne>` dans le message de commit / l'issue. ⚠ Le n° de ligne a dérivé
+(ré-extraction Marker) ET les ancres `<span id="page-N">` sont **non fiables** : n'en déduis jamais une `source.page`.
 
 Le champ `book` d'une entrée porte l'**`abbr`** de `src/data/books.json` — 29 livres
 enregistrés, dont 19 en VF : `LDB`, `AA`, `VDM`, `ADE I`, `ADE II`, `MCLB`, `ACE`, `ZI`, `MDG`, `EDOC`, `MSRC`, `BI`, `AU1`, `AU2`, `NADJ`, `EDO`, `MSR`, `PDT`, `frenchy.bzh`.
-Les 10 autres entrées sont en VO — hors périmètre citable ici (règle 1 de `CLAUDE.md`).
+Les 10 autres entrées sont en VO : seul le livre VO nommé au `CLAUDE.md` § *Sources VF* est citable.
 
 ## 4. L'ENVELOPPE est posée par la fabrique — ne la redéclare jamais
 
@@ -125,4 +125,4 @@ JAMAIS un choix d'agent silencieux enterré. Avant de conclure « le moteur ne s
 | `src/data/data-atlas-complete.test.ts` | atlas des données (docs/donnees.md) — complétude |
 | `src/data/maison-sans-source.test.ts` | cliquet « maison sans source » — le régime d’arbitrage ne dérive pas (#1467 L1b) |
 | `src/data/data-wellformed.test.ts` | Intégrité des données src/data/*.json |
-<!-- sources-empreinte: 4ccc056766bf099714e96d7446d374f32d11e484 (18 fichiers, 1 dossiers) corps: 8cfc350cd838f91830d2c519e23140ce9a8ae883 -->
+<!-- sources-empreinte: 460e19679032d35f26b70eb7017bc307c834b00b (18 fichiers, 1 dossiers) corps: 5a822f0605bd79773ad3e3814a86adaf2169d143 -->

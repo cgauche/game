@@ -19,7 +19,9 @@ décision de périmètre qui change se corrige ICI, à la main, comme tout arbit
 Tout est en **français** sous `Source/`, dossiers préfixés **`Warhammer v4 - …`**. Les dossiers
 SANS ce préfixe (Enemy Within…, Altdorf…, Archives of the Empire…) sont la **VO** (base de
 connaissance MJ du dépôt parent) — **ne jamais les lire/citer** ici (la donnée du jeu est FR :
-CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne>` / `ADE…`.
+CC/CT/F/E…). **Exception unique** : `Source/Warhammer Fantasy Roleplay 5e Core Rulebook/`, livre VO
+AUTORISÉ (`CLAUDE.md` § *Sources VF*). Au moindre doute, **lire le `.md` et citer**
+`LDB <chap> l.<ligne>` / `ADE…`.
 
 > **Couche de lecture consolidée = l'Atlas [`docs/raw/`](raw/00-index.md)** : il agrège
 > ces 16 livres par domaine + catalogues de stats. Lis l'Atlas pour comprendre/vérifier ; n'ouvre `Source/`
@@ -33,7 +35,8 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
 > 90 % scénario, mais souvent il y a quelques règles. » — la dichotomie livre-de-règles / livre-de-contenu
 > ne se juge PAS au niveau du livre : le périmètre s'établit **par passage**, documenté ici, au même
 > standard partout (verbatim citable `l.<ligne>`, extraction FR dans `Source/` obligatoire — un livre sans
-> extraction ne peut pas fournir de mécanique vérifiable). La VO reste interdite.
+> extraction ne peut pas fournir de mécanique vérifiable). La VO reste interdite hors l'exception
+> unique du `CLAUDE.md` § *Sources VF* (Core Rulebook 5e).
 
 - **LDB** = `Source/Warhammer v4 - Livre de base version corrigee/` — chapitres `NN - Titre.md` ;
   les commentaires de code `LDB <n> l.<ligne>` pointent ces fichiers. Chapitres clés :
@@ -125,4 +128,4 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
 - Suppléments VF dispo : `Altdorf — La Couronne de l'Empire`, `Aventures à Ubersreik I`,
   `Middenheim — La Cité du Loup Blanc`, `Nuits Agitées & Dures Journées`,
   `Boîte d'Initiation` (+ `WH4_FR_BI_Livre_Aventure` / `…_Ubersreik`).
-<!-- sources-empreinte: 82d19c2e28a55e5379c332930c93a8891a12b562 (5 fichiers, 0 dossiers) corps: 2c14863ad5bb44999a0125b20871c205c86b3038 -->
+<!-- sources-empreinte: 58bd3012d19e178e456c0df8946b6db271fa7234 (5 fichiers, 0 dossiers) corps: 1d2fee0558283696763edaad894841c265647cc3 -->
