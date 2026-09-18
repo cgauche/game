@@ -614,13 +614,14 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // (`activeAxes`, `auteur`) redeviennent mesurables. Mesure du doc §2.4 : 370 → 621 clés
       // déclarées-jamais-observées, dont 243 posées d'office par la fabrique, hors dénominateur ici
       // (`CLES_POSEES_INCONDITIONNELLEMENT`) — ces 8-là sont les seules à entrer au stock.
-      // Cliquet REMONTÉ 27 → 28 (#1716, 2026-09-18) : `semences-de-scene.json › ambientLight`, le
+      // Réel 26 → 27 sous le plafond 27 INCHANGÉ (#1716, 2026-09-18 ; le cran 28 posé au train 2 était
+      // un mou sans contrepartie, redescendu à la revue de palier) : `semences-de-scene.json › ambientLight`, le
       // réglage OPTIONNEL de la semence d'une scène neuve, que la donnée livrée n'écrit pas — son
       // ABSENCE EST la valeur de départ (`auto`, l'éclairage suit l'horloge), à l'identique de la
       // scène elle-même, dont l'inspecteur écrit `undefined` pour « Automatique ». Même nature que
       // `merchants.json › buyMarkup` et `psychology.json › gating` déjà stockés, même solde : la ligne
       // meurt quand l'auteur nomme un palier de départ, ou quand le champ quitte le def.
-      ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 28],
+      ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 27],
       // Cliquet DESCENDU 6 → 5 : le stock est à 5 depuis un lot antérieur et la marge n'avait pas été
       // reprise. Aucune raison de garder un cran libre : il servirait à absorber un homonyme neuf.
       // … et 5 → 4 (L2 #1548, commit 3d) : l'homonyme `skill` MEURT — la clé n'a plus qu'UNE classe
