@@ -1130,6 +1130,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | fragment | `col,row,sec,secOcc,sum+…` | cible | 0 |
 | formule | `sum` | cible | 13 |
 | formule | `sinPoints` | cible | 10 |
+| formule | `minimum,of` | cible | 2 |
 | source | `book,page` | cible | 3354 |
 | source | `book,note,page` | cible | 1175 |
 | source | `book,chapter` | historique | 0 |
@@ -1156,7 +1157,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **880** (cible 403 · declaree 6 · historique 131 · divergente 340). Objets JSON parcourus : **49483**, dont **32331** portent une forme
+Lignes concept × dataset × champ × forme : **881** (cible 404 · declaree 6 · historique 131 · divergente 340). Objets JSON parcourus : **49485**, dont **32333** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **90**.
 
 Entrées de racine sans concept de valeur : **4102** sur **4189** —
@@ -1828,12 +1829,13 @@ Reconnu par : son noyau `sec` `secOcc` `sum`
 
 ### 3.8 formule de quantité (Formula, engine/ops.ts) — `formule` (strate Valeur)
 
-6 ligne(s), 23 occurrence(s).
-Reconnu par : son noyau `sum` `sinPoints` (≥ 1)
+7 ligne(s), 25 occurrence(s).
+Reconnu par : son noyau `sum` `sinPoints` `minimum` (≥ 1)
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
 |---|---|---|---|---|---|---|---|
-| entité | `durationRounds` | `sum` | cible | `criticals.json` | 2 | — |  |
+| entité | `durationRounds` | `minimum,of` | cible | `criticals.json` | 2 | — | borne basse d’un terme — « (minimum de 1) », AA 07 l.113 / LDB 18 l.88 |
+| entité | `of` | `sum` | cible | `criticals.json` | 2 | — |  |
 | entité | `amount` | `sum` | cible | `etats.json` | 1 | — |  |
 | entité | `amount` | `sum` | cible | `miscast.json` | 4 | — |  |
 | entité | `rounds` | `sum` | cible | `miscast.json` | 3 | — |  |
@@ -2530,7 +2532,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13195** objets sur **49483** ne sont portés par AUCUNE
+Au-delà des orphelines, **13195** objets sur **49485** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -3745,7 +3747,7 @@ Dont **0** littéral(aux) PARTIEL(s) du noyau — — : une mesure qui exigerait
 | de | `n,sides` | 0 | 0 | — |
 | adresse | `book,ch,parts` | 0 | 0 | — |
 | fragment | `sec,secOcc,sum` | 0 | 0 | — |
-| formule | `sum,sinPoints` | 1 | 1 | `miscast.ts` |
+| formule | `sum,sinPoints,minimum` | 1 | 1 | `miscast.ts` |
 | source | `book` | 0 | 0 | — |
 | bornes | `min,max` | 2 | 2 | `oups.ts` `tavernGames.ts` |
 | plage | `min,max` | 2 | 2 | `oups.ts` `tavernGames.ts` |
@@ -5025,4 +5027,4 @@ pèse **2950** slots sur 3324.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: 532eef76ce0f7d986ed86e7ef9cd720f2119652f (380 fichiers, 10 dossiers) corps: 1f51ab468588c223851d3f06e2f6a685a9a5a661 -->
+<!-- sources-empreinte: 01d33558bd5dc5f7e28140431b77c6283c99698b (380 fichiers, 10 dossiers) corps: 52b51fdd0a57b38ae533b97add0eb1bf05ea0699 -->

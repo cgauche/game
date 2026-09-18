@@ -226,7 +226,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Exténué, Drogues et poisons (`LDB 71`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.68-78) → `combat-fatigue`, `doc`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `addCondition`, `brise`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, +22 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +15 fichiers
+- `LDB 16` (l.68-78) → `combat-fatigue`, `doc`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `addCondition`, `brise`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, +24 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +15 fichiers
 
 ---
 
@@ -249,7 +249,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Traumatisme (`traumatisme.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.80-84) → `combat-fatigue`, `doc`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `describeStateRecovery`, `empetre`, `empoisonne`, `collectHeroRoundEndUpkeep`, +10 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +9 fichiers
+- `LDB 16` (l.80-84) → `combat-fatigue`, `doc`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `describeStateRecovery`, `formulaForShape`, `empetre`, `empoisonne`, +12 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +10 fichiers
 
 ---
 
@@ -281,7 +281,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Brisé, Sonné, Hémorragique, Empoisonné, Inconscient, Traumatisme (`traumatisme.md`), Psychologie (`psychologie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.86-101) → `combat-fatigue`, `unstable`, `doc`, `EnemyAction`, `stopBleedOutcome`, `Formula`, `brise`, `needsRecoveryRoll`, `sleepParty`, `restRecovery`, +26 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +14 fichiers
+- `LDB 16` (l.86-101) → `combat-fatigue`, `unstable`, `doc`, `EnemyAction`, `stopBleedOutcome`, `Formula`, `brise`, `needsRecoveryRoll`, `sleepParty`, `restRecovery`, +28 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +15 fichiers
 - `LDB 21` (l.33) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `fearSourceFor`, `psychImmuneToFrom`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `describeApproach`, `describeFrenzy`, +38 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, +18 fichiers
 
 ---
@@ -420,7 +420,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 - `LDB 16 l.27-139` — descriptions individuelles
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.15-17, l.27-139) → `PRONE_POSE`, `combat-fatigue`, `unstable`, `doc`, `etatNonCumulable`, `STABLE_COND_KINDS`, `jsonOpSchema`, `StateRecoveryModal`, `mouvementIntact`, `EnemyAction`, +99 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +35 fichiers
+- `LDB 16` (l.15-17, l.27-139) → `PRONE_POSE`, `combat-fatigue`, `unstable`, `doc`, `etatNonCumulable`, `STABLE_COND_KINDS`, `jsonOpSchema`, `StateRecoveryModal`, `mouvementIntact`, `EnemyAction`, +101 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +35 fichiers
 
 ---
 
@@ -596,7 +596,7 @@ Ces tableaux utilisent tous les États standards (Hémorragique, Sonné, Aveugl�
 
 **Voir aussi** : Traumatisme (`traumatisme.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 7` (l.27-29, l.82-182) → `StructureCritEntry`, `critEscalationSchema`, `amputationSchema`, `CritEscalation`, `attackHandGate`, `retenir-ses-coups`, `MODAL_DEFS`, `aaCriticalOffset`, `retireEtat`, `critiqueTriviale`, +103 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/structureCriticals.ts`, +13 fichiers
+- `AA 7` (l.27-29, l.82-182) → `StructureCritEntry`, `critEscalationSchema`, `pendantRounds`, `amputationSchema`, `CritEscalation`, `attackHandGate`, `retenir-ses-coups`, `Formula`, `MODAL_DEFS`, `aaCriticalOffset`, +108 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/grammaire/valeurs.ts`, +16 fichiers
 
 ---
 

@@ -123,6 +123,7 @@ export const STRUCTURES_CIBLES = [
   // terme de Péché qui s'y ajoute (`sinPointsSchema`) — LDB 40 l.58/62/63/65/68/71/72/73/75/77.
   { concept: "formule", signature: "sum", date: "2026-09-01" },
   { concept: "formule", signature: "sinPoints", date: "2026-09-01" },
+  { concept: "formule", signature: "minimum,of", date: "2026-09-18" },
   { concept: "source", signature: "book,page", date: "2026-08-23" },
   { concept: "source", signature: "book,note,page", date: "2026-08-23" },
   { concept: "plage", signature: "max,min", date: "2026-08-23" },

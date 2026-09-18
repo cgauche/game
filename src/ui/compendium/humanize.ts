@@ -68,6 +68,11 @@ export function deFormule(f: Formula): string {
   return `de ${mots}`;
 }
 
+/** Fragment de DURÉE en Rounds d'une op qui en porte une (`durationFromOp`, engine/ops) — vide si
+ *  l'op n'en porte pas (elle prend alors celle du contexte). SOURCE UNIQUE de la phrase : la borne
+ *  d'une entrée s'y dit d'elle-même (« … (minimum de 1) », AA 07 l.113 / LDB 18 l.88). */
+const pendantRounds = (f: Formula | undefined): string => (f != null ? ` pendant ${humanizeFormula(f)} Round(s)` : '');
+
 /** La MÊME quantité, mais la note de règle SORTIE du nombre — pour les phrases où une UNITÉ suit le
  *  nombre (« 12 sou(s) de cuivre », « 5 minute(s) ») : la note se pose APRÈS l'unité, jamais entre. */
 export function humanizeQuantite(f: Formula): { valeur: string; note: string } {
@@ -107,6 +112,7 @@ function formuleEnMots(f: Formula, regles: string[] | null): string {
     }
     return `${valeur} (règle « ${def.label} »)`;
   }
+  if ('minimum' in f) return `${formuleEnMots(f.of, regles)} (minimum de ${f.minimum})`;
   if ('sum' in f) return f.sum.map((t) => formuleEnMots(t, regles)).join(' + ');
   // Le FACTEUR est une `Formula` comme le multiplicande (`formulaSchema`, grammaire/valeurs.ts) :
   // il s'humanise, il ne s'interpole pas — sans quoi « × {sl:true} » s'imprime « × [object Object] ».
@@ -380,7 +386,7 @@ export function humanizeOp(o: GameOp): string {
     }
     case 'statusMod': return `${typeof o.amount === 'number' && o.amount < 0 ? 'perd' : 'gagne'} ${humanizeFormula(o.amount)} Standing pour la prochaine aventure`;
     case 'grantReverseToken': return `peut inverser ${o.skill ? refLabel('skills', o.skill) : 'un Test concernant sa cible'} une fois pendant sa prochaine aventure`;
-    case 'grantTrait': return `gagne le Trait ${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${humanizeFormula(o.indice)}` : ''}${o.durationRounds ? ` pendant ${humanizeFormula(o.durationRounds)} Round(s)` : ''}`;
+    case 'grantTrait': return `gagne le Trait ${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${humanizeFormula(o.indice)}` : ''}${pendantRounds(o.durationRounds)}`;
     case 'removeTrait': return `perd le Trait ${formatTrait({ id: o.traitId })}`;
     case 'grantPsychTrait': return `gagne l'état psychologique ${psychologyLabel(o.psychType)}${o.cible ? ` (${o.cible})` : ''}`;
     case 'removePsychTrait': return `perd ${o.psychType ? `l'état psychologique ${psychologyLabel(o.psychType)}` : 'un état psychologique au choix'}`;
@@ -456,11 +462,11 @@ export function humanizeOp(o: GameOp): string {
     case 'sbBonus': return `gagne +${o.amount} au Bonus de Force pour ses Dégâts`;
     case 'attackKeyword': return `voit ses attaques comptées comme magiques`;
     case 'mitigateIncoming': return `annule les Dégâts qu'il subit${o.unlessKeyword === 'magic' ? ' (sauf attaques magiques)' : ''}`;
-    case 'moveScale': return `voit son Mouvement ${o.num === 1 && o.den === 2 ? 'réduit de moitié' : `multiplié par ${o.num}/${o.den}`}`;
+    case 'moveScale': return `voit son Mouvement ${o.num === 1 && o.den === 2 ? 'réduit de moitié' : `multiplié par ${o.num}/${o.den}`}${pendantRounds(o.durationRounds)}`;
     case 'moveMod': return `${o.mod >= 0 ? 'gagne' : 'subit'} ${o.mod >= 0 ? '+' : ''}${o.mod} en Mouvement`;
     case 'offTerrainMod': return `est diminué hors de son terrain d'élection`;
     case 'attrMod': return `gagne +${humanizeFormula(o.mod)} ${ATTR_LABEL[o.attr]} (maximum)`;
-    case 'maxWeaponHands': return `ne peut manier que des armes à ${o.hands} main(s)`;
+    case 'maxWeaponHands': return `ne peut manier que des armes à ${o.hands} main(s)${pendantRounds(o.durationRounds)}`;
     case 'disarm': return `lâche l'objet tenu dans une main`;
     case 'handGate': return `doit réussir un Test avant d'agir de cette main`;
     case 'senseLoss': return `perd ${libelleDeValeur(senseSchema, o.sense)}`;

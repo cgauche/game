@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';
 import type { CodexTarget } from './ruleRefs';
-import { applyOps } from './ops';
+import { applyOps, type Formula } from './ops';
 import { makeRNG } from './dice';
 import { passiveMods, traumaMovementHalved, passiveMoveMod, cannotWieldTwoHanded, traumaSkillPenalty } from './trauma';
 import { suspendSource } from './suspension';
@@ -105,19 +105,22 @@ describe('ActiveEffect.passive — les ops d’un effet portent leur source', ()
     expect(mains.passive![0]).toEqual({ op: 'maxWeaponHands', hands: 1 });
   });
 
-  it('PLANCHER de Rounds : porté par l’appelant qui en a la réf, jamais par la durée elle-même', () => {
+  it('PLANCHER de Rounds : porté par la FORMULE de l’entrée, jamais par le site d’appel', () => {
     // « Durée : (Bonus de Force Mentale) Rounds » (VDM 15 l.406) — aucun minimum : à FM < 10, zéro Round.
     const faible = hero({ characteristics: { ...hero().characteristics, 'force-mentale': 9 } });
     applyOps(faible, [{ op: 'charMod', char: 'agilite', mod: -10, durationRounds: { bonusOf: 'force-mentale' } }], { label: 'Écorce' });
     expect(faible.activeEffects![0].duration).toEqual({ scale: 'rounds', left: 0 });
 
     // « inutilisable pour 1d10 − (Bonus d'Endurance) Rounds (minimum de 1) » (AA 07 l.113) : BE 10, d10 = 1.
+    const NUE: Formula = { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'endurance' }, factor: -1 } }] };
     const costaud = hero({ characteristics: { ...hero().characteristics, endurance: 100 } });
-    applyOps(costaud, [{
-      op: 'maxWeaponHands', hands: 1,
-      durationRounds: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'endurance' }, factor: -1 } }] },
-    }], { label: 'Choc au bras', rng: { int: () => 1 } });
+    applyOps(costaud, [{ op: 'maxWeaponHands', hands: 1, durationRounds: { minimum: 1, of: NUE } }], { label: 'Choc au bras', rng: { int: () => 1 } });
     expect(costaud.activeEffects![0].duration).toEqual({ scale: 'rounds', left: 1 });
+
+    // La MEME op sans la borne : le moteur ne la remet pas — zéro Round, comme toute autre durée.
+    const sansBorne = hero({ characteristics: { ...hero().characteristics, endurance: 100 } });
+    applyOps(sansBorne, [{ op: 'maxWeaponHands', hands: 1, durationRounds: NUE }], { label: 'Choc au bras', rng: { int: () => 1 } });
+    expect(sansBorne.activeEffects![0].duration).toEqual({ scale: 'rounds', left: -9 });
   });
 
   it('journal d’un `charMod` : fragment de durée en minutes seulement si l’op porte SON horloge', () => {

@@ -8,7 +8,7 @@ import {
 import { CHAR_KEYS } from '../../engine/types';
 import { OPTIONAL_RULES, setRule, resetRule } from '../../engine/policy';
 import { walkFlow, type Flow, type Condition, type EffectOp } from '../../state/flow';
-import type { GameOp } from '../../engine/ops';
+import type { GameOp, Formula } from '../../engine/ops';
 
 /** Ids KEBAB (multi-segment) connus des registres : « en-flammes », « magie-des-arcanes »,
  *  « force-mentale »… — jamais un mot français de prose (« peut-être »). Une sortie JOUEUR qui en
@@ -108,6 +108,19 @@ describe('humanize — registre JOUEUR', () => {
     expect(humanizeFormula({ charOf: 'endurance' })).toBe('la Endurance');
     expect(humanizeFormula({ dice: { n: 1, sides: 10, plus: 2 } })).toBe('1d10+2');
     expect(humanizeFormula(5)).toBe('5');
+    // Borne basse — « 1d10 – (Bonus d'Endurance) Rounds (minimum de 1) » (AA 07 l.113, LDB 18 l.88).
+    expect(humanizeFormula({ minimum: 1, of: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'endurance' }, factor: -1 } }] } }))
+      .toBe('1d10 + le Bonus de Endurance × -1 (minimum de 1)');
+  });
+
+  it('une op à durée propre DIT sa durée, borne comprise (AA 07 l.113, LDB 18 l.88)', () => {
+    const DUREE: Formula = { minimum: 1, of: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'endurance' }, factor: -1 } }] } };
+    expect(humanizeOp({ op: 'maxWeaponHands', hands: 1, durationRounds: DUREE } as GameOp))
+      .toBe('ne peut manier que des armes à 1 main(s) pendant 1d10 + le Bonus de Endurance × -1 (minimum de 1) Round(s)');
+    expect(humanizeOp({ op: 'moveScale', num: 1, den: 2, durationRounds: DUREE } as GameOp))
+      .toBe('voit son Mouvement réduit de moitié pendant 1d10 + le Bonus de Endurance × -1 (minimum de 1) Round(s)');
+    // Sans durée propre (celle du contexte) : aucune phrase inventée.
+    expect(humanizeOp({ op: 'maxWeaponHands', hands: 1 } as GameOp)).toBe('ne peut manier que des armes à 1 main(s)');
   });
 
   it('humanizeOp : État en libellé italique, jamais l’id', () => {

@@ -156,6 +156,37 @@ describe('Transmutation de Chamon — 3 États PORTÉS par l’effet actif du So
     for (const id of ETATS) expect(stacks(vue(cible.id), id)).toBe(0);
   });
 
+  /** Même geste, sur un Sort à ZONE persistante : la zone tient la MÊME durée surincantée que les
+   *  États portés — une seule source de vérité (`overcastDurationParts`, LDB 47 l.15), aucun plancher. */
+  function lancerGrandsFeux(caster: Combatant, cible: Combatant, steps = 0): void {
+    const spell = findSpellById('grands-feux-d-u-zhul')!;
+    const ocDur = overcastDurationParts(overcastSourceOf(spell), steps);
+    const res = evaluateMissile(caster, cible, spell, cr());
+    applyCast(useGame.getState, useGame.setState, caster, cible, spell, res, true, false, undefined, {
+      durationMult: ocDur.mult, durationBonusRounds: ocDur.bonusRounds, overcastDurationSteps: steps,
+    });
+  }
+
+  it('la ZONE d’un Sort suit la MÊME durée surincantée que ses États portés (BFM 3 → 3, +2 pas → 9)', () => {
+    lancerGrandsFeux(mage, cible);
+    expect(useGame.getState().battle!.zones![0].rounds, 'la zone ne dure pas la Durée du Sort').toBe(3);
+
+    useGame.setState({ battle: { ...useGame.getState().battle!, zones: [] } });
+    lancerGrandsFeux(mage, vue(cible.id), 2);
+    expect(useGame.getState().battle!.zones![0].rounds, 'la zone ignore les pas de Surincantation').toBe(9);
+  });
+
+  it('le BONUS de Rounds (modèle Bénédiction : mult 1, +6 Rounds/pas) atteint la ZONE comme le reste du Sort', () => {
+    const spell = findSpellById('grands-feux-d-u-zhul')!;
+    const res = evaluateMissile(mage, cible, spell, cr());
+    // `overcastDurationParts` DÉCOMPOSE la Surincantation en `mult` ET `bonusRounds` : la zone lit les
+    // deux, comme la branche non-zone (`base × mult + bonus`) — sinon le bonus se perdait en route.
+    applyCast(useGame.getState, useGame.setState, mage, cible, spell, res, true, false, undefined, {
+      durationMult: 1, durationBonusRounds: 6, overcastDurationSteps: 1,
+    });
+    expect(useGame.getState().battle!.zones![0].rounds, 'le bonus de Rounds n’atteint pas la zone').toBe(3 + 6);
+  });
+
   it('deux Chamon = deux effets porteurs = DEUX pions Assourdi (LDB 16 l.11, « les pénalités s’accumulent »)', () => {
     lancerChamon(mage, cible);
     lancerChamon(mage, vue(cible.id));

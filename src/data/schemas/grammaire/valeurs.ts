@@ -685,10 +685,9 @@ export const entityAppearanceSchema = z.strictObject({
  *  ne porte de valeur hors de ces 6 (vérifié au parse). */
 export const hitLocationSchema = z.enum(['tete', 'brasG', 'brasD', 'corps', 'jambeG', 'jambeD']);
 
-/** `Formula` (`src/engine/ops.ts:65`) — quantité résolue à l'application (littéral/dés/bonus/Indice/
- *  jet-associé/pions/écart d'Avantage/Blessures/somme/facteur). Dupliqué (avec `bonusOf`/`charOf` en
- *  `z.string()` plutôt que `charKeySchema`) dans `trappings.ts` — resserré ici sur `CharKey` (fidèle
- *  à `src/engine/ops.ts:65`), sans risque pour `trappings.json` (vérifié au parse). */
+/** `Formula` (`src/engine/ops.ts:87`) — quantité résolue à l'application (littéral/dés/bonus/Indice/
+ *  jet-associé/pions/écart d'Avantage/Blessures/somme/facteur/borne basse). Resserré ici sur `CharKey`
+ *  (fidèle à `src/engine/ops.ts:87`), sans risque pour les datasets (vérifié au parse). */
 /** Feuille de référence du terme `{rule}`, instanciée UNE fois : `formulaSchema` est un `z.lazy` que
  *  chaque composition ré-évalue — une fabrique appelée DANS le `lazy` poserait une marque par instance
  *  (58 mesurées), là où le site de référence est UN. */
@@ -714,6 +713,9 @@ export const formulaSchema: z.ZodType<unknown> = z.lazy(() =>
     z.strictObject({ sum: z.array(formulaSchema) }),
     // `factor` est une Formula (PRODUIT de deux formules — « (Force Mentale) × 1d10 minutes », VDM 05).
     z.strictObject({ times: z.strictObject({ of: formulaSchema, factor: formulaSchema }) }),
+    // BORNE BASSE d'un terme — « 1d10 – (Bonus d'Endurance) Rounds (minimum de 1) » (AA 07 l.113,
+    // LDB 18 l.88) : le minimum vit dans la formule de l'entrée, jamais au moteur. Récursif.
+    z.strictObject({ minimum: z.number().int().nonnegative(), of: formulaSchema }),
   ]),
 );
 

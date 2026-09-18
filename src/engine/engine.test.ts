@@ -739,6 +739,11 @@ describe('Magie — correctifs de fidélité (audit)', () => {
     expect(durationClockMinutes({ kind: 'rounds', value: 6 }, c, 0)).toBeNull();
     expect(durationClockMinutes({ kind: 'instant' }, c, 0)).toBeNull();
     expect(durationClockMinutes({ kind: 'special', text: 'Spécial' }, c, 0)).toBeNull();
+    // AUCUN plancher moteur : à BFM 0, « (Bonus de FM) heures » vaut 0 minute — comme la même formule
+    // en Rounds. Un minimum vit dans la FORMULE du sort (`{minimum, of}`), jamais ici.
+    const faible = caster({ 'force-mentale': 9 });
+    expect(durationClockMinutes({ kind: 'clock', value: { bonusOf: 'force-mentale' }, unit: 'hours' }, faible, 0)).toBe(0);
+    expect(durationClockMinutes({ kind: 'clock', value: { minimum: 1, of: { bonusOf: 'force-mentale' } }, unit: 'hours' }, faible, 0)).toBe(60);
   });
 });
 

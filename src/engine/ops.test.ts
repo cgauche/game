@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';
 import { makeRNG, type RNG } from './dice';
-import { resolveFormula, applyOps, applyActiveEffect } from './ops';
+import { resolveFormula, applyOps, applyActiveEffect, isValidFormula, formulaExpectation, type Formula } from './ops';
 import { hasTraitKey } from './traits/dispatch';
 import { woundsFromHit } from './combat';
 import type { Weapon } from './types';
@@ -39,6 +39,66 @@ describe('resolveFormula', () => {
   it('(Bonus de X) se résout contre la caractéristique EFFECTIVE (buffs compris)', () => {
     const c = hero({ activeEffects: [{ label: 'Buff', char: 'force-mentale', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
     expect(resolveFormula({ bonusOf: 'force-mentale' }, c)).toBe(4); // 38+10 → 48 → bonus 4
+  });
+});
+
+describe('`{minimum, of}` — la borne basse est un terme de la formule (AA 07 l.113, LDB 18 l.88)', () => {
+  /** « inutilisable pour 1d10 – (Bonus d'Endurance) Rounds (minimum de 1) ». */
+  const CHOC_AU_BRAS: Formula = { minimum: 1, of: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'endurance' }, factor: -1 } }] } };
+  const de = (v: number): RNG => ({ int: () => v });
+
+  it('BE 10 : la borne mord — 1 Round, jamais 0 ni négatif', () => {
+    const c = hero({ characteristics: { ...hero().characteristics, endurance: 100 } }); // BE 10
+    expect(resolveFormula(CHOC_AU_BRAS, c, de(1))).toBe(1); // 1 − 10 = −9 → 1
+    expect(resolveFormula(CHOC_AU_BRAS, c, de(10))).toBe(1); // 10 − 10 = 0 → 1
+  });
+
+  it('BE 4 : la borne ne touche pas une durée déjà au-dessus', () => {
+    const c = hero(); // E 45 → BE 4
+    expect(resolveFormula(CHOC_AU_BRAS, c, de(10))).toBe(6); // 10 − 4
+    expect(resolveFormula(CHOC_AU_BRAS, c, de(5))).toBe(1); // 5 − 4 = 1 : la borne n’ajoute rien
+  });
+
+  it('`isValidFormula` accepte la borne, refuse une borne non numérique ou un `of` absent', () => {
+    expect(isValidFormula(CHOC_AU_BRAS)).toBe(true);
+    expect(isValidFormula({ minimum: 'x', of: 3 })).toBe(false);
+    expect(isValidFormula({ minimum: 1 })).toBe(false);
+  });
+
+  it('`formulaExpectation` n’est jamais sous la borne', () => {
+    const c = hero({ characteristics: { ...hero().characteristics, endurance: 100 } });
+    expect(formulaExpectation(CHOC_AU_BRAS, c)).toBe(1); // E[1d10] 5,5 − 10 = −4,5 → 1
+    expect(formulaExpectation({ minimum: 1, of: 7 }, c)).toBe(7);
+  });
+});
+
+describe('AUCUN plancher de durée au moteur — toute échelle rend ce que la formule dit', () => {
+  it('horloge d’une op (`durationMinutes`/`durationHours`) : l’échéance est `now`, pas `now + 1`', () => {
+    const c = hero();
+    applyOps(c, [{ op: 'charMod', char: 'agilite', mod: -10, durationMinutes: 0 }], { label: 'Écorce', now: 100 });
+    expect(c.activeEffects![0].duration).toEqual({ scale: 'clock', until: 100 });
+  });
+
+  it('État posé par une op `condition` : 0 Round et échéance nue, en Rounds comme à l’horloge', () => {
+    const rounds = hero();
+    applyOps(rounds, [{ op: 'condition', id: 'sonne', durationRounds: 0 }], { label: 'Sort' });
+    expect(rounds.conditions[0]).toMatchObject({ id: 'sonne', roundsLeft: 0 });
+
+    const horloge = hero();
+    applyOps(horloge, [{ op: 'condition', id: 'sonne', durationMinutes: 0 }], { label: 'Sort', now: 100 });
+    expect(horloge.conditions[0]).toMatchObject({ id: 'sonne', untilTime: 100 });
+  });
+
+  it('`castPenalty` : Rounds, minutes, heures et jours rendent la formule nue', () => {
+    const c = hero();
+    applyOps(c, [{ op: 'castPenalty', mod: -10, rounds: 0 }], { label: 'Contrecoup' });
+    expect(c.castPenalties![0].roundsLeft).toBe(0);
+    applyOps(c, [{ op: 'castPenalty', mod: -10, minutes: 0 }], { label: 'Contrecoup', now: 100 });
+    expect(c.castPenalties![1].untilTime).toBe(100);
+    applyOps(c, [{ op: 'castPenalty', mod: -10, hours: 0 }], { label: 'Contrecoup', now: 100 });
+    expect(c.castPenalties![2].untilTime).toBe(100);
+    applyOps(c, [{ op: 'castPenalty', mod: -10, days: 0 }], { label: 'Contrecoup', now: 100 });
+    expect(c.castPenalties![3].untilTime).toBe(100);
   });
 });
 
@@ -241,12 +301,12 @@ describe('applyOps — opérations unitaires', () => {
     expect(c.activeEffects![0].duration).toEqual({ scale: 'rounds', left: 3 });
   });
 
-  it('maxWeaponHands : formule « 1d10 − BE » plancher à 1 (minimum de 1, « Choc au bras » l.2557)', () => {
+  it('maxWeaponHands : « 1d10 – (Bonus d’Endurance) Rounds (minimum de 1) » — la borne est DANS la formule (AA 07 l.113)', () => {
     const c = hero({ characteristics: { ...hero().characteristics, endurance: 45 } }); // BE 4
-    const rng: RNG = { int: () => 1 }; // 1d10 tiré au plus bas (1) − BE 4 → négatif → plancher 1
+    const rng: RNG = { int: () => 1 }; // 1d10 tiré au plus bas (1) − BE 4 → −3, borné à 1 par `{minimum}`
     applyOps(c, [{
       op: 'maxWeaponHands', hands: 1,
-      durationRounds: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'endurance' }, factor: -1 } }] },
+      durationRounds: { minimum: 1, of: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'endurance' }, factor: -1 } }] } },
     }], { rng });
     expect(c.activeEffects![0].duration).toEqual({ scale: 'rounds', left: 1 });
   });

@@ -123,7 +123,12 @@ export type Formula =
    *  `rule(id)`) — terme GÉNÉRAL : toute quantité qu'un livre ne chiffre pas (`maison`) reste ÉDITABLE
    *  au panneau in-game au lieu d'être figée dans le moteur. Une règle non numérique (ou inconnue) vaut
    *  0, comme toute formule malformée. */
-  | { rule: string };
+  | { rule: string }
+  /** BORNE BASSE d'un terme (`max(minimum, of)`) — clause d'ENTRÉE du livre, portée par la formule
+   *  qui la reçoit : « inutilisable pour 1d10 – (Bonus d'Endurance) Rounds (minimum de 1) »
+   *  (`AA 07 l.113`, `LDB 18 l.88`) s'écrit `{minimum:1, of:{sum:[…]}}`. Récursif. `minimum` nomme CE
+   *  concept seul — `atLeast` est déjà le seuil d'un palier (`rollThreshold`) et d'une Condition. */
+  | { minimum: number; of: Formula };
 
 /** Résout une formule contre son référent (`ref`) — RNG seedable pour les dés. `rolled` = valeur du
  *  jet courant d'un `rollThreshold` (injectée par l'op ; 0 hors de ce contexte) ; `indice` = Indice
@@ -140,6 +145,7 @@ export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG
   if ('woundsDealt' in f) return woundsDealt ?? 0;
   if ('sl' in f) return sl ?? 0;
   if ('rule' in f) { const v = rule(f.rule); return typeof v === 'number' && Number.isFinite(v) ? v : 0; }
+  if ('minimum' in f) return Math.max(f.minimum, resolveFormula(f.of, ref, rng, rolled, indice, stacks, gap, woundsDealt, sl));
   if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + resolveFormula(term, ref, rng, rolled, indice, stacks, gap, woundsDealt, sl), 0);
   if ('times' in f) return resolveFormula(f.times.of, ref, rng, rolled, indice, stacks, gap, woundsDealt, sl) * resolveFormula(f.times.factor, ref, rng, rolled, indice, stacks, gap, woundsDealt, sl);
   return rollDice(f.dice, rng);
@@ -148,7 +154,7 @@ export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG
 /** Clés reconnues d'une `Formula` OBJET — SOURCE UNIQUE, alignée sur l'union `Formula` et sur les
  *  branches de `resolveFormula`. Réutilisée par le garde-fou d'intégrité des données
  *  (`src/data/data-wellformed.test.ts`) pour valider les champs Formula des `GameOp` sans re-coder la liste. */
-export const FORMULA_OBJECT_KEYS = ['bonusOf', 'charOf', 'dice', 'rolled', 'indiceOf', 'stacks', 'engagedAdvantageGap', 'woundsDealt', 'sl', 'rule', 'sum', 'times'] as const;
+export const FORMULA_OBJECT_KEYS = ['bonusOf', 'charOf', 'dice', 'rolled', 'indiceOf', 'stacks', 'engagedAdvantageGap', 'woundsDealt', 'sl', 'rule', 'sum', 'times', 'minimum'] as const;
 
 /** Une valeur est-elle une `Formula` VALIDE — résoluble par `resolveFormula` sans planter ? `number` FINI,
  *  ou objet portant exactement une clé connue (`sum` récursif). PUR. Rejette une string (un `'$indice'`
@@ -157,6 +163,7 @@ export function isValidFormula(f: unknown): f is Formula {
   if (typeof f === 'number') return Number.isFinite(f);
   if (typeof f !== 'object' || f === null) return false;
   const o = f as Record<string, unknown>;
+  if ('minimum' in o) return typeof o.minimum === 'number' && Number.isFinite(o.minimum) && isValidFormula(o.of);
   if ('sum' in o) return Array.isArray(o.sum) && o.sum.every(isValidFormula);
   if ('times' in o) {
     const t = o.times as Record<string, unknown> | null;
@@ -185,8 +192,8 @@ export type ResolveWindow =
 export function resolveWindowDuration(w: ResolveWindow | undefined, ref: Combatant, now: number, rng: RNG = defaultRNG): Duration | undefined {
   if (w === undefined) return { scale: 'rounds', left: 1 };
   if (w === 'none') return undefined;
-  if (w.scale === 'rounds') return { scale: 'rounds', left: Math.max(1, resolveFormula(w.left, ref, rng)) };
-  return { scale: 'clock', until: now + Math.max(1, resolveFormula(w.minutes, ref, rng)) };
+  if (w.scale === 'rounds') return { scale: 'rounds', left: resolveFormula(w.left, ref, rng) };
+  return { scale: 'clock', until: now + resolveFormula(w.minutes, ref, rng) };
 }
 
 /** Échelle « par +N DR » d'un sort (LDB 41/42/47 — « +1 par +2 DR », « +DR Dégâts ») :
@@ -213,7 +220,8 @@ export function slBonus(sl: number | undefined, p?: PerSL): number {
  *  rendent leur MOYENNE (`n×(faces+1)/2 + plus`) ; `(X)`/`(Bonus de X)` la valeur réelle (déterministe) ;
  *  `{rolled}` une valeur de référence neutre (le dé moyen d'un d10 ≈ 5,5) ; `{rule}` la valeur de la règle,
  *  comme `resolveFormula` (terme PUR et déterministe : il se score comme il se résout) ; les axes
- *  relationnels (Indice/stacks/écart d'Avantage/PB infligés) absents au planning → 0. PUR, sans RNG. */
+ *  relationnels (Indice/stacks/écart d'Avantage/PB infligés) absents au planning → 0. `{minimum}` borne
+ *  l'espérance de `of` — approximation : E[max(n,X)] ≥ max(n,E[X]). PUR, sans RNG. */
 export function formulaExpectation(f: Formula, ref: Combatant): number {
   if (typeof f === 'number') return f;
   if (typeof f !== 'object' || f === null) return 0; // formule malformée (donnée invalide) → 0, jamais un crash en plein combat
@@ -222,6 +230,7 @@ export function formulaExpectation(f: Formula, ref: Combatant): number {
   if ('dice' in f) return f.dice.n * (f.dice.sides + 1) / 2 + (f.dice.plus ?? 0);
   if ('rolled' in f) return 5.5; // référence neutre (dé moyen d'un d10) — jamais tiré
   if ('rule' in f) { const v = rule(f.rule); return typeof v === 'number' && Number.isFinite(v) ? v : 0; }
+  if ('minimum' in f) return Math.max(f.minimum, formulaExpectation(f.of, ref));
   if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + formulaExpectation(term, ref), 0);
   if ('times' in f) return formulaExpectation(f.times.of, ref) * formulaExpectation(f.times.factor, ref);
   return 0; // indiceOf / stacks / engagedAdvantageGap / woundsDealt / sl : hors contexte au planning
@@ -1337,12 +1346,12 @@ export function durationFromCtx(ctx: OpsCtx): Duration {
 interface OpDuree { durationRounds?: Formula; durationMinutes?: Formula; durationHours?: Formula }
 
 /** Durée INTRINSÈQUE portée par l'op (Rounds, sinon horloge depuis `ctx.now`), à défaut celle du
- *  contexte — mêmes échelles exclusives que `durationFromCtx` (LDB 47). `plancherRounds` : minimum de
- *  Rounds, porté par l'APPELANT qui en a la réf (aucune durée n'en a par défaut). */
-function durationFromOp(o: OpDuree, ctx: OpsCtx, ref: Combatant, rng: RNG, plancherRounds = 0): Duration {
-  if (o.durationRounds != null) return { scale: 'rounds', left: Math.max(plancherRounds, resolveFormula(o.durationRounds, ref, rng)) };
+ *  contexte — mêmes échelles exclusives que `durationFromCtx` (LDB 47). Un minimum de durée vit dans
+ *  la FORMULE de l'entrée (`{minimum, of}`), jamais au site d'appel. */
+function durationFromOp(o: OpDuree, ctx: OpsCtx, ref: Combatant, rng: RNG): Duration {
+  if (o.durationRounds != null) return { scale: 'rounds', left: resolveFormula(o.durationRounds, ref, rng) };
   if (o.durationMinutes != null || o.durationHours != null) {
-    return { scale: 'clock', until: (ctx.now ?? 0) + Math.max(1, resolveFormula(o.durationMinutes ?? 0, ref, rng) + resolveFormula(o.durationHours ?? 0, ref, rng) * 60) };
+    return { scale: 'clock', until: (ctx.now ?? 0) + resolveFormula(o.durationMinutes ?? 0, ref, rng) + resolveFormula(o.durationHours ?? 0, ref, rng) * 60 };
   }
   return durationFromCtx(ctx);
 }
@@ -1792,9 +1801,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Durée PORTÉE par l'op, résolue UNE fois ici : horloge (minutes/heures depuis `ctx.now`) ou
         // Rounds. Exclusives (cf. JSDoc du champ) — l'horloge prime, aucun dé n'est tiré pour l'autre.
         const clockMin = o.durationMinutes != null || o.durationHours != null
-          ? Math.max(1, resolveFormula(o.durationMinutes ?? 0, ref, rng) + resolveFormula(o.durationHours ?? 0, ref, rng) * 60)
+          ? resolveFormula(o.durationMinutes ?? 0, ref, rng) + resolveFormula(o.durationHours ?? 0, ref, rng) * 60
           : undefined;
-        const rounds = clockMin == null && o.durationRounds != null ? Math.max(1, resolveFormula(o.durationRounds, ref, rng)) : undefined;
+        const rounds = clockMin == null && o.durationRounds != null ? resolveFormula(o.durationRounds, ref, rng) : undefined;
         if (o.perRound) {
           // État récurrent = cas particulier de l'effet récurrent général (op `perRound`) : la
           // valeur est figée maintenant, l'op `condition` littérale est re-jouée chaque fin de Round,
@@ -2013,18 +2022,18 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         };
         let dureeTxt = '';
         if (o.rounds != null) {
-          cp.roundsLeft = Math.max(1, resolveFormula(o.rounds, ref, rng));
+          cp.roundsLeft = resolveFormula(o.rounds, ref, rng);
           dureeTxt = t('op.frag.roundsCap', { n: cp.roundsLeft, s: cp.roundsLeft > 1 ? 's' : '' });
         } else if (o.minutes != null) {
-          const min = Math.max(1, resolveFormula(o.minutes, ref, rng));
+          const min = resolveFormula(o.minutes, ref, rng);
           cp.untilTime = (ctx.now ?? 0) + min;
           dureeTxt = t('op.frag.min', { n: min });
         } else if (o.hours != null) {
-          const h = Math.max(1, resolveFormula(o.hours, ref, rng));
+          const h = resolveFormula(o.hours, ref, rng);
           cp.untilTime = (ctx.now ?? 0) + h * 60;
           dureeTxt = t('op.frag.hours', { n: h, s: h > 1 ? 's' : '' });
         } else if (o.days != null) {
-          const d = Math.max(1, resolveFormula(o.days, ref, rng));
+          const d = resolveFormula(o.days, ref, rng);
           cp.untilTime = (ctx.now ?? 0) + d * 24 * 60;
           dureeTxt = t('op.frag.days', { n: d, s: d > 1 ? 's' : '' });
         }
@@ -2778,7 +2787,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          duration: durationFromOp(o, ctx, ref, rng, 1), // minimum de 1 Round : AA 07 l.113
+          duration: durationFromOp(o, ctx, ref, rng),
           passive: [sansDuree(o)],
         });
         lines.push(t('op.moveScale', { name: target.label, num: o.num, den: o.den, src: ctx.label ?? 'sort' }));
@@ -2798,7 +2807,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          duration: durationFromOp(o, ctx, ref, rng, 1), // minimum de 1 Round : AA 07 l.113
+          duration: durationFromOp(o, ctx, ref, rng),
           passive: [sansDuree(o)],
         });
         lines.push(t('op.maxWeaponHands', { name: target.label, hands: o.hands, src: ctx.label ?? 'sort' }));

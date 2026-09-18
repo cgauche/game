@@ -969,7 +969,7 @@ Modificateurs (extrait) : paie généreuse / capitaine compétent → **+2d10** 
 **Voir aussi :** [Orientation et phares (MDG)](#orientation-et-phares-mdg), [Maladies et provisions en mer (MDG)](#maladies-et-provisions-en-mer-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.273-302) → `doc`, `sealskinDR`, `mousse`, `exposureNight`, `genuineExposureFail`, `chirurgien`, `skillDRBonus`, `weeklyCrewWageBrass`, `buildExposureBand`, `crewTalentDR`, +14 — `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/schemas/defs/crew-roles.ts`, `src/data/trappings.json`, `src/engine/crewMorale.ts`, `src/engine/exposure.ts`, +7 fichiers
+- `MDG 14` (l.273-302) → `doc`, `sealskinDR`, `mousse`, `exposureNight`, `genuineExposureFail`, `chirurgien`, `weeklyCrewWageBrass`, `skillDRBonus`, `buildExposureBand`, `crewTalentDR`, +14 — `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/schemas/defs/crew-roles.ts`, `src/data/trappings.json`, `src/engine/crewMorale.ts`, `src/engine/exposure.ts`, +7 fichiers
 
 ---
 

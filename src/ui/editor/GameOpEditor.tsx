@@ -238,14 +238,17 @@ const OP_MENU_GROUPS: TypeMenuGroup[] = OP_GROUPS.map(([g, keys]) => ({
  *  (une règle-interrupteur ou un mode n'a pas de valeur à résoudre). Dérivée du registre, jamais listée. */
 const paramsDeRegle = memoParVersion('reglesOptionnelles', () => OPTIONAL_RULES.filter((r) => r.kind === 'param'));
 
-export type FormulaShape = 'lit' | 'bonus' | 'char' | 'dice' | 'rolled' | 'times' | 'regle' | 'dr';
+export type FormulaShape = 'lit' | 'bonus' | 'char' | 'dice' | 'rolled' | 'times' | 'regle' | 'dr' | 'minimum' | 'somme';
 export const shapeOf = (f: Formula | undefined): FormulaShape =>
-  typeof f === 'number' || f == null ? 'lit' : 'bonusOf' in f ? 'bonus' : 'charOf' in f ? 'char' : 'rolled' in f ? 'rolled' : 'times' in f ? 'times' : 'rule' in f ? 'regle' : 'sl' in f ? 'dr' : 'dice';
+  typeof f === 'number' || f == null ? 'lit' : 'minimum' in f ? 'minimum' : 'sum' in f ? 'somme' : 'bonusOf' in f ? 'bonus' : 'charOf' in f ? 'char' : 'rolled' in f ? 'rolled' : 'times' in f ? 'times' : 'rule' in f ? 'regle' : 'sl' in f ? 'dr' : 'dice';
 
 /** Formule par défaut d'une forme — utilisée au CHANGEMENT de forme. Préserve le littéral courant
  *  quand on bascule vers « Nombre » ; ne touche JAMAIS une formule dont la forme est déjà la bonne. */
 export function formulaForShape(s: FormulaShape, current: Formula | undefined): Formula {
   if (s === shapeOf(current)) return current as Formula; // déjà la bonne forme → inchangée (pas de clobber)
+  // QUITTER la borne basse rend la formule qu'elle enveloppait — symétrique de l'enveloppement
+  // ci-dessous : l'aller-retour Minimum → autre forme ne jette pas la quantité éditée.
+  if (current != null && typeof current === 'object' && 'minimum' in current) return formulaForShape(s, current.of);
   if (s === 'lit') return typeof current === 'number' ? current : 1;
   if (s === 'bonus') return { bonusOf: 'force' };
   if (s === 'char') return { charOf: 'force' };
@@ -253,6 +256,11 @@ export function formulaForShape(s: FormulaShape, current: Formula | undefined): 
   if (s === 'times') return { times: { of: { dice: { n: 1, sides: 10 } }, factor: 10 } }; // « 1d10 × 10 » (LDB 71)
   if (s === 'regle') return { rule: paramsDeRegle()[0]?.id ?? '' };
   if (s === 'dr') return { sl: true };
+  // Le minimum ENVELOPPE la formule courante (« 1d10 – (Bonus d'Endurance) Rounds (minimum de 1) »,
+  // AA 07 l.113) : la quantité éditée n'est pas perdue au changement de forme.
+  if (s === 'minimum') return { minimum: 1, of: current ?? { dice: { n: 1, sides: 10 } } };
+  // Une SOMME neuve part du terme courant + un second terme à éditer (« 1d10 + … », LDB 16 l.84).
+  if (s === 'somme') return { sum: [current ?? { dice: { n: 1, sides: 10 } }, 0] };
   return { dice: { n: 1, sides: 10 } };
 }
 
@@ -273,6 +281,7 @@ export function formulaSummary(f: Formula | undefined): string {
   if ('woundsDealt' in f) return 'PB infligés';
   if ('sl' in f) return 'DR';
   if ('rule' in f) return ruleDef(f.rule)?.label ?? f.rule;
+  if ('minimum' in f) return `${formulaSummary(f.of)} (min ${f.minimum})`;
   if ('sum' in f) return f.sum.map(formulaSummary).join(' + ');
   if ('times' in f) return `${formulaSummary(f.times.of)} × ${formulaSummary(f.times.factor)}`;
   return `${f.dice.n}d${f.dice.sides}${f.dice.plus ? `+${f.dice.plus}` : ''}`;
@@ -302,6 +311,8 @@ export function FormulaField({ label, value, onChange, min }: {
           <option value="rolled">Dé du jet (paliers)</option>
           <option value="regle">Règle optionnelle</option>
           <option value="dr">DR du Test</option>
+          <option value="minimum">Minimum</option>
+          <option value="somme">Somme de termes</option>
         </select>
         {shape === 'regle' && (
           <select aria-label="Règle optionnelle" value={typeof value === 'object' && value != null && 'rule' in value ? value.rule : ''}
@@ -338,6 +349,35 @@ export function FormulaField({ label, value, onChange, min }: {
             <FormulaField label="" value={value.times.of} onChange={(of) => onChange({ times: { of, factor: value.times.factor } })} />
             ×
             <FormulaField label="" value={value.times.factor} onChange={(factor) => onChange({ times: { of: value.times.of, factor } })} />
+          </span>
+        )}
+        {/* `minimum` = BORNE BASSE de la formule enveloppée (AA 07 l.113) : `of` s'édite par le MÊME
+            `FormulaField` (récursif), la borne est un entier ≥ 0 (`formulaSchema`). */}
+        {shape === 'minimum' && typeof value === 'object' && value != null && 'minimum' in value && (
+          <span className="fml-dice">
+            <NumberField variant="nu" label="minimum" title="minimum" min={0} value={value.minimum}
+              onChange={(minimum) => onChange({ minimum, of: value.of })} />
+            ≤
+            <FormulaField label="" value={value.of} min={min} onChange={(of) => onChange({ minimum: value.minimum, of })} />
+          </span>
+        )}
+        {/* `sum` = COMPOSITION de termes (« 1d10 + (pions − 1) », LDB 16 l.84) : chaque terme est un
+            `FormulaField` récursif, comme les deux facteurs de `times`. */}
+        {shape === 'somme' && typeof value === 'object' && value != null && 'sum' in value && (
+          <span className="fml-dice">
+            {/* Aucun `min` propagé à un TERME : une somme compose des termes NÉGATIFS
+                (« 1d10 – (Bonus d'Endurance) », AA 07 l.113) — la borne du champ parent est celle du TOTAL. */}
+            {value.sum.map((terme, i) => (
+              <span key={i} className="fml-dice">
+                {i > 0 && '+'}
+                <FormulaField label="" value={terme}
+                  onChange={(t) => onChange({ sum: value.sum.map((x, j) => (j === i ? t : x)) })} />
+                <button type="button" className="btn small danger" title="retirer ce terme" aria-label="retirer ce terme"
+                  onClick={() => onChange({ sum: value.sum.filter((_, j) => j !== i) })}>−</button>
+              </span>
+            ))}
+            <button type="button" className="btn small" title="ajouter un terme" aria-label="ajouter un terme"
+              onClick={() => onChange({ sum: [...value.sum, 0] })}>+</button>
           </span>
         )}
       </span>
@@ -697,8 +737,22 @@ const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'ap', 'testMod',
   'corruption', 'sinMod', 'corruptionExposure', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
   'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain', 'rollTable', 'rollMutation', 'armourPierce', 'light',
-  'fall', 'domeWard', 'offTerrainMod',
+  'fall', 'domeWard', 'offTerrainMod', 'moveScale', 'maxWeaponHands',
 ]);
+
+/** Durée PROPRE en Rounds d'une op qui en porte une (`durationFromOp`, engine/ops) : une `Formula`,
+ *  donc la borne basse d'une entrée (`{minimum, of}` — AA 07 l.113) s'y édite comme toute autre forme.
+ *  ABSENTE = la durée du CONTEXTE (`durationFromCtx`). SOURCE UNIQUE des ops à durée de Rounds SEULE
+ *  (`charMod`, `moveScale`, `maxWeaponHands`) ; `condition` a son propre bloc à TROIS échelles exclusives. */
+function DureeRoundsField({ value, onChange }: { value: Formula | undefined; onChange: (f: Formula | undefined) => void }) {
+  return (
+    <>
+      <label className="dr"><input type="checkbox" checked={value != null}
+        onChange={(e) => onChange(e.target.checked ? 1 : undefined)} /> dure N Rounds</label>
+      {value != null && <FormulaField label="Durée (Rounds)" value={value} min={0} onChange={onChange} />}
+    </>
+  );
+}
 
 /** Rangées d'une op `rollTable` (Vers de carie, MSRC 16 l.90) : `[min,max]` (source unique de fourchette,
  *  cf. `OutcomeBandsField`/`MutationRange`) → `ops` de la rangée, éditées par le MÊME `GameOpEditor`
@@ -920,7 +974,22 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
               {CHARS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}
             </select>
             <label className="dr">Modif.<NumberField variant="nu" label="Modificateur de caractéristique" value={o.mod} onChange={(mod) => upd({ mod })} /></label>
-            <label className="dr">Rounds<NumberField variant="nu" label="Durée en Rounds" min={1} placeholder="durée" vide value={typeof o.durationRounds === 'number' ? o.durationRounds : undefined} onChange={(n) => upd({ durationRounds: n ?? undefined })} /></label>
+            <DureeRoundsField value={o.durationRounds} onChange={(durationRounds) => upd({ durationRounds })} />
+          </>
+        )}
+        {/* Échelle de Mouvement et plafond de mains d'arme (Séquelles & mobilité) : même contrat de durée
+            que `charMod` (Rounds SEULS, sinon celle du contexte) — même champ, jamais une copie. */}
+        {op.op === 'moveScale' && (
+          <>
+            <label className="dr">Numérateur<NumberField variant="nu" label="Numérateur de l’échelle de Mouvement" min={0} value={o.num ?? 1} onChange={(num) => upd({ num })} /></label>
+            <label className="dr">Dénominateur<NumberField variant="nu" label="Dénominateur de l’échelle de Mouvement" min={1} value={o.den ?? 2} onChange={(den) => upd({ den })} /></label>
+            <DureeRoundsField value={o.durationRounds} onChange={(durationRounds) => upd({ durationRounds })} />
+          </>
+        )}
+        {op.op === 'maxWeaponHands' && (
+          <>
+            <label className="dr">Mains<NumberField variant="nu" label="Plafond de mains d’arme" min={1} value={o.hands ?? 1} onChange={(hands) => upd({ hands })} /></label>
+            <DureeRoundsField value={o.durationRounds} onChange={(durationRounds) => upd({ durationRounds })} />
           </>
         )}
         {op.op === 'skillMod' && (

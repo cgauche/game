@@ -59,7 +59,7 @@ seam (`ROLL_SEAM_CORE`) sont hors périmètre — leur pending EST le foyer.
 | Fichier | Sites | Nature | Lignes | Justification |
 |---|---|---|---|---|
 | `src/state/combatEffects.ts` | 1 | canonique | 990 | canonique : le corps d'`openSkillTest` (combatEffects.ts:326) — LA fabrique du `pendingTest` de la famille Flow authorée, le pending y est monté UNE fois pour tous ses appelants. |
-| `src/state/combatFlow.ts` | 2 | mixte | 3343, 7890 | 1 gate de main (`pendingHandGate`, `openAttackCascade`) monté à la main -> #1064 ; 1 `PendingReload` d'ennemi construit APRÈS un `rollSansPilote` déjà scellé — canonique : objet de RENDU (journal/popin), aucun jet à ouvrir. |
+| `src/state/combatFlow.ts` | 2 | mixte | 3343, 7892 | 1 gate de main (`pendingHandGate`, `openAttackCascade`) monté à la main -> #1064 ; 1 `PendingReload` d'ennemi construit APRÈS un `rollSansPilote` déjà scellé — canonique : objet de RENDU (journal/popin), aucun jet à ouvrir. |
 | `src/state/combatSlice.ts` | 5 | dette | 2026, 2072, 2181, 2646, 3059 | 2 `pendingReload` (pièce servie / poste de navire), 1 `pendingStateRecovery`, 1 `pendingHandGate` (2ᵉ main), 1 `pendingHeal` -> #1064 (le lot d'affichage les re-route ; 6 -> 5 : le `pendingTest` de `battleGainAdvantage` passe par `openSkillTest`). |
 | `src/state/interludeFlow.ts` | 1 | dette | 748 | `pendingActivity` du catalogue d'Activités (`openCatalogActivity`) — fabrique UNIQUE de toutes les Activités à jet d'interlude -> #1064. |
 | `src/state/massBattleFlow.ts` | 1 | dette | 348 | `openBattleActivity` — fabrique PARTAGÉE, atteinte par 6 call-sites (prep ×3/round ×2/resistance) -> #1067 (surfaçage massBattle). |
@@ -249,4 +249,4 @@ reste `ROLL_SEAM_PHASE2_STOCK`. 29 sites dans 14 fichiers.
 | `src/state/travelPostes.ts` | 1 |
 | `src/state/triggeredEffects.ts` | 1 |
 
-<!-- sources-empreinte: f938812e6a7943bd82ce64b83d997642078c6948 (2094 fichiers, 134 dossiers) corps: 26c9095519a9824aac66e9a53ac3bdd42b924d6e -->
+<!-- sources-empreinte: 5b309ee815d4b28085da9b7a2352024d60ddcdb0 (2094 fichiers, 134 dossiers) corps: e08667dd000c0cffbd933b10c547a9eefd3a08fc -->

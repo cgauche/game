@@ -456,7 +456,7 @@ export function durationClockMinutes(duration: SpellDuration | null | undefined,
   }
   if (duration.kind !== 'clock') return null;
   const UNIT = { minutes: 1, hours: 60, days: MINUTES_PER_DAY };
-  return Math.max(1, resolveFormula(duration.value, caster)) * UNIT[duration.unit];
+  return resolveFormula(duration.value, caster) * UNIT[duration.unit];
 }
 
 /**

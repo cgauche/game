@@ -5733,7 +5733,7 @@ export function applyCast(
     if (rebond && initiale.issue === 'appliquee') logLines.push(...jouerLeRebond(get, set, toucheInitiale));
     // Zone persistante d'un Projectile (Grands feux d'U'Zhul : « le feu continue de brûler
     // dans la Zone d'Effet pour la durée du Sort ») — posée autour de la cible touchée.
-    if (res.cast) placeSpellZone(get, caster, target, spell, missileSpec, slFor(target), durationMult, logLines);
+    if (res.cast) placeSpellZone(get, caster, target, spell, missileSpec, slFor(target), durationMult, durationBonusRounds, logLines);
     // Maladresse d'un Sort → Incantation Imparfaite Mineure ; sort focalisé dont
     // l'incantation échoue → Imparfaite Mineure également (Livre de base l.183).
     if (res.isFumble && !malevolentHandled) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery, domainId: spell.domainId ?? undefined }));
@@ -5840,7 +5840,7 @@ export function applyCast(
         }
       }
       // Zone persistante d'un sort de soutien/zone (Mur de feu : « Quiconque traverse… »).
-      if (res.cast) placeSpellZone(get, caster, target, spell, spec, slFor(target), durationMult, logLines);
+      if (res.cast) placeSpellZone(get, caster, target, spell, spec, slFor(target), durationMult, durationBonusRounds, logLines);
       // TÉLÉPORTATION (Jalon 2.6 — « vous vous téléportez de BFM mètres (+BFM par +2 DR) »,
       // LDB 47 p.245) : le choix de la case d'arrivée suit l'Appliquer (mode 'teleport',
       // cases = survol des obstacles, atterrissage libre — battleClickTile).
@@ -5946,8 +5946,9 @@ export function applyCast(
 
 /** Pose la ZONE PERSISTANTE d'un sort (op `zone` du Flow, on:'caster' — L11 Mur de feu : mur
  *  perpendiculaire à l'axe lanceur→cible centré sur la cible ; Grands feux : disque autour de la
- *  cible). Durée = celle du sort (`duration.kind==='rounds'` × Surincantation), formules résolues contre
- *  le LANCEUR. Effet IMPUR du Flow résolu ici (grille) ; hors combat : narratif. */
+ *  cible). Durée = celle du sort, surincantée à la SOURCE UNIQUE (`overcastDurationParts` : `base × mult
+ *  + bonus`, LDB 47 l.15), formules résolues contre le LANCEUR. Effet IMPUR du Flow résolu ici
+ *  (grille) ; hors combat : narratif. */
 function placeSpellZone(
   get: Get,
   caster: Combatant,
@@ -5956,12 +5957,13 @@ function placeSpellZone(
   _spec: unknown,
   sl: number,
   durationMult: number,
+  durationBonusRounds: number,
   logLines: string[],
 ): void {
   const pz = spellOps(spell.effects, 'caster').find((o): o is Extract<GameOp, { op: 'zone' }> => o.op === 'zone');
   if (!pz) return;
   const baseRounds = spell.duration?.kind === 'rounds' ? resolveFormula(spell.duration.value, caster, battleRng()) : 1;
-  const rounds = Math.max(1, baseRounds * Math.max(1, durationMult));
+  const rounds = baseRounds * durationMult + durationBonusRounds;
   // Rayon par défaut (si l'op n'a pas de `radiusMeters`) : dérivé de la `target` du sort (« Zone Diamètre
   // BFM m » → rayon BFM/2). Protection de Phâ : Zone centrée sur le lanceur (range self).
   placeZoneFromOp(get, caster, target, pz, spell.label, rounds, sl, (zdeDiameterMeters(spell.target, caster) ?? 4) / 2, logLines,
@@ -6029,7 +6031,7 @@ function scheduleRespawnFromOp(
   _get: Get, set: SetFn, actor: Combatant, op: Extract<GameOp, { op: 'scheduleRespawn' }>,
 ): string[] {
   if (!actor.pos) return [];
-  const days = Math.max(1, resolveFormula(op.delayDays, actor, battleRng()));
+  const days = resolveFormula(op.delayDays, actor, battleRng());
   const count = Math.max(1, resolveFormula(op.count ?? 1, actor, battleRng()));
   const ref = op.ref === 'self' ? (actor.creatureId ?? actor.label) : op.ref;
   const respawn: ScheduledRespawn = {

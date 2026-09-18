@@ -454,7 +454,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // n'existaient nulle part avant la migration du pilote (`psychology.json`), et `descRefSchema`
       // (`grammaire/valeurs.ts`) refuse toute autre graphie — il n'y a pas d'ancienne forme à
       // éteindre. Sans elles, `book` les rangeait sous `source` et `sum` sous `formule`.
-      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 39],
+      // Cliquet REMONTÉ 39 → 40 (#1797) : `formule | minimum,of` — la BORNE BASSE d'un terme de
+      // `Formula` (`{minimum, of}`, `formulaSchema`), où vit désormais le « minimum de 1 » des deux
+      // entrées « Choc au bras » (AA 07 l.113, LDB 18 l.88) que le moteur portait au site d'appel.
+      // Elle ne blanchit AUCUN étalement : la graphie naît avec le terme, et `minimum` ne nomme que
+      // lui (`atLeast`, lui, est déjà le seuil d'un palier et d'une Condition — il n'entre pas au noyau).
+      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 40],
       // Cliquet DESCENDU 671 → 670 (#1467 L1b V-P7) : le statbloc à `size` d'`arene-projet.json` quitte
       // ce stock — le profil embarqué s'ANNONCE (`type: 'statblock'`) et sa forme est déclarée champ par
       // champ (`defs-scenes/communs.ts`), donc sa signature n'est plus lue comme une référence non

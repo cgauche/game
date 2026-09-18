@@ -369,8 +369,9 @@ export const CONCEPTS: readonly Concept[] = [
     signatures: [
       { sig: 'sum', statut: 'cible' },
       { sig: 'sinPoints', statut: 'cible', note: 'terme « (Points de Péché) » — LDB 40 l.58/62/63/65/68/71/72/73/75/77' },
+      { sig: 'minimum,of', statut: 'cible', note: 'borne basse d’un terme — « (minimum de 1) », AA 07 l.113 / LDB 18 l.88' },
     ],
-    noyau: ['sum', 'sinPoints'],
+    noyau: ['sum', 'sinPoints', 'minimum'],
     noyauMin: 1,
   },
   {
