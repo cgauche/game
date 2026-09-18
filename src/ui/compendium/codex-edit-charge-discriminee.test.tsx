@@ -181,9 +181,10 @@ describe('cliquet — champs ÉTRANGERS présentés par les catégories éditabl
     // un bloc muet rendrait au builder de sols le choix de matière que ce lot lui retire.
     // #1789 : la mesure VOIT enfin `terrains` (cf. le CONTEXTE ci-dessus) et y lit trois clés de plus —
     // `ascii`, `absence`, `bordDuMonde` sont des RÔLES à porteur UNIQUE : l'atelier les offre sur les 25
-    // terrains quand le document n'en admet qu'un porteur. Même famille que `materials:vueDeDessus`.
+    // terrains quand le document n'en admet qu'un porteur. Même famille que `materials:vueDeDessus` —
+    // #1795 (la charge par RÔLE à porteur unique).
     terrains: ['ascii', 'bordDuMonde', 'solidHeightM', 'matiere', 'absence'],
-    materials: ['vueDeDessus'], // rôle à porteur UNIQUE : exactement une matière est le « plan vu du dessus »
+    materials: ['vueDeDessus'], // rôle à porteur UNIQUE : exactement une matière est le « plan vu du dessus » (#1795)
   };
 
   it('le stock des catégories qui présentent un champ étranger est celui déclaré, et il DÉCROÎT', () => {

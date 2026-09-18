@@ -171,10 +171,14 @@ export function fillTerrainRect(scene: Scene, rect: Rect, terrain: Terrain, z = 
 
 /**
  * REDIMENSIONNE la grille : chaque couche est re-tissée à la nouvelle taille, tuiles, hauteurs
- * métriques ET crénelure recopiées dans la zone COMMUNE (le reste reçoit le sol de départ,
- * `DEFAULT_TERRAIN`) — les TROIS tableaux par case suivent l'index aplati `y·w+x`, et un merlon hors
- * de la nouvelle grille disparaît avec sa case. `height` comme `crenellated` ne sont conservés que
- * s'ils portent une valeur (≠ 0 pour l'un, non nulle pour l'autre).
+ * métriques ET crénelure recopiées dans la zone COMMUNE — les TROIS tableaux par case suivent
+ * l'index aplati `y·w+x`, et un merlon hors de la nouvelle grille disparaît avec sa case. `height`
+ * comme `crenellated` ne sont conservés que s'ils portent une valeur (≠ 0 pour l'un, non nulle pour
+ * l'autre).
+ *
+ * La SEMENCE des cases neuves est celle de la naissance d'une couche (`addLayer`, `buildScene`) : la
+ * base (`z === 0`) reçoit le sol de départ `DEFAULT_TERRAIN`, un étage naît ABSENT
+ * (`terrainAbsent`) — agrandir une grille ne BÂTIT pas un plancher en surplomb.
  *
  * La pose passe par `putLayer`, jamais par une reconstruction directe de `layers` : le CARDINAL de la
  * grille (#1789) est gardé là et nulle part ailleurs. Les nouvelles dimensions sont posées D'ABORD,
@@ -182,7 +186,8 @@ export function fillTerrainRect(scene: Scene, rect: Rect, terrain: Terrain, z = 
  */
 export function resizeGrid(scene: Scene, w: number, h: number): Scene {
   return scene.layers.reduce<Scene>((s, layer) => {
-    const tiles = new Array(w * h).fill(DEFAULT_TERRAIN) as Terrain[];
+    const semence: Terrain = layer.z === 0 ? DEFAULT_TERRAIN : terrainAbsent();
+    const tiles = new Array(w * h).fill(semence) as Terrain[];
     const height = new Array(w * h).fill(0) as number[];
     const crenellated = new Array(w * h).fill(null) as (string | null)[];
     let hasHeight = false;

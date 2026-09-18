@@ -9,6 +9,7 @@ export interface Finding {
 }
 
 export function extractComments(src: string): Comment[];
+export function codeSeul(src: string): string;
 export function matchLine(comment: Comment, matchIndex: number): number;
 export function excerptAt(comment: Comment, matchIndex: number): string;
 

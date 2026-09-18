@@ -100,6 +100,22 @@ export function terrainHorsGrille(): Terrain {
 }
 
 /**
+ * TERRAINS ÉLECTIFS (#1789) — ceux qu'un AUTEUR peut élire comme terrain de référence d'une op
+ * (`offTerrainMod` : « la créature se meut dans un élément que le marcheur ne foule pas »). Un porteur
+ * de RÔLE n'en est pas : l'absence de tuile n'est pas un élément où l'on nage, et le bord du monde
+ * n'est pas un lieu. Le filtre se dérive des DRAPEAUX du dataset, jamais d'une liste d'ids récitée :
+ * un rôle déposé demain sur une autre entrée la retire de la palette le jour même.
+ */
+const electifsVifs = memoParVersion('terrains', () =>
+  terrains.filter((t) => t.absence !== true && t.bordDuMonde !== true),
+);
+
+/** Les terrains ÉLECTIBLES par un auteur — le dataset MOINS les porteurs de rôle, ordre authoré. */
+export function terrainsElectifs(): readonly TerrainDef[] {
+  return electifsVifs();
+}
+
+/**
  * GLYPHE D'AUTHORING (#1789) — le caractère qui pose ce terrain dans une carte ASCII. C'est une
  * DONNÉE de l'entrée (`terrains.json › ascii`, unique et hors grammaire du plan, tenu au parse) : la
  * légende de base d'un plan se DÉRIVE du dataset au lieu d'être récitée par le lecteur, et un terrain

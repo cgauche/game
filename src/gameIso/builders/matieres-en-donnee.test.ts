@@ -2,11 +2,23 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, it, expect } from 'vitest';
 import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
+import { codeSeul as sansCommentaires } from '../../../scripts/guards/lib/commentPoison.mjs';
 import { materials, semencesDeScene, terrains } from '../../data';
 
 /**
- * GARDE DÉRIVÉE (#1691, élargie #1715, #1716) — aucune couche ÉMETTRICE du monde ne NOMME une
- * matière, ni le SOL qu'une scène neuve reçoit (second bras, #1716).
+ * GARDE DÉRIVÉE (#1691, élargie #1715, #1716, #1789) — aucune couche ÉMETTRICE du monde ne NOMME une
+ * matière, ni un TERRAIN : ni le SOL qu'une scène neuve reçoit (semence, #1716), ni un id de
+ * `terrains.json` en littéral (#1716, #1789).
+ *
+ * Les DEUX BRAS scannent le MÊME périmètre — les cinq couches ci-dessous, même corpus (`fichiers`,
+ * une seule marche d'arbre) — et se neutralisent par la MÊME forme : `NEUTRALISEURS` pour les
+ * matières, `NEUTRALISEURS_TERRAIN` pour les sols, chacun NOMMÉ, chacun tenu par un test de vie qui
+ * le rend ROUGE dès qu'aucun site du périmètre ne l'exerce plus — au grain du CHAMP, une entrée par
+ * champ (`neutraliseursDeChamp`), pour qu'un homonyme qui meurt rougisse SEUL. Un homonyme se
+ * neutralise par le NOM DU CHAMP (`kind:`, `key:`, `cargoId:`, `weather:`, `part:`, `scope:`), par le
+ * VOCABULAIRE d'union déclaré dans le fichier, par une UNION de littéraux ÉCRITE EN PLACE (paramètre,
+ * champ) ou par une SEMENCE d'authoring GELÉE (`as const satisfies Fige<…Defaults>`) — jamais par un
+ * nom de fichier, jamais par un site toléré.
  *
  * Le relief était le dernier domaine de `MaterialRef` dont l'id était choisi EN CODE
  * (`floors.ts` : `'pilier'`, `'pierre'`, `'terre'`) ; il vient de la donnée comme les autres — la
@@ -52,6 +64,9 @@ const baseDe = (c: (typeof COUCHES)[number]) => `src/${c.prefixe}${c.dir === '.'
 /** Le STORE seul (la couche `src/state`, sans préfixe) : les autres couches portent le leur. */
 const duStore = (rel: string) => !/^(gameIso|ui)\//.test(rel);
 
+/** Le chemin que le RAPPORT porte, depuis `src/` : le store est la seule couche sans préfixe. */
+const chemin = (rel: string) => (duStore(rel) ? `state/${rel}` : rel);
+
 /**
  * Les SIGNAUX STRUCTURELS du store, chacun neutralisé par `codeSeul` — aucun nom de fichier,
  * aucune ligne : c'est la FORME qui dit qu'un littéral n'est pas une émission de matière.
@@ -88,12 +103,13 @@ function fichiersDuPerimetre(): { rel: string; code: string }[] {
 }
 
 /** Le code SANS ses commentaires, lignes préservées — mesure COMMUNE aux deux bras (matières et
- *  semence de terrain) : une réf en prose n'est jamais une émission, quel que soit le vocabulaire. */
+ *  semence de terrain) : une réf en prose n'est jamais une émission, quel que soit le vocabulaire.
+ *  La coupe vient de la primitive de garde (`codeSeul`, `scripts/guards/lib/commentPoison.mjs`), qui
+ *  balaie les CHAÎNES et les littéraux de regex avant de blanchir un span de commentaire : un `//`
+ *  à l'intérieur d'une chaîne (`'http://x'`) ne tronque pas la ligne, et la mesure des littéraux qui
+ *  suivent reste faite. */
 function codeNu(src: string): string[] {
-  return src
-    .replace(/\/\*[\s\S]*?\*\//g, (bloc) => bloc.replace(/[^\n]/g, ' '))
-    .split('\n')
-    .map((l) => (l.indexOf('//') >= 0 ? l.slice(0, l.indexOf('//')) : l));
+  return sansCommentaires(src).split('\n');
 }
 
 /** Un littéral de chaîne VIDÉ, ses bornes gardées : une neutralisation ne déplace aucune colonne. */
@@ -121,18 +137,35 @@ const champHorsMatiere = (champs: string) => {
 type Neutraliseur = { nom: string; applique: (code: string, onglets: Set<string>) => string };
 
 /**
+ * UNE entrée de neutraliseur PAR CHAMP, produite depuis le VOCABULAIRE de chaque champ : le contrat
+ * de vie se juge alors au grain du champ, et un homonyme que plus aucun site n'exerce rougit SEUL.
+ * Groupés, quatre champs partageaient un verdict — trois morts passaient sous le vivant.
+ */
+const neutraliseursDeChamp = (vocabulaires: Record<string, string>): Neutraliseur[] =>
+  Object.entries(vocabulaires).map(([champ, vocabulaire]) => ({
+    nom: `champ \`${champ}\` (${vocabulaire})`,
+    applique: champHorsMatiere(champ),
+  }));
+
+/**
  * Les NEUTRALISEURS de ligne, chacun NOMMÉ — la table EST le contrat : un neutraliseur que plus
  * aucun site du périmètre n'exerce est une exemption morte, et le test de vie le rend ROUGE.
- *  - `part`/`scope` : une PARTIE de face, la PORTÉE d'un avertissement de validation ;
- *  - `key`/`kind` : une CLÉ d'IU (onglet, sélection) ;
+ *  - UNE entrée par CHAMP (`neutraliseursDeChamp`), son libellé portant le VOCABULAIRE du champ :
+ *    `part` partie de face, `scope` portée d'un avertissement de validation, `key` clé de récap /
+ *    d'IU — chacun a un homonyme au dataset des matières. `kind` (type de sélection d'un éditeur) n'y
+ *    figure PAS : aucun `kind:` du périmètre ne porte d'homonyme de MATIÈRE (il n'en porte qu'au
+ *    registre des TERRAINS, où le bras terrain le tient) — groupé à `key`, il passait pour vivant ;
  *  - l'UNION de littéraux d'un type : la DÉCLARATION d'un vocabulaire d'état, pas une émission ;
  *  - la comparaison d'un ÉTAT D'ONGLET à une clé déclarée dans le même fichier : le signal est la
  *    GAUCHE de la comparaison (un identifiant d'onglet, `…Tab`), jamais le fichier — `m.material ===
  *    'plan'` reste une émission dans un fichier qui déclare `key: 'plan'` ailleurs.
  */
 const NEUTRALISEURS: readonly Neutraliseur[] = [
-  { nom: 'champ `part`/`scope` (partie de face, portée d’un avertissement)', applique: champHorsMatiere('part|scope') },
-  { nom: 'champ `key`/`kind` (clé d’IU)', applique: champHorsMatiere('key|kind') },
+  ...neutraliseursDeChamp({
+    part: 'partie de face',
+    scope: 'portée d’un avertissement',
+    key: 'clé de récap / d’IU',
+  }),
   { nom: 'UNION de littéraux d’un type', applique: (code) => code.replace(UNION_DE_LITTERAUX, litteraux) },
   {
     nom: 'comparaison d’un état d’ONGLET à une clé déclarée',
@@ -157,13 +190,11 @@ const NEUTRALISEURS: readonly Neutraliseur[] = [
  */
 function codeSeul(src: string, sauf?: string): string {
   const onglets = clesDOnglet(src);
-  return src
-    .replace(/\/\*[\s\S]*?\*\//g, (bloc) => bloc.replace(/[^\n]/g, ' '))
+  return sansCommentaires(src)
     .replace(SEMENCE_DECL, (bloc) => litteraux(bloc))
     .split('\n')
     .map((l) => {
-      const i = l.indexOf('//');
-      let code = i >= 0 ? l.slice(0, i) : l;
+      let code = l;
       for (const n of NEUTRALISEURS) if (n.nom !== sauf) code = n.applique(code, onglets);
       return LIGNE_STRUCTURELLE.test(code) ? litteraux(code) : code;
     })
@@ -212,15 +243,17 @@ const vocabulaireDUnion = (src: string): Set<string> => {
 
 /**
  * Les NEUTRALISEURS du bras TERRAIN, chacun NOMMÉ — même contrat que `NEUTRALISEURS` : un neutraliseur
- * que plus aucun site de `src/state` n'exerce est une exemption morte, et le test de vie le rend ROUGE.
+ * que plus aucun site du PÉRIMÈTRE n'exerce est une exemption morte, et le test de vie le rend ROUGE.
  * Aucun nom de fichier, aucune ligne : c'est la FORME qui dit qu'un littéral n'est pas un id de sol.
  *  - le VOCABULAIRE D'UNION déclaré dans le fichier (capacité d'arête, résultat de dépilage…) ;
  *  - une UNION de littéraux ÉCRITE EN PLACE (paramètre, champ) qui porte AU MOINS un membre hors du
  *    registre des sols : elle DÉCLARE un vocabulaire propre, elle n'émet pas. Une union dont TOUS les
  *    membres sont des ids de terrain est une LISTE RÉCITÉE — même clause qu'au répertoire
  *    `vocabulaireDUnion`, et la ligne reste comptée ;
- *  - un CHAMP dont le vocabulaire n'est pas celui des sols — `key` (clé de récap), `cargoId`
- *    (cargaison, `bois`), `weather` (météo, `neige`) : chacun a un homonyme au registre des terrains ;
+ *  - UNE entrée par CHAMP dont le vocabulaire n'est pas celui des sols (`neutraliseursDeChamp`, la
+ *    même fabrique que le bras des matières) — `key` (clé de récap / d'IU), `kind` (type de
+ *    SÉLECTION d'un éditeur, `route`), `cargoId` (cargaison, `bois`), `weather` (météo, `neige`) :
+ *    chacun a un homonyme au registre des terrains, et chacun rougit SEUL quand son site meurt ;
  *  - la SEMENCE d'authoring GELÉE (`as const satisfies Fige<…Defaults>`) des migrations de projet.
  */
 const NEUTRALISEURS_TERRAIN: readonly { nom: string; portee: 'ligne' | 'bloc'; applique: (code: string, mots: Set<string>) => string }[] = [
@@ -236,11 +269,16 @@ const NEUTRALISEURS_TERRAIN: readonly { nom: string; portee: 'ligne' | 'bloc'; a
     applique: (code) =>
       code.replace(UNION_DE_LITTERAUX, (union) => (membresSontTousDesTerrains(union) ? union : litteraux(union))),
   },
-  { nom: 'champ `key`/`cargoId`/`weather` (vocabulaire hors sols)', portee: 'ligne', applique: champHorsMatiere('key|cargoId|weather') },
+  ...neutraliseursDeChamp({
+    key: 'clé de récap / d’IU',
+    kind: 'type de sélection d’un éditeur',
+    cargoId: 'cargaison',
+    weather: 'météo',
+  }).map((n) => ({ ...n, portee: 'ligne' as const })),
   { nom: 'SEMENCE d’authoring GELÉE d’une migration', portee: 'bloc', applique: (code) => code.replace(SEMENCE_DECL, (bloc) => litteraux(bloc)) },
 ];
 
-/** Le code du store SANS ses commentaires ni ses homonymes de terrain, lignes préservées. `sauf` en
+/** Le code d'une couche SANS ses commentaires ni ses homonymes de terrain, lignes préservées. `sauf` en
  *  retire UN neutraliseur — c'est ainsi que le test de vie mesure ce que chacun blanchit RÉELLEMENT.
  *  Un neutraliseur de portée `bloc` s'applique au TEXTE entier (la semence gelée tient sur 3 lignes). */
 function codeHorsTerrain(src: string, sauf?: string): string {
@@ -257,7 +295,7 @@ function codeHorsTerrain(src: string, sauf?: string): string {
     .join('\n');
 }
 
-describe('couches émettrices du monde — aucune matière ni semence de terrain nommée en dur (#1691, #1715, #1716)', () => {
+describe('couches émettrices du monde — aucune matière ni aucun terrain nommé en dur (#1691, #1715, #1716, #1789)', () => {
   const fichiers = fichiersDuPerimetre();
 
   it('le scan couvre les CINQ couches émettrices (sanity)', () => {
@@ -346,49 +384,53 @@ describe('couches émettrices du monde — aucune matière ni semence de terrain
    * Vocabulaire DÉRIVÉ, comme les deux autres : la liste cherchée est `terrains.json › id` ENTIÈRE —
    * un terrain déposé demain au Codex est gardé le jour même, sans une ligne ici. La moitié
    * « matière » de la clause est tenue par le bras des ids de `materials.json` ci-dessous, qui scanne
-   * `src/state` entier.
+   * le même périmètre.
    *
-   * Les HOMONYMES du store (`porte` capacité d’arête, `vide` résultat de dépilage, `neige` météo,
-   * `bois` cargaison, `route` clé de récap) sont neutralisés par FORME (`NEUTRALISEURS_TERRAIN`) :
-   * vocabulaire d’union déclaré dans le fichier, union écrite en place, nom de champ, semence gelée.
-   * AUCUN site toléré, aucune liste d’exemption, aucun nom de fichier : le stock mesuré est vide.
+   * Les HOMONYMES (`porte` capacité d’arête, `vide` résultat de dépilage, `neige` météo, `bois`
+   * cargaison, `route` clé de récap et type de SÉLECTION d’éditeur) sont neutralisés par FORME
+   * (`NEUTRALISEURS_TERRAIN`) : vocabulaire d’union déclaré dans le fichier, union écrite en place,
+   * nom de champ, semence gelée. AUCUN site toléré, aucune liste d’exemption, aucun nom de fichier :
+   * le stock mesuré est vide.
    *
-   * Périmètre `src/state/scene.ts`, ÉTENDU à `src/state` entier au train C (#1789).
+   * Périmètre : les MÊMES CINQ couches que le bras des matières (#1789), même corpus `fichiers`.
    */
-  it('`src/state` ne porte plus aucun id de terrain en littéral (#1716, périmètre entier #1789)', () => {
+  it('aucune des CINQ couches émettrices ne porte un id de terrain en littéral (#1716, #1789)', () => {
     const ids = terrains.map((t) => t.id);
     expect(ids.length, 'vocabulaire de terrains VIDE : la garde mesurerait le néant.').toBeGreaterThan(0);
     const fautes: string[] = [];
-    for (const f of fichiers.filter((x) => duStore(x.rel))) {
+    for (const f of fichiers) {
       codeHorsTerrain(f.code).split('\n').forEach((l, i) => {
-        for (const id of ids) if (citeId(id).test(l)) fautes.push(`state/${f.rel}:${i + 1} — « ${id} »`);
+        for (const id of ids) if (citeId(id).test(l)) fautes.push(`${chemin(f.rel)}:${i + 1} — « ${id} »`);
       });
     }
     expect(
       fautes,
-      'le store NOMME un terrain : le porteur d’un rôle se demande au dataset ' +
+      'une couche émettrice NOMME un terrain : le porteur d’un rôle se demande au dataset ' +
         '(`terrainAbsent`/`terrainHorsGrille`, `state/terrain`), une semence vient de ' +
         '`semences-de-scene.json` et un défaut de compilateur de `defauts-de-compilation.json` — ' +
-        'jamais d’un littéral.\n  ' +
+        'jamais d’un littéral. En couche de RENDU ou d’IU, le terrain se LIT sur la tuile ou sur le ' +
+        '`MaterialRef` reçu, se DÉRIVE de `terrains` / `terrainsAvecGlyphe`, ou se demande au dataset ' +
+        'PAR RÔLE — jamais choisi en code.\n  ' +
         fautes.join('\n  '),
     ).toEqual([]);
   });
 
   /**
-   * CONTRAT DE VIE des neutraliseurs du bras TERRAIN — même mesure que pour les matières : on rejoue
-   * le scan du store en retirant UN neutraliseur, et la différence d'ids comptés est ce qu'il porte.
+   * CONTRAT DE VIE des neutraliseurs du bras TERRAIN — même mesure que pour les matières, sur le MÊME
+   * périmètre : on rejoue le scan des cinq couches en retirant UN neutraliseur, et la différence d'ids
+   * comptés est ce qu'il porte.
    */
-  it('chaque neutraliseur du bras TERRAIN est exercé par un site de `src/state` (aucune exemption morte)', () => {
+  it('chaque neutraliseur du bras TERRAIN est exercé par un site du périmètre (aucune exemption morte)', () => {
     const ids = terrains.map((t) => t.id);
     const cite = (l: string) => ids.some((id) => citeId(id).test(l));
     for (const n of NEUTRALISEURS_TERRAIN) {
-      const exerce = fichiers.filter((f) => duStore(f.rel)).some((f) => {
+      const exerce = fichiers.some((f) => {
         const avec = codeHorsTerrain(f.code).split('\n');
         return codeHorsTerrain(f.code, n.nom)
           .split('\n')
           .some((l, i) => cite(l) && !cite(avec[i]));
       });
-      expect(exerce, `neutraliseur mort : « ${n.nom} » ne blanchit plus aucun site de \`src/state\` — re-trier l’exemption.`).toBe(true);
+      expect(exerce, `neutraliseur mort : « ${n.nom} » ne blanchit plus aucun site du périmètre — re-trier l’exemption.`).toBe(true);
     }
   });
 
@@ -417,10 +459,30 @@ describe('couches émettrices du monde — aucune matière ni semence de terrain
     ).toBe(0);
   });
 
+  /**
+   * SONDE de la COUPE des commentaires (#1789) — elle balaie les CHAÎNES : un `//` à l'intérieur d'un
+   * littéral (`'http://x'`) n'est pas un début de commentaire. Une coupe naïve à `indexOf('//')`
+   * tronquerait la ligne AVANT la mesure et rendrait AVEUGLE tout ce qui suit l'URL sur cette ligne :
+   * angle mort des DEUX bras, puisque `codeNu` est leur mesure commune. Vocabulaire tiré du dataset.
+   */
+  it('la coupe des commentaires préserve les CHAÎNES : un `//` dans un littéral n’aveugle pas la ligne', () => {
+    const [sol] = terrains.map((t) => t.id);
+    const compte = (src: string) =>
+      codeHorsTerrain(src)
+        .split('\n')
+        .filter((l) => citeId(sol).test(l)).length;
+    expect(compte(`const u = 'http://x'; // '${sol}'`), 'un id CITÉ EN COMMENTAIRE est une réf en prose, jamais une émission.').toBe(0);
+    expect(compte(`const t = '${sol}'; // ok`), 'un id émis en CODE reste compté, commentaire ou pas.').toBe(1);
+    expect(
+      compte(`const a = 'http://x', b = '${sol}';`),
+      'littéral APRÈS une URL sur la même ligne : une coupe naïve à `//` tronquerait avant la mesure et l’émission passerait.',
+    ).toBe(1);
+  });
+
   it('la neutralisation est STRUCTURELLE : une COMPARAISON de partie n’est pas une émission de matière', () => {
-    const chemin = `${GAMEISO}authoring/floorsSvg.ts`;
-    expect(existsSync(chemin), 'le site témoin de la comparaison de partie a disparu — reformuler la garde.').toBe(true);
-    const brut = readFileSync(chemin, 'utf8');
+    const fichierTemoin = `${GAMEISO}authoring/floorsSvg.ts`;
+    expect(existsSync(fichierTemoin), 'le site témoin de la comparaison de partie a disparu — reformuler la garde.').toBe(true);
+    const brut = readFileSync(fichierTemoin, 'utf8');
     const partie = materials.find((m) => brut.includes(`part === '${m.id}'`) || brut.includes(`part !== '${m.id}'`));
     expect(partie, 'plus aucune comparaison `part === <homonyme d’une matière>` : le cas n’est plus exercé.').toBeDefined();
     expect(new RegExp(`'${partie!.id}'`).test(codeSeul(brut)), `« ${partie!.id} » compté comme matière alors que c’est une PARTIE.`).toBe(false);

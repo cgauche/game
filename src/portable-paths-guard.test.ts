@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';
-// @ts-expect-error - lib de garde ESM JS (pas de types)
 import { codeSeul } from '../scripts/guards/lib/commentPoison.mjs';
 
 /**

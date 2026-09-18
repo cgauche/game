@@ -19,7 +19,7 @@ import type { Condition } from '../../engine/flowCore';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
 import { etats, talentConcrete, qualityRefLabel, refLabel, findCrewTestTypeById, charAbr, effectTables, mutationTables, conditionLabel, lightTones, memoParVersion } from '../../data';
 import { findFallTable, fallTables } from '../../data/shipCriticals';
-import { tousLesTerrains } from '../../state/terrain';
+import { terrainLabel, terrainsElectifs } from '../../state/terrain';
 import { RefField } from '../compendium/RefField';
 import type { DatasetKey } from '../../data/overrides';
 import { giveTrappingLabel } from '../../engine/items';
@@ -388,13 +388,13 @@ export function ResolveWindowField({ value, onChange }: {
 
 /**
  * Terrain d'ÉLECTION proposé par défaut à une op `offTerrainMod` : le PREMIER terrain non franchissable
- * à pied du registre (`terrains.json › walkable`), dans l'ordre authoré. Un défaut d'éditeur se DÉRIVE
- * de la donnée — le sens de l'op est « la créature se meut dans un élément que le marcheur ne foule
- * pas » ; l'auteur choisit ensuite. `terrains.json` en porte toujours au moins un (l'absence de tuile).
+ * à pied parmi les ÉLECTIFS (`state/terrain › terrainsElectifs`), dans l'ordre authoré. Un défaut
+ * d'éditeur se DÉRIVE de la donnée — le sens de l'op est « la créature se meut dans un élément que le
+ * marcheur ne foule pas » ; l'auteur choisit ensuite dans la MÊME liste que celle du `<select>`.
  */
 function terrainDElectionParDefaut(): string {
-  const t = tousLesTerrains().find((x) => !x.walkable);
-  if (!t) throw new Error('`terrains.json` ne porte aucun terrain non franchissable : `offTerrainMod` n’a plus de défaut dérivable.');
+  const t = terrainsElectifs().find((x) => !x.walkable);
+  if (!t) throw new Error('`terrains.json` ne porte aucun terrain électif non franchissable : `offTerrainMod` n’a plus de défaut dérivable.');
   return t.id;
 }
 
@@ -608,7 +608,9 @@ export function opSummary(o: GameOp): string {
     case 'crewTestMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} (Tests d’équipage)`;
     case 'fall': return `hauteur lue dans « ${findFallTable(o.hauteur.table.id)?.label ?? (o.hauteur.table.id || '— table à choisir —')} »`;
     case 'moveMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
-    case 'offTerrainMod': return `hors ${o.terrain}${o.mSet != null ? ` : M ${o.mSet}` : ''}${o.testDR ? `, ${o.testDR} DR aux Tests` : ''}`;
+    // Le résumé est de l'AFFICHAGE : le terrain s'y lit à son LIBELLÉ (`terrains.json › label`), l'id nu
+    // ne restant que pour un id absent du registre — l'auteur doit VOIR ce qu'il a élu.
+    case 'offTerrainMod': return `hors ${terrainLabel(o.terrain) ?? o.terrain}${o.mSet != null ? ` : M ${o.mSet}` : ''}${o.testDR ? `, ${o.testDR} DR aux Tests` : ''}${o.suffocates ? ', suffoque' : ''}`;
     case 'attrMod': return `+${formulaSummary(o.mod)} ${({ wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination', fate: 'Destin', resilience: 'Résilience' } as const)[o.attr]}`;
     case 'ap': return `${typeof o.amount === 'number' && o.amount < 0 ? '' : '+'}${formulaSummary(o.amount)} PA${o.loc ? ` (${o.loc})` : ''}`;
     case 'testMod': return `${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests${o.char ? ` de ${CHAR_LABELS[o.char] ?? o.char}` : ''}`;
@@ -695,7 +697,7 @@ const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'ap', 'testMod',
   'corruption', 'sinMod', 'corruptionExposure', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
   'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain', 'rollTable', 'rollMutation', 'armourPierce', 'light',
-  'fall', 'domeWard',
+  'fall', 'domeWard', 'offTerrainMod',
 ]);
 
 /** Rangées d'une op `rollTable` (Vers de carie, MSRC 16 l.90) : `[min,max]` (source unique de fourchette,
@@ -729,9 +731,19 @@ function RollTableRowsField({ rows, onChange }: { rows: { min: number; max: numb
   );
 }
 
+/** Un objet de payload SANS ses clés vides — la même loi que le filtre d'`upd`, applicable à un
+ *  SOUS-objet que `upd` ne balaie pas (il ne voit que le premier niveau). */
+function sansClesVides<T extends object>(o: T): T {
+  return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T;
+}
+
 function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void }) {
   const o = op as any;
-  const upd = (patch: any) => onChange({ ...o, ...patch });
+  // Le payload d'une op est STRICT : un champ VIDÉ ôte sa clé, jamais une clé à `undefined` (une option
+  // absente n'est pas une option indéfinie — `'clé' in op` reste le test d'existence, ici comme au moteur).
+  // Le filtre ne balaie que le PREMIER niveau du payload : un patch qui écrit un SOUS-objet (`valuePerSL`…)
+  // passe par `sansClesVides`, qui y applique la même loi.
+  const upd = (patch: any) => onChange(sansClesVides({ ...o, ...patch }) as GameOp);
   return (
     <div className="eff-body">
       <TypeMenu
@@ -849,7 +861,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
                   <>
                     <label className="dr">tous les<NumberField variant="nu" label="Palier en Degrés de Réussite" title="DR" min={1} value={o.valuePerSL.every ?? 1} onChange={(every) => upd({ valuePerSL: { ...o.valuePerSL, every } })} /> DR</label>
                     <label className="dr">+<NumberField variant="nu" label="quantité par palier" title="quantité par palier" value={o.valuePerSL.amount ?? 1} onChange={(amount) => upd({ valuePerSL: { ...o.valuePerSL, amount } })} /></label>
-                    <label className="dr"><input type="checkbox" checked={!!o.valuePerSL.onFailure} onChange={(e) => upd({ valuePerSL: { ...o.valuePerSL, onFailure: e.target.checked || undefined } })} /> sur l'échec (niveau d'échec)</label>
+                    <label className="dr"><input type="checkbox" checked={!!o.valuePerSL.onFailure} onChange={(e) => upd({ valuePerSL: sansClesVides({ ...o.valuePerSL, onFailure: e.target.checked || undefined }) })} /> sur l'échec (niveau d'échec)</label>
                   </>
                 )}
                 {/* Se libérer (LDB 16 l.66 / Filets, Zoo Impérial p.29) — escapeStrength (Test opposé) et
@@ -926,6 +938,28 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'moveMod' && (
           <label className="dr">Mouvement (±)<NumberField variant="nu" label="Modificateur de Mouvement" value={o.mod ?? 0} onChange={(mod) => upd({ mod })} /></label>
+        )}
+        {/* Le terrain d'élection est une RÉF au registre (`terrains.json`) : il s'élit dans la liste, jamais
+            au clavier. `value` porte l'id, le texte porte le libellé FR ; l'ordre est celui du registre,
+            RESTREINT aux terrains électifs — un porteur de rôle (absence, bord du monde) n'est pas un lieu
+            dont on puisse sortir. `mSet`/`testDR` sont OPTIONNELS au payload : vider le champ ÔTE la clé. */}
+        {op.op === 'offTerrainMod' && (
+          <>
+            <label className="dr">Terrain d’élection
+              <select aria-label="Terrain d’élection" value={o.terrain ?? ''} onChange={(e) => upd({ terrain: e.target.value })}>
+                {terrainsElectifs().map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+              </select>
+            </label>
+            <label className="dr">M imposé
+              <NumberField variant="nu" label="Mouvement imposé hors du terrain d’élection" min={0} placeholder="—" vide
+                value={typeof o.mSet === 'number' ? o.mSet : undefined} onChange={(n) => upd({ mSet: n ?? undefined })} />
+            </label>
+            <label className="dr">DR aux Tests (±)
+              <NumberField variant="nu" label="Modificateur de Degrés de Réussite aux Tests" placeholder="—" vide
+                value={typeof o.testDR === 'number' ? o.testDR : undefined} onChange={(n) => upd({ testDR: n ?? undefined })} />
+            </label>
+            <label className="dr"><input type="checkbox" checked={!!o.suffocates} onChange={(e) => upd({ suffocates: e.target.checked || undefined })} /> suffoque hors de son terrain</label>
+          </>
         )}
         {op.op === 'grantTrait' && (
           <>

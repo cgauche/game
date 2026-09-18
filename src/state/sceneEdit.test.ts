@@ -25,6 +25,7 @@ import {
 } from './sceneEdit';
 import { PARTY_MAX } from './combatants';
 import { validateScene } from './validateScene';
+import { estAbsent, terrainAbsent } from './terrain';
 import { perimeterWallSegs } from './sceneEdit.testkit';
 import { stairFlightCells } from './planDefects';
 import { parseProject } from './worldMap';
@@ -863,7 +864,7 @@ describe('putLayer — une couche posée porte EXACTEMENT `w×h` entrées', () =
    * `tileAt` — une couche courte ferait LEVER `putLayer` au lieu de rendre une grille trouée.
    */
   describe('resizeGrid — le redimensionnement POSE par `putLayer` (#1789)', () => {
-    it('agrandit chaque couche au cardinal, garde la zone commune et remplit le reste du sol de départ', () => {
+    it('agrandit chaque couche au cardinal, garde la zone commune et sème le reste SELON LA COUCHE : sol de départ à la base, absence à l’étage', () => {
       const avant = putLayer(putLayer(grille(), 0, pleines(16, 'pierre')), 1, pleines(16, 'mur'), new Array(16).fill(4));
       const apres = resizeGrid(avant, 6, 5);
       expect(apres.dimensions).toEqual({ w: 6, h: 5 });
@@ -874,7 +875,46 @@ describe('putLayer — une couche posée porte EXACTEMENT `w×h` entrées', () =
       }
       expect(tileAt(apres, 3, 3, 0)).toBe('pierre'); // zone commune préservée
       expect(tileAt(apres, 5, 4, 0)).toBe(DEFAULT_TERRAIN); // DERNIÈRE case de la grille agrandie
-      expect(tileAt(apres, 5, 4, 1)).toBe(DEFAULT_TERRAIN);
+      expect(tileAt(apres, 5, 4, 1)).toBe(terrainAbsent()); // un ÉTAGE naît absent, jamais bâti
+    });
+
+    /**
+     * SEMENCE des cases neuves (#1789) — agrandir une grille ne BÂTIT rien : un étage naît ABSENT,
+     * comme à `addLayer`/`buildScene`. Sans cela, la colonne neuve d'un étage porte un plancher
+     * au-dessus du sol nu et `validateScene` lève autant d'« Étage sans appui » qu'il y a de cases.
+     */
+    it('les cases NEUVES d’un étage sont ABSENTES, celles de la base reçoivent la semence de sol', () => {
+      const avant = putLayer(putLayer(grille(), 0, pleines(16, 'pierre')), 1, pleines(16, 'plancher'));
+      const apres = resizeGrid(avant, 6, 5);
+      for (let y = 0; y < 5; y++)
+        for (let x = 0; x < 6; x++) {
+          const neuve = x >= 4 || y >= 4;
+          if (!neuve) continue;
+          expect(estAbsent(tileAt(apres, x, y, 1)), `étage : case neuve (${x},${y})`).toBe(true);
+          expect(tileAt(apres, x, y, 0), `base : case neuve (${x},${y})`).toBe(DEFAULT_TERRAIN);
+        }
+      expect(tileAt(apres, 3, 3, 1), 'la zone COMMUNE de l’étage est intacte').toBe('plancher');
+    });
+
+    /**
+     * La sonde de la RECETTE (#1789) : agrandir une scène à étages n'ouvre AUCUN « Étage sans
+     * appui ». Les deux FORMES d'étage la discriminent — la semence des cases neuves ne dépend pas
+     * de la couverture de l'étage, mais de la COUCHE : un plancher posé sur une colonne neuve
+     * FLOTTE, que l'étage couvre un coin du plan ou le plan entier (mesuré : semer le sol de départ
+     * à l'étage ouvre 14 avertissements sur le plan entier 4×4 → 6×5, 9 sur le coin 4×4 → 5×5).
+     */
+    it('agrandir une scène à étage PARTIEL n’ouvre aucun avertissement d’étage sans appui', () => {
+      const etage = new Array(16).fill(terrainAbsent()) as Terrain[];
+      for (const i of [0, 1, 4, 5]) etage[i] = 'plancher';
+      const avant = putLayer(putLayer(grille(), 0, pleines(16, 'herbe')), 1, etage);
+      const neufs = (s: Scene) => validateScene([s]).filter((w) => w.message.includes('Étage sans appui')).length;
+      expect(neufs(resizeGrid(avant, 5, 5)) - neufs(avant)).toBe(0);
+    });
+
+    it('agrandir une scène à étage PLEIN n’ouvre aucun avertissement d’étage sans appui', () => {
+      const avant = putLayer(putLayer(grille(), 0, pleines(16, 'herbe')), 1, pleines(16, 'plancher'));
+      const neufs = (s: Scene) => validateScene([s]).filter((w) => w.message.includes('Étage sans appui')).length;
+      expect(neufs(resizeGrid(avant, 6, 5)) - neufs(avant)).toBe(0);
     });
 
     it('rétrécit au cardinal de la NOUVELLE grille, sans une entrée de trop', () => {

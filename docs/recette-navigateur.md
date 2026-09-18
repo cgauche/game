@@ -1330,6 +1330,19 @@ sauvegarde (`Enregistrer •`). `clickButtonByText` en `{ exact: true }`
 en sous-chaîne (`exact: false`, le défaut) ou par préfixe, et lever l'ambiguïté par `dans` plutôt que
 par `exact`.
 
+## Chemins canoniques de l'éditeur
+
+Une op mécanique ne s'atteint pas depuis la Scène : elle vit dans un bloc d'effets de trigger.
+Chemin mesuré en recette (2026-09-18, #1789) jusqu'à l'éditeur d'une op :
+
+Éditeur → onglet **Triggers** → **+ Nouveau trigger** → **+ Bloc** → **Afflictions** → « Effets
+mécaniques (Blessures / État / buffs… — vocabulaire des sorts) » → menu « Type : … » → l'op
+(`offTerrainMod` est sous *Séquelles & mobilité*).
+
+Le libellé de l'entrée est cité COMPLET (`src/state/combatEffects.ts:1535`) : viser « Effets
+mécaniques » en `{ exact: true }` rate (piège du suffixe ci-dessus) — soit le texte entier, soit
+`exact: false`.
+
 ## Chemins canoniques du Codex (niches ouvertes récemment)
 
 Une recette ne doit pas redécouvrir l'arborescence du Compendium à l'aveugle : les niches nichées sous
