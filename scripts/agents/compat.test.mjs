@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 import {
   normalizeText, readFrontmatter, readTomlStringField, transformGuide,
   transformSkillTree, validateRolePairs, validateHookParity, buildExpectedOutputs, collectDiffs,
+  HOOKS_MONO_SURFACE, NUL, SURFACE_CLAUDE, SURFACE_CODEX,
 } from './compat-core.mjs';
 import { atomicWrite, runCompat } from './compat-cli.mjs';
 
@@ -127,29 +128,44 @@ test('génère seulement le credo Codex et partage la mémoire Claude', () => {
   assert.equal(expected.files.has('.codex/memory/MEMORY.md'), false);
 });
 
-/** Le hook du credo est propre à Codex : tout jeu de fixtures VALIDE le porte côté Codex seulement. */
-const CREDO_CODEX = { hooks: { SessionStart: [{ hooks: [{ type: 'command', command: 'node scripts/hooks/inject-project-credo.mjs codex', timeout: 10 }] }] } };
 /** Hook PARTAGÉ de référence — celui-là doit être présent à l'identique sur les deux surfaces. */
 const partage = (command = 'node scripts/hooks/poison-postcheck.mjs', timeout = 10, matcher = 'Write|Edit') =>
   ({ hooks: { PostToolUse: [{ matcher, hooks: [{ type: 'command', command, timeout }] }] } });
-const avecCredo = (surface, base) => ({ hooks: { ...base.hooks, ...(surface === 'codex' ? CREDO_CODEX.hooks : {}) } });
+
+/** Ajoute à `base` les hooks que `HOOKS_MONO_SURFACE` RÉSERVE à `surface`. Les fixtures se dérivent
+ *  ainsi de la TABLE : un mono-surface de plus n'oblige à toucher aucun cas de ce fichier. */
+function avecPropres(surface, base) {
+  const hooks = { ...base.hooks };
+  for (const [cle, proprietaire] of HOOKS_MONO_SURFACE) {
+    if (proprietaire !== surface) continue;
+    const [phase, matcher, script] = cle.split(NUL);
+    const entree = { ...(matcher ? { matcher } : {}), hooks: [{ type: 'command', command: `node scripts/hooks/${script}`, timeout: 10 }] };
+    hooks[phase] = [...(hooks[phase] ?? []), entree];
+  }
+  return { hooks };
+}
+/** Les deux surfaces d'un même jeu, chacune portant ce qui lui est propre. */
+const paire = (claude = partage(), codex = claude) =>
+  [avecPropres(SURFACE_CLAUDE, claude), avecPropres(SURFACE_CODEX, codex)];
 
 test('normalise la parité et rejette les commandes shell', () => {
-  assert.deepEqual(validateHookParity(partage(), avecCredo('codex', partage())), []);
-  const codexShell = avecCredo('codex', partage('cat .codex/credo.md'));
-  assert.equal(validateHookParity(partage(), codexShell)[0].type, 'reference');
+  assert.deepEqual(validateHookParity(...paire()), []);
+  assert.equal(validateHookParity(...paire(partage(), partage('cat .codex/credo.md')))[0].type, 'reference');
 });
 
-test('CONTRAT — le hook du credo est porté par Codex SEUL (Claude importe `@.claude/credo.md`)', () => {
-  // Absent de Codex : la surface qui DOIT le porter ne le porte pas.
-  const sansCredo = validateHookParity(partage(), partage());
-  assert.equal(sansCredo.length, 1);
-  assert.equal(sansCredo[0].type, 'missing');
-  assert.match(sansCredo[0].message, /\.codex\/hooks\.json/);
+test('CONTRAT — un hook mono-surface est EXIGÉ chez son propriétaire, REFUSÉ chez l’autre', () => {
+  // Deux surfaces nues : un diagnostic `missing` par hook que la table réserve à l'une d'elles.
+  const nus = validateHookParity(partage(), partage());
+  assert.equal(nus.length, HOOKS_MONO_SURFACE.size);
+  assert.ok(nus.every((d) => d.type === 'missing'), JSON.stringify(nus));
+  for (const surface of new Set(HOOKS_MONO_SURFACE.values())) {
+    assert.ok(nus.some((d) => d.message.includes(surface)), `aucun manque signalé pour ${surface}`);
+  }
 
-  // Présent AUSSI sur Claude : le credo serait chargé deux fois.
-  const claudeAussi = { hooks: { ...partage().hooks, SessionStart: [{ hooks: [{ type: 'command', command: 'node scripts/hooks/inject-project-credo.mjs claude', timeout: 10 }] }] } };
-  const double = validateHookParity(claudeAussi, avecCredo('codex', partage()));
+  // Le credo porté AUSSI par Claude : il serait chargé deux fois (l'import `@.claude/credo.md` le pose déjà).
+  const [claude, codex] = paire();
+  const claudeAussi = { hooks: { ...claude.hooks, SessionStart: [...claude.hooks.SessionStart, { hooks: [{ type: 'command', command: 'node scripts/hooks/inject-project-credo.mjs claude', timeout: 10 }] }] } };
+  const double = validateHookParity(claudeAussi, codex);
   assert.equal(double.length, 1);
   assert.equal(double[0].type, 'content');
   assert.match(double[0].message, /réservé à \.codex\/hooks\.json/);
@@ -180,24 +196,21 @@ test("CONTRAT — l'import `@.claude/credo.md` se traduit en MÉCANISME, pas en 
 });
 
 test('CLAUDE_PROJECT_DIR ancre légitimement la surface Claude, jamais la surface Codex', () => {
-  const claude = partage('node "$CLAUDE_PROJECT_DIR"/scripts/hooks/poison-postcheck.mjs');
-  assert.deepEqual(validateHookParity(claude, avecCredo('codex', partage())), []);
-  const codexVar = avecCredo('codex', partage('node "$CLAUDE_PROJECT_DIR"/scripts/hooks/poison-postcheck.mjs'));
-  assert.equal(validateHookParity(claude, codexVar)[0].type, 'reference');
+  const ancre = 'node "$CLAUDE_PROJECT_DIR"/scripts/hooks/poison-postcheck.mjs';
+  assert.deepEqual(validateHookParity(...paire(partage(ancre), partage())), []);
+  assert.equal(validateHookParity(...paire(partage(ancre), partage(ancre)))[0].type, 'reference');
 });
 
 test('&& et /dev/null restent interdits sur les deux surfaces', () => {
   const claudeBad = partage('node scripts/hooks/poison-postcheck.mjs && true');
-  assert.equal(validateHookParity(claudeBad, avecCredo('codex', partage()))[0].type, 'reference');
-  const codexBad = avecCredo('codex', partage('node scripts/hooks/poison-postcheck.mjs > /dev/null'));
-  assert.equal(validateHookParity(partage(), codexBad)[0].type, 'reference');
+  assert.equal(validateHookParity(...paire(claudeBad, partage()))[0].type, 'reference');
+  const codexBad = partage('node scripts/hooks/poison-postcheck.mjs > /dev/null');
+  assert.equal(validateHookParity(...paire(partage(), codexBad))[0].type, 'reference');
 });
 
 test('une divergence de timeout ou de matcher entre surfaces reste rejetée', () => {
-  const codexTimeout = avecCredo('codex', partage(undefined, 20));
-  assert.equal(validateHookParity(partage(), codexTimeout)[0].type, 'content');
-  const codexMatcher = avecCredo('codex', partage(undefined, 10, 'Write'));
-  assert.equal(validateHookParity(partage(), codexMatcher)[0].type, 'content');
+  assert.equal(validateHookParity(...paire(partage(), partage(undefined, 20)))[0].type, 'content');
+  assert.equal(validateHookParity(...paire(partage(), partage(undefined, 10, 'Write')))[0].type, 'content');
 });
 
 test('réfute toute référence de profil qui diverge après normalisation', () => {

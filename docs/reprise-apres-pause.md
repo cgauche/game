@@ -108,8 +108,8 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
   `scripts/guards/lib/labelLogic.mjs`).
-- Les gardes de SESSION : 16 scripts sous `scripts/hooks/`, déclarés dans
-  `.claude/settings.json` (versionné) — détail au § 5.
+- Les gardes de SESSION : 15 scripts déclarés dans `.claude/settings.json`
+  (versionné), sur 17 fichiers `.mjs` hors test sous `scripts/hooks/` — détail au § 5.
 - Les schémas de données : `src/data/schemas/` (`src/data/schemas/types.ts`,
   `src/data/schemas/validate.ts`, `src/data/schemas/_registry.generated.ts`,
   `src/data/schemas/_ids.generated.ts`, `src/data/schemas/grammaire/` — le vocabulaire partagé —
@@ -158,11 +158,12 @@ les non-versionnés locaux, elle ne touche pas au repo.
 Vérifier : `git config core.hooksPath` doit répondre `scripts/git-hooks`. Si vide → hooks MORTS,
 refaire `npm install`.
 
-**Hooks de session Claude Code** (gardes anti-dérive à l'écriture), déclarés dans
+**Hooks de session Claude Code** (mise en conformité au démarrage, gardes anti-dérive à l'écriture), déclarés dans
 `.claude/settings.json` :
 
 | Événement | Déclencheur (matcher) | Script | Rôle |
 |---|---|---|---|
+| `SessionStart` | (tous) | `scripts/hooks/bootstrap-conteneur.mjs` | Conformité du conteneur distant (hooks git, gh) |
 | `PreToolUse` | Write \| mcp__lean-ctx__ctx_patch | `scripts/hooks/new-src-file-guard.mjs` | Garde anti-réinvention (nouveau fichier src/) |
 | `PreToolUse` | Write \| Edit | `scripts/hooks/data-edit-guard.mjs` | Grounding donnée (src/data — check-first #148) |
 | `PreToolUse` | Write \| Edit | `scripts/hooks/enterine-guard.mjs` | Tag [entériné] = validation utilisateur |
@@ -242,4 +243,4 @@ sans place dans ce plan fait REFUSER le run, avec son nom.
 `scripts/guards/lib/npmLockHoisted.mjs` — npx --yes npm@10.9.3 install --package-lock-only, puis valider avec npx npm@10.9.3 ci --dry-run. npm 11 ampute les entrées hoistées
 `@emnapi/*` que `npm ci` exige en CI ; la garde (pre-commit +
 `src/npm-lock-hoisted-guard.test.ts`) refuse un lock amputé.
-<!-- sources-empreinte: 7a8d060b687daab3231dc41847b5b52762ffc625 (24 fichiers, 8 dossiers) corps: eaf51a00f4552c2305cbee89810902f8d86281a7 -->
+<!-- sources-empreinte: f02a4fa402717d932c0ec587292cba9a18d3f289 (24 fichiers, 8 dossiers) corps: d50a5fa23727fd68826a45ec9da72dd0388d3fa9 -->

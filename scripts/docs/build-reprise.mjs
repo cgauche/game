@@ -84,11 +84,11 @@ function hooksDeSession(evenement) {
   )
 }
 
-/** Événements de session que la surface Claude DOIT déclarer. `SessionStart` n'en est pas : le credo
- *  de travail entre dans le contexte de Claude par l'IMPORT `@.claude/credo.md` en tête de CLAUDE.md,
- *  et seule la surface Codex — qui n'a pas d'import — l'INJECTE au SessionStart
- *  (`scripts/agents/compat-core.mjs`, `HOOKS_MONO_SURFACE`). */
-const EVENEMENTS = ['PreToolUse', 'PostToolUse']
+/** Événements de session que la surface Claude DOIT déclarer. Son `SessionStart` porte la mise en
+ *  conformité du conteneur distant (#1803), pas le credo : celui-ci entre dans le contexte de Claude
+ *  par l'IMPORT `@.claude/credo.md` en tête de CLAUDE.md, et seule la surface Codex — qui n'a pas
+ *  d'import — l'INJECTE (`scripts/agents/compat-core.mjs`, `HOOKS_MONO_SURFACE`). */
+const EVENEMENTS = ['SessionStart', 'PreToolUse', 'PostToolUse']
 
 // Workflows GitHub Actions : nom, déclencheurs, portes npm exécutées.
 function bloc(texte, cle) {
@@ -175,6 +175,11 @@ const SEUIL = seuilPartage()
 // Comptes d'inventaire du clone.
 const NB_GUARD_LIBS = listerDossier(chemin('scripts/guards/lib')).filter((f) => f.endsWith('.mjs')).length
 const NB_HOOKS_SESSION = listerDossier(chemin('scripts/hooks')).filter((f) => f.endsWith('.mjs') && !f.endsWith('.test.mjs')).length
+/** Scripts de `scripts/hooks/` que la surface Claude DÉCLARE. Le dossier en porte davantage : une
+ *  lib importée par un hook n'est pas un hook, et un hook propre à Codex n'est déclaré que là-bas
+ *  (`scripts/agents/compat-core.mjs`, `HOOKS_MONO_SURFACE`). Compter les FICHIERS en disant
+ *  « déclarés » faisait mentir cet inventaire. */
+const NB_HOOKS_DECLARES = new Set(EVENEMENTS.flatMap((e) => hooksDeSession(e).map((h) => h.script))).size
 const NB_DEFS = listerDossier(chemin('src/data/schemas/defs')).filter((f) => f.endsWith('.ts')).length
 const NB_DEFS_SCENES = listerDossier(chemin('src/data/schemas/defs-scenes')).filter((f) => f.endsWith('.ts')).length
 const NB_DATA_JSON = listerDossier(chemin('src/data')).filter((f) => f.endsWith('.json')).length
@@ -416,8 +421,8 @@ C'est le signal qu'un geste manuel a dévié de ce que \`npm install\` pose seul
   sous \`scripts/guards/lib/\` (dont \`scripts/guards/lib/commentPoison.mjs\`,
   \`scripts/guards/lib/emojiAffordance.mjs\`, \`scripts/guards/lib/hardcode.mjs\`,
   \`scripts/guards/lib/labelLogic.mjs\`).
-- Les gardes de SESSION : ${NB_HOOKS_SESSION} scripts sous \`scripts/hooks/\`, déclarés dans
-  \`.claude/settings.json\` (versionné) — détail au § 5.
+- Les gardes de SESSION : ${NB_HOOKS_DECLARES} scripts déclarés dans \`.claude/settings.json\`
+  (versionné), sur ${NB_HOOKS_SESSION} fichiers \`.mjs\` hors test sous \`scripts/hooks/\` — détail au § 5.
 - Les schémas de données : \`src/data/schemas/\` (\`src/data/schemas/types.ts\`,
   \`src/data/schemas/validate.ts\`, \`src/data/schemas/_registry.generated.ts\`,
   \`src/data/schemas/_ids.generated.ts\`, \`src/data/schemas/grammaire/\` — le vocabulaire partagé —
@@ -462,7 +467,7 @@ les non-versionnés locaux, elle ne touche pas au repo.
 Vérifier : \`git config core.hooksPath\` doit répondre \`scripts/git-hooks\`. Si vide → hooks MORTS,
 refaire \`npm install\`.
 
-**Hooks de session Claude Code** (gardes anti-dérive à l'écriture), déclarés dans
+**Hooks de session Claude Code** (mise en conformité au démarrage, gardes anti-dérive à l'écriture), déclarés dans
 \`.claude/settings.json\` :
 
 | Événement | Déclencheur (matcher) | Script | Rôle |

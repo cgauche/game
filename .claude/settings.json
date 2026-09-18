@@ -1,5 +1,8 @@
 {
   "claudeMdExcludes": ["**/Foundry/CLAUDE.md"],
+  "permissions": {
+    "allow": ["Bash(npm run:*)"]
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -155,6 +158,18 @@
             "command": "node \"$CLAUDE_PROJECT_DIR\"/scripts/hooks/agent-return-judge-reminder.mjs",
             "timeout": 10,
             "statusMessage": "Rappel juge adversarial (retour d'agent)"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/scripts/hooks/bootstrap-conteneur.mjs",
+            "timeout": 300,
+            "statusMessage": "Conformité du conteneur distant (hooks git, gh)"
           }
         ]
       }

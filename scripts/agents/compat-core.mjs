@@ -169,10 +169,15 @@ export const NUL = '\0';
  * Le credo de travail entre dans le contexte de Claude par l'IMPORT `@.claude/credo.md` en tête de
  * CLAUDE.md — un import n'est ni tronqué ni persisté à part. Codex n'a pas d'import : sa surface
  * l'INJECTE au SessionStart. Porter les deux mécanismes sur Claude chargerait le credo deux fois.
+ *
+ * La mise en conformité d'un conteneur distant se garde sur `CLAUDE_CODE_REMOTE`
+ * (`scripts/hooks/bootstrap-conteneur.mjs`) : sur la surface Codex, ce hook ne pourrait que naître
+ * et rendre une liste vide. Un spawn qui ne mesure rien n'est pas une parité, c'est un mort.
  */
 
 export const HOOKS_MONO_SURFACE = new Map([
   [`SessionStart${NUL}${NUL}inject-project-credo.mjs`, SURFACE_CODEX],
+  [`SessionStart${NUL}${NUL}bootstrap-conteneur.mjs`, SURFACE_CLAUDE],
 ]);
 
 export function validateHookParity(claudeSettings, codexHooks) {
