@@ -366,7 +366,7 @@ describe('Aux Armes (AA 07, approche alternative) — lignes nommées', () => {
       { op: 'disarm' },
       {
         op: 'maxWeaponHands', hands: 1,
-        durationRounds: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'endurance' }, factor: -1 } }] },
+        durationRounds: { minimum: 1, of: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'endurance' }, factor: -1 } }] } },
       },
     ]);
   });

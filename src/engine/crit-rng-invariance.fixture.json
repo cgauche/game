@@ -5014,22 +5014,25 @@
         "op": "maxWeaponHands",
         "hands": 1,
         "durationRounds": {
-          "sum": [
-            {
-              "dice": {
-                "n": 1,
-                "sides": 10
+          "minimum": 1,
+          "of": {
+            "sum": [
+              {
+                "dice": {
+                  "n": 1,
+                  "sides": 10
+                }
+              },
+              {
+                "times": {
+                  "of": {
+                    "bonusOf": "endurance"
+                  },
+                  "factor": -1
+                }
               }
-            },
-            {
-              "times": {
-                "of": {
-                  "bonusOf": "endurance"
-                },
-                "factor": -1
-              }
-            }
-          ]
+            ]
+          }
         }
       }
     ],
@@ -5074,22 +5077,25 @@
         "op": "maxWeaponHands",
         "hands": 1,
         "durationRounds": {
-          "sum": [
-            {
-              "dice": {
-                "n": 1,
-                "sides": 10
+          "minimum": 1,
+          "of": {
+            "sum": [
+              {
+                "dice": {
+                  "n": 1,
+                  "sides": 10
+                }
+              },
+              {
+                "times": {
+                  "of": {
+                    "bonusOf": "endurance"
+                  },
+                  "factor": -1
+                }
               }
-            },
-            {
-              "times": {
-                "of": {
-                  "bonusOf": "endurance"
-                },
-                "factor": -1
-              }
-            }
-          ]
+            ]
+          }
         }
       }
     ],
