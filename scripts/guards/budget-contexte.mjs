@@ -34,12 +34,12 @@ import { fileURLToPath } from 'node:url'
 import { cliquetsDuMessage } from './lib/stocksNominatifs.mjs'
 
 /**
- * Plafond du contexte permanent, en OCTETS. MESURE du 2026-09-16 sur `chantier/1776` rebasé sur #1771 : le
- * § Commandes de `CLAUDE.md` dit le régime de push en 56 octets de moins. Il ne se relève qu'en le DISANT au
+ * Plafond du contexte permanent, en OCTETS. MESURE du 2026-09-18 sur `chantier/1818-edition-5e-phase0` : le
+ * § Sources de `CLAUDE.md` nomme le Core 5e, seul livre VO autorisé (#1816). Il ne se relève qu'en le DISANT au
  * message de commit (`CLIQUET: scripts/guards/budget-contexte.mjs +N — <motif>`), et il s'abaisse à chaque
  * allègement.
  */
-export const PLAFOND_OCTETS = 26459
+export const PLAFOND_OCTETS = 26747
 
 /** Le fichier qui PORTE le plafond : c'est lui que le `CLIQUET:` d'un message de commit nomme. */
 export const PORTEUR_DU_PLAFOND = 'scripts/guards/budget-contexte.mjs'
