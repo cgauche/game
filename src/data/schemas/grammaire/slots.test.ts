@@ -210,6 +210,15 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // +1 site ADOPTÉ (#1716) : `defs/semences-de-scene.ts › terrain` — le SOL dont la couche 0 d'une
       // scène neuve est remplie (`emptyScene`), résolu contre `terrains.json` AU PARSE.
       "idDe('terrain')",
+      // +3 sites ADOPTÉS (#1789) : `defs/defauts-de-compilation.ts › cheminDeRonde`, `masse` et `pont`
+      // — les trois terrains que le COMPILATEUR de scène pose quand la déclaration les laisse
+      // implicites. UNE fabrique écrite par champ, donc UNE marque par champ. (L'`idDe('terrain')` du
+      // payload `OP_DEFS.offTerrainMod`, adopté au même lot, n'apparaît PAS ici : `OP_DEFS` est atteint
+      // par le superRefine de `gameOpSchema`, hors de la marche des defs — même angle mort que les
+      // `idDe('trait')` d'op, nommé plus haut.)
+      "idDe('terrain')",
+      "idDe('terrain')",
+      "idDe('terrain')",
       "idDe('trait')",
       "idDe('trapping')",
     ]);

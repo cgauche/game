@@ -13,7 +13,7 @@ import {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
   qualities, qualitySubtypes, qualityTypes, mutations, mutationTables, trappings, weaponGroups, breathTypes, damageTypes, creatures, spells, maneuvers, domains, lightLevels, lightTones, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
   materials, terrains, buildings,
-  pregens, oups, interludeEvents, peripeties, details, semencesDeScene, names, allAxes,
+  pregens, oups, interludeEvents, peripeties, details, semencesDeScene, defautsDeCompilation, names, allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms,
   massBattleWarMachines, massBattleStructures, massBattleHazards, massBattleMightModifiers, massBattlePowerEstimate, massBattleData,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, shipStations, NAVAL_TRAITS,
@@ -276,6 +276,8 @@ const OBJECTS = {
   details, waterExposure: WATER_EXPOSURE,
   // #1716 : semences d'une scène NEUVE (`emptyScene`) — objet de config unique, même patron que `details`.
   semencesDeScene,
+  // #1716 : défauts du COMPILATEUR de scène (`mapSpec`) — même patron, autre moment (compiler, pas créer).
+  defautsDeCompilation,
   // LOT 1 #422 : 3 fiches de règle UNIQUES (MDG 13) — même patron que `waterExposure` (MSRC 16).
   seaNavigation, seaPerils, seaWeather,
   // LOT 1 #422 (suite) : Disponibilité & Troc (LDB 59) — fiche de règle UNIQUE, même patron.
@@ -314,6 +316,7 @@ const OBJECT_FILE: Partial<Record<ObjectDatasetKey, string>> = {
   riverNavigation: 'river-navigation.json',
   arcanePhenomena: 'arcane-phenomena.json',
   semencesDeScene: 'semences-de-scene.json',
+  defautsDeCompilation: 'defauts-de-compilation.json',
 };
 /** Fichier disque d'un dataset-objet (`<clé>.json` par défaut, ou l'override `OBJECT_FILE`). */
 export function datasetObjectFile(key: ObjectDatasetKey): string {

@@ -586,7 +586,14 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // devenu une référence résolue au parse), UNE morte (`arene-projet.json › style` : ses deux corps
       // COMPOSITES n'ont pas de type de bâtiment, le champ y est absent). Aucune graphie neuve : ce
       // sont celles que le registre TypeScript des bâtiments portait EN DUR avant #1715, devenues mesurables.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 468],
+      // Cliquet REMONTÉ 468 → 471 (#1789, 2026-09-18) : les DÉFAUTS DU COMPILATEUR de scène quittent le
+      // code pour la donnée — TROIS lignes NEUVES, une par champ de `defauts-de-compilation.json`
+      // (`cheminDeRonde`, `masse`, `pont`), toutes trois ids nus SCALAIRES à la forme HISTORIQUE. Aucune
+      // graphie neuve : ce sont les trois terrains que `state/mapSpec.ts` (`CELL_WALKWAY`, `CELL_MASS`)
+      // et `buildBoardingScene` portaient EN DUR, devenus mesurables et refinés au parse
+      // (`idDe('terrain')`). MÊMES forme et solde que `semences-de-scene.json › terrain` (#1716) : les
+      // quatre lignes meurent d'un seul geste au lot L3.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 471],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -1011,7 +1018,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // (id nu du sol dont la couche 0 est remplie), `› reliefDefaults` et `› roofDefaults` (les deux
       // records que la semence compose par les schémas PARTAGÉS de la scène). MÊME graphie que leurs
       // sœurs des quatre projets (#1691, #1715) : elles s'éteindront avec elles, d'un seul geste.
-      'L3 #1463': 394,
+      // #1789 (2026-09-18) : 394 → 397 — TROIS lignes de référence NEUVES, même mouvement d'un cran plus
+      // loin : `defauts-de-compilation.json › cheminDeRonde`, `› masse` et `› pont` posent en DONNÉE les
+      // trois terrains que le COMPILATEUR (`state/mapSpec.ts`, `buildBoardingScene`) choisissait en
+      // littéraux. Ids nus scalaires, MÊME graphie que `semences-de-scene.json › terrain` : même lot,
+      // même extinction.
+      'L3 #1463': 397,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en

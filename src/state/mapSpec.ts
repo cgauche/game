@@ -45,6 +45,10 @@ import type {
 } from './scene';
 import { DEFAULT_TERRAIN, emptyScene, tileAt, wallOverlayOf } from './scene';
 import { findStructureById, structureAppearances } from '../data';
+// DÉFAUTS DE COMPILATION (#1716) : ce que ce compilateur pose quand la déclaration laisse le terrain
+// implicite — chemin de ronde et masse d'une `cells` d'enceinte. Donnée éditable au Codex, même patron
+// que `DEFAULT_TERRAIN = semencesDeScene.terrain` (`state/scene.ts`).
+import { defautsDeCompilation } from '../data';
 // PLAGE de pente : la source UNIQUE est le schéma de scène, qui en borne DÉJÀ le parse
 // (`sceneRoofDefaultsSchema`/`roofDefaultsSchema`) — deux littéraux ici la feraient diverger en
 // silence de la porte qui refuse une scène authorée.
@@ -94,11 +98,6 @@ import {
 /** Hauteur (m) par défaut d'une ENCEINTE `cells` sans `height` explicite — chemin de ronde à ~4 m (un
  *  « niveau » de relief, cf. `METRES_PER_LEVEL`). */
 const CELL_WALL_HEIGHT_M = 4;
-/** Terrain MARCHABLE du chemin de ronde auto-posé par une `cells` d'enceinte (dessus du mur plein). */
-const CELL_WALKWAY: Terrain = 'pierre';
-/** Terrain de la MASSE d'un mur plein `cells` : BLOC PLEIN `mur` (4 m = un étage, échelle unifiée) posé au
- *  sol. Le moteur en dérive TOUTES ses faces (relief existant), y compris la PAROI du tunnel qu'il borde. */
-const CELL_MASS: Terrain = 'mur';
 
 /** Un segment de mur DÉCLARATIF : arête cardinale N/E/S/O (canonisée avant écriture) + door/overlay
  *  (`WallOverlay` : `structure` et/ou `appearance`), ou diagonale `\\`/`/` en travers de la case. Plus
@@ -719,13 +718,14 @@ export function buildScene(spec: MapSpec): Scene {
     if (build) {
       const zz = c.z + 1;
       const height = rec.wall?.height ?? CELL_WALL_HEIGHT_M;
-      // MASSE : un mur plein → BLOC `mur` posé au SOL (le moteur en dérive toutes les faces, dont la PAROI
+      // MASSE : un mur plein → le BLOC PLEIN du défaut de compilation, posé au SOL (le moteur en dérive
+      // toutes les faces à partir du relief, dont la PAROI
       // du tunnel qu'il borde, comme un bâtiment). Une PORTE laisse le sol z0 tel quel → passable = le TUNNEL.
-      if (rec.wall) s = paintTiles(s, { x: c.x, y: c.y }, CELL_MASS, 1, c.z);
+      if (rec.wall) s = paintTiles(s, { x: c.x, y: c.y }, defautsDeCompilation.masse, 1, c.z);
       // CHEMIN DE RONDE : une COUCHE DE SOL marchable posée par-dessus, à `height` m (dessus du bloc / toit
       // du tunnel). Sur une porte, ce sol coiffe un vide → SURPLOMB → son dessous = le plafond (règle générale).
       s = addLayer(s, zz);
-      s = paintTiles(s, { x: c.x, y: c.y }, CELL_WALKWAY, 1, zz);
+      s = paintTiles(s, { x: c.x, y: c.y }, defautsDeCompilation.cheminDeRonde, 1, zz);
       s = paintHeight(s, { x: c.x, y: c.y }, height, 1, zz);
       // CRÉNELURE (décoration) : marque le chemin de ronde → merlons sur le PÉRIMÈTRE de la bande.
       if (crestApp) s = paintCrenellated(s, { x: c.x, y: c.y }, crestApp, 1, zz);

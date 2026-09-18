@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { placeCombatant } from './spawn';
 import type { Scene } from './scene';
 import type { Combatant } from '../engine/types';
+import { gameOpSchema, OPS_NON_TYPEES } from '../data/schemas/grammaire/mecanique';
 
 /** Scène minimale 3×1 : eau | sol | eau. */
 const scene = {
@@ -30,5 +31,25 @@ describe('placeCombatant — drapeau positionnel offTerrain (op offTerrainMod, M
     const c = { ...marine(), traits: [] } as Combatant;
     placeCombatant(c, scene, { x: 1, y: 0 });
     expect(c.offTerrain).toBeUndefined();
+  });
+});
+
+/**
+ * PAYLOAD STRICT de l'op (#1789) — `offTerrainMod` a quitté `OPS_NON_TYPEES` : son terrain d'ÉLECTION
+ * est un `idDe('terrain')`, refusé AU PARSE s'il ne résout pas. Sans cette porte, un id fantaisiste
+ * rendait `requiredTerrains` non vide et `offTerrain` VRAI sur TOUTE case — un malus permanent, muet.
+ */
+describe('offTerrainMod — le terrain d’élection est un id du registre, tenu au parse (#1789)', () => {
+  it('accepte un id de `terrains.json` et refuse un id inconnu, en le NOMMANT', () => {
+    const ok = gameOpSchema.safeParse({ op: 'offTerrainMod', terrain: 'eau', mSet: 1, testDR: -2, suffocates: true });
+    expect(ok.success, JSON.stringify(ok.error?.issues)).toBe(true);
+
+    const ko = gameOpSchema.safeParse({ op: 'offTerrainMod', terrain: 'lac-de-biere', mSet: 1 });
+    expect(ko.success).toBe(false);
+    expect(JSON.stringify(ko.error?.issues)).toContain('lac-de-biere');
+  });
+
+  it('l’op ne figure plus à l’inventaire des payloads non décrits', () => {
+    expect(OPS_NON_TYPEES).not.toContain('offTerrainMod');
   });
 });

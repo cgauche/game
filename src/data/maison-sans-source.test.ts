@@ -102,7 +102,7 @@ const TOTAL_GELE = 50;
  * vivaient NON TAGUÉES en littéraux de `state/scene.ts` : le stock ne croît pas, il devient visible,
  * et `TOTAL_GELE` ne bouge pas.
  */
-const MASQUES_GELES: Record<string, number> = { 'actions.json': 29, 'buildings.json': 7, 'props.json': 41, 'semences-de-scene.json': 1, 'terrains.json': 25 };
+const MASQUES_GELES: Record<string, number> = { 'actions.json': 29, 'buildings.json': 7, 'defauts-de-compilation.json': 1, 'props.json': 41, 'semences-de-scene.json': 1, 'terrains.json': 25 };
 
 const lire = (dir: string, f: string): unknown => JSON.parse(readFileSync(join(dir, f), 'utf8'));
 
@@ -192,7 +192,7 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
     ]);
     expect(Object.keys(SANS_LIVRE).sort()).toEqual([
       'actions', 'ambiance', 'books', 'breath-types', 'buildings', 'calendarPhases', 'damage-types',
-      'decorPalette', 'details', 'donnees.manifest', 'groups', 'lieux-services', 'lightLevels',
+      'decorPalette', 'defauts-de-compilation', 'details', 'donnees.manifest', 'groups', 'lieux-services', 'lightLevels',
       'lightTones', 'localisation', 'materials', 'merchantFamilies', 'merchants', 'names', 'pregens',
       'primitives.manifest', 'progression-schemas.derived', 'props',
       'qualitySubtypes', 'qualityTypes', 'raceAppearance', 'raw.manifest',
@@ -212,7 +212,9 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
     // portant son `maison` EXIGÉ au def.
     // 48 → 49 : `semences-de-scene` entre (#1716) — un document `config` à racine unique dont le
     // `maison` EXIGÉ au def dit ce qu'une scène neuve reçoit ; aucun folio n'imprime ce défaut.
-    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(49);
+    // 49 → 50 : `defauts-de-compilation` entre (#1789) — même régime, même forme : un document `config`
+    // à racine unique dont le `maison` EXIGÉ dit ce que le COMPILATEUR pose à la place d'un auteur muet.
+    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(50);
   });
 
   it('`maison` est TOUJOURS une chaîne — zéro drapeau booléen, à TOUTE profondeur des deux racines', () => {

@@ -623,6 +623,12 @@
         },
         {
           "files": [
+            "defauts-de-compilation.json"
+          ],
+          "desc": "LES défauts du COMPILATEUR de scène (#1716) — ce que `buildScene` pose quand une section d'un `MapSpec` laisse le terrain implicite : sol du chemin de ronde et masse d'une `cells` d'enceinte (`src/state/mapSpec.ts`), tuile de pont d'une scène de bord (`buildBoardingScene`, `src/state/seaVoyageFlow.ts`). Objet unique, distinct des SEMENCES (créer une scène) — compiler une déclaration déjà écrite"
+        },
+        {
+          "files": [
             "buildings.json"
           ],
           "desc": "LES types de bâtiment — empreinte offerte à la pose, couverture par défaut des nappes de toit, ornements d'identité posés en billboard ; lu par la façade `src/state/buildings.ts`"

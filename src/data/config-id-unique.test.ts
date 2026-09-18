@@ -99,7 +99,7 @@ describe('id de racine d’un document `config` — unique dans l’espace des i
     expect(manquants, `document(s) du lot sans enveloppe :\n  ${manquants.join('\n  ')}`).toEqual([]);
   });
 
-  it('les 42 documents à enveloppe de `src/data` portent 42 ids DISTINCTS entre eux', () => {
+  it('les 43 documents à enveloppe de `src/data` portent 43 ids DISTINCTS entre eux', () => {
     const docs = documentsConfig();
     // 27 du lot V-FLIP-CONFIG (moins les 2 fondus par #1657 B2a) + 14 documents uniques flippés en
     // `config` par V-FLIP-TABLE + les 2 RECORDS enveloppés par V-FLIP-RECORD (`teintes-jeu`,
@@ -109,7 +109,9 @@ describe('id de racine d’un document `config` — unique dans l’espace des i
     // 41 → 42 (#1716, 2026-09-18) : `semences-de-scene.json` — un document `config` NEUF à objet
     // unique (ce qu'une scène reçoit à sa création), déclaré ici comme tout document déposé dans la
     // racine : le scan le voit par sa STRUCTURE, ce compte dit seulement combien il en voit.
-    expect(docs.length).toBe(42);
+    // 42 → 43 (#1789, 2026-09-18) : `defauts-de-compilation.json` — même forme, même régime, ce que le
+    // COMPILATEUR de scène pose quand l'auteur laisse le terrain implicite.
+    expect(docs.length).toBe(43);
     const parId = new Map<string, string[]>();
     for (const d of docs) parId.set(d.id, [...(parId.get(d.id) ?? []), d.ou]);
     const collisions = [...parId].filter(([, ou]) => ou.length > 1).map(([id, ou]) => `« ${id} » : ${ou.join(' + ')}`);

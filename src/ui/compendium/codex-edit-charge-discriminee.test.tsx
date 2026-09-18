@@ -154,27 +154,40 @@ describe('atelier du Codex — charge du CAS d’un document discriminé (#1686)
  * entrée du même document. C'est exactement la pathologie de `materials` avant ce lot : un formulaire
  * qui offre ce que le save refuse. Les entrées sont dédupliquées par SIGNATURE de clés (deux entrées
  * aux mêmes clés présentent le même formulaire) et les documents sans schéma-tableau sont hors mesure.
+ *
+ * #1789 : le CONTEXTE du parse est le plus petit document qui PARSE, pas un singleton. Un schéma qui
+ * porte un refine de CARDINALITÉ globale (`terrains.json` exige EXACTEMENT une entrée `absence` et une
+ * `bordDuMonde`, `materials.json` exactement un « plan vu du dessus », `names.json` une banque par
+ * `RaceKey`, `advancementCosts.json` des bandes contiguës) ne peut PAS parser `[e]` : la sonde de
+ * faisabilité sortait alors sur un `continue` et la catégorie devenait MUETTE — quatre catégories dont
+ * `materials`, celle-là même que ce cliquet prétend surveiller. Le stock ci-dessous ne GRANDIT pas :
+ * c'est la COUVERTURE qui a grandi, la dette préexistait à la mesure.
  */
 describe('cliquet — champs ÉTRANGERS présentés par les catégories éditables', () => {
-  /** Par catégorie, le PIRE nombre de champs étrangers présentés sur une de ses entrées. Stock
-   *  NOMINATIF et DÉCROISSANT : il ne baisse qu'en déclarant la charge par cas du document fautif. */
-  const STOCK: Record<string, number> = {
-    // Chacun partitionne ses entrées par REFINE sans DÉCLARER sa charge par cas — la clé fautive est
-    // MESURÉE par la sonde ci-dessous, elle est ici pour se lire :
-    activities: 3, // `recuperer` : `stake`/`stakeForm`/`rule` (enjeu et règle optionnelle d'un autre cas d'activité)
-    oups: 2, // Incident de Tir : `min`/`max`, les bornes d100 d'une bande de table (defs/oups.ts)
-    reglesOptionnelles: 2, // règle à BANDES : `min`/`max` d'une autre forme de valeur par défaut
+  /** Par catégorie, les champs étrangers présentés sur sa PIRE entrée — les CLÉS, pas leur compte : un
+   *  compte ne dit pas si la dette a changé de nature. Stock NOMINATIF et DÉCROISSANT : il ne baisse
+   *  qu'en déclarant la charge par cas du document fautif. */
+  const STOCK: Record<string, readonly string[]> = {
+    // Chacun partitionne ses entrées par REFINE sans DÉCLARER sa charge par cas — les clés fautives sont
+    // MESURÉES par la sonde ci-dessous, elles sont ici pour se lire :
+    activities: ['stake', 'stakeForm', 'rule'], // `recuperer` : enjeu et règle optionnelle d'un autre cas d'activité
+    oups: ['min', 'max'], // Incident de Tir : les bornes d100 d'une bande de table (defs/oups.ts)
+    reglesOptionnelles: ['min', 'max'], // règle à BANDES : d'une autre forme de valeur par défaut
     // ENTRÉE #1691 : `terrains` rejoint la même famille — le bloc plein et la matière de ses flancs
     // vont par PAIRE (`solidHeightM` ⟺ `matiere`, `defs/terrains.ts`), si bien qu'un sol nu à qui
     // l'atelier offre l'un des deux se verrait refuser au save. La partition est portée par la
     // PRÉSENCE d'un champ, pas par la valeur d'un discriminant : `chargeParDiscriminant` ne sait pas
     // l'exprimer aujourd'hui, et c'est ce qui soldera cette ligne. Le refine, lui, ne se relâche pas :
     // un bloc muet rendrait au builder de sols le choix de matière que ce lot lui retire.
-    terrains: 2,
+    // #1789 : la mesure VOIT enfin `terrains` (cf. le CONTEXTE ci-dessus) et y lit trois clés de plus —
+    // `ascii`, `absence`, `bordDuMonde` sont des RÔLES à porteur UNIQUE : l'atelier les offre sur les 25
+    // terrains quand le document n'en admet qu'un porteur. Même famille que `materials:vueDeDessus`.
+    terrains: ['ascii', 'bordDuMonde', 'solidHeightM', 'matiere', 'absence'],
+    materials: ['vueDeDessus'], // rôle à porteur UNIQUE : exactement une matière est le « plan vu du dessus »
   };
 
   it('le stock des catégories qui présentent un champ étranger est celui déclaré, et il DÉCROÎT', () => {
-    const mesure: Record<string, number> = {};
+    const mesure: Record<string, readonly string[]> = {};
     for (const cat of CODEX) {
       if (editableObjectDataset(cat.key)) continue;
       const dsKey = editableDataset(cat.key);
@@ -182,29 +195,39 @@ describe('cliquet — champs ÉTRANGERS présentés par les catégories éditabl
       const fichier = datasetFile(dsKey);
       const schema = schemaForFile(fichier);
       const entrees = datasetArray(dsKey) as unknown as Record<string, unknown>[];
-      if (!schema || !entrees.length || !schema.safeParse([entrees[0]]).success) continue; // racine non-liste : hors mesure
+      // Le CONTEXTE de mesure est le plus petit document qui PARSE : `[e]` dès qu'il suffit, le document
+      // ENTIER quand un refine de CARDINALITÉ l'exige. Aucun des deux ne parse ⇒ racine non-liste, hors mesure.
+      if (!schema || !entrees.length) continue;
+      const entier = schema.safeParse(entrees).success;
+      if (!entier && !schema.safeParse([entrees[0]]).success) continue;
       const dedies = dedicatedFieldKeys(cat.key);
       const champs = inferFields(entrees, { meta: metaPourFichier(fichier) }).map((f) => f.key).filter((k) => !dedies.has(k));
       const donneur = new Map<string, unknown>();
       for (const k of champs) for (const e of entrees) if (e[k] != null && !donneur.has(k)) donneur.set(k, e[k]);
       const vues = new Set<string>();
-      let pire = 0;
+      let pire: string[] = [];
       for (const e of entrees) {
         const signature = Object.keys(e).sort().join('|');
         if (vues.has(signature)) continue;
         vues.add(signature);
+        const solo = schema.safeParse([e]).success;
+        if (!solo && !entier) continue;
         const charge = chargeDiscriminee(fichier, e);
         const presentes = champs.filter((k) => !charge || k === charge.champ || charge.duCas.includes(k) || !charge.toutes.includes(k));
-        let etrangers = 0;
+        const etrangers: string[] = [];
         for (const k of presentes) {
           if (e[k] !== undefined || !donneur.has(k)) continue;
-          if (!schema.safeParse([{ ...e, [k]: donneur.get(k) }]).success) etrangers++;
+          const avec = { ...e, [k]: donneur.get(k) };
+          if (!schema.safeParse(solo ? [avec] : entrees.map((x) => (x === e ? avec : x))).success) etrangers.push(k);
         }
-        if (etrangers > pire) pire = etrangers;
+        if (etrangers.length > pire.length) pire = etrangers;
       }
-      if (pire > 0) mesure[cat.key] = pire;
+      if (pire.length) mesure[cat.key] = pire;
     }
     expect(mesure, 'une catégorie présente un champ que son schéma refuse : déclarer sa charge par cas (`chargeParDiscriminant`) — ou, si le stock BAISSE, retirer sa ligne').toEqual(STOCK);
-    expect(mesure.materials, '`materials` a repris des champs étrangers').toBeUndefined();
+    // #1686 tenait à `materials` : le stock NOMME désormais ses clés, si bien qu'une reprise de champs
+    // d'un autre domaine (`pitchDeg`, `couleurDeFace`…) rougit ICI, à la clé près. `vueDeDessus` est le
+    // seul étranger qui reste, et il vient de la charge du domaine `roof` de `tuile` elle-même : un RÔLE
+    // à porteur UNIQUE, que `chargeParDiscriminant` ne sait pas exprimer — la ligne se solde avec.
   }, 120_000);
 });

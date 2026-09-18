@@ -227,7 +227,7 @@ export interface VehicleData {
     traits: NavalTraitRef[];
   };
   /** Facette PONT (couche tactique, §1bis du modèle naval) : plan person-scale du pont, authoré une fois
-   *  par TYPE et réutilisé dans tout scénario (jamais redessiné). Lu en tuiles/murs par `state/shipDeck.ts`. */
+   *  par TYPE et réutilisé dans tout scénario (jamais redessiné) ; `postes` est lu par `state/shipPostes.ts`. */
   deck?: ShipDeck;
 }
 
@@ -1360,9 +1360,11 @@ export interface DeckPosteSlot {
  *  AUTHORÉ une seule fois et réutilisé tel quel dans tout scénario (jamais redessiné). À l'abordage, le pont
  *  est instancié + cousu depuis ce gabarit. Le plan suit `parseWalledAscii` (authoring canon du projet :
  *  tuiles + murs d'arête, `:` = écoutille) ; les `postes` sont des emplacements de RENDU (cf. `DeckPosteSlot`).
- *  TYPE PUR (engine) — la lecture en tuiles/murs (`Terrain`/`WallSeg`) vit en `state/shipDeck.ts`. */
+ *  TYPE PUR (engine) — seul `postes` est lu à ce jour (`state/shipPostes.ts`) ; le plan `ascii` est du gabarit
+ *  authorable, sans lecteur de production depuis #1789. */
 export interface ShipDeck {
-  /** Plan du pont en box-drawing → tuiles + murs via `parseWalledAscii` (tuile de base = planches). */
+  /** Plan du pont en box-drawing → tuiles + murs via `parseWalledAscii` ; la tuile de base est celle du
+   *  défaut de compilation (`defauts-de-compilation.json › pont`). */
   ascii: string[];
   /** Emplacements de postes d'artillerie (mount points authorés PAR TYPE — généralisent `AuthoredEnemy.postes`). */
   postes?: DeckPosteSlot[];

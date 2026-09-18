@@ -222,13 +222,20 @@ export const roofProfileSchema = enumNomme({
 });
 /** Météo AUTHORÉE d'une Scène (`Scene.weather`, `LDB 14 l.68-82`) — lue par `sceneCombatModifiers` et
  *  nommée à l'écran par le hub de ville. */
-export const sceneWeatherSchema = enumNomme({
-  clair: 'Ciel clair',
-  pluie: 'Pluie',
-  brouillard: 'Brouillard',
-  neige: 'Neige',
-  tempete: 'Tempête',
-});
+export const sceneWeatherSchema = enumNomme(
+  {
+    clair: 'Ciel clair',
+    pluie: 'Pluie',
+    brouillard: 'Brouillard',
+    neige: 'Haute épaisseur de neige',
+    tempete: 'Tempête',
+  },
+  {
+    brouillard: '−20 aux tirs (LDB 14 l.75)',
+    tempete: '−20 aux attaques (LDB 14 l.76)',
+    neige: '−30 à l’attaque et à l’esquive (LDB 14 l.82)',
+  },
+);
 /** Côté d'égout bas (OBLIGATOIRE pour `shed`, ignoré sinon). */
 export const eaveSideSchema = z.enum(['N', 'E', 'S', 'O']);
 /**
@@ -713,7 +720,9 @@ export const sceneSchema = z.strictObject({
   ambiance: ambianceSchema.optional(),
   /** Classification écologique lue par les attributs de Domaine (`LDB 48 l.690`). */
   environment: z.enum(['rural', 'urbain', 'sauvage']).optional(),
-  /** Météo (`LDB 14 l.68-82`) — défaut 'clair', lue par `sceneCombatModifiers`. */
+  /** Météo (`LDB 14 l.68-82`) — l'ABSENCE est une VALEUR : temps non spécifié, aucun modificateur de
+   *  combat et aucune ambiance de météo. Lue SANS REPLI par `state/sceneRules.ts`
+   *  (`sceneCombatModifiers`) et par `gameIso/catalog/ambiance.ts`. */
   weather: sceneWeatherSchema.optional(),
   /** Id d'un `lightLevels`, ou `'auto'`/absent = suit l'horloge via `ambiance`. */
   ambientLight: z.string().optional(),

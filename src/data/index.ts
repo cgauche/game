@@ -83,6 +83,7 @@ import ventsTourbillonnantsJson from './vents-tourbillonnants.json';
 import symptomsJson from './symptoms.json';
 import detailsJson from './details.json';
 import semencesDeSceneJson from './semences-de-scene.json';
+import defautsDeCompilationJson from './defauts-de-compilation.json';
 import starsJson from './stars.json';
 import astrologyJson from './astrology.json';
 import locationsJson from './locations.json';
@@ -1614,6 +1615,16 @@ export interface SemencesDeSceneData {
   reliefDefaults: ReliefDefaults;
   roofDefaults: SceneRoofDefaults;
 }
+/**
+ * DÉFAUTS DE COMPILATION (#1716/#1789) — ce que le compilateur de scène (`state/mapSpec.ts`) pose
+ * quand une section d'un `MapSpec` laisse le terrain implicite. Distinct des SEMENCES : celles-ci
+ * fondent une scène neuve, ceux-là remplissent une déclaration déjà écrite.
+ */
+export interface DefautsDeCompilationData {
+  cheminDeRonde: Terrain;
+  masse: Terrain;
+  pont: Terrain;
+}
 /** MANŒUVRE de combat (attaque naturelle activée — LDB 85) — ENTITÉ ÉDITABLE de PREMIÈRE CLASSE (au
  *  même titre qu'un Sort) : son propre dataset `maneuvers.json`, sa catégorie Codex, ses effets
  *  AUTHORÉS en GameOp (`effects`). Un trait l'OCTROIE (`TraitData.grantsManeuvers`) ; le résolveur
@@ -2847,6 +2858,8 @@ export const windsOfMagicTable = (ventsTourbillonnantsJson as { entries: { id: s
 export const details = detailsJson as DetailsData;
 /** Semences d'une scène NEUVE (#1716) — lues par `emptyScene` (`state/scene.ts`), éditables au Codex. */
 export const semencesDeScene = semencesDeSceneJson as SemencesDeSceneData;
+/** Défauts du COMPILATEUR de scène (#1716) — lus par `mapSpec.ts`/`buildBoardingScene`, éditables au Codex. */
+export const defautsDeCompilation = defautsDeCompilationJson as DefautsDeCompilationData;
 export const stars = starsJson as StarData[];
 /** Les 5 demeures célestes (ADE II 3 l.502-512, « Déterminer les demeures célestes ») — ossature
  *  narrative du thème astral (flavor pur, aucun effet mécanique). `rand` = borne haute du 1d10. */

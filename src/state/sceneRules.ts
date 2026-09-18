@@ -31,7 +31,9 @@ export function sceneIsDark(scene: Pick<Scene, 'ambiance'>, gameTime: number): b
 /** Modificateurs de combat de la scène (obscurité de nuit pilotée par l'horloge + météo). */
 export function sceneCombatModifiers(scene: Pick<Scene, 'ambiance' | 'weather'>, gameTime: number): SceneCombatMods {
   const night = sceneIsDark(scene, gameTime);
-  const weather = scene.weather ?? 'clair';
+  // ABSENCE de météo authored : aucune branche ci-dessous ne tire — mesuré identique au repli de ciel
+  // clair qui vivait ici, qui n'était donc pas un défaut mais un id récité sans effet (#1789).
+  const weather = scene.weather;
   const concealed = night || weather === 'brouillard'; // cible dissimulée : Difficile −20 au tir (LDB 14 l.75)
   let attackMod = 0;
   let dodgeMod = 0;

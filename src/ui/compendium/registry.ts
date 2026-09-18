@@ -12,7 +12,7 @@ import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, siegeEngines, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
   stars, locations, findLocationById, books, bookAbr, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, advancementBaseId, weaponGroupLabel, qualitySubtypeLabel, qualityTypeLabel,
-  skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, semencesDeScene, names,
+  skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, semencesDeScene, defautsDeCompilation, names,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms, symptomLabel, windsOfMagicTable,
@@ -1999,6 +1999,22 @@ const CODEX_SPECS: CodexCategorySpec[] = [
           { t: 'kv', k: 'Sol de départ', v: semencesDeScene.terrain },
           { t: 'kv', k: 'Matières de relief', v: Object.entries(semencesDeScene.reliefDefaults).map(([part, mat]) => `${part} : ${mat}`).join(' · ') },
           { t: 'kv', k: 'Toiture', v: `${semencesDeScene.roofDefaults.material} · ${semencesDeScene.roofDefaults.pitchDeg}° · comble ${semencesDeScene.roofDefaults.riseMaxStoreys} étage(s)` },
+        ] as CodexRow[],
+      }),
+    }],
+  },
+  {
+    key: 'defautsDeCompilation', label: 'Défauts de compilation', group: 'Tables',
+    // UNE seule entrée (objet `defauts-de-compilation.json`) — ce que le compilateur de scène pose
+    // quand l'auteur laisse le terrain implicite (`state/mapSpec.ts`). Éditable ici (`edit.object: 'single'`).
+    build: () => [{
+      id: 'defauts-de-compilation', label: 'Défauts de compilation',
+      sections: sections({
+        title: 'Ce que le compilateur pose à la place de l’auteur', layout: 'list',
+        rows: [
+          { t: 'kv', k: 'Chemin de ronde', v: defautsDeCompilation.cheminDeRonde },
+          { t: 'kv', k: 'Masse d’un mur plein', v: defautsDeCompilation.masse },
+          { t: 'kv', k: 'Pont de navire', v: defautsDeCompilation.pont },
         ] as CodexRow[],
       }),
     }],

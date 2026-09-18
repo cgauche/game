@@ -105,6 +105,9 @@ import { openPartyTest, openWorldTest, composeRollLabel, openSequence, freeCons,
 import { registerCascadeApplier, registerCascadeSuccessRule, registerTableStep, startCascade, runCascadeImmediate, pushStep } from './cascade';
 import { exposureWaveBand } from './nightBands';
 import { dataLabel } from '../data';
+// Tuile de PONT d'une scène de bord : défaut de compilation (`defauts-de-compilation.json`), éditable
+// au Codex — la scène d'abordage est compilée, elle n'authore pas son sol.
+import { defautsDeCompilation } from '../data';
 import { t, t as tr } from '../i18n'; // `tr` : alias pour les portées où `t` est un identifiant local (résultat de jet)
 import type { WindAspect } from '../engine/seaWeather';
 
@@ -2171,7 +2174,7 @@ function buildBoardingScene(playerHullRef: string, playerHullName: string, b: Se
     id: BOARDING_SCENE_ID,
     label: `Abordage — ${b.label}`,
     size: [18, 12],
-    terrain: 'planches',
+    terrain: defautsDeCompilation.pont,
     ambiance: 'exterieur',
     heroStart: [3, 7],
     startMessage: t('sv.boardingStart', { ship: b.label }),

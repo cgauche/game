@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useGame } from '../../state/store';
-import { DEFAULT_TERRAIN, Scene, emptyScene, Terrain, tileAt, heightAt } from '../../state/scene';
+import { Scene, emptyScene, tileAt } from '../../state/scene';
+import { resizeGrid } from '../../state/sceneEdit';
 import { validateScene, type Warning } from '../../state/validateScene';
 import { planFocusTiles, type PlanDefectAt, type PlanDefectFamily } from '../../state/planDefects';
 import { testScene } from '../../scenes/test-fixture';
@@ -769,21 +770,7 @@ export function Editor({
     }
   }
   function resize(w: number, h: number) {
-    // Re-tisse chaque couche à la nouvelle taille : tuiles ET hauteurs métriques recopiées dans la zone
-    // commune (le reste = défaut). Le tableau `height` n'est conservé que s'il porte une valeur ≠ 0.
-    const layers = scene.layers.map((layer) => {
-      const tiles: Terrain[] = new Array(w * h).fill(DEFAULT_TERRAIN);
-      const height: number[] = new Array(w * h).fill(0);
-      let hasHeight = false;
-      for (let y = 0; y < Math.min(h, scene.dimensions.h); y++)
-        for (let x = 0; x < Math.min(w, scene.dimensions.w); x++) {
-          tiles[y * w + x] = tileAt(scene, x, y, layer.z);
-          const hv = heightAt(scene, x, y, layer.z);
-          if (hv) { height[y * w + x] = hv; hasHeight = true; }
-        }
-      return { z: layer.z, tiles, ...(hasHeight ? { height } : {}) };
-    });
-    setScene({ ...scene, dimensions: { w, h }, layers });
+    setScene(resizeGrid(scene, w, h));
   }
 
   const { w, h } = scene.dimensions;

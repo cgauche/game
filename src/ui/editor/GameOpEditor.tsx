@@ -19,6 +19,7 @@ import type { Condition } from '../../engine/flowCore';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
 import { etats, talentConcrete, qualityRefLabel, refLabel, findCrewTestTypeById, charAbr, effectTables, mutationTables, conditionLabel, lightTones, memoParVersion } from '../../data';
 import { findFallTable, fallTables } from '../../data/shipCriticals';
+import { tousLesTerrains } from '../../state/terrain';
 import { RefField } from '../compendium/RefField';
 import type { DatasetKey } from '../../data/overrides';
 import { giveTrappingLabel } from '../../engine/items';
@@ -385,6 +386,18 @@ export function ResolveWindowField({ value, onChange }: {
 // Défauts — une op MINIMALE VALIDE par type
 // ---------------------------------------------------------------------------
 
+/**
+ * Terrain d'ÉLECTION proposé par défaut à une op `offTerrainMod` : le PREMIER terrain non franchissable
+ * à pied du registre (`terrains.json › walkable`), dans l'ordre authoré. Un défaut d'éditeur se DÉRIVE
+ * de la donnée — le sens de l'op est « la créature se meut dans un élément que le marcheur ne foule
+ * pas » ; l'auteur choisit ensuite. `terrains.json` en porte toujours au moins un (l'absence de tuile).
+ */
+function terrainDElectionParDefaut(): string {
+  const t = tousLesTerrains().find((x) => !x.walkable);
+  if (!t) throw new Error('`terrains.json` ne porte aucun terrain non franchissable : `offTerrainMod` n’a plus de défaut dérivable.');
+  return t.id;
+}
+
 export function newOp(op: GameOp['op'] | string): GameOp {
   switch (op as GameOp['op']) {
     case 'wounds': return { op: 'wounds', amount: 5 };
@@ -470,7 +483,9 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'fall': return { op: 'fall', hauteur: { table: { id: '' } } };
     case 'moveScale': return { op: 'moveScale', num: 1, den: 2 };
     case 'moveMod': return { op: 'moveMod', mod: -1 };
-    case 'offTerrainMod': return { op: 'offTerrainMod', terrain: 'eau', mSet: 1, testDR: -2 };
+    // Terrain d'ÉLECTION : le SENS de l'op est « hors de l'élément où l'on se meut », donc le premier
+    // terrain NON franchissable à pied du registre — dérivé du dataset, jamais un id récité.
+    case 'offTerrainMod': return { op: 'offTerrainMod', terrain: terrainDElectionParDefaut(), mSet: 1, testDR: -2 };
     case 'attrMod': return { op: 'attrMod', attr: 'fortune', mod: 1 };
     case 'maxWeaponHands': return { op: 'maxWeaponHands', hands: 1 };
     case 'disarm': return { op: 'disarm' };

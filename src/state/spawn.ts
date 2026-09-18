@@ -11,6 +11,7 @@ import { inanimateCombatant } from '../engine/inanimate';
 import { hullArmourBonus, hullNavalTraits } from '../engine/navalTraits';
 import { requiredTerrains } from '../engine/ops';
 import { CustomStatblock, type Scene, heightAt, tileAt } from './scene';
+import { terrainAbsent } from './terrain';
 import { randomizeChars } from '../engine/statblock';
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import { emptyArmour, buildWeapon, hydratePoste, loadWeapon } from '../engine/items';
@@ -44,9 +45,11 @@ export function placeCombatant(c: { pos?: { x: number; y: number; z?: number; h?
   else if (c.offTerrain) delete c.offTerrain;
 }
 
-/** Terrain de la case, tolérant une scène absente (harnais de test sans scène → 'sol'). */
+/** Terrain de la case, tolérant une scène absente : PAS de scène = pas de tuile, donc le terrain que le
+ *  dataset déclare comme l'ABSENCE (`terrainAbsent`, `state/terrain`) — aucun porteur ne l'élit, le
+ *  drapeau `offTerrain` tombe donc à VRAI, comme avec le repli d'id récité qui vivait ici (#1789). */
 function tileAt2(scene: Scene | null, x: number, y: number, z: number): string {
-  return scene ? tileAt(scene, x, y, z) : 'sol';
+  return scene ? tileAt(scene, x, y, z) : terrainAbsent();
 }
 
 /** Forme du corps d'un Combattant (Tableau de Localisation, LDB 76 p.312) : dérivée de l'ESPÈCE du record

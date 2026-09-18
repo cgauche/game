@@ -31,8 +31,8 @@ import { allMusicDefs } from '../../audio/music';
 import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, matieresCouvrantes, matieresDe, structureAppearances, refEstVolumique, siegeEngines } from '../../data';
 import { poseToitureDeCorps, rederiveRoofMasses, renameActionAuthoree, toitureEffective } from '../../state/sceneEdit';
 import { activitiesFor } from '../../engine/activities';
-import { libelleDeValeur, valeursDe } from '../../data/schemas/grammaire/meta';
-import { entityKindSchema, facadeFeatureKindSchema, roofProfileSchema } from '../../data/schemas/defs-scenes/scene';
+import { hintDeValeur, libelleDeValeur, valeursDe } from '../../data/schemas/grammaire/meta';
+import { entityKindSchema, facadeFeatureKindSchema, roofProfileSchema, sceneWeatherSchema } from '../../data/schemas/defs-scenes/scene';
 
 /** Cibles d'une ANCRE de bataille (`Scene.stations[].sceneId`) : les Scènes de Round du catalogue
  *  d'Activités (contexte `bataille-round`) — le SEUL espace d'ids que le consommateur sait résoudre
@@ -2040,12 +2040,14 @@ function SceneProps({
         </label>
         <label className="ed-field">
           Météo
-          <select value={scene.weather ?? 'clair'} onChange={(e) => setScene({ ...scene, weather: e.target.value as Scene['weather'] })}>
-            <option value="clair">Clair</option>
-            <option value="pluie">Pluie</option>
-            <option value="brouillard">Brouillard (−20 tir)</option>
-            <option value="neige">Neige épaisse (−20 attaque/esquive)</option>
-            <option value="tempete">Tempête (−20 attaque)</option>
+          {/* Vocabulaire ET libellés DE L'ENUM (`sceneWeatherSchema`, `defs-scenes/scene.ts`) : une météo
+              ajoutée au schéma s'offre ici le jour même. L'absence est une VALEUR d'authoring — le hub de
+              ville ne nomme alors aucune météo, et aucun modificateur de combat ne s'applique. */}
+          <select value={scene.weather ?? ''} onChange={(e) => setScene({ ...scene, weather: (e.target.value || undefined) as Scene['weather'] })}>
+            <option value="">Non spécifiée</option>
+            {Object.entries(valeursDe(sceneWeatherSchema) ?? {}).map(([id, label]) => (
+              <option key={id} value={id} title={hintDeValeur(sceneWeatherSchema, id)}>{label}</option>
+            ))}
           </select>
         </label>
         <MusicSelect

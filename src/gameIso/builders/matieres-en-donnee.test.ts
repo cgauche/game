@@ -53,10 +53,8 @@ const baseDe = (c: (typeof COUCHES)[number]) => `src/${c.prefixe}${c.dir === '.'
 const duStore = (rel: string) => !/^(gameIso|ui)\//.test(rel);
 
 /**
- * Les trois SIGNAUX STRUCTURELS du store, chacun neutralisé par `codeSeul` — aucun nom de fichier,
+ * Les SIGNAUX STRUCTURELS du store, chacun neutralisé par `codeSeul` — aucun nom de fichier,
  * aucune ligne : c'est la FORME qui dit qu'un littéral n'est pas une émission de matière.
- *  - une valeur TYPÉE `Terrain` (`: Terrain`, `<Terrain>`, `as Terrain[]`) est un id de TERRAIN, et
- *    `pierre`/`terre` sont des homonymes entre les deux vocabulaires ;
  *  - la clé `scope:` porte la PORTÉE d'un avertissement de validation, où `plan` est le plan de scène ;
  *  - une déclaration `… as const satisfies <X>Defaults` est une SEMENCE d'authoring GELÉE : depuis
  *    #1716 la semence VIVANTE est de la donnée (`semences-de-scene.json`, lue par `emptyScene`), et
@@ -66,7 +64,6 @@ const duStore = (rel: string) => !/^(gameIso|ui)\//.test(rel);
  *    `Fige<…Defaults>` (#1789), et cette reconnaissance par REGEX passe au checker (#1789 train D).
  */
 const SIGNAUX_STRUCTURELS = [
-  { nom: 'valeur TYPÉE `Terrain`', re: /:\s*(Readonly)?(Set|ReadonlySet)?<?\s*Terrain\b|\bas\s+Terrain(\[\])?\b/, portee: 'ligne' },
   { nom: 'clé `scope:` (portée d’un avertissement)', re: /\bscope:/, portee: 'ligne' },
   { nom: 'SEMENCE `as const satisfies …Defaults`', re: /\bas const satisfies\s+(?:Fige<)?\w*Defaults>?\b/, portee: 'bloc' },
 ] as const;
@@ -154,9 +151,9 @@ const NEUTRALISEURS: readonly Neutraliseur[] = [
  *  - commentaires de bloc et de ligne retirés — une réf en prose n'est pas une émission ;
  *  - chaque NEUTRALISEUR de `NEUTRALISEURS` appliqué à la ligne ; `sauf` en retire UN, et c'est
  *    ainsi que le test de vie mesure ce que chacun blanchit RÉELLEMENT dans le périmètre ;
- *  - les trois signaux du store (`SIGNAUX_STRUCTURELS`) : valeur TYPÉE `Terrain`, clé `scope:`, et
- *    déclaration `as const satisfies <X>Defaults` (la SEMENCE d'authoring, neutralisée sur tout son
- *    bloc puisqu'elle s'écrit sur plusieurs lignes).
+ *  - les deux signaux du store (`SIGNAUX_STRUCTURELS`) : clé `scope:` et déclaration `as const
+ *    satisfies <X>Defaults` (la SEMENCE d'authoring, neutralisée sur tout son bloc puisqu'elle
+ *    s'écrit sur plusieurs lignes).
  */
 function codeSeul(src: string, sauf?: string): string {
   const onglets = clesDOnglet(src);
@@ -169,6 +166,93 @@ function codeSeul(src: string, sauf?: string): string {
       let code = i >= 0 ? l.slice(0, i) : l;
       for (const n of NEUTRALISEURS) if (n.nom !== sauf) code = n.applique(code, onglets);
       return LIGNE_STRUCTURELLE.test(code) ? litteraux(code) : code;
+    })
+    .join('\n');
+}
+
+/** Un id CITÉ en littéral (la mesure commune des trois bras). */
+const citeId = (id: string) => new RegExp(`(['"\`])${id}\\1`);
+
+/** Les MEMBRES littéraux d'une UNION, déclarée (`type X = 'a' | 'b'`) comme écrite en place. */
+const membresDUnion = (union: string): string[] => [...union.matchAll(/(['"`])([^'"`\n]*)\1/g)].map((m) => m[2]);
+
+/** Les ids de `terrains.json`, mémoïsés — le registre des sols contre lequel une union se juge. */
+const idsTerrain = (() => {
+  let vus: Set<string> | null = null;
+  return () => (vus ??= new Set(terrains.map((t) => t.id)));
+})();
+
+/** CLAUSE PARTAGÉE du bras terrain : une union dont TOUS les membres sont des ids de terrain n'est
+ *  pas un vocabulaire propre, c'est une LISTE RÉCITÉE — elle n'entre pas au répertoire
+ *  (`vocabulaireDUnion`) et le neutraliseur d'union en place ne la blanchit pas. */
+const membresSontTousDesTerrains = (union: string): boolean => {
+  const membres = membresDUnion(union);
+  return membres.length > 0 && membres.every((v) => idsTerrain().has(v));
+};
+
+/**
+ * VOCABULAIRE D'UNION déclaré DANS LE FICHIER (`type X = 'a' | 'b' | …`) — le pendant, pour les ids de
+ * terrain, de ce que `clesDOnglet` fait des clés d'IU : une valeur qui appartient à un vocabulaire
+ * déclaré ici est de CE vocabulaire, pas du registre des sols, et sa lecture (`=== 'vide'`,
+ * `capacite: 'porte'`, une table de priorité) est le MÊME signal que sa déclaration.
+ *
+ * La garde reste fermée sur le cas qui compte : une union dont TOUS les membres sont des ids de
+ * terrain n'est pas un vocabulaire propre, c'est une LISTE DE TERRAINS récitée en code — elle
+ * n'entre pas dans le répertoire, et la ligne reste comptée.
+ */
+const vocabulaireDUnion = (src: string): Set<string> => {
+  const mots = new Set<string>();
+  for (const m of src.matchAll(/\btype\s+\w+\s*=\s*([^;{}]*?);/g)) {
+    const membres = membresDUnion(m[1]);
+    if (membres.length < 2 || membresSontTousDesTerrains(m[1])) continue;
+    for (const v of membres) mots.add(v);
+  }
+  return mots;
+};
+
+/**
+ * Les NEUTRALISEURS du bras TERRAIN, chacun NOMMÉ — même contrat que `NEUTRALISEURS` : un neutraliseur
+ * que plus aucun site de `src/state` n'exerce est une exemption morte, et le test de vie le rend ROUGE.
+ * Aucun nom de fichier, aucune ligne : c'est la FORME qui dit qu'un littéral n'est pas un id de sol.
+ *  - le VOCABULAIRE D'UNION déclaré dans le fichier (capacité d'arête, résultat de dépilage…) ;
+ *  - une UNION de littéraux ÉCRITE EN PLACE (paramètre, champ) qui porte AU MOINS un membre hors du
+ *    registre des sols : elle DÉCLARE un vocabulaire propre, elle n'émet pas. Une union dont TOUS les
+ *    membres sont des ids de terrain est une LISTE RÉCITÉE — même clause qu'au répertoire
+ *    `vocabulaireDUnion`, et la ligne reste comptée ;
+ *  - un CHAMP dont le vocabulaire n'est pas celui des sols — `key` (clé de récap), `cargoId`
+ *    (cargaison, `bois`), `weather` (météo, `neige`) : chacun a un homonyme au registre des terrains ;
+ *  - la SEMENCE d'authoring GELÉE (`as const satisfies Fige<…Defaults>`) des migrations de projet.
+ */
+const NEUTRALISEURS_TERRAIN: readonly { nom: string; portee: 'ligne' | 'bloc'; applique: (code: string, mots: Set<string>) => string }[] = [
+  {
+    nom: 'VOCABULAIRE d’union déclaré dans le fichier',
+    portee: 'ligne',
+    applique: (code, mots) =>
+      mots.size ? code.replace(new RegExp(`(['"\`])(?:${[...mots].join('|')})\\1`, 'g'), (m) => `${m[0]}_${m[0]}`) : code,
+  },
+  {
+    nom: 'UNION de littéraux écrite en place',
+    portee: 'ligne',
+    applique: (code) =>
+      code.replace(UNION_DE_LITTERAUX, (union) => (membresSontTousDesTerrains(union) ? union : litteraux(union))),
+  },
+  { nom: 'champ `key`/`cargoId`/`weather` (vocabulaire hors sols)', portee: 'ligne', applique: champHorsMatiere('key|cargoId|weather') },
+  { nom: 'SEMENCE d’authoring GELÉE d’une migration', portee: 'bloc', applique: (code) => code.replace(SEMENCE_DECL, (bloc) => litteraux(bloc)) },
+];
+
+/** Le code du store SANS ses commentaires ni ses homonymes de terrain, lignes préservées. `sauf` en
+ *  retire UN neutraliseur — c'est ainsi que le test de vie mesure ce que chacun blanchit RÉELLEMENT.
+ *  Un neutraliseur de portée `bloc` s'applique au TEXTE entier (la semence gelée tient sur 3 lignes). */
+function codeHorsTerrain(src: string, sauf?: string): string {
+  const mots = vocabulaireDUnion(src);
+  let texte = codeNu(src).join('\n');
+  for (const n of NEUTRALISEURS_TERRAIN) if (n.portee === 'bloc' && n.nom !== sauf) texte = n.applique(texte, mots);
+  return texte
+    .split('\n')
+    .map((l) => {
+      let code = l;
+      for (const n of NEUTRALISEURS_TERRAIN) if (n.portee === 'ligne' && n.nom !== sauf) code = n.applique(code, mots);
+      return code;
     })
     .join('\n');
 }
@@ -264,30 +348,73 @@ describe('couches émettrices du monde — aucune matière ni semence de terrain
    * « matière » de la clause est tenue par le bras des ids de `materials.json` ci-dessous, qui scanne
    * `src/state` entier.
    *
-   * Une UNION de littéraux d’un TYPE reste neutralisée (`UNION_DE_LITTERAUX`) : elle DÉCLARE un
-   * vocabulaire d’état (la météo, dont `neige` est l’homonyme d’un terrain), elle n’émet aucune
-   * tuile. AUCUN site toléré, aucune liste d’exemption : le stock mesuré est vide.
+   * Les HOMONYMES du store (`porte` capacité d’arête, `vide` résultat de dépilage, `neige` météo,
+   * `bois` cargaison, `route` clé de récap) sont neutralisés par FORME (`NEUTRALISEURS_TERRAIN`) :
+   * vocabulaire d’union déclaré dans le fichier, union écrite en place, nom de champ, semence gelée.
+   * AUCUN site toléré, aucune liste d’exemption, aucun nom de fichier : le stock mesuré est vide.
    *
    * Périmètre `src/state/scene.ts`, ÉTENDU à `src/state` entier au train C (#1789).
    */
-  it('`src/state/scene.ts` ne porte plus aucune matière ni aucun id de terrain en littéral (#1716)', () => {
-    const schema = fichiers.find((f) => f.rel === 'scene.ts');
-    if (!schema) throw new Error('`src/state/scene.ts` a quitté le périmètre scanné — reformuler la garde.');
+  it('`src/state` ne porte plus aucun id de terrain en littéral (#1716, périmètre entier #1789)', () => {
     const ids = terrains.map((t) => t.id);
     expect(ids.length, 'vocabulaire de terrains VIDE : la garde mesurerait le néant.').toBeGreaterThan(0);
-    const cite = (id: string) => new RegExp(`(['"\`])${id}\\1`);
     const fautes: string[] = [];
-    codeNu(schema.code).forEach((l, i) => {
-      const nu = l.replace(UNION_DE_LITTERAUX, litteraux);
-      for (const id of ids) if (cite(id).test(nu)) fautes.push(`state/scene.ts:${i + 1} — « ${id} »`);
-    });
+    for (const f of fichiers.filter((x) => duStore(x.rel))) {
+      codeHorsTerrain(f.code).split('\n').forEach((l, i) => {
+        for (const id of ids) if (citeId(id).test(l)) fautes.push(`state/${f.rel}:${i + 1} — « ${id} »`);
+      });
+    }
     expect(
       fautes,
-      'le schéma de scène NOMME un terrain : le porteur d’un rôle se demande au dataset ' +
-        '(`terrainAbsent`/`terrainHorsGrille`, `state/terrain`) et une semence vient de ' +
-        '`semences-de-scene.json` — jamais d’un littéral.\n  ' +
+      'le store NOMME un terrain : le porteur d’un rôle se demande au dataset ' +
+        '(`terrainAbsent`/`terrainHorsGrille`, `state/terrain`), une semence vient de ' +
+        '`semences-de-scene.json` et un défaut de compilateur de `defauts-de-compilation.json` — ' +
+        'jamais d’un littéral.\n  ' +
         fautes.join('\n  '),
     ).toEqual([]);
+  });
+
+  /**
+   * CONTRAT DE VIE des neutraliseurs du bras TERRAIN — même mesure que pour les matières : on rejoue
+   * le scan du store en retirant UN neutraliseur, et la différence d'ids comptés est ce qu'il porte.
+   */
+  it('chaque neutraliseur du bras TERRAIN est exercé par un site de `src/state` (aucune exemption morte)', () => {
+    const ids = terrains.map((t) => t.id);
+    const cite = (l: string) => ids.some((id) => citeId(id).test(l));
+    for (const n of NEUTRALISEURS_TERRAIN) {
+      const exerce = fichiers.filter((f) => duStore(f.rel)).some((f) => {
+        const avec = codeHorsTerrain(f.code).split('\n');
+        return codeHorsTerrain(f.code, n.nom)
+          .split('\n')
+          .some((l, i) => cite(l) && !cite(avec[i]));
+      });
+      expect(exerce, `neutraliseur mort : « ${n.nom} » ne blanchit plus aucun site de \`src/state\` — re-trier l’exemption.`).toBe(true);
+    }
+  });
+
+  /**
+   * SONDE de la CLAUSE d'union (#1789) — mesurée sur des sources SYNTHÉTIQUES, vocabulaire tiré du
+   * dataset (aucun id récité ici) : une union dont TOUS les membres sont des sols est une LISTE
+   * RÉCITÉE et reste comptée ; un SEUL membre hors registre en fait un vocabulaire propre, blanchi.
+   */
+  it('une union TOUT-TERRAIN reste comptée, une union à membre hors registre est blanchie', () => {
+    const ids = terrains.map((t) => t.id);
+    expect(ids.length, 'moins de deux terrains : la sonde d’union ne mesure rien.').toBeGreaterThan(1);
+    const [a, b] = ids;
+    const horsRegistre = 'hors-registre-des-sols';
+    expect(ids).not.toContain(horsRegistre);
+    const compte = (src: string) =>
+      codeHorsTerrain(src)
+        .split('\n')
+        .filter((l) => ids.some((id) => citeId(id).test(l))).length;
+    expect(
+      compte(`type Sol = '${a}' | '${b}';`),
+      `liste de terrains récitée blanchie : « ${a} | ${b} » n’est pas un vocabulaire propre, elle doit rester comptée.`,
+    ).toBe(1);
+    expect(
+      compte(`function f(x: '${horsRegistre}' | '${a}') {}`),
+      'une union qui porte un membre hors du registre des sols DÉCLARE un vocabulaire : elle se blanchit.',
+    ).toBe(0);
   });
 
   it('la neutralisation est STRUCTURELLE : une COMPARAISON de partie n’est pas une émission de matière', () => {

@@ -120,6 +120,16 @@ function couplesIdLabel(corps: string): { ids: string[]; labels: string[] } | un
   return ids.length ? { ids, labels } : undefined;
 }
 
+/** Un Record écrit EN ARGUMENT de `enumNomme` est posé AU NŒUD — c'est la forme canonique, jamais une
+ *  dette : premier argument (les libellés de valeurs) comme second (les HINTS mécaniques,
+ *  `grammaire/valeurs.ts`). Reconnue à la FORME de l'appel — le texte qui précède le littéral est
+ *  l'ouverture de `enumNomme(`, éventuellement suivie d'un premier argument COMPLET et de sa virgule.
+ *  Un Record déclaré HORS de l'appel reste vu : seul le nom du 1er argument est blanchi ailleurs. */
+function argumentDEnumNomme(avant: string): boolean {
+  const i = avant.lastIndexOf('enumNomme(');
+  return i >= 0 && /^enumNomme\(\s*(?:(?:\{(?:[^{}]|\{[^{}]*\})*\}|[A-Za-z_$][\w$]*)\s*,\s*)?$/.test(avant.slice(i));
+}
+
 export type Fichier = { readonly chemin: string; readonly source: string };
 
 /** Le détecteur, appliqué à des SOURCES données — donc jouable sur une COPIE (contrôle positif). */
@@ -148,7 +158,7 @@ export function recordsDeLibelles(fichiers: readonly Fichier[], vocabulaires: re
       if (cles.length < 2) continue;
       if (valeurs.some(estIdentifiant) || !valeurs.some(marqueFR)) continue;
       const avant = source.slice(0, m.index);
-      if (/enumNomme\(\s*$/.test(avant)) continue;
+      if (argumentDEnumNomme(avant)) continue;
       const nom = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)[^=]*=\s*$/.exec(avant)?.[1];
       if (nom && new RegExp('enumNomme[(]\\s*' + nom + '[^A-Za-z0-9_$]').test(source)) continue;
       if (nom && estTableDeSegments(nom, source)) continue;
@@ -270,5 +280,19 @@ describe('cliquet — un libellé de valeur vit sur le NŒUD, jamais dans un Rec
       { chemin: 'e.ts', source: "const s = enumNomme({ physique: 'Physique', mentale: 'Mentale' });\n" },
     ];
     expect(recordsDeLibelles(foyer, vocabulaires)).toEqual([]);
+  });
+
+  it('le SECOND argument de enumNomme (les hints) est posé au nœud, mais le même Record hors appel est VU', () => {
+    const hints = "{ physique: 'Le corps encaisse', mentale: 'L’esprit encaisse' }";
+    const libelles = "{ physique: 'Physique', mentale: 'Mentale' }";
+    const auNoeud: Fichier[] = [
+      { chemin: 'h.ts', source: `const s = enumNomme(\n  ${libelles},\n  ${hints},\n);\n` },
+      { chemin: 'i.ts', source: `const LIBELLES = ${libelles};\nconst s = enumNomme(LIBELLES, ${hints});\n` },
+    ];
+    expect(recordsDeLibelles(auNoeud, vocabulaires)).toEqual([]);
+    const horsAppel: Fichier[] = [
+      { chemin: 'j.ts', source: `const HINTS = ${hints};\nconst s = enumNomme(${libelles});\n` },
+    ];
+    expect(recordsDeLibelles(horsAppel, vocabulaires)).toEqual(['j.ts:HINTS']);
   });
 });

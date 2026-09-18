@@ -55,7 +55,11 @@
 //   3. on retire la ligne dans le MÊME commit que la migration.
 // Le contrat est BIDIRECTIONNEL : une forme observée absente d'ici = rouge (dérive neuve) ; une
 // ligne d'ici plus observée = rouge (ligne périmée) ; un compte d'occurrences, un LOT, un MOTIF ou
-// une DATE qui bougent = rouge (ils entrent dans la clé comparée). Ce stock ne fait que DÉCROÎTRE.
+// une DATE qui bougent = rouge (ils entrent dans la clé comparée).
+// RÉGIME DU STOCK (#1789, même geste qu'à `slotsStock.mjs:19`, `26628b417`) : une forme rendue
+// MESURABLE par la sortie d'un littéral de code vers une DONNÉE ENTRE au stock — elle y est nouvelle
+// à la mesure, pas au dépôt ; le stock DÉCROÎT quand une forme s'ÉTEINT, migrée vers la forme cible
+// du lexique. Une forme neuve qu'aucune sortie de code n'explique reste une DÉRIVE.
 //
 // LOT, MOTIF, DATE sont du PILOTAGE : ils se DÉCIDENT en revue, la sonde ne les mesure pas — la
 // forme observée les reprend d'ici par son SITE (concept, dataset, champ, signature). Le lot d'une
@@ -482,6 +486,14 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "semences-de-scene.json", champ: "reliefDefaults", signature: "cliff,deck,pilier,ramp", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-09-18" },
   { concept: "reference", dataset: "semences-de-scene.json", champ: "roofDefaults", signature: "material+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-09-18" },
   { concept: "reference", dataset: "semences-de-scene.json", champ: "terrain", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-09-18" },
+  // #1789 : `defauts-de-compilation.json` — ce que le COMPILATEUR de scène pose quand la déclaration
+  // laisse le terrain implicite. Trois ids nus SCALAIRES (chemin de ronde, masse d'un mur plein, pont
+  // d'une scène de bord), forme HISTORIQUE de la référence — MÊME solde que `semences-de-scene.json ›
+  // terrain` juste au-dessus, dont ils sont les jumeaux : mêmes `idDe('terrain')`, même famille
+  // `config`, même lot de mort L3.
+  { concept: "reference", dataset: "defauts-de-compilation.json", champ: "cheminDeRonde", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-09-18" },
+  { concept: "reference", dataset: "defauts-de-compilation.json", champ: "masse", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-09-18" },
+  { concept: "reference", dataset: "defauts-de-compilation.json", champ: "pont", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-09-18" },
   { concept: "reference", dataset: "ship-construction.json", champ: "constructionTraits", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "ship-criticals.json", champ: "ops", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 11, lot: "L3 #1463", date: "2026-08-23" }, // 5 → 11 (#1657 B3-2b-a) : 6 rangées MDG dont le Test ne vivait qu'en prose `note` gagnent leur `crewHit` (MDG 13 l.730/734/736/738/751/756, échec = État À Terre)
   { concept: "reference", dataset: "skills.json", champ: "altChar", signature: "gatedByRule+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },

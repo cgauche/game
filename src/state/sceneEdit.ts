@@ -6,7 +6,7 @@
  * Chaque fonction renvoie une NOUVELLE Scène (immuable). `editorState.ts` les RÉ-EXPORTE : les câblages
  * du canvas (couplés UI/gameIso) y restent. NE JAMAIS importer `../ui/` ni `../gameIso/` ici.
  */
-import { ActionAuthoree, Scene, SceneEntity, SceneEffectZone, Terrain, CellSide, EncounterMember, layerTiles, tileAt, sceneMetresPerTile, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, ArchitectureRect, FacadeSection, BuildingMass, RoofDefaults, SceneRoofDefaults } from './scene';
+import { ActionAuthoree, DEFAULT_TERRAIN, Scene, SceneEntity, SceneEffectZone, Terrain, CellSide, EncounterMember, crenellatedAt, heightAt, layerTiles, tileAt, sceneMetresPerTile, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, ArchitectureRect, FacadeSection, BuildingMass, RoofDefaults, SceneRoofDefaults } from './scene';
 import { memoByRef } from './sceneMemo';
 import type { FireArc, AuthoredShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
@@ -167,6 +167,36 @@ export function fillTerrainRect(scene: Scene, rect: Rect, terrain: Terrain, z = 
   for (let y = rect.y; y < rect.y + rect.h; y++)
     for (let x = rect.x; x < rect.x + rect.w; x++) if (x >= 0 && y >= 0 && x < w && y < h) tiles[y * w + x] = terrain;
   return withLayerTiles(scene, z, tiles);
+}
+
+/**
+ * REDIMENSIONNE la grille : chaque couche est re-tissée à la nouvelle taille, tuiles, hauteurs
+ * métriques ET crénelure recopiées dans la zone COMMUNE (le reste reçoit le sol de départ,
+ * `DEFAULT_TERRAIN`) — les TROIS tableaux par case suivent l'index aplati `y·w+x`, et un merlon hors
+ * de la nouvelle grille disparaît avec sa case. `height` comme `crenellated` ne sont conservés que
+ * s'ils portent une valeur (≠ 0 pour l'un, non nulle pour l'autre).
+ *
+ * La pose passe par `putLayer`, jamais par une reconstruction directe de `layers` : le CARDINAL de la
+ * grille (#1789) est gardé là et nulle part ailleurs. Les nouvelles dimensions sont posées D'ABORD,
+ * c'est contre elles que le cardinal se mesure. PUR — l'éditeur n'en tient que l'appel.
+ */
+export function resizeGrid(scene: Scene, w: number, h: number): Scene {
+  return scene.layers.reduce<Scene>((s, layer) => {
+    const tiles = new Array(w * h).fill(DEFAULT_TERRAIN) as Terrain[];
+    const height = new Array(w * h).fill(0) as number[];
+    const crenellated = new Array(w * h).fill(null) as (string | null)[];
+    let hasHeight = false;
+    let hasCrenellated = false;
+    for (let y = 0; y < Math.min(h, scene.dimensions.h); y++)
+      for (let x = 0; x < Math.min(w, scene.dimensions.w); x++) {
+        tiles[y * w + x] = tileAt(scene, x, y, layer.z);
+        const hv = heightAt(scene, x, y, layer.z);
+        if (hv) { height[y * w + x] = hv; hasHeight = true; }
+        const cv = crenellatedAt(scene, x, y, layer.z);
+        if (cv) { crenellated[y * w + x] = cv; hasCrenellated = true; }
+      }
+    return putLayer(s, layer.z, tiles, hasHeight ? height : undefined, hasCrenellated ? crenellated : undefined);
+  }, { ...scene, dimensions: { w, h }, layers: [] });
 }
 
 /** Ajoute une couche à la cote `z` (grille « vide » = transparente, à construire), triée par z. No-op si
@@ -674,21 +704,27 @@ export function patchEntityCombat(scene: Scene, id: string, patch: Partial<NonNu
   return { ...scene, entities: scene.entities.map((e) => (e.id === id ? { ...e, combat: { ...e.combat, ...patch } } : e)) };
 }
 
-/** Pose (ou REMPLACE) la couche `z` avec des tuiles complètes + hauteurs optionnelles, triée par z. Brique
- *  d'import d'une grille ASCII entière (`buildScene`) — là où `paintTiles`/`paintHeight` posent case par case. */
-export function putLayer(scene: Scene, z: number, tiles: Terrain[], height?: number[]): Scene {
+/** Pose (ou REMPLACE) la couche `z` avec des tuiles complètes + hauteurs et crénelure optionnelles, triée
+ *  par z. Brique d'import d'une grille ASCII entière (`buildScene`) — là où `paintTiles`/`paintHeight`/
+ *  `paintCrenellated` posent case par case. `crenellated` ABSENT garde celle de la couche remplacée (la
+ *  pose ne parle que de ce qu'elle porte) ; PRÉSENT, il la remplace — c'est la voie du redimensionnement,
+ *  qui remappe les merlons sur la nouvelle grille. */
+export function putLayer(scene: Scene, z: number, tiles: Terrain[], height?: number[], crenellated?: (string | null)[]): Scene {
   // CARDINAL de la grille (#1789) : le refine du schéma garde les DOCUMENTS, ce mutateur garde le
   // RUNTIME — une couche posée courte rendrait des trous que `tileAt` devrait replier, et le repli
   // masquerait la pose malformée (`terrainWalkable(undefined) === false` là où le sol est praticable).
   const attendu = scene.dimensions.w * scene.dimensions.h;
-  const court = ([['tiles', tiles.length], ['height', height?.length]] as const).find(([, n]) => n !== undefined && n !== attendu);
+  const court = ([['tiles', tiles.length], ['height', height?.length], ['crenellated', crenellated?.length]] as const).find(
+    ([, n]) => n !== undefined && n !== attendu,
+  );
   if (court)
     throw new Error(
       `putLayer : couche z=${z}, \`${court[0]}\` porte ${court[1]} entrée(s) pour une grille `
       + `${scene.dimensions.w}×${scene.dimensions.h} — il en faut EXACTEMENT ${attendu}`,
     );
   const prev = scene.layers.find((l) => l.z === z);
-  const layer = { z, tiles, ...(height ? { height } : {}), ...(prev?.crenellated ? { crenellated: prev.crenellated } : {}) };
+  const merlons = crenellated ?? prev?.crenellated;
+  const layer = { z, tiles, ...(height ? { height } : {}), ...(merlons ? { crenellated: merlons } : {}) };
   const others = scene.layers.filter((l) => l.z !== z);
   return { ...scene, layers: [...others, layer].sort((a, b) => a.z - b.z) };
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS, DEFAULT_TERRAIN, emptyScene, tileAt, type ArchitectureBody, type ArchitectureRect, type BuildingMass, type Scene, type Terrain } from './scene';
+import { crenellatedAt, DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS, DEFAULT_TERRAIN, emptyScene, tileAt, type ArchitectureBody, type ArchitectureRect, type BuildingMass, type Scene, type Terrain } from './scene';
 import { semencesDeScene } from '../data';
 import { METRES_PER_LEVEL } from './relief';
 import {
@@ -14,7 +14,9 @@ import {
   editEntity,
   moveEntityTo,
   normaliseAssises,
+  paintCrenellated,
   putLayer,
+  resizeGrid,
   rectCoverOf,
   ridgeAxisOf,
   poseToitureDeCorps,
@@ -852,5 +854,45 @@ describe('putLayer — une couche posée porte EXACTEMENT `w×h` entrées', () =
     expect(couche?.tiles).toHaveLength(16);
     expect(couche?.height).toHaveLength(16);
     expect(tileAt(pose, 3, 3, 1)).toBe('pierre');
+  });
+
+  /**
+   * REDIMENSIONNEMENT (#1789) — `resizeGrid` est la SEULE voie du redimensionnement de grille, et elle
+   * POSE par `putLayer` : le cardinal runtime tient donc sur le produit. Le câblage se mesure sur ce
+   * produit : autant d'entrées que de cases, pour CHAQUE couche, et la dernière case rendue par
+   * `tileAt` — une couche courte ferait LEVER `putLayer` au lieu de rendre une grille trouée.
+   */
+  describe('resizeGrid — le redimensionnement POSE par `putLayer` (#1789)', () => {
+    it('agrandit chaque couche au cardinal, garde la zone commune et remplit le reste du sol de départ', () => {
+      const avant = putLayer(putLayer(grille(), 0, pleines(16, 'pierre')), 1, pleines(16, 'mur'), new Array(16).fill(4));
+      const apres = resizeGrid(avant, 6, 5);
+      expect(apres.dimensions).toEqual({ w: 6, h: 5 });
+      expect(apres.layers.map((l) => l.z)).toEqual([0, 1]);
+      for (const couche of apres.layers) {
+        expect(couche.tiles, `couche z=${couche.z}`).toHaveLength(30);
+        if (couche.height) expect(couche.height, `hauteurs z=${couche.z}`).toHaveLength(30);
+      }
+      expect(tileAt(apres, 3, 3, 0)).toBe('pierre'); // zone commune préservée
+      expect(tileAt(apres, 5, 4, 0)).toBe(DEFAULT_TERRAIN); // DERNIÈRE case de la grille agrandie
+      expect(tileAt(apres, 5, 4, 1)).toBe(DEFAULT_TERRAIN);
+    });
+
+    it('rétrécit au cardinal de la NOUVELLE grille, sans une entrée de trop', () => {
+      const apres = resizeGrid(putLayer(grille(), 0, pleines(16, 'pierre')), 2, 2);
+      expect(apres.layers[0].tiles).toHaveLength(4);
+      expect(tileAt(apres, 1, 1, 0)).toBe('pierre');
+    });
+
+    /** La CRÉNELURE est le troisième tableau par case : elle suit le même remappage `y·w+x` que les
+     *  hauteurs — un merlon de la zone commune survit, un merlon exclu part avec sa case. */
+    it('un MERLON de la zone commune survit à l’agrandissement et part avec la case que le rétrécissement exclut', () => {
+      const avant = paintCrenellated(putLayer(grille(), 0, pleines(16, 'pierre')), { x: 1, y: 1 }, 'creneau-x', 1);
+      expect(crenellatedAt(avant, 1, 1, 0)).toBe('creneau-x');
+      const agrandie = resizeGrid(avant, 6, 5);
+      expect(agrandie.layers[0].crenellated, 'crénelure au cardinal de la grille agrandie').toHaveLength(30);
+      expect(crenellatedAt(agrandie, 1, 1, 0), 'le merlon (1,1) a sauté l’agrandissement').toBe('creneau-x');
+      const retrecie = resizeGrid(avant, 1, 1);
+      expect(retrecie.layers[0].crenellated, 'un merlon hors grille survit au rétrécissement').toBeUndefined();
+    });
   });
 });

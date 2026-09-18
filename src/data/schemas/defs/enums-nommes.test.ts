@@ -106,7 +106,7 @@ const MIGRES: readonly [string, unknown, Record<string, string>][] = [
     shed: 'Appentis (shed) — 1 pan', flat: 'Terrasse (flat) — plat',
   }],
   ['scene.weather', sceneWeatherSchema, {
-    clair: 'Ciel clair', pluie: 'Pluie', brouillard: 'Brouillard', neige: 'Neige', tempete: 'Tempête',
+    clair: 'Ciel clair', pluie: 'Pluie', brouillard: 'Brouillard', neige: 'Haute épaisseur de neige', tempete: 'Tempête',
   }],
   ['worldmap.routes[].windFrom (WindDirection)', windDirectionSchema, {
     nord: 'Nord', sud: 'Sud', est: 'Est', ouest: 'Ouest',

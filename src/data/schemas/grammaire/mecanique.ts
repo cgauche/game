@@ -89,6 +89,18 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
    *  elle est déjà écrite par la ligne « Cible » du sort (ZdE, `LDB 47 l.28`) — l'op la LIT. */
   domeWard: z.strictObject({ op: z.literal('domeWard'), traitId: idDe('trait'), indice: formulaSchema }),
   suffocate: z.strictObject({ op: z.literal('suffocate') }),
+  /** `offTerrainMod` — passif POSITIONNEL : hors de son terrain d'ÉLECTION, le porteur subit un M
+   *  IMPOSÉ (`mSet`, Créature marine MDG 16 p.140 « son M tombe à 1 » ; Aquatique MSRC 15 p.90 → 0),
+   *  un malus de DR à TOUS ses Tests (`testDR`) et/ou la suffocation (`suffocates`). Le terrain se
+   *  nomme par un ID du registre (`idDe('terrain')`) : un terrain inconnu est refusé AU PARSE, là où
+   *  il rendait auparavant le drapeau `offTerrain` VRAI partout en silence (`engine/ops.ts:279-283`). */
+  offTerrainMod: z.strictObject({
+    op: z.literal('offTerrainMod'),
+    terrain: idDe('terrain'),
+    mSet: z.number().optional(),
+    testDR: z.number().optional(),
+    suffocates: z.boolean().optional(),
+  }),
 };
 
 /**
@@ -108,7 +120,7 @@ export const OPS_NON_TYPEES: readonly string[] = [
   'grantFreeAttack', 'grantNaturalWeapon', 'grantPsychTrait', 'grantReverseToken', 'grantTalent', 'grantTrait',
   'grantWeapon', 'handGate', 'ignoreAnimosity', 'ignoreStatePenalties', 'incomingAdvantage', 'incomingAttackMod',
   'incomingSpellDRMod', 'interruptFocus', 'intoxicate', 'lifeSteal', 'light', 'martyr', 'maxWeaponHands',
-  'mitigateIncoming', 'moveMod', 'moveScale', 'narrative', 'offTerrainMod', 'perRound', 'polymorph',
+  'mitigateIncoming', 'moveMod', 'moveScale', 'narrative', 'perRound', 'polymorph',
   'preventInfection', 'push', 'reduceDiseaseDays', 'reduceToZero', 'removeCondition', 'removePsychTrait',
   'removeShipPoste', 'rollMutation', 'rollTable', 'rollThreshold', 'sbBonus', 'scheduleRespawn', 'senseLoss',
   'sinMod', 'skillDRBonus', 'skillMod', 'spendAdvantage', 'statusMod', 'summon', 'suppressPsych',

@@ -18,6 +18,10 @@ import { refOuSpec, idDe } from './ref';
  * Le porteur est le NŒUD, jamais la clé de premier niveau : un enum niché (`[].outcomes[].on`) ou
  * partagé par 2 950 chemins (`actorRefSchema`) se nomme UNE fois, ici, comme un champ de racine.
  *
+ * Une valeur peut porter, EN PLUS de son libellé, un HINT mécanique (`hints`, même porteur : le nœud) :
+ * ce que la règle FAIT quand cette valeur est choisie, lu par `hintDeValeur` (`grammaire/meta.ts`) et
+ * rendu en infobulle d'option. Une réf nue, jamais une prose de source (règle stricte 5).
+ *
  * `.extract`/`.exclude` sont REFUSÉS sur un enum nommé : zod 4.4.3 rend un NOUVEAU nœud dont la
  * `.meta()` est vide (mesuré) — le sous-univers perdrait ses libellés EN SILENCE. Un sous-univers se
  * déclare par son propre `enumNomme`. Le refus posé ci-dessous n'est PAS un verrou par construction :
@@ -25,10 +29,13 @@ import { refOuSpec, idDe } from './ref';
  * rendant un nœud neuf qui reprend les méthodes de zod. Le verrou est la garde STRUCTURELLE de
  * `valeurs-de-champ.test.ts` : aucun `.extract(`/`.exclude(` sur un enum nommé dans `src/**`.
  */
-export function enumNomme<const V extends Readonly<Record<string, string>>>(valeurs: V) {
+export function enumNomme<const V extends Readonly<Record<string, string>>>(
+  valeurs: V,
+  hints?: Partial<Record<Extract<keyof V, string>, string>>,
+) {
   type Cle = Extract<keyof V, string>;
   const options = Object.keys(valeurs) as [Cle, ...Cle[]];
-  const noeud = z.enum(options).meta({ valeurs });
+  const noeud = z.enum(options).meta({ valeurs, ...(hints ? { hints } : {}) });
   const refuse = (op: string) => (): never => {
     throw new Error(
       `enumNomme : \`.${op}()\` sur un enum NOMMÉ rendrait un nœud SANS ses libellés de valeurs (zod 4.4.3 : la meta ne suit pas le sous-enum) — déclarer le sous-univers par son propre \`enumNomme\`.`,
