@@ -19,13 +19,17 @@ règles de **Warhammer Fantasy Roleplay 4ᵉ édition**. On contrôle un groupe 
 - **Éditeur de niveau** : peinture de tuiles, placement d'entités, dialogues/triggers/combats.
   La scène de campagne est un document au même format → **entièrement ré-éditable dans l'éditeur**.
 - **Coop hotseat** : les héros jouent tour à tour, le joueur actif est mis en avant.
-- **Assets procéduraux** : tokens, tuiles et animations générés au runtime (Phaser).
+- **Assets procéduraux** : rien de dessiné à la main au runtime — les rigs de personnages sont
+  des SVG composés (`src/gameIso/rig/`), le décor est de la géométrie bâtie à la volée
+  (`src/gameIso/builders/`).
 
 ## Pile technique
 
-- **Phaser 3** — moteur de jeu (rendu de la grille, animations, caméra, input).
-- **React + TypeScript** — interface (menus, créateur, fiches, dialogues, HUD, éditeur).
-- **Zustand** — état partagé reliant React et Phaser.
+- **three.js** — rendu volumique du monde (`src/gameIso/backends/webgl/`) : sol, murs, props, jetons,
+  caméra, lumières.
+- **React + TypeScript** — interface (menus, créateur, fiches, dialogues, HUD, éditeur) et surcouches
+  SVG du plateau (grille, traits de mur, réticules, chrome des jetons).
+- **Zustand** — état partagé reliant React et le rendu du monde.
 - **Vite** — bundler · **Vitest** — tests du moteur de règles.
 
 ## Démarrage
@@ -45,10 +49,15 @@ Autres scripts : `npm test` (tests du moteur), `npm run build` (build de product
 ```
 src/engine/             Règles WFRP4 (pur TS, testé)
 src/data/               Base app-owned (JSON commité, éditable dans le Compendium)
-src/state/              Schéma de Scène, store Zustand, pathfinding, bus
-src/game/               Scène Phaser (exploration + combat tactique)
-src/ui/                 Interface React (menus, créateur, HUD, éditeur)
-src/scenes/             Documents de scène de campagne (Tome 1)
+src/state/              Schéma de Scène, store Zustand, flux de jet, IA, pathfinding
+src/gameIso/            Rendu du monde : builders/ (géométrie pure) montée par stage/ sur le backend
+                        three.js (backends/webgl/), plus rig/, fx/, pov/, authoring/
+src/geometry/           Grille, projection isométrique, déplacement
+src/ui/                 Interface React (menus, créateur, HUD, éditeur, compendium)
+src/scenes/             Documents de scène et de campagne
+src/net/                Coop en ligne : client du relay WS (le Worker Cloudflare vit dans server/)
+src/audio/              Musique et sons
+src/i18n/               Textes français de l'interface
 ```
 
 Le **schéma de Scène** (`src/state/scene.ts`) est l'unique contrat partagé par l'éditeur, le
