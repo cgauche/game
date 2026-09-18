@@ -10,8 +10,9 @@ import { describe, it, expect, afterEach } from 'vitest';
 import {
   tousLesTerrains, terrainIds, terrainEntree, terrainLabel, terrainWalkable, terrainPriority,
   terrainOpaque, terrainBuilt, terrainSolidHeightM, terrainOverlayProp, terrainDetail,
-  terrainAbsent, estAbsent, terrainHorsGrille,
+  terrainAbsent, estAbsent, terrainHorsGrille, glypheDe, terrainsAvecGlyphe,
 } from './index';
+import { GLYPHES_RESERVES } from '../../data/schemas/grammaire/carte-ascii';
 import { setDataset } from '../../data/overrides';
 import { terrainDef, terrainGradient, terrainGradientId, MISSING_GRADIENT } from '../../gameIso/catalog/terrain';
 import { defsGlobaux } from '../../gameIso/sprites';
@@ -99,6 +100,35 @@ describe('terrains — les deux RÔLES ADRESSÉS, jamais un id récité (#1789)'
   it('un dataset SANS porteur d’un rôle lève, nommément — aucun repli silencieux', () => {
     setDataset('terrains', AVANT.map((t) => { const { absence: _a, ...reste } = t; return reste; }) as never);
     expect(() => terrainAbsent()).toThrow(/absence.*0 entrée/s);
+  });
+});
+
+describe('terrains — le GLYPHE d’authoring est une donnée (#1789)', () => {
+  it('`glypheDe` rend le glyphe DÉCLARÉ, `undefined` sur un terrain qui n’en porte pas, sur un id inconnu', () => {
+    const declare = tousLesTerrains().find((t) => typeof t.ascii === 'string');
+    expect(declare, 'aucun terrain ne déclare de glyphe : la façade servirait un vocabulaire vide.').toBeDefined();
+    expect(glypheDe(declare!.id)).toBe(declare!.ascii);
+    const sans = tousLesTerrains().find((t) => t.ascii === undefined)!;
+    expect(glypheDe(sans.id), `« ${sans.id} » n’a pas de glyphe au dataset`).toBeUndefined();
+    expect(glypheDe('zzz-inconnu')).toBeUndefined();
+  });
+
+  it('`terrainsAvecGlyphe` EST la légende de base : un glyphe par terrain déclarant, hors grammaire du plan', () => {
+    const legende = terrainsAvecGlyphe();
+    const declarants = tousLesTerrains().filter((t) => typeof t.ascii === 'string');
+    expect(Object.keys(legende)).toHaveLength(declarants.length);
+    for (const t of declarants) expect(legende[t.ascii!], t.id).toBe(t.id);
+    for (const ch of Object.keys(legende))
+      expect(GLYPHES_RESERVES.has(ch), `le glyphe « ${ch} » est un mot de la grammaire du plan`).toBe(false);
+  });
+
+  it('un glyphe ÉDITÉ au dataset est vu sans rechargement (lecture VIVE)', () => {
+    const declare = tousLesTerrains().find((t) => typeof t.ascii === 'string')!;
+    expect(terrainsAvecGlyphe()['§']).toBeUndefined();
+    setDataset('terrains', AVANT.map((t) => (t.id === declare.id ? { ...t, ascii: '§' } : t)) as never);
+    expect(glypheDe(declare.id), 'la façade a servi un glyphe PÉRIMÉ').toBe('§');
+    expect(terrainsAvecGlyphe()['§']).toBe(declare.id);
+    expect(terrainsAvecGlyphe()[declare.ascii!], 'l’ancien glyphe désigne encore son terrain').toBeUndefined();
   });
 });
 

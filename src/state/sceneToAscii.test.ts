@@ -3,6 +3,8 @@ import { buildScene, type MapSpec } from './mapSpec';
 import { heightAt, isDescriptiveZone, tileAt, type Scene, type SceneEffectZone } from './scene';
 import { sceneZoneTiles } from './zones';
 import { sceneToAscii } from './sceneToAscii';
+import { glypheDe, tousLesTerrains } from './terrain';
+import { setDataset } from '../data/overrides';
 import { diligenceCampaign } from '../scenes/campaign';
 
 /** Scène réelle la plus riche du dépôt (paquet éditeur : 32×38, 2 niveaux). */
@@ -196,6 +198,60 @@ describe('sceneToAscii — round-trip doré (buildScene → export → réimport
     // `appearance` qui est réellement perdue.
     const rebuilt = buildScene(reimport('diag-rt', [2, 2], exp));
     expect((rebuilt.walls ?? []).filter((w) => w.side === '\\' || w.side === '/')).toEqual([{ x: 0, y: 0, side: '\\' }]);
+  });
+});
+
+describe('sceneToAscii — les glyphes DÉCLARÉS au dataset sont RÉSERVÉS (#1789)', () => {
+  /** Une couche à trois terrains : la base, un terrain à glyphe DÉCLARÉ (`terrains.json › ascii`) et
+   *  un terrain SANS glyphe, qui doit donc être servi par l'allocateur. */
+  const planTroisTerrains = (declare: string, sans: string): Scene =>
+    buildScene({
+      id: 'glyphes',
+      label: 'Glyphes',
+      size: [3, 1],
+      terrain: 'herbe',
+      legend: { X: declare, Y: sans },
+      walled: { z0: ['+ + + +', ' . X Y ', '+ + + +'].join('\n') },
+    });
+
+  it('un terrain à glyphe DÉCLARÉ sort sous SON glyphe, et la `legend` exportée le porte quand même', () => {
+    const declare = tousLesTerrains().find((t) => typeof t.ascii === 'string');
+    expect(declare, 'aucun terrain ne déclare de glyphe : la sonde mesurerait le néant.').toBeDefined();
+    const sans = tousLesTerrains().find((t) => t.ascii === undefined && t.id !== 'herbe' && t.id !== declare!.id)!;
+    const exp = sceneToAscii(planTroisTerrains(declare!.id, sans.id));
+    expect(exp.legend[declare!.ascii!], `le glyphe déclaré « ${declare!.ascii} » ne désigne pas « ${declare!.id} »`).toBe(declare!.id);
+    expect(exp.walled.z0, 'la grille n’écrit pas le terrain sous son glyphe déclaré').toContain(declare!.ascii!);
+    // Le round-trip ne dépend d'aucune donnée chez le relecteur : la légende exportée est COMPLÈTE.
+    const rebuilt = buildScene(reimport('glyphes-rt', [3, 1], exp));
+    expectGeometryEqual(planTroisTerrains(declare!.id, sans.id), rebuilt);
+  });
+
+  it('un terrain SANS glyphe n’obtient JAMAIS un glyphe déclaré par un autre (le pool le retire)', () => {
+    // Le glyphe déclaré est posé À L'ATELIER sur un char que l'allocateur servirait TÔT (`b`, second
+    // de l'alphabet) : sans réservation, le premier terrain sans glyphe le raflerait. Les glyphes
+    // committés (`#`/`~`/`_`/`=`) ne sont pas dans l'alphabet d'allocation — ils ne prouveraient rien.
+    const avant = tousLesTerrains().map((t) => ({ ...t }));
+    const hote = avant.find((t) => typeof t.ascii === 'string')!;
+    const sansGlyphe = avant.filter((t) => t.ascii === undefined && t.id !== 'herbe').slice(0, 3);
+    expect(sansGlyphe.length, 'moins de trois terrains sans glyphe : l’allocateur n’est pas exercé.').toBe(3);
+    try {
+      setDataset('terrains', avant.map((t) => (t.id === hote.id ? { ...t, ascii: 'b' } : t)) as never);
+      const exp = sceneToAscii(
+        buildScene({
+          id: 'pool',
+          label: 'Pool',
+          size: [4, 1],
+          terrain: 'herbe',
+          legend: { X: sansGlyphe[0].id, Y: sansGlyphe[1].id, Z: sansGlyphe[2].id },
+          walled: { z0: ['+ + + + +', ' . X Y Z ', '+ + + + +'].join('\n') },
+        }),
+      );
+      expect(exp.legend.b, `le glyphe déclaré « b » a été alloué à « ${exp.legend.b} »`).toBeUndefined();
+      for (const t of sansGlyphe) expect(glypheDe(t.id), `${t.id} a reçu un glyphe`).toBeUndefined();
+      expect(Object.values(exp.legend).sort()).toEqual(sansGlyphe.map((t) => t.id).sort());
+    } finally {
+      setDataset('terrains', avant as never);
+    }
   });
 });
 

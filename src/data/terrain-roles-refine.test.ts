@@ -1,5 +1,11 @@
 /**
- * CONTRAT du REFINE DE COLLECTION des RÔLES de terrain (#1789) — `schemas/defs/terrains.ts`.
+ * CONTRAT des REFINES DE COLLECTION de `terrains.json` (#1789) — `schemas/defs/terrains.ts` : les
+ * deux RÔLES adressés par le moteur, et le GLYPHE d'authoring qui écrit un terrain dans une carte
+ * ASCII (unique dans la collection, hors grammaire du plan — `grammaire/carte-ascii.ts`).
+ *
+ * Le glyphe est de la même classe que les rôles : une propriété dont la VALIDITÉ se mesure sur la
+ * collection entière (deux entrées au même glyphe rendraient la lecture d'un plan dépendante de
+ * l'ordre d'écriture), donc un refine de dataset, jamais d'entrée.
  *
  * Deux rôles que le moteur ADRESSE au lieu de réciter un id : `absence` (la non-tuile — ce qu'une
  * couche porte là où rien n'est bâti) et `bordDuMonde` (ce que la grille rend au-delà de ses bornes).
@@ -14,8 +20,9 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { schema } from './schemas/defs/terrains';
+import { GLYPHES_RESERVES } from './schemas/grammaire/carte-ascii';
 
-type Entree = { id: string; absence?: boolean; bordDuMonde?: boolean };
+type Entree = { id: string; absence?: boolean; bordDuMonde?: boolean; ascii?: string };
 type Role = 'absence' | 'bordDuMonde';
 
 const charger = (): Entree[] => JSON.parse(readFileSync(fileURLToPath(new URL('./terrains.json', import.meta.url)), 'utf8'));
@@ -39,7 +46,7 @@ function exige(entree: Entree | undefined, quoi: string): Entree {
 const porteurDe = (role: Role): Entree =>
   exige(charger().find((t) => t[role] === true), `aucune entrée ne porte le rôle « ${role} »`);
 
-describe('rôles de terrain — EXACTEMENT UN porteur par rôle, refusé au parse sinon (#1789)', () => {
+describe('terrains — rôles à porteur UNIQUE et glyphe d’authoring UNIQUE, refusés au parse sinon (#1789)', () => {
   it('le dataset COMMITTÉ passe : la sonde ne mesure pas un refus permanent', () => {
     expect(refus(() => {}), 'terrains.json refusé À VIDE : les cas ci-dessous ne prouveraient plus rien.').toEqual([]);
   });
@@ -73,6 +80,47 @@ describe('rôles de terrain — EXACTEMENT UN porteur par rôle, refusé au pars
       expect(messages[0]).toContain(porteur.id);
     });
   }
+
+  it('un glyphe d’authoring DOUBLÉ est refusé, en nommant le glyphe et les deux entrées', () => {
+    const porteur = exige(charger().find((t) => typeof t.ascii === 'string'), 'aucune entrée ne déclare de glyphe `ascii`');
+    const autreId = exige(charger().find((t) => t.ascii === undefined), 'toutes les entrées déclarent un glyphe').id;
+    const messages = refus((dataset) => {
+      exige(dataset.find((t) => t.id === autreId), `« ${autreId} » a disparu de la copie`).ascii = porteur.ascii;
+    });
+    expect(messages.length, 'un glyphe doublé n’a levé AUCUN refus.').toBe(1);
+    expect(messages[0], 'le refus ne cite pas `ascii` en chemin.').toContain('@ascii');
+    expect(messages[0], 'le refus ne NOMME pas le glyphe fautif.').toContain(`glyphe « ${porteur.ascii} »`);
+    expect(messages[0], 'le refus ne NOMME pas les entrées en collision.').toContain(porteur.id);
+    expect(messages[0]).toContain(autreId);
+  });
+
+  it('un glyphe de la GRAMMAIRE du plan est refusé, en nommant le glyphe, le terrain et le vocabulaire réservé', () => {
+    const reserve = [...GLYPHES_RESERVES][0];
+    const cible = exige(charger().find((t) => t.ascii === undefined), 'toutes les entrées déclarent un glyphe');
+    const messages = refus((dataset) => {
+      exige(dataset.find((t) => t.id === cible.id), `« ${cible.id} » a disparu de la copie`).ascii = reserve;
+    });
+    expect(messages.length, 'un glyphe RÉSERVÉ n’a levé AUCUN refus.').toBe(1);
+    expect(messages[0], 'le refus ne cite pas `ascii` en chemin.').toContain('@ascii');
+    expect(messages[0], 'le refus ne NOMME pas le glyphe fautif.').toContain(`glyphe « ${reserve} »`);
+    expect(messages[0], 'le refus ne NOMME pas le terrain fautif.').toContain(cible.id);
+    expect(messages[0], 'le refus ne dit pas que le glyphe est réservé par la grammaire.').toContain('RÉSERVÉ');
+  });
+
+  it('un glyphe de PLUS D’UN caractère est refusé au champ, en FRANÇAIS et en citant la valeur lue', () => {
+    const cible = exige(charger().find((t) => t.ascii === undefined), 'toutes les entrées déclarent un glyphe');
+    const messages = refus((dataset) => {
+      exige(dataset.find((t) => t.id === cible.id), `« ${cible.id} » a disparu de la copie`).ascii = '##';
+    });
+    expect(messages.length, 'un glyphe de deux chars n’a levé AUCUN refus.').toBeGreaterThan(0);
+    const dit = messages.join('\n');
+    // Refus de CHAMP (`@<index>.ascii`), non de collection (`@ascii`) : la longueur se mesure sur
+    // l'entrée, le chemin dit donc l'entrée fautive puis le champ.
+    expect(dit, 'le refus ne cite pas `ascii` en chemin.').toMatch(/@\d+\.ascii/);
+    expect(dit, 'le refus ne CITE pas la valeur refusée.').toContain('« ## »');
+    expect(dit, 'le refus ne dit pas la règle en français (UN SEUL caractère).').toContain('UN SEUL caractère');
+    expect(dit, 'le refus sort le message zod ANGLAIS par défaut.').not.toContain('Too big');
+  });
 
   it('les deux rôles sont portés par des entrées DISTINCTES — le bord du monde n’est pas une absence', () => {
     expect(porteurDe('bordDuMonde').id, 'le bord du monde et la non-tuile ont fusionné : la Ligne de Vue au bord change.')

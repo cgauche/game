@@ -1,6 +1,7 @@
 import type { Terrain, WallOverlay, WallSeg } from './scene';
 import { wallOverlayOf } from './scene';
-import { terrainWalkable } from './terrain';
+import { terrainWalkable, terrainsAvecGlyphe } from './terrain';
+import { FOND_ECRIT, GRAMMAIRE_ASCII } from '../data/schemas/grammaire/carte-ascii';
 
 /**
  * Authoring de carte par ASCII (1 char = 1 tuile) — lisible et fidèle pour reproduire un plan. Une
@@ -8,19 +9,24 @@ import { terrainWalkable } from './terrain';
  * mais côté app (source unique réutilisable par les scénarios `src/scenes/...`).
  */
 
-/** Légende commune : `.`/espace = `base`. Surchargeable par scène via `legend`. */
-const BASE_LEGEND: Record<string, Terrain> = { '#': 'mur', '~': 'eau', D: 'porte', _: 'fosse', '=': 'planches' };
+/** LÉGENDE COMMUNE — DÉRIVÉE du dataset : chaque terrain qui porte un glyphe d'authoring
+ *  (`terrains.json › ascii`) s'écrit dans tout plan, sans qu'aucun lecteur ne récite d'id. `.`/espace =
+ *  `base`. Une scène surcharge par sa `legend`. */
+const legendeDeBase = (legend: Record<string, Terrain>): Record<string, Terrain> => ({ ...terrainsAvecGlyphe(), ...legend });
+
+/** Le char vaut-il le FOND de l'étage (`base`) ? Mot de la grammaire du plan, pas une donnée. */
+const estFond = (ch: string) => GRAMMAIRE_ASCII.base.includes(ch);
 
 /** Parse une carte ASCII → { w, h, tiles }. Lève si les lignes diffèrent en largeur ou sur un char
  *  inconnu (garde-fou d'authoring : un plan mal aligné ne passe pas en silence). */
 export function parseAsciiRows(rows: string[], base: Terrain, legend: Record<string, Terrain> = {}): { w: number; h: number; tiles: Terrain[] } {
   const w = rows[0]?.length ?? 0;
-  const lg = { ...BASE_LEGEND, ...legend };
+  const lg = legendeDeBase(legend);
   const tiles: Terrain[] = [];
   rows.forEach((row, y) => {
     if (row.length !== w) throw new Error(`ascii: ligne ${y} largeur ${row.length} ≠ ${w}`);
     for (const ch of row) {
-      if (ch === '.' || ch === ' ') tiles.push(base);
+      if (estFond(ch)) tiles.push(base);
       else if (lg[ch]) tiles.push(lg[ch]);
       else throw new Error(`ascii: char inconnu « ${ch} » (ligne ${y})`);
     }
@@ -30,11 +36,12 @@ export function parseAsciiRows(rows: string[], base: Terrain, legend: Record<str
 
 /**
  * Scanne les `markerChars` dans la grille → leurs positions ET les lignes NETTOYÉES (chaque marqueur
- * remplacé par le char de remplissage = `fill[ch]` sinon `'.'`). Brique de base du motif « poser un
- * marqueur, le nettoyer, scanner sa position » (cf. authoring d'entités dans l'ASCII). `fill` RESTAURE la
- * tuile SOUS le marqueur (ex. une unité au sol pavé : `{ '@': 'P' }`) — sans quoi un marqueur effacerait
- * son terrain (retombe sur la `base`). N'altère AUCUN char non-marqueur. Une clé par char marqueur (même
- * absent → `[]`), positions en ordre de balayage (haut→bas, gauche→droite).
+ * remplacé par le char de remplissage = `fill[ch]` sinon le char de FOND de la grammaire). Brique de
+ * base du motif « poser un marqueur, le nettoyer, scanner sa position » (cf. authoring d'entités dans
+ * l'ASCII). `fill` RESTAURE la tuile SOUS le marqueur (ex. une unité au sol pavé : `{ '@': 'P' }`) —
+ * sans quoi un marqueur effacerait son terrain (retombe sur la `base`). N'altère AUCUN char
+ * non-marqueur. Une clé par char marqueur (même absent → `[]`), positions en ordre de balayage
+ * (haut→bas, gauche→droite).
  */
 export function scanMarkers(rows: string[], markerChars: string, fill: Record<string, string> = {}): { positions: Record<string, { x: number; y: number }[]>; cleaned: string[] } {
   const marks = new Set(markerChars.split(''));
@@ -44,7 +51,7 @@ export function scanMarkers(rows: string[], markerChars: string, fill: Record<st
     let out = '';
     for (let x = 0; x < row.length; x++) {
       const ch = row[x];
-      if (marks.has(ch)) { positions[ch].push({ x, y }); out += fill[ch] ?? '.'; }
+      if (marks.has(ch)) { positions[ch].push({ x, y }); out += fill[ch] ?? FOND_ECRIT; }
       else out += ch;
     }
     return out;
@@ -53,16 +60,16 @@ export function scanMarkers(rows: string[], markerChars: string, fill: Record<st
 }
 
 /** PORTE d'arête (franchissable au jeu, MUR pour la lecture du plan). */
-const DOOR_EDGE = ':';
+const DOOR_EDGE = GRAMMAIRE_ASCII.porte;
 /** FENÊTRE d'arête (mur serti d'une vitre). */
-const WINDOW_EDGE = 'o';
+const WINDOW_EDGE = GRAMMAIRE_ASCII.fenetre;
 /** Cloison DIAGONALE posée sur une CASE (et non sur une arête) — angle mort d'`isWallEdge`. */
-const DIAGONAL_CELLS = '/\\';
+const DIAGONAL_CELLS = GRAMMAIRE_ASCII.diagonales;
 
 /** Un char d'ARÊTE ferme-t-il le plan ? Table UNIQUE du box-drawing, lue par le seul `parseWalledAscii`
  *  — `wallLegend` y ajoute les chars déclarés par la scène (herse, cloison de bois), qui valent mur. */
 function isWallEdge(ch: string, wallLegend: Record<string, WallOverlay> = {}): boolean {
-  return ch === '|' || ch === '-' || ch === DOOR_EDGE || ch === WINDOW_EDGE || ch in wallLegend;
+  return ch === GRAMMAIRE_ASCII.murVertical || ch === GRAMMAIRE_ASCII.murHorizontal || ch === DOOR_EDGE || ch === WINDOW_EDGE || ch in wallLegend;
 }
 
 /** Découpe une grille BOX-DRAWING en lignes, en ne retirant QUE l'ARTEFACT de littéral de gabarit (une
@@ -105,7 +112,7 @@ export function parseWalledAscii(
   const H = (rows.length - 1) / 2;
   if (!Number.isInteger(W) || !Number.isInteger(H) || W < 1 || H < 1) throw new Error('ascii murs : grille (2W+1)×(2H+1) attendue');
   rows.forEach((r, y) => { if (r.length !== 2 * W + 1) throw new Error(`ascii murs : ligne ${y} largeur ${r.length} ≠ ${2 * W + 1}`); });
-  const lg = { ...BASE_LEGEND, ...legend };
+  const lg = legendeDeBase(legend);
   const wallLegend = opts.wallLegend ?? {};
   const isWall = (ch: string) => isWallEdge(ch, wallLegend);
   const tiles: Terrain[] = [];
@@ -121,7 +128,7 @@ export function parseWalledAscii(
     for (let x = 0; x < W; x++) {
       const ch = rows[2 * y + 1][2 * x + 1];
       if (DIAGONAL_CELLS.includes(ch)) { tiles.push(base); walls.push({ x, y, side: ch as '/' | '\\' }); } // cloison DIAGONALE en travers de la case
-      else tiles.push(ch === '.' || ch === ' ' ? base : (lg[ch] ?? (() => { throw new Error(`ascii murs : char inconnu « ${ch} »`); })()));
+      else tiles.push(estFond(ch) ? base : (lg[ch] ?? (() => { throw new Error(`ascii murs : char inconnu « ${ch} »`); })()));
       const n = rows[2 * y][2 * x + 1]; if (isWall(n)) wall(x, y, 'N', n); // arête N (au-dessus de la case)
       const e = rows[2 * y + 1][2 * x + 2]; if (isWall(e)) wall(x, y, 'E', e); // arête E (à droite)
     }
@@ -202,7 +209,7 @@ export function zonesFromSeeds(
   const out: string[] = [];
   for (let y = 0; y < H; y++) {
     let line = '';
-    for (let x = 0; x < W; x++) line += owner[y * W + x] ?? '.';
+    for (let x = 0; x < W; x++) line += owner[y * W + x] ?? FOND_ECRIT;
     out.push(line);
   }
   return out.join('\n');

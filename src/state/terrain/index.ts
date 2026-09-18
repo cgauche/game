@@ -99,6 +99,29 @@ export function terrainHorsGrille(): Terrain {
   return horsGrilleVif();
 }
 
+/**
+ * GLYPHE D'AUTHORING (#1789) — le caractère qui pose ce terrain dans une carte ASCII. C'est une
+ * DONNÉE de l'entrée (`terrains.json › ascii`, unique et hors grammaire du plan, tenu au parse) : la
+ * légende de base d'un plan se DÉRIVE du dataset au lieu d'être récitée par le lecteur, et un terrain
+ * déposé demain au Codex avec son glyphe s'écrit dans les plans le jour même.
+ */
+const glyphesVifs = memoParVersion('terrains', () =>
+  Object.fromEntries(
+    terrains.filter((t) => typeof t.ascii === 'string').map((t) => [t.ascii as string, t.id]),
+  ) as Readonly<Record<string, Terrain>>,
+);
+
+/** Le glyphe d'authoring d'un terrain, ou `undefined` — tous n'en portent pas. */
+export function glypheDe(id: string): string | undefined {
+  return indexDesTerrains()[id]?.ascii;
+}
+
+/** La LÉGENDE DE BASE de toute carte ASCII : glyphe déclaré → id de terrain, index vif. Une `legend`
+ *  de scène se pose PAR-DESSUS (elle surcharge, elle ne remplace pas). */
+export function terrainsAvecGlyphe(): Readonly<Record<string, Terrain>> {
+  return glyphesVifs();
+}
+
 /** Décor billboard posé sur chaque tuile du terrain (id de `props.json`), ou undefined. */
 export function terrainOverlayProp(id: string): string | undefined {
   return indexDesTerrains()[id]?.overlayProp;

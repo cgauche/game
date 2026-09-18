@@ -21,27 +21,38 @@
 import type { Scene, SceneEffectZone, Terrain, WallOverlay, WallSeg } from './scene';
 import { DEFAULT_TERRAIN, heightAt, isDescriptiveZone, tileAt, wallOverlayOf, WALL_OVERLAY_KEYS } from './scene';
 import { sceneZoneTiles } from './zones';
-import { terrainAbsent } from './terrain';
+import { glypheDe, terrainAbsent, terrainsAvecGlyphe } from './terrain';
+import { FOND_ECRIT, GLYPHES_RESERVES, GRAMMAIRE_ASCII } from '../data/schemas/grammaire/carte-ascii';
 
-/** Glyphes RÉSERVÉS par le vocabulaire d'arête (`docs` du format `walled`, cf. `asciiMap.ts`) —
- *  jamais réattribués à un terrain/matériau/zone : `|`/`-` mur, `:` porte, `o` fenêtre, `+` jonction,
- *  `.`/` ` ouvert, `\`/`/` cloison diagonale. */
-const RESERVED_GLYPHS = new Set(['.', ' ', '/', '\\', ':', 'o', '+', '-', '|']);
-const GLYPH_POOL = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+/** Alphabet BRUT de l'allocateur, moins les mots de la grammaire du plan (`carte-ascii.ts`). Les
+ *  glyphes DÉCLARÉS par la donnée (`terrains.json › ascii`) en sont retirés à chaque export : ils
+ *  désignent DÉJÀ un terrain, et un `D` réattribué à une zone rendrait le texte illisible pour qui le
+ *  relit avec la légende de base. */
+const ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   .split('')
-  .filter((c) => !RESERVED_GLYPHS.has(c));
+  .filter((c) => !GLYPHES_RESERVES.has(c));
 
-function makeAllocator(poolLabel: string): (key: string) => string {
-  const assigned = new Map<string, string>();
+/** Les ESPACES DE NOMMAGE d'un export : cases, arêtes, zones. Chacun a sa table clé→char (un terrain
+ *  et une zone ne se confondent pas), mais TOUS consomment le MÊME curseur sur le MÊME pool : un char
+ *  servi à l'un n'est jamais re-servi à un autre dans le même texte. Un curseur par espace ferait
+ *  lire `a` comme « vide » en légende de cases ET « mur-en-bois » en légende d'arêtes. */
+const ESPACES_ALLOUES = ['legend', 'wallLegend', 'zoneLegend'] as const;
+type EspaceAlloue = (typeof ESPACES_ALLOUES)[number];
+
+function makeAllocators(pool: readonly string[]): Record<EspaceAlloue, (key: string) => string> {
   let i = 0;
-  return (key: string) => {
-    const existing = assigned.get(key);
-    if (existing) return existing;
-    if (i >= GLYPH_POOL.length) throw new Error(`sceneToAscii: pool de caractères « ${poolLabel} » épuisé (${key})`);
-    const ch = GLYPH_POOL[i++];
-    assigned.set(key, ch);
-    return ch;
+  const espace = (poolLabel: EspaceAlloue) => {
+    const assigned = new Map<string, string>();
+    return (key: string) => {
+      const existing = assigned.get(key);
+      if (existing) return existing;
+      if (i >= pool.length) throw new Error(`sceneToAscii: pool de caractères « ${poolLabel} » épuisé (${key})`);
+      const ch = pool[i++];
+      assigned.set(key, ch);
+      return ch;
+    };
   };
+  return Object.fromEntries(ESPACES_ALLOUES.map((e) => [e, espace(e)])) as Record<EspaceAlloue, (key: string) => string>;
 }
 
 /** Terrain le plus FRÉQUENT de la couche `z` (base par défaut du char `.`/espace du grillage `walled`). */
@@ -58,10 +69,14 @@ function mostFrequentTerrain(scene: Scene, z: number): Terrain | null {
 
 const edgeKey = (x: number, y: number, side: 'N' | 'E', z: number) => `${x},${y},${side},z${z}`;
 const diagKey = (x: number, y: number, z: number) => `${x},${y},z${z}`;
+/** Séparateur des clés de catégorie (US, U+001F) : un char qu'aucune valeur d'overlay ne peut porter,
+ *  et surtout aucun mot de la grammaire du plan — une clé interne ne s'écrit pas dans le vocabulaire
+ *  du texte exporté. */
+const SEP_CLE = '\u001f';
 /** Catégorie d'arête = ce qu'un char de grille peut porter : porte, fenêtre, et TOUT l'overlay
  *  (`WALL_OVERLAY_KEYS` — jamais une liste énumérée ici : N+1 propriété entre dans la clé toute seule). */
 const wallCatKey = (door: boolean, window: boolean, overlay: WallOverlay) =>
-  `${door ? 1 : 0}|${window ? 1 : 0}|${WALL_OVERLAY_KEYS.map((k) => overlay[k] ?? '').join('|')}`;
+  [door ? 1 : 0, window ? 1 : 0, ...WALL_OVERLAY_KEYS.map((k) => overlay[k] ?? '')].join(SEP_CLE);
 /** L'overlay porte-t-il quoi que ce soit ? (un mur nu `-`/`|` n'en porte aucun). */
 const hasOverlay = (overlay: WallOverlay) => WALL_OVERLAY_KEYS.some((k) => overlay[k] !== undefined);
 /** Overlay lisible dans un avertissement d'outil d'édition (`structure=herse, appearance=mur-en-bois`). */
@@ -72,6 +87,10 @@ export interface SceneAsciiExport {
   walled: Record<string, string>;
   /** Légende de terrain (char → terrain) partagée par toutes les grilles — à coller dans `MapSpec.legend`. */
   legend: Record<string, Terrain>;
+  /** Terrain de FOND de CHAQUE couche (`z0`/`z1`/…) — ce que vaut le char de fond de sa grille. Une
+   *  couche au-dessus du rez a pour fond l'ABSENCE de tuile : lire la légende d'une couche sans cette
+   *  table forcerait chaque appelant (devtools, éditeur) à recopier la règle de `baseOf`. */
+  fondParZ: Record<string, Terrain>;
   /** Terrain de FOND du rez — ce que vaut le char `.` de `walled.z0`, à coller dans `MapSpec.terrain`.
    *  Sans lui, toutes les cases de ce terrain se relisent au défaut de `buildScene` (perte SILENCIEUSE :
    *  382 cases `plancher` sur La Diligence). */
@@ -106,13 +125,21 @@ export function sceneToAscii(scene: Scene): SceneAsciiExport {
   const warn = (msg: string) => warnings.push(msg);
 
   // ── Légende de terrain (partagée par toutes les couches) ─────────────────────────────────────────
-  const terrainAlloc = makeAllocator('legend');
+  // Le pool est celui de l'alphabet MOINS les glyphes que la donnée a déjà attribués : terrains, murs
+  // et zones tirent tous du même pool réduit, aucun ne peut réclamer un `#`/`~`/`D` déclaré.
+  const declares = terrainsAvecGlyphe();
+  const pool = ALPHABET.filter((c) => !(c in declares));
+  const alloc = makeAllocators(pool);
   const legend: Record<string, Terrain> = {};
   const base0 = mostFrequentTerrain(scene, 0) ?? DEFAULT_TERRAIN;
   const baseOf = (z: number) => (z === 0 ? base0 : terrainAbsent());
+  const fondParZ: Record<string, Terrain> = Object.fromEntries(zs.map((z) => [`z${z}`, baseOf(z)]));
   const tileGlyph = (t: Terrain, base: Terrain): string => {
-    if (t === base) return '.';
-    const ch = terrainAlloc(t);
+    if (t === base) return FOND_ECRIT;
+    // Un terrain à glyphe DÉCLARÉ sort sous SON glyphe — le texte exporté s'écrit dans le vocabulaire
+    // d'authoring, pas dans un alphabet d'allocation. `legend` le porte quand même : le round-trip par
+    // `MapSpec.legend` ne dépend alors d'aucune donnée chez celui qui relit.
+    const ch = glypheDe(t) ?? alloc.legend(t);
     legend[ch] = t;
     return ch;
   };
@@ -143,52 +170,53 @@ export function sceneToAscii(scene: Scene): SceneAsciiExport {
   }
   const wallLegend: Record<string, WallOverlay> = {};
   const catToGlyph = new Map<string, string>();
-  const overlayAlloc = makeAllocator('wallLegend');
   const doorCats = [...catCount.values()].filter((c) => c.door).sort((a, b) => b.count - a.count);
   const windowCats = [...catCount.values()].filter((c) => !c.door && c.window).sort((a, b) => b.count - a.count);
   const plainCats = [...catCount.values()].filter((c) => !c.door && !c.window).sort((a, b) => b.count - a.count);
   if (doorCats.length) {
-    for (const c of doorCats) catToGlyph.set(wallCatKey(c.door, c.window, c.overlay), ':');
+    for (const c of doorCats) catToGlyph.set(wallCatKey(c.door, c.window, c.overlay), GRAMMAIRE_ASCII.porte);
     const overlaid = doorCats.filter((c) => hasOverlay(c.overlay));
     if (overlaid.length) {
-      wallLegend[':'] = overlaid[0].overlay;
+      wallLegend[GRAMMAIRE_ASCII.porte] = overlaid[0].overlay;
       const lostN = overlaid.slice(1).reduce((n, c) => n + c.count, 0);
-      if (lostN) warn(`${lostN} porte(s) avec un matériau/une apparence distincts de « ${overlayLabel(overlaid[0].overlay)} » — un seul overlay par glyphe ':' , les autres perdent leur \`structure\`/\`appearance\`.`);
+      if (lostN) warn(`${lostN} porte(s) avec un matériau/une apparence distincts de « ${overlayLabel(overlaid[0].overlay)} » — un seul overlay par glyphe « ${GRAMMAIRE_ASCII.porte} », les autres perdent leur \`structure\`/\`appearance\`.`);
     }
     const lostWindow = doorCats.filter((c) => c.window).reduce((n, c) => n + c.count, 0);
-    if (lostWindow) warn(`${lostWindow} arête(s) à la fois porte ET fenêtre — le glyphe ':' ne porte que la porte, la fenêtre est perdue.`);
+    if (lostWindow) warn(`${lostWindow} arête(s) à la fois porte ET fenêtre — le glyphe « ${GRAMMAIRE_ASCII.porte} » ne porte que la porte, la fenêtre est perdue.`);
   }
   if (windowCats.length) {
-    for (const c of windowCats) catToGlyph.set(wallCatKey(c.door, c.window, c.overlay), 'o');
+    for (const c of windowCats) catToGlyph.set(wallCatKey(c.door, c.window, c.overlay), GRAMMAIRE_ASCII.fenetre);
     const overlaid = windowCats.filter((c) => hasOverlay(c.overlay));
     if (overlaid.length) {
-      wallLegend.o = overlaid[0].overlay;
+      wallLegend[GRAMMAIRE_ASCII.fenetre] = overlaid[0].overlay;
       const lostN = overlaid.slice(1).reduce((n, c) => n + c.count, 0);
-      if (lostN) warn(`${lostN} fenêtre(s) avec un matériau/une apparence distincts de « ${overlayLabel(overlaid[0].overlay)} » — un seul overlay par glyphe 'o', les autres perdent leur \`structure\`/\`appearance\`.`);
+      if (lostN) warn(`${lostN} fenêtre(s) avec un matériau/une apparence distincts de « ${overlayLabel(overlaid[0].overlay)} » — un seul overlay par glyphe « ${GRAMMAIRE_ASCII.fenetre} », les autres perdent leur \`structure\`/\`appearance\`.`);
     }
   }
   const nuPlain = plainCats.find((c) => !hasOverlay(c.overlay));
   if (nuPlain) {
-    catToGlyph.set(wallCatKey(false, false, {}), '-');
-    // '-'/'|' représentent le mur NU (aucun overlay) — jamais enregistrés dans `wallLegend`.
+    catToGlyph.set(wallCatKey(false, false, {}), GRAMMAIRE_ASCII.murHorizontal);
+    // Les murs NUS (aucun overlay) sortent sous les mots `murHorizontal`/`murVertical` de la
+    // grammaire — jamais enregistrés dans `wallLegend`, qui ne porte que des overlays.
   }
   for (const c of plainCats) {
-    if (!hasOverlay(c.overlay)) continue; // déjà couvert par '-'/'|' ci-dessus
+    if (!hasOverlay(c.overlay)) continue; // déjà couvert par le mur NU ci-dessus
     const k = wallCatKey(false, false, c.overlay);
     if (!nuPlain && plainCats.indexOf(c) === 0) {
-      catToGlyph.set(k, '-');
-      wallLegend['-'] = c.overlay;
-      wallLegend['|'] = c.overlay;
+      catToGlyph.set(k, GRAMMAIRE_ASCII.murHorizontal);
+      wallLegend[GRAMMAIRE_ASCII.murHorizontal] = c.overlay;
+      wallLegend[GRAMMAIRE_ASCII.murVertical] = c.overlay;
       continue;
     }
-    const ch = overlayAlloc(`plain:${overlayLabel(c.overlay)}`);
+    const ch = alloc.wallLegend(`plain:${overlayLabel(c.overlay)}`);
     catToGlyph.set(k, ch);
     wallLegend[ch] = c.overlay;
   }
   const wallGlyph = (seg: WallSeg, orientation: 'N' | 'E'): string => {
     const k = wallCatKey(!!seg.door, !!seg.window, wallOverlayOf(seg));
     const g = catToGlyph.get(k);
-    if (g === '-' || g === undefined) return orientation === 'N' ? '-' : '|';
+    if (g === GRAMMAIRE_ASCII.murHorizontal || g === undefined)
+      return orientation === 'N' ? GRAMMAIRE_ASCII.murHorizontal : GRAMMAIRE_ASCII.murVertical;
     return g;
   };
 
@@ -200,7 +228,7 @@ export function sceneToAscii(scene: Scene): SceneAsciiExport {
     for (let ry = 0; ry <= 2 * h; ry++) {
       let row = '';
       for (let rx = 0; rx <= 2 * w; rx++) {
-        if (ry % 2 === 0 && rx % 2 === 0) { row += '+'; continue; }
+        if (ry % 2 === 0 && rx % 2 === 0) { row += GRAMMAIRE_ASCII.jonction; continue; }
         if (ry % 2 === 0) {
           const x = (rx - 1) / 2, ye = ry / 2;
           const seg = edgeAt.get(edgeKey(x, ye, 'N', z));
@@ -231,7 +259,6 @@ export function sceneToAscii(scene: Scene): SceneAsciiExport {
   }
 
   // ── Zones DESCRIPTIVES (pièces) — une couleur par zone id, char recyclé nulle part (legende globale) ──
-  const zoneAlloc = makeAllocator('zoneLegend');
   const zoneLegend: SceneAsciiExport['zoneLegend'] = {};
   const zoneMap: Record<string, string[]> = {};
   const zonesByZ = new Map<number, { x: number; y: number; ch: string }[]>();
@@ -243,7 +270,7 @@ export function sceneToAscii(scene: Scene): SceneAsciiExport {
   }
   for (const zone of descriptive as SceneEffectZone[]) {
     const z = zone.z ?? 0;
-    const ch = zoneAlloc(zone.id);
+    const ch = alloc.zoneLegend(zone.id);
     zoneLegend[ch] = { id: zone.id, label: zone.label, ...(zone.presentation ? { presentation: zone.presentation } : {}) };
     const list = zonesByZ.get(z) ?? [];
     for (const t of sceneZoneTiles(zone)) list.push({ x: t.x, y: t.y, ch });
@@ -303,5 +330,5 @@ export function sceneToAscii(scene: Scene): SceneAsciiExport {
     `export const RELIEF = ${JSON.stringify(relief, null, 2)};\n\n` +
     `export const TERRAIN = ${JSON.stringify(base0)};\n`;
 
-  return { walled, legend, terrain: base0, wallLegend, zoneMap, zoneLegend, relief, notRestored, warnings, text };
+  return { walled, legend, fondParZ, terrain: base0, wallLegend, zoneMap, zoneLegend, relief, notRestored, warnings, text };
 }

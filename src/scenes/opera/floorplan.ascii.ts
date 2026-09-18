@@ -3,7 +3,7 @@
  * 1 char = 1 case ; format box-drawing de `parseWalledAscii` (lignes/colonnes paires = ARÊTES).
  * Légende cases : ' '=vide (hors bâtiment / PUITS de rampe) · ','=salle (dalle) · 'P'=parterre (parquet) ·
  *   'M'=foyer (marbre) · 'S'=scène (planches, +1 m) · 's'=fosse (planches, −1 m) · '#'=masse de maçonnerie
- *   (`BASE_LEGEND` d'`asciiMap.ts` ; à l'étage, le MUR DE FOND DE SCÈNE qui ferme la cage de scène sous le
+ *   (le glyphe `ascii` de `terrains.json` ; à l'étage, le MUR DE FOND DE SCÈNE qui ferme la cage de scène sous le
  *   mur nord — au rez, la rangée 1 est celle des COULISSES, au NORD de la scène — NADJ 08 folio 39 : le
  *   puits touche le mur nord, rien ne relie les deux flancs par le haut).
  *   Arêtes : '-'=mur (N) ·

@@ -642,7 +642,8 @@ export function buildScene(spec: MapSpec): Scene {
   const scanned: { char: string; pos: Pt; z: number }[] = [];
   const walledWalls: WallSpec[] = [];
   // LÉGENDE EFFECTIVE : les lettres `cells` résolvent leur `terrain` (fondation ; défaut = base d'étage) dans
-  // l'ASCII, en surchargeant `legend`/BASE_LEGEND → un `#` d'enceinte tombe en 'pierre', pas en 'mur' ni 'herbe'.
+  // l'ASCII, en surchargeant `legend` et les glyphes `ascii` de `terrains.json` → un `#` d'enceinte tombe
+  // sur la fondation de la lettre, pas sur le terrain que le glyphe désigne par défaut ni sur la base.
   const cellTerrains: Record<string, Terrain> = {};
   for (const [ch, rec] of Object.entries(spec.cells ?? {})) cellTerrains[ch] = rec.terrain ?? spec.terrain ?? DEFAULT_TERRAIN;
   const effLegend = { ...spec.legend, ...cellTerrains };

@@ -18,6 +18,9 @@ import { builtinCampaigns } from '../scenes/campaign';
 import { testScenarios, type TestScenario } from '../scenes/test-scenarios';
 import { editeur } from './editeurBridge';
 import { signalerEntreeEnScene } from './entreeEnScene';
+import { buildOperaFloorplan } from '../scenes/opera/floorplan';
+import { sceneToAscii } from './sceneToAscii';
+import { GLYPHES_RESERVES } from '../data/schemas/grammaire/carte-ascii';
 import { t } from '../i18n';
 import { findSpellById } from '../data';
 
@@ -679,5 +682,91 @@ describe('__wfrp.ready — la PROSE du refus est composée ICI (#1478)', () => {
     await vi.advanceTimersByTimeAsync(0);
     signalerEntreeEnScene('opera-plan', false);
     expect(await p).toContain('✓ monde prêt — scène « opera-plan »');
+  });
+});
+
+describe('__wfrp.ascii — le PLAN de la couche, ses trois légendes et son relief (#1789)', () => {
+  /** Scène la plus riche du dépôt : deux couches, murs à apparence, relief (scène +1 m, fosse −1 m). */
+  const opera = () => {
+    const sc = buildOperaFloorplan();
+    useGame.setState({ scene: sc });
+    return sc;
+  };
+  const sortie = (z: number) => buildApi().ascii(z) as string;
+  /** La liste `ch = valeur` d'une légende imprimée, ou `[]` quand la ligne est absente. */
+  const glyphesDe = (texte: string, titre: string): string[] => {
+    const ligne = texte.split('\n').find((l) => l.startsWith(`${titre} : `));
+    if (!ligne) return [];
+    return ligne.slice(`${titre} : `.length).split(' · ').map((e) => e.split(' = ')[0]);
+  };
+  const grilleDeRelief = (texte: string): string[] => {
+    const lignes = texte.split('\n');
+    const i = lignes.indexOf('relief :');
+    return i < 0 ? [] : lignes.slice(i + 1);
+  };
+
+  afterEach(() => useGame.setState({ scene: null }));
+
+  it('aucun char n’est partagé entre la légende de CASES, celle d’ARÊTES et celle de ZONES', () => {
+    const ex = sceneToAscii(opera());
+    const espaces = { cases: Object.keys(ex.legend), arêtes: Object.keys(ex.wallLegend), zones: Object.keys(ex.zoneLegend) };
+    // `-`/`|` sont les mots NUS de la grammaire : l'export les pose en légende d'arêtes quand toutes
+    // les cloisons portent une apparence — ils ne sortent d'aucun allocateur et ne collisionnent rien.
+    const alloues = (chars: string[]) => chars.filter((c) => !GLYPHES_RESERVES.has(c));
+    for (const [a, b] of [['cases', 'arêtes'], ['cases', 'zones'], ['arêtes', 'zones']] as const) {
+      const communs = alloues(espaces[a]).filter((c) => alloues(espaces[b]).includes(c));
+      expect(communs, `chars servis À LA FOIS en légende ${a} et en légende ${b} : ${communs.join(', ')}`).toEqual([]);
+    }
+  });
+
+  it('les trois légendes s’impriment, et la légende d’arêtes dit l’apparence/la structure', () => {
+    const ex = sceneToAscii(opera());
+    // z1 : c'est l'ÉTAGE qui porte les cloisons à apparence de l'Opéra (`wallLegend` non vide) — une
+    // légende d'arêtes ne s'imprime que là où la couche écrit ses chars.
+    const texte = sortie(1);
+    expect(texte).toContain('légende : ');
+    expect(glyphesDe(texte, 'légende arêtes'), 'aucune légende d’arêtes imprimée').not.toEqual([]);
+    expect(texte, 'la légende d’arêtes ne dit pas ce que porte le char').toMatch(/légende arêtes : .+ = (appearance|structure)=/);
+    expect(glyphesDe(texte, 'légende zones'), 'aucune légende de zones imprimée').not.toEqual([]);
+    for (const ch of glyphesDe(texte, 'légende arêtes')) expect(Object.keys(ex.wallLegend)).toContain(ch);
+    for (const ch of glyphesDe(texte, 'légende zones')) expect(Object.keys(ex.zoneLegend)).toContain(ch);
+    // Le rez n'écrit AUCUN char de `wallLegend` : sa légende d'arêtes ne s'imprime pas du tout.
+    expect(sortie(0), 'le rez imprime une légende d’arêtes dont il n’écrit aucun char').not.toContain('légende arêtes');
+  });
+
+  it('la légende de cases est RESTREINTE aux glyphes PRÉSENTS dans la grille de la couche demandée', () => {
+    const sc = opera();
+    for (const z of [0, 1]) {
+      const texte = sortie(z);
+      const lignes = texte.split('\n');
+      const grille = lignes.slice(1, 1 + 2 * sc.dimensions.h + 1);
+      const vus = new Set<string>();
+      grille.forEach((l, ry) => { for (let rx = 0; rx < l.length; rx++) if (ry % 2 === 1 && rx % 2 === 1) vus.add(l[rx]); });
+      for (const ch of glyphesDe(texte, 'légende').slice(1))
+        expect(vus.has(ch), `z${z} : la légende liste « ${ch} », ABSENT de la grille de cette couche`).toBe(true);
+    }
+    const z0 = new Set(glyphesDe(sortie(0), 'légende'));
+    const z1 = new Set(glyphesDe(sortie(1), 'légende'));
+    expect([...z0].some((ch) => !z1.has(ch)), 'les deux couches listent exactement les mêmes glyphes : la restriction ne mesure rien').toBe(true);
+  });
+
+  it('le RELIEF est une GRILLE h×w alignée sur la carte, jamais une liste de tuples', () => {
+    const sc = opera();
+    for (const z of [0, 1]) {
+      const texte = sortie(z);
+      const grille = grilleDeRelief(texte);
+      expect(grille.length, `z${z} : le relief n’a pas ${sc.dimensions.h} rangées`).toBe(sc.dimensions.h);
+      for (const [y, rangee] of grille.entries())
+        expect(rangee.trim().split(/ +/).length, `z${z} rangée ${y} : ${sc.dimensions.w} jetons attendus`).toBe(sc.dimensions.w);
+    }
+    expect(grilleDeRelief(sortie(0)).join('\n'), 'aucune hauteur signée dans le relief du rez').toMatch(/[+-]\d/);
+  });
+
+  it('une couche ABSENTE est refusée par un ✗ qui nomme les couches existantes', () => {
+    opera();
+    const texte = sortie(9);
+    expect(texte).toContain('✗');
+    expect(texte).toContain('z0');
+    expect(texte).toContain('z1');
   });
 });

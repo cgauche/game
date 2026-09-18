@@ -105,6 +105,7 @@
     "maison": "l’eau libre — rivière, douve, mare ; aucun folio n’imprime de catalogue de sols, donc ce que ce terrain est et ce qu’il vaut en jeu comme à l’écran sont des arbitrages maison.",
     "walkable": false,
     "priority": 0,
+    "ascii": "~",
     "swatch": "#2f5a8a",
     "stops": {
       "0%": "#2f5a8a",
@@ -133,6 +134,7 @@
     "maison": "une fosse ouverte : le sol y manque ; aucun folio n’imprime de catalogue de sols, donc ce que ce terrain est et ce qu’il vaut en jeu comme à l’écran sont des arbitrages maison.",
     "walkable": false,
     "priority": 0,
+    "ascii": "_",
     "swatch": "#16141a",
     "stops": {
       "0%": "#221e2a",
@@ -238,6 +240,7 @@
     "opaque": true,
     "built": true,
     "bordDuMonde": true,
+    "ascii": "#",
     "solidHeightM": 4,
     "swatch": "#9b8e72",
     "stops": {
@@ -396,6 +399,7 @@
     "walkable": true,
     "priority": 3,
     "built": true,
+    "ascii": "=",
     "swatch": "#8a6a3c",
     "stops": {
       "0%": "#96743f",
@@ -426,6 +430,7 @@
     "priority": 9,
     "opaque": true,
     "built": true,
+    "ascii": "D",
     "swatch": "#7a5a3a",
     "stops": {
       "0%": "#7a5a3a",

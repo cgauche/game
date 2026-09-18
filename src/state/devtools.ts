@@ -38,6 +38,8 @@ import { placeOfScene, placeById, routesEtat, visiblePlaces, type MapRoute, type
 import { buildRiverDayCascade } from './riverVoyageFlow';
 import { findVehicleById } from '../data';
 import { estAbsent } from './terrain';
+import { sceneToAscii } from './sceneToAscii';
+import { FOND_ECRIT } from '../data/schemas/grammaire/carte-ascii';
 import { startCascade } from './cascade';
 import { routeDistanceLabel } from '../engine/travel';
 import { actorIn, inBattleId } from './combatants';
@@ -685,42 +687,65 @@ export function buildApi(scenarios: readonly TestScenario[] = testScenarios) {
     },
 
     /** PLAN ASCII de la couche (défaut = celle AFFICHÉE) — la DONNÉE rendue en box-drawing, à comparer
-     *  ligne pour ligne avec ce qui est à l'écran (vue du dessus). Tuiles : `.` parquet · `,` dalle ·
-     *  `M` marbre · `S` surélevé · `s` contrebas (hauteur métrique ≷ 0) · espace=vide. Arêtes : `-`/`|`
-     *  mur · `:` porte · `/ \` diagonale. `console.log(__wfrp.ascii())` pour l'alignement monospace. */
+     *  ligne pour ligne avec ce qui est à l'écran (vue du dessus). C'est l'EXPORT de la scène
+     *  (`sceneToAscii`, pur, sans effet de bord) restreint à la couche : la grille `walled`, ses TROIS
+     *  légendes (cases, arêtes, zones) RESTREINTES aux glyphes que CETTE couche écrit, et son RELIEF
+     *  rendu en GRILLE alignée sur la carte (`.` = hauteur 0, sinon la hauteur en mètres signée).
+     *  Les arêtes portent les mots de la grammaire du plan (`schemas/grammaire/carte-ascii.ts` :
+     *  mur, porte, fenêtre, jonction, diagonale) ET les chars de `wallLegend`, alloués à l'export pour
+     *  les cloisons à structure/apparence. `console.log(__wfrp.ascii())` pour l'alignement monospace. */
     ascii: (z?: number) => {
       const s = g();
       const sc = s.scene;
       if (!sc) return '✗ aucune scène';
       const zz = z ?? getViewZ() ?? (s.partyPos.z ?? 0);
       const W = sc.dimensions.w, H = sc.dimensions.h;
-      const lvl = sc.layers.find((l) => l.z === zz) ?? sc.layers[0];
-      const tiles = lvl.tiles, height = lvl.height ?? [];
-      const wall = new Map<string, boolean>(), diag = new Map<string, string>();
-      for (const w of sc.walls ?? []) {
-        if ((w.z ?? 0) !== zz) continue;
-        if (w.side === 'N' || w.side === 'E') wall.set(`${w.x},${w.y},${w.side}`, !!w.door);
-        else diag.set(`${w.x},${w.y}`, w.side);
-      }
-      const cell = (x: number, y: number) => {
-        const d = diag.get(`${x},${y}`); if (d) return d;
-        const t = tiles[y * W + x], h = height[y * W + x] ?? 0;
-        if (t === 'planches') return h > 0 ? 'S' : h < 0 ? 's' : 'P';
-        return t === 'plancher' ? '.' : t === 'dalle' ? ',' : t === 'marbre' ? 'M' : estAbsent(t) ? ' ' : '?';
-      };
-      const rows: string[] = [];
-      for (let gy = 0; gy <= 2 * H; gy++) {
-        let line = '';
-        for (let gx = 0; gx <= 2 * W; gx++) {
-          const ox = gx % 2 === 1, oy = gy % 2 === 1;
-          if (ox && oy) line += cell((gx - 1) / 2, (gy - 1) / 2);
-          else if (!ox && !oy) line += '+';
-          else if (ox && !oy) { const wl = wall.get(`${(gx - 1) / 2},${gy / 2},N`); line += wl === undefined ? ' ' : wl ? ':' : '-'; }
-          else { const wl = wall.get(`${gx / 2 - 1},${(gy - 1) / 2},E`); line += wl === undefined ? ' ' : wl ? ':' : '|'; }
+      const ex = sceneToAscii(sc);
+      const cle = `z${zz}`;
+      const grille = ex.walled[cle];
+      if (grille === undefined) return `✗ aucune couche z=${zz} (couches : ${Object.keys(ex.walled).join(', ') || 'aucune'})`;
+      const rangs = grille.replace(/^\n|\n$/g, '').split('\n');
+      // Les légendes se restreignent à CETTE couche : l'export mutualise `legend`/`wallLegend` sur
+      // toutes les grilles, montrer les glyphes d'un autre étage ferait lire une case absente.
+      const casesVues = new Set<string>(), aretesVues = new Set<string>();
+      rangs.forEach((ligne, ry) => {
+        for (let rx = 0; rx < ligne.length; rx++) {
+          const ch = ligne[rx];
+          if (ry % 2 === 1 && rx % 2 === 1) casesVues.add(ch);
+          else if (ry % 2 !== rx % 2) aretesVues.add(ch);
         }
-        rows.push(line.replace(/\s+$/, ''));
-      }
-      return `étage z=${zz} (${W}×${H})\n` + rows.join('\n');
+      });
+      const zonesVues = new Set((ex.zoneMap[cle] ?? []).join('').split(''));
+      const table = (titre: string, entrees: [string, string][]) =>
+        entrees.length ? `\n${titre} : ${entrees.map(([ch, v]) => `${ch} = ${v}`).join(' · ')}` : '';
+      const legende = [
+        `${FOND_ECRIT} = ${ex.fondParZ[cle]}`,
+        ...Object.entries(ex.legend).filter(([ch]) => casesVues.has(ch)).map(([ch, t]) => `${ch} = ${t}`),
+      ].join(' · ');
+      const aretes: [string, string][] = Object.entries(ex.wallLegend)
+        .filter(([ch]) => aretesVues.has(ch))
+        .map(([ch, ov]) => [ch, Object.entries(ov).map(([k, v]) => `${k}=${v}`).join(', ')]);
+      const zones: [string, string][] = Object.entries(ex.zoneLegend)
+        .filter(([ch]) => zonesVues.has(ch))
+        .map(([ch, zn]) => [ch, zn.label]);
+      // RELIEF en grille, alignée case pour case sur la carte ci-dessus (une liste de tuples est
+      // illisible passé quelques cases : 2 640 sur l'étage de l'Opéra).
+      const hauteurs = new Map(ex.relief.filter((r) => (r.z ?? 0) === zz).map((r) => [`${r.cell[0]},${r.cell[1]}`, r.height]));
+      const jeton = (h: number | undefined) => (h === undefined ? FOND_ECRIT : h > 0 ? `+${h}` : `${h}`);
+      const larg = Math.max(...[...hauteurs.values()].map((h) => jeton(h).length), 1);
+      const relief = hauteurs.size
+        ? Array.from({ length: H }, (_, y) =>
+            Array.from({ length: W }, (_, x) => jeton(hauteurs.get(`${x},${y}`)).padStart(larg)).join(' '),
+          ).join('\n')
+        : 'plat (aucune hauteur ≠ 0)';
+      return (
+        `étage z=${zz} (${W}×${H})\n` +
+        rangs.map((l) => l.replace(/\s+$/, '')).join('\n') +
+        `\nlégende : ${legende}` +
+        table('légende arêtes', aretes) +
+        table('légende zones', zones) +
+        `\nrelief :\n${relief}`
+      );
     },
 
     /** Navigue vers un écran (menu/party/creator/editor/test/coop/campaign) — id invalide = `throw`

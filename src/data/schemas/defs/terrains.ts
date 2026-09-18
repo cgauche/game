@@ -19,6 +19,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
+import { GLYPHES_RESERVES, glyphesReservesEnClair } from '../grammaire/carte-ascii';
 import { detailRecipeSchema } from '../grammaire/valeurs';
 import { idDe } from '../grammaire/ref';
 
@@ -43,6 +44,15 @@ const doc = document(
     built: z.literal(true).optional(),
     absence: z.literal(true).optional(),
     bordDuMonde: z.literal(true).optional(),
+    // Message FR NOMMANT la valeur refusée : le défaut zod (« Too big: expected string to have <1
+    // characters ») est anglais et ne dit pas ce qu'on lisait.
+    ascii: z
+      .string()
+      .length(1, {
+        error: (iss) =>
+          `glyphe d’authoring « ${String(iss.input)} » : UN SEUL caractère — c'est le char qui pose ce terrain dans une carte ASCII`,
+      })
+      .optional(),
     swatch: couleur,
     // Record `offset → couleur` : un offset ne se répète pas sur une rampe. Au moins deux arrêts —
     // un dégradé d'un seul arrêt est un aplat, que `swatch` dit déjà.
@@ -72,6 +82,10 @@ const doc = document(
     bordDuMonde: {
       label: 'Rôle : bord du monde',
       hint: 'Ce que la grille rend au-delà de ses bornes ; UN SEUL terrain porte ce rôle',
+    },
+    ascii: {
+      label: 'Glyphe d’authoring',
+      hint: 'Le caractère qui pose ce terrain dans une carte ASCII — un seul, jamais un mot de la grammaire du plan (mur, porte, fenêtre, diagonale, jonction, fond)',
     },
     swatch: { label: 'Teinte d’aperçu', hint: 'Couleur `#rrggbb` de la palette de l’éditeur et des faces du monde volumique' },
     stops: {
@@ -113,6 +127,32 @@ const doc = document(
             message:
               `rôle « ${role} » : EXACTEMENT UNE entrée de \`terrains.json\` doit le porter — ` +
               `${porteurs.length} mesurée(s)${porteurs.length ? ` : ${porteurs.join(', ')}` : ''}`,
+          });
+        }
+        // Le GLYPHE d'authoring (`ascii`) est une clé de LECTURE : `asciiMap` en dérive la légende de
+        // base d'un plan. Deux entrées au même glyphe rendraient la carte dépendante de l'ordre
+        // d'écriture ; un glyphe de la GRAMMAIRE (mur, porte, fenêtre, diagonale, jonction, fond)
+        // serait lu comme une arête ou le fond, jamais comme ce terrain.
+        const parGlyphe = new Map<string, string[]>();
+        for (const e of entrees) {
+          if (typeof e.ascii !== 'string') continue;
+          const id = typeof e.id === 'string' ? e.id : '?';
+          parGlyphe.set(e.ascii, [...(parGlyphe.get(e.ascii) ?? []), id]);
+          if (GLYPHES_RESERVES.has(e.ascii))
+            ctx.addIssue({
+              code: 'custom',
+              path: ['ascii'],
+              message:
+                `glyphe « ${e.ascii} » (terrain « ${id} ») : RÉSERVÉ par la grammaire de la carte ASCII ` +
+                `(${glyphesReservesEnClair()}) — la lecture du plan y verrait une arête ou le fond`,
+            });
+        }
+        for (const [glyphe, ids] of parGlyphe) {
+          if (ids.length < 2) continue;
+          ctx.addIssue({
+            code: 'custom',
+            path: ['ascii'],
+            message: `glyphe « ${glyphe} » : déclaré par ${ids.length} terrains (${ids.join(', ')}) — un glyphe d'authoring en désigne UN SEUL`,
           });
         }
       }),
