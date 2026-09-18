@@ -72,7 +72,7 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
     expect(target.activeEffects ?? []).toHaveLength(0); // rien avant application (l'ops n'est encore que DONNÉE)
     applyCriticalToTarget(target, 'brasG', true, 0, [], noop, { prerolled: crit, get: getStub });
     expect(cannotWieldTwoHanded(target)).toBe(true); // effet RÉEL, pas du texte arbitré
-    const eff = target.activeEffects?.find((e) => e.maxWeaponHands != null);
+    const eff = target.activeEffects?.find((e) => e.passive?.some((op) => op.op === 'maxWeaponHands'));
     expect(eff?.duration.scale).toBe('rounds'); // TEMPORAIRE (≠ séquelle permanente 'permanent')
     if (eff?.duration.scale === 'rounds') expect(eff.duration.left).toBeGreaterThanOrEqual(1);
   });

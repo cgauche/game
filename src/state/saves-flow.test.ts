@@ -341,8 +341,16 @@ describe('parseSave — la version DOIT être la courante', () => {
     // vivent désormais en op PASSIVE sur l'`ActiveEffect` du sort (`passive`), matérialisés en pions
     // DÉRIVÉS. Une save de 48 rouvre avec des pions à `roundsLeft` orphelins : aucune Dissipation ne les
     // emporte, aucune source à suspendre pour la Détermination. La save se jette.
-    expect(SAVE_VERSION).toBe(49);
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(49);
     expect(parseSave({ ...cur, version: 48 })).toBeNull();
+  });
+
+  it('MESURE du motif de bump 49 → 50 (#1791) : `ActiveEffect.passive` est le canal UNIQUE des passifs d’effet', () => {
+    // Les quatre champs scalaires (`skillMods`, `moveScale`, `moveMod`, `maxWeaponHands`) sont supprimés du
+    // type : une save de 49 rouvre avec des effets qui les portent et plus aucun lecteur ne les voit — le
+    // −20 de Compétence, le demi-Mouvement et le plafond de mains d'arme tombent en silence. La save se jette.
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(50);
+    expect(parseSave({ ...cur, version: 49 })).toBeNull();
   });
 
   it('MESURE du motif de bump 33 → 34 : la spéc en LIBELLÉ ne couvre plus son emplacement', () => {

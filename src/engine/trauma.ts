@@ -944,7 +944,7 @@ function modSurvives(c: Combatant, kind: PassiveKind, t?: Trauma): boolean {
  * les sources — POINT DE LECTURE pour effectiveChar/testValue/defenseValue/effectiveMovement/recomputeLoadout
  * (via les helpers ci-dessous), filtré par type d'op. Gating UNIFORME par `kind` (table `PASSIVE_CANCELLERS`) :
  *  - séquelle : `kind` dérivé du type d'op (`traumaOpKind`) ;
- *  - sort (ActiveEffect) : kind `intrinseque` (expire, non annulable) ;
+ *  - sort (ActiveEffect) : kind `magique` (expire, non annulable) ;
  *  - à terme trait/mutation/objet : poussent leurs `PassiveMod` (kind explicite) au point d'extension.
  * Le charMod de SORT reste lu par effectiveChar (e.char/e.bonus) → non émis ici (pas de double comptage).
  */
@@ -1047,11 +1047,8 @@ export function passiveMods(c: Combatant): PassiveMod[] {
     // `src`/`label` = L'EFFET émetteur : un `skillMod` de SORT doit s'annoncer au nom de son sort, pas
     // au repli de famille de son seau (`kind:'magique'` tombe côté pool non-cumul, donc « Séquelle » —
     // un sort temporaire s'y annonçait comme une mutilation permanente).
-    if (e.skillMods) for (const [skill, mod] of Object.entries(e.skillMods)) out.push({ op: { op: 'skillMod', skill: { id: skill }, mod }, kind: 'magique', src: effectRef(e), label: e.label });
-    if (e.moveScale) out.push({ op: { op: 'moveScale', num: e.moveScale.num, den: e.moveScale.den }, kind: 'magique' });
-    if (e.moveMod) out.push({ op: { op: 'moveMod', mod: e.moveMod }, kind: 'magique' });
-    if (e.maxWeaponHands != null) out.push({ op: { op: 'maxWeaponHands', hands: e.maxWeaponHands }, kind: 'magique' });
-    // Canal CANONIQUE des passifs d'effet (#1695, `ActiveEffect.passive`) : une op `condition` y devient
+    // Canal UNIQUE des passifs d'effet (#1695, `ActiveEffect.passive`) : toute op qu'un effet porte
+    // s'annonce ICI au nom de l'effet, donc suspendable (`sourceSuspended`). Une op `condition` y devient
     // un pion DÉRIVÉ que la réconciliation pose et retire AVEC l'effet (LDB 48 l.495).
     for (const op of e.passive ?? []) out.push({ op, kind: 'magique', src: effectRef(e), label: e.label });
   }

@@ -198,8 +198,8 @@ describe('racine-de-mandragore (LDB 71 l.35)', () => {
   it('« le Mouvement est réduit de moitié » + « +20 aux Tests de Calme » + gate FM par Round (actGate)', () => {
     const c = makeTarget();
     drinkPure(c, 'racine-de-mandragore');
-    expect(c.activeEffects!.some((e) => e.moveScale?.num === 1 && e.moveScale?.den === 2)).toBe(true);
-    expect(c.activeEffects!.some((e) => e.skillMods?.calme === 20)).toBe(true);
+    expect(c.activeEffects!.some((e) => e.passive?.some((op) => op.op === 'moveScale' && op.num === 1 && op.den === 2))).toBe(true);
+    expect(c.activeEffects!.some((e) => e.passive?.some((op) => op.op === 'skillMod' && op.skill.id === 'calme' && op.mod === 20))).toBe(true);
     expect(c.activeEffects!.some((e) => e.actGate?.char === 'force-mentale')).toBe(true);
   });
 });

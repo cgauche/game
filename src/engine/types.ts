@@ -808,9 +808,8 @@ export interface ActiveEffect {
   /** Ops PASSIVES PORTÉES par cet effet, émises par `passiveMods` tant qu'il dure (#1695) — une op
    *  `condition` y devient un pion DÉRIVÉ (`derivedFrom`, réconcilié par `syncDerivedConditions`) :
    *  LDB 48 l.495, « qui persistent tous pour la durée du Sort ». L'effet EST la durée et le verrou du
-   *  pion ; il part avec lui (expiration, Dissipation, purge). Canal CANONIQUE des passifs d'effet —
-   *  les champs scalaires ci-dessus (`skillMods`, `moveScale`, `moveMod`, `maxWeaponHands`) sont un
-   *  repli antérieur, non migré. */
+   *  pion ; il part avec lui (expiration, Dissipation, purge). Canal UNIQUE des passifs d'effet : tout
+   *  ce qu'un effet émet passe par ici, avec sa source (`effectRef`) et son libellé. */
   passive?: import('./ops').GameOp[];
   /** PA temporisés à TOUTES les localisations (Armure Aethyrique : « +1 PA à toutes les
    *  Localisations ») — lus par effectiveArmourAt à la mitigation des Dégâts. */
@@ -974,15 +973,6 @@ export interface ActiveEffect {
   /** Points de Destin ACCORDÉS temporairement par un Sort (op `gainResource` — Troisième Signe d'Amul) :
    *  retirés à l'expiration s'ils n'ont pas été dépensés (cf. `grantedFortune`). */
   grantedFate?: number;
-  /** Modificateurs de Compétence nommée posés par cet effet (op `skillMod` — sort « −10 Esquive 3
-   *  rounds ») : lus par `traumaSkillPenalty`/`traumaDodgePenalty` en plus des ops de séquelle. */
-  skillMods?: Record<string, number>;
-  /** Échelle multiplicative du Mouvement (op `moveScale`) — lue par `traumaMovementHalved`/`effectiveMovement`. */
-  moveScale?: { num: number; den: number };
-  /** Modificateur ADDITIF de Mouvement (op `moveMod`) — sommé par `effectiveMovement` avant le `moveScale`. */
-  moveMod?: number;
-  /** Plafond de mains d'arme maniables (op `maxWeaponHands`) — lu par `cannotWieldTwoHanded`. */
-  maxWeaponHands?: number;
   /** Lumière émise par un SORT pendant sa durée (op `light` — Lumière, LDB 241) : `radiusM` = le rayon
    *  en MÈTRES, recopié de l'op, lu par `combatantLights` (vision) au MÊME point que la lumière d'un
    *  objet porté — c'est là qu'il devient des cases (`rayonEnCases`). `tone` (#1245, L4) : id

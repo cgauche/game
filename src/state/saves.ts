@@ -124,7 +124,12 @@ import type { Scene } from './scene';
 // 48 prise en plein Transmutation de Chamon rouvre avec des pions à `roundsLeft` SANS effet porteur : ils
 // tiennent leur propre compte, la Dissipation ne les emporte plus et la Détermination n'a plus de source à
 // suspendre. La save se jette (politique 2 ci-dessus).
-export const SAVE_VERSION = 49;
+// 49 → 50 (#1791) : `ActiveEffect.passive` est le canal UNIQUE des passifs d'effet — les quatre champs
+// scalaires (`skillMods`, `moveScale`, `moveMod`, `maxWeaponHands`) sont supprimés du type. Une save de 49
+// rouvre avec des effets qui portent ces champs et plus rien ne les lit : le −10 d'Esquive du sort, le
+// demi-Mouvement et le plafond de mains d'arme disparaissent en silence. La save se jette (politique 2
+// ci-dessus).
+export const SAVE_VERSION = 50;
 
 export interface SaveMeta {
   version: number;

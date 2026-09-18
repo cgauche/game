@@ -227,7 +227,7 @@ describe('applyOps — opérations unitaires', () => {
     applyOps(c, [{ op: 'maxWeaponHands', hands: 1, durationRounds: { dice: { n: 1, sides: 10 } } }], { rng });
     expect(c.activeEffects).toHaveLength(1);
     const eff = c.activeEffects![0];
-    expect(eff.maxWeaponHands).toBe(1);
+    expect(eff.passive).toContainEqual(expect.objectContaining({ op: 'maxWeaponHands', hands: 1 }));
     expect(eff.duration.scale).toBe('rounds');
     if (eff.duration.scale === 'rounds') {
       expect(eff.duration.left).toBeGreaterThanOrEqual(1);
@@ -259,7 +259,7 @@ describe('applyOps — opérations unitaires', () => {
     applyOps(c, [{ op: 'moveScale', num: 1, den: 2, durationRounds: { dice: { n: 1, sides: 10 } } }], { rng });
     expect(c.activeEffects).toHaveLength(1);
     const eff = c.activeEffects![0];
-    expect(eff.moveScale).toEqual({ num: 1, den: 2 });
+    expect(eff.passive).toContainEqual(expect.objectContaining({ op: 'moveScale', num: 1, den: 2 }));
     expect(eff.duration.scale).toBe('rounds');
     if (eff.duration.scale === 'rounds') {
       expect(eff.duration.left).toBeGreaterThanOrEqual(1);

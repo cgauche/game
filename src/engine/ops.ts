@@ -932,7 +932,7 @@ export type GameOp =
   /** Modificateur (pénalité/bonus) à UNE Compétence nommée — GÉNÉRALISE les pénalités de séquelle
    *  `skillPenalty` (Langue −100 « auto-échec parole ») ET `dodgePenalty` (Esquive −20, mobilité). Lu en
    *  PASSIF par les helpers de trauma depuis `t.ops` (annulable par prothèse), et — si posé par un sort
-   *  via `applyOps` — par `ActiveEffect.skillMods` (testValue/defenseValue). Une op, n'importe quelle compétence.
+   *  via `applyOps` — par `ActiveEffect.passive` (collecteur `passiveMods`). Une op, n'importe quelle compétence.
    *  `sense` (optionnel) RESTREINT l'application aux Tests qui SOLLICITENT ce sens (Surdité, LDB 18 : « Tests
    *  de Perception basés sur l'ouïe » — PAS toute Perception) : gaté par le `sense` du CONTEXTE de Test
    *  (`testValue`), pas une liste de compétences codée en dur. Absent = inconditionnel (Cécité : compétences
@@ -990,7 +990,7 @@ export type GameOp =
   | { op: 'mitigateIncoming'; mode: 'nullify'; unlessKeyword?: 'magic' }
   /** Échelle MULTIPLICATIVE du Mouvement — GÉNÉRALISE le drapeau `movementHalved` (= 1/2). `num/den` = la
    *  fraction appliquée à `c.movement` (amputation de jambe : 1/2). Trauma : lu par `traumaMovementHalved` ;
-   *  sort : `ActiveEffect.moveScale`. (`M` n'est pas une Caractéristique → op de mouvement dédiée.)
+   *  sort : portée par `ActiveEffect.passive`. (`M` n'est pas une Caractéristique → op de mouvement dédiée.)
    *  `durationRounds` : effet TEMPORAIRE à durée intrinsèque (Souffle coupé « Mouvement réduit de moitié
    *  pendant 1d10 Rounds », LDB 18-Traumatisme) — MÊME patron que `maxWeaponHands.durationRounds` : résolu
    *  indépendamment du ctx ; absent = durée du ctx (`durationFromCtx`, sort/effet permanent de trauma). */
@@ -1019,7 +1019,7 @@ export type GameOp =
    *  effet TEMPORAIRE à durée intrinsèque (Aux Armes « main/bras inutilisable Nd10 [−BE] Rounds », l.2557/
    *  2562/2588) — résolu indépendamment du ctx, comme `condition`/`charMod` ; absent = durée du ctx
    *  (`durationFromCtx`, sort). Lu par `cannotWieldTwoHanded`/`recomputeLoadout` (via `passiveMods`,
-   *  channel `activeEffects` — même collecteur que la séquelle permanente). */
+   *  canal `ActiveEffect.passive` — même collecteur que la séquelle permanente). */
   | { op: 'maxWeaponHands'; hands: number; durationRounds?: Formula }
   /** Lâche l'objet tenu dans UNE main (Aux Armes, bras/corps « Vous lâchez ce que vous teniez dans
    *  cette main ») — vide le slot de loadout (`main`/`off`) et `recomputeLoadout` (même patron que
@@ -1322,7 +1322,6 @@ export interface OpsCtx {
   weapon?: Weapon;
 }
 
-/** Rounds attribués à un effet dont la durée (minutes/heures/jours) dépasse le combat. */
 /**
  * Durée d'un effet actif posé au cours d'une incantation, dérivée du contexte. Échelles mutuellement
  * exclusives (cf. `engine/duration.ts`) : horloge (minutes/heures/jours, LDB 47) prime ; sinon Rounds ;
@@ -1332,6 +1331,30 @@ export function durationFromCtx(ctx: OpsCtx): Duration {
   if (ctx.defaultUntilTime != null) return { scale: 'clock', until: ctx.defaultUntilTime };
   if (ctx.defaultDurationRounds != null) return { scale: 'rounds', left: ctx.defaultDurationRounds };
   return { scale: 'permanent' };
+}
+
+/** Champs de DURÉE qu'une op peut porter — consommés à la pose par `durationFromOp`. */
+interface OpDuree { durationRounds?: Formula; durationMinutes?: Formula; durationHours?: Formula }
+
+/** Durée INTRINSÈQUE portée par l'op (Rounds, sinon horloge depuis `ctx.now`), à défaut celle du
+ *  contexte — mêmes échelles exclusives que `durationFromCtx` (LDB 47). `plancherRounds` : minimum de
+ *  Rounds, porté par l'APPELANT qui en a la réf (aucune durée n'en a par défaut). */
+function durationFromOp(o: OpDuree, ctx: OpsCtx, ref: Combatant, rng: RNG, plancherRounds = 0): Duration {
+  if (o.durationRounds != null) return { scale: 'rounds', left: Math.max(plancherRounds, resolveFormula(o.durationRounds, ref, rng)) };
+  if (o.durationMinutes != null || o.durationHours != null) {
+    return { scale: 'clock', until: (ctx.now ?? 0) + Math.max(1, resolveFormula(o.durationMinutes ?? 0, ref, rng) + resolveFormula(o.durationHours ?? 0, ref, rng) * 60) };
+  }
+  return durationFromCtx(ctx);
+}
+
+/** L'op telle qu'elle vit en PASSIF : ses champs de durée sont consommés à la pose (l'`ActiveEffect`
+ *  porteur EST la durée), comme le canal de l'État porté (`data/schemas/grammaire/mecanique.ts`). */
+function sansDuree<T extends OpDuree>(o: T): T {
+  const passif = { ...o };
+  delete passif.durationRounds;
+  delete passif.durationMinutes;
+  delete passif.durationHours;
+  return passif;
 }
 
 /**
@@ -1878,23 +1901,16 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'charMod': {
-        // Le charMod peut porter SA propre durée en Rounds OU en horloge (sinon il suit la durée du sort, ctx).
-        let clockMin: number | null = null;
-        const dur: Duration = o.durationRounds != null
-          ? { scale: 'rounds', left: resolveFormula(o.durationRounds, ref, rng) }
-          : o.durationMinutes != null || o.durationHours != null
-            ? (() => {
-                const min = Math.max(1, resolveFormula(o.durationMinutes ?? 0, ref, rng) + resolveFormula(o.durationHours ?? 0, ref, rng) * 60);
-                clockMin = min;
-                return { scale: 'clock' as const, until: (ctx.now ?? 0) + min };
-              })()
-            : durationFromCtx(ctx);
+        const dur: Duration = durationFromOp(o, ctx, ref, rng);
         applyActiveEffect(target, {
           label: ctx.label ?? 'Effet', char: o.char, bonus: o.mod, duration: dur,
         });
         charParts.push(`${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char]}`);
         charRounds = dur.scale === 'rounds' ? dur.left : null;
-        charClockMin = dur.scale === 'clock' ? clockMin : null;
+        // Le fragment de durée en minutes ne se compose que d'une échéance INTRINSÈQUE : une horloge héritée
+        // du contexte (`ctx.defaultUntilTime`) est une date, pas un décompte — elle se dit « hors combat ».
+        const horlogeIntrinseque = o.durationMinutes != null || o.durationHours != null;
+        charClockMin = horlogeIntrinseque && dur.scale === 'clock' ? dur.until - (ctx.now ?? 0) : null;
         break;
       }
       case 'ap': {
@@ -2045,11 +2061,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          duration: o.durationRounds != null
-            ? { scale: 'rounds', left: Math.max(1, resolveFormula(o.durationRounds, ref, rng)) }
-            : o.durationMinutes != null || o.durationHours != null
-              ? { scale: 'clock', until: (ctx.now ?? 0) + Math.max(1, resolveFormula(o.durationMinutes ?? 0, ref, rng) + resolveFormula(o.durationHours ?? 0, ref, rng) * 60) }
-              : durationFromCtx(ctx),
+          duration: durationFromOp(o, ctx, ref, rng),
           grantedTrait: inst,
         });
         lines.push(t('op.grantTrait', { name: target.label, trait: formatTrait(inst), src: ctx.label ?? 'sort' }));
@@ -2717,7 +2729,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
           duration: durationFromCtx(ctx),
-          skillMods: { [o.skill.id]: o.mod },
+          passive: [o],
         });
         lines.push(t('op.skillMod', { name: target.label, mod: `${o.mod >= 0 ? '+' : ''}${o.mod}`, skill: o.skill.id, src: ctx.label ?? 'sort' }));
         break;
@@ -2756,9 +2768,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Chemin SORT : pose un ActiveEffect.light TEMPORISÉ (durée du sort), lu par `combatantLights`
         // (vision) au MÊME point que la lumière d'un objet porté. (Côté OBJET le `passive` n'est jamais
         // exécuté par applyOps → l'op est naturellement inerte là-bas.)
-        const dur: Duration = o.durationRounds != null
-          ? { scale: 'rounds', left: resolveFormula(o.durationRounds, ref, rng) }
-          : durationFromCtx(ctx);
+        const dur: Duration = durationFromOp(o, ctx, ref, rng);
         const lumière = o.tone ? { radiusM: o.radiusM, tone: o.tone } : { radiusM: o.radiusM };
         applyActiveEffect(target, { label: ctx.label ?? 'Lumière', bonus: 0, light: lumière, duration: dur });
         lines.push(t('op.light', { name: target.label, n: o.radiusM, src: ctx.label ?? 'sort' }));
@@ -2766,15 +2776,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'moveScale': {
         target.activeEffects = target.activeEffects ?? [];
-        // Durée INTRINSÈQUE (Souffle coupé : « pendant 1d10 Rounds ») résolue MAINTENANT, indépendamment
-        // du ctx — même patron que `maxWeaponHands`.
-        const dur: Duration = o.durationRounds != null
-          ? { scale: 'rounds', left: Math.max(1, resolveFormula(o.durationRounds, ref, rng)) }
-          : durationFromCtx(ctx);
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          duration: dur,
-          moveScale: { num: o.num, den: o.den },
+          duration: durationFromOp(o, ctx, ref, rng, 1), // minimum de 1 Round : AA 07 l.113
+          passive: [sansDuree(o)],
         });
         lines.push(t('op.moveScale', { name: target.label, num: o.num, den: o.den, src: ctx.label ?? 'sort' }));
         break;
@@ -2784,22 +2789,17 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
           duration: durationFromCtx(ctx),
-          moveMod: o.mod,
+          passive: [o],
         });
         lines.push(t('op.moveMod', { name: target.label, mod: `${o.mod >= 0 ? '+' : ''}${o.mod}`, src: ctx.label ?? 'sort' }));
         break;
       }
       case 'maxWeaponHands': {
         target.activeEffects = target.activeEffects ?? [];
-        // Durée INTRINSÈQUE (Aux Armes : « main/bras inutilisable Nd10[-BE] Rounds », minimum 1) résolue
-        // MAINTENANT, indépendamment du ctx — même patron que `charMod`/`condition`.
-        const dur: Duration = o.durationRounds != null
-          ? { scale: 'rounds', left: Math.max(1, resolveFormula(o.durationRounds, ref, rng)) }
-          : durationFromCtx(ctx);
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          duration: dur,
-          maxWeaponHands: o.hands,
+          duration: durationFromOp(o, ctx, ref, rng, 1), // minimum de 1 Round : AA 07 l.113
+          passive: [sansDuree(o)],
         });
         lines.push(t('op.maxWeaponHands', { name: target.label, hands: o.hands, src: ctx.label ?? 'sort' }));
         break;

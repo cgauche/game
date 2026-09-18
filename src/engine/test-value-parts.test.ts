@@ -117,14 +117,14 @@ function withSequelle(): Combatant {
  *  (`talentPassiveMods` stampe `src`), ce qui mord aussi le jour où un talent recevra un `skillMod`. */
 const TALENT_PASSIF = talents.find((t) => (t.passive ?? []).length > 0)!;
 
-/** `ActiveEffect.skillMods` d'un SORT — le canal qui s'annonçait « Séquelle » (mutilation permanente).
+/** `ActiveEffect.passive` d'un SORT — le canal qui s'annonçait « Séquelle » (mutilation permanente).
  *  Le sort est pris au CATALOGUE (jamais un id forgé) : son lien Codex doit résoudre. */
 const SORT = spells[0];
 
 function withSortSkillMod(): Combatant {
   return hero({
     skills: [{ id: 'marchandage', advances: 15 }] as SkillInstance[],
-    activeEffects: [{ label: SORT.label, skillMods: { marchandage: -20 }, source: { kind: 'spell', id: SORT.id } }] as unknown as Combatant['activeEffects'],
+    activeEffects: [{ label: SORT.label, passive: [{ op: 'skillMod', skill: { id: 'marchandage' }, mod: -20 }], source: { kind: 'spell', id: SORT.id } }] as unknown as Combatant['activeEffects'],
   });
 }
 
@@ -184,7 +184,7 @@ const GRILLE: Cas[] = [
   { id: 'outil', nom: 'outil manquant (Crochetage sans crochets)', c: hero({ skills: [{ id: 'crochetage', advances: 15 }] as SkillInstance[] }), skill: 'crochetage' },
   // Les canaux que la garde de la passe 3 ne voyait pas (sondes du juge).
   { id: 'trait', nom: 'TRAIT à passif skillMod (Dressé pour divertir)', c: withTrait(), skill: 'divertissement' },
-  { id: 'sort-skillmods', nom: 'SORT à `skillMods` (effet actif temporaire)', c: withSortSkillMod(), skill: 'marchandage' },
+  { id: 'sort-skillmods', nom: 'SORT à `skillMod` passif (effet actif temporaire)', c: withSortSkillMod(), skill: 'marchandage' },
   { id: 'armure-custom', nom: 'pièce d’armure CUSTOM (hors catalogue)', c: withArmureCustom(), skill: 'discretion' },
   { id: 'mutation-perimee', nom: 'mutation d’une sauvegarde périmée', c: withMutationPerimee(), skill: 'marchandage' },
   { id: 'sequelle', nom: 'SÉQUELLE (traumatisme à skillMod)', c: withSequelle(), skill: 'marchandage' },

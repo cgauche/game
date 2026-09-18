@@ -73,7 +73,7 @@ lecture UNIQUE**. Ses 14 branches d'émission, dans l'ordre du code :
 | `src/engine/trauma.ts:1036` | `intrinseque` | inline | Objets PORTÉS (equipped) ou TENUS (arme du loadout actif `c.weapons`) : leur `passive: GameOp[]` (skillMod des Bésicles…) émis kind 'intrinseque' — comme les mutations. |
 | `src/engine/trauma.ts:1042` | — | `traitPassiveMods` | Traits à modificateur de PROFIL appliqués en DIRECT (LDB 85 : Élite/Coriace/Brutal/Rapide… facultatifs, statbloc d'éditeur, traits accordés) — leurs `PassiveMod` (vocab GameOp unifié, `TraitData.passive`) émis TELS QUELS. |
 | `src/engine/trauma.ts:1045` | — | `talentPassiveMods` | Talents POSSÉDÉS (LDB 10) : leur `passive: GameOp[]` (Coup puissant, Dur à cuire… ou Frénésie → grantFreeAttack) émis kind `intrinseque`, par niveau — comme les traits. |
-| `src/engine/trauma.ts:1050` | `magique` | inline | — |
+| `src/engine/trauma.ts:1053` | `magique` | inline | — |
 
 Producteurs nommés, avec leur site réel :
 
@@ -163,4 +163,4 @@ Tout passe par le Compendium in-app (écran Codex) :
   champ à part (§7).
 - **Ajouter une table de Corruption** (un dieu du Chaos) : Codex → Tables de Corruption → une entrée
   dont les plages référencent des mutations EXISTANTES par id.
-<!-- sources-empreinte: fcba90019495373125bce11e165962571537346e (144 fichiers, 1 dossiers) corps: 008a5ff5bb6ab3c51f009d75f29b5ee17da8c5e7 -->
+<!-- sources-empreinte: 38eb77e9081643306340eb1c18cb605b97422118 (144 fichiers, 1 dossiers) corps: 4f641e9e08f2f5b6f132272b78d4a66bc67371df -->
