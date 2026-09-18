@@ -28,8 +28,6 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const TRAPPINGS = path.join(ROOT, 'src/data/trappings.json');
 const FAMILLES = path.join(ROOT, 'src/data/merchantFamilies.json');
 // 440→441 : Anneau d'Opsianon, EDO 11 (folio 148), #672.
-const ATTENDU_TRAPPINGS = 441;
-const ATTENDU_FAMILLES = 7;
 /** Vocabulaire de catégorie du CATALOGUE — `vehicle` n'a AUCUN porteur mesuré et meurt du schéma. */
 const VALEURS = new Set(['melee', 'ranged', 'ammunition', 'armor', 'trapping']);
 
@@ -49,7 +47,7 @@ function lire(cible) {
 // ── trappings.json : `type` → `categorie` ──────────────────────────────────────────────────────
 const t = lire(TRAPPINGS);
 if (!Array.isArray(t.data)) echecs.push('trappings.json : racine non tableau');
-else if (t.data.length !== ATTENDU_TRAPPINGS) echecs.push(`trappings.json : cardinal ${t.data.length} ≠ ${ATTENDU_TRAPPINGS} attendu`);
+else if (!t.data.length) echecs.push('trappings.json : racine VIDE — périmètre déplacé');
 
 /**
  * `type` D'ENVELOPPE (#1467 L1b V-FLIP-ENTITE-c) : depuis l'adoption de `document()`, chaque entrée
@@ -80,7 +78,7 @@ const sortieT = Array.isArray(t.data)
 // ── merchantFamilies.json : `match.trappingType` → `match.categorie` ───────────────────────────
 const f = lire(FAMILLES);
 if (!Array.isArray(f.data)) echecs.push('merchantFamilies.json : racine non tableau');
-else if (f.data.length !== ATTENDU_FAMILLES) echecs.push(`merchantFamilies.json : cardinal ${f.data.length} ≠ ${ATTENDU_FAMILLES} attendu`);
+else if (!f.data.length) echecs.push('merchantFamilies.json : racine VIDE — périmètre déplacé');
 
 let migresF = 0;
 let dejaF = 0;
@@ -119,7 +117,7 @@ const avantT = t.data.map((e) => typeAncien(e) ?? e.categorie).join(',');
 const renduT = apresT.map((e) => e.categorie).join(',');
 const avantF = f.data.map((e) => e.match?.trappingType ?? e.match?.categorie ?? '—').join(',');
 const renduF = apresF.map((e) => e.match?.categorie ?? '—').join(',');
-if (residusT || residusF || avantT !== renduT || avantF !== renduF || apresT.length !== ATTENDU_TRAPPINGS || apresF.length !== ATTENDU_FAMILLES) {
+if (residusT || residusF || avantT !== renduT || avantF !== renduF || apresT.length !== t.data.length || apresF.length !== f.data.length) {
   console.error(`VÉRIFICATION POST-ÉCRITURE ROUGE : ${residusT}/${residusF} résidu(s), partitions ${avantT === renduT ? 'ok' : 'ALTÉRÉE (trappings)'} ${avantF === renduF ? 'ok' : 'ALTÉRÉE (merchantFamilies)'}`);
   process.exit(1);
 }

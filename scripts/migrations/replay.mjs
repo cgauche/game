@@ -99,7 +99,7 @@ const estUneMigration = (nom) => /^\d{4}-\d{2}-\d{2}-.+\.mjs$/.test(nom);
  * (`corrige-props.mjs`) était SAUTÉE en silence — « 0 migration(s) », verdict VERT. Ni jouer ce
  * qu'on ne sait pas nommer, ni le taire.
  */
-const MODULES_DE_LA_PORTE = ['replay.mjs', 'replay-head.mjs'];
+const MODULES_DE_LA_PORTE = ['replay.mjs', 'replay-head.mjs', 'replay-croissance.mjs'];
 
 /** Périmètre ÉCRIT par les migrations : les deux racines de documents, plus l'AUTHORING qui produit
  *  les artefacts de scène (`scripts/arene` + les générateurs des deux campagnes navales et leur lib

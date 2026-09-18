@@ -52,7 +52,9 @@ const NOM = '2026-09-05-1599-passifs-par-palier';
 const REL = 'src/data/symptoms.json';
 const CHECK = process.argv.includes('--check');
 
-/** Cardinaux mesurés (2026-09-05) — porte d'identité du périmètre, jamais une estimation. */
+/** Cardinaux des OPS que ce script POSE, chiffrés par la règle elle-même (`LDB 20 l.157` pour la
+ *  pénalité de Convulsions et ses paliers) — ce ne sont pas des populations de donnée qui
+ *  grandissent, mais la forme de l'effet que la règle décrit (#1812). */
 const ATTENDU = { severePassive: 1, opsConvulsions: 6, opsConvulsionsBase: 6, opsFievre: 7, stickyExtenue: 1 };
 
 /** `maison` de `convulsions` après migration — l.157 ne chiffre PAS le palier (Grave). */

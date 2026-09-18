@@ -15,12 +15,17 @@
  *
  * ENTRÉES : les 20 fichiers de `src/data/` listés dans `TYPES` (seules données lues et écrites).
  *
- * IDEMPOTENT / NO-OP SÉMANTIQUE : le no-op se décide sur le CARDINAL du seul geste que ce script
+ * IDEMPOTENT / NO-OP SÉMANTIQUE : le no-op se décide sur le NOMBRE du seul geste que ce script
  * POSSÈDE — la pose de `type`. Zéro `type` à poser dans un fichier = rien n'y est écrit et la sortie
  * est 0, quel que soit l'ordre des AUTRES clés de ses entrées : la remontée de `type` en 2ᵉ position
  * est une normalisation d'enveloppe, et une égalité à l'octet en ferait une réécriture à elle seule.
  * La POSITION de `type` n'est PAS une condition du no-op ; elle est vérifiée après écriture.
- * FAIL-FAST : cardinal inattendu (porte de lecture SEULE, avant toute écriture), racine non-tableau,
+ * PORTE DE FORME — lecture SEULE, avant la moindre écriture. Ce qui protège d'un rejeu sur une
+ * donnée d'une AUTRE époque n'est pas un COMPTE d'entrées (un dataset app-owned croît légitimement,
+ * et un compte gelé fait payer un recalage à chaque ajout, #1812) mais la FORME de chaque entrée :
+ * elle porte soit la forme SOURCE (aucun `type`), soit la forme CIBLE (`type` du def). Ni l'une ni
+ * l'autre → ARBITRAGE REQUIS, rien n'est écrit pour AUCUN fichier, sortie 1.
+ * FAIL-FAST : forme inattendue (porte de lecture SEULE, avant toute écriture), racine non-tableau,
  * entrée sans `id` de chaîne, `id` ailleurs qu'en TÊTE (cette vague ne promeut PAS `id` : sa preuve
  * post-écriture exige la charge utile dans son ordre d'origine), `type` déjà présent mais DIVERGENT
  * → rien n'est écrit, sortie 1.
@@ -57,66 +62,40 @@ const TYPES = {
   'weaponGroups.json': 'weaponGroups',
 };
 
-/**
- * CARDINAL ATTENDU par fichier, et TOTAL — mesuré sur l'arbre au moment de l'écriture (2026-08-28).
- * Vérifié AVANT toute écriture : une entrée ajoutée ou retirée depuis fait sortir 1 plutôt que
- * migrer un périmètre qui n'est plus celui qu'on a mesuré.
- */
-const CARDINAUX = {
-  'advancementCosts.json': 15,
-  'axes.json': 9,
-  'books.json': 29,
-  'calendarMonths.json': 12,
-  'careers.json': 108,
-  'characteristics.json': 19,
-  'gods.json': 41,
-  'groups.json': 38,
-  'interludeEvents.json': 31,
-  'locations.json': 55,
-  'mutations.json': 116,
-  'mutationTables.json': 17,
-  // 30 → 62 (#1728) : les entrées de la table CLAUDE.md sont portées au manifeste, de la MÊME forme
-  // que les 30 autres — primitives EXISTANTES, aucune donnée neuve.
-  // Puis 62 → 66 (#1800, 2026-09-18) : `layout`, `ornaments`, `notchGauge`, `windRose`.
-  'primitives.manifest.json': 66,
-  'qualities.json': 59,
-  'regles.json': 86, // +1 `critiques-de-bateau` (#1657 B3-2), +1 `activites-en-mer` (#1392 T0)
-  'stars.json': 23,
-  'systemes.manifest.json': 16,
-  // 20→21 : la table MAISON `mendier-ennuis` (Échec Stupéfiant à Mendier, LDB 09 l.97), #1612.
-  'tables.json': 21,
-  'voyage-stakes.json': 42, // −1 `river-splinter-dodge` (#1657 B3-2)
-  'weaponGroups.json': 38,
-};
-// Puis 801→802 : +1 table d'effets `mendier-ennuis` (#1612).
-// Puis 802→836 (#1728) : le manifeste des primitives passe de 28 à 62 entrées (table CLAUDE.md
-// portée au manifeste — primitives EXISTANTES).
-// Puis 836→837 (#1392) : regles.json +1 — l'intro « ACTIVITÉS EN MER » (MDG 15) devient une entrée
-// adressée au lieu d'une constante d'écran.
-// Puis 837→841 (#1800) : primitives.manifest.json +4 — `layout`, `ornaments`, `notchGauge`, `windRose`.
-const TOTAL_ATTENDU = 841;
-
 const echecs = [];
 const rapport = [];
 
-// PORTE DE CARDINAL — lecture SEULE, avant la moindre écriture.
+// PORTE DE FORME — lecture SEULE, avant la moindre écriture. Un rejeu sur une donnée d'une AUTRE
+// époque se reconnaît à la FORME de ses entrées, jamais à leur NOMBRE (#1812) : chacune porte soit la
+// forme SOURCE (aucun `type`), soit la forme CIBLE (le `type` que le def déclare).
 {
   const ecarts = [];
-  let total = 0;
-  for (const fichier of Object.keys(TYPES)) {
+  for (const [fichier, type] of Object.entries(TYPES)) {
     const brut = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/data', fichier), 'utf8'));
     if (!Array.isArray(brut)) {
       ecarts.push(`${fichier} : racine non-TABLEAU`);
       continue;
     }
-    total += brut.length;
-    if (brut.length !== CARDINAUX[fichier]) ecarts.push(`${fichier} : ${brut.length} entrée(s) ≠ ${CARDINAUX[fichier]} attendue(s)`);
+    if (!brut.length) {
+      ecarts.push(`${fichier} : 0 entrée — périmètre vidé`);
+      continue;
+    }
+    for (const [i, e] of brut.entries()) {
+      if (!e || typeof e !== 'object' || Array.isArray(e)) {
+        ecarts.push(`${fichier}[${i}] : entrée non-objet`);
+        continue;
+      }
+      if (typeof e.id !== 'string' || !e.id) {
+        ecarts.push(`${fichier}[${i}] : entrée sans \`id\` de chaîne non vide`);
+        continue;
+      }
+      if ('type' in e && e.type !== type) {
+        ecarts.push(`${fichier} ${e.id} : \`type\` = ${JSON.stringify(e.type)} — ni la forme SOURCE (aucun \`type\`) ni la forme CIBLE (${JSON.stringify(type)})`);
+      }
+    }
   }
-  const sommeDeclaree = Object.values(CARDINAUX).reduce((a, b) => a + b, 0);
-  if (sommeDeclaree !== TOTAL_ATTENDU) ecarts.push(`table CARDINAUX : somme ${sommeDeclaree} ≠ TOTAL_ATTENDU ${TOTAL_ATTENDU}`);
-  if (total !== TOTAL_ATTENDU) ecarts.push(`TOTAL mesuré ${total} ≠ ${TOTAL_ATTENDU}`);
   if (ecarts.length) {
-    console.error(`CARDINAL INATTENDU — rien n’est écrit (${ecarts.length}) :`);
+    console.error(`ARBITRAGE REQUIS — forme INATTENDUE, rien n’est écrit (${ecarts.length}) :`);
     for (const m of ecarts) console.error(`  ${m}`);
     process.exit(1);
   }
@@ -202,4 +181,4 @@ if (echecs.length) {
 }
 
 for (const l of rapport) console.log(l);
-console.log(`vague 11b — ${Object.keys(TYPES).length} dataset(s) \`entite\` portent leur \`type\` (${TOTAL_ATTENDU} entrées)`);
+console.log(`vague 11b — ${Object.keys(TYPES).length} dataset(s) \`entite\` portent leur \`type\``);

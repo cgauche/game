@@ -80,7 +80,6 @@ const CAP_IDENTITE = 'S';
  * n'est pas la bonne mesure ici (ce script ne touche que les porteuses de `volume`) : il est gardé par
  * `2026-08-28-l1b-12a-entite-type.mjs`.
  */
-const RECETTES_ATTENDUES = 22;
 
 /** Les 8 caps en ordre horaire — copie LOCALE de `DIR8_ORDER` (`src/state/dir8.ts`) : un script `.mjs`
  *  ne peut pas importer le module TS, et la liste est vérifiée contre lui par le typecheck du projet. */
@@ -115,7 +114,8 @@ const avant = JSON.parse(brut);
   }
   const recettes = avant.filter((e) => e && e.volume);
   const ecarts = [];
-  if (recettes.length !== RECETTES_ATTENDUES) ecarts.push(`${recettes.length} recette(s) ≠ ${RECETTES_ATTENDUES} attendue(s)`);
+  // FORME, jamais cardinal (#1812) : le catalogue de décor grandit, un décor neuf doit se MIGRER.
+  if (!recettes.length) ecarts.push('aucune recette de volume — périmètre déplacé');
   for (const e of avant) {
     if (e && e.seatSlots && !e.volume) ecarts.push(`${e.id} : \`seatSlots\` sans \`volume\` — repère de place sans recette`);
     if (!e || !e.volume) continue;

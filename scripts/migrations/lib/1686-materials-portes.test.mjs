@@ -3,7 +3,8 @@
  *
  * La migration fusionne `propMaterials.json` + `roofMaterials.json` + `reliefMaterials.json` en
  * `materials.json` et pose le `domain` de chaque entrée. Elle DÉCLARE quatre verdicts : le rejeu
- * silencieux, l'état MIXTE, le cardinal par domaine, et la clé de charge ÉTRANGÈRE à son domaine.
+ * silencieux, l'état MIXTE, la FORME de chaque entrée (#1812 : jamais leur NOMBRE — un catalogue
+ * app-owned grandit), et la clé de charge ÉTRANGÈRE à son domaine.
  * Une déclaration n'est pas une porte tant qu'on ne l'a pas vue MORDRE : ce banc joue la migration
  * sur un dépôt JETABLE (`os.tmpdir()`), une fois par scénario, et exige la sortie attendue, un
  * message NOMINATIF, et — pour les rouges — ZÉRO fichier touché (octet, horodatage antidaté, aucun
@@ -157,24 +158,52 @@ test('(c) état MIXTE (une source recréée à côté de la cible) → sortie 1 
   assert.deepEqual(rienTouche(racine, avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
 });
 
-test('(d) CARDINAL cassé (une entrée retirée d’une source) → sortie 1 NOMINATIVE, rien d’écrit ni de supprimé', (t) => {
+test('(d) FORME ÉTRANGÈRE (une entrée de source portant déjà son `domain`) → sortie 1 NOMINATIVE, rien d’écrit ni de supprimé', (t) => {
+  let porteuse = null;
+  const fichiers = sourcesMutees((docs) => {
+    const e = docs['src/data/propMaterials.json'][0];
+    // Ni la forme SOURCE (pas de `domain`) ni la forme CIBLE (le document fusionné) : le `domain` est
+    // ce que cette migration POSE — le trouver déjà posé dans une source est une donnée d'une AUTRE
+    // époque.
+    e.domain = 'prop';
+    porteuse = e.id;
+  });
+  assert.ok(porteuse, 'aucune entrée prop à contaminer — la fixture ne mesure rien');
+  const { racine, avant } = depot(fichiers);
+  t.after(() => efface(racine));
+
+  const { code, sortie } = joue(racine);
+  assert.equal(code, 1, `sortie ${code} — une forme étrangère doit ARRÊTER la migration : ${sortie.slice(0, 800)}`);
+  assert.match(sortie, /propMaterials\.json/, `arrêt sans NOMMER le document fautif : ${sortie.slice(0, 800)}`);
+  assert.match(sortie, new RegExp(porteuse), `arrêt sans NOMMER l’entrée fautive : ${sortie.slice(0, 800)}`);
+  assert.match(sortie, /porte déjà un `domain`/, `arrêt sans DIRE la forme rencontrée : ${sortie.slice(0, 800)}`);
+  assert.deepEqual(rienTouche(racine, avant), [], 'la migration a écrit ou supprimé alors que l’arrêt précède toute écriture');
+});
+
+/**
+ * MORSURE INVERSE du cardinal (#1812) : le nombre de matières n'est PAS une porte. Un catalogue
+ * app-owned qui grandit — ou qui perd une entrée morte — se migre sans recalage : ce qui est exigé
+ * est la FORME de chaque entrée, jamais leur compte.
+ */
+test('(d-bis) CARDINAL DÉPLACÉ (une matière retirée d’une source) : la fusion PASSE, sans recalage', (t) => {
   let retiree = null;
   const fichiers = sourcesMutees((docs) => {
     retiree = docs['src/data/propMaterials.json'].pop();
   });
   assert.ok(retiree, 'aucune entrée à retirer de `propMaterials.json` — la fixture ne mesure rien');
-  const { racine, avant } = depot(fichiers);
+  const { racine } = depot(fichiers);
   t.after(() => efface(racine));
 
   const { code, sortie } = joue(racine);
-  assert.equal(code, 1, `sortie ${code} — un cardinal inattendu doit ARRÊTER la migration : ${sortie.slice(0, 800)}`);
-  assert.match(sortie, /propMaterials\.json/, `arrêt sans NOMMER le document fautif : ${sortie.slice(0, 800)}`);
-  const attendu = CARDINAL['src/data/propMaterials.json'];
-  assert.ok(
-    sortie.includes(`${attendu - 1} entrée(s) ≠ ${attendu} attendue(s)`),
-    `arrêt sans CHIFFRER l’écart : ${sortie.slice(0, 800)}`,
+  assert.equal(code, 0, `sortie ${code} — un cardinal déplacé n'est PAS une anomalie : ${sortie.slice(0, 800)}`);
+  const produit = JSON.parse(fs.readFileSync(path.join(racine, CIBLE), 'utf8'));
+  assert.equal(produit.length, CIBLE_DOC.length - 1, 'la fusion n’a pas porté le périmètre mesuré');
+  assert.equal(produit.some((e) => e.id === retiree.id), false, `${retiree.id} survit à son retrait`);
+  assert.equal(
+    produit.filter((e) => e.domain === 'prop').length,
+    CARDINAL['src/data/propMaterials.json'] - 1,
+    'le domaine `prop` n’a pas suivi le retrait',
   );
-  assert.deepEqual(rienTouche(racine, avant), [], 'la migration a écrit ou supprimé alors que l’arrêt précède toute écriture');
 });
 
 test('(e) CLÉ ÉTRANGÈRE (une clé `N` de toit injectée dans une entrée prop) → sortie 1 NOMINATIVE, AUCUN état mixte laissé', (t) => {

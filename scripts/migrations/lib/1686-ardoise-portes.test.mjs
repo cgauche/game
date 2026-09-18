@@ -121,8 +121,8 @@ test('PORTE 1 : un porteur `ardoise` HORS masse de toit / primitive → sortie 1
   assert.deepEqual(rienEcrit(racine, avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
 });
 
-test('PORTE 2 : un cardinal CASSÉ (une seule entrée revenue à l’id nu) → sortie 1 NOMINATIVE, rien d’écrit', (t) => {
-  const { racine, avant } = depot((docs) => {
+test('PORTE 2 : une entrée revenue à l’id NU est RECOMPOSÉE — l’identité est la porte, pas un compte (#1812)', (t) => {
+  const { racine } = depot((docs) => {
     const toit = docs['src/data/materials.json'].find((e) => e.id === 'toit-ardoise');
     assert.ok(toit, '`toit-ardoise` absent du catalogue de matières — la fixture ne mesure rien');
     toit.id = 'ardoise';
@@ -130,7 +130,8 @@ test('PORTE 2 : un cardinal CASSÉ (une seule entrée revenue à l’id nu) → 
   t.after(() => efface(racine));
 
   const { code, sortie } = joue(racine);
-  assert.equal(code, 1, `sortie ${code} — un cardinal inattendu doit ARRÊTER la migration : ${sortie.slice(0, 600)}`);
-  assert.match(sortie, /catalogueDecor/, `arrêt sans NOMMER le cardinal fautif : ${sortie.slice(0, 600)}`);
-  assert.deepEqual(rienEcrit(racine, avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
+  assert.equal(code, 0, `sortie ${code} — un id NU est la forme SOURCE, elle se migre : ${sortie.slice(0, 600)}`);
+  assert.match(sortie, /1 entrée ardoise→toit-ardoise/, `la recomposition ne se DIT pas : ${sortie.slice(0, 600)}`);
+  const relu = JSON.parse(fs.readFileSync(path.join(racine, 'src/data/materials.json'), 'utf8'));
+  assert.deepEqual(relu.filter((e) => e.id === 'ardoise'), [], 'un id NU survit à l’écriture');
 });

@@ -21,7 +21,6 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const FICHIER = 'src/data/species.json';
-const CARDINAL = 27;
 
 /** Ids de `careers.json` tels que `idDe('career')` les refine — le registre généré lui-même
  *  (`src/data/schemas/grammaire/ref.ts` › `idsDe`, `cibleDe('career') === 'careers.json'`). */
@@ -84,9 +83,9 @@ const sansApercu = (liste) => liste.map((e) => {
 });
 assert.deepEqual(sansApercu(migree), sansApercu(data), `${FICHIER} : la migration a changé autre chose que l’aperçu`);
 
-// CARDINAL sur le RÉSULTAT — jamais sur le delta.
+// FORME sur le RÉSULTAT, jamais cardinal (#1812) : le catalogue des espèces grandit ; ce qui compte
+// est qu'aucune enveloppe `preview` ne survive et que chaque aperçu pointe une carrière du catalogue.
 const finaux = migree.filter((e) => e && typeof e === 'object' && e.previewCareer !== undefined);
-assert.equal(finaux.length, CARDINAL, `cardinal attendu ${CARDINAL} espèces porteuses de previewCareer, vu ${finaux.length}`);
 assert.equal(
   migree.filter((e) => e && typeof e === 'object' && e.preview !== undefined).length,
   0,
@@ -95,4 +94,4 @@ assert.equal(
 for (const e of finaux) assert.ok(IDS_CARRIERE.has(e.previewCareer.id), `${e.id} : id de carrière hors catalogue après écriture`);
 
 fs.writeFileSync(abs, JSON.stringify(migree, null, 2));
-console.log(`${CARDINAL} espèces : \`preview.career\` → \`previewCareer.id\` (référence résolue contre careers.json).`);
+console.log(`${finaux.length} espèce(s) : \`preview.career\` → \`previewCareer.id\` (référence résolue contre careers.json).`);

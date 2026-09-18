@@ -70,17 +70,19 @@ export function gateDe(chemin, racines = RACINES) {
 }
 
 /**
- * Tous les tests `scripts/**\/*.test.mjs` SUIVIS PAR GIT, chemins relatifs POSIX, triés.
+ * Tous les tests `scripts/**\/*.test.mjs` du dépôt — SUIVIS ou NON ENCORE INDEXÉS —, chemins
+ * relatifs POSIX, triés. Un test neuf n'est pas indexé tant qu'on ne l'a pas `git add` : le lister
+ * par les seuls fichiers suivis rendrait VERTE, par ABSENCE, toute garde qui vient d'être écrite.
  * Une lecture git sans verdict LÈVE : jouer « zéro test » serait le pire des verts.
  * @param {string} [racine] racine du dépôt
  * @returns {string[]}
  */
 export function listerTests(racine = process.cwd()) {
-  const vu = lireGit(['ls-files', '-z', '--', 'scripts'], { cwd: racine })
+  const vu = lireGit(['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', 'scripts'], { cwd: racine })
   const sortie = sortieOuNull(vu)
   if (sortie === null)
     throw new Error(
-      `testsParGate : git ne rend pas les fichiers SUIVIS sous ${racine}/scripts ` +
+      `testsParGate : git ne rend pas les fichiers sous ${racine}/scripts ` +
         `(${vu.disponible ? 'lecture sans verdict' : vu.raison}) — la répartition des tests ne se devine pas`,
     )
   return sortie

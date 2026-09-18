@@ -12,7 +12,7 @@
  * Ce banc vit sous `lib/` : `replay.mjs` scanne le dossier des migrations à PLAT et n'y admet que
  * des `.mjs` à préfixe DATÉ — un `.test.mjs` posé à côté des migrations y serait rejoué ou refusé.
  *
- * Trois familles de cas, toutes DÉRIVÉES du dossier des migrations — aucune liste cueillie :
+ * Quatre familles de cas, toutes DÉRIVÉES du dossier des migrations — aucune liste cueillie :
  *
  *  1. NO-OP SUR CORPUS RENVERSÉ : `src/data` ENTIER est recopié dans un dépôt jetable, clés
  *     renversées document par document, puis TOUTES les migrations datées y sont rejouées une à une.
@@ -24,6 +24,12 @@
  *  3. Les deux morsures INVERSES — une entrée à `cover` privée de sa `maison`, un
  *     `steam-breakdown.json` dont `id` n'ouvre plus l'entrée DOIVENT être migrés : un no-op qui
  *     avale tout ne prouverait rien.
+ *  4. PORTE DE FORME (#1812) : ce qui protège d'un rejeu sur une donnée d'une AUTRE époque est la
+ *     FORME des entrées, jamais leur NOMBRE. Pour chaque migration qui porte cette porte (dérivée du
+ *     motif de son message), la première entrée de son premier dataset reçoit un `type` ÉTRANGER :
+ *     ni la forme source ni la forme cible. Exigé : sortie 1, message NOMINATIF, rien d'écrit.
+ *     Sa garde de CLASSE — « +1 entrée ne coûte rien » — ne lit pas le code mais fabrique l'ajout et
+ *     rejoue tout : `npm run migrations:replay:croissance` (`lib/croissance.mjs`).
  *
  * CE QUE LE RENVERSEMENT PRÉSERVE : la TÊTE d'enveloppe, jamais la queue. Sur une entrée de racine
  * tableau, `id` reste en tête (l'invariant que les vagues 9 à 12 posent et vérifient) ; sur une
@@ -285,3 +291,43 @@ test('2026-09-02-1680-props-provenance.mjs : une entrée à `cover` privée de `
   assert.equal(typeof apres.find((e) => e.id === vise).maison, 'string', `${vise} : \`maison\` non écrite`);
   assert.notEqual(fs.readFileSync(cible, 'utf8'), avant, 'fichier inchangé alors qu’une provenance manquait');
 });
+
+// --- 4. PORTE DE FORME : ni la forme SOURCE, ni la forme CIBLE (#1812) ---------------------------
+
+/** Les migrations qui portent la porte de FORME — DÉRIVÉES du message qui la code. */
+// Le repère est le REFUS que le code prononce (`ARBITRAGE REQUIS — forme INATTENDUE`), jamais une
+// phrase de prose : une porte se reconnaît à ce qu'elle DIT en sortant, pas à son commentaire.
+const PORTEURS_DE_FORME = DATEES.filter((m) => /forme INATTENDUE/.test(texteDe(m)));
+
+test('la porte de FORME est portée par les 4 vagues `entite`', () => {
+  for (const m of ['2026-08-28-l1b-11a-entite-type.mjs', '2026-08-28-l1b-11b-entite-type.mjs',
+    '2026-08-28-l1b-12a-entite-type.mjs', '2026-08-28-l1b-12b-entite-type.mjs']) {
+    assert.ok(PORTEURS_DE_FORME.includes(m), `${m} n’est plus reconnue porteuse de la porte de FORME`);
+  }
+});
+
+/** Un `type` qu'AUCUN def ne déclare : ni la forme source (pas de `type`), ni la forme cible. */
+const TYPE_ETRANGER = 'document-d-une-autre-epoque';
+
+for (const migration of PORTEURS_DE_FORME) {
+  const fichier = premierDataset(migration);
+  test(`${migration} : une entrée de ${fichier} ni à la forme SOURCE ni à la forme CIBLE → sortie 1 NOMINATIVE, rien d’écrit`, (t) => {
+    assert.ok(fichier, `${migration} : ni table \`TYPES\` ni \`FICHIER\` — le dataset de la morsure ne se dérive pas`);
+    const { racine, cible, avant } = depotJetable(fichier, (doc) => [{ ...doc[0], type: TYPE_ETRANGER }, ...doc.slice(1)]);
+    t.after(() => efface(racine));
+    const tete = JSON.parse(avant)[0];
+    assert.equal(tete.type, TYPE_ETRANGER, 'la fixture ne porte pas le `type` étranger — la morsure ne mesure rien');
+    fs.utimesSync(cible, ANTIDATE, ANTIDATE);
+    const mtimeAvant = fs.statSync(cible).mtimeMs;
+
+    const r = joue(racine, migration);
+    const sortie = `${r.stdout}${r.stderr}`;
+    const echappe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+    assert.equal(r.code, 1, `sortie ${r.code} — une forme ÉTRANGÈRE doit ARRÊTER la migration : ${sortie.slice(0, 500)}`);
+    assert.match(sortie, new RegExp(echappe(fichier)), `arrêt MUET sur le fichier visé : ${sortie.slice(0, 500)}`);
+    assert.match(sortie, new RegExp(echappe(tete.id)), `arrêt sans NOMMER l’entrée : ${sortie.slice(0, 500)}`);
+    assert.match(sortie, new RegExp(echappe(TYPE_ETRANGER)), `arrêt sans NOMMER la forme rencontrée : ${sortie.slice(0, 500)}`);
+    assert.equal(fs.readFileSync(cible, 'utf8'), avant, `${fichier} RÉÉCRIT alors que l’arrêt précède toute écriture`);
+    assert.equal(fs.statSync(cible).mtimeMs, mtimeAvant, `${fichier} touché (mtime) alors que l’arrêt précède toute écriture`);
+  });
+}

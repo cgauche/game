@@ -32,7 +32,6 @@ const CIBLE = path.join(ROOT, 'src/data/props.json');
 /** Cardinaux FIGÉS, mesurés sur l'arbre à l'écriture (2026-09-03) — porte d'identité du périmètre :
  *  une recette ajoutée ou retirée depuis fait sortir 1 plutôt que migrer un catalogue qui n'est plus
  *  celui qu'on a mesuré. UNE seule recette porte un `foot` (`table-2x1`, posé par #1644). */
-const VOLUMIQUES_ATTENDUS = 22;
 const VOLUMIQUES_A_FOOT = 1;
 
 /** L'ÉCHELLE de la vérification, en m/case : le défaut du monde (`LDB 15 l.12`, `sceneMetresPerTile`).
@@ -50,8 +49,8 @@ if (!Array.isArray(avant)) {
 
 const volumiques = avant.filter((e) => e?.volume);
 const aFoot = volumiques.filter((e) => e.foot !== undefined);
-if (volumiques.length !== VOLUMIQUES_ATTENDUS)
-  echecs.push(`${volumiques.length} recette(s) volumique(s) ≠ ${VOLUMIQUES_ATTENDUS} mesurées`);
+// FORME, jamais cardinal (#1812) : le catalogue de décor grandit, un décor neuf doit se MIGRER.
+if (!volumiques.length) echecs.push('aucune recette volumique — périmètre déplacé');
 if (aFoot.length !== VOLUMIQUES_A_FOOT && aFoot.length !== 0)
   echecs.push(`${aFoot.length} recette(s) à \`foot\` ≠ ${VOLUMIQUES_A_FOOT} mesurée(s)`);
 

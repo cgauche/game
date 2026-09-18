@@ -21,8 +21,8 @@
  *
  * POSITION : `label` s'insère juste après `id`, en 2ᵉ clé.
  * IDEMPOTENT / NO-OP : rejouée, elle repose les mêmes labels, n'écrit rien, sort 0.
- * FAIL-FAST : entrée d'un domaine arbitré absente de la table (ou table portant un id absent du
- * fichier), entrée sans `id`, `label` déjà posé et DIVERGENT → rien n'est écrit, sortie 1.
+ * FAIL-FAST : entrée d'un domaine arbitré SANS `label` et absente de la table (ou table portant un id
+ * absent du fichier), entrée sans `id`, `label` déjà posé et DIVERGENT → rien n'est écrit, sortie 1.
  * FORMATAGE PRÉSERVÉ : le fichier est EXACTEMENT `JSON.stringify(doc, null, 2)`, vérifié AVANT écriture.
  */
 import fs from 'node:fs';
@@ -79,7 +79,14 @@ if (!erreurs.length) {
     }
     const label = arbitrage(entree);
     if (label === undefined) {
-      erreurs.push(`${FICHIER} : \`${entree.id}\` (domaine ${entree.domain}) sans label ARBITRÉ — arbitrage requis`);
+      // PORTE DE FORME, jamais une table par ENTRÉE (#1812) : une matière née APRÈS cette vague arrive
+      // avec son `label` (forme CIBLE) et n'est pas de la juridiction de cet arbitrage. La table
+      // ci-dessus ne répond que des entrées à la forme SOURCE — celles qui n'ont PAS de `label`.
+      if (typeof entree.label === 'string' && entree.label !== '') {
+        sortie.push(entree);
+        continue;
+      }
+      erreurs.push(`${FICHIER} : \`${entree.id}\` (domaine ${entree.domain}) sans \`label\` NI arbitrage — arbitrage requis`);
       continue;
     }
     if (entree.label !== undefined && entree.label !== label) {
@@ -113,7 +120,7 @@ const apres = JSON.parse(fs.readFileSync(cible, 'utf8'));
 if (apres.length !== sortie.length) echecs.push(`POST — ${FICHIER} : ${apres.length} entrée(s) ≠ ${sortie.length}`);
 let arbitres = 0;
 for (const e of apres) {
-  if (!juridiction(e)) continue;
+  if (!juridiction(e) || arbitrage(e) === undefined) continue;
   arbitres++;
   if (e.label !== arbitrage(e) || !e.label) echecs.push(`POST — ${FICHIER} : ${e.id} label ${JSON.stringify(e.label)} ≠ arbitrage`);
   if (Object.keys(e)[0] !== 'id') echecs.push(`POST — ${FICHIER} : ${e.id} première clé ${Object.keys(e)[0]} ≠ id`);

@@ -11,11 +11,12 @@
  * 65 scènes livrées, identique avant et après.
  *
  * Entrée : `src/data/structureAppearance.json` (lu et écrit).
- * CARDINAL ATTENDU, mesuré sur l'arbre au moment de l'écriture (2026-09-05) : 18 entrées portant la
- * clé, sur 18 entrées. Un écart fait sortir 1 AVANT toute écriture.
+ * PORTE DE FORME, jamais un CARDINAL (#1812) : le catalogue des apparences GRANDIT, et une apparence
+ * née après ce passage arrive DÉJÀ à la forme cible (sans `material`). Le périmètre est donc la
+ * PRÉSENCE de la clé morte, entrée par entrée ; un périmètre VIDE (racine vide) fait sortir 1.
  * MARQUEUR D'IDEMPOTENCE : la présence de la clé. Rejouée sur l'arbre migré, la migration n'écrit
  * rien et sort 0.
- * FAIL-FAST : racine non-tableau, cardinal inattendu, formatage non canonique, clé encore présente
+ * FAIL-FAST : racine non-tableau, racine vide, formatage non canonique, clé encore présente
  * après écriture → rien n'est écrit / sortie 1.
  * FORMATAGE PRÉSERVÉ : `src/data/*.json` est `JSON.stringify(doc, null, 2)` (sans saut final).
  */
@@ -27,8 +28,6 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const NOM = '2026-09-05-1686-structure-material-mort';
 const REL = 'src/data/structureAppearance.json';
 const CLE = 'material';
-/** Cardinal mesuré (2026-09-05) — porte d'identité du périmètre, jamais une estimation. */
-const ATTENDU = { entrees: 18, porteuses: 18 };
 
 const echec = (m) => {
   console.error(`[${NOM}] ${m}`);
@@ -41,14 +40,14 @@ const doc = JSON.parse(brut);
 if (brut !== JSON.stringify(doc, null, 2)) echec(`${REL} : formatage non canonique en entrée`);
 if (!Array.isArray(doc)) echec(`${REL} : racine non-TABLEAU`);
 
+// PORTE DE FORME, jamais de CARDINAL (#1812) : le catalogue des apparences de structure grandit ;
+// ce qui délimite le périmètre est la PRÉSENCE de la clé morte, pas le nombre d'entrées.
+if (!doc.length) echec(`${REL} : racine VIDE — périmètre déplacé`);
 const porteuses = doc.filter((e) => e && typeof e === 'object' && CLE in e);
 if (porteuses.length === 0) {
-  if (doc.length !== ATTENDU.entrees) echec(`déjà migrée en apparence, mais ${doc.length} entrée(s) ≠ ${ATTENDU.entrees}`);
   console.log(`[${NOM}] déjà migrée — rien à écrire`);
   process.exit(0);
 }
-if (doc.length !== ATTENDU.entrees) echec(`${doc.length} entrée(s) ≠ ${ATTENDU.entrees} attendue(s)`);
-if (porteuses.length !== ATTENDU.porteuses) echec(`${porteuses.length} entrée(s) portant \`${CLE}\` ≠ ${ATTENDU.porteuses} attendue(s)`);
 
 // ── ÉCRITURE ────────────────────────────────────────────────────────────────────────────────────
 for (const e of porteuses) delete e[CLE];
@@ -58,6 +57,6 @@ fs.writeFileSync(cible, JSON.stringify(doc, null, 2), 'utf8');
 const relu = JSON.parse(fs.readFileSync(cible, 'utf8'));
 const restantes = relu.filter((e) => e && typeof e === 'object' && CLE in e).map((e) => e.id);
 if (restantes.length) echec(`ÉCHEC POST-ÉCRITURE : \`${CLE}\` encore présent sur ${restantes.join(', ')}`);
-if (relu.length !== ATTENDU.entrees) echec(`ÉCHEC POST-ÉCRITURE : ${relu.length} entrée(s) ≠ ${ATTENDU.entrees}`);
+if (relu.length !== doc.length) echec(`ÉCHEC POST-ÉCRITURE : ${relu.length} entrée(s) ≠ ${doc.length} lues`);
 
 console.log(`[${NOM}] migré — clé \`${CLE}\` retirée de ${porteuses.length} apparence(s) de structure`);

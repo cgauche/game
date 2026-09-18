@@ -16,7 +16,8 @@
  * IDEMPOTENT / NO-OP TOLÉRANT À LA FORME : une entrée portant déjà `categories` (et plus de `types`)
  * est reconnue migrée ; rejouée sur l'état final, la migration n'écrit rien et sort 0.
  * FAIL-FAST : `category` portant les deux noms, `types` non-tableau, valeur hors du vocabulaire de
- * catégorie mesuré sur `trappings.json`, cardinal ≠ 6 → rien n'est écrit, sortie 1.
+ * catégorie mesuré sur `trappings.json`, racine VIDE → rien n'est écrit, sortie 1. JAMAIS un
+ * cardinal (#1812) : le catalogue des marchands est app-owned et grandit.
  * FORMATAGE PRÉSERVÉ : le fichier est EXACTEMENT `JSON.stringify(doc, null, 2)` (vérifié avant toute
  * écriture — une forme non canonique fait sortir 1 plutôt que reflower le document en silence).
  */
@@ -27,7 +28,6 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const CIBLE = path.join(ROOT, 'src/data/merchants.json');
 const CATALOGUE = path.join(ROOT, 'src/data/trappings.json');
-const ATTENDU = 6;
 
 const brut = fs.readFileSync(CIBLE, 'utf8');
 const data = JSON.parse(brut);
@@ -42,7 +42,7 @@ const VALEURS = new Set(JSON.parse(fs.readFileSync(CATALOGUE, 'utf8')).map((t) =
 
 const echecs = [];
 if (!Array.isArray(data)) echecs.push('racine non tableau');
-else if (data.length !== ATTENDU) echecs.push(`cardinal ${data.length} ≠ ${ATTENDU} attendu`);
+else if (!data.length) echecs.push('racine VIDE — périmètre déplacé');
 
 let migres = 0;
 let dejaMigres = 0;
@@ -81,7 +81,7 @@ const avant = data.map((e) => (e.category?.types ?? e.category?.categories ?? []
 const rendu = apres.map((e) => (e.category?.categories ?? []).join('/')).join('|');
 const subAvant = data.map((e) => (e.category?.subTypes ?? []).join('/')).join('|');
 const subApres = apres.map((e) => (e.category?.subTypes ?? []).join('/')).join('|');
-if (residus || avant !== rendu || subAvant !== subApres || apres.length !== ATTENDU) {
+if (residus || avant !== rendu || subAvant !== subApres || apres.length !== data.length) {
   console.error(`VÉRIFICATION POST-ÉCRITURE ROUGE : ${residus} \`types\` résiduel(s), ${apres.length} entrée(s), listes ${avant === rendu ? 'conservées' : 'ALTÉRÉES'}, subTypes ${subAvant === subApres ? 'intacts' : 'ALTÉRÉS'}`);
   process.exit(1);
 }

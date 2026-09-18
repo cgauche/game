@@ -48,11 +48,6 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const NOM = '2026-09-11-1687-actions-authorees';
 const RACINE = path.join(ROOT, 'src/scenes');
 
-/** Cardinaux mesurés (2026-09-11) — portes d'identité du périmètre. Les deux populations sont
- *  STABLES de part et d'autre du passage (une fouille reste une fouille, une assise une assise),
- *  donc gardées à l'identique sur une reprise : c'est ce qui rend la migration idempotente SANS
- *  relâcher la porte. */
-const ATTENDU = { projets: 4, scenes: 28, fouilles: 32, assises: 5 };
 /** Forme du document AVANT et APRÈS ce bump — la borne haute est CLOSE (cf. en-tête). */
 const SCHEMA_AVANT = 10;
 const SCHEMA_APRES = 11;
@@ -120,7 +115,8 @@ const rapports = [];
 let scenesVues = 0;
 let interactsVus = 0;
 let videsVues = 0;
-/** Populations STABLES : une entité qui OFFRE une fouille (avant ou après), une entité ASSISE. */
+/** Populations STABLES : une entité qui OFFRE une fouille (avant ou après), une entité ASSISE.
+ *  MESURÉES pour le RAPPORT, jamais confrontées à un compte (#1812) : une Scène neuve en ajoute. */
 let fouillesVues = 0;
 let assisesVues = 0;
 
@@ -159,10 +155,10 @@ for (const abs of cibles) {
   rapports.push({ rel, abs, brut, doc, scenes, interacts, vides });
 }
 
-if (cibles.length !== ATTENDU.projets) echecs.push(`${cibles.length} projet(s) de scène ≠ ${ATTENDU.projets} attendu(s)`);
-if (scenesVues !== ATTENDU.scenes) echecs.push(`${scenesVues} Scène(s) embarquée(s) ≠ ${ATTENDU.scenes} attendue(s)`);
-if (fouillesVues !== ATTENDU.fouilles) echecs.push(`${fouillesVues} décor(s) fouillable(s) ≠ ${ATTENDU.fouilles} attendu(s)`);
-if (assisesVues !== ATTENDU.assises) echecs.push(`${assisesVues} décor(s) à assise ≠ ${ATTENDU.assises} attendu(s)`);
+// FORME, jamais cardinal (#1812) : une Scène et son décor sont des données ÉDITABLES — en créer ne
+// doit rien recaler ici. Ce qui arrête la migration, c'est un périmètre VIDE.
+if (!cibles.length) echecs.push('aucun projet de scène trouvé — périmètre déplacé');
+if (!scenesVues) echecs.push('aucune Scène embarquée — périmètre déplacé');
 
 if (echecs.length) {
   console.error(`[${NOM}] ARBITRAGE REQUIS — ${echecs.length} anomalie(s), AUCUNE écriture :`);

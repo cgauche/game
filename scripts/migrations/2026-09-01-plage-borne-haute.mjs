@@ -136,7 +136,7 @@ if (echecs.length) {
 
   const saisons = meteo.doc.seasons;
   if (!Array.isArray(saisons) || saisons.length !== CARDINAUX['weather.json'].saisons) {
-    ecarts.push(`weather.json : ${Array.isArray(saisons) ? saisons.length : 'non-tableau'} saison(s) ≠ ${CARDINAUX['weather.json'].saisons}`);
+    ecarts.push(`weather.json : ${Array.isArray(saisons) ? saisons.length : 'non-tableau'} saison(s) ≠ ${CARDINAUX['weather.json'].saisons} — table CLOSE, EDOC 08 l.52-59`);
   } else {
     let rangees = 0;
     for (const s of saisons) {
@@ -158,15 +158,15 @@ if (echecs.length) {
       }
     }
     const attendu = Object.values(METEO).reduce((a, l) => a + l.length, 0);
-    if (attendu !== CARDINAUX['weather.json'].rangees) ecarts.push(`table METEO : ${attendu} rangée(s) ≠ ${CARDINAUX['weather.json'].rangees} déclarée(s)`);
-    if (rangees && rangees !== CARDINAUX['weather.json'].rangees) ecarts.push(`weather.json : ${rangees} rangée(s) mesurée(s) ≠ ${CARDINAUX['weather.json'].rangees}`);
+    if (attendu !== CARDINAUX['weather.json'].rangees) ecarts.push(`table METEO : ${attendu} rangée(s) ≠ ${CARDINAUX['weather.json'].rangees} déclarée(s) — EDOC 08 l.52-59`);
+    if (rangees && rangees !== CARDINAUX['weather.json'].rangees) ecarts.push(`weather.json : ${rangees} rangée(s) mesurée(s) ≠ ${CARDINAUX['weather.json'].rangees} — table CLOSE, EDOC 08 l.52-59`);
   }
 
   const bandes = augm.doc;
   if (!Array.isArray(bandes) || bandes.length !== CARDINAUX['advancementCosts.json'].bandes) {
-    ecarts.push(`advancementCosts.json : ${Array.isArray(bandes) ? bandes.length : 'non-tableau'} bande(s) ≠ ${CARDINAUX['advancementCosts.json'].bandes}`);
+    ecarts.push(`advancementCosts.json : ${Array.isArray(bandes) ? bandes.length : 'non-tableau'} bande(s) ≠ ${CARDINAUX['advancementCosts.json'].bandes} — table CLOSE, LDB 07 l.56-70`);
   } else if (AUGMENTATIONS.length !== CARDINAUX['advancementCosts.json'].bandes) {
-    ecarts.push(`table AUGMENTATIONS : ${AUGMENTATIONS.length} bande(s) ≠ ${CARDINAUX['advancementCosts.json'].bandes} déclarée(s)`);
+    ecarts.push(`table AUGMENTATIONS : ${AUGMENTATIONS.length} bande(s) ≠ ${CARDINAUX['advancementCosts.json'].bandes} déclarée(s) — LDB 07 l.56-70`);
   } else {
     for (let i = 0; i < AUGMENTATIONS.length; i++) {
       const b = bandes[i];

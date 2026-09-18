@@ -17,16 +17,18 @@
  * Entrées : `src/data/propMaterials.json`, `src/data/roofMaterials.json`,
  * `src/data/reliefMaterials.json` (lus puis SUPPRIMÉS) et `src/data/materials.json` (écrit).
  *
- * CARDINAUX ATTENDUS, mesurés sur l'arbre au moment de l'écriture (2026-09-05) : 8 `prop`, 4 `roof`,
- * 3 `relief` = 15 entrées. Un écart fait sortir 1 AVANT toute écriture.
- * CARDINAL RECALÉ #1715 : `relief` 4 → 3, `plafond` purgé (0 émetteur) ; `TOTAL_ATTENDU` en dérive.
+ * PORTE DE FORME, jamais de CARDINAL (#1812) : ce qui protège d'un rejeu sur une donnée d'une AUTRE
+ * époque est la FORME des entrées — `id`/`label` de chaîne, `domain` posé (forme CIBLE) ou absent
+ * (forme SOURCE), `type` du document d'accueil, ids uniques sur tout le périmètre — et JAMAIS leur
+ * nombre : un catalogue de matières croît légitimement, et un compte gelé ferait payer un recalage à
+ * chaque matière neuve.
  * MARQUEUR D'IDEMPOTENCE : l'existence des fichiers. Trois sources présentes et pas de `materials.json`
  * = migration ; trois sources absentes et `materials.json` présent = rejeu, aucune écriture, sortie 0
- * (les cardinaux du RÉSULTAT y sont revérifiés). Tout état MIXTE est une anomalie nommée, sortie 1.
- * FAIL-FAST : état mixte, racine non-tableau, entrée sans `id`/`label` de chaîne, entrée portant déjà
- * un `domain`, cardinal inattendu, id répété entre domaines, clé de charge partagée par deux domaines,
- * formatage non canonique → rien n'est écrit, rien n'est supprimé. Les mêmes verdicts sont REJOUÉS
- * après écriture sur le document relu ; aucun n'attend cette relecture pour mordre.
+ * (la FORME du RÉSULTAT y est revérifiée). Tout état MIXTE est une anomalie nommée, sortie 1.
+ * FAIL-FAST : état mixte, racine non-tableau, dataset vide, entrée sans `id`/`label` de chaîne,
+ * entrée portant déjà un `domain`, id répété entre domaines, clé de charge partagée par deux
+ * domaines, formatage non canonique → rien n'est écrit, rien n'est supprimé. Les mêmes verdicts sont
+ * REJOUÉS après écriture sur le document relu ; aucun n'attend cette relecture pour mordre.
  * FORMATAGE PRÉSERVÉ : `src/data/*.json` est `JSON.stringify(doc, null, 2)` (sans saut final),
  * vérifié AVANT écriture et reproduit en sortie.
  */
@@ -39,13 +41,12 @@ const NOM = '2026-09-05-1686-materials';
 const TYPE = 'materials';
 const CIBLE_REL = 'src/data/materials.json';
 
-/** Fichier SOURCE → domaine de ses entrées, et cardinal mesuré. L'ordre est celui de la sortie. */
+/** Fichier SOURCE → domaine de ses entrées. L'ordre est celui de la sortie. */
 const SOURCES = [
-  { rel: 'src/data/propMaterials.json', domain: 'prop', attendu: 8 },
-  { rel: 'src/data/roofMaterials.json', domain: 'roof', attendu: 4 },
-  { rel: 'src/data/reliefMaterials.json', domain: 'relief', attendu: 3 },
+  { rel: 'src/data/propMaterials.json', domain: 'prop' },
+  { rel: 'src/data/roofMaterials.json', domain: 'roof' },
+  { rel: 'src/data/reliefMaterials.json', domain: 'relief' },
 ];
-const TOTAL_ATTENDU = SOURCES.reduce((n, s) => n + s.attendu, 0);
 
 const echec = (m) => {
   console.error(`[${NOM}] ${m}`);
@@ -63,15 +64,22 @@ function lire(rel) {
   return doc;
 }
 
-/** Cardinal par domaine d'un document fusionné, plus les ids répétés. */
-function mesurer(doc, quoi) {
+/**
+ * La FORME CIBLE d'un document fusionné, entrée par entrée : `id`/`label`/`domain` de chaîne, `type`
+ * du document d'accueil, ids uniques. REND le compte par domaine — pour le RAPPORT, jamais pour une
+ * porte (#1812).
+ */
+function formeCible(doc, quoi) {
   if (!Array.isArray(doc)) echec(`${quoi} : racine non-TABLEAU`);
+  if (!doc.length) echec(`${quoi} : 0 entrée — périmètre vidé`);
   const parDomaine = {};
   const vus = new Map();
   for (const e of doc) {
     if (!e || typeof e !== 'object') echec(`${quoi} : entrée non-objet`);
     if (typeof e.id !== 'string' || !e.id) echec(`${quoi} : entrée sans \`id\` de chaîne non vide`);
-    if (typeof e.domain !== 'string') echec(`${quoi} : ${e.id} sans \`domain\``);
+    if (typeof e.label !== 'string' || !e.label) echec(`${quoi} : ${e.id} sans \`label\` de chaîne non vide`);
+    if (e.type !== TYPE) echec(`${quoi} : ${e.id} porte \`type\` ${JSON.stringify(e.type)} ≠ ${JSON.stringify(TYPE)} — ce document n'est pas celui que cette migration rend`);
+    if (typeof e.domain !== 'string' || !e.domain) echec(`${quoi} : ${e.id} sans \`domain\``);
     parDomaine[e.domain] = (parDomaine[e.domain] ?? 0) + 1;
     vus.set(e.id, (vus.get(e.id) ?? 0) + 1);
   }
@@ -80,16 +88,8 @@ function mesurer(doc, quoi) {
   return parDomaine;
 }
 
-/** Le compte par domaine est-il EXACTEMENT celui de la table `SOURCES` ? */
-function portesDeCardinal(parDomaine, quoi) {
-  const ecarts = [];
-  for (const s of SOURCES) if ((parDomaine[s.domain] ?? 0) !== s.attendu) ecarts.push(`${s.domain} ${parDomaine[s.domain] ?? 0} ≠ ${s.attendu}`);
-  const total = Object.values(parDomaine).reduce((a, b) => a + b, 0);
-  if (total !== TOTAL_ATTENDU) ecarts.push(`total ${total} ≠ ${TOTAL_ATTENDU}`);
-  const inconnus = Object.keys(parDomaine).filter((d) => !SOURCES.some((s) => s.domain === d));
-  if (inconnus.length) ecarts.push(`domaine(s) hors périmètre : ${inconnus.join(', ')}`);
-  if (ecarts.length) echec(`${quoi} : ${ecarts.join(' ; ')}`);
-}
+/** Le compte par domaine, rendu lisible pour le rapport — `prop 8, roof 4, relief 3`. */
+const compte = (parDomaine) => Object.entries(parDomaine).map(([d, n]) => `${d} ${n}`).join(', ');
 
 /** Clés d'ENVELOPPE du document, communes aux trois domaines par construction. */
 const ENVELOPPE = ['id', 'type', 'label', 'domain'];
@@ -128,8 +128,9 @@ const sourcesPresentes = SOURCES.filter((s) => existe(s.rel));
 const cible = existe(CIBLE_REL);
 
 if (sourcesPresentes.length === 0 && cible) {
-  portesDeCardinal(mesurer(lire(CIBLE_REL), CIBLE_REL), CIBLE_REL);
-  console.log(`[${NOM}] déjà migrée — ${TOTAL_ATTENDU} matière(s) dans ${CIBLE_REL}, rien à écrire`);
+  const doc = lire(CIBLE_REL);
+  const parDomaine = formeCible(doc, CIBLE_REL);
+  console.log(`[${NOM}] déjà migrée — ${doc.length} matière(s) dans ${CIBLE_REL} (${compte(parDomaine)}), rien à écrire`);
   process.exit(0);
 }
 if (sourcesPresentes.length !== SOURCES.length || cible) {
@@ -144,7 +145,7 @@ const fusion = [];
 for (const s of SOURCES) {
   const doc = lire(s.rel);
   if (!Array.isArray(doc)) echec(`${s.rel} : racine non-TABLEAU`);
-  if (doc.length !== s.attendu) echec(`${s.rel} : ${doc.length} entrée(s) ≠ ${s.attendu} attendue(s)`);
+  if (!doc.length) echec(`${s.rel} : 0 entrée — périmètre vidé`);
   for (const e of doc) {
     if (!e || typeof e !== 'object' || Array.isArray(e)) echec(`${s.rel} : entrée non-objet`);
     if (typeof e.id !== 'string' || !e.id) echec(`${s.rel} : entrée sans \`id\` de chaîne non vide`);
@@ -154,7 +155,7 @@ for (const s of SOURCES) {
     fusion.push({ id, type: TYPE, label, domain: s.domain, ...reste });
   }
 }
-portesDeCardinal(mesurer(fusion, 'fusion'), 'fusion');
+const parDomaine = formeCible(fusion, 'fusion');
 const etrangeres = ecartsDeClesEtrangeres(fusion);
 if (etrangeres.length) echec(`fusion : ${etrangeres.join(' ; ')}`);
 
@@ -166,7 +167,7 @@ for (const s of SOURCES) fs.rmSync(abs(s.rel));
 const relu = JSON.parse(fs.readFileSync(abs(CIBLE_REL), 'utf8'));
 const echecs = [];
 if (SOURCES.some((s) => existe(s.rel))) echecs.push(`fichier(s) source encore présent(s) : ${SOURCES.filter((s) => existe(s.rel)).map((s) => s.rel).join(', ')}`);
-portesDeCardinal(mesurer(relu, `POST ${CIBLE_REL}`), `POST ${CIBLE_REL}`);
+formeCible(relu, `POST ${CIBLE_REL}`);
 for (const [i, e] of relu.entries()) {
   const attendu = fusion[i];
   if (JSON.stringify(e) !== JSON.stringify(attendu)) echecs.push(`POST ${e.id} : la charge utile relue diffère de la fusion`);
@@ -180,6 +181,6 @@ if (echecs.length) {
 }
 
 console.log(
-  `[${NOM}] migré — ${relu.length} matière(s) dans ${CIBLE_REL} (${SOURCES.map((s) => `${s.domain} ${s.attendu}`).join(', ')}), ` +
+  `[${NOM}] migré — ${relu.length} matière(s) dans ${CIBLE_REL} (${compte(parDomaine)}), ` +
     `${SOURCES.length} document(s) source supprimé(s)`,
 );

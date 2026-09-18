@@ -47,8 +47,6 @@ const ID = 'table-murale-2-tabourets';
 const LONGUEUR_AVANT = 1.92;
 const LONGUEUR_APRES = 3;
 const K = LONGUEUR_APRES / LONGUEUR_AVANT;
-const PRIMITIVES_ATTENDUES = 7;
-const PLACES_ATTENDUES = 2;
 /** L'ÉCHELLE à laquelle l'empreinte est jugée, en m/case : le défaut du monde (`LDB 15 l.12`). */
 const MPT = 2;
 /** Abord de chaque place APRÈS l'étirement : droit, depuis la salle (côté des tabourets, `y` local négatif). */
@@ -107,10 +105,11 @@ if (plateau && plateau.size.xM === LONGUEUR_APRES) {
   process.exit(0);
 }
 
-if ((entree.volume?.primitives ?? []).length !== PRIMITIVES_ATTENDUES)
-  echecs.push(`${ID} : ${(entree.volume?.primitives ?? []).length} primitive(s) ≠ ${PRIMITIVES_ATTENDUES} mesurées`);
-if ((entree.seatSlots ?? []).length !== PLACES_ATTENDUES)
-  echecs.push(`${ID} : ${(entree.seatSlots ?? []).length} place(s) ≠ ${PLACES_ATTENDUES} mesurées`);
+// FORME, jamais cardinal (#1812) : une recette de décor est ÉDITABLE — lui ajouter une primitive ou
+// une place ne doit rien recaler ici. L'identité de la cible est son `id` et la COTE de son plateau
+// (ci-dessous), mesurée à l'octet.
+if (!(entree.volume?.primitives ?? []).length) echecs.push(`${ID} : recette sans primitive — périmètre déplacé`);
+if (!(entree.seatSlots ?? []).length) echecs.push(`${ID} : aucune place — périmètre déplacé`);
 if (!plateau || plateau.size.xM !== LONGUEUR_AVANT)
   echecs.push(`${ID} : plateau de ${plateau ? plateau.size.xM : 'aucune caisse'} m ≠ ${LONGUEUR_AVANT} m mesurés`);
 const avantEmpreinte = entree.volume ? empreinteDuCorps(entree) : null;

@@ -218,10 +218,12 @@ test('(d) FORMATAGE non canonique (indentation 4) → sortie 1 NOMINATIVE, rien 
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
 });
 
-test('(e) CARDINAL des Scènes cassé (une Scène retirée) → sortie 1 CHIFFRANT l’écart, rien d’écrit', (t) => {
-  const total = Object.values(SCENES_PAR_PROJET).reduce((n, v) => n + v, 0);
+test('(e) CARDINAL DÉPLACÉ (une Scène retirée) : le passage PASSE, sans recalage (#1812)', (t) => {
+  // Une Scène est une donnée ÉDITABLE : en ajouter ou en retirer une est un geste LÉGITIME de
+  // campagne. Un COMPTE gelé ici ferait payer un recalage à ce lot-là ; ce que ce passage possède,
+  // c'est la FORME de `usable` et le `schema`, et c'est cela qu'il continue de poser.
   const sansPlaces = PROJETS.find((rel) => SIEGES_PAR_PROJET[rel] === 0 && SCENES_PAR_PROJET[rel] > 1);
-  assert.ok(sansPlaces, 'aucun projet sans place à amputer — le scénario mesurerait DEUX cardinaux');
+  assert.ok(sansPlaces, 'aucun projet sans place à amputer — le scénario toucherait aussi aux places');
   const d = depotScenes((rel) => {
     const doc = projetAvant(rel);
     return serialise(rel === sansPlaces ? { ...doc, scenes: doc.scenes.slice(1) } : doc);
@@ -229,12 +231,14 @@ test('(e) CARDINAL des Scènes cassé (une Scène retirée) → sortie 1 CHIFFRA
   t.after(() => efface(d.racine));
 
   const { code, sortie } = joue(d);
-  assert.equal(code, 1, `sortie ${code} — un cardinal inattendu doit ARRÊTER : ${sortie.slice(0, 1200)}`);
-  assert.ok(sortie.includes(`${total - 1} Scène(s) embarquée(s) ≠ ${total}`), `arrêt sans CHIFFRER l’écart : ${sortie.slice(0, 1200)}`);
-  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
+  assert.equal(code, 0, `sortie ${code} — une Scène en moins n’est pas une anomalie : ${sortie.slice(0, 1200)}`);
+  assert.ok(
+    sortie.includes(`${PORTEUR} — schema ${SCHEMA_AVANT} → ${SCHEMA_APRES}, usable posés : ${SIEGES_PAR_PROJET[PORTEUR]}`),
+    `le projet porteur n’est plus migré comme avant : ${sortie.slice(0, 1200)}`,
+  );
 });
 
-test('(e bis) CARDINAL des entités à PLACES cassé (un siège retiré) → sortie 1 CHIFFRANT l’écart, rien d’écrit', (t) => {
+test('(e bis) CARDINAL DÉPLACÉ (un siège retiré) : le passage PASSE et pose ce qui RESTE (#1812)', (t) => {
   let ampute = false;
   const d = depotScenes((rel) => {
     const doc = projetAvant(rel);
@@ -256,12 +260,11 @@ test('(e bis) CARDINAL des entités à PLACES cassé (un siège retiré) → sor
 
   const { code, sortie } = joue(d);
   assert.ok(ampute, 'aucune entité à places retirée — le scénario ne mord pas');
-  assert.equal(code, 1, `sortie ${code} — un cardinal inattendu doit ARRÊTER : ${sortie.slice(0, 1200)}`);
+  assert.equal(code, 0, `sortie ${code} — un siège en moins n’est pas une anomalie : ${sortie.slice(0, 1200)}`);
   assert.ok(
-    sortie.includes(`${SIEGES - 1} entité(s) à places ≠ ${SIEGES}`),
-    `arrêt sans CHIFFRER l’écart : ${sortie.slice(0, 1200)}`,
+    sortie.includes(`${PORTEUR} — schema ${SCHEMA_AVANT} → ${SCHEMA_APRES}, usable posés : ${SIEGES_PAR_PROJET[PORTEUR] - 1}`),
+    `le passage ne pose pas EXACTEMENT les places qui RESTENT : ${sortie.slice(0, 1200)}`,
   );
-  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
 });
 
 test('(f) BORNE HAUTE OUVERTE : un `schema` FUTUR traverse en NO-OP nommé — aucun RABAISSEMENT', (t) => {

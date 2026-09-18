@@ -41,8 +41,6 @@ const POSE = { material: 'toit-ardoise', pitchDeg: 45, riseMaxStoreys: 1 };
 const CHAMPS = Object.keys(POSE);
 /** Type attendu de chaque champ posé — un `material` est un id, les deux autres des nombres. */
 const TYPE_DE = { material: 'string', pitchDeg: 'number', riseMaxStoreys: 'number' };
-/** Cardinaux mesurés (2026-09-09) — portes d'identité du périmètre. */
-const ATTENDU = { projets: 4, scenes: 28 };
 /** Forme du document AVANT et APRÈS ce bump — la borne haute est OUVERTE (cf. en-tête). */
 const SCHEMA_AVANT = 8;
 const SCHEMA_APRES = 9;
@@ -105,8 +103,10 @@ for (const abs of cibles) {
   rapports.push({ rel, abs, brut, doc, scenes, migres, deja });
 }
 
-if (cibles.length !== ATTENDU.projets) echecs.push(`${cibles.length} projet(s) de scène ≠ ${ATTENDU.projets} attendu(s)`);
-if (scenesVues !== ATTENDU.scenes) echecs.push(`${scenesVues} Scène(s) embarquée(s) ≠ ${ATTENDU.scenes} attendue(s)`);
+// FORME, jamais cardinal (#1812) : une Scène est une donnée ÉDITABLE — en créer une ne doit rien
+// recaler ici. Ce qui arrête la migration, c'est un périmètre VIDE, pas un périmètre qui a grandi.
+if (!cibles.length) echecs.push('aucun projet de scène trouvé — périmètre déplacé');
+if (!scenesVues) echecs.push('aucune Scène embarquée — périmètre déplacé');
 
 if (echecs.length) {
   console.error(`[${NOM}] ARBITRAGE REQUIS — ${echecs.length} anomalie(s), AUCUNE écriture :`);

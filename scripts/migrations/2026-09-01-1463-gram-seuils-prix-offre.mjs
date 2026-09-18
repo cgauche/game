@@ -151,7 +151,7 @@ for (const b of bandesTerre) {
 }
 
 /** Compare un constat au nommé, clé par clé. */
-function confronter(vu, attendu, nom, cardinal) {
+function confronter(vu, attendu, nom, cardinal, ref) {
   const vus = Object.keys(vu).sort();
   const nommes = Object.keys(attendu).sort();
   if (vus.join('\n') !== nommes.join('\n')) {
@@ -163,11 +163,13 @@ function confronter(vu, attendu, nom, cardinal) {
       arrets.push(`${nom} : bande ${min} = ${JSON.stringify(vu[min])}, attendu ${JSON.stringify(attendu[min])}`);
     }
   }
-  if (vus.length !== cardinal) arrets.push(`${nom} : cardinal ${vus.length}, attendu ${cardinal}`);
+  // Cardinal IMPOSÉ PAR LE LIVRE, et sa preuve est sa RÉFÉRENCE : la table à bandes est CLOSE, une
+  // bande n'y entre pas par croissance de contenu (#1812).
+  if (vus.length !== cardinal) arrets.push(`${nom} : cardinal ${vus.length}, attendu ${cardinal} — table CLOSE, ${ref}`);
 }
 
-confronter(vuMer, ATTENDU_MER, 'sea-cargo.json › sell.offerPrice', 4);
-confronter(vuTerre, ATTENDU_TERRE, 'land-cargo.json › sell.offerByRichesse', 5);
+confronter(vuMer, ATTENDU_MER, 'sea-cargo.json › sell.offerPrice', 4, 'MDG 15 l.378-383');
+confronter(vuTerre, ATTENDU_TERRE, 'land-cargo.json › sell.offerByRichesse', 5, 'MSRC 13 l.150-156');
 
 if (arrets.length) {
   console.error(`ARRÊT — ${arrets.length} anomalie(s), AUCUNE écriture :`);

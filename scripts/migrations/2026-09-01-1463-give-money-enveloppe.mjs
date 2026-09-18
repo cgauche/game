@@ -40,11 +40,13 @@ const abs = (rel) => path.join(ROOT, rel);
 /** Les 3 dénominations de `Money` (`src/engine/money.ts:10`) — les seules clés qui entrent dans l'enveloppe. */
 const DENOMINATIONS = ['gold', 'silver', 'brass'];
 
-/** Projets porteurs, avec le cardinal ATTENDU d'effets `giveMoney` (asserté, pas constaté). */
+/** Projets porteurs. Le NOMBRE d'effets `giveMoney` n'y est PAS gelé : une Scène est une donnée
+ *  ÉDITABLE, un effet de plus est un geste de campagne légitime (#1812). Ce que ce passage possède,
+ *  c'est la FORME de chaque effet — charge plate XOR enveloppe `montant`. */
 const PROJETS = [
-  ['src/scenes/arene/arene-projet.json', 36],
-  ['src/scenes/barge-du-sel/barge-du-sel-projet.json', 1],
-  ['src/scenes/loup-et-saumure/loup-et-saumure-projet.json', 7],
+  'src/scenes/arene/arene-projet.json',
+  'src/scenes/barge-du-sel/barge-du-sel-projet.json',
+  'src/scenes/loup-et-saumure/loup-et-saumure-projet.json',
 ];
 
 /** Sources d'AUTHORING qui écrivent le littéral d'effet. */
@@ -72,7 +74,7 @@ function* effets(noeud) {
 let migresJson = 0;
 const ecritsJson = [];
 
-for (const [rel, attendu] of PROJETS) {
+for (const rel of PROJETS) {
   const chemin = abs(rel);
   const brut = fs.readFileSync(chemin, 'utf8');
   const doc = JSON.parse(brut);
@@ -95,7 +97,7 @@ for (const [rel, attendu] of PROJETS) {
     e.montant = montant;
     migresJson++;
   }
-  if (vus !== attendu) anomalies.push(`${rel} : ${vus} effet(s) \`giveMoney\` vu(s), ${attendu} attendu(s)`);
+  if (!vus) anomalies.push(`${rel} : AUCUN effet \`giveMoney\` — périmètre déplacé`);
   const sortie = JSON.stringify(doc, null, 1) + '\n';
   if (sortie !== brut) ecritsJson.push([chemin, sortie, rel]);
 }
@@ -131,13 +133,16 @@ if (anomalies.length) {
   for (const a of anomalies) console.error(`  - ${a}`);
   process.exit(1);
 }
-// Cardinal du PASSAGE MIGRANT : 44 = 36 + 1 + 7. Un rejeu ne migre plus rien (0) — les deux seules
-// valeurs licites, tout intermédiaire signalant une migration PARTIELLE.
-assert.ok(migresJson === 44 || migresJson === 0, `44 effets attendus (ou 0 au rejeu), ${migresJson} migrés`);
+// Le passage est TOUT ou RIEN : il enveloppe chaque charge plate qu'il voit, et un rejeu n'en voit
+// plus aucune. La preuve est la FORME après coup (plus une seule charge plate), jamais un compte.
+assert.ok(
+  ecritsJson.length === 0 || migresJson > 0,
+  `un document de projet est réécrit alors qu'AUCUN effet n'a été enveloppé (${migresJson})`,
+);
 
 for (const [chemin, contenu] of [...ecritsJson, ...ecritsMjs]) fs.writeFileSync(chemin, contenu);
 
 const touches = [...ecritsJson, ...ecritsMjs].map(([, , rel]) => rel);
 console.log(touches.length === 0
-  ? 'RIEN À FAIRE — les 44 effets `giveMoney` et leur authoring portent déjà l’enveloppe `montant`.'
+  ? 'RIEN À FAIRE — les effets `giveMoney` et leur authoring portent déjà l’enveloppe `montant`.'
   : `${migresJson} effet(s) en donnée + ${migresMjs} littéral(aux) d’authoring enveloppés dans \`montant\` ; ${touches.length} fichier(s) réécrit(s) :\n  - ${touches.join('\n  - ')}`);

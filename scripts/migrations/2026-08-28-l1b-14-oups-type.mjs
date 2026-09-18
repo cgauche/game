@@ -30,7 +30,9 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
 const FICHIER = 'oups.json';
 const TYPE = 'oups';
-/** CARDINAL ATTENDU — mesuré sur l'arbre au moment de l'écriture (2026-08-28) : 7 bandes d100 + l'Incident de Tir. */
+/** CARDINAL IMPOSÉ PAR LA TABLE, et c'est pourquoi il reste (#1812) : le « Tableau des Oups ! » est
+ *  CLOS — 7 bandes d100 (LDB 14 l.21-30, la référence que porte chaque entrée) plus l'Incident de
+ *  Tir. Une rangée n'y entre pas par croissance de contenu, mais par une RÈGLE de livre. */
 const CARDINAL = 8;
 
 const echoue = (msg) => {
@@ -43,7 +45,7 @@ const brut = fs.readFileSync(chemin, 'utf8');
 const doc = JSON.parse(brut);
 
 if (!Array.isArray(doc)) echoue('racine non-tableau');
-if (doc.length !== CARDINAL) echoue(`cardinal ${doc.length}, attendu ${CARDINAL} — périmètre mesuré changé`);
+if (doc.length !== CARDINAL) echoue(`cardinal ${doc.length}, attendu ${CARDINAL} — table des Oups CLOSE, LDB 14 l.21-30`);
 if (brut !== `${JSON.stringify(doc, null, 2)}\n` && brut !== JSON.stringify(doc, null, 2))
   echoue('forme non canonique (≠ JSON.stringify(doc, null, 2)) — refus de reflower en silence');
 

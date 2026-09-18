@@ -53,7 +53,6 @@ const DUREE_ATTENDUE = { bonusOf: 'force-mentale' };
 /** Texte MAISON à remplacer (EXACT, jamais un motif) et texte VERBATIM d'arrivée (LDB 48 l.495). */
 const NARRATIVE_MAISON = 'Transmutation de Chamon : une cible qui meurt pendant le Sort est enfermée dans une carapace de métal — arbitrage MJ.';
 const NARRATIVE_VERBATIM = 'Si les cibles meurent pendant que le Sort est actif, elles sont enfermées de façon permanente dans une carapace de métaux communs, un macabre rappel des risques de la sorcellerie.';
-const CARDINAL_CONDITIONS = 9;
 
 const abs = path.join(ROOT, FICHIER);
 const brut = fs.readFileSync(abs, 'utf8');
@@ -140,13 +139,13 @@ if (anomalies.length) {
 
 const geste2 = poseNarrativeVerbatim(listeChamon);
 
+// FORME, jamais cardinal (#1812) : le catalogue des Sorts grandit à chaque livre FR, et un Sort neuf
+// à l'État « pour la durée du Sort » doit se MIGRER, pas faire sortir 1.
 if (sites.length === 0 && geste2 === null) {
-  assert.equal(dejaPortes, CARDINAL_CONDITIONS, `état final attendu : ${CARDINAL_CONDITIONS} op « carried », vu ${dejaPortes}`);
-  console.log(`RIEN À FAIRE — les ${CARDINAL_CONDITIONS} États « pour la durée du Sort » sont déjà PORTÉS, et la clause de Chamon est VERBATIM.`);
+  assert.ok(dejaPortes > 0, `état final attendu : au moins une op « carried », vu ${dejaPortes}`);
+  console.log(`RIEN À FAIRE — les ${dejaPortes} États « pour la durée du Sort » sont déjà PORTÉS, et la clause de Chamon est VERBATIM.`);
   process.exit(0);
 }
-
-assert.equal(sites.length + dejaPortes, CARDINAL_CONDITIONS, `cardinal attendu ${CARDINAL_CONDITIONS} op condition, vu ${sites.length + dejaPortes}`);
 
 for (const { op } of sites) {
   delete op.durationRounds; // la durée du pion EST celle de l'effet porteur (`durationFromCtx`)

@@ -257,18 +257,23 @@ test('(h) `reliefDefaults` INCOMPLET (une partie manquante) → sortie 1 NOMMANT
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
 });
 
-test('(i) CARDINAL des Scènes cassé (une Scène retirée) → sortie 1 CHIFFRANT l’écart, rien d’écrit', (t) => {
-  const total = Object.values(SCENES_PAR_PROJET).reduce((n, v) => n + v, 0);
+test('(i) CARDINAL DÉPLACÉ (une Scène retirée) : le passage PASSE et pose ce qui RESTE (#1812)', (t) => {
+  // Une Scène est une donnée ÉDITABLE : son nombre bouge à chaque lot de campagne. Ce que ce passage
+  // possède, c'est le `reliefDefaults` de CHAQUE Scène traversée — c'est cela que la porte mesure.
+  const ampute = PROJETS[0];
+  const restantes = SCENES_PAR_PROJET[ampute] - 1;
   const d = depotScenes((rel) => {
     const doc = projetAvant(rel);
-    return serialiseScene(rel === PROJETS[0] ? { ...doc, scenes: doc.scenes.slice(1) } : doc);
+    return serialiseScene(rel === ampute ? { ...doc, scenes: doc.scenes.slice(1) } : doc);
   });
   t.after(() => efface(d.racine));
 
   const { code, sortie } = joue(d);
-  assert.equal(code, 1, `sortie ${code} — un cardinal inattendu doit ARRÊTER : ${sortie.slice(0, 1200)}`);
-  assert.ok(sortie.includes(`${total - 1} Scène(s) embarquée(s) ≠ ${total}`), `arrêt sans CHIFFRER l’écart : ${sortie.slice(0, 1200)}`);
-  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
+  assert.equal(code, 0, `sortie ${code} — une Scène en moins n’est pas une anomalie : ${sortie.slice(0, 1200)}`);
+  assert.ok(
+    sortie.includes(`${ampute} — schema`) && sortie.includes(`reliefDefaults posés : ${restantes} (déjà migrées : 0, scènes : ${restantes})`),
+    `le passage ne dit pas avoir traité les Scènes qui RESTENT : ${sortie.slice(0, 1200)}`,
+  );
 });
 
 test('(j) `schema` FUTUR : la borne haute est OUVERTE depuis #1715 — le document TRAVERSE sans être rabaissé', (t) => {

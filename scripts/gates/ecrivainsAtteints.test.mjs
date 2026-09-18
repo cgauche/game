@@ -123,6 +123,11 @@ const ATTENDU = {
     // +1 le 2026-09-10 (#1687 lot 2) : morsure des portes de la migration #1687 (activation des
     // décors à places) ; son dépôt jetable vit sous `os.tmpdir()`, l'arbre n'est jamais écrit.
     'scripts/migrations/lib/1687-usable-sieges-portes.test.mjs',
+    // +2 le 2026-09-18 (#1812) : le mode CROISSANCE fait grandir les documents d'un EXPORT jetable
+    // (`os.tmpdir()`, `replay-head.mjs:exporter`) avant de rejouer les migrations — l'arbre n'est
+    // jamais écrit, et son banc travaille sur un dépôt `mkdtemp`.
+    'scripts/migrations/lib/croissance.mjs',
+    'scripts/migrations/lib/croissance.test.mjs',
     'scripts/migrations/lib/empreinteRejeu.test.mjs',
     'scripts/migrations/lib/idempotence-ordre-des-cles.test.mjs',
     'scripts/migrations/replay-head.mjs',

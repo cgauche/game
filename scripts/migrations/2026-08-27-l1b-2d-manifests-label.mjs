@@ -7,11 +7,10 @@
  * divergente »). Le nom du CHAMP change, les VALEURS ne changent pas : les docs générés qui les
  * impriment (`docs/systemes.md`, `docs/donnees.md`) doivent sortir byte-stables.
  *
- * PORTEURS ET CHEMINS (mesurés, 0 champ `label` préexistant sur ces chemins — donc 0 collision) :
- *  - `primitives.manifest.json` : 30 entrées de premier niveau (28 → 30, #1728 : `itemIcon` et
- *    `mediaSelect` entrent au manifeste, de la MÊME forme que les 28 autres) ;
- *  - `systemes.manifest.json`   : 16 entrées de premier niveau ;
- *  - `donnees.manifest.json`    : 11 entrées de `rubriques` (document de famille `config` — il n'a
+ * PORTEURS ET CHEMINS (0 champ `label` préexistant sur ces chemins — donc 0 collision) :
+ *  - `primitives.manifest.json` : les entrées de premier niveau ;
+ *  - `systemes.manifest.json`   : les entrées de premier niveau ;
+ *  - `donnees.manifest.json`    : les entrées de `rubriques` (document de famille `config` — il n'a
  *    PAS de `nom` de premier niveau ; les `mot`/`desc`/`lecon` des homonymes sont d'autres champs).
  *
  * POSITION PRÉSERVÉE : `label` prend la place exacte qu'occupait `nom` dans l'entrée.
@@ -21,9 +20,11 @@
  *
  * IDEMPOTENT / NO-OP TOLÉRANT À LA FORME : une entrée portant déjà `label` (et plus de `nom`) est
  * reconnue migrée ; rejouée sur l'état final, la migration n'écrit rien et sort 0.
+ * PORTE DE FORME (jamais un COMPTE d'entrées, qui croît légitimement) : chaque entrée porte soit la
+ * forme SOURCE (`nom`), soit la forme CIBLE (`label`) ; une entrée qui n'a NI l'une NI l'autre — ou
+ * les deux — est une donnée d'une autre époque, et fait sortir 1.
  * FAIL-FAST : entrée portant `nom` ET `label`, entrée sans ni l'un ni l'autre, `nom` non-chaîne ou
- * vide, compte d'entrées divergent de l'attendu → rien n'est écrit (pour AUCUN des 3 fichiers),
- * sortie 1.
+ * vide, chemin de sélection vide → rien n'est écrit (pour AUCUN des 3 fichiers), sortie 1.
  * FORMATAGE PRÉSERVÉ : chaque fichier est EXACTEMENT `JSON.stringify(doc, null, 2)` (vérifié avant
  * toute écriture — une forme non canonique fait sortir 1 plutôt que reflower le document en silence).
  */
@@ -33,21 +34,18 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
-/** Les 3 porteurs : fichier, sélecteur des entrées PORTEUSES du libellé, et compte ATTENDU. */
+/** Les 3 porteurs : fichier et sélecteur des entrées PORTEUSES du libellé. */
 const PORTEURS = [
-  // 30 → 62 (#1728) : les entrées de la table CLAUDE.md sont portées au manifeste, de la MÊME forme
-  // que les 30 autres — primitives EXISTANTES ; le périmètre mesuré suit, à l'ÉGALITÉ.
-  // Puis 62 → 66 (#1800, 2026-09-18) : `layout`, `ornaments`, `notchGauge`, `windRose`.
-  { fichier: 'src/data/primitives.manifest.json', entrees: (d) => d, attendu: 66 },
-  { fichier: 'src/data/systemes.manifest.json', entrees: (d) => d, attendu: 16 },
-  { fichier: 'src/data/donnees.manifest.json', entrees: (d) => d.rubriques, attendu: 11 },
+  { fichier: 'src/data/primitives.manifest.json', entrees: (d) => d },
+  { fichier: 'src/data/systemes.manifest.json', entrees: (d) => d },
+  { fichier: 'src/data/donnees.manifest.json', entrees: (d) => d.rubriques },
 ];
 
 const echecs = [];
 /** @type {{ chemin: string, brut: string, out: string, migres: string[], dejaMigres: string[] }[]} */
 const plans = [];
 
-for (const { fichier, entrees, attendu } of PORTEURS) {
+for (const { fichier, entrees } of PORTEURS) {
   const chemin = path.join(ROOT, fichier);
   const brut = fs.readFileSync(chemin, 'utf8');
   const data = JSON.parse(brut);
@@ -62,8 +60,8 @@ for (const { fichier, entrees, attendu } of PORTEURS) {
     echecs.push(`${fichier} : les entrées porteuses du libellé sont introuvables (chemin de sélection vide)`);
     continue;
   }
-  if (liste.length !== attendu) {
-    echecs.push(`${fichier} : ${liste.length} entrée(s) porteuse(s), ${attendu} attendue(s) — périmètre déplacé`);
+  if (!liste.length) {
+    echecs.push(`${fichier} : 0 entrée porteuse — périmètre déplacé`);
     continue;
   }
 

@@ -3,7 +3,7 @@
  *
  * MOTIF MESURÉ : le champ `type` porte CINQ concepts différents sur cinq datasets (epic #1463 :
  * « un CONCEPT = UNE structure … jamais un champ homonyme de forme différente »). Ici il départage
- * l'Atout du Défaut (LDB 62-63) — mesuré 40 `atout` / 19 `defaut` sur 59 entrées : une POLARITÉ.
+ * l'Atout du Défaut (LDB 62-63) — une POLARITÉ.
  * Le nom change, les VALEURS ne changent pas.
  *
  * POSITION PRÉSERVÉE : `polarite` prend la place exacte qu'occupait `type` dans l'entrée.
@@ -12,8 +12,10 @@
  *
  * IDEMPOTENT / NO-OP TOLÉRANT À LA FORME : une entrée portant déjà `polarite` (et plus de `type`)
  * est reconnue migrée ; rejouée sur l'état final, la migration n'écrit rien et sort 0.
- * FAIL-FAST : entrée portant `type` ET `polarite`, entrée sans ni l'un ni l'autre, valeur hors
- * `atout`/`defaut`, cardinal ≠ 59 → rien n'est écrit, sortie 1.
+ * PORTE DE FORME, jamais de CARDINAL (#1812) : le catalogue des Atouts/Défauts grandit livre après
+ * livre ; ce qui protège d'un rejeu sur une donnée d'une AUTRE époque est la FORME de chaque entrée.
+ * FAIL-FAST : racine non tableau ou VIDE, entrée portant `type` ET `polarite`, entrée sans ni l'un
+ * ni l'autre, valeur hors `atout`/`defaut` → rien n'est écrit, sortie 1.
  * FORMATAGE PRÉSERVÉ : le fichier est EXACTEMENT `JSON.stringify(doc, null, 2)` (vérifié avant toute
  * écriture — une forme non canonique fait sortir 1 plutôt que reflower le document en silence).
  */
@@ -23,7 +25,6 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const CIBLE = path.join(ROOT, 'src/data/qualities.json');
-const ATTENDU = 59;
 const VALEURS = new Set(['atout', 'defaut']);
 
 const brut = fs.readFileSync(CIBLE, 'utf8');
@@ -36,7 +37,7 @@ if (JSON.stringify(data, null, 2) !== brut) {
 
 const echecs = [];
 if (!Array.isArray(data)) echecs.push('racine non tableau');
-else if (data.length !== ATTENDU) echecs.push(`cardinal ${data.length} ≠ ${ATTENDU} attendu`);
+else if (!data.length) echecs.push('racine VIDE — périmètre déplacé');
 
 let migres = 0;
 let dejaMigres = 0;
@@ -44,7 +45,7 @@ let dejaMigres = 0;
 /**
  * `type` D'ENVELOPPE (#1467 L1b V-FLIP-ENTITE-b) : depuis l'adoption de `document()`, chaque entrée
  * porte `type: "qualities"` — le NOM DU DOCUMENT, pas l'ancienne polarité. Sans cette distinction, la
- * migration lisait l'enveloppe comme un `type` ressuscité et exigeait un arbitrage sur les 59 entrées.
+ * migration lisait l'enveloppe comme un `type` ressuscité et exigeait un arbitrage sur chaque entrée.
  * L'ancien `type` était une valeur de `VALEURS` ({atout, defaut}), jamais le nom du dataset.
  */
 const TYPE_ENVELOPPE = 'qualities';
@@ -78,7 +79,7 @@ const apres = JSON.parse(out);
 const residus = apres.filter((e) => typeAncien(e) !== undefined).length;
 const avant = data.map((e) => typeAncien(e) ?? e.polarite).join(',');
 const rendu = apres.map((e) => e.polarite).join(',');
-if (residus || avant !== rendu || apres.length !== ATTENDU) {
+if (residus || avant !== rendu || apres.length !== data.length) {
   console.error(`VÉRIFICATION POST-ÉCRITURE ROUGE : ${residus} \`type\` résiduel(s), ${apres.length} entrée(s), valeurs ${avant === rendu ? 'conservées' : 'ALTÉRÉES'}`);
   process.exit(1);
 }

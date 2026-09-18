@@ -13,15 +13,19 @@
  *
  * ENTRÉES : les fichiers de `src/data/` listés dans `TYPES` (seules données lues et écrites).
  *
- * IDEMPOTENT / NO-OP SÉMANTIQUE : le no-op se décide sur le CARDINAL du seul geste que ce script
+ * IDEMPOTENT / NO-OP SÉMANTIQUE : le no-op se décide sur le NOMBRE du seul geste que ce script
  * POSSÈDE — la pose de `type`. Zéro `type` à poser dans un fichier = rien n'y est écrit et la sortie
  * est 0, quel que soit l'ordre des AUTRES clés de ses entrées : la remontée de `type` en 2ᵉ position
  * est une normalisation d'enveloppe, et une égalité à l'octet en ferait une réécriture à elle seule.
  * La POSITION de `type` n'est PAS une condition du no-op ; elle est vérifiée après écriture.
- * FAIL-FAST : racine non-tableau, entrée sans `id` de chaîne, `id` ailleurs qu'en TÊTE (cette vague
- * ne promeut PAS `id` : sa preuve post-écriture exige la charge utile dans son ordre d'origine),
- * `type` déjà présent mais DIVERGENT, cardinal d'entrées modifié → rien n'est écrit pour ce fichier,
- * sortie 1.
+ * PORTE DE FORME — lecture SEULE, avant la moindre écriture. Ce qui protège d'un rejeu sur une
+ * donnée d'une AUTRE époque n'est pas un COMPTE d'entrées (un dataset app-owned croît légitimement,
+ * et un compte gelé fait payer un recalage à chaque ajout, #1812) mais la FORME de chaque entrée :
+ * elle porte soit la forme SOURCE (aucun `type`), soit la forme CIBLE (`type` du def). Ni l'une ni
+ * l'autre → ARBITRAGE REQUIS, rien n'est écrit pour AUCUN fichier, sortie 1.
+ * FAIL-FAST : racine non-tableau, dataset vide, entrée sans `id` de chaîne, `id` ailleurs qu'en TÊTE
+ * (cette vague ne promeut PAS `id` : sa preuve post-écriture exige la charge utile dans son ordre
+ * d'origine), `type` déjà présent mais DIVERGENT → rien n'est écrit pour ce fichier, sortie 1.
  * FORMATAGE PRÉSERVÉ : chaque fichier est EXACTEMENT `JSON.stringify(doc, null, 2)`, vérifié AVANT
  * toute écriture — une forme non canonique fait sortir 1 plutôt que reflower le document en silence.
  */
@@ -60,68 +64,40 @@ const TYPES = {
   'sea-shanties.json': 'sea-shanties',
 };
 
-/**
- * CARDINAL ATTENDU par fichier, et TOTAL — mesuré sur l'arbre au moment de l'écriture (2026-08-28).
- * Vérifié AVANT toute écriture : une entrée ajoutée ou retirée depuis fait sortir 1 plutôt que
- * migrer un périmètre qui n'est plus celui qu'on a mesuré.
- * Toute croissance légitime d'un dataset listé recale ce cardinal dans le train de la croissance.
- */
-const CARDINAUX = {
-  'astrology.json': 5,
-  'breath-types.json': 6,
-  'calendarIntercalary.json': 6,
-  'calendarPhases.json': 7,
-  'calendarWeekdays.json': 8,
-  'classes.json': 9,
-  'crew-roles.json': 9,
-  'damage-types.json': 4,
-  'encumbranceTiers.json': 4,
-  'eyes.json': 10,
-  'hairs.json': 10,
-  'lieux-services.json': 7,
-  'lightLevels.json': 5,
-  'lightTones.json': 4,
-  'merchantFamilies.json': 7,
-  'peripeties.json': 10,
-  'qualitySubtypes.json': 3,
-  'qualityTypes.json': 2,
-  // 8→9 : dette « Option Attraper Froid » (`deplacement#option-attraper-froid`), EDOC 09, #674.
-  // 9→10 : dette « Colère des dieux » (`religion#colere-des-dieux-declencheur-maladresse`), LDB 40, #1653.
-  // 10→11 : dette « sabre » (`combat#aa-01-tableau-des-armes-a-deux-mains`), AA 08 l.190, #1661.
-  'raw.manifest.json': 11,
-  'sea-shanties.json': 7,
-};
-// 141→142 : +1, la seule entrée de manifeste ci-dessus. Puis 142→146 : +4 matières de décor (#1624/#1644).
-// Puis 146→147 : +1 entrée de manifeste (dette #1653, Colère des dieux : 6 rangées à dé sans `ops`).
-// Puis 147→145 : −2 reliefs morts purgés (#1686 lot 1).
-// Puis 145→133, 22→20 datasets : `propMaterials.json` (8) et `reliefMaterials.json` (4) n'existent plus
-// comme DOCUMENTS — les trois catalogues de matières fusionnent en `materials.json` (#1686 lot 2), dont
-// l'enveloppe est posée par sa propre migration et tenue au PRÉSENT, sur tout `src/data`, par la
-// partition EXHAUSTIVE de `src/data/migrations-type-enveloppe.test.ts`.
-// Puis 133→134 : +1 entrée de manifeste (dette #1661, sabre AA 08 l.190).
-const TOTAL_ATTENDU = 134;
-
 const echecs = [];
 const rapport = [];
 
-// PORTE DE CARDINAL — lecture SEULE, avant la moindre écriture.
+// PORTE DE FORME — lecture SEULE, avant la moindre écriture. Un rejeu sur une donnée d'une AUTRE
+// époque se reconnaît à la FORME de ses entrées, jamais à leur NOMBRE (#1812) : chacune porte soit la
+// forme SOURCE (aucun `type`), soit la forme CIBLE (le `type` que le def déclare).
 {
   const ecarts = [];
-  let total = 0;
-  for (const fichier of Object.keys(TYPES)) {
+  for (const [fichier, type] of Object.entries(TYPES)) {
     const brut = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/data', fichier), 'utf8'));
     if (!Array.isArray(brut)) {
       ecarts.push(`${fichier} : racine non-TABLEAU`);
       continue;
     }
-    total += brut.length;
-    if (brut.length !== CARDINAUX[fichier]) ecarts.push(`${fichier} : ${brut.length} entrée(s) ≠ ${CARDINAUX[fichier]} attendue(s)`);
+    if (!brut.length) {
+      ecarts.push(`${fichier} : 0 entrée — périmètre vidé`);
+      continue;
+    }
+    for (const [i, e] of brut.entries()) {
+      if (!e || typeof e !== 'object' || Array.isArray(e)) {
+        ecarts.push(`${fichier}[${i}] : entrée non-objet`);
+        continue;
+      }
+      if (typeof e.id !== 'string' || !e.id) {
+        ecarts.push(`${fichier}[${i}] : entrée sans \`id\` de chaîne non vide`);
+        continue;
+      }
+      if ('type' in e && e.type !== type) {
+        ecarts.push(`${fichier} ${e.id} : \`type\` = ${JSON.stringify(e.type)} — ni la forme SOURCE (aucun \`type\`) ni la forme CIBLE (${JSON.stringify(type)})`);
+      }
+    }
   }
-  const sommeDeclaree = Object.values(CARDINAUX).reduce((a, b) => a + b, 0);
-  if (sommeDeclaree !== TOTAL_ATTENDU) ecarts.push(`table CARDINAUX : somme ${sommeDeclaree} ≠ TOTAL_ATTENDU ${TOTAL_ATTENDU}`);
-  if (total !== TOTAL_ATTENDU) ecarts.push(`TOTAL mesuré ${total} ≠ ${TOTAL_ATTENDU}`);
   if (ecarts.length) {
-    console.error(`CARDINAL INATTENDU — rien n’est écrit (${ecarts.length}) :`);
+    console.error(`ARBITRAGE REQUIS — forme INATTENDUE, rien n’est écrit (${ecarts.length}) :`);
     for (const m of ecarts) console.error(`  ${m}`);
     process.exit(1);
   }

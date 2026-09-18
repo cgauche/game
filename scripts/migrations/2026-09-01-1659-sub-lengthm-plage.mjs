@@ -44,6 +44,11 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const ETOILES = path.join(ROOT, 'src/data/stars.json');
 const COQUES = path.join(ROOT, 'src/data/ship-construction.json');
 
+/** Les deux tables sont CLOSES au livre : un 1d10 à 4 branches, sept bandes de Taille. Leur référence
+ *  NUE voyage avec chaque refus — c'est elle qui dit qu'un cardinal vient du LIVRE, pas d'un péage. */
+const REF_SUB = 'ADE II 03 l.63';
+const REF_LENGTH = 'MDG 12 l.122-129';
+
 /** Sous-tirages attendus au RÉSULTAT (ADE II 03 l.63), `id` → `[min, max]` du 1d10. */
 const ATTENDU_SUB = {
   'l-etoile-du-sorcier-sixieme-sens': [1, 3],
@@ -98,15 +103,17 @@ function enFourchette(porteur, champ, nom, plafond) {
 }
 
 /** CONSTAT sur le RÉSULTAT : la fourchette lue au document, confrontée à ce que le livre imprime. */
-function confronter(entrees, champ, attendu, nom) {
-  const vus = entrees.map((e) => e.id).sort();
-  const nommes = Object.keys(attendu).sort();
-  if (vus.join('\n') !== nommes.join('\n')) {
-    arrets.push(`${nom} : entrées du document ≠ entrées nommées :\n    vues   : ${vus.join(', ') || '(aucune)'}\n    nommées: ${nommes.join(', ')}`);
+function confronter(entrees, champ, attendu, nom, ref) {
+  // La table NOMMÉE ne répond que de ce que le livre imprime : une entrée née APRÈS cette vague arrive
+  // à la forme CIBLE et TRAVERSE — exiger l'égalité des deux listes ferait payer un recalage ici à
+  // chaque sous-tirage ajouté (#1812). Ce qui reste exigé : aucune entrée NOMMÉE ne disparaît.
+  const absentes = Object.keys(attendu).filter((id) => !entrees.some((e) => e.id === id));
+  if (absentes.length) {
+    arrets.push(`${nom} : entrée(s) NOMMÉE(S) par le livre absente(s) du document : ${absentes.join(', ')} — ${ref}`);
     return 0;
   }
   let conformes = 0;
-  for (const e of entrees) {
+  for (const e of entrees.filter((x) => attendu[x.id])) {
     const f = e[champ];
     const [min, max] = attendu[e.id];
     if (!f || typeof f !== 'object' || Array.isArray(f) || typeof f.min !== 'number' || !(typeof f.max === 'number' || f.max === null)) {
@@ -114,7 +121,7 @@ function confronter(entrees, champ, attendu, nom) {
       continue;
     }
     if (f.min !== min || f.max !== max) {
-      arrets.push(`${nom} › ${e.id} : ${f.min}–${f.max ?? '+'}, le livre imprime ${min}–${max ?? '+'}`);
+      arrets.push(`${nom} › ${e.id} : ${f.min}–${f.max ?? '+'}, le livre imprime ${min}–${max ?? '+'} — ${ref}`);
       continue;
     }
     conformes++;
@@ -123,46 +130,59 @@ function confronter(entrees, champ, attendu, nom) {
 }
 
 /** COUVERTURE d'une suite de fourchettes : d'un seul tenant depuis `depuis` (0 trou, 0 chevauchement). */
-function couverture(entrees, champ, nom, depuis, jusqua) {
+function couverture(entrees, champ, nom, depuis, jusqua, ref) {
   const bandes = entrees
     .map((e) => ({ id: e.id, f: e[champ] }))
     .filter((b) => b.f && typeof b.f.min === 'number')
     .sort((a, b) => a.f.min - b.f.min);
   let attenduMin = depuis;
   for (const [i, b] of bandes.entries()) {
-    if (b.f.min !== attenduMin) arrets.push(`${nom} : « ${b.id} » commence à ${b.f.min} au lieu de ${attenduMin}`);
+    if (b.f.min !== attenduMin) arrets.push(`${nom} : « ${b.id} » commence à ${b.f.min} au lieu de ${attenduMin} — ${ref}`);
     if (i === bandes.length - 1 && jusqua === 'ouverte') {
-      if (b.f.max !== null) arrets.push(`${nom} : « ${b.id} » est la DERNIÈRE et porte un plafond (${b.f.max}) — le livre imprime « 81+ »`);
+      if (b.f.max !== null) arrets.push(`${nom} : « ${b.id} » est la DERNIÈRE et porte un plafond (${b.f.max}) — le livre imprime « 81+ », ${ref}`);
       return;
     }
     if (typeof b.f.max !== 'number') {
-      arrets.push(`${nom} : « ${b.id} » n'a pas de borne haute`);
+      arrets.push(`${nom} : « ${b.id} » n'a pas de borne haute — ${ref}`);
       return;
     }
     attenduMin = b.f.max + 1;
   }
   if (jusqua !== 'ouverte' && attenduMin !== jusqua + 1) {
-    arrets.push(`${nom} : la suite s'arrête à ${attenduMin - 1} au lieu de ${jusqua}`);
+    arrets.push(`${nom} : la suite s'arrête à ${attenduMin - 1} au lieu de ${jusqua} — ${ref}`);
   }
 }
 
+/** Une entrée à la forme SOURCE (tuple) absente de la table imprimée (`ref`) : ce passage ne sait pas la migrer. */
+const sourceInconnue = (entrees, champ, attendu, nom, ref) => {
+  for (const e of entrees)
+    if (Array.isArray(e[champ]) && !attendu[e.id])
+      arrets.push(`${nom} › ${e.id} : tuple à migrer, ABSENT de la table imprimée — ${ref}`);
+};
+
 const variantes = etoiles.doc.filter((e) => e.sub !== undefined);
+sourceInconnue(variantes, 'sub', ATTENDU_SUB, 'stars.json › [].sub', REF_SUB);
 let migresSub = 0;
 for (const e of variantes) migresSub += enFourchette(e, 'sub', `stars.json › ${e.id}.sub`, Array.isArray(e.sub) ? e.sub[1] : null);
 
+const coquesStandard = coques.doc.standard ?? [];
+sourceInconnue(coquesStandard, 'lengthM', ATTENDU_LENGTH, 'ship-construction.json › standard[].lengthM', REF_LENGTH);
 let migresLength = 0;
-for (const r of coques.doc.standard ?? []) {
+for (const r of coquesStandard) {
   const plafond = ATTENDU_LENGTH[r.id]?.[1] ?? null;
   migresLength += enFourchette(r, 'lengthM', `ship-construction.json › standard[${r.id}].lengthM`, plafond);
 }
 
-const conformesSub = confronter(variantes, 'sub', ATTENDU_SUB, 'stars.json › [].sub');
-const conformesLength = confronter(coques.doc.standard ?? [], 'lengthM', ATTENDU_LENGTH, 'ship-construction.json › standard[].lengthM');
-couverture(variantes, 'sub', 'stars.json › le 1d10 de l\'Étoile du Sorcier', 1, 10);
-couverture(coques.doc.standard ?? [], 'lengthM', 'ship-construction.json › la colonne Taille', 1, 'ouverte');
+const conformesSub = confronter(variantes, 'sub', ATTENDU_SUB, 'stars.json › [].sub', REF_SUB);
+const conformesLength = confronter(coquesStandard, 'lengthM', ATTENDU_LENGTH, 'ship-construction.json › standard[].lengthM', REF_LENGTH);
+couverture(variantes.filter((e) => ATTENDU_SUB[e.id]), 'sub', 'stars.json › le 1d10 de l\'Étoile du Sorcier', 1, 10, REF_SUB);
+couverture(coquesStandard.filter((r) => ATTENDU_LENGTH[r.id]), 'lengthM', 'ship-construction.json › la colonne Taille', 1, 'ouverte', REF_LENGTH);
 
 if (conformesSub + conformesLength !== 11) {
-  arrets.push(`CARDINAL : ${conformesSub + conformesLength} fourchette(s) au résultat, attendu 11 (4 sous-tirages astraux + 7 tailles de coque)`);
+  arrets.push(
+    `CARDINAL : ${conformesSub + conformesLength} fourchette(s) au résultat, attendu 11 ` +
+      `(4 sous-tirages astraux, ${REF_SUB} ; 7 tailles de coque, ${REF_LENGTH})`,
+  );
 }
 
 if (arrets.length) {

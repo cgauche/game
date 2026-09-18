@@ -42,8 +42,6 @@ const NOM = '2026-09-10-1687-usable-sieges';
 const RACINE = path.join(ROOT, 'src/scenes');
 const PROPS = path.join(ROOT, 'src/data/props.json');
 
-/** Cardinaux mesurés (2026-09-10) — portes d'identité du périmètre. */
-const ATTENDU = { projets: 4, scenes: 28, sieges: 5 };
 /** Forme d'entrée et CIBLE de ce bump — la borne haute est OUVERTE (cf. en-tête). */
 const SCHEMA_AVANT = 9;
 const SCHEMA_APRES = 10;
@@ -115,9 +113,11 @@ for (const abs of cibles) {
   rapports.push({ rel, abs, brut, doc, scenes, migres, deja, sieges });
 }
 
-if (cibles.length !== ATTENDU.projets) echecs.push(`${cibles.length} projet(s) de scène ≠ ${ATTENDU.projets} attendu(s)`);
-if (scenesVues !== ATTENDU.scenes) echecs.push(`${scenesVues} Scène(s) embarquée(s) ≠ ${ATTENDU.scenes} attendue(s)`);
-if (siegesVus !== ATTENDU.sieges) echecs.push(`${siegesVus} entité(s) à places ≠ ${ATTENDU.sieges} attendue(s)`);
+// FORME, jamais cardinal (#1812) : une Scène et son décor sont des données ÉDITABLES — en créer ne
+// doit rien recaler ici. Ce qui arrête la migration, c'est un périmètre VIDE.
+if (!cibles.length) echecs.push('aucun projet de scène trouvé — périmètre déplacé');
+if (!scenesVues) echecs.push('aucune Scène embarquée — périmètre déplacé');
+if (!siegesVus) echecs.push('aucune entité à places — périmètre déplacé');
 
 if (echecs.length) {
   console.error(`[${NOM}] ARBITRAGE REQUIS — ${echecs.length} anomalie(s), AUCUNE écriture :`);

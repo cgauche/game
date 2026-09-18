@@ -162,12 +162,6 @@ if (vus.join('\n') !== nommes.join('\n')) {
   for (const s of vus) {
     if (constat[s] !== attendu[s]) arrets.push(`${s} : terme ${constat[s] ? `dé n=${constat[s]}` : '« 1 »'}, attendu ${attendu[s] ? `dé n=${attendu[s]}` : '« 1 »'}`);
   }
-  const n1 = vus.filter((s) => constat[s] === 1).length;
-  const n2 = vus.filter((s) => constat[s] === 2).length;
-  const un = vus.filter((s) => constat[s] === 0).length;
-  if (vus.length !== 10 || n1 !== 4 || n2 !== 2 || un !== 4) {
-    arrets.push(`cardinal : ${vus.length} site(s) — ${n1}× dé n=1, ${n2}× dé n=2, ${un}× « 1 + (PP) », attendu 10 (4 + 2 + 4)`);
-  }
 }
 
 if (arrets.length) {

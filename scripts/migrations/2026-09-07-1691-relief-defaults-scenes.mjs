@@ -41,8 +41,6 @@ const RACINE = path.join(ROOT, 'src/scenes');
 /** La matière de chaque PARTIE, telle que `floors.ts` la choisissait en dur avant ce lot. */
 const POSE = { cliff: 'terre', ramp: 'terre', deck: 'pierre', pilier: 'pilier' };
 const PARTIES = Object.keys(POSE);
-/** Cardinaux mesurés (2026-09-07) — portes d'identité du périmètre. */
-const ATTENDU = { projets: 4, scenes: 28 };
 /** Forme du document AVANT et APRÈS ce bump — la borne haute est CLOSE (cf. en-tête). */
 const SCHEMA_AVANT = 7;
 const SCHEMA_APRES = 8;
@@ -106,8 +104,10 @@ for (const abs of cibles) {
   rapports.push({ rel, abs, brut, doc, scenes, migres, deja });
 }
 
-if (cibles.length !== ATTENDU.projets) echecs.push(`${cibles.length} projet(s) de scène ≠ ${ATTENDU.projets} attendu(s)`);
-if (scenesVues !== ATTENDU.scenes) echecs.push(`${scenesVues} Scène(s) embarquée(s) ≠ ${ATTENDU.scenes} attendue(s)`);
+// FORME, jamais cardinal (#1812) : une Scène est une donnée ÉDITABLE — en créer une ne doit rien
+// recaler ici. Ce qui arrête la migration, c'est un périmètre VIDE, pas un périmètre qui a grandi.
+if (!cibles.length) echecs.push('aucun projet de scène trouvé — périmètre déplacé');
+if (!scenesVues) echecs.push('aucune Scène embarquée — périmètre déplacé');
 
 if (echecs.length) {
   console.error(`[${NOM}] ARBITRAGE REQUIS — ${echecs.length} anomalie(s), AUCUNE écriture :`);

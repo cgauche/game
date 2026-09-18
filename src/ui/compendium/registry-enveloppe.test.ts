@@ -416,65 +416,62 @@ const MUETS: Record<string, number> = {};
 
 /** ANGLE MORT du mapping déduit : tableaux qu'une catégorie couvre PARTIELLEMENT (ids en commun,
  *  mais pas tous) — ils sortent du cliquet de provenance. Gelé : un dataset qui cesse d'être
- *  couvert en entier atterrit ici et rougit, au lieu de disparaître du filet en silence. */
+ *  couvert en entier atterrit ici et rougit, au lieu de disparaître du filet en silence.
+ *  Ce qui est gelé est le TABLEAU (fichier + rang), jamais son nombre d'entrées : un dataset
+ *  app-owned croît légitimement, et un cardinal gelé ferait payer un recalage à chaque ajout (#1812). */
 const PARTIELS: string[] = [
-  "actions.json#0 (55)",
-  "breath-types.json#0 (6)",
-  "damage-types.json#0 (4)",
-  "land-cargo.json#0 (9)",
-  "lightLevels.json#0 (5)",
-  "lightTones.json#0 (4)",
-  "merchantFamilies.json#0 (7)",
-  "merchants.json#0 (6)",
-  // +4 décors de bâtiment #1624 (cheminee, enseigne, clocheton, applique-murale) puis +1 banc #1644
-  // (le seul décor de l'Opéra qui n'avait AUCUNE entrée de donnée) — MÊME angle mort source/desc que
-  // les 78 existants : le catalogue de décor est app-owned, aucune page ne le source.
-  // Puis 83→123 : #1680 ligne 14, BIJECTION art ⇄ donnée (les 40 defs d'art sans entrée reçoivent la
-  // leur) — même angle mort, même cause.
-  "props.json#0 (123)",
-  "qualitySubtypes.json#0 (3)",
-  "river-navigation.json#0 (5)",
-  "sea-cargo.json#0 (13)",
-  "sea-perils.json#0 (4)",
-  "sea-perils.json#1 (3)",
-  "sea-perils.json#2 (5)",
-  "sea-weather.json#3 (6)",
-  "structureAppearance.json#0 (18)",
-  "systemes.manifest.json#0 (16)",
-  "water-exposure.json#0 (12)",
+  "actions.json#0",
+  "breath-types.json#0",
+  "damage-types.json#0",
+  "land-cargo.json#0",
+  "lightLevels.json#0",
+  "lightTones.json#0",
+  "merchantFamilies.json#0",
+  "merchants.json#0",
+  // Le catalogue de décor est app-owned : aucune page ne le source — MÊME angle mort source/desc que
+  // les autres tableaux ci-dessus.
+  "props.json#0",
+  "qualitySubtypes.json#0",
+  "river-navigation.json#0",
+  "sea-cargo.json#0",
+  "sea-perils.json#0",
+  "sea-perils.json#1",
+  "sea-perils.json#2",
+  "sea-weather.json#3",
+  "structureAppearance.json#0",
+  "systemes.manifest.json#0",
+  "water-exposure.json#0",
 ];
 
 /** Tableaux identifiés qu'AUCUNE catégorie ne touche (manifestes d'outillage, vocabulaires de
- *  rendu, tables nichées exposées autrement). Gelé au même titre que `PARTIELS`. */
+ *  rendu, tables nichées exposées autrement). Gelé au même titre que `PARTIELS` — le tableau,
+ *  jamais son cardinal. */
 const ORPHELINS: string[] = [
-  // Les 8 DOCUMENTS-tables de `criticals.json` (#1657 B2a) — même angle mort que `miscast.json#0` :
-  // ce que le Codex expose, ce sont leurs RANGÉES (8 catégories, 160 items), jamais le document
-  // porteur. Un document sans item Codex propre n'est donc pas un manque, c'est la charge qui compte.
-  "criticals.json#0 (8)",
-  "donnees.manifest.json#0 (11)",
-  "lieux-services.json#0 (7)",
-  "miscast.json#0 (5)",
-  // 30 → 62 (#1728) : les entrées de la table CLAUDE.md sont portées au manifeste (primitives
-  // EXISTANTES) — manifeste d'outillage, aucune catégorie Codex ne l'expose ; la charge du document
-  // orphelin suit sa mesure.
-  // Puis 62 → 66 (#1800) : `layout`, `ornaments`, `notchGauge`, `windRose`.
-  "primitives.manifest.json#0 (66)",
-  "qualityTypes.json#0 (2)",
-  // +1 dette « Colère des dieux » #1653, +1 dette « sabre Taillade » #1661 — entrées de manifeste sans
-  // catégorie Codex (même angle mort : dette de règle, jamais une fiche).
-  "raw.manifest.json#0 (11)",
-  "reseau-routier.json#0 (15)",
-  "river-navigation.json#1 (3)",
-  "sea-cargo.json#1 (3)",
-  "sea-events.json#3 (5)",
-  "sea-navigation.json#0 (5)",
-  "sea-weather.json#0 (4)",
-  "sea-weather.json#1 (5)",
-  "sea-weather.json#2 (4)",
+  // Les DOCUMENTS-tables de `criticals.json` (#1657 B2a) — même angle mort que `miscast.json#0` :
+  // ce que le Codex expose, ce sont leurs RANGÉES, jamais le document porteur. Un document sans item
+  // Codex propre n'est donc pas un manque, c'est la charge qui compte.
+  "criticals.json#0",
+  "donnees.manifest.json#0",
+  "lieux-services.json#0",
+  "miscast.json#0",
+  // Manifeste d'OUTILLAGE : aucune catégorie Codex ne l'expose — une primitive neuve y entre sans
+  // toucher ce cliquet (#1812).
+  "primitives.manifest.json#0",
+  "qualityTypes.json#0",
+  // Entrées de manifeste sans catégorie Codex (même angle mort : dette de règle, jamais une fiche).
+  "raw.manifest.json#0",
+  "reseau-routier.json#0",
+  "river-navigation.json#1",
+  "sea-cargo.json#1",
+  "sea-events.json#3",
+  "sea-navigation.json#0",
+  "sea-weather.json#0",
+  "sea-weather.json#1",
+  "sea-weather.json#2",
   // La table « Tomber du gréement » (#1657 B3-2b-c, MDG 13 l.684) : un document-table de PLUS, même
   // angle mort que `criticals.json#0` — ce que le Codex expose, ce sont les RANGÉES de Critiques qui
   // s'y réfèrent (l'op `fall` de leur échec), jamais la table de hauteurs elle-même.
-  "ship-criticals.json#0 (1)",
+  "ship-criticals.json#0",
 ];
 
 const clesDe = (items: readonly object[]): string =>
@@ -565,18 +562,16 @@ describe('Codex — défaut d’enveloppe (#1467 L1b)', () => {
           }
           if (m) muets[c.key] = Math.max(muets[c.key] ?? 0, m);
         }
-        (etat === 'total' ? apparies : etat === 'partiel' ? partiels : orphelins).push(`${f}#${n} (${ids.length})`);
+        // La clé gelée est le TABLEAU (fichier + rang), jamais son cardinal (#1812).
+        (etat === 'total' ? apparies : etat === 'partiel' ? partiels : orphelins).push(`${f}#${n}`);
       }
     }
     expect(muets).toEqual(MUETS);
     expect(partiels).toEqual(PARTIELS);
     expect(orphelins).toEqual(ORPHELINS);
-    // 107 → 108 : la catégorie `shipStations` apparie son dataset (#1657 B3-2b-a).
-    // 108 → 109 : la catégorie `materials` apparie `materials.json` (#1686 lot 3a-2).
-    // 109 → 110 : la catégorie `terrains` apparie `terrains.json` — les 25 sols quittent `PARTIELS` (#1690 lot 3).
-    // 110 → 111 : la catégorie `buildings` apparie `buildings.json` — les 7 types de bâtiment naissent
-    // en donnée et au Codex dans le MÊME lot (#1715), sans passer par `PARTIELS`.
-    expect(apparies.length).toBe(111);
+    // Les listes GELÉES sont celles des DÉFAUTS (`PARTIELS`, `ORPHELINS`), qui doivent DÉCROÎTRE ; les
+    // appariés sont le RESTE, et leur nombre croît à chaque dataset relié au Codex — geler ce compte
+    // ferait payer un recalage à ce lot-là (#1812).
   });
 });
 

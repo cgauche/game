@@ -139,6 +139,12 @@ jobs:
       - name: Rejeu des migrations (idempotence de la donnée)
         if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run migrations:replay
+      # `+1 entrée → aucun rouge` (#1812) : un compte d'entrées gelé dans une migration DÉJÀ JOUÉE
+      # ferait payer un recalage à chaque donnée ajoutée. La porte fabrique l'ajout sur un export
+      # JETABLE — l'arbre du runner n'est pas écrit — et rejoue tout.
+      - name: Rejeu en CROISSANCE (+1 entrée ne coûte rien)
+        if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run migrations:replay:croissance
 
   # Un ticket se ferme quand son correctif est PUBLIÉ, jamais au commit local : AUCUN hook local ne
   # ferme de ticket, c'est ce job qui le fait (#1685 avait été fermé par 8b52f3a55 avant que ce commit

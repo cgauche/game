@@ -89,7 +89,11 @@ const LIBELLE = {
   },
 };
 
-/** CARDINAUX attendus sur l'état AVANT, mesurés sur l'arbre `a8220854d` (2026-09-02). */
+/**
+ * CARDINAUX IMPOSÉS PAR LES TABLES, et c'est pourquoi ils restent (#1812) : les Tableaux de
+ * Blessures Critiques sont CLOS — 4 localisations × 2 livres (`LDB 18 l.53`, `AA 07 l.25-42`), 20
+ * rangées par table. Une rangée n'y entre pas par croissance de contenu, mais par une RÈGLE de livre.
+ */
 const CARDINAUX = {
   documents: 8,
   rangees: 160,
@@ -134,7 +138,10 @@ if (Array.isArray(ldbFichier.doc)) {
   const docs = ldbFichier.doc;
   const rangees = docs.reduce((n, d) => n + d.entries.length, 0);
   if (docs.length !== CARDINAUX.documents || rangees !== CARDINAUX.rangees) {
-    console.error(`ARBITRAGE REQUIS — état migré inattendu : ${docs.length} document(s) / ${rangees} rangée(s).`);
+    console.error(
+      `ARBITRAGE REQUIS — état migré inattendu : ${docs.length} document(s) / ${rangees} rangée(s). ` +
+        'Les Tableaux des Critiques sont CLOS : LDB 18 l.53, AA 07 l.25-42.',
+    );
     process.exit(1);
   }
   console.log(`criticals.json : no-op (déjà migré — ${docs.length} documents, ${rangees} rangées)`);

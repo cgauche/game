@@ -16,13 +16,16 @@
  * unique de matières que rend le lot 2), `src/data/props.json` (primitives de recette volumique) et
  * `src/scenes/<c>/<c>-projet.json` (masses de toit) — tous lus et écrits.
  *
- * CARDINAUX ATTENDUS, mesurés sur l'arbre au moment de l'écriture (2026-09-05) : 1 matière de
- * domaine `roof`, 1 de domaine `prop`, 2 primitives de `props.json`, 3 masses de toit
- * (`arene-projet.json`). Un écart fait sortir 1 AVANT toute écriture.
+ * PORTE DE FORME, jamais un CARDINAL (#1812) : le décor, les recettes et les masses de toit
+ * GRANDISSENT — une référence de plus à `toit-ardoise` est une croissance légitime, pas une anomalie.
+ * Ce qui délimite le périmètre est l'id NU : aucun ne survit à l'écriture, et CHAQUE domaine porte
+ * EXACTEMENT UNE entrée de catalogue (l'homonyme se COMPOSE — c'est une arité d'IDENTITÉ, pas une
+ * population).
  * MARQUEUR D'IDEMPOTENCE : l'id des deux entrées de catalogue. Rejouée sur l'arbre migré, la
  * migration n'écrit rien et sort 0.
  * FAIL-FAST : id ni initial ni final, porteur d'une référence `ardoise` qui n'est ni une masse de
- * toit ni une primitive de recette, cardinal inattendu, formatage non canonique → rien n'est écrit.
+ * toit ni une primitive de recette, deux entrées à un même domaine, formatage non canonique → rien
+ * n'est écrit.
  * FORMATAGE PRÉSERVÉ : `src/data/*.json` est `JSON.stringify(doc, null, 2)` (sans saut final), un
  * document de projet est `JSON.stringify(doc, null, 1) + '\n'` — vérifié AVANT écriture.
  */
@@ -36,8 +39,6 @@ const NOM = '2026-09-05-1686-ardoise-ids-composes';
 const NU = 'ardoise';
 const TOIT = 'toit-ardoise';
 const DECOR = 'prop-ardoise';
-/** Cardinaux mesurés (2026-09-05) — porte d'identité du périmètre, jamais une estimation. */
-const ATTENDU = { catalogueToit: 1, catalogueDecor: 1, primitives: 2, masses: 3 };
 
 const echec = (m) => {
   console.error(`[${NOM}] ${m}`);
@@ -109,15 +110,18 @@ scanne(props.doc, props.rel, connus);
 for (const p of projets) scanne(p.doc, p.rel, connus);
 if (restes.length) echec(`référence \`${NU}\` hors masse de toit / primitive de recette : ${restes.join(', ')}`);
 
+// PORTE DE FORME, jamais de CARDINAL (#1812) : le décor et les recettes grandissent, et une
+// référence de PLUS à `toit-ardoise`/`prop-ardoise` est une croissance légitime. Ce qui délimite le
+// périmètre est l'id NU : aucun ne doit survivre, et les deux entrées COMPOSÉES doivent exister.
 const total = (t) => t.catalogueToit + t.catalogueDecor + t.primitives + t.masses;
 if (total(mesure) === 0) {
-  for (const [k, n] of Object.entries(ATTENDU))
-    if (dejaFait[k] !== n) echec(`déjà migrée en apparence, mais ${k} = ${dejaFait[k]} ≠ ${n}`);
+  for (const k of ['catalogueToit', 'catalogueDecor'])
+    if (!dejaFait[k]) echec(`déjà migrée en apparence, mais ${k} = 0 — l'entrée composée manque`);
   console.log(`[${NOM}] déjà migrée — rien à écrire`);
   process.exit(0);
 }
-for (const [k, n] of Object.entries(ATTENDU))
-  if (mesure[k] !== n) echec(`${k} : ${mesure[k]} occurrence(s) de \`${NU}\` ≠ ${n} attendue(s)`);
+for (const k of ['catalogueToit', 'catalogueDecor'])
+  if (mesure[k] + dejaFait[k] !== 1) echec(`${k} : ${mesure[k] + dejaFait[k]} entrée(s) de catalogue à ce domaine — une seule est attendue (l'homonyme se COMPOSE)`);
 
 // ── ÉCRITURE ────────────────────────────────────────────────────────────────────────────────────
 for (const e of catalogue.doc) if (e.id === NU && REGLES[e.domain]) e.id = REGLES[e.domain].apres;
@@ -145,7 +149,7 @@ for (const f of [catalogue, props, ...projets]) {
   };
   compte(doc);
 }
-const ecarts = Object.entries(ATTENDU).filter(([k, n]) => apres[k] !== n).map(([k, n]) => `${k} ${apres[k]} ≠ ${n}`);
+const ecarts = ['catalogueToit', 'catalogueDecor'].filter((k) => apres[k] !== 1).map((k) => `${k} ${apres[k]} ≠ 1 entrée composée`);
 if (nus.length) ecarts.push(`id nu \`${NU}\` encore présent : ${[...new Set(nus)].join(', ')}`);
 if (ecarts.length) {
   console.error(`[${NOM}] ÉCHEC POST-ÉCRITURE : ${ecarts.join(' ; ')}`);

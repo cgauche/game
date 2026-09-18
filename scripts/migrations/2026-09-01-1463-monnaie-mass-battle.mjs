@@ -19,7 +19,6 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const FICHIER = 'src/data/mass-battle.json';
-const CARDINAL = 10;
 const PROSE = /^(\d+) CO$/;
 
 const abs = path.join(ROOT, FICHIER);
@@ -32,7 +31,8 @@ if (JSON.stringify(data, null, 2) !== brut) {
 
 const machines = data.warMachines;
 assert.equal(Array.isArray(machines), true, 'warMachines absent de mass-battle.json');
-assert.equal(machines.length, CARDINAL, `cardinal attendu ${CARDINAL} machines de guerre, vu ${machines.length}`);
+// FORME, jamais cardinal (#1812) : la liste des machines de guerre est app-owned et peut grandir.
+assert.ok(machines.length > 0, 'warMachines VIDE dans mass-battle.json');
 
 const anomalies = [];
 let migres = 0;
@@ -72,8 +72,8 @@ assert.deepEqual(versProse(data), versProse(JSON.parse(brut)), 'la migration a c
 
 const sortie = JSON.stringify(data, null, 2);
 if (sortie === brut) {
-  console.log(`RIEN À FAIRE — ${FICHIER} porte déjà les ${CARDINAL} prix en monnaie.`);
+  console.log(`RIEN À FAIRE — ${FICHIER} porte déjà ses ${machines.length} prix en monnaie.`);
   process.exit(0);
 }
 fs.writeFileSync(abs, sortie);
-console.log(`${FICHIER} : ${migres}/${CARDINAL} prix de machine de guerre passés de la prose « N CO » à {gold, silver, brass}.`);
+console.log(`${FICHIER} : ${migres}/${machines.length} prix de machine de guerre passés de la prose « N CO » à {gold, silver, brass}.`);

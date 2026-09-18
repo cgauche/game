@@ -55,12 +55,6 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const CIBLE = path.join(ROOT, 'src/data/props.json');
 
-/** Entrées portant au moins un champ de RÈGLE — mesuré sur l'arbre au moment de l'écriture
- *  (2026-09-02 : 36 avant ce script, 41 après les cinq émetteurs neufs). Porte d'identité du
- *  périmètre : un décor à règle ajouté ou retiré depuis fait sortir 1 plutôt que migrer un catalogue
- *  qui n'est plus celui qu'on a mesuré. */
-const A_REGLE_AVANT = 36;
-const A_REGLE_APRES = 41;
 
 /** Champs dont la valeur est une RÈGLE, et non de l'art — la même liste que le refine de schéma. */
 const CHAMPS_DE_REGLE = ['light', 'cover', 'opaque'];
@@ -214,11 +208,10 @@ const avant = JSON.parse(brut);
     process.exit(1);
   }
   const parId = new Map(avant.map((e) => [e?.id, e]));
+  // FORME, jamais cardinal (#1812) : le catalogue de décor grandit, et un émetteur neuf doit se voir
+  // poser sa provenance, pas faire sortir 1. Ce qui mord, c'est une entrée à règle SANS `maison`.
   const aRegleAvant = avant.filter(aUneRegle).length;
-  const dejaMigre = avant.filter((e) => aUneRegle(e) && typeof e.maison === 'string').length;
-  const attendu = dejaMigre === 0 ? A_REGLE_AVANT : A_REGLE_APRES;
-  if (aRegleAvant !== attendu)
-    ecarts.push(`${aRegleAvant} entrée(s) à règle ≠ ${attendu} attendue(s)`);
+  if (!aRegleAvant) ecarts.push('aucune entrée à règle — périmètre déplacé');
 
   for (const e of avant) {
     if (!aUneRegle(e)) continue;
@@ -336,7 +329,7 @@ fs.writeFileSync(CIBLE, sortieTexte, 'utf8');
   for (let i = 0; i < relu.length; i++)
     if (relu[i].id !== avant[i].id) echecs.push(`POST [${i}] : id ${relu[i].id} ≠ ${avant[i].id}`);
   const aRegle = relu.filter(aUneRegle);
-  if (aRegle.length !== A_REGLE_APRES) echecs.push(`POST : ${aRegle.length} entrée(s) à règle ≠ ${A_REGLE_APRES}`);
+  if (aRegle.length !== avant.filter(aUneRegle).length) echecs.push(`POST : ${aRegle.length} entrée(s) à règle ≠ ${avant.filter(aUneRegle).length} lues`);
   for (const e of aRegle) {
     if (typeof e.maison !== 'string' || !e.maison) echecs.push(`POST ${e.id} : \`maison\` absente ou vide`);
     if (e.source !== undefined) echecs.push(`POST ${e.id} : \`source\` posée — ce script n’en pose aucune`);

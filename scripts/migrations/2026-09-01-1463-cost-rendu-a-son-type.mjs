@@ -29,28 +29,25 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
 /** Chemins PORTEURS, par fichier : suite de clés depuis la racine, `[]` traversant un tableau.
- *  L'objet ATTEINT est celui qui porte la clé à renommer. Cardinal attendu ASSERTÉ. */
+ *  L'objet ATTEINT est celui qui porte la clé à renommer, et il porte `de` XOR `vers`. */
 const RENOMMAGES = [
-  ['src/data/actions.json', ['[]'], 'cost', 'coutAction', 55],
-  ['src/data/trappings.json', ['[]', 'prosthesisTraining', '[]'], 'cost', 'px', 6],
-  ['src/data/talents.json', ['[]', 'variants', '[]', 'combat', 'advantageDefenseReaction'], 'cost', 'avantage', 1],
-  ['src/data/naval-traits.json', ['[]', 'install'], 'cost', 'installation', 21],
+  ['src/data/actions.json', ['[]'], 'cost', 'coutAction'],
+  ['src/data/trappings.json', ['[]', 'prosthesisTraining', '[]'], 'cost', 'px'],
+  ['src/data/talents.json', ['[]', 'variants', '[]', 'combat', 'advantageDefenseReaction'], 'cost', 'avantage'],
+  ['src/data/naval-traits.json', ['[]', 'install'], 'cost', 'installation'],
 ];
-const CARDINAL_RENOMMAGES = 83;
 const CARDINAL_RESHAPES = 2;
 
-/** POPULATION courante des nœuds Flow `choice` porteurs d'un coût d'Avantage — ce que la migration
- *  RETROUVE quand on la rejoue, pas ce qu'elle a reshapé (`CARDINAL_RESHAPES` reste à 2 : le nœud de
- *  Déstabilisante + l'op `grantFreeAttack`). Une porte de cardinal suit la donnée qu'un train fait
- *  croître, dans le MÊME train (taxe d'authoring nommée par #1648, patron de `2026-08-28-l1b-11a`).
- *  1→2 : Taillade (XA), coût `$indice` — #1661. */
-const CHOIX_A_COUT = 2;
+/** Les nœuds Flow `choice` porteurs d'un coût d'Avantage se COMPTENT au rejeu, ils ne se GÈLENT pas :
+ *  un talent de plus peut en apporter un, et un compte gelé lui ferait payer un recalage ici (#1812).
+ *  Ce que ce passage possède, c'est la FORME du coût (`cost: {advantage}` → `advantageCost`), vérifiée
+ *  nœud par nœud ci-dessous. `CARDINAL_RESHAPES` reste à 2 : le nœud de Déstabilisante + l'op
+ *  `grantFreeAttack`, les deux gestes que CE passage a faits. */
 
 const FICHIERS = ['src/data/actions.json', 'src/data/trappings.json', 'src/data/talents.json',
   'src/data/naval-traits.json', 'src/data/qualities.json'];
@@ -105,7 +102,7 @@ for (const f of FICHIERS) {
 const anomalies = [];
 let cardinal = 0;
 
-for (const [f, chemin, de, vers, attendu] of RENOMMAGES) {
+for (const [f, chemin, de, vers] of RENOMMAGES) {
   const { data } = documents.get(f);
   let vus = 0;
   for (const porteur of atteints(data, chemin)) {
@@ -116,10 +113,12 @@ for (const [f, chemin, de, vers, attendu] of RENOMMAGES) {
     vus++;
     if (aDe) remplace(porteur, renommeCle(porteur, de, vers));
   }
-  if (vus !== attendu) anomalies.push(`${f} ${chemin.join('.')} : ${vus} porteurs vus, ${attendu} attendus`);
+  // PORTE DE FORME, jamais un COMPTE (#1812) : `actions.json`, `trappings.json`, `talents.json` et
+  // `naval-traits.json` GRANDISSENT. Ce que ce passage possède, c'est que chaque porteur atteint
+  // porte `de` XOR `vers` (ci-dessus, nominatif) — et qu'aucun chemin ne se vide en silence.
+  if (!vus) anomalies.push(`${f} ${chemin.join('.')} : AUCUN porteur de coût — périmètre déplacé`);
   cardinal += vus;
 }
-assert.equal(cardinal, CARDINAL_RENOMMAGES, `cardinal attendu ${CARDINAL_RENOMMAGES} renommages, vu ${cardinal}`);
 
 // RESHAPE 1 — nœud Flow `choice` : `cost: {advantage: N}` → `advantageCost: N`.
 let choix = 0;
@@ -138,7 +137,7 @@ for (const [f, { data }] of documents) {
     remplace(noeud, sortie);
   }
 }
-if (choix !== CHOIX_A_COUT) anomalies.push(`nœuds Flow \`choice\` porteurs d'un coût : ${choix} vus, ${CHOIX_A_COUT} attendu(s)`);
+if (!choix) anomalies.push('nœuds Flow `choice` porteurs d’un coût : AUCUN — périmètre déplacé');
 
 // RESHAPE 2 — op `grantFreeAttack` : le sous-objet `cost` est APLATI sur l'op.
 let gratuites = 0;
@@ -180,7 +179,7 @@ for (const [, { abs, brut, data }] of documents) {
   ecrits++;
 }
 
-const total = CARDINAL_RENOMMAGES + CARDINAL_RESHAPES;
+const total = cardinal + CARDINAL_RESHAPES;
 console.log(ecrits === 0
   ? `RIEN À FAIRE — les ${total} porteurs ont déjà rendu le nom \`cost\`.`
   : `${total} porteurs rendus à leur type dans ${ecrits} document(s).`);

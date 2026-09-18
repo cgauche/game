@@ -17,7 +17,8 @@
  * reconnue migrée, quelle que soit la graphie déjà normalisée ; rejouée sur l'état final, la
  * migration n'écrit rien et sort 0.
  * FAIL-FAST : entrée portant `type` ET `acces`, entrée sans ni l'un ni l'autre, valeur hors
- * {base, avancée, avancee}, cardinal ≠ 48 → rien n'est écrit, sortie 1.
+ * {base, avancée, avancee}, racine VIDE → rien n'est écrit, sortie 1. JAMAIS un cardinal (#1812) :
+ * le catalogue des Compétences porte déjà des entrées de plusieurs livres FR et grandit avec eux.
  * FORMATAGE PRÉSERVÉ : le fichier est EXACTEMENT `JSON.stringify(doc, null, 2)` (vérifié avant toute
  * écriture — une forme non canonique fait sortir 1 plutôt que reflower le document en silence).
  */
@@ -27,7 +28,6 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const CIBLE = path.join(ROOT, 'src/data/skills.json');
-const ATTENDU = 48;
 /** Ancienne graphie → valeur normalisée. L'espace de valeurs reste binaire. */
 const NORMALISE = { base: 'base', 'avancée': 'avancee', avancee: 'avancee' };
 
@@ -41,7 +41,7 @@ if (JSON.stringify(data, null, 2) !== brut) {
 
 const echecs = [];
 if (!Array.isArray(data)) echecs.push('racine non tableau');
-else if (data.length !== ATTENDU) echecs.push(`cardinal ${data.length} ≠ ${ATTENDU} attendu`);
+else if (!data.length) echecs.push('racine VIDE — périmètre déplacé');
 
 let migres = 0;
 let dejaMigres = 0;
@@ -90,7 +90,7 @@ const residus = apres.filter((e) => typeAncien(e) !== undefined).length;
 const avant = data.map((e) => NORMALISE[typeAncien(e) ?? e.acces]).join(',');
 const rendu = apres.map((e) => e.acces).join(',');
 const accents = apres.filter((e) => e.acces === 'avancée').length;
-if (residus || accents || avant !== rendu || apres.length !== ATTENDU) {
+if (residus || accents || avant !== rendu || apres.length !== data.length) {
   console.error(`VÉRIFICATION POST-ÉCRITURE ROUGE : ${residus} \`type\` résiduel(s), ${accents} valeur(s) accentuée(s), ${apres.length} entrée(s), partition ${avant === rendu ? 'conservée' : 'ALTÉRÉE'}`);
   process.exit(1);
 }

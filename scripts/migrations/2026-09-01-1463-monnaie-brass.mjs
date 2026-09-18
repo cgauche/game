@@ -30,15 +30,17 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
 /** Chemins PORTEURS d'un montant, par fichier : suite de clés depuis la racine, `[]` traversant un
- *  tableau. Le cardinal attendu accompagne chaque chemin — il est ASSERTÉ, pas constaté. */
+ *  tableau. Leur NOMBRE de montants n'est pas asserté (#1812) : ces catalogues grandissent, et un
+ *  objet ou un véhicule neuf doit se MIGRER — ce qui est exigé est la FORME de chaque montant
+ *  (exactement une 3ᵉ dénomination, `bronze` OU `brass`) et l'EXHAUSTIVITÉ (plus aucun `bronze`
+ *  hors chemin déclaré). */
 const CHEMINS = [
-  ['src/data/trappings.json', ['[]', 'price'], 392],
-  ['src/data/vehicles.json', ['[]', 'purchase', 'price'], 31],
-  ['src/data/creatures.json', ['[]', 'purchase', 'price'], 14],
-  ['src/data/crew-roles.json', ['[]', 'wage', 'daily'], 9],
-  ['src/data/crew-roles.json', ['[]', 'wage', 'weekly'], 9],
+  ['src/data/trappings.json', ['[]', 'price']],
+  ['src/data/vehicles.json', ['[]', 'purchase', 'price']],
+  ['src/data/creatures.json', ['[]', 'purchase', 'price']],
+  ['src/data/crew-roles.json', ['[]', 'wage', 'daily']],
+  ['src/data/crew-roles.json', ['[]', 'wage', 'weekly']],
 ];
-const CARDINAL = 455;
 
 /** Les nœuds atteints par un chemin (un `price` peut être `'ND'`, `null` ou absent : il n'est pas un montant). */
 function* atteints(noeud, chemin) {
@@ -94,7 +96,7 @@ for (const [f] of CHEMINS) {
 const anomalies = [];
 let cardinal = 0;
 
-for (const [f, chemin, attendu] of CHEMINS) {
+for (const [f, chemin] of CHEMINS) {
   const { data } = documents.get(f);
   let vus = 0;
   for (const montant of atteints(data, chemin)) {
@@ -108,7 +110,7 @@ for (const [f, chemin, attendu] of CHEMINS) {
     for (const k of Object.keys(montant)) delete montant[k];
     Object.assign(montant, remplacant);
   }
-  if (vus !== attendu) anomalies.push(`${f} ${chemin.join('.')} : ${vus} montants vus, ${attendu} attendus`);
+  if (!vus) anomalies.push(`${f} ${chemin.join('.')} : AUCUN montant sur un chemin déclaré porteur — périmètre déplacé`);
   cardinal += vus;
 }
 
@@ -125,7 +127,6 @@ if (anomalies.length) {
   for (const a of anomalies) console.error(`  - ${a}`);
   process.exit(1);
 }
-assert.equal(cardinal, CARDINAL, `cardinal attendu ${CARDINAL} montants, vu ${cardinal}`);
 
 let ecrits = 0;
 for (const [f, { abs, brut, data }] of documents) {
@@ -137,5 +138,5 @@ for (const [f, { abs, brut, data }] of documents) {
 }
 
 console.log(ecrits === 0
-  ? `RIEN À FAIRE — les ${CARDINAL} montants portent déjà \`brass\`.`
-  : `${CARDINAL} montants renommés \`bronze\` → \`brass\` dans ${ecrits} document(s).`);
+  ? `RIEN À FAIRE — les ${cardinal} montants portent déjà \`brass\`.`
+  : `${cardinal} montants renommés \`bronze\` → \`brass\` dans ${ecrits} document(s).`);

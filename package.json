@@ -13,6 +13,7 @@
     "gen:quality-ids": "node scripts/gen-quality-ids.mjs",
     "migrations:replay": "node scripts/migrations/replay.mjs",
     "migrations:replay:head": "node scripts/migrations/replay-head.mjs",
+    "migrations:replay:croissance": "node scripts/migrations/replay-croissance.mjs",
     "dev": "node scripts/lancer-local.mjs vite -- vite",
     "build": "npm run gen && node scripts/lancer-local.mjs vite -- vite build",
     "preview": "node scripts/lancer-local.mjs vite -- vite preview",

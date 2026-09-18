@@ -50,9 +50,10 @@ const FICHIER = 'src/data/spells.json';
  *  minuscule comprise). Tout autre texte `special` reste tel quel. */
 const LANCEUR = ['Sorcier', 'Sorcière', 'Skaven', 'Démon', 'démon', 'Rebouteux', 'Mage', 'Shaman'];
 
-/** Clés d'entrée PORTEUSES, avec leur cardinal attendu — ASSERTÉ, pas constaté. */
-const CHAMPS = [['range', 32], ['target', 22]];
-const CARDINAL = 54;
+/** Clés d'entrée PORTEUSES d'une désignation de lanceur. Leur NOMBRE n'est pas asserté (#1812) : le
+ *  catalogue des Sorts grandit à chaque livre FR, et un sort neuf à la graphie ancienne doit se
+ *  MIGRER, pas faire sortir 1. */
+const CHAMPS = ['range', 'target'];
 
 const abs = path.join(ROOT, FICHIER);
 const brut = fs.readFileSync(abs, 'utf8');
@@ -103,11 +104,12 @@ if (sites.length === 0) {
   process.exit(0);
 }
 
-for (const [champ, attendu] of CHAMPS) {
-  const vus = sites.filter((s) => s.champ === champ).length;
-  assert.equal(vus, attendu, `${FICHIER} [].${champ} : ${vus} porteurs vus, ${attendu} attendus`);
+// FORME, jamais cardinal (#1812) : chaque site relevé porte une clé DU VOCABULAIRE et une valeur
+// `special` dont le texte est de la LISTE CLOSE ci-dessus — c'est cela qui délimite le périmètre.
+for (const s of sites) {
+  assert.ok(CHAMPS.includes(s.champ), `${FICHIER} ${data[s.i].id} : champ ${s.champ} hors {${CHAMPS.join(', ')}}`);
+  assert.ok(LANCEUR.includes(s.valeur.text), `${FICHIER} ${data[s.i].id}.${s.champ} : « ${s.valeur.text} » hors liste close`);
 }
-assert.equal(sites.length, CARDINAL, `cardinal attendu ${CARDINAL} porteurs, vu ${sites.length}`);
 
 for (const { i, champ } of sites) data[i][champ] = { kind: 'self' };
 
@@ -119,5 +121,5 @@ assert.deepEqual(data, temoin, `${FICHIER} : la migration a changé autre chose 
 
 fs.writeFileSync(abs, JSON.stringify(data, null, 2));
 const journal = sites.map((s) => `${data[s.i].id}.${s.champ} (« ${s.valeur.text} »)`);
-console.log(`${CARDINAL} Portées/Cibles « lanceur » → {kind:'self'} :`);
+console.log(`${sites.length} Portée(s)/Cible(s) « lanceur » → {kind:'self'} :`);
 for (const l of journal) console.log(`  ${l}`);

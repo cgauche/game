@@ -123,34 +123,40 @@ test('(b) REJEU sur arbre migré : sortie 0, rien d’écrit (octet ET horodatag
   assert.deepEqual(rienTouche(racine, avant), [], 'le rejeu a écrit');
 });
 
-test('(c) CARDINAL cassé (une apparence retirée) → sortie 1 NOMINATIVE, rien d’écrit', (t) => {
+test('(c) CARDINAL DÉPLACÉ (une apparence retirée) : le passage PASSE, sans recalage (#1812)', (t) => {
+  // Le catalogue des apparences est app-owned et GRANDIT : geler son compte ici ferait payer un
+  // recalage à tout lot qui ajoute un mur. Ce que ce passage possède, c'est la clé morte.
   const ampute = avantDoc();
   ampute.pop();
-  const { racine, avant } = depot({ [CIBLE]: serialise(ampute) });
+  const { racine } = depot({ [CIBLE]: serialise(ampute) });
   t.after(() => efface(racine));
 
   const { code, sortie } = joue(racine);
-  assert.equal(code, 1, `sortie ${code} — un cardinal inattendu doit ARRÊTER la migration : ${sortie.slice(0, 800)}`);
+  assert.equal(code, 0, `sortie ${code} — une apparence en moins n’est pas une anomalie : ${sortie.slice(0, 800)}`);
   assert.ok(
-    sortie.includes(`${CARDINAL - 1} entrée(s) ≠ ${CARDINAL} attendue(s)`),
-    `arrêt sans CHIFFRER l’écart : ${sortie.slice(0, 800)}`,
+    sortie.includes(`clé \`${CLE}\` retirée de ${CARDINAL - 1} apparence(s)`),
+    `le passage ne retire pas la clé des apparences qui RESTENT : ${sortie.slice(0, 800)}`,
   );
-  assert.deepEqual(rienTouche(racine, avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
+  const relu = JSON.parse(fs.readFileSync(path.join(racine, CIBLE), 'utf8'));
+  assert.deepEqual(relu.filter((e) => CLE in e), [], `\`${CLE}\` survit à l’écriture`);
 });
 
-test('(c bis) CARDINAL des PORTEUSES cassé (une apparence sans la clé) → sortie 1 NOMMANT la clé, rien d’écrit', (t) => {
+test('(c bis) PÉRIMÈTRE MIXTE (une apparence déjà à la forme CIBLE) : les porteuses SEULES sont purgées', (t) => {
+  // Une apparence née APRÈS ce passage arrive sans `material` : le mélange source/cible est l'état
+  // NORMAL d'un dataset vivant, pas une anomalie — seule une forme TIERCE en serait une.
   const partiel = avantDoc();
   delete partiel[0][CLE];
-  const { racine, avant } = depot({ [CIBLE]: serialise(partiel) });
+  const { racine } = depot({ [CIBLE]: serialise(partiel) });
   t.after(() => efface(racine));
 
   const { code, sortie } = joue(racine);
-  assert.equal(code, 1, `sortie ${code} — un périmètre partiel doit ARRÊTER la migration : ${sortie.slice(0, 800)}`);
+  assert.equal(code, 0, `sortie ${code} — un périmètre mixte est légitime : ${sortie.slice(0, 800)}`);
   assert.ok(
-    sortie.includes(`${CARDINAL - 1} entrée(s) portant \`${CLE}\` ≠ ${CARDINAL} attendue(s)`),
-    `arrêt sans NOMMER la clé ni CHIFFRER l’écart : ${sortie.slice(0, 800)}`,
+    sortie.includes(`clé \`${CLE}\` retirée de ${CARDINAL - 1} apparence(s)`),
+    `le passage ne purge pas EXACTEMENT les porteuses : ${sortie.slice(0, 800)}`,
   );
-  assert.deepEqual(rienTouche(racine, avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
+  const relu = JSON.parse(fs.readFileSync(path.join(racine, CIBLE), 'utf8'));
+  assert.equal(relu.length, CARDINAL, 'le passage a perdu ou ajouté une entrée');
 });
 
 test('(d1) RACINE non-TABLEAU (document canoniquement formaté) → sortie 1 NOMINATIVE, rien d’écrit', (t) => {

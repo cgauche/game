@@ -23,13 +23,18 @@
  *
  * ENTRÉES : les 21 fichiers de `src/data/` listés dans `TYPES` (seules données lues et écrites).
  *
- * IDEMPOTENT / NO-OP SÉMANTIQUE : le no-op se décide sur le CARDINAL des gestes que ce script
+ * IDEMPOTENT / NO-OP SÉMANTIQUE : le no-op se décide sur le NOMBRE des gestes que ce script
  * POSSÈDE — pose de `type`, purge de la `desc` vide nommée, promotion déclarée de `id`. Zéro geste à
  * poser dans un fichier = rien n'y est écrit et la sortie est 0, quel que soit l'ordre des AUTRES
  * clés de ses entrées : la remontée de `type` en 2ᵉ position est une normalisation d'enveloppe, et
  * une égalité à l'octet en ferait une réécriture à elle seule. La POSITION de `type` n'est PAS
  * une condition du no-op ; elle est vérifiée après chaque écriture.
- * FAIL-FAST : cardinal inattendu (porte de lecture SEULE, avant toute écriture), racine non-tableau,
+ * PORTE DE FORME — lecture SEULE, avant la moindre écriture. Ce qui protège d'un rejeu sur une
+ * donnée d'une AUTRE époque n'est pas un COMPTE d'entrées (un dataset app-owned croît légitimement,
+ * et un compte gelé fait payer un recalage à chaque ajout, #1812) mais la FORME de chaque entrée :
+ * elle porte soit la forme SOURCE (aucun `type`), soit la forme CIBLE (`type` du def). Ni l'une ni
+ * l'autre → ARBITRAGE REQUIS, rien n'est écrit pour AUCUN fichier, sortie 1.
+ * FAIL-FAST : forme inattendue (porte de lecture SEULE, avant toute écriture), racine non-tableau,
  * entrée sans `id` de chaîne, `id` hors tête sans promotion déclarée à `ID_PROMU`, `type` déjà présent
  * mais DIVERGENT, `desc: ""` sur un porteur NON prévu → rien n'est écrit, sortie 1.
  * FORMATAGE PRÉSERVÉ : chaque fichier est EXACTEMENT `JSON.stringify(doc, null, 2)`, vérifié AVANT
@@ -67,51 +72,6 @@ const TYPES = {
 };
 
 /**
- * CARDINAL ATTENDU par fichier, et TOTAL — mesuré sur l'arbre au moment de l'écriture (2026-08-28).
- * Vérifié AVANT toute écriture : une entrée ajoutée ou retirée depuis fait sortir 1 plutôt que
- * migrer un périmètre qui n'est plus celui qu'on a mesuré.
- * Toute croissance légitime d'un dataset listé recale ce cardinal dans le train de la croissance.
- */
-const CARDINAUX = {
-  'careerLevels.json': 432,
-  'combat-stakes.json': 37, // +1 `critTrigger` (#1657 B3-1), +1 `shipCrewHit` (#1657 B3-2)
-  'domains.json': 20,
-  'etats.json': 21,
-  'flow-stakes.json': 34,
-  // 16→18 : Pneumonie + Rhume commun, EDOC 08 (folio 33), #674.
-  'maladies.json': 18,
-  'maneuvers.json': 20,
-  'merchants.json': 6,
-  'naval-ports.json': 39,
-  'naval-traits.json': 27,
-  'pregens.json': 8,
-  // 78→83 : recalé #1624/#1644 (+5 props : cheminee, enseigne, clocheton, applique-murale, banc) — le
-  // cardinal est une porte d'IDENTITÉ de dataset, il suit la donnée qu'un train fait croître, dans le
-  // MÊME train. Puis 83→123 : #1680 ligne 14, BIJECTION art ⇄ donnée (les 40 defs d'art qui n'avaient
-  // pas d'entrée reçoivent la leur ; garde `src/data/props-label-parite.test.ts`).
-  'props.json': 123,
-  // 81→82 : la fenêtre de conscience par Détermination (LDB 20 l.170, durée maison), #1599.
-  // 82→87 : les cinq règles `param` de l'Activité Mendier (heures/jour, discours, apparence, surpris, amende — LDB 09 l.97/l.99, valeurs maison), #1612.
-  'reglesOptionnelles.json': 87,
-  'skills.json': 48,
-  'steam-breakdown.json': 6,
-  'structures.json': 24,
-  'symptoms.json': 18,
-  'talents.json': 187,
-  // 131→132 : Trait Entêté, EDOC 07 (folio 22), #673.
-  'traits.json': 132,
-  'traumas.json': 29,
-  'vehicles.json': 31,
-};
-// 1290→1293 : +2 maladies (#674) +1 trait (#673). Puis 1293→1298 : +5 décors de `props.json` (#1624/#1644).
-// Puis 1298→1338 : +40 décors de `props.json` (#1680 ligne 14, bijection art ⇄ donnée).
-// Puis 1338→1340 : +2 enjeux de `combat-stakes.json` (#1657 B3-1, B3-2).
-// Puis 1340→1341 : +1 Trait naval `cale` (#1657 B3-2b-a, MSRC 07 l.94 / MSRC 10 l.90).
-// Puis 1341→1342 : +1 règle optionnelle `maladie-conscience-determination-minutes` (#1599, LDB 20 l.170).
-// Puis 1342→1347 : +5 règles optionnelles `mendier-*` (#1612, LDB 09 l.97/l.99).
-const TOTAL_ATTENDU = 1347;
-
-/**
  * PROMOTION DÉCLARÉE de `id` — `<fichier>` → rang qu'y occupait `id` AVANT la vague. L'enveloppe veut
  * `id` en tête ; un seul dataset ne l'y avait pas : `steam-breakdown.json` ouvre ses entrées par la
  * fourchette de tirage (`min`/`max`), `id` venant au rang 2. La suite des autres clés, elle, ne bouge
@@ -126,24 +86,37 @@ const DESC_VIDE_PURGEE = { 'talents.json': 'talent-aleatoire' };
 const echecs = [];
 const rapport = [];
 
-// PORTE DE CARDINAL — lecture SEULE, avant la moindre écriture.
+// PORTE DE FORME — lecture SEULE, avant la moindre écriture. Un rejeu sur une donnée d'une AUTRE
+// époque se reconnaît à la FORME de ses entrées, jamais à leur NOMBRE (#1812) : chacune porte soit la
+// forme SOURCE (aucun `type`), soit la forme CIBLE (le `type` que le def déclare).
 {
   const ecarts = [];
-  let total = 0;
-  for (const fichier of Object.keys(TYPES)) {
+  for (const [fichier, type] of Object.entries(TYPES)) {
     const brut = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/data', fichier), 'utf8'));
     if (!Array.isArray(brut)) {
       ecarts.push(`${fichier} : racine non-TABLEAU`);
       continue;
     }
-    total += brut.length;
-    if (brut.length !== CARDINAUX[fichier]) ecarts.push(`${fichier} : ${brut.length} entrée(s) ≠ ${CARDINAUX[fichier]} attendue(s)`);
+    if (!brut.length) {
+      ecarts.push(`${fichier} : 0 entrée — périmètre vidé`);
+      continue;
+    }
+    for (const [i, e] of brut.entries()) {
+      if (!e || typeof e !== 'object' || Array.isArray(e)) {
+        ecarts.push(`${fichier}[${i}] : entrée non-objet`);
+        continue;
+      }
+      if (typeof e.id !== 'string' || !e.id) {
+        ecarts.push(`${fichier}[${i}] : entrée sans \`id\` de chaîne non vide`);
+        continue;
+      }
+      if ('type' in e && e.type !== type) {
+        ecarts.push(`${fichier} ${e.id} : \`type\` = ${JSON.stringify(e.type)} — ni la forme SOURCE (aucun \`type\`) ni la forme CIBLE (${JSON.stringify(type)})`);
+      }
+    }
   }
-  const sommeDeclaree = Object.values(CARDINAUX).reduce((a, b) => a + b, 0);
-  if (sommeDeclaree !== TOTAL_ATTENDU) ecarts.push(`table CARDINAUX : somme ${sommeDeclaree} ≠ TOTAL_ATTENDU ${TOTAL_ATTENDU}`);
-  if (total !== TOTAL_ATTENDU) ecarts.push(`TOTAL mesuré ${total} ≠ ${TOTAL_ATTENDU}`);
   if (ecarts.length) {
-    console.error(`CARDINAL INATTENDU — rien n’est écrit (${ecarts.length}) :`);
+    console.error(`ARBITRAGE REQUIS — forme INATTENDUE, rien n’est écrit (${ecarts.length}) :`);
     for (const m of ecarts) console.error(`  ${m}`);
     process.exit(1);
   }
@@ -260,5 +233,5 @@ if (echecs.length) {
 }
 
 for (const l of rapport) console.log(l);
-console.log(`vague 12 — ${Object.keys(TYPES).length} dataset(s) \`entite\` portent leur \`type\` (${TOTAL_ATTENDU} entrées)`);
+console.log(`vague 12 — ${Object.keys(TYPES).length} dataset(s) \`entite\` portent leur \`type\``);
 console.log(`\`desc: ""\` purgée(s) : ${descPurgees}`);

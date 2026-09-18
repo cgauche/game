@@ -107,7 +107,9 @@ function verifierResultat() {
   const table = (relu.tablesDeChute ?? []).find((t) => t.id === TABLE_DE_CHUTE);
   if (!table) echecs.push(`POST ${SHIP} : table « ${TABLE_DE_CHUTE} » absente`);
   else {
-    if (table.bandes.length !== 3) echecs.push(`POST ${SHIP} : ${table.bandes.length} bandes de chute (attendu 3)`);
+    // Les TROIS bandes de hauteur sont celles de la table `MDG 13 l.684-688` — cardinal IMPOSÉ par le
+    // livre, jamais une population qui grandit (#1812).
+    if (table.bandes.length !== 3) echecs.push(`POST ${SHIP} : ${table.bandes.length} bandes de chute (attendu 3, MDG 13 l.684)`);
     const tailles = table.bandes.flatMap((b) => b.tailles);
     if (tailles.length !== 7) echecs.push(`POST ${SHIP} : ${tailles.length} Tailles couvertes (attendu les 7 de MDG 12 l.122-129)`);
     if (table.bandes.some((b) => Object.keys(b.hauteurs).join(',') !== 'greement,nid-de-pie')) {

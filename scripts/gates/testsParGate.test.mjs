@@ -103,9 +103,10 @@ test('la racine `scripts/*` ne prend que les fichiers DIRECTS de scripts/', () =
   assert.equal(gateDe('scripts/docs/lib/enregistreur-lectures.test.mjs'), 'test:docs')
 })
 
-test('la découverte passe par GIT : un test non SUIVI n’est joué par aucune gate', () => {
+test('la découverte prend le test NEUF (pas encore indexé) et laisse l’IGNORÉ (#1812)', () => {
   // Dépôt JETABLE sous os.tmpdir() — l'arbre du projet n'est jamais écrit : la parité « ce que la CI
-  // joue = ce qui est suivi » ne se mesure pas autrement.
+  // joue = ce qui est dans l'arbre » ne se mesure pas autrement. Une garde qui vient d'être écrite
+  // n'est pas indexée : la lister par les seuls fichiers suivis la rendrait verte par ABSENCE.
   const racine = mkdtempSync(join(tmpdir(), 'testsParGate-'))
   try {
     const git = (...args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8' })
@@ -113,13 +114,15 @@ test('la découverte passe par GIT : un test non SUIVI n’est joué par aucune 
     git('config', 'user.email', 'banc@local')
     git('config', 'user.name', 'banc')
     mkdirSync(join(racine, 'scripts', 'hooks'), { recursive: true })
+    writeFileSync(join(racine, '.gitignore'), 'scripts/hooks/ignore.test.mjs\n')
     writeFileSync(join(racine, 'scripts', 'hooks', 'suivi.test.mjs'), '// suivi\n')
-    writeFileSync(join(racine, 'scripts', 'hooks', 'non-suivi.test.mjs'), '// jamais ajouté\n')
-    git('add', 'scripts/hooks/suivi.test.mjs')
+    writeFileSync(join(racine, 'scripts', 'hooks', 'neuf.test.mjs'), '// écrit, pas encore ajouté\n')
+    writeFileSync(join(racine, 'scripts', 'hooks', 'ignore.test.mjs'), '// hors dépôt\n')
+    git('add', '.gitignore', 'scripts/hooks/suivi.test.mjs')
     git('commit', '-q', '-m', 'banc')
     const lister = () => listerTests(racine)
-    assert.deepEqual(lister(), ['scripts/hooks/suivi.test.mjs'])
-    assert.deepEqual(testsDe('test:hooks', lister), ['scripts/hooks/suivi.test.mjs'])
+    assert.deepEqual(lister(), ['scripts/hooks/neuf.test.mjs', 'scripts/hooks/suivi.test.mjs'])
+    assert.deepEqual(testsDe('test:hooks', lister), ['scripts/hooks/neuf.test.mjs', 'scripts/hooks/suivi.test.mjs'])
     assert.deepEqual(couverture(lister), { orphelins: [], doublons: [] })
   } finally {
     rmSync(racine, { recursive: true, force: true })

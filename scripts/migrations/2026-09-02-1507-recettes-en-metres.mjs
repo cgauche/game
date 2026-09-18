@@ -60,22 +60,12 @@ const chemin = (f) => path.join(ROOT, 'src/data', f);
 const FACTEUR = 2;
 
 /**
- * Cardinaux ATTENDUS, mesurés sur l'arbre au moment de l'écriture (2026-09-02). Porte d'IDENTITÉ du
- * périmètre : une recette ou une source ajoutée depuis fait sortir 1 plutôt que convertir un
- * catalogue qui n'est plus celui qu'on a mesuré.
+ * Datasets portant des ops `light` à convertir. Leur NOMBRE d'ops n'est pas asserté (#1812), pas plus
+ * que le nombre de recettes ou de sources : ces catalogues grandissent, et un décor neuf doit se
+ * MIGRER. Ce qui délimite le périmètre est la FORME — et le MÉLANGE de graphies (par forme touchée,
+ * tout ou rien) reste la porte qui mord.
  */
-const ATTENDU = {
-  recettes: 22,
-  primitives: 172,
-  /** `center.x/y` + (`size.x/y` | `radius`) de chaque primitive — 172 centres, 122 `size`, 50 rayons. */
-  valeursDuPlan: 638,
-  /** `anchor.x/y` des places assises (6 places). */
-  ancres: 6,
-  /** Entrées de `props.json` portant un `light`. */
-  sources: 10,
-  /** Ops `light` par dataset. */
-  ops: { 'trappings.json': 4, 'spells.json': 2, 'tables.json': 1 },
-};
+const DATASETS_OPS = ['trappings.json', 'spells.json', 'tables.json'];
 
 /**
  * PROVENANCES en MÈTRES — les 10 phrases de `maison` que le lot #1680 a écrites disaient leur étalon
@@ -140,22 +130,15 @@ const dejaPoint = (p) => p && typeof p === 'object' && 'xM' in p;
 
 // ————————————————————————————————— PORTE DE LECTURE —————————————————————————————————
 const props = lire('props.json');
-const datasetsOps = Object.fromEntries(Object.keys(ATTENDU.ops).map((f) => [f, lire(f)]));
+const datasetsOps = Object.fromEntries(DATASETS_OPS.map((f) => [f, lire(f)]));
 
 {
   const recettes = props.doc.filter((e) => e && e.volume);
   const primitives = recettes.flatMap((e) => e.volume.primitives ?? []);
   const places = props.doc.flatMap((e) => e?.seatSlots ?? []);
   const sources = props.doc.filter((e) => e && e.light);
-  if (recettes.length !== ATTENDU.recettes) ecarts.push(`${recettes.length} recette(s) ≠ ${ATTENDU.recettes}`);
-  if (primitives.length !== ATTENDU.primitives) ecarts.push(`${primitives.length} primitive(s) ≠ ${ATTENDU.primitives}`);
-  if (places.length !== ATTENDU.ancres) ecarts.push(`${places.length} place(s) ≠ ${ATTENDU.ancres}`);
-  if (sources.length !== ATTENDU.sources) ecarts.push(`${sources.length} source(s) de lumière ≠ ${ATTENDU.sources}`);
-
-  // Cardinal des valeurs DU PLAN effectivement multipliées : 2 par centre, plus 2 par `size` ou 1 par
-  // `radius`. Il est compté sur la forme d'ENTRÉE, quelle que soit sa graphie.
-  const valeursDuPlan = primitives.reduce((n, p) => n + 2 + (p.kind === 'cylinder' ? 1 : 2), 0);
-  if (valeursDuPlan !== ATTENDU.valeursDuPlan) ecarts.push(`${valeursDuPlan} valeur(s) du plan ≠ ${ATTENDU.valeursDuPlan}`);
+  if (!recettes.length) ecarts.push('aucune recette de volume — périmètre déplacé');
+  if (!primitives.length) ecarts.push('aucune primitive de recette — périmètre déplacé');
 
   // MÉLANGE DE GRAPHIES — par forme touchée, jamais globalement : chaque marqueur répond de sa forme.
   const marques = (liste, estMarque) => liste.filter(estMarque).length;
@@ -175,9 +158,8 @@ const datasetsOps = Object.fromEntries(Object.keys(ATTENDU.ops).map((f) => [f, l
     else if (e.maison !== phrase && !/cases\)|cases contre/.test(e.maison))
       ecarts.push(`${id} : phrase de provenance INCONNUE — ni l'ancienne (en cases) ni la nouvelle (en mètres)`);
   }
-  for (const [f, attendu] of Object.entries(ATTENDU.ops)) {
+  for (const f of DATASETS_OPS) {
     const ops = opsLight(datasetsOps[f].doc);
-    if (ops.length !== attendu) ecarts.push(`${f} : ${ops.length} op(s) \`light\` ≠ ${attendu}`);
     const faits = ops.filter((o) => 'radiusM' in o).length;
     if (faits !== 0 && faits !== ops.length) ecarts.push(`${f} : MÉLANGE de graphies — ${faits} op(s) \`light\` migrée(s) sur ${ops.length}`);
     for (const o of ops)
@@ -262,9 +244,9 @@ function opsEnMetres(noeud) {
 // NO-OP SÉMANTIQUE : ce script ne possède que les conversions en mètres et la phrase de provenance
 // qui les suit. Aucune à faire = rien à écrire, quel que soit l'ordre des clés ou le formatage des
 // fichiers. `opsEnMetres` compte en rendant : ses sorties se calculent AVANT la porte.
-const sortiesOps = Object.fromEntries(Object.keys(ATTENDU.ops).map((f) => [f, JSON.stringify(opsEnMetres(datasetsOps[f].doc), null, 2)]));
+const sortiesOps = Object.fromEntries(DATASETS_OPS.map((f) => [f, JSON.stringify(opsEnMetres(datasetsOps[f].doc), null, 2)]));
 if (primitivesConverties + ancresConverties + sourcesConverties + provenancesReecrites + opsConverties === 0) {
-  console.log(`src/data : no-op (0 conversion — ${ATTENDU.recettes} recette(s) et ${ATTENDU.sources} source(s) déjà en mètres)`);
+  console.log('src/data : no-op (0 conversion — recettes, places et sources déjà en mètres)');
   process.exit(0);
 }
 
@@ -272,7 +254,7 @@ const ecrits = [];
 const sortieProps = JSON.stringify(apresProps, null, 2);
 if (sortieProps !== props.brut) { fs.writeFileSync(chemin('props.json'), sortieProps, 'utf8'); ecrits.push('props.json'); }
 
-for (const f of Object.keys(ATTENDU.ops)) {
+for (const f of DATASETS_OPS) {
   if (sortiesOps[f] !== datasetsOps[f].brut) { fs.writeFileSync(chemin(f), sortiesOps[f], 'utf8'); ecrits.push(f); }
 }
 
@@ -318,7 +300,7 @@ for (const f of Object.keys(ATTENDU.ops)) {
     if (d.light && a.light && 'radiusTiles' in a.light && d.light.radiusM / FACTEUR !== a.light.radiusTiles)
       echecs.push(`POST ${d.id} : rayon ${d.light.radiusM} m ≠ ${a.light.radiusTiles} × ${FACTEUR}`);
   }
-  for (const f of Object.keys(ATTENDU.ops)) {
+  for (const f of DATASETS_OPS) {
     const opsApres = opsLight(JSON.parse(fs.readFileSync(chemin(f), 'utf8')));
     const opsAvant = opsLight(datasetsOps[f].doc);
     if (opsApres.length !== opsAvant.length) echecs.push(`POST ${f} : ${opsApres.length} op(s) \`light\` ≠ ${opsAvant.length}`);

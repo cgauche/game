@@ -25,6 +25,12 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const CIBLE = path.join(ROOT, 'src/data/characteristics.json');
+/**
+ * CARDINAL IMPOSÉ PAR LA RÈGLE, et c'est pourquoi il reste (#1812) : le registre de la FICHE est
+ * CLOS — les caractéristiques à jet, les réserves et les compteurs qu'elle porte
+ * (`docs/raw/caracteristiques.md`, `docs/raw/destin.md`, `docs/raw/corruption.md`). Une ligne n'y
+ * entre pas par croissance de contenu, mais par une RÈGLE de livre — qui se lit, elle, au `Source/`.
+ */
 const ATTENDU = 19;
 /** Ancienne valeur → nature. Seule `''` bouge ; les cinq autres sont reconduites à l'identique. */
 const NORMALISE = { roll: 'roll', wounds: 'wounds', extra: 'extra', mv: 'mv', points: 'points', '': 'compteur', compteur: 'compteur' };
@@ -39,7 +45,7 @@ if (JSON.stringify(data, null, 2) !== brut) {
 
 const echecs = [];
 if (!Array.isArray(data)) echecs.push('racine non tableau');
-else if (data.length !== ATTENDU) echecs.push(`cardinal ${data.length} ≠ ${ATTENDU} attendu`);
+else if (data.length !== ATTENDU) echecs.push(`cardinal ${data.length} ≠ ${ATTENDU} attendu — registre CLOS, docs/raw/caracteristiques`);
 
 let migres = 0;
 let dejaMigres = 0;

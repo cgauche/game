@@ -242,6 +242,8 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
   });
 
   it('divergences d’enveloppe (racine ET documents embarqués) : observé == stock', () => {
+    // La clé est l'IDENTITÉ de la divergence, jamais le nombre d'entrées qui la portent : une ligne se
+    // solde en migrant l'enveloppe (elle PART), et un dataset qui grandit ne doit rien recaler (#1812).
     const cle = (e: {
       role: string;
       cle: string;
@@ -249,9 +251,8 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       detail: string;
       document: string;
       chemin: string;
-      entrees: number;
     } & Trace) =>
-      `${e.role} | ${e.cle} | ${e.motif}${e.detail ? `:${e.detail}` : ''} | ${e.document} › ${e.chemin} | ${e.entrees}` +
+      `${e.role} | ${e.cle} | ${e.motif}${e.detail ? `:${e.detail}` : ''} | ${e.document} › ${e.chemin}` +
       trace(e, lotEnveloppe(e));
     expect(
       lignes(scan.enveloppe.map(cle)),
@@ -1176,8 +1177,8 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
     const mute = (v: unknown) => (typeof v === 'number' ? v + 999 : Array.isArray(v) ? [...v, 'ZZZ'] : `${v}~MUTE`);
     const cleHomonyme = (h: { cle: string; classes: readonly string[]; occurrences: number } & Trace) =>
       `${h.cle} | ${[...h.classes].sort().join('/')} | ${h.occurrences}` + trace(h, LOT_CLE_RESERVEE[h.cle] ?? 'L4 #1463');
-    const cleEnveloppe = (e: { role: string; cle: string; motif: string; detail: string; document: string; chemin: string; entrees: number } & Trace) =>
-      `${e.role} | ${e.cle} | ${e.motif}${e.detail ? `:${e.detail}` : ''} | ${e.document} › ${e.chemin} | ${e.entrees}` +
+    const cleEnveloppe = (e: { role: string; cle: string; motif: string; detail: string; document: string; chemin: string } & Trace) =>
+      `${e.role} | ${e.cle} | ${e.motif}${e.detail ? `:${e.detail}` : ''} | ${e.document} › ${e.chemin}` +
       trace(e, lotEnveloppe(e));
     const cleRedeclaration = (r: { def: string; champ: string; concept: string; signature: string; statut: string; commun: string; occurrences: number } & Trace) =>
       `${r.def} | ${r.champ} | ${r.concept} | ${r.signature} | ${r.statut} | ${r.commun} | ${r.occurrences}` +
@@ -1188,7 +1189,7 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT, ((d: { dataset: string; cle: string; date: string }) => `${d.dataset} | ${d.cle} | ${d.date}`) as never, ['dataset', 'cle', 'date']],
       ['STRUCTURES_HOMONYMES', STRUCTURES_HOMONYMES, cleHomonyme as never, ['cle', 'classes', 'occurrences', 'lot', 'date']],
       ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS, cleRedeclaration as never, ['def', 'champ', 'concept', 'signature', 'statut', 'commun', 'occurrences', 'lot', 'date']],
-      ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE, cleEnveloppe as never, ['role', 'cle', 'motif', 'detail', 'document', 'chemin', 'entrees', 'lot', 'date']],
+      ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE, cleEnveloppe as never, ['role', 'cle', 'motif', 'detail', 'document', 'chemin', 'lot', 'date']],
       ['STRUCTURES_ORPHELINES', STRUCTURES_ORPHELINES, cleOrpheline as never, ['dataset', 'champ', 'signature', 'motif', 'occurrences', 'lot', 'date']],
       ['STRUCTURES_OPS', STRUCTURES_OPS, cleOp as never, ['op', 'signature', 'dataset', 'occurrences', 'lot', 'date']],
     ];

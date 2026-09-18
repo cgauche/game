@@ -73,25 +73,25 @@ const FICHIERS = ['src/data/careerLevels.json', 'src/data/classes.json'];
 /** TABLE CLOSE `texte EXACT → forme cible`, avec le cardinal attendu par fichier. */
 const LIAISONS = [
   // A — tête de parenthèse = SPÉCIALISATION (LDB 08 l.1130).
-  ['Outils professionnels (Maréchal-ferrant)', { id: 'outils-professionnels', spec: 'Maréchal-ferrant' }, 5],
-  ["Outils professionnels (Fabricant d'arcs)", { id: 'outils-professionnels', spec: "Fabricant d'arcs" }, 1],
-  ['Outils professionnels (Bricoleur)', { id: 'outils-professionnels', spec: 'Bricoleur' }, 1],
-  ['Outils professionnels (Cartographe)', { id: 'outils-professionnels', spec: 'Cartographe' }, 2],
-  ['Outils professionnels (Maçonnerie)', { id: 'outils-professionnels', spec: 'Maçonnerie' }, 1],
-  ['Outils professionnels (Boucher)', { id: 'outils-professionnels', spec: 'Boucher' }, 1],
-  ['Outils professionnels (Voleur)', { id: 'outils-professionnels', spec: 'Voleur' }, 1],
-  ['Outils professionnels (Ecriture)', { id: 'outils-professionnels', spec: 'Ecriture' }, 1],
-  ['Outils professionnels (Astrologie)', { id: 'outils-professionnels', spec: 'Astrologie' }, 1],
-  ['Arme simple (Hache)', { id: 'arme-simple', spec: 'Hache' }, 2],
-  ['Arme simple (Gaffe)', { id: 'arme-simple', spec: 'Gaffe' }, 4],
-  ['Arme simple (Epée)', { id: 'arme-simple', spec: 'Epée' }, 1],
-  ['Arme simple (Faucille)', { id: 'arme-simple', spec: 'Faucille' }, 1],
-  ['Arme simple (Pioche)', { id: 'arme-simple', spec: 'Pioche' }, 1],
-  ['Atelier (Remèdes)', { id: 'atelier', spec: 'Remèdes' }, 1],
-  ['Atelier (Magie)', { id: 'atelier', spec: 'Magie' }, 4],
-  ['Symbole religieux (Myrmidia)', { id: 'symbole-religieux', spec: 'Myrmidia' }, 1],
-  ['Symbole religieux (Ulric)', { id: 'symbole-religieux', spec: 'Ulric' }, 1],
-  ['Flasque (Alcool)', { id: 'flasque', spec: 'Alcool' }, 4],
+  ['Outils professionnels (Maréchal-ferrant)', { id: 'outils-professionnels', spec: 'Maréchal-ferrant' }],
+  ["Outils professionnels (Fabricant d'arcs)", { id: 'outils-professionnels', spec: "Fabricant d'arcs" }],
+  ['Outils professionnels (Bricoleur)', { id: 'outils-professionnels', spec: 'Bricoleur' }],
+  ['Outils professionnels (Cartographe)', { id: 'outils-professionnels', spec: 'Cartographe' }],
+  ['Outils professionnels (Maçonnerie)', { id: 'outils-professionnels', spec: 'Maçonnerie' }],
+  ['Outils professionnels (Boucher)', { id: 'outils-professionnels', spec: 'Boucher' }],
+  ['Outils professionnels (Voleur)', { id: 'outils-professionnels', spec: 'Voleur' }],
+  ['Outils professionnels (Ecriture)', { id: 'outils-professionnels', spec: 'Ecriture' }],
+  ['Outils professionnels (Astrologie)', { id: 'outils-professionnels', spec: 'Astrologie' }],
+  ['Arme simple (Hache)', { id: 'arme-simple', spec: 'Hache' }],
+  ['Arme simple (Gaffe)', { id: 'arme-simple', spec: 'Gaffe' }],
+  ['Arme simple (Epée)', { id: 'arme-simple', spec: 'Epée' }],
+  ['Arme simple (Faucille)', { id: 'arme-simple', spec: 'Faucille' }],
+  ['Arme simple (Pioche)', { id: 'arme-simple', spec: 'Pioche' }],
+  ['Atelier (Remèdes)', { id: 'atelier', spec: 'Remèdes' }],
+  ['Atelier (Magie)', { id: 'atelier', spec: 'Magie' }],
+  ['Symbole religieux (Myrmidia)', { id: 'symbole-religieux', spec: 'Myrmidia' }],
+  ['Symbole religieux (Ulric)', { id: 'symbole-religieux', spec: 'Ulric' }],
+  ['Flasque (Alcool)', { id: 'flasque', spec: 'Alcool' }],
   // B — « A ou B » : un EMPLACEMENT de choix, forme `choice` (récursive au schéma).
   [
     'Atelier (Ingénierie ou Magie)',
@@ -99,20 +99,16 @@ const LIAISONS = [
     1,
   ],
   // C — graphies NON LITTÉRALES (cf. en-tête : chacune relue à sa ligne de Source).
-  ['Cartes', { id: 'carte' }, 3],
-  ['Clefs', { id: 'clef' }, 1],
-  ['Chiffon', { id: 'chiffons' }, 1],
-  ['Tatouages', { id: 'tatouage' }, 1],
-  ['Bougies', { id: 'bougie' }, 1],
-  ['Epingles', { id: 'epingle' }, 1],
-  ['Carreaux', { id: 'carreau' }, 6],
-  ['Haches de lancer', { id: 'hache-de-lancer' }, 1],
-  ['Cure-oreille (Multiple)', { id: 'cure-oreille' }, 1],
+  ['Cartes', { id: 'carte' }],
+  ['Clefs', { id: 'clef' }],
+  ['Chiffon', { id: 'chiffons' }],
+  ['Tatouages', { id: 'tatouage' }],
+  ['Bougies', { id: 'bougie' }],
+  ['Epingles', { id: 'epingle' }],
+  ['Carreaux', { id: 'carreau' }],
+  ['Haches de lancer', { id: 'hache-de-lancer' }],
+  ['Cure-oreille (Multiple)', { id: 'cure-oreille' }],
 ];
-
-/** Cardinaux ASSERTÉS par sous-famille (bornes de la table ci-dessus, dans l'ordre). */
-const SOUS_FAMILLES = [['spécialisation', 0, 19, 34], ['choix', 19, 20, 1], ['graphie non littérale', 20, 29, 16]];
-const CARDINAL = 51;
 
 /** Les 6 textes que la migration LAISSE en `{text}` — cf. en-tête pour la raison de chacun. */
 const EXCLUSIONS = [
@@ -230,16 +226,12 @@ if (sites.length === 0) {
   process.exit(0);
 }
 
-for (const [nom, debut, fin, attendu] of SOUS_FAMILLES) {
-  const textes = new Set(LIAISONS.slice(debut, fin).map(([t]) => t));
-  const vus = sites.filter((s) => textes.has(s.texte)).length;
-  assert.equal(vus, attendu, `sous-famille « ${nom} » : ${vus} porteurs vus, ${attendu} attendus`);
+// FORME, jamais cardinal (#1812) : chaque porteur relevé nomme un texte de la table de LIAISONS —
+// c'est la table qui délimite le périmètre, pas un compte mesuré un jour d'écriture.
+const TEXTES_LIES = new Set(LIAISONS.map(([t]) => t));
+for (const s of sites) {
+  assert.ok(TEXTES_LIES.has(s.texte), `${s.fichier} : « ${s.texte} » relevé hors table de LIAISONS`);
 }
-for (const [texte, , attendu] of LIAISONS) {
-  const vus = sites.filter((s) => s.texte === texte).length;
-  assert.equal(vus, attendu, `« ${texte} » : ${vus} porteurs vus, ${attendu} attendus`);
-}
-assert.equal(sites.length, CARDINAL, `cardinal attendu ${CARDINAL} porteurs, vu ${sites.length}`);
 
 for (const { liste, index, vers } of sites) {
   const avant = liste[index];
@@ -279,6 +271,6 @@ if (restants.length) {
 }
 
 for (const { abs, data } of documents) fs.writeFileSync(abs, JSON.stringify(data, null, 2));
-console.log(`${CARDINAL} dotations liées au catalogue :`);
-for (const [texte, vers, n] of LIAISONS)
-  console.log(`  ${n} × « ${texte} » → ${JSON.stringify(vers)}`);
+console.log(`${sites.length} dotation(s) liée(s) au catalogue :`);
+for (const [texte, vers] of LIAISONS)
+  console.log(`  ${sites.filter((s) => s.texte === texte).length} × « ${texte} » → ${JSON.stringify(vers)}`);

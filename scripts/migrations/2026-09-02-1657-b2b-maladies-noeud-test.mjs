@@ -32,20 +32,6 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const SYMPTOMS = path.join(ROOT, 'src/data/symptoms.json');
 const MALADIES = path.join(ROOT, 'src/data/maladies.json');
 
-/** CARDINAUX attendus sur l'état AVANT, mesurés sur l'arbre `71720c120` (2026-09-02). */
-const CARDINAUX = {
-  symptomes: 18,
-  maladies: 18,
-  onTick: 4,
-  epreuves: 3, // `onTick` porteur d'une `difficulty` (blesse, toxine, vers-de-carie)
-  certains: 1, // `onTick` SANS `difficulty` (vers-du-reik) — pas une épreuve
-  afterDays: 2,
-  once: 1,
-  difficultyBySeverity: 1,
-  dailyTest: 1,
-  ops: 6, // 1 blesse + 1 toxine + 1 vers-de-carie + 2 vers-du-reik + 1 pneumonie
-};
-
 const CLES_ONTICK = ['difficulty', 'difficultyBySeverity', 'onFail', 'afterDays', 'once'];
 const CLES_DAILY = ['difficulty', 'symptomId', 'onFail'];
 
@@ -80,8 +66,19 @@ const dejaMigre =
 if (dejaMigre) {
   const noeuds = symptomes.filter((s) => s.onTick?.test).length + maladies.filter((m) => m.dailyTest?.test).length;
   const certains = symptomes.filter((s) => s.onTick?.ops).length;
-  if (noeuds !== CARDINAUX.epreuves + CARDINAUX.dailyTest || certains !== CARDINAUX.certains) {
-    console.error(`ARBITRAGE REQUIS — état migré inattendu : ${noeuds} nœud(s) test / ${certains} effet(s) certain(s).`);
+  // PORTE DE FORME, jamais un COMPTE (#1812) : le catalogue des maladies GRANDIT (EDOC 08 en a déjà
+  // ajouté deux). Ce qui dit l'état migré, c'est que CHAQUE porteur de jet décrit son jet par un NŒUD
+  // — jamais leur nombre, qui ferait payer un recalage à chaque maladie ajoutée.
+  const sansNoeud = [
+    ...symptomes.filter((s) => s.onTick && !s.onTick.test && !s.onTick.ops).map((s) => `symptoms.json ${s.id}`),
+    ...maladies.filter((m) => m.dailyTest && !m.dailyTest.test).map((m) => `maladies.json ${m.id}`),
+  ];
+  if (!noeuds || sansNoeud.length) {
+    console.error(
+      `ARBITRAGE REQUIS — état migré inattendu : ${sansNoeud.length} porteur(s) de jet SANS nœud test` +
+        `${noeuds ? '' : ' ; AUCUN nœud test — périmètre déplacé'}, rien n’est écrit :`,
+    );
+    for (const m of sansNoeud) console.error(`  ${m}`);
     process.exit(1);
   }
   console.log(`symptoms.json + maladies.json : no-op (déjà migré — ${noeuds} nœuds test, ${certains} effet certain)`);
@@ -122,11 +119,14 @@ if (dejaMigre) {
       if (!CLES_DAILY.includes(k)) ecarts.push(`maladies/${m.id} : cle INATTENDUE sur dailyTest « ${k} »`);
     }
   }
-  if (symptomes.length !== CARDINAUX.symptomes) ecarts.push(`symptomes : ${symptomes.length} != ${CARDINAUX.symptomes}`);
-  if (maladies.length !== CARDINAUX.maladies) ecarts.push(`maladies : ${maladies.length} != ${CARDINAUX.maladies}`);
-  for (const cle of Object.keys(mesure)) {
-    if (mesure[cle] !== CARDINAUX[cle]) ecarts.push(`${cle} : ${mesure[cle]} != ${CARDINAUX[cle]}`);
-  }
+  // FORME, jamais cardinal (#1812) : les catalogues de Symptômes et de Maladies GRANDISSENT livre
+  // après livre (EDOC 08 en a ajouté deux) — un périmètre VIDE arrête, un périmètre qui a grandi non.
+  if (!symptomes.length) ecarts.push('symptomes : catalogue VIDE — périmètre déplacé');
+  if (!maladies.length) ecarts.push('maladies : catalogue VIDE — périmètre déplacé');
+  if (!mesure.onTick) ecarts.push('symptomes : AUCUN `onTick` — périmètre déplacé');
+  if (!mesure.dailyTest) ecarts.push('maladies : AUCUN `dailyTest` — périmètre déplacé');
+  if (mesure.epreuves + mesure.certains !== mesure.onTick)
+    ecarts.push(`onTick : ${mesure.onTick} porteur(s) pour ${mesure.epreuves} épreuve(s) + ${mesure.certains} effet(s) certain(s)`);
   if (ecarts.length) {
     console.error(`FIDELITE ROMPUE — rien n'est ecrit (${ecarts.length}) :`);
     for (const m of ecarts) console.error(`  ${m}`);
@@ -171,6 +171,8 @@ fs.writeFileSync(SYMPTOMS, JSON.stringify(symptomes, null, 2), 'utf8');
 fs.writeFileSync(MALADIES, JSON.stringify(maladies, null, 2), 'utf8');
 
 // ---- PREUVE post-écriture, sur le RÉSULTAT relu.
+/** Ce que le passage a fait, MESURÉ sur le résultat — le rapport ne récite aucun compte gelé. */
+const rapport = [];
 {
   const sy = JSON.parse(fs.readFileSync(SYMPTOMS, 'utf8'));
   const ma = JSON.parse(fs.readFileSync(MALADIES, 'utf8'));
@@ -211,13 +213,19 @@ fs.writeFileSync(MALADIES, JSON.stringify(maladies, null, 2), 'utf8');
   const exige = (cle, valeur) => {
     if (mesure[cle] !== valeur) echecs.push(`POST ${cle} : ${mesure[cle]} != ${valeur}`);
   };
-  for (const cle of ['symptomes', 'maladies', 'onTick', 'epreuves', 'certains', 'dailyTest', 'afterDays', 'once', 'difficultyBySeverity', 'ops']) {
-    exige(cle, CARDINAUX[cle]);
-  }
+  // AUCUN compte GELÉ (#1812) : ces catalogues grandissent livre après livre. Ce que la preuve
+  // post-écriture exige, ce sont des RELATIONS entre grandeurs MESURÉES — chaque épreuve est devenue
+  // un nœud, chaque `dailyTest` nomme son symptôme, et il ne reste aucun résidu de l'ancienne forme.
   exige('porteursDesDeux', 0);
   exige('porteursDAucun', 0);
-  exige('dailyTestNommant', CARDINAUX.dailyTest);
-  exige('noeuds', CARDINAUX.epreuves + CARDINAUX.dailyTest);
+  exige('dailyTestNommant', mesure.dailyTest);
+  exige('noeuds', mesure.epreuves + mesure.dailyTest);
+  if (!mesure.noeuds) echecs.push('POST noeuds : AUCUN nœud test — périmètre déplacé');
+  rapport.push(
+    `symptoms.json : ${mesure.onTick} onTick · ${mesure.epreuves} noeud(s) test · ${mesure.certains} effet(s) certain(s) (ops) · ` +
+      `${mesure.afterDays} afterDays / ${mesure.once} once / ${mesure.difficultyBySeverity} difficultyBySeverity preserves au porteur`,
+    `maladies.json : ${mesure.dailyTest} dailyTest -> noeud test, symptomId preserve au porteur`,
+  );
   exige('noeudsSansDifficulty', 0);
   exige('noeudsHorsForme', 0);
   exige('difficultyResiduelle', 0);
@@ -230,8 +238,4 @@ if (echecs.length) {
   process.exit(1);
 }
 
-console.log(
-  `symptoms.json : ${CARDINAUX.onTick} onTick · ${CARDINAUX.epreuves} noeuds test · ${CARDINAUX.certains} effet certain (ops) · ` +
-    `${CARDINAUX.afterDays} afterDays / ${CARDINAUX.once} once / ${CARDINAUX.difficultyBySeverity} difficultyBySeverity preserves au porteur`,
-);
-console.log(`maladies.json : ${CARDINAUX.dailyTest} dailyTest -> noeud test, symptomId preserve au porteur`);
+console.log(rapport.join('\n'));

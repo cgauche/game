@@ -13,7 +13,8 @@
  * IDEMPOTENT / NO-OP TOLÉRANT À LA FORME : une entrée portant déjà `ecole` (et plus de `type`) est
  * reconnue migrée ; rejouée sur l'état final, la migration n'écrit rien et sort 0.
  * FAIL-FAST : entrée portant `type` ET `ecole`, entrée sans ni l'un ni l'autre, valeur non-chaîne ou
- * vide, cardinal ≠ 576 → rien n'est écrit, sortie 1.
+ * vide, racine VIDE → rien n'est écrit, sortie 1. JAMAIS un cardinal (#1812) : le catalogue des
+ * Sorts grandit à chaque livre FR intégré.
  * FORMATAGE PRÉSERVÉ : le fichier est EXACTEMENT `JSON.stringify(doc, null, 2)` (vérifié avant toute
  * écriture — une forme non canonique fait sortir 1 plutôt que reflower le document en silence).
  */
@@ -23,7 +24,6 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const CIBLE = path.join(ROOT, 'src/data/spells.json');
-const ATTENDU = 576;
 
 const brut = fs.readFileSync(CIBLE, 'utf8');
 const data = JSON.parse(brut);
@@ -35,7 +35,7 @@ if (JSON.stringify(data, null, 2) !== brut) {
 
 const echecs = [];
 if (!Array.isArray(data)) echecs.push('racine non tableau');
-else if (data.length !== ATTENDU) echecs.push(`cardinal ${data.length} ≠ ${ATTENDU} attendu`);
+else if (!data.length) echecs.push('racine VIDE — périmètre déplacé');
 
 /**
  * `type` D'ENVELOPPE (#1467 L1b V-FLIP-ENTITE-c) : depuis l'adoption de `document()`, chaque entrée
@@ -77,7 +77,7 @@ const apres = JSON.parse(out);
 const residus = apres.filter((e) => typeAncien(e) !== undefined).length;
 const avant = data.map((e) => typeAncien(e) ?? e.ecole).join('\u0001');
 const rendu = apres.map((e) => e.ecole).join('\u0001');
-if (residus || avant !== rendu || apres.length !== ATTENDU) {
+if (residus || avant !== rendu || apres.length !== data.length) {
   console.error(`VÉRIFICATION POST-ÉCRITURE ROUGE : ${residus} \`type\` résiduel(s), ${apres.length} entrée(s), valeurs ${avant === rendu ? 'conservées' : 'ALTÉRÉES'}`);
   process.exit(1);
 }
