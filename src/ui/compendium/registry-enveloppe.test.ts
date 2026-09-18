@@ -111,7 +111,7 @@ const CLES: Record<string, string> = {
   "creatures": '55ac5c9b9846e8ec',
   "traits": '8931be750818442f',
   "locations": '53ca311b61c2a3f1',
-  "books": 'be0011b301362125',
+  "books": 'e0e3db4c3a333c83',
   "careerLevels": '6f86fed09e1f4a98',
   "eyes": 'd51e8a821203257f',
   "hairs": 'f2f80b790111b030',
