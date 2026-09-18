@@ -1,12 +1,15 @@
 # Ajouter un livre source (pipeline complet)
 
-Opération : intégrer un **nouveau livre VF autorisé** (§ Sources VF de `CLAUDE.md`) au projet — de
+Opération : intégrer au projet un **nouveau livre autorisé** — VF, ou le livre VO nommément
+autorisé au § Sources VF de `CLAUDE.md` — de
 son PDF à sa présence dans l'Atlas RAW (`docs/raw/`) et, si besoin, dans `src/data/*.json`. Suit le
 runbook rejoué pour **La Mer des Griffes** (MDG, 15e livre, 2026-06-22 — commits `295f9a40` +
 `819de62d`). Lire d'abord `docs/raw/00-index.md` et `docs/raw/sources.md`.
 
 **Préalable non négociable** (règle 1 de `CLAUDE.md`) : un livre n'entre dans le pipeline que s'il est
-déjà listé au § *Sources VF* du `CLAUDE.md` racine du dossier `Game`, en **VF**. La Boîte d'Initiation
+déjà listé au § *Sources VF* du `CLAUDE.md` racine du dossier `Game`, en **VF**. Un livre **VO**
+n'entre que s'il y est **NOMMÉMENT** autorisé ; à ce jour il y en a UN, le *Core Rulebook 5e*
+(arbitrage utilisateur du 2026-09-18, épique #1816). La Boîte d'Initiation
 WFRP 4e est explicitement **exclue** (`docs/raw/sources.md` § *Exclu des règles* — ruleset simplifié
 divergent, jamais une source de règles ni de stats).
 
@@ -153,8 +156,9 @@ puis committer le dossier `Source/<Livre>/` (le PDF et `Source/_marker/` restent
 Trois points d'enregistrement, dans cet ordre :
 
 1. **`src/data/books.json`** (SOURCE UNIQUE des acronymes, #585) — l'entrée du livre porte
-   `abbr: '<ABRÉV>'`, `dir: 'Source/<dossier du livre>'` et `language: 'VF'` (un livre déjà présent en
-   placeholder VO sans `dir` se COMPLÈTE, jamais un doublon). Puis **`scripts/raw/_lib.mjs`** — ajouter
+   `abbr: '<ABRÉV>'`, `dir: 'Source/<dossier du livre>'` et `language` : la langue DU LIVRE (`'VF'`,
+   ou `'VO'` pour un livre VO autorisé) — un livre déjà présent en placeholder VO sans `dir` se
+   COMPLÈTE, jamais un doublon. Puis **`scripts/raw/_lib.mjs`** — ajouter
    l'`id` du livre au tableau `BOOK_ORDER` : `BOOKS` en DÉRIVE (filtre les entrées porteuses d'un `dir`,
    ordonnées par `BOOK_ORDER` — source unique partagée par `coverage.mjs`/`reconcile.mjs`/`reanchor.mjs`).
    L'ordre de `BOOK_ORDER` fixe l'ordre d'affichage des rapports. (Édition de `books.json` : round-trip

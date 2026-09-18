@@ -44,7 +44,7 @@ script diffère du nom du doc, il est entre parenthèses.
 | Créer/modifier une campagne | `docs/campagne-authoring.md`, skill `creer-une-campagne` |
 | Écran UI (CSS, densité, responsive) | `docs/charte-ui.md`, règle 4 |
 | Flux de jet différé (1 situation = 1 modale) | `docs/ajouter-un-flux-de-jet.md` (`docs:flux-de-jet`) |
-| Intégrer un livre source VF | `docs/ajouter-un-livre-source.md` |
+| Intégrer un livre source (VF, ou VO autorisé) | `docs/ajouter-un-livre-source.md` |
 | Sort, Prière, Bénédiction, Miracle, Rituel | `docs/ajouter-un-sort.md` (`docs:sort`) |
 | Ajouter une icône, remplacer un emoji | `docs/ajouter-une-icone.md` (`docs:icones`) |
 | Mécanique d'une entité (trait, talent, qualité…) | `docs/ajouter-une-mecanique.md` (`docs:mecanique`) |
@@ -92,7 +92,9 @@ script diffère du nom du doc, il est entre parenthèses.
 ## Sources VF
 
 Tout est en **français** sous `Source/`, dossiers préfixés `Warhammer v4 - ` / `WH - V4 - ` ; ceux
-SANS ce préfixe sont la VO du dépôt parent — jamais lus, jamais cités ici. Livres : **LDB** ·
+SANS ce préfixe sont la VO du dépôt parent — jamais lus, jamais cités ici. **Exception unique** :
+`Source/Warhammer Fantasy Roleplay 5e Core Rulebook/`, livre VO AUTORISÉ, cœur de l'édition 5e — fiche
+`user-doctrine-edition-5e-coeur-remplace-ldb-raw-sauf-errata`. Livres : **LDB** ·
 **ADE I/II** · **EDO/EDOC** · **Middenheim** · **AA** · **ZI** · **MDG** · **ACE** · **T2C** ·
 **NADJ** · **VDM**, chacun pour son périmètre (tout livre FR peut fournir une règle, par PASSAGE) —
 chemins et chapitres : `docs/sources-vf.md`. `src/data/*.json` est la source APP-OWNED, éditable au
