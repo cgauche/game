@@ -37,7 +37,7 @@ test('une ligne malformée est ignorée, jamais lue comme un passage', () => {
 test('le message NOMME les entrées à retirer, et se tait quand il n’y a rien', () => {
   assert.equal(messagePeremption([]), null)
   const msg = messagePeremption(['src/ui/A.test.tsx'])
-  assert.match(msg, /src\/ui\/A\.test\.tsx/)
+  assert.ok(msg.includes('src/ui/A.test.tsx'), msg)
   assert.match(msg, /domResiduStock\.mjs/)
 })
 

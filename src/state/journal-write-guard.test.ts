@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { scanJournalWrite } from '../../scripts/guards/lib/journalWrite.mjs';
+import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * Garde-fou « composeur du journal » (#319). `….journal.slice(-40)` réinvente l'action canonique
@@ -16,7 +17,7 @@ import { scanJournalWrite } from '../../scripts/guards/lib/journalWrite.mjs';
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ → ../../ = racine du projet
 const SCAN_DIRS = ['src/state'];
-const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel === 'src/state/store.ts';
+const EXCLUDED = (rel: string) => estFichierVitest(rel) || rel === 'src/state/store.ts';
 
 function countsByFile(): Record<string, number> {
   const counts: Record<string, number> = {};

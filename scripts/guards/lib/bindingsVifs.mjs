@@ -14,6 +14,7 @@ import { join } from 'node:path';
 import ts from 'typescript';
 import { listerArbre } from './lister.mjs';
 import { scriptKindDe } from './dialecte.mjs';
+import { estFichierVitest } from './fichierVitest.mjs';
 
 export const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 
@@ -442,7 +443,7 @@ export function resolveursDentree() {
   const accesseurs = accesseursVifs();
   const out = new Set();
   for (const chemin of fichiersSources()) {
-    if (!chemin.startsWith('src/data/') || /\.test\.tsx?$/.test(chemin)) continue;
+    if (!chemin.startsWith('src/data/') || estFichierVitest(chemin)) continue;
     const src = sansCommentaires(readFileSync(join(RACINE, chemin), 'utf8'));
     for (const forme of FORMES_RESOLVEUR) {
       for (const m of src.matchAll(forme)) if (accesseurs.has(m[2])) out.add(m[1]);
@@ -642,7 +643,8 @@ export function fichiersSources() {
  *  fichier NON-test est le seam s'il DÉFINIT `bumperDataset` (le versionneur d'écriture) ou s'il
  *  l'IMPORTE (l'écrivain : muter en place et versionner est son métier). Ces deux-là PORTENT la
  *  mécanique que les gardes d'index et d'écriture cherchent chez les autres : les y chercher rendrait
- *  la garde fausse. Un `.test.ts(x)` n'est jamais le seam — il en parle, il ne le porte pas. */
+ *  la garde fausse. Un INSTRUMENT Vitest — suite ou banc, `estFichierVitest` — n'est jamais le
+ *  seam : il en parle, il ne le porte pas. */
 let _seam = null;
 export function fichiersDuSeam() {
   if (_seam) return _seam;
@@ -650,7 +652,7 @@ export function fichiersDuSeam() {
   const importe = /import\s*\{[^}]*\bbumperDataset\b[^}]*\}\s*from/;
   const out = new Set();
   for (const chemin of fichiersSources()) {
-    if (/\.test\.tsx?$/.test(chemin)) continue;
+    if (estFichierVitest(chemin)) continue;
     const src = sansCommentaires(readFileSync(join(RACINE, chemin), 'utf8'));
     if (definit.test(src) || importe.test(src)) out.add(chemin);
   }

@@ -42,6 +42,7 @@ import { codeDePanne, docsDePorte, paquetsDArgv } from '../guards/lib/porteSpawn
 import { cheminsMalNormalises, raisonDeRefusEol } from '../guards/lib/eolStage.mjs';
 import { defautsDeForme, familleDe, raisonDeRefusDeForme } from '../guards/memoire-forme.mjs';
 import { arbrePrincipal } from '../guards/lib/gitPorte.mjs';
+import { estFichierVitest } from '../guards/lib/fichierVitest.mjs';
 
 const DEBUT_MS = Date.now();
 
@@ -106,7 +107,7 @@ for (const f of staged) {
   // sont eux qui plantent les FIXTURES littérales de ces gardes (label-logic-guard.test.ts EXCLUDED,
   // combat-hardcode-guard.test.ts EXCLUDED, roll-seam-exclusivity-guard.test.ts EXCLUDED,
   // no-emoji-affordance.test.ts EXCLUDED) — un fichier de test stagé ne doit PAS y rougir.
-  const isTestFile = /\.test\.[tj]sx?$/.test(rel);
+  const isTestFile = estFichierVitest(rel);
   let text;
   try {
     // Mode stagé : scanner le BLOB DE L'INDEX (`:<chemin>`), pas le working tree — sur l'arbre

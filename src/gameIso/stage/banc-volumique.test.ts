@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
+import { estFichierVitest, estSuiteVitest } from '../../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * LE HARNAIS DE BANC RESTE DANS LES BANCS — `stage/banc-volumique.ts` est le SEUL fichier non-`.test.`
@@ -54,14 +55,6 @@ const HARNAIS = 'src/gameIso/stage/banc-volumique.ts';
 /** Ce banc lui-même : il PLANTE les motifs qu'il cherche (chaînes, prose), il ne s'inclut pas. */
 const SOI = 'src/gameIso/stage/banc-volumique.test.ts';
 
-const EST_TEST = /\.test\.(ts|tsx)$/;
-
-/** Un fichier JOUÉ PAR VITEST : un `.test.` (`vitest run`) ou un `.bench.` (`vitest bench`). Ni l'un
- *  ni l'autre n'est de la PRODUCTION — un banc importe l'API `bench` de vitest par construction, et
- *  aucun bundle de jeu ne l'embarque (`vite.config.ts:71` ne le joue même pas en suite). La FORME du
- *  cliquet, jamais une liste de fichiers : le banc N+1 est couvert sans qu'on y revienne. */
-const EST_FICHIER_VITEST = /\.(test|bench)\.(ts|tsx)$/;
-
 /** Les sources TypeScript d'une racine, tests COMPRIS, avec leur texte : la primitive de corpus les
  *  lit UNE fois par clé, et les faits scannent les deux mêmes racines (`src/`, `src/gameIso/`). */
 const sources = (dir: string) => readCorpus([dir], { tests: true });
@@ -69,8 +62,13 @@ const sources = (dir: string) => readCorpus([dir], { tests: true });
 /** Le texte d'un fichier NOMMÉ de `src/`, pris au corpus. */
 const texte = (rel: string): string => sources(SRC).find((f) => f.rel === rel)!.text;
 
-/** Les fichiers de PRODUCTION d'une racine : ni `.test.`, ni `.bench.`, et le harnais lui-même exclu. */
-const production = (dir: string) => sources(dir).filter(({ rel }) => !EST_FICHIER_VITEST.test(rel) && rel !== HARNAIS);
+/** Les fichiers de PRODUCTION d'une racine : aucun INSTRUMENT joué par Vitest — ni suite (`vitest
+ *  run`) ni banc (`vitest bench`) —, et le harnais lui-même exclu. Un banc importe l'API `bench` de
+ *  vitest par construction et aucun bundle de jeu ne l'embarque (`vite.config.ts:71` ne le joue même
+ *  pas en suite). La FORME du cliquet, jamais une liste de fichiers : le banc N+1 est couvert sans
+ *  qu'on y revienne. Le prédicat vit en UN exemplaire, `scripts/guards/lib/fichierVitest.mjs`
+ *  (#1788) : toute garde dont le périmètre est « la production » le consomme. */
+const production = (dir: string) => sources(dir).filter(({ rel }) => !estFichierVitest(rel) && rel !== HARNAIS);
 
 /** Les lignes d'`import`/`export … from` d'une source, avec leur numéro (1-based). */
 export function lignesDImport(source: string): { n: number; texte: string }[] {
@@ -156,7 +154,7 @@ function bancs(): { chemin: string; source: string }[] {
 /** Les `.test.` de `src/**` (ce banc excepté), par chemin relatif à la racine. */
 function testsDuDepot(): { chemin: string; source: string }[] {
   return sources(SRC)
-    .filter(({ rel }) => EST_TEST.test(rel) && rel !== SOI)
+    .filter(({ rel }) => estSuiteVitest(rel) && rel !== SOI)
     .map(({ rel, text }) => ({ chemin: rel, source: text }));
 }
 

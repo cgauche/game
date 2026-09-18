@@ -74,7 +74,7 @@ test('C : un commit du MILIEU sans cliquet est refusé, et le refus le NOMME', (
   assert.deepEqual(refus.map((r) => [r.sha, r.fichier, r.net]), [['bbb2222', PORTEUR, 2]])
   const raison = raisonDeRefusDePlage(refus)
   assert.match(raison, /bbb2222/)
-  assert.match(raison, /scripts\/x\.test\.mjs \+2/)
+  assert.ok(raison.includes('scripts/x.test.mjs +2'), raison)
   assert.match(raison, /rebase -i/)
 })
 

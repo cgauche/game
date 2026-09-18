@@ -53,6 +53,7 @@ import tsModule from 'typescript'
 const ts = tsModule
 import { join, relative, resolve, sep } from 'node:path'
 import { listerArbre } from './lister.mjs'
+import { estFichierVitest } from './fichierVitest.mjs'
 import { repoProgram } from './tsProgram.mjs'
 
 /** Fichiers de PRODUCTION `.ts(x)` sous `dir`, hors `*.test.ts(x)`, en ORDRE TOTAL (`listerArbre`).
@@ -60,7 +61,7 @@ import { repoProgram } from './tsProgram.mjs'
  *  donc du site cité en exemple par le rapport : sans ordre total, le même dépôt rend deux `.md`
  *  différents selon la machine. */
 export function listProdFiles(dir) {
-  return listerArbre(dir, { filtre: (rel) => /\.tsx?$/.test(rel) && !/\.test\.tsx?$/.test(rel) })
+  return listerArbre(dir, { filtre: (rel) => /\.tsx?$/.test(rel) && !estFichierVitest(rel) })
     .map((rel) => join(dir, rel))
 }
 

@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 import { scanSortByZInline, SORT_BY_Z_WHITELIST } from '../../../scripts/guards/lib/sortByZInline.mjs';
+import { estFichierVitest } from '../../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * Garde-fou « tri z inline hors composeur canonique » (#302). `sortByZ` (`src/gameIso/rig/composite.ts`)
@@ -15,7 +16,7 @@ import { scanSortByZInline, SORT_BY_Z_WHITELIST } from '../../../scripts/guards/
 
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url)); // src/gameIso/rig/ → ../../../ = racine
 const SCAN_DIRS = ['src/gameIso/rig'];
-const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || SORT_BY_Z_WHITELIST.includes(rel);
+const EXCLUDED = (rel: string) => estFichierVitest(rel) || SORT_BY_Z_WHITELIST.includes(rel);
 
 function countsByFile(): Record<string, number> {
   const counts: Record<string, number> = {};

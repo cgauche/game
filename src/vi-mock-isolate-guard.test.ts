@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';
+import { estSuiteVitest } from '../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * Garde-fou `isolate: false` × mock de MODULE — la suite tourne avec `test.isolate: false`
@@ -26,10 +27,10 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url)); // racine du projet 
 /** Racines scannées — miroir de `test.include` (vite.config.ts), verrouillé par le test de dérive.
  *  Une racine du miroir qui DISPARAÎT fait LEVER `readCorpus` (refus du vide, par base) : la garde
  *  rougit en nommant la racine, au lieu de scanner un périmètre amputé en silence. */
-const INCLUDE_ROOTS: { dir: string; re: RegExp; glob: string }[] = [
-  { dir: 'src', re: /\.test\.(ts|tsx)$/, glob: 'src/**/*.test.{ts,tsx}' },
-  { dir: 'server/src', re: /\.test\.ts$/, glob: 'server/src/**/*.test.ts' },
-  { dir: 'scripts/map', re: /\.test\.ts$/, glob: 'scripts/map/**/*.test.ts' },
+const INCLUDE_ROOTS: { dir: string; glob: string }[] = [
+  { dir: 'src', glob: 'src/**/*.test.{ts,tsx}' },
+  { dir: 'server/src', glob: 'server/src/**/*.test.ts' },
+  { dir: 'scripts/map', glob: 'scripts/map/**/*.test.ts' },
 ];
 
 const VI = 'vi';
@@ -47,9 +48,9 @@ export function moduleMockHits(source: string, label: string): string[] {
 
 /** Les fichiers de TEST des racines du miroir, avec leur chemin POSIX depuis la racine du dépôt. */
 function scanIncludedTests(): { rel: string; text: string }[] {
-  return INCLUDE_ROOTS.flatMap(({ dir, re }) =>
+  return INCLUDE_ROOTS.flatMap(({ dir }) =>
     readCorpus([dir], { tests: true })
-      .filter(({ rel }) => re.test(rel))
+      .filter(({ rel }) => estSuiteVitest(rel))
       .map(({ rel, text }) => ({ rel, text })),
   );
 }

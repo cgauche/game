@@ -8,6 +8,7 @@
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { estFichierVitest } from '../guards/lib/fichierVitest.mjs';
 
 const ROOT = process.cwd();
 const DATA_DIR = join(ROOT, 'src/data');
@@ -81,7 +82,7 @@ function sourceFiles(dir) {
       const p = join(d, e);
       const st = statSync(p);
       if (st.isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e) && !/\.test\.[tj]sx?$/.test(e)) out.push(p);
+      else if (/\.tsx?$/.test(e) && !estFichierVitest(e)) out.push(p);
     }
   };
   walk(dir);

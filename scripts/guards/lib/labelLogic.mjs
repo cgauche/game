@@ -16,6 +16,7 @@ const ts = tsModule;
 // Substrat AST PARTAGÉ (portées, alias, opérateurs d'égalité, littéralité) — SOURCE UNIQUE
 // `registryIdBranch.mjs` : le suivi d'alias `const k = def.id` y existe déjà, on l'importe.
 import { Scopes, bindingNames, unwrap, isEntryLiteral, EQUALITY_OPS } from './registryIdBranch.mjs';
+import { estFichierVitest } from './fichierVitest.mjs';
 
 /** Retire les commentaires de bloc et de ligne (pas les chaînes).
  * @param {string} src @returns {string} */
@@ -823,7 +824,7 @@ function listTsFiles(dirs) {
  *  `src/data/index.ts` (couture label→id tolérée au CHARGEMENT, hors périmètre du garde-fou).
  *  @param {string} rel chemin relatif à la racine du projet, séparateurs `/` @returns {boolean} */
 export function isCorpusExcluded(rel) {
-  return /\.test\.[tj]sx?$/.test(rel) || rel === 'src/data/index.ts';
+  return estFichierVitest(rel) || rel === 'src/data/index.ts';
 }
 
 /** Map GLOBALE nom→index-paramètre-`id`, collectée en lisant le DISQUE sous `dirs` (déclaration et

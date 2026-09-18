@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { emojisIn } from '../../scripts/guards/lib/emojiAffordance.mjs';
+import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * Garde-fou anti-emoji (LOT 4) : les AFFORDANCES de l'UI passent par le registre d'icônes
@@ -22,7 +23,7 @@ const SRC = 'src';
  *  - `_registry.generated.ts` : fichiers ÉMIS par scripts/gen-registry.mjs (en-tête « généré ») ;
  *  - `__snapshots__/` : instantanés Vitest générés, non édités à la main. */
 const EXCLUDED = (rel: string): boolean =>
-  /\.test\.[tj]sx?$/.test(rel) ||
+  estFichierVitest(rel) ||
   rel.endsWith('_registry.generated.ts') ||
   rel.includes('__snapshots__/');
 

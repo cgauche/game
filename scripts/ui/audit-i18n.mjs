@@ -16,6 +16,7 @@
 // Usage : node scripts/ui/audit-i18n.mjs [--json] [--out <path>]
 import ts from 'typescript';
 import { scriptKindDe } from '../guards/lib/dialecte.mjs';
+import { estFichierVitest } from '../guards/lib/fichierVitest.mjs';
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,7 +29,7 @@ function walk(dir, acc = []) {
     const p = join(dir, e);
     let s; try { s = statSync(p); } catch { continue; }
     if (s.isDirectory()) walk(p, acc);
-    else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e) && !/\.stories\.tsx?$/.test(e)) acc.push(p);
+    else if (/\.tsx?$/.test(e) && !estFichierVitest(e) && !/\.stories\.tsx?$/.test(e)) acc.push(p);
   }
   return acc;
 }

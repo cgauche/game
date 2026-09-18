@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { scanCombatEventPort } from '../../scripts/guards/lib/combatEventPort.mjs';
+import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * QUARANTAINE D'IMPORT du bus d'événements de combat (#316 — « le bus est l'UNIQUE porte »).
@@ -29,13 +30,12 @@ const WHITELIST = new Set<string>([
   'src/state/clockHooks.ts', // bus-owned : boucle de cycle d'HORLOGE onDayStart/onWake (jumeau hors-combat de roundHooks)
 ]);
 
-const isTest = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
 
 describe('quarantaine d’import — bus d’événements de combat unique (#316)', () => {
   it('fireTriggers / runCombatHooks importés UNIQUEMENT par la porte + les modules bus-owned', () => {
     const offenders: string[] = [];
     for (const { rel, text } of readCorpus(SCAN_DIRS, { tests: true })) {
-      if (isTest(rel) || WHITELIST.has(rel)) continue;
+      if (estFichierVitest(rel) || WHITELIST.has(rel)) continue;
       for (const { line, symbol } of scanCombatEventPort(text)) {
         offenders.push(`${rel}:${line} importe ${symbol}`);
       }

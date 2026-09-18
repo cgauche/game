@@ -151,7 +151,7 @@ test('DRIVER : un stock nominatif qui GRANDIT dans l\'index est refusé, sauf CL
     assert.ok(refus, 'aucune décision : le stock a grossi sans que rien ne le dise')
     assert.equal(refus.decision, 'deny')
     assert.match(refus.reason, /STOCK NOMINATIF qui NAÎT ou GRANDIT/)
-    assert.match(refus.reason, /src\/state\/exemptions\.test\.ts : \+2/)
+    assert.ok(refus.reason.includes('src/state/exemptions.test.ts : +2'), refus.reason)
 
     const avecCliquet = decisionOf(
       'git commit -m "feat: deux exemptions de plus' +

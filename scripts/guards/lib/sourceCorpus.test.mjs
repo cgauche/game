@@ -162,7 +162,9 @@ test('la clé est NORMALISÉE : absolu ≡ relatif ≡ séparateur final', () =>
 
 /**
  * ORACLE de périmètre : la marche la plus bête qui puisse répondre à la même question — descente
- * récursive de `readdirSync`, filtre d'extension sur le nom, regex de test. Écrite ICI et nulle part
+ * récursive de `readdirSync`, filtre d'extension sur le nom, motif d'INSTRUMENT Vitest (suite OU
+ * banc) RÉÉCRIT à la main — le témoin n'IMPORTE pas `estFichierVitest` : partager le prédicat
+ * rendrait l'oracle circulaire, il ne pourrait plus contredire le corpus. Écrite ICI et nulle part
  * ailleurs : c'est le témoin indépendant de `listerArbre` + `readCorpus`. Aucun cardinal n'est
  * attendu — l'oracle est la MARCHE, jamais un nombre, qui périmerait au fichier suivant.
  * @param {string} dir @param {string[]} exts @param {boolean} tests
@@ -175,7 +177,7 @@ function marcheNaive(dir, exts, tests) {
       const p = join(d, nom.name)
       if (nom.isDirectory()) { descendre(p); continue }
       if (!exts.some((e) => nom.name.endsWith(e))) continue
-      if (!tests && /\.test\./.test(nom.name)) continue
+      if (!tests && /\.(test|bench)\.[cm]?[jt]sx?$/.test(nom.name)) continue
       if (/\.d\.ts$/.test(nom.name)) continue
       out.push(relative(ROOT, p).split('\\').join('/'))
     }
@@ -206,6 +208,10 @@ test('PÉRIMÈTRE sur l’arbre RÉEL : `readCorpus([\'src\'])` rend EXACTEMENT 
   assert.ok(
     avecTests.some((r) => /\.test\.tsx?$/.test(r)) && horsTests.every((r) => !/\.test\./.test(r)),
     'le filtre `tests` ne discrimine plus les fichiers de test',
+  )
+  assert.ok(
+    avecTests.some((r) => /\.bench\.tsx?$/.test(r)) && horsTests.every((r) => !/\.bench\./.test(r)),
+    '`tests: true` INCLUT exactement ce que le filtre exclut : les BANCS aussi, pas les seules suites',
   )
 })
 

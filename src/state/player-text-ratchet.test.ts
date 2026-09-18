@@ -50,6 +50,7 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
+import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * GEL VIDE — LE FOSSILE EST MORT (E7-FINAL, 2026-08-17). Le compte est 0 partout, et
@@ -278,7 +279,6 @@ function relachees(reel: Record<string, number>, gel: Readonly<Record<string, nu
 }
 
 const somme = (m: Record<string, number>): number => Object.values(m).reduce((a, b) => a + b, 0);
-const estTest = (f: string): boolean => /\.test\.tsx?$/.test(f);
 
 describe('#1318 E7-FINAL — le fossile `rawText` est MORT : le cliquet devient un TRIPWIRE (zéro tolérance)', () => {
   const reel = recense(process.cwd(), compteAppels, undefined, HORS_RAW_TEXT);
@@ -349,7 +349,7 @@ describe('#1318 V8a₀ T2 — les `as CascadeStep` des TESTS sont GELÉS (la pro
   const reel = recense(process.cwd(), compteCasts, undefined, HORS_CASCADE_STEP);
 
   it('AUCUN cast de conteneur en PRODUCTION — c’est le lint qui l’y refuse, et le fait le confirme', () => {
-    expect(Object.keys(reel).filter((f) => !estTest(f)), 'un `as CascadeStep` hors test rouvrirait la voie canonique').toEqual([]);
+    expect(Object.keys(reel).filter((f) => !estFichierVitest(f)), 'un `as CascadeStep` hors test rouvrirait la voie canonique').toEqual([]);
   });
 
   it('les fichiers de TEST ne dépassent pas leur gel', () => {

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { scanPregenByLabel } from '../../scripts/guards/lib/pregenByLabel.mjs';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import pregens from './pregens.json';
+import { estSuiteVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * Garde-fou « prégénéré retrouvé PAR LABEL » (#322) : un test ne retrouve JAMAIS un `PregenDef`
@@ -28,7 +29,7 @@ describe('garde-fou « prégénéré par label » (#322)', () => {
     const lu = corpus();
     expect(lu.length, 'corpus vide : la garde serait verte sans rien scanner').toBeGreaterThan(0);
     expect(
-      lu.some((f) => /\.test\.tsx?$/.test(f.rel)),
+      lu.some((f) => estSuiteVitest(f.rel)),
       'aucun fichier de test dans le corpus — or c’est EXACTEMENT ce que cette garde surveille',
     ).toBe(true);
     expect(NAMES.length, 'aucun label de prégénéré : le détecteur ne chercherait rien').toBeGreaterThan(0);

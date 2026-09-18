@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { codeSeul } from '../scripts/guards/lib/codeSeul.mjs';
 import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';
+import { estSuiteVitest, EST_SUITE_VITEST } from '../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * TESTS SANS HORLOGE (#1788) — un test de `src/` prouve un CONTRAT DE TRAVAIL, jamais une durée.
@@ -69,7 +70,7 @@ const HORLOGE = /\b(?:performance|Date)\s*\.\s*now\s*\(/;
 /** Ce qui est SCANNÉ : les fichiers de test, et le HARNAIS qui s'exécute avant CHACUN d'eux
  *  (`src/test-setup.ts`, `setupFiles` de `vite.config.ts`). Une horloge dans le harnais est une
  *  horloge dans tous les tests à la fois — et celle-là n'apparaît dans aucun d'eux. */
-const EST_TEST = /(?:\.test\.tsx?|\/test-setup\.ts)$/;
+const EST_TEST = (rel: string): boolean => estSuiteVitest(rel) || rel.endsWith('/test-setup.ts');
 
 /**
  * Les `include` de la section `test` de `vite.config.ts` : CE QUE `npm test` joue. DÉRIVÉS, jamais
@@ -95,17 +96,61 @@ function includeDeVite(): string[] {
 
 const INCLUDE_NPM_TEST = includeDeVite();
 
-/** Un motif d'`include` décrit un DOSSIER et des EXTENSIONS : c'est tout ce dont le corpus a besoin. */
-const cibleDe = (motif: string): { dir: string; exts: string[] } => {
-  const m = /^(.+)\/\*\*\/\*\.test\.\{?([a-z,]+)\}?$/.exec(motif);
-  if (!m) throw new Error(`tests-sans-horloge : motif d'include non reconnu — ${motif}`);
-  return { dir: m[1], exts: m[2].split(',').map((e) => `.${e}`) };
+/** Le séparateur d'un glob de Vitest : ce qui précède est le DOSSIER, ce qui suit est la FIN de nom. */
+const SEPARATEUR_GLOB = '/**/*';
+
+/** Les FINS DE NOM qu'un motif d'`include` accepte — l'accolade dépliée en un nom par dialecte.
+ *  Découpé au séparateur de glob : aucune forme de nom de test n'est RÉÉCRITE ici, c'est le glob
+ *  qui la porte, et le test de concordance ci-dessous la confronte au prédicat partagé. */
+const finsDuGlob = (motif: string): string[] => {
+  const [dir, suffixe] = motif.split(SEPARATEUR_GLOB);
+  if (!dir || !suffixe) throw new Error(`tests-sans-horloge : motif d'include non reconnu — ${motif}`);
+  const accolade = /\{([a-z,]+)\}$/.exec(suffixe);
+  return accolade ? accolade[1].split(',').map((d) => suffixe.replace(accolade[0], d)) : [suffixe];
 };
+
+/** Un motif d'`include` décrit un DOSSIER et des EXTENSIONS : c'est tout ce dont le corpus a besoin. */
+const cibleDe = (motif: string): { dir: string; exts: string[] } => ({
+  dir: motif.split(SEPARATEUR_GLOB)[0],
+  exts: [...new Set(finsDuGlob(motif).map((fin) => `.${fin.split('.').pop()}`))],
+});
+
+/** Ce nom de fichier serait-il joué par ce motif d'`include` ? */
+const accepteParLeGlob = (motif: string, nom: string): boolean => finsDuGlob(motif).some((fin) => nom.endsWith(fin));
+
+/** Les six formes témoins de la concordance glob ↔ prédicat : les deux dialectes de suite joués, le
+ *  dialecte de suite que seul `scripts/**` écrit, un BANC, une source de production, un suffixé. */
+const NOMS_TEMOINS = ['a.test.ts', 'a.test.tsx', 'a.test.mjs', 'a.bench.ts', 'a.ts', 'x.test.ts.bak'];
+
+describe('la SUITE se définit à UN endroit — le glob de vite.config.ts et le prédicat partagé concordent', () => {
+  it('sur les dialectes que le glob NOMME, glob et `EST_SUITE_VITEST` acceptent et refusent les mêmes noms', () => {
+    for (const motif of INCLUDE_NPM_TEST) {
+      const { exts } = cibleDe(motif);
+      for (const nom of NOMS_TEMOINS) {
+        if (!exts.some((e) => nom.endsWith(e))) continue; // dialecte que CE glob ne nomme pas
+        expect(accepteParLeGlob(motif, nom), `${motif} ↔ prédicat sur ${nom}`).toBe(EST_SUITE_VITEST.test(nom));
+      }
+    }
+  });
+
+  it('ÉCART MESURÉ : le prédicat couvre un dialecte de suite qu’aucun glob ne joue (`.test.mjs`)', () => {
+    // Ce n'est pas un rouge à masquer, c'est le périmètre : le prédicat sert AUSSI `scripts/**`, dont
+    // les suites sont en `.mjs` et tournent sous `node --test`, hors de `npm test`. La concordance
+    // ci-dessus porte donc sur les dialectes que le glob NOMME, et l'écart est mesuré ici, pas tu.
+    expect(INCLUDE_NPM_TEST.some((m) => accepteParLeGlob(m, 'a.test.mjs'))).toBe(false);
+    expect(EST_SUITE_VITEST.test('a.test.mjs')).toBe(true);
+  });
+
+  it('un nom SUFFIXÉ n’est une suite pour personne', () => {
+    expect(INCLUDE_NPM_TEST.some((m) => accepteParLeGlob(m, 'x.test.ts.bak'))).toBe(false);
+    expect(EST_SUITE_VITEST.test('x.test.ts.bak')).toBe(false);
+  });
+});
 
 describe('tests-sans-horloge-guard : aucun test joué par `npm test` ne lit l’horloge', () => {
   const tests = INCLUDE_NPM_TEST.flatMap((motif) => {
     const { dir, exts } = cibleDe(motif);
-    return readCorpus([dir], { exts, tests: true }).filter((f) => EST_TEST.test(f.rel));
+    return readCorpus([dir], { exts, tests: true }).filter((f) => EST_TEST(f.rel));
   });
 
   it('le corpus scanné est le RÉEL — sinon la garde mesurerait le vide', () => {

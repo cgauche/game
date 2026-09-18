@@ -3,6 +3,7 @@ import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { valeursDe } from '../data/schemas/grammaire/meta';
 import { effectTriggerSchema } from '../data/schemas/grammaire/mecanique';
 import type { EffectTrigger } from './flow';
+import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * GARDE DE COMPLÉTUDE (nouvelle classe, #316) : « zéro trigger d'authoring sans point d'émission ».
@@ -29,11 +30,10 @@ const BUS_OWNED = ['src/state/combat/roundHooks.ts', 'src/state/combat/turnHooks
 //    unique `runDailyUpkeep` (upkeep.ts), anti-double-comptage des franchissements de jour.
 const DEDICATED_EMITTERS = ['src/state/triggeredEffects.ts', 'src/state/upkeep.ts'];
 
-const isTest = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
 
 function tsFiles(): { rel: string; src: string }[] {
   return readCorpus(['src'], { tests: true })
-    .filter(({ rel }) => !isTest(rel))
+    .filter(({ rel }) => !estFichierVitest(rel))
     .map(({ rel, text }) => ({ rel, src: text }));
 }
 

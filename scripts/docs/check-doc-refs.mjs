@@ -11,6 +11,7 @@
 import { readFileSync, existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { parUnitesDeCode, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
+import { estSuiteVitest, SUFFIXE_SUITE } from '../guards/lib/fichierVitest.mjs'
 
 const DOCS_DIR = 'docs'
 const SRC_DIR = 'src'
@@ -268,8 +269,11 @@ const HOOK_SITES_EXEMPTS = new Set([
 // Un hook nomme aussi ses tests-scanners par leur SEUL nom de fichier (`label-logic-guard.test.ts`,
 // EXCLUDED de telle famille) : ce nom se confronte à l'index des tests de `src/`, sinon un renommage
 // laisse la liste mentir. Un MOTIF (`*-guard.test.ts`, `-guard\.test\.ts` d'une regex) n'est pas un nom.
-const TESTS_SRC = new Set(listerArbre(SRC_DIR, { filtre: (r) => /\.test\.tsx?$/.test(r) }).map((r) => r.split('/').pop()))
-const NOM_DE_TEST_RE = /\b[A-Za-z0-9_.-]+\.test\.tsx?\b/g
+const TESTS_SRC = new Set(listerArbre(SRC_DIR, { filtre: (r) => estSuiteVitest(r) }).map((r) => r.split('/').pop()))
+// Le nom nu d'une suite dans la PROSE d'un hook : un nom de fichier COLLÉ au suffixe de suite du
+// prédicat partagé (`scripts/guards/lib/fichierVitest.mjs`) — COMPOSÉ, jamais recopié, et non ancré
+// à droite puisqu'on le cherche AU FIL du texte.
+const NOM_DE_TEST_RE = new RegExp(String.raw`\b[A-Za-z0-9_.-]+` + SUFFIXE_SUITE + String.raw`\b`, 'g')
 for (const dir of HOOKS_DIRS) {
   for (const rel of listerArbre(dir, { filtre: (r) => r.endsWith('.mjs') && !r.endsWith('.test.mjs') })) {
     const f = `${dir}/${rel}`

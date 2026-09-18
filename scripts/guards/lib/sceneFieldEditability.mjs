@@ -65,6 +65,7 @@
 import path from 'node:path';
 import ts from 'typescript';
 import { repoProgram } from './tsProgram.mjs';
+import { estFichierVitest } from './fichierVitest.mjs';
 
 /** Fichiers d'INTERFACE : un écrivain qui y vit est joignable au clic par construction — l'auteur
  *  ouvre l'écran. Crédit DIRECT. */
@@ -91,7 +92,7 @@ const PIPELINE_PATH = [/^src[\\/]state[\\/]mapSpec\.ts$/, /^src[\\/]scenes[\\/]/
 const isUiPath = (rel) => UI_PATH.some((re) => re.test(rel));
 const isAuthorPath = (rel) => AUTHOR_PATH.some((re) => re.test(rel));
 const isPipelinePath = (rel) => PIPELINE_PATH.some((re) => re.test(rel));
-const isTestFile = (rel) => /\.test\.(ts|tsx|mts|mjs)$/.test(rel);
+const isTestFile = (rel) => estFichierVitest(rel);
 
 const SCENE_FILE = 'src/state/scene.ts';
 

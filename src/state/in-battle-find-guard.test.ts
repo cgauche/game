@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { scanInBattleFind } from '../../scripts/guards/lib/inBattleFind.mjs';
+import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * Garde-fou « recherche de combattant EN COMBAT par id » (#279, F1 du programme structurel #276).
@@ -26,7 +27,7 @@ import { scanInBattleFind } from '../../scripts/guards/lib/inBattleFind.mjs';
  */
 
 const SCAN_DIRS = ['src/state', 'src/ui', 'src/gameIso'];
-const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
+const EXCLUDED = (rel: string) => estFichierVitest(rel);
 
 /** Baseline gelée par fichier. src/state (recensement Lot 1, 2026-07-10 — 3 sites résiduels, tous
  *  prédicats COMPOSÉS non réductibles à `inBattleId` seul) ; src/ui + src/gameIso (recensement #410,

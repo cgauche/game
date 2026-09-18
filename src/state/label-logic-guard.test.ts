@@ -14,6 +14,7 @@ import {
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { LABEL_RESOLVER_CALL_STOCK } from '../../scripts/guards/lib/labelResolverCallStock.mjs';
 import { champsAveugles, couvertureDuBalayage, ecartsDeStock } from '../../scripts/guards/lib/stock.mjs';
+import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 /** NON-VACUITÉ d'un cliquet, à jouer EN TÊTE du `it` qu'elle protège (patron `props-volumiques.test.ts`,
  *  `2639287cd`) : le cliquet ne juge que ce que le balayage lui présente — un gisement muet ou une
@@ -60,7 +61,7 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ →
 // tout fichier state : sa migration de renommage teste la PRÉSENCE de clé `'label' in o`, pas une
 // comparaison de libellé.)
 const EXCLUDED = (rel: string) =>
-  /\.test\.[tj]sx?$/.test(rel) || rel === 'src/data/index.ts';
+  estFichierVitest(rel) || rel === 'src/data/index.ts';
 
 // Mécanique de scan (stripComments + BY_LABEL_RX/LABEL_EQ_RX + scanLabelLogic) :
 // `scripts/guards/lib/labelLogic.mjs` (module .mjs pur), partagé avec le hook pre-commit

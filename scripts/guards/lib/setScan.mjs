@@ -8,6 +8,7 @@
 // l'objet passé à `set(` est lu.
 import { readFileSync } from 'node:fs';
 import { listerDossier } from './lister.mjs';
+import { estFichierVitest } from './fichierVitest.mjs';
 import { join, relative } from 'node:path';
 
 /** Clés `pending*`/transitoires du manifeste (`state/stateFields.ts`) — lues par REGEX sur le
@@ -89,7 +90,7 @@ export function runSetScan(root) {
   const stateDir = join(root, 'src/state');
   const pendingKeys = stateFieldKeys(stateDir);
   const files = listerDossier(stateDir)
-    .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts') && f !== 'store.ts' && f !== 'stateFields.ts')
+    .filter((f) => f.endsWith('.ts') && !estFichierVitest(f) && f !== 'store.ts' && f !== 'stateFields.ts')
     .map((f) => join(stateDir, f));
 
   const report = [];

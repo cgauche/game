@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { scanTableLookup } from '../../scripts/guards/lib/tableLookup.mjs';
+import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * Garde-fou « lookup [min,max] hors engine/tables.ts » (#302). `findTableEntry`/`findTableEntryIndex`
@@ -16,7 +17,7 @@ import { scanTableLookup } from '../../scripts/guards/lib/tableLookup.mjs';
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/engine/ → ../../ = racine du projet
 const SCAN_DIRS = ['src'];
-const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel === 'src/engine/tables.ts';
+const EXCLUDED = (rel: string) => estFichierVitest(rel) || rel === 'src/engine/tables.ts';
 
 function countsByFile(): Record<string, number> {
   const counts: Record<string, number> = {};

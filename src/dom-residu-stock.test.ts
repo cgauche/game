@@ -9,6 +9,7 @@ import { existsSync } from 'node:fs';
 import { residusDom, cleFichierTest, messageResiduDom } from './test-setup';
 import { DOM_RESIDU_STOCK } from '../scripts/guards/lib/domResiduStock.mjs';
 import { ecartsDeStock } from '../scripts/guards/lib/stock.mjs';
+import { estSuiteVitest } from '../scripts/guards/lib/fichierVitest.mjs';
 
 // Lecteur ASSEMBLÉ à l'exécution : patron de `src/portable-paths-guard.test.ts:51`.
 const LECTEUR = 'C' + ':';
@@ -61,7 +62,7 @@ describe('stock d’extinction — cliquet', () => {
   });
 
   it('chaque ligne est un CHEMIN de fichier de test — c’est ce que la porte de plage voit', () => {
-    const muettes = [...DOM_RESIDU_STOCK].filter((f) => !/^src\/.+\.test\.tsx?$/.test(f));
+    const muettes = [...DOM_RESIDU_STOCK].filter((f) => !(f.startsWith('src/') && estSuiteVitest(f)));
     expect(muettes, `ligne(s) dont la graphie n’est pas un chemin POSIX sous \`src/\` : elles seraient\n` +
       `INVISIBLES à \`croissanceDesStocks\`, et un append ne coûterait rien :\n${muettes.join('\n')}`).toEqual([]);
   });

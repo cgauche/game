@@ -68,6 +68,7 @@
 import { readFileSync } from 'node:fs';
 import { listerArbre, listerDossier } from './lister.mjs';
 import { join } from 'node:path';
+import { estFichierVitest } from './fichierVitest.mjs';
 
 /** Catalogues `src/data/*.json` adressés par `id`, retenus pour la mesure d'orphelines — MÊME
  *  ensemble que `CATEGORIES` de `src/data/id-collisions.test.ts`, moins `spells`/`trappings`
@@ -168,7 +169,7 @@ function isGeneratedFile(path, text) {
 /** Fichiers `.ts(x)` de PRODUCTION sous `srcDir`, chemins RELATIFS à `srcDir`, en ORDRE TOTAL :
  *  l'ordre décide de celui des sites `recognized`, donc du `.md` rendu. */
 function fichiersDeProduction(srcDir) {
-  return listerArbre(srcDir, { filtre: (rel) => /\.(ts|tsx)$/.test(rel) && !/\.test\./.test(rel) });
+  return listerArbre(srcDir, { filtre: (rel) => /\.(ts|tsx)$/.test(rel) && !estFichierVitest(rel) });
 }
 
 /** Documents de PROJET de scène (`src/scenes/<projet>/<projet>-projet.json`), découverts par

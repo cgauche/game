@@ -4,6 +4,9 @@
 // périmerait au premier import suivant ; la liste se CALCULE (`grep -rl sourceCorpus.mjs src scripts`).
 //
 // SOURCE : un `.d.ts` n'en est pas une (aucun corps) — il est hors corpus SANS option (`EST_DECLARATION`).
+// Ni un INSTRUMENT Vitest : la suite `.test.` comme le banc `.bench.`, dans TOUS les dialectes lus
+// ici (`.ts`/`.tsx` de `src`, `.mts`/`.mjs` de `scripts/qc`). Le prédicat vit en UN exemplaire,
+// `fichierVitest.mjs` — ce corpus le CONSOMME, il n'en tient pas une seconde copie.
 //
 // FRONTIÈRE : cette lib LIT et MÉMOÏSE sa lecture, elle n'interprète pas (aucun AST, aucun verdict).
 // Un corpus est lu UNE fois par clé — la clé est le CONTENU des paramètres (dossiers normalisés en
@@ -42,12 +45,12 @@
 import { readFileSync } from 'node:fs';
 import { isAbsolute, join, relative } from 'node:path';
 import { listerArbre } from './lister.mjs';
+import { estFichierVitest } from './fichierVitest.mjs';
 import { fileURLToPath } from 'node:url';
 
 /** Racine du dépôt : `scripts/guards/lib/` → `../../../`. */
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url)).replace(/[\\/]$/, '');
 
-const EST_TEST = /\.test\./;
 /** Fichier de DÉCLARATION `.d.ts` : aucun corps, il ne peut porter aucun des motifs que les gardes
  *  cherchent, et sa présence rend faux tout compte de « modules de production ». Hors corpus SANS
  *  option, quelles que soient les `exts` demandées. Le filtre ne vise QUE `.d.ts` : les déclarations
@@ -70,8 +73,10 @@ const CORPUS = new Map();
  *   relatif désignent le même corpus, `src/x/` comme `src/x`. La CASSE n'est pas normalisée — sur
  *   Windows `SRC/x` est une clé distincte, donc un mémo manqué, jamais un corpus faux.
  * @param {{ exts?: string[], tests?: boolean }} [opts] `exts` = extensions retenues
- *   (défaut `.ts`/`.tsx`) ; `tests` = garder les `*.test.*` (défaut : non). Les `*.d.ts` sont hors
- *   corpus, sans option (cf. `EST_DECLARATION`).
+ *   (défaut `.ts`/`.tsx`) ; `tests` = garder les INSTRUMENTS Vitest — suites `.test.` ET bancs
+ *   `.bench.`, tous dialectes (`estFichierVitest`, `fichierVitest.mjs`) — (défaut : non). L'option
+ *   INCLUT exactement ce que le filtre exclut : un seul prédicat décide des deux côtés. Les `*.d.ts`
+ *   sont hors corpus, sans option (cf. `EST_DECLARATION`).
  * @returns {ReadonlyArray<Readonly<{ abs: string, rel: string, text: string }>>} gelé, `rel` =
  *   chemin POSIX depuis la racine.
  * @throws {Error} si l'une des bases rend 0 fichier (voir REFUS DU VIDE, en-tête).
@@ -82,7 +87,9 @@ export function readCorpus(dirs, { exts = ['.ts', '.tsx'], tests = false } = {})
   const memo = CORPUS.get(cle);
   if (memo) return memo;
   const garde = (nom) =>
-    exts.some((e) => nom.endsWith(e)) && (tests || !EST_TEST.test(nom)) && !EST_DECLARATION.test(nom);
+    exts.some((e) => nom.endsWith(e)) &&
+    (tests || !estFichierVitest(nom)) &&
+    !EST_DECLARATION.test(nom);
   const parBase = bases.map((base) => listerArbre(base, { filtre: garde }));
   const vide = parBase.findIndex((noms) => noms.length === 0);
   if (vide >= 0) {

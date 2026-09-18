@@ -48,12 +48,16 @@ const EXTS = ['.ts', '.tsx', '.mjs', '.mts', '.js'];
  *    `ProjectV2SingleSelectFieldOptionInput` (API GraphQL GitHub, forme introspectée le 2026-09-15) :
  *    l'outil projette l'état des chantiers sur un Project, il ne produit aucun document de scène.
  */
-const EXEMPTS = [
-  /\.workflow\.js$/,
-  /^src\/data\/scene-prose-graphie-guard\.test\.ts$/,
-  /^src\/state\/projet-migration-3-vers-4\.test\.ts$/,
-  /^scripts\/ops\/board(?:\.test)?\.mjs$/,
-];
+const NOMS_EXEMPTS = new Set([
+  'src/data/scene-prose-graphie-guard.test.ts',
+  'src/state/projet-migration-3-vers-4.test.ts',
+  'scripts/ops/board.mjs',
+  'scripts/ops/board.test.mjs',
+]);
+/** La seule exemption qui n'est pas un NOM mais une FAMILLE : les scénarios d'agents/navigateur,
+ *  reconnus à leur suffixe. */
+const FAMILLES_EXEMPTES = [/\.workflow\.js$/];
+const estExempt = (rel: string): boolean => NOMS_EXEMPTS.has(rel) || FAMILLES_EXEMPTES.some((f) => f.test(rel));
 
 /** Les formes d'authoring RETIRÉES par #1467 L1b V-P2, chacune avec sa cible. */
 const FORMES: readonly { motif: RegExp; quoi: string; cible: string }[] = [
@@ -100,7 +104,7 @@ function masquerFrontmatter(texte: string): string {
 }
 
 describe('graphie de la prose de scène — aucun producteur ne réécrit la forme retirée (#1467 L1b)', () => {
-  const corpus = readCorpus(RACINES, { exts: EXTS, tests: true }).filter((f) => !EXEMPTS.some((x) => x.test(f.rel)));
+  const corpus = readCorpus(RACINES, { exts: EXTS, tests: true }).filter((f) => !estExempt(f.rel));
 
   it('le corpus balayé est NON VIDE et couvre les deux racines (sans quoi la garde serait un no-op vert)', () => {
     expect(corpus.length).toBeGreaterThan(500);

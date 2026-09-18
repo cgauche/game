@@ -14,6 +14,7 @@ import {
   estFichierScanne, loadDecisionsBaseline, partitionBaseline, formatBaselineReport,
 } from '../guards/lib/commentPoison.mjs';
 import { scanLabelLogic } from '../guards/lib/labelLogic.mjs';
+import { estFichierVitest } from '../guards/lib/fichierVitest.mjs';
 
 let raw = '';
 process.stdin.setEncoding('utf8');
@@ -71,7 +72,7 @@ if (isSrcTs) {
     const rappelBaseline = formatBaselineReport({ nouveaux: [], connus: verdict.connus, perimees: [] });
     // Même exclusion que label-logic-guard.test.ts (EXCLUDED) et le pre-commit : un fichier de test
     // plante les FIXTURES littérales de ce garde, il ne doit pas y rougir.
-    if (/(^|\/)src\/(engine|state)\//.test(norm) && !/\.test\.[tj]sx?$/.test(norm))
+    if (/(^|\/)src\/(engine|state)\//.test(norm) && !estFichierVitest(norm))
       for (const f of scanLabelLogic(rel, text))
         lines.push(`POISON logique par label (#142, id STABLE seulement) — ${rel}:${f.line} ${f.detail}`);
     if (lines.length)

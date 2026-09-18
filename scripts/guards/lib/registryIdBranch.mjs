@@ -23,6 +23,7 @@
 import tsModule from 'typescript';
 import { parUnitesDeCode } from './lister.mjs'
 import { scriptKindDe } from './dialecte.mjs'
+import { estFichierVitest } from './fichierVitest.mjs';
 
 /** Liaison LOCALE du compilateur : sous le transformeur SSR de Vitest, chaque `ts.x` d'un import est
  *  une traversée de module (`__vite_ssr_import_N__.default.x`) — sur le visiteur d'AST, chaud, elle
@@ -63,7 +64,7 @@ export const SCAN_EXTS = ['.ts', '.tsx', '.mts', '.mjs', '.js'];
  * @param {string} rel chemin relatif à la racine, séparateurs `/` @returns {boolean}
  */
 export function isRegistryIdBranchExcluded(rel) {
-  return /\.test\.[cm]?[tj]sx?$/.test(rel) || /migration/i.test(rel);
+  return estFichierVitest(rel) || /migration/i.test(rel);
 }
 
 /** Nom d'IDENTITÉ : `id`/`ref` exactement, ou un nom suffixé `Id`/`Ref` (`entityId`, `ruleId`,

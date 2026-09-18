@@ -25,6 +25,7 @@ import { describe, it, expect } from 'vitest';
 import { fileURLToPath } from 'node:url';
 import { IMPORT_RE, resolveImport } from '../../scripts/guards/lib/importGraph.mjs';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
+import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 const SRC = fileURLToPath(new URL('../', import.meta.url)).split('\\').join('/');
 const STATE = `${SRC}state`;
@@ -55,7 +56,7 @@ describe('frontière state → gameIso (CLAUDE.md règle 3)', () => {
   it('le scan voit bien les sources de production de src/state (preuve de câblage)', () => {
     expect(fichiers.length).toBeGreaterThan(50);
     expect(fichiers.some((f) => f.chemin.endsWith('/state/sceneEdit.ts'))).toBe(true);
-    expect(fichiers.some((f) => /\.test\.tsx?$/.test(f.chemin))).toBe(false);
+    expect(fichiers.some((f) => estFichierVitest(f.chemin))).toBe(false);
   });
 
   it('cas planté : un import du rendu est VU, un import de state ne l’est pas (preuve TDD)', () => {

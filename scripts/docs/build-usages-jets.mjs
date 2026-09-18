@@ -15,6 +15,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 import { shellZones, rowZones, scanRollShellUsage } from './lib/rollShellUsage.mjs'
+import { estFichierVitest } from '../guards/lib/fichierVitest.mjs'
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url))
 const OUT = join(ROOT, 'docs/usages-jets.md')
@@ -25,7 +26,7 @@ const check = process.argv.includes('--check')
 
 /** Fichiers de PRODUCTION (hors tests) de `src/`, en chemin relatif POSIX, en ORDRE TOTAL. */
 function prodFiles(dir) {
-  return listerArbre(join(ROOT, dir), { filtre: (rel) => /\.tsx?$/.test(rel) && !/\.test\.[tj]sx?$/.test(rel) })
+  return listerArbre(join(ROOT, dir), { filtre: (rel) => /\.tsx?$/.test(rel) && !estFichierVitest(rel) })
     .map((rel) => ({ rel: `${dir}/${rel}`, text: readFileSync(join(ROOT, dir, rel), 'utf8') }))
 }
 

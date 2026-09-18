@@ -11,6 +11,7 @@ import { rollSeamExcluded, ROLL_SEAM_PHASE2_STOCK, WORLD_DIE_SUBTRACTED_STOCK, P
 import { scanBattleRngEngineLeak } from '../../scripts/guards/lib/battleRngEngineLeak.mjs';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { battleRngEngineLeakExcluded } from '../../scripts/guards/lib/battleRngEngineLeakWhitelist.mjs';
+import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * Garde-fou « exclusivité du seam de jet » (#274, DERNIER verrou du programme #276).
@@ -35,7 +36,7 @@ import { battleRngEngineLeakExcluded } from '../../scripts/guards/lib/battleRngE
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ → ../../ = racine du projet
 const SCAN_DIRS = ['src'];
 
-const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rollSeamExcluded(rel);
+const EXCLUDED = (rel: string) => estFichierVitest(rel) || rollSeamExcluded(rel);
 
 /** Corpus SOURCE de tous les scans de ce fichier : `src/**` en `.ts(x)`, TESTS COMPRIS (les vues
  *  `prodFiles`/`EXCLUDED` filtrent ensuite), chemin RELATIF POSIX + texte. Marche, lecture et
@@ -232,7 +233,7 @@ describe('garde-fou « seam de jet » — exclusivité de rollTest/d100/TestOutc
   it('(M) dé de monde : le compte SOUSTRAIT par fichier est le compte MESURÉ (cliquet à cible zéro)', () => {
     const mesure = new Map<string, number>();
     for (const [rel, sites] of sitesByFile()) {
-      if (/\.test\.[tj]sx?$/.test(rel) || rel.startsWith('src/engine/')) continue;
+      if (estFichierVitest(rel) || rel.startsWith('src/engine/')) continue;
       const n = sites.filter((s: { excludedBy?: string }) => s.excludedBy === 'M').length;
       if (n > 0) mesure.set(rel, n);
     }
@@ -308,7 +309,7 @@ describe('garde-fou « rng vivant → résolveur moteur » — un flux state/** 
   it('aucun fichier hors whitelist ne remet un rng vivant à un résolveur moteur', () => {
     const offenders: string[] = [];
     for (const { rel, text } of corpus()) {
-      if (/\.test\.[tj]sx?$/.test(rel) || battleRngEngineLeakExcluded(rel)) continue;
+      if (estFichierVitest(rel) || battleRngEngineLeakExcluded(rel)) continue;
       const findings = scanBattleRngEngineLeak(rel, text);
       for (const x of findings) offenders.push(`${rel}:${x.line} [rng vivant → ${x.name}] ${x.detail}`);
     }
@@ -407,7 +408,7 @@ const SEAM_CORE = new Set([
 
 /** Fichiers de PRODUCTION scannables (hors tests), en chemin relatif POSIX — vue du `corpus()`. */
 function prodFiles(...dirs: string[]): { rel: string; text: string }[] {
-  return corpus().filter(({ rel }) => !/\.test\.[tj]sx?$/.test(rel) && dirs.some((d) => rel === d || rel.startsWith(`${d}/`)));
+  return corpus().filter(({ rel }) => !estFichierVitest(rel) && dirs.some((d) => rel === d || rel.startsWith(`${d}/`)));
 }
 
 /** Rouleurs d'engine DÉRIVÉS (clôture transitive) — mémoïsés : 4 `it` de deux `describe` les
@@ -1079,7 +1080,7 @@ function formePerdue(n: ts.CallExpression, sf: ts.SourceFile): string | null {
 function appelsPerdus(): string[] {
   const out: string[] = [];
   for (const { rel, text } of corpus()) {
-    if (/\.test\.[tj]sx?$/.test(rel)) continue;
+    if (estFichierVitest(rel)) continue;
     if (!POINTS_DAPPLICATION.some((n) => text.includes(`${n}(`))) continue;
     const sf = ts.createSourceFile(rel, text, ts.ScriptTarget.Latest, true, /\.tsx$/.test(rel) ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
     const walk = (n: ts.Node): void => {
@@ -1115,7 +1116,7 @@ describe('#1508 — tout point d’application consomme son retour, ou le passe 
   it('le scan MESURE quelque chose (le corpus porte bien des appels de points d’application)', () => {
     let vus = 0;
     for (const { rel, text } of corpus()) {
-      if (/\.test\.[tj]sx?$/.test(rel)) continue;
+      if (estFichierVitest(rel)) continue;
       for (const n of POINTS_DAPPLICATION) vus += text.split(`${n}(`).length - 1;
     }
     expect(vus, 'aucun appel vu : le scan ne mordrait sur rien').toBeGreaterThan(20);
@@ -1176,7 +1177,7 @@ describe('#1508 — angles morts du scan, mesurés (alias local, appel par objet
 
   it('faux négatif ASSUMÉ : un ALIAS local échappe au scan — et le corpus n’en porte aucun', () => {
     expect(sondeVoit('const jouer = runFlow; jouer(g, s, f);'), 'le scan ne voit que le nom APPELÉ').toBe(0);
-    const alias = corpus().filter(({ rel, text }) => !/\.test\.[tj]sx?$/.test(rel)
+    const alias = corpus().filter(({ rel, text }) => !estFichierVitest(rel)
       && POINTS_DAPPLICATION.some((n) => new RegExp(`=\\s*${n}\\s*;`).test(text)));
     expect(alias.map((f) => f.rel), 'un alias local d’un point d’application : le scan cesserait de mordre dessus').toEqual([]);
   });
@@ -1204,7 +1205,7 @@ describe('#1508 — angles morts du scan, mesurés (alias local, appel par objet
 
   it('faux négatif ASSUMÉ : un appel PAR OBJET échappe au scan — et le corpus n’en porte aucun', () => {
     expect(sondeVoit('CE.runFlow(g, s, f);'), 'le scan ne lit pas les accès de propriété').toBe(0);
-    const parObjet = corpus().filter(({ rel, text }) => !/\.test\.[tj]sx?$/.test(rel)
+    const parObjet = corpus().filter(({ rel, text }) => !estFichierVitest(rel)
       && POINTS_DAPPLICATION.some((n) => new RegExp(`\\.${n}\\s*\\(`).test(text)));
     expect(parObjet.map((f) => f.rel), 'un appel par objet/namespace : le scan cesserait de mordre dessus').toEqual([]);
   });

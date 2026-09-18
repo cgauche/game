@@ -11,6 +11,7 @@
  */
 import { readdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { estFichierVitest } from './guards/lib/fichierVitest.mjs';
 
 /**
  * `importDir` : chemin (relatif au fichier `out`) d'où importer chaque entrée. Défaut `./defs`
@@ -364,7 +365,7 @@ function genOne(r) {
     return { arrayName: r.arrayName, dir: r.dir, files: 0, changed: false, missing: true };
   }
   const files = entries
-    .filter((f) => /\.tsx?$/.test(f) && !f.startsWith('_') && !/\.test\.tsx?$/.test(f) && !f.endsWith('.ascii.ts') && f !== 'index.ts')
+    .filter((f) => /\.tsx?$/.test(f) && !f.startsWith('_') && !estFichierVitest(f) && !f.endsWith('.ascii.ts') && f !== 'index.ts')
     // Registre à champ `file` : un module du dossier qui ne DÉCLARE pas de document (modules de
     // FORME partagés entre defs) n'est pas une entrée — critère STRUCTUREL, jamais une liste de noms.
     .filter((f) => !r.fields?.includes('file') || /^export const file = '/m.test(readFileSync(join(r.dir, f), 'utf8')))

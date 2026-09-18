@@ -27,6 +27,7 @@
 import ts from 'typescript'
 import { readFileSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
+import { estFichierVitest } from '../guards/lib/fichierVitest.mjs'
 import { join } from 'node:path'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 
@@ -45,7 +46,7 @@ const SECTIONS = [
 /** Même filtre que `scripts/gen-registry.mjs` (entrée `test-scenarios`) — SOURCE UNIQUE du périmètre. */
 function scenarioFiles() {
   return listerDossier(DIR)
-    .filter((f) => /\.tsx?$/.test(f) && !f.startsWith('_') && !/\.test\.tsx?$/.test(f) && !f.endsWith('.ascii.ts') && f !== 'index.ts')
+    .filter((f) => /\.tsx?$/.test(f) && !f.startsWith('_') && !estFichierVitest(f) && !f.endsWith('.ascii.ts') && f !== 'index.ts')
 }
 
 /** Évalue une expression de chaîne STATIQUE (littéral, ou concaténation `+` de littéraux/gabarits

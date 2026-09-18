@@ -6,13 +6,28 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
+import { SUFFIXE_SUITE } from '../guards/lib/fichierVitest.mjs'
 
-// Fichiers porteurs de tables d'exceptions/baselines : les gardes-tests connus + toute lib de
-// scripts/guards (whitelists) + tout futur *-guard.test.ts (couverture par motif, pas par liste figée).
-export const GUARDED = /(label-logic-guard\.test\.ts|ui-ratchets\.test\.ts|component-conformance\.test\.ts|no-emoji-affordance\.test\.ts|comment-poison-guard\.test\.ts|[\\/]scripts[\\/]guards[\\/]|-guard\.test\.tsx?$)/
+// Gardes-tests connus, par leur NOM NU : une liste de noms se compare en CHAÎNE, jamais par regex
+// (aucune de ces entrées ne porte de joker).
+const GARDES_NOMMEES = new Set([
+  'label-logic-guard.test.ts',
+  'ui-ratchets.test.ts',
+  'component-conformance.test.ts',
+  'no-emoji-affordance.test.ts',
+  'comment-poison-guard.test.ts',
+])
+// Les deux FORMES gardées quel que soit le nom : toute lib de `scripts/guards/` (whitelists), et
+// toute suite `*-guard` — le suffixe de suite vient du prédicat partagé (`fichierVitest.mjs`),
+// couverture par motif et non par liste figée.
+const DANS_GUARDS = /[\\/]scripts[\\/]guards[\\/]/
+const SUITE_DE_GARDE = new RegExp('-guard' + SUFFIXE_SUITE + '$')
+/** Ce fichier porte-t-il une table d'exceptions/baseline gardée ? */
+export const estFichierGarde = (file) =>
+  GARDES_NOMMEES.has(String(file).split(/[\\/]/).pop()) || DANS_GUARDS.test(file) || SUITE_DE_GARDE.test(file)
 // Motif de CRÉATION de garde : tout fichier dont le nom/chemin annonce une garde (`-guard`, `guards/`).
 // Un fichier de garde NEUF est gardé DÈS sa création — parade au déplacement d'une whitelist vers un
-// nouveau fichier hors de la liste figée GUARDED.
+// nouveau fichier hors de la liste nominative `GARDES_NOMMEES`.
 export const GUARD_FILE = /(-guard(?:\.|\b)|[\\/]guards?[\\/])/i
 
 /** Multiset des « jetons de table » d'un extrait : TOUTE chaîne quotée (simple/double/backtick, peu
@@ -45,7 +60,7 @@ export function evaluate({ file, before, after, isWrite, exists }) {
     return { reason: `⚠ ${file.split(/[\\/]/).pop()} — création d'un fichier de garde : vérifier qu'il ne DÉPLACE pas une whitelist existante ` +
       `(les tables d'exceptions ne grossissent qu'avec l'AUTORISATION de l'utilisateur, demande 2026-07-13). Confirmer = valider CE nouveau fichier.` }
   }
-  if (!GUARDED.test(file)) return null
+  if (!estFichierGarde(file)) return null
 
   const beforeBag = entries(before)
   const afterBag = entries(after)

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { ESLint } from 'eslint';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';
+import { estSuiteVitest } from '../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * FILET DE PÉRIMÈTRE DE LA PURETÉ DE COUCHE (#1709 C3b-2 ; CLAUDE.md règle stricte 3, #8 et #161).
@@ -147,7 +148,7 @@ function sondeProduction(): string {
 function sondeTest(dir: string): string {
   const profondeurRacine = dir === 'src';
   const f = readCorpus([dir], { tests: true }).find(
-    ({ rel }) => /\.test\.tsx?$/.test(rel) && (!profondeurRacine || rel.split('/').length === 2),
+    ({ rel }) => estSuiteVitest(rel) && (!profondeurRacine || rel.split('/').length === 2),
   );
   expect(f, `${dir} : aucun fichier de test réel — la sonde du mur ne mesure rien`).toBeTruthy();
   return f!.rel;

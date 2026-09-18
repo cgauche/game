@@ -26,6 +26,7 @@ import {
   type BaselineEntry,
 } from '../scripts/guards/lib/commentPoison.mjs';
 import { LEGACY_VOCAB_SITES } from '../scripts/guards/lib/legacyVocabStock.mjs';
+import { estFichierVitest, estSuiteVitest } from '../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * EN-TÊTE STRUCTURÉ de la garde (#1475).
@@ -102,11 +103,10 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url)); // racine du projet 
 // scannée par elle-même. Un détecteur qui doit citer un motif le plante en LITTÉRAL DE CHAÎNE ici
 // (jamais lu par `extractComments`), il ne l'écrit pas dans sa prose.
 const CORPUS = readCorpus([...POISON_DIRS], { exts: [...POISON_EXTS], tests: true });
-const EST_TEST = /\.test\./;
 /** Périmètre de mesure de #1486 : le code de production des deux racines. */
-const HORS_TESTS = CORPUS.filter((f) => !EST_TEST.test(f.rel));
+const HORS_TESTS = CORPUS.filter((f) => !estFichierVitest(f.rel));
 /** Fichiers de test de `src/**` : périmètre du cliquet famille 4. */
-const TESTS_SRC = CORPUS.filter((f) => EST_TEST.test(f.rel) && f.rel.startsWith('src/'));
+const TESTS_SRC = CORPUS.filter((f) => estSuiteVitest(f.rel) && f.rel.startsWith('src/'));
 
 describe('garde-fou commentaires — en-tête structuré (#1475)', () => {
   it('la garde se déclare : question A→B→C, primitive, périmètre, angles morts, baseline décroissante, ticket', () => {

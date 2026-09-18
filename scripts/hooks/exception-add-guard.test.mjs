@@ -5,7 +5,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { entries, evaluate } from './exception-add-guard.mjs'
 
-const GUARD = 'src/state/label-logic-guard.test.ts' // matche GUARDED
+const GUARD = 'src/state/label-logic-guard.test.ts' // matche `estFichierGarde`
 const edit = (before, after, file = GUARD) => evaluate({ file, before, after, isWrite: false, exists: true })
 const asks = (d) => assert.ok(d && typeof d.reason === 'string', 'attendu : ask')
 const silent = (d) => assert.equal(d, null, `attendu : silence, obtenu : ${d?.reason}`)

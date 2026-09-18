@@ -6,6 +6,7 @@ import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import { iconRefsIn } from '../../scripts/guards/lib/iconRefs.mjs';
 import { ICON_DEFS } from './icons';
+import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * Garde-fou anti-icône-fantôme (#269) : une réf d'icône `icon: '...'`/`"icon": "..."` posée en
@@ -23,7 +24,7 @@ const SCAN_DIRS = ['src/state', 'src/scenes'];
 
 /** `*.test.*` exclus : les tests portent parfois des ids de fixture forgés (pas rendus à
  *  l'utilisateur, pas des affordances réelles). */
-const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
+const EXCLUDED = (rel: string) => estFichierVitest(rel);
 
 /** Les SOURCES des deux racines de donnée (tests compris — `EXCLUDED` les écarte au site), plus les
  *  datasets PLATS de `src/data`, chacun avec son texte. */

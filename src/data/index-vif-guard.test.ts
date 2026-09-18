@@ -63,7 +63,9 @@
  *
  * ASYMÉTRIE DE PÉRIMÈTRE, dite : la garde d'ÉCRITURE (`seam-ecriture-guard.test.ts`) balaie AUSSI les
  * `.test.ts` (une écriture hors seam dans un test contamine les autres tests du même processus) ;
- * celle-ci s'arrête aux non-tests. Stock résiduel dans les `.test.ts`, MESURÉ à ce lot : 46 valeurs
+ * celle-ci s'arrête aux INSTRUMENTS Vitest, tests ET bancs (`scripts/guards/lib/fichierVitest.mjs`,
+ * #1788 — un banc POSE un index figé à dessein, c'est le témoin qu'il compare au vif). Stock
+ * résiduel dans les `.test.ts`, MESURÉ à ce lot : 46 valeurs
  * figées à l'import (fixtures d'arbre livré, la plupart légitimes — `const TRAITS_LIVRES = [...traits]` de
  * `fraicheur-datasets.test.ts` EST la sauvegarde qui restaure le seam). Les migrer relève d'un tri
  * cas par cas, pas d'un motif.
@@ -72,6 +74,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { bindingsVifs, clesDuSeam, indexFiges, nomsVifsDuFichier, fichiersSources, fichiersDuSeam, accesseursVifs, sansCommentaires, RACINE } from '../../scripts/guards/lib/bindingsVifs.mjs';
+import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 import { DATASET_KEYS } from './overrides';
 
 describe('#1692 — aucun index figé à l’import sur un dataset mutable', () => {
@@ -112,7 +115,7 @@ describe('#1692 — aucun index figé à l’import sur un dataset mutable', () 
   it('aucun index NI aucune vue dérivée de niveau module sur un dataset du seam', () => {
     const seam = fichiersDuSeam();
     const fautifs = fichiersSources()
-      .filter((f) => !/\.test\.tsx?$/.test(f) && !seam.has(f))
+      .filter((f) => !estFichierVitest(f) && !seam.has(f))
       .flatMap((f) => indexFiges(f, readFileSync(join(RACINE, f), 'utf8'), parBinding));
     expect(fautifs, 'ces index servent l’ancien monde après une édition au Codex — passer par `indexParId`/`indexParChamp` (src/data/versionDataset.ts)').toEqual([]);
   });

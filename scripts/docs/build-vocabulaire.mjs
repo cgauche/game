@@ -20,6 +20,7 @@
 import ts from 'typescript'
 import { readFileSync } from 'node:fs'
 import { parLibelle, listerArbre } from '../guards/lib/lister.mjs'
+import { estFichierVitest } from '../guards/lib/fichierVitest.mjs'
 import { basename } from 'node:path'
 import { loadSource, findAlias, aliasDoc, readUnionMembers, renderFields, emitOrCheck } from './lib/jsdocUnion.mjs'
 import { mesurerCanaux } from './lib/canauxMecaniques.mjs'
@@ -127,7 +128,7 @@ function applyOpsCases(sf, path) {
 function fichiersSources(dir, exts) {
   return listerArbre(dir, {
     descendre: (rel) => !rel.split('/').includes('node_modules'),
-    filtre: (rel) => exts.some((x) => rel.endsWith(x)) && !/\.test\.tsx?$/.test(rel),
+    filtre: (rel) => exts.some((x) => rel.endsWith(x)) && !estFichierVitest(rel),
   }).map((rel) => `${dir}/${rel}`)
 }
 

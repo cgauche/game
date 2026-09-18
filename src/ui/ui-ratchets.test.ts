@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
+import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * Cliquets d'hygiène UI (#236) — même patron que `combat-hardcode-guard`/`no-emoji-affordance` : une
@@ -23,7 +24,7 @@ const FICHIERS_UI = (): readonly Fichier[] => readCorpus(['src/ui'], { exts: ['.
 /** Chemin depuis `src/ui/` — la clé des baselines et des exemptions. */
 const rel = (f: Fichier) => f.rel.slice('src/ui/'.length);
 const nomDe = (f: Fichier) => f.rel.slice(f.rel.lastIndexOf('/') + 1);
-const estTest = (f: Fichier) => /\.test\./.test(f.rel);
+const estTest = (f: Fichier) => estFichierVitest(f.rel);
 const estCss = (f: Fichier) => f.rel.endsWith('.css');
 const estTsx = (f: Fichier) => f.rel.endsWith('.tsx');
 
@@ -1573,17 +1574,17 @@ function scanRefusMuet(files: readonly Fichier[]): Record<string, number> {
 
 describe('#1318 V5 — cliquets d’hygiène UI (champ nombre, breakpoints)', () => {
   it('(xvii) <input type="number"> à la main : aucune hausse par fichier (composer NumberField)', () => {
-    const files = FICHIERS_UI().filter((f) => estTsx(f) && !f.rel.endsWith('.test.tsx'));
+    const files = FICHIERS_UI().filter((f) => estTsx(f) && !estFichierVitest(f.rel));
     assertRatchet(scanNumberInputs(files), NUMBER_INPUT_BASELINE, '`<input type="number">` (primitive `NumberField`)');
   });
 
   it('(xix) raison de refus MUETTE (`<button disabled title=…>`) : aucune hausse, zéro côté joueur', () => {
-    const files = FICHIERS_UI().filter((f) => estTsx(f) && !f.rel.endsWith('.test.tsx'));
+    const files = FICHIERS_UI().filter((f) => estTsx(f) && !estFichierVitest(f.rel));
     assertRatchet(scanRefusMuet(files), REFUS_MUET_BASELINE, '`<button disabled title=…>` (primitive `GatedAction`)');
   });
 
   it('(xix) le stock restant est ENTIÈREMENT dans l’atelier — aucun écran joueur ne porte de refus muet', () => {
-    const files = FICHIERS_UI().filter((f) => estTsx(f) && !f.rel.endsWith('.test.tsx'));
+    const files = FICHIERS_UI().filter((f) => estTsx(f) && !estFichierVitest(f.rel));
     const joueur = Object.entries(scanRefusMuet(files))
       .filter(([f]) => !/^(editor|compendium|gallery)\//.test(f))
       .map(([f, n]) => `${f} : ${n}`);
@@ -1592,7 +1593,7 @@ describe('#1318 V5 — cliquets d’hygiène UI (champ nombre, breakpoints)', ()
 
   it('(xix) chaque exemption est un SITE encore RÉEL — une ligne périmée se retire', () => {
     const reels = new Set(
-      FICHIERS_UI().filter((f) => estTsx(f) && !f.rel.endsWith('.test.tsx')).flatMap((f) => sitesRefusMuet(f).map((s) => s.cle)),
+      FICHIERS_UI().filter((f) => estTsx(f) && !estFichierVitest(f.rel)).flatMap((f) => sitesRefusMuet(f).map((s) => s.cle)),
     );
     const perimees = [...REFUS_MUET_EXEMPT_SITES.keys()].filter((k) => !reels.has(k));
     expect(perimees, `Exemption(s) PÉRIMÉE(S) — le site a bougé ou a été migré, retirer la ligne :\n${perimees.join('\n')}`).toEqual([]);

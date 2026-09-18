@@ -101,10 +101,11 @@
 //   · une flèche à corps CONCIS reste de portée MODULE (`export const stock = () => [ … ]`) : c'est
 //     l'une des trois enveloppes d'une ligne mesurées le 2026-09-04, et la traiter en corps de
 //     fonction rouvrirait ce contournement ;
-//   · les porteurs en `.mts` sont hors périmètre — aucun n'en porte aujourd'hui (mesuré : les 65
-//     `.mts` de `scripts/guards/lib/` sont tous des `.d.mts` générés, et aucun `.mts` de `scripts/`
-//     ne porte 3 entrées littérales) ; le jour où il en naît un, cette liste l'accueille.
+//   · les DIALECTES des porteurs de test ne sont pas énumérés ici : ils viennent du fragment
+//     `SUFFIXE_SUITE` (`fichierVitest.mjs`), qui les porte tous — une suite née en `.mts` ou en
+//     `.mjs` sous `src/` entre dans le périmètre sans qu'on revienne sur cette liste.
 import { createRequire } from 'node:module'
+import { SUFFIXE_SUITE } from './fichierVitest.mjs'
 import { parUnitesDeCode } from './lister.mjs'
 import { scriptKindDe } from './dialecte.mjs'
 
@@ -114,9 +115,12 @@ import { scriptKindDe } from './dialecte.mjs'
  *  Les JSON de `scripts/guards/lib/` (`decisions-baseline.json`) et le gel d'exports de la racine
  *  (`knip-exports-baseline.json`) sont, eux, NOMINATIFS de bout en bout. */
 const PORTEURS = [
-  /^src\/.+\.test\.tsx?$/,
+  // Les SUITES des deux racines : une racine COMPOSÉE avec le suffixe de suite du prédicat partagé
+  // (`fichierVitest.mjs`). Un BANC en est absent à dessein : son index FIGÉ est le témoin qu'il
+  // compare au vif, pas un stock nominatif à migrer.
+  new RegExp(String.raw`^src\/.+` + SUFFIXE_SUITE + '$'),
   /^scripts\/guards\/lib\/.+\.mjs$/,
-  /^scripts\/.+\.test\.mjs$/,
+  new RegExp(String.raw`^scripts\/.+` + SUFFIXE_SUITE + '$'),
   /^scripts\/hooks\/[^/]+\.json$/,
   /^scripts\/raw\/[^/]+-stock\.json$/,
   /^scripts\/raw\/[^/]+-baseline\.json$/,

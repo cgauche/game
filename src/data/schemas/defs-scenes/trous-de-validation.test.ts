@@ -11,6 +11,7 @@
 import { describe, it, expect } from 'vitest';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { listerDossier } from '../../../../scripts/guards/lib/lister.mjs';
+import { estFichierVitest } from '../../../../scripts/guards/lib/fichierVitest.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { TROUS_DE_VALIDATION } from './trous-de-validation';
@@ -30,7 +31,7 @@ const GARDE = {
   angleMort: [
     'un `z.custom` ALIASÉ (`const c = z.custom; c<T>()`) ou ré-exporté depuis un autre module échappe au ' +
       'scan textuel : le motif, pas le symbole résolu.',
-    'les fichiers `*.test.ts` sont exclus — le trou qu’on tient est celui des SCHÉMAS servis à la porte, ' +
+    'les INSTRUMENTS Vitest (`*.test.ts`, `*.bench.ts`) sont exclus — le trou qu’on tient est celui des SCHÉMAS servis à la porte, ' +
       'pas des fixtures.',
     'le PÉRIMÈTRE est le RÉPERTOIRE : les autres répertoires de schémas (`grammaire/**`, `defs/**`) sont ' +
       'HORS cliquet — 0 site `z.custom` y est mesuré aujourd’hui (relevé du juge, 2026-08-24), un trou qui ' +
@@ -56,7 +57,7 @@ const DEFS_SCENES = __dirname;
  *  l'ordre du scan. `dir` est paramétré : le cliquet se joue aussi sur un répertoire-jouet (câblage). */
 function sitesZCustom(dir: string): string[] {
   const out: string[] = [];
-  for (const f of listerDossier(dir).filter((n) => n.endsWith('.ts') && !n.endsWith('.test.ts'))) {
+  for (const f of listerDossier(dir).filter((n) => n.endsWith('.ts') && !estFichierVitest(n))) {
     readFileSync(join(dir, f), 'utf8')
       .split(/\r?\n/)
       .forEach((ligne) => {

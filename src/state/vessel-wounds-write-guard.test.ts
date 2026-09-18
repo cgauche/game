@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { scanVesselWoundsWrite } from '../../scripts/guards/lib/vesselWoundsWrite.mjs';
+import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * Garde-fou « écriture de la coque hors seam » (#302, #296). SOURCE UNIQUE de `state.vessel.wounds` :
@@ -17,7 +18,7 @@ import { scanVesselWoundsWrite } from '../../scripts/guards/lib/vesselWoundsWrit
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ → ../../ = racine du projet
 const SCAN_DIRS = ['src/state'];
 const FOYERS = new Set(['src/state/shipDamage.ts', 'src/state/seaVoyageFlow.ts']);
-const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || FOYERS.has(rel);
+const EXCLUDED = (rel: string) => estFichierVitest(rel) || FOYERS.has(rel);
 
 function countsByFile(): Record<string, number> {
   const counts: Record<string, number> = {};

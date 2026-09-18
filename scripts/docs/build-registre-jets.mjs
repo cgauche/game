@@ -22,6 +22,7 @@ import {
   engineDiceRollers, scanDesHorsPorte,
 } from '../guards/lib/rollSeamExclusivity.mjs'
 import { scanFlowTestEngineRoll } from '../guards/lib/flowTestEngineRoll.mjs'
+import { estFichierVitest } from '../guards/lib/fichierVitest.mjs'
 import {
   ROLL_SEAM_CORE, ROLL_SEAM_PHASE2_STOCK,
   PENDING_JET_FABRICATION_STOCK, ENGINE_DELEGATED_ROLL_STOCK, DES_HORS_PORTE_STOCK, SEAM_CALLERS,
@@ -35,7 +36,7 @@ const check = process.argv.includes('--check')
 /** Fichiers de PRODUCTION (hors tests) d'un jeu de dossiers, en chemin relatif POSIX, en ORDRE TOTAL. */
 function prodFiles(...dirs) {
   return dirs.flatMap((d) =>
-    listerArbre(join(ROOT, d), { filtre: (rel) => /\.tsx?$/.test(rel) && !/\.test\.[tj]sx?$/.test(rel) })
+    listerArbre(join(ROOT, d), { filtre: (rel) => /\.tsx?$/.test(rel) && !estFichierVitest(rel) })
       .map((rel) => ({ rel: `${d}/${rel}`, text: readFileSync(join(ROOT, d, rel), 'utf8') })),
   )
 }
