@@ -15,7 +15,7 @@
 .city-hub-service.active { border-color: var(--accent); background: var(--panel-strong, var(--panel2)); color: var(--text); }
 .city-hub-service-label { font-weight: 600; }
 /* Largeur max + ancrage haut (#359) : sans borne, le détail (souvent quelques lignes courtes) file
-   sur toute la colonne `1fr` du master-detail — un panneau aéré-à-vide lit comme inachevé (charte). */
+   sur toute la colonne `1fr` du maître-détail — un panneau aéré-à-vide lit comme inachevé (charte). */
 .city-hub-detail { min-width: 0; max-width: min(640px, 96vw); }
 .city-hub-prices { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .city-hub-prices li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; border-bottom: 1px solid var(--border); }
@@ -31,11 +31,7 @@
   .city-hub-service { flex: 1 1 140px; }
 }
 /* Onglet Plan (#345 phase 5) : le plan a besoin de plus de largeur que la liste de services étroite
-   — au-delà du breakpoint canon d'empilement seulement (`MASTER_DETAIL_STACK_BREAKPOINT_PX`) : sous
-   700px, le Plan s'empile comme tout MasterDetail (régression recette #343). */
-@media (min-width: 701px) {
-  .city-hub-plan.master-detail { grid-template-columns: minmax(240px, 1.3fr) 1fr; }
-}
+   — c'est `MasterDetail aside="lg"` (`CityHubScreen`) qui le dit, pas une grille recodée ici. */
 .city-hub-plan-canvas { min-height: 220px; }
 @media (max-width: 560px) {
   .city-hub-weather { font-size: 12px; }

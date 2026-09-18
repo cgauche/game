@@ -46,6 +46,7 @@ import {
   speciesTalentChoicesDone,
   speciesTalentRandomCount,
 } from './draft';
+import { Row } from '../Layout';
 
 /** Grisage cérémoniel d'un bloc « non renseigné » (page blanche). */
 const DIM: CSSProperties = { opacity: 0.38 };
@@ -107,12 +108,12 @@ export function CreatorSummary({ d, step = 0 }: { d: CreatorDraft; step?: number
   return (
     <aside className="creator-summary">
       {started && (starActive || ahead('details')) && (
-        <div className="creator-identity-roadmap row-flex">
+        <Row className="creator-identity-roadmap">
           {starActive && (ahead('star')
             ? <RoadmapChip>signe — étape {stepNo('star')}</RoadmapChip>
             : d.star ? <span className="chip">{findStarById(d.star)?.label ?? d.star}</span> : null)}
           {ahead('details') && <RoadmapChip>nom, traits — étape {stepNo('details')}</RoadmapChip>}
-        </div>
+        </Row>
       )}
 
       {hero ? (

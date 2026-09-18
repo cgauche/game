@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { RigPortrait } from './RigPortrait';
 import { hpColor } from '../gameIso/teamColors';
 import { StateChips } from './StateChips';
@@ -74,10 +75,10 @@ export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, s
       <Boite
         {...(decoratif ? { 'aria-hidden': true } : { type: 'button' as const, onClick, title: title ?? c.label, 'aria-label': title ?? c.label })}
         className={`ptile ${active ? 'active' : ''} ${selected ? 'sel' : ''} ${hovered ? 'hov' : ''} ${endMark ? `ko ${endMark.className}` : ''} ${team ? `team-${team}` : ''}`}
-        style={{ width: s }}
+        style={{ '--ptile-px': `${s}px` } as CSSProperties}
       >
         {active && <i className="ptile-caret">▼</i>}
-        <span className="ptile-face" style={{ width: s, height: s }}>
+        <span className="ptile-face">
           <RigPortrait combatant={c} size={s} ring={ring} />
           {endMark && (
             <span className={`end-mark ${endMark.className}`} title={endMark.label} aria-label={endMark.label}>

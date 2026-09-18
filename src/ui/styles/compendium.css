@@ -78,7 +78,7 @@
     overflow: hidden;
     height: 100%;
   }
-  .codex-md .master-detail-detail {
+  .codex-md > :last-child {
     height: 100%;
   }
 }
@@ -313,15 +313,21 @@
 .codex-ref.codex-inline:focus-visible {
   border-bottom-color: var(--gold);
 }
-/* Popover en PORTAL (document.body) : position fixed inline depuis le rect du déclencheur →
-   échappe à tout overflow/empilement. pointer-events:none = pur tooltip (aucun pont de survol). */
+/* Popover en PORTAL (document.body) : `position: fixed`, placé par les VARIABLES que `CodexRef`
+   calcule depuis le rect du déclencheur → échappe à tout overflow/empilement, sans une seule
+   propriété CSS inline. `pointer-events: none` = pur tooltip (aucun pont de survol) ; l'ÉTAT
+   « actionnable » est l'attribut `[data-atteignable]`, jamais une variable. */
 .codex-pop {
   position: fixed;
   z-index: 9999;
+  top: var(--pop-top, auto);
+  bottom: var(--pop-bottom, auto);
+  left: var(--pop-left, 0);
+  max-width: var(--pop-w, none);
   display: flex;
   flex-direction: column;
   gap: 5px;
-  max-height: 50vh;
+  max-height: var(--pop-h, 50vh);
   overflow: hidden;
   padding: 9px 11px;
   background: var(--panel2);
@@ -332,6 +338,10 @@
   white-space: normal;
   font-weight: 400;
   pointer-events: none;
+}
+.codex-pop[data-atteignable],
+.codex-pop [data-atteignable] {
+  pointer-events: auto;
 }
 /* RAISON DE REFUS en tête du popover (arbitrage user 2026-08-24 : la raison vit au SURVOL, jamais en
    texte permanent sous le nom d'une capacité). Teinte d'avertissement du jeu, jamais l'encre de prose.

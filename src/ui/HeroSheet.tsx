@@ -18,6 +18,7 @@ import { SkillChip, TalentChip, TraitChips, EntityRef } from './EntityChip';
 import { CodexRef } from './compendium/CodexRef';
 import { axisDataFor, heroRoseAxes, heroStatusLabel, heroSubtitle } from './CharCard';
 import { t } from '../i18n';
+import { Row } from './Layout';
 
 /** Rubriques du corps `HeroSheet`, dans l'ordre canonique du détail candidat (#417). Toutes par
  *  défaut — un appelant restreint via `sections` (ex. l'onglet Compétences & Talents de la fiche,
@@ -100,7 +101,7 @@ export function HeroSheet({
   return (
     <div className={['hero-sheet', className].filter(Boolean).join(' ')}>
       {header && (
-        <div className="hero-sheet-head row-flex">
+        <Row className="hero-sheet-head">
           <CharacterPreview hero={hero} size="md" ambiance="panel" className="hero-sheet-fig" />
           <div className="hero-sheet-id">
             <DetailIdentity
@@ -114,7 +115,7 @@ export function HeroSheet({
             />
           </div>
           <RoseAxes axes={heroRoseAxes(hero, axisIds)} size="medal" title={t('party.rose.title', { name: hero.label })} />
-        </div>
+        </Row>
       )}
 
       {has('stats') && (

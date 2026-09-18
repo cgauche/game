@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { CargoCarrier } from '../engine/cargo';
 import { carriersColocated, carrierFreeEnc } from '../engine/cargo';
+import { spanFull } from './Layout';
 import { NumberField } from './NumberField';
 
 /**
@@ -10,14 +11,12 @@ import { NumberField } from './NumberField';
  * source→cible→lot→quantité, filtré aux porteurs au même endroit (`carriersColocated`). Ne s'affiche que
  * s'il y a au moins deux porteurs et du vrac à déplacer.
  */
-export function CargoTransferPanel({ carriers, onMove, labelOf, disabled, className }: {
+export function CargoTransferPanel({ carriers, onMove, labelOf, disabled, ...placement }: {
   carriers: CargoCarrier[];
   onMove: (fromId: string, toId: string, cargoId: string, enc: number) => void;
   labelOf: (cargoId: string) => string;
   disabled?: boolean;
-  /** Modificateur de layout de l'appelant (ex. `span-2` dans un `.panel-grid`). */
-  className?: string;
-}) {
+} & Partial<typeof spanFull>) {
   const [rawFrom, setFrom] = useState('');
   const [rawTo, setTo] = useState('');
   const [rawCargo, setCargo] = useState('');
@@ -34,7 +33,7 @@ export function CargoTransferPanel({ carriers, onMove, labelOf, disabled, classN
   const amount = encSaisi == null ? maxEnc : Math.max(0, Math.min(Math.floor(encSaisi), maxEnc));
 
   return (
-    <details className={`fold cargo-transfer-fold${className ? ` ${className}` : ''}`}>
+    <details className="fold cargo-transfer-fold" {...placement}>
       <summary><span className="fold-title">Transférer une cargaison</span></summary>
       <div className="fold-body">
         {dests.length === 0 ? (

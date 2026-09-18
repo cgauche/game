@@ -31,6 +31,7 @@ import { formatImperial } from '../engine/clock';
 import { VB_W, VB_H, fitViewport, type Viewport } from './worldMapViewport';
 import { MapCanvas, type MapMarker, type MapPath } from './MapCanvas';
 import { CompassRose } from './PlanChrome';
+import { Split } from './Layout';
 
 /** Hash déterministe d'un id → sens de courbure stable d'une route (pas de Math.random). */
 function hashStr(s: string): number {
@@ -429,7 +430,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
 
   return (
     <ScreenShell title={<><Icon id="nav/campaign" size="sm" /> {map.label}</>} onClose={close} meta={{ time: gameTime, money }}>
-      <div className="layout-sidebar worldmap-layout">
+      <Split side="end" align="stretch" stackBelow={900} gap="xl" pad="xl" className="screen-scroll worldmap-layout">
       <div className="worldmap-canvas">
         <MapCanvas
           className="wm-map"
@@ -691,7 +692,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
         </div>
       )}
       </aside>
-      </div>
+      </Split>
     </ScreenShell>
   );
 }

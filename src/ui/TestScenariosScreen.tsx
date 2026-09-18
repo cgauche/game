@@ -5,6 +5,7 @@ import { testScenarios, type TestScenario, type ScenarioCategory } from '../scen
 import { SCENARIO_SECTIONS } from '../scenes/test-scenarios/_shared';
 import { Icon } from './Icon';
 import { MenuCard, MenuCardHead } from './MenuCard';
+import { Grid, Row, Stack, grow } from './Layout';
 
 type Section = (typeof SCENARIO_SECTIONS)[number];
 
@@ -46,7 +47,7 @@ export function TestScenariosScreen() {
   return (
     <div className="menu">
       <MenuCard
-        className="test-scenarios"
+        large
         header={<MenuCardHead
           lead={<button type="button" className="btn small btn-ghost menu-back" onClick={() => setScreen('menu')}>
             <Icon id="ui/undo" size="sm" /> Retour
@@ -55,28 +56,27 @@ export function TestScenariosScreen() {
           sub="Chaque scénario fixe un groupe et une scène adaptée à ce qu'on vérifie."
         />}
       >
-        {groupBySection(testScenarios).map((sec) => (
-          <section className="ts-section" key={sec.section.key}>
-            <h2 className="mini-title"><Icon id={sec.section.icon} size="sm" /> {sec.section.label}</h2>
-            <div className="ts-grid">
-              {sec.items.map((sc) => (
-                <div className="ts-card" key={sc.id}>
-                  <div className="ts-head">
-                    <span className="ts-ico"><Icon id={sc.icon} size={20} /></span>
-                    <strong>{sc.title}</strong>
-                  </div>
-                  <p className="ts-tests" title={sc.tests}>{sc.tests}</p>
-                  <p className="ts-party">{sc.partyNote}</p>
-                  {/* Ancrage de RECETTE (#1335) : l'id du scénario, stable au reload — le libellé et
-                      l'ordre des cartes ne le sont pas. Aucun effet de style. */}
-                  <button className="btn btn-primary" data-testid={`scenario-launch-${sc.id}`} onClick={() => launch(sc)}>
-                    Lancer
-                  </button>
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
+        <Stack gap="xl">
+          {groupBySection(testScenarios).map((sec) => (
+            <Stack as="section" gap="md" key={sec.section.key}>
+              <h2 className="mini-title"><Icon id={sec.section.icon} size="sm" /> {sec.section.label}</h2>
+              <Grid min="lg" gap="lg">
+                {sec.items.map((sc) => (
+                  <Stack className="panel sunken" gap="sm" key={sc.id}>
+                    <Row gap="md"><Icon id={sc.icon} size={20} /><strong>{sc.title}</strong></Row>
+                    <p className="hint clamp" title={sc.tests} {...grow}>{sc.tests}</p>
+                    <p className="hint">{sc.partyNote}</p>
+                    {/* Ancrage de RECETTE (#1335) : l'id du scénario, stable au reload — le libellé et
+                        l'ordre des cartes ne le sont pas. Aucun effet de style. */}
+                    <button className="btn btn-primary" data-testid={`scenario-launch-${sc.id}`} onClick={() => launch(sc)}>
+                      Lancer
+                    </button>
+                  </Stack>
+                ))}
+              </Grid>
+            </Stack>
+          ))}
+        </Stack>
       </MenuCard>
     </div>
   );

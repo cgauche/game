@@ -328,7 +328,7 @@
   flex: 1;
 }
 /* Actions du siège — filet séparateur + collées en pied de carte (.acte-actions du kit) ; compose
-   `.row-flex` (rangée qui s'enroule, components.css), TOUJOURS visibles. */
+   `Row` (rangée qui s'enroule, couche LAYOUT), TOUJOURS visibles. */
 .seat-card-actions {
   margin-top: auto;
   padding-top: 6px;
@@ -538,7 +538,7 @@
 .candidate-wealth {
   font-size: 11px;
 }
-/* Actions de la carte — compose `.row-flex` ; ici seulement le centrage et le collage en bas. */
+/* Actions de la carte — compose `Row` ; ici seulement le centrage et le collage en bas. */
 .candidate-actions {
   justify-content: center;
   margin-top: auto;

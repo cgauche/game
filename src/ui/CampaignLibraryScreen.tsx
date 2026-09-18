@@ -8,6 +8,7 @@ import { downloadText, fileSlug } from '../state/fileIo';
 import { parseProject, CURRENT_PROJECT_SCHEMA, type ProjectDoc } from '../state/worldMap';
 import { projectsLoad, projectSave, projectRemove, nomDeProjet, type SavedProject } from '../state/projectLibrary';
 import { allBuiltinCampaigns, type BuiltinCampaign } from '../scenes/campaign';
+import { Row, Stack } from './Layout';
 
 /** Une entrée sélectionnable de la bibliothèque : soit une campagne EMBARQUÉE (lecture seule,
  *  exportable mais jamais supprimable), soit un projet de la bibliothèque locale (supprimable). */
@@ -217,7 +218,7 @@ export function CampaignLibraryScreen({ onClose }: { onClose: () => void }) {
   const list = (
     <>
       <div className="mini-title">Campagnes du jeu</div>
-      <div className="stack">{builtins.map(row)}</div>
+      <Stack>{builtins.map(row)}</Stack>
       <div className="mini-title">Ma bibliothèque</div>
       <label className="btn small">
         <Icon id="file/import" size="sm" /> Importer une campagne…
@@ -234,7 +235,7 @@ export function CampaignLibraryScreen({ onClose }: { onClose: () => void }) {
       </label>
       {error && <p className="chip tone-danger" role="alert">{error}</p>}
       {locals.length > 0
-        ? <div className="stack">{locals.map(row)}</div>
+        ? <Stack>{locals.map(row)}</Stack>
         : <p className="empty">Aucune campagne importée pour l’instant.</p>}
     </>
   );
@@ -242,13 +243,13 @@ export function CampaignLibraryScreen({ onClose }: { onClose: () => void }) {
   const detail = selected == null
     ? <p className="empty">Sélectionnez une campagne pour la jouer, l’exporter ou la supprimer.</p>
     : (
-      <div className="stack">
+      <Stack>
         <h3>{entryLabel(selected)}</h3>
-        <div className="row-flex">
+        <Row>
           <span className="chip">{entrySceneCount(selected)} scène{entrySceneCount(selected) > 1 ? 's' : ''}</span>
           <span className="chip">{selected.kind === 'builtin' ? 'Campagne du jeu' : 'Ma bibliothèque'}</span>
           {selected.kind === 'library' && selected.sp.published && <span className="chip">publiée</span>}
-        </div>
+        </Row>
         {selected.kind === 'library' && selected.sp.project.desc && (
           <p>{selected.sp.project.desc}</p>
         )}
@@ -262,7 +263,7 @@ export function CampaignLibraryScreen({ onClose }: { onClose: () => void }) {
             <button type="button" className="btn danger" onClick={() => remove(selected)}>Supprimer</button>
           )}
         </div>
-      </div>
+      </Stack>
     );
 
   return (

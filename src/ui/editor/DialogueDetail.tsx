@@ -14,6 +14,7 @@ import { FlowEditor } from './FlowEditor';
 import { WhenEditor, condSummary } from './ConditionEditor';
 import { ListRow } from '../ListRow';
 import { NumberField } from '../NumberField';
+import { Row, Stack } from '../Layout';
 
 /** Ids posables au clic pour `DialogueChoice.icon` — DÉRIVÉS du registre d'icônes (`ICON_DEFS`,
  *  généré depuis `icons/defs/`), jamais une liste tenue à la main. */
@@ -40,7 +41,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
 
   return (
     <div className="dlg-detail">
-      <div className="row-flex">
+      <Row>
         <label className="ed-field dlg-id-field">
           Id du dialogue
           <input value={dialogue.id} onChange={(e) => onChange({ ...dialogue, id: e.target.value })} />
@@ -55,7 +56,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
             ))}
           </select>
         </label>
-      </div>
+      </Row>
 
       <div className="dlg-split">
         <div className="dlg-nodes">
@@ -80,7 +81,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
 
         {node && (
           <div className="dlg-node-edit panel sunken">
-            <div className="row-flex">
+            <Row>
               <input className="node-id" value={node.id} placeholder="id nœud" onChange={(e) => {
                 const id = e.target.value;
                 // renomme le nœud ET les références (start, choix → next)
@@ -118,11 +119,11 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
               >
                 ✕ nœud
               </button>
-            </div>
+            </Row>
             <textarea className="node-text" value={node.desc} onChange={(e) => updNode({ desc: e.target.value })} placeholder="Texte de la réplique" />
 
             <div className="mini-title">Choix ({node.choices.length})</div>
-            <div className="stack">
+            <Stack>
               {node.choices.map((c, ci) => (
                 <details className="eff-row dlg-choice" key={ci}>
                   <summary>
@@ -140,7 +141,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                     </span>
                   </summary>
                   <div className="eff-body">
-                    <div className="row-flex">
+                    <Row>
                       <input className="choice-text" value={c.label} onChange={(e) => updChoice(ci, { label: e.target.value })} placeholder="Texte du choix" />
                       <label className="dr" title="Icône d'affordance affichée devant le choix (registre d'icônes — jamais un emoji collé au texte).">
                         {c.icon ? <Icon id={c.icon} size="sm" /> : '—'}
@@ -153,8 +154,8 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                           ))}
                         </select>
                       </label>
-                    </div>
-                    <div className="row-flex">
+                    </Row>
+                    <Row>
                       <label className="dr">
                         →
                         <select value={c.next ?? ''} onChange={(e) => updChoice(ci, { next: e.target.value || undefined })}>
@@ -185,7 +186,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                           />
                         ))}
                       </span>
-                    </div>
+                    </Row>
                     <div className="mini-title" title="Le choix n'apparaît que si la condition est vraie (flag, créneau horaire, ET/OU/NON).">Affiché si</div>
                     <WhenEditor when={c.when} onChange={(when) => updChoice(ci, { when })} />
                     <div className="mini-title">À la sélection (effets · conditions · tests)</div>
@@ -196,7 +197,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
               <button className="btn small" onClick={() => updNode({ choices: [...node.choices, { label: '' }] })}>
                 + Choix
               </button>
-            </div>
+            </Stack>
           </div>
         )}
       </div>

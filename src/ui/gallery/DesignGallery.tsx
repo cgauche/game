@@ -13,11 +13,12 @@ import { MasterDetail } from '../MasterDetail';
 import { Icon } from '../Icon';
 import { useGame } from '../../state/store';
 import { GALLERY_SPECIMENS, GALLERY_CATEGORIES } from './registry';
+import { Row } from '../Layout';
 
 export function DesignGallery() {
   const setScreen = useGame((s) => s.setScreen);
-  const [activeId, setActiveId] = useState(GALLERY_SPECIMENS[0]?.label);
-  const entry = GALLERY_SPECIMENS.find((s) => s.label === activeId) ?? GALLERY_SPECIMENS[0];
+  const [activeId, setActiveId] = useState(GALLERY_SPECIMENS[0]?.id);
+  const entry = GALLERY_SPECIMENS.find((s) => s.id === activeId) ?? GALLERY_SPECIMENS[0];
   const Render = entry?.render;
   return (
     <ScreenShell title={<><Icon id="nav/art-gallery" /> Design system — L'Atelier du scribe</>} onClose={() => setScreen('menu')} body="centered-wide" className="gallery-screen">
@@ -31,10 +32,10 @@ export function DesignGallery() {
                   <h4 className="gallery-list-heading">{cat}</h4>
                   {GALLERY_SPECIMENS.filter((s) => s.category === cat).map((s) => (
                     <button
-                      key={s.label}
+                      key={s.id}
                       type="button"
-                      className={`btn gallery-list-item${s.label === activeId ? ' active' : ''}`}
-                      onClick={() => setActiveId(s.label)}
+                      className={`btn gallery-list-item${s.id === activeId ? ' active' : ''}`}
+                      onClick={() => setActiveId(s.id)}
                     >
                       {s.label}
                     </button>
@@ -46,16 +47,16 @@ export function DesignGallery() {
           detail={
             entry && Render ? (
               <div className="gallery-detail-wrap">
-                <div className="gallery-detail-head row-flex">
+                <Row className="gallery-detail-head">
                   <h3>{entry.label}</h3>
                   <span className="gallery-detail-source">{entry.file}</span>
-                </div>
+                </Row>
                 {entry.note && <p className="hint">{entry.note}</p>}
                 <div className="gallery-detail">
                   <div className="gallery-spec">
-                    <div className="gallery-spec-stage row-flex">
+                    <Row className="gallery-spec-stage">
                       <Render />
-                    </div>
+                    </Row>
                   </div>
                 </div>
               </div>

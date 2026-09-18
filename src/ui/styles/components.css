@@ -5,7 +5,6 @@
 
    Inventaire :
      .panel              surface (carte/cadre). .sunken (creux), .gold (liseré or), .flush (sans padding)
-     .stack / .row-flex  empilement vertical / rangée horizontale qui s'enroule
      .fold               section repliable (<details>) : <summary>.fold-title</summary><div class=fold-body>
      .parchment-card     carte-parchemin narrative + sceau d100 — primitive ParchmentCard.tsx
      .field              champ de formulaire (libellé au-dessus du contrôle)
@@ -15,10 +14,11 @@
      .modal-overlay/.modal  cadre de modale partagé (+ .modal-actions/.btn-ghost/.rm-influence)
      .charprev           aperçu « perso en pied » (CharacterPreview) : tailles + ambiances
      .icon               icône SVG maison (primitive <Icon> — src/ui/Icon.tsx, registre src/ui/icons/)
-     .master-detail      maître-détail (liste gauche + détail centre) — primitive MasterDetail.tsx
+     .clamp              texte tronqué à N lignes (`--clamp`, défaut 3)
      .cart-step/.btn-step  stepper de quantité [−][centre][+] — primitive QtyStepper.tsx
      .trade-table        table de négoce (colonnes+prix+action+groupes) — primitive TradeTable.tsx
      .menu-card          carte de menu (en-tête + sections de boutons pleine largeur) — primitive MenuCard.tsx
+                         (.menu-card-large = plafond écran-catalogue, prop `large`)
                          (.game-menu-overlay = menu système plein écran en jeu ; .menu-btn/.menu-toggle)
    Titres de section : réutiliser `.mini-title` (déjà global).                              */
 
@@ -40,8 +40,8 @@
 .panel.flush {
   padding: 0;
 }
-/* Densité RESPONSIVE (≤700px, charte règle 4 : utilisable à 360px) — padding resserré comme `.bar`/
-   `.panel-grid`. DOIT vivre ICI (components.css APRÈS base.css) : à spécificité égale, seul l'ORDRE de
+/* Densité RESPONSIVE (≤700px, charte règle 4 : utilisable à 360px) — padding resserré comme `.bar`.
+   DOIT vivre ICI (components.css APRÈS base.css) : à spécificité égale, seul l'ORDRE de
    cascade fait gagner (#306 — la même règle sous base.css était MORTE, écrasée par `.panel{padding:16px}`). */
 @media (max-width: 700px) {
   .panel {
@@ -49,17 +49,13 @@
   }
 }
 
-/* ── EMPILEMENTS ── */
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.row-flex {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+/* ── TRONCATURE À N LIGNES ── : concept de TEXTE partagé — l'appelant pose `--clamp` s'il veut
+   autre chose que 3 lignes. */
+.clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--clamp, 3);
+  overflow: hidden;
 }
 /* ── ACTION GATÉE (primitive GatedAction.tsx) : bouton d'engagement dont la raison d'indisponibilité
    se lit AU SURVOL/FOCUS, dans l'infobulle partagée (`.codex-pop [data-refus]`) — arbitrage user
@@ -580,41 +576,6 @@ button.chip:hover {
   font-size: 11px;
 }
 
-/* ── MASTER-DETAIL (primitive MasterDetail.tsx, #330) — liste GAUCHE + détail CENTRE, gabarit de
-   LAYOUT pur (aucun état dedans, cf. doc du composant). ≤700px (breakpoint canon, aligné sur
-   `MASTER_DETAIL_STACK_BREAKPOINT_PX` — les deux se modifient ENSEMBLE) : empilement, liste en
-   rangée qui s'enroule (pas de scroll horizontal, y compris à 360px), scroll-vers-détail au clic
-   (#343). ── */
-.master-detail {
-  display: grid;
-  grid-template-columns: minmax(160px, 240px) 1fr;
-  gap: 12px;
-  align-items: start;
-  min-width: 0;
-}
-.master-detail-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  max-height: min(60vh, 520px);
-  overflow-y: auto;
-}
-.master-detail-detail {
-  min-width: 0;
-}
-@media (max-width: 700px) {
-  .master-detail {
-    grid-template-columns: 1fr;
-  }
-  .master-detail-list {
-    flex-direction: row;
-    flex-wrap: wrap;
-    max-height: none;
-    overflow: visible;
-  }
-}
-
 /* ── BANDEAU D'INTERLOCUTEUR (primitive SpeakerBanner.tsx, #371) — portrait + nom + réplique.
    `.dialogue-box` = surface + position ; en overlay de dialogue (variant `dialogue`, DialogueBox.tsx) elle
    flotte en bas de l'écran ; `.dlg-boniment` (variant statique, marchand/aubergiste) la remet dans le
@@ -750,22 +711,6 @@ button.chip:hover {
   justify-content: center;
   background: linear-gradient(180deg, var(--panel2), var(--bg2));
   color: var(--gold2);
-}
-
-/* ── CORPS BORNÉ/CENTRÉ (`ScreenShell` prop `body='centered'`, #371 lot 2) — même patron que les
-   traitements manuels qu'elle remplace (`.port-body`/`.city-hub-master`) : un écran de PANNEAUX (pas
-   un canevas plein cadre) borne et centre son corps pour ne pas laisser un océan vide en large. ── */
-.screen-body {
-  width: min(960px, 96vw);
-  margin: 6px auto 0;
-}
-/* Variante GRILLE/CATALOGUE (`ScreenShell` prop `body='centered-wide'`, politique grand écran
-   charte-ui.md) — un écran de tables/cartes (négoce…) profite d'un plafond plus large qu'un écran
-   de lecture ; en dessous de 1440px le comportement reste identique à `.screen-body`. */
-@media (min-width: 1440px) {
-  .screen-body.screen-body-wide {
-    width: min(1400px, 96vw);
-  }
 }
 
 /* ── STEPPER DE QUANTITÉ (primitive QtyStepper.tsx, #371 LOT 3) — triplet [−][centre][+], moissonné de
@@ -950,6 +895,18 @@ button.chip:hover {
 }
 .game-menu-card .menu-btn {
   justify-content: flex-start;
+}
+/* Carte-CATALOGUE (`MenuCard` prop `large`, #1800) : une carte qui porte une GRILLE de cartes, pas
+   une colonne de boutons — plafond relevé, puis relevé encore au-delà de 1440px (politique grand
+   écran, docs/charte-ui.md) pour ne pas enfermer le contenu dans un couloir sur un moniteur large.
+   Distincte de `.game-menu-sub-wide` (720px, sous-écran de menu système). */
+.menu-card-large {
+  max-width: min(760px, 96vw);
+}
+@media (min-width: 1440px) {
+  .menu-card-large {
+    max-width: min(1600px, 96vw);
+  }
 }
 /* Sous-écrans (Coopération, Options) : en-tête Retour + titre, corps aligné à gauche, carte élargie.
    La carte est BORNÉE au champ (#839) : sans plafond, le sous-écran Options poussait son en-tête ET sa

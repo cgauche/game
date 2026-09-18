@@ -44,7 +44,7 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     // Étape 1 : gabarit UNIQUE (CreatorStepFrame → MasterDetail), pas de fiche vivante à ce stade.
     expect(html).toContain('creator-step');
     expect(html).toContain('master-detail-list');
-    expect(html).toContain('master-detail-detail');
+    expect(html).toContain('class="split creator-step"'); // MasterDetail composé sur `Split` (couche LAYOUT)
     expect(html).not.toContain('creator-summary');
     // Page blanche : AUCUNE race sélectionnée au montage (fin du fantôme pré-tiré).
     expect(html).not.toContain('fig-tile sel');
@@ -107,7 +107,7 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     const html = renderToStaticMarkup(<CareerScreen d={withSpecies(newDraft(7), SP.id)} setD={() => {}} />);
     expect(html).toContain('creator-step');
     expect(html).toContain('master-detail-list');
-    expect(html).toContain('master-detail-detail');
+    expect(html).toContain('class="split creator-step"'); // MasterDetail composé sur `Split` (couche LAYOUT)
     expect(html).toContain('Rechercher une carrière'); // SearchFilterField canonique en tête
     expect(html).toContain('Tirer aux dés — d100');
     expect(html).toContain('role="listbox"'); // GroupedPickGrid (sections par classe)
@@ -223,9 +223,9 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     const soldier = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
     const html = renderToStaticMarkup(<SkillsScreen d={soldier} setD={() => {}} skillsSub="talents" setSkillsSub={() => {}} />);
     // Les deux colonnes sont des bandes titrées (`Band` = `.cu-sechead` de la planche), posées par
-    // la primitive globale `.panel-grid` — jamais une 2e grille 2-colonnes de domaine.
+    // la primitive globale `Grid` — jamais une 2e grille 2-colonnes de domaine.
     expect(html).toContain('creator-band');
-    expect(html).toContain('panel-grid');
+    expect(html).toContain('class="grid"');
     expect(html).toContain('De race');
     expect(html).toContain('De carrière');
     expect(html).toContain('un au choix');

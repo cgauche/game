@@ -6,6 +6,7 @@
 // Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
 // exit 1 avec message actionnable si diff — jamais d'écriture en mode --check.
 import { readFileSync, existsSync } from 'node:fs'
+import { FEUILLES_PARTAGEES } from '../guards/lib/cssCouches.mjs'
 import { parUnitesDeCode } from '../guards/lib/lister.mjs'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 
@@ -13,6 +14,11 @@ const SOURCE = 'src/data/primitives.manifest.json'
 const CIBLE = 'docs/primitives.md'
 
 const PRIMITIVES = JSON.parse(readFileSync(SOURCE, 'utf8'))
+
+/** Couche des modules de style ; les feuilles PARTAGÉES qu'aucune primitive ne possède viennent de
+ *  leur source UNIQUE (`scripts/guards/lib/cssCouches.mjs`). */
+const CSS_RACINE = 'src/ui/styles/'
+const CSS_PARTAGES = FEUILLES_PARTAGEES
 
 // Intégrité : un manifeste qui cite un fichier absent rendrait une table qui ment, et
 // `check-doc-refs` la refuserait plus loin sans nommer la cause.
@@ -26,6 +32,15 @@ for (const p of PRIMITIVES) {
   if (vus.has(p?.id)) erreurs.push(`id en doublon : ${p.id}`)
   vus.add(p?.id)
   if (p?.fichier && !existsSync(p.fichier)) erreurs.push(`primitive « ${p.label} » (${p.id}) : fichier absent ${p.fichier}`)
+  // Champ `css` (#1800) : le module de `src/ui/styles/` que la primitive POSSÈDE. C'est LUI qui
+  // trace la frontière module de PRIMITIVE / module d'ÉCRAN pour le cliquet (xxi) — un chemin qui
+  // ment, qui sort de la couche, ou qui réclame une feuille PARTAGÉE déclasserait des modules
+  // d'écran entiers en silence.
+  if (p?.css != null) {
+    if (!existsSync(p.css)) erreurs.push(`primitive « ${p.label} » (${p.id}) : css absent ${p.css}`)
+    if (!String(p.css).startsWith(CSS_RACINE)) erreurs.push(`primitive « ${p.label} » (${p.id}) : css hors ${CSS_RACINE} (${p.css})`)
+    if (CSS_PARTAGES.includes(p.css)) erreurs.push(`primitive « ${p.label} » (${p.id}) : css ${p.css} est une feuille PARTAGÉE, aucune primitive ne la possède`)
+  }
 }
 if (erreurs.length) {
   console.error(`build-primitives — ${erreurs.length} erreur(s) d'intégrité du manifeste :`)
@@ -49,8 +64,9 @@ out += `DANS la primitive, jamais dans une Nᵉ copie. Le hook \`scripts/hooks/n
 out += `rappelle au geste : un \`.tsx\` neuf de \`src/ui\`/\`src/gameIso\` est soit une primitive déclarée ici,\n`
 out += `soit un écran inscrit à \`scripts/hooks/ecrans-ui.json\`.\n\n`
 out += `Colonnes : **Besoin** = le motif · **Primitive** = le ou les symboles exportés · **Fichier** = la\n`
-out += `source unique · **Périmètre** = où elle est composée · **Verrou** = la garde ou la clause qui la\n`
-out += `tient (\`—\` : aucune garde mécanique, la revue seule).\n\n`
+out += `source unique · **CSS possédé** = le module de \`src/ui/styles/\` dont la primitive porte la\n`
+out += `matière (\`—\` : elle n'en possède aucun) · **Périmètre** = où elle est composée · **Verrou** = la\n`
+out += `garde ou la clause qui la tient (\`—\` : aucune garde mécanique, la revue seule).\n\n`
 out += `**Périmètre mesuré / angles morts** — ce doc RENDS le manifeste \`${SOURCE}\`, il ne mesure pas le\n`
 out += `code : une primitive existe ici parce qu'un humain l'y a DÉCLARÉE. Ce qui est vérifié à la\n`
 out += `génération : chaque entrée porte un \`type\` \`primitives.manifest\`, un \`id\` unique, des champs non\n`
@@ -62,9 +78,10 @@ out += `manifeste est invisible ici, et rien ne la révèle sauf le hook \`new-s
 out += `mord qu'à la CRÉATION d'un \`.tsx\` de \`src/ui\`/\`src/gameIso\` — un module \`.ts\`, un fichier antérieur\n`
 out += `au hook, ou une primitive née ailleurs n'y passent jamais.\n\n`
 out += `${lignes.length} primitives.\n\n`
-out += `| Besoin | Primitive | Fichier | Périmètre | Verrou |\n|---|---|---|---|---|\n`
+out += `| Besoin | Primitive | Fichier | CSS possédé | Périmètre | Verrou |\n|---|---|---|---|---|---|\n`
 for (const p of lignes) {
-  out += `| ${cell(p.concept)} | \`${cell(p.label)}\` | \`${cell(p.fichier)}\` | ${cell(p.perimetre)} | ${cell(p.verrou)} |\n`
+  const css = p.css ? `\`${cell(p.css)}\`` : '—'
+  out += `| ${cell(p.concept)} | \`${cell(p.label)}\` | \`${cell(p.fichier)}\` | ${css} | ${cell(p.perimetre)} | ${cell(p.verrou)} |\n`
 }
 
 emitOrCheck({

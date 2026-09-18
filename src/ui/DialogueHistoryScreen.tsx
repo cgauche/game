@@ -10,6 +10,7 @@ import { GameDate } from './GameDate';
 import { ListRow } from './ListRow';
 import { useGame } from '../state/store';
 import type { DialogueTurn } from '../state/dialogueHistory';
+import { Stack } from './Layout';
 
 /** Une conversation = un run CONTIGU de tours partageant le même `dialogueId` ET `sceneId` — un
  *  dialogue se termine toujours avant qu'un autre s'ouvre, jamais d'entrelacement. */
@@ -47,7 +48,7 @@ export function DialogueHistoryScreen({ onClose }: { onClose: () => void }) {
   const list = aucune ? (
     <p className="empty">Aucune conversation enregistrée.</p>
   ) : (
-    <div className="stack">
+    <Stack>
       {conversations.map((conv, i) => (
         <ListRow
           key={`${conv.dialogueId}-${conv.sceneId ?? ''}-${conv.at}-${i}`}
@@ -59,7 +60,7 @@ export function DialogueHistoryScreen({ onClose }: { onClose: () => void }) {
           <GameDate time={conv.at} />
         </ListRow>
       ))}
-    </div>
+    </Stack>
   );
 
   const selected = conversations[selIdx];
@@ -67,15 +68,15 @@ export function DialogueHistoryScreen({ onClose }: { onClose: () => void }) {
   const detail = aucune ? null : !selected ? (
     <p className="empty">Sélectionnez une conversation.</p>
   ) : (
-    <div className="stack">
+    <Stack>
       {selected.turns.map((turn, i) => (
-        <div key={i} className="stack">
+        <Stack key={i}>
           {turn.speaker && <div className="mini-title">{turn.speaker}</div>}
           <Prose md={turn.nodeText} />
           <p className="dlg-history-reply">{turn.choiceText}</p>
-        </div>
+        </Stack>
       ))}
-    </div>
+    </Stack>
   );
 
   return (

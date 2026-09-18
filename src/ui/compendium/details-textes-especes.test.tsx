@@ -55,9 +55,9 @@ describe('DetailsTextsField — la clé d’espèce se CHOISIT (#1525)', () => {
     for (const s of posees) for (const o of options(s)) expect(raceKeySchema.options as readonly string[]).toContain(o);
   });
 
-  it('les blocs de surcharge sont COMPOSÉS dans `.panel-grid` (responsive, charte UI règle 4)', () => {
+  it('les blocs de surcharge sont COMPOSÉS dans `Grid` (responsive, charte UI règle 4)', () => {
     mount({ nom: { all: 'g', bySpecies: { humain: 'h', nain: 'n' } } });
-    const grilles = [...container.querySelectorAll('.panel-grid')];
+    const grilles = [...container.querySelectorAll('.grid')];
     expect(grilles).toHaveLength(1);
     // chaque select d'espèce vit SOUS la grille — la composition porte bien les blocs
     for (const s of selects()) expect(grilles[0].contains(s)).toBe(true);

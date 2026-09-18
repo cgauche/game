@@ -65,6 +65,7 @@ import { LayerField, LayerChip, sceneLayerZs } from './LayerField';
 import { estCardinal, type Dir8 } from '../../state/dir8';
 import { REF_DECOR_DEFAUT } from '../../data/props.types';
 import { propFootTiles } from '../../state/footprint';
+import { Row, Stack } from '../Layout';
 
 /** Caps OFFERTS au sélecteur d'orientation, dans l'ordre horaire de `DIR8_ORDER` : les huit pour une
  *  entité ordinaire, les quatre CARDINAUX pour un décor volumique (`Dir4`, #1680 ligne 3). Un seul
@@ -439,7 +440,7 @@ export function Inspector({
                 <p className="hint">
                   Exclusions — cases à NE JAMAIS coiffer (cour intérieure, puits de lumière), par étage.
                 </p>
-                <div className="stack">
+                <Stack>
                   {(architectureBody.roofExclusions ?? []).map((ex, i) => (
                     <div key={i} className="ed-dim">
                       <LayerField z={ex.z} layers={architectureBody.storeys.map((storey) => storey.z)} onChange={(z) => patchExclusion(i, { z })} />
@@ -458,7 +459,7 @@ export function Inspector({
                     </div>
                   ))}
                   <button className="btn small" onClick={addExclusion}>+ Exclusion</button>
-                </div>
+                </Stack>
               </Fold>
               <div className="insp-actions">
                 <button className="btn small danger" onClick={removeSel}>Supprimer le corps</button>
@@ -536,9 +537,9 @@ export function Inspector({
                   })}
                 />
                 <div className="mini-title">Features</div>
-                <div className="stack">
+                <Stack>
                   {(facadeSection.features ?? []).map((feature, index) => (
-                    <div className="panel sunken stack" key={`${feature.id}:${index}`}>
+                    <Stack className="panel sunken" key={`${feature.id}:${index}`}>
                       <span className="chip">{feature.id}</span>
                       <label className="ed-field">
                         Type
@@ -591,7 +592,7 @@ export function Inspector({
                           </label>
                         ))}
                       </div>
-                    </div>
+                    </Stack>
                   ))}
                   <button
                     className="btn small"
@@ -605,7 +606,7 @@ export function Inspector({
                   >
                     Nouvelle feature
                   </button>
-                </div>
+                </Stack>
               </Fold>
               <Fold title="Pièces révélées" open>
                 <RoomZoneSelect zones={roomZones} value={facadeSection.roomZoneIds ?? []} onChange={(roomZoneIds) => updateFacadeSection({ roomZoneIds })} />
@@ -1049,14 +1050,14 @@ export function Inspector({
                 <p className="hint">Arête @ ({sel.x},{sel.y}) {sel.side}{sel.z ? ` · étage ${sel.z}` : ''}.</p>
                 <div className="ed-field">
                   <span>Type</span>
-                  <div className="row-flex">
+                  <Row>
                     <button className={`btn small ${selW.door ? '' : 'btn-primary'}`} title="Cloison pleine (bloque vue et passage)" onClick={() => patchSelW({ door: undefined, closed: undefined })}>
                       ▮ Cloison
                     </button>
                     <button className={`btn small ${selW.door ? 'btn-primary' : ''}`} title="Arête franchissable (porte)" onClick={() => patchSelW({ door: true })}>
                       <Icon id="map-tool/door" size="sm" /> Porte
                     </button>
-                  </div>
+                  </Row>
                 </div>
                 {selW.door && (
                   <label className="ed-check">
@@ -1093,11 +1094,11 @@ export function Inspector({
                 <p className="hint">Posée, l'arête tient (bloque vue + passage) jusqu'à être abattue en combat ; elle devient alors une brèche franchissable. « — (aucun) — » = pas de structure. La HAUTEUR d'un rempart se peint désormais à l'outil <Icon id="map-tool/height" size="sm" /> (hauteur des cases qu'il borde), plus de réglage par segment.</p>
                 <div className="ed-field">
                   <span>Escaladable</span>
-                  <div className="row-flex">
+                  <Row>
                     <button className={`btn small ${selW.climb ? '' : 'btn-primary'}`} title="Arête non grimpable" onClick={() => patchSelW({ climb: undefined })}>Non</button>
                     <button className={`btn small ${selW.climb?.kind === 'ladder' ? 'btn-primary' : ''}`} title="Échelle / surface facile : pas de Test (LDB 15 l.53)" onClick={() => patchSelW({ climb: { kind: 'ladder' } })}>Échelle</button>
                     <button className={`btn small ${selW.climb?.kind === 'surface' ? 'btn-primary' : ''}`} title="Paroi à prises : Test d'Escalade (LDB 15 l.57)" onClick={() => patchSelW({ climb: { kind: 'surface', ...(selW.climb?.kind === 'surface' ? selW.climb : {}) } })}>Paroi</button>
-                  </div>
+                  </Row>
                 </div>
                 {selW.climb?.kind === 'surface' && (
                   <>
@@ -1675,14 +1676,14 @@ function EmplacementFold({ ent, scene, setScene }: { ent: SceneEntity; scene: Sc
           </label>
           <div className="ed-field">
             <span>Créneau de tir</span>
-            <div className="row-flex">
+            <Row>
               <button className={`btn small ${directional ? '' : 'btn-primary'}`} title="Pivot libre — tire dans toutes les directions" onClick={() => setScene(setPosteSide(scene, ent.id, undefined))}>
                 ↻ Omni
               </button>
               <button className={`btn small ${directional ? 'btn-primary' : ''}`} title="Arc fixe, relatif à l'orientation-monde du chef de pièce" onClick={() => setScene(setPosteSide(scene, ent.id, poste.side ?? 'proue'))}>
                 → Directionnel
               </button>
-            </div>
+            </Row>
           </div>
           {directional && (
             <label className="ed-field">
@@ -1980,7 +1981,7 @@ function SceneProps({
           repos. Cliquez une ligne pour l'éditer — la carte suit.
         </p>
         <SearchFilterField icon className="pal-search" placeholder="filtrer…" value={filter} onChange={setFilter} />
-        <div className="stack insp-content">
+        <Stack className="insp-content">
           {shown.map((row) => (
             <ListRow key={row.key} onClick={() => setSel(row.sel)} label={<>{row.icon} {row.label}</>}>
               {row.tag && <span className="chip">{row.tag}</span>}
@@ -1988,7 +1989,7 @@ function SceneProps({
               <LayerChip z={row.z} layers={layerZs} />
             </ListRow>
           ))}
-        </div>
+        </Stack>
       </Fold>
       <Fold title="Ambiance & météo">
         <label className="ed-field">
@@ -2148,7 +2149,7 @@ function SceneProps({
           la scène — jalon déjà posé, événement déjà survenu. Portes/structures/passerelles s'auto-gèrent
           (icônes dédiées) ; ce registre couvre les drapeaux LIBRES d'auteur.
         </p>
-        <div className="stack">
+        <Stack>
           {flagEntries.map(([key, value]) => (
             <div key={key} className="ed-dim">
               <span className="chip">{key}</span>
@@ -2171,7 +2172,7 @@ function SceneProps({
             />
             <button className="btn small" disabled={!newFlagKey.trim() || newFlagKey.trim() in scene.flags} onClick={addFlag}>+ Drapeau</button>
           </div>
-        </div>
+        </Stack>
       </Fold>
       {/* Ancres de bataille (`stations[]`) : chaque Scène de la pioche de Puissance de Bataille reçoit
           son emplacement sur ce plan. Sans ancre, le consommateur étale les Scènes en repli
@@ -2181,7 +2182,7 @@ function SceneProps({
           Emplacement, sur ce plan, de chaque Scène de bataille de la pioche. Aucune ancre = les Scènes
           sont étalées automatiquement.
         </p>
-        <div className="stack">
+        <Stack>
           {(scene.stations ?? []).map((st, i) => (
             <div key={i} className="ed-dim">
               <label>
@@ -2210,7 +2211,7 @@ function SceneProps({
             </div>
           ))}
           <button className="btn small" disabled={!anchorTargets.length} onClick={addStation}>+ Ancre</button>
-        </div>
+        </Stack>
       </Fold>
     </>
   );

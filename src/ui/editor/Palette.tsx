@@ -29,6 +29,7 @@ import type { Pt, Tool, ZoneVariant } from './editorState';
 import { planStairFlight } from './editorState';
 import { siegeEngines } from '../../data';
 import { LayerField, layerLabel } from './LayerField';
+import { Stack } from '../Layout';
 
 type Family = 'select' | 'architecture' | 'tile' | 'wall' | 'height' | 'stair' | 'crenellated' | 'personnage' | 'prop' | 'heroStart' | 'zone' | 'entry' | 'encounter' | 'emplacement' | 'erase';
 
@@ -252,7 +253,7 @@ export function Palette({
             ) : <p className="hint">Aucun corps — créez-en un ci-dessous.</p>}
 
             <div className="mini-title">Ajouter</div>
-            <div className="stack">
+            <Stack>
               <button className="btn small btn-primary" onClick={onAddArchitectureBody}>Nouveau corps</button>
               <button
                 className="btn small"
@@ -272,7 +273,7 @@ export function Palette({
                 Section de façade
               </button>
               <button className="btn small" disabled={!architectureBody} onClick={onAddRoofSection}>Section de toiture</button>
-            </div>
+            </Stack>
             <p className="hint">
               « Section de façade » s’arme puis se pose au clic sur une arête du plan (une façade existante
               est sélectionnée avant toute création). Tout le reste — libellé, style, toiture du corps,

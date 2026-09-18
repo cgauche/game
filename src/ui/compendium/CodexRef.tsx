@@ -12,7 +12,7 @@
  * contexte d'empilement. `pointer-events: none` → pur tooltip, pas de pont de survol ; le clic
  * (déclencheur) ouvre le Codex.
  */
-import { isValidElement, useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { isValidElement, useCallback, useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useGame } from '../../state/store';
 import { codexLookup, codexLookupById } from './registry';
@@ -349,9 +349,18 @@ export function CodexRef({
             ref={popRef}
             id={tipId}
             className="codex-pop"
-            // Sous `wrap` le popover est ACTIONNABLE (il porte la porte) : il reprend les
-            // événements de pointeur que `.codex-pop` neutralise pour le pur tooltip.
-            style={{ top: pos.top, bottom: pos.bottom, left: pos.left, maxWidth: pos.width, maxHeight: pos.maxHeight, ...(boiteAtteignable ? { pointerEvents: 'auto' as const } : null) }}
+            // Placement CALCULÉ → variables CSS lues par `.codex-pop` (arbitrage user A2, 2026-09-18).
+            // Sous `wrap` le popover est ACTIONNABLE (il porte la porte) : un ÉTAT est un ATTRIBUT,
+            // jamais une variable — `[data-atteignable]` lui rend les événements de pointeur que
+            // `.codex-pop` neutralise pour le pur tooltip.
+            style={{
+              '--pop-top': pos.top != null ? `${pos.top}px` : 'auto',
+              '--pop-bottom': pos.bottom != null ? `${pos.bottom}px` : 'auto',
+              '--pop-left': `${pos.left}px`,
+              '--pop-w': `${pos.width}px`,
+              '--pop-h': `${pos.maxHeight}px`,
+            } as CSSProperties}
+            data-atteignable={boiteAtteignable ? '' : undefined}
             role="tooltip"
             onMouseEnter={cancelHide}
             onMouseLeave={hide}
@@ -381,7 +390,7 @@ export function CodexRef({
                       /* Contrôle RÉEL → il compose le token de bouton partagé (`.btn.btn-ghost`,
                          `components.css`) ; `.codex-pop-open` ne garde que son placement en pied. */
                       className="btn btn-ghost codex-pop-open"
-                      style={{ pointerEvents: 'auto' }}
+                      data-atteignable=""
                       onClick={() => { open(); unpin(); }}
                     >
                       Ouvrir la fiche

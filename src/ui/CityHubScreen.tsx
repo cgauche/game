@@ -336,6 +336,7 @@ export function CityHubScreen({
         {screenTab === 'plan' && poi.length > 0 ? (
           <MasterDetail
             className="city-hub-master city-hub-plan"
+            aside="lg"
             listLabel={`Plan de ${place.label}`}
             list={
               <div className="worldmap-canvas city-hub-plan-canvas">

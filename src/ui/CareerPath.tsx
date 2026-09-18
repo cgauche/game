@@ -1,6 +1,7 @@
 import { Fragment, useRef, type KeyboardEvent } from 'react';
 import { MetalStatus } from './MetalStatus';
 import type { CareerLevelData } from '../data';
+import { Row } from './Layout';
 
 /**
  * CareerPath — chemin d'évolution d'une carrière en 4 niveaux (médaillons niveau/nom/statut,
@@ -40,9 +41,9 @@ export function CareerPath({ levels, currentLevel, selected, onSelect }: {
   };
 
   return (
-    <div
+    <Row
       ref={ref}
-      className="cc-path row-flex"
+      className="cc-path"
       role={onSelect ? 'radiogroup' : 'list'}
       aria-label="Chemin de carrière"
       onKeyDown={onKeyDown}
@@ -78,6 +79,6 @@ export function CareerPath({ levels, currentLevel, selected, onSelect }: {
           </Fragment>
         );
       })}
-    </div>
+    </Row>
   );
 }

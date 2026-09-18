@@ -4,6 +4,7 @@ import { CharacterPreview } from './CharacterPreview';
 import { ParchmentCard } from './ParchmentCard';
 import { heroSubtitle, heroRoles, heroKeySkills, heroKeyTalents } from './CharCard';
 import { t } from '../i18n';
+import { Row } from './Layout';
 
 /**
  * PRÉSENTATION d'un personnage — la vue qui RACONTE (avant/après recrutement), distincte de la
@@ -51,13 +52,13 @@ export function HeroPresentation({ hero, onFullSheet, onClose }: {
           {skills.length > 0 && (
             <section className="hero-present-sec">
               <h4>{t('present.skills')}</h4>
-              <div className="hero-present-chips row-flex">{skills.map((s) => <span key={s} className="lore-chip">{s}</span>)}</div>
+              <Row className="hero-present-chips">{skills.map((s) => <span key={s} className="lore-chip">{s}</span>)}</Row>
             </section>
           )}
           {talents.length > 0 && (
             <section className="hero-present-sec">
               <h4>{t('present.talents')}</h4>
-              <div className="hero-present-chips row-flex">{talents.map((tt) => <span key={tt} className="lore-chip">{tt}</span>)}</div>
+              <Row className="hero-present-chips">{talents.map((tt) => <span key={tt} className="lore-chip">{tt}</span>)}</Row>
             </section>
           )}
         </div>

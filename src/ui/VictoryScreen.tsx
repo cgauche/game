@@ -9,6 +9,7 @@ import { RuleDivider } from './Ornaments';
 import { Icon } from './Icon';
 import { useModalA11y } from './Modal';
 import { GatedAction } from './GatedAction';
+import { Row } from './Layout';
 
 /** Beat de lisibilité avant l'écran plein écran : on laisse voir le COUP FATAL et la chute du dernier
  *  ennemi (le champ de bataille reste rendu sous l'overlay) avant de recouvrir la scène — sinon la victoire
@@ -114,7 +115,7 @@ export function VictoryScreen() {
                 const canHarvest = !!harvestProfileFor(d.creatureId) && net.mode !== 'guest';
                 const done = (pv?.harvested ?? []).includes(d.creatureId ?? '');
                 return (
-                  <div key={d.label} className="victory-foe row-flex">
+                  <Row key={d.label} className="victory-foe">
                     {d.label}{d.count > 1 ? ` ×${d.count}` : ''}
                     {canHarvest && (
                       <GatedAction
@@ -129,7 +130,7 @@ export function VictoryScreen() {
                         btnClassName="btn-ghost victory-harvest"
                       />
                     )}
-                  </div>
+                  </Row>
                 );
               })}
             </div>

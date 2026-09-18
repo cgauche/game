@@ -13,6 +13,7 @@ import { SpeakerBanner } from './SpeakerBanner';
 import { CargoTransferPanel } from './CargoTransferPanel';
 import { TradeTable, type TradeGroup } from './TradeTable';
 import { GatedAction } from './GatedAction';
+import { Grid, Row, spanFull } from './Layout';
 
 /** Raison UNIQUE du refus des gestes de marché à un invité : l'hôte seul engage la bourse du groupe. */
 const REFUS_INVITE = 'L’hôte seul engage les dépenses du groupe.';
@@ -88,7 +89,7 @@ export function LandMarketView() {
             </ul>
           </section>
         )}
-        <div className="panel-grid port-trade">
+        <Grid min="md" stackBelow={700} className="port-trade">
           <section className="panel port-section">
             <h3>Acheter — offres de l’étape</h3>
             {!target && <p className="port-hint">Aucun porteur de charge : procurez-vous une bête de somme ou un véhicule pour transporter une cargaison.</p>}
@@ -99,8 +100,8 @@ export function LandMarketView() {
                 groups={offerGroups}
                 rowKey={(o) => o.cargoId}
                 label={(o) => (
-                  <span className="trade-offer-name row-flex">
-                    {/* `row-flex` : l'action « Évaluer » compose `GatedAction`, dont la boîte est un
+                  <Row as="span" className="trade-offer-name">
+                    {/* `Row` : l'action « Évaluer » compose `GatedAction`, dont la boîte est un
                         BLOC dès qu'une raison l'accompagne. */}
                     {o.label}
                     {o.wine && (o.wineTier
@@ -111,7 +112,7 @@ export function LandMarketView() {
                           descOfferte="Test d’Évaluation pour révéler la qualité secrète du vin (MSRC 13 l.95)"
                           onClick={() => evalWine(o.cargoId)} primary={false} btnClassName="small ghost"
                         /></>)}
-                  </span>
+                  </Row>
                 )}
                 enc={(o) => o.enc}
                 encLabel="Dispo"
@@ -184,8 +185,8 @@ export function LandMarketView() {
               />
             )}
           </section>
-          <CargoTransferPanel className="span-2" carriers={carriers} onMove={move} labelOf={cargoLabel} disabled={isGuest} />
-        </div>
+          <CargoTransferPanel {...spanFull} carriers={carriers} onMove={move} labelOf={cargoLabel} disabled={isGuest} />
+        </Grid>
     </ScreenShell>
   );
 }

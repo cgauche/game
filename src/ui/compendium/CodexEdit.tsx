@@ -65,6 +65,7 @@ import type { SecondaryRef, Variant } from '../../data/schemas/grammaire/valeurs
 import { OPTIONAL_RULES, type RuleKind, type RuleValue } from '../../engine/policy';
 import { VARIANT_RESOLVED_FIELDS as TALENT_VARIANT_FIELDS } from '../../data/schemas/defs/talents';
 import { VARIANT_RESOLVED_FIELDS as SPELL_VARIANT_FIELDS } from '../../data/schemas/defs/spells';
+import { Grid } from '../Layout';
 
 /** Catégories à VARIANTES réglées (#563/#564), avec les champs que leur résolution APPLIQUE — valeurs
  *  LUES des defs (`VARIANT_RESOLVED_FIELDS`), jamais recopiées : `VariantsField` en déduit les sous-
@@ -1737,7 +1738,7 @@ export function DetailsTextsField({ value, onChange }: { value: DetailsTexts | u
             <b>{DETAIL_TEXT_LABEL[key] ?? key}</b>
             <label className="ed-subfield">global<textarea rows={3} value={t.all} onChange={(e) => setText(key, { all: e.target.value })} /></label>
             <span className="de-hint">par espèce</span>
-            <div className="panel-grid">
+            <Grid min="md" stackBelow={700}>
               {Object.keys(t.bySpecies ?? {}).map((sp) => (
                 <div className="ed-field" key={sp}>
                   <div className="de-reflrow">
@@ -1750,7 +1751,7 @@ export function DetailsTextsField({ value, onChange }: { value: DetailsTexts | u
                   <textarea rows={2} value={t.bySpecies[sp]} onChange={(e) => setSpecies(key, sp, e.target.value)} />
                 </div>
               ))}
-            </div>
+            </Grid>
             <GatedAction id={`details-add-species-${key}`} label="+ Espèce" primary={false} btnClassName="small"
               enabled={clesLibres(key).length > 0}
               reason="Les 7 espèces ont déjà leur surcharge."

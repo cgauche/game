@@ -8,6 +8,9 @@
 /* Tuile = carte d'équipe (fond teinté), portrait au-dessus, jauge de vie HORIZONTALE dessous. */
 .ptile {
   position: relative;
+  /* Taille CALCULÉE par la primitive (`CHAR_SIZE_PX` × facteur d'unité active), posée en VARIABLE
+     CSS sur l'élément — jamais une propriété inline (arbitrage user A2, 2026-09-18). */
+  width: var(--ptile-px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -32,6 +35,8 @@
 .ptile-face {
   position: relative;
   display: block;
+  width: var(--ptile-px);
+  height: var(--ptile-px);
 }
 .ptile-face .rig-portrait {
   display: block;
@@ -1108,8 +1113,8 @@
   position: relative; flex: 1; height: 14px; border-radius: 7px;
   background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.15); overflow: hidden;
 }
-.dr-bar-fill { display: block; height: 100%; background: var(--ok-bright); transition: width 0.25s ease; }
-.dr-bar-notch { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(0, 0, 0, 0.5); }
+.dr-bar-fill { display: block; height: 100%; width: var(--dr-pct, 0%); background: var(--ok-bright); transition: width 0.25s ease; }
+.dr-bar-notch { position: absolute; top: 0; bottom: 0; left: var(--dr-at); width: 1px; background: rgba(0, 0, 0, 0.5); }
 .dr-bar-val { font-size: 12px; font-weight: 700; color: var(--gold); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 

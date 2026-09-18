@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
+import { Split, Stack } from './Layout';
 
-/** Breakpoint canon d'empilement — DOIT rester aligné sur `.master-detail` (`components.css`) ; les
- *  deux se modifient ENSEMBLE. */
+/** Breakpoint canon d'empilement — passé aux primitives de placement (`Split stackBelow`,
+ *  `Stack rowBelow`) ET lu par la mise en vue du détail : une seule valeur pour les trois. */
 export const MASTER_DETAIL_STACK_BREAKPOINT_PX = 700;
 
 /** Marge de tolérance (px) pour « au bord » — évite un flottant de 0,3px (sous-pixel, zoom navigateur)
@@ -58,8 +59,8 @@ function isActionableTarget(target: EventTarget | null): boolean {
 
 /**
  * MasterDetail — GABARIT DE COMPOSITION UNIQUE d'un maître-détail (liste à gauche, détail au
- * centre) : deux slots, empilement ≤700px (breakpoints canon), 360px sans scroll horizontal
- * (`components.css`). Réconciliation avec la piste ÉCARTÉE `useMasterDetail` (CLAUDE.md « Pistes
+ * centre) : deux slots posés sur `Split`/`Stack` (couche LAYOUT), empilement ≤700px (breakpoints
+ * canon), 360px sans scroll horizontal. Réconciliation avec la piste ÉCARTÉE `useMasterDetail` (CLAUDE.md « Pistes
  * évaluées puis écartées ») : le rejet portait sur le HOOK D'ÉTAT PARTAGÉ (marchand ⇄ carte
  * divergent après sélection) — il reste écarté. Cette primitive est un GABARIT DE LAYOUT pur :
  * aucun état de sélection dedans, l'appelant possède `list`/`detail` (boutons a11y natifs ou
@@ -74,6 +75,7 @@ export function MasterDetail({
   list,
   detail,
   listLabel,
+  aside = 'sm',
   className,
 }: {
   /** Slot GAUCHE — items de sélection (l'appelant en possède l'état). */
@@ -82,13 +84,15 @@ export function MasterDetail({
   detail: ReactNode;
   /** `aria-label` du conteneur de liste. */
   listLabel?: string;
+  /** Largeur du rail de liste (`Split` prop `aside`) : `sm` rail étroit, `lg` liste qui respire. */
+  aside?: 'sm' | 'lg';
   className?: string;
 }) {
   const detailRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLElement>(null);
   useScrollEdgeAttrs(listRef);
 
-  const handleListInteraction = useCallback((e: MouseEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>) => {
+  const handleListInteraction = useCallback((e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
     if ('key' in e && e.key !== 'Enter' && e.key !== ' ') return;
     if (!isActionableTarget(e.target)) return;
     // rAF : laisser le re-render de l'appelant poser le nouveau détail avant de mesurer sa position.
@@ -100,17 +104,19 @@ export function MasterDetail({
   }, []);
 
   return (
-    <div className={`master-detail${className ? ` ${className}` : ''}`}>
-      <div
+    <Split className={className} aside={aside} gap="lg" stackBelow={MASTER_DETAIL_STACK_BREAKPOINT_PX}>
+      <Stack
         ref={listRef}
         className="master-detail-list"
+        gap="xs"
+        rowBelow={MASTER_DETAIL_STACK_BREAKPOINT_PX}
         aria-label={listLabel}
         onClickCapture={handleListInteraction}
         onKeyDownCapture={handleListInteraction}
       >
         {list}
-      </div>
-      <div className="master-detail-detail" ref={detailRef}>{detail}</div>
-    </div>
+      </Stack>
+      <div ref={detailRef}>{detail}</div>
+    </Split>
   );
 }

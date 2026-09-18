@@ -23,6 +23,7 @@ import { Icon } from '../Icon';
 import { Tabs } from '../Tabs';
 import { ListRow } from '../ListRow';
 import { NumberField } from '../NumberField';
+import { Row } from '../Layout';
 
 export type LogicTab = 'triggers' | 'dialogues' | 'encounters' | 'validation';
 
@@ -168,7 +169,7 @@ function TriggersTab({
       </div>
       {t ? (
         <div className="logic-detail">
-          <div className="row-flex">
+          <Row>
             <label className="ed-field">
               Id
               <input
@@ -191,7 +192,7 @@ function TriggersTab({
             >
               Supprimer
             </button>
-          </div>
+          </Row>
           <div className="mini-title" title="Le trigger ne se déclenche qu'en entrant dans la zone si la condition est vraie (flag, créneau horaire, ET/OU/NON).">Condition de déclenchement</div>
           <WhenEditor when={t.when} onChange={(when) => upd({ when })} />
           <div className="mini-title">Au déclenchement (effets · conditions · tests)</div>
@@ -239,7 +240,7 @@ function DialoguesTab({
       </div>
       {d ? (
         <div className="logic-detail">
-          <div className="row-flex logic-detail-bar">
+          <Row className="logic-detail-bar">
             <button
               className="btn small danger"
               onClick={() => {
@@ -249,7 +250,7 @@ function DialoguesTab({
             >
               Supprimer le dialogue
             </button>
-          </div>
+          </Row>
           <DialogueDetail
             key={d.id}
             dialogue={d}
@@ -314,7 +315,7 @@ function EncountersTab({
       </div>
       {enc ? (
         <div className="logic-detail">
-          <div className="row-flex">
+          <Row>
             <label className="ed-field">
               Id (référencé par « Démarrer un combat »)
               <input
@@ -334,7 +335,7 @@ function EncountersTab({
             >
               Supprimer
             </button>
-          </div>
+          </Row>
           <div className="mini-title">Combattants (membres)</div>
           <div className="enemy-list">
             {members.map((m) => {

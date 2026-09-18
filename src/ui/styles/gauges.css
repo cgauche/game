@@ -37,13 +37,14 @@
 .life-bar__fill {
   display: block;
   height: 100%;
+  width: var(--life-pct, 0%);
   border-radius: 3px;
   transition: width 0.2s ease;
-  background: var(--silver);
+  background: var(--life-color, var(--silver));
 }
-.life-bar[data-tone='ok'] .life-bar__fill { background: var(--ok-bright); }
-.life-bar[data-tone='warn'] .life-bar__fill { background: var(--gold2); }
-.life-bar[data-tone='danger'] .life-bar__fill { background: var(--danger); }
+.life-bar[data-tone='ok'] .life-bar__fill { background: var(--life-color, var(--ok-bright)); }
+.life-bar[data-tone='warn'] .life-bar__fill { background: var(--life-color, var(--gold2)); }
+.life-bar[data-tone='danger'] .life-bar__fill { background: var(--life-color, var(--danger)); }
 .life-bar__value {
   grid-area: value;
   color: var(--text);
@@ -114,10 +115,13 @@
   position: relative;
   min-width: 0;
 }
+/* Géométrie CALCULÉE de la piste à taille fixe (`cellSize`) : la primitive pose `--notch-w` et
+   `--cell-w` en VARIABLES, jamais une propriété inline (arbitrage user A2, 2026-09-18). */
 .notch-gauge__notches {
   display: flex;
   gap: 2px;
   height: 12px;
+  width: var(--notch-w, auto);
 }
 .notch-gauge__notch {
   flex: 1 1 0;
@@ -130,6 +134,7 @@
   position: absolute;
   top: -2px;
   bottom: -2px;
+  left: var(--mark-at);
   width: 2px;
   margin-left: -1px;
   background: var(--gold2);
@@ -149,6 +154,7 @@
 .notch-gauge[data-fixed] { grid-template-columns: auto auto auto; }
 .notch-gauge[data-fixed][data-stacked] { grid-template-columns: auto auto; }
 .notch-gauge[data-fixed] .notch-gauge__notches { flex: 0 0 auto; }
+.notch-gauge[data-fixed] .notch-gauge__notch { flex: 0 0 var(--cell-w); }
 
 /* Empilement ALIGNÉ de N `NotchGauge` (registre Seuils de la fiche, `EtatPanel.tsx`) : patron de
    GROUPE de la primitive (pas un scope par écran) — les colonnes libellé/piste/valeur de chaque

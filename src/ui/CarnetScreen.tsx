@@ -13,6 +13,7 @@ import { bookAbr } from '../data';
 import { useGame } from '../state/store';
 import type { Affaire, Indice, IndiceStade } from '../state/campaignNarratif';
 import type { ClueState } from '../state/clues';
+import { Row, Stack } from './Layout';
 
 /** Sentinelle du pseudo-groupe « Épinglés », en tête de liste — jamais un id de donnée réelle. */
 const PINNED_SEL = '__pinned__';
@@ -54,11 +55,11 @@ function ClueBand({ indice, clue, onTogglePin }: { indice: Indice; clue: ClueSta
         </span>
       }
       right={
-        <span className="row-flex">
+        <Row as="span">
           <span className="chip">{indice.kind === 'rumeur' ? 'Rumeur' : 'Indice'}</span>
           {clue.statut === 'réfuté' && <span className="chip tone-danger">Fausse piste</span>}
           <EpingleButton clue={clue} onToggle={() => onTogglePin(indice.id)} />
-        </span>
+        </Row>
       }
     >
       <div className={clue.statut === 'réfuté' ? 'clue-refuted' : undefined}>
@@ -109,7 +110,7 @@ export function CarnetScreen({ onClose }: { onClose: () => void }) {
   const list = aucunIndice ? (
     <p className="empty">Aucun indice découvert pour l’instant.</p>
   ) : (
-    <div className="stack">
+    <Stack>
       {hasPinned && (
         <ListRow
           variant="codex"
@@ -134,7 +135,7 @@ export function CarnetScreen({ onClose }: { onClose: () => void }) {
           </ListRow>
         );
       })}
-    </div>
+    </Stack>
   );
 
   const indicesDétail: Indice[] =
@@ -147,13 +148,13 @@ export function CarnetScreen({ onClose }: { onClose: () => void }) {
   const detail = aucunIndice ? null : indicesDétail.length === 0 ? (
     <p className="empty">Sélectionnez une affaire pour consulter ses indices.</p>
   ) : (
-    <div className="stack">
+    <Stack>
       {indicesDétail.map((i) => {
         const clue = clues[i.id];
         if (!clue) return null;
         return <ClueBand key={i.id} indice={i} clue={clue} onTogglePin={toggleCluePin} />;
       })}
-    </div>
+    </Stack>
   );
 
   return (

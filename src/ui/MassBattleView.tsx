@@ -15,6 +15,7 @@ import {
 import { BATTLE_HAZARDS } from '../engine/massBattle';
 import type { Combatant } from '../engine/types';
 import { GatedAction } from './GatedAction';
+import { Grid } from './Layout';
 
 /**
  * Écran de Combat de masse / Puissance de Bataille (ADE II 08). Il ne gère QUE les Rounds ('round') et
@@ -54,10 +55,10 @@ export function MassBattleView() {
 
 function ArmyBars({ mb }: { mb: MassBattleState }) {
   return (
-    <div className="mb-armies panel-grid">
+    <Grid min="md" stackBelow={700} className="mb-armies">
       <ArmyBar army={mb.ally} side="ally" />
       <ArmyBar army={mb.enemy} side="enemy" />
-    </div>
+    </Grid>
   );
 }
 

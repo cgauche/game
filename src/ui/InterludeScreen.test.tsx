@@ -104,7 +104,7 @@ describe('InterludeScreen — refonte LOT 6', () => {
     expect(html).not.toContain('nom exact');
     expect(html).toContain('tab-btn'); // Tabs (primitive UNIQUE) — les onglets SÉLECTIONNENT le héros (#330)
     expect(html.match(/interlude-hero panel/g)?.length).toBe(1); // UN SEUL volet de héros rendu à la fois
-    expect(html).toContain('master-detail'); // gabarit MasterDetail (liste GAUCHE + détail CENTRE)
+    expect(html).toContain('master-detail-list'); // gabarit MasterDetail (liste GAUCHE + détail CENTRE)
     expect(html).toContain('Revenus'); // Revenus est un volet comme les autres (gabarit commun)
     expect(html).toContain('Artisanat');
     expect(html).toContain('Apprentissage');
@@ -121,7 +121,7 @@ describe('InterludeScreen — refonte LOT 6', () => {
     const html = renderToStaticMarkup(
       <InterludeScreen seam={{ ...seam, phase: 'activities', openPane: { heroId: hero.id, pane: 'revenus' } }} />,
     );
-    expect(html).toContain('master-detail'); // maître-détail (#330) : liste GAUCHE + détail CENTRE
+    expect(html).toContain('master-detail-list'); // maître-détail (#330) : liste GAUCHE + détail CENTRE
     expect(html).toContain('activity-pane-desc'); // la description VERBATIM `<Prose>` (`desc` de activities.json)
     expect(html).toContain('Cette Activité englobe'); // desc de Revenus — EXISTAIT en donnée, jamais affichée avant #330
     expect(html).toContain('activity-pane-foot'); // le pied du gabarit
@@ -139,7 +139,7 @@ describe('InterludeScreen — refonte LOT 6', () => {
     const html = renderToStaticMarkup(
       <InterludeScreen seam={{ ...seam, phase: 'activities', catalog, openPane: { heroId: hero.id, pane: 'convalescence' } }} />,
     );
-    expect(html).toContain('master-detail'); // maître-détail (#330)
+    expect(html).toContain('master-detail-list'); // maître-détail (#330)
     expect(html).toContain('activity-pane-foot');
     expect(html).toContain('Calme'); // la compétence du Test (chip Codex)
     expect(html).toContain('Très difficile'); // la Difficulté, sur la LIGNE du pré-jet (#1072)
@@ -184,7 +184,7 @@ describe('InterludeScreen — refonte LOT 6', () => {
     const html = renderToStaticMarkup(
       <InterludeScreen seam={{ ...seam, phase: 'activities', openPane: { heroId: hero.id, pane: 'bank' } }} />,
     );
-    expect(html).toContain('master-detail'); // maître-détail (#330)
+    expect(html).toContain('master-detail-list'); // maître-détail (#330)
     expect(html).toContain('activity-pane-foot');
     expect(html).not.toContain('rm-roll pending'); // pas de Test : dépôt direct
     expect(html).toContain('Sans jet');

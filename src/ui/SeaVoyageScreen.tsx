@@ -11,6 +11,7 @@ import { libelleDeValeur } from '../data/schemas/grammaire/meta';
 import { windDirectionSchema } from '../data/schemas/defs-scenes/worldmap';
 import type { TravelRecapDay } from '../state/travelFlow';
 import { vesselHullGauge } from './VoyageScreen';
+import { Row } from './Layout';
 
 /** Cap de mer (`WindDirection` : nord/sud/est/ouest) → `Dir8` (vocabulaire rose des vents du projet). */
 const HEADING_TO_DIR8: Record<string, Dir8> = { nord: 'N', sud: 'S', est: 'E', ouest: 'O' };
@@ -50,14 +51,14 @@ export function SeaVoyageBody({ day }: { day: TravelRecapDay }) {
       </div>
       {/* Méta du jour en CARTOUCHES label+valeur (primitive `.stat-chip`, §charte-ui) — plus de phrase
           concaténée ni d'ids bruts (vent/cap en libellés, arbitrage user 2026-07-11). */}
-      <div className="sea-voyage-meta row-flex">
+      <Row className="sea-voyage-meta">
         <span className="sv-weather">{chrome.weatherLabel}</span>
         <span className="stat-chip"><span className="sc-label">Vent</span><span className="sc-value">{libelleDeValeur(windDirectionSchema, chrome.windFrom)}</span></span>
         <span className="stat-chip"><span className="sc-label">Cap</span><span className="sc-value">{libelleDeValeur(windDirectionSchema, chrome.heading)}</span></span>
         <span className="stat-chip"><span className="sc-label">Distance</span><span className="sc-value">{chrome.milesLeft} milles{chrome.daysLeft > 0 ? ` · ~${chrome.daysLeft} j` : ''}</span></span>
         {chrome.manann !== 0 && <span className="stat-chip"><span className="sc-label">Manann</span><span className="sc-value">{chrome.manann >= 0 ? `+${chrome.manann}` : chrome.manann}</span></span>}
         {chrome.hullDelta !== 0 && <span className="stat-chip"><span className="sc-label">Coque</span><span className="sc-value">{chrome.hullDelta > 0 ? `+${chrome.hullDelta}` : chrome.hullDelta}</span></span>}
-      </div>
+      </Row>
       {/* Événements de bord RACONTÉS (un récit → une carte-parchemin) — AVANT le procès-verbal, ils
           en sont la cause narrative du jour. */}
       {(day.events?.length ?? 0) > 0 && (

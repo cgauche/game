@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Prose } from './Prose';
 import type { Porteur } from './liage';
+import { Row } from './Layout';
 
 /**
  * DetailFrame — cadre de détail de l'élue (en-tête nom + chips méta + rubriques de plein rang +
@@ -62,8 +63,8 @@ export function DetailIdentity({ label, sub, meta, band = true }: {
   );
   return (
     <>
-      {label != null && (band ? <div className="detail-frame-head row-flex">{identity}</div> : identity)}
-      {meta && <div className="detail-frame-meta row-flex">{meta}</div>}
+      {label != null && (band ? <Row className="detail-frame-head">{identity}</Row> : identity)}
+      {meta && <Row className="detail-frame-meta">{meta}</Row>}
     </>
   );
 }

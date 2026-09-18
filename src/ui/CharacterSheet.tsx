@@ -50,6 +50,7 @@ import { woundsTone, encumbranceTone } from './gaugeTones';
 import { corruptionThresholdExceeded } from '../engine/corruption';
 import { locationLabel } from '../engine/combat';
 import { CarrierInventory } from './CarrierInventory';
+import { Row } from './Layout';
 
 /** Badges de zone de l'onglet Possessions (lot « corps-index », #492) : PA cumulé des 6 Localisations
  *  RÉELLES (`hero.armour`, couches rigide+Flexible+mutations déjà cumulées) — `sang` si une pièce
@@ -226,12 +227,12 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
             </div>
             <SheetActiveEffects hero={hero} />
             {canSoigner && (
-              <div className="row-flex">
+              <Row>
                 <button className="btn small" onClick={() => openMedic({ patientId: hero.id })}
                   title="Soins du groupe (Tests de Guérison) — ouvre l'infirmerie sur ce héros (provisoire — maison PartyDock au lot 6)">
                   <Icon id="journal/heal" size="sm" /> Soins
                 </button>
-              </div>
+              </Row>
             )}
           </aside>
           <div className="sheet-main">
@@ -361,7 +362,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                   {' '}en combat
                 </span>
               ) : (
-                <div className="spell-actions row-flex">
+                <Row className="spell-actions">
                   {isArcaneSpell(sp) && (
                     <>
                       <GatedAction
@@ -385,7 +386,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                     btnClassName="small"
                     onClick={() => oocCastSpell(hero.id, sp.id, targetId)}
                   />
-                </div>
+                </Row>
               )}
             </div>
           );
@@ -399,7 +400,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
             {isMagicMissile(sp) ? (
               <span className="muted">{' '}en combat</span>
             ) : (
-              <div className="spell-actions row-flex">
+              <Row className="spell-actions">
                 <GatedAction
                   id={`sheet-cast-grimoire-${hero.id}-${sp.id}`}
                   label={<><Icon id="nav/compendium" size="sm" /> Lancer (grimoire)</>}
@@ -409,7 +410,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                   btnClassName="small"
                   onClick={() => oocCastSpell(hero.id, sp.id, targetId, true)}
                 />
-              </div>
+              </Row>
             )}
           </div>
         ))}
@@ -435,11 +436,11 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                     <span className="spell-name">
                       {d.label} · NI {d.ni} ({prog}/{d.ni})
                     </span>
-                    <div className="spell-actions row-flex">
+                    <Row className="spell-actions">
                       <button className="btn small" onClick={() => oocDispelSpell(hero.id, d.spellId, d.casterId)}>
                         <Icon id="action/dispel" size="sm" /> Dissiper
                       </button>
-                    </div>
+                    </Row>
                   </div>
                 );
               })}
@@ -471,7 +472,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                       <CodexRef category="spells" id={sp.id} label={sp.label}>{sp.label}</CodexRef>
                       {n > 0 ? <span className="muted"> · ×{n}</span> : null}
                     </span>
-                    <div className="spell-actions row-flex">
+                    <Row className="spell-actions">
                       {n > 0 && (
                         <button className="btn small" title="Jeter un composant (pas de remboursement)" onClick={() => removeSpellComponent(hero.id, sp.id)}>
                           −
@@ -487,7 +488,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                         primary={false}
                         btnClassName="small"
                       />
-                    </div>
+                    </Row>
                   </div>
                 );
               })}

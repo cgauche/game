@@ -8,6 +8,7 @@ import { RecapLineSections } from './RecapLine';
 import { XpBadge } from './creator/CreatorStepFrame';
 import { SessionEndBody } from './SessionEndModal';
 import { GatedAction } from './GatedAction';
+import { Grid, Row } from './Layout';
 
 /**
  * RÉCAP DE FIN DE CHAPITRE (#717) — ce que la route retiendra : la chronique DÉRIVÉE (objectifs
@@ -47,18 +48,18 @@ export function ChapterRecapScreen() {
             : <p className="empty">{t('chap.chroniqueVide')}</p>}
         </ParchmentCard>
       </Band>
-      <div className="panel-grid">
+      <Grid min="md" stackBelow={700}>
         <Band title={t('chap.lieux')}>
           {recap.lieux.length > 0
-            ? <div className="row-flex">{recap.lieux.map((l) => <span key={l} className="chip">{l}</span>)}</div>
+            ? <Row>{recap.lieux.map((l) => <span key={l} className="chip">{l}</span>)}</Row>
             : <p className="empty">{t('chap.lieuxVide')}</p>}
         </Band>
         <Band title={t('chap.tombes')}>
           {recap.tombes.length > 0
-            ? <div className="row-flex">{recap.tombes.map((h) => <span key={h.id} className="chip">{h.label}</span>)}</div>
+            ? <Row>{recap.tombes.map((h) => <span key={h.id} className="chip">{h.label}</span>)}</Row>
             : <p className="empty">{t('chap.tombesVide')}</p>}
         </Band>
-      </div>
+      </Grid>
       <Band title={t('chap.seance')}>
         {volet === 1 && (
           <div className="modal-actions">

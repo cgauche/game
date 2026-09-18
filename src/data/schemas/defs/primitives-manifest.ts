@@ -14,12 +14,14 @@ const doc = document(
   famille,
   {
     fichier: z.string(),
+    css: z.string().optional(),
     concept: z.string(),
     perimetre: z.string(),
     verrou: z.string(),
   },
   {
     fichier: { label: 'Fichier', hint: 'Chemin source de la primitive' },
+    css: { label: 'CSS possédé', hint: 'Module de src/ui/styles que la primitive POSSÈDE (#1800)' },
     concept: { label: 'Concept', hint: 'Besoin couvert par la primitive' },
     perimetre: { label: 'Périmètre', hint: 'Ce que la primitive couvre' },
     verrou: { label: 'Verrou', hint: 'Ce qui empêche une réinvention concurrente' },

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { WorldMapView } from './WorldMapView';
+import { declarations, reglesCss } from '../../scripts/guards/lib/cssCouches.mjs';
 
 /**
  * Recette « impossible de cliquer sur la carte » — rendu STATIQUE sur la VRAIE carte de campagne
@@ -82,24 +83,52 @@ describe('carte du monde — les commandes de zoom restent atteignables panneau 
 });
 
 /**
- * #1117 — l'empilement ≤900px est une garantie de la PRIMITIVE `.layout-sidebar`, pas de l'écran :
- * l'aside y revient dans le flux (une surface superposée à la carte serait incliquable, quel que
- * soit son `z-index`). L'écran de carte compose la primitive et ne redéclare donc pas la règle.
+ * #1117 — la GÉOMÉTRIE de cet écran, aux deux régimes. ≥901px : deux colonnes, le canevas PUIS
+ * l'aside borné (`world-meta.css`), l'aside étiré sur la hauteur et défilant dans la sienne.
+ * ≤900px : une seule colonne, garantie par la PRIMITIVE `Split` que l'écran compose — une surface
+ * superposée à la carte serait incliquable, quel que soit son `z-index`.
  * Vérification NAVIGATEUR : fenêtre ~850px ET ~360px, route SÉLECTIONNÉE (panneau ouvert),
  * `document.elementFromPoint` au centre de « Zoomer » → le bouton ; le panneau reste lisible dessous.
  */
-describe('carte du monde — l’empilement ≤900px vient de la primitive (#1117)', () => {
-  const base = readFileSync(new URL('./styles/base.css', import.meta.url), 'utf8');
-  const worldMeta = readFileSync(new URL('./styles/world-meta.css', import.meta.url), 'utf8');
+describe('carte du monde — la géométrie de ses deux régimes (#1117)', () => {
+  const layout = reglesCss(readFileSync(new URL('./styles/layout.css', import.meta.url), 'utf8'));
+  const ecran = reglesCss(readFileSync(new URL('./styles/world-meta.css', import.meta.url), 'utf8'));
+  /** Dernière valeur déclarée pour `prop` sur `selecteur`, dans le contexte `media` (`null` = 1er niveau). */
+  const valeur = (
+    regles: { selecteurs: string[]; corps: string; media: string | null }[],
+    selecteur: string, media: string | null, prop: string,
+  ) => regles
+    .filter((r) => r.selecteurs.includes(selecteur) && r.media === media)
+    .flatMap((r) => declarations(r.corps))
+    .filter((d) => d.prop === prop)
+    .pop()?.valeur ?? null;
+  const html = renderToStaticMarkup(<WorldMapView hereSceneId="arene-hub" initialRouteId="route-futaie" />);
 
-  it('≤900px : la primitive remet son aside dans le FLUX', () => {
-    const media = /@media \(max-width: 900px\) \{[\s\S]*?\n\}/.exec(base)?.[0] ?? '';
-    expect(media, 'la media query empilée de la primitive existe').toBeTruthy();
-    expect(media, 'l’aside y est remis dans le flux').toMatch(/\.layout-sidebar > aside\s*\{[^}]*position:\s*static/);
+  it('≥901px : deux colonnes — le canevas, puis l’aside BORNÉ', () => {
+    expect(html.indexOf('worldmap-canvas'), 'le canevas est le PREMIER enfant').toBeLessThan(html.indexOf('worldmap-side'));
+    expect(html, 'la colonne bornée est donc la SECONDE (`side="end"`)').toContain('data-side="end"');
+    const mq = '@media (min-width: 901px)';
+    expect(valeur(ecran, '.worldmap-layout', mq, '--aside'), 'l’écran pose SA largeur de colonne bornée par la variable que `Split` consomme')
+      .toBe('min(400px, 40vw)');
+    expect(valeur(ecran, '.worldmap-layout', mq, 'grid-template-columns'), 'les colonnes appartiennent à `Split`').toBe(null);
+    expect(valeur(layout, ".split[data-side='end']", null, 'grid-template-columns'), 'la primitive lit `--aside`').toContain('var(--aside');
+  });
+
+  it('≥901px : l’aside s’ÉTIRE sur la hauteur et défile dans la sienne', () => {
+    expect(html, 'l’écran demande des colonnes de même hauteur').toContain('data-align="stretch"');
+    expect(valeur(layout, ".split[data-align='stretch']", null, 'align-items'), 'la primitive sert `align="stretch"`').toBe('stretch');
+    const mq = '@media (min-width: 901px)';
+    expect(valeur(ecran, '.worldmap-layout > aside.worldmap-side', mq, 'align-self')).toBe('stretch');
+    expect(valeur(ecran, '.worldmap-layout > aside.worldmap-side', mq, 'overflow-y'), 'elle défile dans SA hauteur').toBe('auto');
+  });
+
+  it('≤900px : la PRIMITIVE empile en une colonne', () => {
+    expect(html, 'l’écran déclare sa cassure à la primitive').toContain('data-stack-below="900"');
+    expect(valeur(layout, ".split[data-stack-below='900']", '@media (max-width: 900px)', 'grid-template-columns')).toBe('1fr');
   });
 
   it('l’écran de carte ne REDÉCLARE pas la règle de la primitive', () => {
-    const media = /@media \(max-width: 900px\) \{[\s\S]*?\n\}/.exec(worldMeta)?.[0] ?? '';
-    expect(media).not.toMatch(/aside\.worldmap-side\s*\{[^}]*position:\s*static/);
+    expect(valeur(ecran, '.worldmap-layout', '@media (max-width: 900px)', 'grid-template-columns'),
+      'l’empilement appartient à `Split`').toBe(null);
   });
 });

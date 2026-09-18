@@ -27,6 +27,7 @@ import { Tabs } from './Tabs';
 import { coreAxisIds } from '../data';
 import { resolveActiveAxes } from '../state/worldMap';
 import { t } from '../i18n';
+import { Row } from './Layout';
 
 /**
  * Écran d'équipe — solo ET coop. En coop, l'hôte attribue chaque SIÈGE (`net.slots`) ; chaque joueur
@@ -436,12 +437,12 @@ export function PartyScreenView({
       <div className="party-main">
       <CompanyRail party={party} axisIds={axisIds} campaignName={campaignName} onChangeCampaign={onChangeCampaign} />
       <div className="party-company">
-        <div className="party-acts-header row-flex">
+        <Row className="party-acts-header">
           <h3 className="party-acts-title">{t('party.acts.title')}</h3>
           <span className="party-acts-subtitle">
             {t(party.length <= 1 ? 'party.acts.subtitle.one' : 'party.acts.subtitle', { seats: NUM_WORDS_FR[PARTY_MAX], sealed: NUM_WORDS_FR[Math.min(party.length, PARTY_MAX)] })}
           </span>
-        </div>
+        </Row>
         <div className="party-roster" aria-label={t('party.acts.title')}>
           {views.map(({ seat, hero: h }, i) => {
             const mine = !coop || seat === net.mySeat;
@@ -508,10 +509,10 @@ export function PartyScreenView({
                       {mine ? t('party.slot.invite') : <><Icon id="ui/wait" size="sm" /> {t('party.slot.waiting', { name: seatName(seat) })}</>}
                     </span>
                     {mine && (
-                      <div className="seat-empty-actions row-flex">
+                      <Row className="seat-empty-actions">
                         <button className="btn small" onClick={onCreate}>{t('party.seat.create')}</button>
                         <button className="btn small btn-primary" onClick={() => setSelector({ mode: 'recruit' })}>{t('party.seat.choose')}</button>
-                      </div>
+                      </Row>
                     )}
                   </div>
                 )}
@@ -523,9 +524,9 @@ export function PartyScreenView({
       </div>
 
       {net.mode !== 'guest' && (
-        <footer className="party-actions row-flex">
+        <Row as="footer" className="party-actions">
           <p className="party-actions-summary">{partySummaryText(party, axisIds)}</p>
-          <div className="party-actions-buttons row-flex">
+          <Row className="party-actions-buttons">
             {inProgress && (
               <button className="btn btn-primary" onClick={onResume}>
                 {t('party.action.resume')}
@@ -544,8 +545,8 @@ export function PartyScreenView({
               primary={!inProgress}
               onClick={onStart}
             />
-          </div>
-        </footer>
+          </Row>
+        </Row>
       )}
 
       {selector && (selector.mode === 'recruit' || onReplaceHero) && (

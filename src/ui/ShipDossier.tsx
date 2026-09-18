@@ -19,6 +19,7 @@ import { ScreenShell } from './ScreenShell';
 import { Tabs } from './Tabs';
 import { CargoTransferPanel } from './CargoTransferPanel';
 import { ShipPreview } from './ShipPreview';
+import { Split } from './Layout';
 
 /**
  * DOSSIER DE NAVIRE persistant (#227, attendu C.1) — écran plein-champ du `CampaignVessel` (l'INSTANCE
@@ -26,7 +27,7 @@ import { ShipPreview } from './ShipPreview';
  * données existent déjà sur `vessel` (aucun trou moteur) : c'est l'écran qui les compose avec les
  * primitives partagées (jauges à crans `NotchGauge`, ton de Moral `moraleTone`, résumé d'équipage salarié
  * `ShipCrewWages`). Coquille plein-champ `ScreenShell` + onglets (patron de PortView) ; responsive
- * ≤900/700/560 via `.layout-sidebar`/`.panel-grid`. La coque reste une JAUGE (pas de silhouette à
+ * ≤900/700/560 via `Split`/`Grid`. La coque reste une JAUGE (pas de silhouette à
  * localisations — arbitrage USER). La fiche de combat `PosteSheet` (postes/manœuvre) reste distincte.
  */
 
@@ -132,7 +133,7 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
               <p>Coque : <b>{woundsCur}</b> / {woundsMax} Blessure(s){woundsCur <= 0 ? ' — épave, échouée' : missing > 0 ? ' — avariée' : ' — intacte'}</p>
             </div>
           </section>
-          <div className="layout-sidebar port-yard">
+          <Split aside="md" stackBelow={900} gap="xl" pad="xl" className="screen-scroll port-yard">
             <section className="panel port-section">
               <h3>Jauges</h3>
               <NotchGauge label="Coque" value={woundsCur} max={woundsMax} stacked tone={hullTone} />
@@ -202,11 +203,11 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
                 ) : <p className="port-hint">Aucun facteur appliqué à ce navire.</p>}
               </details>
             </section>
-          </div>
+          </Split>
         </>)}
 
         {tab === 'cargaison' && (
-          <div className="layout-sidebar port-trade">
+          <Split aside="md" stackBelow={900} gap="xl" pad="xl" className="screen-scroll port-trade">
             <section className="panel port-section">
               <h3>Cale</h3>
               <NotchGauge label="Soute" value={cargoEnc} max={cargoMax} marks={cargoMarks} stacked tone={cargoTone} format={(v) => `${v} / ${capacity} Enc${overload.palierId ? ` — ${overload.label} (${overload.ratioPct} %)` : ''}`} />
@@ -229,11 +230,11 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
               )}
             </section>
             {transfer}
-          </div>
+          </Split>
         )}
 
         {tab === 'equipage' && (
-          <div className="layout-sidebar port-yard">
+          <Split aside="md" stackBelow={900} gap="xl" pad="xl" className="screen-scroll port-yard">
             <section className="panel port-section">
               <h3>Équipage salarié</h3>
               {vessel.crew?.length ? (
@@ -278,7 +279,7 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
                 <p className="port-hint">Aucun facteur actif — seule la paie hebdomadaire pèsera au conseil.</p>
               )}
             </section>
-          </div>
+          </Split>
         )}
     </ScreenShell>
   );

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { GaugeTone } from './NotchGauge';
 
 /**
@@ -64,7 +64,16 @@ export function LifeBar({ value, max, label, tone, color, format, overlay, stack
         aria-valuemax={max}
         aria-valuenow={value}
       >
-        <span className="life-bar__fill" style={{ width: `${Math.round((overflowing ? 1 : frac) * 100)}%`, ...(color ? { background: color } : {}) }} />
+        {/* Géométrie et teinte de DONNÉE → variables CSS lues par la feuille (arbitrage user A2,
+            2026-09-18). `initial` rend la variable GARANTIE-INVALIDE : `var()` reprend alors son
+            repli, donc la matière du ton `data-tone`. */}
+        <span
+          className="life-bar__fill"
+          style={{
+            '--life-pct': `${Math.round((overflowing ? 1 : frac) * 100)}%`,
+            '--life-color': color ?? 'initial',
+          } as CSSProperties}
+        />
       </div>
       {overlay && display != null && <span className="life-bar__value">{display}</span>}
     </div>

@@ -117,8 +117,11 @@
 }
 /* Phase 3 (#343) : la carte reste la zone principale, le panneau de départ (4 états mutuellement
    exclusifs — reprise/départ/muet/porte de nuit, tous `.worldmap-panel`) devient une colonne latérale
-   FIXE (compose `.layout-sidebar` — jamais une grille maison). ≤900px : la primitive empile déjà
-   (comportement mobile inchangé, panneau pleine largeur sous la carte). */
+   FIXE, SECONDE (compose `Split side="end" align="stretch"` — jamais une grille maison). ≥901px, cet
+   écran pose SA colonne bornée par la variable `--aside` que `Split` consomme (400px plafonnée à
+   40vw), et une seule RANGÉE, pour que
+   l'aside défile dans sa propre hauteur au lieu d'allonger la page. ≤900px : la primitive empile
+   (`data-stack-below="900"`), panneau pleine largeur sous la carte. */
 .worldmap-layout {
   min-height: 0;
 }
@@ -129,7 +132,7 @@
 }
 @media (min-width: 901px) {
   .worldmap-layout {
-    grid-template-columns: minmax(0, 1fr) min(400px, 40vw);
+    --aside: min(400px, 40vw);
     grid-template-rows: minmax(0, 1fr);
   }
   .worldmap-layout > aside.worldmap-side {
@@ -276,7 +279,6 @@
 /* `.port-purse` = bourse de la méta d'en-tête (primitive `ScreenMeta`) ; `.market-carrier` = chip de
    PORTEUR de la barre d'outils du marché terrestre — même graisse discrète, sémantique distincte. */
 .port-purse, .market-carrier { margin-left: auto; font-size: 13px; color: var(--muted); }
-.port-yard, .port-trade, .port-escale { align-items: start; }
 /* En-tête d'escale-hub (#228) : région + 5 indices de l'Index des ports + desc du catalogue. */
 .port-head { width: min(900px, 96vw); margin: 0 auto 6px; }
 .port-region { margin: 0 0 6px; }

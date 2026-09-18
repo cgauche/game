@@ -32,8 +32,12 @@ export const ordreDeStock = (entrees: readonly EntreeNominative[]): EntreeNomina
   [...entrees].sort((a, b) =>
     parUnitesDeCode(a.fichier, b.fichier) || parUnitesDeCode(a.ref, b.ref) || a.occurrence - b.occurrence);
 
+/** Une réf peut porter les guillemets de son propre langage — un sélecteur CSS d'attribut
+ *  (`.grid[data-min='sm']`) casserait le littéral qui l'accueille. */
+const litteral = (v: string) => `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+
 const ligne = (e: EntreeNominative) =>
-  `  { fichier: '${e.fichier}', ref: '${e.ref}', occurrence: ${e.occurrence} },`;
+  `  { fichier: ${litteral(e.fichier)}, ref: ${litteral(e.ref)}, occurrence: ${e.occurrence} },`;
 
 /**
  * Refuse toute croissance, puis écrit (ou vérifie, sous `--check`) le fichier de stock.
@@ -44,9 +48,17 @@ export function regenererStock(p: {
   collections: readonly CollectionAReecrire[];
   check: boolean;
   outil: string;
+  /** AMORÇAGE : saute la barrière décroissante et écrit le stock depuis la MESURE. Un stock VIDE
+   *  face à N sites mesurés est un refus — sans cette porte, un stock nominatif ne pourrait jamais
+   *  naître. LÉGALE au seul commit qui CRÉE le stock : tout usage ultérieur est un contournement,
+   *  visible au diff, et la porte de plage le compte. */
+  amorce?: boolean;
 }): number {
+  if (p.amorce) {
+    console.warn(`AMORÇAGE : la barrière décroissante est SAUTÉE pour ${p.chemin} — légal au seul commit qui CRÉE ce stock.`);
+  }
   for (const c of p.collections) {
-    const refus = refusDeCroissance(c.mesurees, c.stock, { nom: c.nom, motif: c.motif });
+    const refus = p.amorce ? null : refusDeCroissance(c.mesurees, c.stock, { nom: c.nom, motif: c.motif });
     if (refus) { console.error(refus); return 1; }
   }
 

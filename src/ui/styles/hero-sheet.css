@@ -9,7 +9,7 @@
   overflow-y: auto;
   min-height: 0;
 }
-/* Compose `.row-flex` (JSX, primitive canon de la rangée qui s'enroule) — n'y redéclare NI `display`
+/* Compose `Row` (JSX, primitive canon de la rangée qui s'enroule) — n'y redéclare NI `display`
    NI `flex-wrap` (cliquet vii : le motif « rangée qui s'enroule » vit dans components.css). Ici,
    seule la gouttière propre à la bande. */
 .hero-sheet-head {

@@ -18,6 +18,7 @@ import { Icon } from '../Icon';
 import { MasterDetail } from '../MasterDetail';
 import { ListRow } from '../ListRow';
 import { Tabs } from '../Tabs';
+import { Row } from '../Layout';
 
 /** Clé de navigation d'un `CodexFocus` (identité qualifiée `category+id`) — le focus PORTE l'id. */
 const focusItemKey = (focus: CodexFocus | null | undefined): string | null =>
@@ -173,7 +174,7 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
         {onClose && <button className="btn small" onClick={close} aria-label="Fermer le Compendium" title="Fermer">✕</button>}
       </header>
 
-      <div className="row-flex codex-cats">
+      <Row className="codex-cats">
         {flatCats.map(renderChip)}
         {clusters.map((cl) => {
           const hasActive = cl.cats.some((c) => c.key === catKey);
@@ -197,11 +198,11 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
                 <span className="fold-title">{cl.label}</span>
                 <span className="count">{cl.cats.length}</span>
               </summary>
-              <div className="fold-body row-flex codex-cats">{cl.cats.map(renderChip)}</div>
+              <Row className="fold-body codex-cats">{cl.cats.map(renderChip)}</Row>
             </details>
           );
         })}
-      </div>
+      </Row>
 
       <MasterDetail
         className="codex-md"

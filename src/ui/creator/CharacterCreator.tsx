@@ -168,6 +168,7 @@ import {
 import { XP_CAREER_FIRST, XP_CAREER_TOP3, XP_STAR_ROLLED, parseStatus, speciesAllowed } from '../../engine/creation';
 import { PARTY_MAX } from '../../state/combatants';
 import { GatedAction } from '../GatedAction';
+import { Grid, Row } from '../Layout';
 
 /** Métadonnées d'étape : libellé FR + ÉCRAN de plein rendu. Les HUIT pas passent par la MÊME porte —
  *  un pas pose ses propres hooks puis compose `CreatorStepFrame` (seule Présentation garde un
@@ -337,9 +338,9 @@ export function CharacterCreator() {
   return (
     <div className="screen creator">
       <header className="bar">
-        <button className="btn small row-flex" onClick={closeCreator}>
+        <Row as="button" className="btn small" onClick={closeCreator}>
           ← <Icon id="nav/seat-owner" size="sm" /> Groupe ({party.length}/{PARTY_MAX})
-        </button>
+        </Row>
         <h2>{editing ? 'Modifier le personnage' : 'Créateur de personnage'}</h2>
         <div className="wizard-steps">
           {ids.map((id, i) => (
@@ -785,7 +786,7 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
     <p className="hint">Choisissez d'abord une race pour découvrir les carrières accessibles.</p>
   ) : (
     <>
-      <div className="row-flex creator-pick-filters">
+      <Row className="creator-pick-filters">
         <button
           type="button"
           className="chip"
@@ -811,7 +812,7 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
           />
         )}
         <span className="creator-pick-count">{sectionsAll.length} classes — {accessible.length} carrières</span>
-      </div>
+      </Row>
       <GroupedPickGrid
         sections={sections}
         selectedId={d.careerId || undefined}
@@ -1060,21 +1061,21 @@ export function CharScreen({ d, setD }: StepProps): ReactNode {
                     meta={
                       <>
                         {d.charMode !== 'pointBuy' && rowRolling && (
-                          <span className="row-flex">
+                          <Row as="span">
                             <DiceRoll scene={false} landed={false} faces={null} onSkip={() => setSeq(null)} tone="gold" />
-                          </span>
+                          </Row>
                         )}
                         {d.charMode !== 'pointBuy' && !rowRolling && !revealed && (
-                          <span className="row-flex">
+                          <Row as="span">
                             <span className="rm-die"><DieFace n={null} landed tone="gold" /></span>
                             <span className="rm-die"><DieFace n={null} landed tone="gold" /></span>
-                          </span>
+                          </Row>
                         )}
                         {d.charMode === 'rolled' && revealed && (
-                          <span className="row-flex">
+                          <Row as="span">
                             <span className="rm-die"><DieFace n={pairs[i][0]} landed tone="gold" /></span>
                             <span className="rm-die"><DieFace n={pairs[i][1]} landed tone="gold" /></span>
-                          </span>
+                          </Row>
                         )}
                         {d.charMode === 'reassigned' && revealed && (
                           <select
@@ -1747,9 +1748,9 @@ function talentsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): StepZon
         <p className="hint">
           Un seul Talent de carrière au Niveau 1 — les trois autres s'achèteront en PX au fil du jeu.
         </p>
-        {/* « Deux colonnes de MÊME RANG » (planche mock6) : la primitive globale `.panel-grid`
+        {/* « Deux colonnes de MÊME RANG » (planche mock6) : la primitive globale `Grid`
             (auto-fit, une seule colonne ≤700px) — jamais une 2e grille 2-colonnes de domaine. */}
-        <div className="panel-grid">
+        <Grid min="md" stackBelow={700}>
           <Band title={<>De race<small>un au choix</small></>} right={<b className={choiceEntries.every((e) => d.speciesTalentChoices[e]) ? 'ok-text' : 'warn-text'}>{choiceEntries.filter((e) => d.speciesTalentChoices[e]).length}/{choiceEntries.length}</b>}>
             {choiceEntries.length === 0 ? (
               <p className="hint">Aucune décision ici — la race ne propose pas de branche « A ou B ».</p>
@@ -1873,7 +1874,7 @@ function talentsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): StepZon
               );
             })()}
           </Band>
-        </div>
+        </Grid>
         <PettySpellsSection d={d} setD={setD} />
       </>
     ),
@@ -2089,15 +2090,15 @@ export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
           // Faces RÉELLES figées (draftWealthDice, même graine/ordre RNG que draftWealth) — jamais une
           // face fabriquée ; le total est porté par la barre (`right`).
           <>
-            {/* `.row-flex` : la bande est une COLONNE flex (ses enfants s'étirent) — le plateau doit
+            {/* `Row` : la bande est une COLONNE flex (ses enfants s'étirent) — le plateau doit
                 rester à la taille de ses dés, pas s'allonger en bandeau vide. */}
-            <div className="row-flex">
+            <Row>
               <span className="dicewell-tray">
                 {draftWealthDice(d).map((n, i) => (
                   <span key={i} className="rm-die dicewell-die"><DieFace n={n} landed tone="gold" /></span>
                 ))}
               </span>
-            </div>
+            </Row>
             <p className="hint">Jet figé, aucune relance — la bourse est créditée au groupe à l'engagement.</p>
           </>
         )}
@@ -2400,10 +2401,10 @@ export function PresentationScreen({ d }: StepProps): ReactNode {
           {level?.label ? `${level.label} (${displayLabelForSex(d.sex, careerLabel, career?.labelF)})` : displayLabelForSex(d.sex, careerLabel, career?.labelF)}
           {level?.status && <> · <MetalStatus status={level.status} size="chip" /></>}
         </p>
-        <div className="row-flex">
+        <Row>
           {sign && <span className="chip">Signe <CodexRef category="stars" id={sign.id} label={sign.label}>{sign.label}</CodexRef></span>}
           <span className="chip">PX création <b>+{xpTotal(d)}</b></span>
-        </div>
+        </Row>
       </div>
 
       <div className="presentation-col presentation-right">

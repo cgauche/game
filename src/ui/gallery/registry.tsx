@@ -54,6 +54,10 @@ import { CharStatsGrid } from '../CharStatsGrid';
 import { axesProfile } from '../../engine/axes';
 import { GameOpChips } from '../GameOpChips';
 import { Band } from '../Band';
+import { Grid, Row, Split, Stack, pushEnd, spanFull } from '../Layout';
+import { Fleuron, OrnateFrame, RuleDivider } from '../Ornaments';
+import { NotchGauge } from '../NotchGauge';
+import { WindRose } from '../WindRose';
 import { CAREER_CHAR_ADVANCES } from '../creator/draft';
 import { ItemIcon } from '../ItemIcon';
 import { MediaSelect } from '../MediaSelect';
@@ -119,33 +123,33 @@ function TokenSwatches() {
 
 function Buttons() {
   return (
-    <div className="row-flex">
+    <Row>
       <button type="button" className="btn">Neutre</button>
       <button type="button" className="btn btn-primary">Primaire</button>
       <button type="button" className="btn btn-ghost">Discret</button>
       <button type="button" className="btn btn-test">Outil de test</button>
       <button type="button" className="btn" disabled>Désactivé</button>
-    </div>
+    </Row>
   );
 }
 
 function Chips() {
   return (
-    <div className="row-flex">
+    <Row>
       <span className="chip">Chip simple</span>
       <span className="chip"><b>Nom</b> — détail</span>
       <span className="chip">Compteur <span className="count">3</span></span>
-    </div>
+    </Row>
   );
 }
 
 function Panels() {
   return (
-    <div className="row-flex">
+    <Row>
       <div className="panel" style={{ padding: 12 }}>Surface</div>
       <div className="panel sunken" style={{ padding: 12 }}>Creuse</div>
       <div className="panel gold" style={{ padding: 12 }}>Liseré or</div>
-    </div>
+    </Row>
   );
 }
 
@@ -157,16 +161,16 @@ function TabsDemo() {
     { key: 'c', label: 'Onglet C' },
   ];
   return (
-    <div className="stack">
+    <Stack>
       <Tabs tabs={tabs} active={active} onChange={setActive} label="Onglets" />
-    </div>
+    </Stack>
   );
 }
 
 function OptionChooserDemo() {
   const [choice, setChoice] = useState<'parry' | 'dodge'>('parry');
   return (
-    <div className="stack">
+    <Stack>
       <OptionChooser
         layout="seg"
         groupLabel="Réaction (seg)"
@@ -194,7 +198,7 @@ function OptionChooserDemo() {
           { key: 'ok', label: 'Confirmer', primary: true, onSelect: () => {} },
         ]}
       />
-    </div>
+    </Stack>
   );
 }
 
@@ -211,18 +215,18 @@ function ItemIconDemo() {
   const objets = objetsExemple();
   if (!objets.length) return <p className="hint">Aucun objet du catalogue n'a pu être instancié.</p>;
   return (
-    <div className="stack">
+    <Stack>
       {(['sm', 'md', 'lg'] as const).map((size) => (
-        <div key={size} className="row-flex" style={{ alignItems: 'center', gap: 12 }}>
+        <Row key={size} align="center" gap="lg">
           <span className="hint" style={{ width: 32 }}>{size}</span>
           {objets.map((item) => (
             <span key={item.uid} title={item.label} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <ItemIcon item={item} size={size} />
             </span>
           ))}
-        </div>
+        </Row>
       ))}
-    </div>
+    </Stack>
   );
 }
 
@@ -256,11 +260,11 @@ function RefFieldDemo() {
   const cfgCarac = refFieldCfg('species', 'refChar');
   if (!cfgClasse || !cfgCarac) return <p className="hint">Config de champ-réf introuvable.</p>;
   return (
-    <div className="stack">
+    <Stack>
       <RefField cfg={cfgClasse} fieldKey="class" label="Classe de la carrière" value={classe} onChange={setClasse} nullable />
       <RefField cfg={cfgCarac} fieldKey="refChar" label="Caractéristique de référence" value={carac} onChange={setCarac} nullable />
       <p className="hint">Stocké : {JSON.stringify({ class: classe, refChar: carac })}</p>
-    </div>
+    </Stack>
   );
 }
 
@@ -339,7 +343,7 @@ function GroupedPickGridDemo() {
  *  cadre imbriqué, aucune ambiance : la tuile porte sa propre matière. */
 function FigTileDemo() {
   return (
-    <div className="row-flex">
+    <Row>
       <div style={{ width: 140 }}>
         <FigTile
           preview={{ appearance: { species: rigSpeciesId(especeHumaine().id), sex: 'M', build: 0.5, seed: 7 } }}
@@ -395,7 +399,7 @@ function FigTileDemo() {
         />
         <p className="hint">Colonne-index (#492) : critiques/séquelles</p>
       </div>
-    </div>
+    </Row>
   );
 }
 
@@ -424,7 +428,7 @@ function PlaqueRowDemo() {
   const ch = Object.fromEntries(CHAR_KEYS.map((k) => [k, effectiveChar(herosExemple(), k)])) as Record<(typeof CHAR_KEYS)[number], number>;
   const [k1, k2, k3] = CHAR_KEYS;
   return (
-    <div className="stack">
+    <Stack>
       <PlaqueGrid>
         {[k1, k2].map((k) => (
           <PlaqueRow key={k} prefix={charAbr(k)} content={CHAR_LABELS[k]} value={ch[k]} />
@@ -434,10 +438,10 @@ function PlaqueRowDemo() {
           content={CHAR_LABELS[k3]}
           rolling
           meta={
-            <span className="row-flex">
+            <Row as="span">
               <span className="rm-die"><DieFace n={5} landed tone="gold" /></span>
               <span className="rm-die"><DieFace n={6} landed tone="gold" /></span>
-            </span>
+            </Row>
           }
           value={ch[k3]}
         />
@@ -453,41 +457,41 @@ function PlaqueRowDemo() {
         />
         <PlaqueRow content="Résistance à l'alcool" sub={`${CHAR_LABELS[k2]} ${ch[k2]}`} value="—" />
       </PlaqueGrid>
-    </div>
+    </Stack>
   );
 }
 
 function MetalStatusDemo() {
   return (
-    <div className="row-flex">
+    <Row>
       <MetalStatus status="Bronze 1" />
       <MetalStatus status="Argent 2" />
       <MetalStatus status="Or 3" />
       <MetalStatus status="Or 3" size="plaque" />
-    </div>
+    </Row>
   );
 }
 
 function CharStatsGridDemo() {
   return (
-    <div className="stack">
+    <Stack>
       {(['sm', 'md', 'lg'] as const).map((size) => (
         <div key={size}>
           <span className="hint">size=&quot;{size}&quot;</span>
           <CharStatsGrid size={size} value={(k) => effectiveChar(herosExemple(), k)} />
         </div>
       ))}
-    </div>
+    </Stack>
   );
 }
 
 function WaxSealDemo() {
   return (
-    <div className="row-flex">
+    <Row>
       <WaxSeal size={40} />
       <SealedPlaque title={carriereExemple().label} desc="Carrière élue" selected />
       <SealedPlaque title="Carrière non retenue" desc="Autre proposition" />
-    </div>
+    </Row>
   );
 }
 
@@ -505,12 +509,12 @@ function DetailFrameDemo() {
 function HeroSheetDemo() {
   if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
   return (
-    <div className="stack">
+    <Stack>
       <p className="hint">`header` (bande figurine+identité+rose) : composé tel quel par le détail candidat de l'écran d'équipe.</p>
       <HeroSheet hero={herosExemple()} />
       <p className="hint">`header={false}` : composé par la fiche vivante du créateur (alcôve propre à l'appelant).</p>
       <HeroSheet hero={herosExemple()} header={false} />
-    </div>
+    </Stack>
   );
 }
 
@@ -534,12 +538,12 @@ function CreatorStepFrameNote() {
 
 function CreatorDiceDemo() {
   return (
-    <div className="stack">
+    <Stack>
       <CreatorDice label={`Tirer le Signe astral (d100) — ${signeAstralExemple()?.label ?? ''}`} rolled={false} xp={20} onRoll={() => {}} />
       <CreatorDice rolled xp={20}>
         <p className="hint">Résultat gardé — {signeAstralExemple()?.label}.</p>
       </CreatorDice>
-    </div>
+    </Stack>
   );
 }
 
@@ -551,7 +555,7 @@ function CreatorDiceDemo() {
 function LifeBarDemo() {
   if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
   return (
-    <div className="stack">
+    <Stack>
       <LifeBar
         label="Blessures"
         value={herosExemple().wounds.current}
@@ -567,18 +571,18 @@ function LifeBarDemo() {
         tone={(v, m) => (m > 0 && v / m <= 0.34 ? 'danger' : m > 0 && v / m <= 0.67 ? 'warn' : 'ok')}
       />
       <LifeBar stacked label="Encombrement (stacked) — surchargé" value={9} max={6} tone="danger" />
-    </div>
+    </Stack>
   );
 }
 
 function PortraitTileDemo() {
   if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
   return (
-    <div className="row-flex">
+    <Row>
       <PortraitTile c={herosExemple()} ring="var(--gold)" variant="identity" size="md" />
       <PortraitTile c={herosExemple()} ring="var(--gold)" variant="vital" size="md" />
       <PortraitTile c={herosExemple()} ring="var(--gold)" variant="full" size="md" active />
-    </div>
+    </Row>
   );
 }
 
@@ -651,14 +655,14 @@ function PanneauParametreDemo() {
 
 function ParchmentCardDemo() {
   return (
-    <div className="stack">
+    <Stack>
       <ParchmentCard title="Événement" seal={{ label: 'Tirage', roll: 42 }} tone="ok">
         Récit ponctuel adossé à un tirage d100 — texture parcheminée + médaillon du tirage.
       </ParchmentCard>
       <ParchmentCard seal={{ kind: 'cire' }}>
         Texte d’auteur SCELLÉ (#717) — aucun tirage à montrer : le cachet de cire franchit le bord.
       </ParchmentCard>
-    </div>
+    </Stack>
   );
 }
 
@@ -680,10 +684,10 @@ function MasterDetailDemo() {
     <MasterDetail
       listLabel="Exemple de maître-détail"
       list={
-        <div className="stack">
+        <Stack>
           <button type="button" className="btn gallery-list-item" onClick={() => setSel('x')}>Élément X</button>
           <button type="button" className="btn gallery-list-item" onClick={() => setSel('y')}>Élément Y</button>
-        </div>
+        </Stack>
       }
       detail={<p>Détail de l'élément « {sel === 'x' ? 'X' : 'Y'} ».</p>}
     />
@@ -694,10 +698,10 @@ function SearchFilterFieldDemo() {
   const items = ['Épée', 'Hallebarde', 'Arquebuse', 'Dague'];
   const { search, setSearch, filtered } = useFilteredList(items, (i) => i);
   return (
-    <div className="stack">
+    <Stack>
       <SearchFilterField value={search} onChange={setSearch} placeholder="Filtrer…" icon />
-      <div className="row-flex">{filtered.map((i) => <span className="chip" key={i}>{i}</span>)}</div>
-    </div>
+      <Row>{filtered.map((i) => <span className="chip" key={i}>{i}</span>)}</Row>
+    </Stack>
   );
 }
 
@@ -757,22 +761,22 @@ function RoseAxesDemo() {
   const CORE = allAxes.filter((a) => a.core);
   const heroes = herosExemples().slice(0, 3);
   return (
-    <div className="stack">
+    <Stack>
       <p className="hint">Scores RÉELS des pré-tirés (`axesProfile`, `src/engine/axes.ts`) sur les axes du socle de base.</p>
-      <div className="row-flex">
+      <Row>
         <RoseAxes axes={axesProfile(heroes[0], CORE)} size="glyph" title={`${heroes[0].label} — glyphe`} />
         <RoseAxes axes={axesProfile(heroes[0], CORE)} size="medal" title={`${heroes[0].label} — médaillon`} />
-      </div>
+      </Row>
       <RoseAxes axes={axesProfile(heroes[0], CORE)} size="grand" title={`${heroes[0].label} — rendu plein`} />
-      <div className="row-flex">
+      <Row>
         {heroes.map((h) => (
-          <div key={h.id} className="stack" style={{ alignItems: 'center' }}>
+          <Stack key={h.id} align="center">
             <RoseAxes axes={axesProfile(h, CORE)} size="medal" title={`${h.label} — médaillon`} />
             <span className="hint">{h.label}</span>
-          </div>
+          </Stack>
         ))}
-      </div>
-    </div>
+      </Row>
+    </Stack>
   );
 }
 
@@ -811,9 +815,9 @@ const GAMEOP_CHIPS_DEMO_OPS: GameOp[] = [
 
 function GameOpChipsDemo() {
   return (
-    <div className="row-flex skill-tags">
+    <Row className="skill-tags">
       <GameOpChips ops={GAMEOP_CHIPS_DEMO_OPS} />
-    </div>
+    </Row>
   );
 }
 
@@ -849,7 +853,84 @@ function ScreenShellNote() {
   );
 }
 
+/** COUCHE LAYOUT (#1800) — les quatre concepts de placement, montés sur des données réelles et sans
+ *  un seul `style=` : ce que la galerie montre, c'est la GÉOMÉTRIE que l'écran n'a plus à écrire. */
+function LayoutDemo() {
+  const quatre = herosExemples().slice(0, 4);
+  return (
+    <Stack gap="xl">
+      <Band title="Stack — pile (gap sur l'échelle)">
+        <Stack gap="sm">
+          {quatre.map((h) => <span key={h.id} className="hint">{h.label}</span>)}
+        </Stack>
+      </Band>
+      <Band title="Row — rangée qui s'enroule (justify / pushEnd)">
+        <Row gap="md" justify="between">
+          {quatre.map((h) => <span key={h.id} className="chip">{h.label}</span>)}
+          <button type="button" className="btn small" {...pushEnd}>Au bout</button>
+        </Row>
+      </Band>
+      <Band title="Grid — grille de cartes (min=sm, spanFull)">
+        <Grid min="sm" gap="lg">
+          {quatre.map((h) => (
+            <Stack className="panel sunken" gap="sm" key={h.id}>
+              <strong>{h.label}</strong>
+              <span className="hint clamp">{h.career ?? '—'}</span>
+            </Stack>
+          ))}
+          <span className="hint" {...spanFull}>Un enfant `spanFull` occupe toute la largeur.</span>
+        </Grid>
+      </Band>
+      <Band title="Split — colonne bornée + contenu (aside=sm, s'empile sous 700)">
+        <Split aside="sm" gap="lg">
+          <Stack gap="xs">
+            {quatre.map((h) => <button type="button" className="btn small" key={h.id}>{h.label}</button>)}
+          </Stack>
+          <div className="panel">Le détail prend la place restante, sans largeur écrite à la main.</div>
+        </Split>
+      </Band>
+    </Stack>
+  );
+}
+
+/** Ornements maison : filet titré, fleuron, cadre. */
+function OrnamentsDemo() {
+  return (
+    <Stack gap="lg">
+      <RuleDivider label="Filet titré" />
+      <Row gap="md" align="center"><Fleuron /><span className="hint">Fleuron seul (filet sans libellé)</span></Row>
+      <OrnateFrame tone="gold"><span className="hint">Cadre ornementé, ton or</span></OrnateFrame>
+      <OrnateFrame><span className="hint">Cadre ornementé, ton fer (défaut)</span></OrnateFrame>
+    </Stack>
+  );
+}
+
+/** Jauge à CRANS : domaine, seuils, ton, piste à taille fixe. */
+function NotchGaugeDemo() {
+  return (
+    <Stack gap="lg">
+      <NotchGauge label="Coque" value={7} max={10} tone="ok" />
+      <NotchGauge label="Moral d'équipage" value={3} max={10} tone="warn" />
+      <NotchGauge label="Surcharge" value={118} max={140} notches={14} marks={[100, 120]} />
+      <NotchGauge label="Destin" value={2} max={3} cellSize={18} stacked />
+    </Stack>
+  );
+}
+
+/** Rose des vents : provenance, force, cap du navire. */
+function WindRoseDemo() {
+  return (
+    <Row gap="xl" align="start">
+      <WindRose dir="NE" force="brise-fraiche" />
+      <WindRose dir="S" force="vent-violent" heading="O" />
+      <WindRose dir="O" force="calme-plat" size="sm" />
+    </Row>
+  );
+}
+
 export interface GallerySpecimen {
+  /** Id STABLE du spécimen (clé de sélection), déclaré — le `label` n'est que l'affichage. */
+  id: string;
   /** Nom d'affichage — reprend le `label` de la primitive au manifeste. */
   label: string;
   /** Chemin EXACT déclaré par `src/data/primitives.manifest.json` (comparaison stricte). */
@@ -861,52 +942,60 @@ export interface GallerySpecimen {
 }
 
 export const GALLERY_SPECIMENS: GallerySpecimen[] = [
-  { label: 'Palette de tokens', file: 'src/ui/styles/base.css', category: 'Atomes', render: TokenSwatches },
-  { label: 'Boutons', file: 'src/ui/styles/base.css', category: 'Atomes', render: Buttons },
-  { label: 'Chips', file: 'src/ui/styles/components.css', category: 'Atomes', render: Chips },
-  { label: 'Panel', file: 'src/ui/styles/components.css', category: 'Atomes', render: Panels },
-  { label: 'ScreenShell', file: 'src/ui/ScreenShell.tsx', category: 'Écrans & layout', note: 'maquette d’états — la coquille EST cet écran', render: ScreenShellNote },
-  { label: 'ScreenMeta', file: 'src/ui/ScreenMeta.tsx', category: 'Écrans & layout', render: ScreenMetaDemo },
-  { label: 'MasterDetail', file: 'src/ui/MasterDetail.tsx', category: 'Écrans & layout', render: MasterDetailDemo },
-  { label: 'Tabs', file: 'src/ui/Tabs.tsx', category: 'Écrans & layout', render: TabsDemo },
-  { label: 'MenuCard', file: 'src/ui/MenuCard.tsx', category: 'Écrans & layout', render: MenuCardDemo },
-  { label: 'Band', file: 'src/ui/Band.tsx', category: 'Écrans & layout', render: BandDemo },
-  { label: 'SearchFilterField', file: 'src/ui/SearchFilterField.tsx', category: 'Écrans & layout', render: SearchFilterFieldDemo },
-  { label: 'OptionChooser', file: 'src/ui/OptionChooser.tsx', category: 'Jets', render: OptionChooserDemo },
-  { label: 'PanneauParametre', file: 'src/ui/PanneauParametre.tsx', category: 'Écrans & layout', render: PanneauParametreDemo },
-  { label: 'InfluenceRow', file: 'src/ui/InfluenceRow.tsx', category: 'Jets', render: InfluenceRowDemo },
-  { label: 'VsHeader', file: 'src/ui/VsHeader.tsx', category: 'Jets', render: VsHeaderDemo },
-  { label: 'RollShell', file: 'src/ui/RollShell.tsx', category: 'Jets', note: 'maquette statique d’états — un spécimen vivant exigerait un flux de jet monté (store + makeRollFlow), hors de portée d’une vignette de galerie', render: RollShellStaticMock },
-  { label: 'RollRow', file: 'src/ui/RollRow.tsx', category: 'Jets', note: 'maquette statique d’états — même raison que RollShell (flux de jet monté hors de portée d’une vignette)', render: RollRowStaticMock },
-  { label: 'PortraitTile', file: 'src/ui/PortraitTile.tsx', category: 'Personnages', render: PortraitTileDemo },
-  { label: 'LifeBar', file: 'src/ui/LifeBar.tsx', category: 'Personnages', render: LifeBarDemo },
-  { label: 'CharacterPreview', file: 'src/ui/CharacterPreview.tsx', category: 'Personnages', render: CharacterPreviewDemo },
-  { label: 'CreatorDice', file: 'src/ui/creator/CreatorDice.tsx', category: 'Personnages', render: CreatorDiceDemo },
-  { label: 'CreatorStepFrame', file: 'src/ui/creator/CreatorStepFrame.tsx', category: 'Personnages', note: 'gabarit plein-champ — s’observe sur les 7 pas du créateur, pas en vignette', render: CreatorStepFrameNote },
-  { label: 'RoseAxes', file: 'src/ui/RoseAxes.tsx', category: 'Personnages', render: RoseAxesDemo },
-  { label: 'CharStatsGrid', file: 'src/ui/CharStatsGrid.tsx', category: 'Personnages', render: CharStatsGridDemo },
-  { label: 'TradeTable', file: 'src/ui/TradeTable.tsx', category: 'Négoce & activités', render: TradeTableDemo },
-  { label: 'ActivityPane', file: 'src/ui/ActivityPane.tsx', category: 'Négoce & activités', render: ActivityPaneDemo },
-  { label: 'QtyStepper', file: 'src/ui/QtyStepper.tsx', category: 'Négoce & activités', render: QtyStepperDemo },
-  { label: 'NumberField', file: 'src/ui/NumberField.tsx', category: 'Négoce & activités', render: NumberFieldDemo },
-  { label: 'GatedAction', file: 'src/ui/GatedAction.tsx', category: 'Négoce & activités', render: GatedActionDemo },
-  { label: 'ParchmentCard', file: 'src/ui/ParchmentCard.tsx', category: 'Négoce & activités', render: ParchmentCardDemo },
-  { label: 'Prose', file: 'src/ui/Prose.tsx', category: 'Texte', render: ProseDemo },
-  { label: 'GameOpEditor', file: 'src/ui/editor/GameOpEditor.tsx', category: 'Éditeur', render: GameOpEditorDemo },
-  { label: 'DescRefField', file: 'src/ui/compendium/DescRefField.tsx', category: 'Éditeur', render: DescRefFieldDemo },
-  { label: 'GameOpChips', file: 'src/ui/GameOpChips.tsx', category: 'Texte', render: GameOpChipsDemo },
-  { label: 'MetalStatus', file: 'src/ui/MetalStatus.tsx', category: 'Atelier du scribe', render: MetalStatusDemo },
-  { label: 'WaxSeal / SealedPlaque', file: 'src/ui/WaxSeal.tsx', category: 'Atelier du scribe', render: WaxSealDemo },
-  { label: 'CareerPath', file: 'src/ui/CareerPath.tsx', category: 'Atelier du scribe', render: () => <CareerPath levels={niveauxDeLaCarriereExemple()} currentLevel={2} /> },
-  { label: 'FigTile', file: 'src/ui/FigTile.tsx', category: 'Atelier du scribe', render: FigTileDemo },
-  { label: 'PlaqueRow / PlaqueGrid', file: 'src/ui/PlaqueRow.tsx', category: 'Atelier du scribe', render: PlaqueRowDemo },
-  { label: 'GroupedPickGrid', file: 'src/ui/GroupedPickGrid.tsx', category: 'Atelier du scribe', render: GroupedPickGridDemo },
-  { label: 'DetailFrame', file: 'src/ui/DetailFrame.tsx', category: 'Atelier du scribe', render: DetailFrameDemo },
-  { label: 'HeroSheet', file: 'src/ui/HeroSheet.tsx', category: 'Personnages', render: HeroSheetDemo },
-  { label: 'ReadyRow', file: 'src/ui/ReadyRow.tsx', category: 'Écrans & layout', render: ReadyRowDemo },
-  { label: 'ItemIcon', file: 'src/ui/ItemIcon.tsx', category: 'Négoce & activités', render: ItemIconDemo },
-  { label: 'MediaSelect', file: 'src/ui/MediaSelect.tsx', category: 'Négoce & activités', render: MediaSelectDemo },
-  { label: 'RefField', file: 'src/ui/compendium/RefField.tsx', category: 'Éditeur', render: RefFieldDemo },
+  { id: 'palette-de-tokens', label: 'Palette de tokens', file: 'src/ui/styles/base.css', category: 'Atomes', render: TokenSwatches },
+  { id: 'boutons', label: 'Boutons', file: 'src/ui/styles/base.css', category: 'Atomes', render: Buttons },
+  { id: 'chips', label: 'Chips', file: 'src/ui/styles/components.css', category: 'Atomes', render: Chips },
+  { id: 'panel', label: 'Panel', file: 'src/ui/styles/components.css', category: 'Atomes', render: Panels },
+  { id: 'screenshell', label: 'ScreenShell', file: 'src/ui/ScreenShell.tsx', category: 'Écrans & layout', note: 'maquette d’états — la coquille EST cet écran', render: ScreenShellNote },
+  { id: 'screenmeta', label: 'ScreenMeta', file: 'src/ui/ScreenMeta.tsx', category: 'Écrans & layout', render: ScreenMetaDemo },
+  { id: 'masterdetail', label: 'MasterDetail', file: 'src/ui/MasterDetail.tsx', category: 'Écrans & layout', render: MasterDetailDemo },
+  { id: 'tabs', label: 'Tabs', file: 'src/ui/Tabs.tsx', category: 'Écrans & layout', render: TabsDemo },
+  { id: 'menucard', label: 'MenuCard', file: 'src/ui/MenuCard.tsx', category: 'Écrans & layout', render: MenuCardDemo },
+  { id: 'band', label: 'Band', file: 'src/ui/Band.tsx', category: 'Écrans & layout', render: BandDemo },
+  { id: 'searchfilterfield', label: 'SearchFilterField', file: 'src/ui/SearchFilterField.tsx', category: 'Écrans & layout', render: SearchFilterFieldDemo },
+  { id: 'optionchooser', label: 'OptionChooser', file: 'src/ui/OptionChooser.tsx', category: 'Jets', render: OptionChooserDemo },
+  { id: 'panneauparametre', label: 'PanneauParametre', file: 'src/ui/PanneauParametre.tsx', category: 'Écrans & layout', render: PanneauParametreDemo },
+  { id: 'influencerow', label: 'InfluenceRow', file: 'src/ui/InfluenceRow.tsx', category: 'Jets', render: InfluenceRowDemo },
+  { id: 'vsheader', label: 'VsHeader', file: 'src/ui/VsHeader.tsx', category: 'Jets', render: VsHeaderDemo },
+  { id: 'rollshell', label: 'RollShell', file: 'src/ui/RollShell.tsx', category: 'Jets', note: 'maquette statique d’états — un spécimen vivant exigerait un flux de jet monté (store + makeRollFlow), hors de portée d’une vignette de galerie', render: RollShellStaticMock },
+  { id: 'rollrow', label: 'RollRow', file: 'src/ui/RollRow.tsx', category: 'Jets', note: 'maquette statique d’états — même raison que RollShell (flux de jet monté hors de portée d’une vignette)', render: RollRowStaticMock },
+  { id: 'portraittile', label: 'PortraitTile', file: 'src/ui/PortraitTile.tsx', category: 'Personnages', render: PortraitTileDemo },
+  { id: 'lifebar', label: 'LifeBar', file: 'src/ui/LifeBar.tsx', category: 'Personnages', render: LifeBarDemo },
+  { id: 'characterpreview', label: 'CharacterPreview', file: 'src/ui/CharacterPreview.tsx', category: 'Personnages', render: CharacterPreviewDemo },
+  { id: 'creatordice', label: 'CreatorDice', file: 'src/ui/creator/CreatorDice.tsx', category: 'Personnages', render: CreatorDiceDemo },
+  { id: 'creatorstepframe', label: 'CreatorStepFrame', file: 'src/ui/creator/CreatorStepFrame.tsx', category: 'Personnages', note: 'gabarit plein-champ — s’observe sur les 7 pas du créateur, pas en vignette', render: CreatorStepFrameNote },
+  { id: 'roseaxes', label: 'RoseAxes', file: 'src/ui/RoseAxes.tsx', category: 'Personnages', render: RoseAxesDemo },
+  { id: 'charstatsgrid', label: 'CharStatsGrid', file: 'src/ui/CharStatsGrid.tsx', category: 'Personnages', render: CharStatsGridDemo },
+  { id: 'tradetable', label: 'TradeTable', file: 'src/ui/TradeTable.tsx', category: 'Négoce & activités', render: TradeTableDemo },
+  { id: 'activitypane', label: 'ActivityPane', file: 'src/ui/ActivityPane.tsx', category: 'Négoce & activités', render: ActivityPaneDemo },
+  { id: 'qtystepper', label: 'QtyStepper', file: 'src/ui/QtyStepper.tsx', category: 'Négoce & activités', render: QtyStepperDemo },
+  { id: 'numberfield', label: 'NumberField', file: 'src/ui/NumberField.tsx', category: 'Négoce & activités', render: NumberFieldDemo },
+  { id: 'gatedaction', label: 'GatedAction', file: 'src/ui/GatedAction.tsx', category: 'Négoce & activités', render: GatedActionDemo },
+  { id: 'parchmentcard', label: 'ParchmentCard', file: 'src/ui/ParchmentCard.tsx', category: 'Négoce & activités', render: ParchmentCardDemo },
+  { id: 'prose', label: 'Prose', file: 'src/ui/Prose.tsx', category: 'Texte', render: ProseDemo },
+  { id: 'gameopeditor', label: 'GameOpEditor', file: 'src/ui/editor/GameOpEditor.tsx', category: 'Éditeur', render: GameOpEditorDemo },
+  { id: 'descreffield', label: 'DescRefField', file: 'src/ui/compendium/DescRefField.tsx', category: 'Éditeur', render: DescRefFieldDemo },
+  { id: 'gameopchips', label: 'GameOpChips', file: 'src/ui/GameOpChips.tsx', category: 'Texte', render: GameOpChipsDemo },
+  { id: 'metalstatus', label: 'MetalStatus', file: 'src/ui/MetalStatus.tsx', category: 'Atelier du scribe', render: MetalStatusDemo },
+  { id: 'waxseal-sealedplaque', label: 'WaxSeal / SealedPlaque', file: 'src/ui/WaxSeal.tsx', category: 'Atelier du scribe', render: WaxSealDemo },
+  { id: 'careerpath', label: 'CareerPath', file: 'src/ui/CareerPath.tsx', category: 'Atelier du scribe', render: () => <CareerPath levels={niveauxDeLaCarriereExemple()} currentLevel={2} /> },
+  { id: 'figtile', label: 'FigTile', file: 'src/ui/FigTile.tsx', category: 'Atelier du scribe', render: FigTileDemo },
+  { id: 'plaquerow-plaquegrid', label: 'PlaqueRow / PlaqueGrid', file: 'src/ui/PlaqueRow.tsx', category: 'Atelier du scribe', render: PlaqueRowDemo },
+  { id: 'groupedpickgrid', label: 'GroupedPickGrid', file: 'src/ui/GroupedPickGrid.tsx', category: 'Atelier du scribe', render: GroupedPickGridDemo },
+  { id: 'detailframe', label: 'DetailFrame', file: 'src/ui/DetailFrame.tsx', category: 'Atelier du scribe', render: DetailFrameDemo },
+  { id: 'herosheet', label: 'HeroSheet', file: 'src/ui/HeroSheet.tsx', category: 'Personnages', render: HeroSheetDemo },
+  { id: 'readyrow', label: 'ReadyRow', file: 'src/ui/ReadyRow.tsx', category: 'Écrans & layout', render: ReadyRowDemo },
+  { id: 'itemicon', label: 'ItemIcon', file: 'src/ui/ItemIcon.tsx', category: 'Négoce & activités', render: ItemIconDemo },
+  { id: 'mediaselect', label: 'MediaSelect', file: 'src/ui/MediaSelect.tsx', category: 'Négoce & activités', render: MediaSelectDemo },
+  { id: 'reffield', label: 'RefField', file: 'src/ui/compendium/RefField.tsx', category: 'Éditeur', render: RefFieldDemo },
+  { id: 'stack-row-grid-split', label: 'Stack / Row / Grid / Split', file: 'src/ui/Layout.tsx', category: 'Écrans & layout', render: LayoutDemo },
+  { id: 'ornements', label: 'Ornements', file: 'src/ui/Ornaments.tsx', category: 'Atelier du scribe', render: OrnamentsDemo },
+  { id: 'notchgauge', label: 'NotchGauge', file: 'src/ui/NotchGauge.tsx', category: 'Personnages', render: NotchGaugeDemo },
+  { id: 'windrose', label: 'WindRose', file: 'src/ui/WindRose.tsx', category: 'Personnages', render: WindRoseDemo },
 ];
+
+/** Deux spécimens homonymes d'id seraient indistinguables à la sélection. */
+const IDS = new Set(GALLERY_SPECIMENS.map((s) => s.id));
+if (IDS.size !== GALLERY_SPECIMENS.length) throw new Error('galerie : deux spécimens portent le même id');
 
 export const GALLERY_CATEGORIES = [...new Set(GALLERY_SPECIMENS.map((s) => s.category))];

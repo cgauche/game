@@ -18,6 +18,7 @@ import { Icon } from './Icon';
 import type { IconIdInput } from './icons';
 import type { Combatant } from '../engine/types';
 import { GatedAction } from './GatedAction';
+import { Row } from './Layout';
 
 const LODGING_META: Record<RestLodging, { icon: IconIdInput; label: string }> = {
   privee: { icon: 'rest/bed', label: 'Privée' },
@@ -115,7 +116,7 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
       {editable.length > 1 && (
         <div className="rest-master">
           <div className="mini-title">Pour toute la troupe</div>
-          <div className="rest-master-choices row-flex">
+          <Row className="rest-master-choices">
             <OptionChooser
               layout="seg"
               groupLabel="Couchage"
@@ -126,7 +127,7 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
               groupLabel="Pitance"
               options={masterFood.map((f) => ({ key: f, label: <><Icon id={FOOD_META[f].icon} size="sm" /> {FOOD_META[f].label}</>, selected: commonFood === f, onSelect: () => applyTroupe({ food: f }) }))}
             />
-          </div>
+          </Row>
         </div>
       )}
       <div className="rest-rows">
@@ -159,7 +160,7 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
                 )}
               </div>
               {isOpen && mine && (
-                <div className="rest-hero-controls row-flex">
+                <Row className="rest-hero-controls">
                   <OptionChooser
                     layout="seg"
                     groupLabel="Couchage"
@@ -170,7 +171,7 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
                     groupLabel="Nourriture"
                     options={foodOptions(p.places, h).map((f) => ({ key: f, label: <><Icon id={FOOD_META[f].icon} size="sm" /> {FOOD_META[f].label}</>, selected: cfg.food === f, onSelect: () => restSet(h.id, { food: f }) }))}
                   />
-                </div>
+                </Row>
               )}
             </div>
           );

@@ -1,6 +1,6 @@
 /* ════════════ ÉDITEUR DE NIVEAU v2 ════════════
    Layout : toolbar / [palette rail | canvas | inspecteur docké] / barre de statut / dock Logique.
-   Compose les primitives de components.css (.panel/.fold/.listrow/.chip/.count/.stack/.row-flex).
+   Compose les primitives de components.css (.panel/.fold/.listrow/.chip/.count) et la couche LAYOUT (`Stack`/`Row`).
    Responsive : ≤900px la palette et l'inspecteur deviennent des TIROIRS (barre tactile en bas),
    le dock Logique ouvert passe en plein écran. Breakpoints canon : 900 / 700 / 560. */
 
@@ -696,7 +696,7 @@ button.insp-row.active {
   flex-wrap: wrap;
 }
 .tf-row .dr,
-.row-flex .dr {
+.row .dr {
   display: flex;
   align-items: center;
   gap: 2px;

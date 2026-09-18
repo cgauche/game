@@ -29,6 +29,7 @@ import { Icon } from './Icon';
 import { CodexRef } from './compendium/CodexRef';
 import { woundsTone } from './gaugeTones';
 import { findVehicleById } from '../data';
+import { Row } from './Layout';
 
 export const NATURE_ORDER: Possession['nature'][] = ['bete', 'vehicule', 'navire', 'serviteur', 'immeuble'];
 
@@ -107,7 +108,7 @@ function PossessionRow({ p, allPossessions, onOpen }: { p: Possession; allPosses
 
   return (
     <div className="inv-item">
-      <div className="inv-item-head row-flex">
+      <Row className="inv-item-head">
         <PlaqueRow
           valueMuted
           prefix={prefixOf(p)}
@@ -122,7 +123,7 @@ function PossessionRow({ p, allPossessions, onOpen }: { p: Possession; allPosses
             <Icon id="journal/info" size="sm" />
           </CodexRef>
         )}
-      </div>
+      </Row>
       {'wounds' in p && p.wounds && (
         <LifeBar value={p.wounds.current} max={p.wounds.max} tone={woundsTone} label="Blessures" />
       )}

@@ -14,6 +14,7 @@ import { speciesSingular, findSpeciesById, careerLabelFor, skillInstanceLabel, t
 import { dominantAxes, axesProfile } from '../engine/axes';
 import { t } from '../i18n';
 import { GatedAction } from './GatedAction';
+import { Row } from './Layout';
 
 /** Sous-titre d'ARCHÉTYPE : « Carrière — Espèce » (la CARRIÈRE en tête, c'est le concept du personnage
  *  en WFRP ; l'espèce suit, atténuée — arbitrage user 2026-07-13). Sans « (niv. N) » (bruit : tous
@@ -194,7 +195,7 @@ export function CandidateCard({
       {wealth != null && (
         <span className="candidate-wealth hint">{t('picker.hero.purse')} <Coins money={wealth} /></span>
       )}
-      <div className="candidate-actions row-flex">
+      <Row className="candidate-actions">
         <GatedAction
           id={`char-recruit-${hero.id}`}
           label={variant === 'modal' ? (recruited ? t('picker.hero.inParty') : t('picker.hero.choose')) : t('party.hero.recruit')}
@@ -217,7 +218,7 @@ export function CandidateCard({
             )}
           </span>
         )}
-      </div>
+      </Row>
     </OrnateFrame>
   );
 }
@@ -264,7 +265,7 @@ export function SeatCard({
           décale ni n'apparaît en flux au survol (directive user 2026-07-13). Filet + collée en pied
           (`.acte-actions` du kit, #417 — mort du cadre `OrnateFrame` interne, la carte de siège est
           plate bordée à la `.acte`, pas un cadre-dans-le-cadre). */}
-      {actions && <div className="seat-card-actions row-flex">{actions}</div>}
+      {actions && <Row className="seat-card-actions">{actions}</Row>}
     </article>
   );
 }

@@ -4,7 +4,7 @@
    ne redéfinit AUCUNE de ces classes. */
 
 /* Scroll de l'écran ENTIER (patron `.port-overlay{overflow-y:auto}`, world-meta.css) — posé sur le
-   voile racine (`className="gallery-screen"` de `ScreenShell`) : `.screen-body`/`.master-detail`
+   voile racine (`className="gallery-screen"` de `ScreenShell`) : `.screen-body`/`.split`
    sont dimensionnés à leur contenu (hauteur `auto`), un `overflow` posé plus bas dans l'arbre n'a
    aucune boîte bornée contre laquelle défiler. */
 .gallery-screen {
@@ -55,7 +55,7 @@
   flex-direction: column;
   gap: 16px;
 }
-/* `.gallery-detail-head`/`.gallery-spec-stage` composent `.row-flex` (JSX) pour l'enroulement —
+/* `.gallery-detail-head`/`.gallery-spec-stage` composent `Row` (JSX) pour l'enroulement —
    cette feuille ne pose que leurs propriétés PROPRES (cliquet vii : pas de flex-wrap local). */
 .gallery-detail-head {
   align-items: baseline;

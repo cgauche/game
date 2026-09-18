@@ -328,6 +328,7 @@
     "type": "primitives.manifest",
     "label": "PanneauParametre",
     "fichier": "src/ui/PanneauParametre.tsx",
+    "css": "src/ui/styles/panneau-parametre.css",
     "concept": "panneau-paramètre borné ancré à son déclencheur : un clic commit et ferme, Échap annule",
     "perimetre": "munition d’une arme, localisation, objets d’une pastille, sort à dissiper",
     "verrou": "réflexe avant tout tiroir de console recodé ; jamais pour un choix exhaustif"
@@ -337,6 +338,7 @@
     "type": "primitives.manifest",
     "label": "LifeBar",
     "fichier": "src/ui/LifeBar.tsx",
+    "css": "src/ui/styles/gauges.css",
     "concept": "barre de remplissage lisse : ton par palier ou teinte continue, dépassement explicite",
     "perimetre": "vie du portrait, Blessures et Encombrement de la fiche",
     "verrou": "réflexe avant toute jauge crantée réutilisée en barre de vie : JAMAIS NotchGauge, réservée aux ressources à PALIERS DISCRETS (Coque, Moral, Soute)"
@@ -454,6 +456,7 @@
     "type": "primitives.manifest",
     "label": "RoseAxes",
     "fichier": "src/ui/RoseAxes.tsx",
+    "css": "src/ui/styles/rose.css",
     "concept": "rose des forces : mini-radar gravé à N axes paramétrables",
     "perimetre": "glyphe de figurine, médaillon, rendu plein",
     "verrou": "axes calculés par axisScore et axesProfile (src/engine/axes.ts)"
@@ -490,6 +493,7 @@
     "type": "primitives.manifest",
     "label": "FigTile",
     "fichier": "src/ui/FigTile.tsx",
+    "css": "src/ui/styles/frames.css",
     "concept": "cadre-figurine unique : boîte à hauteur fixe, nom et compte dessous, sceau optionnel ; variante hero = présence plein format, prop zoneBadges donnant un badge par HitLocation ancré anatomiquement (l'appelant fournit la donnée par zone, jamais la position)",
     "perimetre": "races, carrières, candidats, colonne aside de la fiche",
     "verrou": "seule définition des classes fig-tile (src/ui/styles/frames.css) ; AUCUNE ambiance CharacterPreview exposée (la tuile porte SA matière) ; réflexe avant tout cadre dans un cadre"
@@ -517,6 +521,7 @@
     "type": "primitives.manifest",
     "label": "PlaqueRow/PlaqueGrid",
     "fichier": "src/ui/PlaqueRow.tsx",
+    "css": "src/ui/styles/plaque-row.css",
     "concept": "rangée-plaque sombre à rivets : préfixe codex, méta centrale, valeur à droite, états élu et roulant",
     "perimetre": "registre de caractéristiques, rangées d’allocation",
     "verrou": "réflexe avant toute rangée de registre recodée"
@@ -526,6 +531,7 @@
     "type": "primitives.manifest",
     "label": "CreatorStepFrame",
     "fichier": "src/ui/creator/CreatorStepFrame.tsx",
+    "css": "src/ui/styles/creator-step.css",
     "concept": "gabarit d’étape du créateur : bande d’action requise, zone de choix, zone de description",
     "perimetre": "toutes les étapes du créateur",
     "verrou": "src/ui/creator/creator-ossature.test.tsx"
@@ -535,6 +541,7 @@
     "type": "primitives.manifest",
     "label": "Band",
     "fichier": "src/ui/Band.tsx",
+    "css": "src/ui/styles/band.css",
     "concept": "bande titrée de rubrique : titre, compteur ou jauge ancrés à droite, contenu dessous",
     "perimetre": "étapes du créateur, bandes de section du registre État de la fiche",
     "verrou": "réflexe avant tout bandeau de rubrique recodé"
@@ -544,6 +551,7 @@
     "type": "primitives.manifest",
     "label": "HeroSheet",
     "fichier": "src/ui/HeroSheet.tsx",
+    "css": "src/ui/styles/hero-sheet.css",
     "concept": "corps de fiche héros : en-tête figurine, caractéristiques et dérivées, forces seuillées, chips codex",
     "perimetre": "résumé du créateur, écran de groupe",
     "verrou": "réflexe avant toute fiche de personnage recodée"
@@ -555,6 +563,45 @@
     "fichier": "src/ui/gallery/DesignGallery.tsx",
     "concept": "galerie du design system in-app (DEV) : chaque primitive montée vivante avec des données réelles",
     "perimetre": "référence de goût des primitives d’UI",
+    "verrou": "—"
+  },
+  {
+    "id": "layout",
+    "type": "primitives.manifest",
+    "label": "Stack/Row/Grid/Split",
+    "fichier": "src/ui/Layout.tsx",
+    "concept": "placement d'écran : pile, rangée, grille, split — gap/pad sur l'échelle, cassure canon",
+    "perimetre": "tout écran",
+    "verrou": "ui-ratchets (xxi)/(xxii)"
+  },
+  {
+    "id": "ornaments",
+    "type": "primitives.manifest",
+    "label": "Fleuron/RuleDivider/CornerFlourish/OrnateFrame",
+    "fichier": "src/ui/Ornaments.tsx",
+    "css": "src/ui/styles/ornaments.css",
+    "concept": "textures maison (parchemin/fer/encre), filets titrés et fleurons de coin",
+    "perimetre": "cartes de menu, sections titrées, cadres de planche",
+    "verrou": "—"
+  },
+  {
+    "id": "notchGauge",
+    "type": "primitives.manifest",
+    "label": "NotchGauge",
+    "fichier": "src/ui/NotchGauge.tsx",
+    "css": "src/ui/styles/gauges.css",
+    "concept": "jauge à CRANS (N/M) avec repère de seuil — quotas, Destin, avaries",
+    "perimetre": "registre État, dossier de navire, bandes de quota",
+    "verrou": "—"
+  },
+  {
+    "id": "windRose",
+    "type": "primitives.manifest",
+    "label": "WindRose",
+    "fichier": "src/ui/WindRose.tsx",
+    "css": "src/ui/styles/gauges.css",
+    "concept": "rose des vents : direction + force du vent",
+    "perimetre": "voyage en mer, dossier de navire",
     "verrou": "—"
   }
 ]

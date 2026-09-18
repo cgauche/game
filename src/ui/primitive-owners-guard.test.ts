@@ -19,7 +19,7 @@ import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
  * marqueur y apparaîtra.
  *
  * CALIBRAGE — seules les classes appartenant à un COMPOSANT de la table sont gatées. Les primitives
- * CSS GLOBALES de `styles.css` (`.bar`, `.panel-grid`, `.layout-sidebar`, `.btn`, `.chip`, `.seg`,
+ * CSS GLOBALES de `styles.css` (`.bar`, `.grid`, `.split`, `.btn`, `.chip`, `.seg`,
  * `.modal-actions`, textures `.tx-*` d'`ornaments.css`) sont FAITES pour être posées partout : les
  * gater serait du bruit, elles restent hors table.
  */
@@ -110,10 +110,9 @@ const OWNERS: Record<string, string[]> = {
   'creator-band-head': ['Band.tsx'],
   'creator-band-right': ['Band.tsx'],
 
-  // MasterDetail — gabarit de layout liste GAUCHE + détail CENTRE.
-  'master-detail': ['MasterDetail.tsx'],
+  // MasterDetail — gabarit de layout liste GAUCHE + détail CENTRE, composé sur `Split`/`Stack`
+  // (couche LAYOUT) : la seule classe qui lui reste en propre est la géométrie de son rail.
   'master-detail-list': ['MasterDetail.tsx'],
-  'master-detail-detail': ['MasterDetail.tsx'],
 
   // Tabs — le bouton d'onglet (roving tabindex + aria-selected vivent dans la primitive).
   'tab-btn': ['Tabs.tsx'],

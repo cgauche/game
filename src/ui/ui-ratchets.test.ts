@@ -1,9 +1,25 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
+import { FEUILLES_PARTAGEES, reglesCss } from '../../scripts/guards/lib/cssCouches.mjs';
+import {
+  mesureCssCouches,
+  modulesDEcran,
+  modulesDePrimitive,
+  sitesEspacementHorsEchelle,
+  sitesIdentiteEcran,
+  sitesStyleInline,
+  type Fichier as FichierMesure,
+} from '../../scripts/guards/lib/cssCouchesAudit';
+import {
+  CSS_ESPACEMENT_RATCHET,
+  CSS_IDENTITE_ECRAN_RATCHET,
+  STYLE_INLINE_RATCHET,
+} from '../../scripts/guards/lib/cssCouchesStock.mjs';
+import { cleDeSite, ecartDuVolet } from '../../scripts/guards/lib/stock.mjs';
 
 /**
  * Cliquets d'hygiène UI (#236) — même patron que `combat-hardcode-guard`/`no-emoji-affordance` : une
@@ -66,9 +82,10 @@ const PRICE_PA_ARMOR_EXEMPT = new Set([
 ]);
 const PRICE_BASELINE: Record<string, number> = {};
 
-// ── (vii) `flex-wrap: wrap` hors `components.css` : le motif « rangée qui s'enroule » vit dans
-//    `.bar`/primitives partagées de `components.css` (§charte-ui). Un `flex-wrap` codé en dur dans un
-//    AUTRE module CSS est de la dette gelée (#287) — le cliquet interdit sa hausse, impose la décrue. ──
+// ── (vii) `flex-wrap: wrap` hors couche partagée : le motif « rangée qui s'enroule » vit dans `.bar`
+//    (`components.css`) et dans `Row` (`layout.css`, qui s'enroule PAR CONSTRUCTION). Un `flex-wrap`
+//    codé en dur dans un AUTRE module CSS est de la dette gelée (#287) — le cliquet interdit sa
+//    hausse, impose la décrue. ──
 const FLEX_WRAP_BASELINE: Record<string, number> = {
   // +1 : `.creator-band-right:has(.notch-gauge + .notch-gauge)` (registre État, `EtatPanel.tsx`) —
   // bande à DEUX jauges de quota (Mutations) collisionnant avec son titre dans la colonne bornée
@@ -92,8 +109,9 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   // -2 : lot « ossature enforcée » (#393) — mort du bandeau fiche-vivante ≤1100px du rail 3 zones
   // (`.creator-shell > .creator-summary` et `.creator-derived` en rangée), l'empilement vit sur
   // le gabarit unique `.creator-step`.
-  // -1 : purge du bloc MORT `.career-path` (superseded par CareerPath/`.cc-path`, 0 réf) — voir (xii).
-  'styles/creator.css': 5,
+  // -1 : purge du bloc MORT `.career-path` (superseded par CareerPath/`.cc-path`, 0 réf).
+  // -1 (#1800) : mort de la redéfinition locale de la rangée qui s'enroule — le créateur compose `Row`.
+  'styles/creator.css': 4,
   'styles/editor.css': 10,
   'styles/gauges.css': 1,
   // -1 (R-M1, bande de groupe) : `.party-dock` ne s'enroule plus — une seule rangée qui DÉFILE à
@@ -151,8 +169,8 @@ const FILL_LITERAL_BASELINE: Record<string, number> = {
 //    couvre donc TOUT `.panel` porté par le MÊME élément : bare en tête de sélecteur (`^\s*\.panel`), OU
 //    composé à une autre classe (`X.panel`, ex. `.interlude-hero.panel`), modificateurs `.mod`/`:pseudo`/
 //    `[attr]` inclus jusqu'à la fin du sélecteur (`\s*[,{]`). EXCLUS : les DESCENDANTS/enfants (`.panel h3`,
-//    `.panel-grid > .panel`) — `.panel` n'y est pas compound sur le même élément, ils scopent sans remplacer
-//    la surface — et la classe distincte `.panel-grid` (`.panel` suivi de `-`). La densité mobile du canon
+//    `.grid > .panel`) — `.panel` n'y est pas compound sur le même élément, ils scopent sans remplacer
+//    la surface — et toute classe distincte dont le nom commence par `.panel` (`.panel` suivi de `-`). La densité mobile du canon
 //    vit DANS components.css, APRÈS la base, pour gagner la cascade.
 // BASELINE nominative : les 3 spécialisations LÉGITIMES de l'interlude (world-meta.css) — carte d'Activité
 //    à liseré d'or (`.interlude-hero.panel`, densité resserrée assumée), son état actif, et le bandeau de
@@ -246,588 +264,9 @@ const BARE_BUTTON_BASELINE: Record<string, number> = {
 // littéral `btn`/`chip`/`seg` dans son expression, soit vivre dans un fichier-primitive exempté ci-dessus.
 const BARE_BUTTON_OPAQUE_BASELINE: Record<string, number> = {};
 
-// ── (xii) Sélecteurs de classe DÉFINIS par module CSS de DOMAINE (doctrine user 2026-07-12, #373 —
-//    « J'y crois pas une seule seconde à des classes mono-écrans, c'est une excuse à la dérive »).
-//    Le stock de classes de domaine doit être GELÉ et DÉCROISSANT — hausse = échec, motif : « motif
-//    partagé ? → couche atomique (charte, catalogue) ; vraiment spécifique → justifier ». Modules
-//    scannés = les modules de DOMAINE (`base`/`components`/`tabs` EXCLUS, couche partagée gardée par
-//    xiii ; `styles.css` orchestrateur d'`@import` gardé par xiii) : creator, combat-ui,
-//    combat-modals, sheet, merchant, hud, world-meta, editor, compendium, codex-edit, house-rules,
-//    mass-battle, ornaments, tavern, party, gauges (jauges navire). L'exhaustivité (xiv) garantit
-//    qu'AUCUN .css n'échappe à xii OU xiii.
-//    Comptage = NOMS de classes DISTINCTS apparaissant en position de définition (sélecteur), toute
-//    forme confondue (bare, composé `X.foo`, descendant `.foo .bar`, modificateur `.foo:hover`,
-//    dans un `@media`) — dédupliqué PAR MODULE. Parse par accumulation caractère-par-caractère : le
-//    tampon de sélecteur courant se vide à chaque `{` (capturé si ce n'est pas un prélude `@…`, ex.
-//    `@media (...)`) et à chaque `}` (referme la règle OU le bloc `@media` — le contenu de règle,
-//    jamais un sélecteur, n'est donc jamais scanné). Les commentaires sont neutralisés en amont.
-const DOMAIN_CSS_MODULES = [
-  'creator',
-  'combat-ui',
-  'combat-modals',
-  'sheet',
-  'merchant',
-  'hud',
-  'world-meta',
-  'editor',
-  'compendium',
-  'codex-edit',
-  'house-rules',
-  'mass-battle',
-  'ornaments',
-  'tavern',
-  'party',
-  'gauges',
-  'city-hub',
-  'voyage',
-  'gallery',
-  'rose',
-  'hero-sheet',
-  'frames',
-  'creator-step',
-  'plaque-row',
-  'band',
-  'panneau-parametre',
-  'celestial-wheel',
-  'creator-presentation',
-  'creator-shell',
-  'test-scenarios',
-  'combat-console',
-  'exploration-dock',
-  'postes-roster',
-];
-const CLASS_SELECTOR_BASELINE: Record<string, number> = {
-  'styles/codex-edit.css': 20,
-  // LifeBar (#492, arbitrage 2026-07-17 « on sait gérer de vraies barres de blessures ») : +5
-  // (27 → 32) — `.life-bar(-label|-track|-fill|-value)`, primitive dédiée (patron NotchGauge, même
-  // module « jauges »), remplace `.ptile-gauge`/`.ptile-pv` (morts, contrepartie en hud.css).
-  // +1 (juge vision, correction d'alignement bande Seuils) : `.notch-gauge-stack` — patron de GROUPE
-  // de la primitive `NotchGauge` (colonnes label/piste/valeur alignées en `subgrid` entre N jauges
-  // empilées), posé ICI (à côté de la primitive) et non dans `sheet.css` (appelant).
-  'styles/gauges.css': 33,
-  // #417 suite (consécration HeroSheet) : -6 — .candidate-detail-head/-fig/-id (bande
-  // d'en-tête) + override .candidate-detail-pane .creator-derived (dérivées 2 colonnes) morts,
-  // portés par hero-sheet.css (SOURCE UNIQUE partagée avec la fiche vivante du créateur).
-  'styles/party.css': 66, // #417 passe finale : eyebrow .camp-plate-eyebrow (CAMPAGNE) + override scopé .entity-chip sous .card-roles (chips d'axes small-caps inline, jamais une boîte)
-  // +5 : bande d'en-tête figurine+identité+rose du détail candidat (correction de cap 2026-07-14,
-  // remplace `.candidate-detail-rose` par `.candidate-detail-head`/`-fig`/`-id`).
-  // +6 : grille de sièges « Les contrats d'engagement » (planche ratifiée d'équipe, correction
-  // de cap 2026-07-14) — `.party-acts-header`/`-title`/`-subtitle`, `.seat-card-seal`/`-contract`,
-  // `.seat-contract-badge`/`.seat-empty-title`, `.party-actions-summary`/`-buttons`.
-  // +6 : scène centrale du roulis + dé SVG au chiffre gravé sur la face (#396 v2-v4) — `.rm-scene`/
-  // `.rm-die-landed`/`.rm-die-svg`/`.rm-die-gem`/`.rm-die-num`/`.rm-die-rolling` (primitive DiceRoll).
-  // +1 (2026-07-16, #496) : `.rm-die-gold` — modificateur de matière DORÉE de `DieFace`/`DiceRoll`
-  // (prop `tone`), SOURCE UNIQUE qui remplace les 3 scopes ancêtres dupliqués (creator-step.css/
-  // plaque-row.css, purgés en regard).
-  // Onglet Compétences & Talents composant `HeroSheet` (arbitrage 2026-07-17) : -5 (148 -> 143) -- `.skill-grid`/
-  // `.skill-line`/`.sk-name`/`.sk-val`/`.sk-adv` MIGRENT vers hero-sheet.css (module de la primitive
-  // qui rend la table à valeurs (source unique), contrepartie ASSUMÉE en regard.
-  // Lot POSSESSIONS (A) : -2 (143 -> 141) -- mort du mannequin `.equip-doll`/`.equip-figure`
-  // (EquipmentPanel, #492) : le rig grand format vit desormais dans la colonne de la fiche.
-  // Lot POSSESSIONS (B) : -12 (141 -> 129) -- mort de l'ancienne rangée `.inv-row`/`.ir-*`
-  // (Sac de l'onglet Possessions) : `.inv-rows`/`.inv-row`/`.kind-melee`/`.kind-ranged`/
-  // `.kind-armor`/`.equipped`/`.ir-main`/`.ir-name`/`.ir-stats`/`.ir-enc`/`.ir-kind`/`.inv-nested`
-  // migrent au registre `Band`/`PlaqueRow` (module sheet.css, patron EtatPanel) — `.ir-hand` reste
-  // ici (HandPicker, composé DANS la nouvelle barre d'actions, inchangé).
-  // Chartrage du bloc « dé fixé » (juge vision) : +4 (129 -> 133) -- `.prow`, `.prow-act` et
-  // `.prow-fixed-mark` EXISTAIENT déjà dans le markup de `RollRow` SANS aucune règle (le défaut mesuré :
-  // ferrage hérité de l'ambiance de la coquille, divergent d'une modale à l'autre) ;
-  // `.rm-die-pick` remplace le détournement de `.rm-loc-grid` (grille de 3 boutons) par le bloc propre du
-  // sélecteur. Aucun nouveau motif d'écran : le champ COMPOSE `.field` (canon), sans classe de domaine.
-  // +7 (#942 L7, verdict vision) : pied FIXE de `RollShell` (`.modal:has(> .rs-scroll)`, `.modal > .rs-scroll`,
-  // sa barre d'actions), `.prow-line` (+ son 1er enfant) qui ancre la marque à SA ligne, `.rm-range`
-  // (+ son cas sans libellé) pour la fourchette des tuiles, et l'allègement de voile DESCENDU ici
-  // depuis la couche partagée (`.app-campaign .modal-overlay:has(.roll-modal)`).
-  // +2 (#1078 LOT A1) : `.rm-subtitle`/`.rm-summary` — `.rm-vs` servait CINQ rôles (opposition
-  // VsHeader, sous-titre de RollShell, bandeau d'issue agrégée) sous un seul nom : restyler l'un
-  // repeignait les autres. Somme nulle VISUELLE (les trois classes partagent le MÊME bloc de
-  // déclarations, combat-modals.css) ; la hausse achète la séparation des rôles, pas un motif d'écran.
-  // +1 (#1078 LOT B2) : `.rm-spellinfo` — la PORTÉE d'un sort (gabarit de ZdE / « sur lui-même »,
-  // CastModal) détournait `.rm-vs` alors qu'elle n'oppose personne. MÊME bloc de déclarations : somme
-  // nulle visuelle, un rôle de plus nommé.
-  // -2 (143 → 141) : mort de la VARIANTE d'enveloppe `test` — `.test-modal` (largeur figée à 340px,
-  // qui écrasait la coquille standard) et `.test-actor` (sous-titre jumeau de `.rm-subtitle`)
-  // disparaissent ; les fenêtres de jet n'ont plus qu'une enveloppe, gardée par le cliquet (xvi).
-  // +1 (#1349 G5) : `.rm-posture-etat` — l'ÉTAT LECTURE SEULE d'une posture de tir (armée / non armée,
-  // accent porté par `[data-armee]` sur la rangée) est un rôle distinct de `.rm-crowd-note` (la note
-  // explicative, 11px muted) qu'il détournerait sinon. Un rôle de plus nommé, aucun motif d'écran.
-  // -9 (142 → 133), mort de la barre v7 : sortent l'interlude de ciblage qu'elle SEULE portait
-  // (`.action-bar.targeting-interlude` + `.targeting-interlude`/`.ti-icon`/`.ti-title`/`.ti-badge`
-  // et la densité `.btn`/`.small` de sa tranche `pointer: coarse`), la méta de son sélecteur de sort
-  // (`.bp-spell-ni`, `.ab-spell-meta`) et le masquage `.ab-actor-top:empty` de sa rangée d'Avantage.
-  // #1318 E1 : 133 → 132 — `.rm-die-input` meurt, la matière du champ du dé se déclare au CONTENEUR
-  // du site (`.rm-die-pick > label > input`), la primitive `NumberField` ne portant aucune classe d'écran.
-  // -5 : le dossier de navire compose le roster PARTAGÉ (`PostesRoster`), qui porte sa matière dans
-  // `postes-roster.css` — `.ship-role`, `.ship-role-head`, `.ship-role-name`, `.ess` et `.crew-remove`
-  // n'ont plus de rendu. Les jumelles `.ship-poste*` (pièces d'artillerie) restent.
-  'styles/combat-modals.css': 127,
-  // -35 (110 → 75), mort de la barre v7 : le module ne définit plus AUCUNE classe de la barre
-  // (`.action-bar`, `.commencer-btn`, `.coop-ready`, la famille `.ab-*` — cadre acteur, hotbar,
-  // slots, tiroirs) ni du cadre actif `ActiveFrame` (`.aframe`, famille `.af-*`, `[data-slot=…]`).
-  // Sa matrice responsive (900/700/560 + `pointer: coarse`) part avec elle : le DOCK DE DÉCISION est
-  // la console, qui porte SA matrice dans `combat-console.css` (test « matrice responsive canonique »
-  // recentré). Restent ici les surfaces qui ont d'autres porteurs : `.rig-portrait` (portrait de
-  // l'arche), `.fx-chip*` (pastilles partagées), `.pv-badge` (aperçu tap-1 sur la scène),
-  // `.ready-row`/`.ready-chip` (RestModal/VictoryScreen/VoyageScreen).
-  'styles/combat-ui.css': 73,
-  // Console de combat (lot console) : famille `.cc-*` de la surface — deux travées, alvéole,
-  // conduit d'Avantage, arche, coin de fin de tour, bandeau de phase.
-  // Passe de CONTENU (spec §1c-bis) : l'arche ne compose plus `ActiveFrame` — elle rend son propre
-  // gabarit (portrait + 2 gouttières à socle + Blessures + nom). Sortent les 5 spécialisations en
-  // contexte de la primitive (`.aframe`, `.af-mid`, `.af-bar`, `.af-v`, `.af-h`) et le débord
-  // `.cc-overflow`/`.cc-book` (SUPPRIMÉ : l'exhaustif est l'écran de capacités) ; entrent
-  // `.cc-arch-body`, `.cc-gutter`, `.cc-gutter-rail`, `.cc-gutter-action`, `.cc-gutter-move`,
-  // `.cc-socle`. Total MESURÉ inchangé à 43.
-  // Dont, hors famille `.cc-*` : `.ptile`/`.ptile-face` (portrait MINI de la ligne compacte —
-  // `PortraitTile` pose sa largeur en style INLINE, API fermée `CHAR_SIZE_PX`), `.btn` (densité du
-  // bouton de sortie du bandeau de phase ≤560px), `.rig-portrait` (dessin du portrait de l'arche),
-  // et les modificateurs d'état `.on`/`.out`/`.spend`/`.pulse`.
-  // +1 (43 → 44) : `.team-enemy` — correctif C-2 du juge vision (2026-08-17). Le portrait de l'arche
-  // portait DEUX anneaux de camp concentriques (bordure d'équipe de `PortraitTile` + cadre du dessin
-  // de `RigPortrait`) : « cadre dans un cadre », antipattern `FigTile` de la doctrine. Le cadre du
-  // dessin se retire, et la FORME du trait (R9, daltonisme) passe sur l'anneau restant — d'où cette
-  // seule référence à la classe d'équipe de la primitive, aucune classe de domaine créée.
-  // +8 (44 → 52) : COMPOSITION de la travée gauche sur la planche USER 2026-08-17 (spec §1c-bis) —
-  // `.cc-bay-body`/`.cc-arsenal`/`.cc-arsenal-body`/`.cc-quick` (les deux groupes de la travée et
-  // leurs boîtes), `.cc-bay-head` (bande de titre : le set au poing / ACCÈS RAPIDE), `.cc-sets` (la
-  // COLONNE de sets, qui absorbe l'ancien commutateur : `.cc-sets-toggle` disparaît), `.cc-set-n`
-  // (rang gravé de la vignette), `.cc-set-load` (l'état « déch. » DIT, jamais la couleur seule) et
-  // `.cc-grid-quick` (2×2). Aucune n'est décorative : chacune porte une région de la composition.
-  'styles/combat-console.css': 50,
-  // Pont d'EXPLORATION (spec HUD combat § « Zone 11 ») : `.exploration-dock` (la bande basse, même
-  // matière/liseré que le pont de combat) et `.xd-openers` (la rangée d'icônes-écrans à son extrémité
-  // droite, tiroir-journal compris). DEUX noms, aucun décoratif : sans eux, les ouvreurs restent des
-  // boîtes flottantes sur le champ.
-  // -1 (3 → 2) : le module ne cite PLUS `.worldmap-btn`. La tôle du pont était réécrite ici, de
-  // l'extérieur, en 6 propriétés (scope par écran) : elle est devenue une VARIANTE de la primitive
-  // (`.worldmap-btn[data-skin='tole']`, définie AVEC elle dans world-meta.css — attribut, aucun nom
-  // de classe neuf là-bas). Baisse ASSAINIE, gardée par `ExplorationDock.test.tsx`.
-  'styles/exploration-dock.css': 2,
-  // +1 : `.nb` (#393 P2) — note d'atelier non cliquable en fin de section chips (CodexRowView).
-  'styles/compendium.css': 56,
-  // +25 : charte « Atelier du scribe » (#412) — MetalStatus/WaxSeal+SealedPlaque/CareerPath/
-  // FigTile/GroupedPickGrid/DetailFrame (primitives SANS canon préexistant).
-  // +1 : `.creator-race-shell` (#393 P1) — gabarit deux-zones de l'étape Race (compose
-  // `MasterDetail`, enfants ciblés par position pour ne pas re-déclarer ses classes).
-  // +1 : `.rm-loc-grid` (#393 P1) — override responsive 360px scopé à l'étape Race, la primitive
-  // `OptionChooser` (combat-modals.css) fige 3 colonnes quel que soit le conteneur.
-  // +11 : peau « Atelier du scribe » LOT #414 (`.dicewell`/`.dicewell-tray`/`.dicewell-txt` —
-  // encrier bordé-teinté de CreatorDice) + restructuration concurrente de l'étape Race (#393 P2,
-  // `.creator-race-card`/`.creator-race-grid`/`.creator-race-lineages`/`.creator-race-lineage`…).
-  // +5 : correction structurelle Race (#393 P3, verdict utilisateur 2026-07-14) — rangée recherche+
-  // encrier (`.creator-race-toolbar`/`.creator-race-search`), copy titre+sous-titre de l'encrier
-  // (`.dicewell-copy`/`.dicewell-sub`), état résolu (`.dicewell.done`) et liseré de borne
-  // (`.creator-race-card.rolled`).
-  // +6 : polish finale Race (#393 P4, rapport juge vision) — `.detail-frame-head`/`.detail-frame-sub`
-  // (tagline sourcée), `.dicewell.emph` (encrier idle en emphase), override local
-  // `.creator-race-card .charprev-lg` (figurine généreuse sans casser le zéro-scroll).
-  // +2 net (#393 P2) : mort du call-site Carrière de `FacetedPickGrid` — `.pick-facets`/`.pick-grid`/
-  // `.pick-card*` PARTENT (dernier consommateur), `.creator-race-shell/-toolbar/-search/-count`
-  // deviennent `.creator-pick-*` (partagées Race+Carrière, renommage 1:1) + `.dicewell-die` (grands
-  // losanges de l'encrier, correctif toolbar P1).
-  // +2 : correctifs utilisateur 2026-07-14 (rang CareerPath explorable — `.cc-step.sel`/
-  // `.cc-step:focus-visible` ; rangée filtres Carrière — `.creator-pick-filters`).
-  // #417 suite (consécration HeroSheet) : -3 — .creator-summary .stat-val.boost (highlight
-  // d'augmentation, plus rendu par la fiche vivante — HeroSheet ne le porte pas) et
-  // .creator-summary .char-skills (bloc mort, remplacé par le corps HeroSheet) retirés.
-  // #393 P3 (Caractéristiques/Signe astral, étalons finale-mock2/mock3) : +3 — `.char-die` (dés
-  // permanents par rangée du tirage), `.star-wheel-col` (colonne roue, `.appear-panel`/`.appear-
-  // controls` réutilisés pour le reste du layout) et `.cw-label` (noms de signe autour de la roue) ;
-  // `.rolled`/`.row-flex`/`NotchGauge` réutilisés pour le surlignage de rangée et la jauge N/10.
-  // Lot P3 final (retouches juge vision) : +2 — `.cw-label-dash` (tirets d'anneau à 23 signes),
-  // `.creator-identity-roadmap` (chips signe/nom prospectives).
-  // Lot P3bis+P4 (#393, écrans Caractéristiques/Compétences & Talents à la charte Atelier) : +17 —
-  // scaffolding de layout des DEUX NOUVEAUX écrans plein-panneau (`Band` générique + gabarit
-  // deux-zones panneau/fiche vivante, MÊME composition que Race/Carrière) : `.creator-band(-head|-right)`,
-  // `.creator-chars-(screen|shell|main)`, `.creator-skills-(screen|shell|main|head|title|sub|card|tabnav)`,
-  // `.creator-talents-cols`, `.skill-row(-grid|-label)` — widgets d'allocation composent `QtyStepper`
-  // (canonique, mort du `Stepper` local), aucune classe recodée pour ça.
-  // Migration FigTile (#430 phase 2, même lot) : -21 — purge de l'ancien motif `.creator-race-card*`
-  // (tuile bois + charprev imbriqué, mort par cascade depuis be3fe9e0) au profit du cadre UNIQUE
-  // `FigTile`/`frames.css` ; ne reste qu'un modificateur ADDITIF `.creator-race-grid .fig-tile.rolled`.
-  // +3 : pastilles de suivi 5a (`.creator-skill-quota-gauges` + descendant `.notch-gauge`, compose
-  // `.row-flex` en JSX — LOT clôture pieds étape 5) et séparateur « ou » des talents de race
-  // (`.talent-option-ou` : le mot nu, chips SÉPARÉES codex-liées et jamais de pointillé gris-sur-noir —
-  // `src/ui/styles/creator.css` porte le verbatim au site de la classe).
-  // #393 P5 (Possessions/Détails/Présentation, DERNIER lot du programme #393) : +18 — étend le
-  // gabarit deux-zones aux étapes 6/7 (`.creator-trappings-(screen|shell|main)`,
-  // `.creator-details-(screen|shell|main|toolbar)`) ; identité (`.identity-(grid|field|sex-toggle)`) ;
-  // bourse (`.creator-purse-line`) ; gabarit DÉDIÉ 3 colonnes de l'étape 8, renommée « Présentation »
-  // (`.creator-presentation-screen`, `.presentation-(col|left|center|right|fig|name|sub)`).
-  // Correctif responsive PRÉSENTATION (agent-œil post-livraison, même lot) : +1 —
-  // `.presentation-left .char-stats` (repli 3 colonnes ≤560px, la grille 5 colonnes canonique
-  // débordait la colonne étroite mobile).
-  // Lot « OSSATURE ENFORCÉE » (#393, croquis user 2026-07-15) : -18 NET (163 → 145, décrue
-  // exigée par l'amendement 2 « revenir SOUS 123 » — premier maillon du lot). Le gabarit 2 zones
-  // s'encode dans `CreatorStepFrame` (`.creator-step`, renommage 1:1 de `.creator-pick-shell`) :
-  // MORT du rail 3 zones (`.creator-shell`/`.creator-rail`/`.creator-main` + overrides ParchmentCard
-  // `.creator-main .tag|.talent-option|.talent-desc|.char-alloc|.path-node`, bandeau fiche ≤1100px),
-  // des shells par-étape (`.creator-chars|skills|trappings|details-(screen|shell|main)`) et de
-  // `.rail-line` ; la teinte dorée des dés vit dans creator-step.css (module de la primitive).
-  // Consécration PlaqueRow (#393 amendement 3, même lot) : -8 (145 → 137) — les rangées de
-  // caractéristiques de l'étape 3 composent la primitive (plaque-row.css) : `.char-alloc(-grid)`/
-  // `.char-key`/`.char-name`/`.char-roll`/`.char-die`/`.char-total`/`.rm-die-num` morts ici.
-  // Migration étape 1 (species, même lot) : -3 (137 → 134) — purge du bloc MORT `.career-path`/
-  // `.path-node`(`.current`/`em`), ancien CareerPath superseded par la primitive `.cc-path`/`.cc-step`
-  // (0 réf TSX) rencontré en auditant creator.css pour la décrue.
-  // Migration étape 7 (details, même lot) : -5 (133 → 128) — l'état civil COMPOSE la rangée-plaque
-  // (`PlaqueGrid`/`PlaqueRow`, planche `.idf` = la plaque à colonne de libellé gravée) : mort de
-  // `.identity-(grid|field|sex-toggle)` et de `.input-dice` (la valeur éditable est une matière de
-  // plaque, plaque-row.css) ; la bande d'action rejoint l'en-tête d'étape PARTAGÉ
-  // (`.creator-skills-head`, topbar `.fam-topbar` de la planche) → `.creator-details-toolbar` MORTE.
-  // Migration étape 6 (trappings, même lot) : -1 (134 → 133) — `.creator-purse-line` MORTE : le total
-  // de la bourse s'ancre à droite de la barre (`Band.right`, motif `.cu-sechead .cnt` de la planche —
-  // même rang que les « N objets » des dotations), les faces figées + la note passent en enfants
-  // DIRECTS de la bande (valeurs `.c-note` déjà portées par `.creator-band > .hint`).
-  // Consécration StepHeader (#393 amendement 3, clôture de la migration étape 7) : -3 (128 → 125) —
-  // les 6 en-têtes de pas (étapes 3, 5a/5b/5c, 6, 7) COMPOSENT la primitive (creator-step.css, valeurs
-  // `.fam-topbar`/`.c-dhead` de la planche : titre 26px + rubrique small-caps EN LIGNE à la baseline,
-  // là où le markup recopié à la main les EMPILAIT) : `.creator-skills-head`/`-title`/`-sub` morts ici.
-  // Migration étape 8 (presentation, clôture du lot) : -9 (125 → 116, sous l'objectif < 123 de
-  // l'amendement 2) — tout le style de la mise en scène finale rejoint SON module dédié
-  // (creator-presentation.css, patron rose.css/frames.css) : `.creator-presentation-screen`,
-  // `.presentation-(col|center|fig|name|sub|left)` morts ici, et avec eux les deux descendants qui
-  // n'existaient QUE pour cet écran (`.presentation-col .mini-title`, `.presentation-left .char-stats`
-  // — d'où -9 et non -7 : le compte est par NOM de classe cité, pas par règle).
-  // Migration étape 4 (star, lot ossature) : -2 (116 → 114). L'astrolabe rejoint SON module dédié
-  // (celestial-wheel.css, patron plaque-row.css/creator-presentation.css) : `.celestial-wheel`,
-  // `.cw-label`, `.cw-label-dash` morts ici ; et le corps de l'étape COMPOSE le patron
-  // figure+contrôles déjà canon du fichier (`.appear-panel`/`.appear-controls`) au lieu des
-  // `.star-body`/`.star-detail-col` que la migration avait d'abord recodés — seules `.star-wheel-col`
-  // (l'astrolabe veut la moitié de la zone, `.appear-figure` est une vignette de 184px) et
-  // `.star-apparence` (l'ambiance de la constellation) restent propres au pas.
-  // Migration étape 5 (skills 5a/5b/5c, lot ossature) : -6 (114 → 108), SANS module neuf — la
-  // réserve annoncée par l'amendement 3 (« rangées d'allocation de l'étape 5 : MÊME meuble » que
-  // les caracs de l'étape 3 ; la planche le dit en clair, ses `.cs-row` et `.ck-cell` ont la MÊME
-  // matière au hex près). Les trois volets composent `PlaqueGrid`/`PlaqueRow` : `.skill-row`,
-  // `.skill-row-grid`, `.skill-row-label` morts ; `.creator-skills-card` morte (le gabarit porte le
-  // layout) ; `.creator-talents-cols` morte au profit de la primitive GLOBALE `.panel-grid` (« deux
-  // colonnes de même rang » de la planche mock6) ; `.creator-skill-quota-gauges` morte, les quotas
-  // se comptant dans la tête de `Band` (`.cu-sechead .gauge` : « la réglette sertie compte les
-  // quotas au même endroit, toujours »). La rubrique `.rf` de la planche (carac liée), portée à
-  // l'identique par `.cs-row` ET `.ck-cell`, entre dans la primitive (prop `sub`) SANS classe neuve :
-  // sélecteurs d'ÉLÉMENT sous la classe existante (`.plaque-name:has(> small)`, `.plaque-name > small`),
-  // l'idiome que le module tenait déjà pour la plaque éditable (`.plaque-name > input`).
-  // Vérification finale du lot ossature : -1 (108 → 107) — purge de `.tag-char`, MORTE (0 réf, la
-  // marque « carrière » des rangées de caractéristiques porte `.tag.char` — classe DISTINCTE, bien
-  // vivante, définie juste en dessous). Audit de décrue : les 4 autres classes sans consommateur
-  // LITTÉRAL du fichier sont des faux positifs (`metal-status-chip|-plaque`, `st-argent|-or` sont
-  // bâties par gabarit dans `MetalStatus.tsx` — `metal-status-${size}` / `st-${tier}`).
-  // LOT « la tuile, aux valeurs » (#431) : -2 (107 → 105) — PURGE du doublon `.fig-tile*`, la dette
-  // de la « phase 2 » annoncée par #430 et jamais payée (frames.css redéclarait la primitive « sans
-  // toucher creator.css » : deux peaux se disputaient la tuile par cascade). `.fig-tile-name` et
-  // `.fig-tile-sub` meurent ICI, frames.css devient la SEULE définition (+1 en regard, cf. plus bas).
-  // `fig-tile` et `sel` restent comptés : le modificateur DOMAINE `.creator-race-grid .fig-tile.rolled`
-  // et `.cc-step.sel` les gardent vivants dans ce module.
-  // +2 (2026-07-16, #496) : sceau de cire des talents 5c (planche #393, patron `FigTile`) — la carte
-  // EST la cible de clic (`.talent-option` devient tantôt le `<button>`, tantôt son enveloppe
-  // `<div>` quand elle porte un `<select>` non imbricable dans un bouton) : `.talent-option-btn`
-  // (reset de l'enfant cliquable côté carrière) et `.talent-option-seal` (médaillon du sceau) —
-  // les 3 `<input type=radio>` des cartes race/carrière meurent au profit du bouton natif.
-  // Onglet État — registre compact (#492 Lot 1c, arbitrage user 2026-07-17) : -4 (107 → 103) — la
-  // bande titrée (`Band`) est EXTRAITE en primitive partagée (`Band.tsx`/`styles/band.css`, patron
-  // plaque-row.css/frames.css) : `.creator-band(-head|-right)` meurent ici, contrepartie ASSUMÉE en
-  // regard (band.css, plus bas).
-  // Cue de bord de rail scrollable (#535, recette navigateur) : +1 (103 → 104) — `.master-detail-list`
-  // (déjà comptée en couche partagée, `components.css`) réapparaît ICI comme fragment de sélecteur
-  // `.creator-step > .master-detail-list::before/::after` (`docs/charte-ui.md` § « Cue de bord de
-  // rail scrollable ») : nommer le RAIL RÉEL plutôt qu'un `:first-child` structurel opaque — la
-  // recette a mesuré que l'ancien sélecteur, correct mais anonyme, ralentissait le diagnostic
-  // navigateur (identification du conteneur ciblé). Coût assumé pour la diagnosticabilité.
-  'styles/creator.css': 104,
-  // +1 (113) : `.trace-layer-panel` — panneau flottant du CALQUE DE RÉFÉRENCE (décalquage d'une
-  // planche de livre, #830), motif propre à l'éditeur (chargement/opacité/calage 2 points).
-  // +3 (116) : `.trace-layer-panel-collapsed`/`-head`/`-chevron` — repli/dépli du panneau (#830 suite,
-  // retour user 2026-07-25 « comment je ferme/ouvre le calque de référence ? »).
-  // #834 audit-2 défaut 2 : + `.autosave-recovery-pill` (pastille de reprise masquée, sinon invisible).
-  // -1 (117 → 116) : le menu d'ajout de l'atelier compose `ListRow` (cité ici pour sa densité de menu)
-  // au lieu de ses deux classes propres `.eff-add-group`/`.eff-add-item`, mortes.
-  // -1 (116 → 115) : `.eff-type` meurt — le CHANGEMENT de type d'un effet/d'une op se sert du même
-  // menu que l'ajout (`TypeMenu` sur `AddMenu`), plus aucun `<select>` de type dans l'atelier.
-  // +1 (115 → 116) : `.editor-iso-3d` (a7f8ac0a, #1176 P3-3) — contexte d'empilement du canevas
-  // volumique sous les surcouches SVG d'authoring.
-  // -1 (116 → 115) : `.ed-foot-inputs` meurt — l'empreinte d'un décor se VERROUILLE à son type
-  // (`props.json`), l'inspecteur n'offre plus la paire de champs qui la saisissait à la main.
-  // Le détecteur n'a pas bougé : c'est le STOCK qui a baissé.
-  'styles/editor.css': 115,
-  'styles/house-rules.css': 9,
-  // LifeBar (#492, arbitrage 2026-07-17) : -2 (145 → 143) — `.ptile-gauge`/`.ptile-pv` MEURENT (le
-  // marqueur `ptile-gauge` reste un className de compatibilité, sans style propre), le rendu vit
-  // dans `LifeBar` (gauges.css).
-  // #668 : +1 (143 → 144) — `.objective-deadline` (puce de compte à rebours du bandeau d'objectif).
-  // #1078 LOT B1 : +1 (144 → 145) — `.info` complète le trio de tons de `.recap-line` (`ok`/`bad`
-  // déjà ici) : le ton ATTÉNUÉ s'écrit, au lieu de dépendre de la couleur par défaut — un cadre qui
-  // remet ses lignes à pleine couleur l'effaçait.
-  // #1135 (attribution des ancrages du HUD) — décomposition MESURÉE (`git show <rev>:hud.css` passé au
-  // détecteur ci-dessous), et non estimée :
-  //  · 145 au point de départ (`d8742493`), baseline alors déclarée à 145 — cliquet vert ;
-  //  · +5 NON DÉCLARÉS par `9bae13b3` : `view-controls`/`vc-group`/`vc-btn`/`vc-zoom-value`/`btn`.
-  //    `ViewControls` posait sa géométrie en `style={{…}}` inline (objet recopié bouton par bouton),
-  //    interdit par la charte ; ces classes sont la contrepartie de sa mise en feuille, et
-  //    `.view-controls` est l'ANCRE qu'exigent la tranche `pointer: coarse` (cible de 44px) et la
-  //    tranche ≤560 (bande basse). Le cliquet mesure donc 150 contre 145 déclarées : il est ROUGE à
-  //    HEAD depuis ce commit. La dette se régularise ICI, avec sa justification propre ;
-  //  · -8 par RELOGEMENT : `.action-bar` et les sept `.ab-actor`/`-bar`/`-ico`/`-lbl`/`-slot`/
-  //    `-slots`/`-spells`. Le DOCK DE DÉCISION porte sa matrice responsive dans `combat-ui.css`, le
-  //    module qui définissait DÉJÀ ces noms — aucune classe ne meurt ni n'y naît (ce module paie -1
-  //    en regard, `.inspect-toggle`, la bascule appartenant à `ViewControls`).
-  // 145 + 5 - 8 = 142, mesure post-lot. La matrice responsive du HUD n'ajoute AUCUN nom : elle ne cible
-  // que des classes déjà définies ici, et le lieu de la pile de contexte est désigné par
-  // `[data-hud='place']` (attribut, pas classe). Détecteur inchangé.
-  // -1 (142 → 141) : mort de la variante d'enveloppe `test` — `.rs-embedded.test-modal` n'a plus de
-  // classe à neutraliser, la zone de jet embarquée compose `roll-modal` seule.
-  // +6 (141 → 147), passe d'ASSEMBLAGE #1349 : `.hud-rail` (le RAIL D'OUTILS de l'épure G devient
-  // UN panneau encadré — commandes de vue + journal, plus rien d'épars sur le champ) et les cinq
-  // noms de la bande de groupe repliable à ≤560 (`.pd-track` la piste défilante, `.pd-handle` la
-  // poignée, `.pd-count`, `.pd-micro` et sa micro-jauge par héros). Aucun n'est décoratif : chacun
-  // porte une surface que le HUD n'avait pas (panneau unique, piste, repli).
-  // +1 (147 → 148) : `.pd-label` — la poignée NOMME ce qu'elle compte (« 13 au groupe ») ; un
-  // nombre nu se lisait indifféremment héros ou vignettes de la frise dessous (grief d'assemblage).
-  // +3 (148 → 151) : le RACK d'alvéoles réservées de `StateChips` (spec HUD combat §1c-bis) — la
-  // cellule pleine `.pt-state`, la cellule VIDE `.pt-void` (dessinée : « zéro État ne rétrécit pas
-  // la carte ») et le chiffre `.pt-n` porté par la pastille. Trois surfaces neuves, aucune
-  // décorative : sans elles la grille d'États du bandeau n'a ni case ni indice.
-  // +2 (151 → 153), passe d'ASSEMBLAGE des deux plaques d'outils : `.exploration-dock` (l'ancrage du
-  // tiroir-journal SUR le pont hors combat, et la borne de son panneau sur la réserve `--xd-deck-h` —
-  // le tiroir ne flotte plus au coin du champ) et `.worldmap-btn` (l'ouvreur du rail dissous ≤700 se
-  // pose lui-même : sans ancrage il retombait dans le flux du stage). Deux noms CITÉS, aucun défini
-  // en propre ici, et aucun décoratif — chacun porte un ancrage que le HUD n'avait pas.
-  // +1 (153 → 154), #1411 P2-A : `.is-hand` — l'ANCRAGE de l'interrupteur de pause de Round
-  // (`raise-hand`, spec §1d) au pied de la frise (il s'aligne sur la colonne sans l'élargir). Un seul
-  // nom, aucun décoratif : sans lui la commande déborde la colonne. La GRADUATION de sa raison de
-  // refus appartient à sa primitive (`GatedAction` variante `dense`, components.css) — ce module ne
-  // redéfinit aucune taille de texte pour elle.
-  'styles/hud.css': 154,
-  'styles/mass-battle.css': 29,
-  'styles/merchant.css': 53,
-  'styles/ornaments.css': 13,
-  // #492 Lot 1b : -9 (91 → 82) — extraction du bloc `.test-scenarios`/`.ts-*` (SON module dédié,
-  // aucun rapport avec la fiche) ; +5 (82 → 87) — onglet État rédigé, silhouette organisatrice
-  // (`.etat-body`/`-zones`/`-zone`/`-ras`/`.ras-title`, tonalité en attribut `data-tone` — pas de
-  // classe par ton). Net -4.
-  // #492 Lot 1c (registre compact, arbitrage user 2026-07-17) : -3 (87 → 84) — la silhouette
-  // organisatrice (rig + zones par Localisation, jugée du bruit) MEURT : `.etat-body`/`-zones`/
-  // `-zone` retirés. Ne reste que l'état calme (`.etat-ras`/`.ras-title`, composition validée
-  // inchangée) — le registre affligé compose `Band`/`PlaqueRow`, aucune classe neuve ici.
-  // +2 (#509 : .bg-favors/.favor-chip — Faveurs dues sur BackgroundPanel) — survivent (BackgroundPanel, hors fiche).
-  // #492 LOT « colonne PRÉSENCE » (arbitrage 2026-07-17, 2e vague) : +1 (84 → 85) — SEULE hausse du
-  // lot, malgré la mort de la rangée de compagnie (`.frame-row`, portée par `party.css`, pas ce
-  // module) et le déplacement pur des blocs `.sheet-vitals`/`.sheet-resources`/`.sheet-stats` DANS
-  // la colonne et les onglets (zéro classe neuve, ils sont RÉUTILISÉS — et restent VIVANTS pour
-  // `ShipSheet.tsx`, qui les partage, donc non retirables). Le `+1` est `.plaque-row`, référencé ICI
-  // pour les liserés de gravité (`[data-tone] .plaque-row`, pt.5) : `PlaqueRow.tsx` est hors périmètre
-  // du lot (pas de prop `tone` à y ajouter, `data-tone` reste posé sur la bande `Section` englobante,
-  // jamais une classe par ton) — cibler le sélecteur en DESCENDANT est le seul geste possible sans
-  // sortir du périmètre. La gangrène du cadre (`data-corruption`, pt.6) et le dock au-dessus de
-  // l'overlay (pt.2, `PartyDock.tsx`) sont à coût NUL ici (attributs / z-index inline contextuel).
-  // Correction de jumeau (2026-07-17) : -3 (86 → 83) — `.sheet-headstats` (bornage 223px, écrit
-  // contre le MAUVAIS jumeau) et `.sheet-stats`/`.sheet-resources` (morts : la tête de l'onglet
-  // Compétences RÉUTILISE désormais `hero-sheet-stats`/`.hero-sheet-derived`, le patron du jumeau
-  // CANONIQUE `HeroSheet` — hero-sheet.css, déjà importé globalement, aucune classe neuve). `.sheet-
-  // vitals` reste (vivant pour Encombrement en Possessions ET pour `ShipSheet.tsx`).
-  // Onglet Compétences & Talents composant `HeroSheet` (arbitrage 2026-07-17) : -1 (83 -> 82) -- `.sheet-skills`
-  // (margin-bottom du wrapper 'competences' recodé a la main) MEURT : la rubrique vit desormais dans
-  // la primitive, dont le flex `.hero-sheet{gap:10px}` espace deja ses sections.
-  // #492 lot « colonne présence » (arbitrage user 2026-07-17, rig grand format + arc integre) :
-  // +4 (82 -> 86) -- l'override mobile compose la primitive FigTile/VitalArc en DESCENDANT
-  // (`.sheet-portrait .fig-tile.hero`/`.fig-tile-fig`, `.sheet-portrait .vital-arc svg`) : 4
-  // classes CITEES ici (fig-tile, hero, fig-tile-fig, vital-arc), aucune definie EN PROPRE.
-  // Onglet État sans figurine au repos (arbitrage user 2026-07-17) : +1 (86 -> 87) -- `.ras-sub`
-  // (sous-ligne discrete du RAS), seule classe neuve ; `CharacterPreview` retiree de l'etat calme.
-  // Lot POSSESSIONS (B), registre `Band`/`PlaqueRow` (#492) : +7 (87 -> 94) -- `.inv-rows` (déplacé
-  // de combat-modals.css) + `.inv-item-nested`/`.inv-actionbar`/`.inv-skin`/`.inv-skin-body`/
-  // `.inv-skin-remove`/`.inv-nested` (déplacé aussi) : la rangée-plaque élue déplie sa barre
-  // d'actions EN PLACE, contrepartie ASSUMÉE des -12 de combat-modals.css.
-  // Fix visuel (registre Possessions rétréci à son contenu vs jumeau État pleine largeur) : +1
-  // (94 -> 95) -- `.inv-item` devient flex-column (même mécanisme d'étirement que `creator-band`
-  // en État : la `PlaqueRow`/bouton n'est stretch que si elle est enfant direct d'un flex/grid).
-  // Lot « corps-index » (#492, arbitrage 2026-07-17) : -1 (95 -> 94) -- purge de la plaque ENC.
-  // (`.stat-chip.enc-over`, seule occurrence dans ce module) : la plaque MEURT sans remplaçant
-  // (amendement en vol — l'Encombrement rejoint une barre de la colonne au geste suivant).
-  // Geste « colonne au croquis » (2026-07-17) : +4 (94 -> 98) -- `VitalArc` MEURT (-1, `.vital-arc`
-  // purgé de `.sheet-portrait .vital-arc svg`) ; la colonne compose désormais `NotchGauge` (Blessures
-  // + Encombrement, jauge PARTAGÉE Coque/Moral/Soute) via `.sheet-portrait .notch-gauge` (+1) et les
-  // rangées race/classe/statut via `.sheet-idrows`/`.sheet-idrow`/`.sheet-idrow-label`/`.sheet-idrow-
-  // value` (+4), aucune classe neuve pour la jauge elle-même (SOURCE UNIQUE `gauges.css`).
-  // Compteurs de DESTIN (pt.4, #492, arbitrage 2026-07-17) : +1 (98 → 99) — `.etat-threshold`
-  // (« actives N/BE », « phys N/BE · ment M/BFM »), ton par palier en attribut `data-tone`.
-  // Fix de composition (2026-07-17) : -1 (99 → 98) — `.etat-threshold` MEURT, les compteurs
-  // composent désormais `NotchGauge` (primitive crantée, `gauges.css`), aucune classe ici.
-  // Lot « chevet » — grammaire de carte + bande DESTIN (#492, 2026-07-17) : +6 (98 → 104) — noms CITÉS
-  // dans ce module par les nouveaux sélecteurs DESCENDANTS/scopés (aucune n'y est DÉFINIE en propre,
-  // le compte est par nom cité, pas par règle) : `.sheet-etat`/`.plaque-value` (valeur discrète du
-  // registre, « ces textes énormes en gras, pourquoi ? »), `.etat-destin-row`/`.notch-gauge` (bande de
-  // synthèse Destin), `.life-bar__label`/`.life-bar__value` (discipline d'alignement gauche/droite de
-  // la colonne, patron `.sheet-idrow*` déjà tenu ici).
-  // LOT L addendum pt.5 (durci, 2026-07-17) : -1 (104 → 103) — `.plaque-value` (valeur discrète)
-  // MIGRE dans la primitive (`plaque-row.css`, variante `[data-value-muted]`) et ne se cite plus ICI.
-  // Fix d'alignement de la bande Seuils (juge vision, 2026-07-17) : -1 (103 → 102) — `.etat-destin-row`
-  // MEURT (règle purgée, cf. FLEX_WRAP_BASELINE ci-dessus) : les 3 jauges composent `.notch-gauge-stack`
-  // (gauges.css, à côté de la primitive `NotchGauge`) au lieu d'un scope local à cet écran.
-  // Fusion vague-2 + fiche : 106 (précédent fusionné) - 2 (LOT L+M) = 104.
-  // Tableau de bord État (arbitrage user 2026-07-17) : +2 (`.reserves-seuils-grid` grille 2 colonnes
-  // de la bande « Réserves & seuils », `.etat-chips` rangée de chips codex-liées qui s'enroule —
-  // `.plaque-fx` scopé `.plaque-name >` dans `PlaqueRow`, non composable ici) ; -3 (`.etat-ras`/
-  // `.ras-title`/`.ras-sub`, ancien état RAS mort). `.etat-buff`/`.etat-chip-clock` envisagées puis
-  // ÉVITÉES (décrue avant hausse) : le ton de buff réutilise `.chip.tone-ok` (variante ajoutée à la
-  // famille `.tone-warn`/`.tone-danger`, components.css) et le cumul/durée inline réutilise
-  // `.entity-badge` (badge discret de fin de chip, déjà partagé par `EntityChip`, base.css) — zéro
-  // classe neuve pour les deux. Net 104 → 104 (inchangé).
-  // Renommage du titre AFFICHÉ de la bande de capacité (arbitrage user 2026-07-18, ancien titre
-  // rejeté) : classe de grille renommée en écho — `.reserves-seuils-grid` (même sélecteur, nom
-  // aligné). Net 104 → 104 (renommage, pas d'ajout).
-  // #762 : `.inv-item-head` — tête de ligne du Registre des Possessions (plaque cliquable de gestion
-  // + son lien Codex SIBLING, jamais imbriqué). Net 104 → 105.
-  // #990 : `.masked` — ÉTAT de la primitive `RollLine` (jet figé caché jusqu'à la réponse), aux côtés
-  // de `.ok`/`.fail`/`.pending` : liseré 3px neutre + empreintes réservées des colonnes dé/DR (la
-  // révélation ne déplace rien). Classe de PRIMITIVE, jamais d'écran — aucun site ne la pose. 105 → 106.
-  // #1072 : `.rm-roll-diff` — la Difficulté du Test sur la LIGNE (texte + valeur), classe de la
-  // PRIMITIVE `RollLine`. MIGRATION, pas un ajout net : `.interlude-hint` (world-meta.css, 134 → 133)
-  // meurt en regard — la Difficulté ne se peint plus écran par écran. 106 → 107.
-  // #1078 LOT B1 : net NUL (107 → 107) — `.recap-line` est CITÉE ici (`.rm-journal .recap-line`,
-  // aucune définition propre : l'issue d'un jet est une donnée rendue par le renderer UNIQUE dans le
-  // cadre que ce module possède déjà) ; `.jr-line` n'est plus citée — aucune modale ne compose plus
-  // le markup du journal, sa gouttière se reprend en sélecteur d'ÉLÉMENT (`.recap-line > svg`).
-  // Finition B1 : +1 (107 → 108) — `.rm-await` (zone d'ATTENTE d'un verdict suspendu à une fenêtre
-  // qui va s'interposer, #1004) : rôle distinct de l'issue, donc classe propre aux mêmes tokens de
-  // bloc, jamais la note de pied `.rm-log`.
-  // +3 (#1388 C4) : la métrique compte des NOMS DE CLASSE (`classNamesDefined`), et le segment qui
-  // compose `GatedAction bare` en nomme trois qui n'existaient pas dans ce module — `btn-nu`,
-  // `gated-action`, `codex-ref`. Ce ne sont PAS des classes neuves du domaine : elles appartiennent
-  // aux primitives (`base.css`, `components.css`), et `sheet.css` ne fait que reprendre la main de
-  // SPÉCIFICITÉ dessus (`.seg .btn.btn-nu` bat `.seg button`), sans dupliquer une déclaration. Le
-  // sélecteur d'attribut `[aria-disabled='true']` ne pèse rien dans cette métrique.
-  'styles/sheet.css': 111,
-  // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
-  'styles/test-scenarios.css': 9,
-  'styles/tavern.css': 13,
-  // +1 (#942 L7, verdict vision) : `.interlude-phase-actions .hint` — la raison d'un CTA fermé se pose
-  // AU-DESSUS du bouton (il changeait d'ancrage entre gaté et actif). Aucune contre-règle de voile
-  // ici : l'allègement est descendu dans son domaine (combat-modals.css), le voile plein redevient
-  // le défaut partagé.
-  // #1072 : -1 (134 → 133) — `.interlude-hint` mort, la Difficulté est rendue par `RollLine`.
-  // #1318 V10 (2026-08-16) : +1 (133 → 134) — `.market-carrier`, chip de PORTEUR de la barre d'outils
-  // du marché terrestre. Le site EMPRUNTAIT `.port-purse`, propriété de la primitive `ScreenMeta`
-  // (garde `primitive-owners-guard`) : un porteur n'est pas une bourse, la classe est sa sémantique
-  // propre et vit dans SON domaine (world-meta), documentée au catalogue de `docs/charte-ui.md`.
-  // -4 : la carte du monde n'habille plus le roster de postes — sa matière vit dans
-  // `postes-roster.css`, à côté de la primitive `PostesRoster` que le dossier de navire compose aussi.
-  'styles/world-meta.css': 130,
-  'styles/city-hub.css': 18,
-  'styles/voyage.css': 30,
-  // Galerie design system DEV (#412) — layout d'écran seul (les spécimens composent le canon).
-  'styles/gallery.css': 17,
-  // Rose des forces (#409) — `.rose`/`.rose text`/`.rose-corner` (`.rose-corner.sm .rose` réutilise
-  // le sélecteur `.rose` déjà compté, dédoublonné par module).
-  'styles/rose.css': 3,
-  // Cadre-figurine UNIQUE (FigTile, #430) — `.fig-tile`/`-name`/`-sub`/`-seal`/`.sel`/`.charprev`
-  // (descendant `.fig-tile-fig > .charprev`, dédoublonné) — module primitive dédiée, MÊME patron que
-  // rose.css/hero-sheet.css.
-  // Consolidation #431 (LOT « la tuile, aux valeurs ») : +1 (7 → 8) — le doublon `.fig-tile*` de
-  // creator.css est PURGÉ (phase 2 de #430, jamais faite : deux peaux se disputaient la primitive
-  // par cascade — ce que frames.css redéclarait gagnait, ce qu'il ignorait survivait), ce module
-  // devient la SEULE définition. `.fig-tile-legend` (bandeau superposé) meurt au profit de
-  // `.fig-tile-fig` (boîte-figurine à hauteur FIXE, patron `.fam-tile` de la planche) et de la
-  // variante par PROP `.big` (172px pleine zone vs 104 compacte) — l'appelant choisit une taille,
-  // jamais une classe par écran. Contrepartie : creator.css paie -2 en regard.
-  // #492 lot « colonne présence » (arbitrage user 2026-07-17, rig grand format) : +1 (8 -> 9) --
-  // `.fig-tile.hero` (boite-figurine PLEINE FORME 320px, presence STATIQUE de l'aside de la fiche)
-  // rejoint `.big`/`.compact` comme 3e variante de taille de la MEME primitive.
-  // Lot « corps-index » (#492, arbitrage 2026-07-17) : +2 (9 -> 11) -- `.fig-zone-badges`/
-  // `.fig-zone-badge` (badges ANCRÉS par Localisation, position en attribut `data-loc`, ton en
-  // `data-tone` — jamais une classe par zone/ton, patron déjà tenu par sheet.css/NotchGauge).
-  // Cadre de campagne (#717) : +1 (11 -> 12) -- `.fig-row`, la RANGÉE de tuiles (grille uniforme,
-  // 2 colonnes ≤700px) posée AVEC la primitive qu'elle aligne, par `FigRow` (FigTile.tsx). Aucun
-  // motif d'écran : l'écran d'ouverture la COMPOSE, il ne redessine pas de grille.
-  'styles/frames.css': 12,
-  // Corps de fiche héros (HeroSheet.tsx, #417 suite) — bande d'en-tête + dérivées 2 colonnes,
-  // SOURCE UNIQUE partagée par la fiche vivante du créateur et le détail candidat.
-  // Lot P3 final (retouches juge vision) : +1 — `.chip-roadmap` (chips prospectives par rubrique).
-  // Onglet Compétences & Talents composant `HeroSheet` (`skillsVariant='valeurs'`, arbitrage 2026-07-17) : +5 —
-  // `.skill-grid`/`.skill-line`/`.sk-name`/`.sk-val`/`.sk-adv` migrés depuis combat-modals.css (leur
-  // rendu vit dans la primitive, contrepartie ASSUMÉE en regard).
-  'styles/hero-sheet.css': 12,
-  // Ossature 2 zones du créateur (CreatorStepFrame, lot « ossature enforcée » #393) — slots
-  // `.creator-step-(action|choice|desc)` + dés DORÉS planche (`.rm-die-*` scopés au gabarit et aux
-  // plateaux `.dicewell-tray`) ; le layout `.creator-step` vit dans creator.css (renommage 1:1).
-  // Consécration StepHeader (#393 amendement 3, clôture étape 7) : +3 (8 → 11) — l'en-tête de pas
-  // rejoint le module de SA primitive (`.step-head`/`-title`, + le bornage `.dicewell` de la topbar,
-  // classe déjà définie en creator.css : le compte est par-module) ; creator.css paie -3 en regard.
-  // +1 (11 → 12) : `.btn-step` — la MANIVELLE laiton de la planche (`.crank button`) reteint la
-  // primitive PARTAGÉE `QtyStepper` DANS le gabarit d'étape, MÊME idiome que les dés dorés
-  // (`.rm-die-*`) déjà scopés ici : la peau marchande (`--panel2` en aplat, components.css) reste le
-  // canon de la table de négoce, aucun fork du composant. Lot « matières & proportions » #393.
-  // -4 (2026-07-16, #496) : `.rm-die-gem`/`.rm-die-num`/`.rm-die-rolling` (scopes `.creator-step`/
-  // `.dicewell-tray`) purgés — la matière DORÉE des dés est maintenant la prop `tone="gold"` de
-  // `DieFace`/`DiceRoll` (modificateur `.rm-die-gold`, SOURCE UNIQUE combat-modals.css).
-  'styles/creator-step.css': 8,
-  // Mise en scène FINALE du créateur (`PresentationScreen`, migration étape 8 du lot ossature) —
-  // l'étape EXEMPTÉE du gabarit 2 zones (user 2026-07-15 : « sauf sur le dernier écran ») porte son
-  // style dans SON module, jamais dans creator.css (amendement 2 : décrue nette exigée). Valeurs de
-  // la planche ratifiée § « Écran final » : `.fin-col` (registre), `.fin-stage` (la scène),
-  // `.c-lamp` (la lampe), `.c-main` (gabarit). Contrepartie ASSUMÉE des -9 de creator.css.
-  'styles/creator-presentation.css': 8,
-  // Coquille « Atelier du scribe » du créateur (lot « matières & proportions » #393) — `.dirC` de la
-  // planche FINALE : le SOL de l'écran, que `.screen` (base.css) ne pose pas et que le radial
-  // générique du `body` tenait à sa place (mesuré : #1f180f → #100e0b, plus clair et plus froid).
-  // Module DÉDIÉ et non creator.css (cliquet gelé à 107) ni la couche partagée (cliquet xiii —
-  // `.screen.creator` est mono-consommateur, donc du DOMAINE) : idiome `.screen.codex` de
-  // compendium.css. 2 = les deux noms du sélecteur composé `.screen.creator`.
-  'styles/creator-shell.css': 2,
-  // Rangée-plaque à rivets d'or (PlaqueRow/PlaqueGrid, #393 amendement 3) — matière `.c-plate` +
-  // états `.ck-cell` de la planche FINALE, module primitive dédiée (patron rose.css/frames.css) :
-  // `.plaque-(row|grid|prefix|name|meta|value)`, états `.sel`/`.rolling`, dés compacts ET dorés
-  // scopés à la méta (`.rm-die`/`-num`/`-gem`/`-rolling` — la plaque rend or où qu'elle soit
-  // montée, galerie comprise ; la gemme rouge de combat-modals.css reste le canon du combat).
-  // Migration étape 7 (details, même lot) : +1 (12 → 13) — `.plaque-label` : la colonne de libellé
-  // gravée de la planche (`.idf .lb`, 92px small-caps) rejoint la primitive, contrepartie ASSUMÉE
-  // des -5 de creator.css (mécanisme voulu par l'amendement 3 : « les classes par-étape meurent
-  // dans les primitives ») — la plaque ÉDITABLE (`.idf .vl` : trait pointillé) et la plaque
-  // CLIQUABLE n'ont, elles, coûté aucune classe (sélecteurs d'élément `.plaque-name > input` /
-  // `button.plaque-row`).
-  // -2 (2026-07-16, #496) : `.rm-die-gem`/`.rm-die-rolling` (scope `.plaque-meta`) purgés — même
-  // bascule que creator-step.css vers le modificateur `.rm-die-gold` de combat-modals.css.
-  // +1 (lot « chevet », #492) : `.plaque-fx` — bloc de chips d'effet net SOUS le nom (registre État),
-  // additif à `meta` (qui reste latérale pour les autres écrans, ex. badges Possessions).
-  'styles/plaque-row.css': 12,
-  // Bande titrée (`Band`, extraite du créateur #492 Lot 1c) — module primitive dédiée (patron
-  // rose.css/frames.css) : `.creator-band(-head|-right)` + les descendants `.hint`/`.notch-gauge`
-  // (jauge du tirage, complète la primitive `NotchGauge` sans fork).
-  // +1 (LOT L, 2026-07-17) : `.creator-band-title-link` — reset du bouton-titre CLIQUABLE
-  // (`onTitleClick`, registre État → catégorie Compendium), posé UNE fois dans la primitive.
-  // +1 (juge vision, 2026-07-17) : `.creator-band-title-affordance` — glyphe d'affordance codex
-  // (discret au repos, plein contraste au survol/focus), posé UNE fois dans la primitive.
-  'styles/band.css': 7,
-  // Panneau-paramètre borné ANCRÉ (`PanneauParametre`, spec HUD combat zone 10) — module primitive
-  // dédiée : `.pp-panel` (la surface hors flux, ancrée), `.pp-title`, `.pp-meta` (la méta qui fait
-  // décider : NI, quantité, progression). La 4ᵉ est `.rm-loc-grid` — non pas une définition neuve
-  // mais le SCOPE du canon d'`OptionChooser` dans le panneau (une valeur de paramètre par ligne),
-  // même précédent que `.creator-step .rm-loc-grid` (creator.css).
-  // +2 (roster par poste, 2026-09-05) : `.pp-visuel`/`.pp-nom` — la rangée d'un candidat PORTEUR
-  // D'UN VISUEL (portrait : affecter une personne) est `[visuel] [nom] [méta]`, rangée par la
-  // PRIMITIVE. Sans ces deux nœuds, la grille positionnelle ci-dessus chassait le nom contre le bord
-  // droit et reléguait la méta sous le portrait, et chaque appelant aurait dû recoder sa rangée.
-  'styles/panneau-parametre.css': 6,
-  // Astrolabe de la roue céleste (`CelestialWheel`, migration étape 4 du lot ossature) : les MATIÈRES
-  // du cadran aux valeurs du `svg` « 4 — Signe astral » de la planche FINALE. 14 pour 3 qui vivaient
-  // dans creator.css : contrepartie ASSUMÉE de la fidélité (l'ancienne roue était un croquis à deux
-  // anneaux — pas d'aiguille, pas de rayons gravés, pas de bornes d100, pas de moyeu), tenue au plus
-  // court par mutualisation — un SEUL filet laiton (`.cw-ring-fine`) pour l'anneau intérieur, l'anneau
-  // pointillé (dash en attribut) et le liseré du moyeu ; les deux `<stop>` de la gemme portent leur
-  // `stop-color` en attribut `var(--…)` ; la note du moyeu et l'invite du cadran vide partagent
-  // `.cw-hub-note`. Le reste est un nœud = une matière, sans descendant décoratif.
-  'styles/celestial-wheel.css': 14,
-  // Roster PAR POSTE (`PostesRoster` + sa case `AssignRow`) — module de la primitive (patron
-  // panneau-parametre.css/band.css) : `.pr-roster`, `.pr-ligne`, `.pr-label`, `.pr-banc`,
-  // `.pr-cases`, `.pr-add` (6 matières, une par nœud de la maquette A). La 7ᵉ n'est pas une
-  // définition neuve mais le SCOPE tactile d'une primitive composée (`.ptile` de `PortraitTile`) —
-  // la cible de 44 px de la charte est portée par la feuille qui compose, jamais par une
-  // neutralisation depuis un écran. `.mini-title` (grille du titre) est cataloguée ailleurs.
-  'styles/postes-roster.css': 8,
-};
 
-// ── (xiii) FUITE DE DOMAINE dans la COUCHE PARTAGÉE (#371) : le cliquet (xii) ne scanne que les modules
-//    de DOMAINE — `base.css`/`components.css` (couche atomique partagée) en sont EXCLUS. C'était le trou :
+// ── (xiii) FUITE DE DOMAINE dans la COUCHE PARTAGÉE (#371) : la couche partagée est la SEULE que le
+//    cliquet d'identité (xxi) ne juge pas — elle porte l'identité PAR CONSTRUCTION. C'était le trou :
 //    44 classes `.party-*`/`.candidate-*`/`.seat-*` s'étaient planquées dans base.css pour échapper au gel
 //    (feedback user 2026-07-13 « elle réinvente la roue, on a des guards mais elle passe à travers »). Une
 //    classe de la couche partagée n'est LÉGITIME que si elle est VRAIMENT partagée : soit DOCUMENTÉE au
@@ -845,7 +284,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
 // jeton, pastille d'état de fin, pastille d'ENTITÉ), consommée par plusieurs modules de `gameIso`, et
 // elle échappait aux DEUX cliquets (xii ne voit que `src/ui/styles/`, xiv ne parcourt que `src/ui`).
 // Une classe qui s'y planquerait sans être partagée ni cataloguée compte donc désormais comme fuite.
-const SHARED_CSS_FILES = ['styles/base.css', 'styles/components.css', 'styles/tabs.css', 'styles.css', '../gameIso/anim.css'];
+const SHARED_CSS_FILES = [
+  ...FEUILLES_PARTAGEES.map((f) => f.slice('src/ui/'.length)),
+  'styles.css',
+  '../gameIso/anim.css',
+];
 const SHARED_LEAK_BASELINE: Record<string, number> = {
   // #1372 : 16 → 15 — `.lazy-fallback` cesse d'être mono-consommateur (le voile d'entrée en scène du
   // monde volumique le REPREND au lieu de définir sa propre classe, `stage/VolumetricWorld.tsx`).
@@ -860,6 +303,10 @@ const SHARED_LEAK_BASELINE: Record<string, number> = {
   // `col-stat`, `col-emph`, `col-enc`, `col-price`, `col-buy`, `detail-row`, `group-row`, `rm-roll`.
   'styles/components.css': 10,
   'styles/tabs.css': 1,
+  // Couche LAYOUT (#1800) : TOLÉRANCE ZÉRO d'entrée — chacune de ses classes est cataloguée à la
+  // charte (`.stack`/`.row`/`.grid`/`.split`/`.screen`/`.screen-body`/`.screen-scroll`/
+  // `.master-detail-list`), aucune n'est mono-consommateur planqué.
+  'styles/layout.css': 0,
   'styles.css': 6,
   // Chrome du MONDE : les classes y sont mono-consommateur PAR NATURE (un peintre unique par marque —
   // `TokenChromeMarks`, `PastilleEntite`, les animations de FX). Baseline posée à l'entrée au radar,
@@ -1079,13 +526,13 @@ describe('#236 — cliquets d’hygiène UI', () => {
     assertRatchet(counts, PRICE_BASELINE, 'prix sans <Coins>');
   });
 
-  it('(vii) flex-wrap: wrap hors components.css : aucune hausse par module CSS', () => {
+  it('(vii) flex-wrap: wrap hors components.css/layout.css : aucune hausse par module CSS', () => {
     const counts: Record<string, number> = {};
-    for (const f of FICHIERS_UI().filter((f) => estCss(f) && nomDe(f) !== 'components.css')) {
+    for (const f of FICHIERS_UI().filter((f) => estCss(f) && nomDe(f) !== 'components.css' && nomDe(f) !== 'layout.css')) {
       const n = (f.text.match(/flex-wrap:\s*wrap/g) || []).length;
       if (n > 0) counts[rel(f)] = n;
     }
-    assertRatchet(counts, FLEX_WRAP_BASELINE, 'flex-wrap hors components.css');
+    assertRatchet(counts, FLEX_WRAP_BASELINE, 'flex-wrap hors components.css/layout.css');
   });
 
   it('(viii) fill/stroke littéraux hors token var(--…) : aucune hausse par fichier .tsx', () => {
@@ -1105,7 +552,7 @@ describe('#236 — cliquets d’hygiène UI', () => {
       // redéfinitions indentées d'un `@media` — le piège #306), soit COMPOSÉ à une autre classe (`X.panel`,
       // ex. `.interlude-hero.panel` — l'angle mort de l'ancre seule). Les modificateurs du même élément
       // (`.mod`/`:pseudo`/`[attr]`) sont tolérés jusqu'à la FIN du sélecteur (`\s*[,{]`) ; les descendants
-      // (`.panel h3`, `.panel-grid > .panel`) et la classe distincte `.panel-grid` (suivi de `-`) sont exclus.
+      // (`.panel h3`, `.grid > .panel`) et toute classe dont le nom commence par `.panel-` sont exclus.
       const n = (css.match(/(?:^\s*|[a-z0-9-])\.panel(?:[.:][\w-]+|\[[^\]]*\])*\s*[,{]/gm) || []).length;
       if (n > 0) counts[rel(f)] = n;
     }
@@ -1117,15 +564,6 @@ describe('#236 — cliquets d’hygiène UI', () => {
     const { bare, opaque } = scanBareButtons(files);
     assertRatchet(bare, BARE_BUTTON_BASELINE, '<button> nu — composer .btn/.chip ou une primitive (feedback user 2026-07-12, #373)');
     assertRatchet(opaque, BARE_BUTTON_OPAQUE_BASELINE, '<button> className opaque — exposer un littéral btn/chip/seg ou passer par une primitive (feedback user 2026-07-12, #373)');
-  });
-
-  it('(xii) sélecteurs de classe DÉFINIS par module CSS de domaine : gelé et décroissant (doctrine user 2026-07-12, #373)', () => {
-    const counts: Record<string, number> = {};
-    for (const mod of DOMAIN_CSS_MODULES) {
-      const css = readFileSync(join(UI, 'styles', `${mod}.css`), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
-      counts[`styles/${mod}.css`] = classNamesDefined(css).size;
-    }
-    assertRatchet(counts, CLASS_SELECTOR_BASELINE, 'sélecteurs de classe définis (stock de classes de domaine, #373)');
   });
 
   it('(xiii) fuite de domaine en couche partagée : classe base/components mono-consommateur ET non cataloguée = gelée et décroissante (#371)', () => {
@@ -1143,20 +581,24 @@ describe('#236 — cliquets d’hygiène UI', () => {
       }
       counts[file] = leaks; // clé = le chemin DÉCLARÉ (une feuille partagée peut vivre hors `src/ui`)
     }
-    assertRatchet(counts, SHARED_LEAK_BASELINE, 'classe de domaine planquée en couche partagée — la déplacer dans un module de domaine (cliqueté par xii) ou la documenter au catalogue de charte-ui.md (#371)');
+    assertRatchet(counts, SHARED_LEAK_BASELINE, 'classe de domaine planquée en couche partagée — la déplacer dans le module de sa primitive ou la documenter au catalogue de charte-ui.md (#371)');
   });
 
-  // ── (xiv) EXHAUSTIVITÉ (#371, gap gauges.css) : les cliquets xii (domaine) et xiii (partagé) ne
-  //    valent QUE pour les fichiers listés — un module CSS oublié (ex. `gauges.css`, ~40 classes de
-  //    domaine naval) échappait aux DEUX en silence. Ce test STRUCTUREL refuse tout `.css` de
-  //    `src/ui/**` non couvert : il doit appartenir soit à `DOMAIN_CSS_MODULES` (xii, `styles/<mod>.css`)
-  //    soit à `SHARED_CSS_FILES` (xiii). Ajouter un module CSS force donc à le classer et à poser sa
-  //    baseline — plus de fichier hors radar.
-  it('(xiv) exhaustivité : chaque .css de src/ui est couvert par xii (domaine) OU xiii (partagé)', () => {
-    const all = FICHIERS_UI().filter(estCss).map(rel);
-    const accounted = new Set<string>([...DOMAIN_CSS_MODULES.map((m) => `styles/${m}.css`), ...SHARED_CSS_FILES]);
-    const orphans = all.filter((f) => !accounted.has(f)).sort();
-    expect(orphans, `CSS hors radar (ni cliquet de domaine xii, ni garde partagée xiii) — l’ajouter à DOMAIN_CSS_MODULES ou SHARED_CSS_FILES :\n${orphans.join('\n')}`).toEqual([]);
+  // ── (xiv) EXHAUSTIVITÉ (#371, gap gauges.css ; recalée #1800) : une feuille de `src/ui/**` a un
+  //    statut — PARTAGÉE (`SHARED_CSS_FILES`, gardée par xiii), de PRIMITIVE (une entrée du
+  //    manifeste la nomme par son champ `css`), ou d'ÉCRAN (soumise à (xxi)). Le défaut fondateur :
+  //    un module CSS oublié (`gauges.css`, ~40 classes de domaine naval) échappait à TOUT en
+  //    silence. Toute feuille hors de `src/ui/styles/` doit donc être déclarée nommément, et les
+  //    trois statuts couvrent `src/ui/styles/` par construction — ce que l'union vérifie.
+  it('(xiv) exhaustivité : chaque .css de src/ui est PARTAGÉ, de PRIMITIVE ou d’ÉCRAN', () => {
+    const primitives = modulesDePrimitive();
+    const toutes = FICHIERS_UI().filter(estCss).map((f) => f.rel);
+    const partagees = new Set(SHARED_CSS_FILES.map((f) => (f.startsWith('..') ? f.replace('../', 'src/') : `src/ui/${f}`)));
+    const sansStatut = toutes.filter((f) => !partagees.has(f) && !primitives.has(f) && !f.startsWith('src/ui/styles/')).sort();
+    expect(sansStatut, `CSS hors radar (ni partagé, ni de primitive, ni sous src/ui/styles/) :\n${sansStatut.join('\n')}`).toEqual([]);
+    const couverts = new Set([...partagees, ...primitives, ...modulesDEcran().map((f) => f.rel)]);
+    const oublies = toutes.filter((f) => !couverts.has(f)).sort();
+    expect(oublies, `CSS qu'aucun des trois statuts ne prend :\n${oublies.join('\n')}`).toEqual([]);
   });
 
   it('(xv) rangée TÉMOIN porteuse de valeur hors `opposedFrozen.ts` : gelée et décroissante (#990)', () => {
@@ -1462,7 +904,7 @@ const REFUS_MUET_EXEMPT_SITES = new Map<string, string>([
   ['GatedAction.tsx:155', 'la primitive elle-même : `title={ariaLabel}` y est le NOM accessible, pas une raison'],
   ['OptionChooser.tsx:104', '`OptionBouton` : la composition partagée des trois layouts, dont la branche gatée compose déjà `GatedAction`'],
   ['RollShell.tsx:299', 'modèle de props de la coquille de jet — passage à `GatedAction` = train T9'],
-  ['MenuCard.tsx:130', 'modèle de props du menu — train T9'],
+  ['MenuCard.tsx:133', 'modèle de props du menu — train T9'],
   ['MediaSelect.tsx:59', 'modèle de props du sélecteur média — train T9'],
   ['QtyStepper.tsx:36', 'modèle de props du stepper (décrément) — train T9'],
   ['QtyStepper.tsx:40', 'modèle de props du stepper (incrément) — train T9'],
@@ -1687,17 +1129,6 @@ describe('#1318 V5 — cliquets d’hygiène UI (champ nombre, breakpoints)', ()
 /** Propriétés de BOÎTE d'un contrôle : celles qu'une règle de module posée sur un `input` non typé
  *  peut écraser (cascade) ou clamper (`min-*`/`max-*`, hors cascade — d'où `!important` sur les deux). */
 const PROPRIETES_DE_BOITE = ['width', 'height', 'min-width', 'min-height', 'max-width', 'max-height', 'padding', 'box-sizing', 'flex'] as const;
-/** Règles `sélecteur { corps }` d'un CSS sans ses commentaires, `@media` aplatis. */
-function reglesCss(text: string): { selecteurs: string[]; corps: string }[] {
-  const out: { selecteurs: string[]; corps: string }[] = [];
-  const re = /([^{}]+)\{([^{}]*)\}/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(text.replace(/\/\*[\s\S]*?\*\//g, '')))) {
-    const selecteurs = m[1].split(',').map((s) => s.trim()).filter((s) => s && !s.startsWith('@'));
-    if (selecteurs.length) out.push({ selecteurs, corps: m[2] });
-  }
-  return out;
-}
 /** Propriétés de boîte déclarées `!important` par la règle globale case/radio de base.css. */
 function boiteImmune(): Set<string> {
   const base = readFileSync(join(UI, 'styles/base.css'), 'utf8');
@@ -1732,5 +1163,217 @@ describe('#1792 — la boîte des contrôles custom est immune aux règles de mo
       }
     }
     expect(decouvertes, 'règle(s) de module qui déforment une case/radio (propriété de boîte non immune) :').toEqual([]);
+  });
+
+  it('(xx) preuve — une règle posée APRÈS une at-rule DÉCLARATION reste vue par `reglesCss`', () => {
+    // `styles.css` est une SUITE d'`@import …;` puis des règles : si le lexer n'oubliait pas le
+    // prélude d'une at-rule sans bloc, tout ce qui suit sortirait du champ du cliquet.
+    const styles = FICHIERS_UI().find((f) => rel(f) === 'styles.css');
+    const vues = reglesCss(styles!.text).filter((r) => r.selecteurs.includes('.btn:focus-visible'));
+    expect(vues, '`.btn:focus-visible` de styles.css est mesurée').toHaveLength(1);
+    expect(vues[0].media, 'au premier niveau').toBe(null);
+
+    const fixture = reglesCss('@import "a.css"; .x { color: red }');
+    expect(fixture.map((r) => r.selecteurs)).toEqual([['.x']]);
+    expect(fixture[0].media).toBe(null);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+// (xxi)/(xxii) — LES TROIS COUCHES (#1800). La MESURE et le STOCK vivent dans
+// `scripts/guards/lib/` (`cssCouchesAudit.ts`, `cssCouchesStock.mjs`), partagés avec le
+// régénérateur `scripts/ui/regen-css-couches-stock.mts` ; ICI vit le VERDICT. Rien ne joue les
+// régénérateurs en CI : ces `it` SONT le `--check`.
+//
+// Doctrine utilisateur du 2026-07-12 (#373) : « J'y crois pas une seule seconde à des classes
+// mono-écrans personnellement, c'est une excuse à la dérive ». Ce que ce cliquet compte n'est plus
+// le NOMBRE de classes d'un module (une classe de PLACEMENT est une composition légitime par
+// écran, arbitrage A1 du 2026-09-18) mais l'IDENTITÉ qu'un module d'écran redéclare, l'espacement
+// qu'il pose hors de l'échelle, et le `style=` qu'il écrit à la main.
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+
+/** Une fixture de mesure : même forme qu'un fichier de `readCorpus`, jamais le disque. */
+const fixture = (rel: string, text: string): FichierMesure => ({ rel, text });
+
+/** Les réfs d'une liste de sites — ce qu'un `it` de preuve compare. */
+const refs = (sites: { file: string; ref: string }[]) => sites.map((s) => s.ref);
+
+/** Spécificité (classes+attributs, éléments) d'un sélecteur SIMPLE (sans combinateur). */
+function specificite(selecteur: string): number {
+  return (selecteur.match(/\.[\w-]+|\[[^\]]*\]/g) ?? []).length;
+}
+
+/** Un sélecteur SIMPLE (que des `.classe` et des `[attr]`/`[attr='v']`) matche-t-il cet élément ? */
+function matcheElement(selecteur: string, classes: string[], attrs: Record<string, string>): boolean {
+  if (/[\s>+~:,]/.test(selecteur)) return false; // combinateur ou pseudo : hors du cas mesuré
+  const morceaux = selecteur.match(/\.[\w-]+|\[[^\]]*\]/g) ?? [];
+  if (morceaux.join('') !== selecteur) return false;
+  return morceaux.every((m) => {
+    if (m.startsWith('.')) return classes.includes(m.slice(1));
+    const [, nom, valeur] = /^\[([\w-]+)(?:=['"]?([^'"\]]*)['"]?)?\]$/.exec(m) ?? [];
+    if (!nom || !(nom in attrs)) return false;
+    return valeur === undefined || attrs[nom] === valeur;
+  });
+}
+
+/** La règle GAGNANTE pour `prop` sur un élément donné, selon la cascade réelle (spécificité, puis
+ *  ORDRE d'`@import` de `styles.css`). Les blocs `@media` sont hors du cas mesuré (pleine largeur). */
+function regleGagnante(
+  feuilles: readonly { nom: string; text: string }[],
+  prop: string,
+  classes: string[],
+  attrs: Record<string, string>,
+): { origine: string; selecteur: string; valeur: string } | null {
+  let meilleure: { origine: string; selecteur: string; valeur: string; poids: number } | null = null;
+  for (const { nom, text } of feuilles) {
+    for (const { selecteurs, corps, media } of reglesCss(text)) {
+      if (media) continue;
+      const decl = corps.split(';').map((d) => d.split(':').map((x) => x.trim()));
+      const posee = decl.find(([p]) => p === prop);
+      if (!posee) continue;
+      for (const sel of selecteurs) {
+        if (!matcheElement(sel, classes, attrs)) continue;
+        const poids = specificite(sel);
+        // À poids ÉGAL, la feuille la plus tardive gagne — c'est tout l'enjeu de l'ordre d'`@import`.
+        if (!meilleure || poids >= meilleure.poids) meilleure = { origine: nom, selecteur: sel, valeur: posee[1], poids };
+      }
+    }
+  }
+  return meilleure ? { origine: meilleure.origine, selecteur: meilleure.selecteur, valeur: meilleure.valeur } : null;
+}
+
+describe('#1800 — trois couches CSS : un module d’écran ne pose que du PLACEMENT', () => {
+  it('(xxi) identité en module d’écran : stock nominatif, décroissant', () => {
+    const { neuves, perimees } = ecartDuVolet({
+      sites: mesureCssCouches().identite,
+      stock: CSS_IDENTITE_ECRAN_RATCHET,
+      ou: 'scripts/guards/lib/cssCouchesStock.mjs (CSS_IDENTITE_ECRAN_RATCHET)',
+    });
+    expect(neuves, `Identité NEUVE dans un module d’ÉCRAN — la porter dans le module de sa primitive (manifeste, champ \`css\`) :\n${neuves.join('\n')}`).toEqual([]);
+    expect(perimees, `Entrée(s) SOLDÉE(s) — relancer \`npx tsx scripts/ui/regen-css-couches-stock.mts\` :\n${perimees.join('\n')}`).toEqual([]);
+  });
+
+  it('(xxi) espacement hors échelle : stock nominatif, décroissant', () => {
+    const { neuves, perimees } = ecartDuVolet({
+      sites: mesureCssCouches().espacement,
+      stock: CSS_ESPACEMENT_RATCHET,
+      ou: 'scripts/guards/lib/cssCouchesStock.mjs (CSS_ESPACEMENT_RATCHET)',
+    });
+    expect(neuves, `Espacement NEUF hors de l’échelle \`--sp-*\` (base.css) :\n${neuves.join('\n')}`).toEqual([]);
+    expect(perimees, `Entrée(s) SOLDÉE(s) — relancer le régénérateur :\n${perimees.join('\n')}`).toEqual([]);
+  });
+
+  it('(xxii) style inline hors variable CSS : stock nominatif, décroissant', () => {
+    const { neuves, perimees } = ecartDuVolet({
+      sites: mesureCssCouches().inline,
+      stock: STYLE_INLINE_RATCHET,
+      ou: 'scripts/guards/lib/cssCouchesStock.mjs (STYLE_INLINE_RATCHET)',
+    });
+    expect(neuves, `\`style=\` NEUF (arbitrage user A2, 2026-09-18 : la seule forme légale est un objet dont TOUTES les clés sont des variables CSS) :\n${neuves.join('\n')}`).toEqual([]);
+    expect(perimees, `Entrée(s) SOLDÉE(s) — relancer le régénérateur :\n${perimees.join('\n')}`).toEqual([]);
+  });
+
+  it('(xxi) le manifeste classe chaque module : un css de primitive existe, vit sous styles/, et n’est pas partagé', () => {
+    const fautes: string[] = [];
+    for (const css of modulesDePrimitive()) {
+      if (!css.startsWith('src/ui/styles/')) fautes.push(`${css} — hors de src/ui/styles/`);
+      else if (!existsSync(join(UI, '..', '..', css))) fautes.push(`${css} — absent du disque`);
+      if (FEUILLES_PARTAGEES.includes(css)) fautes.push(`${css} — feuille PARTAGÉE, aucune primitive ne la possède`);
+    }
+    expect(fautes, `Champ \`css\` fautif au manifeste des primitives — il déclasserait un module d’écran entier :\n${fautes.join('\n')}`).toEqual([]);
+  });
+
+  it('(xxi) le balayage n’est pas vide : des modules d’écran, et chacun hors couche partagée', () => {
+    const ecrans = modulesDEcran().map((f) => f.rel);
+    expect(ecrans.length, 'aucun module d’ÉCRAN mesuré — le cliquet serait vert par vacuité').toBeGreaterThan(0);
+    expect(ecrans.filter((f) => FEUILLES_PARTAGEES.includes(f))).toEqual([]);
+  });
+
+  it('(xxi) preuve par mutation — une couleur dans une classe MAL NOMMÉE d’un module d’écran rougit', () => {
+    const sites = sitesIdentiteEcran([fixture('src/ui/styles/faux.css', '.layout-truc { color: var(--gold) }')]);
+    expect(sites).toEqual([{ file: 'src/ui/styles/faux.css', ref: '.layout-truc :: color' }]);
+  });
+
+  it('(xxi) preuve — une classe de placement NEUVE est verte', () => {
+    expect(sitesIdentiteEcran([
+      fixture('src/ui/styles/faux.css', '.x { display: flex; gap: var(--sp-md); min-width: 0; grid-template-columns: 1fr 2fr }'),
+    ])).toEqual([]);
+  });
+
+  it('(xxi) preuve — chaque famille d’identité est vue, et aucun placement ne l’est', () => {
+    const peint = ['border-radius: 8px', 'box-shadow: none', 'font-weight: 600', 'opacity: 0.5',
+      'background: red', 'border-color: red', 'cursor: pointer', 'transition: 0.15s'];
+    for (const decl of peint) {
+      expect(refs(sitesIdentiteEcran([fixture('src/ui/styles/faux.css', `.x { ${decl} }`)])), decl).toHaveLength(1);
+    }
+    for (const decl of ['--ma-var: 3px', 'list-style: none', 'touch-action: none', 'user-select: none']) {
+      expect(sitesIdentiteEcran([fixture('src/ui/styles/faux.css', `.x { ${decl} }`)]), decl).toEqual([]);
+    }
+  });
+
+  it('(xxi) preuve — le contexte @media n’abrite rien, et la réf porte le sélecteur SEUL', () => {
+    expect(refs(sitesIdentiteEcran([
+      fixture('src/ui/styles/faux.css', '@media (max-width: 700px) { .x { font-size: 12px } }'),
+    ]))).toEqual(['.x :: font-size']);
+  });
+
+  it('(xxi) preuve — le même texte en module de PRIMITIVE est VERT (la frontière vient du manifeste)', () => {
+    const feuilles = [fixture('src/ui/styles/faux.css', '.x { color: red }')];
+    const manifeste = [{ id: 'fausse', css: 'src/ui/styles/faux.css' }];
+    expect(modulesDEcran(feuilles, modulesDePrimitive(manifeste))).toEqual([]);
+    expect(modulesDEcran(feuilles, modulesDePrimitive([{ id: 'autre' }]))).toEqual(feuilles);
+  });
+
+  it('(xxi) preuve — l’échelle : un littéral px est un site, un token n’en est pas un', () => {
+    const espacement = (css: string) => refs(sitesEspacementHorsEchelle([fixture('src/ui/styles/faux.css', css)]));
+    expect(espacement('.x { gap: 10px }')).toEqual(['.x :: gap :: 10px']);
+    expect(espacement('.x { gap: var(--sp-md) }')).toEqual([]);
+    expect(espacement('.x { margin: 0 auto }')).toEqual([]);
+    expect(espacement('.x { padding: 0 max(12px, env(safe-area-inset-left)) }'))
+      .toEqual(['.x :: padding :: 0 max(12px, env(safe-area-inset-left))']);
+  });
+
+  it('(xxi) preuve — l’exemption est au SITE : une 2ᵉ déclaration homonyme est une occurrence NEUVE', () => {
+    const sites = sitesIdentiteEcran([fixture('src/ui/styles/faux.css', '.x { color: red; color: blue }')]);
+    const { neuves } = ecartDuVolet({
+      sites,
+      stock: [{ fichier: 'src/ui/styles/faux.css', ref: '.x :: color', occurrence: 1 }],
+      ou: 'fixture',
+    });
+    expect(neuves).toHaveLength(1);
+    expect(neuves[0]).toContain(cleDeSite({ fichier: 'src/ui/styles/faux.css', ref: '.x :: color', occurrence: 2 }));
+  });
+
+  it('(xxi) preuve — la CASCADE : `.stack[data-pad]` n’est écrasé ni par `.panel` ni par `.panel.flush`', () => {
+    // Méthode : calcul de SPÉCIFICITÉ puis d'ORDRE sur les règles RÉELLES des deux feuilles, dans
+    // l'ordre d'`@import` de `styles.css` (jsdom ne résout pas `var()`, il ne pourrait rien dire ici).
+    const feuilles = [
+      { nom: 'components.css', text: readFileSync(join(UI, 'styles/components.css'), 'utf8') },
+      { nom: 'layout.css', text: readFileSync(join(UI, 'styles/layout.css'), 'utf8') },
+    ];
+    const avecPad = regleGagnante(feuilles, 'padding', ['panel', 'flush', 'stack'], { 'data-pad': 'md' });
+    expect(avecPad?.origine, 'avec `pad`, c’est la couche LAYOUT qui pose le padding').toBe('layout.css');
+    expect(avecPad?.valeur).toBe('var(--pad)');
+    const sansPad = regleGagnante(feuilles, 'padding', ['panel', 'stack'], {});
+    expect(sansPad?.origine, 'sans `pad`, le panel garde SON padding').toBe('components.css');
+    expect(sansPad?.valeur).toBe('16px');
+  });
+
+  it('(xxii) preuve — formes de `style=`', () => {
+    const inline = (tsx: string) => refs(sitesStyleInline([fixture('src/ui/Faux.tsx', tsx)]));
+    expect(inline('<i style={{ width: w }} />')).toEqual(['i :: width']);
+    expect(inline("<i style={{ '--x': w }} />")).toEqual([]);
+    expect(inline("<i style={{ '--x': w } as CSSProperties} />")).toEqual([]);
+    expect(inline("<i style={{ '--x': 1, width: 2 }} />")).toEqual(['i :: --x,width']);
+    expect(inline('<i style={s} />')).toEqual(['i :: expr']);
+    expect(inline('<i style={c ? { top } : undefined} />')).toEqual(['i :: expr']);
+    expect(inline('<i style={{}} />')).toEqual(['i :: vide']);
+    expect(inline('<i style={{ ...base }} />')).toEqual(['i :: expr']);
+    expect(inline('<i className="dr-bar-fill" style={{ width: w }} />')).toEqual(['i.dr-bar-fill :: width']);
+  });
+
+  it('(xxii) preuve — un commentaire n’est pas du markup', () => {
+    expect(sitesStyleInline([fixture('src/ui/Faux.tsx', '{/* style={{ color }} */}')])).toEqual([]);
+    expect(sitesStyleInline([fixture('src/ui/Faux.tsx', '// style={{ color }}')])).toEqual([]);
   });
 });

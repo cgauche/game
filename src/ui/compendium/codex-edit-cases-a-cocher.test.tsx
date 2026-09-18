@@ -46,7 +46,7 @@ function poseLesFeuilles(fichiers: string[]) {
  *  case courte de l'éditeur d'op (`GameOpEditor`, `<label class="dr">`). */
 const SITES: Record<string, string> = {
   'codex-edit .ed-check': '<div class="codex-edit-form"><label class="ed-check"><input type="checkbox" /><span>Maison</span></label></div>',
-  'atelier .dr': '<div class="row-flex"><label class="dr"><input type="checkbox" /> chaque Round</label></div>',
+  'atelier .dr': '<div class="row"><label class="dr"><input type="checkbox" /> chaque Round</label></div>',
 };
 function poseUneCase(site: keyof typeof SITES): HTMLInputElement {
   document.body.innerHTML = SITES[site];

@@ -6,6 +6,7 @@ import { Scene } from '../../state/scene';
 import { testScenarios, TestScenario } from '../../scenes/test-scenarios';
 import { projectsLoad, projectRemove, nomDeProjet, SavedProject } from '../../state/projectLibrary';
 import { allBuiltinCampaigns, BuiltinCampaign } from '../../scenes/campaign';
+import { Row, Stack } from '../Layout';
 
 /** Un refus d'ouverture RENDU à l'auteur : `message` en mots d'auteur, `detail` = le rapport brut de
  *  la porte (`parseProject`), replié sous le message. */
@@ -74,7 +75,7 @@ export function OpenProjectModal({
       {projects.length > 0 && (
         <>
           <div className="mini-title">Mes projets</div>
-          <div className="stack">
+          <Stack>
             {projects.map((p) => (
               <div className="listrow" key={p.id}>
                 <span className="lr-name">{nomDeProjet(p.label)}</span>
@@ -87,11 +88,11 @@ export function OpenProjectModal({
                 </button>
               </div>
             ))}
-          </div>
+          </Stack>
         </>
       )}
       <div className="mini-title">Campagnes du jeu</div>
-      <div className="stack">
+      <Stack>
         {allBuiltinCampaigns.map((bc) => (
           <div className="listrow" key={bc.id}>
             <span className="lr-name">
@@ -103,9 +104,9 @@ export function OpenProjectModal({
             </button>
           </div>
         ))}
-      </div>
+      </Stack>
       <div className="mini-title">Scénarios de test</div>
-      <div className="stack">
+      <Stack>
         {testScenarios.map((sc) => (
           <div className="listrow" key={sc.id}>
             <span className="lr-name">
@@ -117,7 +118,7 @@ export function OpenProjectModal({
             </button>
           </div>
         ))}
-      </div>
+      </Stack>
     </Modal>
   );
 }
@@ -164,10 +165,10 @@ export function SaveProjectModal({
           </select>
         </label>
       )}
-      <label className="row-flex">
+      <Row as="label">
         <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} />
         <span>Jouable depuis le menu principal</span>
-      </label>
+      </Row>
       <div className="modal-actions">
         <button className="btn" onClick={onClose}>
           Annuler

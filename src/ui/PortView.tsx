@@ -22,6 +22,7 @@ import { TradeTable, type TradeGroup } from './TradeTable';
 import { ShoreLeaveBody } from './ShoreLeaveModal';
 import { ManannBody } from './ManannPriestModal';
 import { GatedAction } from './GatedAction';
+import { Grid, Split } from './Layout';
 
 /** Raison UNIQUE du refus des gestes de port à un invité : l'hôte seul engage la bourse du groupe. */
 const REFUS_INVITE = 'L’hôte seul engage les dépenses du groupe.';
@@ -62,7 +63,7 @@ export function EscaleTab({ vessel, isGuest, pendingShoreLeave, pendingManannPri
   const countOf = (roleId: string) => vessel.crew?.find((h) => h.roleId === roleId)?.count ?? 0;
   const hasEvent = !!(pendingShoreLeave || pendingManannPriest);
   return (
-    <div className="layout-sidebar port-escale">
+    <Split aside="md" stackBelow={900} gap="xl" pad="xl" className="screen-scroll port-escale">
       <section className="panel port-section">
         <h3>Vie du port</h3>
         {!hasEvent && <p className="port-hint">Aucun événement d’escale en cours.</p>}
@@ -72,7 +73,7 @@ export function EscaleTab({ vessel, isGuest, pendingShoreLeave, pendingManannPri
       <section className="panel port-section">
         <h3>Recruter de l’équipage</h3>
         <p className="port-hint">Embauche de marins salariés : la solde est prélevée à l’entretien hebdomadaire, aucune avance à l’embauche.</p>
-        <div className="panel-grid">
+        <Grid min="md" stackBelow={700}>
           {hireable.map((role) => {
             const n = countOf(role.id);
             return (
@@ -97,11 +98,11 @@ export function EscaleTab({ vessel, isGuest, pendingShoreLeave, pendingManannPri
               </div>
             );
           })}
-        </div>
+        </Grid>
         <ShipCrewWages vessel={vessel} />
         {!vessel.crew?.length && !vessel.wagesOwed && <p className="port-hint">Aucun équipage salarié pour l’instant.</p>}
       </section>
-    </div>
+    </Split>
   );
 }
 
@@ -111,7 +112,7 @@ export function EscaleTab({ vessel, isGuest, pendingShoreLeave, pendingManannPri
  * `ref`), puis trois onglets. Chantier (Réparer MDG 13 l.643 / Caréner Salissures l.150-159 /
  * Améliorations MDG 12) · Cargaison (commerce maritime l.309-399) · Escale (`EscaleTab` : événements
  * d'escale en cours surfacés + recrutement salarié). Overlay plein écran (patron `WorldMapView`),
- * sections en `.layout-sidebar`/`panel-grid` (responsive ≤900/700/560), français, aucun texte tuto
+ * sections en `Split`/`Grid` (responsive ≤900/700/560), français, aucun texte tuto
  * (les `desc` sont du VERBATIM). `initialTab` : levier de test (rendu statique) ; défaut = Chantier.
  */
 export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'cargaison' | 'escale' } = {}) {
@@ -178,7 +179,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
       />
 
         {tab === 'coque' ? (
-          <div className="layout-sidebar port-yard">
+          <Split aside="md" stackBelow={900} gap="xl" pad="xl" className="screen-scroll port-yard">
             <section className="panel port-section">
               <h3>Coque &amp; entretien</h3>
               <p>Blessures : <b>{woundsCur}/{woundsMax}</b>{vessel.criticals?.length ? ` · ${vessel.criticals.length} Critique(s) noté(s)` : ''}</p>
@@ -216,7 +217,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
             <section className="panel port-section">
               <h3>Améliorations</h3>
               {upgrades.length === 0 && <p className="port-hint">Toutes les Améliorations installables le sont déjà.</p>}
-              <div className="panel-grid">
+              <Grid min="md" stackBelow={700}>
                 {upgrades.map(({ def, cost }) => (
                   <div key={def.id} className="port-upgrade">
                     <div className="port-upgrade-head">
@@ -235,11 +236,11 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                     <Prose md={def.desc} porteur={{ type: 'navalTraits', id: def.id, chemin: 'desc' }} />
                   </div>
                 ))}
-              </div>
+              </Grid>
             </section>
-          </div>
+          </Split>
         ) : tab === 'cargaison' ? (
-          <div className="layout-sidebar port-trade">
+          <Split aside="md" stackBelow={900} gap="xl" pad="xl" className="screen-scroll port-trade">
             <section className="panel port-section">
               <h3>Acheter — offres de l’escale</h3>
               <p className="port-hint">
@@ -319,7 +320,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                 />
               )}
             </section>
-          </div>
+          </Split>
         ) : (
           <EscaleTab
             vessel={vessel} isGuest={isGuest}

@@ -18,7 +18,7 @@ ne pas la réinventer par fichier :
    (jamais un trou, même id absent/inconnu).
 3. **`SpeakerBanner`** si l'écran porte un interlocuteur (aubergiste, marchand) — juste sous la bande
    d'ambiance, avant le contenu.
-4. **Contenu** en primitives composées : `.panel`/`.panel-grid`, `MasterDetail` (liste+détail),
+4. **Contenu** en primitives composées : `.panel` en `Grid`, `MasterDetail` (liste+détail),
    tables (`.port-table`…) — jamais une liste/section maison recodée (cf. « Couche atomique » et
    `docs/primitives.md`).
 5. **Pied d'action** — `.bar`/`.modal-actions` selon le contexte (barre d'écran vs modale imbriquée).
@@ -35,26 +35,32 @@ habité » du juge, #371) ; un centrage/bornage codé à la main par écran (tra
   `--danger`/`--danger-soft` (alerte), `--copper`/`--silver` (monnaie). Changer la palette =
   éditer `:root` seul. Seules exceptions tolérées : `rgba(0,0,0/255,255,255,…)` génériques
   (ombres/voiles). **Réflexe : à chaque couleur écrite, utiliser ou créer un token.**
-- **Pas de monolithe CSS.** `src/ui/styles.css` est un orchestrateur d'`@import` ; le style vit
-  dans des modules sous `src/ui/styles/` — couche PARTAGÉE : `base`, `components`, `tabs`
-  (variantes de la primitive `Tabs`), `gauges` (jauges partagées) ; modules de DOMAINE : `creator`,
-  `combat-ui`, `combat-modals`, `sheet`, `merchant`, `hud`, `world-meta`, `editor`, `compendium`,
-  `codex-edit`, `house-rules`, `mass-battle`, `ornaments`, `tavern`.
+- **Pas de monolithe CSS, et TROIS COUCHES** (#1800). `src/ui/styles.css` est un orchestrateur
+  d'`@import`, dans l'ordre `base → components → tabs → layout → modules` : (1) **tokens** —
+  `base.css` `:root`, couleurs ET échelle d'espacement `--sp-*` ; (2) **identité** — ce qui a une
+  matière (couleur, bordure, police, rayon, ombre) : `components.css`, `tabs.css`, et le module que
+  chaque primitive POSSÈDE (champ `css` de `src/data/primitives.manifest.json` : `band`, `frames`,
+  `gauges`, `hero-sheet`, `ornaments`, `plaque-row`, `rose`, `creator-step`,
+  `panneau-parametre`) ; (3) **layout** — `layout.css`, ce qui PLACE et n'a aucune matière.
+  `layout.css` vient APRÈS `components.css` : sans quoi `.panel { padding: 16px }` écraserait le
+  `pad` de toute primitive de placement. Un module d'ÉCRAN (tous les autres) ne déclare QUE du
+  placement.
 - **Nouveau style : le réflexe est la couche PARTAGÉE, jamais la classe locale par défaut**
-  (doctrine utilisateur 2026-07-12 : « classe mono-écran = excuse à la dérive » ; « si on ne sait
-  pas faire, on ajoute de nouveaux génériques — on en a déjà pas mal, j'en doute »). Ordre :
+  (doctrine utilisateur 2026-07-12, #373, verbatim : « J'y crois pas une seule seconde à des
+  classes mono-écrans personnellement, c'est une excuse à la dérive » ; la charte ajoute, de son
+  propre chef : si on ne sait pas faire, on ajoute de nouveaux génériques). Ordre :
   (1) composer une classe du catalogue ci-dessous ; (2) motif inexprimable → l'ajouter en
-  GÉNÉRIQUE paramétrable à la couche partagée (cas attendu RARE) ; (3) une classe de domaine ne
-  se crée que pour du vraiment spécifique (géométrie d'un canevas, skin d'un écran unique) et se
-  justifie. Cliquets CI : (x) boutons nus, (xii) stock de classes par module de domaine —
-  baselines gelées, décroissantes.
+  GÉNÉRIQUE paramétrable à la couche partagée (cas attendu RARE) ; (3) une classe d'ÉCRAN ne pose
+  que du PLACEMENT — jamais une identité, jamais un espacement hors de l'échelle `--sp-*`
+  (arbitrage utilisateur A1 du 2026-09-18). Cliquets CI : (x) boutons nus, (xxi) identité et
+  espacement en module d'écran, (xxii) style inline — stocks NOMINATIFS, décroissants.
 - **Primitives canoniques** (`src/ui/styles/components.css`) — **composer, ne pas recréer une
   surface ad-hoc** : `.panel` (surface ; variantes `.sunken`/`.gold`/`.flush`), `.fold` (section
   repliable `<details>`), `.field` (champ libellé-au-dessus), `.stat-chip` (cartouche
-  label+valeur), `.listrow` (rangée nom+méta+action), `.chip`/`.count` (badges), `.stack`/
-  `.row-flex`. Idem pour le cadre `<Modal>` partagé (jamais de `.modal-overlay`+`.modal`+
-  `useModalA11y` recopiés à la main) et les layouts responsive `.layout-sidebar`/`.panel-grid`/
-  `.bar` (règle stricte 4). **Avant d'écrire du CSS : chercher la primitive qui existe déjà.**
+  label+valeur), `.listrow` (rangée nom+méta+action), `.chip`/`.count` (badges), `.clamp`
+  (troncature à N lignes). Idem pour le cadre `<Modal>` partagé (jamais de `.modal-overlay`+`.modal`+
+  `useModalA11y` recopiés à la main) et, pour le PLACEMENT, les quatre primitives `Stack`/`Row`/
+  `Grid`/`Split` (`src/ui/Layout.tsx`, règle stricte 4). **Avant d'écrire du CSS : chercher la primitive qui existe déjà.**
   Afficher une valeur avec son LABEL, jamais un format cryptique (« Destin 4·4 » → 4 cartouches
   nommés Destin/Chance/Résilience/Détermination).
 - **Le contenu VARIABLE (États, longueurs de noms) ne décale JAMAIS les colonnes d'une liste.** Une
@@ -113,8 +119,7 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.prose-exergue` | EXERGUE dans une prose : le couple citation `« … »` + attribution, encadré À SA PLACE dans le corps du texte | Posé par le SEUL plugin `exergues` de `<Prose>` (`src/ui/Prose.tsx`), activé par la donnée de catégorie (champ `exergues` de `CodexCategory`) — il enveloppe un `ParchmentCard` dont il annule la marge propre ; jamais un encadré de citation recodé par écran, et jamais un champ `exergue` en donnée (la `desc` reste entière). |
 | `.stat-chip` (+ `.sc-label`, `.sc-value`) | Cartouche « label + valeur » (PV, carac, ressource) | Afficher une valeur nommée — jamais un format cryptique (« 4·4 » sans libellé, cf. règle charte ci-dessus). |
 | `.listrow` (+ `.lr-name`) | Rangée de liste : nom (flex:1) + méta + action | Toute liste d'entités cliquables/actionnables (inventaire, roster…) plutôt qu'un `<li>` stylé à la main. |
-| `.stack` | Empilement vertical (flex column, gap 8px) | Toute pile de blocs verticale simple — pas de `display:flex;flex-direction:column` recopié. |
-| `.row-flex` | Rangée horizontale qui s'enroule (flex-wrap) | Toute rangée d'éléments qui doit passer à la ligne sur petit écran plutôt qu'un `overflow` caché. |
+| `.clamp` | Texte TRONQUÉ à N lignes (`--clamp`, défaut 3) | Toute accroche/description bornée dans une carte — jamais un `-webkit-line-clamp` recopié par écran. |
 | `.wounds-badge` / `.char-value` (+ tailles `.char-value-sm`/`.char-value-md`/`.char-value-lg`) / `.game-date` / `.fx-chip-label` | Composants de donnée unifiés (LOT 5) — respectivement PB/carac+avancées/date de jeu/étiquette d'effet | Rendus par leurs composants (`WoundsBadge`, `CharValue`, `GameDate`, `FxChip`) — ne pas reformater ces données à la main ailleurs ; `CharValue` prend l'échelle NOMMÉE (`size`, défaut `sm`, #418) au lieu d'hériter du contexte. |
 | `.swatch` | Pastille/bande peinte à une couleur de DONNÉE (style inline), forme réglée par variables au contexte (`--swatch-display`/`--swatch-w`/`--swatch-h`/`--swatch-gap`/`--swatch-border`/`--swatch-radius`) | Toute couleur MONTRÉE (rangée `couleur` d'une fiche du Codex, bande de jeton de la galerie) — DÉCORATIVE (`aria-hidden`), le hex ou le nom du jeton restant écrit à côté ; jamais un carré peint recodé par écran. |
 | `.icon` | Cadrage de l'icône SVG maison | Posée par la primitive `<Icon>` (`src/ui/Icon.tsx`) — cale l'icône sur la ligne de base du texte adjacent ; jamais un `<svg>` brut à côté de texte. |
@@ -122,7 +127,7 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.activity-pane` (+ `.activity-pane-head`, `.activity-pane-body`, `.activity-pane-desc`, `.activity-pane-blocked`, `.activity-pane-foot`, `.activity-pane-terms`, `.activity-pane-detail`, `.activity-pane-actions`) | Panneau d'Activité/Service : en-tête (icône + titre), corps DÉFILABLE, pied FIXE (pré-jet + coût `<Coins>` + action jamais cachés par le scroll) | Composé par la primitive `ActivityPane` (`src/ui/ActivityPane.tsx`, CLAUDE.md) — tout volet d'Activité (interlude) ou détail de service (hub de ville) la COMPOSE au lieu d'un markup en-tête/corps/pied recodé à la main. |
 | `.sans-webgl` (+ variante `.sans-webgl.compact`) | Message « le monde ne peut pas être affiché » : ce que le joueur voit quand la machine refuse le contexte WebGL 2, le monde volumique étant le seul peintre du jeu (#1176 C5a) | Posé par la primitive `SansWebgl` (`src/gameIso/stage/SansWebgl.tsx`) sur `.panel` — tout hôte de monde (stage de jeu, plan de station) le monte À LA PLACE de son canevas ; `compact` = posé DANS un panneau borné. Jamais un écran nu et muet, jamais un second peintre de secours. |
 | `.plaque-nom` | Boîte du NOM d'un utilisable révélé (Alt maintenu) ou survolé, posée au-dessus de lui dans le SVG du plateau (#1687) : centrage et ombrage de lisibilité sur le monde nu, jamais une cible (`pointer-events: none` de bout en bout) | Posée par la primitive `PlaquesDeNom` (`src/gameIso/stage/PlaquesDeNom.tsx`) autour de `CodexTitre` — le TEXTE reste celui du chrome de nom du Codex, une seule matière de nom à l'écran ; jamais un second peintre de nom, jamais une boîte qui mangerait une bande du champ au-dessus de chaque décor. |
-| `.menu-card` (+ `.game-menu-overlay` menu système plein écran, `.game-menu-card`/`.game-menu-sub-wide`/`.menu-sub-head`/`.menu-sub-body`, `.menu-card-head`/`.menu-card-title`/`.menu-card-sub`/`.menu-card-meta`, `.menu-btn`, `.menu-toggle`, `.menu-buttons`) | Carte de menu : en-tête + sections de grands boutons pleine largeur (icône + libellé) séparées par un filet titré ; `.game-menu-overlay` = voile plein écran du menu système (pause) en jeu, ses sous-écrans Coopération/Options composant la même carte | Composée par la primitive `MenuCard`/`MenuSection`/`MenuButton`/`MenuToggle` (`src/ui/MenuCard.tsx`, CLAUDE.md) — le menu principal (`MainMenu`) ET le menu système plein écran en jeu (`GameMenu`) la COMPOSENT ; jamais un `.menu-card` recodé ni un `<button className="btn">` de menu à la main. |
+| `.menu-card` (+ `.menu-card-large` carte-CATALOGUE, prop `large` — plafond 760px, 1600px au-delà de 1440px ; `.game-menu-overlay` menu système plein écran, `.game-menu-card`/`.game-menu-sub-wide`/`.menu-sub-head`/`.menu-sub-body`, `.menu-card-head`/`.menu-card-title`/`.menu-card-sub`/`.menu-card-meta`, `.menu-btn`, `.menu-toggle`, `.menu-buttons`) | Carte de menu : en-tête + sections de grands boutons pleine largeur (icône + libellé) séparées par un filet titré ; `.game-menu-overlay` = voile plein écran du menu système (pause) en jeu, ses sous-écrans Coopération/Options composant la même carte | Composée par la primitive `MenuCard`/`MenuSection`/`MenuButton`/`MenuToggle` (`src/ui/MenuCard.tsx`, CLAUDE.md) — le menu principal (`MainMenu`) ET le menu système plein écran en jeu (`GameMenu`) la COMPOSENT ; jamais un `.menu-card` recodé ni un `<button className="btn">` de menu à la main. |
 
 ### Atelier du scribe (#412)
 
@@ -188,13 +193,17 @@ son propre cue (Compendium, pickers marchands…) sans reposer le mécanisme de 
 
 | Classe | Rôle | Quand l'utiliser / anti-patron |
 |---|---|---|
-| `.layout-sidebar` | Grille « colonne latérale (270px) + contenu » | Fiche vivante, inspecteurs — s'empile en 1 colonne ≤900px (breakpoint canon). |
-| `.panel-grid` (+ `.span-2`) | Grille de `.panel` en auto-fit (min 340px) | Tableau de bord de plusieurs panels — 1 colonne ≤700px ; `.span-2` pour un panel pleine largeur. |
+| `.stack` (`Stack`) | PILE verticale — `gap`/`pad` sur l'échelle, `align`, `rowBelow` (devient une rangée sous la cassure) | Toute pile de blocs — composer `<Stack>`, jamais un `display:flex;flex-direction:column` recopié. |
+| `.row` (`Row`) | RANGÉE horizontale qui s'enroule — `justify`, `align`, `wrap`, `stackBelow` (devient une pile) | Toute rangée d'éléments qui doit passer à la ligne sur petit écran plutôt qu'un `overflow` caché. |
+| `.grid` (`Grid`) | GRILLE de cartes/panneaux — `min` (`sm` 240 / `md` 340 / `lg` 400px, colonnes AUTO) ou `cols` (2/3/4 FIXES, exclusif), `stackBelow` | Tableau de bord, catalogue de cartes — 1 colonne sous la cassure ; l'enfant pleine largeur porte le modificateur `spanFull` (attribut `data-span`). |
+| `.split` (`Split`) | Deux colonnes dont une BORNÉE — `aside` (`sm` 160-240 / `md` 270px / `lg` 240px-1,3fr), `side`, `sticky`, `align` (`start` par défaut, `stretch` égalise les hauteurs), `stackBelow` | Fiche vivante, inspecteur, maître-détail — s'empile sous la cassure, et `sticky` y revient dans le flux. C'est `side` qui dit QUELLE colonne est bornée : la première, ou la dernière en `side="end"`. |
+| `.screen-scroll` | Rail DÉFILANT borné (1480px, centré) d'un écran plein champ | Le corps d'un écran plein-champ qui doit défiler d'un SEUL bloc — jamais des scrollbars imbriquées. |
+| Attributs de placement | `data-gap`/`data-pad` (échelle `--sp-2xs`…`--sp-xl`), `data-stack-below`/`data-row-below` (900/700/560), `data-grow`/`data-push`/`data-span` | Posés par les props de `src/ui/Layout.tsx` ; les modificateurs d'ENFANT `grow`, `pushEnd`, `spanFull` s'étalent en attributs sur l'enfant (`data-grow`, `data-push`, `data-span`). Jamais une valeur en pixels : l'échelle `--sp-*` est fermée (10px → `lg` dans un `.panel`, `md` sinon ; 14px → `lg`). |
 | `.bar` | Barre d'écran (en-tête, fond dégradé, filet or) | En-tête d'écran avec titre + actions — s'enroule ≤700px ; ne PAS la détourner pour une simple rangée sans fond/padding de header (charte : « éviter les espaces vides »). |
 | `.screen` | Colonne plein-écran (flex column, hauteur 100%) | Coquille racine d'un écran plein-champ « historique » (hors `ScreenShell`, cf. table `docs/primitives.md`). |
 | `.screen-body` | Corps de `ScreenShell` borné/centré (~960px) | Posée par `ScreenShell` (prop `body='centered'`) — écran de PANNEAUX/LECTURE (marché, dossier, hub) plutôt que canevas plein cadre ; jamais un centrage/bornage manuel recopié par écran. |
-| `.screen-body-wide` | Modificateur de `.screen-body` — plafond relevé (~1400px) au-delà de 1440px | Posée par `ScreenShell` (prop `body='centered-wide'`, politique grand écran) — écran-GRILLE/catalogue (négoce en `TradeTable`/`.panel-grid`) plutôt que lecture ; toujours combinée à `.screen-body`, jamais seule. |
-| `.master-detail` (+ `.master-detail-list`, `.master-detail-detail`) | Gabarit maître-détail (liste gauche + détail centre), LAYOUT pur | Composé par `MasterDetail.tsx` (CLAUDE.md) — s'empile ≤700px (`MASTER_DETAIL_STACK_BREAKPOINT_PX`), jamais une 2ᵉ composition liste+détail recodée. |
+| `.screen-body-wide` | Modificateur de `.screen-body` — plafond relevé (~1400px) au-delà de 1440px | Posée par `ScreenShell` (prop `body='centered-wide'`, politique grand écran) — écran-GRILLE/catalogue (négoce en `TradeTable`/`Grid`) plutôt que lecture ; toujours combinée à `.screen-body`, jamais seule. |
+| `.master-detail-list` | Géométrie de DÉFILEMENT du rail de liste d'un maître-détail (plafond `min(60vh, 520px)`) | Posée par `MasterDetail.tsx` (CLAUDE.md), composé sur `Split aside="sm"` + `Stack rowBelow={700}` — jamais une 2ᵉ composition liste+détail recodée. |
 | `.tabs` (+ `.tab-btn`) | Style de base (variante `flat`) de la barre d'onglets | Posée par la primitive React `Tabs` (CLAUDE.md) — les variantes `pill`/`sub`/`dock` composent par-dessus dans `tabs.css` ; jamais un `role=tablist` recodé à la main. |
 | `.seg` (`sheet.css`) | Segmented control (choix exclusif, boutons collés) | Composé par la primitive React `OptionChooser` (variante `seg`) — jamais un groupe de boutons exclusifs recodé à la main. |
 
@@ -332,7 +341,7 @@ trois règles :
 1. **Les GRILLES de cartes s'élargissent.** Une grille de cartes (scénarios, catalogue…) compose
    `grid-template-columns: repeat(auto-fill, minmax(~380-420px, 1fr))` sur la largeur UTILE du
    conteneur (pas un `auto-fit` étroit qui laisse 2 colonnes flotter dans un couloir) — 3-4 colonnes
-   sur un 1920px plutôt que 2. `.ts-grid` (scénarios de test) applique ce motif.
+   sur un 1920px plutôt que 2. `Grid min="lg"` (scénarios de test) applique ce motif.
 2. **Le PLAFOND diffère grille/lecture.** Un écran-GRILLE ou catalogue (tables, cartes,
    `TradeTable`) monte son plafond vers ~1200-1600px — plus de colonnes utiles, plus de contenu par
    écran. Un écran de LECTURE (prose, fiche, panneau centré) GARDE un plafond confortable

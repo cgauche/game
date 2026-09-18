@@ -270,12 +270,6 @@
 .warn-text {
   color: var(--gold);
 }
-.row-flex {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
 /* Fiche vivante — zone DESC du gabarit (`.creator-step > :last-child`, pleine hauteur). */
 .creator-summary {
   background: var(--panel);
@@ -308,7 +302,7 @@
   font-size: 12px;
   color: var(--muted);
 }
-/* Roadmap d'IDENTITÉ (signe astral + nom/traits, #417 suite P3) — compose `.row-flex`, chips via
+/* Roadmap d'IDENTITÉ (signe astral + nom/traits, #417 suite P3) — compose `Row`, chips via
    `.chip`/`.chip-roadmap` (hero-sheet.css). */
 .creator-identity-roadmap {
   gap: 4px;
@@ -645,7 +639,7 @@
 /* ══ Charte « Atelier du scribe » (#412, kit ratifié) — primitives SANS canon préexistant :
    MetalStatus / WaxSeal+SealedPlaque / CareerPath / FigTile / GroupedPickGrid / DetailFrame.
    Tokens : couleurs `:root` (`--atelier-*`, base.css — retunées EN PARTAGÉ, jamais un hex en dur
-   ici). Rangées qui s'enroulent : composent `.row-flex` (base primitive) — jamais un flex-wrap
+   ici). Rangées qui s'enroulent : composent `Row` (couche LAYOUT) — jamais un flex-wrap
    redéclaré localement (cliquet vii). */
 
 /* -- MetalStatus (chip statut Bronze/Argent/Or) -- */
@@ -719,7 +713,7 @@
 }
 .sealed-plaque.sel .sealed-plaque-title { color: var(--atelier-brass-elu); }
 
-/* -- CareerPath (chemin de carrière, médaillons de niveau) — `.cc-path` compose `.row-flex` (JSX).
+/* -- CareerPath (chemin de carrière, médaillons de niveau) — `.cc-path` compose `Row` (JSX).
    NOWRAP (correctif utilisateur 2026-07-14, #393 P2) : la chaîne des 4 niveaux tient sur UNE ligne
    (maquette ratifiée) — les médaillons se COMPRIMENT (`min-width:0`, ellipse du nom AVEC `title`)
    plutôt que de laisser le 4e wrapper en pleine largeur sous les trois autres. */
@@ -819,7 +813,7 @@
 }
 
 /* -- DetailFrame (cadre de détail de l'élue) — panneau à liseré laiton + coins vissés (langage
-   `.c-frame`/`.cand-detail` du kit), `.detail-frame-meta` compose `.row-flex` (JSX). */
+   `.c-frame`/`.cand-detail` du kit), `.detail-frame-meta` compose `Row` (JSX). */
 .detail-frame {
   position: relative;
   display: flex;
@@ -845,7 +839,7 @@
 }
 .detail-frame::before { left: 10px; }
 .detail-frame::after { right: 10px; }
-/* Compose `.row-flex` (JSX, base primitive) — n'y redéclare pas `flex-wrap` (cliquet vii). */
+/* Compose `Row` (couche LAYOUT) — n'y redéclare pas `flex-wrap` (cliquet vii). */
 .detail-frame-head {
   align-items: baseline;
   gap: 14px;
@@ -887,8 +881,7 @@
    renommage 1:1 de l'ex-`.creator-pick-shell` P1/P2, déjà calibré planche) : zone de CHOIX (~60 %)
    ⇄ zone DESC (colonne droite UNIVERSELLE, plafonnée ~600px). Slots de l'ossature dans
    creator-step.css. Enfants ciblés PAR POSITION (`:first-child`/`:last-child`) plutôt qu'en
-   re-déclarant `.master-detail-list`/`.master-detail-detail` ici — évite de gonfler le stock de
-   classes de domaine (cliquet xii) pour un simple calage de proportions. */
+   re-déclarant les classes de la primitive ici — un calage de proportions n'est pas une classe. */
 /* Cadre-parchemin DEUX PANNEAUX (rail liste + détail élu, juge vision #393 polish, écart n°1) :
    bordure/radius/halo + 4 rivets laiton d'angle, valeurs `.c-lectern`/`.c-rivet` de la planche
    ratifiée. Rivets en COUCHES de fond
@@ -925,7 +918,7 @@
      à 1600 est inchangée), sain en dessous, et continu avec le repli 38 % de ≤900px. */
   grid-template-columns: minmax(0, 1fr) minmax(320px, min(600px, 40%));
   grid-template-rows: minmax(0, 1fr);
-  align-items: stretch; /* le canon `.master-detail` pose `align-items:start` (liste courte, JAMAIS
+  align-items: stretch; /* le canon `.split` pose `align-items:start` (liste courte, JAMAIS
     scrollée) — ici la liste est longue (grille de cartes) : elle doit occuper toute la hauteur
     disponible pour scroller EN INTERNE plutôt que de pousser le pied de l'étape hors écran. */
 }
@@ -1154,7 +1147,7 @@
    d'allocation des trois volets de l'étape 5 COMPOSENT `PlaqueRow`/`PlaqueGrid` (plaque-row.css) :
    `.skill-row(-grid|-label)` — le doublon d'un meuble déjà consacré (`.cs-row` et `.ck-cell` sont
    la MÊME matière dans la planche) — sont morts, avec la coquille `.creator-skills-card` (le
-   gabarit porte le layout) et `.creator-talents-cols` (la primitive globale `.panel-grid`). Les
+   gabarit porte le layout) et `.creator-talents-cols` (la primitive globale `Grid`). Les
    quotas comptent dans la tête de `Band` (`.cu-sechead .gauge`), plus dans une rangée flottante :
    `.creator-skill-quota-gauges` est morte avec elle. */
 

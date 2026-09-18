@@ -720,8 +720,8 @@ console. ») — les verbes `ooc*` sont des lanceurs HORS combat et ne produisai
 - **Zoom de la carte, panneau de route OUVERT — DÉFAUT OUVERT (#1117)** : à ~850×900, panneau ouvert,
   `elementFromPoint` au centre et aux 4 coins de « Zoomer » rend `ASIDE.worldmap-side`. Deux pistes ont
   été éliminées par la mesure : l'ordre d'empilement (le cadre carte isole déjà, `.wm-zoom` porte son
-  `z-index`) et le `sticky` de l'aside (la primitive `.layout-sidebar` le remet en `static` ≤900px —
-  `base.css`, garde `WorldMapView.test.tsx`). La cause restante est GÉOMÉTRIQUE et se mesure au
+  `z-index`) et un aside COLLANT — il ne l'est pas : l'écran compose `Split side="end" align="stretch"`
+  sans `sticky`, et `world-meta.css` pose `position: static` ≥901px (garde `WorldMapView.test.tsx`). La cause restante est GÉOMÉTRIQUE et se mesure au
   navigateur, pas au CSS : relever `getBoundingClientRect()` de `.worldmap-canvas`,
   `.map-canvas-frame`, `.wm-zoom` et de l'aside, plus leur `position`/`transform`/`margin` calculés,
   et joindre les 4 rectangles au rapport. Sans ces rectangles, tout nouveau correctif est un pari.

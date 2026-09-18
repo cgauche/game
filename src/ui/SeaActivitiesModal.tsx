@@ -15,6 +15,7 @@ import { partyMoneyTotal, bourseOf } from '../state/bourseFlow';
 import { Coins } from './Coins';
 import { NumberField } from './NumberField';
 import { Icon } from './Icon';
+import { Grid } from './Layout';
 
 /**
  * ACTIVITÉS EN MER (MDG 15 l.266-306) — modale hebdomadaire (semaine de 8 jours, l.268) : chaque
@@ -22,7 +23,7 @@ import { Icon } from './Icon';
  * réutilisé de l'interlude). Le Commerce d'opportunité (l.276) expose une mise en CO plafonnée par
  * l'Encombrement libre du navire et la bourse ; la Cartographie (l.292) expose une Planque gratuite
  * plafonnée par la bourse. « Entretien du navire » n'est PAS ici (déjà câblé au Test d'équipage
- * nocturne). Responsive : une carte par héros (`panel-grid` → 1 colonne ≤700px).
+ * nocturne). Responsive : une carte par héros (`Grid` → 1 colonne ≤700px).
  */
 export function SeaActivitiesModal() {
   const pending = useGame((s) => s.pendingSeaActivities);
@@ -49,7 +50,7 @@ export function SeaActivitiesModal() {
           <Prose md={intro.desc} porteur={{ type: 'regles', id: intro.id, chemin: 'desc' }} />
         </div>
       )}
-      <div className="panel-grid">
+      <Grid min="md" stackBelow={700}>
         {heroes.map((h) => {
           const pick = picks[h.id];
           const chosen = pick?.activityId ?? '';
@@ -111,7 +112,7 @@ export function SeaActivitiesModal() {
             </section>
           );
         })}
-      </div>
+      </Grid>
       <p className="sea-act-purse">Bourse du groupe : <b><Coins money={money} /></b> · Cale libre : <b>{freeEnc} Enc</b></p>
       <div className="modal-actions">
         <button type="button" className="btn btn-primary" onClick={() => confirm(picks)}>Valider la semaine</button>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Modal } from './Modal';
 import { useGame } from '../state/store';
+import { Grid } from './Layout';
 
 type HeroKey = 'ambitionShort' | 'ambitionLong' | 'motivation';
 
@@ -8,7 +9,7 @@ type HeroKey = 'ambitionShort' | 'ambitionLong' | 'motivation';
  * CORPS de la FIN DE SÉANCE (LDB 05 Ambitions + LDB 17 Détermination) — le groupe coche les Ambitions
  * accomplies (personnelles et de groupe) et les héros ayant agi selon leur Motivation. « Terminer
  * la séance » octroie les PX d'Ambition (+50 court / +500 long) et regagne la Détermination via
- * `store.endSession`, puis restaure la Chance pour la prochaine séance. Responsive (`.panel-grid`).
+ * `store.endSession`, puis restaure la Chance pour la prochaine séance. Responsive (`Grid`).
  *
  * PUR : ni voile ni piège Tab — il se monte tel quel DANS un écran plein-champ qui porte déjà les
  * siens (récap de fin de chapitre, #717) comme dans sa modale ci-dessous. `apercu` le rend INERTE
@@ -46,7 +47,7 @@ export function SessionEndBody({ onDone, onCancel, apercu }: { onDone: () => voi
           Long terme accomplie (+500 PX à chaque héros)
         </label>
       </section>
-      <div className="panel-grid">
+      <Grid min="md" stackBelow={700}>
         {party.map((h) => (
           <section key={h.id} className="se-hero hr-group">
             <h4 className="mini-title">{h.label}</h4>
@@ -64,7 +65,7 @@ export function SessionEndBody({ onDone, onCancel, apercu }: { onDone: () => voi
             </label>
           </section>
         ))}
-      </div>
+      </Grid>
       <div className="modal-actions">
         <button className="btn" disabled={apercu} onClick={onCancel}>Annuler</button>
         <button className="btn btn-primary" disabled={apercu} onClick={confirm}>Terminer la séance</button>

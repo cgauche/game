@@ -10,6 +10,7 @@ import { Prose } from '../Prose';
 import type { Porteur } from '../liage';
 import { libelleDuChamp } from './editFields';
 import { uniqueSlugId } from '../../data/slug';
+import { Row } from '../Layout';
 
 export function CodexSourceBadge({ source }: { source: CodexItem['source'] }) {
   if (!source) return null;
@@ -154,14 +155,14 @@ export function CodexEntry({ item, instance, category, exergues }: { item: Codex
   // Faits-clés : TOUJOURS visibles dans l'en-tête (jamais cachés derrière un onglet).
   const meta =
     item.meta && item.meta.length > 0 ? (
-      <div className="row-flex codex-meta">
+      <Row className="codex-meta">
         {item.meta.map((m) => (
           <span key={m.label} className="stat-chip codex-fact">
             <span className="sc-label" title={m.label}>{m.label}</span>
             <span className="sc-value">{m.value}</span>
           </span>
         ))}
-      </div>
+      </Row>
     ) : undefined;
 
   return (
@@ -200,7 +201,7 @@ export function CodexEntry({ item, instance, category, exergues }: { item: Codex
         )}
       />
       {item.maison && (
-        // PROVENANCE d'un document sans folio : l'arbitrage maison se LIT sur la fiche, comme la réf
+        // PROVENANCE d'un document sans folio : la valeur maison se LIT sur la fiche, comme la réf
         // de livre d'une entrée sourcée (`CodexSourceBadge`). Rendu UNE fois ici, jamais par catégorie.
         <section className="codex-sec">
           <h3 className="codex-sec-title section-label">{libelleDuChamp('maison')}</h3>

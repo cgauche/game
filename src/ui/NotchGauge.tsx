@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 /**
  * Jauge à CRANS générique (segments discrets gravés, pas une barre continue) — porte les jauges du
@@ -79,14 +79,14 @@ export function NotchGauge({
       >
         <div
           className="notch-gauge__notches"
-          style={cellSize != null ? { width: n * cellSize + (n - 1) * 2 } : undefined}
+          style={{ '--notch-w': cellSize != null ? `${n * cellSize + (n - 1) * 2}px` : 'initial' } as CSSProperties}
         >
           {Array.from({ length: n }, (_, i) => (
             <span
               key={i}
               className="notch-gauge__notch"
               data-on={i < filled ? '' : undefined}
-              style={cellSize != null ? { flex: `0 0 ${cellSize}px` } : undefined}
+              style={{ '--cell-w': cellSize != null ? `${cellSize}px` : 'initial' } as CSSProperties}
             />
           ))}
         </div>
@@ -95,7 +95,7 @@ export function NotchGauge({
             key={i}
             className="notch-gauge__mark"
             data-mark={m}
-            style={{ left: `${clamp01((m - min) / span) * 100}%` }}
+            style={{ '--mark-at': `${clamp01((m - min) / span) * 100}%` } as CSSProperties}
           />
         ))}
       </div>

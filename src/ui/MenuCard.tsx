@@ -12,16 +12,19 @@ import { t } from '../i18n';
  * Ne jamais recoder un `.menu-card` ni un `<button className="btn">` de menu à la main : composer
  * `MenuCard` > `MenuSection` > `MenuButton` (et `MenuToggle` pour un interrupteur de menu).
  */
-export function MenuCard({ header, footer, className, children }: {
+export function MenuCard({ header, footer, large, className, children }: {
   /** En-tête de la carte (titre, sous-titre/méta) — rendu avant les sections. */
   header?: ReactNode;
   /** Pied de carte (note discrète) — rendu après les sections. */
   footer?: ReactNode;
+  /** Carte-CATALOGUE : plafond relevé (760px, 1600px au-delà de 1440px) pour une carte qui porte une
+   *  GRILLE plutôt qu'une colonne de boutons. Distinct du `wide` de `MenuSubScreen` (720px). */
+  large?: boolean;
   className?: string;
   children: ReactNode;
 }) {
   return (
-    <div className={`menu-card${className ? ` ${className}` : ''}`}>
+    <div className={`menu-card${large ? ' menu-card-large' : ''}${className ? ` ${className}` : ''}`}>
       {header}
       {children}
       {footer}

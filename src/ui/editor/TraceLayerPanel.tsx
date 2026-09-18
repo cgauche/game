@@ -2,6 +2,7 @@ import { useRef, useState, type DragEvent } from 'react';
 import { CALIB_INSTRUCTIONS, type CalibStep } from '../../state/traceCalibration';
 import { OptionChooser } from '../OptionChooser';
 import { layerLabel } from './LayerField';
+import { Row } from '../Layout';
 
 /**
  * Panneau flottant du CALQUE DE RÉFÉRENCE (#830) — décalquer une planche de livre sous la grille de
@@ -132,12 +133,12 @@ export function TraceLayerPanel({
         </>
       ) : (
         <>
-          <div className="row-flex">
-            <label className="row-flex">
+          <Row>
+            <Row as="label">
               <input type="checkbox" checked={visible} onChange={onToggleVisible} />
               <span>Visible</span>
-            </label>
-          </div>
+            </Row>
+          </Row>
           <OptionChooser
             layout="seg"
             groupLabel="Position"
@@ -168,18 +169,18 @@ export function TraceLayerPanel({
               onChange={(e) => onOpacityChange(Number(e.target.value) / 100)}
             />
           </label>
-          <label className="row-flex">
+          <Row as="label">
             <input type="checkbox" checked={allowRotation} onChange={(e) => onAllowRotationChange(e.target.checked)} />
             <span title="Par défaut, le calage 2 points ne résout que translation + échelle (angle verrouillé à 0) : une planche de livre est scannée droite.">
               Autoriser la rotation (scan de travers)
             </span>
-          </label>
-          <label className="row-flex">
+          </Row>
+          <Row as="label">
             <input type="checkbox" checked={contraste} onChange={(e) => onContrasteChange(e.target.checked)} />
             <span title="Le mobilier volumique de la scène passe en aplat cyan translucide, arêtes soulignées : ce qui vient du plan dessiné et ce qui vient de la scène construite se distinguent. Sans effet quand le calque est masqué.">
               Contraste de calage
             </span>
-          </label>
+          </Row>
           <button className="btn small btn-primary" onClick={onStartCalibration}>
             Calibrer 2 points…
           </button>
