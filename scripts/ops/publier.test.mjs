@@ -9,6 +9,7 @@ import assert from 'node:assert/strict'
 import { existsSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { codeSeul } from '../guards/lib/commentPoison.mjs'
 import { numerosCites } from '../guards/lib/fermetures.mjs'
 import { refusDeSujet, sujetDuMessage } from '../guards/lib/sujetDeCommit.mjs'
 import { reinitialiserStub } from '../guards/lib/coursesCi.mjs'
@@ -21,6 +22,7 @@ import {
   attenteCiSecondes,
   citerArgv,
   commandeInterdite,
+  corpsDeLaPage,
   corpsDePilotage,
   correspondGlob,
   estDocDerive,
@@ -32,16 +34,19 @@ import {
   journalVide,
   lancerDetache,
   ligneDeDetachement,
+  lireTicket,
   marquePublication,
   messageDeDerives,
   modeDuLog,
   motifDeRotation,
   nomDeJournal,
+  PLAFOND_PAGES,
   nomDeRotation,
   optionsDe,
   partitionSales,
   plageDeCitations,
   planDeReprise,
+  poserCommentaire,
   refusDeGit,
   rotationnerLog,
   sansOptionsGlobales,
@@ -406,10 +411,32 @@ test('sansOptionsGlobales : le sous-commande, quel que soit le préfixe', () => 
   assert.deepEqual(sansOptionsGlobales([]), [])
 })
 
-test('la SOURCE du train ne porte AUCUN geste de fermeture — la CI ferme', () => {
-  const src = readFileSync(new URL('./publier.mjs', import.meta.url), 'utf8')
-  assert.equal(/\['issue',\s*'close'/.test(src), false, '`gh issue close` n’appartient pas au train')
-  assert.equal(/issue\s+close/.test(src.replace(/^\s*(\/\/|\*|\/\*).*$/gm, '')), false)
+/** Les argv LITTÉRAUX passés à `gh`/`appel` dans une source, quelle que soit la graphie de quote. */
+function argvDesAppelsGh(code) {
+  return [...code.matchAll(/\b(?:gh|appel)\(\s*\[([^\]]*)\]/g)]
+    .map((m) => [...m[1].matchAll(/['"`]([^'"`]*)['"`]/g)].map((t) => t[1]))
+}
+
+test('la SOURCE du train : `gh api` en GET ou POST — aucune route GraphQL, aucun geste de FERMETURE', () => {
+  const code = codeSeul(readFileSync(new URL('./publier.mjs', import.meta.url), 'utf8'))
+  const argvs = argvDesAppelsGh(code)
+  // Sans cette borne, un extracteur cassé rendrait le cliquet VERT en ne lisant plus rien.
+  assert.ok(argvs.length >= 3, `le cliquet ne lit plus les appels du train (${argvs.length})`)
+  for (const argv of argvs) {
+    const dit = `gh ${argv.join(' ')}`
+    // Contrat POSITIF : toute sous-commande CLI (`issue`, `pr`, `label`, `project`…) et `api graphql`
+    // sont servis par GraphQL, refusé HTTP 403 aux sessions Claude Code où le train tourne (#1804).
+    assert.equal(argv[0], 'api', `route hors REST : ${dit}`)
+    assert.notEqual(argv[1], 'graphql', `route GraphQL : ${dit}`)
+    // La CI ferme (job `fermetures`), jamais le train — ni `gh issue close`, ni son équivalent REST
+    // `-X PATCH -f state=closed`, que l'ancienne rédaction de ce cliquet ne voyait pas.
+    for (const nom of ['-X', '--method']) {
+      const i = argv.indexOf(nom)
+      if (i !== -1) assert.equal(argv[i + 1], 'POST', `méthode interdite au train : ${dit}`)
+    }
+    assert.equal(argv.some((a) => /state=closed/.test(a)), false, `geste de fermeture : ${dit}`)
+  }
+  assert.equal(/issue\s+close|state=closed/.test(code), false, 'aucun geste de fermeture dans le train')
 })
 
 test('la table des ÉTAPES nomme les neuf étapes, dans l’ordre du régime', () => {
@@ -802,6 +829,136 @@ test('corpsDePilotage : le temps d’ATTENTE de la CI est dit COMME TEL, jamais 
   assert.match(corpsDePilotage(PILOTAGE), /attente du verdict CI : 5\.2 min \(temps d’attente, pas de machine locale\)/)
   // Une course jamais lue n'invente pas de durée.
   assert.doesNotMatch(corpsDePilotage({ ...PILOTAGE, ci: { etat: 'non lue' } }), /attente du verdict CI/)
+})
+
+// ── pilotage par REST (#1804) ──────────────────────────────────────────────────────────
+
+/** `gh` factice : rend la réponse indexée par l'argv JOINT, et GARDE ce qu'on lui a demandé. */
+function ghFeint(reponses) {
+  const vus = []
+  const appel = (args, racine) => {
+    vus.push({ args, racine })
+    return reponses[args.join(' ')] ?? { ok: false, raison: `argv non prévu : ${args.join(' ')}` }
+  }
+  return { appel, vus }
+}
+
+const TICKET = 'api repos/cgauche/game/issues/1804'
+const PAGE1 = `${TICKET}/comments?per_page=100&page=1`
+
+test('corpsDeLaPage : une PAGE est un TABLEAU ; une réponse d’erreur est refusée, jamais lue comme un commentaire', () => {
+  assert.deepEqual(corpsDeLaPage('[{"body":"un"},{"body":"deux"}]'), ['un', 'deux'])
+  assert.deepEqual(corpsDeLaPage('[]'), [])
+  // Un commentaire sans corps rend '' : `.includes` d'une marque ne peut pas jeter sur `undefined`.
+  assert.deepEqual(corpsDeLaPage('[{}]'), [''])
+  // Le refus d'API est un OBJET. Le lire comme une page VIDE ferait croire la marque absente, et le
+  // train REPOSTERAIT son commentaire sur un ticket déjà piloté.
+  assert.throws(
+    () => corpsDeLaPage('{"message":"This GitHub API path is not available in agent sessions"}'),
+    /non tabulaire/,
+  )
+})
+
+test('PLAFOND_PAGES : un plafond ANTI-EMBALLEMENT, pas une borne de lecture', () => {
+  // 50 pages de 100 : aucun ticket du dépôt n'en approche (le plus commenté en porte 30, mesuré au
+  // 2026-09-18). Le dépasser REFUSE, il ne tronque pas — voir le test qui suit.
+  assert.equal(PLAFOND_PAGES, 50)
+})
+
+test('lireTicket : l’état et les commentaires par REST — aucune sous-commande `gh issue` (route GraphQL)', () => {
+  const { appel, vus } = ghFeint({
+    [TICKET]: { ok: true, stdout: '{"state":"open","comments":2}' },
+    [PAGE1]: { ok: true, stdout: '[{"body":"un"},{"body":"deux"}]' },
+  })
+  assert.deepEqual(lireTicket('1804', '/c', appel), { ok: true, etat: 'open', corps: ['un', 'deux'] })
+  assert.deepEqual(vus.map((v) => v.args[0]), ['api', 'api'])
+  assert.equal(vus.every((v) => v.racine === '/c'), true)
+  // `gh issue view --json` est refusé HTTP 403 aux sessions Claude Code : il ne reste aucune trace.
+  assert.equal(vus.some((v) => v.args.includes('issue')), false)
+})
+
+test('lireTicket : c’est la LISTE qui dit où elle s’arrête, jamais le COMPTEUR du ticket', () => {
+  // Le compteur est lu AVANT les pages : un commentaire arrivé entre les deux appels le rend faux.
+  // Ici il annonce 100 alors que 101 existent, et le 101ᵉ porte la marque d'idempotence — s'y fier
+  // ferait REPOSTER un commentaire de pilotage sur un ticket déjà piloté.
+  const { appel, vus } = ghFeint({
+    [TICKET]: { ok: true, stdout: '{"state":"closed","comments":100}' },
+    [PAGE1]: { ok: true, stdout: JSON.stringify(Array.from({ length: 100 }, (_, i) => ({ body: `c${i}` }))) },
+    [`${TICKET}/comments?per_page=100&page=2`]: { ok: true, stdout: '[{"body":"la marque"}]' },
+  })
+  const vue = lireTicket('1804', '/c', appel)
+  assert.equal(vue.corps.length, 101)
+  assert.equal(vue.corps.at(-1), 'la marque')
+  assert.equal(vus.length, 3)
+  // `--paginate` est refusé dès la PAGE SUIVANTE en session agent, et rend son erreur DANS le flux.
+  assert.equal(vus.some((v) => v.args.includes('--paginate')), false)
+})
+
+test('lireTicket : une page INCOMPLÈTE est la dernière — un ticket sans commentaire coûte une page', () => {
+  const { appel, vus } = ghFeint({
+    [TICKET]: { ok: true, stdout: '{"state":"open","comments":0}' },
+    [PAGE1]: { ok: true, stdout: '[]' },
+  })
+  assert.deepEqual(lireTicket('1804', '/c', appel), { ok: true, etat: 'open', corps: [] })
+  assert.equal(vus.length, 2)
+})
+
+test('lireTicket : au-delà du PLAFOND la lecture est REFUSÉE, jamais tronquée', () => {
+  const pleine = JSON.stringify(Array.from({ length: 100 }, (_, i) => ({ body: `c${i}` })))
+  const vus = []
+  const vue = lireTicket('1804', '/c', (args) => {
+    vus.push(args)
+    return { ok: true, stdout: vus.length === 1 ? '{"state":"open","comments":0}' : pleine }
+  })
+  assert.equal(vue.ok, false)
+  assert.match(vue.raison, /plus de 50 pages/)
+  assert.equal(vus.length, PLAFOND_PAGES + 1)
+})
+
+test('lireTicket : une PULL REQUEST est refusée — la route REST `/issues/<n>` les sert aussi', () => {
+  const { appel, vus } = ghFeint({
+    [TICKET]: { ok: true, stdout: '{"state":"open","comments":0,"pull_request":{"url":"…"}}' },
+  })
+  const vue = lireTicket('1804', '/c', appel)
+  assert.equal(vue.ok, false)
+  assert.match(vue.raison, /pull request, pas un ticket/)
+  // Le refus tombe AVANT toute lecture de commentaires.
+  assert.equal(vus.length, 1)
+})
+
+test('lireTicket : un refus sur UNE page rend la lecture ROUGE, jamais une liste PARTIELLE', () => {
+  const { appel } = ghFeint({
+    [TICKET]: { ok: true, stdout: '{"state":"open","comments":150}' },
+    [PAGE1]: { ok: true, stdout: JSON.stringify(Array.from({ length: 100 }, () => ({ body: 'sans la marque' }))) },
+    [`${TICKET}/comments?per_page=100&page=2`]: { ok: false, raison: 'gh a rendu 1 : HTTP 403' },
+  })
+  // La page manquante peut être CELLE qui porte la marque : rendre le reste ferait REPOSTER.
+  assert.deepEqual(lireTicket('1804', '/c', appel), { ok: false, raison: 'gh a rendu 1 : HTTP 403' })
+})
+
+test('lireTicket : le refus du ticket, la réponse illisible et la page d’ERREUR sont NOMMÉS', () => {
+  assert.deepEqual(lireTicket('1804', '/c', () => ({ ok: false, raison: 'gh absent' })), { ok: false, raison: 'gh absent' })
+
+  const illisible = lireTicket('1804', '/c', () => ({ ok: true, stdout: 'pas du json' }))
+  assert.equal(illisible.ok, false)
+  assert.match(illisible.raison, /réponse gh illisible/)
+
+  const { appel } = ghFeint({
+    [TICKET]: { ok: true, stdout: '{"state":"open","comments":1}' },
+    [PAGE1]: { ok: true, stdout: '{"message":"not available in agent sessions"}' },
+  })
+  const page = lireTicket('1804', '/c', appel)
+  assert.equal(page.ok, false)
+  assert.match(page.raison, /non tabulaire/)
+})
+
+test('poserCommentaire : un POST REST dont le corps vient du FICHIER, jamais `gh issue comment`', () => {
+  const { appel, vus } = ghFeint({})
+  poserCommentaire('1804', '/tmp/corps-1804.md', '/c', appel)
+  assert.deepEqual(vus[0].args, [
+    'api', 'repos/cgauche/game/issues/1804/comments', '-X', 'POST', '-F', 'body=@/tmp/corps-1804.md',
+  ])
+  assert.equal(vus[0].racine, '/c')
 })
 
 test('titreDeCommit : première ligne, bornée à 120 caractères', () => {

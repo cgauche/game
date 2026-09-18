@@ -728,6 +728,67 @@ function gh(args, cwd) {
   return { ok: true, stdout: String(vu.stdout ?? '') }
 }
 
+/** Chemin REST d'un ticket. Les sous-commandes `gh issue view|comment` passent par GraphQL, refusé
+ *  aux sessions Claude Code (HTTP 403, « use the REST API ») : le pilotage emprunte la route que
+ *  TOUTES les sessions du dépôt peuvent prendre (#1804). */
+const cheminTicket = (numero) => `repos/${DEPOT}/issues/${numero}`
+
+/** Corps des commentaires d'UNE page REST. Une page est un TABLEAU ; une réponse d'erreur de l'API
+ *  est un OBJET (`{"message": …}`) — sans cette distinction, un refus serait lu comme un
+ *  commentaire, et la marque d'idempotence ne s'y trouvant pas, le train reposterait. PURE. */
+export function corpsDeLaPage(stdout) {
+  const lu = JSON.parse(stdout)
+  if (!Array.isArray(lu)) throw new Error(`réponse REST non tabulaire : ${JSON.stringify(lu).slice(0, 200)}`)
+  return lu.map((c) => String(c?.body ?? ''))
+}
+
+/** Taille de page REST demandée pour les commentaires (maximum autorisé par l'API). */
+const PAR_PAGE = 100
+
+/** Plafond de pages, anti-emballement. Le dépasser REFUSE la lecture : une liste TRONQUÉE perdrait la
+ *  marque d'idempotence, et le train reposterait sur un ticket déjà piloté. */
+export const PLAFOND_PAGES = 50
+
+/**
+ * État et commentaires d'un ticket, par REST. `gh api --paginate` est INUTILISABLE ici : la requête
+ * de page suivante est refusée aux sessions agent (« This GitHub API path is not available in agent
+ * sessions »), et l'objet d'erreur entre DANS le flux là où le consommateur attend un tableau. Les
+ * pages se demandent donc par `page=<n>`, et c'est la LISTE qui dit où elle s'arrête : une page
+ * incomplète est la dernière. Le compteur `comments` du ticket n'est pas consulté — il est lu AVANT
+ * les pages, donc un commentaire arrivé entre les deux appels en ferait manquer une.
+ */
+export function lireTicket(numero, racine, appel = gh) {
+  const vue = appel(['api', cheminTicket(numero)], racine)
+  if (!vue.ok) return { ok: false, raison: vue.raison }
+  let issue
+  try {
+    issue = JSON.parse(vue.stdout)
+  } catch (e) {
+    return { ok: false, raison: `réponse gh illisible (${e.message})` }
+  }
+  // La route `/issues/<n>` sert AUSSI les pull requests : y poster un pilotage serait hors sujet.
+  if (issue?.pull_request) return { ok: false, raison: `#${numero} est une pull request, pas un ticket` }
+  const corps = []
+  for (let page = 1; page <= PLAFOND_PAGES; page += 1) {
+    const vuePage = appel(['api', `${cheminTicket(numero)}/comments?per_page=${PAR_PAGE}&page=${page}`], racine)
+    if (!vuePage.ok) return { ok: false, raison: vuePage.raison }
+    let lus
+    try {
+      lus = corpsDeLaPage(vuePage.stdout)
+    } catch (e) {
+      return { ok: false, raison: e.message }
+    }
+    corps.push(...lus)
+    if (lus.length < PAR_PAGE) return { ok: true, etat: String(issue?.state ?? ''), corps }
+  }
+  return { ok: false, raison: `#${numero} : plus de ${PLAFOND_PAGES} pages de commentaires` }
+}
+
+/** Pose un commentaire par REST. `-F body=@<fichier>` fait LIRE le corps au fichier : un corps de
+ *  plusieurs kilo-octets ne passe jamais par la liste d'arguments du processus. */
+export const poserCommentaire = (numero, fichier, racine, appel = gh) =>
+  appel(['api', `${cheminTicket(numero)}/comments`, '-X', 'POST', '-F', `body=@${fichier}`], racine)
+
 /** Attente BLOQUANTE sans busy-loop (le train est synchrone de bout en bout). */
 function attendre(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
@@ -1037,19 +1098,12 @@ export const ETAPES = [
       const rates = []
       const poses = []
       for (const numero of numeros) {
-        const vue = gh(['issue', 'view', numero, '--repo', DEPOT, '--json', 'state,comments'], racine)
+        const vue = lireTicket(numero, racine)
         if (!vue.ok) {
           rates.push(`#${numero} : ${vue.raison}`)
           continue
         }
-        let issue
-        try {
-          issue = JSON.parse(vue.stdout)
-        } catch (e) {
-          rates.push(`#${numero} : réponse gh illisible (${e.message})`)
-          continue
-        }
-        const corpsVus = (issue.comments ?? []).map((c) => String(c.body ?? ''))
+        const corpsVus = vue.corps
         if (corpsVus.some((c) => c.includes(marquePublication(journal.tete)))) {
           ctx.journaliser(`[publier] pilotage — #${numero} déjà piloté\n`)
           continue
@@ -1063,11 +1117,11 @@ export const ETAPES = [
           ci,
           ferme: fermes.has(numero),
           fermeParCi,
-          fermeAutrement: String(issue.state ?? '').toLowerCase() === 'closed' && !fermeParCi,
+          fermeAutrement: vue.etat.toLowerCase() === 'closed' && !fermeParCi,
         })
         const fichier = fichierTemporaire(`corps-${numero}`, corps)
         try {
-          const pose = gh(['issue', 'comment', numero, '--repo', DEPOT, '--body-file', fichier], racine)
+          const pose = poserCommentaire(numero, fichier, racine)
           if (pose.ok) poses.push(numero)
           else rates.push(`#${numero} : ${pose.raison}`)
         } finally {

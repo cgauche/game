@@ -59,8 +59,8 @@ borne, la borne est un `Monitor` sur l'horloge + `TaskStop`.
   simplification), reconstruire la paire — à quelle question la phrase répond DANS SON CONTEXTE (lire
   avant/après ; la troncature à la ponctuation est la variante vicieuse) contre celle que le code lui
   fait porter. Différence = ÉTIRÉE. Étalon : `src/engine/conditions.ts`.
-- **Tout pointeur s'écrit DÉRÉFÉRENCÉ** : `#N` avec son titre recollé de `gh issue view <N> --json
-  title`, lib prescrite avec sa ligne de `package.json`, « bloqué par <externe> » avec sa sonde
+- **Tout pointeur s'écrit DÉRÉFÉRENCÉ** : `#N` avec son titre recollé de `gh api
+  repos/{owner}/{repo}/issues/<N> --jq .title`, lib prescrite avec sa ligne de `package.json`, « bloqué par <externe> » avec sa sonde
   d'absence collée. **Toute affirmation d'ABSENCE porte sa sonde ET son périmètre** — « aucun X » est
   irrecevable, et deux mesures ne se confirment que si leurs MÉTHODES DIFFÈRENT. Un diagnostic s'écrit
   en HYPOTHÈSE À RÉFUTER avec sa sonde discriminante : le fix que je prescris peut être faux aussi.
