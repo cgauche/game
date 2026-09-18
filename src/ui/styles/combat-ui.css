@@ -274,24 +274,6 @@ textarea:focus {
 .derived b {
   color: var(--gold);
 }
-.skill-adv-grid {
-  display: grid;
-  gap: 6px;
-}
-.skill-adv {
-  display: flex;
-  flex-direction: row !important;
-  align-items: center;
-  margin: 0 !important;
-  gap: 8px !important;
-}
-.skill-adv span {
-  flex: 1;
-  color: var(--text);
-}
-.skill-adv input {
-  width: 60px;
-}
 .talent-choices {
   display: flex;
   flex-direction: column;

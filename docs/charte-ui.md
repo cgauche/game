@@ -377,7 +377,14 @@ noms longs — Détermination — étaient tronquées DEUX fois : le nom ET la r
   par module — `combat-ui.css`, `combat-modals.css`, `creator.css`) — case charbon bordée (cochée
   = fond `--accent` + marque `--gold2`), radio = point or, select = chevron or en data-URI, focus
   `--gold`, options thémées. **Piège select** : un override `padding` shorthand mange la flèche →
-  utiliser `padding-right` + `background-color` (jamais `background` en raccourci).
+  utiliser `padding-right` + `background-color` (jamais `background` en raccourci). **Boîte de la
+  case/radio immune (#1792)** : `width`/`height`/`min-*`/`max-*`/`flex` sont `!important` à la
+  source — une DÉCLARATION de boîte posée par un module sur un `input` non typé (`.x input { width }`,
+  `min-height` tactile) vise ses champs texte/nombre et n'a pas à exclure les cases par
+  `:not([type='checkbox'])`. Une exclusion qui sélectionne autre chose que la boîte d'un input
+  (`creator.css` : `label:has(> input:not([type='checkbox']))`, layout de rangée) reste légitime.
+  Garde `ui-ratchets` (xx) : toute propriété de boîte d'un module sur un `input` non typé doit être
+  couverte par l'immunité.
 - **Éviter les espaces vides.** Un panneau aéré-à-vide lit comme inachevé. Regrouper sur une
   ligne ce qui peut l'être (ex. itinéraire + boutons de mode en `space-between`), ne pas
   détourner `.bar` (header à fond/padding) pour une simple rangée, resserrer les marges —

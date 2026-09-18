@@ -896,10 +896,6 @@ button.chip:hover {
   line-height: 1.35;
   padding: 2px 0;
 }
-.menu-toggle input {
-  flex: none;
-  margin: 0;
-}
 .menu-card-head {
   display: flex;
   flex-direction: column;

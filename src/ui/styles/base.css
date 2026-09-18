@@ -290,14 +290,22 @@ textarea::placeholder {
   opacity: 1;
 }
 /* Charte : cases & radios CUSTOM (fin du carré bleu système) — case charbon bordée, cochée =
-   fond sang + marque or. S'applique à TOUTE l'UI (jeu + éditeur). */
+   fond sang + marque or. S'applique à TOUTE l'UI (jeu + éditeur). La BOÎTE du contrôle est
+   `!important` (#1792, garde ui-ratchets xx) : une règle `.x input { width }` ou le `min-height`
+   tactile ci-dessous visent les champs texte/nombre et ne déforment jamais une case. */
 input[type='checkbox'],
 input[type='radio'] {
   appearance: none;
   -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  flex: 0 0 auto !important;
   margin: 0;
   border: 1.5px solid var(--border);
   background: var(--panel2);

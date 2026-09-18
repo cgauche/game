@@ -369,7 +369,7 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // recentré). Restent ici les surfaces qui ont d'autres porteurs : `.rig-portrait` (portrait de
   // l'arche), `.fx-chip*` (pastilles partagées), `.pv-badge` (aperçu tap-1 sur la scène),
   // `.ready-row`/`.ready-chip` (RestModal/VictoryScreen/VoyageScreen).
-  'styles/combat-ui.css': 75,
+  'styles/combat-ui.css': 73,
   // Console de combat (lot console) : famille `.cc-*` de la surface — deux travées, alvéole,
   // conduit d'Avantage, arche, coin de fin de tour, bandeau de phase.
   // Passe de CONTENU (spec §1c-bis) : l'arche ne compose plus `ActiveFrame` — elle rend son propre
@@ -1681,5 +1681,56 @@ describe('#1318 V5 — cliquets d’hygiène UI (champ nombre, breakpoints)', ()
       const réels = new Set(widthBreakpoints(readFileSync(join(UI, r), 'utf8')));
       for (const bp of bps) expect([...réels], `${r} : exemption ${bp} périmée — la retirer`).toContain(bp);
     }
+  });
+});
+
+/** Propriétés de BOÎTE d'un contrôle : celles qu'une règle de module posée sur un `input` non typé
+ *  peut écraser (cascade) ou clamper (`min-*`/`max-*`, hors cascade — d'où `!important` sur les deux). */
+const PROPRIETES_DE_BOITE = ['width', 'height', 'min-width', 'min-height', 'max-width', 'max-height', 'padding', 'box-sizing', 'flex'] as const;
+/** Règles `sélecteur { corps }` d'un CSS sans ses commentaires, `@media` aplatis. */
+function reglesCss(text: string): { selecteurs: string[]; corps: string }[] {
+  const out: { selecteurs: string[]; corps: string }[] = [];
+  const re = /([^{}]+)\{([^{}]*)\}/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text.replace(/\/\*[\s\S]*?\*\//g, '')))) {
+    const selecteurs = m[1].split(',').map((s) => s.trim()).filter((s) => s && !s.startsWith('@'));
+    if (selecteurs.length) out.push({ selecteurs, corps: m[2] });
+  }
+  return out;
+}
+/** Propriétés de boîte déclarées `!important` par la règle globale case/radio de base.css. */
+function boiteImmune(): Set<string> {
+  const base = readFileSync(join(UI, 'styles/base.css'), 'utf8');
+  const estCase = (s: string) => /\[type=["']checkbox["']\]/.test(s);
+  const estRadio = (s: string) => /\[type=["']radio["']\]/.test(s);
+  const regle = reglesCss(base).find((r) => r.selecteurs.some(estCase) && r.selecteurs.some(estRadio));
+  const immunes = new Set<string>();
+  for (const decl of regle?.corps.split(';') ?? []) {
+    const [prop, valeur] = decl.split(':').map((x) => x?.trim());
+    if (prop && valeur && /!important$/.test(valeur)) immunes.add(prop);
+  }
+  return immunes;
+}
+
+describe('#1792 — la boîte des contrôles custom est immune aux règles de module', () => {
+  it('(xx) base.css : chaque propriété de boîte de la règle case/radio est `!important`', () => {
+    const immunes = boiteImmune();
+    const manquantes = PROPRIETES_DE_BOITE.filter((p) => !immunes.has(p));
+    expect(manquantes, 'propriété(s) de boîte de la case/radio sans `!important` — une règle de module ou le `min-height` tactile la déformerait').toEqual([]);
+  });
+
+  it('(xx) toute propriété de boîte posée par un module sur un `input` NON typé est couverte par l’immunité', () => {
+    const immunes = boiteImmune();
+    const decouvertes: string[] = [];
+    for (const f of FICHIERS_UI().filter(estCss)) {
+      for (const { selecteurs, corps } of reglesCss(f.text)) {
+        if (!selecteurs.some((s) => /(^|[\s>+~])input(:[a-z-]+(\([^)]*\))?)*$/.test(s) && !/\[type=/.test(s))) continue;
+        for (const decl of corps.split(';')) {
+          const prop = decl.split(':')[0]?.trim();
+          if ((PROPRIETES_DE_BOITE as readonly string[]).includes(prop) && !immunes.has(prop)) decouvertes.push(`${rel(f)} : ${selecteurs.join(', ')} { ${prop} }`);
+        }
+      }
+    }
+    expect(decouvertes, 'règle(s) de module qui déforment une case/radio (propriété de boîte non immune) :').toEqual([]);
   });
 });
