@@ -223,8 +223,11 @@ export const ECRIT_LU = {
         '(scripts/gen-registry.mjs:435,662) — `toutes.mjs` joue `npm run gen` AVANT les lanes et REFUSE si un ' +
         'registre bouge, donc il ne reste rien à écrire',
     },
-    lit: ['src/', 'server/src/', 'scripts/map/', 'docs/', 'Source/', '.gitattributes', 'vite.config.ts'],
+    lit: ['src/', 'server/src/', 'scripts/', 'docs/', 'Source/', '.gitattributes', 'vite.config.ts'],
     raison:
+      'LIT scripts/ EN ENTIER, pas le seul `scripts/map/` de son `include` : les tests de `src/` ' +
+      'IMPORTENT les porteurs de garde (`git grep "from \'../../scripts/"` : guards/lib, source, ' +
+      'docs/lib, data/lib, qc/lib, raw, migrations, campagne, arene, gen-registry.mjs) ; ' +
       'LIT docs/ ET docs/raw/ — 43 chemins (sonde `fs` du 2026-09-16, #1738) : la famille des ' +
       'CLIQUETS ET CONTRATS qui confrontent le code à un doc DÉRIVÉ (data-atlas-complete, ' +
       'index-moteur-ratchet, slots-contrat, structures-contrat, roll-seam-exclusivity-guard, ' +
