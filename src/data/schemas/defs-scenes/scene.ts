@@ -759,4 +759,24 @@ export const sceneSchema = z.strictObject({
   /** Points d'arrivée nommés — `z` = étage visé (défaut 0, #835 FU-5). */
   entryPoints: z.record(z.string(), z.strictObject({ x: z.number(), y: z.number(), z: z.number().optional() })).optional(),
   startMessage: z.string().optional(),
+}).superRefine((scene, ctx) => {
+  // CARDINAL de la grille (#1789) : chaque tableau PARALLÈLE d'une couche porte EXACTEMENT `w×h`
+  // entrées — la grille est aplatie, indexée `y·w+x` (`tiles`, et quand ils sont présents `height`
+  // et `crenellated`) ; un tableau plus court rendrait des trous que les lectures devraient replier,
+  // et le repli masquerait le document malformé. C'est ce qui permet à `tileAt` de n'avoir AUCUN
+  // repli de tuile (`state/scene.ts`) et à `heightAt` de ne replier que l'absence du tableau ENTIER.
+  const attendu = scene.dimensions.w * scene.dimensions.h;
+  (scene.layers ?? []).forEach((l, i) => {
+    const paralleles: [string, number | undefined][] = [['tiles', l.tiles.length], ['height', l.height?.length], ['crenellated', l.crenellated?.length]];
+    for (const [champ, n] of paralleles) {
+      if (n === undefined || n === attendu) continue;
+      ctx.addIssue({
+        code: 'custom',
+        path: ['layers', i, champ],
+        message:
+          `scène « ${scene.id} », couche z=${l.z} : \`${champ}\` porte ${n} entrée(s) pour une grille ` +
+          `${scene.dimensions.w}×${scene.dimensions.h} — il en faut EXACTEMENT ${attendu}`,
+      });
+    }
+  });
 });

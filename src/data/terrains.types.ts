@@ -35,6 +35,14 @@ export interface TerrainMeta {
    *  demain dans le dataset est donc du sol nu par défaut, et un étage posé dessus se signale
    *  (`map:check`, audit « étage sans appui ») au lieu de passer en silence. */
   built?: boolean;
+  /** RÔLE — ce terrain EST l'absence de tuile : ce qu'une couche porte là où rien n'est bâti (couches
+   *  z>0, cases hors bâti, couche absente). Le seam l'ADRESSE (`terrainAbsent`, `estAbsent`, #1789) ;
+   *  le schéma exige qu'EXACTEMENT une entrée le porte. */
+  absence?: boolean;
+  /** RÔLE — ce terrain EST ce que la grille rend au-delà de ses bornes (`tileAt` hors grille,
+   *  `terrainHorsGrille`, #1789) : ses propriétés (opacité, bâti, bloc plein) FONT la Ligne de Vue et
+   *  le raccord d'arêtes au bord. Le schéma exige qu'EXACTEMENT une entrée le porte. */
+  bordDuMonde?: boolean;
 }
 
 /** L'ENTRÉE de `terrains.json` : la méta ci-dessus, l'enveloppe du document, et la présentation. */

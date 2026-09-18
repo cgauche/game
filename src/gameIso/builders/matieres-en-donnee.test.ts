@@ -256,6 +256,40 @@ describe('couches émettrices du monde — aucune matière ni semence de terrain
     ).toEqual([]);
   });
 
+  /**
+   * TROISIÈME BRAS (#1716) — le SCHÉMA du monde ne récite aucun terrain.
+   *
+   * Vocabulaire DÉRIVÉ, comme les deux autres : la liste cherchée est `terrains.json › id` ENTIÈRE —
+   * un terrain déposé demain au Codex est gardé le jour même, sans une ligne ici. La moitié
+   * « matière » de la clause est tenue par le bras des ids de `materials.json` ci-dessous, qui scanne
+   * `src/state` entier.
+   *
+   * Une UNION de littéraux d’un TYPE reste neutralisée (`UNION_DE_LITTERAUX`) : elle DÉCLARE un
+   * vocabulaire d’état (la météo, dont `neige` est l’homonyme d’un terrain), elle n’émet aucune
+   * tuile. AUCUN site toléré, aucune liste d’exemption : le stock mesuré est vide.
+   *
+   * Périmètre `src/state/scene.ts`, ÉTENDU à `src/state` entier au train C (#1789).
+   */
+  it('`src/state/scene.ts` ne porte plus aucune matière ni aucun id de terrain en littéral (#1716)', () => {
+    const schema = fichiers.find((f) => f.rel === 'scene.ts');
+    if (!schema) throw new Error('`src/state/scene.ts` a quitté le périmètre scanné — reformuler la garde.');
+    const ids = terrains.map((t) => t.id);
+    expect(ids.length, 'vocabulaire de terrains VIDE : la garde mesurerait le néant.').toBeGreaterThan(0);
+    const cite = (id: string) => new RegExp(`(['"\`])${id}\\1`);
+    const fautes: string[] = [];
+    codeNu(schema.code).forEach((l, i) => {
+      const nu = l.replace(UNION_DE_LITTERAUX, litteraux);
+      for (const id of ids) if (cite(id).test(nu)) fautes.push(`state/scene.ts:${i + 1} — « ${id} »`);
+    });
+    expect(
+      fautes,
+      'le schéma de scène NOMME un terrain : le porteur d’un rôle se demande au dataset ' +
+        '(`terrainAbsent`/`terrainHorsGrille`, `state/terrain`) et une semence vient de ' +
+        '`semences-de-scene.json` — jamais d’un littéral.\n  ' +
+        fautes.join('\n  '),
+    ).toEqual([]);
+  });
+
   it('la neutralisation est STRUCTURELLE : une COMPARAISON de partie n’est pas une émission de matière', () => {
     const chemin = `${GAMEISO}authoring/floorsSvg.ts`;
     expect(existsSync(chemin), 'le site témoin de la comparaison de partie a disparu — reformuler la garde.').toBe(true);

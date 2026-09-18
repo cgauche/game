@@ -13,6 +13,7 @@
  */
 import type { Scene } from './scene';
 import { heightAt, tileAt, isWalkable } from './scene';
+import { estAbsent } from './terrain';
 import { paintHeight } from './sceneEdit';
 import { STEP_MAX_M } from './relief';
 
@@ -103,7 +104,7 @@ export function planStairFlight(scene: Scene, cells: readonly StairCell[], z: nu
   // Extrémité HAUTE = celle qui affleure le plancher de `toZ` ; hauteurs MINIMALES des candidats
   // (déterministe quand plusieurs planchers de hauteurs différentes jouxtent la même extrémité).
   const toNeighbours = (p: StairCell) =>
-    chebyNeighbours(p.x, p.y).filter((n) => tileAt(scene, n.x, n.y, toZ) !== 'vide' && isWalkable(scene, n.x, n.y, toZ));
+    chebyNeighbours(p.x, p.y).filter((n) => !estAbsent(tileAt(scene, n.x, n.y, toZ)) && isWalkable(scene, n.x, n.y, toZ));
   const touchesTo = (p: StairCell) => toNeighbours(p).length > 0;
   const minToNeighbourHeight = (p: StairCell) => Math.min(...toNeighbours(p).map((n) => heightAt(scene, n.x, n.y, toZ)));
   const minLowSupportHeight = (p: StairCell) => {
@@ -143,7 +144,7 @@ export function planStairFlight(scene: Scene, cells: readonly StairCell[], z: nu
     return { ok: false, reason: `volée de ${L} case${L > 1 ? 's' : ''} insuffisante pour Δh=${delta} m ; minimum = ${minCells} (STEP_MAX_M=${STEP_MAX_M} m)` };
 
   for (const c of ordered)
-    if (tileAt(scene, c.x, c.y, toZ) !== 'vide')
+    if (!estAbsent(tileAt(scene, c.x, c.y, toZ)))
       return { ok: false, reason: 'trémie bouchée — la case de to au-dessus de la volée doit être vide (surface fantôme)' };
 
   // Crans depuis l'extrémité BASSE (k=1..L) : la case du haut affleure exactement le plancher visé.

@@ -15,6 +15,7 @@ import { nextEntityId } from './entityId';
 import { findTrappingById, findCreatureById, creatureLabel } from '../data';
 import { siegeEmplacementEntity } from './siegeEmplacement';
 import { stairFlightCells, interiorCells } from './planDefects';
+import { estAbsent, terrainAbsent } from './terrain';
 import { PARTY_MAX } from './combatants';
 import {
   assignSeat,
@@ -172,7 +173,7 @@ export function fillTerrainRect(scene: Scene, rect: Rect, terrain: Terrain, z = 
  *  une couche `z` existe déjà. Source unique de l'ajout de couche (éditeur multi-niveaux). */
 export function addLayer(scene: Scene, z: number): Scene {
   if (scene.layers.some((l) => l.z === z)) return scene;
-  const tiles = new Array(scene.dimensions.w * scene.dimensions.h).fill('vide') as Terrain[];
+  const tiles = new Array(scene.dimensions.w * scene.dimensions.h).fill(terrainAbsent()) as Terrain[];
   return { ...scene, layers: [...scene.layers, { z, tiles }].sort((a, b) => a.z - b.z) };
 }
 
@@ -676,6 +677,16 @@ export function patchEntityCombat(scene: Scene, id: string, patch: Partial<NonNu
 /** Pose (ou REMPLACE) la couche `z` avec des tuiles complètes + hauteurs optionnelles, triée par z. Brique
  *  d'import d'une grille ASCII entière (`buildScene`) — là où `paintTiles`/`paintHeight` posent case par case. */
 export function putLayer(scene: Scene, z: number, tiles: Terrain[], height?: number[]): Scene {
+  // CARDINAL de la grille (#1789) : le refine du schéma garde les DOCUMENTS, ce mutateur garde le
+  // RUNTIME — une couche posée courte rendrait des trous que `tileAt` devrait replier, et le repli
+  // masquerait la pose malformée (`terrainWalkable(undefined) === false` là où le sol est praticable).
+  const attendu = scene.dimensions.w * scene.dimensions.h;
+  const court = ([['tiles', tiles.length], ['height', height?.length]] as const).find(([, n]) => n !== undefined && n !== attendu);
+  if (court)
+    throw new Error(
+      `putLayer : couche z=${z}, \`${court[0]}\` porte ${court[1]} entrée(s) pour une grille `
+      + `${scene.dimensions.w}×${scene.dimensions.h} — il en faut EXACTEMENT ${attendu}`,
+    );
   const prev = scene.layers.find((l) => l.z === z);
   const layer = { z, tiles, ...(height ? { height } : {}), ...(prev?.crenellated ? { crenellated: prev.crenellated } : {}) };
   const others = scene.layers.filter((l) => l.z !== z);
@@ -700,7 +711,7 @@ export function realFloorAt(scene: Scene): (z: number) => ReadonlySet<string> {
     if (cached) return cached;
     const out = new Set<string>();
     if (layerZs.has(z))
-      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (tileAt(scene, x, y, z) !== 'vide') out.add(`${x},${y}`);
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (!estAbsent(tileAt(scene, x, y, z))) out.add(`${x},${y}`);
     cache.set(z, out);
     return out;
   };

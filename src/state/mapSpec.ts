@@ -52,6 +52,7 @@ import { PENTE_TOIT_DEG } from '../data/schemas/defs-scenes/scene';
 // SOLS NUS : la primitive PARTAGÉE de l'audit de plan (`terrains.json › built`, complément) — la CLI
 // `map:check` (famille `etage-sans-appui`) et cette porte jugent le même appui sur le même ensemble.
 import { groundTerrains } from './planDefects';
+import { estAbsent, terrainAbsent } from './terrain';
 import { planStairFlight, applyStairFlight } from './stairFlight';
 import type { Flow } from './flow';
 import type { FireArc } from '../engine/types';
@@ -211,7 +212,7 @@ export interface MapSpec {
   levels?: Record<string, string>;
   /** Grilles BOX-DRAWING par étage (`z0`/`z1`/…) : arêtes DANS l'ASCII (`parseWalledAscii`, (2W+1)×(2H+1)).
    *  Chaque étage → `putLayer(z, tiles)` + les murs d'arête/portes RETOURNÉS (avec `z`). Coexiste avec `levels`
-   *  (étages différents) ; MÊME base que `levels` (z0 = `terrain`, z>0 = `'vide'`). Traité à l'étape 2 (terrain). */
+   *  (étages différents) ; MÊME base que `levels` (z0 = `terrain`, z>0 = la tuile ABSENTE). Traité à l'étape 2 (terrain). */
   walled?: Record<string, string>;
   /** Char d'ARÊTE → ce qu'il ÉCRIT sur l'arête d'un étage `walled` (`WallOverlay`) : le char VAUT MUR,
    *  et porte une `structure` destructible (id de `structures.json`, ex. herse `porte-de-ville`), une
@@ -604,7 +605,7 @@ function validateFloorSupport(scene: Scene, tolerated: ReadonlySet<string>): voi
     if (layer.z <= 0) continue;
     for (let y = 0; y < h; y++)
       for (let x = 0; x < w; x++) {
-        if (tileAt(scene, x, y, layer.z) === 'vide') continue;
+        if (estAbsent(tileAt(scene, x, y, layer.z))) continue;
         if (tolerated.has(`${x},${y},${layer.z}`)) continue;
         const belowZ = layer.z - 1;
         const belowTerrain = tileAt(scene, x, y, belowZ);
@@ -665,7 +666,7 @@ export function buildScene(spec: MapSpec): Scene {
       const z = parseInt(key.replace('z', ''), 10);
       const { positions, cleaned } = scanMarkers(rowsOf(rows), bindChars, spec.markerFill);
       for (const [ch, list] of Object.entries(positions)) for (const p of list) scanned.push({ char: ch, pos: p, z });
-      const base: Terrain = z === 0 ? (spec.terrain ?? DEFAULT_TERRAIN) : 'vide';
+      const base: Terrain = z === 0 ? (spec.terrain ?? DEFAULT_TERRAIN) : terrainAbsent();
       const tiles = parseAsciiRows(cleaned, base, effLegend).tiles;
       s = putLayer(s, z, tiles);
       scanChars(cleaned, z, (r, x) => r[x] ?? ' ');
@@ -676,7 +677,7 @@ export function buildScene(spec: MapSpec): Scene {
     // recomplétée à 2W+1 (les ASCII éditables retirent les espaces de fin) ; les murs héritent du `z` de l'étage.
     for (const [key, rows] of Object.entries(spec.walled)) {
       const z = parseInt(key.replace('z', ''), 10);
-      const base: Terrain = z === 0 ? (spec.terrain ?? DEFAULT_TERRAIN) : 'vide';
+      const base: Terrain = z === 0 ? (spec.terrain ?? DEFAULT_TERRAIN) : terrainAbsent();
       const padded = walledRowsOf(rows, w);
       const parsed = parseWalledAscii(padded, base, effLegend, { wallLegend: spec.wallLegend });
       s = putLayer(s, z, parsed.tiles);

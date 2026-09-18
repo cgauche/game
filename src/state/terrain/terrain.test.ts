@@ -10,6 +10,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import {
   tousLesTerrains, terrainIds, terrainEntree, terrainLabel, terrainWalkable, terrainPriority,
   terrainOpaque, terrainBuilt, terrainSolidHeightM, terrainOverlayProp, terrainDetail,
+  terrainAbsent, estAbsent, terrainHorsGrille,
 } from './index';
 import { setDataset } from '../../data/overrides';
 import { terrainDef, terrainGradient, terrainGradientId, MISSING_GRADIENT } from '../../gameIso/catalog/terrain';
@@ -51,6 +52,53 @@ describe('terrains — la règle lue au dataset', () => {
     expect(terrainBuilt('mur')).toBe(true);
     expect(terrainSolidHeightM('mur')).toBeGreaterThan(0);
     expect(terrainOverlayProp('bois')).toBe('arbre');
+  });
+});
+
+describe('terrains — les deux RÔLES ADRESSÉS, jamais un id récité (#1789)', () => {
+  it('`terrainAbsent()` rend le terrain qui PORTE le rôle d’absence, `terrainHorsGrille()` celui du bord du monde', () => {
+    const absent = terrainAbsent();
+    expect(terrainEntree(absent)?.absence, 'le terrain rendu ne porte pas le rôle d’absence.').toBe(true);
+    const bord = terrainHorsGrille();
+    expect(terrainEntree(bord)?.bordDuMonde, 'le terrain rendu ne porte pas le rôle de bord du monde.').toBe(true);
+    expect(bord, 'le bord du monde et la non-tuile ont fusionné.').not.toBe(absent);
+  });
+
+  it('le bord du monde porte ce qui FAIT la Ligne de Vue au bord : opaque, bâti, bloc plein', () => {
+    const bord = terrainHorsGrille();
+    expect(terrainOpaque(bord)).toBe(true);
+    expect(terrainBuilt(bord)).toBe(true);
+    expect(terrainSolidHeightM(bord)).toBeGreaterThan(0);
+  });
+
+  it('`estAbsent` : vrai sur le porteur du rôle, faux partout ailleurs — un id INCONNU n’est pas une absence', () => {
+    expect(estAbsent(terrainAbsent())).toBe(true);
+    expect(estAbsent(terrainHorsGrille())).toBe(false);
+    expect(estAbsent('herbe')).toBe(false);
+    expect(estAbsent('zzz-inconnu'), 'un id inconnu a été pris pour la non-tuile.').toBe(false);
+    expect(estAbsent('')).toBe(false);
+  });
+
+  it('une entrée ÉDITÉE qui reçoit le rôle est vue sans rechargement (les deux rôles)', () => {
+    const absentAvant = terrainAbsent();
+    const bordAvant = terrainHorsGrille();
+    const editees = AVANT.map((t) => {
+      if (t.id === absentAvant) { const { absence: _a, ...reste } = t; return reste; }
+      if (t.id === bordAvant) { const { bordDuMonde: _b, ...reste } = t; return reste; }
+      if (t.id === 'eau') return { ...t, absence: true };
+      if (t.id === 'roche') return { ...t, bordDuMonde: true };
+      return t;
+    });
+    setDataset('terrains', editees as never);
+    expect(terrainAbsent(), 'la façade a servi un porteur de rôle PÉRIMÉ').toBe('eau');
+    expect(estAbsent('eau'), 'le rôle édité n’est pas vu par `estAbsent`').toBe(true);
+    expect(estAbsent(absentAvant), 'l’ancien porteur passe encore pour la non-tuile').toBe(false);
+    expect(terrainHorsGrille(), 'le bord du monde a servi un porteur PÉRIMÉ').toBe('roche');
+  });
+
+  it('un dataset SANS porteur d’un rôle lève, nommément — aucun repli silencieux', () => {
+    setDataset('terrains', AVANT.map((t) => { const { absence: _a, ...reste } = t; return reste; }) as never);
+    expect(() => terrainAbsent()).toThrow(/absence.*0 entrée/s);
   });
 });
 

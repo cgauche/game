@@ -37,6 +37,7 @@ import { beginShipwreck } from './shipwreck';
 import { placeOfScene, placeById, routesEtat, visiblePlaces, type MapRoute, type WorldMap } from './worldMap';
 import { buildRiverDayCascade } from './riverVoyageFlow';
 import { findVehicleById } from '../data';
+import { estAbsent } from './terrain';
 import { startCascade } from './cascade';
 import { routeDistanceLabel } from '../engine/travel';
 import { actorIn, inBattleId } from './combatants';
@@ -655,7 +656,7 @@ export function buildApi(scenarios: readonly TestScenario[] = testScenarios) {
         override: getViewZ(),
         groupeZ: s.partyPos.z ?? 0,
         couches: [...sc.layers].sort((a, b) => a.z - b.z).map((l) => {
-          const pleines = l.tiles.filter((t) => t !== 'vide').length;
+          const pleines = l.tiles.filter((t) => !estAbsent(t)).length;
           const hs = (l.height ?? []).filter((h) => h !== 0);
           return {
             z: l.z,
@@ -705,7 +706,7 @@ export function buildApi(scenarios: readonly TestScenario[] = testScenarios) {
         const d = diag.get(`${x},${y}`); if (d) return d;
         const t = tiles[y * W + x], h = height[y * W + x] ?? 0;
         if (t === 'planches') return h > 0 ? 'S' : h < 0 ? 's' : 'P';
-        return t === 'plancher' ? '.' : t === 'dalle' ? ',' : t === 'marbre' ? 'M' : t === 'vide' ? ' ' : '?';
+        return t === 'plancher' ? '.' : t === 'dalle' ? ',' : t === 'marbre' ? 'M' : estAbsent(t) ? ' ' : '?';
       };
       const rows: string[] = [];
       for (let gy = 0; gy <= 2 * H; gy++) {

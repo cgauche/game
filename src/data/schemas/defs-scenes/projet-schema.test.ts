@@ -198,6 +198,52 @@ describe('sceneSchema — une arête `x,y,side,z` ne porte qu’un segment', () 
   });
 });
 
+/**
+ * CARDINAL de la grille (#1789) — `tiles`, `height` et `crenellated` sont des tableaux PARALLÈLES
+ * aplatis indexés `y·w+x` : l'un d'eux plus court que `w×h` rendrait des trous au MÊME index.
+ * `tileAt` (`state/scene.ts`) ne porte plus AUCUN repli de tuile ; c'est cette porte qui le permet.
+ */
+describe('sceneSchema — chaque tableau parallèle d’une couche porte EXACTEMENT `w×h` entrées', () => {
+  const pleine = (n: number, t = 'sol') => Array.from({ length: n }, () => t);
+  const avecCouches = (layers: Jouet[]): Jouet => projet({ scenes: [sceneMinimale({ layers })] });
+
+  it('une couche AMPUTÉE est refusée, en nommant la scène, l’étage, la longueur et l’attendu', () => {
+    expect(fautes(avecCouches([{ z: 0, tiles: pleine(15) }]))).toEqual([
+      'scenes.0.layers.0.tiles :: scène « scene-1 », couche z=0 : `tiles` porte 15 entrée(s) pour une grille 4×4 — il en faut EXACTEMENT 16',
+    ]);
+  });
+
+  it('une couche TROP LONGUE est refusée de la même façon, et l’étage fautif est celui qui est nommé', () => {
+    expect(fautes(avecCouches([{ z: 0, tiles: pleine(16) }, { z: 1, tiles: pleine(17) }]))).toEqual([
+      'scenes.0.layers.1.tiles :: scène « scene-1 », couche z=1 : `tiles` porte 17 entrée(s) pour une grille 4×4 — il en faut EXACTEMENT 16',
+    ]);
+  });
+
+  it('`height` amputé est refusé en NOMMANT `height` — même index, même trou silencieux (`heightAt` replierait à 0 m)', () => {
+    expect(fautes(avecCouches([{ z: 0, tiles: pleine(16), height: Array.from({ length: 15 }, () => 0) }]))).toEqual([
+      'scenes.0.layers.0.height :: scène « scene-1 », couche z=0 : `height` porte 15 entrée(s) pour une grille 4×4 — il en faut EXACTEMENT 16',
+    ]);
+  });
+
+  it('`crenellated` amputé est refusé en NOMMANT `crenellated`, et les deux tableaux présents au cardinal passent', () => {
+    expect(fautes(avecCouches([{ z: 0, tiles: pleine(16), crenellated: Array.from({ length: 4 }, () => null) }]))).toEqual([
+      'scenes.0.layers.0.crenellated :: scène « scene-1 », couche z=0 : `crenellated` porte 4 entrée(s) pour une grille 4×4 — il en faut EXACTEMENT 16',
+    ]);
+    expect(projetSchema.safeParse(avecCouches([{ z: 0, tiles: pleine(16), height: Array.from({ length: 16 }, () => 0), crenellated: Array.from({ length: 16 }, () => null) }])).success).toBe(true);
+  });
+
+  it('les couches EXACTES passent, et une scène sans couche du tout n’invente rien', () => {
+    expect(projetSchema.safeParse(avecCouches([{ z: 0, tiles: pleine(16) }, { z: 1, tiles: pleine(16, 'vide') }])).success).toBe(true);
+    expect(projetSchema.safeParse(projet({ scenes: [sceneMinimale()] })).success).toBe(true);
+  });
+
+  it('la DONNÉE livrée traverse : les couches de la Diligence sont au cardinal', () => {
+    const scenes = (diligenceProjet as { scenes: { layers?: { tiles: string[] }[] }[] }).scenes;
+    expect(scenes.flatMap((s) => s.layers ?? []).length).toBeGreaterThan(0);
+    expect(projetSchema.safeParse(diligenceProjet).success).toBe(true);
+  });
+});
+
 describe('projetSchema — les quatre sémantiques du seam, chacune NOMMÉE', () => {
   it('(a) `activeAxes` référence un axe inconnu de axes.json → rouge nommant l\'index et l\'id', () => {
     expect(fautes(projet({ activeAxes: ['negoce', 'plongee-sous-marine'] }))).toEqual([

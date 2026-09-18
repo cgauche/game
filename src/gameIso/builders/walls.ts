@@ -11,6 +11,7 @@
 import { heightAt, tileAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, isWalkable, structureAt, edgeOf, type FacadeFeature, type Scene, type WallSeg, type WallSide } from '../../state/scene';
 import { interiorCells } from '../../state/planDefects';
 import { memoByRef } from '../../state/sceneMemo';
+import { estAbsent } from '../../state/terrain';
 import { viewedBuilder, type Viewed } from './viewTruth';
 import { effectiveArchitecture } from '../../state/sceneEdit';
 import { structureAppearance, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
@@ -249,7 +250,7 @@ function storeyAbove(scene: Scene, seg: Pick<WallSeg, 'x' | 'y' | 'side'>, z: nu
   const cells: [number, number][] = [[seg.x, seg.y], [seg.x + nx, seg.y + ny]];
   return scene.layers.some((l) => l.z > z
     && cells.some(([x, y]) => x >= 0 && y >= 0 && x < w && y < h
-      && tileAt(scene, x, y, l.z) !== 'vide'
+      && !estAbsent(tileAt(scene, x, y, l.z))
       && Math.abs(heightAt(scene, x, y, l.z) - topH) < EPS));
 }
 

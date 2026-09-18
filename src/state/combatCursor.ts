@@ -9,6 +9,7 @@ import type { Get } from './flowTypes';
 import type { Combatant } from '../engine/types';
 import { tileCenter, type Dims } from '../geometry/iso';
 import { isWalkable, liftDe, tileAt, type Scene } from './scene';
+import { estAbsent } from './terrain';
 import { combatantAtTile } from './combatGeometry';
 import { combatantClickActs } from './combatOrParty';
 import type { TargetingMode } from './targetingModes';
@@ -63,13 +64,13 @@ export function screenStepDot(scene: Scene, from: Pt, to: Pt, dir: ScreenDir, di
  * `≤ activeZ` — SOURCE UNIQUE partagée par le curseur de combat (clavier/manette, `nextCursorTile`) ET le
  * picking SOURIS (`stage/useStagePointer`) : les deux doivent pouvoir VISER le chemin de ronde z1
  * depuis la cour z0 (là où se tiennent défenseurs et pièces). On prend d'abord la couche MARCHABLE la plus
- * haute (chemin de ronde > sol), sinon la couche RÉELLE la plus haute (terrain ≠ 'vide' : eau/mur visables) ;
+ * haute (chemin de ronde > sol), sinon la couche RÉELLE la plus haute (tuile NON absente : eau/mur visables) ;
  * à défaut, la base z0. Mono-couche ⇒ toujours z0 (byte-identique au sol plat). PUR.
  */
 export function resolveCursorZ(scene: Scene, x: number, y: number): number {
   const zsDesc = scene.layers.map((l) => l.z).sort((a, b) => b - a);
   for (const z of zsDesc) if (isWalkable(scene, x, y, z)) return z; // surface marchable réelle
-  for (const z of zsDesc) { const t = tileAt(scene, x, y, z); if (t && t !== 'vide') return z; } // case réelle non marchable
+  for (const z of zsDesc) { if (!estAbsent(tileAt(scene, x, y, z))) return z; } // case réelle non marchable
   return 0;
 }
 

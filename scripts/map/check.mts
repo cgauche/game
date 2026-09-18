@@ -12,6 +12,7 @@
  *                                                            aucune grille ASCII n'existant derrière)
  */
 import { auditStairwells, builtTerrains, floorPairs, PLAN_DEFECT_FAMILIES, scenePlanDefects, scenesZ, terrainAt, type PlanDefect, type PlanDefectFamily, type PlanDefectFamilyDef } from '../../src/state/planDefects';
+import { estAbsent } from '../../src/state/terrain';
 import { codedSites, coord, projectSites, type Site } from './sites';
 import { findMaps, MAP_REGISTRY, type MapEntry } from './registry';
 
@@ -111,11 +112,11 @@ function report(entry: MapEntry): void {
     console.log('# bâti aux deux étages · 1 étage seul · 0 rez bâti seul · , sol praticable · . vide\n');
     const batis = builtTerrains();
     const built = (t: string) => (entry.floorTerrain ? t === entry.floorTerrain : batis.has(t));
-    const pave = (t: string) => (entry.floorTerrain ? t === entry.paveTerrain : t !== 'vide' && !batis.has(t));
+    const pave = (t: string) => (entry.floorTerrain ? t === entry.paveTerrain : !estAbsent(t) && !batis.has(t));
     for (let y = 0; y < scene.dimensions.h; y++) {
       let line = '';
       for (let x = 0; x < scene.dimensions.w; x++) {
-        const e = terrainAt(scene, x, y, aboveZ) !== 'vide';
+        const e = !estAbsent(terrainAt(scene, x, y, aboveZ));
         const below = terrainAt(scene, x, y, belowZ);
         line += e && built(below) ? '#' : e ? '1' : built(below) ? '0' : pave(below) ? ',' : '.';
       }

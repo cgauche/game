@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS, DEFAULT_TERRAIN, emptyScene, type ArchitectureBody, type ArchitectureRect, type BuildingMass, type Scene, type Terrain } from './scene';
+import { DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS, DEFAULT_TERRAIN, emptyScene, tileAt, type ArchitectureBody, type ArchitectureRect, type BuildingMass, type Scene, type Terrain } from './scene';
 import { semencesDeScene } from '../data';
 import { METRES_PER_LEVEL } from './relief';
 import {
@@ -822,5 +822,35 @@ describe('normaliseAssises / seatOccupant — le seam unique d’assise', () => 
     const monte = editEntity(assis, 'table-1', { z: 1 });
     expect(monte.seatAssignments).toEqual({});
     expect(erreurs(monte)).toEqual([]);
+  });
+});
+
+/**
+ * CARDINAL de la grille au RUNTIME (#1789) — le refine du schéma garde les DOCUMENTS, `putLayer`
+ * garde les POSES : une couche plus courte que `w×h` rendrait des trous au même index aplati
+ * `y·w+x`, et `tileAt` (`state/scene.ts`) n'a plus AUCUN repli de tuile pour les masquer.
+ */
+describe('putLayer — une couche posée porte EXACTEMENT `w×h` entrées', () => {
+  const grille = () => emptyScene(4, 4);
+  const pleines = (n: number, t: Terrain = 'sol'): Terrain[] => new Array(n).fill(t);
+
+  it('une couche COURTE est refusée, en nommant l’étage, le tableau, la longueur et l’attendu', () => {
+    expect(() => putLayer(grille(), 1, pleines(15))).toThrow(
+      'putLayer : couche z=1, `tiles` porte 15 entrée(s) pour une grille 4×4 — il en faut EXACTEMENT 16',
+    );
+  });
+
+  it('un `height` COURT est refusé de la même façon, et c’est `height` qui est nommé', () => {
+    expect(() => putLayer(grille(), 0, pleines(16), new Array(15).fill(0))).toThrow(
+      'putLayer : couche z=0, `height` porte 15 entrée(s) pour une grille 4×4 — il en faut EXACTEMENT 16',
+    );
+  });
+
+  it('la couche EXACTE est posée, hauteurs comprises', () => {
+    const pose = putLayer(grille(), 1, pleines(16, 'pierre'), new Array(16).fill(2));
+    const couche = pose.layers.find((l) => l.z === 1);
+    expect(couche?.tiles).toHaveLength(16);
+    expect(couche?.height).toHaveLength(16);
+    expect(tileAt(pose, 3, 3, 1)).toBe('pierre');
   });
 });

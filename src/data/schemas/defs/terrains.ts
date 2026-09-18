@@ -41,6 +41,8 @@ const doc = document(
     priority: z.number().int().min(0),
     opaque: z.literal(true).optional(),
     built: z.literal(true).optional(),
+    absence: z.literal(true).optional(),
+    bordDuMonde: z.literal(true).optional(),
     swatch: couleur,
     // Record `offset → couleur` : un offset ne se répète pas sur une rampe. Au moins deux arrêts —
     // un dégradé d'un seul arrêt est un aplat, que `swatch` dit déjà.
@@ -62,6 +64,14 @@ const doc = document(
     built: {
       label: 'Surface bâtie',
       hint: 'Ouvrage construit qui PORTE l’étage posé dessus — absent : sol nu, un étage posé dessus est signalé par `map:check`',
+    },
+    absence: {
+      label: 'Rôle : absence de tuile',
+      hint: 'La non-tuile — ce qu’une couche porte là où rien n’est bâti ; UN SEUL terrain porte ce rôle',
+    },
+    bordDuMonde: {
+      label: 'Rôle : bord du monde',
+      hint: 'Ce que la grille rend au-delà de ses bornes ; UN SEUL terrain porte ce rôle',
     },
     swatch: { label: 'Teinte d’aperçu', hint: 'Couleur `#rrggbb` de la palette de l’éditeur et des faces du monde volumique' },
     stops: {
@@ -88,6 +98,24 @@ const doc = document(
   },
   {
     exiges: ['maison'],
+    // Chaque RÔLE que le moteur ADRESSE (#1789) est porté par EXACTEMENT UNE entrée : `absence` (la
+    // non-tuile des couches sans bâti) et `bordDuMonde` (ce que la grille rend au-delà de ses bornes).
+    // C'est une propriété de la COLLECTION : un refine d'ENTRÉE ne sait pas compter ses voisines.
+    affinerDataset: (dataset) =>
+      dataset.superRefine((v, ctx) => {
+        const entrees = (Array.isArray(v) ? v : []) as readonly Record<string, unknown>[];
+        for (const role of ['absence', 'bordDuMonde'] as const) {
+          const porteurs = entrees.filter((e) => e[role] === true).map((e) => (typeof e.id === 'string' ? e.id : '?'));
+          if (porteurs.length === 1) continue;
+          ctx.addIssue({
+            code: 'custom',
+            path: [role],
+            message:
+              `rôle « ${role} » : EXACTEMENT UNE entrée de \`terrains.json\` doit le porter — ` +
+              `${porteurs.length} mesurée(s)${porteurs.length ? ` : ${porteurs.join(', ')}` : ''}`,
+          });
+        }
+      }),
     // Les `<stop>` d'un `<linearGradient>` se lisent DANS L'ORDRE D'ÉMISSION : SVG clampe un offset
     // qui recule sur son prédécesseur, et l'arrêt devient inerte sans un mot. L'ordre est donc une
     // contrainte de la DONNÉE, pas une convention d'écriture — les émetteurs trient en plus

@@ -6,7 +6,7 @@
  */
 import { heightAt, isDescriptiveZone, type Scene, type SceneEffectZone } from './scene';
 import { sceneZoneTiles } from './zones';
-import { terrainWalkable, tousLesTerrains } from './terrain';
+import { estAbsent, terrainAbsent, terrainWalkable, tousLesTerrains } from './terrain';
 import { gradeBetween, METRES_PER_LEVEL } from './relief';
 import { memoByRef, memoByRefDeps } from './sceneMemo';
 import type { CellSide } from './scene';
@@ -17,16 +17,18 @@ import type { CellSide } from './scene';
 export const builtTerrains = (): Set<string> => new Set(tousLesTerrains().filter((t) => t.built).map((t) => t.id));
 
 /** Sols NUS = complément de `builtTerrains()` sur le dataset des terrains (famille 5, toutes cartes) :
- *  sol naturel (`herbe`, `terre`, `route`, `sable`…) comme `vide` (rien du tout). Un terrain déposé
+ *  sol naturel (`herbe`, `terre`, `route`, `sable`…) comme la tuile ABSENTE (rien du tout). Un terrain déposé
  *  demain sans `built` tombe donc ICI, et un étage posé dessus se signale au lieu de passer en silence. */
 export const groundTerrains = (): Set<string> => new Set(tousLesTerrains().filter((t) => !t.built).map((t) => t.id));
 
-/** Terrain d'une case, hors bornes / étage absent = `'vide'` (comme la base des couches z>0). */
+/** Terrain d'une case pour l'AUDIT DE PLAN : hors bornes et étage absent y valent la tuile ABSENTE
+ *  (`terrainAbsent`) — un plan n'a rien à auditer là où rien n'est bâti. Lecture distincte de
+ *  `tileAt`, qui rend le terrain du BORD DU MONDE hors grille (#1789). */
 export function terrainAt(scene: Scene, x: number, y: number, z: number): string {
-  if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return 'vide';
+  if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return terrainAbsent();
   const layer = scene.layers.find((l) => l.z === z);
-  if (!layer) return 'vide';
-  return layer.tiles[y * scene.dimensions.w + x] ?? 'vide';
+  if (!layer) return terrainAbsent();
+  return layer.tiles[y * scene.dimensions.w + x];
 }
 
 /** Étages présents dans la Scène, triés (z croissant). */
@@ -150,7 +152,7 @@ interface Tremie {
   detail: string;
 }
 
-const isFloor = (scene: Scene, x: number, y: number, z: number) => terrainAt(scene, x, y, z) !== 'vide';
+const isFloor = (scene: Scene, x: number, y: number, z: number) => !estAbsent(terrainAt(scene, x, y, z));
 
 /** 4-voisinage d'une case — foyer unique des parcours de grille de ce module. */
 const NEIGHBORS4: readonly (readonly [number, number])[] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
@@ -166,7 +168,7 @@ const NEIGHBORS8: readonly (readonly [number, number])[] = [...NEIGHBORS4, [1, 1
  *  `interior`/`exterior` de la zone du dessous — contre un puits interne, qui n'en exige aucun. */
 function exteriorVoidCells(scene: Scene, z: number): Set<string> {
   const { w, h } = scene.dimensions;
-  const isVide = (x: number, y: number) => terrainAt(scene, x, y, z) === 'vide';
+  const isVide = (x: number, y: number) => estAbsent(terrainAt(scene, x, y, z));
   const visited = new Set<string>();
   const exterior = new Set<string>();
   for (let y0 = 0; y0 < h; y0++) {
@@ -319,8 +321,8 @@ export function stairFlightCells(scene: Scene, belowZ: number, aboveZ: number): 
   const floorAbove = aboveZ * METRES_PER_LEVEL;
   const { w, h } = scene.dimensions;
   const eligible = (x: number, y: number): boolean =>
-    terrainAt(scene, x, y, belowZ) !== 'vide'
-    && terrainAt(scene, x, y, aboveZ) === 'vide'
+    !estAbsent(terrainAt(scene, x, y, belowZ))
+    && estAbsent(terrainAt(scene, x, y, aboveZ))
     && heightAt(scene, x, y, belowZ) > baseBelow + 1e-6;
 
   const cells = new Set<string>();
@@ -577,7 +579,7 @@ export function auditStairwells(scene: Scene, aboveZ: number, belowZ: number, st
     for (let x = 0; x < scene.dimensions.w; x++) {
       if (isFloor(scene, x, y, aboveZ)) continue;
       const below = terrainAt(scene, x, y, belowZ);
-      if (below === 'vide') continue; // rien à trouer : pas dans le bâti
+      if (estAbsent(below)) continue; // rien à trouer : pas dans le bâti
       const covered = NEIGHBORS4.filter(([dx, dy]) => isFloor(scene, x + dx, y + dy, aboveZ)).length;
       if (covered < 3) continue;
       const ch = charAt(x, y);

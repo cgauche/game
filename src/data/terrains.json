@@ -237,6 +237,7 @@
     "priority": 9,
     "opaque": true,
     "built": true,
+    "bordDuMonde": true,
     "solidHeightM": 4,
     "swatch": "#9b8e72",
     "stops": {
@@ -634,6 +635,7 @@
     "maison": "l’absence de sol à cet étage — le vide au-dessus du niveau du dessous ; aucun folio n’imprime de catalogue de sols, donc ce que ce terrain est et ce qu’il vaut en jeu comme à l’écran sont des arbitrages maison.",
     "walkable": false,
     "priority": 0,
+    "absence": true,
     "swatch": "#11141c",
     "stops": {
       "0%": "#6b5d4f",

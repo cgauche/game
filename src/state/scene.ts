@@ -44,7 +44,7 @@ import type { wallSideSchema } from '../data/schemas/defs-scenes/communs';
 import { findStructureById, semencesDeScene } from '../data';
 import type { Dir8 } from './dir8';
 import type { Pt } from './path';
-import { terrainWalkable } from './terrain';
+import { terrainHorsGrille, terrainWalkable } from './terrain';
 import { entityBlockedAt } from './sceneRules';
 import { type Grade, gradeBetween, metricToLift } from './relief';
 import { aretesA } from './wallIndex';
@@ -492,8 +492,10 @@ export function enrolledEntityIds(scene: Scene): Set<string> {
 }
 
 export function tileAt(scene: Scene, x: number, y: number, z = 0): Terrain {
-  if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return 'mur';
-  return layerTiles(scene, z)[y * scene.dimensions.w + x] ?? 'sol';
+  if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return terrainHorsGrille();
+  // Aucun repli de tuile : le schéma exige `tiles.length === w×h` sur chaque couche (#1789), donc
+  // toute case DANS la grille porte son terrain.
+  return layerTiles(scene, z)[y * scene.dimensions.w + x];
 }
 
 /** Hauteur RÉELLE (mètres) de la surface de la case (x,y) sur la couche `z` : >0 surélevée, <0 en

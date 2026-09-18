@@ -17,6 +17,7 @@
 import { terrains } from '../../data/index';
 import { memoParVersion } from '../../data/versionDataset';
 import type { TerrainDef } from '../../data/terrains.types';
+import type { Terrain } from '../scene';
 
 export type { TerrainDef } from '../../data/terrains.types';
 
@@ -63,6 +64,41 @@ export function terrainOpaque(id: string): boolean {
 export function terrainBuilt(id: string): boolean {
   return indexDesTerrains()[id]?.built === true;
 }
+/**
+ * LES DEUX RÔLES ADRESSÉS (#1789) — le moteur ne récite aucun id : il demande au dataset QUI tient le
+ * rôle. `absence` = la non-tuile (ce qu'une couche porte là où rien n'est bâti) ; `bordDuMonde` = ce
+ * que la grille rend au-delà de ses bornes. Le schéma (`defs/terrains.ts`, `affinerDataset`) exige
+ * qu'EXACTEMENT une entrée porte chacun : le porteur est donc une FONCTION du dataset, vive comme
+ * l'index, et l'absence de porteur est un dataset ROMPU, pas un cas à replier en silence.
+ */
+function porteurDuRole(role: 'absence' | 'bordDuMonde'): Terrain {
+  const porteurs = terrains.filter((t) => t[role] === true);
+  if (porteurs.length !== 1)
+    throw new Error(
+      `terrains : le rôle « ${role} » est porté par ${porteurs.length} entrée(s) (${porteurs.map((t) => t.id).join(', ') || 'aucune'}) — il en faut EXACTEMENT une`,
+    );
+  return porteurs[0].id;
+}
+
+const absenceVive = memoParVersion('terrains', () => porteurDuRole('absence'));
+const horsGrilleVif = memoParVersion('terrains', () => porteurDuRole('bordDuMonde'));
+
+/** Le terrain qui EST l'absence de tuile — ce qu'une couche porte là où rien n'est bâti. */
+export function terrainAbsent(): Terrain {
+  return absenceVive();
+}
+
+/** Ce terrain est-il l'absence de tuile ? Un id INCONNU n'est pas une absence : c'est un id inconnu. */
+export function estAbsent(id: string): boolean {
+  return indexDesTerrains()[id]?.absence === true;
+}
+
+/** Le terrain que la grille rend AU-DELÀ de ses bornes (`tileAt` hors grille) — ses propriétés font
+ *  la Ligne de Vue, le raccord d'arêtes et les piliers au bord du monde. */
+export function terrainHorsGrille(): Terrain {
+  return horsGrilleVif();
+}
+
 /** Décor billboard posé sur chaque tuile du terrain (id de `props.json`), ou undefined. */
 export function terrainOverlayProp(id: string): string | undefined {
   return indexDesTerrains()[id]?.overlayProp;

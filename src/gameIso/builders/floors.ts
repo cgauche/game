@@ -7,7 +7,7 @@
  */
 import { Scene, tileAt, heightAt, isWalkable } from '../../state/scene';
 import { gradeBetween } from '../../state/relief';
-import { terrainMatiere, terrainPriority, terrainSolidHeightM } from '../../state/terrain';
+import { estAbsent, terrainMatiere, terrainPriority, terrainSolidHeightM } from '../../state/terrain';
 import type { PartRelief } from '../../data/materials.types';
 import type { CellSide, Face, FloorEl } from './types';
 import { viewedBuilder, type Viewed } from './viewTruth';
@@ -67,15 +67,15 @@ export function isOverhang(scene: Scene, x: number, y: number, z: number): boole
  *  laisser le dessus BRUT du bloc à nu quand on regarde le mur d'en bas (activeZ sous z). GÉNÉRAL. */
 export function capsSolid(scene: Scene, x: number, y: number, z: number): boolean {
   if (capsSolidDirect(scene, x, y, z)) return true; // (a) posé DIRECTEMENT sur un bloc plein
-  if (z <= 0 || tileAt(scene, x, y, z) === 'vide') return false;
+  if (z <= 0 || estAbsent(tileAt(scene, x, y, z))) return false;
   const { w: W, h: H } = scene.dimensions;
   const top = displayHeightAt(scene, x, y, z);
   for (let zz = z - 1; zz >= 0; zz--) {
-    if (tileAt(scene, x, y, zz) === 'vide') continue;
+    if (estAbsent(tileAt(scene, x, y, zz))) continue;
     // (b) TOIT DE GATEHOUSE : le sol dessous est passable (TUNNEL de porte) mais BORDÉ par un bloc plein de
     //     même niveau montant jusqu'au dessus (le chemin de ronde ceinture la masse et coiffe le passage) →
     //     toit SOLIDE d'une structure, pas un tablier sur pilotis. Rend le rempart continu au-dessus de la porte.
-    //     Voisin HORS CARTE ignoré : `tileAt` y rend un « mur » implicite (bord de carte) — un tablier posé
+    //     Voisin HORS CARTE ignoré : `tileAt` y rend le terrain du BORD DU MONDE — un tablier posé
     //     en BORD de scène n'est pas pour autant un toit de gatehouse.
     if (SIDES.some((s) => { const [dx, dy] = NEIGHBOURS[s]; const nx = x + dx, ny = y + dy; return nx >= 0 && nx < W && ny >= 0 && ny < H && terrainSolidHeightM(tileAt(scene, nx, ny, zz)) > 0 && displayHeightAt(scene, nx, ny, zz) >= top - 0.01; })) return true;
   }
@@ -87,10 +87,10 @@ export function capsSolid(scene: Scene, x: number, y: number, z: number): boolea
  *  ne redessine AUCUNE falaise (sinon redondance + à base égale la couche z1 gagne le tri et RECOUVRE une
  *  rampe z0 de même hauteur posée devant). ⊥ du cas (b) « gatehouse » (tunnel : le sol DOIT border sa dalle). */
 export function capsSolidDirect(scene: Scene, x: number, y: number, z: number): boolean {
-  if (z <= 0 || tileAt(scene, x, y, z) === 'vide') return false;
+  if (z <= 0 || estAbsent(tileAt(scene, x, y, z))) return false;
   const top = displayHeightAt(scene, x, y, z);
   for (let zz = z - 1; zz >= 0; zz--)
-    if (tileAt(scene, x, y, zz) !== 'vide' && terrainSolidHeightM(tileAt(scene, x, y, zz)) > 0 && displayHeightAt(scene, x, y, zz) >= top - 0.01) return true;
+    if (!estAbsent(tileAt(scene, x, y, zz)) && terrainSolidHeightM(tileAt(scene, x, y, zz)) > 0 && displayHeightAt(scene, x, y, zz) >= top - 0.01) return true;
   return false;
 }
 
@@ -100,7 +100,7 @@ export function capsSolidDirect(scene: Scene, x: number, y: number, z: number): 
  *  dessus brut du bloc). Miroir de `capsSolid`, côté bloc. */
 function cappedAbove(scene: Scene, x: number, y: number, z: number): boolean {
   const top = displayHeightAt(scene, x, y, z);
-  return scene.layers.some((l) => l.z > z && tileAt(scene, x, y, l.z) !== 'vide' && displayHeightAt(scene, x, y, l.z) >= top - 0.01);
+  return scene.layers.some((l) => l.z > z && !estAbsent(tileAt(scene, x, y, l.z)) && displayHeightAt(scene, x, y, l.z) >= top - 0.01);
 }
 
 /** Hauteur d'AFFICHAGE de la surface INFÉRIEURE sous un surplomb (1ʳᵉ couche marchable en dessous), ou null. */
@@ -109,13 +109,13 @@ function overhangLowerHeight(scene: Scene, x: number, y: number, z: number): num
   return null;
 }
 
-/** Étage de SOL effectif sous (x,y) pour le BROUILLARD : à un trou (`vide`) de l'étage actif, on retombe
+/** Étage de SOL effectif sous (x,y) pour le BROUILLARD : à un trou (tuile ABSENTE) de l'étage actif, on retombe
  *  sur le premier sol en dessous → le voile reflète la visibilité du CONTREBAS (vu par le trou) au lieu
  *  d'un noir « inconnu » qui masquerait l'étage inférieur. Mono-niveau (pas de trou) ⇒ `activeZ`.
  *  Une seule vérité de voile pour le builder (surplomb PLEIN) et la teinte de visibilité du monde. */
 export function fogFloorZ(scene: Scene, x: number, y: number, activeZ: number): number {
   for (let zz = activeZ; zz >= 0; zz--)
-    if (scene.layers.some((l) => l.z === zz) && tileAt(scene, x, y, zz) !== 'vide') return zz;
+    if (scene.layers.some((l) => l.z === zz) && !estAbsent(tileAt(scene, x, y, zz))) return zz;
   return activeZ;
 }
 
@@ -134,10 +134,10 @@ function edgeCorners(x: number, y: number, side: CellSide): [{ x: number; y: num
 
 /** Faces d'une tuile de sol, dans l'ORDRE DE PEINTURE (piliers — les plus en arrière, ils tombent sous
  *  la dalle — puis parois de relief qui descendent SOUS le sol, losange de base, wedges par-dessus).
- *  null si la tuile est `vide` (étage non construit → transparente, on voit le dessous). */
+ *  null si la tuile est ABSENTE (étage non construit → transparente, on voit le dessous). */
 function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boolean, caps: boolean): Face[] | null {
   const terrain = tileAt(scene, x, y, z);
-  if (terrain === 'vide') return null;
+  if (estAbsent(terrain)) return null;
   const self = displayHeightAt(scene, x, y, z); // AFFICHAGE (bloc plein `solidHeightM` compris) — jamais lu par le combat
   const solidBlock = terrainSolidHeightM(terrain) > 0; // mur (terrain à bloc plein) → flancs en PIERRE, pas en terre
   const faces: Face[] = [];
@@ -155,7 +155,7 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
     const seen = new Set<string>();
     for (const side of SIDES) {
       const [dx, dy] = NEIGHBOURS[side];
-      if (tileAt(scene, x + dx, y + dy, z) !== 'vide') continue; // arête INTÉRIEURE du tablier → pas de pilier
+      if (!estAbsent(tileAt(scene, x + dx, y + dy, z))) continue; // arête INTÉRIEURE du tablier → pas de pilier
       for (const c of edgeCorners(x, y, side)) {
         const k = `${c.x},${c.y}`;
         if (seen.has(k)) continue;
@@ -186,7 +186,7 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
     if (self <= nb) continue; // la case HAUTE porte la paroi (plateau surélevé ET rebord de fosse)
     const grade = gradeBetween(self, nb);
     if (grade === 'flat') continue; // de niveau → aucune paroi
-    const deck = overhang && tileAt(scene, x + dx, y + dy, z) === 'vide';
+    const deck = overhang && estAbsent(tileAt(scene, x + dx, y + dy, z));
     const loH = deck ? self - DECK_THICKNESS_M : nb;
     const [A, B] = edgeCorners(x, y, side);
     const part: PartRelief = deck ? 'deck' : grade;
