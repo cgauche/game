@@ -141,14 +141,23 @@ function paragrapheDe(corps, citation) {
     .find((p) => compacter(p).includes(noyau)) ?? ''
 }
 
+/** LIGNE du paragraphe qui porte `citation` : une fiche empile ses verbatims datés ligne à ligne. */
+function ligneDuVerbatim(paragraphe, citation) {
+  const noyau = citation.slice(0, 30)
+  return paragraphe.split('\n').find((l) => compacter(l).includes(noyau)) ?? ''
+}
+
 /**
- * Date d'une doctrine : celle écrite dans le PARAGRAPHE du verbatim, sinon celle de l'en-tête
- * (description puis `metadata.modified`), sinon la date d'AJOUT git de la fiche — dite comme telle,
- * parce qu'elle date le fichier et non la parole.
+ * Date d'une doctrine : celle écrite sur la LIGNE du verbatim, sinon dans son PARAGRAPHE, sinon
+ * celle de l'en-tête (description puis `metadata.modified`), sinon la date d'AJOUT git de la fiche —
+ * dite comme telle, parce qu'elle date le fichier et non la parole.
  * @returns {{ date: string, source: 'phrase'|'en-tete'|'ajout' }}
  */
 export function dateDe({ entete, corps, citation, dateAjout }) {
-  const dansPhrase = citation ? DATE_ISO.exec(paragrapheDe(corps, citation)) : null
+  const paragraphe = citation ? paragrapheDe(corps, citation) : ''
+  const dansPhrase = citation
+    ? (DATE_ISO.exec(ligneDuVerbatim(paragraphe, citation)) ?? DATE_ISO.exec(paragraphe))
+    : null
   if (dansPhrase) return { date: dansPhrase[1], source: 'phrase' }
   const dansEntete = DATE_ISO.exec(entete)
   if (dansEntete) return { date: dansEntete[1], source: 'en-tete' }

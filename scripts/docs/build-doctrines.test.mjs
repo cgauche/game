@@ -119,6 +119,20 @@ test('date — le PARAGRAPHE du verbatim prime sur l en-tête', () => {
   )
 })
 
+test('date — deux verbatims datés COLLÉS : la date est celle de la LIGNE du verbatim extrait', () => {
+  const corps = [
+    '**Verbatim (2026-09-04)** : « Une première parole, plus courte. »',
+    '**Arbitrage (2026-09-18, #1800)** : « Un module CSS d écran ne déclare que du PLACEMENT ; toute IDENTITÉ vit dans une primitive. »',
+    '',
+    '**Why :** la raison.',
+  ].join('\n')
+  const citation = 'Un module CSS d écran ne déclare que du PLACEMENT ; toute IDENTITÉ vit dans une primitive.'
+  assert.deepEqual(
+    dateDe({ entete: '', corps, citation, dateAjout: () => '2000-01-01' }),
+    { date: '2026-09-18', source: 'phrase' },
+  )
+})
+
 test('date — à défaut, l en-tête (horodatage `modified` compris)', () => {
   const { entete, corps } = decouperFiche(ENTETE_SEULE.texte)
   assert.deepEqual(
