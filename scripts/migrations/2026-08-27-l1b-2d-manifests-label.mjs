@@ -37,7 +37,8 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const PORTEURS = [
   // 30 → 62 (#1728) : les entrées de la table CLAUDE.md sont portées au manifeste, de la MÊME forme
   // que les 30 autres — primitives EXISTANTES ; le périmètre mesuré suit, à l'ÉGALITÉ.
-  { fichier: 'src/data/primitives.manifest.json', entrees: (d) => d, attendu: 62 },
+  // Puis 62 → 66 (#1800, 2026-09-18) : `layout`, `ornaments`, `notchGauge`, `windRose`.
+  { fichier: 'src/data/primitives.manifest.json', entrees: (d) => d, attendu: 66 },
   { fichier: 'src/data/systemes.manifest.json', entrees: (d) => d, attendu: 16 },
   { fichier: 'src/data/donnees.manifest.json', entrees: (d) => d.rubriques, attendu: 11 },
 ];

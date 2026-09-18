@@ -192,7 +192,7 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     expect(enc.getAttribute('data-overflow')).toBe('');
     expect(enc.getAttribute('data-tone')).toBe('danger');
     expect(enc.querySelector('.life-bar__value')?.textContent).toBe('15/6 · +9');
-    expect((enc.querySelector('.life-bar__fill') as HTMLElement).style.width).toBe('100%');
+    expect((enc.querySelector('.life-bar__fill') as HTMLElement).style.getPropertyValue('--life-pct')).toBe('100%');
   });
 
   it('tête de l’onglet Compétences & Talents : CharStatsGrid + Mouvement + Destin·Chance/Résilience·Détermination', () => {

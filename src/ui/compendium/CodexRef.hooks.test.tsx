@@ -240,7 +240,7 @@ describe('CodexRef — la raison d’un refus s’atteint au survol, au FOCUS et
     act(() => { trigger.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
     const pop = document.querySelector('.codex-pop') as HTMLElement;
     expect(pop, 'le repli doit s’afficher').toBeTruthy();
-    expect(pop.style.pointerEvents, 'une boîte affichée mais inatteignable au pointeur').toBe('auto');
+    expect(pop.hasAttribute('data-atteignable'), 'une boîte affichée mais inatteignable au pointeur').toBe(true);
     // … et le pont de survol la maintient le temps que le pointeur y arrive.
     act(() => { trigger.dispatchEvent(new MouseEvent('mouseout', { bubbles: true })); });
     expect(document.querySelector('.codex-pop'), 'le pont de survol ne tient pas').toBeTruthy();

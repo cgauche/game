@@ -874,12 +874,6 @@ export const RATCHET_EXCEPTIONS = {
     "isShield (fallback de RENDU rig) — détecte un bouclier d'abord par la Qualité Protectrice ; " +
     "repli texte sur x.label pour un objet custom/legacy dépourvu de cette Qualité. Classification " +
     "VISUELLE (quel gabarit dessiner), pas une FK de logique métier — aucune régression possible.",
-  'ui/gallery/DesignGallery.tsx:12':
-    "Galerie design DEV (référence de goût in-app, HORS gameplay) : `activeId` = le spécimen sélectionné, " +
-    "identifié par son label faute d'autre identité (entrée de démo interne). Sélection d'UI d'outil dev, " +
-    "pas une FK de logique métier — aucune régression jouable. Exposée par #608 (le champ etait `name`).",
-  'ui/gallery/DesignGallery.tsx:28':
-    'Même galerie DEV (classe active du bouton de liste, même comparaison) — même justification que :12.',
   'ui/RollRow.tsx:92':
     "Nom ACCESSIBLE dérivé du libellé affiché de la ligne (« Fixer le dé — Voile », #1117) — display " +
     "pur, aucun branchement de comportement : rien n'est décidé selon le texte, il est seulement RENDU " +

@@ -340,7 +340,7 @@ describe('CombatConsole — arche', () => {
     expect(med.getAttribute('data-hostile')).toBe('');
     expect(med.querySelector('[data-nom]')!.textContent).toBe('Rat e1');
     expect(med.querySelector('.life-bar__value')!.textContent).toBe('7 / 12 BLESSURES');
-    expect(parseColor((med.querySelector('.life-bar__fill') as HTMLElement).style.background)).toEqual(parseColor(ENEMY_TINT));
+    expect(parseColor((med.querySelector('.life-bar__fill') as HTMLElement).style.getPropertyValue('--life-color'))).toEqual(parseColor(ENEMY_TINT));
     expect(med.querySelectorAll('.pt-state').length).toBe(1);
     expect(med.querySelector('.pt-n')!.textContent).toBe('2');
   });

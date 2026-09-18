@@ -58,8 +58,8 @@ export function regenererStock(p: {
     console.warn(`AMORÇAGE : la barrière décroissante est SAUTÉE pour ${p.chemin} — légal au seul commit qui CRÉE ce stock.`);
   }
   for (const c of p.collections) {
-    const refus = p.amorce ? null : refusDeCroissance(c.mesurees, c.stock, { nom: c.nom, motif: c.motif });
-    if (refus) { console.error(refus); return 1; }
+    const refus = refusDeCroissance(c.mesurees, c.stock, { nom: c.nom, motif: c.motif });
+    if (refus && !p.amorce) { console.error(refus); return 1; }
   }
 
   const src = readFileSync(p.chemin, 'utf8');

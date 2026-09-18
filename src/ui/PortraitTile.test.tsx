@@ -14,16 +14,16 @@ describe('PortraitTile', () => {
     c.wounds = { current: 12, max: 12 };
     const html = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />);
     expect(html).toContain('ptile-gauge');
-    expect(html).toContain('width:100%'); // barre horizontale (largeur = ratio), plus de hauteur
-    expect(html).toContain('#2ecc71'); // hpColor(1) — vert sain
+    expect(html).toContain('--life-pct:100%'); // barre horizontale (largeur = ratio), plus de hauteur
+    expect(html).toContain('--life-color:#2ecc71'); // hpColor(1) — vert sain
   });
 
   it('jauge rouge en zone critique (≤34 %)', () => {
     const c = base();
     c.wounds = { current: 3, max: 12 }; // ratio 0.25
     const html = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />);
-    expect(html).toContain('width:25%');
-    expect(html).toContain('#e74c3c'); // hpColor critique
+    expect(html).toContain('--life-pct:25%');
+    expect(html).toContain('--life-color:#e74c3c'); // hpColor critique
   });
 
   it('PV chiffrés : héros à partir de md ; jamais en sm ni pour un ennemi (jauge seule)', () => {

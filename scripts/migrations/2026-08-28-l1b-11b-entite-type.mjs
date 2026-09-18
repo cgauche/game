@@ -77,7 +77,8 @@ const CARDINAUX = {
   'mutationTables.json': 17,
   // 30 → 62 (#1728) : les entrées de la table CLAUDE.md sont portées au manifeste, de la MÊME forme
   // que les 30 autres — primitives EXISTANTES, aucune donnée neuve.
-  'primitives.manifest.json': 62,
+  // Puis 62 → 66 (#1800, 2026-09-18) : `layout`, `ornaments`, `notchGauge`, `windRose`.
+  'primitives.manifest.json': 66,
   'qualities.json': 59,
   'regles.json': 86, // +1 `critiques-de-bateau` (#1657 B3-2), +1 `activites-en-mer` (#1392 T0)
   'stars.json': 23,
@@ -92,7 +93,8 @@ const CARDINAUX = {
 // portée au manifeste — primitives EXISTANTES).
 // Puis 836→837 (#1392) : regles.json +1 — l'intro « ACTIVITÉS EN MER » (MDG 15) devient une entrée
 // adressée au lieu d'une constante d'écran.
-const TOTAL_ATTENDU = 837;
+// Puis 837→841 (#1800) : primitives.manifest.json +4 — `layout`, `ornaments`, `notchGauge`, `windRose`.
+const TOTAL_ATTENDU = 841;
 
 const echecs = [];
 const rapport = [];
