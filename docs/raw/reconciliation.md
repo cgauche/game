@@ -162,9 +162,9 @@ _Aucune._
 
 ## B1 — Règles décrites par l'Atlas marquées « (non implémenté) » (LDB)
 
-- **docs\raw\00-index.md** L33 — le code mort détecté, `(non implémenté)` sinon. Source éditoriale (dettes/blocages) :
-- **docs\raw\00-index.md** L86 — - **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non
-- **docs\raw\bestiaire.md** L382 — **Implémente :** (non implémenté)
+- **00-index.md** L33 — le code mort détecté, `(non implémenté)` sinon. Source éditoriale (dettes/blocages) :
+- **00-index.md** L86 — - **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non
+- **bestiaire.md** L382 — **Implémente :** (non implémenté)
 
 ## B2 — Chapitres LDB cités par l'Atlas, jamais référencés dans le code
 
@@ -179,4 +179,4 @@ LDB 38
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, EDO, EDOC, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: 7cc5e35ce57a4f16b600cbed9e88eae804cec155 (4108 fichiers, 150 dossiers) corps: 97b5a3d620336772d3adb45ed4ff7bfe3149f0a0 -->
+<!-- sources-empreinte: 7cc5e35ce57a4f16b600cbed9e88eae804cec155 (4108 fichiers, 150 dossiers) corps: e9cdce9555193c071b5228100d523c1f35d6601e -->
