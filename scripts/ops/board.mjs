@@ -26,11 +26,10 @@
 // Usage : `npm run ops:board` (mesurer puis synchroniser) · `-- --liste` (mesurer et IMPRIMER, aucun
 // appel d'écriture, aucun Project requis ; `--sans-fetch` y tolère un `origin` injoignable) ·
 // `-- --creer` (créer le Project « Chantiers », ses champs et son lien au dépôt, puis synchroniser).
-import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { arbrePrincipal, fetchOrigin, lireGit, sortieOuNull } from '../guards/lib/gitPorte.mjs'
 import { inventaire } from './worktrees.mjs'
-import { DEPOT } from '../guards/lib/ticketsGh.mjs'
+import { DEPOT, appelGhRunner, pagesRest } from '../guards/lib/ticketsGh.mjs'
 
 /** Le propriétaire du Project (un Project d'UTILISATEUR, pas d'organisation). */
 export const PROPRIETAIRE = 'cgauche'
@@ -363,41 +362,39 @@ export function planDeSync(lignes, itemsExistants = [], { issues = new Map() } =
 }
 
 /**
- * La requête GraphQL qui lit l'état de N tickets en UN appel : un alias `i<N>` par numéro. PURE.
- * @param {number[]} numeros @returns {string}
+ * Les entrées de `repos/<dépôt>/issues?state=all` → l'état des tickets DEMANDÉS, et une anomalie par
+ * numéro absent de la liste. PURE.
+ * La route `/issues` sert AUSSI les pull requests : une charge portant `pull_request` est ÉCARTÉE —
+ * sans quoi une PR dont le numéro coïncide avec un ticket cité par une branche rendrait l'état d'un
+ * objet qui n'est pas ce ticket (mesuré 2026-09-19 : 9 PR parmi les 1827 entrées de la liste).
+ * La forme rendue est CELLE QUE LISENT les consommateurs : `state` en MAJUSCULES (REST rend
+ * `open`/`closed`) et `closed_at` sous `closedAt`, une seule forme dans la carte plutôt qu'une
+ * normalisation reportée sur chaque lecteur (`statutDe`, `construireLignes`, `planDeSync`).
+ * @param {unknown} entrees @param {number[]} numeros
+ * @returns {{issues: Map<number, {number:number, state:string, closedAt:string|null, title:string}>,
+ *   anomalies: string[]}}
  */
-export function requeteIssues(numeros) {
-  const [proprietaire, nom] = DEPOT.split('/')
-  const alias = [...new Set(numeros.map(Number))]
-    .sort((a, b) => a - b)
-    .map((n) => `    i${n}: issue(number: ${n}) { number state closedAt title }`)
-    .join('\n')
-  return `query {\n  repository(owner: "${proprietaire}", name: "${nom}") {\n${alias}\n  }\n}`
-}
-
-/**
- * La réponse de `requeteIssues` → les issues par numéro, et une anomalie par numéro INTROUVABLE
- * (l'alias rend `null` : le ticket n'existe pas dans ce dépôt). PURE.
- * @param {unknown} reponse @param {number[]} numeros
- * @returns {{issues: Map<number, object>, anomalies: string[]}}
- */
-export function lireIssues(reponse, numeros) {
-  const depot = reponse?.data?.repository ?? reponse?.repository ?? null
+export function indexerIssues(entrees, numeros) {
+  const parNumero = new Map()
+  for (const entree of Array.isArray(entrees) ? entrees : []) {
+    if (entree?.pull_request) continue
+    const numero = Number(entree?.number)
+    if (!Number.isFinite(numero)) continue
+    parNumero.set(numero, {
+      number: numero,
+      state: String(entree?.state ?? '').toUpperCase(),
+      closedAt: entree?.closed_at ?? null,
+      title: String(entree?.title ?? ''),
+    })
+  }
   const issues = new Map()
   const anomalies = []
-  for (const numero of numeros) {
-    const vue = depot ? depot[`i${numero}`] : undefined
-    if (vue) issues.set(Number(numero), vue)
+  for (const numero of [...new Set(numeros.map(Number))].sort((a, b) => a - b)) {
+    const vue = parNumero.get(numero)
+    if (vue) issues.set(numero, vue)
     else anomalies.push(`ticket #${numero} introuvable dans ${DEPOT}`)
   }
   return { issues, anomalies }
-}
-
-/** `[1,2,3]` en tranches de `taille`. PURE. */
-export function tranches(valeurs, taille) {
-  const lots = []
-  for (let i = 0; i < valeurs.length; i += taille) lots.push(valeurs.slice(i, i + taille))
-  return lots
 }
 
 /** Les champs d'un `gh project field-list --format json`, par nom normalisé. PURE. */
@@ -505,30 +502,58 @@ export function comptesParStatut(lignes) {
 // ————————————————————————————————— mesure et gestes —————————————————————————————————
 
 /**
- * `gh <args>` — LA porte de tout appel à `gh`, injectable partout ailleurs. Un refus de `gh` (scope
- * manquant, réseau, Project absent) est JETÉ avec le stderr de `gh` recopié : aucun repli silencieux.
+ * `gh <args>` — la porte des appels de `synchroniser`, injectable partout. Elle JETTE, et c'est ce
+ * dont dépendent ses DIX sites d'appel : une séquence de gestes qu'un refus doit INTERROMPRE, pas
+ * une lecture qui rend un verdict. NEUF de ces sites sont `gh project …` — trois LECTURES (`project
+ * list`, `field-list`, `item-list`) et six ÉCRITURES (`item-edit`, `create`, `link`, `field-create`,
+ * `item-add`, `item-archive`) —, le DIXIÈME est `gh api graphql` (réécriture des options du champ
+ * Status). Projects v2 n'a AUCUNE route REST (les Projects classiques ont été retirés — `gh api
+ * repos/cgauche/game/projects` rend 404, mesuré 2026-09-19) : ni les lectures ni les écritures de
+ * `synchroniser` ne peuvent passer par la couture REST.
+ * Le SPAWN, lui, est unique dans le dépôt : `appelGhRunner` (`ticketsGh.mjs`), seul à porter
+ * `stdio[0] = 'ignore'`, la parade au `gh` pendu sur le stdin d'un runner. Son motif de refus est le
+ * STDERR de `gh`, et c'est là que `gh` met tout : sur `gh api graphql` refusé, stdout porte le corps
+ * JSON et stderr la MÊME phrase plus le code (« … (HTTP 403) ») ; sur un argv invalide, stdout est
+ * VIDE (mesuré 2026-09-19). Rien d'utile ne se perd.
  * @param {string[]} args @returns {string}
  */
 export function gh(args) {
-  try {
-    return execFileSync('gh', args, { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
-  } catch (e) {
-    const dit = [e?.stderr, e?.stdout].filter(Boolean).map(String).join('\n').trim()
-    throw new Error(`gh ${args.join(' ')} a refusé : ${dit || e?.message || 'raison non dite'}`, { cause: e })
-  }
+  const vu = appelGhRunner({ cwd: process.cwd(), maxBuffer: 256 * 1024 * 1024 })(args)
+  if (!vu.ok) throw new Error(`gh ${args.join(' ')} a refusé : ${vu.raison || 'raison non dite'}`)
+  return vu.stdout
 }
 
-/** L'état des issues par lots de 50 numéros, via `gh api graphql`. */
-export function issuesDeGh(numeros, ghFn = gh) {
-  const issues = new Map()
-  const anomalies = []
-  for (const lot of tranches([...new Set(numeros.map(Number))].sort((a, b) => a - b), 50)) {
-    const brut = ghFn(['api', 'graphql', '-f', `query=${requeteIssues(lot)}`])
-    const vu = lireIssues(JSON.parse(brut), lot)
-    for (const [numero, issue] of vu.issues) issues.set(numero, issue)
-    anomalies.push(...vu.anomalies)
-  }
-  return { issues, anomalies }
+/**
+ * L'état des tickets demandés, lu par la LISTE REST du dépôt : `repos/<dépôt>/issues?state=all`,
+ * page par page (`pagesRest` — JAMAIS `--paginate`, refusé aux sessions dès la 2ᵉ page).
+ * UN SEUL CHEMIN, quel que soit le nombre de numéros : `--liste` en demande 84 sur cet arbre
+ * (mesuré 2026-09-19), soit 84 spawns de `gh` à ~0,43 s par lecture ticket-à-ticket, contre 19 pages
+ * à ~0,74 s pour la liste entière (1827 entrées, 14 s). Un embranchement « si peu de numéros alors un
+ * GET par numéro » ferait deux lectures à tenir d'accord, pour un gain qui n'existe qu'en dessous de
+ * ~30 numéros.
+ * Un refus REST est JETÉ, jamais rendu en carte partielle : un ticket manquant vaut « Ouvert » pour
+ * `statutDe`, et le board mentirait sans rien dire.
+ * L'ORDRE est DEMANDÉ (`sort=created&direction=desc`), jamais supposé : l'arrêt anticipé
+ * (`assezLu`) repose sur cet ordre demandé, pas sur une propriété des numéros — la route par défaut
+ * trie déjà par création, mais rien ne le garantit, et un numéro n'est pas une date.
+ * Et l'arrêt se fait sur la COMPLÉTUDE — tous les numéros demandés ont été VUS —, jamais sur un
+ * SEUIL (« la page est passée sous le plus petit numéro demandé ») : une issue TRANSFÉRÉE d'un autre
+ * dépôt porte une date de création ancienne et un numéro neuf, et le critère par seuil la manquerait.
+ * Un numéro demandé qui n'existe pas fait lire la liste ENTIÈRE, plafond compris : c'est le cas
+ * exhaustif d'avant, et il rend son anomalie « introuvable ».
+ * @param {number[]} numeros
+ * @param {(args: string[]) => {ok:boolean, stdout?:string, raison?:string}} [appel]
+ */
+export function issuesDeGh(numeros, appel = appelGhRunner({ cwd: process.cwd() })) {
+  const demandes = [...new Set(numeros.map(Number).filter(Number.isFinite))]
+  const vue = pagesRest(`repos/${DEPOT}/issues?state=all&sort=created&direction=desc`, appel, {
+    assezLu: (entrees) => {
+      const vus = new Set(entrees.map((e) => Number(e?.number)))
+      return demandes.every((n) => vus.has(n))
+    },
+  })
+  if (!vue.ok) throw new Error(`lecture des tickets de ${DEPOT} refusée : ${vue.raison}`)
+  return indexerIssues(vue.entrees, numeros)
 }
 
 /**
@@ -784,7 +809,13 @@ function main() {
     process.exit(1)
   }
 
-  const vu = mesurer({ base: BASE, sansFetch: veutSansFetch })
+  let vu
+  try {
+    vu = mesurer({ base: BASE, sansFetch: veutSansFetch })
+  } catch (e) {
+    process.stderr.write(`[board] ${e.message}\n`)
+    process.exit(1)
+  }
   if (!vu.ok) {
     process.stderr.write(`[board] ${vu.refus}\n`)
     process.exit(1)

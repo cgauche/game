@@ -4,10 +4,11 @@
 // Lancé par `npm run test:ops`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import {
   CHAMPS, COULEURS_STATUT, JOURS_DORMANT, STATUTS, avanceDite, comptesDAvance, commitsDuLog,
-  construireLignes, cleNormalisee, jourDe, lignesDeBranches, lireChamps, lireIssues, lireItems,
-  mesurer, mutationOptions, optionsAReecrire, optionsDuChamp, planDeSync, poserChamp, requeteIssues,
+  construireLignes, cleNormalisee, indexerIssues, issuesDeGh, jourDe, lignesDeBranches, lireChamps,
+  lireItems, mesurer, mutationOptions, optionsAReecrire, optionsDuChamp, planDeSync, poserChamp,
   statutDe, statutLePlusVivant, synchroniser, ticketsCites, ticketsDe, valeursDeLigne,
 } from './board.mjs'
 
@@ -287,20 +288,106 @@ test('mutationOptions nomme les 5 options et leur COULEUR, sur le fieldId donné
   assert.match(requete, /\.\.\. on ProjectV2SingleSelectField \{ id options \{ id name \} \}/)
 })
 
-test('requeteIssues rend un alias par ticket, sous le dépôt nommé', () => {
-  const requete = requeteIssues([1727, 1388])
-  assert.match(requete, /repository\(owner: "cgauche", name: "game"\)/)
-  assert.match(requete, /i1727: issue\(number: 1727\)/)
-  assert.match(requete, /i1388: issue\(number: 1388\)/)
-  assert.match(requete, /number state closedAt title/)
-})
-
-test('lireIssues : un alias `null` est une ANOMALIE nommée, pas un ticket silencieux', () => {
-  const reponse = { data: { repository: { i1727: { number: 1727, state: 'OPEN', closedAt: null, title: 'T' }, i9999: null } } }
-  const vu = lireIssues(reponse, [1727, 9999])
+test('indexerIssues : un numéro absent de la liste est une ANOMALIE nommée, pas un ticket silencieux', () => {
+  const vu = indexerIssues([{ number: 1727, state: 'open', closed_at: null, title: 'T' }], [1727, 9999])
   assert.equal(vu.issues.get(1727).title, 'T')
   assert.equal(vu.issues.has(9999), false)
   assert.deepEqual(vu.anomalies, ['ticket #9999 introuvable dans cgauche/game'])
+})
+
+test('indexerIssues rend la forme que lisent les consommateurs : state MAJUSCULE, closedAt', () => {
+  // REST rend `open`/`closed` et `closed_at` ; `statutDe` et `planDeSync` comparent à `CLOSED`.
+  const vu = indexerIssues([
+    { number: 1388, state: 'closed', closed_at: '2026-09-01T10:00:00Z', title: 'Fini' },
+    { number: 1727, state: 'open', closed_at: null, title: 'Cliquets' },
+  ], [1388, 1727])
+  assert.deepEqual(vu.issues.get(1388),
+    { number: 1388, state: 'CLOSED', closedAt: '2026-09-01T10:00:00Z', title: 'Fini' })
+  assert.deepEqual(vu.issues.get(1727), { number: 1727, state: 'OPEN', closedAt: null, title: 'Cliquets' })
+  assert.deepEqual(vu.anomalies, [])
+})
+
+test('indexerIssues ÉCARTE les pull requests : la route /issues les sert aussi', () => {
+  const vu = indexerIssues([
+    { number: 1813, state: 'open', closed_at: null, title: 'PR homonyme', pull_request: { url: '…' } },
+  ], [1813])
+  assert.equal(vu.issues.has(1813), false)
+  assert.deepEqual(vu.anomalies, ['ticket #1813 introuvable dans cgauche/game'])
+})
+
+const issueFeinte = (number, reste = {}) => ({ number, state: 'open', closed_at: null, title: 'x', ...reste })
+const servirPages = (pages) => {
+  const routes = []
+  const appel = (args) => {
+    routes.push(args.join(' '))
+    return { ok: true, stdout: JSON.stringify(pages[routes.length - 1] ?? []) }
+  }
+  return { routes, appel }
+}
+
+test('board ne SPAWNE pas : le seul site de spawn `gh` est celui de la couture (`appelGhRunner`)', () => {
+  // Deux CONTRATS sont légitimes (`gh` JETTE, la couture rend un verdict) ; deux SPAWNS ne le sont
+  // pas — la copie perdrait `stdio[0] = 'ignore'`, la parade au `gh` pendu sur le stdin d'un runner.
+  const source = readFileSync(new URL('./board.mjs', import.meta.url), 'utf8')
+  assert.equal(/child_process/.test(source), false, 'board.mjs spawne hors de `ticketsGh.mjs`')
+})
+
+test('issuesDeGh lit la LISTE page par page — un seul chemin, jamais un GET par numéro', () => {
+  const { routes, appel } = servirPages([
+    Array.from({ length: 100 }, (_, i) => issueFeinte(2000 + i)),
+    [{ number: 1727, state: 'closed', closed_at: '2026-09-10T00:00:00Z', title: 'Cliquets' }],
+  ])
+  const vu = issuesDeGh([1727, 2000, 4242], appel)
+  assert.deepEqual(routes, [
+    'api repos/cgauche/game/issues?state=all&sort=created&direction=desc&per_page=100&page=1',
+    'api repos/cgauche/game/issues?state=all&sort=created&direction=desc&per_page=100&page=2',
+  ])
+  assert.equal(vu.issues.get(1727).state, 'CLOSED')
+  assert.equal(vu.issues.get(2000).state, 'OPEN')
+  assert.deepEqual(vu.anomalies, ['ticket #4242 introuvable dans cgauche/game'])
+})
+
+test('issuesDeGh s’arrête dès que TOUS les numéros demandés sont vus — l’ORDRE est DEMANDÉ', () => {
+  const { routes, appel } = servirPages([
+    Array.from({ length: 100 }, (_, i) => issueFeinte(1900 - i)),
+    Array.from({ length: 100 }, (_, i) => issueFeinte(1800 - i)),
+    Array.from({ length: 100 }, (_, i) => issueFeinte(1700 - i)),
+  ])
+  const vu = issuesDeGh([1890, 1750], appel)
+  // Le dernier numéro demandé tombe page 2 : la 3ᵉ n'est JAMAIS demandée.
+  assert.equal(routes.length, 2)
+  for (const route of routes) assert.match(route, /sort=created&direction=desc/)
+  assert.deepEqual(vu.anomalies, [])
+  assert.equal(vu.issues.get(1750).state, 'OPEN')
+})
+
+test('issuesDeGh : l’arrêt est la COMPLÉTUDE, jamais un SEUIL — une issue TRANSFÉRÉE a un numéro NEUF', () => {
+  // #1999 vient d'un autre dépôt : date de création ANCIENNE (donc page 3 en tri `created desc`),
+  // numéro NEUF. Un arrêt « la page est passée sous le plus petit numéro demandé » la manquerait.
+  const { routes, appel } = servirPages([
+    Array.from({ length: 100 }, (_, i) => issueFeinte(1900 - i)),
+    Array.from({ length: 100 }, (_, i) => issueFeinte(1800 - i)),
+    [issueFeinte(1999), issueFeinte(1600)],
+  ])
+  const vu = issuesDeGh([1850, 1999], appel)
+  assert.equal(routes.length, 3, 'un arrêt par SEUIL se serait arrêté à la page 2')
+  assert.deepEqual(vu.anomalies, [])
+  assert.equal(vu.issues.get(1999).number, 1999)
+})
+
+test('issuesDeGh : un numéro INTROUVABLE fait lire la liste entière, et le PLAFOND refuse', () => {
+  let pages = 0
+  const appel = () => {
+    pages += 1
+    return { ok: true, stdout: JSON.stringify(Array.from({ length: 100 }, (_, i) => issueFeinte(pages * 1000 + i))) }
+  }
+  assert.throws(() => issuesDeGh([1], appel), /plus de 50 pages/)
+  assert.equal(pages, 50)
+})
+
+test('issuesDeGh JETTE sur un refus REST : jamais une carte partielle', () => {
+  const appel = () => ({ ok: false, raison: 'HTTP 403 quelque chose' })
+  assert.throws(() => issuesDeGh([1727], appel), /lecture des tickets de cgauche\/game refusée : HTTP 403/)
 })
 
 test('lireChamps et lireItems ne lisent que ce qui est contractuel, par NOM normalisé', () => {

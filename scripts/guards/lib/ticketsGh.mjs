@@ -1,9 +1,10 @@
 // LECTURE DES TICKETS GITHUB — la couture REST des scripts qui LISENT une issue depuis une session
 // Claude Code (#1813) : `fermer-depuis-main.mjs`, `fermetures-non-citees.mjs` et le train de
-// publication. Ce n'est PAS la seule route `gh` du dépôt : `board.mjs` (l.527,735),
-// `signaler-rouge.mjs` (signaler-rouge.mjs:92-108) et `deps-report.mjs` (deps-report.mjs:85,89)
-// parlent d'une issue en GraphQL ou par sous-commande CLI — ils tournent sur RUNNER, où GraphQL
-// n'est pas refusé, et le solde de #1804 les en ÉCARTE explicitement, mesurés CI-seulement.
+// publication, et la MESURE de `board.mjs` (`issuesDeGh`). Ce n'est PAS la seule ROUTE `gh` du
+// dépôt : `synchroniser` (`board.mjs`), `signaler-rouge.mjs` (signaler-rouge.mjs:92-108) et
+// `deps-report.mjs` (deps-report.mjs:85,89) parlent d'une issue ou d'un Project en GraphQL ou par
+// sous-commande CLI — ils tournent sur RUNNER, où GraphQL n'est pas refusé, et le solde de #1804 les
+// en ÉCARTE explicitement, mesurés CI-seulement.
 //
 // LE FAIT : `gh issue view|list|comment`, `gh label list` et `gh api graphql` sont servis par
 // GraphQL, refusé HTTP 403 aux sessions Claude Code (« GitHub GraphQL is not available from Claude
@@ -15,10 +16,12 @@
 // CONTRAT de la couture : `appel(args, { input }) => { ok, stdout, raison }`. Les fonctions de
 // LECTURE ne spawnent RIEN — elles reçoivent `appel`, et c'est ce qui rend leur banc hermétique.
 // `appelGhRunner` est le SEUL site de spawn du module, et l'enrobeur des scripts de runner qui
-// passent par cette couture. Deux enrobeurs vivent hors d'elle, avec le même contrat de sortie : le
-// train de publication garde le sien (`spawnSync` borné en temps, contrainte qu'il est seul à
-// porter), et `signaler-rouge.mjs` le sien (signaler-rouge.mjs:77-83), qui LÈVE au lieu de rendre un
-// verdict — un signalement muet ne sert à rien.
+// passent par cette couture — `board.mjs` y compris : son `gh` qui JETTE (`board.mjs`) est un
+// CONTRAT différent posé sur ce spawn-ci, pas un second spawn. Deux enrobeurs vivent hors d'elle,
+// avec le même contrat de sortie : le train de publication garde le sien (`spawnSync` borné en
+// temps, contrainte qu'il est seul à porter), et `signaler-rouge.mjs` le sien
+// (signaler-rouge.mjs:77-83), qui LÈVE au lieu de rendre un verdict — un signalement muet ne sert à
+// rien.
 //
 // Aucune FERMETURE ici. Le dépôt en compte DEUX sites, recensés et déclarés par
 // `sitesDeFermeture.mjs` : `fermer-depuis-main.mjs` pour les tickets SOLDÉS du job `fermetures`, et
@@ -100,11 +103,19 @@ export function corpsDeLaPage(stdout) {
  * dernière. Aucun compteur EXTERNE ne borne la boucle — un compteur lu dans un appel ANTÉRIEUR peut
  * être faux (une entrée arrivée entre les deux appels) et faire manquer la dernière page.
  * Un refus sur une page quelconque rend `ok:false`, jamais une liste partielle.
+ *
+ * ARRÊT ANTICIPÉ, `assezLu` : un appelant qui demande à l'API un ORDRE (`sort=…&direction=…`) et ne
+ * cherche qu'une PARTIE de la liste s'arrête dès que ce qu'il cherche est LÀ. Le prédicat lit les
+ * entrées DÉJÀ accumulées, APRÈS chaque page entière : il ne peut donc jamais tronquer une page, et
+ * son absence laisse la lecture exhaustive à l'octet. Ce n'est PAS un compteur externe — il ne dit
+ * pas combien de pages lire, il lit ce qui est arrivé. Un prédicat qui ne se satisfait jamais
+ * ramène au cas exhaustif, plafond compris.
  * @param {string} chemin route REST, query de tête comprise (`repos/o/r/issues?state=closed`)
  * @param {(args: string[]) => {ok:boolean, stdout?:string, raison?:string}} appel
+ * @param {{assezLu?: (entrees: object[]) => boolean}} [options] arrêt anticipé, évalué après chaque page
  * @returns {{ok:true, entrees:object[]} | {ok:false, raison:string}}
  */
-export function pagesRest(chemin, appel) {
+export function pagesRest(chemin, appel, { assezLu } = {}) {
   const jointeur = chemin.includes('?') ? '&' : '?'
   const entrees = []
   for (let page = 1; page <= PLAFOND_PAGES; page += 1) {
@@ -118,6 +129,7 @@ export function pagesRest(chemin, appel) {
     }
     entrees.push(...lues)
     if (lues.length < PAR_PAGE) return { ok: true, entrees }
+    if (assezLu?.(entrees)) return { ok: true, entrees }
   }
   return { ok: false, raison: `${chemin} : plus de ${PLAFOND_PAGES} pages de ${PAR_PAGE} entrées` }
 }

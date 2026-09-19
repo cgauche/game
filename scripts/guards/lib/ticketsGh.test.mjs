@@ -61,7 +61,8 @@ test('pagesRest : une page INCOMPLÈTE est la dernière — c’est la LISTE qui
 })
 
 test('pagesRest : AUCUN compteur externe ne borne la boucle — un compteur lu ailleurs peut mentir', () => {
-  // La signature ne prend qu'un chemin et un appel : rien par quoi passer un total.
+  // Chemin et appel sont les seuls paramètres REQUIS : rien par quoi passer un total. L'arrêt
+  // anticipé est un PRÉDICAT sur les entrées lues (`assezLu`), pas un nombre de pages.
   assert.equal(pagesRest.length, 2)
   const { appel } = ghFeint({
     'api truc?per_page=100&page=1': { ok: true, stdout: page(100) },
@@ -107,6 +108,38 @@ test('pagesRest : au-delà du PLAFOND la lecture est REFUSÉE, jamais tronquée'
   assert.equal(vue.entrees, undefined)
   assert.match(vue.raison, /plus de 50 pages/)
   assert.equal(vus.length, PLAFOND_PAGES)
+})
+
+test('pagesRest : `assezLu` arrête la lecture APRÈS une page entière, et jamais au milieu', () => {
+  const vus = []
+  const vue = pagesRest('truc', (args) => {
+    vus.push(args)
+    return { ok: true, stdout: JSON.stringify(Array.from({ length: PAR_PAGE }, (_, i) => ({ n: vus.length * 1000 + i }))) }
+  }, { assezLu: (entrees) => entrees.some((e) => e.n === 3000) })
+  assert.equal(vue.ok, true)
+  // La 3ᵉ page porte ce qu'on cherche : trois pages lues, ENTIÈRES, et la 4ᵉ jamais demandée.
+  assert.equal(vus.length, 3)
+  assert.equal(vue.entrees.length, 3 * PAR_PAGE)
+})
+
+test('pagesRest : un `assezLu` jamais satisfait ramène au cas EXHAUSTIF, plafond compris', () => {
+  const vus = []
+  const vue = pagesRest('truc', (args) => {
+    vus.push(args)
+    return { ok: true, stdout: page(PAR_PAGE) }
+  }, { assezLu: () => false })
+  assert.equal(vue.ok, false)
+  assert.match(vue.raison, /plus de 50 pages/)
+  assert.equal(vus.length, PLAFOND_PAGES)
+})
+
+test('pagesRest : sans `assezLu`, la lecture est celle d’avant — à l’entrée près', () => {
+  const { appel, vus } = ghFeint({
+    'api truc?per_page=100&page=1': { ok: true, stdout: page(100) },
+    'api truc?per_page=100&page=2': { ok: true, stdout: page(3) },
+  })
+  assert.equal(pagesRest('truc', appel).entrees.length, 103)
+  assert.equal(vus.length, 2)
 })
 
 test('pagesRest : un chemin qui porte DÉJÀ une query reçoit `&`, jamais un second `?`', () => {
