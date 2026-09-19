@@ -116,10 +116,23 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `Band` |  |  |  |  | U |  | U |  | U | U |  |  |  |  | U |  |
 | `HeroSheet` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `DesignGallery` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-| `Stack/Row/Grid/Split` |  |  |  |  | U |  | U | U | U | U | U |  | U |  | U | U |
+| `Stack/Row/Grid/Split` |  | U |  |  | U |  | U | U | U | U | U |  | U |  | U | U |
 | `Fleuron/RuleDivider/CornerFlourish/OrnateFrame` |  |  |  |  | U |  | U | U | U | U | U |  |  | U | U | U |
 | `NotchGauge` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `WindRose` |  |  |  |  | U |  | U |  |  |  |  |  |  |  |  |  |
+| `RollLine` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
+| `RollPanel` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
+| `DiceRoll` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
+| `ForcedRollPicker` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
+| `RecapLine` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
+| `MultiRollList` |  |  |  |  | U |  | U |  | U | U |  |  |  |  |  |  |
+| `RevealBody` |  |  |  |  | U |  | U |  | U | U |  |  |  |  |  |  |
+| `TeamSegments` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
+| `CombatBanner` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `LogDrawer` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `InspectPanel` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `EquipmentPanel` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `GameStage3D` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U |  |
 
 ## Primitives jamais adoptées par un système déclaré
 
@@ -138,6 +151,10 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 - `CreatorStepFrame` (src/ui/creator/CreatorStepFrame.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `HeroSheet` (src/ui/HeroSheet.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `DesignGallery` (src/ui/gallery/DesignGallery.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `CombatBanner` (src/ui/CombatBanner.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `LogDrawer` (src/ui/LogDrawer.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `InspectPanel` (src/ui/InspectPanel.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `EquipmentPanel` (src/ui/EquipmentPanel.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 
 ## Modules `src/state`/`src/engine` non rattachés à un système déclaré
 
@@ -164,4 +181,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: 1e4642550a3489a1366bfece9277fc30b8069aba (1819 fichiers, 2 dossiers) corps: 89df32e6c3e8dcc54431e4487afed6f6439a7f6d -->
+<!-- sources-empreinte: 933704e60fb8b32bd1da3aa9cf7f1a992f4307d6 (1819 fichiers, 2 dossiers) corps: d20b43992769aca67ce39a89230395cc797618b3 -->

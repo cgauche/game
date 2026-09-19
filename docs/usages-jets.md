@@ -164,7 +164,7 @@ Aucune n'est déclarée par un nom de fichier : chacune est la conjonction de zo
 | `src/ui/BargainModal.tsx` | ✓ | · | · | · | · | · | · | — |
 | `src/ui/BattementModal.tsx` | · | · | · | · | · | · | · | `Icon`, `OptionChooser`, `VsHeader` |
 | `src/ui/CascadeModal.tsx` | · | · | ✓ | ✓ | · | ✓ | · | `CriticalBody`, `Icon`, `ModalSubject`, `NumberField`, `OptionChooser`, `RecapLineList`, `RevealBody`, `SequencePanel`, `TableRollLine` |
-| `src/ui/CastModal.tsx` | · | · | · | · | ✓ | ✓ | ✓ | `CharFrame`, `GatedAction`, `Icon`, `OptionChooser`, `RollRow`, `VsHeader` |
+| `src/ui/CastModal.tsx` | · | · | · | · | ✓ | ✓ | ✓ | `CharFrame`, `Icon`, `OptionChooser`, `QtyStepper`, `RollRow`, `Row`, `Stack`, `VsHeader` |
 | `src/ui/CorruptionModal.tsx` | · | · | · | · | · | · | · | `Icon`, `OptionChooser` |
 | `src/ui/CrewTestModal.tsx` | · | ✓ | · | · | · | · | · | `Icon` |
 | `src/ui/DisengageModal.tsx` | ✓ | · | · | · | · | · | · | — |
@@ -188,7 +188,7 @@ Aucune n'est déclarée par un nom de fichier : chacune est la conjonction de zo
 | `src/ui/StateRecoveryModal.tsx` | · | · | · | · | · | · | · | — |
 | `src/ui/SteamSaveModal.tsx` | · | · | · | · | · | · | · | — |
 | `src/ui/WardModal.tsx` | · | · | · | · | · | · | · | `Icon` |
-| `src/ui/jetProps/useAttackJetProps.tsx` | ✓ | · | · | · | · | ✓ | · | `CodexRef`, `CritLocationPicker`, `DeterminationButton`, `Icon`, `VsHeader` |
+| `src/ui/jetProps/useAttackJetProps.tsx` | ✓ | · | · | · | · | ✓ | · | `CodexRef`, `CritLocationPicker`, `DeterminationButton`, `Icon`, `Row`, `VsHeader` |
 | `src/ui/jetProps/useDefenseJetProps.tsx` | ✓ | · | · | · | · | · | · | `CodexRef`, `DeterminationButton`, `Icon`, `OptionChooser`, `VsHeader` |
 | `src/ui/jetProps/useExtendedTestJetProps.tsx` | · | · | · | ✓ | · | · | · | `Icon` |
 | `src/ui/jetProps/useFumbleJetProps.tsx` | · | · | ✓ | · | · | · | · | `Icon`, `TableRollLine` |
@@ -242,4 +242,4 @@ est un angle mort, et les voici :
 - Les **ids de zone** (`Zn`) affichés sont ceux que le JSDoc des props DÉCLARE. Une zone du contrat non
   encore taguée à la primitive n'a pas d'id ici — ce document RELÈVE les ids, il ne les attribue pas.
 
-<!-- sources-empreinte: 6e0840e72ed817759b21b63435847af882f0749e (1965 fichiers, 134 dossiers) corps: 11e7590641b0612969a670fbd2edaaa3425111e7 -->
+<!-- sources-empreinte: d48f92e01450299f987aa7d94cc96def965784db (1965 fichiers, 134 dossiers) corps: e9573524ccbea81a2359f9a451a309a7fe6c8cb6 -->

@@ -311,7 +311,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Inconscient, Traumatisme (`traumatisme.md`), Maladies (`maladies.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.103-109) → `combat-fatigue`, `unstable`, `doc`, `etatNonCumulable`, `jsonOpSchema`, `mouvementIntact`, `stopBleedOutcome`, `empileSurPionExistant`, `useAttackJetProps`, `opRow`, +45 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/data/schemas/defs/miscast.ts`, +23 fichiers
+- `LDB 16` (l.103-109) → `combat-fatigue`, `unstable`, `doc`, `etatNonCumulable`, `jsonOpSchema`, `mouvementIntact`, `stopBleedOutcome`, `empileSurPionExistant`, `opRow`, `useAttackJetProps`, +45 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/data/schemas/defs/miscast.ts`, +23 fichiers
 
 ---
 
@@ -335,7 +335,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Hémorragique, Empoisonné, À Terre, Exténué
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.111-119) → `combat-fatigue`, `unstable`, `doc`, `etatNonCumulable`, `STABLE_COND_KINDS`, `jsonOpSchema`, `mouvementIntact`, `stopBleedOutcome`, `empileSurPionExistant`, `useAttackJetProps`, +50 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/data/schemas/defs/miscast.ts`, +22 fichiers
+- `LDB 16` (l.111-119) → `combat-fatigue`, `unstable`, `doc`, `etatNonCumulable`, `STABLE_COND_KINDS`, `jsonOpSchema`, `mouvementIntact`, `stopBleedOutcome`, `empileSurPionExistant`, `opRow`, +50 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/data/schemas/defs/miscast.ts`, +22 fichiers
 
 ---
 
@@ -359,7 +359,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Exténué, Magie (`magie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.123-129) → `doc`, `etatNonCumulable`, `STABLE_COND_KINDS`, `jsonOpSchema`, `mouvementIntact`, `empileSurPionExistant`, `useAttackJetProps`, `opRow`, `toucheSauvee`, `ResolveWindow`, +39 — `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/data/schemas/defs/miscast.ts`, `src/engine/combat.ts`, +17 fichiers
+- `LDB 16` (l.123-129) → `doc`, `etatNonCumulable`, `STABLE_COND_KINDS`, `jsonOpSchema`, `mouvementIntact`, `empileSurPionExistant`, `opRow`, `useAttackJetProps`, `toucheSauvee`, `ResolveWindow`, +39 — `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/data/schemas/defs/miscast.ts`, `src/engine/combat.ts`, +17 fichiers
 
 ---
 
@@ -512,7 +512,7 @@ Le LDB 16 exprime toutes les durées en Rounds. Plusieurs sources introduisent d
 - `LDB 40 l.85` — Colère des dieux 131-135 : Hémorragique quotidien jusqu'à Pénitence
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.117) → `doc`, `etatNonCumulable`, `jsonOpSchema`, `mouvementIntact`, `stopBleedOutcome`, `empileSurPionExistant`, `useAttackJetProps`, `opRow`, `toucheSauvee`, `ResolveWindow`, +34 — `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/data/schemas/defs/miscast.ts`, `src/engine/combat.ts`, +17 fichiers
+- `LDB 16` (l.117) → `doc`, `etatNonCumulable`, `jsonOpSchema`, `mouvementIntact`, `stopBleedOutcome`, `empileSurPionExistant`, `opRow`, `useAttackJetProps`, `toucheSauvee`, `ResolveWindow`, +34 — `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/data/schemas/defs/miscast.ts`, `src/engine/combat.ts`, +17 fichiers
 - `LDB 40` (l.56, l.59, l.63, l.64, l.68, l.71, l.72, l.73, l.75, l.77, l.79, l.84, l.85) → `jsonOpSchema`, `NestedTest`, `SinPoints`, `applyTriggeredTestBranch`, `peche`, `wrath-table`, `liveTableDecl`, `GameOp`, `ALL_MAGIC`, `sinPointsSchema`, +39 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/data/raw.manifest.json` ⚠hors-app, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/miscast.ts`, +10 fichiers
 - `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `miscast-mineure`, `mineure-signe-de-sorciere`, `followsCharacterRules`, `mineure-lait-caille`, `overcastAxes`, `mineure-mildiou`, `MiscastResult`, `mineure-cerumen`, `combat-spell-plus`, `mineure-lueur-occulte`, +103 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/miscast.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +18 fichiers
 

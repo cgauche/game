@@ -2003,4 +2003,4 @@
   - ⬜ l.2728-2735 « Wallcrawler » — candidat trou de règle, 0 réf
 - **CRB 16** (Appendices) :
   - ⬜ l.202-279 « Prone (page 186) » — candidat trou de règle, 0 réf
-<!-- sources-empreinte: 5309e18482ba3e36033b8285bfdcb73684145ce1 (368 fichiers, 18 dossiers) corps: ab0da3c8e467b9807b3a5dc8e139a6891c4e0919 -->
+<!-- sources-empreinte: 6782b2f5491be3fbac7e8ca327e548feaedb64c1 (368 fichiers, 18 dossiers) corps: ab0da3c8e467b9807b3a5dc8e139a6891c4e0919 -->
