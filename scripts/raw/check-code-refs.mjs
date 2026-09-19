@@ -4,7 +4,7 @@
 // de `src/**` (.ts/.tsx/.json, hors node_modules, hors `src/gameIso/rig/parts/tenues/defs/` — même
 // périmètre que le générateur `build-implemente`), résout le fichier-chapitre (`chapterFile`, _lib.mjs)
 // et signale la réf dont la borne haute dépasse le nombre de lignes du chapitre, OU dont le chapitre
-// est introuvable. Regex de réfs RÉUTILISÉES (`ldbRe`/`otherRe`/`span`/`bookOf`) — jamais réécrites.
+// est introuvable. Regex de réfs RÉUTILISÉE (`refRe`/`span`/`bookOf`) — jamais réécrite.
 // Cliquet NOMINATIF (`scripts/raw/dead-code-refs-stock.json`, écart calculé par `ecartDuVolet` de
 // `scripts/guards/lib/stock.mjs`, forme de `reconciliation-stock.json`) : une ENTRÉE par site, et les deux
 // sens échouent — un site NEUF est une régression à corriger ou à déclarer, une entrée dont le site
@@ -25,7 +25,7 @@ import { readFileSync } from 'node:fs'
 import { listerArbre } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ldbRe, otherRe, span, chapterFile, bookOf, readText, PIVOT_ABBR } from './_lib.mjs'
+import { refRe, span, chapterFile, bookOf, readText } from './_lib.mjs'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
 
@@ -34,18 +34,13 @@ export const EXCLUDE_SRC_PREFIX = 'src/gameIso/rig/parts/tenues/defs/' // art de
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'dead-code-refs-stock.json')
 export const EMPTY_LINE_STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'empty-line-code-refs-stock.json')
 
-// Réfs `LDB NN l.X…` et « autres livres » (AA/ZI/EDO…) d'une ligne — `{ abbr, nn, hi }` (borne haute
-// de la plage dépliée par `span`). Réfs de livre entier (sans numéro de chapitre) = hors sujet (aucun
-// fichier à borner). Miroir de `refsInLine` de check-refs.mjs, même vocabulaire de _lib.mjs.
+// Réfs `<ABRÉV> NN l.X…` d'une ligne, tous livres — `{ abbr, nn, lo, hi }` (plage dépliée par
+// `span`). Réfs de livre entier (sans numéro de chapitre) = hors sujet (aucun fichier à borner).
+// Miroir de `refsInLine` de check-refs.mjs, même graphie unique `refRe` (_lib.mjs).
 function* refsInLine(ln) {
-  const ldb = ldbRe()
+  const re = refRe()
   let m
-  while ((m = ldb.exec(ln))) {
-    const [lo, hi] = span(m[2], m[3])
-    yield { abbr: PIVOT_ABBR, nn: m[1], lo, hi }
-  }
-  const other = otherRe()
-  while ((m = other.exec(ln))) {
+  while ((m = re.exec(ln))) {
     const nn = m[2]
     if (nn == null) continue
     const abbr = bookOf(m[1].replace(/\s+/g, ' ').trim())

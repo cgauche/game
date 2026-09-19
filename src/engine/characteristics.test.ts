@@ -15,7 +15,7 @@ function mk(activeEffects: { char: CharKey; bonus: number; label?: string }[] = 
   } as Combatant;
 }
 
-describe('effectiveChar — non-cumul des modificateurs (LDB l.168 : meilleur bonus + pire pénalité, sommés)', () => {
+describe('effectiveChar — non-cumul des modificateurs (LDB 16 l.13 : meilleur bonus + pire pénalité, sommés)', () => {
   it('aucun effet actif → valeur de base', () => {
     expect(effectiveChar(mk(), 'force')).toBe(40);
   });

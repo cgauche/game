@@ -93,7 +93,7 @@ export const amputationSchema = z.strictObject({
   // Nombre d'UNITÉS que CETTE ligne fait perdre à ses séquelles cumulatives (« Perdez 1d10 dents »,
   // criticals.json:bouche-explosee/machoire-mutilee) — `Formula`, défaut 1. Cf. `Amputation.unites`.
   unites: formulaSchema.optional(),
-  // Test différé à la fin de la rencontre (« Coupure à l'orteil », LDB l.171 / AA 07 l.171) — marqueur `pendingAmputation`.
+  // Test différé à la fin de la rencontre (« Coupure à l'orteil », LDB 18 l.171 / AA 07 l.171) — marqueur `pendingAmputation`.
   timing: z.literal('postEncounter').optional(),
   // Séquelle CONDITIONNELLE : `difficulty` = Test gate SÉPARÉ (réussite → pas d'amputation) ; absent = le
   // Test de Résistance `difficulty` détermine lui-même la perte. `perDR` = orteils 1 + DR en dessous de 0.

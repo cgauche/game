@@ -14,15 +14,15 @@
 //         node scripts/raw/audit-refs-chapitre.mjs EDOC 8 --largeur 200
 //         node scripts/raw/audit-refs-chapitre.mjs "ADE II" 4
 //
-// Vocabulaire RÉUTILISÉ de `_lib.mjs` (source unique) : `ldbRe`/`otherRe`/`refNums`/`isRangeSuffix`/
-// `chapterFile`/`bookOf`/`readText`/`PIVOT_ABBR` + les ensembles d'exclusion de fiches. Périmètre de
+// Vocabulaire RÉUTILISÉ de `_lib.mjs` (source unique) : `refRe`/`refNums`/`isRangeSuffix`/
+// `chapterFile`/`bookOf`/`readText` + les ensembles d'exclusion de fiches. Périmètre de
 // balayage = `src/` + `scripts/` + `docs/`, hors artefacts DATÉS (`docs/plans`, `docs/superpowers`,
 // fiches `epreuve-*`) et hors rapports RÉ-GÉNÉRÉS (`RAWDOC_META_GENERATED`).
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parUnitesDeCode, listerArbre } from '../guards/lib/lister.mjs'
 import {
-  ldbRe, otherRe, refNums, isRangeSuffix, chapterFile, bookOf, readText, PIVOT_ABBR,
+  refRe, refNums, isRangeSuffix, chapterFile, bookOf, readText,
   RAWDOC_META_GENERATED, isRawEpreuve,
 } from './_lib.mjs'
 
@@ -51,16 +51,7 @@ function anchorsOf(line, suffix) {
 /** Réfs d'une ligne visant `(abbr, nn)` — `{ ref, anchors }`. */
 export function* refsInLine(ln, abbr, nn) {
   const wanted = Number(nn)
-  if (abbr === PIVOT_ABBR) {
-    const re = ldbRe()
-    let m
-    while ((m = re.exec(ln))) {
-      if (Number(m[1]) !== wanted) continue
-      yield { ref: `${PIVOT_ABBR} ${wanted} l.${m[2]}${m[3]}`, anchors: anchorsOf(m[2], m[3]) }
-    }
-    return
-  }
-  const re = otherRe()
+  const re = refRe()
   let m
   while ((m = re.exec(ln))) {
     if (m[2] == null || Number(m[2]) !== wanted) continue

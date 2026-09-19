@@ -1,12 +1,12 @@
 // Réconciliation déterministe CODE ↔ ATLAS RAW.
-// Sens A (code → Atlas) : toute réf de règle citée dans src/ (`LDB NN l.X`, et pour les 14 autres
-//   livres `<ABRÉV> NN l.X`) dont le chapitre n'est PAS couvert par l'Atlas (trou dur), ou dont la
-//   ligne n'est pinée par aucune citation Atlas du même chapitre à ±TOL (trou fin) → l'app applique
-//   une règle absente de l'Atlas. Étendu aux 14 livres hors LDB (#434 défaut 9) : `codeOther`/
+// Sens A (code → Atlas) : toute réf de règle citée dans src/ (`<ABRÉV> NN l.X`) dont le chapitre
+//   n'est PAS couvert par l'Atlas (trou dur), ou dont la ligne n'est pinée par aucune citation
+//   Atlas du même chapitre à ±TOL (trou fin) → l'app applique
+//   une règle absente de l'Atlas. Étendu aux livres hors pivot (#434 défaut 9) : `codeOther`/
 //   `atlasOther` indexent PAR CHAPITRE (miroir de `codeLDB`/`atlasLDB`), plus une loose
-//   scan `atlasOtherChLoose` (miroir de `atlasCh`) faute d'export d'une alternation tolérante par
-//   `_lib.mjs` (otherRe() couvre les graphies tronquées — Midd\w*, ADE ?[12]… — non ré-exposées ;
-//   `atlasOtherChLoose` ne teste que l'abréviation CANONIQUE de BOOKS, pas ces graphies).
+//   scan `atlasOtherChLoose` (miroir de `atlasCh`), borné à l'abréviation CANONIQUE de BOOKS.
+//   La GRAPHIE d'une réf est UNE (`refRe`, _lib.mjs) : c'est le RÉGIME, pas la regex, qui distingue
+//   ici le livre pivot des autres.
 // Sens B (Atlas → code) : règles citées par l'Atlas marquées `(non implémenté)`, et chapitres
 //   cités par l'Atlas mais jamais référencés dans le code → l'Atlas décrit une règle hors-code.
 //   (Sens B reste borné au LDB — hors périmètre #434 défaut 9.)
@@ -23,7 +23,7 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parUnitesDeCode, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { ecartsDeStock } from '../guards/lib/stock.mjs'
-import { ldbRe, otherRe, ldbFolioRe, otherFolioRe, folioSpan, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED, readText, PIVOT_ABBR } from './_lib.mjs'
+import { refRe, refFolioRe, folioSpan, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED, readText, PIVOT_ABBR } from './_lib.mjs'
 import { lireStockJson } from './stockNominatif.mjs'
 import { loadAbbrMap, folioCitationsFromJson } from './build-implemente.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
@@ -46,6 +46,8 @@ const OTHER_LOOSE_RE = new Map(
 )
 // Mention LÂCHE du livre PIVOT (« LDB 12 » sans réf de ligne) — sigle lu au registre des livres.
 const pivotLooseRe = () => new RegExp(`\\b${esc(PIVOT_ABBR)} (\\d+)\\b`, 'g')
+// Cardinal des livres hors pivot — DÉRIVÉ de `BOOKS`, jamais écrit : les rapports le citent.
+const HORS_PIVOT = BOOKS.length - 1
 
 // Clé de chapitre canonique du Sens A (#434 défaut 9 suite, #1156) : le code écrit le numéro
 // zéro-préfixé (`AA 02`, `ADE II ch.03`, `LDB 08`), l'Atlas écrit les titres sans préfixe
@@ -65,15 +67,13 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
     .map((f) => join(rawDir, f))
 
   // --- regex de réfs (source unique : _lib.mjs ; instances stateful /g locales) ---
-  const LDB_RE = ldbRe()
-  const OTHER_RE = otherRe()
+  const REF_RE = refRe()
   // Miroir FOLIO (#606) : la graphie `ABBR NN p.folio` (gelée par #585) est aussi une citation de
   // chapitre valide côté ATLAS (jamais côté CODE — le code cite des lignes, la donnée cite déjà son
   // folio via `source:{book,page}`, traité par le crédit `codeFolioLdbCh` plus bas) ; convertie en
   // plage de LIGNES via `folioSpan`, fusionnée aux spans `atlasLDB`/`atlasOther` — la couverture ne
   // doit voir qu'UNE mesure, jamais un chemin parallèle qui recompte différemment.
-  const LDB_FOLIO_RE = ldbFolioRe()
-  const OTHER_FOLIO_RE = otherFolioRe()
+  const REF_FOLIO_RE = refFolioRe()
   let folioIgnored = 0 // folios cités en Atlas sans ancre `data-folio` résoluble dans le bon chapitre
 
   // === collecte CODE ===
@@ -87,20 +87,22 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
     const lines = text.split('\n')
     lines.forEach((ln, i) => {
       let m
-      LDB_RE.lastIndex = 0
-      while ((m = LDB_RE.exec(ln))) {
-        const ch = chKey(m[1]), start = Number(m[2])
-        if (!codeLDB.has(ch)) codeLDB.set(ch, [])
-        codeLDB.get(ch).push({ line: start, file: f.replace(/\\/g, '/'), row: i + 1, text: ln.trim().slice(0, 160) })
-      }
-      OTHER_RE.lastIndex = 0
-      while ((m = OTHER_RE.exec(ln))) {
+      REF_RE.lastIndex = 0
+      while ((m = REF_RE.exec(ln))) {
         const book = bookOf(m[1].replace(/\s+/g, ' ').trim())
         if (!book) continue
         const rec = { line: Number(m[3]), file: f.replace(/\\/g, '/'), row: i + 1, text: ln.trim().slice(0, 160) }
+        // RÉGIME (jamais la graphie) : le pivot s'indexe par chapitre seul — une de ses réfs sans
+        // chapitre n'a pas d'unité à réconcilier, la mesure `codeOtherNoCh` étant celle des AUTRES
+        // livres (Sens A « autres livres »).
         if (m[2] == null) {
+          if (book === PIVOT_ABBR) continue
           if (!codeOtherNoCh.has(book)) codeOtherNoCh.set(book, [])
           codeOtherNoCh.get(book).push(rec)
+        } else if (book === PIVOT_ABBR) {
+          const ch = chKey(m[2])
+          if (!codeLDB.has(ch)) codeLDB.set(ch, [])
+          codeLDB.get(ch).push(rec)
         } else {
           if (!codeOther.has(book)) codeOther.set(book, new Map())
           const chMap = codeOther.get(book)
@@ -144,27 +146,27 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
     for (const mm of text.matchAll(pivotLooseRe())) atlasCh.add(chKey(mm[1]))
     if (/catalogue-/.test(d)) for (const mm of text.matchAll(pivotLooseRe())) catalogCh.add(chKey(mm[1]))
     let m
-    LDB_RE.lastIndex = 0
-    while ((m = LDB_RE.exec(text))) {
-      const ch = chKey(m[1])
+    // Le pivot pine ses spans dans `atlasLDB` et désigne le doc PROPRIÉTAIRE du chapitre ; les autres
+    // livres vont dans `atlasOther` — RÉGIME, sur la graphie UNIQUE `refRe`.
+    const pineAtlasLDB = (ch, sp) => {
       if (!atlasLDB.has(ch)) atlasLDB.set(ch, [])
-      atlasLDB.get(ch).push(span(m[2], m[3]))
+      atlasLDB.get(ch).push(sp)
       const key = ch + '|' + d
       ownerCount.set(key, (ownerCount.get(key) || 0) + 1)
       if (!docOwnerOfCh.has(ch) || ownerCount.get(key) > ownerCount.get(ch + '|' + docOwnerOfCh.get(ch)))
         docOwnerOfCh.set(ch, d)
     }
-    LDB_FOLIO_RE.lastIndex = 0
-    while ((m = LDB_FOLIO_RE.exec(text))) {
-      const ch = chKey(m[1])
-      const resolved = folioSpan(PIVOT_ABBR, ch, m[2], m[3])
-      if (!resolved) { folioIgnored++; continue }
-      if (!atlasLDB.has(ch)) atlasLDB.set(ch, [])
-      atlasLDB.get(ch).push(resolved)
-      const key = ch + '|' + d
-      ownerCount.set(key, (ownerCount.get(key) || 0) + 1)
-      if (!docOwnerOfCh.has(ch) || ownerCount.get(key) > ownerCount.get(ch + '|' + docOwnerOfCh.get(ch)))
-        docOwnerOfCh.set(ch, d)
+    REF_RE.lastIndex = 0
+    while ((m = REF_RE.exec(text))) {
+      if (m[2] == null) continue // réf Atlas sans chapitre : pas d'unité chapitre à indexer
+      const book = bookOf(m[1].replace(/\s+/g, ' ').trim())
+      if (!book) continue
+      const ch = chKey(m[2])
+      if (book === PIVOT_ABBR) { pineAtlasLDB(ch, span(m[3], m[4])); continue }
+      if (!atlasOther.has(book)) atlasOther.set(book, new Map())
+      const chMap = atlasOther.get(book)
+      if (!chMap.has(ch)) chMap.set(ch, [])
+      chMap.get(ch).push(span(m[3], m[4]))
     }
     for (const [abbr, re] of OTHER_LOOSE_RE) {
       re.lastIndex = 0
@@ -178,25 +180,15 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
         }
       }
     }
-    OTHER_RE.lastIndex = 0
-    while ((m = OTHER_RE.exec(text))) {
-      if (m[2] == null) continue // réf Atlas sans chapitre : pas d'unité chapitre à indexer
-      const book = bookOf(m[1].replace(/\s+/g, ' ').trim())
-      if (!book) continue
-      if (!atlasOther.has(book)) atlasOther.set(book, new Map())
-      const chMap = atlasOther.get(book)
-      const ch = chKey(m[2])
-      if (!chMap.has(ch)) chMap.set(ch, [])
-      chMap.get(ch).push(span(m[3], m[4]))
-    }
-    OTHER_FOLIO_RE.lastIndex = 0
-    while ((m = OTHER_FOLIO_RE.exec(text))) {
+    REF_FOLIO_RE.lastIndex = 0
+    while ((m = REF_FOLIO_RE.exec(text))) {
       if (m[2] == null) continue
       const book = bookOf(m[1].replace(/\s+/g, ' ').trim())
       if (!book) continue
       const ch = chKey(m[2])
       const resolved = folioSpan(book, ch, m[3], m[4])
       if (!resolved) { folioIgnored++; continue }
+      if (book === PIVOT_ABBR) { pineAtlasLDB(ch, resolved); continue }
       if (!atlasOther.has(book)) atlasOther.set(book, new Map())
       const chMap = atlasOther.get(book)
       if (!chMap.has(ch)) chMap.set(ch, [])
@@ -226,7 +218,7 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
     }
   }
 
-  // === SENS A (14 autres livres) : code → Atlas — miroir du bloc LDB ci-dessus ===
+  // === SENS A (livres hors pivot) : code → Atlas — miroir du bloc pivot ci-dessus ===
   const hardAOther = []
   const softAOther = []
   for (const [book, chMap] of [...codeOther].sort((a, b) => parUnitesDeCode(a[0], b[0]))) {
@@ -294,9 +286,9 @@ export function renderReport(data) {
 
   const L = []
   L.push('# Atlas RAW — Réconciliation CODE ↔ ATLAS', '')
-  L.push('> Déterministe (`node scripts/raw/reconcile.mjs`). **Sens A** = règles que l\'app applique', '> (réfs `LDB NN l.X` dans `src/`, et pour les 14 autres livres `<ABRÉV> NN l.X`) absentes de', '> l\'Atlas. **Sens B** = règles que l\'Atlas décrit hors du code (borné au LDB).', `> Tolérance ligne = ±${TOL}.`, '')
+  L.push('> Déterministe (`node scripts/raw/reconcile.mjs`). **Sens A** = règles que l\'app applique', '> (réfs `<ABRÉV> NN l.X` dans `src/`, tous livres) absentes de', `> l'Atlas. **Sens B** = règles que l'Atlas décrit hors du code (borné à ${PIVOT_ABBR}).`, `> Tolérance ligne = ±${TOL}.`, '')
   L.push(`**Sens A — code → Atlas (LDB)** : ${hardA.length} chapitre(s) cités par le code & absents de l'Atlas · ${softA.length} chapitre(s) couverts avec des lignes non pinées. Réfs folio (\`ABBR NN p.X\`, #606) côté Atlas : ${folioIgnored} ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).`)
-  L.push(`**Sens A — code → Atlas (14 autres livres)** : ${hardAOther.length} chapitre(s)-livre cités par le code & absents de l'Atlas · ${softAOther.length} chapitre(s)-livre couverts avec des lignes non pinées · ${noChapterCount} réf(s) sans chapitre (non réconciliables par cette mesure).`)
+  L.push(`**Sens A — code → Atlas (${HORS_PIVOT} livres hors ${PIVOT_ABBR})** : ${hardAOther.length} chapitre(s)-livre cités par le code & absents de l'Atlas · ${softAOther.length} chapitre(s)-livre couverts avec des lignes non pinées · ${noChapterCount} réf(s) sans chapitre (non réconciliables par cette mesure).`)
   L.push(`**Sens B — Atlas → code (LDB)** : ${nonImpl.length} marqueur(s) « (non implémenté) » · ${atlasOnly.length} chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : ${atlasOnlyBefore.length} · ${atlasOnlyFolioCredited.length} crédités par une source folio de \`src/data\`).`, '')
 
   L.push('## A1 — Chapitres appelés par le CODE (LDB), ABSENTS de l\'Atlas (trous durs)', '')
@@ -317,7 +309,7 @@ export function renderReport(data) {
     L.push('')
   }
 
-  L.push('## A-AUTRES 0 — Résumé Sens A par livre (14 livres hors LDB)', '')
+  L.push(`## A-AUTRES 0 — Résumé Sens A par livre (${HORS_PIVOT} livres hors ${PIVOT_ABBR})`, '')
   if (!bookStats.size) L.push('_Aucune réf code vers un autre livre._', '')
   else {
     L.push('| Livre | Trous durs (chapitres) | Chapitres à lignes non pinées | Réfs sans chapitre |', '|---|---|---|---|')

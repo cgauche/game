@@ -1043,7 +1043,7 @@ export interface Trauma {
   amputateAfterDays?: number;
   /** id STABLE de la fiche de séquelle (`traumas.json`) posée si `amputateAfterDays` expire sans Chirurgie. */
   amputateSequel?: string;
-  /** « Épaule luxée » (AA 07 l.125 / LDB l.120) / « Genou démis » (AA 07 l.179 / LDB l.179) : membre DÉSACTIVÉ
+  /** « Épaule luxée » (AA 07 l.125 / LDB 18 l.120) / « Genou démis » (AA 07 l.179 / LDB 18 l.179) : membre DÉSACTIVÉ
    *  (les `ops` passives — bras `maxWeaponHands:1` / jambe `moveScale` — tiennent tant que la séquelle vit).
    *  Après Aide Médicale (`awaitingMedicalAid` levé), un Test ÉTENDU de Guérison Accessible (+20) de
    *  `restoreDR` DR (acte « Guérison » de l'Infirmerie, `medicFlow`) rend l'usage : la séquelle est retirée et

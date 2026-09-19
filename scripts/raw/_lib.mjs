@@ -1,10 +1,9 @@
 // Helpers partagés des gardes Atlas RAW (coverage / reconcile / reanchor).
-// Source UNIQUE de : map des livres (BOOKS), résolveur de fichier-chapitre, regex de réfs LDB
-// (ldbRe, consommée par reconcile/check-refs) et « autres livres » (otherRe, dérivée de BOOKS,
-// consommée par reconcile/check-refs), dépliage de plage, échappement regex, et normalisation de
-// texte pour le match exact des citations. reanchor.mjs dérive sa PROPRE alternation de BOOKS
-// (réfs SANS abréviation LDB séparée : LDB s'y traite comme les autres livres) — pas encore
-// unifiée avec otherRe/ldbRe (#434 défaut 10, périmètre non couvert par ce fichier).
+// Source UNIQUE de : map des livres (BOOKS), résolveur de fichier-chapitre, graphie de réf — UNE
+// pour TOUS les livres de BOOKS, par ligne (refRe) et par folio (refFolioRe), sur l'alternation
+// dérivée `allAbbrAlternation` —, dépliage de plage, échappement regex, et normalisation de texte
+// pour le match exact des citations. reanchor.mjs dérive sa PROPRE alternation de BOOKS (#434
+// défaut 10, périmètre non couvert par ce fichier).
 import { readFileSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { join } from 'node:path'
@@ -44,14 +43,14 @@ export const BOOKS = BOOK_ORDER.map((id) => {
 
 const BOOK_DIR = new Map(BOOKS)
 
-// Sigle du livre PIVOT de l'Atlas (le LIVRE DE BASE : ses réfs sont indexées chapitre PAR chapitre,
-// les 15 autres livres passent par la voie `other*`). Lu au registre `books.json` — jamais réécrit à
-// la main dans les regex de réfs, dans les filtres « hors pivot », ni dans les `{book}`/`{abbr}` que
-// les gardes de la MÊME chaîne produisent (`build-implemente`, `check-refs`, `check-code-refs`) et
-// que `reconcile` consomme : producteur et consommateur tiennent le sigle du même endroit.
-// L'ABSENCE du livre pivot est déjà fatale plus haut (`BOOKS` l.35, `BOOK_ORDER[0]`) ; le garde
-// ci-dessous couvre le cas RESTANT — entrée présente mais SANS `abbr` (`PIVOT_ABBR` valant alors
-// `undefined`, qui bâtirait des regex `\bundefined …` muettes).
+// Sigle du livre PIVOT de l'Atlas (le LIVRE DE BASE), lu au registre `books.json`. Il porte le
+// RÉGIME de réconciliation (Sens A/B indexés chapitre PAR chapitre pour ce livre) et les libellés —
+// JAMAIS la graphie d'une réf, qui est UNE pour tous les livres (`refRe`). Jamais réécrit à la main
+// dans les filtres « hors pivot », ni dans les `{book}`/`{abbr}` que les gardes de la MÊME chaîne
+// produisent (`build-implemente`, `check-refs`, `check-code-refs`) et que `reconcile` consomme :
+// producteur et consommateur tiennent le sigle du même endroit.
+// L'ABSENCE du livre pivot est déjà fatale plus haut (`BOOKS`, `BOOK_ORDER[0]`) ; le garde ci-dessous
+// couvre le cas RESTANT — entrée présente mais SANS `abbr` (`PIVOT_ABBR` valant alors `undefined`).
 const PIVOT_BOOK_ID = 'livre-de-base'
 export const PIVOT_ABBR = _byId.get(PIVOT_BOOK_ID)?.abbr
 if (!PIVOT_ABBR) throw new Error(`_lib: livre pivot "${PIVOT_BOOK_ID}" sans \`abbr\` dans books.json`)
@@ -59,40 +58,36 @@ if (!PIVOT_ABBR) throw new Error(`_lib: livre pivot "${PIVOT_BOOK_ID}" sans \`ab
 // Échappe une chaîne pour l'insérer littéralement dans une RegExp.
 export const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
+// Alternation d'abréviations DÉRIVÉE de BOOKS (#434 défaut 10 : une alternation écrite à la main
+// avait oublié MDG ; citation-graphy-guard écrivait la sienne, désynchronisée dès que BOOKS gagne un
+// livre). Tri par longueur décroissante OBLIGATOIRE : sinon "MSR" matcherait avant "MSRC", "EDO"
+// avant "EDOC". Plus de graphies tolérées (#585 lot B) : un livre, UNE abréviation canonique
+// (SOURCE UNIQUE `books.json`), l'identité stricte suffit — aucune variante à couvrir.
+// Calculée UNE fois : `refRe()` est une fabrique appelée par ligne scannée.
+const ABBR_ALT = BOOKS.map(([a]) => esc(a)).sort((a, b) => b.length - a.length).join('|')
+export const allAbbrAlternation = () => ABBR_ALT
+
 // Regex de réfs (factories : instances FRAÎCHES — l'état /g `lastIndex` n'est pas partagé entre appelants).
+// UNE graphie pour TOUS les livres de BOOKS, le pivot compris : `<ABRÉV>[ [ch.]NN] l.<ligne><suffixe>`.
+// Groupes, IDENTIQUES quel que soit le livre : m[1] livre · m[2] chapitre (OPTIONNEL, `undefined`
+// pour une réf de livre entier) · m[3] ligne · m[4] suffixe.
 // `ch.` optionnel devant le numéro de chapitre (#434 défaut 3) : le code écrit indifféremment
-// `LIVRE NN l.X` et `LIVRE ch.NN l.X` — le groupe livre reste OBLIGATOIRE dans les deux regex.
+// `LIVRE NN l.X` et `LIVRE ch.NN l.X` — le groupe livre reste OBLIGATOIRE.
 // Suffixe : `-fin` (plage) · `+n…` (points) · `/n…` (forme COMPACTE `l.298/315/369`, #1318 E3-L4 —
 // jusque-là seul le PREMIER numéro était vu, les suivants échappaient à toute garde : `l.222/999`
 // passait vert). Le `(?!\d)(?!\s*l\.)` (nombre ENTIER, puis pas de ` l.` derrière — sans le garde
 // de chiffre la regex se rabattrait sur `/2` de `/20 l.72`) distingue `/315` (ligne du MÊME chapitre) de `/20 l.72` (réf
 // MULTI-CHAPITRES `LDB 18 l.298/20 l.72`, où `20` est un CHAPITRE — jamais une ligne du 18).
-export const ldbRe = () => new RegExp(`\\b${esc(PIVOT_ABBR)} (?:ch\\.)?(\\d+) l\\.(\\d+)((?:[-+]\\d+|/\\d+(?!\\d)(?!\\s*l\\.))*)`, 'g') // <pivot> <ch> l.<line>[-end][+n…][/n…]
+export const refRe = () =>
+  new RegExp(`\\b(${ABBR_ALT})(?: (?:ch\\.)?(\\d+))? l\\.(\\d+)((?:[-+]\\d+|/\\d+(?!\\d)(?!\\s*l\\.))*)`, 'g')
 
-// otherRe DÉRIVE de BOOKS (#434 défaut 10 : une alternation écrite à la main avait oublié MDG).
-// Plus de graphies tolérées (#585 lot B) : chaque livre a désormais UNE seule abréviation
-// canonique (SOURCE UNIQUE `books.json`), l'identité stricte suffit — aucune variante à couvrir.
-// Tri par longueur décroissante OBLIGATOIRE : sinon "MSR" matcherait avant "MSRC", "EDO" avant "EDOC".
-const OTHER_ABBR_ALT = BOOKS.filter(([a]) => a !== PIVOT_ABBR).map(([a]) => esc(a))
-  .sort((a, b) => b.length - a.length).join('|')
-// m[4] = suffixe de plage `((?:[-+]\d+)*)` (#487), miroir de ldbRe ; check-refs et reconcile.mjs
-// (branche atlasOther) le lisent tous deux désormais (#586).
-export const otherRe = () =>
-  new RegExp(`\\b(${OTHER_ABBR_ALT})(?: (?:ch\\.)?(\\d+))? l\\.(\\d+)((?:[-+]\\d+|/\\d+(?!\\d)(?!\\s*l\\.))*)`, 'g')
+// Miroir FOLIO de `refRe` (#606) : la graphie canonique `ABBR NN p.<folio>[-fin][+pts]` (gelee par
+// #585) est aussi une ref de chapitre valide -- jamais captee par la regex ` l.` ci-dessus. Memes
+// groupes de capture que son pendant ` l.`, pour rester un substitut direct cote appelant.
+export const refFolioRe = () =>
+  new RegExp(`\\b(${ABBR_ALT})(?: (?:ch\\.)?(\\d+))? p\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
 
-// Miroir FOLIO de `ldbRe`/`otherRe` (#606) : la graphie canonique `ABBR NN p.<folio>[-fin][+pts]`
-// (gelee par #585) est aussi une ref de chapitre valide -- jamais captee par les regex ` l.` ci-dessus.
-// Memes groupes de capture que leur pendant ` l.`, pour rester des substituts directs cote appelant.
-export const ldbFolioRe = () => new RegExp(`\\b${esc(PIVOT_ABBR)} (?:ch\\.)?(\\d+) p\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
-export const otherFolioRe = () =>
-  new RegExp(`\\b(${OTHER_ABBR_ALT})(?: (?:ch\\.)?(\\d+))? p\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
-
-// Expose l'alternation hors-LDB (triée par longueur décroissante, source unique) à tout consommateur
-// qui a besoin de matcher un livre SANS composer le reste d'otherRe (#434 défaut 10 : citation-graphy-guard
-// écrivait sa propre alternation à la main, désynchronisée si BOOKS gagne un livre).
-export const otherAbbrAlternation = () => OTHER_ABBR_ALT
-
-// Canonicalise le texte brut matché par otherRe (m[1]) vers l'abréviation BOOKS (#434 défaut 11).
+// Canonicalise le texte brut matché par refRe (m[1]) vers l'abréviation BOOKS (#434 défaut 11).
 // Identité stricte (#585 lot B) — une seule graphie par livre, aucune variante à résoudre.
 export function bookOf(text) {
   return BOOK_DIR.has(text) ? text : null

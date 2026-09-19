@@ -309,7 +309,7 @@ test('cliquet à DOUBLE SENS : entrée du stock SOLDÉE (plus de trou mesuré) �
 test('cliquet : le livre PIVOT (LDB) n\'a PAS de voie de stock en Sens A — tolérance ZÉRO', () => {
   // CLAUDE.md règle 1 : « devoir rouvrir `Source/` = un défaut de l'Atlas à corriger ». Le LDB est le
   // livre pivot, couvert fiche à fiche par l'Atlas : un chapitre qu'il cite et que l'Atlas ignore se
-  // CORRIGE. Les 14 autres livres n'ont pas cette couverture — leur dette se stocke, nommée et datée.
+  // CORRIGE. Les livres hors pivot n'ont pas cette couverture — leur dette se stocke, nommée et datée.
   for (const cle of Object.keys(lireStock())) assert.ok(!/^LDB /.test(cle), `le stock admet ${cle} : le LDB se corrige, il ne se stocke pas`)
   // (a) trou LDB observé, stock VIDE → refus nominatif par la GATE (volet `pivot`), pas seulement ici
   const trouLdb = trousDurs({ hardA: [{ ch: '6', count: 1, sample: [{ file: 'src/a.ts', row: 1 }] }] })

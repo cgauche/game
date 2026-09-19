@@ -3,7 +3,7 @@
 // tableau de bilan jamais scanné, exclusion de l'art de rig) + les nouveaux (#487). Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { ldbRe, otherRe, buildFolioMap, folioRangeIn, otherAbbrAlternation } from './_lib.mjs'
+import { refRe, buildFolioMap, folioRangeIn, allAbbrAlternation } from './_lib.mjs'
 import {
   slugify, refsWithSpans, declNameOf, symbolFor, refMatches, mergeSpans,
   parseFiche, renderBlock, regenerateFiche, validateManifest, isExcludedSrc, indexCode, isDeadExport,
@@ -313,16 +313,15 @@ test('rendu déterministe : deux appels renvoient les mêmes octets', () => {
   assert.deepEqual(renderBlock(field, ctx), renderBlock(field, ctx))
 })
 
-test('GUARD_LEAK_RE DÉRIVE de otherAbbrAlternation (_lib.mjs), pas un duplicata (#434 défaut 10)', () => {
-  assert.equal(GUARD_LEAK_RE.source, `\\b(?:LDB|${otherAbbrAlternation()}) ?\\d* l\\.`)
+test('GUARD_LEAK_RE DÉRIVE de allAbbrAlternation (_lib.mjs), pas un duplicata (#434 défaut 10)', () => {
+  assert.equal(GUARD_LEAK_RE.source, `\\b(?:${allAbbrAlternation()}) ?\\d* l\\.`)
 })
 
-test('invisibilité des gardes : aucune ligne générée ne matche ldbRe/otherRe/GUARD_LEAK_RE', () => {
+test('invisibilité des gardes : aucune ligne générée ne matche refRe/GUARD_LEAK_RE', () => {
   const field = parseFiche('a.md', FICHE_IMPL).fields[0]
   const block = renderBlock(field, implCtx())
   for (const line of block) {
-    assert.equal([...line.matchAll(ldbRe())].length, 0, `ldbRe: ${line}`)
-    assert.equal([...line.matchAll(otherRe())].length, 0, `otherRe: ${line}`)
+    assert.equal([...line.matchAll(refRe())].length, 0, `refRe: ${line}`)
     assert.equal(GUARD_LEAK_RE.test(line), false, `GUARD_LEAK_RE: ${line}`)
   }
 })

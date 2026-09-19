@@ -3633,8 +3633,7 @@ export function createCombatSlice(get: Get, set: Set) {
         }
       }
       logLines.push(caster.focus.dr >= ni ? t('cs.focusEnough', { name: caster.label, spell: spell.label }) : t('cs.focusProgress', { dr: caster.focus.dr, ni }));
-      // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.190-191 :
-      // tout double OU tout résultat en 0 au-delà de la Compétence).
+      // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB 46 l.140).
       if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'majeure', { componentDowngrade: compUsed, domainId: spell.domainId ?? undefined }));
       finishPlayerAction(get, set, logLines, 'focus'); // sortie commune combat / hors combat (pose `acted:true`)
       // Lanceur ENNEMI (modale auto-pilotée) : le tour de l'IA était suspendu → reprise (calqué sur

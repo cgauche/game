@@ -14,7 +14,7 @@ import type { Combatant } from '../../engine/types';
 /**
  * #38 (d) — Variante Hémorragique d'Aux Armes (l.2451) : le jet de mort par hémorragie (10 %/pion, un
  * double = coagulation) EST le hook LDB `bleed-death` — SEUL le prédicat d'éligibilité diffère : AA
- * l'exige INCONSCIENT (LDB l.105 : tout bleeder encore actif). Graine d100 21 = double → coagulation :
+ * l'exige INCONSCIENT (LDB 16 l.105 : tout bleeder encore actif). Graine d100 21 = double → coagulation :
  * le stack tombe de 3 à 2 SI ET SEULEMENT SI le jet a eu lieu (preuve seed-indépendante du gate).
  */
 describe('#38 (d) — gate AA du jet de mort par Hémorragique (Aux Armes l.2451)', () => {

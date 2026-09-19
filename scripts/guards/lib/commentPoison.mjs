@@ -13,7 +13,7 @@
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { otherAbbrAlternation } from '../../raw/_lib.mjs';
+import { allAbbrAlternation } from '../../raw/_lib.mjs';
 import { LEGACY_VOCAB_SITES } from './legacyVocabStock.mjs';
 
 /** PÉRIMÈTRE des gardes anti-poison — SOURCE UNIQUE des trois portes (suite Vitest, pre-commit,
@@ -703,10 +703,10 @@ export const RAW_CLAIM_FAMILIES = [
 /** Réf de livre ancrant la thèse au Source (n'importe où dans le MÊME commentaire logique).
  *  Alternation DÉRIVÉE de `_lib.mjs` (#434 défaut 10 : une alternation écrite à la main ici
  *  omettait Ubersreik/Altdorf/T3, désynchronisée dès qu'un livre s'ajoutait à BOOKS). `ACE`
- *  (Altdorf, Annexe I — citée en `p.NNN`, jamais `l.NNN`) est portée par `BOOKS`/`otherAbbrAlternation`
+ *  (Altdorf, Annexe I — citée en `p.NNN`, jamais `l.NNN`) est portée par `BOOKS`/`allAbbrAlternation`
  *  (alias `Ald\w+`/`Alt\w+` en plus de la forme canonique `ACE`, ref #529) — aucune entrée en dur ici. */
 export const BOOK_REF_RX = new RegExp(
-  `\\b(LDB|${otherAbbrAlternation()})\\b\\s*(\\d+|ch\\.?\\s*\\d+|l\\.\\s*\\d+|p\\.?\\s*\\d+|§)`,
+  `\\b(${allAbbrAlternation()})\\b\\s*(\\d+|ch\\.?\\s*\\d+|l\\.\\s*\\d+|p\\.?\\s*\\d+|§)`,
   'i',
 );
 

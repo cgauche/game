@@ -1408,7 +1408,7 @@ describe('Avancement par PX (store) — câblage moteur', () => {
     expect(h0().xp).toBe(900);
   });
 
-  it('buyTalent hors-carrière : refusé (LDB l.97)', () => {
+  it('buyTalent hors-carrière : refusé (LDB 07 l.93)', () => {
     set1(mkHero({ xp: 1000 }));
     useGame.getState().buyTalent('h', 'castagneur'); // hors Niveau Agitateur
     expect(h0().talents.find((t) => t.talentId === 'castagneur')).toBeUndefined();

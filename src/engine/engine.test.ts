@@ -882,7 +882,7 @@ describe('Création de héros', () => {
     expect(hero.skills.length).toBeGreaterThan(0);
     expect(hero.wounds.max).toBeGreaterThan(0);
     expect(hero.movement).toBe(4);
-    // 40 augmentations de carrière (+5 × 8) + 24 d'espèce (3×+5 + 3×+3, LDB l.510)
+    // 40 augmentations de carrière (+5 × 8) + 24 d'espèce (3×+5 + 3×+3, LDB 05 l.484)
     const totalAdv = hero.skills.reduce((s, sk) => s + sk.advances, 0);
     expect(totalAdv).toBe(64);
   });

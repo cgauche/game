@@ -1232,7 +1232,7 @@ export function resolveMelee(
 }
 
 /**
- * Bandes de portée d'un tir (table des Difficultés de Combat, LDB `14 - _GoBack.md` l.82-118) :
+ * Bandes de portée d'un tir (table des Difficultés de Combat, LDB 14 l.50-86) :
  * Bout portant (≤ Portée÷10) +40, Courte (≤ Portée÷2) +20, Moyenne (≤ Portée) +0, Longue (≤ Portée×2)
  * −10, Extrême (≤ Portée×3) −30 ; au-delà = hors de portée. Échelle 1 case = `metresPerTile` (défaut 2 m,
  * LDB 15 l.12 ; une Scène MER en déclare une autre, cf. `sceneMetresPerTile`).
@@ -1257,7 +1257,7 @@ function rangeBandAt(distanceTiles: number, rangeMeters: number, metresPerTile =
   return RANGE_BANDS.find((b) => m <= rangeMeters * b.maxFactor) ?? null;
 }
 
-/** Modificateur de portée d'un tir (LDB l.82-118) ; null si hors de portée. */
+/** Modificateur de portée d'un tir (LDB 14 l.50-86) ; null si hors de portée. */
 export function rangeBandModifier(distanceTiles: number, rangeMeters: number, metresPerTile = 2): number | null {
   return rangeBandAt(distanceTiles, rangeMeters, metresPerTile)?.mod ?? null;
 }

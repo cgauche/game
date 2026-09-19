@@ -416,6 +416,22 @@
       "occurrence": 1,
       "lot": "#1711",
       "date": "2026-09-12"
+    },
+    {
+      "famille": "bookNoChapterSrc",
+      "fichier": "src/engine/combat.ts",
+      "ref": "// Pénalité de mobilité : pire pénalité (non-cumul, LDB l.20) entre Encombrement et traumatisme",
+      "occurrence": 1,
+      "lot": "#1825",
+      "date": "2026-09-19"
+    },
+    {
+      "famille": "bookNoChapterSrc",
+      "fichier": "src/engine/trauma.ts",
+      "ref": "/** Pire pénalité de mobilité/Esquive due aux traumatismes de jambe (≤ 0 ; non-cumul, LDB l.20). Une prothèse",
+      "occurrence": 1,
+      "lot": "#1825",
+      "date": "2026-09-19"
     }
   ]
 }

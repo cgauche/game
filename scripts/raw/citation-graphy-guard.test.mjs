@@ -13,7 +13,7 @@ import {
   scanMultiFolioSplitViolations, scanChapterBoundaryFolioViolations, readStock, STOCK_PATH,
   scanTout,
 } from './citation-graphy-guard.mjs'
-import { otherAbbrAlternation, chapterBoundaryRisk } from './_lib.mjs'
+import { allAbbrAlternation, chapterBoundaryRisk, PIVOT_ABBR } from './_lib.mjs'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
 
 function withTempSrcDir(content, fn) {
@@ -125,13 +125,13 @@ test('docs/raw (b) : réf de livre SANS chapitre (AA l.4395, ADE II l.653) → d
   })
 })
 
-test('docs/raw : LDB sans chapitre HORS périmètre (b) ; EDO/EDOC & MSR/MSRC désambiguïsés', () => {
+test('docs/raw (b) : le livre PIVOT est DANS la classe, au même titre ; EDO/EDOC & MSR/MSRC désambiguïsés', () => {
   withTempRawDir({
-    'x.md': ['LDB l.162 (LDB hors classe b, non listé)', 'EDOC l.101', 'EDO l.5', 'MSRC l.71', 'MSR l.9'].join('\n') + '\n',
+    'x.md': [`${PIVOT_ABBR} l.162`, 'EDOC l.101', 'EDO l.5', 'MSRC l.71', 'MSR l.9'].join('\n') + '\n',
   }, (raw) => {
     const kinds = scanDocsRawViolations(raw).filter((x) => x.kind === 'book-no-chapter').map((x) => x.text)
-    assert.equal(kinds.length, 4) // EDOC, EDO, MSRC, MSR — pas LDB
-    assert.ok(!kinds.some((t) => /^LDB /.test(t)))
+    assert.equal(kinds.length, 5)
+    assert.ok(kinds.some((t) => t.startsWith(`${PIVOT_ABBR} l.162`)))
   })
 })
 
@@ -147,8 +147,17 @@ test('docs/raw (c) : nom de fichier de chapitre en backticks (`08 - Titre.md` l.
   })
 })
 
-test('docs/raw (b) : BOOK_NO_CHAPTER_RE DÉRIVE de otherAbbrAlternation (_lib.mjs), pas un duplicata (#434 défaut 10)', () => {
-  assert.equal(BOOK_NO_CHAPTER_RE().source, `\\b(${otherAbbrAlternation()}) l\\.\\d`)
+// COMPORTEMENT, jamais la formule : un test qui ré-écrit l'expression construisant la regex est une
+// tautologie (il passe même si les deux côtés sont faux). On assert ce que la classe VOIT.
+test('docs/raw (b) : la classe voit le pivot, un sigle PRÉFIXE d’un autre, et un sigle À ESPACE', () => {
+  const vu = (s) => [...s.matchAll(BOOK_NO_CHAPTER_RE())].map((m) => m[1])
+  assert.deepEqual(vu(`${PIVOT_ABBR} l.162`), [PIVOT_ABBR])           // le pivot, comme les autres
+  assert.deepEqual(vu('EDOC l.101'), ['EDOC'])                        // pas 'EDO' (tri par longueur)
+  assert.deepEqual(vu('MSRC l.71'), ['MSRC'])                         // pas 'MSR'
+  assert.deepEqual(vu('ADE II l.653'), ['ADE II'])                    // sigle à espace
+  assert.deepEqual(vu('LDB 16 l.13'), [])                             // chapitre PRÉSENT → hors classe
+  assert.deepEqual(vu('ADE2 l.65'), [])                               // graphie inconnue → invisible
+  assert.equal(allAbbrAlternation().split('|').includes(PIVOT_ABBR), true)
 })
 
 test('docs/raw (b) : identité stricte (#585 lot B) — MDG canonique détecté, anciennes graphies ADEII/Midd invisibles (hors alternation)', () => {

@@ -646,7 +646,7 @@ _2124 exports publics mesurés (160 fichiers de `src/engine`, hors tests) — 18
 | `resolveMeleePassive` | 1180 | function | Issue d'une attaque de mêlée SANS défense — cas IMPOSÉS par le RAW (Surpris/Inconscient/Fuir dos tourné/objet inanimé ; jamais un choix volontaire) — à partir d'un jet d'attaque déjà obtenu : un simple succès suffit à toucher. | Combat : modificateurs de test, résolution, Combat : attaque, Avantage, engagement, Coups Critiques, Objets, possessions, équipement |
 | `isHelplessTarget` | 1199 | const | Cible sans défense possible face à une attaque (LDB 16 l.113). | Combat : modificateurs de test, résolution, Combat : attaque, Avantage, engagement, Coups Critiques |
 | `resolveMelee` | 1203 | function | Résout une attaque de mêlée (Test opposé de Corps à corps). | Combat : modificateurs de test, résolution, Combat : attaque, Avantage, engagement, Coups Critiques |
-| `rangeBandModifier` | 1261 | function | Modificateur de portée d'un tir (LDB l.82-118) ; null si hors de portée. | Combat : modificateurs de test, résolution |
+| `rangeBandModifier` | 1261 | function | Modificateur de portée d'un tir (LDB 14 l.50-86) ; null si hors de portée. | Combat : modificateurs de test, résolution |
 | `rangeBandName` | 1266 | function | Nom de la bande de portée — pour l'affichage. | Combat : modificateurs de test, résolution |
 | `rangeBandId` | 1271 | function | id STABLE de la bande de portée courante (≠ libellé) ; null si hors de portée. | Combat : modificateurs de test, résolution |
 | `belowMinRangeBand` | 1279 | function | Le tir est-il REFUSÉ car la cible est plus PROCHE que la bande minimale autorisée de l'arme (machines de siège ADE II 8 l.251/253 : « à Bout Portant » / « distance inférieure à leur Portée Courte ») ? C'est un REFUS, pas un malus. | Combat : modificateurs de test, résolution |
@@ -3127,4 +3127,4 @@ _2124 exports publics mesurés (160 fichiers de `src/engine`, hors tests) — 18
 |---|---|---|---|---|
 | `woundsFromHit` | 30 | function | Blessures infligées par un coup : `totalDamage` (Dégâts d'arme + DR + qualités) moins le Bonus d'Endurance et les PA EFFECTIFS à la `location` (armure portée/naturelle + `extraAP`, matériau ignoré PUIS retrait plat, LDB 62 l.270). | Calcul des Blessures, Blessures, dégâts, soin, guérison, Tests : Degrés de Réussite, Caractéristiques, tables, Qualités d'arme et d'armure |
 
-<!-- sources-empreinte: f5e37e6ded5fa178c2583e740f6ad0701620be0e (166 fichiers, 6 dossiers) corps: 5b0d34bc41c1080a844c11a8a8c43275e50b4d7f -->
+<!-- sources-empreinte: c361d2d5e336c87cd6f3dcb7545f1a428dc9b6b0 (166 fichiers, 6 dossiers) corps: 422ef477f06a0f1c9f0a73f5dfb1fc5f9d51fcf9 -->

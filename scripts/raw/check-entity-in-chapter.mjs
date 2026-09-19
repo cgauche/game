@@ -20,7 +20,7 @@
 // Re-run : node scripts/raw/check-entity-in-chapter.mjs (npm run raw:check-entity-in-chapter).
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { chapterFile, otherAbbrAlternation, readText } from './_lib.mjs'
+import { chapterFile, allAbbrAlternation, readText } from './_lib.mjs'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
 
@@ -34,7 +34,7 @@ export const sitesEntites = (violations) => violations.map((v) => ({ file: v.doc
 // Chapitre = premier groupe de chiffres qui suit l'abréviation (`ch.` optionnel devant) ; une réf
 // sans chapitre numérique immédiat (« AA Annexe III », « ADE II ch. Les Ogres ») ne matche pas —
 // hors sujet ici (rien à chapitrer), périmètre de check-refs/check-code-refs.
-const SOURCE_ABBR_RE = () => new RegExp(`^(LDB|${otherAbbrAlternation()})\\s+(?:ch\\.\\s*)?(\\d+)\\b`)
+const SOURCE_ABBR_RE = () => new RegExp(`^(${allAbbrAlternation()})\\s+(?:ch\\.\\s*)?(\\d+)\\b`)
 
 /** Normalise pour le match de PRÉSENCE (tolérant, pas le match exact de citation) : dépouille le
  *  markdown (emphase/code), les accents (NFD → suppression des diacritiques) et la casse. */

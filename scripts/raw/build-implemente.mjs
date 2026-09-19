@@ -7,7 +7,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { parUnitesDeCode, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ldbRe, otherRe, span, bookOf, BOOKS, esc, folioRange, otherAbbrAlternation, readText, PIVOT_ABBR } from './_lib.mjs'
+import { refRe, span, bookOf, BOOKS, esc, folioRange, allAbbrAlternation, readText } from './_lib.mjs'
 import { closureOf } from '../guards/lib/importGraph.mjs'
 
 export const RAWDIR = 'docs/raw'
@@ -47,8 +47,8 @@ const COMMENT_OR_BLANK = /^\s*(?:\/\/|\/\*|\*|$)/
 export const GEN_TAG = '_(généré — `npm run raw:implemente`)_'
 export const NOT_IMPL = '(non implémenté)'
 // Alternation DÉRIVÉE de `_lib.mjs` (#434 défaut 10 : une alternation écrite à la main ici se
-// désynchronisait dès qu'un livre s'ajoutait à BOOKS — cf. otherAbbrAlternation, source unique).
-export const GUARD_LEAK_RE = new RegExp(`\\b(?:${esc(PIVOT_ABBR)}|${otherAbbrAlternation()}) ?\\d* l\\.`)
+// désynchronisait dès qu'un livre s'ajoutait à BOOKS — cf. allAbbrAlternation, source unique).
+export const GUARD_LEAK_RE = new RegExp(`\\b(?:${allAbbrAlternation()}) ?\\d* l\\.`)
 
 export function slugify(s) {
   return s
@@ -62,14 +62,9 @@ export function slugify(s) {
 /** Réfs `{ book, ch, lo, hi }` d'une ligne (spans dépliés par `span`). */
 export function refsWithSpans(line) {
   const out = []
-  const ldb = ldbRe()
+  const re = refRe()
   let m
-  while ((m = ldb.exec(line))) {
-    const [lo, hi] = span(m[2], m[3])
-    out.push({ book: PIVOT_ABBR, ch: Number(m[1]), lo, hi })
-  }
-  const other = otherRe()
-  while ((m = other.exec(line))) {
+  while ((m = re.exec(line))) {
     if (m[2] == null) continue
     const book = bookOf(m[1].replace(/\s+/g, ' ').trim())
     if (!book) continue

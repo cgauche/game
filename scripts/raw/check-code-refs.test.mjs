@@ -55,7 +55,7 @@ test('plage l.X-Y : la borne HAUTE est vérifiée', () => {
   })
 })
 
-test('réf « autre livre » (MSRC 16 l.99999) hors borne → détectée via otherRe', () => {
+test('réf « autre livre » (MSRC 16 l.99999) hors borne → détectée via refRe', () => {
   withTempSrcDir('x.ts', '// MSRC 16 l.99999 déborde franchement\n', (dir) => {
     const dead = scanDeadCodeRefs(dir)
     assert.equal(dead.length, 1)

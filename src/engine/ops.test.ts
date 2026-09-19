@@ -1,6 +1,6 @@
 /**
  * engine/ops — vocabulaire d'effets partagé (sorts / tables de contrecoup /
- * mutations) : formules, applicateur, non-cumul des modificateurs (LDB l.168).
+ * mutations) : formules, applicateur, non-cumul des modificateurs (LDB 16 l.13).
  */
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';
@@ -467,7 +467,7 @@ describe('applyOps — opérations unitaires', () => {
   });
 });
 
-describe('applyActiveEffect — non-cumul (LDB l.168)', () => {
+describe('applyActiveEffect — non-cumul (LDB 16 l.13)', () => {
   it('meilleur bonus conservé, pire pénalité conservée, bonus+pénalité coexistent', () => {
     const c = hero();
     applyActiveEffect(c, { label: 'A', char: 'force-mentale', bonus: 10, duration: { scale: 'rounds', left: 3 } });

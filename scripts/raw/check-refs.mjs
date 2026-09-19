@@ -12,7 +12,7 @@
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ldbRe, otherRe, span, chapterFile, bookOf, RAWDOC_META_GENERATED, readText, PIVOT_ABBR } from './_lib.mjs'
+import { refRe, span, chapterFile, bookOf, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
 
@@ -23,17 +23,12 @@ export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'dead-re
 // dépôt, c'est lui que la porte de plage reconnaît) et la réf citée, borne HAUTE comprise.
 export const sitesMorts = (dead, rawDir = RAWDIR) => dead.map((d) => ({ file: `${rawDir}/${d.doc}`, ref: `${d.ref} l.${d.hi}` }))
 
-// Réfs `LDB NN l.X…` et réfs « autres livres » (AA/ZI/EDO…) d'une ligne — génère
-// `{ abbr, nn, hi }` (borne haute de la plage dépliée par `span`).
+// Réfs `<ABRÉV> NN l.X…` d'une ligne, tous livres — génère `{ abbr, nn, hi }` (borne haute de la
+// plage dépliée par `span`). Graphie UNIQUE `refRe` (_lib.mjs).
 function* refsInLine(ln) {
-  const ldb = ldbRe()
+  const re = refRe()
   let m
-  while ((m = ldb.exec(ln))) {
-    const [, hi] = span(m[2], m[3])
-    yield { abbr: PIVOT_ABBR, nn: m[1], hi }
-  }
-  const other = otherRe()
-  while ((m = other.exec(ln))) {
+  while ((m = re.exec(ln))) {
     const nn = m[2]
     if (nn == null) continue // pas de chapitre → hors sujet (réf de livre entier, pas de fichier à borner)
     const abbr = bookOf(m[1].replace(/\s+/g, ' ').trim())

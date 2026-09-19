@@ -3,10 +3,10 @@
 // (`ch.`, folio nu, réf sans chapitre) le temps de leur strip mécanique (lot B). Les familles
 // `bareFolio`/`bookNoChapterSrc` couvrent `src/**` ET `docs/raw/*.md` (fiches scannées, même
 // périmètre que `chDot` — #454).
-// `NN-Nom l.X` (ex. `18-Traumatisme l.417-422`) : cette forme est INVISIBLE de `ldbRe`/`otherRe`
-// (_lib.mjs — les deux exigent le livre AVANT le numéro de chapitre, jamais un nom de chapitre
+// `NN-Nom l.X` (ex. `18-Traumatisme l.417-422`) : cette forme est INVISIBLE de `refRe`
+// (_lib.mjs — il exige le livre AVANT le numéro de chapitre, jamais un nom de chapitre
 // collé au numéro), donc jamais comptée par `reconcile.mjs`, jamais ré-ancrée. Forme canonique :
-// `LDB NN l.X` (ou `<ABRÉV> NN l.X` pour les 14 autres livres) — sans nom de chapitre.
+// `<ABRÉV> NN l.X` — sans nom de chapitre, pour TOUS les livres de `BOOKS`.
 // Zéro tolérance, PAS de baseline (le stock doit être à 0 après le lot #487) : toute occurrence
 // nouvelle ou survivante fait échouer le test avec la liste `fichier:ligne`.
 // Re-run : node scripts/raw/citation-graphy-guard.mjs
@@ -14,7 +14,7 @@ import { join, dirname, resolve } from 'node:path'
 import { listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { fileURLToPath } from 'node:url'
 import { fieldBlockMask } from './build-implemente.mjs'
-import { otherAbbrAlternation, bookOf, folioRange, chapterBoundaryRiskFor, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve, readText } from './_lib.mjs'
+import { allAbbrAlternation, bookOf, folioRange, chapterBoundaryRiskFor, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve, readText } from './_lib.mjs'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
 import { readStock as readStockFile } from './stockNominatif.mjs'
 
@@ -34,15 +34,15 @@ const isImplProseScanned = (name) => isScannedFiche(name) && !RAWDOC_AUTHOR_META
 // (a) Plage de lignes à tiret CADRATIN/demi-cadratin : `l.417–422` / `l.417—422`. Forme canonique =
 // tiret-moins `l.417-422` (dépliée par `span`) ; en/em-dash est INVISIBLE de `span` → jamais dépliée.
 export const EMDASH_RANGE_RE = () => /l\.\d+[–—]/g
-// (b) Réf de livre SANS chapitre : `<ABRÉV> l.<n>` — invisible de `otherRe` (qui exige un numéro de
-// chapitre) → jamais comptée. Alternation DÉRIVÉE de `_lib.mjs` (#434 défaut 10 : une alternation
-// écrite à la main ici se désynchronisait dès qu'un livre s'ajoutait à BOOKS). LDB hors scan : cf.
-// `ldbRe` (`_lib.mjs`), le groupe livre y est obligatoire — une réf `LDB l.X` sans chapitre n'a pas
-// de forme distincte détectable par cette classe (elle resterait juste hors couverture `ldbRe`/
-// `reconcile`, pas une graphie « livre-sans-chapitre » au sens de cette garde).
-export const BOOK_NO_CHAPTER_RE = () => new RegExp(`\\b(${otherAbbrAlternation()}) l\\.\\d`, 'g')
+// (b) Réf de livre SANS chapitre : `<ABRÉV> l.<n>` — le chapitre manquant, ni `check-refs` ni
+// `check-code-refs` n'ont de fichier à borner : la réf n'est jamais comptée. TOUS les livres de
+// `BOOKS`, le pivot compris : la graphie est UNE (`refRe`, _lib.mjs), la classe l'est aussi.
+// Alternation DÉRIVÉE de `_lib.mjs` (#434 défaut 10 : une alternation écrite à la main ici se
+// désynchronisait dès qu'un livre s'ajoutait à BOOKS). Les réfs irrésolues au `Source/` sont des
+// entrées NOMINATIVES du stock, jamais une exclusion de classe.
+export const BOOK_NO_CHAPTER_RE = () => new RegExp(`\\b(${allAbbrAlternation()}) l\\.\\d`, 'g')
 // (c) Nom de FICHIER de chapitre en backticks entre le livre et les lignes : `` `NN - Titre.md` l.X ``
-// (ex. `ADE II \`08 - Le theatre de la guerre.md\` l.89-131`) — invisible d'`otherRe` (numéro de
+// (ex. `ADE II \`08 - Le theatre de la guerre.md\` l.89-131`) — invisible de `refRe` (numéro de
 // chapitre attendu NU, pas un nom de fichier). Forme canonique : `<ABRÉV> NN l.X`.
 export const BACKTICK_FILE_RE = () => /`\d{1,2} - [^`]*\.md` l\.\d/g
 
@@ -70,21 +70,17 @@ export const NONIMPL_RE = () => new RegExp(
 )
 
 // --- (#585 lot A) extension : cosmétique `ch.` (e), folio nu (f), abréviation INCONNUE (g) ---
-// Alternation TOUS livres (LDB compris) — dérivée de `_lib.mjs` (LDB ne préfixe-collisionne AUCUNE
-// autre abréviation, l'ordre de longueur d'`otherAbbrAlternation` reste valide en lui ajoutant LDB
-// en tête, sans recomposer le tri).
-const ALL_ABBR_ALT = () => `LDB|${otherAbbrAlternation()}`
-// (e) `ch.` cosmétique devant un numéro de chapitre — TOLÉRÉ par `ldbRe`/`otherRe` (#434 défaut 3),
+// (e) `ch.` cosmétique devant un numéro de chapitre — TOLÉRÉ par `refRe` (#434 défaut 3),
 // mais graphie DÉVIANTE au sens de #585 (le numéro de fichier n'a plus besoin du préfixe `ch.` depuis
 // la convention 2ed2acff/a5eddf80) : cliqueté par fichier, strip mécanique = lot B.
-export const CH_DOT_RE = () => new RegExp(`\\b(${ALL_ABBR_ALT()}) ch\\.\\d+`, 'g')
+export const CH_DOT_RE = () => new RegExp(`\\b(${allAbbrAlternation()}) ch\\.\\d+`, 'g')
 // (f) Folio NU sans chapitre : `<ABRÉV> p.<n>` (chapitre absent → invérifiable contre les data-folio
 // bakés). Classification par TYPE de champ : en `.ts`/`.tsx` seule une ligne de COMMENTAIRE compte
 // (une citation dans un titre de test `describe`/`it` reste hors périmètre, ce n'est pas un
 // commentaire) ; en `.json` seul un champ `"ref": …` compte (les champs `desc`/prose sont verbatim
 // source — règle 5, jamais réécrits — et `source:{book,page}` est la convention folio-imprimé, hors
 // périmètre de cette garde, cf. #585).
-export const BARE_FOLIO_RE = () => new RegExp(`\\b(${ALL_ABBR_ALT()}) p\\.\\d+`, 'g')
+export const BARE_FOLIO_RE = () => new RegExp(`\\b(${allAbbrAlternation()}) p\\.\\d+`, 'g')
 const isCommentLine = (ln) => { const t = ln.trim(); return t.startsWith('//') || t.startsWith('*') || t.startsWith('/*') }
 const isRefFieldLine = (ln) => /^\s*"ref"\s*:/.test(ln)
 // (g) Réf `ABRÉV NN l.X` / `ABRÉV NN p.X` dont l'abréviation N'EST PAS un livre connu de `_lib.mjs`
@@ -98,7 +94,7 @@ export const UNKNOWN_ABBR_RE = () => /\b[A-Z]{2,6}(?:\s+I{1,2})? \d+ [lp]\.\d+/g
 // Un seul chapitre N est écrit dans la réf — si un des folios listés ne résout PAS dans CE chapitre
 // (`folioRange(abbr, folio).ch !== N`), c'est que le folio appartient à un AUTRE chapitre, jamais
 // écrit : violation. Forme canonique : deux réfs séparées (`ABRÉV NN p.X / ABRÉV MM p.Y`).
-export const MULTI_FOLIO_RE = () => new RegExp(`\\b(${ALL_ABBR_ALT()}) (\\d+) p\\.(\\d+)((?:[/,-]\\d+)+)`, 'g')
+export const MULTI_FOLIO_RE = () => new RegExp(`\\b(${allAbbrAlternation()}) (\\d+) p\\.(\\d+)((?:[/,-]\\d+)+)`, 'g')
 
 // (i) Folio SIMPLE `<ABRÉV> N p.X` cité au DERNIER folio du chapitre N alors que le chapitre N+1
 // s'ouvre sur X ou X+1 (#454 juge adversarial, cas prouvé `LDB 48 p.255` — voir `chapterBoundaryRisk`,
@@ -106,7 +102,7 @@ export const MULTI_FOLIO_RE = () => new RegExp(`\\b(${ALL_ABBR_ALT()}) (\\d+) p\
 // ci-dessus (périmètre disjoint, pas de double-compte). AVERTISSEMENT cliqueté (jamais bloquant à
 // l'aveugle) : la position structurelle rend le débordement PLAUSIBLE, mais seule une relecture
 // verbatim tranche si le sujet cité vit réellement en N ou en N+1 — non automatisable ici.
-export const CHAPTER_BOUNDARY_FOLIO_RE = () => new RegExp(`\\b(${ALL_ABBR_ALT()}) (\\d+) p\\.(\\d+)(?![/,-]\\d)`, 'g')
+export const CHAPTER_BOUNDARY_FOLIO_RE = () => new RegExp(`\\b(${allAbbrAlternation()}) (\\d+) p\\.(\\d+)(?![/,-]\\d)`, 'g')
 
 // --- PASSE UNIQUE : un corpus lu une fois, une itération par (fichier, ligne), tous les détecteurs
 // nourris au passage. Chaque CLASSE est une fonction PURE d'une LIGNE vers ses occurrences

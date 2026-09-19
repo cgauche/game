@@ -15,7 +15,7 @@ import { traitEncumbranceFactor } from './combatFeatures/dispatch';
 const REIK = 'humains-reiklander';
 const sp = () => findSpeciesById(REIK)!;
 
-describe('speciesSkillAdvanceMap — 3×+5 / 3×+3 (LDB l.510)', () => {
+describe('speciesSkillAdvanceMap — 3×+5 / 3×+3 (LDB 05 l.484)', () => {
   it('par défaut : 3 premières compétences +5, 3 suivantes +3', () => {
     const m = speciesSkillAdvanceMap(sp());
     // Reiklander : Calme, Charme, Commandement, Corps à corps (Base), Évaluation, Langue (Bretonnien)…

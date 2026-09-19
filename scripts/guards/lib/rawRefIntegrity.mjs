@@ -14,11 +14,11 @@
 // ±6 lignes ; avec le préfixe, 108 à cette date. Le stock COURANT se lit dans
 // `scripts/guards/raw-blind-refs-stock.json`, jamais ici — il est ABSENT, régime de tolérance zéro.
 //
-// Vocabulaire RÉUTILISÉ de `scripts/raw/_lib.mjs` (source unique) : `ldbRe`/`otherRe`/`span`/
+// Vocabulaire RÉUTILISÉ de `scripts/raw/_lib.mjs` (source unique) : `refRe`/`span`/
 // `bookOf`/`chapterFile`/`readText`. Périmètre src/ aligné sur `check-code-refs.mjs`.
 import { readFileSync } from 'node:fs'
 import { listerArbre } from './lister.mjs'
-import { ldbRe, otherRe, span, refNums, isRangeSuffix, chapterFile, bookOf, readText } from '../../raw/_lib.mjs'
+import { refRe, span, refNums, isRangeSuffix, chapterFile, bookOf, readText } from '../../raw/_lib.mjs'
 import { ecartDuVolet } from './stock.mjs'
 import { readStock } from '../../raw/stockNominatif.mjs'
 
@@ -104,15 +104,9 @@ function* anchorsOf(line, suffix) {
 
 /** Réfs `<ABRÉV> NN l.X[-Y|+n…|/n…]` d'une ligne — `{ abbr, nn, lo, hi, ref }` (miroir de check-code-refs). */
 export function* refsInLine(ln) {
-  const ldb = ldbRe()
+  const re = refRe()
   let m
-  while ((m = ldb.exec(ln))) {
-    for (const [lo, hi] of anchorsOf(m[2], m[3])) {
-      yield { abbr: 'LDB', nn: m[1], lo, hi, ref: `LDB ${Number(m[1])} l.${m[2]}${m[3]}` }
-    }
-  }
-  const other = otherRe()
-  while ((m = other.exec(ln))) {
+  while ((m = re.exec(ln))) {
     const nn = m[2]
     if (nn == null) continue
     const abbr = bookOf(m[1].replace(/\s+/g, ' ').trim())

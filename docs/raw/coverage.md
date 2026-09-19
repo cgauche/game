@@ -79,7 +79,7 @@
 | 59 | Faire son marche | ✅ | 19 (economie.md ×19) |
 | 60 | Fabrication | ✅ | 16 (economie.md ×13) |
 | 61 | Encombrement | ✅ | 40 (equipement.md ×18) |
-| 62 | Les armes | ✅ | 118 (combat.md ×111) |
+| 62 | Les armes | ✅ | 119 (combat.md ×112) |
 | 63 | Armures | ✅ | 28 (combat.md ×27) |
 | 64 | Sacs et contenants | 📖 | catalogue (catalogue-*.md) |
 | 65 | Vetements et accessoires | 📖 | 1 (traumatisme.md ×1) |
@@ -2003,4 +2003,4 @@
   - ⬜ l.2728-2735 « Wallcrawler » — candidat trou de règle, 0 réf
 - **CRB 16** (Appendices) :
   - ⬜ l.202-279 « Prone (page 186) » — candidat trou de règle, 0 réf
-<!-- sources-empreinte: 5560becfe43d79e4236c5d66121d586f6f577051 (368 fichiers, 18 dossiers) corps: 13da5720c3e32f16a7c3a2064fdde76099601755 -->
+<!-- sources-empreinte: 5309e18482ba3e36033b8285bfdcb73684145ce1 (368 fichiers, 18 dossiers) corps: ab0da3c8e467b9807b3a5dc8e139a6891c4e0919 -->
