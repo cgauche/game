@@ -106,6 +106,9 @@ describe('Voyage — poste Cartographie (Établir des cartes, test étendu)', ()
     for (const { rel, text } of readCorpus(['src/ui'], { tests: true })) {
       const path = rel.slice('src/ui/'.length);
       if (path === 'DrBar.tsx') continue; // le composant ne s'importe pas lui-même
+      // La VITRINE n'est pas un site de jeu : `src/ui/gallery/gallery-exhaustive.test.ts` y EXIGE un
+      // spécimen de toute primitive du manifeste.
+      if (path.startsWith('gallery/')) continue;
       if (/from ['"].*\/DrBar['"]/.test(text)) importers.push(path);
     }
     // Exception nommée : `MedicModal.tsx` — état d'opération de Chirurgie ARMÉE, visible AVANT/ENTRE
