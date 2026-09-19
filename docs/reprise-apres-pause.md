@@ -234,7 +234,7 @@ l'arbre, jouées seules pour qu'aucun lecteur ne tombe sur un fichier à moitié
 
 Les deux tables vivent dans `scripts/gates/toutes.mjs` : `LANES` pour la répartition ci-dessus,
 `ECRIT_LU` pour ce que CHAQUE gate écrit et lit (24 gates mesurées, dont
-9 écrivain(s) — écriture de chaque run ou écriture POSSIBLE à porte nommée) ; c'est elle
+10 écrivain(s) — écriture de chaque run ou écriture POSSIBLE à porte nommée) ; c'est elle
 qui rend le classement vérifiable plutôt que déclaratif. La suite est BORNÉE par `WFRP_TEST_COEURS`
 pendant que les autres lanes tournent. Options : `--gates`, `--liste`, `--serie`. Une gate de `ci.yml`
 sans place dans ce plan fait REFUSER le run, avec son nom.
@@ -243,4 +243,4 @@ sans place dans ce plan fait REFUSER le run, avec son nom.
 `scripts/guards/lib/npmLockHoisted.mjs` — npx --yes npm@10.9.3 install --package-lock-only, puis valider avec npx npm@10.9.3 ci --dry-run. npm 11 ampute les entrées hoistées
 `@emnapi/*` que `npm ci` exige en CI ; la garde (pre-commit +
 `src/npm-lock-hoisted-guard.test.ts`) refuse un lock amputé.
-<!-- sources-empreinte: 7c5b73feb6e271ff74b7692c9691b87a7221aa68 (24 fichiers, 8 dossiers) corps: 724a6f30bdab49d6243782624108af9e72ddc6e9 -->
+<!-- sources-empreinte: e0d0066742bad45b3e5d29401a5250651c154d53 (24 fichiers, 8 dossiers) corps: 65163da496c03bfebf90ebfed2c00868ad559489 -->
