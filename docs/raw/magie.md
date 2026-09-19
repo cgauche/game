@@ -119,7 +119,7 @@ Les Collèges de Magie (comme les elfes) enseignent que la magie se divise en **
 Le Talent **Seconde vue** (LDB 10) permet de percevoir les Vents de Magie et leur influence sur le monde. Elle affecte tous les sens (manifestation dépend de l'expérience du lanceur). Avec la Seconde vue, on peut utiliser les compétences **Intuition**, **Perception** et **Pistage** avec les sens aethyriques. La Seconde vue ne se désactive pas : le MJ peut demander des Tests spontanés pour percevoir des détails magiques.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.7-10) → `miscast-mineure`, `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `hasArcaneTalent` ⚠sans-appelant, `mineure-cerumen`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `mineure-rupture`, `mineure-secousse-spirituelle`, +36 — `src/data/miscast.json`, `src/data/raw.manifest.json` ⚠hors-app, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/domainAttributes.ts`, `src/state/combatEffects.ts`, `src/state/partyFlow.ts`
+- `LDB 46` (l.7-10) → `miscast-mineure`, `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `hasArcaneTalent` ⚠sans-appelant, `mineure-cerumen`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `mineure-rupture`, `mineure-secousse-spirituelle`, +36 — `src/data/miscast.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/domainAttributes.ts`, `src/state/combatEffects.ts`, `src/state/partyFlow.ts`
 - dette : #463
 
 ---
@@ -742,7 +742,7 @@ La **malepierre** est un éclat de magie pure dans le plan matériel — manifes
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 19` (l.40, l.51-53) → `CorruptionModal`, `combat-end-corruption`, `sombre-pacte`, `EXPOSURE_LADDER`, `testDeCorruption`, `exposureLevelSchema`, `physique`, `corruption-mineure`, `corruption-moderee`, `doc`, +17 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/effets.ts`, +10 fichiers
 - `LDB 44` (l.113-119) → `doc` — `src/data/schemas/defs/trappings.ts`
-- `LDB 46` (l.164-173) → `DispelModal`, `windsModFromRoll`, `FocusModal`, `force-des-vents`, `rollWindsOfMagic`, `STEP_WINDOW_AUTO`, `doc`, `windsMagicModOf`, `HoverTargeting`, `focalisation-etendue`, +67 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, +32 fichiers
+- `LDB 46` (l.164-173) → `DispelModal`, `windsModFromRoll`, `FocusModal`, `force-des-vents`, `rollWindsOfMagic`, `STEP_WINDOW_AUTO`, `doc`, `windsMagicModOf`, `HoverTargeting`, `focalisation-etendue`, +67 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +31 fichiers
 - `VDM 2` (l.165) → `surincantation`, `doc`, `armourCastDRPenalty`, `armure-du-chaos`, `malevolentInfluenceSeverity`, `ItemInstance`, `malepierreDR`, `malepierreCharge`, `malepierreReserveOf`, `consumeMalepierre`, +4 — `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/surincantation.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, +4 fichiers
 - dette : #884
 

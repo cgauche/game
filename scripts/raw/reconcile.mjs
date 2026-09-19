@@ -5,8 +5,10 @@
 //   table keyée (livre, chapitre) pour TOUS les livres du registre : la graphie d'une réf est UNE
 //   (`refRe`, _lib.mjs), la mention LÂCHE aussi (`<ABRÉV> [ch.]NN`), l'indexation aussi.
 // Sens B (Atlas → code) : B1 = lignes de l'Atlas marquées `(non implémenté)`, tous docs confondus
-//   (aucune dimension de livre) ; B2 = chapitres cités par l'Atlas jamais référencés par le code,
-//   calculé par livre de CŒUR.
+//   (aucune dimension de livre), ventilées par ÉTAT DE DETTE ; B2 = chapitres cités par l'Atlas jamais
+//   référencés par le code, calculé par livre de CŒUR, après deux crédits : le FOLIO d'une donnée de
+//   `src/data`, et la DETTE DE FICHE déclarée au manifest (#1825 — une dette se déclare UNE fois, à la
+//   granularité de son ticket : un chapitre déjà sous dette de fiche ne se stocke pas une 2e fois).
 // RÉGIME de CŒUR — le prédicat `coeurDe(abbr)` (champ `coeur` de `books.json`) décide du RÉGIME en
 //   deux endroits, et nulle part ailleurs :
 //   R1 un trou dur de Sens A d'un livre de cœur ne se STOCKE pas — il se CORRIGE à l'Atlas
@@ -36,7 +38,10 @@ import {
   folioSpan, span, RAWDOC_META_GENERATED, readText,
 } from './_lib.mjs'
 import { lireStockJson } from './stockNominatif.mjs'
-import { loadAbbrMap, folioCitationsFromJson } from './build-implemente.mjs'
+import {
+  loadAbbrMap, folioCitationsFromJson, chargerDette, registresDeFiches, isFicheDoc, parseFiche,
+  stemDeFiche, couvertureDe, stemDe, MANIFEST_PATH,
+} from './build-implemente.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 
 export const TOL = 20 // tolérance en lignes : la synthèse Atlas pine un ancrage proche, pas la ligne exacte
@@ -109,8 +114,9 @@ const setDe = (table, book) => table.get(book) || new Set()
 const nomDeDoc = (chemin) => chemin.replace(/\\/g, '/').split('/').pop()
 
 /** Calcule la réconciliation CODE↔ATLAS. Pur vis-à-vis de l'écriture de fichier (aucun writeFileSync ici).
- *  `registre` = le registre des livres (`books.json` par défaut) : les tests en injectent un de fixture. */
-export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR, registre = REGISTRE_LIVRES } = {}) {
+ *  `registre` = le registre des livres (`books.json` par défaut), `manifestPath` = la dette éditoriale :
+ *  les tests en injectent des fixtures. */
+export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR, registre = REGISTRE_LIVRES, manifestPath = MANIFEST_PATH } = {}) {
   const books = booksDe(registre)
   const coeurs = coeursDe(registre)
   const ALT = alternationDe(books)
@@ -181,12 +187,20 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR, registr
   const catalog = new Map()    // book -> Set(ch)  — chapitres couverts par un catalogue (verbatim)
   const docOwner = new Map()   // `book|ch` -> doc (le + de réfs) — le PROPRIÉTAIRE du chapitre
   const ownerCount = new Map() // `book|ch|doc` -> n
+  // Les FICHES qui décrivent un chapitre (`book|ch` -> Set de stems) : `atlasLoose` est contribué par
+  // TOUS les docs — catalogues, index, épreuves compris, dont beaucoup de chapitres qu'aucune fiche
+  // ne décrit — or une dette se déclare au niveau d'une FICHE. Seules elles sont comptées ici.
+  const fichesDuChapitre = new Map()
+  const fiches = []            // { doc, content, parsed } — le parse des fiches, source des registres d'`id`
   for (const d of DOCS) {
     const text = readText(d)
+    const nom = nomDeDoc(d)
     const estCatalogue = /catalogue-/.test(d)
+    if (isFicheDoc(nom)) fiches.push({ doc: nom, content: text, parsed: parseFiche(nom, text) })
     for (const mm of text.matchAll(looseReDe(ALT))) {
       enSet(atlasLoose, mm[1], chKey(mm[2]))
       if (estCatalogue) enSet(catalog, mm[1], chKey(mm[2]))
+      if (isFicheDoc(nom)) enSet(fichesDuChapitre, `${mm[1]}|${chKey(mm[2])}`, stemDeFiche(nom))
     }
     // Pine le span et désigne le doc PROPRIÉTAIRE du chapitre — pour TOUT livre.
     const piner = (book, ch, sp) => {
@@ -254,52 +268,109 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR, registr
   for (const s of softA) stat(s.book).soft++
   for (const [book, refs] of codeNoCh) stat(book).noCh = refs.length
 
-  // === SENS B1 : lignes marquées « (non implémenté) » — GLOBAL, aucune dimension de livre ===
+  // Dette éditoriale — UNE lecture, la couture de `build-implemente.mjs` (jamais un 2e lecteur du
+  // manifest) : ses `id` se résolvent contre les registres tirés du parse des fiches ci-dessus.
+  const dette = chargerDette(registresDeFiches(fiches), manifestPath)
+  // Ligne du champ `**Implémente :**` → son topic, pour rattacher un marqueur B1 à sa dette.
+  const topicParLigne = new Map() // doc -> Map(row -> topic)
+  for (const fi of fiches) {
+    const rows = new Map()
+    for (const f of fi.parsed.fields) rows.set(f.headerIdx + 1, f.topic)
+    topicParLigne.set(fi.doc, rows)
+  }
+
+  // === SENS B1 : lignes marquées « (non implémenté) » — GLOBAL, aucune dimension de livre.
+  // Chaque marqueur dit s'il est COUVERT par une dette déclarée (entrée de topic ou de fiche) ou SANS
+  // entrée : sans cette ventilation, un chiffre de tête qui grossit ne distingue plus l'instruit du reste.
   const nonImpl = []
   for (const d of DOCS) {
-    const lines = readText(d).split('\n')
-    lines.forEach((ln, i) => {
-      if (/non impl[ée]ment[ée]/i.test(ln)) nonImpl.push({ doc: nomDeDoc(d), row: i + 1, text: ln.trim().slice(0, 200) })
+    const nom = nomDeDoc(d)
+    const rows = topicParLigne.get(nom)
+    readText(d).split('\n').forEach((ln, i) => {
+      if (!/non impl[ée]ment[ée]/i.test(ln)) return
+      const topic = rows?.get(i + 1)
+      const entree = topic ? dette.detteDe(topic) : undefined
+      nonImpl.push({ doc: nom, row: i + 1, text: ln.trim().slice(0, 200), topic, dette: entree })
     })
   }
+
+  // DÉCROISSANCE de chaque entrée de FICHE : combien de ses topics elle couvre ENCORE, sur combien.
+  // L'état est lu au marqueur de l'Atlas COMMITTÉ (`(non implémenté)`), la vérité que `raw:implemente`
+  // vient d'y écrire — aucun second index du code ici. Imprimé, jamais asserté : la garde qui REFUSE
+  // une entrée sans objet vit dans `raw:implemente` (`dettesDeFicheSansObjet`).
+  const marqueurs = new Set(nonImpl.filter((n) => n.topic).map((n) => n.topic))
+  const topicsParFiche = new Map()
+  for (const fi of fiches) {
+    for (const f of fi.parsed.fields) {
+      const stem = stemDe(f.topic)
+      if (!topicsParFiche.has(stem)) topicsParFiche.set(stem, [])
+      topicsParFiche.get(stem).push({ topic: f.topic, implemente: !marqueurs.has(f.topic) })
+    }
+  }
+  const dettesDeFiche = dette.entreesDeFiche().map((entree) => ({
+    fiche: entree.id,
+    ticket: entree.ticket,
+    couverts: couvertureDe(entree, topicsParFiche.get(entree.id) ?? [], dette).length,
+    total: (topicsParFiche.get(entree.id) ?? []).length,
+  }))
   // === SENS B2 (R2, régime de CŒUR) : chapitres cités par l'Atlas jamais référencés dans le code
   // (`atlasLoose`/`codeLoose` portent déjà la clé canonique `chKey`, #434 défaut 11 — `LDB 06` et
   // `LDB 6` sont une seule entrée). Crédite le FOLIO : un chapitre atteint par une source
   // `{book,page}` de src/data est référencé (donnée), pas hors-code.
+  // Second crédit, la DETTE DE FICHE (#1825) : un chapitre que le code n'atteint pas, mais dont
+  // TOUTES les fiches qui le décrivent sont sous dette de fiche déclarée, est déjà déclaré — à sa
+  // granularité, celle du ticket. Le déclarer une seconde fois au stock nominatif serait la même
+  // dette écrite deux fois. Un chapitre qu'aucune fiche ne décrit ne peut pas être crédité ainsi.
   const b2 = []
   for (const [book] of livresDeCoeur(books, coeurs)) {
     const coeur = coeurDe(book, coeurs)
     const cite = setDe(codeLoose, book)
     const folio = setDe(codeFolioCh, book)
     const avant = [...setDe(atlasLoose, book)].filter((ch) => !cite.has(ch)).sort((a, b) => Number(a) - Number(b))
-    b2.push({
-      book,
-      coeur,
-      avant,
-      credites: avant.filter((ch) => folio.has(ch)),
-      horsCode: avant.filter((ch) => !folio.has(ch)),
-    })
+    const sousDette = []
+    const horsCode = []
+    for (const ch of avant.filter((c) => !folio.has(c))) {
+      const stems = [...(fichesDuChapitre.get(`${book}|${ch}`) ?? [])].sort()
+      const entrees = stems.map((s) => dette.detteDeFiche(s))
+      if (stems.length && entrees.every(Boolean)) sousDette.push({ ch, fiches: stems, tickets: [...new Set(entrees.map((e) => e.ticket))] })
+      else horsCode.push(ch)
+    }
+    b2.push({ book, coeur, avant, credites: avant.filter((ch) => folio.has(ch)), sousDette, horsCode })
   }
 
   const codeBooks = new Set([...code.keys(), ...codeNoCh.keys()])
   const atlasBooks = new Set([...atlas.keys(), ...atlasLoose.keys()])
 
-  return { hardA, softA, nonImpl, b2, codeNoCh, bookStats, codeBooks, atlasBooks, folioIgnored, coeurs }
+  return { hardA, softA, nonImpl, dettesDeFiche, b2, codeNoCh, bookStats, codeBooks, atlasBooks, folioIgnored, coeurs }
 }
+
+/** État d'un marqueur B1 : hors d'un champ `**Implémente :**` c'est de la PROSE (aucune dette à
+ *  attendre) ; sur un topic, le ticket ou le blocage qui le couvre, sinon rien de déclaré. */
+const etatDeDette = (n) =>
+  !n.topic ? 'hors champ Implémente (prose)'
+    : n.dette?.ticket ? `dette ${n.dette.ticket}`
+      : n.dette?.bloque ? 'bloqué'
+        : 'SANS entrée de dette'
 
 /** Rend le Markdown `docs/raw/reconciliation.md` — pur (aucun accès fichier). */
 export function renderReport(data) {
-  const { hardA, softA, nonImpl, b2, codeNoCh, bookStats, codeBooks, atlasBooks, folioIgnored, coeurs = new Map() } = data
+  const { hardA, softA, nonImpl, dettesDeFiche = [], b2, codeNoCh, bookStats, codeBooks, atlasBooks, folioIgnored, coeurs = new Map() } = data
   const coeur = (book) => coeurDe(book, coeurs)
   const noChapterCount = [...codeNoCh.values()].reduce((n, a) => n + a.length, 0)
+  const sousDetteDe = (e) => e.sousDette ?? []
+  const surTopic = nonImpl.filter((n) => n.topic)
+  const couverts = surTopic.filter((n) => n.dette)
+  const sansEntree = surTopic.filter((n) => !n.dette)
+  const prose = nonImpl.filter((n) => !n.topic)
 
   const L = []
   L.push('# Atlas RAW — Réconciliation CODE ↔ ATLAS', '')
   L.push(
     '> Déterministe (`node scripts/raw/reconcile.mjs`). **Sens A** = règles que l\'app applique',
     '> (réfs `<ABRÉV> NN l.X` dans `src/`, tous livres) absentes de l\'Atlas. **Sens B1** = lignes de',
-    '> l\'Atlas marquées « (non implémenté) », tous docs. **Sens B2** = chapitres que l\'Atlas décrit',
-    '> hors du code, par livre de CŒUR (champ `coeur` de `books.json`).',
+    '> l\'Atlas marquées « (non implémenté) », tous docs, ventilées par état de dette. **Sens B2** =',
+    '> chapitres que l\'Atlas décrit hors du code, par livre de CŒUR (champ `coeur` de `books.json`),',
+    '> après crédit du folio d\'une donnée et de la dette de fiche déclarée au manifest.',
     `> Tolérance ligne = ±${TOL}.`,
     '',
   )
@@ -307,9 +378,9 @@ export function renderReport(data) {
   // Le résumé de TÊTE porte les NOMBRES, jamais un compte de livres : par livre de cœur, ses trois
   // mesures de Sens B2 — dérivées de `b2`, donc un cœur de plus s'y lit sans une ligne ici.
   const b2Tete = b2
-    .map((e) => `${e.book} (cœur ${e.coeur}) : ${e.horsCode.length} chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédit folio : ${e.avant.length} · ${e.credites.length} crédité(s) par une source folio de \`src/data\`)`)
+    .map((e) => `${e.book} (cœur ${e.coeur}) : ${e.horsCode.length} chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédits : ${e.avant.length} · ${e.credites.length} crédité(s) par une source folio de \`src/data\` · ${sousDetteDe(e).length} sous dette de fiche déclarée)`)
     .join(' · ')
-  L.push(`**Sens B — Atlas → code** : ${nonImpl.length} marqueur(s) « (non implémenté) » (tous docs)${b2Tete ? ` · ${b2Tete}` : ' · aucun livre de cœur au registre'}.`, '')
+  L.push(`**Sens B — Atlas → code** : ${nonImpl.length} marqueur(s) « (non implémenté) » (tous docs), dont ${couverts.length} sous dette déclarée, ${sansEntree.length} sans entrée et ${prose.length} hors champ Implémente${b2Tete ? ` · ${b2Tete}` : ' · aucun livre de cœur au registre'}.`, '')
 
   L.push('## A0 — Résumé Sens A par livre', '')
   if (!bookStats.size) L.push('_Aucune réf de code vers un livre du registre._', '')
@@ -349,14 +420,25 @@ export function renderReport(data) {
 
   L.push('## B1 — Règles décrites par l\'Atlas marquées « (non implémenté) »', '')
   if (!nonImpl.length) L.push('_Aucun marqueur._', '')
-  else for (const n of nonImpl) L.push(`- **${n.doc}** L${n.row} — ${n.text}`)
+  else {
+    L.push(`${couverts.length} sous dette déclarée · ${sansEntree.length} sans entrée de \`src/data/raw.manifest.json\` · ${prose.length} hors champ \`**Implémente :**\`.`, '')
+    for (const n of nonImpl) L.push(`- **${n.doc}** L${n.row} — ${etatDeDette(n)} — ${n.text}`)
+  }
   L.push('')
+  L.push('### Dettes de FICHE — ce qu\'elles couvrent ENCORE', '')
+  if (!dettesDeFiche.length) L.push('_Aucune entrée de fiche au manifest._', '')
+  else {
+    for (const d of dettesDeFiche) L.push(`- **${d.fiche}.md** (${d.ticket}) — couvre ${d.couverts} topic(s) sur ${d.total}`)
+    L.push('')
+  }
 
   for (const e of b2) {
     L.push(`## B2 ${e.book} (cœur ${e.coeur}) — Chapitres cités par l'Atlas, jamais référencés dans le code`, '')
-    L.push(`_Avant crédit folio (${e.avant.length})_ : ${e.avant.length ? e.avant.map((c) => `${e.book} ${c}`).join(' · ') : '—'}`, '')
+    L.push(`_Avant crédits (${e.avant.length})_ : ${e.avant.length ? e.avant.map((c) => `${e.book} ${c}`).join(' · ') : '—'}`, '')
     L.push(`_Crédités par une source folio de \`src/data/*.json\` (${e.credites.length}, donnée référencée sans réf de ligne)_ : ${e.credites.length ? e.credites.map((c) => `${e.book} ${c}`).join(' · ') : '—'}`, '')
-    L.push('**VRAIS hors-code (après crédit folio) :**')
+    const sd = sousDetteDe(e)
+    L.push(`_Sous dette de fiche déclarée (${sd.length}, toutes les fiches qui décrivent le chapitre sont ticketées)_ : ${sd.length ? sd.map((s) => `${e.book} ${s.ch} (${s.tickets.join(', ')} — ${s.fiches.join(', ')})`).join(' · ') : '—'}`, '')
+    L.push('**VRAIS hors-code (après crédits) :**')
     if (!e.horsCode.length) L.push('_Aucun._', '')
     else L.push(e.horsCode.map((c) => `${e.book} ${c}`).join(' · '), '')
   }
@@ -428,9 +510,12 @@ function main() {
   console.log(`Sens A : ${data.hardA.length} trou(s) dur(s) chapitre-livre · ${data.softA.length} chapitre(s)-livre à lignes non pinées · ${noChapterCount} réf(s) sans chapitre (hors mesure) · folios Atlas ignorés ${data.folioIgnored}`)
   for (const [book, st] of [...data.bookStats].sort((a, b) => parUnitesDeCode(a[0], b[0])))
     console.log(`  ${book} : ${st.hard} trous durs · ${st.soft} chapitres non pinés · ${st.noCh} réfs sans chapitre`)
-  console.log(`Sens B1 : ${data.nonImpl.length} (non implémenté)`)
+  const surTopic = data.nonImpl.filter((n) => n.topic)
+  console.log(`Sens B1 : ${data.nonImpl.length} (non implémenté) — ${surTopic.filter((n) => n.dette).length} sous dette déclarée, ${surTopic.filter((n) => !n.dette).length} sans entrée, ${data.nonImpl.length - surTopic.length} hors champ Implémente`)
+  for (const d of data.dettesDeFiche)
+    console.log(`  dette de fiche ${d.fiche}.md (${d.ticket}) : couvre ${d.couverts} topic(s) sur ${d.total}`)
   for (const e of data.b2)
-    console.log(`Sens B2 ${e.book} (cœur ${e.coeur}) : ${e.avant.length} → ${e.horsCode.length} chapitre(s) Atlas hors-code (${e.credites.length} crédité(s) par folio)`)
+    console.log(`Sens B2 ${e.book} (cœur ${e.coeur}) : ${e.avant.length} → ${e.horsCode.length} chapitre(s) Atlas hors-code (${e.credites.length} crédité(s) par folio, ${e.sousDette.length} sous dette de fiche)`)
 
   const entrees = trousDurs(data)
   const stock = lireStock()

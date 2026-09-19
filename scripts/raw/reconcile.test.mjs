@@ -17,6 +17,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { computeReconciliation, renderReport, trousDurs, ecartsTrousDurs, lireStock, STOCK_PATH, PREFIXE_B2, decodeCle } from './reconcile.mjs'
 import { BOOKS, coeurDe, coeursDe } from './_lib.mjs'
+import { parseFiche, registresDeFiches, validerDette, orphelinsDeDette } from './build-implemente.mjs'
 
 // Registre de FIXTURE à DEUX cœurs (#1825 lot C) : le régime se juge sur le PRÉDICAT, jamais sur
 // l'identité d'un livre réel — ces sigles n'existent nulle part ailleurs, et leurs dossiers non plus.
@@ -42,8 +43,8 @@ test("Sens A LDB (#606) : une fiche qui ne cite QU'en folio (`ABBR NN p.X`) cred
   withFixtures(
     { 'a.ts': '// règle LDB 10 l.50\n' },
     { 'fiche.md': 'LDB 10 p.132\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 0)
       assert.equal(data.softA.length, 0)
     },
@@ -71,10 +72,15 @@ test('Sens B2 : le crédit FOLIO retire les chapitres-données ; normalisation d
   assert.ok(!porteur.avant.includes('06'))
 })
 
-function withFixtures(srcFiles, docFiles, fn) {
+/** Fixtures isolées : un `src/`, un `docs/raw/` et la DETTE éditoriale (`raw.manifest.json`) du cas.
+ *  La dette est injectée comme le registre des livres — jamais le manifest réel du dépôt, dont les
+ *  `id` sont inconnus d'un Atlas de fixture. */
+function withFixtures(srcFiles, docFiles, fn, dette = []) {
   const root = mkdtempSync(join(tmpdir(), 'reconcile-'))
   const srcDir = join(root, 'src')
   const rawDir = join(root, 'raw')
+  const manifestPath = join(root, 'raw.manifest.json')
+  writeFileSync(manifestPath, JSON.stringify(dette, null, 2), 'utf8')
   mkdirSync(srcDir, { recursive: true })
   mkdirSync(rawDir, { recursive: true })
   for (const [name, content] of Object.entries(srcFiles)) {
@@ -83,15 +89,175 @@ function withFixtures(srcFiles, docFiles, fn) {
     writeFileSync(p, content, 'utf8')
   }
   for (const [name, content] of Object.entries(docFiles)) writeFileSync(join(rawDir, name), content, 'utf8')
-  try { fn({ srcDir, rawDir }) } finally { rmSync(root, { recursive: true, force: true }) }
+  try { fn({ srcDir, rawDir, manifestPath }) } finally { rmSync(root, { recursive: true, force: true }) }
 }
+
+// --- Sens B2, crédit par DETTE DE FICHE (#1825) : une dette se déclare UNE fois ---
+// Le cœur de fixture `QQA` : son chapitre 7 est décrit par l'Atlas, jamais cité par le code.
+
+const FICHE_QA7 = '# Atlas RAW — Fixture\n\n## Sujet\n\n**Sources RAW :** `QQA 7 l.10`\n\n**Implémente :** x\n'
+
+test('Sens B2 : chapitre de cœur dont la SEULE fiche est sous dette de fiche → crédité, nommé avec son ticket', () => {
+  withFixtures(
+    { 'a.ts': '// rien\n' },
+    { 'fiche.md': FICHE_QA7 },
+    (opts) => {
+      const data = computeReconciliation({ ...opts, registre: REGISTRE })
+      const e = data.b2.find((x) => x.book === QA)
+      assert.deepEqual(e.horsCode, [], 'le chapitre est déjà déclaré en dette : il ne se stocke pas une 2e fois')
+      assert.deepEqual(e.sousDette.map((s) => s.ch), ['7'])
+      assert.deepEqual(e.sousDette[0].tickets, ['#1825'])
+      assert.deepEqual(e.sousDette[0].fiches, ['fiche'])
+      assert.match(renderReport(data), /Sous dette de fiche déclarée \(1[\s\S]*QQA 7 \(#1825 — fiche\)/)
+    },
+    [{ id: 'fiche', ticket: '#1825' }],
+  )
+})
+
+test('Sens B2 : le MÊME chapitre sans entrée de dette → trou dur B2 neuf', () => {
+  withFixtures(
+    { 'a.ts': '// rien\n' },
+    { 'fiche.md': FICHE_QA7 },
+    (opts) => {
+      const data = computeReconciliation({ ...opts, registre: REGISTRE })
+      const e = data.b2.find((x) => x.book === QA)
+      assert.deepEqual(e.horsCode, ['7'])
+      assert.deepEqual(e.sousDette, [])
+      assert.deepEqual(trousDurs(data).map((t) => t.cle), [`${PREFIXE_B2}${QA} 7`])
+    },
+  )
+})
+
+test('Sens B2 : chapitre décrit par DEUX fiches dont une seule sous dette → PAS de crédit', () => {
+  withFixtures(
+    { 'a.ts': '// rien\n' },
+    { 'fiche.md': FICHE_QA7, 'autre.md': '# Autre\n\n## Sujet\n\n**Sources RAW :** `QQA 7 l.80`\n\n**Implémente :** x\n' },
+    (opts) => {
+      const data = computeReconciliation({ ...opts, registre: REGISTRE })
+      const e = data.b2.find((x) => x.book === QA)
+      assert.deepEqual(e.sousDette, [], 'une fiche non déclarée décrit encore ce chapitre')
+      assert.deepEqual(e.horsCode, ['7'])
+    },
+    [{ id: 'fiche', ticket: '#1825' }],
+  )
+})
+
+test('Sens B2 : chapitre décrit par AUCUNE fiche (catalogue seul) → jamais crédité par une dette de fiche', () => {
+  // Beaucoup de chapitres de l'Atlas ne sont cités que par un catalogue, un index ou une épreuve :
+  // aucune fiche ne les décrit, donc aucune dette de fiche ne peut les couvrir.
+  withFixtures(
+    { 'a.ts': '// rien\n' },
+    { 'catalogue-x.md': '# Catalogue\n\nQQA 7 : entrées verbatim\n', 'fiche.md': '# F\n\n## Sujet\n\n**Sources RAW :** `QQA 9 l.10`\n\n**Implémente :** x\n' },
+    (opts) => {
+      const e = computeReconciliation({ ...opts, registre: REGISTRE }).b2.find((x) => x.book === QA)
+      assert.deepEqual(e.sousDette.map((s) => s.ch), ['9'], 'seule la fiche déclarée est créditée')
+      assert.deepEqual(e.horsCode, ['7'], 'le chapitre du catalogue reste hors-code')
+    },
+    [{ id: 'fiche', ticket: '#1825' }],
+  )
+})
+
+// --- LOT F SIMULé : un second cœur extrait AVANT toute implémentation, déclaré par 2 lignes ---
+// Les DEUX portes se jugent ensemble : `raw:reconcile` (aucun trou dur B2 à stocker) et
+// `raw:implemente` (aucun topic orphelin). C'est l'invariant du lot : une dette se déclare UNE fois.
+// Les fiches portent le marqueur que `raw:implemente` vient d'y écrire : aucun code ne les couvre.
+const F1 = '# Atlas RAW — Carac 5e\n\n## Jets\n\n**Sources RAW :** `QQB 3 l.10`\n\n**Implémente :** (non implémenté)\n\n## Avantage\n\n**Sources RAW :** `QQB 3 l.50`\n\n**Implémente :** (non implémenté)\n'
+const F2 = '# Atlas RAW — Combat 5e\n\n## Attaque\n\n**Sources RAW :** `QQB 4 l.10`\n\n**Implémente :** (non implémenté)\n'
+const DOCS_LOT_F = { 'carac-5e.md': F1, 'combat-5e.md': F2 }
+
+/** Les orphelins de `raw:implemente` pour les mêmes docs et la même dette — aucun code n'existe. */
+const orphelinsDe = (dette, docs) => {
+  const fiches = Object.entries(docs).map(([doc, content]) => ({ doc, content, parsed: parseFiche(doc, content) }))
+  const ctx = {
+    index: { impl: [], tests: [], fileLines: new Map(), nonCommentText: new Map() },
+    closure: new Set(),
+    dette: validerDette(dette, registresDeFiches(fiches)),
+    fiches,
+  }
+  return orphelinsDeDette(ctx)
+}
+
+test('#1825 lot F déclaré : 2 entrées de fiche → AUCUN trou dur B2 à stocker ET aucun orphelin', () => {
+  const dette = [{ id: 'carac-5e', ticket: '#1900' }, { id: 'combat-5e', ticket: '#1900' }]
+  withFixtures({ 'a.ts': '// rien\n' }, DOCS_LOT_F, (opts) => {
+    const data = computeReconciliation({ ...opts, registre: REGISTRE })
+    const e = data.b2.find((x) => x.book === QB)
+    assert.deepEqual(e.horsCode, [])
+    assert.deepEqual(e.sousDette.map((s) => `${s.ch}:${s.tickets.join()}`), ['3:#1900', '4:#1900'])
+    assert.deepEqual(trousDurs(data).map((t) => t.cle), [], 'aucune entrée à écrire au stock nominatif')
+    assert.deepEqual(data.dettesDeFiche, [
+      { fiche: 'carac-5e', ticket: '#1900', couverts: 2, total: 2 },
+      { fiche: 'combat-5e', ticket: '#1900', couverts: 1, total: 1 },
+    ])
+  }, dette)
+  assert.deepEqual(orphelinsDe(dette, DOCS_LOT_F), [])
+})
+
+test('#1825 ticket fermé, entrées retirées : les trous B2 et les orphelins RESSURGISSENT, nommés', () => {
+  withFixtures({ 'a.ts': '// rien\n' }, DOCS_LOT_F, (opts) => {
+    const data = computeReconciliation({ ...opts, registre: REGISTRE })
+    assert.deepEqual(data.b2.find((x) => x.book === QB).horsCode, ['3', '4'])
+    assert.deepEqual(trousDurs(data).map((t) => t.cle), [`${PREFIXE_B2}${QB} 3`, `${PREFIXE_B2}${QB} 4`])
+  })
+  assert.deepEqual(orphelinsDe([], DOCS_LOT_F), ['carac-5e#jets', 'carac-5e#avantage', 'combat-5e#attaque'])
+})
+
+test('#1825 une entrée pour DEUX fiches : la couverture est bornée à la fiche déclarée', () => {
+  const dette = [{ id: 'carac-5e', ticket: '#1900' }]
+  withFixtures({ 'a.ts': '// rien\n' }, DOCS_LOT_F, (opts) => {
+    const data = computeReconciliation({ ...opts, registre: REGISTRE })
+    const e = data.b2.find((x) => x.book === QB)
+    assert.deepEqual(e.sousDette.map((s) => s.ch), ['3'])
+    assert.deepEqual(e.horsCode, ['4'], 'la fiche non déclarée garde son trou')
+  }, dette)
+  assert.deepEqual(orphelinsDe(dette, DOCS_LOT_F), ['combat-5e#attaque'])
+})
+
+test('#1825 chapitre co-décrit par une fiche sous dette ET un doc NON-fiche → crédité', () => {
+  // La couverture se juge sur les FICHES : un index ou un catalogue qui mentionne le même chapitre ne
+  // porte aucune dette et n'en portera jamais. Exiger qu'il soit déclaré ne créditerait jamais rien,
+  // l'immense majorité des chapitres de l'Atlas étant aussi cités hors des fiches.
+  const dette = [{ id: 'carac-5e', ticket: '#1900' }, { id: 'combat-5e', ticket: '#1900' }]
+  withFixtures(
+    { 'a.ts': '// rien\n' },
+    { ...DOCS_LOT_F, '00-index.md': '# Index\n\nvoir QQB 3 et QQB 4\n' },
+    (opts) => {
+      const e = computeReconciliation({ ...opts, registre: REGISTRE }).b2.find((x) => x.book === QB)
+      assert.deepEqual(e.sousDette.map((s) => s.ch), ['3', '4'])
+      assert.deepEqual(e.horsCode, [])
+    },
+    dette,
+  )
+})
+
+test('Sens B1 : un marqueur « (non implémenté) » dit s’il est sous dette, sans entrée, ou hors champ Implémente', () => {
+  withFixtures(
+    { 'a.ts': '// rien\n' },
+    {
+      'fiche.md': '# F\n\n## Sujet\n\n**Sources RAW :** `QQA 7 l.10`\n\n**Implémente :** (non implémenté)\n',
+      'libre.md': '# L\n\nprose qui parle de (non implémenté)\n',
+    },
+    (opts) => {
+      const data = computeReconciliation({ ...opts, registre: REGISTRE })
+      const parDoc = new Map(data.nonImpl.map((n) => [n.doc, n]))
+      assert.equal(parDoc.get('fiche.md').topic, 'fiche#sujet')
+      assert.equal(parDoc.get('fiche.md').dette.ticket, '#1825')
+      assert.equal(parDoc.get('libre.md').topic, undefined, 'une prose n’est pas un topic : aucune dette à lui demander')
+      const rapport = renderReport(data)
+      assert.match(rapport, /1 sous dette déclarée · 0 sans entrée de `src\/data\/raw\.manifest\.json` · 1 hors champ/)
+      assert.match(rapport, /\*\*fiche\.md\*\* L7 — dette #1825/)
+      assert.match(rapport, /\*\*libre\.md\*\* L3 — hors champ Implémente \(prose\)/)
+    },
+    [{ id: 'fiche', ticket: '#1825' }],
+  )
+})
 
 test('Sens A LDB : chapitre absent de l\'Atlas → trou dur', () => {
   withFixtures(
     { 'a.ts': '// règle LDB 6 l.3\n' },
     { 'fiche.md': 'rien à voir\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 1)
       assert.equal(data.hardA[0].ch, '6')
     },
@@ -102,8 +268,8 @@ test('Sens A LDB : chapitre cité, ligne hors tolérance → trou fin', () => {
   withFixtures(
     { 'a.ts': '// règle LDB 6 l.500\n' },
     { 'fiche.md': 'LDB 6 l.3\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 0)
       assert.equal(data.softA.length, 1)
       assert.equal(data.softA[0].missCount, 1)
@@ -115,8 +281,8 @@ test('Sens A LDB : chapitre cité, ligne dans ±TOL → couvert', () => {
   withFixtures(
     { 'a.ts': '// règle LDB 6 l.10\n' },
     { 'fiche.md': 'LDB 6 l.3\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 0)
       assert.equal(data.softA.length, 0)
     },
@@ -127,8 +293,8 @@ test('Sens A LDB : chapitre couvert par un catalogue → jamais un trou de ligne
   withFixtures(
     { 'a.ts': '// règle LDB 6 l.500\n' },
     { 'catalogue-x.md': 'LDB 6 mentionné, données verbatim\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 0)
       assert.equal(data.softA.length, 0)
     },
@@ -139,8 +305,8 @@ test('Sens A LDB : chapitre zéro-préfixé au CODE, catalogue non préfixé →
   withFixtures(
     { 'a.ts': '// règle LDB 08 l.500\n' },
     { 'catalogue-x.md': '## [LDB 8] Statut\ndonnées verbatim\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 0)
       assert.equal(data.softA.length, 0)
     },
@@ -151,8 +317,8 @@ test('Sens A LDB : Atlas zéro-préfixé, code non préfixé → la ligne est pi
   withFixtures(
     { 'a.ts': '// règle LDB 8 l.500\n' },
     { 'fiche.md': 'LDB 08 l.3-600\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 0)
       assert.equal(data.softA.length, 0)
     },
@@ -163,8 +329,8 @@ test('Sens A LDB : chapitre RÉELLEMENT absent (numéro différent) reste un tro
   withFixtures(
     { 'a.ts': '// règle LDB 09 l.3\n' },
     { 'catalogue-x.md': '## [LDB 8] Statut\ndonnées verbatim\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 1)
       assert.equal(data.hardA[0].ch, '9')
     },
@@ -175,8 +341,8 @@ test('Sens A (autres livres) : chapitre absent de l\'Atlas → trou dur PAR LIVR
   withFixtures(
     { 'a.ts': '// règle AA 07 l.3\n' },
     { 'fiche.md': 'rien à voir\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 1)
       assert.equal(data.hardA[0].book, 'AA')
       assert.equal(data.hardA[0].ch, '7')
@@ -189,8 +355,8 @@ test('Sens A (autres livres) : chapitre zéro-préfixé au CODE, non préfixé �
   withFixtures(
     { 'a.ts': '// règle AA 02 l.3\n' },
     { 'fiche.md': '## [AA 2] INTRODUCTION\nAA 2 l.3\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 0)
       assert.equal(data.softA.length, 0)
     },
@@ -201,8 +367,8 @@ test('Sens A (autres livres) : chapitre RÉELLEMENT absent (numéro différent) 
   withFixtures(
     { 'a.ts': '// règle AA 09 l.3\n' },
     { 'fiche.md': '## [AA 2] INTRODUCTION\nAA 2 l.3\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 1)
       assert.equal(data.hardA[0].book, 'AA')
       assert.equal(data.hardA[0].ch, '9')
@@ -214,8 +380,8 @@ test('Sens A (autres livres) : chapitre cité, ligne hors tolérance → trou fi
   withFixtures(
     { 'a.ts': '// règle AA 07 l.500\n' },
     { 'fiche.md': 'AA 07 l.3\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 0)
       assert.equal(data.softA.length, 1)
       assert.equal(data.softA[0].book, 'AA')
@@ -228,8 +394,8 @@ test('Sens A (autres livres) : réf SANS chapitre (`AA l.X`) → comptée à par
   withFixtures(
     { 'a.ts': '// règle AA l.4395\n' },
     { 'fiche.md': 'rien à voir\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 0)
       assert.equal(data.softA.length, 0)
       assert.equal(data.codeNoCh.get('AA').length, 1)
@@ -242,8 +408,8 @@ test('Sens A (autres livres) : chapitre couvert par un catalogue (autre livre) �
   withFixtures(
     { 'a.ts': '// règle AA 07 l.500\n' },
     { 'catalogue-x.md': 'AA 07 mentionné, données verbatim\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 0)
       assert.equal(data.softA.length, 0)
     },
@@ -254,8 +420,8 @@ test('Sens A (autres livres) : Atlas en PLAGE (AA 07 l.3-600) couvre toute la pl
   withFixtures(
     { 'a.ts': '// règle AA 07 l.500\n' },
     { 'fiche.md': 'AA 07 l.3-600\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 0)
       assert.equal(data.softA.length, 0)
     },
@@ -266,8 +432,8 @@ test('Sens A (autres livres) : deux livres distincts n\'interfèrent pas l\'un a
   withFixtures(
     { 'a.ts': '// règles AA 07 l.3 et ZI 02 l.9\n' },
     { 'fiche.md': 'AA 07 l.3 couvert. rien pour ZI.\n' },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir })
+    (opts) => {
+      const data = computeReconciliation(opts)
       assert.equal(data.hardA.length, 1)
       assert.equal(data.hardA[0].book, 'ZI')
       assert.equal(data.softA.length, 0)
@@ -362,8 +528,8 @@ test('R2 : deux livres de CŒUR citant le MÊME numéro de chapitre restent DEUX
   withFixtures(
     { 'a.ts': `// règles ${QA} 6 l.500 et ${QB} 6 l.500 et ${QA} l.20\n` },
     { 'fiche.md': `${QA} 6 l.3\n${QB} 6 l.3\n` },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir, registre: REGISTRE })
+    (opts) => {
+      const data = computeReconciliation({ ...opts, registre: REGISTRE })
       // Sens A : deux chapitres-livre DISTINCTS, chacun son propriétaire
       assert.deepEqual(data.softA.map((s) => `${s.book} ${s.ch} ${s.proprietaire}`), [`${QA} 6 fiche.md`, `${QB} 6 fiche.md`])
       // bookStats : deux livres comptés séparément ; la réf de cœur SANS chapitre est COMPTÉE
@@ -377,19 +543,19 @@ test('R2 : deux livres de CŒUR citant le MÊME numéro de chapitre restent DEUX
   )
 })
 
-test('rendu : le résumé de TÊTE porte les trois nombres de Sens B2 PAR livre de cœur, jamais un compte de livres', () => {
+test('rendu : le résumé de TÊTE porte les nombres de Sens B2 PAR livre de cœur, jamais un compte de livres', () => {
   const data = {
     hardA: [], softA: [], nonImpl: [{ doc: 'x.md', row: 1, text: '(non implémenté)' }],
     codeNoCh: new Map(), bookStats: new Map(), codeBooks: new Set(), atlasBooks: new Set(),
     folioIgnored: 0, coeurs: coeursDe(REGISTRE),
     b2: [
-      { book: QA, coeur: '4e', avant: ['26', '38'], credites: ['26'], horsCode: ['38'] },
-      { book: QB, coeur: '5e', avant: [], credites: [], horsCode: [] },
+      { book: QA, coeur: '4e', avant: ['26', '38', '40'], credites: ['26'], sousDette: [{ ch: '40', fiches: ['f'], tickets: ['#1825'] }], horsCode: ['38'] },
+      { book: QB, coeur: '5e', avant: [], credites: [], sousDette: [], horsCode: [] },
     ],
   }
   const tete = renderReport(data).split('\n').find((l) => l.startsWith('**Sens B —'))
-  assert.match(tete, new RegExp(`${QA} \\(cœur 4e\\) : 1 chapitre\\(s\\) cité\\(s\\) par l'Atlas jamais référencé\\(s\\) dans le code \\(avant crédit folio : 2 · 1 crédité\\(s\\)`))
-  assert.match(tete, new RegExp(`${QB} \\(cœur 5e\\) : 0 chapitre\\(s\\).*avant crédit folio : 0 · 0 crédité\\(s\\)`))
+  assert.match(tete, new RegExp(`${QA} \\(cœur 4e\\) : 1 chapitre\\(s\\) cité\\(s\\) par l'Atlas jamais référencé\\(s\\) dans le code \\(avant crédits : 3 · 1 crédité\\(s\\).*· 1 sous dette de fiche déclarée\\)`))
+  assert.match(tete, new RegExp(`${QB} \\(cœur 5e\\) : 0 chapitre\\(s\\).*avant crédits : 0 · 0 crédité\\(s\\).*· 0 sous dette de fiche déclarée\\)`))
   assert.equal(/\d+ livre\(s\) de cœur/.test(tete), false, 'un compte de LIVRES n’est pas un compte de trous')
   // Registre sans aucun cœur : la tête le DIT, elle ne rend pas une phrase tronquée.
   const sansCoeur = renderReport({ ...data, b2: [], coeurs: new Map() }).split('\n').find((l) => l.startsWith('**Sens B —'))
@@ -435,8 +601,8 @@ test('R2 : un chapitre d\'un livre de cœur décrit par l\'Atlas et jamais cité
   withFixtures(
     { 'a.ts': '// aucune réf de code\n' },
     { 'fiche.md': `${QB} 9 l.3\n` },
-    ({ srcDir, rawDir }) => {
-      const data = computeReconciliation({ srcDir, rawDir, registre: REGISTRE })
+    (opts) => {
+      const data = computeReconciliation({ ...opts, registre: REGISTRE })
       const e = data.b2.find((x) => x.book === QB)
       assert.deepEqual(e.avant, ['9'])
       assert.deepEqual(e.horsCode, ['9'])

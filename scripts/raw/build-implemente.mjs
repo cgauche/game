@@ -12,7 +12,11 @@ import { closureOf } from '../guards/lib/importGraph.mjs'
 
 export const RAWDIR = 'docs/raw'
 export const SRC_DIR = 'src'
-export const EXCLUDE_SRC_PREFIX = 'src/gameIso/rig/parts/tenues/defs/' // art de couverture, pas une règle
+const EXCLUDE_SRC_PREFIX = 'src/gameIso/rig/parts/tenues/defs/' // art de couverture, pas une règle
+// Manifests ÉDITORIAUX de `src/data/` : ils parlent DU dépôt (dette d'un topic, inventaire d'une
+// donnée), ils n'appliquent aucune règle. Leurs réfs sont de la méta, jamais une implémentation.
+// La classe est TOUT `src/data/*.manifest.json` : un nom de fichier n'a pas à être deviné ici.
+export const MANIFEST_EDITORIAL_RE = /^src\/data\/[^/]+\.manifest\.json$/
 export const MANIFEST_PATH = 'src/data/raw.manifest.json'
 export const BOOKS_JSON_PATH = 'src/data/books.json'
 export const APP_ROOT_MODULE = 'src/main.tsx'
@@ -33,7 +37,11 @@ export function isFicheDoc(name) {
   if (name.startsWith('epreuve-') || name.startsWith('catalogue-')) return false
   return true
 }
-export const isExcludedSrc = (rel) => rel.startsWith(EXCLUDE_SRC_PREFIX)
+/** Le stem d'une fiche depuis son nom de fichier — dérivation UNIQUE (`parseFiche` et `reconcile`). */
+export const stemDeFiche = (basename) => basename.replace(/\.md$/, '')
+/** Fichier de `src/` qui n'IMPLÉMENTE rien — art de couverture du rig, manifest éditorial : ses
+ *  réfs ne comptent jamais pour l'implémentation d'un topic. Seule exclusion de `indexCode`. */
+export const estHorsImplementation = (rel) => rel.startsWith(EXCLUDE_SRC_PREFIX) || MANIFEST_EDITORIAL_RE.test(rel)
 // Rang du livre dans `BOOKS` (= son rang dans `books.json`), pour l'ordre des puces.
 const RANG_DU_LIVRE = new Map(BOOKS.map(([abbr], i) => [abbr, i]))
 
@@ -273,7 +281,7 @@ export function parseFiche(basename, content) {
   const fields = []
   const anomalies = []
   const slugCount = new Map()
-  const stem = basename.replace(/\.md$/, '')
+  const stem = stemDeFiche(basename)
 
   const { isHeader, inFieldBlock, endIdxOf } = fieldBlockMask(lines)
 
@@ -301,7 +309,7 @@ export function parseFiche(basename, content) {
       slugCount.set(slug, n)
       const topic = `${stem}#${slug}${n > 1 ? '-' + n : ''}`
       // `heading` = le titre VERBATIM d'où le slug du topic est tiré, exposé ici pour que personne
-      // n'ait à re-dériver l'appariement titre↔topic (cf. `headingForTopic`).
+      // n'ait à re-dériver l'appariement titre↔topic (cf. `libelleDe`).
       fields.push({ topic, heading: nearestHeading || stem, headerIdx: i, endIdx: endIdxOf[i], refs: pending })
       pending = []
       continue
@@ -332,7 +340,7 @@ export function indexCode(srcDir = SRC_DIR, abbrMap = null) {
   const folioStats = { byBook: new Map(), noAtlas: 0, noPage: 0 }
   for (const f of fichiersDuCode(srcDir)) {
     const rel = f.replace(/\\/g, '/')
-    if (isExcludedSrc(rel)) continue
+    if (estHorsImplementation(rel)) continue
     const isTest = /\.(test|spec)\./.test(rel)
     const content = readFileSync(f, 'utf8')
     const lines = content.split('\n')
@@ -374,9 +382,11 @@ export function isDeadExport(name, defFile, index) {
   return true
 }
 
-/** Rend le bloc (lignes) d'un champ pour un topic. Déterministe. */
-export function renderBlock(field, ctx) {
-  const { index, closure, manifestByTopic } = ctx
+/** ÉTAT d'un topic, PUR : puces d'implémentation ordonnées, groupes `sans code`, fichiers de test,
+ *  fichiers de code cités. C'est la mesure — le rendu, les stats, les orphelins de dette et
+ *  `reconcile.mjs` la LISENT ; personne ne renifle le Markdown produit pour la retrouver. */
+export function etatDuTopic(field, ctx) {
+  const { index, closure } = ctx
   const { impl, tests } = index
   const tol = ctx.tol ?? TOL
   const refs = field.refs
@@ -394,6 +404,7 @@ export function renderBlock(field, ctx) {
 
   const bullets = []       // { book, ch, order, text }
   const sansCodeGroups = new Map() // 'BOOK|CH' -> { book, ch, spans:[] }
+  const fichiers = new Set()
   for (const g of refGroups.values()) {
     const matchedSpans = []
     const citMap = new Map() // file:row -> cit
@@ -401,7 +412,7 @@ export function renderBlock(field, ctx) {
       const matched = impl.filter((c) => c.book === g.book && c.ch === g.ch && refMatches(ref, c, tol) && folioOk(c))
       if (matched.length) {
         matchedSpans.push([ref.lo, ref.hi])
-        for (const c of matched) citMap.set(c.file + ':' + c.row, c)
+        for (const c of matched) { citMap.set(c.file + ':' + c.row, c); fichiers.add(c.file) }
       } else {
         const k = ref.book + '|' + ref.ch
         if (!sansCodeGroups.has(k)) sansCodeGroups.set(k, { book: ref.book, ch: ref.ch, spans: [] })
@@ -413,31 +424,44 @@ export function renderBlock(field, ctx) {
   }
   bullets.sort(ordreDesPuces)
 
-  const manifest = manifestByTopic.get(field.topic)
-  const manifestBullets = []
-  if (manifest) {
-    if (manifest.ticket) manifestBullets.push(`- dette : ${manifest.ticket}`)
-    if (manifest.bloque) manifestBullets.push(`- bloqué : ${manifest.bloque}`)
-  }
+  // Fichiers de test : mesurés SEULEMENT quand aucune puce ne sort — « cité par tests seulement »
+  // est l'état d'un topic sans implémentation.
+  const testFiles = new Set()
+  if (!bullets.length) for (const ref of refs) for (const c of tests) if (refMatches(ref, c, tol)) testFiles.add(c.file)
 
+  return {
+    topic: field.topic,
+    implemente: bullets.length > 0,
+    bullets,
+    sansCode: [...sansCodeGroups.values()],
+    testFiles,
+    fichiers,
+  }
+}
+
+/** Rend le bloc (lignes) d'un champ pour un topic, depuis son ÉTAT mesuré. Déterministe. */
+export function renderBlock(field, ctx) {
+  const etat = etatDuTopic(field, ctx)
   const out = []
-  if (bullets.length) {
+  if (etat.implemente) {
     out.push(`**Implémente :** ${GEN_TAG}`)
-    for (const b of bullets) out.push(b.text)
-    const sansCode = renderSansCode([...sansCodeGroups.values()])
+    for (const b of etat.bullets) out.push(b.text)
+    const sansCode = renderSansCode(etat.sansCode)
     if (sansCode) out.push(sansCode)
   } else {
     out.push(`**Implémente :** ${NOT_IMPL}`)
-    const testFiles = new Set()
-    for (const ref of refs) for (const c of tests) if (refMatches(ref, c, tol)) testFiles.add(c.file)
-    if (testFiles.size) {
-      const list = [...testFiles].sort()
+    if (etat.testFiles.size) {
+      const list = [...etat.testFiles].sort()
       const shown = list.slice(0, 4).map((f) => `\`${f}\``)
       if (list.length > 4) shown.push(`+${list.length - 4}`)
       out.push(`- cité par tests seulement : ${shown.join(', ')}`)
     }
   }
-  out.push(...manifestBullets)
+  // Une seule lecture du manifest, la couture `detteDe` — c'est ELLE qui sait si la dette d'un topic
+  // implémenté existe (son entrée propre) ou non (la couverture de fiche ne le vise pas).
+  const dette = ctx.dette.detteDe(field.topic, { implemente: etat.implemente })
+  if (dette?.ticket) out.push(`- dette : ${dette.ticket}`)
+  if (dette?.bloque) out.push(`- bloqué : ${dette.bloque}`)
   return out
 }
 
@@ -521,45 +545,89 @@ export function regenerateFiche(basename, content, ctx) {
   return lines.join('\n')
 }
 
+/** Le stem de fiche porté par un `id` de dette : `<fiche>#<slug>` → `<fiche>` ; un stem est le sien. */
+export const stemDe = (id) => String(id).split('#')[0]
+
+/** Titre H1 d'une fiche — il y en a UN, le reste est un défaut de la fiche (fail-fast). */
+function titreDeFiche(stem, content) {
+  const h1 = content.split('\n').map((ln) => HEADING_RE.exec(ln)).filter((m) => m && m[1].length === 1)
+  if (h1.length !== 1) throw new Error(`fiche « ${stem}.md » : ${h1.length} titre(s) H1 (1 attendu)`)
+  return h1[0][2].trim()
+}
+
 /**
- * Titre (heading VERBATIM) de la fiche qui porte un topic `<fiche>#<slug>`. Passe par `parseFiche` —
- * donc par la MÊME dérivation de topic que le générateur, disambiguation `-N` comprise : aucun second
- * slugify parallèle ne peut diverger. Fail-fast si la fiche ou le topic n'existe pas.
+ * Libellé d'un `id` de dette — dérivation UNIQUE des deux formes : un TOPIC `<fiche>#<slug>` rend le
+ * heading VERBATIM de sa section, un STEM de fiche rend le titre H1 de la fiche. Le topic passe par
+ * `parseFiche`, donc par la MÊME dérivation que le générateur, disambiguation `-N` comprise : aucun
+ * second slugify parallèle ne peut diverger. Fail-fast si la fiche, le topic ou le H1 manque.
  * Consommé par la migration `2026-08-28-l1b-10b-rawmanifest-label.mjs` et par sa garde.
  */
-export function headingForTopic(topic, rawDir = RAWDIR) {
-  const stem = String(topic).split('#')[0]
-  const { fields } = parseFiche(stem, readFileSync(join(rawDir, `${stem}.md`), 'utf8'))
-  const hit = fields.filter((f) => f.topic === topic)
-  if (hit.length !== 1) throw new Error(`topic « ${topic} » : ${hit.length} champ(s) dans ${stem}.md (1 attendu)`)
+export function libelleDe(id, rawDir = RAWDIR) {
+  const stem = stemDe(id)
+  const content = readFileSync(join(rawDir, `${stem}.md`), 'utf8')
+  if (stem === String(id)) return titreDeFiche(stem, content)
+  const { fields } = parseFiche(stem, content)
+  const hit = fields.filter((f) => f.topic === id)
+  if (hit.length !== 1) throw new Error(`topic « ${id} » : ${hit.length} champ(s) dans ${stem}.md (1 attendu)`)
   return hit[0].heading
 }
 
-/** Charge + valide le manifest éditorial (fail-fast). `knownTopics` = Set des topics des fiches. */
-export function loadManifest(knownTopics, path = MANIFEST_PATH) {
-  const arr = JSON.parse(readFileSync(path, 'utf8'))
-  return validateManifest(arr, knownTopics)
-}
-export function validateManifest(arr, knownTopics) {
-  const byTopic = new Map()
-  const errors = []
-  // L'entrée de manifest porte son identité en `id` ; sa VALEUR vit dans l'espace des topics de
-  // fiches (`domaine#sujet`), d'où la confrontation à `knownTopics` ci-dessous.
-  for (const e of arr) {
-    if (!e.id) { errors.push(`entrée manifest sans id : ${JSON.stringify(e)}`); continue }
-    if (byTopic.has(e.id)) errors.push(`id dupliqué dans le manifest : ${e.id}`)
-    if (!e.ticket && !e.bloque) errors.push(`entrée manifest sans ticket ni bloque : ${e.id}`)
-    if (knownTopics && !knownTopics.has(e.id)) errors.push(`id inconnu des fiches : ${e.id}`)
-    byTopic.set(e.id, e)
-  }
-  if (errors.length) {
-    const msg = `raw.manifest.json — ${errors.length} erreur(s) d'intégrité :\n  ${errors.join('\n  ')}`
-    throw new Error(msg)
-  }
-  return byTopic
+/** Charge + valide la dette éditoriale (fail-fast). `registres` = `{ topics, stems }` des fiches. */
+export function chargerDette(registres, path = MANIFEST_PATH) {
+  return validerDette(JSON.parse(readFileSync(path, 'utf8')), registres)
 }
 
-/** Contexte complet (index code + closure + manifest) + parse de toutes les fiches. */
+/**
+ * Valide les entrées de dette et rend la couture qui les LIT. Une entrée porte son identité en `id`,
+ * qui vit soit dans l'espace des topics (`<fiche>#<slug>`), soit dans celui des fiches (`<fiche>`) —
+ * d'où la confrontation aux deux registres, dérivés du même parse. Une entrée de FICHE couvre tout
+ * topic de sa fiche sans entrée propre ; sa portée large n'est bornée que par la VIE de son ticket,
+ * `ticket` y est donc obligatoire — à la fermeture du ticket l'entrée part et les topics encore non
+ * implémentés redeviennent orphelins (#1825).
+ */
+export function validerDette(entrees, { topics = new Set(), stems = new Set() } = {}) {
+  const parTopic = new Map()
+  const parFiche = new Map()
+  const erreurs = []
+  for (const e of entrees) {
+    if (!e.id) { erreurs.push(`entrée de dette sans id : ${JSON.stringify(e)}`); continue }
+    if (parTopic.has(e.id) || parFiche.has(e.id)) erreurs.push(`id dupliqué dans le manifest : ${e.id}`)
+    if (!e.ticket && !e.bloque) erreurs.push(`entrée de dette sans ticket ni bloque : ${e.id}`)
+    const estTopic = topics.has(e.id)
+    const estFiche = stems.has(e.id)
+    if (estTopic && estFiche) erreurs.push(`id AMBIGU — topic ET fiche portent « ${e.id} »`)
+    else if (estTopic) parTopic.set(e.id, e)
+    else if (estFiche) {
+      if (!e.ticket) erreurs.push(`entrée de FICHE sans ticket : ${e.id} — une dette de fiche vit aussi longtemps que son ticket`)
+      parFiche.set(e.id, e)
+    } else erreurs.push(`id inconnu des fiches : ${e.id}`)
+  }
+  if (erreurs.length) throw new Error(`raw.manifest.json — ${erreurs.length} erreur(s) d'intégrité :\n  ${erreurs.join('\n  ')}`)
+  return {
+    entrees,
+    /** Dette qui couvre `topic`, la plus spécifique d'abord :
+     *  - son entrée de TOPIC, dans les DEUX états — elle nomme un RESTE choisi par son auteur, et
+     *    la plupart des entrées réelles annotent un topic déjà implémenté ;
+     *  - sinon, et SEULEMENT si le topic n'est pas implémenté, l'entrée de sa FICHE : une couverture
+     *    large ne dit rien d'un topic implémenté, que personne n'a examiné (#1825). */
+    detteDe: (topic, { implemente } = {}) =>
+      parTopic.get(topic) ?? (implemente ? undefined : parFiche.get(stemDe(topic))),
+    /** Dette déclarée au niveau d'une FICHE (son stem), ou `undefined`. */
+    detteDeFiche: (stem) => parFiche.get(stem),
+    /** Les entrées de FICHE déclarées, dans l'ordre du manifest. */
+    entreesDeFiche: () => [...parFiche.values()],
+  }
+}
+
+/** Les topics qu'une entrée de FICHE couvre RÉELLEMENT parmi `topics` (`{ topic, implemente }` de sa
+ *  fiche) : ni implémentés, ni porteurs d'une entrée propre. Passe par `detteDe`, donc par la MÊME
+ *  règle de couverture que le rendu — source unique de la garde « entrée sans objet » et de la
+ *  ventilation du rapport de réconciliation. */
+export function couvertureDe(entree, topics, dette) {
+  return topics.filter((t) => dette.detteDe(t.topic, { implemente: t.implemente }) === entree)
+}
+
+/** Contexte complet (index code + closure + dette) + parse de toutes les fiches. */
 export function buildContext({ rawDir = RAWDIR, srcDir = SRC_DIR, manifestPath = MANIFEST_PATH, booksPath = BOOKS_JSON_PATH } = {}) {
   const index = indexCode(srcDir, loadAbbrMap(booksPath))
   const closure = closureOf([APP_ROOT_MODULE])
@@ -568,51 +636,75 @@ export function buildContext({ rawDir = RAWDIR, srcDir = SRC_DIR, manifestPath =
     const content = readText(join(rawDir, doc))
     return { doc, content, parsed: parseFiche(doc, content) }
   })
-  const knownTopics = new Set()
-  for (const fi of fiches) for (const f of fi.parsed.fields) knownTopics.add(f.topic)
-  const manifestByTopic = loadManifest(knownTopics, manifestPath)
+  const { topics, stems } = registresDeFiches(fiches)
+  const dette = chargerDette({ topics, stems }, manifestPath)
   const folioWinners = computeFolioWinners(fiches, index)
-  return { index, closure, manifestByTopic, fiches, rawDir, folioWinners }
+  return { index, closure, dette, fiches, rawDir, folioWinners }
 }
 
-/** Stats + rendu par topic (pour --dry / stdout). */
-export function computeAll(ctx) {
+/** Les deux espaces d'`id` d'une dette, du MÊME parse : les topics, et les fiches qui les portent. */
+export function registresDeFiches(fiches) {
+  const topics = new Set()
+  const stems = new Set()
+  for (const fi of fiches) for (const f of fi.parsed.fields) { topics.add(f.topic); stems.add(stemDe(f.topic)) }
+  return { topics, stems }
+}
+
+/** États des topics (mesure PURE, `etatDuTopic`) + anomalies de champ des fiches. */
+export function etatsDesTopics(ctx) {
   const perTopic = []
   const anomalies = []
   for (const fi of ctx.fiches) {
     for (const a of fi.parsed.anomalies) anomalies.push(a)
-    for (const f of fi.parsed.fields) {
-      const block = renderBlock(f, ctx)
-      const implemented = block[0].includes(GEN_TAG)
-      const testsOnly = block.some((l) => l.startsWith('- cité par tests seulement'))
-      let files = 0
-      if (implemented) {
-        const set = new Set()
-        for (const l of block) for (const m of l.matchAll(/`(src\/[^`]+)`/g)) set.add(m[1])
-        files = set.size
-      }
-      perTopic.push({ topic: f.topic, implemented, testsOnly, files })
-    }
+    for (const f of fi.parsed.fields) perTopic.push(etatDuTopic(f, ctx))
   }
   return { perTopic, anomalies }
 }
 
-/** Garde #434 (Sens B) : tout topic rendu `(non implémenté)` (dette ou blocage RÉEL) DOIT porter une
- *  entrée de manifest (`ticket` ou `bloque`, garanti par `validateManifest`). Retourne les topics
- *  ORPHELINS (non implémenté SANS entrée) — un topic implémenté n'est jamais orphelin. */
-export function findManifestOrphans(ctx, all = computeAll(ctx)) {
-  return all.perTopic.filter((t) => !t.implemented && !ctx.manifestByTopic.has(t.topic)).map((t) => t.topic)
+/** Garde #434 (Sens B) : tout topic non implémenté DOIT être couvert par une dette déclarée (entrée
+ *  de topic ou entrée de sa fiche). Retourne les topics ORPHELINS — un topic implémenté n'en est
+ *  jamais un. */
+export function orphelinsDeDette(ctx, all = etatsDesTopics(ctx)) {
+  return all.perTopic.filter((t) => !t.implemente && !ctx.dette.detteDe(t.topic, { implemente: false })).map((t) => t.topic)
+}
+
+/** Dual de `orphelinsDeDette` (#1825) : une entrée de FICHE qui ne couvre plus AUCUN topic — tous
+ *  implémentés, ou tous porteurs de leur entrée propre — est SANS OBJET. Sans cette garde elle
+ *  survivrait en silence jusqu'à la fermeture de son ticket, en masquant une couverture qui ne
+ *  couvre rien. Rend `{ entree, couverts, total }` pour chaque entrée sans objet. */
+export function dettesDeFicheSansObjet(ctx, all = etatsDesTopics(ctx)) {
+  const parFiche = new Map()
+  for (const t of all.perTopic) {
+    const stem = stemDe(t.topic)
+    if (!parFiche.has(stem)) parFiche.set(stem, [])
+    parFiche.get(stem).push(t)
+  }
+  return ctx.dette.entreesDeFiche()
+    .map((entree) => {
+      const topics = parFiche.get(entree.id) ?? []
+      return { entree, couverts: couvertureDe(entree, topics, ctx.dette).length, total: topics.length }
+    })
+    .filter((e) => e.couverts === 0)
 }
 
 function printOrphans(orphans) {
-  console.error(`raw:implemente — ${orphans.length} topic(s) NON IMPLÉMENTÉ(s) sans entrée de manifest :`)
+  console.error(`raw:implemente — ${orphans.length} topic(s) NON IMPLÉMENTÉ(s) sans dette déclarée :`)
   for (const t of orphans) console.error(`  ${t}`)
   console.error('  → ticketer la dette (entrée `ticket`) ou consigner le blocage (entrée `bloque`) dans src/data/raw.manifest.json.')
 }
 
+function printSansObjet(sansObjet) {
+  console.error(`raw:implemente — ${sansObjet.length} entrée(s) de FICHE SANS OBJET (plus aucun topic couvert) :`)
+  for (const { entree, total } of sansObjet)
+    console.error(`  ${entree.id} (${entree.ticket}) — les ${total} topic(s) de docs/raw/${entree.id}.md sont implémentés ou portent leur propre entrée`)
+  console.error('  → retirer l\'entrée de src/data/raw.manifest.json ; fermer ou re-scoper son ticket.')
+}
+
+const citeParTestsSeulement = (t) => !t.implemente && t.testFiles.size > 0
+
 function printStats(ctx, { perTopic, anomalies }, touched) {
-  const impl = perTopic.filter((t) => t.implemented).length
-  const testsOnly = perTopic.filter((t) => !t.implemented && t.testsOnly).length
+  const impl = perTopic.filter((t) => t.implemente).length
+  const testsOnly = perTopic.filter(citeParTestsSeulement).length
   const notImpl = perTopic.length - impl - testsOnly
   console.log(`fiches : ${touched}/${ctx.fiches.length} · champs : ${perTopic.length} · implémentés : ${impl} · non implémentés : ${notImpl} · tests seulement : ${testsOnly} · anomalies (non-début-de-ligne) : ${anomalies.length}`)
   for (const a of anomalies) console.log(`  anomalie ${a.doc}:${a.row} — ${a.text}`)
@@ -635,8 +727,9 @@ function main() {
   const ctx = buildContext()
   ctx.folioExclusive = args.includes('--folio-exclusive') // expérience #434 (mesure avant adoption)
 
-  const all = computeAll(ctx)
-  const orphans = findManifestOrphans(ctx, all)
+  const all = etatsDesTopics(ctx)
+  const orphans = orphelinsDeDette(ctx, all)
+  const sansObjet = dettesDeFicheSansObjet(ctx, all)
 
   const regenerated = ctx.fiches.map((fi) => ({ doc: fi.doc, content: regenerateFiche(fi.doc, fi.content, ctx), orig: fi.content }))
   const touched = regenerated.filter((r) => r.content !== r.orig)
@@ -644,9 +737,10 @@ function main() {
   if (DRY) {
     printStats(ctx, all, touched.length)
     if (orphans.length) printOrphans(orphans)
+    if (sansObjet.length) printSansObjet(sansObjet)
     console.log('--- topics ---')
     for (const t of all.perTopic) {
-      const state = t.implemented ? `implémenté(${t.files} fichiers)` : t.testsOnly ? 'tests seulement' : 'non implémenté'
+      const state = t.implemente ? `implémenté(${t.fichiers.size} fichiers)` : citeParTestsSeulement(t) ? 'tests seulement' : 'non implémenté'
       console.log(`${t.topic} → ${state}`)
     }
     return
@@ -661,14 +755,17 @@ function main() {
       failed = true
     }
     if (orphans.length) { printOrphans(orphans); failed = true }
+    if (sansObjet.length) { printSansObjet(sansObjet); failed = true }
     if (failed) process.exit(1)
-    console.log('raw:implemente — OK (champs Implémente à jour · tout non-implémenté ticketé)')
+    console.log('raw:implemente — OK (champs Implémente à jour · tout non-implémenté ticketé · toute dette de fiche couvre un topic)')
     return
   }
 
   for (const r of touched) writeFileSync(join(ctx.rawDir, r.doc), r.content)
   printStats(ctx, all, touched.length)
-  if (orphans.length) { printOrphans(orphans); process.exit(1) }
+  if (orphans.length) printOrphans(orphans)
+  if (sansObjet.length) printSansObjet(sansObjet)
+  if (orphans.length || sansObjet.length) process.exit(1)
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)

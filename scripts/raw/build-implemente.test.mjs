@@ -6,10 +6,10 @@ import assert from 'node:assert/strict'
 import { refRe, buildFolioMap, folioRangeIn, allAbbrAlternation } from './_lib.mjs'
 import {
   slugify, refsWithSpans, declNameOf, symbolFor, refMatches, mergeSpans,
-  parseFiche, renderBlock, regenerateFiche, validateManifest, isExcludedSrc, indexCode, isDeadExport,
+  parseFiche, renderBlock, regenerateFiche, validerDette, estHorsImplementation, indexCode, isDeadExport,
   GUARD_LEAK_RE, GEN_TAG, NOT_IMPL,
-  buildAbbrMap, folioCitationsFromJson, findManifestOrphans, computeAll, computeFolioWinners,
-  headingForTopic, MANIFEST_PATH, ordreDesPuces,
+  buildAbbrMap, folioCitationsFromJson, orphelinsDeDette, etatsDesTopics, etatDuTopic, computeFolioWinners,
+  libelleDe, MANIFEST_PATH, ordreDesPuces, registresDeFiches, dettesDeFicheSansObjet,
 } from './build-implemente.mjs'
 import { closureOf } from '../guards/lib/importGraph.mjs'
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs'
@@ -63,7 +63,11 @@ function makeIndex(files) {
   }
   return { impl, tests, fileLines, nonCommentText }
 }
-const ctxOf = (index, { closure = new Set(), manifest = new Map() } = {}) => ({ index, closure, manifestByTopic: manifest })
+// Dette de FIXTURE : les entrées passent par la vraie couture (`validerDette`), jamais par une Map
+// posée à la main — un test qui contourne la résolution ne garde pas la résolution.
+const detteDe = (entrees = [], registres = { topics: new Set(entrees.map((e) => e.id)), stems: new Set() }) =>
+  validerDette(entrees, registres)
+const ctxOf = (index, { closure = new Set(), dette = detteDe() } = {}) => ({ index, closure, dette })
 
 test('slugify : accents pliés, non-alphanumériques → tirets comprimés/rognés', () => {
   assert.equal(slugify('Forcer le rythme et épuisement (MDG)'), 'forcer-le-rythme-et-epuisement-mdg')
@@ -198,9 +202,12 @@ test('declNameOf : reconnaît function/const/class/type', () => {
   assert.equal(declNameOf('  const notTopLevel = 1'), null)
 })
 
-test('isExcludedSrc : art de rig (tenues/defs) exclu', () => {
-  assert.equal(isExcludedSrc('src/gameIso/rig/parts/tenues/defs/Loup.ts'), true)
-  assert.equal(isExcludedSrc('src/engine/combat.ts'), false)
+test('estHorsImplementation : art de rig (tenues/defs) et manifests ÉDITORIAUX exclus — une méta n’implémente rien', () => {
+  assert.equal(estHorsImplementation('src/gameIso/rig/parts/tenues/defs/Loup.ts'), true)
+  assert.equal(estHorsImplementation('src/data/raw.manifest.json'), true)
+  assert.equal(estHorsImplementation('src/data/donnees.manifest.json'), true)
+  assert.equal(estHorsImplementation('src/engine/combat.ts'), false)
+  assert.equal(estHorsImplementation('src/data/creatures.json'), false)
 })
 
 test('indexCode : fichiers .test./.spec. → index SÉPARÉ (jamais implémentation)', () => {
@@ -302,8 +309,7 @@ test('renderBlock : topic sans match non-test → (non implémenté) + cité par
   const index = makeIndex([
     { rel: 'src/engine/x.test.ts', content: '// LDB 30 l.5\n', isTest: true },
   ])
-  const manifest = new Map([['a#s', { topic: 'a#s', ticket: '#463' }]])
-  const ctx = ctxOf(index, { manifest })
+  const ctx = ctxOf(index, { dette: detteDe([{ id: 'a#s', ticket: '#463' }]) })
   const field = parseFiche('a.md', '## S\n\n**Sources RAW :** `LDB 30 l.5`\n\n**Implémente :** x\n').fields[0]
   const block = renderBlock(field, ctx)
   assert.equal(block[0], `**Implémente :** ${NOT_IMPL}`)
@@ -345,13 +351,41 @@ test('regenerateFiche : SEUL le bloc du champ change, le reste octet pour octet 
   assert.ok(!after.includes('ancien texte à écraser'))
 })
 
-test('validateManifest : id inconnu / doublon / entrée sans ticket ni bloque → fail-fast', () => {
-  const known = new Set(['a#s'])
-  assert.throws(() => validateManifest([{ id: 'a#inconnu', ticket: '#1' }], known), /id inconnu des fiches/)
-  assert.throws(() => validateManifest([{ id: 'a#s', ticket: '#1' }, { id: 'a#s', ticket: '#2' }], known), /dupliqué/)
-  assert.throws(() => validateManifest([{ id: 'a#s' }], known), /sans ticket ni bloque/)
-  assert.throws(() => validateManifest([{ ticket: '#1' }], known), /entrée manifest sans id/)
-  assert.doesNotThrow(() => validateManifest([{ id: 'a#s', bloque: 'attente RAW' }], known))
+// --- Dette éditoriale (#1825) : une dette se déclare UNE fois, à la granularité de son ticket ---
+
+const REGISTRES = { topics: new Set(['a#s', 'a#t']), stems: new Set(['a']) }
+
+test('validerDette : id inconnu / doublon / sans ticket ni bloque / id AMBIGU → fail-fast', () => {
+  assert.throws(() => validerDette([{ id: 'a#inconnu', ticket: '#1' }], REGISTRES), /id inconnu des fiches/)
+  assert.throws(() => validerDette([{ id: 'a#s', ticket: '#1' }, { id: 'a#s', ticket: '#2' }], REGISTRES), /dupliqué/)
+  assert.throws(() => validerDette([{ id: 'a#s' }], REGISTRES), /sans ticket ni bloque/)
+  assert.throws(() => validerDette([{ ticket: '#1' }], REGISTRES), /entrée de dette sans id/)
+  assert.throws(
+    () => validerDette([{ id: 'a', ticket: '#1' }], { topics: new Set(['a']), stems: new Set(['a']) }),
+    /AMBIGU/,
+  )
+  assert.doesNotThrow(() => validerDette([{ id: 'a#s', bloque: 'attente RAW' }], REGISTRES))
+})
+
+test('validerDette : une entrée de FICHE exige un `ticket` — sa portée large est bornée par la vie du ticket', () => {
+  assert.throws(() => validerDette([{ id: 'a', bloque: 'plus tard' }], REGISTRES), /entrée de FICHE sans ticket/)
+  assert.doesNotThrow(() => validerDette([{ id: 'a', ticket: '#1825' }], REGISTRES))
+})
+
+test('detteDe : entrée de TOPIC d’abord, entrée de FICHE ensuite, sinon rien', () => {
+  const dette = validerDette([{ id: 'a', ticket: '#1825' }, { id: 'a#s', ticket: '#463' }], REGISTRES)
+  assert.equal(dette.detteDe('a#s').ticket, '#463', 'la plus spécifique l’emporte')
+  assert.equal(dette.detteDe('a#t').ticket, '#1825', 'un topic sans entrée propre est couvert par sa fiche')
+  assert.equal(dette.detteDe('b#u'), undefined, 'une autre fiche n’est pas couverte')
+  assert.equal(dette.detteDeFiche('a').ticket, '#1825')
+  assert.equal(dette.detteDeFiche('b'), undefined)
+})
+
+test('registresDeFiches : les deux espaces d’id viennent du MÊME parse (topics et leurs fiches)', () => {
+  const content = '## Un\n\n**Implémente :** x\n\n## Deux\n\n**Implémente :** x\n'
+  const { topics, stems } = registresDeFiches([{ doc: 'a.md', content, parsed: parseFiche('a.md', content) }])
+  assert.deepEqual([...topics].sort(), ['a#deux', 'a#un'])
+  assert.deepEqual([...stems], ['a'])
 })
 
 // --- Pont FOLIO (#434) ---
@@ -501,25 +535,86 @@ test('computeFolioWinners : deux topics sur la même plage → meilleur recouvre
 
 // --- Garde manifest (Sens B, #434) ---
 
-test('findManifestOrphans : non-impl sans entrée → orphelin ; non-impl AVEC entrée → OK ; impl sans entrée → OK', () => {
+// Fiche de fixture : un topic implémenté, deux non implémentés — le socle des tests d'orphelins.
+const FICHE_TROIS_TOPICS = [
+  '# Atlas RAW — Fixture', '',
+  '## Impl Topic', '', '**Sources RAW :** `LDB 6 l.10`', '', '**Implémente :** x', '',
+  '## Non Tickete', '', '**Sources RAW :** `LDB 99 l.500`', '', '**Implémente :** x', '',
+  '## Orphelin', '', '**Sources RAW :** `LDB 88 l.400`', '', '**Implémente :** x', '',
+].join('\n')
+const ctxTroisTopics = (entrees) => {
   const index = makeIndex([
     { rel: 'src/engine/f.ts', content: ['// LDB 6 l.10', 'export const foo = 1'].join('\n') },
   ])
-  const content = [
-    '## Impl Topic', '', '**Sources RAW :** `LDB 6 l.10`', '', '**Implémente :** x', '',
-    '## Non Tickete', '', '**Sources RAW :** `LDB 99 l.500`', '', '**Implémente :** x', '',
-    '## Orphelin', '', '**Sources RAW :** `LDB 88 l.400`', '', '**Implémente :** x', '',
-  ].join('\n')
-  const fiches = [{ doc: 'a.md', content, parsed: parseFiche('a.md', content) }]
-  const manifestByTopic = new Map([['a#non-tickete', { topic: 'a#non-tickete', ticket: '#1' }]])
-  const ctx = { index, closure: new Set(), manifestByTopic, fiches }
-  // sanity : les 3 états attendus
-  const states = new Map(computeAll(ctx).perTopic.map((t) => [t.topic, t.implemented]))
-  assert.equal(states.get('a#impl-topic'), true)
-  assert.equal(states.get('a#non-tickete'), false)
-  assert.equal(states.get('a#orphelin'), false)
-  // seul l'orphelin (non-impl SANS entrée) est retourné
-  assert.deepEqual(findManifestOrphans(ctx), ['a#orphelin'])
+  const fiches = [{ doc: 'a.md', content: FICHE_TROIS_TOPICS, parsed: parseFiche('a.md', FICHE_TROIS_TOPICS) }]
+  return { index, closure: new Set(), dette: validerDette(entrees, registresDeFiches(fiches)), fiches }
+}
+
+test('etatsDesTopics : l’état est MESURÉ, pas reniflé au rendu (implémenté / non implémenté)', () => {
+  const ctx = ctxTroisTopics([])
+  const etats = new Map(etatsDesTopics(ctx).perTopic.map((t) => [t.topic, t]))
+  assert.equal(etats.get('a#impl-topic').implemente, true)
+  assert.deepEqual([...etats.get('a#impl-topic').fichiers], ['src/engine/f.ts'])
+  assert.equal(etats.get('a#non-tickete').implemente, false)
+  assert.equal(etats.get('a#orphelin').implemente, false)
+  // même mesure depuis le champ seul, sans passer par le rendu
+  const field = parseFiche('a.md', FICHE_TROIS_TOPICS).fields[0]
+  assert.equal(etatDuTopic(field, ctx).implemente, true)
+})
+
+test('orphelinsDeDette : non-impl sans dette → orphelin ; couvert par une entrée de TOPIC → OK ; impl → OK', () => {
+  const ctx = ctxTroisTopics([{ id: 'a#non-tickete', ticket: '#1' }])
+  assert.deepEqual(orphelinsDeDette(ctx), ['a#orphelin'])
+})
+
+test('orphelinsDeDette : une entrée de FICHE couvre TOUS ses topics non implémentés ; sans elle, tous orphelins', () => {
+  assert.deepEqual(orphelinsDeDette(ctxTroisTopics([{ id: 'a', ticket: '#1825' }])), [])
+  assert.deepEqual(orphelinsDeDette(ctxTroisTopics([])), ['a#non-tickete', 'a#orphelin'])
+})
+
+test('renderBlock : un topic couvert par une entrée de FICHE rend la MÊME puce de dette qu’une entrée de topic', () => {
+  const ctx = ctxTroisTopics([{ id: 'a', ticket: '#1825' }])
+  const field = parseFiche('a.md', FICHE_TROIS_TOPICS).fields.find((f) => f.topic === 'a#orphelin')
+  assert.deepEqual(renderBlock(field, ctx), [`**Implémente :** ${NOT_IMPL}`, '- dette : #1825'])
+})
+
+// L'ATLAS NE MENT PAS : une couverture de FICHE ne vise que les topics NON implémentés. Dire
+// « dette : #N » sous un champ généré complet ferait porter à un topic que PERSONNE n'a examiné la
+// dette de sa voisine. L'entrée de TOPIC, elle, nomme un reste choisi : elle se rend dans les deux états.
+test('#1825 renderBlock : la dette de FICHE ne se rend PAS sous un topic implémenté ; celle du TOPIC, si', () => {
+  const parFiche = ctxTroisTopics([{ id: 'a', ticket: '#1825' }])
+  const impl = parseFiche('a.md', FICHE_TROIS_TOPICS).fields.find((f) => f.topic === 'a#impl-topic')
+  assert.deepEqual(renderBlock(impl, parFiche).filter((l) => l.startsWith('- dette')), [],
+    'un topic implémenté affiche la dette de sa FICHE : l’Atlas ment')
+  const parTopic = ctxTroisTopics([{ id: 'a#impl-topic', ticket: '#511' }])
+  assert.deepEqual(renderBlock(impl, parTopic).filter((l) => l.startsWith('- dette')), ['- dette : #511'])
+  // et la couture le dit elle-même, pas le rendu
+  assert.equal(parFiche.dette.detteDe('a#impl-topic', { implemente: true }), undefined)
+  assert.equal(parFiche.dette.detteDe('a#impl-topic', { implemente: false }).ticket, '#1825')
+})
+
+// Dual de l'orphelin : la dette de fiche DOIT décroître. Une entrée qui ne couvre plus aucun topic
+// ne masque plus rien — elle survivrait muette jusqu'à la fermeture de son ticket.
+test('#1825 dettesDeFicheSansObjet : entrée de fiche qui ne couvre plus AUCUN topic → refusée, nommée', () => {
+  const couvrante = ctxTroisTopics([{ id: 'a', ticket: '#1825' }])
+  assert.deepEqual(dettesDeFicheSansObjet(couvrante), [], '2 topics non implémentés : l’entrée a un objet')
+  // les deux topics non implémentés prennent leur entrée PROPRE : la fiche ne couvre plus rien
+  const vide = ctxTroisTopics([
+    { id: 'a', ticket: '#1825' },
+    { id: 'a#non-tickete', ticket: '#1' },
+    { id: 'a#orphelin', bloque: 'attente VF' },
+  ])
+  const sansObjet = dettesDeFicheSansObjet(vide)
+  assert.deepEqual(sansObjet.map((s) => [s.entree.id, s.entree.ticket, s.couverts, s.total]), [['a', '#1825', 0, 3]])
+  // une entrée de TOPIC sur un topic implémenté reste VIVANTE (elle nomme un reste) — jamais sans objet
+  assert.deepEqual(dettesDeFicheSansObjet(ctxTroisTopics([{ id: 'a#impl-topic', ticket: '#511' }])), [])
+})
+
+test('le manifest éditorial n’IMPLÉMENTE rien : ses réfs n’entrent pas dans l’index de code', () => {
+  const brut = readFileSync(MANIFEST_PATH, 'utf8')
+  assert.match(brut, refRe(), 'fixture vide : le manifest réel ne cite plus aucune règle, le test ne prouve plus rien')
+  const idx = indexCode('src')
+  assert.deepEqual(idx.impl.filter((c) => c.file.endsWith('.manifest.json')).map((c) => c.file), [])
 })
 
 test('renderBlock : topic non matché par lignes mais MATCHÉ par folio → implémenté, id = symbole', () => {
@@ -527,7 +622,7 @@ test('renderBlock : topic non matché par lignes mais MATCHÉ par folio → impl
     impl: [{ book: 'AA', ch: 9, lo: 146, hi: 160, file: 'src/data/creatures.json', row: 5160, isTs: false, sym: 'demigriffon-adulte-dresse' }],
     tests: [], fileLines: new Map(), nonCommentText: new Map(),
   }
-  const ctx = { index, closure: new Set(), manifestByTopic: new Map() }
+  const ctx = ctxOf(index)
   const field = parseFiche('a.md', '## Demigriffon\n\n**Sources RAW :** `AA 9 l.150`\n\n**Implémente :** ancien\n').fields[0]
   const block = renderBlock(field, ctx)
   assert.ok(block[0].includes(GEN_TAG))
@@ -538,26 +633,30 @@ test('renderBlock : topic non matché par lignes mais MATCHÉ par folio → impl
   assert.deepEqual(renderBlock(field, ctx), renderBlock(field, ctx))
 })
 
-test('headingForTopic : rend le titre VERBATIM d’où le slug du topic est tiré (disambiguation -N comprise)', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'raw-heading-'))
+test('libelleDe : un TOPIC rend son heading VERBATIM (disambiguation -N comprise), une FICHE rend son H1', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'raw-libelle-'))
   try {
     writeFileSync(join(dir, 'a.md'), [
+      '# Atlas RAW — Magie (règles)', '',
       '## Seconde Vue', '', '**Implémente :** x', '',
       '## Magie Noire (Dhar)', '', '**Implémente :** x', '',
       '### Seconde Vue', '', '**Implémente :** x', '',
     ].join('\n'))
-    assert.equal(headingForTopic('a#seconde-vue', dir), 'Seconde Vue')
-    assert.equal(headingForTopic('a#magie-noire-dhar', dir), 'Magie Noire (Dhar)')
-    assert.equal(headingForTopic('a#seconde-vue-2', dir), 'Seconde Vue') // 2ᵉ porteur du même slug
-    assert.throws(() => headingForTopic('a#absent', dir), /0 champ\(s\)/)
+    assert.equal(libelleDe('a#seconde-vue', dir), 'Seconde Vue')
+    assert.equal(libelleDe('a#magie-noire-dhar', dir), 'Magie Noire (Dhar)')
+    assert.equal(libelleDe('a#seconde-vue-2', dir), 'Seconde Vue') // 2ᵉ porteur du même slug
+    assert.equal(libelleDe('a', dir), 'Atlas RAW — Magie (règles)')
+    assert.throws(() => libelleDe('a#absent', dir), /0 champ\(s\)/)
+    writeFileSync(join(dir, 'b.md'), '## Sans titre\n\n**Implémente :** x\n')
+    assert.throws(() => libelleDe('b', dir), /0 titre\(s\) H1/)
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
-test('raw.manifest.json : le `label` de chaque entrée EST le titre d’Atlas que son topic adresse', () => {
+test('raw.manifest.json : le `label` de chaque entrée EST le titre d’Atlas que son `id` adresse', () => {
   const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'))
   assert.ok(manifest.length > 0)
   const divergents = manifest
-    .map((e) => ({ id: e.id, label: e.label, titre: headingForTopic(e.id) }))
+    .map((e) => ({ id: e.id, label: e.label, titre: libelleDe(e.id) }))
     .filter((x) => x.label !== x.titre)
     .map((x) => `${x.id} : label ${JSON.stringify(x.label)} ≠ titre ${JSON.stringify(x.titre)}`)
   assert.deepEqual(divergents, [])

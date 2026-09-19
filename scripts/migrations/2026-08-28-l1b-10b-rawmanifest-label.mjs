@@ -1,8 +1,8 @@
 /**
  * Migration #1467 L1b V-P0d — les 8 entrées de `raw.manifest.json` reçoivent leur `label`.
  *
- * MOTIF : l'enveloppe exige `label` non vide. Le libellé d'un topic de manifeste existe DÉJÀ : c'est
- * le TITRE de la section d'Atlas qu'il adresse. La migration le DÉRIVE par `headingForTopic`
+ * MOTIF : l'enveloppe exige `label` non vide. Le libellé d'une entrée de manifeste existe DÉJÀ : c'est
+ * le TITRE de la section d'Atlas qu'elle adresse. La migration le DÉRIVE par `libelleDe`
  * (`scripts/raw/build-implemente.mjs`) — la propre dérivation de topic du générateur, donc le même
  * `slugify` et la même disambiguation `-N` : aucune table en dur, aucun second slugify parallèle.
  *
@@ -17,7 +17,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { headingForTopic } from '../raw/build-implemente.mjs';
+import { libelleDe } from '../raw/build-implemente.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const CIBLE = path.join(ROOT, 'src/data/raw.manifest.json');
@@ -45,7 +45,7 @@ for (const [i, entree] of data.entries()) {
   }
   let label;
   try {
-    label = headingForTopic(entree.id, RAWDIR);
+    label = libelleDe(entree.id, RAWDIR);
   } catch (e) {
     erreurs.push(e.message);
     continue;
@@ -78,7 +78,7 @@ const echecs = [];
 if (apres.length !== data.length) echecs.push(`POST — ${apres.length} entrée(s) ≠ ${data.length}`);
 for (const e of apres) {
   if (typeof e.label !== 'string' || e.label === '') echecs.push(`POST — ${e.id} : label vide/absent`);
-  else if (e.label !== headingForTopic(e.id, RAWDIR)) echecs.push(`POST — ${e.id} : label DÉSACCORDÉ du titre d'Atlas`);
+  else if (e.label !== libelleDe(e.id, RAWDIR)) echecs.push(`POST — ${e.id} : label DÉSACCORDÉ du titre d'Atlas`);
   if (Object.keys(e)[0] !== 'id') echecs.push(`POST — ${e.id} : première clé ${Object.keys(e)[0]} ≠ id`);
 }
 

@@ -2,12 +2,13 @@
 
 > Déterministe (`node scripts/raw/reconcile.mjs`). **Sens A** = règles que l'app applique
 > (réfs `<ABRÉV> NN l.X` dans `src/`, tous livres) absentes de l'Atlas. **Sens B1** = lignes de
-> l'Atlas marquées « (non implémenté) », tous docs. **Sens B2** = chapitres que l'Atlas décrit
-> hors du code, par livre de CŒUR (champ `coeur` de `books.json`).
+> l'Atlas marquées « (non implémenté) », tous docs, ventilées par état de dette. **Sens B2** =
+> chapitres que l'Atlas décrit hors du code, par livre de CŒUR (champ `coeur` de `books.json`),
+> après crédit du folio d'une donnée et de la dette de fiche déclarée au manifest.
 > Tolérance ligne = ±20.
 
 **Sens A — code → Atlas (tous livres)** : 12 chapitre(s)-livre cités par le code & absents de l'Atlas · 11 chapitre(s)-livre couverts avec des lignes non pinées · 2 réf(s) sans chapitre (non réconciliables par cette mesure). Réfs folio (`ABBR NN p.X`, #606) côté Atlas : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).
-**Sens B — Atlas → code** : 3 marqueur(s) « (non implémenté) » (tous docs) · LDB (cœur 4e) : 1 chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédit folio : 12 · 11 crédité(s) par une source folio de `src/data`) · CRB (cœur 5e) : 0 chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédit folio : 0 · 0 crédité(s) par une source folio de `src/data`).
+**Sens B — Atlas → code** : 3 marqueur(s) « (non implémenté) » (tous docs), dont 1 sous dette déclarée, 0 sans entrée et 2 hors champ Implémente · LDB (cœur 4e) : 1 chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédits : 12 · 11 crédité(s) par une source folio de `src/data` · 0 sous dette de fiche déclarée) · CRB (cœur 5e) : 0 chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédits : 0 · 0 crédité(s) par une source folio de `src/data` · 0 sous dette de fiche déclarée).
 
 ## A0 — Résumé Sens A par livre
 
@@ -157,30 +158,40 @@
 
 ## B1 — Règles décrites par l'Atlas marquées « (non implémenté) »
 
-- **00-index.md** L33 — le code mort détecté, `(non implémenté)` sinon. Source éditoriale (dettes/blocages) :
-- **00-index.md** L86 — - **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non
-- **bestiaire.md** L382 — **Implémente :** (non implémenté)
+1 sous dette déclarée · 0 sans entrée de `src/data/raw.manifest.json` · 2 hors champ `**Implémente :**`.
+
+- **00-index.md** L33 — hors champ Implémente (prose) — le code mort détecté, `(non implémenté)` sinon. Source éditoriale (dettes/blocages) :
+- **00-index.md** L86 — hors champ Implémente (prose) — - **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non
+- **bestiaire.md** L382 — bloqué — **Implémente :** (non implémenté)
+
+### Dettes de FICHE — ce qu'elles couvrent ENCORE
+
+_Aucune entrée de fiche au manifest._
 
 ## B2 LDB (cœur 4e) — Chapitres cités par l'Atlas, jamais référencés dans le code
 
-_Avant crédit folio (12)_ : LDB 26 · LDB 27 · LDB 28 · LDB 29 · LDB 30 · LDB 31 · LDB 32 · LDB 33 · LDB 34 · LDB 35 · LDB 38 · LDB 39
+_Avant crédits (12)_ : LDB 26 · LDB 27 · LDB 28 · LDB 29 · LDB 30 · LDB 31 · LDB 32 · LDB 33 · LDB 34 · LDB 35 · LDB 38 · LDB 39
 
 _Crédités par une source folio de `src/data/*.json` (11, donnée référencée sans réf de ligne)_ : LDB 26 · LDB 27 · LDB 28 · LDB 29 · LDB 30 · LDB 31 · LDB 32 · LDB 33 · LDB 34 · LDB 35 · LDB 39
 
-**VRAIS hors-code (après crédit folio) :**
+_Sous dette de fiche déclarée (0, toutes les fiches qui décrivent le chapitre sont ticketées)_ : —
+
+**VRAIS hors-code (après crédits) :**
 LDB 38
 
 ## B2 CRB (cœur 5e) — Chapitres cités par l'Atlas, jamais référencés dans le code
 
-_Avant crédit folio (0)_ : —
+_Avant crédits (0)_ : —
 
 _Crédités par une source folio de `src/data/*.json` (0, donnée référencée sans réf de ligne)_ : —
 
-**VRAIS hors-code (après crédit folio) :**
+_Sous dette de fiche déclarée (0, toutes les fiches qui décrivent le chapitre sont ticketées)_ : —
+
+**VRAIS hors-code (après crédits) :**
 _Aucun._
 
 ## Livres vus par la mesure
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, LDB, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, EDO, EDOC, LDB, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: 5d9aa5c878aab5ceb4431215f27d6da39fb7d9eb (4112 fichiers, 150 dossiers) corps: bead93d05aec2985f5ef2187c53c3099412d7b16 -->
+<!-- sources-empreinte: 8fbe1fcabdeff172ee61ac63c10383a27a99005f (4113 fichiers, 150 dossiers) corps: 3ba5f64547e8a2b46815ad23cf6a625a0ada7c65 -->

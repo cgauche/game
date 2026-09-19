@@ -4376,7 +4376,7 @@ Notes : la **hache d'armes** choisit **Taille OU Empaleuse OU Assommante** (+ *D
 **Voir aussi** : Atouts et Défauts d'arme (Taillade, Empaleuse, Précise, Protectrice, Défensive, Piège-lame, À Enroulement, Enchevêtrement, Immobilisante) ; Armes à distance et munitions AA ; Combat à deux armes et main secondaire (LDB 13) ; Allonge et Charge (LDB 13/15) ; Armures et boucliers (LDB 63).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 8` (l.100-104, l.130-433) → `splitIndice`, `immobilisante-fixe`, `cimeterre`, `dague-ballock`, `massue`, `pique-d-armes`, `destabilisante`, `taillade`, `tir-de-zone`, `desequilibree`, +32 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/raw.manifest.json` ⚠hors-app, `src/data/trappings.json`, `src/engine/qualities/normalize.ts`
+- `AA 8` (l.100-104, l.130-433) → `splitIndice`, `immobilisante-fixe`, `cimeterre`, `dague-ballock`, `massue`, `pique-d-armes`, `destabilisante`, `taillade`, `tir-de-zone`, `desequilibree`, +32 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/trappings.json`, `src/engine/qualities/normalize.ts`
 - sans code : `AA 8` (l.205-211)
 - dette : #1661
 - bloqué : Indice de Taillade du sabre selon la Compétence employée (AA 08 l.190) : aucune Condition ne lit la Compétence de l'attaque
@@ -4876,7 +4876,7 @@ Si l'arme subit un **Incident de tir** à n'importe quel moment, en résoudre le
 **Voir aussi** : AA : Qualités et Défauts d'armes (Imprécise, Dangereuse, Recharge, Salve, Tir de zone, Explosion, Empaleuse, Perforante, Percutante, Dévastatrice, Pointue, Pointe d'arme) ; LDB 13 : Combat (Tir ciblé, DR, doubles/Critiques) ; LDB 18 : Traumatisme (Localisations, Blessures Critiques au bras) ; LDB 16 : États (*Surpris*, *À Terre*, *En flammes*) ; LDB 14 : Taille (catégories, modificateurs de Taille de cible) ; ADE II : Combat de masse (grandes batailles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 10` (l.3-25, l.28-53, l.55-92, l.94-98, l.101-111, l.113-128, l.131-134, l.136-150, l.152-173, l.175-196, l.198-224, l.227-249, l.254-276) → `ArtilleryMisfireEntry`, `StructureCritEntry`, `artillery-misfire`, `structure-criticals`, `warMachineCrewPenalty`, `woundsFromHit`, `rollArtillerySalveMisfire`, `couvertDepuisDifficulte`, `cranDeCouvertEnMoins`, `doc`, +54 — `src/data/artillery-misfire.json`, `src/data/artilleryMisfire.ts`, `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/props.json`, `src/data/qualities.json`, +21 fichiers
+- `AA 10` (l.3-25, l.28-53, l.55-92, l.94-98, l.101-111, l.113-128, l.131-134, l.136-150, l.152-173, l.175-196, l.198-224, l.227-249, l.254-276) → `ArtilleryMisfireEntry`, `StructureCritEntry`, `artillery-misfire`, `structure-criticals`, `warMachineCrewPenalty`, `woundsFromHit`, `rollArtillerySalveMisfire`, `couvertDepuisDifficulte`, `cranDeCouvertEnMoins`, `doc`, +54 — `src/data/artillery-misfire.json`, `src/data/artilleryMisfire.ts`, `src/data/combat-stakes.json`, `src/data/props.json`, `src/data/qualities.json`, `src/data/schemas/defs-scenes/scene.ts`, +20 fichiers
 
 ---
 
@@ -5033,7 +5033,7 @@ Si un guerrier rompt le combat mais que son opposant veut **toujours l'engager**
 **Voir aussi** : États (_Brisé_, _À Terre_, _Empêtré_, _Exténué_, _Surpris_) ; Avantage ; Engagement et désengagement (LDB) ; Déplacement et Course ; Tests de Calme / Résistance / Athlétisme ; Combat monté et véhicules.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 10` (l.284-292, l.422-424, l.427-434) → `ArtilleryMisfireEntry`, `artillery-misfire`, `rollArtillerySalveMisfire`, `combat-aa-avantage-groupe`, `salve`, `applyOups` — `src/data/artillery-misfire.json`, `src/data/artilleryMisfire.ts`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/qualities.json`, `src/data/reglesOptionnelles.json`, `src/engine/artilleryMisfire.ts`, +1 fichiers
+- `AA 10` (l.284-292, l.422-424, l.427-434) → `ArtilleryMisfireEntry`, `artillery-misfire`, `rollArtillerySalveMisfire`, `combat-aa-avantage-groupe`, `salve`, `applyOups` — `src/data/artillery-misfire.json`, `src/data/artilleryMisfire.ts`, `src/data/qualities.json`, `src/data/reglesOptionnelles.json`, `src/engine/artilleryMisfire.ts`, `src/state/combatFlow.ts`
 - sans code : `AA 10` (l.292, l.294-304, l.306-348, l.350-352, l.355-372, l.375-383, l.386-406, l.408-421)
 - dette : #511
 

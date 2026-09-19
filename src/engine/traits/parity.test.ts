@@ -119,8 +119,8 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Aura de Mort', 'rayon 70 m : +DR Nécromancie/Shyish, −10 autres Domaines — gating par Domaine du cast à bâtir'],
   // Trait VDM sans SEAM de déclenchement — dette OUVERTE #862 (le dispatcher doit observer le TIERS) ;
   // la desc verbatim est affichée, rien n'est inventé. `raw.manifest.json` ne peut pas porter cette
-  // dette : son intégrité (`validateManifest`, scripts/raw/build-implemente.mjs:491) n'accepte qu'un
-  // topic de fiche `docs/raw/*.md`, or l'entité vit en catalogue.
+  // dette : son intégrité (`validerDette`, scripts/raw/build-implemente.mjs) n'accepte qu'un topic
+  // ou une fiche de `docs/raw/*.md`, or l'entité vit en catalogue.
   ['Siphonnage de sort', 'se déclenche quand un ENNEMI résout une incantation : `onCastResolved` est émis sur le LANCEUR (`self: caster`, combatFlow.ts:4274) et `emitCombatEvent` diffuse à `audience ?? [self]` (combatEvents.ts:32), aucun Trigger n\'observe le cast d\'autrui ; la table `vdm-siphonnage-de-sort` (tables.json) existe et reste à câbler — #862'],
 ]);
 

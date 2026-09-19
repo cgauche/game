@@ -46,7 +46,7 @@ export const SANS_LIVRE: Readonly<Record<string, string>> = {
     'configuration d’AUTHORING (#1716) — les DÉFAUTS du COMPILATEUR de scène (`state/mapSpec.ts`) : sol du chemin de ronde et masse d’une `cells` d’enceinte, tuile de pont d’une scène de bord. Aucun folio n’imprime ce qu’un compilateur de carte pose à la place d’un auteur muet. Le document EST son entrée (famille `config`) et EXIGE `maison` à sa racine (`exiges` de `schemas/defs/defauts-de-compilation.ts`), même régime que `semences-de-scene`',
   'donnees.manifest': 'manifeste d’outillage — rubriques de la carte des données, décrit le dépôt',
   'primitives.manifest': 'manifeste d’outillage — primitives partagées, décrit le dépôt',
-  'raw.manifest': 'manifeste d’outillage — dette/blocage par id de topic RAW, décrit le dépôt',
+  'raw.manifest': 'manifeste d’outillage — dette/blocage par id de topic ou de fiche RAW, décrit le dépôt',
   'systemes.manifest': 'manifeste d’outillage — systèmes du jeu, décrit le dépôt',
   actions: 'vocabulaire des actes du moteur — une action porte un folio quand une règle la nomme (12/55), jamais par construction',
 

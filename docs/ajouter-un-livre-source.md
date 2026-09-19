@@ -189,6 +189,18 @@ Trois points d'enregistrement, dans cet ordre :
 
    Le résumé de tête de `docs/raw/coverage.md` se ventile par GROUPE (une ligne par valeur de
    `coeur`, une pour les livres sans cœur déclaré) : deux corps de règles ne s'additionnent jamais.
+
+   **Fiches extraites AVANT l'implémentation — la dette se déclare UNE fois.** Une fiche neuve dont
+   aucun topic n'est encore codé rendrait autant d'orphelins que de topics (`raw:implemente`) et
+   autant de trous `B2` que de chapitres. Les deux se déclarent par UNE ligne de
+   `src/data/raw.manifest.json` : une entrée dont l'`id` est le STEM de la fiche (`magie`, pas
+   `magie#seconde-vue`), avec le `ticket` de la phase qui portera l'implémentation — `ticket` est
+   OBLIGATOIRE sur une entrée de fiche, `bloque` seul est refusé. Elle couvre tout topic de la fiche
+   qui n'a pas d'entrée propre (la plus spécifique l'emporte), et `raw:reconcile` CRÉDITE les
+   chapitres de cœur dont toutes les fiches qui les décrivent sont ainsi déclarées : aucune entrée
+   `B2 <ABRÉV> <ch>` à écrire au stock. L'entrée vit aussi longtemps que son ticket
+   (`scripts/hooks/solde-ticket-guard.mjs`, `evaluateManifestClosure`) : à la fermeture elle part,
+   et tout topic encore non implémenté redevient orphelin, à ticketer nommément.
 2. **`docs/raw/sources.md`** — ajouter une ligne à la table *Les N livres* (abrév, titre, dossier,
    rôle en une phrase) et incrémenter le compte en tête de fichier (« Le **RAW** du projet = ces
    **N livres** »). Si le livre a des chapitres purement narratifs/de cadre (gazetteer), documenter

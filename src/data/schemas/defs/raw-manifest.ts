@@ -1,9 +1,9 @@
 /**
  * Schéma de `raw.manifest.json` — manifeste éditorial du champ Implémente de l'Atlas RAW (#487),
- * généré par `scripts/raw/build-implemente.mjs` : par `id` (le topic de fiche `domaine#sujet`),
- * ticket de dette ou raison de blocage. Le `label` (clé d'ENVELOPPE) est le titre VERBATIM de la
- * section d'Atlas que le topic adresse — accord gardé par `scripts/raw/build-implemente.test.mjs`
- * (`headingForTopic`).
+ * généré par `scripts/raw/build-implemente.mjs` : par `id`, ticket de dette ou raison de blocage.
+ * Un `id` désigne soit un TOPIC de fiche (`domaine#sujet`), soit une FICHE entière (`domaine`), dont
+ * l'entrée couvre alors tout topic sans entrée propre. Le `label` (clé d'ENVELOPPE) est le titre
+ * VERBATIM que l'`id` adresse — accord gardé par `scripts/raw/build-implemente.test.mjs` (`libelleDe`).
  * Vocabulaire app-interne (tooling), pas une donnée RAW — cf. `EXEMPT_DATASETS` (citationCoverage.mjs).
  */
 import { z } from 'zod';
@@ -35,9 +35,21 @@ const doc = document(
   },
   {
     affinerEntree: (entree) =>
-      entree.refine((entry) => (entry as { ticket?: string }).ticket !== undefined || (entry as { bloque?: string }).bloque !== undefined, {
-        message: 'ticket ou bloque requis',
-      }),
+      entree
+        .refine((entry) => (entry as { ticket?: string }).ticket !== undefined || (entry as { bloque?: string }).bloque !== undefined, {
+          message: 'ticket ou bloque requis',
+        })
+        // Une entrée de FICHE (`id` sans `#`) couvre TOUS les topics de sa fiche : sa portée large
+        // n'est bornée que par la vie de son ticket, qui est donc obligatoire (#1825). La forme de
+        // l'`id` suffit à le dire ici ; la résolution contre les fiches réelles vit dans
+        // `validerDette` (scripts/raw/build-implemente.mjs).
+        .refine(
+          (entry) => {
+            const e = entry as { id?: string; ticket?: string };
+            return typeof e.id !== 'string' || e.id.includes('#') || e.ticket !== undefined;
+          },
+          { message: 'entrée de fiche (id sans #) : ticket requis' },
+        ),
   },
 );
 
