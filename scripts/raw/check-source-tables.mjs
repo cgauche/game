@@ -31,7 +31,7 @@ import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { BOOKS, readText } from './_lib.mjs'
-import { ecartDuVolet, sitesEnEntrees, cleDeSite, survieDeLecheance } from '../guards/lib/stock.mjs'
+import { ecartDuVolet, sitesEnEntrees, cleDeSite, parCleDeSite, survieDeLecheance } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
 import { parseChapitre, tablesOf, normText, estCleDePlage } from '../../src/data/source/decoupe.ts'
 
@@ -126,7 +126,9 @@ export const comptesParFamille = (sites) =>
   Object.fromEntries(FAMILLES.map((f) => [f, sites.filter((s) => s.famille === f).length]))
 
 /**
- * Les ENTRÉES du stock, dans l'ordre du balayage — c'est CE rendu que le fichier de stock porte.
+ * Les ENTRÉES du stock, en ORDRE CANONIQUE (`parCleDeSite`) — c'est CE rendu que le fichier de stock
+ * porte. L'ordre du BALAYAGE n'y entre pas : réordonner `src/data/books.json` ne réécrit pas ce
+ * fichier (#1825).
  * `ancien` (les entrées déjà committées) porte la SURVIE : `survieDeLecheance`
  * (`scripts/guards/lib/stock.mjs`), seule définition du dépôt.
  * @param {{famille: string, file: string, ref: string}[]} sites
@@ -135,7 +137,7 @@ export const comptesParFamille = (sites) =>
 export const entreesDe = (sites, { lot, date, ancien = [] }) =>
   FAMILLES.flatMap((famille) =>
     survieDeLecheance(sitesEnEntrees(sites.filter((s) => s.famille === famille), { famille }), { lot, date, ancien }),
-  )
+  ).sort(parCleDeSite)
 
 /** Les clés des sites MESURÉS (même occurrence que le stock : le calcul d'occurrence est celui de
  *  `sitesEnEntrees`, jamais un second comptage). */

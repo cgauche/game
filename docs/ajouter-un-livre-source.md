@@ -64,8 +64,8 @@ relevé le 2026-09-14** par la session d'extraction, non mesuré ici.
 | `00 - Index.md` | liens relatifs tous vivants | `index-mort` |
 | Tables | chaque bloc a sa ligne de séparateur `\|---\|` | `table-sans-separateur` |
 
-**La garde et son stock.** `node scripts/raw/check-source-format.mjs` balaie les **20 dossiers FR
-suivis** — les 16 livres à `dir` de `src/data/books.json` plus les 4 dossiers antérieurs au pipeline,
+**La garde et son stock.** `node scripts/raw/check-source-format.mjs` balaie les **dossiers FR
+suivis** — les livres à `dir` de `src/data/books.json` plus les dossiers antérieurs au pipeline,
 atteints par balayage des préfixes `Warhammer v4 - `, `WH - V4 - `, `WH4_FR_`, `Boite d'Initiation`,
 `Warhammer - Habitants` — et compare ce qu'elle mesure au stock nominatif
 `scripts/raw/source-format-stock.json` : une entrée par (famille, dossier, détail). Les deux sens
@@ -160,11 +160,19 @@ Trois points d'enregistrement, dans cet ordre :
 1. **`src/data/books.json`** (SOURCE UNIQUE des acronymes, #585) — l'entrée du livre porte
    `abbr: '<ABRÉV>'`, `dir: 'Source/<dossier du livre>'` et `language` : la langue DU LIVRE (`'VF'`,
    ou `'VO'` pour un livre VO autorisé) — un livre déjà présent en placeholder VO sans `dir` se
-   COMPLÈTE, jamais un doublon. Puis **`scripts/raw/_lib.mjs`** — ajouter
-   l'`id` du livre au tableau `BOOK_ORDER` : `BOOKS` en DÉRIVE (filtre les entrées porteuses d'un `dir`,
-   ordonnées par `BOOK_ORDER` — source unique partagée par `coverage.mjs`/`reconcile.mjs`/`reanchor.mjs`).
-   L'ordre de `BOOK_ORDER` fixe l'ordre d'affichage des rapports. (Édition de `books.json` : round-trip
-   octet-fidèle exigé par `src/data/serialize.test.ts`.)
+   COMPLÈTE, jamais un doublon. **Aucun script ne porte la LISTE des livres** : `BOOKS`
+   (`scripts/raw/_lib.mjs`, source unique partagée par `coverage.mjs`/`reconcile.mjs`/`reanchor.mjs`)
+   DÉRIVE de `books.json` — les entrées porteuses d'un `dir`, dans l'ORDRE DU FICHIER. (Les réglages
+   PAR CHAPITRE restent à poser plus bas : `HORS_REGLE` et `SCENARIO_BOOKS` de `coverage.mjs` § 5,
+   `DOMAINS` de `build-catalogs.mjs` § 5.) L'entrée s'insère au RAYON qui lui revient, jamais
+   forcément en fin de fichier : aucun artefact commité ne suit l'ordre du registre — les stocks
+   nominatifs se rendent en ordre canonique de clé (#1825). Cet ordre décide en revanche de
+   l'affichage : les rapports de l'Atlas suivent `BOOKS` (section par livre de `docs/raw/coverage.md`,
+   puces des champs `**Implémente :**`), et au Compendium la catégorie « Livres »
+   (`src/ui/compendium/registry.ts`, `books.map` non trié) est REGROUPÉE par `folder`
+   (`CompendiumScreen.tsx`) : les rayons sortent dans l'ordre de leur PREMIÈRE apparition au fichier,
+   et les livres dans l'ordre du fichier à l'intérieur d'un rayon. (Édition de `books.json` :
+   round-trip octet-fidèle exigé par `src/data/serialize.test.ts`.)
 2. **`docs/raw/sources.md`** — ajouter une ligne à la table *Les N livres* (abrév, titre, dossier,
    rôle en une phrase) et incrémenter le compte en tête de fichier (« Le **RAW** du projet = ces
    **N livres** »). Si le livre a des chapitres purement narratifs/de cadre (gazetteer), documenter

@@ -34,7 +34,8 @@ export function isFicheDoc(name) {
   return true
 }
 export const isExcludedSrc = (rel) => rel.startsWith(EXCLUDE_SRC_PREFIX)
-const BOOK_ORDER = new Map(BOOKS.map(([abbr], i) => [abbr, i]))
+// Rang du livre dans `BOOKS` (= son rang dans `books.json`), pour l'ordre des puces.
+const RANG_DU_LIVRE = new Map(BOOKS.map(([abbr], i) => [abbr, i]))
 
 // --- regex héritées (graphies du libellé de champ) ---
 export const HEADING_RE = /^(#{1,6})\s+(.*)$/
@@ -85,7 +86,7 @@ export function buildAbbrMap(books) {
   for (const b of books) {
     if (!b || typeof b.id !== 'string') continue
     knownIds.add(b.id)
-    if (!b.dir) continue // seuls les livres EXTRAITS (avec dossier Source) portent le pont folio ; les 29 ont un abbr désormais
+    if (!b.dir) continue // seuls les livres EXTRAITS (avec dossier Source) portent le pont folio
     if (!BOOK_ABBRS.has(b.abbr)) throw new Error(`books.json: abbr inconnue de BOOKS pour "${b.id}" → "${b.abbr}"`)
     bySlug.set(b.id, b.abbr)
   }
@@ -472,13 +473,21 @@ function buildMatchBullet(g, matchedSpans, cits, { index, closure }) {
   return { book: g.book, ch: g.ch, text: `- \`${g.book} ${g.ch}\` (${spans.map(fmtSpan).join(', ')}) → ${after}` }
 }
 
-/** Ordre TOTAL des puces d'un champ `**Implémente :**` : livre (ordre du registre), chapitre, puis le
+/** Ordre TOTAL des puces d'un champ `**Implémente :**` : livre (rang dans `BOOKS`), chapitre, puis le
  *  TEXTE de la puce — qui porte les fichiers cités. PUR (aucune lecture disque). Sans ce dernier
  *  départage, deux puces de même (livre, chapitre) issues de deux fichiers gardaient l'ordre
  *  d'insertion, c'est-à-dire celui de la marche du disque (#1244). Les groupes `sans code` n'ont pas
- *  de `text` : leur clé `book|ch` est unique, le départage y est inerte. */
+ *  de `text` : leur clé `book|ch` est unique, le départage y est inerte.
+ *  Un livre HORS `BOOKS` est un BUG D'APPELANT (toute puce vient de `refsWithSpans`, qui écarte ce
+ *  que `bookOf` ne reconnaît pas, ou du pont folio, dont `buildAbbrMap` refuse l'`abbr` inconnue) :
+ *  il se REFUSE ici, nommément. Un rang par défaut entrelacerait ses puces en silence. */
+const rangDe = (puce) => {
+  const rang = RANG_DU_LIVRE.get(puce.book)
+  if (rang === undefined) throw new Error(`ordreDesPuces : livre "${puce.book}" hors de BOOKS — puce : ${puce.text ?? `${puce.book} ${puce.ch}`}`)
+  return rang
+}
 export const ordreDesPuces = (a, b) =>
-  (BOOK_ORDER.get(a.book) ?? 99) - (BOOK_ORDER.get(b.book) ?? 99)
+  rangDe(a) - rangDe(b)
   || a.ch - b.ch
   || parUnitesDeCode(a.text ?? '', b.text ?? '')
 

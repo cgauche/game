@@ -7,15 +7,15 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
-  folioGapsInText, chapterFolioSpan, scanBookDir, scanAllBooks, sitesDeSauts, STOCK_PATH,
+  folioGapsInText, chapterFolioSpan, scanBookDir, scanAllBooks, sitesDeSauts, entreesDeSauts, STOCK_PATH,
   emptyFolioAnchorsInText, scanEmptyFoliosInBook, scanAllEmptyFolios, entreesDAncresVides,
   assertEmptyFoliosAgainstStock, lireStocksAncresVides, EMPTY_PERDUES_PATH, EMPTY_BENIGNES_PATH,
   chapterTexts, SEUIL_UTILE,
 } from './check-folio-continuity.mjs'
-import { cleDeSite, ecartDuVolet, sitesEnEntrees } from '../guards/lib/stock.mjs'
+import { cleDeSite, ecartDuVolet, refusDeCroissance } from '../guards/lib/stock.mjs'
 import { stocksEnTexte, trier } from './lib/empty-folios-stock.mjs'
-import { readStock } from './stockNominatif.mjs'
-import { BOOKS } from './_lib.mjs'
+import { lireStockJson, readStock, texteDeStock } from './stockNominatif.mjs'
+import { BOOKS, PIVOT_ABBR } from './_lib.mjs'
 import { parUnitesDeCode } from '../guards/lib/lister.mjs'
 
 /** Un dossier de livre en chemin POSIX — la graphie que le stock et la porte de plage partagent. */
@@ -147,9 +147,9 @@ test('sitesDeSauts : un site = le CHAPITRE EXTRAIT et le saut lui-même, jamais 
 })
 
 test('scanBookDir : `path` est le chemin POSIX du chapitre, celui que la porte de plage reconnaît', () => {
-  const [abbr, dir] = BOOKS[0]
+  const [abbr, dir] = BOOKS.find(([a]) => a === PIVOT_ABBR)
   const gap = scanBookDir(abbr, dir)[0]
-  assert.ok(gap, 'le premier livre porte au moins un saut mesuré')
+  assert.ok(gap, `le livre pivot ${PIVOT_ABBR} porte au moins un saut mesuré`)
   assert.equal(gap.path, `${dir}/${gap.file}`)
   assert.match(gap.path, /^Source\/[^\\]+\.md$/, 'racine `Source/`, séparateurs POSIX, extension `.md`')
 })
@@ -171,16 +171,54 @@ test('stock COMMITTÉ : PLAFOND de la dette d’extraction — 76 sauts, aucun d
   }
 })
 
-// AUCUN GÉNÉRATEUR COMMITTÉ pour ce stock — comme pour les autres stocks nominatifs de l'Atlas. Sa
-// régénération (après une ré-extraction Marker, qui déplace les folios) est le rendu de
-// `sitesEnEntrees(sitesDeSauts(scanAllBooks()))`, écrit à `STOCK_PATH` sous la clé `entrees` : ce
-// test le NOMME et le vérifie à la clé ET à l'ORDRE, là où `ecartDuVolet` ci-dessus ne juge que les
-// ensembles. Un stock ré-ordonné à la main rougit ici.
+// Le stock EST le rendu de `entreesDeSauts(scanAllBooks())`, écrit par
+// `node scripts/raw/check-folio-continuity.mjs --ecrire-stock` : ce test le vérifie à la clé ET à
+// l'ORDRE, là où `ecartDuVolet` ci-dessus ne juge que les ensembles. Un stock ré-ordonné à la main
+// rougit ici.
 test('stock COMMITTÉ : le rendu EXACT et ORDONNÉ des sites mesurés sur l’arbre', () => {
-  const attendu = sitesEnEntrees(sitesDeSauts(scanAllBooks()))
+  const attendu = entreesDeSauts(scanAllBooks())
   const stock = readStock(STOCK_PATH)
-  const cle = (e) => `${e.fichier} :: ${e.ref} :: ${e.occurrence}`
-  assert.deepEqual(stock.map(cle), attendu.map(cle))
+  assert.deepEqual(stock.map(cleDeSite), attendu.map(cleDeSite))
+})
+
+// L'ÉCHÉANCE (`lot`, `date`) n'est PAS un paramètre du régénérateur, et ce test dit pourquoi :
+// `survieDeLecheance` ne pose une échéance NEUVE que sur une entrée dont la clé manque au stock, et
+// c'est exactement la classe que `refusDeCroissance` empêche d'être écrite. Les deux volets se
+// mesurent ENSEMBLE : sur le stock réel, zéro entrée neuve ; sur un stock amputé, l'entrée neuve
+// existe ET la barrière la nomme.
+test('échéance : seule une entrée HORS du stock la prendrait — et celle-là est REFUSÉE', () => {
+  const ancien = readStock(STOCK_PATH)
+  const sansEcheance = (entrees) => entrees.filter((e) => !e.lot && !e.date)
+  assert.deepEqual(sansEcheance(entreesDeSauts(scanAllBooks(), { ancien })), [],
+    'une entrée écrite sans échéance : elle vient d’ailleurs que du stock commité')
+
+  const ampute = ancien.slice(1)
+  const neuves = sansEcheance(entreesDeSauts(scanAllBooks(), { ancien: ampute }))
+  assert.equal(neuves.length, 1, 'le volet est inerte : retirer une entrée n’en rend aucune neuve')
+  const refus = refusDeCroissance(entreesDeSauts(scanAllBooks(), { ancien: ampute }), ampute,
+    { nom: 'folio-gaps-stock.json', motif: '' })
+  assert.ok(refus?.includes(ancien[0].ref), `la barrière NOMME le saut neuf : ${refus}`)
+})
+
+// Le RÉGÉNÉRATEUR (`--ecrire-stock`) rend le fichier COMMITTÉ à l'octet — échéances manuscrites
+// (`lot`, `date`) comprises, par `survieDeLecheance`. Sans cette épreuve, un régénérateur qui
+// rajeunit les dates ou reformate le JSON passerait inaperçu jusqu'au prochain commit.
+test('régénérateur : ré-écrire le stock en place rend le MÊME octet', () => {
+  const doc = lireStockJson(STOCK_PATH)
+  const mesurees = entreesDeSauts(scanAllBooks(), { ancien: doc.entrees })
+  assert.equal(texteDeStock(doc.quoi, mesurees), readFileSync(STOCK_PATH, 'utf8'))
+})
+
+// #1825 : l'ordre des livres vit dans `src/data/books.json` et n'a aucune raison d'être figé.
+// Le stock COMMITTÉ ne doit donc rien à cet ordre — sinon déplacer une entrée du registre (insérer
+// un livre ailleurs qu'à la fin) forcerait à réécrire un artefact, et le critère « un livre de plus =
+// UNE entrée de books.json » tomberait. Registre INJECTÉ (`scanAllBooks(books)`), jamais le fichier.
+test('#1825 le rendu du stock est INDIFFÉRENT à l’ordre du registre (registre inversé)', () => {
+  const sitesDe = (books) => sitesDeSauts(scanAllBooks(books)).map((s) => `${s.file} :: ${s.ref}`)
+  const rendu = (books) => entreesDeSauts(scanAllBooks(books)).map(cleDeSite)
+  const inverse = [...BOOKS].reverse()
+  assert.notDeepEqual(sitesDe(inverse), sitesDe(BOOKS), 'le balayage rend le même ordre : sonde inerte')
+  assert.deepEqual(rendu(inverse), rendu(BOOKS))
 })
 
 test('stock TRUQUÉ : une entrée retirée rend son site NEUF, une entrée sans site est SOLDÉE', () => {

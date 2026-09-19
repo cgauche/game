@@ -10,7 +10,8 @@ import {
   comptesParFamille, verdictDesPreuves, comptesDeTri, FAMILLES, STOCK_PATH,
 } from './check-source-tables.mjs'
 import { readStock } from './stockNominatif.mjs'
-import { BOOKS } from './_lib.mjs'
+import { cleDeSite } from '../guards/lib/stock.mjs'
+import { BOOKS, PIVOT_ABBR } from './_lib.mjs'
 import { parseChapitre, tablesOf } from '../../src/data/source/decoupe.ts'
 
 const FICHIER = 'Source/Livre/01 - Fixture.md'
@@ -138,9 +139,9 @@ test('cleDeLigne : la première cellule NON VIDE, normalisée', () => {
 })
 
 test('scanBookDir : le `fichier` d’un site est le chapitre extrait, en POSIX depuis la racine du dépôt', () => {
-  const [, dir] = BOOKS[0]
+  const [, dir] = BOOKS.find(([abbr]) => abbr === PIVOT_ABBR)
   const sites = scanBookDir(dir)
-  assert.ok(sites.length > 0, 'le premier livre porte au moins un site mesuré')
+  assert.ok(sites.length > 0, `le livre pivot ${PIVOT_ABBR} porte au moins un site mesuré`)
   for (const s of sites.slice(0, 20)) assert.match(s.file, /^Source\/[^\\]+\/[^\\]+\.md$/)
 })
 
@@ -154,9 +155,19 @@ test('stock COMMITTÉ : chaque site mesuré y a son entrée, et aucune entrée n
 // par `node scripts/raw/check-source-tables.mjs --ecrire-stock`. Ce test le vérifie à la clé ET à
 // l'ORDRE, là où l'écart ci-dessus ne juge que les ensembles — un stock réordonné à la main rougit.
 test('stock COMMITTÉ : le rendu EXACT et ORDONNÉ des sites mesurés sur l’arbre', () => {
-  const cle = (e) => `${e.famille} :: ${e.fichier} :: ${e.ref} :: ${e.occurrence}`
   const attendu = entreesDe(scanAllBooks(), { lot: '', date: '' })
-  assert.deepEqual(readStock(STOCK_PATH).map(cle), attendu.map(cle))
+  assert.deepEqual(readStock(STOCK_PATH).map(cleDeSite), attendu.map(cleDeSite))
+})
+
+// #1825 : même contrat que `check-folio-continuity.test.mjs` — l'ordre des livres vit dans
+// `src/data/books.json`, et aucun artefact commité ne s'y asservit : insérer un livre AU MILIEU du
+// registre ne doit réécrire aucun stock. Registre INJECTÉ (`scanAllBooks(books)`), jamais le fichier.
+test('#1825 le rendu du stock est INDIFFÉRENT à l’ordre du registre (registre inversé)', () => {
+  const sitesDe = (books) => scanAllBooks(books).map((s) => `${s.famille} :: ${s.file} :: ${s.ref}`)
+  const rendu = (books) => entreesDe(scanAllBooks(books), { lot: '', date: '' }).map(cleDeSite)
+  const inverse = [...BOOKS].reverse()
+  assert.notDeepEqual(sitesDe(inverse), sitesDe(BOOKS), 'le balayage rend le même ordre : sonde inerte')
+  assert.deepEqual(rendu(inverse), rendu(BOOKS))
 })
 
 // PLAFOND de la dette (jamais dans la lib de stock : il vit ICI, cf. `scripts/guards/lib/stock.mjs`).

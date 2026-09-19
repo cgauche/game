@@ -1,216 +1,6 @@
 {
-  "quoi": "Sauts de la séquence `data-folio` des chapitres extraits : une ENTRÉE par saut mesuré (`<ABBR NN> <from>→<to>`, des folios du PDF), sous le chapitre qui le porte. Dette d'EXTRACTION, pas de rédaction : une entrée se solde en ré-extrayant la ou les pages manquantes. Mise à la forme nominative le 2026-09-12 (#1711 T4) par conversion du compte par chapitre qui le précédait, à somme égale chapitre par chapitre (76 sites, 46 chapitres). AUCUN générateur committé : ce fichier EST le rendu de sitesEnEntrees(sitesDeSauts(scanAllBooks())) de scripts/raw/check-folio-continuity.mjs, clé pour clé et dans l'ordre — après une ré-extraction Marker, il se réécrit par cette fonction, et scripts/raw/check-folio-continuity.test.mjs le vérifie.",
+  "quoi": "Sauts de la séquence `data-folio` des chapitres extraits : une ENTRÉE par saut mesuré (`<ABBR NN> <from>→<to>`, des folios du PDF), sous le chapitre qui le porte. Dette d'EXTRACTION, pas de rédaction : une entrée se solde en ré-extrayant la ou les pages manquantes. Mise à la forme nominative le 2026-09-12 (#1711 T4) par conversion du compte par chapitre qui le précédait, à somme égale chapitre par chapitre (76 sites, 46 chapitres). Ce fichier EST le rendu de entreesDeSauts(scanAllBooks()) de scripts/raw/check-folio-continuity.mjs, clé pour clé et dans l'ORDRE CANONIQUE de la clé (parCleDeSite) — jamais dans l'ordre du balayage, donc réordonner src/data/books.json ne le réécrit pas. Après une ré-extraction Marker il se réécrit par `node scripts/raw/check-folio-continuity.mjs --ecrire-stock`, qui refuse d'entériner un saut NEUF (refusDeCroissance) et fait survivre les échéances posées à la main — il n'en pose donc jamais lui-même ; scripts/raw/check-folio-continuity.test.mjs le vérifie.",
   "entrees": [
-    {
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/08 - Statut.md",
-      "ref": "LDB 8 65→67",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/08 - Statut.md",
-      "ref": "LDB 8 69→71",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/08 - Statut.md",
-      "ref": "LDB 8 77→80",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/44 - L'Aethyr.md",
-      "ref": "LDB 44 230→233",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/45 - _GoBack.md",
-      "ref": "LDB 45 229→232",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/51 - Magie du Chaos.md",
-      "ref": "LDB 51 264→265",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/55 - Colonies.md",
-      "ref": "LDB 55 283→285",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/85 - Traits de creature.md",
-      "ref": "LDB 85 342→344",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/85 - Traits de creature.md",
-      "ref": "LDB 85 345→353",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/01 - LES GRANDES PROVINCES.md",
-      "ref": "ADE I 1 8→10",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/01 - LES GRANDES PROVINCES.md",
-      "ref": "ADE I 1 11→13",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/01 - LES GRANDES PROVINCES.md",
-      "ref": "ADE I 1 16→18",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/01 - LES GRANDES PROVINCES.md",
-      "ref": "ADE I 1 18→20",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/01 - LES GRANDES PROVINCES.md",
-      "ref": "ADE I 1 20→21",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
-      "ref": "ADE I 3 37→40",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
-      "ref": "ADE I 3 40→42",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
-      "ref": "ADE I 3 42→44",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/05 - Guide de Karak Azgaraz.md",
-      "ref": "ADE I 5 66→68",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/05 - Guide de Karak Azgaraz.md",
-      "ref": "ADE I 5 70→71",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md",
-      "ref": "ADE I 6 80→83",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/08 - Annexe II.md",
-      "ref": "ADE I 8 92→97",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/02 - Les ogres.md",
-      "ref": "ADE II 2 21→23",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/03 - Des signes dans le ciel.md",
-      "ref": "ADE II 3 40→42",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/04 - Un peu de magie.md",
-      "ref": "ADE II 4 58→60",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/04 - Un peu de magie.md",
-      "ref": "ADE II 4 62→64",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/08 - Le theatre de la guerre.md",
-      "ref": "ADE II 8 90→91",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/09 - Annexe I.md",
-      "ref": "ADE II 9 92→96",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
-      "ref": "MCLB 2 51→53",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/04 - Bestiaire.md",
-      "ref": "MCLB 4 117→118",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/10 - ANNEXE III.md",
-      "ref": "MCLB 10 157→160",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
     {
       "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/01 - INTRODUCTION.md",
       "ref": "EDOC 1 3→5",
@@ -360,20 +150,6 @@
     },
     {
       "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
-      "ref": "ACE 5 66→68",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
-      "ref": "ACE 5 93→95",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
       "ref": "ACE 5 103→105",
       "occurrence": 1,
       "lot": "#1711",
@@ -388,6 +164,13 @@
     },
     {
       "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "ACE 5 123→125",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
       "ref": "ACE 5 124→113",
       "occurrence": 1,
       "lot": "#1711",
@@ -395,7 +178,14 @@
     },
     {
       "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
-      "ref": "ACE 5 123→125",
+      "ref": "ACE 5 66→68",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "ACE 5 93→95",
       "occurrence": 1,
       "lot": "#1711",
       "date": "2026-09-12"
@@ -424,6 +214,230 @@
     {
       "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/12 - Activites.md",
       "ref": "ACE 12 223→224",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/14 - Les Vents a l'oeuvre.md",
+      "ref": "VDM 14 202→204",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/15 - Nemesis et aventures magiques.md",
+      "ref": "VDM 15 223→224",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/01 - LES GRANDES PROVINCES.md",
+      "ref": "ADE I 1 11→13",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/01 - LES GRANDES PROVINCES.md",
+      "ref": "ADE I 1 16→18",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/01 - LES GRANDES PROVINCES.md",
+      "ref": "ADE I 1 18→20",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/01 - LES GRANDES PROVINCES.md",
+      "ref": "ADE I 1 20→21",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/01 - LES GRANDES PROVINCES.md",
+      "ref": "ADE I 1 8→10",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "ADE I 3 37→40",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "ADE I 3 40→42",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "ADE I 3 42→44",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/05 - Guide de Karak Azgaraz.md",
+      "ref": "ADE I 5 66→68",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/05 - Guide de Karak Azgaraz.md",
+      "ref": "ADE I 5 70→71",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md",
+      "ref": "ADE I 6 80→83",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/08 - Annexe II.md",
+      "ref": "ADE I 8 92→97",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/02 - Les ogres.md",
+      "ref": "ADE II 2 21→23",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/03 - Des signes dans le ciel.md",
+      "ref": "ADE II 3 40→42",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/04 - Un peu de magie.md",
+      "ref": "ADE II 4 58→60",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/04 - Un peu de magie.md",
+      "ref": "ADE II 4 62→64",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/08 - Le theatre de la guerre.md",
+      "ref": "ADE II 8 90→91",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/09 - Annexe I.md",
+      "ref": "ADE II 9 92→96",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/08 - Statut.md",
+      "ref": "LDB 8 65→67",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/08 - Statut.md",
+      "ref": "LDB 8 69→71",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/08 - Statut.md",
+      "ref": "LDB 8 77→80",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/44 - L'Aethyr.md",
+      "ref": "LDB 44 230→233",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/45 - _GoBack.md",
+      "ref": "LDB 45 229→232",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/51 - Magie du Chaos.md",
+      "ref": "LDB 51 264→265",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/55 - Colonies.md",
+      "ref": "LDB 55 283→285",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/85 - Traits de creature.md",
+      "ref": "LDB 85 342→344",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/85 - Traits de creature.md",
+      "ref": "LDB 85 345→353",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "MCLB 2 51→53",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/04 - Bestiaire.md",
+      "ref": "MCLB 4 117→118",
+      "occurrence": 1,
+      "lot": "#1711",
+      "date": "2026-09-12"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/10 - ANNEXE III.md",
+      "ref": "MCLB 10 157→160",
       "occurrence": 1,
       "lot": "#1711",
       "date": "2026-09-12"
@@ -515,20 +529,6 @@
     {
       "fichier": "Source/Warhammer v4 - Nuits agitees & dures journees/16 - JEUX DE TAVERNE.md",
       "ref": "NADJ 16 95→96",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les Vents de Magie/14 - Les Vents a l'oeuvre.md",
-      "ref": "VDM 14 202→204",
-      "occurrence": 1,
-      "lot": "#1711",
-      "date": "2026-09-12"
-    },
-    {
-      "fichier": "Source/Warhammer v4 - Les Vents de Magie/15 - Nemesis et aventures magiques.md",
-      "ref": "VDM 15 223→224",
       "occurrence": 1,
       "lot": "#1711",
       "date": "2026-09-12"

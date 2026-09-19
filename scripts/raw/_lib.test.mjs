@@ -4,7 +4,32 @@
 // `LIVRE NN l.X` dans le code) est vue au même titre. Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { refRe, refFolioRe, allAbbrAlternation, span, refNums, isRangeSuffix, bookOf, chapterFile, BOOKS, PIVOT_ABBR } from './_lib.mjs'
+import { refRe, refFolioRe, allAbbrAlternation, span, refNums, isRangeSuffix, bookOf, chapterFile, BOOKS, booksDe, PIVOT_ABBR } from './_lib.mjs'
+import booksData from '../../src/data/books.json' with { type: 'json' }
+
+// #1825 lot B : `books.json` possède l'ORDRE des livres (= l'ordre du fichier, celui que le
+// Compendium affiche), `_lib.mjs` n'en tient aucune liste. Le contrat se juge sur une FIXTURE —
+// le FILTRE (`dir`) et l'ORDRE du registre, sans recopier le registre réel ni aucun cardinal.
+// Sigles volontairement en ordre DÉCROISSANT : un tri glissé dans `booksDe` les remettrait dans
+// l'autre sens, et ce test le verrait.
+const REGISTRE = [
+  { id: 'c', abbr: 'C', dir: 'Source/C' },
+  { id: 'b', abbr: 'B' },
+  { id: 'a', abbr: 'A', dir: 'Source/A' },
+]
+
+test('booksDe : seules les entrées à `dir` entrent, dans l’ORDRE DU REGISTRE (jamais retrié)', () => {
+  assert.deepEqual(booksDe(REGISTRE), [['C', 'Source/C'], ['A', 'Source/A']])
+})
+
+test('booksDe : un `dir` vide ou null écarte l’entrée, comme un `dir` absent', () => {
+  assert.deepEqual(booksDe([{ id: 'v', abbr: 'V', dir: '' }, { id: 'n', abbr: 'N', dir: null }]), [])
+})
+
+test('BOOKS : le registre RÉEL passé par `booksDe` — aucune liste de livres dans le script', () => {
+  assert.deepEqual(BOOKS, booksDe(booksData))
+  assert.ok(BOOKS.every(([abbr, dir]) => abbr && dir), 'une entrée de BOOKS sans sigle ni dossier')
+})
 
 test('refRe : "LDB 17 l.25" matche', () => {
   const m = [...'LDB 17 l.25'.matchAll(refRe())]

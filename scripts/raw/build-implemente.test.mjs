@@ -38,6 +38,16 @@ test('#1244 ordre TOTAL des puces — même (livre, chapitre), deux fichiers : l
     'deux puces de même (livre, chapitre) suivent encore l’ordre d’insertion : le départage a sauté')
 })
 
+// #1825 : le rang d'une puce se lit dans `BOOKS` (dérivé de `books.json`). Aucun producteur de la
+// chaîne ne fabrique une puce hors de `BOOKS` — c'est un bug d'appelant, qui se REFUSE : un rang
+// par défaut entrelacerait ses puces avec les vraies, sans un mot.
+test('#1825 ordreDesPuces REFUSE un livre hors de BOOKS, en le nommant', () => {
+  const inconnu = { book: 'XXX', ch: 1, text: '- `XXX 1` (l.1) → src/x.ts' }
+  const connu = { book: 'LDB', ch: 2, text: '- `LDB 2` (l.1) → src/y.ts' }
+  assert.throws(() => ordreDesPuces(inconnu, connu), /livre "XXX" hors de BOOKS/)
+  assert.throws(() => ordreDesPuces(connu, inconnu), /livre "XXX" hors de BOOKS/)
+})
+
 // --- fabrique d'index depuis des fichiers en mémoire (miroir de indexCode) ---
 function makeIndex(files) {
   const impl = [], tests = []

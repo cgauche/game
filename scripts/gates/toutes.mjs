@@ -329,6 +329,10 @@ export const ECRIT_LU = {
         'dans `main()`, sous sa porte `isMain`, et exige les PDF gitignorés',
       'scripts/raw/empty-folios-benignes-stock.json':
         'même porte, même module : les deux stocks sont écrits par le même `main()` derrière `isMain`',
+      'scripts/raw/folio-gaps-stock.json':
+        '`check-folio-continuity.test.mjs` IMPORTE le détecteur des sauts de folio, dont l’unique ' +
+        'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ; ' +
+        'le banc ne fait que LIRE le stock (`readStock`, `lireStockJson`)',
     },
     lit: ['docs/raw/', 'scripts/raw/', 'scripts/guards/lib/', 'Source/', 'src/'],
     raison:
@@ -353,11 +357,19 @@ export const ECRIT_LU = {
   },
   'raw:check-folio-continuity': {
     ecrit: [],
+    ecritFerme: {
+      'scripts/raw/folio-gaps-stock.json':
+        'le stock NOMINATIF des sauts de folio ne se réécrit que sous `--ecrire-stock`, option que la ' +
+        'commande de .github/workflows/ci.yml ne passe pas ; sans elle la gate COMPARE le stock à sa ' +
+        'mesure et ne touche à rien',
+    },
     lit: ['docs/raw/', 'Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs'],
     raison:
-      'aucune écriture dans les scripts atteints ; LIT le registre de livres, le normaliseur de références, ' +
+      'LIT le registre de livres, le normaliseur de références, ' +
       'le stock NOMINATIF des sauts de folio (scripts/raw/folio-gaps-stock.json) et les deux stocks des ancres ' +
-      'sans contenu (scripts/raw/empty-folios-perdues-stock.json, scripts/raw/empty-folios-benignes-stock.json)',
+      'sans contenu (scripts/raw/empty-folios-perdues-stock.json, scripts/raw/empty-folios-benignes-stock.json) ; ' +
+      'le seul module écrivain atteint est le détecteur lui-même, dont l’écriture est fermée par sa ' +
+      'porte `--ecrire-stock`',
   },
   'raw:check-source-tables': {
     ecrit: [],
@@ -369,7 +381,7 @@ export const ECRIT_LU = {
     },
     lit: ['Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/'],
     raison:
-      'LIT le registre de livres, le parseur de tables (src/data/source/decoupe.ts), les 16 dossiers de ' +
+      'LIT le registre de livres, le parseur de tables (src/data/source/decoupe.ts), les dossiers à `dir` de ' +
       'Source/ et son stock nominatif scripts/raw/source-tables-stock.json ; le seul module écrivain ' +
       'atteint est le détecteur lui-même, dont l’écriture est fermée par sa porte `--ecrire-stock`',
   },
@@ -383,7 +395,7 @@ export const ECRIT_LU = {
     },
     lit: ['Source/', 'src/data/books.json', 'scripts/raw/', 'scripts/guards/lib/'],
     raison:
-      'LIT le registre de livres et les 20 dossiers FR de Source/ (les 16 à `dir` plus les 4 ' +
+      'LIT le registre de livres et les dossiers FR de Source/ (ceux à `dir` plus les ' +
       'pré-pipeline atteints par balayage), ainsi que son stock nominatif ' +
       'scripts/raw/source-format-stock.json ; le seul module écrivain atteint est le détecteur ' +
       'lui-même, dont l’écriture est fermée par sa porte `--ecrire-stock`',

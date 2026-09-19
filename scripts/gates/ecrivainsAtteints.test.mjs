@@ -261,6 +261,11 @@ const ATTENDU = {
     // `scripts/guards/lib/depotGabarit.mjs` (test:docs) et les dépôts jetables de `scripts/ops/`.
     'scripts/raw/check-source-format.test.mjs',
     'scripts/raw/check-refs.test.mjs',
+    // +1 le 2026-09-19 (#1825 lot B) : le détecteur des sauts de folio porte désormais UN
+    // `writeFileSync` — la régénération de son stock nominatif, fermée par `--ecrire-stock` sous
+    // `isMain`, et déclarée en `ecritFerme` de `test:raw` (ECRIT_LU). Le banc ne fait que LIRE
+    // (`readStock`, `lireStockJson`) pour comparer le fichier commité au rendu.
+    'scripts/raw/check-folio-continuity.mjs',
     'scripts/raw/citation-graphy-guard.test.mjs',
     'scripts/raw/folio-bootstrap.mjs',
     'scripts/raw/folio-bootstrap.test.mjs',
@@ -291,7 +296,9 @@ const ATTENDU = {
   // Mesure du 2026-09-11 (`scripts/docs/lib/enregistreur-lectures.mjs` en `--import` sur le CLI) :
   // 4 137 lectures, ZÉRO écriture.
   'raw:check-code-refs': ['scripts/raw/build-implemente.mjs'],
-  'raw:check-folio-continuity': [],
+  // +1 le 2026-09-19 (#1825 lot B) : même module, même porte — la gate ne passe pas
+  // `--ecrire-stock`, elle COMPARE le stock à sa mesure et ne touche à rien.
+  'raw:check-folio-continuity': ['scripts/raw/check-folio-continuity.mjs'],
   // +1 le 2026-09-14 (#1384 B1) : la gate neuve est le détecteur des tables cassées de `Source/`,
   // qui porte UN `writeFileSync` — la régénération de son stock nominatif, fermée par la porte
   // `--ecrire-stock` (check-source-tables.mjs:194) que ci.yml ne passe pas ; déclarée en

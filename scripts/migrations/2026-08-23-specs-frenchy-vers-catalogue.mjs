@@ -178,7 +178,7 @@ if (!fs.existsSync(absFrenchy) || !fs.readdirSync(absFrenchy).some((f) => /^\d{2
 let dirPose = false;
 if (livre.extractionDir !== DIR_FRENCHY) {
   // `extractionDir` et non `dir` : `dir` est le champ des livres de l'Atlas RAW — `scripts/raw/
-  // _lib.mjs#BOOK_ORDER` les liste un par un et `build-implemente.mjs#buildAbbrMap` refuse (exit 1)
+  // _lib.mjs#BOOKS` en dérive et `build-implemente.mjs#buildAbbrMap` refuse (exit 1)
   // tout `dir` dont l'`abbr` n'y est pas. Ordre des clés : id, label, abbr, <extraction>, language…
   const { id, label, abbr, ...reste } = livre;
   delete reste.extractionDir;

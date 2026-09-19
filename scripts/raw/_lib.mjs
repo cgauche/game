@@ -24,22 +24,13 @@ import { normalize, ELLIPSIS_SENTINEL } from '../../src/data/source/normalize.ts
 // N'affecte pas JSON.parse (deja tolerant aux fins de ligne) ni les fichiers deja en LF (no-op).
 export const readText = (path) => readFileSync(path, 'utf8').replace(/\r\n|\r/g, '\n')
 
-// ABRÉV → dossier Source, DÉRIVÉ de `books.json` (SOURCE UNIQUE des acronymes, ref #585) : filtre
-// les entrées porteuses d'un `dir` (les livres couverts par l'Atlas RAW), ordonnées par
-// BOOK_ORDER (ordre d'affichage des rapports — books.json n'est pas trié dans cet ordre).
-const BOOK_ORDER = [
-  'livre-de-base', 'archives-de-l-empire-1', 'archives-de-l-empire-2', 'aux-armes', 'zoo-imperial',
-  'middenheim', 'ennemi-dans-l-ombre', 'ennemi-dans-l-ombre-compagnon', 'mort-sur-le-reik',
-  'mort-sur-le-reik-compagnon', 'pouvoir-derriere-le-trone', 'altdorf-couronne-de-l-empire',
-  'aventures-a-ubersreik-1', 'nuits-agitees-et-dures-journees', 'mer-des-griffes',
-  'vents-de-la-magie', 'core-rulebook-5e',
-]
-const _byId = new Map(booksData.map((b) => [b.id, b]))
-export const BOOKS = BOOK_ORDER.map((id) => {
-  const b = _byId.get(id)
-  if (!b || !b.dir) throw new Error(`BOOKS: livre "${id}" introuvable ou sans dir dans books.json`)
-  return [b.abbr, b.dir]
-})
+// ABRÉV → dossier Source, DÉRIVÉ de `books.json` (SOURCE UNIQUE des acronymes ET de l'ordre,
+// ref #585, #1825) : les entrées porteuses d'un `dir` (les livres couverts par l'Atlas RAW), dans
+// l'ORDRE DU FICHIER — le même que l'app sert au joueur (`src/data/index.ts` `books`,
+// `src/ui/compendium/DescRefField.tsx` filtre `!!b.dir`). C'est aussi l'ordre d'affichage des
+// rapports : un livre de plus est UNE entrée de `books.json`, zéro ligne ici.
+export const booksDe = (registre) => registre.filter((b) => b.dir).map((b) => [b.abbr, b.dir])
+export const BOOKS = booksDe(booksData)
 
 const BOOK_DIR = new Map(BOOKS)
 
@@ -49,11 +40,15 @@ const BOOK_DIR = new Map(BOOKS)
 // dans les filtres « hors pivot », ni dans les `{book}`/`{abbr}` que les gardes de la MÊME chaîne
 // produisent (`build-implemente`, `check-refs`, `check-code-refs`) et que `reconcile` consomme :
 // producteur et consommateur tiennent le sigle du même endroit.
-// L'ABSENCE du livre pivot est déjà fatale plus haut (`BOOKS`, `BOOK_ORDER[0]`) ; le garde ci-dessous
-// couvre le cas RESTANT — entrée présente mais SANS `abbr` (`PIVOT_ABBR` valant alors `undefined`).
+// Le garde ci-dessous couvre les deux cas où le sigle manque : entrée pivot ABSENTE du registre, ou
+// présente mais SANS `abbr` (`PIVOT_ABBR` valant alors `undefined`) — le message les distingue, un
+// rouge qui nomme la mauvaise cause envoie chercher au mauvais endroit.
 const PIVOT_BOOK_ID = 'livre-de-base'
-export const PIVOT_ABBR = _byId.get(PIVOT_BOOK_ID)?.abbr
-if (!PIVOT_ABBR) throw new Error(`_lib: livre pivot "${PIVOT_BOOK_ID}" sans \`abbr\` dans books.json`)
+const _pivot = booksData.find((b) => b.id === PIVOT_BOOK_ID)
+export const PIVOT_ABBR = _pivot?.abbr
+if (!PIVOT_ABBR) {
+  throw new Error(`_lib: livre pivot "${PIVOT_BOOK_ID}" ${_pivot ? 'sans `abbr`' : 'ABSENT'} dans books.json`)
+}
 
 // Échappe une chaîne pour l'insérer littéralement dans une RegExp.
 export const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

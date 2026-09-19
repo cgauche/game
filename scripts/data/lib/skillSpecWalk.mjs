@@ -60,7 +60,7 @@ export function skillArraysOf(entry) {
 
 /**
  * Dossier d'extraction d'un livre, quel que soit le champ qui le porte : `dir` pour les livres de
- * l'Atlas RAW (`scripts/raw/_lib.mjs#BOOK_ORDER` les exige, pont folio compris), `extractionDir`
+ * l'Atlas RAW (`scripts/raw/_lib.mjs#BOOKS` les exige, pont folio compris), `extractionDir`
  * pour une extraction citable HORS Atlas (`frenchy-bzh`). Une seule lecture, partagée par le
  * périmètre `extractedBooks` et par le volet « dossier FR réclamé » de la garde.
  */

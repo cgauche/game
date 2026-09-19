@@ -3,9 +3,10 @@
  * `abbr` est l'UNIQUE champ d'acronyme (affichage Compendium ET Atlas RAW), sans doublon `abr`.
  * `id` = relation id-pure vers `source.book` (migration `21aa4881`). `dir` = chemin d'extraction
  * `Source/…` des livres couverts par l'Atlas RAW ; absent des autres. `BOOKS` de
- * `scripts/raw/_lib.mjs` DÉRIVE de `books.json` (filtre les entrées `dir`), sans liste en dur
- * à synchroniser. `language`/`folder` sont typés nullable par l'interface mais toujours renseignés
- * (string) sur toutes les entrées observées ; `desc` est le seul champ réellement null.
+ * `scripts/raw/_lib.mjs` DÉRIVE de `books.json` (filtre les entrées `dir`, ORDRE DU FICHIER), sans
+ * liste en dur à synchroniser. `language`/`folder` sont typés nullable par l'interface mais
+ * toujours renseignés (string) sur toutes les entrées observées ; `desc` est le seul champ
+ * réellement null.
  *
  * `desc` (clé d'ENVELOPPE) porte ici un HTML de présentation (bibliographie) — hors du périmètre
  * `<Prose>` : ce n'est pas un texte de règle copié/collé verbatim d'un livre, mais une notice
@@ -26,7 +27,7 @@ const doc = document(
     abbr: z.string(),
     /** Chemin d'extraction `Source/…` — présent sur les livres couverts par l'Atlas RAW. */
     dir: z.string().nullable().optional(),
-    /** Chemin d'extraction `Source/…` d'un livre HORS Atlas RAW (`scripts/raw/_lib.mjs#BOOK_ORDER`
+    /** Chemin d'extraction `Source/…` d'un livre HORS Atlas RAW (`scripts/raw/_lib.mjs#BOOKS`
      *  ne le porte pas, donc pas de pont folio ni de fiche RAW) dont les chapitres sont néanmoins
      *  sur disque et citables — `frenchy-bzh`. Lu par `skillSpecWalk.mjs#sourceDirOf`. */
     extractionDir: z.string().nullable().optional(),

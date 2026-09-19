@@ -23,6 +23,7 @@ import { BOOKS } from '../_lib.mjs'
 import { EMPTY_BENIGNES_PATH, EMPTY_PERDUES_PATH, SEUIL_UTILE, entreesDAncresVides, scanEmptyFoliosInBook } from '../check-folio-continuity.mjs'
 import { extractPages, resolveBookOffset, HAS_LOWER_RE } from '../anchor-fill.mjs'
 import { parUnitesDeCode } from '../../guards/lib/lister.mjs'
+import { texteDeStock } from '../stockNominatif.mjs'
 
 // Caractères utiles d'une page PDF : lignes portant un MOT réel (3 minuscules consécutives —
 // critère de `anchor-fill.mjs`, qui écarte titre courant, numéro de folio et codes de chapitre),
@@ -69,9 +70,6 @@ export const QUOI = {
   perdues: "Ancres sans contenu dont la page PORTE du texte au PDF : la vérité citable manque au corpus. Une ENTRÉE par folio perdu (`<ABBR NN> folio <F>`), sous le chapitre extrait qui le porte. `pdfChars` = les caractères utiles mesurés au PDF par scripts/raw/lib/empty-folios-stock.mjs, une fois : AUCUN PDF n'est suivi par le dépôt, l'observé de la classe n'est donc PAS rejouable en CI — la garde ne confronte cette mesure qu'au seuil SEUIL_UTILE du code. Une entrée se solde en restituant la page au `.md` (l'ancre cesse alors d'être vide, et scripts/raw/check-folio-continuity.mjs réclame le retrait). Passer une entrée d'ici vers empty-folios-benignes-stock.json est une CROISSANCE nette de l'autre fichier : elle se déclare par `CLIQUET:` au message.",
   benignes: "Ancres sans contenu dont la page ne porte PAS de texte au PDF (pleine page d'illustration, page blanche) : rien ne manque au corpus. Une ENTRÉE par folio (`<ABBR NN> folio <F>`), sous le chapitre extrait qui le porte. Même contrat de mesure et même remise que empty-folios-perdues-stock.json, dont ce fichier est le pendant : un folio classé ici alors que son `pdfChars` dépasse le seuil est refusé par `malClassees`.",
 }
-
-/** Le TEXTE d'un stock (forme `{ quoi, entrees }` de `scripts/raw/stockNominatif.mjs`). */
-export const texteDeStock = (quoi, entrees) => `${JSON.stringify({ quoi, entrees }, null, 2)}\n`
 
 /** Les DEUX stocks triés, chemin → texte. ÉCRITURE en une seule définition : le générateur au PDF et
  *  tout transport de la donnée passent par ici, donc rendent le même octet. */

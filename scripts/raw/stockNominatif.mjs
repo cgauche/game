@@ -26,3 +26,7 @@ export function readStock(path) {
   return lireStockJson(path).entrees ?? []
 }
 
+/** Le TEXTE d'un fichier de stock — seule ÉCRITURE du dépôt pour la forme `{ quoi, entrees }`, en
+ *  regard de `lireStockJson` : tout régénérateur rend le même octet. */
+export const texteDeStock = (quoi, entrees) => `${JSON.stringify({ quoi, entrees }, null, 2)}\n`
+

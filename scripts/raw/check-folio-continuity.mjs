@@ -23,8 +23,9 @@ import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, readText } from './_lib.mjs'
-import { cleDeSite, ecartDuVolet, sitesEnEntrees } from '../guards/lib/stock.mjs'
-import { readStock } from './stockNominatif.mjs'
+import { writeFileSync } from 'node:fs'
+import { cleDeSite, ecartDuVolet, parCleDeSite, refusDeCroissance, sitesEnEntrees, survieDeLecheance } from '../guards/lib/stock.mjs'
+import { lireStockJson, readStock, texteDeStock } from './stockNominatif.mjs'
 
 const ICI = dirname(fileURLToPath(import.meta.url))
 export const STOCK_PATH = join(ICI, 'folio-gaps-stock.json')
@@ -108,6 +109,21 @@ export function scanBookDir(abbr, dir) {
  *  des folios du PDF). Un chapitre porte souvent plusieurs sauts — c'est le saut, pas le chapitre,
  *  qui est l'unité du cliquet. */
 export const sitesDeSauts = (gaps) => gaps.map((g) => ({ file: g.path, ref: `${g.ref} ${g.from}→${g.to}` }))
+
+/**
+ * Les ENTRÉES du stock des sauts, en ORDRE CANONIQUE (`parCleDeSite`) — c'est CE rendu que
+ * `folio-gaps-stock.json` porte, et que `--ecrire-stock` écrit. L'ordre du BALAYAGE n'y entre pas :
+ * réordonner `src/data/books.json` ne réécrit pas ce fichier (#1825).
+ * AUCUNE ÉCHÉANCE À POSER ICI, et c'est mesuré : `survieDeLecheance` n'emploie le `lot`/`date` qu'on
+ * lui passe que pour une entrée dont la CLÉ manque à `ancien` — la classe même que `--ecrire-stock`
+ * REFUSE d'écrire (`refusDeCroissance`). Toute entrée écrite porte donc l'échéance que le stock
+ * commité lui donnait déjà ; les valeurs vides ci-dessous sont inatteignables, et le test
+ * « échéance : seule une entrée HORS du stock la prendrait » le tient.
+ * @param {{ path: string, ref: string, from: number, to: number }[]} gaps
+ * @param {{ ancien?: Iterable<object> }} [p]
+ */
+export const entreesDeSauts = (gaps, { ancien = [] } = {}) =>
+  survieDeLecheance(sitesEnEntrees(sitesDeSauts(gaps)), { lot: '', date: '', ancien }).sort(parCleDeSite)
 
 /** Balaie tous les livres de `books` (BOOKS par défaut) → sauts de folios agrégés. */
 export function scanAllBooks(books = BOOKS) {
@@ -303,7 +319,25 @@ function reportEmptyFolios() {
   return true
 }
 
+// Régénérer le stock des sauts : node scripts/raw/check-folio-continuity.mjs --ecrire-stock
+// BARRIÈRE DÉCROISSANT-SEULEMENT (`refusDeCroissance`) : un saut MESURÉ hors du stock en place ne
+// s'entérine pas par une réécriture, il se déclare. C'est elle qui rend l'échéance sans objet ici :
+// aucune entrée NEUVE n'est jamais écrite, donc aucun `lot` à estampiller (cf. `entreesDeSauts`).
+function ecrireStock() {
+  const ancien = readStock(STOCK_PATH)
+  const mesurees = entreesDeSauts(scanAllBooks(), { ancien })
+  const refus = refusDeCroissance(mesurees, ancien, {
+    nom: 'folio-gaps-stock.json',
+    motif: 'Un saut NEUF se corrige en ré-extrayant la ou les pages manquantes ; le déclarer exige un `CLIQUET:` au message de commit.',
+  })
+  if (refus) { console.log(refus); process.exitCode = 1; return }
+  writeFileSync(STOCK_PATH, texteDeStock(lireStockJson(STOCK_PATH).quoi, mesurees), 'utf8')
+  console.log(`stock écrit : ${STOCK_PATH} — ${mesurees.length} entrée(s)`)
+}
+
 function main() {
+  const args = process.argv.slice(2)
+  if (args.includes('--ecrire-stock')) return ecrireStock()
   const koGaps = reportGaps()
   const koEmpty = reportEmptyFolios()
   if (koGaps || koEmpty) process.exitCode = 1
