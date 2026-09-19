@@ -116,7 +116,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `Band` |  |  |  |  | U |  | U |  | U | U |  |  |  |  | U |  |
 | `HeroSheet` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `DesignGallery` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-| `Stack/Row/Grid/Split` |  | U |  |  | U |  | U | U | U | U | U |  | U |  | U | U |
+| `Stack/Row/Grid/Split` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `Fleuron/RuleDivider/CornerFlourish/OrnateFrame` |  |  |  |  | U |  | U | U | U | U | U |  |  | U | U | U |
 | `NotchGauge` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `WindRose` |  |  |  |  | U |  | U |  |  |  |  |  |  |  |  |  |
@@ -133,6 +133,13 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `InspectPanel` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `EquipmentPanel` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `GameStage3D` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U |  |
+| `StateChips` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
+| `InitiativeStrip` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `PartyDock` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `ObjectiveBanner` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `ViewControls` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U |  |
+| `DrBar` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
+| `Coins` |  |  |  |  | U |  | U | U | U | U | U |  | U |  | U |  |
 
 ## Primitives jamais adoptées par un système déclaré
 
@@ -155,6 +162,9 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 - `LogDrawer` (src/ui/LogDrawer.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `InspectPanel` (src/ui/InspectPanel.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `EquipmentPanel` (src/ui/EquipmentPanel.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `InitiativeStrip` (src/ui/InitiativeStrip.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `PartyDock` (src/ui/PartyDock.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `ObjectiveBanner` (src/ui/ObjectiveBanner.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 
 ## Modules `src/state`/`src/engine` non rattachés à un système déclaré
 
@@ -181,4 +191,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: 9652a48ad50d24edb968b78f05867c7353893ceb (1819 fichiers, 2 dossiers) corps: d20b43992769aca67ce39a89230395cc797618b3 -->
+<!-- sources-empreinte: f088b5c16635ce11aa650f9c9c41e98986e94713 (1819 fichiers, 2 dossiers) corps: 0269e0edd43141d66b123246ad2f428530cd89cc -->

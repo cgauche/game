@@ -177,7 +177,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
 | Fichier | Contient | Exposition (Codex — édition) |
 |---|---|---|
 | `books.json` | **Registre des livres sources** — le champ `abr` est l'abréviation CANONIQUE (voir §B) (30 entrée(s)) | `books` — dataset `books` |
-| `primitives.manifest.json` · `systemes.manifest.json` | Manifestes TOOLING (#298, vocabulaire app-interne, pas RAW) — sources de `docs/systemes.md` (`npm run docs:systemes`, `scripts/docs/build-systemes.mjs`) (79 entrée(s) · 16 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) ; exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
+| `primitives.manifest.json` · `systemes.manifest.json` | Manifestes TOOLING (#298, vocabulaire app-interne, pas RAW) — sources de `docs/systemes.md` (`npm run docs:systemes`, `scripts/docs/build-systemes.mjs`) (86 entrée(s) · 16 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) ; exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 | `raw.manifest.json` | Manifeste éditorial du champ Implémente de l'Atlas RAW (généré par `scripts/raw/build-implemente.mjs`, #487) : par topic, ticket de dette ou raison de blocage — la SEULE surface écrite à la main du champ (11 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 | `donnees.manifest.json` | Manifeste éditorial de cet atlas (#903, rangement par rubrique, description, règle d'or, pièges d'homonymes) — source de `docs/donnees.md` (`npm run docs:donnees`, `scripts/docs/build-donnees.mjs`) (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 
@@ -495,4 +495,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: 14166e43961c78178c83c0496ee61737d6402395 (371 fichiers, 2 dossiers) corps: 3931475735b0b34d05aca1145f391acceb52bc41 -->
+<!-- sources-empreinte: 41960a62834b4c1a1c531149f4d4d446a11dc7e9 (371 fichiers, 2 dossiers) corps: 840a99b895eeac608886d77e0cdd92960019b0ef -->
