@@ -15,7 +15,7 @@ import {
 import { cleDeSite, ecartDuVolet, refusDeCroissance } from '../guards/lib/stock.mjs'
 import { stocksEnTexte, trier } from './lib/empty-folios-stock.mjs'
 import { lireStockJson, readStock, texteDeStock } from './stockNominatif.mjs'
-import { BOOKS, PIVOT_ABBR } from './_lib.mjs'
+import { BOOKS } from './_lib.mjs'
 import { parUnitesDeCode } from '../guards/lib/lister.mjs'
 
 /** Un dossier de livre en chemin POSIX — la graphie que le stock et la porte de plage partagent. */
@@ -147,9 +147,10 @@ test('sitesDeSauts : un site = le CHAPITRE EXTRAIT et le saut lui-même, jamais 
 })
 
 test('scanBookDir : `path` est le chemin POSIX du chapitre, celui que la porte de plage reconnaît', () => {
-  const [abbr, dir] = BOOKS.find(([a]) => a === PIVOT_ABBR)
-  const gap = scanBookDir(abbr, dir)[0]
-  assert.ok(gap, `le livre pivot ${PIVOT_ABBR} porte au moins un saut mesuré`)
+  // Le corpus RENVOIE le livre : le premier saut mesuré fait foi — aucun sigle ni rang écrit ici.
+  let gap, dir
+  for (const [a, d] of BOOKS) { gap = scanBookDir(a, d)[0]; dir = d; if (gap) break }
+  assert.ok(gap, 'le corpus `Source/` porte au moins un saut de folio mesuré')
   assert.equal(gap.path, `${dir}/${gap.file}`)
   assert.match(gap.path, /^Source\/[^\\]+\.md$/, 'racine `Source/`, séparateurs POSIX, extension `.md`')
 })

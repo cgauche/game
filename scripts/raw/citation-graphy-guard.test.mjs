@@ -13,8 +13,13 @@ import {
   scanMultiFolioSplitViolations, scanChapterBoundaryFolioViolations, readStock, STOCK_PATH,
   scanTout,
 } from './citation-graphy-guard.mjs'
-import { allAbbrAlternation, chapterBoundaryRisk, PIVOT_ABBR } from './_lib.mjs'
+import { allAbbrAlternation, chapterBoundaryRisk, sigleDeCoeur } from './_lib.mjs'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
+
+// Un sigle RÉEL, pris au registre par son RÉGIME (livre de cœur) — jamais recopié : la classe se
+// juge sur ce que la graphie VOIT, pas sur l'identité d'un livre. Résolveur PARTAGÉ avec les autres
+// bancs (`sigleDeCoeur`, _lib.mjs) : il nomme sa cause quand le registre ne porte aucun cœur.
+const SIGLE_COEUR = sigleDeCoeur()
 
 function withTempSrcDir(content, fn) {
   const dir = mkdtempSync(join(tmpdir(), 'graphy-guard-'))
@@ -96,10 +101,10 @@ function withTempRawDir(files, fn) {
   try { fn(join(dir, 'raw')) } finally { rmSync(dir, { recursive: true, force: true }) }
 }
 
-/** Réf de FIXTURE : `spec(18, '417-422')` → « <pivot> 18 l.417-422 » (patron `spec` de `_lib.test.mjs`).
+/** Réf de FIXTURE : `spec(18, '417-422')` → « <sigle de cœur> 18 l.417-422 » (patron `spec` de `_lib.test.mjs`).
  *  SPÉCIMEN CONSTRUIT, jamais écrit en graphie canonique : ce fichier est lui-même balayé par les
  *  gardes de réf du dépôt, qui ne distinguent pas un spécimen de test d'une citation vivante. */
-const spec = (ch, tail) => ['LDB', String(ch), `l.${tail}`].join(' ')
+const spec = (ch, tail) => [SIGLE_COEUR, String(ch), `l.${tail}`].join(' ')
 
 test('docs/raw (a) : plage à tiret cadratin (l.417–422 / l.417—422) → détectée, tiret-moins silencieux', () => {
   withTempRawDir({
@@ -125,13 +130,13 @@ test('docs/raw (b) : réf de livre SANS chapitre (AA l.4395, ADE II l.653) → d
   })
 })
 
-test('docs/raw (b) : le livre PIVOT est DANS la classe, au même titre ; EDO/EDOC & MSR/MSRC désambiguïsés', () => {
+test('docs/raw (b) : un livre de CŒUR est DANS la classe, au même titre ; EDO/EDOC & MSR/MSRC désambiguïsés', () => {
   withTempRawDir({
-    'x.md': [`${PIVOT_ABBR} l.162`, 'EDOC l.101', 'EDO l.5', 'MSRC l.71', 'MSR l.9'].join('\n') + '\n',
+    'x.md': [`${SIGLE_COEUR} l.162`, 'EDOC l.101', 'EDO l.5', 'MSRC l.71', 'MSR l.9'].join('\n') + '\n',
   }, (raw) => {
     const kinds = scanDocsRawViolations(raw).filter((x) => x.kind === 'book-no-chapter').map((x) => x.text)
     assert.equal(kinds.length, 5)
-    assert.ok(kinds.some((t) => t.startsWith(`${PIVOT_ABBR} l.162`)))
+    assert.ok(kinds.some((t) => t.startsWith(`${SIGLE_COEUR} l.162`)))
   })
 })
 
@@ -149,15 +154,15 @@ test('docs/raw (c) : nom de fichier de chapitre en backticks (`08 - Titre.md` l.
 
 // COMPORTEMENT, jamais la formule : un test qui ré-écrit l'expression construisant la regex est une
 // tautologie (il passe même si les deux côtés sont faux). On assert ce que la classe VOIT.
-test('docs/raw (b) : la classe voit le pivot, un sigle PRÉFIXE d’un autre, et un sigle À ESPACE', () => {
+test('docs/raw (b) : la classe voit un livre de cœur, un sigle PRÉFIXE d’un autre, et un sigle À ESPACE', () => {
   const vu = (s) => [...s.matchAll(BOOK_NO_CHAPTER_RE())].map((m) => m[1])
-  assert.deepEqual(vu(`${PIVOT_ABBR} l.162`), [PIVOT_ABBR])           // le pivot, comme les autres
+  assert.deepEqual(vu(`${SIGLE_COEUR} l.162`), [SIGLE_COEUR])         // un livre de cœur, comme les autres
   assert.deepEqual(vu('EDOC l.101'), ['EDOC'])                        // pas 'EDO' (tri par longueur)
   assert.deepEqual(vu('MSRC l.71'), ['MSRC'])                         // pas 'MSR'
   assert.deepEqual(vu('ADE II l.653'), ['ADE II'])                    // sigle à espace
   assert.deepEqual(vu('LDB 16 l.13'), [])                             // chapitre PRÉSENT → hors classe
   assert.deepEqual(vu('ADE2 l.65'), [])                               // graphie inconnue → invisible
-  assert.equal(allAbbrAlternation().split('|').includes(PIVOT_ABBR), true)
+  assert.equal(allAbbrAlternation().split('|').includes(SIGLE_COEUR), true)
 })
 
 test('docs/raw (b) : identité stricte (#585 lot B) — MDG canonique détecté, anciennes graphies ADEII/Midd invisibles (hors alternation)', () => {

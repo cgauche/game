@@ -67,7 +67,7 @@ import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
  * `REST_OFFERS[s.id]` supprimées), `obtainabilityGraph` lit la famille de Sort qu'un Talent ouvre sur
  * son entrée (`combat.castingKind`), `gen-toise-gallery` passe par la primitive `sizeFromTraits`, la
  * planche `_qc-decor-sheet` prend sa liste de mise en avant EN ARGUMENT (`--new=id1,id2`) et
- * `reconcile.mjs` lit le sigle du livre PIVOT au registre (`PIVOT_ABBR`, dérivé de `books.json`), puis
+ * `reconcile.mjs` lit le CŒUR d'un livre au registre (`coeurDe`, champ `coeur` de `books.json`), puis
  * 20 → 9 (lot E4/C-γ, 2026-08-17) — le cluster AMPUTATION/comptage : `critical.ts`, `trauma.ts`,
  * `injuries.ts` et `CharacterSheet.tsx` sortent de la liste. Ce que l'entrée DÉCLARE désormais : la règle
  * de COMPTAGE d'une séquelle cumulative (`TraumaFiche.cumul` — portée, unité, effet par palier, seuil
@@ -135,7 +135,7 @@ const CEILING = Object.values(KNOWN).reduce((s, n) => s + n, 0);
  * `seaVoyageFlow.ts` passe de 6 à 4, `combatSlice.ts` de 3 à 2 et `InterludeScreen.tsx` de 3 à 2),
  * 131 après le lot C4-δ4 (outillage : `obtainabilityGraph.ts`, `gen-toise-gallery.mts` et
  * `reconcile.mjs` sortent de la liste — famille de Sort lue sur le Talent, Taille lue par
- * `sizeFromTraits`, sigle du livre pivot lu au registre `books.json`), 112 après le lot E4/C-γ (cluster
+ * `sizeFromTraits`, cœur d'un livre lu au registre `books.json`), 112 après le lot E4/C-γ (cluster
  * amputation/comptage : `CharacterSheet.tsx` et `partyFlow.ts` sortent de la liste — paliers de prothèse
  * déclarés au catalogue —, `critical.ts` passe de 5 à 1, `trauma.ts` de 10 à 4 et `injuries.ts` de 5 à 2 ;
  * la prose de ce lot annonçait 113, la SOMME de la table valait 112 — écart de prose corrigé au lot Cε,

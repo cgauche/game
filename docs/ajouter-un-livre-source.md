@@ -173,6 +173,22 @@ Trois points d'enregistrement, dans cet ordre :
    (`CompendiumScreen.tsx`) : les rayons sortent dans l'ordre de leur PREMIÈRE apparition au fichier,
    et les livres dans l'ordre du fichier à l'intérieur d'un rayon. (Édition de `books.json` :
    round-trip octet-fidèle exigé par `src/data/serialize.test.ts`.)
+
+   **Livre de CŒUR (`coeur`)** — champ OPTIONNEL de la même entrée, la valeur nommant le corps de
+   règles dont ce livre est le livre de base (`"4e"`, `"5e"` ; graphie normalisée : minuscules, sans
+   espace de bord — deux livres ne portent jamais deux graphies d'un même cœur). Un supplément ne le
+   porte PAS. Le déclarer entraîne, sans une ligne de code (`coeurDe`, `scripts/raw/_lib.mjs`) :
+   - **R1** — le Sens A du livre passe à tolérance ZÉRO : un chapitre que le code cite et qu'aucune
+     fiche ni aucun catalogue de l'Atlas ne porte se CORRIGE à l'Atlas, il ne se stocke PAS dans
+     `scripts/raw/reconciliation-stock.json` (CLAUDE.md règle 1) ; `raw:reconcile` refuse le trou
+     comme l'entrée de stock ;
+   - **R2** — le Sens B2 est calculé pour lui : les chapitres que l'Atlas décrit et qu'aucune réf de
+     code ni aucune source folio de `src/data` n'atteint deviennent des trous `B2 <ABRÉV> <ch>`,
+     stockables avec une dette instruite. La section B2 du rapport est rendue pour TOUT livre de
+     cœur, « _Aucun._ » compris.
+
+   Le résumé de tête de `docs/raw/coverage.md` se ventile par GROUPE (une ligne par valeur de
+   `coeur`, une pour les livres sans cœur déclaré) : deux corps de règles ne s'additionnent jamais.
 2. **`docs/raw/sources.md`** — ajouter une ligne à la table *Les N livres* (abrév, titre, dossier,
    rôle en une phrase) et incrémenter le compte en tête de fichier (« Le **RAW** du projet = ces
    **N livres** »). Si le livre a des chapitres purement narratifs/de cadre (gazetteer), documenter

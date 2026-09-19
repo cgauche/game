@@ -36,7 +36,7 @@ const isImplProseScanned = (name) => isScannedFiche(name) && !RAWDOC_AUTHOR_META
 export const EMDASH_RANGE_RE = () => /l\.\d+[–—]/g
 // (b) Réf de livre SANS chapitre : `<ABRÉV> l.<n>` — le chapitre manquant, ni `check-refs` ni
 // `check-code-refs` n'ont de fichier à borner : la réf n'est jamais comptée. TOUS les livres de
-// `BOOKS`, le pivot compris : la graphie est UNE (`refRe`, _lib.mjs), la classe l'est aussi.
+// `BOOKS`, les livres de cœur compris : la graphie est UNE (`refRe`, _lib.mjs), la classe l'est aussi.
 // Alternation DÉRIVÉE de `_lib.mjs` (#434 défaut 10 : une alternation écrite à la main ici se
 // désynchronisait dès qu'un livre s'ajoutait à BOOKS). Les réfs irrésolues au `Source/` sont des
 // entrées NOMINATIVES du stock, jamais une exclusion de classe.

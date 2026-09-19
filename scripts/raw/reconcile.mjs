@@ -1,19 +1,27 @@
 // Réconciliation déterministe CODE ↔ ATLAS RAW.
 // Sens A (code → Atlas) : toute réf de règle citée dans src/ (`<ABRÉV> NN l.X`) dont le chapitre
 //   n'est PAS couvert par l'Atlas (trou dur), ou dont la ligne n'est pinée par aucune citation
-//   Atlas du même chapitre à ±TOL (trou fin) → l'app applique
-//   une règle absente de l'Atlas. Étendu aux livres hors pivot (#434 défaut 9) : `codeOther`/
-//   `atlasOther` indexent PAR CHAPITRE (miroir de `codeLDB`/`atlasLDB`), plus une loose
-//   scan `atlasOtherChLoose` (miroir de `atlasCh`), borné à l'abréviation CANONIQUE de BOOKS.
-//   La GRAPHIE d'une réf est UNE (`refRe`, _lib.mjs) : c'est le RÉGIME, pas la regex, qui distingue
-//   ici le livre pivot des autres.
-// Sens B (Atlas → code) : règles citées par l'Atlas marquées `(non implémenté)`, et chapitres
-//   cités par l'Atlas mais jamais référencés dans le code → l'Atlas décrit une règle hors-code.
-//   (Sens B reste borné au LDB — hors périmètre #434 défaut 9.)
+//   Atlas du même chapitre à ±TOL (trou fin) → l'app applique une règle absente de l'Atlas. UNE
+//   table keyée (livre, chapitre) pour TOUS les livres du registre : la graphie d'une réf est UNE
+//   (`refRe`, _lib.mjs), la mention LÂCHE aussi (`<ABRÉV> [ch.]NN`), l'indexation aussi.
+// Sens B (Atlas → code) : B1 = lignes de l'Atlas marquées `(non implémenté)`, tous docs confondus
+//   (aucune dimension de livre) ; B2 = chapitres cités par l'Atlas jamais référencés par le code,
+//   calculé par livre de CŒUR.
+// RÉGIME de CŒUR — le prédicat `coeurDe(abbr)` (champ `coeur` de `books.json`) décide du RÉGIME en
+//   deux endroits, et nulle part ailleurs :
+//   R1 un trou dur de Sens A d'un livre de cœur ne se STOCKE pas — il se CORRIGE à l'Atlas
+//      (CLAUDE.md règle 1 : « devoir rouvrir `Source/` est un DÉFAUT DE L'ATLAS à corriger ») ;
+//   R2 le Sens B2 et son crédit par folio se calculent par livre de cœur (`livresDeCoeur`) — un
+//      supplément n'étant pas couvert fiche à fiche, son « Atlas hors-code » ne dirait rien.
+//   Le même prédicat est relu en LIBELLÉ par `renderReport` (colonne « Cœur », marque « se corrige,
+//   ne se stocke pas », titres B2) et par le groupement de `coverage.mjs` : dire ce qu'un livre EST
+//   n'est pas lui appliquer un régime, et un libellé ne décide de rien.
+//   Un cœur de plus est UNE clé `coeur` de `books.json`, zéro ligne ici.
 // CLIQUET (#1709 lot D2, #925) : les TROUS DURS des deux sens — chapitre-livre cité par le code et
-//   absent de l'Atlas (`hardA`/`hardAOther`), chapitre LDB de l'Atlas jamais atteint par le code après
-//   crédit folio (`atlasOnly`) — sont confrontés au STOCK NOMINATIF `reconciliation-stock.json` : une
-//   entrée neuve OU une entrée du stock devenue caduque pose `process.exitCode = 1` (double sens).
+//   absent de l'Atlas (`hardA`), chapitre d'un livre de cœur décrit par l'Atlas jamais atteint par
+//   le code après crédit folio (`b2[].horsCode`) — sont confrontés au STOCK NOMINATIF
+//   `reconciliation-stock.json` : une entrée neuve OU une entrée du stock devenue caduque pose
+//   `process.exitCode = 1` (double sens).
 //   Les mesures fines (trous de ligne, `(non implémenté)`, folios ignorés, réfs sans chapitre) restent
 //   IMPRIMÉES et jamais assertées. Lecteur = `lireStockJson` (check-code-refs.mjs), écart = `ecartsDeStock`
 //   (guards/lib/stock.mjs) — jamais un troisième.
@@ -23,7 +31,10 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parUnitesDeCode, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { ecartsDeStock } from '../guards/lib/stock.mjs'
-import { refRe, refFolioRe, folioSpan, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED, readText, PIVOT_ABBR } from './_lib.mjs'
+import {
+  refReDe, refFolioReDe, alternationDe, bookOfDe, booksDe, coeursDe, coeurDe, livresDeCoeur, REGISTRE_LIVRES,
+  folioSpan, span, RAWDOC_META_GENERATED, readText,
+} from './_lib.mjs'
 import { lireStockJson } from './stockNominatif.mjs'
 import { loadAbbrMap, folioCitationsFromJson } from './build-implemente.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
@@ -31,6 +42,38 @@ import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 export const TOL = 20 // tolérance en lignes : la synthèse Atlas pine un ancrage proche, pas la ligne exacte
 export const RAWDIR = 'docs/raw'
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'reconciliation-stock.json')
+/** Préfixe des clés de trou dur du Sens B2 — SOURCE UNIQUE : la clé s'écrit et se relit ici.
+ *  Exporté pour que les bancs lisent le préfixe au lieu de le recopier. */
+export const PREFIXE_B2 = 'B2 '
+
+/** Décode une clé de trou dur — `<ABRÉV> <ch>` (Sens A) ou `B2 <ABRÉV> <ch>` (Sens B2) — en
+ *  `{ sens, book, ch }`, ou `null` si la clé est hors grammaire (sigle absent du registre, chapitre
+ *  non numérique). Le PRÉFIXE ne tranche pas à lui seul : un livre dont le sigle est `B2` produirait
+ *  la clé de Sens A `B2 7`, qu'un `startsWith` avalerait comme du Sens B2 — elle échapperait à R1.
+ *  Chaque lecture n'est retenue que si elle se PARSE : son sigle est au registre, son chapitre est
+ *  un nombre. Les DEUX lectures valides à la fois (il faudrait au registre un livre `B2 <X>` ET un
+ *  livre `<X>`) = clé AMBIGUË : le décodeur LÈVE en nommant les deux lectures. Une chaîne ne peut
+ *  pas les départager, et deviner un régime silencieusement coûterait un refus R1 manquant. */
+export function decodeCle(cle, abbrs) {
+  const lire = (s) => {
+    const i = s.lastIndexOf(' ')
+    if (i <= 0) return null
+    const book = s.slice(0, i)
+    const ch = s.slice(i + 1)
+    return abbrs.has(book) && /^\d+$/.test(ch) ? { book, ch } : null
+  }
+  const sensA = lire(cle)
+  const sensB2 = cle.startsWith(PREFIXE_B2) ? lire(cle.slice(PREFIXE_B2.length)) : null
+  if (sensA && sensB2) {
+    throw new Error(
+      `reconcile: clé de trou dur AMBIGUË « ${cle} » — lisible en Sens A (${sensA.book} ch.${sensA.ch}) `
+      + `comme en Sens B2 (${sensB2.book} ch.${sensB2.ch}). Deux sigles du registre « ${sensA.book} » et `
+      + `« ${sensB2.book} » se chevauchent sur le préfixe « ${PREFIXE_B2.trim()} » : renommer l'un des deux `
+      + "`abbr` dans `src/data/books.json`, une clé en chaîne ne peut pas les départager.",
+    )
+  }
+  return sensB2 ? { sens: 'B2', ...sensB2 } : sensA ? { sens: 'A', ...sensA } : null
+}
 
 function fichiersSources(dir, exts) {
   return listerArbre(dir, {
@@ -39,26 +82,39 @@ function fichiersSources(dir, exts) {
   }).map((rel) => join(dir, rel))
 }
 
-// Regex loose « BOOK NN » par livre CANONIQUE (miroir de `PIVOT_LOOSE_RE`) — construite depuis
-// `BOOKS` (export `_lib.mjs`), abréviation canonique seule (voir note de tête sur la couverture partielle).
-const OTHER_LOOSE_RE = new Map(
-  BOOKS.filter(([abbr]) => abbr !== PIVOT_ABBR).map(([abbr]) => [abbr, new RegExp(`\\b${esc(abbr)} (?:ch\\.)?(\\d+)\\b`, 'g')])
-)
-// Mention LÂCHE du livre PIVOT (« LDB 12 » sans réf de ligne) — sigle lu au registre des livres.
-const pivotLooseRe = () => new RegExp(`\\b${esc(PIVOT_ABBR)} (\\d+)\\b`, 'g')
-// Cardinal des livres hors pivot — DÉRIVÉ de `BOOKS`, jamais écrit : les rapports le citent.
-const HORS_PIVOT = BOOKS.length - 1
+// Mention LÂCHE d'un chapitre (« LDB 12 », « AA ch.7 » — sans réf de ligne), UNE pour tous les
+// livres, sur l'alternation du registre : c'est elle qui dit « l'Atlas couvre ce chapitre ».
+const looseReDe = (alt) => new RegExp(`\\b(${alt}) (?:ch\\.)?(\\d+)\\b`, 'g')
 
 // Clé de chapitre canonique du Sens A (#434 défaut 9 suite, #1156) : le code écrit le numéro
 // zéro-préfixé (`AA 02`, `ADE II ch.03`, `LDB 08`), l'Atlas écrit les titres sans préfixe
 // (`## [AA 2]`, `## [LDB 8]`) — comparaison textuelle brute = faux trou, et exemption catalogue
-// morte pour toute réf zéro-préfixée. Normalise aux DEUX collectes (code ET Atlas) et pour les
-// QUINZE livres, LDB compris (codeCh/codeLDB/atlasCh/catalogCh/atlasLDB), miroir de
-// `String(Number(nn))` déjà appliqué par `chapterFile` (_lib.mjs) pour résoudre le fichier.
+// morte pour toute réf zéro-préfixée. Normalise aux DEUX collectes (code ET Atlas) et pour TOUS
+// les livres, miroir de `String(Number(nn))` déjà appliqué par `chapterFile` (_lib.mjs).
 const chKey = (n) => String(Number(n))
 
-/** Calcule la réconciliation CODE↔ATLAS. Pur vis-à-vis de l'écriture de fichier (aucun writeFileSync ici). */
-export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) {
+const enChapitre = (table, book, ch, valeur) => {
+  if (!table.has(book)) table.set(book, new Map())
+  const chMap = table.get(book)
+  if (!chMap.has(ch)) chMap.set(ch, [])
+  chMap.get(ch).push(valeur)
+}
+const enSet = (table, book, ch) => {
+  if (!table.has(book)) table.set(book, new Set())
+  table.get(book).add(ch)
+}
+const setDe = (table, book) => table.get(book) || new Set()
+/** Nom de fichier d'un doc, séparateurs NORMALISÉS AVANT la coupe : `join` rend `docs\\raw\\x.md`
+ *  sous Windows, et un rapport committé ne doit pas dire deux choses selon la machine qui l'écrit. */
+const nomDeDoc = (chemin) => chemin.replace(/\\/g, '/').split('/').pop()
+
+/** Calcule la réconciliation CODE↔ATLAS. Pur vis-à-vis de l'écriture de fichier (aucun writeFileSync ici).
+ *  `registre` = le registre des livres (`books.json` par défaut) : les tests en injectent un de fixture. */
+export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR, registre = REGISTRE_LIVRES } = {}) {
+  const books = booksDe(registre)
+  const coeurs = coeursDe(registre)
+  const ALT = alternationDe(books)
+  const bookOf = bookOfDe(books)
   const SRC = fichiersSources(srcDir, ['.ts', '.tsx', '.json'])
   const DOCS = listerDossier(rawDir)
     // (#454 DoD, #585 lot A) source unique _lib.mjs — corrige un manque : reanchor.md (rapport
@@ -67,23 +123,22 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
     .map((f) => join(rawDir, f))
 
   // --- regex de réfs (source unique : _lib.mjs ; instances stateful /g locales) ---
-  const REF_RE = refRe()
+  const REF_RE = refReDe(ALT)
   // Miroir FOLIO (#606) : la graphie `ABBR NN p.folio` (gelée par #585) est aussi une citation de
   // chapitre valide côté ATLAS (jamais côté CODE — le code cite des lignes, la donnée cite déjà son
-  // folio via `source:{book,page}`, traité par le crédit `codeFolioLdbCh` plus bas) ; convertie en
-  // plage de LIGNES via `folioSpan`, fusionnée aux spans `atlasLDB`/`atlasOther` — la couverture ne
-  // doit voir qu'UNE mesure, jamais un chemin parallèle qui recompte différemment.
-  const REF_FOLIO_RE = refFolioRe()
+  // folio via `source:{book,page}`, traité par le crédit `codeFolioCh` plus bas) ; convertie en
+  // plage de LIGNES via `folioSpan`, fusionnée aux spans d'`atlas` — la couverture ne doit voir
+  // qu'UNE mesure, jamais un chemin parallèle qui recompte différemment.
+  const REF_FOLIO_RE = refFolioReDe(ALT)
   let folioIgnored = 0 // folios cités en Atlas sans ancre `data-folio` résoluble dans le bon chapitre
 
   // === collecte CODE ===
-  const codeLDB = new Map()      // ch -> [{line, file, row, text}]  (réfs ligne strictes)
-  const codeOther = new Map()    // book -> ch -> [{line, file, row, text}]
-  const codeOtherNoCh = new Map() // book -> [{line, file, row, text}]  (réfs SANS chapitre : `AA l.4395`)
-  const codeCh = new Set()       // tout chapitre LDB mentionné (lâche)
+  const code = new Map()      // book -> ch -> [{line, file, row, text}]  (réfs ligne strictes)
+  const codeNoCh = new Map()  // book -> [{line, file, row, text}]  (réfs SANS chapitre : `AA l.4395`)
+  const codeLoose = new Map() // book -> Set(ch)  — tout chapitre mentionné (lâche)
   for (const f of SRC) {
     const text = readFileSync(f, 'utf8')
-    for (const m of text.matchAll(pivotLooseRe())) codeCh.add(chKey(m[1]))
+    for (const mm of text.matchAll(looseReDe(ALT))) enSet(codeLoose, mm[1], chKey(mm[2]))
     const lines = text.split('\n')
     lines.forEach((ln, i) => {
       let m
@@ -92,33 +147,21 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
         const book = bookOf(m[1].replace(/\s+/g, ' ').trim())
         if (!book) continue
         const rec = { line: Number(m[3]), file: f.replace(/\\/g, '/'), row: i + 1, text: ln.trim().slice(0, 160) }
-        // RÉGIME (jamais la graphie) : le pivot s'indexe par chapitre seul — une de ses réfs sans
-        // chapitre n'a pas d'unité à réconcilier, la mesure `codeOtherNoCh` étant celle des AUTRES
-        // livres (Sens A « autres livres »).
         if (m[2] == null) {
-          if (book === PIVOT_ABBR) continue
-          if (!codeOtherNoCh.has(book)) codeOtherNoCh.set(book, [])
-          codeOtherNoCh.get(book).push(rec)
-        } else if (book === PIVOT_ABBR) {
-          const ch = chKey(m[2])
-          if (!codeLDB.has(ch)) codeLDB.set(ch, [])
-          codeLDB.get(ch).push(rec)
+          if (!codeNoCh.has(book)) codeNoCh.set(book, [])
+          codeNoCh.get(book).push(rec)
         } else {
-          if (!codeOther.has(book)) codeOther.set(book, new Map())
-          const chMap = codeOther.get(book)
-          const ch = chKey(m[2])
-          if (!chMap.has(ch)) chMap.set(ch, [])
-          chMap.get(ch).push(rec)
+          enChapitre(code, book, chKey(m[2]), rec)
         }
       }
     })
   }
 
-  // === crédit FOLIO (#434) : chapitres LDB atteints par une source `{book,page}` d'un src/data/*.json ===
+  // === crédit FOLIO (#434) : chapitres atteints par une source `{book,page}` d'un src/data/*.json ===
   // Réutilise l'extraction canonique (`folioCitationsFromJson` → `folioIndexOf`/`folioRange`, mapping
   // slug→abbr de books.json) — jamais une 2e implémentation. Un chapitre-données (carrières LDB 26-35,
   // possessions 66-70…) est « référencé dans le code » via le folio même sans réf de LIGNE.
-  const codeFolioLdbCh = new Set()
+  const codeFolioCh = new Map() // book -> Set(ch)
   let abbrMap
   try { abbrMap = loadAbbrMap() } catch { abbrMap = null }
   if (abbrMap) {
@@ -127,58 +170,40 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
       const rel = f.replace(/\\/g, '/')
       if (!rel.endsWith('.json') || /\.(test|spec)\./.test(rel)) continue
       for (const c of folioCitationsFromJson(rel, readFileSync(f, 'utf8'), { ...abbrMap, stats: folioStats })) {
-        if (c.book === PIVOT_ABBR) codeFolioLdbCh.add(chKey(c.ch))
+        if (bookOf(c.book)) enSet(codeFolioCh, c.book, chKey(c.ch))
       }
     }
   }
 
   // === collecte ATLAS ===
-  const atlasLDB = new Map()      // ch -> [[lo,hi], …]
-  const atlasOther = new Map()    // book -> ch -> [[lo,hi], …]
-  const atlasOtherChLoose = new Map() // book(canonique) -> Set(ch)  — mention lâche, miroir de atlasCh
-  const catalogOtherCh = new Map()    // book(canonique) -> Set(ch)  — chapitres couverts par un catalogue
-  const atlasCh = new Set()       // tout chapitre LDB cité (lâche)
-  const catalogCh = new Set()     // chapitres LDB couverts par un catalogue (données verbatim, niveau chapitre)
-  const docOwnerOfCh = new Map()  // ch -> doc (le + de réfs)
-  const ownerCount = new Map()
+  const atlas = new Map()      // book -> ch -> [[lo,hi], …]
+  const atlasLoose = new Map() // book -> Set(ch)  — mention lâche
+  const catalog = new Map()    // book -> Set(ch)  — chapitres couverts par un catalogue (verbatim)
+  const docOwner = new Map()   // `book|ch` -> doc (le + de réfs) — le PROPRIÉTAIRE du chapitre
+  const ownerCount = new Map() // `book|ch|doc` -> n
   for (const d of DOCS) {
     const text = readText(d)
-    for (const mm of text.matchAll(pivotLooseRe())) atlasCh.add(chKey(mm[1]))
-    if (/catalogue-/.test(d)) for (const mm of text.matchAll(pivotLooseRe())) catalogCh.add(chKey(mm[1]))
-    let m
-    // Le pivot pine ses spans dans `atlasLDB` et désigne le doc PROPRIÉTAIRE du chapitre ; les autres
-    // livres vont dans `atlasOther` — RÉGIME, sur la graphie UNIQUE `refRe`.
-    const pineAtlasLDB = (ch, sp) => {
-      if (!atlasLDB.has(ch)) atlasLDB.set(ch, [])
-      atlasLDB.get(ch).push(sp)
-      const key = ch + '|' + d
-      ownerCount.set(key, (ownerCount.get(key) || 0) + 1)
-      if (!docOwnerOfCh.has(ch) || ownerCount.get(key) > ownerCount.get(ch + '|' + docOwnerOfCh.get(ch)))
-        docOwnerOfCh.set(ch, d)
+    const estCatalogue = /catalogue-/.test(d)
+    for (const mm of text.matchAll(looseReDe(ALT))) {
+      enSet(atlasLoose, mm[1], chKey(mm[2]))
+      if (estCatalogue) enSet(catalog, mm[1], chKey(mm[2]))
     }
+    // Pine le span et désigne le doc PROPRIÉTAIRE du chapitre — pour TOUT livre.
+    const piner = (book, ch, sp) => {
+      enChapitre(atlas, book, ch, sp)
+      const cle = `${book}|${ch}`
+      const key = `${cle}|${d}`
+      ownerCount.set(key, (ownerCount.get(key) || 0) + 1)
+      if (!docOwner.has(cle) || ownerCount.get(key) > ownerCount.get(`${cle}|${docOwner.get(cle)}`))
+        docOwner.set(cle, d)
+    }
+    let m
     REF_RE.lastIndex = 0
     while ((m = REF_RE.exec(text))) {
       if (m[2] == null) continue // réf Atlas sans chapitre : pas d'unité chapitre à indexer
       const book = bookOf(m[1].replace(/\s+/g, ' ').trim())
       if (!book) continue
-      const ch = chKey(m[2])
-      if (book === PIVOT_ABBR) { pineAtlasLDB(ch, span(m[3], m[4])); continue }
-      if (!atlasOther.has(book)) atlasOther.set(book, new Map())
-      const chMap = atlasOther.get(book)
-      if (!chMap.has(ch)) chMap.set(ch, [])
-      chMap.get(ch).push(span(m[3], m[4]))
-    }
-    for (const [abbr, re] of OTHER_LOOSE_RE) {
-      re.lastIndex = 0
-      for (const mm of text.matchAll(re)) {
-        const ch = chKey(mm[1])
-        if (!atlasOtherChLoose.has(abbr)) atlasOtherChLoose.set(abbr, new Set())
-        atlasOtherChLoose.get(abbr).add(ch)
-        if (/catalogue-/.test(d)) {
-          if (!catalogOtherCh.has(abbr)) catalogOtherCh.set(abbr, new Set())
-          catalogOtherCh.get(abbr).add(ch)
-        }
-      }
+      piner(book, chKey(m[2]), span(m[3], m[4]))
     }
     REF_FOLIO_RE.lastIndex = 0
     while ((m = REF_FOLIO_RE.exec(text))) {
@@ -188,53 +213,32 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
       const ch = chKey(m[2])
       const resolved = folioSpan(book, ch, m[3], m[4])
       if (!resolved) { folioIgnored++; continue }
-      if (book === PIVOT_ABBR) { pineAtlasLDB(ch, resolved); continue }
-      if (!atlasOther.has(book)) atlasOther.set(book, new Map())
-      const chMap = atlasOther.get(book)
-      if (!chMap.has(ch)) chMap.set(ch, [])
-      chMap.get(ch).push(resolved)
+      piner(book, ch, resolved)
     }
   }
 
-  const covered = (ch, line) => (atlasLDB.get(ch) || []).some(([lo, hi]) => line >= lo - TOL && line <= hi + TOL)
-  const coveredOther = (book, ch, line) =>
-    ((atlasOther.get(book) || new Map()).get(ch) || []).some(([lo, hi]) => line >= lo - TOL && line <= hi + TOL)
+  const covered = (book, ch, line) =>
+    ((atlas.get(book) || new Map()).get(ch) || []).some(([lo, hi]) => line >= lo - TOL && line <= hi + TOL)
 
-  // === SENS A (LDB) : code → Atlas ===
-  const hardA = []  // chapitres dans le code, absents de l'Atlas
-  const softA = []  // chapitres couverts, lignes non pinées
-  for (const [ch, refs] of [...codeLDB].sort((a, b) => Number(a[0]) - Number(b[0]))) {
-    const uniqLines = [...new Set(refs.map((r) => r.line))].sort((a, b) => a - b)
-    if (!atlasCh.has(ch)) {
-      hardA.push({ ch, count: refs.length, lines: uniqLines, sample: refs.slice(0, 4) })
-    } else if (catalogCh.has(ch)) {
-      // chapitre couvert par un catalogue (données verbatim au niveau chapitre) — pas un trou de ligne
-    } else {
-      const miss = uniqLines.filter((l) => !covered(ch, l))
-      if (miss.length) {
-        const ex = miss.map((l) => refs.find((r) => r.line === l)).filter(Boolean)
-        softA.push({ ch, missCount: miss.length, totalLines: uniqLines.length, ex })
-      }
-    }
-  }
-
-  // === SENS A (livres hors pivot) : code → Atlas — miroir du bloc pivot ci-dessus ===
-  const hardAOther = []
-  const softAOther = []
-  for (const [book, chMap] of [...codeOther].sort((a, b) => parUnitesDeCode(a[0], b[0]))) {
-    const looseCh = atlasOtherChLoose.get(book) || new Set()
-    const catalogChSet = catalogOtherCh.get(book) || new Set()
+  // === SENS A : code → Atlas, UNE table (livre, chapitre) ===
+  const hardA = [] // chapitres-livre dans le code, absents de l'Atlas
+  const softA = [] // chapitres-livre couverts, lignes non pinées
+  for (const [book, chMap] of [...code].sort((a, b) => parUnitesDeCode(a[0], b[0]))) {
+    const looseCh = setDe(atlasLoose, book)
+    const catalogChSet = setDe(catalog, book)
     for (const [ch, refs] of [...chMap].sort((a, b) => Number(a[0]) - Number(b[0]) || parUnitesDeCode(a[0], b[0]))) {
       const uniqLines = [...new Set(refs.map((r) => r.line))].sort((a, b) => a - b)
       if (!looseCh.has(ch)) {
-        hardAOther.push({ book, ch, count: refs.length, lines: uniqLines, sample: refs.slice(0, 4) })
+        hardA.push({ book, ch, count: refs.length, lines: uniqLines, sample: refs.slice(0, 4) })
       } else if (catalogChSet.has(ch)) {
-        // chapitre couvert par un catalogue — pas un trou de ligne (miroir catalogCh)
+        // chapitre couvert par un catalogue (données verbatim au niveau chapitre) — pas un trou de ligne
       } else {
-        const miss = uniqLines.filter((l) => !coveredOther(book, ch, l))
+        const miss = uniqLines.filter((l) => !covered(book, ch, l))
         if (miss.length) {
           const ex = miss.map((l) => refs.find((r) => r.line === l)).filter(Boolean)
-          softAOther.push({ book, ch, missCount: miss.length, totalLines: uniqLines.length, ex })
+          // Chapitre couvert par la seule mention LÂCHE (aucun span pinné) : personne ne le possède.
+          const proprietaire = nomDeDoc(docOwner.get(`${book}|${ch}`) || '') || '—'
+          softA.push({ book, ch, missCount: miss.length, totalLines: uniqLines.length, ex, proprietaire })
         }
       }
     }
@@ -242,139 +246,139 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
 
   // Résumé par livre (le compte central du #434 défaut 9)
   const bookStats = new Map()
-  const bump = (book, key) => {
+  const stat = (book) => {
     if (!bookStats.has(book)) bookStats.set(book, { hard: 0, soft: 0, noCh: 0 })
-    bookStats.get(book)[key]++
+    return bookStats.get(book)
   }
-  for (const h of hardAOther) bump(h.book, 'hard')
-  for (const s of softAOther) bump(s.book, 'soft')
-  for (const [book, refs] of codeOtherNoCh) {
-    if (!bookStats.has(book)) bookStats.set(book, { hard: 0, soft: 0, noCh: 0 })
-    bookStats.get(book).noCh = refs.length
-  }
+  for (const h of hardA) stat(h.book).hard++
+  for (const s of softA) stat(s.book).soft++
+  for (const [book, refs] of codeNoCh) stat(book).noCh = refs.length
 
-  // === SENS B (LDB uniquement — hors périmètre #434 défaut 9) : Atlas → code ===
+  // === SENS B1 : lignes marquées « (non implémenté) » — GLOBAL, aucune dimension de livre ===
   const nonImpl = []
   for (const d of DOCS) {
     const lines = readText(d).split('\n')
     lines.forEach((ln, i) => {
-      if (/non impl[ée]ment[ée]/i.test(ln)) nonImpl.push({ doc: d.split('/').pop(), row: i + 1, text: ln.trim().slice(0, 200) })
+      if (/non impl[ée]ment[ée]/i.test(ln)) nonImpl.push({ doc: nomDeDoc(d), row: i + 1, text: ln.trim().slice(0, 200) })
     })
   }
-  // B2 : chapitres LDB cités par l'Atlas jamais référencés dans le code (`atlasCh`/`codeCh` portent
-  // déjà la clé canonique `chKey`, #434 défaut 11 — `LDB 06` et `LDB 6` sont une seule entrée).
-  // Crédite le FOLIO : un chapitre atteint par une source `{book,page}` de src/data est référencé
-  // (donnée), pas hors-code.
-  const atlasOnlyBefore = [...atlasCh].filter((ch) => !codeCh.has(ch)).sort((a, b) => Number(a) - Number(b))
-  const atlasOnly = atlasOnlyBefore.filter((ch) => !codeFolioLdbCh.has(ch))
-  const atlasOnlyFolioCredited = atlasOnlyBefore.filter((ch) => codeFolioLdbCh.has(ch))
-
-  const codeOtherBooks = new Set([...codeOther.keys(), ...codeOtherNoCh.keys()])
-  const atlasOtherBooks = new Set([...atlasOther.keys(), ...atlasOtherChLoose.keys()])
-
-  return {
-    hardA, softA, docOwnerOfCh, nonImpl, atlasOnly, atlasOnlyBefore, atlasOnlyFolioCredited,
-    hardAOther, softAOther, codeOtherNoCh, bookStats,
-    codeOtherBooks, atlasOtherBooks, folioIgnored,
+  // === SENS B2 (R2, régime de CŒUR) : chapitres cités par l'Atlas jamais référencés dans le code
+  // (`atlasLoose`/`codeLoose` portent déjà la clé canonique `chKey`, #434 défaut 11 — `LDB 06` et
+  // `LDB 6` sont une seule entrée). Crédite le FOLIO : un chapitre atteint par une source
+  // `{book,page}` de src/data est référencé (donnée), pas hors-code.
+  const b2 = []
+  for (const [book] of livresDeCoeur(books, coeurs)) {
+    const coeur = coeurDe(book, coeurs)
+    const cite = setDe(codeLoose, book)
+    const folio = setDe(codeFolioCh, book)
+    const avant = [...setDe(atlasLoose, book)].filter((ch) => !cite.has(ch)).sort((a, b) => Number(a) - Number(b))
+    b2.push({
+      book,
+      coeur,
+      avant,
+      credites: avant.filter((ch) => folio.has(ch)),
+      horsCode: avant.filter((ch) => !folio.has(ch)),
+    })
   }
+
+  const codeBooks = new Set([...code.keys(), ...codeNoCh.keys()])
+  const atlasBooks = new Set([...atlas.keys(), ...atlasLoose.keys()])
+
+  return { hardA, softA, nonImpl, b2, codeNoCh, bookStats, codeBooks, atlasBooks, folioIgnored, coeurs }
 }
 
 /** Rend le Markdown `docs/raw/reconciliation.md` — pur (aucun accès fichier). */
 export function renderReport(data) {
-  const { hardA, softA, docOwnerOfCh, nonImpl, atlasOnly, atlasOnlyBefore, atlasOnlyFolioCredited, hardAOther, softAOther, codeOtherNoCh, bookStats, codeOtherBooks, atlasOtherBooks, folioIgnored } = data
-  const noChapterCount = [...codeOtherNoCh.values()].reduce((n, a) => n + a.length, 0)
+  const { hardA, softA, nonImpl, b2, codeNoCh, bookStats, codeBooks, atlasBooks, folioIgnored, coeurs = new Map() } = data
+  const coeur = (book) => coeurDe(book, coeurs)
+  const noChapterCount = [...codeNoCh.values()].reduce((n, a) => n + a.length, 0)
 
   const L = []
   L.push('# Atlas RAW — Réconciliation CODE ↔ ATLAS', '')
-  L.push('> Déterministe (`node scripts/raw/reconcile.mjs`). **Sens A** = règles que l\'app applique', '> (réfs `<ABRÉV> NN l.X` dans `src/`, tous livres) absentes de', `> l'Atlas. **Sens B** = règles que l'Atlas décrit hors du code (borné à ${PIVOT_ABBR}).`, `> Tolérance ligne = ±${TOL}.`, '')
-  L.push(`**Sens A — code → Atlas (LDB)** : ${hardA.length} chapitre(s) cités par le code & absents de l'Atlas · ${softA.length} chapitre(s) couverts avec des lignes non pinées. Réfs folio (\`ABBR NN p.X\`, #606) côté Atlas : ${folioIgnored} ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).`)
-  L.push(`**Sens A — code → Atlas (${HORS_PIVOT} livres hors ${PIVOT_ABBR})** : ${hardAOther.length} chapitre(s)-livre cités par le code & absents de l'Atlas · ${softAOther.length} chapitre(s)-livre couverts avec des lignes non pinées · ${noChapterCount} réf(s) sans chapitre (non réconciliables par cette mesure).`)
-  L.push(`**Sens B — Atlas → code (LDB)** : ${nonImpl.length} marqueur(s) « (non implémenté) » · ${atlasOnly.length} chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : ${atlasOnlyBefore.length} · ${atlasOnlyFolioCredited.length} crédités par une source folio de \`src/data\`).`, '')
+  L.push(
+    '> Déterministe (`node scripts/raw/reconcile.mjs`). **Sens A** = règles que l\'app applique',
+    '> (réfs `<ABRÉV> NN l.X` dans `src/`, tous livres) absentes de l\'Atlas. **Sens B1** = lignes de',
+    '> l\'Atlas marquées « (non implémenté) », tous docs. **Sens B2** = chapitres que l\'Atlas décrit',
+    '> hors du code, par livre de CŒUR (champ `coeur` de `books.json`).',
+    `> Tolérance ligne = ±${TOL}.`,
+    '',
+  )
+  L.push(`**Sens A — code → Atlas (tous livres)** : ${hardA.length} chapitre(s)-livre cités par le code & absents de l'Atlas · ${softA.length} chapitre(s)-livre couverts avec des lignes non pinées · ${noChapterCount} réf(s) sans chapitre (non réconciliables par cette mesure). Réfs folio (\`ABBR NN p.X\`, #606) côté Atlas : ${folioIgnored} ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).`)
+  // Le résumé de TÊTE porte les NOMBRES, jamais un compte de livres : par livre de cœur, ses trois
+  // mesures de Sens B2 — dérivées de `b2`, donc un cœur de plus s'y lit sans une ligne ici.
+  const b2Tete = b2
+    .map((e) => `${e.book} (cœur ${e.coeur}) : ${e.horsCode.length} chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédit folio : ${e.avant.length} · ${e.credites.length} crédité(s) par une source folio de \`src/data\`)`)
+    .join(' · ')
+  L.push(`**Sens B — Atlas → code** : ${nonImpl.length} marqueur(s) « (non implémenté) » (tous docs)${b2Tete ? ` · ${b2Tete}` : ' · aucun livre de cœur au registre'}.`, '')
 
-  L.push('## A1 — Chapitres appelés par le CODE (LDB), ABSENTS de l\'Atlas (trous durs)', '')
-  if (!hardA.length) L.push('_Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une fiche._', '')
-  else for (const h of hardA) {
-    L.push(`### LDB ${h.ch} — ${h.count} réf(s) code, 0 dans l'Atlas`)
-    for (const s of h.sample) L.push(`- \`${s.file}:${s.row}\` (l.${s.line}) — ${s.text}`)
-    L.push('')
-  }
-
-  L.push('## A2 — Lignes appelées par le CODE (LDB) non pinées par l\'Atlas (chapitre couvert, règle peut-être survolée)', '')
-  if (!softA.length) L.push('_Aucune._', '')
-  else for (const s of softA.sort((a, b) => b.missCount - a.missCount)) {
-    const owner = (docOwnerOfCh.get(s.ch) || '').split('/').pop()
-    L.push(`### LDB ${s.ch} — ${s.missCount}/${s.totalLines} ligne(s) code hors couverture (propriétaire : ${owner})`)
-    for (const r of s.ex.slice(0, 12)) L.push(`- l.${r.line} — \`${r.file}:${r.row}\` — ${r.text}`)
-    if (s.ex.length > 12) L.push(`- … +${s.ex.length - 12} autres`)
-    L.push('')
-  }
-
-  L.push(`## A-AUTRES 0 — Résumé Sens A par livre (${HORS_PIVOT} livres hors ${PIVOT_ABBR})`, '')
-  if (!bookStats.size) L.push('_Aucune réf code vers un autre livre._', '')
+  L.push('## A0 — Résumé Sens A par livre', '')
+  if (!bookStats.size) L.push('_Aucune réf de code vers un livre du registre._', '')
   else {
-    L.push('| Livre | Trous durs (chapitres) | Chapitres à lignes non pinées | Réfs sans chapitre |', '|---|---|---|---|')
+    L.push('| Livre | Cœur | Trous durs (chapitres) | Chapitres à lignes non pinées | Réfs sans chapitre |', '|---|---|---|---|---|')
     for (const [book, st] of [...bookStats].sort((a, b) => parUnitesDeCode(a[0], b[0])))
-      L.push(`| ${book} | ${st.hard} | ${st.soft} | ${st.noCh} |`)
+      L.push(`| ${book} | ${coeur(book) ?? '—'} | ${st.hard} | ${st.soft} | ${st.noCh} |`)
     L.push('')
   }
 
-  L.push('## A1-AUTRES — Chapitres appelés par le CODE (autres livres), ABSENTS de l\'Atlas (trous durs)', '')
-  if (!hardAOther.length) L.push('_Aucun._', '')
-  else for (const h of hardAOther) {
-    L.push(`### ${h.book} ${h.ch} — ${h.count} réf(s) code, 0 dans l'Atlas`)
+  L.push('## A1 — Chapitres appelés par le CODE, ABSENTS de l\'Atlas (trous durs)', '')
+  if (!hardA.length) L.push('_Aucun. Tout chapitre référencé dans le code est cité par au moins une fiche._', '')
+  else for (const h of hardA) {
+    const regime = coeur(h.book) ? ` — livre de cœur (${coeur(h.book)}) : se corrige, ne se stocke pas` : ''
+    L.push(`### ${h.book} ${h.ch} — ${h.count} réf(s) code, 0 dans l'Atlas${regime}`)
     for (const s of h.sample) L.push(`- \`${s.file}:${s.row}\` (l.${s.line}) — ${s.text}`)
     L.push('')
   }
 
-  L.push('## A2-AUTRES — Lignes appelées par le CODE (autres livres) non pinées par l\'Atlas', '')
-  if (!softAOther.length) L.push('_Aucune._', '')
-  else for (const s of softAOther.sort((a, b) => b.missCount - a.missCount)) {
-    L.push(`### ${s.book} ${s.ch} — ${s.missCount}/${s.totalLines} ligne(s) code hors couverture`)
+  L.push('## A2 — Lignes appelées par le CODE non pinées par l\'Atlas (chapitre couvert, règle peut-être survolée)', '')
+  if (!softA.length) L.push('_Aucune._', '')
+  else for (const s of [...softA].sort((a, b) => b.missCount - a.missCount)) {
+    L.push(`### ${s.book} ${s.ch} — ${s.missCount}/${s.totalLines} ligne(s) code hors couverture (propriétaire : ${s.proprietaire})`)
     for (const r of s.ex.slice(0, 12)) L.push(`- l.${r.line} — \`${r.file}:${r.row}\` — ${r.text}`)
     if (s.ex.length > 12) L.push(`- … +${s.ex.length - 12} autres`)
     L.push('')
   }
 
-  L.push('## A3-AUTRES — Réfs de CODE sans chapitre (`<ABRÉV> l.X`, pas d\'unité chapitre à couvrir)', '')
-  if (!codeOtherNoCh.size) L.push('_Aucune._', '')
-  else for (const [book, refs] of [...codeOtherNoCh].sort((a, b) => parUnitesDeCode(a[0], b[0]))) {
+  L.push('## A3 — Réfs de CODE sans chapitre (`<ABRÉV> l.X`, pas d\'unité chapitre à couvrir)', '')
+  if (!codeNoCh.size) L.push('_Aucune._', '')
+  else for (const [book, refs] of [...codeNoCh].sort((a, b) => parUnitesDeCode(a[0], b[0]))) {
     L.push(`### ${book} — ${refs.length} réf(s) sans chapitre`)
     for (const r of refs.slice(0, 4)) L.push(`- \`${r.file}:${r.row}\` (l.${r.line}) — ${r.text}`)
     if (refs.length > 4) L.push(`- … +${refs.length - 4} autres`)
     L.push('')
   }
 
-  L.push('## B1 — Règles décrites par l\'Atlas marquées « (non implémenté) » (LDB)', '')
+  L.push('## B1 — Règles décrites par l\'Atlas marquées « (non implémenté) »', '')
   if (!nonImpl.length) L.push('_Aucun marqueur._', '')
   else for (const n of nonImpl) L.push(`- **${n.doc}** L${n.row} — ${n.text}`)
   L.push('')
 
-  L.push('## B2 — Chapitres LDB cités par l\'Atlas, jamais référencés dans le code', '')
-  L.push(`_Avant crédit folio (${atlasOnlyBefore.length})_ : ${atlasOnlyBefore.length ? atlasOnlyBefore.map((c) => `LDB ${c}`).join(' · ') : '—'}`, '')
-  L.push(`_Crédités par une source folio de \`src/data/*.json\` (${atlasOnlyFolioCredited.length}, donnée référencée sans réf de ligne)_ : ${atlasOnlyFolioCredited.length ? atlasOnlyFolioCredited.map((c) => `LDB ${c}`).join(' · ') : '—'}`, '')
-  L.push('**VRAIS hors-code (après crédit folio) :**')
-  if (!atlasOnly.length) L.push('_Aucun._', '')
-  else L.push(atlasOnly.map((c) => `LDB ${c}`).join(' · '), '')
+  for (const e of b2) {
+    L.push(`## B2 ${e.book} (cœur ${e.coeur}) — Chapitres cités par l'Atlas, jamais référencés dans le code`, '')
+    L.push(`_Avant crédit folio (${e.avant.length})_ : ${e.avant.length ? e.avant.map((c) => `${e.book} ${c}`).join(' · ') : '—'}`, '')
+    L.push(`_Crédités par une source folio de \`src/data/*.json\` (${e.credites.length}, donnée référencée sans réf de ligne)_ : ${e.credites.length ? e.credites.map((c) => `${e.book} ${c}`).join(' · ') : '—'}`, '')
+    L.push('**VRAIS hors-code (après crédit folio) :**')
+    if (!e.horsCode.length) L.push('_Aucun._', '')
+    else L.push(e.horsCode.map((c) => `${e.book} ${c}`).join(' · '), '')
+  }
 
-  L.push('## Autres livres', '')
-  L.push(`Code : ${[...codeOtherBooks].sort().join(', ') || '—'}`)
-  L.push(`Atlas : ${[...atlasOtherBooks].sort().join(', ') || '—'}`, '')
+  L.push('## Livres vus par la mesure', '')
+  L.push(`Code : ${[...codeBooks].sort().join(', ') || '—'}`)
+  L.push(`Atlas : ${[...atlasBooks].sort().join(', ') || '—'}`, '')
 
   return L.join('\n')
 }
 
 /** Entrées de TROU DUR d'une réconciliation, NOMMÉES (jamais un compte) — l'unité du cliquet.
  *  Clé : `<ABRÉV> <ch>` pour le sens A (code → Atlas), `B2 <ABRÉV> <ch>` pour le sens B2
- *  (Atlas → code). `sites` = les `fichier:ligne` échantillonnés, pour le message nominatif. */
-export function trousDurs({ hardA = [], hardAOther = [], atlasOnly = [] }) {
+ *  (Atlas → code, livres de cœur). `sites` = les `fichier:ligne` échantillonnés, pour le message nominatif. */
+export function trousDurs({ hardA = [], b2 = [] }) {
   const site = (s) => `${s.file}:${s.row}`
   const entrees = []
   for (const h of hardA)
-    entrees.push({ cle: `${PIVOT_ABBR} ${h.ch}`, quoi: `${h.count} réf(s) de code, 0 dans l'Atlas`, sites: (h.sample ?? []).map(site) })
-  for (const h of hardAOther)
     entrees.push({ cle: `${h.book} ${h.ch}`, quoi: `${h.count} réf(s) de code, 0 dans l'Atlas`, sites: (h.sample ?? []).map(site) })
-  for (const ch of atlasOnly)
-    entrees.push({ cle: `B2 ${PIVOT_ABBR} ${ch}`, quoi: "chapitre décrit par l'Atlas, jamais référencé par le code (ni crédité par un folio de `src/data`)", sites: [] })
+  for (const e of b2)
+    for (const ch of e.horsCode ?? [])
+      entrees.push({ cle: `${PREFIXE_B2}${e.book} ${ch}`, quoi: "chapitre décrit par l'Atlas, jamais référencé par le code (ni crédité par un folio de `src/data`)", sites: [] })
   return entrees
 }
 
@@ -387,16 +391,23 @@ export function lireStock(path = STOCK_PATH) {
 }
 
 /** Écart NOMINATIF des trous durs mesurés à leur stock, dans les deux sens (`ecartsDeStock`), PLUS
- *  le refus du livre PIVOT : une clé `LDB <ch>` — trou observé OU entrée de stock — est refusée, le
- *  LDB est couvert fiche à fiche par l'Atlas et un chapitre manquant s'y CORRIGE (CLAUDE.md règle 1 :
- *  « devoir rouvrir `Source/` = un défaut de l'Atlas à corriger »). Le sens B2 (`B2 LDB <ch>`) n'est
- *  pas concerné : il dit l'Atlas hors-code, pas l'Atlas incomplet.
+ *  le refus des livres de CŒUR (R1) : une clé de Sens A `<ABRÉV> <ch>` d'un livre de cœur — trou
+ *  observé OU entrée de stock — est refusée, un livre de cœur étant couvert fiche à fiche par
+ *  l'Atlas et un chapitre manquant s'y CORRIGEANT (CLAUDE.md règle 1 : « devoir rouvrir `Source/`
+ *  = un défaut de l'Atlas à corriger »). Le sens B2 n'est pas concerné : il dit l'Atlas hors-code,
+ *  pas l'Atlas incomplet.
  *  Pur : aucun exit — l'appelant décide (frontière de `guards/lib/stock.mjs`). */
-export function ecartsTrousDurs(entrees, stock) {
-  const estPivot = (cle) => cle.startsWith(`${PIVOT_ABBR} `)
-  const pivot = [
-    ...entrees.filter((e) => estPivot(e.cle)).map((e) => `${e.cle} — ${e.quoi}${e.sites.length ? ` · ${e.sites.join(' , ')}` : ''}`),
-    ...Object.keys(stock).filter(estPivot).map((cle) => `${cle} — entrée de stock INADMISSIBLE (${stock[cle]?.quoi ?? stock[cle]})`),
+export function ecartsTrousDurs(entrees, stock, registre = REGISTRE_LIVRES) {
+  const coeurs = coeursDe(registre)
+  const abbrs = new Set(booksDe(registre).map(([a]) => a))
+  // R1 ne vise que le Sens A : c'est le DÉCODEUR qui tranche le sens, jamais le préfixe seul.
+  const estDeCoeur = (cle) => {
+    const d = decodeCle(cle, abbrs)
+    return d?.sens === 'A' && coeurDe(d.book, coeurs) != null
+  }
+  const coeur = [
+    ...entrees.filter((e) => estDeCoeur(e.cle)).map((e) => `${e.cle} — ${e.quoi}${e.sites.length ? ` · ${e.sites.join(' , ')}` : ''}`),
+    ...Object.keys(stock).filter(estDeCoeur).map((cle) => `${cle} — entrée de stock INADMISSIBLE (${stock[cle]?.quoi ?? stock[cle]})`),
   ]
   const { neuves, perimees } = ecartsDeStock({
     observe: entrees,
@@ -407,26 +418,27 @@ export function ecartsTrousDurs(entrees, stock) {
       perimee: (cle) => `${cle} — ${stock[cle]?.quoi ?? stock[cle]} (${stock[cle]?.lot ?? 'lot non dit'})`,
     },
   })
-  return { neuves, perimees, pivot }
+  return { neuves, perimees, coeur }
 }
 
 function main() {
   const data = computeReconciliation()
   ecrireDoc(join(RAWDIR, 'reconciliation.md'), renderReport(data))
-  console.log(`Sens A (LDB) : ${data.hardA.length} trous durs · ${data.softA.length} chapitres à lignes non pinées · folios Atlas ignorés ${data.folioIgnored}`)
-  const noChapterCount = [...data.codeOtherNoCh.values()].reduce((n, a) => n + a.length, 0)
-  console.log(`Sens A (autres livres) : ${data.hardAOther.length} trou(s) dur(s) chapitre-livre · ${data.softAOther.length} chapitre(s)-livre à lignes non pinées · ${noChapterCount} réf(s) sans chapitre (hors mesure)`)
+  const noChapterCount = [...data.codeNoCh.values()].reduce((n, a) => n + a.length, 0)
+  console.log(`Sens A : ${data.hardA.length} trou(s) dur(s) chapitre-livre · ${data.softA.length} chapitre(s)-livre à lignes non pinées · ${noChapterCount} réf(s) sans chapitre (hors mesure) · folios Atlas ignorés ${data.folioIgnored}`)
   for (const [book, st] of [...data.bookStats].sort((a, b) => parUnitesDeCode(a[0], b[0])))
     console.log(`  ${book} : ${st.hard} trous durs · ${st.soft} chapitres non pinés · ${st.noCh} réfs sans chapitre`)
-  console.log(`Sens B : ${data.nonImpl.length} (non implémenté) · B2 ${data.atlasOnlyBefore.length} → ${data.atlasOnly.length} chapitres Atlas hors-code (${data.atlasOnlyFolioCredited.length} crédités par folio)`)
+  console.log(`Sens B1 : ${data.nonImpl.length} (non implémenté)`)
+  for (const e of data.b2)
+    console.log(`Sens B2 ${e.book} (cœur ${e.coeur}) : ${e.avant.length} → ${e.horsCode.length} chapitre(s) Atlas hors-code (${e.credites.length} crédité(s) par folio)`)
 
   const entrees = trousDurs(data)
   const stock = lireStock()
-  const { neuves, perimees, pivot } = ecartsTrousDurs(entrees, stock)
-  if (pivot.length) {
-    console.log(`LIVRE PIVOT — ${pivot.length} chapitre(s) ${PIVOT_ABBR} : le livre pivot se CORRIGE, il ne se stocke pas.`)
-    for (const p of pivot) console.log(`  ${p}`)
-    console.log("  Remède : couvrir le chapitre dans une fiche de l'Atlas (ou retirer la réf de code) — aucune voie de stock en Sens A pour le LDB.")
+  const { neuves, perimees, coeur } = ecartsTrousDurs(entrees, stock)
+  if (coeur.length) {
+    console.log(`LIVRE DE CŒUR — ${coeur.length} chapitre(s) : un livre de cœur se CORRIGE, il ne se stocke pas.`)
+    for (const p of coeur) console.log(`  ${p}`)
+    console.log("  Remède : couvrir le chapitre dans une fiche de l'Atlas (ou retirer la réf de code) — aucune voie de stock en Sens A pour un livre de cœur.")
   }
   if (neuves.length) {
     console.log(`TROU(S) DUR(S) NEUF(S) — ${neuves.length} chapitre(s) hors du stock \`scripts/raw/reconciliation-stock.json\` :`)
@@ -437,8 +449,8 @@ function main() {
     console.log(`STOCK À DÉCROÎTRE — ${perimees.length} entrée(s) de \`scripts/raw/reconciliation-stock.json\` sans trou mesuré : retirer l'entrée.`)
     for (const p of perimees) console.log(`  ${p}`)
   }
-  if (neuves.length || perimees.length || pivot.length) process.exitCode = 1
-  else console.log(`Cliquet des trous durs : ${entrees.length} trou(s) dur(s), tous au stock (${Object.keys(stock).length} entrée(s)) — aucun neuf, aucun périmé, aucun ${PIVOT_ABBR}.`)
+  if (neuves.length || perimees.length || coeur.length) process.exitCode = 1
+  else console.log(`Cliquet des trous durs : ${entrees.length} trou(s) dur(s), tous au stock (${Object.keys(stock).length} entrée(s)) — aucun neuf, aucun périmé, aucun livre de cœur.`)
 }
 
 const isMain = process.argv[1] && process.argv[1].endsWith('reconcile.mjs')

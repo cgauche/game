@@ -538,7 +538,7 @@ nombre d’entrées qui la portent.
 | `src/data/artillery-misfire.json` | object | pipe à la racine | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
 | `src/data/astrology.json` | array | liste | entité | 5 | `desc`:string(5) `id`:string(5) `label`:string(5) `rand`:number(5) `source`:object(5) `type`:string(5) |
 | `src/data/axes.json` | array | liste | entité | 9 | `core`:boolean(6) `desc`:string(9) `id`:string(9) `label`:string(9) `maison`:string(9) `skills`:array(9) `talents`:array(3) `type`:string(9) |
-| `src/data/books.json` | array | liste | entité | 30 | `abbr`:string(30) `desc`:string(18) `dir`:string(17) `extractionDir`:string(1) `folder`:string(30) `id`:string(30) `label`:string(30) `language`:string(30) `type`:string(30) |
+| `src/data/books.json` | array | liste | entité | 30 | `abbr`:string(30) `coeur`:string(2) `desc`:string(18) `dir`:string(17) `extractionDir`:string(1) `folder`:string(30) `id`:string(30) `label`:string(30) `language`:string(30) `type`:string(30) |
 | `src/data/breath-types.json` | array | liste | entité | 6 | `id`:string(6) `label`:string(6) `type`:string(6) |
 | `src/data/buildings.json` | array | liste | entité | 7 | `features`:array(4) `id`:string(7) `label`:string(7) `maison`:string(7) `roofMaterial`:string(7) `type`:string(7) |
 | `src/data/calendarIntercalary.json` | array | liste | entité | 6 | `afterMonth`:number(6) `id`:string(6) `label`:string(6) `source`:object(6) `type`:string(6) |
@@ -661,7 +661,7 @@ nombre d’entrées qui la portent.
 
 ### 2.2 Fréquence globale des signatures d’entrée
 
-Signatures distinctes d’entrée de document : **629**. Les 40 plus fréquentes :
+Signatures distinctes d’entrée de document : **631**. Les 40 plus fréquentes :
 
 | Signature d’entrée | Entrées |
 |---|---|
@@ -5027,4 +5027,4 @@ pèse **2950** slots sur 3324.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: 6f4f1ff04dbd9af67535ff2bb0316d03ef6a8c24 (380 fichiers, 10 dossiers) corps: 14b93944e1564c460ab4ed769143466151a17bb0 -->
+<!-- sources-empreinte: 6b7293d0072a25be53c8afa3c3e27d355181c2e6 (380 fichiers, 10 dossiers) corps: 661c6978b6790bd7e19e33a9c1047a7cd50ae41c -->

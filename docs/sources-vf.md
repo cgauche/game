@@ -140,4 +140,4 @@ AUTORISÉ (`CLAUDE.md` § *Sources VF*). Au moindre doute, **lire le `.md` et ci
 - Suppléments VF dispo : `Altdorf — La Couronne de l'Empire`, `Aventures à Ubersreik I`,
   `Middenheim — La Cité du Loup Blanc`, `Nuits Agitées & Dures Journées`,
   `Boîte d'Initiation` (+ `WH4_FR_BI_Livre_Aventure` / `…_Ubersreik`).
-<!-- sources-empreinte: 32ef17f2a4fcdae5f4d31845ec46d58274a753d0 (5 fichiers, 0 dossiers) corps: b325c68fd2eacb10c6198f52c9effdfb1297d721 -->
+<!-- sources-empreinte: 84d3d3753b60b7700f03577772da448043eecc3b (5 fichiers, 0 dossiers) corps: b325c68fd2eacb10c6198f52c9effdfb1297d721 -->

@@ -1,38 +1,31 @@
 # Atlas RAW — Réconciliation CODE ↔ ATLAS
 
 > Déterministe (`node scripts/raw/reconcile.mjs`). **Sens A** = règles que l'app applique
-> (réfs `<ABRÉV> NN l.X` dans `src/`, tous livres) absentes de
-> l'Atlas. **Sens B** = règles que l'Atlas décrit hors du code (borné à LDB).
+> (réfs `<ABRÉV> NN l.X` dans `src/`, tous livres) absentes de l'Atlas. **Sens B1** = lignes de
+> l'Atlas marquées « (non implémenté) », tous docs. **Sens B2** = chapitres que l'Atlas décrit
+> hors du code, par livre de CŒUR (champ `coeur` de `books.json`).
 > Tolérance ligne = ±20.
 
-**Sens A — code → Atlas (LDB)** : 0 chapitre(s) cités par le code & absents de l'Atlas · 0 chapitre(s) couverts avec des lignes non pinées. Réfs folio (`ABBR NN p.X`, #606) côté Atlas : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).
-**Sens A — code → Atlas (16 livres hors LDB)** : 12 chapitre(s)-livre cités par le code & absents de l'Atlas · 11 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure).
-**Sens B — Atlas → code (LDB)** : 3 marqueur(s) « (non implémenté) » · 1 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : 12 · 11 crédités par une source folio de `src/data`).
+**Sens A — code → Atlas (tous livres)** : 12 chapitre(s)-livre cités par le code & absents de l'Atlas · 11 chapitre(s)-livre couverts avec des lignes non pinées · 2 réf(s) sans chapitre (non réconciliables par cette mesure). Réfs folio (`ABBR NN p.X`, #606) côté Atlas : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).
+**Sens B — Atlas → code** : 3 marqueur(s) « (non implémenté) » (tous docs) · LDB (cœur 4e) : 1 chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédit folio : 12 · 11 crédité(s) par une source folio de `src/data`) · CRB (cœur 5e) : 0 chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédit folio : 0 · 0 crédité(s) par une source folio de `src/data`).
 
-## A1 — Chapitres appelés par le CODE (LDB), ABSENTS de l'Atlas (trous durs)
+## A0 — Résumé Sens A par livre
 
-_Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une fiche._
+| Livre | Cœur | Trous durs (chapitres) | Chapitres à lignes non pinées | Réfs sans chapitre |
+|---|---|---|---|---|
+| ADE I | — | 1 | 1 | 0 |
+| ADE II | — | 0 | 1 | 0 |
+| EDO | — | 1 | 2 | 0 |
+| EDOC | — | 2 | 2 | 0 |
+| LDB | 4e | 0 | 0 | 2 |
+| MCLB | — | 1 | 0 | 0 |
+| MDG | — | 2 | 1 | 0 |
+| MSRC | — | 1 | 2 | 0 |
+| NADJ | — | 2 | 1 | 0 |
+| PDT | — | 2 | 0 | 0 |
+| VDM | — | 0 | 1 | 0 |
 
-## A2 — Lignes appelées par le CODE (LDB) non pinées par l'Atlas (chapitre couvert, règle peut-être survolée)
-
-_Aucune._
-
-## A-AUTRES 0 — Résumé Sens A par livre (16 livres hors LDB)
-
-| Livre | Trous durs (chapitres) | Chapitres à lignes non pinées | Réfs sans chapitre |
-|---|---|---|---|
-| ADE I | 1 | 1 | 0 |
-| ADE II | 0 | 1 | 0 |
-| EDO | 1 | 2 | 0 |
-| EDOC | 2 | 2 | 0 |
-| MCLB | 1 | 0 | 0 |
-| MDG | 2 | 1 | 0 |
-| MSRC | 1 | 2 | 0 |
-| NADJ | 2 | 1 | 0 |
-| PDT | 2 | 0 | 0 |
-| VDM | 0 | 1 | 0 |
-
-## A1-AUTRES — Chapitres appelés par le CODE (autres livres), ABSENTS de l'Atlas (trous durs)
+## A1 — Chapitres appelés par le CODE, ABSENTS de l'Atlas (trous durs)
 
 ### ADE I 2 — 2 réf(s) code, 0 dans l'Atlas
 - `src/data/talents.json:3194` (l.267) — "note": "ADE I 02 l.267"
@@ -90,9 +83,9 @@ _Aucune._
 ### PDT 9 — 1 réf(s) code, 0 dans l'Atlas
 - `src/ui/mono-stake-ratchet.test.ts:73` (l.285) — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
 
-## A2-AUTRES — Lignes appelées par le CODE (autres livres) non pinées par l'Atlas
+## A2 — Lignes appelées par le CODE non pinées par l'Atlas (chapitre couvert, règle peut-être survolée)
 
-### EDOC 6 — 13/13 ligne(s) code hors couverture
+### EDOC 6 — 13/13 ligne(s) code hors couverture (propriétaire : —)
 - l.11 — `src/data/reseau-routier.json:12` — "note": "EDOC 06 l.11 — normes du décret de Wilhelm le Sage (2453)."
 - l.15 — `src/data/reseau-routier.json:26` — "note": "EDOC 06 l.15 — section « Routes principales »."
 - l.19 — `src/data/reseau-routier.json:38` — "note": "EDOC 06 l.19 — section « Routes secondaires »."
@@ -107,7 +100,7 @@ _Aucune._
 - l.55 — `src/data/reseau-routier.json:67` — "note": "EDOC 06 l.55 — section « Les Lignes Rochet » ; la surcote de 10 % est l.57."
 - … +1 autres
 
-### EDO 1 — 6/7 ligne(s) code hors couverture
+### EDO 1 — 6/7 ligne(s) code hors couverture (propriétaire : combat.md)
 - l.5 — `src/data/schemas/defs-scenes/narratif.test.ts:26` — source: { book: 'ennemi-dans-l-ombre', page: 12, note: 'EDO 01 l.5' },
 - l.13 — `src/scenes/diligence/edo-ch1-calibration-voyage.test.ts:14` — * Promesse tenue, `EDO 01 l.13` : « Deux jours de diligence, bien sûr. À pied, le trajet devrait durer
 - l.17 — `src/scenes/diligence/edo-ch1-calibration-voyage.test.ts:15` — * environ une semaine. » Emplacement du relais, `EDO 01 l.17` : « Son emplacement exact importe peu, du
@@ -115,58 +108,60 @@ _Aucune._
 - l.202 — `src/scenes/test-scenarios/96-presets-edo.ts:198` — // comme une perte de temps de jouer pour moins de 2/- » (`EDO 01 l.202`), soit 24 sous.
 - l.340 — `src/scenes/diligence/edo-ch1-calibration-voyage.test.ts:20` — * D'où vient le `km` : `EDO 01 l.340` — « Une borne sur le bas-côté indique : « Altdorf, 180 km ». »
 
-### MSRC 12 — 6/12 ligne(s) code hors couverture
-- l.85 — `src/data/index.ts:2577` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
+### MSRC 12 — 6/12 ligne(s) code hors couverture (propriétaire : combat.md)
+- l.85 — `src/data/index.ts:2579` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
 - l.107 — `src/engine/naval-traits.test.ts:301` — it('Plat-bord : palier de LONGUEUR (grande barge ~30 m, bande ouverte au-delà de 20 m) → 45 CO / 60 Enc (MSRC 12 l.107/109)', () => {
-- l.111 — `src/data/index.ts:2577` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
+- l.111 — `src/data/index.ts:2579` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
 - l.117 — `src/engine/naval-traits.test.ts:304` — it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, MSRC 12 l.117)', () => {
 - l.137 — `src/data/schemas/defs/sea-weather.ts:106` — /** Gréement de course (MSRC 12 l.137) : DELTA de % voiles ajouté au tableau standard par aspect de vent. */
 - l.140 — `src/engine/naval-traits.test.ts:191` — it('Gréement de course → −10 au Test de Navigation (MSRC 12 l.140) ; converti −1 DR d’équipage', () => {
 
-### ADE II 4 — 4/5 ligne(s) code hors couverture
+### ADE II 4 — 4/5 ligne(s) code hors couverture (propriétaire : combat.md)
 - l.41 — `src/state/interlude-activities.test.ts:319` — it('Identifier : exige Savoir (Magie) acquis (« Pour d’autres sorciers », ADE II 4 l.41)', () => {
 - l.43 — `src/state/interlude-activities.test.ts:337` — // ADE II 4 l.43-52 — table de DR complète (le POC collapsait ≥+4/≤+3 et IGNORAIT la ligne « 0 à +1 »).
 - l.46 — `src/state/interlude-activities.test.ts:303` — // ── Identifier un artefact magique (ADE II 4 l.46-59) ─────────────────────────────────────
 - l.50 — `src/state/interlude-activities.test.ts:362` — it('Identifier : Échec (−2 à −3) → confond avec un objet similaire, AUCUNE fausse Particularité (ADE II 4 l.50)', () => {
 
-### EDOC 13 — 3/8 ligne(s) code hors couverture
+### EDOC 13 — 3/8 ligne(s) code hors couverture (propriétaire : talents.md)
 - l.137 — `src/data/index.ts:1097` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
 - l.522 — `src/data/index.ts:1696` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
 - l.524 — `src/data/refs-migrated.test.ts:852` — *  sont au catalogue, sourcées à la desc verbatim de leur Trait (`EDOC 13 l.524` folio 83,
 
-### MDG 15 — 3/49 ligne(s) code hors couverture
+### MDG 15 — 3/49 ligne(s) code hors couverture (propriétaire : deplacement.md)
 - l.461 — `src/data/naval-ports.test.ts:47` — it('Erengrad : Taille 4, Richesse 4, Surplus pièces-détachées-de-navire +1, Demande laine +1 (MDG 15 l.461-462, folio 138)', () => {
 - l.468 — `src/data/naval-ports.test.ts:67` — it('Kirkjugarður Langskipa : production armes/produits-de-luxe, sans surplus ni demande (MDG 15 l.468-469, folio 138)', () => {
 - l.474 — `src/data/naval-ports.test.ts:74` — it('Fjirgard : production produits-de-luxe, Demande armes +1, sans surplus (MDG 15 l.474, folio 138)', () => {
 
-### VDM 14 — 3/7 ligne(s) code hors couverture
+### VDM 14 — 3/7 ligne(s) code hors couverture (propriétaire : magie.md)
 - l.353 — `src/data/arcanePhenomena.ts:77` — /** Modificateurs de NIVEAU D'INCANTATION apportés par le lieu (`VDM 14 l.353`, l.437, l.489) —
 - l.437 — `src/engine/castingNumber.test.ts:28` — it('Caverne de l’Attache : moitié ARRONDIE À L’INFÉRIEUR, Sorts de la Bête (VDM 14 l.437)', () => {
 - l.489 — `src/data/index.ts:2124` — *  deux natures (`VDM 12 l.646-647`, `VDM 14 l.489`). */
 
-### ADE I 6 — 1/1 ligne(s) code hors couverture
+### ADE I 6 — 1/1 ligne(s) code hors couverture (propriétaire : —)
 - l.185 — `src/data/index.ts:1097` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
 
-### EDO 7 — 1/1 ligne(s) code hors couverture
+### EDO 7 — 1/1 ligne(s) code hors couverture (propriétaire : combat.md)
 - l.184 — `src/ui/mono-stake-ratchet.test.ts:73` — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
 
-### MSRC 5 — 1/1 ligne(s) code hors couverture
+### MSRC 5 — 1/1 ligne(s) code hors couverture (propriétaire : —)
 - l.113 — `src/state/riverVoyageFlow.ts:876` — // Réparateur de SUBSTITUTION (`MSRC 5 l.113-117`) : le −10 est DÉJÀ fondu dans la valeur jetée,
 
-### NADJ 16 — 1/19 ligne(s) code hors couverture
+### NADJ 16 — 1/19 ligne(s) code hors couverture (propriétaire : tests.md)
 - l.119 — `src/engine/combat.ts:903` — *  (Middenball NADJ 16 l.119 : « en utilisant les règles habituelles relatives à l'Avantage »).
 
-## A3-AUTRES — Réfs de CODE sans chapitre (`<ABRÉV> l.X`, pas d'unité chapitre à couvrir)
+## A3 — Réfs de CODE sans chapitre (`<ABRÉV> l.X`, pas d'unité chapitre à couvrir)
 
-_Aucune._
+### LDB — 2 réf(s) sans chapitre
+- `src/engine/combat.ts:336` (l.20) — // Pénalité de mobilité : pire pénalité (non-cumul, LDB l.20) entre Encombrement et traumatisme
+- `src/engine/trauma.ts:1192` (l.20) — /** Pire pénalité de mobilité/Esquive due aux traumatismes de jambe (≤ 0 ; non-cumul, LDB l.20). Une prothèse
 
-## B1 — Règles décrites par l'Atlas marquées « (non implémenté) » (LDB)
+## B1 — Règles décrites par l'Atlas marquées « (non implémenté) »
 
-- **docs\raw\00-index.md** L33 — le code mort détecté, `(non implémenté)` sinon. Source éditoriale (dettes/blocages) :
-- **docs\raw\00-index.md** L86 — - **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non
-- **docs\raw\bestiaire.md** L382 — **Implémente :** (non implémenté)
+- **00-index.md** L33 — le code mort détecté, `(non implémenté)` sinon. Source éditoriale (dettes/blocages) :
+- **00-index.md** L86 — - **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non
+- **bestiaire.md** L382 — **Implémente :** (non implémenté)
 
-## B2 — Chapitres LDB cités par l'Atlas, jamais référencés dans le code
+## B2 LDB (cœur 4e) — Chapitres cités par l'Atlas, jamais référencés dans le code
 
 _Avant crédit folio (12)_ : LDB 26 · LDB 27 · LDB 28 · LDB 29 · LDB 30 · LDB 31 · LDB 32 · LDB 33 · LDB 34 · LDB 35 · LDB 38 · LDB 39
 
@@ -175,8 +170,17 @@ _Crédités par une source folio de `src/data/*.json` (11, donnée référencée
 **VRAIS hors-code (après crédit folio) :**
 LDB 38
 
-## Autres livres
+## B2 CRB (cœur 5e) — Chapitres cités par l'Atlas, jamais référencés dans le code
 
-Code : AA, ACE, ADE I, ADE II, EDO, EDOC, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
-Atlas : AA, ACE, ADE I, ADE II, AU1, EDO, EDOC, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: 863ccf8208440a4e3ad6b26c773dab72f0a52761 (4111 fichiers, 150 dossiers) corps: 2f979997e444f161b7ca3f2271a8ea1e91b4d102 -->
+_Avant crédit folio (0)_ : —
+
+_Crédités par une source folio de `src/data/*.json` (0, donnée référencée sans réf de ligne)_ : —
+
+**VRAIS hors-code (après crédit folio) :**
+_Aucun._
+
+## Livres vus par la mesure
+
+Code : AA, ACE, ADE I, ADE II, EDO, EDOC, LDB, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
+Atlas : AA, ACE, ADE I, ADE II, AU1, EDO, EDOC, LDB, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
+<!-- sources-empreinte: 5d9aa5c878aab5ceb4431215f27d6da39fb7d9eb (4112 fichiers, 150 dossiers) corps: bead93d05aec2985f5ef2187c53c3099412d7b16 -->

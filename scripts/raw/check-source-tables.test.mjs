@@ -11,7 +11,7 @@ import {
 } from './check-source-tables.mjs'
 import { readStock } from './stockNominatif.mjs'
 import { cleDeSite } from '../guards/lib/stock.mjs'
-import { BOOKS, PIVOT_ABBR } from './_lib.mjs'
+import { BOOKS } from './_lib.mjs'
 import { parseChapitre, tablesOf } from '../../src/data/source/decoupe.ts'
 
 const FICHIER = 'Source/Livre/01 - Fixture.md'
@@ -139,9 +139,10 @@ test('cleDeLigne : la première cellule NON VIDE, normalisée', () => {
 })
 
 test('scanBookDir : le `fichier` d’un site est le chapitre extrait, en POSIX depuis la racine du dépôt', () => {
-  const [, dir] = BOOKS.find(([abbr]) => abbr === PIVOT_ABBR)
-  const sites = scanBookDir(dir)
-  assert.ok(sites.length > 0, `le livre pivot ${PIVOT_ABBR} porte au moins un site mesuré`)
+  // Le corpus RENVOIE le livre : le premier scan non vide fait foi — aucun sigle ni rang écrit ici.
+  let sites = []
+  for (const [, dir] of BOOKS) { sites = scanBookDir(dir); if (sites.length) break }
+  assert.ok(sites.length > 0, 'le corpus `Source/` porte au moins un site de table mesuré')
   for (const s of sites.slice(0, 20)) assert.match(s.file, /^Source\/[^\\]+\/[^\\]+\.md$/)
 })
 

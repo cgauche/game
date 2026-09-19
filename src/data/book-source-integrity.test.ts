@@ -65,6 +65,33 @@ describe('relation-livre id-pure — tout source.book est un id de books.json', 
 });
 
 /**
+ * CŒUR de règles (#1825) : `coeur` désigne le corps de règles dont un livre est le livre de base.
+ * Il porte un RÉGIME (`scripts/raw/_lib.mjs#coeurDe` → `reconcile.mjs` : refus de stock en Sens A,
+ * calcul du Sens B2) — deux graphies d'un même cœur scinderaient ce régime en deux en silence.
+ */
+describe('cœur de règles — une graphie par corps de règles (#1825)', () => {
+  const coeurs = books.map((b) => b.coeur).filter((c): c is string => c != null);
+
+  it('au moins un livre de cœur est déclaré', () => {
+    expect(coeurs.length).toBeGreaterThan(0);
+  });
+
+  it('chaque valeur est NORMALISÉE : sans espace de bord, en minuscules, non vide', () => {
+    expect(coeurs.filter((c) => c !== c.trim().toLowerCase() || c === '')).toEqual([]);
+  });
+
+  it('deux livres ne portent jamais deux graphies d’un même cœur (casse/espaces repliés)', () => {
+    const parRepli = new Map<string, Set<string>>();
+    for (const c of coeurs) {
+      const repli = c.trim().toLowerCase().replace(/\s+/g, '');
+      if (!parRepli.has(repli)) parRepli.set(repli, new Set());
+      parRepli.get(repli)!.add(c);
+    }
+    expect([...parRepli].filter(([, g]) => g.size > 1).map(([k, g]) => `${k} : ${[...g].join(' / ')}`)).toEqual([]);
+  });
+});
+
+/**
  * Plafond du stock cliqueté. Il vit ICI, dans la garde, et NON dans le fichier de stock : sans lui,
  * « le stock ne peut que décroître » n'était qu'un commentaire, et le chemin le plus court pour
  * « solder » une régression restait d'ajouter une ligne au stock, CI verte (précédent `reconcile` :

@@ -58,7 +58,7 @@ Un champ ne compte pour un canal que si son TYPE le porte : `SpellData.effects: 
 | `DomainData` | `src/data/index.ts:2013` | — | `effects: TriggeredEffect[]` | — |
 | `ManeuverDef` | `src/data/index.ts:1641` | — | `effects: TriggeredEffect[]` | — |
 | `Mutation` | `src/engine/corruption.ts:58` | `passive: GameOp[]` | `effects: TriggeredEffect[]` | — |
-| `NavalTraitData` | `src/data/index.ts:2553` | `passive: GameOp[]` | — | — |
+| `NavalTraitData` | `src/data/index.ts:2555` | `passive: GameOp[]` | — | — |
 | `QualityData` | `src/data/index.ts:1928` | `passive: GameOp[]` | `effects: TriggeredEffect[]` | `capabilities: QualityCapabilities` |
 | `StatusData` | `src/data/index.ts:1432` | `passive: GameOp[]` | `effects: TriggeredEffect[]` | — |
 | `SymptomData` | `src/data/index.ts:1971` | `passive: GameOp[]` | `effects: TriggeredEffect[]` | `capabilities: SymptomCapabilities` |
@@ -356,4 +356,4 @@ Valeurs du champ `on` d'un `TriggeredEffect`.
 | `{ pick … }` | `sizeAtMost?`, `max` | — |
 
 _6 entrées — dérivées de `src/engine/flowCore.ts`._
-<!-- sources-empreinte: f28dea56b0ea0e13e81a0554dad99402a6afd847 (665 fichiers, 16 dossiers) corps: e9e1c676e66d26f1f1504d69e9a6889e1ab72b98 -->
+<!-- sources-empreinte: d4a914381a6e6cf4c5f4a797f00299923ff3ed8c (665 fichiers, 16 dossiers) corps: 4274a5488253103c1793ebd9d53940fc81a6a119 -->

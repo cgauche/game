@@ -13,10 +13,10 @@
 // hors-règle / trou. Le dénominateur de la ligne de résumé est DÉRIVÉ (jamais un compte recopié).
 // Sortie : docs/raw/coverage.md
 import { existsSync } from 'node:fs'
-import { listerDossier } from '../guards/lib/lister.mjs'
+import { listerDossier, parUnitesDeCode } from '../guards/lib/lister.mjs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BOOKS, esc, chapterFile, folioSpan, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
+import { BOOKS, coeurDe, esc, chapterFile, folioSpan, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 const rawDir = 'docs/raw'
 // Chapitres HORS-RÈGLE (exclus du dénominateur) : section MJ/cadre du LDB (terrain/politique/colonies/
@@ -350,6 +350,15 @@ function main() {
   let gSecCatalogue = 0, gSecHorsRegle = 0, gSecHolesScenario = 0, gSecHolesRegle = 0
   let gIgnoredFolios = 0 // #606 : folios cites en docs sans ancre data-folio resoluble dans le bon chapitre
   const perBook = []
+  // Résumé de tête par GROUPE de livres : un corps de règles (`coeur` de books.json) ne se somme pas
+  // avec un autre, ni avec les suppléments — chaque groupe porte SES comptes et SON dénominateur.
+  // DÉRIVÉ du registre : un cœur de plus y apparaît sans une ligne ici.
+  const parGroupe = new Map() // clé de cœur (ou `null`) -> { ok, cat, mid, hole }
+  const groupe = (ab) => {
+    const cle = coeurDe(ab)
+    if (!parGroupe.has(cle)) parGroupe.set(cle, { ok: 0, cat: 0, mid: 0, hole: 0 })
+    return parGroupe.get(cle)
+  }
   // ANOMALIE (#1279 S4-a) : stubs de découpe CITÉS par l'Atlas — des réfs qui pointent dans le vide.
   const stubsCites = []
   const info0 = (ab, nn) => chapterFile(ab, nn)?.path ?? `${ab} ${nn}`
@@ -414,6 +423,7 @@ function main() {
       }
     }
     gOk += bOk; gCat += bCat; gMid += bMid; gHole += bHole
+    const g = groupe(ab); g.ok += bOk; g.cat += bCat; g.mid += bMid; g.hole += bHole
     perBook.push(`${ab} ✅${bOk}·📖${bCat}·🟡${bMid}·⬜${bHole}`)
     out.push(`## ${ab} — ✅ ${bOk} · 📖 ${bCat} · 🟡 ${bMid} · ⬜ ${bHole}`, '', ...lines2, '')
     if (detailBlocks.length) {
@@ -440,7 +450,13 @@ function main() {
     parNiveau.get(n).push(ab)
   }
   const niveauxTxt = [...parNiveau.entries()].sort((a, b) => a[0] - b[0]).map(([n, abs]) => `H${n} pour ${abs.join('/')}`).join(', ')
-  const summaryLine = `**Couverture (profondeur) : ✅ ${gOk} traités par une fiche · 📖 ${gCat} transcrits par un catalogue seul (jamais traités) · 🟡 ${gMid} effleurés · ⬜ ${gHole} trous** sur ${denom} chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — ${niveauxTxt}, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur ${gSecCatalogue + gSecHorsRegle + gSecHoles} section(s) non couvertes par une fiche : **${gSecCatalogue} transcrite(s) en catalogue** (recopiées, pas traitées) · **${gSecHorsRegle} hors-règle** (chapitre explicitement exclu) · **${gSecHolesScenario} bruit de scénario** (livres \`SCENARIO_PUR\` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **${gSecHolesRegle} candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et ${gSecEnfoui} titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (\`ABBR NN p.X\`, #606) : ${gIgnoredFolios} ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : ${perBook.join(' · ')}.`
+  // Une ligne par GROUPE rencontré, chacune avec SES comptes et SON dénominateur : deux corps de
+  // règles ne s'additionnent pas, et un supplément ne se range sous aucun d'eux (la compatibilité
+  // par supplément n'est pas modélisée). Les cœurs d'abord, les livres sans cœur déclaré ensuite.
+  const lignesGroupe = [...parGroupe]
+    .sort((a, b) => (a[0] === null) - (b[0] === null) || parUnitesDeCode(String(a[0]), String(b[0])))
+    .map(([cle, g]) => `- **${cle ? `Cœur ${cle}` : 'Livres sans cœur déclaré'}** : ✅ ${g.ok} traités par une fiche · 📖 ${g.cat} transcrits par un catalogue seul (jamais traités) · 🟡 ${g.mid} effleurés · ⬜ ${g.hole} trous, sur ${g.ok + g.cat + g.mid + g.hole} chapitres-règles (hors artefacts OCR).`)
+  const summaryLine = ['**Couverture (profondeur), par groupe de livres** :', '', ...lignesGroupe, '', `Section-granulaire (niveau de heading ADAPTATIF par livre — ${niveauxTxt}, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur ${gSecCatalogue + gSecHorsRegle + gSecHoles} section(s) non couvertes par une fiche : **${gSecCatalogue} transcrite(s) en catalogue** (recopiées, pas traitées) · **${gSecHorsRegle} hors-règle** (chapitre explicitement exclu) · **${gSecHolesScenario} bruit de scénario** (livres \`SCENARIO_PUR\` ${[...SCENARIO_PUR].join('/')} : prose de campagne, aucune règle) · **${gSecHolesRegle} candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et ${gSecEnfoui} titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (\`ABBR NN p.X\`, #606) : ${gIgnoredFolios} ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : ${perBook.join(' · ')}.`].join('\n')
   const summaryIdx = out.indexOf(SUMMARY_PLACEHOLDER)
   out[summaryIdx] = summaryLine
   ecrireDoc(join(rawDir, 'coverage.md'), out.join('\n'))

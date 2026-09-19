@@ -30,25 +30,35 @@ export const readText = (path) => readFileSync(path, 'utf8').replace(/\r\n|\r/g,
 // `src/ui/compendium/DescRefField.tsx` filtre `!!b.dir`). C'est aussi l'ordre d'affichage des
 // rapports : un livre de plus est UNE entrée de `books.json`, zéro ligne ici.
 export const booksDe = (registre) => registre.filter((b) => b.dir).map((b) => [b.abbr, b.dir])
+// Registre BRUT des livres, tel que `books.json` le porte — la lecture du fichier vit ICI et nulle
+// part ailleurs, pour que tout consommateur puisse recevoir un registre FIXTURE par injection.
+export const REGISTRE_LIVRES = booksData
 export const BOOKS = booksDe(booksData)
 
 const BOOK_DIR = new Map(BOOKS)
 
-// Sigle du livre PIVOT de l'Atlas (le LIVRE DE BASE), lu au registre `books.json`. Il porte le
-// RÉGIME de réconciliation (Sens A/B indexés chapitre PAR chapitre pour ce livre) et les libellés —
-// JAMAIS la graphie d'une réf, qui est UNE pour tous les livres (`refRe`). Jamais réécrit à la main
-// dans les filtres « hors pivot », ni dans les `{book}`/`{abbr}` que les gardes de la MÊME chaîne
-// produisent (`build-implemente`, `check-refs`, `check-code-refs`) et que `reconcile` consomme :
-// producteur et consommateur tiennent le sigle du même endroit.
-// Le garde ci-dessous couvre les deux cas où le sigle manque : entrée pivot ABSENTE du registre, ou
-// présente mais SANS `abbr` (`PIVOT_ABBR` valant alors `undefined`) — le message les distingue, un
-// rouge qui nomme la mauvaise cause envoie chercher au mauvais endroit.
-const _byId = new Map(booksData.map((b) => [b.id, b]))
-const PIVOT_BOOK_ID = 'livre-de-base'
-const _pivot = _byId.get(PIVOT_BOOK_ID)
-export const PIVOT_ABBR = _pivot?.abbr
-if (!PIVOT_ABBR) {
-  throw new Error(`_lib: livre pivot "${PIVOT_BOOK_ID}" ${_pivot ? 'sans `abbr`' : 'ABSENT'} dans books.json`)
+// CŒUR de règles d'un livre (`books.json`, champ `coeur`) : le corps de règles dont ce livre est le
+// livre de base, ou `null` pour un supplément. C'est LUI qui porte le régime de réconciliation
+// (refus de stock en Sens A, calcul du Sens B2) — JAMAIS la graphie d'une réf, qui est UNE pour tous
+// les livres (`refRe`), ni une identité de livre écrite dans le code : un cœur de plus est UNE clé
+// de `books.json`. Lu par `abbr`, l'unité que les rapports et les clés de stock nomment déjà.
+export const coeursDe = (registre) => new Map(registre.filter((b) => b.abbr && b.coeur).map((b) => [b.abbr, b.coeur]))
+const COEURS = coeursDe(booksData)
+export const coeurDe = (abbr, coeurs = COEURS) => coeurs.get(abbr) ?? null
+
+// Les livres de CŒUR du registre, `[[abbr, dir], …]`, dans l'ORDRE DU FICHIER — la population que
+// le régime R2 parcourt (`reconcile.mjs`), et celle où un banc prend un sigle RÉEL par son RÉGIME.
+export const livresDeCoeur = (books = BOOKS, coeurs = COEURS) => books.filter(([a]) => coeurDe(a, coeurs))
+
+// Sigle d'un livre de CŒUR du registre — ce qu'un banc cite quand il lui faut un sigle réel sans
+// recopier l'identité d'un livre. LÈVE en NOMMANT la cause : une déstructuration nue rendrait
+// « undefined is not iterable » au chargement du module de test, un rouge qui envoie chercher au
+// mauvais endroit. Vit ici parce qu'ici vit la lecture du registre — une copie par banc serait la
+// liste qu'on vient de supprimer.
+export function sigleDeCoeur(books = BOOKS, coeurs = COEURS) {
+  const [premier] = livresDeCoeur(books, coeurs)
+  if (!premier) throw new Error('_lib: le registre `src/data/books.json` ne porte aucun livre de cœur (champ `coeur`)')
+  return premier[0]
 }
 
 // Échappe une chaîne pour l'insérer littéralement dans une RegExp.
@@ -60,11 +70,12 @@ export const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 // avant "EDOC". Plus de graphies tolérées (#585 lot B) : un livre, UNE abréviation canonique
 // (SOURCE UNIQUE `books.json`), l'identité stricte suffit — aucune variante à couvrir.
 // Calculée UNE fois : `refRe()` est une fabrique appelée par ligne scannée.
-const ABBR_ALT = BOOKS.map(([a]) => esc(a)).sort((a, b) => b.length - a.length).join('|')
+export const alternationDe = (books) => books.map(([a]) => esc(a)).sort((a, b) => b.length - a.length).join('|')
+const ABBR_ALT = alternationDe(BOOKS)
 export const allAbbrAlternation = () => ABBR_ALT
 
 // Regex de réfs (factories : instances FRAÎCHES — l'état /g `lastIndex` n'est pas partagé entre appelants).
-// UNE graphie pour TOUS les livres de BOOKS, le pivot compris : `<ABRÉV>[ [ch.]NN] l.<ligne><suffixe>`.
+// UNE graphie pour TOUS les livres de BOOKS, les livres de cœur compris : `<ABRÉV>[ [ch.]NN] l.<ligne><suffixe>`.
 // Groupes, IDENTIQUES quel que soit le livre : m[1] livre · m[2] chapitre (OPTIONNEL, `undefined`
 // pour une réf de livre entier) · m[3] ligne · m[4] suffixe.
 // `ch.` optionnel devant le numéro de chapitre (#434 défaut 3) : le code écrit indifféremment
@@ -74,20 +85,24 @@ export const allAbbrAlternation = () => ABBR_ALT
 // passait vert). Le `(?!\d)(?!\s*l\.)` (nombre ENTIER, puis pas de ` l.` derrière — sans le garde
 // de chiffre la regex se rabattrait sur `/2` de `/20 l.72`) distingue `/315` (ligne du MÊME chapitre) de `/20 l.72` (réf
 // MULTI-CHAPITRES `LDB 18 l.298/20 l.72`, où `20` est un CHAPITRE — jamais une ligne du 18).
-export const refRe = () =>
-  new RegExp(`\\b(${ABBR_ALT})(?: (?:ch\\.)?(\\d+))? l\\.(\\d+)((?:[-+]\\d+|/\\d+(?!\\d)(?!\\s*l\\.))*)`, 'g')
+export const refReDe = (alt) =>
+  new RegExp(`\\b(${alt})(?: (?:ch\\.)?(\\d+))? l\\.(\\d+)((?:[-+]\\d+|/\\d+(?!\\d)(?!\\s*l\\.))*)`, 'g')
+export const refRe = () => refReDe(ABBR_ALT)
 
 // Miroir FOLIO de `refRe` (#606) : la graphie canonique `ABBR NN p.<folio>[-fin][+pts]` (gelee par
 // #585) est aussi une ref de chapitre valide -- jamais captee par la regex ` l.` ci-dessus. Memes
 // groupes de capture que son pendant ` l.`, pour rester un substitut direct cote appelant.
-export const refFolioRe = () =>
-  new RegExp(`\\b(${ABBR_ALT})(?: (?:ch\\.)?(\\d+))? p\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
+export const refFolioReDe = (alt) =>
+  new RegExp(`\\b(${alt})(?: (?:ch\\.)?(\\d+))? p\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
+export const refFolioRe = () => refFolioReDe(ABBR_ALT)
 
 // Canonicalise le texte brut matché par refRe (m[1]) vers l'abréviation BOOKS (#434 défaut 11).
 // Identité stricte (#585 lot B) — une seule graphie par livre, aucune variante à résoudre.
-export function bookOf(text) {
-  return BOOK_DIR.has(text) ? text : null
+export const bookOfDe = (books) => {
+  const abbrs = new Set(books.map(([a]) => a))
+  return (text) => (abbrs.has(text) ? text : null)
 }
+export const bookOf = bookOfDe(BOOKS)
 
 // Un suffixe est-il une PLAGE (`-fin`) ? Les autres formes (`+pts`, `/compacte`) sont des ancres
 // DISTINCTES, jamais un intervalle : un consommateur qui juge « toutes les lignes citées sont vides »

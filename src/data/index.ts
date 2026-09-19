@@ -2263,6 +2263,8 @@ export interface BookData {
   dir?: string | null;
   extractionDir?: string | null;
   language: string | null;
+  /** Corps de règles dont ce livre est le CŒUR (`4e`, `5e`) — absent (ou vidé à l'atelier) d'un supplément. */
+  coeur?: string | null;
   folder: string | null;
   desc?: string;
 }

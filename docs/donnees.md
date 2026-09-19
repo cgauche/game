@@ -495,4 +495,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: 5921c9e78a039ac0174aaf1fec9a78255e390e40 (371 fichiers, 2 dossiers) corps: 3931475735b0b34d05aca1145f391acceb52bc41 -->
+<!-- sources-empreinte: 58aaf7eb60787efa294dfed78fe21bad9884d160 (371 fichiers, 2 dossiers) corps: 3931475735b0b34d05aca1145f391acceb52bc41 -->

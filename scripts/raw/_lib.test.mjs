@@ -1,11 +1,16 @@
 // Test de la graphie de réf partagée (`refRe`, #434 défaut 3, #1825 lot A) : UNE fabrique couvre
-// TOUS les livres de BOOKS, le pivot compris, avec les MÊMES groupes — m[1] livre · m[2] chapitre
+// TOUS les livres de BOOKS, les livres de cœur compris, avec les MÊMES groupes — m[1] livre · m[2] chapitre
 // (optionnel) · m[3] ligne · m[4] suffixe. La forme `LIVRE ch.NN l.X` (écrite en parallèle de
 // `LIVRE NN l.X` dans le code) est vue au même titre. Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { refRe, refFolioRe, allAbbrAlternation, span, refNums, isRangeSuffix, bookOf, chapterFile, BOOKS, booksDe, PIVOT_ABBR } from './_lib.mjs'
+import { refRe, refFolioRe, allAbbrAlternation, span, refNums, isRangeSuffix, bookOf, chapterFile, BOOKS, booksDe, coeursDe, coeurDe, livresDeCoeur, sigleDeCoeur } from './_lib.mjs'
 import booksData from '../../src/data/books.json' with { type: 'json' }
+
+// Un sigle RÉEL, pris au registre par son RÉGIME (livre de cœur) — jamais recopié : le test dit le
+// contrat de graphie, pas l'identité d'un livre. Résolveur PARTAGÉ avec les autres bancs
+// (`sigleDeCoeur`, _lib.mjs) : il nomme sa cause quand le registre ne porte aucun cœur.
+const SIGLE_COEUR = sigleDeCoeur()
 
 // #1825 lot B : `books.json` possède l'ORDRE des livres (= l'ordre du fichier, celui que le
 // Compendium affiche), `_lib.mjs` n'en tient aucune liste. Le contrat se juge sur une FIXTURE —
@@ -29,6 +34,44 @@ test('booksDe : un `dir` vide ou null écarte l’entrée, comme un `dir` absent
 test('BOOKS : le registre RÉEL passé par `booksDe` — aucune liste de livres dans le script', () => {
   assert.deepEqual(BOOKS, booksDe(booksData))
   assert.ok(BOOKS.every(([abbr, dir]) => abbr && dir), 'une entrée de BOOKS sans sigle ni dossier')
+})
+
+// #1825 lot C : le CŒUR d'un livre est une donnée du registre, lue par `abbr`.
+const REGISTRE_COEURS = [
+  { id: 'c', abbr: 'C', dir: 'Source/C', coeur: '4e' },
+  { id: 'd', abbr: 'D', dir: 'Source/D', coeur: '5e' },
+  { id: 's', abbr: 'S', dir: 'Source/S' },
+]
+
+test('coeursDe : le registre rend un cœur PAR SIGLE ; une entrée sans `coeur` n’y est pas', () => {
+  assert.deepEqual([...coeursDe(REGISTRE_COEURS)], [['C', '4e'], ['D', '5e']])
+})
+
+test('coeurDe : la valeur du cœur, ou `null` pour un supplément comme pour un sigle inconnu', () => {
+  const coeurs = coeursDe(REGISTRE_COEURS)
+  assert.equal(coeurDe('C', coeurs), '4e')
+  assert.equal(coeurDe('D', coeurs), '5e')
+  assert.equal(coeurDe('S', coeurs), null)
+  assert.equal(coeurDe('INCONNU', coeurs), null)
+})
+
+test('coeurDe : le registre RÉEL déclare au moins un livre de cœur, et le sigle vient de lui', () => {
+  assert.ok(SIGLE_COEUR, 'aucun livre de `books.json` ne porte de `coeur`')
+  assert.equal(coeurDe(SIGLE_COEUR), coeursDe(booksData).get(SIGLE_COEUR))
+})
+
+test('livresDeCoeur : les livres à `coeur`, dans l’ORDRE DU REGISTRE (jamais retriés)', () => {
+  const inverse = [...REGISTRE_COEURS].reverse()
+  assert.deepEqual(livresDeCoeur(booksDe(inverse), coeursDe(inverse)), [['D', 'Source/D'], ['C', 'Source/C']])
+})
+
+test('sigleDeCoeur : un registre SANS cœur LÈVE en nommant sa cause, jamais « undefined is not iterable »', () => {
+  const sansCoeur = [{ id: 's', abbr: 'S', dir: 'Source/S' }]
+  assert.throws(
+    () => sigleDeCoeur(booksDe(sansCoeur), coeursDe(sansCoeur)),
+    /books\.json` ne porte aucun livre de cœur \(champ `coeur`\)/,
+  )
+  assert.equal(sigleDeCoeur(booksDe(REGISTRE_COEURS), coeursDe(REGISTRE_COEURS)), 'C')
 })
 
 test('refRe : "LDB 17 l.25" matche', () => {
@@ -63,16 +106,16 @@ test('refRe : suffixe points "l.10+17" préservé avec la forme ch.', () => {
   assert.equal(span(m[0][3], m[0][4]).join(','), '10,17')
 })
 
-// --- UNE graphie : le pivot n'a pas de grammaire propre (#1825 lot A) ---
-test('refRe : le livre PIVOT et un AUTRE livre rendent les MÊMES groupes', () => {
-  const [p] = [...`${PIVOT_ABBR} 17 l.25-30`.matchAll(refRe())]
+// --- UNE graphie : un livre de cœur n'a pas de grammaire propre (#1825 lot A) ---
+test('refRe : un livre de CŒUR et un AUTRE livre rendent les MÊMES groupes', () => {
+  const [p] = [...`${SIGLE_COEUR} 17 l.25-30`.matchAll(refRe())]
   const [o] = [...'MDG 17 l.25-30'.matchAll(refRe())]
-  assert.deepEqual([p[1], p[2], p[3], p[4]], [PIVOT_ABBR, '17', '25', '-30'])
+  assert.deepEqual([p[1], p[2], p[3], p[4]], [SIGLE_COEUR, '17', '25', '-30'])
   assert.deepEqual([o[1], o[2], o[3], o[4]], ['MDG', '17', '25', '-30'])
 })
 
-test('refRe : le CHAPITRE est optionnel pour TOUS les livres, pivot compris', () => {
-  const [p] = [...`${PIVOT_ABBR} l.168`.matchAll(refRe())]
+test('refRe : le CHAPITRE est optionnel pour TOUS les livres, livres de cœur compris', () => {
+  const [p] = [...`${SIGLE_COEUR} l.168`.matchAll(refRe())]
   const [o] = [...'MSRC l.90'.matchAll(refRe())]
   assert.equal(p[2], undefined)
   assert.equal(p[3], '168')
@@ -80,10 +123,10 @@ test('refRe : le CHAPITRE est optionnel pour TOUS les livres, pivot compris', ()
   assert.equal(o[3], '90')
 })
 
-test('allAbbrAlternation : TOUS les livres de BOOKS, le pivot compris — aucun exclu', () => {
+test('allAbbrAlternation : TOUS les livres de BOOKS, les livres de cœur compris — aucun exclu', () => {
   const toutes = allAbbrAlternation().split('|')
   assert.equal(toutes.length, BOOKS.length)
-  assert.ok(toutes.includes(PIVOT_ABBR))
+  assert.ok(toutes.includes(SIGLE_COEUR))
   assert.deepEqual([...toutes].sort(), BOOKS.map(([a]) => a).sort())
 })
 
@@ -93,10 +136,10 @@ test('allAbbrAlternation : tri par longueur DÉCROISSANTE (MSRC avant MSR, EDOC 
   assert.ok(alt.indexOf('EDOC') < alt.indexOf('EDO'))
 })
 
-test('refFolioRe : miroir FOLIO, mêmes groupes, pivot compris', () => {
-  const [p] = [...`${PIVOT_ABBR} 48 p.255-256`.matchAll(refFolioRe())]
+test('refFolioRe : miroir FOLIO, mêmes groupes, livres de cœur compris', () => {
+  const [p] = [...`${SIGLE_COEUR} 48 p.255-256`.matchAll(refFolioRe())]
   const [o] = [...'ADE II 08 p.233'.matchAll(refFolioRe())]
-  assert.deepEqual([p[1], p[2], p[3], p[4]], [PIVOT_ABBR, '48', '255', '-256'])
+  assert.deepEqual([p[1], p[2], p[3], p[4]], [SIGLE_COEUR, '48', '255', '-256'])
   assert.deepEqual([o[1], o[2], o[3], o[4]], ['ADE II', '08', '233', ''])
 })
 
@@ -109,8 +152,8 @@ test('refFolioRe : miroir FOLIO, mêmes groupes, pivot compris', () => {
 // `src/raw-ref-integrity.test.ts`) : ce fichier est lui-même scanné par les gardes de réf du dépôt,
 // qui ne distinguent pas une citation vivante d'un spécimen de test — une fixture littérale
 // s'y lirait comme une vraie réf morte.
-/** Réf de FIXTURE : `spec(18, '298/315/369')` → « <pivot> 18 l.298/315/369 ». */
-const spec = (ch, tail) => [PIVOT_ABBR, String(ch), `l.${tail}`].join(' ')
+/** Réf de FIXTURE : `spec(18, '298/315/369')` → « <sigle de cœur> 18 l.298/315/369 ». */
+const spec = (ch, tail) => [SIGLE_COEUR, String(ch), `l.${tail}`].join(' ')
 /** Tous les numéros de ligne rendus par la grammaire pour une chaîne (miroir du parcours des gardes). */
 const nums = (s) => [...s.matchAll(refRe())].flatMap((m) => refNums(m[3], m[4]))
 
@@ -122,8 +165,8 @@ test('refRe : forme COMPACTE à deux numéros', () => {
   assert.deepEqual(nums(spec(18, '202/213')), [202, 213])
 })
 
-test('refRe : forme COMPACTE sans chapitre (`l.298/315`) — le pivot la rend comme les autres', () => {
-  assert.deepEqual(nums(`${PIVOT_ABBR} l.298/315`), [298, 315])
+test('refRe : forme COMPACTE sans chapitre (`l.298/315`) — un livre de cœur la rend comme les autres', () => {
+  assert.deepEqual(nums(`${SIGLE_COEUR} l.298/315`), [298, 315])
 })
 
 test('refRe : la borne HAUTE d’une compacte est celle que borne check-code-refs', () => {
@@ -213,7 +256,7 @@ test('refRe : "Midd 02 l.10" ne matche PAS (ancien préfixe tronqué Middenheim,
   assert.equal(m.length, 0)
 })
 
-test('refRe : "ch.23 l.75" SANS livre ne matche pas (second spécimen, sans le pivot alentour)', () => {
+test('refRe : "ch.23 l.75" SANS livre ne matche pas (second spécimen, sans sigle alentour)', () => {
   const m = [...'La Difficulté (ch.23 l.75)'.matchAll(refRe())]
   assert.equal(m.length, 0)
 })

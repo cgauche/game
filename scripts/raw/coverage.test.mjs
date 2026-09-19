@@ -9,7 +9,7 @@ import {
   sectionsOf, refSpansFor, annotateSections, classifyHole, SCENARIO_PUR, SECTION_LEVEL, sectionLevelOf,
   markerSplitStub, chapterTitleOf,
 } from './coverage.mjs'
-import { chapterFile, readText } from './_lib.mjs'
+import { BOOKS, chapterFile, coeurDe, readText } from './_lib.mjs'
 
 // #604 (garde de classe) : le seam readText (_lib.mjs) normalise \r\n/\r -> \n AU POINT DE LECTURE --
 // sectionsOf lui-meme reste nu (aucune tolerance interne). Repro root-cause : le '.' de regex exclut
@@ -377,7 +377,7 @@ test('#604 intégration : une section 0-réf d\'un chapitre ✅/📖 HORS_REGLE 
 
 test('#604 intégration : le total ventilé (catalogue + hors-règle + scénario + trou) de la ligne de résumé est COHÉRENT avec la somme annoncée, jamais un total qui dérive du détail', () => {
   const md = readText('docs/raw/coverage.md')
-  const summary = md.split('\n').find((l) => l.startsWith('**Couverture'))
+  const summary = md.split('\n').find((l) => l.startsWith('Section-granulaire'))
   assert.ok(summary)
   const totalM = /sur (\d+) section\(s\) non couvertes par une fiche/.exec(summary)
   const catM = /(\d+) transcrite\(s\) en catalogue/.exec(summary)
@@ -387,6 +387,19 @@ test('#604 intégration : le total ventilé (catalogue + hors-règle + scénario
   assert.ok(totalM && catM && horsM && scenM && trouM)
   const sum = Number(catM[1]) + Number(horsM[1]) + Number(scenM[1]) + Number(trouM[1])
   assert.equal(sum, Number(totalM[1]), 'la somme des 4 buckets doit reconstituer EXACTEMENT le total annoncé')
+})
+
+// #1825 lot C : le résumé de tête ne somme plus DEUX corps de règles en un total. Une ligne par
+// GROUPE (une par valeur de `coeur` rencontrée, une pour les livres sans cœur déclaré), chacune
+// avec SES comptes et SON dénominateur, et la réunion des dénominateurs couvre tous les chapitres.
+test('#1825 : le résumé de tête rend UNE ligne par groupe de livres, jamais un total confondu', () => {
+  const md = readText('docs/raw/coverage.md')
+  const lignes = md.split('\n').filter((l) => /^- \*\*(Cœur |Livres sans cœur déclaré)/.test(l))
+  const coeurs = new Set(BOOKS.map(([a]) => coeurDe(a)).filter((c) => c))
+  assert.equal(lignes.length, coeurs.size + 1, 'une ligne par cœur, plus celle des livres sans cœur')
+  for (const c of coeurs) assert.ok(lignes.some((l) => l.startsWith(`- **Cœur ${c}**`)), `groupe manquant : ${c}`)
+  for (const l of lignes) assert.match(l, /sur \d+ chapitres-règles/, 'chaque groupe porte SON dénominateur')
+  assert.equal(md.split('\n').some((l) => l.startsWith('**Couverture (profondeur) :')), false, 'plus de total confondu')
 })
 
 // --- ARTEFACT jugé sur le CONTENU, pas sur le titre de fichier (#1279 S4-a) ---
