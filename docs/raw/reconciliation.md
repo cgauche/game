@@ -1,12 +1,12 @@
 # Atlas RAW — Réconciliation CODE ↔ ATLAS
 
 > Déterministe (`node scripts/raw/reconcile.mjs`). **Sens A** = règles que l'app applique
-> (réfs `LDB NN l.X` dans `src/`, et pour les 14 autres livres `<ABRÉV> NN l.X`) absentes de
-> l'Atlas. **Sens B** = règles que l'Atlas décrit hors du code (borné au LDB).
+> (réfs `<ABRÉV> NN l.X` dans `src/`, tous livres) absentes de
+> l'Atlas. **Sens B** = règles que l'Atlas décrit hors du code (borné à LDB).
 > Tolérance ligne = ±20.
 
 **Sens A — code → Atlas (LDB)** : 0 chapitre(s) cités par le code & absents de l'Atlas · 0 chapitre(s) couverts avec des lignes non pinées. Réfs folio (`ABBR NN p.X`, #606) côté Atlas : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).
-**Sens A — code → Atlas (14 autres livres)** : 12 chapitre(s)-livre cités par le code & absents de l'Atlas · 11 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure).
+**Sens A — code → Atlas (16 livres hors LDB)** : 12 chapitre(s)-livre cités par le code & absents de l'Atlas · 11 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure).
 **Sens B — Atlas → code (LDB)** : 3 marqueur(s) « (non implémenté) » · 1 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : 12 · 11 crédités par une source folio de `src/data`).
 
 ## A1 — Chapitres appelés par le CODE (LDB), ABSENTS de l'Atlas (trous durs)
@@ -17,7 +17,7 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 
 _Aucune._
 
-## A-AUTRES 0 — Résumé Sens A par livre (14 livres hors LDB)
+## A-AUTRES 0 — Résumé Sens A par livre (16 livres hors LDB)
 
 | Livre | Trous durs (chapitres) | Chapitres à lignes non pinées | Réfs sans chapitre |
 |---|---|---|---|
@@ -162,9 +162,9 @@ _Aucune._
 
 ## B1 — Règles décrites par l'Atlas marquées « (non implémenté) » (LDB)
 
-- **00-index.md** L33 — le code mort détecté, `(non implémenté)` sinon. Source éditoriale (dettes/blocages) :
-- **00-index.md** L86 — - **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non
-- **bestiaire.md** L382 — **Implémente :** (non implémenté)
+- **docs\raw\00-index.md** L33 — le code mort détecté, `(non implémenté)` sinon. Source éditoriale (dettes/blocages) :
+- **docs\raw\00-index.md** L86 — - **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non
+- **docs\raw\bestiaire.md** L382 — **Implémente :** (non implémenté)
 
 ## B2 — Chapitres LDB cités par l'Atlas, jamais référencés dans le code
 
@@ -179,4 +179,4 @@ LDB 38
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, EDO, EDOC, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: 7d008cb284606ad10dedbefe7fd8c783ff2ce43d (4108 fichiers, 150 dossiers) corps: e9cdce9555193c071b5228100d523c1f35d6601e -->
+<!-- sources-empreinte: 94dbf5c1c9d34f4f548c9ad7f901eb147e94b470 (4108 fichiers, 150 dossiers) corps: 2f979997e444f161b7ca3f2271a8ea1e91b4d102 -->
