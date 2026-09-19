@@ -7,9 +7,10 @@ import type { ReactNode } from 'react';
  * `is-selected`, qui n'est stylée nulle part : la sélection y était invisible. La primitive tranche :
  * l'appelant déclare `selected`, elle pose la classe que la CSS de sa famille sait peindre.
  *
- * `variant` = la famille de style : `insp` (panneaux de l'ÉDITEUR, `button.insp-row`) ou `codex`
- * (écrans de consultation du JEU, `.codex-row`). Les puces se passent en `children`
- * (`<span className="chip">`) — la rangée décide de leur PLACE, jamais de leur contenu.
+ * `variant` = la famille de style, portée en `data-variant` sur la balise : `insp` (panneaux de
+ * l'ÉDITEUR) ou `codex` (écrans de consultation du JEU) — les deux vivent chez `.listrow`
+ * (components.css). Les puces se passent en `children` (`<span className="chip">`) : la rangée décide
+ * de leur PLACE, jamais de leur contenu.
  */
 export function ListRow({
   onClick,
@@ -31,12 +32,11 @@ export function ListRow({
   /** Puces de méta, alignées à droite. */
   children?: ReactNode;
 }) {
-  const family = variant === 'codex' ? 'codex-row' : 'insp-row';
-  const on = selected ? (variant === 'codex' ? ' on' : ' active') : '';
   return (
     <button
       type="button"
-      className={`listrow ${family}${on}`}
+      className="listrow"
+      data-variant={variant}
       title={title}
       aria-current={selected ? 'true' : undefined}
       onClick={onClick}

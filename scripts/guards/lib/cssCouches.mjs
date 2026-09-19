@@ -22,6 +22,24 @@ export const FEUILLES_PARTAGEES = [
   'src/ui/styles/layout.css',
 ];
 
+/** Couche des modules de style de `src/ui`. */
+export const RACINE_DES_MODULES = 'src/ui/styles/';
+
+/** Zone d'un chemin : ses deux premiers segments (`src/ui/`, `src/gameIso/`). */
+const zoneDe = (chemin) => `${String(chemin).split('/').slice(0, 2).join('/')}/`;
+
+/**
+ * Un module de primitive vit dans `RACINE_DES_MODULES`, ou — pour une primitive qui n'habite pas
+ * `src/ui` — dans la ZONE de son `fichier` (#1806 A3). Tout autre chemin sort de la couche.
+ * @param {string} fichier @param {string} css @returns {boolean}
+ */
+export function moduleHorsCouche(fichier, css) {
+  if (!String(css).endsWith('.css')) return true;
+  if (String(css).startsWith(RACINE_DES_MODULES)) return false;
+  const zone = zoneDe(fichier);
+  return zone === 'src/ui/' || !String(css).startsWith(zone);
+}
+
 /** At-rules dont le corps ne porte PAS de sélecteurs : leur bloc entier est sauté. */
 const AT_SANS_SELECTEURS = /^@(keyframes|-webkit-keyframes|font-face|property|counter-style)\b/;
 
@@ -61,7 +79,7 @@ export function reglesCss(texte) {
       }
       // Règle : son corps court jusqu'à sa propre accolade fermante.
       const fin = finDeBloc(src, i);
-      const selecteurs = tete.split(',').map((s) => s.trim()).filter(Boolean);
+      const selecteurs = decoupeSelecteurs(tete);
       if (selecteurs.length) {
         out.push({ selecteurs, corps: src.slice(i + 1, fin), media: contexte.length ? contexte.join(' && ') : null });
       }
@@ -75,6 +93,30 @@ export function reglesCss(texte) {
     tampon += c;
   }
   return out;
+}
+
+/**
+ * Découpe une LISTE de sélecteurs sur ses virgules de NIVEAU 0 : celles d'un `:has()`/`:is()`/
+ * `:not()`/`:where()` séparent des arguments, pas des sélecteurs — `label:has(> a, > .btn)` est UN
+ * sélecteur, et le couper en deux inventait une règle fantôme (`> .btn)`) tout en perdant la vraie.
+ * @param {string} tete @returns {string[]}
+ */
+export function decoupeSelecteurs(tete) {
+  const out = [];
+  let prof = 0;
+  let courant = '';
+  let quote = null;
+  for (let k = 0; k < tete.length; k++) {
+    const c = tete[k];
+    if (quote) { courant += c; if (c === quote && tete[k - 1] !== '\\') quote = null; continue; }
+    if (c === '"' || c === "'") { quote = c; courant += c; continue; }
+    if (c === '(' || c === '[') prof++;
+    else if (c === ')' || c === ']') prof--;
+    else if (c === ',' && prof === 0) { out.push(courant); courant = ''; continue; }
+    courant += c;
+  }
+  out.push(courant);
+  return out.map((s) => s.trim()).filter(Boolean);
 }
 
 /** Index de l'accolade fermante appairée à celle ouverte en `i`. */

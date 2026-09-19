@@ -128,17 +128,17 @@ describe('#1004 modale d’attaque — attente neutre au lieu du verdict', () =>
     expect(host.textContent).toContain('En attente de la Défense de Grunni.');
   });
 
-  it('l’attente occupe SA zone (`.rm-await`, bloc aux tokens du cadre d’issue), jamais la note de pied', () => {
+  it('l’attente occupe SA zone (note au ton `attente`, bloc aux tokens du cadre d’issue), jamais la note de pied', () => {
     playAttack(HIT_SEED);
     act(() => { root.render(<AttackModal />); });
-    const zone = host.querySelector('.rm-await');
+    const zone = host.querySelector('.rm-note[data-ton="attente"]');
     expect(zone, 'le libellé validé à l’écran a sa zone propre').not.toBeNull();
     expect(zone!.textContent).toContain('En attente de la Défense de Grunni.');
-    expect(host.querySelector('.rm-log'), 'pas la note atténuée de pied de modale').toBeNull();
+    expect(host.querySelector('.modal-log'), 'pas la note atténuée de pied de modale').toBeNull();
     // Le rendu de cette zone est celui d'un BLOC (fond, respiration, texte aligné à gauche) — le
-    // vérifier ICI garde la classe d'être vidée de sa matière ailleurs.
-    const css = readFileSync(join(process.cwd(), 'src/ui/styles/sheet.css'), 'utf8');
-    const rule = css.slice(css.indexOf('.rm-await {'));
+    // vérifier ICI garde le ton d'être vidé de sa matière ailleurs.
+    const css = readFileSync(join(process.cwd(), 'src/ui/styles/components.css'), 'utf8');
+    const rule = css.slice(css.indexOf(".rm-note[data-ton='attente'] {"));
     expect(rule.slice(0, rule.indexOf('}'))).toMatch(/background:[^;]+;[\s\S]*text-align: left/);
   });
 

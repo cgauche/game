@@ -1028,18 +1028,6 @@
   background: rgba(0, 0, 0, 0.18);
 }
 .medic-wound-pick { justify-content: center; }
-/* Zone de JET embarquée (RollShell `embedded`) : encart dans la modale persistante —
-   neutralise le min-width des classes de modale autonome. */
-.rs-embedded {
-  position: relative; /* ancre la scène centrale du roulis de dés (#396, `.rm-scene`) */
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 8px 10px;
-  margin: 6px 0;
-  background: rgba(0, 0, 0, 0.18);
-}
-.rs-embedded.roll-modal,
-.rs-embedded.rest-modal { min-width: 0; }
 
 /* ── Modale de REPOS (nuit) ── */
 .rest-modal { min-width: min(520px, 94vw); }
@@ -1069,17 +1057,6 @@
 .rest-travel-lines { margin: 0 0 6px; padding-left: 18px; font-size: 13px; color: var(--muted); }
 .rest-travel-lines li { margin: 2px 0; }
 
-/* ── Ligne de récap structurée (#349, `ui/RecapLine.tsx`) — mêmes teintes que le PV multijet (.mrl-row). */
-.recap-lines { display: flex; flex-direction: column; gap: 2px; margin: 0 0 6px; }
-.recap-line { margin: 2px 0; font-size: 13px; color: var(--muted); }
-.recap-line.bad { color: var(--danger-soft); }
-.recap-line.ok { color: var(--ok-bright); }
-/* Le ton `info` du trio est ATTÉNUÉ, et l'écrit ici comme `ok`/`bad` : le cadre d'issue d'une modale
-   de jet remet ses lignes à pleine couleur (`.rm-journal .recap-line`, sheet.css) — sans cette règle
-   de MÊME spécificité, module importé après, une ligne tonée `info` y perdait son atténuation. */
-.recap-line.info { color: var(--muted); }
-.recap-phase + .recap-phase { margin-top: 6px; }
-.recap-phase-label { margin: 0 0 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); opacity: .8; }
 
 /* ── Conseil de bord (paie hebdomadaire + Moral, #229) ── */
 .council-modal .rm-loc-grid { grid-template-columns: 1fr; gap: 6px; }
@@ -1090,22 +1067,13 @@
 .council-result { margin: 10px 0 0; text-align: center; font-size: 13px; }
 .council-result.danger { color: var(--danger-soft); }
 
-/* ── Brique MULTI-JETS (bilan de nuit, cascades globalisées) ── */
-.mrl { display: flex; flex-direction: column; gap: 6px; max-height: min(46vh, 420px); overflow-y: auto; }
-.mrl-row { display: flex; gap: 8px; align-items: flex-start; }
-.mrl-port { flex: 0 0 34px; display: flex; justify-content: center; padding-top: 2px; }
-/* Corps en COLONNE : libellé (icône incluse) au-dessus, ligne de jet / note en dessous. */
-.mrl-roll { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.mrl-roll .rm-roll-block { min-width: 0; }
-.mrl-label { font-size: 12px; color: var(--muted); }
-.mrl-text { font-size: 12.5px; }
-.mrl-row.bad .mrl-label, .mrl-row.bad .mrl-text { color: var(--danger-soft); }
-.mrl-row.ok .mrl-label, .mrl-row.ok .mrl-text { color: var(--ok-bright); }
-
-/* Cascade séquentielle (jets de nuit/voyage) : le bilan empilé réutilise `.mrl` (MultiRollList) dans
-   le slot `extra` de RollShell ; l'étape courante = un jet standard du flot de base. Marge sous
-   la pile pour la séparer du jet actif. */
-.roll-modal .mrl { margin-bottom: 10px; }
+/* Lecteur de document / handout (`DocumentModal`, monté par `CampaignView`) : l'écran ne déclare que
+   sa largeur — le titre est celui de `Modal`, la matière celle de `ParchmentCard`, le texte celui de
+   `Prose` (couche partagée). */
+.document-modal {
+  width: 560px;
+  max-width: 92vw;
+}
 
 /* Barre de Test ÉTENDU (DR cumulé vers la cible) (#23). */
 .dr-bar { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
@@ -1118,56 +1086,6 @@
 .dr-bar-val { font-size: 12px; font-weight: 700; color: var(--gold); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 
-/* Messages de victoire (Effets journal de onVictory) — affichés dans l'écran de victoire (#9). */
-.victory-messages { margin: 4px 0 12px; max-width: 520px; text-align: center; }
-.victory-msg { color: var(--gold); font-size: 14px; margin: 4px 0; line-height: 1.5; }
-
-/* ── Coup Critique : panneau complet (au niveau de la modale d'attaque) ── */
-.crit-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  margin: 8px 0;
-}
-.crit-stat {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--danger-soft);
-  background: rgba(192, 57, 43, 0.16);
-  border: 1px solid rgba(224, 83, 58, 0.5);
-  border-radius: 6px;
-  padding: 2px 8px;
-}
-.crit-cond {
-  font-size: 12px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 2px 7px;
-}
-.crit-effects {
-  margin: 8px 0 4px;
-  max-height: 34vh;
-  overflow: auto;
-}
-.crit-effect {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  padding: 5px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-.crit-effect .ce-text {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--gold2);
-}
-.crit-effect .ce-note {
-  font-size: 11px;
-  color: var(--muted);
-  line-height: 1.35;
-}
 
 /* ══ Matrice responsive du HUD (design 2026-07-31 §12) ═══════════════════════════════════════════
    Breakpoints canon 900 / 700 / 560, plus `pointer: coarse` — dans CET ordre, une tranche chacun :
@@ -1246,21 +1164,6 @@
     white-space: nowrap;
   }
   .is-cell { flex: 0 0 auto; }
-  /* Le fil d'événements RESTE EN HAUT sous 700px : le pont s'y empile sur trois rangées (mesuré
-     616,5px de haut à 700×800) et le coin bas-gauche appartient au tiroir du journal — il n'y a pas
-     de bande de terrain au-dessus du pont où poser le fil. Il passe donc sous la bande
-     d'initiative (le groupe, puis le round, puis le flux) : le `top` se pose sous le BAS MESURÉ de
-     la bande en combat ENGAGÉ (84 + 100 = 184px, recette `hud-clickables.mjs`) plus l'air — le
-     message du flux et la frise n'ont aucune surface commune. */
-  .combat-feed {
-    top: 192px;
-    bottom: auto;
-    left: 50%;
-    transform: translateX(-50%);
-    align-items: center;
-    max-width: 94vw;
-  }
-  .cb-ev { white-space: normal; text-align: center; } /* événements longs : retour à la ligne (pas de débord) */
   .modal-actions { flex-wrap: wrap; justify-content: center; }
   .party-dock { top: 6px; --pd-gap: 8px; }
   .ptile-states { font-size: 10px; }

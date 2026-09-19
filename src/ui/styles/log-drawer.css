@@ -1,0 +1,18 @@
+/* ══════════════════ Journal de combat (`LogDrawer.tsx`) ══════════════════
+   Le tiroir qui garde l'historique COMPLET (le fil d'événements, `combat-banner.css`, ne dit que le
+   beat). La LIGNE de journal (`NarratedLine.tsx`, poseur déclaré au manifeste) est une gouttière
+   d'icône FIXE + le texte : le retour à la ligne s'aligne sous la première ligne au lieu de repartir
+   du bord. Les noms par camp sont rendus par `TeamSegments` (team-segments.css). */
+.jr-line {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+.jr-ic {
+  flex: 0 0 auto;
+  width: 16px;
+  text-align: center;
+}
+.jr-tx {
+  flex: 1;
+}

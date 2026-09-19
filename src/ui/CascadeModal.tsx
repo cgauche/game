@@ -504,7 +504,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         key: r.id,
         /* La FOURCHETTE est portée par la tuile, libellé ou pas : c'est ce qui fait lire une table
            d100 (« Corps 01-50 / Esprit 51-100 ») au lieu d'un choix binaire libre. */
-        label: <>{r.label ? `${r.label} ` : ''}<span className="rm-range">{fourchette(r.min, r.max, dieMax)}</span></>,
+        label: r.label ?? '',
+        range: fourchette(r.min, r.max, dieMax),
         disabled: nat == null,
         primary: decl.result?.id === r.id,
         selected: decl.result?.id === r.id, // ligne ÉLUE = état ferré (aria-pressed), pas un simple style
@@ -638,7 +639,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         extra={tbl ? (
           <>
             <TableRollLine table={tableLineLabel(tableStepDef(cur.table!.tableId)?.label, cur.label, modalTitle)} roll={tbl.roll} die={tbl.die} mod={cur.table!.mod ?? 0} result={tbl.lines[0] ?? ''} />
-            {tbl.lines.slice(1).map((l, i) => <p key={i} className="rm-log">{l}</p>)}
+            {tbl.lines.slice(1).map((l, i) => <p key={i} className="modal-log">{l}</p>)}
             {aff.lines}
           </>
         ) : cur.de?.result ? (

@@ -20,6 +20,12 @@
      .menu-card          carte de menu (en-tête + sections de boutons pleine largeur) — primitive MenuCard.tsx
                          (.menu-card-large = plafond écran-catalogue, prop `large`)
                          (.game-menu-overlay = menu système plein écran en jeu ; .menu-btn/.menu-toggle)
+     .seg                contrôle segmenté (choix exclusif) : segment ÉLU = `aria-pressed`
+     .prow-act           zone d'ACTIONS d'une rangée (posée par `RollRow` ET `NumberField`)
+     .modal-log          ligne de journal d'une modale (texte atténué, centré)
+     .rm-note            note secondaire d'une fenêtre de jet (`data-ton` : discret/etat/bloque/attente/menace)
+     .muted / .empty     ton atténué ; état « rien à montrer » d'une liste
+     .off-malus          valeur PÉNALISANTE inline (« −20 » de la main secondaire)
    Titres de section : réutiliser `.mini-title` (déjà global).                              */
 
 /* ── SURFACE ── */
@@ -186,7 +192,7 @@
   letter-spacing: .3px;
   color: color-mix(in srgb, var(--ink) 76%, var(--blood));
 }
-/* Le corps du parchemin est CLAIR — tout texte générique posé dedans (ex. `.rm-log`, taré pour un
+/* Le corps du parchemin est CLAIR — tout texte générique posé dedans (ex. `.modal-log`, taré pour un
    fond de modale sombre) doit rester lisible sur `--parchment`, jamais son `--muted` d'origine. */
 .parchment-card-body p { color: var(--ink); }
 /* EXERGUE d'une prose (plugin `<Prose exergues>`) : la carte-parchemin posée DANS le fil du texte,
@@ -266,6 +272,38 @@
 .listrow > .lr-name {
   flex: 1;
   min-width: 0;
+}
+/* VARIANTES de famille (`ListRow`, prop `variant` → `data-variant`) : `insp` = panneaux de
+   l'ÉDITEUR, `codex` = écrans de consultation du JEU. La rangée ÉLUE porte `aria-current` (grammaire
+   unique des états ferrés, base.css) — jamais une classe d'état de plus. */
+.listrow[data-variant='insp'] {
+  width: 100%;
+  text-align: left;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.listrow[data-variant='insp']:hover {
+  border-color: var(--gold2);
+}
+.listrow[data-variant='insp'][aria-current='true'] {
+  border-color: var(--gold);
+  background: rgba(216, 169, 59, 0.1);
+}
+.listrow[data-variant='codex'] {
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  transition: border-color 0.1s, background 0.1s;
+}
+.listrow[data-variant='codex']:hover {
+  border-color: var(--gold2);
+}
+.listrow[data-variant='codex'][aria-current='true'] {
+  border-color: var(--gold);
+  background: var(--panel2);
 }
 
 /* ── PASTILLE PEINTE (`.swatch`) ── Carré/bande peint à une couleur de DONNÉE (posée en style inline
@@ -399,10 +437,10 @@ button.chip:hover {
   place-items: center;
   z-index: 130; /* au-dessus de l'écran de victoire (120) : Évaluer/Détecter le butin ouvre une modale PAR-DESSUS */
 }
-/* L'allègement de voile des modales de JET (ancrage par bandes + voile plus léger) vit désormais dans le
-   DOMAINE qui le motive — voir `combat-modals.css` : il existe pour garder le CHAMP DE BATAILLE
-   lisible sous la fenêtre. Ici, en couche partagée, il s'appliquait à tout écran portant une modale
-   de jet et n'y séparait plus les plans (deux fenêtres empilées se lisaient comme une seule). */
+/* L'allègement de voile des modales de JET (ancrage par bandes + voile plus léger) appartient au
+   DOMAINE qui le motive — `roll-shell.css`, scopé à `.app-campaign` : il existe pour garder le CHAMP
+   DE BATAILLE lisible sous la fenêtre. En couche partagée, il s'appliquerait à tout écran portant une
+   modale de jet et n'y séparerait plus les plans (deux fenêtres empilées, lues comme une seule). */
 
 /* Matière « Atelier du scribe » (#414, planche ratifiée de la fiche, `.sheet-modal`) : halo or
    radial en tête + dégradé bois froid, bandeau or de tête, bordures chaudes, ombre profonde. TOUTE
@@ -721,6 +759,16 @@ button.chip:hover {
 .btn-step:hover:not(:disabled) { border-color: var(--accent2); }
 .btn-step:disabled { opacity: 0.35; cursor: not-allowed; }
 .cart-step .cart-n { min-width: 16px; text-align: center; font-variant-numeric: tabular-nums; }
+/* Cible TACTILE (CLAUDE.md règle 4) : sous pointeur grossier le pas est un carré de 40 px, dans ses
+   DEUX formes — le bouton nu et celui que `GatedAction` rend (`class="btn btn-step"`, où `.btn` pose
+   `min-height: 40px` en base.css). Même spécificité que `.btn`, mais `components.css` s'importe APRÈS
+   `base.css` : c'est cette règle qui décide, et le pas reste carré. */
+@media (pointer: coarse) {
+  .btn-step { width: 40px; height: 40px; min-height: 40px; }
+}
+/* Un pas dont la BORNE PORTE SA RAISON compose `GatedAction` (prop `refus`) : le conteneur de la
+   primitive n'apporte aucune boîte — le triplet garde sa rangée. */
+.cart-step > .gated-action { display: inline-flex; margin: 0; padding: 0; }
 
 /* ── TABLE DE NÉGOCE (primitive TradeTable.tsx, #371 LOT 3) — moissonnée de l'étalon marchand
    (`MerchantPanel` Acheter/Parcourir) : colonnes de stats paramétrables, rangée grisée si inabordable
@@ -941,14 +989,23 @@ button.chip:hover {
   overscroll-behavior: contain;
 }
 
+/* Pile des ZONES DE RÉGLAGE d'une fenêtre de jet (localisation, arme, posture, surincantation) :
+   posée par les modales elles-mêmes, jamais par `RollShell` — contrat de couche partagée. */
+.rm-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+  margin: var(--sp-md) 0 10px;
+}
+
 /* Note secondaire d'une modale de jet (7 sites : enjeu d'une étape de cascade, acte de soin en cours,
    cadence d'un Test étendu, nuit sans histoire, opposition annulée). Six d'entre eux sont des <p> à
    contenu INLINE : aucun sélecteur ne les vise, leur rendu est inchangé (typographie et marges restent
    celles de leur contexte — les toucher serait un restylage non recetté). Le septième porte une icône
    suivie d'une <Prose> de BLOC : l'icône FLOTTE (les lignes se composent autour) plutôt que de créer un
    contexte flex, qui aurait dégauchi l'alignement des six autres. */
-.rm-note > svg,
-.rm-note > .icon {
+.rm-note:not([data-ton]) > svg,
+.rm-note:not([data-ton]) > .icon {
   float: left;
   margin: 2px 6px 0 0;
 }
@@ -958,9 +1015,57 @@ button.chip:hover {
 .rm-note p + p {
   margin-top: 4px;
 }
+/* TONS de la note (`data-ton`) — un ton nommé compose ses enfants lui-même (l'icône y reste EN LIGNE,
+   d'où le `:not([data-ton])` du flottement ci-dessus, réservé à la note à prose de bloc) :
+   `discret` = précision sous un contrôle ; `etat` = posture ANNONCÉE, non cliquable (armée sous
+   `[data-armee]`) ; `bloque` = jet impossible (pas de ligne de vue, hors de portée) ; `attente` =
+   verdict suspendu à une fenêtre qui va s'interposer (#1004) ; `menace` = danger SUBI, fond rouge. */
+.rm-note[data-ton='discret'] {
+  font-size: 11px;
+  color: var(--muted);
+}
+.rm-note[data-ton='etat'] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+[data-armee] > .rm-note[data-ton='etat'] {
+  color: var(--text);
+  font-weight: 600;
+}
+.rm-note[data-ton='bloque'] {
+  text-align: center;
+  color: var(--danger-soft);
+  font-weight: 600;
+  margin: 10px 0;
+}
+.rm-note[data-ton='attente'] {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: left;
+}
+.rm-note[data-ton='menace'] {
+  text-align: center;
+  font-size: 12px;
+  color: var(--danger-soft);
+  background: rgba(120, 40, 30, 0.22);
+  border: 1px solid rgba(200, 90, 70, 0.4);
+  border-radius: 6px;
+  padding: 5px 8px;
+  margin: 0 0 10px;
+}
+.rm-note[data-ton='menace'] b {
+  color: var(--danger-bright);
+}
 
 /* Z3b — ENJEU d'un jet (`StakeNote`, #1117). Classe PROPRIÉTAIRE de la zone : `.rm-note` reste la note
-   générique (6 sites au contenu inline) et `.rm-threat` porte l'autre sens (menace SUBIE, fond rouge).
+   générique (6 sites au contenu inline) et son ton `menace` porte l'autre sens (danger SUBI, fond rouge).
    Ton NEUTRE assumé : un enjeu ANNONCE ce que le jet met en jeu, il n'alarme pas. L'icône FLOTTE, comme
    sur `.rm-note`, pour que la prose de bloc se compose autour d'elle. */
 .rm-stake {
@@ -1004,4 +1109,106 @@ button.chip:hover {
   position: absolute;
   inset: 0;
   height: auto;
+}
+
+/* ── CONTRÔLE SEGMENTÉ (`.seg`) ── Choix exclusif rendu en barre de segments (Parade/Esquive, main
+   qui tient l'arme, allure de marche). Aucun composant ne le possède : 22 sites le posent, dont la
+   primitive `OptionChooser` (layout `seg`) — couche PARTAGÉE. Le segment ÉLU se dit `aria-pressed`. */
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  width: fit-content;
+}
+/* La MATIÈRE du segment, y compris quand il compose `GatedAction bare` : `.btn.btn-nu` (deux classes)
+   l'emporterait sur `.seg button` (une classe + un type) et lui retirerait sa boîte — le segment
+   refusé perdait alors ses 12 px de rembourrage vertical et se rendait 17 px au lieu de 29. Le
+   sélecteur reprend donc la main SANS dupliquer les déclarations. */
+.seg button,
+.seg .btn.btn-nu {
+  background: var(--panel2);
+  border: none;
+  border-right: 1px solid var(--border);
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+/* Le dernier segment n'a pas de bordure droite — y compris quand il est porté par le conteneur
+   `.gated-action` de son refus (le bouton n'y est plus l'enfant direct du `.seg`). */
+.seg button:last-child,
+.seg > :last-child button,
+.seg > :last-child .btn.btn-nu {
+  border-right: none;
+}
+/* Un segment REFUSÉ compose `GatedAction bare` : son conteneur ne doit apporter AUCUNE boîte, le
+   `.seg` portant déjà la géométrie de la barre. `display: flex` (et non `contents`) : l'infobulle
+   `CodexRef` mesure le rect de son enveloppe pour se placer — sous `display: contents` ce rect vaut
+   0×0 et la boîte se pose au coin haut-gauche de l'écran (mesuré en recette : (8, 6) pour un segment
+   à (1050, 258)). */
+.seg > .gated-action,
+.seg > .gated-action > .codex-ref {
+  display: flex;
+  align-items: stretch;
+  margin: 0;
+  padding: 0;
+}
+.seg > .gated-action button { flex: 1; }
+/* Un segment REFUSÉ porte une raison à ATTEINDRE : il garde `aria-disabled` (jamais `disabled`) et
+   l'apparence d'un contrôle mort — les MÊMES déclarations que `.btn[aria-disabled='true']`
+   (`base.css`), pas une seconde grammaire. `disabled` reste possible pour un segment MUET. */
+.seg button:disabled,
+.seg button[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+/* `.seg .btn.btn-nu` (0,3,0) l'emporterait sur `.seg button[aria-pressed='true']` (0,2,1) : un segment
+   RETENU mais refusé perdait son dégradé et sa graisse (mesuré : `background-image: none`,
+   `font-weight: 400`). Le sélecteur du RETENU reprend donc la main sur les deux écritures. */
+.seg button[aria-pressed='true'],
+.seg .btn.btn-nu[aria-pressed='true'] {
+  background: linear-gradient(180deg, var(--accent2), var(--accent));
+  font-weight: 600;
+}
+
+/* Zone d'ACTIONS d'une rangée : ordre visuel = choix de RÈGLE (Résilience/Résistance/Détermination),
+   puis l'offre de CONFORT (dé fixé), puis le CTA. Posée par DEUX primitives (`RollRow`,
+   `NumberField`) — couche partagée. */
+.prow-act {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  /* +1 flex-wrap (cliquet vii) : jusqu'à 5 contrôles de largeurs variables sur une rangée de modale
+     (520px) — doit s'enrouler dès 360px, même justification que `.rm-die-pick`. */
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+  text-align: left;
+}
+
+/* Ligne de JOURNAL d'une modale (10 sites : renoncement, sauvegarde de Destin, escale, empoignade,
+   pas de table d'une cascade…) — le récit de ce qui vient d'être tranché, atténué et centré. */
+.modal-log {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  margin: 8px 0;
+}
+
+/* TONS d'appoint : texte atténué (13 sites), état « rien à montrer » d'une liste (10 sites), et la
+   valeur PÉNALISANTE inline — le « −20 » de la main secondaire, rendu en `<em>` (fiche) ou en
+   déclencheur de règle (panneau d'équipement) : le ton ne dépend pas de la balise. */
+.muted {
+  color: var(--muted);
+}
+.empty {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 2px 0;
+}
+.off-malus {
+  font-style: normal;
+  color: var(--danger-soft);
 }

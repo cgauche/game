@@ -20,6 +20,7 @@ import { VsHeader } from '../VsHeader';
 import { recapLineOfEvent } from '../../gameIso/combatNarration';
 import { ev } from '../../state/combatLog';
 import { Icon } from '../Icon';
+import { Row } from '../Layout';
 import { composeRollLabel } from '../../state/rollSeam';
 
 const LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
@@ -200,7 +201,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
         <div className="rm-options">
           {/* LDB 10 l.767-773 */}
           {dualEligible && (
-            <div className="rm-loc-inline rm-dual-toggle">
+            <div className="rm-loc-inline" data-bascule>
               <label>
                 <input type="checkbox" checked={!!pa.dualMode} onChange={(e) => setDualMode(e.target.checked)} />
                 <span className="mini-title"><Icon id="action/attack" size="sm" /> Des deux armes</span>
@@ -246,35 +247,35 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               dans la modale ») : la fenêtre ANNONCE la posture armée et sa valeur, le CONTRÔLE vit dans
               la console (cases `posture-tir` / `posture-tas`). Aucun bouton ici, aucun setter. */}
           {showCrowd && (
-            <div className="rm-crowd" data-posture="intoCrowd" data-armee={pa.intoCrowd ? '' : undefined}>
-              <span className="rm-posture-etat">
+            <Row gap="md" align="center" data-posture="intoCrowd" data-armee={pa.intoCrowd ? '' : undefined}>
+              <span className="rm-note" data-ton="etat">
                 <Icon id="action/aim" size="sm" /> Dans le tas {pa.intoCrowd ? `— armée${cm ? ` (+${cm.value})` : ''}` : crowdSansObjet ? '— sans objet sur cette cible' : '— non armée'}
               </span>
               <CodexRef category="regles" id="tirer-dans-le-tas" label="Tirer dans le tas" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
-              <span className="rm-crowd-note">
+              <span className="rm-note" data-ton="discret">
                 {pa.intoCrowd
                   ? `${crowd.length} au contact — touche au hasard, 0 DR si sauvé par le bonus.`
                   : crowdSansObjet
                     ? `Posture armée à la console : ${crowdBlock}. Ce tir reste visé.`
                     : 'Tir visé : la cible désignée, sans le bonus de groupe.'}
               </span>
-            </div>
+            </Row>
           )}
           {showHoldGround && (
-            <div className="rm-crowd" data-posture="heldGround" data-armee={pa.heldGround ? '' : undefined}>
-              <span className="rm-posture-etat">
+            <Row gap="md" align="center" data-posture="heldGround" data-armee={pa.heldGround ? '' : undefined}>
+              <span className="rm-note" data-ton="etat">
                 <Icon id="travel/anchor" size="sm" /> Tir immobile {pa.heldGround ? '— armé' : holdSansObjet ? '— sans objet sur ce tir' : '— non armé'}
               </span>
               <CodexRef category="regles" id="tir-en-mouvement" label="Tirer en se déplaçant" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
               {pa.heldGround
-                ? <span className="rm-crowd-note">Immobile : pas de -10, mais Mouvement du Tour consommé.</span>
+                ? <span className="rm-note" data-ton="discret">Immobile : pas de -10, mais Mouvement du Tour consommé.</span>
                 : holdSansObjet
-                  ? <span className="rm-crowd-note">Posture armée à la console : {holdBlock}. Ce tir n’en bénéficie pas.</span>
-                  : <span className="rm-crowd-note">Tir mobile : -10 « Tir en bougeant » (tu gardes ton Mouvement).</span>}
-            </div>
+                  ? <span className="rm-note" data-ton="discret">Posture armée à la console : {holdBlock}. Ce tir n’en bénéficie pas.</span>
+                  : <span className="rm-note" data-ton="discret">Tir mobile : -10 « Tir en bougeant » (tu gardes ton Mouvement).</span>}
+            </Row>
           )}
           {canHarpoonRopeCut && (
-            <div className="rm-crowd">
+            <Row gap="md" align="center">
               <button
                 className={`btn small ${pa.harpoonRopeCut ? 'btn-primary' : ''}`}
                 onClick={() => setHarpoonRopeCut(!pa.harpoonRopeCut)}
@@ -282,12 +283,12 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
                 <Icon id="action/aim" size="sm" /> Tirer sans la corde (60 m, sans Immobilisante)
               </button>
               {pa.harpoonRopeCut
-                ? <span className="rm-crowd-note">Corde séparée : Portée 60, mais la cible n'est plus Immobilisée.</span>
-                : <span className="rm-crowd-note">Corde tenue : Immobilisante, Portée 20.</span>}
-            </div>
+                ? <span className="rm-note" data-ton="discret">Corde séparée : Portée 60, mais la cible n'est plus Immobilisée.</span>
+                : <span className="rm-note" data-ton="discret">Corde tenue : Immobilisante, Portée 20.</span>}
+            </Row>
           )}
           {canWithhold && (
-            <div className="rm-crowd">
+            <Row gap="md" align="center">
               <button
                 className={`btn small ${pa.withhold ? 'btn-primary' : ''}`}
                 onClick={() => setWithhold(!pa.withhold)}
@@ -295,11 +296,11 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
                 <Icon id="melee/pulled-punch" size="sm" /> Retenir ses coups
               </button>
               <CodexRef category="regles" id="retenir-ses-coups" label="Retenir ses coups (maîtriser sans tuer)" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
-              {pa.withhold && <span className="rm-crowd-note">Non létal : Critique seulement si la cible tombe à 0 ; sans Empaleuse/Percutante/Perforante/Taille.</span>}
-            </div>
+              {pa.withhold && <span className="rm-note" data-ton="discret">Non létal : Critique seulement si la cible tombe à 0 ; sans Empaleuse/Percutante/Perforante/Taille.</span>}
+            </Row>
           )}
           {canGrapple && (
-            <div className="rm-crowd">
+            <Row gap="md" align="center">
               <button
                 className={`btn small ${pa.grapple ? 'btn-primary' : ''}`}
                 onClick={() => setGrapple(!pa.grapple)}
@@ -307,12 +308,12 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
                 <Icon id="melee/grapple" size="sm" /> Empoigner
               </button>
               <CodexRef category="regles" id="empoignade" label="Empoignade" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
-              {pa.grapple && <span className="rm-crowd-note">Sur une touche : aucun Dégât ; Empoignade + Empêtré (cible).</span>}
-            </div>
+              {pa.grapple && <span className="rm-note" data-ton="discret">Sur une touche : aucun Dégât ; Empoignade + Empêtré (cible).</span>}
+            </Row>
           )}
         </div>
         {blocked && (
-          <div className="rm-blocked"><Icon id="ui/warning" size="sm" /> {preview!.blocked ? 'Pas de ligne de vue' : 'Hors de portée'}</div>
+          <div className="rm-note" data-ton="bloque"><Icon id="ui/warning" size="sm" /> {preview!.blocked ? 'Pas de ligne de vue' : 'Hors de portée'}</div>
         )}
         <DeterminationButton combatant={attacker} onSpend={(name) => spendResolve(attacker.id, name)} />
       </>
@@ -333,7 +334,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
         )]
       : undefined,
     postRollExtra: res && awaitingDefense
-      ? <p className="rm-await">{t('defense.awaiting', { cible: target.label })}</p>
+      ? <p className="rm-note" data-ton="attente">{t('defense.awaiting', { cible: target.label })}</p>
       : undefined,
     forcedExtra: res?.critical && pa.forced ? <CritLocationPicker current={res.critLocation} onSet={setCritLocation} shape={target.bodyShape} /> : undefined,
     actions: [

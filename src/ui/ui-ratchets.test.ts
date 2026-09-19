@@ -96,12 +96,8 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   // motif `.bar` non composable ici (c'est une rangée de CHAMPS d'un formulaire d'édition, pas un
   // bandeau d'écran) ; le `flex-wrap` seul ne suffisait pas, il va de pair avec `min-width: 0`.
   'styles/codex-edit.css': 2,
-  // -1 (#492 lot POSSESSIONS B) : mort de l'ancienne `.inv-row { flex-wrap: wrap }` (registre
-  // `Band`/`PlaqueRow` désormais, `.inv-actionbar` reprend le motif dans sheet.css, en regard).
-  // +2 (chartrage du bloc « dé fixé », juge vision) : `.prow-act` (zone d'actions d'une rangée de jet)
-  // et `.rm-die-pick` (options de dé + champ) — deux rangées de contrôles de largeurs variables qui
-  // doivent s'enrouler dès 360px ; motif `.bar` non composable (chrome d'en-tête d'écran).
-  'styles/combat-modals.css': 8,
+  // `.prow-act` a rejoint la couche partagée (hors cliquet) ; les six autres rangées enroulées de la
+  // famille JET sont keyées aux modules de leurs primitives, en regard (#1806 2c).
   'styles/combat-ui.css': 7,
   'styles/compendium.css': 3,
   // +1 : `.creator-race-lineages` (#393 P2, correction structurelle Race) — rangée de chips de
@@ -116,7 +112,8 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/gauges.css': 1,
   // -1 (R-M1, bande de groupe) : `.party-dock` ne s'enroule plus — une seule rangée qui DÉFILE à
   // tuiles pleines. Baisse ASSAINIE, pas une tolérance.
-  'styles/hud.css': 5,
+  // -1 (#1806 2c) : `.crit-stats` suit sa primitive `RevealBody`.
+  'styles/hud.css': 4,
   'styles/mass-battle.css': 2,
   'styles/merchant.css': 1,
   // +1 (#492 lot POSSESSIONS B) : `.inv-actionbar` — barre d'actions de la rangée ÉLUE du registre
@@ -127,15 +124,28 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   // +1 (tableau de bord État, arbitrage user 2026-07-17) : `.etat-chips` — rangée de chips codex-liées
   // des États actifs qui s'enroule ; motif `.bar` non composable ici (chrome de barre d'écran) et
   // `.plaque-fx` scopé DANS `PlaqueRow` (`.plaque-name > .plaque-fx`), même justification que ce dernier.
-  'styles/sheet.css': 4,
+  // -1 (#1806 2c) : `.rm-roll-mods` (rangée de chips d'une ligne de jet) suit sa primitive `RollLine`.
+  'styles/sheet.css': 3,
   // -1 : le roster de postes porte sa matière dans `postes-roster.css`, la feuille de sa primitive.
-  'styles/world-meta.css': 17,
+  // +3 (#1806 2c) : `.ship-crew-row`, `.poste-layout`, `.poste-chips` — le PLACEMENT de l'écran de
+  // navire vit au module de CET écran.
+  'styles/world-meta.css': 20,
   'styles/city-hub.css': 1,
   'styles/voyage.css': 3,
   // +1 (lot #492 « chevet ») : `.plaque-fx` (chips d'effet net sous le nom, `PlaqueRow.tsx`) — enroule
   // en rangée, motif `.bar` non composable ici (le `.bar` du canon porte fond/bordure/padding d'en-tête,
   // pas d'une puce compacte sous un titre de plaque).
   'styles/plaque-row.css': 1,
+  // Famille JET (#1806 2c) : chaque rangée de contrôles/chips de largeurs variables s'enroule dès
+  // 360px depuis le module de sa primitive — `.rm-roll-mods` (chips de modificateurs), `.rm-die-pick`
+  // (options de dé + champ), `.crit-stats` (valeurs d'un Coup Critique), `.insp-badges` (badges de
+  // camp/états), `.set-card-body` (carte de set d'armes). Une rangée de foule s'enroule par la
+  // primitive de placement `Row` (`layout.css`), sans règle propre.
+  'styles/roll-line.css': 1,
+  'styles/forced-roll-picker.css': 1,
+  'styles/reveal-body.css': 1,
+  'styles/inspect-panel.css': 1,
+  'styles/equipment-panel.css': 1,
   // +1 : `.pr-cases` (`PostesRoster`/`AssignRow`) — les portraits d'un poste s'enroulent quand ils
   // débordent de la colonne de cases ; motif `.bar` non composable ici (`.bar` porte fond/bordure/
   // padding d'une barre d'écran, pas d'une case DANS une rangée de grille).
@@ -219,11 +229,10 @@ const BARE_BUTTON_EXEMPT_FILES = new Set([
   // est cliquable (`.c-plate{cursor:pointer}`), la primitive rend alors un VRAI bouton plutôt que
   // de laisser chaque écran piéger un `div` au clic.
   'PlaqueRow.tsx',
-  // ListRow.tsx : primitive canon de la RANGÉE DE LISTE sélectionnable (`.listrow` + famille
-  // `insp-row`/`codex-row`, #841) — même famille que Tabs/MenuCard/PlaqueRow. Elle existe justement
+  // ListRow.tsx : primitive canon de la RANGÉE DE LISTE sélectionnable (`.listrow` et ses variantes
+  // `data-variant`, #841/#1806) — même famille que Tabs/MenuCard/PlaqueRow. Elle existe justement
   // pour que plus aucun panneau ne recode la rangée : 13 sites de l'éditeur la composent désormais,
-  // et les 3 classes d'état concurrentes (`active`/`on`/`is-selected`, dont une jamais stylée) sont
-  // tranchées ici.
+  // et l'ÉLECTION s'y dit `aria-current`, une seule grammaire pour tous.
   'ListRow.tsx',
 ]);
 // `dicewell` : bouton-encrier canon de `CreatorDice` (#414, langage `.c-dicewell.act` du kit
@@ -292,7 +301,9 @@ const SHARED_CSS_FILES = [
 const SHARED_LEAK_BASELINE: Record<string, number> = {
   // #1372 : 16 → 15 — `.lazy-fallback` cesse d'être mono-consommateur (le voile d'entrée en scène du
   // monde volumique le REPREND au lieu de définir sa propre classe, `stage/VolumetricWorld.tsx`).
-  'styles/base.css': 15, // #417 : `.hero-present-sec` reste croisée (PartyScreen+HeroPresentation) ; `.lore-chip`/
+  // #1806 2c : 15 → 14 — `.codex-ref` (enveloppe du déclencheur de popover, `CodexRef`) entre au
+  // catalogue de `charte-ui.md` : c'est un contrat de couche, pas une fuite de domaine.
+  'styles/base.css': 14, // #417 : `.hero-present-sec` reste croisée (PartyScreen+HeroPresentation) ; `.lore-chip`/
   // `.hero-present-chips` repassent mono-consommateur — le détail candidat compose désormais `SkillChip`/
   // `TalentChip`/`EntityRef` + `.skill-tags` (recalage utilisateur 2026-07-14, primitives de fiche vivante)
   // #839 : INCHANGÉ à 11 — le partage de l'écran Options déplace deux fuites sans en retirer :
@@ -301,7 +312,9 @@ const SHARED_LEAK_BASELINE: Record<string, number> = {
   // #1318 V10 (2026-08-16) : 11 → 10 — DÉCROISSANCE mesurée après la migration des recopies de markup
   // vers leurs primitives (garde `primitive-owners-guard`). Stock restant, mesuré : `alert`, `col-name`,
   // `col-stat`, `col-emph`, `col-enc`, `col-price`, `col-buy`, `detail-row`, `group-row`, `rm-roll`.
-  'styles/components.css': 10,
+  // #1806 2c : 10 → 9 — `rm-roll` suit sa primitive `RollLine` (`roll-line.css`) ; la couche partagée
+  // ne déclare plus de ligne de jet.
+  'styles/components.css': 9,
   'styles/tabs.css': 1,
   // Couche LAYOUT (#1800) : TOLÉRANCE ZÉRO d'entrée — chacune de ses classes est cataloguée à la
   // charte (`.stack`/`.row`/`.grid`/`.split`/`.screen`/`.screen-body`/`.screen-scroll`/
@@ -311,7 +324,10 @@ const SHARED_LEAK_BASELINE: Record<string, number> = {
   // Chrome du MONDE : les classes y sont mono-consommateur PAR NATURE (un peintre unique par marque —
   // `TokenChromeMarks`, `PastilleEntite`, les animations de FX). Baseline posée à l'entrée au radar,
   // GELÉE et DÉCROISSANTE comme les autres.
-  '../gameIso/anim.css': 26,
+  // #1806 2c : 26 → 22 — la feuille est celle de la primitive `GameStage` ; `.glow` et `.dmg-float`
+  // sont cataloguées à la charte avec `.iso-stage`, et les règles à ZÉRO poseur (`.bob`, `.gush`,
+  // `.crow` + `.crow .wing`) sont purgées (garde §5.2 de `primitive-owners-guard`).
+  '../gameIso/anim.css': 22,
 };
 
 /** Classes `.foo` citées entre backticks dans le catalogue de la charte (contrat de couche atomique). */
@@ -680,22 +696,29 @@ function pxOf(css: string, selector: string, prop: string): number | null {
 const occurrences = (s: string, needle: string) => s.split(needle).length - 1;
 
 const HUD_TRANCHES = ['@media (max-width: 900px)', '@media (max-width: 700px)', '@media (max-width: 560px)', '@media (pointer: coarse)'];
-const HUD_MODULES = ['hud.css', 'combat-console.css'];
+/** Les modules qui composent le HUD : l'écran résiduel, l'organisme console, et les modules des
+ *  PRIMITIVES qu'il monte (#1806 — l'identité a quitté les modules d'écran). La matrice se lit sur
+ *  leur UNION : c'est elle qui porte les quatre tranches, pas chaque fichier pris à part. */
+const HUD_MODULES = ['hud.css', 'combat-console.css', 'roll-shell.css', 'combat-banner.css'];
 
 describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => {
   const read = (m: string) => readFileSync(join(UI, 'styles', m), 'utf8');
 
-  it('chaque module du HUD pose les quatre tranches, une seule fois chacune', () => {
+  it('l’UNION des modules du HUD porte les quatre tranches, et aucun module n’en duplique une', () => {
+    const portees = new Set<string>();
     for (const m of HUD_MODULES) {
       const css = read(m);
       for (const q of HUD_TRANCHES) {
-        expect(occurrences(css, q), `${m} : la tranche ${q} doit exister en UN exemplaire (section responsive ordonnée)`).toBe(1);
+        const n = occurrences(css, q);
+        expect(n, `${m} : la tranche ${q} est écrite ${n} fois — une section responsive ordonnée n'en pose qu'UNE`).toBeLessThanOrEqual(1);
+        if (n) portees.add(q);
       }
     }
+    expect([...portees].sort(), 'l’union des modules du HUD doit porter les quatre tranches du canon').toEqual([...HUD_TRANCHES].sort());
   });
 
   it('aucun breakpoint de largeur hors du canon 900 / 700 / 560', () => {
-    for (const m of [...HUD_MODULES, 'combat-modals.css']) {
+    for (const m of HUD_MODULES) {
       const widths = [...read(m).matchAll(/@media[^{]*max-width:\s*(\d+)px/g)].map((x) => x[1]);
       const hors = [...new Set(widths)].filter((w) => !['900', '700', '560'].includes(w));
       expect(hors, `${m} : breakpoint(s) hors canon (360 et 420 sont des largeurs de RECETTE)`).toEqual([]);
@@ -793,7 +816,7 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
   });
 
   it('les modales de jet occupent l’écran sous 560, corps défilable et pied fixe', () => {
-    const css = read('combat-modals.css');
+    const css = read('roll-shell.css');
     expect(css).toMatch(/\.modal:has\(>\s*\.rs-scroll\)\s*\{[^}]*overflow:\s*hidden/); // le corps défile, pas la boîte
     expect(css).toMatch(/\.modal:has\(>\s*\.rs-scroll\)\s*>\s*\.modal-actions/); // pied hors du scrollport
     const at560 = mediaBlock(css, '@media (max-width: 560px)');
@@ -867,7 +890,7 @@ function scanNumberInputs(files: readonly Fichier[]): Record<string, number> {
 }
 
 // ── (xviii) Breakpoints de LARGEUR hors canon, sur TOUS les modules CSS (#1318 V5) — le volet
-//    responsive du HUD ne regardait que `hud.css`/`combat-ui.css`/`combat-modals.css` ; la règle
+//    responsive du HUD ne regardait que `hud.css`/`combat-ui.css`/`roll-shell.css` ; la règle
 //    stricte 4 du CLAUDE.md vaut pour tout `src/ui`. Canon VERS LE BAS : `max-width` ∈ {900,700,560}.
 //    Canon VERS LE HAUT : `min-width` ∈ {561,701,901} (complément exact d'une tranche basse) et 1440
 //    (docs/charte-ui.md § « Politique grand écran (≥1440px) »).
@@ -902,12 +925,12 @@ function widthBreakpoints(css: string): string[] {
 //    ligne porte sa raison ; une ligne périmée (le site a bougé ou a été migré) échoue aussi.
 const REFUS_MUET_EXEMPT_SITES = new Map<string, string>([
   ['GatedAction.tsx:155', 'la primitive elle-même : `title={ariaLabel}` y est le NOM accessible, pas une raison'],
-  ['OptionChooser.tsx:104', '`OptionBouton` : la composition partagée des trois layouts, dont la branche gatée compose déjà `GatedAction`'],
+  ['OptionChooser.tsx:108', '`OptionBouton` : la composition partagée des trois layouts, dont la branche gatée compose déjà `GatedAction`'],
   ['RollShell.tsx:299', 'modèle de props de la coquille de jet — passage à `GatedAction` = train T9'],
   ['MenuCard.tsx:133', 'modèle de props du menu — train T9'],
   ['MediaSelect.tsx:59', 'modèle de props du sélecteur média — train T9'],
-  ['QtyStepper.tsx:36', 'modèle de props du stepper (décrément) — train T9'],
-  ['QtyStepper.tsx:40', 'modèle de props du stepper (incrément) — train T9'],
+  ['QtyStepper.tsx:64', 'modèle de props du stepper (décrément) — train T9'],
+  ['QtyStepper.tsx:72', 'modèle de props du stepper (incrément) — train T9'],
 ]);
 const REFUS_MUET_BASELINE: Record<string, number> = {
   'editor/Editor.tsx': 1,
@@ -1273,11 +1296,11 @@ describe('#1800 — trois couches CSS : un module d’écran ne pose que du PLAC
     expect(perimees, `Entrée(s) SOLDÉE(s) — relancer le régénérateur :\n${perimees.join('\n')}`).toEqual([]);
   });
 
-  it('(xxi) le manifeste classe chaque module : un css de primitive existe, vit sous styles/, et n’est pas partagé', () => {
+  it('(xxi) le manifeste classe chaque module : un css de primitive existe, et n’est pas une feuille partagée', () => {
     const fautes: string[] = [];
     for (const css of modulesDePrimitive()) {
-      if (!css.startsWith('src/ui/styles/')) fautes.push(`${css} — hors de src/ui/styles/`);
-      else if (!existsSync(join(UI, '..', '..', css))) fautes.push(`${css} — absent du disque`);
+      if (!css.endsWith('.css')) fautes.push(`${css} — n’est pas une feuille CSS`);
+      if (!existsSync(join(UI, '..', '..', css))) fautes.push(`${css} — absent du disque`);
       if (FEUILLES_PARTAGEES.includes(css)) fautes.push(`${css} — feuille PARTAGÉE, aucune primitive ne la possède`);
     }
     expect(fautes, `Champ \`css\` fautif au manifeste des primitives — il déclasserait un module d’écran entier :\n${fautes.join('\n')}`).toEqual([]);

@@ -8,7 +8,28 @@
 @import './styles/components.css'; /* PRIMITIVES CANONIQUES (panel/fold/field/stat-chip/listrow…) — composer celles-ci */
 @import './styles/tabs.css'; /* Tabs — primitive UNIQUE d'onglets (#314), variantes flat/pill/sub/dock */
 @import './styles/layout.css'; /* COUCHE LAYOUT (#1800) — Stack/Row/Grid/Split + coquilles d'écran ; APRÈS components.css : le `padding` d'une primitive de placement doit battre `.panel`/`.panel.flush` */
-@import './styles/ornaments.css'; /* textures maison (.tx-parchment/.tx-iron/.tx-ink) + cadres/fleurons (Ornaments.tsx) */
+
+/* ══ Modules de PRIMITIVE de la famille JET (#1806) ══ Chacun est le module `css` d'une entrée du
+   manifeste : l'identité d'une classe vit chez la primitive qui la POSE. L'ordre suit les
+   dépendances ÉCRITES entre eux ; toute autre surcharge passe par la spécificité (descendant). */
+@import './styles/roll-shell.css'; /* coquille de jet (RollShell) : ancrage, corps défilable, cadre d'issue */
+@import './styles/roll-line.css'; /* ligne de jet (RollLine) : grille, dé, DR, chips de mods */
+@import './styles/roll-row.css'; /* rangée d'un participant (RollRow) */
+@import './styles/roll-panel.css'; /* panneau de jet unique (RollPanel) — APRÈS roll-line.css : `.rr-win .rm-roll` accentue la ligne */
+@import './styles/dice-roll.css'; /* dés (DiceRoll, Dice) : gemme, chiffre gravé, roulis, scène centrale */
+@import './styles/forced-roll-picker.css'; /* sélecteur de dé d'une rangée (ForcedRollPicker) */
+@import './styles/option-chooser.css'; /* options de jet (OptionChooser) : rangée, menu, grille, fourchette */
+@import './styles/recap-line.css'; /* ligne de récap (RecapLine) — APRÈS roll-shell.css : le ton `info` doit battre `.rm-journal .recap-line` (même spécificité) */
+@import './styles/multi-roll-list.css'; /* bilan multi-jets (MultiRollList) — APRÈS roll-line.css : `.mrl-roll .rm-roll-block` borne la ligne */
+@import './styles/reveal-body.css'; /* corps de révélation (RevealBody) : critique/imparfaite/mutation */
+@import './styles/vs-header.css'; /* en-tête d'opposition A→B (VsHeader) */
+@import './styles/team-segments.css'; /* segments tonés par camp (TeamSegments) */
+@import './styles/combat-banner.css'; /* fil d'événements de combat (CombatBanner) */
+@import './styles/log-drawer.css'; /* journal de combat (LogDrawer, NarratedLine) */
+@import './styles/inspect-panel.css'; /* panneau d'inspection (InspectPanel) */
+@import './styles/equipment-panel.css'; /* panneau d'équipement (EquipmentPanel) */
+
+@import './styles/ornaments.css'; /* textures maison (.tx-parchment/.tx-ink) + cadres/fleurons (Ornaments.tsx) */
 @import './styles/rose.css'; /* rose des forces (mini-radar gravé, #409) — RoseAxes.tsx, coin/médaillon/pleine */
 @import './styles/hero-sheet.css'; /* corps de fiche héros (HeroSheet.tsx) — bande d'en-tête + rubriques, composé par CreatorSummary/CandidateDetailPane */
 @import './styles/party.css'; /* écran d'équipe (sélection des héros) : colonne compagnie + étal de candidats */
@@ -24,8 +45,7 @@
 @import './styles/creator-presentation.css'; /* mise en scène finale du créateur (PresentationScreen, #393) : registre ⇄ scène ⇄ rubriques, valeurs .fin-col/.fin-stage de la planche */
 @import './styles/combat-ui.css'; /* audio, coop, select, campaign, victoire, dialogue, barre d'action */
 @import './styles/combat-console.css'; /* console de combat (CombatConsole.tsx) : deux travées + grille fixe + conduit d'Avantage + coin de fin de tour */
-@import './styles/combat-modals.css'; /* modales de jet (attaque/défense/incantation/critique…) */
-@import './styles/panneau-parametre.css'; /* panneau-paramètre borné ANCRÉ (PanneauParametre, spec HUD zone 10) — APRÈS combat-modals.css : scope le .rm-loc-grid d'OptionChooser dans le panneau */
+@import './styles/panneau-parametre.css'; /* panneau-paramètre borné ANCRÉ (PanneauParametre, spec HUD zone 10) — scope le .rm-loc-grid d'OptionChooser (option-chooser.css) dans le panneau, par la spécificité du descendant */
 @import './styles/sheet.css'; /* fiche de personnage + avancement */
 @import './styles/merchant.css'; /* marchand (achat/vente/réparation) */
 @import './styles/tavern.css'; /* jeux de taverne (NADJ ch.16) */

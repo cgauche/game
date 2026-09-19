@@ -68,7 +68,7 @@ export function ShipBatteryModal() {
       title={<><Icon id="action/aim" size="sm" /> Tir de batterie — Test d’équipage</>}
       subtitle={<><strong>{ship.label}</strong> — bordée {p.side} sur <strong>{target.label}</strong> ({postes.length} pièce{plural(postes.length)})</>}
       extra={
-        <div className="rm-threat">
+        <div className="rm-note" data-ton="menace">
           <Icon id="action/aim" size="sm" /> {target.label} — Coque {target.wounds.current}/{target.wounds.max}. {postes.length} pièce{plural(postes.length)} : {postes.map((pp) => pp.item.label).join(' · ')}.
         </div>
       }

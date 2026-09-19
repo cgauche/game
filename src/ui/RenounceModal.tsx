@@ -20,13 +20,13 @@ export function RenounceModal() {
   const resilience = hero.resilience ?? 0;
   return (
     /* Fenêtre HORS jet (le Test est déjà résolu — reste la décision « Je te renie ! ») : pas de
-       géométrie de jet (voile allégé + ancrage haut, `combat-modals.css`). */
+       géométrie de jet (voile allégé + ancrage haut, `roll-shell.css`). */
     <Modal title={<><Icon id="nav/mutation" size="sm" /> La Corruption gagne du terrain</>} variant="plain">
-      <p className="rm-log">
+      <p className="modal-log">
         <b>{hero.label}</b> échoue à contenir sa Corruption (Résistance <Icon id="nav/dice" size="sm" /> {pr.testRoll}/{pr.testTarget}) — une{' '}
         <b>mutation</b> menace de se développer.
       </p>
-      <p className="rm-log">
+      <p className="modal-log">
         « Je te renie ! » : sacrifier <b>1 Point de Résilience</b> ({resilience} restant{resilience > 1 ? 's' : ''}) pour
         refuser la mutation. Les Points de Corruption restent — la menace reviendra.
       </p>

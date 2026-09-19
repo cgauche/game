@@ -363,7 +363,7 @@ const HUD_CSS = readCss('hud.css');
 const BASE_CSS = readCss('base.css');
 const CC_BASE = baseSection(CC_CSS);
 const HUD_BASE = baseSection(HUD_CSS);
-const MODALS_BASE = baseSection(readCss('combat-modals.css'));
+const BANNER_BASE = baseSection(readCss('combat-banner.css'));
 
 const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
 
@@ -818,7 +818,7 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
   //    pont (planche 2026-08-17 : journal `[170,779,330,57]`, aucun cadre, aligné à gauche). Il
   //    était en haut-centre, en pastilles cadrées (`top: 136px; left: 50%`).
   it('P-5 — le fil de combat est ancré bas-gauche sur la réserve du pont, en lignes NUES', () => {
-    const feed = ruleOf(MODALS_BASE, '.combat-feed');
+    const feed = ruleOf(BANNER_BASE, '.combat-feed');
     expect(decl(feed, 'top')).toBe('auto');
     expect(decl(feed, 'transform')).toBe('none');
     // Ancré au BAS, et sa réserve est la hauteur du pont elle-même (jamais un nombre recopié).
@@ -827,13 +827,13 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     expect(decl(feed, 'left')).toMatch(/^\d+(\.\d+)?px$/);
     expect(decl(feed, 'align-items')).toBe('flex-start');
     // Lignes NUES : plus de carte (fond, filet, arrondi, rembourrage) — la lisibilité tient à l'ombre.
-    const ev = ruleOf(MODALS_BASE, '.cb-ev');
+    const ev = ruleOf(BANNER_BASE, '.cb-ev');
     expect(decl(ev, 'background')).toBe('none');
     expect(parseFloat(decl(ev, 'border')!)).toBe(0);
     expect(decl(ev, 'text-shadow')).toBeTruthy();
     // Le ton se porte à l'ENCRE (plus de liseré ni de fond à teinter).
     for (const ton of ['.cb-tone-strong', '.cb-tone-grave']) {
-      const bloc = ruleOf(MODALS_BASE, ton);
+      const bloc = ruleOf(BANNER_BASE, ton);
       expect(decl(bloc, 'color'), ton).toBeTruthy();
       expect(decl(bloc, 'background'), ton).toBeNull();
     }
@@ -984,7 +984,7 @@ describe('CombatConsole — trois formes, une seule bande', () => {
     expect(decl(ouv700, 'top')).toBe('auto');
     expect(decl(ouv700, 'bottom')).toContain('var(--cc-deck-h)');
     // … et le fil de combat s'ancre sur la MÊME réserve : les deux se rangent dans le même repère.
-    expect(decl(ruleOf(MODALS_BASE, '.combat-feed'), 'bottom')).toContain('var(--cc-deck-h)');
+    expect(decl(ruleOf(BANNER_BASE, '.combat-feed'), 'bottom')).toContain('var(--cc-deck-h)');
   });
 
   it('la forme SPECTATRICE ne publie AUCUN slot au pont clavier (pas de touche sans case)', () => {
@@ -2551,10 +2551,10 @@ describe('CombatConsole — munition : le chip de l’en-tête est le DÉCLENCHE
     // La conséquence ne pend qu'au candidat qui DÉCHARGERA : celui en chambre ne la porte pas.
     expect(candidats().map((b) => b.textContent)).toEqual(['Carreau×12valeur actuelle', 'Carreau perçant×5décharge — rechargement à refaire']);
     // La munition EN CHAMBRE est MARQUÉE (état, pas une simple mise en avant) — et son marquage est
-    // LISIBLE : classe d'état, `aria-pressed`, ET un mot à l'écran (une classe qu'aucune règle ne
-    // peint ne marque rien : sonde du juge vision).
+    // LISIBLE : l'état ferré `aria-pressed`, une règle qui le PEINT, ET un mot à l'écran (un état
+    // qu'aucune règle ne peint ne marque rien : sonde du juge vision).
     expect(candidats().map((b) => b.getAttribute('aria-pressed'))).toEqual(['true', 'false']);
-    expect(candidats().map((b) => b.classList.contains('on'))).toEqual([true, false]);
+    expect(ruleOf(baseSection(BASE_CSS), ".btn[aria-pressed='true']"), 'l’état pressé n’est peint nulle part').toMatch(/border-color|box-shadow|background/);
     expect(candidats().map((b) => b.querySelector('[data-actuel]')?.textContent ?? null)).toEqual(['valeur actuelle', null]);
   });
 

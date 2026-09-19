@@ -754,6 +754,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Coop : demande la pause du prochain début de Round (fenêtre Chance). */
   raiseHand: () => void;
   lowerHand: () => void;
+  /** `text` = Markdown (rendu par `Prose`, `src/ui/DocumentModal.tsx`) : un paragraphe par bloc séparé d'une ligne vide. */
   document: { title: string; text: string } | null;
   /** Scène d'où l'on vient (pour `transitionBack` : sortie d'intérieur). */
   previousScene: { id: string; pos: Pt } | null;

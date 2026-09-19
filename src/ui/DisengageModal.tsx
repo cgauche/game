@@ -82,7 +82,7 @@ export function DisengageModal() {
             ]}
           />
           {pd.canEsquive === false && (
-            <p className="rm-log">Action déjà dépensée : seul « {groupMode ? 'Retraite stratégique' : "Sacrifier l'Avantage"} » (sans coût d'Action) reste possible.</p>
+            <p className="modal-log">Action déjà dépensée : seul « {groupMode ? 'Retraite stratégique' : "Sacrifier l'Avantage"} » (sans coût d'Action) reste possible.</p>
           )}
         </div>
         <div className="rm-influence">
@@ -131,7 +131,7 @@ export function DisengageModal() {
         : { combatant: actor, d: calme ? testBreakdown('Calme', calmeValue(mover), calme, 'intermediaire') : undefined }),
       // Issue courte sous la ligne du coup : « Touché · N Blessure(s) » / « Manqué ».
       note: (part) => (isBackstab(part.id) && res
-        ? <p className="rm-log">{res.hit ? `Touché · ${res.woundsLost ?? 0} Blessure${(res.woundsLost ?? 0) > 1 ? 's' : ''}` : 'Manqué'}</p>
+        ? <p className="modal-log">{res.hit ? `Touché · ${res.woundsLost ?? 0} Blessure${(res.woundsLost ?? 0) > 1 ? 's' : ''}` : 'Manqué'}</p>
         : undefined),
     // Les rangées de cette coquille appartiennent au flux `flee` (≠ `disengage` de la coquille).
     }).map((r) => ({ ...r, flowKey: 'flee' as const })).map((r) => (isBackstab(String(r.key))

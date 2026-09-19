@@ -1,0 +1,158 @@
+/* ══════════════════ Coquille de jet (`RollShell.tsx`, #333/#1142) ══════════════════
+   L'enceinte d'une fenêtre de jet : voile et ancrage de sa modale, corps défilable à pied fixe,
+   zone embarquée (`EmbeddedShell`), et les trois rôles de texte qu'elle pose elle-même
+   (sous-titre, portée de sort, issue agrégée). Les BRIQUES qu'elle compose vivent dans leur
+   module : `roll-row.css`, `roll-line.css`, `dice-roll.css`, `recap-line.css`, `vs-header.css`. */
+.roll-modal {
+  min-width: 340px;
+}
+/* VOILE ALLÉGÉ + ancrage par le BORD HAUT des fenêtres de jet — règle de DOMAINE (descendue de
+   `components.css`, couche partagée, verdict vision #942 L7) : elle existe pour qu'on VOIE l'action
+   sous la fenêtre, ce qui n'a de sens que sur l'écran qui porte le champ de bataille. Ailleurs
+   (écran plein-champ : interlude, port, marché), le voile PLEIN de la couche partagée reprend et
+   sépare les plans — plus besoin d'une contre-règle par écran. */
+.app-campaign .modal-overlay:has(.roll-modal) {
+  background: rgba(0, 0, 0, 0.28);
+}
+/* INVARIANT DE GÉOMÉTRIE (#1142, `docs/charte-ui.md` § « Invariant de GÉOMÉTRIE d'une fenêtre de
+   jet ») : c'est le bord HAUT qui est fixé, pas le bas. La bande de champ de bataille visible
+   au-dessus de la fenêtre (`--roll-band`) reste alors CONSTANTE d'un état à l'autre de la même
+   session de jet ; une zone qui apparaît (issue, bilan, post-jet) pousse vers le BAS au lieu de
+   hisser toute la fenêtre. Mesuré sous ancrage bas : 105,6px de tremblement de `.cs-rows` sur la
+   cascade d'ouverture de combat (1600×900 comme 900×780) — 0 après.
+   Le plafond de hauteur se recalcule sur les DEUX bandes : la fenêtre ne crève jamais le bas de
+   l'écran, les grands flux défilent dans `.rs-scroll` (pied d'actions fixe, règles ci-dessous).
+   La bande BASSE (`--roll-dock`) réserve la place de la console de combat (`.combat-console`) et
+   du tiroir de journal (`.log-drawer`, bottom 92px) : sans elle, une fenêtre haute descend jusqu'à
+   8px du bas et les recouvre. Les deux bandes se soustraient du `max-height` (`box-sizing:
+   border-box` global, base.css) — le bord haut reste invariant, le débordement part au défilement.
+   Tranche ≤560 EXCLUE : elle prend tout l'écran (bloc dédié plus bas), il n'y a plus de bande. */
+@media (min-width: 561px) {
+  .app-campaign .modal-overlay:has(.roll-modal) {
+    --roll-band: min(23vh, 260px);
+    --roll-dock: 96px;
+    align-items: start;
+    padding-top: var(--roll-band);
+    padding-bottom: var(--roll-dock);
+  }
+  .app-campaign .modal-overlay:has(.roll-modal) > .modal {
+    max-height: calc(100vh - var(--roll-band) - var(--roll-dock));
+  }
+}
+/* PIED FIXE de TOUTE modale de jet (`RollShell`) — le corps défile, la barre d'actions reste à
+   l'écran. Sans ça, une étape à contenu long (grille de 31 lignes d'un tableau d100, pile d'étapes
+   déjà validées) poussait « Lancer »/« Continuer » hors du champ : la modale entière était le
+   scrollport (`.modal { overflow: auto }`), donc son pied descendait avec le contenu.
+   Le sélecteur `:has(> .rs-scroll)` ne touche QUE les modales qui portent ce corps (les autres
+   gardent leur défilement de boîte) ; `.modal`/`.modal-actions` sont de la couche partagée
+   (components.css) — contexte de la coquille, spécificité supérieure. */
+.modal:has(> .rs-scroll) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* le défilement passe au corps ; la boîte, elle, ne bouge plus */
+}
+.modal > .rs-scroll {
+  flex: 1 1 auto;
+  min-height: 0; /* sans quoi un enfant flex refuse de rétrécir sous son contenu */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.modal:has(> .rs-scroll) > .modal-actions {
+  flex: 0 0 auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+/* ≤560 (design 2026-07-31 §12) : sur téléphone une fenêtre de jet prend TOUT l'écran, pour donner
+   au corps du jet la pleine hauteur. Le corps défile et le pied reste fixe par les règles ci-dessus :
+   cette tranche n'ôte que le cadre et l'ancrage. */
+@media (max-width: 560px) {
+  .modal-overlay:has(> .modal > .rs-scroll) {
+    place-items: stretch;
+    padding: 0;
+  }
+  .modal:has(> .rs-scroll) {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    max-height: 100%;
+    border-radius: 0;
+    padding: 14px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  /* Le corps prend la pleine hauteur du téléphone : un jet court (1 rangée) laissait son contenu
+     collé en haut et ~150px de vide avant « Appliquer ». Le contenu se CENTRE dans le corps ;
+     `safe` est obligatoire — un `center` nu rend le HAUT inatteignable dès que le contenu déborde
+     (débordement centré = la première ligne passe au-dessus du scrollport, sans retour possible).
+     Les enfants gardent leur hauteur naturelle (`flex: 0 0 auto`) : le passage en colonne flex ne
+     doit rien tasser. */
+  .modal:has(> .rs-scroll) > .rs-scroll {
+    display: flex;
+    flex-direction: column;
+    justify-content: safe center;
+  }
+  .modal:has(> .rs-scroll) > .rs-scroll > * {
+    flex: 0 0 auto;
+  }
+}
+/* Deux RÔLES distincts, deux classes (#1078 LOT A1) : `.rm-subtitle` le sous-titre UNIQUE de
+   `RollShell` ; `.rm-summary` son bandeau d'issue agrégée. La bande d'OPPOSITION A→B est `.rm-vs`
+   (`vs-header.css`) : mêmes déclarations, autre propriétaire. */
+.rm-subtitle,
+.rm-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 6px 0 12px;
+}
+/* Zone de JET embarquée (`EmbeddedShell`) : encart dans un écran-hub ou une modale persistante —
+   neutralise le min-width des classes de modale autonome. */
+.rs-embedded {
+  position: relative; /* ancre la scène centrale du roulis de dés (#396, `.rm-scene`) */
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin: 6px 0;
+  background: rgba(0, 0, 0, 0.18);
+}
+.rs-embedded.roll-modal,
+.rs-embedded.rest-modal { min-width: 0; }
+/* Cascade séquentielle (jets de nuit/voyage) : le bilan empilé réutilise `.mrl` (multi-roll-list.css)
+   dans le slot `extra` de RollShell ; l'étape courante = un jet standard du flot de base. Marge sous
+   la pile pour la séparer du jet actif. */
+.roll-modal .mrl { margin-bottom: 10px; }
+
+/* ── ISSUE du jet ── Le CADRE appartient à la coquille ; chaque ligne est rendue par le renderer
+   UNIQUE `RecapLineRow` (recap-line.css) : un site fournit la DONNÉE, jamais le markup (#1078). */
+.rm-journal {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: left; /* ligne de journal : toujours à gauche, quelle que soit l'ambiance de la coquille hôte */
+}
+/* Dans ce cadre, les lignes reprennent la mise en forme du journal (icône en gouttière, texte à pleine
+   couleur). Les tons du vocabulaire partagé restent ceux de `recap-line.css` (même spécificité,
+   module importé APRÈS celui-ci) — aucune règle de ton n'est redéclarée ici. */
+.rm-journal .recap-line {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  margin: 0;
+  font-size: inherit;
+  color: inherit;
+}
+/* Gouttière d'icône du journal (`.jr-ic`, log-drawer.css) reprise ici : boîte FIXE devant le texte,
+   pour que le retour à la ligne s'aligne sous la première ligne au lieu de repartir du bord. */
+.rm-journal .recap-line > svg {
+  flex: 0 0 16px;
+}
+/* DR net du Test opposé (2 rangées) : la différence de DR entre les deux jets, sous l'issue. */
+.rm-netsl {
+  text-align: right;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold2);
+  padding-right: 2px;
+}

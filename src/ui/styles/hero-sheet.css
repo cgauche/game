@@ -53,8 +53,7 @@
 }
 
 /* Table à VALEURS de la rubrique Compétences (variante skillsVariant='valeurs', onglet
-   Compétences & Talents de la fiche vivante, arbitrage 2026-07-17) — migrée depuis combat-modals.css : son rendu
-   vit désormais dans la primitive. */
+   Compétences & Talents de la fiche vivante, arbitrage 2026-07-17). */
 .skill-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

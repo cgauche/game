@@ -60,6 +60,19 @@ import { NotchGauge } from '../NotchGauge';
 import { WindRose } from '../WindRose';
 import { CAREER_CHAR_ADVANCES } from '../creator/draft';
 import { ItemIcon } from '../ItemIcon';
+import { Icon } from '../Icon';
+import { RollLine, PendingRollLine, TableRollLine } from '../RollLine';
+import { testBreakdown, testPending } from '../breakdown';
+import { RollPanel } from '../RollPanel';
+import { DiceRoll } from '../DiceRoll';
+import { ForcedRollPicker } from '../ForcedRollPicker';
+import { RecapLineList } from '../RecapLine';
+import { MultiRollList } from '../MultiRollList';
+import { RevealBody } from '../RevealBody';
+import { TeamSegments } from '../TeamSegments';
+import { LogDrawer } from '../LogDrawer';
+import { InspectPanel } from '../InspectPanel';
+import { EquipmentPanel } from '../EquipmentPanel';
 import { MediaSelect } from '../MediaSelect';
 import { RefField, refFieldCfg } from '../compendium/RefField';
 import { itemFromTrappingById } from '../../engine/items';
@@ -189,6 +202,16 @@ function OptionChooserDemo() {
         options={[
           { key: 'a', label: 'Option A', onSelect: () => {} },
           { key: 'b', label: 'Option B', onSelect: () => {} },
+        ]}
+      />
+      {/* Grille de TABLE d100 : la fourchette (`range`) fait lire une table là où une grille nue
+          ne montre qu'un menu — c'est la forme des tirages à choisir (dé forcé, zone touchée). */}
+      <OptionChooser
+        layout="grid"
+        groupLabel="Table d100 (grid + fourchette)"
+        options={[
+          { key: 'bas', label: 'Le coup porte bas', range: '01-35', onSelect: () => {} },
+          { key: 'haut', label: 'Le coup porte haut', range: '36-00', onSelect: () => {} },
         ]}
       />
       <OptionChooser
@@ -928,6 +951,149 @@ function WindRoseDemo() {
   );
 }
 
+// ── Famille JET (#1806 lot 2c) : chaque module de primitive a son spécimen ──────────────────────
+/** Ligne de jet : la même brique avant (cible annoncée) et après le dé (verdict + DR). */
+function RollLineDemo() {
+  return (
+    <Stack>
+      <PendingRollLine p={testPending('Athlétisme', 45, 45, 'intermediaire')} />
+      <RollLine d={testBreakdown('Athlétisme', 45, { roll: 32, target: 45, sl: 1, success: true }, 'intermediaire')} />
+      <RollLine d={testBreakdown('Corps à corps', 52, { roll: 88, target: 52, sl: -3, success: false })} />
+      <TableRollLine table="Table des Critiques" roll={73} result="Bras — entaille profonde" />
+    </Stack>
+  );
+}
+
+/** Panneau de jet unique : l'issue d'un Test opposé, gagnant accentué. */
+function RollPanelDemo() {
+  if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
+  return (
+    <RollPanel
+      rows={[
+        { combatant: herosExemple(), d: testBreakdown('Attaque', 52, { roll: 24, target: 52, sl: 2, success: true }) },
+        { combatant: herosExempleB(), d: testBreakdown('Esquive', 41, { roll: 67, target: 41, sl: -2, success: false }) },
+      ]}
+      winnerIndex={0}
+      netSL={4}
+    />
+  );
+}
+
+/** Dés : la rangée inline posée (d100 = dizaines + unités) et la matière dorée de l'Atelier. */
+function DiceRollDemo() {
+  return (
+    <Row gap="xl" align="center">
+      <DiceRoll scene={false} landed faces={[7, 3]} />
+      <DiceRoll scene={false} landed faces={[0, 9]} tone="gold" />
+    </Row>
+  );
+}
+
+/** Sélecteur de dé d'une rangée : offre pré-jet (champ vide) et dé déjà posé. */
+function ForcedRollPickerDemo() {
+  const [roll, setRoll] = useState<number | null>(null);
+  return (
+    <Stack>
+      <ForcedRollPicker roll={roll} target={45} onSet={setRoll} rowName="Athlétisme" />
+      <ForcedRollPicker roll={11} target={45} onSet={() => {}} fixed marked rowName="Résilience" />
+    </Stack>
+  );
+}
+
+/** Ligne de récap : le trio de tons, et les noms tonés par camp. */
+function RecapLineDemo() {
+  return (
+    <RecapLineList
+      lines={[
+        { text: 'Gustav franchit le mur (DR +2).', tone: 'ok', icon: 'action/force' },
+        { text: 'Grunni rate son embuscade.', tone: 'bad', segments: [{ text: 'Grunni', team: 'enemy' }, { text: ' rate son embuscade.' }] },
+        { text: 'La nuit tombe sur le campement.', tone: 'info' },
+      ]}
+    />
+  );
+}
+
+/** Bilan multi-jets : une pile de jets d'un même temps (nuit de repos). */
+function MultiRollListDemo() {
+  if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
+  return (
+    <MultiRollList
+      entries={[
+        { actorId: herosExemple().id, label: 'Convalescence', d: testBreakdown('Endurance', 42, { roll: 27, target: 42, sl: 1, success: true }), text: '+4 Points de Blessure', tone: 'ok' },
+        { actorId: herosExempleB().id, label: 'Cauchemars', d: testBreakdown('Calme', 38, { roll: 71, target: 38, sl: -3, success: false }), text: 'Nuit agitée : aucun Point de Chance récupéré', tone: 'bad' },
+      ]}
+    />
+  );
+}
+
+/** Corps de révélation : le Coup Critique tiré sur table, avec ses effets expliqués. */
+function RevealBodyDemo() {
+  if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
+  return (
+    <RevealBody
+      entry={{
+        kind: 'critical',
+        title: 'Coup Critique',
+        dice: 73,
+        lines: ['Entaille profonde du bras'],
+        weapon: 'Épée',
+        crit: { location: 'Bras droit', woundsLost: 5, conditions: [{ id: 'saignement', value: 1 }] },
+        details: [{ text: 'Hémorragie 1', note: 'Un Saignement s’ajoute à chaque Round tant qu’il n’est pas soigné.' }],
+      }}
+      actor={herosExemple()}
+      subject={herosExempleB()}
+    />
+  );
+}
+
+/** Segments tonés par camp : les noms cités se colorent, le reste est neutre. */
+function TeamSegmentsDemo() {
+  return (
+    <p>
+      <TeamSegments segments={[{ text: 'Gustav', team: 'ally' }, { text: ' frappe ' }, { text: 'le mutant', team: 'enemy' }, { text: ' au bras.' }]} />
+    </p>
+  );
+}
+
+/** Fil d'événements : la ligne NUE posée sur le terrain, aux trois tons du beat. */
+function CombatBannerDemo() {
+  return (
+    <Stack>
+      {(['', 'cb-tone-strong', 'cb-tone-grave'] as const).map((ton, i) => (
+        <div key={i} className={`cb-ev ${ton}`}>
+          <span className="cb-ic"><Icon id="action/attack" size={15} /></span>
+          <span className="cb-tx">
+            <TeamSegments segments={[{ text: 'Gustav', team: 'ally' }, { text: ' frappe ' }, { text: 'le mutant', team: 'enemy' }]} />
+          </span>
+        </div>
+      ))}
+    </Stack>
+  );
+}
+
+/** Tiroir du journal : l'historique complet, ouvert sur ses lignes narrées. */
+function LogDrawerDemo() {
+  return <LogDrawer battle={null} journal={['La porte cède sous l’épaule de Gustav.', 'Une odeur de suif monte de la cave.']} initialOpen />;
+}
+
+/** Panneau d'inspection : identité, badges de camp, statbloc — modale de lecture seule. */
+function InspectPanelDemo() {
+  const [ouvert, setOuvert] = useState(false);
+  if (!herosExempleB()) return <p className="hint">Aucun pregen disponible.</p>;
+  return (
+    <>
+      <button type="button" className="btn" onClick={() => setOuvert(true)}>Inspecter un combattant</button>
+      {ouvert && <InspectPanel combatant={herosExempleB()} onClose={() => setOuvert(false)} />}
+    </>
+  );
+}
+
+/** Panneau d'équipement : cellules par localisation × couche, cartes de set, récap en main. */
+function EquipmentPanelDemo() {
+  if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
+  return <EquipmentPanel hero={herosExemple()} />;
+}
+
 export interface GallerySpecimen {
   /** Id STABLE du spécimen (clé de sélection), déclaré — le `label` n'est que l'affichage. */
   id: string;
@@ -959,6 +1125,18 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { id: 'vsheader', label: 'VsHeader', file: 'src/ui/VsHeader.tsx', category: 'Jets', render: VsHeaderDemo },
   { id: 'rollshell', label: 'RollShell', file: 'src/ui/RollShell.tsx', category: 'Jets', note: 'maquette statique d’états — un spécimen vivant exigerait un flux de jet monté (store + makeRollFlow), hors de portée d’une vignette de galerie', render: RollShellStaticMock },
   { id: 'rollrow', label: 'RollRow', file: 'src/ui/RollRow.tsx', category: 'Jets', note: 'maquette statique d’états — même raison que RollShell (flux de jet monté hors de portée d’une vignette)', render: RollRowStaticMock },
+  { id: 'rollline', label: 'RollLine', file: 'src/ui/RollLine.tsx', category: 'Jets', render: RollLineDemo },
+  { id: 'rollpanel', label: 'RollPanel', file: 'src/ui/RollPanel.tsx', category: 'Jets', render: RollPanelDemo },
+  { id: 'diceroll', label: 'DiceRoll', file: 'src/ui/DiceRoll.tsx', category: 'Jets', render: DiceRollDemo },
+  { id: 'forcedrollpicker', label: 'ForcedRollPicker', file: 'src/ui/ForcedRollPicker.tsx', category: 'Jets', render: ForcedRollPickerDemo },
+  { id: 'recapline', label: 'RecapLine', file: 'src/ui/RecapLine.tsx', category: 'Jets', render: RecapLineDemo },
+  { id: 'multirolllist', label: 'MultiRollList', file: 'src/ui/MultiRollList.tsx', category: 'Jets', render: MultiRollListDemo },
+  { id: 'revealbody', label: 'RevealBody', file: 'src/ui/RevealBody.tsx', category: 'Jets', render: RevealBodyDemo },
+  { id: 'teamsegments', label: 'TeamSegments', file: 'src/ui/TeamSegments.tsx', category: 'Texte', render: TeamSegmentsDemo },
+  { id: 'combatbanner', label: 'CombatBanner', file: 'src/ui/CombatBanner.tsx', category: 'Combat', note: 'maquette de TONS — le composant vivant projette le beat du combat en cours (store), qu’aucune vignette ne porte', render: CombatBannerDemo },
+  { id: 'logdrawer', label: 'LogDrawer', file: 'src/ui/LogDrawer.tsx', category: 'Combat', render: LogDrawerDemo },
+  { id: 'inspectpanel', label: 'InspectPanel', file: 'src/ui/InspectPanel.tsx', category: 'Combat', render: InspectPanelDemo },
+  { id: 'equipmentpanel', label: 'EquipmentPanel', file: 'src/ui/EquipmentPanel.tsx', category: 'Personnages', render: EquipmentPanelDemo },
   { id: 'portraittile', label: 'PortraitTile', file: 'src/ui/PortraitTile.tsx', category: 'Personnages', render: PortraitTileDemo },
   { id: 'lifebar', label: 'LifeBar', file: 'src/ui/LifeBar.tsx', category: 'Personnages', render: LifeBarDemo },
   { id: 'characterpreview', label: 'CharacterPreview', file: 'src/ui/CharacterPreview.tsx', category: 'Personnages', render: CharacterPreviewDemo },

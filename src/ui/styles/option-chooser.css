@@ -1,0 +1,60 @@
+/* ══════════════════ Sélecteur d'options de jet (`OptionChooser.tsx`) ══════════════════
+   Les trois layouts du choix : rangée `seg` (`.rm-loc-inline` + `.seg`, couche partagée), grille de
+   boutons (`.rm-loc-grid`), barre d'actions (`.modal-actions`, couche partagée). L'état RETENU est
+   `aria-pressed` (base.css) — jamais une classe de ton posée ici. */
+/* Rangée de choix compacte (choix rare) : libellé + contrôle sur une seule ligne. */
+.rm-loc-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+/* Rangée-BASCULE (maniement de deux armes, LDB 10 l.767-773) : toute la ligne est cliquable. */
+.rm-loc-inline[data-bascule],
+.rm-loc-inline[data-bascule] input {
+  cursor: pointer;
+}
+.rm-loc-inline[data-bascule] {
+  user-select: none;
+}
+/* Menu déroulant d'une rangée de choix (arme, localisation, allure). */
+.rm-loc-select {
+  flex: 1;
+  min-width: 0;
+  background: var(--panel2, var(--bg));
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.rm-loc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+/* DÉCLARATION de rangée (`declare` de `RollRow`) : la rangée de choix est un enfant de `.prow-act`
+   (couche partagée, components.css) comme les autres contrôles — elle ne prend pas toute la largeur
+   et s'enroule avec eux, aucune classe de domaine de plus. */
+.prow-act > .rm-loc-inline {
+  flex: 0 0 auto;
+  margin: 0;
+}
+/* FOURCHETTE d'une ligne de tableau, sur la tuile (« Trahison ! 07-10 ») — c'est ce qui fait lire une
+   table d100 au lieu d'un menu (prop `range` de `RollGridOption`). Séparée du libellé (elle s'y
+   collait) et posée au ton `hint` : la valeur qui compte reste le nom de la ligne. */
+.rm-range {
+  margin-left: 6px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+/* Une tuile SANS libellé (la fourchette EST son nom) ne porte pas la marge de séparation. */
+.rm-range:first-child {
+  margin-left: 0;
+}

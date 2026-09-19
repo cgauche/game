@@ -6,7 +6,7 @@
 // Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
 // exit 1 avec message actionnable si diff — jamais d'écriture en mode --check.
 import { readFileSync, existsSync } from 'node:fs'
-import { FEUILLES_PARTAGEES } from '../guards/lib/cssCouches.mjs'
+import { FEUILLES_PARTAGEES, RACINE_DES_MODULES, moduleHorsCouche } from '../guards/lib/cssCouches.mjs'
 import { parUnitesDeCode } from '../guards/lib/lister.mjs'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 
@@ -15,9 +15,8 @@ const CIBLE = 'docs/primitives.md'
 
 const PRIMITIVES = JSON.parse(readFileSync(SOURCE, 'utf8'))
 
-/** Couche des modules de style ; les feuilles PARTAGÉES qu'aucune primitive ne possède viennent de
+/** Les feuilles PARTAGÉES qu'aucune primitive ne possède viennent de
  *  leur source UNIQUE (`scripts/guards/lib/cssCouches.mjs`). */
-const CSS_RACINE = 'src/ui/styles/'
 const CSS_PARTAGES = FEUILLES_PARTAGEES
 
 // Intégrité : un manifeste qui cite un fichier absent rendrait une table qui ment, et
@@ -32,13 +31,13 @@ for (const p of PRIMITIVES) {
   if (vus.has(p?.id)) erreurs.push(`id en doublon : ${p.id}`)
   vus.add(p?.id)
   if (p?.fichier && !existsSync(p.fichier)) erreurs.push(`primitive « ${p.label} » (${p.id}) : fichier absent ${p.fichier}`)
-  // Champ `css` (#1800) : le module de `src/ui/styles/` que la primitive POSSÈDE. C'est LUI qui
+  // Champ `css` (#1800) : le module que la primitive POSSÈDE (`moduleHorsCouche`). C'est LUI qui
   // trace la frontière module de PRIMITIVE / module d'ÉCRAN pour le cliquet (xxi) — un chemin qui
   // ment, qui sort de la couche, ou qui réclame une feuille PARTAGÉE déclasserait des modules
   // d'écran entiers en silence.
   if (p?.css != null) {
     if (!existsSync(p.css)) erreurs.push(`primitive « ${p.label} » (${p.id}) : css absent ${p.css}`)
-    if (!String(p.css).startsWith(CSS_RACINE)) erreurs.push(`primitive « ${p.label} » (${p.id}) : css hors ${CSS_RACINE} (${p.css})`)
+    if (moduleHorsCouche(p.fichier, p.css)) erreurs.push(`primitive « ${p.label} » (${p.id}) : css hors couche (${p.css}) — attendu sous ${RACINE_DES_MODULES}, ou dans la zone de son fichier hors de src/ui`)
     if (CSS_PARTAGES.includes(p.css)) erreurs.push(`primitive « ${p.label} » (${p.id}) : css ${p.css} est une feuille PARTAGÉE, aucune primitive ne la possède`)
   }
 }

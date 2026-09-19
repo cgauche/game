@@ -207,7 +207,7 @@ describe('RollLine — détail d’un jet pour la modale', () => {
 });
 
 describe('#990 — géométrie de la ligne masquée : la révélation change les VALEURS, pas la mise en page', () => {
-  const css = readFileSync(new URL('./styles/sheet.css', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('./styles/roll-line.css', import.meta.url), 'utf8');
 
   it('l’état `.masked` porte le liseré 3px de la ligne pré-remplie voisine (pas le 1px par défaut)', () => {
     expect(css).toMatch(/\.rm-roll\.masked\s*\{[^}]*border-left:\s*3px/);

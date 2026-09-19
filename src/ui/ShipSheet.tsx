@@ -48,8 +48,8 @@ export function PosteDetail({ hull, poste, combatants, readOnly }: { hull: Comba
   // sélecteur (qui, elle, dit « à charger au prochain rechargement »).
   const loadedAmmoItem = poste.loaded !== false ? stock.find((a) => a.uid === poste.loadedAmmoUid) : undefined;
   return (
-    <div className="ship-poste selected">
-      <span className="ship-poste-name"><Icon id="action/aim" size="sm" /> {poste.side ? libelleDeValeur(posteSideSchema, poste.side) : 'Omni'} · {poste.item.label}</span>
+    <div className="panel sunken">
+      <b><Icon id="action/aim" size="sm" /> {poste.side ? libelleDeValeur(posteSideSchema, poste.side) : 'Omni'} · {poste.item.label}</b>
       {stock.length > 0 && (readOnly ? (
         // Inspection (#240) : munition chargée VISIBLE mais non modifiable (pas de sélecteur sur la pièce d'autrui).
         <span className="ship-poste-ammo"><span aria-hidden><Icon id="fire/blast" size="sm" /></span> {loadedAmmoItem ? loadedAmmoItem.label : 'pièce déchargée'}</span>

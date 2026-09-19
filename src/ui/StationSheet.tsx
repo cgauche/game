@@ -8,7 +8,10 @@ import type { Scene } from '../state/scene';
  * Sélecteur secondaire du plan (`TopoScene`), synchronisé par `selectedStationId` (= `station.id`, globalement
  * unique). L'appelant PRÉ-FILTRE les stations par kind (un plan ne mélange jamais deux kinds) → on rend TOUT ce
  * qui est passé, sans garde de kind. Sous-titre OPTIONNEL (`subtitleOf`) : le bord d'une pièce navale, plus tard
- * la nature d'une activité. Réutilise les classes CSS `poste-chip*` existantes (pas de churn styles.css).
+ * la nature d'une activité. La puce EST la primitive partagée `.chip` (état retenu : `aria-pressed`),
+ * son effectif la pastille numérique `.count` — zéro classe de domaine pour une puce. Un poste SANS
+ * personne prend le ton d'alarme `.tone-warn` de la primitive, le chiffre restant lisible : le signal
+ * ne repose jamais sur la seule couleur.
  */
 export function StationChips({
   stations,
@@ -31,14 +34,14 @@ export function StationChips({
         return (
           <button
             key={s.id}
-            className={`poste-chip${selected ? ' selected' : ''}`}
+            className={count ? 'chip' : 'chip tone-warn'}
+            aria-pressed={selected}
             onClick={() => onSelect(s.id)}
             title={sub ? `${sub} · ${s.label}` : s.label}
           >
-            <span className={`poste-dot${count ? ' manned' : ''}`} aria-hidden />
-            {sub && <span className="poste-chip-side">{sub}</span>}
-            <span className="poste-chip-name">{s.label}</span>
-            <span className="poste-chip-badge">{count}</span>
+            {sub && <b>{sub}</b>}
+            <span>{s.label}</span>
+            <span className="count">{count}</span>
           </button>
         );
       })}
@@ -81,7 +84,7 @@ export function StationSheet({
   return (
     <div className="poste-layout">
       {scene && (
-        <div className="ship-section topo-panel">
+        <div className="ship-section panel sunken flush topo-panel">
           <TopoScene
             scene={scene}
             stations={stations}

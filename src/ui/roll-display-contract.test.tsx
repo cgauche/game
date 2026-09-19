@@ -146,8 +146,8 @@ describe('CLIQUET — `.rm-journal` n’est écrit QUE par la coquille', () => {
 /**
  * CLIQUET (#1078 LOT C1) — l'OPPOSITION A→B a UNE surface : `VsHeader`. La classe `.rm-vs` n'est
  * donc posée QUE par `ui/VsHeader.tsx` : un site qui la repose habille en opposition ce qui n'oppose
- * personne (le sous-titre a `.rm-subtitle`, l'issue agrégée `.rm-summary`, la portée d'un sort
- * `.rm-spellinfo`, la rangée `.prow`) — c'est la confusion de rôles que le LOT A1 a démêlée.
+ * personne (le sous-titre a `.rm-subtitle`, l'issue agrégée `.rm-summary`, la rangée `.prow`) — c'est
+ * la confusion de rôles que le LOT A1 a démêlée.
  * Baseline ZÉRO, sans liste d'exception.
  *
  * COUVERTURE : les modules `.ts(x)` de `src` hors tests, COMMENTAIRES RETIRÉS avant le scan — nommer
@@ -422,7 +422,7 @@ function scrollChildren(html: string): string[] {
  * markup doit garantir — et que ces trois contrats mesurent : ce qui APPARAÎT au jet est rendu
  * APRÈS les rangées, la seule zone volatile au-dessus d'elles est Z4 (`setup`), et les zones qui
  * précèdent les rangées sont les MÊMES d'un état à l'autre. Le CSS ancre ensuite le haut
- * (`combat-modals.css`) ; sans cet ordre du document, l'ancrage haut ferait simplement descendre le
+ * (`roll-shell.css`) ; sans cet ordre du document, l'ancrage haut ferait simplement descendre le
  * contenu au lieu de hisser la fenêtre — le tremblement changerait de forme, pas de nature.
  *
  * Ce qui est mesuré est l'ORDRE PAR CLASSES, jamais un index brut : un `extra` en Fragment (ou tout
@@ -435,11 +435,11 @@ describe('RollShell — ORDRE DU DOCUMENT : rien de volatile au-dessus des rang�
   const setupNode = <div className="rm-options">Parade / Esquive</div>;
   /** Nœuds STABLES d'un site, servis en Fragment : présents aux deux états, ils décalent l'index
    *  des enfants directs de `.rs-scroll` sans toucher à l'ordre relatif que le contrat mesure. */
-  const extraNode = <><div className="rm-portraits">Gustav</div><div className="rm-spellinfo">Portée</div></>;
+  const extraNode = <><div className="rm-portraits">Gustav</div><div className="rm-subtitle">Portée</div></>;
   /** Zones VOLATILES : elles n'existent qu'APRÈS le jet. Les trois premières sont rendues par la
    *  coquille elle-même (`RollShell.tsx` : `.rm-journal`, `.rm-netsl`, `.rm-summary`) ; les deux
    *  suivantes sont les classes des nœuds passés aux slots post-jet `postRollExtra`/`forcedExtra`. */
-  const ZONES_VOLATILES = ['rm-journal', 'rm-netsl', 'rm-summary', 'rm-await', 'rm-loc-grid'];
+  const ZONES_VOLATILES = ['rm-journal', 'rm-netsl', 'rm-summary', 'rm-note', 'rm-loc-grid'];
   const volatilesDe = (classes: string[]) =>
     classes.filter((c) => c.split(/\s+/).some((n) => ZONES_VOLATILES.includes(n)));
 
@@ -452,7 +452,7 @@ describe('RollShell — ORDRE DU DOCUMENT : rien de volatile au-dessus des rang�
         title="Athlétisme" subtitle="Gustav — Franchir (Athlétisme)" extra={extraNode}
         rows={[rolledRow()]} rolled
         outcome={toRecapLines(['Gustav franchit'])} summary={<>DR +2</>}
-        postRollExtra={<div className="rm-await">Surincantation</div>}
+        postRollExtra={<div className="rm-note" data-ton="attente">Surincantation</div>}
         actions={actions}
       />,
     ));
@@ -473,7 +473,7 @@ describe('RollShell — ORDRE DU DOCUMENT : rien de volatile au-dessus des rang�
         rows={[rolledRow(), rolledRow('Esquive', { interactive: false })]} rolled
         winnerIndex={0} netSL={2}
         outcome={toRecapLines(['Le coup porte'])} summary={<>DR total +6</>}
-        postRollExtra={<div className="rm-await">Contre-sort</div>}
+        postRollExtra={<div className="rm-note" data-ton="attente">Contre-sort</div>}
         forcedExtra={<div className="rm-loc-grid">Localisation</div>}
         actions={actions}
       />,

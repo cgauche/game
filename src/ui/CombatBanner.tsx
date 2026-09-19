@@ -4,6 +4,7 @@ import { combatFeed, narrateIntent, narrateRefus } from '../gameIso/combatNarrat
 import { eteindreRefus, REFUS_MS } from '../state/refusVisible';
 import { scheduleFlowTimer, clearTrackedTimer } from '../state/combatTimers';
 import { Icon } from './Icon';
+import { TeamSegments } from './TeamSegments';
 
 /**
  * Bandeau haut : annonce le beat de combat COURANT — projection de sources existantes (zéro état
@@ -44,13 +45,7 @@ export function CombatBanner() {
         <div key={key} className={`cb-ev cb-now cb-tone-${line.tone}`}>
           <span className="cb-ic"><Icon id={line.icon} size={15} /></span>
           <span className="cb-tx">
-            {line.segments.map((s, j) =>
-              s.team ? (
-                <b key={j} className={s.team === 'ally' ? 'nm-ally' : 'nm-foe'}>{s.text}</b>
-              ) : (
-                <span key={j}>{s.text}</span>
-              ),
-            )}
+            <TeamSegments segments={line.segments} />
           </span>
         </div>
       )}

@@ -3,7 +3,7 @@
 // sur le corpus réel se prouve ailleurs (`src/ui/ui-ratchets.test.ts`, cliquets (xxi)/(xxii)).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { declarations, estPlacement, reglesCss, valeurHorsEchelle } from './cssCouches.mjs'
+import { declarations, decoupeSelecteurs, estPlacement, moduleHorsCouche, reglesCss, valeurHorsEchelle } from './cssCouches.mjs'
 
 test('reglesCss : règle de premier niveau — sélecteurs séparés, corps rendu, media nul', () => {
   assert.deepEqual(reglesCss('.a, .b > .c { color: red; gap: 4px }'), [
@@ -70,4 +70,28 @@ test('valeurHorsEchelle : un littéral de longueur NON NUL, et rien d’autre', 
   for (const v of ['0', 'auto', '0 auto', 'var(--sp-md)', 'calc(3 * var(--sp-md))', '50%', '2vw', '0px']) {
     assert.equal(valeurHorsEchelle(v), false, v)
   }
+})
+
+test('reglesCss : une virgule DANS `:has()`/`:is()` ne coupe pas la liste (#1806)', () => {
+  const regles = reglesCss('label:has(> a, > .btn) { color: red }')
+  assert.deepEqual(regles[0].selecteurs, ['label:has(> a, > .btn)'])
+  // Les virgules de NIVEAU 0 séparent toujours, y compris autour d'un sélecteur à parenthèses.
+  assert.deepEqual(reglesCss('.a:is(.x, .y), .b[data-k="1,2"] { color: red }')[0].selecteurs, [
+    '.a:is(.x, .y)',
+    '.b[data-k="1,2"]',
+  ])
+})
+
+test('decoupeSelecteurs : niveau 0 seulement, espaces réduits, vides écartés', () => {
+  assert.deepEqual(decoupeSelecteurs('  .a ,  .b:not(.c, .d) , '), ['.a', '.b:not(.c, .d)'])
+})
+
+test('moduleHorsCouche : `src/ui/styles/`, ou la zone du `fichier` hors de `src/ui` (#1806 A3)', () => {
+  assert.equal(moduleHorsCouche('src/ui/RollShell.tsx', 'src/ui/styles/roll-shell.css'), false)
+  assert.equal(moduleHorsCouche('src/gameIso/stage/GameStage3D.tsx', 'src/gameIso/anim.css'), false)
+  assert.equal(moduleHorsCouche('src/gameIso/stage/GameStage3D.tsx', 'src/ui/styles/hud.css'), false)
+  // Une primitive de `src/ui` ne colocalise pas sa feuille ; une autre ne sort pas de SA zone.
+  assert.equal(moduleHorsCouche('src/ui/RollShell.tsx', 'src/ui/RollShell.css'), true)
+  assert.equal(moduleHorsCouche('src/gameIso/stage/GameStage3D.tsx', 'src/state/anim.css'), true)
+  assert.equal(moduleHorsCouche('src/gameIso/stage/GameStage3D.tsx', 'src/gameIso/anim.ts'), true)
 })

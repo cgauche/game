@@ -68,7 +68,7 @@ describe('StakeNote — la primitive de la zone Z3b (#1117)', () => {
     expect(html).toContain('Points de Blessure');
     // Ton NEUTRE : ni la note générique, ni la menace SUBIE (fond rouge).
     expect(html).not.toContain('rm-note');
-    expect(html).not.toContain('rm-threat');
+    expect(html).not.toContain("data-ton=\"menace\"");
   });
 
   it('ne porte PLUS le lien textuel « la règle » (arbitrage user 2026-08-06 : le renvoi va au TITRE)', () => {

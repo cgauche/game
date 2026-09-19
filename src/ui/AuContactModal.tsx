@@ -99,7 +99,7 @@ export function AuContactModal() {
         outcome={issue}
         postRollExtra={
           <>
-            <p className="rm-log">Tu l'emportes : choisis comment se poursuit le corps à corps.</p>
+            <p className="modal-log">Tu l'emportes : choisis comment se poursuit le corps à corps.</p>
             <OptionChooser
               layout="actions"
               options={[

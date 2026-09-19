@@ -1011,7 +1011,7 @@
   }
 }
 @media (max-width: 560px) {
-  /* `.rm-loc-grid` (OptionChooser layout='grid', combat-modals.css) fige 3 colonnes ET des boutons
+  /* `.rm-loc-grid` (OptionChooser layout='grid', option-chooser.css) fige 3 colonnes ET des boutons
      à largeur intrinsèque (non rétrécissable en grille) quel que soit le conteneur — troncature du
      verdict de tirage (races de la borne) à 360px. Scopé à l'étape Race (jamais le fichier
      partagé) : 1 colonne, boutons rétrécissables, texte qui s'enroule au lieu de déborder. */

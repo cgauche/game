@@ -11,36 +11,33 @@
  */
 import { describe, it, expect } from 'vitest';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
+import { reglesCss } from '../../scripts/guards/lib/cssCouches.mjs';
 
 // Commentaires NEUTRALISÉS (même précaution que `ui-ratchets`) : un commentaire qui NOMME la classe
 // n'est pas une règle — sans ça, la sonde reste verte alors que la déclaration a disparu (mesuré).
 const SHEETS = readCorpus(['src/ui/styles'], { exts: ['.css'], tests: true })
   .map(({ rel, text }) => ({ file: rel, css: text.replace(/\/\*[\s\S]*?\*\//g, '') }));
 
-/** Blocs `{…}` dont le SÉLECTEUR contient la classe, et dont le corps porte au moins une déclaration.
+/** Toutes les règles des feuilles, LEXÉES par la porte unique `reglesCss` : une lecture à la regex
+ *  ne voit qu'une règle sur deux (le `}` fermant est consommé par le match précédent, il ne peut plus
+ *  servir de délimiteur au suivant) — un détecteur ne mesure que sa couverture. */
+const REGLES = SHEETS.flatMap(({ file, css }) => reglesCss(css).map((r) => ({ file, ...r })));
+
+/** Règles dont le SÉLECTEUR contient la classe, et dont le corps porte au moins une déclaration.
  *  Frontière `(?![\w-])` et non `\b` : `\b` fait passer `.prow-act` pour une règle de `.prow`. */
 function rulesFor(cls: string): { file: string; body: string }[] {
-  const re = new RegExp(`(^|[,{}])([^{}]*\\.${cls}(?![\\w-])[^{}]*)\\{([^{}]*)\\}`, 'g');
-  const found: { file: string; body: string }[] = [];
-  for (const { file, css } of SHEETS) {
-    for (const m of css.matchAll(re)) {
-      if (/[a-z-]+\s*:/.test(m[3])) found.push({ file, body: m[3] });
-    }
-  }
-  return found;
+  const re = new RegExp(`\\.${cls}(?![\\w-])`);
+  return REGLES.filter((r) => r.selecteurs.some((s) => re.test(s)) && /[a-z-]+\s*:/.test(r.corps)).map((r) => ({
+    file: r.file,
+    body: r.corps,
+  }));
 }
 
 /** Corps des règles dont le SÉLECTEUR contient `needle` — pour cibler une règle DESCENDANTE, qui
  *  n'a pas de classe propre : la matière du champ du dé se déclare au CONTENEUR du site, la
  *  primitive `NumberField` ne portant aucune classe d'écran. */
 function rulesForSelector(needle: string): string[] {
-  const found: string[] = [];
-  for (const { css } of SHEETS) {
-    for (const m of css.matchAll(/(^|[,{}])([^{}]*)\{([^{}]*)\}/g)) {
-      if (m[2].includes(needle) && /[a-z-]+\s*:/.test(m[3])) found.push(m[3]);
-    }
-  }
-  return found;
+  return REGLES.filter((r) => r.selecteurs.some((s) => s.includes(needle)) && /[a-z-]+\s*:/.test(r.corps)).map((r) => r.corps);
 }
 
 /** Corps d'un bloc `@media …{…}` (accolades APPARIÉES — une règle imbriquée ne coupe pas la tranche).
@@ -101,9 +98,9 @@ describe('rangée de jet — les classes du bloc « dé fixé » sont chartrées
     const overlayRules = rulesFor('modal-overlay').filter((r) => /background:\s*rgba\(0,\s*0,\s*0,\s*0\.2/.test(r.body));
     expect(overlayRules.length, 'aucun allègement de voile déclaré — le combat a perdu sa lisibilité du champ').toBeGreaterThan(0);
     for (const r of overlayRules) {
-      expect(r.file, 'allègement de voile déclaré en couche PARTAGÉE : il s’appliquerait à tout écran portant une modale de jet').toMatch(/combat-modals\.css$/);
+      expect(r.file, 'allègement de voile déclaré en couche PARTAGÉE : il s’appliquerait à tout écran portant une modale de jet').toMatch(/roll-shell\.css$/);
     }
-    const combat = SHEETS.find((s) => /combat-modals\.css$/.test(s.file))!.css;
+    const combat = SHEETS.find((s) => /roll-shell\.css$/.test(s.file))!.css;
     expect(combat, 'l’allègement n’est pas scopé à l’écran qui porte le champ de bataille').toMatch(
       /\.app-campaign\s+\.modal-overlay:has\(\.roll-modal\)\s*\{[^}]*background:\s*rgba\(0,\s*0,\s*0,\s*0\.28\)/,
     );
@@ -118,9 +115,9 @@ describe('rangée de jet — les classes du bloc « dé fixé » sont chartrées
    * verrouille la DÉCLARATION, la preuve pixel est la mesure de recette navigateur.
    */
   it('la géométrie ancre le bord HAUT et RÉSERVE la bande basse (tranche ≥561px)', () => {
-    const combat = SHEETS.find((s) => /combat-modals\.css$/.test(s.file))!.css;
+    const combat = SHEETS.find((s) => /roll-shell\.css$/.test(s.file))!.css;
     const slice = mediaSlice(combat, /@media\s*\(min-width:\s*561px\)\s*\{/);
-    expect(slice, 'plus de tranche `@media (min-width: 561px)` dans la feuille de domaine').toBeTruthy();
+    expect(slice, 'plus de tranche `@media (min-width: 561px)` dans la feuille de la coquille de jet').toBeTruthy();
     const overlay = /\.app-campaign\s+\.modal-overlay:has\(\.roll-modal\)\s*\{([^{}]*)\}/.exec(slice!)?.[1] ?? '';
     expect(overlay, 'la bande haute n’est plus nommée : rien ne fixe le bord haut').toMatch(/--roll-band:/);
     expect(overlay, 'sans `align-items: start` la fenêtre se recentre — le bord haut redevient variable').toMatch(/align-items:\s*start/);

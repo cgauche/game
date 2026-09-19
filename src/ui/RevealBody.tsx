@@ -52,7 +52,7 @@ export function CriticalBody({ entry, actor, subject }: { entry: RevealEntry; ac
         </div>
       ) : (
         entry.lines.slice(1).map((l, i) => (
-          <p key={i} className="rm-log">
+          <p key={i} className="modal-log">
             {l}
           </p>
         ))
@@ -77,7 +77,7 @@ export function RevealBody({ entry, actor, subject }: { entry: RevealEntry; acto
     return (
       <ParchmentCard>
         {entry.lines.map((l, i) => (
-          <p key={i} className="rm-log">
+          <p key={i} className="modal-log">
             {l}
           </p>
         ))}
@@ -88,7 +88,7 @@ export function RevealBody({ entry, actor, subject }: { entry: RevealEntry; acto
     <>
       <TableRollLine table={TABLE_LABEL[entry.kind] ?? entry.title} roll={entry.dice} result={entry.lines[0] ?? ''} />
       {entry.lines.slice(1).map((l, i) => (
-        <p key={i} className="rm-log">
+        <p key={i} className="modal-log">
           {l}
         </p>
       ))}

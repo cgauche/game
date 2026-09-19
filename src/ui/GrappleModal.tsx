@@ -91,7 +91,7 @@ export function GrappleModal() {
         outcome={issue}
         postRollExtra={
           <>
-            <p className="rm-log">Tu l'emportes : choisis l'issue de l'Empoignade.</p>
+            <p className="modal-log">Tu l'emportes : choisis l'issue de l'Empoignade.</p>
             <OptionChooser
               layout="actions"
               options={[

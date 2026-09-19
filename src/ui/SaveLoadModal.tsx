@@ -93,7 +93,7 @@ export function SaveLoadModal({ mode, onClose }: { mode: 'save' | 'load'; onClos
   return (
     <Modal
       title={<><Icon id={mode === 'save' ? 'file/save' : 'file/open'} /> {mode === 'save' ? t('saveload.title.save') : t('saveload.title.load')}</>}
-      /* Fenêtre HORS jet : la géométrie de jet (voile allégé + ancrage haut, `combat-modals.css`) sert
+      /* Fenêtre HORS jet : la géométrie de jet (voile allégé + ancrage haut, `roll-shell.css`) sert
          à garder le champ de bataille lisible sous la fenêtre — elle n'a pas lieu d'être ici. */
       variant="plain"
       onClose={onClose}

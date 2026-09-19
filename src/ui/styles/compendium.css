@@ -108,20 +108,8 @@
   gap: 4px;
   padding: 8px;
 }
-.codex-row {
-  cursor: pointer;
-  text-align: left;
-  font: inherit;
-  color: var(--text);
-  transition: border-color 0.1s, background 0.1s;
-}
-.codex-row:hover {
-  border-color: var(--gold2);
-}
-.codex-row.on {
-  border-color: var(--gold);
-  background: var(--panel2);
-}
+/* La RANGÉE elle-même est la primitive `ListRow` en variante `codex`
+   (`.listrow[data-variant='codex']`, components.css) : cet écran n'en pose que le satellite. */
 .codex-row-src {
   font-size: 11px;
   color: var(--muted);

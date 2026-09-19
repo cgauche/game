@@ -13,6 +13,7 @@
     "type": "primitives.manifest",
     "label": "RollShell",
     "fichier": "src/ui/RollShell.tsx",
+    "css": "src/ui/styles/roll-shell.css",
     "concept": "coquille de jet mono/multi (Lancer→Chance→Pacte→Résilience→Appliquer)",
     "perimetre": "toute modale de jet, mono (N=1) et multi (N contributeurs)",
     "verrou": "roll-modal-invariant.test.ts"
@@ -22,6 +23,7 @@
     "type": "primitives.manifest",
     "label": "RollRow",
     "fichier": "src/ui/RollRow.tsx",
+    "css": "src/ui/styles/roll-row.css",
     "concept": "ligne de jet d'un participant (RollShell multi)",
     "perimetre": "toute modale de jet multi-contributeurs",
     "verrou": "—"
@@ -49,6 +51,13 @@
     "type": "primitives.manifest",
     "label": "OptionChooser/ChoiceButtons",
     "fichier": "src/ui/OptionChooser.tsx",
+    "css": "src/ui/styles/option-chooser.css",
+    "poseurs": [
+      "src/ui/CastModal.tsx",
+      "src/ui/PortraitPicker.tsx",
+      "src/ui/jetProps/useAttackJetProps.tsx",
+      "src/ui/jetProps/useDefenseJetProps.tsx"
+    ],
     "concept": "choix d'options de jet (seg/grid/actions)",
     "perimetre": "tout choix d'options + paire/triplet de boutons de décision",
     "verrou": "—"
@@ -76,6 +85,10 @@
     "type": "primitives.manifest",
     "label": "VsHeader",
     "fichier": "src/ui/VsHeader.tsx",
+    "css": "src/ui/styles/vs-header.css",
+    "poseurs": [
+      "src/ui/HandGateModal.tsx"
+    ],
     "concept": "en-tête A→B d'une modale de combat/opposition",
     "perimetre": "toute confrontation à 2 camps",
     "verrou": "—"
@@ -603,5 +616,160 @@
     "concept": "rose des vents : direction + force du vent",
     "perimetre": "voyage en mer, dossier de navire",
     "verrou": "—"
+  },
+  {
+    "id": "rollLine",
+    "type": "primitives.manifest",
+    "label": "RollLine",
+    "fichier": "src/ui/RollLine.tsx",
+    "css": "src/ui/styles/roll-line.css",
+    "concept": "ligne d’un jet : nom + Difficulté, calcul, dé, DR, chips de modificateurs, états (pré-jet, masqué, sur table)",
+    "perimetre": "toute ligne de jet — rangée de RollShell, panneau de RollPanel, pile de MultiRollList, révélation",
+    "verrou": "roll-display-contract.test.ts"
+  },
+  {
+    "id": "rollPanel",
+    "type": "primitives.manifest",
+    "label": "RollPanel",
+    "fichier": "src/ui/RollPanel.tsx",
+    "css": "src/ui/styles/roll-panel.css",
+    "poseurs": [
+      "src/ui/RollRow.tsx"
+    ],
+    "concept": "panneau de jet unique : même géométrie avant et après le jet (portrait, ligne, note de conséquence)",
+    "perimetre": "jet mono d’une modale ou d’une étape de cascade ; accent du gagnant d’un Test opposé",
+    "verrou": "—"
+  },
+  {
+    "id": "diceRoll",
+    "type": "primitives.manifest",
+    "label": "DiceRoll",
+    "fichier": "src/ui/DiceRoll.tsx",
+    "css": "src/ui/styles/dice-roll.css",
+    "poseurs": [
+      "src/ui/Dice.tsx",
+      "src/ui/creator/CharacterCreator.tsx"
+    ],
+    "concept": "le DÉ comme matière : gemme, chiffre gravé, roulis, matière dorée, scène centrale qui voile son hôte",
+    "perimetre": "roulis d’une fenêtre de jet, encrier du créateur, d100 textuel d’une ligne de jet",
+    "verrou": "aucune face de dé redessinée hors de ce module (tone=\"gold\" couvre l’Atelier)"
+  },
+  {
+    "id": "forcedRollPicker",
+    "type": "primitives.manifest",
+    "label": "ForcedRollPicker",
+    "fichier": "src/ui/ForcedRollPicker.tsx",
+    "css": "src/ui/styles/forced-roll-picker.css",
+    "concept": "sélecteur du dé d’une rangée de jet : options de dé + saisie libre de la valeur",
+    "perimetre": "toute modale de jet (« Je ne faillirai pas ! », option « Dés fixés »)",
+    "verrou": "forcedDieRow.ts — aucune modale ne dérive son propre sélecteur"
+  },
+  {
+    "id": "recapLine",
+    "type": "primitives.manifest",
+    "label": "RecapLine",
+    "fichier": "src/ui/RecapLine.tsx",
+    "css": "src/ui/styles/recap-line.css",
+    "concept": "ligne de récap structurée : trio de tons ok/bad/info et étiquette de phase",
+    "perimetre": "issue d’une fenêtre de jet, chronique d’un écran, carte-parchemin",
+    "verrou": "state/recapLine.ts — un site fournit la DONNÉE, jamais le markup (#1078)"
+  },
+  {
+    "id": "multiRollList",
+    "type": "primitives.manifest",
+    "label": "MultiRollList",
+    "fichier": "src/ui/MultiRollList.tsx",
+    "css": "src/ui/styles/multi-roll-list.css",
+    "concept": "bilan MULTI-JETS d’un même temps : portrait, libellé, ligne de jet, note",
+    "perimetre": "nuit de repos, journée de voyage, conseil de bord, cascade globalisée",
+    "verrou": "—"
+  },
+  {
+    "id": "revealBody",
+    "type": "primitives.manifest",
+    "label": "RevealBody",
+    "fichier": "src/ui/RevealBody.tsx",
+    "css": "src/ui/styles/reveal-body.css",
+    "concept": "corps d’une RÉVÉLATION tirée sur table : valeurs du coup, États infligés, chaque effet avec son explication RAW",
+    "perimetre": "Coup Critique, Imparfaite, Mutation — étape d’affichage comme étape de choix de déviation",
+    "verrou": "—"
+  },
+  {
+    "id": "teamSegments",
+    "type": "primitives.manifest",
+    "label": "TeamSegments",
+    "fichier": "src/ui/TeamSegments.tsx",
+    "css": "src/ui/styles/team-segments.css",
+    "concept": "texte découpé en segments TONÉS PAR CAMP : les noms cités en gras, allié ou ennemi",
+    "perimetre": "journal de combat, ligne de récap, fil d’événements",
+    "verrou": "les deux vocabulaires de segments (NarratedSegment, RecapSegment) passent par ce rendu"
+  },
+  {
+    "id": "combatBanner",
+    "type": "primitives.manifest",
+    "label": "CombatBanner",
+    "fichier": "src/ui/CombatBanner.tsx",
+    "css": "src/ui/styles/combat-banner.css",
+    "concept": "fil d’ÉVÉNEMENTS du combat : le beat courant, ligne nue posée sur le terrain, toné par sa gravité",
+    "perimetre": "refus du geste tenté, intention télégraphiée de l’IA, dernier résultat du journal",
+    "verrou": "projection de sources existantes — zéro état dédié"
+  },
+  {
+    "id": "logDrawer",
+    "type": "primitives.manifest",
+    "label": "LogDrawer",
+    "fichier": "src/ui/LogDrawer.tsx",
+    "css": "src/ui/styles/log-drawer.css",
+    "poseurs": [
+      "src/ui/NarratedLine.tsx"
+    ],
+    "concept": "tiroir du JOURNAL : l’historique complet, une ligne = gouttière d’icône + texte",
+    "perimetre": "journal de combat du HUD ; la ligne narrée est partagée avec le cadre d’issue d’une fenêtre de jet",
+    "verrou": "—"
+  },
+  {
+    "id": "inspectPanel",
+    "type": "primitives.manifest",
+    "label": "InspectPanel",
+    "fichier": "src/ui/InspectPanel.tsx",
+    "css": "src/ui/styles/inspect-panel.css",
+    "poseurs": [
+      "src/ui/editor/Inspector.tsx"
+    ],
+    "nature": "organisme",
+    "concept": "panneau d’INSPECTION en lecture seule : identité + jauge, badges de camp/états, statbloc",
+    "perimetre": "clic sur l’ordre de bataille ; l’en-tête est partagé avec l’inspecteur de l’éditeur",
+    "verrou": "statbloc rendu par le rendu PARTAGÉ du Codex (CodexSections)"
+  },
+  {
+    "id": "equipmentPanel",
+    "type": "primitives.manifest",
+    "label": "EquipmentPanel",
+    "fichier": "src/ui/EquipmentPanel.tsx",
+    "css": "src/ui/styles/equipment-panel.css",
+    "nature": "organisme",
+    "concept": "panneau d’ÉQUIPEMENT : emplacements en cellules (localisation × couche) + cartes de set d’armes + récap en main",
+    "perimetre": "onglet Possessions de la fiche de personnage",
+    "verrou": "aucun mannequin (mort, #492) — le rig grand format vit dans la colonne de la fiche"
+  },
+  {
+    "id": "gameStage",
+    "type": "primitives.manifest",
+    "label": "GameStage3D",
+    "fichier": "src/gameIso/stage/GameStage3D.tsx",
+    "css": "src/gameIso/anim.css",
+    "poseurs": [
+      "src/gameIso/stage/",
+      "src/gameIso/fx/",
+      "src/gameIso/SurcoucheIso.tsx",
+      "src/gameIso/sceneAnims.ts",
+      "src/gameIso/TokenChromeMarks.tsx",
+      "src/gameIso/catalog/decor/defs/",
+      "src/gameIso/rig/parts/weapons/defs/"
+    ],
+    "nature": "organisme",
+    "concept": "LE PLATEAU : la surface du monde (caméra responsive) et les animations de ce qui vit dessus",
+    "perimetre": "campagne, arène, plan top-down — halos de décor, chiffres de dégâts, fourmis de gabarit",
+    "verrou": "gameIso/stage/anim-css-branchee.test.ts — les keyframes sont importées par l’hôte du monde"
   }
 ]

@@ -509,6 +509,14 @@ h3 {
   padding: 6px 10px;
   font-size: 13px;
 }
+/* ÉTAT FERRÉ d'un bouton — le choix DÉJÀ POSÉ se VOIT (munition en chambre, ligne de table élue,
+   outil actif). Grammaire UNIQUE des états ferrés : `aria-pressed` pour un interrupteur,
+   `aria-current` pour l'item courant d'un ensemble (`.listrow`, components.css) — jamais une classe
+   de ton en plus de l'attribut. */
+.btn[aria-pressed='true'] {
+  border-color: var(--atelier-brass-vif);
+  box-shadow: inset 0 0 0 1px var(--atelier-brass-vif);
+}
 /* Variante NUE (`GatedAction bare`) : le contrôle n'apporte AUCUNE boîte — l'alvéole qui l'accueille
    porte déjà sa géométrie (fond, filet, taille). Elle vit ICI, chez la primitive, jamais en
    neutralisation de `.btn` depuis le conteneur d'un écran. */

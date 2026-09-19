@@ -15,7 +15,7 @@ export interface RollOption {
   disabled?: boolean;
   /** Option masquée (non rendue) — condition de disponibilité fausse. */
   hidden?: boolean;
-  /** layout `seg` : option active (classe `on`). */
+  /** Option RETENUE (état ferré : `aria-pressed`, peint par `base.css`). */
   selected?: boolean;
   /** layout `grid`/`actions` : bouton mis en avant (classe `btn-primary`). */
   primary?: boolean;
@@ -42,6 +42,10 @@ export interface RollOption {
 export interface RollGridOption extends RollOption {
   refus?: string;
   refusId?: string;
+  /** FOURCHETTE d'une ligne de tableau d100 (« 07-10 »), portée par la tuile : c'est ce qui fait lire
+   *  une TABLE au lieu d'un menu. Rendue au ton `hint`, après le libellé — la valeur qui compte reste
+   *  le nom de la ligne. */
+  range?: ReactNode;
 }
 
 /** Option d'une barre d'ACTIONS : MÊME contrat de refus que la grille, parce que c'est le même
@@ -119,7 +123,7 @@ function OptionBouton({
  * `.rm-loc-grid` réécrits à la main dans chaque modale. Le métier reste dans la modale ; ce composant
  * ne fait que rendre les boutons et propager `onSelect`.
  *
- * - `seg`     → segmented control (`.rm-loc-inline` + `.seg`) ; option active = classe `on`, valeur affichée.
+ * - `seg`     → segmented control (`.rm-loc-inline` + `.seg`) ; option retenue = `aria-pressed`, valeur affichée.
  * - `grid`    → grille de boutons (`.rm-loc-grid` de `.btn small`) — menus dans le corps de la modale.
  * - `actions` → barre d'actions (`.modal-actions` de `.btn`) — choix binaires (cf. `<ChoiceButtons>`).
  *
@@ -165,7 +169,6 @@ export function OptionChooser({
                  `GatedAction`) sans que le `.seg` perde sa géométrie. Le CONTENU est celui d'un
                  segment offert — valeur effective comprise : un refus ne change pas ce qu'on lit. */
               bare
-              btnClassName={o.selected ? 'on' : ''}
               ariaPressed={!!o.selected}
             >
               {o.content ?? (
@@ -189,17 +192,19 @@ export function OptionChooser({
             key={o.key}
             o={o}
             id={`${idPrefix}-${uid}-${o.key}`}
-            /* `selected` = l'option RETENUE (état, `aria-pressed` + classe `on` — même sémantique
-               qu'en `seg`) ; `primary` reste la mise en avant VISUELLE. Une grille qui n'exprime que
-               `primary` ne ferre rien : le choix posé ne se distingue pas d'un bouton d'action. */
+            /* `selected` = l'option RETENUE (état `aria-pressed`, que `base.css` peint — même
+               sémantique qu'en `seg`) ; `primary` reste la mise en avant VISUELLE. Une grille qui
+               n'exprime que `primary` ne ferre rien : le choix posé ne se distingue pas d'un bouton
+               d'action. */
             primary={!!o.primary}
-            btnClassName={`small${o.selected ? ' on' : ''}`}
+            btnClassName="small"
             ariaPressed={o.selected != null ? !!o.selected : undefined}
           >
             {o.content ?? (
               <>
-                {o.label}
+                {o.range != null && o.label ? <span>{o.label}</span> : o.label}
                 {o.value != null ? <> ({o.value})</> : null}
+                {o.range != null ? <span className="rm-range">{o.range}</span> : null}
               </>
             )}
           </OptionBouton>

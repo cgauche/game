@@ -33,15 +33,17 @@ export function VsHeader({
   return (
     <div className="rm-vs">
       {actor && <CharFrame c={actor} variant="vital" size="md" />}
-      {target && actor && (
+      {(label || (target && actor)) && (
+        // SANS opposition (sort sur soi, gabarit de Zone d'Effet), la bande reste la même : le
+        // qualificatif se pose à côté du portrait, sans flèche — il n'y a pas de second camp à viser.
         <span className="rm-vs-arrow">
-          {label && (
+          {label && <span className="rm-weapon">{label}</span>}
+          {target && actor && (
             <>
-              <span className="rm-weapon">{label}</span>
-              <br />
+              {label ? <br /> : null}
+              {verb ? <Icon id={verb} size="sm" /> : '→'}
             </>
           )}
-          {verb ? <Icon id={verb} size="sm" /> : '→'}
         </span>
       )}
       {target && <CharFrame c={target} variant={targetVariant} size="md" />}

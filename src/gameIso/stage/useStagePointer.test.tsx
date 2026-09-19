@@ -1322,7 +1322,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
    */
   it('curseur RENDU : flèche au repos, main sur l’utilisable, flèche de nouveau à l’épuisement', () => {
     const feuille = document.createElement('style');
-    feuille.textContent = readFileSync(join(process.cwd(), 'src/ui/styles/combat-modals.css'), 'utf8');
+    feuille.textContent = readFileSync(join(process.cwd(), 'src/gameIso/anim.css'), 'utf8');
     document.head.append(feuille);
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('class', 'iso-stage');

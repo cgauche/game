@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { scanAllPrimitives, scanGenericDomainImport } from '../../scripts/guards/lib/genericDomainImport.mjs';
+import { directImportsOf } from '../../scripts/guards/lib/importGraph.mjs';
 
 /**
  * Garde-fou « le générique n'importe pas le domanial » (#329 — recensement adversarial, classe (a)
@@ -23,7 +24,12 @@ import { scanAllPrimitives, scanGenericDomainImport } from '../../scripts/guards
  * toute HAUSSE échoue.
  */
 
-/** Baseline gelée : `primitiveId -> nombre de cibles domaniales tolérées` (renvoi #329 par entrée). */
+/**
+ * Baseline gelée : `primitiveId -> nombre de cibles domaniales tolérées` (renvoi #329 par entrée).
+ * VIDE, et elle le reste : un ORGANISME de domaine (panneau, plateau) se DÉCLARE au manifeste
+ * (`nature: 'organisme'`) et sort du corpus mesuré — il n'entre pas ici en dette chiffrée, qui
+ * rendrait le cliquet inerte sans le dire (#1806).
+ */
 const BASELINES: Record<string, number> = {};
 
 /** `scanAllPrimitives` lit les fichiers via des chemins relatifs à la racine repo (cwd du runner).
@@ -72,6 +78,32 @@ describe('garde-fou « le générique n’importe pas le domanial » (cliquet, #
       if (n < baseline) stale.push(`${primitiveId} : baseline ${baseline}, réel ${n} — ABAISSER la baseline`);
     }
     expect(stale, 'Baseline(s) PÉRIMÉE(s) — abaisser ces entrées de BASELINES').toEqual([]);
+  });
+
+  /** BORNE de la déclaration `nature: 'organisme'` : sans elle, n'importe quelle entrée s'auto-
+   *  déclarerait organisme pour sortir du corpus mesuré. Un organisme n'existe au manifeste QUE pour le
+   *  module CSS qu'il POSSÈDE : il porte donc `css`, et AUCUNE autre entrée du manifeste n'importe son
+   *  `fichier` — une primitive que d'autres primitives COMPOSENT est générique, et le reste. Le SENS
+   *  compte : c'est d'être importé qui disqualifie, pas d'importer (`InspectPanel` importe `ShipSheet`,
+   *  et cela ne lui retire pas sa nature d'organisme). */
+  it('un `organisme` possède un module CSS et n’est composé par AUCUNE autre entrée du manifeste', () => {
+    const primitives: { id: string; fichier: string; css?: string; nature?: string }[] = JSON.parse(
+      readFileSync('src/data/primitives.manifest.json', 'utf8'),
+    );
+    const organismes = primitives.filter((p) => p.nature === 'organisme');
+    expect(organismes.length, 'la déclaration doit rester rare et mesurée').toBeGreaterThan(0);
+    const fautes: string[] = [];
+    for (const o of organismes) {
+      if (!o.css) fautes.push(`${o.id} : « organisme » sans champ css — il n’a alors aucune raison d’être au manifeste`);
+      const composeurs = primitives
+        .filter((p) => p.fichier !== o.fichier)
+        .filter((p) => directImportsOf(p.fichier, readFileSync(p.fichier, 'utf8')).includes(o.fichier))
+        .map((p) => p.id);
+      if (composeurs.length) {
+        fautes.push(`${o.id} : composé par ${composeurs.join(', ')} — une primitive que d'autres composent est GÉNÉRIQUE, elle assainit ses imports au lieu de se déclarer organisme`);
+      }
+    }
+    expect(fautes, fautes.join('\n')).toEqual([]);
   });
 
   it('FAIL-CLOSED : une primitive fictive important un module single-système est DÉTECTÉE', () => {

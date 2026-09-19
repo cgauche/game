@@ -22,7 +22,7 @@ export function ShoreLeaveBody({ embedded = false }: { embedded?: boolean } = {}
   const title = <><Icon id="travel/anchor" size="sm" /> Accostage à {p.to.label}</>;
   const body = (
     <>
-      <p className="rm-log">
+      <p className="modal-log">
         Autorisez-vous l'équipage à faire relâche à terre pendant l'escale ? Un refus empêche
         l'Embrigadement, mais prive aussi l'équipage des faveurs que la vie du port pourrait lui
         offrir.

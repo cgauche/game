@@ -217,6 +217,22 @@ if (existsSync(CHARTE_MD)) {
   }
 }
 
+// 4c (#1806 §5.1). CATALOGUE OBLIGATOIRE — toute primitive qui POSSÈDE un module CSS (champ `css`
+//     du manifeste) est nommée dans `docs/charte-ui.md` : sans cela, une couche d'identité entière
+//     (ce que peint la primitive, et où) n'existe nulle part pour qui cherche où écrire son CSS.
+//     La mention se fait par le NOM DE FICHIER du module entre backticks — c'est la question qu'on
+//     pose à la charte (« où vit cette matière ? »), pas l'identifiant du manifeste.
+if (existsSync(CHARTE_MD) && existsSync(MANIFESTE_PRIMITIVES)) {
+  const charte = readFileSync(CHARTE_MD, 'utf8')
+  const backtiques = new Set([...charte.matchAll(/`([^`]*)`/g)].flatMap((m) => m[1].split(/[\s,()]+/)))
+  for (const e of JSON.parse(readFileSync(MANIFESTE_PRIMITIVES, 'utf8'))) {
+    if (!e.css) continue
+    const base = e.css.slice(e.css.lastIndexOf('/') + 1)
+    if (!backtiques.has(base) && !backtiques.has(e.css))
+      problems.push({ file: CHARTE_MD, line: 1, kind: 'module de primitive absent du catalogue de la charte', tok: `${e.id} → ${e.css}` })
+  }
+}
+
 // 5. SENS INVERSE — le code cite la doc. Tout chemin `docs/….md` écrit dans un commentaire ou une
 // chaîne de `src/**` / `scripts/**` doit exister sur le disque : une doc supprimée laisse sinon des
 // renvois pendants qu'AUCUNE garde ne voit (les sens 1-4 ne lisent que `docs/*.md` et CLAUDE.md).

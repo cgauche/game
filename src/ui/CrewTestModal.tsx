@@ -101,7 +101,7 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
       title={<><Icon id="travel/anchor" size="sm" /> {testType.label} — Test d’équipage</>}
       subtitle={<><strong>{ship.label}</strong> — Moral {p.moraleScore}{p.extraDR ? ` · sabotage ${sign(p.extraDR)} DR` : ''}</>}
       extra={p.extraDR
-        ? <div className="rm-threat"><Icon id="ui/warning" size="sm" /> Le Test d’équipage est perturbé : {sign(p.extraDR)} DR (sabotage).</div>
+        ? <div className="rm-note" data-ton="menace"><Icon id="ui/warning" size="sm" /> Le Test d’équipage est perturbé : {sign(p.extraDR)} DR (sabotage).</div>
         : undefined}
       rows={rows}
       rolled={allRolled}

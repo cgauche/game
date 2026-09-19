@@ -124,8 +124,13 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
     render();
     expect(dieInput()).not.toBeNull();
     // La FOURCHETTE est portée par CHAQUE tuile (verdict vision #942 L7) : c'est ce qui fait lire
-    // une table d100 et non un choix libre — libellée ou pas, la ligne annonce ses bornes.
-    expect(rowButtons().map((b) => b.textContent)).toEqual(['Ligne basse 01-50', '51-100']);
+    // une table d100 et non un choix libre — libellée ou pas, la ligne annonce ses bornes. Elle est
+    // une SURFACE à elle (`.rm-range`, option-chooser.css), qui porte son ton et son écart au libellé.
+    expect(rowButtons().map((b) => b.querySelector('.rm-range')?.textContent ?? null)).toEqual(['01-50', '51-100']);
+    expect(rowButtons().map((b) => b.textContent)).toEqual(['Ligne basse01-50', '51-100']);
+    // L'écart se lit au CSS (`.rm-range` / `.rm-range:first-child`) : un libellé est un ÉLÉMENT, sinon
+    // la fourchette est toujours premier enfant et se colle au nom de la ligne.
+    expect(rowButtons().map((b) => b.querySelector('.rm-range')?.previousElementSibling?.textContent ?? null)).toEqual(['Ligne basse', null]);
     expect(host.textContent).toContain('Lancer'); // le tirage naturel reste le défaut
   });
 

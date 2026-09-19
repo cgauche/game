@@ -24,7 +24,7 @@
  * Chaque fonction de mesure est PURE sur les fichiers qu'elle reçoit : les preuves par mutation lui
  * passent des fixtures en mémoire, jamais le disque.
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from './sourceCorpus.mjs';
 import {
@@ -64,9 +64,15 @@ export function modulesDEcran(
   return fichiers.filter((f) => !FEUILLES_PARTAGEES.includes(f.rel) && !primitives.has(f.rel));
 }
 
-/** Toutes les feuilles de `src/ui/styles/`. */
-export const feuillesDeStyle = (): readonly Fichier[] =>
-  readCorpus(['src/ui/styles'], { exts: ['.css'] });
+/** Toutes les feuilles MESURÉES : `src/ui/styles/` ∪ les modules déclarés par le manifeste (champ
+ *  `css`), où qu'ils vivent — une primitive qui n'habite pas `src/ui` (le plateau, `gameIso`) POSSÈDE
+ *  quand même sa feuille, et le corpus se lit sur la SOURCE UNIQUE qu'est le manifeste (#1806 A3). */
+export const feuillesDeStyle = (): readonly Fichier[] => {
+  const dansStyles = readCorpus(['src/ui/styles'], { exts: ['.css'] });
+  const dejaLues = new Set(dansStyles.map((f) => f.rel));
+  const ailleurs = [...modulesDePrimitive()].filter((c) => !dejaLues.has(c) && existsSync(`${RACINE}${c}`));
+  return [...dansStyles, ...ailleurs.map((rel) => ({ rel, text: readFileSync(`${RACINE}${rel}`, 'utf8') }))];
+};
 
 /** Le sélecteur NORMALISÉ d'une règle : la liste telle qu'elle est écrite, espaces réduits. Le
  *  contexte `@media` n'entre PAS dans la clé — il n'est pas un abri, et l'y mettre ferait dériver

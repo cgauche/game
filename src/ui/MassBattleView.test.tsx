@@ -45,7 +45,7 @@ function monter(): HTMLDivElement {
   document.body.appendChild(container);
   root = createRoot(container);
   act(() => { root!.render(<MassBattleView />); });
-  const puces = [...container.querySelectorAll('.poste-chip')] as HTMLElement[];
+  const puces = [...container.querySelectorAll('.poste-chips .chip')] as HTMLElement[];
   for (const p of puces) {
     act(() => { p.click(); });
     if (container!.querySelector('.pr-cases')) break;

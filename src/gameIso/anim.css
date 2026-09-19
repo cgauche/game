@@ -86,13 +86,11 @@
 .howl { animation: howl 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
 .chop { animation: chop 1.2s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 85%; }
 .kick { animation: kick 1.3s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
-.gush { animation: gush 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: 0 50%; }
 .wrap { animation: wrap 1.8s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 60%; }
 @keyframes feed { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(4px) rotate(-2deg); } }
 @keyframes howl { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(7deg); } }
 @keyframes chop { 0%, 100% { transform: rotate(-14deg); } 55% { transform: rotate(20deg); } }
 @keyframes kick { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(10deg); } }
-@keyframes gush { 0%, 100% { transform: scaleX(0.7); opacity: 0.7; } 50% { transform: scaleX(1.2); opacity: 1; } }
 @keyframes wrap { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-2px, 2px); } }
 
 /* Faune d'ambiance (portée d'ambush.html) : mouches qui tournent sur les cadavres,
@@ -107,16 +105,6 @@
   50% { transform: translate(-9px, 0); }
   75% { transform: translate(0, 7px); }
   100% { transform: translate(9px, 0); }
-}
-.crow { animation: crowfly 13s linear infinite; }
-.crow .wing { animation: flap 0.28s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 50%; }
-@keyframes crowfly {
-  from { transform: translate(-140px, 90px); }
-  to { transform: translate(1260px, -10px); }
-}
-@keyframes flap {
-  0%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(0.35); }
 }
 
 /* Projectile volant from→to (flèche/carreau ou trait magique). */
@@ -175,3 +163,41 @@
   to { stroke-dashoffset: -32; }
 }
 .zde-ants { animation: zdeMarch 0.9s linear infinite; }
+
+/* ── LE PLATEAU lui-même (`stage/GameStage3D.tsx`, `SurcoucheIso.tsx`) : il remplit tout l'espace
+   disponible (caméra responsive), et porte les animations de ce qui vit dessus. ── */
+.iso-stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: radial-gradient(circle at 50% 28%, var(--bg), var(--bg));
+  /* Aucun `cursor` au REPOS : le stage est le seul écrivain du curseur du monde
+     (`stage/useStagePointer.ts` — `'pointer'` sur un utilisable, `''` sinon), et une main posée ici
+     rendrait cet effacement invisible (#1687). */
+  touch-action: none;
+}
+/* Halo d'un décor magique ou d'une arme à feu (`.glow`, posé par les défs de `gameIso/catalog` et
+   `rig/parts/weapons`) : pulsation lente, jamais une animation par déf. */
+.iso-stage .glow {
+  animation: isoglow 2.2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes isoglow {
+  0%, 100% { transform: scale(0.8); opacity: 0.6; }
+  50% { transform: scale(1.35); opacity: 1; }
+}
+/* Chiffre de dégâts qui monte au-dessus de la cible (`fx/FxLayer.tsx`). */
+.iso-stage .dmg-float {
+  font: 700 18px 'Segoe UI', sans-serif;
+  paint-order: stroke;
+  animation: dmgfloat 0.85s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes dmgfloat {
+  0% { transform: translateY(0); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translateY(-26px); opacity: 0; }
+}

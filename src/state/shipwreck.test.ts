@@ -123,6 +123,10 @@ describe('beginShipwreck — cascade de survie (héros pilotés par un humain, d
     expect(get().party[0].dead).toBeFalsy();          // F 200 → rejoint la côte
     expect(get().party[2].dead).toBeFalsy();
     expect(get().document?.title).toBe('Naufrage');   // dénouement à l’écran (modale document)
+    // Le rapport est du Markdown (`Prose`) : chaque ligne du journal est un PARAGRAPHE, jamais un saut simple.
+    const rapport = get().document?.text ?? '';
+    expect(rapport.split('\n\n').length).toBeGreaterThan(1);
+    expect(rapport).not.toMatch(/[^\n]\n[^\n]/);
     expect(get().journal.join('\n')).toContain('— NAUFRAGE —');
     expect(get().partyWiped).toBeFalsy();             // au moins un rescapé
   });

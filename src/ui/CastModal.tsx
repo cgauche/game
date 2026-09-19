@@ -24,7 +24,8 @@ import { ev } from '../state/combatLog';
 import { testBreakdown, testPending, soutienMod, opposedLines } from './breakdown';
 import { Icon } from './Icon';
 import { resultLine, freeCons } from '../state/rollSeam';
-import { GatedAction } from './GatedAction';
+import { QtyStepper } from './QtyStepper';
+import { Row, Stack, grow } from './Layout';
 
 /** Marque du pluriel FR, accordée sur la VALEUR (patron `plural(n)` des modales de navire) : le
  *  raccourci « (s) » du code laissait l'écran écrire « 1 pas … RESTANT(S) ». */
@@ -234,31 +235,28 @@ export function CastModal() {
             actor={caster}
             target={selfTarget || zoneUnplaced ? undefined : target}
             label={
-              <>
-                {spell.label}
-                {!isPrayer ? ` · NI ${ni}` : ''}
-              </>
-            }
-            verb="action/cast"
-          />
-          {/* PORTÉE du sort (gabarit de Zone d'Effet / cible = le lanceur) : ce n'est PAS une
-              opposition A→B — sa classe est la sienne (`.rm-spellinfo`, #1078 LOT B2), pas celle de
-              `VsHeader`. Mêmes déclarations que `.rm-vs` : rendu inchangé, rôle séparé. */}
-          {(selfTarget || pc.zone) && (
-            <p className="rm-spellinfo">
-              {pc.zone ? (
+              // La PORTÉE du sort (gabarit de Zone d'Effet, cible = le lanceur) n'est pas une
+              // opposition A→B : la bande la porte comme qualificatif, à côté du seul portrait
+              // du lanceur — une seule bande d'en-tête par fenêtre (#1078 LOT B2).
+              pc.zone ? (
                 <>
                   <strong>Zone d'Effet</strong> — gabarit {pc.zone.radius * 2 + 1}×{pc.zone.radius * 2 + 1} cases
                   {zoneUnplaced ? ' · la zone se pose après le jet' : ''}
                 </>
-              ) : (
+              ) : selfTarget ? (
                 <>
                   <strong>{spell.label}</strong>
                   {!isPrayer ? ` · NI ${ni}` : ''} — sur soi
                 </>
-              )}
-            </p>
-          )}
+              ) : (
+                <>
+                  {spell.label}
+                  {!isPrayer ? ` · NI ${ni}` : ''}
+                </>
+              )
+            }
+            verb="action/cast"
+          />
         </>
       }
       rows={[castRow]}
@@ -334,26 +332,39 @@ export function CastModal() {
             return (
               <div className="rm-options">
                 <span className="mini-title"><Icon id="magic/gust" size="sm" /> Surincantation — {left} pas (+{stepCost} DR) restant{plural(left)}</span>
-                <div className="rm-stepper-list">
+                <Stack gap="sm">
                   {rows.map((a) => (
-                    <div key={a} className="rm-stepper">
-                      <span className="rm-stepper-label">
+                    <Row key={a} gap="md" align="center">
+                      <span {...grow}>
                         {META[a][0]} {META[a][1]}
                         {a === 'zone' && pc.zone ? ` ${pc.zone.radius * 2 + 1}×${pc.zone.radius * 2 + 1}` : ''}
                         {a === 'targets' && cap > 0 ? ` +${cap}` : ''}
                         {a === 'damage' && dmgBonus > 0 ? ` +${dmgBonus}` : ''}
                       </span>
-                      <GatedAction id={`overcast-minus-${a}`} label="−" ariaLabel={`Rendre un pas de ${META[a][1]}`} enabled={oc[a] > 0} reason={`Aucun pas de ${META[a][1]} à rendre.`} onClick={() => allocOvercast(a, -1)} primary={false} btnClassName="small" />
-                      <strong className="rm-stepper-val">{oc[a]}</strong>
-                      <GatedAction id={`overcast-plus-${a}`} label="+" ariaLabel={`Allouer un pas de ${META[a][1]} (+${stepCost} DR)`} enabled={left > 0} reason="Plus aucun DR excédentaire à allouer." onClick={() => allocOvercast(a, 1)} primary={false} btnClassName="small" />
-                    </div>
+                      <QtyStepper
+                        center={<strong>{oc[a]}</strong>}
+                        onDec={() => allocOvercast(a, -1)}
+                        onInc={() => allocOvercast(a, 1)}
+                        decLabel={`Rendre un pas de ${META[a][1]}`}
+                        incLabel={`Allouer un pas de ${META[a][1]} (+${stepCost} DR)`}
+                        refus={{
+                          id: `overcast-${a}`,
+                          dec: oc[a] > 0 ? undefined : `Aucun pas de ${META[a][1]} à rendre.`,
+                          inc: left > 0 ? undefined : 'Plus aucun DR excédentaire à allouer.',
+                        }}
+                      />
+                    </Row>
                   ))}
-                </div>
+                </Stack>
                 {/* Désignation des cibles supplémentaires — SÉPARÉE de l'allocation (sans bouton carte redondant). */}
                 {can.targets && cap > 0 && (battle ? (
-                  <button className="btn small rm-overcast-pick" onClick={() => pickTargets(true)} title="Choisir les cibles supplémentaires sur le champ de bataille">
-                    <Icon id="nav/campaign" size="sm" /> Désigner les cibles ({designated}/{cap})
-                  </button>
+                  // La rangée ceint le bouton à son contenu : dans la pile des réglages, un bouton seul
+                  // s'étirerait sur toute la largeur.
+                  <Row>
+                    <button className="btn small" onClick={() => pickTargets(true)} title="Choisir les cibles supplémentaires sur le champ de bataille">
+                      <Icon id="nav/campaign" size="sm" /> Désigner les cibles ({designated}/{cap})
+                    </button>
+                  </Row>
                 ) : (
                   <div className="rm-loc-grid">
                     {candidates.map((m) => (
@@ -365,14 +376,21 @@ export function CastModal() {
                     et refaire un jet ») : la durée se prolonge intégralement quel que soit ce choix,
                     borné [0, pas Durée alloués]. Défaut = tous les pas (paquet complet, zéro-clic). */}
                 {oc.duration > 0 && spellHasOvercastTableRoll(spellEffectOps(spell.effects)) && (
-                  <div className="rm-stepper-list">
-                    <div className="rm-stepper">
-                      <span className="rm-stepper-label"><Icon id="nav/dice" size="sm" /> Jets sur le Tableau</span>
-                      <GatedAction id="overcast-table-minus" label="−" ariaLabel="Décliner un jet sur le Tableau" enabled={(pc.chosenTableRolls ?? oc.duration) > 0} reason="Aucun jet sur le Tableau à décliner." onClick={() => setChosenTableRolls((pc.chosenTableRolls ?? oc.duration) - 1)} primary={false} btnClassName="small" />
-                      <strong className="rm-stepper-val">{pc.chosenTableRolls ?? oc.duration}</strong>
-                      <GatedAction id="overcast-table-plus" label="+" ariaLabel="Refaire un jet sur le Tableau" enabled={(pc.chosenTableRolls ?? oc.duration) < oc.duration} reason="Tous les pas de Durée alloués font déjà l’objet d’un jet." onClick={() => setChosenTableRolls((pc.chosenTableRolls ?? oc.duration) + 1)} primary={false} btnClassName="small" />
-                    </div>
-                  </div>
+                  <Row gap="md" align="center">
+                    <span {...grow}><Icon id="nav/dice" size="sm" /> Jets sur le Tableau</span>
+                    <QtyStepper
+                      center={<strong>{pc.chosenTableRolls ?? oc.duration}</strong>}
+                      onDec={() => setChosenTableRolls((pc.chosenTableRolls ?? oc.duration) - 1)}
+                      onInc={() => setChosenTableRolls((pc.chosenTableRolls ?? oc.duration) + 1)}
+                      decLabel="Décliner un jet sur le Tableau"
+                      incLabel="Refaire un jet sur le Tableau"
+                      refus={{
+                        id: 'overcast-table',
+                        dec: (pc.chosenTableRolls ?? oc.duration) > 0 ? undefined : 'Aucun jet sur le Tableau à décliner.',
+                        inc: (pc.chosenTableRolls ?? oc.duration) < oc.duration ? undefined : 'Tous les pas de Durée alloués font déjà l’objet d’un jet.',
+                      }}
+                    />
+                  </Row>
                 )}
               </div>
             );

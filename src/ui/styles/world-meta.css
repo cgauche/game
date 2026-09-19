@@ -605,3 +605,30 @@
 .travel-recap-day { font-weight: 600; color: var(--gold); }
 .travel-recap-days ul { margin: 2px 0 0; padding-left: 16px; color: var(--muted); }
 .travel-recap-foot { font-size: 13px; color: var(--muted); margin: 0 0 4px; }
+
+/* ── Fiche du NAVIRE / plan de STATIONS (`ShipSheet.tsx`, `StationSheet.tsx`) ── Placement seul : la
+   matière du plan et du détail vient de `.panel` (components.css), les puces de `.chip`/`.count`. */
+.ship-section { margin-bottom: var(--sp-lg); }
+/* Plan TOP-DOWN (TopoScene) : hauteur DÉFINIE + non-shrink — sinon le parent flex `.sheet-main` l'écrase
+ * à ~0 et clippe le plan ; le SVG (100 %×100 %, letterbox `meet`) tient alors tout entier dans la boîte. */
+.topo-panel { flex: 0 0 auto; height: clamp(180px, 34vh, 320px); }
+.ship-crew-row { display: flex; flex-wrap: wrap; gap: var(--sp-xs); margin-top: var(--sp-xs); align-items: center; min-height: 22px; }
+/* Maître-détail piloté par le plan (FTL/RTS) : plan à gauche, bande de puces + détail à droite ; s'empile ≤900px. */
+.poste-layout { display: flex; flex-wrap: wrap; gap: var(--sp-lg); align-items: flex-start; }
+.poste-layout > .topo-panel { flex: 1 1 260px; }
+.poste-detail-col { flex: 1 1 260px; min-width: 0; }
+@media (max-width: 900px) { .poste-layout > .topo-panel { flex-basis: 100%; } }
+/* Bande de puces RTS (une station = une puce de l'ensemble), s'enroule. */
+.poste-chips { display: flex; flex-wrap: wrap; gap: var(--sp-sm); margin: var(--sp-sm) 0; }
+
+/* Bourse du groupe (`MedicModal`, `ScreenMeta`) : la pile et la teinte de son montant — les valeurs
+   sont rendues par la primitive `Coins`. */
+.purse {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2xs);
+}
+.purse .coins {
+  font-size: 13px;
+  color: var(--muted);
+}

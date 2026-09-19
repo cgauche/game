@@ -25,7 +25,7 @@ export function ManannBody({ embedded = false }: { embedded?: boolean } = {}) {
   const title = <><Icon id="faith/church" size="sm" /> Un Prêtre de Manann s'avance…</>;
   const body = (
     <>
-      <p className="rm-log">
+      <p className="modal-log">
         Il s'exclame que vous avez courroucé Manann par votre impiété et que votre bateau doit être
         purifié. Payez <Coins money={p.cost} /> pour une bénédiction, ou refusez et laissez l'Humeur
         de Manann chuter de 4d10.

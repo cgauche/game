@@ -445,6 +445,11 @@ textarea:focus {
 .vl-acts { display: flex; gap: 6px; }
 .vl-act { font-size: 12px; padding: 4px 10px; white-space: nowrap; }
 
+/* Messages de victoire (Effets journal de onVictory) — affichés dans l'écran de victoire (#9) et,
+   ferrés à gauche, dans la fenêtre de loot ci-dessous. */
+.victory-messages { margin: var(--sp-xs) 0 var(--sp-lg); max-width: 520px; text-align: center; }
+.victory-msg { color: var(--gold); font-size: 14px; margin: 4px 0; line-height: 1.5; }
+
 /* Fenêtre de loot hors combat — même squelette que les sections de victoire, en modale compacte. */
 .loot-modal { width: min(560px, 94vw); }
 .loot-modal .victory-rewards { justify-content: flex-start; margin: 10px 0; }

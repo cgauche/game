@@ -39,9 +39,10 @@ habité » du juge, #371) ; un centrage/bornage codé à la main par écran (tra
   d'`@import`, dans l'ordre `base → components → tabs → layout → modules` : (1) **tokens** —
   `base.css` `:root`, couleurs ET échelle d'espacement `--sp-*` ; (2) **identité** — ce qui a une
   matière (couleur, bordure, police, rayon, ombre) : `components.css`, `tabs.css`, et le module que
-  chaque primitive POSSÈDE (champ `css` de `src/data/primitives.manifest.json` : `band`, `frames`,
-  `gauges`, `hero-sheet`, `ornaments`, `plaque-row`, `rose`, `creator-step`,
-  `panneau-parametre`) ; (3) **layout** — `layout.css`, ce qui PLACE et n'a aucune matière.
+  chaque primitive POSSÈDE — la liste fait foi au manifeste des primitives (champ `css`) : `band.css`,
+  `frames.css`, `gauges.css`, `hero-sheet.css`, `ornaments.css`, `plaque-row.css`, `rose.css`,
+  `creator-step.css`, `panneau-parametre.css`, plus la famille JET cataloguée ci-dessous ;
+  (3) **layout** — `layout.css`, ce qui PLACE et n'a aucune matière.
   `layout.css` vient APRÈS `components.css` : sans quoi `.panel { padding: 16px }` écraserait le
   `pad` de toute primitive de placement. Un module d'ÉCRAN (tous les autres) ne déclare QUE du
   placement.
@@ -75,7 +76,7 @@ habité » du juge, #371) ; un centrage/bornage codé à la main par écran (tra
 ## Couche atomique — catalogue
 
 Classes CSS **canoniques** réellement définies dans `src/ui/styles/components.css` / `base.css`
-(+ `.seg` en `sheet.css`, composé par la primitive React `OptionChooser`). Ne couvre que le
+(+ `.seg`, composé par la primitive React `OptionChooser`). Ne couvre que le
 PARTAGÉ (utilisé par ≥2 domaines) — pas les classes propres à un seul écran (`.voyage-*`,
 `.city-hub-*`, `.party-*`, `.char-card*`…). Pour la couche **React** (composants, pas classes),
 voir `docs/primitives.md` — les deux se lisent ensemble : une
@@ -99,10 +100,12 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.chip.tone-warn` / `.chip.tone-danger` / `.chip.tone-ok` | Variantes de TON du chip (or / rouge alerte / vert bénéfique) | Bande d'alarmes de la colonne moniteur (#492) — un chip qui SIGNALE (pas un badge neutre) prend le ton de sa gravité ; composer, jamais un `style={{color}}` inline. `.tone-ok` = buff de sort (registre État, #492 tableau de bord). |
 | `.count` | Pastille numérique (compteur) | À l'intérieur d'un `.chip`/`.tab-btn`, jamais seule dans le flux de texte. |
 | `.rm-note` | Note secondaire d'une modale de jet (acte de soin en cours, cadence d'un Test étendu, opposition annulée) | Rangée flex à alignement HAUT : accepte une icône + une `<Prose>` de bloc (dont les paragraphes perdent leur marge propre). Partagée par 6 modales — jamais redéfinie dans un module de domaine. |
-| `.rm-stake` | Zone Z3b — l'ENJEU d'un jet et le renvoi vers sa règle | Classe PROPRIÉTAIRE de la zone, écrite par la SEULE primitive `StakeNote` (`src/ui/StakeNote.tsx`, composée par la prop `stake` de `RollShell`). Ton NEUTRE (liseré, pas de fond d'alerte) : un enjeu ANNONCE — la menace SUBIE reste à `.rm-threat`. Icône flottante, prose de bloc sans marges propres. |
+| `.rm-stake` | Zone Z3b — l'ENJEU d'un jet et le renvoi vers sa règle | Classe PROPRIÉTAIRE de la zone, écrite par la SEULE primitive `StakeNote` (`src/ui/StakeNote.tsx`, composée par la prop `stake` de `RollShell`). Ton NEUTRE (liseré, pas de fond d'alerte) : un enjeu ANNONCE — la menace SUBIE reste au ton `menace` de `.rm-note`. Icône flottante, prose de bloc sans marges propres. |
 | `.entity-chip` (+ `.entity-badge`, `.entity-choice`, variante NUE `.entity-chip.plain`) | Chip d'ENTITÉ unifié (compétence/talent/sort/objet) avec déclencheur popover CodexRef | Source unique = `EntityChip.tsx` — remplace `.tag`/`.codex-chip` pour toute entité de règle ; ne pas recréer un badge ad hoc pour un nom de sort/talent. La variante `.entity-chip.plain` (primitive `PlainChip`) est la MÊME boîte SANS popover ni lookup par libellé — un libellé qui ne désigne aucune entité (nom d'objet authoré en clair d'une Possession) garde sa borne visible sans promettre une fiche. Un « A ou B » se rend en chips INDIVIDUELLES cliquables séparées d'un `ou` (`EntityChoice`, `src/ui/EntityChip.tsx:50-56`), jamais en une chaîne fusionnée non cliquable — un talent tiré au hasard porte la même affordance codex. |
 | `.tag` (+ `.tag.talent`) | Badge historique (alias de `.chip`) | Ne pas en créer de nouveaux usages — préférer `.chip` ou `.entity-chip` selon le contenu (texte libre vs entité de règle). |
 | `.gated-action` (+ `.gated-action-reason`, variante `.gated-action.dense`) | Action GATÉE : bouton d'engagement dont la RAISON d'indisponibilité se lit au SURVOL/FOCUS (voir « Raison d'un refus » ci-dessous), sa copie hors écran (`.hors-ecran`) servant l'`aria-describedby` ; `.gated-action-reason` = la même raison RENDUE EN CLAIR, par l'opt-in `raisonInline` (attente d'un invité en coop, diagnostic d'authoring, activité refusée) ; `dense` = graduation réduite pour une COLONNE étroite (pied de la frise d'initiative) | Composée par la primitive `GatedAction` (`src/ui/GatedAction.tsx`, CLAUDE.md) — tout bouton principal désactivé pour un motif intelligible (hub de ville « Entrer », écran d'équipe « Commencer ») la COMPOSE au lieu d'un `<button disabled title=…>` muet ; la densité se demande par la prop, jamais en redéfinition de `.btn` chez l'appelant. |
+| `.muted` | Texte SECONDAIRE (valeur dérivée, mention de contexte) — couleur atténuée, taille inchangée | Composer au lieu d'un `color: var(--muted)` recopié par module ; ne porte AUCUNE boîte (ni fond ni bordure) — un état, pas un badge. |
+| `.empty` | Ligne d'état VIDE d'une liste (« Aucun objet »), en italique atténué | Une liste vide DIT qu'elle est vide, jamais un trou muet ; jamais utilisée pour une erreur (ton neutre). |
 | `.hors-ecran` | Texte destiné au SEUL lecteur d'écran (nom d'un emplacement vide, raison d'un refus) : hors flux, clippé, JAMAIS `display:none` — l'arbre a11y le perdrait | Définition UNIQUE dans `src/ui/styles/base.css` — aucune recopie du clip par module de domaine. |
 
 ### Conteneurs / surfaces
@@ -235,7 +238,7 @@ son propre cue (Compendium, pickers marchands…) sans reposer le mécanisme de 
 | `.modal-actions` | Barre d'actions de modale (max 2 boutons : ghost à gauche, primaire à droite) | JAMAIS de 3ᵉ bouton — les dépenses de ressources vivent dans `.rm-influence`, pas ici. |
 | `.rm-influence` | Rangée « influencer le jet » (Chance/Pacte/Résilience/Détermination) | Vide → invisible (`:empty{display:none}`) ; composée par `InfluenceRow` (CLAUDE.md). |
 | `.prow` | RANGÉE de jet (`RollRow`) — CONTENEUR | Porte le ferrage EXPLICITE de tous ses enfants (`text-align`) : sans lui chaque enfant hérite du `text-align` de la coquille hôte et la même rangée se lit différemment selon la modale. Tout ferrage/alignement de rangée se règle ICI, jamais élément par élément. |
-| `.prow-act` | Zone d'ACTIONS d'une rangée de jet (`RollRow`) | Ordre visuel imposé par la primitive : choix de RÈGLE (Résilience/Résistance/Détermination) → offre de CONFORT (dé fixé) → CTA « Lancer ». Layout posé dans `combat-modals.css`, jamais hérité de l'ambiance de la coquille hôte. |
+| `.prow-act` | Zone d'ACTIONS d'une rangée de jet (`RollRow`) | Ordre visuel imposé par la primitive : choix de RÈGLE (Résilience/Résistance/Détermination) → offre de CONFORT (dé fixé) → CTA « Lancer ». Layout posé dans `components.css`, jamais hérité de l'ambiance de la coquille hôte. |
 | `.rm-die-pick` | Bloc du sélecteur de dé (`ForcedRollPicker`) — options de dé + champ | Le champ COMPOSE `.field` (libellé au-dessus) et se dimensionne à son contenu (3 chiffres) ; sa matière se déclare AU CONTENEUR (`.rm-die-pick > label > input`), sans classe propre — jamais une cellule d'une grille de boutons (`.rm-loc-grid`) détournée. UNE surface par ÉTAT : l'étiquette dit « Fixer le dé » (offre, champ vide) puis « Dé fixé » (marque de provenance, valeur éditable). |
 | `.prow-fixed-mark` | MARQUE de provenance « Dé fixé » d'une rangée SANS sélecteur (témoin, bilan, siège voisin) | Ne se rend PAS quand le sélecteur est présent : c'est alors SON étiquette qui porte la marque (jamais deux surfaces pour un seul fait). |
 
@@ -260,6 +263,64 @@ plafond mesuré, portée, États…).
 | `.dlg-choices` (+ `.dlg-choice`, `.dlg-choice-text`, `.dlg-choice-cost`) | Zone de choix du dialogue arborescent | Variant `dialogue` seulement — le contenu des lignes reste au métier (`DialogueBox`), la primitive ne pose que le conteneur. |
 | `.scene-backdrop` (+ `.scene-backdrop-fallback`) | Bande d'illustration d'ambiance (bord haut d'un panel) | Composée par la primitive `SceneBackdrop` (CLAUDE.md) — sans `backdropId`/id inconnu, repli dégradé + fleuron `Ornaments`, jamais un trou. |
 
+### Famille JET — un module de primitive par brique (#1806)
+
+L'IDENTITÉ d'une classe vit dans le module CSS de la primitive qui la POSE (arbitrage utilisateur A1
+du 2026-09-18) ; un écran ne garde que son PLACEMENT. Chaque famille de classes de jet vit donc au
+module de sa primitive, déclaré au manifeste des primitives (champ `css`) et montré à la galerie.
+
+| Module | Primitive | Classes possédées |
+|---|---|---|
+| `roll-shell.css` | `RollShell` | `.roll-modal`, `.rs-scroll`, `.rs-embedded`, `.rm-subtitle`, `.rm-summary`, `.rm-journal`, `.rm-netsl`, et l'ancrage du voile `.app-campaign .modal-overlay:has(.roll-modal)` |
+| `roll-line.css` | `RollLine` / `PendingRollLine` | `.rm-roll*`, `.rm-roll-diff`, `.rm-roll-mods`, `.rm-mod` (+ `.pos`/`.neg`), `.rm-table-result` |
+| `roll-row.css` | `RollRow` | `.prow`, `.prow-line`, `.prow-fixed-mark` |
+| `roll-panel.css` | `RollPanel` | `.roll-panel`, `.rr-row`, `.rr-port`, `.rr-main`, `.rr-line`, `.rr-note`, `.rr-win`, `.rr-lose` |
+| `dice-roll.css` | `DiceRoll` / `DieFace` | `.rm-die*` (dont `.rm-die-gold`, matière de l'Atelier), `.rm-rolling`, `.rm-scene`, `.d100`, `.d100-rolling` |
+| `forced-roll-picker.css` | `ForcedRollPicker` | `.rm-die-pick` (+ son champ, sans classe propre) |
+| `option-chooser.css` | `OptionChooser` | `.rm-loc-grid`, `.rm-loc-inline` (+ `[data-bascule]`), `.rm-loc-select`, `.rm-range` |
+| `recap-line.css` | `RecapLine` / `RecapLineList` | `.recap-line`, `.recap-lines`, `.recap-phase`, `.recap-phase-label` |
+| `multi-roll-list.css` | `MultiRollList` | `.mrl`, `.mrl-row`, `.mrl-port`, `.mrl-label`, `.mrl-roll`, `.mrl-text` |
+| `reveal-body.css` | `RevealBody` | `.crit-stats`, `.crit-stat`, `.crit-effects`, `.crit-effect`, `.crit-cond` |
+| `vs-header.css` | `VsHeader` | `.rm-vs`, `.rm-vs-arrow`, `.rm-weapon` — `.rm-weapon` sert aussi de QUALIFICATIF hors bandeau A→B (l'arme dégainée de `HandGateModal`, déclarée en `poseurs` au manifeste) : c'est la même matière, pas une copie |
+| `team-segments.css` | `TeamSegments` | `.nm-ally`, `.nm-foe` |
+| `combat-banner.css` | `CombatBanner` | `.combat-feed`, `.cb-ev`, `.cb-now`, `.cb-tone-strong`, `.cb-tone-grave` |
+| `log-drawer.css` | `LogDrawer` / `NarratedLine` | `.jr-line`, `.jr-ic`, `.jr-tx` |
+| `inspect-panel.css` | `InspectPanel` | `.inspect-panel`, `.insp-head`, `.insp-id`, `.insp-lbl`, `.insp-badges`, `.insp-badge`, `.insp-pv-num` |
+| `equipment-panel.css` | `EquipmentPanel` | `.equip-panel`, `.equip-slots`, `.eq-*`, `.equip-sets`, `.set-*`, `.weap-quals` |
+| `src/gameIso/anim.css` | `GameStage3D` (`anim.css`) | `.iso-stage` (la surface du monde, sans `cursor` au repos), `.glow` (halo d'un décor magique ou d'une arme à feu), `.dmg-float` (chiffre de dégâts qui monte au-dessus de la cible) |
+
+Quatre classes de la famille sont PARTAGÉES et vivent donc en couche d'identité (`components.css`) :
+`.seg` (segments d'`OptionChooser`, dont l'état pressé est `.seg button[aria-pressed='true']` —
+jamais un `.on`), `.prow-act` (zone d'actions d'une rangée, remplie par `RollRow` comme par
+`OptionChooser`), `.modal-log` (paragraphe de contexte d'une modale, posé par 11 écrans) et
+`.rm-options` (pile des zones de réglage du corps d'un jet, posée par 8 modales — jamais par
+`RollShell` lui-même). Le critère est mécanique : au-delà de deux poseurs hors de la primitive, la
+classe est un contrat de couche, pas la propriété d'un module (garde §5.2).
+
+**Préfixe d'une classe de la couche partagée** : une classe partagée ne garde le préfixe `rm-` que si
+TOUS ses poseurs sont des fenêtres de jet ; un seul poseur hors jet et elle se renomme sans préfixe
+(`.modal-log`, `.seg`, `.prow-act`). Mesure du 2026-09-18 : `.rm-note` a 7 poseurs (`StakeNote`,
+`MultiRollList`, `CrewTestModal`, `HealModal`, `MedicModal`, `ShipBatteryModal`, `useAttackJetProps` /
+`useDefenseJetProps`) et `.rm-options` 8 (`CastModal`, `CorruptionModal`, `DisengageModal`,
+`FateSaveModal`, `MountTargetModal`, `ForcedRollPicker`, les deux `jetProps`) — tous des fenêtres de
+jet : les deux gardent leur préfixe.
+
+**Organisme de domaine au manifeste** : une entrée qui n'existe au manifeste que pour le module CSS
+qu'elle POSSÈDE (panneau d'inspection, panneau d'équipement, plateau de jeu) porte `nature:
+"organisme"` ; elle assume ses imports de domaine et sort du corpus mesuré par la garde de généricité
+(`src/data/generic-domain-import-guard.test.ts`), au lieu d'y entrer comme dette chiffrée. La
+déclaration est BORNÉE, et la garde la mesure : un organisme porte obligatoirement `css`, et AUCUNE
+autre entrée du manifeste n'importe son `fichier` — une primitive que d'autres primitives COMPOSENT
+est générique, et le reste (le sens compte : c'est d'ÊTRE importé qui disqualifie ; un organisme, lui,
+compose librement des primitives).
+
+| Classe | Rôle | Quand l'utiliser / anti-patron |
+|---|---|---|
+| `.codex-ref` | ENVELOPPE du déclencheur de popover Codex (`CodexRef`) | Posée par la seule primitive `CodexRef` — une chip, un chiffre ou un segment qui ouvre une fiche la porte par composition ; jamais un `onClick` d'ouverture recodé sur une classe d'écran. |
+| `.rm-note[data-ton]` | TON d'une note de modale de jet : `discret` (contexte de foule), `etat` (posture tenue), `bloque` (geste impossible), `attente` (jet adverse en attente), `menace` (danger subi) | UNE classe, N tons par attribut — jamais une classe de note par situation (une classe par contexte — foule, geste bloqué, attente adverse, menace subie — est morte avec #1806). |
+| `.listrow[data-variant]` | VARIANTE de la rangée de liste (`ListRow`) : `insp` (inspecteur d'éditeur), `codex` (index du Compendium) | L'élection se dit `aria-current='true'`, jamais une classe `.on`/`.active` — même grammaire que le reste des états ferrés. |
+| `.off-malus` | Chiffre de MALUS de main faible affiché sous un set d'armes | Marque de règle, pas un badge : jamais un `.chip` (elle n'a ni boîte ni bordure) — définie une seule fois en couche partagée, composée par `EquipmentPanel` comme par la fiche. |
+
 ## Contrat d'affichage d'un jet (Z0-Z15)
 
 Doctrine (arbitrages utilisateur 2026-08-04, #1078) : **un seul schéma d'informations pour TOUS les
@@ -277,7 +338,7 @@ seule, et a UN propriétaire — la primitive qui la rend. Réfs : #1064, #1072,
 | **Z3b** Enjeu | ce que le jet MET EN JEU — la PHRASE seule | prop `stake` de `RollShell` / `CascadeStep.stake` → `StakeNote` (`.rm-stake` — SEUL écrivain de la classe) | Le producteur ne fournit qu'une `StakeRef` (clé de dataset + valeurs calculées) : le TEXTE est rendu par le résolveur unique `resolveStake` (fail-closed). Contenu autorisé : **descripteur mécanique** assemblé depuis la donnée réelle, et/ou **verbatim COURT** recollable — jamais une phrase d'aide rédigée, jamais un pavé (le verbatim intégral vit dans la fiche Codex). Ton NEUTRE : un enjeu ANNONCE. |
 | **Z3b′** Renvoi de règle | la porte vers la FICHE de la règle du jet | affordance COMPACTE accolée au libellé d'étape DANS LE TITRE (`CascadeBody.titleNode`, Z0 — le sous-titre `stepSubtitle` ne porte plus que la position) : `StakeRule` (`CodexRef` en déclencheur-icône, `ab-codex-info` + glyphe `journal/info`), cible DÉRIVÉE de l'entrée d'enjeu | Arbitrage user 2026-08-06 : « "la régle" ? C'est moche. Je pensais que tu allais mettre un "i" a coté de "Cauchemars", pas "la régle" en dessous ». Jamais un lien textuel sous la phrase, jamais un bouton local ni un caractère typographique bricolé ; nom accessible obligatoire (`ariaLabel`, l'icône est `aria-hidden`). **Ne vaut que pour le TITRE d'étape** : les CHIPS restent leurs propres portes, sans ⓘ voisin (#1078). |
 | **Z3b″** Renvoi en surface DENSE | la porte vers la règle depuis une GRILLE d'actes (menu d'infirmerie, listes de gestes) | l'ÉLÉMENT D'ACTION est sa propre porte : `CodexRef wrap` + `instance` nommant l'acte, cible DÉRIVÉE de l'enjeu du jet (`stakeRuleOf(flowStakeRef(...))`) | Jamais un ⓘ par cellule (la grille en serait criblée), jamais une phrase d'enjeu par cellule. Un acte dont le jet n'a PAS d'enjeu authoré ne reçoit AUCUNE porte — pas d'affordance morte (`hasFlowStake` décide). Même principe que Z5b : le contrôle EST sa règle (#1078). |
-| **Z3c** Menace subie | la perturbation/menace que le personnage SUBIT (sabotage d'un Test d'équipage, attaque entrante) | `.rm-threat` (2 écrivains : `CrewTestModal`, `ShipBatteryModal`) | Ton DANGER assumé — réservé à ce qui est subi, jamais à un enjeu annoncé (Z3b). |
+| **Z3c** Menace subie | la perturbation/menace que le personnage SUBIT (sabotage d'un Test d'équipage, attaque entrante) | `.rm-note` au ton `menace` (2 écrivains : `CrewTestModal`, `ShipBatteryModal`) | Ton DANGER assumé — réservé à ce qui est subi, jamais à un enjeu annoncé (Z3b). |
 | **Z4** Pré-jet | le choix de RÈGLE avant le jet (Parade/Esquive, arme, localisation) | `RollShell.setup` + `OptionChooser` | Valeurs par `optionValue`/`optionPending`, jamais un « base + mods » recalculé au call-site. Disparaît au jet. |
 | **Z5** LA ligne | portrait · libellé + difficulté · base ± mods = cible · dé · verdict ✓/✗ ±DR | `RollLine` / `PendingRollLine` (site UNIQUE) | La Difficulté vit ICI, en texte et en valeur (`.rm-roll-diff`), TOUJOURS — jamais en chip (#1072). Elle est CHOISIE (hors combat : le site qui ouvre le jet la pose) ou DÉRIVÉE (en combat : la combinaison des circonstances la compose, `LDB 14 l.91-96`) — un contrat, deux modes, le mode se lit à la présence de `difficultyParts` (posée par `rollLine`, jamais devinée à l'affichage) ; DÉRIVÉE, le palier devient sa propre affordance de règle (popover de composition → fiche « Combiner les Difficultés ») et ses circonstances ne sont PLUS des chips (#1153). Le masque de découverte (#990) s'applique par CELLULE (`RollMask`). |
 | **Z5b** Chips | les modificateurs CIRCONSTANCIELS, nommés | `ModChips` (`.rm-mod`) | Une chip EST sa règle, cliquable (patron `chipCodex` / `CodexRef` / `RULE_REF`) ; provenance en badges structurés, jamais un ⓘ. L'écart de réconciliation (`reconciled`, plafond mesuré `TestResult.clamped`) devient une chip NOMMÉE — jamais un masquage silencieux. |
@@ -290,7 +351,7 @@ seule, et a UN propriétaire — la primitive qui la rend. Réfs : #1064, #1072,
 | **Z11** Sélecteur de dé | le dé POSÉ (Résilience, option « Dés fixés ») | `ForcedRollPicker` | Commit au geste TERMINAL (Entrée) ; un blur pré-jet réinitialise. UNE surface de marque « Dé fixé » (étiquette du sélecteur, sinon `.prow-fixed-mark`). |
 | **Z12** Issue | ce qui s'est PASSÉ | `RollShell.outcome` (`RecapLine[]` → `RecapLineRow`, cadre `.rm-journal`) | DONNÉE, jamais du JSX ni du markup de site. Ni le verdict chiffré (Z5) ni la progression (Z6). Pleine couleur par défaut, ton AUTHORÉ. Muette sous le verrou `panelMasked` (#990). |
 | **Z13** Bilan | l'agrégat multi / le DR net | `RollShell.summary` (`.rm-summary`) + `netSL` (`.rm-netsl`) | Masqué avec les jets qu'il compare (#990). |
-| **Z14** Post-jet métier | surincantation, Critique, contre-sort | `RollShell.postRollExtra` / `forcedExtra` | Ne porte JAMAIS d'issue (Z12). L'ATTENTE d'un jet distant est une zone d'ÉTAT distincte (`.rm-await`). |
+| **Z14** Post-jet métier | surincantation, Critique, contre-sort | `RollShell.postRollExtra` / `forcedExtra` | Ne porte JAMAIS d'issue (Z12). L'ATTENTE d'un jet distant est une zone d'ÉTAT distincte (`.rm-note[data-ton='attente']`). |
 | **Z15** Actions | les verbes de la barre | `RollShell.actions` (`RollAction`) | Vocabulaire VERROUILLÉ (`assertActionVocabulary` : verbes du flux + neutres) ; la proéminence se DÉDUIT de la `key`, aucun style au call-site. |
 
 ### Invariant de GÉOMÉTRIE d'une fenêtre de jet (#1142)
@@ -304,7 +365,7 @@ soigne le symptôme chez lui et laisse l'invariant faux partout ailleurs.
 Conséquences concrètes :
 
 - L'ancrage de la fenêtre dans le voile fixe son bord HAUT (`.app-campaign .modal-overlay:has(.roll-modal)`,
-  `src/ui/styles/combat-modals.css`) : la fenêtre occupe la bande basse de l'écran, la bande de champ
+  `src/ui/styles/roll-shell.css`) : la fenêtre occupe la bande basse de l'écran, la bande de champ
   de bataille visible au-dessus reste CONSTANTE d'un état à l'autre. C'est ce que servait l'ancrage
   bas (verdict vision #942 L7, « voir l'action sous la fenêtre ») — un bord haut fixe le sert mieux,
   puisque la bande visible ne respire plus au gré du contenu.
@@ -383,7 +444,7 @@ noms longs — Détermination — étaient tronquées DEUX fois : le nom ET la r
 
 - **Aucun contrôle natif non stylisé.** `<input type=checkbox/radio>` et `<select>` système sont
   interdits : style GLOBAL `appearance:none` appliqué dans `src/ui/styles/base.css` (+ variantes
-  par module — `combat-ui.css`, `combat-modals.css`, `creator.css`) — case charbon bordée (cochée
+  par module — `combat-ui.css`, `equipment-panel.css`, `creator.css`) — case charbon bordée (cochée
   = fond `--accent` + marque `--gold2`), radio = point or, select = chevron or en data-URI, focus
   `--gold`, options thémées. **Piège select** : un override `padding` shorthand mange la flèche →
   utiliser `padding-right` + `background-color` (jamais `background` en raccourci). **Boîte de la

@@ -201,7 +201,7 @@ function finishShipwreck(get: Get, set: Set, shore: MapPlace | undefined, swimme
     : t('wreck.noSurvivor'));
   // Échouage : transition AVANT la modale (transitionTo purge `document` via resetFields('scene')).
   if (survivors.length && shore) get().transitionTo(shore.scene, shore.entry);
-  set({ document: { title: t('wreck.title'), text: [...get().journal.slice(journalMark), ...lines].join('\n') } });
+  set({ document: { title: t('wreck.title'), text: [...get().journal.slice(journalMark), ...lines].join('\n\n') } });
   // Aucun survivant → défaite hors combat (écran unique `checkPartyWiped`).
   checkPartyWiped(get, set);
   return lines;

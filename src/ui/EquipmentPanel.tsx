@@ -205,7 +205,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
             <div className="eq-loc-row" key={z.label}>
               <span className="eq-loc-head">
                 <span className="eq-loc-name">{z.label}</span>
-                <span className={`eq-loc-pa ${ap > 0 ? 'on' : ''}`} title="Points d'Armure de la zone (couches rigide + Flexible cumulées, mutations comprises)">PA {ap}</span>
+                <span className="eq-loc-pa" data-pa={ap > 0 ? 'oui' : undefined} title="Points d'Armure de la zone (couches rigide + Flexible cumulées, mutations comprises)">PA {ap}</span>
               </span>
               {LAYERS.map((layer) => {
                 const worn = covering.find((i) => i.equipped && armourLayer(i) === layer.key);

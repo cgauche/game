@@ -10,7 +10,7 @@ import { RenounceModal } from './RenounceModal';
 import type { Combatant } from '../engine/types';
 
 /**
- * `.roll-modal` porte la GÉOMÉTRIE DE JET (voile allégé + ancrage par le bord haut, `combat-modals.css`) :
+ * `.roll-modal` porte la GÉOMÉTRIE DE JET (voile allégé + ancrage par le bord haut, `roll-shell.css`) :
  * elle existe pour qu'on VOIE le champ de bataille sous la fenêtre pendant qu'un jet se résout. Une
  * fenêtre qui ne résout aucun jet — sauvegarde, décision d'escale/d'accostage, « Je te renie ! » après
  * un Test déjà résolu — n'a rien à montrer dessous : elle prend la coquille nue (`variant="plain"`).

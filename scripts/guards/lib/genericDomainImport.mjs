@@ -50,8 +50,12 @@ export function scanGenericDomainImport(primitiveFile, contenu, ownerSystems) {
 }
 
 /**
- * Scan complet : pour chaque primitive du manifeste, ses imports domaniaux.
- * @param {{ id: string, fichier: string }[]} primitives
+ * Scan complet : pour chaque primitive GÉNÉRIQUE du manifeste, ses imports domaniaux. Une entrée de
+ * `nature: 'organisme'` en est exclue : c'est un ORGANISME de domaine (panneau d'inspection, panneau
+ * d'équipement, plateau du monde), entré au manifeste pour le module CSS qu'il POSSÈDE (#1806) et non
+ * pour une généricité — lui interdire d'importer son domaine n'a aucun sens, et le tolérer par une
+ * baseline chiffrée rendrait le cliquet inerte sans le dire.
+ * @param {{ id: string, fichier: string, nature?: string }[]} primitives
  * @param {{ id: string, modules: string[] }[]} systemes
  * @param {(path: string) => string} [readFile] injectable (tests)
  * @returns {{ primitiveId: string, fichier: string, target: string, systemId: string }[]}
@@ -60,6 +64,7 @@ export function scanAllPrimitives(primitives, systemes, readFile = (p) => readFi
   const ownerSystems = computeOwnerSystems(systemes);
   const findings = [];
   for (const p of primitives) {
+    if (p.nature === 'organisme') continue;
     const contenu = readFile(p.fichier);
     for (const f of scanGenericDomainImport(p.fichier, contenu, ownerSystems)) {
       findings.push({ primitiveId: p.id, fichier: p.fichier, target: f.target, systemId: f.systemId });

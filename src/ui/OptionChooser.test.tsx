@@ -7,9 +7,9 @@ import { OptionChooser, ChoiceButtons, type RollOption, type RollSegOption } fro
 import { optionValue, optionPending } from './breakdown';
 
 /** Pose la cascade RÉELLE de l'app, dans SON ordre (`src/ui/styles.css` : `base.css` puis
- *  `sheet.css`) — mesurer un style calculé sans elle mesurerait le vide. */
+ *  `components.css`, foyer de `.seg`) — mesurer un style calculé sans elle mesurerait le vide. */
 function poserFeuilles(): void {
-  for (const f of ['./styles/base.css', './styles/sheet.css']) {
+  for (const f of ['./styles/base.css', './styles/components.css']) {
     const style = document.createElement('style');
     style.dataset.recette = 'feuille';
     style.textContent = readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');
@@ -31,7 +31,7 @@ describe('OptionChooser — sélecteur d’options de jet partagé', () => {
     { key: 'esquive', label: 'Esquive', value: 48, title: 'Esquiver' },
   ];
 
-  it('layout seg : segmented control, mini-titre, valeur effective, option active = classe `on`', () => {
+  it('layout seg : segmented control, mini-titre, valeur effective, option active = `aria-pressed`', () => {
     const html = renderToStaticMarkup(<OptionChooser layout="seg" groupLabel="Réaction" options={seg} />);
     expect(html).toContain('class="seg"');
     expect(html).toContain('Réaction'); // mini-titre du groupe
@@ -39,9 +39,11 @@ describe('OptionChooser — sélecteur d’options de jet partagé', () => {
     expect(html).toContain('55'); // valeur effective affichée à côté du libellé
     expect(html).toContain('Esquive');
     expect(html).toContain('48');
-    // L'option sélectionnée porte la classe `on`, pas l'autre.
-    expect(html).toMatch(/class="on"[^>]*>\s*Parade/);
-    expect(html).not.toMatch(/class="on"[^>]*>\s*Esquive/);
+    // L'ÉLECTION se dit `aria-pressed` (arbitrage A2), jamais une classe `on` : une seule grammaire
+    // d'état ferré, et le lecteur d'écran l'entend.
+    expect(html).not.toContain('class="on"');
+    expect(html).toMatch(/aria-pressed="true"[^>]*>\s*Parade/);
+    expect(html).toMatch(/aria-pressed="false"[^>]*>\s*Esquive/);
   });
 
   it('layout seg : une option qui porte sa RAISON COMPOSE `GatedAction` (bare), sans rien réécrire', () => {
@@ -66,17 +68,18 @@ describe('OptionChooser — sélecteur d’options de jet partagé', () => {
     expect(html).toMatch(/aria-pressed="false"[^>]*>\s*cellule|cellule[\s\S]{0,80}aria-pressed="false"/);
   });
 
-  it('layout seg : le segment RETENU garde sa classe `on` même refusé', () => {
+  it('layout seg : le segment RETENU reste annoncé pressé même refusé', () => {
     const html = renderToStaticMarkup(
       <OptionChooser layout="seg" options={[{ key: 'a', label: 'A', selected: true, refus: 'Plus disponible.' }]} />,
     );
-    expect(html).toMatch(/class="btn[^"]*btn-nu[^"]*on"/);
+    expect(html).toMatch(/<button[^>]*class="btn[^"]*btn-nu"[^>]*aria-pressed="true"/);
   });
 
   it('layout seg : le refus garde la MATIÈRE du segment — mesurée sur le style CALCULÉ, pas sur la classe', () => {
     // Une classe rendue ne prouve rien : c'est la CASCADE qui décide. `.btn.btn-nu` (0,3,0) l'emporte
-    // sur `.seg button` (0,1,1) et sur `.seg button.on` (0,2,1) — sans les sélecteurs qui reprennent
-    // la main (`sheet.css`), le segment refusé perd sa boîte (padding 0) et le retenu son relief.
+    // sur `.seg button` (0,1,1) et sur `.seg button[aria-pressed='true']` (0,2,1) — sans les sélecteurs
+    // qui reprennent la main (`components.css`), le segment refusé perd sa boîte (padding 0) et le
+    // retenu son relief.
     poserFeuilles();
     const boite = document.createElement('div');
     boite.innerHTML = renderToStaticMarkup(

@@ -15,8 +15,8 @@ describe('classes rm-* — aucune classe fantôme', () => {
       for (const c of m[1].split(/\s+/)) if (c.startsWith('rm-') && !used.has(c)) used.set(c, rel);
   }
 
-  it('mesure un stock non vide (la garde ne peut pas être vide par accident)', () => {
-    expect(used.size).toBeGreaterThan(30);
+  it('le balayage VOIT une classe qu’on sait posée (la garde ne peut pas être vide par accident)', () => {
+    expect(used.get('rm-range')).toBe('src/ui/OptionChooser.tsx');
   });
 
   /** Recherche SANS regex construite : un sélecteur `.classe` suivi d'un caractère qui termine le nom. */

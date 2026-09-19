@@ -16,7 +16,7 @@
   margin: 0;
 }
 /* Une VALEUR DE PARAMÈTRE occupe sa ligne entière : les 3 colonnes de `.rm-loc-grid` (canon
-   `OptionChooser layout='grid'`, combat-modals.css) hacheraient un libellé de sort en trois mots.
+   `OptionChooser layout='grid'`, option-chooser.css) hacheraient un libellé de sort en trois mots.
    Scopé au panneau, jamais au fichier partagé — même précédent que `.creator-step .rm-loc-grid`. */
 .pp-panel .rm-loc-grid {
   grid-template-columns: 1fr;
