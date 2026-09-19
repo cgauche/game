@@ -127,13 +127,16 @@ export const ECRIT_LU = {
       '`stocks-nominatifs.test.mjs:113-129` dérive les stocks OUBLIÉS par la FORME — il prend TOUT `.json` ' +
       'suivi par git (`git ls-files --cached -- *.json`), saute les porteurs connus et PARSE le reste, ' +
       'donc public/qc/*.json, server/package.json, server/package-lock.json, server/tsconfig.json, ' +
-      'knip.json et package-lock.json ; il n’en écrit aucun, et aucune gate n’écrit sous public/ ni server/',
+      'knip.json et package-lock.json ; il n’en écrit aucun, et aucune gate n’écrit sous public/ ni server/ ; ' +
+      '+1 écrivain le 2026-09-18 (#1813) : `modulesFeuilles.test.mjs` fabrique l’arbre jetable où il éprouve ' +
+      'les graphies d’import qui atteignent une FEUILLE (`mkdtempSync` sous os.tmpdir(), `rmSync` en finally) — ' +
+      'sonde `git status --porcelain` avant/après identique, et aucun résidu dans os.tmpdir()',
   },
   'test:ops': {
     ecrit: [],
     lit: ['src/', 'scripts/ops/', 'scripts/guards/lib/', 'scripts/hooks/', '.claude/workflows/', '.github/workflows/', 'knip.json', 'knip-exports-baseline.json'],
     raison:
-      'cinq modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
+      'six modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
       '`knip-exports-ratchet.mjs` (`main()` gardé par `import.meta.url === argv[1]`, l.121 ; seul `--sync` ' +
       'écrirait la baseline, l.94-96), `ruleset-main.mjs` (le corps du ruleset part par un fichier de ' +
       'os.tmpdir(), ruleset-main.mjs:117-120, et son `executer` n’est jamais appelé par les tests), ' +
@@ -149,7 +152,11 @@ export const ECRIT_LU = {
       'd’exports le relit) ; les 3 fichiers de .claude/workflows/ sont lus EN PLACE, sur l’arbre réel. ' +
       'Ce que `soldesSuivis()` lirait de .claude/soldes/ n’est atteint que par le `main()` du script, ' +
       'gardé par `import.meta.url === argv[1]` (fermetures-non-citees.mjs:195) : les tests passent leurs ' +
-      'PROPRES dépôts jetables, et la sonde n’a mesuré aucune lecture sous .claude/soldes/',
+      'PROPRES dépôts jetables, et la sonde n’a mesuré aucune lecture sous .claude/soldes/ ; ' +
+      '+1 écrivain le 2026-09-18 (#1813) : `plageFermante.test.mjs` prend ses dépôts jetables à ' +
+      '`instanceDeDepot` (os.tmpdir()) et y pose `.claude/soldes/42.md` avant de commiter — lire une plage ' +
+      'et le solde qu’un commit emporte exige de VRAIS commits ; `rmSync` en finally, et sonde ' +
+      '`git status --porcelain` avant/après identique sur l’arbre du dépôt',
   },
   'test:runner': {
     ecrit: [],

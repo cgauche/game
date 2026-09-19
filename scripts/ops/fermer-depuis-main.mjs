@@ -6,92 +6,78 @@
 // Aucun hook local ne ferme donc de ticket : c'est le job `fermetures` de `ci.yml` qui appelle ce
 // script sur la plage réellement poussée, après le job `build`.
 //
+// Ce fichier est une FEUILLE, et c'est ce qui tient l'invariant « un seul site ferme » : il porte le
+// GESTE et rien d'autre, le vocabulaire de LECTURE d'une plage fermante vivant dans
+// `scripts/guards/lib/plageFermante.mjs`. Rien dans le dépôt ne l'importe — cliquet dans
+// `fermer-depuis-main.test.mjs` et dans `publier.test.mjs`.
+//
 // Usage : node scripts/ops/fermer-depuis-main.mjs <before>..<sha>   (`npm run ops:fermer -- <plage>`)
 // Le geste GitHub appartient à l'orchestrateur et à la CI, jamais à un agent.
-import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { dirname, join } from 'node:path'
-import { estAncetre } from '../guards/lib/gitPorte.mjs'
-import { numerosFermes } from '../guards/lib/fermetures.mjs'
+import {
+  avertissementRapportee, commitsDeLaPlage, decisionPour, fermeturesDeLaPlage, marqueDe,
+  motifDePlageIllisible, posteUnSolde, soldeDuCommit,
+} from '../guards/lib/plageFermante.mjs'
+import { DEPOT, appelGhRunner, cheminTicket, lireTicket, poserCommentaire } from '../guards/lib/ticketsGh.mjs'
 
-const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
-export const DEPOT = 'cgauche/game'
+const RACINE = fileURLToPath(new URL('../..', import.meta.url))
 
-/** Marque d'IDEMPOTENCE posée dans le commentaire de fermeture : elle porte le sha qui a soldé. */
-export const marqueDe = (sha) => `<!-- ferme-depuis-main: ${sha} -->`
+const appelGh = appelGhRunner({ cwd: RACINE, maxBuffer: 32 * 1024 * 1024 })
 
 /**
- * Tickets fermés par une plage de commits, chacun rattaché au PREMIER commit qui le cite. PUR.
- * @param {{ sha: string, message: string }[]} commits du plus ancien au plus récent
- * @returns {{ numero: string, sha: string }[]}
+ * Le geste qui ferme les tickets SOLDÉS d'une plage — le solde POSTÉ, puis l'état PATCHÉ.
+ * `gh issue close` est servi par GraphQL, refusé HTTP 403 aux sessions Claude Code ; ce PATCH est la
+ * seule route ouverte. `poser: false` rejoue le SEUL patch, sur un ticket dont le solde est déjà au
+ * fil (un PATCH raté au run précédent) : sans cela, le rejeu du job posterait un second solde
+ * identique.
+ *
+ * `state_reason=completed` est passé EXPLICITEMENT. `PATCH /repos/{owner}/{repo}/issues/{n}` porte
+ * `state` et `state_reason` en DEUX champs distincts, et la doc REST ne DÉFINIT aucune valeur de
+ * `state_reason` pour un `state=closed` sans raison : s'en remettre au défaut, c'est parier sur un
+ * comportement non écrit. Les 100 dernières fermetures du dépôt portent toutes `completed` (sonde
+ * `gh api repos/cgauche/game/issues?state=closed --jq .[].state_reason`, 2026-09-18) — ce que posait
+ * la rédaction d'avant, `gh issue close --reason completed` ; l'écrire ici rend le geste IDENTIQUE.
+ * @param {{numero:string|number, corps:string, poser?:boolean, appel?:Function}} p
+ * @returns {{ok:boolean, raison?:string}}
  */
-export function fermeturesDeLaPlage(commits) {
-  const vus = new Map()
-  for (const c of commits) {
-    for (const numero of numerosFermes(c.message)) {
-      if (!vus.has(numero)) vus.set(numero, c.sha)
-    }
+export function fermerLeTicket({ numero, corps, poser = true, appel = appelGh }) {
+  if (poser) {
+    const pose = poserCommentaire({ depot: DEPOT, numero, corps, appel })
+    if (!pose.ok) return { ok: false, raison: `commentaire non posé — ${pose.raison}` }
   }
-  return [...vus].map(([numero, sha]) => ({ numero, sha }))
+  const ferme = appel([
+    'api', cheminTicket(DEPOT, numero), '-X', 'PATCH', '-f', 'state=closed', '-f', 'state_reason=completed',
+  ])
+  return ferme.ok ? { ok: true } : { ok: false, raison: ferme.raison }
 }
 
 /**
- * Que faire d'un ticket, sachant son état et ses commentaires. PUR.
- * @returns {'fermer'|'rien'|'rapporter'} `rien` = déjà fermée PAR CE SHA (rejeu du job) ;
- *   `rapporter` = déjà fermée par un AUTRE geste — on ne la referme pas, on le DIT.
+ * Le traitement d'UN ticket soldé : lire, décider, agir. Exporté et ses coutures injectées, parce
+ * que c'est ICI que la décision PURE devient un geste — `poser: posteUnSolde(decision)` est la ligne
+ * qui tient l'idempotence, et une ligne sans banc est libre de mentir (mutée en `poser: true`, elle
+ * reposte le solde que `decisionPour` refuse, sans qu'aucun test bouge).
+ * @param {{numero:string|number, sha:string, lire?:Function, fermer?:Function, solde?:Function}} p
+ * @returns {{ok:boolean, dit?:string, avertissement?:string, raison?:string}}
  */
-export function decisionPour({ etat, commentaires, sha }) {
-  if (etat === 'open') return 'fermer'
-  return commentaires.some((c) => String(c).includes(marqueDe(sha))) ? 'rien' : 'rapporter'
-}
+export function traiterUnTicket({
+  numero, sha,
+  lire = (n) => lireTicket({ depot: DEPOT, numero: n, appel: appelGh }),
+  fermer = fermerLeTicket,
+  solde = soldeDuCommit,
+}) {
+  const vue = lire(numero)
+  if (!vue.ok) return { ok: false, raison: `lecture impossible — ${vue.raison}` }
 
-/**
- * Une issue déjà fermée par un AUTRE geste s'AVERTIT, elle ne rougit pas : le commit a fait son
- * travail, et rougir le job `fermetures` sur `main` pour cela ferait passer pour cassée une
- * publication saine. `::warning::` est la forme que GitHub Actions remonte à l'annotation de la course.
- * L'échec reste réservé aux défauts réels : API en erreur, ticket inexistant, plage illisible.
- */
-export const avertissementRapportee = (numero, sha) =>
-  `::warning::[fermetures] #${numero} déjà FERMÉE par un autre geste que ${sha} — non refermée, à vérifier\n`
+  const decision = decisionPour({ etat: vue.etat.toLowerCase(), commentaires: vue.corps, sha })
+  if (decision === 'rien') return { ok: true, dit: `déjà fermée par ${sha} — rien à faire` }
+  if (decision === 'rapporter') return { ok: true, avertissement: avertissementRapportee(numero, sha) }
 
-/** JAMAIS `shell: true` ; `stdio[0] = 'ignore'` = le `< /dev/null` qu'un `gh` de workflow réclame. */
-const gh = (args) =>
-  execFileSync('gh', args, { cwd: RACINE, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] })
-
-/** Le dépôt LU est un paramètre : le test joue sur un dépôt jetable de `os.tmpdir()`, jamais sur
- *  l'arbre de travail (un test ne fabrique pas de commits dans l'arbre partagé). */
-const git = (args, cwd = RACINE) => execFileSync('git', args, { cwd, encoding: 'utf8', maxBuffer: 1e8 })
-
-/**
- * La base d'une plage est-elle un ANCÊTRE de sa tête ? `git log <base>..<tête>` sur une base
- * inatteignable lève une erreur brute de git ; le job qui l'appelle doit dire CE QUI s'est passé.
- * @returns {string|null} le motif de refus, ou `null` si la plage est lisible
- */
-export function motifDePlageIllisible(plage, cwd = RACINE) {
-  const [base, tete] = plage.split('..')
-  const vu = estAncetre(base, tete, { cwd })
-  if (!vu.disponible) return `ascendance de ${plage} indisponible : ${vu.raison} — aucune fermeture n'est jugée`
-  if (vu.absent || vu.valeur !== true)
-    return `base ${base} inatteignable depuis ${tete} : push non fast-forward sur main, interdit par le pre-push`
-  return null
-}
-
-/** Commits d'une plage `<a>..<b>`, du plus ancien au plus récent. */
-export function commitsDeLaPlage(plage, cwd = RACINE) {
-  const brut = git(['log', '--reverse', '--pretty=format:%H%x1f%B%x00', plage], cwd)
-  return brut.split('\0').filter((b) => b.trim()).map((bloc) => {
-    const [sha, message] = bloc.replace(/^\n/, '').split('\x1f')
-    return { sha, message: message ?? '' }
-  })
-}
-
-/** Solde tel que le COMMIT l'emporte (jamais le disque du runner) ; `null` s'il n'y est pas. */
-export function soldeDuCommit(sha, numero, cwd = RACINE) {
-  try {
-    return git(['show', `${sha}:.claude/soldes/${numero}.md`], cwd)
-  } catch {
-    return null
-  }
+  const emporte = solde(sha, numero)
+  const corps = `${emporte ?? `Fermé par le commit ${sha}, publié sur main (aucun solde emporté).`}\n\n${marqueDe(sha)}\n`
+  const vu = fermer({ numero, corps, poser: posteUnSolde(decision) })
+  if (!vu.ok) return { ok: false, raison: `fermeture impossible — ${vu.raison}` }
+  const dejaAuFil = decision === 'patcher' ? ' — solde DÉJÀ au fil, seul l’état restait ouvert' : ''
+  return { ok: true, dit: `fermée (solde du commit ${sha}${emporte ? '' : ' — ABSENT'})${dejaAuFil}` }
 }
 
 function main() {
@@ -112,24 +98,13 @@ function main() {
   }
   let rate = 0
   for (const { numero, sha } of fermetures) {
-    const issue = JSON.parse(gh(['issue', 'view', numero, '--repo', DEPOT, '--json', 'state,comments']))
-    const etat = String(issue.state).toLowerCase()
-    const decision = decisionPour({ etat, commentaires: (issue.comments ?? []).map((c) => c.body), sha })
-    if (decision === 'rien') {
-      process.stdout.write(`[fermetures] #${numero} déjà fermée par ${sha} — rien à faire\n`)
-      continue
-    }
-    if (decision === 'rapporter') {
-      process.stderr.write(avertissementRapportee(numero, sha))
-      continue
-    }
-    const solde = soldeDuCommit(sha, numero)
-    const corps = `${solde ?? `Fermé par le commit ${sha}, publié sur main (aucun solde emporté).`}\n\n${marqueDe(sha)}\n`
-    try {
-      gh(['issue', 'close', numero, '--repo', DEPOT, '--comment', corps])
-      process.stdout.write(`[fermetures] #${numero} fermée (solde du commit ${sha}${solde ? '' : ' — ABSENT'})\n`)
-    } catch (err) {
-      process.stderr.write(`[fermetures] #${numero} : fermeture impossible — ${String(err.message).slice(0, 200)}\n`)
+    // Un ticket en échec ne doit pas emporter les suivants : chaque tour rend son verdict, la boucle
+    // continue, et `rate` décide du code de sortie.
+    const vu = traiterUnTicket({ numero, sha })
+    if (vu.avertissement) process.stderr.write(vu.avertissement)
+    else if (vu.ok) process.stdout.write(`[fermetures] #${numero} ${vu.dit}\n`)
+    else {
+      process.stderr.write(`[fermetures] #${numero} : ${vu.raison}\n`)
       rate += 1
     }
   }

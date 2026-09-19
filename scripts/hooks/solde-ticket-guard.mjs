@@ -1913,8 +1913,11 @@ function porteEtatFerme(args) {
   })
 }
 
-/** Forme de fermeture `gh` portée par un segment, ou `null`. */
-function fermetureGh(segment) {
+/** Forme de fermeture `gh` portée par un segment (argv, exécutable en tête), ou `null`.
+  *  EXPORTÉE : c'est le RECONNAISSEUR canonique du geste de fermeture, et le recensement statique des
+  *  sites de fermeture du dépôt (`scripts/guards/lib/sitesDeFermeture.mjs`) le consomme tel quel —
+  *  une seconde table de graphies dirait « ferme » d'une commande que cette porte laisse passer. */
+export function fermetureGh(segment) {
   const start = segment[0] === '&' ? 1 : 0
   if (basenameExecutable(segment[start]) !== 'gh') return null
   const args = segment.slice(start + 1)

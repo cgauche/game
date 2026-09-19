@@ -29,9 +29,9 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { jobsCi } from '../gates/gatesDeCi.mjs'
+import { DEPOT } from '../guards/lib/ticketsGh.mjs'
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
-export const DEPOT = 'cgauche/game'
 export const NOM = 'main'
 
 /**

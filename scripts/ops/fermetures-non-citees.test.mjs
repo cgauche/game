@@ -6,7 +6,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import {
   comparerFermetures, rapportMarkdown, reculeDe, MARGE_CITATION_JOURS, CHEMIN_BASELINE,
-  FERMEUR_CANARI, TITRE_CANARI,
+  FERMEUR_CANARI, TITRE_CANARI, cheminFermees, fermeesDeLaFenetre, fermetureDeLIssue, fermeesDepuis,
 } from './fermetures-non-citees.mjs'
 
 /** Plafond de la baseline : il vit ICI, jamais dans le JSON — sans lui, le chemin le plus court pour
@@ -136,4 +136,93 @@ test('CLIQUET : la baseline RÉELLE ne dépasse pas son plafond et chaque entré
 test('la fenêtre des CITATIONS déborde celle des fermetures (faux rouge de bord #1385)', () => {
   assert.equal(reculeDe('2026-08-20', MARGE_CITATION_JOURS), '2026-08-13')
   assert.ok(MARGE_CITATION_JOURS >= 1, 'un commit fermant PRÉCÈDE toujours la fermeture vue par l’API')
+})
+
+// ── lecture REST de la fenêtre (#1813) ────────────────────────────────────────
+
+test('la fenêtre se demande à la route des ISSUES du dépôt, jamais à `search/issues`', () => {
+  // `search/issues` et `gh api --paginate` sont refusés HTTP 403 aux sessions agent
+  // (« This GitHub API path is not available in agent sessions », mesuré 2026-09-18).
+  const chemin = cheminFermees('cgauche/game', '2026-09-01')
+  assert.equal(chemin, 'repos/cgauche/game/issues?state=closed&since=2026-09-01T00:00:00Z')
+  assert.equal(/search\/issues|paginate/.test(chemin), false)
+})
+
+const issue = (n, extra = {}) => ({
+  number: n,
+  title: `titre de #${n}`,
+  closed_at: '2026-09-03T10:00:00Z',
+  state_reason: 'completed',
+  labels: [{ name: 'bug' }],
+  ...extra,
+})
+
+test('fermetureDeLIssue : les champs de la BASELINE, ni renommés ni reformés', () => {
+  assert.deepEqual(fermetureDeLIssue(issue(1700)), {
+    numero: 1700,
+    titre: 'titre de #1700',
+    closedAt: '2026-09-03T10:00:00Z',
+    stateReason: 'completed',
+    labels: ['bug'],
+  })
+  // `state_reason` nul se lit « null », comme le rendait `(.state_reason // "null")`.
+  assert.equal(fermetureDeLIssue(issue(1, { state_reason: null })).stateReason, 'null')
+  assert.deepEqual(fermetureDeLIssue(issue(1, { labels: [] })).labels, [])
+})
+
+test('le paramètre `since` porte sur `updated_at` : le filtre CLIENT taille la fenêtre exacte', () => {
+  // `since` est donc PLUS LARGE que voulu — aucune fermeture n'est manquée, mais une issue TOUCHÉE
+  // dans la fenêtre et fermée AVANT elle remonte, et n'est pas une fermeture de cette fenêtre.
+  const lues = [
+    issue(1700, { closed_at: '2026-09-03T10:00:00Z' }),
+    issue(1600, { closed_at: '2026-08-12T23:59:59Z' }),
+  ]
+  assert.deepEqual(fermeesDeLaFenetre(lues, '2026-09-01').map((f) => f.numero), [1700])
+  // La borne est INCLUSIVE : une fermeture à l'instant d'ouverture de la fenêtre en fait partie.
+  assert.deepEqual(
+    fermeesDeLaFenetre([issue(9, { closed_at: '2026-09-01T00:00:00Z' })], '2026-09-01').map((f) => f.numero),
+    [9],
+  )
+})
+
+test('la route des issues sert AUSSI les pull requests : elles sont ÉCARTÉES', () => {
+  const lues = [issue(1700), issue(1701, { pull_request: { url: '…' } })]
+  assert.deepEqual(fermeesDeLaFenetre(lues, '2026-09-01').map((f) => f.numero), [1700])
+})
+
+test('une issue sans `closed_at` ne peut pas être datée : elle sort de la fenêtre', () => {
+  assert.deepEqual(fermeesDeLaFenetre([issue(1700, { closed_at: null })], '2026-09-01'), [])
+})
+
+test('fermeesDepuis : TOUT passe par la couture injectée — `closedBy` compris, sinon le banc part sur le réseau', () => {
+  const vus = []
+  const appel = (args) => {
+    vus.push(args)
+    if (args[1].startsWith('repos/cgauche/game/issues?')) {
+      return { ok: true, stdout: JSON.stringify([issue(1700), issue(1701, { pull_request: { url: '…' } })]) }
+    }
+    return { ok: true, stdout: 'cgauche\n' }
+  }
+  const f = fermeesDepuis('2026-09-01', appel)
+  assert.deepEqual(f.map((x) => [x.numero, x.closedBy]), [[1700, 'cgauche']])
+  // La liste, puis le seul ticket retenu : la pull request écartée ne coûte aucun appel.
+  assert.deepEqual(vus.map((a) => a[1]), [
+    'repos/cgauche/game/issues?state=closed&since=2026-09-01T00:00:00Z&per_page=100&page=1',
+    'repos/cgauche/game/issues/1700',
+  ])
+  assert.equal(vus.length, 2, 'aucun appel n’échappe au feint : une lecture hors couture partirait sur le réseau')
+})
+
+test('fermeesDepuis : un `closedBy` illisible est NOMMÉ comme l’est un refus de liste', () => {
+  const appel = (args) => (args[1].includes('?')
+    ? { ok: true, stdout: JSON.stringify([issue(1700)]) }
+    : { ok: false, raison: 'gh: Not Found (HTTP 404)' })
+  assert.throws(() => fermeesDepuis('2026-09-01', appel), /#1700 : qui l’a fermée est illisible — gh: Not Found/)
+})
+
+test('fermeesDepuis : un refus de LISTE est nommé, et rien n’est rendu', () => {
+  assert.throws(
+    () => fermeesDepuis('2026-09-01', () => ({ ok: false, raison: 'HTTP 403' })),
+    /lecture des issues fermées impossible — HTTP 403/,
+  )
 })

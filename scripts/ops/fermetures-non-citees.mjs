@@ -21,10 +21,10 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { ecartsDeStock } from '../guards/lib/stock.mjs'
 import { numerosFermes } from '../guards/lib/fermetures.mjs'
+import { DEPOT, appelGhRunner, cheminTicket, pagesRest } from '../guards/lib/ticketsGh.mjs'
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 export const CHEMIN_BASELINE = join(RACINE, 'scripts', 'ops', 'fermetures-non-citees.json')
-export const DEPOT = 'cgauche/game'
 
 /** Label qui EXEMPTE : le doublon n'a pas de solde propre, c'est le survivant qui le porte. */
 export const LABEL_EXEMPTANT = 'duplicate'
@@ -39,8 +39,8 @@ export const LABEL_EXEMPTANT = 'duplicate'
  *  serait INERTE le jour où la première course verte ferme la survivante.
  *  Les DEUX conditions comptent : une issue « Canari rouge » fermée par un humain reste une
  *  fermeture hors commit à solder, et le bot ne blanchit pas les fermetures qu'il fait par ailleurs.
- *  NON PROUVÉ sur ce dépôt : 25 fermetures échantillonnées, 0 par le bot — la première course réelle
- *  tranchera la graphie exacte du `closed_by.login`. */
+ *  La graphie du `closed_by.login` est MESURÉE (2026-09-18, fenêtre depuis le 2026-09-10, 47
+ *  fermetures) : `github-actions[bot]` 45, `cgauche` 2. */
 export const FERMEUR_CANARI = 'github-actions[bot]'
 export const TITRE_CANARI = 'Canari rouge'
 const fermeeParLeCanari = (f) =>
@@ -114,37 +114,62 @@ export function rapportMarkdown({ depuis, rapport, rouges }) {
   return [`### Fermetures hors commit depuis le ${depuis}`, '', lignes, '', verdict].join('\n')
 }
 
-/** `gh` sur un runner GitHub Actions hérite d'un stdin jamais fermé : sans `stdio[0] = 'ignore'`
- *  (l'équivalent programmatique du `< /dev/null` de la ligne de commande, mesuré au grounding L2),
- *  `gh api --paginate` peut rester pendu à attendre une entrée qui ne vient pas.
- *  JAMAIS `shell: true` : `gh` est un exécutable, et sous `cmd.exe` le `&` de la requête de recherche
- *  (`…closed:>=…&per_page=100`) coupe la commande en deux — mesuré 2026-09-04, HTTP 422 puis
- *  « 'per_page' n'est pas reconnu en tant que commande interne ». */
-const gh = (args) =>
-  execFileSync('gh', args, {
-    cwd: RACINE, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
-    stdio: ['ignore', 'pipe', 'pipe'],
-  })
+/** L'enrobeur `gh` des scripts de runner est UNIQUE et vit à la lib : mêmes contraintes ici et au
+ *  job `fermetures` (stdin refermé, jamais `shell: true`), donc une seule implémentation. */
+const appelGh = appelGhRunner({ cwd: RACINE })
 
 const git = (args) => execFileSync('git', args, { cwd: RACINE, encoding: 'utf8', maxBuffer: 1e8 })
 
-/** Issues FERMÉES depuis `depuis`. L'endpoint s'écrit SANS barre oblique de tête : sous Git Bash,
- *  MSYS réécrit un argument commençant par `/` en chemin Windows et `gh` refuse alors l'endpoint
- *  (mesuré 2026-09-04 : « invalid API endpoint: "C:/Program Files/Git/repos/…" »). */
-export function fermeesDepuis(depuis) {
-  const brut = gh([
-    'api', '--paginate',
-    `search/issues?q=repo:${DEPOT}+is:issue+closed:>=${depuis}&per_page=100`,
-    '--jq', '.items[] | {numero: .number, titre: .title, closedAt: .closed_at, stateReason: (.state_reason // "null"), labels: [.labels[].name]}',
-  ])
-  const issues = brut.split('\n').filter(Boolean).map((l) => JSON.parse(l))
-  // `search/issues` ne porte PAS `closed_by` : il se lit une issue à la fois — c'est le nom qu'il faut
-  // pour dire QUI a fermé hors commit, et la fenêtre est de l'ordre de la dizaine d'issues.
-  return issues.map((i) => ({
-    ...i,
+/** L'endpoint s'écrit SANS barre oblique de tête : sous Git Bash, MSYS réécrit un argument
+ *  commençant par `/` en chemin Windows et `gh` refuse alors l'endpoint (mesuré 2026-09-04 :
+ *  « invalid API endpoint: "C:/Program Files/Git/repos/…" »). */
+export const cheminFermees = (depot, depuis) =>
+  `repos/${depot}/issues?state=closed&since=${depuis}T00:00:00Z`
+
+/**
+ * Une entrée REST `repos/<o>/<r>/issues` mise à la forme que `comparerFermetures` lit. PURE.
+ * `closedBy` n'est pas ici : il vit sur la route du ticket, une issue à la fois.
+ */
+export const fermetureDeLIssue = (i) => ({
+  numero: i.number,
+  titre: i.title,
+  closedAt: i.closed_at,
+  stateReason: i.state_reason ?? 'null',
+  labels: (i.labels ?? []).map((l) => l.name),
+})
+
+/**
+ * La fenêtre exacte, TAILLÉE côté client. PURE.
+ * Le paramètre `since` de `repos/<o>/<r>/issues` porte sur `updated_at`, PAS sur `closed_at` : il est
+ * donc PLUS LARGE que la fenêtre voulue — aucune fermeture n'est manquée, et ce filtre est ce qui
+ * rend la fenêtre exacte. Cet endpoint sert AUSSI les pull requests : `pull_request` les écarte.
+ * @param {object[]} entrees @param {string} depuis `AAAA-MM-JJ`
+ */
+export function fermeesDeLaFenetre(entrees, depuis) {
+  const borne = Date.parse(`${depuis}T00:00:00Z`)
+  return entrees
+    .filter((i) => !i.pull_request && i.closed_at && Date.parse(i.closed_at) >= borne)
+    .map(fermetureDeLIssue)
+}
+
+/**
+ * Issues FERMÉES depuis `depuis`. `search/issues` et `gh api --paginate` sont refusés HTTP 403 aux
+ * sessions agent (« This GitHub API path is not available in agent sessions », mesuré 2026-09-18) :
+ * la liste se lit page par page sur la route des issues du dépôt (`pagesRest`).
+ */
+export function fermeesDepuis(depuis, appel = appelGh) {
+  const vue = pagesRest(cheminFermees(DEPOT, depuis), appel)
+  if (!vue.ok) throw new Error(`[fermetures] lecture des issues fermées impossible — ${vue.raison}`)
+  // `closed_by` n'est pas rendu par la LISTE : il se lit une issue à la fois — c'est le nom qu'il
+  // faut pour dire QUI a fermé hors commit, et la fenêtre est de l'ordre de la dizaine d'issues.
+  // Il passe par la MÊME couture que la liste : une lecture qui court-circuiterait `appel` ferait
+  // partir sur le réseau un banc qui se croit hermétique, et jetterait là où la liste NOMME.
+  return fermeesDeLaFenetre(vue.entrees, depuis).map((f) => {
+    const nom = appel(['api', cheminTicket(DEPOT, f.numero), '--jq', '.closed_by.login // "null"'])
+    if (!nom.ok) throw new Error(`[fermetures] #${f.numero} : qui l’a fermée est illisible — ${nom.raison}`)
     // `--jq` de `gh` rend une chaîne BRUTE (jamais du JSON entre guillemets) : elle se trime, elle ne se parse pas.
-    closedBy: gh(['api', `repos/${DEPOT}/issues/${i.numero}`, '--jq', '.closed_by.login // "null"']).trim(),
-  }))
+    return { ...f, closedBy: nom.stdout.trim() }
+  })
 }
 
 /** Le commit qui ferme un ticket PRÉCÈDE la fermeture vue par l'API, et un rebase peut l'en éloigner

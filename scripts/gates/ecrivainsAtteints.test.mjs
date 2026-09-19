@@ -75,6 +75,12 @@ const ATTENDU = {
     // +1 le 2026-09-05 (#1679 L3b) : la porte de rôle du lecteur à ordre total pose ses dossiers-fixtures
     // (`mkdtempSync` + `writeFileSync`) sous `os.tmpdir()` — l'arbre n'est jamais écrit.
     'scripts/guards/lib/lister.test.mjs',
+    // +1 le 2026-09-18 (#1813) : la garde des MODULES FEUILLES fabrique un arbre JETABLE
+    // (`mkdtempSync` sous os.tmpdir(), `mkdirSync`/`writeFileSync` pour la feuille, son banc et les
+    // sources du cas, `rmSync` en finally) — éprouver les graphies d'import qui atteignent une feuille
+    // exige de VRAIS fichiers à résoudre, et l'arbre du dépôt n'est jamais écrit : mesuré le
+    // 2026-09-18, `git status --porcelain` identique avant/après, et `/tmp` sans résidu.
+    'scripts/guards/lib/modulesFeuilles.test.mjs',
     'scripts/guards/lib/plageStock.test.mjs',
     // +2 le 2026-09-06 (#1679 L3b) : la purge des dossiers de CACHE (`node_modules/.cache`,
     // `node_modules/.cache/gates`) est une source unique — elle EFFACE, par construction ; son test
@@ -158,6 +164,12 @@ const ATTENDU = {
     'scripts/guards/lib/depotGabarit.mjs',
     'scripts/guards/lib/purgerPerimes.mjs',
     'scripts/ops/chantier.test.mjs',
+    // +1 le 2026-09-18 (#1813) : le banc du vocabulaire de PLAGE FERMANTE prend ses dépôts jetables à
+    // la fixture partagée (`instanceDeDepot`, sous os.tmpdir()) et y pose ses fichiers
+    // (`mkdirSync`/`writeFileSync` pour `.claude/soldes/42.md`, `rmSync` en finally) : lire une plage
+    // dans l'histoire et le solde qu'un commit emporte exige de VRAIS commits, et l'arbre du dépôt
+    // n'est jamais écrit — mesuré le 2026-09-18, `git status --porcelain` identique avant/après.
+    'scripts/ops/plageFermante.test.mjs',
     'scripts/ops/publier.mjs',
     'scripts/ops/publier.test.mjs',
     'scripts/ops/worktrees.test.mjs',

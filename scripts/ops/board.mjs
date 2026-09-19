@@ -30,11 +30,10 @@ import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { arbrePrincipal, fetchOrigin, lireGit, sortieOuNull } from '../guards/lib/gitPorte.mjs'
 import { inventaire } from './worktrees.mjs'
+import { DEPOT } from '../guards/lib/ticketsGh.mjs'
 
 /** Le propriétaire du Project (un Project d'UTILISATEUR, pas d'organisation). */
 export const PROPRIETAIRE = 'cgauche'
-/** Le dépôt dont les tickets sont projetés. */
-export const DEPOT = 'cgauche/game'
 /** Le titre qui IDENTIFIE le Project : un second Project de même titre serait le même board. */
 export const TITRE_PROJECT = 'Chantiers'
 /** La référence de base de toute mesure d'avance/retard. */
