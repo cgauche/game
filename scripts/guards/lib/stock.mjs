@@ -26,8 +26,6 @@
 //     ici servirait l'écart d'un AUTRE appel. Ce qui se mémoïse, c'est la LECTURE du disque, et elle
 //     vit dans `sourceCorpus.mjs` (`readCorpus`, clé de contenu).
 
-import { parUnitesDeCode } from './lister.mjs';
-
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
@@ -78,24 +76,6 @@ export function ecartsDeStock({ observe, stock, cle, remede = {} }) {
  * @param {{ famille?: string, fichier: string, ref: string, occurrence: number }} e
  */
 export const cleDeSite = (e) => [e.famille ?? '', e.fichier, e.ref, e.occurrence].join(' :: ');
-
-/**
- * ORDRE CANONIQUE d'un stock nominatif RENDU : sa propre CLÉ (famille, fichier, réf, occurrence),
- * par unités de code. Il ne doit RIEN à l'ordre du balayage : deux corpus parcourus dans deux ordres
- * rendent le MÊME fichier, donc un registre réordonné (`src/data/books.json`, #1825) ne réécrit
- * aucun artefact commité.
- * POSÉ AU RENDU, jamais dans `sitesEnEntrees` : l'occurrence y est l'ordinal du BALAYAGE, et
- * `check-folio-continuity.mjs#entreesDAncresVides` apparie encore site et mesure PAR POSITION (le
- * `line`, et le `pdfChars` de `lib/empty-folios-stock.mjs` qui en dérive) — trier là déplacerait des
- * VALEURS, pas des lignes.
- * @param {{ famille?: string, fichier?: string, ref?: string, occurrence?: number }} a
- * @param {{ famille?: string, fichier?: string, ref?: string, occurrence?: number }} b
- */
-export const parCleDeSite = (a, b) =>
-  parUnitesDeCode(a.famille ?? '', b.famille ?? '')
-  || parUnitesDeCode(a.fichier ?? '', b.fichier ?? '')
-  || parUnitesDeCode(a.ref ?? '', b.ref ?? '')
-  || (a.occurrence ?? 0) - (b.occurrence ?? 0);
 
 /**
  * Sites OBSERVÉS → entrées NOMINALES. L'occurrence est l'ordinal du site parmi ceux qui partagent la

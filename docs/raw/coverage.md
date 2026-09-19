@@ -2003,4 +2003,4 @@
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: ba543c060446efdc98091c66ea7ef49f6b699591 (368 fichiers, 18 dossiers) corps: ba86e83e3e8753b95be36d0b01835333a5137922 -->
+<!-- sources-empreinte: 6db3cad14513261332864e3f2109d3a3c5a5a117 (368 fichiers, 18 dossiers) corps: ba86e83e3e8753b95be36d0b01835333a5137922 -->

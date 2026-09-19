@@ -43,8 +43,9 @@ const BOOK_DIR = new Map(BOOKS)
 // Le garde ci-dessous couvre les deux cas où le sigle manque : entrée pivot ABSENTE du registre, ou
 // présente mais SANS `abbr` (`PIVOT_ABBR` valant alors `undefined`) — le message les distingue, un
 // rouge qui nomme la mauvaise cause envoie chercher au mauvais endroit.
+const _byId = new Map(booksData.map((b) => [b.id, b]))
 const PIVOT_BOOK_ID = 'livre-de-base'
-const _pivot = booksData.find((b) => b.id === PIVOT_BOOK_ID)
+const _pivot = _byId.get(PIVOT_BOOK_ID)
 export const PIVOT_ABBR = _pivot?.abbr
 if (!PIVOT_ABBR) {
   throw new Error(`_lib: livre pivot "${PIVOT_BOOK_ID}" ${_pivot ? 'sans `abbr`' : 'ABSENT'} dans books.json`)

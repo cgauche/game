@@ -24,8 +24,8 @@ import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, readText } from './_lib.mjs'
 import { writeFileSync } from 'node:fs'
-import { cleDeSite, ecartDuVolet, parCleDeSite, refusDeCroissance, sitesEnEntrees, survieDeLecheance } from '../guards/lib/stock.mjs'
-import { lireStockJson, readStock, texteDeStock } from './stockNominatif.mjs'
+import { cleDeSite, ecartDuVolet, refusDeCroissance, sitesEnEntrees, survieDeLecheance } from '../guards/lib/stock.mjs'
+import { lireStockJson, parCleDeSite, readStock, texteDeStock } from './stockNominatif.mjs'
 
 const ICI = dirname(fileURLToPath(import.meta.url))
 export const STOCK_PATH = join(ICI, 'folio-gaps-stock.json')

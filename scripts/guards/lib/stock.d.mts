@@ -35,11 +35,6 @@ export interface EntreeNominative {
 
 export function cleDeSite(e: EntreeNominative): string;
 
-export function parCleDeSite(
-  a: Partial<EntreeNominative>,
-  b: Partial<EntreeNominative>,
-): number;
-
 export function sitesEnEntrees(
   sites: readonly { file: string; ref: string }[],
   p?: { famille?: string },

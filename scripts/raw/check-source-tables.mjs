@@ -31,8 +31,8 @@ import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { BOOKS, readText } from './_lib.mjs'
-import { ecartDuVolet, sitesEnEntrees, cleDeSite, parCleDeSite, survieDeLecheance } from '../guards/lib/stock.mjs'
-import { readStock } from './stockNominatif.mjs'
+import { ecartDuVolet, sitesEnEntrees, cleDeSite, survieDeLecheance } from '../guards/lib/stock.mjs'
+import { parCleDeSite, readStock } from './stockNominatif.mjs'
 import { parseChapitre, tablesOf, normText, estCleDePlage } from '../../src/data/source/decoupe.ts'
 
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'source-tables-stock.json')
