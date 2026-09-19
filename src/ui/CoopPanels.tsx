@@ -2,6 +2,7 @@ import { useGame } from '../state/store';
 import { CharFrame } from './CharFrame';
 import { MenuToggle } from './MenuCard';
 import { Icon } from './Icon';
+import { Stack } from './Layout';
 
 /**
  * Briques coop PARTAGÉES (lobby « Jouer en ligne » ET menu ☰ en partie) : code de room à
@@ -105,10 +106,10 @@ export function CoopMenuSection() {
   const net = useGame((s) => s.net);
   if (net.mode !== 'host') return null;
   return (
-    <div className="gm-section">
+    <Stack gap="xs">
       <CoopSeatList />
       <CoopRoomPanel />
       <CoopAssignList />
-    </div>
+    </Stack>
   );
 }

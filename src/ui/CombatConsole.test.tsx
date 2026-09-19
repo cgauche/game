@@ -359,10 +359,12 @@ describe('CombatConsole — arche', () => {
 const STYLES = join(process.cwd(), 'src', 'ui', 'styles');
 const readCss = (f: string) => readFileSync(join(STYLES, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
 const CC_CSS = readCss('combat-console.css');
-const HUD_CSS = readCss('hud.css');
+const CHIPS_CSS = readCss('state-chips.css');
 const BASE_CSS = readCss('base.css');
 const CC_BASE = baseSection(CC_CSS);
-const HUD_BASE = baseSection(HUD_CSS);
+const CHIPS_BASE = baseSection(CHIPS_CSS);
+const DOCK_BASE = baseSection(readCss('party-dock.css'));
+const STRIP_BASE = baseSection(readCss('initiative-strip.css'));
 const BANNER_BASE = baseSection(readCss('combat-banner.css'));
 
 const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
@@ -525,7 +527,7 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
     expect(decl(val, 'font')).toMatch(/monospace/);
     expect(val).not.toContain('--font-display');
     // La carte du BANDEAU porte la même donnée sur la même primitive : même traitement, même seuil.
-    const tuile = ruleOf(HUD_BASE, '.party-dock .ptile [data-overlay] > span');
+    const tuile = ruleOf(DOCK_BASE, '.party-dock .ptile [data-overlay] > span');
     for (const bloc of [val, tuile]) {
       const fond = decl(bloc, 'background');
       const ink = parseColor(decl(bloc, 'color')!);
@@ -551,7 +553,7 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
 
   // A-2 : la plaque de l'indice mangeait le filet de son alvéole (8/16 rangées du bord droit).
   it('A-2 — l’indice d’État se loge DANS l’alvéole, sans mordre son cadre', () => {
-    const n = ruleOf(HUD_BASE, '.ptile-states[data-reserve] .pt-n');
+    const n = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve] .pt-n');
     expect(decl(n, 'position')).toBe('absolute');
     for (const cote of ['top', 'right', 'bottom', 'left']) {
       const v = decl(n, cote);
@@ -560,24 +562,24 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
   });
 
   it('A-3 — le glyphe occupe son alvéole et l’indice porte sa propre pastille', () => {
-    const svg = ruleOf(HUD_BASE, '.ptile-states[data-reserve] .pt-state svg');
+    const svg = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve] .pt-state svg');
     // Le glyphe laisse le filet de l'alvéole, pas davantage (à −4px il tombait à 11px dans 15).
     for (const p of ['width', 'height']) expect(decl(svg, p)).toBe('calc(var(--alv) - 2px)');
-    const n = ruleOf(HUD_BASE, '.ptile-states[data-reserve] .pt-n');
+    const n = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve] .pt-n');
     const pastille = parseColor(decl(n, 'background')!);
     expect(pastille[3]).toBe(1);
     expect(contrast(parseColor(decl(n, 'color')!), pastille)).toBeGreaterThanOrEqual(4.5);
     // … et la pastille se DÉTACHE du fond de l'alvéole (sinon elle se lit comme un trait du glyphe).
-    const alv = ruleOf(HUD_BASE, '.ptile-states[data-reserve] .pt-state, .ptile-states[data-reserve] .pt-void');
+    const alv = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve] .pt-state, .ptile-states[data-reserve] .pt-void');
     const fondAlv = colorsIn(decl(alv, 'background')!).map((c) => over(c, parseColor(token('--cc-brass-cell-hi'))));
     expect(worst(pastille, fondAlv)).toBeGreaterThanOrEqual(3);
   });
 
   it('B-6 — l’alvéole VIDE est opaque et cerclée, d’un cran SOUS l’alvéole portée', () => {
-    const alv = ruleOf(HUD_BASE, '.ptile-states[data-reserve] .pt-state, .ptile-states[data-reserve] .pt-void');
-    const vide = ruleOf(HUD_BASE, '.ptile-states[data-reserve] .pt-void');
+    const alv = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve] .pt-state, .ptile-states[data-reserve] .pt-void');
+    const vide = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve] .pt-void');
     // La HACHURE de la carte du bandeau : c'est elle qui passait au travers d'une alvéole translucide.
-    const hachure = colorsIn(decl(ruleOf(HUD_BASE, '.party-dock .ptile-wrap'), 'background')!);
+    const hachure = colorsIn(decl(ruleOf(DOCK_BASE, '.party-dock .ptile-wrap'), 'background')!);
     const fondVide = colorsIn(decl(vide, 'background')!);
     for (const c of fondVide) expect(c[3]).toBe(1);
     const ratioVide = worst(parseColor(decl(vide, 'border-color')!), fondVide);
@@ -592,8 +594,8 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
   // B-7 : la pastille-BOUTON (slot `action` de `StateChips`) portait un commentaire annonçant son
   // style… suivi d'AUCUNE règle : à l'écran elle était le jumeau exact de l'informative.
   it('B-7 — la pastille ACTIONNABLE se distingue de l’informative (affordance visible)', () => {
-    const info = ruleOf(HUD_BASE, '.ptile-states[data-reserve] .pt-state, .ptile-states[data-reserve] .pt-void');
-    const bouton = ruleOf(HUD_BASE, '.ptile-states[data-reserve] .pt-state.btn');
+    const info = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve] .pt-state, .ptile-states[data-reserve] .pt-void');
+    const bouton = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve] .pt-state.btn');
     // L'informative garde le laiton de RUBRIQUE ; la bouton prend un filet d'un AUTRE laiton.
     expect(decl(info, 'border')).toMatch(/--atelier-brass-rubric/);
     const filet = decl(bouton, 'border-color');
@@ -612,9 +614,9 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
     const nu = ruleOf(baseSection(BASE_CSS), '.btn.btn-nu');
     expect(parseFloat(decl(nu, 'min-height')!), 'la variante nue ne remet plus le plancher à 0 ?').toBe(0);
     // L'alvéole reste de 15px À L'ŒIL : c'est sa ZONE DE CONTACT qui porte le calibre.
-    const alv = ruleOf(HUD_BASE, '.ptile-states[data-reserve]');
+    const alv = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve]');
     expect(parseFloat(decl(alv, '--alv')!)).toBeLessThan(40);
-    const coarse = mediaBlock(HUD_CSS, '@media (pointer: coarse)');
+    const coarse = mediaBlock(CHIPS_CSS, '@media (pointer: coarse)');
     const cible = ruleOf(coarse, '.ptile-states[data-reserve] .pt-state.btn::after');
     expect(decl(cible, 'position')).toBe('absolute');
     for (const d of ['width', 'height']) {
@@ -622,7 +624,7 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
     }
     // … centrée sur l'alvéole, qui doit donc être le repère positionné de la zone.
     expect(decl(cible, 'transform')).toBe('translate(-50%, -50%)');
-    const boite = ruleOf(HUD_BASE, '.ptile-states[data-reserve] .pt-state, .ptile-states[data-reserve] .pt-void');
+    const boite = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve] .pt-state, .ptile-states[data-reserve] .pt-void');
     expect(decl(boite, 'position')).toBe('relative');
   });
 
@@ -850,11 +852,11 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     expect(decl(racine, '--cc-bay-h')).toMatch(/var\(--cc-cell-h\)/);
     // La colonne vit dans la BANDE DE TERRAIN : ancrée sous le coin du menu, elle S'ARRÊTE sur la
     // réserve du pont — c'est son bord BAS qui est borné, pas seulement sa hauteur.
-    const strip = ruleOf(HUD_BASE, '.initiative-strip');
+    const strip = ruleOf(STRIP_BASE, '.initiative-strip');
     expect(decl(strip, 'bottom')).toMatch(/var\(--cc-deck-h\)/);
     expect(parseFloat(decl(strip, 'top')!)).toBeGreaterThanOrEqual(44);
     // La PISTE aussi : au-delà elle défile (aucune entrée ne disparaît, rien ne dépasse sur le pont).
-    const tiles = ruleOf(HUD_BASE, '.is-tiles');
+    const tiles = ruleOf(STRIP_BASE, '.is-tiles');
     expect(decl(tiles, '--is-avail')).toMatch(/var\(--cc-deck-h\)/);
     expect(decl(tiles, 'max-height')).toMatch(/--is-avail/);
     expect(decl(tiles, 'overflow-y')).toBe('auto');
@@ -885,17 +887,17 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     const basBandeau = pxCalc(decl(phase, 'bottom')!, env);
     expect(basBandeau, 'le bandeau redescend sur le liseré du pont').toBeGreaterThanOrEqual(D);
     const hautBandeau = basBandeau + P;
-    const basFrise = pxCalc(decl(ruleOf(HUD_BASE, '.initiative-strip'), 'bottom')!, env);
+    const basFrise = pxCalc(decl(ruleOf(STRIP_BASE, '.initiative-strip'), 'bottom')!, env);
     expect(basFrise, 'la frise descend dans la bande du bandeau de phase').toBeGreaterThanOrEqual(hautBandeau);
     // La piste borne sa hauteur sur la MÊME réserve (sinon elle déborderait là où la boîte s'arrête).
-    expect(decl(ruleOf(HUD_BASE, '.is-tiles'), '--is-avail')).toMatch(/var\(--cc-phase-h\)/);
+    expect(decl(ruleOf(STRIP_BASE, '.is-tiles'), '--is-avail')).toMatch(/var\(--cc-phase-h\)/);
 
     // … et la RAMPE de débord suit la PLAQUE : la boîte de la frise épouse son contenu au lieu d'être
     // étirée jusqu'à la réserve (sonde B6 : 174px de terrain nu, puis 20px de bois dans le vide).
-    const strip = ruleOf(HUD_BASE, '.initiative-strip');
+    const strip = ruleOf(STRIP_BASE, '.initiative-strip');
     expect(decl(strip, 'height')).toBe('fit-content');
     expect(decl(strip, 'margin-block')).toBe('auto');
-    expect(decl(ruleOf(HUD_BASE, '.initiative-strip::after'), 'bottom')).toBeTruthy();
+    expect(decl(ruleOf(STRIP_BASE, '.initiative-strip::after'), 'bottom')).toBeTruthy();
   });
 });
 

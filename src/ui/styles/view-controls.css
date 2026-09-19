@@ -1,0 +1,64 @@
+/* ══ ViewControls — module de la primitive (`src/ui/ViewControls.tsx`, manifeste `viewControls`) ══
+   La RANGÉE DE CAMÉRA du HUD : orientation, affichage, zoom. Identité entière ici (#1806 2a,
+   arbitrage A1 du 2026-09-18).
+   La MATIÈRE du bouton est la peau partagée `.skin-tole[data-ton='sombre']` (components.css) : ce
+   module n'en porte que le DELTA — corps du glyphe et état enfoncé. `.vc-btn` est posée À CÔTÉ de
+   `.btn`, jamais en composé `.btn.vc-btn` : un module qui vise `.btn` REPEINT une classe de la
+   couche partagée (garde `src/ui/css-modules-guard.test.ts`).
+   Le delta se lit SOUS son conteneur (`.view-controls .vc-btn`, 0-2-0) : la peau déclare AUSSI
+   `font-size` (19px, 0-2-0) et un delta à 0-1-0 perdrait — le glyphe de 20px tombait à 19px.
+   Garde de la CLASSE : `src/ui/ui-ratchets.test.ts`, « le DELTA bat la peau ». ══ */
+.view-controls {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  user-select: none;
+}
+.vc-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Rail d'OUTILS (spécimen G) : des commandes IDENTIQUES vissées sur un rail de bois — même
+   matière que le reste du HUD, aucune commande de plus (le rail complet vit au lot grimoire). */
+.view-controls .vc-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+}
+.view-controls .vc-btn[aria-pressed='true'] {
+  border-color: var(--atelier-brass-hover);
+  color: var(--gold2);
+}
+.vc-zoom-value {
+  min-width: 44px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ══ Matrice responsive — UN bloc par tranche ══ */
+@media (max-width: 560px) {
+  /* La rangée de caméra remonte DANS le bandeau haut (arbitrage d'assemblage 2026-08-17) : posée à
+     mi-hauteur elle coupait le terrain en deux. Elle s'ARRÊTE avant le coin du tiroir (elle
+     occupait toute la largeur et le recouvrait, 30×16 mesurés) : elle part de 56px, cale à droite.
+     La réserve du BAS qu'elle dégage est celle du tiroir du journal (`.log-drawer`, log-drawer.css)
+     — contrat croisé asserté par `src/ui/ui-ratchets.test.ts`. */
+  .view-controls {
+    top: 92px;
+    bottom: auto;
+    left: 56px;
+    right: 4px;
+    justify-content: flex-end;
+    flex-direction: row;
+    gap: 6px;
+  }
+}

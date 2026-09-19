@@ -1,0 +1,124 @@
+/* ══ PortraitTile — module de la primitive (`src/ui/PortraitTile.tsx`, manifeste `portraitTile`) ══
+   La TUILE de portrait : carte d'équipe (fond teinté), portrait au-dessus, jauge de vie horizontale
+   dessous, pastille d'état de fin en coin. Toute son identité vit ici (#1806 2a, arbitrage A1 du
+   2026-09-18) ; les écrans qui la montent n'en déclarent que le PLACEMENT.
+   Dépendances écrites : la colonne d'États est la primitive `StateChips` (state-chips.css), le
+   visage est `RigPortrait` (combat-ui.css `.rig-portrait`). Les spécialisations contextuelles de la
+   frise, du bandeau de groupe et de la console vivent chez elles (initiative-strip.css,
+   party-dock.css, combat-console.css). ══ */
+.ptile-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 3px;
+  pointer-events: auto;
+}
+/* Tuile = carte d'équipe (fond teinté), portrait au-dessus, jauge de vie HORIZONTALE dessous. */
+.ptile {
+  position: relative;
+  /* Taille CALCULÉE par la primitive (`CHAR_SIZE_PX` × facteur d'unité active), posée en VARIABLE
+     CSS sur l'élément — jamais une propriété inline (arbitrage user A2, 2026-09-18). */
+  width: var(--ptile-px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  background: rgba(10, 14, 20, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  line-height: 0;
+  border-radius: 9px;
+  flex: 0 0 auto;
+}
+/* R5 : FOND d'équipe derrière le portrait (vert allié / rouge ennemi). */
+.ptile.team-ally {
+  background: rgba(55, 192, 122, 0.16);
+  border-color: rgba(55, 192, 122, 0.45);
+}
+.ptile.team-enemy {
+  background: rgba(192, 57, 43, 0.18);
+  border-color: rgba(192, 57, 43, 0.5);
+}
+.ptile-face {
+  position: relative;
+  display: block;
+  width: var(--ptile-px);
+  height: var(--ptile-px);
+}
+/* Le rig REMPLIT le visage de SA tuile. Poids 0-3-0 : `.sheet-portrait .rig-portrait` (0-2-0,
+   `sheet.css`, importée APRÈS ce module) vise le rig NU de `FigTile`, et la fiche de navire monte
+   une vraie tuile dans ce même conteneur (`src/ui/ShipSheet.tsx`). */
+.ptile .ptile-face .rig-portrait {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* Cadre épais : la couleur (vert allié / rouge ennemi) + la forme (plein/tirets, R9) se lisent d'un coup d'œil. */
+  border-width: 3px;
+}
+/* R6 : l'unité active (déjà agrandie côté React) reçoit le liseré or + halo. */
+.ptile.active {
+  outline: 2px solid var(--gold2);
+  outline-offset: 1px;
+  box-shadow: 0 0 12px rgba(255, 224, 102, 0.55);
+  z-index: 1;
+}
+/* Tuile-radio d'un picker (cible de soin, répartition…) : le choix courant, liseré or sans halo. */
+.ptile.sel {
+  outline: 2px solid var(--gold2);
+  outline-offset: 1px;
+}
+/* Survolé (token carte ↔ portrait frise, réciproque) : halo de focus NEUTRE, distinct de l'or
+   (actif/picker). N'agrandit pas — juste un liseré clair reliant le portrait au pion survolé. */
+.ptile.hov {
+  outline: 1.5px solid rgba(233, 240, 255, 0.85);
+  outline-offset: 1px;
+  box-shadow: 0 0 9px rgba(210, 228, 255, 0.5);
+}
+.ptile.ko .rig-portrait {
+  filter: grayscale(0.9);
+  opacity: 0.6;
+}
+.ptile-caret {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--gold2);
+  font-size: 10px;
+  font-style: normal;
+  line-height: 1;
+  text-shadow: 0 0 3px var(--shadow-ink);
+  pointer-events: none;
+  z-index: 2;
+}
+/* États de FIN (#237) : pastille distincte par état, coin bas-droit du portrait — teinte propre à
+   chaque état (langage visuel UNIQUE, cf. src/ui/endStateVisual.ts). */
+.ptile .end-mark {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 0, 0, 0.55);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  z-index: 3;
+}
+.ptile .end-mark svg { width: 12px; height: 12px; }
+.end-mark.es-mort { background: var(--end-mort-bg); color: var(--end-mort-fg); }
+.end-mark.es-koan { background: var(--end-koan-bg); color: var(--end-koan-fg); }
+.end-mark.es-rendu { background: var(--end-rendu-bg); color: var(--end-rendu-fg); }
+.end-mark.es-hors { background: var(--end-hors-bg); color: var(--end-hors-fg); }
+/* Teinte du portrait selon l'état de fin (au-delà du grisé commun .ptile.ko) : la reddition reste
+   colorée (l'ennemi capturé est intact, pas un cadavre) ; hors-combat vire au sépia (parti). */
+.ptile.es-rendu .rig-portrait { filter: none; opacity: 0.85; }
+.ptile.es-hors .rig-portrait { filter: grayscale(0.75) sepia(0.25); opacity: 0.6; }
+/* Déclencheur « … » de la colonne d'États repliée — posé par `StateChips` DANS la tuile. */
+.ptile-more {
+  color: var(--muted);
+  font-weight: 700;
+  cursor: default;
+}

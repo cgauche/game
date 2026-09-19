@@ -167,6 +167,14 @@ describe('Zone 11 — UNE bande, jamais des boîtes flottantes (contrat d’asse
 const VIEWPORT_W = 1280;
 const VIEWPORT_H = 800;
 const styles = (n: string) => readFileSync(join(process.cwd(), 'src', 'ui', 'styles', n), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+/** Corps du bloc, à la RACINE du module (sélecteur en colonne 0) : les tranches `@media` indentent
+ *  leurs règles, et une déclaration de tranche ne vaut pas pour la matière de base. */
+function blocRacine(css: string, sel: string): string {
+  const re = new RegExp(`(^|\\})\\s*\\n${sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`);
+  const m = re.exec(css);
+  if (!m) throw new Error(`sélecteur absent à la racine : ${sel}`);
+  return m[2];
+}
 /** Corps du PREMIER bloc dont le sélecteur est exactement `sel`. */
 function bloc(css: string, sel: string): string {
   const re = new RegExp(`(^|[}\\n])\\s*${sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`, 'm');
@@ -284,13 +292,13 @@ describe('Zone 11 — la RÉSERVE du pont est lisible, et le pont est COMPACT', 
     const coarse = /@media \(pointer: coarse\) \{\s*:root \{([^}]*)\}/.exec(css);
     expect(coarse, 'la tranche pointeur grossier règle la rangée, pas une hauteur en dur').not.toBeNull();
     expect(px(prop(coarse![1], '--xd-row'), {})).toBe(44);
-    const wmCoarse = /@media \(pointer: coarse\) \{([\s\S]*?)\n\}/.exec(styles('world-meta.css'));
-    expect(wmCoarse, 'la variante « tôle » déclare sa cible tactile avec la primitive').not.toBeNull();
-    expect(prop(bloc(wmCoarse![1], ".worldmap-btn[data-skin='tole']"), 'min-height')).toBe('44px');
+    const coarseSkin = /@media \(pointer: coarse\) \{([\s\S]*?)\n\}/.exec(styles('components.css'));
+    expect(coarseSkin, 'la peau « tôle » déclare sa cible tactile en couche d’identité').not.toBeNull();
+    expect(prop(bloc(coarseSkin![1], '.skin-tole[data-ton]'), 'min-height')).toBe('44px');
   });
 
   it('le tiroir-journal LIT la réserve pour s’ancrer au-dessus du pont (jamais un nombre recopié)', () => {
-    const hud = styles('hud.css');
+    const hud = styles('exploration-dock.css');
     const tiroir = bloc(hud, '.exploration-dock .log-drawer');
     // Le pont porte l'ancrage : le tiroir ne flotte plus (les calages mobiles ≤700/≤560 sont annulés).
     expect(prop(tiroir, 'position')).toBe('relative');
@@ -345,19 +353,28 @@ describe('Zone 11 — MÊME MATIÈRE que le pont de combat, mesurée à profonde
   });
 });
 
-describe('Zone 11 — la tôle du pont est une VARIANTE de la primitive, jamais un scope d’écran', () => {
+describe('Zone 11 — la tôle du pont est une PEAU partagée, jamais un scope d’écran', () => {
   it('le module du pont ne redéfinit AUCUNE propriété de `.worldmap-btn`', () => {
     expect(styles('exploration-dock.css')).not.toContain('.worldmap-btn');
   });
 
-  it('la variante vit avec la primitive, et les ouvreurs du pont la portent', () => {
-    const wm = styles('world-meta.css');
-    const tole = bloc(wm, ".worldmap-btn[data-skin='tole']");
-    for (const p of ['border-radius', 'background', 'border', 'box-shadow', 'color', 'clip-path']) expect(() => prop(tole, p)).not.toThrow();
+  // Quatre poseurs (pont, rail, menu ☰, tiroir) sur trois bases : la matière est une PEAU de la
+  // couche d'identité, posée À CÔTÉ de la base, et non la variante d'une primitive (#1806 2a).
+  it('la peau vit en couche d’identité, et les ouvreurs du pont la portent', () => {
+    const skin = styles('components.css');
+    // À la RACINE du module : la tranche `pointer: coarse` redéclare le MÊME sélecteur (la cible de
+    // 44px) et `bloc` rendrait sa règle — c'est la MATIÈRE qui est en jeu ici, pas la cible.
+    const corps = blocRacine(skin, '.skin-tole[data-ton]');
+    for (const p of ['border-radius', 'background', 'box-shadow']) expect(() => prop(corps, p)).not.toThrow();
+    const laiton = blocRacine(skin, ".skin-tole[data-ton='laiton']");
+    for (const p of ['border', 'color', 'clip-path']) expect(() => prop(laiton, p)).not.toThrow();
     const el = monter();
     const boutons = [...el.querySelectorAll('.exploration-dock .worldmap-btn')];
     expect(boutons.length).toBeGreaterThan(0);
-    for (const b of boutons) expect(b.getAttribute('data-skin')).toBe('tole');
+    for (const b of boutons) {
+      expect(b.classList.contains('skin-tole')).toBe(true);
+      expect(b.getAttribute('data-ton')).toBe('laiton');
+    }
   });
 });
 
@@ -381,7 +398,7 @@ describe('Zone 11 — le journal est SUR le pont hors combat, au RAIL en combat'
     expect(rail!.querySelector('.log-drawer')).not.toBeNull();
     const dossier = rail!.querySelector('.worldmap-btn');
     expect(dossier!.getAttribute('title')).toBe('Dossier du navire — état, cargaison, équipage');
-    expect(dossier!.getAttribute('data-skin')).toBe('tole');
+    expect(dossier!.getAttribute('data-ton')).toBe('laiton');
     // Zéro flottant en barre haute, en AUCUN mode (le dossier y vivait).
     expect(el.querySelector('.hud-topbar .worldmap-btn')).toBeNull();
     expect(el.querySelectorAll('.worldmap-btn')).toHaveLength(el.querySelectorAll('.hud-rail .worldmap-btn').length);

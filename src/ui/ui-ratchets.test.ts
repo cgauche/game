@@ -4,7 +4,9 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
-import { FEUILLES_PARTAGEES, reglesCss } from '../../scripts/guards/lib/cssCouches.mjs';
+import { FEUILLES_PARTAGEES, declarations, reglesCss } from '../../scripts/guards/lib/cssCouches.mjs';
+import { comparerPoids } from '../../scripts/guards/lib/cssConservation.mjs';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import {
   mesureCssCouches,
   modulesDEcran,
@@ -113,7 +115,10 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   // -1 (R-M1, bande de groupe) : `.party-dock` ne s'enroule plus — une seule rangée qui DÉFILE à
   // tuiles pleines. Baisse ASSAINIE, pas une tolérance.
   // -1 (#1806 2c) : `.crit-stats` suit sa primitive `RevealBody`.
-  'styles/hud.css': 4,
+  // -3 (#1806 2a) : `.medic-patients` suit son écran (world-meta.css, +1 en regard) ; `.frame-row`
+  // et le repeint `.modal-actions` ≤700 MEURENT — les quatre sites de rangée de tuiles composent
+  // `Row`, et le pied d'une modale qui s'enroule est un comportement de la couche partagée.
+  'styles/hud.css': 1,
   'styles/mass-battle.css': 2,
   'styles/merchant.css': 1,
   // +1 (#492 lot POSSESSIONS B) : `.inv-actionbar` — barre d'actions de la rangée ÉLUE du registre
@@ -129,7 +134,9 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   // -1 : le roster de postes porte sa matière dans `postes-roster.css`, la feuille de sa primitive.
   // +3 (#1806 2c) : `.ship-crew-row`, `.poste-layout`, `.poste-chips` — le PLACEMENT de l'écran de
   // navire vit au module de CET écran.
-  'styles/world-meta.css': 20,
+  // +1 (#1806 2a) : `.medic-patients` (bandeau de patients de l'infirmerie, qui s'enroule) a suivi
+  // son écran depuis `hud.css` — même site, autre foyer, -3 en regard côté HUD.
+  'styles/world-meta.css': 21,
   'styles/city-hub.css': 1,
   'styles/voyage.css': 3,
   // +1 (lot #492 « chevet ») : `.plaque-fx` (chips d'effet net sous le nom, `PlaqueRow.tsx`) — enroule
@@ -695,38 +702,56 @@ function pxOf(css: string, selector: string, prop: string): number | null {
 }
 const occurrences = (s: string, needle: string) => s.split(needle).length - 1;
 
-const HUD_TRANCHES = ['@media (max-width: 900px)', '@media (max-width: 700px)', '@media (max-width: 560px)', '@media (pointer: coarse)'];
-/** Les modules qui composent le HUD : l'écran résiduel, l'organisme console, et les modules des
- *  PRIMITIVES qu'il monte (#1806 — l'identité a quitté les modules d'écran). La matrice se lit sur
- *  leur UNION : c'est elle qui porte les quatre tranches, pas chaque fichier pris à part. */
-const HUD_MODULES = ['hud.css', 'combat-console.css', 'roll-shell.css', 'combat-banner.css'];
+const TRANCHES_CANON = ['@media (max-width: 900px)', '@media (max-width: 700px)', '@media (max-width: 560px)', '@media (pointer: coarse)'];
+const LARGEURS_CANON = ['900', '700', '560'];
 
-describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => {
+/** Écarts au canon responsive MESURÉS sur tout module de `src/ui/styles` : `module|tranche` → nombre
+ *  d'écritures de la tranche quand il dépasse 1, `module|<largeur>` → 1 pour un breakpoint hors canon. */
+function ecartsResponsive(): Record<string, number> {
+  const dir = join(UI, 'styles');
+  const ecarts: Record<string, number> = {};
+  for (const m of listerDossier(dir).filter((f) => f.endsWith('.css'))) {
+    const css = readFileSync(join(dir, m), 'utf8');
+    for (const q of TRANCHES_CANON) {
+      const n = occurrences(css, q);
+      if (n > 1) ecarts[`${m}|${q}`] = n;
+    }
+    const largeurs = new Set([...css.matchAll(/@media[^{]*max-width:\s*(\d+)px/g)].map((x) => x[1]));
+    for (const w of largeurs) if (!LARGEURS_CANON.includes(w)) ecarts[`${m}|${w}`] = 1;
+  }
+  return ecarts;
+}
+
+/** Stock DÉCROISSANT, au site, mesuré le 2026-09-19 — aucun module de la famille Combat (#1806) n'y
+ *  figure ; chaque entrée se solde au lot de son écran sous l'épic #1811. */
+const ECARTS_RESPONSIVE_STOCK: Record<string, number> = {
+  'base.css|@media (max-width: 700px)': 2,
+  'components.css|@media (max-width: 560px)': 2,
+  'components.css|@media (max-width: 700px)': 2,
+  'creator-presentation.css|1100': 1,
+  'creator.css|@media (max-width: 560px)': 2,
+  'creator.css|@media (max-width: 700px)': 5,
+  'layout.css|@media (max-width: 700px)': 2,
+  'party.css|@media (max-width: 700px)': 3,
+  'party.css|@media (max-width: 900px)': 2,
+  'sheet.css|@media (max-width: 700px)': 2,
+  'world-meta.css|@media (max-width: 560px)': 6,
+  'world-meta.css|@media (max-width: 700px)': 2,
+  'world-meta.css|@media (max-width: 900px)': 3,
+};
+
+describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
   const read = (m: string) => readFileSync(join(UI, 'styles', m), 'utf8');
 
-  it('l’UNION des modules du HUD porte les quatre tranches, et aucun module n’en duplique une', () => {
-    const portees = new Set<string>();
-    for (const m of HUD_MODULES) {
-      const css = read(m);
-      for (const q of HUD_TRANCHES) {
-        const n = occurrences(css, q);
-        expect(n, `${m} : la tranche ${q} est écrite ${n} fois — une section responsive ordonnée n'en pose qu'UNE`).toBeLessThanOrEqual(1);
-        if (n) portees.add(q);
-      }
-    }
-    expect([...portees].sort(), 'l’union des modules du HUD doit porter les quatre tranches du canon').toEqual([...HUD_TRANCHES].sort());
-  });
-
-  it('aucun breakpoint de largeur hors du canon 900 / 700 / 560', () => {
-    for (const m of HUD_MODULES) {
-      const widths = [...read(m).matchAll(/@media[^{]*max-width:\s*(\d+)px/g)].map((x) => x[1]);
-      const hors = [...new Set(widths)].filter((w) => !['900', '700', '560'].includes(w));
-      expect(hors, `${m} : breakpoint(s) hors canon (360 et 420 sont des largeurs de RECETTE)`).toEqual([]);
-    }
+  it('TOUT module écrit chaque tranche du canon au plus UNE fois, et aucun breakpoint hors de 900 / 700 / 560', () => {
+    expect(ecartsResponsive(), 'écart NEUF : une section responsive ordonnée ne pose chaque tranche qu’une fois (360 et 420 sont des largeurs de RECETTE) ; écart SOLDÉ : retirer son entrée du stock').toEqual(ECARTS_RESPONSIVE_STOCK);
   });
 
   it('≤700 : la frise d’initiative devient une bande horizontale défilable, contrainte et dégagée', () => {
-    const at700 = mediaBlock(read('hud.css'), '@media (max-width: 700px)');
+    // La frise est une PRIMITIVE (#1806 2a) : sa tranche vit dans SON module ; l'ancrage de l'ouvreur
+    // du rail dissous reste à l'ÉCRAN qui monte le rail. Les deux blocs se lisent CONCATÉNÉS.
+    const at700 = mediaBlock(read('initiative-strip.css'), '@media (max-width: 700px)')
+      + mediaBlock(read('hud.css'), '@media (max-width: 700px)');
     expect(at700).toMatch(/\.is-tiles\s*\{[^}]*flex-direction:\s*row/);
     expect(at700).toMatch(/\.is-tiles\s*\{[^}]*overflow-x:[ \t\r\n]*auto/);
     // `overflow-x` ne mord que sur une piste BORNÉE : alignée en `flex-start`, elle prend la largeur
@@ -751,7 +776,7 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
     // l'écran à 1280 (grief vision). La lire dans la tranche ≤560 seulement laisserait le retour à la
     // ligne revenir au-dessus de 560. Le défilement vit sur la PISTE (`.pd-track`) depuis le repli
     // de la bande : le cadre porte l'ancrage, la piste porte la rangée.
-    const hudBase = baseSection(read('hud.css'));
+    const hudBase = baseSection(read('party-dock.css'));
     expect(hudBase).toMatch(/\.pd-track\s*\{[^}]*flex-wrap:\s*nowrap/);
     expect(hudBase).toMatch(/\.pd-track\s*\{[^}]*overflow-x:[ \t\r\n]*auto/); // débordement de secours (combat naval)
     const barAt560 = mediaBlock(read('combat-console.css'), '@media (max-width: 560px)');
@@ -766,7 +791,11 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
   });
 
   it('≤560 : la bande basse réserve la hauteur de la CONSOLE (caméra et tiroir hors de son emprise)', () => {
-    const hudAt560 = mediaBlock(read('hud.css'), '@media (max-width: 560px)');
+    // Tiroir et rangée de caméra sont deux PRIMITIVES distinctes depuis #1806 2a : la garantie est
+    // CROISÉE, les deux tranches se lisent CONCATÉNÉES — jamais « si trouvé ici, sinon là », qui
+    // rendrait l'assertion verte quand l'un des deux modules perd son ancrage.
+    const hudAt560 = mediaBlock(read('log-drawer.css'), '@media (max-width: 560px)')
+      + mediaBlock(read('view-controls.css'), '@media (max-width: 560px)');
     // La console compacte monte à 265px du bas (4px d'ancrage + 261px mesurés au navigateur,
     // scénario magie 360×640, passe d'ASSEMBLAGE). Toute surface posée plus bas passe SOUS elle et
     // cesse de recevoir ses clics. Le tiroir du journal réserve donc cette hauteur ; la rangée de
@@ -796,9 +825,121 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
   });
 
   it('pointeur grossier : les commandes de caméra offrent une cible de 44px', () => {
-    const coarse = mediaBlock(read('hud.css'), '@media (pointer: coarse)');
-    expect(coarse).toMatch(/\.vc-btn\s*\{[^}]*min-width:\s*44px/);
-    expect(coarse).toMatch(/\.vc-btn\s*\{[^}]*min-height:\s*44px/);
+    // La cible tactile suit la PEAU partagée `.skin-tole` (components.css) : une seule définition
+    // pour les quatre commandes vissées du HUD (caméra, journal, menu ☰, ouvreurs du pont).
+    const coarse = mediaBlock(readFileSync(join(UI, 'styles', 'components.css'), 'utf8'), '@media (pointer: coarse)');
+    expect(coarse).toMatch(/\.skin-tole\[data-ton\]\s*\{[^}]*min-width:\s*44px/);
+    expect(coarse).toMatch(/\.skin-tole\[data-ton\]\s*\{[^}]*min-height:\s*44px/);
+    // … et la garantie n'a de sens que si les commandes la PORTENT : sans cette assertion positive,
+    // « les commandes de vue offrent 44px » se dégraderait en « la peau fait 44px ».
+    // Lu aux LITTÉRAUX de `className` (commentaires blanchis) : CHAQUE pose de la classe de commande
+    // porte la peau, et le fichier en pose au moins une.
+    const COMMANDES: [string, string][] = [
+      ['ViewControls.tsx', 'vc-btn'],
+      ['LogDrawer.tsx', 'ld-btn'],
+      ['GameMenu.tsx', 'gm-btn'],
+      ['ExplorationDock.tsx', 'worldmap-btn'],
+      ['CampaignView.tsx', 'worldmap-btn'],
+    ];
+    for (const [f, classe] of COMMANDES) {
+      const code = readFileSync(join(UI, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+      const poses = [...code.matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\})/g)]
+        .map((m) => (m[1] ?? m[2]).split(/\s+/))
+        .filter((classes) => classes.includes(classe));
+      expect(poses.length, `${f} pose « ${classe} »`).toBeGreaterThan(0);
+      expect(poses.filter((classes) => !classes.includes('skin-tole')), `${f} : « ${classe} » posée SANS la peau`).toEqual([]);
+    }
+  });
+
+  it('≤560, bande DÉPLIÉE : son rang passe devant le fil d’événements, et la règle BAT l’ancrage de repos', () => {
+    const hud = readFileSync(join(UI, 'styles', 'hud.css'), 'utf8');
+    const rang = (css: string, selecteur: string) => {
+      const regle = reglesCss(css).find((r) => r.selecteurs.includes(selecteur) && declarations(r.corps).some((d) => d.prop === 'z-index'));
+      return regle ? Number(declarations(regle.corps).find((d) => d.prop === 'z-index')!.valeur) : null;
+    };
+    const depliee = reglesCss(hud).find((r) => r.media?.includes('max-width: 560px') && r.selecteurs.includes('.stage > .party-dock.on'));
+    expect(depliee, 'la tranche ≤560 de `hud.css` porte le rang de la bande dépliée').toBeDefined();
+    const rangDeplie = Number(declarations(depliee!.corps).find((d) => d.prop === 'z-index')?.valeur);
+    const fil = rang(readFileSync(join(UI, 'styles', 'combat-banner.css'), 'utf8'), '.combat-feed');
+    expect(fil, '`.combat-feed` porte un rang').not.toBeNull();
+    expect(rangDeplie).toBeGreaterThan(fil!);
+    // À poids ÉGAL c'est l'ordre qui tranche, et l'ancrage de repos (`.stage > .party-dock`) suit
+    // la primitive dans le graphe d'imports : le rang déplié se lit donc à un poids SUPÉRIEUR.
+    expect(comparerPoids('.stage > .party-dock.on', '.stage > .party-dock')).toBe(1);
+    expect(rang(hud, '.stage > .party-dock'), 'rang de repos').toBeLessThan(rangDeplie);
+  });
+
+  // Une PEAU se pose À CÔTÉ d'une classe de module : les deux visent le MÊME élément. Toute
+  // propriété que le module redéclare et que la peau déclare AUSSI se tranche à la cascade — si le
+  // delta PERD, c'est la peau qu'on voit et le module ment (défaut mesuré : `.vc-btn` à 0-1-0
+  // perdait `font-size: 20px` contre `.skin-tole[data-ton]` à 0-2-0, glyphes de caméra à 19px).
+  // Mesure STRUCTURELLE, jamais une liste de noms : les classes surveillées sont celles qui ne sont
+  // JAMAIS posées sans la peau — une classe posée aussi SANS elle est une BASE, que la peau repeint
+  // légitimement.
+  it('peau `.skin-tole` : le DELTA d’un module BAT la peau sur toute propriété qu’elle déclare aussi', () => {
+    const PEAU = 'skin-tole';
+    const lire = (rel: string) => readFileSync(join(UI, '..', '..', rel), 'utf8');
+    const base = (rel: string) => rel.slice(rel.lastIndexOf('/') + 1);
+    /** Poids de cascade : classes + attributs (ni id ni élément dans ces feuilles). */
+    const poids = (sel: string) => (sel.match(/\.[\w-]+|\[[^\]]*\]/g) ?? []).length;
+    /** Famille de propriété : une longhand de bordure se fait écraser par la shorthand `border`. */
+    const famille = (p: string) => (p.startsWith('border-') && p !== 'border-radius' ? 'border' : p);
+
+    // 1. Les classes posées EXCLUSIVEMENT avec la peau, lues aux valeurs `className` du corpus.
+    const avec = new Set<string>();
+    const sans = new Set<string>();
+    for (const { text } of readCorpus(['src/ui'], { exts: ['.tsx'] })) {
+      for (const m of text.matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\})/g)) {
+        const classes = (m[1] ?? m[2]).replace(/\$\{[^}]*\}/g, ' ').split(/\s+/).filter(Boolean);
+        for (const c of classes) if (c !== PEAU) (classes.includes(PEAU) ? avec : sans).add(c);
+      }
+    }
+    const vissees = [...avec].filter((c) => !sans.has(c));
+    expect(vissees.length, 'aucune classe vissée sur la peau : la mesure serait vide').toBeGreaterThan(0);
+
+    // 2. Ce que la peau déclare, et à quel poids.
+    const peau = new Map<string, number>();
+    for (const f of FEUILLES_PARTAGEES) {
+      for (const { selecteurs, corps } of reglesCss(lire(f))) {
+        for (const sel of selecteurs) {
+          if (!sel.includes(`.${PEAU}`)) continue;
+          for (const d of corps.split(';')) {
+            const prop = famille(d.split(':')[0].trim());
+            if (prop) peau.set(prop, Math.max(peau.get(prop) ?? 0, poids(sel)));
+          }
+        }
+      }
+    }
+    expect(peau.size, 'la peau ne déclare rien ?').toBeGreaterThan(0);
+
+    // 3. Rang d'`@import` : à poids ÉGAL, la feuille la plus tardive gagne.
+    const orchestrateur = readFileSync(join(UI, 'styles.css'), 'utf8');
+    const rang = (rel: string) => orchestrateur.indexOf(`/${base(rel)}'`);
+    const rangPeau = Math.max(...FEUILLES_PARTAGEES.map(rang));
+
+    const perdants: string[] = [];
+    for (const rel of [...modulesDEcran().map((f) => f.rel), ...modulesDePrimitive()]) {
+      for (const { selecteurs, corps } of reglesCss(lire(rel))) {
+        for (const sel of selecteurs) {
+          const dernier = sel.split(/[\s>+~]+/).filter(Boolean).pop() ?? '';
+          if (!vissees.some((c) => dernier.includes(`.${c}`))) continue;
+          for (const d of corps.split(';')) {
+            const [prop, ...reste] = d.split(':');
+            const attendu = peau.get(famille(prop.trim()));
+            if (attendu === undefined) continue;
+            const gagne = poids(sel) > attendu || (poids(sel) === attendu && rang(rel) > rangPeau);
+            if (!gagne) {
+              perdants.push(`${rel} :: ${sel} { ${prop.trim()}: ${reste.join(':').trim()} } — poids ${poids(sel)} contre ${attendu}`);
+            }
+          }
+        }
+      }
+    }
+    expect(
+      perdants,
+      `DELTA PERDANT contre la peau — c'est la peau qu'on voit, pas ces valeurs. Porter le delta sous`
+        + ` son conteneur (poids ≥ celui de la peau) ou le retirer :\n${perdants.join('\n')}`,
+    ).toEqual([]);
   });
 
   it('la colonne d’États est ancrée dans la carte de SON héros, à TOUTE largeur', () => {
@@ -806,13 +947,43 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
     // largeurs qui ne l'atteignent pas et les pastilles reflotteraient entre deux portraits.
     // Planche USER 2026-08-17 : la colonne est SŒUR du portrait dans `.ptile-wrap` (rangée flex) —
     // à CÔTÉ de lui, plus posée dessus — et son emprise est UNE colonne d'alvéole, fixe.
-    const base = baseSection(read('hud.css'));
+    const base = baseSection(read('party-dock.css'));
     expect(base).toMatch(/\.party-dock\s+\.ptile-wrap\s*\{[^}]*display:\s*flex/);
     expect(base).toMatch(/\.party-dock\s+\.ptile-wrap\s*\{[^}]*flex-direction:\s*row/);
     expect(base).toMatch(/\.party-dock\s+\.ptile-states\s*\{[^}]*display:\s*grid/);
     // Une colonne d'alvéole FIXE, pas une grille libre : sans ce gabarit, une tuile portant 3 États
     // s'élargirait et la bande se décalerait d'un héros à l'autre.
     expect(base).toMatch(/\.party-dock\s+\.ptile-states\s*\{[^}]*grid-template-columns:\s*var\(--alv\)/);
+  });
+
+  // `--alv` est une variable de CONTEXTE : `state-chips.css` en pose la valeur de BASE
+  // (`.ptile-states[data-reserve]`, 15px) et ses hôtes la leur (`.party-dock .ptile-states`, 20px ;
+  // la console) — à spécificité ÉGALE (0-2-0). C'est donc l'ORDRE D'IMPORT qui décide, et il se
+  // GARDE : `state-chips.css` importée APRÈS reprendrait la main et ramènerait les alvéoles de la
+  // bande à la taille du rack de liste.
+  it('`--alv` : les poseurs de CONTEXTE s’importent APRÈS la primitive qui pose sa base', () => {
+    const orchestrateur = readFileSync(join(UI, 'styles.css'), 'utf8');
+    const rang = (f: string) => {
+      const i = orchestrateur.indexOf(`styles/${f}`);
+      expect(i, `${f} est importée par \`src/ui/styles.css\``).toBeGreaterThan(-1);
+      return i;
+    };
+    const socle = rang('state-chips.css');
+    for (const f of ['party-dock.css', 'combat-console.css']) {
+      expect(rang(f), `${f} pose sa valeur de \`--alv\` APRÈS la base`).toBeGreaterThan(socle);
+    }
+  });
+
+  // La barre d'actions est une primitive de la couche d'identité : sa tranche ≤700 (enroulement et
+  // centrage, pour que deux boutons ne débordent pas d'une fenêtre étroite) vit AVEC elle. Posée
+  // dans un module d'ÉCRAN, elle ne valait que tant que cet écran gardait la règle — et TOUTES les
+  // modales la perdaient avec lui.
+  it('≤700 : la barre d’actions des modales s’enroule et se centre, chez sa primitive', () => {
+    const at700 = reglesCss(readFileSync(join(UI, 'styles', 'components.css'), 'utf8'))
+      .filter((r) => r.media?.includes('max-width: 700px') && r.selecteurs.includes('.modal-actions'));
+    expect(at700.length, '`.modal-actions` a une tranche ≤700 dans `components.css`').toBe(1);
+    expect(at700[0].corps).toMatch(/flex-wrap:\s*wrap/);
+    expect(at700[0].corps).toMatch(/justify-content:\s*center/);
   });
 
   it('les modales de jet occupent l’écran sous 560, corps défilable et pied fixe', () => {

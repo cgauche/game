@@ -1,5 +1,5 @@
 /* Jeux de taverne (NADJ ch.16) — modale de jeu. Couleurs = tokens :root (base.css). Responsive :
-   la boîte scrolle verticalement, les rangées de portraits (.frame-row) et le grid d'options s'enroulent. */
+   la boîte scrolle verticalement, les rangées de portraits (`Row`) et le grid d'options s'enroulent. */
 .modal.tavern-modal {
   max-width: 560px;
   width: min(560px, 94vw);

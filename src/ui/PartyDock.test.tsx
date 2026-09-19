@@ -73,7 +73,7 @@ describe('PartyDock', () => {
   // La plomberie du marqueur est ABSENTE, pas masquée : ni prop, ni attribut, ni règle CSS.
   it('ne porte AUCUNE plomberie de marqueur d’actif (composant, appelant, feuille)', () => {
     const lire = (f: string) => readFileSync(join(process.cwd(), 'src', 'ui', f), 'utf8');
-    for (const f of ['PartyDock.tsx', 'CampaignView.tsx', 'styles/hud.css']) {
+    for (const f of ['PartyDock.tsx', 'CampaignView.tsx', 'styles/party-dock.css']) {
       expect(lire(f), f).not.toMatch(/actingId|data-acting/);
     }
     // La feuille ne vise plus la carte par un attribut de situation (aucun sélecteur d'attribut
@@ -86,7 +86,7 @@ describe('PartyDock', () => {
 // La composition de la carte se juge sur la STRUCTURE montée (qui contient quoi) et sur les BOÎTES
 // déclarées : aucune sonde DOM ne voyait que le liseré d'actif encerclait le nom, ni que la légende
 // réservait deux lignes en permanence.
-const HUD_CSS = readFileSync(join(process.cwd(), 'src', 'ui', 'styles', 'hud.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+const HUD_CSS = readFileSync(join(process.cwd(), 'src', 'ui', 'styles', 'party-dock.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
 const ruleOf = (selector: string) => {
   const hits = [...HUD_CSS.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((b) => b[1].replace(/\s+/g, ' ').trim() === selector);
   expect(hits.length, `règle « ${selector} » : ${hits.length} occurrence(s), attendu 1`).toBe(1);

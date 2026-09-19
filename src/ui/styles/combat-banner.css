@@ -92,3 +92,9 @@
   }
   .cb-ev { white-space: normal; text-align: center; } /* événements longs : retour à la ligne (pas de débord) */
 }
+@media (max-width: 560px) {
+  /* Le fil d'événements se pose SOUS le bandeau haut, jamais au milieu du terrain : il annonce, il
+     ne s'installe pas dans le champ (grief d'assemblage — le toast traversait le ruban de jeu).
+     Repère : bande de groupe repliée (6..30), frise (34..86), caméra (92..136), fil à 140. */
+  .combat-feed { top: 140px; }
+}

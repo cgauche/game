@@ -11,7 +11,7 @@
      .stat-chip          cartouche « label + valeur » (PV, carac, ressource…)
      .listrow            rangée de liste : nom (flex:1) + méta + action
      .chip               badge/pastille (alias de .tag) ; .count = pastille numérique
-     .modal-overlay/.modal  cadre de modale partagé (+ .modal-actions/.btn-ghost/.rm-influence)
+     .modal-overlay/.modal  cadre de modale partagé (+ .modal-actions/.modal-subject/.btn-ghost/.rm-influence)
      .charprev           aperçu « perso en pied » (CharacterPreview) : tailles + ambiances
      .icon               icône SVG maison (primitive <Icon> — src/ui/Icon.tsx, registre src/ui/icons/)
      .clamp              texte tronqué à N lignes (`--clamp`, défaut 3)
@@ -467,6 +467,11 @@ button.chip:hover {
   color: var(--gold2);
   font-size: 20px;
 }
+/* Bandeau « sujet » d'une modale (`ModalSubject`) : sa respiration sous le titre. La rangée est un
+   `Row` — ici, la marge seule. */
+.modal-subject {
+  margin: 4px 0 10px;
+}
 /* Barre d'actions normée des modales : 2 boutons max — [Annuler/Subir discret à gauche] [primaire
    à droite, largeur min fixe]. Les dépenses de ressources vivent dans `.rm-influence`, pas ici. */
 .modal-actions {
@@ -765,6 +770,13 @@ button.chip:hover {
    `base.css` : c'est cette règle qui décide, et le pas reste carré. */
 @media (pointer: coarse) {
   .btn-step { width: 40px; height: 40px; min-height: 40px; }
+  /* Les plaques qui portent la peau « tôle » (↓) sont les bandes qu'on touche au doigt : cible
+     DIGNE, une seule fois pour ses quatre poseurs. La réserve du pont suit (`--xd-row`,
+     exploration-dock.css). */
+  .skin-tole[data-ton] {
+    min-width: 44px;
+    min-height: 44px;
+  }
 }
 /* Un pas dont la BORNE PORTE SA RAISON compose `GatedAction` (prop `refus`) : le conteneur de la
    primitive n'apporte aucune boîte — le triplet garde sa rangée. */
@@ -867,6 +879,12 @@ button.chip:hover {
 @media (max-width: 700px) {
   .activity-pane-actions { margin-left: 0; width: 100%; }
   .activity-pane-actions .btn { flex: 1 1 auto; }
+  /* Barre d'actions des modales : à l'étroit, les deux boutons s'ENROULENT et se CENTRENT plutôt
+     que de déborder de la fenêtre. Règle de la primitive, valable pour TOUTES les modales. */
+  .modal-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
 
 /* ── MENU (primitive MenuCard.tsx) : patron « vrai menu » partagé — menu principal (`.menu-card`,
@@ -1211,4 +1229,36 @@ button.chip:hover {
 .off-malus {
   font-style: normal;
   color: var(--danger-soft);
+}
+
+/* ── PEAU « TÔLE VISSÉE » (`.skin-tole` + `data-ton`) ───────────────────────────────────────────
+   La matière d'une commande VISSÉE sur une plaque de bois-laiton : plaque coupée au carré (aucun
+   arrondi), nappe de tôle éclairée par le haut, liseré interne d'or. Elle est PARTAGÉE — quatre
+   poseurs sur TROIS bases différentes (`ViewControls` sur `.btn`, `LogDrawer` et `GameMenu` sur un
+   bouton nu, `ExplorationDock`/`CampaignView` sur `.worldmap-btn`) : elle n'appartient donc à aucune
+   primitive (#1806 2a, garde §5.2 de `src/ui/primitive-owners-guard.test.ts`).
+   Elle se pose TOUJOURS avec son ton — d'où le sélecteur `[data-ton]`, qui lui donne le cran de
+   spécificité nécessaire pour battre la forme de base d'un `.worldmap-btn` déclarée plus loin dans
+   la cascade. Chaque module garde son DELTA (corps du glyphe, états, ancrage). */
+.skin-tole[data-ton] {
+  width: 42px;
+  height: 42px;
+  border-radius: 0;
+  background: linear-gradient(180deg, var(--hud-tool-hi), var(--atelier-wood-mid));
+  box-shadow: inset 0 1px 0 rgba(255, 225, 160, 0.12);
+  cursor: pointer;
+  opacity: 0.92;
+  font-size: 19px;
+}
+/* Ton SOMBRE : commande de service, elle se tait tant qu'on ne la regarde pas. */
+.skin-tole[data-ton='sombre'] {
+  border: 1px solid var(--wm-frame-dark);
+  color: var(--muted);
+}
+/* Ton LAITON : commande qui OUVRE (menu système, écrans du pont) — filet de laiton, encre d'or, et
+   le coin coupé qui dit « plaque vissée ». */
+.skin-tole[data-ton='laiton'] {
+  border: 1px solid var(--atelier-brass-hover);
+  color: var(--gold2);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
 }

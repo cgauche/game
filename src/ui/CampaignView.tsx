@@ -318,8 +318,8 @@ export function CampaignView() {
             {vessel && (
               <button
                 type="button"
-                className="worldmap-btn"
-                data-skin="tole"
+                className="worldmap-btn skin-tole"
+                data-ton="laiton"
                 onClick={() => setDossierOpen(true)}
                 title="Dossier du navire — état, cargaison, équipage"
               >

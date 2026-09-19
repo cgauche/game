@@ -1,0 +1,319 @@
+/* ══ InitiativeStrip — module de la primitive (`src/ui/InitiativeStrip.tsx`, manifeste
+   `initiativeStrip`) ══ La FRISE D'INITIATIVE : colonne de bois montée sur chant de laiton,
+   cartouche de Round collé en tête, une entrée par combattant, badges de premier coup et de
+   pré-emption en débord. Identité entière ici (#1806 2a, arbitrage A1 du 2026-09-18).
+   Dépendances écrites : la vignette est `PortraitTile` (portrait-tile.css) — les règles
+   `.is-tiles .ptile*` ci-dessous en sont des spécialisations CONTEXTUELLES ; la réserve du bas lit
+   `--cc-deck-h`/`--cc-phase-h`, publiées par la console (combat-console.css). ══ */
+
+/* ── Frise d'initiative → COLONNE À GAUCHE (inversée avec le dock du groupe — demande utilisateur).
+   Défile verticalement si beaucoup de combattants (R4 : plus de débordement hors écran).
+   ELLE S'ARRÊTE AU-DESSUS DU PONT de console (planche 2026-08-17 : plaque de frise `[0,132,133,472]`,
+   pont à y=863) : la colonne vit dans la BANDE DE TERRAIN — sous le coin du menu ☰ (44px au doigt +
+   air) et au-dessus du pont — et s'y centre. Centrée sur le VIEWPORT, sa plaque descendait derrière
+   le bout gauche de la console (mesuré 103,6 × 97,3px de recouvrement à 1280, points de frise
+   par-dessus le pont au hit-test) ; ancrée en haut seulement, son cartouche de Round passait sous le
+   bouton de menu. La réserve du bas est la hauteur du pont elle-même PLUS celle du bandeau de phase
+   qui se pose dessus (`--cc-deck-h`/`--cc-phase-h`, combat-console.css), jamais un nombre recopié :
+   la colonne est en z-index 45 contre 5 pour la console, elle recouvrait donc le titre du bandeau et
+   le décapitait (sonde pixel, quatre captures sur quatre).
+   La boîte ÉPOUSE SA PLAQUE (`height: fit-content` + marges automatiques qui la centrent dans la
+   bande) : étirée du haut au bas de la bande, elle emportait sa rampe de débord loin sous la dernière
+   vignette — 174px de terrain nu, puis 20px de bois suspendu dans le vide (sonde B6). ── */
+.initiative-strip {
+  position: absolute;
+  top: 70px;
+  bottom: calc(var(--cc-deck-h) + var(--cc-phase-h) + 12px);
+  left: 10px;
+  height: fit-content;
+  margin-block: auto;
+  transform: none;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  max-height: none;
+}
+.is-tiles {
+  display: flex;
+  flex-direction: column;
+  /* Portraits CALÉS À GAUCHE (pas centrés) : une tuile portant le badge de pré-emption est plus
+     large — centrer décalerait son portrait vs les tuiles sans badge (frise en zigzag, cf. retour
+     2026-06-11). En flex-start tous les portraits partagent le même bord gauche, badge à droite. */
+  align-items: flex-start;
+  gap: 6px;
+  /* Matière du spécimen A (`docs/plans/Spec HUD Combat.dc.html`) : colonne de bois montée sur un
+     chant de laiton, cartouche de Round gravé en tête, badges posés en DÉBORD (rien n'élargit une
+     vignette). Habillage seul — la géométrie de la colonne est inchangée. */
+  position: relative;
+  padding: 9px 8px 12px;
+  background: linear-gradient(90deg, var(--hud-frise-edge), var(--atelier-wood-top) 62%, var(--atelier-wood-bottom));
+  border: 1px solid var(--wm-frame-dark);
+  /* Chant de laiton du bord droit : le trait qui fait « colonne montée » (spécimen A). */
+  border-right: 2px solid var(--atelier-brass-hover);
+  border-radius: 0;
+  /* L'ascenseur reste DANS le cadre : une barre système collée au chant de laiton cassait la
+     colonne (grief vision). */
+  scrollbar-width: none;
+  overflow-y: auto;
+  overflow-x: visible;
+  /* Chaque entrée est un point d'ARRÊT : la colonne ne s'immobilise jamais au milieu d'un visage. */
+  scroll-snap-type: y mandatory;
+  /* La colonne s'arrête sur une entrée ENTIÈRE : le pas d'une entrée est fixe (vignette 44 + écart
+     6), la tête (cartouche de Round + rembourrages) est réservée à part, et la hauteur utile est
+     arrondie AU PAS INFÉRIEUR — sans quoi la dernière entrée était coupée en plein portrait et son
+     score tronqué (mesuré en pause, 1280×800). La déclaration simple reste le repli des moteurs
+     sans `round()`. */
+  /* Pas MESURÉ (DOM 1280×800) : entrée 50px, pas 56px (écart 6). Hors entrées, la colonne occupe
+     49px : rembourrage 9 + 12, filets 2, cartouche de Round 26 collé en tête (`sticky`) + son
+     écart 6 — moins les 6px d'écart que la DERNIÈRE entrée ne porte pas. La hauteur utile est donc
+     arrondie AU PAS INFÉRIEUR sur cette base, et le cartouche COLLE : sans lui, la piste défilée
+     n'avait plus de tête et la 12ᵉ entrée se coupait en plein visage (sonde du juge : peau à
+     pleine intensité jusqu'à y=722 contre un filet à 724). */
+  --is-pitch: 56px;
+  --is-head: 52px;
+  /* L'entrée visée par un défilement se cale SOUS le cartouche collé (26 de cartouche + 3 de marge
+     + 6 d'écart = 35px MESURÉS), jamais dessous. */
+  scroll-padding-top: 35px;
+  /* La piste ne descend pas plus bas que la plaque : sa borne est celle de la colonne (l'espace
+     AU-DESSUS du pont), arrondie au pas d'entrée. Au-delà, elle DÉFILE — aucune entrée ne
+     disparaît, et rien ne dépasse sur le pont. */
+  --is-avail: min(84vh, calc(100vh - 70px - var(--cc-deck-h) - var(--cc-phase-h) - 12px));
+  max-height: var(--is-avail);
+  max-height: calc(round(down, calc(var(--is-avail) - var(--is-head)), var(--is-pitch)) + var(--is-head));
+}
+.is-tiles::-webkit-scrollbar {
+  display: none;
+}
+/* Indicateur de DÉBORD : une RAMPE de fondu posée sur le dernier pouce de la colonne — au bord,
+   la matière du panneau est pleine (aucun pixel de vignette à pleine intensité contre le filet),
+   et l'atténuation se lit sur 18px. L'axe suit celui de la frise (bas en colonne, droite en bande
+   horizontale ≤700). Elle est ancrée à la PLAQUE : la boîte de la frise l'épouse (`fit-content`
+   ci-dessus), donc la rampe se pose sur le pied du bois et jamais sur du terrain nu. */
+.initiative-strip::after {
+  content: '';
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+  /* 22px : le rembourrage du pied (12) PLUS la garde qui couvre le résidu d'une entrée suivante
+     quand la piste est défilée hors cran (3px mesurés) — au filet, la matière est pleinement
+     celle du panneau (luminance de bord 15 contre 34 au cœur, sonde pixel). */
+  height: 22px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(20, 15, 10, 0) 0%, var(--atelier-wood-bottom) 78%);
+}
+/* Chaque entrée est un point d'ARRÊT : la colonne ne s'immobilise jamais au milieu d'un visage. */
+.is-cell {
+  scroll-snap-align: start;
+}
+
+.is-cell {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  padding-left: 7px;
+}
+/* Réglette de CAMP (spécimen A : « la colonne se lit comme un code-barres ») — déduite du fond
+   d'équipe déjà porté par `PortraitTile`, aucun marqueur de plus dans le markup. */
+.is-cell::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 5px;
+  background: linear-gradient(180deg, var(--combat-enemy), var(--blood));
+}
+.is-cell:has(.ptile.team-ally)::before {
+  background: linear-gradient(180deg, var(--hud-camp-ally-hi), var(--hud-camp-ally-lo));
+}
+/* Vignette d'ENNEMI : entrée PLEINE hachurée à liseré de camp (spécimen A). Le contour POINTILLÉ
+   de `RigPortrait` (canal de forme, posé en style inline) se lisait « débogage » dans la colonne ;
+   ici le camp est déjà porté par la réglette de gauche — un canal non coloré, et le seul de la
+   frise. Sur le TERRAIN, le pointillé des pions reste intact. */
+.is-tiles .ptile.team-enemy .rig-portrait {
+  border-style: solid !important;
+  border-color: var(--combat-enemy) !important;
+  background: repeating-linear-gradient(135deg, var(--cc-brass-cell-hi) 0 6px, var(--hud-frise-edge) 6px 12px);
+}
+.is-tiles .ptile.team-ally .rig-portrait {
+  border-color: var(--hud-camp-ally-hi) !important;
+  background: repeating-linear-gradient(135deg, var(--cc-brass-cell-hi) 0 6px, var(--hud-frise-edge) 6px 12px);
+}
+/* UN SEUL traitement « au trait » dans la frise : le liseré doré de la vignette active. Le survol
+   (écho carte↔frise) garde son halo NEUTRE, jamais un deuxième or. */
+.is-tiles .ptile.hov:not(.active) {
+  box-shadow: none;
+}
+.is-round {
+  /* Cartouche COLLÉ en tête de la piste défilante : la colonne garde sa tête à toute position de
+     défilement, ce qui rend la hauteur d'entrées CONSTANTE (et donc l'arrondi au pas exact). */
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: linear-gradient(90deg, var(--hud-frise-edge), var(--atelier-wood-top) 62%, var(--atelier-wood-bottom));
+  align-self: stretch;
+  padding-bottom: 5px;
+  margin-bottom: 3px;
+  border-bottom: 1px solid var(--atelier-brass-hover);
+  color: var(--gold2);
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-align: center;
+}
+/* Design 2026-07-31 §5. */
+.is-cell[data-phase='past'] { opacity: 0.5; }
+/* PIED de la frise : l'interrupteur de pause de Round (`raise-hand`, coop). Ce bloc n'en porte que
+   l'ANCRAGE — il s'aligne sur la largeur de la colonne, jamais il ne l'élargit ; la graduation de la
+   commande est la variante `dense` de sa primitive (`GatedAction`, components.css). */
+.is-hand {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+/* LDB 13 l.40. */
+.is-score {
+  position: absolute; top: -4px; left: -5px; z-index: 2;
+  min-width: 20px; padding: 0 3px; height: 16px; line-height: 15px;
+  border-radius: 0; text-align: center;
+  font: 700 10px ui-monospace, monospace;
+  background: linear-gradient(180deg, var(--atelier-wood-top), var(--hud-frise-score-lo));
+  color: var(--muted);
+  border: 1px solid var(--atelier-wood-etch);
+  pointer-events: none;
+}
+/* Au trait : le score passe sur plaque de laiton (le doré désigne l'acteur, spécimen A). */
+.is-cell[data-phase='current'] .is-score {
+  background: linear-gradient(180deg, var(--atelier-brass-vif), var(--atelier-brass-hover));
+  border-color: var(--combat-gold);
+  color: var(--hud-frise-edge);
+}
+.is-score.lente { color: var(--muted); border-color: rgba(163, 147, 111, 0.5); }
+.is-first {
+  font-size: 10px;
+  background: rgba(255, 224, 102, 0.14);
+  border: 1px solid rgba(255, 224, 102, 0.5);
+  border-radius: 6px;
+  color: var(--gold2);
+  padding: 1px 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.is-first .icon {
+  vertical-align: -2px;
+}
+/* LDB 62 l.298-300. */
+.is-first.free {
+  color: var(--cyan-pale);
+  border-color: rgba(159, 216, 255, 0.55);
+  background: rgba(159, 216, 255, 0.12);
+}
+/* LDB 10. */
+.is-preempt {
+  font-size: 10px;
+  background: rgba(255, 138, 92, 0.14);
+  border: 1px solid rgba(255, 138, 92, 0.5);
+  border-radius: 6px;
+  color: var(--danger-bright);
+  padding: 1px 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.is-preempt .icon { vertical-align: -2px; }
+.is-preempt.armed {
+  background: rgba(255, 138, 92, 0.3);
+  border-color: var(--danger-bright);
+  box-shadow: 0 0 0 1px rgba(255, 138, 92, 0.45);
+}
+
+/* ══ Matrice responsive (canon 900 / 700 / 560) — UN bloc par tranche ══ */
+@media (max-width: 900px) {
+  /* Cartes de la frise compactées : seules les respirations tombent — portrait, Blessures et
+     alertes restent. */
+  .is-tiles { gap: 5px; padding: 6px 5px; }
+}
+@media (max-width: 700px) {
+  /* La frise quitte la colonne latérale pour une BANDE HORIZONTALE défilable sous le groupe,
+     cartouche du Round en tête. Le `padding-top` de la piste réserve la place du badge
+     d'initiative, qui déborde du haut de chaque cellule.
+     PLUS DE RÉSERVE DE DROITE : la plaque de caméra a quitté l'écran de jeu et le rail dégraissé
+     s'ancre désormais en BAS à cette largeur (hud.css, `.hud-rail > .worldmap-btn`) — le haut-droite
+     est libre, la bande va jusqu'au bord comme à gauche. Elle réservait 168px pour une colonne qui
+     n'existe plus.
+     `align-items: stretch` CONTRAINT la piste à la largeur de la bande : `overflow-x: auto` ne mord
+     que sur une boîte bornée — alignée en `flex-start` elle prenait la largeur de son contenu et
+     débordait du HUD sans jamais défiler. */
+  .initiative-strip {
+    top: 84px;
+    left: 4px;
+    right: 4px;
+    bottom: auto;
+    transform: none;
+    max-height: none;
+    align-items: stretch;
+  }
+  .is-tiles {
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    padding: 9px 5px 5px;
+    max-height: none;
+    min-width: 0;
+    overflow-x: auto;
+    /* Bande horizontale : l'arrêt se fait sur la vignette ENTIÈRE, sur l'axe X. */
+    scroll-snap-type: x mandatory;
+  }
+  /* La rampe de fondu bascule au bord DROIT : c'est là que la bande déborde (sliver de 11px avant
+     la bordure mesuré à 360, x=343..353). Même loi, autre axe. */
+  .initiative-strip::after {
+    left: auto;
+    top: 1px;
+    bottom: 1px;
+    right: 1px;
+    width: 22px;
+    height: auto;
+    background: linear-gradient(90deg, rgba(20, 15, 10, 0) 0%, var(--atelier-wood-bottom) 78%);
+  }
+  .is-round {
+    align-self: center;
+    flex: 0 0 auto;
+    padding: 0 8px 0 2px;
+    border-bottom: none;
+    border-right: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .is-cell { flex: 0 0 auto; }
+}
+@media (max-width: 560px) {
+  /* Empilement HAUT re-mesuré à 360px, bande de groupe REPLIÉE : groupe (6..30), frise (34..86),
+     rangée de caméra (92..136), fil d'événements (140..) — puis le TERRAIN jusqu'à la console.
+     Vignettes de frise réduites à 34px : la bande d'ordre reste lisible sans manger le champ. */
+  .initiative-strip {
+    top: 34px;
+    /* Elle part APRÈS le coin du menu ☰ (44px au doigt + air), comme la bande de groupe : à 4px du
+       bord, sa tête passait sous le bouton (chevauchement mesuré 42×18). */
+    left: 58px;
+    right: 4px;
+  }
+  .is-tiles .ptile,
+  .is-tiles .ptile-face {
+    width: 34px !important;
+  }
+  .is-tiles .ptile-face {
+    height: 34px !important;
+  }
+  .is-tiles .rig-portrait {
+    width: 34px !important;
+    height: 34px !important;
+  }
+  .is-round {
+    font-size: 11px;
+  }
+}

@@ -1,4 +1,5 @@
 import { CharFrame } from './CharFrame';
+import { Row } from './Layout';
 import type { CharVariant } from './PortraitTile';
 import type { Combatant } from '../engine/types';
 
@@ -11,8 +12,8 @@ import type { Combatant } from '../engine/types';
  */
 export function ModalSubject({ c, variant = 'vital' }: { c: Combatant; variant?: CharVariant }) {
   return (
-    <div className="modal-subject">
+    <Row justify="center" className="modal-subject">
       <CharFrame c={c} variant={variant} size="md" />
-    </div>
+    </Row>
   );
 }

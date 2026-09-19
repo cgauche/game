@@ -41,7 +41,7 @@ habité » du juge, #371) ; un centrage/bornage codé à la main par écran (tra
   matière (couleur, bordure, police, rayon, ombre) : `components.css`, `tabs.css`, et le module que
   chaque primitive POSSÈDE — la liste fait foi au manifeste des primitives (champ `css`) : `band.css`,
   `frames.css`, `gauges.css`, `hero-sheet.css`, `ornaments.css`, `plaque-row.css`, `rose.css`,
-  `creator-step.css`, `panneau-parametre.css`, plus la famille JET cataloguée ci-dessous ;
+  `creator-step.css`, `panneau-parametre.css`, plus les familles JET et HUD cataloguées ci-dessous ;
   (3) **layout** — `layout.css`, ce qui PLACE et n'a aucune matière.
   `layout.css` vient APRÈS `components.css` : sans quoi `.panel { padding: 16px }` écraserait le
   `pad` de toute primitive de placement. Un module d'ÉCRAN (tous les autres) ne déclare QUE du
@@ -235,6 +235,7 @@ son propre cue (Compendium, pickers marchands…) sans reposer le mécanisme de 
 | `.modal-overlay` (+ variante `:has(.roll-modal)`) | Voile plein écran (`position:fixed inset:0`) | Cadre UNIQUE de toute modale — jamais un voile recopié à la main ; la variante `:has()` ancre les modales de jet en bas avec un voile plus léger. |
 | `.modal` / `.modal.wide` | Boîte de la modale (surface, largeur plafonnée) | `.wide` (760px) pour un contenu riche (multi-colonnes) ; `.modal` seul (520px) sinon. |
 | `.picker-modal` | Titre `<h3>` d'une modale de sélection | Modale de choix dans une liste (picker) — cohérent avec `.modal`. |
+| `.modal-subject` | Respiration du bandeau « sujet » sous le titre d'une modale (la rangée est un `Row`) | Posée par `ModalSubject` seul — jamais à la main. |
 | `.modal-actions` | Barre d'actions de modale (max 2 boutons : ghost à gauche, primaire à droite) | JAMAIS de 3ᵉ bouton — les dépenses de ressources vivent dans `.rm-influence`, pas ici. |
 | `.rm-influence` | Rangée « influencer le jet » (Chance/Pacte/Résilience/Détermination) | Vide → invisible (`:empty{display:none}`) ; composée par `InfluenceRow` (CLAUDE.md). |
 | `.prow` | RANGÉE de jet (`RollRow`) — CONTENEUR | Porte le ferrage EXPLICITE de tous ses enfants (`text-align`) : sans lui chaque enfant hérite du `text-align` de la coquille hôte et la même rangée se lit différemment selon la modale. Tout ferrage/alignement de rangée se règle ICI, jamais élément par élément. |
@@ -284,12 +285,28 @@ module de sa primitive, déclaré au manifeste des primitives (champ `css`) et m
 | `vs-header.css` | `VsHeader` | `.rm-vs`, `.rm-vs-arrow`, `.rm-weapon` — `.rm-weapon` sert aussi de QUALIFICATIF hors bandeau A→B (l'arme dégainée de `HandGateModal`, déclarée en `poseurs` au manifeste) : c'est la même matière, pas une copie |
 | `team-segments.css` | `TeamSegments` | `.nm-ally`, `.nm-foe` |
 | `combat-banner.css` | `CombatBanner` | `.combat-feed`, `.cb-ev`, `.cb-now`, `.cb-tone-strong`, `.cb-tone-grave` |
-| `log-drawer.css` | `LogDrawer` / `NarratedLine` | `.jr-line`, `.jr-ic`, `.jr-tx` |
+| `log-drawer.css` | `LogDrawer` / `NarratedLine` | `.log-drawer` (+ `.open`), `.ld-btn`, `.ld-panel`, `.jr-line`, `.jr-ic`, `.jr-tx` |
+| `portrait-tile.css` | `PortraitTile` | `.ptile*` (dont `.team-ally`/`.team-enemy`, `.active`, `.sel`, `.hov`, `.ko`), `.ptile-wrap`, `.ptile-face`, `.ptile-caret`, `.ptile-more`, `.end-mark` (+ `.es-*`) |
+| `state-chips.css` | `StateChips` | `.ptile-states` (+ `[data-reserve]`), `.pt-state`, `.pt-void`, `.pt-n` — `--alv` (côté d'une alvéole) y prend sa valeur de BASE, le bandeau de groupe et la console posent la leur |
+| `initiative-strip.css` | `InitiativeStrip` | `.initiative-strip` (+ sa rampe de débord), `.is-tiles`, `.is-cell`, `.is-round`, `.is-score`, `.is-hand`, `.is-first`, `.is-preempt` |
+| `party-dock.css` | `PartyDock` | `.party-dock` (+ `.on`), `.pd-track`, `.pd-handle`, `.pd-count`, `.pd-label`, `.pd-micro` — identité et mise en page INTERNE seules : l'ANCRAGE de la bande (bord, rang d'empilement, `[data-fiche]`, réserve des coins) appartient à l'écran qui la monte (`hud.css`) |
+| `media-select.css` | `MediaSelect` | `.media-select` (+ `.open`, `.align-left`/`.align-right`), `.ms-trigger`, `.ms-list`, `.ms-opt`, `.ms-caret`, `.ms-label`, `.ms-sub` |
+| `objective-banner.css` | `ObjectiveBanner` | `.objective-banner`, `.objective-head`, `.objective-text`, `.objective-count`, `.objective-deadline`, `.objective-list` |
+| `view-controls.css` | `ViewControls` | `.view-controls`, `.vc-group`, `.vc-btn` (le CORPS du glyphe et l'état `aria-pressed` ; la matière est `.skin-tole`), `.vc-zoom-value` |
+| `dr-bar.css` | `DrBar` | `.dr-bar`, `.dr-bar-track`, `.dr-bar-fill`, `.dr-bar-notch`, `.dr-bar-val` |
+| `coins.css` | `Coins` | `.coins[data-ton]`, `.coin-gold`, `.coin-silver`, `.coin-copper`, `.coin-sep` |
 | `inspect-panel.css` | `InspectPanel` | `.inspect-panel`, `.insp-head`, `.insp-id`, `.insp-lbl`, `.insp-badges`, `.insp-badge`, `.insp-pv-num` |
 | `equipment-panel.css` | `EquipmentPanel` | `.equip-panel`, `.equip-slots`, `.eq-*`, `.equip-sets`, `.set-*`, `.weap-quals` |
 | `src/gameIso/anim.css` | `GameStage3D` (`anim.css`) | `.iso-stage` (la surface du monde, sans `cursor` au repos), `.glow` (halo d'un décor magique ou d'une arme à feu), `.dmg-float` (chiffre de dégâts qui monte au-dessus de la cible) |
 
-Quatre classes de la famille sont PARTAGÉES et vivent donc en couche d'identité (`components.css`) :
+La **peau « tôle vissée »** `.skin-tole` (+ `data-ton="sombre"|"laiton"`, `components.css`) est du
+même ordre : la matière d'une commande VISSÉE sur une plaque de bois-laiton — plaque coupée au
+carré, nappe éclairée par le haut, liseré interne d'or, et sa cible de 44px au doigt. Elle se pose
+à côté de N'IMPORTE QUELLE base (`.btn` de la rangée de caméra, bouton nu du menu ☰ et du tiroir
+du journal, `.worldmap-btn` des ouvreurs du pont) : quatre poseurs sur trois bases, donc une PEAU
+partagée et non la variante d'une primitive. Chaque module n'en garde que son delta.
+
+Quatre classes de la famille de JET sont PARTAGÉES et vivent donc en couche d'identité (`components.css`) :
 `.seg` (segments d'`OptionChooser`, dont l'état pressé est `.seg button[aria-pressed='true']` —
 jamais un `.on`), `.prow-act` (zone d'actions d'une rangée, remplie par `RollRow` comme par
 `OptionChooser`), `.modal-log` (paragraphe de contexte d'une modale, posé par 11 écrans) et

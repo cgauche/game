@@ -10,7 +10,7 @@ import { spellMoney, type Money } from '../engine/money';
  * `title` = épellation française COMPLÈTE (#354, `spellMoney`) : le survol de TOUT montant explique
  * la notation « S/C », sans duplication par écran.
  */
-export function Coins({ money }: { money: Money }) {
+export function Coins({ money, ton }: { money: Money; ton?: 'discret' }) {
   const parts: JSX.Element[] = [];
   if (money.gold) parts.push(<span key="g" className="coin-gold">{money.gold} CO</span>);
   if (money.silver) {
@@ -27,7 +27,7 @@ export function Coins({ money }: { money: Money }) {
   }
   if (!parts.length) parts.push(<span key="0" className="coin-copper">0 sc</span>);
   return (
-    <span className="coins" title={spellMoney(money)}>
+    <span className="coins" data-ton={ton} title={spellMoney(money)}>
       {parts.map((p, i) => (
         <Fragment key={i}>
           {i > 0 ? ' ' : ''}

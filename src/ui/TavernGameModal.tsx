@@ -4,6 +4,7 @@ import { TAVERN_GAMES, findTavernGameById, tavernFastRegime, TAVERN_TEST_DIFFICU
 import { CHAR_LABELS, DIFFICULTY_LABELS, type Difficulty } from '../engine/types';
 import { tavernGameValue, tavernPartieEnCours, tavernNpcOffers, type TavernOpponent } from '../state/tavernFlow';
 import { sceneNpc } from '../state/sceneNpc';
+import { Row } from './Layout';
 import { bourseOf } from '../state/bourseFlow';
 import { refLabel } from '../data/index';
 import { PA_PER_SC, toBrass, fromBrass } from '../engine/money';
@@ -209,11 +210,11 @@ export function TavernGameModal() {
           )}
           <div className="tavern-block">
             <span className="mini-title">Qui joue ?</span>
-            <div className="frame-row">
+            <Row gap="sm" align="start">
               {heroes.map((h) => (
                 <CharFrame key={h.id} c={h} variant="identity" size="xs" selected={h.id === challengerId} onClick={() => setChallengerId(h.id)} />
               ))}
-            </div>
+            </Row>
             {game && challenger && <p className="tavern-detail">{challenger.label} : valeur de jeu <b>{challengerVal}</b>.</p>}
           </div>
           <div className="tavern-block">
@@ -246,11 +247,11 @@ export function TavernGameModal() {
                 )}
               </div>
             ) : oppKind === 'hero' ? (
-              <div className="frame-row">
+              <Row gap="sm" align="start">
                 {oppCandidates.map((h) => (
                   <CharFrame key={h.id} c={h} variant="identity" size="xs" selected={h.id === (oppHeroId || oppCandidates[0]?.id)} onClick={() => setOppHeroId(h.id)} />
                 ))}
-              </div>
+              </Row>
             ) : (
               <NumberField
                 id="tavern-opp-value"

@@ -98,6 +98,10 @@
     "type": "primitives.manifest",
     "label": "PortraitTile/CharFrame",
     "fichier": "src/ui/PortraitTile.tsx",
+    "css": "src/ui/styles/portrait-tile.css",
+    "poseurs": [
+      "src/ui/StateChips.tsx"
+    ],
     "concept": "affichage d'un personnage (HUD/modale/picker)",
     "perimetre": "toute vignette de personnage",
     "verrou": "—"
@@ -269,6 +273,7 @@
     "type": "primitives.manifest",
     "label": "MediaSelect",
     "fichier": "src/ui/MediaSelect.tsx",
+    "css": "src/ui/styles/media-select.css",
     "concept": "sélecteur visuel (déclencheur + popover de rangées média + texte) là où un <select> natif ne peut pas porter d'icône",
     "perimetre": "sélecteurs d'arme/armure de la fiche, menu « Donner »",
     "verrou": "—"
@@ -771,5 +776,75 @@
     "concept": "LE PLATEAU : la surface du monde (caméra responsive) et les animations de ce qui vit dessus",
     "perimetre": "campagne, arène, plan top-down — halos de décor, chiffres de dégâts, fourmis de gabarit",
     "verrou": "gameIso/stage/anim-css-branchee.test.ts — les keyframes sont importées par l’hôte du monde"
+  },
+  {
+    "id": "stateChips",
+    "type": "primitives.manifest",
+    "label": "StateChips",
+    "fichier": "src/ui/StateChips.tsx",
+    "css": "src/ui/styles/state-chips.css",
+    "concept": "colonne d'États d'un combattant : pastilles informatives ou actionnables, alvéoles RÉSERVÉES (le compte ne dépend jamais des États portés), indice chiffré",
+    "perimetre": "tuile de portrait, bande de groupe, rangée de liste — partout où un État se lit",
+    "verrou": "src/ui/determination-reachability.test.tsx — la pastille actionnable garde sa cible de 44px au doigt"
+  },
+  {
+    "id": "initiativeStrip",
+    "type": "primitives.manifest",
+    "label": "InitiativeStrip",
+    "fichier": "src/ui/InitiativeStrip.tsx",
+    "css": "src/ui/styles/initiative-strip.css",
+    "concept": "frise d'initiative : colonne de bois à cartouche de Round collé, une entrée par combattant, badges de premier coup et de pré-emption en débord",
+    "perimetre": "HUD de combat (colonne à gauche ; bande horizontale défilable ≤700)",
+    "verrou": "src/ui/ui-ratchets.test.ts — matrice responsive du HUD"
+  },
+  {
+    "id": "partyDock",
+    "type": "primitives.manifest",
+    "label": "PartyDock",
+    "fichier": "src/ui/PartyDock.tsx",
+    "css": "src/ui/styles/party-dock.css",
+    "concept": "bande de groupe : une rangée de cartes IDENTITAIRES qui défile à tuiles pleines, repliée sur sa poignée ≤560",
+    "perimetre": "HUD plein-champ (exploration et combat) — elle ne marque jamais l’acteur du tour",
+    "verrou": "src/ui/PartyDock.test.tsx — aucune plomberie de marqueur d’actif"
+  },
+  {
+    "id": "objectiveBanner",
+    "type": "primitives.manifest",
+    "label": "ObjectiveBanner",
+    "fichier": "src/ui/ObjectiveBanner.tsx",
+    "css": "src/ui/styles/objective-banner.css",
+    "concept": "objectif courant : tête repliable (texte, compte, échéance) et liste dépliée",
+    "perimetre": "pile de contexte d'exploration du HUD",
+    "verrou": "—"
+  },
+  {
+    "id": "viewControls",
+    "type": "primitives.manifest",
+    "label": "ViewControls",
+    "fichier": "src/ui/ViewControls.tsx",
+    "css": "src/ui/styles/view-controls.css",
+    "concept": "rangée de commandes de CAMÉRA : orientation, affichage, zoom — chacune vissée sur la peau partagée « tôle »",
+    "perimetre": "HUD plein-champ du plateau",
+    "verrou": "src/ui/ui-ratchets.test.ts — cible de 44px sous pointeur grossier"
+  },
+  {
+    "id": "drBar",
+    "type": "primitives.manifest",
+    "label": "DrBar",
+    "fichier": "src/ui/DrBar.tsx",
+    "css": "src/ui/styles/dr-bar.css",
+    "concept": "barre de Test ÉTENDU (LDB 154) : DR cumulés vers la cible, cran de seuil, valeur gravée",
+    "perimetre": "toute épreuve étendue (rituel, poursuite, jeu de taverne)",
+    "verrou": "—"
+  },
+  {
+    "id": "coins",
+    "type": "primitives.manifest",
+    "label": "Coins",
+    "fichier": "src/ui/Coins.tsx",
+    "css": "src/ui/styles/coins.css",
+    "concept": "montant en monnaie impériale (LDB 57), coloré par dénomination et épelé en `title` — miroir JSX de `formatMoney`",
+    "perimetre": "tout prix AFFICHÉ : négoce, soins, repos, conseil, bourse d'en-tête",
+    "verrou": "—"
   }
 ]

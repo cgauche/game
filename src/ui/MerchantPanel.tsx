@@ -4,6 +4,7 @@ import { findTrappingById, findVehicleById, weaponGroupLabel, merchantFamilies, 
 import { priceToMoney, fromBrass, toBrass, canAfford, add as moneyAdd, type Money } from '../engine/money';
 import { craftPriceFactor } from '../engine/qualities/craftEconomy';
 import { isRepairable, itemRepairCostBrass } from '../engine/repair';
+import { Row } from './Layout';
 import { bargainBuyFactor } from '../engine/bargain';
 import { compareEquip, isShieldItem } from '../engine/equipCompare';
 import { itemFromTrappingById, isWeaponActive, damageString } from '../engine/items';
@@ -290,11 +291,11 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
               {'item' in d ? d.item.label : (catalogEntryOf(d.unit.id)?.label ?? d.unit.id)}
               {'unit' in d && <span className="hint"> (monture/véhicule)</span>}
             </span>
-            <div className="frame-row">
+            <Row gap="sm" align="start">
               {party.map((h) => (
                 <CharFrame key={h.id} c={h} variant="identity" size="xs" selected={d.heroId === h.id} onClick={() => onAssignDist(i, h.id)} />
               ))}
-            </div>
+            </Row>
           </div>
         ))}
       </div>

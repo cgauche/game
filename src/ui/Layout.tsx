@@ -82,6 +82,9 @@ type RowProps = {
   justify?: 'start' | 'between' | 'end' | 'center';
   /** `false` : la rangée ne s'enroule pas — elle déborde ou défile. */
   wrap?: boolean;
+  /** La rangée vit DANS une ligne de texte (elle en suit la ligne de base) au lieu d'occuper sa
+   *  propre bande — une rangée de tuiles après un libellé sur la même ligne. */
+  inline?: boolean;
   /** Sous cette cassure, la rangée devient une pile. */
   stackBelow?: Cassure;
   as?: Balise;
@@ -90,7 +93,7 @@ type RowProps = {
 
 /** RANGÉE horizontale, qui s'enroule par défaut. Sous `stackBelow`, elle devient une pile. */
 export const Row = forwardRef<HTMLElement, RowProps>(function Row(
-  { gap, pad, align, justify, wrap = true, stackBelow, as = 'div', children, ...reste }, ref,
+  { gap, pad, align, justify, wrap = true, inline, stackBelow, as = 'div', children, ...reste }, ref,
 ) {
   return rendre(as, 'row', {
     'data-gap': gap,
@@ -98,6 +101,7 @@ export const Row = forwardRef<HTMLElement, RowProps>(function Row(
     'data-align': align,
     'data-justify': justify,
     'data-wrap': wrap ? undefined : 'no',
+    'data-inline': inline ? '' : undefined,
     'data-stack-below': stackBelow,
   }, reste, children, ref);
 });

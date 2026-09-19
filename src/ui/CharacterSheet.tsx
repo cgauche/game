@@ -331,7 +331,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
       )}
       <div className="spell-target">
         Cible :{' '}
-        <div className="frame-row">
+        <Row inline gap="sm" align="start">
           {party.map((m) => (
             <CharFrame
               key={m.id}
@@ -343,7 +343,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
               nom={m.id === hero.id ? `${m.label} (soi)` : m.label}
             />
           ))}
-        </div>
+        </Row>
       </div>
       <div className="spell-list">
         {spells.map((sp) => {

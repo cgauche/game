@@ -85,9 +85,14 @@ const REPEINTS_STOCK: readonly string[] = [
   "src/ui/styles/creator.css|.creator-step > .master-detail-list[data-at-top]::before",
   "src/ui/styles/creator.css|.main-head .hint",
   "src/ui/styles/creator.css|.tag.char",
+  // Spécialisations CONTEXTUELLES de la console sur la tuile de portrait (design #1806 §2.2) :
+  // elles deviennent exemptes PAR CONSTRUCTION au sous-lot 2b, quand `combat-console.css` devient le
+  // module de la primitive `combatConsole` — `.cc-*` sera alors une classe de module de PRIMITIVE.
+  // Rendues VISIBLES par le 2a (`portrait-tile.css` possède désormais `.ptile*`), pas créées par lui.
+  "src/ui/styles/combat-console.css|.cc-arch .ptile.team-enemy",
+  "src/ui/styles/combat-console.css|.cc-dock [data-medaillon] .ptile",
+  "src/ui/styles/combat-console.css|.cc-dock [data-medaillon] .ptile-face",
   "src/ui/styles/editor.css|.insp-fold .fold-title",
-  "src/ui/styles/hud.css|.btn.vc-btn",
-  "src/ui/styles/hud.css|.btn.vc-btn[aria-pressed='true']",
   "src/ui/styles/merchant.css|.merchant-body .empty",
   "src/ui/styles/party.css|.candidate-fig > .charprev",
   "src/ui/styles/party.css|.card-roles .entity-chip",

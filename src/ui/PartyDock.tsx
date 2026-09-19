@@ -11,7 +11,8 @@ const DOCK_RING = 'var(--atelier-brass-hover)';
  *  3 cases dessinées). Le compte ne dépend jamais des États portés. */
 const DOCK_STATE_CELLS = 3;
 
-/** Dock de compagnie composé de portraits complets, avec empilement contextuel de fiche. La bande est
+/** Dock de compagnie composé de portraits complets. FICHE OUVERTE, la bande expose l'état en
+ *  ATTRIBUT (`data-fiche`) ; le rang qu'il commande appartient à l'écran qui la monte (`hud.css`). La bande est
  *  strictement IDENTITAIRE : elle ne marque pas l'acteur du tour (spec §1c-bis BANDEAU, arbitrage user
  *  2026-08-17) — l'ordre du tour et l'actif vivent à la frise d'initiative seule. */
 export type PartyDockProps = {
@@ -26,7 +27,7 @@ export function PartyDock({ heroes, targeting, onOpen }: PartyDockProps) {
    *  masquée en CSS et la piste toujours montée : l'état ne retire jamais de contenu du DOM. */
   const [open, setOpen] = useState(false);
   return (
-    <div className={`party-dock${open ? ' on' : ''}`} style={sheetOpen ? { zIndex: 126 } : undefined}>
+    <div className={`party-dock${open ? ' on' : ''}`} data-fiche={sheetOpen ? '' : undefined}>
       {/* POIGNÉE (≤560px) : la bande repliée rend le TERRAIN au joueur sans rien perdre — le compte
           du groupe et la vie de chacun restent lus, en micro-jauges, et le tap déplie les tuiles. */}
       <button

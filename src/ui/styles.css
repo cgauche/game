@@ -25,9 +25,23 @@
 @import './styles/vs-header.css'; /* en-tête d'opposition A→B (VsHeader) */
 @import './styles/team-segments.css'; /* segments tonés par camp (TeamSegments) */
 @import './styles/combat-banner.css'; /* fil d'événements de combat (CombatBanner) */
-@import './styles/log-drawer.css'; /* journal de combat (LogDrawer, NarratedLine) */
+@import './styles/log-drawer.css'; /* journal de combat (LogDrawer, NarratedLine) : tiroir, commande de coin, ligne narrée */
 @import './styles/inspect-panel.css'; /* panneau d'inspection (InspectPanel) */
 @import './styles/equipment-panel.css'; /* panneau d'équipement (EquipmentPanel) */
+
+/* ══ Modules de PRIMITIVE du HUD (#1806 2a) ══ Même loi : l'identité vit chez la primitive qui la
+   POSE. `portrait-tile.css` d'abord (la tuile), puis ce qui la SPÉCIALISE en contexte.
+   `state-chips.css` AVANT `party-dock.css` : `--alv` et le `gap` de la colonne d'États s'y jouent à
+   spécificité ÉGALE (0-2-0), c'est l'ordre qui donne 20px à la bande de groupe et 15 au rack. */
+@import './styles/portrait-tile.css'; /* tuile de portrait (PortraitTile) : carte d'équipe, visage, caret, pastille de fin */
+@import './styles/state-chips.css'; /* colonne d'États (StateChips) : alvéoles réservées, pastille actionnable, indice */
+@import './styles/initiative-strip.css'; /* frise d'initiative (InitiativeStrip) — APRÈS portrait-tile.css : `.is-tiles .ptile*` spécialise la vignette */
+@import './styles/party-dock.css'; /* bande de groupe (PartyDock) — APRÈS state-chips.css : `--alv` du bandeau (20px) contre celui du rack (15px), même spécificité */
+@import './styles/media-select.css'; /* sélecteur visuel (MediaSelect) : déclencheur + popover de rangées média */
+@import './styles/objective-banner.css'; /* objectif courant (ObjectiveBanner) : tête repliable + liste */
+@import './styles/view-controls.css'; /* rangée de caméra (ViewControls) — le corps du bouton ; sa matière est `.skin-tole` (components.css) */
+@import './styles/dr-bar.css'; /* barre de Test étendu (DrBar) */
+@import './styles/coins.css'; /* monnaie colorée (Coins) */
 
 @import './styles/ornaments.css'; /* textures maison (.tx-parchment/.tx-ink) + cadres/fleurons (Ornaments.tsx) */
 @import './styles/rose.css'; /* rose des forces (mini-radar gravé, #409) — RoseAxes.tsx, coin/médaillon/pleine */

@@ -13,9 +13,9 @@ import type { IconIdInput } from './icons';
  * (dossier, carnet, hub…) restent chez `CampaignView` : ici, une entrée est OFFERTE quand son rappel
  * est fourni — la condition d'apparition vit au call site, jamais dupliquée.
  *
- * Les entrées portent la variante « tôle vissée » de leur primitive (`data-skin="tole"` sur
- * `.worldmap-btn`, définie AVEC elle dans world-meta.css) : le pont est une plaque, pas une barre de
- * panneaux — et aucune propriété de bouton n'est réécrite depuis la feuille de cet écran.
+ * Les entrées portent la peau PARTAGÉE « tôle vissée » (`skin-tole` + `data-ton="laiton"`,
+ * components.css) : le pont est une plaque, pas une barre de panneaux — et aucune propriété de
+ * bouton n'est réécrite depuis la feuille de cet écran.
  */
 export type ExplorationDockProps = {
   /** Possessions du groupe (#762) — gestion des bêtes/véhicules/navires/serviteurs. */
@@ -40,29 +40,29 @@ export function ExplorationDock({ onPossessions, onCarnet, onShipDossier, onVoya
   return (
     <div className="exploration-dock" data-deck="exploration">
       <div className="xd-openers" aria-label="Écrans de campagne">
-        <button type="button" className="worldmap-btn" data-skin="tole" onClick={onPossessions} title="Possessions du groupe">
+        <button type="button" className="worldmap-btn skin-tole" data-ton="laiton" onClick={onPossessions} title="Possessions du groupe">
           <Icon id="travel/mount" size="lg" />
         </button>
         {onCarnet && (
-          <button type="button" className="worldmap-btn" data-skin="tole" onClick={onCarnet} title="Carnet d’enquête">
+          <button type="button" className="worldmap-btn skin-tole" data-ton="laiton" onClick={onCarnet} title="Carnet d’enquête">
             <Icon id="nav/compendium" size="lg" />
           </button>
         )}
         {onShipDossier && (
-          <button type="button" className="worldmap-btn" data-skin="tole" onClick={onShipDossier} title="Dossier du navire — état, cargaison, équipage">
+          <button type="button" className="worldmap-btn skin-tole" data-ton="laiton" onClick={onShipDossier} title="Dossier du navire — état, cargaison, équipage">
             <Icon id="travel/sail-ship" size="lg" />
           </button>
         )}
         {onVoyage && (
-          <button type="button" className="worldmap-btn" data-skin="tole" onClick={onVoyage} title="Rouvrir l’écran de voyage">
+          <button type="button" className="worldmap-btn skin-tole" data-ton="laiton" onClick={onVoyage} title="Rouvrir l’écran de voyage">
             <Icon id="travel/sail-ship" size="lg" />
           </button>
         )}
         {worldMap && (
           <button
             type="button"
-            className={`worldmap-btn ${worldMap.interrupted ? 'attention' : ''}`}
-            data-skin="tole"
+            className={`worldmap-btn skin-tole ${worldMap.interrupted ? 'attention' : ''}`}
+            data-ton="laiton"
             onClick={worldMap.onOpen}
             title={worldMap.interrupted ? 'Carte du monde — voyage interrompu (reprendre)' : 'Carte du monde — voyager'}
           >
@@ -70,12 +70,12 @@ export function ExplorationDock({ onPossessions, onCarnet, onShipDossier, onVoya
           </button>
         )}
         {hub && (
-          <button type="button" className="worldmap-btn" data-skin="tole" onClick={hub.onOpen} title={`${hub.label} — services du lieu`}>
+          <button type="button" className="worldmap-btn skin-tole" data-ton="laiton" onClick={hub.onOpen} title={`${hub.label} — services du lieu`}>
             <Icon id={hub.icon} size="lg" />
           </button>
         )}
         {rest && (
-          <button type="button" className="worldmap-btn" data-skin="tole" onClick={rest.onOpen} title={rest.title}>
+          <button type="button" className="worldmap-btn skin-tole" data-ton="laiton" onClick={rest.onOpen} title={rest.title}>
             {/* Une seule icône Repos (auberge/chez soi/camp) — le `title` porte la nuance. */}
             <Icon id="nav/rest" size="lg" />
           </button>

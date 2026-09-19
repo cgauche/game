@@ -108,3 +108,25 @@
 /* « Baisse des prix » à la vente (LDB 59 l.60) : Disponibilité de l'acheteur + brader ÷2 */
 .sell-haggle { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); }
 .sell-haggle .sell-av { white-space: nowrap; }
+
+/* Étiquette « équipé » dans la liste de vente. */
+.equipped-tag {
+  margin-left: 6px;
+  font-size: 10px;
+  color: var(--ok-bright);
+  border: 1px solid rgba(95, 207, 146, 0.5);
+  border-radius: 4px;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+/* Barre de panier (achat) toujours visible au défilement (sticky). L'écart sous la barre est de la
+   MARGE OPAQUE (padding-bottom), pas une marge transparente : une ligne qui défile ne peut pas
+   « pointer » dans un interstice sous la barre (chevauchement, #375). */
+.merch-tab .cart-bar {
+  position: sticky;
+  top: -2px;
+  z-index: 3;
+  background: var(--bg2);
+  padding: 6px 2px 8px;
+  margin: -2px 0 0;
+}

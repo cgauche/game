@@ -50,7 +50,8 @@ export function GameMenu({ sceneName, time, onQuit, onSaveLoad, onEndSession, in
     <div className="game-menu">
       <button
         type="button"
-        className="gm-btn"
+        className="gm-btn skin-tole"
+        data-ton="laiton"
         aria-label={open ? t('gameMenu.close') : t('gameMenu.menu')}
         aria-expanded={open}
         title={open ? t('gameMenu.close') : t('gameMenu.menu')}

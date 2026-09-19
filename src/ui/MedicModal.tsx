@@ -155,7 +155,7 @@ export function MedicModal() {
 
   return (
     <Modal title={npc ? <><Icon id="journal/heal" size="sm" /> Soins — {npc.label}</> : <><Icon id="journal/heal" size="sm" /> Soins</>} variant="plain" className="medic-modal" onClose={busy ? undefined : close}>
-      {paid && <span className="purse medic-purse">Bourse <Coins money={money} /></span>}
+      {paid && <span className="medic-purse hint">Bourse <Coins money={money} ton="discret" /></span>}
 
       {/* Bandeau PATIENTS : tuile full (jauge + États = le diagnostic), sélection or. */}
       <div className="medic-patients">

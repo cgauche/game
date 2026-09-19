@@ -13,8 +13,8 @@
    avalé sur toute la largeur. Le pont ne porte donc que sa rangée (cible tactile `--xd-row`), sa
    respiration et son liseré, tant qu'aucun contenu ne lui est authoré. */
 :root {
-  /* Côté de la cible tactile de la rangée : patron des commandes vissées (`.ld-btn`/`.btn.vc-btn`,
-     hud.css) — au doigt il passe à 44px (tranche `pointer: coarse` ci-dessous), et la réserve suit. */
+  /* Côté de la cible tactile de la rangée : patron des commandes vissées (peau `.skin-tole`,
+     components.css) — au doigt il passe à 44px (tranche `pointer: coarse` ci-dessous), et la réserve suit. */
   --xd-row: 42px;
   /* Liseré de laiton du parapet : MÊME épaisseur que sur le pont de combat, et le décalage de nappe
      ci-dessous la relit (la nappe se pose dans la boîte de fond, liseré exclu). */
@@ -60,14 +60,33 @@
 }
 /* Rangée d'icônes-écrans : à l'extrémité DROITE du pont, jamais au milieu du champ. Le tiroir-journal
    en est le DERNIER élément hors combat (§1c-ter : une plaque unique, jamais des éléments épars) ;
-   son ancrage sur le pont vit avec ses classes (hud.css). Les ouvreurs portent la variante « tôle
-   vissée » de leur primitive (`.worldmap-btn[data-skin='tole']`, world-meta.css) : aucune propriété
-   de bouton n'est réécrite depuis ce module d'écran. */
+   son ancrage sur le pont vit ci-dessous. Les ouvreurs portent la peau PARTAGÉE « tôle vissée »
+   (`.skin-tole[data-ton='laiton']`, components.css) : aucune propriété de bouton n'est réécrite
+   depuis ce module d'écran. */
 .xd-openers {
   margin-left: auto;
   display: flex;
   align-items: center;
   gap: 6px;
+}
+/* LE TIROIR-JOURNAL SUR LE PONT (§1c-ter : une plaque unique, jamais des éléments épars) — le PONT
+   porte l'ancrage, comme le rail en combat. Hors toute tranche : sans cette remise à zéro, les
+   calages mobiles du tiroir (≤700 : 140px du bas ; ≤560 : 274px, log-drawer.css) le renvoyaient
+   flotter au milieu du terrain alors que son bouton est assis dans la rangée d'ouvreurs. */
+.exploration-dock .log-drawer {
+  position: relative;
+  inset: auto;
+  align-items: flex-end;
+}
+/* Le panneau naît de son bouton et s'ouvre VERS LE HAUT, borné par la bande de terrain disponible :
+   il lit la RÉSERVE DU BAS du pont (`--xd-deck-h`, ci-dessus) et la réserve du haut de la frise
+   (70px, initiative-strip.css), jamais un nombre recopié — même patron que `--is-avail` sur
+   `--cc-deck-h`. */
+.exploration-dock .ld-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  max-height: calc(100vh - 70px - var(--xd-deck-h) - 12px);
 }
 
 /* ── Matrice responsive (règle stricte 4 : 900 / 700 / 560, puis pointeur grossier) ── */

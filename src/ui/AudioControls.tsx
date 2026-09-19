@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { getVolume, getMusicVolume, isMuted, setMuted, setVolume, setMusicVolume, playSfx } from '../audio/engine';
 import { Icon } from './Icon';
+import { Stack } from './Layout';
 
 /** Contrôles audio du menu ☰ (Jalon 8 — sons CC0) : sourdine globale + volumes effets/musique,
  *  persistants. Bouger le volume d'effets joue un échantillon ; la musique s'ajuste en direct. */
@@ -9,7 +10,7 @@ export function AudioControls() {
   const [musicVol, setMusicVol] = useState(getMusicVolume());
   const [muted, setMute] = useState(isMuted());
   return (
-    <div className="gm-section">
+    <Stack gap="xs">
       <span className="mini-title">Audio</span>
       <div className="audio-controls">
         <button
@@ -59,6 +60,6 @@ export function AudioControls() {
           }}
         />
       </div>
-    </div>
+    </Stack>
   );
 }

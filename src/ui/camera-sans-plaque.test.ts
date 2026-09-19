@@ -28,8 +28,8 @@ describe('commandes de vue — hors du jeu, dans l’éditeur', () => {
     const rail = campaignView.slice(campaignView.indexOf('className="hud-rail"'));
     const corps = rail.slice(0, rail.indexOf('</div>'));
     expect(corps).toContain('<LogDrawer');
-    // L'ouvreur du dossier porte la variante « tôle vissée » de sa primitive (world-meta.css).
-    expect(corps).toMatch(/className="worldmap-btn"\s*\n\s*data-skin="tole"/);
+    // L'ouvreur du dossier porte la peau « tôle vissée » PARTAGÉE (components.css).
+    expect(corps).toMatch(/className="worldmap-btn skin-tole"\s*\n\s*data-ton="laiton"/);
     // EXHAUSTIF : le seul composant du rail est le tiroir (l'`Icon` est celle du bouton de dossier).
     expect(corps.match(/<[A-Z][A-Za-z]*/g)).toEqual(['<Icon', '<LogDrawer']);
   });

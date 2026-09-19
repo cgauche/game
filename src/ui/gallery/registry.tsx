@@ -23,6 +23,13 @@ import type { DescRef } from '../../data/source/decoupe';
 import { GatedAction } from '../GatedAction';
 import { ReadyRow } from '../ReadyRow';
 import { PortraitTile } from '../PortraitTile';
+import { StateChips } from '../StateChips';
+import { InitiativeStrip } from '../InitiativeStrip';
+import { PartyDock } from '../PartyDock';
+import { ObjectiveBanner } from '../ObjectiveBanner';
+import { ViewControls } from '../ViewControls';
+import { DrBar } from '../DrBar';
+import { Coins } from '../Coins';
 import { LifeBar } from '../LifeBar';
 import { CharacterPreview } from '../CharacterPreview';
 import { MetalStatus } from '../MetalStatus';
@@ -1071,6 +1078,100 @@ function CombatBannerDemo() {
   );
 }
 
+/** Colonne d'États : rack d'alvéoles RÉSERVÉES (les cases sont dessinées même vides) contre la
+ *  forme libre, qui ne montre que ce qui est porté. */
+function StateChipsDemo() {
+  if (!herosExemple()) return <p className="hint">Aucun pregen disponible.</p>;
+  return (
+    <Row>
+      <StateChips c={herosExemple()} max={3} reserve />
+      <StateChips c={herosExemple()} max={3} />
+    </Row>
+  );
+}
+
+/** Frise d'initiative : cartouche de Round, entrée courante au trait, entrées passées atténuées. */
+function InitiativeStripDemo() {
+  const equipe = herosExemples().slice(0, 3);
+  if (!equipe.length) return <p className="hint">Aucun pregen disponible.</p>;
+  return (
+    <InitiativeStrip
+      order={equipe.map((c) => c.id)}
+      turn={1}
+      round={2}
+      combatants={equipe}
+      over={false}
+      canFirstIds={[]}
+      onActivate={() => {}}
+      onPromote={() => {}}
+    />
+  );
+}
+
+/** Bande de groupe : une carte identitaire par héros (portrait, Blessures, États, nom dessous). */
+function PartyDockDemo() {
+  const equipe = herosExemples().slice(0, 4);
+  if (!equipe.length) return <p className="hint">Aucun pregen disponible.</p>;
+  return <PartyDock heroes={equipe} onOpen={() => {}} />;
+}
+
+/** Objectif courant : tête seule, puis tête repliable (échéance + compte des précédents). */
+function ObjectiveBannerDemo() {
+  return (
+    <Stack>
+      <ObjectiveBanner objectives={[{ id: 'o1', text: 'Retrouver le coche perdu sur la route d’Altdorf' }]} now={0} />
+      <ObjectiveBanner
+        objectives={[
+          { id: 'o1', text: 'Fouiller la grange' },
+          { id: 'o2', text: 'Atteindre Bogenhafen avant la nuit', deadline: 60 * 60 * 9 },
+        ]}
+        now={0}
+      />
+    </Stack>
+  );
+}
+
+/** Rangée de caméra : commandes vissées (peau `.skin-tole`), état enfoncé par `aria-pressed`. */
+function ViewControlsDemo() {
+  const [vue, setVue] = useState<'iso' | 'top'>('iso');
+  const [inspection, setInspection] = useState(false);
+  return (
+    <ViewControls
+      zoom={1}
+      onZoomIn={() => {}}
+      onZoomOut={() => {}}
+      onZoomReset={() => {}}
+      onRotateLeft={() => {}}
+      onRotateRight={() => {}}
+      view={vue}
+      onToggleView={() => setVue((v) => (v === 'iso' ? 'top' : 'iso'))}
+      inspectEnabled={inspection}
+      onToggleInspect={() => setInspection((v) => !v)}
+    />
+  );
+}
+
+/** Barre de Test ÉTENDU : DR cumulés vers la cible, avec et sans crans lisibles. */
+function DrBarDemo() {
+  return (
+    <Stack>
+      <DrBar cum={4} target={6} />
+      <DrBar cum={19} target={30} label="DR de rituel" />
+    </Stack>
+  );
+}
+
+/** Montants en monnaie impériale (LDB 57) : notation S/C, sous seuls, et le ton discret. */
+function CoinsDemo() {
+  return (
+    <Stack>
+      <span><Coins money={toMoney({ gold: 2, silver: 6, brass: 8 })} /></span>
+      <span><Coins money={toMoney({ brass: 9 })} /></span>
+      <span>Bourse <Coins money={toMoney({ silver: 12 })} ton="discret" /></span>
+    </Stack>
+  );
+}
+
 /** Tiroir du journal : l'historique complet, ouvert sur ses lignes narrées. */
 function LogDrawerDemo() {
   return <LogDrawer battle={null} journal={['La porte cède sous l’épaule de Gustav.', 'Une odeur de suif monte de la cave.']} initialOpen />;
@@ -1135,6 +1236,13 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { id: 'teamsegments', label: 'TeamSegments', file: 'src/ui/TeamSegments.tsx', category: 'Texte', render: TeamSegmentsDemo },
   { id: 'combatbanner', label: 'CombatBanner', file: 'src/ui/CombatBanner.tsx', category: 'Combat', note: 'maquette de TONS — le composant vivant projette le beat du combat en cours (store), qu’aucune vignette ne porte', render: CombatBannerDemo },
   { id: 'logdrawer', label: 'LogDrawer', file: 'src/ui/LogDrawer.tsx', category: 'Combat', render: LogDrawerDemo },
+  { id: 'initiativestrip', label: 'InitiativeStrip', file: 'src/ui/InitiativeStrip.tsx', category: 'Combat', render: InitiativeStripDemo },
+  { id: 'partydock', label: 'PartyDock', file: 'src/ui/PartyDock.tsx', category: 'Combat', render: PartyDockDemo },
+  { id: 'viewcontrols', label: 'ViewControls', file: 'src/ui/ViewControls.tsx', category: 'Combat', render: ViewControlsDemo },
+  { id: 'objectivebanner', label: 'ObjectiveBanner', file: 'src/ui/ObjectiveBanner.tsx', category: 'Écrans & layout', render: ObjectiveBannerDemo },
+  { id: 'statechips', label: 'StateChips', file: 'src/ui/StateChips.tsx', category: 'Personnages', render: StateChipsDemo },
+  { id: 'drbar', label: 'DrBar', file: 'src/ui/DrBar.tsx', category: 'Jets', render: DrBarDemo },
+  { id: 'coins', label: 'Coins', file: 'src/ui/Coins.tsx', category: 'Négoce & activités', render: CoinsDemo },
   { id: 'inspectpanel', label: 'InspectPanel', file: 'src/ui/InspectPanel.tsx', category: 'Combat', render: InspectPanelDemo },
   { id: 'equipmentpanel', label: 'EquipmentPanel', file: 'src/ui/EquipmentPanel.tsx', category: 'Personnages', render: EquipmentPanelDemo },
   { id: 'portraittile', label: 'PortraitTile', file: 'src/ui/PortraitTile.tsx', category: 'Personnages', render: PortraitTileDemo },

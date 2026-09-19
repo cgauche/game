@@ -42,7 +42,7 @@ export function LogDrawer({ battle, journal, initialOpen = false, onOpenHistory 
           {!battle && journal.length === 0 && <p className="empty">— rien à signaler —</p>}
         </div>
       )}
-      <button type="button" className="ld-btn" onClick={() => setOpen(!open)} title={open ? 'Fermer le journal' : 'Ouvrir le journal'}>
+      <button type="button" className="ld-btn skin-tole" data-ton="sombre" onClick={() => setOpen(!open)} title={open ? 'Fermer le journal' : 'Ouvrir le journal'}>
         <Icon id="nav/compendium" size="lg" />
       </button>
     </div>

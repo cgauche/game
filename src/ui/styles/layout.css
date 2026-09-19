@@ -71,6 +71,13 @@ ol.grid {
 .row[data-align='end'] { align-items: flex-end; }
 .row[data-align='stretch'] { align-items: stretch; }
 .row[data-align='baseline'] { align-items: baseline; }
+/* Rangée EN LIGNE : elle suit la ligne de texte qui la précède au lieu de prendre sa propre bande
+   (« Cible : » puis la rangée de tuiles, `CharacterSheet`). Un enfant de conteneur FLEX est
+   blockifié par la cascade — l'attribut n'a donc d'effet que là où il en faut. */
+.row[data-inline] {
+  display: inline-flex;
+  vertical-align: middle;
+}
 
 /* ── GRILLE (`Grid`) — colonnes AUTO (`min`) ou FIXES (`cols`), jamais les deux ── */
 .grid {
