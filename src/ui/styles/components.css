@@ -615,9 +615,6 @@ button.chip:hover {
   align-items: center;
   gap: 6px;
 }
-.fx-chip-label {
-  font-size: 11px;
-}
 
 /* ── BANDEAU D'INTERLOCUTEUR (primitive SpeakerBanner.tsx, #371) — portrait + nom + réplique.
    `.dialogue-box` = surface + position ; en overlay de dialogue (variant `dialogue`, DialogueBox.tsx) elle

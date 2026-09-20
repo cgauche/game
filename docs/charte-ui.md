@@ -124,7 +124,7 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.stat-chip` (+ `.sc-label`, `.sc-value`) | Cartouche « label + valeur » (PV, carac, ressource) | Afficher une valeur nommée — jamais un format cryptique (« 4·4 » sans libellé, cf. règle charte ci-dessus). |
 | `.listrow` (+ `.lr-name`) | Rangée de liste : nom (flex:1) + méta + action | Toute liste d'entités cliquables/actionnables (inventaire, roster…) plutôt qu'un `<li>` stylé à la main. |
 | `.clamp` | Texte TRONQUÉ à N lignes (`--clamp`, défaut 3) | Toute accroche/description bornée dans une carte — jamais un `-webkit-line-clamp` recopié par écran. |
-| `.wounds-badge` / `.char-value` (+ tailles `.char-value-sm`/`.char-value-md`/`.char-value-lg`) / `.game-date` / `.fx-chip-label` | Composants de donnée unifiés (LOT 5) — respectivement PB/carac+avancées/date de jeu/étiquette d'effet | Rendus par leurs composants (`WoundsBadge`, `CharValue`, `GameDate`, `FxChip`) — ne pas reformater ces données à la main ailleurs ; `CharValue` prend l'échelle NOMMÉE (`size`, défaut `sm`, #418) au lieu d'hériter du contexte. |
+| `.wounds-badge` / `.char-value` (+ tailles `.char-value-sm`/`.char-value-md`/`.char-value-lg`) / `.game-date` | Composants de donnée unifiés (LOT 5) — respectivement PB/carac+avancées/date de jeu | Rendus par leurs composants (`WoundsBadge`, `CharValue`, `GameDate`) — ne pas reformater ces données à la main ailleurs ; `CharValue` prend l'échelle NOMMÉE (`size`, défaut `sm`, #418) au lieu d'hériter du contexte. |
 | `.swatch` | Pastille/bande peinte à une couleur de DONNÉE (style inline), forme réglée par variables au contexte (`--swatch-display`/`--swatch-w`/`--swatch-h`/`--swatch-gap`/`--swatch-border`/`--swatch-radius`) | Toute couleur MONTRÉE (rangée `couleur` d'une fiche du Codex, bande de jeton de la galerie) — DÉCORATIVE (`aria-hidden`), le hex ou le nom du jeton restant écrit à côté ; jamais un carré peint recodé par écran. |
 | `.icon` | Cadrage de l'icône SVG maison | Posée par la primitive `<Icon>` (`src/ui/Icon.tsx`) — cale l'icône sur la ligne de base du texte adjacent ; jamais un `<svg>` brut à côté de texte. |
 | `.charprev` (+ `.charprev-svg`, tailles `.charprev-xs`/`.charprev-sm`/`.charprev-md`/`.charprev-lg`, `.charprev-fill`, ambiances `.charprev-amb-panel`/`.charprev-amb-parchment`/`.charprev-amb-spotlight`) | Cadre d'aperçu « perso en pied » (`CharacterPreview`) | Toute vignette de personnage EN PIED — les tailles/ambiances sont des modificateurs, jamais un `<img>`/SVG dimensionné à la main. |
@@ -282,11 +282,12 @@ module de sa primitive, déclaré au manifeste des primitives (champ `css`) et m
 | `option-chooser.css` | `OptionChooser` | `.rm-loc-grid`, `.rm-loc-inline` (+ `[data-bascule]`), `.rm-loc-select`, `.rm-range` |
 | `recap-line.css` | `RecapLine` / `RecapLineList` | `.recap-line`, `.recap-lines`, `.recap-phase`, `.recap-phase-label` |
 | `multi-roll-list.css` | `MultiRollList` | `.mrl`, `.mrl-row`, `.mrl-port`, `.mrl-label`, `.mrl-roll`, `.mrl-text` |
-| `reveal-body.css` | `RevealBody` | `.crit-stats`, `.crit-stat`, `.crit-effects`, `.crit-effect`, `.crit-cond` |
+| `reveal-body.css` | `RevealBody` / `RevealTimer` | `.crit-stats`, `.crit-stat`, `.crit-effects`, `.crit-effect`, `.crit-cond` ; minuteur de fermeture : `.reveal-timer`, `@keyframes reveal-timer-drain`, durée en variable `--reveal-timer-duree` |
 | `vs-header.css` | `VsHeader` | `.rm-vs`, `.rm-vs-arrow`, `.rm-weapon` — `.rm-weapon` sert aussi de QUALIFICATIF hors bandeau A→B (l'arme dégainée de `HandGateModal`, déclarée en `poseurs` au manifeste) : c'est la même matière, pas une copie |
 | `team-segments.css` | `TeamSegments` | `.nm-ally`, `.nm-foe` |
 | `combat-banner.css` | `CombatBanner` | `.combat-feed`, `.cb-ev`, `.cb-now`, `.cb-tone-strong`, `.cb-tone-grave` |
 | `log-drawer.css` | `LogDrawer` / `NarratedLine` | `.log-drawer` (+ `.open`), `.ld-btn`, `.ld-panel`, `.jr-line`, `.jr-ic`, `.jr-tx` |
+| `rig-portrait.css` | `RigPortrait` | `.rig-portrait` (et son `<svg>`) — taille, anneau et FORME du trait (R9) arrivent en variables `--rp-taille` / `--rp-anneau` / `--rp-trait` posées par la primitive ; la tuile, la frise, la bande, la console et la fiche le SPÉCIALISENT en descendant |
 | `portrait-tile.css` | `PortraitTile` | `.ptile*` (dont `.team-ally`/`.team-enemy`, `.active`, `.sel`, `.hov`, `.ko`), `.ptile-wrap`, `.ptile-face`, `.ptile-caret`, `.ptile-more`, `.end-mark` (+ `.es-*`) |
 | `state-chips.css` | `StateChips` | `.ptile-states` (+ `[data-reserve]`), `.pt-state`, `.pt-void`, `.pt-n` — `--alv` (côté d'une alvéole) y prend sa valeur de BASE, le bandeau de groupe et la console posent la leur |
 | `initiative-strip.css` | `InitiativeStrip` | `.initiative-strip` (+ sa rampe de débord), `.is-tiles`, `.is-cell`, `.is-round`, `.is-score`, `.is-hand`, `.is-first`, `.is-preempt` |
@@ -299,7 +300,10 @@ module de sa primitive, déclaré au manifeste des primitives (champ `css`) et m
 | `inspect-panel.css` | `InspectPanel` | `.inspect-panel`, `.insp-head`, `.insp-id`, `.insp-lbl`, `.insp-badges`, `.insp-badge`, `.insp-pv-num` |
 | `equipment-panel.css` | `EquipmentPanel` | `.equip-panel`, `.equip-slots`, `.eq-*`, `.equip-sets`, `.set-*`, `.weap-quals` |
 | `combat-console.css` | `CombatConsole` (organisme) | `.combat-console` (le PONT), `.cc-phase` (+ `[data-phase]`), `.cc-dock`, `.cc-bay*`, `.cc-arsenal*`, `.cc-sets`/`.cc-set*`, `.cc-grid*`, `.cc-cell` (l'alvéole, posée à côté de `.chip`), `.cc-ico`, `.cc-lbl`, `.cc-key`, `.cc-cost`, `.cc-quick`, `.cc-arch*` (le fronton), `.cc-gutter*`, `.cc-socle`, `.cc-conduit*`, `.cc-corner`, `.cc-end` — identité et mise en page INTERNE ; la matière de la bande est la peau `.skin-pont` |
-| `src/gameIso/anim.css` | `GameStage3D` (`anim.css`) | `.iso-stage` (la surface du monde, sans `cursor` au repos), `.glow` (halo d'un décor magique ou d'une arme à feu), `.dmg-float` (chiffre de dégâts qui monte au-dessus de la cible) |
+| `fx-chip.css` | `FxChip` / `EffectChips` | `.fx-chips` (la rangée), `.fx-chip` (+ tons `.malus`, `.buff`, `.state`, `.more`, compte `<b>`, durée `<em>`), `.fx-chip-label` |
+| `spectator-chip.css` | `SpectatorChip` | `.spectator-chip` — l'ANCRAGE est un état de la primitive (`data-pose='ecran'`), pas une règle recopiée chez chacun de ses trois hôtes |
+| `ready-row.css` | `ReadyRow` | `.ready-row`, `.ready-chip` (+ `.ok`), `.ready-noportrait` |
+| `src/gameIso/anim.css` | `GameStage3D` (`anim.css`) | `.iso-stage` (la surface du monde, sans `cursor` au repos), `.glow` (halo d'un décor magique ou d'une arme à feu), `.dmg-float` (chiffre de dégâts qui monte au-dessus de la cible), `.pv-badge` (badge d'aperçu tap-1) |
 
 La **peau « tôle vissée »** `.skin-tole` (+ `data-ton="sombre"|"laiton"`, `components.css`) est du
 même ordre : la matière d'une commande VISSÉE sur une plaque de bois-laiton — plaque coupée au
@@ -472,7 +476,7 @@ noms longs — Détermination — étaient tronquées DEUX fois : le nom ET la r
 
 - **Aucun contrôle natif non stylisé.** `<input type=checkbox/radio>` et `<select>` système sont
   interdits : style GLOBAL `appearance:none` appliqué dans `src/ui/styles/base.css` (+ variantes
-  par module — `combat-ui.css`, `equipment-panel.css`, `creator.css`) — case charbon bordée (cochée
+  par module — `equipment-panel.css`, `creator.css`) — case charbon bordée (cochée
   = fond `--accent` + marque `--gold2`), radio = point or, select = chevron or en data-URI, focus
   `--gold`, options thémées. **Piège select** : un override `padding` shorthand mange la flèche →
   utiliser `padding-right` + `background-color` (jamais `background` en raccourci). **Boîte de la

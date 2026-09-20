@@ -73,6 +73,7 @@ describe('coop — UNE puce de spectateur à l’écran, jamais deux', () => {
     combatCoop();
     act(() => { root.render(<><CombatConsole /><ActiveModal /></>); });
     expect(puces(), 'la bande d’attente ne nomme pas le siège qui tient le tour').toBe(1);
+    expect(document.querySelector('.spectator-chip')!.getAttribute('data-pose'), 'la bande d’attente de la console suit le FLUX de sa travée').toBeNull();
     // La modale s'ouvre ENSUITE (jet du héros distant) : c'est elle qui parle désormais.
     act(() => {
       useGame.setState({
@@ -80,6 +81,7 @@ describe('coop — UNE puce de spectateur à l’écran, jamais deux', () => {
       });
     });
     expect(puces(), 'deux puces coexistent : la console n’a pas relu la décision').toBe(1);
+    expect(document.querySelector('.spectator-chip')!.getAttribute('data-pose'), 'la puce de l’arbitre de modales s’ANCRE à l’écran').toBe('ecran');
   });
 });
 

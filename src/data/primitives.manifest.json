@@ -337,6 +337,7 @@
     "type": "primitives.manifest",
     "label": "ReadyRow",
     "fichier": "src/ui/ReadyRow.tsx",
+    "css": "src/ui/styles/ready-row.css",
     "concept": "rangée de ready-check coop : sièges requis seuls, siège nommé, état prêt/attendu",
     "perimetre": "pause de Round, écran de Victoire, nuit de repos",
     "verrou": "quorum = siegesRequis (src/state/netOwnership.ts), source unique"
@@ -729,6 +730,39 @@
     "concept": "LE PONT de combat : deux travées d’alvéoles à compte FIXE autour de l’arche du combattant actif, conduit d’Avantage, coin de fin de tour",
     "perimetre": "HUD de combat plein-champ, dimensionné sur la FENÊTRE — la galerie en montre la composition de bureau, les formes étroites s’observent en recette",
     "verrou": "src/ui/CombatConsole.test.tsx — comptes de cases et budget de hauteur du pont"
+  },
+  {
+    "id": "rigPortrait",
+    "type": "primitives.manifest",
+    "label": "RigPortrait",
+    "fichier": "src/ui/RigPortrait.tsx",
+    "css": "src/ui/styles/rig-portrait.css",
+    "concept": "visage d’un combattant vu de FACE, bordure = identité d’équipe (couleur + forme du trait, R9)",
+    "perimetre": "tuile de portrait, frise d’initiative, bande de groupe, console, fiche",
+    "verrou": "le corps et le cadrage viennent de `tokenBodyKind(…, \"top\")`, partagés avec le pion de la carte"
+  },
+  {
+    "id": "fxChip",
+    "type": "primitives.manifest",
+    "label": "FxChip/EffectChips",
+    "fichier": "src/ui/FxChip.tsx",
+    "css": "src/ui/styles/fx-chip.css",
+    "poseurs": [
+      "src/ui/EffectChips.tsx"
+    ],
+    "concept": "pastille d’une conséquence mécanique : État (malus), buff avec sa durée, effet nommé, « +N » de débord",
+    "perimetre": "rack de la tuile de portrait, panneau Perso, cartes, récapitulatifs d’interlude",
+    "verrou": "le routage vers la règle est une donnée (`chipCodex`) — aucune analyse de texte"
+  },
+  {
+    "id": "spectatorChip",
+    "type": "primitives.manifest",
+    "label": "SpectatorChip",
+    "fichier": "src/ui/SpectatorChip.tsx",
+    "css": "src/ui/styles/spectator-chip.css",
+    "concept": "puce qui NOMME le siège attendu quand le geste n’appartient pas au siège local (coop)",
+    "perimetre": "arbitre de modales, travée d’attente de la console, zone de choix d’un dialogue",
+    "verrou": "le siège attendu vient de `spectatorSeatOfModal` (src/ui/ownership.ts), source unique"
   },
   {
     "id": "logDrawer",

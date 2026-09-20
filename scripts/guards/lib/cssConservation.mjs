@@ -172,9 +172,21 @@ export function inversions(avant, apres) {
 /** `x` l'emporte-t-il sur `y` à la cascade : importance, puis poids, puis ordre. */
 const lEmporte = (x, y) => (x.important !== y.important ? x.important : (comparerPoids(x.sel, y.sel) || Math.sign(x.pos - y.pos)) > 0);
 
-const partagentUneClasse = (selA, selB) => {
-  const b = new Set(classesDe(composeDeDroite(selB)));
-  return classesDe(composeDeDroite(selA)).some((c) => b.has(c));
+/** L'ÉLÉMENT que nomme un composé (`h3`, `h3.titre`, `input[type]`) — `''` s'il n'en nomme aucun. */
+const elementDe = (compose) => (/^[a-zA-Z][\w-]*/.exec(compose) ?? [''])[0];
+
+/**
+ * Deux sélecteurs visent-ils un sujet APPARENTÉ ? Ils partagent une classe de leur composé de
+ * droite — ou ils y nomment le même ÉLÉMENT (`.panel h3`, `.zone-section > h3` et
+ * `.zone h3.titre` se disputent le même `<h3>`). Le critère est LARGE à dessein : la sonde
+ * rapporte, le lecteur trie.
+ */
+const sujetsApparentes = (selA, selB) => {
+  const [dA, dB] = [composeDeDroite(selA), composeDeDroite(selB)];
+  const b = new Set(classesDe(dB));
+  if (classesDe(dA).some((c) => b.has(c))) return true;
+  const [eA, eB] = [elementDe(dA), elementDe(dB)];
+  return !!eA && eA === eB;
 };
 
 /**
@@ -189,12 +201,12 @@ export function bascules(avant, apres) {
   const [a, b] = [derniers(avant), derniers(apres)];
   const out = [];
   for (const neuve of apparues) {
-    const ancetre = disparues.find((d) => d.prop === neuve.prop && d.valeur === neuve.valeur && d.media === neuve.media && d.sel !== neuve.sel && partagentUneClasse(d.sel, neuve.sel));
+    const ancetre = disparues.find((d) => d.prop === neuve.prop && d.valeur === neuve.valeur && d.media === neuve.media && d.sel !== neuve.sel && sujetsApparentes(d.sel, neuve.sel));
     if (!ancetre) continue;
     for (const [k, rivaleApres] of b) {
       const rivaleAvant = a.get(k);
       if (!rivaleAvant || rivaleApres.prop !== neuve.prop || rivaleApres.valeur === neuve.valeur) continue;
-      if (!partagentUneClasse(rivaleApres.sel, neuve.sel) && !partagentUneClasse(rivaleApres.sel, ancetre.sel)) continue;
+      if (!sujetsApparentes(rivaleApres.sel, neuve.sel) && !sujetsApparentes(rivaleApres.sel, ancetre.sel)) continue;
       const [gagnaitAvant, gagneApres] = [lEmporte(ancetre, rivaleAvant), lEmporte(neuve, rivaleApres)];
       if (gagnaitAvant !== gagneApres) out.push({ avant: cleDe(ancetre), apres: cleDe(neuve), contre: k, gagnaitAvant, gagneApres });
     }

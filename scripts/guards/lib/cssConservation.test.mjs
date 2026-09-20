@@ -109,9 +109,58 @@ test('bascules : un sélecteur RE-PONDÉRÉ qui passe devant une déclaration co
   }])
 })
 
+// Le cas du 2d : le sujet d'un sélecteur peut être un ÉLÉMENT (`.panel h3` contre `.zone-section >
+// h3`, tous deux 0-1-1). Deux détecteurs, deux concepts — et il faut les DEUX.
+test('inversions : un bloc DÉPLACÉ vers une feuille plus précoce nomme la rivale de poids égal qu’il ne bat plus', () => {
+  // Les deux déclarations sont CONSERVÉES : seul l'ordre change. C'est `inversions`, pas `bascules`.
+  const rivale = '.zone-section > h3 { font-size: 11.5px }'
+  const notre = '.panel h3 { font-size: 15px }'
+  const avant = aplatir(ENTREE, image({ [ENTREE]: "@import './styles/creator.css';\n@import './styles/ecran.css';", 'src/ui/styles/creator.css': rivale, 'src/ui/styles/ecran.css': notre }))
+  const apres = aplatir(ENTREE, image({ [ENTREE]: "@import './styles/components.css';\n@import './styles/creator.css';", 'src/ui/styles/components.css': notre, 'src/ui/styles/creator.css': rivale }))
+  assert.deepEqual(bascules(avant, apres), [])
+  assert.deepEqual(inversions(avant, apres).map((i) => i.groupe), ['h3|font-size|0-1-1'])
+})
+
+test('bascules : un sujet d’ÉLÉMENT re-pondéré est vu comme un sujet de classe', () => {
+  // `.panel h3` (0-1-1) resserré en `.panel > h3` reste 0-1-1 mais change de feuille : il perdait
+  // contre la rivale importée après dans l'image AVANT, il l'emporte dans l'image APRÈS. Aucune
+  // classe au composé de droite : sans l'apparentement par ÉLÉMENT, la sonde ne voit rien.
+  const rivale = '.zone-section > h3 { font-size: 11.5px }'
+  const avant = aplatir(ENTREE, image({ [ENTREE]: "@import './styles/ecran.css';\n@import './styles/creator.css';", 'src/ui/styles/ecran.css': '.panel h3 { font-size: 15px }', 'src/ui/styles/creator.css': rivale }))
+  const apres = aplatir(ENTREE, image({ [ENTREE]: "@import './styles/ecran.css';\n@import './styles/creator.css';", 'src/ui/styles/ecran.css': '.panel > h3 { font-size: 15px }', 'src/ui/styles/creator.css': rivale }))
+  assert.deepEqual(bascules(avant, apres), [])
+  const apresAvance = aplatir(ENTREE, image({ [ENTREE]: "@import './styles/creator.css';\n@import './styles/ecran.css';", 'src/ui/styles/ecran.css': '.panel > h3 { font-size: 15px }', 'src/ui/styles/creator.css': rivale }))
+  assert.deepEqual(bascules(avant, apresAvance), [{
+    avant: '|.panel h3|font-size|15px',
+    apres: '|.panel > h3|font-size|15px',
+    contre: '|.zone-section > h3|font-size|11.5px',
+    gagnaitAvant: false,
+    gagneApres: true,
+  }])
+})
+
 test('bascules : un renommage qui garde le même verdict contre ses rivales ne rapporte rien', () => {
   const rivale = '.btn.small { font-size: 12px }'
   const avant = aplatir(ENTREE, image({ [ENTREE]: `${rivale}\n.btn.vc-btn { font-size: 20px }` }))
   const apres = aplatir(ENTREE, image({ [ENTREE]: `${rivale}\n.view-controls .vc-btn { font-size: 20px }` }))
   assert.deepEqual(bascules(avant, apres), [])
 })
+
+test('bascules : un composé `h3.titre` nomme AUSSI l’élément — à poids ÉGAL, la rivale qui porte une classe est vue', () => {
+  const ecranPuisCreateur = "@import './styles/ecran.css';\n@import './styles/creator.css';"
+  const createurPuisEcran = "@import './styles/creator.css';\n@import './styles/ecran.css';"
+  const graphe = (ordre, ecran, rivale) => aplatir(ENTREE, image({ [ENTREE]: ordre, 'src/ui/styles/ecran.css': ecran, 'src/ui/styles/creator.css': rivale }))
+  const egale = 'h3.titre { font-size: 11.5px }'
+  assert.equal(comparerPoids('.panel > h3', 'h3.titre'), 0)
+  assert.deepEqual(bascules(graphe(ecranPuisCreateur, '.panel h3 { font-size: 15px }', egale), graphe(createurPuisEcran, '.panel > h3 { font-size: 15px }', egale)), [{
+    avant: '|.panel h3|font-size|15px',
+    apres: '|.panel > h3|font-size|15px',
+    contre: '|h3.titre|font-size|11.5px',
+    gagnaitAvant: false,
+    gagneApres: true,
+  }])
+  const lourde = '.zone h3.titre { font-size: 11.5px }'
+  assert.equal(comparerPoids('.panel > h3', lourde.split(' {')[0]), -1)
+  assert.deepEqual(bascules(graphe(ecranPuisCreateur, '.panel h3 { font-size: 15px }', lourde), graphe(createurPuisEcran, '.panel > h3 { font-size: 15px }', lourde)), [])
+})
+

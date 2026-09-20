@@ -130,6 +130,9 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `TeamSegments` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
 | `CombatBanner` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `CombatConsole` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `RigPortrait` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
+| `FxChip/EffectChips` |  |  |  |  |  |  |  |  |  | U |  |  |  |  |  |  |
+| `SpectatorChip` |  |  |  |  |  |  |  |  | U | U |  |  |  |  |  |  |
 | `LogDrawer` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `InspectPanel` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `EquipmentPanel` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
@@ -193,4 +196,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: c45add59c7462f85c0959eb1d646fea4ad18d3f4 (1819 fichiers, 2 dossiers) corps: 57d9a5442e7c8e628d7b09798871647a6dfbd4ff -->
+<!-- sources-empreinte: 74d0f72e3d96abf989e3ed55d462cb1aee2ffb92 (1819 fichiers, 2 dossiers) corps: ab834f5ba63f2d7650e09ce5812bef9e9a655b02 -->

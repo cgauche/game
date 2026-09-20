@@ -201,3 +201,11 @@
   15% { opacity: 1; }
   100% { transform: translateY(-26px); opacity: 0; }
 }
+/* Badge d'aperçu tap-1 sur la scène, posé par `stage/movePreview.tsx` (modèle de clic implicite). */
+.pv-badge {
+  font: 700 13px system-ui, sans-serif;
+  fill: var(--combat-gold);
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3px;
+}

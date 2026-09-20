@@ -18,7 +18,7 @@ import { CastModal } from './CastModal';
 import { type PanelRowData as PanelRow } from './RollPanel';
 import { OptionChooser, type RollGridOption } from './OptionChooser';
 import { NumberField } from './NumberField';
-import { CriticalBody, RevealBody } from './RevealBody';
+import { CriticalBody, RevealBody, RevealTimer } from './RevealBody';
 import { ModalSubject } from './ModalSubject';
 import { RecapLineList } from './RecapLine';
 import { TableRollLine } from './RollLine';
@@ -166,12 +166,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     const t = window.setTimeout(() => useGame.getState().cascadeNext(), autoCloseMs);
     return () => window.clearTimeout(t);
   }, [autoStepId, autoCloseMs, autoOwned]);
-  // BARRE DE TEMPS de l'auto-fermeture, réservée au GRAVE (arbitrage 2026-06-11) : le compte à
-  // rebours d'un Critique/d'une mutation se VOIT, l'informatif mineur disparaît sans cérémonie. Le
-  // délai, lui, court pour les deux. `key` = l'étape, pour que l'animation CSS reparte à zéro d'une
-  // étape à la suivante.
+  // La barre de temps ne s'affiche qu'au GRAVE (arbitrage 2026-06-11) ; le délai, lui, court pour les
+  // deux. `key` = l'étape, pour que l'animation CSS reparte à zéro d'une étape à la suivante.
   const autoCloseBar = autoCloseMs != null && autoStep?.reveal?.severity === 'grave'
-    ? <div className="reveal-timer" key={autoStepId}><i style={{ animationDuration: `${autoCloseMs}ms` }} /></div>
+    ? <RevealTimer key={autoStepId} ms={autoCloseMs} />
     : null;
 
   if (!p) return null;

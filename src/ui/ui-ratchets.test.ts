@@ -100,7 +100,9 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 2,
   // `.prow-act` a rejoint la couche partagée (hors cliquet) ; les six autres rangées enroulées de la
   // famille JET sont keyées aux modules de leurs primitives, en regard (#1806 2c).
-  'styles/combat-ui.css': 7,
+  // -2 (#1806 2d) : `.fx-chips` suit sa primitive (`styles/fx-chip.css`, +1 en regard) ; `.derived`,
+  // règle MORTE sans aucun poseur dans le dépôt, est supprimée — le TOTAL baisse de 1.
+  'styles/combat-ui.css': 5,
   'styles/compendium.css': 3,
   // +1 : `.creator-race-lineages` (#393 P2, correction structurelle Race) — rangée de chips de
   // lignée en tête du détail, s'enroule (motif `.bar` non composable ici, boutons de largeur variable).
@@ -157,6 +159,9 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   // débordent de la colonne de cases ; motif `.bar` non composable ici (`.bar` porte fond/bordure/
   // padding d'une barre d'écran, pas d'une case DANS une rangée de grille).
   'styles/postes-roster.css': 1,
+  // `.fx-chips` (#1806 2d) : la rangée de pastilles d'États s'enroule dès qu'elle déborde de son
+  // rack — la même règle qu'avant, keyée au module de sa primitive.
+  'styles/fx-chip.css': 1,
 };
 
 // ── (viii) Couleurs `fill=`/`stroke=` LITTÉRALES dans le JSX de `src/ui` : un fill/stroke codé en dur

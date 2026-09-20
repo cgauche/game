@@ -17,54 +17,6 @@
   text-align: center;
 }
 
-/* ── Coop : puce spectateur + ready-check ── */
-.spectator-chip {
-  position: fixed;
-  bottom: 84px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(10, 10, 16, 0.85);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 13px;
-  color: var(--muted);
-  z-index: 40;
-  pointer-events: none;
-}
-/* Puce posée DANS un panneau (zone de choix d'un dialogue) : elle suit le flux, sans surimpression.
-   Pose déclarée en ATTRIBUT (convention de ce module : `data-hud`, `data-tone`) — aucune classe de
-   variante n'entre au stock. */
-.spectator-chip[data-pose='inline'] {
-  position: static;
-  transform: none;
-  align-self: center;
-  margin-top: 4px;
-}
-.ready-row {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-.ready-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--bg2);
-  font-size: 13px;
-  color: var(--muted);
-}
-.ready-chip.ok {
-  border-color: var(--ok);
-  color: var(--ok);
-}
-.ready-noportrait {
-  font-size: 18px;
-}
-
 /* ── Lobby coop — carte centrée sur la charte (même coquille que le menu) ── */
 .coop-card {
   max-width: 460px;
@@ -190,31 +142,6 @@
   color: var(--danger-soft); /* #305 : var(--danger) sur menu-card (panel/panel2) < 4.5:1 (AA) */
 }
 
-/* Barre de temps des révélations GRAVES (auto-fermeture longue, arbitrage 2026-06-11) :
-   se vide de gauche à droite sur la durée — un clic ferme avant. */
-.reveal-timer {
-  height: 4px;
-  margin: 10px 0 2px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.reveal-timer i {
-  display: block;
-  height: 100%;
-  background: var(--gold);
-  animation: reveal-timer-drain linear forwards;
-}
-@keyframes reveal-timer-drain {
-  from { width: 100%; }
-  to { width: 0%; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .reveal-timer i {
-    animation: none;
-    width: 100%;
-  }
-}
 .panel h3 {
   margin: 0 0 12px;
   font-size: 15px;
@@ -229,56 +156,6 @@
   font-size: 13px;
   color: var(--muted);
 }
-input,
-select,
-textarea {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  color: var(--text);
-  padding: 8px 10px;
-  font-size: 14px;
-  font-family: inherit;
-}
-/* Charte : <select> CUSTOM — fin de la flèche système, chevron or dessiné, options thémées. */
-select {
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
-  padding-right: 28px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23c9a227' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-}
-select:hover {
-  border-color: var(--gold);
-}
-option {
-  background: var(--panel2);
-  color: var(--text);
-}
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--gold);
-}
-.derived {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 6px;
-}
-.derived b {
-  color: var(--gold);
-}
-.talent-choices {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
 .radio {
   flex-direction: row !important;
   align-items: center;
@@ -291,15 +168,6 @@ textarea:focus {
 .campaign-view {
   flex-direction: row;
   position: relative;
-}
-.adv {
-  color: var(--gold);
-}
-.cond {
-  background: var(--danger);
-  border-radius: 4px;
-  padding: 0 4px;
-  color: var(--on-accent);
 }
 .stage {
   flex: 1;
@@ -461,69 +329,5 @@ textarea:focus {
   margin: 20px auto 0;
   font-size: 17px;
   padding: 11px 40px;
-}
-
-.rig-portrait {
-  display: inline-block;
-  border-radius: 8px;
-  border: 2px solid var(--border);
-  background: var(--bg);
-  overflow: hidden;
-  flex: 0 0 auto;
-  line-height: 0;
-}
-.rig-portrait svg {
-  display: block;
-}
-/* Pastilles d'États/buffs partagées */
-.fx-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-.fx-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 12px;
-  border-radius: 6px;
-  padding: 1px 5px;
-  border: 1px solid var(--border);
-  background: var(--panel2);
-  color: var(--text);
-}
-.fx-chip b {
-  font-size: 9px;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 3px;
-  padding: 0 2px;
-}
-.fx-chip em {
-  font-size: 9px;
-  font-style: normal;
-  color: var(--ok-bright);
-}
-.fx-chip.malus {
-  background: var(--chip-malus-bg);
-  border-color: var(--chip-malus-border);
-}
-.fx-chip.buff {
-  background: var(--chip-buff-bg);
-  border-color: var(--chip-buff-border);
-}
-.fx-chip.state {
-  background: rgba(224, 151, 63, 0.18);
-  border-color: var(--chip-state-border);
-}
-.fx-chip.more {
-  color: var(--muted);
-}
-/* Badge d'aperçu tap-1 sur la scène (modèle de clic implicite) */
-.pv-badge {
-  font: 700 13px system-ui, sans-serif;
-  fill: var(--combat-gold);
-  paint-order: stroke;
-  stroke: var(--bg);
-  stroke-width: 3px;
 }
 

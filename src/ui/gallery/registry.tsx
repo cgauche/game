@@ -22,6 +22,10 @@ import { DescRefField } from '../compendium/DescRefField';
 import type { DescRef } from '../../data/source/decoupe';
 import { GatedAction } from '../GatedAction';
 import { ReadyRow } from '../ReadyRow';
+import { SpectatorChip } from '../SpectatorChip';
+import { RigPortrait } from '../RigPortrait';
+import { FxChip } from '../FxChip';
+import { EffectChips } from '../EffectChips';
 import { PortraitTile } from '../PortraitTile';
 import { StateChips } from '../StateChips';
 import { InitiativeStrip } from '../InitiativeStrip';
@@ -39,7 +43,7 @@ import { CareerPath } from '../CareerPath';
 import { FigTile, type ZoneBadgeSpec } from '../FigTile';
 import { PlaqueRow, PlaqueGrid } from '../PlaqueRow';
 import { DieFace } from '../DiceRoll';
-import { CHAR_KEYS, CHAR_LABELS } from '../../engine/types';
+import { CHAR_KEYS, CHAR_LABELS, type ConditionId } from '../../engine/types';
 import { effectiveChar } from '../../engine/characteristics';
 import { GroupedPickGrid, type PickGridSection } from '../GroupedPickGrid';
 import { DetailFrame } from '../DetailFrame';
@@ -54,7 +58,7 @@ import { MenuCard, MenuSection, MenuButton, MenuToggle } from '../MenuCard';
 import { CreatorDice } from '../creator/CreatorDice';
 import { GameOpEditor } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
-import { species, careers, levelsForCareer, stars, mutations, rigSpeciesId, allAxes, charAbr, spells, memoParVersion } from '../../data';
+import { species, careers, levelsForCareer, stars, mutations, rigSpeciesId, allAxes, charAbr, spells, etats, memoParVersion } from '../../data';
 import { makePregens } from '../../data/pregens';
 import { toMoney } from '../../engine/money';
 import { RoseAxes } from '../RoseAxes';
@@ -1079,6 +1083,47 @@ function CombatBannerDemo() {
   );
 }
 
+/** Visage d'un combattant : trait PLEIN et anneau d'équipe pour un héros, trait en TIRETS pour un
+ *  ennemi (R9 — la forme encode l'équipe autant que la couleur), et la taille en variable. */
+function RigPortraitDemo() {
+  const h = herosExemple();
+  if (!h) return <p className="hint">Aucun pregen disponible.</p>;
+  return (
+    <Row>
+      <RigPortrait combatant={h} size={42} />
+      <RigPortrait combatant={h} size={64} ring="var(--hud-camp-ally-hi)" />
+      <RigPortrait combatant={{ ...h, kind: 'enemy' }} size={64} ring="var(--combat-enemy)" />
+    </Row>
+  );
+}
+
+/** Deux États RÉELS du catalogue — la pastille NE fabrique aucune règle, elle rend ce que la donnée dit. */
+const etatsExemples = memoParVersion('etats', () => etats.slice(0, 2).map((e) => ({ id: e.id as ConditionId, value: 1 })));
+
+/** Pastilles : rangée d'États réels (`EffectChips`) et conséquence mécanique nommée (`FxChip`). */
+function FxChipDemo() {
+  return (
+    <Stack gap="sm">
+      <EffectChips conditions={etatsExemples()} />
+      <Row>
+        <FxChip icon="action/attack" label="−1 Activité" />
+        <FxChip icon="resource/gold-purse" label="Revenus +20 %" />
+      </Row>
+    </Stack>
+  );
+}
+
+/** Puce de siège spectateur, dans ses DEUX poses — la pose d'écran est montrée EN FLUX (un
+ *  `position: fixed` s'échapperait de la vignette : c'est justement ce que l'attribut porte). */
+function SpectatorChipDemo() {
+  return (
+    <Stack gap="sm">
+      <SpectatorChip label="Ilse" />
+      <SpectatorChip label="L’hôte" action="choisit la réponse…" />
+    </Stack>
+  );
+}
+
 /** Colonne d'États : rack d'alvéoles RÉSERVÉES (les cases sont dessinées même vides) contre la
  *  forme libre, qui ne montre que ce qui est porté. */
 function StateChipsDemo() {
@@ -1327,6 +1372,9 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { id: 'viewcontrols', label: 'ViewControls', file: 'src/ui/ViewControls.tsx', category: 'Combat', render: ViewControlsDemo },
   { id: 'objectivebanner', label: 'ObjectiveBanner', file: 'src/ui/ObjectiveBanner.tsx', category: 'Écrans & layout', render: ObjectiveBannerDemo },
   { id: 'statechips', label: 'StateChips', file: 'src/ui/StateChips.tsx', category: 'Personnages', render: StateChipsDemo },
+  { id: 'rigportrait', label: 'RigPortrait', file: 'src/ui/RigPortrait.tsx', category: 'Personnages', render: RigPortraitDemo },
+  { id: 'fxchip', label: 'FxChip / EffectChips', file: 'src/ui/FxChip.tsx', category: 'Personnages', render: FxChipDemo },
+  { id: 'spectatorchip', label: 'SpectatorChip', file: 'src/ui/SpectatorChip.tsx', category: 'Écrans & layout', render: SpectatorChipDemo },
   { id: 'drbar', label: 'DrBar', file: 'src/ui/DrBar.tsx', category: 'Jets', render: DrBarDemo },
   { id: 'coins', label: 'Coins', file: 'src/ui/Coins.tsx', category: 'Négoce & activités', render: CoinsDemo },
   { id: 'inspectpanel', label: 'InspectPanel', file: 'src/ui/InspectPanel.tsx', category: 'Combat', render: InspectPanelDemo },

@@ -291,6 +291,42 @@
 * {
   box-sizing: border-box;
 }
+/* Charte : PEAU DE CHAMP de toute l'app (saisie, liste déroulante, zone de texte) — encre, fond,
+   filet et rayon communs. Couche des ÉLÉMENTS : aucun écran ne la redéclare. */
+input,
+select,
+textarea {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 14px;
+  font-family: inherit;
+}
+/* Charte : <select> CUSTOM — fin de la flèche système, chevron or dessiné, options thémées. */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23c9a227' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+select:hover {
+  border-color: var(--gold);
+}
+option {
+  background: var(--panel2);
+  color: var(--text);
+}
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+}
 /* Charte : curseurs/barres teintés or (le natif convient pour le range). */
 input[type='range'],
 progress {

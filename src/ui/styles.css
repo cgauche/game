@@ -33,6 +33,7 @@
    POSE. `portrait-tile.css` d'abord (la tuile), puis ce qui la SPÉCIALISE en contexte.
    `state-chips.css` AVANT `party-dock.css` : `--alv` et le `gap` de la colonne d'États s'y jouent à
    spécificité ÉGALE (0-2-0), c'est l'ordre qui donne 20px à la bande de groupe et 15 au rack. */
+@import './styles/rig-portrait.css'; /* visage d'un combattant (RigPortrait) ; `.ptile .ptile-face .rig-portrait` (portrait-tile.css) le spécialise dans sa tuile par la SPÉCIFICITÉ (0-3-0 contre 0-1-0) */
 @import './styles/portrait-tile.css'; /* tuile de portrait (PortraitTile) : carte d'équipe, visage, caret, pastille de fin */
 @import './styles/state-chips.css'; /* colonne d'États (StateChips) : alvéoles réservées, pastille actionnable, indice */
 @import './styles/initiative-strip.css'; /* frise d'initiative (InitiativeStrip) — APRÈS portrait-tile.css : `.is-tiles .ptile*` spécialise la vignette */
@@ -42,6 +43,11 @@
 @import './styles/view-controls.css'; /* rangée de caméra (ViewControls) — le corps du bouton ; sa matière est `.skin-tole` (components.css) */
 @import './styles/dr-bar.css'; /* barre de Test étendu (DrBar) */
 @import './styles/coins.css'; /* monnaie colorée (Coins) */
+
+/* ══ Modules de PRIMITIVE de la table de combat et de la coop (#1806 2d) ══ */
+@import './styles/fx-chip.css'; /* pastille d'État / de buff (FxChip, EffectChips) */
+@import './styles/spectator-chip.css'; /* puce de siège spectateur (SpectatorChip) : pose de flux, pose d'écran */
+@import './styles/ready-row.css'; /* rangée de ready-check coop (ReadyRow) */
 
 @import './styles/ornaments.css'; /* textures maison (.tx-parchment/.tx-ink) + cadres/fleurons (Ornaments.tsx) */
 @import './styles/rose.css'; /* rose des forces (mini-radar gravé, #409) — RoseAxes.tsx, coin/médaillon/pleine */
@@ -57,7 +63,7 @@
 @import './styles/band.css'; /* bande titrée (Band, #492 Lot 1c) — extraite du créateur, partagée avec le registre État de la fiche */
 @import './styles/celestial-wheel.css'; /* astrolabe de laiton (CelestialWheel, #393) — matières du cadran, valeurs du svg « 4 — Signe astral » de la planche FINALE */
 @import './styles/creator-presentation.css'; /* mise en scène finale du créateur (PresentationScreen, #393) : registre ⇄ scène ⇄ rubriques, valeurs .fin-col/.fin-stage de la planche */
-@import './styles/combat-ui.css'; /* audio, coop, select, campaign, victoire, dialogue, barre d'action */
+@import './styles/combat-ui.css'; /* audio, lobby coop, campagne, limites d'erreur, victoire, butin, beat d'ouverture ; couche partagée `.panel h3` / `.panel label` / `.radio` (#1834) */
 @import './styles/combat-console.css'; /* console de combat (CombatConsole.tsx) : deux travées + grille fixe + conduit d'Avantage + coin de fin de tour */
 @import './styles/panneau-parametre.css'; /* panneau-paramètre borné ANCRÉ (PanneauParametre, spec HUD zone 10) — scope le .rm-loc-grid d'OptionChooser (option-chooser.css) dans le panneau, par la spécificité du descendant */
 @import './styles/sheet.css'; /* fiche de personnage + avancement */

@@ -3,7 +3,7 @@
    dessous, pastille d'état de fin en coin. Toute son identité vit ici (#1806 2a, arbitrage A1 du
    2026-09-18) ; les écrans qui la montent n'en déclarent que le PLACEMENT.
    Dépendances écrites : la colonne d'États est la primitive `StateChips` (state-chips.css), le
-   visage est `RigPortrait` (combat-ui.css `.rig-portrait`). Les spécialisations contextuelles de la
+   visage est `RigPortrait` (rig-portrait.css `.rig-portrait`). Les spécialisations contextuelles de la
    frise, du bandeau de groupe et de la console vivent chez elles (initiative-strip.css,
    party-dock.css, combat-console.css). ══ */
 .ptile-wrap {

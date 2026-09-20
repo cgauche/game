@@ -91,6 +91,12 @@ const REPEINTS_STOCK: readonly string[] = [
   "src/ui/styles/party.css|.card-roles .entity-chip:focus-within",
   "src/ui/styles/party.css|.card-roles .entity-chip:hover",
   "src/ui/styles/party.css|.party-actions .btn",
+  // RÉVÉLÉ (pas créé) au 2d de #1806 : déclarer `rigPortrait` donne un propriétaire à `.rig-portrait`,
+  // et la fiche PEINT le visage en médaillon depuis son écran (rayon 999px, ombre portée). Mesuré au
+  // site : `width`/`height: 112px` y sont MORTS (`.ptile .ptile-face .rig-portrait`, 0-3-0, les bat),
+  // et `border-width: 3px` y est redondant — restent un rayon et une ombre, qui appellent un TON de la
+  // primitive et une prop traversant `PortraitTile`. Soldé au lot de la fiche (épic #1811).
+  "src/ui/styles/sheet.css|.sheet-portrait .rig-portrait",
   "src/ui/styles/sheet.css|[data-tone] .plaque-row",
   "src/ui/styles/sheet.css|[data-tone='ambre'] .plaque-row",
   "src/ui/styles/sheet.css|[data-tone='sang'] .plaque-row",

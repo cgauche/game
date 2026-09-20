@@ -67,7 +67,7 @@ export function DialogueBox() {
           />
         );
       })}
-      {!owns && <SpectatorChip label={meneur} action="répond pour le groupe…" inline />}
+      {!owns && <SpectatorChip label={meneur} action="répond pour le groupe…" />}
     </>}>
       {node.desc}
     </SpeakerBanner>

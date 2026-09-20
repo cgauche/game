@@ -2,7 +2,8 @@ import type { EndState } from '../engine/conditions';
 import type { IconId } from './icons';
 
 /** Langage visuel d'un état de fin (#237) : icône du registre (jamais un émoji), classe de teinte
- *  (styles hud.css / combat-ui.css §états de fin), libellé FR pour title/aria. */
+ *  (portrait-tile.css `.end-mark.es-*`, gameIso/anim.css `.token-endmark.es-*`), libellé FR pour
+ *  title/aria. */
 export interface EndStateVisual {
   icon: IconId;
   className: string;

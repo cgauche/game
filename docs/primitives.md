@@ -27,7 +27,7 @@ manifeste est invisible ici, et rien ne la révèle sauf le hook `new-src-file-g
 mord qu'à la CRÉATION d'un `.tsx` de `src/ui`/`src/gameIso` — un module `.ts`, un fichier antérieur
 au hook, ou une primitive née ailleurs n'y passent jamais.
 
-87 primitives.
+90 primitives.
 
 | Besoin | Primitive | Fichier | CSS possédé | Périmètre | Verrou |
 |---|---|---|---|---|---|
@@ -56,6 +56,7 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | dispatcher UNIQUE d'effet déclenché (donnée) | `fireTriggers` | `src/state/triggeredEffects.ts` | — | Trait/Talent/Atout/État pour un Trigger | triggered-effects.test.ts (dispatcher unique) |
 | sélecteur du dé d’une rangée de jet : options de dé + saisie libre de la valeur | `ForcedRollPicker` | `src/ui/ForcedRollPicker.tsx` | `src/ui/styles/forced-roll-picker.css` | toute modale de jet (« Je ne faillirai pas ! », option « Dés fixés ») | forcedDieRow.ts — aucune modale ne dérive son propre sélecteur |
 | libellé d’attaque gratuite de créature, par freeKind | `FREE_ATTACK_LABEL` | `src/engine/combat.ts` | — | toute attaque gratuite affichée | — |
+| pastille d’une conséquence mécanique : État (malus), buff avec sa durée, effet nommé, « +N » de débord | `FxChip/EffectChips` | `src/ui/FxChip.tsx` | `src/ui/styles/fx-chip.css` | rack de la tuile de portrait, panneau Perso, cartes, récapitulatifs d’interlude | le routage vers la règle est une donnée (`chipCodex`) — aucune analyse de texte |
 | rendu JOUEUR d’une liste de GameOp : chips codex-liées et phrase humanisée | `GameOpChips` | `src/ui/GameOpChips.tsx` | — | passifs d’entité, effets de signe astral | jamais le résumeur d’atelier opSummary |
 | édition d'une liste de GameOp[] | `GameOpEditor` | `src/ui/editor/GameOpEditor.tsx` | — | sorts, effets déclenchés, passifs, consommables, activités ; repris par EffectList et FlowEditor | no-json-fields.test.ts |
 | LE PLATEAU : la surface du monde (caméra responsive) et les animations de ce qui vit dessus | `GameStage3D` | `src/gameIso/stage/GameStage3D.tsx` | `src/gameIso/anim.css` | campagne, arène, plan top-down — halos de décor, chiffres de dégâts, fourmis de gabarit | gameIso/stage/anim-css-branchee.test.ts — les keyframes sont importées par l’hôte du monde |
@@ -92,12 +93,13 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | affichage d'un personnage (HUD/modale/picker) | `PortraitTile/CharFrame` | `src/ui/PortraitTile.tsx` | `src/ui/styles/portrait-tile.css` | toute vignette de personnage | — |
 | rendu de prose Markdown verbatim (HTML brut neutralisé) | `Prose` | `src/ui/Prose.tsx` | — | tout champ de prose RAW | no-html-in-prose.test.ts |
 | stepper de quantité moins / centre / plus | `QtyStepper` | `src/ui/QtyStepper.tsx` | — | panier, quantité en stock, baisse de prix par cran | — |
-| rangée de ready-check coop : sièges requis seuls, siège nommé, état prêt/attendu | `ReadyRow` | `src/ui/ReadyRow.tsx` | — | pause de Round, écran de Victoire, nuit de repos | quorum = siegesRequis (src/state/netOwnership.ts), source unique |
+| rangée de ready-check coop : sièges requis seuls, siège nommé, état prêt/attendu | `ReadyRow` | `src/ui/ReadyRow.tsx` | `src/ui/styles/ready-row.css` | pause de Round, écran de Victoire, nuit de repos | quorum = siegesRequis (src/state/netOwnership.ts), source unique |
 | ligne de récap structurée : trio de tons ok/bad/info et étiquette de phase | `RecapLine` | `src/ui/RecapLine.tsx` | `src/ui/styles/recap-line.css` | issue d’une fenêtre de jet, chronique d’un écran, carte-parchemin | state/recapLine.ts — un site fournit la DONNÉE, jamais le markup (#1078) |
 | picker de référence multilangue-safe (par id) | `RefField` | `src/ui/compendium/RefField.tsx` | — | toute ref id statique du Compendium | CodexRef.test.ts |
 | attaque gratuite déclenchée, kind-agnostique | `resolveFreeAttacks` | `src/state/combatFlow.ts` | — | toute source de Frappe réactive/Assaut féroce/Trait/État | creatureFreeAttacks.test.ts |
 | résolution rendu + dispatch backend | `resolveRender/tokenBodyKind` | `src/gameIso/rig/bodyPlan.ts` | — | tout rendu iso/POV/portrait | eslint.config.js |
 | corps d’une RÉVÉLATION tirée sur table : valeurs du coup, États infligés, chaque effet avec son explication RAW | `RevealBody` | `src/ui/RevealBody.tsx` | `src/ui/styles/reveal-body.css` | Coup Critique, Imparfaite, Mutation — étape d’affichage comme étape de choix de déviation | — |
+| visage d’un combattant vu de FACE, bordure = identité d’équipe (couleur + forme du trait, R9) | `RigPortrait` | `src/ui/RigPortrait.tsx` | `src/ui/styles/rig-portrait.css` | tuile de portrait, frise d’initiative, bande de groupe, console, fiche | le corps et le cadrage viennent de `tokenBodyKind(…, "top")`, partagés avec le pion de la carte |
 | ligne d’un jet : nom + Difficulté, calcul, dé, DR, chips de modificateurs, états (pré-jet, masqué, sur table) | `RollLine` | `src/ui/RollLine.tsx` | `src/ui/styles/roll-line.css` | toute ligne de jet — rangée de RollShell, panneau de RollPanel, pile de MultiRollList, révélation | roll-display-contract.test.ts |
 | panneau de jet unique : même géométrie avant et après le jet (portrait, ligne, note de conséquence) | `RollPanel` | `src/ui/RollPanel.tsx` | `src/ui/styles/roll-panel.css` | jet mono d’une modale ou d’une étape de cascade ; accent du gagnant d’un Test opposé | — |
 | ligne de jet d'un participant (RollShell multi) | `RollRow` | `src/ui/RollRow.tsx` | `src/ui/styles/roll-row.css` | toute modale de jet multi-contributeurs | — |
@@ -109,6 +111,7 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | coquille d'écran plein-champ (voile + en-tête + corps, a11y dialogue) | `ScreenShell` | `src/ui/ScreenShell.tsx` | — | carte du monde, port/escale, marché, dossier de navire, négoce | aucune modale/écran bespoke (existant) |
 | champ de filtre/recherche de liste : le widget, avec useFilteredList (état) et filterByLabel (pur) | `SearchFilterField` | `src/ui/SearchFilterField.tsx` | — | catalogue, palette, sélecteur | — |
 | dégâts/soin de coque, source unique de state.vessel.wounds | `damageHull/healHull/damageVesselHull/healVesselHull` | `src/state/shipDamage.ts` | — | voyage fluvial/maritime + combat naval | vessel-wounds-write-guard.test.ts |
+| puce qui NOMME le siège attendu quand le geste n’appartient pas au siège local (coop) | `SpectatorChip` | `src/ui/SpectatorChip.tsx` | `src/ui/styles/spectator-chip.css` | arbitre de modales, travée d’attente de la console, zone de choix d’un dialogue | le siège attendu vient de `spectatorSeatOfModal` (src/ui/ownership.ts), source unique |
 | colonne d'États d'un combattant : pastilles informatives ou actionnables, alvéoles RÉSERVÉES (le compte ne dépend jamais des États portés), indice chiffré | `StateChips` | `src/ui/StateChips.tsx` | `src/ui/styles/state-chips.css` | tuile de portrait, bande de groupe, rangée de liste — partout où un État se lit | src/ui/determination-reachability.test.tsx — la pastille actionnable garde sa cible de 44px au doigt |
 | onglets (flat/pill/sub/dock) : role tablist, aria-selected, roving tabindex | `Tabs` | `src/ui/Tabs.tsx` | — | fiche, écran plein-champ, dock repliable, sous-onglets ; styles src/ui/styles/tabs.css | réflexe avant toute liste d’onglets recodée |
 | texte découpé en segments TONÉS PAR CAMP : les noms cités en gras, allié ou ennemi | `TeamSegments` | `src/ui/TeamSegments.tsx` | `src/ui/styles/team-segments.css` | journal de combat, ligne de récap, fil d’événements | les deux vocabulaires de segments (NarratedSegment, RecapSegment) passent par ce rendu |
@@ -118,4 +121,4 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | en-tête A→B d'une modale de combat/opposition | `VsHeader` | `src/ui/VsHeader.tsx` | `src/ui/styles/vs-header.css` | toute confrontation à 2 camps | — |
 | sceau de cire et plaque d’élu scellée | `WaxSeal/SealedPlaque` | `src/ui/WaxSeal.tsx` | — | tuiles de sélection, plaques d’élu | — |
 | rose des vents : direction + force du vent | `WindRose` | `src/ui/WindRose.tsx` | `src/ui/styles/gauges.css` | voyage en mer, dossier de navire | — |
-<!-- sources-empreinte: 079d6e22b88e8143290ac55531566c75ee5a5218 (6 fichiers, 0 dossiers) corps: 18f6400f2a0763eae3a8598d270709b8b8fb3f7c -->
+<!-- sources-empreinte: 53f096a9c53dc22e9a4bcb3ac6732ddad2876554 (6 fichiers, 0 dossiers) corps: 5aa4af6e8a2e9c11748938abb93314a11d492a27 -->

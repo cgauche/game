@@ -1180,7 +1180,7 @@ export function CombatConsole() {
       {!phase && !controlled && (
         <div className="cc-phase">
           {siegeDistant !== null ? (
-            <SpectatorChip inline label={net.seatNames[siegeDistant] ?? 'L’hôte'} action={`joue ${active.label}…`} />
+            <SpectatorChip label={net.seatNames[siegeDistant] ?? 'L’hôte'} action={`joue ${active.label}…`} />
           ) : (
             <span className="cc-phase-label">
               <Icon id="ui/wait" size="sm" /> {active.kind === 'enemy' ? 'Tour de l’ennemi' : `Tour de ${active.label}`}
