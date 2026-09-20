@@ -1,9 +1,9 @@
 import { useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
-import { CoopRoomPanel, CoopSeatList, CoopAssignList } from './CoopPanels';
+import { CoopSection, CoopHostSections, CoopSeatList, CoopCodeInput } from './CoopPanels';
 import { SaveLoadModal } from './SaveLoadModal';
-import { RuleDivider } from './Ornaments';
-import { MenuCard } from './MenuCard';
+import { MenuSubScreen } from './MenuCard';
+import { Row, Grid } from './Layout';
 import { Icon } from './Icon';
 import { t } from '../i18n';
 
@@ -16,11 +16,12 @@ import { t } from '../i18n';
  * (créer / roster local / pré-tiré) ; les écrans invités REFLÈTENT le sien (snapshots).
  * INVITÉ : code + nom → connecté. Reconnexion automatique avec reprise de siège.
  *
- * Présentation (Jalon 9) : carte centrée sur la charte, composée de `MenuCard` (même primitive
- * que le menu principal), sections en `.panel`.
+ * Présentation : c'est un SOUS-ÉCRAN de menu (`MenuSubScreen`), le même que Coopération et
+ * Options — en-tête Retour + titre, corps défilant, sections en `.panel`. Un ÉCRAN, pas un
+ * dialogue : il garde la coquille `.menu`, sans voile ni a11y de dialogue.
  */
 
-/** Coquille de carte centrée, partagée par les 3 états du lobby (local / invité / hôte) — compose `MenuCard`. */
+/** Coquille centrée, partagée par les 3 états du lobby (local / invité / hôte). */
 function CoopShell({
   title,
   backLabel,
@@ -36,20 +37,9 @@ function CoopShell({
 }) {
   return (
     <div className="menu">
-      <MenuCard
-        className={`coop-card${wide ? ' wide' : ''}`}
-        header={<>
-          <div className="coop-top">
-            <button className="btn small btn-ghost" onClick={onBack}>
-              {backLabel}
-            </button>
-          </div>
-          <h1 className="coop-title">{title}</h1>
-          <RuleDivider />
-        </>}
-      >
+      <MenuSubScreen title={title} backLabel={backLabel} onBack={onBack} wide={wide}>
         {children}
-      </MenuCard>
+      </MenuSubScreen>
     </div>
   );
 }
@@ -70,13 +60,12 @@ export function CoopLobby() {
   if (net.mode === 'local') {
     return (
       <CoopShell title={t("coop.title.local")} backLabel={t("coop.back.menu")} onBack={() => { leave(); setScreen('menu'); }}>
-        <label className="field coop-name">
+        <label className="field">
           <span>{t("coop.name.label")}</span>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("coop.name.placeholder")} autoFocus />
         </label>
-        <div className="coop-roles">
-          <section className="panel coop-role">
-            <div className="mini-title">{t("coop.host.section")}</div>
+        <Grid cols={2} gap="lg" align="stretch">
+          <CoopSection title={t("coop.host.section")}>
             <p className="hint">{t("coop.host.hint")}</p>
             <button
               className="btn btn-primary"
@@ -90,17 +79,10 @@ export function CoopLobby() {
             >
               {t("coop.host.btn")}
             </button>
-          </section>
-          <section className="panel coop-role">
-            <div className="mini-title">{t("coop.join.section")}</div>
+          </CoopSection>
+          <CoopSection title={t("coop.join.section")}>
             <p className="hint">{t("coop.join.hint")}</p>
-            <input
-              className="coop-code-input"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              placeholder={t("coop.join.placeholder")}
-              maxLength={6}
-            />
+            <CoopCodeInput valeur={joinCode} onChange={setJoinCode} placeholder={t("coop.join.placeholder")} />
             <button
               className="btn btn-primary"
               disabled={!name.trim() || joinCode.trim().length !== 6 || busy}
@@ -114,9 +96,9 @@ export function CoopLobby() {
             >
               {t("coop.join.btn")}
             </button>
-            {error && <p className="hint coop-error">{error}</p>}
-          </section>
-        </div>
+            {error && <p className="chip tone-danger" role="alert">{error}</p>}
+          </CoopSection>
+        </Grid>
       </CoopShell>
     );
   }
@@ -124,16 +106,15 @@ export function CoopLobby() {
   if (net.mode === 'guest') {
     return (
       <CoopShell title={t("coop.title.guest")} backLabel={t("coop.back.quit")} onBack={() => { leave(); setScreen('menu'); }}>
-        <section className="panel coop-role">
-          <div className="mini-title">Partie {net.roomCode}</div>
+        <CoopSection title={<>Partie {net.roomCode}</>}>
           <CoopSeatList />
-        </section>
-        <p className="hint coop-waiting">
-          <Icon id={net.connection === 'reconnecting' ? 'coop/away' : 'ui/wait'} size="sm" />{' '}
+        </CoopSection>
+        <Row className="hint" gap="xs" justify="center">
+          <Icon id={net.connection === 'reconnecting' ? 'coop/away' : 'ui/wait'} size="sm" />
           {net.hostAway ? t("coop.guest.waiting.hostAway")
             : net.connection === 'reconnecting' ? t("coop.guest.waiting.reconnecting")
             : t("coop.guest.waiting.default")}
-        </p>
+        </Row>
       </CoopShell>
     );
   }
@@ -141,26 +122,15 @@ export function CoopLobby() {
   // ── HÔTE ──
   return (
     <CoopShell title={t("coop.title.host")} backLabel={t("coop.back.quit")} onBack={() => { leave(); setScreen('menu'); }} wide>
-      <section className="panel coop-role">
-        <div className="mini-title">{t("coop.host.invite.section")}</div>
-        <CoopRoomPanel />
-      </section>
-      <section className="panel coop-role">
-        <div className="mini-title">{t("coop.host.players.section")}</div>
-        <CoopSeatList />
-      </section>
-      <section className="panel coop-role">
-        <div className="mini-title">{t("coop.host.assign.section")}</div>
-        <CoopAssignList />
-      </section>
+      <CoopHostSections />
       {/* Charger en session : le salon survit (`applyLoadedSave` préserve `net`), l'invité
           suit au snapshot — c'est LE chemin pour reprendre une partie coop sauvegardée. */}
-      <div className="coop-actions">
+      <Row gap="md" className="coop-actions">
         <button className="btn" onClick={() => setLoadOpen(true)}><Icon id="file/open" /> {t("coop.host.loadGame")}</button>
         <button className="btn btn-primary" onClick={() => setScreen('party')}>
           {t("coop.host.compose")}
         </button>
-      </div>
+      </Row>
       {loadOpen && <SaveLoadModal mode="load" onClose={() => setLoadOpen(false)} />}
     </CoopShell>
   );

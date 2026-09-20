@@ -26,7 +26,11 @@ describe('#1800 — Stack/Row/Grid/Split : props de placement → attributs data
       expect(row).not.toContain(attr);
     }
     const grid = renderToStaticMarkup(<Grid>x</Grid>);
-    for (const attr of ['data-min', 'data-cols', 'data-stack-below']) expect(grid).not.toContain(attr);
+    for (const attr of ['data-min', 'data-cols', 'data-align', 'data-stack-below']) expect(grid).not.toContain(attr);
+  });
+
+  it('Grid : `align="stretch"` égale les cases d’une rangée', () => {
+    expect(renderToStaticMarkup(<Grid cols={2} align="stretch">x</Grid>)).toContain('data-align="stretch"');
   });
 
   it('Stack : gap/pad/align/rowBelow', () => {

@@ -100,15 +100,6 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   // motif `.bar` non composable ici (c'est une rangée de CHAMPS d'un formulaire d'édition, pas un
   // bandeau d'écran) ; le `flex-wrap` seul ne suffisait pas, il va de pair avec `min-width: 0`.
   'styles/codex-edit.css': 2,
-  // `.prow-act` a rejoint la couche partagée (hors cliquet) ; les six autres rangées enroulées de la
-  // famille JET sont keyées aux modules de leurs primitives, en regard (#1806 2c).
-  // -2 (#1806 2d) : `.fx-chips` suit sa primitive (`styles/fx-chip.css`, +1 en regard) ; `.derived`,
-  // règle MORTE sans aucun poseur dans le dépôt, est supprimée — le TOTAL baisse de 1.
-  // -2 (#1806 2d γ) : `.victory-rewards` et `.vl-assign` suivent leurs primitives
-  // (`styles/reward-recap.css` et `styles/gear-assign-list.css`, +1 chacune en regard) — TOTAL stable.
-  // -1 (#1806 2d γ2) : la rangée des vaincus compose `Row`, qui s'enroule PAR CONSTRUCTION —
-  // `.victory-defeated` MEURT, rien en regard.
-  'styles/combat-ui.css': 2,
   'styles/gear-assign-list.css': 1,
   'styles/reward-recap.css': 1,
   'styles/compendium.css': 3,
@@ -1128,7 +1119,7 @@ const REFUS_MUET_EXEMPT_SITES = new Map<string, string>([
   ['GatedAction.tsx:155', 'la primitive elle-même : `title={ariaLabel}` y est le NOM accessible, pas une raison'],
   ['OptionChooser.tsx:108', '`OptionBouton` : la composition partagée des trois layouts, dont la branche gatée compose déjà `GatedAction`'],
   ['RollShell.tsx:299', 'modèle de props de la coquille de jet — passage à `GatedAction` = train T9'],
-  ['MenuCard.tsx:133', 'modèle de props du menu — train T9'],
+  ['MenuCard.tsx:143', 'modèle de props du menu — train T9'],
   ['MediaSelect.tsx:59', 'modèle de props du sélecteur média — train T9'],
   ['QtyStepper.tsx:64', 'modèle de props du stepper (décrément) — train T9'],
   ['QtyStepper.tsx:72', 'modèle de props du stepper (incrément) — train T9'],

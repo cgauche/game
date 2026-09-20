@@ -333,6 +333,16 @@
     "verrou": "réflexe avant tout minuteur de pression recodé"
   },
   {
+    "id": "coopPanels",
+    "type": "primitives.manifest",
+    "label": "CoopInvite / CoopCodeInput / SeatList / CoopAssignRow / CoopBanner",
+    "fichier": "src/ui/CoopPanels.tsx",
+    "css": "src/ui/styles/coop-panels.css",
+    "concept": "briques de salon coop : plaque et champ du code de room, sièges avec présence, ligne d'attribution, bandeau de liaison",
+    "perimetre": "salon « Jouer en ligne » et sous-écran Coopération du menu ☰",
+    "verrou": "aucune recopie de ligne siège/attribution : la même brique sert le lobby et le menu"
+  },
+  {
     "id": "readyRow",
     "type": "primitives.manifest",
     "label": "ReadyRow",

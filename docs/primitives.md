@@ -27,7 +27,7 @@ manifeste est invisible ici, et rien ne la révèle sauf le hook `new-src-file-g
 mord qu'à la CRÉATION d'un `.tsx` de `src/ui`/`src/gameIso` — un module `.ts`, un fichier antérieur
 au hook, ou une primitive née ailleurs n'y passent jamais.
 
-93 primitives.
+94 primitives.
 
 | Besoin | Primitive | Fichier | CSS possédé | Périmètre | Verrou |
 |---|---|---|---|---|---|
@@ -44,6 +44,7 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | montant en monnaie impériale (LDB 57), coloré par dénomination et épelé en `title` — miroir JSX de `formatMoney` | `Coins` | `src/ui/Coins.tsx` | `src/ui/styles/coins.css` | tout prix AFFICHÉ : négoce, soins, repos, conseil, bourse d'en-tête | — |
 | fil d’ÉVÉNEMENTS du combat : le beat courant, ligne nue posée sur le terrain, toné par sa gravité | `CombatBanner` | `src/ui/CombatBanner.tsx` | `src/ui/styles/combat-banner.css` | refus du geste tenté, intention télégraphiée de l’IA, dernier résultat du journal | projection de sources existantes — zéro état dédié |
 | LE PONT de combat : deux travées d’alvéoles à compte FIXE autour de l’arche du combattant actif, conduit d’Avantage, coin de fin de tour | `CombatConsole` | `src/ui/CombatConsole.tsx` | `src/ui/styles/combat-console.css` | HUD de combat plein-champ, dimensionné sur la FENÊTRE — la galerie en montre la composition de bureau, les formes étroites s’observent en recette | src/ui/CombatConsole.test.tsx — comptes de cases et budget de hauteur du pont |
+| briques de salon coop : plaque et champ du code de room, sièges avec présence, ligne d'attribution, bandeau de liaison | `CoopInvite / CoopCodeInput / SeatList / CoopAssignRow / CoopBanner` | `src/ui/CoopPanels.tsx` | `src/ui/styles/coop-panels.css` | salon « Jouer en ligne » et sous-écran Coopération du menu ☰ | aucune recopie de ligne siège/attribution : la même brique sert le lobby et le menu |
 | cérémonie de tirage du créateur : attente, roulant, rendu, gain de PX en direct | `CreatorDice` | `src/ui/creator/CreatorDice.tsx` | — | Race, Carrière, Caractéristiques, Signe astral | — |
 | gabarit d’étape du créateur : bande d’action requise, zone de choix, zone de description | `CreatorStepFrame` | `src/ui/creator/CreatorStepFrame.tsx` | `src/ui/styles/creator-step.css` | toutes les étapes du créateur | src/ui/creator/creator-ossature.test.tsx |
 | galerie du design system in-app (DEV) : chaque primitive montée vivante avec des données réelles | `DesignGallery` | `src/ui/gallery/DesignGallery.tsx` | — | référence de goût des primitives d’UI | — |
@@ -124,4 +125,4 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | en-tête A→B d'une modale de combat/opposition | `VsHeader` | `src/ui/VsHeader.tsx` | `src/ui/styles/vs-header.css` | toute confrontation à 2 camps | — |
 | sceau de cire et plaque d’élu scellée | `WaxSeal/SealedPlaque` | `src/ui/WaxSeal.tsx` | — | tuiles de sélection, plaques d’élu | — |
 | rose des vents : direction + force du vent | `WindRose` | `src/ui/WindRose.tsx` | `src/ui/styles/gauges.css` | voyage en mer, dossier de navire | — |
-<!-- sources-empreinte: 49949ef5af83bcd0dce2c2dfaf987cb79d99241c (6 fichiers, 0 dossiers) corps: 506935ed988200edfd9aaadcbefbf99765f90483 -->
+<!-- sources-empreinte: fd77132d3e67a23d160c4693de3d71468361b35b (6 fichiers, 0 dossiers) corps: 4f5af0bcd05be79f353cfc3b5e1cd7d4ff40ad32 -->

@@ -29,7 +29,8 @@ describe("CoopLobby -- libelles i18n Phase D", () => {
     expect(html).toContain("Rejoindre une partie");
     expect(html).toContain("Héberger");
     expect(html).toContain("Rejoindre");
-    expect(html).toContain("← Menu");
+    const retour = html.slice(html.indexOf("menu-back"));
+    expect(retour.slice(0, retour.indexOf("</button>"))).toContain(t("coop.back.menu"));
     expect(html).toContain("Le groupe se compose ensemble");
     expect(html).toContain("Le code de room fait 6 caractères.");
     expect(html).toContain("CODE");
@@ -39,7 +40,7 @@ describe("CoopLobby -- libelles i18n Phase D", () => {
     // Verification que les valeurs du catalogue resolvent correctement
     expect(t("coop.title.guest")).toBe("Salon — invité");
     expect(t("coop.title.host")).toBe("Salon — hôte");
-    expect(t("coop.back.quit")).toBe("← Quitter");
+    expect(t("coop.back.quit")).toBe("Quitter");
     expect(t("coop.host.invite.section")).toBe("Inviter — partagez le code");
     expect(t("coop.host.players.section")).toBe("Joueurs connectés");
     expect(t("coop.host.assign.section")).toBe("Attribution des héros");

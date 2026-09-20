@@ -22,6 +22,8 @@ import { DescRefField } from '../compendium/DescRefField';
 import type { DescRef } from '../../data/source/decoupe';
 import { GatedAction } from '../GatedAction';
 import { ReadyRow } from '../ReadyRow';
+import { CoopInvite, CoopCodeInput, SeatList, CoopAssignRow, CoopBanner } from '../CoopPanels';
+import { CharFrame } from '../CharFrame';
 import { GearAssignList } from '../GearAssignList';
 import { RewardRecap } from '../RewardRecap';
 import { SceneErrorBoundary } from '../SceneErrorBoundary';
@@ -655,6 +657,56 @@ function ReadyRowDemo() {
       <ReadyRow ready={{ 0: true }} />
     </div>
   );
+}
+
+/** Le bloc d'invitation de l'hôte : la plaque du code et ses deux gestes de copie. */
+function CoopInviteDemo() {
+  return <CoopInvite code="AB12CD" onCopierCode={() => {}} onCopierLien={() => {}} />;
+}
+
+/** Le champ du code côté invité : ce qu'on frappe remonte en MAJUSCULES, six caractères au plus. */
+function CoopCodeInputDemo() {
+  const [code, setCode] = useState('ab12');
+  return <CoopCodeInput valeur={code} onChange={setCode} placeholder="CODE" />;
+}
+
+/** Les trois états d'un siège : l'hôte (c'est moi), un invité connecté, un invité en reconnexion. */
+function SeatListDemo() {
+  return <SeatList sieges={[
+    { seat: 0, nom: 'Hôte', moi: true, absent: false },
+    { seat: 1, nom: 'Antoine', moi: false, absent: false },
+    { seat: 2, nom: 'Béa', moi: false, absent: true },
+  ]} />;
+}
+
+/** Deux lignes d'attribution DANS une surface : une personne (portrait + nom) et un RÔLE (sans
+ *  portrait). Le panneau est ce qui compte ici — c'est lui qui empilerait ces lignes en colonne si
+ *  `label.coop-assign-row` ne renversait pas `.panel label`. */
+function CoopAssignRowDemo() {
+  const heros = herosExemples()[0];
+  const sieges = [{ valeur: 0, libelle: 'Hôte' }, { valeur: 1, libelle: 'Antoine' }];
+  return (
+    <section className="panel">
+      <CoopAssignRow
+        portrait={heros ? <CharFrame c={heros} variant="identity" size="xs" /> : undefined}
+        libelle={heros?.label ?? 'Héros'}
+        valeur={0}
+        options={sieges}
+        onChange={() => {}}
+      />
+      <CoopAssignRow
+        libelle="Maître du Jeu"
+        valeur=""
+        options={[{ valeur: '', libelle: 'IA (aucun MJ)' }, ...sieges]}
+        onChange={() => {}}
+      />
+    </section>
+  );
+}
+
+/** Bandeau de liaison : il se pose en HAUT DU CHAMP (position fixe), au-dessus de l'écran courant. */
+function CoopBannerDemo() {
+  return <CoopBanner icone="ui/warning">Béa : reconnexion en cours…</CoopBanner>;
 }
 
 /** Deux lignes de butin : une lame CATALOGUÉE non identifiée (la révélation est offerte) et un objet
@@ -1472,6 +1524,11 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { id: 'detailframe', label: 'DetailFrame', file: 'src/ui/DetailFrame.tsx', category: 'Atelier du scribe', render: DetailFrameDemo },
   { id: 'herosheet', label: 'HeroSheet', file: 'src/ui/HeroSheet.tsx', category: 'Personnages', render: HeroSheetDemo },
   { id: 'readyrow', label: 'ReadyRow', file: 'src/ui/ReadyRow.tsx', category: 'Écrans & layout', render: ReadyRowDemo },
+  { id: 'coopinvite', label: 'CoopInvite', file: 'src/ui/CoopPanels.tsx', category: 'Écrans & layout', render: CoopInviteDemo },
+  { id: 'coopcodeinput', label: 'CoopCodeInput', file: 'src/ui/CoopPanels.tsx', category: 'Écrans & layout', render: CoopCodeInputDemo },
+  { id: 'seatlist', label: 'SeatList', file: 'src/ui/CoopPanels.tsx', category: 'Écrans & layout', render: SeatListDemo },
+  { id: 'coopassignrow', label: 'CoopAssignRow', file: 'src/ui/CoopPanels.tsx', category: 'Écrans & layout', render: CoopAssignRowDemo },
+  { id: 'coopbanner', label: 'CoopBanner', file: 'src/ui/CoopPanels.tsx', category: 'Écrans & layout', render: CoopBannerDemo },
   { id: 'gearassignlist', label: 'GearAssignList', file: 'src/ui/GearAssignList.tsx', category: 'Négoce & activités', render: GearAssignListDemo },
   { id: 'rewardrecap', label: 'RewardRecap', file: 'src/ui/RewardRecap.tsx', category: 'Négoce & activités', render: RewardRecapDemo },
   { id: 'errorboundary', label: 'SceneErrorBoundary', file: 'src/ui/SceneErrorBoundary.tsx', category: 'Écrans & layout', render: SceneErrorBoundaryDemo },

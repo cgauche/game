@@ -3,7 +3,7 @@ import { useGame } from '../state/store';
 import { useModalA11y } from './Modal';
 import { ScreenMeta } from './ScreenMeta';
 import { MenuCard, MenuCardHead, MenuSection, MenuButton, MenuSubScreen } from './MenuCard';
-import { OptionsPanel } from './OptionsScreen';
+import { OptionsSubScreen } from './OptionsScreen';
 import { CoopMenuSection, GmSoloToggle } from './CoopPanels';
 import { t } from '../i18n';
 
@@ -82,7 +82,7 @@ export function GameMenu({ sceneName, time, onQuit, onSaveLoad, onEndSession, in
           )}
 
           {view === 'coop' && (
-            <MenuSubScreen title={t('gameMenu.section.coop')} onBack={back}>
+            <MenuSubScreen title={t('gameMenu.section.coop')} onBack={back} wide>
               <p className="hint">{t('gameMenu.coop.hint')}</p>
               <CoopMenuSection />
               <GmSoloToggle />
@@ -90,9 +90,7 @@ export function GameMenu({ sceneName, time, onQuit, onSaveLoad, onEndSession, in
           )}
 
           {view === 'options' && (
-            <MenuSubScreen title={t('gameMenu.options')} onBack={back} wide>
-              <OptionsPanel />
-            </MenuSubScreen>
+            <OptionsSubScreen onBack={back} />
           )}
         </div>
       )}

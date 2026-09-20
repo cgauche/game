@@ -987,7 +987,7 @@ export async function realKeyUp(session, touche) {
  *
  * MESURÉ sur le salon coop (Chrome headless du kit, 2026-08-13) : `.coop-code-input` frappé
  * `ab12cd` se lit `AB12CD` — la valeur est donc passée par le `onChange` React
- * (`e.target.value.toUpperCase()`, `CoopLobby.tsx`), pas seulement par le DOM ; et le bouton
+ * (`e.target.value.toUpperCase()`, `CoopCodeInput` de `CoopPanels.tsx`), pas seulement par le DOM ; et le bouton
  * « Héberger », `disabled` tant que le nom est vide, s'arme après la frappe du champ de nom.
  *
  * `clear` (défaut) sélectionne le contenu existant (`select()` — une SÉLECTION, pas une écriture

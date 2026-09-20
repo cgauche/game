@@ -83,6 +83,11 @@ label.radio {
     flex-wrap: wrap;
     gap: 6px;
   }
+  /* La CARTE DE MENU resserre ses flancs (charte règle 4 : utilisable à 360px). La tranche vit ICI :
+     à poids égal elle doit SUIVRE la déclaration de base de `.menu-card` (`base.css`) dans la cascade. */
+  .menu-card {
+    padding: var(--sp-xl);
+  }
 }
 
 /* ── TRONCATURE À N LIGNES ── : concept de TEXTE partagé — l'appelant pose `--clamp` s'il veut
@@ -1019,7 +1024,8 @@ button.chip:hover {
 }
 .menu-sub-head {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  /* Deux flancs ÉGAUX : le titre se centre sur la carte, pas sur l'espace laissé par « Retour ». */
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 10px;
 }

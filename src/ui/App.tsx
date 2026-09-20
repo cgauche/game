@@ -6,7 +6,7 @@ import { MainMenu } from './MainMenu';
 import { PartyScreen } from './PartyScreen';
 import { CharacterCreator } from './creator/CharacterCreator';
 import { GlobalSvgDefs } from './GlobalSvgDefs';
-import { Icon } from './Icon';
+import { CoopBanner, liaisonASignaler } from './CoopPanels';
 import { SceneErrorBoundary } from './SceneErrorBoundary';
 import { PossessionsScreen } from './PossessionsScreen';
 import { useGameKeyboard } from './useGameKeyboard';
@@ -34,20 +34,13 @@ const DesignGallery = import.meta.env.DEV
   ? lazy(() => import('./gallery/DesignGallery').then((m) => ({ default: m.DesignGallery })))
   : null;
 
-/** Bannière coop non bloquante : reconnexions en cours (invité comme hôte). */
-function CoopBanner() {
+/** Le bandeau de liaison coop, monté au-dessus de l'écran courant : sa matière et sa lecture de la
+ *  vue réseau vivent avec les autres briques coop (`CoopPanels`), le foyer de montage est ICI. */
+function BandeauLiaison() {
   const net = useGame((s) => s.net);
-  if (net.mode === 'guest' && net.connection === 'reconnecting')
-    return <div className="coop-banner"><Icon id="ui/warning" size="sm" /> Reconnexion en cours…</div>;
-  if (net.mode === 'guest' && net.hostAway)
-    return <div className="coop-banner"><Icon id="ui/wait" size="sm" /> L'hôte est déconnecté — la partie reprendra à son retour.</div>;
-  if (net.mode === 'host') {
-    const away = Object.entries(net.presence)
-      .filter(([, p]) => p === 'away')
-      .map(([s]) => net.seatNames[Number(s)] ?? `Joueur ${Number(s) + 1}`);
-    if (away.length) return <div className="coop-banner"><Icon id="ui/warning" size="sm" /> {away.join(', ')} : reconnexion en cours…</div>;
-  }
-  return null;
+  const signal = liaisonASignaler(net);
+  if (!signal) return null;
+  return <CoopBanner icone={signal.icone}>{signal.texte}</CoopBanner>;
 }
 
 export function App() {
@@ -79,7 +72,7 @@ export function App() {
           mais un écran plein-champ (interlude) a besoin du voile PLEIN pour séparer les niveaux. */}
       <div className={`app app-${screen}`}>
         <GlobalSvgDefs />
-        <CoopBanner />
+        <BandeauLiaison />
         <Suspense fallback={<div className="lazy-fallback" role="status">Chargement…</div>}>
           {screen === 'menu' && <MainMenu />}
           {screen === 'party' && <PartyScreen />}

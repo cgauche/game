@@ -26,7 +26,7 @@ const LOCK_NOTE_ID = 'hr-lock-note';
  * contrôles et les boutons de remise au défaut s'y LIENT par `aria-describedby` (`GatedAction
  * reasonId=…`), aucune rangée ne la répète.
  *
- * CORPS UNIQUE de l'onglet « Règles maison » de l'écran Options (`OptionsPanel`) — donc rendu à
+ * CORPS UNIQUE de l'onglet « Règles maison » de l'écran Options (`OptionsSubScreen`) — donc rendu à
  * l'identique dans ses DEUX foyers : le menu principal hors partie et le menu système en jeu.
  */
 export function HouseRulesPanel() {

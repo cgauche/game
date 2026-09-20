@@ -46,7 +46,7 @@ const OVERLAY_OWNERS = ['Modal.tsx', 'ScreenShell.tsx'];
 // maison composant la primitive MenuCard, a11y `useModalA11y` câblée) ; langage MenuCard voulu, pas la
 // chrome de Modal/ScreenShell.
 // OptionsScreen.tsx (#839) : MÊME voile et MÊME carte que GameMenu — c'est l'écran Options du menu
-// PRINCIPAL, qui compose `MenuSubScreen` + `OptionsPanel`, exactement ceux du sous-écran Options en
+// PRINCIPAL, qui compose `OptionsSubScreen`, exactement celui du sous-écran Options en
 // jeu. Même justification, même a11y (`useModalA11y` câblée) : semi-canonique, jamais une 2e chrome.
 const OVERLAY_WHITELIST = ['CharacterSheet.tsx', 'ShipSheet.tsx', 'InspectPanel.tsx', 'compendium/CompendiumScreen.tsx', 'CampaignView.tsx', 'GameMenu.tsx', 'OptionsScreen.tsx'];
 

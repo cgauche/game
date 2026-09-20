@@ -63,16 +63,25 @@ export function MenuCardHead({ title, lead, sub, meta, className }: {
 }
 
 /**
- * SOUS-ÉCRAN de menu (Coopération, Options) : la MÊME carte plein écran, en-tête « Retour » + titre.
- * Vit ICI (à côté de `MenuCard`, dont c'est une composition) et non dans un foyer, parce que les DEUX
- * menus s'en servent : le menu SYSTÈME en jeu (`GameMenu`) et le menu PRINCIPAL hors partie
- * (`MainMenu` → `OptionsScreen`) — même langage, un seul markup. `wide` élargit la carte et lui pose
- * son contrat de hauteur (`.game-menu-sub-wide` : plafond au champ, corps seul défilant, #839).
+ * SOUS-ÉCRAN de menu (Coopération, Options, salon coop) : la MÊME carte plein écran, en-tête
+ * « Retour » + titre. Vit ICI (à côté de `MenuCard`, dont c'est une composition) et non dans un
+ * foyer, parce que les TROIS s'en servent : le menu SYSTÈME en jeu (`GameMenu`), le menu PRINCIPAL
+ * hors partie (`MainMenu` → `OptionsScreen`) et le salon coop (`CoopLobby`) — même langage, un seul
+ * markup. `wide` élargit la carte et lui pose son contrat de hauteur (`.game-menu-sub-wide` :
+ * plafond au champ, #839).
+ *
+ * Le CORPS DÉFILANT (`.menu-sub-body`) est posé ICI, par la primitive : sans lui un sous-écran haut
+ * (salon hôte, onglet Clavier) pousse son contenu hors de la carte au lieu de défiler. `head` reçoit
+ * ce qui doit rester EN TÊTE, hors du défileur (la barre d'onglets d'Options).
  */
-export function MenuSubScreen({ title, onBack, wide, children }: {
+export function MenuSubScreen({ title, onBack, backLabel, wide, head, children }: {
   title: ReactNode;
   onBack: () => void;
+  /** Libellé du bouton de retour quand « Retour » MENT : le salon coop en sort (« Quitter »). */
+  backLabel?: ReactNode;
   wide?: boolean;
+  /** Bande FIXE entre l'en-tête et le corps défilant (barre d'onglets). */
+  head?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -81,12 +90,13 @@ export function MenuSubScreen({ title, onBack, wide, children }: {
       header={<MenuCardHead
         className="menu-sub-head"
         lead={<button type="button" className="btn small btn-ghost menu-back" onClick={onBack}>
-          <Icon id="ui/undo" size="sm" /> {t('gameMenu.back')}
+          <Icon id="ui/undo" size="sm" /> {backLabel ?? t('gameMenu.back')}
         </button>}
         title={title}
       />}
     >
-      {children}
+      {head}
+      <div className="menu-sub-body">{children}</div>
     </MenuCard>
   );
 }

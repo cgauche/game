@@ -113,6 +113,8 @@ type GridProps = {
   min?: 'sm' | 'md' | 'lg';
   /** Nombre de colonnes FIXES — exclusif de `min`. */
   cols?: 2 | 3 | 4;
+  /** Hauteur des cases d'une rangée : `start` les hisse en haut, `stretch` les égale (défaut : `start`). */
+  align?: 'start' | 'stretch';
   stackBelow?: Cassure;
   as?: Balise;
   children: ReactNode;
@@ -121,11 +123,12 @@ type GridProps = {
 /** GRILLE : colonnes AUTOMATIQUES (`min`, largeur minimale d'une carte) ou FIXES (`cols`) — jamais
  *  les deux. Avec `cols`, elle s'empile sous 700px sauf `stackBelow` contraire. */
 export const Grid = forwardRef<HTMLElement, GridProps>(function Grid(
-  { gap, pad, min, cols, stackBelow, as = 'div', children, ...reste }, ref,
+  { gap, pad, min, cols, align, stackBelow, as = 'div', children, ...reste }, ref,
 ) {
   return rendre(as, 'grid', {
     'data-gap': gap,
     'data-pad': pad,
+    'data-align': align,
     'data-min': cols ? undefined : min,
     'data-cols': cols,
     'data-stack-below': stackBelow ?? (cols ? 700 : undefined),

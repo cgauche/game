@@ -499,6 +499,8 @@ h3 {
    Split            « colonne bornée + contenu » (fiche vivante, inspecteurs…)
                     → `stackBelow={900}` ;
    .bar             barre d'écran : s'enroule ≤ 700px, marges safe-area ;
+   .menu-card       carte de menu : marges resserrées ≤ 700px (la tranche vit dans components.css,
+                    APRÈS la déclaration de base — à poids égal seul l'ORDRE tranche) ;
    pointer: coarse  cibles tactiles ≥ 40px (boutons, champs, selects).      */
 @media (max-width: 700px) {
   .bar {
