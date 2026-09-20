@@ -1,6 +1,6 @@
 # Atlas RAW — Économie : monnaie, marché, fabrication
 
-> Référentiel **autosuffisant** des règles WFRP4 (RAW), consolidé sur les 14 livres autorisés, à usage
+> Référentiel **autosuffisant** des règles WFRP4 (RAW), consolidé sur les livres autorisés, à usage
 > d'agent (répondre + auditer le code sans rouvrir les livres). Chaque règle cite `LIVRE NN l.X-Y`
 > (last-recours = la source). Abréviations : [`sources.md`](sources.md). Index : [`00-index.md`](00-index.md).
 >

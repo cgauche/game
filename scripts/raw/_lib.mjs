@@ -142,6 +142,27 @@ export const alternationDe = (books) => books.map(([a]) => esc(a)).sort((a, b) =
 const ABBR_ALT = alternationDe(BOOKS)
 export const allAbbrAlternation = () => ABBR_ALT
 
+// Un livre est-il EXTRAIT (donc adressable par l'outillage Atlas) ? Prédicat UNIQUE : `booksDe`,
+// `perimetreDeCoeur` et `apply-livre` en jugent tous par lui — une entrée de `books.json` sans `dir`
+// (livre autorisé mais jamais converti en `.md`) n'a ni chapitre à lire ni fiche à intégrer.
+export const estLivreExtrait = (b) => Boolean(b && b.abbr && b.dir)
+
+// MARQUEUR de BLOC PRÉSERVÉ d'un livre — `<!-- <ABRÉV>-INTEGRATION -->` : un correctif MANUEL posé
+// dans une fiche ou un catalogue de l'Atlas, que `build-catalogs.mjs` re-préserve à chaque
+// régénération et que `merge-docs.mjs` re-fusionne. L'ÉCRIVAIN (`apply-livre.mjs`) et les LECTEURS
+// passent par ICI, et le motif se DÉRIVE de l'alternation du registre : un marqueur écrit que le
+// lecteur ne relit pas, c'est un correctif manuel effacé sans un mot à la régénération suivante.
+export const marqueurIntegration = (abbr) => `<!-- ${abbr}-INTEGRATION -->`
+export const marqueurIntegrationFin = (abbr) => `<!-- /${abbr}-INTEGRATION -->`
+export const blockStartReDe = (alt) => new RegExp(`^<!-- ((?:${alt})-INTEGRATION) -->`)
+export const blockStartRe = () => blockStartReDe(ABBR_ALT)
+
+// Mention LÂCHE d'un chapitre (« <ABRÉV> 12 », « <ABRÉV> ch.7 » — sans réf de ligne), UNE pour tous
+// les livres, sur l'alternation du registre : c'est elle qui dit « ce document parle de ce chapitre »
+// (`reconcile.mjs` couverture, `assemble-domain.mjs` cœur d'une fiche existante).
+export const looseReDe = (alt) => new RegExp(`\\b(${alt}) (?:ch\\.)?(\\d+)\\b`, 'g')
+export const looseRe = () => looseReDe(ABBR_ALT)
+
 // Regex de réfs (factories : instances FRAÎCHES — l'état /g `lastIndex` n'est pas partagé entre appelants).
 // UNE graphie pour TOUS les livres de BOOKS, les livres de cœur compris : `<ABRÉV>[ [ch.]NN] l.<ligne><suffixe>`.
 // Groupes, IDENTIQUES quel que soit le livre : m[1] livre · m[2] chapitre (OPTIONNEL, `undefined`

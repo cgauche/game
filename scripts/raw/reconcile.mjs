@@ -34,8 +34,8 @@ import { fileURLToPath } from 'node:url'
 import { parUnitesDeCode, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { ecartsDeStock } from '../guards/lib/stock.mjs'
 import {
-  refReDe, refFolioReDe, alternationDe, bookOfDe, booksDe, coeursDe, coeurDe, livresDeCoeur, REGISTRE_LIVRES,
-  folioSpan, span, RAWDOC_META_GENERATED, readText,
+  refReDe, refFolioReDe, alternationDe, bookOfDe, booksDe, coeursDe, coeurDe, livresDeCoeur, looseReDe,
+  REGISTRE_LIVRES, folioSpan, span, RAWDOC_META_GENERATED, readText,
 } from './_lib.mjs'
 import { lireStockJson } from './stockNominatif.mjs'
 import {
@@ -87,9 +87,6 @@ function fichiersSources(dir, exts) {
   }).map((rel) => join(dir, rel))
 }
 
-// Mention LÂCHE d'un chapitre (« LDB 12 », « AA ch.7 » — sans réf de ligne), UNE pour tous les
-// livres, sur l'alternation du registre : c'est elle qui dit « l'Atlas couvre ce chapitre ».
-const looseReDe = (alt) => new RegExp(`\\b(${alt}) (?:ch\\.)?(\\d+)\\b`, 'g')
 
 // Clé de chapitre canonique du Sens A (#434 défaut 9 suite, #1156) : le code écrit le numéro
 // zéro-préfixé (`AA 02`, `ADE II ch.03`, `LDB 08`), l'Atlas écrit les titres sans préfixe
@@ -191,6 +188,11 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR, registr
   // TOUS les docs — catalogues, index, épreuves compris, dont beaucoup de chapitres qu'aucune fiche
   // ne décrit — or une dette se déclare au niveau d'une FICHE. Seules elles sont comptées ici.
   const fichesDuChapitre = new Map()
+  // MÉLANGE DE CŒURS — une FICHE de l'Atlas synthétise UN corps de règles : la même fiche qui cite
+  // deux cœurs présente comme UNE règle ce que deux systèmes disent différemment, et le lecteur (agent
+  // ou joueur) n'a aucun moyen de savoir lequel s'applique. Un SUPPLÉMENT (`coeur` absent) ne compte
+  // pas : il ne porte pas de corps de règles propre.  stem de fiche -> cœur -> sigles cités
+  const coeursParFiche = new Map()
   const fiches = []            // { doc, content, parsed } — le parse des fiches, source des registres d'`id`
   for (const d of DOCS) {
     const text = readText(d)
@@ -200,7 +202,17 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR, registr
     for (const mm of text.matchAll(looseReDe(ALT))) {
       enSet(atlasLoose, mm[1], chKey(mm[2]))
       if (estCatalogue) enSet(catalog, mm[1], chKey(mm[2]))
-      if (isFicheDoc(nom)) enSet(fichesDuChapitre, `${mm[1]}|${chKey(mm[2])}`, stemDeFiche(nom))
+      if (isFicheDoc(nom)) {
+        enSet(fichesDuChapitre, `${mm[1]}|${chKey(mm[2])}`, stemDeFiche(nom))
+        const coeur = coeurDe(mm[1], coeurs)
+        if (coeur) {
+          const stem = stemDeFiche(nom)
+          if (!coeursParFiche.has(stem)) coeursParFiche.set(stem, new Map())
+          const parCoeur = coeursParFiche.get(stem)
+          if (!parCoeur.has(coeur)) parCoeur.set(coeur, new Set())
+          parCoeur.get(coeur).add(mm[1])
+        }
+      }
     }
     // Pine le span et désigne le doc PROPRIÉTAIRE du chapitre — pour TOUT livre.
     const piner = (book, ch, sp) => {
@@ -341,7 +353,22 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR, registr
   const codeBooks = new Set([...code.keys(), ...codeNoCh.keys()])
   const atlasBooks = new Set([...atlas.keys(), ...atlasLoose.keys()])
 
-  return { hardA, softA, nonImpl, dettesDeFiche, b2, codeNoCh, bookStats, codeBooks, atlasBooks, folioIgnored, coeurs }
+  return { hardA, softA, nonImpl, dettesDeFiche, b2, codeNoCh, bookStats, codeBooks, atlasBooks, folioIgnored, coeurs, melanges: melangesDeCoeur(coeursParFiche), fichesJugees: coeursParFiche.size }
+}
+
+/** Les fiches qui citent DEUX cœurs ou plus, triées — PUR (aucun accès fichier). */
+export function melangesDeCoeur(coeursParFiche) {
+  const melanges = []
+  for (const [fiche, parCoeur] of [...coeursParFiche].sort((a, b) => parUnitesDeCode(a[0], b[0]))) {
+    if (parCoeur.size < 2) continue
+    melanges.push({
+      fiche,
+      coeurs: [...parCoeur]
+        .sort((a, b) => parUnitesDeCode(a[0], b[0]))
+        .map(([coeur, livres]) => ({ coeur, livres: [...livres].sort(parUnitesDeCode) })),
+    })
+  }
+  return melanges
 }
 
 /** État d'un marqueur B1 : hors d'un champ `**Implémente :**` c'est de la PROSE (aucune dette à
@@ -517,6 +544,15 @@ function main() {
   for (const e of data.b2)
     console.log(`Sens B2 ${e.book} (cœur ${e.coeur}) : ${e.avant.length} → ${e.horsCode.length} chapitre(s) Atlas hors-code (${e.credites.length} crédité(s) par folio, ${e.sousDette.length} sous dette de fiche)`)
 
+  if (data.melanges.length) {
+    console.log(`MÉLANGE DE CŒURS — ${data.melanges.length} fiche(s) sur ${data.fichesJugees} citent plus d'UN corps de règles :`)
+    for (const m of data.melanges)
+      console.log(`  ${m.fiche}.md : ${m.coeurs.map((c) => `cœur ${c.coeur} (${c.livres.join(', ')})`).join(' ET ')}`)
+    console.log("  Remède : une fiche synthétise UN cœur — scinder la fiche, ou retirer la citation qui n'appartient pas au sien.")
+  } else {
+    console.log(`Mélange de cœurs : aucune des ${data.fichesJugees} fiche(s) citant un livre de cœur n'en cite deux.`)
+  }
+
   const entrees = trousDurs(data)
   const stock = lireStock()
   const { neuves, perimees, coeur } = ecartsTrousDurs(entrees, stock)
@@ -534,7 +570,7 @@ function main() {
     console.log(`STOCK À DÉCROÎTRE — ${perimees.length} entrée(s) de \`scripts/raw/reconciliation-stock.json\` sans trou mesuré : retirer l'entrée.`)
     for (const p of perimees) console.log(`  ${p}`)
   }
-  if (neuves.length || perimees.length || coeur.length) process.exitCode = 1
+  if (neuves.length || perimees.length || coeur.length || data.melanges.length) process.exitCode = 1
   else console.log(`Cliquet des trous durs : ${entrees.length} trou(s) dur(s), tous au stock (${Object.keys(stock).length} entrée(s)) — aucun neuf, aucun périmé, aucun livre de cœur.`)
 }
 

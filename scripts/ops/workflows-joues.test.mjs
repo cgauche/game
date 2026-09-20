@@ -13,9 +13,9 @@
 // CROISÉ, et ce qui survit quand un réfutateur ne rend rien.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { jouerWorkflow } from '../guards/lib/jouer-workflow.mjs';
 
 const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 const DOSSIER = join(RACINE, '.claude', 'workflows');
@@ -27,48 +27,8 @@ const ARBRE = '/arbre-jete';
 const SONDES = '/sondes-jetees';
 const BRIEF = '/briefs/brief-L3-socle.md';
 
-/**
- * Joue un script de workflow dans l'enveloppe du harnais, avec des doublures.
- * `repondre(prompt, opts)` rend ce que l'agent aurait rendu, phase par phase.
- * @returns {{ rendu: object, promptsParLabel: Map<string, string>, journal: string[] }}
- */
-async function jouer(nomDuScript, argsDuRun, repondre) {
-  const source = readFileSync(join(DOSSIER, nomDuScript), 'utf8').replace(/^export const meta/m, 'const meta');
-  const promptsParLabel = new Map();
-  const journal = [];
-  const agent = (prompt, opts) => {
-    promptsParLabel.set(`${opts.phase}:${opts.label}`, prompt);
-    return Promise.resolve(repondre(prompt, opts));
-  };
-  // La doublure fait ce que fait le harnais, point par point :
-  //  · `parallel` ne REJETTE jamais — un thunk qui lève rend `null`, comme un agent mort ;
-  //  · `pipeline` dépose à `null` l'item dont une stage lève, et saute ses stages restantes ;
-  //  · les items qui traversent `pipeline` sont des COPIES — une comparaison d'identité y est fausse.
-  const parallel = (thunks) => Promise.all(thunks.map((t) => Promise.resolve().then(t).catch(() => null)));
-  const copie = (v) => (v === undefined ? undefined : structuredClone(v));
-  const pipeline = async (items, ...stages) => {
-    const out = [];
-    for (const item of items) {
-      let courant = copie(item);
-      for (const stage of stages) {
-        try {
-          courant = copie(await stage(courant));
-        } catch {
-          courant = null;
-          break;
-        }
-      }
-      out.push(courant);
-    }
-    return out;
-  };
-  const fabrique = new Function(
-    'agent', 'parallel', 'pipeline', 'phase', 'log', 'args', 'budget',
-    `return (async () => {\n${source}\n})()`,
-  );
-  const rendu = await fabrique(agent, parallel, pipeline, () => {}, (m) => journal.push(m), argsDuRun, undefined);
-  return { rendu, promptsParLabel, journal };
-}
+/** Joue un script de `.claude/workflows/` — l'enveloppe vit dans `scripts/guards/lib/jouer-workflow.mjs`. */
+const jouer = (nomDuScript, argsDuRun, repondre) => jouerWorkflow(join(DOSSIER, nomDuScript), argsDuRun, repondre);
 
 // ── `juge-design-socle.js` ───────────────────────────────────────────────────────────────────────
 

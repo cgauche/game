@@ -6,19 +6,22 @@
 // jamais une liste de livres. Une entrée de chapitre porte `ch` ; ses `from`/`to`/`title` optionnels
 // n'en transcrivent qu'une PLAGE DE SOUS-SECTION (ancres `chapterFile`, cf. `_lib.mjs`) — même
 // mécanisme, pour un chapitre trop large pour son catalogue.
-// Contrainte : tout bloc `<!-- X-INTEGRATION -->` du fichier existant reste un correctif MANUEL (perte
-// connue de l'extraction Marker, aucun mécanisme `inc` ne la couvre encore) — préservé tel quel par
-// extractPreservedBlocks/appendPreservedBlocks, JAMAIS régénéré. Re-run après toute ré-extraction.
+// Contrainte : tout bloc `<!-- <ABRÉV>-INTEGRATION -->` du fichier existant reste un correctif MANUEL
+// (perte connue de l'extraction Marker, aucun mécanisme `inc` ne la couvre encore) — préservé tel quel
+// par extractPreservedBlocks/appendPreservedBlocks, JAMAIS régénéré. Re-run après toute ré-extraction.
+// `appendPreservedBlocks` recolle en FIN de fichier : #1839.
 // node scripts/raw/build-catalogs.mjs
 import { existsSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BOOKS, chapterFile as chapterFileLib, livresDeCatalogue, readText } from './_lib.mjs'
+import { BOOKS, blockStartRe, chapterFile as chapterFileLib, esc, livresDeCatalogue, readText } from './_lib.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 
-export const BLOCK_START = /^<!-- ([A-Z0-9_-]+-INTEGRATION) -->/
-const blockEnd = (tag) => new RegExp(`^<!-- /${tag} -->\\s*$`)
+// Motif du marqueur : DÉRIVÉ de l'alternation du registre (`_lib.mjs`) — un sigle porte des espaces,
+// des minuscules, un point ; aucune classe de caractères écrite à la main ne les tient tous.
+export const BLOCK_START = blockStartRe()
+const blockEnd = (tag) => new RegExp(`^<!-- /${esc(tag)} -->\\s*$`)
 
 // Extrait les blocs préservés (délimités par `<!-- X-INTEGRATION -->` … `<!-- /X-INTEGRATION -->`,
 // précédés d'un séparateur `---` isolé) d'un catalogue EXISTANT. Un bloc sans marqueur de fin sur

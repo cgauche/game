@@ -34,6 +34,10 @@ const ATTENDU = {
     // forge ses fiches sous un `mkdtempSync` de os.tmpdir() — l'arbre du dépôt n'est jamais écrit.
     'scripts/gates/classerPush.test.mjs',
     'scripts/guards/lib/memoryLinks.test.mjs',
+    // +1 le 2026-09-20 (#1825 lot E2) : le banc de l'ENVELOPPE de jeu d'un workflow écrit ses
+    // scripts JOUETS sous un `mkdtempSync` de os.tmpdir() (`rmSync` en finally) — l'enveloppe
+    // charge un FICHIER, un script jouet ne se fabrique pas autrement ; l'arbre n'est jamais écrit.
+    'scripts/guards/lib/jouer-workflow.test.mjs',
     // +1 le 2026-09-14 (#1759) : la garde de couverture des tests `scripts/**` éprouve la parité
     // « joué = suivi par git » sur un dépôt JETABLE (`mkdtempSync` + `git init` + `writeFileSync`,
     // `rmSync` en finally, sous `os.tmpdir()`) — un fichier NON suivi ne se fabrique pas autrement,
@@ -288,6 +292,14 @@ const ATTENDU = {
     // puis `rmSync`) sous `os.tmpdir()` — l'arbre n'est jamais écrit, et le module mesuré
     // (`stockNominatif.mjs`) ne fait que LIRE.
     'scripts/raw/stockNominatif.test.mjs',
+    // +3 le 2026-09-20 (#1825 lot E2) : les deux bancs neufs posent leurs fixtures (catalogue à bloc
+    // préservé, fiche d'un autre cœur) sous `mkdtempSync` de os.tmpdir(), `rmSync` en finally ;
+    // l'assembleur est ACQUIS parce que son banc l'importe — ses `writeFileSync` vivent dans
+    // `assemble()`, que seul `main()` appelle, sous sa porte `isMain` (assemble-domain.mjs), et le
+    // banc n'appelle que ses fonctions PURES (`coeursCites`, `coeurDuRendu`, `refuserSiAutreCoeur`).
+    'scripts/raw/apply-livre.test.mjs',
+    'scripts/raw/assemble-domain.mjs',
+    'scripts/raw/assemble-domain.test.mjs',
   ],
   'raw:check-refs': [],
   // +1 le 2026-09-11 (#925) : la gate enchaîne `citation-graphy-guard.mjs`, qui IMPORTE

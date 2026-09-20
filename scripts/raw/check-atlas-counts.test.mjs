@@ -1,10 +1,10 @@
-// Test de la garde `check-atlas-counts` (node --test) : détecte un nombre de livres ou un compte
-// d'état recopiés en dur, reste silencieuse sur le seuil invariant, et couvre les deux vraies
-// pages de garde de l'Atlas (00-index.md + sources.md). Lancé par `npm run test:raw`.
+// Test de la garde `check-atlas-counts` (node --test) : détecte un nombre de livres, un nombre de
+// chapitres ou un compte d'état recopiés en dur, reste silencieuse sur le seuil invariant, et couvre
+// TOUTES les pages manuscrites de l'Atlas plus l'assembleur des fiches. Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readText } from './_lib.mjs'
-import { scanForbiddenCounts, INDEX_PATH, SOURCES_PATH, SCANNED_PATHS } from './check-atlas-counts.mjs'
+import { scanForbiddenCounts, INDEX_PATH, SOURCES_PATH, SCANNED_PATHS, ASSEMBLEUR_PATH, estPageManuscrite } from './check-atlas-counts.mjs'
 
 test('scanForbiddenCounts : "N livres" recopié en dur → détecté', () => {
   const v = scanForbiddenCounts('depuis les 15 livres autorisés\n')
@@ -44,16 +44,29 @@ test('scanForbiddenCounts : "## Les 15 livres" (titre de section, patron sources
   assert.equal(v[0].excerpt, '15 livres')
 })
 
-test('SCANNED_PATHS couvre les deux pages de garde (00-index.md + sources.md)', () => {
-  assert.deepEqual(SCANNED_PATHS, [INDEX_PATH, SOURCES_PATH])
+test('scanForbiddenCounts : "N chapitres" recopié en dur → détecté', () => {
+  const v = scanForbiddenCounts('| Cœur des règles (85 chapitres) |\n')
+  assert.equal(v.length, 1)
+  assert.equal(v[0].excerpt, '85 chapitres')
 })
 
-test('docs/raw/00-index.md réel — aucun compte manuscrit interdit (non-régression #544)', () => {
-  const text = readText(INDEX_PATH)
-  assert.deepEqual(scanForbiddenCounts(text), [])
+test('scanForbiddenCounts : "les chapitres" sans chiffre → silencieux', () => {
+  assert.deepEqual(scanForbiddenCounts('tous les chapitres du livre sont couverts\n'), [])
 })
 
-test('docs/raw/sources.md réel — aucun compte manuscrit interdit (non-régression #544)', () => {
-  const text = readText(SOURCES_PATH)
-  assert.deepEqual(scanForbiddenCounts(text), [])
+test('estPageManuscrite : rapports GÉNÉRÉS, catalogues ré-générés et épreuves DATÉES sont hors périmètre', () => {
+  assert.deepEqual(
+    ['00-index.md', 'sources.md', 'combat.md', 'coverage.md', 'reconciliation.md', 'reanchor.md', 'catalogue-sorts.md', 'epreuve-2026-06-22.md', 'notes.txt'].filter(estPageManuscrite),
+    ['00-index.md', 'sources.md', 'combat.md'],
+  )
+})
+
+test('SCANNED_PATHS couvre les pages de garde, les fiches et l’ASSEMBLEUR qui écrit leur en-tête', () => {
+  for (const attendu of [INDEX_PATH, SOURCES_PATH, ASSEMBLEUR_PATH]) assert.ok(SCANNED_PATHS.includes(attendu), attendu)
+  assert.ok(SCANNED_PATHS.length > 3, `périmètre trop maigre : ${SCANNED_PATHS.length} fichier(s)`)
+})
+
+test('arbre réel — aucun compte manuscrit interdit dans le périmètre balayé (non-régression #544, #1825)', () => {
+  const trouves = SCANNED_PATHS.flatMap((p) => scanForbiddenCounts(readText(p)).map((v) => `${p}:${v.line} « ${v.excerpt} »`))
+  assert.deepEqual(trouves, [])
 })

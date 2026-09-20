@@ -228,9 +228,13 @@ Trois points d'enregistrement, dans cet ordre :
    scénario, comme Ubersreik). La curation est toujours *à la main* (voir § 5) ; préciser le tag
    `source.book` attendu dans `src/data/*.json`.
 
-`docs/raw/00-index.md` liste séparément le compte de livres en tête (« consolidées depuis les N
-livres autorisés ») — **vérifier qu'il reste synchronisé** avec `sources.md` à chaque ajout (cf.
-§ Anomalies : au moment de la rédaction, `00-index.md` n'a pas suivi le dernier ajout MDG).
+**Aucun compte de livres ni de chapitres ne s'écrit à la main dans l'Atlas** : un nombre recopié ment
+dès le commit suivant, les comptes courants vivent dans les rapports GÉNÉRÉS (`coverage.md`,
+`reconciliation.md`, `reanchor.md`). La garde `node scripts/raw/check-atlas-counts.mjs` (chaînée dans
+`npm run docs:check`) refuse `N livres`, `N chapitres` et tout compte d'état `✅/🟡/⬜/❌ N` dans
+**toutes les pages manuscrites de `docs/raw/`** ET dans `scripts/raw/assemble-domain.mjs`, qui écrit
+leur en-tête. En sont hors : les rapports générés, les catalogues (verbatim de `Source/`) et les
+épreuves datées. Rien à vérifier à la main à l'ajout d'un livre.
 
 ### Le registre de CHAPITRES — `scripts/raw/chapitres.json`
 
@@ -270,14 +274,35 @@ nouveau livre vient enrichir les fiches de domaine existantes (`combat.md`, `mag
 créer une nouvelle si le livre introduit un domaine inédit (le combat naval de MDG a justifié
 `docs/raw/combat-naval.md`, un fichier dédié référencé dans la table `Domaines` de `00-index.md`).
 
-- **Workflow multi-agents** (opt-in « ultracode », cf. skill `orchestrer-des-agents`) :
-  un agent par domaine touché fait `extract → verify` adversarial — la vérification reconfronte
-  chaque réf/citation à la source, indispensable (des fabrications de contenu ont été trouvées et
-  corrigées lors de l'épreuve du 2026-06-22, `docs/raw/epreuve-2026-06-22.md`). Le script workflow
-  n'a pas d'accès filesystem : il renvoie topics/entrées de catalogue/sommaire en JSON.
-- **Apply déterministe** : un script `apply-<livre>.mjs` (patron `scripts/raw/apply-mdg.mjs`) lit
-  le JSON de sortie du workflow et insère topics + sommaire dans les fiches de domaine, **idempotent**
-  via un sentinel `<!-- <LIVRE>-INTEGRATION -->`.
+La chaîne, dans l'ordre — **périmètre → workflow → assemble → apply → gardes** :
+
+1. **Périmètre** — `node scripts/raw/workflow-args.mjs <coeur> --avec-supplements|--coeur-seul`
+   imprime le JSON `{ coeur, supplements, livres: [{ ab, dir, coeur, language }] }`, projeté du
+   registre `src/data/books.json`. Le drapeau est EXIGÉ : le registre dit l'appartenance d'un livre à
+   un cœur, il ne dit RIEN de la compatibilité d'un supplément avec ce cœur — c'est l'appelant qui
+   déclare, et le résultat porte son choix.
+2. **Workflow multi-agents** — `scripts/raw/atlas-domain.workflow.js` (opt-in « ultracode », cf. skill
+   `orchestrer-des-agents`) : un agent par domaine touché fait `extract → verify` adversarial — la
+   vérification reconfronte chaque réf/citation à la source, indispensable (des fabrications de
+   contenu ont été trouvées et corrigées lors de l'épreuve du 2026-06-22,
+   `docs/raw/epreuve-2026-06-22.md`). Le script n'a pas d'accès filesystem ni d'`import` : c'est un
+   corps d'`AsyncFunction` que le lanceur enveloppe, et le JSON de l'étape 1 lui arrive par le global
+   **`args`** (champ `args` du lanceur de workflows, collé tel quel). Il ne nomme **aucun livre** —
+   rien à y éditer quand un livre s'ajoute. Langue des prompts : la **synthèse** d'une fiche est en
+   français, les **citations, termes et abréviations de jeu** restent verbatim dans la langue du livre
+   cité (champ `language`), jamais traduits. Il rend `{ coeur, supplements, domains: […] }`.
+3. **Assemblage de la fiche** — `node scripts/raw/assemble-domain.mjs <output.json> [Titre]` écrit
+   `docs/raw/<domaine>.md` depuis ce JSON. Il LÈVE si le rendu ne porte pas son `coeur`, NOMME ce
+   cœur dans l'en-tête, et REFUSE d'écrire sur une fiche existante dont les livres de cœur cités
+   relèvent d'un autre corps de règles (une fiche synthétise UN cœur).
+4. **Apply déterministe** (enrichir des fiches DÉJÀ écrites, au lieu d'en assembler une) —
+   `node scripts/raw/apply-livre.mjs <ABRÉV> <workflow-output.json>` insère topics + sommaire dans
+   les fiches de domaine, **idempotent** via un sentinel `<!-- <ABRÉV>-INTEGRATION -->` (sigle en
+   argument, libellé lu au registre ; le motif du marqueur est dérivé du registre dans `_lib.mjs`,
+   donc un sigle à espace ou à point reste préservé par `build-catalogs.mjs`).
+5. **Gardes** — `npm run raw:coverage`, `raw:reconcile` (dont le refus d'une fiche à deux cœurs),
+   `raw:implemente`, `raw:check-refs`, `node scripts/raw/check-atlas-counts.mjs`.
+
 - **Catalogues de données verbatim** (`docs/raw/catalogue-*.md`) : régénérés par
   `node scripts/raw/build-catalogs.mjs`, qui concatène **verbatim** les chapitres de données des
   livres. Rien à éditer dans le script : ajouter une entrée `{ book, ch, catalogue }` à la liste

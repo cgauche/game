@@ -130,7 +130,10 @@ export const ECRIT_LU = {
       'knip.json et package-lock.json ; il n’en écrit aucun, et aucune gate n’écrit sous public/ ni server/ ; ' +
       '+1 écrivain le 2026-09-18 (#1813) : `modulesFeuilles.test.mjs` fabrique l’arbre jetable où il éprouve ' +
       'les graphies d’import qui atteignent une FEUILLE (`mkdtempSync` sous os.tmpdir(), `rmSync` en finally) — ' +
-      'sonde `git status --porcelain` avant/après identique, et aucun résidu dans os.tmpdir()',
+      'sonde `git status --porcelain` avant/après identique, et aucun résidu dans os.tmpdir() ; ' +
+      '+1 écrivain le 2026-09-20 (#1825 lot E2) : `guards/lib/jouer-workflow.test.mjs` écrit ses scripts ' +
+      'JOUETS sous `mkdtempSync` de os.tmpdir() (`rmSync` en finally) — l’enveloppe qu’il éprouve charge un ' +
+      'FICHIER, et l’arbre n’est jamais écrit',
   },
   'test:ops': {
     ecrit: [],
@@ -298,7 +301,7 @@ export const ECRIT_LU = {
     lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs', 'scripts/docs/lib/empreinte-sources.mjs'],
     raison:
       'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT Source/ ' +
-      '(312 chapitres mesurés) et son propre code',
+      'et son propre code',
   },
   'raw:reconcile': {
     ecrit: [],
@@ -307,8 +310,8 @@ export const ECRIT_LU = {
     },
     lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/docs/lib/empreinte-sources.mjs'],
     raison:
-      'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT Source/ ' +
-      '(285 chapitres mesurés), son stock `scripts/raw/reconciliation-stock.json` et son propre code',
+      'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT Source/, ' +
+      'son stock `scripts/raw/reconciliation-stock.json` et son propre code',
   },
   'test:raw': {
     ecrit: [],
@@ -337,9 +340,12 @@ export const ECRIT_LU = {
     lit: ['docs/raw/', 'scripts/raw/', 'scripts/guards/lib/', 'Source/', 'src/'],
     raison:
       'harnais de l’Atlas : il lit les fiches que les trois rapports écrivent ; éprouvant les scripts ' +
-      'eux-mêmes, il LIT ce qu’ils lisent — Source/ et src/ (4 105 lectures mesurées) ; ses deux bancs ' +
+      'eux-mêmes, il LIT ce qu’ils lisent — Source/ et src/ ; ses deux bancs ' +
       'écrivains (`check-source-format.test.mjs`, `lib/marker-pages.test.mjs`) ne posent que des dossiers ' +
-      'JETABLES sous `os.tmpdir()`, retirés par `rmSync` — aucune écriture dans l’arbre',
+      'JETABLES sous `os.tmpdir()`, retirés par `rmSync` — aucune écriture dans l’arbre ; +3 écrivains le ' +
+      '2026-09-20 (#1825 lot E2) : `apply-livre.test.mjs` et `assemble-domain.test.mjs`, même régime ' +
+      'os.tmpdir(), et `assemble-domain.mjs`, ACQUIS par l’import de son banc — ses `writeFileSync` vivent ' +
+      'dans `assemble()`, appelée par le seul `main()`, sous sa porte `isMain`',
   },
   'raw:check-refs': {
     ecrit: [],
@@ -352,7 +358,7 @@ export const ECRIT_LU = {
     ecrit: [],
     lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs'],
     raison:
-      'aucune écriture dans les scripts atteints ; LIT Source/ (134 chapitres mesurés) et son stock ' +
+      'aucune écriture dans les scripts atteints ; LIT Source/ et son stock ' +
       'scripts/raw/empty-line-code-refs-stock.json',
   },
   'raw:check-folio-continuity': {

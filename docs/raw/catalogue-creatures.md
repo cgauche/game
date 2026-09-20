@@ -11487,4 +11487,4 @@ Les doppelgängers semblent incapables de se reproduire. Ils ont donc sans doute
 **Description :** la « véritable » apparence d'un doppelgänger est parfaitement hideuse. Ce sont des bipèdes humanoïdes de 1,80 m en moyenne. Ils ont l'air de ne pas avoir de peau : de l'extérieur, on peut voir leurs muscles, leurs artères, et certains de leurs organes.
 
 \*\* Ne s'applique que si sa véritable apparence est révélée
-<!-- sources-empreinte: 719d7248f610987d3f6e4bac5067ab93f381b043 (130 fichiers, 17 dossiers) corps: 8cd18cfe9639c0e9c6da96bb3b58cf7d3cffb4c7 -->
+<!-- sources-empreinte: fb62f170bfef4d53365fbea37af093258e72eb81 (130 fichiers, 17 dossiers) corps: 8cd18cfe9639c0e9c6da96bb3b58cf7d3cffb4c7 -->

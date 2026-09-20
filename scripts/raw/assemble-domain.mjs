@@ -3,16 +3,50 @@
 // Le champ Implemente des topics est DERIVE du code par build-implemente (#487) : l'assembleur ne
 // pose qu'un PLACEHOLDER nu (`**Implémente :** (non implémenté)`) par topic, jamais une carte
 // code->regle ni un bilan de fidelite manuscrits (sections d'etat supprimees #507 — code-map.md eradique).
+// CŒUR — l'entrée PORTE le cœur de règles de son run (`coeur`, clé de `src/data/books.json`) :
+// l'assembleur le NOMME dans l'en-tête au lieu d'une édition écrite en dur, et il REFUSE d'écrire
+// sur une fiche existante dont les livres de CŒUR cités relèvent d'un AUTRE cœur — sans quoi un run
+// écraserait la fiche d'un autre corps de règles, ou produirait la fiche à deux cœurs que
+// `reconcile.mjs` (`melangesDeCoeur`) fait rougir. OÙ vit la fiche d'un second cœur n'est PAS
+// tranché ici : l'assembleur refuse, il ne route pas.
 // Usage : node scripts/raw/assemble-domain.mjs <output.json> [Titre si mono]
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { coeurDe, looseRe, readText } from './_lib.mjs'
 
-const [, , jsonPath, titleArg] = process.argv
-if (!jsonPath) { console.error('usage: node scripts/raw/assemble-domain.mjs <output.json> [Titre]'); process.exit(1) }
+/** Les cœurs de règles qu'un texte de fiche CITE, par ses mentions de chapitre — PUR. */
+export function coeursCites(texte) {
+  const trouves = new Set()
+  for (const m of texte.matchAll(looseRe())) {
+    const coeur = coeurDe(m[1])
+    if (coeur) trouves.add(coeur)
+  }
+  return [...trouves].sort()
+}
 
-const parsed = JSON.parse(readFileSync(jsonPath, 'utf8'))
-const root = parsed.result || parsed
-const list = root.domains && Array.isArray(root.domains) ? root.domains : [root]
+/** Le cœur d'un rendu de workflow, ou LEVE en nommant la cause : il ne se devine pas. PUR. */
+export function coeurDuRendu(data, racine = {}, source = '<entrée>') {
+  const coeur = data.coeur ?? racine.coeur
+  if (typeof coeur !== 'string' || !coeur)
+    throw new Error(
+      `assemble-domain: le rendu de workflow ${source} ne porte pas son \`coeur\` — l'en-tête d'une `
+      + 'fiche NOMME le corps de règles qu\'elle synthétise, et il ne se devine pas depuis le JSON',
+    )
+  return coeur
+}
+
+/** Refuse d'écraser une fiche existante d'un AUTRE cœur — prédicat GÉNÉRAL, aucun cœur nommé. */
+export function refuserSiAutreCoeur(path, coeur) {
+  if (!existsSync(path)) return
+  const autres = coeursCites(readText(path)).filter((c) => c !== coeur)
+  if (!autres.length) return
+  throw new Error(
+    `assemble-domain: ${path} cite déjà le(s) cœur(s) ${autres.join(', ')} et ce run porte le cœur `
+    + `${coeur} — refus d'écrire : une fiche synthétise UN corps de règles (écraser perdrait l'autre, `
+    + 'fusionner produirait la fiche à deux cœurs que `raw:reconcile` fait rougir)',
+  )
+}
 
 const slug = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 -]/g, '').trim().replace(/\s+/g, '-')
 
@@ -26,7 +60,8 @@ function withPlaceholderField(md) {
   return `${stripped}\n\n${IMPLEMENTE_PLACEHOLDER}`
 }
 
-function assemble(data) {
+export function assemble(data, { racine = {}, source = '<entrée>', titleArg } = {}) {
+  const coeur = coeurDuRendu(data, racine, source)
   const domain = data.domain
   const title = data.title || titleArg || (domain.charAt(0).toUpperCase() + domain.slice(1))
   const topics = data.topics || []
@@ -44,7 +79,7 @@ function assemble(data) {
 
   const out = `# Atlas RAW — ${title}
 
-> Référentiel **autosuffisant** des règles WFRP4 (RAW), consolidé sur les 14 livres autorisés, à usage
+> Référentiel **autosuffisant** des règles du cœur **${coeur}** (RAW), consolidé sur les livres autorisés, à usage
 > d'agent (répondre + auditer le code sans rouvrir les livres). Chaque règle cite \`LIVRE NN l.X-Y\`
 > (last-recours = la source). Abréviations : [\`sources.md\`](sources.md). Index : [\`00-index.md\`](00-index.md).
 >
@@ -69,10 +104,22 @@ ${autre}
 
 *Couverture du survey* : ${counts}.
 `
+  const path = join('docs/raw', domain + '.md')
+  refuserSiAutreCoeur(path, coeur)
   mkdirSync('docs/raw', { recursive: true })
-  writeFileSync(join('docs/raw', domain + '.md'), out, 'utf8')
-  return { domain, topics: topics.length }
+  writeFileSync(path, out, 'utf8')
+  return { domain, topics: topics.length, coeur }
 }
 
-const results = list.map(assemble)
-for (const r of results) console.log(`wrote docs/raw/${r.domain}.md — ${r.topics} topics`)
+function main() {
+  const [, , jsonPath, titleArg] = process.argv
+  if (!jsonPath) { console.error('usage: node scripts/raw/assemble-domain.mjs <output.json> [Titre]'); process.exit(1) }
+  const parsed = JSON.parse(readFileSync(jsonPath, 'utf8'))
+  const racine = parsed.result || parsed
+  const list = racine.domains && Array.isArray(racine.domains) ? racine.domains : [racine]
+  for (const r of list.map((d) => assemble(d, { racine, source: jsonPath, titleArg })))
+    console.log(`wrote docs/raw/${r.domain}.md — ${r.topics} topics (cœur ${r.coeur})`)
+}
+
+const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+if (isMain) main()

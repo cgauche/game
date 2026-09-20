@@ -18,7 +18,7 @@ donc une ref de l'Atlas pointe le **même** endroit que le code.
 
 | Abrév. | Livre | Dossier `Source/` | Rôle |
 |---|---|---|---|
-| **LDB** | Livre de base (version corrigée) | `Warhammer v4 - Livre de base version corrigee/` | Cœur des règles (85 chapitres) |
+| **LDB** | Livre de base (version corrigée) | `Warhammer v4 - Livre de base version corrigee/` | Cœur des règles |
 | **ADE I** | Les Archives de l'Empire, vol. 1 | `Warhammer v4 - Les archives de l'Empire volume 1/` | Carrières, talents, objets, créatures |
 | **ADE II** | Les Archives de l'Empire, vol. 2 | `Warhammer v4 - Les archives de l'Empire volume 2/` | Ogres, carrières, talents, créatures |
 | **AA** | Aux Armes (*Up in Arms*) | `WH - V4 - Aux Armes/` | Combat & armes, talents, sièges, montures |

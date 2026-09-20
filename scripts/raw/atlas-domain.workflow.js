@@ -1,11 +1,11 @@
 export const meta = {
   name: 'atlas-raw-fanout',
-  description: "Atlas RAW AUTONOME. Par domaine : Cadrage (auto-decouverte des chapitres) -> Cartographie -> Taxonomie -> Survey 14 livres -> Synthese (tables verbatim) -> Boucle d'audit completude+dedup (loop-until-dry) -> Verif fidelite -> correction fidelite. Le champ Implemente des fiches est DERIVE du code par build-implemente (#487) — le workflow ne pose qu'un placeholder. Traite un LOT de domaines (liste embarquee BATCH). Zero config par domaine.",
+  description: "Atlas RAW AUTONOME. Le PERIMETRE (coeur de regles + livres, avec leur langue) ENTRE par `args`, projete de src/data/books.json par `node scripts/raw/workflow-args.mjs <coeur>` : le script ne nomme aucun livre. Par domaine : Cadrage (auto-decouverte des chapitres) -> Cartographie -> Taxonomie -> Survey de tous les livres du perimetre -> Synthese (tables verbatim) -> Boucle d'audit completude+dedup (loop-until-dry) -> Verif fidelite -> correction fidelite. Le champ Implemente des fiches est DERIVE du code par build-implemente (#487) — le workflow ne pose qu'un placeholder. Traite un LOT de domaines (liste embarquee BATCH). Zero config par domaine.",
   phases: [
     { title: 'Cadrage', detail: 'auto-decouverte des chapitres du domaine (index)', model: 'sonnet' },
     { title: 'Cartographie', detail: 'inventaire exhaustif a couvrir', model: 'sonnet' },
     { title: 'Taxonomie', detail: 'topics couvrant tout l inventaire', model: 'opus' },
-    { title: 'Survey', detail: 'consolidation 14 livres', model: 'haiku/sonnet' },
+    { title: 'Survey', detail: 'consolidation de tous les livres du perimetre', model: 'haiku/sonnet' },
     { title: 'Synthese', detail: 'entrees autosuffisantes, tables verbatim', model: 'opus' },
     { title: 'Audit', detail: 'completude+dedup en boucle (loop-until-dry)', model: 'opus' },
     { title: 'Verif', detail: 'fidelite + correction', model: 'sonnet/opus' },
@@ -39,25 +39,40 @@ const DOMAINS = {
 }
 
 const MAXLOOPS = 3
+const CARTE_DOMAINES = Object.entries(DOMAINS).map(([cle, titre]) => '- ' + cle + ' : ' + titre).join('\n')
 
-const BOOKS = [
-  { ab: 'LDB',        dir: "Source/Warhammer v4 - Livre de base version corrigee" },
-  { ab: 'ADE I',      dir: "Source/Warhammer v4 - Les archives de l'Empire volume 1" },
-  { ab: 'ADE II',     dir: "Source/Warhammer v4 - Les archives de l'Empire volume 2" },
-  { ab: 'AA',         dir: "Source/WH - V4 - Aux Armes" },
-  { ab: 'ZI',         dir: "Source/WH - V4 - Le zoo imperial" },
-  { ab: 'MCLB'      , dir: "Source/Warhammer v4 - Middenheim la cite du Loup Blanc" },
-  { ab: 'EDO',        dir: "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre" },
-  { ab: 'EDOC',       dir: "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon" },
-  { ab: 'MSR',         dir: "Source/Warhammer v4 - 2.0 Mort sur le Reik" },
-  { ab: 'MSRC',        dir: "Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon" },
-  { ab: 'PDT',         dir: "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone" },
-  { ab: 'ACE',        dir: "Source/Warhammer v4 - Aldorf la Couronne de l'Empire" },
-  { ab: 'AU1',  dir: "Source/Warhammer v4 - Aventures a Ubersreik" },
-  { ab: 'NADJ',      dir: "Source/Warhammer v4 - Nuits agitees & dures journees" },
-]
+// ---- PERIMETRE, recu du lanceur par `args` ----
+// Le script ne nomme AUCUN livre : le registre lui ENTRE, projete de `src/data/books.json` par
+// `node scripts/raw/workflow-args.mjs <coeur>` (#1825). Chaque defaut de forme LEVE en le NOMMANT :
+// un perimetre devine ferait survoler des livres entiers sans qu'aucun rapport ne le dise.
+if (typeof args === 'undefined' || args === null || typeof args !== 'object' || Array.isArray(args)) {
+  throw new Error('atlas-domain: `args` absent ou non-objet — le lanceur doit passer le perimetre rendu par `node scripts/raw/workflow-args.mjs <coeur>` : { coeur, livres: [{ ab, dir, coeur, language }] }')
+}
+const COEUR = args.coeur
+if (typeof COEUR !== 'string' || !COEUR) {
+  throw new Error('atlas-domain: `args.coeur` absent ou non textuel — le coeur de regles du perimetre ne se devine pas')
+}
+const BOOKS = Array.isArray(args.livres) ? args.livres : []
+if (!BOOKS.length) {
+  throw new Error('atlas-domain: `args.livres` absent ou vide — aucun livre a parcourir pour le coeur « ' + COEUR + ' »')
+}
+for (const b of BOOKS) {
+  const manque = ['ab', 'dir', 'language'].filter((k) => !b || typeof b[k] !== 'string' || !b[k])
+  if (manque.length) {
+    throw new Error('atlas-domain: une entree de `args.livres` sans ' + manque.map((k) => '`' + k + '`').join(', ') + ' : ' + JSON.stringify(b))
+  }
+}
+// Le livre de REFERENCE du perimetre = son livre de coeur ; aucun repli nomme.
+const REFERENCE = BOOKS.find((b) => b.coeur === COEUR)
+if (!REFERENCE) {
+  throw new Error('atlas-domain: aucun livre de coeur « ' + COEUR + ' » dans `args.livres` — le livre de reference du perimetre ne se devine pas')
+}
 const dirOf = (ab) => (BOOKS.find((b) => b.ab === ab) || {}).dir
-const bookMap = BOOKS.map((b) => '- ' + b.ab + ' = ' + b.dir).join('\n')
+const bookMap = BOOKS.map((b) => '- ' + b.ab + ' = ' + b.dir + ' (langue : ' + b.language + ')').join('\n')
+const LANGUES = [...new Set(BOOKS.map((b) => b.language))].join(', ')
+// #1816 — fiche `user-doctrine-edition-5e-coeur-remplace-ldb-raw-sauf-errata`.
+const LANGUE_FICHE = 'LANGUE DE LA FICHE : la SYNTHESE que tu rediges est en FRANCAIS parfaitement accentue.'
+const LANGUE_CITATION = 'LANGUE DES CITATIONS : tout ce qui vient du livre — citation, intitule de regle, cellule de table, terme et ABREVIATION de jeu — reste VERBATIM dans la langue de CE livre (' + LANGUES + ' selon le livre, cf. le mapping), jamais traduit ni francise. Une table se transcrit dans sa langue d origine.'
 const slug = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 -]/g, '').trim().replace(/\s+/g, '-').slice(0, 48)
 
 const CADRAGE_SCHEMA = { type: 'object', properties: { coverageRefs: { type: 'array', items: { type: 'object', properties: { ab: { type: 'string' }, nn: { type: 'string' } }, required: ['ab', 'nn'] } }, sonnetBooks: { type: 'array', items: { type: 'string' } } }, required: ['coverageRefs'] }
@@ -71,14 +86,14 @@ const VERIFY_SCHEMA = { type: 'object', properties: { topicId: { type: 'string' 
 const STRUCT = [
   '## <titre>',
   '',
-  '<synthese fidele et COMPLETE, FR parfaitement accentue, aussi longue que necessaire pour etre autosuffisante. ZERO invention.>',
+  '<synthese fidele et COMPLETE, en FRANCAIS parfaitement accentue, aussi longue que necessaire pour etre autosuffisante. ZERO invention.>',
   '',
-  '<TABLES VERBATIM en Markdown quand la regle est une table (jamais reduites aux bornes), chacune suivie de sa ref.>',
+  '<TABLES VERBATIM en Markdown quand la regle est une table (jamais reduites aux bornes), transcrites dans la LANGUE DU LIVRE, chacune suivie de sa ref.>',
   '',
   '**Sources RAW** :',
   '- `<ABBR NN l.X-Y>` — <ce que precise ce passage> (CONSOLIDE tous livres)',
   '',
-  '> « citation verbatim quand le mot exact compte » — `<ABBR NN l.X>`',
+  '> « citation verbatim quand le mot exact compte, dans la LANGUE DU LIVRE cite » — `<ABBR NN l.X>`',
   '',
   '**Voir aussi** : <topics lies>',
   // Le champ Implemente est DERIVE du code par build-implemente (#487) : le workflow ne pose qu'un
@@ -88,12 +103,15 @@ const STRUCT = [
 
 function cadragePrompt(dom) {
   return [
-    'CADRAGE du domaine "' + dom.title + '" (id ' + dom.domain + ') pour l Atlas RAW WFRP4 (VF). Tu decouvres TOUS les chapitres (tous livres) qui contiennent des regles de ce domaine.',
-    'Lis les index : "' + dirOf('LDB') + '/00 - Index.md" (85 chapitres, OBLIGATOIRE) puis les "00 - Index.md" des autres livres si pertinents. Grep au besoin les termes du domaine dans le LDB pour confirmer.',
+    'CADRAGE du domaine "' + dom.title + '" (id ' + dom.domain + ') pour l Atlas RAW du coeur de regles « ' + COEUR + ' ». Tu decouvres TOUS les chapitres (tous les livres du perimetre ci-dessous) qui contiennent des regles de ce domaine.',
+    'Lis les index : "' + REFERENCE.dir + '/00 - Index.md" (livre de REFERENCE du perimetre, ' + REFERENCE.ab + ', OBLIGATOIRE) puis les "00 - Index.md" des autres livres si pertinents. Grep au besoin les termes du domaine dans le livre de reference pour confirmer.',
     'Mapping ABBR -> dossier :',
     bookMap,
     '',
-    'Renvoie coverageRefs = SEULEMENT le(s) chapitre(s) DEDIE(s) au domaine (1 a 3 MAXIMUM, nn = prefixe du fichier). EXCLUS imperativement tout chapitre qui est le FOYER d un AUTRE domaine (ex. Traumatisme = LDB 18 SEUL ; PAS 13 Combat, PAS 16 Etats, PAS 17 Destin, PAS 62/63 Armes/Armures — ces regles voisines seront cross-referencees en « Voir aussi », jamais re-couvertes ici). Ajoute uniquement un chapitre de SUPPLEMENT vraiment dedie au domaine (ex. systeme alternatif). Le but est un domaine ETROIT, sans chevauchement. sonnetBooks = livres DENSES pour CE domaine.',
+    'Les domaines de l Atlas — le TIEN est "' + dom.domain + '" ; les chapitres-FOYERS de tout AUTRE domaine sont HORS de ton perimetre :',
+    CARTE_DOMAINES,
+    '',
+    'Renvoie coverageRefs = SEULEMENT le(s) chapitre(s) DEDIE(s) au domaine (1 a 3 MAXIMUM, nn = prefixe du fichier). EXCLUS imperativement tout chapitre qui est le FOYER d un AUTRE domaine de la liste ci-dessus : ces regles voisines seront cross-referencees en « Voir aussi », jamais re-couvertes ici. Ajoute uniquement un chapitre de SUPPLEMENT vraiment dedie au domaine (p. ex. un systeme alternatif). Le but est un domaine ETROIT, sans chevauchement. sonnetBooks = livres DENSES pour CE domaine.',
     'Renvoie { coverageRefs, sonnetBooks }.',
   ].join('\n')
 }
@@ -118,19 +136,21 @@ function taxoPrompt(dom, inventory) {
 
 function surveyPrompt(dom, b, TOPICS) {
   return [
-    'Extracteur de REGLES WFRP4 (VF), domaine "' + dom.title + '". Livre : ' + b.ab + ', dossier "' + b.dir + '".',
+    'Extracteur de REGLES du coeur « ' + COEUR + ' », domaine "' + dom.title + '". Livre : ' + b.ab + ' (langue : ' + b.language + '), dossier "' + b.dir + '".',
     'Repere TOUS les passages-regles du domaine dans CE livre (Glob "' + b.dir + '/*.md", lis 00 - Index.md + chapitres pertinents EN ENTIER ; ne te limite pas, sois exhaustif ; survole seulement l intrigue de scenario).',
     'TOPICS (tag le plus proche ; sinon topicId="autre" + suggestion dans gist) :',
     TOPICS.map((t) => '- ' + t.id + ' : ' + t.t).join('\n'),
-    'Pour chaque passage REELLEMENT lu : { topicId, ref ("' + b.ab + ' <NN> l.<debut>-<fin>", lignes reelles), gist (1 phrase) }. N invente rien ; si rien, hits:[]. Renvoie { hits }.',
+    'Pour chaque passage REELLEMENT lu : { topicId, ref ("' + b.ab + ' <NN> l.<debut>-<fin>", lignes reelles), gist (1 phrase, en francais) }. Les termes de jeu cites restent dans la langue du livre (' + b.language + '), jamais traduits. N invente rien ; si rien, hits:[]. Renvoie { hits }.',
   ].join('\n')
 }
 
 function synthPrompt(dom, t, hits, covers) {
-  const hitText = hits.length ? hits.map((h) => '- [' + h.book + '] ' + h.ref + ' — ' + h.gist).join('\n') : '(aucun candidat — localise via Grep/Read, surtout le LDB)'
+  const hitText = hits.length ? hits.map((h) => '- [' + h.book + '] ' + h.ref + ' — ' + h.gist).join('\n') : '(aucun candidat — localise via Grep/Read, surtout le livre de reference ' + REFERENCE.ab + ')'
   const cov = (covers && covers.length) ? covers.join(' ; ') : '(voir le titre)'
   return [
-    'Tu rediges UNE entree de l Atlas RAW : referentiel WFRP4 (VF) AUTOSUFFISANT — repondre a toute question ET auditer le code SANS ouvrir les livres. Domaine : ' + dom.title + '. Topic : "' + t.t + '" (id ' + t.id + ').',
+    'Tu rediges UNE entree de l Atlas RAW : referentiel AUTOSUFFISANT du coeur de regles « ' + COEUR + ' » — repondre a toute question ET auditer le code SANS ouvrir les livres. Domaine : ' + dom.title + '. Topic : "' + t.t + '" (id ' + t.id + ').',
+    'Mapping ABBR -> dossier (et LANGUE de chaque livre) :',
+    bookMap,
     'Ce topic DOIT couvrir : ' + cov,
     'Passages-candidats du survey :',
     hitText,
@@ -141,7 +161,9 @@ function synthPrompt(dom, t, hits, covers) {
     '',
     STRUCT.replace('## <titre>', '## ' + t.t),
     '',
-    'REGLES : ZERO invention (chaque affirmation/case de table soutenue par un passage LU). RESTE DANS LE PERIMETRE du domaine : une regle qui appartient a un AUTRE domaine se met en **Voir aussi**, on ne la re-traite pas ici. TRANSCRIS REELLEMENT les tables ligne par ligne — il est INTERDIT d ecrire « a transcrire »/TODO/un placeholder a la place d une table. Jamais la Boite d Initiation. FR accentue. Les "verbatim" de sources sans VF officielle (AA/ZI = Up in Arms/Imperial Zoo) sont des TRADUCTIONS : ecris « traduit de » et non « verbatim ». Refs/code entre backticks.',
+    'REGLES : ZERO invention (chaque affirmation/case de table soutenue par un passage LU). RESTE DANS LE PERIMETRE du domaine : une regle qui appartient a un AUTRE domaine se met en **Voir aussi**, on ne la re-traite pas ici. TRANSCRIS REELLEMENT les tables ligne par ligne — il est INTERDIT d ecrire « a transcrire »/TODO/un placeholder a la place d une table. N utilise que les livres du perimetre ci-dessus. Refs/code entre backticks.',
+    LANGUE_FICHE,
+    LANGUE_CITATION,
     'Renvoie { topicId:"' + t.id + '", title:"' + t.t + '", markdown, refs:[...], codeHint }.',
   ].join('\n')
 }
@@ -170,7 +192,9 @@ function augmentPrompt(dom, existingMd, title, topicId, gaps) {
     'POINTS A TRAITER (lis la source aux refs ; transcris/ajoute/corrige pour de vrai ; pour un doublon, retire la redite et renvoie a l autre topic) :',
     gaps.map((g) => '- (' + g.kind + ') ' + g.what + (g.ref ? ' [' + g.ref + ']' : '') + (g.fix ? ' -> ' + g.fix : '')).join('\n'),
     '',
-    'Produis l entree COMPLETE et autosuffisante (structure ci-dessous), tables VERBATIM ligne par ligne. ZERO invention. FR accentue.',
+    'Produis l entree COMPLETE et autosuffisante (structure ci-dessous), tables VERBATIM ligne par ligne. ZERO invention.',
+    LANGUE_FICHE,
+    LANGUE_CITATION,
     '',
     STRUCT.replace('## <titre>', '## ' + title),
     '',
@@ -183,7 +207,7 @@ function verifyPrompt(dom, entry) {
     'VERIF de fidelite (regle 1 : zero invention), domaine ' + dom.title + '. CONSULTATIF.',
     'TITRE : ' + entry.title + '\nREFS : ' + (entry.refs || []).join(' | '),
     'MARKDOWN :\n' + entry.markdown,
-    'Pour CHAQUE ref, ouvre la source (mapping ci-dessous), LIS, confirme. Verifie SPECIALEMENT les TABLES/valeurs transcrites (recopie exacte). Traque inventions, lignes fausses, valeurs/tables erronees, autre systeme, refs introuvables, label « verbatim » sur une traduction.',
+    'Pour CHAQUE ref, ouvre la source (mapping ci-dessous), LIS, confirme. Verifie SPECIALEMENT les TABLES/valeurs transcrites (recopie exacte). Traque inventions, lignes fausses, valeurs/tables erronees, autre systeme, refs introuvables, livre hors perimetre, et toute citation TRADUITE la ou le verbatim de la langue du livre est exige.',
     bookMap,
     'Renvoie { topicId:"' + entry.topicId + '", faithful, issues:[...] }.',
   ].join('\n')
@@ -219,8 +243,9 @@ async function runDomain(domain) {
 
   phase('Cadrage')
   const cad = await agent(cadragePrompt(dom), { label: dom.domain + ':cadrage', phase: 'Cadrage', model: 'sonnet', schema: CADRAGE_SCHEMA })
-  const COVERAGE = (cad && cad.coverageRefs && cad.coverageRefs.length) ? cad.coverageRefs : [{ ab: 'LDB', nn: '12' }]
-  const SONNET = new Set(['LDB', ...((cad && cad.sonnetBooks) || [])])
+  const COVERAGE = (cad && cad.coverageRefs) || []
+  if (!COVERAGE.length) { log(dom.title + ' — cadrage VIDE (aucun chapitre dedie rendu), domaine saute'); return null }
+  const SONNET = new Set([REFERENCE.ab, ...((cad && cad.sonnetBooks) || [])])
   log(dom.title + ' — cadrage : ' + COVERAGE.map((r) => r.ab + r.nn).join(',') + ' ; denses=' + [...SONNET].join(','))
 
   phase('Cartographie')
@@ -295,5 +320,6 @@ for (const d of BATCH) {
   const res = await runDomain(d)
   if (res) domains.push(res)
 }
-log('Lot termine : ' + domains.map((d) => d.domain + '(' + d.topics.length + 't' + (d.lastAuditDry ? ',sec' : '') + ')').join(' · '))
-return { domains }
+log('Lot termine (coeur ' + COEUR + ', ' + BOOKS.length + ' livre(s), supplements ' + (args.supplements === undefined ? 'non dit' : String(args.supplements)) + ') : ' + domains.map((d) => d.domain + '(' + d.topics.length + 't' + (d.lastAuditDry ? ',sec' : '') + ')').join(' · '))
+// Le rendu PORTE son coeur : `assemble-domain.mjs` refuse d ecrire une fiche sans lui.
+return { coeur: COEUR, supplements: args.supplements === undefined ? null : args.supplements, domains }

@@ -15,7 +15,7 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { computeReconciliation, renderReport, trousDurs, ecartsTrousDurs, lireStock, STOCK_PATH, PREFIXE_B2, decodeCle } from './reconcile.mjs'
+import { computeReconciliation, renderReport, trousDurs, ecartsTrousDurs, lireStock, STOCK_PATH, PREFIXE_B2, decodeCle, melangesDeCoeur } from './reconcile.mjs'
 import { BOOKS, coeurDe, coeursDe } from './_lib.mjs'
 import { parseFiche, registresDeFiches, validerDette, orphelinsDeDette } from './build-implemente.mjs'
 
@@ -636,4 +636,32 @@ test('cliquet : chaque entrée du stock nomme ses SITES, son LOT et sa DATE (jam
 test('cliquet : le fichier de stock ABSENT vaut tolérance ZÉRO (lireStockJson), jamais un stock ouvert', () => {
   assert.deepEqual(lireStock(join(tmpdir(), 'stock-qui-nexiste-pas.json')), {})
   assert.ok(STOCK_PATH.endsWith('reconciliation-stock.json'))
+})
+
+// ── MÉLANGE DE CŒURS — une fiche de l'Atlas synthétise UN corps de règles ─────────────────────
+// Sigles de FIXTURE : un banc qui recopierait des sigles réels réintroduirait la table de livres que
+// #1825 vient de sortir du code.
+test('melangesDeCoeur : une fiche qui ne cite qu’UN cœur (même par deux livres) n’est pas un mélange', () => {
+  const parFiche = new Map([
+    ['combat', new Map([['alpha', new Set(['BKA', 'BKA2'])]])],
+    ['magie', new Map()],
+  ])
+  assert.deepEqual(melangesDeCoeur(parFiche), [])
+})
+
+test('melangesDeCoeur : une fiche qui cite DEUX cœurs est nommée, avec ses deux cœurs et leurs livres', () => {
+  const parFiche = new Map([
+    ['magie', new Map([['beta', new Set(['BKB'])], ['alpha', new Set(['BKA'])]])],
+    ['combat', new Map([['alpha', new Set(['BKA'])]])],
+  ])
+  assert.deepEqual(melangesDeCoeur(parFiche), [{
+    fiche: 'magie',
+    coeurs: [{ coeur: 'alpha', livres: ['BKA'] }, { coeur: 'beta', livres: ['BKB'] }],
+  }])
+})
+
+test('arbre réel : aucune fiche de l’Atlas ne cite deux cœurs (garde née verte, #1825)', () => {
+  const { melanges, fichesJugees } = computeReconciliation()
+  assert.ok(fichesJugees > 0, 'aucune fiche ne cite de livre de cœur — la garde ne mesure rien')
+  assert.deepEqual(melanges, [])
 })
