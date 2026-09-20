@@ -34,6 +34,8 @@ The rules also use 1d100, a roll from 1–100 made with two d10s. Designate one 
 
 In general, low rolls give successful results. So, whether you're rolling a d10 or a d100, you want to get as close to 01 as possible.
 
+# <span id="page-6-0"></span>**Using This Book**
+
 You don't need to read this book cover to cover to get started. Depending on whether you intend to create a Character or GM a game for your friends, you may wish to vary your reading order.
 
 - 0 **Character Building:** A guide to making your Character
@@ -62,9 +64,9 @@ Familiarise yourself with **Chapter 10: Glorious Reikland**, to get a feel for t
 
 # **The Rules of the Road**
 
-<span id="page-6-0"></span>I **Using This Book Chapter 5: Rules** explains how the game actually works. For everything from fighting orcs to picking pockets, smoothtalking nobles to barrelling down cobbled streets in a breakneck chase, you'll find rules here on how to do it. It's important for both players and the Gamemaster to understand these rules in order to facilitate a smooth game.
+**Chapter 5: Rules** explains how the game actually works. For everything from fighting orcs to picking pockets, smooth-talking nobles to barrelling down cobbled streets in a breakneck chase, you'll find rules here on how to do it. It's important for both players and the Gamemaster to understand these rules in order to facilitate a smooth game.
 
-> However, you can get away with reading just two pages (130- 131), especially for your first few sessions.
+> However, you can get away with reading just two pages (130-131), especially for your first few sessions.
 
 #### **WARHAMMER FANTASY ROLEPLAY 5TH EDITION**
 
@@ -128,9 +130,23 @@ Ogres are much in demand throughout the Empire as bodyguards, mercenaries, and s
 
 Beyond our borders, the Empire is surrounded by peoples of varying degrees of usefulness and good sense. To the west lies Bretonnia, a hidebound and somewhat theatrical kingdom, though one which can generally be relied upon to oppose worse sorts of people. The Wasteland, having recently separated itself from Imperial administration, is chiefly concerned with commerce and therefore behaves sensibly whenever there is money to be made. Tilea provides excellent mercenaries, though they do seem to spend an extraordinary amount of time fighting one another. To the east, Kislev remains an intermittent ally, its hardy people understandably occupied with their own affairs.
 
-On The Empire's Resilience When Sigmar founded his Empire, he forged the realm through might of arms and triumph of diplomacy, leaving behind a nation so soundly established that it has endured for twenty-five centuries. Our current Emperor, Karl Franz, stands in the rightful succession to that great founder, and occasional periods of disagreement, competing claims, civil wars, and other temporary administrative complications should not distract from this remarkable continuity. No nation survives so long without possessing an excellent foundation. Even nature herself has helpfully arranged our defences. In the south and west, the mountains rise like the walls of a mighty fortress, while in the north the Sea of Claws provides a most convenient moat. Between them lies the rich and fertile heartland of the Empire, where millions of citizens go about their daily business under the reassuring protection of Imperial law. Our forests, too, provide valuable natural protection. The mighty woods that divide our towns are extensive enough to discourage casual invasion and supply timber, game and other useful resources. Naturally, one should exercise a little common sense when wandering alone beneath their canopy. There are bandits, wolves, the occasional beastman, and other unfortunate examples of wildlife that have failed to appreciate the benefits of civilisation. From time to time a village is abandoned, a traveller goes missing, or some woodland settlement suffers an unfortunate fire. Such incidents are regrettable, certainly, but hardly evidence of widespread insecurity. Indeed, the fact that Imperial citizens continue to live, farm, trade, and raise families throughout these lands is proof of the protection they enjoy. One cannot expect every tree to have a watchman.
+# On The Empire's Resilience
 
-Threats Without and Within Our glorious Empire is beset by myriad threats, both beyond its borders and lurking in our wild places. That so many seek to tear down what we have built is proof that our civilisation is the envy of all others. The notorious Black Fire Pass occasionally disgorges slavering hordes of orcs and goblins intent on sweeping through our lands in a green tide of destruction. Across the Sea of Claws dwell the warriors of the northern wastes, who make war on honest folk in the name of their cruel gods. Sailors tell of black-clad elves seizing whole crews and carrying them away in gargantuan vessels. Within our borders, tribes of vicious goblins skulk in the deep forests and braying herds of twisted beastmen prey upon isolated villages, which is why sensible settlements are enclosed by stout palisades. Many an explorer or merchant has been set upon from the skies by a hungry griffon or dragged into a mire by the tentacles of a bog octopus. Some even tell of ancient dragons, who dwell deep within mountain lairs, occasionally emerging to menace livestock or roast whole villages alive. There are, of course, bandits, pirates, and other scoundrels who have yet to find respectable employment, while even our cities harbour cutpurses and ne'er-do-wells. As for the tales of mutants and other horrors lurking beneath our streets, I shall leave such fanciful nonsense to those who enjoy frightening themselves in the dark.
+When Sigmar founded his Empire, he forged the realm through might of arms and triumph of diplomacy, leaving behind a nation so soundly established that it has endured for twenty-five centuries. Our current Emperor, Karl Franz, stands in the rightful succession to that great founder, and occasional periods of disagreement, competing claims, civil wars, and other temporary administrative complications should not distract from this remarkable continuity. No nation survives so long without possessing an excellent foundation.
+
+Even nature herself has helpfully arranged our defences. In the south and west, the mountains rise like the walls of a mighty fortress, while in the north the Sea of Claws provides a most convenient moat. Between them lies the rich and fertile heartland of the Empire, where millions of citizens go about their daily business under the reassuring protection of Imperial law.
+
+Our forests, too, provide valuable natural protection. The mighty woods that divide our towns are extensive enough to discourage casual invasion and supply timber, game and other useful resources. Naturally, one should exercise a little common sense when wandering alone beneath their canopy. There are bandits, wolves, the occasional beastman, and other unfortunate examples of wildlife that have failed to appreciate the benefits of civilisation. From time to time a village is abandoned, a traveller goes missing, or some woodland settlement suffers an unfortunate fire. Such incidents are regrettable, certainly, but hardly evidence of widespread insecurity. Indeed, the fact that Imperial citizens continue to live, farm, trade, and raise families throughout these lands is proof of the protection they enjoy. One cannot expect every tree to have a watchman.
+
+# Threats Without and Within
+
+Our glorious Empire is beset by myriad threats, both beyond its borders and lurking in our wild places. That so many seek to tear down what we have built is proof that our civilisation is the envy of all others.
+
+The notorious Black Fire Pass occasionally disgorges slavering hordes of orcs and goblins intent on sweeping through our lands in a green tide of destruction. Across the Sea of Claws dwell the warriors of the northern wastes, who make war on honest folk in the name of their cruel gods. Sailors tell of black-clad elves seizing whole crews and carrying them away in gargantuan vessels.
+
+Within our borders, tribes of vicious goblins skulk in the deep forests and braying herds of twisted beastmen prey upon isolated villages, which is why sensible settlements are enclosed by stout palisades. Many an explorer or merchant has been set upon from the skies by a hungry griffon or dragged into a mire by the tentacles of a bog octopus. Some even tell of ancient dragons, who dwell deep within mountain lairs, occasionally emerging to menace livestock or roast whole villages alive.
+
+There are, of course, bandits, pirates, and other scoundrels who have yet to find respectable employment, while even our cities harbour cutpurses and ne'er-do-wells. As for the tales of mutants and other horrors lurking beneath our streets, I shall leave such fanciful nonsense to those who enjoy frightening themselves in the dark.
 
 # Our Greatest Foe
 

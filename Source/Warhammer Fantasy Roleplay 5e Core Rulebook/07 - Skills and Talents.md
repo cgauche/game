@@ -866,7 +866,41 @@ You can make shots of exceptional accuracy. Ranged Tests you make do not incur a
 
 You are skilled at using your shield to control the flow of battle. Once per Round, while carrying a shield, you may lose Momentum to either grant your shield's AP bonus to an adjacent ally who is not carrying a shield, or, if you win an Opposed Melee Test while attacking or defending, push your opponent up to 2 yards directly away and no longer count as Engaged.
 
-**Sixth Sense** You get a strange feeling whenever danger is near. If you are about to trigger a trap or fall victim to a hidden danger, such as an ambush, collapsing tunnel, or poisoned glass of wine, you may make a **Challenging (+0 SL) Intuition** Test. On a success, you detect the danger at the last possible moment. **Small** You are much shorter than most folk in the Old World. Gain *Size (Small)*. The full rules for different Sizes are found in **Chapter 12: Bestiary** on page 360. **Sniper** Distance is of no import to your shooting skills, and you are just as adept at picking off far away targets as those nearby. You suffer no penalties for shooting at Long Range, and only a -1 SL penalty for shots made at Extreme Range. **Speedreader** You read books at a voracious pace. A single glance is all you require to read a full page of text, and you can easily make your way through even a lengthy tome in a single day. When you make an Extended Research Test, double the SL added by any successful Test you make. **Sprinter** You are a swift runner with a good level of physical fitness. You gain Advantage on Athletics Tests to run and jump. **Step Aside** You are skilled at being where enemy weapons are not. If you successfully use Dodge to defend against an attack, you may move up to 2 yards as you dive away, and no longer count as Engaged. Opponents do not gain a free attack when you do this. **Stone Soup** You are used to getting by with less, and know how to survive lean times. If a member of the party makes a Foraging Test (see page 152), they automatically locate sufficient food to feed you, over and above the number of Characters fed by the Test result, even if the Test fails. **Stout-hearted** No matter how bad things get, you always seem to come back for more. The first time in an encounter you gain one or more *Broken* Conditions, you gain one less. **Slayer** You are undaunted by large enemies and attack them with great gusto. If you Charge a creature whose Size is larger than you, you automatically gain Momentum.
+#### **Sixth Sense**
+
+You get a strange feeling whenever danger is near. If you are about to trigger a trap or fall victim to a hidden danger, such as an ambush, collapsing tunnel, or poisoned glass of wine, you may make a **Challenging (+0 SL) Intuition** Test. On a success, you detect the danger at the last possible moment.
+
+#### **Slayer**
+
+You are undaunted by large enemies and attack them with great gusto. If you Charge a creature whose Size is larger than you, you automatically gain Momentum.
+
+#### **Small**
+
+You are much shorter than most folk in the Old World. Gain *Size (Small)*. The full rules for different Sizes are found in **Chapter 12: Bestiary** on page 360.
+
+#### **Sniper**
+
+Distance is of no import to your shooting skills, and you are just as adept at picking off far away targets as those nearby. You suffer no penalties for shooting at Long Range, and only a -1 SL penalty for shots made at Extreme Range.
+
+#### **Speedreader**
+
+You read books at a voracious pace. A single glance is all you require to read a full page of text, and you can easily make your way through even a lengthy tome in a single day. When you make an Extended Research Test, double the SL added by any successful Test you make.
+
+#### **Sprinter**
+
+You are a swift runner with a good level of physical fitness. You gain Advantage on Athletics Tests to run and jump.
+
+#### **Step Aside**
+
+You are skilled at being where enemy weapons are not. If you successfully use Dodge to defend against an attack, you may move up to 2 yards as you dive away, and no longer count as Engaged. Opponents do not gain a free attack when you do this.
+
+#### **Stone Soup**
+
+You are used to getting by with less, and know how to survive lean times. If a member of the party makes a Foraging Test (see page 152), they automatically locate sufficient food to feed you, over and above the number of Characters fed by the Test result, even if the Test fails.
+
+#### **Stout-hearted**
+
+No matter how bad things get, you always seem to come back for more. The first time in an encounter you gain one or more *Broken* Conditions, you gain one less.
 
 #### **Striding Gait (Terrain)**
 

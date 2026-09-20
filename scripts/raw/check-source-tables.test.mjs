@@ -174,22 +174,12 @@ test('#1825 le rendu du stock est INDIFFÉRENT à l’ordre du registre (registr
 // PLAFOND de la dette (jamais dans la lib de stock : il vit ICI, cf. `scripts/guards/lib/stock.mjs`).
 // Il ne monte QUE par une édition de cette ligne, sous `CLIQUET:` — il n'est pas le compte du jour,
 // il est la borne que le jour ne doit pas franchir.
-// 687 → 664 au lot B2 (#1384) : −25 `span-colle` (famille RETIRÉE — la lib absorbe le marqueur de
-// folio collé, 25 lignes sur 25 mesurées) et +2 `cle-de-ligne-ambigue` NEUVES, NOMMÉES : sous
-// `sansBr`, `Batterie tonnerre<br>de feu` (AA 10 l.185) et `CANON À RÉPÉTITION FEU D'ENFER` (l.210)
-// rejoignent leurs homonymes d'une autre table de la même section — une FUSION de clés, donc une
-// ambiguïté de résolution RÉELLE que le détecteur nomme désormais (4 autres clés se réécrivent sans
-// leur `<br>`, à total constant).
-// 664 → 811 au train #1820 : +147 sites du Core Rulebook 5e, livre ENREGISTRÉ par ce train (81
-// `br-litteral`, 47 `cle-de-ligne-ambigue`, 18 `banniere-suspecte`, 1 `donnee-en-tete`) —
-// l'inventaire d'un livre neuf entre en bloc, il ne décroîtra qu'en repassant le dossier par la
-// chaîne canonique (#1739).
-const PLAFOND = 811
+const PLAFOND = 809
 
 // PLAFOND de la DETTE, distinct du précédent : le fichier de stock est un INVENTAIRE des sites
 // mesurés (il ne décroît qu'en corrigeant `Source/`), la dette est ce qui reste À TRIER — les entrées
 // sans `preuve`. Celle-là descend à CHAQUE preuve lue au PDF, et ne monte que sous `CLIQUET:`.
-const PLAFOND_A_TRIER = 811
+const PLAFOND_A_TRIER = 809
 
 test('stock COMMITTÉ : PLAFOND de la DETTE — « à trier » (entrées sans preuve) ne remonte jamais', () => {
   const { aTrier, verifies } = comptesDeTri(readStock(STOCK_PATH))

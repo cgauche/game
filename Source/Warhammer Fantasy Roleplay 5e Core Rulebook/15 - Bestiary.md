@@ -932,7 +932,7 @@ Fortunately rare, manticores are relentlessly ferocious, driven to clear their t
 
 **Bite:** (60/+8) Lose Momentum to make this Free Attack
 
-**Tail:** (60/+7) Lose Momentum to make this Free Attack, smaller opponents take
+**Tail:** (60/+7) Lose Momentum to make this Free Attack, smaller opponents take a *Prone* Condition if wounded
 
 #### **Armour**
 
@@ -943,8 +943,6 @@ Fortunately rare, manticores are relentlessly ferocious, driven to clear their t
 #### **Skills**
 
 Melee (Brawling) 60, Track 55
-
-a *Prone* Condition if wounded
 
 #### **Traits**
 
@@ -957,6 +955,8 @@ a *Prone* Condition if wounded
 **Territorial:** Protective of a particular area or location, will fight to the death to protect it and will not pursue enemies leaving the area
 
 **Venom (Difficult):** Wounded opponents must pass an **Difficult (-1 SL) Endurance** Test or gain a *Poisoned* Condition
+
+#### **Optional Traits**
 
 *Hatred (Predators), Mutation, Trained (Broken, Magic, Mount)*
 
@@ -2049,15 +2049,21 @@ Climb 60, Endurance 60, Melee (Brawling) 50
 
 *Corruption (Minor), Dark Vision, Disease (Ratte Fever), Mutation, Tail, Tracker, Trained (Broken, Guard, Mount, War)*
 
+# **CREATURE TEMPLATES**
+
+The templates provided here are suggestions for quick ways to create a more forbidding creature able to provide greater challenge to an adventuring party. They represent experienced soldiers, fierce commanders, or wily spellcasters. Following the templates is Ungrakk's Brayherd, a group of Beastmen created using the templates as an example.
+
 # **Leader**
 
 This creature leads a small band of fellows, or acts as a lieutenant to a greater commander of a larger force. They are fierce fighters who also possess some social skills.
 
-|   |     |     |     |     |     | LEADER |     |     |     |     |   |
-|---|-----|-----|-----|-----|-----|--------|-----|-----|-----|-----|---|
-| M | WS  | BS  | S   | T   | I   | Ag     | Dex | Int | WP  | Fel | W |
-| – | +15 | +15 | +15 | +15 | +15 | +15    | –   | –   | +15 | +5  | * |
-|   |     |     |     |     |     | Skills |     |     |     |     |   |
+#### **LEADER**
+
+| M | WS  | BS  | S   | T   | I   | Ag  | Dex | Int | WP  | Fel | W |
+|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|---|
+| – | +15 | +15 | +15 | +15 | +15 | +15 | –   | –   | +15 | +5  | * |
+
+#### **Skills**
 
 Cool +15, Dodge +15, Intimidate +15, Leadership +15, Lore (Warfare) +10, Melee (Any Two) +15, Perception +15
 
@@ -2065,32 +2071,41 @@ Cool +15, Dodge +15, Intimidate +15, Leadership +15, Lore (Warfare) +10, Melee (
 
 Combat Aware, Combat Reflexes, Furious Assault, Inspiring, Resolute, War Leader
 
+*\* Wounds need to be increased due to changes to S, T, and WP.*
+
 # **Commander**
 
 A creature with the Commander template may be a tribal chieftain, great general, or warlord. They are highly skilled warriors and inspiring figures who may lead significant forces.
 
-|   | COMMANDER                                                                  |    |   |   |                         |    |                                      |     |     |     |   |  |  |  |
-|---|----------------------------------------------------------------------------|----|---|---|-------------------------|----|--------------------------------------|-----|-----|-----|---|--|--|--|
-| M | WS                                                                         | BS | S | T | I                       | Ag | Dex                                  | Int | WP  | Fel | W |  |  |  |
-| – |                                                                            |    |   |   | +20 +20 +20 +10 +20 +10 |    | –                                    | –   | +20 | +15 | * |  |  |  |
-|   | Skills                                                                     |    |   |   |                         |    |                                      |     |     |     |   |  |  |  |
-|   |                                                                            |    |   |   |                         |    | Cool +20, Dodge +20, Intimidate +20, |     |     |     |   |  |  |  |
-|   |                                                                            |    |   |   |                         |    |                                      |     |     |     |   |  |  |  |
-|   | Leadership +30, Lore (Warfare) +20, Melee<br>(Any Two) +20, Perception +20 |    |   |   |                         |    |                                      |     |     |     |   |  |  |  |
-|   |                                                                            |    |   |   |                         |    |                                      |     |     |     |   |  |  |  |
-|   | Talents<br>Combat Aware, Combat Reflexes, Furious Assault,                 |    |   |   |                         |    |                                      |     |     |     |   |  |  |  |
+#### **COMMANDER**
 
-Inspiring, Luck, Resolute, Unshakeable, War Leader *\* Wounds need to be increased due to changes to S, T, and WP.*
+| M | WS  | BS  | S   | T   | I   | Ag  | Dex | Int | WP  | Fel | W |
+|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|---|
+| – | +20 | +20 | +20 | +10 | +20 | +10 | –   | –   | +20 | +15 | * |
+
+#### **Skills**
+
+Cool +20, Dodge +20, Intimidate +20, Leadership +30, Lore (Warfare) +20, Melee (Any Two) +20, Perception +20
+
+#### **Talents**
+
+Combat Aware, Combat Reflexes, Furious Assault, Inspiring, Luck, Resolute, Unshakeable, War Leader
+
+*\* Wounds need to be increased due to changes to S, T, and WP.*
 
 # **Soldier**
 
-The Soldier template represents a creature trained for hand-tohand combat
+The Soldier template represents a creature trained for hand-to-hand combat
 
-|   |     |    |     |     |   | SOLDIER |     |     |     |     |   |
-|---|-----|----|-----|-----|---|---------|-----|-----|-----|-----|---|
-| M | WS  | BS | S   | T   | I | Ag      | Dex | Int | WP  | Fel | W |
-| – | +10 | –  | +10 | +10 | – | –       | –   | –   | +10 | –   | * |
-|   |     |    |     |     |   | Skills  |     |     |     |     |   |
+#### **SOLDIER**
+
+| M | WS  | BS | S   | T   | I | Ag | Dex | Int | WP  | Fel | W |
+|---|-----|----|-----|-----|---|----|-----|-----|-----|-----|---|
+| – | +10 | –  | +10 | +10 | – | –  | –   | –   | +10 | –   | * |
+
+#### **Skills**
+
+Cool +10, Dodge +10, Melee (Basic or Polearm) +10
 
 *\* Wounds need to be increased due to changes to S, T, and WP.*
 
@@ -2098,30 +2113,37 @@ The Soldier template represents a creature trained for hand-tohand combat
 
 The creature is skilled in ambushing enemies or harassing them from a distance. They may eschew any armour or extraneous weaponry that might otherwise slow them down.
 
-|   |    |     |   |   | SKIRMISHER |        |     |     |     |     |   |
-|---|----|-----|---|---|------------|--------|-----|-----|-----|-----|---|
-| M | WS | BS  | S | T | I          | Ag     | Dex | Int | WP  | Fel | W |
-| – | –  | +10 | – | – | +10        | +10    | –   | –   | +10 | –   | * |
-|   |    |     |   |   |            | Skills |     |     |     |     |   |
+#### **SKIRMISHER**
 
-Stealth (Rural or Underground) +10
+| M | WS | BS  | S | T | I   | Ag  | Dex | Int | WP  | Fel | W |
+|---|----|-----|---|---|-----|-----|-----|-----|-----|-----|---|
+| – | –  | +10 | – | – | +10 | +10 | –   | –   | +10 | –   | * |
+
+#### **Skills**
+
+Dodge +10, Ranged (Bow, Sling, or Throwing) +10, Stealth (Rural or Underground) +10
+
+*\* Wounds need to be increased due to changes to WP.*
 
 # **Elite**
 
 The creature is a veteran soldier with a few tricks up their sleeve. They may be employed as a shock trooper or bodyguard to leaders or spellcasters. They may well be equipped with better armour and weaponry than generic creatures. Skills and Talents ensure they hit hard when they want to.
 
-|   |                                                           |    |     |     |     | ELITE   |                                         |     |     |     |   |  |
-|---|-----------------------------------------------------------|----|-----|-----|-----|---------|-----------------------------------------|-----|-----|-----|---|--|
-| M | WS                                                        | BS | S   | T   | I   | Ag      | Dex                                     | Int | WP  | Fel | W |  |
-| – | +15                                                       | –  | +15 | +15 | +15 | –       | –                                       | –   | +15 | –   | * |  |
-|   | Skills<br>Cool +15, Dodge +15, Intimidate +10, Leadership |    |     |     |     |         |                                         |     |     |     |   |  |
-|   |                                                           |    |     |     |     | Talents | +5, Melee (Any Two) +15, Perception +15 |     |     |     |   |  |
+#### **ELITE**
+
+| M | WS  | BS | S   | T   | I   | Ag | Dex | Int | WP  | Fel | W |
+|---|-----|----|-----|-----|-----|----|-----|-----|-----|-----|---|
+| – | +15 | –  | +15 | +15 | +15 | –  | –   | –   | +15 | –   | * |
+
+#### **Skills**
+
+Cool +15, Dodge +15, Intimidate +10, Leadership +5, Melee (Any Two) +15, Perception +15
+
+#### **Talents**
+
+Combat Aware, Combat Reflexes, Resolute
 
 *\* Wounds need to be increased due to changes to S, T, and WP.*
-
-*\* Wounds need to be increased due to changes to S, T, and WP.*
-
-*\* Wounds need to be increased due to changes to WP.*
 
 # **Spellcaster**
 

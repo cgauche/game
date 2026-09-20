@@ -45,8 +45,10 @@ committé :
 **Découpage en tranches (reste de #1739).** La session d'extraction produit le PDF par tranches de
 40 pages ; le séparateur `{N}----` portant l'index **absolu** de page quelle que soit la tranche,
 les tranches s'unissent **par page** (une page en double ou un texte hors pagination doivent être
-refusés). **Cet outil d'union n'est pas encore committé** : `marker-split.mjs` prend UN seul `.md`
-et n'unit rien ; il arrivera avec le premier livre ré-extrait (AU1). Les contraintes de machine
+refusés). L'union vit dans `scripts/raw/lib/marker-pages.mjs` : `mdsDeMarker` accepte un `.md` d'un
+tenant comme un dossier de tranches (`<a>-<b>/<pdf>/<pdf>.md`, ordonnées par borne basse) et
+`pagesDeMarker` les unit page par page, en levant sur du texte hors pagination comme sur une page
+extraite deux fois. `marker-split.mjs` la consomme par son 2ᵉ argument. Les contraintes de machine
 citées avec — MAX_PATH (260) dépassé par `<out>/<nom du PDF>/<nom du PDF>.md` et l'échec **après**
 conversion, ~7 Go de pointe, 15-20 s par page CPU, un seul Marker à la fois — sont un **témoignage
 relevé le 2026-09-14** par la session d'extraction, non mesuré ici.
