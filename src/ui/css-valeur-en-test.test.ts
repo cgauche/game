@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { sitesValeurCss } from '../../scripts/guards/lib/cssValeurEnTest.mjs';
+import { estSuiteVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
 
 /**
  * CLIQUET — « un test unitaire ne cite jamais À LA FOIS un sélecteur d'écran et une VALEUR »
@@ -22,7 +23,7 @@ import { sitesValeurCss } from '../../scripts/guards/lib/cssValeurEnTest.mjs';
  */
 describe('cliquet — valeur de design épinglée sur une lecture de CSS, en test unitaire', () => {
   it('aucun test de `src/**` ne compare une déclaration CSS à une valeur de design', () => {
-    const tests = readCorpus(['src'], { exts: ['.ts', '.tsx'], tests: true }).filter((f) => /\.test\.tsx?$/.test(f.rel));
+    const tests = readCorpus(['src'], { exts: ['.ts', '.tsx'], tests: true }).filter((f) => estSuiteVitest(f.rel));
     expect(tests.length, 'aucun test lu : la mesure serait vide').toBeGreaterThan(100);
     const sites = sitesValeurCss(tests).map((s) => `${s.file}:${s.line} — valeur « ${s.valeur} » : ${s.texte}`);
     expect(
