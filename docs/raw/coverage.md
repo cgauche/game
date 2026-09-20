@@ -40,8 +40,8 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 14 | OPTION : FRAPPE MORTELLE | ✅ | 141 (combat.md ×136) |
 | 15 | Deplacement | ✅ | 70 (combat.md ×62) |
 | 16 | Etats | ✅ | 56 (etats.md ×31) |
-| 17 | Destin et Resistance | ✅ | 52 (destin.md ×31) |
-| 18 | Traumatisme | ✅ | 103 (traumatisme.md ×68) |
+| 17 | Destin et Resistance | ✅ | 55 (destin.md ×31) |
+| 18 | Traumatisme | ✅ | 107 (traumatisme.md ×68) |
 | 19 | Corruption | ✅ | 35 (corruption.md ×29) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
 | 21 | Psychologie | ✅ | 53 (psychologie.md ×29) |
@@ -2009,4 +2009,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: 0a750409b3443dc3f21de434407bbe100cc06677 (369 fichiers, 18 dossiers) corps: 00209347bf675ef0cbc2d9259e81bbf09c26e984 -->
+<!-- sources-empreinte: d503fcbc15abd379a284af9bbb2d073bed0701e0 (369 fichiers, 18 dossiers) corps: d51d3e280baa04da2f1c9caa32042b174dd782b2 -->
