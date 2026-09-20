@@ -536,21 +536,21 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.319-521 « EXAMPLE OUTCOMES » — candidat trou de règle, 0 réf
   - ⬜ l.522-553 « SOCIAL TEST DIFFICULTY FACTORS » — candidat trou de règle, 0 réf
   - ⬜ l.554-727 « Making Friends (and Enemies) » — candidat trou de règle, 0 réf
-  - ⬜ l.728-785 « Mistaken Identity » — candidat trou de règle, 0 réf
-  - ⬜ l.786-829 « EXAMPLE DIFFICULTIES OF COMMON INVESTIGATIVE TASKS » — candidat trou de règle, 0 réf
-  - ⬜ l.830-943 « BATTLE TONGUE » — candidat trou de règle, 0 réf
-  - ⬜ l.944-1107 « Tracking » — candidat trou de règle, 0 réf
-  - ⬜ l.1108-1337 « HOW FAR, THOUGH? » — candidat trou de règle, 0 réf
-  - ⬜ l.1338-1392 « Disengaging » — candidat trou de règle, 0 réf
-  - ⬜ l.1393-1788 « 4: Apply Damage » — candidat trou de règle, 0 réf
-  - ⬜ l.1789-1867 « ARM CRITICAL WOUNDS » — candidat trou de règle, 0 réf
-  - ⬜ l.1868-1965 « Broken Bones » — candidat trou de règle, 0 réf
-  - ⬜ l.1966-2041 « Tongue » — candidat trou de règle, 0 réf
-  - ⬜ l.2042-2119 « Itching Pox » — candidat trou de règle, 0 réf
-  - ⬜ l.2120-2214 « Infection » — candidat trou de règle, 0 réf
-  - ⬜ l.2215-2222 « Frenzy » — candidat trou de règle, 0 réf
-  - ⬜ l.2223-2409 « Hatred (Target) » — candidat trou de règle, 0 réf
-  - ⬜ l.2410-2496 « Manifestation Time » — candidat trou de règle, 0 réf
+  - ⬜ l.728-779 « Mistaken Identity » — candidat trou de règle, 0 réf
+  - ⬜ l.780-824 « EXAMPLE DIFFICULTIES OF COMMON INVESTIGATIVE TASKS » — candidat trou de règle, 0 réf
+  - ⬜ l.825-938 « BATTLE TONGUE » — candidat trou de règle, 0 réf
+  - ⬜ l.939-1102 « Tracking » — candidat trou de règle, 0 réf
+  - ⬜ l.1103-1332 « HOW FAR, THOUGH? » — candidat trou de règle, 0 réf
+  - ⬜ l.1333-1387 « Disengaging » — candidat trou de règle, 0 réf
+  - ⬜ l.1388-1783 « 4: Apply Damage » — candidat trou de règle, 0 réf
+  - ⬜ l.1784-1862 « ARM CRITICAL WOUNDS » — candidat trou de règle, 0 réf
+  - ⬜ l.1863-1960 « Broken Bones » — candidat trou de règle, 0 réf
+  - ⬜ l.1961-2036 « Tongue » — candidat trou de règle, 0 réf
+  - ⬜ l.2037-2114 « Itching Pox » — candidat trou de règle, 0 réf
+  - ⬜ l.2115-2203 « Infection » — candidat trou de règle, 0 réf
+  - ⬜ l.2204-2211 « Frenzy » — candidat trou de règle, 0 réf
+  - ⬜ l.2212-2398 « Hatred (Target) » — candidat trou de règle, 0 réf
+  - ⬜ l.2399-2482 « Manifestation Time » — candidat trou de règle, 0 réf
 - **CRB 09** (Between Adventures) :
   - ⬜ l.303-343 « Elves and Yenlui » — candidat trou de règle, 0 réf
   - ⬜ l.344-483 « Change Career » — candidat trou de règle, 0 réf
@@ -2009,4 +2009,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: 067c5e09d0197b00c6962ddaf3065fff6919ecfd (369 fichiers, 18 dossiers) corps: a2f7e6110bcf78a83021a2c5ad0014ab0248fb30 -->
+<!-- sources-empreinte: 0a750409b3443dc3f21de434407bbe100cc06677 (369 fichiers, 18 dossiers) corps: 00209347bf675ef0cbc2d9259e81bbf09c26e984 -->

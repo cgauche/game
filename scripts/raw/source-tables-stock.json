@@ -1,5 +1,5 @@
 {
-  "quoi": "Tables du `Source/` que leur FORME rend inadressables (#1384, épique #1388) : une ENTRÉE par SITE, clé `famille :: fichier :: ref :: occurrence` (régime #1711). Compte par famille à la naissance : br-litteral 470, donnee-en-tete 14, banniere-suspecte 131, cle-de-ligne-ambigue 194. CE FICHIER EST UN INVENTAIRE des sites mesurés, PLAFONNÉ en nombre d'entrées : il ne décroît que quand un site disparaît du `Source/`. La DETTE, elle, est le compte « à trier » — les entrées SANS `preuve` — et celle-là décroît vers zéro, sous son propre plafond (`PLAFOND_A_TRIER`, `check-source-tables.test.mjs`) : une entrée reçoit sa `preuve` (« PDF p.N : … ») + sa `date` le jour où sa forme est lue au PDF et jugée conforme au livre, et elle RESTE (le site existe, il est jugé). PLAN de résorption — B2 : AUCUNE migration de `Source/`. Un `<br>` de cellule est un saut de ligne IMPRIMÉ (GFM n'a pas d'autre forme) : la lib l'absorbe pour l'ADRESSAGE (`sansBr`) et le rend en `\\n` pour une cellule (`brEnSaut`), donc il ne bloque plus une adresse. Son SENS, lui, se lit AU PDF, site par site : une CÉSURE typographique se corrige en espace dans `Source/`, une liste d'items imprimée en colonne se garde telle quelle et se solde par une `preuve` sur son entrée (« PDF p.N : … » + `date`). B3 et suivants : une ZONE par train, corrigée à la main au PDF (geste `docs/ajouter-un-livre-source.md` §7) — `18 - Traumatisme`, `10 - Talents`, `61 - Encombrement`, `62 - Les armes`, `85 - Traits`, `08 - Statut`, `14 - _GoBack`, `40 - Les prières`, `46 - Les règles magiques`, `05 - _gjdgxs` du Livre de base ; zones portées par tickets existants : #1707 (table de Talents dupliquée), #1519 (`51 - Magie du Chaos` mal titré), #678 (EDOC `09 - _GoBack.md`, en-têtes orphelins). Le résidu de SCÉNARIO (hors donnée de règle) est porté par #1731. COUVERTURE DITE de `cle-de-ligne-ambigue` : elle nomme les clés partagées ENTRE tables d'une section — le périmètre d'UN geste (restituer les headings imprimés). Les clés dupliquées DANS une même table et les valeurs non-clés répétées rendent aussi `ligne-ambigue` et restent HORS de cette famille : mesuré le 2026-09-14, 145 ici, 220 au grain « clé dupliquée dans la section », 2 289 au prédicat réel de `rowsMatching` (toute valeur de cellule répétée). LIMITE DITE : `banniere-suspecte` est le résidu que la garde du parseur n'absorbe PAS. Il se ventile (mesure du 2026-09-14) en texte NON majuscule 51, bandeau MAJUSCULE sans rangée de donnée 49 (pour l'essentiel des titres de statbloc de PNJ et leurs rubriques : « ISABELLA — PROPHÈTE (BRONZE 4) », « COMPÉTENCES DE BASE »), une seule lettre 11, aucune lettre 1, et bandeau MAJUSCULE devant une table SANS en-têtes 1 (fourchette en `headers[0]`). Chacun se tranche au PDF, un par un, jamais par un élargissement de la garde qui sauterait un en-tête réel.",
+  "quoi": "Tables du `Source/` que leur FORME rend inadressables (#1384, épique #1388) : une ENTRÉE par SITE, clé `famille :: fichier :: ref :: occurrence` (régime #1711). Compte par famille à la naissance : br-litteral 439, donnee-en-tete 14, banniere-suspecte 129, cle-de-ligne-ambigue 194. CE FICHIER EST UN INVENTAIRE des sites mesurés, PLAFONNÉ en nombre d'entrées : il ne décroît que quand un site disparaît du `Source/`. La DETTE, elle, est le compte « à trier » — les entrées SANS `preuve` — et celle-là décroît vers zéro, sous son propre plafond (`PLAFOND_A_TRIER`, `check-source-tables.test.mjs`) : une entrée reçoit sa `preuve` (« PDF p.N : … ») + sa `date` le jour où sa forme est lue au PDF et jugée conforme au livre, et elle RESTE (le site existe, il est jugé). PLAN de résorption — B2 : AUCUNE migration de `Source/`. Un `<br>` de cellule est un saut de ligne IMPRIMÉ (GFM n'a pas d'autre forme) : la lib l'absorbe pour l'ADRESSAGE (`sansBr`) et le rend en `\\n` pour une cellule (`brEnSaut`), donc il ne bloque plus une adresse. Son SENS, lui, se lit AU PDF, site par site : une CÉSURE typographique se corrige en espace dans `Source/`, une liste d'items imprimée en colonne se garde telle quelle et se solde par une `preuve` sur son entrée (« PDF p.N : … » + `date`). B3 et suivants : une ZONE par train, corrigée à la main au PDF (geste `docs/ajouter-un-livre-source.md` §7) — `18 - Traumatisme`, `10 - Talents`, `61 - Encombrement`, `62 - Les armes`, `85 - Traits`, `08 - Statut`, `14 - _GoBack`, `40 - Les prières`, `46 - Les règles magiques`, `05 - _gjdgxs` du Livre de base ; zones portées par tickets existants : #1707 (table de Talents dupliquée), #1519 (`51 - Magie du Chaos` mal titré), #678 (EDOC `09 - _GoBack.md`, en-têtes orphelins). Le résidu de SCÉNARIO (hors donnée de règle) est porté par #1731. COUVERTURE DITE de `cle-de-ligne-ambigue` : elle nomme les clés partagées ENTRE tables d'une section — le périmètre d'UN geste (restituer les headings imprimés). Les clés dupliquées DANS une même table et les valeurs non-clés répétées rendent aussi `ligne-ambigue` et restent HORS de cette famille : mesuré le 2026-09-14, 145 ici, 220 au grain « clé dupliquée dans la section », 2 289 au prédicat réel de `rowsMatching` (toute valeur de cellule répétée). LIMITE DITE : `banniere-suspecte` est le résidu que la garde du parseur n'absorbe PAS. Il se ventile (mesure du 2026-09-14) en texte NON majuscule 51, bandeau MAJUSCULE sans rangée de donnée 49 (pour l'essentiel des titres de statbloc de PNJ et leurs rubriques : « ISABELLA — PROPHÈTE (BRONZE 4) », « COMPÉTENCES DE BASE »), une seule lettre 11, aucune lettre 1, et bandeau MAJUSCULE devant une table SANS en-têtes 1 (fourchette en `headers[0]`). Chacun se tranche au PDF, un par un, jamais par un élargissement de la garde qui sauterait un en-tête réel.",
   "entrees": [
     {
       "famille": "banniere-suspecte",
@@ -237,22 +237,6 @@
       "famille": "banniere-suspecte",
       "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/07 - Skills and Talents.md",
       "ref": "invoke-deity#1 :: impassioned zeal (cause)||",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "banniere-suspecte",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "common-means-of-investigation-and-research#1 :: test|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "banniere-suspecte",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "dosage#1 :: creature size and dosage|||",
       "occurrence": 1,
       "lot": "#1384 B2",
       "date": "2026-09-18"
@@ -2292,90 +2276,11 @@
     {
       "famille": "br-litteral",
       "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "arm-critical-wounds#1 :: d100|description|wounds|additional effects|",
+      "ref": "example-difficulties-of-common-investigative-tasks#1 :: difficulty|action",
       "occurrence": 1,
       "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "battle-tongue#1 :: language|family|spoken by…|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "carousing#1 :: 1d10|outcome|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "common-means-of-investigation-and-research#1 :: test|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "common-means-of-investigation-and-research-v#1 :: action|test|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "concluding-the-chase#1 :: d10|obstacle|example tests|||",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "concocting-poison#1 :: sl|result|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "difficulty-table#1 :: difficulty|test modifier|example",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "dosage#1 :: tiny|a single dose counts as 10 doses. a single dose counts as 4 doses.|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "effect-of-pre-prepared-cures#1 :: symptom|alchemical|herbal|quack",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "example-difficulties-of-common-investigative-tasks#1 :: difficulty|action|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
+      "date": "2026-09-20",
+      "preuve": "PDF p.147 : chaque cellule Action imprime trois entrées sur trois lignes distinctes (Gossip / Track / Charm…)."
     },
     {
       "famille": "br-litteral",
@@ -2383,183 +2288,26 @@
       "ref": "example-difficulties-of-common-underhanded-tasks#1 :: difficulty|action",
       "occurrence": 1,
       "lot": "#1384 B2",
-      "date": "2026-09-18"
+      "date": "2026-09-20",
+      "preuve": "PDF p.135 : chaque cellule Action imprime trois entrées sur trois lignes distinctes (Sleight of Hand / Charm / Bribe…)."
     },
     {
       "famille": "br-litteral",
       "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "example-navigation-difficulties#1 :: difficulty|conditions||",
+      "ref": "leaping#1 :: difficulty|action",
       "occurrence": 1,
       "lot": "#1384 B2",
-      "date": "2026-09-18"
+      "date": "2026-09-20",
+      "preuve": "PDF p.156 : chaque cellule Action imprime trois entrées sur trois lignes distinctes (Ride (Horse) / Drive / Athletics…)."
     },
     {
       "famille": "br-litteral",
       "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "fumbles#1 :: 1d10|result||",
+      "ref": "status-and-social-standing#1 :: difficulty|action",
       "occurrence": 1,
       "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "leaping#1 :: difficulty|action||",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "leg-critical-wounds#1 :: d100|description|wounds|additional effects|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "locating-herbs-for-remedies#1 :: time of year|required sl|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "lock-difficulty#1 :: lock type|difficulty|sl||",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "melee-attack-modifiers#1 :: positive modifiers|negative modifiers",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "mental-corruption-table#1 :: d100|description|effect|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "outcomes-table#1 :: sl|result|have you succeeded?|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "physical-corruption-table#1 :: description animalistic legs corpulent distended digits emaciated enormous eye extra leg joints extra mouth|effect +1 movement +5 strength, +5 toughness, -1 movement +10 dexterity +5 agility, -10 strength gain the acute sense (sight) talent. +5 agility|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "pursuits#1 :: positives while quarry|positives while pursuers|||",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "ranged-attack-modifiers-add-all-that-apply#1 :: positive modifiers|negative modifiers",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "ranged-combat#1 :: d10|result",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "remedy-creation-difficulty#1 :: symptom|alchemical ingredient price|trade (apothecary)|trade (herbalist)",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "selection-of-traps-v#1 :: trap|setting difficulty|setting fumble|if triggered",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "sneaking-around#1 :: action pick a pocket|test a sleight of hand test, opposed by your target's perception.|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "social-test-difficulty-factors#1 :: |positive factors|negative factors",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "status-and-social-standing#1 :: action|test|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "status-and-social-standing#1 :: difficulty|action|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "trap-spot-difficulty#1 :: set trap result|perception test difficulty very hard (-3 sl)|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "v-body-critical-wounds#1 :: d100|description|wounds|additional effects|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "v-head-critical-wounds#1 :: d100|description|wounds|additional effects",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
+      "date": "2026-09-20",
+      "preuve": "PDF p.141 : chaque cellule Action imprime trois entrées sur trois lignes distinctes (Charm / Entertain (Singing) / Consume Alcohol…)."
     },
     {
       "famille": "br-litteral",
@@ -2567,15 +2315,8 @@
       "ref": "v-selection-of-poisons#1 :: name|source|resistance test|effect",
       "occurrence": 1,
       "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "what-you-already-know#1 :: specialisation|common lore specialisations information provided|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
+      "date": "2026-09-20",
+      "preuve": "PDF p.155 : la cellule Effect de Weirdroot imprime deux entrées sur deux lignes distinctes, « Test not Fumbled: … » et « Test Fumbled: … »."
     },
     {
       "famille": "br-litteral",
@@ -6367,7 +6108,8 @@
       "ref": "scatter#1 :: 1|2|3",
       "occurrence": 1,
       "lot": "#1384 B2",
-      "date": "2026-09-18"
+      "date": "2026-09-20",
+      "preuve": "PDF p.168 : le diagramme de dispersion est une grille 3×3 sans rangée d'en-têtes ; « 1 | 2 | 3 » en est la première rangée imprimée."
     },
     {
       "famille": "donnee-en-tete",

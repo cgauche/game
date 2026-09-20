@@ -79,16 +79,15 @@ Combine any SL bonuses or penalties from the Difficulty with the Character's mod
 
 #### **DIFFICULTY TABLE**
 
-| Difficulty  | Test<br>Modifier | Example                                                         |
+| Difficulty  | Test Modifier | Example                                                         |
 |-------------|------------------|-----------------------------------------------------------------|
-| Very Easy   | +6 SL            | Noticing the obvious, jumping a small<br>gap                    |
+| Very Easy   | +6 SL            | Noticing the obvious, jumping a small gap                    |
 | Easy        | +4 SL            | Sharpening the edge of a trusty blade                           |
-| Average     | +2 SL            | Quickly finding pertinent information<br>in a book you can read |
-| Challenging | +0               | Typical Ranged and Melee attack<br>Tests, climbing a stone wall |
-| Difficult   | –1 SL            | Recalling an obscure fact about a long<br>dead noble            |
-| Hard        | –2 SL            | Swimming upstream in a flooding<br>sewer                        |
-| Very Hard   | –3 SL            | Convincing a witch hunter they've<br>made a terrible mistake    |
-|             |                  |                                                                 |
+| Average     | +2 SL            | Quickly finding pertinent information in a book you can read |
+| Challenging | +0               | Typical Ranged and Melee attack Tests, climbing a stone wall |
+| Difficult   | –1 SL            | Recalling an obscure fact about a long-dead noble            |
+| Hard        | –2 SL            | Swimming upstream in a flooding sewer                        |
+| Very Hard   | –3 SL            | Convincing a witch hunter they've made a terrible mistake    |
 
 If a difficulty is not specified, you should assume it is Challenging (+0 SL). Most Tests made during Combat are Challenging (+0 SL).
 
@@ -112,16 +111,16 @@ Often, you will only need to know whether a Test results in a success or failure
 
 #### **OUTCOMES TABLE**
 
-| SL            | Result                | Have You Succeeded?                                                                                                                                                                                                                          |  |
-|---------------|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-| +5 or<br>more | Astounding<br>Success | Yes, perfectly!: The result is as good as<br>it can be, perhaps with extra luck and<br>fortunate coincidences thrown in!                                                                                                                     |  |
-| +3 to<br>+4   | Impressive<br>Success | Yes, and…: You achieve your goal with<br>style, exceeding your expectations.                                                                                                                                                                 |  |
-| +1 to<br>+2   | Success               | Yes: You achieve a solid success.                                                                                                                                                                                                            |  |
-| +0            | Marginal<br>Success   | Yes, but…: You more or less achieve what<br>you intend, but imperfectly, and perhaps<br>with an unpredictable side effect.                                                                                                                   |  |
-| –0            | Marginal<br>Failure   | No, but…: You marginally fail, perhaps<br>accomplishing a portion of what you<br>intended.                                                                                                                                                   |  |
-| –1 to<br>–2   | Failure               | No: You just plain do it wrong.                                                                                                                                                                                                              |  |
-| –3 to<br>–4   | Impressive<br>Failure | No, and…: Not only do you mess up,<br>but you also cause additional things to go<br>wrong.                                                                                                                                                   |  |
-| –5 or<br>less | Astounding<br>Failure | No, not in any way!: Everything goes<br>wrong in the worst possible way. The<br>GM will likely add to your woes with<br>unanticipated consequences of your<br>actions. Surely no one is this unlucky; you<br>have clearly offended the gods. |  |
+| SL            | Result                | Have You Succeeded?                                                                                                                                                                                                                          |
+|---------------|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| +5 or more | Astounding Success | Yes, perfectly!: The result is as good as it can be, perhaps with extra luck and fortunate coincidences thrown in!                                                                                                                     |
+| +3 to +4   | Impressive Success | Yes, and…: You achieve your goal with style, exceeding your expectations.                                                                                                                                                                 |
+| +1 to +2   | Success               | Yes: You achieve a solid success.                                                                                                                                                                                                            |
+| +0            | Marginal Success   | Yes, but…: You more or less achieve what you intend, but imperfectly, and perhaps with an unpredictable side effect.                                                                                                                   |
+| –0            | Marginal Failure   | No, but…: You marginally fail, perhaps accomplishing a portion of what you intended.                                                                                                                                                   |
+| –1 to –2   | Failure               | No: You just plain do it wrong.                                                                                                                                                                                                              |
+| –3 to –4   | Impressive Failure | No, and…: Not only do you mess up, but you also cause additional things to go wrong.                                                                                                                                                   |
+| –5 or less | Astounding Failure | No, not in any way!: Everything goes wrong in the worst possible way. The GM will likely add to your woes with unanticipated consequences of your actions. Surely no one is this unlucky; you have clearly offended the gods. |
 
 #### **EXTENDED TESTS**
 
@@ -245,16 +244,17 @@ To move unseen, make the appropriate Stealth Test (Rural, Underground, or Urban)
 
 A suitable distraction, such as a modest fire, a street brawl, or a blathering guest (page 115), grants Advantage on Stealth Tests.
 
-| COMMON FORMS OF SKULLDUGGERY    |                                                                                                                                                                                                            |  |
-|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-| Action<br>Pick a pocket         | Test<br>A Sleight of Hand Test, opposed by your target's Perception.                                                                                                                                       |  |
-| Force open a door or<br>window  | A Strength Test to do it quickly, or a Stealth (Urban) Test with the right tools to do it quietly.                                                                                                         |  |
-| Pick a lock                     | A Pick Lock Test, with a difficulty set by the lock's quality. Especially challenging locks might require<br>an Extended Test, with one roll every round, or every minute.                                 |  |
-| Connect with local<br>criminals | A Difficult (-1 SL) Gossip Test, made with Advantage if you have the Criminal Talent yourself.                                                                                                             |  |
-| Argue your<br>innocence         | A Charm Test, opposed by your opponent's Cool, or an opposed Lore (Law) Test to do so in court.<br>Either way, Test with Disadvantage if you were caught red-handed or if there is incriminating evidence. |  |
-| Cheat at cards                  | A Sleight of Hand Test, opposed by your opponent's Perception. Success grants Advantage on your<br>next Gamble Test during that game.                                                                      |  |
-| Bribe a guard                   | A Bribery Test to find someone open to being bribed, at a price set by their status. You might Haggle<br>with them over the price.                                                                         |  |
-| Learn a thing's value           | An Evaluate Test to learn something's value, or a Difficult (-1 SL) Evaluate Test to quickly spot the<br>most valuable thing in a room.                                                                    |  |
+| COMMON FORMS OF SKULLDUGGERY | |
+|---|---|
+| Action | Test |
+| Pick a pocket | A Sleight of Hand Test, opposed by your target's Perception. |
+| Force open a door or window | A Strength Test to do it quickly, or a Stealth (Urban) Test with the right tools to do it quietly. |
+| Pick a lock | A Pick Lock Test, with a difficulty set by the lock's quality. Especially challenging locks might require an Extended Test, with one roll every round, or every minute. |
+| Connect with local criminals | A Difficult (-1 SL) Gossip Test, made with Advantage if you have the Criminal Talent yourself. |
+| Argue your innocence | A Charm Test, opposed by your opponent's Cool, or an opposed Lore (Law) Test to do so in court. Either way, Test with Disadvantage if you were caught red-handed or if there is incriminating evidence. |
+| Cheat at cards | A Sleight of Hand Test, opposed by your opponent's Perception. Success grants Advantage on your next Gamble Test during that game. |
+| Bribe a guard | A Bribery Test to find someone open to being bribed, at a price set by their status. You might Haggle with them over the price. |
+| Learn a thing's value | An Evaluate Test to learn something's value, or a Difficult (-1 SL) Evaluate Test to quickly spot the most valuable thing in a room. |
 
 V
 
@@ -366,29 +366,29 @@ If time is not an issue and discovery is unlikely, a character with the Pick Loc
 
 | Trap                                             | Setting Difficulty                                                                          | Setting Fumble                                 | If Triggered                                                                                                   |
 |--------------------------------------------------|---------------------------------------------------------------------------------------------|------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
-| Bucket of sewage<br>balanced on door             | Easy (+4 SL) Set Trap Test.                                                                 | Setter gains Besmirched<br>Condition.          | Target gains Besmirched Condition.                                                                             |
-| Covered pit                                      | Average (+2 SL) Set Trap<br>Test. Pit takes three hours to<br>dig for every two yards deep. | Fall of the depth to which<br>the pit was dug. | Fall of the depth to which the pit was<br>dug.                                                                 |
-| Mantrap (page 310)                               | Easy (+4 SL) Set Trap Test.<br>Can be set in 5 minutes.                                     | Setter takes 6 Damage to<br>Arm Location.      | Target takes 1d10 + 5 to Leg Location<br>and 1 Entangled with Strength 55.                                     |
-| Pulling aside a branch<br>triggers dropping rock | Challenging (+0 SL) Set<br>Trap Test.                                                       | Setter takes 4 Damage to<br>random Location.   | Target takes 1d10 + 5 Damage<br>to Head Location and 1 Stunned<br>Condition.                                   |
-| Loose floorboard<br>triggers a swinging<br>blade | Difficult (-1 SL) Set Trap<br>Test. Requires a bladed<br>weapon and one hour.               | Setter takes 5 Damage to<br>random Location.   | Target and anyone else within 2 yards<br>of them take 1d10 + Damage of the<br>weapon used to random locations. |
+| Bucket of sewage balanced on door             | Easy (+4 SL) Set Trap Test.                                                                 | Setter gains Besmirched Condition.          | Target gains Besmirched Condition.                                                                             |
+| Covered pit                                      | Average (+2 SL) Set Trap Test. Pit takes three hours to dig for every two yards deep. | Fall of the depth to which the pit was dug. | Fall of the depth to which the pit was dug.                                                                 |
+| Mantrap (page 310)                               | Easy (+4 SL) Set Trap Test. Can be set in 5 minutes.                                     | Setter takes 6 Damage to Arm Location.      | Target takes 1d10 + 5 to Leg Location and 1 Entangled with Strength 55.                                     |
+| Pulling aside a branch triggers dropping rock | Challenging (+0 SL) Set Trap Test.                                                       | Setter takes 4 Damage to random Location.   | Target takes 1d10 + 5 Damage to Head Location and 1 Stunned Condition.                                   |
+| Loose floorboard triggers a swinging blade | Difficult (-1 SL) Set Trap Test. Requires a bladed weapon and one hour.               | Setter takes 5 Damage to random Location.   | Target and anyone else within 2 yards of them take 1d10 + Damage of the weapon used to random locations. |
 
 #### **LOCK DIFFICULTY**
 
-| Lock Type                                                | Difficulty             | SL |  |  |
-|----------------------------------------------------------|------------------------|----|--|--|
-| Simple Latch                                             | Average (+2 SL)        | 2  |  |  |
-| Decent Lock                                              | Challenging<br>(+0 SL) | 4  |  |  |
-| Siggurd Haffensnatch's<br>Unassailable Tumblered Barrier | Difficult (–1 SL)      | 5  |  |  |
-| Dwarf-made Lock                                          | Very Hard (–3 SL)      | 8  |  |  |
+| Lock Type                                                | Difficulty             | SL |
+|----------------------------------------------------------|------------------------|----|
+| Simple Latch                                             | Average (+2 SL)        | 2  |
+| Decent Lock                                              | Challenging (+0 SL) | 4  |
+| Siggurd Haffensnatch's Unassailable Tumblered Barrier | Difficult (–1 SL)      | 5  |
+| Dwarf-made Lock                                          | Very Hard (–3 SL)      | 8  |
 
 #### **TRAP SPOT DIFFICULTY**
 
-| Set Trap Result                       | Perception Test Difficulty<br>Very Hard (-3 SL) |  |
-|---------------------------------------|-------------------------------------------------|--|
-| Astounding Success<br>(+5 or more SL) |                                                 |  |
-| Impressive Success<br>(+3 to +4 SL)   | Hard (-2 SL)                                    |  |
-| Success (+1 to +2 SL)                 | Difficult (-1 SL)                               |  |
-| Marginal Success (+0 SL)              | Challenging (+0 SL)                             |  |
+| Set Trap Result | Perception Test Difficulty |
+|---|---|
+| Astounding Success (+5 or more SL) | Very Hard (-3 SL) |
+| Impressive Success (+3 to +4 SL)   | Hard (-2 SL)                                    |
+| Success (+1 to +2 SL)                 | Difficult (-1 SL)                               |
+| Marginal Success (+0 SL)              | Challenging (+0 SL)                             |
 
 If no difficulty is specified, or if the trap was left long ago or by an unknown person, the Difficulty is Challenging (+0 SL). Exceedingly obvious traps, or those set in extremely barren areas or open plains with few places to hide the mechanisms involved, may only require an Average (+2 SL) or easier Perception Test.
 
@@ -488,46 +488,46 @@ Your Status is determined by your current Career level:
 
 - 0 **Gold:** The rulers of society, their advisers, protectors, magistrates, and the independently wealthy. Reaching Gold usually requires talent, success, and more than a little luck.
 - 0 **Silver:** Skilled professionals, merchants, artisans, and respected tradesfolk. Though not wealthy or powerful, they enjoy a comfortable and respectable place in society.
-- 0 **Brass:** Labourers, peasants, unskilled workers, and the poor. This Tier also includes many criminals, ne'er-dowells, and those with no steady livelihood.
+- 0 **Brass:** Labourers, peasants, unskilled workers, and the poor. This Tier also includes many criminals, ne'er-do-wells, and those with no steady livelihood.
 
 The number after your Status is your Standing, your social position relative to others of your Status.
 
-|                                               | COMMON SOCIAL TESTS                                                                                                                                                                                                                                                                          |  |
-|-----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-| Action                                        | Test                                                                                                                                                                                                                                                                                         |  |
-| Befriend<br>a useful<br>contact               | A Charm Test to make a good impression,<br>discover what someone likes, or otherwise<br>ingratiate yourself with them. This<br>could yield useful information or grant<br>Advantage on a future Test.                                                                                        |  |
-| Make<br>someone<br>Fear you                   | An Intimidate Test, opposed by the<br>target's Cool.                                                                                                                                                                                                                                         |  |
-| Carouse<br>with some<br>soldiers              | A Perform, Play or Entertain Test to<br>regale them with songs, music, or stories,<br>or a Consume Alcohol Test to join the<br>festivities and prove you can keep up.                                                                                                                        |  |
-| Convince<br>someone<br>to do what<br>you want | A Charm Test to convince them to see<br>things your way, opposed by the subject's<br>Cool. A suitable Lore Test may replace<br>Charm when it comes to intellectual<br>debates, while Intimidate may get you<br>what you want in the short term, but leave<br>you with a longer term problem. |  |
-| Talk your<br>way in to a<br>gathering         | A Charm Test, opposed by your<br>opponent's Cool. The Difficulty depends<br>on whether you look as though you belong,<br>and how plausible your reasoning is for<br>getting inside.                                                                                                          |  |
-| Inspire a<br>crowd                            | A Charm Test, opposed by the lowest<br>Cool rating of those listening. Leadership<br>can be used in a military setting or when<br>you otherwise have authority over the<br>gathered crowd.                                                                                                   |  |
-| Read the<br>Room                              | An Intuition Test to determine the<br>general mood of a group of people, figure<br>out who holds power, who is happy to<br>follow their lead, and who's afraid of<br>whom.                                                                                                                   |  |
-| Lying                                         | A Cool, Charm, or Entertain (Acting)<br>Test to lie convincingly, opposed by the<br>listener's Intuition.                                                                                                                                                                                    |  |
-| Spread<br>a Nasty<br>Rumour                   | A Gossip Test, with a difficulty depending<br>on how hard the rumour is to believe and<br>what evidence you might have to support<br>it.                                                                                                                                                     |  |
-| Negotiate<br>a Discount                       | A Haggle Test to convince the merchant<br>to offer you a better rate.                                                                                                                                                                                                                        |  |
+|                                               | COMMON SOCIAL TESTS                                                                                                                                                                                                                                                                          |
+|-----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Action                                        | Test                                                                                                                                                                                                                                                                                         |
+| Befriend a useful contact               | A Charm Test to make a good impression, discover what someone likes, or otherwise ingratiate yourself with them. This could yield useful information or grant Advantage on a future Test.                                                                                        |
+| Make someone Fear you                   | An Intimidate Test, opposed by the target's Cool.                                                                                                                                                                                                                                         |
+| Carouse with some soldiers              | A Perform, Play or Entertain Test to regale them with songs, music, or stories, or a Consume Alcohol Test to join the festivities and prove you can keep up.                                                                                                                        |
+| Convince someone to do what you want | A Charm Test to convince them to see things your way, opposed by the subject's Cool. A suitable Lore Test may replace Charm when it comes to intellectual debates, while Intimidate may get you what you want in the short term, but leave you with a longer term problem. |
+| Talk your way in to a gathering         | A Charm Test, opposed by your opponent's Cool. The Difficulty depends on whether you look as though you belong, and how plausible your reasoning is for getting inside.                                                                                                          |
+| Inspire a crowd                            | A Charm Test, opposed by the lowest Cool rating of those listening. Leadership can be used in a military setting or when you otherwise have authority over the gathered crowd.                                                                                                   |
+| Read the Room                              | An Intuition Test to determine the general mood of a group of people, figure out who holds power, who is happy to follow their lead, and who's afraid of whom.                                                                                                                   |
+| Lying                                         | A Cool, Charm, or Entertain (Acting) Test to lie convincingly, opposed by the listener's Intuition.                                                                                                                                                                                    |
+| Spread a Nasty Rumour                   | A Gossip Test, with a difficulty depending on how hard the rumour is to believe and what evidence you might have to support it.                                                                                                                                                     |
+| Negotiate a Discount                       | A Haggle Test to convince the merchant to offer you a better rate.                                                                                                                                                                                                                        |
 
 | EXAMPLE DIFFICULTIES OF COMMON SOCIAL ACTIONS | V |
 |-----------------------------------------------|---|
 
-| Difficulty             | Action                                                                                                                                                                                                                                                       |  |
-|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-| Very Easy (+6 SL)      | Charm: Convince a habitual gambler to play one last hand, double or nothing.<br>Entertain (Singing): Get a whole bar to sing along to a beloved and irreverent ballad.<br>Consume Alcohol: Acquaint yourself with a group of soldiers just back from patrol. |  |
-| Easy (+4 SL)           | Charm: Befriend a starving student while sharing a meal you've paid for.<br>Intimidate: Convince a cowardly noble not to challenge you to a duel.<br>Play (Lute): Play well enough to earn a few brass coins and very few second glances.                    |  |
-| Average (+2 SL)        | Charm: Convince an underpaid guard to let you pass by without being searched.<br>Intuition: Recognise an outlandish business opportunity as a scam.<br>Leadership: Organise disciplined troops into decent marching order.                                   |  |
-| Challenging (+0<br>SL) | Charm: Earn a few brass pennies by spending a day begging on a public square.<br>Intimidate: Convince a petty thief to bother someone else.<br>Gossip: Spread a rumour that a well-known merchant is in fact close to bankruptcy.                            |  |
-| Difficult (-1 SL)      | Leadership: Order your soldiers to hold in the face of an oncoming cavalry charge.<br>Charm: Convince an enemy soldier to hear you out before they gut you.<br>Consume Alcohol: Match a dwarf, drink for drink.                                              |  |
-| Hard (-2 SL)           | Perform ( Juggling): Perform at swordpoint to please a bored and ruthless noble.<br>Haggle: Convince a blacksmith to cut you a deal on you on the eve of a siege.<br>Intimidate: Convince an ogre you're tougher than you look.                              |  |
-| Very Hard (-3 SL)      | Play (Bagpipe): Have your music leave a lasting impression at the court in Altdorf.<br>Charm: Convince a sneering courtier not to speak badly of you the instant you depart.<br>Intuition: Discern the true feelings of a stoic dwarf longbeard.             |  |
+| Difficulty             | Action                                                                                                                                                                                                                                                       |
+|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Very Easy (+6 SL)      | Charm: Convince a habitual gambler to play one last hand, double or nothing.<br>Entertain (Singing): Get a whole bar to sing along to a beloved and irreverent ballad.<br>Consume Alcohol: Acquaint yourself with a group of soldiers just back from patrol. |
+| Easy (+4 SL)           | Charm: Befriend a starving student while sharing a meal you've paid for.<br>Intimidate: Convince a cowardly noble not to challenge you to a duel.<br>Play (Lute): Play well enough to earn a few brass coins and very few second glances.                    |
+| Average (+2 SL)        | Charm: Convince an underpaid guard to let you pass by without being searched.<br>Intuition: Recognise an outlandish business opportunity as a scam.<br>Leadership: Organise disciplined troops into decent marching order.                                   |
+| Challenging (+0 SL) | Charm: Earn a few brass pennies by spending a day begging on a public square.<br>Intimidate: Convince a petty thief to bother someone else.<br>Gossip: Spread a rumour that a well-known merchant is in fact close to bankruptcy.                            |
+| Difficult (-1 SL)      | Leadership: Order your soldiers to hold in the face of an oncoming cavalry charge.<br>Charm: Convince an enemy soldier to hear you out before they gut you.<br>Consume Alcohol: Match a dwarf, drink for drink.                                              |
+| Hard (-2 SL)           | Perform ( Juggling): Perform at swordpoint to please a bored and ruthless noble.<br>Haggle: Convince a blacksmith to cut you a deal on you on the eve of a siege.<br>Intimidate: Convince an ogre you're tougher than you look.                              |
+| Very Hard (-3 SL)      | Play (Bagpipe): Have your music leave a lasting impression at the court in Altdorf.<br>Charm: Convince a sneering courtier not to speak badly of you the instant you depart.<br>Intuition: Discern the true feelings of a stoic dwarf longbeard.             |
 
 ### **SOCIAL TEST DIFFICULTY FACTORS**
 
 |         | Positive Factors                                  | Negative Factors                                                                           |
 |---------|---------------------------------------------------|--------------------------------------------------------------------------------------------|
-|         | Relationship The Character is a<br>friend or ally | The Character is a<br>rival or foe                                                         |
-| Request | The request or<br>demand is modest                | The request is<br>burdensome or difficult                                                  |
-| Stakes  | There is very little<br>at stake for the<br>NPC   | There's a good deal at<br>stake, and the NPC's<br>reputation or livelihood<br>might suffer |
-| Costs   | It will cost very<br>little to comply             | The request will be<br>costly in terms of time<br>or money                                 |
-| Risks   | There are few<br>risks to the NPC                 | The NPC might be<br>harmed or killed                                                       |
+| Relationship | The Character is a friend or ally | The Character is a rival or foe                                                         |
+| Request | The request or demand is modest                | The request is burdensome or difficult                                                  |
+| Stakes  | There is very little at stake for the NPC   | There's a good deal at stake, and the NPC's reputation or livelihood might suffer |
+| Costs   | It will cost very little to comply             | The request will be costly in terms of time or money                                 |
+| Risks   | There are few risks to the NPC                 | The NPC might be harmed or killed                                                       |
 
 # **Maintaining Status**
 
@@ -683,13 +683,13 @@ When carousing, make a Consume Alcohol Test, with the Difficulty determined by t
 
 These effects last for two hours after you cease drinking, at which time they end, and you become hungover, suffering a *Fatigued*  Condition that lasts 12 - TB (Toughness Bonus) hours.
 
-| 1d10 | Outcome                                                                                                                                                                                                                                                                                           |  |
-|------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-| 1–2  | 'Marienburger's Courage!': Gain a bonus of +2<br>SL to resist Fear.                                                                                                                                                                                                                               |  |
-| 3–4  | 'You're My Besht Mate!': Ignore all your existing<br>Animosities (see page 183).                                                                                                                                                                                                                  |  |
-| 5–6  | 'Why's Everything Wobbling!': On your Turn,<br>you can either Move or take an Action, but not<br>both (see page 162).                                                                                                                                                                             |  |
-| 7–8  | 'I'll Take Yer All On!': Gain Animosity<br>(Everybody!) (see page 183).                                                                                                                                                                                                                           |  |
-| 9–10 | 'How Did I Get Here?': You wake up the next<br>day, massively hungover, with little memory<br>of what transpired. The GM and other players<br>with you will fill in the embarrassing gaps if you<br>investigate. Pass a Consume Alcohol Test or also<br>gain a Poisoned Condition (see page 186). |  |
+| 1d10 | Outcome                                                                                                                                                                                                                                                                                           |
+|------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1–2  | 'Marienburger's Courage!': Gain a bonus of +2 SL to resist Fear.                                                                                                                                                                                                                               |
+| 3–4  | 'You're My Besht Mate!': Ignore all your existing Animosities (see page 183).                                                                                                                                                                                                                  |
+| 5–6  | 'Why's Everything Wobbling!': On your Turn, you can either Move or take an Action, but not both (see page 162).                                                                                                                                                                             |
+| 7–8  | 'I'll Take Yer All On!': Gain Animosity (Everybody!) (see page 183).                                                                                                                                                                                                                           |
+| 9–10 | 'How Did I Get Here?': You wake up the next day, massively hungover, with little memory of what transpired. The GM and other players with you will fill in the embarrassing gaps if you investigate. Pass a Consume Alcohol Test or also gain a Poisoned Condition (see page 186). |
 
 #### **EXAMPLE OUTCOMES**
 
@@ -751,65 +751,60 @@ Let the Players piece the evidence together where possible, and if they still be
 
 #### **COMMON MEANS OF INVESTIGATION AND RESEARCH**
 
-| Test                                                                                                                                                                                                                                                          |  |
-|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-| An Average (+2 SL) Animal Care Test,<br>or Challenging (+0 SL) if a subtle poison<br>or illness was the cause.                                                                                                                                                |  |
-| The liar makes a Charm Test, opposed<br>by the target's Intuition. The Difficulty<br>can increase if the lie is particularly<br>outrageous.                                                                                                                   |  |
-| A Gossip Test to learn what others think<br>of the subject, with better rolls revealing<br>more secretive or pertinent information.<br>A successful Bribery Test can tell you<br>someone is corrupt enough to take a<br>bribe, and what their price might be. |  |
-| A Charm Test, opposed by the<br>target's Cool to trick them into letting<br>something slip, or an Intimidate<br>Test opposed by Cool to force the<br>information from them. The Difficulty is<br>set by just how sensitive the information<br>is.             |  |
-| A successful Perception Test spots<br>hidden or subtle details, with better<br>results revealing more information. A<br>disturbed scene increases the Test's<br>Difficulty.                                                                                   |  |
-| A successful Research Test will tell you<br>what library or book to consult to learn<br>something, or help you find pertinent<br>facts buried within large and mouldering<br>tomes.                                                                           |  |
-| Having an Advance in a Lore Skill will<br>tell you basic information about that<br>subject, with a Test required only to<br>recall particularly obscure or unusual<br>information.                                                                            |  |
-| An Evaluate Test, with a Difficulty set by<br>the quality of the work.                                                                                                                                                                                        |  |
-| A Track Test, with a Difficulty set by the<br>conditions and age of the trail. Opposed<br>by your quarry's Track only if they took<br>the time to cover their trail.                                                                                          |  |
-|                                                                                                                                                                                                                                                               |  |
+| Action | Test |
+|---|---|
+| Tell how an animal died | An Average (+2 SL) Animal Care Test, or Challenging (+0 SL) if a subtle poison or illness was the cause. |
+| Tell a lie, or spot one | The liar makes a Charm Test, opposed by the target's Intuition. The Difficulty can increase if the lie is particularly outrageous. |
+| Ask around about someone | A Gossip Test to learn what others think of the subject, with better rolls revealing more secretive or pertinent information. A successful Bribery Test can tell you someone is corrupt enough to take a bribe, and what their price might be. |
+| Wring a secret from someone | A Charm Test, opposed by the target's Cool to trick them into letting something slip, or an Intimidate Test opposed by Cool to force the information from them. The Difficulty is set by just how sensitive the information is. |
+| Search a room or a crime scene | A successful Perception Test spots hidden or subtle details, with better results revealing more information. A disturbed scene increases the Test's Difficulty. |
+| Extract information from books | A successful Research Test will tell you what library or book to consult to learn something, or help you find pertinent facts buried within large and mouldering tomes. |
+| Recall a useful fact | Having an Advance in a Lore Skill will tell you basic information about that subject, with a Test required only to recall particularly obscure or unusual information. |
+| Spot a forgery | An Evaluate Test, with a Difficulty set by the quality of the work. |
+| Follow someone's trail | A Track Test, with a Difficulty set by the conditions and age of the trail. Opposed by your quarry's Track only if they took the time to cover their trail. |
 
 # **COMMON MEANS OF INVESTIGATION AND RESEARCH** V
 
-| Action                         | Test                                                                                                                                                                                                                                                 |  |
-|--------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-| Tell how an animal             | An Average (+2 SL) Animal Care Test, or Challenging (+0 SL) if a subtle poison or illness was the                                                                                                                                                    |  |
-| died                           | cause.                                                                                                                                                                                                                                               |  |
-| Tell a lie, or spot            | The liar makes a Charm Test, opposed by the target's Intuition. The Difficulty can increase if the lie is                                                                                                                                            |  |
-| one                            | particularly outrageous.                                                                                                                                                                                                                             |  |
-| Ask around about<br>someone    | A Gossip Test to learn what others think of the subject, with better rolls revealing more secretive or<br>pertinent information. A successful Bribery Test can tell you someone is corrupt enough to take a bribe,<br>and what their price might be. |  |
-| Wring a secret from<br>someone | A Charm Test, opposed by the target's Cool to trick them into letting something slip, or an Intimidate<br>Test opposed by Cool to force the information from them. The Difficulty is set by just how sensitive the<br>information is.                |  |
-| Search a room or a             | A successful Perception Test spots hidden or subtle details, with better results revealing more                                                                                                                                                      |  |
-| crime scene                    | information. A disturbed scene increases the Test's Difficulty.                                                                                                                                                                                      |  |
-| Extract information            | A successful Research Test will tell you what library or book to consult to learn something, or help you                                                                                                                                             |  |
-| from books                     | find pertinent facts buried within large and mouldering tomes.                                                                                                                                                                                       |  |
-| Recall a useful fact           | Having an Advance in a Lore Skill will tell you basic information about that subject, with a Test required<br>only to recall particularly obscure or unusual information.                                                                            |  |
-| Spot a forgery                 | An Evaluate Test, with a Difficulty set by the quality of the work.                                                                                                                                                                                  |  |
-| Follow someone's               | A Track Test, with a Difficulty set by the conditions and age of the trail. Opposed by your quarry's Track                                                                                                                                           |  |
-| trail                          | only if they took the time to cover their trail.                                                                                                                                                                                                     |  |
+| Action | Test |
+|---|---|
+| Tell how an animal died | An Average (+2 SL) Animal Care Test, or Challenging (+0 SL) if a subtle poison or illness was the cause. |
+| Tell a lie, or spot one | The liar makes a Charm Test, opposed by the target's Intuition. The Difficulty can increase if the lie is particularly outrageous. |
+| Ask around about someone | A Gossip Test to learn what others think of the subject, with better rolls revealing more secretive or pertinent information. A successful Bribery Test can tell you someone is corrupt enough to take a bribe, and what their price might be. |
+| Wring a secret from someone | A Charm Test, opposed by the target's Cool to trick them into letting something slip, or an Intimidate Test opposed by Cool to force the information from them. The Difficulty is set by just how sensitive the information is. |
+| Search a room or a crime scene | A successful Perception Test spots hidden or subtle details, with better results revealing more information. A disturbed scene increases the Test's Difficulty. |
+| Extract information from books | A successful Research Test will tell you what library or book to consult to learn something, or help you find pertinent facts buried within large and mouldering tomes. |
+| Recall a useful fact | Having an Advance in a Lore Skill will tell you basic information about that subject, with a Test required only to recall particularly obscure or unusual information. |
+| Spot a forgery | An Evaluate Test, with a Difficulty set by the quality of the work. |
+| Follow someone's trail | A Track Test, with a Difficulty set by the conditions and age of the trail. Opposed by your quarry's Track only if they took the time to cover their trail. |
 
 ### **EXAMPLE DIFFICULTIES OF COMMON INVESTIGATIVE TASKS**
 
-| Difficulty          | Action                                                                                                                                                                                                                             |  |
-|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-| Very Easy (+6 SL)   | Gossip: Find out who the most hated man in town is.<br>Track: Follow a bleeding fawn through the woods.<br>Charm: Convince an inebriated friend you'll certainly pay her back tomorrow.                                            |  |
-| Easy (+4 SL)        | Evaluate: Spot that a misspelt deed to a bridge over the Reik is fake.<br>Research: Recall that the deeds to baronial property are held in the graf 's vault.<br>Intimidate: Convince a cowardly thief to name their accomplice.   |  |
-| Average (+2 SL)     | Track: Follow a fleeing bandit's tracks left in soft earth.<br>Lore (Magic): Recall the colour and nature of the eight Winds of Magic.<br>Lore (History): Recall the broad outline of Sigmar's life.                               |  |
-| Challenging (+0 SL) | Bribery: Tell if a particular guard is likely to let a thief go for the right bribe.<br>Charm: Convince a listener you're from somewhere else in the Empire entirely.<br>Track: Follow a recent trail through a field or woodland. |  |
-| Difficult (-1 SL)   | Evaluate: Notice an otherwise perfect forgery made use of the wrong ink.<br>Perception: Spot a speck of blood on a passing servant's collar.<br>Intuition: Spot truth from lie in a Tilean merchant's sales pitch.                 |  |
-| Hard (-2 SL)        | Research: Find the true name of a daemon hidden in a mad wizard's grimoire.<br>Lore (Law): Recall the perfect legal precedent to make a stunning point in court.<br>Track: Follow a day-old trail across barren, rocky mountains.  |  |
-| Very Hard (-3 SL)   | Research: Get to the bottom of a dwarf grudge.<br>Perception: Notice that a single book is missing from a towering bookshelf.<br>Lore (Reikland): Recall the name of every one of Karl Franz's cousins.                            |  |
+| Difficulty          | Action                                                                                                                                                                                                                             |
+|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Very Easy (+6 SL)   | Gossip: Find out who the most hated man in town is.<br>Track: Follow a bleeding fawn through the woods.<br>Charm: Convince an inebriated friend you'll certainly pay her back tomorrow.                                            |
+| Easy (+4 SL)        | Evaluate: Spot that a misspelt deed to a bridge over the Reik is fake.<br>Research: Recall that the deeds to baronial property are held in the graf 's vault.<br>Intimidate: Convince a cowardly thief to name their accomplice.   |
+| Average (+2 SL)     | Track: Follow a fleeing bandit's tracks left in soft earth.<br>Lore (Magic): Recall the colour and nature of the eight Winds of Magic.<br>Lore (History): Recall the broad outline of Sigmar's life.                               |
+| Challenging (+0 SL) | Bribery: Tell if a particular guard is likely to let a thief go for the right bribe.<br>Charm: Convince a listener you're from somewhere else in the Empire entirely.<br>Track: Follow a recent trail through a field or woodland. |
+| Difficult (-1 SL)   | Evaluate: Notice an otherwise perfect forgery made use of the wrong ink.<br>Perception: Spot a speck of blood on a passing servant's collar.<br>Intuition: Spot truth from lie in a Tilean merchant's sales pitch.                 |
+| Hard (-2 SL)        | Research: Find the true name of a daemon hidden in a mad wizard's grimoire.<br>Lore (Law): Recall the perfect legal precedent to make a stunning point in court.<br>Track: Follow a day-old trail across barren, rocky mountains.  |
+| Very Hard (-3 SL)   | Research: Get to the bottom of a dwarf grudge.<br>Perception: Notice that a single book is missing from a towering bookshelf.<br>Lore (Reikland): Recall the name of every one of Karl Franz's cousins.                            |
 
 # **What You Already Know**
 
 Even the most ignorant peasant in the Empire knows something of the world around them, even if it is only which cow provides the most milk and how much coin it will take to ensure their lord does not evict them come winter. The information in **Chapter 10** is common knowledge, and does not require a Test to know or remember.
 
-| Specialisation | COMMON LORE SPECIALISATIONS<br>Information Provided                                                                                                                                                         |  |
-|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-| Engineering    | Understand the application of levers,<br>pulleys, inclined planes, and other<br>simple machinery. Recognise the work<br>of a specific artisan, or the principles<br>underlying a complex machine.           |  |
-| Geology        | Recognise specific types of stone, and<br>determine where digging a well or mine<br>is likely to prove fruitful, or judge if a<br>cave is prone to flooding or likely to<br>collapse.                       |  |
-| Heraldry       | Recognise the banners and iconography<br>of great noble houses and military<br>outfits. Determine the meaning of the<br>animals, colours, and other symbols used<br>in a coat of arms.                      |  |
-| History        | Recall pertinent facts about historical<br>events.                                                                                                                                                          |  |
-| Law            | Know what the law is and how it might<br>be broken or circumvented, and make a<br>compelling legal argument or recognise<br>the flaw in one.                                                                |  |
-| Magic          | Recall the names of the Winds of Magic<br>and their effects, recognise the trappings<br>of a particular magical tradition, or<br>determine if a grimoire contains true<br>spells or the ravings of the mad. |  |
-| Metallurgy     | Determine what metals or alloys a<br>weapon or tool is made of, how it was<br>likely to have been forged, and how it<br>might be repaired.                                                                  |  |
-| Science        | Knowledge of natural philosophy —<br>how the mundane phenomena appear<br>to work, and the theory behind creating<br>unusual compounds such as black<br>powder or soap.                                      |  |
-| Theology       | The practices and beliefs behind<br>religions common to your culture, such<br>as Sigmar, Taal, or Ulric, worshipped<br>in the Empire, or Asuryan and Khaine,                                                |  |
+| COMMON LORE SPECIALISATIONS | |
+|---|---|
+| Specialisation | Information Provided                                                                                                                                                         |
+| Engineering    | Understand the application of levers, pulleys, inclined planes, and other simple machinery. Recognise the work of a specific artisan, or the principles underlying a complex machine.           |
+| Geology        | Recognise specific types of stone, and determine where digging a well or mine is likely to prove fruitful, or judge if a cave is prone to flooding or likely to collapse.                       |
+| Heraldry       | Recognise the banners and iconography of great noble houses and military outfits. Determine the meaning of the animals, colours, and other symbols used in a coat of arms.                      |
+| History        | Recall pertinent facts about historical events.                                                                                                                                                          |
+| Law            | Know what the law is and how it might be broken or circumvented, and make a compelling legal argument or recognise the flaw in one.                                                                |
+| Magic          | Recall the names of the Winds of Magic and their effects, recognise the trappings of a particular magical tradition, or determine if a grimoire contains true spells or the ravings of the mad. |
+| Metallurgy     | Determine what metals or alloys a weapon or tool is made of, how it was likely to have been forged, and how it might be repaired.                                                                  |
+| Science        | Knowledge of natural philosophy — how the mundane phenomena appear to work, and the theory behind creating unusual compounds such as black powder or soap.                                      |
+| Theology       | The practices and beliefs behind religions common to your culture, such as Sigmar, Taal, or Ulric, worshipped in the Empire, or Asuryan and Khaine, who are revered by the elves. |
 
 #### **Lore**
 
@@ -837,27 +832,27 @@ The following are the most common languages of the Old World, and the peoples wh
 
 V
 
-| LANGUAGE       | FAMILY                                    | SPOKEN BY…                                                                                                                                                                                                                    |  |
-|----------------|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-| Albion         | None                                      | …the folk of Albion, who hail from a far-off, mist shrouded<br>island realm and are rarely encountered.                                                                                                                       |  |
-| Battle Tongue  | None                                      | …warriors of the Old World. Composed of simple commands and gestures, it was<br>supposedly developed by the goddess Myrmidia when she walked the Old World<br>as a mortal.                                                    |  |
-| Bretonnian     | Haffennaff, Reikspiel,<br>Wastelander     | …the folk of Bretonnia, a chivalric realm to the southwest of the Empire.                                                                                                                                                     |  |
-| Classical      | Estalian, Tilean                          | …Human academics of all kinds. Over 3,000 years old, it is used in most scholarly<br>texts of the Empire, including grimoires and many holy books.                                                                            |  |
-| Elthárin       | None                                      | …the folk of Athel Loren, the Laurelorn, and visiting merchants from Ulthuan.<br>The tonal language has many dialects, and is notoriously difficult for non-elves to<br>learn.                                                |  |
-| Estalian       | Classical, Tilean                         | …the folk of Estalia, people of the hot, southwestern kingdoms known for their<br>bitter politics and worship of the goddess Myrmidia.                                                                                        |  |
-| Gospodarinyi   | Górelsk, Ungol                            | …the majority of the folk of Kislev, a hardy people from the frozen oblasts to the<br>east of the Empire. The language is often called Kislevarin or Kislevite by outsiders.                                                  |  |
-| Grumbarth      | None                                      | …ogres. Few others learn this simple tongue, though some mercenary<br>commanders find it useful.                                                                                                                              |  |
-| Guilder        | None                                      | …members of appropriate trade guilds. Guilder is a slang-rich patois used to<br>protect trade secrets and reinforce bonds.                                                                                                    |  |
-| Haffennaff     | Bretonnian, Reikspiel,<br>Wastelander     | …the folk of the Mootland, the halfling grand province in the Empire. Also called<br>Mootish.                                                                                                                                 |  |
-| Khazalid       | None                                      | …the folk of Karaz Ankor, the dwarf kingdoms in the mountains. This language is<br>also widespread through the Cult of Sigmar, in honour of Sigmar's friendship with<br>the dwarfs.                                           |  |
-| Magick         | None                                      | …spellcasters. A catch-all term for tonal languages used to shape the Winds of<br>Magic into material effects. Magick is not used for communication.                                                                          |  |
-| Norse          | None                                      | …the folk of Norsca. Norse is commonly spoken across the north of the Empire in<br>Nordland and Ostland, and is well-known in the Wasteland and Kislev, too.                                                                  |  |
-| Pilgrim Sign   | None                                      | …pilgrims and holy folk of the Old World who have taken vows of silence. This is<br>a sign language with a full vocabulary, often learned by deaf folk.                                                                       |  |
-| Reikspiel      | Bretonnian,<br>Haffennaff,<br>Wastelander | …the folk of the Empire. Reikspiel is the primary language used in most WFRP<br>games. It is the modern version of the tongue once spoken by the god-king<br>Sigmar.                                                          |  |
-| Queekish       | None                                      | …the folk of the Under-empire. Used by the skaven.                                                                                                                                                                            |  |
-| Tilean         | Classical, Estalian                       | …the folk of Tilea, who are most commonly encountered in the Empire as traders<br>or mercenaries.                                                                                                                             |  |
-| Thieves Tongue | None                                      | …street folk of the Old World. Expressions of this language are highly localised<br>and individual, with local variants common.                                                                                               |  |
-| Wastelander    | Bretonnian,<br>Haffennaff, Reikspiel      | the rural folk of the Wasteland, a windswept territory to the west of the<br>Reikland. The official language of the Wasteland's capital, Marienburg, is Reikspiel,<br>a reminder that the nation was once part of the Empire. |  |
+| LANGUAGE       | FAMILY                                    | SPOKEN BY…                                                                                                                                                                                                                    |
+|----------------|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Albion         | None                                      | …the folk of Albion, who hail from a far-off, mist shrouded island realm and are rarely encountered.                                                                                                                       |
+| Battle Tongue  | None                                      | …warriors of the Old World. Composed of simple commands and gestures, it was supposedly developed by the goddess Myrmidia when she walked the Old World as a mortal.                                                    |
+| Bretonnian     | Haffennaff, Reikspiel, Wastelander     | …the folk of Bretonnia, a chivalric realm to the southwest of the Empire.                                                                                                                                                     |
+| Classical      | Estalian, Tilean                          | …Human academics of all kinds. Over 3,000 years old, it is used in most scholarly texts of the Empire, including grimoires and many holy books.                                                                            |
+| Elthárin       | None                                      | …the folk of Athel Loren, the Laurelorn, and visiting merchants from Ulthuan. The tonal language has many dialects, and is notoriously difficult for non-elves to learn.                                                |
+| Estalian       | Classical, Tilean                         | …the folk of Estalia, people of the hot, southwestern kingdoms known for their bitter politics and worship of the goddess Myrmidia.                                                                                        |
+| Gospodarinyi   | Górelsk, Ungol                            | …the majority of the folk of Kislev, a hardy people from the frozen oblasts to the east of the Empire. The language is often called Kislevarin or Kislevite by outsiders.                                                  |
+| Grumbarth      | None                                      | …ogres. Few others learn this simple tongue, though some mercenary commanders find it useful.                                                                                                                              |
+| Guilder        | None                                      | …members of appropriate trade guilds. Guilder is a slang-rich patois used to protect trade secrets and reinforce bonds.                                                                                                    |
+| Haffennaff     | Bretonnian, Reikspiel, Wastelander     | …the folk of the Mootland, the halfling grand province in the Empire. Also called Mootish.                                                                                                                                 |
+| Khazalid       | None                                      | …the folk of Karaz Ankor, the dwarf kingdoms in the mountains. This language is also widespread through the Cult of Sigmar, in honour of Sigmar's friendship with the dwarfs.                                           |
+| Magick         | None                                      | …spellcasters. A catch-all term for tonal languages used to shape the Winds of Magic into material effects. Magick is not used for communication.                                                                          |
+| Norse          | None                                      | …the folk of Norsca. Norse is commonly spoken across the north of the Empire in Nordland and Ostland, and is well-known in the Wasteland and Kislev, too.                                                                  |
+| Pilgrim Sign   | None                                      | …pilgrims and holy folk of the Old World who have taken vows of silence. This is a sign language with a full vocabulary, often learned by deaf folk.                                                                       |
+| Reikspiel      | Bretonnian, Haffennaff, Wastelander | …the folk of the Empire. Reikspiel is the primary language used in most WFRP games. It is the modern version of the tongue once spoken by the god-king Sigmar.                                                          |
+| Queekish       | None                                      | …the folk of the Under-empire. Used by the skaven.                                                                                                                                                                            |
+| Tilean         | Classical, Estalian                       | …the folk of Tilea, who are most commonly encountered in the Empire as traders or mercenaries.                                                                                                                             |
+| Thieves Tongue | None                                      | …street folk of the Old World. Expressions of this language are highly localised and individual, with local variants common.                                                                                               |
+| Wastelander    | Bretonnian, Haffennaff, Reikspiel      | ...the rural folk of the Wasteland, a windswept territory to the west of the Reikland. The official language of the Wasteland's capital, Marienburg, is Reikspiel, a reminder that the nation was once part of the Empire. |
 
 # **Research**
 
@@ -957,15 +952,15 @@ Depending on the distance to be covered and the circumstances at hand, trekking 
 
 #### **EXAMPLE NAVIGATION DIFFICULTIES**
 
-| Difficulty             | Conditions                                                                                                                                                                       |  |  |
-|------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|--|
-| Very Easy<br>(+6 SL)   | An evening's stroll in fair conditions<br>following a well travelled path.                                                                                                       |  |  |
-| Easy (+4 SL)           | A short hike up a modest hill, or a ride to<br>the next town over.                                                                                                               |  |  |
-| Average (+2<br>SL)     | A day's travel across open terrain, or through<br>a forest in a region for which the Characters<br>have a map, or at least one Advance in the<br>appropriate Lore (Local) Skill. |  |  |
-| Challenging<br>(+0 SL) | A two-day trip to a place the Characters<br>know of but have not been, or a short river<br>journey through a frequently travelled part<br>of the Talabec.                        |  |  |
-| Difficult (-1<br>SL)   | A hasty night time ride on rarely travelled<br>back roads, or a hunt through the trackless<br>Barren Hills in search of a rumoured chapel.                                       |  |  |
-| Hard (-2<br>SL)        | A slog through the Mirror Moors in search<br>of signs of gnomish settlements, or a<br>descent through a section of a river known<br>for its rapids and hidden rocks.             |  |  |
-| Very Hard<br>(-3 SL)   | A hopeless journey through the sweltering<br>jungles of Lustria with few supplies, or an<br>hours-long ascent from within a lightless<br>cavern without so much as a candle.     |  |  |
+| Difficulty             | Conditions                                                                                                                                                                       |
+|------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Very Easy (+6 SL)   | An evening's stroll in fair conditions following a well travelled path.                                                                                                       |
+| Easy (+4 SL)           | A short hike up a modest hill, or a ride to the next town over.                                                                                                               |
+| Average (+2 SL)     | A day's travel across open terrain, or through a forest in a region for which the Characters have a map, or at least one Advance in the appropriate Lore (Local) Skill. |
+| Challenging (+0 SL) | A two-day trip to a place the Characters know of but have not been, or a short river journey through a frequently travelled part of the Talabec.                        |
+| Difficult (-1 SL)   | A hasty night time ride on rarely travelled back roads, or a hunt through the trackless Barren Hills in search of a rumoured chapel.                                       |
+| Hard (-2 SL)        | A slog through the Mirror Moors in search of signs of gnomish settlements, or a descent through a section of a river known for its rapids and hidden rocks.             |
+| Very Hard (-3 SL)   | A hopeless journey through the sweltering jungles of Lustria with few supplies, or an hours-long ascent from within a lightless cavern without so much as a candle.     |
 
 #### **Foraging**
 
@@ -1013,12 +1008,12 @@ Unlike creating a herbal remedy, the ingredients for alchemical preparations are
 
 #### **LOCATING HERBS FOR REMEDIES**
 
-| Time of Year                                   | Required SL |  |
-|------------------------------------------------|-------------|--|
-| Winter (18th Kaldzeit to 16th<br>Nachhexen)    | 20          |  |
-| Spring (17th Nachhexen to 17th<br>Sigmarzeit)  | 10          |  |
-| Summer (18th Sigmarzeit to 16th<br>Nachgeheim) | 5           |  |
-| Autumn (17th Nachgeheim to 17th<br>Kaldzeit)   | 10          |  |
+| Time of Year                                   | Required SL |
+|------------------------------------------------|-------------|
+| Winter (18th Kaldzeit to 16th Nachhexen)    | 20          |
+| Spring (17th Nachhexen to 17th Sigmarzeit)  | 10          |
+| Summer (18th Sigmarzeit to 16th Nachgeheim) | 5           |
+| Autumn (17th Nachgeheim to 17th Kaldzeit)   | 10          |
 
 #### **Herbal Remedies**
 
@@ -1032,11 +1027,11 @@ Selling any such cures without the proper guild license can carry stiff penaltie
 
 #### **REMEDY CREATION DIFFICULTY**
 
-| Symptom                                     | Alchemical<br>Ingredient<br>Price | Trade<br>(Apothecary)  | Trade<br>(Herbalist) |
+| Symptom                                     | Alchemical Ingredient Price | Trade (Apothecary)  | Trade (Herbalist) |
 |---------------------------------------------|-----------------------------------|------------------------|----------------------|
-| Malaise,<br>Nausea, Pox,<br>Infection       | 5/-                               | Average<br>(+2 SL)     | Average<br>(+2 SL)   |
-| Coughs and<br>Sneezes, Fever,<br>Flux       | 10/-                              | Challenging<br>(+0 SL) | Difficult<br>(-1 SL) |
-| Blight, Buboes,<br>Convulsions,<br>Gangrene | 1 GC                              | Difficult<br>(-1 SL)   | Hard<br>(-2 SL)      |
+| Malaise, Nausea, Pox, Infection       | 5/-                               | Average (+2 SL)     | Average (+2 SL)   |
+| Coughs and Sneezes, Fever, Flux       | 10/-                              | Challenging (+0 SL) | Difficult (-1 SL) |
+| Blight, Buboes, Convulsions, Gangrene | 1 GC                              | Difficult (-1 SL)   | Hard (-2 SL)      |
 
 # **Concocting Poison**
 
@@ -1046,30 +1041,30 @@ Concocting a poison is similar to concocting a remedy, involving the same Lore S
 
 When you make the Trade Test, refer to the following table for the results.
 
-| REMEDY EFFECTIVENESS       |                                                                                                                                                                           |  |
-|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-| SL                         | Result                                                                                                                                                                    |  |
-| +6 or more,<br>or Critical | A highly effective preparation is created. The<br>Symptom is alleviated for a period of TB<br>days.                                                                       |  |
-| +1 to +5                   | The remedy is effective. The Symptom is<br>alleviated for 24 hours.                                                                                                       |  |
-| +0                         | The Symptom is alleviated for 24 hours, but<br>the patient suffers an undignified side effect,<br>such as persistent hiccups or having their<br>tongue turn green.        |  |
-| –0                         | The remedy is useless, though if the patient<br>fails an Average (+2 SL) Cool Test, they<br>may benefit from a placebo effect and ignore<br>the Symptom for 2d10 hours.   |  |
-| –1 to –5                   | The remedy has no effect.                                                                                                                                                 |  |
-| –6 or less, or<br>Fumble   | Not only does the remedy fail to alleviate<br>the Symptom, the patient must Test to see if<br>they contract the Galloping Trots in addition<br>to their current ailments. |  |
+| REMEDY EFFECTIVENESS       |                                                                                                                                                                           |
+|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| SL                         | Result                                                                                                                                                                    |
+| +6 or more, or Critical | A highly effective preparation is created. The Symptom is alleviated for a period of TB days.                                                                       |
+| +1 to +5                   | The remedy is effective. The Symptom is alleviated for 24 hours.                                                                                                       |
+| +0                         | The Symptom is alleviated for 24 hours, but the patient suffers an undignified side effect, such as persistent hiccups or having their tongue turn green.        |
+| –0                         | The remedy is useless, though if the patient fails an Average (+2 SL) Cool Test, they may benefit from a placebo effect and ignore the Symptom for 2d10 hours.   |
+| –1 to –5                   | The remedy has no effect.                                                                                                                                                 |
+| –6 or less, or Fumble   | Not only does the remedy fail to alleviate the Symptom, the patient must Test to see if they contract the Galloping Trots in addition to their current ailments. |
 
 # V **SELECTION OF POISONS**
 
 | Name                    | Source                                                                | Resistance Test                                                                                | Effect                                                                                                                                                                                                                          |
 |-------------------------|-----------------------------------------------------------------------|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Adder root              | Mashed roots of widespread<br>plant (Herbs)                           | Challenging (+0 SL)<br>Endurance Test if ingested                                              | For -SL hours, you are Stinking<br>Drunk (page 145) and suffer 1 Stunned<br>Condition per -SL.                                                                                                                                  |
-| Black lotus<br>(leaves) | Dried leaves of plant native to the<br>Southlands (must be purchased) | Difficult (-1 SL) Endurance<br>Test upon inhalation                                            | Take 2 Stunned Conditions and 1 Stunned<br>Condition per -SL.                                                                                                                                                                   |
-| Black lotus<br>(sap)    | Sap of plant native to the<br>Southlands (must be purchased)          | Difficult (-1 SL) Endurance<br>Test upon suffering at least 1<br>Wound from a sap-coated blade | Take 2 Poisoned Conditions and 1<br>Poisoned Condition per -SL.                                                                                                                                                                 |
-| Daemon's<br>tand        | Fungus common to wetlands in<br>the Old World (Herbs)                 | Hard (-2 SL) Endurance Test<br>if ingested                                                     | Pass Test or gain the Convulsions and<br>Fever Symptoms for 2d10 hours.                                                                                                                                                         |
-| Dwarf bile              | Fungus common to the Worlds<br>Edge Mountains (Herbs)                 | Challenging (+0 SL)<br>Endurance Test if ingested                                              | Pass Test or gain the Malaise and Nausea<br>Symptoms for 2d10 hours.                                                                                                                                                            |
-| Juck                    | Paste made from woodland plant<br>harvested in spring (Herbs)         | Average (+2 SL) Endurance<br>Test if smeared onto skin                                         | Gain the Pox Symptom for 40 minutes<br>plus 10 minutes per -SL.                                                                                                                                                                 |
-| Rat poison              | Heating ruby sulphur<br>(Chemistry)                                   | Difficult (-1 SL) Endurance<br>Test if ingested                                                | Take the Besmirched Condition and 2<br>Poisoned Conditions.                                                                                                                                                                     |
-| Schlafenkraut           | Infusion of dried leaves of<br>wetland plant (Herbs)                  | Difficult (-1 SL) Endurance<br>Test if ingested                                                | Take 1 Fatigued Condition and 1 Fatigued<br>Condition per -SL. If you receive more<br>Fatigued Conditions than your Toughness<br>Bonus, fall into a deep slumber.                                                               |
-| Spider spittle          | Concentrated giant spider<br>venom (Chemistry)                        | Challenging (+0 SL)<br>Endurance Test on taking 1<br>Wound from envenomed blade                | Take 1 Poisoned Condition.                                                                                                                                                                                                      |
-| Weirdroot               | Sliced bulbs of widespread plant<br>(Herbs)                           | Very Easy (+6 SL) Endurance<br>Test if ingested                                                | Test not Fumbled: For 2d10 hours, suffer<br>1 Blinded Condition and gain +2 SL to<br>Psychology Tests.<br>Test Fumbled: For 2d10 hours, you are<br>Stinking Drunk (page 145) and suffer 2<br>Blinded and 2 Deafened Conditions. |
+| Adder root              | Mashed roots of widespread plant (Herbs)                           | Challenging (+0 SL) Endurance Test if ingested                                              | For -SL hours, you are Stinking Drunk (page 145) and suffer 1 Stunned Condition per -SL.                                                                                                                                  |
+| Black lotus (leaves) | Dried leaves of plant native to the Southlands (must be purchased) | Difficult (-1 SL) Endurance Test upon inhalation                                            | Take 2 Stunned Conditions and 1 Stunned Condition per -SL.                                                                                                                                                                   |
+| Black lotus (sap)    | Sap of plant native to the Southlands (must be purchased)          | Difficult (-1 SL) Endurance Test upon suffering at least 1 Wound from a sap-coated blade | Take 2 Poisoned Conditions and 1 Poisoned Condition per -SL.                                                                                                                                                                 |
+| Daemon's tand        | Fungus common to wetlands in the Old World (Herbs)                 | Hard (-2 SL) Endurance Test if ingested                                                     | Pass Test or gain the Convulsions and Fever Symptoms for 2d10 hours.                                                                                                                                                         |
+| Dwarf bile              | Fungus common to the Worlds Edge Mountains (Herbs)                 | Challenging (+0 SL) Endurance Test if ingested                                              | Pass Test or gain the Malaise and Nausea Symptoms for 2d10 hours.                                                                                                                                                            |
+| Juck                    | Paste made from woodland plant harvested in spring (Herbs)         | Average (+2 SL) Endurance Test if smeared onto skin                                         | Gain the Pox Symptom for 40 minutes plus 10 minutes per -SL.                                                                                                                                                                 |
+| Rat poison              | Heating ruby sulphur (Chemistry)                                   | Difficult (-1 SL) Endurance Test if ingested                                                | Take the Besmirched Condition and 2 Poisoned Conditions.                                                                                                                                                                     |
+| Schlafenkraut           | Infusion of dried leaves of wetland plant (Herbs)                  | Difficult (-1 SL) Endurance Test if ingested                                                | Take 1 Fatigued Condition and 1 Fatigued Condition per -SL. If you receive more Fatigued Conditions than your Toughness Bonus, fall into a deep slumber.                                                               |
+| Spider spittle          | Concentrated giant spider venom (Chemistry)                        | Challenging (+0 SL) Endurance Test on taking 1 Wound from envenomed blade                | Take 1 Poisoned Condition.                                                                                                                                                                                                      |
+| Weirdroot               | Sliced bulbs of widespread plant (Herbs)                           | Very Easy (+6 SL) Endurance Test if ingested                                                | Test not Fumbled: For 2d10 hours, suffer 1 Blinded Condition and gain +2 SL to Psychology Tests.<br>Test Fumbled: For 2d10 hours, you are Stinking Drunk (page 145) and suffer 2 Blinded and 2 Deafened Conditions. |
 
 # **GETTING AROUND**
 
@@ -1093,15 +1088,15 @@ Jumping to reach high ledges, leaping from rooftop to rooftop, or failing both a
 
 Difficulty is determined by the Character's Movement, with values 3 or below increasing Difficulty, and values of 5 or greater reducing it.
 
-| Difficulty             | Action                                                                                                                                                                                                                                      |  |  |
-|------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|--|
-| Very Easy (+6 SL)      | Ride (Horse): Bring a quiet horse for a gentle trot over a lush meadow.<br>Drive: Navigate a small obstacle with your horse and cart.<br>Athletics: Dash across town to catch the baker before she's sold out of fresh bread.               |  |  |
-| Easy (+4 SL)           | Climb: Make your way up a well-kept ladder.<br>Swim: Cross a deep but still pool of water.<br>Row: Row from a moored barge to the docks in a small tender.                                                                                  |  |  |
-| Average (+2 SL)        | Sail: See to the rigging and unfurl the fore and mainsail in a gentle breeze.<br>Climb: Clamber up a steep incline with the help of a rope.<br>Ride (Horse): Bring your steed up to a respectable gallop.                                   |  |  |
-| Challenging (+0<br>SL) | Ride (Demigryph): Have your mount join a tight formation during a parade.<br>Athletics: Climb up a brick wall to the second-story window and slip inside.<br>Drive: Spur your beasts onward to escape pursuing bandits.                     |  |  |
-| Difficult (-1 SL)      | Climb: Clamber over loose roof tiles during a downpour.<br>Sail: Successfully tack your vessel into a blustering headwind.<br>Swim: Make your way upriver in swift-flowing water.                                                           |  |  |
-| Hard (-2 SL)           | Ride (Demigryph): Spur your beast to gallop headfirst into a wall of glittering spears.<br>Drive: Bring your damaged cart to a halt before plunging headfirst into the ditch.<br>Row: Paddle your way out of the jaws of a hungry stirpike. |  |  |
-| Very Hard (-3 SL)      | Ride (Horse): Leap across a broken bridge to safety.<br>Climb: Ascend the smooth granite face of a lofty mountain in the rain.<br>Swim: Plunge over a waterfall and dive into the water below without injury.                               |  |  |
+| Difficulty             | Action                                                                                                                                                                                                                                      |
+|------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Very Easy (+6 SL)      | Ride (Horse): Bring a quiet horse for a gentle trot over a lush meadow.<br>Drive: Navigate a small obstacle with your horse and cart.<br>Athletics: Dash across town to catch the baker before she's sold out of fresh bread.               |
+| Easy (+4 SL)           | Climb: Make your way up a well-kept ladder.<br>Swim: Cross a deep but still pool of water.<br>Row: Row from a moored barge to the docks in a small tender.                                                                                  |
+| Average (+2 SL)        | Sail: See to the rigging and unfurl the fore and mainsail in a gentle breeze.<br>Climb: Clamber up a steep incline with the help of a rope.<br>Ride (Horse): Bring your steed up to a respectable gallop.                                   |
+| Challenging (+0 SL) | Ride (Demigryph): Have your mount join a tight formation during a parade.<br>Athletics: Climb up a brick wall to the second-story window and slip inside.<br>Drive: Spur your beasts onward to escape pursuing bandits.                     |
+| Difficult (-1 SL)      | Climb: Clamber over loose roof tiles during a downpour.<br>Sail: Successfully tack your vessel into a blustering headwind.<br>Swim: Make your way upriver in swift-flowing water.                                                           |
+| Hard (-2 SL)           | Ride (Demigryph): Spur your beast to gallop headfirst into a wall of glittering spears.<br>Drive: Bring your damaged cart to a halt before plunging headfirst into the ditch.<br>Row: Paddle your way out of the jaws of a hungry stirpike. |
+| Very Hard (-3 SL)      | Ride (Horse): Leap across a broken bridge to safety.<br>Climb: Ascend the smooth granite face of a lofty mountain in the rain.<br>Swim: Plunge over a waterfall and dive into the water below without injury.                               |
 
 V
 
@@ -1157,12 +1152,12 @@ These rules are intended to create interesting narrative moments, and so work sl
 
 If the players are chasing one another, simply resolve the pursuit with an Opposed Athletics, Drive, Ride, Swim, or other appropriate Test instead.
 
-| PURSUIT FACTORS                                                          |                                                                         |  |  |  |
-|--------------------------------------------------------------------------|-------------------------------------------------------------------------|--|--|--|
-| Positives while Quarry                                                   | Positives while Pursuers                                                |  |  |  |
-| Won the Chase Test                                                       | Won the Chase Test                                                      |  |  |  |
-| Terrain is dense or crowded<br>with places to hide                       | Terrain is open with few<br>places to hide                              |  |  |  |
-| Your slowest member has a<br>higher Movement than the<br>fastest Pursuer | Your slowest member has a<br>higher Movement than the<br>fastest Quarry |  |  |  |
+| PURSUIT FACTORS                                                          |                                                                         |
+|--------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| Positives while Quarry                                                   | Positives while Pursuers                                                |
+| Won the Chase Test                                                       | Won the Chase Test                                                      |
+| Terrain is dense or crowded with places to hide                       | Terrain is open with few places to hide                              |
+| Your slowest member has a higher Movement than the fastest Pursuer | Your slowest member has a higher Movement than the fastest Quarry |
 
 #### **Pursuit Circumstances**
 
@@ -1195,19 +1190,19 @@ If you satisfy the outcome conditions imposed by your Pursuit Factors, you win, 
 
 **If you're the Pursuer and you lose:** The Quarry escapes. They may leave behind clues or evidence that could help you track them down later, but for now they have given you the slip. Any Pursuers who overcame their Obstacles may press on without the others, each gaining a single opportunity to attack or restrain the slowest member of the Quarry. Bear in mind this may leave a lone Character outnumbered and far from their companions.
 
-|     | OBSTACLE TABLE                                                                                               |                                                                               |  |  |  |
-|-----|--------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|--|--|--|
-| d10 | Obstacle                                                                                                     | Example Tests                                                                 |  |  |  |
-| 1   | A merchant's wagon overturns, spilling its goods<br>across your path.                                        | Athletics to leap over the spilled goods, or Dodge to duck<br>to one side.    |  |  |  |
-| 2   | An overly curious guard tries to stop you to see what<br>the fuss is about.                                  | Charm or Intimidate to convince them to bother someone<br>else.               |  |  |  |
-| 3   | A chest-deep pool, canal, or stream lies in your way.                                                        | Swim to dive in, or Athletics to leap across.                                 |  |  |  |
-| 4   | A belligerent bystander or panicking animal lurches<br>into your path.                                       | Dodge to avoid them or Melee to fend them off.                                |  |  |  |
-| 5   | A patch of boggy ground or densely packed crowd<br>threatens to slow your progress.                          | Athletics or Endurance to push through, or Intimidate to<br>clear a path.     |  |  |  |
-| 6   | A stretch of open ground offers little choice but to<br>trust in your ability to outdistance your opponents. | Athletics, Drive, or Ride to cover the distance as quickly as<br>possible.    |  |  |  |
-| 7   | A shadowy alley or dense patch of foliage obscures<br>your surroundings.                                     | Stealth to hide from Pursuers or Track to keep on your<br>Quarry's trail.     |  |  |  |
-| 8   | A pothole or half-buried root makes you (or your<br>mount) stumble.                                          | Endurance to push through the pain or Charm Animal to<br>calm your mount.     |  |  |  |
-| 9   | A sudden change in elevation forces you onto rooftops<br>or through the treetops.                            | Athletics to leap between gaps or Climb to negotiate the<br>changing terrain. |  |  |  |
-| 10  | A maze of alleys or winding canyons causes you to<br>lose sight of your Quarry or Pursuers.                  | Perception to spot them again or Navigation to avoid<br>getting lost.         |  |  |  |
+|     | OBSTACLE TABLE                                                                                               |                                                                               |
+|-----|--------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| d10 | Obstacle                                                                                                     | Example Tests                                                                 |
+| 1   | A merchant's wagon overturns, spilling its goods across your path.                                        | Athletics to leap over the spilled goods, or Dodge to duck to one side.    |
+| 2   | An overly curious guard tries to stop you to see what the fuss is about.                                  | Charm or Intimidate to convince them to bother someone else.               |
+| 3   | A chest-deep pool, canal, or stream lies in your way.                                                        | Swim to dive in, or Athletics to leap across.                                 |
+| 4   | A belligerent bystander or panicking animal lurches into your path.                                       | Dodge to avoid them or Melee to fend them off.                                |
+| 5   | A patch of boggy ground or densely packed crowd threatens to slow your progress.                          | Athletics or Endurance to push through, or Intimidate to clear a path.     |
+| 6   | A stretch of open ground offers little choice but to trust in your ability to outdistance your opponents. | Athletics, Drive, or Ride to cover the distance as quickly as possible.    |
+| 7   | A shadowy alley or dense patch of foliage obscures your surroundings.                                     | Stealth to hide from Pursuers or Track to keep on your Quarry's trail.     |
+| 8   | A pothole or half-buried root makes you (or your mount) stumble.                                          | Endurance to push through the pain or Charm Animal to calm your mount.     |
+| 9   | A sudden change in elevation forces you onto rooftops or through the treetops.                            | Athletics to leap between gaps or Climb to negotiate the changing terrain. |
+| 10  | A maze of alleys or winding canyons causes you to lose sight of your Quarry or Pursuers.                  | Perception to spot them again or Navigation to avoid getting lost.         |
 
 # **COMBAT**
 
@@ -1428,16 +1423,16 @@ Any failed Melee or Ranged Test that rolls a double is a Fumble.
 
 By default, you drop your weapon and must spend your next Action retrieving it. Alternatively, the GM may roll on the **Oops! Table**.
 
-| OOPS! TABLE |                                                                                                                                                                                                                                                          |  |  |
-|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|--|
-| 1d10        | Result                                                                                                                                                                                                                                                   |  |  |
-| 1–2         | You catch a part of your anatomy (we recommend<br>you play this for laughs) — lose 1 Wound, ignoring<br>Toughness Bonus or Armour Points.                                                                                                                |  |  |
-| 3–4         | Your melee weapon jars badly, or ranged weapon<br>malfunctions or slightly breaks — your weapon<br>suffers 1 Damage. Next Round, you will act last<br>regardless of Combat Initiative order, Talents, or<br>special rules as you recover (see page 161). |  |  |
-| 5–6         | Your manoeuvre was misjudged, leaving you out of<br>position, or you lose grip of a ranged weapon. Next<br>Round, your Action suffers a penalty of -1 SL.                                                                                                |  |  |
-| 7           | You stumble badly, finding it hard to right yourself.<br>Lose your next Move.                                                                                                                                                                            |  |  |
-| 8           | You mishandle your weapon, or you drop your<br>ammunition. Miss your next Action.                                                                                                                                                                        |  |  |
-| 9           | You overextend yourself or stumble and twist your<br>ankle. Suffer -1 SL when using one of your legs<br>(randomly determined) for 1d10 Rounds. This<br>counts as a Critical Wound.                                                                       |  |  |
-| 10          | You completely mess up, hitting 1 random ally in<br>range using your rolled units die to determine the<br>SL of the hit. If that is not possible, you somehow<br>hit yourself in the face and gain a Stunned<br>Condition (see page 186).                |  |  |
+| OOPS! TABLE |                                                                                                                                                                                                                                                          |
+|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1d10        | Result                                                                                                                                                                                                                                                   |
+| 1–2         | You catch a part of your anatomy (we recommend you play this for laughs) — lose 1 Wound, ignoring Toughness Bonus or Armour Points.                                                                                                                |
+| 3–4         | Your melee weapon jars badly, or ranged weapon malfunctions or slightly breaks — your weapon suffers 1 Damage. Next Round, you will act last regardless of Combat Initiative order, Talents, or special rules as you recover (see page 161). |
+| 5–6         | Your manoeuvre was misjudged, leaving you out of position, or you lose grip of a ranged weapon. Next Round, your Action suffers a penalty of -1 SL.                                                                                                |
+| 7           | You stumble badly, finding it hard to right yourself. Lose your next Move.                                                                                                                                                                            |
+| 8           | You mishandle your weapon, or you drop your ammunition. Miss your next Action.                                                                                                                                                                        |
+| 9           | You overextend yourself or stumble and twist your ankle. Suffer -1 SL when using one of your legs (randomly determined) for 1d10 Rounds. This counts as a Critical Wound.                                                                       |
+| 10          | You completely mess up, hitting 1 random ally in range using your rolled units die to determine the SL of the hit. If that is not possible, you somehow hit yourself in the face and gain a Stunned Condition (see page 186).                |
 
 #### **Opposed Tests and Fumbles**
 
@@ -1455,8 +1450,8 @@ There are some extra considerations that apply to ranged attacks:
 
 | d10  | Result                                                                                                  |
 |------|---------------------------------------------------------------------------------------------------------|
-| 1–8  | The weapon fails to fire. If a gun, it must be<br>reloaded. If an explosive, it is a dud.               |
-| 9–10 | Catastrophe! The weapon explodes, dealing full<br>Damage to your primary arm with +0 SL for<br>the hit. |
+| 1–8  | The weapon fails to fire. If a gun, it must be reloaded. If an explosive, it is a dud.               |
+| 9–10 | Catastrophe! The weapon explodes, dealing full Damage to your primary arm with +0 SL for the hit. |
 
 - 0 Ranged Attacks cannot normally be opposed with Melee Skills. At Point Blank Range (page 166), however, the target may oppose the attack with Dodge.
 - 0 You cannot make Ranged Attacks while Engaged, unless your weapon has the Pistol Quality (see page 305).
@@ -1503,7 +1498,7 @@ These modifiers apply to Attack Tests only, not to Tests made to oppose an attac
 | Size is larger than you (+1 SL) or Monstrous (+2 SL)          | Target is smaller than you (-1 SL), or Tiny (-2 SL)                                                  |
 | Range is Short (+1 SL) or Point Blank (+2 SL)                 | Range is Long (-1 SL), or Extreme (-2 SL)                                                            |
 | Target is Surprised (+1 SL)                                   | Target is in cover or Prone (-1 SL)                                                                  |
-| You spent an Action last Turn aiming at the target<br>(+1 SL) | Fog or poor lighting (-1 SL), rain and wind (-2 SL) or extreme<br>weather or pitch blackness (-3 SL) |
+| You spent an Action last Turn aiming at the target (+1 SL) | Fog or poor lighting (-1 SL), rain and wind (-2 SL) or extreme weather or pitch blackness (-3 SL) |
 |                                                               | Attacker moved before firing (-1 SL)                                                                 |
 
 # **MELEE ATTACK MODIFIERS**
@@ -1511,7 +1506,7 @@ These modifiers apply to Attack Tests only, not to Tests made to oppose an attac
 | Positive Modifiers                                  | Negative Modifiers                                                                             |
 |-----------------------------------------------------|------------------------------------------------------------------------------------------------|
 | Target is outnumbered (+1 SL) or surrounded (+2 SL) | Attacker is in mud, water, or difficult terrain (-1 SL)                                        |
-| Target is Surprised (+1 SL)                         | Attacker is in an enclosed space with a weapon of Average (-1 SL)<br>or greater (-2 SL) reach. |
+| Target is Surprised (+1 SL)                         | Attacker is in an enclosed space with a weapon of Average (-1 SL) or greater (-2 SL) reach. |
 | Target is Prone or attacker has high ground (+1 SL) | Attacker is Prone (-1 SL)                                                                      |
 | Target is Entangled (+1 SL)                         | Attacker's weapon is in the off-hand (-2 SL)                                                   |
 |                                                     | Defender has high ground (-1 SL)                                                               |
@@ -1765,101 +1760,101 @@ Sudden Death is useful for determining the fate of background NPCs such as briga
 
 | d100          | Description         | Wounds | Additional Effects                                                                                                                                                                                                            |
 |---------------|---------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 03 or<br>less | Dramatic<br>Injury  | 0      | A scratch to the cheek leaving you with an impressive duelling scar. Gain 1 Bleeding<br>Condition. Once healed, the scar gives a +1 SL bonus to appropriate social Tests. You<br>can only gain this benefit once.             |
+| 03 or less | Dramatic Injury  | 0      | A scratch to the cheek leaving you with an impressive duelling scar. Gain 1 Bleeding Condition. Once healed, the scar gives a +1 SL bonus to appropriate social Tests. You can only gain this benefit once.             |
 | 04–09         | Ear Bash            | 1      | Your ear is left ringing. Gain 1 Deafened Condition.                                                                                                                                                                          |
 | 10–12         | Poked Eye           | 1      | The blow glances across your eye socket. Gain 1 Blinded Condition.                                                                                                                                                            |
 | 13–17         | Minor Cut           | 1      | The strike pierces your cheek. Gain 1 Bleeding Condition.                                                                                                                                                                     |
 | 18–20         | Rattling Blow       | 1      | The blow floods your vision with flashing lights. Gain 1 Stunned Condition.                                                                                                                                                   |
 | 21–25         | Black Eye           | 2      | A blow glances your eye. Gain 2 Blinded Conditions.                                                                                                                                                                           |
 | 26–30         | Sliced Ear          | 2      | A blow cuts into your ear. Gain 1 Bleeding and 2 Deafened Conditions.                                                                                                                                                         |
-| 31–35         | Struck<br>Forehead  | 2      | A solid blow strikes your forehead. Gain 2 Bleeding Conditions and a Blinded<br>Condition that cannot be removed until all Bleeding Conditions are removed.                                                                   |
-| 36–40         | Fractured Jaw       | 2      | The blow fractures your jaw. Gain 1 Stunned Condition. Suffer a Broken Bone (Minor)<br>Injury.                                                                                                                                |
-| 41–45         | Broken Nose         | 3      | A solid blow to the nose. Gain 1 Bleeding Condition. Make a Challenging (+0 SL)<br>Endurance Test or also gain a Stunned Condition.                                                                                           |
-| 46–50         | Major Eye<br>Wound  | 3      | A blow strikes your eye socket. Gain 1 Bleeding Condition. Also gain 1 Blinded<br>Condition that cannot be removed until you receive Medical Attention (see page 172).                                                        |
-| 51–55         | Broken Jaw          | 3      | The blow breaks your jaw. Gain 2 Stunned Conditions. Suffer a Broken Bone (Major)<br>Injury.                                                                                                                                  |
-| 56–60         | Major Ear<br>Wound  | 3      | The blow destroys the hearing in one ear permanently. Gain 4 Deafened Conditions. If<br>you suffer this result again, your hearing is permanently lost.                                                                       |
-| 61–65         | Concussive<br>Blow  | 4      | A solid thump to the skull. Take 1 Deafened and 1d10 Stunned Conditions. Gain a<br>Fatigued Condition that lasts for 1d10 days.                                                                                               |
-| 66–75         | Smashed Teeth       | 4      | The blow knocks out several teeth. Gain 2 Bleeding Conditions. Lose 1d10 teeth —<br>Amputation (Easy +4 SL).                                                                                                                  |
-| 76–80         | Mangled Ear         | 4      | A blow tears your ear apart. Gain 2 Bleeding and 3 Deafened Conditions. Lose your ear<br>— Amputation (Average +2 SL).                                                                                                        |
-| 81–85         | Devastated<br>Eye   | 5      | A strike to your eye bursts it. Gain 2 Bleeding and 1 Stunned Condition. Lose your eye<br>— Amputation (Difficult -1 SL).                                                                                                     |
-| 86–94         | Disfiguring<br>Blow | 5      | The blow destroys your eye and nose. Gain 3 Bleeding and 2 Stunned Conditions. Lose<br>your eye and nose — Amputation (Hard -2 SL).                                                                                           |
-| 95–99         | Mangled Jaw         | 5      | The blow shatters your jaw and destroys your tongue, sending teeth flying. Gain 4<br>Bleeding and 3 Stunned Conditions. Suffer a Broken Bone (Major) Injury and lose your<br>tongue and 1d10 teeth — Amputation (Hard -2 SL). |
-| 00 or<br>more | Shattered<br>Skull  | Death  | Your head is caved in and you collapse, instantly dead. A suitably bladed weapon<br>may decapitate you instead, your severed head landing 1d10 yards away in a random<br>direction.                                           |
+| 31–35         | Struck Forehead  | 2      | A solid blow strikes your forehead. Gain 2 Bleeding Conditions and a Blinded Condition that cannot be removed until all Bleeding Conditions are removed.                                                                   |
+| 36–40         | Fractured Jaw       | 2      | The blow fractures your jaw. Gain 1 Stunned Condition. Suffer a Broken Bone (Minor) Injury.                                                                                                                                |
+| 41–45         | Broken Nose         | 3      | A solid blow to the nose. Gain 1 Bleeding Condition. Make a Challenging (+0 SL) Endurance Test or also gain a Stunned Condition.                                                                                           |
+| 46–50         | Major Eye Wound  | 3      | A blow strikes your eye socket. Gain 1 Bleeding Condition. Also gain 1 Blinded Condition that cannot be removed until you receive Medical Attention (see page 172).                                                        |
+| 51–55         | Broken Jaw          | 3      | The blow breaks your jaw. Gain 2 Stunned Conditions. Suffer a Broken Bone (Major) Injury.                                                                                                                                  |
+| 56–60         | Major Ear Wound  | 3      | The blow destroys the hearing in one ear permanently. Gain 4 Deafened Conditions. If you suffer this result again, your hearing is permanently lost.                                                                       |
+| 61–65         | Concussive Blow  | 4      | A solid thump to the skull. Take 1 Deafened and 1d10 Stunned Conditions. Gain a Fatigued Condition that lasts for 1d10 days.                                                                                               |
+| 66–75         | Smashed Teeth       | 4      | The blow knocks out several teeth. Gain 2 Bleeding Conditions. Lose 1d10 teeth — Amputation (Easy +4 SL).                                                                                                                  |
+| 76–80         | Mangled Ear         | 4      | A blow tears your ear apart. Gain 2 Bleeding and 3 Deafened Conditions. Lose your ear — Amputation (Average +2 SL).                                                                                                        |
+| 81–85         | Devastated Eye   | 5      | A strike to your eye bursts it. Gain 2 Bleeding and 1 Stunned Condition. Lose your eye — Amputation (Difficult -1 SL).                                                                                                     |
+| 86–94         | Disfiguring Blow | 5      | The blow destroys your eye and nose. Gain 3 Bleeding and 2 Stunned Conditions. Lose your eye and nose — Amputation (Hard -2 SL).                                                                                           |
+| 95–99         | Mangled Jaw         | 5      | The blow shatters your jaw and destroys your tongue, sending teeth flying. Gain 4 Bleeding and 3 Stunned Conditions. Suffer a Broken Bone (Major) Injury and lose your tongue and 1d10 teeth — Amputation (Hard -2 SL). |
+| 00 or more | Shattered Skull  | Death  | Your head is caved in and you collapse, instantly dead. A suitably bladed weapon may decapitate you instead, your severed head landing 1d10 yards away in a random direction.                                           |
 
 ### **ARM CRITICAL WOUNDS**
 
-| d100           | Description             | Wounds | Additional Effects                                                                                                                                                                                                                                                                              |  |
-|----------------|-------------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-| 10 or<br>less  | Jolted Wrist            | 0      | Drop any item held in that hand.                                                                                                                                                                                                                                                                |  |
-| 11–20          | Jarred Arm              | 0      | Drop anything held in that hand, which is useless for 1d10 – TB Rounds (minimum<br>1). For this time, treat the hand as lost (see Amputated Parts, page 177).                                                                                                                                   |  |
-| 21–25          | Minor Cut               | 1      | Your upper arm is cut. Gain a Bleeding Condition.                                                                                                                                                                                                                                               |  |
-| 26–30          | Bleeding Hand           | 1      | Take 1 Bleeding Condition. While suffering from that Bleeding Condition, make an<br>Average (+2 SL) Dexterity Test before taking Actions involving items held in that<br>hand. If you fail, you drop the item.                                                                                  |  |
-| 31–45          | Sprain                  | 1      | Suffer a Torn Muscle (Minor) Injury.                                                                                                                                                                                                                                                            |  |
-| 46–50          | Torn Muscles            | 1      | The blow slams into your forearm. Gain a Bleeding Condition and a Torn Muscle<br>(Minor) Injury.                                                                                                                                                                                                |  |
-| 51–55          | Wrenched Arm            | 2      | Drop any item held in that hand. The arm is useless for 1d10 Rounds (see<br>Amputated Parts, page 177).                                                                                                                                                                                         |  |
-| 56–60          | Gaping Wound            | 2      | Gain 2 Bleeding Conditions. Until you receive Surgery to stitch the cut, any Wounds<br>to the wounded arm inflict an additional Bleeding Condition.                                                                                                                                             |  |
-| 61–65          | Ruptured<br>Ligament    | 2      | Drop any item held in that hand. Suffer a Torn Muscle (Major) Injury.                                                                                                                                                                                                                           |  |
-| 66–80          | Clean Break             | 2      | Drop any item held in that hand and gain a Broken Bone (Minor) Injury. Pass a<br>Difficult (-1 SL) Endurance Test or gain a Stunned Condition.                                                                                                                                                  |  |
-| 81–85          | Deep Cut                | 3      | Gain 2 Bleeding Conditions. Gain 1 Stunned Condition and suffer a Torn Muscle<br>(Minor) Injury.                                                                                                                                                                                                |  |
-| 86–90          | Crushed Elbow           | 3      | Drop whatever was held in that hand and gain a Broken Bone (Major) Injury.                                                                                                                                                                                                                      |  |
-| 91–95          | Damaged<br>Artery       | 3      | Gain 4 Bleeding Conditions.                                                                                                                                                                                                                                                                     |  |
-| 96–109         | Dislocated<br>Shoulder  | 4      | The arm is useless until the shoulder is reset (see Amputated Parts, page 177). An<br>Extended Average (+2 SL) Heal Test reaching 6 SL resets the arm. After this, for<br>1d10 days, Tests made using the arm suffer a -1 SL penalty.                                                           |  |
-| 110–115        | Severed Finger          | 4      | You lose a finger — Amputation (Average +2 SL). Gain a Bleeding Condition.                                                                                                                                                                                                                      |  |
-| 116–120        | Cleft Hand              | 4      | Your hand is splayed. Lose 1 finger — Amputation (Difficult -1 SL). Gain 2<br>Bleeding and 1 Stunned Condition. For every successive Round in which you do not<br>receive Medical Attention, lose another finger. If you lose all fingers, you lose the<br>hand — Amputation (Difficult -1 SL). |  |
-| 121–125        | Mauled Bicep            | 5      | The blow rips bicep from bone. You drop anything held in that hand and suffer 2<br>Bleeding, 1 Stunned, and a Torn Muscle (Major) Injury.                                                                                                                                                       |  |
-| 126–130        | Mangled Hand            | 5      | You lose your hand — Amputation (Hard -2 SL). Gain 2 Bleeding Conditions.                                                                                                                                                                                                                       |  |
-| 131–135        | Sliced Tendons          | 5      | The blow leaves your arm useless — Amputation (Very Hard -3 SL). Gain 3<br>Bleeding and 1 Stunned Condition.                                                                                                                                                                                    |  |
-| 136 or<br>more | Brutal<br>Dismemberment | Death  | Your arm is severed or torn away. You expire from shock and blood loss almost<br>instantly.                                                                                                                                                                                                     |  |
+| d100           | Description             | Wounds | Additional Effects                                                                                                                                                                                                                                                                              |
+|----------------|-------------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 10 or less  | Jolted Wrist            | 0      | Drop any item held in that hand.                                                                                                                                                                                                                                                                |
+| 11–20          | Jarred Arm              | 0      | Drop anything held in that hand, which is useless for 1d10 – TB Rounds (minimum 1). For this time, treat the hand as lost (see Amputated Parts, page 177).                                                                                                                                   |
+| 21–25          | Minor Cut               | 1      | Your upper arm is cut. Gain a Bleeding Condition.                                                                                                                                                                                                                                               |
+| 26–30          | Bleeding Hand           | 1      | Take 1 Bleeding Condition. While suffering from that Bleeding Condition, make an Average (+2 SL) Dexterity Test before taking Actions involving items held in that hand. If you fail, you drop the item.                                                                                  |
+| 31–45          | Sprain                  | 1      | Suffer a Torn Muscle (Minor) Injury.                                                                                                                                                                                                                                                            |
+| 46–50          | Torn Muscles            | 1      | The blow slams into your forearm. Gain a Bleeding Condition and a Torn Muscle (Minor) Injury.                                                                                                                                                                                                |
+| 51–55          | Wrenched Arm            | 2      | Drop any item held in that hand. The arm is useless for 1d10 Rounds (see Amputated Parts, page 177).                                                                                                                                                                                         |
+| 56–60          | Gaping Wound            | 2      | Gain 2 Bleeding Conditions. Until you receive Surgery to stitch the cut, any Wounds to the wounded arm inflict an additional Bleeding Condition.                                                                                                                                             |
+| 61–65          | Ruptured Ligament    | 2      | Drop any item held in that hand. Suffer a Torn Muscle (Major) Injury.                                                                                                                                                                                                                           |
+| 66–80          | Clean Break             | 2      | Drop any item held in that hand and gain a Broken Bone (Minor) Injury. Pass a Difficult (-1 SL) Endurance Test or gain a Stunned Condition.                                                                                                                                                  |
+| 81–85          | Deep Cut                | 3      | Gain 2 Bleeding Conditions. Gain 1 Stunned Condition and suffer a Torn Muscle (Minor) Injury.                                                                                                                                                                                                |
+| 86–90          | Crushed Elbow           | 3      | Drop whatever was held in that hand and gain a Broken Bone (Major) Injury.                                                                                                                                                                                                                      |
+| 91–95          | Damaged Artery       | 3      | Gain 4 Bleeding Conditions.                                                                                                                                                                                                                                                                     |
+| 96–109         | Dislocated Shoulder  | 4      | The arm is useless until the shoulder is reset (see Amputated Parts, page 177). An Extended Average (+2 SL) Heal Test reaching 6 SL resets the arm. After this, for 1d10 days, Tests made using the arm suffer a -1 SL penalty.                                                           |
+| 110–115        | Severed Finger          | 4      | You lose a finger — Amputation (Average +2 SL). Gain a Bleeding Condition.                                                                                                                                                                                                                      |
+| 116–120        | Cleft Hand              | 4      | Your hand is splayed. Lose 1 finger — Amputation (Difficult -1 SL). Gain 2 Bleeding and 1 Stunned Condition. For every successive Round in which you do not receive Medical Attention, lose another finger. If you lose all fingers, you lose the hand — Amputation (Difficult -1 SL). |
+| 121–125        | Mauled Bicep            | 5      | The blow rips bicep from bone. You drop anything held in that hand and suffer 2 Bleeding, 1 Stunned, and a Torn Muscle (Major) Injury.                                                                                                                                                       |
+| 126–130        | Mangled Hand            | 5      | You lose your hand — Amputation (Hard -2 SL). Gain 2 Bleeding Conditions.                                                                                                                                                                                                                       |
+| 131–135        | Sliced Tendons          | 5      | The blow leaves your arm useless — Amputation (Very Hard -3 SL). Gain 3 Bleeding and 1 Stunned Condition.                                                                                                                                                                                    |
+| 136 or more | Brutal Dismemberment | Death  | Your arm is severed or torn away. You expire from shock and blood loss almost instantly.                                                                                                                                                                                                     |
 
 # V **BODY CRITICAL WOUNDS**
 
-| d100           | Description                   | Wounds | Additional Effects                                                                                                                                                                                                                                                       |  |
-|----------------|-------------------------------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-| 10 or<br>less  | Winded                        | 0      | Suffocate for 1 Round as you get your breath back.                                                                                                                                                                                                                       |  |
-| 11–15          | Gut Blow                      | 1      | Pass an Average (+2 SL) Endurance Test or vomit, suffering a Stunned Condition<br>for 1 Round and gaining the Besmirched Condition.                                                                                                                                      |  |
-| 16–25          | Flesh Wound                   | 1      | Gain 1 Bleeding Condition.                                                                                                                                                                                                                                               |  |
-| 26–30          | Low Blow!                     | 1      | Gain a Stunned Condition.                                                                                                                                                                                                                                                |  |
-| 31–35          | Twisted Back                  | 1      | Suffer a Torn Muscle (Minor) Injury.                                                                                                                                                                                                                                     |  |
-| 36–50          | Bruised Ribs                  | 2      | All Agility Tests suffer a -1 SL penalty for 1d10 days.                                                                                                                                                                                                                  |  |
-| 51–55          | Wrenched Collar<br>Bone       | 2      | Randomly select one arm. Drop whatever is held in that hand; the arm is useless for<br>1d10 Rounds (see Amputated Parts, page 177).                                                                                                                                      |  |
-| 56–60          | Ragged Wound                  | 2      | Take 2 Bleeding Conditions.                                                                                                                                                                                                                                              |  |
-| 61–65          | Cracked Ribs                  | 2      | The hit cracks one or more ribs. Gain a Stunned Condition. Gain a Broken Bone<br>(Minor) Injury.                                                                                                                                                                         |  |
-| 66–70          | Gaping Wound                  | 3      | Take 3 Bleeding Conditions. Until you receive Surgery, any Wounds you receive to<br>the body inflict an additional Bleeding Condition as the cut reopens.                                                                                                                |  |
-| 71–75          | Painful Cut                   | 3      | Gain 2 Bleeding Conditions and a Stunned Condition. Take a Hard (-2 SL)<br>Endurance Test or scream out in agony. On an Astounding Failure (-6 SL), gain<br>the Unconscious Condition as you black out from the pain.                                                    |  |
-| 76–80          | Pulled Back                   | 3      | Your back turns to white pain as you pull a muscle. Suffer a Stunned Condition and<br>a Torn Muscle (Major) Injury.                                                                                                                                                      |  |
-| 81–85          | Arterial Damage               | 3      | Gain 4 Bleeding Conditions. Until you receive Surgery, every time you receive<br>Damage to the Body Hit Location, gain 2 Bleeding Conditions.                                                                                                                            |  |
-| 86–90          | Gut Wound                     | 4      | Gain 2 Bleeding Conditions and contract a Festering Wound (see Disease and<br>Infection, page 179).                                                                                                                                                                      |  |
-| 91–95          | Fractured Hip                 | 4      | Gain a Stunned Condition. Take a Challenging (+0 SL) Endurance Test or also<br>gain the Prone Condition. Suffer a Broken Bone (Minor) Injury.                                                                                                                            |  |
-| 96–100         | Major Chest<br>Wound          | 4      | You take a significant wound to your chest, flensing skin from muscle and sinew.<br>Take 4 Bleeding Conditions. Until you receive Surgery to stitch the wound together,<br>any Wounds you receive to the body also inflict 2 Bleeding Conditions as the tears<br>reopen. |  |
-| 101–105        | Smashed Rib<br>Cage           | 5      | Gain a Stunned Condition that can only be removed through Medical Attention.<br>Take 1 Bleeding Condition and a Broken Bone (Major) Injury.                                                                                                                              |  |
-| 106–110        | Spinal Cord<br>Damage         | 5      | Gain 3 Stunned Conditions and a Broken Bone (Major) Injury. Your legs never work<br>again — Amputation (Very Hard -3 SL).                                                                                                                                                |  |
-| 111–115        | Internal Bleeding             | 5      | Gain a Bleeding Condition that can only be removed through Surgery. Contract<br>Blood Rot (see Disease and Infection, page 179).                                                                                                                                         |  |
-| 116 or<br>more | Torn Apart                    | Death  | You are hacked in two. The top half lands in a random direction, and all creatures<br>within 2 yards are showered in blood.                                                                                                                                              |  |
+| d100           | Description                   | Wounds | Additional Effects                                                                                                                                                                                                                                                       |
+|----------------|-------------------------------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 10 or less  | Winded                        | 0      | Suffocate for 1 Round as you get your breath back.                                                                                                                                                                                                                       |
+| 11–15          | Gut Blow                      | 1      | Pass an Average (+2 SL) Endurance Test or vomit, suffering a Stunned Condition for 1 Round and gaining the Besmirched Condition.                                                                                                                                      |
+| 16–25          | Flesh Wound                   | 1      | Gain 1 Bleeding Condition.                                                                                                                                                                                                                                               |
+| 26–30          | Low Blow!                     | 1      | Gain a Stunned Condition.                                                                                                                                                                                                                                                |
+| 31–35          | Twisted Back                  | 1      | Suffer a Torn Muscle (Minor) Injury.                                                                                                                                                                                                                                     |
+| 36–50          | Bruised Ribs                  | 2      | All Agility Tests suffer a -1 SL penalty for 1d10 days.                                                                                                                                                                                                                  |
+| 51–55          | Wrenched Collar Bone       | 2      | Randomly select one arm. Drop whatever is held in that hand; the arm is useless for 1d10 Rounds (see Amputated Parts, page 177).                                                                                                                                      |
+| 56–60          | Ragged Wound                  | 2      | Take 2 Bleeding Conditions.                                                                                                                                                                                                                                              |
+| 61–65          | Cracked Ribs                  | 2      | The hit cracks one or more ribs. Gain a Stunned Condition. Gain a Broken Bone (Minor) Injury.                                                                                                                                                                         |
+| 66–70          | Gaping Wound                  | 3      | Take 3 Bleeding Conditions. Until you receive Surgery, any Wounds you receive to the body inflict an additional Bleeding Condition as the cut reopens.                                                                                                                |
+| 71–75          | Painful Cut                   | 3      | Gain 2 Bleeding Conditions and a Stunned Condition. Take a Hard (-2 SL) Endurance Test or scream out in agony. On an Astounding Failure (-6 SL), gain the Unconscious Condition as you black out from the pain.                                                    |
+| 76–80          | Pulled Back                   | 3      | Your back turns to white pain as you pull a muscle. Suffer a Stunned Condition and a Torn Muscle (Major) Injury.                                                                                                                                                      |
+| 81–85          | Arterial Damage               | 3      | Gain 4 Bleeding Conditions. Until you receive Surgery, every time you receive Damage to the Body Hit Location, gain 2 Bleeding Conditions.                                                                                                                            |
+| 86–90          | Gut Wound                     | 4      | Gain 2 Bleeding Conditions and contract a Festering Wound (see Disease and Infection, page 179).                                                                                                                                                                      |
+| 91–95          | Fractured Hip                 | 4      | Gain a Stunned Condition. Take a Challenging (+0 SL) Endurance Test or also gain the Prone Condition. Suffer a Broken Bone (Minor) Injury.                                                                                                                            |
+| 96–100         | Major Chest Wound          | 4      | You take a significant wound to your chest, flensing skin from muscle and sinew. Take 4 Bleeding Conditions. Until you receive Surgery to stitch the wound together, any Wounds you receive to the body also inflict 2 Bleeding Conditions as the tears reopen. |
+| 101–105        | Smashed Rib Cage           | 5      | Gain a Stunned Condition that can only be removed through Medical Attention. Take 1 Bleeding Condition and a Broken Bone (Major) Injury.                                                                                                                              |
+| 106–110        | Spinal Cord Damage         | 5      | Gain 3 Stunned Conditions and a Broken Bone (Major) Injury. Your legs never work again — Amputation (Very Hard -3 SL).                                                                                                                                                |
+| 111–115        | Internal Bleeding             | 5      | Gain a Bleeding Condition that can only be removed through Surgery. Contract Blood Rot (see Disease and Infection, page 179).                                                                                                                                         |
+| 116 or more | Torn Apart                    | Death  | You are hacked in two. The top half lands in a random direction, and all creatures within 2 yards are showered in blood.                                                                                                                                              |
 
 # **LEG CRITICAL WOUNDS**
 
-| d100           | Description           | Wounds | Additional Effects                                                                                                                                                                                                                                                                       |  |
-|----------------|-----------------------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-| 10 or<br>less  | Jabbed Toe            | 0      | Pass an Average (+2 SL) Endurance Test or suffer Disadvantage on Tests based on<br>Agility until the end of your Turn.                                                                                                                                                                   |  |
-| 11–20          | Lost Footing          | 0      | Pass a Challenging (+0 SL) Athletics Test or gain the Prone Condition.                                                                                                                                                                                                                   |  |
-| 21–25          | Twisted Ankle         | 1      | Tests relying on the leg, such as those made to run, Climb, or Dodge, suffer<br>Disadvantage for 1d10 - Toughness Bonus Rounds (minimum 1).                                                                                                                                              |  |
-| 26–40          | Minor Cut             | 1      | Gain 1 Bleeding Condition.                                                                                                                                                                                                                                                               |  |
-| 41–45          | Thigh Strike          | 1      | A blow slams into your upper thigh. Gain a Bleeding Condition and take an Average<br>(+2 SL) Endurance Test or gain the Prone Condition.                                                                                                                                                 |  |
-| 46–50          | Sprained Ankle        | 1      | Gain a Torn Muscle (Minor) Injury.                                                                                                                                                                                                                                                       |  |
-| 51–55          | Twisted Knee          | 2      | You twist your knee too far. Tests using the leg suffer a Disadvantage penalty for 1d10<br>Rounds.                                                                                                                                                                                       |  |
-| 56–60          | Bad Cut               | 2      | Gain 2 Bleeding Conditions. Pass a Challenging (+0 SL) Endurance Test or gain the<br>Prone Condition.                                                                                                                                                                                    |  |
-| 61–65          | Badly Twisted<br>Knee | 2      | Gain a Torn Muscle (Major) Injury.                                                                                                                                                                                                                                                       |  |
-| 66–70          | Badly Cut Toe         | 2      | Gain 1 Bleeding Condition. After the encounter, make a Challenging (+0 SL)<br>Endurance Test. If you fail, lose 1 toe — Amputation (Average +2 SL).                                                                                                                                      |  |
-| 71–75          | Ruptured<br>Tendon    | 3      | Gain 1 Stunned and the Prone Condition. Pass a Hard (-2 SL) Endurance Test or gain<br>the Unconscious Condition. Suffer a Torn Muscle (Major) Injury.                                                                                                                                    |  |
-| 76–80          | Torn Thigh            | 3      | Gain 3 Bleeding Conditions. Until you receive Surgery to stitch the cut, any associated<br>leg Wounds you receive inflict an additional Bleeding Condition.                                                                                                                              |  |
-| 81–85          | Hacked Leg            | 3      | Gain 2 Bleeding, 1 Stunned, the Prone Condition, and suffer a Broken Bone (Minor)<br>Injury.                                                                                                                                                                                             |  |
-| 86–95          | Dislocated Knee       | 4      | Gain the Prone Condition and your leg is useless (see Amputated Parts, page 177)<br>until the knee is reset. An Extended Average (+2 SL) Heal Test reaching 6 SL resets<br>the knee, with one Test made each Round. After this, for 1d10 days, Movement is<br>halved.                    |  |
-| 96–100         | Cracked Shin          | 4      | Gain 1 Stunned and the Prone Condition. Further, suffer a Broken Bone (Minor) and<br>Torn Muscle (Major) Injury.                                                                                                                                                                         |  |
-| 101–105        | Broken Knee           | 4      | You gain 1 Bleeding, 1 Stunned, the Prone Condition, and a Broken Bone (Major) Injury.                                                                                                                                                                                                   |  |
-| 106–115        | Crushed Foot          | 4      | Make an Average (+2 SL) Endurance Test. If you fail, gain the Prone Condition and<br>lose 1 toe, plus 1 additional toe for each SL below 0 — Amputation (Average +2 SL).<br>Gain 2 Bleeding Conditions. If you do not receive Surgery within Toughness Bonus<br>days, you lose the foot. |  |
-| 116–120        | Severed Foot          | 5      | Your foot is severed— Amputation (Hard -2 SL). You gain 3 Bleeding, 2 Stunned, and<br>the Prone Condition.                                                                                                                                                                               |  |
-| 121–125        | Cut Tendon            | 5      | Your leg collapses. Gain 2 Bleeding, 2 Stunned, and the Prone Condition and your leg<br>never works again — Amputation (Very Hard -3 SL).                                                                                                                                                |  |
-| 126 or<br>more | Shattered Pelvis      | Death  | The blow shatters your pelvis, severing a leg. You die instantly from traumatic shock.                                                                                                                                                                                                   |  |
+| d100           | Description           | Wounds | Additional Effects                                                                                                                                                                                                                                                                       |
+|----------------|-----------------------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 10 or less  | Jabbed Toe            | 0      | Pass an Average (+2 SL) Endurance Test or suffer Disadvantage on Tests based on Agility until the end of your Turn.                                                                                                                                                                   |
+| 11–20          | Lost Footing          | 0      | Pass a Challenging (+0 SL) Athletics Test or gain the Prone Condition.                                                                                                                                                                                                                   |
+| 21–25          | Twisted Ankle         | 1      | Tests relying on the leg, such as those made to run, Climb, or Dodge, suffer Disadvantage for 1d10 - Toughness Bonus Rounds (minimum 1).                                                                                                                                              |
+| 26–40          | Minor Cut             | 1      | Gain 1 Bleeding Condition.                                                                                                                                                                                                                                                               |
+| 41–45          | Thigh Strike          | 1      | A blow slams into your upper thigh. Gain a Bleeding Condition and take an Average (+2 SL) Endurance Test or gain the Prone Condition.                                                                                                                                                 |
+| 46–50          | Sprained Ankle        | 1      | Gain a Torn Muscle (Minor) Injury.                                                                                                                                                                                                                                                       |
+| 51–55          | Twisted Knee          | 2      | You twist your knee too far. Tests using the leg suffer a Disadvantage penalty for 1d10 Rounds.                                                                                                                                                                                       |
+| 56–60          | Bad Cut               | 2      | Gain 2 Bleeding Conditions. Pass a Challenging (+0 SL) Endurance Test or gain the Prone Condition.                                                                                                                                                                                    |
+| 61–65          | Badly Twisted Knee | 2      | Gain a Torn Muscle (Major) Injury.                                                                                                                                                                                                                                                       |
+| 66–70          | Badly Cut Toe         | 2      | Gain 1 Bleeding Condition. After the encounter, make a Challenging (+0 SL) Endurance Test. If you fail, lose 1 toe — Amputation (Average +2 SL).                                                                                                                                      |
+| 71–75          | Ruptured Tendon    | 3      | Gain 1 Stunned and the Prone Condition. Pass a Hard (-2 SL) Endurance Test or gain the Unconscious Condition. Suffer a Torn Muscle (Major) Injury.                                                                                                                                    |
+| 76–80          | Torn Thigh            | 3      | Gain 3 Bleeding Conditions. Until you receive Surgery to stitch the cut, any associated leg Wounds you receive inflict an additional Bleeding Condition.                                                                                                                              |
+| 81–85          | Hacked Leg            | 3      | Gain 2 Bleeding, 1 Stunned, the Prone Condition, and suffer a Broken Bone (Minor) Injury.                                                                                                                                                                                             |
+| 86–95          | Dislocated Knee       | 4      | Gain the Prone Condition and your leg is useless (see Amputated Parts, page 177) until the knee is reset. An Extended Average (+2 SL) Heal Test reaching 6 SL resets the knee, with one Test made each Round. After this, for 1d10 days, Movement is halved.                    |
+| 96–100         | Cracked Shin          | 4      | Gain 1 Stunned and the Prone Condition. Further, suffer a Broken Bone (Minor) and Torn Muscle (Major) Injury.                                                                                                                                                                         |
+| 101–105        | Broken Knee           | 4      | You gain 1 Bleeding, 1 Stunned, the Prone Condition, and a Broken Bone (Major) Injury.                                                                                                                                                                                                   |
+| 106–115        | Crushed Foot          | 4      | Make an Average (+2 SL) Endurance Test. If you fail, gain the Prone Condition and lose 1 toe, plus 1 additional toe for each SL below 0 — Amputation (Average +2 SL). Gain 2 Bleeding Conditions. If you do not receive Surgery within Toughness Bonus days, you lose the foot. |
+| 116–120        | Severed Foot          | 5      | Your foot is severed— Amputation (Hard -2 SL). You gain 3 Bleeding, 2 Stunned, and the Prone Condition.                                                                                                                                                                               |
+| 121–125        | Cut Tendon            | 5      | Your leg collapses. Gain 2 Bleeding, 2 Stunned, and the Prone Condition and your leg never works again — Amputation (Very Hard -3 SL).                                                                                                                                                |
+| 126 or more | Shattered Pelvis      | Death  | The blow shatters your pelvis, severing a leg. You die instantly from traumatic shock.                                                                                                                                                                                                   |
 
 # **Injuries**
 
@@ -2157,14 +2152,11 @@ A plethora of cures for all manner of ailments are available for sale, though th
 
 # **EFFECT OF PRE-PREPARED CURES**
 
-| Symptom                                     | Alchemical           | Herbal          | Quack                |
-|---------------------------------------------|----------------------|-----------------|----------------------|
-|                                             | Remedy               | Remedy          | Medicine             |
-| Malaise, Nausea,                            | Average              | Average         | Difficult            |
-| Pox, Infection                              | (+2 SL)              | (+2 SL)         | (–1 SL)              |
-| Coughs and Sneezes,                         | Challenging          | Difficult       | Hard                 |
-| Fever, Flux                                 | (+0 SL)              | (–1 SL)         | (-2 SL)              |
-| Blight, Buboes,<br>Convulsions,<br>Gangrene | Difficult (–1<br>SL) | Hard (-2<br>SL) | Very Hard<br>(-3 SL) |
+| Symptom | Alchemical Remedy | Herbal Remedy | Quack Medicine |
+|---|---|---|---|
+| Malaise, Nausea, Pox, Infection | Average (+2 SL) | Average (+2 SL) | Difficult (–1 SL) |
+| Coughs and Sneezes, Fever, Flux | Challenging (+0 SL) | Difficult (–1 SL) | Hard (-2 SL) |
+| Blight, Buboes, Convulsions, Gangrene | Difficult (–1 SL) | Hard (-2 SL) | Very Hard (-3 SL) |
 
 Poisons can inflict some of the same symptoms as a disease, but the effects usually don't last quite as long, and treating them requires identifying the poison and administering an appropriate antidote. A **Difficult (-1 SL) Heal** Test, or an **Average (+2 SL) Trade (Poisoner)** Test correctly identifies the poison and the antidote required, which could be anything from a herbal preparation to an alchemical concoction to something far more esoteric.
 
@@ -2174,17 +2166,14 @@ Poisoning is almost always handled by having the affected Character make an Endu
 
 Most poisons are prepared with the intention of harming a human-sized target. A dose of poison is defined as the amount needed to force a single Endurance Test on characters of *Small* or *Average* Size. For every additional dose applied, the Difficulty of the Endurance Test required to resist the poison worsens by 1 step. When used against creatures of different Sizes, more or less poison may be required.
 
-| CREATURE SIZE AND DOSAGE |  |  |  |
-|--------------------------|--|--|--|
-|--------------------------|--|--|--|
-
-| Tiny             | A single dose counts as 10 doses.<br>A single dose counts as 4 doses. |  |
-|------------------|-----------------------------------------------------------------------|--|
-| Little           |                                                                       |  |
-| Small or Average | Dosage as normal                                                      |  |
-| Large            | 2 doses count as a single dose.                                       |  |
-| Enormous         | 5 doses count as a single dose.                                       |  |
-| Monstrous        | 20 doses count as a single dose.                                      |  |
+| CREATURE SIZE AND DOSAGE | |
+|---|---|
+| Tiny | A single dose counts as 10 doses. |
+| Little | A single dose counts as 4 doses. |
+| Small or Average | Dosage as normal |
+| Large | 2 doses count as a single dose. |
+| Enormous | 5 doses count as a single dose. |
+| Monstrous | 20 doses count as a single dose. |
 
 **Note:** Creatures with the following Creature Traits are usually immune to poison: *Construct*, *Daemonic*, *Ethereal*, and *Undead*.
 
@@ -2434,30 +2423,28 @@ V
 
 # **PHYSICAL CORRUPTION TABLE**
 
-| Description<br>Animalistic Legs<br>Corpulent<br>Distended Digits<br>Emaciated<br>Enormous Eye<br>Extra Leg Joints<br>Extra Mouth | Effect<br>+1 Movement<br>+5 Strength, +5 Toughness, -1<br>Movement<br>+10 Dexterity<br>+5 Agility, -10 Strength<br>Gain the Acute Sense (Sight)<br>Talent.<br>+5 Agility             |  |
-|----------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
-|                                                                                                                                  |                                                                                                                                                                                      |  |
-|                                                                                                                                  |                                                                                                                                                                                      |  |
-|                                                                                                                                  |                                                                                                                                                                                      |  |
-|                                                                                                                                  |                                                                                                                                                                                      |  |
-|                                                                                                                                  |                                                                                                                                                                                      |  |
-|                                                                                                                                  |                                                                                                                                                                                      |  |
-|                                                                                                                                  |                                                                                                                                                                                      |  |
-|                                                                                                                                  | Roll on the Hit Locations<br>table to see where.                                                                                                                                     |  |
-| Fleshy Tentacle                                                                                                                  | Gain the Tentacles 1 Creature<br>Trait. See page 362.                                                                                                                                |  |
-|                                                                                                                                  | Effective light of a candle                                                                                                                                                          |  |
-|                                                                                                                                  | +10 Fellowship, you do not<br>scar.                                                                                                                                                  |  |
-|                                                                                                                                  | -20 Fellowship                                                                                                                                                                       |  |
-|                                                                                                                                  | +2 Armour Points to all<br>Locations                                                                                                                                                 |  |
-|                                                                                                                                  | -10 to all Language Tests when<br>speaking                                                                                                                                           |  |
-|                                                                                                                                  | Roll on the Hit Locations<br>table twice to see where.                                                                                                                               |  |
-|                                                                                                                                  | -1 Movement                                                                                                                                                                          |  |
-|                                                                                                                                  | Roll on the Hit Locations<br>table to see where.                                                                                                                                     |  |
-|                                                                                                                                  | +1 Armour Point to all<br>Locations                                                                                                                                                  |  |
-|                                                                                                                                  | +1 Armour Point to the head,<br>gain the Horns Creature Trait<br>(see page 358).                                                                                                     |  |
-|                                                                                                                                  | Gain Striding Gait (Wetland)<br>Talent.                                                                                                                                              |  |
-|                                                                                                                                  | Whiskered Snout Gain Acute Sense (Smell) Talent<br>and +2 SL to Track Tests.                                                                                                         |  |
-|                                                                                                                                  | Glowing Skin<br>Inhuman Beauty<br>Inverted Face<br>Iron Skin<br>Lolling Tongue<br>Patchy Feathers<br>Short Legs<br>Spiny Protrusions<br>Thorny Scales<br>Uneven Horns<br>Webbed Feet |  |
+| d100 | Description | Effect |
+|---|---|---|
+| 01–05 | Animalistic Legs | +1 Movement |
+| 06–10 | Corpulent | +5 Strength, +5 Toughness, -1 Movement |
+| 11–15 | Distended Digits | +10 Dexterity |
+| 16–20 | Emaciated | +5 Agility, -10 Strength |
+| 21–25 | Enormous Eye | Gain the Acute Sense (Sight) Talent. |
+| 26–30 | Extra Leg Joints | +5 Agility |
+| 31–35 | Extra Mouth | Roll on the Hit Locations table to see where. |
+| 36–40 | Fleshy Tentacle | Gain the Tentacles 1 Creature Trait. See page 362. |
+| 41–45 | Glowing Skin | Effective light of a candle |
+| 46–50 | Inhuman Beauty | +10 Fellowship, you do not scar. |
+| 51–55 | Inverted Face | -20 Fellowship |
+| 56–60 | Iron Skin | +2 Armour Points to all Locations |
+| 61–65 | Lolling Tongue | -10 to all Language Tests when speaking |
+| 66–70 | Patchy Feathers | Roll on the Hit Locations table twice to see where. |
+| 71–75 | Short Legs | -1 Movement |
+| 76–80 | Spiny Protrusions | Roll on the Hit Locations table to see where. |
+| 81–85 | Thorny Scales | +1 Armour Point to all Locations |
+| 86–90 | Uneven Horns | +1 Armour Point to the head, gain the Horns Creature Trait (see page 358). |
+| 91–95 | Webbed Feet | Gain Striding Gait (Wetland) Talent. |
+| 96–00 | Whiskered Snout | Gain Acute Sense (Smell) Talent and +2 SL to Track Tests. |
 
 #### **Absolution**
 
@@ -2465,29 +2452,28 @@ As Corruption Points mount and the grip of the Ruinous Powers tightens around yo
 
 # **MENTAL CORRUPTION TABLE**
 
-| d100  | Description                     | Effect                                                                            |  |
-|-------|---------------------------------|-----------------------------------------------------------------------------------|--|
-| 01–05 | Awful Cravings                  | -5 Willpower, -5 Fellowship                                                       |  |
-| 06–10 | Beast Within                    | +10 Willpower, -5 Intelligence,<br>-5 Fellowship                                  |  |
-| 11–15 |                                 | Chaotic Dreams Gain a Fatigued Condition for<br>the first two hours of every day. |  |
-| 16–20 | Crawling Skin                   | -5 Initiative, -5 Dexterity                                                       |  |
-| 21–25 |                                 | Erratic Fantasist -5 Initiative, -5 Willpower                                     |  |
-| 26–30 | Fearful Concern -10 Willpower   |                                                                                   |  |
-| 31–35 | Hateful<br>Impulses             | Subject to Animosity (see page<br>183) to all not of your species                 |  |
-| 36–40 | Hollow Heart                    | +10 Willpower, -10 Fellowship                                                     |  |
-| 41–45 | Jealous Thoughts -10 Fellowship |                                                                                   |  |
-| 46–50 | Lonely Spirit                   | -10 to any Test when alone                                                        |  |
-| 51–55 | Mental Blocks                   | -10 Intelligence                                                                  |  |
-| 56–60 |                                 | Profane Urgency +10 Agility, -10 Willpower                                        |  |
-| 61–65 | Shaky Morale                    | Gain the Broken Condition if<br>you fail a Fear Test.                             |  |
-| 66–70 | Suspicious<br>Mind              | -5 Initiative, -5 Intelligence                                                    |  |
-| 71–75 | Thrill Hunter                   | +10 Willpower, -10 Initiative                                                     |  |
-| 76–80 | Tortured<br>Visions             | -10 Initiative                                                                    |  |
-| 81–85 | Totally<br>Unhinged             | +10 Willpower, -20 Fellowship                                                     |  |
-| 86–90 | Unending<br>Malice              | +1 SL on Tests to hurt, -1 SL<br>to any Test not hurting another                  |  |
-| 91–95 | Unholy Rage                     | +10 Weapon Skill, subject to<br>Frenzy (see page 184)                             |  |
-| 96–00 | Worried Jitters                 | +5 Agility, -5 Fellowship                                                         |  |
-|       |                                 |                                                                                   |  |
+| d100 | Description | Effect |
+|---|---|---|
+| 01–05 | Awful Cravings | -5 Willpower, -5 Fellowship |
+| 06–10 | Beast Within | +10 Willpower, -5 Intelligence, -5 Fellowship |
+| 11–15 | Chaotic Dreams | Gain a Fatigued Condition for the first two hours of every day. |
+| 16–20 | Crawling Skin | -5 Initiative, -5 Dexterity |
+| 21–25 | Erratic Fantasist | -5 Initiative, -5 Willpower |
+| 26–30 | Fearful Concern | -10 Willpower |
+| 31–35 | Hateful Impulses | Subject to Animosity (see page 183) to all not of your species |
+| 36–40 | Hollow Heart | +10 Willpower, -10 Fellowship |
+| 41–45 | Jealous Thoughts | -10 Fellowship |
+| 46–50 | Lonely Spirit | -10 to any Test when alone |
+| 51–55 | Mental Blocks | -10 Intelligence |
+| 56–60 | Profane Urgency | +10 Agility, -10 Willpower |
+| 61–65 | Shaky Morale | Gain the Broken Condition if you fail a Fear Test. |
+| 66–70 | Suspicious Mind | -5 Initiative, -5 Intelligence |
+| 71–75 | Thrill Hunter | +10 Willpower, -10 Initiative |
+| 76–80 | Tortured Visions | -10 Initiative |
+| 81–85 | Totally Unhinged | +10 Willpower, -20 Fellowship |
+| 86–90 | Unending Malice | +1 SL on Tests to hurt, -1 SL to any Test not hurting another |
+| 91–95 | Unholy Rage | +10 Weapon Skill, subject to Frenzy (see page 184) |
+| 96–00 | Worried Jitters | +5 Agility, -5 Fellowship |
 
 - 0 Cleansing a profane temple dedicated to the Dark Gods — though doing so may expose you to even greater corruption.
 - 0 Completing a holy pilgrimage and receiving a blessing from a high priest at its end.
