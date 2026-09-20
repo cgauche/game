@@ -52,9 +52,10 @@ XII
 
 While predominantly peopled by men and women of the Empire, the Reikland is also home to halflings, dwarfs, elves, ogres, and more. Below are basic profiles you can use for everyday citizens of the Empire, followed by specific profiles for commonly encountered individuals — watchmen, merchants, etc. All of these can be adapted to provide tailored allies and antagonists for your game, as described above.
 
-|   | HUMAN |    |    |    |    |    |     |     |    |     |    |  |  |
-|---|-------|----|----|----|----|----|-----|-----|----|-----|----|--|--|
+#### **HUMAN**
+
 | M | WS    | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |  |  |
+|---|-------|----|----|----|----|----|-----|-----|----|-----|----|--|--|
 | 4 | 30    | 30 | 30 | 30 | 30 | 30 | 30  | 30  | 30 | 30  | 12 |  |  |
 
 **Hand Weapon:** (35/+7)
@@ -77,9 +78,10 @@ While predominantly peopled by men and women of the Empire, the Reikland is also
 
 Animal Care 35, Gossip 35, Haggle 35, Melee (Basic) 35, Ranged (Bow) 35
 
-|   | HALFLING |    |    |    |    |    |     |     |    |     |    |  |  |
-|---|----------|----|----|----|----|----|-----|-----|----|-----|----|--|--|
+#### **HALFLING**
+
 | M | WS       | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |  |  |
+|---|----------|----|----|----|----|----|-----|-----|----|-----|----|--|--|
 | 4 | 20       | 40 | 20 | 20 | 50 | 30 | 40  | 30  | 40 | 40  | 10 |  |  |
 
 **Hand Weapon:** (20/+6)
@@ -106,9 +108,10 @@ Charm 45, Dodge 35, Perception 55, Sleight of Hand 45, Stealth (Urban) 35
 
 **Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
 
-| DWARF |    |    |    |    |    |    |     |     |    |     |    |  |
-|-------|----|----|----|----|----|----|-----|-----|----|-----|----|--|
+#### **DWARF**
+
 | M     | WS | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |  |
+|-------|----|----|----|----|----|----|-----|-----|----|-----|----|--|
 | 3     | 40 | 30 | 30 | 40 | 20 | 20 | 40  | 30  | 50 | 20  | 16 |  |
 
 **Attacks**
@@ -177,9 +180,10 @@ Cool 45, Melee (Basic) 45, Navigation 55, Perception 55, Ranged (Bow) 45
 
 Often the first to arrive at the scene of trouble, watchmen may also be found patrolling towns and cities, standing guard at gates and important buildings, or relaxing in taverns after their shifts. The profile could also be used for guards and soldiers, though such characters benefit from more armour options.
 
-| HUMAN WATCHMAN |    |    |    |    |    |    |     |     |    |     |    |  |
-|----------------|----|----|----|----|----|----|-----|-----|----|-----|----|--|
+#### **HUMAN WATCHMAN**
+
 | M              | WS | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |  |
+|----------------|----|----|----|----|----|----|-----|-----|----|-----|----|--|
 | 4              | 45 | 30 | 40 | 30 | 40 | 35 | 30  | 30  | 30 | 30  | 13 |  |
 
 **Attacks**
@@ -220,7 +224,7 @@ Merchants are commonly encountered wherever goods are bought and sold. This prof
 
 ### **HUMAN MERCHANT**
 
-| M | WS | BS | S<br>T<br>I |    |    | Ag<br>Dex |    | Int<br>WP |    | Fel | W  |
+| M | WS | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |
 |---|----|----|-------------|----|----|-----------|----|-----------|----|-----|----|
 | 4 | 30 | 30 | 30          | 30 | 30 | 40        | 30 | 40        | 35 | 45  | 12 |
 
@@ -252,9 +256,10 @@ Abacus, Canvas Tarpaulin, Cloak, Clothing, Dagger, Hat, Mule and Cart containing
 
 Belligerent and mercenary, these NPCs represent the sort of petty criminals who thrive in the rookeries of the Empire's cities. They may be found propping up the bar in rough taverns or working as frighteners and leg breakers for crime lords.
 
-| HUMAN THUG |    |    |    |    |    |    |     |     |    |     |    |  |
-|------------|----|----|----|----|----|----|-----|-----|----|-----|----|--|
+#### **HUMAN THUG**
+
 | M          | WS | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |  |
+|------------|----|----|----|----|----|----|-----|-----|----|-----|----|--|
 | 4          | 40 | 30 | 45 | 40 | 35 | 30 | 30  | 30  | 30 | 30  | 15 |  |
 
 #### **Attacks**
@@ -285,13 +290,15 @@ Charm 35, Consume Alcohol 45, Cool 40, Dodge 35, Gamble 35, Gossip 35, Haggle 35
 
 Clothing, Dagger, Hand Weapon, Hood, Knuckledusters, Leather Jack, Pouch containing 3d10 Brass Pennies, Sling Bag containing 2 Candles and 5 Matches
 
-Many folk of the Empire believe halflings are natural thieves. This is partly a cultural misunderstanding, as property in the Moot is often considered to belong to the community rather than the individual. That said, some halflings are simply flatout larcenists.
+# **Halfling Thief**
 
-|   | HALFLING THIEF |    |   |   |   |    |     |     |    |     |   |  |  |
-|---|----------------|----|---|---|---|----|-----|-----|----|-----|---|--|--|
+Many folk of the Empire believe halflings are natural thieves. This is partly a cultural misunderstanding, as property in the Moot is often considered to belong to the community rather than the individual. That said, some halflings are simply flat-out larcenists.
+
+#### **HALFLING THIEF**
+
 | M | WS             | BS | S | T | I | Ag | Dex | Int | WP | Fel | W |  |  |
-
-# 4 20 40 30 20 55 40 50 30 40 40 10
+|---|----------------|----|---|---|---|----|-----|-----|----|-----|---|--|--|
+| 4 | 20             | 40 | 30 | 20 | 55 | 40 | 50 | 30 | 40 | 40 | 10 |  |  |
 
 **Dagger:** (25/+5)
 
@@ -333,8 +340,7 @@ An elusive and enigmatic folk, gnomes are isolationist and secretive. Little is 
 
 Most gnomes are acerbic and quick-tempered, standing a little taller than halflings, but with slimmer frames and distinctive bulbous noses. They share many cultural traits with dwarfs: their menfolk cultivate long bushy beards, they are skilled smiths, engineers, and artisans, and they live in networks of burrows beneath hills and mountains. Unlike dwarfs they are known to work magic, though they seem to be limited to working with the Lore of Shadows. They are also rumoured to have a strange affinity with many small animals that live in the woodlands and hillsides near their burrows. It is rare to see a gnome in a human city, though the occasional adventurous individual ventures beyond their hidden homes.
 
-| GNOME |  |  | XII |
-|-------|--|--|-----|
+#### **GNOME**
 
 | M | WS | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
@@ -410,9 +416,10 @@ No one knows why, but halflings and ogres share a curious affinity. Many halflin
 
 Scavenging in the forest, boars are reclusive creatures, but when cornered will fight using their sharp tusks with a tenacity that shocks the unprepared. Though most are 5–6 feet long, some grow to remarkable proportions, with the largest prized by orcs, who use them as ferocious war mounts.
 
-|   | BOAR |    |    |    |    |    |     |     |    |     |    |  |  |  |  |
-|---|------|----|----|----|----|----|-----|-----|----|-----|----|--|--|--|--|
+#### **BOAR**
+
 | M | WS   | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |  |  |  |  |
+|---|------|----|----|----|----|----|-----|-----|----|-----|----|--|--|--|--|
 | 7 | 35   | –  | 35 | 40 | 35 | 35 | –   | 10  | 10 | –   | 12 |  |  |  |  |
 
 #### **Attacks**
@@ -445,9 +452,10 @@ Melee (Brawling) 40, Perception 40, Stealth (Rural) 40
 
 While the pampered pooches of the courtiers of Altdorf pose only a threat to an adventurer's dignity, larger breeds, such as those bred for war, can be a formidable threat.
 
-|   |    |    |    |    |    | DOG |     |     |    |     |   |
-|---|----|----|----|----|----|-----|-----|-----|----|-----|---|
+#### **DOG**
+
 | M | WS | BS | S  | T  | I  | Ag  | Dex | Int | WP | Fel | W |
+|---|----|----|----|----|----|-----|-----|-----|----|-----|---|
 | 6 | 25 | –  | 20 | 20 | 35 | 30  | –   | 15  | 10 | 15  | 4 |
 
 #### **Attacks**
@@ -488,9 +496,10 @@ loud noise or magic
 
 Rats get everywhere and are especially prevalent in the cities and towns. The more densely people are packed in, the more densely rats are packed in with them, which is especially bad when the creatures carry disease. Though typically small, they can grow to monstrous proportions, with reports of rats beneath Altdorf the size of a human and larger. Rat catchers are employed to keep them in check.
 
-|   | GIANT RAT |    |    |    |    |    |     |     |    |     |   |  |  |  |  |
-|---|-----------|----|----|----|----|----|-----|-----|----|-----|---|--|--|--|--|
+#### **GIANT RAT**
+
 | M | WS        | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W |  |  |  |  |
+|---|-----------|----|----|----|----|----|-----|-----|----|-----|---|--|--|--|--|
 | 6 | 20        | –  | 20 | 20 | 35 | 35 | 10  | 15  | 15 | –   | 4 |  |  |  |  |
 
 **Claws:** (30/+4)
@@ -523,9 +532,10 @@ Melee (Brawling) 30, Perception 45, Stealth 40
 
 Giant spiders lurk deep within the forests and caves of the Empire, but can live anywhere, including dusty attics and dark cellars. Most trap their prey with strong webs before injecting venom. Though most are the size of a large rat, some giant spider species are terrifyingly large. Forest goblins often capture larger examples for mounts.
 
-|   | GIANT SPIDER |    |    |    |    |    |     |     |    |     |   |  |  |  |  |
-|---|--------------|----|----|----|----|----|-----|-----|----|-----|---|--|--|--|--|
+#### **GIANT SPIDER**
+
 | M | WS           | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W |  |  |  |  |
+|---|--------------|----|----|----|----|----|-----|-----|----|-----|---|--|--|--|--|
 | 6 | 35           | –  | 15 | 25 | 10 | 35 | 30  | 5   | 25 | –   | 4 |  |  |  |  |
 
 **Fangs:** (40/+3)
@@ -554,11 +564,14 @@ Condition, with a Strength of 40
 
 *Size (Tiny to Large), Striding Gait (Woodland), Swarm, Trained (Broken, Guard, Magic, Mount, War), Venom (Average)*
 
+# **Horse**
+
 Horses are bred for many jobs, including speedy mounts for messengers, sturdy destriers for knights, and mighty drays for farmers. They are so useful, horse trading is almost a competitive sport in the Reikland. Unscrupulous horse copers (horse salesmen) are keen to make money at the expense of the ignorant buyer, painting and filing teeth of elderly horses or stuffing rags up noses to soak mucus — so the prospective buyer should beware.
 
-|   |    |    |    |    |    | HORSE |     |     |    |     |    |
-|---|----|----|----|----|----|-------|-----|-----|----|-----|----|
+#### **HORSE**
+
 | M | WS | BS | S  | T  | I  | Ag    | Dex | Int | WP | Fel | W  |
+|---|----|----|----|----|----|-------|-----|-----|----|-----|----|
 | 8 | 25 | –  | 45 | 35 | 15 | 30    | –   | 10  | 10 | 10  | 22 |
 |   |    |    |    |    |    |       |     |     |    |     |    |
 
@@ -576,15 +589,11 @@ Athletics 40, Endurance 40
 
 **Traits**
 
-**Bestial:** Animal behaviour is simple and predictable,
-
-see page 356
+**Bestial:** Animal behaviour is simple and predictable, see page 356
 
 **Size (Large):** See page 360 for implications of size
 
-**Skittish:** Receive +3 *Broken* Conditions if affected by
-
-loud noise or magic
+**Skittish:** Receive +3 *Broken* Conditions if affected by loud noise or magic
 
 **Optional Traits**
 
@@ -594,9 +603,10 @@ loud noise or magic
 
 Wolves usually hunt in packs and have a reputation for being tenacious hunters, pursuing their prey over dozens of miles without rest or respite. Several species prowl the Reikland, including the fierce giant wolves, which are captured and bred by goblins to use as guards and mounts.
 
-| WOLF |    |    |    |    |    |    |     |     |    |     |    |
-|------|----|----|----|----|----|----|-----|-----|----|-----|----|
+#### **WOLF**
+
 | M    | WS | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |
+|------|----|----|----|----|----|----|-----|-----|----|-----|----|
 | 9    | 25 | –  | 35 | 30 | 35 | 30 | –   | 15  | 15 | –   | 10 |
 
 **Claws:** (35/+6)
@@ -677,9 +687,10 @@ Climb 65, Melee (Brawling) 40, Stealth (Rural) 65, Swim 90
 
 Squigs are large, generally round, fungoid creatures that live deep below ground in the dankest, darkest caves. They possess a gaping maw and large, sharp teeth, and are prized by goblins for their flesh and their hides, and to act as guards and pets.
 
-|   | CAVE SQUIG |    |    |    |    |         |     |     |    |     |    |  |
-|---|------------|----|----|----|----|---------|-----|-----|----|-----|----|--|
+#### **CAVE SQUIG**
+
 | M | WS         | BS | S  | T  | I  | Ag      | Dex | Int | WP | Fel | W  |  |
+|---|------------|----|----|----|----|---------|-----|-----|----|-----|----|--|
 | 4 | 45         | –  | 50 | 30 | 10 | 50      | –   | 5   | 15 | –   | 12 |  |
 |   |            |    |    |    |    | Attacks |     |     |    |     |    |  |
 
@@ -709,7 +720,7 @@ Athletics 60, Dodge 60
 
 # **Demigryph**
 
-With the head of an eagle and body of a lion, demigryphs are powerful creatures with a noble bearing. They roam the forests and grasslands of the Empire, usually far from human habitation, hunting as individuals. Captive demigryphs are deployed by the Empire's doughtiest knightly orders as war mounts. Unlike larger monstrous mounts, which are generally taken when young or bred in captivity, the capture of a fullgrown demigryph is a rite of passage among some orders.
+With the head of an eagle and body of a lion, demigryphs are powerful creatures with a noble bearing. They roam the forests and grasslands of the Empire, usually far from human habitation, hunting as individuals. Captive demigryphs are deployed by the Empire's doughtiest knightly orders as war mounts. Unlike larger monstrous mounts, which are generally taken when young or bred in captivity, the capture of a full-grown demigryph is a rite of passage among some orders.
 
 ### **DEMIGRYPH M WS BS S T I Ag Dex Int WP Fel W** 7 45 – 55 40 30 45 – 15 25 – 30
 
@@ -845,9 +856,10 @@ needed, see page 357 for details
 
 Giants are solitary creatures who usually shun civilisation. Most stalk remote and high places surrounding the Empire, holing up in caves and forgotten ruins far from smaller folk, though they sometimes migrate to the foothills in search of food. They have a reputation for belligerence and ferocity, due in equal parts to their intimidating size, their association with marauding orc and goblin armies, and their tendency to devour farmers' cattle. Wandering giants have been known to smash up villages, stomping cottages into ruins and then rooting around in the wreckage for anything edible. Breweries are an especially popular target, as giants are notorious drunkards.
 
-|   | GIANT |    |    |    |    |    |     |     |    |     |    |  |  |  |
-|---|-------|----|----|----|----|----|-----|-----|----|-----|----|--|--|--|
+#### **GIANT**
+
 | M | WS    | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |  |  |  |
+|---|-------|----|----|----|----|----|-----|-----|----|-----|----|--|--|--|
 | 6 | 30    | 30 | 65 | 55 | 30 | 20 | 15  | 15  | 25 | 15  | 72 |  |  |  |
 |   |       |    |    |    |    |    |     |     |    |     |    |  |  |  |
 
@@ -875,9 +887,10 @@ Consume Alcohol 60, Melee (Basic) 35
 
 With the forequarters and wings of an eagle and the hindquarters of a great cat, griffons are elegant creatures with a proud, regal bearing. Perhaps because of this perceived nobility, the griffon has become one of the Empire's foremost symbols, appearing on heraldry, religious iconography, and imperial regalia. Griffons are also among the most intelligent of beasts. If captured young and properly trained, they become fiercely loyal companions, capable of understanding and obeying a remarkable range of commands. So prized are they that hunters regularly die attempting to steal griffon eggs.
 
-|   | GRIFFON |    |    |    |    |    |     |     |    |     |    |  |  |  |
-|---|---------|----|----|----|----|----|-----|-----|----|-----|----|--|--|--|
+#### **GRIFFON**
+
 | M | WS      | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |  |  |  |
+|---|---------|----|----|----|----|----|-----|-----|----|-----|----|--|--|--|
 | 6 | 50      | –  | 50 | 50 | 45 | 60 | –   | 20  | 50 | 15  | 80 |  |  |  |
 
 #### **Attacks**
@@ -900,9 +913,7 @@ Athletics 65, Melee (Brawling) 60, Perception 60
 
 #### **Traits**
 
-**Fly (80):** As the creature's Move, they can fly up to 80
-
-yards, see page 358 for details
+**Fly (80):** As the creature's Move, they can fly up to 80 yards, see page 358 for details
 
 **Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
 
@@ -1030,9 +1041,10 @@ Scrawny, spiteful, nimble, and possessed of a degree of mean cunning, a goblin's
 
 — Taunting of a captive by goblins of the Cluster Eye Tribe
 
-|   | GOBLIN |    |    |    |    |    |     |     |    |     |    |  |  |
-|---|--------|----|----|----|----|----|-----|-----|----|-----|----|--|--|
+#### **GOBLIN**
+
 | M | WS     | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |  |  |
+|---|--------|----|----|----|----|----|-----|-----|----|-----|----|--|--|
 | 4 | 25     | 30 | 30 | 30 | 20 | 30 | 25  | 20  | 20 | 15  | 11 |  |  |
 
 **Attacks**
@@ -1081,9 +1093,10 @@ illumination distance of light sources by 20 yards
 
 Orcs are nasty, brutal, belligerent, and almost immune to pain. Muscular and broad-shouldered, they are built for fighting and will not let something as trivial as a lost arm spoil a good scrap. If no enemies can be found, they fight rival tribes of orcs and goblins, and if there are none, they fight each other. Though less numerous than goblins, they are bigger, tougher, and never let them forget it. Larger orcs are stronger, more aggressive, and command greater prestige, for might equals right in their warlike society. Some ride enormous boars into battle, a sight that rarely fails to terrify.
 
-| ORC |    |    |    |    |    |    |     |     |    |     |    |  |  |
-|-----|----|----|----|----|----|----|-----|-----|----|-----|----|--|--|
+#### **ORC**
+
 | M   | WS | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |  |  |
+|-----|----|----|----|----|----|----|-----|-----|----|-----|----|--|--|
 | 4   | 25 | 30 | 30 | 30 | 20 | 30 | 25  | 20  | 20 | 15  | 11 |  |  |
 
 #### **Attacks**
@@ -1140,9 +1153,10 @@ by 20 yards
 
 Pea-brained creatures akin to enthusiastic, uncontrolled puppies, snotlings are natural scavengers and mimics. They collect bones, shiny objects, and whatever else catches their eye, while happily copying the actions of anything they see. If driven into battle by goblins or orcs, they fight in stinking swarms, hoping to overwhelm their foes through sheer weight of numbers. To aid this, they gather all manner of disgusting and noxious substances, from poisonous fungi to bodily waste, to hurl at their enemies.
 
-|   | SNOTLING |    |    |    |    |    |     |     |    |     |   |  |  |
-|---|----------|----|----|----|----|----|-----|-----|----|-----|---|--|--|
+#### **SNOTLING**
+
 | M | WS       | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W |  |  |
+|---|----------|----|----|----|----|----|-----|-----|----|-----|---|--|--|
 | 4 | 20       | 20 | 20 | 20 | 20 | 30 | 20  | 10  | 20 | 15  | 4 |  |  |
 
 #### **Attacks**
@@ -1181,9 +1195,10 @@ Neither living nor truly dead, the undead are the animate corpses of once living
 
 Some of the most pitiable creatures of the Old World, crypt ghouls are ugly, stooping creatures with sallow, filthy skin and sharp, yellow teeth capable of tearing flesh from their victims. Ghouls are drawn to the magical energies of Shyish and Dhar, which in practice means they gravitate to graveyards and crypts, and around battlefields.
 
-|   | CRYPT GHOUL |    |    |    |    |    |     |     |    |     |    |  |  |
-|---|-------------|----|----|----|----|----|-----|-----|----|-----|----|--|--|
+#### **CRYPT GHOUL**
+
 | M | WS          | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |  |  |
+|---|-------------|----|----|----|----|----|-----|-----|----|-----|----|--|--|
 | 4 | 30          | –  | 35 | 40 | 30 | 35 | 25  | 20  | 20 | 5   | 13 |  |  |
 
 #### **Attacks**
@@ -1214,9 +1229,10 @@ Melee (Brawling) 35, Stealth 40, Track 40
 
 Skeletons are the fleshless bones of those long dead, reanimated by dark magic to walk the earth as mockeries of the living. Those who died and were not laid to rest according to the rituals of Morr, the god of death, may be resurrected in this form by a sufficiently powerful necromancer. Utterly mindless, skeletons will fight until their bones are smashed to pieces. They have no courage for they have no fear. They cannot be killed because they are not alive.
 
-| SKELETON |    |    |    |    |    |    |     |     |    |     |    |  |
-|----------|----|----|----|----|----|----|-----|-----|----|-----|----|--|
+#### **SKELETON**
+
 | M        | WS | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |  |
+|----------|----|----|----|----|----|----|-----|-----|----|-----|----|--|
 | 4        | 25 | 25 | 30 | 30 | 20 | 20 | 25  | –   | –  | –   | 12 |  |
 
 **Attacks**
@@ -1321,11 +1337,11 @@ Critical Wounds are ignored
 
 *Corruption (Minor), Disease (Various), Distracting, Territorial*
 
+# **Dire Wolf**
+
 When the earth gives up the dead, it is not only humans who rise. Macabre parodies of wolves and giant wolves, with glowing eyes, and tatters of flesh falling from their rotting, festering carcasses, dire wolves prowl the night on behalf of their necromantic masters. In the Reikland, they are said to roam the wooded foothills of the Hägercrybs when Morrslieb is full. They hunt tirelessly, driven by an insatiable hunger for flesh and an unnatural instinct for the scent of blood.
 
-|  | DIRE WOLF |
-|--|-----------|
-|--|-----------|
+#### **DIRE WOLF**
 
 | M | WS | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
@@ -1451,7 +1467,7 @@ Melee (Brawling) 40, Melee (Two-handed) 45
 
 # **Tomb Banshee**
 
-Tomb banshees are the spectral remains of once-powerful witches whose spirits are steeped in the foetid energies of Dhar. Their restless afterlife is tormented by loss and bitterness, a yawning void in their souls that drives them to unleash soulrending howls, powerful enough to drive the living insane — or stop their hearts outright.
+Tomb banshees are the spectral remains of once-powerful witches whose spirits are steeped in the foetid energies of Dhar. Their restless afterlife is tormented by loss and bitterness, a yawning void in their souls that drives them to unleash soul-rending howls, powerful enough to drive the living insane — or stop their hearts outright.
 
 ### **TOMB BANSHEE**
 
@@ -1585,19 +1601,13 @@ Beastmen are grotesque hybrids of animal and human who consider themselves the t
 
 # **Gor**
 
-Gors, the most common of the beastmen, haunt almost every forest in the Old World. Their appearance varies widely, but most combine human and bestial features,
-
-often with the head and legs of a goat and the torso and arms of a man. All gors possess a large pair of horns, the defining mark that distinguishes them from ungors and turnskins. Among beastmen, larger horns command greater status, and the biggest gors are
-
-known as bestigors.
+Gors, the most common of the beastmen, haunt almost every forest in the Old World. Their appearance varies widely, but most combine human and bestial features, often with the head and legs of a goat and the torso and arms of a man. All gors possess a large pair of horns, the defining mark that distinguishes them from ungors and turnskins. Among beastmen, larger horns command greater status, and the biggest gors are known as bestigors.
 
 # **Ungor**
 
-Ungors bear only vestigial or stunted horns, and so are not considered true gors by the rest of the herd. Some even have almost human faces, making them effective infiltrators but frequent targets of ridicule. Scorned and mistreated by their largerhorned kin, ungors are often stunted and malnourished, leaving them bitter creatures eager to vent their resentment on others.
+Ungors bear only vestigial or stunted horns, and so are not considered true gors by the rest of the herd. Some even have almost human faces, making them effective infiltrators but frequent targets of ridicule. Scorned and mistreated by their larger-horned kin, ungors are often stunted and malnourished, leaving them bitter creatures eager to vent their resentment on others.
 
-|  |  | GOR |  |
-|--|--|-----|--|
-|  |  |     |  |
+#### **GOR**
 
 | M | WS | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
@@ -1719,9 +1729,10 @@ Like a rotten beam beneath white-washed walls, a terrible enemy lurks unseen wit
 
 To those untouched by the blight of Chaos, its corruption appears horrifyingly alien. Yet to those it ensnares, every step towards damnation and every thought that draws them closer to the Dark Gods seems not only logical, but inevitable. Some especially devout followers of proscribed cults are granted foul mutations that all but guarantee their deaths should witch hunters uncover their secret.
 
-| CULTIST |    |    |    |    |    |    |     |     |    |     |    |
-|---------|----|----|----|----|----|----|-----|-----|----|-----|----|
+#### **CULTIST**
+
 | M       | WS | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |
+|---------|----|----|----|----|----|----|-----|-----|----|-----|----|
 | 4       | 30 | 30 | 30 | 30 | 30 | 30 | 30  | 30  | 30 | 30  | 12 |
 |         |    |    |    |    |    |    |     |     |    |     |    |
 
@@ -1871,7 +1882,7 @@ by fastest and most deadly means possible,
 
 # **Bloodletter of Khorne**
 
-Khorne's chosen, bloodletters stalk the battlefields of the Old World, harvesting skulls in honour of the Blood God. Needlelike teeth jut from their monstrous, horned visages, and their blood-red skin is covered in scales as hard as brass. Each bears a Hellblade, a wickedly sharp weapon steeped in gore, wielded with the savage fury for which Khorne's daemons are feared.
+Khorne's chosen, bloodletters stalk the battlefields of the Old World, harvesting skulls in honour of the Blood God. Needle-like teeth jut from their monstrous, horned visages, and their blood-red skin is covered in scales as hard as brass. Each bears a Hellblade, a wickedly sharp weapon steeped in gore, wielded with the savage fury for which Khorne's daemons are feared.
 
 # **Daemonette of Slaanesh**
 
@@ -2167,6 +2178,8 @@ Aethyric Attunement or Instinctive Diction, Arcane Magic (Any) or Chaos Magic (A
 
 Choose up to 3 spells from the Petty Magic list and up to 3 from a suitable magical Lore.
 
+*\* Wounds need to be increased due to changes to WP.*
+
 # **Spellcaster Lord**
 
 This creature is a highly capable magician and respected (or feared) by similar subordinate creatures. This template may create a powerful Necromancer, Orc Shaman Lord, Skaven Grey Seer, or other preeminent spellcaster.
@@ -2175,7 +2188,7 @@ This creature is a highly capable magician and respected (or feared) by similar 
 
 | M | WS  | BS | S | T | I   | Ag  | Dex | Int | WP          | Fel | W |
 |---|-----|----|---|---|-----|-----|-----|-----|-------------|-----|---|
-| – | +10 | –  | – | – | +20 | +15 | –   |     | +20 +20 +10 |     | * |
+| – | +10 | –  | – | – | +20 | +15 | –   | +20 | +20         | +10 | * |
 
 #### **Skills**
 
@@ -2190,6 +2203,8 @@ Aethyric Attunement, Arcane Magic (Any) or Chaos Magic (Any), Instinctive Dictio
 #### **Spells**
 
 Choose up to 6 spells from the Petty Magic list and up to 9 from a suitable magical Lore.
+
+*\* Wounds need to be increased due to changes to WP.*
 
 # **UNGRAKK'S BRAYHERD**
 
@@ -2213,11 +2228,9 @@ Skrakk is the lieutenant of Ungrakk, the beastlord, though he grows impatient lo
 
 **Toughness Bonus:** 5 **Light Armour:** +1 AP
 
-Stealth Tests in woodland
-
 #### **Traits**
 
-**Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards **Striding Gait (Woodland):** Suffer no penalties for moving through woodland and +1 SL to all Athletics and
+**Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards **Striding Gait (Woodland):** Suffer no penalties for moving through woodland and +1 SL to all Athletics and Stealth Tests in woodland
 
 #### **Skills**
 
@@ -2233,9 +2246,7 @@ Cool 60, Dodge 50, Intimidate 60, Leadership 15, Melee (Basic 65, Two-Handed 65)
 
 Greataxe, Light Armour
 
-*\* Wounds need to be increased due to changes to WP.*
-
-*\* Wounds need to be increased due to changes to WP.*
+# **Ungrakk - Gor Beastlord (Commander)**
 
 Ungrakk is a mighty warrior who inspires fear and respect in his fellow beastmen. He is an unimaginative gor, driven to kill humans and cast down their structures. Following their conflict with the Shadow Web goblins, he leads a band of 5 Gors and 15 Ungor Archers. Life in the Hägercrybs has been relatively easy for the herd, and Ungrakk hopes to gather some more strength before taking to raiding tougher targets such as villages and farmsteads.
 
@@ -2289,12 +2300,11 @@ Challenging (+0 SL) Cool Test
 
 Axe, Medium Armour
 
-**Swilegrakk - Bray Shaman (Spellcaster)**
+# **Swilegrakk - Bray Shaman (Spellcaster)**
 
 Swilegrakk is the brayherd's revered shaman. Though he leads the beastmen in their howling rites, he is a morose figure. He fears the Shadow Web goblins will despoil several ancient herdstones in the Reikwald and wishes Ungrakk would return home.
 
-|  | SWILEGRAKK - BRAY SHAMAN (SPELLCASTER) |
-|--|----------------------------------------|
+#### **SWILEGRAKK - BRAY SHAMAN (SPELLCASTER)**
 
 | M | WS | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
@@ -2640,10 +2650,10 @@ Larger creatures have more Wounds:
 | Size      | Wounds                                                            |
 |-----------|-------------------------------------------------------------------|
 | Small     | 2 × Toughness Bonus                                               |
-| Average   | Strength Bonus + (2 × Toughness<br>Bonus) + Willpower Bonus       |
-| Large     | (Strength Bonus + (2 × Toughness<br>Bonus) + Willpower Bonus) × 2 |
-| Enormous  | (Strength Bonus + (2 × Toughness<br>Bonus) + Willpower Bonus) × 4 |
-| Monstrous | (Strength Bonus + (2 × Toughness<br>Bonus) + Willpower Bonus) × 8 |
+| Average   | Strength Bonus + (2 × Toughness Bonus) + Willpower Bonus       |
+| Large     | (Strength Bonus + (2 × Toughness Bonus) + Willpower Bonus) × 2 |
+| Enormous  | (Strength Bonus + (2 × Toughness Bonus) + Willpower Bonus) × 4 |
+| Monstrous | (Strength Bonus + (2 × Toughness Bonus) + Willpower Bonus) × 8 |
 
 ### **Spellcaster (Various)**
 

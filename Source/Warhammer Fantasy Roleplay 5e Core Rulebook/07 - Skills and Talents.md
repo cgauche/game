@@ -46,9 +46,7 @@ Other than that, Grouped Skills are handled in exactly the same way as normal Sk
 
 **Example:** *Sigrid has 1 Advance in the Basic Skill* Entertain (Singing)*, but nothing in* Entertain (Acting)*. This means she Tests her* Fellowship *of 41 when attempting to act, and Tests 46 when singing (41 + 5 = 46). By comparison, Theodora has a single Advance in the Advanced Skill* Animal Training (Pigeon)*, but no Advances in* Animal Training (Horse)*. This means she can use the Skill to train her pigeons to drop bombs on unsuspecting enemies, but she cannot train her horse to charge into a formation of enemy troops, as she has no idea how to train horses.*
 
-| COMPLETE SKILL LIST |  |  |
-|---------------------|--|--|
-|---------------------|--|--|
+#### **COMPLETE SKILL LIST**
 
 | Skill           | Desc | Rules      | Skill            | Desc | Rules      | Skill           | Desc | Rules      |
 |-----------------|------|------------|------------------|------|------------|-----------------|------|------------|
@@ -318,13 +316,13 @@ You either study one of the eight Colour Lores of Magic (Beasts, Death, Fire, He
 
 You may normally learn only one Arcane Lore of Magic. Dark Lores are an exception: depending on your path of study (and with the GM's permission), you may learn a single Dark Lore in addition to one of the other Arcane Lores. You can unlearn this Talent at a cost of 100 XP, but you will immediately lose all Spells linked to the Talent if you do so.
 
-| Number of Spells<br>currently known | XP Cost for a new Spell |
-|-------------------------------------|-------------------------|
-| Up to 5                             | 100 XP                  |
-| 6 to 10                             | 200 XP                  |
-| 11 to 15                            | 300 XP                  |
-| 16 to 20                            | 400 XP                  |
-| 21 and up                           | 500 XP                  |
+| Number of Spells currently known | XP Cost for a new Spell |
+|----------------------------------|-------------------------|
+| Up to 5                          | 100 XP                  |
+| 6 to 10                          | 200 XP                  |
+| 11 to 15                         | 300 XP                  |
+| 16 to 20                         | 400 XP                  |
+| 21 and up                        | 500 XP                  |
 
 ### **Argumentative**
 
@@ -402,13 +400,13 @@ Each time you obtain a Spell of your chosen Lore, you gain a Corruption Point as
 
 Under normal circumstances, you may not learn more than one Lore of Chaos. Unlike the *Arcane Lore* Talent, once learned, this Talent may never be unlearned.
 
-| Number of Spells<br>currently known | XP Cost for a new Spell |  |
-|-------------------------------------|-------------------------|--|
-| Up to 5                             | 100 XP                  |  |
-| 6 to 10                             | 200 XP                  |  |
-| 11 to 15                            | 300 XP                  |  |
-| 16 to 20                            | 400 XP                  |  |
-| 21 and up                           | 500 XP                  |  |
+| Number of Spells currently known | XP Cost for a new Spell |
+|----------------------------------|-------------------------|
+| Up to 5                          | 100 XP                  |
+| 6 to 10                          | 200 XP                  |
+| 11 to 15                         | 300 XP                  |
+| 16 to 20                         | 400 XP                  |
+| 21 and up                        | 500 XP                  |
 
 ### **Combat Aware**
 
@@ -480,28 +478,28 @@ You are trained in simple movements to distract or startle your opponent, drawin
 
 ### **Doomed**
 
-At the age of 10, you underwent the Dooming, a coming-ofage ritual observed by many humans in the Old World. During the incense-laden rite, a priest of Morr known as a doomsayer foretold the manner of your death. In conjunction with your GM, devise a suitable Doom. If your Character dies in the manner foretold, all allied Characters immediately refresh their Fortune, and your next Character begins play with an additional Fate Point.
+At the age of 10, you underwent the Dooming, a coming-of-age ritual observed by many humans in the Old World. During the incense-laden rite, a priest of Morr known as a doomsayer foretold the manner of your death. In conjunction with your GM, devise a suitable Doom. If your Character dies in the manner foretold, all allied Characters immediately refresh their Fortune, and your next Character begins play with an additional Fate Point.
 
 ### **DOOMINGS**
 
-| 1d100 | Dooming                                                                                     | 1d100 | Dooming                                                                              |
-|-------|---------------------------------------------------------------------------------------------|-------|--------------------------------------------------------------------------------------|
-|       | 01–03 The witch's word shall write your doom.                                               | 51–52 | Recall young Tomas and provoke not the beast of the woods.                           |
-| 04–06 | Beware the sign of the crimson sun.                                                         | 53–55 | Be thou circumspect when carousing with dwarfs.                                      |
-| 07–09 | Thine mind lingers overlong in the land of dreams.                                          | 56–58 | Plague and dark disease shall bring thee quickly to thy knees.                       |
-| 10–12 | Tread not upon the tender roots of sleeping trees.                                          | 59–62 | The sword shalt deliver no justice, only thine end.                                  |
-|       | 13–15 Trust not the signs of Ranald.                                                        | 63–65 | The sticky bun! The pork pasty! The eel and leek pie! Lo, they<br>are Morr's dishes! |
-|       | 16–18 Hold thine breath under Morrslieb's light, lest<br>darkness take root in thine soul.  | 66–68 | Strain thou not the patience of the weary Shallyan.                                  |
-| 19–21 | Fear the land bereft of the seagull's cry.                                                  | 69–71 | A lurker in goblin shape waits to waylay every treasure seeker.                      |
-| 22–24 | Be thou impious upon a Mondstille night and thou<br>wilt never see another.                 | 72–74 | Recall Baron Trister and honour thy debts.                                           |
-|       | 25–28 Trust not in the strength of bridges if the day be a<br>Festag.                       | 75–78 | Keep the relic of a crow's skull upon thee, lest thee drink<br>poison and perish.    |
-|       | 29–31 The children of Ulric call, with haste thou wilt fall.                                | 79–81 | When thou wager with elves, win thou may, lose thou may,<br>but cheat thou not.      |
-|       | 32–34 A night without song precedes a morning without<br>waking.                            | 82–84 | Laugh not in the face of the flatulent lest thine own guts<br>fester.                |
-|       | 35–38 For the want of a key, that's the ending of thee.                                     | 85–87 | Never was there one such as thee, who drowned on land and<br>not at sea.             |
-|       | 39–41 An ogre may name you his most valuable boon and<br>yet remain an ogre.                | 88–91 | As new life cries out, Father Morr shall welcome thee.                               |
-|       | 42–44 It ringeth once: peace. It ringeth twice: pleasure. It<br>ringeth thrice: death.      | 92–94 | Heed the siren's trilling, or soon your heart lies still.                            |
-|       | 45–47 The Twisted Puppeteer doth pull thy strings and thus<br>conjure up the end of things. | 95–97 | Rise not before Cacklefax's calling, for thine death is early<br>indeed.             |
-|       | 48–50 Ottokar dared to court the divine, but to do so is no<br>right of thine.              | 98–00 | Morr sends a maiden.                                                                 |
+| 1d100 | Dooming                                                                            | 1d100 | Dooming                                                                           |
+|-------|------------------------------------------------------------------------------------|-------|-----------------------------------------------------------------------------------|
+| 01–03 | The witch's word shall write your doom.                                            | 51–52 | Recall young Tomas and provoke not the beast of the woods.                        |
+| 04–06 | Beware the sign of the crimson sun.                                                | 53–55 | Be thou circumspect when carousing with dwarfs.                                   |
+| 07–09 | Thine mind lingers overlong in the land of dreams.                                 | 56–58 | Plague and dark disease shall bring thee quickly to thy knees.                    |
+| 10–12 | Tread not upon the tender roots of sleeping trees.                                 | 59–62 | The sword shalt deliver no justice, only thine end.                               |
+| 13–15 | Trust not the signs of Ranald.                                                     | 63–65 | The sticky bun! The pork pasty! The eel and leek pie! Lo, they are Morr's dishes! |
+| 16–18 | Hold thine breath under Morrslieb's light, lest darkness take root in thine soul.  | 66–68 | Strain thou not the patience of the weary Shallyan.                               |
+| 19–21 | Fear the land bereft of the seagull's cry.                                         | 69–71 | A lurker in goblin shape waits to waylay every treasure seeker.                   |
+| 22–24 | Be thou impious upon a Mondstille night and thou wilt never see another.           | 72–74 | Recall Baron Trister and honour thy debts.                                        |
+| 25–28 | Trust not in the strength of bridges if the day be a Festag.                       | 75–78 | Keep the relic of a crow's skull upon thee, lest thee drink poison and perish.    |
+| 29–31 | The children of Ulric call, with haste thou wilt fall.                             | 79–81 | When thou wager with elves, win thou may, lose thou may, but cheat thou not.      |
+| 32–34 | A night without song precedes a morning without waking.                            | 82–84 | Laugh not in the face of the flatulent lest thine own guts fester.                |
+| 35–38 | For the want of a key, that's the ending of thee.                                  | 85–87 | Never was there one such as thee, who drowned on land and not at sea.             |
+| 39–41 | An ogre may name you his most valuable boon and yet remain an ogre.                | 88–91 | As new life cries out, Father Morr shall welcome thee.                            |
+| 42–44 | It ringeth once: peace. It ringeth twice: pleasure. It ringeth thrice: death.      | 92–94 | Heed the siren's trilling, or soon your heart lies still.                         |
+| 45–47 | The Twisted Puppeteer doth pull thy strings and thus conjure up the end of things. | 95–97 | Rise not before Cacklefax's calling, for thine death is early indeed.             |
+| 48–50 | Ottokar dared to court the divine, but to do so is no right of thine.              | 98–00 | Morr sends a maiden.                                                              |
 
 You have been trained to fight shoulder-to-shoulder with other soldiers as a single unit. Allies may freely Disengage from an opponent you are also Engaged with as you cover their retreat. Additionally, on your Turn you may lose Momentum in order to grant Momentum to any allies you are standing shoulder to shoulder with, so long as they also have this Talent.
 
@@ -601,6 +599,10 @@ You clearly see the great works of the gods all around you. You automatically kn
 
 You are a skilled hunter and know all the best techniques to find game. When travelling through well-stocked lands, you are automatically assumed to be able to hunt down enough game to feed yourself and a number of others equal to your Initiative Bonus, so long as you have time and the correct equipment. You may secure more food in addition to this using the normal rules for foraging (see page 152).
 
+#### **Impassioned Zeal (Cause)**
+
+You have a fervent belief in a certain cause, whether it be political, religious, or philosophical. When you talk about your cause, your words fill with passion and fervent zeal. You gain Advantage on Charm Tests when speaking on these matters. You also find it hard to deny, or prevaricate about the cause, and suffer Disadvantage when lying about or denouncing the subject of your passions.
+
 #### **Implacable**
 
 It takes a lot to finish you off. Any time you would gain one or more *Bleeding* Conditions, you gain one less.
@@ -623,15 +625,13 @@ You are blessed by one of the gods and can empower their cult's Miracles. Upon l
 
 Under normal circumstances, you may not learn more than one *Invoke (Deity)* Talent. Further, you may not learn the *Channelling* Skill or the *Arcane Magic*, *Chaos Magic*, *Magic Resistance*, *Petty Magic*, or *Witch!* Talents when you have the *Invoke* Talent, and vice versa. You can unlearn this Talent for 100 XP, but will lose all of your Miracles if you do so, and will garner the extreme disfavour of your god, with effects determined by your GM.
 
-| Impassioned Zeal (Cause)                                                                                                        |                                       |                              |
-|---------------------------------------------------------------------------------------------------------------------------------|---------------------------------------|------------------------------|
-| You have a fervent belief in a certain cause, whether it be<br>political, religious, or philosophical. When you talk about your | Number of Miracles<br>currently known | XP Cost for a new<br>Miracle |
-| cause, your words fill with passion and fervent zeal. You gain                                                                  | Up to 5                               | 100 XP                       |
-| Advantage on Charm Tests when speaking on these matters.                                                                        | 6 to 10                               | 200 XP                       |
-| You also find it hard to deny, or prevaricate about the cause,                                                                  | 11 to 15                              | 300 XP                       |
-| and suffer Disadvantage when lying about or denouncing the                                                                      | 16 to 20                              | 400 XP                       |
-| subject of your passions.                                                                                                       | 21 and up                             | 500 XP                       |
-|                                                                                                                                 |                                       |                              |
+| Number of Miracles currently known | XP Cost for a new Miracle |
+|------------------------------------|---------------------------|
+| Up to 5                            | 100 XP                    |
+| 6 to 10                            | 200 XP                    |
+| 11 to 15                           | 300 XP                    |
+| 16 to 20                           | 400 XP                    |
+| 21 and up                          | 500 XP                    |
 
 #### **Iron Jaw**
 
@@ -745,14 +745,13 @@ You have the spark to cast magic within you and have mastered techniques to cont
 
 Full rules for learning new Spells are provided in **Chapter 8: Magic**. You can unlearn this Talent at a cost of 100 XP, but immediately lose all Spells linked to the Talent if you do so.
 
-| Number of Spells<br>currently known | XP Cost for a new Spell |
-|-------------------------------------|-------------------------|
-| Up to 5                             | 50 XP                   |
-| 6 to 10                             | 100 XP                  |
-| 11 to 15                            | 150 XP                  |
-| 16 to 20                            | 200 XP                  |
-| 21 and up                           | 250 XP                  |
-|                                     |                         |
+| Number of Spells currently known | XP Cost for a new Spell |
+|----------------------------------|-------------------------|
+| Up to 5                          | 50 XP                   |
+| 6 to 10                          | 100 XP                  |
+| 11 to 15                         | 150 XP                  |
+| 16 to 20                         | 200 XP                  |
+| 21 and up                        | 250 XP                  |
 
 #### **Pharmacist**
 
