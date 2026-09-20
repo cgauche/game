@@ -70,6 +70,17 @@
     "gating": {
       "movement": "half"
     },
+    "lockedUntil": {
+      "kind": "compare",
+      "subject": {
+        "who": "target",
+        "field": "woundsCurrent"
+      },
+      "op": ">=",
+      "value": 1
+    },
+    "lockedReason": "il faut regagner au moins 1 Blessure",
+    "resolveHeals": 1,
     "icon": "condition/prone",
     "severity": 75,
     "aiThreat": 3

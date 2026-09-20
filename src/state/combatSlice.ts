@@ -66,7 +66,7 @@ import { teamCommandTargets } from './commandTeam';
 import { isConsumable } from '../engine/consumables';
 import { battleConsumeItem, runConsumable } from './consumableFlow';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, stacks, recoveredStacks, COND, setConditionGainedHook, releaseConditionLocks, raisonRefusDetermination, fenetreDetermination, syncDerivedConditions } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, stacks, recoveredStacks, COND, setConditionGainedHook, releaseConditionLocks, raisonRefusDetermination, fenetreDetermination, syncDerivedConditions, isConditionLocked, soinDeDetermination } from '../engine/conditions';
 import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, resolveExtractLodgedAmmo, healDifficulty, applyHealWounds, type HealMode } from '../engine/healing';
 import { hasWaterContainer, waterSprayCandidates } from '../engine/suffocation';
 import { treatTrauma, receiveMedicalAid, poseDeterminationCanceller } from '../engine/trauma';
@@ -375,11 +375,16 @@ const REFUS_DEPLACEMENT: Partial<Record<MovementBlockReason, MsgKey>> = {
  *
  * Le pion peut être PARTAGÉ avec une cause native (KO à 0 PB — LDB 16 l.115) : ce que la suspension n'a
  * pas emporté, le retrait de LDB 17 l.61 l'emporte.
- * Le seul REFUS est celui que la donnée déclare (`raisonRefusDetermination` — l.188).
+ * Le seul REFUS est celui que la donnée déclare (`raisonRefusDetermination`), ÉVALUÉ D'ABORD : rien
+ * n'est soigné ni débité sur une dépense refusée. `soigne` = les Blessures que `EtatData.resolveHeals`
+ * déclare (LDB 17 l.61), rendues AVANT le retrait — c'est ce soin qui lève le verrou d'À Terre
+ * (LDB 18 l.15). La dépense est ATOMIQUE : retrait non acquis, le soin est repris.
  */
-function retireEtatParDetermination(c: Combatant, conditionName: string, now: number): boolean {
-  if (raisonRefusDetermination(c, conditionName)) return false;
+function retireEtatParDetermination(c: Combatant, conditionName: string, now: number): { retire: boolean; soigne: number } {
+  if (raisonRefusDetermination(c, conditionName)) return { retire: false, soigne: 0 };
   const avant = stacks(c, conditionName);
+  const soigne = soinDeDetermination(c, conditionName);
+  if (soigne > 0) applyHealWounds(c, soigne, { skillCheck: false, wake: false, log: () => [] });
   const src = c.conditions.find((x) => x.id === conditionName)?.derivedFrom?.src;
   const fenetre = src ? fenetreDetermination(c, conditionName, now) : undefined;
   if (src && fenetre) {
@@ -389,7 +394,14 @@ function retireEtatParDetermination(c: Combatant, conditionName: string, now: nu
     syncDerivedConditions(c);
   }
   if (stacks(c, conditionName) >= avant) removeCondition(c, conditionName, 1); // « Retirez un État » (un pion), LDB 17 l.61
-  return stacks(c, conditionName) < avant;
+  const retire = stacks(c, conditionName) < avant;
+  // ATOMICITÉ : le point n'est pas débité quand rien n'est levé (appelants) — le soin ne doit pas rester
+  // non plus. Reste ici le retrait qu'un PLANCHER de pions dérivés refuse (`retireEtat`).
+  if (!retire && soigne > 0) {
+    c.wounds.current -= soigne;
+    syncDerivedConditions(c);
+  }
+  return { retire, soigne: retire ? soigne : 0 };
 }
 
 /** `effectId` de la fenêtre ci-dessus — PRÉFIXE commun, que les lecteurs retrouvent par ce nom. */
@@ -1658,14 +1670,17 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     wardCancel: () => set({ pendingWard: null }), // renonce avant le jet : aucune trace, re-cliquable
 
-    // ── Se relever d'À Terre (LDB 16 l.35) : utilise le Mouvement pour se mettre debout. Impossible
-    //    tant qu'on n'a pas regagné ≥1 PB (LDB 18 l.15 : à 0 PB on reste au sol). Ne consomme PAS l'Action. ──
+    // ── Se relever d'À Terre — LDB 16 l.35 · LDB 18 l.15. Le Mouvement, pas l'Action. ──
     battleStandUp: () => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const battle = get().battle;
       if (!battle || battle.over || battle.movementUsed > 0) return;
       const active = activeCombatant(battle);
-      if (!active || !controlsCombatant(get(), active) || !hasCondition(active, COND.aTerre) || active.wounds.current <= 0) return;
+      // MÊME lecture que la case du registre (gate `remede-atteignable`) : hors d'état d'agir, aucun
+      // geste ; État verrouillé, aucun retrait (LDB 18 l.15).
+      if (!active || !controlsCombatant(get(), active) || isOutOfAction(active)) return;
+      const inst = active.conditions.find((c) => c.id === COND.aTerre);
+      if (!inst || isConditionLocked(inst, active)) return;
       removeCondition(active, COND.aTerre);
       set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: null, log: [...battle.log, ev('move', t('cs.standUp', { name: active.label }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
@@ -2164,14 +2179,16 @@ export function createCombatSlice(get: Get, set: Set) {
       if (aiDriven(get(), attacker) && get().battle) resumeEnemyTurn(get, set);
     },
     handGateCancel: () => set({ pendingHandGate: null }), // avant le jet : aucun coût (l'Action n'est pas encore ouverte)
-    battleRecoverState: (state: 'empetre' | 'en-flammes') => {
+    battleRecoverState: (state: string) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle } = get();
       if (!battle || battle.over || battle.acted) return;
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
-      const n = stacks(active, state);
-      if (n <= 0) return; // pas porteur de l'État
+      const inst = active.conditions.find((c) => c.id === state);
+      const n = inst?.value ?? 0;
+      if (!inst || n <= 0) return; // pas porteur de l'État
+      if (isConditionLocked(inst, active)) return; // État verrouillé : le Test ne l'ôterait pas (LDB 18)
       // Test de récupération (Empêtré « se libérer »/En flammes « se rouler », LDB 16 l.66/l.84) lu de la
       // DONNÉE (`EtatData.recover`) par la SOURCE UNIQUE `resolveRecoverTest` — Empêtré = opposé de Force
       // (escapeStrength figée prioritaire, sinon source vivante) ; En flammes = Athlétisme simple.
@@ -2239,20 +2256,17 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
 
-    // ── Détermination (Resolve) : retirer un État de l'actif, +1 PB si À Terre (LDB 17 l.59-61) ──
+    // ── Détermination (Resolve) : retirer un État de l'actif (LDB 17 l.59-61) ──
     battleSpendResolve: (conditionName: string) => {
       const { battle } = get();
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active) || (active.resolve ?? 0) <= 0) return;
       if (!active.conditions.some((c) => c.id === conditionName)) return;
-      if (!retireEtatParDetermination(active, conditionName, get().gameTime)) return; // rien à lever : le point n'est pas débité
+      const { retire, soigne } = retireEtatParDetermination(active, conditionName, get().gameTime);
+      if (!retire) return; // rien à lever : le point n'est pas débité
       active.resolve = (active.resolve ?? 0) - 1;
-      let extra = '';
-      if (conditionName === COND.aTerre) {
-        applyHealWounds(active, 1, { skillCheck: false, wake: false, log: () => [] }); // +1 PB en se relevant (LDB 17 l.61), plafond munition-logée
-        extra = t('cs.fragGettingUp');
-      }
+      const extra = soigne > 0 ? t('cs.fragGettingUp') : '';
       // Le JOUEUR lit le LIBELLÉ de l'État (« Aveuglé »), jamais son id : `conditionLabel` est la porte.
       set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', t('cs.determinationRemove', { name: active.label, cond: conditionLabel(conditionName), extra }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
@@ -2267,13 +2281,10 @@ export function createCombatSlice(get: Get, set: Set) {
       const hero = actorIn(s, combatantId);
       if (!hero || (hero.resolve ?? 0) <= 0) return;
       if (!hero.conditions.some((c) => c.id === conditionName)) return;
-      if (!retireEtatParDetermination(hero, conditionName, s.gameTime)) return; // rien à lever : le point n'est pas débité
+      const { retire, soigne } = retireEtatParDetermination(hero, conditionName, s.gameTime);
+      if (!retire) return; // rien à lever : le point n'est pas débité
       hero.resolve = (hero.resolve ?? 0) - 1;
-      let extra = '';
-      if (conditionName === COND.aTerre) {
-        applyHealWounds(hero, 1, { skillCheck: false, wake: false, log: () => [] }); // +1 PB en se relevant (LDB 17 l.61), plafond munition-logée
-        extra = t('cs.fragGettingUp');
-      }
+      const extra = soigne > 0 ? t('cs.fragGettingUp') : '';
       if (s.battle) {
         set({ battle: { ...s.battle, log: [...s.battle.log, ev('info', t('cs.determinationRemove', { name: hero.label, cond: conditionLabel(conditionName), extra }), hero.id)] } });
       } else {

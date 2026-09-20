@@ -268,6 +268,8 @@ export const fr = {
   'cond.effectExtended': '{name} : {label} est prolongé (Test de Force Mentale réussi, +1 Round).',
   'cond.spellCondExpire': "{name} : l'État {cond} (sort) se dissipe.",
   'cond.lockReleased': "{name} : l'État {cond} est levé par le soin (Blessure critique, LDB 18).",
+  'cond.lockedByAct': 'l’État ne se lève que par {acte}',
+  'cond.locked': 'l’État est verrouillé',
   // États PORTÉS par un canal passif (`syncDerivedConditions`) : la ligne NOMME le fait porteur.
   'cond.derivedGain': '{name} gagne l’État {cond} — {src}.',
   'cond.derivedLoss': '{name} perd l’État {cond} — {src} ne le porte plus.',
@@ -2414,6 +2416,8 @@ export const fr = {
   'agate.notAVessel': 'pas un navire',
   'agate.vesselActionSpent': 'Action du navire déjà dépensée',
   'agate.advantageCapped': 'Avantage au plafond ({n})',
+  'agate.stateNotCarried': 'l’État n’est pas porté',
+  'agate.stateNoRecoverTest': 'cet État ne se retire pas par un Test',
   'agate.spellNotFocusable': 'ce Sort ne se focalise pas',
   'agate.focusBlocked': 'Focalisation bloquée : {reason}',
   // Focalisation est une Compétence AVANCÉE (`LDB 09 l.30`), spécialisée par Vent (`LDB 46`).

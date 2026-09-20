@@ -8,7 +8,7 @@ import { attackWeapon } from '../engine/combat';
 import { availableAttacks, selfManeuversOf, selfManeuverApplicable, previewResourceDelta, STANCE_BLOCK } from '../state/combatFlow';
 import { findSpellById, byId, findActionById, ACTIONS, type ActionDef } from '../data/index';
 import { type CodexTarget } from '../engine/ruleRefs';
-import { actionGate, runAction, currentInterludeAction, ACTION_CANDIDATES, type ActionCtx, type ActionRunCtx } from '../state/actionRegistry';
+import { actionGate, runAction, currentInterludeAction, ACTION_CANDIDATES, remedesPertinents, type ActionCtx, type ActionRunCtx } from '../state/actionRegistry';
 import { offresDuRegistre } from '../state/registreOffres';
 import { targetingModeLabel, dispellableOnCarrier } from '../state/targetingModes';
 import { CodexRef } from './compendium/CodexRef';
@@ -26,7 +26,7 @@ import { SpectatorChip } from './SpectatorChip';
 import { spectatorSeatOfModal } from './ownership';
 import { actorHasSkill } from '../engine/skills';
 import { hasHealSkill, healableTargets } from '../engine/healing';
-import { canTakeAction, hasCondition, isOutOfAction, raisonRefusDetermination } from '../engine/conditions';
+import { canTakeAction, isActionLocked, isOutOfAction, raisonRefusDetermination } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { isFrenzied, isFrenzyCapable } from '../engine/psychology';
 import { hasWaterContainer, waterSprayCandidates } from '../engine/suffocation';
@@ -638,8 +638,10 @@ export function CombatConsole() {
   const ring = heroIdx >= 0 ? HERO_RING[heroIdx % HERO_RING.length] : ENEMY_RING;
   const previewDelta = previewResourceDelta(battle);
   const stunned = !canTakeAction(active);
-  const broken = hasCondition(active, 'brise');
-  const busy = battle.acted || stunned || broken;
+  // ÉTAT qui VERROUILLE l'Action (Brisé, `LDB 16 l.52`) : lu au drapeau `restrictsAction` de la donnée
+  // (`isActionLocked`), jamais par id — tout État qui le déclare ferme les mêmes cases.
+  const actionVerrouillee = isActionLocked(active);
+  const busy = battle.acted || stunned || actionVerrouillee;
 
   // ── LA CONSOLE CONSOMME LE REGISTRE DES ACTIONS ────────────────────────────────────────────────
   // Contexte d'offre commun à toutes les cases (prédicats `ACTION_GATES`, spec HUD « Zone 12 »).
@@ -895,7 +897,7 @@ export function CombatConsole() {
     rangedWs.length > 0 ? cellFor('posture-tas', 'arme', { on: posture('intoCrowd'), off: busy }) : undefined,
     // G6bis — gestes d'ÉTAT du porteur (surface `geste-d-etat` du registre, spec §1a) : ce que sa
     // SITUATION ouvre — en selle, à une pièce servie, à la barre — jamais ce que son arme offre.
-    active.mountId ? cellFor('dismount', 'geste', { off: broken }) : undefined,
+    active.mountId ? cellFor('dismount', 'geste', { off: actionVerrouillee }) : undefined,
     active.mannedPoste ? cellFor('leave-poste', 'geste', { off: busy }) : undefined,
     // La barre : le BARREUR la tient (`atHelm`), et la COQUE elle-même quand c'est SON tour — même case,
     // mêmes arguments (`battleShipManeuver` accepte l'un ou l'autre, `combatSlice.ts:1362`).
@@ -968,6 +970,8 @@ export function CombatConsole() {
   const attacks = availableAttacks(active, battle).filter((a) => a.kind !== 'arme');
   const spells = (active.spells ?? []).map((id) => findSpellById(id)).filter((s): s is NonNullable<typeof s> => !!s);
   const selfManeuvers = selfManeuversOf(active).filter((m) => selfManeuverApplicable(active, m));
+  // Les REMÈDES dont l'État est porté — lecture du registre (`remedesPertinents`).
+  const remedes = remedesPertinents(gateCtx);
 
   const candidates: Cell[] = [
     cellFor('course', 'mouvement'),
@@ -988,10 +992,10 @@ export function CombatConsole() {
     ),
     hasBattement(active) ? cellFor('battement', 'avantage', { off: busy }) : undefined,
     hasDistraire(active) ? cellFor('distraire', 'avantage', { off: busy }) : undefined,
-    // Remèdes d'ÉTAT et relevé : offerts quand l'État est porté, exécutés par le registre.
-    hasCondition(active, 'a-terre') && active.wounds.current > 0 ? cellFor('stand', 'mouvement') : undefined,
-    hasCondition(active, 'en-flammes') ? cellFor('roll-fire', 'geste', { args: { stateId: 'en-flammes' } }) : undefined,
-    hasCondition(active, 'empetre') ? cellFor('free-entangle', 'geste', { args: { stateId: 'empetre' } }) : undefined,
+    // REMÈDES D'ÉTAT — une case par entrée de remède dont l'État est porté ; la famille se lit au COÛT
+    // déclaré, l'ordre est celui de la donnée. Un remède hors d'atteinte garde sa case, fermée, avec sa
+    // raison (verrou de l'État — `LDB 18 l.15`).
+    ...remedes.map((def) => cellFor(def.id, def.coutAction === 'mouvement' ? 'mouvement' : 'geste')),
     isFrenzyCapable(active) && !isFrenzied(active) ? cellFor('frenzy', 'geste') : undefined,
     canAidTeam(active, battle.combatants) ? cellFor('aid-team', 'geste', { off: busy }) : undefined,
     // DÉTERMINATION — deux des trois dépenses (LDB 17 l.59-60) sont des alvéoles, comme toute action :

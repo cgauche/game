@@ -16,7 +16,7 @@ import type { Combatant } from '../engine/types';
 import type { BattleState, GameState } from './store';
 import { canMove, trampleTarget, entityPickables, activeCombatant } from './store';
 import { currentTargetingMode } from './targetingModes';
-import { canTakeAction, isOutOfAction, raisonRefusDetermination } from '../engine/conditions';
+import { canTakeAction, isOutOfAction, raisonRefusDetermination, raisonVerrouEtat } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { isFrenzied } from '../engine/psychology';
 import { isVehicle } from '../engine/vehicle';
@@ -33,7 +33,7 @@ import { availableAttacks, placingZoneOf, STANCE_BLOCK } from './combatFlow';
 import { mountablesNear, mountMovement } from './mount';
 import { servablePostes, crewPosteOf, type ShipPoste } from './shipPostes';
 import { pushSlot } from './siegePush';
-import { ACTIONS, findSpellById, type ActionDef } from '../data/index';
+import { ACTIONS, findConditionById, findSpellById, type ActionDef } from '../data/index';
 import { isArcaneSpell, castBlockedBy, focusSkillFor, focusWindLabel } from '../engine/magic';
 import { t } from '../i18n';
 import { aPorteeDe } from './exploreNav';
@@ -50,6 +50,9 @@ export interface ActionCtx {
   active: Combatant;
   battle: BattleState;
   netMode?: string;
+  /** L'ENTRÉE évaluée, posée par `actionGate` à partir de l'entrée résolue : un gate y lit ce que
+   *  l'action DÉCLARE (l'État qu'elle traite) au lieu de nommer un id. */
+  def?: ActionDef;
   /** PARAMÈTRES DE LA CASE (`ActionRunCtx` — la Compétence visée, l'arme, l'objet) : une entrée du
    *  registre peut être rendue N fois, une par candidat, et le verdict d'offre porte alors sur CE
    *  candidat (« au plafond de CETTE méthode d'Avantage »). Les gates de règle pure les ignorent ; le
@@ -57,8 +60,25 @@ export interface ActionCtx {
   args?: ActionRunCtx;
 }
 
+/** Le gate qui désigne une entrée comme REMÈDE de l'État qu'elle déclare : deux lecteurs le nomment,
+ *  la donnée (`actions.json`) et `remedesPertinents`. */
+export const GATE_ETAT_PORTE = 'etat-porte';
+
 const ok: ActionGate = { ok: true };
 const no = (reason: string): ActionGate => ({ ok: false, reason });
+
+/** L'ÉTAT qu'une entrée de remède déclare (`rule` + `ruleCategory: 'etats'`). FAIL-FAST : une entrée
+ *  portée au gate `etat-porte` sans État déclaré est un bug de donnée, que la garde de registre
+ *  (`action-atteignabilite.test`) refuse déjà — il ne se traduit pas en refus de jeu. */
+function etatDeclare(def?: ActionDef): string {
+  const id = def?.ruleCategory === 'etats' ? def.rule : undefined;
+  if (!id) throw new Error(`gate de remède : l'entrée « ${def?.id ?? '?'} » ne déclare aucun État (rule + ruleCategory: 'etats')`);
+  return id;
+}
+
+/** L'instance de l'État que l'entrée traite, si le porteur l'a. */
+const instanceDeLEtat = ({ active, def }: ActionCtx) =>
+  active.conditions?.find((c) => c.id === etatDeclare(def));
 
 /** L'Action du Tour est-elle encore disponible ET utilisable ? (Sonné/Inconscient → `canTakeAction`).
  *  Périmètre STRICT de l'économie du tour : les restrictions d'ÉTAT propres à une famille d'actes
@@ -156,6 +176,23 @@ export const ACTION_GATES: Record<string, (ctx: ActionCtx) => ActionGate> = {
       : battle.loadoutSwapped
         ? no(t('agate.loadoutSwapped'))
         : ok,
+  /** PERTINENCE d'un remède : le porteur a l'État que l'entrée déclare. */
+  [GATE_ETAT_PORTE]: (ctx) => (instanceDeLEtat(ctx) ? ok : no(t('agate.stateNotCarried'))),
+  /** REMÈDE ATTEIGNABLE : le porteur n'est pas hors d'état d'agir (`isOutOfAction`, lu aussi par
+   *  `battleStandUp`), et l'instance de l'État n'est pas VERROUILLÉE — verrou de type (`etats.json`),
+   *  d'instance, ou acte de soin attendu. Ce verrou (`raisonVerrouEtat`) est l'invariant que les deux
+   *  dispatchers de remède partagent avec cette case. `LDB 18 l.15`. */
+  'remede-atteignable': (ctx) => {
+    const inst = instanceDeLEtat(ctx);
+    if (!inst) return no(t('agate.stateNotCarried'));
+    if (isOutOfAction(ctx.active)) return no(t('agate.unableToAct'));
+    const verrou = raisonVerrouEtat(inst, ctx.active);
+    return verrou ? no(verrou) : ok;
+  },
+  /** L'État se retire-t-il par un TEST ? Prérequis du dispatcher `battleRecoverState` (`EtatData.recover`),
+   *  pas une propriété du remède : un remède-GESTE ne le porte pas. */
+  'etat-recuperable-par-test': (ctx) =>
+    findConditionById(etatDeclare(ctx.def))?.recover ? ok : no(t('agate.stateNoRecoverTest')),
   /** Cumuler l'Avantage (LDB 09 l.305-308) : chaque méthode a SON plafond (`skillAdvantageCap`), et
    *  au plafond le Test ne peut plus rien rendre. Le refus est DIT (« Avantage au plafond (N) ») et la
    *  case reste dessinée : la faire disparaître privait le joueur de la raison. La méthode visée vient
@@ -216,6 +253,22 @@ export const ACTION_GATES: Record<string, (ctx: ActionCtx) => ActionGate> = {
     !isVehicle(active) ? no(t('agate.notAVessel')) : battle.acted ? no(t('agate.vesselActionSpent')) : ok,
 };
 
+/** Les entrées de REMÈDE du registre — celles que la donnée porte au gate `etat-porte`. */
+export const REMEDES = ACTIONS.filter((a) => [a.gate].flat().includes(GATE_ETAT_PORTE));
+
+/** LE GESTE QUI REMÈDE À CET ÉTAT — source unique de son libellé pour les surfaces qui le nomment
+ *  (fenêtre du Test de récupération). */
+export function remedeDeLEtat(stateId: string): ActionDef | undefined {
+  return REMEDES.find((a) => a.rule === stateId);
+}
+
+/** Les remèdes PERTINENTS pour ce porteur : ceux dont l'État est porté (le verdict du gate, pris une
+ *  fois). Lecture UNIQUE des surfaces — elles n'indexent pas `ACTION_GATES`. L'ordre est celui de la
+ *  donnée. */
+export function remedesPertinents(ctx: ActionCtx): ActionDef[] {
+  return REMEDES.filter((def) => ACTION_GATES[GATE_ETAT_PORTE]({ ...ctx, def }).ok);
+}
+
 /** Verdict d'offre d'une action, par son id — porte de lecture UNIQUE pour les surfaces.
  *  Le champ `gate` de l'entrée peut nommer PLUSIEURS prédicats : ils se composent par l'ET séquentiel
  *  déjà écrit (`et`) — toutes passent, sinon la PREMIÈRE raison refusée est rendue (aucune raison
@@ -226,7 +279,7 @@ export function actionGate(actionId: string, ctx: ActionCtx): ActionGate {
   const noms = Array.isArray(def.gate) ? def.gate : [def.gate];
   const inconnu = noms.find((g) => !ACTION_GATES[g]);
   if (inconnu) return no(`gate inconnu : ${inconnu}`);
-  return et(...noms.map((g) => ACTION_GATES[g]))(ctx);
+  return et(...noms.map((g) => ACTION_GATES[g]))({ ...ctx, def });
 }
 
 /** Contexte des sélecteurs : impurs par nature (ils lisent le combat, parfois la scène). */
@@ -362,7 +415,6 @@ export interface ActionRunCtx {
   crewId?: string;
   posteUid?: string;
   crewTestId?: string;
-  stateId?: 'empetre' | 'en-flammes';
   /** Bascule d'un mode ARMÉ : `true` = désarmer (re-clic sur la même case). */
   toggleOff?: boolean;
 }
@@ -396,7 +448,8 @@ export const ACTION_RUN: Record<string, Dispatcher> = {
   battleFocusSpell: (get, ctx) => { if (ctx.spellId) get().battleFocusSpell(ctx.spellId); },
   battleDispelSpell: (get, ctx) => { if (ctx.spellId && ctx.casterId) get().battleDispelSpell(ctx.spellId, ctx.casterId); },
   battleGainAdvantage: (get, ctx) => { if (ctx.skillId) get().battleGainAdvantage(ctx.skillId); },
-  battleRecoverState: (get, ctx) => { if (ctx.stateId) get().battleRecoverState(ctx.stateId); },
+  // L'État traité est celui que l'ENTRÉE déclare : aucun paramètre de case ne le porte.
+  battleRecoverState: (get, _ctx, def) => get().battleRecoverState(etatDeclare(def)),
   battleStandUp: (get) => get().battleStandUp(),
   battleBattement: (get, ctx) => get().battleBattement(ctx.targetId),
   battleDistraire: (get, ctx) => get().battleDistraire(ctx.targetId),

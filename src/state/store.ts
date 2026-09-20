@@ -1063,7 +1063,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Annule l'Action avant le jet de Main ensanglantée (défait une charge misclic comme `attackCancel`). */
   handGateCancel: () => void;
   /** Se libérer (Empêtré, Test opposé de Force) / se rouler au sol (En flammes, Athlétisme) : OUVRE la modale (LDB 16 l.66/84). */
-  battleRecoverState: (state: 'empetre' | 'en-flammes') => void;
+  battleRecoverState: (state: string) => void;
   // recover{Roll,Reroll,BonusSL,DarkPact} (Lancer/Chance/+1 DR/Pacte) : générés (RollFlowActionsMap).
   /** « Appliquer » : retire 1 + DR pions de l'État, consomme l'Action. */
   recoverConfirm: () => void;

@@ -1,12 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant, ConditionUnlock } from './types';
 import type { Condition } from './flowCore';
-import { addCondition, removeCondition, hasCondition, stacks, isConditionLocked, releaseConditionLocks, hasSurgeryLockedCondition } from './conditions';
+import { addCondition, removeCondition, hasCondition, stacks, isConditionLocked, raisonVerrouEtat, releaseConditionLocks, hasSurgeryLockedCondition } from './conditions';
+import { t } from '../i18n';
 import { applyOps } from './ops';
 import { CRITIQUE_DOCS } from '../data/criticals';
 import { spellOps } from './flowCore';
 import miscastJson from '../data/miscast.json';
 import { gameOpSchema } from '../data/schemas/grammaire/mecanique';
+import { schema as etatsSchema } from '../data/schemas/defs/etats';
+import { findConditionById } from '../data';
 
 /** Toutes les rangées de Blessure critique, les 8 documents-tables confondus (LDB + Aux Armes) —
  *  la lecture ne nomme aucune famille : un 9ᵉ tableau y entre sans une ligne. */
@@ -229,5 +232,81 @@ describe('la donnée ne peut pas authorer un verrou sur un sujet non garanti (#1
     });
     expect(res.success).toBe(false);
     expect(res.success ? '' : res.error.issues.map((i) => i.message).join('\n')).toContain('« time »');
+  });
+});
+
+/**
+ * VERROU DE TYPE (`EtatData.lockedUntil`, etats.json) : même algèbre, même contexte et donc MÊME porte
+ * de parse que le verrou d'instance — il vaut pour TOUTE instance de l'État, quelle que soit sa cause.
+ */
+describe('verrou de TYPE — une instance NUE de l’État en hérite', () => {
+  it('À Terre à 0 Blessure : `removeCondition` est inerte, et se lève dès 1 Blessure regagnée', () => {
+    expect(findConditionById('a-terre')!.lockedUntil, 'la donnée ne porte plus le verrou : la sonde ne mesure rien').toBeDefined();
+    const c = mk();
+    c.wounds.current = 0;
+    addCondition(c, 'a-terre', 1); // pose NUE : aucun verrou d'instance
+    expect(isConditionLocked(c.conditions[0], c)).toBe(true);
+    removeCondition(c, 'a-terre');
+    expect(hasCondition(c, 'a-terre'), 'À Terre retiré à 0 Blessure (LDB 18 l.15)').toBe(true);
+    c.wounds.current = 1;
+    expect(isConditionLocked(c.conditions[0], c)).toBe(false);
+    removeCondition(c, 'a-terre');
+    expect(hasCondition(c, 'a-terre')).toBe(false);
+  });
+
+  // La raison rendue est celle du verrou QUI TIENT : à 5 Blessures, le verrou de TYPE d'À Terre est
+  // TOMBÉ — dire « il faut regagner au moins 1 Blessure » serait FAUX.
+  it('verrou d’INSTANCE sur un État qui porte AUSSI un verrou de type : la raison est celle de l’instance', () => {
+    const c = mk();
+    c.wounds.current = 5;
+    addCondition(c, 'hemorragique', 1);
+    addCondition(c, 'a-terre', 1, undefined, undefined, undefined, undefined, { lockedUntil: noHemo });
+    const inst = c.conditions.find((x) => x.id === 'a-terre')!;
+    expect(isConditionLocked(inst, c), 'l’Hémorragique tient encore : l’État est verrouillé').toBe(true);
+    expect(raisonVerrouEtat(inst, c)).toBe(t('cond.locked'));
+    expect(raisonVerrouEtat(inst, c), 'raison du verrou de TYPE alors que le porteur a 5 Blessures')
+      .not.toBe(findConditionById('a-terre')!.lockedReason);
+    // TÉMOIN — à 0 Blessure, sans verrou d'instance, c'est bien la raison du TYPE qui est rendue.
+    const d = mk();
+    d.wounds.current = 0;
+    addCondition(d, 'a-terre', 1);
+    expect(raisonVerrouEtat(d.conditions[0], d)).toBe(findConditionById('a-terre')!.lockedReason);
+  });
+
+  it('la donnée ne peut pas authorer un verrou de TYPE sur un sujet non garanti', () => {
+    const res = etatsSchema.safeParse([{
+      id: 'x', type: 'etats', label: 'X', desc: 'x', source: { book: 'livre-de-base', page: 1 },
+      lockedUntil: { kind: 'flag', expr: 'porte-ouverte' },
+    }]);
+    expect(res.success).toBe(false);
+    expect(res.success ? '' : res.error.issues.map((i) => i.message).join('\n')).toContain('« flag »');
+  });
+});
+
+/**
+ * PORTES DE PARSE du verrou de TYPE et de son soin : ce que la donnée ne peut pas dire, elle ne peut
+ * pas le naître. Un verrou MUET (sans raison) refuserait sans dire pourquoi ; un soin NUL se dit par
+ * l'absence du champ (`LDB 17 l.61`).
+ */
+describe('etats.json — verrou de type et soin de Détermination, au parse', () => {
+  const etat = (extra: Record<string, unknown>) => ([{
+    id: 'x', type: 'etats', label: 'X', desc: 'x', source: { book: 'livre-de-base', page: 1 }, ...extra,
+  }]);
+  const pbPleins = { kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 };
+  const messages = (r: ReturnType<typeof etatsSchema.safeParse>) => (r.success ? '' : r.error.issues.map((i) => i.message).join('\n'));
+
+  it('un verrou SANS raison est refusé, en nommant l’État — et l’inverse aussi', () => {
+    const muet = etatsSchema.safeParse(etat({ lockedUntil: pbPleins }));
+    expect(muet.success).toBe(false);
+    expect(messages(muet)).toContain('« x »');
+    expect(messages(muet)).toContain('lockedReason');
+    expect(etatsSchema.safeParse(etat({ lockedReason: 'parce que' })).success, 'une raison sans verrou n’est jamais lue').toBe(false);
+  });
+
+  it('le COUPLE complet passe ; un soin de Détermination nul ou fractionnaire est refusé', () => {
+    expect(etatsSchema.safeParse(etat({ lockedUntil: pbPleins, lockedReason: 'parce que' })).success).toBe(true);
+    expect(etatsSchema.safeParse(etat({ resolveHeals: 1 })).success).toBe(true);
+    expect(etatsSchema.safeParse(etat({ resolveHeals: 0 })).success, '0 n’est pas un soin : l’absence du champ le dit').toBe(false);
+    expect(etatsSchema.safeParse(etat({ resolveHeals: 1.5 })).success).toBe(false);
   });
 });

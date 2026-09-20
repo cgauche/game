@@ -19,10 +19,10 @@ import { t } from '../i18n';
 import { visibleFocusables } from './Modal';
 import { sousLayoutJsdom } from './layoutJsdom.testkit';
 import { hotbar } from '../state/hotbarBridge';
-import { regles, findQualityById, findActionById, findVehicleById, ACTIONS, type ActionDef } from '../data/index';
+import { regles, findQualityById, findActionById, findConditionById, findVehicleById, ACTIONS, etats, type ActionDef } from '../data/index';
 import { ActiveModal } from './ActiveModal';
 import { vehicleCombatant } from '../engine/vehicle';
-import { actionGate, ACTION_CANDIDATES } from '../state/actionRegistry';
+import { actionGate, ACTION_CANDIDATES, REMEDES } from '../state/actionRegistry';
 import { emptyScene } from '../state/scene';
 import { mdToText } from './Prose';
 import { CombatConsole } from './CombatConsole';
@@ -2664,7 +2664,7 @@ describe('CombatConsole — munition : le chip de l’en-tête est le DÉCLENCHE
 // L'annulation du déplacement n'est pas une case de plus : elle vit sur la ressource qu'elle rend.
 // Le contrat est une AFFORDANCE-VÉRITÉ — elle n'est à l'écran que là où `cancelMove` mordrait
 // vraiment. Le compteur `movementUsed` ne suffit pas à le dire : `battleStandUp` l'écrit SANS poser
-// de `moveSnapshot` (`combatSlice.ts:1602`), et le dispatcher n'aurait alors rien à restaurer.
+// de `moveSnapshot` (`combatSlice.ts:1663`), et le dispatcher n'aurait alors rien à restaurer.
 describe('CombatConsole — annuler le déplacement, sur la gouttière de Mouvement', () => {
   const geste = () => host.querySelector('.cc-gutter-move [data-action="undo-move"]') as HTMLButtonElement | null;
 
@@ -3647,5 +3647,106 @@ describe('CombatConsole — la raison d’une case fermée s’atteint au clavie
     expect(refusAuTap(det), 'au doigt, la raison reste introuvable').toBe(attendue);
     expect(useGame.getState().battle!.combatants[0].resolve, 'le tap a dépensé quelque chose').toBe(avant);
     expect(useGame.getState().battle!.action, 'le tap a armé un mode').toBeNull();
+  });
+});
+
+/**
+ * ÉTAT QUI VERROUILLE L'ACTION — la console ne connaît AUCUN nom d'État : elle lit le drapeau
+ * `restrictsAction` de la donnée (`isActionLocked`, `LDB 16 l.52`). La sonde parcourt donc TOUS les
+ * États qui le déclarent : le jour où un second le porte, il ferme les mêmes cases sans une ligne
+ * de code — et ce test le vérifie déjà.
+ */
+describe('CombatConsole — tout État qui déclare `restrictsAction` ferme les mêmes cases', () => {
+  const caseAction = (id: string) => host.querySelector(`[data-action="${id}"]`) as HTMLButtonElement | null;
+  const verrouillants = etats.filter((e) => e.restrictsAction);
+
+  it('la Défensive se ferme pour CHAQUE État verrouillant de la donnée, et reste ouverte sans lui', () => {
+    expect(verrouillants.length, 'aucun État ne déclare `restrictsAction` : la sonde ne mesurerait rien').toBeGreaterThan(0);
+    // TÉMOIN : le MÊME héros, sans État verrouillant, garde la case OUVERTE.
+    const libre = hero('h1', 'Gunnar');
+    libre.conditions = [];
+    monter(libre, { foes: [foe('e1', 9, 9)] });
+    expect(caseAction('defend')!.disabled, 'sans État verrouillant, la Défensive devrait être offerte').toBe(false);
+    for (const etat of verrouillants) {
+      const h = hero('h1', 'Gunnar');
+      h.conditions = [{ id: etat.id, value: 1 }] as ConditionInstance[];
+      monter(h, { foes: [foe('e1', 9, 9)] });
+      expect(
+        caseAction('defend')!.disabled,
+        `l’État ${etat.id} déclare restrictsAction, la Défensive reste pourtant ouverte`,
+      ).toBe(true);
+    }
+  });
+});
+
+/**
+ * REMÈDE D'ÉTAT — UN ÉTAT VERROUILLÉ NE SE LÈVE PAS, et la case le DIT avant le clic. À Terre à 0
+ * Blessure est verrouillé en donnée (`EtatData.lockedUntil`, `LDB 18 l.15`) : le gate et le dispatcher
+ * lisent ce verrou. La case reste DESSINÉE, fermée, avec la raison de la donnée.
+ */
+describe('remède d’État — offre et dispatcher rendent le MÊME verdict', () => {
+  const caseAction = (id: string) => host.querySelector(`[data-action="${id}"]`) as HTMLButtonElement | null;
+  /** Héros À TERRE, avec le compte de Blessures voulu. */
+  function aTerre(wounds: number) {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [{ id: 'a-terre', value: 1 }] as ConditionInstance[];
+    h.wounds.current = wounds;
+    return h;
+  }
+
+  it('0 Blessure : la case « Se relever » est DESSINÉE, FERMÉE, et dit pourquoi', () => {
+    monter(aTerre(0), { foes: [foe('e1', 9, 9)] });
+    const cell = caseAction('stand');
+    expect(cell, 'la case de relevé a disparu au lieu de dire son refus').not.toBeNull();
+    expect(cell!.getAttribute('data-gated'), 'la case ne se déclare pas fermée').toBe('');
+    // … et la raison est CELLE DE LA DONNÉE (`lockedReason` d'À Terre), pas un repli générique.
+    expect(cell!.querySelector('[data-gate]')!.textContent).toBe(findConditionById('a-terre')!.lockedReason);
+    // … et le clic ne fait RIEN (le dispatcher refuse la même chose) : l'État reste porté.
+    act(() => cell!.click());
+    expect(useGame.getState().battle!.combatants[0].conditions.some((c) => c.id === 'a-terre'), 'le héros s’est relevé à 0 PB').toBe(true);
+  });
+
+  it('TÉMOIN — 5 Blessures : la case est OFFERTE et le clic relève', () => {
+    monter(aTerre(5), { foes: [foe('e1', 9, 9)] });
+    const cell = caseAction('stand');
+    expect(cell, 'la case de relevé n’est pas offerte').not.toBeNull();
+    expect(cell!.getAttribute('data-gated'), 'la case est fermée alors que le relevé est possible').toBeNull();
+    act(() => cell!.click());
+    expect(useGame.getState().battle!.combatants[0].conditions.some((c) => c.id === 'a-terre'), 'le clic n’a pas relevé').toBe(false);
+  });
+
+  it('un porteur SANS l’État n’a PAS la case : la pertinence vient du gate `etat-porte`', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    expect(caseAction('stand'), 'debout, la case de relevé n’a aucune raison d’exister').toBeNull();
+  });
+
+  // CONTRAT D'ORDRE : les cases de remède paraissent dans l'ordre de `actions.json` — c'est la donnée
+  // qui range l'offre, un déplacement d'entrée déplace la case.
+  it('tous les États de remède portés : les cases sortent dans l’ordre de la donnée', () => {
+    const h = hero('h1', 'Gunnar');
+    // Le porteur a TOUS les États que le registre sait soigner : les cases naissent donc toutes.
+    h.conditions = REMEDES.map((a) => ({ id: a.rule!, value: 1 })) as ConditionInstance[];
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    const attendus = REMEDES.map((a) => a.id);
+    expect(attendus.length, 'aucun remède au registre : la sonde ne mesurerait rien').toBeGreaterThan(0);
+    const rendus = [...host.querySelectorAll('.cc-cell[data-action]')]
+      .map((c) => c.getAttribute('data-action')!)
+      .filter((id) => attendus.includes(id));
+    expect(rendus, 'l’ordre des cases de remède à l’écran a changé').toEqual(attendus);
+  });
+
+  // La fenêtre du Test de récupération NOMME le geste par l'entrée du registre (source unique du
+  // libellé) : elle ne peut plus diverger de la case.
+  it('la fenêtre de récupération porte le LIBELLÉ de l’entrée de remède', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [{ id: 'en-flammes', value: 1 }] as ConditionInstance[];
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    act(() => caseAction('roll-fire')!.click());
+    act(() => { root.render(<><CombatConsole /><ActiveModal /></>); });
+    expect(useGame.getState().pendingStateRecovery, 'la case n’a pas ouvert le Test').toBeTruthy();
+    // Le titre porte aussi la puce d'enjeu (`StakeRule`) : on mesure le LIBELLÉ, pas sa ponctuation.
+    expect(host.querySelector('.modal h3')!.textContent!.trim()).toBe(findActionById('roll-fire')!.label);
   });
 });

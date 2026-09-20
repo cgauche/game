@@ -1848,9 +1848,15 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           const v = o.all
             ? (target.conditions.find((x) => x.id === id)?.value ?? 1)
             : Math.max(1, resolveFormula(o.value ?? 1, ref, rng) + slBonus(ctx.sl, o.valuePerSL));
+          // Le retrait peut être INERTE (État verrouillé, LDB 18 ; pion porté par un fait vivant) : la
+          // ligne et la notification suivent le retrait EFFECTIF, mesuré aux pions.
+          const avant = target.conditions.find((x) => x.id === id)?.value ?? 0;
           removeCondition(target, id, v);
-          lines.push(t('op.removeCond', { name: target.label, what: o.all ? t('op.condAll') : t('op.condSome', { n: v }), cond: conditionLabel(id) }));
-          ctx.onCondition?.({ stateId: id, change: 'loss', targetId: target.id });
+          const retires = avant - (target.conditions.find((x) => x.id === id)?.value ?? 0);
+          if (retires > 0) {
+            lines.push(t('op.removeCond', { name: target.label, what: o.all ? t('op.condAll') : t('op.condSome', { n: retires }), cond: conditionLabel(id) }));
+            ctx.onCondition?.({ stateId: id, change: 'loss', targetId: target.id });
+          }
         } else {
           lines.push(t('op.noCondToRemove', { name: target.label }));
         }

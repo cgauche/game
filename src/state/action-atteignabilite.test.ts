@@ -31,8 +31,8 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { ACTIONS } from '../data/index';
-import { ACTION_GATES, ACTION_CANDIDATES, ACTION_PORTEURS, ACTION_RUN, MODES_HORS_REGISTRE, BATTLE_ACTION_MODES, actionGate, runAction } from './actionRegistry';
+import { ACTIONS, findConditionById } from '../data/index';
+import { ACTION_GATES, ACTION_CANDIDATES, ACTION_PORTEURS, ACTION_RUN, REMEDES, MODES_HORS_REGISTRE, BATTLE_ACTION_MODES, actionGate, runAction } from './actionRegistry';
 import { TARGETING_MODES, targetingModeLabel, CAST_MODE } from './targetingModes';
 import { KEYBINDINGS } from './keybindings';
 import { TAILLE_ZONE, TOUCHES_IMPRIMEES, cleEntree, dispositionDeduite, poserDansBarre, resoudreDisposition, retirerDeBarre } from './dispositionConsole';
@@ -81,7 +81,7 @@ const KEYBINDING_IDS = KEYBINDINGS.map((b) => b.id);
  *  ce que fait déjà `CombatConsole.test.tsx` (bandeau d'interlude : `.cc-phase [data-action=…]` rendu,
  *  cliqué, effet mesuré). Débrancher le bandeau y vire donc rouge ; ici, la lecture ne sert qu'à
  *  n'attribuer une surface aux interludes que tant que le pont existe. */
-const INTERLUDE_BRANCHE = /currentInterludeAction/.test(CONSOLE_SRC);
+const INTERLUDE_BRANCHE = /currentInterludeAction\(/.test(CONSOLE_SRC);
 const INTERLUDE_KEYS = INTERLUDE_BRANCHE ? ACTIONS.filter((a) => a.surface === 'interlude').map((a) => a.id) : [];
 
 /** Un GESTE SECONDAIRE n'a pas de case nommée : la console le rend depuis le registre, par l'alvéole
@@ -93,6 +93,14 @@ const GESTE_2E_BRANCHE = /surface === 'geste-secondaire'/.test(CONSOLE_SRC);
 const GESTE_2E_KEYS = GESTE_2E_BRANCHE
   ? ACTIONS.filter((a) => a.surface === 'geste-secondaire' && a.hote && CONSOLE_KEYS.includes(a.hote)).map((a) => a.id)
   : [];
+
+/** Un REMÈDE D'ÉTAT (Se relever, Se rouler, Se libérer) n'a plus d'id cité au site : sa PERTINENCE
+ *  est le gate que SON entrée DÉCLARE (`etat-porte` — l'entrée dit l'État qu'elle traite par `rule` +
+ *  `ruleCategory: 'etats'`), et la console rend TOUTES les entrées qui le portent. Sa surface est CE
+ *  branchement, mesuré à sa source ; la preuve structurelle (la case naît de l'État porté, porte sa
+ *  raison, exécute son dispatcher) est au DOM dans `CombatConsole.test.tsx`. */
+const REMEDE_BRANCHE = /remedesPertinents\(/.test(CONSOLE_SRC);
+const REMEDE_KEYS = REMEDE_BRANCHE ? REMEDES.map((a) => a.id) : [];
 
 /** Une PASTILLE D'ENTITÉ n'a pas de case : elle naît de la chose qui l'offre, sur le champ (spec zone
  *  4). Sa surface est le lecteur du registre qui la fabrique — `state/entityGestes`, qui énumère les
@@ -117,8 +125,9 @@ const PASTILLE_KEYS = PASTILLE_BRANCHE
   : [];
 
 /** Surfaces VIVANTES : la console, le bandeau d'interlude qu'elle rend, les gestes secondaires de ses
- *  alvéoles, les PASTILLES des entités du champ, la FRISE, et le clavier. */
-const SURFACES_VIVANTES = new Set([...CONSOLE_KEYS, ...FRISE_KEYS, ...INTERLUDE_KEYS, ...GESTE_2E_KEYS, ...PASTILLE_KEYS, ...KEYBINDING_IDS]);
+ *  alvéoles, les REMÈDES d'État qu'elle rend par déclaration, les PASTILLES des entités du champ, la
+ *  FRISE, et le clavier. */
+const SURFACES_VIVANTES = new Set([...CONSOLE_KEYS, ...FRISE_KEYS, ...INTERLUDE_KEYS, ...GESTE_2E_KEYS, ...REMEDE_KEYS, ...PASTILLE_KEYS, ...KEYBINDING_IDS]);
 
 /** Les clés qu'une action revendique : son id + ses clés de surface encore forkées. */
 const claimedKeys = (a: (typeof ACTIONS)[number]) => [a.id, ...(a.keys ?? [])];
@@ -127,6 +136,13 @@ describe('registre des actions — cohérence interne (ids de code résolus)', (
   it('chaque `gate` déclaré existe dans ACTION_GATES (un id, ou chacun des ids composés)', () => {
     const bad = ACTIONS.filter((a) => [a.gate].flat().some((g) => !(g in ACTION_GATES))).map((a) => `${a.id} → ${a.gate}`);
     expect(bad, `gate(s) inconnu(s) :\n  ${bad.join('\n  ')}`).toEqual([]);
+  });
+  // Un gate de remède LIT l'État que son entrée déclare : sans cette déclaration il lève (fail-fast).
+  // La donnée ne peut donc pas naître dans la forme que le code refuse.
+  it('toute entrée de remède déclare un État de `etats.json`', () => {
+    expect(REMEDES.length, 'aucun remède au registre : la garde ne mesure rien').toBeGreaterThan(0);
+    const bad = REMEDES.filter((a) => a.ruleCategory !== 'etats' || !a.rule || !findConditionById(a.rule));
+    expect(bad.map((a) => `${a.id} → ${a.ruleCategory}/${a.rule}`), 'État non déclaré ou inconnu').toEqual([]);
   });
   it('chaque `candidates` déclaré existe dans ACTION_CANDIDATES', () => {
     const bad = ACTIONS.filter((a) => a.candidates && !(a.candidates in ACTION_CANDIDATES)).map((a) => `${a.id} → ${a.candidates}`);

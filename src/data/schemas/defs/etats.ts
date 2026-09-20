@@ -8,7 +8,7 @@
 import { z } from 'zod';
 import { charKeySchema, difficultySchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
-import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
+import { conditionSchema, gameOpSchema, sujetsNonGarantis, triggeredEffectSchema } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'etats.json';
@@ -29,6 +29,18 @@ const recoverSchema = z.strictObject({
   difficulty: difficultySchema.optional(),
 });
 
+/** `EtatData.lockedUntil` : même contexte d'évaluation que le verrou d'instance (`conditionLockCtx`),
+ *  donc même refus — un sujet que cette vue ne porte pas serait évalué FAUX en silence. */
+const verrouDEtatSchema = conditionSchema.superRefine((v, ctx) => {
+  for (const kind of sujetsNonGarantis(v)) {
+    ctx.addIssue({
+      code: 'custom',
+      message: `Verrou d'État : la Condition « ${kind} » lit un état que le contexte de verrou ne porte pas `
+        + '(`conditionLockCtx`, engine/actorView.ts — la vue du seul PORTEUR).',
+    });
+  }
+});
+
 const doc = document(
   'etats',
   famille,
@@ -46,6 +58,12 @@ const doc = document(
     /** LDB 16 l.115 (Inconscient), l.37 (À Terre), l.137 (Surpris) — « ne se cumule pas ». */
     nonCumulable: z.boolean().optional(),
     recover: recoverSchema.optional(),
+    /** `EtatData.lockedUntil` — verrou de TYPE (À Terre : `LDB 18 l.15`). Même porte que le verrou
+     *  d'instance de l'op `condition` : un sujet hors du contexte de verrou est refusé ICI, nommé. */
+    lockedUntil: verrouDEtatSchema.optional(),
+    lockedReason: z.string().optional(),
+    /** `EtatData.resolveHeals` — `LDB 17 l.61`. Un soin NUL se dit par l'absence du champ. */
+    resolveHeals: z.number().int().min(1).optional(),
     /** `EtatData.persistsAfterCombat` (`src/data/index.ts`) — LDB 16 l.56/70/84/92/107/117, LDB 62 l.250. */
     persistsAfterCombat: z.boolean().optional(),
   },
@@ -63,6 +81,15 @@ const doc = document(
       hint: 'État bloquant (Brisé) : l’IA dépense sa Détermination pour le lever',
     },
     recover: { label: 'Guérison', hint: 'Test (Compétence/Caractéristique/Difficulté) qui met fin à l’État' },
+    lockedUntil: {
+      label: 'Verrouillé tant que',
+      hint: 'Tant que la Condition est fausse, l’État ne se retire par aucun moyen (À Terre à 0 Blessure)',
+    },
+    lockedReason: { label: 'Raison du verrou', hint: 'Ce que le joueur lit quand le verrou refuse le geste' },
+    resolveHeals: {
+      label: 'Blessures rendues par la Détermination',
+      hint: 'Blessures regagnées quand un point de Détermination retire cet État (À Terre : 1)',
+    },
     persistsAfterCombat: { label: 'Persiste hors combat' },
   },
   {
@@ -72,7 +99,19 @@ const doc = document(
   { exiges: ['desc', 'source'] },
 );
 
-export const schema = doc.schema;
+/** Un verrou de TYPE et sa RAISON vont ENSEMBLE : un verrou muet laisserait la case refuser sans dire
+ *  pourquoi, une raison sans verrou ne serait jamais lue. */
+export const schema = doc.schema.superRefine((entrees, ctx) => {
+  for (const e of entrees as { id?: string; lockedUntil?: unknown; lockedReason?: unknown }[]) {
+    if ((e.lockedUntil != null) === (e.lockedReason != null)) continue;
+    ctx.addIssue({
+      code: 'custom',
+      path: [e.lockedUntil != null ? 'lockedReason' : 'lockedUntil'],
+      message: `État « ${String(e.id ?? '?')} » : « lockedUntil » (verrou de TYPE) et « lockedReason » `
+        + '(ce que le joueur lit quand il tient) se déclarent ENSEMBLE — ajouter le champ manquant, ou retirer l’autre.',
+    });
+  }
+});
 export const meta = doc.meta;
 
 export const exposition = doc.exposition;

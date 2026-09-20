@@ -357,12 +357,40 @@
     ]
   },
   {
+    "id": "stand",
+    "type": "actions",
+    "label": "Se relever",
+    "icon": "action/stand-up",
+    "surface": "grille",
+    "gate": [
+      "mouvement-intact",
+      "etat-porte",
+      "remede-atteignable"
+    ],
+    "run": "battleStandUp",
+    "coutAction": "mouvement",
+    "rule": "a-terre",
+    "ruleCategory": "etats",
+    "source": {
+      "book": "livre-de-base",
+      "page": 167
+    },
+    "keys": [
+      "stand"
+    ]
+  },
+  {
     "id": "roll-fire",
     "type": "actions",
-    "label": "Se rouler",
+    "label": "Se rouler au sol",
     "icon": "action/roll-fire",
     "surface": "grille",
-    "gate": "action-libre",
+    "gate": [
+      "action-libre",
+      "etat-porte",
+      "etat-recuperable-par-test",
+      "remede-atteignable"
+    ],
     "run": "battleRecoverState",
     "coutAction": "action",
     "rule": "en-flammes",
@@ -377,32 +405,18 @@
     "label": "Se libérer",
     "icon": "action/break-free",
     "surface": "grille",
-    "gate": "action-libre",
+    "gate": [
+      "action-libre",
+      "etat-porte",
+      "etat-recuperable-par-test",
+      "remede-atteignable"
+    ],
     "run": "battleRecoverState",
     "coutAction": "action",
     "rule": "empetre",
     "ruleCategory": "etats",
     "keys": [
       "free-entangle"
-    ]
-  },
-  {
-    "id": "stand",
-    "type": "actions",
-    "label": "Se relever",
-    "icon": "action/stand-up",
-    "surface": "grille",
-    "gate": "mouvement-intact",
-    "run": "battleStandUp",
-    "coutAction": "mouvement",
-    "rule": "a-terre",
-    "ruleCategory": "etats",
-    "source": {
-      "book": "livre-de-base",
-      "page": 167
-    },
-    "keys": [
-      "stand"
     ]
   },
   {

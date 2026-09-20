@@ -28,6 +28,7 @@ import { refreshWounds } from './characteristics';
 import { restoreSuppressedPsych } from './psychology';
 import { hasActiveFlag } from './activeFlags';
 import { applyOps, resolveWindowDuration } from './ops'; // cycle runtime (ops→conditions) : appelés au tick/à la dépense, jamais à l'init du module
+import { cappedHealAmount } from './healing'; // cycle runtime (healing→conditions) : appelé à la dépense, jamais à l'init
 import { aaDeathByCriticalCount } from './critical'; // cycle runtime (critical→combat→conditions) : appelé seulement dans inDeathCondition, jamais à l'init
 
 /** Les 12 États CANONIQUES (LDB 16) à comportement moteur, par `id` STABLE (slug d'etats.json). Le
@@ -182,21 +183,44 @@ export function addClockCondition(c: Combatant, name: string, value: number, unt
   }
 }
 
-/** Un État posé par un Critique est-il VERROUILLÉ (LDB 18) ? Deux formes, INDÉPENDANTES d'un trauma porteur :
- *  - `unlockBy` (acte de soin) : verrouillé tant que l'acte NOMMÉ (Aide Médicale / Chirurgie / magie) n'a pas
- *    été reçu — l'acte le lève via `releaseConditionLocks` (Aveuglé/Sonné/Inconscient « par Aide Médicale »,
- *    Hémorragique « par Chirurgie ») ;
- *  - `lockedUntil` (prédicat d'état, algèbre flowCore) : verrouillé tant que la Condition n'est pas VRAIE contre
- *    l'état VIVANT du porteur (Aveuglé « tant que tous les Hémorragique n'ont pas été éliminés », Tête 46-50 ⇒
- *    `compare hemorragique == 0`).
- *  Tant qu'il tient, `removeCondition` (dont l'auto-dissipation) est inerte sur cet État. */
+/** Un État est-il VERROUILLÉ ? Trois formes, d'un même verdict :
+ *  - `unlockBy` (acte de soin, LDB 18) : l'acte NOMMÉ le lève, via `releaseConditionLocks` ;
+ *  - `lockedUntil` de l'INSTANCE (LDB 18) : prédicat posé par le Critique qui a posé l'État ;
+ *  - `lockedUntil` du TYPE (`etats.json`) : prédicat vrai de TOUTE instance de cet État, quelle que soit
+ *    son origine — À Terre à 0 Blessure, LDB 18 l.15.
+ *  Le prédicat s'évalue contre la vue du porteur (`conditionLockCtx`) ; les sujets hors de cette vue sont
+ *  refusés AU PARSE. Tant qu'un verrou tient, `removeCondition` est inerte sur cet État. */
 export function isConditionLocked(inst: ConditionInstance, c: Combatant): boolean {
-  if (inst.unlockBy != null) return true; // verrou d'acte de soin non encore levé (LDB 18)
-  if (!inst.lockedUntil) return false;
-  // Le prédicat s'évalue contre la vue COMPLÈTE du porteur (`conditionLockCtx`, source unique partagée
-  // avec les Flows) : PB, Taille, Avantage, camp, appartenances, Caractéristiques, États, Capacités.
-  // Les sujets que ce contexte ne porte pas sont refusés AU PARSE, jamais évalués faux ici.
-  return !evalCondition(inst.lockedUntil, conditionLockCtx(c));
+  return raisonVerrouEtat(inst, c) !== undefined;
+}
+
+/** Les actes de soin qui lèvent un verrou d'État (LDB 18), en français — source unique du libellé,
+ *  partagée par le refus d'un remède et l'éditeur d'op. */
+export const ACTE_DE_DEVERROUILLAGE: Record<import('./types').ConditionUnlock, string> = {
+  medicalAid: 'Aide Médicale',
+  surgery: 'Chirurgie',
+  magic: 'Soin magique',
+};
+
+/** POURQUOI cet État ne se lève pas maintenant — la raison DU VERROU QUI TIENT, `undefined` si aucun.
+ *  Les trois formes sont évaluées séparément, chacune avec SA raison : l'acte de soin attendu
+ *  (`unlockBy`), le prédicat posé par le Critique (`lockedUntil` d'instance), puis celui du TYPE
+ *  (`EtatData.lockedUntil`, dont la raison est la donnée `lockedReason`). `isConditionLocked` lit ce
+ *  même verdict : une seule évaluation, jamais deux copies du OU. */
+export function raisonVerrouEtat(inst: ConditionInstance, c: Combatant): string | undefined {
+  if (inst.unlockBy != null) return t('cond.lockedByAct', { acte: ACTE_DE_DEVERROUILLAGE[inst.unlockBy] });
+  const type = findConditionById(inst.id);
+  if (!inst.lockedUntil && !type?.lockedUntil) return undefined; // aucun prédicat : rien à projeter
+  const vue = conditionLockCtx(c);
+  if (inst.lockedUntil && !evalCondition(inst.lockedUntil, vue)) return t('cond.locked');
+  if (type?.lockedUntil && !evalCondition(type.lockedUntil, vue)) return type.lockedReason ?? t('cond.locked');
+  return undefined;
+}
+
+/** Blessures que la dépense d'un point de Détermination REND en retirant cet État (`EtatData.resolveHeals`,
+ *  LDB 17 l.61) — EFFECTIVES : même plafond que le soin lui-même (`cappedHealAmount`, LDB 62 l.250). */
+export function soinDeDetermination(c: Combatant, conditionId: string): number {
+  return cappedHealAmount(c, findConditionById(conditionId)?.resolveHeals ?? 0);
 }
 
 /** Un acte `act` LÈVE-t-il un verrou d'État `unlockBy` (LDB 18) ? Le soin magique compte AUSSI comme Aide
@@ -301,7 +325,16 @@ export function fenetreDetermination(c: Combatant, conditionId: string, now: num
  * (LDB 16 l.117).
  */
 export function raisonRefusDetermination(c: Combatant, conditionId: string): string | undefined {
-  const src = c.conditions.find((x) => x.id === conditionId)?.derivedFrom?.src;
+  const inst = c.conditions.find((x) => x.id === conditionId);
+  // La dépense REND d'abord les Blessures que l'État déclare (LDB 17 l.61) : le verrou s'évalue sur le
+  // porteur TEL QU'IL SERA. Ce qui refuse encore refuserait aussi après le soin (LDB 18).
+  if (inst) {
+    const soin = soinDeDetermination(c, conditionId);
+    const apres = soin > 0 ? { ...c, wounds: { ...c.wounds, current: c.wounds.current + soin } } : c;
+    const verrou = raisonVerrouEtat(inst, apres);
+    if (verrou) return verrou;
+  }
+  const src = inst?.derivedFrom?.src;
   if (!src || opPorteuseDEtat(c, conditionId)?.resolveWindow !== 'none') return undefined;
   return t('cond.refusDeterminationVerrou', { cond: conditionLabel(conditionId), src: refLabel(src.category, { id: src.id }) });
 }

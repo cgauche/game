@@ -19,7 +19,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant, ConditionChange } from './types';
 import { applyOps } from './ops';
-import { addCondition, releaseConditionLocks, tickDurations, endOfRound, COND } from './conditions';
+import { addCondition, hasCondition, releaseConditionLocks, tickDurations, endOfRound, COND } from './conditions';
 import { contractDisease, tickDisease } from './disease';
 import { MINUTES_PER_DAY } from './clock';
 import type { RNG } from './dice';
@@ -82,6 +82,24 @@ describe("op 'condition' → canal onCondition (l'id part avec la ligne)", () =>
     addCondition(c, COND.extenue, 2);
     const { seen } = withSpy((emit) => applyOps(c, [{ op: 'removeCondition', id: COND.extenue }], { onCondition: emit }));
     expect(seen).toEqual([{ stateId: COND.extenue, change: 'loss', targetId: 'h' }]);
+  });
+
+  // Un État VERROUILLÉ (LDB 18) ne part pas : l'op ne peut ni l'annoncer au journal ni notifier une
+  // perte qui n'a pas eu lieu — le canal suit le RETRAIT EFFECTIF, mesuré aux pions.
+  it("op 'removeCondition' sur un État VERROUILLÉ : ni ligne, ni perte", () => {
+    const c = hero({ wounds: { current: 0, max: 12 } });
+    addCondition(c, COND.aTerre, 1); // verrou de TYPE : 0 Blessure (LDB 18 l.15)
+    const { lines, seen } = withSpy((emit) => applyOps(c, [{ op: 'removeCondition', id: COND.aTerre }], { onCondition: emit }));
+    expect(hasCondition(c, COND.aTerre), 'la sonde ne mesurerait rien si le verrou ne tenait pas').toBe(true);
+    expect(lines, 'le journal annonce un retrait qui n’a pas eu lieu').toEqual([]);
+    expect(seen, 'le canal notifie une perte qui n’a pas eu lieu').toEqual([]);
+
+    // TÉMOIN — le même État, verrou TOMBÉ (1 Blessure) : la ligne ET la perte sortent.
+    c.wounds.current = 1;
+    const ok = withSpy((emit) => applyOps(c, [{ op: 'removeCondition', id: COND.aTerre }], { onCondition: emit }));
+    expect(hasCondition(c, COND.aTerre)).toBe(false);
+    expect(ok.lines).toHaveLength(1);
+    expect(ok.seen).toEqual([{ stateId: COND.aTerre, change: 'loss', targetId: 'h' }]);
   });
 
   it("removeCondition SANS État à retirer : la ligne sort, le canal reste MUET (rien à nommer)", () => {

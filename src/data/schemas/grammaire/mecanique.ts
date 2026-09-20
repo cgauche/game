@@ -182,7 +182,7 @@ function refusLoose(v: Record<string, unknown>, ctx: z.RefinementCtx): void {
 export const SUJETS_DE_VERROU = new Set(['always', 'compare', 'capability', 'has', 'relation', 'casterChaosDomain', 'visiblePassive'] as const);
 
 /** Les `kind` d'une Condition de verrou que le contexte ne garantit pas (récursif sur `all`/`any`/`not`). */
-function sujetsNonGarantis(cond: unknown): string[] {
+export function sujetsNonGarantis(cond: unknown): string[] {
   if (!cond || typeof cond !== 'object') return [];
   const c = cond as Record<string, unknown>;
   if (c.kind === 'all' || c.kind === 'any') return (Array.isArray(c.of) ? c.of : []).flatMap(sujetsNonGarantis);

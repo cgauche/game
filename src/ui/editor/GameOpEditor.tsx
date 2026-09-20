@@ -25,6 +25,7 @@ import type { DatasetKey } from '../../data/overrides';
 import { giveTrappingLabel } from '../../engine/items';
 import { parseTraitInstance, formatTrait, formatWardSave } from '../../engine/traits/dispatch';
 import { traumaLabelOf } from '../../engine/trauma';
+import { ACTE_DE_DEVERROUILLAGE } from '../../engine/conditions';
 import { AddMenu, TypeMenu, pickable, type TypeMenuGroup } from './AddMenu';
 import { JsonField } from './JsonField';
 import { Icon } from '../Icon';
@@ -41,8 +42,9 @@ const SIZES = Object.keys(SIZE_LABEL) as SizeCategory[];
 
 const CHARS = Object.keys(CHAR_LABELS) as CharKey[];
 
-/** Actes de soin qui LÈVENT un verrou d'État (`ConditionUnlock`, LDB 18) — union FERMÉE du moteur. */
-const UNLOCK_LABELS: [ConditionUnlock, string][] = [['medicalAid', 'Aide Médicale'], ['surgery', 'Chirurgie'], ['magic', 'Soin magique']];
+/** Actes de soin qui LÈVENT un verrou d'État (`ConditionUnlock`, LDB 18) — libellés du moteur
+ *  (`ACTE_DE_DEVERROUILLAGE`), partagés avec le refus d'un remède sur un État verrouillé. */
+const UNLOCK_LABELS = Object.entries(ACTE_DE_DEVERROUILLAGE) as [ConditionUnlock, string][];
 
 // ---------------------------------------------------------------------------
 // Vocabulaire COMPLET — libellé + menu groupé par intention

@@ -1468,6 +1468,15 @@ export interface EtatData extends StatusData {
    *  par-nom. `opposedBy:'source'` → opposé contre la Force d'entrave : `escapeStrength` FIGÉE en priorité
    *  (vaut même source absente), sinon Force de la source VIVANTE. Retire 1 + DR pions sur succès. */
   recover?: { skill?: Ref; characteristic?: import('../engine/types').CharKey; opposedBy?: 'source'; difficulty?: import('../engine/types').Difficulty };
+  /** VERROU DE TYPE : tant que cette Condition est fausse, AUCUNE instance de cet État ne se retire
+   *  (À Terre — `LDB 18 l.15`). Même champ, même algèbre et même porte de parse que le verrou d'INSTANCE
+   *  (`ConditionInstance.lockedUntil`) ; lu par `isConditionLocked`. */
+  lockedUntil?: import('../engine/flowCore').Condition;
+  /** Ce que le joueur lit quand `lockedUntil` tient (fragment français, éditable). */
+  lockedReason?: string;
+  /** Blessures RENDUES quand une dépense de Détermination retire cet État — `LDB 17 l.61`. Le soin
+   *  précède le retrait : c'est lui qui lève le verrou d'À Terre. */
+  resolveHeals?: number;
   /** Cet État VERROUILLE l'Action : le Mouvement + l'Action doivent servir à fuir/se cacher (Brisé, LDB 16
    *  l.52). Drapeau DÉCLARATIF lu en DONNÉES par `isActionLocked`/`restrictingConditions` (engine/conditions),
    *  partagé par le gate de hotbar (`battleSelectAction`) ET l'IA (dépense PROACTIVE de Détermination pour se
