@@ -27,7 +27,7 @@ manifeste est invisible ici, et rien ne la révèle sauf le hook `new-src-file-g
 mord qu'à la CRÉATION d'un `.tsx` de `src/ui`/`src/gameIso` — un module `.ts`, un fichier antérieur
 au hook, ou une primitive née ailleurs n'y passent jamais.
 
-95 primitives.
+96 primitives.
 
 | Besoin | Primitive | Fichier | CSS possédé | Périmètre | Verrou |
 |---|---|---|---|---|---|
@@ -69,7 +69,7 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | grille de sélection en sections par famille ou classe, role listbox et roving tabindex | `GroupedPickGrid` | `src/ui/GroupedPickGrid.tsx` | — | tout picker groupé | — |
 | corps de fiche héros : en-tête figurine, caractéristiques et dérivées, forces seuillées, chips codex | `HeroSheet` | `src/ui/HeroSheet.tsx` | `src/ui/styles/hero-sheet.css` | résumé du créateur, écran de groupe | réflexe avant toute fiche de personnage recodée |
 | rangée d'influence Chance/Pacte/Résilience/Détermination | `InfluenceRow` | `src/ui/InfluenceRow.tsx` | — | toute modale de jet influençable ; porte aussi ResilienceButton et DeterminationButton | — |
-| frise d'initiative : colonne de bois à cartouche de Round collé, une entrée par combattant, badges de premier coup et de pré-emption en débord | `InitiativeStrip` | `src/ui/InitiativeStrip.tsx` | `src/ui/styles/initiative-strip.css` | HUD de combat (colonne à gauche ; bande horizontale défilable ≤700) | src/ui/ui-ratchets.test.ts — matrice responsive du HUD |
+| frise d'initiative : colonne de bois à cartouche de Round collé, une entrée par combattant, badges de premier coup et de pré-emption en débord | `InitiativeStrip` | `src/ui/InitiativeStrip.tsx` | `src/ui/styles/initiative-strip.css` | HUD de combat (colonne à gauche ; bande horizontale défilable ≤700) | scripts/recette/hud-clickables.mjs — la bande défile, va jusqu'au bord, garde sa tête et son acteur au trait dans le champ |
 | panneau d’INSPECTION en lecture seule : identité + jauge, badges de camp/états, statbloc | `InspectPanel` | `src/ui/InspectPanel.tsx` | `src/ui/styles/inspect-panel.css` | clic sur l’ordre de bataille ; l’en-tête est partagé avec l’inspecteur de l’éditeur | statbloc rendu par le rendu PARTAGÉ du Codex (CodexSections) |
 | icône d'OBJET (silhouette de rig arme/armure/bouclier, sinon glyphe de catégorie) | `ItemIcon` | `src/ui/ItemIcon.tsx` | — | sac, onglet Combat de la fiche, pickers MediaSelect, hotbar de combat | src/ui/no-emoji-affordance.test.ts |
 | placement d'écran : pile, rangée, grille, split — gap/pad sur l'échelle, cassure canon | `Stack/Row/Grid/Split` | `src/ui/Layout.tsx` | — | tout écran | ui-ratchets (xxi)/(xxii) |
@@ -122,8 +122,9 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | texte découpé en segments TONÉS PAR CAMP : les noms cités en gras, allié ou ennemi | `TeamSegments` | `src/ui/TeamSegments.tsx` | `src/ui/styles/team-segments.css` | journal de combat, ligne de récap, fil d’événements | les deux vocabulaires de segments (NarratedSegment, RecapSegment) passent par ce rendu |
 | table de négoce : colonnes de stats, prix, action par rangée, groupes de rubrique | `TradeTable` | `src/ui/TradeTable.tsx` | — | marchand, port, marché terrestre | réflexe avant tout tableau d’achat/vente recodé |
 | appui long 450 ms tactile et souris, geste secondaire d’une alvéole | `useLongPress` | `src/ui/useLongPress.ts` | — | alvéoles de la console de combat | réflexe avant tout minuteur de pression recodé |
-| rangée de commandes de CAMÉRA : orientation, affichage, zoom — chacune vissée sur la peau partagée « tôle » | `ViewControls` | `src/ui/ViewControls.tsx` | `src/ui/styles/view-controls.css` | HUD plein-champ du plateau | src/ui/ui-ratchets.test.ts — cible de 44px sous pointeur grossier |
+| ramener un élément en vue dans son conteneur défilant : 'nearest' par défaut, 'smooth' seulement hors prefers-reduced-motion, appel protégé (scrollIntoView absent en jsdom) | `useRamenerEnVue / ramenerEnVue` | `src/ui/useRamenerEnVue.ts` | — | rangée qui roule, acteur au trait de la frise, détail empilé du master-detail, badge de zone de la fiche | aucun `scrollIntoView` écrit à la main : le geste, ses défauts et la préférence système vivent en UN point |
+| rangée de commandes de CAMÉRA : orientation, affichage, zoom — chacune vissée sur la peau partagée « tôle » | `ViewControls` | `src/ui/ViewControls.tsx` | `src/ui/styles/view-controls.css` | éditeur de scène et galerie QC — sur l'écran de jeu la caméra se pilote au geste et au clavier, sans plaque | src/ui/camera-sans-plaque.test.ts — montée dans l'éditeur, jamais dans le HUD de jeu |
 | en-tête A→B d'une modale de combat/opposition | `VsHeader` | `src/ui/VsHeader.tsx` | `src/ui/styles/vs-header.css` | toute confrontation à 2 camps | — |
 | sceau de cire et plaque d’élu scellée | `WaxSeal/SealedPlaque` | `src/ui/WaxSeal.tsx` | — | tuiles de sélection, plaques d’élu | — |
 | rose des vents : direction + force du vent | `WindRose` | `src/ui/WindRose.tsx` | `src/ui/styles/gauges.css` | voyage en mer, dossier de navire | — |
-<!-- sources-empreinte: 95f7e4e874ca4f2c219cd77e8f2a637f3b902959 (6 fichiers, 0 dossiers) corps: 13505402b615aee43b01be4f16820eb3d0a469fb -->
+<!-- sources-empreinte: 3632f9fb4ca6e4f76edadf510f06104d461bbfae (6 fichiers, 0 dossiers) corps: 45cf7897ac20c4c094a303170feadcff5d29dc86 -->
