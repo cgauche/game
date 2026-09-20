@@ -6,10 +6,11 @@ import { execFileSync, spawnSync } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { isAbsolute, join, sep } from 'node:path'
-import { gabaritDeDepot, instanceDeDepot } from './depotGabarit.mjs'
+import { envDeDepotForge, gabaritDeDepot, instanceDeDepot } from './depotGabarit.mjs'
 import { listerDossier } from './lister.mjs'
+import { readCorpus } from './sourceCorpus.mjs'
 
-const git = (cwd) => (args) => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+const git = (cwd) => (args) => execFileSync('git', args, { cwd, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
 
 const PARAMS = {
   fichiers: { 'src/a.ts': 'export const a = 1\n', 'lu/b.txt': 'b\n' },
@@ -172,7 +173,7 @@ test('B : l’instance est un dépôt HISTORIQUE complet (objets, refs, graphe) 
     assert.equal(g(['merge-base', 'HEAD', 'refs/remotes/origin/main']), sha, 'les deux refs ne partagent pas l’histoire')
     assert.equal(g(['log', '-1', '--format=%s']), PARAMS.message)
 
-    const fsck = spawnSync('git', ['fsck', '--no-progress'], { cwd: racine, encoding: 'utf8' })
+    const fsck = spawnSync('git', ['fsck', '--no-progress'], { cwd: racine, env: envDeDepotForge(), encoding: 'utf8' })
     assert.equal(fsck.status, 0, `git fsck a refusé l’instance : ${fsck.stderr}`)
     assert.doesNotMatch(fsck.stderr + fsck.stdout, /missing|broken|corrupt/i)
 
@@ -185,4 +186,151 @@ test('B : l’instance est un dépôt HISTORIQUE complet (objets, refs, graphe) 
   } finally {
     jeter(racine)
   }
+})
+
+// ── Sonde C : un dépôt FORGÉ ne connaît que LUI-MÊME ─────────────────────────────────────────────
+/**
+ * Git exporte `GIT_DIR`, `GIT_INDEX_FILE` et consorts à ses sous-processus (`git rev-parse
+ * --local-env-vars`) : un `git` lancé dans un dossier forgé qui en hérite vise le dépôt de
+ * l'appelant, où que ce dossier soit. La mesure se fait sur un dépôt TÉMOIN jetable — jamais sur un
+ * dépôt de travail — dont le `config` et l'index sont confrontés à l'OCTET, avant et après.
+ */
+test('C : sous `GIT_DIR`/`GIT_INDEX_FILE` d’un TÉMOIN, la fabrication ne le touche pas et l’instance est AUTONOME', () => {
+  const temoin = mkdtempSync(join(tmpdir(), 'temoin-'))
+  const avant = { GIT_DIR: process.env.GIT_DIR, GIT_INDEX_FILE: process.env.GIT_INDEX_FILE }
+  try {
+    const gitTemoin = git(temoin)
+    gitTemoin(['init', '-q', '-b', 'main'])
+    writeFileSync(join(temoin, 'a.txt'), 'témoin\n', 'utf8')
+    gitTemoin(['add', 'a.txt'])
+    const empreinte = () => ['config', 'index'].map((f) => readFileSync(join(temoin, '.git', f)).toString('hex'))
+    const octets = empreinte()
+
+    process.env.GIT_DIR = join(temoin, '.git')
+    process.env.GIT_INDEX_FILE = join(temoin, '.git', 'index')
+    // Paramètres UNIQUES : sur un gabarit déjà mémoïsé, l'instance serait une copie de fichiers, et
+    // pas un seul processus git ne serait lancé sous ces variables.
+    // L'intégrité du témoin se mesure que la fabrication aboutisse ou NON — un forgeur qui vise
+    // ailleurs meurt souvent en vol, après avoir écrit.
+    let forge = null
+    let echec = null
+    try { forge = instanceDeDepot({ fichiers: { 'forge/x.txt': 'x\n' }, message: 'forgé sous GIT_DIR' }) } catch (e) { echec = e }
+    try {
+      assert.deepEqual(empreinte(), octets, 'la fabrication a ÉCRIT dans le dépôt désigné par GIT_DIR / GIT_INDEX_FILE')
+      assert.equal(echec, null, `la fabrication a échoué sous GIT_DIR : ${echec?.message}`)
+      const { racine } = forge
+      const gitLa = git(racine)
+      assert.equal(
+        gitLa(['rev-parse', '--path-format=absolute', '--git-dir']).replace(/\//g, sep), join(racine, '.git'),
+        'l’instance ne résout pas SON dépôt',
+      )
+      assert.equal(gitLa(['log', '-1', '--format=%s']), 'forgé sous GIT_DIR', 'le commit de fondation est allé ailleurs')
+    } finally {
+      if (forge) rmSync(forge.racine, { recursive: true, force: true })
+    }
+  } finally {
+    for (const [nom, valeur] of Object.entries(avant)) {
+      if (valeur === undefined) delete process.env[nom]
+      else process.env[nom] = valeur
+    }
+    rmSync(temoin, { recursive: true, force: true })
+  }
+})
+
+// ── Sonde D : STATIQUE — aucun autre forgeur n'hérite de l'env de git ────────────────────────────
+/** Le fichier qui DÉFINIT l'env isolé : le seul lanceur qui n'a personne à qui le demander. */
+const PRIMITIVE = 'scripts/guards/lib/depotGabarit.mjs'
+
+/** Ce que le détecteur reconnaît d'un dépôt FORGÉ : un `init` cité en tête d'arguments (`(['init'`,
+ *  `('init'`). Sa COUVERTURE s'arrête là — un `init` passé par une variable lui échappe. */
+const FORGE_UN_DEPOT = /[([]\s*['"]init['"]/
+
+/** Un site de lancement de git. La FENÊTRE d'un site est sa ligne et les deux suivantes : l'option
+ *  `env` d'un appel écrit sur plusieurs lignes y tient. */
+const SITE_GIT = /(?:execFileSync|spawnSync)\(\s*['"]git['"]/
+
+/** L'import qui adresse l'env isolé à la primitive. */
+const IMPORTE_L_ENV = /import\s*\{[^}]*\benvDeDepotForge\b[^}]*\}\s*from\s*['"][^'"]*depotGabarit\.mjs['"]/
+
+/**
+ * Lanceurs qui visent l'arbre RÉEL du dépôt : leur env HÉRITÉ est ce qui les rend justes, et c'est
+ * la raison pour laquelle ils sont hors de la règle. Nominatif AU SITE : `ancre` est un texte de la
+ * fenêtre du site, `sites` son compte EXACT dans le fichier — une entrée qui n'atteint plus rien,
+ * ou qui en atteint un de plus, fait rougir.
+ */
+const LANCEURS_ARBRE_REEL = [
+  {
+    fichier: 'scripts/gates/classerPush.test.mjs', ancre: 'cwd: RACINE', sites: 1,
+    raison: 'lit les sources SUIVIES de l’arbre réel (`ls-files`) pour confronter la gate à la mesure',
+  },
+  {
+    fichier: 'scripts/gates/testsParGate.test.mjs', ancre: "['rev-parse', '--show-toplevel']", sites: 1,
+    raison: 'résout la RACINE de l’arbre réel, qui est le corpus que la couverture mesure',
+  },
+  {
+    fichier: 'scripts/hooks/solde-ticket-guard.test.mjs', ancre: '`HEAD:${chemin}`', sites: 1,
+    raison: 'lit les revues de palier dans le HEAD de l’arbre réel — le contrôle positif de la chaîne',
+  },
+  {
+    fichier: 'scripts/hooks/solde-ticket-guard.test.mjs', ancre: "'--is-shallow-repository'", sites: 2,
+    raison: 'mesure la profondeur de l’arbre réel, dont dépend la lecture d’histoire des deux cas',
+  },
+]
+
+/** Fichiers du corpus qui forgent un dépôt, hors la primitive. */
+function forgeurs() {
+  const corpus = readCorpus(['scripts', 'src'], { exts: ['.mjs', '.mts', '.js', '.ts', '.tsx'], tests: true })
+  return corpus.filter((f) => f.rel !== PRIMITIVE && FORGE_UN_DEPOT.test(f.text) && SITE_GIT.test(f.text))
+}
+
+/** Sites de lancement de git d'un texte, la ligne comptée depuis 1. */
+function sitesGit(texte) {
+  const lignes = texte.split('\n')
+  return lignes.flatMap((ligne, i) =>
+    SITE_GIT.test(ligne) ? [{ ligne: i + 1, texte: ligne.trim(), fenetre: lignes.slice(i, i + 3).join('\n') }] : [])
+}
+
+/** L'option `env` d'un site, quand elle ADRESSE la primitive : un `env` quelconque ne vaut rien. */
+const ENV_ISOLE = /\benv\s*:[^\n]*\benvDeDepotForge\(/
+
+/** Les fautes d'UN fichier, s'il forge un dépôt ; aucune s'il n'en forge pas. */
+function fautesDe({ rel, text }) {
+  if (!FORGE_UN_DEPOT.test(text) || !SITE_GIT.test(text)) return []
+  const fautes = []
+  if (!IMPORTE_L_ENV.test(text)) fautes.push(`${rel} : forge un dépôt sans importer \`envDeDepotForge\``)
+  const exempts = LANCEURS_ARBRE_REEL.filter((e) => e.fichier === rel)
+  for (const site of sitesGit(text)) {
+    if (ENV_ISOLE.test(site.fenetre)) continue
+    if (exempts.some((e) => site.fenetre.includes(e.ancre))) continue
+    fautes.push(`${rel}:${site.ligne} : lanceur git sans \`env: envDeDepotForge()\` — ${site.texte}`)
+  }
+  return fautes
+}
+
+test('D : le détecteur MORD sur un forgeur à env hérité, à env quelconque, et se tait sur un forgeur isolé', () => {
+  const importe = "import { envDeDepotForge } from '../guards/lib/depotGabarit.mjs'\n"
+  // Le lanceur des échantillons s'écrit en DEUX morceaux : ce banc est lui-même au corpus du détecteur.
+  const lance = (args, options) => `${'execFileSync'}('git', ${args}, { cwd: d${options} })\n`
+  const forge = (options) => lance("['init', '-q']", options)
+  assert.equal(fautesDe({ rel: 'x.test.mjs', text: forge('') }).length, 2)
+  assert.equal(fautesDe({ rel: 'x.test.mjs', text: importe + forge(', env: process.env') }).length, 1)
+  assert.deepEqual(fautesDe({ rel: 'x.test.mjs', text: importe + forge(', env: envDeDepotForge()') }), [])
+  assert.deepEqual(fautesDe({ rel: 'x.test.mjs', text: lance("['status']", '') }), [])
+})
+
+test('D : tout fichier qui FORGE un dépôt passe l’env isolé à CHACUN de ses lanceurs git', () => {
+  assert.deepEqual(forgeurs().flatMap(fautesDe), [])
+})
+
+test('D : le stock des lanceurs d’arbre RÉEL est nominatif, compté au site, et chaque entrée porte sa raison', () => {
+  const parRel = new Map(forgeurs().map((f) => [f.rel, f.text]))
+  const fautes = []
+  for (const e of LANCEURS_ARBRE_REEL) {
+    assert.ok(e.raison.length > 30, `« ${e.fichier} / ${e.ancre} » sans raison lisible`)
+    const texte = parRel.get(e.fichier)
+    if (!texte) { fautes.push(`${e.fichier} ne forge plus de dépôt : l’entrée « ${e.ancre} » est morte`); continue }
+    const vus = sitesGit(texte).filter((s) => s.fenetre.includes(e.ancre)).length
+    if (vus !== e.sites) fautes.push(`${e.fichier} « ${e.ancre} » : ${vus} site(s) atteint(s) pour ${e.sites} déclaré(s)`)
+  }
+  assert.deepEqual(fautes, [])
 })

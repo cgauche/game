@@ -50,6 +50,35 @@ export function listerDossier(dir, { absent = 'lever' } = {}) {
 }
 
 /**
+ * MOTIF de chemin de dépôt → expression régulière, aux règles de `.gitattributes` :
+ *   · `*` ne traverse JAMAIS `/` ;
+ *   · `**` entre deux `/` vaut ZÉRO ou PLUSIEURS dossiers : le motif atteint la page posée à la
+ *     racine comme celle posée sous un dossier de cœur.
+ * C'est la grammaire que ce dépôt ÉCRIT (le motif des catalogues de l'Atlas,
+ * `scripts/raw/gate-catalogues.mjs`, en aiguillage de fusion et en cible de générateur). Le PATHSPEC
+ * git nu ne la partage PAS — il est en `fnmatch` sans `FNM_PATHNAME`, où `*` traverse `/` et où
+ * `**` suivi d'un `/` exige un dossier réel. C'est la magie `:(glob)` qui la lui donne, et c'est pourquoi
+ * `gate-catalogues.mjs` DÉRIVE son pathspec du motif au lieu de l'écrire deux fois.
+ * SEUL site du dépôt qui sait lire un motif.
+ * @param {string} motif @returns {RegExp}
+ */
+export function motifDeGlob(motif) {
+  const segments = String(motif).split('/')
+  let corps = ''
+  segments.forEach((seg, i) => {
+    const suivi = i < segments.length - 1
+    // `**` MÉDIAN consomme son propre `/` (d'où zéro dossier possible) ; FINAL, il prend tout le
+    // reste du chemin, dossiers compris.
+    if (seg === '**') { corps += suivi ? '(?:[^/]+/)*' : '.*'; return }
+    corps += seg.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*') + (suivi ? '/' : '')
+  })
+  return new RegExp(`^${corps}$`)
+}
+
+/** Ce chemin est-il visé par ce motif ? Séparateurs POSIX, quelle que soit la plateforme. */
+export const correspondGlob = (chemin, motif) => motifDeGlob(motif).test(String(chemin ?? '').replace(/\\/g, '/'))
+
+/**
  * Chemins RELATIFS POSIX des FICHIERS sous `dir`, à toute profondeur : dossiers parcourus dans
  * l'ordre trié ET résultat trié (le tri final décide, la marche ne fait que le rendre lisible).
  * Le type d'une entrée se lit par `lstatSync`, comme le `Dirent.isDirectory()` que cette fonction

@@ -330,8 +330,9 @@ if (docsPourLaPorte.length || citePlan || citeUnMort()) {
 }
 
 // #487 — champ Implémente d'une fiche docs/raw ÉDITÉ à la main : le --check tourne UNIQUEMENT si une
-// fiche docs/raw à plat est stagée (coût borné à ce cas), même patron bloquant que ci-dessus.
-const rawFicheStaged = staged.some((f) => /^docs\/raw\/[^/]+\.md$/.test(f.replace(/\\/g, '/')));
+// page de l'Atlas est stagée (coût borné à ce cas), même patron bloquant que ci-dessus. Les fiches
+// vivent SOUS leur cœur (`docs/raw/<coeur>/<page>.md`, #1825) : le motif traverse les dossiers.
+const rawFicheStaged = staged.some((f) => /^docs\/raw\/.+\.md$/.test(f.replace(/\\/g, '/')));
 if (rawFicheStaged) {
   try {
     execFileSync(process.execPath, [join(ROOT, 'scripts', 'raw', 'build-implemente.mjs'), '--check'], { cwd: ROOT, stdio: 'inherit' });

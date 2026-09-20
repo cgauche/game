@@ -1,16 +1,15 @@
 // Garde du pilote de fusion des docs dérivés (scripts/git-hooks/merge-docs.mjs) et de la liste
 // UNIQUE des générateurs (scripts/docs/build-all.mjs). `npm run test:hooks`.
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readdirSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { catalogueConflicts, mergeFicheRaw, restoreImplemente, sentinelFor, stripImplemente, threeWay } from './merge-docs.mjs'
-import { GENERATORS } from '../docs/build-all.mjs'
-import { RAWDOC_META_GENERATED } from '../raw/_lib.mjs'
-import { isFicheDoc } from '../raw/build-implemente.mjs'
+import { GENERATORS, ciblesSurDisque } from '../docs/build-all.mjs'
+import { pagesDeLAtlas, RAWDOC_META_GENERATED } from '../raw/_lib.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -177,17 +176,8 @@ function famillesDe(paths) {
   return map
 }
 
-const FICHES_RAW = readdirSync(join(ROOT, 'docs', 'raw'))
-
-/** Déplie un `targets` (glob toléré, borné à docs/raw) en chemins réels. */
-function cibles(t) {
-  if (!t.includes('*')) return [t]
-  const re = new RegExp('^' + t.replace('docs/raw/', '').replace('.', '\\.').replace('*', '.*') + '$')
-  return FICHES_RAW.filter((f) => re.test(f)).map((f) => 'docs/raw/' + f)
-}
-
 test('taxonomie — toute cible ECRITE EN ENTIER par un generateur est generee ou catalogue', () => {
-  const paths = GENERATORS.flatMap((g) => g.targets.flatMap(cibles))
+  const paths = GENERATORS.flatMap((g) => ciblesSurDisque(g.targets, ROOT))
   assert.ok(paths.length >= 18, `cibles depliees : ${paths.length}`)
   const fam = famillesDe(paths)
   const hors = paths.filter((p) => !['docs-generes', 'docs-catalogue'].includes(fam.get(p)))
@@ -200,8 +190,8 @@ test('taxonomie — les rapports RAWDOC_META_GENERATED sont en famille generee',
   assert.deepEqual(paths.filter((p) => fam.get(p) !== 'docs-generes'), [])
 })
 
-test('taxonomie — toute fiche reconnue par isFicheDoc est en famille fiche-raw', () => {
-  const paths = FICHES_RAW.filter(isFicheDoc).map((f) => 'docs/raw/' + f)
+test('taxonomie — toute FICHE énumérée par la couture de l’Atlas est en famille fiche-raw', () => {
+  const paths = pagesDeLAtlas(join(ROOT, 'docs', 'raw'), { classes: ['fiche'] }).map((p) => `docs/raw/${p.relatif}`)
   assert.ok(paths.length >= 20, `fiches : ${paths.length}`)
   const fam = famillesDe(paths)
   assert.deepEqual(paths.filter((p) => fam.get(p) !== 'docs-fiche-raw'), [])

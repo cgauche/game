@@ -12,7 +12,7 @@
  *  5. Modificateur de Mouvement (l.104-108) : un participant plus rapide gagne autant de DR bonus que sa
  *     différence de Mouvement avec le plus lent de la course (M8/M7/M9 → +1 / 0 / +2 relatifs au plus lent).
  *  6. Rattrapés (l.94) : trois décisions de camp + un recalcul de Distance — cf. `PursuitPolicy` et
- *     `pursuitLaggard` ci-dessous, et la fiche `docs/raw/deplacement.md` (§ Poursuites, Étape 4).
+ *     `pursuitLaggard` ci-dessous, et la fiche `docs/raw/4e/deplacement.md` (§ Poursuites, Étape 4).
  *
  * La résolution d'issue (`pursuitOutcome`) est la PRIMITIVE PARTAGÉE terrestre/navale (la poursuite navale
  * MDG 13 calcule son « gain » de Distance différemment — en mètres — mais franchit les MÊMES seuils).

@@ -8,11 +8,9 @@
 //   node scripts/raw/reanchor-split.mjs            → rapport seul (aucune écriture)
 //   node scripts/raw/reanchor-split.mjs --apply     → réécrit en place docs/raw/*.md
 import { writeFileSync } from 'node:fs'
-import { listerDossier } from '../guards/lib/lister.mjs'
-import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
-import { BOOKS, esc, normalize, readText } from './_lib.mjs'
-import { RAWDIR, EXCLUDE } from './check-refs.mjs'
+import { BOOKS, esc, normalize, pagesDeLAtlas, readText } from './_lib.mjs'
+import { RAWDIR, CLASSES } from './check-refs.mjs'
 
 // Commit qui a éclaté ces 2 livres (bloc unique numéroté « 01 ») en fichiers-chapitres.
 export const SPLIT_SOURCE_SHA = '77dab03c'
@@ -171,15 +169,14 @@ export function explainFailure(origKeys, startStr, suffix, bookIndex) {
 }
 
 // ---------- balayage docs/raw + réécriture ----------
-export function scanAndApply(rawDir, exclude, sources, apply) {
-  const docs = listerDossier(rawDir).filter((f) => f.endsWith('.md') && !exclude.has(f))
+export function scanAndApply(rawDir, classes, sources, apply) {
+  const docs = pagesDeLAtlas(rawDir, { classes })
   const rewritten = []
   const unresolved = []
   for (const source of sources) {
     const origKeys = origLinesOf(source).map(key)
     const bookIndex = buildBookIndex(source.abbr)
-    for (const doc of docs) {
-      const path = join(rawDir, doc)
+    for (const { relatif: doc, chemin: path } of docs) {
       const lines = readText(path).split('\n')
       const editsByRow = new Map()
       for (let row = 0; row < lines.length; row++) {
@@ -218,7 +215,7 @@ export function scanAndApply(rawDir, exclude, sources, apply) {
 
 function main() {
   const apply = process.argv.includes('--apply')
-  const { rewritten, unresolved } = scanAndApply(RAWDIR, EXCLUDE, SPLIT_SOURCES, apply)
+  const { rewritten, unresolved } = scanAndApply(RAWDIR, CLASSES, SPLIT_SOURCES, apply)
   const byAbbr = {}
   for (const r of rewritten) byAbbr[r.abbr] = (byAbbr[r.abbr] ?? 0) + 1
   console.log(`ré-ancrage split : ${rewritten.length} réf(s) ${apply ? 'réécrites' : 'à réécrire (relancer --apply)'} — ${Object.entries(byAbbr).map(([a, n]) => `${a} ${n}`).join(' · ')}`)

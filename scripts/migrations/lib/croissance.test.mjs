@@ -27,6 +27,7 @@ import {
   reconnaisseurDeRef,
   refusSansReference,
 } from './croissance.mjs';
+import { pagesDeLAtlas } from '../../raw/_lib.mjs';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 
@@ -99,12 +100,16 @@ test('SANS_CROISSANCE : chaque document écarté NOMME la porte qui l’exige (`
 // --- 2. La référence nue ------------------------------------------------------------------------
 
 const porteRef = reconnaisseurDeRef(RACINE);
+/** Un topic RÉEL de l'Atlas, pris à la couture : un topic écrit ici figerait la partition du jour. */
+const [UN_TOPIC] = pagesDeLAtlas(path.join(RACINE, 'docs/raw'), { classes: ['fiche'] })
+  .map((p) => p.relatif.replace(/\.md$/, ''));
 
 test('une RÉFÉRENCE NUE exempte : abréviation du catalogue + chapitre, ou topic de l’Atlas', () => {
-  assert.ok(porteRef('cardinal 20 ≠ 19 attendu — registre CLOS, docs/raw/caracteristiques'));
+  assert.ok(UN_TOPIC, 'la couture n’énumère aucune fiche — le cas serait vert à vide');
+  assert.ok(porteRef(`cardinal 20 ≠ 19 attendu — registre CLOS, docs/raw/${UN_TOPIC}`));
   assert.ok(porteRef('9 document(s) / 180 rangée(s) — LDB 18 l.53'));
   assert.ok(porteRef('3 bande(s) ≠ 4 — MDG 13 l.684'));
-  assert.ok(porteRef('les 4 saisons — combat#regles-de-deplacement'));
+  assert.ok(porteRef(`les 4 saisons — ${UN_TOPIC}#regles-de-deplacement`));
 });
 
 test('un mot NU n’exempte rien (« combat », « destin »… traînent dans toutes les proses)', () => {

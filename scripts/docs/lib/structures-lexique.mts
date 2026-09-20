@@ -239,7 +239,7 @@ export const CONCEPTS: readonly Concept[] = [
       // statbloc, la valeur IMPRIMÉE est un champ de la référence — `#1463` (« Faits tranchés au
       // Source ») : « `value` = le seul nom du NOMBRE IMPRIMÉ au statbloc », et sa clause de
       // composition « `value` requis sur un statbloc ». `advances` est le nom du RANG ACHETÉ en PX
-      // (Augmentation, `LDB 07`, `docs/raw/avancement.md:27`), qui vit sur l'INSTANCE, pas ici.
+      // (Augmentation, `LDB 07`, `docs/raw/4e/avancement.md:27`), qui vit sur l'INSTANCE, pas ici.
       // RÉSERVE OUVERTE, dite et non tranchée (commit de préservation `772a217cc`, verbatim
       // utilisateur) : « la forme {id, spec|choix, value} n'est PAS le schéma final — #1463 tranche un
       // noyau générique de référence + compositions fermées ; `value`/`times`/avances = un seul rang

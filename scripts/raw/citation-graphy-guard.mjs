@@ -11,10 +11,10 @@
 // nouvelle ou survivante fait échouer le test avec la liste `fichier:ligne`.
 // Re-run : node scripts/raw/citation-graphy-guard.mjs
 import { join, dirname, resolve } from 'node:path'
-import { listerArbre, listerDossier } from '../guards/lib/lister.mjs'
+import { listerArbre } from '../guards/lib/lister.mjs'
 import { fileURLToPath } from 'node:url'
 import { fieldBlockMask } from './build-implemente.mjs'
-import { allAbbrAlternation, bookOf, folioRange, chapterBoundaryRiskFor, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve, readText } from './_lib.mjs'
+import { allAbbrAlternation, bookOf, folioRange, chapterBoundaryRiskFor, pagesDeLAtlas, readText } from './_lib.mjs'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
 import { readStock as readStockFile } from './stockNominatif.mjs'
 
@@ -23,13 +23,12 @@ export const EXTS = ['.ts', '.tsx', '.json']
 export const RAWDIR = 'docs/raw'
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'graphy-stock.json')
 
-// Fiches EXCLUES des scans docs/raw (rapports générés / épreuves de ré-ancrage — graphies libres).
-// Source UNIQUE _lib.mjs (#454 DoD, #585 lot A) — jamais un Set dupliqué à la main ici.
-const DOCS_EXCLUDE = RAWDOC_META_GENERATED
-const isScannedFiche = (name) => name.endsWith('.md') && !DOCS_EXCLUDE.has(name) && !isRawEpreuve(name)
-// Scan (d) « prose d'état d'implémentation » : mêmes exclusions + fiches d'auteur (index, conventions
-// de sourcing) dont les réfs sont illustratives, pas de la prose d'état à juger (RAWDOC_AUTHOR_META).
-const isImplProseScanned = (name) => isScannedFiche(name) && !RAWDOC_AUTHOR_META.has(name)
+// Acceptations DÉCLARÉES à la couture. Scans (a/b/c/e/f/i) : tout sauf les rapports générés et les
+// épreuves de ré-ancrage, dont les graphies sont libres. Scan (d) « prose d'état d'implémentation » :
+// les pages d'AUTEUR (index, conventions de sourcing) en sortent aussi — leurs réfs sont
+// illustratives, pas de la prose d'état à juger.
+export const CLASSES = ['fiche', 'catalogue', 'auteur']
+export const CLASSES_PROSE = ['fiche', 'catalogue']
 
 // (a) Plage de lignes à tiret CADRATIN/demi-cadratin : `l.417–422` / `l.417—422`. Forme canonique =
 // tiret-moins `l.417-422` (dépliée par `span`) ; en/em-dash est INVISIBLE de `span` → jamais dépliée.
@@ -211,13 +210,13 @@ function fichiersSources(dir, exts) {
   }).map((rel) => join(dir, rel))
 }
 
-/** Fiches SCANNÉES de `rawDir` (hors rapports générés et épreuves), lues : `prose` dit si la fiche
- *  entre aussi au scan (d) (fiches d'auteur exclues, `RAWDOC_AUTHOR_META`). */
+/** Pages SCANNÉES de `rawDir`, lues : `prose` dit si la page entre aussi au scan (d). */
 function fichesScannees(rawDir) {
-  return listerDossier(rawDir, { absent: 'vide' }).filter(isScannedFiche).map((nom) => ({
-    file: join(rawDir, nom).replace(/\\/g, '/'),
-    prose: isImplProseScanned(nom),
-    lignes: readText(join(rawDir, nom)).split('\n'),
+  const prose = new Set(CLASSES_PROSE)
+  return pagesDeLAtlas(rawDir, { classes: CLASSES, absent: 'vide' }).map((p) => ({
+    file: p.chemin.replace(/\\/g, '/'),
+    prose: prose.has(p.classe),
+    lignes: readText(p.chemin).split('\n'),
   }))
 }
 

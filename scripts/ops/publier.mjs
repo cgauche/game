@@ -47,6 +47,7 @@ import { MANAGED_ROOTS } from '../agents/compat-core.mjs'
 import { sourcesMesurees, touchesDocSources } from '../git-hooks/docs-rebuild.mjs'
 import { PEREMPTION_MS, purgerPerimes } from '../guards/lib/purgerPerimes.mjs'
 import { resoudreOutilLocal } from '../lancer-local.mjs'
+import { correspondGlob } from '../guards/lib/lister.mjs'
 
 /** L'arbre où VIT ce script — jamais `process.cwd()` : le train publie SON worktree. */
 export const RACINE = fileURLToPath(new URL('../..', import.meta.url))
@@ -428,12 +429,6 @@ export function verdictDesRuns(courses, sha, { workflow = WORKFLOW } = {}) {
   // `ROUGES` nomme les trois échecs connus ; toute AUTRE conclusion (`neutral`, `skipped`, une
   // valeur neuve de GitHub) n'est pas verte non plus — elle rougit, et le journal la porte.
   return { etat: 'rouge', course, inattendue: !ROUGES.has(conclusion) }
-}
-
-/** `motif` de glob SIMPLE (`*` = un segment sans `/`) appliqué à un chemin POSIX. PURE. */
-export function correspondGlob(chemin, motif) {
-  const echappe = String(motif).replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*')
-  return new RegExp(`^${echappe}$`).test(String(chemin))
 }
 
 /**

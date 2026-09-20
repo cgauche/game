@@ -24,7 +24,6 @@ import {
   citerArgv,
   commandeInterdite,
   corpsDePilotage,
-  correspondGlob,
   estDocDerive,
   etatDeLEtape,
   filetDuTrainEnfant,
@@ -278,27 +277,19 @@ test('verdictDesRuns : la PREMIÈRE course de la liste triée gouverne', () => {
 
 // ── estDocDerive ───────────────────────────────────────────────────────────────────────
 
-test('correspondGlob : `*` ne franchit PAS un séparateur', () => {
-  assert.equal(correspondGlob('docs/raw/catalogue-divers.md', 'docs/raw/catalogue-*.md'), true)
-  // Le cas qui compte : `docs/*.md` NE couvre PAS un doc d'un sous-dossier — sans quoi un manuscrit
-  // de `docs/raw/` passerait pour dérivé.
-  assert.equal(correspondGlob('docs/raw/catalogue-divers.md', 'docs/*.md'), false)
-  assert.equal(correspondGlob('docs/systemes.md', 'docs/*.md'), true)
-})
-
 // La fixture des générateurs vit DANS le corps du `describe(…)` : c'est une donnée LOCALE au sens de
 // `scripts/guards/lib/stocksNominatifs.mjs` (§ PORTÉE DE MODULE), pas un stock nominatif de module.
 describe('estDocDerive', () => {
   const GEN = [
     { script: 'a.mjs', targets: ['docs/systemes.md'] },
-    { script: 'b.mjs', targets: ['docs/raw/catalogue-*.md'] },
+    { script: 'b.mjs', targets: ['docs/raw/**/catalogue-*.md'] },
     { script: 'c.mjs', targets: [], injecte: ['CLAUDE.md'] },
     { script: 'd.mjs', targets: [], injecte: ['docs/raw/*.md'] },
   ]
 
   test('estDocDerive : les cibles, les injections et les globs sont DÉRIVÉS', () => {
     assert.equal(estDocDerive('docs/systemes.md', GEN), true)
-    assert.equal(estDocDerive('docs/raw/catalogue-divers.md', GEN), true)
+    assert.equal(estDocDerive('docs/raw/4e/catalogue-divers.md', GEN), true)
     assert.equal(estDocDerive('CLAUDE.md', GEN), true)
     assert.equal(estDocDerive('docs/raw/00-index.md', GEN), true)
   })

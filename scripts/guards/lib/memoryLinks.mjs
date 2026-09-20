@@ -45,6 +45,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { parUnitesDeCode, listerDossier } from './lister.mjs';
 import { extname, join } from 'node:path';
+import { sansBlocsDeCode } from './liensMarkdown.mjs';
 
 /** Dossier de la mémoire persistante, relatif à la racine du dépôt. */
 export const MEMORY_DIR = '.claude/memory';
@@ -55,18 +56,6 @@ export const MEMORY_INDEX = 'MEMORY.md';
 export function liveNotes(root) {
   const dir = join(root, MEMORY_DIR);
   return listerDossier(dir).filter((nom) => nom.endsWith('.md') && statSync(join(dir, nom)).isFile());
-}
-
-/** Retire les blocs de code clôturés en PRÉSERVANT le compte de lignes. @returns {string} */
-function stripFences(text) {
-  let fenced = false;
-  return text
-    .split('\n')
-    .map((line) => {
-      if (/^\s*```/.test(line)) { fenced = !fenced; return ''; }
-      return fenced ? '' : line;
-    })
-    .join('\n');
 }
 
 /**
@@ -80,7 +69,7 @@ export function scanMemoryLinks(root) {
 
   for (const file of notes) {
     const rel = `${MEMORY_DIR}/${file}`;
-    const lines = stripFences(readFileSync(join(root, MEMORY_DIR, file), 'utf8')).split('\n');
+    const lines = sansBlocsDeCode(readFileSync(join(root, MEMORY_DIR, file), 'utf8')).split('\n');
 
     lines.forEach((line, i) => {
       // 1. WIKI — [[nom]], [[nom|alias]], [[nom#ancre]], [[nom.md]]
@@ -204,7 +193,7 @@ export function scanRepoMemoryLinks(root, { fichiers, vocabulaire } = {}) {
     try { texte = readFileSync(join(root, rel), 'utf8'); } catch { continue; }
     if (!texte.includes('[[') && !texte.includes(`${MEMORY_DIR}/`) && !prefixes.some((p) => texte.includes(p))) continue;
     // Les fences ne sont retirées que du markdown : dans un `.ts`, ``` vit dans une chaîne.
-    const lignes = (rel.endsWith('.md') ? stripFences(texte) : texte).replace(/\r\n/g, '\n').split('\n');
+    const lignes = (rel.endsWith('.md') ? sansBlocsDeCode(texte) : texte).replace(/\r\n/g, '\n').split('\n');
 
     lignes.forEach((ligne, i) => {
       for (const m of ligne.matchAll(JETON_FICHE)) {

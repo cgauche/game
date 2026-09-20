@@ -20,6 +20,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { envDeDepotForge } from '../../scripts/guards/lib/depotGabarit.mjs';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { neufsDe } from '../../scripts/migrations/replay.mjs';
 import { scan } from '../../scripts/guards/lib/grammaireGuard.mjs';
@@ -198,7 +199,7 @@ describe('vocabulaire de la grammaire — DÉRIVÉ des schémas, jamais recopié
 describe('rejeu des migrations — le verdict VOIT le fichier NEUF (#1466 T3bis-a)', () => {
   it('`neufsDe` rend les `??` d’un VRAI dépôt, et ni le suivi ni le modifié', () => {
     const tmp = mkdtempSync(join(tmpdir(), 'replay-neufs-'));
-    const git = (...args: string[]) => execFileSync('git', args, { cwd: tmp, stdio: 'pipe' });
+    const git = (...args: string[]) => execFileSync('git', args, { cwd: tmp, env: envDeDepotForge(), stdio: 'pipe' });
     git('init', '-q');
     writeFileSync(join(tmp, 'suivi.json'), '{}');
     git('add', 'suivi.json');

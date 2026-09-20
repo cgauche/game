@@ -33,6 +33,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { listerDossier } from '../../guards/lib/lister.mjs';
+import { pagesDeLAtlas } from '../../raw/_lib.mjs';
 import { comparer, empreinteDe } from './empreinteRejeu.mjs';
 import { ATTENDU_ROUGE, PERIMETRE } from '../replay.mjs';
 
@@ -47,11 +48,15 @@ function abreviations(racine) {
   return books.map((b) => b.abbr).filter((a) => typeof a === 'string' && /^[A-Z]/.test(a));
 }
 
-/** Les topics RAW, DÉRIVÉS de `docs/raw/` — un id y suffit à ancrer une règle. */
+/** Acceptation DÉCLARÉE à la couture (`pagesDeLAtlas`) : les FICHES seules — un catalogue ou une
+ *  page d'auteur n'ancre aucun topic. Le banc du contrat la LIT (`scripts/raw/_lib.test.mjs`). */
+export const CLASSES = ['fiche'];
+
+/** Les topics RAW, DÉRIVÉS des FICHES de l'Atlas par la couture d'énumération — un id y suffit à
+ *  ancrer une règle. Le stem PORTE son cœur (`<coeur>/<domaine>`) : deux cœurs ne collisionnent pas. */
 function topicsRaw(racine) {
-  return listerDossier(path.join(racine, 'docs/raw'))
-    .filter((f) => f.endsWith('.md'))
-    .map((f) => f.replace(/\.md$/, ''));
+  return pagesDeLAtlas(path.join(racine, 'docs/raw'), { classes: CLASSES })
+    .map((p) => p.relatif.replace(/\.md$/, ''));
 }
 
 const echappe = (s) => s.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');

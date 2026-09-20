@@ -89,7 +89,7 @@ jobs:
         run: npm run docs:empreinte
       - name: Fraîcheur des catalogues Atlas RAW
         if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
-        run: npm run raw:catalogs && git diff --exit-code -- 'docs/raw/catalogue-*.md'
+        run: npm run raw:catalogs && git diff --exit-code -- ':(glob)docs/raw/**/catalogue-*.md'
       - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:coverage
       - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}

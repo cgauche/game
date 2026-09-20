@@ -20,7 +20,6 @@ import {
   cellRefFor, estErreur, findCells, findRuns, normText, parseChapitre, resoudreAdresse,
   type ChapitreParse, type DescRef,
 } from './decoupe.ts';
-// @ts-expect-error - fixture de dépôt ESM JS (pas de types) — même convention que `vite.config.ts`
 import { instanceDeDepot } from '../../../scripts/guards/lib/depotGabarit.mjs';
 // @ts-expect-error - outil ESM JS (pas de types) — même convention que `vite.config.ts`
 import { optionsDe, reparerAdresses } from '../../../scripts/source/reparer-adresses.mjs';

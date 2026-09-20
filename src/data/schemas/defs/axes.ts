@@ -10,7 +10,7 @@
  *
  * Doctrine : la Caractéristique d'un axe entre UNIQUEMENT via une Compétence, jamais un
  * canal caractéristique nu — un axe sans Compétence Avancée formée reste à 0, comme au jeu (LDB 09
- * l.30, Compétence Avancée sans Augmentation = Test impossible, cf. `docs/raw/competences.md`).
+ * l.30, Compétence Avancée sans Augmentation = Test impossible, cf. `docs/raw/4e/competences.md`).
  */
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';

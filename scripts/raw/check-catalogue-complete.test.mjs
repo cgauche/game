@@ -4,16 +4,15 @@
 // coverage.mjs). Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { listerDossier } from '../guards/lib/lister.mjs'
-import { join } from 'node:path'
 import { catalogueBlocksOf, scanIncompleteChapters } from './check-catalogue-complete.mjs'
-import { sectionsOf, cleanTitle, catalogChaptersOf } from './coverage.mjs'
-import { chapterFile, niveauDeSectionDe, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
+import { sectionsOf, cleanTitle, catalogChaptersOf, pagesLues } from './coverage.mjs'
+import { chapterFile, niveauDeSectionDe, readText } from './_lib.mjs'
 import { normalizeLoose } from './check-entity-in-chapter.mjs'
 
 test('catalogueBlocksOf : un bloc `## [ABBR NN]` collecte tous ses headings jusqu\'au PROCHAIN bloc, jamais au-delà', () => {
   const docs = [{
     file: 'catalogue-x.md',
+    classe: 'catalogue',
     text: [
       '## [AA 3] Un chapitre',
       '### Premier talent',
@@ -34,6 +33,7 @@ test('catalogueBlocksOf : un bloc `## [ABBR NN]` collecte tous ses headings jusq
 test('catalogueBlocksOf : les headings sont NORMALISÉS (markdown/casse/accents dépouillés), même nettoyage des deux côtés', () => {
   const docs = [{
     file: 'catalogue-x.md',
+    classe: 'catalogue',
     text: ['## [LDB 9] Compétences', '### **Empreint de la Magie**'].join('\n'),
   }]
   const blocks = catalogueBlocksOf(docs)
@@ -75,9 +75,9 @@ test('scanIncompleteChapters : chapitre crédité mais UNE section absente du bl
 })
 
 test('#604 stock réel (Disque RÉEL, tolérance zéro) : 0 violation sur les chapitres réellement crédités', () => {
-  const rawDir = 'docs/raw'
-  const docs = listerDossier(rawDir).filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
-    .map((f) => ({ file: f, text: readText(join(rawDir, f)) }))
+  // Les pages LUES viennent du lecteur lui-même (`pagesLues`, coverage.mjs) — jamais un listing
+  // recopié ici : un banc qui compose son propre périmètre mesure autre chose que la garde.
+  const docs = pagesLues()
   const catalogCh = catalogChaptersOf(docs)
   const blocks = catalogueBlocksOf(docs)
   const violations = scanIncompleteChapters(catalogCh, blocks)

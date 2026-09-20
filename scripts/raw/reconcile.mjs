@@ -31,21 +31,24 @@
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { parUnitesDeCode, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
+import { parUnitesDeCode, listerArbre } from '../guards/lib/lister.mjs'
 import { ecartsDeStock } from '../guards/lib/stock.mjs'
 import {
   refReDe, refFolioReDe, alternationDe, bookOfDe, booksDe, coeursDe, coeurDe, livresDeCoeur, looseReDe,
-  REGISTRE_LIVRES, folioSpan, span, RAWDOC_META_GENERATED, readText,
+  REGISTRE_LIVRES, folioSpan, span, pagesDeLAtlas, readText,
 } from './_lib.mjs'
 import { lireStockJson } from './stockNominatif.mjs'
 import {
-  loadAbbrMap, folioCitationsFromJson, chargerDette, registresDeFiches, isFicheDoc, parseFiche,
+  loadAbbrMap, folioCitationsFromJson, chargerDette, registresDeFiches, parseFiche,
   stemDeFiche, couvertureDe, stemDe, MANIFEST_PATH,
 } from './build-implemente.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 
 export const TOL = 20 // tolérance en lignes : la synthèse Atlas pine un ancrage proche, pas la ligne exacte
 export const RAWDIR = 'docs/raw'
+// Acceptation DÉCLARÉE à la couture : tout sauf les rapports générés (réfs illustratives de
+// diagnostic). Un catalogue, une page d'auteur, une épreuve datée CITENT des chapitres de l'Atlas.
+export const CLASSES = ['fiche', 'catalogue', 'auteur', 'epreuve']
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'reconciliation-stock.json')
 /** Préfixe des clés de trou dur du Sens B2 — SOURCE UNIQUE : la clé s'écrit et se relit ici.
  *  Exporté pour que les bancs lisent le préfixe au lieu de le recopier. */
@@ -106,9 +109,6 @@ const enSet = (table, book, ch) => {
   table.get(book).add(ch)
 }
 const setDe = (table, book) => table.get(book) || new Set()
-/** Nom de fichier d'un doc, séparateurs NORMALISÉS AVANT la coupe : `join` rend `docs\\raw\\x.md`
- *  sous Windows, et un rapport committé ne doit pas dire deux choses selon la machine qui l'écrit. */
-const nomDeDoc = (chemin) => chemin.replace(/\\/g, '/').split('/').pop()
 
 /** Calcule la réconciliation CODE↔ATLAS. Pur vis-à-vis de l'écriture de fichier (aucun writeFileSync ici).
  *  `registre` = le registre des livres (`books.json` par défaut), `manifestPath` = la dette éditoriale :
@@ -119,11 +119,7 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR, registr
   const ALT = alternationDe(books)
   const bookOf = bookOfDe(books)
   const SRC = fichiersSources(srcDir, ['.ts', '.tsx', '.json'])
-  const DOCS = listerDossier(rawDir)
-    // (#454 DoD, #585 lot A) source unique _lib.mjs — corrige un manque : reanchor.md (rapport
-    // généré, réfs illustratives de diagnostic) n'était PAS exclu, seul script des 4 gardes dans ce cas.
-    .filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
-    .map((f) => join(rawDir, f))
+  const DOCS = pagesDeLAtlas(rawDir, { classes: CLASSES, registre })
 
   // --- regex de réfs (source unique : _lib.mjs ; instances stateful /g locales) ---
   const REF_RE = refReDe(ALT)
@@ -188,29 +184,28 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR, registr
   // TOUS les docs — catalogues, index, épreuves compris, dont beaucoup de chapitres qu'aucune fiche
   // ne décrit — or une dette se déclare au niveau d'une FICHE. Seules elles sont comptées ici.
   const fichesDuChapitre = new Map()
-  // MÉLANGE DE CŒURS — une FICHE de l'Atlas synthétise UN corps de règles : la même fiche qui cite
-  // deux cœurs présente comme UNE règle ce que deux systèmes disent différemment, et le lecteur (agent
-  // ou joueur) n'a aucun moyen de savoir lequel s'applique. Un SUPPLÉMENT (`coeur` absent) ne compte
-  // pas : il ne porte pas de corps de règles propre.  stem de fiche -> cœur -> sigles cités
-  const coeursParFiche = new Map()
+  // CŒUR ÉTRANGER — une FICHE de l'Atlas synthétise le corps de règles de SON cœur, celui que son
+  // CHEMIN déclare : une fiche qui cite le livre de cœur d'un AUTRE cœur présente comme UNE règle ce
+  // que deux systèmes disent différemment, et le lecteur (agent ou joueur) n'a aucun moyen de savoir
+  // lequel s'applique. Un SUPPLÉMENT (`coeur` absent) ne compte pas : il ne porte pas de corps de
+  // règles propre.  relatif de fiche -> cœur étranger -> sigles cités
+  const etrangersParFiche = new Map()
   const fiches = []            // { doc, content, parsed } — le parse des fiches, source des registres d'`id`
-  for (const d of DOCS) {
+  for (const { relatif: nom, chemin: d, classe, coeur: coeurDeLaFiche } of DOCS) {
     const text = readText(d)
-    const nom = nomDeDoc(d)
-    const estCatalogue = /catalogue-/.test(d)
-    if (isFicheDoc(nom)) fiches.push({ doc: nom, content: text, parsed: parseFiche(nom, text) })
+    const estFiche = classe === 'fiche'
+    if (estFiche) fiches.push({ doc: nom, content: text, parsed: parseFiche(nom, text) })
     for (const mm of text.matchAll(looseReDe(ALT))) {
       enSet(atlasLoose, mm[1], chKey(mm[2]))
-      if (estCatalogue) enSet(catalog, mm[1], chKey(mm[2]))
-      if (isFicheDoc(nom)) {
+      if (classe === 'catalogue') enSet(catalog, mm[1], chKey(mm[2]))
+      if (estFiche) {
         enSet(fichesDuChapitre, `${mm[1]}|${chKey(mm[2])}`, stemDeFiche(nom))
-        const coeur = coeurDe(mm[1], coeurs)
-        if (coeur) {
-          const stem = stemDeFiche(nom)
-          if (!coeursParFiche.has(stem)) coeursParFiche.set(stem, new Map())
-          const parCoeur = coeursParFiche.get(stem)
-          if (!parCoeur.has(coeur)) parCoeur.set(coeur, new Set())
-          parCoeur.get(coeur).add(mm[1])
+        const coeurCite = coeurDe(mm[1], coeurs)
+        if (coeurCite && coeurCite !== coeurDeLaFiche) {
+          if (!etrangersParFiche.has(nom)) etrangersParFiche.set(nom, new Map())
+          const parCoeur = etrangersParFiche.get(nom)
+          if (!parCoeur.has(coeurCite)) parCoeur.set(coeurCite, new Set())
+          parCoeur.get(coeurCite).add(mm[1])
         }
       }
     }
@@ -218,10 +213,10 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR, registr
     const piner = (book, ch, sp) => {
       enChapitre(atlas, book, ch, sp)
       const cle = `${book}|${ch}`
-      const key = `${cle}|${d}`
+      const key = `${cle}|${nom}`
       ownerCount.set(key, (ownerCount.get(key) || 0) + 1)
       if (!docOwner.has(cle) || ownerCount.get(key) > ownerCount.get(`${cle}|${docOwner.get(cle)}`))
-        docOwner.set(cle, d)
+        docOwner.set(cle, nom)
     }
     let m
     REF_RE.lastIndex = 0
@@ -263,7 +258,7 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR, registr
         if (miss.length) {
           const ex = miss.map((l) => refs.find((r) => r.line === l)).filter(Boolean)
           // Chapitre couvert par la seule mention LÂCHE (aucun span pinné) : personne ne le possède.
-          const proprietaire = nomDeDoc(docOwner.get(`${book}|${ch}`) || '') || '—'
+          const proprietaire = docOwner.get(`${book}|${ch}`) || '—'
           softA.push({ book, ch, missCount: miss.length, totalLines: uniqLines.length, ex, proprietaire })
         }
       }
@@ -295,10 +290,9 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR, registr
   // Chaque marqueur dit s'il est COUVERT par une dette déclarée (entrée de topic ou de fiche) ou SANS
   // entrée : sans cette ventilation, un chiffre de tête qui grossit ne distingue plus l'instruit du reste.
   const nonImpl = []
-  for (const d of DOCS) {
-    const nom = nomDeDoc(d)
+  for (const { relatif: nom, chemin } of DOCS) {
     const rows = topicParLigne.get(nom)
-    readText(d).split('\n').forEach((ln, i) => {
+    readText(chemin).split('\n').forEach((ln, i) => {
       if (!/non impl[ée]ment[ée]/i.test(ln)) return
       const topic = rows?.get(i + 1)
       const entree = topic ? dette.detteDe(topic) : undefined
@@ -353,22 +347,25 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR, registr
   const codeBooks = new Set([...code.keys(), ...codeNoCh.keys()])
   const atlasBooks = new Set([...atlas.keys(), ...atlasLoose.keys()])
 
-  return { hardA, softA, nonImpl, dettesDeFiche, b2, codeNoCh, bookStats, codeBooks, atlasBooks, folioIgnored, coeurs, melanges: melangesDeCoeur(coeursParFiche), fichesJugees: coeursParFiche.size }
+  return {
+    hardA, softA, nonImpl, dettesDeFiche, b2, codeNoCh, bookStats, codeBooks, atlasBooks, folioIgnored, coeurs,
+    etrangers: coeursEtrangers(etrangersParFiche), fichesJugees: DOCS.filter((p) => p.classe === 'fiche').length,
+  }
 }
 
-/** Les fiches qui citent DEUX cœurs ou plus, triées — PUR (aucun accès fichier). */
-export function melangesDeCoeur(coeursParFiche) {
-  const melanges = []
-  for (const [fiche, parCoeur] of [...coeursParFiche].sort((a, b) => parUnitesDeCode(a[0], b[0]))) {
-    if (parCoeur.size < 2) continue
-    melanges.push({
+/** Les fiches qui citent le livre de cœur d'un AUTRE cœur que celui de leur CHEMIN, triées — PUR
+ *  (aucun accès fichier). L'entrée est la table bâtie au balayage : relatif -> cœur étranger -> sigles. */
+export function coeursEtrangers(etrangersParFiche) {
+  const etrangers = []
+  for (const [fiche, parCoeur] of [...etrangersParFiche].sort((a, b) => parUnitesDeCode(a[0], b[0]))) {
+    etrangers.push({
       fiche,
       coeurs: [...parCoeur]
         .sort((a, b) => parUnitesDeCode(a[0], b[0]))
         .map(([coeur, livres]) => ({ coeur, livres: [...livres].sort(parUnitesDeCode) })),
     })
   }
-  return melanges
+  return etrangers
 }
 
 /** État d'un marqueur B1 : hors d'un champ `**Implémente :**` c'est de la PROSE (aucune dette à
@@ -544,13 +541,13 @@ function main() {
   for (const e of data.b2)
     console.log(`Sens B2 ${e.book} (cœur ${e.coeur}) : ${e.avant.length} → ${e.horsCode.length} chapitre(s) Atlas hors-code (${e.credites.length} crédité(s) par folio, ${e.sousDette.length} sous dette de fiche)`)
 
-  if (data.melanges.length) {
-    console.log(`MÉLANGE DE CŒURS — ${data.melanges.length} fiche(s) sur ${data.fichesJugees} citent plus d'UN corps de règles :`)
-    for (const m of data.melanges)
-      console.log(`  ${m.fiche}.md : ${m.coeurs.map((c) => `cœur ${c.coeur} (${c.livres.join(', ')})`).join(' ET ')}`)
-    console.log("  Remède : une fiche synthétise UN cœur — scinder la fiche, ou retirer la citation qui n'appartient pas au sien.")
+  if (data.etrangers.length) {
+    console.log(`CŒUR ÉTRANGER — ${data.etrangers.length} fiche(s) sur ${data.fichesJugees} citent le livre de cœur d'un AUTRE cœur que le leur :`)
+    for (const m of data.etrangers)
+      console.log(`  ${m.fiche} : ${m.coeurs.map((c) => `cœur ${c.coeur} (${c.livres.join(', ')})`).join(' ET ')}`)
+    console.log("  Remède : une fiche synthétise le cœur que son CHEMIN déclare — déplacer la fiche, la scinder, ou retirer la citation étrangère.")
   } else {
-    console.log(`Mélange de cœurs : aucune des ${data.fichesJugees} fiche(s) citant un livre de cœur n'en cite deux.`)
+    console.log(`Cœur étranger : aucune des ${data.fichesJugees} fiche(s) ne cite le livre de cœur d'un autre cœur que le sien.`)
   }
 
   const entrees = trousDurs(data)
@@ -570,7 +567,7 @@ function main() {
     console.log(`STOCK À DÉCROÎTRE — ${perimees.length} entrée(s) de \`scripts/raw/reconciliation-stock.json\` sans trou mesuré : retirer l'entrée.`)
     for (const p of perimees) console.log(`  ${p}`)
   }
-  if (neuves.length || perimees.length || coeur.length || data.melanges.length) process.exitCode = 1
+  if (neuves.length || perimees.length || coeur.length || data.etrangers.length) process.exitCode = 1
   else console.log(`Cliquet des trous durs : ${entrees.length} trou(s) dur(s), tous au stock (${Object.keys(stock).length} entrée(s)) — aucun neuf, aucun périmé, aucun livre de cœur.`)
 }
 

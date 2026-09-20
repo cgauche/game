@@ -14,14 +14,11 @@
 // baseline (à la différence de `check-entity-in-chapter`, dont le stock historique justifiait un
 // cliquet) : toute régression future doit échouer immédiatement, jamais se glisser sous un seuil.
 // Re-run : node scripts/raw/check-catalogue-complete.mjs (npm run raw:check-catalogue-complete).
-import { listerDossier } from '../guards/lib/lister.mjs'
-import { join, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { sectionsOf, catalogChaptersOf, cleanTitle } from './coverage.mjs'
-import { chapterFile, niveauDeSectionDe, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
+import { sectionsOf, catalogChaptersOf, cleanTitle, pagesLues, RAWDIR } from './coverage.mjs'
+import { chapterFile, niveauDeSectionDe, readText } from './_lib.mjs'
 import { normalizeLoose } from './check-entity-in-chapter.mjs'
-
-const rawDir = 'docs/raw'
 // `## [ABBR NN] Titre` — patron STRUCTUREL des blocs catalogue (vérifié #604 : coïncide exactement,
 // chapitre pour chapitre, avec `catalogChaptersOf` — 112/112 des deux côtés sur le stock mesuré).
 const BLOCK_RE = /^## \[([^\]]+)\]/
@@ -33,7 +30,7 @@ const BLOCK_RE = /^## \[([^\]]+)\]/
 export function catalogueBlocksOf(docs) {
   const blocks = new Map()
   for (const d of docs) {
-    if (!/^catalogue-/.test(d.file)) continue
+    if (d.classe !== 'catalogue') continue
     const lines = d.text.split('\n')
     const starts = []
     lines.forEach((l, i) => {
@@ -88,9 +85,8 @@ export function scanIncompleteChapters(catalogCh, blocks) {
   return violations
 }
 
-function main() {
-  const docs = listerDossier(rawDir).filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
-    .map((f) => ({ file: f, text: readText(join(rawDir, f)) }))
+function main(rawDir = RAWDIR) {
+  const docs = pagesLues(rawDir)
   const catalogCh = catalogChaptersOf(docs)
   const blocks = catalogueBlocksOf(docs)
   const violations = scanIncompleteChapters(catalogCh, blocks)

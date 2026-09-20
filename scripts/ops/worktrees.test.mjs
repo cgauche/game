@@ -8,7 +8,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
+import { envDeDepotForge, instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import {
   CLASSES, arbresTenus, classerWorktree, comptesParClasse, inventaire, ligneDInventaire, parseWorktrees, purger,
 } from './worktrees.mjs'
@@ -193,9 +193,9 @@ test('purger : sans absent NI fusionné, aucun geste — la taille ne se joue pa
 /** Dépôt jetable + son `origin` NU, avec `origin/main` réellement posé. */
 function depotAvecOrigin() {
   const nu = mkdtempSync(join(tmpdir(), 'origin-nu-'))
-  execFileSync('git', ['init', '--bare', '-q', '-b', 'main', nu], { encoding: 'utf8' })
+  execFileSync('git', ['init', '--bare', '-q', '-b', 'main', nu], { env: envDeDepotForge(), encoding: 'utf8' })
   const { racine } = instanceDeDepot({ fichiers: { 'a.txt': 'a' }, message: 'fondation' })
-  const git = (...args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8' }).trim()
+  const git = (...args) => execFileSync('git', args, { cwd: racine, env: envDeDepotForge(), encoding: 'utf8' }).trim()
   git('remote', 'add', 'origin', nu)
   git('push', '-q', 'origin', 'main')
   return { racine, git, jeter: () => { for (const d of [racine, nu]) rmSync(d, { recursive: true, force: true }) } }

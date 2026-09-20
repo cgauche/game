@@ -15,15 +15,19 @@ vivantes font foi.
 Garde `npm run docs:check` (`scripts/docs/check-doc-refs.mjs`) : chaque chemin `src/…`/`scripts/…` et
 chaque symbole backtiqué cités par `docs/*.md` (hors `docs/plans/` et `docs/raw/`) doivent exister,
 et chaque `label` de `src/data/primitives.manifest.json` doit être un EXPORT réel — exit 1 avec la
-liste `fichier:ligne` sinon. Une référence vivante qui ment ne se tague pas, elle se corrige.
+liste `fichier:ligne` sinon. Un renvoi à une DOC, lui, se juge partout : tout chemin `docs/….md`
+écrit sous `src/`, sous `scripts/` ou dans la prose d'une doc — les pages de l'Atlas comprises, à
+toute profondeur — doit désigner un fichier existant (exclusions structurelles : `docs/plans/`, qui a
+sa garde dédiée, et les épreuves DATÉES, qui disent l'arbre de leur jour). Une référence vivante qui
+ment ne se tague pas, elle se corrige.
 
 **Fusion des docs DÉRIVÉS** (`.gitattributes`, trois familles, pilote
 `scripts/git-hooks/merge-docs.mjs` déclaré par `npm run postinstall`) :
 
 - `merge=docs-generes` — docs 100 % générés : la version courante est retenue, `docs:build` régénère.
-- `merge=docs-catalogue` — `docs/raw/catalogue-*.md` : dérivés SAUF leurs blocs `<!-- X-INTEGRATION -->`,
+- `merge=docs-catalogue` — `docs/raw/**/catalogue-*.md` : dérivés SAUF leurs blocs `<!-- X-INTEGRATION -->`,
   correctifs manuels dont la perte est refusée.
-- `merge=docs-fiche-raw` — fiches `docs/raw/*.md` mixtes (prose manuscrite + champ `**Implémente :**`
+- `merge=docs-fiche-raw` — fiches `docs/raw/**/*.md` mixtes (prose manuscrite + champ `**Implémente :**`
   dérivé) : fusion 3-voies de la PROSE seule, chaque champ réinjecté PAR IDENTITÉ (heading porteur),
   donc une section ajoutée par l'entrant garde SON champ ; un conflit restant est un vrai conflit humain.
 

@@ -3,8 +3,8 @@
 // TOUTES les pages manuscrites de l'Atlas plus l'assembleur des fiches. Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readText } from './_lib.mjs'
-import { scanForbiddenCounts, INDEX_PATH, SOURCES_PATH, SCANNED_PATHS, ASSEMBLEUR_PATH, SOURCES_VF_WRITER_PATH, estPageManuscrite } from './check-atlas-counts.mjs'
+import { pagesDeLAtlas, readText } from './_lib.mjs'
+import { scanForbiddenCounts, CLASSES, RAW_DIR, cheminsBalayes, ASSEMBLEUR_PATH, SOURCES_VF_WRITER_PATH } from './check-atlas-counts.mjs'
 
 test('scanForbiddenCounts : "N livres" recopié en dur → détecté', () => {
   const v = scanForbiddenCounts('depuis les 15 livres autorisés\n')
@@ -75,19 +75,23 @@ test('scanForbiddenCounts : un prompt qui vise une FOURCHETTE de topics n\'est p
   assert.deepEqual(scanForbiddenCounts('Vise 8 a 18 topics. Renvoie { topics }.\n'), [])
 })
 
-test('estPageManuscrite : rapports GÉNÉRÉS, catalogues ré-générés et épreuves DATÉES sont hors périmètre', () => {
-  assert.deepEqual(
-    ['00-index.md', 'sources.md', 'combat.md', 'coverage.md', 'reconciliation.md', 'reanchor.md', 'catalogue-sorts.md', 'epreuve-2026-06-22.md', 'notes.txt'].filter(estPageManuscrite),
-    ['00-index.md', 'sources.md', 'combat.md'],
-  )
+test('acceptation DÉCLARÉE : les pages MANUSCRITES seules — rapports générés, catalogues et épreuves DATÉES hors périmètre', () => {
+  assert.deepEqual([...CLASSES].sort(), ['auteur', 'fiche'])
+  const hors = pagesDeLAtlas(RAW_DIR, { classes: ['catalogue', 'generee', 'epreuve'] })
+  assert.ok(hors.length, 'l’Atlas réel porte bien des pages hors périmètre — sinon le contrat est vert à vide')
+  const balayes = cheminsBalayes()
+  for (const p of hors) assert.ok(!balayes.includes(p.chemin), `${p.relatif} ne doit pas être balayée`)
 })
 
-test('SCANNED_PATHS couvre les pages de garde, les fiches et les ÉCRIVAINS de prose d’Atlas', () => {
-  for (const attendu of [INDEX_PATH, SOURCES_PATH, ASSEMBLEUR_PATH, SOURCES_VF_WRITER_PATH]) assert.ok(SCANNED_PATHS.includes(attendu), attendu)
-  assert.ok(SCANNED_PATHS.length > 3, `périmètre trop maigre : ${SCANNED_PATHS.length} fichier(s)`)
+test('`cheminsBalayes` couvre TOUTE page manuscrite de l’Atlas et les ÉCRIVAINS de prose d’Atlas', () => {
+  const balayes = cheminsBalayes()
+  for (const p of pagesDeLAtlas(RAW_DIR, { classes: CLASSES }))
+    assert.ok(balayes.includes(p.chemin), `page manuscrite non balayée : ${p.relatif}`)
+  for (const attendu of [ASSEMBLEUR_PATH, SOURCES_VF_WRITER_PATH]) assert.ok(balayes.includes(attendu), attendu)
+  assert.ok(balayes.length > 3, `périmètre trop maigre : ${balayes.length} fichier(s)`)
 })
 
 test('arbre réel — aucun compte manuscrit interdit dans le périmètre balayé (non-régression #544, #1825)', () => {
-  const trouves = SCANNED_PATHS.flatMap((p) => scanForbiddenCounts(readText(p)).map((v) => `${p}:${v.line} « ${v.excerpt} »`))
+  const trouves = cheminsBalayes().flatMap((p) => scanForbiddenCounts(readText(p)).map((v) => `${p}:${v.line} « ${v.excerpt} »`))
   assert.deepEqual(trouves, [])
 })

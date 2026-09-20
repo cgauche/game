@@ -10,7 +10,7 @@
 // (hors-règle, catalogues), registre d'OUTILLAGE dont ce fichier est le LECTEUR UNIQUE. Zéro ligne
 // de code pour l'un comme pour l'autre.
 import { readFileSync } from 'node:fs'
-import { listerDossier } from '../guards/lib/lister.mjs'
+import { listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { join } from 'node:path'
 import booksData from '../../src/data/books.json' with { type: 'json' }
 import chapitresData from './chapitres.json' with { type: 'json' }
@@ -56,16 +56,21 @@ export const coeurDe = (abbr, coeurs = COEURS) => coeurs.get(abbr) ?? null
 // le régime R2 parcourt (`reconcile.mjs`), et celle où un banc prend un sigle RÉEL par son RÉGIME.
 export const livresDeCoeur = (books = BOOKS, coeurs = COEURS) => books.filter(([a]) => coeurDe(a, coeurs))
 
-// Sigle d'un livre de CŒUR du registre — ce qu'un banc cite quand il lui faut un sigle réel sans
-// recopier l'identité d'un livre. LÈVE en NOMMANT la cause : une déstructuration nue rendrait
-// « undefined is not iterable » au chargement du module de test, un rouge qui envoie chercher au
-// mauvais endroit. Vit ici parce qu'ici vit la lecture du registre — une copie par banc serait la
-// liste qu'on vient de supprimer.
-export function sigleDeCoeur(books = BOOKS, coeurs = COEURS) {
-  const [premier] = livresDeCoeur(books, coeurs)
-  if (!premier) throw new Error('_lib: le registre `src/data/books.json` ne porte aucun livre de cœur (champ `coeur`)')
-  return premier[0]
+// Sigles des livres de CŒUR du registre — ce qu'un banc parcourt quand il lui faut des sigles réels
+// sans recopier l'identité d'un livre. TOUS les cœurs, jamais le premier seul : un banc qui ne
+// jugerait qu'un cœur laisserait le cœur N+1 hors de sa couverture. LÈVE en NOMMANT la cause — un
+// tableau vide rendrait un banc VERT À VIDE. Vit ici parce qu'ici vit la lecture du registre.
+export function siglesDeCoeur(books = BOOKS, coeurs = COEURS) {
+  const sigles = livresDeCoeur(books, coeurs).map(([abbr]) => abbr)
+  if (!sigles.length) throw new Error('_lib: le registre `src/data/books.json` ne porte aucun livre de cœur (champ `coeur`)')
+  return sigles
 }
+
+// Les CŒURS de règles que le registre déclare, dans l'ORDRE DU FICHIER, sans doublon : la population
+// des dossiers de `docs/raw/` (`pagesDeLAtlas`) et celle des périmètres d'extraction
+// (`perimetreDeCoeur`, `workflow-args.mjs`). Registre INJECTABLE (fixture).
+export const coeursDuRegistre = (registre = REGISTRE_LIVRES) =>
+  [...new Set(registre.filter((b) => estLivreExtrait(b) && b.coeur).map((b) => b.coeur))]
 
 // TENEUR d'un livre (`books.json`, champ `teneur`) : ce que contiennent ses chapitres NON couverts
 // par une fiche — `scenario` (campagne pure, aucune règle propre), `mixte` (scénario ET règles), ou
@@ -396,3 +401,73 @@ export { normalize, ELLIPSIS_SENTINEL }
 export const RAWDOC_META_GENERATED = new Set(['coverage.md', 'reconciliation.md', 'reanchor.md'])
 export const RAWDOC_AUTHOR_META = new Set(['00-index.md', 'sources.md', 'code-map.md'])
 export const isRawEpreuve = (name) => /^epreuve-/.test(name)
+
+// --- L'ÉNUMÉRATION UNIQUE des pages de l'Atlas (#1825) ---
+// INVARIANT : une page de règles de l'Atlas appartient à UN cœur, et son CHEMIN le dit
+// (`docs/raw/<coeur>/<page>.md`) ; aucun cœur n'est le cœur implicite. Un cœur de plus est UNE
+// entrée `coeur` de `src/data/books.json` plus un dossier — zéro ligne de code, ici comme ailleurs.
+// Cette couture est le SEUL site qui liste `docs/raw/` : chaque lecteur lui DÉCLARE les classes de
+// page qu'il accepte, et ce qui SÉPARE ces classes reste ce qu'en disent les deux ensembles nommés
+// ci-dessus et `isRawEpreuve` — la couture les CONSOMME, elle ne les redit pas.
+// Elle LÈVE sur les deux formes qui nieraient l'invariant : une page de règles posée à la RACINE
+// (elle n'aurait pas de cœur), un sous-dossier qui n'est pas un cœur du registre.
+export const CLASSES_DE_PAGE = ['fiche', 'catalogue', 'generee', 'auteur', 'epreuve']
+// Classes dont une page appartient à un CŒUR : elles ne peuvent pas vivre à la racine de l'Atlas.
+const CLASSES_DE_COEUR = new Set(['fiche', 'catalogue', 'epreuve'])
+const PREFIXE_CATALOGUE = 'catalogue-'
+
+/** Classe d'une page de l'Atlas d'après son NOM de fichier — dérivation UNIQUE des six lecteurs. */
+export function classeDePage(nom) {
+  if (RAWDOC_META_GENERATED.has(nom)) return 'generee'
+  if (RAWDOC_AUTHOR_META.has(nom)) return 'auteur'
+  if (isRawEpreuve(nom)) return 'epreuve'
+  if (nom.startsWith(PREFIXE_CATALOGUE)) return 'catalogue'
+  return 'fiche'
+}
+
+/**
+ * Les pages `.md` de l'Atlas, triées par chemin relatif (ordre total de `listerArbre`).
+ * @param {string} rawDir racine de l'Atlas
+ * @param {{ classes: string[], registre?: Array<object>, absent?: 'lever' | 'vide' }} options
+ *   `classes` OBLIGATOIRE — l'acceptation que le lecteur DÉCLARE ; aucun défaut n'est offert, un
+ *   défaut choisirait en silence le périmètre d'une garde.
+ * @returns {Array<{ coeur: string|null, nom: string, relatif: string, chemin: string, classe: string }>}
+ */
+export function pagesDeLAtlas(rawDir, options = {}) {
+  const { classes, registre = REGISTRE_LIVRES, absent = 'lever' } = options
+  const dites = CLASSES_DE_PAGE.join(', ')
+  if (!Array.isArray(classes) || !classes.length)
+    throw new Error(`pagesDeLAtlas: \`classes\` non déclaré — un lecteur de l'Atlas DÉCLARE les classes de page qu'il accepte parmi ${dites}`)
+  const inconnues = classes.filter((c) => !CLASSES_DE_PAGE.includes(c))
+  if (inconnues.length)
+    throw new Error(`pagesDeLAtlas: classe(s) de page inconnue(s) « ${inconnues.join(', ')} » — classes de l'Atlas : ${dites}`)
+  const coeurs = coeursDuRegistre(registre)
+  const connus = coeurs.length ? coeurs.join(', ') : '(aucun)'
+  const relatifs = listerArbre(rawDir, {
+    absent,
+    descendre: (rel) => {
+      if (rel.includes('/') || !coeurs.includes(rel))
+        throw new Error(
+          `pagesDeLAtlas: « ${rawDir}/${rel} » n'est pas un cœur du registre des livres — tout sous-dossier `
+          + `de l'Atlas EST un cœur de \`src/data/books.json\` ; cœurs du registre : ${connus}`)
+      return true
+    },
+    filtre: (rel) => rel.endsWith('.md'),
+  })
+  const retenues = new Set(classes)
+  const pages = []
+  for (const relatif of relatifs) {
+    const coupe = relatif.lastIndexOf('/')
+    const coeur = coupe < 0 ? null : relatif.slice(0, coupe)
+    const nom = relatif.slice(coupe + 1)
+    const classe = classeDePage(nom)
+    if (coeur === null && CLASSES_DE_COEUR.has(classe))
+      throw new Error(
+        `pagesDeLAtlas: « ${rawDir}/${nom} » est une page de classe « ${classe} » posée à la RACINE de `
+        + `l'Atlas — une telle page appartient à UN cœur et son chemin le dit : ${rawDir}/<coeur>/${nom} `
+        + `; cœurs du registre : ${connus}`)
+    if (!retenues.has(classe)) continue
+    pages.push({ coeur, nom, relatif, chemin: join(rawDir, relatif), classe })
+  }
+  return pages
+}

@@ -13,13 +13,16 @@
 //      atteintes par un générateur, dont `fieldConsumers.mjs`, le fichier de l'incident fondateur),
 //      aucun module ne cite un des cinq noms de listing hors `lister.mjs`. Ce volet couvre ce que le
 //      lint ne sait PAS exprimer : un module ATTEINT qui vit hors des globs du mur.
+//  (d) MOTIF     : `correspondGlob` lit un motif aux règles du PATHSPEC git — `*` ne franchit pas un
+//      `/`, `**` vaut ZÉRO ou plusieurs dossiers. Le cas qui fait la fonction : une cible de
+//      générateur descendue d'un dossier (`docs/raw/<coeur>/catalogue-*.md`).
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { listerDossier, listerArbre, parUnitesDeCode, parLibelle } from './lister.mjs'
+import { listerDossier, listerArbre, parUnitesDeCode, parLibelle, correspondGlob } from './lister.mjs'
 import { clotureDImports } from './importGraph.mjs'
 import { GENERATORS, NON_GENERATOR_CHECKS } from '../../docs/build-all.mjs'
 import configEslint from '../../../eslint.config.js'
@@ -182,4 +185,31 @@ test('CLÔTURE — aucun module atteint par une racine du registre ne liste un d
     `listing hors du lecteur à ordre total (`
       + `passer par \`listerDossier\`/\`listerArbre\` de ${SOURCE_DU_LECTEUR}) :\n  ${sites.join('\n  ')}`,
   )
+})
+
+// ── (d) MOTIF ──────────────────────────────────────────────────────────────────────────
+// Chemins de fixture sous une racine INVENTÉE (`pages/`) : ce banc juge la GRAMMAIRE d'un motif,
+// pas l'arbre du jour — et un chemin de doc écrit ici serait, lui, confronté au disque par le
+// sens 5 de `scripts/docs/check-doc-refs.mjs`.
+
+test('correspondGlob : `*` ne franchit PAS un séparateur', () => {
+  assert.equal(correspondGlob('pages/raw/catalogue-divers.md', 'pages/raw/catalogue-*.md'), true)
+  // Le cas qui compte : `pages/*.md` NE couvre PAS une page d'un sous-dossier — sans quoi un
+  // manuscrit de `pages/raw/` passerait pour dérivé.
+  assert.equal(correspondGlob('pages/raw/catalogue-divers.md', 'pages/*.md'), false)
+  assert.equal(correspondGlob('pages/systemes.md', 'pages/*.md'), true)
+})
+
+test('correspondGlob : `**` vaut ZÉRO ou plusieurs dossiers', () => {
+  const motif = 'pages/raw/**/catalogue-*.md'
+  assert.equal(correspondGlob('pages/raw/un-coeur/catalogue-divers.md', motif), true)
+  assert.equal(correspondGlob('pages/raw/catalogue-divers.md', motif), true)
+  assert.equal(correspondGlob('pages/raw/un-coeur/plus-bas/catalogue-divers.md', motif), true)
+  // Ce que `**` n'autorise pas : sortir de la racine du motif, ni changer le nom visé.
+  assert.equal(correspondGlob('pages/autre/un-coeur/catalogue-divers.md', motif), false)
+  assert.equal(correspondGlob('pages/raw/un-coeur/combat.md', motif), false)
+})
+
+test('correspondGlob : un chemin rendu par Windows se lit en POSIX', () => {
+  assert.equal(correspondGlob('pages\\raw\\un-coeur\\catalogue-divers.md', 'pages/raw/**/catalogue-*.md'), true)
 })

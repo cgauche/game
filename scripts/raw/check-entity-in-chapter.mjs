@@ -3,7 +3,7 @@
 // juste : #600 a trouvé deux talents (`empreint-d-ulgu`, `empreint-de-la-magie`) tagués `LDB 10`
 // alors que leur texte vit en NADJ/EDOC — la graphie passait toutes les gardes de bornage de ligne
 // (check-refs/check-code-refs/citation-graphy-guard) parce qu'elles vérifient une PLAGE de ligne,
-// jamais le CONTENU. Ici : pour chaque entrée `docs/raw/talents.md` de forme
+// jamais le CONTENU. Ici : pour chaque entrée `docs/raw/4e/talents.md` de forme
 //   ### <Nom>
 //   **Source :** <ABBR> <N> ...
 // on résout le fichier-chapitre (`chapterFile`, _lib.mjs) et on vérifie que `<Nom>` (normalisé :
@@ -20,11 +20,20 @@
 // Re-run : node scripts/raw/check-entity-in-chapter.mjs (npm run raw:check-entity-in-chapter).
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { chapterFile, allAbbrAlternation, readText } from './_lib.mjs'
+import { chapterFile, allAbbrAlternation, pagesDeLAtlas, readText } from './_lib.mjs'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
 
-export const TARGETS = ['docs/raw/talents.md']
+export const RAWDIR = 'docs/raw'
+// Acceptation DÉCLARÉE à la couture : les FICHES seules. Le garde lit les entrées `### <Nom>` de la
+// fiche des talents, DE CHAQUE cœur qui en porte une — la cible se RÉSOUT, elle ne s'écrit pas.
+export const CLASSES = ['fiche']
+export const NOM_CIBLE = 'talents.md'
+/** Les cibles, RÉSOLUES À L'APPEL : un module qui lirait l'Atlas à son CHARGEMENT imposerait son cwd
+ *  et sa levée à quiconque l'importe pour une seule fonction pure (`check-catalogue-complete.mjs`
+ *  importe `normalizeLoose`). */
+export const ciblesDeLAtlas = (rawDir = RAWDIR) =>
+  pagesDeLAtlas(rawDir, { classes: CLASSES }).filter((p) => p.nom === NOM_CIBLE).map((p) => `${rawDir}/${p.relatif}`)
 export const STOCK_PATH = resolve(dirname(fileURLToPath(import.meta.url)), 'entity-in-chapter-stock.json')
 // Sites observés → sites du stock : le DOC de l'Atlas où l'entrée est lue (chemin depuis la racine du
 // dépôt) et le NOM de l'entité. Jamais `row` : la ligne du doc dérive à chaque édition de la fiche.
@@ -68,7 +77,7 @@ function chapterTextOf(cf) {
   return chapterTextCache.get(cf.path)
 }
 
-/** Parcourt un doc Atlas (défaut : docs/raw/talents.md) et retourne les entrées `### <Nom>` /
+/** Parcourt un doc Atlas (défaut : docs/raw/4e/talents.md) et retourne les entrées `### <Nom>` /
  *  `**Source :** <ABBR> <N>…` dont `<Nom>` (normalisé) est ABSENT du texte du chapitre cité —
  *  `{ doc, row, name, ref, chapterFile }`. Réf sans chapitre numérique résoluble = ignorée. */
 export function scanMissingEntities(docPath) {
@@ -102,17 +111,18 @@ export function scanMissingEntities(docPath) {
   return violations
 }
 
-export function scanAll(targets = TARGETS) {
+export function scanAll(targets = ciblesDeLAtlas()) {
   return targets.flatMap((t) => scanMissingEntities(t))
 }
 
 function main() {
-  const violations = scanAll()
+  const cibles = ciblesDeLAtlas()
+  const violations = scanAll(cibles)
   const { neuves, perimees } = ecartDuVolet({
     sites: sitesEntites(violations), stock: readStock(STOCK_PATH), ou: 'entity-in-chapter-stock.json',
   })
 
-  console.log(`check-entity-in-chapter : ${violations.length} entrée(s) dont le nom est ABSENT du chapitre cité, sur ${TARGETS.join(', ')}`)
+  console.log(`check-entity-in-chapter : ${violations.length} entrée(s) dont le nom est ABSENT du chapitre cité, sur ${cibles.join(', ')}`)
 
   if (neuves.length) {
     console.log('RÉGRESSION — entrée(s) à réf fausse hors du stock :')

@@ -13,13 +13,15 @@ import {
   scanMultiFolioSplitViolations, scanChapterBoundaryFolioViolations, readStock, STOCK_PATH,
   scanTout,
 } from './citation-graphy-guard.mjs'
-import { allAbbrAlternation, chapterBoundaryRisk, sigleDeCoeur } from './_lib.mjs'
+import { allAbbrAlternation, chapterBoundaryRisk, siglesDeCoeur } from './_lib.mjs'
+import { avecAtlasFixture } from './atlasFixture.mjs'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
 
-// Un sigle RÉEL, pris au registre par son RÉGIME (livre de cœur) — jamais recopié : la classe se
+// Des sigles RÉELS, pris au registre par leur RÉGIME (livre de cœur) — jamais recopiés : la classe se
 // juge sur ce que la graphie VOIT, pas sur l'identité d'un livre. Résolveur PARTAGÉ avec les autres
-// bancs (`sigleDeCoeur`, _lib.mjs) : il nomme sa cause quand le registre ne porte aucun cœur.
-const SIGLE_COEUR = sigleDeCoeur()
+// bancs (`siglesDeCoeur`, _lib.mjs) : il nomme sa cause quand le registre ne porte aucun cœur, et il
+// les rend TOUS — juger le seul premier laisserait le cœur N+1 hors de la couverture du banc.
+const SIGLES_COEUR = siglesDeCoeur()
 
 function withTempSrcDir(content, fn) {
   const dir = mkdtempSync(join(tmpdir(), 'graphy-guard-'))
@@ -94,28 +96,27 @@ test('node_modules ignoré', () => {
 })
 
 // --- scans docs/raw (#434) : plage à tiret cadratin (a) + réf de livre sans chapitre (b) ---
-function withTempRawDir(files, fn) {
-  const dir = mkdtempSync(join(tmpdir(), 'graphy-docs-'))
-  mkdirSync(join(dir, 'raw'), { recursive: true })
-  for (const [name, content] of Object.entries(files)) writeFileSync(join(dir, 'raw', name), content, 'utf8')
-  try { fn(join(dir, 'raw')) } finally { rmSync(dir, { recursive: true, force: true }) }
-}
+// Les pages vivent SOUS un cœur : un Atlas est PARTITIONNÉ, et la couture refuse une page de règles
+// posée à sa racine. Fabrique PARTAGÉE avec les autres bancs de lecteurs (`atlasFixture.mjs`).
+const withTempRawDir = (files, fn) => avecAtlasFixture(files, (dir) => fn(dir), { prefixe: 'graphy-docs-' })
 
-/** Réf de FIXTURE : `spec(18, '417-422')` → « <sigle de cœur> 18 l.417-422 » (patron `spec` de `_lib.test.mjs`).
+/** Réf de FIXTURE : `spec(s, 18, '417-422')` → « <s> 18 l.417-422 » (patron `spec` de `_lib.test.mjs`).
  *  SPÉCIMEN CONSTRUIT, jamais écrit en graphie canonique : ce fichier est lui-même balayé par les
  *  gardes de réf du dépôt, qui ne distinguent pas un spécimen de test d'une citation vivante. */
-const spec = (ch, tail) => [SIGLE_COEUR, String(ch), `l.${tail}`].join(' ')
+const spec = (sigle, ch, tail) => [sigle, String(ch), `l.${tail}`].join(' ')
 
 test('docs/raw (a) : plage à tiret cadratin (l.417–422 / l.417—422) → détectée, tiret-moins silencieux', () => {
-  withTempRawDir({
-    'en.md': `Faim (${spec(18, '417–422')}) en cadratin\n`,   // en-dash U+2013
-    'em.md': `Soif (${spec(18, '417—422')}) em-cadratin\n`,    // em-dash U+2014
-    'ok.md': `Faim (${spec(18, '417-422')}) tiret-moins\n`,     // hyphen-minus → canonique
-  }, (raw) => {
-    const v = scanDocsRawViolations(raw).filter((x) => x.kind === 'emdash-range')
-    assert.equal(v.length, 2)
-    assert.deepEqual(v.map((x) => x.file.split('/').pop()).sort(), ['em.md', 'en.md'])
-  })
+  for (const sigle of SIGLES_COEUR) {
+    withTempRawDir({
+      'en.md': `Faim (${spec(sigle, 18, '417–422')}) en cadratin\n`,   // en-dash U+2013
+      'em.md': `Soif (${spec(sigle, 18, '417—422')}) em-cadratin\n`,    // em-dash U+2014
+      'ok.md': `Faim (${spec(sigle, 18, '417-422')}) tiret-moins\n`,     // hyphen-minus → canonique
+    }, (raw) => {
+      const v = scanDocsRawViolations(raw).filter((x) => x.kind === 'emdash-range')
+      assert.equal(v.length, 2, `livre de cœur ${sigle}`)
+      assert.deepEqual(v.map((x) => x.file.split('/').pop()).sort(), ['em.md', 'en.md'])
+    })
+  }
 })
 
 test('docs/raw (b) : réf de livre SANS chapitre (AA l.4395, ADE II l.653) → détectée ; avec chapitre → silence', () => {
@@ -130,13 +131,14 @@ test('docs/raw (b) : réf de livre SANS chapitre (AA l.4395, ADE II l.653) → d
   })
 })
 
-test('docs/raw (b) : un livre de CŒUR est DANS la classe, au même titre ; EDO/EDOC & MSR/MSRC désambiguïsés', () => {
+test('docs/raw (b) : TOUT livre de CŒUR est DANS la classe, au même titre ; EDO/EDOC & MSR/MSRC désambiguïsés', () => {
+  const desambigues = ['EDOC l.101', 'EDO l.5', 'MSRC l.71', 'MSR l.9']
   withTempRawDir({
-    'x.md': [`${SIGLE_COEUR} l.162`, 'EDOC l.101', 'EDO l.5', 'MSRC l.71', 'MSR l.9'].join('\n') + '\n',
+    'x.md': [...SIGLES_COEUR.map((s) => `${s} l.162`), ...desambigues].join('\n') + '\n',
   }, (raw) => {
     const kinds = scanDocsRawViolations(raw).filter((x) => x.kind === 'book-no-chapter').map((x) => x.text)
-    assert.equal(kinds.length, 5)
-    assert.ok(kinds.some((t) => t.startsWith(`${SIGLE_COEUR} l.162`)))
+    assert.equal(kinds.length, SIGLES_COEUR.length + desambigues.length)
+    for (const s of SIGLES_COEUR) assert.ok(kinds.some((t) => t.startsWith(`${s} l.162`)), `le livre de cœur ${s} échappe à la classe`)
   })
 })
 
@@ -154,15 +156,17 @@ test('docs/raw (c) : nom de fichier de chapitre en backticks (`08 - Titre.md` l.
 
 // COMPORTEMENT, jamais la formule : un test qui ré-écrit l'expression construisant la regex est une
 // tautologie (il passe même si les deux côtés sont faux). On assert ce que la classe VOIT.
-test('docs/raw (b) : la classe voit un livre de cœur, un sigle PRÉFIXE d’un autre, et un sigle À ESPACE', () => {
+test('docs/raw (b) : la classe voit TOUT livre de cœur, un sigle PRÉFIXE d’un autre, et un sigle À ESPACE', () => {
   const vu = (s) => [...s.matchAll(BOOK_NO_CHAPTER_RE())].map((m) => m[1])
-  assert.deepEqual(vu(`${SIGLE_COEUR} l.162`), [SIGLE_COEUR])         // un livre de cœur, comme les autres
+  for (const s of SIGLES_COEUR) {
+    assert.deepEqual(vu(`${s} l.162`), [s])                           // un livre de cœur, comme les autres
+    assert.equal(allAbbrAlternation().split('|').includes(s), true)
+  }
   assert.deepEqual(vu('EDOC l.101'), ['EDOC'])                        // pas 'EDO' (tri par longueur)
   assert.deepEqual(vu('MSRC l.71'), ['MSRC'])                         // pas 'MSR'
   assert.deepEqual(vu('ADE II l.653'), ['ADE II'])                    // sigle à espace
   assert.deepEqual(vu('LDB 16 l.13'), [])                             // chapitre PRÉSENT → hors classe
   assert.deepEqual(vu('ADE2 l.65'), [])                               // graphie inconnue → invisible
-  assert.equal(allAbbrAlternation().split('|').includes(SIGLE_COEUR), true)
 })
 
 test('docs/raw (b) : identité stricte (#585 lot B) — MDG canonique détecté, anciennes graphies ADEII/Midd invisibles (hors alternation)', () => {
@@ -306,10 +310,10 @@ test('non-régression : le VRAI src/ du repo est à ZÉRO abréviation INCONNUE 
 function withTempSrcAndRawDir(srcFiles, rawFiles, fn) {
   const dir = mkdtempSync(join(tmpdir(), 'graphy-585-'))
   mkdirSync(join(dir, 'src'), { recursive: true })
-  mkdirSync(join(dir, 'raw'), { recursive: true })
   for (const [name, content] of Object.entries(srcFiles)) writeFileSync(join(dir, 'src', name), content, 'utf8')
-  for (const [name, content] of Object.entries(rawFiles)) writeFileSync(join(dir, 'raw', name), content, 'utf8')
-  try { fn(join(dir, 'src'), join(dir, 'raw')) } finally { rmSync(dir, { recursive: true, force: true }) }
+  try {
+    return withTempRawDir(rawFiles, (rawDir) => fn(join(dir, 'src'), rawDir))
+  } finally { rmSync(dir, { recursive: true, force: true }) }
 }
 
 test('(e) ch. cosmétique : détecté en src (LDB ch.6) et en docs/raw (AA ch.7), forme sans ch. silencieuse', () => {
@@ -599,8 +603,8 @@ const JOUET_SRC = [
   '// Outre à eau (LDB 64 p.301/303) : multi-folio à cheval',            // 6  multiFolioSplit
   '// Mauvais œil (LDB 48 p.255) : folio en fin de chapitre',            // 7  chapterBoundaryFolio
 ].join('\n') + '\n'
-const JOUET_FICHE = [
-  `Faim (${spec(18, '417–422')}) plage à tiret cadratin`,                  // 1  docsRaw emdash-range
+const jouetFiche = (sigle) => [
+  `Faim (${spec(sigle, 18, '417–422')}) plage à tiret cadratin`,           // 1  docsRaw emdash-range
   'ogres : Langue Magick (ADE II l.653)',                                // 2  docsRaw book-no-chapter + bookNoChapterSrc
   '**Source :** ADE II `08 - Le theatre de la guerre.md` l.89-131.',      // 3  docsRaw backtick-file
   "Ce passage n'est pas implémenté.",                                    // 4  implProse
@@ -608,7 +612,8 @@ const JOUET_FICHE = [
 ].join('\n') + '\n'
 
 test('(#925) passe UNIQUE : une ligne fautive par classe, un seul scanTout, chaque classe est nourrie', () => {
-  withTempSrcAndRawDir({ 'x.ts': JOUET_SRC }, { 'combat.md': JOUET_FICHE }, (srcDir, rawDir) => {
+  for (const sigle of SIGLES_COEUR) {
+    withTempSrcAndRawDir({ 'x.ts': JOUET_SRC }, { 'combat.md': jouetFiche(sigle) }, (srcDir, rawDir) => {
     const passe = scanTout(srcDir, ['.ts', '.tsx', '.json'], rawDir)
     const sites = (famille) => passe[famille].map((v) => `${v.file.split('/').pop()}:${v.row}`)
     const attendu = {
@@ -632,17 +637,20 @@ test('(#925) passe UNIQUE : une ligne fautive par classe, un seul scanTout, chaq
       [passe.chapterBoundaryFolio[0].abbr, passe.chapterBoundaryFolio[0].ch, passe.chapterBoundaryFolio[0].folio],
       ['LDB', 48, 255],
     )
-  })
+    })
+  }
 })
 
 test('(#925) ce que rend une passe est GELÉ : un appelant ne peut pas écrire dans le mémo', () => {
-  withTempSrcAndRawDir({ 'x.ts': JOUET_SRC }, { 'combat.md': JOUET_FICHE }, (srcDir, rawDir) => {
-    const exts = ['.ts', '.tsx', '.json']
-    const premier = scanGraphyViolations(srcDir, exts)
-    assert.equal(Object.isFrozen(premier), true)
-    assert.throws(() => premier.push({ file: 'x.ts', row: 99, text: 'intrus' }), TypeError)
-    const second = scanGraphyViolations(srcDir, exts)
-    assert.deepEqual(second.map((v) => `${v.row}`), premier.map((v) => `${v.row}`))
-    assert.equal(Object.isFrozen(scanTout(srcDir, exts, rawDir).chDot), true)
-  })
+  for (const sigle of SIGLES_COEUR) {
+    withTempSrcAndRawDir({ 'x.ts': JOUET_SRC }, { 'combat.md': jouetFiche(sigle) }, (srcDir, rawDir) => {
+      const exts = ['.ts', '.tsx', '.json']
+      const premier = scanGraphyViolations(srcDir, exts)
+      assert.equal(Object.isFrozen(premier), true)
+      assert.throws(() => premier.push({ file: 'x.ts', row: 99, text: 'intrus' }), TypeError)
+      const second = scanGraphyViolations(srcDir, exts)
+      assert.deepEqual(second.map((v) => `${v.row}`), premier.map((v) => `${v.row}`))
+      assert.equal(Object.isFrozen(scanTout(srcDir, exts, rawDir).chDot), true)
+    })
+  }
 })

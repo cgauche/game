@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { STATUS_DLL_INIT_FAILED } from './spawnResilient.mjs'
 import { arbrePrincipal, classer, commitsDe, estAncetre, estRepertoire, fetchOrigin, lireGit, natureDuChemin, raisonCourte, sortieOuNull } from './gitPorte.mjs'
-import { instanceDeDepot } from './depotGabarit.mjs'
+import { envDeDepotForge, instanceDeDepot } from './depotGabarit.mjs'
 
 const ZERO = '0'.repeat(40)
 
@@ -18,7 +18,7 @@ const ZERO = '0'.repeat(40)
  *  cas normal de la porte de stock, et c'est un ABSENT, pas une panne. */
 function depot() {
   const { racine, sha: premier } = instanceDeDepot({ fichiers: { 'a.txt': 'a\n' }, message: 'un' })
-  const g = (...a) => execFileSync('git', a, { cwd: racine, encoding: 'utf8' })
+  const g = (...a) => execFileSync('git', a, { cwd: racine, env: envDeDepotForge(), encoding: 'utf8' })
   writeFileSync(join(racine, 'neuf.txt'), 'n\n')
   g('add', '-A'); g('commit', '-q', '-m', 'deux')
   return { racine, premier, second: g('rev-parse', 'HEAD').trim(), g }
@@ -186,9 +186,9 @@ test('fetchOrigin : une origine LOCALE réelle met `origin/main` à jour ; sans 
   const amont = depot()
   const aval = mkdtempSync(join(tmpdir(), 'git-aval-'))
   try {
-    execFileSync('git', ['clone', '-q', '--no-local', amont.racine, aval], { encoding: 'utf8' })
+    execFileSync('git', ['clone', '-q', '--no-local', amont.racine, aval], { env: envDeDepotForge(), encoding: 'utf8' })
     // La ref distante est SUPPRIMÉE localement : seul un fetch réel peut la remettre.
-    execFileSync('git', ['update-ref', '-d', 'refs/remotes/origin/main'], { cwd: aval })
+    execFileSync('git', ['update-ref', '-d', 'refs/remotes/origin/main'], { cwd: aval, env: envDeDepotForge() })
     assert.equal(lireGit(['rev-parse', 'origin/main'], { cwd: aval }).absent, true)
     const vu = fetchOrigin({ cwd: aval })
     assert.equal(vu.disponible, true, vu.raison)
@@ -236,7 +236,7 @@ test('arbrePrincipal : deux refus NOMMÉS, jamais un repli sur le cwd', () => {
   const base = mkdtempSync(join(tmpdir(), 'nu-'))
   const nu = join(base, 'depot.git')
   try {
-    execFileSync('git', ['init', '-q', '--bare', nu], { encoding: 'utf8' })
+    execFileSync('git', ['init', '-q', '--bare', nu], { env: envDeDepotForge(), encoding: 'utf8' })
     const vuNu = arbrePrincipal(nu)
     assert.equal(vuNu.disponible, false, "un dépôt nu n'a pas d'arbre principal")
     assert.match(vuNu.raison, /hors d'un arbre/)

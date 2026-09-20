@@ -276,12 +276,12 @@ test('le hook n\'arme QUE les générateurs dont un DOC est stagé — jamais un
 test('le refus NOMME les cibles des générateurs armés — un sha1 nu ne dit pas quoi régénérer', () => {
   const lues = {
     'scripts/docs/build-index-moteur.mjs': { cibles: ['docs/index-moteur.md'], fichiers: [], dossiers: [] },
-    'scripts/raw/build-catalogs.mjs': { cibles: ['docs/raw/catalogue-sorts.md', 'docs/index-moteur.md'], fichiers: [], dossiers: [] },
+    'scripts/raw/build-catalogs.mjs': { cibles: ['docs/raw/4e/catalogue-sorts.md', 'docs/index-moteur.md'], fichiers: [], dossiers: [] },
   }
   // Triées, dédupliquées (deux générateurs peuvent nommer la même cible dans un refus).
   assert.deepEqual(
     ciblesDesArmes(lues, ['scripts/raw/build-catalogs.mjs', 'scripts/docs/build-index-moteur.mjs']),
-    ['docs/index-moteur.md', 'docs/raw/catalogue-sorts.md'],
+    ['docs/index-moteur.md', 'docs/raw/4e/catalogue-sorts.md'],
   )
   // Un générateur que la mesure ne porte pas ne fabrique pas de cible fantôme.
   assert.deepEqual(ciblesDesArmes(lues, ['scripts/docs/build-inconnu.mjs']), [])

@@ -8,7 +8,7 @@
  * NUES : « Comment Wilhelmina Faust peut être taggée Soins alors qu'elle n'a aucune compétence, sort
  * ou talent dans la matière ? » — un plancher purement caractéristique attribue une CAPACITÉ à qui n'a
  * que l'APTITUDE, ce que le RAW interdit pour les Compétences Avancées). Le RAW tranche déjà entre les
- * deux (`docs/raw/competences.md` § Compétences de Base vs Avancées) :
+ * deux (`docs/raw/4e/competences.md` § Compétences de Base vs Avancées) :
  *   « Les Compétences de Base peuvent faire l'objet d'un Test même si vous n'y avez pas mis
  *   d'Augmentation. Pour cela, tentez simplement un Test utilisant la Caractéristique associée. »
  *   — LDB 09 l.25

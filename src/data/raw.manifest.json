@@ -1,68 +1,68 @@
 [
   {
-    "id": "combat#conversion-combat-poursuite",
+    "id": "4e/combat#conversion-combat-poursuite",
     "type": "raw.manifest",
     "label": "Conversion Combat → Poursuite",
     "ticket": "#511"
   },
   {
-    "id": "combat#detail-mecanique-de-chaque-miracle",
+    "id": "4e/combat#detail-mecanique-de-chaque-miracle",
     "type": "raw.manifest",
     "label": "Détail mécanique de chaque Miracle",
     "ticket": "#375"
   },
   {
-    "id": "bestiaire#catalogue-du-bestiaire",
+    "id": "4e/bestiaire#catalogue-du-bestiaire",
     "type": "raw.manifest",
     "label": "Catalogue du bestiaire",
     "bloque": "topic documentaire (pointeur vers le catalogue creatures.json), aucune règle à implémenter"
   },
   {
-    "id": "magie#seconde-vue",
+    "id": "4e/magie#seconde-vue",
     "type": "raw.manifest",
     "label": "Seconde Vue",
     "ticket": "#463"
   },
   {
-    "id": "magie#malepierre",
+    "id": "4e/magie#malepierre",
     "type": "raw.manifest",
     "label": "Malepierre",
     "ticket": "#884"
   },
   {
-    "id": "magie#magie-noire-dhar",
+    "id": "4e/magie#magie-noire-dhar",
     "type": "raw.manifest",
     "label": "Magie Noire (Dhar)",
     "ticket": "#517"
   },
   {
-    "id": "magie#magie-elfique-qhaysh",
+    "id": "4e/magie#magie-elfique-qhaysh",
     "type": "raw.manifest",
     "label": "Magie Elfique (Qhaysh)",
     "bloque": "passage de lore (LDB 46 l.2), aucune règle mécanique — vérifié au Source le 2026-07-16"
   },
   {
-    "id": "magie#dissipation-contre-sort",
+    "id": "4e/magie#dissipation-contre-sort",
     "type": "raw.manifest",
     "label": "Dissipation / Contre-sort",
     "ticket": "#1033"
   },
   {
-    "id": "religion#colere-des-dieux-declencheur-maladresse",
+    "id": "4e/religion#colere-des-dieux-declencheur-maladresse",
     "type": "raw.manifest",
     "label": "Colère des dieux — déclencheur Maladresse",
     "ticket": "#1653",
     "bloque": "6 rangées à DÉ du Tableau de la Colère des dieux sans `ops` — LDB 40 l.61 et l.70 (pénalité de Compétence à durée, hors magie), l.64 (cibles dans `applyMiscast` + échec automatique par divinité), l.74 (action contrainte), l.80 et l.82 (suppression temporaire de Talent) : le vocabulaire de `GameOp` ne les exprime pas encore"
   },
   {
-    "id": "combat#aa-01-tableau-des-armes-a-deux-mains",
+    "id": "4e/combat#aa-01-tableau-des-armes-a-deux-mains",
     "type": "raw.manifest",
     "label": "[AA 01] Tableau des Armes à Deux Mains",
     "ticket": "#1661",
     "bloque": "Indice de Taillade du sabre selon la Compétence employée (AA 08 l.190) : aucune Condition ne lit la Compétence de l'attaque"
   },
   {
-    "id": "deplacement#option-attraper-froid",
+    "id": "4e/deplacement#option-attraper-froid",
     "type": "raw.manifest",
     "label": "Option « Attraper Froid »",
     "ticket": "#674"

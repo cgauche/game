@@ -30,7 +30,8 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import path, { resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { binLocal, envIsole, resoudreOutilLocal } from '../lancer-local.mjs'
-import { listerDossier } from '../guards/lib/lister.mjs'
+import { correspondGlob, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
+import { MOTIF_CATALOGUES } from '../raw/gate-catalogues.mjs'
 import { execFileResilient } from '../guards/lib/spawnResilient.mjs'
 import {
   avecPied, deltaSourcesLues, empreinteDeLIndex, empreinteDuDisque, existeFichier, fusionnerLectures,
@@ -46,8 +47,9 @@ import {
  *  péremption n'était dite que par la gate `docs:empreinte`, 7 min plus tard dans `ops:publier`.
  *  Ordre = ordre d'exécution. */
 export const GENERATORS = [
-  { runner: 'node', script: 'scripts/raw/build-catalogs.mjs', targets: ['docs/raw/catalogue-*.md'], check: false },
-  { runner: 'node', script: 'scripts/raw/build-implemente.mjs', targets: [], injecte: ['docs/raw/*.md'] },
+  { runner: 'node', script: 'scripts/raw/build-atlas-index.mjs', targets: [], injecte: ['docs/raw/00-index.md'] },
+  { runner: 'node', script: 'scripts/raw/build-catalogs.mjs', targets: [MOTIF_CATALOGUES], check: false },
+  { runner: 'node', script: 'scripts/raw/build-implemente.mjs', targets: [], injecte: ['docs/raw/**/*.md'] },
   { runner: 'node', script: 'scripts/docs/build-primitives.mjs', targets: ['docs/primitives.md'] },
   { runner: 'node', script: 'scripts/docs/build-systemes.mjs', targets: ['docs/systemes.md'] },
   { runner: 'node', script: 'scripts/docs/build-donnees.mjs', targets: ['docs/donnees.md'] },
@@ -118,15 +120,19 @@ function tsxEsmDe(cwd) {
   return fileURLToPath(import.meta.resolve('tsx/esm'))
 }
 
-/** Chemins visés par une liste de `targets`/`injecte` — un glob se déplie sur le disque. */
+/** Chemins visés par une liste de `targets`/`injecte` — un glob se déplie sur le disque, aux règles
+ *  de `motifDeGlob` (`correspondGlob`). La marche est bornée DEUX fois : à la racine, le préfixe
+ *  LITTÉRAL du motif (jusqu'au dernier `/` avant le premier joker) ; en PROFONDEUR, seul un motif
+ *  porteur de `**` descend — `*` ne traverse pas `/`, et marcher tout `docs/` pour n'en retenir que
+ *  `docs/*.md` jetterait tout ce qu'on vient de lire. */
 export function ciblesSurDisque(cibles, cwd) {
   return cibles.flatMap((cible) => {
     if (!cible.includes('*')) return [cible]
-    const dossier = cible.slice(0, cible.lastIndexOf('/'))
-    const motif = new RegExp(`^${cible.split('*').map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('[^/]*')}$`)
-    return listerDossier(path.join(cwd, dossier), { absent: 'vide' })
+    const dossier = cible.slice(0, cible.indexOf('*')).replace(/\/[^/]*$/, '')
+    const recursif = cible.includes('**')
+    return listerArbre(path.join(cwd, dossier), { absent: 'vide', descendre: () => recursif })
       .map((n) => `${dossier}/${n}`)
-      .filter((p) => motif.test(p))
+      .filter((p) => correspondGlob(p, cible))
   })
 }
 

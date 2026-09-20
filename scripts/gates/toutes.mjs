@@ -231,13 +231,13 @@ export const ECRIT_LU = {
       'LIT scripts/ EN ENTIER, pas le seul `scripts/map/` de son `include` : les tests de `src/` ' +
       'IMPORTENT les porteurs de garde (`git grep "from \'../../scripts/"` : guards/lib, source, ' +
       'docs/lib, data/lib, qc/lib, raw, migrations, campagne, arene, gen-registry.mjs) ; ' +
-      'LIT docs/ ET docs/raw/ — 43 chemins (sonde `fs` du 2026-09-16, #1738) : la famille des ' +
+      'LIT docs/ ET docs/raw/ (sonde `fs` du 2026-09-16, #1738) : la famille des ' +
       'CLIQUETS ET CONTRATS qui confrontent le code à un doc DÉRIVÉ (data-atlas-complete, ' +
       'index-moteur-ratchet, slots-contrat, structures-contrat, roll-seam-exclusivity-guard, ' +
       'scene-field-editability-guard, ui-ratchets, oversize-search-blindspot) — d’où la lane ' +
       'SÉPARÉE des trois écrivains de docs/raw ; AUCUNE lecture sous .claude/ ni de CLAUDE.md ' +
-      '(même sonde, 24 200 chemins) : les deux gardes documentaires qui les balayaient vivent ' +
-      'désormais en node:test (scripts/guards/lib/memoryLinks.test.mjs dans test:hooks, ' +
+      '(même sonde) : les deux gardes documentaires qui les balayaient vivent ' +
+      'en node:test (scripts/guards/lib/memoryLinks.test.mjs dans test:hooks, ' +
       'scripts/docs/manual-docs-ratchet.test.mjs dans test:docs) ; LIT Source/ (verbatims ' +
       'et résolution de prose : src/data/psychology-verbatim.test.ts:24, tavern-desc-verbatim.test.ts:20, ' +
       'variants-integrity.test.ts:234, vdm-objets-maudits.test.ts:154, prose-resolution.test.ts:142, ' +
@@ -336,6 +336,12 @@ export const ECRIT_LU = {
         '`check-folio-continuity.test.mjs` IMPORTE le détecteur des sauts de folio, dont l’unique ' +
         'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ; ' +
         'le banc ne fait que LIRE le stock (`readStock`, `lireStockJson`)',
+      'docs/raw/00-index.md':
+        '`build-atlas-index.test.mjs` IMPORTE l’écrivain du bloc des cœurs du routeur de l’Atlas ; son ' +
+        'unique `writeFileSync` vit dans `main()`, sous sa porte `isMain` ' +
+        '(scripts/raw/build-atlas-index.mjs), et le banc n’appelle que ses fonctions PURES ' +
+        '(`lignesDesCoeurs`, `injecter`). Le cas `--check` le LANCE, mais dans un arbre JETABLE de ' +
+        '`os.tmpdir()` dont il est le cwd : c’est cette page-là qu’il écrit, jamais celle du dépôt',
     },
     lit: ['docs/raw/', 'scripts/raw/', 'scripts/guards/lib/', 'Source/', 'src/'],
     raison:
@@ -345,7 +351,11 @@ export const ECRIT_LU = {
       'JETABLES sous `os.tmpdir()`, retirés par `rmSync` — aucune écriture dans l’arbre ; +3 écrivains le ' +
       '2026-09-20 (#1825 lot E2) : `apply-livre.test.mjs` et `assemble-domain.test.mjs`, même régime ' +
       'os.tmpdir(), et `assemble-domain.mjs`, ACQUIS par l’import de son banc — ses `writeFileSync` vivent ' +
-      'dans `assemble()`, appelée par le seul `main()`, sous sa porte `isMain`',
+      'dans `assemble()`, appelée par le seul `main()`, sous sa porte `isMain` ; +4 le 2026-09-20 ' +
+      '(#1825 lot F0) : la fabrique d’Atlas jetable (`atlasFixture.mjs`) et les deux bancs qui la ' +
+      'prennent (`_lib.test.mjs`, `build-atlas-index.test.mjs`), même régime os.tmpdir(), et ' +
+      '`build-atlas-index.mjs`, ACQUIS par l’import de son banc — son `writeFileSync` vit dans ' +
+      '`main()`, sous sa porte `isMain`',
   },
   'raw:check-refs': {
     ecrit: [],

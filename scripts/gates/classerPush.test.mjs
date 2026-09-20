@@ -20,6 +20,7 @@ import {
   classer,
   gatesSautables,
 } from './classerPush.mjs'
+import { envDeDepotForge } from '../guards/lib/depotGabarit.mjs'
 import { gatesDeCi, stepsCi, CI_SEULEMENT } from './gatesDeCi.mjs'
 import { corpusParGate, inerte } from './ecrivainsAtteints.mjs'
 import { ECRIT_LU } from './toutes.mjs'
@@ -231,7 +232,7 @@ test('chaque entrée de DOCUMENTAIRE et de CI_SEULEMENT_PRODUIT porte sa RAISON'
 
 // (d) — le CLI, sur des dépôts JETABLES de `os.tmpdir()`.
 
-const gitDe = (cwd) => (args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim()
+const gitDe = (cwd) => (args) => execFileSync('git', args, { cwd, env: envDeDepotForge(), encoding: 'utf8' }).trim()
 
 /** Un dépôt jetable avec un `main` d'un commit, une branche de travail, et `origin` sur lui-même. */
 function depotJetable() {
@@ -260,7 +261,7 @@ function jouerCli(cwd, env) {
     const stdout = execFileSync(process.execPath, [CLASSEUR], {
       cwd,
       encoding: 'utf8',
-      env: { ...process.env, ...env },
+      env: { ...envDeDepotForge(), ...env },
       stdio: ['ignore', 'pipe', 'pipe'],
     })
     return { code: 0, stdout }
@@ -320,18 +321,18 @@ test('CLI — un clone `--single-branch` VA CHERCHER `origin/main`, puis classe'
     git(['commit', '-q', '-m', 'fiche'])
     // `--single-branch` sur la branche de TRAVAIL : le clone n'a aucune `refs/remotes/origin/main`.
     execFileSync('git', ['clone', '-q', '--single-branch', '--branch', 'chantier/x', racine, clone], {
-      encoding: 'utf8',
+      env: envDeDepotForge(), encoding: 'utf8',
     })
     assert.throws(
-      () => execFileSync('git', ['rev-parse', '--verify', '--quiet', 'refs/remotes/origin/main'], { cwd: clone }),
+      () => execFileSync('git', ['rev-parse', '--verify', '--quiet', 'refs/remotes/origin/main'], { cwd: clone, env: envDeDepotForge() }),
       'le clone doit bien être SANS origin/main — sinon le cas ne mesure rien',
     )
     const r = jouerCli(clone, { REF: 'refs/heads/chantier/x', SHA: 'HEAD' })
     assert.equal(r.code, 0)
     assert.equal(r.stdout.trim(), 'produit=false')
     assert.equal(
-      execFileSync('git', ['rev-parse', 'refs/remotes/origin/main'], { cwd: clone, encoding: 'utf8' }).trim(),
-      execFileSync('git', ['rev-parse', 'refs/heads/main'], { cwd: racine, encoding: 'utf8' }).trim(),
+      execFileSync('git', ['rev-parse', 'refs/remotes/origin/main'], { cwd: clone, env: envDeDepotForge(), encoding: 'utf8' }).trim(),
+      execFileSync('git', ['rev-parse', 'refs/heads/main'], { cwd: racine, env: envDeDepotForge(), encoding: 'utf8' }).trim(),
       'le fetch doit avoir RAPPORTÉ origin/main',
     )
   } finally {

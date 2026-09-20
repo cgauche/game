@@ -15,29 +15,31 @@
 //         node scripts/raw/audit-refs-chapitre.mjs "ADE II" 4
 //
 // Vocabulaire RÉUTILISÉ de `_lib.mjs` (source unique) : `refRe`/`refNums`/`isRangeSuffix`/
-// `chapterFile`/`bookOf`/`readText` + les ensembles d'exclusion de fiches. Périmètre de
-// balayage = `src/` + `scripts/` + `docs/`, hors artefacts DATÉS (`docs/plans`, `docs/superpowers`,
-// fiches `epreuve-*`) et hors rapports RÉ-GÉNÉRÉS (`RAWDOC_META_GENERATED`).
+// `chapterFile`/`bookOf`/`readText`, et la COUTURE d'énumération de l'Atlas. Périmètre de
+// balayage = `src/` + `scripts/` + `docs/`, hors artefacts DATÉS (`docs/plans`, `docs/superpowers`) ;
+// sous `docs/raw/`, les pages sont celles que la couture rend pour l'ACCEPTATION déclarée ci-dessous
+// — ce qui sépare une page d'un rapport ré-généré ou d'une épreuve ne se redit pas ici.
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parUnitesDeCode, listerArbre } from '../guards/lib/lister.mjs'
-import {
-  refRe, refNums, isRangeSuffix, chapterFile, bookOf, readText,
-  RAWDOC_META_GENERATED, isRawEpreuve,
-} from './_lib.mjs'
+import { refRe, refNums, isRangeSuffix, chapterFile, bookOf, readText, pagesDeLAtlas } from './_lib.mjs'
 
 export const ROOTS = ['src', 'scripts', 'docs']
 export const SKIP_DIRS = new Set(['node_modules', '.git', 'plans', 'superpowers'])
 export const EXCLUDE_PREFIX = ['src/gameIso/rig/parts/tenues/defs/'] // art de couverture (cf. check-code-refs)
+const RAWDIR = 'docs/raw'
+/** ACCEPTATION déclarée à la couture : les pages qui portent des réfs d'AUTEUR — ni rapport
+ *  ré-généré (bornes de ligne, pas des citations), ni épreuve datée. */
+export const CLASSES = ['fiche', 'catalogue', 'auteur']
 
-const nomDe = (rel) => rel.slice(rel.lastIndexOf('/') + 1)
 function fichiersScannes(dir) {
-  return listerArbre(dir, {
+  const horsAtlas = listerArbre(dir, {
     absent: 'vide',
-    descendre: (rel) => !rel.split('/').some((s) => SKIP_DIRS.has(s)),
-    filtre: (rel) => /\.(tsx?|mjs|mts|json|md)$/.test(rel)
-      && !RAWDOC_META_GENERATED.has(nomDe(rel)) && !isRawEpreuve(nomDe(rel)),
+    descendre: (rel) => !rel.split('/').some((s) => SKIP_DIRS.has(s)) && `${dir}/${rel}` !== RAWDIR,
+    filtre: (rel) => /\.(tsx?|mjs|mts|json|md)$/.test(rel),
   }).map((rel) => join(dir, rel))
+  if (`${dir}/raw` !== RAWDIR) return horsAtlas
+  return [...horsAtlas, ...pagesDeLAtlas(RAWDIR, { classes: CLASSES, absent: 'vide' }).map((p) => p.chemin)]
 }
 
 /** ANCRES jugeables d'une réf : une plage `-fin` reste UN intervalle, les autres formes (`+pts`,

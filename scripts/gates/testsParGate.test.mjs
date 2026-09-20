@@ -12,6 +12,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { envDeDepotForge } from '../guards/lib/depotGabarit.mjs'
 import { gatesDeCi } from './gatesDeCi.mjs'
 import { GATES, RACINES, couverture, gateDe, listerTests, testsDe } from './testsParGate.mjs'
 
@@ -109,7 +110,7 @@ test('la découverte prend le test NEUF (pas encore indexé) et laisse l’IGNOR
   // n'est pas indexée : la lister par les seuls fichiers suivis la rendrait verte par ABSENCE.
   const racine = mkdtempSync(join(tmpdir(), 'testsParGate-'))
   try {
-    const git = (...args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8' })
+    const git = (...args) => execFileSync('git', args, { cwd: racine, env: envDeDepotForge(), encoding: 'utf8' })
     git('init', '-q')
     git('config', 'user.email', 'banc@local')
     git('config', 'user.name', 'banc')

@@ -9,15 +9,16 @@
 // est ABSENT en régime nominal → tolérance ZÉRO (`readStock` traite un fichier absent comme zéro
 // entrée). S'il renaît, il se recrée à sa mesure MINIMALE, chaque entrée portant son lot et sa date.
 // Re-run : node scripts/raw/check-refs.mjs
-import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { refRe, span, chapterFile, bookOf, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
+import { refRe, span, chapterFile, bookOf, pagesDeLAtlas, readText } from './_lib.mjs'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
 
 export const RAWDIR = 'docs/raw'
-export const EXCLUDE = RAWDOC_META_GENERATED // (#454 DoD, #585 lot A) — source unique _lib.mjs
+// Acceptation DÉCLARÉE à la couture : tout sauf les rapports générés — une réf morte est une réf
+// morte, qu'elle soit lue dans une fiche, un catalogue, une page d'auteur ou une épreuve datée.
+export const CLASSES = ['fiche', 'catalogue', 'auteur', 'epreuve']
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'dead-refs-stock.json')
 // Sites morts observés → sites du stock : la FICHE où la réf est lue (chemin depuis la racine du
 // dépôt, c'est lui que la porte de plage reconnaît) et la réf citée, borne HAUTE comprise.
@@ -44,11 +45,10 @@ function lineCount(path) {
 }
 
 /** Parcourt `rawDir` (docs/raw par défaut) et retourne les réfs mortes : `{ doc, row, ref, hi, chapterLines, file }`. */
-export function scanDeadRefs(rawDir = RAWDIR, exclude = EXCLUDE) {
+export function scanDeadRefs(rawDir = RAWDIR, classes = CLASSES) {
   const dead = []
-  const docs = listerDossier(rawDir).filter((f) => f.endsWith('.md') && !exclude.has(f))
-  for (const doc of docs) {
-    const lines = readText(join(rawDir, doc)).split('\n')
+  for (const { relatif: doc, chemin } of pagesDeLAtlas(rawDir, { classes })) {
+    const lines = readText(chemin).split('\n')
     lines.forEach((ln, i) => {
       for (const { abbr, nn, hi } of refsInLine(ln)) {
         const cf = chapterFile(abbr, nn)

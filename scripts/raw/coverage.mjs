@@ -20,9 +20,12 @@ import { existsSync } from 'node:fs'
 import { listerDossier, parUnitesDeCode } from '../guards/lib/lister.mjs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BOOKS, coeurDe, esc, chapterFile, estHorsRegle, folioSpan, motifHorsRegle, niveauDeSectionDe, RAWDOC_META_GENERATED, readText, teneurDe } from './_lib.mjs'
+import { BOOKS, coeurDe, esc, chapterFile, estHorsRegle, folioSpan, motifHorsRegle, niveauDeSectionDe, pagesDeLAtlas, readText, teneurDe } from './_lib.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
-const rawDir = 'docs/raw'
+export const RAWDIR = 'docs/raw'
+// Acceptation DÉCLARÉE à la couture (`pagesDeLAtlas`) : tout sauf les rapports générés — l'épreuve
+// datée et les pages d'auteur CITENT des chapitres, et ce qu'elles citent est couvert.
+export const CLASSES = ['fiche', 'catalogue', 'auteur', 'epreuve']
 // Le front-matter (index/intro/préface) de TOUT livre est hors-règle par son TITRE — une propriété du
 // fichier, pas du livre : elle reste ici, là où les chapitres hors-règle NOMMÉS vivent en donnée.
 const isFrontMatter = (t) => /^index$|^introduction|avant-?propos|préface|^preface|^sommaire|^\*+$/i.test(t.trim())
@@ -75,7 +78,7 @@ export function chapterTitleOf(title, text) {
 export function catalogChaptersOf(docs) {
   const catalogCh = new Set()
   for (const d of docs) {
-    if (!/^catalogue-/.test(d.file)) continue
+    if (d.classe !== 'catalogue') continue
     for (const [ab] of BOOKS) {
       const re = new RegExp(`\\b${esc(ab)} (\\d+)\\b`, 'g')
       let m
@@ -265,10 +268,15 @@ function classify(ab, nn, horsRegle, isPur, docs, catalogCh) {
 const HOLE_MARK = { catalogue: '📖', scenario: '⬜', trou: '⬜', 'hors-regle': '➖' }
 const HOLE_LABEL = { catalogue: 'transcrit en catalogue, jamais traité', scenario: 'bruit de scénario', trou: 'candidat trou de règle', 'hors-regle': 'hors-règle (narratif/cadre), chapitre par ailleurs couvert' }
 
-function main() {
+/** Les pages LUES par cette acceptation, texte compris — source UNIQUE de `check-catalogue-complete`
+ *  et de leurs bancs. Une page est identifiée par son chemin RELATIF à l'Atlas : deux cœurs portent
+ *  le même nom de fiche. */
+export const pagesLues = (rawDir = RAWDIR) => pagesDeLAtlas(rawDir, { classes: CLASSES })
+  .map((p) => ({ file: p.relatif, classe: p.classe, text: readText(p.chemin) }))
+
+function main(rawDir = RAWDIR) {
   // Profondeur-conscient : on garde chaque fiche séparée pour compter les refs et trouver la fiche PROPRIÉTAIRE.
-  const docs = listerDossier(rawDir).filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
-    .map((f) => ({ file: f, text: readText(join(rawDir, f)) }))
+  const docs = pagesLues(rawDir)
   // Chapitres crédités par un catalogue : source unique `catalogChaptersOf` (#604 défaut latent —
   // extraite pour être réutilisée par `check-catalogue-complete.mjs`, jamais une resaisie).
   const catalogCh = catalogChaptersOf(docs)

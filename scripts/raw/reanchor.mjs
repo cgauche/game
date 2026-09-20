@@ -26,7 +26,7 @@ import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
-import { BOOKS, esc, chapterFile, normalize, ELLIPSIS_SENTINEL as SENT, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve, readText } from './_lib.mjs'
+import { BOOKS, esc, chapterFile, normalize, ELLIPSIS_SENTINEL as SENT, pagesDeLAtlas, readText } from './_lib.mjs'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
@@ -43,10 +43,10 @@ export const LOW_STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'rea
 // Sites LOW observés → sites du stock : la FICHE où la réf est lue (chemin depuis la racine du dépôt,
 // c'est lui que la porte de plage reconnaît) et la RÉF CITÉE telle qu'écrite (`full`).
 export const sitesLow = (lowRows) => lowRows.map((r) => ({ file: r.doc, ref: r.full }))
-// On ne traite que les fiches de DOMAINE + catalogues. On saute les rapports générés ET les fichiers
-// MÉTA (index, conventions, rapports d'épreuve) dont les réfs sont ILLUSTRATIVES, pas des citations
-// vivantes. Deux ensembles PARTAGÉS (#454 DoD, #585 lot A) : source unique `_lib.mjs`.
-const isMeta = (f) => RAWDOC_META_GENERATED.has(f) || RAWDOC_AUTHOR_META.has(f) || isRawEpreuve(f)
+// Acceptation DÉCLARÉE à la couture : fiches de DOMAINE et catalogues SEULS. Les rapports générés,
+// les pages d'AUTEUR (index, conventions) et les épreuves DATÉES portent des réfs ILLUSTRATIVES,
+// jamais des citations vivantes à ré-ancrer.
+export const CLASSES = ['fiche', 'catalogue']
 
 // Réf unifiée (abrévs de BOOKS, plus longue d'abord ; capture chapitre + début + suffixe -Y/+n).
 const ABBR_ALT = BOOKS.map(([a]) => esc(a)).sort((a, b) => b.length - a.length).join('|')
@@ -210,15 +210,14 @@ export function classifyQuote(li, citedStart, rawQuote, findCross) {
 // `scan` est le cœur RÉUTILISABLE (CLI ET tests) : parcourt `rawDir`, classe chaque réf, applique
 // les réécritures --apply/--remap sur DISQUE (seul effet de bord — pas d'écriture de rapport ici,
 // à charge de l'appelant), et renvoie tally + lignes de rapport + les réfs LOW (pour le cliquet).
-export function scan(rawDir = RAWDIR, { apply = false, remap = false } = {}) {
-  const DOCS = listerDossier(rawDir).filter((f) => f.endsWith('.md') && !isMeta(f))
+export function scan(rawDir = RAWDIR, { apply = false, remap = false, classes = CLASSES } = {}) {
+  const DOCS = pagesDeLAtlas(rawDir, { classes })
   const tally = { OK: 0, DRIFT: 0, MEDIUM: 0, LOW: 0, RANGE: 0, 'PAST-EOF': 0, 'NO-SOURCE': 0 }
   let totalRefs = 0, totalQuotes = 0, appliedTotal = 0, remappedTotal = 0
   const lowRows = []   // [{ doc: chemin de la FICHE, full, detail }] — un SITE = une unité du cliquet
   const sections = []  // [{ file, rows }] pour le rapport
 
-  for (const file of DOCS.sort()) {
-    const path = join(rawDir, file)
+  for (const { relatif: file, chemin: path } of DOCS) {
     const lines = readText(path).split('\n')
     const rows = []
     const edits = new Map()   // lineIdx -> [{start,end,replacement}]

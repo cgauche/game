@@ -79,21 +79,21 @@ test('stripArticles : tolère « Empreint de la Magie » vs « Empreint de Magie
 
 test('sitesEntites : un site = le DOC et le NOM de l’entité, deux homonymes → deux occurrences', () => {
   const sites = sitesEntites([
-    { doc: 'docs/raw/talents.md', row: 12, name: 'X' },
-    { doc: 'docs/raw/talents.md', row: 40, name: 'X' },
-    { doc: 'docs/raw/talents.md', row: 51, name: 'Y' },
+    { doc: 'docs/raw/4e/talents.md', row: 12, name: 'X' },
+    { doc: 'docs/raw/4e/talents.md', row: 40, name: 'X' },
+    { doc: 'docs/raw/4e/talents.md', row: 51, name: 'Y' },
   ])
   assert.deepEqual(sites, [
-    { file: 'docs/raw/talents.md', ref: 'X' },
-    { file: 'docs/raw/talents.md', ref: 'X' },
-    { file: 'docs/raw/talents.md', ref: 'Y' },
+    { file: 'docs/raw/4e/talents.md', ref: 'X' },
+    { file: 'docs/raw/4e/talents.md', ref: 'X' },
+    { file: 'docs/raw/4e/talents.md', ref: 'Y' },
   ], 'la ligne du doc ne fait pas partie du site')
   const { neuves } = ecartDuVolet({ sites, stock: [], ou: 'entity-in-chapter-stock.json' })
   assert.equal(neuves.length, 3)
-  assert.ok(neuves.some((n) => n.startsWith(' :: docs/raw/talents.md :: X :: 2')), `les homonymes se distinguent par leur occurrence :\n${neuves.join('\n')}`)
+  assert.ok(neuves.some((n) => n.startsWith(' :: docs/raw/4e/talents.md :: X :: 2')), `les homonymes se distinguent par leur occurrence :\n${neuves.join('\n')}`)
 })
 
-test('stock ABSENT → tolérance ZÉRO : la VRAIE docs/raw/talents.md ne porte aucune entité hors chapitre (#600 solde)', () => {
+test('stock ABSENT → tolérance ZÉRO : la VRAIE docs/raw/4e/talents.md ne porte aucune entité hors chapitre (#600 solde)', () => {
   assert.equal(STOCK_PATH.endsWith('entity-in-chapter-stock.json'), true)
   assert.deepEqual(readStock(STOCK_PATH), [], 'le régime nominal est le stock ABSENT (ou vide)')
   assert.deepEqual(readStock(join(tmpdir(), 'inexistant-entity-in-chapter.json')), [], 'fichier absent = zéro entrée tolérée')

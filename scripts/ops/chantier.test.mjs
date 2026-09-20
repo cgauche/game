@@ -9,7 +9,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
+import { envDeDepotForge, instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import { ECRIT_LU } from '../gates/toutes.mjs'
 import { EQUIPEMENTS, argumentsDe, brancheDe, cibleDe, creerChantier, equipementsDesPrerequis, nomValide, refusDeCreation, resumeDeChantier } from './chantier.mjs'
 
@@ -71,9 +71,9 @@ test('nom invalide : refus NOMMÉ, et aucun git n’est joué', () => {
 /** Dépôt jetable + son `origin` NU, avec `origin/main` réellement posé. */
 function depotAvecOrigin() {
   const nu = mkdtempSync(join(tmpdir(), 'origin-nu-'))
-  execFileSync('git', ['init', '--bare', '-q', '-b', 'main', nu], { encoding: 'utf8' })
+  execFileSync('git', ['init', '--bare', '-q', '-b', 'main', nu], { env: envDeDepotForge(), encoding: 'utf8' })
   const { racine } = instanceDeDepot({ fichiers: { 'a.txt': 'a' }, message: 'fondation' })
-  const git = (...args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8' }).trim()
+  const git = (...args) => execFileSync('git', args, { cwd: racine, env: envDeDepotForge(), encoding: 'utf8' }).trim()
   git('remote', 'add', 'origin', nu)
   git('push', '-q', 'origin', 'main')
   return { racine, nu, git, jeter: () => { for (const d of [racine, nu]) rmSync(d, { recursive: true, force: true }) } }
@@ -97,10 +97,11 @@ test('création RÉELLE : worktree .wt-42 sur chantier/42 issue d’ORIGIN/main,
     const cible = cibleDe(racine, '42')
     assert.equal(existsSync(cible), true, 'le worktree est posé sur le disque')
     assert.equal(vu.branche, 'chantier/42')
-    assert.equal(execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: cible, encoding: 'utf8' }).trim(), 'chantier/42')
-    assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: cible, encoding: 'utf8' }).trim(),
+    const gitLa = (cwd, ...args) => execFileSync('git', args, { cwd, env: envDeDepotForge(), encoding: 'utf8' }).trim()
+    assert.equal(gitLa(cible, 'rev-parse', '--abbrev-ref', 'HEAD'), 'chantier/42')
+    assert.equal(gitLa(cible, 'rev-parse', 'HEAD'),
       git('rev-parse', 'origin/main'), 'le chantier part d’origin/main')
-    assert.notEqual(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: cible, encoding: 'utf8' }).trim(), teteLocale,
+    assert.notEqual(gitLa(cible, 'rev-parse', 'HEAD'), teteLocale,
       'et surtout PAS de HEAD local')
     assert.match(vu.resume, new RegExp(`branche=${brancheDe('42')}`))
     assert.match(vu.resume, /^port=\d+ \(http:\/\/localhost:\d+\/\)$/m)
@@ -218,10 +219,10 @@ test('lancé depuis un WORKTREE : la cible se pose sous l’ARBRE PRINCIPAL, à 
     assert.equal(vu.cible, cibleDe(racine, '45'), 'la cible est calculée sur l’arbre principal, pas sur le cwd')
     assert.equal(existsSync(cibleDe(racine, '45')), true, 'le worktree neuf est posé là')
     assert.equal(existsSync(join(depuisLeWorktree, '.wt-45')), false, 'rien n’est posé SOUS le worktree appelant')
-    assert.equal(execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: cibleDe(racine, '45'), encoding: 'utf8' }).trim(),
-      'chantier/45')
+    const gitLa = (cwd, ...args) => execFileSync('git', args, { cwd, env: envDeDepotForge(), encoding: 'utf8' })
+    assert.equal(gitLa(cibleDe(racine, '45'), 'rev-parse', '--abbrev-ref', 'HEAD').trim(), 'chantier/45')
     // Et git le compte comme un arbre du MÊME dépôt, à plat : trois worktrees, aucun imbriqué.
-    const listes = execFileSync('git', ['worktree', 'list', '--porcelain'], { cwd: racine, encoding: 'utf8' })
+    const listes = gitLa(racine, 'worktree', 'list', '--porcelain')
     const chemins = listes.split(/\r?\n/).filter((l) => l.startsWith('worktree ')).map((l) => l.slice('worktree '.length))
     assert.equal(chemins.length, 3, listes)
     assert.equal(chemins.filter((c) => c.replace(/\\/g, '/').includes('/.wt-44/')).length, 0, 'aucun arbre sous .wt-44')

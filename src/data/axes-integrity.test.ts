@@ -40,7 +40,7 @@ describe('#409 — intégrité de axes.json', () => {
 
   /** Réfutation utilisateur 2026-07-14 (« bonne en ingénierie » / « taggée Soins » sans formation) :
    *  un axe EXPERT (scénario, non-`core`) ne doit reposer QUE sur des Compétences AVANCÉES (LDB 09
-   *  l.30 — inutilisables sans Augmentation, cf. `docs/raw/competences.md`), jamais une Compétence de
+   *  l.30 — inutilisables sans Augmentation, cf. `docs/raw/4e/competences.md`), jamais une Compétence de
    *  Base qui laisserait la Caractéristique nue « allumer » l'axe sans formation. Verrou id par id
    *  (pas un sondage sur les pregens) — une régression de DONNÉE (ajout d'un skillId de Base à un axe
    *  expert) casse ce test AVANT de reproduire le bug en jeu. */

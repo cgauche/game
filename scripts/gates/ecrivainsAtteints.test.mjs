@@ -245,9 +245,19 @@ const ATTENDU = {
   'raw:reconcile': ['scripts/docs/lib/empreinte-sources.mjs', 'scripts/raw/build-implemente.mjs'],
   'test:raw': [
     'scripts/docs/lib/empreinte-sources.mjs',
+    // +1 le 2026-09-20 (#1825 lot F0) : le banc du contrat d'acceptation de l'Atlas IMPORTE
+    // l'acceptation déclarée par chaque lecteur, `croissance.mjs` compris — une ligne de contrat
+    // qui nommerait ses lecteurs dans une CHAÎNE ne dirait rien de ce qu'ils déclarent. Le module
+    // n'écrit que dans un EXPORT jetable sous `os.tmpdir()` (même raison qu'en `test:hooks`).
+    'scripts/migrations/lib/croissance.mjs',
     'scripts/raw/anchor-fill.mjs',
     'scripts/raw/build-implemente.mjs',
     'scripts/raw/build-implemente.test.mjs',
+    // +1 le 2026-09-20 (#1825 lot F0) : le banc de l'aiguillage des catalogues FORGE un dépôt
+    // (`mkdtempSync` + `mkdirSync`/`writeFileSync`, `rmSync` en finally, sous `os.tmpdir()`) pour
+    // mesurer ce que la magie `:(glob)` porte — l'arbre du dépôt ne peut pas discriminer les deux
+    // grammaires de glob. Aucune écriture DANS l'arbre : même classe que `check-source-format.test.mjs`.
+    'scripts/raw/catalogues-aiguillage.test.mjs',
     'scripts/raw/check-code-refs.test.mjs',
     'scripts/raw/check-entity-in-chapter.test.mjs',
     'scripts/raw/check-folio-continuity.test.mjs',
@@ -296,10 +306,24 @@ const ATTENDU = {
     // préservé, fiche d'un autre cœur) sous `mkdtempSync` de os.tmpdir(), `rmSync` en finally ;
     // l'assembleur est ACQUIS parce que son banc l'importe — ses `writeFileSync` vivent dans
     // `assemble()`, que seul `main()` appelle, sous sa porte `isMain` (assemble-domain.mjs), et le
-    // banc n'appelle que ses fonctions PURES (`coeursCites`, `coeurDuRendu`, `refuserSiAutreCoeur`).
+    // banc n'appelle que ses fonctions PURES (`coeurDuRendu`, `dossierDuCoeur`, `cheminDeFiche`).
     'scripts/raw/apply-livre.test.mjs',
     'scripts/raw/assemble-domain.mjs',
     'scripts/raw/assemble-domain.test.mjs',
+    // +4 le 2026-09-20 (#1825 lot F0) : la FABRIQUE d'Atlas jetable et les deux bancs qui la
+    // prennent posent leur arborescence sous `mkdtempSync` de os.tmpdir(), `rmSync` en finally ;
+    // l'écrivain du bloc des cœurs est ACQUIS parce que son banc l'importe — son `writeFileSync`
+    // vit dans `main()`, sous sa porte `isMain` (build-atlas-index.mjs), et le cas `--check` le
+    // LANCE dans un arbre JETABLE dont il est le cwd.
+    'scripts/raw/_lib.test.mjs',
+    'scripts/raw/atlasFixture.mjs',
+    'scripts/raw/build-atlas-index.mjs',
+    'scripts/raw/build-atlas-index.test.mjs',
+    // +1 le 2026-09-20 (#1825 lot F0-D) : le banc de l'aiguillage des catalogues prend la fixture de
+    // dépôt jetable (`instanceDeDepot`) et son env isolé (`envDeDepotForge`). La primitive ne fabrique
+    // que sous `mkdtempSync` de os.tmpdir(), et jette ses gabarits à la sortie du process — aucune
+    // écriture DANS l'arbre : même classe que `marker-pages.test.mjs` ci-dessus.
+    'scripts/guards/lib/depotGabarit.mjs',
   ],
   'raw:check-refs': [],
   // +1 le 2026-09-11 (#925) : la gate enchaîne `citation-graphy-guard.mjs`, qui IMPORTE

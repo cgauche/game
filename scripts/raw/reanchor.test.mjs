@@ -4,18 +4,16 @@
 // (LOW + « texte trouvé en ZI 2 l.68 ») mais ne bloquait rien. Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join, basename } from 'node:path'
+import { basename } from 'node:path'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
 import { buildIndex, classifyQuote, scan, sitesLow, RAWDIR, LOW_STOCK_PATH } from './reanchor.mjs'
+import { avecAtlasFixture } from './atlasFixture.mjs'
 
-function withTempRawDir(content, fn) {
-  const dir = mkdtempSync(join(tmpdir(), 'reanchor-'))
-  writeFileSync(join(dir, 'fixture.md'), content, 'utf8')
-  try { fn(dir) } finally { rmSync(dir, { recursive: true, force: true }) }
-}
+// La fiche vit SOUS un cœur : un Atlas est PARTITIONNÉ, et la couture refuse une page de règles
+// posée à sa racine. Fabrique PARTAGÉE avec les autres bancs de lecteurs (`atlasFixture.mjs`).
+const withTempRawDir = (content, fn) =>
+  avecAtlasFixture({ 'fixture.md': content }, (dir, coeur) => fn(dir, `${coeur}/fixture.md`), { prefixe: 'reanchor-' })
 
 // ---------- classifyQuote (pur, fixtures synthétiques — reproduit la FORME du bug réel) ----------
 
@@ -77,12 +75,12 @@ test('scan() : citation juste → silencieuse (pas de ligne LOW, pas dans lowRow
 
 test('scan() : citation introuvable dans le chapitre cité → LOW, alimente lowRows (unité du cliquet)', () => {
   const md = `Une note.\n> « Une phrase qui n'existe nulle part dans ce chapitre source. »\n> \`LDB 6 l.5\`\n`
-  withTempRawDir(md, (dir) => {
+  withTempRawDir(md, (dir, relatif) => {
     const r = scan(dir, {})
     assert.equal(r.tally.LOW, 1)
     assert.equal(r.lowRows.length, 1)
     assert.equal(basename(r.lowRows[0].doc), 'fixture.md', 'le site NOMME la fiche où la réf est lue')
-    assert.equal(r.lowRows[0].doc, `${dir.split('\\').join('/')}/fixture.md`, 'chemin de la fiche depuis la racine du balayage, en séparateurs /')
+    assert.equal(r.lowRows[0].doc, `${dir.split('\\').join('/')}/${relatif}`, 'chemin de la fiche depuis la racine du balayage, CŒUR COMPRIS, en séparateurs /')
     assert.equal(r.lowRows[0].full, 'LDB 6 l.5', 'et la RÉF CITÉE telle qu’écrite')
     assert.deepEqual(sitesLow(r.lowRows), [{ file: r.lowRows[0].doc, ref: 'LDB 6 l.5' }])
   })
@@ -101,26 +99,26 @@ test('scan() : citation présente mais à une autre ligne du chapitre RÉEL → 
 
 test('écart : un site ❌ LOW hors du stock est NEUF, une entrée sans site est SOLDÉE, les deux nommés', () => {
   const { neuves, perimees } = ecartDuVolet({
-    sites: sitesLow([{ doc: 'docs/raw/bestiaire.md', full: 'ZI 13 l.954' }]),
-    stock: [{ fichier: 'docs/raw/magie.md', ref: 'LDB 6 l.5', occurrence: 1 }],
+    sites: sitesLow([{ doc: 'docs/raw/4e/bestiaire.md', full: 'ZI 13 l.954' }]),
+    stock: [{ fichier: 'docs/raw/4e/magie.md', ref: 'LDB 6 l.5', occurrence: 1 }],
     ou: 'reanchor-low-stock.json',
   })
   assert.equal(neuves.length, 1)
-  assert.match(neuves[0], /docs\/raw\/bestiaire\.md :: ZI 13 l\.954 :: 1 — site NEUF/)
+  assert.match(neuves[0], /docs\/raw\/[\w-]+\/bestiaire\.md :: ZI 13 l\.954 :: 1 — site NEUF/)
   assert.match(neuves[0], /CLIQUET:/)
   assert.equal(perimees.length, 1)
-  assert.match(perimees[0], /docs\/raw\/magie\.md/)
+  assert.match(perimees[0], /docs\/raw\/[\w-]+\/magie\.md/)
   assert.match(perimees[0], /entrée SOLDÉE/)
 })
 
 test('écart : deux sites de la MÊME réf dans la MÊME fiche se distinguent par leur OCCURRENCE', () => {
   const sites = sitesLow([
-    { doc: 'docs/raw/bestiaire.md', full: 'ZI 13 l.954' },
-    { doc: 'docs/raw/bestiaire.md', full: 'ZI 13 l.954' },
+    { doc: 'docs/raw/4e/bestiaire.md', full: 'ZI 13 l.954' },
+    { doc: 'docs/raw/4e/bestiaire.md', full: 'ZI 13 l.954' },
   ])
   const stock = [
-    { fichier: 'docs/raw/bestiaire.md', ref: 'ZI 13 l.954', occurrence: 1 },
-    { fichier: 'docs/raw/bestiaire.md', ref: 'ZI 13 l.954', occurrence: 2 },
+    { fichier: 'docs/raw/4e/bestiaire.md', ref: 'ZI 13 l.954', occurrence: 1 },
+    { fichier: 'docs/raw/4e/bestiaire.md', ref: 'ZI 13 l.954', occurrence: 2 },
   ]
   const couvert = ecartDuVolet({ sites, stock, ou: 'reanchor-low-stock.json' })
   assert.deepEqual([couvert.neuves, couvert.perimees], [[], []], 'deux entrées d’occurrences distinctes couvrent les deux sites')
@@ -137,14 +135,14 @@ test('stock réel — les quatre gestes : site neuf, entrée ajoutée, occurrenc
   const sitesDuStock = stock.map((e) => ({ file: e.fichier, ref: e.ref }))
   const ou = 'reanchor-low-stock.json'
 
-  const neuf = ecartDuVolet({ sites: [...sitesDuStock, { file: 'docs/raw/combat.md', ref: 'LDB 99 l.1' }], stock, ou })
+  const neuf = ecartDuVolet({ sites: [...sitesDuStock, { file: 'docs/raw/4e/combat.md', ref: 'LDB 99 l.1' }], stock, ou })
   assert.equal(neuf.neuves.length, 1, 'un site jamais déclaré doit sortir SEUL')
-  assert.match(neuf.neuves[0], /docs\/raw\/combat\.md :: LDB 99 l\.1 :: 1 — site NEUF/)
+  assert.match(neuf.neuves[0], /docs\/raw\/[\w-]+\/combat\.md :: LDB 99 l\.1 :: 1 — site NEUF/)
   assert.deepEqual(neuf.perimees, [])
 
   const declare = ecartDuVolet({
-    sites: [...sitesDuStock, { file: 'docs/raw/combat.md', ref: 'LDB 99 l.1' }],
-    stock: [...stock, { fichier: 'docs/raw/combat.md', ref: 'LDB 99 l.1', occurrence: 1 }], ou,
+    sites: [...sitesDuStock, { file: 'docs/raw/4e/combat.md', ref: 'LDB 99 l.1' }],
+    stock: [...stock, { fichier: 'docs/raw/4e/combat.md', ref: 'LDB 99 l.1', occurrence: 1 }], ou,
   })
   assert.deepEqual([declare.neuves, declare.perimees], [[], []], 'déclarer l’entrée éteint la garde — et la porte de plage, elle, compte la ligne ajoutée')
 

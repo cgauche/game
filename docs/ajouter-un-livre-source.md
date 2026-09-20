@@ -179,6 +179,11 @@ Trois points d'enregistrement, dans cet ordre :
    règles dont ce livre est le livre de base (`"4e"`, `"5e"` ; graphie normalisée : minuscules, sans
    espace de bord — deux livres ne portent jamais deux graphies d'un même cœur). Un supplément ne le
    porte PAS. Le déclarer entraîne, sans une ligne de code (`coeurDe`, `scripts/raw/_lib.mjs`) :
+   - **R0** — le cœur est un DOSSIER de l'Atlas : ses fiches, ses catalogues et ses pages d'auteur
+     vivent sous `docs/raw/<coeur>/`, et le nom du dossier EST la valeur du champ. Un cœur déclaré
+     sans dossier est DIT au routeur `docs/raw/00-index.md` (bloc généré, « dossier à créer ») ; une
+     page de règles posée à la RACINE de l'Atlas, ou un sous-dossier qui n'est pas un cœur du
+     registre, fait LEVER la couture d'énumération (`pagesDeLAtlas`) — donc toutes les gardes `raw:*` ;
    - **R1** — le Sens A du livre passe à tolérance ZÉRO : un chapitre que le code cite et qu'aucune
      fiche ni aucun catalogue de l'Atlas ne porte se CORRIGE à l'Atlas, il ne se stocke PAS dans
      `scripts/raw/reconciliation-stock.json` (CLAUDE.md règle 1) ; `raw:reconcile` refuse le trou
@@ -220,7 +225,9 @@ Trois points d'enregistrement, dans cet ordre :
    `B2 <ABRÉV> <ch>` à écrire au stock. L'entrée vit aussi longtemps que son ticket
    (`scripts/hooks/solde-ticket-guard.mjs`, `evaluateManifestClosure`) : à la fermeture elle part,
    et tout topic encore non implémenté redevient orphelin, à ticketer nommément.
-2. **`docs/raw/sources.md`** — ajouter une ligne à la table *Les N livres* (abrév, titre, dossier,
+2. **`docs/raw/sources.md`** — la page des sources est TRANSVERSE : elle vit à la racine de l'Atlas et
+   porte les livres de TOUS les cœurs, quel que soit le cœur du livre ajouté (ou son absence de cœur).
+   Y ajouter une ligne à la table *Les N livres* (abrév, titre, dossier,
    rôle en une phrase) et incrémenter le compte en tête de fichier (« Le **RAW** du projet = ces
    **N livres** »). Si le livre a des chapitres purement narratifs/de cadre (gazetteer), documenter
    le partage règles/cadre ici ou dans `CLAUDE.md`.
@@ -274,7 +281,7 @@ livres.
 L'Atlas (cf. `docs/raw/00-index.md`) consolide les règles **par domaine**, pas par livre — un
 nouveau livre vient enrichir les fiches de domaine existantes (`combat.md`, `magie.md`, …) ou en
 créer une nouvelle si le livre introduit un domaine inédit (le combat naval de MDG a justifié
-`docs/raw/combat-naval.md`, un fichier dédié référencé dans la table `Domaines` de `00-index.md`).
+`docs/raw/4e/combat-naval.md`, un fichier dédié référencé dans la table `Domaines` de `00-index.md`).
 
 La chaîne, dans l'ordre — **périmètre → workflow → assemble → apply → gardes** :
 
@@ -287,25 +294,25 @@ La chaîne, dans l'ordre — **périmètre → workflow → assemble → apply �
    `orchestrer-des-agents`) : un agent par domaine touché fait `extract → verify` adversarial — la
    vérification reconfronte chaque réf/citation à la source, indispensable (des fabrications de
    contenu ont été trouvées et corrigées lors de l'épreuve du 2026-06-22,
-   `docs/raw/epreuve-2026-06-22.md`). Le script n'a pas d'accès filesystem ni d'`import` : c'est un
+   `docs/raw/4e/epreuve-2026-06-22.md`). Le script n'a pas d'accès filesystem ni d'`import` : c'est un
    corps d'`AsyncFunction` que le lanceur enveloppe, et le JSON de l'étape 1 lui arrive par le global
    **`args`** (champ `args` du lanceur de workflows, collé tel quel). Il ne nomme **aucun livre** —
    rien à y éditer quand un livre s'ajoute. Langue des prompts : la **synthèse** d'une fiche est en
    français, les **citations, termes et abréviations de jeu** restent verbatim dans la langue du livre
    cité (champ `language`), jamais traduits. Il rend `{ coeur, supplements, domains: […] }`.
 3. **Assemblage de la fiche** — `node scripts/raw/assemble-domain.mjs <output.json> [Titre]` écrit
-   `docs/raw/<domaine>.md` depuis ce JSON. Il LÈVE si le rendu ne porte pas son `coeur`, NOMME ce
-   cœur dans l'en-tête, et REFUSE d'écrire sur une fiche existante dont les livres de cœur cités
-   relèvent d'un autre corps de règles (une fiche synthétise UN cœur).
+   `docs/raw/<coeur>/<domaine>.md` depuis ce JSON : le CHEMIN dit le cœur, et c'est la seule chose
+   qui le dise. Il LÈVE si le rendu ne porte pas son `coeur`, et NOMME ce cœur dans l'en-tête.
 4. **Apply déterministe** (enrichir des fiches DÉJÀ écrites, au lieu d'en assembler une) —
    `node scripts/raw/apply-livre.mjs <ABRÉV> <workflow-output.json>` insère topics + sommaire dans
    les fiches de domaine, **idempotent** via un sentinel `<!-- <ABRÉV>-INTEGRATION -->` (sigle en
    argument, libellé lu au registre ; le motif du marqueur est dérivé du registre dans `_lib.mjs`,
    donc un sigle à espace ou à point reste préservé par `build-catalogs.mjs`).
-5. **Gardes** — `npm run raw:coverage`, `raw:reconcile` (dont le refus d'une fiche à deux cœurs),
+5. **Gardes** — `npm run raw:coverage`, `raw:reconcile` (dont le refus d'une fiche qui cite le livre
+   de cœur d'un AUTRE cœur que celui de son dossier),
    `raw:implemente`, `raw:check-refs`, `node scripts/raw/check-atlas-counts.mjs`.
 
-- **Catalogues de données verbatim** (`docs/raw/catalogue-*.md`) : régénérés par
+- **Catalogues de données verbatim** (`docs/raw/<coeur>/catalogue-*.md`) : régénérés par
   `node scripts/raw/build-catalogs.mjs`, qui concatène **verbatim** les chapitres de données des
   livres. Rien à éditer dans le script : ajouter une entrée `{ book, ch, catalogue }` à la liste
   **`enCatalogue`** de `scripts/raw/chapitres.json` (§ 3), le `catalogue` étant `creatures`, `sorts`,

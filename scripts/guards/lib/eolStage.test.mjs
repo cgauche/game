@@ -7,6 +7,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { envDeDepotForge } from './depotGabarit.mjs'
 import { cheminsMalNormalises, raisonDeRefusEol } from './eolStage.mjs'
 
 const TAB = '\t'
@@ -61,7 +62,7 @@ test('le refus NOMME les chemins ET le geste de réparation', () => {
 
 test('dépôt JETABLE : `git apply --index` d’un patch CRLF stage un blob CRLF, et la porte le voit', () => {
   const dir = mkdtempSync(join(tmpdir(), 'eol-stage-'))
-  const git = (...args) => execFileSync('git', args, { cwd: dir, encoding: 'utf8' })
+  const git = (...args) => execFileSync('git', args, { cwd: dir, env: envDeDepotForge(), encoding: 'utf8' })
   try {
     git('init', '-q', '-b', 'main')
     git('config', 'user.email', 'x@y.z')

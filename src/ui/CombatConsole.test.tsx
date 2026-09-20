@@ -3241,7 +3241,7 @@ describe('CombatConsole — geste secondaire de l’alvéole (Focaliser)', () =>
     expect(panneau(), 'la touche Menu n’ouvre rien non plus').toBeNull();
   });
 
-  /** `LDB 09 l.30` (verbatim, `docs/raw/competences.md`) : « Vous ne pouvez effectuer de Test de
+  /** `LDB 09 l.30` (verbatim, `docs/raw/4e/competences.md`) : « Vous ne pouvez effectuer de Test de
    *  Compétence Avancée que si vous y avez ajouté au moins une Augmentation. » Focalisation EST
    *  Avancée (`skills.json`, accès « avancee ») — le geste doit se fermer AVANT le journal. */
   it('SANS la Compétence Focalisation : le geste est refusé à la CASE, et le journal reste muet', () => {

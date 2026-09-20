@@ -279,9 +279,9 @@ test('stock NOMINATIF de l Atlas RAW — une entrée qui nomme une FICHE (docs/r
     '    }',
   ]
   const enveloppe = (corps) => ['{', '  "quoi": "fixture",', '  "entrees": [', ...corps, '  ]', '}', ''].join('\n')
-  const ajoutee = entree('docs/raw/bestiaire.md', 'ZI 13 l.954')
-  const avant = enveloppe(entree('docs/raw/combat.md', 'LDB 46 l.12'))
-  const apres = enveloppe([...entree('docs/raw/combat.md', 'LDB 46 l.12').map((l, i) => (i === 6 ? '    },' : l)), ...ajoutee])
+  const ajoutee = entree('docs/raw/4e/bestiaire.md', 'ZI 13 l.954')
+  const avant = enveloppe(entree('docs/raw/4e/combat.md', 'LDB 46 l.12'))
+  const apres = enveloppe([...entree('docs/raw/4e/combat.md', 'LDB 46 l.12').map((l, i) => (i === 6 ? '    },' : l)), ...ajoutee])
   const [c] = croissanceDesStocks(
     diffAuxLignes(f, 11, ajoutee, []),
     { lirePostImage: () => apres, lirePreImage: () => avant },
@@ -289,7 +289,7 @@ test('stock NOMINATIF de l Atlas RAW — une entrée qui nomme une FICHE (docs/r
   assert.equal(c.fichier, f)
   assert.equal(c.net, 1, 'une fiche de l’Atlas est un chemin de dépôt : la porte de plage compte l’entrée ajoutée')
   assert.equal(
-    c.exemples[0], '"fichier": "docs/raw/bestiaire.md",',
+    c.exemples[0], '"fichier": "docs/raw/4e/bestiaire.md",',
     'l’exemple cité est la ligne qui NOMME la fiche',
   )
 })

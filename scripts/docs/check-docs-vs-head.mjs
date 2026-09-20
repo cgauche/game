@@ -23,16 +23,15 @@
 //   node scripts/docs/check-docs-vs-head.mjs [chemins…]
 import { execFileSync } from 'node:child_process'
 import { GENERATORS } from './build-all.mjs'
+import { correspondGlob } from '../guards/lib/lister.mjs'
 
 const OUTIL = 'docs-vs-commit'
 const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
 const git = (args) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
 
-/** Un `target` de `GENERATORS` peut porter un glob (`docs/raw/catalogue-*.md`). */
-const CIBLES = GENERATORS.flatMap((g) => g.targets).map(
-  (t) => new RegExp(`^${t.split('*').map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('[^/]*')}$`),
-)
-const estGenere = (p) => CIBLES.some((re) => re.test(p))
+/** Un `target` de `GENERATORS` peut porter un MOTIF (`motifDeGlob`, `scripts/guards/lib/lister.mjs`). */
+const CIBLES = GENERATORS.flatMap((g) => g.targets)
+const estGenere = (p) => CIBLES.some((motif) => correspondGlob(p, motif))
 
 const cibles = (() => {
   const args = process.argv.slice(2).filter((a) => !a.startsWith('--'))

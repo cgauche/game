@@ -5,7 +5,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { REGISTRE_LIVRES } from './_lib.mjs'
-import { coeursDuRegistre, perimetreDeCoeur } from './workflow-args.mjs'
+import { perimetreDeCoeur } from './workflow-args.mjs'
+import { coeursDuRegistre } from './_lib.mjs'
 
 const FIXTURE = [
   { id: 'base-alpha', abbr: 'BKA', dir: 'Source/Fixture - Base Alpha', language: 'Langue-A', coeur: 'alpha' },

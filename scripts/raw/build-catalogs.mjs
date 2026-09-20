@@ -15,8 +15,31 @@ import { existsSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BOOKS, blockStartRe, chapterFile as chapterFileLib, esc, livresDeCatalogue, readText } from './_lib.mjs'
+import { BOOKS, blockStartRe, chapterFile as chapterFileLib, esc, livresDeCatalogue, pagesDeLAtlas, readText } from './_lib.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
+
+export const RAWDIR = 'docs/raw'
+// Acceptation DÉCLARÉE à la couture : les catalogues — l'écrivain relit OÙ vit déjà le catalogue
+// qu'il réécrit, puisque le CHEMIN déclare le cœur.
+export const CLASSES = ['catalogue']
+
+/** Les catalogues de l'Atlas, ÉNUMÉRÉS UNE FOIS : l'appelant qui en résout plusieurs ne reparcourt
+ *  pas l'Atlas par catalogue. */
+export const cataloguesDeLAtlas = (rawDir = RAWDIR) => pagesDeLAtlas(rawDir, { classes: CLASSES })
+
+/** Le chemin d'un catalogue de l'Atlas — le cœur vient du CHEMIN de la page existante. LÈVE en
+ *  nommant la cause quand le catalogue n'existe sous aucun cœur : un défaut choisirait un cœur en
+ *  silence, là où un catalogue porte des blocs de livres qui n'en déclarent AUCUN. */
+export function cheminDeCatalogue(file, pages = cataloguesDeLAtlas()) {
+  const page = pages.find((p) => p.nom === file)
+  // Séparateurs NORMALISÉS : `ecrireDoc` KEYE son pied d'empreinte par le chemin, et un rapport
+  // committé ne doit pas dire deux choses selon la machine qui l'écrit.
+  if (page) return page.chemin.replace(/\\/g, '/')
+  throw new Error(
+    `build-catalogs: le catalogue « ${file} » ne vit sous AUCUN cœur de l'Atlas — son cœur vient `
+    + `de son CHEMIN : pose sa page sous <atlas>/<coeur>/ , le cœur où ce catalogue doit être lu ; `
+    + `catalogues vus : ${pages.map((p) => p.relatif).join(', ') || '(aucun)'}`)
+}
 
 // Motif du marqueur : DÉRIVÉ de l'alternation du registre (`_lib.mjs`) — un sigle porte des espaces,
 // des minuscules, un point ; aucune classe de caractères écrite à la main ne les tient tous.
@@ -88,6 +111,8 @@ if (dirsVides.length) {
   process.exit(1)
 }
 const log = []
+// ÉNUMÉRATION HISSÉE : l'Atlas se parcourt UNE fois pour tous les catalogues à écrire.
+const pagesCatalogues = cataloguesDeLAtlas()
 for (const dom of CATALOGUES) {
   const parts = [], refs = [], missing = []
   for (const [abbr, chaps] of livresDeCatalogue(dom.id)) for (const spec of chaps) {
@@ -101,7 +126,7 @@ for (const dom of CATALOGUES) {
     `> **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)\n` +
     `> des livres autorisés. Système & règles : voir [\`${dom.rules}\`](${dom.rules}).\n>\n` +
     `> **Chapitres source :** ${refs.join(' · ')}.\n\n---\n`
-  const path = `docs/raw/${dom.file}`
+  const path = cheminDeCatalogue(dom.file, pagesCatalogues)
   const preserved = extractPreservedBlocks(path)
   const body = appendPreservedBlocks(header + parts.join('\n') + '\n', preserved)
   ecrireDoc(path, body)

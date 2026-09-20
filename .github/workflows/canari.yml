@@ -117,7 +117,7 @@ jobs:
         id: raw-catalogs
         continue-on-error: true
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: npm run raw:catalogs && git diff --exit-code -- 'docs/raw/catalogue-*.md'
+        run: npm run raw:catalogs && git diff --exit-code -- ':(glob)docs/raw/**/catalogue-*.md'
       - id: raw-coverage
         continue-on-error: true
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}

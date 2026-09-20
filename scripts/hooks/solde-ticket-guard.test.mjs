@@ -62,7 +62,7 @@ import {
   archivesDe, derniereRevueArchivee, fenetreDeRevue, mesureDuPalier, nomDArchiveDeRevue, nomsDArchiveAcceptes,
   revuesNeuves,
 } from '../guards/lib/revuePalier.mjs'
-import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
+import { envDeDepotForge, instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 
 const TODAY = '2026-07-14'
 const VERIFIE_OK = 'VERIFIE: relu le diff complet, lancé npm test et vérifié les 3 fichiers touchés à la main.'
@@ -539,7 +539,7 @@ test('evaluate : palier INMESURABLE -> deny nomme, jamais un silence qui laisse 
 /** Depot jetable : la revue s'y ecrit DIRECTEMENT sous son nom d'archive, comme dans le dispositif. */
 function depotAvecRevues() {
   const { racine: depot, sha: racine } = instanceDeDepot({ fichiers: { 'scripts/racine.txt': 'racine' }, message: 'racine' })
-  const git = (...args) => execFileSync('git', args, { cwd: depot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  const git = (...args) => execFileSync('git', args, { cwd: depot, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
   mkdirSync(join(depot, '.claude', 'soldes'), { recursive: true })
   const commit = (marque, dossier = 'scripts') => {
     mkdirSync(join(depot, dossier), { recursive: true })
@@ -1639,7 +1639,7 @@ test('evaluate : ni index ni disque → "fichier absent" (jamais le message de s
 test('diffDuCommit.contenu : le solde EMPORTÉ suit la forme — index oui, hors pathspec non', () => {
   const { racine: repo } = instanceDeDepot({ fichiers: { 'src/x.ts': 'export const a = 1\n' }, message: 'socle' })
   try {
-    const git = (...args) => execFileSync('git', args, { cwd: repo, stdio: ['ignore', 'pipe', 'ignore'] })
+    const git = (...args) => execFileSync('git', args, { cwd: repo, env: envDeDepotForge(), stdio: ['ignore', 'pipe', 'ignore'] })
     mkdirSync(join(repo, '.claude', 'soldes'), { recursive: true })
     writeFileSync(join(repo, '.claude', 'soldes', '77.md'), 'solde-77-stage', 'utf8')
     writeFileSync(join(repo, '.claude', 'soldes', '78.md'), 'solde-78-disque', 'utf8')
@@ -1993,7 +1993,7 @@ test('verifierCapture : une capture PLAUSIBLE passe ; les six défauts sont NOMM
 test('verifierCapture : une capture IGNORÉE par git est refusée, la même sous public/qc/soldes/ passe', () => {
   const base = mkdtempSync(join(tmpdir(), 'solde-capture-ignore-'))
   try {
-    execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: base, encoding: 'utf8' })
+    execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: base, env: envDeDepotForge(), encoding: 'utf8' })
     writeFileSync(join(base, '.gitignore'), 'public/qc/*\n!public/qc/soldes/\n', 'utf8')
     mkdirSync(join(base, 'public', 'qc', 'soldes'), { recursive: true })
     writeFileSync(join(base, 'public', 'qc', 'ignoree.png'), pngDe(1280, 720, 4096))
@@ -2142,8 +2142,8 @@ test('fichiersDuCommitGit : un RENOMMAGE rend les deux chemins NUS, jamais « {a
   // un solde JUSTE était refusé.
   const { racine: repo } = instanceDeDepot({ fichiers: { 'src/ancien.ts': 'export const a = 1\n'.repeat(20) }, message: 'socle' })
   try {
-    const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
-    execFileSync('git', ['mv', 'src/ancien.ts', 'src/nouveau.ts'], { cwd: repo, stdio: 'ignore' })
+    const git = (...args) => execFileSync('git', args, { cwd: repo, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    execFileSync('git', ['mv', 'src/ancien.ts', 'src/nouveau.ts'], { cwd: repo, env: envDeDepotForge(), stdio: 'ignore' })
     git('commit', '-q', '--no-verify', '-am', 'renomme')
     const sha = git('rev-parse', 'HEAD').trim()
 
@@ -2387,7 +2387,7 @@ test('un poste SUPPRIMÉ par le commit sort de la mesure et reste dans la RÉFÉ
     message: 'socle',
   })
   try {
-    execFileSync('git', ['rm', '-q', '-r', '--cached', '.claude/skills/b'], { cwd: racine, stdio: ['ignore', 'pipe', 'ignore'] })
+    execFileSync('git', ['rm', '-q', '-r', '--cached', '.claude/skills/b'], { cwd: racine, env: envDeDepotForge(), stdio: ['ignore', 'pipe', 'ignore'] })
     const image = listeurDImage(['ls-files', '--cached'], racine)
     const preImage = listeurDImage(['ls-tree', '--name-only', 'HEAD'], racine)
     assert.deepEqual(image('.claude/skills'), ['a'], 'la skill retirée de l’index sort de la MESURE')

@@ -11,7 +11,7 @@
  *
  * Un cardinal IMPOSÉ PAR LE LIVRE (les 20 rangées d'un Tableau des Critiques, les 19 caractéristiques)
  * n'est pas un péage : il se DÉCLARE dans le refus que le code prononce, par une RÉFÉRENCE NUE
- * (`LDB 18 l.53`, `docs/raw/caracteristiques`). L'exemption vit AU SITE, jamais dans une liste de
+ * (`LDB 18 l.53`, `docs/raw/4e/caracteristiques`). L'exemption vit AU SITE, jamais dans une liste de
  * fichiers tenue ici.
  *
  * L'export, l'effacement et le périmètre sont ceux de `replay-head.mjs` / `replay.mjs` — une seule

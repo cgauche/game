@@ -27,13 +27,13 @@
 // Re-run : node scripts/raw/check-atlas-counts.mjs (chaîné dans npm run docs:check).
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { listerDossier } from '../guards/lib/lister.mjs'
-import { BOOKS, RAWDOC_META_GENERATED, isRawEpreuve, readText } from './_lib.mjs'
+import { BOOKS, pagesDeLAtlas, readText } from './_lib.mjs'
 
 const RACINE = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const RAW_DIR = resolve(RACINE, 'docs/raw')
-export const INDEX_PATH = resolve(RAW_DIR, '00-index.md')
-export const SOURCES_PATH = resolve(RAW_DIR, 'sources.md')
+export const RAW_DIR = resolve(RACINE, 'docs/raw')
+// Acceptation DÉCLARÉE à la couture : les pages MANUSCRITES — fiches et pages d'auteur. Les rapports
+// générés, les catalogues ré-générés verbatim et les épreuves DATÉES n'ont aucun compte manuscrit.
+export const CLASSES = ['fiche', 'auteur']
 /** L'ASSEMBLEUR des fiches : il INJECTE son en-tête dans chaque fiche qu'il écrit. */
 export const ASSEMBLEUR_PATH = resolve(RACINE, 'scripts/raw/assemble-domain.mjs')
 /** L'ÉCRIVAIN de `docs/sources-vf.md` : même classe que l'assembleur — sa prose ÉDITORIALE décrit
@@ -41,14 +41,11 @@ export const ASSEMBLEUR_PATH = resolve(RACINE, 'scripts/raw/assemble-domain.mjs'
  *  La page elle-même est GÉNÉRÉE : la scanner ne désignerait pas le fichier à corriger. */
 export const SOURCES_VF_WRITER_PATH = resolve(RACINE, 'scripts/docs/build-sources-vf.mjs')
 
-/** Une page `docs/raw/` est-elle MANUSCRITE (donc scannée) ? */
-export const estPageManuscrite = (nom) =>
-  nom.endsWith('.md') && !RAWDOC_META_GENERATED.has(nom) && !isRawEpreuve(nom) && !nom.startsWith('catalogue-')
-
-/** Les fichiers balayés, dans l'ordre du dossier puis les ÉCRIVAINS de prose de l'Atlas. */
+/** Les fichiers balayés, dans l'ordre de l'Atlas puis les ÉCRIVAINS de prose de l'Atlas — résolus À
+ *  L'APPEL : un module qui parcourrait l'Atlas à son CHARGEMENT imposerait son cwd et sa levée à
+ *  quiconque l'importe pour une seule fonction pure (`scanForbiddenCounts`). */
 export const cheminsBalayes = (rawDir = RAW_DIR) =>
-  [...listerDossier(rawDir).filter(estPageManuscrite).map((f) => resolve(rawDir, f)), ASSEMBLEUR_PATH, SOURCES_VF_WRITER_PATH]
-export const SCANNED_PATHS = cheminsBalayes()
+  [...pagesDeLAtlas(rawDir, { classes: CLASSES }).map((p) => p.chemin), ASSEMBLEUR_PATH, SOURCES_VF_WRITER_PATH]
 
 // Nombre de livres écrit en dur devant « livres » (ex. « 15 livres », « depuis les 14 livres »).
 const BOOK_COUNT_RE = /\b(\d+)\s+livres\b/gi
@@ -84,8 +81,9 @@ export function scanForbiddenCounts(text) {
 }
 
 function main() {
+  const balayes = cheminsBalayes()
   let all = []
-  for (const path of SCANNED_PATHS) {
+  for (const path of balayes) {
     const text = readText(path)
     const rel = path.slice(RACINE.length + 1).replace(/\\/g, '/')
     all = all.concat(scanForbiddenCounts(text).map((v) => ({ ...v, rel })))
@@ -96,7 +94,7 @@ function main() {
     process.exitCode = 1
     return
   }
-  console.log(`check-atlas-counts — OK (aucun compte manuscrit dans ${SCANNED_PATHS.length} fichier(s) manuscrit(s) de l'Atlas ; ${BOOKS.length} livres dans BOOKS)`)
+  console.log(`check-atlas-counts — OK (aucun compte manuscrit dans ${balayes.length} fichier(s) manuscrit(s) de l'Atlas ; ${BOOKS.length} livres dans BOOKS)`)
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)

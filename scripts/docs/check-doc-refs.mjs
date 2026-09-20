@@ -12,6 +12,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { parUnitesDeCode, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { estSuiteVitest, SUFFIXE_SUITE } from '../guards/lib/fichierVitest.mjs'
+import { liensJugeables } from '../guards/lib/liensMarkdown.mjs'
 
 const DOCS_DIR = 'docs'
 const SRC_DIR = 'src'
@@ -233,12 +234,16 @@ if (existsSync(CHARTE_MD) && existsSync(MANIFESTE_PRIMITIVES)) {
   }
 }
 
-// 5. SENS INVERSE — le code cite la doc. Tout chemin `docs/….md` écrit dans un commentaire ou une
-// chaîne de `src/**` / `scripts/**` doit exister sur le disque : une doc supprimée laisse sinon des
-// renvois pendants qu'AUCUNE garde ne voit (les sens 1-4 ne lisent que `docs/*.md` et CLAUDE.md).
-// Exclusion STRUCTURELLE unique : `docs/plans/…` a sa propre garde dédiée
-// (`scripts/docs/check-plans-anchors.mjs`, sens 2 & 3, avec ses exemptions de fixtures au SITE) —
-// le doubler ici ne ferait que rejouer ses faux positifs.
+// 5. UN RENVOI À UNE DOC NE MENT PAS. Tout chemin `docs/….md` écrit dans un commentaire ou une
+// chaîne de `src/**` / `scripts/**`, ou dans la PROSE d'une doc — `docs/**/*.md`, les pages de
+// l'Atlas comprises —, doit exister sur le disque : une doc supprimée ou DÉPLACÉE laisse sinon des
+// renvois pendants qu'AUCUNE garde ne voit (les sens 1-4 ne lisent que `docs/*.md` à plat, et ne
+// jugent que les chemins de CODE qu'ils citent). C'est ce sens qui tient la partition de l'Atlas par
+// cœur : une fiche citée à son ancien chemin est ROUGE, `fichier:ligne`.
+// Exclusions STRUCTURELLES : `docs/plans/…` — cité comme cible ET lu comme source — a sa propre
+// garde dédiée (`scripts/docs/check-plans-anchors.mjs`, sens 2 & 3, avec ses exemptions de fixtures
+// au SITE), le doubler ici ne ferait que rejouer ses faux positifs ; une ÉPREUVE DATÉE est une preuve
+// publiée, qui dit l'arbre du jour où elle fut écrite et ne se réécrit jamais.
 const DOC_REF_RE = /\bdocs\/[A-Za-z0-9_./-]*\.md\b/g
 // Exemptions AU SITE (fichier|jeton), jamais au fichier entier : un chemin écrit dans un dépôt
 // JETABLE monté par un test n'a pas vocation à exister dans celui-ci.
@@ -249,7 +254,12 @@ const DOC_REF_SITES_EXEMPTS = new Set([
 // Ce fichier-ci est hors du sens 5 : il ÉNONCE les jetons exemptés ci-dessus (même patron que
 // `FICHIERS_DE_LA_GARDE` dans check-plans-anchors.mjs), il ne les cite pas comme documentation.
 const DOC_REF_SELF = 'scripts/docs/check-doc-refs.mjs'
-for (const f of [...fichiersSources(SRC_DIR, EXTS_SRC), ...fichiersSources('scripts', EXTS_SRC)]) {
+/** Les docs LUES par ce sens : toute page `.md` de `docs/`, à toute profondeur, hors des deux
+ *  exclusions structurelles dites ci-dessus. */
+const DOCS_LISANT = listerArbre(DOCS_DIR, { filtre: (r) => r.endsWith('.md') })
+  .filter((r) => !r.startsWith('plans/') && !/(^|\/)epreuve-/.test(r))
+  .map((r) => `${DOCS_DIR}/${r}`)
+for (const f of [...fichiersSources(SRC_DIR, EXTS_SRC), ...fichiersSources('scripts', EXTS_SRC), ...DOCS_LISANT]) {
   const rel = f.replace(/\\/g, '/')
   if (rel === DOC_REF_SELF) continue
   const text = readFileSync(f, 'utf8')
@@ -258,6 +268,23 @@ for (const f of [...fichiersSources(SRC_DIR, EXTS_SRC), ...fichiersSources('scri
     if (m[0].startsWith('docs/plans/') || DOC_REF_SITES_EXEMPTS.has(site)) continue
     if (!existsSync(m[0]))
       problems.push({ file: rel, line: lineAt(text, m.index), kind: 'doc citée mais absente', tok: m[0] })
+  }
+}
+
+// 5b. UN LIEN D'UNE DOC RÉSOUT. Une page de `docs/` lie ses voisines par chemin RELATIF — le frère
+// NU (`](combat.md)`, la forme DOMINANTE entre pages d'un même dossier) comme le `](../x.md)` ou le
+// `](./y.ts)` : déplacer la page d'un cran change la profondeur de TOUS ses liens, et rien ne le
+// disait — le sens 5 ne voit qu'un chemin de dépôt (`docs/…`, `src/…`), jamais une cible relative.
+// CE QUI EST JUGEABLE est dit une seule fois, par `liensJugeables` : c'est elle qui écarte l'URL à
+// schéma, le chemin absolu, l'ancre seule et les blocs de code. Ici ne reste que la RÉSOLUTION,
+// depuis le DOSSIER de la page. Mêmes exclusions de corpus que le sens 5 (`DOCS_LISANT`).
+for (const f of DOCS_LISANT) {
+  const rel = f.replace(/\\/g, '/')
+  const dossier = rel.slice(0, rel.lastIndexOf('/'))
+  const { texteScanne, liens } = liensJugeables(readFileSync(f, 'utf8'))
+  for (const lien of liens) {
+    if (!existsSync(join(dossier, lien.cible)))
+      problems.push({ file: rel, line: lineAt(texteScanne, lien.index), kind: 'lien de doc mort', tok: lien.ecrit })
   }
 }
 

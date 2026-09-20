@@ -4,10 +4,10 @@
 // régénère en mémoire, compare au committé, exit 1 sans écrire.
 // Re-run : node scripts/raw/build-implemente.mjs (npm run raw:implemente).
 import { readFileSync, writeFileSync } from 'node:fs'
-import { parUnitesDeCode, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
+import { parUnitesDeCode, listerArbre } from '../guards/lib/lister.mjs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { refRe, span, bookOf, BOOKS, esc, folioRange, allAbbrAlternation, readText } from './_lib.mjs'
+import { refRe, span, bookOf, BOOKS, esc, folioRange, allAbbrAlternation, pagesDeLAtlas, readText } from './_lib.mjs'
 import { closureOf } from '../guards/lib/importGraph.mjs'
 
 export const RAWDIR = 'docs/raw'
@@ -30,15 +30,13 @@ export const APP_ROOT_MODULE = 'src/main.tsx'
 // côté FOLIO (feature #434), pas TOL — écart rapporté à l'orchestrateur.
 export const TOL = 10
 
-const EXCLUDE_DOCS = new Set(['coverage.md', 'reconciliation.md', 'reanchor.md', '00-index.md', 'sources.md', 'code-map.md'])
-export function isFicheDoc(name) {
-  if (!name.endsWith('.md')) return false
-  if (EXCLUDE_DOCS.has(name)) return false
-  if (name.startsWith('epreuve-') || name.startsWith('catalogue-')) return false
-  return true
-}
-/** Le stem d'une fiche depuis son nom de fichier — dérivation UNIQUE (`parseFiche` et `reconcile`). */
-export const stemDeFiche = (basename) => basename.replace(/\.md$/, '')
+// Acceptation DÉCLARÉE à la couture (`pagesDeLAtlas`) : les FICHES seules — le champ `Implémente` ne
+// vit que sur un topic de fiche.
+export const CLASSES = ['fiche']
+/** Le stem d'une fiche depuis son chemin RELATIF à l'Atlas (`<coeur>/<domaine>`) — dérivation UNIQUE
+ *  (`parseFiche` et `reconcile`) : le stem PORTE le cœur, sans quoi deux cœurs collisionneraient sur
+ *  le même id de topic. */
+export const stemDeFiche = (relatif) => relatif.replace(/\.md$/, '')
 /** Fichier de `src/` qui n'IMPLÉMENTE rien — art de couverture du rig, manifest éditorial : ses
  *  réfs ne comptent jamais pour l'implémentation d'un topic. Seule exclusion de `indexCode`. */
 export const estHorsImplementation = (rel) => rel.startsWith(EXCLUDE_SRC_PREFIX) || MANIFEST_EDITORIAL_RE.test(rel)
@@ -276,12 +274,12 @@ export function fieldBlockMask(lines) {
 }
 
 /** Parse une fiche : champs Implémente (topic, bloc, réfs collectées) + anomalies non-début-de-ligne. */
-export function parseFiche(basename, content) {
+export function parseFiche(relatif, content) {
   const lines = content.split('\n')
   const fields = []
   const anomalies = []
   const slugCount = new Map()
-  const stem = stemDeFiche(basename)
+  const stem = stemDeFiche(relatif)
 
   const { isHeader, inFieldBlock, endIdxOf } = fieldBlockMask(lines)
 
@@ -301,7 +299,7 @@ export function parseFiche(basename, content) {
       continue
     }
     if (!isHeader[i] && !/^\s*>/.test(ln) && FIELD_ANYWHERE_RE.test(ln)) {
-      anomalies.push({ doc: basename, row: i + 1, text: ln.trim().slice(0, 160) })
+      anomalies.push({ doc: relatif, row: i + 1, text: ln.trim().slice(0, 160) })
     }
     if (isHeader[i]) {
       const slug = slugify(nearestHeading || stem)
@@ -536,8 +534,8 @@ function renderSansCode(groups) {
 }
 
 /** Régénère le contenu d'une fiche (SEULS les blocs de champs changent). */
-export function regenerateFiche(basename, content, ctx) {
-  const { fields } = parseFiche(basename, content)
+export function regenerateFiche(relatif, content, ctx) {
+  const { fields } = parseFiche(relatif, content)
   if (!fields.length) return content
   const lines = content.split('\n')
   const reps = fields.map((f) => ({ f, block: renderBlock(f, ctx) })).sort((a, b) => b.f.headerIdx - a.f.headerIdx)
@@ -631,9 +629,8 @@ export function couvertureDe(entree, topics, dette) {
 export function buildContext({ rawDir = RAWDIR, srcDir = SRC_DIR, manifestPath = MANIFEST_PATH, booksPath = BOOKS_JSON_PATH } = {}) {
   const index = indexCode(srcDir, loadAbbrMap(booksPath))
   const closure = closureOf([APP_ROOT_MODULE])
-  const docs = listerDossier(rawDir).filter(isFicheDoc)
-  const fiches = docs.map((doc) => {
-    const content = readText(join(rawDir, doc))
+  const fiches = pagesDeLAtlas(rawDir, { classes: CLASSES }).map(({ relatif: doc, chemin }) => {
+    const content = readText(chemin)
     return { doc, content, parsed: parseFiche(doc, content) }
   })
   const { topics, stems } = registresDeFiches(fiches)

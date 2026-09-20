@@ -29,7 +29,28 @@ process.on('exit', jeterLesGabarits)
 process.once('SIGINT', () => { jeterLesGabarits(); process.exit(130) })
 process.once('SIGTERM', () => { jeterLesGabarits(); process.exit(143) })
 
-const git = (cwd) => (args) => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+/** Variables par lesquelles un processus git LOCALISE un dépôt, telles que git les énumère
+ *  (`git rev-parse --local-env-vars`) : une seule source, jamais une liste recopiée. Mémoïsées — la
+ *  réponse de git ne dépend que du binaire. @type {string[] | null} */
+let VARIABLES_LOCALES = null
+
+/**
+ * `process.env` PURGÉ des variables qui localisent un dépôt : l'environnement de TOUT processus git
+ * lancé dans un dépôt forgé. Un parent qui les exporte — git sous un hook — les transmet sinon à
+ * l'enfant, qui vise alors le dépôt du parent depuis le dossier forgé.
+ * L'env se dérive à chaque appel du `process.env` COURANT, qui est mutable ; seule la liste des
+ * variables est retenue.
+ * @returns {NodeJS.ProcessEnv}
+ */
+export function envDeDepotForge() {
+  VARIABLES_LOCALES ??= execFileSync('git', ['rev-parse', '--local-env-vars'], { encoding: 'utf8' })
+    .split('\n').map((l) => l.trim()).filter(Boolean)
+  const env = { ...process.env }
+  for (const nom of VARIABLES_LOCALES) delete env[nom]
+  return env
+}
+
+const git = (cwd) => (args) => execFileSync('git', args, { cwd, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
 
 /** Clé de contenu : deux appels aux mêmes paramètres décrivent le même arbre, donc le même gabarit. */
 function cle({ fichiers, branche, origin, message, refs, commit }) {

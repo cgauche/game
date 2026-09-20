@@ -11,16 +11,14 @@
 // Un supplément n'est donc ni inclus ni exclu par défaut : l'appelant DÉCLARE son choix
 // (`supplements`), le résultat le PORTE, et le rapport du run le dit. Aucun défaut n'est offert —
 // un défaut trancherait, en silence, une règle de jeu qui n'appartient pas au code.
-import { REGISTRE_LIVRES, estLivreExtrait } from './_lib.mjs'
+// `coeursDuRegistre` vit dans `_lib.mjs`, avec la lecture du registre : c'est la MÊME population
+// qui ouvre les dossiers de l'Atlas (`pagesDeLAtlas`) et les périmètres d'extraction.
+import { REGISTRE_LIVRES, coeursDuRegistre, estLivreExtrait } from './_lib.mjs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const CHOIX = { '--avec-supplements': true, '--coeur-seul': false }
 const CHOIX_DITS = Object.keys(CHOIX).join(' | ')
-
-/** Les cœurs de règles que le registre déclare, dans l'ordre du fichier, sans doublon. */
-export const coeursDuRegistre = (registre = REGISTRE_LIVRES) =>
-  [...new Set(registre.filter((b) => estLivreExtrait(b) && b.coeur).map((b) => b.coeur))]
 
 /**
  * Le périmètre d'extraction d'UN cœur. LÈVE en NOMMANT la cause — un périmètre silencieusement vide
