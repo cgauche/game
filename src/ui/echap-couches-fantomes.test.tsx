@@ -162,8 +162,8 @@ describe('Menu système — le focus clavier entre dans la carte (#1752)', () =>
   });
 
   it('la CLASSE entière : l’écran de victoire, lui aussi monté en permanence, prend le focus à sa révélation', () => {
-    // Son `actif` est `over === 'victory' && revealed` : la boîte naît APRÈS le délai de tenue du coup
-    // fatal (`VICTORY_REVEAL_MS`, `VictoryScreen.tsx:41-46`), bien après le premier rendu.
+    // La boîte ne se MONTE qu'à `over === 'victory' && revealed` : elle naît APRÈS le délai de tenue du
+    // coup fatal (`VICTORY_REVEAL_MS`, `VictoryScreen.tsx`), bien après le premier rendu.
     vi.useFakeTimers();
     try {
       act(() => root.render(<Ecran />));
@@ -171,8 +171,9 @@ describe('Menu système — le focus clavier entre dans la carte (#1752)', () =>
         useGame.setState({ battle: { ...useGame.getState().battle!, over: 'victory' } } as never);
       });
       act(() => { vi.advanceTimersByTime(1000); });
-      const victoire = host.querySelector('.victory-screen') as HTMLElement | null;
-      expect(victoire, 'l’écran de victoire est révélé').toBeTruthy();
+      const victoire = [...host.querySelectorAll<HTMLElement>('[role="dialog"]')]
+        .find((d) => document.getElementById(d.getAttribute('aria-labelledby') ?? '')?.textContent === 'Victoire') ?? null;
+      expect(victoire, 'l’écran de victoire est révélé, et il porte son nom').toBeTruthy();
       expect(victoire!.contains(document.activeElement), 'le clavier a une prise sur [Continuer]').toBe(true);
     } finally {
       vi.useRealTimers();

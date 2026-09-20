@@ -93,7 +93,9 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   // bande à DEUX jauges de quota (Mutations) collisionnant avec son titre dans la colonne bornée
   // `.sheet-main` (motif `.bar` non composable ici, c'est un slot droit de `Band`, pas un bandeau).
   'styles/band.css': 1,
-  'styles/base.css': 4,
+  // -1 (#1834) : l'enroulement du titre de section suit `.panel h3` en couche PARTAGÉE
+  // (`components.css`, hors cliquet) — une base et sa tranche dans la MÊME feuille.
+  'styles/base.css': 3,
   // +1 (#1388 C4) : `.de-reflrow` (rangée dense de réfs de l'atelier Codex) s'enroule dès 360 px —
   // motif `.bar` non composable ici (c'est une rangée de CHAMPS d'un formulaire d'édition, pas un
   // bandeau d'écran) ; le `flex-wrap` seul ne suffisait pas, il va de pair avec `min-width: 0`.
@@ -104,7 +106,9 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   // règle MORTE sans aucun poseur dans le dépôt, est supprimée — le TOTAL baisse de 1.
   // -2 (#1806 2d γ) : `.victory-rewards` et `.vl-assign` suivent leurs primitives
   // (`styles/reward-recap.css` et `styles/gear-assign-list.css`, +1 chacune en regard) — TOTAL stable.
-  'styles/combat-ui.css': 3,
+  // -1 (#1806 2d γ2) : la rangée des vaincus compose `Row`, qui s'enroule PAR CONSTRUCTION —
+  // `.victory-defeated` MEURT, rien en regard.
+  'styles/combat-ui.css': 2,
   'styles/gear-assign-list.css': 1,
   'styles/reward-recap.css': 1,
   'styles/compendium.css': 3,

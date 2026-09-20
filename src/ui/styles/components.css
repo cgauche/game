@@ -46,12 +46,42 @@
 .panel.flush {
   padding: 0;
 }
+/* Contenu CANONIQUE d'une surface : son titre de section et ses champs. Ils vivent avec `.panel`
+   (#1834) — base et tranche responsive dans la MÊME feuille, une seule section ≤700px. */
+.panel h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+}
+.panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+/* Ligne de case à cocher / de bouton radio : le contrôle et son libellé sur la MÊME ligne, encre
+   pleine. À poids ÉGAL de `.panel label` (0-1-1) et déclarée après : elle en renverse l'empilement
+   par l'ordre seul. */
+label.radio {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--text);
+}
 /* Densité RESPONSIVE (≤700px, charte règle 4 : utilisable à 360px) — padding resserré comme `.bar`.
    DOIT vivre ICI (components.css APRÈS base.css) : à spécificité égale, seul l'ORDRE de
    cascade fait gagner (#306 — la même règle sous base.css était MORTE, écrasée par `.panel{padding:16px}`). */
 @media (max-width: 700px) {
   .panel {
     padding: 12px;
+  }
+  .panel h3 {
+    flex-wrap: wrap;
+    gap: 6px;
   }
 }
 
@@ -435,7 +465,13 @@ button.chip:hover {
   background: rgba(0, 0, 0, 0.42); /* voile allégé : on garde le CHAMP visible derrière la modale (R2/R10) */
   display: grid;
   place-items: center;
-  z-index: 130; /* au-dessus de l'écran de victoire (120) : Évaluer/Détecter le butin ouvre une modale PAR-DESSUS */
+  z-index: 130; /* au-dessus du voile opaque (120) : Évaluer/Détecter le butin ouvre une modale PAR-DESSUS */
+}
+/* Voile OPAQUE : la scène n'a plus à rester lisible (fin de combat), et le rang laisse passer
+   au-dessus la modale qu'une action de la boîte ouvre. */
+.modal-overlay[data-voile='opaque'] {
+  background: rgba(8, 6, 12, 0.92);
+  z-index: 120;
 }
 /* L'allègement de voile des modales de JET (ancrage par bandes + voile plus léger) appartient au
    DOMAINE qui le motive — `roll-shell.css`, scopé à `.app-campaign` : il existe pour garder le CHAMP

@@ -679,11 +679,19 @@ function RewardRecapDemo() {
         messages={['La foule scande votre nom — l’arène a trouvé son vainqueur.']}
         xp={120}
         gold={{ gold: 5, silver: 12, brass: 8 }}
-        sections={[{
-          id: 'vaincus',
-          titre: 'Ennemis vaincus',
-          children: <Row><span className="chip">Mutant ×3</span><span className="chip">Meneur</span></Row>,
-        }]}
+        sections={[
+          {
+            id: 'equipement',
+            titre: <><Icon id="resource/gold-purse" size="sm" /> Équipement — qui l’emporte&nbsp;?</>,
+            enAvant: true,
+            children: <Row><span className="chip">Bâton de combat</span><span className="chip">Dague</span></Row>,
+          },
+          {
+            id: 'vaincus',
+            titre: 'Ennemis vaincus',
+            children: <Row><span className="chip">Mutant ×3</span><span className="chip">Meneur</span></Row>,
+          },
+        ]}
         action={<button className="btn btn-primary reward-continue">Continuer</button>}
       />
     </div>

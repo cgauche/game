@@ -1,13 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useGame } from '../state/store';
 import { ownsLocal } from './ownership';
 import { harvestProfileFor } from '../engine/harvest';
 import { ReadyRow } from './ReadyRow';
 import { GearAssignList } from './GearAssignList';
 import { RewardRecap, type RecapSection } from './RewardRecap';
-import { RuleDivider } from './Ornaments';
 import { Icon } from './Icon';
-import { useModalA11y } from './Modal';
+import { Modal } from './Modal';
 import { GatedAction } from './GatedAction';
 import { Row } from './Layout';
 
@@ -49,11 +48,9 @@ export function VictoryScreen() {
   const ready = pv?.readyBySeat ?? {};
   // COUCHE BLOQUANTE tant que l'écran est là : [Continuer] VALIDE la victoire (attribution du butin,
   // `victoryReady` répliqué au relais en coop) — un congédiement est GRATUIT par contrat
-  // (`dismissStack`), il n'engage rien, donc il ne peut pas porter ce geste. Échap est inerte ici,
-  // le bouton se clique. Même doctrine qu'une sortie d'interlude qui commet (keybindings.ts:313-315).
-  // `actif` = la condition de l'early-return ci-dessous (les hooks restent AVANT lui).
-  const boxRef = useRef<HTMLDivElement>(null);
-  useModalA11y(boxRef, undefined, { kind: 'victoire', actif: overVictory && revealed });
+  // (`dismissStack`), il n'engage rien, donc il ne peut pas porter ce geste. Échap est donc inerte :
+  // `Modal` sans `onClose` pose une couche bloquante. Même doctrine qu'une sortie d'interlude qui
+  // commet (keybindings.ts:313-315).
   if (!battle || battle.over !== 'victory' || !revealed) return null;
   const assignable = party.filter((h) => ownsLocal(state, h.id)); // solo : tous (#1262)
 
@@ -68,7 +65,7 @@ export function VictoryScreen() {
     sections.push({
       id: 'equipement',
       titre: <><Icon id="resource/gold-purse" size="sm" /> Équipement — qui l'emporte&nbsp;?</>,
-      className: 'victory-section-gear',
+      enAvant: true,
       children: (
         <GearAssignList
           gear={gear}
@@ -84,7 +81,7 @@ export function VictoryScreen() {
       id: 'vaincus',
       titre: 'Ennemis vaincus',
       children: (
-        <div className="victory-defeated">
+        <Row gap="sm">
           {defeated.map((d) => {
             const canHarvest = !!harvestProfileFor(d.creatureId) && net.mode !== 'guest';
             const done = (pv?.harvested ?? []).includes(d.creatureId ?? '');
@@ -107,35 +104,31 @@ export function VictoryScreen() {
               </Row>
             );
           })}
-        </div>
+        </Row>
       ),
     });
   }
 
   return (
-    <div className="victory-overlay">
-      <div ref={boxRef} role="dialog" aria-modal="true" aria-label="Victoire" className="victory-screen">
-        <h1 className="victory-title">Victoire</h1>
-        <RuleDivider />
-        {/* #9 : messages de journal de la victoire (ex. annonce de l'arène) affichés ICI. */}
-        <RewardRecap
-          messages={pv?.messages}
-          xp={xp}
-          gold={pv?.gold}
-          emptyNote="Ni or ni gloire sonnante sur ces adversaires — le groupe repart les mains vides, mais entier."
-          sections={sections}
-          action={online ? (
-            <>
-              <ReadyRow ready={ready} />
-              <button className="btn btn-primary reward-continue" disabled={!!ready[net.mySeat]} onClick={() => victoryReady(net.mySeat)}>
-                {ready[net.mySeat] ? <><Icon id="ui/wait" size="sm" /> En attente des autres…</> : 'Continuer'}
-              </button>
-            </>
-          ) : (
-            <button className="btn btn-primary reward-continue" onClick={dismiss}>Continuer</button>
-          )}
-        />
-      </div>
-    </div>
+    <Modal title="Victoire" variant="plain" voile="opaque" kind="victoire">
+      {/* #9 : messages de journal de la victoire (ex. annonce de l'arène) affichés ICI. */}
+      <RewardRecap
+        messages={pv?.messages}
+        xp={xp}
+        gold={pv?.gold}
+        emptyNote="Ni or ni gloire sonnante sur ces adversaires — le groupe repart les mains vides, mais entier."
+        sections={sections}
+        action={online ? (
+          <>
+            <ReadyRow ready={ready} />
+            <button className="btn btn-primary reward-continue" disabled={!!ready[net.mySeat]} onClick={() => victoryReady(net.mySeat)}>
+              {ready[net.mySeat] ? <><Icon id="ui/wait" size="sm" /> En attente des autres…</> : 'Continuer'}
+            </button>
+          </>
+        ) : (
+          <button className="btn btn-primary reward-continue" onClick={dismiss}>Continuer</button>
+        )}
+      />
+    </Modal>
   );
 }

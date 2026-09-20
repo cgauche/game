@@ -51,6 +51,13 @@
   padding-bottom: 5px;
   margin: 0 0 10px;
 }
+/* Rubrique à TOUCHER (#377) : le cadre de la surface remplace le filet de séparation du titre, qui
+   prend une gouttière d'icône. La surface elle-même est `.panel.gold`, posée par la primitive. */
+.reward-section[data-avant] h3 {
+  gap: 6px;
+  border-bottom: none;
+  padding-bottom: 0;
+}
 .reward-continue {
   display: block;
   margin: 20px auto 0;

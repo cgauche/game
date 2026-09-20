@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
+import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react';
 import { useDismissLayer } from './useDismissLayer';
 import type { OnDismiss } from '../state/dismissStack';
 import { ModalSubject } from './ModalSubject';
@@ -57,8 +57,7 @@ function focusTarget(box: HTMLElement, mode: 'initial' | 'rescue'): HTMLElement 
 
 /** @param kind libellé de DIAGNOSTIC de la couche empilée.
  *  @param actif le dialogue est-il RÉELLEMENT à l'écran. DISTINCT d'« annulable » : un composant monté
- *   en permanence (menu système fermé) ou qui rend `null` sous condition (écran de victoire hors
- *   victoire) n'a AUCUNE couche — sans quoi il empilerait une couche fantôme qui mange le
+ *   en permanence (menu système fermé) ou qui rend `null` sous condition n'a AUCUNE couche — sans quoi il empilerait une couche fantôme qui mange le
  *   congédiement de toute la session. */
 export function useModalA11y(
   boxRef: RefObject<HTMLDivElement>,
@@ -181,6 +180,8 @@ export function Modal({
   title,
   subject,
   variant = 'roll',
+  voile,
+  kind,
   className,
   onClose,
   backdropClose = false,
@@ -190,6 +191,11 @@ export function Modal({
   /** Combattant concerné → tuile-portrait en bandeau (omis si absent). */
   subject?: Combatant | null;
   variant?: 'roll' | 'plain';
+  /** Voile OPAQUE, sous les modales de jet : la scène n'a plus à rester lisible et une modale peut
+   *  s'ouvrir par-dessus (fin de combat). Défaut : voile allégé, au rang le plus haut. */
+  voile?: 'opaque';
+  /** Nom de la couche de congédiement (`dismissStack`) — défaut `modale`. */
+  kind?: string;
   className?: string;
   /** Échap = ce callback (l'équivalent du bouton Fermer/Annuler visible). Absent → modale
    *  NON annulable (un jet posé doit être résolu). */
@@ -199,17 +205,20 @@ export function Modal({
   children: ReactNode;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
-  useModalA11y(boxRef, onClose); // aucun early-return : la boîte montée est la boîte affichée
+  // NOM ACCESSIBLE : le titre rendu EST le nom du dialogue — aucun appelant n'a à le redire.
+  const titreId = useId();
+  useModalA11y(boxRef, onClose, kind ? { kind } : undefined); // aucun early-return : la boîte montée est la boîte affichée
   return (
-    <div className="modal-overlay" onClick={backdropClose && onClose ? onClose : undefined}>
+    <div className="modal-overlay" data-voile={voile} onClick={backdropClose && onClose ? onClose : undefined}>
       <div
         ref={boxRef}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titreId}
         className={`modal${VARIANT_CLASS[variant]}${className ? ` ${className}` : ''}`}
         onClick={backdropClose ? (e) => e.stopPropagation() : undefined}
       >
-        <h3>{title}</h3>
+        <h3 id={titreId}>{title}</h3>
         {subject && <ModalSubject c={subject} />}
         {children}
       </div>

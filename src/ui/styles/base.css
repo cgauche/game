@@ -506,10 +506,6 @@ h3 {
     gap: 8px;
     padding: 10px max(12px, env(safe-area-inset-right)) 10px max(12px, env(safe-area-inset-left));
   }
-  .panel h3 {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
 }
 @media (pointer: coarse) {
   .btn {

@@ -3,13 +3,14 @@ import { Coins } from './Coins';
 import { Icon } from './Icon';
 import { toBrass, type Money } from '../engine/money';
 
-/** Une rubrique du récapitulatif : son titre et son contenu. `className` est l'ANCRAGE de l'écran
- *  hôte sur cette rubrique (mise en avant, ferrage) — la matière commune reste `.reward-section`. */
+/** Une rubrique du récapitulatif : son titre et son contenu. */
 export interface RecapSection {
   /** Identité STABLE de la rubrique : la liste est conditionnelle (une rubrique disparaît quand elle se vide). */
   id: string;
   titre: ReactNode;
-  className?: string;
+  /** Rubrique à TOUCHER (#377) : elle se pose sur la surface à liseré or de la charte (`.panel.gold`)
+   *  et son titre renonce au filet de séparation, que le cadre remplace. */
+  enAvant?: boolean;
   children: ReactNode;
 }
 
@@ -58,7 +59,7 @@ export function RewardRecap({ messages, xp, gold, emptyNote, sections, action }:
       ) : null}
 
       {sections?.map((s) => (
-        <div key={s.id} className={s.className ? `reward-section ${s.className}` : 'reward-section'}>
+        <div key={s.id} className={s.enAvant ? 'reward-section panel gold' : 'reward-section'} data-avant={s.enAvant || undefined}>
           <h3>{s.titre}</h3>
           {s.children}
         </div>

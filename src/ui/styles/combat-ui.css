@@ -124,29 +124,7 @@
   color: var(--danger-soft); /* #305 : var(--danger) sur menu-card (panel/panel2) < 4.5:1 (AA) */
 }
 
-.panel h3 {
-  margin: 0 0 12px;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-}
-.panel label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 12px;
-  font-size: 13px;
-  color: var(--muted);
-}
-.radio {
-  flex-direction: row !important;
-  align-items: center;
-  gap: 8px !important;
-  margin: 0 !important;
-  color: var(--text) !important;
-}
-
-/* Beat d'OUVERTURE de combat (symétrique de .victory-overlay) — décoratif, ne bloque rien. */
+/* Beat d'OUVERTURE de combat — décoratif, ne bloque rien (pointer-events: none). */
 .combat-splash { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; pointer-events: none; }
 .combat-splash-inner { text-align: center; animation: combat-splash-in 2.7s ease-out forwards; }
 .combat-splash-word {
@@ -169,49 +147,3 @@
   .combat-splash-inner { animation: combat-splash-fade 2.3s ease-out forwards; }
 }
 @keyframes combat-splash-fade { 0%, 68% { opacity: 1; } 100% { opacity: 0; } }
-
-/* Écran de victoire plein écran (fin de combat) — XP/or/butin assignable/vaincus. */
-.victory-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(8, 6, 12, 0.92);
-  display: grid;
-  place-items: center;
-  z-index: 120;
-}
-.victory-screen {
-  background: linear-gradient(180deg, var(--panel2), var(--panel));
-  border: 1px solid var(--border);
-  border-top: 4px solid var(--gold);
-  border-radius: 14px;
-  padding: 26px 28px 22px;
-  max-width: 520px;
-  width: 92%;
-  max-height: 88vh;
-  overflow-y: auto;
-  box-shadow:
-    0 24px 70px rgba(0, 0, 0, 0.6),
-    inset 0 0 0 1px rgba(201, 162, 39, 0.18);
-}
-.victory-title {
-  text-align: center;
-  font-size: clamp(30px, 7vw, 40px);
-  margin: 0;
-  color: var(--gold2);
-  letter-spacing: 1px;
-  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.6);
-}
-.victory-screen .rule-divider {
-  margin: 8px 0 18px;
-}
-/* Butin d'équipement EN AVANT (#377) : c'est la rubrique « à toucher » de l'écran de victoire — un
-   liseré doré + fond légèrement rehaussé la distinguent des rubriques purement informatives. */
-.victory-section-gear {
-  border: 1px solid rgba(201, 162, 39, 0.35);
-  border-radius: 10px;
-  padding: 10px 12px;
-  background: rgba(201, 162, 39, 0.06);
-}
-.victory-section-gear h3 { display: flex; align-items: center; gap: 6px; border-bottom: none; padding-bottom: 0; }
-.victory-defeated { display: flex; flex-wrap: wrap; gap: 6px; }
-
