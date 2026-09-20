@@ -100,11 +100,13 @@ export interface ExecCtx {
  *  (`setFreeAttackHook` dans `createCombatSlice`), pointe sur `applyTalentFreeAttack` (combatFlow). Appelé
  *  par `runCombatFlow` lorsqu'un `do`/`ops` porte un `grantFreeAttack` : il ouvre la VRAIE frappe (motif
  *  aiAvailableFreeAttack — instantanée, Action préservée). Inversion de dépendance (cette brique reste sans import
- *  de combatFlow → pas de cycle). Absent (hors store) ⇒ no-op (l'op reste inerte, comme dans `applyOps`). */
+ *  de combatFlow → pas de cycle). Absent (hors store) ⇒ no-op (l'op reste inerte, comme dans `applyOps`).
+ *  REND sa SUSPENSION (#1852) : une frappe qui ouvre une fenêtre arrête le dispatch des frappes suivantes
+ *  — une attaque gratuite est un Test d'attaque COMPLET (LDB 85 l.41-43). */
 type FreeAttackHook = (
   get: Get, set: SetFn, actor: Combatant, op: Extract<import('../../engine/ops').GameOp, { op: 'grantFreeAttack' }>,
   fa: FreeAttackFreeze,
-) => void;
+) => boolean;
 let freeAttackHook: FreeAttackHook | undefined;
 export function setFreeAttackHook(fn: FreeAttackHook): void { freeAttackHook = fn; }
 
@@ -472,7 +474,9 @@ export function runCombatFlow(ctx: ExecCtx, flow: Flow): void {
             // Ops IMPURES `grantFreeAttack` : résolues par le hook injecté (couche combatFlow) — la frappe
             // vise le TIERS de `ctx.freeAttack` (chargeur/victime), pas `unit` (le porteur). `applyOps` les
             // laisse inertes → on les passe quand même (no-op) pour garder le journal des autres ops.
-            if (freeAttackHook && ctx.freeAttack) for (const op of node.effect.ops) if (op.op === 'grantFreeAttack') freeAttackHook(ctx.get, ctx.set, unit, op, ctx.freeAttack);
+            // Une frappe qui SUSPEND (fenêtre de défense ouverte) arrête le dispatch : la suivante se
+            // déclarera à la fermeture, jamais par-dessus la fenêtre (#1852).
+            if (freeAttackHook && ctx.freeAttack) for (const op of node.effect.ops) if (op.op === 'grantFreeAttack' && freeAttackHook(ctx.get, ctx.set, unit, op, ctx.freeAttack)) break;
             // Op IMPURE `interruptFocus` (LDB 46 l.144) : le hook injecté (combatFlow) résout l'interruption
             // sur `unit` (le focaliseur) — perte des DR + Imparfaite Mineure (qui peut appender sa propre étape).
             if (focusInterruptHook) for (const op of node.effect.ops) if (op.op === 'interruptFocus') focusInterruptHook(ctx.get, ctx.set, unit);

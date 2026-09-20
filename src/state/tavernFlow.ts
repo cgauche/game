@@ -68,7 +68,7 @@ import { jetSurfaced } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { t, interpolate } from '../i18n';
 import { dataLabel } from '../data';
-import { stepDetail, stepFraction, stepPrecision } from './rollSeam';
+import { stepDetail, stepFraction, stepPrecision, idDansLaSequence } from './rollSeam';
 import type { PlayerText } from '../i18n/playerText';
 
 /**
@@ -586,7 +586,7 @@ function equipeBande(get: Get, seq: SequenceState<TavernPayload>): { band: Built
   }
   const ph = sequencePhaseOf(seq.params, seq.round);
   const band = bandStep({
-    id: `${TAVERN_ROUND_KIND}-${seq.round}`,
+    id: idDansLaSequence(get, TAVERN_ROUND_KIND), // id = ADRESSE ; la MANCHE voyage sur `meta.round` (#1852)
     kind: TAVERN_ROUND_KIND,
     icon: 'nav/dice',
     label: stepDetail(dataLabel(game.label), t('step.tavernMiTemps', { n: ph.roundInPhase, phase: ph.phase })),
@@ -688,7 +688,7 @@ function torchonRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Se
   const valeur = lanceur.camp === 'player' ? p.opponentValue : (p.allyValue ?? p.opponentValue);
   rows.push(figurantRow(`danseur-${seq.round}`, t('tavern.danseur', { rang, camp }), valeur, { skill: { id: 'esquive' } }, 0));
   const band = bandStep({
-    id: `${TAVERN_ROUND_KIND}-${seq.round}`,
+    id: idDansLaSequence(get, TAVERN_ROUND_KIND), // id = ADRESSE ; la MANCHE voyage sur `meta.round` (#1852)
     kind: TAVERN_ROUND_KIND,
     icon: 'nav/dice',
     label: stepDetail(dataLabel(game.label), t('step.tavernTorchon', { lanceur: lanceur.label })),
@@ -871,7 +871,7 @@ function tavernRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
       tavernRow(get, opponentHero, game, p.choices?.[opponentHero.id]),
     ];
     const band = bandStep({
-      id: `${TAVERN_ROUND_KIND}-${seq.round}`,
+      id: idDansLaSequence(get, TAVERN_ROUND_KIND), // id = ADRESSE ; la MANCHE voyage sur `meta.round` (#1852)
       kind: TAVERN_ROUND_KIND,
       icon: 'nav/dice',
       label: stepDetail(dataLabel(game.label), t('step.tavernManche', { n: seq.round })),
@@ -895,7 +895,7 @@ function tavernRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
   // découvrait qu'en le ratant (friction mesurée en recette, #1279 S3).
   const second = combinedSecondRead(game, challenger, difficulty, p.opponentValue);
   const step = monoStep({
-    id: `${TAVERN_ROUND_KIND}-${seq.round}`,
+    id: idDansLaSequence(get, TAVERN_ROUND_KIND), // id = ADRESSE ; la MANCHE voyage sur `meta.round` (#1852)
     kind: TAVERN_ROUND_KIND,
     icon: 'nav/dice',
     label: composeRollLabel(challenger, game.label, test),

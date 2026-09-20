@@ -18,7 +18,7 @@
 import type { GameState } from './store';
 import { useGame, activeCombatant } from './store';
 import { controlsActive } from './netOwnership';
-import { pickActiveModalKey } from './modalArbiter';
+import { modalHolds } from './modalArbiter';
 import { modalBlocksMapHover } from './mapHover';
 import { hotbar } from './hotbarBridge';
 import { editeur } from './editeurBridge';
@@ -147,7 +147,7 @@ export interface KeyBinding {
 const inBattle = (s: GameState) => s.mode === 'battle' && !!s.battle && !s.battle.over;
 /** Aucune modale de combat ouverte (sinon Espace/Entrée doivent rester à la modale). Garde des
  *  gestes qui ENGAGENT ou QUITTENT le tour (fin de tour, barre d'action, menu système). */
-const noModal = (s: GameState) => pickActiveModalKey(s as Parameters<typeof pickActiveModalKey>[0]) == null;
+const noModal = (s: GameState) => !modalHolds(s as Parameters<typeof modalHolds>[0]);
 /** La CARTE accepte-t-elle un geste de ciblage ? MÊME verdict que la souris (`modalBlocksMapHover`,
  *  arbitre) : une modale PILOTÉE PAR LA CARTE (désignation de cibles d'un sort) laisse la scène
  *  vivante — la souris y cible, le curseur clavier/manette doit pouvoir en faire autant. */

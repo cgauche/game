@@ -299,7 +299,9 @@ describe('__wfrp.fastForward — avance-rapide des tours IA (garde anti-boucle, 
     // du mouvement), donc pas d'issue RNG-dépendante (pas de risque de cascade de fin de combat).
     useGame.setState({ battle: { ...b, order: [...enemyIds, heroId], baseOrder: [...enemyIds, heroId], turn: -1 } });
     useGame.getState().confirmRoundStart();
-    vi.clearAllTimers();
+    // Le beat de tour armé par `confirmRoundStart` EST la machinerie mesurée : l'annuler ici laissait
+    // `fastForward` seul à relancer l'IA — ce qu'il ne fait plus (#1852, il n'amorce que ce qui est
+    // arrêté et ne double jamais un tour). On le laisse vivre : `runAllTimersAsync` le déroule.
 
     const p = buildApi().fastForward(100);
     await vi.runAllTimersAsync();
@@ -312,6 +314,46 @@ describe('__wfrp.fastForward — avance-rapide des tours IA (garde anti-boucle, 
       const active = after.combatants.find((c) => c.id === after.order[after.turn]);
       expect(active?.kind).toBe('hero'); // rendu au tour du héros (piloté humain)
     }
+  });
+
+  it('chaîne ARRÊTÉE (beats purgés) : `fastForward` la RAMORCE et rend la main au héros', async () => {
+    const b = useGame.getState().battle!;
+    const heroId = b.combatants.find((c) => c.kind === 'hero')!.id;
+    const enemyIds = b.combatants.filter((c) => c.kind === 'enemy').map((c) => c.id);
+    useGame.setState({ battle: { ...b, order: [...enemyIds, heroId], baseOrder: [...enemyIds, heroId], turn: -1 } });
+    useGame.getState().confirmRoundStart();
+    vi.clearAllTimers(); // PLUS AUCUN beat en vol : c'est `fastForward` SEUL qui doit ramorcer (#1852)
+
+    const p = buildApi().fastForward(100);
+    await vi.runAllTimersAsync();
+    const msg = await p;
+
+    expect(msg, msg).toContain('✓');
+    const after = useGame.getState().battle;
+    if (after && !after.over) {
+      expect(after.combatants.find((c) => c.id === after.order[after.turn])?.kind).toBe('hero');
+    }
+  });
+
+  it('fenêtre OUVERTE : `fastForward` rend la main en la NOMMANT, sans rien décider à la place du joueur', async () => {
+    const b = useGame.getState().battle!;
+    const hero = b.combatants.find((c) => c.kind === 'hero')!;
+    const enemyId = b.combatants.find((c) => c.kind === 'enemy')!.id;
+    useGame.setState({
+      // Tour de l'IA (sinon `fastForward` rend la main pour la bonne autre raison : « tour piloté »),
+      // mais la fenêtre du défenseur est ouverte.
+      battle: { ...b, order: [enemyId, hero.id], baseOrder: [enemyId, hero.id], turn: 0 },
+      // Une fenêtre de défense VIVANTE, sur son étape : la main appartient au joueur.
+      pendingDefense: { attackerId: b.combatants.find((c) => c.kind === 'enemy')!.id, defenderId: hero.id, weapon: hero.weapons[0], mode: 'parade', def: null, result: null } as never,
+      pendingCascade: { title: 'Défense', purpose: 'combat', cursor: 0, log: [], seq: 1, participants: [{ id: 'defense-jet-0', kind: 'defenseJet', jet: 'defense', actorId: hero.id }] } as never,
+    });
+
+    const p = buildApi().fastForward(100);
+    await vi.runAllTimersAsync();
+    const msg = await p;
+
+    expect(msg, 'la fenêtre est NOMMÉE, pas scrutée jusqu’à la borne').toBe('✓ fenêtre « cascade » ouverte (à répondre)');
+    expect(useGame.getState().pendingDefense, 'aucune décision prise à la place du joueur').not.toBeNull();
   });
 
   it('borne à maxIters (garde-fou anti-boucle infinie) si rien ne progresse jamais vers un tour humain', async () => {

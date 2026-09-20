@@ -17,6 +17,13 @@ import type { Combatant } from '../../engine/types';
  * dépenser pour la Haine (état psy CIBLÉ, LDB 21 : +1 DR aux Tests de Combat contre le groupe via
  * `psychDRAdjust`, immunité à sa Peur — pas du vide).
  */
+/** Le combattant PREND son rang d'initiative : `runEnemyAI` refuse un tour qui n'est pas celui de
+ *  l'actif, et refuse de rejouer un tour déjà joué (jeton de tour, #1852). */
+const auTourDe = (id: string): void => {
+  const b = useGame.getState().battle!;
+  b.turn = b.order.indexOf(id);
+};
+
 describe('Rage → Haine (LDB 85 l.281-283, branche « minimum 1 »)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
@@ -46,6 +53,7 @@ describe('Rage → Haine (LDB 85 l.281-283, branche « minimum 1 »)', () => {
   it('Avantage 1 + adversaire ENGAGÉ → dépense tout, Haine ACTIVE ciblant le groupe de l’adversaire (+1 DR d’attaque contre lui)', () => {
     const { H, E } = setup();
     E.advantage = 1;
+    auTourDe(E.id);
     runEnemyAI(useGame.getState, useGame.setState, E.id);
     expect(E.advantage).toBe(0); // « dépenser TOUS ses Avantages »
     expect(isFrenzied(E)).toBe(false); // < 3 → pas la branche Frénésie
@@ -61,6 +69,7 @@ describe('Rage → Haine (LDB 85 l.281-283, branche « minimum 1 »)', () => {
   it('Avantage ≥ 3 → la branche FRÉNÉSIE prime (politique historique conservée)', () => {
     const { E } = setup();
     E.advantage = 3;
+    auTourDe(E.id);
     runEnemyAI(useGame.getState, useGame.setState, E.id);
     expect(isFrenzied(E)).toBe(true);
     expect(E.advantage).toBe(0);
@@ -70,8 +79,10 @@ describe('Rage → Haine (LDB 85 l.281-283, branche « minimum 1 »)', () => {
   it('Haine ACTIVE couvrant déjà tous les adversaires engagés → ne re-dépense PAS (l’Avantage est conservé)', () => {
     const { H, E } = setup();
     E.advantage = 1;
+    auTourDe(E.id);
     runEnemyAI(useGame.getState, useGame.setState, E.id); // 1ʳᵉ Rage → Haine posée, Avantage 0
     E.advantage = 2; // regagné plus tard
+    useGame.getState().battle!.round += 1; // « plus tard » = un AUTRE Round (un tour ne se joue qu'une fois, #1852)
     runEnemyAI(useGame.getState, useGame.setState, E.id);
     expect(E.advantage).toBe(2); // déjà couvert → pas de re-dépense
     expect((E.psychState ?? []).filter((p) => p.type === 'haine')).toHaveLength(1);
@@ -83,6 +94,7 @@ describe('Rage → Haine (LDB 85 l.281-283, branche « minimum 1 »)', () => {
     E.engagedWith = [];
     H.engagedWith = [];
     E.advantage = 1;
+    auTourDe(E.id);
     runEnemyAI(useGame.getState, useGame.setState, E.id);
     expect(E.advantage).toBe(1); // pas de cible au contact → pas de dépense
     expect((E.psychState ?? []).some((p) => p.type === 'haine')).toBe(false);
@@ -92,6 +104,7 @@ describe('Rage → Haine (LDB 85 l.281-283, branche « minimum 1 »)', () => {
     const { H, E } = setup();
     (H as Combatant).groups = [];
     E.advantage = 2;
+    auTourDe(E.id);
     runEnemyAI(useGame.getState, useGame.setState, E.id);
     expect(E.advantage).toBe(2);
     expect((E.psychState ?? []).some((p) => p.type === 'haine')).toBe(false);

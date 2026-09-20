@@ -28,6 +28,7 @@ import type { Consequence } from './rollSeam';
 import type { BuiltCascadeStep } from './stepBrand';
 import { resultLines, surfaceOf } from './rollSeam';
 import { WORLD_STEP_OWNER } from './netOwnership';
+import { hoteOrphelin, PENDING_BY_JET } from './stateFields';
 import { toRecapLines } from './recapLine';
 import { actorIn } from './combatants';
 import { rollTest, evaluateTest, evaluateCombinedTest, bestForcedRoll, resolveOpposed, opposedBranchSuccess, type TestResult } from '../engine/tests';
@@ -1014,6 +1015,25 @@ function fenetrePour(same: PendingCascade | null, purpose: PendingCascade['purpo
   return f.purpose !== undefined && f.purpose === purpose ? f : null;
 }
 
+/**
+ * LE RANG D'UNE ÉTAPE À NAÎTRE (#1852) — DÉRIVATION UNIQUE du compteur de la séquence d'accueil,
+ * partagée par l'APPEND (`pushStep`, patron `pushDie`) et par tout mint qui forge son id en amont
+ * (`rollSeam.idDansLaSequence` : hôtes de combat, manches de poursuite/taverne, orientation…).
+ *
+ * FENÊTRE-AWARE : une étape mintée PENDANT l'application d'une autre (Critique, Assaut féroce `onHit`
+ * → `resolveFreeAttacks` → `maybeOpenDefense`) naît dans la fenêtre d'insertion, dont le rang part de
+ * `seqBase` — lire `pendingCascade.seq` y rendrait un rang PÉRIMÉ, donc un id déjà pris (collision).
+ * `purpose` absent = « la séquence en place, quelle qu'elle soit » (sous-jeux à séquence unique).
+ */
+export function compteurDeSequence(s: Pick<GameState, 'pendingCascade'>, purpose?: PendingCascade['purpose']): number {
+  const cur = s.pendingCascade;
+  const same = cur && (purpose === undefined || cur.purpose === purpose) ? cur : null;
+  const p = purpose ?? same?.purpose ?? cur?.purpose;
+  const fenetre = p ? fenetrePour(same, p) : null;
+  if (fenetre) return fenetre.seqBase + fenetre.inseres.length;
+  return same ? seqDe(same) : 0;
+}
+
 /** Pousse UNE étape déjà formée dans la séquence de `purpose` (doctrine du slot ci-dessus). Quand
  *  l'étape OUVRE la séquence, elle PRÊTE son `label`/`icon` au titre de la fenêtre (« Surprise »,
  *  « Imparfaite »…) — la situation qui l'a ouverte est le titre juste ; repli générique
@@ -1042,18 +1062,21 @@ export function pushStep(set: Set, step: CascadeStep | ((index: number) => Casca
     const cur = s.pendingCascade;
     const same = cur && cur.purpose === p ? cur : null;
     const fenetre = fenetrePour(same, p);
-    const compteur = fenetre ? fenetre.seqBase + fenetre.inseres.length : (same ? seqDe(same) : 0);
+    const compteur = compteurDeSequence(s, p);
     const st = typeof step === 'function' ? step(compteur) : step;
     if (!st) return {};
     assertBandeDeclarePossession([st]);
+    assertIdsUniques([st], same?.participants ?? []);
     // PENDANT une application : COLLECTÉE, pas écrite — `commitStep` la fusionnera sur le tableau du
     // pilote (le store n'est pas l'hôte du tableau tant qu'une étape se valide).
-    if (fenetre) { fenetre.inseres.push(st); fenetre.dernier = st.id; return {}; }
+    if (fenetre) { assertIdsUniques([st], fenetre.inseres); fenetre.inseres.push(st); fenetre.dernier = st.id; return {}; }
     // L'append est une PORTE du curseur : une étape qui atterrit SOUS le curseur passe par le seam
     // (`poserLeCurseur`), comme à l'ouverture. `pushStep` n'a pas de `get` — l'état de CE `set` fait
     // office de lecture, il est celui qui reçoit l'étape.
     const g = (() => s) as Get;
-    if (same) return { pendingCascade: poserLeCurseur(g, { ...same, participants: [...same.participants, st], seq: compteur + 1 }) };
+    // APPEND : le curseur ne bouge QUE s'il était en bilan (`cursor === participants.length`) — sinon
+    // il reste posé sur l'étape en cours, et ce n'est pas une ARRIVÉE (cf. `franchirLesHotesOrphelins`).
+    if (same) return { pendingCascade: poserLeCurseur(g, { ...same, participants: [...same.participants, st], seq: compteur + 1 }, same.cursor >= same.participants.length) };
     const fresh: PendingCascade = poserLeCurseur(g, { title: st.label ?? 'Conséquences', icon: st.icon ?? 'action/attack', purpose: p, cursor: 0, log: [], participants: [st], seq: 1 });
     // Slot occupé par un AUTRE purpose : on le SUSPEND (jamais un écrasement) — même `set` atomique
     // que `suspendActiveCascade`, dont `pushStep` n'a pas le `get`.
@@ -1099,6 +1122,38 @@ function assertBandeDeclarePossession(steps: readonly CascadeStep[]): void {
 }
 
 /**
+ * INVARIANT D'IDENTITÉ D'ÉTAPE (#1298, #1852) : dans UNE séquence, deux étapes ne portent jamais le
+ * même `id`. L'id est l'ADRESSE de l'étape — `cascadeChoose`, les grappes de dés
+ * (`combatEffects.groupeDe`), les insertions de conséquence et la recette la visent par lui. Deux
+ * étapes homonymes rendent la première in-adressable : c'est ainsi qu'une seconde DÉFENSE (attaque
+ * gratuite) se glissait derrière la première sans que rien ne les distingue (#1852).
+ *
+ * PORTÉE EXACTE, dite : les DEUX portes d'entrée d'étapes dans le slot (`startCascade`, `pushStep`) —
+ * ouverture, append au fragment en place, et collecte d'insertion. Elle ne voit NI une séquence
+ * restaurée d'une sauvegarde, NI les remplacements d'étape en vol (mêmes exceptions que
+ * `assertBandeDeclarePossession` ci-dessus, pour les mêmes raisons).
+ *
+ * Une porte qui appende N étapes de même nature dérive son id du COMPTEUR MONOTONE de la séquence
+ * (`rollSeam.idDansLaSequence`, patron `pushDie`) — jamais de la longueur du tableau, qui recule à
+ * chaque troncature.
+ *
+ * COUVERTURE : TOUTE collision, quel que soit le genre d'étape — un id est une ADRESSE, jamais un
+ * porteur de donnée (le rang d'une manche vit sur `meta.round`, pas dans `pursuit-N`). En DEV elle
+ * JETTE, en PROD elle se journalise et la séquence s'ouvre (politique de la possession de bande).
+ */
+function assertIdsUniques(steps: readonly CascadeStep[], dejaLa: readonly CascadeStep[]): void {
+  const vus = new Set(dejaLa.map((x) => x.id));
+  for (const st of steps) {
+    if (!vus.has(st.id)) { vus.add(st.id); continue; }
+    const msg = `[cascade] étape « ${st.id} » (${st.kind}) : une étape de CE même id est déjà dans la `
+      + 'séquence — l\'id est l\'adresse d\'une étape, deux homonymes en rendent une in-adressable '
+      + '(dériver l\'id du compteur `seq` : `rollSeam.idDansLaSequence`, patron `pushDie`).';
+    console.error(msg);
+    if (import.meta.env?.DEV) throw new Error(msg);
+  }
+}
+
+/**
  * Ouvre une séquence interactive (≥ 1 étape influençable). Le curseur démarre sur la 1ʳᵉ étape.
  * Applique la DOCTRINE DU SLOT ci-dessus (append même purpose / suspension sinon) : aucun écrasement.
  * `restNights` du fragment déjà en place l'emporte (`??`) — un séjour multi-nuits porte SON compteur,
@@ -1112,6 +1167,7 @@ export function startCascade(
   if (!opts.steps.length) return;
   assertBandeDeclarePossession(opts.steps);
   const cur = get().pendingCascade;
+  assertIdsUniques(opts.steps, cur && cur.purpose === opts.purpose ? cur.participants : []);
   if (cur && cur.purpose === opts.purpose) {
     // APPEND au fragment en place : le curseur en BILAN (`cursor === participants.length`) se retrouve
     // POSÉ sur la première étape appendue — même porte que l'ouverture (`poserLeCurseur`).
@@ -1125,7 +1181,7 @@ export function startCascade(
         roundBoundary: cur.roundBoundary || opts.roundBoundary,
         combatEndBoundary: cur.combatEndBoundary || opts.combatEndBoundary,
         restNights: cur.restNights ?? opts.restNights,
-      }),
+      }, cur.cursor >= cur.participants.length),
     });
     return;
   }
@@ -1409,6 +1465,36 @@ function tirageSansSiege(get: Get, st: CascadeStep | undefined): boolean {
 }
 
 /**
+ * HÔTE ORPHELIN AU CURSEUR (#1852) — le curseur n'arrive JAMAIS sur une étape-jet qui n'a pas de quoi
+ * rendre un corps : sa fenêtre serait vide, donc invalidable, et la cadence Rapide/Auto la
+ * re-conduirait sans fin (`combatAuto.JET_AUTO`).
+ *
+ * DEV : la violation THROW (le producteur fautif se voit au premier passage) ; en PROD elle se
+ * journalise et l'étape est FRANCHIE — une partie en cours ne se fige pas sur une fenêtre morte.
+ * Prédicat PUR et TOTAL (les neuf `HostJet`) : `stateFields.hoteOrphelin`.
+ *
+ * Joué à l'ARRIVÉE du curseur seulement (ouverture, avancée, reprise, et l'append qui tire le curseur
+ * hors du bilan) : le curseur POSÉ sur l'étape dont la fenêtre vient de rendre sa donnée n'est pas un
+ * orphelin — il la quittera au geste suivant (`advanceCascade`), et un append fait pendant son
+ * application (Critique, Maladresse) ne le déplace pas.
+ */
+function franchirLesHotesOrphelins(get: Get, p: PendingCascade): PendingCascade {
+  let cursor = p.cursor;
+  const s = get();
+  while (cursor < p.participants.length && hoteOrphelin(s, p.participants[cursor])) {
+    const st = p.participants[cursor];
+    const cause = `[cascade] hôte orphelin « ${st.id} » (jet:'${st.jet}') : sa donnée manque `
+      + `(slot \`${String(PENDING_BY_JET[st.jet!])}\`, acteurs, donnée d'étape) — la fenêtre n'aurait aucun corps à rendre.`;
+    // DEUX messages, chacun vrai : en PROD l'étape est FRANCHIE (la partie ne se fige pas sur une
+    // fenêtre morte) ; en DEV rien n'est franchi — on JETTE, au premier passage du producteur fautif.
+    console.error(`${cause} Étape FRANCHIE.`); // le seam tourne DANS un `set` (`pushStep`) : la ligne va au journal technique, jamais au `battle.log` (ré-entrance)
+    if (import.meta.env?.DEV) throw new Error(cause);
+    cursor++;
+  }
+  return cursor === p.cursor ? p : { ...p, cursor };
+}
+
+/**
  * LE CURSEUR SE POSE SUR UNE ÉTAPE — seam UNIQUE du pilote INTERACTIF (#1426), joué PARTOUT où le
  * curseur atteint une étape : ouverture (`startCascade`), APPEND (`pushStep`), avancée
  * (`advanceCascade`) et REPRISE d'une séquence parquée (`resumeSuspendedCascade`).
@@ -1428,9 +1514,10 @@ function tirageSansSiege(get: Get, st: CascadeStep | undefined): boolean {
  * `tableStepResolved`, calque `runCascadeImmediate` ; `roulerDeEtape` pour un jet) : le dé est consommé
  * au RANG de l'étape, jamais au build, et l'étape porte son résultat — le bilan le montre.
  */
-function poserLeCurseur(get: Get, p: PendingCascade): PendingCascade {
-  const st = p.participants[p.cursor];
-  if (!tirageSansSiege(get, st)) return p;
+function poserLeCurseur(get: Get, p: PendingCascade, arrivee = true): PendingCascade {
+  const pose = arrivee ? franchirLesHotesOrphelins(get, p) : p;
+  const st = pose.participants[pose.cursor];
+  if (!tirageSansSiege(get, st)) return pose;
   let resolue: CascadeStep;
   const interaction = stepInteraction(st);
   if (interaction === 'table') {
@@ -1442,7 +1529,7 @@ function poserLeCurseur(get: Get, p: PendingCascade): PendingCascade {
   } else {
     resolue = { ...st, result: roulerDeEtape(st.target!, battleRng(), st.evaluation) };
   }
-  return { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? resolue : x)) };
+  return { ...pose, participants: pose.participants.map((x, k) => (k === pose.cursor ? resolue : x)) };
 }
 
 /**

@@ -12,6 +12,13 @@ import type { BattleState } from './store';
 // Piétinement — action gratuite à 1 Avantage (LDB 85 - Traits de creature.md l.320-321)
 // ---------------------------------------------------------------------------
 
+/** Le combattant PREND son rang d'initiative : `runEnemyAI` refuse un tour qui n'est pas celui de
+ *  l'actif (jeton de tour, #1852) — jouer le tour de quelqu'un d'autre n'est pas une situation. */
+const auTourDe = (id: string): void => {
+  const b = useGame.getState().battle!;
+  b.turn = b.order.indexOf(id);
+};
+
 const at = (kind: 'hero' | 'enemy', id: string, x: number, y: number, over: Partial<Combatant> = {}): Combatant =>
   ({
     id, name: id, kind,
@@ -345,6 +352,7 @@ describe('Piétinement en combat (store)', () => {
     H.conditions = [{ id: 'surpris', value: 1 }]; // ne se défend pas → résolution instantanée
     useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 0 } });
     expect(useGame.getState().battle!.movementUsed).toBe(0);
+    auTourDe(E.id);
     runEnemyAI(useGame.getState, useGame.setState, E.id);
     vi.advanceTimersByTime(4000); // laisse jouer le télégraphe + la charge
     const st = useGame.getState();
@@ -366,6 +374,7 @@ describe('Piétinement en combat (store)', () => {
     H.pos = { x: 10, y: 10 };
     H.conditions = [{ id: 'surpris', value: 1 }];
     useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 0 } });
+    auTourDe(E.id);
     runEnemyAI(useGame.getState, useGame.setState, E.id);
     vi.advanceTimersByTime(4000);
     const st = useGame.getState();

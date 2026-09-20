@@ -22,7 +22,7 @@ import { Combatant, HitLocation, CHAR_LABELS, type FireArc, type Weapon } from '
 import { rollLine, hostStep, openSequence, pushHost, pushDisplay } from './rollSeam';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { defenseDodgeMod, activeCombatant, STANCE_BLOCK, moveEnv, removeEntity, entityPickables, cleFeuilleRamassee, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castContextMods, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, jouerLaSuiteDuCoup, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, trampleTarget, TRAMPLE_WEAPON, trampleFreeMove, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, resolveMovement, fearedSourceTowards, markActed, noteApproachMove, clearApproachMoves, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart, releaseSeatsOfCombatants } from './combatFlow';
+import { defenseDodgeMod, activeCombatant, STANCE_BLOCK, moveEnv, removeEntity, entityPickables, cleFeuilleRamassee, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castContextMods, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, jouerLaSuiteDuCoup, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, drainerLesGratuites, resolveFreeAttacks, trampleTarget, TRAMPLE_WEAPON, trampleFreeMove, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, resolveMovement, fearedSourceTowards, markActed, noteApproachMove, clearApproachMoves, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart, releaseSeatsOfCombatants } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from './lineOfSight';
 import { smokeOf, captureMoveSnapshot } from './combatGeometry';
@@ -2714,7 +2714,34 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || !pd || !pd.result) return;
       const attacker = inBattleId(battle, pd.attackerId);
       const defender = inBattleId(battle, pd.defenderId);
-      set({ pendingDefense: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
+      // LE SLOT SE VIDE ET L'ÉTAPE SE FERME DANS LE MÊME ÉTAT (#1852) : `committed` DIT à l'état que
+      // cette étape a rendu sa donnée. Sans lui, l'état intermédiaire (slot vide, curseur encore posé
+      // dessus) est un hôte ORPHELIN pour tout lecteur — le rendu, l'arbitre, la garde du curseur —,
+      // et seul le batching React le masquait. Le curseur, lui, quitte l'étape plus bas (`quitterLaDefense`),
+      // une fois les conséquences du coup appliquées.
+      set((s) => {
+        const casc = s.pendingCascade;
+        const cur = casc?.participants[casc.cursor];
+        return {
+          pendingDefense: null, // null AVANT la reprise → ré-entrance/double-advance impossibles
+          ...(cur?.jet === 'defense'
+            ? { pendingCascade: { ...casc!, participants: casc!.participants.map((st, i) => (i === casc!.cursor ? { ...st, committed: true } : st)) } }
+            : {}),
+        };
+      });
+      /**
+       * QUITTER L'ÉTAPE DE DÉFENSE (#1852) — SOURCE UNIQUE de « cette fenêtre a rendu sa donnée, le
+       * curseur n'a plus rien à y faire », pour les QUATRE sorties de `defenseConfirm`. Un slot
+       * `pendingDefense` REPOSÉ entre-temps appartient à l'étape SUIVANTE (la frappe d'après) : on
+       * avance TOUJOURS, sans quoi la donnée neuve s'afficherait dans la fenêtre de la précédente.
+       * Rend `false` quand l'étape courante n'est plus la défense (la Maladresse a ouvert SA séquence).
+       */
+      const quitterLaDefense = (): boolean => {
+        const casc = get().pendingCascade;
+        if (casc?.purpose !== 'combat' || casc.participants[casc.cursor]?.jet !== 'defense') return false;
+        get().cascadeNext();
+        return true;
+      };
       // Défense SURFACÉE d'une attaque PILOTÉE (#989, `openSurfacedDefense`) : l'issue OPPOSÉE rejoint le
       // chemin d'application UNIQUE de l'attaque — `attackConfirm` reprend avec le résultat défendu. Le
       // curseur est TOUJOURS sur l'étape 'defense' de la MÊME cascade d'attaque : aucun tour n'avance ici
@@ -2743,41 +2770,21 @@ export function createCombatSlice(get: Get, set: Set) {
         if (pd.shieldReaction && pd.mode === 'parade') applyShieldReaction(get, set, defender, attacker, pd.shieldReaction, (pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : defender.weapons[0]));
         if (suspended) {
           // Déviation Critique du héros : `applyAttackResult` a EMPILÉ l'étape 'deviation' APRÈS l'étape
-          // défense courante. Avancer le curseur dessus (comme la Maladresse plus bas) — sinon, en
-          // Auto-combat, le pilote BOUCLE sur l'étape défense orpheline (pendingDefense déjà nulle →
-          // defenseConfirm no-op = soft-lock). Garde : seulement si on est ENCORE sur l'étape défense.
-          const casc = get().pendingCascade;
-          if (casc?.participants[casc.cursor]?.jet === 'defense') get().cascadeNext();
+          // défense courante ; on quitte la défense, elle a rendu sa donnée.
+          quitterLaDefense();
           return; // la suite (autoCleave/Piétinement/fumble/reprise) part de l'applier 'deviation' (resolveDeviation)
         }
         jouerLaSuiteDuCoup(get, set, attacker, defender, pd.result, suite); // ÉCRITURE UNIQUE de la queue d'un coup (effets de manœuvre + Action rendue, chaîne parquée, balayage automatique)
       }
-      if (defender && pushDefenderFumble(get, set, defender, pd)) {
-        // Positionne le curseur défense → Maladresse quand la défense est l'étape courante (sinon
-        // `pushHost` a créé une cascade neuve déjà au curseur 0 sur la Maladresse).
-        const casc = get().pendingCascade;
-        if (casc && casc.participants[casc.cursor]?.jet === 'defense') get().cascadeNext();
-        return;
-      }
-      // Attaque(s) d'Arme GRATUITE(S) « disponible(s) » de l'attaquant après l'attaque PRINCIPALE (jamais après
-      // une gratuite : `!pd.free`) ; toute source `grantFreeAttack{when:'available'}` — Frénésie LDB 21 l.33 = seule en donnée.
-      if (attacker && !pd.free) aiAvailableFreeAttack(get, set, attacker);
-      // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
-      if (attacker && aiCreatureFreeAttacks(get, set, attacker)) {
-        // Une manœuvre gratuite dont les effets portent un nœud `test` (Hurlement : « Test de Résistance
-        // ou Brisé ») APPEND ses étapes `triggeredTest` DERRIÈRE l'étape défense COURANTE (résolue,
-        // pendingDefense null) au lieu de la REMPLACER (≠ maybeOpenDefense d'une gratuite de mêlée, qui
-        // repose un pendingDefense). Avancer le curseur pour révéler ces étapes, sinon soft-lock :
-        // `useDefenseJetProps` rend null sur une défense sans pendingDefense → fenêtre vide.
-        const casc = get().pendingCascade;
-        if (casc?.purpose === 'combat' && casc.participants[casc.cursor]?.jet === 'defense' && !get().pendingDefense) get().cascadeNext();
-        return;
-      }
-      // la défense est l'étape de SA cascade combat → enchaîner le curseur
-      // (les conséquences empilées — Critique/Maladresse — s'affichent inline ; la clôture reprend l'IA).
-      const seq = get().pendingCascade;
-      if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'defense' && !get().pendingDefense) get().cascadeNext();
-      else resumeEnemyTurn(get, set);
+      if (defender && pushDefenderFumble(get, set, defender, pd)) { quitterLaDefense(); return; }
+      // Attaques GRATUITES de l'attaquant après CE coup : d'Arme « disponibles » (Frénésie LDB 21 l.33)
+      // — jamais après une gratuite (`!pd.free`) — puis celles de créature. UNE file, qui S'ARRÊTE à la
+      // première fenêtre ouverte : la fenêtre qui suit est celle de la gratuite SUIVANTE, sur SA propre
+      // étape (LDB 85 l.41-43 — chaque gratuite est un Test d'attaque complet).
+      if (attacker && drainerLesGratuites(get, set, attacker, { disponibles: !pd.free })) { quitterLaDefense(); return; }
+      // La défense est l'étape de SA cascade combat → enchaîner le curseur (les conséquences empilées —
+      // Critique/Maladresse — s'affichent inline ; la clôture reprend l'IA). Rien derrière elle : reprise.
+      if (!quitterLaDefense()) resumeEnemyTurn(get, set);
     },
     renounceResolve: (renounce: boolean) => resolveRenounce(get, set, renounce),
 

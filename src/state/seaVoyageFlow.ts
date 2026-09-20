@@ -117,7 +117,7 @@ const SEA_ASPECT_KEY = { face: 'sv.windFace', arriere: 'sv.windArriere', lateral
 function seaAspectLabel(aspect: WindAspect): string {
   return t(SEA_ASPECT_KEY[aspect]);
 }
-import { stepPrecision } from './rollSeam';
+import { stepPrecision, idDansLaSequence } from './rollSeam';
 import { actorIn } from './combatants';
 import type { PlayerText } from '../i18n/playerText';
 
@@ -534,7 +534,7 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
   // La POSSESSION de la bande est posée par le socle (`bandStep`) : N contributeurs ⇒ `groupOwner`, un
   // seul ⇒ son porteur. Déclarée nulle part ici — c'est ce qui laissait la fenêtre à l'hôte seul (#1268).
   return bandStep({
-    id: kind, kind, label: dataLabel(testType?.label, testTypeId), icon: opts.icon ?? 'travel/anchor',
+    id: idDansLaSequence(get, kind), kind, label: dataLabel(testType?.label, testTypeId), icon: opts.icon ?? 'travel/anchor', // id = ADRESSE : le `kind` seul collisionne dès qu'un jour en pousse deux (#1852)
     aggregate: 'summed-dr',
     ...(stake ? { stake } : {}),
     meta: {

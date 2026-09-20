@@ -172,7 +172,7 @@ import { suspendActiveCascade, resumeSuspendedCascade, dropSceneEntrySteps, exte
 import { differerLaSuite, jouerFlowEntier, nePeutPasDifferer, cloturer, registerCloture, flowRestant } from './combatEffects';
 import { flowFromEffects } from './flow';
 import { nightBands } from './nightBands';
-import { resultLine, openSequence, hostStep, pousseSi, type BuiltCascadeStep } from './rollSeam';
+import { resultLine, openSequence, hostStep, idDansLaSequence, pousseSi, type BuiltCascadeStep } from './rollSeam';
 import { createCombatSlice } from './combatSlice';
 
 /** Source unique des écrans valides — `Screen` en dérive (`typeof SCREENS[number]`) : un id absent
@@ -245,6 +245,13 @@ export interface BattleState {
    *  Mouvement (pas de « Mouvement → Action → Mouvement », règle maison). Cf. `canMove`. */
   movedPreAction: boolean;
   acted: boolean;
+  /** JETON DE TOUR D'IA (#1852) — « round:turn:id » du dernier tour d'IA JOUÉ. `maybeRunEnemyTurn` est
+   *  rappelé par tout ce qui relance le combat (changement de cadence `resumeCadence`, reprise après
+   *  une fenêtre, scrutation de recette) : sans jeton, chaque rappel armait un `runEnemyAI` de plus sur
+   *  le MÊME combattant, qui jouait deux fois son tour. Le jeton vit sur le TIR, pas sur la
+   *  planification — un beat redondant arrive et n'a rien à jouer. Porté par `battle` (et non par un
+   *  module) : il naît et meurt avec le combat, sans fuite d'une partie à l'autre. */
+  aiTurnPlayed?: string;
   /** Le set d'armes a-t-il déjà été changé ce Tour ? Plafond MAISON 1×/tour (dégainer = Action gratuite,
    *  cadence laissée au MJ, LDB 13 l.106). Reset au tour. */
   loadoutSwapped?: boolean;
@@ -2741,7 +2748,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Par la PORTE (#1262 V2 L4) : dernier hôte manuscrit de `src/state`. Le mint vérifie que
     // `pendingExtendedTest` est posé — il vient de l'être, ligne au-dessus.
     const steps: BuiltCascadeStep[] = [];
-    pousseSi(steps, hostStep(get, { id: 'ext-jet', kind: 'extendedJet', jet: 'extended', actorId: opts.actorId }));
+    pousseSi(steps, hostStep(get, { id: idDansLaSequence(get, 'ext-jet', 'test'), kind: 'extendedJet', jet: 'extended', actorId: opts.actorId }));
     if (steps.length) openSequence(get, set, { title: opts.label, icon: 'ui/key', purpose: 'test', steps });
   },
   extendedTestNext: () => {

@@ -277,7 +277,7 @@ import { combatEndBands, combatEndRowMeta } from './combatEndBands';
 import type { CascadeStepMeta, EnchainementDuCoup, RebondDeChaine, SeuilDeSauvegarde, SauvegardeSuite, SuiteDeCoup, ToucheDeProjectile } from './pendings';
 import {
   freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, monoStep, pousseSi,
-  hostStep, openSequence, openBand, pushHost, pushTableDone, pushTable, pushChoice, pushDisplay, pushDie, tableStep, makeBandFactory,
+  hostStep, idDansLaSequence, openSequence, openBand, pushHost, pushTableDone, pushTable, pushChoice, pushDisplay, pushDie, tableStep, makeBandFactory,
   type Consequence, type TableSpec,
 } from './rollSeam';
 import { revealToStep } from './revealStep';
@@ -3109,6 +3109,30 @@ export function applyShieldReaction(get: Get, set: SetFn, defender: Combatant, a
   checkBattleOver(get, set);
 }
 
+/**
+ * UNE DÉFENSE EST-ELLE EN COURS ? (#1852) — LE prédicat du slot `pendingDefense`, lu par la PORTE
+ * d'ouverture (`maybeOpenDefense`) et par les trois FILES de frappes (`drainerLesGratuites`,
+ * `runCleaveChain`, `resolveFreeAttacks`). LDB 85 l.41-43 : une attaque gratuite est un Test d'attaque
+ * COMPLET, donc résolue entièrement — fenêtre du défenseur comprise — avant que la suivante soit
+ * déclarée. Une file qui le lit s'ARRÊTE sans rien consommer : sa frappe est reprise à la fermeture.
+ */
+export function defenseEnCours(s: Pick<GameState, 'pendingDefense'>): boolean {
+  return s.pendingDefense != null;
+}
+
+/** REFUS d'ouverture : un producteur déclare une frappe par-dessus une défense vivante. DEV = throw
+ *  (le producteur fautif se voit au premier passage) ; PROD = journal. CE QUI EST GARANTI : la frappe
+ *  n'est jamais résolue SANS la fenêtre de son défenseur (LDB 85 l.41-43), et le `true` rendu empêche
+ *  l'appelant de retomber sur la résolution instantanée. CE QUI NE L'EST PAS : cette frappe-là est
+ *  ABANDONNÉE — aucun producteur ne la remet en file ; la file de frappes du tour est #1858. */
+function refuserLaDefense(attacker: Combatant, target: Combatant): boolean {
+  const msg = `[combat] défense déjà ouverte : ${attacker.label} déclare une frappe sur ${target.label} `
+    + 'avant que la précédente soit résolue — la frappe est refusée (LDB 85 l.41-43).';
+  console.error(msg);
+  if (import.meta.env?.DEV) throw new Error(msg);
+  return true;
+}
+
 /** OUVRE la fenêtre de Défense HÔTÉE par la cascade — les trois interpositions (tir réactif, mêlée
  *  réactive, défense du chemin d'attaque piloté) ouvrent la MÊME fenêtre. `pendingDefense`, posé par
  *  l'appelant JUSTE avant, porte la donnée que la fenêtre rend ; l'étape porte la possession du
@@ -3118,7 +3142,10 @@ export function applyShieldReaction(get: Get, set: SetFn, defender: Combatant, a
  *  et un appelant qui répondrait `true` d'office laisserait l'attaquant suspendu devant une fenêtre
  *  qui n'existe pas. Le verdict remonte donc au site d'interposition, à lui de résoudre sans elle. */
 function openDefenseCascade(get: Get, set: SetFn, target: Combatant): boolean {
-  const step = hostStep(get, { id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: target.id });
+  // Une attaque GRATUITE rouvre une défense DANS la même séquence de combat (LDB 85 l.41-43 — chaque
+  // gratuite est un Test d'attaque complet, donc SA fenêtre) : l'id se distingue par le compteur de la
+  // séquence d'accueil (#1852).
+  const step = hostStep(get, { id: idDansLaSequence(get, 'defense-jet', 'combat'), kind: 'defenseJet', jet: 'defense', actorId: target.id });
   if (!step) return false;
   openSequence(get, set, { title: 'Défense', icon: 'action/defend', purpose: 'combat', steps: [step] });
   return true;
@@ -3138,6 +3165,7 @@ export function maybeOpenDefense(
   free?: { kind: string; prevActed: boolean },
   fromCharge?: boolean,
 ): boolean {
+  if (defenseEnCours(get())) return refuserLaDefense(attacker, target);
   if (!defenseSurfaced(get(), target)) return false;
   // TIR sur un héros : ouvre la défense réactive UNIQUEMENT si le RAW l'autorise (Protectrice 2+ en
   // Ligne de Vue LDB 62 l.296 / Bout Portant LDB 14 l.40 / tireur Engagé LDB 14 l.44). Vide = tir non
@@ -3348,7 +3376,9 @@ export function openAttackCascade(get: Get, set: SetFn, pa0: PendingAttack, titl
     return true; // la fenêtre ouverte est celle du GATE ; l'attaque s'ouvrira à sa réussite
   }
   set({ pendingAttack: pa });
-  const step = hostStep(get, { id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: pa.attackerId });
+  // Une chaîne d'attaques (balayage, deux armes, gratuite) rejoint la séquence déjà ouverte : l'id se
+  // distingue par le compteur de la séquence d'accueil (#1852).
+  const step = hostStep(get, { id: idDansLaSequence(get, 'attack-jet', 'combat'), kind: 'attackJet', jet: 'attack', actorId: pa.attackerId });
   if (!step) return false;
   openSequence(get, set, { title, icon, purpose: 'combat', steps: [step] });
   return true;
@@ -3434,6 +3464,13 @@ function runCleaveChain(get: Get, set: SetFn, attacker: Combatant, chain: Cleave
   for (let n = chain.n; n < chain.bcc; n++) {
     const battle = get().battle;
     if (!battle || battle.over) break;
+    // Une défense VIVANTE (ouverte par le coup précédent ou par une autre file) : la chaîne PARQUE sur
+    // elle son état INTACT et attend — `defenseConfirm` la reprendra (LDB 85 l.41-43).
+    if (defenseEnCours(get())) {
+      const pd = get().pendingDefense!;
+      set({ pendingDefense: { ...pd, cleaveChain: { hitIds, n, bcc: chain.bcc, fm: chain.fm } } });
+      return;
+    }
     const next = cleaveTargets(battle, attacker, hitIds)[0];
     if (!next) break;
     hitIds = [...hitIds, next.id];
@@ -3616,17 +3653,41 @@ export function applyTrample(get: Get, set: SetFn, attacker: Combatant, target: 
  *  PAR L'IA. Gate `!aiDriven` : ennemi OU héros en Auto-combat (un héros MANUEL la déclenche lui-même via
  *  l'affordance UI `hasFreeWeaponAttack`). DÉLÈGUE chaque op au MÊME résolveur que les attaques gratuites
  *  RÉACTIVES (`applyTalentFreeAttack` : plafond, coût d'Avantage, jet d'attaque, Action préservée) — un seul
- *  résolveur partagé, plus de chemin frenzy-spécifique ni de jet dupliqué. Cible = adversaire adjacent. */
-export function aiAvailableFreeAttack(get: Get, set: SetFn, actor: Combatant): void {
-  if (!aiDriven(get(), actor) || isOutOfAction(actor)) return;
+ *  résolveur partagé, plus de chemin frenzy-spécifique ni de jet dupliqué. Cible = adversaire adjacent.
+ *
+ *  REND SA SUSPENSION (#1852) : une frappe qui ouvre une fenêtre de défense ARRÊTE la file — une
+ *  attaque gratuite est un Test d'attaque COMPLET (LDB 85 l.41-43), donc résolue entièrement, fenêtre
+ *  du défenseur comprise, avant que la suivante soit déclarée. */
+export function aiAvailableFreeAttack(get: Get, set: SetFn, actor: Combatant): boolean {
+  if (!aiDriven(get(), actor) || isOutOfAction(actor)) return false;
   const battle = get().battle;
-  if (!battle || battle.over || !actor.pos) return;
+  if (!battle || battle.over || !actor.pos) return false;
   const target = battle.combatants.find(
     (t) => t.kind !== actor.kind && !isOutOfAction(t) && !!t.pos && combatDistance(actor, t) <= 1,
   );
-  if (!target) return;
+  if (!target) return false;
   for (const { op, cap } of availableFreeAttackOps(actor))
-    applyTalentFreeAttack(get, set, actor, op, { targetId: target.id, key: 'arme', cap });
+    if (applyTalentFreeAttack(get, set, actor, op, { targetId: target.id, key: 'arme', cap })) return true;
+  return false;
+}
+
+/**
+ * LES GRATUITES D'UN COMBATTANT, EN UNE FILE (#1852) — les attaques d'Arme « disponibles » (Frénésie,
+ * LDB 21 l.33) PUIS les gratuites de créature (Morsure/Caudale/Piétinement…, LDB 85), dans l'ordre du
+ * code existant (inchangé : le RAW est muet sur l'ordre de N gratuites). UN SEUL appel pour les trois
+ * sites qui chaînaient les deux résolveurs sans lire le verdict du premier (`defenseConfirm`, le tour
+ * d'IA, la reprise de manœuvre) : la file S'ARRÊTE à la PREMIÈRE fenêtre ouverte, et l'appelant qui
+ * reçoit `true` ne reprend NI le tour NI la suite. Les unités NON consommées restent en tête de
+ * `pendingFreeAttacks` ; ce qui les rappelle à la fermeture dépend du chemin (un coup interrompu par
+ * un Critique à dévier n'a aujourd'hui personne pour les redemander — #1858).
+ *
+ * `disponibles` : les gratuites d'Arme ne suivent QUE l'Action (jamais une gratuite — `pd.free`, ni une
+ * manœuvre gratuite), le site le déclare.
+ */
+export function drainerLesGratuites(get: Get, set: SetFn, actor: Combatant, opts: { disponibles: boolean }): boolean {
+  if (defenseEnCours(get())) return true; // une fenêtre est déjà vivante : la file attend sa fermeture
+  if (opts.disponibles && aiAvailableFreeAttack(get, set, actor)) return true;
+  return aiCreatureFreeAttacks(get, set, actor);
 }
 
 // ── Attaques GRATUITES accordées par un TALENT déclenché (Assaut féroce `onHit`, Frappe réactive
@@ -3642,45 +3703,48 @@ export function aiAvailableFreeAttack(get: Get, set: SetFn, actor: Combatant): v
  *  tenue, Action préservée. Le plafond borne aussi la récursion (un onHit qui touche → +1 attaque, recomptée
  *  → s'arrête au niveau). Appelée par le hook `freeAttack` quand `runCombatFlow` exécute le `do`/`grantFreeAttack`
  *  (le Test préalable a déjà réussi en amont, c'est un nœud Flow). */
-function applyTalentFreeAttack(get: Get, set: SetFn, actor: Combatant, op: Extract<GameOp, { op: 'grantFreeAttack' }>, fa: FreeAttackFreeze): void {
+function applyTalentFreeAttack(get: Get, set: SetFn, actor: Combatant, op: Extract<GameOp, { op: 'grantFreeAttack' }>, fa: FreeAttackFreeze): boolean {
   const target = inBattleId(get().battle, fa.targetId);
-  if (!target || isOutOfAction(actor) || isOutOfAction(target) || !actor.pos || !target.pos) return;
-  if ((actor.weapons[0]?.type ?? 'melee') !== 'melee') return; // attaque d'arme de mêlée (l'arme tenue)
+  if (!target || isOutOfAction(actor) || isOutOfAction(target) || !actor.pos || !target.pos) return false;
+  if ((actor.weapons[0]?.type ?? 'melee') !== 'melee') return false; // attaque d'arme de mêlée (l'arme tenue)
   const uses = actor.freeAttacksThisTurn ?? {};
-  if ((uses[fa.key] ?? 0) >= fa.cap) return; // plafond /Round atteint (= niveau du talent)
+  if ((uses[fa.key] ?? 0) >= fa.cap) return false; // plafond /Round atteint (= niveau du talent)
   const ck = `${fa.key}:${target.id}`;
-  if (op.perChargerOncePerRound && (uses[ck] ?? 0) >= 1) return; // 1 riposte par chargeur (Frappe réactive)
-  if (op.advantageCost != null && actor.advantage < op.advantageCost) return; // Avantage insuffisant
-  if (op.advantageOrMovement && actor.advantage <= 0) return; // simplifié : Avantage requis (« ou Mouvement » = raffinement)
+  if (op.perChargerOncePerRound && (uses[ck] ?? 0) >= 1) return false; // 1 riposte par chargeur (Frappe réactive)
+  if (op.advantageCost != null && actor.advantage < op.advantageCost) return false; // Avantage insuffisant
+  if (op.advantageOrMovement && actor.advantage <= 0) return false; // simplifié : Avantage requis (« ou Mouvement » = raffinement)
   if (op.advantageCost != null) campSpend(get, actor, op.advantageCost); // réserve du camp en mode groupe (AA 11 l.30-38) / le combattant (LDB)
   else if (op.advantageOrMovement) campSpend(get, actor, 1);
   actor.freeAttacksThisTurn = { ...uses, [fa.key]: (uses[fa.key] ?? 0) + 1, ...(op.perChargerOncePerRound ? { [ck]: 1 } : {}) };
   const prevActed = get().battle?.acted ?? false; // gratuite : Action préservée
   // Défenseur SURFACÉ : la frappe passe par la MÊME couture d'ouverture que les autres gratuites
   // (patron `applyFreeAttack`) — suspendue ici, appliquée à `defenseConfirm` (Action restaurée).
-  if (maybeOpenDefense(get, set, actor, target, actor.weapons[0], { kind: fa.key, prevActed })) return;
+  // REND sa suspension (#1852) : l'appelant s'arrête, la frappe suivante attend la fermeture.
+  if (maybeOpenDefense(get, set, actor, target, actor.weapons[0], { kind: fa.key, prevActed })) return true;
   const r = resolveAttack(get, actor, target);
   // L'Action entre AVEC le coup (même donnée `{kind, prevActed}` que la fenêtre de défense ci-dessus) :
   // toute fenêtre la porte, et la reprise rend l'Action APRÈS son `markActed`.
   const suite: SuiteDeCoup = { freeAttack: { kind: fa.key, prevActed } };
-  if (!r) return;
-  if (applyAttackResult(get, set, actor, r.victim ?? target, r.weapon, r.res, false, undefined, suite)) return;
+  if (!r) return false;
+  if (applyAttackResult(get, set, actor, r.victim ?? target, r.weapon, r.res, false, undefined, suite)) return true; // conséquence influençable ouverte (Critique, sauvegarde) : même suspension
   // MÊME écriture de queue que la reprise ; enchaînement absent = `auto` (LDB 85 l.362).
   jouerLaSuiteDuCoup(get, set, actor, r.victim ?? target, r.res, suite);
+  return false;
 }
 
 /** HOOK `freeAttack` (injecté dans la brique `combat/triggeredTest` par `createCombatSlice`) : pont
- *  exécuteur de Flow → vraie frappe. Appelé par `runCombatFlow` sur un `do`/`grantFreeAttack`. */
-export function freeAttackHookImpl(get: Get, set: SetFn, actor: Combatant, op: Extract<GameOp, { op: 'grantFreeAttack' }>, fa: FreeAttackFreeze): void {
-  applyTalentFreeAttack(get, set, actor, op, fa);
+ *  exécuteur de Flow → vraie frappe. Appelé par `runCombatFlow` sur un `do`/`grantFreeAttack`. REND la
+ *  suspension de la frappe (#1852) — le dispatcher d'ops s'arrête à la première fenêtre ouverte. */
+export function freeAttackHookImpl(get: Get, set: SetFn, actor: Combatant, op: Extract<GameOp, { op: 'grantFreeAttack' }>, fa: FreeAttackFreeze): boolean {
+  return applyTalentFreeAttack(get, set, actor, op, fa);
 }
 
 /** Résout les attaques gratuites DÉCLENCHÉES des talents de `actor` pour `trigger` (contre `victim`) —
  *  source : les `effects` du talent (donnée). Le Flow de chaque talent est JOUÉ par `runCombatFlow` (le
  *  nœud `choice`/`test` éventuel y est cadence-aware ; le `do`/`grantFreeAttack` ouvre la frappe via le
  *  hook contre `victim`, le tiers threadé dans `ctx.freeAttack`). Vaut héros ET IA. */
-export function resolveFreeAttacks(get: Get, set: SetFn, actor: Combatant, trigger: EffectTrigger, victim: Combatant | undefined): void {
-  if (!victim) return;
+export function resolveFreeAttacks(get: Get, set: SetFn, actor: Combatant, trigger: EffectTrigger, victim: Combatant | undefined): boolean {
+  if (!victim) return false;
   // TOUTES les sources (Talent/Trait/Atout/État), pas seulement les talents : une réaction `grantFreeAttack`
   // (Frappe réactive `onCharged`, Assaut féroce `onHit`, et demain un Trait de créature) est jouée
   // indifféremment du KIND. On NE garde que les Flows qui accordent une attaque gratuite (`flowHasFreeAttack`) :
@@ -3688,14 +3752,18 @@ export function resolveFreeAttacks(get: Get, set: SetFn, actor: Combatant, trigg
   for (const src of freeAttackSourcesOf(actor)) {
     for (const eff of src.effects) {
       if (eff.trigger !== trigger || !flowHasFreeAttack(eff.flow)) continue;
+      if (defenseEnCours(get())) return true; // fenêtre vivante : la source suivante se déclarera à la fermeture
       // L'ENTITÉ PORTEUSE de la réaction (Talent/Trait/Atout, taguée par `withSource`) voyage dans
       // l'`opsCtx` : un Test enfoui dans son Flow en DÉRIVE son enjeu (#1262 V2 L6d).
       runCombatFlow(
         { mode: 'combat', get, set, target: actor, caster: actor, label: src.label, freeAttack: { targetId: victim.id, cap: src.cap, key: src.key }, ...(eff.source ? { opsCtx: { source: eff.source } } : {}) },
         eff.flow,
       );
+      // Le verdict se lit sur le SLOT : le Flow (nœud `test`/`choice` en amont) ne le remonte pas.
+      if (defenseEnCours(get())) return true;
     }
   }
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -4069,6 +4137,7 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
   while (enemy.pendingFreeAttacks.length) {
     const kind = enemy.pendingFreeAttacks[0];
     const b2 = get().battle; if (!b2 || b2.over) break;
+    if (defenseEnCours(get())) return true; // fenêtre vivante : l'unité reste EN TÊTE de file, reprise à la fermeture
     // Manœuvres de ZONE/spéciales : résolveur propre (opposé) — une défense de HÉROS ouvre une cascade
     // influençable et SUSPEND (return true → reprise à la fermeture via `resumeManeuverDefense`).
     if (kind === 'souffle' || kind === 'vomi' || kind === 'langue' || kind === 'hurlement') {
@@ -4124,8 +4193,9 @@ export function resumeManeuverDefense(get: Get, set: SetFn, resume: { attackerId
   if (!battle || battle.over) return;
   const attacker = inBattleId(battle, resume.attackerId);
   if (attacker && !isOutOfAction(attacker)) {
-    if (!resume.free) aiAvailableFreeAttack(get, set, attacker); // manœuvre-ACTION (Regard/Étreinte) → libres d'Arme (Frénésie) après l'Action
-    if (aiCreatureFreeAttacks(get, set, attacker)) return; // enchaîne la file (peut rouvrir une cascade)
+    // Manœuvre-ACTION (Regard/Étreinte) → libres d'Arme (Frénésie) après l'Action, puis la file de
+    // créature : UN appel qui s'arrête à la première fenêtre ouverte (#1852).
+    if (drainerLesGratuites(get, set, attacker, { disponibles: !resume.free })) return;
   }
   resumeEnemyTurn(get, set); // → advanceTurn
 }
@@ -4880,7 +4950,7 @@ export function castZoneSpell(get: Get, set: SetFn, caster: Combatant, label: st
  *  maître de la dégradation (il vient de poser le pending, il sait quoi en faire). */
 export function openCastCascade(get: Get, set: SetFn, caster: Combatant): boolean {
   const step = hostStep(get, {
-    id: `cast-${caster.id}`, kind: 'cast', jet: 'cast', actorId: caster.id,
+    id: idDansLaSequence(get, `cast-${caster.id}`, 'combat'), kind: 'cast', jet: 'cast', actorId: caster.id,
     ...(caster.kind === 'enemy' ? { groupOwner: true } : {}),
   });
   if (!step) return false;
@@ -6787,7 +6857,7 @@ export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: Bl
   // ne sauve pas une arme brisée). Sinon, la 1re fois dans la période le porteur GARDE l'arme (−20/1 Round) ;
   // le 2e évènement de lâcher la fait tomber. Capacité lue en DONNÉE (`preventForcedDrop`), jamais par nom.
   if (!drop.destroyed && lockedGauntletHolds(attacker, drop, battle.round)) {
-    pushDisplay(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: 'action/defend', label: tr('cf.bladeTrapLabel'), outcome: toRecapLines([tr('cf.lockedGauntletHold', { name: attacker.label, weapon: drop.label })]) });
+    pushDisplay(set, { id: idDansLaSequence(get, `cons-bladetrap-result-${defender.id}`, 'combat'), kind: 'bladeTrapResult', actorId: defender.id, icon: 'action/defend', label: tr('cf.bladeTrapLabel'), outcome: toRecapLines([tr('cf.lockedGauntletHold', { name: attacker.label, weapon: drop.label })]) });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
     return;
@@ -6795,7 +6865,7 @@ export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: Bl
   attacker.weapons = attacker.weapons.filter((w) => w !== drop);
   // Étape d'AFFICHAGE empilée (comme un Coup Critique) : visible « l'un sous l'autre », acquittée par le
   // joueur. `actorId` = le défenseur piégeur (propriétaire de la modale en coop). Applier muet (préserve `outcome`).
-  pushDisplay(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: 'item/weapon', label: tr('cf.bladeTrapLabel'), outcome: toRecapLines([line]) });
+  pushDisplay(set, { id: idDansLaSequence(get, `cons-bladetrap-result-${defender.id}`, 'combat'), kind: 'bladeTrapResult', actorId: defender.id, icon: 'item/weapon', label: tr('cf.bladeTrapLabel'), outcome: toRecapLines([line]) });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
 }
@@ -6879,8 +6949,13 @@ export function resumeSuspendedAI(get: Get, set: SetFn): void {
   // au héros (soft-lock observé). `advanceTurn` saute de lui-même les hors-combat.
   if (isOutOfAction(active)) { advanceTurn(get, set); return; }
   // Acteur IA ayant déjà agi (conséquence d'attaque) → fin de tour ; sinon début de tour (entretien) → IA.
-  if (battle.acted) resumeEnemyTurn(get, set);
-  else maybeRunEnemyTurn(get, set);
+  if (battle.acted) { resumeEnemyTurn(get, set); return; }
+  // Tour suspendu AVANT d'avoir consommé son Action (entretien, Peur au contact) : il n'a RIEN joué,
+  // le jeton de tour lui est RENDU (#1852). Le jeton dit « ce tour a déjà été joué » ; le laisser posé
+  // sur un tour qui n'a rien décidé ferait refuser toute relance du même `round:turn:id` — le tour
+  // gèlerait au lieu de reprendre.
+  if (battle.aiTurnPlayed === cleDeTour(battle, active.id)) battle.aiTurnPlayed = undefined;
+  maybeRunEnemyTurn(get, set);
 }
 
 export function advanceTurn(get: Get, set: SetFn) {
@@ -7088,7 +7163,18 @@ export function maybeRunEnemyTurn(get: Get, set: SetFn) {
   const battle = get().battle!;
   const active = activeCombatant(battle);
   if (!active || !aiDriven(get(), active) || isOutOfAction(active)) return;
+  // Ce point d'entrée est rappelé par tout ce qui « relance » le combat (changement de cadence, reprise
+  // après fenêtre, scrutation de recette) : un tour DÉJÀ JOUÉ ne se replanifie pas (#1852). Les beats
+  // REDONDANTS, eux, sont inoffensifs — le jeton de tour vit sur le TIR (`runEnemyAI`), pas sur la
+  // planification : un beat qui arrive en second n'a plus rien à jouer, et celui qui ACCÉLÈRE la
+  // cadence (recette) reste utile.
+  if (battle.aiTurnPlayed === cleDeTour(battle, active.id)) return;
   scheduleCombatTimer(() => runEnemyAI(get, set, active.id), beatHold(get, 'turnHandoff'));
+}
+
+/** CLÉ d'un tour d'IA : CE combattant, à CE tour de CE Round — l'unité que le jeton protège. */
+function cleDeTour(battle: BattleState, id: string): string {
+  return `${battle.round}:${battle.turn}:${id}`;
 }
 
 /** LDB 21 (Psychologie) l.27 : « Si la source de votre Peur se rapproche de vous, vous devez réussir un
@@ -7640,6 +7726,17 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // un siège MJ pris entre la planification et le tir rend cet acteur conduit à la MAIN. On rend la main
   // sans jouer : le MJ le pilote via l'UI (`controlsCombatant`), l'IA n'a plus à décider pour lui.
   if (!aiDriven(get(), enemy)) return;
+  // JETON DE TOUR (#1852) — un tour se joue UNE fois, et seulement quand c'est celui de son porteur :
+  //  - un beat armé avant que le tour ne tourne tirerait un tour HORS de son rang (ordre d'initiative) ;
+  //  - une fenêtre ouverte tient la main (`combatAdvanceBlocked`) : l'IA n'a rien à décider par-dessus ;
+  //  - un second appel pour le MÊME « round:turn:id » est un DOUBLON.
+  // Le refus est SILENCIEUX : ce n'est pas une violation d'invariant, c'est un appel qui arrive trop
+  // tard (ou deux fois) — le tour, lui, reste porté par celui qui l'a joué.
+  if (activeCombatant(battle)?.id !== enemyId) return;
+  if (combatAdvanceBlocked(get())) return;
+  const cleTour = cleDeTour(battle, enemyId);
+  if (battle.aiTurnPlayed === cleTour) return;
+  battle.aiTurnPlayed = cleTour;
   // Couche MER (navire-unité) : une coque IA agit en UNITÉ via des Tests d'équipage (manœuvre/bordée), pas comme
   // une créature (ni psychologie, ni marche de fantassin). Branche DÉDIÉE — `chooseEnemyAction` n'a aucun candidat naval.
   if (isVehicle(enemy)) return runShipAI(get, set, enemy);
@@ -7750,6 +7847,13 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       const b = get().battle;
       // Tour caduc (combat fini OU relancé pendant le télégraphe → `enemy` hors du combat courant).
       if (!b || b.over || !b.combatants.includes(enemy)) { clearActorAim(get, set); return; }
+      // QUELQU'UN TIENT LA MAIN pendant le télégraphe (#1852) : une riposte `onCharged` du chargé
+      // (Frappe réactive, LDB 10 l.496-500) a ouvert SA fenêtre sur ce chargeur SURFACÉ, ou une pause
+      // de Round s'est posée. La frappe ne part pas par-dessus — LDB 85 l.41-43 : chaque Test d'attaque
+      // se résout entièrement, fenêtre du défenseur comprise. Le tour, qui n'a rien consommé
+      // (`battle.acted` faux), repart à la fermeture de la séquence : `resumeSuspendedAI` rend le jeton
+      // et rappelle `maybeRunEnemyTurn`.
+      if (combatAdvanceBlocked(get())) { clearActorAim(get, set); return; }
       // Attaque-ACTION spéciale (Regard pétrifiant / Étreinte glaciale) à la place de l'attaque
       // normale si la créature en a le trait + l'Avantage ; sinon attaque normale (opposée). Une manœuvre
       // spéciale qui touche des HÉROS ouvre une cascade de défense influençable → tour SUSPENDU (reprise
@@ -7758,10 +7862,10 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // Si la modale de défense s'ouvre, ne PAS armer advanceTurn ici : la reprise
       // est portée par defenseConfirm → resumeEnemyTurn (anti double-advance).
       if (!suspended) {
-        aiAvailableFreeAttack(get, set, enemy); // attaque(s) d'Arme GRATUITE(S) « disponible(s) » après l'attaque principale (Frénésie LDB 21 l.33 = seule source en donnée)
-        // Attaques gratuites de créature (Morsure/Caudale/Piétinement, OPPOSÉES) après l'attaque
-        // principale ; si une modale de défense s'ouvre, ne PAS avancer (reprise via defenseConfirm).
-        if (!aiCreatureFreeAttacks(get, set, enemy)) scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'postAttack'));
+        // Attaques GRATUITES après l'attaque principale : d'Arme « disponibles » (Frénésie LDB 21 l.33 =
+        // seule source en donnée) puis de créature (Morsure/Caudale/Piétinement, OPPOSÉES). La file
+        // s'arrête à la première fenêtre ouverte ; ne PAS avancer alors (reprise via defenseConfirm).
+        if (!drainerLesGratuites(get, set, enemy, { disponibles: true })) scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'postAttack'));
       }
     }, delay);
   };

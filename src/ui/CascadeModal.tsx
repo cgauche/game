@@ -118,7 +118,6 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const p = useGame((s) => s.pendingCascade);
   const pursuit = useGame((s) => pursuitOf(s)); // manche de poursuite (séquence `pursuit`) — porte partyRole/encounter
   const pursuitAbandon = useGame((s) => s.pursuitAbandon);
-  const pendingCast = useGame((s) => s.pendingCast); // étape-jet `cast` : hôte la situation d'incantation (réactif, pas de hook conditionnel)
   const batchRoll = useGame((s) => s.cascadeBatchRoll); // étape « batch » — un Test générique par participant (seam #275 Décision 4 cran 1)
   const batchReroll = useGame((s) => s.cascadeBatchReroll);
   const batchBonusSL = useGame((s) => s.cascadeBatchBonusSL);
@@ -435,17 +434,22 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // l'étape). Il est donc versé ICI, à la coquille, pour les six rendus `RollShell` — spread AVANT
   // les props du hook : celui qui porte DÉJÀ son enjeu (Test étendu, dont le pending le transporte)
   // garde le sien, sans jamais deux `StakeNote`.
-  const JET_RENDERERS: Record<NonNullable<CascadeStep['jet']>, () => JSX.Element | null> = {
-    attack: () => (attackProps ? <RollShell {...stakeProps} {...attackProps} embedded={embedded} /> : null),
-    trample: () => (trampleProps ? <RollShell {...stakeProps} {...trampleProps} embedded={embedded} /> : null),
-    defense: () => (defenseProps ? <RollShell {...stakeProps} {...defenseProps} embedded={embedded} /> : null),
-    fumble: () => (fumbleProps ? <RollShell {...stakeProps} {...fumbleProps} embedded={embedded} /> : null),
-    test: () => (testProps ? <RollShell {...stakeProps} {...testProps} embedded={embedded} /> : null),
-    extended: () => (extendedProps ? <RollShell {...stakeProps} {...extendedProps} embedded={embedded} /> : null),
+  const JET_RENDERERS: Record<NonNullable<CascadeStep['jet']>, () => JSX.Element> = {
+    attack: () => <RollShell {...stakeProps} {...attackProps!} embedded={embedded} />,
+    trample: () => <RollShell {...stakeProps} {...trampleProps!} embedded={embedded} />,
+    defense: () => <RollShell {...stakeProps} {...defenseProps!} embedded={embedded} />,
+    fumble: () => <RollShell {...stakeProps} {...fumbleProps!} embedded={embedded} />,
+    test: () => <RollShell {...stakeProps} {...testProps!} embedded={embedded} />,
+    extended: () => <RollShell {...stakeProps} {...extendedProps!} embedded={embedded} />,
     disengage: () => <DisengageModal />,
     forceDoor: () => <ForceDoorModal />,
-    cast: () => (pendingCast && !pendingCast.pickingTargets && !pendingCast.zone?.placing ? <CastModal /> : null),
+    cast: () => <CastModal />,
   };
+  // ÉTAPE-JET : le rendu est INCONDITIONNEL (#1852) — ce que garantissent DEUX portes en amont, et
+  // elles seules : le socle refuse de poser le curseur sur un hôte qui n'a pas de quoi rendre un corps
+  // (`cascade.poserLeCurseur` → `stateFields.hoteOrphelin`, prédicat TOTAL : slot, acteurs, donnée
+  // d'étape), et l'effacement VOULU de l'incantation pendant un ciblage CARTE est une condition
+  // d'élection de l'ARBITRE (`modalArbiter`, entrée `cascade`).
   if (cur.jet) return JET_RENDERERS[cur.jet]();
   const interaction = stepInteraction(cur);
   const isLast = p.cursor + 1 >= p.participants.length;

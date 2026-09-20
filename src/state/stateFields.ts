@@ -16,6 +16,7 @@
  * à la main. Un champ réinitialisé à une valeur ≠ `init` reste EXPLICITE hors `resetFields`, sur son site.
  */
 import type { GameState } from './store';
+import type { CascadeStep } from './pendings';
 
 /** Contextes de réinitialisation. `scene` = changement de scène (`transitionTo`) ;
  *  `combatStart` = ouverture de combat (`startCombat`). */
@@ -154,6 +155,63 @@ const FIELD_KEYS = Object.keys(STATE_FIELDS) as FieldKey[];
 /** Clés des champs `pending*` — DÉRIVÉES du manifeste (jamais une seconde liste à tenir). Consommée par
  *  le marquage « dé fixé » du journal (`fixedDieMark.ts`), qui doit voir TOUS les jets ouverts. */
 export const PENDING_FIELD_KEYS = FIELD_KEYS.filter((k) => k.startsWith('pending')) as PendingKey[];
+
+/** Les jets qu'une étape peut HÔTER — union fermée de `CascadeStepBase.jet`. */
+export type HostJet = NonNullable<CascadeStep['jet']>;
+
+/**
+ * SLOT `pending*` porteur des données de CHAQUE jet hôté — table TOTALE : ajouter un `jet` à l'union
+ * ne compile plus sans sa ligne ici. `fumble` est le seul à `null` : sa donnée (arme + résultat des
+ * Oups !) vit SUR l'étape (`step.fumble`), il n'y a pas de `pendingFumble` à désynchroniser.
+ *
+ * Elle vit ICI, avec le manifeste des champs transitoires : c'est une lecture du STORE, et ses deux
+ * consommateurs sont aux deux bouts de la chaîne — le mint (`rollSeam.hostStep`, qui refuse d'ouvrir
+ * une fenêtre sans sa donnée) et la porte du curseur (`cascade.poserLeCurseur`, qui refuse de s'y
+ * poser quand la donnée a disparu). Ce module n'importe AUCUN runtime : ni l'un ni l'autre n'y
+ * gagne de cycle.
+ */
+export const PENDING_BY_JET: Record<HostJet, PendingKey | null> = {
+  attack: 'pendingAttack',
+  trample: 'pendingTrample',
+  defense: 'pendingDefense',
+  fumble: null,
+  cast: 'pendingCast',
+  test: 'pendingTest',
+  extended: 'pendingExtendedTest',
+  disengage: 'pendingDisengage',
+  forceDoor: 'pendingForceDoor',
+};
+
+/**
+ * HÔTE ORPHELIN (#1852) — « cette étape-jet n'a PAS de quoi rendre un corps ». DÉFINITION UNIQUE,
+ * partagée par la porte du curseur (`cascade.poserLeCurseur`) et par les hooks de props des jets
+ * (`ui/jetProps/useXJetProps`) : c'est parce qu'elle est TOTALE que `CascadeModal` rend ses étapes-jets
+ * INCONDITIONNELLEMENT (`{...props!}` sur un hook rendu `null` donne `{}` à `RollShell`, donc un crash).
+ *
+ * Trois causes, toutes portées ici — le slot VIDE, l'ACTEUR sorti du `battle`, et la donnée portée par
+ * l'ÉTAPE (Maladresse : `PENDING_BY_JET.fumble` est `null`, son corps vit dans `step.fumble`).
+ * Une étape déjà VALIDÉE (`committed`) est hors sujet : elle a rendu sa donnée et se ferme.
+ * Prédicat PUR (aucun runtime importé) et TOTAL sur les neuf `HostJet`.
+ */
+export function hoteOrphelin(s: Partial<GameState>, step: CascadeStep | undefined): boolean {
+  if (!step?.jet || step.committed) return false;
+  const slot = PENDING_BY_JET[step.jet];
+  if (slot && s[slot] == null) return true;
+  const present = (id: string | undefined): boolean => !!id && !!s.battle?.combatants.some((c) => c.id === id);
+  switch (step.jet) {
+    case 'attack': return !present(s.pendingAttack?.attackerId) || !present(s.pendingAttack?.targetId);
+    case 'trample': return !present(s.pendingTrample?.attackerId) || !present(s.pendingTrample?.targetId);
+    case 'defense': return !present(s.pendingDefense?.attackerId) || !present(s.pendingDefense?.defenderId);
+    case 'fumble': return !step.fumble || !present(step.actorId);
+    // Épreuve étendue : hors combat, l'acteur se lit au GROUPE (même pool que `useExtendedTestJetProps`).
+    case 'extended': {
+      const id = s.pendingExtendedTest?.actorId;
+      const pool = s.battle?.combatants ?? s.party ?? [];
+      return !id || !pool.some((c) => c.id === id);
+    }
+    default: return false; // cast / test / disengage / forceDoor : leur corps ne tient qu'au slot
+  }
+}
 
 /** Bloc complet `{ champ: init }` des champs transitoires — assemblé dans l'état initial du store. */
 export function initialFields(): Pick<GameState, FieldKey> {

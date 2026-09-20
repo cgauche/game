@@ -60,7 +60,7 @@ import { combatDistance } from './footprint';
 import { registerCascadeApplier, setSuiteApresCommit, pushStep, idDeLaDernierePoussee,
   etapesDeLaFenetre, annoterEtapeDeLaFenetre } from './cascade';
 import { exposureWaveBand } from './nightBands';
-import { freeCons, rollStep, hostStep, monoStep, openSequence, pousseSi, pushDie, type BuiltCascadeStep } from './rollSeam';
+import { freeCons, rollStep, hostStep, idDansLaSequence, monoStep, openSequence, pousseSi, pushDie, type BuiltCascadeStep } from './rollSeam';
 import { startGroundPursuit } from './pursuitFlow';
 import { sourceExposureMod, autoExposureMods, drawWaterDisease, isWounded } from '../engine/waterExposure';
 import { loseWounds, hasCondition } from '../engine/conditions';
@@ -1009,7 +1009,7 @@ export function openSkillTest(
   // ENJEU (#1117) : `FlowTest.stake` DESCEND sur l'étape qui lance — c'est elle que `CascadeModal` lit.
   // Second transporteur du champ, à parité avec les deux fabriques de `combat/triggeredTest.ts` : sans
   // lui, tout Flow joué par `runFlow` (Escalade, Saut, Récolte…) porterait un enjeu que rien n'affiche.
-  const jet = hostStep(get, { id: 'test-jet', kind: 'sceneTestJet', jet: 'test', actorId: def.id, ...(spec.stake ? { stake: spec.stake } : {}) });
+  const jet = hostStep(get, { id: idDansLaSequence(get, 'test-jet', 'test'), kind: 'sceneTestJet', jet: 'test', actorId: def.id, ...(spec.stake ? { stake: spec.stake } : {}) });
   if (!jet) return false; // le mint ne refuse QUE si `pendingTest` manque — rien à défaire, il vient d'être posé
   openSequence(get, set, { title: label, icon: 'nav/dice', purpose: 'test', steps: [jet] });
   return true;

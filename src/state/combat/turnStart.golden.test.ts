@@ -57,6 +57,10 @@ describe('GOLDEN — cycle de tour ennemi (runEnemyAI turnStart)', () => {
 
     const captureTurnStart = (id: string): string[] => {
       const before = useGame.getState().battle!.log.length;
+      // Chacun à SON rang : `runEnemyAI` refuse un tour qui n'est pas celui de l'actif (jeton de
+      // tour, #1852) — deux acteurs testés = deux tours, jamais deux fois le même.
+      const b = useGame.getState().battle!;
+      b.turn = b.order.indexOf(id);
       runEnemyAI(useGame.getState, useGame.setState, id);
       // Portion synchrone seulement : les setTimeout d'attaque ne sont PAS avancés (fake timers).
       return useGame.getState().battle!.log.slice(before).map((e) => `${e.kind}:${e.text}`);

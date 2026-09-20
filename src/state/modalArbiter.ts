@@ -38,8 +38,13 @@ export type AutoPolicy =
 
 export interface ModalDef {
   key: string;
-  /** Le pending de cette modale est-il posé ? */
+  /** Le pending de cette modale est-il posé ? (condition d'ÉLECTION : la fenêtre à RENDRE) */
   when: (s: ArbiterState) => boolean;
+  /** La situation TIENT-ELLE LA MAIN, même sans fenêtre rendue ? Défaut : `when`. Une modale peut
+   *  déléguer son geste à la CARTE (désignation de cibles d'un sort) : plus de fenêtre à élire, mais
+   *  les gestes qui ENGAGENT ou QUITTENT le tour restent fermés (#1852) — la situation, elle, dure.
+   *  Lu par `modalHolds` (gardes clavier/manette), jamais par le rendu. */
+  tientLaMain?: (s: ArbiterState) => boolean;
   /** Combattant concerné ('*' = tous ; undefined = hôte seul). */
   owner: (s: ArbiterState) => string | undefined | '*';
   /** Politique d'automatisation (Cadence de combat) — REQUISE. */
@@ -132,7 +137,17 @@ export const MODAL_DEFS = [
   //  useExtendedTestJetProps) — `pendingExtendedTest` coexiste comme porteur de données, comme `pendingAttack`.)
   // CASCADE séquentielle (jets de nuit/voyage) : l'étape COURANTE a son héros → modale chez son
   // propriétaire (coop : chaque contrôleur influence ses propres jets, l'un après l'autre).
-  { key: 'cascade', when: (s) => !!s.pendingCascade, owner: (s) => {
+  // Le CIBLAGE CARTE d'une incantation (`pickingTargets` / pose de zone) EFFACE la fenêtre : la carte
+  // prend la main, le joueur y désigne ses cibles. C'est une condition d'ÉLECTION (#1852) : l'arbitre
+  // n'élit jamais une modale dont le corps serait vide. La cascade reste OUVERTE (le curseur ne bouge
+  // pas) et la SITUATION tient toujours la main (`tientLaMain` ci-dessous, gardes clavier) : la
+  // fenêtre revient dès la pose faite.
+  { key: 'cascade', when: (s) => {
+    if (!s.pendingCascade) return false;
+    const cur = s.pendingCascade.participants[s.pendingCascade.cursor];
+    if (cur?.jet !== 'cast') return true;
+    return !s.pendingCast?.pickingTargets && !s.pendingCast?.zone?.placing;
+  }, tientLaMain: (s) => !!s.pendingCascade, owner: (s) => {
     // Étape de GROUPE (enfoncer une porte) → '*' (chacun pilote ses héros) ; étape MONDE sans acteur
     // (`worldOwner`, seam #275 Décision 3 — désertion/Moral) → sentinel routé au siège MJ par
     // `netOwnership.seatOwns` ; sinon le héros de l'étape.
@@ -195,10 +210,13 @@ export function autoPolicyOf(s: ArbiterState): AutoPolicy | null {
   return def ? def.auto : null;
 }
 
-/** Une modale du registre tient-elle la fenêtre ? (Le verdict « la carte est-elle inerte ? » y ajoute
- *  l'exception des interludes pilotés par la carte : `state/mapHover.ts`.) */
+/** Une modale du registre tient-elle la MAIN ? — verdict des gardes de PILOTAGE (fin de tour, barre
+ *  d'action, menu système), DISTINCT de l'élection d'une fenêtre (`pickActiveModalKey`) : une modale
+ *  qui a délégué son geste à la CARTE n'a plus de fenêtre à rendre et tient pourtant la main
+ *  (`tientLaMain`). (Le verdict « la carte est-elle inerte ? » y ajoute l'exception des interludes
+ *  pilotés par la carte : `state/mapHover.ts`.) */
 export function modalHolds(s: ArbiterState): boolean {
-  return (MODAL_DEFS as readonly ModalDef[]).some((d) => d.when(s));
+  return (MODAL_DEFS as readonly ModalDef[]).some((d) => (d.tientLaMain ?? d.when)(s));
 }
 
 /**

@@ -75,7 +75,7 @@ import { cadence } from '../engine/cadence';
 import { PREFERENCES, preferenceDef, setPreference, resetPreference, type PrefValue } from './preferences';
 import { pickActiveModalKey, autoPolicyOf } from './modalArbiter';
 import { willAutoResolve } from './combatAuto';
-import { aiDriven } from './combatGate';
+import { aiDriven, combatAdvanceBlocked } from './combatGate';
 import type { Combatant } from '../engine/types';
 import { makeRNG } from '../engine/dice';
 import { partyMoneyTotal, creditBourse, distributeCredit, condCtx } from './bourseFlow';
@@ -1692,13 +1692,18 @@ export function buildApi(scenarios: readonly TestScenario[] = testScenarios) {
       return Array.from({ length: count }, () => rng.int(1, 100));
     },
 
-    /** RECETTE : avance les tours IA jusqu'au prochain tour d'un combattant piloté HUMAIN, ou la fin du
-     *  combat — SANS chemin parallèle : passe par la MÊME machinerie que la partie réelle
-     *  (`maybeRunEnemyTurn`/`advanceTurn`/`runEnemyAI`), on accélère seulement les délais de lisibilité
-     *  du Réalisateur (`combatDirector.beatHold`, TEMPO) le temps de l'avance — restaurés à la fin (y
-     *  compris si `maxIters` est atteint). `maxIters` (scrutations, pas des tours) est un GARDE-FOU
-     *  anti-boucle infinie, jamais une taille de tour attendue. Un coût de recette, pas un raccourci du
-     *  flux testé (doctrine __wfrp : ne saute que le bruit IA, jamais l'action du joueur). */
+    /** RECETTE : avance les tours IA jusqu'au prochain tour d'un combattant piloté HUMAIN, une FENÊTRE
+     *  à répondre, ou la fin du combat — SANS chemin parallèle : passe par la MÊME machinerie que la
+     *  partie réelle (`maybeRunEnemyTurn`/`advanceTurn`/`runEnemyAI`), on accélère seulement les délais
+     *  de lisibilité du Réalisateur (`combatDirector.beatHold`, TEMPO) le temps de l'avance — restaurés
+     *  à la fin (y compris si `maxIters` est atteint).
+     *
+     *  CONTRAT (#1852) : il n'AMORCE un tour d'IA que si PERSONNE ne tient la main
+     *  (`combatAdvanceBlocked`) et rend la main dès qu'une fenêtre s'ouvre, en la NOMMANT — c'est au
+     *  scénario de recette d'y répondre comme un joueur. Il ne joue jamais deux fois le même tour (le
+     *  jeton de tour vit dans la machinerie, pas ici). `maxIters` (scrutations, pas des tours) est un
+     *  GARDE-FOU anti-boucle infinie, jamais une taille de tour attendue. Un coût de recette, pas un
+     *  raccourci du flux testé (doctrine __wfrp : ne saute que le bruit IA, jamais l'action du joueur). */
     fastForward: (maxIters = 400) =>
       new Promise<string>((resolve, reject) => {
         // `globalThis` (pas `window`) : identique en navigateur (window === globalThis) ET testable
@@ -1726,14 +1731,24 @@ export function buildApi(scenarios: readonly TestScenario[] = testScenarios) {
           if (!b || b.over) return { done: true, msg: b?.over ? `✓ combat terminé (${b.over})` : '✓ pas de combat en cours' };
           const c = inBattleId(b, b.order[b.turn]);
           if (!c || !aiDriven(s, c)) return { done: true, msg: `✓ tour de ${c?.label ?? '—'} (piloté)` };
+          // UNE FENÊTRE TIENT LA MAIN (#1852) : défense réactive, Critique, pause de Round… Rien n'avancera
+          // tant qu'un humain n'aura pas répondu — on REND LA MAIN en la nommant, au lieu de scruter
+          // jusqu'à la borne (et, avant, de re-kicker l'IA par-dessus).
+          const fenetre = pickActiveModalKey(s);
+          if (fenetre) return { done: true, msg: `✓ fenêtre « ${fenetre} » ouverte (à répondre)` };
           return { done: false, msg: '' };
         };
-        // Relance `maybeRunEnemyTurn` seulement au PREMIER constat d'immobilité (round:tour inchangé
-        // depuis la dernière scrutation) — jamais à chaque scrutation : la machinerie EST déjà
-        // auto-perpétuante (`advanceTurn` rappelle `maybeRunEnemyTurn` à chaque tour) ; la relancer en
-        // boucle empilerait des `runEnemyAI` redondants sur le MÊME combattant (le ciblage par id ne
-        // vérifie pas que c'est encore son tour) et casserait l'ordre d'initiative.
-        const kick = () => maybeRunEnemyTurn(() => useGame.getState(), useGame.setState);
+        // CONTRAT DU KICK : `fastForward` ne DÉCIDE rien et ne joue aucun tour à la place de la
+        // machinerie — elle est auto-perpétuante (`advanceTurn` rappelle `maybeRunEnemyTurn` à chaque
+        // tour). Il ne fait que RAMORCER une chaîne ARRÊTÉE (juste après `confirmRoundStart`, ou un tour
+        // immobile), et seulement quand PERSONNE ne tient la main (`combatAdvanceBlocked`) : une fenêtre
+        // ouverte appartient au joueur, la pause de Round aussi. Le doublon, lui, est impossible en aval
+        // (jeton de tour de `runEnemyAI`/`maybeRunEnemyTurn`, #1852) — ici on ne fait que ne pas le
+        // provoquer.
+        const kick = () => {
+          if (combatAdvanceBlocked(useGame.getState(), { roundStart: true })) return;
+          maybeRunEnemyTurn(() => useGame.getState(), useGame.setState);
+        };
         const tick = () => {
           try {
             const r = status();

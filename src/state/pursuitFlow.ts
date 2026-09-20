@@ -54,7 +54,7 @@ import type { GameState } from './store';
 import { traceLineOf } from '../engine/traceLine';
 import { t } from '../i18n';
 import { dataLabel } from '../data';
-import { stepDetail, stepManche, stepPrecision } from './rollSeam';
+import { stepDetail, stepManche, stepPrecision, idDansLaSequence } from './rollSeam';
 import type { PlayerText } from '../i18n/playerText';
 
 /** Adversaire AUTHORÉ d'une poursuite : une RÉFÉRENCE de vivant (bestiaire ou statbloc d'éditeur) et
@@ -218,7 +218,8 @@ function pursuitRow(get: Get, h: Combatant, skill: string, label: string): Batch
 function pursuitRoundBand(get: Get, p: PursuitPayload, label: string): BuiltCascadeStep | undefined {
   const participants = runners(get, p.retires).map((h) => pursuitRow(get, h, p.skill, label));
   return bandStep({
-    id: `pursuit-${p.manche}`,
+    // L'id est une ADRESSE (rang dans la séquence) ; la MANCHE, elle, voyage sur `meta.round` (#1852).
+    id: idDansLaSequence(get, 'pursuit'),
     kind: PURSUIT_MOVE_KIND,
     icon: 'travel/foot',
     label: stepManche(p.manche, dataLabel(label)),
@@ -335,7 +336,8 @@ function choixPoursuivants(get: Get, p: PursuitPayload, pris: PursuitPris): Buil
  *  est pas une (autre kind, bande déjà formée, pas de porteur ni de cible). */
 function monoPursuitRound(step: CascadeStep): string | null {
   if (step.kind !== PURSUIT_MOVE_KIND || step.participants || typeof step.actorId !== 'string' || step.target == null) return null;
-  return /^pursuit-(\d+)-/.exec(step.id)?.[1] ?? '0';
+  // La manche est une DONNÉE de l'étape (`meta.round`), jamais un rang parsé dans son id (#1852).
+  return String(step.meta?.round ?? 0);
 }
 
 /**

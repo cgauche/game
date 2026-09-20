@@ -82,9 +82,12 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
     // pendingCast + cascade `jet:'cast'` → l'arbitre renvoie 'cascade' (qui rend CastModal via le host).
     const castCascade = { participants: [{ jet: 'cast', actorId: 'h1' }], cursor: 0 };
     expect(pickActiveModalKey({ pendingCast: {}, pendingCascade: castCascade })).toBe('cascade');
-    // Ciblage CARTE (Surincantation / pose de zone) : le host de CascadeModal s'efface (return null) —
-    // l'arbitre renvoie tout de même 'cascade' (la cascade existe) ; c'est le HOST qui ne monte rien.
-    expect(pickActiveModalKey({ pendingCast: { pickingTargets: true }, pendingCascade: castCascade })).toBe('cascade');
+    // Ciblage CARTE (Surincantation / pose de zone) : la carte prend la main, la fenêtre s'efface —
+    // et c'est l'ARBITRE qui ne l'élit pas (#1852). Il n'élit JAMAIS une modale au corps vide : le
+    // `null` rendu par le host sous une fenêtre déjà élue était un état mort (fiche mémoire
+    // `game-modal-arbiter-dead-state`). La cascade, elle, reste OUVERTE : la fenêtre revient à la pose.
+    expect(pickActiveModalKey({ pendingCast: { pickingTargets: true }, pendingCascade: castCascade })).toBeNull();
+    expect(pickActiveModalKey({ pendingCast: { zone: { placing: true } }, pendingCascade: castCascade })).toBeNull();
   });
 
   it('le Contre-sort n’est PLUS une modale propre : la réaction est rendue DANS la cascade `cast` (Sort ennemi figé)', () => {

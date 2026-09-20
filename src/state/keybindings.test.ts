@@ -8,6 +8,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { KEYBINDINGS, formatCombo, modsDeLaTouche, modsMatch, type KeyBinding } from './keybindings';
+import { modalHolds, pickActiveModalKey } from './modalArbiter';
 import type { GameState } from './store';
 
 const binding = (id: string) => KEYBINDINGS.find((k) => k.id === id)!;
@@ -24,7 +25,10 @@ const fake = (over: Partial<GameState> = {}): GameState =>
 /** Cascade d'incantation dont l'étape courante DÉSIGNE ses cibles sur la carte (`pickingTargets`). */
 const cartePilote = (over: Partial<GameState> = {}) =>
   fake({
-    pendingCascade: { participants: [{ actorId: 'h1' }], cursor: 0 } as never,
+    // Étape `jet:'cast'` RÉELLE : c'est elle que l'arbitre EFFACE pendant la désignation (entrée
+    // `cascade`, `modalArbiter`). Une étape sans `jet` ne mesurerait pas la garde — l'arbitre élirait
+    // la cascade et toutes les portes seraient fermées pour une autre raison.
+    pendingCascade: { participants: [{ actorId: 'h1', id: 'c', kind: 'castJet', jet: 'cast' }], cursor: 0 } as never,
     pendingCast: { casterId: 'h1', pickingTargets: true } as never,
     ...over,
   });
@@ -57,6 +61,10 @@ describe('raccourcis — le CURSEUR vit tant que la carte cible', () => {
 describe('raccourcis — les gestes qui ENGAGENT ou QUITTENT restent gardés par la modale', () => {
   it('pendant le ciblage par la carte : ni fin de tour, ni barre d’action, ni menu système', () => {
     const s = cartePilote();
+    // La fenêtre s'EFFACE (la carte prend la main) mais une modale TIENT toujours la main : les deux
+    // verdicts sont distincts (#1852), et ce sont les gestes hors-carte qui suivent le second.
+    expect(pickActiveModalKey(s as never), 'aucune fenêtre élue pendant la désignation').toBeNull();
+    expect(modalHolds(s as never), 'une situation modale tient pourtant la main').toBe(true);
     expect(binding('end-turn').when(s), 'Espace finirait le tour au milieu d’une désignation de cibles').toBe(false);
     expect(binding('hotbar-1').when(s), 'une capacité de la barre ouvrirait un 2ᵉ flux par-dessus le sort').toBe(false);
     expect(binding('toggle-menu').when(s), 'Échap doit annuler le ciblage, pas ouvrir le menu système').toBe(false);

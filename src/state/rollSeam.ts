@@ -44,13 +44,13 @@ import type {
 } from './pendings';
 import type { BuiltCascadeStep } from './stepBrand';
 import type { PlayerText } from '../i18n/playerText';
-import type { PendingKey } from './stateFields';
+import { PENDING_BY_JET, type HostJet } from './stateFields';
 import type { OupsResolved } from '../engine/oups';
 import type { RecapLine, RecapTone } from './recapLine';
 import type { ModLine } from '../engine/combat';
 import { combatBaseValue, combatValueModParts, conditionModLines, combatCharKey, combineMods, composeDifficulty } from '../engine/combat';
 import { volatileCharLines } from '../engine/characteristics';
-import { startCascade, runCascadeImmediate, rollBatchParticipant, pushStep, tableStepPosee, cascadeTableFolds, clampStepAmount, porteursDeLEtape } from './cascade';
+import { startCascade, runCascadeImmediate, rollBatchParticipant, pushStep, tableStepPosee, cascadeTableFolds, clampStepAmount, porteursDeLEtape, compteurDeSequence } from './cascade';
 import { testValue, partyBest, partyAssisted, testValueSplit, testValueParts, skillBaseValue, supportSplit, type SupportDetail } from '../engine/skills';
 import { testStatePenaltyParts, testStatePenalty } from '../engine/conditions';
 import { tenuParUnHumain, porteurParId, seatOwns, conduitParLeSiegeDuMonde, WORLD_STEP_OWNER } from './netOwnership';
@@ -1778,25 +1778,24 @@ export function pushDie(set: Set, spec: DieStepSpec, purpose: PendingCascade['pu
   pushStep(set, (index) => dieStep({ ...spec, id: `${spec.id}-${index}` }), purpose);
 }
 
-/** Les jets qu'une étape peut HÔTER — union fermée de `CascadeStepBase.jet`. */
-export type HostJet = NonNullable<CascadeStep['jet']>;
+/** Les jets qu'une étape peut HÔTER, et le SLOT porteur de la donnée de chacun : tenus avec le
+ *  manifeste des champs du store (`stateFields`), où les lit aussi la porte du curseur. */
+export type { HostJet };
 
 /**
- * SLOT `pending*` porteur des données de CHAQUE jet hôté — table TOTALE : ajouter un `jet` à l'union
- * ne compile plus sans sa ligne ici. `fumble` est le seul à `null` : sa donnée (arme + résultat des
- * Oups !) vit SUR l'étape (`step.fumble`), il n'y a pas de `pendingFumble` à désynchroniser.
+ * ID UNIQUE DANS LA SÉQUENCE D'ACCUEIL (#1852) — `openSequence` APPEND quand une séquence du MÊME
+ * `purpose` est ouverte (doctrine du slot) : un id CONSTANT y serait servi deux fois (deux défenses
+ * d'un même tour, deux Tests de scène, deux attaques d'une chaîne), la première étape deviendrait
+ * in-adressable, et la garde d'unicité (`cascade.assertIdsUniques`) refuserait l'append.
+ *
+ * Le rang vient de la DÉRIVATION UNIQUE du compteur (`cascade.compteurDeSequence`, celle-là même que
+ * `pushStep` applique à l'append) : fenêtre d'insertion comprise — un hôte minté PENDANT l'application
+ * d'une étape prenait sinon un rang périmé, donc un id déjà pris. `purpose` omis = la séquence en
+ * place, quelle qu'elle soit (sous-jeux à séquence unique : poursuite, taverne, voyage).
  */
-const PENDING_BY_JET: Record<HostJet, PendingKey | null> = {
-  attack: 'pendingAttack',
-  trample: 'pendingTrample',
-  defense: 'pendingDefense',
-  fumble: null,
-  cast: 'pendingCast',
-  test: 'pendingTest',
-  extended: 'pendingExtendedTest',
-  disengage: 'pendingDisengage',
-  forceDoor: 'pendingForceDoor',
-};
+export function idDansLaSequence(get: Get, base: string, purpose?: PendingCascade['purpose']): string {
+  return `${base}-${compteurDeSequence(get(), purpose)}`;
+}
 
 /** Ce qui est vrai de TOUTE étape hôte : elle nomme son jet, et rien du montage. */
 interface HostBase {

@@ -71,7 +71,9 @@ describe('#1262 lot 5a — DÉFENSE : la fenêtre naît du pending, et va au si�
     expect(maybeOpenDefense(useGame.getState, useGame.setState, enemy, hero)).toBe(true);
     expect(useGame.getState().pendingDefense, 'la donnée que la fenêtre rend').not.toBeNull();
     const st = etape('defense')!;
-    expect(st.id).toBe('defense-jet');
+    // Id DÉRIVÉ du compteur de la séquence (#1852) : une seconde défense (attaque gratuite) rejoint la
+    // même séquence, et deux étapes d'un id constant y seraient in-adressables.
+    expect(st.id).toBe('defense-jet-0');
     expect(st.kind).toBe('defenseJet');
     expect(st.actorId, 'le DÉFENSEUR porte l’étape').toBe(hero.id);
     expect(useGame.getState().pendingCascade!.title).toBe('Défense');
@@ -111,7 +113,7 @@ describe('#1262 lot 5a — ATTAQUE : l’étape hôte suit son `pendingAttack`',
     openAttackCascade(useGame.getState, useGame.setState, { attackerId: hero.id, targetId: enemy.id, location: null, result: null, weaponUid: 'sw' }, 'Attaque', 'action/attack');
     expect(useGame.getState().pendingAttack).not.toBeNull();
     const st = etape('attack')!;
-    expect(st.id).toBe('attack-jet');
+    expect(st.id).toBe('attack-jet-0'); // id DÉRIVÉ du compteur de la séquence d'accueil (#1852)
     expect(st.kind).toBe('attackJet');
     expect(st.actorId).toBe(hero.id);
   });
@@ -149,7 +151,7 @@ describe('#1262 lot 5a — INCANTATION : `groupOwner` ne se pose QUE par le mint
     poseCast(hero.id, enemy.id);
     openCastCascade(useGame.getState, useGame.setState, hero);
     const st = etape('cast')!;
-    expect(st.id).toBe(`cast-${hero.id}`);
+    expect(st.id).toBe(`cast-${hero.id}-0`); // id DÉRIVÉ du compteur de la séquence d'accueil (#1852)
     expect(st.kind).toBe('cast');
     expect(st.groupOwner).toBeUndefined();
     expect(modalOwnerOf(useGame.getState()), 'COOP : la fenêtre est au siège du lanceur').toBe(hero.id);
