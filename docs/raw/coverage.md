@@ -2009,4 +2009,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: a03f37a350e557264d6f154d3f01282f0cff3ef1 (369 fichiers, 18 dossiers) corps: 57bf670e8ecc995616087d5857d5b0b71e9b99f4 -->
+<!-- sources-empreinte: fa5f9e6034c8b2b99de8fac062f292ea9e4d8417 (369 fichiers, 18 dossiers) corps: 57bf670e8ecc995616087d5857d5b0b71e9b99f4 -->

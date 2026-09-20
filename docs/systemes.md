@@ -133,6 +133,9 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `RigPortrait` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `FxChip/EffectChips` |  |  |  |  |  |  |  |  |  | U |  |  |  |  |  |  |
 | `SpectatorChip` |  |  |  |  |  |  |  |  | U | U |  |  |  |  |  |  |
+| `GearAssignList` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `RewardRecap` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `SceneErrorBoundary` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `LogDrawer` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `InspectPanel` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `EquipmentPanel` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
@@ -164,6 +167,9 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 - `DesignGallery` (src/ui/gallery/DesignGallery.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `CombatBanner` (src/ui/CombatBanner.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `CombatConsole` (src/ui/CombatConsole.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `GearAssignList` (src/ui/GearAssignList.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `RewardRecap` (src/ui/RewardRecap.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `SceneErrorBoundary` (src/ui/SceneErrorBoundary.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `LogDrawer` (src/ui/LogDrawer.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `InspectPanel` (src/ui/InspectPanel.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `EquipmentPanel` (src/ui/EquipmentPanel.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
@@ -196,4 +202,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: 83922ae1d4ef10c0176db03f3d7d5d42a1d4f6ee (1819 fichiers, 2 dossiers) corps: ab834f5ba63f2d7650e09ce5812bef9e9a655b02 -->
+<!-- sources-empreinte: acfadad42b674f1545d5685b6fef27b13a6eb9aa (1819 fichiers, 2 dossiers) corps: e9a0f625d22aae74d33ccdd90f6dde3e6771487f -->
