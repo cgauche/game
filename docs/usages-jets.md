@@ -98,7 +98,7 @@ qu'il étale. La matrice ci-dessus le montre par une ligne quasi vide — c'est 
 
 | Consommateur | Spreads mesurés |
 |---|---|
-| `src/ui/CascadeModal.tsx` | `attackProps`, `defenseProps`, `extendedProps`, `fumbleProps`, `stakeProps`, `testProps`, `trampleProps` |
+| `src/ui/CascadeModal.tsx` | `attackProps!`, `defenseProps!`, `extendedProps!`, `fumbleProps!`, `stakeProps`, `testProps!`, `trampleProps!` |
 
 _1 consommateurs sur 37._
 
@@ -242,4 +242,4 @@ est un angle mort, et les voici :
 - Les **ids de zone** (`Zn`) affichés sont ceux que le JSDoc des props DÉCLARE. Une zone du contrat non
   encore taguée à la primitive n'a pas d'id ici — ce document RELÈVE les ids, il ne les attribue pas.
 
-<!-- sources-empreinte: 130b22d24d2c81c1f59a25958e14f804c9803b70 (1967 fichiers, 134 dossiers) corps: e9573524ccbea81a2359f9a451a309a7fe6c8cb6 -->
+<!-- sources-empreinte: f2ecca4a1f2b381209fa8f340deab73fdb08e35a (1967 fichiers, 134 dossiers) corps: 8f1ee698aaa823822390b65a5262b101aae75e43 -->
