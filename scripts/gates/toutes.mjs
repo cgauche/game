@@ -336,12 +336,17 @@ export const ECRIT_LU = {
         '`check-folio-continuity.test.mjs` IMPORTE le détecteur des sauts de folio, dont l’unique ' +
         'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ; ' +
         'le banc ne fait que LIRE le stock (`readStock`, `lireStockJson`)',
-      'docs/raw/00-index.md':
-        '`build-atlas-index.test.mjs` IMPORTE l’écrivain du bloc des cœurs du routeur de l’Atlas ; son ' +
-        'unique `writeFileSync` vit dans `main()`, sous sa porte `isMain` ' +
-        '(scripts/raw/build-atlas-index.mjs), et le banc n’appelle que ses fonctions PURES ' +
-        '(`lignesDesCoeurs`, `injecter`). Le cas `--check` le LANCE, mais dans un arbre JETABLE de ' +
-        '`os.tmpdir()` dont il est le cwd : c’est cette page-là qu’il écrit, jamais celle du dépôt',
+      // Le MOTIF, pas une page : l’écrivain tient le routeur de l’Atlas ET l’index de chaque cœur,
+      // et la population des cœurs est DÉRIVÉE (#1825) — un chemin de cœur écrit ici sous-déclarerait
+      // dès le cœur suivant. Même motif qu’à sa déclaration de générateur (`injecte`,
+      // scripts/docs/build-all.mjs), lu par la grammaire unique (`correspondGlob`).
+      'docs/raw/**/00-index.md':
+        '`build-atlas-index.test.mjs` IMPORTE l’écrivain des blocs des index de l’Atlas (cœurs du ' +
+        'routeur, domaines de chaque cœur) ; son unique `writeFileSync` vit dans `main()`, sous sa ' +
+        'porte `isMain` (scripts/raw/build-atlas-index.mjs), et le banc n’appelle que ses fonctions ' +
+        'PURES (`lignesDesCoeurs`, `lignesDesDomaines`, `blocsDeLAtlas`, `injecter`). Le cas `--check` ' +
+        'le LANCE, mais dans un arbre JETABLE de `os.tmpdir()` dont il est le cwd : ce sont ces ' +
+        'pages-là qu’il écrit, jamais celles du dépôt',
     },
     lit: ['docs/raw/', 'scripts/raw/', 'scripts/guards/lib/', 'Source/', 'src/'],
     raison:

@@ -27,32 +27,40 @@ plusieurs livres. Les rapports transverses et le routeur des cœurs sont à
 
 ## Domaines
 
-| Domaine | Fichier | État | Chapitres LDB (+ suppléments) |
-|---|---|---|---|
-| Combat | [`combat.md`](combat.md) | ✅ pilote | 13, 14, 15, 62, 63, 76, 85 + AA / ZI / ADE / tomes |
-| Combat naval (Mer des Griffes) | [`combat-naval.md`](combat-naval.md) | 🟡 brouillon | MDG 12, 13, 14 |
-| Tests & Degrés de Réussite | [`tests.md`](tests.md) | ✅ | 12 |
-| États | [`etats.md`](etats.md) | ✅ | 16 |
-| Déplacement & voyage | [`deplacement.md`](deplacement.md) | ✅ | 15 + EDOC |
-| Destin, Résilience & Détermination | [`destin.md`](destin.md) | ✅ | 17 |
-| Traumatisme & Blessures critiques | `traumatisme.md` | ⏳ | 18 |
-| Corruption & mutation | [`corruption.md`](corruption.md) | ✅ | 19 + EDO App.2 + EDOC 8 |
-| Maladies & infections | [`maladies.md`](maladies.md) | ✅ | 20 + MSRC 14/04 |
-| Psychologie | [`psychologie.md`](psychologie.md) | ✅ | 21 + 85 |
-| Caractéristiques & Blessures | [`caracteristiques.md`](caracteristiques.md) | ✅ | 05 + 85 (Taille) |
-| Compétences | [`competences.md`](competences.md) | ✅ | 09 + AA / ADE I / ADE II |
-| Talents | [`talents.md`](talents.md) | ✅ | 10 + AA / ADE |
-| Classes, Carrières & Statut | [`carrieres.md`](carrieres.md) | ✅ | 06, 07, 08 (système+statut+index) — détails/niveau catalogue séparé |
-| Création de personnage | [`creation.md`](creation.md) | ✅ | 04, 05 + MCLB Ann.II + ADE I Ann.I |
-| Avancement (PX) | [`avancement.md`](avancement.md) | ✅ | 07 + PDT 13 |
-| Magie (règles, sorts, Imparfaites) | [`magie.md`](magie.md) | ✅ | 44, 46–51 (règles + tables d100) — catalogue sorts séparé |
-| Religion (prières, bénédictions, miracles) | [`religion.md`](religion.md) | ✅ | 24–25, 40–42 (règles) ; catalogue 26-43 séparé |
-| Équipement, objets & encombrement | [`equipement.md`](equipement.md) | ✅ | 61, 67, 71, 72, 73, 74 (règles) — 64–70, 74–75 catalogue flagué |
-| Économie (monnaie, marché, fabrication) | [`economie.md`](economie.md) | ✅ | 57, 59, 60 + MSRC Compagnon ch.11 |
-| Bestiaire & Traits de créature | [`bestiaire.md`](bestiaire.md) | ✅ | 76, 85 (système) — catalogue 77–83 + ZI / frenchy / EDO / MSR / ADE flagué séparé |
-| Activités & événements | [`activites.md`](activites.md) | ✅ | 22, 23 + AA / ADE II / EDOC |
+**1 domaine = 1 fiche `<clé>.md`** — la clé est l'id STABLE (c'est elle que nomme un lot du workflow
+d'extraction), le titre est de l'affichage. La table ci-dessous est **GÉNÉRÉE** depuis
+`scripts/raw/domaines.json` par `node scripts/raw/build-atlas-index.mjs` : un domaine de plus est une
+entrée de ce registre, jamais une ligne écrite ici. Tout domaine déclaré a sa fiche et toute fiche a
+son domaine — garde `scripts/raw/domaines.test.mjs`. Quels livres et chapitres alimentent une fiche
+se LIT sur la fiche, et se MESURE dans [`../coverage.md`](../coverage.md) et
+[`../reconciliation.md`](../reconciliation.md).
 
-✅ = livré · ⏳ = à construire (fan-out workflow par domaine).
+<!-- ATLAS-DOMAINES:DEBUT -->
+| Domaine | Titre |
+|---|---|
+| [`combat`](combat.md) | Combat |
+| [`combat-naval`](combat-naval.md) | Combat naval (La Mer des Griffes) |
+| [`tests`](tests.md) | Tests & Degrés de Réussite |
+| [`etats`](etats.md) | États |
+| [`deplacement`](deplacement.md) | Déplacement & Voyage (hors combat) |
+| [`destin`](destin.md) | Destin, Résilience & Détermination |
+| [`traumatisme`](traumatisme.md) | Traumatisme & Blessures critiques (LDB 18) |
+| [`corruption`](corruption.md) | Corruption & Mutations |
+| [`maladies`](maladies.md) | Maladies & Infections |
+| [`psychologie`](psychologie.md) | Psychologie |
+| [`caracteristiques`](caracteristiques.md) | Caractéristiques & statistiques dérivées |
+| [`competences`](competences.md) | Compétences |
+| [`talents`](talents.md) | Talents |
+| [`carrieres`](carrieres.md) | Classes, Carrières & Statut |
+| [`creation`](creation.md) | Création de Personnage |
+| [`avancement`](avancement.md) | Avancement (Points d'Expérience) |
+| [`magie`](magie.md) | Magie (règles) |
+| [`religion`](religion.md) | Religion (Prières, Bénédictions, Miracles) |
+| [`equipement`](equipement.md) | Équipement, objets & encombrement |
+| [`economie`](economie.md) | Économie : monnaie, marché, fabrication |
+| [`bestiaire`](bestiaire.md) | Bestiaire & Profils de créature |
+| [`activites`](activites.md) | Activités & Événements (Entre deux aventures) |
+<!-- ATLAS-DOMAINES:FIN -->
 
 ## Catalogues (données mécaniques verbatim — source Marker propre, tous livres)
 

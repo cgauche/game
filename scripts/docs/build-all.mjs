@@ -47,7 +47,7 @@ import {
  *  péremption n'était dite que par la gate `docs:empreinte`, 7 min plus tard dans `ops:publier`.
  *  Ordre = ordre d'exécution. */
 export const GENERATORS = [
-  { runner: 'node', script: 'scripts/raw/build-atlas-index.mjs', targets: [], injecte: ['docs/raw/00-index.md'] },
+  { runner: 'node', script: 'scripts/raw/build-atlas-index.mjs', targets: [], injecte: ['docs/raw/**/00-index.md'] },
   { runner: 'node', script: 'scripts/raw/build-catalogs.mjs', targets: [MOTIF_CATALOGUES], check: false },
   { runner: 'node', script: 'scripts/raw/build-implemente.mjs', targets: [], injecte: ['docs/raw/**/*.md'] },
   { runner: 'node', script: 'scripts/docs/build-primitives.mjs', targets: ['docs/primitives.md'] },
@@ -120,18 +120,24 @@ function tsxEsmDe(cwd) {
   return fileURLToPath(import.meta.resolve('tsx/esm'))
 }
 
-/** Chemins visés par une liste de `targets`/`injecte` — un glob se déplie sur le disque, aux règles
- *  de `motifDeGlob` (`correspondGlob`). La marche est bornée DEUX fois : à la racine, le préfixe
- *  LITTÉRAL du motif (jusqu'au dernier `/` avant le premier joker) ; en PROFONDEUR, seul un motif
- *  porteur de `**` descend — `*` ne traverse pas `/`, et marcher tout `docs/` pour n'en retenir que
- *  `docs/*.md` jetterait tout ce qu'on vient de lire. */
+/** Chemins visés par une liste de `targets`/`injecte` — un glob se déplie sur le disque dans la
+ *  grammaire UNIQUE du dépôt (`motifDeGlob` / `correspondGlob`, `scripts/guards/lib/lister.mjs`), et
+ *  dans aucune autre : ce site ne lit pas le motif lui-même, il le DONNE à lire.
+ *  La marche est bornée DEUX fois, par le motif seul : à la racine, ses segments sans joker ; en
+ *  PROFONDEUR, un dossier n'est descendu que si un PRÉFIXE du motif le vise encore — `docs/*.md` ne
+ *  marche donc pas `docs/raw/`, et `docs/raw/**\/00-index.md` descend tout `docs/raw/`. */
 export function ciblesSurDisque(cibles, cwd) {
   return cibles.flatMap((cible) => {
     if (!cible.includes('*')) return [cible]
-    const dossier = cible.slice(0, cible.indexOf('*')).replace(/\/[^/]*$/, '')
-    const recursif = cible.includes('**')
-    return listerArbre(path.join(cwd, dossier), { absent: 'vide', descendre: () => recursif })
-      .map((n) => `${dossier}/${n}`)
+    const segments = cible.split('/')
+    const dossier = segments.slice(0, segments.findIndex((s) => s.includes('*'))).join('/')
+    const sous = (rel) => (dossier ? `${dossier}/${rel}` : rel)
+    const prefixes = segments.slice(0, -1).map((_, i) => segments.slice(0, i + 1).join('/'))
+    return listerArbre(path.join(cwd, dossier), {
+      absent: 'vide',
+      descendre: (rel) => prefixes.some((p) => correspondGlob(sous(rel), p)),
+    })
+      .map(sous)
       .filter((p) => correspondGlob(p, cible))
   })
 }

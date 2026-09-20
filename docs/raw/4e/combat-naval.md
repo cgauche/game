@@ -7,8 +7,8 @@
 >
 > ⚠️ **Cette fiche est née d'un constat** : les implémentations naval ont répété des violations RAW faute
 > d'avoir lu le mécanisme COMPLET d'abord — une fiche RAW se lit AVANT d'implémenter. Elle est la
-> **référence** ; on implémente CONTRE elle, plus de mémoire. Abréviation `MDG` = CLAUDE.md (à inscrire dans
-> `sources.md`). Combat à pied / qualités d'arme génériques → [`combat.md`](combat.md).
+> **référence** ; on implémente CONTRE elle, plus de mémoire. Abréviation `MDG` : [`sources.md`](../sources.md).
+> Combat à pied / qualités d'arme génériques → [`combat.md`](combat.md).
 > ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ## Sommaire
@@ -434,5 +434,4 @@ désormais les MÊMES fonctions AGNOSTIQUES que le tir individuel (`weaponWithAm
    (double sur 1d100, sur un Test d'équipage réussi — `MDG 13 l.656`). ⚠️ Arc 3 octants : le RAW ne donne pas d'angle.
 
 > Cette fiche est le **brouillon de référence** ; à confronter à la Source par une passe de vérification (les n° de
-> ligne sont post-Marker, le chapitre est sûr, la ligne approximative). Inscrire `MDG` dans `sources.md` + ajouter
-> la ligne « Combat naval » au tableau des domaines de `00-index.md`.
+> ligne sont post-Marker, le chapitre est sûr, la ligne approximative).

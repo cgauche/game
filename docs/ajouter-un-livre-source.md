@@ -281,15 +281,31 @@ livres.
 L'Atlas (cf. `docs/raw/00-index.md`) consolide les règles **par domaine**, pas par livre — un
 nouveau livre vient enrichir les fiches de domaine existantes (`combat.md`, `magie.md`, …) ou en
 créer une nouvelle si le livre introduit un domaine inédit (le combat naval de MDG a justifié
-`docs/raw/4e/combat-naval.md`, un fichier dédié référencé dans la table `Domaines` de `00-index.md`).
+`docs/raw/4e/combat-naval.md`). Un domaine inédit est UNE entrée de `scripts/raw/domaines.json`
+(`{ cle, titre }` sous son cœur) : la fiche porte le nom de la `cle`, le bloc `Domaines` de
+`docs/raw/<coeur>/00-index.md` en est GÉNÉRÉ, et `scripts/raw/domaines.test.mjs` refuse un domaine
+sans fiche comme une fiche sans domaine.
+
+**Un CŒUR de règles de plus** (un livre qui ouvre un corps de règles, pas un supplément) se pose dans
+cet ordre, et l'ordre compte : l'entrée `coeur` de `src/data/books.json`, puis **ensemble** le
+dossier `docs/raw/<coeur>/` avec son `00-index.md` manuscrit ET l'entrée `"<coeur>": [ … ]` de
+`scripts/raw/domaines.json`. Cet index manuscrit DOIT porter la paire de marqueurs
+`<!-- ATLAS-DOMAINES:DEBUT -->` / `<!-- ATLAS-DOMAINES:FIN -->` — c'est entre eux que
+`node scripts/raw/build-atlas-index.mjs` écrit la table des domaines, et il REFUSE (une ligne, exit 1)
+un index sans la paire, comme un cœur déclaré sans un seul domaine : un cœur sans domaine serait un
+survol silencieux.
 
 La chaîne, dans l'ordre — **périmètre → workflow → assemble → apply → gardes** :
 
-1. **Périmètre** — `node scripts/raw/workflow-args.mjs <coeur> --avec-supplements|--coeur-seul`
-   imprime le JSON `{ coeur, supplements, livres: [{ ab, dir, coeur, language }] }`, projeté du
-   registre `src/data/books.json`. Le drapeau est EXIGÉ : le registre dit l'appartenance d'un livre à
-   un cœur, il ne dit RIEN de la compatibilité d'un supplément avec ce cœur — c'est l'appelant qui
-   déclare, et le résultat porte son choix.
+1. **Périmètre** — `node scripts/raw/workflow-args.mjs <coeur> --avec-supplements|--coeur-seul --domaines a,b`
+   imprime le JSON `{ coeur, supplements, domaines: [{ cle, titre }], lot: [cle], livres: [{ ab, dir, coeur, language }] }`,
+   projeté des registres `src/data/books.json` et `scripts/raw/domaines.json`. Le drapeau de
+   suppléments est EXIGÉ : le registre dit l'appartenance d'un livre à un cœur, il ne dit RIEN de la
+   compatibilité d'un supplément avec ce cœur — c'est l'appelant qui déclare, et le résultat porte
+   son choix. `--domaines` l'est aussi : il porte le LOT que CE run traite (une ou plusieurs `cle` du
+   cœur, séparées par des virgules) ; sans lui, ou sur une clé inconnue, la commande LÈVE en nommant
+   les domaines déclarés pour ce cœur. `domaines` est la CARTE complète du cœur, que le workflow
+   emploie pour tenir chaque domaine dans son périmètre.
 2. **Workflow multi-agents** — `scripts/raw/atlas-domain.workflow.js` (opt-in « ultracode », cf. skill
    `orchestrer-des-agents`) : un agent par domaine touché fait `extract → verify` adversarial — la
    vérification reconfronte chaque réf/citation à la source, indispensable (des fabrications de
@@ -299,7 +315,8 @@ La chaîne, dans l'ordre — **périmètre → workflow → assemble → apply �
    **`args`** (champ `args` du lanceur de workflows, collé tel quel). Il ne nomme **aucun livre** —
    rien à y éditer quand un livre s'ajoute. Langue des prompts : la **synthèse** d'une fiche est en
    français, les **citations, termes et abréviations de jeu** restent verbatim dans la langue du livre
-   cité (champ `language`), jamais traduits. Il rend `{ coeur, supplements, domains: […] }`.
+   cité (champ `language`), jamais traduits. Il ne nomme **aucun domaine** non plus : la carte et le
+   lot lui arrivent par le même `args`. Il rend `{ coeur, supplements, domains: […] }`.
 3. **Assemblage de la fiche** — `node scripts/raw/assemble-domain.mjs <output.json> [Titre]` écrit
    `docs/raw/<coeur>/<domaine>.md` depuis ce JSON : le CHEMIN dit le cœur, et c'est la seule chose
    qui le dise. Il LÈVE si le rendu ne porte pas son `coeur`, et NOMME ce cœur dans l'en-tête.

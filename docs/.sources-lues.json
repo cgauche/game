@@ -15279,6 +15279,7 @@
       "scripts/raw/_lib.mjs",
       "scripts/raw/build-atlas-index.mjs",
       "scripts/raw/chapitres.json",
+      "scripts/raw/domaines.json",
       "src/data/books.json",
       "src/data/source/normalize.ts"
     ],
@@ -15425,6 +15426,7 @@
       "scripts/raw/_lib.mjs",
       "scripts/raw/build-catalogs.mjs",
       "scripts/raw/chapitres.json",
+      "scripts/raw/domaines.json",
       "src/data/books.json",
       "src/data/source/normalize.ts"
     ],
@@ -15743,6 +15745,7 @@
       "scripts/raw/_lib.mjs",
       "scripts/raw/build-implemente.mjs",
       "scripts/raw/chapitres.json",
+      "scripts/raw/domaines.json",
       "src/audio/_registry.generated.ts",
       "src/audio/defs/critique.ts",
       "src/audio/defs/des.ts",
@@ -20064,6 +20067,7 @@
       "scripts/raw/_lib.mjs",
       "scripts/raw/chapitres.json",
       "scripts/raw/coverage.mjs",
+      "scripts/raw/domaines.json",
       "src/data/books.json",
       "src/data/source/normalize.ts"
     ],
@@ -20308,6 +20312,7 @@
       "scripts/guards/lib/stock.mjs",
       "scripts/raw/_lib.mjs",
       "scripts/raw/chapitres.json",
+      "scripts/raw/domaines.json",
       "scripts/raw/reanchor-low-stock.json",
       "scripts/raw/reanchor.mjs",
       "scripts/raw/stockNominatif.mjs",
@@ -20662,6 +20667,7 @@
       "scripts/raw/_lib.mjs",
       "scripts/raw/build-implemente.mjs",
       "scripts/raw/chapitres.json",
+      "scripts/raw/domaines.json",
       "scripts/raw/reconcile.mjs",
       "scripts/raw/reconciliation-stock.json",
       "scripts/raw/stockNominatif.mjs",

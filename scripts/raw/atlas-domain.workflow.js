@@ -1,6 +1,6 @@
 export const meta = {
   name: 'atlas-raw-fanout',
-  description: "Atlas RAW AUTONOME. Le PERIMETRE (coeur de regles + livres, avec leur langue) ENTRE par `args`, projete de src/data/books.json par `node scripts/raw/workflow-args.mjs <coeur>` : le script ne nomme aucun livre. Par domaine : Cadrage (auto-decouverte des chapitres) -> Cartographie -> Taxonomie -> Survey de tous les livres du perimetre -> Synthese (tables verbatim) -> Boucle d'audit completude+dedup (loop-until-dry) -> Verif fidelite -> correction fidelite. Le champ Implemente des fiches est DERIVE du code par build-implemente (#487) — le workflow ne pose qu'un placeholder. Traite un LOT de domaines (liste embarquee BATCH). Zero config par domaine.",
+  description: "Atlas RAW AUTONOME. Le PERIMETRE (coeur de regles + livres, avec leur langue) ENTRE par `args`, projete de src/data/books.json par `node scripts/raw/workflow-args.mjs <coeur>` : le script ne nomme aucun livre. Par domaine : Cadrage (auto-decouverte des chapitres) -> Cartographie -> Taxonomie -> Survey de tous les livres du perimetre -> Synthese (tables verbatim) -> Boucle d'audit completude+dedup (loop-until-dry) -> Verif fidelite -> correction fidelite. Le champ Implemente des fiches est DERIVE du code par build-implemente (#487) — le workflow ne pose qu'un placeholder. Le LOT de domaines a traiter et la CARTE des domaines du coeur entrent par le meme `args` (--domaines a,b) : le script ne nomme aucun domaine. Zero config par domaine.",
   phases: [
     { title: 'Cadrage', detail: 'auto-decouverte des chapitres du domaine (index)', model: 'sonnet' },
     { title: 'Cartographie', detail: 'inventaire exhaustif a couvrir', model: 'sonnet' },
@@ -12,41 +12,15 @@ export const meta = {
   ],
 }
 
-// ---- LOT a traiter ce run (juste des NOMS ; le cadrage decouvre les chapitres) ----
-const BATCH = ['traumatisme']
-
-const DOMAINS = {
-  tests: 'Tests, Degrés de Réussite & Difficulté',
-  etats: 'États',
-  deplacement: 'Déplacement & voyage (hors combat)',
-  destin: 'Destin, Résilience & Détermination',
-  traumatisme: 'Traumatisme & Blessures critiques',
-  corruption: 'Corruption & mutation',
-  maladies: 'Maladies & infections',
-  psychologie: 'Psychologie',
-  caracteristiques: 'Caractéristiques & Blessures',
-  competences: 'Compétences',
-  talents: 'Talents',
-  carrieres: 'Classes, Carrières & Statut',
-  creation: 'Création de personnage',
-  avancement: 'Avancement (Points d\'Expérience)',
-  magie: 'Magie (règles, sorts, Incantations imparfaites)',
-  religion: 'Religion (prières, bénédictions, miracles)',
-  equipement: 'Équipement, objets & encombrement',
-  economie: 'Économie (monnaie, marché, fabrication)',
-  bestiaire: 'Bestiaire & Traits de créature',
-  activites: 'Activités & événements',
-}
-
 const MAXLOOPS = 3
-const CARTE_DOMAINES = Object.entries(DOMAINS).map(([cle, titre]) => '- ' + cle + ' : ' + titre).join('\n')
 
 // ---- PERIMETRE, recu du lanceur par `args` ----
-// Le script ne nomme AUCUN livre : le registre lui ENTRE, projete de `src/data/books.json` par
-// `node scripts/raw/workflow-args.mjs <coeur>` (#1825). Chaque defaut de forme LEVE en le NOMMANT :
-// un perimetre devine ferait survoler des livres entiers sans qu'aucun rapport ne le dise.
+// Le script ne nomme AUCUN livre ni AUCUN domaine : le registre lui ENTRE, projete de
+// `src/data/books.json` et de `scripts/raw/domaines.json` par `node scripts/raw/workflow-args.mjs`
+// (#1825). Chaque defaut de forme LEVE en le NOMMANT : un perimetre devine ferait survoler des
+// livres entiers, et un lot devine relacherait des agents sur des domaines que personne n'a demandes.
 if (typeof args === 'undefined' || args === null || typeof args !== 'object' || Array.isArray(args)) {
-  throw new Error('atlas-domain: `args` absent ou non-objet — le lanceur doit passer le perimetre rendu par `node scripts/raw/workflow-args.mjs <coeur>` : { coeur, livres: [{ ab, dir, coeur, language }] }')
+  throw new Error('atlas-domain: `args` absent ou non-objet — le lanceur doit passer le perimetre rendu par `node scripts/raw/workflow-args.mjs <coeur> <drapeau> --domaines a,b` : { coeur, domaines: [{ cle, titre }], lot: [cle], livres: [{ ab, dir, coeur, language }] }')
 }
 const COEUR = args.coeur
 if (typeof COEUR !== 'string' || !COEUR) {
@@ -67,6 +41,29 @@ const REFERENCE = BOOKS.find((b) => b.coeur === COEUR)
 if (!REFERENCE) {
   throw new Error('atlas-domain: aucun livre de coeur « ' + COEUR + ' » dans `args.livres` — le livre de reference du perimetre ne se devine pas')
 }
+// ---- DOMAINES, recus du meme `args` ----
+// La CARTE (`args.domaines`) tient chaque domaine dans son perimetre : le cadrage EXCLUT les
+// chapitres-foyers des autres. Le LOT (`args.lot`) est ce que CE run traite.
+const DOMAINES = Array.isArray(args.domaines) ? args.domaines : []
+if (!DOMAINES.length) {
+  throw new Error('atlas-domain: `args.domaines` absent ou vide — la carte des domaines du coeur « ' + COEUR + ' » ne se devine pas')
+}
+for (const d of DOMAINES) {
+  const manque = ['cle', 'titre'].filter((k) => !d || typeof d[k] !== 'string' || !d[k])
+  if (manque.length) {
+    throw new Error('atlas-domain: une entree de `args.domaines` sans ' + manque.map((k) => '`' + k + '`').join(', ') + ' : ' + JSON.stringify(d))
+  }
+}
+const LOT = Array.isArray(args.lot) ? args.lot : []
+if (!LOT.length) {
+  throw new Error('atlas-domain: `args.lot` absent ou vide — le lot de domaines a traiter ne se devine pas ; domaines du coeur « ' + COEUR + ' » : ' + DOMAINES.map((d) => d.cle).join(', '))
+}
+const inconnus = LOT.filter((c) => !DOMAINES.some((d) => d.cle === c))
+if (inconnus.length) {
+  throw new Error('atlas-domain: domaine(s) « ' + inconnus.join(', ') + ' » du lot inconnu(s) du coeur « ' + COEUR + ' » — domaines declares : ' + DOMAINES.map((d) => d.cle).join(', '))
+}
+const CARTE_DOMAINES = DOMAINES.map((d) => '- ' + d.cle + ' : ' + d.titre).join('\n')
+
 const dirOf = (ab) => (BOOKS.find((b) => b.ab === ab) || {}).dir
 const bookMap = BOOKS.map((b) => '- ' + b.ab + ' = ' + b.dir + ' (langue : ' + b.language + ')').join('\n')
 const LANGUES = [...new Set(BOOKS.map((b) => b.language))].join(', ')
@@ -239,7 +236,7 @@ async function applyGaps(dom, entries, gaps) {
 }
 
 async function runDomain(domain) {
-  const dom = { domain, title: DOMAINS[domain] || domain }
+  const dom = { domain, title: DOMAINES.find((d) => d.cle === domain).titre }
 
   phase('Cadrage')
   const cad = await agent(cadragePrompt(dom), { label: dom.domain + ':cadrage', phase: 'Cadrage', model: 'sonnet', schema: CADRAGE_SCHEMA })
@@ -313,9 +310,9 @@ async function runDomain(domain) {
 }
 
 // ============ EXECUTION (lot) ============
-log('Fan-out Atlas RAW — lot : ' + BATCH.join(', '))
+log('Fan-out Atlas RAW — lot : ' + LOT.join(', '))
 const domains = []
-for (const d of BATCH) {
+for (const d of LOT) {
   log('==== Domaine : ' + d + ' ====')
   const res = await runDomain(d)
   if (res) domains.push(res)

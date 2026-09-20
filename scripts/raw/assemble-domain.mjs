@@ -29,6 +29,11 @@ export function coeurDuRendu(data, racine = {}, source = '<entrée>') {
 export const dossierDuCoeur = (coeur, rawDir = RAWDIR) => join(rawDir, coeur)
 export const cheminDeFiche = (coeur, domain, rawDir = RAWDIR) => join(dossierDuCoeur(coeur, rawDir), `${domain}.md`)
 
+/** L'EN-TÊTE d'une fiche de domaine : le `titre` du registre (`scripts/raw/domaines.json`) en est le
+ *  suffixe, et le préfixe ne s'écrit qu'ICI — `domaines.test.mjs` juge les fiches par cette même
+ *  fonction, la FICHE faisant foi sur le titre. PUR. */
+export const enTeteDeFiche = (titre) => `# Atlas RAW — ${titre}`
+
 const slug = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 -]/g, '').trim().replace(/\s+/g, '-')
 
 // Placeholder du champ Implemente : build-implemente le remplira a partir du code (jamais ecrit a la
@@ -58,7 +63,7 @@ export function assemble(data, { racine = {}, source = '<entrée>', titleArg } =
   if (data.inventoryCount != null) meta.push(`${data.inventoryCount} éléments inventoriés`)
   if (data.auditLoops != null) meta.push(`${data.auditLoops} boucle(s) d'audit` + (data.lastAuditDry ? ' (sec)' : ' (plafond atteint)'))
 
-  const out = `# Atlas RAW — ${title}
+  const out = `${enTeteDeFiche(title)}
 
 > Référentiel **autosuffisant** des règles du cœur **${coeur}** (RAW), consolidé sur les livres autorisés, à usage
 > d'agent (répondre + auditer le code sans rouvrir les livres). Chaque règle cite \`LIVRE NN l.X-Y\`

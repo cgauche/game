@@ -7,13 +7,14 @@
 // INVARIANT #1825 : le code ne nomme AUCUN livre — un livre de plus, c'est de la DONNÉE. Ce qu'on
 // sait du LIVRE vit dans son entrée de `src/data/books.json` (sigle, dossier, langue, cœur, teneur,
 // niveau de section) ; ce qu'on sait de ses CHAPITRES vit dans `scripts/raw/chapitres.json`
-// (hors-règle, catalogues), registre d'OUTILLAGE dont ce fichier est le LECTEUR UNIQUE. Zéro ligne
-// de code pour l'un comme pour l'autre.
+// (hors-règle, catalogues) et ce qu'on sait des DOMAINES d'un cœur dans `scripts/raw/domaines.json` :
+// registres d'OUTILLAGE dont ce fichier est le LECTEUR UNIQUE. Zéro ligne de code pour aucun d'eux.
 import { readFileSync } from 'node:fs'
 import { listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { join } from 'node:path'
 import booksData from '../../src/data/books.json' with { type: 'json' }
 import chapitresData from './chapitres.json' with { type: 'json' }
+import domainesData from './domaines.json' with { type: 'json' }
 // Normalisation de citation : SOURCE UNIQUE dans `src/data/source/normalize.ts` (module feuille en
 // syntaxe effaçable, chargé tel quel par Node nu comme par vitest). Importée ICI parce que ce
 // fichier s'en sert lui-même (`findAnchor`, `sectionsOf`), et RÉ-EXPORTÉE plus bas pour ses 15
@@ -133,6 +134,35 @@ export const cataloguesDe = (chapitres, registre = booksData) => {
 }
 const CATALOGUES = cataloguesDe(chapitresData)
 export const livresDeCatalogue = (id, catalogues = CATALOGUES) => catalogues.get(id) ?? []
+
+// Ce qu'on sait des DOMAINES d'un cœur vit dans le registre d'OUTILLAGE `scripts/raw/domaines.json`,
+// à côté de celui des chapitres : un domaine de plus, un cœur de plus, c'est UNE entrée — zéro
+// ligne de code, ni ici, ni au workflow d'extraction, ni à l'index du cœur (bloc GÉNÉRÉ).
+// Une clé de domaine est une AIRE DOCUMENTAIRE — le nom de la fiche qui la porte —, JAMAIS une
+// affirmation d'identité mécanique : deux cœurs peuvent porter la même clé sans que rien ne les
+// rapproche, et la comparaison de deux cœurs se fait à la granularité du TOPIC, pas du domaine.
+// PORTÉE : ce fichier est le LECTEUR UNIQUE du registre et n'expose la table complète à personne —
+// `domainesDe` rend les domaines d'UN cœur, `coeursDeDomaines` ne rend que des noms de cœur.
+// Ce que `domaines.test.mjs` MESURE, et rien de plus : aucun autre source de `scripts/` ou `src/` ne
+// NOMME le fichier du registre hors commentaire, et aucun export d'ici ne rend une table keyée par
+// cœur. Un chemin ASSEMBLÉ à l'exécution passerait sous la garde (limite dite au banc).
+const REGISTRE_DOMAINES = domainesData
+
+/** Les cœurs pour lesquels des domaines sont déclarés, dans l'ORDRE DU FICHIER. */
+export const coeursDeDomaines = (registre = REGISTRE_DOMAINES) => Object.keys(registre)
+
+/**
+ * Les domaines d'UN cœur, `[{ cle, titre }]`, dans l'ORDRE DU FICHIER — celui du rendu.
+ * LÈVE en NOMMANT la cause : un cœur sans domaine rendrait un lot vide, un index sans bloc et un
+ * workflow qui survole, sans qu'aucun rapport ne le dise.
+ */
+export function domainesDe(coeur, registre = REGISTRE_DOMAINES) {
+  const dits = Object.keys(registre).join(', ') || '(aucun)'
+  const liste = typeof coeur === 'string' && Object.hasOwn(registre, coeur) ? registre[coeur] : null
+  if (!liste || !liste.length)
+    throw new Error(`_lib: aucun domaine déclaré pour le cœur « ${coeur} » dans scripts/raw/domaines.json — cœurs porteurs de domaines : ${dits}`)
+  return liste
+}
 
 // Échappe une chaîne pour l'insérer littéralement dans une RegExp.
 export const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

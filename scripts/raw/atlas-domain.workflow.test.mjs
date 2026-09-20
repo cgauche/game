@@ -1,9 +1,10 @@
 // GARDE DE FORME du workflow d'extraction de fiches d'Atlas (#1825 lot E).
 //
-// L'invariant : le script ne NOMME aucun livre — ni sigle, ni titre, ni dossier, ni édition, ni
-// cardinal de livres/chapitres —, ni dans son code, ni dans un PROMPT. Le périmètre (cœur de règles,
-// livres, dossiers, LANGUES) lui ENTRE par le global `args`, projeté de `src/data/books.json` par
-// `perimetreDeCoeur` (`workflow-args.mjs`).
+// L'invariant : le script ne NOMME aucun livre ni aucun DOMAINE — ni sigle, ni titre, ni dossier, ni
+// édition, ni cardinal de livres/chapitres —, ni dans son code, ni dans un PROMPT. Le périmètre
+// (cœur de règles, livres, dossiers, LANGUES) et le vocabulaire des DOMAINES (carte du cœur, lot à
+// traiter) lui ENTRENT par le global `args`, projetés de `src/data/books.json` et de
+// `scripts/raw/domaines.json` par `perimetreDeCoeur` (`workflow-args.mjs`).
 //
 // Un banc qui ne lirait que le CODE raterait le cas qui a coûté : une identité de livre en dur dans
 // un prompt, invisible à tout grep de table. Ce banc JOUE donc le script (enveloppe partagée
@@ -21,7 +22,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { REGISTRE_LIVRES } from './_lib.mjs'
 import { perimetreDeCoeur } from './workflow-args.mjs'
-import { coeursDuRegistre } from './_lib.mjs'
+import { coeursDeDomaines, coeursDuRegistre, domainesDe } from './_lib.mjs'
 import { scanForbiddenCounts } from './check-atlas-counts.mjs'
 import { jouerWorkflow } from '../guards/lib/jouer-workflow.mjs'
 
@@ -36,7 +37,18 @@ const REGISTRE_FIXTURE = [
   { id: 'supplement-gamma', abbr: 'SPG', label: 'Appendice Gamma', dir: 'Source/Fixture - Supplement Gamma', language: 'Langue-B' },
   { id: 'sans-extraction', abbr: 'SXX', label: 'Jamais Extrait', language: 'Langue-A' },
 ]
-const PERIMETRE = () => perimetreDeCoeur('alpha', { supplements: true, registre: REGISTRE_FIXTURE })
+// Domaines de FIXTURE : clés et titres INVENTÉS, deux cœurs — rien du registre réel.
+const DOMAINES_FIXTURE = {
+  alpha: [
+    { cle: 'domaine-un', titre: 'Premier Domaine de Fixture' },
+    { cle: 'domaine-deux', titre: 'Second Domaine de Fixture' },
+  ],
+  beta: [{ cle: 'domaine-trois', titre: 'Troisieme Domaine de Fixture' }],
+}
+const LOT = ['domaine-un']
+const PERIMETRE = () => perimetreDeCoeur('alpha', {
+  supplements: true, lot: LOT, registre: REGISTRE_FIXTURE, registreDomaines: DOMAINES_FIXTURE,
+})
 
 /** Rendus d'agent valides ; `trous` fait passer le run par `applyGaps` et la re-vérification. */
 const repondreAvec = (trous) => {
@@ -79,11 +91,12 @@ const fonctionsDePrompt = [...SOURCE.matchAll(/function (\w+Prompt)\s*\([^)]*\)\
 /** Bordures UNICODE : `\w` laisserait passer « ZI, ÉAA, l'ACE. */
 const borde = (s) => new RegExp(`(?<![\\p{L}\\p{N}])${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}\\p{N}])`, 'u')
 
-/** Toute identité du registre RÉEL : sigles, libellés, dossiers, cœurs, langues. */
+/** Toute identité du registre RÉEL : sigles, libellés, dossiers, cœurs, langues, TITRES de domaine. */
 const identitesReelles = () => [
   ...REGISTRE_LIVRES.flatMap((b) => [b.abbr, b.label, b.dir].filter(Boolean)),
   ...coeursDuRegistre(REGISTRE_LIVRES),
   ...new Set(REGISTRE_LIVRES.map((b) => b.language).filter(Boolean)),
+  ...coeursDeDomaines().flatMap((c) => domainesDe(c).map((d) => d.titre)),
 ]
 
 test('workflow Atlas : CHAQUE fonction de prompt du script a produit un prompt (aucune phase muette)', async () => {
@@ -105,6 +118,39 @@ test('workflow Atlas : aucune IDENTITÉ du registre RÉEL ne part dans un prompt
   assert.deepEqual(fuites, [], `identités du registre réel écrites en dur dans un prompt :\n${fuites.join('\n')}`)
 })
 
+/**
+ * Les noms de DOMAINE qu'un prompt ÉMET, lus à leur FORME d'émission : la carte du cœur (le bloc de
+ * lignes `- <cle> : <titre>` que sa phrase d'introduction porte) et l'id du domaine du run. On ne
+ * CHERCHE aucune clé réelle dans le texte — une `cle` est un mot commun (« combat », « magie »,
+ * « tests »), et un tel détecteur rougirait sur du français. C'est l'ENSEMBLE émis qu'on confronte.
+ */
+function nomsDeDomaineEmis(prompts) {
+  const noms = new Set()
+  for (const prompt of prompts.values()) {
+    // `(id …)` est ANCRÉ à l'en-tête du cadrage : la même forme sert aussi aux id de TOPIC, qui
+    // viennent du rendu d'agent, pas des `args`.
+    const cadrage = /^CADRAGE du domaine "([^"]+)" \(id ([^)]+)\)/m.exec(prompt)
+    if (cadrage) { noms.add(cadrage[1]); noms.add(cadrage[2]) }
+    for (const m of prompt.matchAll(/le TIEN est "([^"]+)"/g)) noms.add(m[1])
+    const carte = /^.*domaines de l Atlas.*$\n((?:- .+\n?)+)/m.exec(prompt)
+    for (const ligne of carte ? carte[1].trim().split('\n') : []) {
+      const vu = /^- (\S+) : (.+)$/.exec(ligne)
+      if (vu) { noms.add(vu[1]); noms.add(vu[2]) }
+    }
+  }
+  return noms
+}
+
+test('workflow Atlas : tout nom de DOMAINE émis dans un prompt vient des `args` de la fixture', async () => {
+  const attendus = PERIMETRE().domaines.flatMap((d) => [d.cle, d.titre]).sort()
+  assert.deepEqual(
+    [...nomsDeDomaineEmis(await promptsDesDeuxRuns())].sort(),
+    attendus,
+    'la carte des domaines émise doit être EXACTEMENT celle des `args` — un nom de plus est une ' +
+      'identité écrite en dur, un nom de moins une carte devenue muette (que rien ne jugerait)',
+  )
+})
+
 test('workflow Atlas : aucun CARDINAL de livres ou de chapitres dans un prompt', async () => {
   const prompts = await promptsDesDeuxRuns()
   const fuites = []
@@ -115,7 +161,7 @@ test('workflow Atlas : aucun CARDINAL de livres ou de chapitres dans un prompt',
 
 test('workflow Atlas : le livre de RÉFÉRENCE est le livre de cœur du périmètre reçu', async () => {
   const prompts = await promptsDesDeuxRuns()
-  const cadrage = prompts.get('Cadrage:traumatisme:cadrage')
+  const cadrage = prompts.get(`Cadrage:${LOT[0]}:cadrage`)
   assert.ok(cadrage, `prompt de cadrage absent — labels : ${[...prompts.keys()].join(' · ')}`)
   assert.match(cadrage, /Source\/Fixture - Base Alpha\/00 - Index\.md/)
   assert.match(cadrage, /livre de REFERENCE du perimetre, BKA/)
@@ -126,9 +172,9 @@ test('workflow Atlas : le livre de RÉFÉRENCE est le livre de cœur du périmè
 
 test('workflow Atlas : la consigne de CITATION suit la langue du livre cité', async () => {
   const prompts = await promptsDesDeuxRuns()
-  assert.match(prompts.get('Survey:traumatisme:survey:BKA'), /Livre : BKA \(langue : Langue-A\)/)
-  assert.match(prompts.get('Survey:traumatisme:survey:SPG'), /Livre : SPG \(langue : Langue-B\)/)
-  for (const cle of ['Synthese:traumatisme:synth:topic-un', 'Audit:traumatisme:augment:topic-un']) {
+  assert.match(prompts.get(`Survey:${LOT[0]}:survey:BKA`), /Livre : BKA \(langue : Langue-A\)/)
+  assert.match(prompts.get(`Survey:${LOT[0]}:survey:SPG`), /Livre : SPG \(langue : Langue-B\)/)
+  for (const cle of [`Synthese:${LOT[0]}:synth:topic-un`, `Audit:${LOT[0]}:augment:topic-un`]) {
     const p = prompts.get(cle)
     assert.ok(p, `prompt ${cle} absent — labels : ${[...prompts.keys()].join(' · ')}`)
     assert.match(p, /LANGUE DE LA FICHE : la SYNTHESE que tu rediges est en FRANCAIS/)
@@ -144,13 +190,17 @@ test('workflow Atlas : le survey parcourt EXACTEMENT les livres du périmètre r
 })
 
 test('workflow Atlas : un `args` absent ou mal formé LÈVE en nommant la cause', async () => {
-  const { livres } = PERIMETRE()
+  const { livres, domaines } = PERIMETRE()
   const cas = [
     [undefined, /`args` absent ou non-objet/],
     [{ livres }, /`args\.coeur` absent ou non textuel/],
     [{ coeur: 'alpha' }, /`args\.livres` absent ou vide/],
     [{ coeur: 'alpha', livres: [{ ab: 'BKA', dir: 'Source/Fixture - Base Alpha' }] }, /sans `language`/],
     [{ coeur: 'alpha', livres: livres.filter((l) => !l.coeur) }, /aucun livre de coeur « alpha »/],
+    [{ coeur: 'alpha', livres }, /`args\.domaines` absent ou vide/],
+    [{ coeur: 'alpha', livres, domaines: [{ cle: 'domaine-un' }] }, /`args\.domaines` sans `titre`/],
+    [{ coeur: 'alpha', livres, domaines }, /`args\.lot` absent ou vide/],
+    [{ coeur: 'alpha', livres, domaines, lot: ['domaine-jamais-declare'] }, /« domaine-jamais-declare » du lot inconnu/],
   ]
   for (const [argsDuRun, motif] of cas) {
     await assert.rejects(() => jouerWorkflow(SCRIPT, argsDuRun, repondreAvec(false)), motif, `args = ${JSON.stringify(argsDuRun)}`)

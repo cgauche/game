@@ -1,0 +1,26 @@
+{
+  "4e": [
+    { "cle": "combat", "titre": "Combat" },
+    { "cle": "combat-naval", "titre": "Combat naval (La Mer des Griffes)" },
+    { "cle": "tests", "titre": "Tests & Degrés de Réussite" },
+    { "cle": "etats", "titre": "États" },
+    { "cle": "deplacement", "titre": "Déplacement & Voyage (hors combat)" },
+    { "cle": "destin", "titre": "Destin, Résilience & Détermination" },
+    { "cle": "traumatisme", "titre": "Traumatisme & Blessures critiques (LDB 18)" },
+    { "cle": "corruption", "titre": "Corruption & Mutations" },
+    { "cle": "maladies", "titre": "Maladies & Infections" },
+    { "cle": "psychologie", "titre": "Psychologie" },
+    { "cle": "caracteristiques", "titre": "Caractéristiques & statistiques dérivées" },
+    { "cle": "competences", "titre": "Compétences" },
+    { "cle": "talents", "titre": "Talents" },
+    { "cle": "carrieres", "titre": "Classes, Carrières & Statut" },
+    { "cle": "creation", "titre": "Création de Personnage" },
+    { "cle": "avancement", "titre": "Avancement (Points d'Expérience)" },
+    { "cle": "magie", "titre": "Magie (règles)" },
+    { "cle": "religion", "titre": "Religion (Prières, Bénédictions, Miracles)" },
+    { "cle": "equipement", "titre": "Équipement, objets & encombrement" },
+    { "cle": "economie", "titre": "Économie : monnaie, marché, fabrication" },
+    { "cle": "bestiaire", "titre": "Bestiaire & Profils de créature" },
+    { "cle": "activites", "titre": "Activités & Événements (Entre deux aventures)" }
+  ]
+}

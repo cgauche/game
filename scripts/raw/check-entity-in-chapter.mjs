@@ -3,7 +3,7 @@
 // juste : #600 a trouvé deux talents (`empreint-d-ulgu`, `empreint-de-la-magie`) tagués `LDB 10`
 // alors que leur texte vit en NADJ/EDOC — la graphie passait toutes les gardes de bornage de ligne
 // (check-refs/check-code-refs/citation-graphy-guard) parce qu'elles vérifient une PLAGE de ligne,
-// jamais le CONTENU. Ici : pour chaque entrée `docs/raw/4e/talents.md` de forme
+// jamais le CONTENU. Ici : pour chaque entrée de la fiche `<coeur>/talents.md` de forme
 //   ### <Nom>
 //   **Source :** <ABBR> <N> ...
 // on résout le fichier-chapitre (`chapterFile`, _lib.mjs) et on vérifie que `<Nom>` (normalisé :
@@ -77,7 +77,7 @@ function chapterTextOf(cf) {
   return chapterTextCache.get(cf.path)
 }
 
-/** Parcourt un doc Atlas (défaut : docs/raw/4e/talents.md) et retourne les entrées `### <Nom>` /
+/** Parcourt un doc Atlas (cible RÉSOLUE par `ciblesDeLAtlas`, jamais écrite) et retourne les entrées `### <Nom>` /
  *  `**Source :** <ABBR> <N>…` dont `<Nom>` (normalisé) est ABSENT du texte du chapitre cité —
  *  `{ doc, row, name, ref, chapterFile }`. Réf sans chapitre numérique résoluble = ignorée. */
 export function scanMissingEntities(docPath) {

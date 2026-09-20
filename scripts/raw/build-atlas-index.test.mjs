@@ -12,13 +12,24 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { avecAtlasFixture } from './atlasFixture.mjs'
-import { DEBUT, FIN, INDEX_PATH, injecter, lignesDesCoeurs } from './build-atlas-index.mjs'
+import { avecAtlasFixture, coeurDeBanc } from './atlasFixture.mjs'
+import {
+  DEBUT, DEBUT_DOMAINES, FIN, FIN_DOMAINES, INDEX_PATH, NOM_INDEX, blocsDeLAtlas, injecter,
+  lignesDesCoeurs, lignesDesDomaines,
+} from './build-atlas-index.mjs'
 
 const SCRIPT = fileURLToPath(new URL('./build-atlas-index.mjs', import.meta.url))
 
 const COEUR_A = 'coeur-alpha'
 const COEUR_B = 'coeur-beta'
+/** Domaines de fixture : cœurs, clés et titres INVENTÉS — le banc dit le RÉGIME, pas l'état du jour. */
+const DOMAINES = {
+  [COEUR_A]: [
+    { cle: 'domaine-un', titre: 'Premier Domaine de Fixture' },
+    { cle: 'domaine-deux', titre: 'Second Domaine de Fixture' },
+  ],
+  [COEUR_B]: [{ cle: 'domaine-trois', titre: 'Troisieme Domaine de Fixture' }],
+}
 /** Registre de fixture : deux cœurs inventés, un supplément SANS cœur, un livre non extrait. */
 const REGISTRE = [
   { abbr: 'XAA', dir: 'Livre Alpha', coeur: COEUR_A },
@@ -78,16 +89,59 @@ test('injecter — le hors-bloc est INTOUCHÉ, le bloc est remplacé', () => {
   assert.equal(injecter(une, ['- a']), une)
 })
 
-test('--check : un bloc PÉRIMÉ sort 1 ; le bloc réécrit est à jour', () => {
-  const arbre = mkdtempSync(join(tmpdir(), 'atlas-index-banc-'))
+test('le bloc des DOMAINES lie chaque CLÉ à sa fiche, et porte son titre en affichage', () => {
+  assert.deepEqual(lignesDesDomaines(DOMAINES[COEUR_A]), [
+    '| Domaine | Titre |',
+    '|---|---|',
+    '| [`domaine-un`](domaine-un.md) | Premier Domaine de Fixture |',
+    '| [`domaine-deux`](domaine-deux.md) | Second Domaine de Fixture |',
+  ])
+})
+
+test('blocsDeLAtlas — le routeur racine, puis l’index de CHAQUE cœur à dossier ; rien d’écrit à la main', () => {
+  avecAtlasFixture(
+    { [NOM_INDEX]: '# Alpha\n', 'domaine-un.md': '# Un\n' },
+    (rawDir) => {
+      const blocs = blocsDeLAtlas(rawDir, REGISTRE, DOMAINES)
+      assert.deepEqual(blocs.map((b) => [b.chemin, b.debut]), [
+        [join(rawDir, NOM_INDEX), DEBUT],
+        [join(rawDir, COEUR_A, NOM_INDEX), DEBUT_DOMAINES],
+      ])
+      // Le cœur SANS dossier n'a pas de bloc : il n'a pas de page où l'écrire.
+      assert.equal(blocs.some((b) => b.chemin.includes(COEUR_B)), false)
+      assert.deepEqual(blocs[1].lignes, lignesDesDomaines(DOMAINES[COEUR_A]))
+    },
+    { coeur: COEUR_A },
+  )
+})
+
+test('un index de cœur SANS sa paire de marqueurs : refus d’UNE ligne, jamais une trace de pile', () => {
+  const arbre = mkdtempSync(join(tmpdir(), 'atlas-index-refus-'))
+  const coeur = coeurDeBanc()
   try {
-    mkdirSync(join(arbre, 'docs', 'raw'), { recursive: true })
+    mkdirSync(join(arbre, 'docs', 'raw', coeur), { recursive: true })
+    writeFileSync(join(arbre, INDEX_PATH), `# Atlas\n\n${DEBUT}\n${FIN}\n`, 'utf8')
+    writeFileSync(join(arbre, 'docs', 'raw', coeur, NOM_INDEX), '# Cœur\n\nun index sans marqueurs\n', 'utf8')
+    const rendu = spawnSync(process.execPath, [SCRIPT], { cwd: arbre, encoding: 'utf8' })
+    assert.equal(rendu.status, 1)
+    assert.match(rendu.stderr, /marqueurs/)
+    assert.equal(rendu.stderr.trim().split('\n').length, 1, `refus en plusieurs lignes :\n${rendu.stderr}`)
+  } finally { rmSync(arbre, { recursive: true, force: true }) }
+})
+
+test('--check : un bloc PÉRIMÉ sort 1 — au routeur comme à l’index d’un cœur', () => {
+  const arbre = mkdtempSync(join(tmpdir(), 'atlas-index-banc-'))
+  const coeur = coeurDeBanc()
+  try {
+    mkdirSync(join(arbre, 'docs', 'raw', coeur), { recursive: true })
     const page = join(arbre, INDEX_PATH)
+    const pageDuCoeur = join(arbre, 'docs', 'raw', coeur, NOM_INDEX)
     writeFileSync(page, `# Atlas\n\n${DEBUT}\n- cœur inventé d'une autre époque\n${FIN}\n`, 'utf8')
+    writeFileSync(pageDuCoeur, `# Cœur\n\n${DEBUT_DOMAINES}\n| domaine inventé d'une autre époque |\n${FIN_DOMAINES}\n`, 'utf8')
     const jouer = (...args) => spawnSync(process.execPath, [SCRIPT, ...args], { cwd: arbre, encoding: 'utf8' })
     assert.equal(jouer('--check').status, 1)
     assert.equal(jouer().status, 0)
-    assert.equal(readFileSync(page, 'utf8').includes("d'une autre époque"), false)
+    for (const p of [page, pageDuCoeur]) assert.equal(readFileSync(p, 'utf8').includes("d'une autre époque"), false)
     assert.equal(jouer('--check').status, 0)
   } finally { rmSync(arbre, { recursive: true, force: true }) }
 })

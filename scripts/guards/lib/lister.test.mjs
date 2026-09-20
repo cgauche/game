@@ -15,16 +15,18 @@
 //      lint ne sait PAS exprimer : un module ATTEINT qui vit hors des globs du mur.
 //  (d) MOTIF     : `correspondGlob` lit un motif aux règles du PATHSPEC git — `*` ne franchit pas un
 //      `/`, `**` vaut ZÉRO ou plusieurs dossiers. Le cas qui fait la fonction : une cible de
-//      générateur descendue d'un dossier (`docs/raw/<coeur>/catalogue-*.md`).
+//      générateur descendue d'un dossier (`docs/raw/<coeur>/catalogue-*.md`). Et l'ACCORD des deux
+//      lecteurs de cette grammaire : le dépliage sur disque (`ciblesSurDisque`) rend EXACTEMENT ce
+//      que le filtre rend — une grammaire de motif locale à un site rendrait un motif inerte.
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { listerDossier, listerArbre, parUnitesDeCode, parLibelle, correspondGlob } from './lister.mjs'
 import { clotureDImports } from './importGraph.mjs'
-import { GENERATORS, NON_GENERATOR_CHECKS } from '../../docs/build-all.mjs'
+import { ciblesSurDisque, GENERATORS, NON_GENERATOR_CHECKS } from '../../docs/build-all.mjs'
 import configEslint from '../../../eslint.config.js'
 
 const RACINE_DEPOT = fileURLToPath(new URL('../../../', import.meta.url)).replace(/[\\/]$/, '')
@@ -212,4 +214,42 @@ test('correspondGlob : `**` vaut ZÉRO ou plusieurs dossiers', () => {
 
 test('correspondGlob : un chemin rendu par Windows se lit en POSIX', () => {
   assert.equal(correspondGlob('pages\\raw\\un-coeur\\catalogue-divers.md', 'pages/raw/**/catalogue-*.md'), true)
+})
+
+/** L'arbre FORGÉ du volet (d) : deux niveaux de dossier, la page posée à la racine du motif comme
+ *  celle posée dessous, et un voisin qu'aucun motif ne doit attraper. */
+const PAGES_FORGEES = [
+  'pages/00-index.md',
+  'pages/systemes.md',
+  'pages/raw/00-index.md',
+  'pages/raw/combat.md',
+  'pages/raw/un-coeur/00-index.md',
+  'pages/raw/un-coeur/combat.md',
+  'pages/raw/un-coeur/plus-bas/00-index.md',
+  'pages/autre/00-index.md',
+]
+
+test('ciblesSurDisque ⇔ correspondGlob : les DEUX lecteurs du motif s’accordent sur un arbre FORGÉ', () => {
+  const racine = mkdtempSync(join(tmpdir(), 'cibles-'))
+  try {
+    for (const page of PAGES_FORGEES) {
+      mkdirSync(join(racine, dirname(page)), { recursive: true })
+      writeFileSync(join(racine, page), '')
+    }
+    // Joker MÉDIAN (`**` et `*`), joker FINAL, motif sans joker : le dépliage du disque doit rendre
+    // exactement ce que le filtre retient — ni plus (une marche trop large), ni moins (un motif
+    // inerte, qu'aucune page ne satisfait alors que le filtre dit vrai).
+    for (const motif of [
+      'pages/raw/**/00-index.md', 'pages/raw/*/00-index.md', 'pages/*.md', 'pages/**/combat.md',
+      'pages/**/*.md', 'pages/raw/00-index.md',
+    ]) {
+      assert.deepEqual(
+        ciblesSurDisque([motif], racine).sort(),
+        PAGES_FORGEES.filter((p) => correspondGlob(p, motif)).sort(),
+        `déplié ≠ filtré pour « ${motif} »`,
+      )
+    }
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
 })
