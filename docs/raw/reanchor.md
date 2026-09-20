@@ -8,27 +8,27 @@
 
 > (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).
 
-## avancement.md
+## 4e/avancement.md
 
 | Réf | Statut | Détail |
 |---|---|---|
 | `LDB 07 l.43` | ❌ LOW | « votre carrière va influer sur son gain en expé… » — aucune occurrence |
 | `LDB 07 l.84` | ❌ LOW | « gagner de l'argent… » — aucune occurrence |
 
-## bestiaire.md
+## 4e/bestiaire.md
 
 | Réf | Statut | Détail |
 |---|---|---|
 | `LDB 85 l.276-277` | ❌ LOW | « augmentez f et e de +10, et réduisez ag de -5 … » — aucune occurrence |
 | `LDB 85 l.387` | ❌ LOW | « corps à corps (bagarre)… » — aucune occurrence |
 
-## carrieres.md
+## 4e/carrieres.md
 
 | Réf | Statut | Détail |
 |---|---|---|
 | `LDB 07 l.84` | ❌ LOW | « gagner de l'argent… » — aucune occurrence |
 
-## combat.md
+## 4e/combat.md
 
 | Réf | Statut | Détail |
 |---|---|---|
@@ -39,26 +39,26 @@
 | `ZI 13 l.984` | ❌ LOW | « nuée - la nuée est considérée comme une seule … » — aucune occurrence |
 | `AA 10 l.215` | ❌ LOW | « pierrier 20 co 5 rare 30 +14 dangereuse, recha… » — aucune occurrence |
 
-## corruption.md
+## 4e/corruption.md
 
 | Réf | Statut | Détail |
 |---|---|---|
 | `LDB 19 l.51-52` | ❌ LOW | « sur un échec, vous gagnez 2 points de corrupti… » — texte trouvé en LDB 21 l.54 |
 | `LDB 17 l.67` | ❌ LOW | « je te renie !… » — aucune occurrence |
 
-## creation.md
+## 4e/creation.md
 
 | Réf | Statut | Détail |
 |---|---|---|
 | `LDB 05 l.459` | ❌ LOW | « consultez votre carrière. recherchez dans le s… » — aucune occurrence |
 
-## deplacement.md
+## 4e/deplacement.md
 
 | Réf | Statut | Détail |
 |---|---|---|
 | `MDG 15 l.76` | ❌ LOW | « distance/jour suppose un équipage permettant d… » — aucune occurrence |
 
-## etats.md
+## 4e/etats.md
 
 | Réf | Statut | Détail |
 |---|---|---|
@@ -68,9 +68,9 @@
 | `LDB 46 l.126` | ❌ LOW | « 66-70 régurgitation : gagnez l'état sonné, qui… » — aucune occurrence |
 | `NADJ 05 l.117` | ❌ LOW | « état fatigué… » — aucune occurrence |
 
-## tests.md
+## 4e/tests.md
 
 | Réf | Statut | Détail |
 |---|---|---|
 | `LDB 17 l.68` | ❌ LOW | « "je ne faillirai pas !" : au lieu de lancer le… » — aucune occurrence |
-<!-- sources-empreinte: 2e3d724a0cd741b824cc5626ec019e5cae1e3c6d (219 fichiers, 15 dossiers) corps: ed5c50e5f85ddb3eaf2cc8f09e649488c1f4f974 -->
+<!-- sources-empreinte: 37ce6b576af9ac54e7ee94231dfa0e5b142082c1 (219 fichiers, 16 dossiers) corps: 9af94bd9a99ba8aadb862576de3189bd02a17eca -->

@@ -27,28 +27,28 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 01 | VERSION ORIGINALE | ➖ hors-règle | « VERSION ORIGINALE » / « TRADUCTION FRANÇAISE » — crédits d'édition, aucune règle |
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | *(artefact OCR)* | ➖ | |
-| 04 | Cités et villes | ✅ | 7 (creation.md ×7) |
-| 05 | Points de vue | ✅ | 90 (creation.md ×52) |
+| 04 | Cités et villes | ✅ | 7 (4e/creation.md ×7) |
+| 05 | Points de vue | ✅ | 90 (4e/creation.md ×52) |
 | 06 | *(artefact OCR)* | ➖ | |
-| 07 | Carrieres | ✅ | 83 (avancement.md ×61) |
-| 08 | Statut | ✅ | 26 (carrieres.md ×22) |
-| 09 | Competences | ✅ | 146 (competences.md ×137) |
-| 10 | Talents | ✅ | 200 (talents.md ×138) |
-| 11 | Sixième sens | ✅ | 31 (talents.md ×30) |
-| 12 | Tests | ✅ | 50 (tests.md ×45) |
-| 13 | Combat | ✅ | 132 (combat.md ×122) |
-| 14 | OPTION : FRAPPE MORTELLE | ✅ | 141 (combat.md ×136) |
-| 15 | Deplacement | ✅ | 70 (combat.md ×62) |
-| 16 | Etats | ✅ | 56 (etats.md ×31) |
-| 17 | Destin et Resistance | ✅ | 55 (destin.md ×31) |
-| 18 | Traumatisme | ✅ | 107 (traumatisme.md ×68) |
-| 19 | Corruption | ✅ | 35 (corruption.md ×29) |
-| 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
-| 21 | Psychologie | ✅ | 53 (psychologie.md ×29) |
-| 22 | Evenements | ✅ | 4 (activites.md ×4) |
-| 23 | Activites | ✅ | 41 (activites.md ×36) |
+| 07 | Carrieres | ✅ | 83 (4e/avancement.md ×61) |
+| 08 | Statut | ✅ | 26 (4e/carrieres.md ×22) |
+| 09 | Competences | ✅ | 146 (4e/competences.md ×137) |
+| 10 | Talents | ✅ | 200 (4e/talents.md ×138) |
+| 11 | Sixième sens | ✅ | 31 (4e/talents.md ×30) |
+| 12 | Tests | ✅ | 50 (4e/tests.md ×45) |
+| 13 | Combat | ✅ | 132 (4e/combat.md ×122) |
+| 14 | OPTION : FRAPPE MORTELLE | ✅ | 141 (4e/combat.md ×136) |
+| 15 | Deplacement | ✅ | 70 (4e/combat.md ×62) |
+| 16 | Etats | ✅ | 56 (4e/etats.md ×31) |
+| 17 | Destin et Resistance | ✅ | 55 (4e/destin.md ×31) |
+| 18 | Traumatisme | ✅ | 107 (4e/traumatisme.md ×68) |
+| 19 | Corruption | ✅ | 35 (4e/corruption.md ×29) |
+| 20 | Maladies et infections | ✅ | 30 (4e/maladies.md ×30) |
+| 21 | Psychologie | ✅ | 53 (4e/psychologie.md ×29) |
+| 22 | Evenements | ✅ | 4 (4e/activites.md ×4) |
+| 23 | Activites | ✅ | 41 (4e/activites.md ×36) |
 | 24 | Les dieux | 📖 | catalogue (catalogue-*.md) |
-| 25 | Les cultes | ✅ | 3 (religion.md ×3) |
+| 25 | Les cultes | ✅ | 3 (4e/religion.md ×3) |
 | 26 | Le culte de Manaan, dieu de la mer | 📖 | catalogue (catalogue-*.md) |
 | 27 | Le culte de Morr, Dieu de la Mort | 📖 | catalogue (catalogue-*.md) |
 | 28 | Le culte de Myrmidia, deesse de la Strategie | 📖 | catalogue (catalogue-*.md) |
@@ -63,44 +63,44 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 37 | Les dieux elfes | 📖 | catalogue (catalogue-*.md) |
 | 38 | Les dieux halflings | 📖 | catalogue (catalogue-*.md) |
 | 39 | Les dieux du Chaos | 📖 | catalogue (catalogue-*.md) |
-| 40 | Les prieres | ✅ | 48 (religion.md ×24) |
-| 41 | Benedictions | ✅ | 12 (religion.md ×7) |
-| 42 | Miracles | 📖 | 4 (magie.md ×2) |
+| 40 | Les prieres | ✅ | 48 (4e/religion.md ×24) |
+| 41 | Benedictions | ✅ | 12 (4e/religion.md ×7) |
+| 42 | Miracles | 📖 | 4 (4e/magie.md ×2) |
 | 43 | Miracles de Rhya | 📖 | catalogue (catalogue-*.md) |
-| 44 | L'Aethyr | ✅ | 10 (magie.md ×10) |
+| 44 | L'Aethyr | ✅ | 10 (4e/magie.md ×10) |
 | 45 | • MAGIE • | ➖ hors-règle | ouverture « • MAGIE • » : exergue + prose d'intro ; les règles vivent aux ch. suivants |
-| 46 | Les regles magiques | ✅ | 91 (magie.md ×51) |
-| 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
-| 48 | Magie des Couleurs | ✅ | 18 (magie.md ×18) |
-| 49 | Sorcellerie | ✅ | 4 (magie.md ×3) |
+| 46 | Les regles magiques | ✅ | 91 (4e/magie.md ×51) |
+| 47 | Listes des sorts | ✅ | 7 (4e/magie.md ×7) |
+| 48 | Magie des Couleurs | ✅ | 18 (4e/magie.md ×18) |
+| 49 | Sorcellerie | ✅ | 4 (4e/magie.md ×3) |
 | 50 | Magie noire | 📖 | catalogue (catalogue-*.md) |
-| 51 | Magie du Chaos | ✅ | 14 (deplacement.md ×14) |
+| 51 | Magie du Chaos | ✅ | 14 (4e/deplacement.md ×14) |
 | 52 | configuration du terrain | ➖ hors-règle | section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC) |
 | 53 | Le canal Grünberg | ➖ hors-règle | section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC) |
 | 54 | La politique | ➖ hors-règle | section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC) |
 | 55 | Colonies | ➖ hors-règle | section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC) |
 | 56 | Sites anciens et ruines terrifiantes | ➖ hors-règle | section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC) |
-| 57 | La monnaie | 📖 | 1 (economie.md ×1) |
+| 57 | La monnaie | 📖 | 1 (4e/economie.md ×1) |
 | 58 | •GUIDE DE L'ÉQUIPEMENT • | ➖ hors-règle | ouverture « • GUIDE DE L'ÉQUIPEMENT • » : intro + index des listes (renvois de pages) |
-| 59 | Faire son marche | ✅ | 19 (economie.md ×19) |
-| 60 | Fabrication | ✅ | 16 (economie.md ×13) |
-| 61 | Encombrement | ✅ | 40 (equipement.md ×18) |
-| 62 | Les armes | ✅ | 119 (combat.md ×112) |
-| 63 | Armures | ✅ | 28 (combat.md ×27) |
+| 59 | Faire son marche | ✅ | 19 (4e/economie.md ×19) |
+| 60 | Fabrication | ✅ | 16 (4e/economie.md ×13) |
+| 61 | Encombrement | ✅ | 40 (4e/equipement.md ×18) |
+| 62 | Les armes | ✅ | 119 (4e/combat.md ×112) |
+| 63 | Armures | ✅ | 28 (4e/combat.md ×27) |
 | 64 | Sacs et contenants | 📖 | catalogue (catalogue-*.md) |
-| 65 | Vetements et accessoires | 📖 | 1 (traumatisme.md ×1) |
+| 65 | Vetements et accessoires | 📖 | 1 (4e/traumatisme.md ×1) |
 | 66 | Nourriture, boisson et hebergement | 📖 | catalogue (catalogue-*.md) |
-| 67 | Outils et necessaires | ✅ | 5 (equipement.md ×5) |
+| 67 | Outils et necessaires | ✅ | 5 (4e/equipement.md ×5) |
 | 68 | Livres et documents | 📖 | catalogue (catalogue-*.md) |
 | 69 | Outils professionnels et Ateliers | 📖 | catalogue (catalogue-*.md) |
-| 70 | Animaux et vehicules | 📖 | 1 (deplacement.md ×1) |
-| 71 | Drogues et poisons | 📖 | 2 (equipement.md ×2) |
-| 72 | Herbes et potions | ✅ | 8 (equipement.md ×8) |
-| 73 | Protheses | ✅ | 5 (equipement.md ×5) |
-| 74 | Possessions diverses | ✅ | 13 (equipement.md ×12) |
+| 70 | Animaux et vehicules | 📖 | 1 (4e/deplacement.md ×1) |
+| 71 | Drogues et poisons | 📖 | 2 (4e/equipement.md ×2) |
+| 72 | Herbes et potions | ✅ | 8 (4e/equipement.md ×8) |
+| 73 | Protheses | ✅ | 5 (4e/equipement.md ×5) |
+| 74 | Possessions diverses | ✅ | 13 (4e/equipement.md ×12) |
 | 75 | Mercenaires | 📖 | catalogue (catalogue-*.md) |
-| 76 | Point d'Impact des Creatures | ✅ | 53 (combat.md ×29) |
-| 77 | Les populations du Reikland | ✅ | 9 (combat.md ×5) |
+| 76 | Point d'Impact des Creatures | ✅ | 53 (4e/combat.md ×29) |
+| 77 | Les populations du Reikland | ✅ | 9 (4e/combat.md ×5) |
 | 78 | Les Betes du Reikland | 📖 | catalogue (catalogue-*.md) |
 | 79 | Les betes monstrueuses du Reikland | 📖 | catalogue (catalogue-*.md) |
 | 80 | Les hordes de peaux-vertes | 📖 | catalogue (catalogue-*.md) |
@@ -108,7 +108,7 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 82 | Les morts sans repos | 📖 | catalogue (catalogue-*.md) |
 | 83 | Esclaves des Tenebres | 📖 | catalogue (catalogue-*.md) |
 | 84 | Guerrier du Chaos | 📖 | catalogue (catalogue-*.md) |
-| 85 | Traits de creature | ✅ | 299 (combat.md ×205) |
+| 85 | Traits de creature | ✅ | 299 (4e/combat.md ×205) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
@@ -698,19 +698,19 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | CREDITS | 📖 | 1 (combat.md ×1) |
-| 02 | INTRODUCTION | 📖 | 2 (competences.md ×2) |
-| 03 | LES CHEVALIERS DE L'EMPIRE | ✅ | 3 (competences.md ×3) |
+| 01 | CREDITS | 📖 | 1 (4e/combat.md ×1) |
+| 02 | INTRODUCTION | 📖 | 2 (4e/competences.md ×2) |
+| 03 | LES CHEVALIERS DE L'EMPIRE | ✅ | 3 (4e/competences.md ×3) |
 | 04 | LES CHIENS DE GUERRE | 📖 | catalogue (catalogue-*.md) |
-| 05 | LA TILEE ET LES PERSONNAGES TILEENS | 📖 | 1 (competences.md ×1) |
-| 06 | LE CULTE DE MYRMIDIA | ✅ | 25 (combat.md ×24) |
-| 07 | MISES A JOUR DE L'ETAT HEMORRAGIQUE | ✅ | 46 (combat.md ×41) |
-| 08 | LA RESERVE DE L'INTENDANT | ✅ | 101 (combat.md ×100) |
-| 09 | LE COMBAT MONTE | ✅ | 24 (combat.md ×23) |
-| 10 | L'ARTILLERIE ET LES DEGATS INFLIGES AUX STRUCTURES | ✅ | 97 (combat.md ×92) |
-| 11 | ANNEXE I AVANTAGES DE GROUPE | ✅ | 12 (combat.md ×12) |
-| 12 | ANNEXE II ACTIVITES DE GUERRIER | ✅ | 21 (combat.md ×20) |
-| 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS A JOUR | ✅ | 17 (combat.md ×17) |
+| 05 | LA TILEE ET LES PERSONNAGES TILEENS | 📖 | 1 (4e/competences.md ×1) |
+| 06 | LE CULTE DE MYRMIDIA | ✅ | 25 (4e/combat.md ×24) |
+| 07 | MISES A JOUR DE L'ETAT HEMORRAGIQUE | ✅ | 46 (4e/combat.md ×41) |
+| 08 | LA RESERVE DE L'INTENDANT | ✅ | 101 (4e/combat.md ×100) |
+| 09 | LE COMBAT MONTE | ✅ | 24 (4e/combat.md ×23) |
+| 10 | L'ARTILLERIE ET LES DEGATS INFLIGES AUX STRUCTURES | ✅ | 97 (4e/combat.md ×92) |
+| 11 | ANNEXE I AVANTAGES DE GROUPE | ✅ | 12 (4e/combat.md ×12) |
+| 12 | ANNEXE II ACTIVITES DE GUERRIER | ✅ | 21 (4e/combat.md ×20) |
+| 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS A JOUR | ✅ | 17 (4e/combat.md ×17) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H2) :
 
@@ -806,8 +806,8 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | Contes de sorcellerie | ➖ hors-règle | histoire de la magie (cadre, prose pure) ; ch.15 némésis = PNJ nommés STATBLOCKÉS → catalogue-creatures (comme PDT) ; 2-14 = règles/data |
-| 02 | Revisions des regles d'incantation | ✅ | 61 (magie.md ×61) |
-| 03 | Travaux arcaniques | ✅ | 128 (competences.md ×76) |
+| 02 | Revisions des regles d'incantation | ✅ | 61 (4e/magie.md ×61) |
+| 03 | Travaux arcaniques | ✅ | 128 (4e/competences.md ×76) |
 | 04 | Hysh - Domaine de la Lumiere | 📖 | catalogue (catalogue-*.md) |
 | 05 | Chamon - Domaine du Metal | 📖 | catalogue (catalogue-*.md) |
 | 06 | Ghyran - Domaine de la Vie | 📖 | catalogue (catalogue-*.md) |
@@ -817,8 +817,8 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 10 | Aqshy - Domaine du Feu | 📖 | catalogue (catalogue-*.md) |
 | 11 | Ghur - Domaine de la Bete | 📖 | catalogue (catalogue-*.md) |
 | 12 | Artefacts magiques | 📖 | catalogue (catalogue-*.md) |
-| 13 | Creatures magiques | ✅ | 9 (magie.md ×9) |
-| 14 | Les Vents a l'oeuvre | ✅ | 24 (magie.md ×24) |
+| 13 | Creatures magiques | ✅ | 9 (4e/magie.md ×9) |
+| 14 | Les Vents a l'oeuvre | ✅ | 24 (4e/magie.md ×24) |
 | 15 | Nemesis et aventures magiques | 📖 | catalogue (catalogue-*.md) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H2) :
@@ -837,8 +837,8 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 04 | Les nains imperiaux | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 05 | Guide de Karak Azgaraz | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 06 | Guide de la Laurelorn | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
-| 07 | Annexe I | 📖 | 3 (competences.md ×2) |
-| 08 | Annexe II | 📖 | 2 (carrieres.md ×1) |
+| 07 | Annexe I | 📖 | 3 (4e/competences.md ×2) |
+| 08 | Annexe II | 📖 | 2 (4e/carrieres.md ×1) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H2) :
 
@@ -856,14 +856,14 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | Mercenaires ogres dans le Vieux Monde | 📖 | catalogue (catalogue-*.md) |
-| 02 | Les ogres | ✅ | 51 (combat.md ×43) |
+| 02 | Les ogres | ✅ | 51 (4e/combat.md ×43) |
 | 03 | Des signes dans le ciel | 📖 | catalogue (catalogue-*.md) |
-| 04 | Un peu de magie | ✅ | 28 (combat.md ×24) |
+| 04 | Un peu de magie | ✅ | 28 (4e/combat.md ×24) |
 | 05 | L'hospice | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 06 | Le personnel | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 07 | Les patients | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
-| 08 | Le theatre de la guerre | ✅ | 70 (combat.md ×69) |
-| 09 | Annexe I | 📖 | 1 (activites.md ×1) |
+| 08 | Le theatre de la guerre | ✅ | 70 (4e/combat.md ×69) |
+| 09 | Annexe I | 📖 | 1 (4e/activites.md ×1) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H2) :
 
@@ -1078,7 +1078,7 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 09 | Au-dela des murs | ➖ hors-règle | |
 | 10 | L'Espionnage a Altdorf | 📖 | catalogue (catalogue-*.md) |
 | 11 | Cultes interdits et groupes extremistes | 📖 | catalogue (catalogue-*.md) |
-| 12 | Activites | ✅ | 17 (activites.md ×17) |
+| 12 | Activites | ✅ | 17 (4e/activites.md ×17) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
@@ -1143,11 +1143,11 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | TROIS EXPEDITIONS | ✅ | 3 (combat.md ×3) |
-| 02 | Griffon | ✅ | 8 (combat.md ×5) |
+| 01 | TROIS EXPEDITIONS | ✅ | 3 (4e/combat.md ×3) |
+| 02 | Griffon | ✅ | 8 (4e/combat.md ×5) |
 | 03 | Dragon | 📖 | catalogue (catalogue-*.md) |
-| 04 | L'abominable Halagrundsor | 📖 | 1 (etats.md ×1) |
-| 05 | Amibe | 📖 | 1 (etats.md ×1) |
+| 04 | L'abominable Halagrundsor | 📖 | 1 (4e/etats.md ×1) |
+| 05 | Amibe | 📖 | 1 (4e/etats.md ×1) |
 | 06 | Cockatrice | 📖 | catalogue (catalogue-*.md) |
 | 07 | Chimere | 📖 | catalogue (catalogue-*.md) |
 | 08 | Grand taurus | 📖 | catalogue (catalogue-*.md) |
@@ -1155,8 +1155,8 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 10 | Macareux a bec tranchant | 📖 | catalogue (catalogue-*.md) |
 | 11 | Chat sauvage | 📖 | catalogue (catalogue-*.md) |
 | 12 | Il Potente Granchio | 📖 | catalogue (catalogue-*.md) |
-| 13 | Sirene | ✅ | 5 (etats.md ×3) |
-| 14 | Expeditions prevues | ✅ | 26 (combat.md ×22) |
+| 13 | Sirene | ✅ | 5 (4e/etats.md ×3) |
+| 14 | Expeditions prevues | ✅ | 26 (4e/combat.md ×22) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
@@ -1228,21 +1228,21 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | La Mer des Griffes | ➖ hors-règle | gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles |
-| 02 | La Bretonnie et le Wasteland | ✅ | 4 (magie.md ×4) |
+| 02 | La Bretonnie et le Wasteland | ✅ | 4 (4e/magie.md ×4) |
 | 03 | La cote du Nordland | ➖ hors-règle | gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles |
 | 04 | La cote de l'Ostland | ➖ hors-règle | gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles |
 | 05 | Le Pays des Trolls | ➖ hors-règle | gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles |
 | 06 | Kraka Ravnsvake | ➖ hors-règle | gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles |
-| 07 | La cote des Skaelings | ✅ | 24 (carrieres.md ×24) |
+| 07 | La cote des Skaelings | ✅ | 24 (4e/carrieres.md ×24) |
 | 08 | La cote des Bjornlings | ➖ hors-règle | gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles |
-| 09 | La classe Cotier | ✅ | 32 (carrieres.md ×32) |
-| 10 | Le culte de Manann | 📖 | 2 (religion.md ×2) |
-| 11 | Le culte de Stromfels | 📖 | 1 (religion.md ×1) |
-| 12 | Navires et construction navale | ✅ | 130 (equipement.md ×60) |
-| 13 | Navigation maritime | ✅ | 143 (combat.md ×83) |
-| 14 | Navigation a bord de grands vaisseaux | ✅ | 52 (maladies.md ×19) |
-| 15 | Longs voyages | ✅ | 45 (deplacement.md ×23) |
-| 16 | Bestiaire | ✅ | 10 (bestiaire.md ×10) |
+| 09 | La classe Cotier | ✅ | 32 (4e/carrieres.md ×32) |
+| 10 | Le culte de Manann | 📖 | 2 (4e/religion.md ×2) |
+| 11 | Le culte de Stromfels | 📖 | 1 (4e/religion.md ×1) |
+| 12 | Navires et construction navale | ✅ | 130 (4e/equipement.md ×60) |
+| 13 | Navigation maritime | ✅ | 143 (4e/combat.md ×83) |
+| 14 | Navigation a bord de grands vaisseaux | ✅ | 52 (4e/maladies.md ×19) |
+| 15 | Longs voyages | ✅ | 45 (4e/deplacement.md ×23) |
+| 16 | Bestiaire | ✅ | 10 (4e/bestiaire.md ×10) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
@@ -1286,14 +1286,14 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 03 | CHAPITRE 1 - Easter eggs | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 04 | ORGANISATIONS ET LIEUX | ➖ hors-règle | « ORGANISATIONS ET LIEUX » / « L'INTRIGUE » — prose de campagne |
 | 05 | CHAPITRE 2 - L'Empire | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
-| 06 | Chapitre 3 - Les routes et grandes routes | 🟡 | 1 (deplacement.md ×1) |
-| 07 | Chapitre 4 - Montures et vehicules | ✅ | 19 (deplacement.md ×19) |
-| 08 | CHAPITRE 5 - Voyager | ✅ | 16 (deplacement.md ×7) |
+| 06 | Chapitre 3 - Les routes et grandes routes | 🟡 | 1 (4e/deplacement.md ×1) |
+| 07 | Chapitre 4 - Montures et vehicules | ✅ | 19 (4e/deplacement.md ×19) |
+| 08 | CHAPITRE 5 - Voyager | ✅ | 16 (4e/deplacement.md ×7) |
 | 09 | OÙ EST MON TABLEAU DE RENCONTRES ALÉATOIRES ? | ➖ hors-règle | encarts de conseil au MJ (« OÙ EST MON TABLEAU DE RENCONTRES ALÉATOIRES ? ») |
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 11 | CHAPITRE 7 - Toutes les routes menent a Bogenhafen | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
-| 12 | CHAPITRE 8 - Les mutants dans l'Empire | ✅ | 3 (corruption.md ×3) |
-| 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ✅ | 6 (talents.md ×6) |
+| 12 | CHAPITRE 8 - Les mutants dans l'Empire | ✅ | 3 (4e/corruption.md ×3) |
+| 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ✅ | 6 (4e/talents.md ×6) |
 | 14 | CHAPITRE 10 - Sur la route | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 15 | CHAPITRE 11 - L'Affaire du joyau cache - Un melodrame a l'intrigue complexe | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 16 | CHAPITRE 12 - LE CARNAVAL DU PANDEMONIUM | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
@@ -1383,7 +1383,7 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 01 | PREFACE - UN PEU D'HISTOIRE | ➖ hors-règle | |
 | 02 | Commentaires des Auteurs | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 03 | CHAPITRE 1 - EASTER EGGS | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
-| 04 | CHAPITRE 2 - Les herbes et leurs usages | ✅ | 4 (maladies.md ×4) |
+| 04 | CHAPITRE 2 - Les herbes et leurs usages | ✅ | 4 (4e/maladies.md ×4) |
 | 05 | CHAPITRE 3 - Scenes coupees | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 06 | CHAPITRE 4 - Les fleuves de l'Empire | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 07 | CHAPITRE 5 - Navigation fluviale | 📖 | catalogue (catalogue-*.md) |
@@ -1391,11 +1391,11 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 09 | CHAPITRE 7 - Compagnons de voyage | 📖 | catalogue (catalogue-*.md) |
 | 10 | CHAPITRE 8 - LES RIVERAINS | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 11 | CHAPITRE 9 - Le service des tours imperiales a signaux | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
-| 12 | CHAPITRE 10 - Personnalisation | 🟡 | 2 (combat.md ×2) |
+| 12 | CHAPITRE 10 - Personnalisation | 🟡 | 2 (4e/combat.md ×2) |
 | 13 | CHAPITRE 11 - Regles du commerce | 📖 | catalogue (catalogue-*.md) |
 | 14 | CHAPITRE 12 - Naufrageurs, contrebandiers et pirates | 📖 | catalogue (catalogue-*.md) |
-| 15 | CHAPITRE 13 - Bestiaire fluvial | ✅ | 14 (combat.md ×14) |
-| 16 | CHAPITRE 14 - Maladies transmises par l'eau | ✅ | 16 (maladies.md ×16) |
+| 15 | CHAPITRE 13 - Bestiaire fluvial | ✅ | 14 (4e/combat.md ×14) |
+| 16 | CHAPITRE 14 - Maladies transmises par l'eau | ✅ | 16 (4e/maladies.md ×16) |
 | 17 | CHAPITRE 15 - La Couronne Rouge Guide du Meneur de Jeu | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 18 | CHAPITRE 16 - L'Empereur Luitpold | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 19 | CHAPITRE 17 - La vengeance du Roi des tombes | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
@@ -1530,7 +1530,7 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 01 | introduction | ➖ hors-règle | |
 | 02 | Si un regard pouvait tuer | ➖ hors-règle | |
 | 03 | pour etoffer un peu | ➖ hors-règle | |
-| 04 | Ca fait beaucoup de Traits ! | ✅ | 7 (combat.md ×7) |
+| 04 | Ca fait beaucoup de Traits ! | ✅ | 7 (4e/combat.md ×7) |
 | 05 | *(artefact OCR)* | ➖ | |
 | 06 | LES FOUS DE GOTHEIM | ➖ hors-règle | |
 | 07 | Wilhelm Kreigrisch, le bourgmestre | ➖ hors-règle | |
@@ -1563,18 +1563,18 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | Une nuit agitee aux Trois Plumes | ➖ hors-règle | |
 | 04 | Les autres invités | ➖ hors-règle | |
-| 05 | 22h00 | ✅ | 6 (combat.md ×4) |
-| 06 | Une journee au tribunal | ✅ | 13 (combat.md ×13) |
+| 05 | 22h00 | ✅ | 6 (4e/combat.md ×4) |
+| 06 | Une journee au tribunal | ✅ | 13 (4e/combat.md ×13) |
 | 07 | Les dignitaires du tribunal | ➖ hors-règle | |
-| 08 | Une nuit a l'Opera | ✅ | 3 (combat.md ×3) |
+| 08 | Une nuit a l'Opera | ✅ | 3 (4e/combat.md ×3) |
 | 09 | Le répurgateur | ➖ hors-règle | |
 | 10 | le mariage de nastassia | ➖ hors-règle | |
-| 11 | Le joyau volé | ✅ | 6 (combat.md ×6) |
+| 11 | Le joyau volé | ✅ | 6 (4e/combat.md ×6) |
 | 12 | *(artefact OCR)* | ➖ | |
 | 13 | SEIGNEUR D'UBERSREIK - | ➖ hors-règle | |
 | 14 | appendice I - Gnomes | ➖ hors-règle | |
-| 15 | LE PEUPLE DES LANDES | ✅ | 4 (talents.md ×3) |
-| 16 | JEUX DE TAVERNE | ✅ | 17 (tests.md ×14) |
+| 15 | LE PEUPLE DES LANDES | ✅ | 4 (4e/talents.md ×3) |
+| 16 | JEUX DE TAVERNE | ✅ | 17 (4e/tests.md ×14) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
@@ -1756,11 +1756,11 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 04 | Chapitre 4 - Sur la route de Bogenhafen... | ➖ hors-règle | |
 | 05 | Chapitre 5 - Le faux heritage | ➖ hors-règle | |
 | 06 | Chapitre 6 - La Schaffenfest | ➖ hors-règle | |
-| 07 | Chapitre 7 - Dans les tenebres | ✅ | 3 (combat.md ×3) |
+| 07 | Chapitre 7 - Dans les tenebres | ✅ | 3 (4e/combat.md ×3) |
 | 08 | Chapitre 8 - Chasser les ombres | ➖ hors-règle | |
-| 09 | Chapitre 9 - L'heure fatidique | ✅ | 3 (combat.md ×3) |
+| 09 | Chapitre 9 - L'heure fatidique | ✅ | 3 (4e/combat.md ×3) |
 | 10 | APPENDICE 1 - Un guide de Bogenhafen | ➖ hors-règle | |
-| 11 | APPENDICE 2 - Nouvelles regles | ✅ | 19 (combat.md ×19) |
+| 11 | APPENDICE 2 - Nouvelles regles | ✅ | 19 (4e/combat.md ×19) |
 | 12 | Annexe 3 - Documents et aides de jeux | ➖ hors-règle | |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H2) :
@@ -1875,8 +1875,8 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 09 | LE TRAITRE DEMASQUE | ➖ hors-règle | |
 | 10 | Fiches de PNJ | 📖 | catalogue (catalogue-*.md) |
 | 11 | doppleganger | 📖 | catalogue (catalogue-*.md) |
-| 12 | HYPNOTISME | ✅ | 6 (competences.md ×6) |
-| 13 | POINTS D'EXPERIENCE | ✅ | 6 (avancement.md ×6) |
+| 12 | HYPNOTISME | ✅ | 6 (4e/competences.md ×6) |
+| 13 | POINTS D'EXPERIENCE | ✅ | 6 (4e/avancement.md ×6) |
 | 14 | CALENDRIER DES ATTRACTIONS PRINCIPALES | ➖ hors-règle | |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
@@ -2009,4 +2009,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: d503fcbc15abd379a284af9bbb2d073bed0701e0 (369 fichiers, 18 dossiers) corps: d51d3e280baa04da2f1c9caa32042b174dd782b2 -->
+<!-- sources-empreinte: 78155b950ea4d5642ac2c85314e35adce146bba0 (370 fichiers, 19 dossiers) corps: a6253d4d7184a9c947b902807a66f06ffe60b835 -->

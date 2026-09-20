@@ -126,4 +126,4 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | en-tête A→B d'une modale de combat/opposition | `VsHeader` | `src/ui/VsHeader.tsx` | `src/ui/styles/vs-header.css` | toute confrontation à 2 camps | — |
 | sceau de cire et plaque d’élu scellée | `WaxSeal/SealedPlaque` | `src/ui/WaxSeal.tsx` | — | tuiles de sélection, plaques d’élu | — |
 | rose des vents : direction + force du vent | `WindRose` | `src/ui/WindRose.tsx` | `src/ui/styles/gauges.css` | voyage en mer, dossier de navire | — |
-<!-- sources-empreinte: 3f5417e0cc7b2fa21cf6ccb4d664370c36ee981d (6 fichiers, 0 dossiers) corps: 13505402b615aee43b01be4f16820eb3d0a469fb -->
+<!-- sources-empreinte: 95f7e4e874ca4f2c219cd77e8f2a637f3b902959 (6 fichiers, 0 dossiers) corps: 13505402b615aee43b01be4f16820eb3d0a469fb -->

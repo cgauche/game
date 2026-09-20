@@ -2426,7 +2426,7 @@ _2127 exports publics mesurés (160 fichiers de `src/engine`, hors tests) — 18
 
 | Export | Ligne | Genre | Rôle | Concepts |
 |---|---|---|---|---|
-| `possesses` | 28 | function | Le personnage POSSÈDE-t-il la Compétence (Base = toujours, testable sur la Caractéristique nue ; Avancée = au moins une Augmentation, LDB 09 l.25/l.30 — cf. `docs/raw/competences.md`) ? `spec` cible une spécialisation précise (sinon la première instance de l'id, comme `skillBaseValue`) — exportée : réutilisée par `engine/axes.ts` (#409, gate « axe expert » avant `skillBaseValue`). | Applications de compétence en combat, Compétences, Talents, Carrières, Tests : Degrés de Réussite, Caractéristiques, tables |
+| `possesses` | 28 | function | Le personnage POSSÈDE-t-il la Compétence (Base = toujours, testable sur la Caractéristique nue ; Avancée = au moins une Augmentation, LDB 09 l.25/l.30 — cf. `docs/raw/4e/competences.md`) ? `spec` cible une spécialisation précise (sinon la première instance de l'id, comme `skillBaseValue`) — exportée : réutilisée par `engine/axes.ts` (#409, gate « axe expert » avant `skillBaseValue`). | Applications de compétence en combat, Compétences, Talents, Carrières, Tests : Degrés de Réussite, Caractéristiques, tables |
 | `skillAdvantageCap` | 46 | function | Plafond d'Avantage cumulable via cette Compétence en combat (LDB 09 l.305-308) = Bonus de la Caractéristique `cap` déclarée. | Applications de compétence en combat, Combat : attaque, Avantage, engagement, Coups Critiques, Compétences, Talents, Carrières, Tests : Degrés de Réussite, Caractéristiques, tables |
 | `combatAdvantageSkills` | 53 | function | Compétences dont `c` peut se servir en combat pour cumuler l'Avantage, avec leur plafond. | Applications de compétence en combat, Combat : attaque, Avantage, engagement, Coups Critiques, Compétences, Talents, Carrières |
 | `fearsBy` | 65 | function | `foe` est-il sous une Peur SOURCÉE par `self` (non surmontée) — gate `fear` des substitutions (l.287) ? | Applications de compétence en combat, Psychologie : Peur, Terreur, Frénésie, Animosité, Voyage : terrestre, monté, fluvial, maritime |
@@ -3130,4 +3130,4 @@ _2127 exports publics mesurés (160 fichiers de `src/engine`, hors tests) — 18
 |---|---|---|---|---|
 | `woundsFromHit` | 30 | function | Blessures infligées par un coup : `totalDamage` (Dégâts d'arme + DR + qualités) moins le Bonus d'Endurance et les PA EFFECTIFS à la `location` (armure portée/naturelle + `extraAP`, matériau ignoré PUIS retrait plat, LDB 62 l.270). | Calcul des Blessures, Blessures, dégâts, soin, guérison, Tests : Degrés de Réussite, Caractéristiques, tables, Qualités d'arme et d'armure |
 
-<!-- sources-empreinte: 6f487975cb699577599b8508975c5148733fe84d (166 fichiers, 6 dossiers) corps: f815ed58ce0fcbab47dfc60262dd980e53db89dd -->
+<!-- sources-empreinte: 69c9a5cc7460505aa2cdb43751810aafa26b5649 (166 fichiers, 6 dossiers) corps: 9580886b4943c05ce34deb08fcbd327dc299ab8a -->
