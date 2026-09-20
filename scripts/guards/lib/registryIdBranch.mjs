@@ -75,11 +75,15 @@ export function isRegistryIdBranchExcluded(rel) {
  *  Les noms `key`/`code`/`name` ont été MESURÉS puis ÉCARTÉS : ~50 sites, TOUS des
  *  `KeyboardEvent.key`/`.code` ou des codes errno — une garde qui hurle à tort se fait désactiver.
  *  `book` est ajouté (#1318 V6) : c'est l'identité d'un LIVRE source (`source.book`, sigle stable
- *  `LDB`/`NADJ`/`VDM` du registre des livres), et le scan la manquait par son seul nom.
+ *  du registre des livres), et le scan la manquait par son seul nom.
+ *  `abbr` et son diminutif `ab` : le nom sous lequel le registre des livres et ses lecteurs
+ *  (`scripts/raw/_lib.mjs`, `books.json`) portent CETTE même identité — `b.abbr === '…'` dans du
+ *  code générique est le même branchement que `source.book === '…'`, écrit avec l'autre nom du
+ *  champ (#1825).
  *  C'est le SEUL critère de nom du scan, et donc sa principale limite : un champ d'identité baptisé
  *  autrement (`def.key`, `v.when.rule`) n'est pas reconnu. Les ALIAS, eux, sont suivis
  *  par la liaison (`const k = def.id` → kind `IDENTITY`), pas par leur nom. */
-const ID_NAME_RX = /^(?:id|ref|book|\w*Id|\w*Ref)$/;
+const ID_NAME_RX = /^(?:id|ref|book|abbr|ab|\w*Id|\w*Ref)$/;
 
 /** Méthodes d'APPARTENANCE à une collection — `LISTE.includes(id)`, `SET.has(id)`. */
 const MEMBERSHIP_METHODS = new Set(['includes', 'has', 'indexOf', 'lastIndexOf']);

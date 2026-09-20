@@ -87,7 +87,7 @@ export type Possession = PossessionCommon &
         nature: 'navire';
         vehicleId: string;
         wounds?: { current: number; max: number };
-        upgrades?: NavalTraitRef[]; // MDG 12, T2C ch.10
+        upgrades?: NavalTraitRef[]; // MDG 12, MSRC 12
         crew?: CrewHire[]; // marins nommés #250 (individuation)
         naval: NavalPossessionState; // cf. CampaignVessel (T2/#267)
       }

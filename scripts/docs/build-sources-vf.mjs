@@ -103,21 +103,21 @@ AUTORISÉ (\`CLAUDE.md\` § *Sources VF*). Au moindre doute, **lire le \`.md\` e
 - **${abbr('archives-de-l-empire-1')}** = \`${dir('archives-de-l-empire-1')}\`.
 - **${abbr('archives-de-l-empire-2')}** = \`${dir('archives-de-l-empire-2')}\`.
 - **${abbr('ennemi-dans-l-ombre')}** (L'Ennemi dans l'Ombre, T1) = \`${dir('ennemi-dans-l-ombre')}\` — périmètre
-  RE-VÉRIFIÉ au \`Source/\` (2026-09-13) : le livre ne porte **aucun bloc de Sort** (zéro \`**NI :**\` sur ses
-  13 chapitres) **ni de Talent** ; ses seuls blocs de créature sont **Horreur rose / Horreur bleue de
+  RE-VÉRIFIÉ au \`Source/\` (2026-09-13) : le livre ne porte **aucun bloc de Sort** (zéro \`**NI :**\` sur
+  l'ensemble de ses chapitres) **ni de Talent** ; ses seuls blocs de créature sont **Horreur rose / Horreur bleue de
   Tzeentch** (\`EDO 09 l.556-570\`, folio 114) — les **Furies du Chaos**, les 3 Talents de culte et les Sorts du
   Chaos que l'on croisait attribués « EDO p.7X-8X » sont en réalité **EDOC ch.9** (voir l'entrée suivante).
   Nouvelles règles propres à EDO = **Appendice 2** (folios 145-149) : PNJ, portes & serrures, fièvre cérébrale
   pourpre + symptômes, 6 Traits de créature et 5 Mutations (folios 147-148), Anneau d'Opsianon.
   2026-07-11 (#309) : Calendrier Impérial (Annexe 3, folios 149-150 — mois/jours/intercalaires ;
   la table est INTROUVABLE au LDB, l'ancienne attribution « LDB » des datasets calendrier était fausse).
-- **${abbr('ennemi-dans-l-ombre-compagnon')}** (Compagnon T1) = \`${dir('ennemi-dans-l-ombre-compagnon')}\` — 9 véhicules ;
-  **ch.9 « La Main pourpre »** = la source RÉELLE de la matière Tzeentch (folios 75-85) : 3 Talents de culte
+- **${abbr('ennemi-dans-l-ombre-compagnon')}** (Compagnon T1) = \`${dir('ennemi-dans-l-ombre-compagnon')}\` — véhicules ;
+  **ch.9 « La Main pourpre »** = la source RÉELLE de la matière Tzeentch (folios 75-85) : les Talents de culte
   (\`EDOC 13 l.85-101\` — Bénédiction de Tzeentch, Disciple du changement, Double vie, folio 75), les Sorts du
   Chaos avec leurs blocs NI/Portée (folios 79-83), Marque de Tzeentch (folio 83), **Furies du Chaos** (folio 84),
   **Horreurs de Tzeentch** (folio 85). Avant de taguer \`book\`+\`page\` sur une entrée « Chaos T1 », vérifier au
   \`Source/\` de quel des deux volumes vient le bloc.
-- **Middenheim** = \`${dir('middenheim')}\` — 3 origines humaines + carrière Frère Loup.
+- **Middenheim** = \`${dir('middenheim')}\` — origines humaines + carrière Frère Loup.
 - **${abbr('aux-armes')}** (Aux Armes / *Up in Arms*) = \`${dir('aux-armes')}\` — supplément combat & armes (autorisé 2026-06-14 ;
   source des talents que frenchy.bzh référence : Fusilier, Officier de Siège, etc.).
 - **${abbr('zoo-imperial')}** (Zoo Impérial / *The Imperial Zoo*) = \`${dir('zoo-imperial')}\` — créatures exotiques + le trait
@@ -126,26 +126,26 @@ AUTORISÉ (\`CLAUDE.md\` § *Sources VF*). Au moindre doute, **lire le \`.md\` e
 - **${abbr('mer-des-griffes')}** (La Mer des Griffes / *Sea of Claws*) = \`${dir('mer-des-griffes')}\` — **cadre côtier + règles navales**
   (autorisé 2026-06-22) : navires & construction/artillerie (ch.12), navigation/manœuvres/**combat naval** + dégâts &
   Critiques sur navire (ch.13), tests d'équipage & moral (ch.14), longs voyages/commerce/**activités & maladies en mer**
-  (ch.15), classe **Côtier** (8 carrières, ch.9) + carrières norses (ch.7), cultes **Manann/Stromfels** + miracles
+  (ch.15), classe **Côtier** (ch.9) + carrières norses (ch.7), cultes **Manann/Stromfels** + miracles
   (ch.10-11), magie des mers (ch.2), **bestiaire marin** + capitaines nommés (ch.16). Comme AA/ZI : extraction curée à la main.
 - **${abbr('altdorf-couronne-de-l-empire')}** (Altdorf – Couronne de l'Empire) = \`${dir('altdorf-couronne-de-l-empire')}\` — **UNIQUEMENT
-  l'Annexe I « Activités à Altdorf » (ch.12)** : 5 Activités « entre deux aventures » gated par lieu (Pénitence,
+  l'Annexe I « Activités à Altdorf » (ch.12)** : les Activités « entre deux aventures » gated par lieu (Pénitence,
   Entraînement à une arme inhabituelle, Tester des objets magiques, Mécénat, Recherche universitaire) — cf. \`activities.json\`
   (\`book: "${book('altdorf-couronne-de-l-empire').id}"\`, l'id de \`books.json\` ; \`where: ["altdorf"]\`). Le reste du livre = contenu de campagne (tout passage de
   règle supplémentaire s'ajoute au périmètre ici, arbitrage 2026-07-10). Comme AA/ZI/MDG : extraction curée à la main.
 - **${abbr('mort-sur-le-reik-compagnon')}** (Mort sur le Reik – Compagnon) = \`${dir('mort-sur-le-reik-compagnon')}\`
-  (19 chapitres extraits) — autorisé 2026-07-10 (#277). Périmètre constaté : **ch.5 « Navigation
+  — autorisé 2026-07-10 (#277). Périmètre constaté : **ch.5 « Navigation
   fluviale »** (tables de \`river-navigation.json\`/\`river-perils.json\`, critiques fluviaux
-  \`river-criticals.json\`), **ch.10 « Personnalisation »** (8 traits navals d'aménagement de
+  \`river-criticals.json\`), **ch.10 « Personnalisation »** (traits navals d'aménagement de
   \`naval-traits.json\` : bouteur, murs blindés, coque de course, safran, plat-bord, allègement, gréement de
   course, fourquines), **ch.13 « Bestiaire fluvial »** (créatures), **ch.14 « Maladies transmises par
   l'eau »** (maladies/symptômes/états, \`water-exposure.json\`), véhicules fluviaux. Curation à la main.
 - **${abbr('nuits-agitees-et-dures-journees')}** (Nuits agitées & dures journées) = \`${dir('nuits-agitees-et-dures-journees')}\` —
   autorisé 2026-07-10 (arbitrage par-passage). Périmètre constaté : **appendice I « Gnomes »**
-  (espèce jouable, \`species.json\`), **« Jeux de taverne »** (\`tavernGames.json\`), 3 entrées \`gods.json\`,
-  1 talent, 1 trapping.
+  (espèce jouable, \`species.json\`), **« Jeux de taverne »** (\`tavernGames.json\`), des entrées de
+  \`gods.json\`, \`talents.json\` et \`trappings.json\`.
 - **${abbr('vents-de-la-magie')}** (Les Vents de Magie / *Winds of Magic*) = \`${dir('vents-de-la-magie')}\` —
-  supplément **magie des 8 Collèges** (autorisé 2026-07-22, extrait Marker, 15 chapitres). Périmètre :
+  supplément **magie des 8 Collèges** (autorisé 2026-07-22, extrait Marker). Périmètre :
   **règles d'incantation RÉVISÉES** (ch.2 — le livre déclare *remplacer* LDB 46-51 : Focalisation,
   Surincantation, Incantations Imparfaites, dissipation, Repousser les Vents ; + **magie rituelle** &
   rituels, nouvelles **Activités**) ; **carrières & compétences arcaniques** (ch.3 — Alchimiste ordinaire,
@@ -159,11 +159,11 @@ AUTORISÉ (\`CLAUDE.md\` § *Sources VF*). Au moindre doute, **lire le \`.md\` e
   unique) = \`${dir('core-rulebook-5e')}\` — **cœur des règles de la 5e édition** (autorisé 2026-09-18,
   épique #1816 ; arbitrages utilisateur du même jour : « Elle est en VO, mais ce n'est pas grave, ca sera
   l'occasion d'éprouver notre système de langue VO/VF ! » et « Pas de traduction, on va gérer la VO dans
-  l'application. »). Extraction Marker, 18 chapitres, dont 13 de contenu : 04 Introduction ·
+  l'application. »). Extraction Marker ; chapitres de CONTENU : 04 Introduction ·
   05 Character Building · 06 Class and Careers · 07 Skills and Talents · **08 Rules** (tests, combat,
   blessures, maladies, psychologie, États, corruption) · 09 Between Adventures · 10 Religion and
   Belief · 11 Magic · 12 The Gamemaster · 13 Glorious Reikland · 14 Consumer Guide · 15 Bestiary ·
-  16 Appendices ; les 5 autres sont l'appareil du livre : 01 Cover · 02 Contents · 03 Credits ·
+  16 Appendices ; les autres sont l'appareil du livre : 01 Cover · 02 Contents · 03 Credits ·
   17 Index · 18 Character Sheet.
   Le texte reste en ANGLAIS, verbatim — **aucune traduction** dans \`Source/\`. Périmètre par passage et
   curation \`src/data\` (tag \`source.book: "${book('core-rulebook-5e').id}"\`) : phases suivantes de #1816.
@@ -190,10 +190,22 @@ AUTORISÉ (\`CLAUDE.md\` § *Sources VF*). Au moindre doute, **lire le \`.md\` e
 - Tome 1 : \`${dir('ennemi-dans-l-ombre')}\` + \`${dir('ennemi-dans-l-ombre-compagnon')}\`.
 - Tome 2 : \`${dir('mort-sur-le-reik')}\` + \`${dir('mort-sur-le-reik-compagnon')}\`.
 - Tome 3 : \`${dir('pouvoir-derriere-le-trone')}\` (Compagnon ${book('pouvoir-derriere-le-trone-compagnon').dir ? `= \`${dir('pouvoir-derriere-le-trone-compagnon')}\`` : `${book('pouvoir-derriere-le-trone-compagnon').language === 'VF' ? 'VF connu mais' : 'VO,'} non extrait dans \`Source/\``}).
-- Suppléments VF dispo : \`${book('altdorf-couronne-de-l-empire').label}\`, \`${book('aventures-a-ubersreik-1').label}\`,
+- Suppléments VF dispo : \`${book('altdorf-couronne-de-l-empire').label}\`,
+  \`${book('aventures-a-ubersreik-1').label}\` (extrait : \`${dir('aventures-a-ubersreik-1')}\`),
   \`${book('middenheim').label}\`, \`${book('nuits-agitees-et-dures-journees').label}\`,
   \`${book('boite-d-initiation').label}\` (+ \`WH4_FR_BI_Livre_Aventure\` / \`…_Ubersreik\`).
 `
+
+// COMPLÉTUDE — tout livre du registre porteur d'un `dir` FIGURE dans la page : un livre extrait sous
+// `Source/` mais absent de cette page est un périmètre que personne ne peut lire. Le gabarit est
+// ÉDITORIAL (il cite livre par livre) : rien ne l'oblige à suivre le registre, sauf cette garde. Elle
+// LÈVE à la GÉNÉRATION comme `book`/`dir`, donc aussi sous `--check` (`npm run docs:check`).
+const absents = BOOKS.filter((b) => b.dir && !out.includes(b.dir))
+if (absents.length) {
+  console.error('build-sources-vf — livre(s) EXTRAIT(s) absent(s) de la page (ajouter leur entrée dans ce script) :')
+  for (const b of absents) console.error(`  ${b.id} (${b.abbr}) — ${b.dir}`)
+  process.exit(1)
+}
 
 emitOrCheck({
   out,

@@ -82,7 +82,7 @@ export function LandMarketView() {
                 const biens = r.biens.map((id) => cargoLabel(id)).join(', ');
                 return (
                   <li key={i}>
-                    {biens} se vendent au double à <b>{dest}</b>{here ? ' — c’est ici : vendez ces biens (MSRC 13 l.180).' : '.'}
+                    {biens} se vendent au double à <b>{dest}</b>{here ? ' — c’est ici : vendez ces biens.' : '.'}
                   </li>
                 );
               })}
@@ -93,7 +93,7 @@ export function LandMarketView() {
           <section className="panel port-section">
             <h3>Acheter — offres de l’étape</h3>
             {!target && <p className="port-hint">Aucun porteur de charge : procurez-vous une bête de somme ou un véhicule pour transporter une cargaison.</p>}
-            {market.offers.length === 0 && <p className="port-hint">Aucun marchand n’a de cargaison à céder ici (disponibilité MSRC 13 l.22-42).</p>}
+            {market.offers.length === 0 && <p className="port-hint">Aucun marchand n’a de cargaison à céder ici.</p>}
             {market.offers.length > 0 && (
               <TradeTable
                 columns={[]}
@@ -109,7 +109,7 @@ export function LandMarketView() {
                       : <> <GatedAction
                           id={`market-eval-${o.cargoId}`} label="Évaluer" ariaLabel={`Évaluer ${o.label}`}
                           enabled={!isGuest} reason={REFUS_INVITE}
-                          descOfferte="Test d’Évaluation pour révéler la qualité secrète du vin (MSRC 13 l.95)"
+                          descOfferte="Test d’Évaluation pour révéler la qualité secrète du vin"
                           onClick={() => evalWine(o.cargoId)} primary={false} btnClassName="small ghost"
                         /></>)}
                   </Row>
@@ -146,7 +146,7 @@ export function LandMarketView() {
                         label="Acheter"
                         enabled={!isGuest && affordable && !!target && fits}
                         reason={isGuest ? REFUS_INVITE : !target ? 'Aucun porteur pour recevoir ce lot.' : !fits ? `Contenance dépassée (libre ${free} Enc).` : 'Bourse insuffisante.'}
-                        descOfferte="Estimation avant Marchandage (+10 % si lot partiel, l.131)"
+                        descOfferte="Estimation avant Marchandage (+10 % si lot partiel)"
                         onClick={() => buy(o.cargoId, want)}
                         primary={false}
                         btnClassName="small"
@@ -172,12 +172,12 @@ export function LandMarketView() {
                   <div className="port-sell-actions">
                     <GatedAction
                       id={`market-sell-${r.carrierId}-${r.index}`} label="Vendre" enabled={!isGuest} reason={REFUS_INVITE}
-                      descOfferte="Trouver un acheteur puis marchander (MSRC 13 l.133-160)"
+                      descOfferte="Trouver un acheteur puis marchander"
                       onClick={() => sell(r.carrierId, r.index)} primary={false} btnClassName="small"
                     />
                     <GatedAction
                       id={`market-dump-${r.carrierId}-${r.index}`} label="Brader" enabled={!isGuest} reason={REFUS_INVITE}
-                      descOfferte="Brader à la moitié du prix de base (MSRC 13 l.160)"
+                      descOfferte="Brader à la moitié du prix de base"
                       onClick={() => dump(r.carrierId, r.index)} primary={false} btnClassName="small ghost"
                     />
                   </div>

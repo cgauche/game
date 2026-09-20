@@ -4,7 +4,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readText } from './_lib.mjs'
-import { scanForbiddenCounts, INDEX_PATH, SOURCES_PATH, SCANNED_PATHS, ASSEMBLEUR_PATH, estPageManuscrite } from './check-atlas-counts.mjs'
+import { scanForbiddenCounts, INDEX_PATH, SOURCES_PATH, SCANNED_PATHS, ASSEMBLEUR_PATH, SOURCES_VF_WRITER_PATH, estPageManuscrite } from './check-atlas-counts.mjs'
 
 test('scanForbiddenCounts : "N livres" recopié en dur → détecté', () => {
   const v = scanForbiddenCounts('depuis les 15 livres autorisés\n')
@@ -54,6 +54,27 @@ test('scanForbiddenCounts : "les chapitres" sans chiffre → silencieux', () => 
   assert.deepEqual(scanForbiddenCounts('tous les chapitres du livre sont couverts\n'), [])
 })
 
+test('scanForbiddenCounts : compte d\'état en APPOSITION parenthésée → détecté (#1825 E1b)', () => {
+  const v = scanForbiddenCounts('| Combat | combat.md | ✅ pilote (14 topics) | 13, 14 |\n')
+  assert.equal(v.length, 1)
+  assert.equal(v[0].excerpt, '✅ pilote (14 topics)')
+  assert.equal(scanForbiddenCounts('| 🟡 brouillon (12 fiches) |\n').length, 1)
+})
+
+test('scanForbiddenCounts : pastille suivie d\'une PROSE à chiffre (valeur de règle) → silencieux', () => {
+  // Les fiches de domaine ouvrent leurs puces par une pastille ; le chiffre qui suit y est une
+  // VALEUR DE RÈGLE, jamais un compte de population (lignes réelles de `combat-naval.md`).
+  assert.deepEqual(scanForbiddenCounts('**État du code.** ✅ Tir de zone (3 bandes RAW, corrige l\'ancien)\n'), [])
+  assert.deepEqual(scanForbiddenCounts('**État du code.** ✅ **Seuil de succès** (l.13) câblé\n'), [])
+  assert.deepEqual(scanForbiddenCounts('**État du code.** ✅ **(1)(2)(3)(4-Dégâts)(5)** après refonte\n'), [])
+})
+
+test('scanForbiddenCounts : un prompt qui vise une FOURCHETTE de topics n\'est pas un compte', () => {
+  // `atlas-domain.workflow.js` écrit « Vise 8 a 18 topics » : une consigne de cadrage, sans pastille
+  // ni parenthèse fermée — rien à périmer, aucune population décrite.
+  assert.deepEqual(scanForbiddenCounts('Vise 8 a 18 topics. Renvoie { topics }.\n'), [])
+})
+
 test('estPageManuscrite : rapports GÉNÉRÉS, catalogues ré-générés et épreuves DATÉES sont hors périmètre', () => {
   assert.deepEqual(
     ['00-index.md', 'sources.md', 'combat.md', 'coverage.md', 'reconciliation.md', 'reanchor.md', 'catalogue-sorts.md', 'epreuve-2026-06-22.md', 'notes.txt'].filter(estPageManuscrite),
@@ -61,8 +82,8 @@ test('estPageManuscrite : rapports GÉNÉRÉS, catalogues ré-générés et épr
   )
 })
 
-test('SCANNED_PATHS couvre les pages de garde, les fiches et l’ASSEMBLEUR qui écrit leur en-tête', () => {
-  for (const attendu of [INDEX_PATH, SOURCES_PATH, ASSEMBLEUR_PATH]) assert.ok(SCANNED_PATHS.includes(attendu), attendu)
+test('SCANNED_PATHS couvre les pages de garde, les fiches et les ÉCRIVAINS de prose d’Atlas', () => {
+  for (const attendu of [INDEX_PATH, SOURCES_PATH, ASSEMBLEUR_PATH, SOURCES_VF_WRITER_PATH]) assert.ok(SCANNED_PATHS.includes(attendu), attendu)
   assert.ok(SCANNED_PATHS.length > 3, `périmètre trop maigre : ${SCANNED_PATHS.length} fichier(s)`)
 })
 

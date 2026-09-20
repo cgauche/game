@@ -80,7 +80,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
         ) : null}
         {pt.psychMod && capLabel ? ' · ' : null}
         {capLabel ? (
-          <span className="test-psych-mod" title="Capricieux (MSRC 15) : le d10 de l'interlocuteur décale le DR du Test">
+          <span className="test-psych-mod" title="Capricieux : le d10 de l'interlocuteur décale le DR du Test">
             {capLabel}
           </span>
         ) : null}

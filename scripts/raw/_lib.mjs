@@ -142,6 +142,14 @@ export const alternationDe = (books) => books.map(([a]) => esc(a)).sort((a, b) =
 const ABBR_ALT = alternationDe(BOOKS)
 export const allAbbrAlternation = () => ABBR_ALT
 
+// MÊME fabrique (`alternationDe`), AUTRE population : TOUT livre du registre porteur d'un `abbr`,
+// extrait ou non. `allAbbrAlternation` ne couvre que les livres EXTRAITS (à `dir`) parce que
+// l'Atlas n'adresse que ceux-là ; mais un livre SANS extraction se CITE quand même, et la garde qui
+// juge une réf RENDUE (`src/ui/book-ref-guard.test.ts`, #1826) doit voir tout le registre.
+// Une SEULE alternation existe dans le dépôt : celle que rend `alternationDe`, ici paramétrée.
+const ABBR_ALT_REGISTRE = alternationDe(booksData.filter((b) => b.abbr).map((b) => [b.abbr]))
+export const alternationDuRegistre = () => ABBR_ALT_REGISTRE
+
 // Un livre est-il EXTRAIT (donc adressable par l'outillage Atlas) ? Prédicat UNIQUE : `booksDe`,
 // `perimetreDeCoeur` et `apply-livre` en jugent tous par lui — une entrée de `books.json` sans `dir`
 // (livre autorisé mais jamais converti en `.md`) n'a ni chapitre à lire ni fiche à intégrer.

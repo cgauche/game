@@ -44,8 +44,8 @@ Même piège hors Atlas : `src/data/*.json` volumineux (`creatures.json`, `spell
 
 | Domaine | Fichier | État | Chapitres LDB (+ suppléments) |
 |---|---|---|---|
-| Combat | [`combat.md`](combat.md) | ✅ pilote (14 topics) | 13, 14, 15, 62, 63, 76, 85 + AA / ZI / ADE / tomes |
-| Combat naval (Mer des Griffes) | [`combat-naval.md`](combat-naval.md) | 🟡 brouillon (12 topics) | MDG 12, 13, 14 |
+| Combat | [`combat.md`](combat.md) | ✅ pilote | 13, 14, 15, 62, 63, 76, 85 + AA / ZI / ADE / tomes |
+| Combat naval (Mer des Griffes) | [`combat-naval.md`](combat-naval.md) | 🟡 brouillon | MDG 12, 13, 14 |
 | Tests & Degrés de Réussite | [`tests.md`](tests.md) | ✅ | 12 |
 | États | [`etats.md`](etats.md) | ✅ | 16 |
 | Déplacement & voyage | [`deplacement.md`](deplacement.md) | ✅ | 15 + EDOC |
@@ -71,13 +71,18 @@ Même piège hors Atlas : `src/data/*.json` volumineux (`creatures.json`, `spell
 
 ## Catalogues (données mécaniques verbatim — source Marker propre, tous livres)
 
+> La colonne **Contenu** décrit ce que le catalogue TRANSCRIT. Les LIVRES et CHAPITRES qui l'alimentent
+> ne s'écrivent pas ici : chaque catalogue porte sa ligne **« Chapitres source »** dans son propre
+> en-tête, GÉNÉRÉE depuis `scripts/raw/chapitres.json#enCatalogue` — une liste recopiée ici mentirait
+> dès le livre suivant.
+
 | Catalogue | Contenu |
 |---|---|
-| [`catalogue-creatures.md`](catalogue-creatures.md) | Bestiaire complet : LDB 76–85 + MCLB + ZI + ogres ADE II + Chaos EDO + montures EDOC + fluvial MSRC + PNJ PDT |
-| [`catalogue-sorts.md`](catalogue-sorts.md) | Sorts : LDB 47–51 + Tzeentch EDO |
-| [`catalogue-divin.md`](catalogue-divin.md) | Dieux, cultes, bénédictions, miracles : LDB 24–43 + cultes du Chaos MCLB/Altdorf |
-| [`catalogue-equipement.md`](catalogue-equipement.md) | Objets/prix/Enc : LDB 57–75 + Aux Armes |
-| [`catalogue-carrieres.md`](catalogue-carrieres.md) | Détails par niveau : LDB 06–08 + ADE I/II + MCLB |
+| [`catalogue-creatures.md`](catalogue-creatures.md) | Bestiaire : profils de créature, Point d'Impact, Traits |
+| [`catalogue-sorts.md`](catalogue-sorts.md) | Sorts, avec leurs blocs NI / Portée / Cible / Durée |
+| [`catalogue-divin.md`](catalogue-divin.md) | Dieux, cultes, bénédictions, miracles |
+| [`catalogue-equipement.md`](catalogue-equipement.md) | Objets, prix, Encombrement, armes et armures |
+| [`catalogue-carrieres.md`](catalogue-carrieres.md) | Carrières, détails par niveau |
 | [`catalogue-divers.md`](catalogue-divers.md) | Règles éparses des suppléments (entraînement, espionnage, navigation, mutants, astrologie…) |
 
 ## Gardes déterministes (rejouables)

@@ -3,6 +3,7 @@ import ts from 'typescript';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
+import { alternationDuRegistre, REGISTRE_LIVRES } from '../../scripts/guards/lib/rawRefIntegrity.mjs';
 
 /**
  * Garde-fou « réf de livre hors surface Codex » (#601, même classe que #596).
@@ -24,8 +25,28 @@ import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 const UI_DIR = fileURLToPath(new URL('.', import.meta.url));
 
-/** Sigles des livres autorisés (§ Sources VF) suivis d'un numéro de chapitre/fiche. */
-const BOOK_REF = /\b(LDB|MDG|EDOC|EDO|ADE2?|ACE|T2C|NADJ|ZI|AA)\s+\d+/;
+/**
+ * `abbr` d'un livre du registre (`src/data/books.json`) suivi d'un numéro de chapitre/fiche.
+ *
+ * L'alternation n'est PAS écrite ici : elle vient de `scripts/raw/_lib.mjs`
+ * (`alternationDuRegistre`), servie à `src/**` par la couture typée `rawRefIntegrity.mjs`. Un
+ * livre de plus est UNE entrée de `books.json`, zéro ligne ici (#1825, #1826). Le tri est par
+ * longueur décroissante : un sigle préfixe d'un autre ne masque pas le plus long.
+ *
+ * POPULATION : TOUT livre du registre porteur d'un `abbr`, extrait ou non — un livre qu'aucune
+ * extraction ne couvre se cite quand même sur un écran. (La population VOISINE, `allAbbrAlternation`,
+ * ne retient que les livres EXTRAITS : c'est celle de l'Atlas, qui doit pouvoir OUVRIR le chapitre.)
+ *
+ * CE QUI RESTE HORS GARDE : un livre du registre SANS `abbr` (aucun aujourd'hui, asséré plus bas) ;
+ * un livre nommé par son TITRE et non par son sigle ; une réf de ligne nue (`l.141`) ; un sigle
+ * seul HORS parenthèses (deux lettres en capitales sont aussi un mot) ; et tout ce qui n'est pas
+ * un nœud RENDU.
+ *
+ * DEUX formes : le sigle suivi d'un numéro, et le sigle SEUL entre parenthèses — l'apposition par
+ * laquelle une phrase de jeu cite sa source sans chapitre.
+ */
+const SIGLES = alternationDuRegistre();
+const BOOK_REF = new RegExp(`\\b(${SIGLES})\\s+\\d+|\\((?:${SIGLES})\\)`);
 
 /**
  * Surfaces d'AUTORING, dispensées au MÊME titre que le Codex — tranché sous #601.
@@ -77,10 +98,19 @@ describe('réfs de livre — réservées au Codex et aux surfaces d’authoring 
 
   it('le détecteur voit RÉELLEMENT une réf rendue (et ignore les commentaires)', () => {
     // Preuve que la garde échoue sur la classe — sinon elle ne mesure que son angle mort.
+    // Le sigle de la sonde est PRIS au registre lui-même (jamais découpé dans l'alternation, où il
+    // serait déjà échappé) : aucune identité de livre n'est écrite ici, et un registre qui perdrait
+    // ce livre déplacerait la sonde avec lui.
+    const sigle = REGISTRE_LIVRES.find((b) => b.abbr)!.abbr!;
     const probe = join(UI_DIR, '__probe.tsx');
     const sf = ts.createSourceFile(
       probe,
-      ['// glose en commentaire (LDB 23 l.141) — tolérée', 'export const a = "Refuser la Faveur (LDB 23 l.141)";'].join('\n'),
+      [
+        `// glose en commentaire (${sigle} 23 l.141) — tolérée`,
+        `export const a = "Refuser la Faveur (${sigle} 23 l.141)";`,
+        `export const b = "la voie des sorciers (${sigle}).";`,
+        `export const c = "un mot qui contient ${sigle} sans le citer";`,
+      ].join('\n'),
       ts.ScriptTarget.Latest,
       true,
       ts.ScriptKind.TSX,
@@ -91,6 +121,14 @@ describe('réfs de livre — réservées au Codex et aux surfaces d’authoring 
       ts.forEachChild(n, visit);
     };
     visit(sf);
-    expect(hits).toEqual([2]);
+    expect(hits).toEqual([2, 3]);
+  });
+
+  it('le motif est DÉRIVÉ du registre ENTIER, jamais une seconde alternation (#1826)', () => {
+    expect(BOOK_REF.source).toBe(`\\b(${alternationDuRegistre()})\\s+\\d+|\\((?:${alternationDuRegistre()})\\)`);
+    // La population couverte, assérée et non promise : tout livre à `abbr`, extrait ou non.
+    const sansAbbr = REGISTRE_LIVRES.filter((b) => !b.abbr).map((b) => b.id);
+    expect(sansAbbr, `Livre(s) du registre sans \`abbr\`, donc hors de cette garde : ${sansAbbr.join(', ')}`).toEqual([]);
+    for (const b of REGISTRE_LIVRES) expect(BOOK_REF.test(`${b.abbr} 12`), `${b.abbr} n'est pas couvert`).toBe(true);
   });
 });

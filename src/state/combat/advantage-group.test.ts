@@ -256,20 +256,23 @@ describe('Redoutable — clause AA bout-en-bout (op gainAdvantage{feedOpposingPo
 
 // La clause d'Avantage de groupe est conditionnée au MODULE DE RÈGLES (MDG 16 l.13 : « Si vous utilisez
 // les règles d'Avantage de groupe du supplément Aux Armes ! »), jamais au livre d'origine du PORTEUR :
-// l'entrée `redoutable` est UNIQUE et ses porteurs des trois provenances (zoo-imperial, mer-des-griffes,
-// frenchy-bzh) la subissent à l'identique, sous le seul gate `groupAdvantage()`.
+// l'entrée `redoutable` est UNIQUE et ses porteurs la subissent à l'identique quelle que soit leur
+// provenance, sous le seul gate `groupAdvantage()`.
 describe('Redoutable — la clause AA suit le MODULE de règles, pas le livre du porteur', () => {
-  const carriersByBook = (book: string) =>
-    creatures.filter((c) => c.source?.book === book && (c.traits ?? []).some((t) => t.id === 'redoutable'));
+  const porteurs = creatures.filter((c) => (c.traits ?? []).some((t) => t.id === 'redoutable'));
+  const carriersByBook = (book: string) => porteurs.filter((c) => c.source?.book === book);
+  /** Provenances RÉELLES des porteurs, DÉRIVÉES de la donnée : ce banc porte sur la PLURALITÉ des
+   *  livres d'origine, jamais sur une liste de livres recopiée (#1825). */
+  const LIVRES_PORTEURS = [...new Set(porteurs.map((c) => c.source?.book).filter((b): b is string => !!b))];
 
-  it('les porteurs des trois livres pointent tous l’entrée UNIQUE `redoutable` (aucun `redoutable-mdg`)', () => {
+  it('les porteurs de PLUSIEURS livres pointent tous l’entrée UNIQUE `redoutable` (aucun `redoutable-mdg`)', () => {
     expect(creatures.some((c) => (c.traits ?? []).some((t) => t.id === 'redoutable-mdg'))).toBe(false);
-    for (const book of ['zoo-imperial', 'mer-des-griffes', 'frenchy-bzh']) {
-      expect(carriersByBook(book).length).toBeGreaterThan(0);
-    }
+    // La PLURALITÉ des provenances est ce qui donne son sens au banc : sans elle, les volets
+    // paramétrés ci-dessous n'éprouveraient qu'un seul livre et la clause pourrait le suivre.
+    expect(LIVRES_PORTEURS.length).toBeGreaterThan(1);
   });
 
-  it.each(['zoo-imperial', 'mer-des-griffes', 'frenchy-bzh'])(
+  it.each(LIVRES_PORTEURS)(
     'un porteur %s nourrit la réserve ADVERSE quand le module AA est actif',
     (book) => {
       setRule('combat-aa-avantage-groupe', true);
@@ -284,7 +287,7 @@ describe('Redoutable — la clause AA suit le MODULE de règles, pas le livre du
     },
   );
 
-  it.each(['zoo-imperial', 'mer-des-griffes', 'frenchy-bzh'])(
+  it.each(LIVRES_PORTEURS)(
     'un porteur %s ne nourrit RIEN quand le module AA est inactif (mode Livre de base)',
     (book) => {
       const carrier = carriersByBook(book)[0];

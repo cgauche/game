@@ -318,7 +318,7 @@ function BattleBanner({ mb }: { mb: MassBattleState }) {
       <p className="interlude-detail">
         <b>{mb.ally.label}</b> (Puissance {armyMight(mb.ally)}) contre <b>{mb.enemy.label}</b> (Puissance {armyMight(mb.enemy)}).
         Préparez-la depuis vos Activités <em>Entre deux aventures</em> : Discours, Planification, Repérage,
-        Sabotage… (max 3, ADE II 8). « Engager la bataille » clôt l'interlude et lance les Rounds.
+        Sabotage… (max 3). « Engager la bataille » clôt l'interlude et lance les Rounds.
       </p>
     </section>
   );
@@ -1040,7 +1040,7 @@ function IdentifyPane({ hero, refus, desc, porteur }: { hero: Combatant; refus?:
   const blocked = !items.length
     ? `Aucun objet non identifié dans le sac de ${hero.label}.`
     : !savoir
-      ? `${hero.label} ne possède pas Savoir (Magie) — la longue étude d'un artefact est la voie des sorciers (ADE II).`
+      ? `${hero.label} ne possède pas Savoir (Magie) — la longue étude d'un artefact est la voie des sorciers.`
       : null;
   return (
     <ActivityPane
@@ -1226,7 +1226,7 @@ function BattlePrepPane({ hero, def, refus, entry }: {
       porteur={{ type: 'activities', id: def.id, chemin: 'desc' }}
       blocked={blocked}
       prejet={prejet}
-      note={<>1 Activité d'interlude — l'issue porte sur l'armée (ADE II 8).{def.assisted
+      note={<>1 Activité d'interlude — l'issue porte sur l'armée.{def.assisted
         ? rule('interlude-assist-costs-activity')
           ? ' Les autres PJ peuvent prêter leur Soutien — chacun y dépense un créneau.'
           : ' Les autres PJ peuvent prêter leur Soutien, gratuitement.'

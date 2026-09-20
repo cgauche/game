@@ -12,9 +12,15 @@
 //      chapitres d'un livre se compte à son extraction, il ne se recopie pas dans une page.
 //   3. `<pastille-état> N` — compte d'état (✅/🟡/⬜/❌) collé à un nombre, hors formulation de
 //      seuil invariant (`⬜ = 0`, qui ne mesure rien et ne devient jamais périmée).
-// PÉRIMÈTRE — les pages MANUSCRITES de l'Atlas, plus le script qui écrit l'EN-TÊTE de chaque fiche
-// (`assemble-domain.mjs` : un cardinal écrit là se recopie dans toute fiche assemblée ensuite — la
-// garde doit voir l'ÉCRIVAIN, pas seulement ses sorties). En sont dehors, parce qu'aucun compte n'y
+//   4. `<pastille-état> … (N <chose>)` — le MÊME compte d'état, écrit en APPOSITION parenthésée
+//      après la qualification de l'état (`✅ pilote (14 topics)`, #1825 lot E1b). La classe 3 ne
+//      voit qu'un chiffre COLLÉ à la pastille : celle-ci tient l'apposition. La parenthèse FERMÉE
+//      sur `<nombre> <mot>` est ce qui distingue un COMPTE d'une valeur de règle en prose
+//      (`✅ Tir de zone (3 bandes RAW, …`, qui n'est pas un compte de population).
+// PÉRIMÈTRE — les pages MANUSCRITES de l'Atlas, plus les SCRIPTS qui écrivent de la prose d'Atlas :
+// `assemble-domain.mjs` (en-tête de chaque fiche) et `scripts/docs/build-sources-vf.mjs` (gabarit
+// éditorial de `docs/sources-vf.md`) — un cardinal écrit là se recopie dans toute sortie écrite
+// ensuite : la garde doit voir l'ÉCRIVAIN, pas seulement ses sorties. En sont dehors, parce qu'aucun compte n'y
 // est manuscrit : les rapports ré-générés (`RAWDOC_META_GENERATED`), les catalogues ré-générés
 // verbatim depuis `Source/` (`catalogue-*.md`, où un compte serait la PROSE du livre), et les
 // épreuves DATÉES (`isRawEpreuve`), dont les comptes sont une mesure à une date, gelée.
@@ -30,14 +36,18 @@ export const INDEX_PATH = resolve(RAW_DIR, '00-index.md')
 export const SOURCES_PATH = resolve(RAW_DIR, 'sources.md')
 /** L'ASSEMBLEUR des fiches : il INJECTE son en-tête dans chaque fiche qu'il écrit. */
 export const ASSEMBLEUR_PATH = resolve(RACINE, 'scripts/raw/assemble-domain.mjs')
+/** L'ÉCRIVAIN de `docs/sources-vf.md` : même classe que l'assembleur — sa prose ÉDITORIALE décrit
+ *  les livres extraits, et un cardinal de chapitres écrit là se recopie dans la page à chaque run.
+ *  La page elle-même est GÉNÉRÉE : la scanner ne désignerait pas le fichier à corriger. */
+export const SOURCES_VF_WRITER_PATH = resolve(RACINE, 'scripts/docs/build-sources-vf.mjs')
 
 /** Une page `docs/raw/` est-elle MANUSCRITE (donc scannée) ? */
 export const estPageManuscrite = (nom) =>
   nom.endsWith('.md') && !RAWDOC_META_GENERATED.has(nom) && !isRawEpreuve(nom) && !nom.startsWith('catalogue-')
 
-/** Les fichiers balayés, dans l'ordre du dossier puis l'assembleur. */
+/** Les fichiers balayés, dans l'ordre du dossier puis les ÉCRIVAINS de prose de l'Atlas. */
 export const cheminsBalayes = (rawDir = RAW_DIR) =>
-  [...listerDossier(rawDir).filter(estPageManuscrite).map((f) => resolve(rawDir, f)), ASSEMBLEUR_PATH]
+  [...listerDossier(rawDir).filter(estPageManuscrite).map((f) => resolve(rawDir, f)), ASSEMBLEUR_PATH, SOURCES_VF_WRITER_PATH]
 export const SCANNED_PATHS = cheminsBalayes()
 
 // Nombre de livres écrit en dur devant « livres » (ex. « 15 livres », « depuis les 14 livres »).
@@ -47,6 +57,10 @@ const CHAPTER_COUNT_RE = /\b(\d+)\s+chapitres\b/gi
 // Pastille d'état (✅/🟡/⬜/❌) directement suivie d'un chiffre — un COMPTE, pas un seuil invariant
 // (`⬜ = 0` ne matche pas : le `=` s'intercale entre la pastille et le chiffre).
 const STATE_COUNT_RE = /[✅🟡⬜❌]\s+\d+\b/gu
+// Même compte d'état, en APPOSITION parenthésée après la qualification de l'état. Trois conditions
+// le distinguent d'une valeur de règle : la pastille, la MEME cellule de table ou phrase (ni `|` ni
+// fin de ligne entre les deux) et la parenthèse REFERMÉE juste après `<nombre> <mot>`.
+const STATE_POPULATION_RE = /[✅🟡⬜❌][^|\n]{0,40}?\(\s*\d+\s+\p{L}+\s*\)/gu
 
 /** Balaie `text` (PUR, aucun accès fichier) → liste de violations `{ line, excerpt, reason }`. */
 export function scanForbiddenCounts(text) {
@@ -57,7 +71,10 @@ export function scanForbiddenCounts(text) {
       violations.push({ line: i + 1, excerpt: m[0], reason: `nombre de livres recopié en dur (dérive de BOOKS.length = ${BOOKS.length} dans _lib.mjs, jamais écrit ici)` })
     }
     for (const m of line.matchAll(CHAPTER_COUNT_RE)) {
-      violations.push({ line: i + 1, excerpt: m[0], reason: 'nombre de chapitres recopié en dur — il se compte à l\'extraction (`coverage.md`, GÉNÉRÉ), jamais dans une page manuscrite' })
+      violations.push({ line: i + 1, excerpt: m[0], reason: 'nombre de chapitres recopié en dur — il se compte à l\'extraction (`coverage.md`, GÉNÉRÉ), jamais dans une page manuscrite ni dans un script qui en écrit une' })
+    }
+    for (const m of line.matchAll(STATE_POPULATION_RE)) {
+      violations.push({ line: i + 1, excerpt: m[0], reason: 'compte d\'état manuscrit en apposition (✅/🟡/⬜/❌ … (N …)) — même dette que le compte collé à la pastille : les comptes courants vivent dans coverage.md/reconciliation.md/reanchor.md (GÉNÉRÉS)' })
     }
     for (const m of line.matchAll(STATE_COUNT_RE)) {
       violations.push({ line: i + 1, excerpt: m[0], reason: 'compte d\'état manuscrit (✅/🟡/⬜/❌ + N) — les comptes courants vivent dans coverage.md/reconciliation.md/reanchor.md (GÉNÉRÉS), jamais dans les pages de garde de l\'Atlas' })

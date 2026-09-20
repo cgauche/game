@@ -45,6 +45,8 @@ export const STOCK_PATH: URL;
 export function chapterFile(abbr: string, nn: string, range?: { from: string; to?: string }):
   { path: string; file: string; dir: string; text?: string } | null;
 export function readText(path: string): string;
+export function alternationDuRegistre(): string;
+export const REGISTRE_LIVRES: { id: string; abbr?: string; dir?: string; language?: string }[];
 
 export function significantWords(text: string, minLen?: number): Set<string>;
 export function sharesSignificantWord(a: string, b: string, minLen?: number): boolean;

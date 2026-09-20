@@ -340,7 +340,7 @@ Les commandements sont les préceptes spécifiques à chaque culte dont la viola
 
 <!-- MDG-INTEGRATION -->
 
-VÉRIFIÉ — aucune correction nécessaire. Toutes les réfs `MDG 10/11 l.X` résolvent exactement, toutes les citations « » sont verbatim, toutes les valeurs mécaniques sont sourcées. Les 4 topics sont validés tels quels (collez l'original). Détail du contrôle ligne par ligne :
+VÉRIFIÉ — aucune correction nécessaire. Toutes les réfs `MDG 10/11 l.X` résolvent exactement, toutes les citations « » sont verbatim, toutes les valeurs mécaniques sont sourcées. Les topics ci-dessous sont validés tels quels (collez l'original). Détail du contrôle ligne par ligne :
 
 TOPIC 1 (Culte de Manann) — `MDG 10 l.100` = ligne 100 (« Les commandements exposés dans WFJDR (en page 205) sont universels. ») VERBATIM ✓ ; croyance « domaine en mer » = l.102 ✓ ; croyance « conter exploits » = l.104 ✓ ; commandements locaux = l.108+110 ✓ ; `MDG 10 l.236` = ligne 236, citation plafond 3 navires VERBATIM (incl. « voir page 130 ») ✓.
 

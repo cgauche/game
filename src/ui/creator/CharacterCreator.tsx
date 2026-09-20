@@ -1314,7 +1314,7 @@ export function StarScreen({ d, setD }: StepProps) {
       </StepHeader>
       <p className="hint" style={{ margin: '0 0 8px' }}>
         Tourner la roue à la main choisit librement (+0 PX) ; le d100 s'arrête sur la fourchette du signe tiré, et le
-        garder rapporte +{XP_STAR_ROLLED} PX de création (ADE II 3). L'Étoile du Sorcier ouvre quatre destins — la roue
+        garder rapporte +{XP_STAR_ROLLED} PX de création. L'Étoile du Sorcier ouvre quatre destins — la roue
         les déplie si l'aiguille s'y pose.
       </p>
     </>
@@ -1360,7 +1360,7 @@ export function StarScreen({ d, setD }: StepProps) {
       </div>
       <div className="appear-controls">
         {selPos && selPos.members.length > 1 && (
-          <Section title="Quatre destins — 1d10 (ADE II 3)">
+          <Section title="Quatre destins — 1d10">
             <PlaqueGrid>
               {selPos.members.map((m) => (
                 <PlaqueRow
@@ -1429,7 +1429,7 @@ export function StarScreen({ d, setD }: StepProps) {
           <p className="hint">
             {selPos && selPos.members.length > 1
               ? 'L’Étoile du Sorcier ouvre quatre destins — choisissez le vôtre ci-dessus.'
-              : 'Choisissez ou tirez votre signe astral (ADE II 3) — son sens apparaîtra ici.'}
+              : 'Choisissez ou tirez votre signe astral — son sens apparaîtra ici.'}
           </p>
         )}
       </div>

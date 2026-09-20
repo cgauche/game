@@ -134,20 +134,20 @@ describe('schémas de progression (PDF -> careerLevels.json)', () => {
     expect(desaccords).toEqual([]);
   });
 
-  it("l'artefact couvre les 7 livres à Carrières et porte son ENVELOPPE de document", () => {
-    expect(audit.livresArtefact).toEqual([
-      'livre-de-base',
-      'vents-de-la-magie',
-      'aux-armes',
-      'mer-des-griffes',
-      'archives-de-l-empire-1',
-      'archives-de-l-empire-2',
-      'middenheim',
-    ]);
+  it("l'artefact couvre EXACTEMENT les livres qui portent des Carrières, et porte son ENVELOPPE de document", () => {
+    // Vérité INDÉPENDANTE de l'artefact : les livres qui portent une Carrière dans la DONNÉE.
+    // L'artefact, lui, tient sa liste du lecteur de PDF (`gen-progression-schemas.py`, champ
+    // `livres`) — les deux se rejoignent ou l'extraction a sauté un livre. Aucune liste n'est
+    // écrite ici : un livre à Carrières de plus se MESURE au lieu de se recopier (#1825).
+    const porteursDeCarriere = [...new Set(careers.map((c) => c.source.book))].sort();
+    expect(porteursDeCarriere.length).toBeGreaterThan(0);
+    expect([...audit.livresArtefact].sort()).toEqual(porteursDeCarriere);
+    // L'ORDRE de `livres` est celui du parcours d'extraction : l'artefact ne le promet pas, et le
+    // figer ici gèlerait un accident de génération. C'est l'ENSEMBLE qui est le contrat.
     // #1467 L1b V-FLIP-CONFIG : la prose « généré par… / ne pas éditer » a quitté la DONNÉE (elle
     // décrivait le def, pas le document) — elle vit au JSDoc de `defs/progression-schemas-derived.ts`.
-    // Ce que l'artefact porte désormais, et que ce volet gèle, c'est son ENVELOPPE de document, dont
-    // le `type` est ce que la fabrique vérifie au parse.
+    // Ce que l'artefact porte, et que ce volet gèle, c'est son ENVELOPPE de document, dont le
+    // `type` est ce que la fabrique vérifie au parse.
     expect(artefact.id).toBe('progression-schemas-derived');
     expect(artefact.type).toBe('progression-schemas.derived');
     expect(artefact.label).toBe('Schémas de progression (relevé dérivé)');

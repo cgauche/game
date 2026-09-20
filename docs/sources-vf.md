@@ -50,21 +50,21 @@ AUTORISÉ (`CLAUDE.md` § *Sources VF*). Au moindre doute, **lire le `.md` et ci
 - **ADE I** = `Source/Warhammer v4 - Les archives de l'Empire volume 1/`.
 - **ADE II** = `Source/Warhammer v4 - Les archives de l'Empire volume 2/`.
 - **EDO** (L'Ennemi dans l'Ombre, T1) = `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/` — périmètre
-  RE-VÉRIFIÉ au `Source/` (2026-09-13) : le livre ne porte **aucun bloc de Sort** (zéro `**NI :**` sur ses
-  13 chapitres) **ni de Talent** ; ses seuls blocs de créature sont **Horreur rose / Horreur bleue de
+  RE-VÉRIFIÉ au `Source/` (2026-09-13) : le livre ne porte **aucun bloc de Sort** (zéro `**NI :**` sur
+  l'ensemble de ses chapitres) **ni de Talent** ; ses seuls blocs de créature sont **Horreur rose / Horreur bleue de
   Tzeentch** (`EDO 09 l.556-570`, folio 114) — les **Furies du Chaos**, les 3 Talents de culte et les Sorts du
   Chaos que l'on croisait attribués « EDO p.7X-8X » sont en réalité **EDOC ch.9** (voir l'entrée suivante).
   Nouvelles règles propres à EDO = **Appendice 2** (folios 145-149) : PNJ, portes & serrures, fièvre cérébrale
   pourpre + symptômes, 6 Traits de créature et 5 Mutations (folios 147-148), Anneau d'Opsianon.
   2026-07-11 (#309) : Calendrier Impérial (Annexe 3, folios 149-150 — mois/jours/intercalaires ;
   la table est INTROUVABLE au LDB, l'ancienne attribution « LDB » des datasets calendrier était fausse).
-- **EDOC** (Compagnon T1) = `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/` — 9 véhicules ;
-  **ch.9 « La Main pourpre »** = la source RÉELLE de la matière Tzeentch (folios 75-85) : 3 Talents de culte
+- **EDOC** (Compagnon T1) = `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/` — véhicules ;
+  **ch.9 « La Main pourpre »** = la source RÉELLE de la matière Tzeentch (folios 75-85) : les Talents de culte
   (`EDOC 13 l.85-101` — Bénédiction de Tzeentch, Disciple du changement, Double vie, folio 75), les Sorts du
   Chaos avec leurs blocs NI/Portée (folios 79-83), Marque de Tzeentch (folio 83), **Furies du Chaos** (folio 84),
   **Horreurs de Tzeentch** (folio 85). Avant de taguer `book`+`page` sur une entrée « Chaos T1 », vérifier au
   `Source/` de quel des deux volumes vient le bloc.
-- **Middenheim** = `Source/Warhammer v4 - Middenheim la cite du Loup Blanc/` — 3 origines humaines + carrière Frère Loup.
+- **Middenheim** = `Source/Warhammer v4 - Middenheim la cite du Loup Blanc/` — origines humaines + carrière Frère Loup.
 - **AA** (Aux Armes / *Up in Arms*) = `Source/WH - V4 - Aux Armes/` — supplément combat & armes (autorisé 2026-06-14 ;
   source des talents que frenchy.bzh référence : Fusilier, Officier de Siège, etc.).
 - **ZI** (Zoo Impérial / *The Imperial Zoo*) = `Source/WH - V4 - Le zoo imperial/` — créatures exotiques + le trait
@@ -73,26 +73,26 @@ AUTORISÉ (`CLAUDE.md` § *Sources VF*). Au moindre doute, **lire le `.md` et ci
 - **MDG** (La Mer des Griffes / *Sea of Claws*) = `Source/WH - V4 - La Mer de Griffe/` — **cadre côtier + règles navales**
   (autorisé 2026-06-22) : navires & construction/artillerie (ch.12), navigation/manœuvres/**combat naval** + dégâts &
   Critiques sur navire (ch.13), tests d'équipage & moral (ch.14), longs voyages/commerce/**activités & maladies en mer**
-  (ch.15), classe **Côtier** (8 carrières, ch.9) + carrières norses (ch.7), cultes **Manann/Stromfels** + miracles
+  (ch.15), classe **Côtier** (ch.9) + carrières norses (ch.7), cultes **Manann/Stromfels** + miracles
   (ch.10-11), magie des mers (ch.2), **bestiaire marin** + capitaines nommés (ch.16). Comme AA/ZI : extraction curée à la main.
 - **ACE** (Altdorf – Couronne de l'Empire) = `Source/Warhammer v4 - Aldorf la Couronne de l'Empire/` — **UNIQUEMENT
-  l'Annexe I « Activités à Altdorf » (ch.12)** : 5 Activités « entre deux aventures » gated par lieu (Pénitence,
+  l'Annexe I « Activités à Altdorf » (ch.12)** : les Activités « entre deux aventures » gated par lieu (Pénitence,
   Entraînement à une arme inhabituelle, Tester des objets magiques, Mécénat, Recherche universitaire) — cf. `activities.json`
   (`book: "altdorf-couronne-de-l-empire"`, l'id de `books.json` ; `where: ["altdorf"]`). Le reste du livre = contenu de campagne (tout passage de
   règle supplémentaire s'ajoute au périmètre ici, arbitrage 2026-07-10). Comme AA/ZI/MDG : extraction curée à la main.
 - **MSRC** (Mort sur le Reik – Compagnon) = `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/`
-  (19 chapitres extraits) — autorisé 2026-07-10 (#277). Périmètre constaté : **ch.5 « Navigation
+  — autorisé 2026-07-10 (#277). Périmètre constaté : **ch.5 « Navigation
   fluviale »** (tables de `river-navigation.json`/`river-perils.json`, critiques fluviaux
-  `river-criticals.json`), **ch.10 « Personnalisation »** (8 traits navals d'aménagement de
+  `river-criticals.json`), **ch.10 « Personnalisation »** (traits navals d'aménagement de
   `naval-traits.json` : bouteur, murs blindés, coque de course, safran, plat-bord, allègement, gréement de
   course, fourquines), **ch.13 « Bestiaire fluvial »** (créatures), **ch.14 « Maladies transmises par
   l'eau »** (maladies/symptômes/états, `water-exposure.json`), véhicules fluviaux. Curation à la main.
 - **NADJ** (Nuits agitées & dures journées) = `Source/Warhammer v4 - Nuits agitees & dures journees/` —
   autorisé 2026-07-10 (arbitrage par-passage). Périmètre constaté : **appendice I « Gnomes »**
-  (espèce jouable, `species.json`), **« Jeux de taverne »** (`tavernGames.json`), 3 entrées `gods.json`,
-  1 talent, 1 trapping.
+  (espèce jouable, `species.json`), **« Jeux de taverne »** (`tavernGames.json`), des entrées de
+  `gods.json`, `talents.json` et `trappings.json`.
 - **VDM** (Les Vents de Magie / *Winds of Magic*) = `Source/Warhammer v4 - Les Vents de Magie/` —
-  supplément **magie des 8 Collèges** (autorisé 2026-07-22, extrait Marker, 15 chapitres). Périmètre :
+  supplément **magie des 8 Collèges** (autorisé 2026-07-22, extrait Marker). Périmètre :
   **règles d'incantation RÉVISÉES** (ch.2 — le livre déclare *remplacer* LDB 46-51 : Focalisation,
   Surincantation, Incantations Imparfaites, dissipation, Repousser les Vents ; + **magie rituelle** &
   rituels, nouvelles **Activités**) ; **carrières & compétences arcaniques** (ch.3 — Alchimiste ordinaire,
@@ -106,11 +106,11 @@ AUTORISÉ (`CLAUDE.md` § *Sources VF*). Au moindre doute, **lire le `.md` et ci
   unique) = `Source/Warhammer Fantasy Roleplay 5e Core Rulebook/` — **cœur des règles de la 5e édition** (autorisé 2026-09-18,
   épique #1816 ; arbitrages utilisateur du même jour : « Elle est en VO, mais ce n'est pas grave, ca sera
   l'occasion d'éprouver notre système de langue VO/VF ! » et « Pas de traduction, on va gérer la VO dans
-  l'application. »). Extraction Marker, 18 chapitres, dont 13 de contenu : 04 Introduction ·
+  l'application. »). Extraction Marker ; chapitres de CONTENU : 04 Introduction ·
   05 Character Building · 06 Class and Careers · 07 Skills and Talents · **08 Rules** (tests, combat,
   blessures, maladies, psychologie, États, corruption) · 09 Between Adventures · 10 Religion and
   Belief · 11 Magic · 12 The Gamemaster · 13 Glorious Reikland · 14 Consumer Guide · 15 Bestiary ·
-  16 Appendices ; les 5 autres sont l'appareil du livre : 01 Cover · 02 Contents · 03 Credits ·
+  16 Appendices ; les autres sont l'appareil du livre : 01 Cover · 02 Contents · 03 Credits ·
   17 Index · 18 Character Sheet.
   Le texte reste en ANGLAIS, verbatim — **aucune traduction** dans `Source/`. Périmètre par passage et
   curation `src/data` (tag `source.book: "core-rulebook-5e"`) : phases suivantes de #1816.
@@ -137,7 +137,8 @@ AUTORISÉ (`CLAUDE.md` § *Sources VF*). Au moindre doute, **lire le `.md` et ci
 - Tome 1 : `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/` + `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/`.
 - Tome 2 : `Source/Warhammer v4 - 2.0 Mort sur le Reik/` + `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/`.
 - Tome 3 : `Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/` (Compagnon VO, non extrait dans `Source/`).
-- Suppléments VF dispo : `Altdorf — La Couronne de l'Empire`, `Aventures à Ubersreik I`,
+- Suppléments VF dispo : `Altdorf — La Couronne de l'Empire`,
+  `Aventures à Ubersreik I` (extrait : `Source/Warhammer v4 - Aventures a Ubersreik/`),
   `Middenheim — La Cité du Loup Blanc`, `Nuits Agitées & Dures Journées`,
   `Boîte d'Initiation` (+ `WH4_FR_BI_Livre_Aventure` / `…_Ubersreik`).
-<!-- sources-empreinte: 4efb4efb67d4568ee4038dbb63c31a1ca0ebdb90 (5 fichiers, 0 dossiers) corps: b325c68fd2eacb10c6198f52c9effdfb1297d721 -->
+<!-- sources-empreinte: f3f7f9b1a8208bb664b38236d775cc5e14271b5c (5 fichiers, 0 dossiers) corps: da8cffdb50ddfde41209add487d250ed45aed89e -->

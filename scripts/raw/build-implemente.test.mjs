@@ -3,7 +3,7 @@
 // tableau de bilan jamais scanné, exclusion de l'art de rig) + les nouveaux (#487). Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { refRe, buildFolioMap, folioRangeIn, allAbbrAlternation } from './_lib.mjs'
+import { refRe, buildFolioMap, folioRangeIn, allAbbrAlternation, REGISTRE_LIVRES, estLivreExtrait } from './_lib.mjs'
 import {
   slugify, refsWithSpans, declNameOf, symbolFor, refMatches, mergeSpans,
   parseFiche, renderBlock, regenerateFiche, validerDette, estHorsImplementation, indexCode, isDeadExport,
@@ -392,15 +392,17 @@ test('registresDeFiches : les deux espaces d’id viennent du MÊME parse (topic
 
 test('buildAbbrMap : abbr → slug ; abbr inconnue de BOOKS → fail-fast ; entrée sans dir → hors map (VO)', () => {
   assert.throws(() => buildAbbrMap([{ id: 'x', abbr: 'ZZZ', dir: 'Source/x' }]), /abbr inconnue de BOOKS/)
-  const { abbrOf, knownIds } = buildAbbrMap([
-    { id: 'aux-armes', abbr: 'AA', dir: 'Source/WH - V4 - Aux Armes' },
-    { id: 'mort-sur-le-reik-compagnon', abbr: 'MSRC', dir: 'Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon' },
-    { id: 'lustria', abbr: 'Lustria' }, // VO hors Atlas — a désormais un abbr mais aucun dir (#585)
-  ])
-  assert.equal(abbrOf.get('aux-armes'), 'AA')
-  assert.equal(abbrOf.get('mort-sur-le-reik-compagnon'), 'MSRC')
-  assert.equal(abbrOf.has('lustria'), false)
-  assert.deepEqual([...knownIds].sort(), ['aux-armes', 'lustria', 'mort-sur-le-reik-compagnon'])
+  // Registre de banc PRIS au registre réel (`buildAbbrMap` refuse toute abbr qu'il ne connaît pas,
+  // le banc ne peut donc pas l'inventer) : deux livres EXTRAITS, un livre à `abbr` SANS `dir`.
+  // Aucune identité de livre n'est recopiée ici — un livre de plus ne touche pas ce banc (#1825).
+  const extraits = REGISTRE_LIVRES.filter(estLivreExtrait).slice(0, 2)
+  assert.equal(extraits.length, 2, 'le registre doit porter au moins DEUX livres extraits (à `abbr` ET `dir`) : sans eux ce banc n’éprouve rien')
+  const sansDir = REGISTRE_LIVRES.find((b) => b.abbr && !b.dir)
+  assert.ok(sansDir, 'le registre doit porter au moins UN livre à `abbr` SANS `dir` : c’est le cas que ce banc éprouve (hors Atlas → hors map)')
+  const { abbrOf, knownIds } = buildAbbrMap([...extraits, sansDir])
+  for (const b of extraits) assert.equal(abbrOf.get(b.id), b.abbr)
+  assert.equal(abbrOf.has(sansDir.id), false)
+  assert.deepEqual([...knownIds].sort(), [...extraits, sansDir].map((b) => b.id).sort())
 })
 
 test('buildFolioMap + folioRangeIn : plage jusqu\'à l\'ancre suivante / EOF / introuvable / ambigu', () => {

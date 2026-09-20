@@ -40,7 +40,7 @@ import { cliquetsDuMessage } from './lib/stocksNominatifs.mjs'
  * relève qu'en le DISANT au message de commit (`CLIQUET: scripts/guards/budget-contexte.mjs +N — <motif>`),
  * et il s'abaisse à chaque allègement.
  */
-export const PLAFOND_OCTETS = 26807
+export const PLAFOND_OCTETS = 26808
 
 /** Le fichier qui PORTE le plafond : c'est lui que le `CLIQUET:` d'un message de commit nomme. */
 export const PORTEUR_DU_PLAFOND = 'scripts/guards/budget-contexte.mjs'

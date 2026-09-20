@@ -408,15 +408,28 @@ test('stock COMMITTÉ truqué : déplacer une PERDUE vers `benignes` → rouge N
 
 // ---------- frontière de COUVERTURE : les fins de LIVRE (angle mort déclaré, #1457 grief G2) ----------
 
-test('couverture : les 3 dernières ancres de LIVRE (AA 144, ZI 144, MDG 160) sont hors mesure — aucun chapitre suivant ne les reprend', () => {
+test('couverture : la DERNIÈRE ancre de chaque LIVRE est hors mesure — aucun chapitre suivant ne la reprend', () => {
   const mesure = scanAllEmptyFolios()
-  for (const [abbr, folio] of [['AA', 144], ['ZI', 144], ['MDG', 160]]) {
-    const texts = chapterTexts(new Map(BOOKS).get(abbr))
+  // Le périmètre est le REGISTRE (`BOOKS`), jamais une liste de livres recopiée : un livre de plus
+  // entre ici par `books.json`, avec sa propre dernière ancre lue au disque (#1825).
+  // Un livre SANS aucune ancre de folio n'est pas un saut muet : c'est un cas NOMMÉ et COMPTÉ
+  // (l'extraction Marker ne bake pas le folio imprimé de tous les livres). Les deux populations
+  // recouvrent le registre entier — aucun livre ne disparaît entre les deux.
+  const vus = []
+  const sansAncre = []
+  for (const [abbr, dir] of BOOKS) {
+    const texts = chapterTexts(dir)
     const dernier = [...texts.keys()].pop()
-    const ancres = [...texts.get(dernier).matchAll(/data-folio="(-?\d+)"/g)].map((m) => Number(m[1]))
-    assert.equal(ancres.pop(), folio, `${abbr} : folio ${folio} est bien la DERNIÈRE ancre du DERNIER fichier (${dernier})`)
-    assert.ok(!mesure.some((e) => e.abbr === abbr && e.folio === folio), `${abbr} ${folio} : hors mesure, faute de paire d’ancres`)
+    const ancres = dernier === undefined
+      ? []
+      : [...texts.get(dernier).matchAll(/data-folio="(-?\d+)"/g)].map((m) => Number(m[1]))
+    const folio = ancres.pop()
+    if (folio === undefined) { sansAncre.push(abbr); continue }
+    vus.push(abbr)
+    assert.ok(!mesure.some((e) => e.abbr === abbr && e.folio === folio), `${abbr} ${folio} (${dernier}) : hors mesure, faute de paire d’ancres`)
   }
+  assert.equal(vus.length + sansAncre.length, BOOKS.length, `livres du registre non classés : vus [${vus}] / sans ancre [${sansAncre}] contre ${BOOKS.length} livres`)
+  assert.ok(vus.length > 0, `aucune dernière ancre lue : le banc serait vert par vacuité (sans ancre : ${sansAncre})`)
 })
 
 // ---------- MORSURE sur le CAS D'OR réel : la page 88 du LDB, re-vidée EN MÉMOIRE (#1457, grief G4) ----------

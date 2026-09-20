@@ -497,6 +497,15 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
     expect(rules(byBook)).toEqual(['id-equality']);
   });
 
+  it('MORSURE : l’identité d’un livre nommée `abbr`/`ab` est vue comme un `id` (#1825 E1b)', () => {
+    // Sigles INVENTÉS : ce banc éprouve le NOM DU CHAMP, il ne recopie aucune identité du registre.
+    const byAbbr = ['export function dossier(b: BookData) {', "  return b.abbr === 'XYZ' ? special() : generic(b);", '}'].join('\n');
+    expect(rules(byAbbr)).toEqual(['id-equality']);
+
+    const byAb = ['export function couverture(b) {', "  if (b.ab === 'QRS') return special();", '  return generic(b);', '}'].join('\n');
+    expect(rules(byAb, 'scripts/raw/probe.mjs')).toEqual(['id-equality']);
+  });
+
   it('MORSURE : l’outillage `scripts/**` en `.mjs` est parsable et scanné', () => {
     const mjs = ["export function compile(entry) {", "  if (entry.ref === 'auberge') return special();", '  return generic(entry);', '}'].join('\n');
     expect(rules(mjs, 'scripts/arene/probe.mjs')).toEqual(['id-equality']);
