@@ -1,8 +1,11 @@
 // Construit les catalogues de l'Atlas (docs/raw/catalogue-*.md) en CONCATÉNANT verbatim les chapitres
-// de DONNÉES de la SOURCE Marker propre (tables intactes), LDB + suppléments. Chaque chapitre est cité
-// `<ABBR> NN` → crédité au niveau chapitre par coverage.mjs/reconcile.mjs. Un item de `inc` peut être un
-// numéro de chapitre entier, OU `{ ch, from, to?, title }` pour une PLAGE DE SOUS-SECTION (ancres
-// `chapterFile`, cf. `_lib.mjs`) — même mécanisme, pour un chapitre trop large pour son domaine (ex. MDG 2).
+// de DONNÉES de la SOURCE Marker propre (tables intactes). Chaque chapitre est cité
+// `<ABBR> NN` → crédité au niveau chapitre par coverage.mjs/reconcile.mjs. #1825 lot E : l'APPARTENANCE
+// d'un chapitre à un catalogue est de la DONNÉE (`enCatalogue` de `scripts/raw/chapitres.json`, lue par
+// `livresDeCatalogue`) — ne restent ici que le fichier, le titre et la fiche de règles du CATALOGUE,
+// jamais une liste de livres. Une entrée de chapitre porte `ch` ; ses `from`/`to`/`title` optionnels
+// n'en transcrivent qu'une PLAGE DE SOUS-SECTION (ancres `chapterFile`, cf. `_lib.mjs`) — même
+// mécanisme, pour un chapitre trop large pour son catalogue.
 // Contrainte : tout bloc `<!-- X-INTEGRATION -->` du fichier existant reste un correctif MANUEL (perte
 // connue de l'extraction Marker, aucun mécanisme `inc` ne la couvre encore) — préservé tel quel par
 // extractPreservedBlocks/appendPreservedBlocks, JAMAIS régénéré. Re-run après toute ré-extraction.
@@ -11,7 +14,7 @@ import { existsSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BOOKS, chapterFile as chapterFileLib, readText } from './_lib.mjs'
+import { BOOKS, chapterFile as chapterFileLib, livresDeCatalogue, readText } from './_lib.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 
 export const BLOCK_START = /^<!-- ([A-Z0-9_-]+-INTEGRATION) -->/
@@ -51,26 +54,18 @@ function appendPreservedBlocks(content, blocks) {
   return content.replace(/\n+$/, '\n') + '\n' + blocks.join('\n\n') + '\n'
 }
 
-// Domaines → chapitres de DONNÉES par livre (repérés au canal titre).
-const DOMAINS = [
-  { file: 'catalogue-creatures.md', titre: 'Bestiaire — profils de créature', rules: 'bestiaire.md',
-    inc: [['LDB', [76, 77, 78, 79, 80, 82, 83, 84, 85]], ['MCLB', [4]],
-          ['ZI', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]],
-          ['ADE II', [1, 2]], ['EDO', [11]], ['EDOC', [7]], ['MSRC', [13]], ['PDT', [10, 11]], ['MDG', [16]], ['VDM', [13, 15]]] },
-  { file: 'catalogue-sorts.md', titre: 'Sorts — listes complètes', rules: 'magie.md',
-    inc: [['LDB', [47, 48, 49, 50, 51]], ['EDO', [11]],
-          ['MDG', [{ ch: 2, from: 'Magie des mers', to: 'LES ELFES SUR LA MER DES GRIFFES', title: 'Magie des mers' }]],
-          ['VDM', [4, 5, 6, 7, 8, 9, 10, 11]]] },
-  { file: 'catalogue-divin.md', titre: 'Religion — dieux, bénédictions & miracles', rules: 'religion.md',
-    inc: [['LDB', [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43]], ['MCLB', [7]], ['ACE', [11]], ['MDG', [10, 11]]] },
-  { file: 'catalogue-equipement.md', titre: 'Équipement — objets, prix & Encombrement', rules: 'equipement.md',
-    inc: [['LDB', [57, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75]],
-          ['AA', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]], ['MDG', [12]], ['VDM', [12]]] },
-  { file: 'catalogue-carrieres.md', titre: 'Carrières — détails par niveau', rules: 'carrieres.md',
-    inc: [['LDB', [6, 7, 8]], ['ADE I', [7, 8]], ['ADE II', [1]], ['MCLB', [8, 9, 10]], ['MDG', [9, 11]]] },
-  { file: 'catalogue-divers.md', titre: 'Règles diverses des suppléments', rules: '00-index.md',
-    inc: [['ADE II', [3, 9]], ['MSR', [11]], ['MSRC', [7, 9, 14]], ['ACE', [10, 12]], ['EDOC', [12]]] },
+// Les CATALOGUES de l'Atlas : leur identité (`id`, clé que les entrées de chapitre citent), leur fichier,
+// leur titre et la fiche de règles qui les traite. Quels chapitres de quel livre y entrent est de la
+// DONNÉE (`enCatalogue` de `scripts/raw/chapitres.json`) — l'ordre des blocs suit donc l'ORDRE DU REGISTRE.
+export const CATALOGUES = [
+  { id: 'creatures', file: 'catalogue-creatures.md', titre: 'Bestiaire — profils de créature', rules: 'bestiaire.md' },
+  { id: 'sorts', file: 'catalogue-sorts.md', titre: 'Sorts — listes complètes', rules: 'magie.md' },
+  { id: 'divin', file: 'catalogue-divin.md', titre: 'Religion — dieux, bénédictions & miracles', rules: 'religion.md' },
+  { id: 'equipement', file: 'catalogue-equipement.md', titre: 'Équipement — objets, prix & Encombrement', rules: 'equipement.md' },
+  { id: 'carrieres', file: 'catalogue-carrieres.md', titre: 'Carrières — détails par niveau', rules: 'carrieres.md' },
+  { id: 'divers', file: 'catalogue-divers.md', titre: 'Règles diverses des suppléments', rules: '00-index.md' },
 ]
+export const idsDeCatalogue = () => CATALOGUES.map((c) => c.id)
 
 function chapterFile(abbr, nn, range) {
   const c = chapterFileLib(abbr, nn, range)
@@ -90,15 +85,14 @@ if (dirsVides.length) {
   process.exit(1)
 }
 const log = []
-for (const dom of DOMAINS) {
+for (const dom of CATALOGUES) {
   const parts = [], refs = [], missing = []
-  for (const [abbr, chaps] of dom.inc) for (const spec of chaps) {
-    const isRange = typeof spec === 'object'
-    const nn = isRange ? spec.ch : spec
-    const c = chapterFile(abbr, nn, isRange ? { from: spec.from, to: spec.to } : undefined)
+  for (const [abbr, chaps] of livresDeCatalogue(dom.id)) for (const spec of chaps) {
+    const { ch: nn, from, to, title } = spec
+    const c = chapterFile(abbr, nn, from ? { from, to } : undefined)
     if (!c) { missing.push(`${abbr} ${nn}`); continue }
     refs.push(`\`${abbr} ${nn}\``)
-    parts.push(`\n\n## [${abbr} ${nn}] ${isRange ? spec.title : c.title}\n\n${c.text}`)
+    parts.push(`\n\n## [${abbr} ${nn}] ${title ?? c.title}\n\n${c.text}`)
   }
   const header = `# Atlas RAW — Catalogue : ${dom.titre}\n\n` +
     `> **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)\n` +

@@ -114,6 +114,9 @@ const NOMMES = [
   'melee|ranged|zone|allFoes|allAround|self',
   'physique|mentale',
   'prop|roof|relief',
+  // `teneurSchema` (#1825 lot E) : ce que contiennent les chapitres d'un livre non couverts par une
+  // fiche de l'Atlas — absente = livre de règles (`defs/books.ts`).
+  'scenario|mixte',
   'selfWound|weaponDamageActLast|actionPenalty|loseMovement|loseAction|trauma|hitAlly|misfire',
   'weapon|ammo|armour|inventory',
   'arme|morsure|caudale|cornes|souffle|vomi|tentacules|etreinte|regard|langue|hurlement',

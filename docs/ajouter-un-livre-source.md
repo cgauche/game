@@ -163,8 +163,7 @@ Trois points d'enregistrement, dans cet ordre :
    COMPLÈTE, jamais un doublon. **Aucun script ne porte la LISTE des livres** : `BOOKS`
    (`scripts/raw/_lib.mjs`, source unique partagée par `coverage.mjs`/`reconcile.mjs`/`reanchor.mjs`)
    DÉRIVE de `books.json` — les entrées porteuses d'un `dir`, dans l'ORDRE DU FICHIER. (Les réglages
-   PAR CHAPITRE restent à poser plus bas : `HORS_REGLE` et `SCENARIO_BOOKS` de `coverage.mjs` § 5,
-   `DOMAINS` de `build-catalogs.mjs` § 5.) L'entrée s'insère au RAYON qui lui revient, jamais
+   PAR CHAPITRE, eux, vivent au registre d'outillage `scripts/raw/chapitres.json`, § 3.) L'entrée s'insère au RAYON qui lui revient, jamais
    forcément en fin de fichier : aucun artefact commité ne suit l'ordre du registre — les stocks
    nominatifs se rendent en ordre canonique de clé (#1825). Cet ordre décide en revanche de
    l'affichage : les rapports de l'Atlas suivent `BOOKS` (section par livre de `docs/raw/coverage.md`,
@@ -189,6 +188,24 @@ Trois points d'enregistrement, dans cet ordre :
 
    Le résumé de tête de `docs/raw/coverage.md` se ventile par GROUPE (une ligne par valeur de
    `coeur`, une pour les livres sans cœur déclaré) : deux corps de règles ne s'additionnent jamais.
+
+   **INVARIANT (#1825)** — *le code ne nomme aucun livre : un livre de plus, c'est de la DONNÉE.* Ce
+   qu'on sait du LIVRE vit dans son entrée de `src/data/books.json` ; ce qu'on sait de ses CHAPITRES
+   vit dans `scripts/raw/chapitres.json` (§ 3) — zéro ligne de code dans les deux cas. La séparation
+   n'est pas cosmétique : `books.json` est la donnée de JEU, éditable au Compendium et servie au
+   joueur ; `chapitres.json` est de l'OUTILLAGE, qui ne sert qu'à la chaîne Atlas.
+
+   **Les deux PROPRIÉTÉS d'Atlas du LIVRE** — champs OPTIONNELS de la même entrée, éditables au
+   Compendium, lus par des accesseurs de `scripts/raw/_lib.mjs` :
+   - **`teneur`** (`"scenario"` · `"mixte"`, liste à l'atelier) — ce que contiennent les chapitres du
+     livre NON couverts par une fiche. `scenario` = campagne pure : une section vide y est du bruit.
+     `mixte` = scenario ET règles : une section vide peut y cacher une règle. ABSENTE = livre de
+     règles. C'est elle qui décide le `➖ hors-règle` de tout chapitre non crédité et la ventilation
+     section-granulaire du résumé. À ne pas confondre avec `folder`, qui est le RAYON de
+     bibliothèque (rangement au Compendium), jamais la teneur.
+   - **`niveauDeSection`** (entier 2–6) — le niveau de heading qui porte les SUJETS du livre, pour la
+     mesure section-granulaire. ABSENT = 2. À mesurer sur l'histogramme réel H2/H3/H4 du livre (#604)
+     plutôt qu'à deviner : un argmax brut se fait piéger par les listes profondément imbriquées.
 
    **Fiches extraites AVANT l'implémentation — la dette se déclare UNE fois.** Une fiche neuve dont
    aucun topic n'est encore codé rendrait autant d'orphelins que de topics (`raw:implemente`) et
@@ -215,9 +232,36 @@ Trois points d'enregistrement, dans cet ordre :
 livres autorisés ») — **vérifier qu'il reste synchronisé** avec `sources.md` à chaque ajout (cf.
 § Anomalies : au moment de la rédaction, `00-index.md` n'a pas suivi le dernier ajout MDG).
 
-Si le livre a des chapitres de **cadre pur** (gazetteer, sans règle), les lister dans
-`HORS_REGLE` de `scripts/raw/coverage.mjs` (ex. `'MDG 1', 'MDG 3', …` — cadre côtier) pour qu'ils
-sortent du dénominateur de couverture au lieu de compter comme des trous.
+### Le registre de CHAPITRES — `scripts/raw/chapitres.json`
+
+Ce qu'on sait des CHAPITRES d'un livre y vit, en DEUX listes d'objets qui désignent leur livre par son
+**`id` STABLE** (jamais son sigle : le sigle est de l'affichage). Rien à éditer dans un script.
+
+- **`horsRegle`** — `{ book, ch, motif }` par chapitre exclu du dénominateur de couverture. À remplir
+  quand le livre a des chapitres de **cadre pur** (gazetteer, sans règle), pour qu'ils en sortent au
+  lieu de compter comme des trous. Conservateur : n'y taguer que le clairement-non-règle, pour ne
+  jamais masquer un vrai trou ; le front-matter (index/intro/préface) est déjà écarté par son TITRE.
+  Si le livre ENTIER est une campagne ou un compagnon, c'est sa `teneur` qu'il faut renseigner (§ 1),
+  pas ses chapitres un à un.
+  ⚠ Un motif est NOTRE prose éditoriale : il renvoie au CHAPITRE (« ch.8 »), **jamais** à une réf
+  citable `<ABRÉV> NN l.X` — ce serait une citation que RIEN ne vérifie : aucun scanner de réfs ne
+  lit ce fichier (`reconcile.mjs` et `check-code-refs.mjs` scannent `src/**`, `check-refs.mjs` les
+  `.md` de `docs/raw/`), elle pourrirait donc en silence au premier réancrage.
+- **`enCatalogue`** — `{ book, ch, catalogue, from?, to?, title? }` par chapitre de DONNÉES que
+  l'Atlas transcrit verbatim (§ 4), **une entrée par chapitre ET par catalogue** : un chapitre qui
+  alimente deux catalogues porte deux entrées. `from`/`to`/`title` n'y servent qu'à n'en transcrire
+  qu'une PLAGE de sous-section, pour un chapitre trop large pour le catalogue.
+
+L'ORDRE des entrées est celui du registre des livres, puis du numéro de chapitre — c'est aussi
+l'ordre des blocs dans les catalogues produits (rien n'est retrié à la lecture).
+
+**Intégrité** — `scripts/raw/chapitres.test.mjs` (`npm run test:raw`) refuse un `book` qui n'est pas
+l'id d'un livre couvert par l'Atlas, un `ch` qui ne résout aucun fichier sous son `dir`, un motif
+vide ou porteur d'une réf citable, un `catalogue` que `build-catalogs.mjs` ne produit pas, un
+doublon, un ordre de fichier qui dérive, et toute CLÉ hors du jeu admis — `from` mal orthographié
+ferait transcrire le chapitre ENTIER sans un mot, et `to`/`title` sans `from` n'ouvrent aucune
+plage. Ces contrôles ne peuvent pas vivre au schéma : zod ne voit ni `Source/` ni le registre des
+livres.
 
 ## 4. Intégration à l'Atlas RAW (`docs/raw/`)
 
@@ -235,11 +279,11 @@ créer une nouvelle si le livre introduit un domaine inédit (le combat naval de
   le JSON de sortie du workflow et insère topics + sommaire dans les fiches de domaine, **idempotent**
   via un sentinel `<!-- <LIVRE>-INTEGRATION -->`.
 - **Catalogues de données verbatim** (`docs/raw/catalogue-*.md`) : régénérés par
-  `node scripts/raw/build-catalogs.mjs`, qui concatène **verbatim** les chapitres de données du
-  livre (repérés par chapitre dans la table `DOMAINS` en tête du script — ajouter les paires
-  `[ABRÉV, [numéros de chapitre]]` du nouveau livre au domaine catalogue concerné :
-  `catalogue-creatures`, `catalogue-sorts`, `catalogue-divin`, `catalogue-equipement`,
-  `catalogue-carrieres` ou `catalogue-divers`). Un chapitre cité par un catalogue est crédité
+  `node scripts/raw/build-catalogs.mjs`, qui concatène **verbatim** les chapitres de données des
+  livres. Rien à éditer dans le script : ajouter une entrée `{ book, ch, catalogue }` à la liste
+  **`enCatalogue`** de `scripts/raw/chapitres.json` (§ 3), le `catalogue` étant `creatures`, `sorts`,
+  `divin`, `equipement`, `carrieres` ou `divers`. Seuls le fichier, le titre et la fiche de règles
+  d'un catalogue vivent dans le script — jamais une liste de livres. Un chapitre cité par un catalogue est crédité
   **au niveau chapitre** par `coverage.mjs`/`reconcile.mjs` (pas besoin de citation `l.X`).
 
 ## 5. Curation de la donnée dans `src/data/*.json`
@@ -296,7 +340,7 @@ node scripts/raw/reconcile.mjs            # code ↔ Atlas : Sens A (règle cod�
   == l'arbre de travail et la carte devient un no-op. Ne jamais lancer `--remap` sur une Source déjà
   committée : il recalerait aussi les réfs des autres livres via le diff `git HEAD`↔arbre.
 - `coverage.mjs` doit sortir le nouveau livre à `⬜ 0` (tout chapitre-règle couvert par une fiche
-  **ou** un catalogue **ou** listé en `HORS_REGLE`/`SCENARIO_BOOKS`) avant de considérer
+  **ou** déclaré par la `teneur` du livre / la liste `horsRegle` du registre de chapitres) avant de considérer
   l'intégration terminée.
 - `reconcile.mjs` ne réconcilie que les réfs **`LDB NN l.X`** en profondeur (Sens A ligne-par-ligne) ;
   pour les autres livres (dont un nouveau livre comme MDG), il ne fait qu'un comptage global des

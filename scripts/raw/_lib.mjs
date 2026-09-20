@@ -4,10 +4,16 @@
 // dérivée `allAbbrAlternation` —, dépliage de plage, échappement regex, et normalisation de texte
 // pour le match exact des citations. reanchor.mjs dérive sa PROPRE alternation de BOOKS (#434
 // défaut 10, périmètre non couvert par ce fichier).
+// INVARIANT #1825 : le code ne nomme AUCUN livre — un livre de plus, c'est de la DONNÉE. Ce qu'on
+// sait du LIVRE vit dans son entrée de `src/data/books.json` (sigle, dossier, langue, cœur, teneur,
+// niveau de section) ; ce qu'on sait de ses CHAPITRES vit dans `scripts/raw/chapitres.json`
+// (hors-règle, catalogues), registre d'OUTILLAGE dont ce fichier est le LECTEUR UNIQUE. Zéro ligne
+// de code pour l'un comme pour l'autre.
 import { readFileSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { join } from 'node:path'
 import booksData from '../../src/data/books.json' with { type: 'json' }
+import chapitresData from './chapitres.json' with { type: 'json' }
 // Normalisation de citation : SOURCE UNIQUE dans `src/data/source/normalize.ts` (module feuille en
 // syntaxe effaçable, chargé tel quel par Node nu comme par vitest). Importée ICI parce que ce
 // fichier s'en sert lui-même (`findAnchor`, `sectionsOf`), et RÉ-EXPORTÉE plus bas pour ses 15
@@ -60,6 +66,68 @@ export function sigleDeCoeur(books = BOOKS, coeurs = COEURS) {
   if (!premier) throw new Error('_lib: le registre `src/data/books.json` ne porte aucun livre de cœur (champ `coeur`)')
   return premier[0]
 }
+
+// TENEUR d'un livre (`books.json`, champ `teneur`) : ce que contiennent ses chapitres NON couverts
+// par une fiche — `scenario` (campagne pure, aucune règle propre), `mixte` (scénario ET règles), ou
+// `null` pour un livre de RÈGLES. C'est elle qui ventile les sections 0-réf de `coverage.mjs` ; un
+// livre de plus est UNE entrée de `books.json`, zéro ligne ici. Registre INJECTABLE (fixture).
+export const teneursDe = (registre) => new Map(registre.filter((b) => b.abbr && b.teneur).map((b) => [b.abbr, b.teneur]))
+const TENEURS = teneursDe(booksData)
+export const teneurDe = (abbr, teneurs = TENEURS) => teneurs.get(abbr) ?? null
+
+// NIVEAU DE SECTION d'un livre (`books.json`, champ `niveauDeSection`) : le niveau de heading qui
+// porte ses SUJETS (#604 — un argmax brut se fait piéger par les listes imbriquées). ABSENT = 2.
+export const niveauxDeSectionDe = (registre) =>
+  new Map(registre.filter((b) => b.abbr && b.niveauDeSection).map((b) => [b.abbr, b.niveauDeSection]))
+const NIVEAUX_DE_SECTION = niveauxDeSectionDe(booksData)
+export const niveauDeSectionDe = (abbr, niveaux = NIVEAUX_DE_SECTION) => niveaux.get(abbr) ?? 2
+
+// Ce qu'on sait des CHAPITRES d'un livre vit dans le registre d'OUTILLAGE `scripts/raw/chapitres.json`,
+// là où son entrée de `books.json` dit ce qu'on sait du LIVRE : ils ne servent qu'à la chaîne Atlas
+// et personne ne les édite en jeu. Ses entrées désignent leur livre par son `id`
+// STABLE ; la traduction id → sigle se fait ICI, UNE fois, par le registre des livres — le sigle est
+// de l'affichage.
+export const REGISTRE_CHAPITRES = chapitresData
+const siglesParId = (registre) => new Map(registre.filter((b) => b.abbr).map((b) => [b.id, b.abbr]))
+
+// Chapitres HORS-RÈGLE (`chapitres.json`, `horsRegle`) : sigle → (numéro de chapitre → MOTIF de son
+// exclusion du dénominateur de couverture). Le motif est de la DONNÉE — c'est lui que
+// `chapitres.test.mjs` exige non vide et sans réf citable.
+export const horsRegleDe = (chapitres, registre = booksData) => {
+  const sigles = siglesParId(registre)
+  const parSigle = new Map()
+  for (const { book, ch, motif } of chapitres.horsRegle ?? []) {
+    const ab = sigles.get(book)
+    if (!ab) continue
+    if (!parSigle.has(ab)) parSigle.set(ab, new Map())
+    parSigle.get(ab).set(ch, motif)
+  }
+  return parSigle
+}
+const HORS_REGLE = horsRegleDe(chapitresData)
+export const motifHorsRegle = (abbr, ch, table = HORS_REGLE) => table.get(abbr)?.get(Number(ch)) ?? null
+export const estHorsRegle = (abbr, ch, table = HORS_REGLE) => motifHorsRegle(abbr, ch, table) != null
+
+// Appartenance des chapitres aux CATALOGUES de l'Atlas (`chapitres.json`, `enCatalogue` : UNE entrée
+// par chapitre ET par catalogue) : id de catalogue → `[[abbr, [{ ch, from, to, title }, …]], …]`, dans
+// l'ORDRE DU FICHIER (registre des livres puis numéro de chapitre, tenu par `chapitres.test.mjs` —
+// aucun tri à la lecture). `build-catalogs.mjs` ne garde que ce qui appartient au CATALOGUE (fichier,
+// titre, fiche de règles), jamais une liste de livres.
+export const cataloguesDe = (chapitres, registre = booksData) => {
+  const sigles = siglesParId(registre)
+  const parCatalogue = new Map()
+  for (const { book, catalogue, ...spec } of chapitres.enCatalogue ?? []) {
+    const ab = sigles.get(book)
+    if (!ab) continue
+    if (!parCatalogue.has(catalogue)) parCatalogue.set(catalogue, new Map())
+    const parLivre = parCatalogue.get(catalogue)
+    if (!parLivre.has(ab)) parLivre.set(ab, [])
+    parLivre.get(ab).push(spec)
+  }
+  return new Map([...parCatalogue].map(([id, parLivre]) => [id, [...parLivre]]))
+}
+const CATALOGUES = cataloguesDe(chapitresData)
+export const livresDeCatalogue = (id, catalogues = CATALOGUES) => catalogues.get(id) ?? []
 
 // Échappe une chaîne pour l'insérer littéralement dans une RegExp.
 export const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

@@ -6,10 +6,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  sectionsOf, refSpansFor, annotateSections, classifyHole, SCENARIO_PUR, SECTION_LEVEL, sectionLevelOf,
+  sectionsOf, refSpansFor, annotateSections, classifyHole, estCampagnePure,
   markerSplitStub, chapterTitleOf,
 } from './coverage.mjs'
-import { BOOKS, chapterFile, coeurDe, readText } from './_lib.mjs'
+import { BOOKS, chapterFile, coeurDe, niveauDeSectionDe, readText } from './_lib.mjs'
 
 // #604 (garde de classe) : le seam readText (_lib.mjs) normalise \r\n/\r -> \n AU POINT DE LECTURE --
 // sectionsOf lui-meme reste nu (aucune tolerance interne). Repro root-cause : le '.' de regex exclut
@@ -224,17 +224,6 @@ test('annotateSections : la section "(intro)" (avant le premier H2) est TOUJOURS
   assert.ok(!ann.some((s) => s.isIntro))
 })
 
-test('SCENARIO_PUR (#454 juge tour 2, défaut 1) : ventile les campagnes PURES des compagnons MIXTES', () => {
-  // Campagnes pures (EDO/MSR/PDT/AU1) : un chapitre ✅ n'y couvre jamais une règle propre, juste une
-  // rencontre qui EN APPELLE une définie ailleurs — leurs trous de section sont du bruit de scénario.
-  for (const ab of ['EDO', 'MSR', 'PDT', 'AU1']) assert.ok(SCENARIO_PUR.has(ab), `${ab} doit être SCENARIO_PUR`)
-  // ACE (Annexe I de règles) et NADJ (jeux de taverne, cf. NADJ 16) restent des livres MIXTES : un
-  // trou de section peut y cacher une vraie règle, jamais assimilables au bruit des campagnes pures.
-  for (const ab of ['ACE', 'NADJ']) assert.ok(!SCENARIO_PUR.has(ab), `${ab} ne doit PAS être SCENARIO_PUR`)
-  // Un livre de règles pur (jamais dans SCENARIO_BOOKS) n'est a fortiori pas SCENARIO_PUR.
-  assert.ok(!SCENARIO_PUR.has('LDB'))
-})
-
 test('refSpansFor (#606) : une ref FOLIO `ABBR NN p.X` credite le meme chapitre que `l.X`, sans throw', () => {
   // Disque REEL (LDB 10 = Talents, le cas fondateur du ticket) : la graphie p.<folio> (canonique #585)
   // resout une plage de lignes VIA folioRange -- jamais 0 span silencieux.
@@ -255,7 +244,7 @@ test('refSpansFor (#606) : un folio qui resout vers un AUTRE chapitre (frontiere
   assert.equal(stats.ignoredFolios, 1)
 })
 
-// --- #604 : granularité adaptative (SECTION_LEVEL) ---
+// --- #604 : granularité adaptative (`niveauDeSection` du registre) ---
 
 test('sectionsOf(text, 3) : découpe sur H3, pas H2 — le LDB/MCLB ne ressortent plus vides', () => {
   const text = [
@@ -297,15 +286,15 @@ test('sectionsOf(text, 3) : CASCADE — les headings H2 restent aussi des bounda
   assert.deepEqual(titles, ['LE BRAS DE FER', 'LA BÊTE PARMI LES TAILLEURS', 'MIDDENBALL'])
 })
 
-test('SECTION_LEVEL/sectionLevelOf (#604) : granularité par livre — H3-dominant, H4 à part, H2 par défaut', () => {
-  for (const ab of ['LDB', 'MCLB', 'ACE', 'EDOC', 'MSRC', 'MSR', 'PDT', 'NADJ', 'MDG', 'ZI']) {
-    assert.equal(sectionLevelOf(ab), 3, `${ab} doit découper au H3`)
+test('niveauDeSectionDe (#604, #1825 lot E) : `coverage.mjs` découpe au niveau que le REGISTRE déclare — absent = 2', () => {
+  // RÈGLE, pas table : tout livre du registre découpe à un niveau de heading VALIDE, et celui qui ne
+  // déclare rien retombe sur 2 (comportement historique). Aucun sigle recopié : la population vient
+  // du registre, et le défaut se juge sur un sigle qu'AUCUNE entrée ne porte.
+  for (const [ab] of BOOKS) {
+    const n = niveauDeSectionDe(ab)
+    assert.ok(Number.isInteger(n) && n >= 2 && n <= 6, `${ab} : niveau de section hors [2,6] (${n})`)
   }
-  assert.equal(sectionLevelOf('AU1'), 4, 'AU1 (H4-dominant) découpe au H4')
-  for (const ab of ['AA', 'ADE I', 'ADE II', 'EDO']) {
-    assert.equal(sectionLevelOf(ab), 2, `${ab} reste au H2 (défaut, structuration réelle en H2)`)
-  }
-  assert.ok(!SECTION_LEVEL.has('AA'), 'AA absent de la table = défaut 2, jamais un 2 explicite redondant')
+  assert.equal(niveauDeSectionDe('SIGLE-ABSENT-DU-REGISTRE'), 2, 'absent du registre = défaut 2, jamais undefined')
 })
 
 test('classifyHole (#604) : ventilation ferme, JAMAIS un masquage silencieux', () => {
@@ -325,7 +314,7 @@ test('classifyHole (#604) : un chapitre catalogué mais crédité par une réf d
 test('#604 recette : NADJ 16 « MIDDENBALL » (H3 l.113) ressort nommément comme sa PROPRE section, plus absorbé par LE TORCHON TREMPÉ (H2)', () => {
   const info = chapterFile('NADJ', '16')
   const text = readText(info.path)
-  const sections = sectionsOf(text, sectionLevelOf('NADJ'))
+  const sections = sectionsOf(text, niveauDeSectionDe('NADJ'))
   const middenball = sections.find((s) => s.title === 'MIDDENBALL')
   assert.ok(middenball, 'MIDDENBALL doit apparaître comme sa propre section (H3, plus jamais absorbé par un H2 voisin)')
   assert.equal(middenball.lo, 113)
@@ -338,15 +327,57 @@ test('#604 recette : MCLB (0 section en H2) obtient de VRAIES sections en H3 ada
   const info = chapterFile('MCLB', '2') // Guide du visiteur — 0 H2, 255 H3 (mesuré)
   const text = readText(info.path)
   const h2Sections = sectionsOf(text, 2).filter((s) => !s.isIntro)
-  const h3Sections = sectionsOf(text, sectionLevelOf('MCLB')).filter((s) => !s.isIntro)
+  const h3Sections = sectionsOf(text, niveauDeSectionDe('MCLB')).filter((s) => !s.isIntro)
   assert.equal(h2Sections.length, 0, 'confirme l\'angle mort H2 mesuré (#604)')
   assert.ok(h3Sections.length > 0, 'la granularité adaptative doit produire de vraies sections MCLB')
+})
+
+// `niveauDeSection` et `teneur` sont de la DONNÉE ÉDITABLE : le contrat #454/#604 ne se tient pas en
+// recopiant leurs valeurs (garde de synchronisation) mais par le COMPORTEMENT, sur le disque RÉEL, au
+// cas NOMMÉ que l'arbitrage visait — même patron que les recettes NADJ 16 / MCLB / AA 09.
+
+test('#604 recette : LDB 10 « Talents » — le niveau déclaré du LDB révèle ses sujets ; le défaut H2 les rend AVEUGLES', () => {
+  // Cas fondateur mesuré (#604, #606) : le chapitre des Talents s'organise en H3. Au défaut H2 il ne
+  // rend que 2 sections — des dizaines de talents deviennent invisibles à la ventilation. Retirer ou
+  // baisser le niveau déclaré du LDB fait rougir ICI, pas dans une table recopiée.
+  const text = readText(chapterFile('LDB', '10').path)
+  const aveugle = sectionsOf(text, 2).filter((s) => !s.isIntro)
+  const declare = sectionsOf(text, niveauDeSectionDe('LDB')).filter((s) => !s.isIntro)
+  assert.equal(aveugle.length, 2, 'confirme l\'angle mort H2 mesuré sur LDB 10')
+  assert.ok(declare.length > 10 * aveugle.length, `le niveau déclaré du LDB doit découper ses SUJETS (${declare.length} sections, contre ${aveugle.length} en H2)`)
+})
+
+test('#604 recette : AU1 02 — un livre H4-dominant perd 45 sections dès qu’on le ramène au H3', () => {
+  // AU1 est le seul livre du registre dont les sujets vivent en H4 (mesuré : 4 sections en H3, 49 en
+  // H4 sur « Si un regard pouvait tuer »). Passer sa déclaration à 3 rendrait ses rencontres muettes.
+  const text = readText(chapterFile('AU1', '2').path)
+  const h3 = sectionsOf(text, 3).filter((s) => !s.isIntro)
+  const declare = sectionsOf(text, niveauDeSectionDe('AU1')).filter((s) => !s.isIntro)
+  assert.ok(declare.length > 5 * h3.length, `AU1 doit découper plus FIN que le H3 (${declare.length} vs ${h3.length})`)
+})
+
+test('#454 recette : NADJ 16 « MIDDENBALL » — une section de RÈGLE d’un compagnon MIXTE sort en candidat trou, jamais en bruit de scénario', () => {
+  // #454 juge tour 2, défaut 1 : NADJ (jeux de taverne, ch.16) et ACE (annexes de règles, ch.11-12
+  // transcrits en catalogue) NE SONT PAS des campagnes pures — un trou de section y cache une VRAIE
+  // règle. Basculer leur `teneur` en `scenario` à l'atelier reclasserait ces sections en bruit, en
+  // silence : la garde est ICI, sur une section RÉELLE, à travers le classifieur de PRODUCTION.
+  const sections = sectionsOf(readText(chapterFile('NADJ', '16').path), niveauDeSectionDe('NADJ'))
+  const middenball = sections.find((s) => s.title === 'MIDDENBALL')
+  assert.ok(middenball, 'la section de règle doit exister sur le disque')
+  assert.equal(classifyHole(0, { isPur: estCampagnePure('NADJ') }), 'trou')
+})
+
+test('#454 recette : ACE — un livre qui alimente les catalogues de RÈGLE n’est pas une campagne pure', () => {
+  // ACE 11 est transcrit au catalogue `divin` : des données de RÈGLE, pas une rencontre. Ses sections
+  // non transcrites restent donc des candidats trou de règle.
+  assert.ok(chapterFile('ACE', '11'), 'le chapitre de règles cité doit exister')
+  assert.equal(classifyHole(0, { isPur: estCampagnePure('ACE') }), 'trou')
 })
 
 test('#604 recette (régression #453) : AA 09 « LES INTÉRIMAIRES DE L\'AVENTURE » reste un chapitre enfoui l.191-502 (AA reste H2, non affecté par la granularité adaptative)', () => {
   const info = chapterFile('AA', '9')
   const text = readText(info.path)
-  const sections = sectionsOf(text, sectionLevelOf('AA'))
+  const sections = sectionsOf(text, niveauDeSectionDe('AA'))
   const enfoui = sections.find((s) => s.title.includes('INTÉRIMAIRES'))
   assert.ok(enfoui, 'le chapitre enfoui doit toujours être détecté')
   assert.equal(enfoui.enfoui, true)
@@ -360,7 +391,7 @@ test('#604 recette (régression #453) : AA 09 « LES INTÉRIMAIRES DE L\'AVENTUR
 // invisible des 22 tests PURS ci-dessus, qui n'exercent jamais ce maillon de rendu/comptage. Preuve par
 // un run RÉEL du script complet (`main()`, via sous-processus — le seul moyen d'exercer main() qui n'est
 // PAS exporté) sur `docs/raw/coverage.md` généré.
-test('#604 intégration (régression juge adversarial) : coverage.md régénéré ne contient AUCUNE ligne `undefined` (chapitre ✅/📖 par ailleurs HORS_REGLE, ex. AA 02/EDOC 13/MDG 03)', async () => {
+test('#604 intégration (régression juge adversarial) : coverage.md régénéré ne contient AUCUNE ligne `undefined` (chapitre ✅/📖 par ailleurs hors-règle, ex. AA 02/EDOC 13/MDG 03)', async () => {
   const { execFileSync } = await import('node:child_process')
   execFileSync(process.execPath, ['scripts/raw/coverage.mjs'], { cwd: process.cwd(), stdio: 'pipe' })
   const md = readText('docs/raw/coverage.md')
@@ -368,7 +399,7 @@ test('#604 intégration (régression juge adversarial) : coverage.md régénér�
   assert.deepEqual(undefinedLines, [], `aucune ligne « undefined » ne doit apparaître (poison de rendu, #604 juge) — trouvé :\n${undefinedLines.join('\n')}`)
 })
 
-test('#604 intégration : une section 0-réf d\'un chapitre ✅/📖 HORS_REGLE (ex. AA 02 « INTRODUCTION », front-matter) rend `➖` (mark hors-regle), jamais un fallback undefined', () => {
+test('#604 intégration : une section 0-réf d\'un chapitre ✅/📖 hors-règle (ex. AA 02 « INTRODUCTION », front-matter) rend `➖` (mark hors-regle), jamais un fallback undefined', () => {
   const md = readText('docs/raw/coverage.md')
   const block = md.slice(md.indexOf('- **AA 02**'), md.indexOf('- **AA 02**') + 400)
   assert.ok(block.includes('➖ l.'), 'AA 02 doit porter au moins une section ➖ hors-règle détaillée')
@@ -400,6 +431,26 @@ test('#1825 : le résumé de tête rend UNE ligne par groupe de livres, jamais u
   for (const c of coeurs) assert.ok(lignes.some((l) => l.startsWith(`- **Cœur ${c}**`)), `groupe manquant : ${c}`)
   for (const l of lignes) assert.match(l, /sur \d+ chapitres-règles/, 'chaque groupe porte SON dénominateur')
   assert.equal(md.split('\n').some((l) => l.startsWith('**Couverture (profondeur) :')), false, 'plus de total confondu')
+})
+
+// #1825 lot E : la ligne de résumé ne NOMME plus aucun livre à la main. Ses deux listes de sigles
+// PARTITIONNENT le registre par la TENEUR lue en donnée — avant, la seconde (« compagnons mixtes
+// ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG ») n'était produite par AUCUNE table, et citait `ADE`, un sigle
+// qu'aucune entrée ne porte. Elle ne cite pas davantage un identifiant de CODE au lecteur.
+test('#1825 : les deux listes de la ventilation sont DÉRIVÉES du registre et le partitionnent', () => {
+  const md = readText('docs/raw/coverage.md')
+  const summary = md.split('\n').find((l) => l.startsWith('Section-granulaire'))
+  assert.ok(summary)
+  const pures = /bruit de scénario\*\* \(livres de teneur `scenario` ([^ ]+) :/.exec(summary)
+  const reste = /candidat\(s\) trou de règle\*\* \(reste : (.+?) — livres de règles/.exec(summary)
+  assert.ok(pures && reste, 'les deux listes de sigles doivent être présentes')
+  assert.deepEqual(pures[1].split('/'), BOOKS.filter(([a]) => estCampagnePure(a)).map(([a]) => a))
+  assert.deepEqual(reste[1].split('/'), BOOKS.filter(([a]) => !estCampagnePure(a)).map(([a]) => a))
+  assert.equal(pures[1].split('/').length + reste[1].split('/').length, BOOKS.length, 'les deux listes partitionnent le registre')
+  // La classe se mesure par la graphie SCREAMING_SNAKE : les titres de chapitre en capitales portent
+  // des ESPACES, jamais des underscores.
+  const identifiants = [...new Set(md.match(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b/g) ?? [])]
+  assert.deepEqual(identifiants, [], `aucun identifiant de code dans un doc de lecture : ${identifiants.join(', ')}`)
 })
 
 // --- ARTEFACT jugé sur le CONTENU, pas sur le titre de fichier (#1279 S4-a) ---

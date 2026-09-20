@@ -1,0 +1,910 @@
+{
+  "quoi": "REGISTRE des CHAPITRES de l’Atlas RAW — ce qu’on sait des CHAPITRES d’un livre, là où son entrée de src/data/books.json dit ce qu’on sait du LIVRE (abbr, dir, langue, coeur, teneur, niveauDeSection). Donnée d’OUTILLAGE : elle ne sert qu’à la chaîne Atlas (coverage.mjs, build-catalogs.mjs), jamais au jeu, et ne s’édite pas au Compendium. `book` est l’id STABLE du livre (books.json), jamais son abréviation : le sigle est de l’affichage. `horsRegle` = les chapitres exclus du dénominateur de couverture, chacun avec le MOTIF de son exclusion — notre prose éditoriale, jamais une réf citable « ABRÉV NN l.X » : aucun scanner de réfs ne lit ce fichier (reconcile.mjs et check-code-refs.mjs scannent src/**, check-refs.mjs les .md de docs/raw/), une réf y pourrirait donc sans bruit. `enCatalogue` = les chapitres que l’Atlas transcrit verbatim, UNE entrée par chapitre ET par catalogue (les catalogues eux-mêmes — fichier, titre, fiche de règles — vivent dans scripts/raw/build-catalogs.mjs) ; `from`/`to`/`title` n’y transcrivent qu’une PLAGE de sous-section. Lecteur UNIQUE : scripts/raw/_lib.mjs. Intégrité : scripts/raw/chapitres.test.mjs.",
+  "horsRegle": [
+    {
+      "book": "livre-de-base",
+      "ch": 1,
+      "motif": "« VERSION ORIGINALE » / « TRADUCTION FRANÇAISE » — crédits d'édition, aucune règle"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 45,
+      "motif": "ouverture « • MAGIE • » : exergue + prose d'intro ; les règles vivent aux ch. suivants"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 52,
+      "motif": "section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC)"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 53,
+      "motif": "section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC)"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 54,
+      "motif": "section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC)"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 55,
+      "motif": "section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC)"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 56,
+      "motif": "section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC)"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 58,
+      "motif": "ouverture « • GUIDE DE L'ÉQUIPEMENT • » : intro + index des listes (renvois de pages)"
+    },
+    {
+      "book": "core-rulebook-5e",
+      "ch": 1,
+      "motif": "couverture : la seule accroche « A GRIM WORLD OF PERILOUS ADVENTURE » (3 lignes)"
+    },
+    {
+      "book": "core-rulebook-5e",
+      "ch": 2,
+      "motif": "sommaire (tables de renvois de pages)"
+    },
+    {
+      "book": "core-rulebook-5e",
+      "ch": 3,
+      "motif": "crédits d'édition"
+    },
+    {
+      "book": "core-rulebook-5e",
+      "ch": 18,
+      "motif": "feuille de personnage : rappels imprimés, chacun défini ailleurs dans ce livre — ch.8 (déplacement, localisations, corruption), ch.5 (blessures), ch.7 (compétence ↔ caractéristique), ch.14 (monnaie, encombrement)"
+    },
+    {
+      "book": "vents-de-la-magie",
+      "ch": 1,
+      "motif": "histoire de la magie (cadre, prose pure) ; ch.15 némésis = PNJ nommés STATBLOCKÉS → catalogue-creatures (comme PDT) ; 2-14 = règles/data"
+    },
+    {
+      "book": "archives-de-l-empire-1",
+      "ch": 1,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "archives-de-l-empire-1",
+      "ch": 2,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "archives-de-l-empire-1",
+      "ch": 3,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "archives-de-l-empire-1",
+      "ch": 4,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "archives-de-l-empire-1",
+      "ch": 5,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "archives-de-l-empire-1",
+      "ch": 6,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "archives-de-l-empire-2",
+      "ch": 5,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "archives-de-l-empire-2",
+      "ch": 6,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "archives-de-l-empire-2",
+      "ch": 7,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "middenheim",
+      "ch": 1,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "middenheim",
+      "ch": 2,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "middenheim",
+      "ch": 3,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "middenheim",
+      "ch": 5,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "middenheim",
+      "ch": 6,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "mer-des-griffes",
+      "ch": 1,
+      "motif": "gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles"
+    },
+    {
+      "book": "mer-des-griffes",
+      "ch": 3,
+      "motif": "gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles"
+    },
+    {
+      "book": "mer-des-griffes",
+      "ch": 4,
+      "motif": "gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles"
+    },
+    {
+      "book": "mer-des-griffes",
+      "ch": 5,
+      "motif": "gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles"
+    },
+    {
+      "book": "mer-des-griffes",
+      "ch": 6,
+      "motif": "gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles"
+    },
+    {
+      "book": "mer-des-griffes",
+      "ch": 8,
+      "motif": "gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles"
+    },
+    {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "ch": 2,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "ch": 3,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "ch": 4,
+      "motif": "« ORGANISATIONS ET LIEUX » / « L'INTRIGUE » — prose de campagne"
+    },
+    {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "ch": 5,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "ch": 9,
+      "motif": "encarts de conseil au MJ (« OÙ EST MON TABLEAU DE RENCONTRES ALÉATOIRES ? »)"
+    },
+    {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "ch": 10,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "ch": 11,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "ch": 13,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "ch": 14,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "ch": 15,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "ch": 16,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "mort-sur-le-reik-compagnon",
+      "ch": 2,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "mort-sur-le-reik-compagnon",
+      "ch": 3,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "mort-sur-le-reik-compagnon",
+      "ch": 5,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "mort-sur-le-reik-compagnon",
+      "ch": 6,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "mort-sur-le-reik-compagnon",
+      "ch": 8,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "mort-sur-le-reik-compagnon",
+      "ch": 10,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "mort-sur-le-reik-compagnon",
+      "ch": 11,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "mort-sur-le-reik-compagnon",
+      "ch": 17,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "mort-sur-le-reik-compagnon",
+      "ch": 18,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    },
+    {
+      "book": "mort-sur-le-reik-compagnon",
+      "ch": 19,
+      "motif": "Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes)."
+    }
+  ],
+  "enCatalogue": [
+    {
+      "book": "livre-de-base",
+      "ch": 6,
+      "catalogue": "carrieres"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 7,
+      "catalogue": "carrieres"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 8,
+      "catalogue": "carrieres"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 24,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 25,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 26,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 27,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 28,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 29,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 30,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 31,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 32,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 33,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 34,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 35,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 36,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 37,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 38,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 39,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 40,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 41,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 42,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 43,
+      "catalogue": "divin"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 47,
+      "catalogue": "sorts"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 48,
+      "catalogue": "sorts"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 49,
+      "catalogue": "sorts"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 50,
+      "catalogue": "sorts"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 51,
+      "catalogue": "sorts"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 57,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 59,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 60,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 61,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 62,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 63,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 64,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 65,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 66,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 67,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 68,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 69,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 70,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 71,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 72,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 73,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 74,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 75,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 76,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 77,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 78,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 79,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 80,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 82,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 83,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 84,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "livre-de-base",
+      "ch": 85,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "aux-armes",
+      "ch": 1,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "aux-armes",
+      "ch": 2,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "aux-armes",
+      "ch": 3,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "aux-armes",
+      "ch": 4,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "aux-armes",
+      "ch": 5,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "aux-armes",
+      "ch": 6,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "aux-armes",
+      "ch": 7,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "aux-armes",
+      "ch": 8,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "aux-armes",
+      "ch": 9,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "aux-armes",
+      "ch": 10,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "aux-armes",
+      "ch": 11,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "aux-armes",
+      "ch": 12,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "aux-armes",
+      "ch": 13,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "vents-de-la-magie",
+      "ch": 4,
+      "catalogue": "sorts"
+    },
+    {
+      "book": "vents-de-la-magie",
+      "ch": 5,
+      "catalogue": "sorts"
+    },
+    {
+      "book": "vents-de-la-magie",
+      "ch": 6,
+      "catalogue": "sorts"
+    },
+    {
+      "book": "vents-de-la-magie",
+      "ch": 7,
+      "catalogue": "sorts"
+    },
+    {
+      "book": "vents-de-la-magie",
+      "ch": 8,
+      "catalogue": "sorts"
+    },
+    {
+      "book": "vents-de-la-magie",
+      "ch": 9,
+      "catalogue": "sorts"
+    },
+    {
+      "book": "vents-de-la-magie",
+      "ch": 10,
+      "catalogue": "sorts"
+    },
+    {
+      "book": "vents-de-la-magie",
+      "ch": 11,
+      "catalogue": "sorts"
+    },
+    {
+      "book": "vents-de-la-magie",
+      "ch": 12,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "vents-de-la-magie",
+      "ch": 13,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "vents-de-la-magie",
+      "ch": 15,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "archives-de-l-empire-1",
+      "ch": 7,
+      "catalogue": "carrieres"
+    },
+    {
+      "book": "archives-de-l-empire-1",
+      "ch": 8,
+      "catalogue": "carrieres"
+    },
+    {
+      "book": "archives-de-l-empire-2",
+      "ch": 1,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "archives-de-l-empire-2",
+      "ch": 1,
+      "catalogue": "carrieres"
+    },
+    {
+      "book": "archives-de-l-empire-2",
+      "ch": 2,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "archives-de-l-empire-2",
+      "ch": 3,
+      "catalogue": "divers"
+    },
+    {
+      "book": "archives-de-l-empire-2",
+      "ch": 9,
+      "catalogue": "divers"
+    },
+    {
+      "book": "middenheim",
+      "ch": 4,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "middenheim",
+      "ch": 7,
+      "catalogue": "divin"
+    },
+    {
+      "book": "middenheim",
+      "ch": 8,
+      "catalogue": "carrieres"
+    },
+    {
+      "book": "middenheim",
+      "ch": 9,
+      "catalogue": "carrieres"
+    },
+    {
+      "book": "middenheim",
+      "ch": 10,
+      "catalogue": "carrieres"
+    },
+    {
+      "book": "altdorf-couronne-de-l-empire",
+      "ch": 10,
+      "catalogue": "divers"
+    },
+    {
+      "book": "altdorf-couronne-de-l-empire",
+      "ch": 11,
+      "catalogue": "divin"
+    },
+    {
+      "book": "altdorf-couronne-de-l-empire",
+      "ch": 12,
+      "catalogue": "divers"
+    },
+    {
+      "book": "zoo-imperial",
+      "ch": 1,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "zoo-imperial",
+      "ch": 2,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "zoo-imperial",
+      "ch": 3,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "zoo-imperial",
+      "ch": 4,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "zoo-imperial",
+      "ch": 5,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "zoo-imperial",
+      "ch": 6,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "zoo-imperial",
+      "ch": 7,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "zoo-imperial",
+      "ch": 8,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "zoo-imperial",
+      "ch": 9,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "zoo-imperial",
+      "ch": 10,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "zoo-imperial",
+      "ch": 11,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "zoo-imperial",
+      "ch": 12,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "zoo-imperial",
+      "ch": 13,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "zoo-imperial",
+      "ch": 14,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "mer-des-griffes",
+      "ch": 2,
+      "catalogue": "sorts",
+      "from": "Magie des mers",
+      "to": "LES ELFES SUR LA MER DES GRIFFES",
+      "title": "Magie des mers"
+    },
+    {
+      "book": "mer-des-griffes",
+      "ch": 9,
+      "catalogue": "carrieres"
+    },
+    {
+      "book": "mer-des-griffes",
+      "ch": 10,
+      "catalogue": "divin"
+    },
+    {
+      "book": "mer-des-griffes",
+      "ch": 11,
+      "catalogue": "divin"
+    },
+    {
+      "book": "mer-des-griffes",
+      "ch": 11,
+      "catalogue": "carrieres"
+    },
+    {
+      "book": "mer-des-griffes",
+      "ch": 12,
+      "catalogue": "equipement"
+    },
+    {
+      "book": "mer-des-griffes",
+      "ch": 16,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "ch": 7,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "ch": 12,
+      "catalogue": "divers"
+    },
+    {
+      "book": "mort-sur-le-reik-compagnon",
+      "ch": 7,
+      "catalogue": "divers"
+    },
+    {
+      "book": "mort-sur-le-reik-compagnon",
+      "ch": 9,
+      "catalogue": "divers"
+    },
+    {
+      "book": "mort-sur-le-reik-compagnon",
+      "ch": 13,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "mort-sur-le-reik-compagnon",
+      "ch": 14,
+      "catalogue": "divers"
+    },
+    {
+      "book": "ennemi-dans-l-ombre",
+      "ch": 11,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "ennemi-dans-l-ombre",
+      "ch": 11,
+      "catalogue": "sorts"
+    },
+    {
+      "book": "mort-sur-le-reik",
+      "ch": 11,
+      "catalogue": "divers"
+    },
+    {
+      "book": "pouvoir-derriere-le-trone",
+      "ch": 10,
+      "catalogue": "creatures"
+    },
+    {
+      "book": "pouvoir-derriere-le-trone",
+      "ch": 11,
+      "catalogue": "creatures"
+    }
+  ]
+}

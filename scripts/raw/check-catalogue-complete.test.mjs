@@ -7,8 +7,8 @@ import assert from 'node:assert/strict'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { join } from 'node:path'
 import { catalogueBlocksOf, scanIncompleteChapters } from './check-catalogue-complete.mjs'
-import { sectionsOf, sectionLevelOf, cleanTitle, catalogChaptersOf } from './coverage.mjs'
-import { chapterFile, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
+import { sectionsOf, cleanTitle, catalogChaptersOf } from './coverage.mjs'
+import { chapterFile, niveauDeSectionDe, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
 import { normalizeLoose } from './check-entity-in-chapter.mjs'
 
 test('catalogueBlocksOf : un bloc `## [ABBR NN]` collecte tous ses headings jusqu\'au PROCHAIN bloc, jamais au-delà', () => {
@@ -52,7 +52,7 @@ test('scanIncompleteChapters : chapitre crédité ET transcrit EN ENTIER (fixtur
   const catalogCh = new Set(['NADJ 16']) // JEUX DE TAVERNE, disque réel — H3 adaptatif (#604)
   const info = chapterFile('NADJ', '16')
   const text = readText(info.path)
-  const sections = sectionsOf(text, sectionLevelOf('NADJ')).filter((s) => !s.isIntro)
+  const sections = sectionsOf(text, niveauDeSectionDe('NADJ')).filter((s) => !s.isIntro)
   // Reconstruit un bloc catalogue COMPLET à partir des vrais titres de section du chapitre (preuve
   // positive : la garde ne signale rien quand la transcription est réellement intégrale).
   const blocks = new Map([['NADJ 16', sections.map((s) => normalizeLoose(cleanTitle(s.title)))]])
@@ -64,7 +64,7 @@ test('scanIncompleteChapters : chapitre crédité mais UNE section absente du bl
   const catalogCh = new Set(['NADJ 16'])
   const info = chapterFile('NADJ', '16')
   const text = readText(info.path)
-  const sections = sectionsOf(text, sectionLevelOf('NADJ')).filter((s) => !s.isIntro)
+  const sections = sectionsOf(text, niveauDeSectionDe('NADJ')).filter((s) => !s.isIntro)
   assert.ok(sections.length > 1, 'fixture invalide : le chapitre réel doit porter au moins 2 sections')
   // Omet délibérément la DERNIÈRE section (transcription partielle du catalogue — le scénario du ticket).
   const partial = sections.slice(0, -1).map((s) => normalizeLoose(cleanTitle(s.title)))

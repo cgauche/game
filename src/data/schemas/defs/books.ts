@@ -16,6 +16,20 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
+import { enumNomme } from '../grammaire/valeurs';
+
+/**
+ * TENEUR d'un livre : ce que ses chapitres NON couverts par une fiche contiennent réellement.
+ * Absente = livre de RÈGLES (tout chapitre non couvert est un candidat trou). Lue par
+ * `scripts/raw/_lib.mjs#teneurDe` — `coverage.mjs` en dérive sa ventilation sans nommer un livre.
+ */
+export const teneurSchema = enumNomme(
+  { scenario: 'Campagne pure', mixte: 'Compagnon mixte' },
+  {
+    scenario: 'Aucune règle propre : une section vide y est du bruit de campagne',
+    mixte: 'Chapitres de scénario ET de règles : une section vide peut cacher une règle',
+  },
+);
 
 export const file = 'books.json';
 export const famille = 'entite';
@@ -43,6 +57,10 @@ const doc = document(
       .refine((v) => v === v.trim().toLowerCase(), 'graphie normalisée attendue : sans espace de bord, en minuscules')
       .nullable()
       .optional(),
+    /** Teneur des chapitres non couverts par une fiche — absente = livre de RÈGLES. */
+    teneur: teneurSchema.nullable().optional(),
+    /** Niveau de heading qui porte les SUJETS de ce livre ; absent = 2 (`niveauDeSectionDe`). */
+    niveauDeSection: z.number().int().min(2).max(6).nullable().optional(),
     folder: z.string().nullable(),
   },
   {
@@ -51,7 +69,9 @@ const doc = document(
     extractionDir: { label: 'Dossier d’extraction (hors Atlas)', hint: 'Chemin `Source/…` d’un livre hors Atlas RAW mais citable' },
     language: { label: 'Langue', hint: 'Langue de l’édition (VF/VO)' },
     coeur: { label: 'Cœur de règles', hint: 'Corps de règles dont ce livre est le cœur ; vide pour un supplément' },
-    folder: { label: 'Rayon de classement', hint: 'Catégorie de rangement du livre (Livre de Règle, Cadre de campagne…)' },
+    teneur: { label: 'Teneur', hint: 'Ce que contiennent les chapitres non couverts par une fiche ; vide = livre de règles' },
+    niveauDeSection: { label: 'Niveau de section', hint: 'Niveau de heading qui porte les sujets de ce livre (2 à 6) ; vide = 2' },
+    folder: { label: 'Rayon de classement', hint: 'Catégorie de rangement du livre (Livre de Règle, Cadre de campagne…) — le RAYON de bibliothèque, jamais la teneur' },
   },
   {
     codex: { keys: ['books'] },

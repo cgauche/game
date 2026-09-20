@@ -4,7 +4,7 @@
 // `LIVRE NN l.X` dans le code) est vue au même titre. Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { refRe, refFolioRe, allAbbrAlternation, span, refNums, isRangeSuffix, bookOf, chapterFile, BOOKS, booksDe, coeursDe, coeurDe, livresDeCoeur, sigleDeCoeur } from './_lib.mjs'
+import { refRe, refFolioRe, allAbbrAlternation, span, refNums, isRangeSuffix, bookOf, chapterFile, BOOKS, booksDe, cataloguesDe, coeursDe, coeurDe, estHorsRegle, horsRegleDe, livresDeCatalogue, livresDeCoeur, motifHorsRegle, niveauDeSectionDe, niveauxDeSectionDe, sigleDeCoeur, teneurDe, teneursDe } from './_lib.mjs'
 import booksData from '../../src/data/books.json' with { type: 'json' }
 
 // Un sigle RÉEL, pris au registre par son RÉGIME (livre de cœur) — jamais recopié : le test dit le
@@ -72,6 +72,78 @@ test('sigleDeCoeur : un registre SANS cœur LÈVE en nommant sa cause, jamais «
     /books\.json` ne porte aucun livre de cœur \(champ `coeur`\)/,
   )
   assert.equal(sigleDeCoeur(booksDe(REGISTRE_COEURS), coeursDe(REGISTRE_COEURS)), 'C')
+})
+
+// #1825 lot E : ce qu'on sait du LIVRE vit sur son entrée de `books.json` (`teneur`,
+// `niveauDeSection`), ce qu'on sait de ses CHAPITRES dans le registre d'outillage
+// `scripts/raw/chapitres.json`, qui désigne son livre par son `id` STABLE. Le code n'en tient aucune
+// table. Contrat jugé sur des FIXTURES — aucun sigle réel recopié ici.
+const REGISTRE_PROPRIETES = [
+  { id: 'c', abbr: 'C', dir: 'Source/C', teneur: 'scenario', niveauDeSection: 4 },
+  { id: 'm', abbr: 'M', dir: 'Source/M', teneur: 'mixte' },
+  { id: 'r', abbr: 'R', dir: 'Source/R' },
+]
+const PLAGE = { book: 'r', ch: 2, catalogue: 'bestiaire', from: 'Début', to: 'Fin', title: 'Extrait' }
+const CHAPITRES = {
+  horsRegle: [{ book: 'm', ch: 3, motif: 'prose de campagne' }],
+  // Un chapitre appartient à DEUX catalogues : deux entrées, jamais une clé qui porte une liste.
+  enCatalogue: [{ book: 'c', ch: 7, catalogue: 'bestiaire' }, PLAGE, { book: 'r', ch: 1, catalogue: 'sorts' }, { book: 'r', ch: 1, catalogue: 'bestiaire' }],
+}
+
+test('teneurDe : la teneur d’un livre vient du registre — absente pour un livre de RÈGLES', () => {
+  const t = teneursDe(REGISTRE_PROPRIETES)
+  assert.deepEqual([...t], [['C', 'scenario'], ['M', 'mixte']])
+  assert.equal(teneurDe('C', t), 'scenario')
+  assert.equal(teneurDe('M', t), 'mixte')
+  assert.equal(teneurDe('R', t), null)
+  assert.equal(teneurDe('INCONNU', t), null)
+})
+
+test('niveauDeSectionDe : le niveau DÉCLARÉ, et 2 pour qui n’en déclare pas', () => {
+  const n = niveauxDeSectionDe(REGISTRE_PROPRIETES)
+  assert.equal(niveauDeSectionDe('C', n), 4)
+  assert.equal(niveauDeSectionDe('M', n), 2)
+  assert.equal(niveauDeSectionDe('INCONNU', n), 2)
+})
+
+test('estHorsRegle/motifHorsRegle : le MOTIF est la donnée, lu par SIGLE et par NUMÉRO (jamais par graphie)', () => {
+  const h = horsRegleDe(CHAPITRES, REGISTRE_PROPRIETES)
+  assert.equal(motifHorsRegle('M', 3, h), 'prose de campagne')
+  assert.equal(motifHorsRegle('M', '03', h), 'prose de campagne', '« 03 » et 3 désignent le MÊME chapitre')
+  assert.equal(estHorsRegle('M', 3, h), true)
+  assert.equal(estHorsRegle('M', 4, h), false)
+  assert.equal(estHorsRegle('C', 3, h), false, 'un livre sans chapitre hors-règle n’en porte aucun')
+})
+
+test('horsRegleDe : une entrée dont le `book` n’est AUCUN livre du registre n’entre pas — jamais une clé `undefined`', () => {
+  const h = horsRegleDe({ horsRegle: [{ book: 'livre-fantome', ch: 1, motif: 'x' }] }, REGISTRE_PROPRIETES)
+  assert.equal(h.size, 0)
+})
+
+test('cataloguesDe/livresDeCatalogue : un catalogue rend ses livres dans l’ORDRE DU FICHIER, plages comprises', () => {
+  const c = cataloguesDe(CHAPITRES, REGISTRE_PROPRIETES)
+  assert.deepEqual(livresDeCatalogue('bestiaire', c), [
+    ['C', [{ ch: 7 }]],
+    ['R', [{ ch: 2, from: 'Début', to: 'Fin', title: 'Extrait' }, { ch: 1 }]],
+  ])
+  assert.deepEqual(livresDeCatalogue('sorts', c), [['R', [{ ch: 1 }]]])
+  assert.deepEqual(livresDeCatalogue('catalogue-inconnu', c), [], 'un catalogue sans livre rend une liste vide, jamais undefined')
+})
+
+test('cataloguesDe : un MÊME chapitre dans deux catalogues entre dans les deux, chacun par SON entrée', () => {
+  const c = cataloguesDe(CHAPITRES, REGISTRE_PROPRIETES)
+  assert.deepEqual(livresDeCatalogue('sorts', c)[0][1], [{ ch: 1 }])
+  assert.ok(livresDeCatalogue('bestiaire', c)[1][1].some((s) => s.ch === 1))
+})
+
+test('cataloguesDe : l’ORDRE des entrées du fichier est celui du rendu — aucun tri à la lecture', () => {
+  const inverse = { ...CHAPITRES, enCatalogue: [...CHAPITRES.enCatalogue].reverse() }
+  assert.deepEqual(livresDeCatalogue('bestiaire', cataloguesDe(inverse, REGISTRE_PROPRIETES)).map(([a]) => a), ['R', 'C'])
+})
+
+test('cataloguesDe : l’id STABLE du livre porte la relation, jamais son sigle — renommer un sigle ne casse rien', () => {
+  const renomme = REGISTRE_PROPRIETES.map((b) => (b.id === 'c' ? { ...b, abbr: 'SIGLE-RENOMME' } : b))
+  assert.deepEqual(livresDeCatalogue('bestiaire', cataloguesDe(CHAPITRES, renomme)).map(([a]) => a), ['SIGLE-RENOMME', 'R'])
 })
 
 test('refRe : "LDB 17 l.25" matche', () => {

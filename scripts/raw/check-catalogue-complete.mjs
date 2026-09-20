@@ -17,8 +17,8 @@
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { sectionsOf, sectionLevelOf, catalogChaptersOf, cleanTitle } from './coverage.mjs'
-import { chapterFile, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
+import { sectionsOf, catalogChaptersOf, cleanTitle } from './coverage.mjs'
+import { chapterFile, niveauDeSectionDe, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
 import { normalizeLoose } from './check-entity-in-chapter.mjs'
 
 const rawDir = 'docs/raw'
@@ -75,7 +75,7 @@ export function scanIncompleteChapters(catalogCh, blocks) {
     // Exclut les sections `enfoui` (titre de chapitre VOISIN bavé par l'extraction, #454/H1 orné) :
     // ce n'est pas du contenu du chapitre crédité, un catalogue n'a pas à le transcrire (miroir du
     // `.filter(!enfoui)` de `classify` dans coverage.mjs — même artefact, même exclusion).
-    const sections = sectionsOf(text, sectionLevelOf(ab)).filter((s) => !s.isIntro && !s.enfoui)
+    const sections = sectionsOf(text, niveauDeSectionDe(ab)).filter((s) => !s.isIntro && !s.enfoui)
     const headings = blocks.get(key) || []
     for (const s of sections) {
       const needle = normalizeLoose(cleanTitle(s.title))

@@ -17,14 +17,14 @@
 - **Cœur 5e** : ✅ 0 traités par une fiche · 📖 0 transcrits par un catalogue seul (jamais traités) · 🟡 0 effleurés · ⬜ 12 trous, sur 12 chapitres-règles (hors artefacts OCR).
 - **Livres sans cœur déclaré** : ✅ 48 traités par une fiche · 📖 45 transcrits par un catalogue seul (jamais traités) · 🟡 2 effleurés · ⬜ 0 trous, sur 95 chapitres-règles (hors artefacts OCR).
 
-Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE I/ADE II/EDO, H3 pour LDB/CRB/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ/MSR/PDT, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3874 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2495 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **686 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · CRB ✅0·📖0·🟡0·⬜12 · AA ✅9·📖4·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0.
+Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE I/ADE II/EDO, H3 pour LDB/CRB/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ/MSR/PDT, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3874 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2495 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres de teneur `scenario` AU1/EDO/MSR/PDT : prose de campagne, aucune règle) · **686 candidat(s) trou de règle** (reste : LDB/CRB/AA/VDM/ADE I/ADE II/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ — livres de règles et compagnons mixtes, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · CRB ✅0·📖0·🟡0·⬜12 · AA ✅9·📖4·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0.
 
 ## LDB — ✅ 40 · 📖 33 · 🟡 0 · ⬜ 1
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | VERSION ORIGINALE | ➖ hors-règle | |
+| 01 | VERSION ORIGINALE | ➖ hors-règle | « VERSION ORIGINALE » / « TRADUCTION FRANÇAISE » — crédits d'édition, aucune règle |
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | *(artefact OCR)* | ➖ | |
 | 04 | Cités et villes | ✅ | 7 (creation.md ×7) |
@@ -68,20 +68,20 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 42 | Miracles | 📖 | 4 (magie.md ×2) |
 | 43 | Miracles de Rhya | 📖 | catalogue (catalogue-*.md) |
 | 44 | L'Aethyr | ✅ | 10 (magie.md ×10) |
-| 45 | • MAGIE • | ➖ hors-règle | |
+| 45 | • MAGIE • | ➖ hors-règle | ouverture « • MAGIE • » : exergue + prose d'intro ; les règles vivent aux ch. suivants |
 | 46 | Les regles magiques | ✅ | 91 (magie.md ×51) |
 | 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
 | 48 | Magie des Couleurs | ✅ | 18 (magie.md ×18) |
 | 49 | Sorcellerie | ✅ | 4 (magie.md ×3) |
 | 50 | Magie noire | 📖 | catalogue (catalogue-*.md) |
 | 51 | Magie du Chaos | ✅ | 14 (deplacement.md ×14) |
-| 52 | configuration du terrain | ➖ hors-règle | |
-| 53 | Le canal Grünberg | ➖ hors-règle | |
-| 54 | La politique | ➖ hors-règle | |
-| 55 | Colonies | ➖ hors-règle | |
-| 56 | Sites anciens et ruines terrifiantes | ➖ hors-règle | |
+| 52 | configuration du terrain | ➖ hors-règle | section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC) |
+| 53 | Le canal Grünberg | ➖ hors-règle | section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC) |
+| 54 | La politique | ➖ hors-règle | section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC) |
+| 55 | Colonies | ➖ hors-règle | section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC) |
+| 56 | Sites anciens et ruines terrifiantes | ➖ hors-règle | section MJ/cadre du LDB (terrain/politique/colonies/sites = direction de jeu, pas des règles PC) |
 | 57 | La monnaie | 📖 | 1 (economie.md ×1) |
-| 58 | •GUIDE DE L'ÉQUIPEMENT • | ➖ hors-règle | |
+| 58 | •GUIDE DE L'ÉQUIPEMENT • | ➖ hors-règle | ouverture « • GUIDE DE L'ÉQUIPEMENT • » : intro + index des listes (renvois de pages) |
 | 59 | Faire son marche | ✅ | 19 (economie.md ×19) |
 | 60 | Fabrication | ✅ | 16 (economie.md ×13) |
 | 61 | Encombrement | ✅ | 40 (equipement.md ×18) |
@@ -245,9 +245,9 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | Cover | ➖ hors-règle | |
-| 02 | Contents | ➖ hors-règle | |
-| 03 | Credits | ➖ hors-règle | |
+| 01 | Cover | ➖ hors-règle | couverture : la seule accroche « A GRIM WORLD OF PERILOUS ADVENTURE » (3 lignes) |
+| 02 | Contents | ➖ hors-règle | sommaire (tables de renvois de pages) |
+| 03 | Credits | ➖ hors-règle | crédits d'édition |
 | 04 | Introduction | ➖ hors-règle | |
 | 05 | Character Building | ⬜ |  |
 | 06 | Class and Careers | ⬜ |  |
@@ -262,7 +262,7 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 15 | Bestiary | ⬜ |  |
 | 16 | Appendices | ⬜ |  |
 | 17 | Index | ➖ hors-règle | |
-| 18 | Character Sheet | ➖ hors-règle | |
+| 18 | Character Sheet | ➖ hors-règle | feuille de personnage : rappels imprimés, chacun défini ailleurs dans ce livre — ch.8 (déplacement, localisations, corruption), ch.5 (blessures), ch.7 (compétence ↔ caractéristique), ch.14 (monnaie, encombrement) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
@@ -805,7 +805,7 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | Contes de sorcellerie | ➖ hors-règle | |
+| 01 | Contes de sorcellerie | ➖ hors-règle | histoire de la magie (cadre, prose pure) ; ch.15 némésis = PNJ nommés STATBLOCKÉS → catalogue-creatures (comme PDT) ; 2-14 = règles/data |
 | 02 | Revisions des regles d'incantation | ✅ | 61 (magie.md ×61) |
 | 03 | Travaux arcaniques | ✅ | 128 (competences.md ×76) |
 | 04 | Hysh - Domaine de la Lumiere | 📖 | catalogue (catalogue-*.md) |
@@ -831,12 +831,12 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | LES GRANDES PROVINCES | ➖ hors-règle | |
-| 02 | CLANS HALFLING DU REIKLAND | ➖ hors-règle | |
-| 03 | GUIDE DU GRAND COMTE DU MOOTLAND | ➖ hors-règle | |
-| 04 | Les nains imperiaux | ➖ hors-règle | |
-| 05 | Guide de Karak Azgaraz | ➖ hors-règle | |
-| 06 | Guide de la Laurelorn | ➖ hors-règle | |
+| 01 | LES GRANDES PROVINCES | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 02 | CLANS HALFLING DU REIKLAND | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 03 | GUIDE DU GRAND COMTE DU MOOTLAND | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 04 | Les nains imperiaux | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 05 | Guide de Karak Azgaraz | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 06 | Guide de la Laurelorn | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 07 | Annexe I | 📖 | 3 (competences.md ×2) |
 | 08 | Annexe II | 📖 | 2 (carrieres.md ×1) |
 
@@ -859,9 +859,9 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 02 | Les ogres | ✅ | 51 (combat.md ×43) |
 | 03 | Des signes dans le ciel | 📖 | catalogue (catalogue-*.md) |
 | 04 | Un peu de magie | ✅ | 28 (combat.md ×24) |
-| 05 | L'hospice | ➖ hors-règle | |
-| 06 | Le personnel | ➖ hors-règle | |
-| 07 | Les patients | ➖ hors-règle | |
+| 05 | L'hospice | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 06 | Le personnel | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 07 | Les patients | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 08 | Le theatre de la guerre | ✅ | 70 (combat.md ×69) |
 | 09 | Annexe I | 📖 | 1 (activites.md ×1) |
 
@@ -958,12 +958,12 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | MIDDENHEIM | ➖ hors-règle | |
-| 02 | Guide du visiteur | ➖ hors-règle | |
-| 03 | Au-dela des murs | ➖ hors-règle | |
+| 01 | MIDDENHEIM | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 02 | Guide du visiteur | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 03 | Au-dela des murs | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 04 | Bestiaire | 📖 | catalogue (catalogue-*.md) |
-| 05 | Le Grand-Duche | ➖ hors-règle | |
-| 06 | Les Petits Rois | ➖ hors-règle | |
+| 05 | Le Grand-Duche | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 06 | Les Petits Rois | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 07 | Cultes du Chaos de Middenheim | 📖 | catalogue (catalogue-*.md) |
 | 08 | ANNEXE I | 📖 | catalogue (catalogue-*.md) |
 | 09 | ANNEXE II | 📖 | catalogue (catalogue-*.md) |
@@ -1227,14 +1227,14 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | La Mer des Griffes | ➖ hors-règle | |
+| 01 | La Mer des Griffes | ➖ hors-règle | gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles |
 | 02 | La Bretonnie et le Wasteland | ✅ | 4 (magie.md ×4) |
-| 03 | La cote du Nordland | ➖ hors-règle | |
-| 04 | La cote de l'Ostland | ➖ hors-règle | |
-| 05 | Le Pays des Trolls | ➖ hors-règle | |
-| 06 | Kraka Ravnsvake | ➖ hors-règle | |
+| 03 | La cote du Nordland | ➖ hors-règle | gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles |
+| 04 | La cote de l'Ostland | ➖ hors-règle | gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles |
+| 05 | Le Pays des Trolls | ➖ hors-règle | gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles |
+| 06 | Kraka Ravnsvake | ➖ hors-règle | gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles |
 | 07 | La cote des Skaelings | ✅ | 24 (carrieres.md ×24) |
-| 08 | La cote des Bjornlings | ➖ hors-règle | |
+| 08 | La cote des Bjornlings | ➖ hors-règle | gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles |
 | 09 | La classe Cotier | ✅ | 32 (carrieres.md ×32) |
 | 10 | Le culte de Manann | 📖 | 2 (religion.md ×2) |
 | 11 | Le culte de Stromfels | 📖 | 1 (religion.md ×1) |
@@ -1282,21 +1282,21 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | INTRODUCTION | ➖ hors-règle | |
-| 02 | Commentaires des invites | ➖ hors-règle | |
-| 03 | CHAPITRE 1 - Easter eggs | ➖ hors-règle | |
-| 04 | ORGANISATIONS ET LIEUX | ➖ hors-règle | |
-| 05 | CHAPITRE 2 - L'Empire | ➖ hors-règle | |
+| 02 | Commentaires des invites | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 03 | CHAPITRE 1 - Easter eggs | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 04 | ORGANISATIONS ET LIEUX | ➖ hors-règle | « ORGANISATIONS ET LIEUX » / « L'INTRIGUE » — prose de campagne |
+| 05 | CHAPITRE 2 - L'Empire | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 06 | Chapitre 3 - Les routes et grandes routes | 🟡 | 1 (deplacement.md ×1) |
 | 07 | Chapitre 4 - Montures et vehicules | ✅ | 19 (deplacement.md ×19) |
 | 08 | CHAPITRE 5 - Voyager | ✅ | 16 (deplacement.md ×7) |
-| 09 | OÙ EST MON TABLEAU DE RENCONTRES ALÉATOIRES ? | ➖ hors-règle | |
-| 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |
-| 11 | CHAPITRE 7 - Toutes les routes menent a Bogenhafen | ➖ hors-règle | |
+| 09 | OÙ EST MON TABLEAU DE RENCONTRES ALÉATOIRES ? | ➖ hors-règle | encarts de conseil au MJ (« OÙ EST MON TABLEAU DE RENCONTRES ALÉATOIRES ? ») |
+| 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 11 | CHAPITRE 7 - Toutes les routes menent a Bogenhafen | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 12 | CHAPITRE 8 - Les mutants dans l'Empire | ✅ | 3 (corruption.md ×3) |
 | 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ✅ | 6 (talents.md ×6) |
-| 14 | CHAPITRE 10 - Sur la route | ➖ hors-règle | |
-| 15 | CHAPITRE 11 - L'Affaire du joyau cache - Un melodrame a l'intrigue complexe | ➖ hors-règle | |
-| 16 | CHAPITRE 12 - LE CARNAVAL DU PANDEMONIUM | ➖ hors-règle | |
+| 14 | CHAPITRE 10 - Sur la route | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 15 | CHAPITRE 11 - L'Affaire du joyau cache - Un melodrame a l'intrigue complexe | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 16 | CHAPITRE 12 - LE CARNAVAL DU PANDEMONIUM | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
@@ -1381,24 +1381,24 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | PREFACE - UN PEU D'HISTOIRE | ➖ hors-règle | |
-| 02 | Commentaires des Auteurs | ➖ hors-règle | |
-| 03 | CHAPITRE 1 - EASTER EGGS | ➖ hors-règle | |
+| 02 | Commentaires des Auteurs | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 03 | CHAPITRE 1 - EASTER EGGS | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 04 | CHAPITRE 2 - Les herbes et leurs usages | ✅ | 4 (maladies.md ×4) |
-| 05 | CHAPITRE 3 - Scenes coupees | ➖ hors-règle | |
-| 06 | CHAPITRE 4 - Les fleuves de l'Empire | ➖ hors-règle | |
+| 05 | CHAPITRE 3 - Scenes coupees | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 06 | CHAPITRE 4 - Les fleuves de l'Empire | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 07 | CHAPITRE 5 - Navigation fluviale | 📖 | catalogue (catalogue-*.md) |
-| 08 | CHAPITRE 6 - La Patrouille fluviale imperiale | ➖ hors-règle | |
+| 08 | CHAPITRE 6 - La Patrouille fluviale imperiale | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 09 | CHAPITRE 7 - Compagnons de voyage | 📖 | catalogue (catalogue-*.md) |
-| 10 | CHAPITRE 8 - LES RIVERAINS | ➖ hors-règle | |
-| 11 | CHAPITRE 9 - Le service des tours imperiales a signaux | ➖ hors-règle | |
+| 10 | CHAPITRE 8 - LES RIVERAINS | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 11 | CHAPITRE 9 - Le service des tours imperiales a signaux | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 12 | CHAPITRE 10 - Personnalisation | 🟡 | 2 (combat.md ×2) |
 | 13 | CHAPITRE 11 - Regles du commerce | 📖 | catalogue (catalogue-*.md) |
 | 14 | CHAPITRE 12 - Naufrageurs, contrebandiers et pirates | 📖 | catalogue (catalogue-*.md) |
 | 15 | CHAPITRE 13 - Bestiaire fluvial | ✅ | 14 (combat.md ×14) |
 | 16 | CHAPITRE 14 - Maladies transmises par l'eau | ✅ | 16 (maladies.md ×16) |
-| 17 | CHAPITRE 15 - La Couronne Rouge Guide du Meneur de Jeu | ➖ hors-règle | |
-| 18 | CHAPITRE 16 - L'Empereur Luitpold | ➖ hors-règle | |
-| 19 | CHAPITRE 17 - La vengeance du Roi des tombes | ➖ hors-règle | |
+| 17 | CHAPITRE 15 - La Couronne Rouge Guide du Meneur de Jeu | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 18 | CHAPITRE 16 - L'Empereur Luitpold | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
+| 19 | CHAPITRE 17 - La vengeance du Roi des tombes | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
@@ -2009,4 +2009,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: 60856f113c93fb90b1a34032be09522238710b5d (368 fichiers, 18 dossiers) corps: 7047db39f3a96838002493eb4f2287f173801ea7 -->
+<!-- sources-empreinte: a03f37a350e557264d6f154d3f01282f0cff3ef1 (369 fichiers, 18 dossiers) corps: 57bf670e8ecc995616087d5857d5b0b71e9b99f4 -->

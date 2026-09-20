@@ -2265,6 +2265,10 @@ export interface BookData {
   language: string | null;
   /** Corps de règles dont ce livre est le CŒUR (`4e`, `5e`) — absent (ou vidé à l'atelier) d'un supplément. */
   coeur?: string | null;
+  /** Teneur des chapitres non couverts par une fiche d'Atlas — absente = livre de RÈGLES. */
+  teneur?: 'scenario' | 'mixte' | null;
+  /** Niveau de heading qui porte les SUJETS de ce livre (`sectionsOf`) — absent = 2. */
+  niveauDeSection?: number | null;
   folder: string | null;
   desc?: string;
 }

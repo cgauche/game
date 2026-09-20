@@ -3,7 +3,7 @@
 > **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)
 > des livres autorisés. Système & règles : voir [`bestiaire.md`](bestiaire.md).
 >
-> **Chapitres source :** `LDB 76` · `LDB 77` · `LDB 78` · `LDB 79` · `LDB 80` · `LDB 82` · `LDB 83` · `LDB 84` · `LDB 85` · `MCLB 4` · `ZI 1` · `ZI 2` · `ZI 3` · `ZI 4` · `ZI 5` · `ZI 6` · `ZI 7` · `ZI 8` · `ZI 9` · `ZI 10` · `ZI 11` · `ZI 12` · `ZI 13` · `ZI 14` · `ADE II 1` · `ADE II 2` · `EDO 11` · `EDOC 7` · `MSRC 13` · `PDT 10` · `PDT 11` · `MDG 16` · `VDM 13` · `VDM 15`.
+> **Chapitres source :** `LDB 76` · `LDB 77` · `LDB 78` · `LDB 79` · `LDB 80` · `LDB 82` · `LDB 83` · `LDB 84` · `LDB 85` · `VDM 13` · `VDM 15` · `ADE II 1` · `ADE II 2` · `MCLB 4` · `ZI 1` · `ZI 2` · `ZI 3` · `ZI 4` · `ZI 5` · `ZI 6` · `ZI 7` · `ZI 8` · `ZI 9` · `ZI 10` · `ZI 11` · `ZI 12` · `ZI 13` · `ZI 14` · `MDG 16` · `EDOC 7` · `MSRC 13` · `EDO 11` · `PDT 10` · `PDT 11`.
 
 ---
 
@@ -1683,6 +1683,2576 @@ Toutes les Armures et les Armes portées par les cibles affectées subissent 1 D
 Grâce à **Warhammer Fantasy le jeu de rôle**, vous retrouvez enfi n le Vieux Monde. Rassemblez votre groupe, créez vos (anti) héros et préparez-vous à vous frayer un chemin à travers la destruction, engendrée par l'ignoble corruption, les intrigants et les créatures terrifi antes.
 
 Ce livre de règles de la quatrième édition de **Warhammer Fantasy le jeu de rôle** renferme tout ce dont vous avez besoin pour vivre des aventures sombres et périlleuses dans le Vieux Monde.
+
+
+## [VDM 13] Creatures magiques
+
+*Pages PDF 177-193*
+
+# • CRÉATURES MAGIQUES •
+
+<span id="page-176-0" data-folio="173"></span>Les Vents de Magie ne servent pas seulement à alimenter des sorts, ils ont une personnalité et une volonté propres qui peuvent se manifester sous des formes terribles. Certains sorciers étudient des sorts et des rituels pour donner vie à des créatures grâce à la magie. On leur donne l'appellation générique de « créatures magiques ». Elles ont un lien avec celles des forces du Chaos (comme les démons) ou de la nature (comme les esprits de la forêt), mais s'en distinguent. S'il existe une multitude de créatures magiques qui peuvent apparaître grâce à une concentration d'énergie magique, on peut toutefois les classer selon trois grandes catégories :
+
+- 0 **Les élémentaires incarnés :** des créatures puissantes et violentes, issues d'une concentration d'énergie magique, qui incarnent les aspects les plus destructeurs d'un vent précis.
+- 0 **Les fabriqués par magie :** de puissantes constructions matérielles à qui l'on accorde un semblant de vie, mais qui ne disposent pas d'une volonté propre.
+- 0 **Les familiers :** de petits serviteurs magiques, à qui un sorcier a alloué une partie de sa propre vitalité, leur donnant un peu d'esprit et d'indépendance.
+
+# **ÉLÉMENTAIRES INCARNÉS**
+
+Quand la magie se concentre fortement dans l'atmosphère ou lorsqu'une Tempête de Magie s'annonce, des sorciers peuvent oser invoquer l'essence la plus pure et la plus destructrice de l'un des vents. Elle prend alors la forme de créatures spirituelles d'une force tumultueuse. Ces élémentaires incarnés sont des avatars à la conscience limitée qui personnifient les particularités d'un seul vent magique. On comprend mal les phénomènes qui leur donnent naissance. Les élémentaires sont la quintessence du vent auquel ils sont rattachés, mais ils ont tendance à n'en montrer que ses aspects les plus destructeurs. De plus, à l'aide des rituels établis pour invoquer les élémentaires, seuls trois d'entre eux ont été correctement documentés : ceux du Feu, de la Mort et de la Bête. Des sorciers de combat des Collèges du Feu, d'Améthyste et d'Ambre, ont invoqué ces monstres gigantesques à l'issue de rites longs et complexes se déroulant dans des lieux sacrés, des appuis arcaniques ou des endroits saturés de magie. De temps en temps, ces élémentaires monstrueux apparaissent de manière inopinée là où la concentration d'un vent précis est abondante. Par exemple, on trouve parfois des élémentaires incarnés de la Bête dans les profondeurs du rocher du Fauschlag.
+
+On pense qu'il existe de nombreuses autres formes d'élémentaires. Des marins ont fait le récit de créatures constituées uniquement d'eau, ce que des érudits de la magie ont supposé être des élémentaires incarnés de la Vie. Les ungols et les hobgobelins qui sillonnent les steppes orientales évoquent des « démons du vent », que certains imaginent être des élémentaires de Lumière. D'autre part, les ifrits qui hanteraient les déserts méridionaux seraient une pâle copie d'élémentaires. Les gospodars, eux, expliquent que leurs dieux se manifestent sous forme d'immenses ours constitués de pierre et de glace. Enfin, les mineurs et les montagnards racontent les mêmes histoires de créatures composées de roche ou de métal vivant. Les sorciers d'Altdorf aimeraient beaucoup savoir si de tels récits se fondent sur une quelconque vérité et si, dans ce cas, ces créatures peuvent être des élémentaires incarnés d'autres vents que *Aqshy*, *Shyish* et *Ghur*.
+
+
+#### <span id="page-177-0" data-folio="174"></span>ÉLÉMENTAIRE INCARNÉ DU FEU
+
+| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+| 7 | 55 | –  | 55 | 55 | 55 | 55 | 31  | –   | –  | –   | 80 |
+
+**Traits :** Arme (Énorme épieu) +10, Fabriqué, Foulée, Immunité (tous les feux), Instable, Lanceur de Sorts (Domaine du Feu), Protection 8+, Redoutable 3, Taille (Énorme), Terreur 3
+
+**Compétences :** Corps à corps (Arme d'hast) 70
+
+**Sorts :** Armure aethyrique, Blizzard ardent d'Ygethmor (voir page 134)
+
+**Descendre en cendres :** l'intense chaleur qui émane de l'élémentaire incarné du Feu fait grimacer et fléchir ses ennemis en combat rapproché. Au corps à corps, ils doivent réussir un Test de **Calme Accessible (+20)** ou bien subir –20 à leur Compétence de Corps à corps.
+
+**Don du feu :** l'élémentaire irradie de chaleur et libère des braises brûlantes pendant qu'il se déplace. Au début de chaque Round, lancez 1d10. Sur un 10 et à la discrétion du MJ, un objet inflammable situé dans un rayon de 20 mètres de l'élémentaire reçoit +1 État *En flammes*. Si cet objet est porté par un Personnage, il dispose d'un tour pour s'en débarrasser sans quoi il reçoit lui aussi +1 État *En flammes*.
+
+Les Personnages qui portent de la poudre noire dans un rayon de 20 mètres de l'élémentaire doivent lancer 1d10 au début de chaque tour. Elle s'embrase sur un 10, ce qui peut donner lieu à des explosions imprévues ou à des incidents de tir (**WFRP,** page 160). Lorsque la poudre noire explose, elle est généralement considérée comme une bombe (**WFJDR**, page 295), sauf si elle est transportée en une quantité trop importante qui s'avérera fatale.
+
+**Lanceur de sorts décérébré :** les élémentaires incarnés du Feu peuvent utiliser leur Caractéristique de Force pour lancer des sorts.
+
+# **Élémentaire incarné du Feu**
+
+*Aqshy* est le Vent de Magie le plus destructeur, affamé et insatiable, dévorant tout sans raison apparente. On raconte que les élémentaires incarnés du Feu qui en sont issus possèdent un courroux et une fureur qui n'est égalée que par celle des démons.
+
+Connus dans la tradition magique sous le nom de Calcinés, Faucheurs noirs et Jack des Cendres, ils dominent largement les champs de bataille. De leur apparence maigre mais terrible, comme des braises noires parsemées de cendre, émane une chaleur phénoménale. Peu de personnes peuvent endurer leur colère : une tempête de feu qui transforme les armures en scories fondues et fait exploser l'artillerie, projetant des éclats brûlants de métal dans les airs et dans la peau de ceux qui se trouvent à proximité.
+
+Les élémentaires incarnés du Feu sont si destructeurs et difficiles à contrôler qu'on les invoque rarement. Même dans les pires circonstances, les magisters les plus téméraires de l'Ordre Flamboyant, qui pourtant ne manque pas d'adeptes écervelés, sont réticents à l'idée d'en convoquer un. Malgré leur réputation, ces imposants monstres apprécient l'étrange attachement que leur portent de nombreux paysans vivant sur le versant bretonnien des Montagnes Grises.
+
+Ils dressent des effigies de bois brûlé devant leurs masures pour remercier un mystérieux démoniste qui a un jour convoqué une vingtaine de Faucheurs noirs afin de vaincre une horde d'horribles morts-vivants en furie. Les barons locaux démolissent ces effigies s'ils les trouvent et affirment que ces récits sont des mensonges séditieux. Toutefois, les forteresses noircies et brûlées qui parsèment la région apportent la preuve du contraire.
+
+
+<span id="page-178-0" data-folio="175"></span># **Élémentaire incarné de la Mort**
+
+Ceux qui souhaitent invoquer un élémentaire incarné de la Mort risquent leur propre anéantissement, car en le faisant venir, c'est la Mort elle-même que l'on invite dans ce monde. Cette entité est une vision terrifiante : son énorme corps serpentin se contorsionne et se termine de chaque côté par de maigres têtes de dragons affamés.
+
+Même si ses proportions sont monstrueuses, il ne produit aucun bruit à l'exception d'un léger susurrement, inquiétants murmures sépulcraux qui le suivent dans son sillage. Contrairement aux autres élémentaires incarnés, on ne lui connaît pas d'autre nom. Il est rarement invoqué et ceux qui savent comment faire, les Spirites de l'Ordre d'Améthyste, le respectent bien trop pour se référer à lui autrement que par ce qu'il est.
+
+#### ÉLÉMENTAIRE INCARNÉ DE LA MORT
+
+| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+| 6 | 48 | –  | 65 | 65 | 59 | 55 | 10  | –   | –  | –   | 96 |
+
+**Traits :** Arme (Dents et cornes) +10, Constricteur, Fabriqué, Foulée, Instable, Immunité (*Shyish*), Morsure +9, Protection 8+, Redoutable 3, Taille (Énorme), Terreur 3
+
+**Dévoreur de vie :** À chaque fois que l'élémentaire incarné de la Mort tue un adversaire, il en absorbe les Blessures. Il gagne 1d10 Points de Blessure pour chaque tranche de 10 Points de Blessures de la victime, ce qui peut l'amener au-delà de son maximum de base.
+
+**Brouillard d'Améthyste :** Au lieu de faire une attaque normale, l'élémentaire incarné de la Mort peut dégager des vapeurs malodorantes qui empestent la mort. Quiconque se trouve au corps à corps avec lui doit effectuer un Test de **Résistance Difficile (–20)** et en cas d'échec subir un État *Empoisonné* pour chaque DR négatif. Cette attaque est magique et blesse les créatures normalement immunisées au poison.
+
+**Sablier de** *Shyish* **:** Par dépit ou désespoir, l'élémentaire peut briser le sablier utilisé pour l'invoquer, laissant s'échapper des volutes d'énergie de *Shyish*. Cette action remplace une attaque normale et étend le rayon du Brouillard d'Améthyste jusqu'à 30 mètres.
+
+Après avoir résolu le Brouillard d'Améthyste, l'élémentaire incarné subit 6d10 Blessures. Les Dégâts sont réduits par son Bonus d'Endurance, mais ne peuvent pas être évités avec le Trait *Protection*.
+
+**Silencieux :** L'élémentaire incarné de la Mort ne produit aucun bruit et a un bonus de +2 DR à tout Test de Discrétion qu'il effectue.
+
+L'élémentaire incarné de la Mort est lié au royaume mortel par le pouvoir contenu dans une horloge de *Shyish* particulière : un sablier enchanté qui contient de la poudre d'os d'un monarque. Cet artefact fait office de cœur arcanique puissant et lui seul peut contenir le pouvoir harassant de cette entité surnaturelle.
+
+Les spécialistes du Domaine de *Shyish* affirment que ceux qui croisent le regard d'un élémentaire incarné de la Mort y voient leur propre anéantissement – mais en s'en approchant suffisamment, ils sont déjà perdus. Lorsqu'il se dresse, l'élémentaire frappe avec une vitesse que peu devancent et broie ses ennemis en enroulant son corps tortueux autour d'eux ou en les déchiquetant sous ses mâchoires monstrueuses.
+
+
+<span id="page-179-0" data-folio="176"></span># **Élémentaire incarné de la Bête**
+
+Les adeptes de la magie d'Ambre convoquent des élémentaires incarnés de la Bête grâce à des rituels puissants et complexes. Pour en augmenter la puissance, un imposant totem composé de crânes d'animaux et de fourrures à peine fraîchement dépecées est nécessaire, ce qui a amené les sorciers d'Ambre à désigner cette entité titanesque sous le nom de Prédateur sanglant. Ses autres noms sont l'Homme cornu et le Chasseur sans visage.
+
+La silhouette gigantesque de l'élémentaire est un humanoïde aux muscles puissants entrecroisés de nerfs gonflés à bloc. Il a en guise de tête un crâne à dents de sabre, surmonté de bois d'une grande envergure. Ses griffes avant sont des serres d'aigle et il se dresse sur ses pattes arrière, semblables à celles d'un lion.
+
+L'esprit de l'élémentaire, bestial et cruel, renferme ceux d'innombrables prédateurs sauvages et assoiffés de sang. Il chasse tous ceux qui entrent sur son territoire, les blesse grièvement jusqu'à ce que leur lutte cesse avant de se gorger de leur sang et de se repaître de leur chair. Son hurlement provoque la terreur chez ceux qui l'entendent, réveillant en eux la mémoire ancestrale des prédateurs primitifs.
+
+|   |    |    |    | ÉLÉMENTAIRE INCARNÉ DE LA BÊTE |    |    |     |     |    |     |     |
+|---|----|----|----|--------------------------------|----|----|-----|-----|----|-----|-----|
+| M | CC | CT | F  | E                              | I  | Ag | Dex | Int | FM | Soc | B   |
+| 7 | 56 | –  | 75 | 62                             | 45 | 49 | 15  | –   | –  | –   | 104 |
+
+**Traits :** Arme (Griffes) +11, Armure (Peau) 2 (8), Cornes +10, Fabriqué, Foulée, Immunité (*Ghur*), Instable, Protection 8+, Redoutable 3, Taille (Énorme), Terreur 3
+
+**Hurlement de la Grande Bête :** Le hurlement du prédateur sanglant distille la peur chez ceux qui l'entendent. Lors de son tour, il peut dépenser 1 Avantage et hurler sur ses ennemis pour une Attaque gratuite. Toutes les cibles vivantes qui se trouvent dans un rayon en mètres égal à l'Initiative de la créature (45) reçoivent immédiatement 3 États *Assourdi* et doivent réussir un Test de **Calme Complexe (–10)** ou bien recevoir 3 États *Brisé*. Un Personnage qui réussit ce Test une fois n'a plus besoin de l'effectuer durant le reste de la rencontre.
+
+#### TRAIT DE CRÉATURE : REDOUTABLE (INDICE)
+
+Si, au début de son tour, la créature a un nombre d'Avantages inférieur à son indice de Redoutable, elle gagne immédiatement tous les Avantages qui lui manquent.
+
+Si vous utilisez les règles d'Avantage de groupe de **Aux armes !**, la créature génère en Avantage son indice de Redoutable dans la réserve adverse d'Avantage.
+
+#### ESPRITS DE LA NATURE
+
+Le terme *« esprit de la nature »* est employé de façon approximative par les citoyens de l'Empire pour décrire toute créature forestière mystérieuse qu'ils pourraient croiser par hasard. Les sorciers des Collèges et les elfes savent que les esprits de la nature sont distincts des élémentaires et des autres manifestations aethyriques. Chaque arbre, chaque pierre abrite un esprit mineur qui peut s'éveiller si les conditions sont réunies. Les druides et les elfes des bois communient avec ces esprits en sommeil. Même si de nombreux esprits de la nature peuvent sembler incorporels, ce sont des entités vivantes qui peuvent être tuées.
+
+Les esprits de la nature existent depuis plus longtemps que les elfes, et leurs origines restent inconnues, même pour les habitants de Laurelorn. Les esprits de la nature, comme les dryades, les naïades et les farfadets, prospèrent dans des régions où la saturation magique est constante et les puissants hommes-arbres résident dans les forêts, là où elle s'est établie depuis des siècles. Les vénérables esprits de la nature peuvent apparaître sous bien des formes différentes, allant des licornes aux crapauds géants en passant par des grands cerfs, serpents et êtres humanoïdes étranges.
+
+
+# **FABRIQUÉS PAR MAGIE**
+
+<span id="page-180-0" data-folio="177"></span>La principale caractéristique des fabriqués réside dans leur appellation : ils sont *fabriqués*, conçus avec des matériaux bruts. Leur élaboration peut être extrêmement simple ou bien exiger un savoir-faire rigoureux, comme par exemple une marionnette dont les doigts ont été taillés individuellement, habilement reliés ensemble et parfaitement articulés. Certains sorciers aiment exécuter ce travail eux-mêmes, mais la plupart obtiennent des résultats plus impressionnants en engageant un artisan compétent.
+
+Le sorcier lui explique ce qu'il souhaite obtenir et l'artisan ce qui est possible. Avec un peu de chance, cette collaboration trouve un compromis, mais certains sorciers sont assez entêtés. Parfois, les artisans se résignent et font ce qu'on leur demande, même s'il s'agit d'une mauvaise idée, par exemple un homme d'osier composé de bois et de ramures qui provoque la colère d'une petite armée de taalites.
+
+Indépendamment de ce qui les compose, les fabriqués sont souvent forts et endurants : s'ils sont en paille, ils peuvent prendre feu, mais résistent bien plus longtemps que ce que l'on pourrait croire et frappent aussi fort que s'ils étaient en fer forgé.
+
+Il ne s'agit pas simplement d'objets physiques à qui l'on donne vie : ce sont des fabrications magiques et leurs composants ne réagissent pas toujours de façon naturelle après l'enchantement. Nul doute qu'un loup en granite coule si on le pousse hors d'une barge, mais il peut nager jusqu'à la berge de la rivière (ou marcher au fond de l'eau et pister l'embarcation).
+
+Même si les fabriqués ne sont pas intelligents par rapport à des serviteurs et sbires mortels, leur abêtissement procure un sérieux avantage : ils font ce qu'on leur ordonne et *seulement* cela. Cela peut sembler contre-productif, mais des plans ingénieux et minutieux ont été maintes fois chamboulés par des mercenaires qui pensaient avoir de meilleures idées.
+
+De même, là où les mortels sont soudainement sujets à la peur, au doute, aux crises de conscience et de moralité, les fabriqués ne ressentent pas d'émotions. Si l'un d'entre eux reçoit l'ordre de commettre une atrocité, il va à coup sûr s'y conformer et l'exécuter ! Quand il est en feu, il ne se met pas à crier et à se rouler par terre, mais continue de faire ce qui lui a été demandé jusqu'à ce qu'il ne puisse plus. Cependant, cela implique que les ordres et les instructions doivent être très soigneusement pensés et formulés avant d'être émis.
+
+Créer des fabriqués peut être chronophage et onéreux, ce qui est donc rarement entrepris sans but précis. Cela peut être simplement pour se distinguer des autres sorciers ou pour la recherche arcanique, mais cela répond généralement à des fins plus pratiques.
+
+Consultez la page 28 pour plus de détails sur le Rituel *Créer un Fabriqué*.
+
+# **Gardes du corps**
+
+De nombreux fabriqués sont construits pour dissuader ou mettre fin aux attaques contre leur maître lorsqu'il est en déplacement ici ou là. Ces gardes du corps ont généralement une forme humanoïde (quoique souvent grands) qui permet de les déguiser facilement et de réduire les chances d'attirer l'attention ou de provoquer l'effroi lorsque le sorcier se promène.
+
+Il y a de nombreuses raisons de se garder d'aborder d'un sorcier, mais s'il est accompagné d'un grand personnage à la démarche inhabituelle, vêtu d'un long pardessus et d'un chapeau qui masque son visage, il y a de fortes chances pour qu'il soit en compagnie d'un fabriqué et doive donc être laissé tranquille.
+
+# **Gardiens de maison**
+
+*« Je suis désolé, mais Heinz Lang, umbramancien et Gardien Gris, n'est pas à la maison. Si vous souhaitez lui laisser un message, s'il vous plaît, parlez distinctement après les croâs… Croâ ! Croâ ! Croâ ! »*
+
+Les sorciers sont des gens occupés. Comme ils ne sont pas toujours chez eux pour recevoir des visiteurs, que leurs résidences ne sont pas toujours rattachées à leurs ateliers magiques et qu'ils ne peuvent pas être aux deux endroits en même temps, les fabriqués font office de gardiens en leur absence.
+
+Certains sont ingénieux, comme un pliodon de Lustrie qui ne bouge que si quelqu'un commence à faire n'importe quoi avec les grimoires, ou une licorne, haute de deux mètres et demi, qui patrouille les terres du domaine du magister-alchimiste du coin et prend en chasse quiconque la regarde de travers.
+
+Ils peuvent servir de gardiens à d'autres endroits, comme une portion de rivière riche en *Ghyran* qu'un druide ne souhaite pas partager avec ses rivaux, et ne pas être uniquement au service d'un sorcier. Des marchands fortunés et des nobles souhaiteraient peut-être avoir un garde qui ne soit pas tenté par les objets de valeur qu'il protège.
+
+
+<span id="page-181-0" data-folio="178"></span># **Ouvriers**
+
+Pour les sorciers, les caisses de livres sont lourdes et leurs tours doivent être construites dans des endroits où même les nains n'osent pas s'aventurer. Il est rare que les embarcations qui rament toutes seules se mutinent et jettent par-dessus bord les sorciers parce qu'ils portent malheur. Enfin, n'importe lequel d'entre eux doit parfois être porté pour rentrer chez lui après une nuit de discussions animées, souvent à cause de l'alcool.
+
+À tout le moins, les fabriqués sont forts, infatigables et possèdent éventuellement plusieurs paires de mains. Ils n'ont pas besoin d'avoir une forme humanoïde pour travailler avec des outils ou être capables de voyager (dans le cas des embarcations qui rament toutes seules par exemple). Tout est possible : une grue de chantier naval, une machine pour l'extraction des carrières, un moulin qui tourne sans vent… Malheureusement, les fabriqués ouvriers entraînent rapidement la mobilisation des guildes et des agitateurs locaux, il est donc préférable de les garder hors de vue et de ne pas trop en construire.
+
+# **Soldats**
+
+Les sorciers ont reçu de nombreuses demandes pour construire des régiments de fabriqués à des fins militaires, mais elles n'ont pas été suivies d'effets. Les fabriqués exigent beaucoup de directives de la part de leurs créateurs et lorsque la concentration des sorciers est rompue, ils sont désorientés par les revirements spectaculaires sur le champ de bataille. Il y a même eu des cas où dans la mêlée certains se sont retournés contre leurs alliés. De manière générale, les sorciers n'engagent pas de fabriqués dans les combats. Cependant, certains d'entre eux se sentent suffisamment à l'aise pour y commander une bête des marais.
+
+# LES PIERRES DU TERTRE
+
+Le Culte de Morr, par crainte des pilleurs de tombes ou des nécromanciens, a demandé à Wilhelm Stross, un sorcier d'Améthyste, de construire un gardien sépulcral pour protéger un tertre funéraire découvert dans les collines de l'effroi à l'est d'Essen. Stross a visité la région et est tombé par hasard sur plusieurs monolithes anciens et érodés, vestiges d'antiques cercles de pierres. Il les a utilisés pour construire au sommet de la butte un dolmen incliné par le poids des années et constellé de lichen, mais qui est en réalité le gardien sépulcral.
+
+Ce dernier a reçu l'ordre de rester immobile et de ne se redresser dans une forme à moitié humanoïde que si quelqu'un commence à creuser plus d'une trentaine de centimètres dans le tertre ou dans une zone délimitée autour de celui-ci. Si le pilleur s'arrête, le gardien attendra qu'il soit hors de vue de la butte pour reprendre sa position initiale. Il n'attaquera – et si nécessaire ne tuera – que si le pilleur persiste ou s'en prend à lui. Seul Stross ou un prêtre de Morr peuvent lui ordonner de s'arrêter.
+
+
+<span id="page-182-0" data-folio="179"></span># **Bêtes des marais**
+
+L'infâme bête des marais prend traditionnellement vie sous forme de masse marécageuse croupie et vaseuse. Les sorciers pensent qu'il s'agit de l'un des exemples de fabriqués les plus anciens, précédant la formation des Collèges impériaux de bien des siècles. Cependant, elle se différencie des fabriqués ordinaires (si l'on peut les appeler ainsi) en ce sens qu'elle ne subsiste que pendant quelques jours à moins d'être imprégnée d'encore plus de magie. Durant sa courte existence, c'est un être puissant doté de pouvoirs régénératifs.
+
+On raconte qu'elles sont particulièrement répandues dans les marécages d'Albion, où certaines auraient même une forme de vie indépendante. Plusieurs déambulent également dans les couloirs du Collège de Jade où elles font office de gardes et effectuent des tâches ingrates qui demandent de la force brute.
+
+La création d'une bête des marais exige deux matériaux essentiels. Le premier est évidemment une importante quantité de matière végétale humide en décomposition et c'est pour cela que la plupart d'entre elles sont créées loin de la civilisation, dans des marais, marécages et tourbières. Le Collège de Jade a l'avantage de pouvoir envoyer de nombreux apprentis (certains même volontaires) dans la campagne environnante d'Altdorf pour draguer des herbes pourrissantes et désengorger les affluents du Reik obstrués par du limon, et d'en ramener des charrettes pleines dans ses ateliers.
+
+Le second est le soi-disant *« cœur-de-pierre »* d'une bête des marais. Au centre de chacune d'elles se trouve un bloc de pierre qui les maintient magiquement en vie à la suite du rituel. À Albion ce sont des fragments d'une pierre d'ogham gravée avec d'antiques mots magiques, mais il pourrait s'agir de n'importe quelle pierre correctement gravée avec des symboles magiques conçus pour attirer les Vents de Magie.
+
+Enfin, il faut savoir qu'il n'est pas nécessaire qu'une bête des marais provienne à tout prix des marais. Les sorciers de Jade ont réalisé des expériences en forêt et ont créé des fabriqués similaires à partir d'aiguilles et de pommes de pins, de champignons, de mousse et de lichen. Il existe également la légende du fameux cheval putréfié d'Abdecker Gasse à Altdorf. Dans celle-ci, une infâme masse de chair, d'os et de carcasses putrides d'équidés, couronnée par trois têtes chevalines écorchées, devint incontrôlable avant d'être abattue. Les sorciers de Jade qui ont aidé à la détruire soupçonnaient qu'un cœur-de-pierre enchanté pour attirer Dhar était impliqué, mais un tel objet n'a jamais été retrouvé.
+
+#### BÊTE DES MARAIS
+
+| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+| 5 | 35 | –  | 50 | 55 | 10 | 15 | 10  | –   | –  | –   | 40 |
+
+**Traits :** Arme +8, Fabriqué, Infravision, Increvable, Infecté, Infravision, Instable, Limicole, Régénération, Stupide, Taille (Grande)
+
+**Facultatif :** Affamé, Frénésie, Parasité, Territorial
+
+
+# **FAMILIERS**
+
+<span id="page-183-0" data-folio="180"></span>Les familiers sont des entités magiques intelligentes créées pour servir un lanceur de sorts. C'est ce qui est généralement admis, mais la nature de la magie (et de ses adeptes) suppose que la réalité est autrement plus nuancée et complexe.
+
+# **Catégories de familiers**
+
+Les lanceurs de sorts qui accomplissent le Rituel *Créer un familier* (voir page 29) peuvent créer des familiers. Il en existe trois catégories distinctes : les familiers de combat, qui servent de garde du corps à leurs créateurs ; les familiers de pouvoir, qui peuvent seconder leurs maîtres dans le lancement de sorts et la compréhension de la magie ; les familiers de sorts, qui sont eux-mêmes des magiciens.
+
+La plupart des sorciers des Collèges fabriquent magiquement leurs familiers, même s'il existe un débat sur ce que cela implique véritablement. Certains invoquent ce qu'ils appellent un « esprit aethyrique » dans un objet physique et lui donnent ainsi vie. Par exemple, il est de bon goût chez les sorciers Dorés d'acheter ou de commander un oiseau mécanique dans lequel ils attirent un esprit aethyrique. D'autres sorciers les façonnent selon leur propre imagination, créant littéralement une forme grâce à la magie. Qu'il s'agisse d'un esprit aethyrique occupant une forme imaginée par le sorcier ou bien d'une entité unique en son genre créée de manière spontanée, les familiers qui en résultent sont l'objet d'intenses discussions et de querelles houleuses. Bien entendu, les répurgateurs les considèrent souvent tous comme des démons.
+
+Les sorciers de village et dissidents préfèrent apprivoiser et dresser un oiseau ou un animal sauvage (rarement plus grand qu'un gros chat), puis l'enchanter, ce qui augmente son intelligence et sa capacité à comprendre. L'animal devient alors dans la foulée une créature magique. À l'heure actuelle, certains sorciers impériaux, en particulier ceux des Ordres de Jade et d'Ambre, continuent de créer des familiers de cette façon, même si cela est perçu comme suranné, voire amateur.
+
+Les familiers des sorciers du Chaos et des démonologues sont presque toujours des démons mineurs, des créatures espiègles, au mieux hargneuses, souvent malveillantes. Elles sont invoquées depuis les Royaumes du Chaos à l'aide de sorts et de rituels puis asservies.
+
+Tous les lanceurs de sorts ne sont pas capables de créer les différentes formes de familiers. Reportez-vous au Tableau des Domaines et familiers pour voir quelle sorte de familier chaque lanceur de sorts peut créer.
+
+### **Quelle taille ont-ils ?**
+
+Les familiers sont généralement considérés comme de petits animaux, en particulier ceux des sorciers de village : chats, chauves-souris, crapauds et rats. Ceux créés par les sorciers impériaux peuvent avoir des formes plus étranges, mais leur taille est limitée. Partez du principe qu'ils sont rarement plus grands qu'un chat domestique replet. Les familiers de combat sont un peu plus grands, approchant la taille d'un halfling.
+
+|                                       | DOMAINES ET FAMILIERS            |                          |
+|---------------------------------------|----------------------------------|--------------------------|
+| Domaine                               | Apparence habituelle du familier | Catégorie de familier    |
+| Un des Domaines de Collège            | Variable, voir page 182          | Combat, pouvoir ou sorts |
+| Domaine de la Sorcellerie             | Animal de compagnie              | Pouvoir                  |
+| Domaine de la Magie naturelle         | Animal de compagnie              | Pouvoir                  |
+| Domaine de la Nécromancie             | Petit fabriqué mort-vivant       | Combat ou pouvoir        |
+| Domaine de la Démonologie ou du Chaos | Entité démoniaque toute petite   | Combat, pouvoir ou sorts |
+
+
+<span id="page-184-0" data-folio="181"></span>### **Peuvent-ils parler ?**
+
+Tous les familiers, même s'ils n'ont pas de bouche, parlent la langue maternelle de leur maître et une langue supplémentaire, s'ils en possèdent la Compétence. Certains discutent vivement avec n'importe qui, d'autres ne s'adressent qu'à leur maître, ou seulement si l'on fait appel à eux – ceci dépend de leur personnalité et chaque familier a la sienne. Certaines ressemblent à celles de leurs maîtres et d'autres diffèrent. Les familiers ont tendance à ne pas parler lorsque des répurgateurs sont dans les environs, mais certains ne peuvent pas s'en empêcher.
+
+#### **Apprécient-ils leurs créateurs ? Leurs créateurs les apprécient-ils ?**
+
+En temps normal, un sorcier et son familier partagent un lien fort et une affection sincère, voire de l'amour. Cependant, ces sentiments peuvent être couverts par des querelles, sarcasmes, jérémiades, disputes, bouderies et critiques ou en règle générale par une autorité disputée. Ceci varie selon les sorciers et leurs familiers, mais peu ressentent le besoin de faire étalage de leurs véritables émotions.
+
+De temps en temps, des familiers en veulent à leur créateur, mais ils sont toujours tenus de les servir. Dans de rares cas, des créateurs et leurs familiers pâtissent de conflits de personnalités affirmées, mais comme une partie de l'essence de leur créateur se retrouve chez le familier, ceci indique généralement que le sorcier n'est pas en paix avec lui-même.
+
+### **Familiers contre fabriqués**
+
+La différence fondamentale entre les fabriqués et les familiers réside dans la capacité de ces derniers à être émus, avoir conscience d'eux-mêmes et faire preuve d'intelligence. Ceci s'avère exact, même pour les familiers qui débutent comme bibelots en métal, comme l'oiseau en bronze d'un magister-alchimiste, ou qui ne semblent pas vivants, comme l'assistant d'un Gardien Gris qui ressemble à une volute de fumée.
+
+#### **Personnalités des familiers**
+
+Plus encore que les sorciers eux-mêmes, les familiers représentent la nature du vent dont ils sont issus. Leurs personnalités ont tendance à être dominées par les émotions associées à ce vent et sont donc plutôt limitées. Si vous souhaitez avoir des idées pour celle de votre familier, consultez le tableau ci-dessous.
+
+| PERSONNALITÉ DU FAMILIER |           |             |              |           |             |                 |            |             |  |  |  |
+|--------------------------|-----------|-------------|--------------|-----------|-------------|-----------------|------------|-------------|--|--|--|
+| d10                      | Aqshy     | Azyr        | Chamon       | Ghur      | Ghyran      | Hysh            | Shyish     | Ulgu        |  |  |  |
+| 1                        | Dynamique | Arrogant    | Ambitieux    | Farouche  | Rustre      | Hautain         | Morbide    | Mystérieux  |  |  |  |
+| 2                        | Narquois  | Rêveur      | Avare        | Timide    | Agreste     | Prévenant       | Morose     | Réservé     |  |  |  |
+| 3                        | Rancunier | Idéaliste   | Épicurien    | Prédateur | Attentionné | Suffisant       | Sardonique | Circonspect |  |  |  |
+| 4                        | Irritable | Sélénophile | Lunatique    | Distant   | Doux        | Pieux           | Sinistre   | Timide      |  |  |  |
+| 5                        | Agité     | Sagace      | Mesquin      | Anxieux   | Appliqué    | Pompeux         | Sombre     | Cynique     |  |  |  |
+| 6                        | Surexcité | Snob        | Protocolaire | Cruel     | Amical      | Coincé          | Distant    | Sournois    |  |  |  |
+| 7                        | Courroucé | Fier        | Assuré       | Craintif  | Bucolique   | Studieux        | Paresseux  | Perfide     |  |  |  |
+| 8                        | Furieux   | Inspiré     | Amusant      | Tactile   | Fiable      | Mégalomane      | Stoïque    | Malin       |  |  |  |
+| 9                        | Fanfaron  | Prétentieux | Généreux     | Vif       | Loquace     | Traditionaliste | Fataliste  | Sarcastique |  |  |  |
+| 10                       | Menaçant  | Gracieux    | Babillard    | Féroce    | Vulgaire    | Spirituel       | Résigné    | Distant     |  |  |  |
+
+
+#### FAMILIER DE COMBAT
+
+| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B |
+|---|----|----|----|----|----|----|-----|-----|----|-----|---|
+| 4 | 40 | 20 | 35 | 30 | 30 | 35 | 30  | 20  | 20 | 20  | 8 |
+
+<span id="page-185-0" data-folio="182"></span>**Traits :** Arme (Dague +5, Zweihänder +8), Armure 2, Magique, Taille (Petite)
+
+**Compétences :** Athlétisme 45, Calme 30, Corps à corps (Base 50, Deux-mains 50), Escalade 40, Esquive 45, Intimidation 40, Perception 40, Résistance 40
+
+**Talents :** Costaud, Empreint de (Vent au choix) (voir page 186), Guerrier né, Réflexes foudroyants, Sans peur (Taille Grande ou plus petite), Très fort
+
+**Possessions :** Zweihänder, dague
+
+#### FAMILIER DE POUVOIR
+
+| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B |
+|---|----|----|----|----|----|----|-----|-----|----|-----|---|
+| 4 | 20 | 20 | 20 | 20 | 30 | 30 | 30  | 40  | 35 | 20  | 7 |
+
+**Traits :** Arme (Dague) +4, Magique, Taille (Petite)
+
+**Compétences :** Athlétisme 40, Esquive 40, Intuition 40, Langue (Classique) 50, Savoir (Magie) 50, Corps à corps (Base) 30, Perception 40, Discrétion (Urbaine 40, Rurale 40)
+
+**Talents :** Assistant magique (voir page 186), Détection d'artefact, Empreint de (Vent au choix) (voir page 186), Lire/Écrire, Petit, Perspicace, Seconde vue
+
+#### FAMILIER DE SORTS
+
+| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B |
+|---|----|----|----|----|----|----|-----|-----|----|-----|---|
+| 4 | 20 | 20 | 20 | 20 | 30 | 30 | 30  | 35  | 35 | 20  | 7 |
+
+**Traits :** Arme (Dague) +4, Magique, Taille (Petite)
+
+**Compétences :** Athlétisme 40, Corps à corps (Base) 30, Esquive 40, Focalisation (Vent au choix) 45, Langue (Classique 50, Magick 50),Perception 40, Recherche 50,Savoir (Magie) 50,
+
+**Talents :** Empreint de (Vent au choix) (voir page 186), Lire/Écrire, Magie mineure, Perspicace, Petit, Seconde vue
+
+**Sorts :** Selon le Niveau de Carrière de son maître, un familier de sorts peut connaître jusqu'à quatre Sorts et le sorcier qui les lui enseigne doit déjà les maîtriser. Le familier peut en apprendre un nouveau à chaque fois que son maître gagne un Niveau de Carrière.
+
+# **Améliorer des familiers**
+
+Les familiers PNJ ne progressent pas nécessairement avec le temps, mais ils sont dotés de pensées distinctes et d'un vécu. Si un sorcier en crée un – contrairement à ceux interprétés par d'autres Joueurs (voir **Jouer un familier** plus loin) –, il peut dépenser son PX pour l'améliorer. Le sorcier peut utiliser ce PX pour augmenter soit ses propres Caractéristiques, Compétences ou Talents, ou bien ceux de son familier, il ne peut pas le dépenser deux fois.
+
+Concernant l'évolution de Carrière des familiers de combat et de sort, consultez la page 188. Les familiers de pouvoir se servent de l'évolution de Carrière des familiers de sorts, mais ne peuvent pas apprendre de Sorts.
+
+# **Apparences des familiers**
+
+Tous les sorciers sont différents, mais les familiers qui apparaissent dans les Collèges de Magie d'Altdorf le sont peut-être même plus encore. Pourtant, chaque Ordre a ses traditions et ses recommandations – certaines sont pragmatiques, d'autres purement esthétiques – pour les créer.
+
+#### **Familiers de** *Hysh*
+
+**Combat :** Une sphère éblouissante d'une trentaine de centimètres de diamètre maximum, hérissée de pointes qui darde de rayons de lumière les ennemis de son maître comme des flèches. Ce familier peut avoir une forme humanoïde, mais il est trop brillant pour que l'on puisse en distinguer les traits.
+
+**Pouvoir :** Une petite lampe ou une bougie qui s'allume toute seule. Son maître peut la porter, mais elle peut rapidement léviter et flotter si nécessaire. Sa flamme vacille lorsqu'elle parle.
+
+**Sort :** Un grand papillon de nuit, aussi lumineux et blanc qu'une pleine lune. En virevoltant, il perd des écailles étincelantes et est attiré par la lumière, mais il n'est pas assez stupide pour se laisser brûler.
+
+### **Familiers de** *Chamon*
+
+**Combat :** Un solide homoncule d'environ soixante à quatre-vingt-dix centimètres, vêtu de pieds en cape d'une épaisse armure de plate en fer. Il porte une épée presque aussi grande que lui.
+
+**Pouvoir :** Une boule ou un cylindre en métal argenté de la taille d'une grosse pomme. Elle semble inanimée, mais peut sauter et rouler à sa guise. Si quelqu'un d'autre que son maître le manipule, elle suinte un acide urticant.
+
+**Sort :** Un homoncule hirsute d'une trentaine de centimètres maximum, aux larges épaules et d'apparence humaine. Il ressemble à l'archétype du forgeron. Il porte un marteau qu'il frappe sur une petite enclume pour lancer un sort.
+
+
+<span id="page-186-0" data-folio="183"></span>### **Familiers de** *Ghyran*
+
+**Combat :** Un animal sauvage agressif, comme un chat, un serpent ou un faucon, extrêmement protecteur envers son maître.
+
+**Pouvoir :** Un arbre ou un arbuste mobile qui ne dépasse pas le genou de son maître, gorgé de fruits ou de glands. Lorsqu'il utilise son pouvoir, l'un des fruits tombe au sol et disparaît, mais il se regarnit sans cesse.
+
+**Sort :** Un hibou d'une espèce indéterminée avec de grandes aigrettes. En le regardant de biais, on pourrait croire qu'il porte des lunettes, ce qui amène à le regarder à nouveau.
+
+# **Familiers d'***Azyr*
+
+**Combat :** Un minuscule nuage gris orageux qui gronde comme une tempête lointaine. Si son maître est menacé, le son s'amplifie et, dans un tourbillon de vent et d'éclairs, il attaque.
+
+**Pouvoir :** Une présence invisible donnant l'impression pesante qu'une tempête se prépare. Son maître peut le voir à tout moment, mais les autres uniquement lorsqu'il fait appel à son pouvoir : un éclair en zigzag qui se déchire à ses côtés. Curieusement, il a l'air de sourire.
+
+**Sort :** Un animal en métal aplati, rappelant une girouette. Cette créature en deux dimensions se déplace comme si elle en avait trois, ce qui provoque une légère migraine pour celui qui la regarde, mais le regard est happé par ses yeux brillants comme des étoiles qui s'éclairent intensément lorsqu'elle lance un sort.
+
+### **Familiers d'***Ulgu*
+
+**Combat :** Un chat, une chauve-souris ou une araignée de grande taille et constitué d'ombre, totalement silencieux même lorsqu'il se bat.
+
+**Pouvoir :** Un épais brouillard en forme de serpent qui tournoie autour de son maître, lequel le porte parfois comme une écharpe vivante et affectueuse.
+
+**Sort :** Une ombre humanoïde, toujours présente, mais qui n'est visible que lorsque de la lumière la révèle. Lorsqu'elle lance un sort, l'entité apparaît momentanément.
+
+#### **Familiers de** *Shyish*
+
+**Combat :** Un corbeau étrangement grand et puissant avec des yeux améthyste. Il se pavane partout comme s'il était chez lui.
+
+**Pouvoir :** Un morceau d'améthyste brut et brillant de la taille d'un poing. Il peut déployer ses ailes violettes pour planer et voler, mais le sorcier peut le porter en pendentif.
+
+**Sort :** Un petit squelette dont les os semblent faits d'améthyste. Il peut s'asseoir sur l'épaule de son maître ou se cacher dans sa poche.
+
+#### **Familiers d'***Aqshy*
+
+**Combat :** Un lézard semblable à un dragon qui rougeoie comme du bois en train de brûler.
+
+**Pouvoir :** Une boule de feu animée dont émane une chaleur agréable, mais qui n'enflamme pas les objets.
+
+**Sort :** Une salamandre écarlate qui chante en croassant puissamment lorsqu'elle lance des sorts.
+
+#### **Familiers de** *Ghur*
+
+**Combat :** Un animal sauvage odorant comme un loup, un ours ou un cerf miniature avec des feuilles dans sa fourrure ou ses bois. Certains animaux ont une signification religieuse, ce qui peut causer des problèmes à leurs maîtres. Par exemple, un sorcier avec un familier en forme de loup peut être perçu comme ayant une inclination ulricanne (pour les fidèles sigmarites) ou comme tournant Ulric en ridicule (pour les ulricans).
+
+**Pouvoir :** Un escargot de la taille d'un poing avec une solide coquille couverte de mousse. Quand le besoin s'en fait sentir, il peut se déplacer aussi rapidement qu'un chat.
+
+**Sort :** Une corneille bruyante qui a un avis sur tout.
+
+
+# **JOUER UN FAMILIER**
+
+<span id="page-187-0" data-folio="184"></span>Les familiers sont créés pour servir les lanceurs de sorts. Ils dépendent d'un sorcier qui leur donne la vie et un but. Cependant, ils ne sont pas totalement dépourvus de personnalité puisqu'ils sont imprégnés de l'essence de leur créateur et portés par le vent dont ils proviennent.
+
+Un Joueur peut vouloir interpréter un familier, mais il sera confronté à des difficultés qui ne doivent pas être prises à la légère.
+
+Si la rencontre d'un Personnage plus classique est improbable, les familiers peuvent servir de Personnages de rechange pratiques, par exemple si l'un d'entre eux est tué ou si un nouveau Joueur rejoint la table et que le groupe d'aventuriers vagabonde en pleine nature ou ne souhaite pas partager son programme chargé.
+
+# **Le créateur**
+
+Avant qu'un Joueur puisse interpréter un familier, un lanceur de sort doit déjà faire partie du groupe et être d'accord pour en créer un. Ce lanceur de sorts doit alors remplir les conditions énoncées plus haut dans ce chapitre.
+
+Tant que ce lanceur de sorts est vivant et fait partie du groupe, le familier peut exister. Si son maître meurt ou quitte le groupe, la force motrice à l'origine de son existence part avec lui et il le suivra ou disparaîtra peu à peu de la réalité.
+
+#### **Le lien entre les lanceurs de sorts et les familiers**
+
+Les familiers ne sont pas obligés d'apprécier leur créateur, mais ils sont tenus de leur obéir. Il est important de s'assurer que le Joueur qui décide d'interpréter un familier soit disposé à avoir un rôle en grande partie servile et que la personne qui joue le lanceur de sort comprenne qu'elle est responsable de son amusement et de son intégration dans le jeu.
+
+Les lanceurs de sorts donnent beaucoup de leur personne lors de la création d'un familier, que cela se traduise en Points de Blessure, de Destin ou de Résilience. Ils leur attachent beaucoup d'importance, même à ceux qui s'avèrent désagréables ou bizarres, et prennent leur défense s'ils sont menacés ou blessés.
+
+# **Le Vent**
+
+Chaque familier est créé à l'aide du vent dont se sert son créateur ; il lui impose le type de magie qu'il peut exercer. Si un lanceur de sorts utilise plus d'un vent (par exemple un sorcier elfe aguerri ou un adepte des arts noirs), il choisit celui avec lequel il crée le familier. Mais même ceux qui manipulent plusieurs vents trouvent qu'il est extrêmement difficile de créer une créature magique.
+
+**Exemple :** *Thyrus Gormann essaye d'invoquer un familier de sorts. Comme Thyrus est un sorcier Flamboyant, son familier aura la Compétence Focalisation (Aqshy) et le Talent Empreint d'Aqshy. Quand ce dernier gagnera un Domaine des Arcanes, il devra choisir le Talent Magie des Arcanes (Feu).*
+
+### **Les difficultés de jouer des familiers**
+
+Les familiers de sorts sont des magiciens nés, mais ils sont petits et faibles. Les familiers de combat, même s'ils sont forts et bien protégés, possèdent peu de compétences audelà de celles du combat au corps à corps et ne peuvent encaisser que quelques coups avant d'être détruits. Étant petits et à peine plus résistants qu'un halfling ordinaire, ils ne sont pas conçus pour subir beaucoup de dégâts, quand bien même il existe des sorts que leurs créateurs peuvent lancer pour les revigorer.
+
+Les familiers sont restreints dans leur choix de Carrière. Les familiers de combat ne peuvent prendre que la Carrière homonyme, de même pour les familiers de sorts. Comme ils atteignent rapidement la totalité des Caractéristiques, Compétences et Talents qu'ils peuvent augmenter, ils sont également limités.
+
+Dans son ensemble, la population n'apprécie pas les familiers et voit peu de différences entre ces créations magiques et les démons. À dire vrai, ils ont raison, peu d'éléments permettent de les distinguer et un familier doté d'un objectif propre suscite la méfiance et la crainte. Les répurgateurs ne sont pas tendres avec eux et détruisent tous ceux qu'ils ne trouvent pas à proximité de leur sorcier créateur.
+
+
+<span id="page-188-0" data-folio="185"></span># **Caractéristiques**
+
+Si jouer un familier a l'air amusant, décidez avec le Joueur interprétant votre sorcier créateur quelle sorte de familier vous aimeriez tous les deux et créez-en un comme vous le feriez pour n'importe quel autre Personnage.
+
+|                       | Familier de<br>combat | Familier de<br>sorts |
+|-----------------------|-----------------------|----------------------|
+| Capacité de<br>Combat | 1d10 + 30             | 2d10 + 10            |
+| Capacité de Tir       | 2d10 + 10             | 2d10 + 10            |
+| Force                 | 1d10 + 30             | 2d10 + 10            |
+| Endurance             | 2d10 + 20             | 2d10 + 10            |
+| Initiative            | 2d10 + 20             | 2d10 + 20            |
+| Agilité               | 2d10 + 20             | 2d10 + 20            |
+| Dextérité             | 2d10 + 20             | 2d10 + 20            |
+| Intelligence          | 2d10 + 10             | 1d10 + 30            |
+| Force Mentale         | 2d10 + 10             | 1d10 + 30            |
+| Sociabilité           | 2d10 + 10             | 2d10 + 10            |
+| Points de Blessure    | (2 x BE) + BFM        | (2 x BE) + BFM       |
+| Points de Destin      | 1                     | 2                    |
+| Résilience            | 2                     | 1                    |
+| Points                |                       |                      |
+| supplémentaires       | *                     | *                    |
+| Mouvement             | 4                     | 4                    |
+
+<sup>\*</sup> Pour créer un familier, un sorcier peut renoncer à 1 Point de Destin ou de Résilience. Pour chaque Point de Destin ou de Résilience supplémentaire dépensé par le sorcier créateur, le familier peut en obtenir autant et les dépenser soit en Points de Destin ou de Résilience.
+
+# **Compétences et Talents**
+
+Vous pouvez sélectionner 3 Compétences qui bénéficient de 5 Augmentations chacune et 3 autres Compétences auxquelles vous pouvez ajouter 3 Augmentations à chacune. Si vous avez le choix entre deux Talents, vous devez opter pour l'un des deux.
+
+#### **Familier de combat**
+
+**Compétences :** Athlétisme, Calme, Corps à corps (Base), Corps à corps (Escrime), Corps à corps (Fléau), Corps à corps (Parade), Corps à corps (Arme à deux mains), Escalade, Esquive, Intimidation, Perception, Résistance
+
+**Talents :** Sans peur (Taille Grande ou plus petite), Réflexes foudroyants *ou* Très fort, Petit, Costaud, Empreint de (Vent au choix), Très résistant ou Guerrier né
+
+#### **Familier de sorts**
+
+**Compétences :** Athlétisme, Corps à corps (Base), Discrétion (Urbaine), Discrétion (Rurale), Esquive, Focalisation (Vent au choix), Intuition, Langue (Classique), Langue (Magick),Perception, Recherche, Savoir (Magie)
+
+**Talents :** Magie mineure, Lire/Écrire, Seconde vue, Perspicace *ou* Imperturbable, Petit, Empreint de (Vent au choix)
+
+# FAMILIERS DE POUVOIR
+
+Un familier de pouvoir a les mêmes Caractéristiques, Compétences et Talents qu'un familier de sorts. Il commence également avec le Talent *Assistant magique* en plus de ses autres Talents. Toutefois, il ne peut pas apprendre les Compétences Focalisation et Langue (Magick), ni les Talents *Magie mineure* et *Magie des Arcanes*.
+
+# **Les familiers et les langues**
+
+On suppose que tous les familiers parlent la langue maternelle de leur sorcier créateur et comprennent également intuitivement le Magick, même s'ils ne le maîtrisent pas. Un familier en saisit la portée et s'il est capable d'entendre distinctement un sorcier lancer un sort, il peut savoir lequel en réussissant un Test de **Savoir (Magie) Facile (+40)**.
+
+# **Familiers, Classe et Statut**
+
+En temps normal, les familiers ne gagnent pas d'argent et le Statut n'a aucune incidence sur leur capacité à interagir socialement puisqu'ils en sont dépourvus.
+
+Si, pour une quelconque raison, vous deviez leur en donner un, ils seraient considérés comme possédant le Statut Bronze 1 lorsqu'ils échangent avec la plupart des gens. Cependant, notez bien qu'en dehors des Collèges, leurs interlocuteurs seront surpris d'apprendre qu'ils sont capables d'interagir socialement.
+
+Au sein de milieux comme les Collèges de Magie, les familiers peuvent acquérir leur propre réputation. Ils sont considérés comme étant de Statut Argent 1 lorsqu'ils font face à des Personnages ayant la Compétence Savoir (Magie).
+
+Les MJ et les Joueurs doivent prendre en compte que, même s'ils acquièrent des compétences comme Charme ou Ragot, la plupart des gens dans le Vieux Monde et audelà les considéreront avec crainte et méfiance. Lorsqu'ils s'entretiennent avec des inconnus, les Tests basés sur la Sociabilité leur sont généralement Difficiles (–20).
+
+En règle générale, les familiers n'accordent pas d'intérêt aux possessions matérielles et il est ainsi difficile de les soudoyer. Si un étranger essayait de les manipuler avec des offres ou des pots-de-vin, la plupart se concerteraient avec leur sorcier créateur.
+
+Les familiers n'ont pas de Classe et ne reçoivent pas les Possessions de départ. Si pour une quelconque raison ils devaient en avoir une, les familiers de combat correspondraient aux Guerriers et les familiers de sorts aux Lettrés.
+
+
+<span id="page-189-0" data-folio="186"></span>### **Nouveau Talent : Empreint de (Vent)**
+
+**Maxi :** 1
+
+**Tests :** Voir ci-dessous.
+
+Vous êtes empreint de l'un des Vents de Magie et les personnes dotées de la Seconde vue peuvent le voir s'accrocher à votre corps. Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie.
+
+De plus, vous disposez d'un effet supplémentaire selon le vent qui vous enveloppe.
+
+*Aqshy* : Vous obtenez le Talent *Frénésie* et pour y entrer vous pouvez utiliser votre Compétence Focalisation (*Aqshy*) à la place de votre Force Mentale.
+
+*Azyr :* Vous pouvez recourir à votre Compétence Focalisation (*Azyr*) plutôt que Perception pour les Tests appropriés.
+
+*Chamon :* Vous pouvez vous servir de votre Compétence Focalisation (*Chamon*) au lieu d'Évaluation pour tous les Tests appropriés.
+
+*Ghur* : Vous pouvez utiliser votre Compétence Focalisation (*Ghur*) à la place d'Emprise sur les animaux et Savoir (Bête) pour les Tests appropriés.
+
+*Ghyran :* Vous pouvez vous servir de votre Compétence Focalisation (*Ghyran*) en lieu et place de Savoir (Animaux, Herbes, Plantes) et Soin aux animaux pour les Tests appropriés.
+
+*Hysh* : Vous pouvez recourir à votre Compétence Focalisation (*Hysh*) à la place de Recherche pour les Tests appropriés.
+
+*Shyish* : Vous pouvez vous servir de votre Compétence Focalisation (*Shyish*) plutôt qu'Intimidation pour tous les Tests appropriés.
+
+*Ulgu* : Vous pouvez utiliser votre Compétence Focalisation (*Ulgu*) au lieu de Discrétion pour les Tests appropriés.
+
+# **Nouveau Talent : Assistant magique**
+
+**Maxi :** 1
+
+Ce Talent est propre aux familiers de pouvoir et aucune autre race n'y a accès.
+
+Le familier peut apporter son soutien au sorcier qui l'a créé lorsque celui-ci effectue un Test de Focalisation, de Savoir (Magie) ou de Langue (Magick). L'assistant peut également participer aux Tests de Recherche, pourvu qu'il s'agisse de découvertes ou d'innovations magiques. Il apporte un Soutien de +20 à ces Tests au lieu du +10 habituel (voir **WFJDR**, page 155).
+
+# **Possessions**
+
+Un familier de combat commence avec une armure de plates complète qui comprend des brassards, des jambières, un heaume et un plastron. Il peut choisir jusqu'à deux armes des groupes Base, Deux-mains, Fléau, Escrime et Parade. Un familier de pouvoir commence avec une dague.
+
+Un familier de sorts commence avec un grimoire et une dague.
+
+Les familiers peuvent agir sur les objets physiques, mais ils éprouvent de la fatigue en les portant. Ils doublent l'Encombrement de tout objet physique, en dehors de leurs Possessions de départ. En revanche, ils peuvent porter des objets magiques sans pénalité.
+
+Les familiers peuvent délaisser un objet en leur possession au profit d'un autre, magique, qui remplit une fonction équivalente. Par exemple, un familier de combat peut échanger son épée contre une autre, magique.
+
+**Exemple :** *Braun Jenken est un familier de combat. Son équipement de départ comprend une zweihänder (3 Points d'Encombrement), une dague et une armure de plates complète qui comprend des brassards, des jambières, un heaume et un plastron (7 Points d'Encombrement tant qu'elle est portée), soit un Encombrement total de 10. Ceci implique que le familier subit naturellement des pénalités puisque son équipement dépasse sa capacité d'Encombrement (qui est de 8, compte tenu de son Talent Costaud). S'il trouvait une autre zweihänder, il ajouterait 6 Points d'Encombrement, atteignant le double de sa limite, mais si l'arme était magique il n'en ajouterait que 3.*
+
+
+<span id="page-190-0" data-folio="187"></span># **Les familiers et les États**
+
+**En flammes :** les familiers subissent l'État *En flammes* tel qu'il est décrit, sauf s'ils possèdent le Talent *Empreint d'Aqshy*. De ce cas, les Dégâts de cet État ne leur infligent rien. Dans le cas d'un feu magique, le familier ignore les Dégâts de l'État *En flammes* causés par des sorts du Domaine du Feu, mais subit ceux engendrés par d'autres sources magiques (par exemple le Sort *Feu rose de Tzeentch*).
+
+*À Terre, Assourdi, Aveuglé, Brisé, Empêtré, Inconscient, Sonné, Surpris* : les familiers subissent ces États normalement.
+
+*Empoisonné, Exténué, Hémorragique :* les familiers ne subissent pas ces États, sauf s'ils proviennent d'un sort, d'un objet magique ou d'une créature dotée du Trait Magique.
+
+# **Les familiers et la maladie**
+
+Les familiers ne peuvent pas être malades ou avoir des plaies infectées, à moins que la source ne soit un sort, un objet magique ou une créature ayant le Trait *Magique*.
+
+# **Avancement des familiers**
+
+Les familiers progressent comme les autres Personnages. Ils doivent augmenter leurs Caractéristiques, Compétences et Talents avant de passer au Niveau suivant de leur Carrière. Référez-vous aux Compétences et Talents de Carrière à la page 36 du **Livre de Règles** de **WFJDR** pour voir quelles Augmentations un Personnage peut prendre avant de commencer sa Carrière. Ils gagnent et dépensent des Points d'Expérience comme les autres Personnages.
+
+Les familiers ne peuvent pas changer de Carrière et ne peuvent poursuivre que celle associée à leur catégorie.
+
+Il n'est pas prévu qu'ils obtiennent des Possessions pour progresser au sein de leur Carrière.
+
+Il faut supposer qu'entre les aventures, les familiers restent à proximité de leur sorcier créateur et sont ainsi impliqués dans les évènements qu'il rencontre. Lorsque leur sorcier créateur entreprend une Activité, les familiers peuvent lui apporter leur Soutien et lui accorder un bonus de +10 à l'instar des autres Personnages. Néanmoins, ils ne peuvent pas eux-mêmes entreprendre d'Activité.
+
+Toutefois, lorsqu'un sorcier créateur entreprend et réussit l'Activité *Améliorer un familier*, ce dernier peut alors choisir entre plusieurs d'entre elles, comme expliqué à la page 34.
+
+Malgré tout, les familiers de combat ne pourront jamais apprendre les Compétences Focalisation ou Langue (Magick), ni les Talents Magie mineure ou Magie des Arcanes.
+
+Les familiers prennent également part aux Évènements qui impactent leur sorcier créateur entre deux aventures. Il ne leur arrive pas d'Évènements propres, à moins qu'ils ne soient inhabituellement indépendants pour des familiers.
+
+# **Les familiers et la Corruption**
+
+Les familiers subissent la Corruption et les Mutations de la même manière que des Personnages humains.
+
+# **Le Trait de créature** *Magique*
+
+Les Personnages familiers ont le Trait de créature *Magique*.
+
+# **Dégâts et soins des familiers**
+
+Les familiers encaissent des Dégâts comme les autres Personnages. Cependant, si le familier n'est pas un humanoïde, le MJ devra adapter leur Localisation à sa forme. Les Coup Critiques s'appliquent aux familiers, mais ils se traduisent par une diminution de leur pouvoir à cause de la perturbation des énergies magiques plutôt qu'à une hémorragie ou des os cassés.
+
+Les familiers sont invoqués de manière à ce qu'ils retrouvent lentement leur forme initiale après avoir subi des Dégâts, ils guérissent ainsi au même rythme que les autres Personnages. Toutefois, les soins non magiques n'ont pas d'effet sur eux, pas plus que la Compétence Guérison et les miracles de guérison ne les aident.
+
+Les sorts qui guérissent les autres Personnages soignent également les familiers, comme le nouveau sort d'Arcane *Secourir un serviteur magique*, employé pour revigorer un familier blessé et présenté à la page 26.
+
+# **L'alimentation des familiers**
+
+Contrairement aux familiers animaux, ceux créés par les Sorciers et ceux d'origine spirituelle ou démoniaque n'ont pas besoin de nourriture ou d'eau.
+
+
+# **FAMILIER DE COMBAT**
+
+<span id="page-191-0" data-folio="188"></span>*Les familiers de combat prennent souvent la forme de petits guerriers armurés, redoutables gardes du corps au service de leur sorcier créateur.*
+
+# **FAMILIER DE SORTS**
+
+*Les familiers de sorts sont souvent des diablotins minuscules, de tout petits golems ou des marionnettes animées, magiquement doués pour les connaissances arcaniques et l'incantation.*
+
+#### SCHÉMA DE PROGRESSION DU FAMILIER DE COMBAT
+
+| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
+|----|----|---|---|---|----|-----|-----|----|-----|
+| h  |    | h |   | h |    |     |     |    |     |
+
+# **Évolution de Carrière**
+
+#### <sup>h</sup> **Nouvellement créé**
+
+**Compétences :** Athlétisme, Calme, Corps à corps (Deux au choix), Escalade, Esquive, Intuition, Langue (Bataille), Perception, Résistance
+
+**Talents :** Ambidextre, Distraire, Frappe réactive, Guerrier né
+
+#### **Familier de combat**
+
+**Compétences :** Corps à corps (Au choix), Chevaucher (Cheval), Discrétion (Rurale ou Urbaine), Intimidation, Savoir (Guerre)
+
+**Talents :** Combat instinctif, Endurci, Riposte, Très fort
+
+#### **Teigne en armure**
+
+**Compétences :** Corps à corps (Au choix), Discrétion (Rurale ou Urbaine), Pari, Savoir (Héraldique) **Talents :** Assaut féroce, Impitoyable, Frénésie,
+
+Maniement de deux armes
+
+#### **Diablotin blindé**
+
+**Compétences :** Commandement, Corps à corps (Au choix)
+
+**Talents :** Coup puissant, Frappe blessante, Frappe assommante, Maîtrise du combat
+
+#### SCHÉMA DE PROGRESSION DU FAMILIER DE SORTS
+
+| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
+|----|----|---|---|---|----|-----|-----|----|-----|
+|    |    |   |   |   |    | h   | h   | h  |     |
+
+# **Évolution de Carrière**
+
+#### <sup>h</sup> **Nouvellement invoqué**
+
+**Compétences :** Calme, Corps à corps (Base), Discrétion (Rurale ou Urbaine), Esquive, Focalisation (Vent au choix), Intuition, Langue (Magick), Perception, Ragot, Savoir (Magie)
+
+**Talents :** Harmonisation aethyrique, Imperturbable, Perception de la magie, Perspicace
+
+#### **Familier de sorts**
+
+**Compétences :** Charme, Corps à corps (Arme d'hast), Chevaucher (Cheval), Langue (Au choix), Recherche, Savoir (Au choix),
+
+**Talents :** Chanceux, Diction instinctive, Magie des Arcanes (Vent au choix), Sixième sens
+
+#### **Diablotin énigmatique**
+
+**Compétences :** Escamotage, Évaluation, Langue (Au choix), Savoir (Au choix)
+
+**Talents :** Détection d'artefact, Flairer les ennuis, Oreille absolue, Studieux,
+
+#### **Sorcelin**
+
+**Compétences :** Langue (au choix), Savoir (au choix) **Talents :** Effrayant, Mains agiles, Mage de guerre, Sorcier !
+
+
+## [VDM 15] Nemesis et aventures magiques
+
+*Pages PDF 212-228*
+
+# NÉMÉSIS ET • AVENTURES MAGIQUES •
+
+<span id="page-211-0" data-folio="208"></span>Les némésis sont des adversaires que les Personnages peuvent affronter encore et encore. Ce ne sont pas de vulgaires ennemis qui servent d'opposants ponctuels à qui l'on inflige un coup fatal à la fin d'une aventure. Ils n'apparaissent pas à toutes les sessions de jeu ou dans tous les arcs narratifs, mais ressurgissent à plusieurs reprises lors d'une campagne avec leurs séides et leurs objectifs. Vaincre une némésis a de grandes chances d'être un élément majeur, voire le point culminant du jeu à long terme. Son efficacité repose sur trois aspects essentiels :
+
+- 0 **Du pouvoir :** la némésis doit être capable de battre les Personnages par la force ou la ruse. Mais ceci n'implique pas forcément de les tuer : avoir toujours un coup d'avance sur eux est suffisant. Il n'est pas nécessaire qu'elle soit le plus puissant des antagonistes, mais elle doit être un obstacle difficile à surmonter. Une partie de son pouvoir peut provenir de sa capacité à diriger ses sbires.
+- 0 **Un plan :** la némésis a soit un but unique (par exemple devenir un prince démon pour Egrimm van Horstmann), soit une lubie permanente (obtenir la connaissance de sorts, comme les Scribes Bleus). Le premier suppose vraisemblablement plusieurs étapes avant de porter ses fruits, mais les deux peuvent donner lieu à des aventures. Elles constituent parfois les fragments d'un mystère plus vaste que les Personnages doivent découvrir et résoudre.
+- 0 **Une obsession :** la némésis n'abandonnera pas. Même quand l'une de ses entreprises est contrecarrée, elle essaiera à nouveau ou élaborera un autre stratagème. Cet entêtement est parfois une faiblesse à exploiter ou un indice sur ses prochains agissements. Si les Personnages deviennent une source d'ennuis récurrents, ils peuvent eux-mêmes finir par l'obséder !
+
+Une bonne némésis est souvent autant détestée par les Personnages qu'appréciée des Joueurs. Tomber nez à nez avec elle doit provoquer un enthousiasme soudain et le désir, non pas simplement de la détruire, mais de déjouer ses manœuvres : *« C'est encore elle ! Cette fois, on va être plus malins ! »* S'ils échouent, ils attendent avec impatience la prochaine rencontre. Beaucoup de groupes peuvent avoir envie d'une joute verbale avec elle, et non simplement de lancer des sorts et d'utiliser leurs armes. Ils ne l'apprécieront que s'ils ont la possibilité de discuter avec elle, d'arriver à la comprendre, même s'ils sont en désaccord. Et sait-on jamais, peut-être qu'alors ils trouveront un terrain d'entente ?
+
+Ce genre de némésis a besoin d'une qualité salutaire. Si elle utilise des méthodes dangereuses pour parvenir à ses fins, elle œuvre par ailleurs pour une cause juste et peut malencontreusement mettre en lumière les mauvais côtés des projets des employeurs des Personnages. Elle n'est pas irrémédiablement mauvaise ou perdue, mais s'avère être une grosse épine dans le pied. Elle doit toujours être une source de frustration ou de danger, mais son histoire ou sa situation peuvent susciter de la compassion de la part des Personnages. Mòna Mimn en est un exemple : elle est véritablement dangereuse, mais son comportement n'est motivé que par son existence vide et solitaire. Si les Personnages arrivent à le déceler, peut-être trouveront-ils une approche nonviolente pour régler leur conflit avec elle.
+
+Bien entendu, certaines némésis n'ont que ce qu'elles méritent. Elles doivent être arrêtées ou bien mourir parce qu'elles sont trop dangereuses et malfaisantes. Discuter avec elles n'est valable qu'en cas de tactique dilatoire ou pour obtenir des informations. Celles-ci sont d'authentiques méchants qui n'apportent que de la destruction, de la douleur et de la souffrance aux innocents. Leurs manigances, si les Personnages s'avèrent incapables de les déjouer, laissent des séquelles néfastes et durables.
+
+Le secret pour ce type de némésis ne réside pas dans l'ampleur de sa cruauté, même si elle est rarement équivoque, mais dans sa capacité à accomplir son œuvre. Elle est compétente, efficace, et sa stratégie est impitoyable. Elle ne commet pas d'erreurs stupides, sauf si elle est intelligemment piégée par des Personnages rusés. Cependant, son efficacité sans pitié implique que vous donniez aux Personnages et aux Joueurs de nombreuses options, sans quoi ils finiront par mourir.
+
+Certaines némésis sont trop puissantes pour les Personnages, particulièrement au début d'une campagne, et le resteront peut-être. Constant Drachenfels et Nagash en sont deux exemples. Toutefois, les Personnages peuvent toujours défier ce genre de némésis en résistant à leurs plus faibles séides. Ces derniers devraient être des ennemis intéressants et dignes de ce nom, faisant de leur maître une figure mystérieuse et puissante tapie dans l'ombre. N'importe quelle intrigue les impliquant repose sur le mystère du commanditaire de ces actions malfaisantes, la recherche de son identité et l'effrayante révélation qui s'ensuit.
+
+
+# **EGRIMM VAN HORSTMANN**
+
+<span id="page-212-0" data-folio="209"></span>**Motivation :** Gagner les faveurs de Tzeentch et obtenir le statut de démon.
+
+**Ambition à court terme :** Recruter davantage de sorciers dans la Cabale.
+
+**Ambition à long terme :** Renverser les institutions magiques du Vieux Monde.
+
+De nombreux répurgateurs et fervents Sigmarites pensent que tous les magisters ne sont qu'à un pas de la corruption : après tout, ils s'efforcent de contrôler ce qui constitue le Chaos et l'emploient pour assouvir leurs caprices. Quand on cherche à les contredire, ils se réfèrent à Egrimm van Horstmann, un apostat qui a montré ce qui arrive quand les sorciers pratiquent leur sorcellerie sans risque de représailles.
+
+La traîtrise de Horstmann a commencé bien longtemps avant qu'il ne rejoigne le Collège Lumineux. Les Hiérophantes ont honte qu'il ait pratiqué son art diabolique sous leur nez et qu'il soit devenu le patriarche de leur Ordre.
+
+**Un talent prodigieux**
+
+En 2504 CI, le jeune Horstmann fit la démonstration de son potentiel au collège et devint un apprenti chantre de maître Alric. En trois années, il monta dans la hiérarchie et manœuvra secrètement pour en prendre le contrôle. Il asservit des démons pour exécuter ses ordres, vola des artefacts dans les chambres fortes sous le collège et pervertit subtilement les rituels de l'ordre. Il pénétra même dans le royaume de Tzeentch où il scella un sombre pacte avec l'un des aspects du dieu. Il négocia la conservation de son âme en échange de quoi il travaillerait pour l'Architecte du Destin. Ses manigances attisèrent un conflit avec le Collège Doré et aboutirent à la mort du patriarche Elrisse. Très vite, Horstmann, doté d'une immense connaissance et d'une humilité manifeste, devint un magister respecté et le patriarche du Collège Lumineux.
+
+De plus en plus méfiant à son sujet, Verspasian Kant s'y opposa finalement, aidé d'un répurgateur et d'autres alliés. Le perfide magister libéra Baudros, un dragon du Chaos, de son emprisonnement magique sous la Pyramide de Lumière et s'enfuit au nord. Toutefois, Tzeentch voulut donner une leçon à van Horstmann : pendant que Baudros l'embrasait dans ses flammes, le dieu lui proposa de vivre en échange de son âme. Le magister y consentit et le dragon l'amena dans une forge où il fut soigné grâce à une armure du Chaos.
+
+À présent, van Horstmann occupe les Tours d'Argent, sa forteresse dans les collines des hurlements au sein des Désolations du Chaos. De là, avec les sorciers les plus puissants de la Cabale, il complote pour amener davantage de sorciers à Tzeentch. En de rares occasions, il sort pour poursuivre ses objectifs ou pour protéger ses manigances de ceux qui cherchent à les saper. Ceci exige qu'il se rende parfois sur le champ de bataille, mais lorsqu'il voyage de manière anonyme, il utilise des enchantements puissants pour dissimuler sa véritable apparence. Van Horstmann est calculateur et incroyablement patient : il préfère travailler lentement et prudemment, et ne prend jamais le chemin le plus direct ou le plus simple pour parvenir à ses fins.
+
+Le sorcier est enfermé dans une armure du Chaos finement ouvragée et gravée de runes inextricables ; un cadeau de Tzeentch pour le maintenir en vie. Lorsqu'il enlève son casque, ses traits défigurés sont anormalement lisses, séquelle des flammes de Baudros.
+
+# LA CABALE
+
+La Cabale de van Horstmann date de l'époque où il siégeait au Collège Lumineux et où il corrompait des sorciers. Depuis, leurs rangs se sont accrus et ils ont infiltré d'autres groupes, y compris des cultes du Chaos. Le professeur Fassbinder de l'Université d'Altdorf pense qu'ils manipulent la Couronne Rouge et la Main Pourpre, même si ces deux cultes sont trop dispersés pour qu'une seule personne ne les contrôle.
+
+La Cabale recrute des sorciers, généralement en leur offrant des connaissances ou des savoirs interdits comme si de rien n'était. À terme, les recrues sont introduites à d'autres personnes en quête de secrets arcaniques. Elles sont petit à petit orientées vers l'adoration de Tzeentch, d'abord par des références voilées puis finalement de manière ouverte. Une fois qu'elles sont jugées suffisamment corrompues, elles doivent prêter allégeance au Modeleur de Voies puis voyager jusqu'aux Tours d'Argent où elles sont marquées de la rune de Tzeentch et où van Horstmann les informe de ses plans. Si les cabalistes trahissent leur nouveau dieu, ils deviennent des engeances du Chaos.
+
+
+<span id="page-213-0" data-folio="210"></span># **Motivations**
+
+Egrimm van Horstmann souhaite s'élever au rang de démon. Après avoir provoqué d'innombrables dégâts parmi les sorciers impériaux, il pense mériter le privilège de devenir un prince démon, mais Tzeentch n'a pas encore exaucé son vœu. En attendant son approbation, Van Horstmann continue de rassembler des informations et de conspirer, dans l'espoir que le dieu porte enfin son regard sur lui.
+
+Van Hortsmann s'évertue à déstabiliser et à corrompre davantage les collèges et toutes les institutions magiques de l'Empire. Son emprise sur l'Ordre Lumineux contrecarrée, il souhaite contrôler les sorciers de tout le pays en se servant de la Cabale pour les manipuler avec de fausses promesses. Par l'intermédiaire de ses cultistes, acolytes et pions ignorants, il espère étendre de plus en plus l'influence du Chaos d'un bout à l'autre du Vieux Monde.
+
+# **Une némésis nommée Egrimm Van Horstmann**
+
+Van Hortsmann est un fin manipulateur, ce qui fait de lui un employeur de l'ombre idéal. Tout Personnage sorcier peut sceller des alliances précieuses avec des membres secrets de la Cabale. Ils se présentent comme d'aimables PNJ désireux de l'aider, voire de s'opposer aux Puissances de la Ruine. Par l'intermédiaire de ses valets, van Horstmann peut se servir du groupe d'aventuriers pour ses propres intérêts : rechercher des artefacts magiques, trouver des sorciers prêts à être corrompus et obtenir des informations sur les Collèges de Magie. À force, le sorcier du groupe sera tenté d'être corrompu. Mais rappelez-vous que rien n'est direct ou évident avec van Horstmann, tout n'est qu'un jeu subtil d'intrigues dans des intrigues.
+
+#### EGRIMM VAN HORSTMANN
+
+| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+| 4 | 62 | 31 | 54 | 62 | 68 | 70 | 58  | 77  | 85 | 45  | 25 |
+
+**Compétences :** Athlétisme 85, Calme 105, Charme 55, Chevaucher (Cheval 80, Dragon 90), Commandement 65, Corps à corps (Arme d'hast 72, Base 82), Crochetage 78, Discrétion (Rurale) 80, Divertissement (Interprétation 65, Chant 65), Escamotage 78, Esquive 80, Évaluation 97, Focalisation (*Dhar* 115, *Hysh* 95), Intimidation 64, Intuition 98, Langue (Classique 97, Langue sombre 97, Magick 117), Perception 88, Ragot 60, Recherche 97, Résistance 82, Résistance à l'alcool 72, Savoir (Altdorf 87, Démonologie 97, Guerre 87, Magie 107, Magie noire 97, Néhékhara 87, Tzeentch 99), Soin aux animaux 87, Subornation 60
+
+**Talents :** Affinité avec les animaux, Chanceux 3, Corruption choisie, Coup puissant, Destinée (*Un fil du destin est tissé tout au long de ta vie, ondulant comme un serpent. Comprends ceci ou cours à ta perte.*), Détection d'artefact, Diction instinctive, Doigts de fée, Effrayant, Ferveur ardente, Harmonisation aethyrique, Lire/Écrire, Mage de guerre, Magie des Arcanes (Démonologie, Lumière), Magie du Chaos (Tzeentch), Magie mineure, Mains agiles, Menaçant, Menteur, Obstiné, Perception de la magie, Perspicace, Présence imposante, Réflexes foudroyants, Savant (Tzeentch), Seconde vue, Sixième sens, Tour des souvenirs, Très résistant, Vigilance, Volonté de fer
+
+**Traits :** Arme (Épée runique du Chaos) +11, Armure 6 (12), Corruption (Modérée), Effrayé (Serpents), Perturbant, Protection (9+)
+
+**Possessions :** Armure du Chaos (ne peut pas être enlevée), épée runique du Chaos (+BF +5, Dévastatrice, Incassable, Magique, Perforante, Taille), Cape de charme doré, Grimoire de Magie noire, Crâne de Katam, Talisman de Tzeentch
+
+**Corruption mentale :** Cœur desséché
+
+#### **SORTS**
+
+**Magie mineure :** Alerte, Bruits, Drain, Fléchette, Serrure ouverte, Tendre l'oreille
+
+**Sorts d'Arcane :** Carreau, Enchevêtrement, Envol, Explosion, Perturbant, Protection, Sang corrosif, Téléportation
+
+**Domaine de la Démonologie :** Détection de démon, Manifestation de démon mineur, Octogramme
+
+**Domaine de la Lumière :** Assaut de pierre, Bannissement, Collet d'Abulla, Distorsion temporelle, Filet d'Amyntok, Intention inspirée, Lumière aveuglante, Mains de Karkora, Pensée rapide, Yeux de Volans
+
+**Domaine de Tzeentch :** Aura dorée de Tzeentch, Avantage de Tzeentch, Éclair du changement, Feu bleu de Tzeentch, Feu rose de Tzeentch, Feu spirituel, Flammes vacillantes du capricieux destin, Malédiction de Tzeentch, Parole de Tzeentch, Percevoir l'écheveau, Trahison de Tzeentch, Transformation de Tzeentch, Tempête de feu de Tzeentch
+
+
+<span id="page-214-0" data-folio="211"></span># **Le Crâne de Katam**
+
+Egrimm van Horstmann a volé le Crâne de Katam dans l'une des chambres fortes du Collège Lumineux. Il s'agit d'un crâne humain recouvert de sceaux en argent gravés et orné de pierres précieuses. C'est un vivier de connaissances qui ne s'adressera à un porteur légitime d'une voix mystérieuse et rauque que s'il le souhaite.
+
+Katam était un puissant démonologue qui vivait dans l'ancienne Mourkain, bien avant que cette cité maudite ne soit rasée. Il apprit à communiquer avec les dieux du Chaos et conclut un marché avec Tzeentch : en échange de son âme, il aurait la vie éternelle. Mais, le Grand Imposteur ne précisa pas quelle partie de Katam vivrait pour toujours. À présent, il ne reste plus que son crâne, conscient et passablement mécontent. À sa mort, des sceaux ont été gravés dessus avec le sang corrosif de Baudros, un dragon du Chaos. Ceux-ci sont destinés à réfréner tout propos malveillant de Katam, sans grand succès.
+
+Katam, s'il en a envie, peut apporter un bonus de +2 DR à tous les Tests de Focalisation. Le lanceur de sort doit alors réussir un Test de **Calme Difficile (−20)** ou subir un État *Exténué* et recevoir 1 Point de Corruption pendant que le crâne lui susurre des secrets qui lui font perdre la tête.
+
+Solentan, un célèbre magister de Jade, a découvert un culte de Nurgle à Talabheim. Si les Personnages l'aident à contrecarrer les plans des cultistes, le magister leur offrira du savoir et des informations, et les présentera à la noblesse et à l'armée du Talabecland. Toutefois, si la menace du culte est sérieuse, l'offre de Solentan, membre de la Cabale, ne l'est pas. Neutraliser ce danger est un test qui condamnera les Personnages qui le réussissent à devenir des pions de premier choix pour la Cabale. Ils effectueront alors pour elle des tâches qui paraissent utiles à l'Empire, mais qui en réalité servent les nombreuses intrigues tentaculaires de van Horstmann.
+
+# TROP C'EST TROP
+
+Horstmann a piégé la famille Salzenhaar d'Altdorf, dont les membres sont considérés comme les sorciers qui ont gangrené la cité avec la Pourriture des dieux. Malgré son innocence, la famille est rejetée par les autres nobles et est à présent pauvre et pleine de ressentiment. Ursula Salzenhaar écume de rage et est déterminée à agir. Elle a réuni ceux qui ont une rancœur personnelle envers Horstmann, dont Verspasian Kant, le patriarche de l'Ordre Lumineux. Ils ont décidé de détruire la Cabale et son instigateur une bonne fois pour toutes. Ils disposent de fonds, d'un accès à l'armée et d'un soutien magique ; il ne manque plus à présent que des agents talentueux.
+
+# **La Cape de charme doré**
+
+Selon les légendes transmises par les vitki norses, le serviteur de Tchar le plus imprévisible et indiscret est un démon connu sous le nom du Changelin. On dit que la créature, un métamorphe roué et malveillant, a humilié jusqu'aux dieux du Chaos avec ses canulars et persiflages.
+
+Une légende en particulier raconte qu'un jour il se faufila dans le Palais des Plaisirs, au centre du domaine de Slaanesh. En détournant l'attention de nombreux gardes et sénéchaux, il pénétra dans les quartiers privés du dieu et le surprit assoupi. Pendant que le Sombre Prince dormait, le Changelin lui coupa les cheveux et les tissa en une belle étoffe qu'il présenta respectueusement à son maître, Tzeentch.
+
+Quelle que soit l'authenticité de cette histoire, parmi les nombreux objets magiques qui arrivèrent en possession d'Egrimm à la suite de son pacte avec Tzeentch, se trouvait une cape en soie dorée, imprégnée de puissantes propriétés magiques.
+
+Son porteur obtient les Traits de créature *Perturbant* et *Protection 9+*. Il est l'objet d'une Haine par les adeptes et les démons de Slaanesh, mais respectueux de la cape, ils prennent également grand soin de ne pas l'abîmer. Ils ne porteront donc pas d'attaque à distance contre le porteur de la cape, même avec des *Projectiles magiques*, et s'ils l'attaquent au corps à corps, ils devront toujours retenir leurs coups (**WFJDR**, page 173).
+
+
+# **LES SCRIBES BLEUS DE TZEENTCH**
+
+<span id="page-215-0" data-folio="212"></span>**Motivation :** Retrouver et consigner chaque nouveau sort au fil du temps.
+
+**Ambition à court terme :** Retrouver et consigner chaque nouveau sort au fil du temps.
+
+**Ambition à long terme :** Retrouver et consigner chaque nouveau sort au fil du temps.
+
+Quand les patriarches des Collèges de Magie se réunissent, il y a un sujet dont ils préfèrent discuter à voix basse. Il existe une maladie psychiatrique mystérieuse qui affecte quelques magisters de tous les collèges, spécifiquement ceux qui s'efforcent de créer de nouveaux sorts. Elle revêt toujours la même forme : dans les jours qui précèdent son effondrement, le sorcier se plaint d'une légère lueur bleutée en périphérie de son champ de vision et d'un son semblable à celui d'« une plume crissant sur du papier ». Sa chute survient rapidement après un raté sorcellaire catastrophique. Le sorcier souffre d'un effondrement psychique total et pendant une période de délires il divague à propos d'« Êtres bleus » qui lui dérobent son esprit. Les victimes ne s'en remettent jamais complètement, comme si elles avaient subi un traumatisme irréparable.
+
+Ces magisters malchanceux ont reçu la visite des Scribes Bleus, des serviteurs de Tzeentch, le Grand Architecte, condamnés à franchir la réalité pour y rechercher des fragments de l'esprit morcelé de leur maître.
+
+#### **La destruction de Tzeentch**
+
+Il y eut jadis une guerre entre les Puissances de la Ruine au cours de laquelle les autres dieux précipitèrent Tzeentch du haut des Montagnes Infinies. Le Grand Sorcier éclata en dix mille fragments éparpillés à travers l'espace et le temps qui se logèrent dans les esprits de mortels et devinrent des sorts et des incantations. Ils se multiplièrent et se transformèrent en un embrouillamini éternel du savoir magique. Tzeentch se résolut à récupérer ses fragments et créa pour cela les Scribes Bleus.
+
+Les deux démons ont pour tâche de recueillir tous les sorts qui existent, ce qui demande de leur part plus de sensibilité que la plupart des serviteurs inférieurs commandés par le Modeleur de Voies. Il reste donc attentif à ce qu'ils ne bénéficient pas d'une indépendance trop importante, accordant ainsi à P'tarix le pouvoir de coucher sur papier tous les sorts sans pouvoir les lire et à son compagnon, Xirat'p, la capacité de les lancer et les lire, sans pour autant comprendre ce qui est écrit.
+
+#### **L'importante tâche des Scribes**
+
+Mus par la volonté de leur maître, les Scribes Bleus voyagent entre les royaumes et à travers la réalité à la recherche de sorts modifiés ou inédits. Ils apparaissent au grand jour sur les champs de bataille où des armées se lancent des sorts destructeurs sans compter. Ils foncent à toute allure dans un va-et-vient fulgurant, perchés sur un large disque de Tzeentch aux multiples yeux et entourés de parchemins et de tomes remplis de sorts. Pendant que P'tarix prend en note les nouveaux sorts sur un parchemin, Xirat'p en lit certains au hasard dans les livres et les lance pour semer la confusion chez leurs ennemis et se protéger pendant cette mission.
+
+En dehors des combats, ils se montrent plus fins. Xirat'p et P'tarix ont un don de prescience limité qui leur permet d'anticiper la création d'un enchantement à venir. Avant qu'il ne jette son nouveau sort, le lanceur est assailli par des manifestations de l'Aethyr à peine perceptibles. Il entrevoit en fin de soirée une légère lueur dans un coin de son bureau qui reflète des motifs sur les murs ainsi qu'une brume tourbillonnante multicolore accompagnée d'indistincts murmures inhumains.
+
+À mesure que l'apparition s'intensifie, il n'y a plus d'échappatoire. Les Scribes Bleus pourchassent leur proie jusqu'à ce qu'elle prononce l'incantation ou le sort qu'ils convoitent. Ils apparaissent alors dans le monde matériel et saisissent les mots en plein vol. La victime sent que le concept magique est arraché de son esprit et seule une volonté de fer peut résister à ce supplice.
+
+# **Motivations**
+
+Les Scribes Bleus sont une extension de Tzeentch et ils n'ont donc pas d'autre choix que de se donner du mal pour effectuer la tâche qu'il leur a confiée. Ils sont obligés de voyager sans relâche pour récupérer et consigner chaque nouveau sort au fil du temps. Celle-ci comprend des sorts, des incantations rituelles et des mots de pouvoir prononcés pendant la création d'objets magiques. Les Scribes surgissent le plus souvent au moment de la création d'un sort totalement nouveau, mais un jeune sorcier qui en lance un déjà existant peut également attirer leur attention. Une légère différence d'intonation produit d'infimes changements sur la manière dont un sort fonctionne. En revanche, ils ne s'intéressent pas aux faiseurs de miracles.
+
+Leur but ultime est de rassembler tous les sorts et de faire à nouveau partie de Tzeentch. C'est bien entendu impossible, puisqu'il existe un nombre infini de formulations magiques.
+
+
+| P'TARIX, CELUI QUI ÉCRIT |    |    |    |    |    |    |     |     |    |     |    |
+|--------------------------|----|----|----|----|----|----|-----|-----|----|-----|----|
+| M                        | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+| 4                        | 35 | 35 | 37 | 35 | 35 | 30 | 40  | 45  | 50 | 10  | 11 |
+
+<span id="page-216-0" data-folio="213"></span>**Talents :** Écrire (sans Lire)
+
+**Traits :** Arme (Plume) +9, Corruption (Modérée), Démoniaque 8+, Immunité Psychologique, Instable, Mutation (un bras supplémentaire, +1 attaque), Perturbant, Peur 1, Siphonnage de sort, Taille (Petite) **Possessions :** une gamme d'encriers, des plumes, du
+
+sable pour sécher l'encre, des parchemins
+
+| XIRAT'P, CELUI QUI LIT |  |  |
+|------------------------|--|--|
+|                        |  |  |
+
+| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+| 4 | 33 | 37 | 35 | 38 | 45 | 48 | 57  | 89  | 89 | 13  | 14 |
+
+**Talents :** Lire (sans Écrire)
+
+**Traits :** Arme (Griffes) +6, Corruption (Modérée), Démoniaque 8+, Immunité Psychologique, Incantateur hasardeux, Instable, Perturbant, Peur 1,
+
+Taille (Petite)
+
+**Compétences :** Langue (Magick) 95
+
+
+<span id="page-217-0" data-folio="214"></span># **Les Scribes Bleus en tant qu'adversaires**
+
+Les Scribes Bleus peuvent prendre en chasse le sorcier d'un groupe d'aventuriers ou une personne qu'ils connaissent et qui effectue des expériences sur la magie ou des recherches ésotériques sorcellaires. Comme décrit plus haut, des phénomènes singuliers font office de signes avant-coureurs.
+
+Si les Personnages découvrent la menace qui s'annonce, ils peuvent faire obstacle aux Scribes Bleus et protéger le sorcier. Ceci impliquera une quête pour en apprendre plus sur les Scribes Bleus au travers de récits et sur l'étrange maladie qui affecte les magisters. Ils devront aussi faire face à des experts en démonologie peu recommandables.
+
+Règle optionnelle : le MJ peut décider qu'il y a 2 % de chance que les Scribes Bleus ciblent un Personnage à chaque fois qu'il obtient un Critique lorsqu'il focalise ou lance un sort pour la première fois. P'tarix et Xirat'p peuvent agir immédiatement ou bien prendre leur mal en patience et traquer les Personnages avant d'apparaître lorsque le Personnage lance à nouveau le même sort.
+
+#### NOUVEAU TRAIT : INCANTATEUR HASARDEUX
+
+Xirat'p peut lancer des sorts au hasard. Lorsqu'il est attaqué, lancez un dé une fois par Round sur le tableau qui suit pour connaître le type de sort qu'il lance. Puisque le domaine est déterminé aléatoirement, faites de même pour le sort ou choisissez-le. Il existe davantage de Sorts du Domaine de Tzeentch dans le **Compagnon de L'Ennemi dans l'Ombre** et dans celui de **Mort sur le Rei**k ; ceux du Domaine de Slaanesh se trouvent dans le **Compagnon du Pouvoir derrière le Trône**.
+
+| 1d100  | Domaine                       |  |  |  |  |  |
+|--------|-------------------------------|--|--|--|--|--|
+| 1–5    | Magie mineure                 |  |  |  |  |  |
+| 6–10   | Magie des Arcanes             |  |  |  |  |  |
+| 11–15  | Domaine de la Bête            |  |  |  |  |  |
+| 16–20  | Domaine de la Mort            |  |  |  |  |  |
+| 21–25  | Domaine du Feu                |  |  |  |  |  |
+| 26–30  | Domaine des Cieux             |  |  |  |  |  |
+| 31–35  | Domaine du Métal              |  |  |  |  |  |
+| 36–40  | Domaine de la Vie             |  |  |  |  |  |
+| 41–45  | Domaine de la Lumière         |  |  |  |  |  |
+| 46–50  | Domaine des Ombres            |  |  |  |  |  |
+| 51–55  | Domaine de la Magie naturelle |  |  |  |  |  |
+| 56–60  | Domaine de la Sorcellerie     |  |  |  |  |  |
+| 61–65  | Domaine de la Démonologie     |  |  |  |  |  |
+| 66–70  | Domaine de la Nécromancie     |  |  |  |  |  |
+| 71–79  | Domaine de Slaanesh           |  |  |  |  |  |
+| 80–95  | Domaine de Tzeentch           |  |  |  |  |  |
+| 96–100 | Au choix du MJ                |  |  |  |  |  |
+
+#### NOUVEAU TRAIT : SIPHONNAGE DE SORT
+
+Lorsqu'un ennemi réussit à lancer un sort ou utilise pour cela un objet magique, les Scribes Bleus peuvent lui imposer un Test opposé de Force Mentale. S'ils le réussissent, lancez 1d10 et consultez le tableau suivant :
+
+|  | 1d10 | Effet                                                                                                                                                                      |
+|--|------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  | 1–2  | Aucun effet : L'énergie magique s'évapore dans<br>un éclat spectaculaire inoffensif.                                                                                       |
+|  | 3–7  | Sort siphonné  : Les Scribes Bleus jettent<br>le sort à la place du lanceur. Ceci vient en<br>complément de tout autre sort qu'ils pourraient<br>lancer lors de ce Round.  |
+|  | 8–9  | Sort en miroir : Le lanceur comme les Scribes<br>Bleus incantent le sort. Ils peuvent en lancer un<br>autre lors de ce Round.                                              |
+|  | 10   | Fuite d'énergie  : Les énergies du sort sont<br>gravement perturbées. Le lanceur et les Scribes<br>Bleus se retrouvent au centre d'une Explosion<br>(5) qui fait 6 Dégâts. |
+
+Quand les Scribes Bleus réussissent un Siphonnage de sort (un résultat de 3 à 10 ci-dessus) à l'encontre du lanceur de sort, celui-ci doit réussir en plus un Test de **Calme Très Difficile (−30)**. S'il échoue, il subit un État *Inconscient* pendant 1d10 heures et reçoit 2 Points de Corruption.
+
+# UNE NUIT MÉMORABLE
+
+Cette année, les Illuminations au Carnaval de Middenheim vont être les plus belles que l'on a jamais vues. Plusieurs magisters ont voyagé depuis Altdorf pour montrer à la Grande Guilde des Sorciers de la ville ce à quoi ressemble de la vraie magie. L'astromancienne Schumann et Branoff de l'Ordre Doré collaborent sur de nouveaux sorts spectaculaires inédits dans l'Empire. Certes, il y a eu *quelques* phénomènes étranges pendant les répétitions, mais c'est ça d'innover…
+
+### LE BRAQUAGE
+
+L'umbramancienne Olorea a soif de connaissances. Après des années de recherche, elle a eu vent des Scribes Bleus grâce à une copie dérobée du *Liber Malefic*. À présent, elle compte créer un nouveau rituel pour attirer leur attention et voler autant de livres et de parchemins que possible sur leur disque. Elle a alors besoin de personnes assez naïves pour rassembler les composants du rituel et distraire les Scribes Bleus au moment où ils apparaîtront.
+
+
+# **MÒNA MIMN**
+
+<span id="page-218-0" data-folio="215"></span>**Motivation :** Faire subir aux autres sa souffrance.
+
+**Ambition à court terme :** Réactiver les pierres gardiennes. **Ambition à long terme :** Se servir des pierres gardiennes pour transformer le Vieux Monde en un vaste lac froid.
+
+La solitude est une chose terrible et Mòna Mimn est seule depuis *terriblement* longtemps.
+
+Le destin de beaucoup de clans de fimirs est de s'éteindre lentement, et le dernier des dirach de Mòna est mort depuis des siècles. Aucune apprentie n'est née dans son clan, personne qui puisse égaler la longue vie d'une meargh et à qui transmettre son savoir. Aucune compagnie pendant de longues années mornes ; seule dans les marécages avec pour unique bruit celui du croassement des grenouilles et du crachin sur les flaques pour lui rappeler que la vie et le temps continuent toujours autour d'elle.
+
+Âgée d'un millier d'années, la vieille meargh vit dans sa tour noire qui penche toujours un peu plus. Les huttes et bâtiments de son défunt clan ont depuis longtemps pourri ou sombré dans la tourbière alentour et seuls des monticules de pierres recouverts de mousse lui rappellent sa famille. Elle erre sur ces terres lugubres en quête de champignons vénéneux et de grenouilles à dîner, grognant et maugréant à l'adresse de l'une des bêtes des marais qui l'escorte, mais sans beaucoup réagir. Elle se méfie de la compagnie des démons : ils souhaitent toujours obtenir quelque chose.
+
+Mòna est devenue complètement folle, une folie amère. Autrefois, elle trouvait son bonheur dans sa contrée détrempée, y voyant de la vie et des possibilités, mais à présent l'endroit n'incarne plus qu'un déclin inéluctable. Elle n'est pas tout à fait morte, mais pas tout à fait vivante non plus ; seuls le marais et la morosité subsistent.
+
+Elle en veut beaucoup aux humains, ces créatures qui ont lentement tué son clan au fil des sombres décennies. Ils sont détestables… et pourtant elle souhaite parfois que certains aillent à sa rencontre pour qu'elle puisse pester contre eux, tempêter contre leur cruauté impitoyable. Mais non, elle ne les tuerait pas. Elle crierait et exigerait des réponses, afin qu'elle puisse écouter leurs excuses… afin qu'elle puisse à nouveau entendre le son d'une autre voix.
+
+#### **La découverte des pierres gardiennes**
+
+Au cours d'une longue marche solitaire dans les profondeurs des marais, Mòna a trouvé un curieux ensemble de menhirs usés par le temps, à moitié enterrés et inclinés. Les glyphes décrépits qui y étaient gravés ont réveillé des souvenirs. Elle y est donc retournée avec des bêtes des marais pour les exhumer et les replacer comme ils étaient jadis. En parcourant leur surface de ses mains griffues, elle a senti un pouvoir ancien, mais réduit, et a compris ce qu'ils étaient.
+
+Les elfes les appelaient *« pierres gardiennes »*, un dispositif des Anciens pour canaliser de puissantes énergies magiques. Pour la première fois depuis… elle ne saurait dire quand, Mòna avait trouvé quelque chose qui l'enthousiasme. Quelque chose d'intéressant, quelque chose de *puissant*. Puis elle eut une idée qui devint un dessein et sa raison de vivre.
+
+Mòna pense que les autres méritent de comprendre ce qu'est devenue son existence. Ils devraient, eux aussi, connaître la solitude des marécages. Pour ce faire, elle étend le marais et le force à se développer au-delà de ses limites naturelles pour qu'il engouffre les hameaux alentour, submerge les villes, inonde les cités et couvre l'Empire jusqu'à même briser ses frontières montagneuses ! En ranimant correctement les pierres gardiennes et en dirigeant le flux de magie, elle croit pouvoir le faire ; cela prend du temps, mais elle en a.
+
+### **La lente avancée du Furdienst sur les terres**
+
+Le travail de Mòna a déjà commencé. Même si de nombreux milles marécageux séparent sa tour et les mégalithes des villages de Weidemarkt et de Schattenlas, leurs habitants ont dû mettre des huttes au sec. Les anciens grommellent que la bruine est plus abondante et plus grise, que l'humidité s'infiltre dans leurs os douloureux, ce qui n'est pas naturel selon eux.
+
+Avoir un but a ranimé la vie qui sommeillait en Mòna depuis longtemps. Elle a fabriqué encore plus de pierre des hardes et extrait plusieurs bêtes des marais du bourbier. Silencieusement immergées dans le sol, trois d'entre elles protègent les mégalithes, deux autres sa tour, tandis que la dernière l'accompagne. Elle voyage beaucoup à la recherche de restes de pierres gardiennes, qu'il s'agisse de menhirs tout entiers ou de simples fragments. Ceux-ci sont plus faciles à trouver et elle les enterre le long des frontières de son marais grandissant pour y diriger les énergies magiques des mégalithes. Elle a besoin d'autres pierres gardiennes afin d'accumuler davantage de pouvoir. En trouver une intacte, avec des glyphes lisibles, lui permettrait d'ériger la sienne. Peut-être que ce dont elle a besoin n'est qu'un dessin de ceux-ci ? La bibliothèque d'un sorcier pourrait refermer un tel savoir, mais comment en obtenir l'accès ? Elle ne veut pas commencer à fréquenter des démons, à moins qu'il n'y ait pas d'autre solution. Avec des intermédiaires volontaires et compétents, peut-être ?
+
+
+<span id="page-219-0" data-folio="216"></span># **Rencontrer Mòna**
+
+Les interactions entre Mòna Mimn et les Personnages se concentrent sur la nécessité qu'elle a de comprendre les glyphes des pierres gardiennes et d'en trouver d'autres fragments. Cela peut commencer incidemment par des rumeurs évoquant une étrange silhouette qui erre aux abords du marais et qui disparaît avant que quelqu'un ne s'approche suffisamment pour l'identifier. Cette silhouette peut avoir été aperçue en train de creuser, puisque Mòna sème et recherche des fragments de pierres gardiennes.
+
+Vous pouvez attirer l'attention des Personnages sur une série de cambriolages réalisés dans des bibliothèques magiques ou des collections privées, si vous ne souhaitez pas commencer en pleine nature. Parmi les objets volés, on trouve des traités sur les Vents de Magie, des récits de voyage dans certains endroits reculés (de manière générale les littoraux et les milieux humides), des pages reproduisant d'anciennes et curieuses gravures sur pierre, et même des pierres ouvragées qui en comportent. L'enquête indique que le voleur aurait des capacités surnaturelles, voire démoniaques. Une rencontre avec celui-ci ou le contenu des carnets de voyage donnent des indices pour poursuivre l'enquête.
+
+La piste mène les Personnages à Mòna et à ses bêtes des marais, qui devraient les dissuader d'attaquer si telle est leur intention première. La fimir n'attaquera pas non plus, à moins qu'elle n'ait pas d'autre choix, en revanche elle se lance dans une intense diatribe. L'occasion de crier contre quelqu'un qui l'écoutera est émotionnellement bien plus importante pour elle qu'elle ne l'imagine.
+
+#### **Une étrange dépendance s'installe**
+
+Après s'être calmée, Mòna voit là l'occasion d'employer les Personnages. Après tout, elle souhaite simplement qu'ils recherchent d'anciens textes ou trouvent plus de pierres pour sa collection, et peut-être même, en enterrer quelques-unes à des endroits qui lui sont inaccessibles. Ils peuvent accepter cette tâche ou bien s'élancer dans une course pour l'empêcher de mettre la main sur d'autres livres et artefacts, et exhumer ce qu'elle a enfoui.
+
+Mòna est obstinée, mais les Personnages peuvent devenir sa béquille émotionnelle – vitale pour elle – que ce soit en tant qu'agents ou némésis. Dans le premier cas, elle leur donne des missions intéressantes et fait appel (à contrecœur) à des démons mineurs pour voler quelques couronnes ou les aider dans leurs objectifs personnels. Dans le second cas, elle cherche à se montrer plus maligne qu'eux, mais pas à les tuer. De leur côté, les Personnages peuvent être sa planche de salut : ils pourraient l'aider s'ils comprennent le poids de ses siècles de solitude.
+
+| MÒNA MIMN – MATRICHE FIMIR |    |    |    |    |    |    |     |     |    |     |    |
+|----------------------------|----|----|----|----|----|----|-----|-----|----|-----|----|
+| M                          | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+| 6                          | 45 | 20 | 50 | 55 | 50 | 35 | 40  | 75  | 70 | 25  | 44 |
+
+**Compétences :** Calme 95, Commandement 40, Corps à corps (Arme d'hast) 55, Divertissement (Narration) 50, Esquive 55, Focalisation (*Dhar*) 90, Intuition 80, Langue (Magick) 100, Perception 80, Savoir (Magie 95, Théologie 85)
+
+**Talents :** Chanceux, Diction instinctive 2, Harmonisation aethyrique, Magie des Arcanes (Magie du marais de Mòna), Magie mineure, Menaçant, Perception de la magie, Seconde vue, Sixième sens
+
+**Traits :** À sang-froid, Arme (Bâton de combat) +9, Armure 1 (6), Limicole, Mauvais œil, Redoutable 1, Taille (Grande), Vision nocturne
+
+**Possessions :** Bâton enchanté, bêtes des marais domestiquées, robes moisies
+
+#### **SORTS**
+
+**Magie mineure :** Bruits, Coup de vent, Feux follets, Pas léger, Repères, Source
+
+**Sorts d'Arcane :** Effrayant, Enchevêtrement, Protection, Souffle
+
+**Magie du marais de Mòna :** Bourbier d'abattement, Brume mystique, De la boue jusqu'au bout !, Empreint de bruine, Tourner en rond, Une piqûre de moustiques
+
+
+<span id="page-220-0" data-folio="217"></span>### **Mauvais œil**
+
+L'œil cyclopéen des magiciens fimirs peut discerner les flux et reflux des Vents de Magie aussi facilement que l'œil humain perçoit la lumière et des ombres. Cette sensibilité accrue aux Vents de Magie leur permet de faire le meilleur usage de tout pouvoir magique disponible.
+
+Le Mauvais œil octroie le Talent *Seconde vue*, et tous les Tests qui l'utilisent à des fins de Pistage, Orientation, Perception et autres bénéficient de +2 DR pour ces Compétences.
+
+De plus, il accorde aux Tests de Langue (Magick) ou de Focalisation un bonus de +1 DR. Un Personnage doté de ce Talent et qui subit une Incantation Imparfaite peut effectuer un Test de **Perception Complexe (−10)**. S'il le réussit, il constate que les énergies magiques se dérèglent. Il peut alors choisir d'arrêter d'incanter, ce qui implique que le Sort échoue, mais que l'Incantation Imparfaite n'a pas lieu.
+
+#### **Magie du marais de Mòna Bourbier d'abattement**
+
+**NI :** 6
+
+**Portée :** (Force Mentale) mètres
+
+**Cible :** 1
+
+**Durée :** Spéciale
+
+Le sol sous les pieds de la cible devient une boue froide et collante. S'en échapper n'est pas facile et plus la cible essaie de se libérer, plus elle se décourage et se désespère. Elle subit +1 État *Empêtré* dont la Force est égale à votre Intelligence. Pour chaque tranche de +2 DR lors de votre Test d'Incantation, vous pouvez ajouter +1 État *Empêtré* à la cible. Le Sort s'achève une fois que tous les États Empêtré ont été retirés. À chaque Round durant lequel la cible reste empêtrée, elle doit réussir un Test de **Calme Accessible (+20)** ou recevoir un État *Exténué*.
+
+### **Brume mystique**
+
+**NI :** 4
+
+**Portée :** (Force Mentale) mètres
+
+**Cible :** ZdE (Bonus de Force Mentale) mètres **Durée :** (Bonus de Force Mentale) Rounds
+
+Brume mystique a le même effet que le Sort du Domaine des *Ombres Miasme mystifiant* (page 112), même si Mòna le trouve plus facile à lancer comme le reflète son NI réduit.
+
+#### **De la boue jusqu'au bout !**
+
+**NI :** 20 **Portée :** Vous
+
+**Cible :** ZdE (Force Mentale) mètres **Durée :** (Bonus de Force Mentale) années
+
+Il s'agit d'un nouveau Sort sur lequel Mòna travaille et qu'elle doit améliorer. Pour le lancer, vous devez vous trouver au bord d'un marais, un pied dans l'eau, l'autre sur la terre ferme. Le marais déborde de ses frontières, sur une distance égale à la Zone d'Effet.
+
+### **Empreint de bruine**
+
+**NI :** 9
+
+**Portée :** Vous
+
+**Cible :** ZdE (Bonus de Force Mentale) milles **Durée :** (Bonus de Force Mentale) heures
+
+Vous implorez les nuages de s'accumuler et de faire tomber une fine pluie pénétrante et gelée. Les fimirs trouvent ce genre d'atmosphère relaxante, mais les autres créatures doivent réussir un Test de **Résistance Facile (+40)** ou recevoir un État *Exténué*. Les Tests effectués pour tirer avec des armes à poudre, lancer des Sorts du Domaine du Feu ou entrer en *Frénésie* subissent un malus de −2 DR tant que le crachin persiste.
+
+#### **Piqûres de moustiques**
+
+**NI :** 5
+
+**Portée :** (Force Mentale) mètres
+
+**Cible :** ZdE (Bonus de Force Mentale) mètres **Durée :** (Bonus de Force Mentale) Rounds
+
+Vous invoquez un important nuage tourbillonnant de moustiques pour harceler vos ennemis de leurs piqûres douloureuses. La nuée s'en prend à toute créature à sang chaud dans la Zone d'Effet qui inflige +2 Dégâts à la fin du Round, considéré comme un Projectile magique. L'essaim reste en jeu pendant la Durée du Sort. Tant qu'elles demeurent dans la Zone d'Effet, toutes les créatures à sang chaud doivent réussir un Test de **Résistance Accessible (+20)** ou recevoir +1 État *Aveuglé* et un autre *Exténué*.
+
+#### **Tourner en rond**
+
+**NI :** 4
+
+**Portée :** (Bonus de Force Mentale) mètres
+
+**Cible :** 1
+
+**Durée :** (Bonus de Force Mentale) heures
+
+Vous maudissez votre cible qui devient confuse et perd tout sens de l'orientation. Pour que ce Sort puisse fonctionner, la cible ne doit pas avoir conscience qu'il a été lancé. Si c'est le cas, pendant la Durée du Sort, la cible subit un malus de −3 DR à tous ses Tests d'Orientation effectués tant qu'elle se trouve dans l'enceinte d'un marais.
+
+
+# **LA VENTE AUX ENCHÈRES**
+
+<span id="page-221-0" data-folio="218"></span>Il y a cent cinquante ans, quatre enfants des rues issus du quartier des quais de Weissenberg ont été identifiés comme possédant des talents magiques exceptionnels. Des magisters de six collèges se sont disputés à leur sujet pour savoir lequel les prendrait comme apprentis. Il a fallu que le Patriarche suprême règle la question et les enfants furent placés en apprentissage au sein des Ordres de la Vie, des Ombres, des Cieux et de la Bête.
+
+Au cours des huit années qui suivirent, leurs débuts prometteurs se concrétisèrent. Les quatre se réunirent et travaillèrent ensemble au nez et à la barbe des collèges. Ils se servirent des secrets des collèges des uns et des autres et furent capables de créer une magie qui mélangeait des vents. Ils consignèrent ces sorts dans un grimoire.
+
+Les collèges accueillirent ces révélations avec effroi puisqu'il est formellement interdit à un sorcier humain d'employer plus d'un Vent de Magie. Bien que ces sorts eussent été créés pour des sorciers utilisant chacun un vent distinct, mais que les consignes dans ce domaine n'étaient pas claires, on les persuada de garder le secret de leurs recherches. Toutefois, des répurgateurs eurent vent de leurs activités. Les quatre sorciers disparurent alors et l'on n'entendit plus jamais parler d'eux.
+
+Les répurgateurs détruisirent tous leurs travaux ainsi que leurs possessions et ordonnèrent que leurs noms soient effacés des archives.
+
+**Une seule page**
+
+La rumeur de la vente d'un sort créé par les Quatre de Weissenberg, comme on les appelle, s'est propagée. Dans une semaine, il sera mis aux enchères dans un lieu tenu secret par un mystérieux receleur, le Marquis bleu. L'homme est peut-être un criminel, mais il a la solide réputation de tenir ses engagements et de protéger l'identité de ses clients, ainsi que la sienne, même lorsque l'on interroge ses laquais.
+
+Missionnés par un collège, les Personnages doivent obtenir ce sort. L'institution espère que le parchemin les conduira aux archives perdues des Quatre de Weissenberg. Les Personnages disposent également d'un avantage : ils ont appris que le sort est passé à un moment donné entre les mains du marchand Otto Berg.
+
+Un répurgateur et sa suite sont en ville pour localiser le sort et son vendeur. Ils sont rejoints par des représentants de chaque collège, eux aussi en ville pour la vente aux enchères. Les magisters disent qu'ils sont ici pour aider le répurgateur, mais en réalité ils désirent eux-mêmes obtenir le sort et le garder.
+
+### **Le marchand et le voleur**
+
+Berg se cache et, pour le retrouver, les Personnages doivent parler à d'autres marchands afin d'obtenir l'adresse de l'auberge dans laquelle il s'est réfugié. Terrifié, il leur annonce qu'il a vendu l'objet à un représentant du Marquis bleu, mais qu'il ne peut vraiment pas leur en dire plus.
+
+Il a acheté le sort à Patsy Piedblé, un voleur halfling. Il est affolé par l'intérêt que suscite ce qu'il pensait n'être qu'un simple sort et se terre, protégé par une bande de contrebandiers qui lui doivent un service. Ils se cachent dans un coin fortifié des égouts, qui exige de la ruse pour le repérer et de la force brute pour y entrer. Les Personnages peuvent ainsi se retrouver au beau milieu d'une bataille entre une bande de contrebandiers, un répurgateur et plusieurs sorciers.
+
+Piedblé a volé le sort à l'exploratrice Ingrid Dirkmann, décédée il y a deux mois et dont les affaires sont sous scellé au poste de garde du coin. L'avocat d'Ingrid les a soudoyés pour qu'ils les gardent précieusement.
+
+#### **La vente aux enchères**
+
+La vente aux enchères a lieu dans les bas quartiers à minuit. L'endroit est organisé de manière à ce que les enchérisseurs ne voient pas leurs concurrents et des coursiers apportent les enchères (de l'argent, des biens et des promesses) au Marquis bleu. Si les Personnages enquêtent sur lui, ils peuvent le trouver uniquement durant la vente.
+
+Et dans ce cas, ils peuvent lui voler le sort.
+
+# PEAU D'ÉCORCE ET D'OS
+
+**NI :** 1 pour *Ghyran* et 3 pour *Ghur* (deux sorciers différents doivent contribuer à ce Sort lors d'un même Round)
+
+**Portée :** le Sort fait effet sur l'un des deux lanceurs. **Cible :** 1
+
+**Durée :** (Bonus de Force Mentale) Rounds (utilisez celui du participant qui a le plus haute)
+
+Cette nouvelle couleur de magie, créée par les Quatre de Weissenberg, permet à deux magisters d'associer leurs pouvoirs et de lancer un sort unique. Bien que ce ne soit pas techniquement illégal, plusieurs factions intéressées, dont le culte de Sigmar, insistent lourdement pour que cela le devienne.
+
+La peau de l'un des lanceurs devient rugueuse et dure, et il reçoit un bonus de +20 en Endurance.
+
+
+# **L'APPRENTIE**
+
+<span id="page-222-0" data-folio="219"></span>Depuis qu'elle est née, tout le monde à Camberheim savait que Hanna était différente. Les habitants disaient qu'elle avait été bénie par Rhya, notamment avec sa capacité à parler aux animaux. Devenue l'apprentie de l'herboriste local, elle développa ses compétences jusqu'à égaler celles de son mentor dès l'âge de neuf ans.
+
+Ses parents savaient que ses talents attireraient l'attention et cherchèrent à les garder secrets. Mais un colporteur cupide devina la vérité et revendit l'information, qui remonta jusqu'à Altdorf. En comprenant ce que cela implique, le Collège de Jade envoie l'un des leurs (ou un groupe d'aventuriers) pour savoir si Hanna est une recrue potentielle. On leur accorde un mandat, leur donnant le droit d'emmener la jeune femme à Altdorf.
+
+#### **En chemin**
+
+À une journée du village, les Personnages découvrent une diligence détruite par le feu. Les dégâts sont récents, mais on trouve peu de choses à l'exception de quelques pointes de flèches. Non loin, une planche de bois de la diligence gravée d'un corbeau indique l'emplacement d'une tombe fraîchement creusée. Cette scène est le résultat d'une attaque de bandits.
+
+### **Boris et les bandits**
+
+À Camberheim, les villageois se montrent très nerveux envers les Personnages et nient connaître Hanna. On les oriente vers l'aîné du village, Ivan, qui est également le tenancier de la taverne, *La Tête de l'Orc*. Cet ancien soldat expérimenté, mais à présent invalide, nie dans un premier temps l'existence de la fille. Si les Personnages le poussent dans ses retranchements, il leur explique qu'on l'a forcé à mentir et qu'il a peur des représailles. Il ajoute que Hanna a été capturée par un groupe de bandits violents dirigés par « Boris le Terrible ».
+
+Ivan a l'intention d'envoyer les Personnages tuer Boris et sa bande. Leur cachette se trouve dans un moulin à vent abandonné d'où ils terrorisent les environs. Le moulin et les bâtiments alentour sont situés sur une petite colline, entourés par une palissade en bois pourri. Les bandits sont enclins à faire la fête chaque soir et sont alors vulnérables. Peu d'entre eux se battront jusqu'à la mort et il est alors aisé de négocier avec eux. Toutefois, Hanna ne se trouve pas au moulin.
+
+Au retour des Personnages, Ivan admet qu'il leur a menti et que Hanna est protégée par le prêtre local de Taal. Les villageois en ont décidé ainsi après qu'un étrange homme qui la recherchait soit arrivé à la taverne un soir. Ce nécromancien voulait faire d'elle son apprentie. Ils laissent entendre que le prêtre se trouve dans un sanctuaire proche.
+
+### **Pas si protégée**
+
+Le sanctuaire est situé au pied d'un affleurement rocheux, dans une petite clairière. Une grande pierre levée taillée grossièrement se trouve au centre de celle-ci. Des offrandes de nourriture et d'autres petits objets se trouvent autour de sa base et une main pourrissante (tombée d'un zombie) non loin de là. Un chemin étroit mène à une petite caverne dans laquelle le prêtre de Taal, Heinrich, est grièvement blessé. Il a été attaqué par un agresseur inconnu qui a emmené Hanna avec lui.
+
+#### **La sombre apprentie**
+
+Pister le nécromancien dans son antre est facile. Il a élu domicile dans une petite chapelle de Morr, située au centre d'un cimetière en bordure d'une vieille ville minière abandonnée. L'herbe a envahi les maisons, qui s'effondrent, et abritent à présent une douzaine de zombies qui errent dans les environs. Le nécromancien est secondé par deux coupe-jarrets qu'il paie grassement et Hanna est retenue prisonnière dans une crypte vide.
+
+#### **De retour au village**
+
+Si Hanna est sauvée, elle demande à rentrer chez elle pour dire au revoir à ceux qu'elle aime. Les villageois sont très attristés et supplient les Personnages de partir sans elle. Si les Personnages sont blessés, Ivan et d'autres personnes peuvent les soigner. Les Personnages pourront alors se rendre compte qu'emmener Hanna aura un impact terrible sur la population locale.
+
+
+# INDEX
+
+| #                                                |            | Brasser une potion                             | 34         | Croissance vitale                                                     | 87         |
+|--------------------------------------------------|------------|------------------------------------------------|------------|-----------------------------------------------------------------------|------------|
+<span id="page-223-0" data-folio="220"></span>| 10 compétences de départ ?                       | 35         | Brume mystique                                 | 217        | Culte de Morr, Le                                                     | 93, 117    |
+| A                                                |            | C                                              |            | Culte de Rhya, Le                                                     | 83         |
+| Accomplir un Rituel                              | 34         | Cabale, La                                     | 209        | Culte de Taal, Le                                                     | 143        |
+| Acolyte dans l'ombre, L'                         | 105        | Cage dorée                                     | 74         | Culte de Verena, Le                                                   | 93, 107    |
+| Aenarion                                         | 8          | Caledor                                        | 8          | D                                                                     |            |
+| Agressivité de la Maresang                       | 26         | Cape de charme doré, La                        | 211        | Dague voleuse de Chance, La                                           | 171        |
+| Ailes grises                                     | 110        | Capuche vengeresse                             | 146        | Danse du désespoir                                                    | 111        |
+| Alchimie et la vraie Magie                       | 37         | Caractéristiques des potions                   | 155        | De la boue jusqu'au bout !                                            | 217        |
+| Alchimie ordinaire, L'<br>Alchimie               | 49<br>49   | Caresse de Laniph<br>Catalogue des potions     | 122<br>161 | Déchireur de Sociabilité, Le<br>Découverte des pierres gardiennes, La | 171<br>215 |
+| Alchimiste ordinaire                             | 37         | Cautériser                                     | 134        | Décrypter une malédiction                                             | 26         |
+| Alimentation des familiers, L'                   | 187        | Cendre et poussière                            | 123        | Défaut                                                                | 75         |
+| Al-kahest                                        | 52         | Cercles d'oghams                               | 195        | Dégâts et soins des familiers                                         | 187        |
+| Allumer le feu                                   | 134        | Cercueil de Jade                               | 86         | Dénouer les nœuds                                                     | 75         |
+| Almanach                                         | 86         | Chair de pierre                                | 86         | Dernières paroles                                                     | 123        |
+| Amarante                                         | 122        | Chambre des travaux, La                        | 200        | Des sites intéressants                                                | 207        |
+| Âme emprisonnée                                  | 122        | Chant revigorant                               | 86         | Désorientation                                                        | 111        |
+| Améliorer des familiers                          | 182        | Chantage                                       | 84         | Destin de Bjuna                                                       | 123        |
+| Améliorer un familier                            | 34         | Chaos, Le                                      | 59         | Destin éclairci                                                       | 99         |
+| Ami débauché, L'                                 | 161        | Charme changeant                               | 110        | Destrier d'Ombre                                                      | 111        |
+| Amplification                                    | 194        | Chemin du vagabond, Le                         | 57         | Destruction de Tzeentch, La                                           | 212        |
+| Anatomie d'un Sort<br>Anciens, Les               | 20<br>7    | Chut !                                         | 110        | Deuxième Signe d'Amul, Le                                             | 99         |
+| Aperçu de la mort                                | 122        | Chute de feuilles<br>Clarté d'esprit           | 87<br>62   | Devin<br>Dévoiler l'inconnu                                           | 40<br>75   |
+| Apothéose verdoyante                             | 86         | Cœurs ardents                                  | 134        | Diplômés du Collège Flamboyant, Les                                   | 129        |
+| Apparence des grimoires, L'                      | 164        | Cognat de l'âtre                               | 134        | Disciples de la mort, Les                                             | 117        |
+| Apparences des familiers                         | 182        | Colérique                                      | 134        | Dissipation                                                           | 23         |
+| Appeler une monture                              | 146        | Collège Céleste, Le                            | 95         | Distorsion temporelle                                                 | 63         |
+| Approches à la préparation de potions, Les       | 154        | Collège d'Améthyste, Le                        | 119        | Domaines magiques multiples                                           | 23         |
+| Arc d'empathie sanglante, L'                     | 170        | Collège de Jade, Le                            | 83         | Don de Vie                                                            | 87         |
+| Arc de T'Essla                                   | 98         | Collège Doré, Le                               | 71         | Du balai, sorcière !                                                  | 48         |
+| Arche de saphir                                  | 98         | Collège Flamboyant, Le                         | 131        | Durée                                                                 | 20         |
+| Argile fertile                                   | 26         | Collège Gris, Le                               | 107        | E                                                                     |            |
+| Arme enchantée                                   | 74         | Collège Lumineux, Le                           | 59         | Eau de la terre                                                       | 87         |
+| Armée et la noblesse, L'                         | 59         | Collet d'Abulla                                | 62         | Écaille d'acier                                                       | 75         |
+| Armée, L'<br>Armure de fer blanc                 | 131<br>74  | Comète de Cassandora<br>Compétences et Talents | 98<br>185  | École impériale d'Artillerie de Nuln, L'                              | 131        |
+| Art de Chamon, L'                                | 69         | Composants                                     | 21         | Écorce                                                                | 88         |
+| Art de la malédiction                            | 28         | Compréhension parfaite                         | 63         | Écrire des parchemins                                                 | 153        |
+| Ashamira Dib                                     | 60         | Concentré de pouvoir                           | 162        | Écrits de Sedelmann, Les                                              | 165        |
+| Assaut de pierre                                 | 62         | Concocter                                      | 161        | Édifice érigé<br>Édifice illuminé                                     | 63<br>63   |
+| Atout Maudit, L'                                 | 170        | Configuration du terrain                       | 87         | Effets de détérioration d'une potion                                  | 157        |
+| Attache, L'                                      | 205        | Confrérie d'Ambre, La                          | 143        | Effets de détérioration d'une potion                                  | 156        |
+| Atténuation                                      | 194        | Connaissances arcaniques dans                  |            | Effets de la Corruption chaotique                                     | 191        |
+| Attraction                                       | 194        | l'actuel Empire, les                           | 15         | Effets de la Corruption nécromantique                                 | 191        |
+| Augure et les Carrières existantes               | 46         | Conséquences                                   | 196        | Effets de la Magie sur le monde, Les                                  | 189        |
+| Augure et les stupéfiants, L'                    | 46         | Consommer des potions                          | 155        | Effondrement de Fabriqué                                              | 26         |
+| Augure                                           | 44         | Constellations ascendantes                     | 93         | Égide d'Aqshy, L'                                                     | 135        |
+| Avantage de la Seconde vue<br>Avantages et Magie | 160<br>21  | Contact doré<br>Contraindre les esprits        | 75<br>123  | Élémentaire incarné de la Bête                                        | 176        |
+|                                                  |            | Contrôler des élémentaires                     | 32         | Élémentaire incarné de la Mort                                        | 31, 175    |
+| B                                                |            | Corne d'Andar                                  | 110        | Élémentaire incarné du Feu                                            | 174        |
+| Balthasar Gelt                                   | 72         | Corps de feu                                   | 135        | Élémentaires mineurs                                                  | 28         |
+| Bannissement<br>Bâton enchanté                   | 62<br>152  | Corrompre une pierre gardienne                 | 28         | Élémentaliste de Cour, L'                                             | 11         |
+| Bedeau                                           | 38         | Corruption arcanique, la                       | 17         | Elspeth von Draken<br>Embrasement                                     | 120<br>135 |
+| Bête indomptée                                   | 146        | Corruption des lignes de force                 |            | Embrasser son destin                                                  | 123        |
+| Bêtes des marais                                 | 179        | et des pierres gardiennes                      | 197        | Empreint de bruine                                                    | 217        |
+| Bibliothécaire instantané de Meissner            | 62         | Corruption                                     | 191, 198   | Enfants sauvages                                                      | 141        |
+| Blizzard ardent d'Ygethmor                       | 134        | Cotte de mailles de bravoure usurpée, La       | 171        | Ennemi prévisible                                                     | 99         |
+| Bosquet d'Ombre                                  | 110        | Courir après son ombre                         | 103        | Entre l'arbre et l'écorce                                             | 145        |
+| Bottes du remords soudain, Les                   | 170        | Couronne de Flammes                            | 135        | Éonirs, Les                                                           | 83, 143    |
+| Bouclier céruléen                                | 98         | Crâne de Katam, Le                             | 211        | Épée ardente de Rhuin, L'                                             | 135        |
+| Bouclier en acier doré                           | 74         | Créateur, Le                                   | 184        | Épée de retenue, L'                                                   | 171        |
+| Bourbier d'abattement                            | 217        | Créer un Fabriqué<br>Créer un familier         | 28<br>29   | Épées sanguines                                                       | 135        |
+| Boussole d'argent de Puchta                      | 74         | Créer une pierre de pouvoir                    | 30         | Escalier en colimaçon                                                 | 88         |
+| Boussole d'argent météorique                     | 53         | Créer une propriété de pierre gardienne        | 30         | Esprits de la nature                                                  | 176        |
+| Braquage, Le                                     | 214        | Creuset de Chamon                              | 75         | Étreinte d'Iyrtu                                                      | 123        |
+| Brassage (catastrophes)<br>Brassage (tests de)   | 161<br>160 | Crevasse                                       | 63         | Êtres du dessous<br>Éveil du bois                                     | 88<br>146  |
+| Brassage                                         | 160        | Cri de guerre du Druide                        | 87         | Exemples de grimoires                                                 | 165        |
+|                                                  |            |                                                |            |                                                                       |            |
+
+
+| F                                                |            | Invoquer un démon                                       | 31        | Motivations                                   | 210, 212   |
+|--------------------------------------------------|------------|---------------------------------------------------------|-----------|-----------------------------------------------|------------|
+<span id="page-224-0" data-folio="221"></span>| Fabriquer des composés simples                   | 50         | Ironie du Destin                                        | 99        | Mur de feu                                    | 137        |
+| Failles du Warp<br>Familier de combat            | 198<br>185 | Isolation                                               | 194       | Murmure de la nature                          | 88         |
+| Familier de sorts                                | 185        | Isoler des éléments de base                             | 50        | Musc de sanglier                              | 162        |
+| Familiers contre fabriqués                       | 181        | J                                                       |           | Mystères des Pierres, Les<br>Mystracine, La   | 204<br>47  |
+| Familiers et la Corruption, Les                  | 187        | Jack des Cendres                                        | 32, 174   |                                               |            |
+| Familiers et la maladie, Les                     | 187        | Jardins de Jade, Les                                    | 81        | N                                             |            |
+| Familiers et les États, Les                      | 187        | Jonctions saturées                                      | 198       | Nains, Les                                    | 69         |
+| Familiers                                        | 180-188    | Jonctions telluriques                                   | 197       | Ne buvez jamais l'eau                         | 201        |
+| Familiers, Classe et Statut                      | 185        | Jumeau maléfique                                        | 111       | Nectar de beauté                              | 162        |
+| Fauche-démon                                     | 64         | L                                                       |           | Nectar de véracité<br>Nectar de vitalité      | 162<br>162 |
+| Fausse idole                                     | 202        | Laboratoire alchimique portatif, Le                     | 50        | Nettoyage impeccable                          | 100        |
+| Faux blafarde, La                                | 120        | Lames d'Azur                                            | 99        | Noblesse, La                                  | 69         |
+| Faux croisées, Les                               | 30         | Lance d'Ambre, La                                       | 147       | Nouveau Talent : Assistant magique            | 186        |
+| Faux de Shyish, La                               | 124        | Langue bestiale                                         | 147       | Nouveau Talent : Empreint de (Vent)           | 186        |
+| Festin de sang, Le                               | 84         | Labyrinthe de Cristal, Le<br>Lente avancée du Furdienst | 124       | Nouveau Trait : Incantateur hasardeux         | 214        |
+| Fibule d'attraction non souhaitée, La            | 171        | sur les terres, La                                      | 215       | Nouveau Trait : Siphonnage de sort            | 214        |
+| Filet d'Amyntok                                  | 64         | Lentille céleste                                        | 99        | Nouvelles Carrières et                        |            |
+| Flamme fascinante                                | 136        | Lunes du chasseur, Les                                  | 147       | pratiques arcaniques                          | 35         |
+| Flamme inextinguible                             | 136        | Lever le voile                                          | 64        | Nouvelles Carrières                           | 35         |
+| Fléau d'attention non sollicitée, Le             | 172        | Lever une malédiction                                   | 33        | Nuit de la Valse noire, La                    | 16         |
+| Focalisation Critique                            | 22         | Libération de la mort                                   | 124       | Nuit des Mille Duels mystiques, La            | 17         |
+| Forêt d'épines                                   | 88         | Lier un esprit à une pierre de pouvoir                  | 33        | O                                             |            |
+| Forge de Chamon                                  | 75         | Lier une bête monstrueuse                               | 33        | Objets maudits                                | 170        |
+| Forge de Henoth, La<br>Forge de Tarnus, La       | 200<br>136 | Lignes de force naturelles et artificielles             | 193       | Obstination du bœuf                           | 148        |
+| Forme bestiale et autres                         |            | Linceul d'Invisibilité                                  | 112       | Obtenir aléatoirement                         |            |
+| sorts de transformation                          | 150        | Liqueur de rêve, La                                     | 46        | les nouvelles Carrières                       | 35         |
+| Forme bestiale                                   | 147        | Livres cachés de Chamon, Les                            | 165       | Ombre errante                                 | 112        |
+| Fournaise flétrissante                           | 136        | Livres de WA, Les                                       | 165       | Ombres étrangleuses                           | 112        |
+| G                                                |            | Lotion capillaire                                       | 162       | Optique, L'                                   | 50         |
+| Gardes du corps                                  | 177        | Lueur éblouissante                                      | 64        | Or des fous, L'                               | 76         |
+| Gardiens de maison                               | 177        | Lueur stellaire                                         | 99        | Orbe de Hysh                                  | 65         |
+| Geyser                                           | 88         | Lumière aveuglante                                      | 65        | Ordre de Jade, L'                             | 117        |
+| Globe doré de Gehenna                            | 76         | Lumière de guérison                                     | 65        | Ouvriers                                      | 178        |
+| Goût du feu                                      | 136        | M                                                       |           | P                                             |            |
+| Graisse de la terre                              | 88         | Magie du marais de Mòna                                 | 217       | Panacea Universalis                           | 162        |
+| Grand Cataclysme, Le                             | 8          | Magister Vigilant                                       | 42        | Parchemins                                    | 153        |
+| Grand Rituel, Le                                 | 9          | Magnétisme magique                                      | 67        | Parent sauvage de Zandox                      | 124        |
+| Grand Vortex, Le                                 | 8, 196     | Magnétisme                                              | 50        | Peau d'écorce et d'os                         | 218        |
+| Grands feux d'U'Zhul                             | 136        | Magnus et Teclis, et la fondation                       |           | Peau du chasseur                              | 148        |
+| Graver une pierre d'ogham                        | 31         | des Collèges de Magie                                   | 12        | Pelage d'hiver                                | 148        |
+| Gregor Martak                                    | 144        | Mains de Karkora                                        | 65        | Pensée rapide                                 | 65         |
+| Griffonnages évocateurs                          | 202        | Maître de la bête<br>Maîtres du savoir de Saphery, Les  | 147<br>59 | Persécution des Sorciers<br>avant Magnus, La  | 10         |
+| Grimoires aléatoires                             | 166        | Maladresse de Focalisation                              | 22        | Persécution, La                               | 10         |
+| Grimoires et Rituels                             | 27         | Malédiction d'Anraheir                                  | 148       | Perte de mémoire                              | 112        |
+| Grimoires                                        | 19, 164    | Malédiction de la rouille                               | 76        | Perturber la Magie                            | 26         |
+| H                                                |            | Malédiction du Destin                                   | 100       | Pierres de Barbaneagra, Les                   | 204        |
+| Hache de fureur incessante, La                   | 172        | Malepierre                                              | 22        | Pierres de pouvoir                            | 167        |
+| Halo purificateur                                | 64         | Manigances mortelles                                    | 7         | Pierres du tertre, Les                        | 178        |
+| Héritiers de la Flamme, Les                      | 129        | Manteau miroitant                                       | 65        | Pierres gardiennes (corruption)               | 28, 197    |
+| Histoire, le savoir et la pratique de la Magie   |            | Marchand et le voleur, Le                               | 218       | Pierres gardiennes                            | 193        |
+| dans l'Empire, L'                                | 6          | Marine impériale, La                                    | 93        | Pince-sorciers, Le                            | 109        |
+| Holzkrugs, Les                                   | 108        | Matérialiser le marais-vivant                           | 33        | Piqûres de moustiques                         | 217        |
+| Hommes-bêtes du dessous, Les                     | 144        | Maudit                                                  | 100       | Pistolet de solitude involontaire, Le         | 172        |
+| Horreurs noires                                  | 111        | Mauvais œil                                             | 217       | Plume de plomb                                | 77         |
+| Hurricanum Céleste, L'                           | 95         | Mécénat d'Ashamira Dib, Le                              | 60        | Poches profondes                              | 113        |
+| I                                                |            | Mécénat d'Elspeth von Draken, Le                        | 120       | Poids des années                              | 124        |
+| Illusion grandiose                               | 111        | Mécénat d'Immanuel-Ferrand                              |           | Poings d'ignominie, Les                       | 172        |
+| Illusion rétroactive de Ribauld                  | 112        | Holswig-Schliestein, Le                                 | 108       | Pont des ombres                               | 113        |
+| Illusion                                         | 111        | Mécénat de Balthasar Gelt, Le                           | 73        | Portail d'Ombre                               | 113        |
+| Immanuel-Ferrand Holswig-Schliestein             | 108        | Mécénat de Gregor Martak, Le                            | 144       | Portails magiques                             | 198        |
+| Importante tâche des Scribes, L'                 | 212        | Mécénat de Raphael Julevno, Le                          | 97        | Possessions                                   | 186        |
+| Imprégner un bâton                               | 31         | Mécénat de Sergov Pfeiffer, Le                          | 132       | Potion d'invisibilité                         | 163        |
+| Incantation Critique<br>Incantations Imparfaites | 20<br>20   | Membre flétri<br>Mémoriser des Sorts                    | 124<br>19 | Potion de divination                          | 163        |
+| Incarnation de Wyssan                            | 147        | Message confondant                                      | 133       | Potion de Focalisation<br>Potion de puissance | 163<br>163 |
+| Influences malveillantes                         | 22         | Métal changeant                                         | 77        | Potion de vol                                 | 163        |
+| Ingrédients                                      | 160        | Méthode essai-erreur                                    | 76        | Potions magiques                              | 154        |
+| Inscription                                      | 76         | Miasme mystifiant                                       | 112       | Poudre alchimique de Leonardo                 | 53         |
+| Intention inspirée                               | 64         | Miroir mystique                                         | 100       | Pour l'amour de la poudre                     |            |
+| Interruptions                                    | 22         | Mistral de la stratosphère                              | 100       | et de la fumée                                | 37         |
+| Invasion, L'                                     | 12         | Mort rapide                                             | 124       | Prédateur sanglant, Le                        | 32, 176    |
+|                                                  |            |                                                         |           |                                               |            |
+
+
+<span id="page-225-0" data-folio="222"></span>| Prédiction prodigieuse                    | 100     | Shyish à découvert                      | 125      | U                               |     |
+|-------------------------------------------|---------|-----------------------------------------|----------|---------------------------------|-----|
+| Premier Signe d'Amul, Le                  | 100     | Silence                                 | 27       | Un petit cou pour la route ?    | 84  |
+| Prémonition                               | 101     | Skavens                                 | 107      | Un vent céleste                 | 91  |
+| Prisme de pouvoir                         | 53      | Soldats                                 | 107, 178 | Un vent mourant                 | 115 |
+| Produits alchimiques                      | 51      | Sombre apprentie, La                    | 219      | Une dispute en boucle           | 191 |
+| Projectiles magiques                      | 20      | Sorciers de village, Les                | 83       | Une lueur d'espoir              | 57  |
+| Projection astrale                        | 101     | Sorts de contact en combat              | 21       | Une némésis nommée              |     |
+| Propriétés des pierres de pouvoir         | 167     | Sorts prémonitoires                     | 46       | Egrimm Van Horstmann            | 210 |
+| Propriétés des pierres gardiennes         | 194     | Stupéfiants (autres)                    | 47       | Une philosophie du commandement | 105 |
+| Protection de Phâ                         | 65      | Substance de l'Ombre                    | 113      | Une vieille tradition           | 43  |
+| Protections de fer météorique             | 77      | Substances caustiques ou corrosives     | 50       | V                               |     |
+| Puits de Tarnus                           | 113     | Suivre le fumet                         | 148      | Vaporisation de musc            | 149 |
+| Purification                              | 137     | Sur liste noire                         | 132      | Varech avarié                   | 27  |
+| Q                                         |         | Sur mesure                              | 145      | Vent Lumineux, Le               | 54  |
+| Quand avez-vous votre                     |         | Surincantation                          | 23       | Vent Céleste, Le                | 90  |
+| père pour la dernière fois ?              | 96      | Symbolisme de l'Ordre Céleste           | 91       | Vent d'Ambre, Le                | 138 |
+| Que soufflent les Quatre Vents !          | 101     | Symbolisme de l'Ordre d'Améthyste       | 115      | Vent Gris, Le                   | 102 |
+| Quelle taille ont-ils ?                   | 180     | Symbolisme de l'Ordre de Jade           | 79       | Vent Doré, Le                   | 66  |
+| R                                         |         | Symbolisme de l'Ordre Doré              | 67       | Vent d'Améthyste, Le            | 114 |
+| Raphael Julevno                           | 96      | Symbolisme de l'Ordre Flamboyant        | 127      | Vent Flamboyant, Le             | 126 |
+| Recrutement des Collèges de Magie, Le     | 15      | Symbolisme de l'Ordre Gris              | 103      | Vent de Jade, Le                | 78  |
+| Redoutable (Trait de créature)            | 176     | Symbolisme de l'Ordre Lumineux          | 55       | Vente aux enchères, La          | 218 |
+| Reflet du passé, Le                       | 206     | T                                       |          | Ver frétillant                  | 149 |
+| Réfraction prismatique de Habermas        | 77      | Tableau d'Augure                        | 45       | Vitesse de Lykos                | 125 |
+| Réfraction                                | 194     | Tableau d'Incantation                   |          | Voie de Paranoth, La            | 89  |
+| Régénération                              | 89      | Imparfaite de grimoire                  | 165      | Voile violet de Shyish          | 125 |
+| Régiment monstrueux de Merciw             | 148     | Tableau de mouvements du vortex         | 21       | Vol de vie                      | 125 |
+|                                           |         | Tableau des Symboles                    | 45       | Vol du Destin                   | 149 |
+| Règles d'Incantation                      | 190-192 | Teclis                                  | 12       | Vortex aléatoires               | 20  |
+| Règles environnementales                  | 192     | Télépathie                              | 125      | Vortex d'âmes                   | 125 |
+| Relevé tellurique                         | 191     | Tempête de flammes                      | 137      | Voués au monde sauvage          | 141 |
+| Rencontrer Mòna                           | 216     | Tempête de magma                        | 137      | Voyage vers l'Est               | 96  |
+| Réparer du métal                          | 77      | Tempête de Shemtek                      | 101      |                                 |     |
+| Repousser les Vents                       | 22      | Test d'Incantation                      | 20       | Y                               |     |
+| Reproduction de Levorg                    | 77      | Test de Focalisation                    | 22       | Yeux de la meute                | 149 |
+| Répurgateurs, Les                         | 59      | Tête enflammée                          | 137      | Yeux de Volans                  | 65  |
+| Restrictions à l'incantation              | 21      | Thaumodivinator, Le                     | 46       |                                 |     |
+| Résumé des phénomènes arcaniques          | 199     | Toile Géomantique, La                   | 197      |                                 |     |
+| Réunir des ingrédients                    | 34      |                                         |          |                                 |     |
+| Révolutionnaires, Les                     | 69      | Tome de pouvoir de Krampi, Le           | 165      |                                 |     |
+| Risque de détérioration d'une potion      | 156     | Tonifiant de lucidité                   | 163      |                                 |     |
+| Rituels                                   | 27      | Tornade de Thorsen                      | 101      |                                 |     |
+| Rivalité fraternelle                      | 43      | Tourner en rond                         | 217      |                                 |     |
+| Robes de sorcier                          | 151     | Tout feu, tout flamme                   | 132      |                                 |     |
+| Rôle et responsabilités                   | 39      | Traces et empreintes de l'Ordre d'Ambre | 139      |                                 |     |
+| Rose améthyste, La                        | 206     | Trait de créature Magique, Le           | 187      |                                 |     |
+| Royaume du Sorcier, Le                    | 7       | Traître de Tarn                         | 113      |                                 |     |
+| S                                         |         | Transe ambrée                           | 148      |                                 |     |
+| Sablier de la Mort, Le                    | 121     | Transformation de Kadon                 | 149      |                                 |     |
+| Sabotage de la forge d'Henoth, Le         | 201     | Transformation en arbre                 | 89       |                                 |     |
+| Sanctifier                                | 125     | Transmutation de Chamon                 | 77       |                                 |     |
+| Sang bouillant                            | 137     | Transmutation fantasmagorique           |          |                                 |     |
+| Sang de la terre                          | 89      | de Colchis                              | 89       |                                 |     |
+| Scribes Bleus en tant qu'adversaires, Les | 214     | Traversée rapide                        | 149      |                                 |     |
+| Seconde vue                               | 19      | Troisième Signe d'Amul, Le              | 101      |                                 |     |
+| Secourir un serviteur magique             | 26      | Trouver des lignes de force telluriques | 89       |                                 |     |
+| Secrets de la vallée, Les                 | 206     | Trouver un client                       | 50       |                                 |     |
+|                                           |         | Tumulte de demain, Le                   | 96       |                                 |     |
+| Sergov Pfeiffer                           | 132     |                                         |          |                                 |     |
+
+Serres d'ambre 148
+
+
+# LICENCE MAGIQUE
+
+<span id="page-226-0" data-folio="223"></span>Selon la loi telle que stipulée dans les Articles de l'Ordonnance impériale sur la Magie, au nom de l'Empereur Karl-Franz I, Protecteur de l'Empire, Rempart de lumière, Empereur et fils d'Empereurs, de la bienveillante gouvernance du Grand Théogoniste Yorri XV et sous la sagesse du Patriarche Suprême Thyrus Gormann, qui parle au nom de tous les Patriarches des Collèges impériaux de Magie, une licence pour pratiquer la magie dans les limites de l'Empire et au-delà, et avec l'autorisation explicite des autorités susmentionnées, est accordée à :
+
+du prestigieux . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . nom du sorcier ici . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ordre du sorcier ici
+
+# pour la période de TROIS ANS et UN JOUR à compter du jour auquel cette licence est cachetée et signée, date à laquelle elle doit être renouvelée.
+
+Le Magister susmentionné est libre de pratiquer, d'étudier, de se documenter et d'expérimenter les forces arcaniques de la magie présentes en ce monde, sous réserve qu'il se conforme rigoureusement aux Articles de l'Ordonnance impériale sur la Magie. Il peut procéder ainsi dans les limites permises par les lois et idéaux du Saint Empire de Sigmar et son Empereur légitimement élu, le Patriarche Suprême des Collèges de Magie, les lois et idéaux de son ordre, le Patriarche de son ordre, les autorités qui peuvent demander à tout Magister de servir dans le cadre de son exercice et les supérieurs au sein de son ordre.
+
+Le Magister susmentionné ne peut ni renverser ni entraver avec une intention malveillante ou en vue d'un bénéfice financier ou politique les décisions de l'Empereur, des Électeurs ou de leurs institutions et agents attitrés.
+
+Le Magister susmentionné doit présenter cette licence à la demande des autorités en charge et être prêt à répondre à toute question concernant ses termes ou ceux des Articles de l'Ordonnance impériale sur la Magie.
+
+Il peut être exigé du Magister susmentionné de rendre de justes services aux autorités impériales face aux manigances, pratiques, créatures et individus anti-impériaux et destructeurs dont les moyens dépassent ceux des autorités civiles. En de telles circonstances, tous les Magisters sont en droit d'attendre l'hébergement, les avantages, la déférence et l'égalité de traitement qui siérait à tout noble du Saint Empire de Sigmar.
+
+Les Magisters sont soumis à toutes les directives des représentants du Culte de Sigmar.
+
+Le Magister susmentionné est autorisé à conclure un contrat de travail auprès de tout individu ou organisation, civile ou religieuse, publique ou privée, nobiliaire ou mercantile, sous réserve qu'il ne contrevienne pas aux termes établis par cette licence ou aux Articles de l'Ordonnance impériale sur la Magie et que son employeur ne soit pas un ennemi du Saint Empire de Sigmar ou de son peuple.
+
+La Magister susmentionné a défense de promouvoir ou d'étudier les Domaines interdits des Pouvoirs démoniaques, pas plus que les pratiques impies de la Nécromancie ou de toute autre forme de sorcellerie utilisant les énergies maléfiques de la Magie noire. Tout Magister surpris en train de contrevenir à cet Article est coupable d'un Acte abominable et est à la fois Hérétique et Traître, et sujet à un châtiment approprié.
+
+La présente licence peut être retirée par toute autorité publique attitrée en produisant des preuves de manigances anti-impériales ou de pratiques illégales de la magie mentionnées plus haut, mais ne se limitent pas à celles-ci. L'abus de cette révocation est sujet à un châtiment au nom de l'Empire, confié à l'Ordre du Marteau d'argent.
+
+La présente licence, une fois publiée, ne peut être amendée. La présente licence ne peut être détenue que par le Magister susmentionné, son supérieur ou une tierce personne attitrée. Sa possession entre les mains d'autres individus est répréhensible par une amende, un châtiment corporel ou la peine de mort.
+
+ . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . Signé ce jour
+
+Magister-Secrétaire Wilhelm Van Der Rijn, Tour de Volans
+
+
+## [ADE II 1] Mercenaires ogres dans le Vieux Monde
+
+*Pages PDF 8-16*
+
+## **MERCENAIRES OGRES DANS LE VIEUX MONDE**
+
+<span id="page-7-0" data-folio="6"></span>Il n'existe aucun récit historique précis dans l'Empire, faisant état de la première fois où un ogre a été aperçu errant depuis ses terres lointaines de l'est jusque dans le Vieux Monde. Les archives conservées dans les quelques karaks restants des Montagnes du Bord du Monde (et certainement dans les Livres des rancunes des nains) indiquent que les tribus nomades d'ogres ont commencé à attaquer les possessions naines les plus à l'est environ deux mille ans avant la fondation de l'Empire. Au cours des siècles suivants, de nombreux récits ont été consacrés aux ogres errants, à leurs incroyables aptitudes au combat et, surtout, à leur appétit insatiable. Les annales de la genèse de l'Empire indiquent que Sigmar luimême a occasionnellement utilisé, et fréquemment combattu, des ogres au cours de diverses batailles. Les mercenaires ogres ont pris part à la quasi-totalité des combats impériaux majeurs depuis l'époque de Sigmar, se retrouvant souvent des deux côtés des plus grandes batailles, en particulier celles contre les peaux-vertes. Toutes les terres situées à l'ouest des Montagnes du Bord du Monde sans exception ont connu le lourd pas des ogres à un moment donné de leur histoire.
+
+#### Z'ONT PRIS MON HALFLING !
+
+0 Grobide parcourt l'Empire depuis plusieurs années maintenant, et il a plus ou moins appris à vivre parmi les minus. Il ne mange pas ce qui ne lui appartient pas, échange des métaux brillants contre de la nourriture savoureuse et garde toujours un halfling dans les parages en cas de besoin. Malheureusement pour lui, Grobide a récemment rencontré quelques difficultés sur ce dernier point. Pandry Cendreplaine, sa dernière cuisinière en date, a disparu il y a plusieurs nuits et Grobide cherche désespérément à la retrouver. Les habitants de la ville sont tout aussi désespérés, car, dans ses recherches, l'ogre a mis la ville sens dessus dessous. En réalité, Pandry a été enlevée par un autre ogre, Manche la Combine, qui l'a traînée dans une grotte voisine afin qu'elle prépare ses repas. La ville risque bien d'être dévastée par les deux ogres s'ils en viennent aux mains. Et pour couronner le tout, Pandry a perdu toute envie de travailler avec les ogres. Les Personnages parviendront-ils à empêcher cette marmite en ébullition d'exploser ?
+
+## **Buffet <sup>à</sup> volonté**
+
+Les ogres sont par nature des bagarreurs nomades qui voyagent sur de vastes étendues et se battent fréquemment, au gré de leur humeur. Les rares érudits impériaux qui se donnent la peine d'étudier le sujet suggèrent qu'il s'agit davantage d'une question de survie qu'autre chose. En effet, l'appétit vorace des tribus d'ogres ne fait qu'épuiser les denrées des régions qu'elles parcourent, ce qui les oblige à se déplacer constamment à la recherche de quelque chose à se mettre sous la dent. Mais ce phénomène n'explique pas pour autant l'intense désir de voyage qui anime de nombreux ogres un jour ou l'autre.
+
+Pour une raison qu'eux-mêmes ignorent, certains ogres demeurent insatisfaits tant qu'ils n'ont pas pu apercevoir (et probablement goûter) ce qui se trouve au-delà du prochain horizon. Si on leur demande pourquoi ils ont ressenti le besoin d'errer si loin de leur patrie, les ogres, peu enclins à l'introspection même dans les meilleurs moments, répondent généralement quelque chose du genre *« j'avais juste envie de me promener »*. Bien des ogres voyageurs déclarent qu'ils retourneront sur leurs terres à l'est « *un jour* », ce qui pourrait ne pas arriver avant plusieurs dizaines d'années.
+
+Les ogres finissent souvent par être attirés par la carrière de mercenaire, car la vie de soldat répond admirablement à nombre de leurs besoins et autres penchants. Après tout, ils vivent pour se battre et pour manger (mais pas nécessairement dans cet ordre). La vie d'un mercenaire ogre le conduit de bataille en bataille, et le combat contre de terribles adversaires offre la perspective de grands festins aux survivants. Les ogres trouvent presque miraculeux que tant de minus soient prêts à les payer pour ce qu'ils font plus ou moins gratuitement sur leurs propres terres.
+
+Ceux qui deviennent des bandits ou des pillards, s'en tenant à un mode de vie qui prévaut sur leurs terres, finissent par s'attirer les foudres des autorités des différents pays du Vieux Monde qui les pourchassent dans le seul but de les éliminer. Des bandes de mercenaires ogres se spécialisent même dans la traque (et la consommation) de leurs propres congénères. Cela étant, certains ogres mercenaires n'hésitent pas à se lancer dans des pillages s'ils pensent pouvoir s'en tirer. Bénéficier d'« *un combat contre un repas* » est une tentation à laquelle peu d'entre eux résistent si la mission semble faisable. Cependant, ils sont assez perspicaces quant à la manière dont les autorités locales sont susceptibles de réagir, c'est pourquoi ils planifient leurs activités en conséquence.
+
+
+<span id="page-8-0" data-folio="7"></span>Les contrats des mercenaires sont négociés et leur durée est généralement limitée, ce qui permet aux ogres de passer à autre chose s'ils en ressentent le besoin. Les mercenaires itinérants trouveront presque toujours un nouveau combat à mener, alors que les sédentaires n'auront pas l'occasion de se battre aussi souvent. L'une des principales raisons pour lesquelles les ogres sont prêts à travailler pour les peaux-vertes est leur propension à se battre constamment. Mais ils s'en méfient tout de même, car ils ne respectent pas toujours leur part du marché. Dans le langage des ogres, les orcs et les gobelins ne *« savent pas toujours bien servir à table »*.
+
+Dans l'Empire, les mercenaires ogres sont souvent connus sous le nom de Mangeurs d'hommes, d'après un mercenaire tristement célèbre du même nom. Les Mangeurs d'hommes voyagent généralement seuls ou en petits groupes. Il leur est ainsi possible de subvenir à leurs besoins plus facilement, car trouver de la nourriture pour une « poignée de gaillards » s'avère plus simple que pour une grande tribu. De plus, ils ont appris il y a fort longtemps que les minus deviennent terriblement nerveux lorsque trop d'ogres se rassemblent au même endroit. Et qui dit clients craintifs dit pas de travail, ce qui n'arrange pas leurs affaires et mène à des assiettes vides : un vrai désastre pour un ogre digne de ce nom.
+
+## **Des assiettes bien remplies**
+
+Les ogres s'adaptent extrêmement bien à différentes cultures. Ils se font facilement aux us et coutumes de leur pays d'adoption, bien qu'ils comprennent rarement les nuances les plus subtiles, si tant est qu'ils y prêtent attention. L'essentiel de la culture tribale des ogres se résumant à la loi du plus fort, presque tout ce qu'ils apprennent en dehors des Royaumes ogres est nouveau pour eux, ce qui a tendance à les fasciner. Les mercenaires ogres adoptent volontiers les tenues ainsi que le style de combat des troupes aux côtés desquelles ils se rangent. Par exemple, les mercenaires ogres de l'Empire portent parfois un méli-mélo des couleurs des armées des différentes provinces ou cités-États pour lesquelles ils combattent habituellement. Ceux qui connaissent la fortune aiment fourrer des pistolets surdimensionnés dans leur large ceinture, aux côtés du reste de leur attirail.
+
+Cette capacité d'adaptation s'avère très utile lorsqu'il s'agit de trouver du travail, quête permanente des ogres. Mais quelle que soit la facilité avec laquelle il apprend à s'intégrer au sein d'autres cultures, un ogre n'en demeure pas moins un ogre. Où qu'ils se trouvent, les mercenaires ogres ont deux préoccupations : d'où va venir leur prochain repas et leur réputation de combattants. Ils ont beau rire de bon cœur lorsque quelqu'un tente de les railler (ou peut-être qu'ils ne comprennent tout simplement pas), les ogres ne sauraient tolérer les insultes concernant leurs prouesses en matière de combat ou de nourriture. Pour un mercenaire ogre, la réputation mène au travail et le travail mène à la viande. Ils considèrent les atteintes à leur réputation comme des insultes mortelles car, si elles restent sans réponse, elles peuvent les amener à manger moins, c'est pourquoi ils seront toujours prompts à recourir à la violence.
+
+Les autres espèces du Vieux Monde ne comprennent pas à quel point l'obsession des ogres pour la nourriture est intense. Elle régit leur vie et détermine leur rythme de sommeil. Alors même qu'un ogre est en train de finir son repas, il pense déjà au prochain et peut devenir anxieux quant aux détails de son acquisition. Les ogres ne naissent pas seulement avec une petite fringale : ils sont littéralement affamés. Ce n'est pas un hasard si le dieu ogre, la Gueule, est un estomac sans fond. Les mercenaires ogres les plus malins apprennent rapidement à minimiser l'expression de leur faim en présence de minus, car ils se rendent bien compte que cette attitude rend tout le monde nerveux. Ils précisent alors qu'ils ont juste *« un petit creux »*. Bien sûr, il leur arrive de vouloir mettre délibérément les minus mal à l'aise, une tactique de négociation que de nombreux ogres utilisent à leur avantage.
+
+
+## <span id="page-9-0" data-folio="8"></span>**UNE INDEMNISATION SAVOUREUSE**
+
+Ce n'est un secret pour personne : entretenir des mercenaires ogres coûte cher. Ces derniers demandent souvent des salaires élevés et des repas réguliers, ainsi que le droit d'obtenir des « rations de combat » après la bataille. Mais il arrive que certaines de ces « rations » ne soient pas tout à fait mortes lorsque les ogres commencent leur moisson. Les soldats expérimentés savent qu'il vaut mieux achever leurs amis avant que les ogres ne viennent les chercher.
+
+Bien que les ogres comprennent parfaitement la valeur de l'or, très peu d'entre eux s'intéressent à l'argent ou au bronze, à l'exception de ceux qui ont vécu ou travaillé dans les cités-États de l'Empire pendant un certain temps. Les mercenaires ogres sont bien plus enclins à accepter un combat difficile pour deux couronnes d'or plutôt que pour soixante pistoles d'argent. De même, la paye standard des mercenaires ogres expérimentés engagés sur le long terme est d'une couronne d'or par jour, plus les rations régulières, qui comprennent l'équivalent d'au moins un tiers de vache et un tonneau de bière chaque soir. Une vache décente coûte environ deux couronnes, et un fût de bière trois pistoles, ce qui signifie que l'entretien d'un mercenaire ou d'un garde du corps ogre compétent coûtera à son employeur environ une couronne d'or par jour en plus de sa paye. C'est le strict minimum, étant donné que l'ogre moyen peut consommer beaucoup plus s'il en a l'occasion (et il ne se gênera pas pour le faire).
+
+Fort heureusement, les mercenaires ogres attendent rarement une prime pour le « *danger encouru* ». Après tout, c'est exactement ce pour quoi ils se sont engagés. Cependant, comme de nombreuses troupes, ils s'attendent à une contrepartie lorsqu'on leur demande de se battre contre les morts-vivants et les forces démoniaques des Dieux du Chaos. Toutefois, leurs raisons varient légèrement de celles des autres mercenaires : ils ne se soucient pas du fait que ces forces soient effrayantes, mais sont contrariés, car ils ne peuvent pas se repaître de leur chair. En effet, la viande des morts-vivants est avariée et les démons ne laissent rien derrière eux lorsqu'ils sont tués.
+
+### LE FAUX BARON DU CRIME
+
+0 Hans Buttlemur, un commerçant à l'avenir prometteur, a un problème. Après une altercation avec une bande de racketteurs, il a eu l'idée formidable d'engager un garde du corps ogre pour dissuader quiconque de menacer son commerce. Au début, tout s'est déroulé sans encombre, mais les complications se sont rapidement accumulées lorsque Hans a réalisé combien il lui en coûterait de nourrir et satisfaire Morgn'n'tharn. Une chose en entraînant une autre, et avec l'aide et les encouragements de son nouvel employé, Hans a pris le contrôle du gang des extorqueurs, de leurs plus grands rivaux et même d'une large partie du réseau criminel local. L'ogre est ravi de cette situation, car son époque de vache maigre est révolue. Hans, de son côté, est moins confiant. Le marchand et baron du crime, dépassé par les événements, serait reconnaissant si les Personnages pouvaient le sortir de ce pétrin. Morgn'n'tharn, quant à lui, sera plus que satisfait de placer une autre marionnette au sommet de son empire criminel si les Personnages parvenaient à lui présenter un candidat convaincant.
+
+Ce n'est pas parce que les ogres mangent des choses qui feraient vomir un bouc qu'ils apprécient la viande de piètre qualité. Le peu de nourriture qu'ils peuvent tirer d'un tel repas suffit seulement à atténuer les affres de la faim. Les ogres apprécient grandement la « boustifaille de qualité » et acceptent même d'être payés moins s'ils peuvent en obtenir régulièrement. Les mercenaires ogres à qui l'on propose les services d'un cuisinier halfling compétent sont plus que ravis, prêts à se lancer dans des défis invraisemblables avec un grand sourire. S'ils traitent régulièrement avec des mercenaires ogres, les commandants minus finissent par découvrir que ceux-ci obéissent plus facilement à leurs ordres et font de leur mieux pour faire ce qu'on leur demande dès lors qu'ils sont bien nourris.
+
+### ENGAGER UN OGRE
+
+Les prix indiqués ne comprennent pas la nourriture, qui représente un supplément de 10/- par jour si elle est achetée chez un boucher réputé. Cependant, les ogres étant prêts à manger tout ce qui a un jour été en vie, les Personnages entreprenants peuvent trouver d'autres moyens de nourrir leurs camarades ogres.
+
+| Mercenaire     | Tâche rapide | Coût journalier | Coût hebdomadaire | Remarques                                                                            |  |
+|----------------|--------------|-----------------|-------------------|--------------------------------------------------------------------------------------|--|
+| Ouvrier        | 2/–          | 6/–             | 2 CO              | Il est conseillé de s'en tenir aux travaux<br>impliquant des denrées non comestibles |  |
+| Mercenaire     | 6/–          | 1 CO            | 6 CO              | Loyal tant que la nourriture est disponible                                          |  |
+| Garde du corps | 8/–          | 1 CO 6/–        | 8 CO              | Peut détecter la nourriture empoisonnée, mais a<br>tendance à finir le plat          |  |
+
+
+## <span id="page-10-0" data-folio="9"></span>**S'en mettre plein les joues**
+
+Les commandants inexpérimentés trouvent que les mercenaires ogres sont, au mieux, très difficiles à gérer. Ces derniers ont tendance à se quereller, se montrent particulièrement paresseux, aiment s'attirer des ennuis, menacer les autres et déclencher des bagarres, entre autres. Aussi grand et menaçant que puisse être un minus, il lui est pratiquement impossible d'intimider un ogre pour le forcer à faire quelque chose qui ne l'intéresse pas. À moins qu'ils ne viennent de vivre une ou plusieurs batailles sanglantes et qu'ils ne soient (temporairement) en train de se délecter de leurs « rations de combat », les ogres n'hésitent pas à demander des provisions supplémentaires. Pour y remédier, de nombreux commandants engagent un capitaine ogre accompagné de ses troupes : de cette manière, ils ne traitent qu'avec un seul ogre à la fois, en espérant pouvoir préserver leurs propres soldats. Les officiers les plus avisés apprennent également à tourner les « priorités » de leurs mercenaires ogres à leur avantage. Par exemple, les stratèges myrmidiens emploient des ruses qui consistent à suggérer qu'un régiment ennemi pourrait se préparer à attaquer les chariots de ravitaillement. Ainsi, les ogres font presque invariablement tout leur possible pour chercher l'ennemi en question dans le but de l'anéantir.
+
+Compte tenu des difficultés et des grandes dépenses que cela implique, pourquoi donc s'évertuer à engager des mercenaires ogres ? Tout simplement parce que, le moment venu, ils excellent dans leur domaine : annihiler leurs adversaires. Dire que les ogres vivent pour se battre est un euphémisme. Nés d'une culture qui fait des conflits violents et réguliers un mode de vie, les ogres ne sont pas seulement doués pour le combat : ils adorent ça. Les mercenaires ogres les plus expérimentés ont d'ailleurs vu leurs compétences affinées par des combats incessants contre une grande variété d'adversaires, ce qui les a rendus encore plus impitoyables.
+
+Les mercenaires ogres sont connus pour leur empressement à se mesurer même aux ennemis les plus redoutables sans la moindre hésitation. Si les ogres sont capables de ressentir la peur (notamment lorsqu'ils sont confrontés à des ennemis surnaturels particulièrement terrifiants), ils la considèrent plus comme une sensation pénible dont ils se débarrassent rapidement que comme un réel obstacle au combat. L'histoire de l'Empire regorge de récits de mercenaires ogres faisant face à des adversités presque insurmontables, chargeant de toute leur rage alors que d'autres troupes auraient certainement battu en retraite. Les érudits suggèrent que ce serait dû à leur incapacité à calculer leurs chances de survie. Quoi qu'il en soit, l'armée impériale les utilise depuis longtemps comme un rempart autour duquel les autres troupes peuvent se
+
+*Être ou ne pas être un ogre Soit, « les ogres sont bruyants, cupides, vantards, fougueux, colériques et belliqueux », mais très honnêtement, nous avons tous rencontré des humains partageant ces traits de caractère, dont beaucoup sont des nobles, soit dit en passant. Je ne peux pas dire que j'en ai connu beaucoup de mon vivant, mais j'ai toujours eu un faible pour ces créatures. J'ai déjà mentionné Megg Roth, la domestique de ma tante, une merveilleuse ogresse. Bien qu'un peu maladroite, elle racontait les histoires comme personne. Je dois admettre que j'envie un peu les ogres : imaginez être de cette envergure et avoir la liberté de voyager où le vent vous porte. Où iriez-vous ? Et j'ajouterais à cela que certains ogres sont instruits !*
+
+Grâce à leur talent naturel pour l'intimidation, les mercenaires ogres font souvent office de garde du corps ou de gros bras pour des groupes criminels. La perspective d'affronter un ennemi de près de deux fois votre taille, qui vous découpera en morceaux avant de vous dévorer, suffit à décourager les plus braves. À l'exception de quelques rares cas, comme les tueurs nains, aucun soldat ne se réjouit d'affronter un ogre au combat. Certains employeurs engagent même des mercenaires ogres pour priver leurs ennemis de cette possibilité. Les mercenaires ogres ont servi dans de nombreuses guerres civiles qui ont opposé les provinces de l'Empire. On peut les trouver en Tilée à tout moment, où ils vont et viennent entre les forces des cités-États aussi rapidement que les anciens contrats expirent et que les nouveaux sont rédigés.
+
+rallier pour affronter les ennemis les plus
+
+menaçants.
+
+
+#### CHRONOLOGIE DES ÉVÉNEMENTS MARQUANTS CONCERNANT LES MERCENAIRES OGRES
+
+<span id="page-11-0" data-folio="10"></span>Toutes les dates indiquées correspondent au calendrier impérial, car les ogres n'ont guère besoin de se situer dans le temps, sauf pour savoir quand aura lieu leur prochain repas. Nombre d'entre eux connaissent plus ou moins ces événements et seraient capables de les remettre dans l'ordre, mais ils considèrent l'histoire comme quelque chose qu'il vaut mieux laisser au passé.
+
+#### -1957 CI
+
+Les royaumes nains situés le long des Montagnes du Bord du Monde découvrent, à leur grande surprise, que les ogres qui attaquent leurs terres ne sont intéressés ni par l'or ni par les bijoux. Ils en ont plutôt après la bière, la nourriture et les nains eux-mêmes...
+
+### C. –300 CI
+
+Les tribus humaines des terres qui deviendront par la suite l'Averland apprennent à négocier les services militaires des ogres errants en leur offrant du bétail ainsi que le premier choix de « butins de combat ». Les ogres s'avèrent utiles lors des batailles, mais trop chers pour être entretenus longtemps.
+
+### 1-30 CI
+
+L'Empire nouvellement fondé est mis à l'épreuve par de nombreux et terribles ennemis. L'empereur Sigmar trouve le penchant belliqueux des mercenaires ogres extrêmement utile, ils deviennent donc rapidement un élément indispensable aux forces impériales. Les ogres, de leur côté, trouvent que « *Sigmar, le grand minus, sait recevoir à sa table* », le plus grand éloge jamais fait aux employeurs humains.
+
+#### 475 CI
+
+Une horde de peaux-vertes se rassemble petit à petit pour envahir la Tilée depuis les Principautés Frontalières. Les Tiléens, désespérés et dépourvus d'armée permanente, rassemblent rapidement autant de mercenaires qu'ils peuvent à travers le Vieux Monde, y compris de nombreux groupes d'ogres. Lors de la légendaire bataille de Pugno, les mercenaires mettent en déroute la horde de peaux-vertes, changeant à jamais la Tilée et sa future doctrine militaire.
+
+#### 542 CI
+
+À l'apogée de sa centième victoire dans la fosse, le Puissant Marn le Broyeur a soudain une révélation : il n'est pas obligé de manger son adversaire déchu. Cette idée est rapidement suivie d'une autre tout aussi percutante : des créatures de tous horizons pourraient être introduites dans la fosse, ce qui donnerait lieu à des combats éclectiques et à une grande variété de victuailles. Dans un premier temps, beaucoup pensent que Marn a simplement pris un coup de trop sur la tête, mais ses idées finissent par faire leur chemin, y compris chez les minus, changeant à jamais les combats de gladiateurs.
+
+#### 1123-1124 CI
+
+Après des années de combat désespéré contre les skavens, le comte Mandred du Middenland engage des bandes d'ogres pour l'assister dans sa lutte. Ces derniers ont prouvé leur valeur à maintes reprises, en massacrant d'innombrables skavens et en se régalant sans cesse des butins obtenus sur le champ de bataille. Après la bataille finale, le capitaine ogre Nogrud L'Insatiable refuse la nourriture obtenue au combat : « *J'en ai marre de bouffer du rat, les minus* » et opte pour un petit troupeau de bovins et quelques chevaux à la place.
+
+#### 1525-1528 CI
+
+Suite aux déprédations de Gorthor le Cruel, le plus infâme de tous les Seigneurs des bêtes, les provinces d'Ostland et du Hochland ont été pratiquement détruites. Des années après cette défaite, beaucoup des bêtes rassemblées au sein de l'armée de Gorthor errent toujours dans la Forêt des Ombres. Une immense chasse est organisée dans la forêt, et bien que les récompenses promises n'aient fait qu'augmenter, peu de gens sont enclins à se lancer dans cette mission, car la forêt est bien trop effrayante. Un grand groupe de chasseurs ogres finit par relever le défi. Pendant plusieurs années, ils reviennent régulièrement des profondeurs de la forêt avec des centaines de crânes partiellement rongés pour collecter leurs primes.
+
+#### 1712 CI
+
+La WAAAGH! Gorbad ! est finalement vaincu face aux impénétrables murs d'Altdorf. Bien que la victoire finale soit due à un effort collectif, les archives impériales indiquent que le courage sans égal dont a fait preuve le gladiateur ogre Igdrol Moignondefer en abattant (et en mangeant) à lui seul deux des six wyverns sauvages du chef de guerre a été un facteur déterminant dans la survie de la ville.
+
+#### 2006 CI
+
+Dans la grande ville de Remas en Tilée, le brillant Leonardo da Miragliano dirige la reconstruction du Grand Colisée. Il construit des dizaines de dispositifs innovants au sein de cette structure massive inspirés par des conversations avec le légendaire gladiateur ogre, Brognal « le tueur de taureaux ».
+
+### 2302-2304 CI
+
+Les batailles qui font rage à travers le Vieux Monde pendant la Grande Guerre contre le Chaos sont si intenses que, pour la première fois, des tribus entières d'ogres se tournent vers le mercenariat, traversant les Montagnes du Bord du Monde avec entrain pour rejoindre les deux camps de la lutte. Certaines tribus ne repartiront jamais, établissant de nouveaux foyers dans l'Empire et au-delà.
+
+#### 2309 CI
+
+Pendant la Troisième Guerre de Parravon, le graf Haldebrand de la maison Jungfreud engage de nombreux mercenaires ogres de la vallée d'Osséine pour travailler comme son « *infanterie de choc* » contre la cavalerie lourde des envahisseurs bretonniens. Les ogres s'avèrent extrêmement efficaces, repoussant à plusieurs reprises les Bretonniens et aidant finalement le Graf à assiéger Parravon.
+
+#### 2342 CI
+
+Le jeune duc Amoux de Parravon, intrigué par les récits de leur force, engage une bande d'ogres afin de s'en servir contre un rival. Alors qu'ils détruisent convenablement les forces ennemies, les mercenaires ogres, suite à un « malentendu », mangent dix-neuf des chevaux de guerre préférés du duc en célébrant leur victoire. Cette histoire se répand dans toute la Bretonnie, où les nobles refusent désormais de travailler avec des ogres. Curieusement, les marchands bretonniens commencent à engager des gardes du corps ogres à peu près à la même époque.
+
+#### 2475 CI
+
+Un mercenaire à la retraite convainc un Graissus Dents d'Or, sceptique, que l'or peut servir à autre chose qu'à décorer sa dentition. Une fois que le jeune ogre inspiré s'élève au rang d'Archityran en 2487 CI, l'or est officiellement reconnu comme aussi précieux que la viande rouge dans la plupart des royaumes ogres.
+
+#### 2499 CI
+
+Des nuées de skavens font irruption depuis les égouts de Nuln. Des héros improbables et plusieurs mercenaires, dont la bande du célèbre capitaine ogre Hrothyogg, protègent la ville d'une ruine totale. Faisant fi des exigences habituelles, Hrothyogg accepte une bonne quantité de poudre noire de Nuln en guise de paiement.
+
+
+## <span id="page-12-0" data-folio="11"></span>**De couteaux et d'épées**
+
+L'équipement des ogres est généralement aussi démesuré qu'eux. Une épée humaine ressemble davantage à une dague entre leurs mains de géants et ils sont presque incapables de manier une lame taillée pour un halfling. Les mercenaires ogres sont fréquemment très bien armés et beaucoup portent un véritable un arsenal létal. Ils ont tendance à mettre leur équipement à rude épreuve, s'attachant rarement à une pièce en particulier. En raison de leur manque d'intérêt pour l'artisanat, ils ont tendance à négliger l'entretien de leur matériel. Ils utilisent une arme jusqu'à ce qu'elle se brise, puis s'en débarrassent sans y accorder la moindre importance.
+
+Les mercenaires ogres de l'Empire les plus sages font une exception pour leurs armes à poudre noire, exception qui s'avère plus pragmatique qu'autre chose, car si elles sont malmenées, les armes à feu sont beaucoup plus susceptibles d'exploser. Sur leurs terres à l'est, ils obligent souvent leurs serviteurs gnoblars (un dérivé local de gobelins des collines) à s'occuper de leur équipement, menaçant de n'en faire qu'une bouchée si l'une de leurs armes venait à être cassée, ce qui finit presque toujours par arriver. Au sein de l'Empire, ils demandent généralement à leur employeur de faire en sorte que quelqu'un s'occupe de cette tâche à leur place. Dans l'armée régulière, cette tâche équivaut à un blâme retors. En effet, les ogres forment volontiers un petit monticule de larmes massives et rouillées aux pieds de leurs armuriers avant de leur ordonner promptement de les rendre *« belles, brillantes et tranchantes »*.
+
+Les massues constituent une autre exception. Les ogres apprécient ce type d'arme, car il s'agit de la plus expéditive : elle peut tuer une cible sans lui faire perdre trop de « jus » et elle est plus facile à obtenir dans une taille qui leur convient. Les mercenaires ogres adaptent souvent leur massue à leur goût, en la renforçant avec des bandes de fer ou d'acier, ou en y ajoutant de longues pointes et de dangereuses lames. De cette manière, la massue devient presque aussi menaçante que l'ogre qui la manie.
+
+Les mercenaires ogres s'embarrassent rarement d'armures, leur peau épaisse et dépourvue de sensibilité faisant office de cuir. Même s'ils voulaient porter une armure, il serait quasiment impossible de trouver une cotte de mailles à leur taille, sans parler du forgeron capable de la fabriquer. De plus, la plupart des ogres estiment que passer du temps à entretenir une armure est particulièrement barbant. La seule pièce d'armure que tous les mercenaires ogres s'empressent d'acquérir dès lors qu'ils peuvent se l'offrir est une pansière décente. Le ventre musclé d'un ogre est sa plus grande fierté, car plus la bedaine est large et rebondie, plus le guerrier est accompli. Les mercenaires ogres ne lésinent donc pas sur les moyens si un forgeron est capable de fabriquer une pansière digne de ce nom. Ils n'hésiteront pas non plus à ajouter un supplément s'ils peuvent la faire décorer « *convenablement* ». S'ils privilégient les motifs représentant les dents de la Gueule, des gravures en lien avec leur tribu de l'est, des animaux mythiques (qu'ils ont tués et mangés) ou des symboles relatant leur histoire personnelle sont aussi envisageables. De nombreux ogres demandent également des variations de symboles locaux ou d'héraldique, bien qu'ils aient rarement le souci du détail. Inutile de préciser qu'il serait tout à fait imprudent de s'aventurer à pointer du doigt une quelconque incohérence dans les motifs de la pansière d'un ogre.
+
+## LA LOI DU PLUS FORT
+
+I
+
+0 Le groupe arrive dans une petite ville, affamé et avec un besoin urgent de se rafraîchir, mais il trouve porte close à toutes les auberges et tavernes. En fouillant un peu, les Personnages découvrent qu'une énorme dispute a éclaté sur la place du village, où des bruits d'indignation se font entendre. Connus pour leur vantardise, deux ogres (Thoggall et Yur'n'gut) se disputent le privilège d'être le plus grand et le plus large. Tout le monde en ville a fermé boutique afin afin d'assister à ce litige. Au centre de la place, deux ogres très grands et corpulents sont mesurés par ce qui est certainement un membre haut placé du conseil municipal, Margretta Tolwasser, qui se tient sur un tabouret, un long ruban à la main. Il semble que la circonférence et la hauteur des ogres soient exactement les mêmes. De frustration, ces derniers se précipitent vers un étal de légumes et commencent à dévorer tout ce qu'ils trouvent. Margretta annonce qu'ils pourront manger jusqu'à ce que la cloche de l'hôtel de ville retentisse. Ensuite, ils seront mesurés à nouveau. Si les Personnages veulent s'assurer le gîte et le couvert pour la nuit, ils doivent intervenir et trouver un moyen pour qu'un des ogres l'emporte sur l'autre. Les ogres, de leur côté, incitent le groupe à les aider à récolter de la nourriture contre une petite récompense : Thoggall leur offre sa protection et Yur'n'gut promet de porter leurs bagages. Malheureusement, les choses prennent une mauvaise tournure au moment où l'un des ogres commence à lorgner sur le cheval de Margretta, Bette.
+
+
+## **L'art sacré du combat de gladiateurs**
+
+<span id="page-13-0" data-folio="12"></span>I
+
+Seule une coutume ogre est parvenue au-delà des Montagnes des Larmes : le combat de gladiateurs. Avant la naissance de l'Empire, lorsque les humains sont entrés en contact avec les ogres, ils pratiquaient déjà des sports violents, mais il s'agissait seulement de combats impliquant des animaux ou de l'appâtage des ours. Les ogres avaient alors développé le combat de gladiateurs comme un moyen de décider qui était le plus fort des deux opposants destinés au commandement d'une tribu. Cette activité leur permettait également de vénérer leur divinité des gladiateurs, la Gueule.
+
+Les ogres n'accordent aucune importance à l'entraînement et se bagarrent souvent. Mais pendant de longs siècles, un combat « *digne de ce nom* » impliquait que deux ogres entrent dans la fosse et qu'un seul en ressorte après avoir vaincu (et mangé) son adversaire.
+
+L'histoire n'indique pas exactement ce que les humains ont pensé lorsqu'ils ont assisté pour la première fois à un combat de fosse entre des mercenaires ogres. En revanche, ce type de combat ritualisé, n'impliquant pas forcément de manger son adversaire, s'est rapidement développé partout où les mercenaires ogres se trouvaient. Les érudits estiment que ces luttes ont permis de réduire les effusions de sang inutiles, car les affrontements entre champions sont rarement mortels et évitent bien souvent des conflits généralisés.
+
+Ceci est quelque peu ironique étant donné les origines extrêmement meurtrières de cette pratique. Regarder les autres se battre reste un divertissement populaire dans tout le Vieux Monde. Les Tiléens, en particulier, prenaient plaisir à assister à des démonstrations d'habileté martiale. À ce jour, ils acclament toujours autant les gladiateurs professionnels.
+
+### LA FOSSE SACRÉE
+
+0 Les ogres entretiennent une relation compliquée avec leur dieu, la Gueule. Bien qu'ils considèrent cet être comme l'incarnation de l'appétit et de la faim, sensations que tous les ogres ne connaissent que trop bien, certains ont remarqué que si manger est une expérience fort agréable, être affamé est tout son contraire. Les ogres sont aussi dévoués à leur culte que n'importe quel autre peuple du Vieux Monde, c'est pourquoi il ne leur viendrait jamais à l'idée de tenter de diffuser leur religion auprès des non-ogres. Pourtant, certains d'entre eux s'y essaient à l'occasion. Mentag l'Englobant fait partie de ces individus : il invite tout le monde à participer à des banquets en l'honneur de « *sa vieille grand-mère* ». Beaucoup y assistent, et la plupart pensent à tort que ces festins ont effectivement lieu en l'honneur de la grand-mère de Mentag. Cependant, une poignée d'entre eux ont commencé à faire des rêves étranges et à creuser des fosses en dehors de la ville dans lesquelles ils jettent des offrandes de viande de plus en plus élaborées. Le culte de Shallya de la ville aimerait que quelqu'un découvre ce qui se trame.
+
+L'ampleur des combats de gladiateurs ogres a changé à jamais lorsque le champion Marn le Broyeur a eu une grande révélation en 542 CI. Après un combat particulièrement spectaculaire, il a réalisé qu'il n'était pas obligé de dévorer son adversaire déchu. On suppose qu'il en a tout simplement eu assez du goût des ogres, car, dans la foulée, il a proposé d'introduire d'autres animaux dans la fosse afin que les combats deviennent plus intéressants et offrent une plus grande variété de repas.
+
+Cette transformation a pris un certain temps, mais les « *idées saugrenues* » de Marn ont fini par faire leur chemin. Le combat de fosse a finalement évolué pour englober une grande variété de styles, dont beaucoup ne sont pas nécessairement à mort. Malgré tout, les Tiléens continuent de payer le prix fort pour avoir le « privilège » d'assister à un « vrai » combat de mercenaires ogres.
+
+## **Un foyer loin de chez soi**
+
+Bien qu'il existe des enclaves ogres, celles-ci sont extrêmement rares, notamment en raison de la nature nomade de la plupart des ogres et du fait qu'en grand nombre, ils rendent leurs voisins nerveux (ce qui est souvent justifié). Au sein de l'Empire, les mercenaires ogres se trouvent le plus souvent dans les grandes villes et les cités franches. Ils se rassemblent généralement dans des tavernes assez malfamées qui accueillent uniquement les membres de leur espèce.
+
+#### **Vallée d'Osséine**
+
+Fondée à l'origine par des ogres ayant survécu à la Grande Guerre contre le Chaos, la vallée d'Osséine pourrait bien être le plus grand territoire des ogres en dehors de leurs royaumes de l'est. Les mercenaires ogres se sont emparés des richesses durement gagnées contre les puissances obscures. On raconte que Magnus le Pieux lui-même n'aurait pas tari d'éloges sur leur bravoure. Par la suite, ils ont préféré s'établir dans le Vieux Monde au lieu de chercher de nouvelles tribus à l'est. La vallée où ils vivent est cachée dans la partie sud des Montagnes Grises, protégée par d'énormes accumulations de neige qui durent presque toute l'année et par une volonté impitoyable de dévorer quiconque ose pénétrer leur territoire sans y avoir été invité.
+
+La vallée d'Osséine est ouverte à tous les ogres de passage, pour autant qu'ils laissent derrière eux leurs querelles avec les autres tribus. Des ogres errants solitaires, des bandes de mercenaires et même des tribus entières séjournent occasionnellement dans la vallée, en passant par les Principautés Frontalières ou le long des Montagnes Noires lorsqu'ils viennent de l'est.
+
+Les commandants, ou toute autre personne ayant de l'argent à dépenser, qui souhaitent faire parvenir une offre aux habitants de la vallée d'Osséine peuvent s'adresser à Edelard Bénibière (dit « Ed »), le halfling qui gère le Sanglier de Cuivre, une taverne fréquentée par les mercenaires ogres à Nuln.
+
+
+#### <span id="page-14-0" data-folio="13"></span>**La Taverne des Dents Rouges**
+
+Les villes de l'Empire ne manquent pas de tavernes, mais peu de ces établissements exigus sont en mesure d'accueillir des ogres, et encore moins de les sustenter. La taverne des Dents Rouges a été construite par son propriétaire, Ruggero Oeildacier, dans un style tiléen, avec plusieurs grandes salles ouvertes contenant des boxes massifs, mais relativement peu de tables. Cet ancien mercenaire était jadis un gladiateur prospère. Au cours de ses deux premières carrières, il a combattu aux côtés des ogres et, à quelques occasions mémorables, contre eux. Il sait donc à quel point ils peuvent se montrer généreux lorsqu'il s'agit d'acheter à boire et à manger.
+
+Oeildacier a construit la taverne des Dents Rouges spécifiquement pour répondre aux besoins des nombreux ogres travaillant à Bechafen. Elle est depuis devenue un lieu de prédilection pour les mercenaires ogres, qu'ils soient de passage ou des résidents permanents. La « Rouge », comme l'appellent les locaux, sert de grandes quantités de bière passable et de colossales brochettes de viande *« crue à souhait »* qui recouvrent souvent le comptoir de sang. Les personnes qui cherchent à engager des mercenaires ogres à Bechafen sont redirigées vers les Dents Rouges avec une mise en garde : *« faites attention à vos doigts et priez pour avoir l'estomac solide »*.
+
+#### **Mercenaires ogres (tristement) célèbres**
+
+Que ce soit en raison de leurs compétences, de leurs exploits ou de leur audace, quelques mercenaires ogres ont acquis une grande notoriété. Chaque histoire racontée dans les tavernes du Vieux Monde contribue à renforcer leurs légendes, aussi terribles et valeureuses soient-elles.
+
+#### **Golgfag Mange'homme**
+
+Sans doute le plus célèbre mercenaire ogre actuel, Golgfag a parcouru bien plus que le Vieux Monde, dévorant et annihilant tout ce qui se trouvait sur son passage, des rivages d'Ulthuan aux Montagnes des Larmes. Il doit son surnom à un incident survenu en Tilée, lorsqu'il a rongé jusqu'à l'os son intendant humain après une dispute concernant des rations. Il faut savoir que Golgfag est prêt à manger n'importe quoi, sans aucune préférence. Ses troupes, connues sous le nom de Mangeurs d'hommes, sont réputées être parmi les mercenaires ogres les plus dangereux du Vieux Monde, comme en atteste une longue liste d'actes honorables.
+
+L'infamie et l'insolence de Golgfag ont été confirmées après la bataille du ravin de la Jambe Cassée en 2510 CI. Pendant plusieurs années, il s'est battu aux côtés du maître de guerre orc Gnashrak Sal'chicot, et parfois même contre lui. Après une ultime confrontation, Golgfag et ses Mangeurs d'hommes ont dû lutter pour s'extirper du camp du maître de guerre, mais pas avant que l'ogre n'ait arraché le bras de l'orc.
+
+Il s'est empressé de l'apporter au légendaire Ungrim Poing-de-Fer, le Roi Tueur de Karak Kadrin, comme preuve de sa volonté sincère de participer à la lutte contre Sal'chicot. Le roi nain a accepté cette offre et à la fin de la Bataille du ravin de la Jambe Cassée, Golgfag livra un Gnashrak enchaîné à Poing-de-Fer. Cependant, l'excellente récompense offerte pour cet exploit n'a pas empêché Golgfag de piller l'une des chambres fortes de Karak Kadrin avant de se rendre dans l'Empire.
+
+Depuis, le Roi Tueur promet une généreuse récompense à quiconque dispose d'informations sur l'endroit où se trouve Golgfag.
+
+La renommée de l'ogre est telle qu'en 2518 CI, le terme « mangeur d'hommes » est devenu synonyme de « *mercenaire ogre* » dans tout le Vieux Monde.
+
+#### **Capitaine Hrothyogg**
+
+Seul ogre à avoir battu Golgfag Mange'homme dans un concours du plus gros mangeur, Hrothyogg est l'exact opposé de son rival. Là où Golgfag est bruyant et vantard, Hrothyogg se montre discret et taciturne. Alors que Golgfag est constamment agité, impatient et enragé, Hrothyogg adopte un calme, une froideur et une patience infinis (ce qui est très rare chez un ogre). Le capitaine Hrothyogg a passé de longues années en Tilée, où il a appris le métier de mercenaire du pays qui l'a pratiquement inventé. Réputé pour être maître dans l'art de la « *renégociation stratégique* », il sait exactement quand présenter de modestes demandes pour plus de provisions ou un meilleur paiement, ce qu'il fait généralement juste après que lui et ses Lames ont fait leurs preuves, mais avant que la prochaine vague de combat ne puisse avoir lieu. Ses compétences sont telles que de nombreux commandants humains ont fait confiance à son jugement tactique lors du déploiement de ses troupes au cours d'une bataille. Quelques mercenaires non-ogres ont notamment servi sous ses ordres sans se plaindre.
+
+
+I
+
+<span id="page-15-0" data-folio="14"></span>**Isrogdal l'Empressé**
+
+L'ogre gladiateur devenu mercenaire est bien connu dans toute la Tilée, ainsi que dans les parties les plus à l'est de l'Empire, à la fois pour la rapidité avec laquelle il commet ses meurtres et pour son empressement à manger ses victimes. À plusieurs reprises, il a commencé à dévorer des morceaux de ses adversaires dans la fosse alors que leur combat n'était pas encore terminé. Isrogdal est actuellement très demandé dans le milieu criminel de l'Empire, car en tant que gros bras intimidant, il n'a pas son pareil. Son « enthousiasme » l'a déjà contraint à déménager plusieurs fois, car plus d'un « client » avec qui il devait simplement discuter s'est retrouvé dans son assiette.
+
+#### ISROGDAL L'EMPRESSÉ - SPADASSIN OGRE, ANCIEN PUGILISTE (ARGENT 1)
+
+| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+| 6 | 41 | 32 | 58 | 52 | 11 | 32 | 25  | 22  | 33 | 26  | 36 |
+
+**Compétences :** Athlétisme 45, Calme 37, Corps à corps (Bagarre 54, Base 51), Divertissement (Raillerie) 27, Esquive 42, Intimidation 72, Langue (Reikspiel) 27, Marchandage 27, Pari 32, Ragot 27, Résistance 62, Résistance à l'alcool 57, Savoir (Ogres) 25, Subornation 28 **Talents :** Combat déloyal 2, Combat instinctif, Combattant au contact, Massif (p. 20), Résistance (Poisons ingérés), Très fort, Vice (Nourriture), Vision nocturne
+
+**Traits :** Arme (Coup-de-poing +9, Massue +9), Armure 2 **Possessions :** pansière, cotte de mailles et chausses, coiffe de mailles, arme simple (massue), coup-de-poing, 2d10 pistoles d'argent
+
+## **Ugrik l'Égarée**
+
+Ogresse tout à fait quelconque, Ugrik s'est fait connaître après avoir attaqué une caravane de l'Empire qui s'approchait de son camp dans le sud de l'Ostermark. Le convoi essayait en fait d'engager les ogres pour l'aider à faire face aux invasions de goules qui ravageaient alors le Stirland, mais ces derniers, qui n'avaient pas mangé depuis plusieurs heures, n'étaient pas d'humeur à discuter. Pendant cette escarmouche, Ugrik reçut un boulet de canon sur le côté de la tête, ce qui faillit la tuer, mais heureusement pour elle, les ogres ont la tête dure. Pour plaisanter, les canonniers avaient inscrit sur leurs munitions diverses prières et insultes, une pratique très répandue, bien que peu avisée. Le boulet ayant atteint Ugrik indiquait « Retour à l'envoyeur ». L'ogresse, très affectée par le fait d'avoir frôlé la mort, lut cette demande à haute voix et décida de lui donner une suite favorable. Elle transforma le projectile difforme en une lourde massue et depuis, elle voyage vers Nuln dans l'espoir de « *retrouver les canons* ».
+
+#### UGRIK L'ÉGARÉE - HORS-LA-LOI OGRE (BRONZE 2)
+
+| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+| 6 | 48 | 30 | 53 | 50 | 22 | 33 | 25  | 25  | 33 | 22  | 36 |
+
+**Compétences :** Athlétisme 43, Calme 38, Corps à corps (Base) 53, Esquive 38, Guérison 27, Intimidation 58, Langue (Reikspiel) 28, Orientation 25, Pari 30, Perception 27, Pistage 27, Projectiles (Arc) 35, Résistance 55, Résistance à l'alcool 55, Savoir (Ogres 30, Région 30), Survie en extérieur 30
+
+**Talents :** Combat déloyal, Combat instinctif, Combattant au contact, Frappe assommante, Massif (p. 20), Nomade, Résistance (Poisons ingérés), Très fort, Vice (Nourriture), Vision nocturne
+
+**Traits :** À Distance (Arc +8), Arme (Massue +9), Armure 3 **Possessions :** arme simple (massue à tête de boulet de canon), pansière, arme simple (massue), arc avec 12 flèches, 2d10 sous de cuivre
+
+
+## <span id="page-16-0" data-folio="15"></span>VOUS REPRENDREZ BIEN UN MORCEAU ? PERSONNAGES JOUEURS OGRES • •
+
+
+## [ADE II 2] Les ogres
+
+*Pages PDF 17-39*
+
+## **LES OGRES**
+
+Pour la plupart des habitants de l'Empire, les ogres représentent une menace obscure, mais âprement discutée, venant de terres lointaines. Dans le Vieux Monde, les ogres font presque toujours partie de compagnies de mercenaires, au sein desquelles ils sont recrutés pour leur force, leur taille et leur férocité inégalables. Ceux qui y ont déjà eu affaire ne savent que trop bien qu'il faut les aborder avec prudence.
+
+Grand, hargneux et brutal, l'ogre adulte mesure environ 2,75 m et pèse près de 450 kg. Pour faire simple, les ogres sont des montagnes de muscles, dont les os sont particulièrement épais et résistants.
+
+L'aspect le plus impressionnant cette race est certainement leur ventre, et pas seulement selon leurs propres dires. Rien ne fait plus la fierté d'un ogre que la taille de sa bedaine, qu'il ne manquera pas de tâter et de contracter afin de créer un gargouillis assourdissant. L'appétit des ogres étant légendaire, se battre et manger sont sans surprise leurs activités favorites.
+
+Les ogres sont bruyants, goulus, vantards, fougueux, colériques et belliqueux. Mais ce sont également des créatures assez frustes, qui ne comprennent pas toujours les concepts abstraits les plus élémentaires. La musique, l'art, l'imagination et la créativité sont autant de sujets éclairés qui ne signifient absolument rien pour les ogres. Il est donc préférable de leur dire les choses de manière très directe : toute tentative de subtilité ou de métaphore ne fera qu'embrouiller et frustrer les ogres. Toutefois, ils savent apprécier un bon beuglement, en particulier pendant un banquet.
+
+Les ogres sont bien connus pour leur propension à voyager, ce qui fait qu'on peut facilement les trouver aux quatre coins du monde, combattant dans des groupes de mercenaires d'une vingtaine à quelques centaines d'individus, voire plus. Contrairement à la croyance populaire, les ogres s'intègrent plutôt bien dans la plupart des sociétés qu'ils rencontrent, assimilant les coutumes et les traditions locales avec une facilité qui est probablement due à un manque d'imagination.
+
+
+## <span id="page-17-0" data-folio="16"></span>**Histoire des ogres**
+
+Il y a plusieurs milliers d'années, les ogres vivaient dans les steppes orientales, de l'autre côté des Montagnes du Bord du Monde. Ce peuple simple passait la plupart de son temps à commercer et à guerroyer. Son territoire était bordé de nations humaines qui voyaient certains avantages à travailler avec les ogres, notamment en raison de leur force prodigieuse. À la naissance de l'Empire, Sigmar les a d'ailleurs considérés comme d'excellents guerriers. Bien que mutuellement bénéfiques, ces relations étaient souvent entachées de suspicion. Certains trouvaient que leurs alliés ogres avaient appris trop de choses et étaient devenus un peu trop puissants grâce à ces arrangements. D'aucuns disent que c'est cette méfiance qui poussa un puissant sorcier à attaquer les ogres, tandis que d'autres pensent que cet acte avait pour seul but de venger les nombreuses personnes que les ogres avaient tuées et dévorées au combat. Quelle que soit la véritable version, un terrible châtiment s'abattit sur les ogres, qui les changea à jamais.
+
+### LA GLOIRE DANS LES TRIPES
+
+Le ventre d'un ogre est de la plus haute importance que ce soit pour des raisons sociales, spirituelles ou physiques. Contrairement à la plupart des autres humanoïdes, la majorité des organes vitaux des ogres se trouvent dans leurs tripes et sont protégés par une épaisse gangue de muscles imbriqués plutôt que par leur cage thoracique. Ces muscles incroyablement puissants peuvent broyer et mélanger avec une force colossale tout ce que l'ogre ingère, ce qui lui permet de digérer presque tout ce qui entre dans sa gueule béante. Plus le ventre d'un ogre est proéminent, plus il est respecté par ses congénères, son envergure étant synonyme de batailles remportées et de territoires conquis.
+
+Au-dessus des steppes ogres, une étoile maléfique lit un jour son apparition. Chaque nuit, sa lueur maladive gagnait en intensité, jusqu'à ce que des semaines plus tard, son miasme crépitant de lumière verte éclipse les deux lunes. Les ogres, n'étant absolument pas conscients du destin tragique qui les attendait, ne purent que contempler le ciel dans un mélange de désarroi et de fascination. La comète de malepierre finit par frapper, consumant instantanément plus des deux tiers des ogres, avant de s'enfoncer profondément dans la terre et d'envoyer ses ondes de choc dans le monde entier.
+
+L'immense cratère laissé est depuis vénéré comme la Gueule, le Dévoreur de toutes choses, la principale divinité des ogres. La dévastation apportée détruisit les terres luxuriantes des ogres, les brûlant et les déformant pour ne laisser qu'un territoire désolé, où la lutte pour la survie poussa les ogres au cannibalisme et pire encore. Aujourd'hui, les royaumes ogres sont un conglomérat de rois tyranniques et cupides où règne la loi du plus fort.
+
+Après l'arrivée de leur dieu, les ogres furent possédés par différents aspects d'une faim insatiable, dont l'une était une appétence indéniable pour les voyages. Désormais, on trouve des ogres dans le monde entier, y compris au sein de l'Empire, où ils vendent leurs impressionnantes compétences au plus offrant avant de s'en aller vers d'autres contrées. Cependant, il arrive que certains s'installent sur des terres étrangères. Les ogres vivant dans l'Empire sont connus sous le nom d'ogres impériaux.
+
+### ARGOT DES OGRES
+
+Les linguistes de l'Université d'Altdorf ont remarqué que l'apparition d'une nouvelle langue vernaculaire entrait souvent en corrélation directe avec la migration des ogres à travers l'Empire. Si les ogres adoptent les expressions populaires des pays qu'ils traversent et les remplacent lors de leur pérégrination suivante, ils sont également les architectes de leur propre argot et de leurs propres tournures idiomatiques. Deux exemples marquants sont le terme « minus », qui désigne les non-ogres, et « *s'en mettre plein les joues* », qui signifie à la fois manger et se battre. Nul ne sait avec certitude si cet argot provient de traductions grossières du Grumbarth, la langue des ogres des Montagnes des Larmes, car peu d'érudits ont survécu assez longtemps pour découvrir tous les secrets de ce dialecte.
+
+## **Point de vue**
+
+#### **Ce que les ogres pensent des humains du Reikland...**
+
+*« J'aime bien leurs chapeaux. Et leurs petites chemises tailladées. Leurs armes sont pas terribles, un peu mieux que des cure-dents ! La plupart d'entre eux te regardent bizarrement, t'insultent ou te chassent de leur boutique avec leurs petites lames. Mais si tu en trouves un riche, avec un très grand chapeau, il te paiera bien pour rester là, à jouer les durs ! Ils pensent qu'on est bêtes, mais tu sais quoi ? Je me fiche de ce qu'ils pensent, du moment que je deviens riche ! »*
+
+— Brutus Torlecou, garde du corps ogre
+
+#### **Ce que les humains du Reikland pensent des ogres...**
+
+*« Les ogres ont une mauvaise réputation, ce qui n'est absolument pas mérité ni un tant soit peu justifié. Bien sûr, leur travail est souvent bâclé par rapport à ce dont nous avons l'habitude, mais je défie n'importe quel Reiklander de créer un corset comme le fait un ogre ! Parfois, je me demande si nous méprisons les ogres de la même manière que les nains nous méprisent... Et si c'est le cas, j'ai un peu de peine pour eux, mais je suis également ravie : pensez à tout ce que nous avons accompli malgré le mépris des nains ! »*
+
+— Ellena Pfinkis, ingénieure du Reikland
+
+#### **Ce que les ogres pensent des nains...**
+
+*« Comment on appelle un humain sur lequel on vient de s'asseoir ? Un nain ! Ha ha ! T'as compris ? Parce qu'ils sont tout écrasés et grincheux. Dis ça au petit minus et tu t'en mettras plein les joues pendant plusieurs jours. »*
+
+— Nathaniel Striesser, dit « Nat », « comédien » ogre
+
+#### **Ce que les nains pensent des ogres...**
+
+*« Ma mère avait l'habitude de dire "plus grand tu es, moins tu fais preuve d'honnêteté". Elle parlait surtout des humains et des elfes, que Valaya la préserve, et dans ces cas-là, elle avait raison. Mais cette théorie ne s'applique pas aux ogres. Je pense qu'ils sont trop stupides pour mentir. Mais ce n'est pas pour autant qu'ils sont dignes de confiance. »*
+
+— Ezra Brynsdottir, brise-bouclier naine
+
+
+<span id="page-18-0" data-folio="17"></span>#### **Ce que les ogres pensent des halflings...**
+
+*« Ils sont petits et délicieux si tu dois remplir ton garde-manger vide, mais il vaut mieux s'en servir pour cuisiner... Enfin, c'est eux qui font la cuisine. Ils sont très bavards, mais il y a quelque chose chez eux qui en ferait presque des membres de la famille. Mais c'est pas non plus comme les avortons que tu finis par manger. »*
+
+— Ballison Grandfestin, dit « le boucher », restaurateur ogre
+
+#### **Ce que les halflings pensent des ogres...**
+
+*« Brutaux ? Oui. Stupides ? Souvent. Dangereux ? Absolument... Et pourtant, vous ne trouverez pas amitié plus solide, littéralement ! Avez-vous déjà senti la force d'un ogre ? Ils sont certainement plus dignes de confiance que la plupart des Reiklanders, foi de halfling. »*
+
+— Ferdinand Piedfoin-Piedpaille, studieux halfling
+
+#### **Ce que les ogres pensent des hauts elfes...**
+
+*« Les minus avec les oreilles pointues, là ? Ils se croient mieux que nous. Ils parlent trop bien, ça me donne mal à la tête. À mon avis, ils ont meilleur goût que nous, c'est déjà ça. »*
+
+— Tuzergoo Fracasservelle, vagabond ogre
+
+#### **Ce que les hauts elfes pensent des ogres...**
+
+*« Lorsque l'on a vécu aussi longtemps que moi, vu autant de rivages que moi, goûté autant de cuisines que moi, assisté à autant de guerres que moi, on commence à s'accommoder du monde tel qu'il est vraiment. On commence à s'habituer au fait que le monde change, rapidement, mais toujours avec un courant sous-jacent de cohésion, de stabilité, qui maintient toute une génération dans la lignée de celle qui l'a précédée. Mais les ogres ne fonctionnent pas de cette manière : parmi leurs leurs, ils sont un peuple immuable, jusqu'à ce qu'ils commencent à errer et deviennent une tout autre personne. »*
+
+— Aesenil Clairciel, explorateur haut elfe
+
+#### **Ce que les ogres pensent des elfes sylvains...**
+
+*« Les quoi ? Ah oui, les forêts qui piquent. Oui, je vois : tu te promènes, tu cherches à manger et d'un coup, tu es couvert de flèches. C'est pas des elfes ça, juste des arbres en colère. Mais il faut bien souffrir un peu pour manger, pas vrai ? »*
+
+— Varzurga, chasseur ogre
+
+#### **Ce que les elfes sylvains pensent des ogres...**
+
+*« Peu de créatures ont le pas aussi lourd que les ogres, dont chaque mouvement laisse une nouvelle marque dans la nature. Et pourtant, contrairement aux humains ou aux nains, peu de mes semblables éprouvent de l'animosité à leur égard. Après tout, on ne déteste pas la fourmi qui se repaît du cerf déchu, ni le grondement de son estomac lorsqu'il crie famine. Les ogres sont une force naturelle de ce monde, force qui demande à être contrecarrée par la lame et les flèches, mais jamais par la haine. »*
+
+— Faraoth Vaguauvent, observateur elfe sylvain
+
+## UN HÉRITAGE COMMUN ?
+
+De nombreuses théories tarabiscotées sur les origines des halflings et des ogres abondent dans le Vieux Monde en raison de l'étrange similitude et de la curieuse affinité qui lient ces deux races. L'une d'entre elles, proposée par le philosophe impérial Albrecht de Nuln, suggère que les deux espèces partagent un ancêtre commun, et qu'une mutation pourrait être à l'origine de leurs différences physiologiques actuelles. Selon lui, ces éléments permettraient d'expliquer leurs nombreuses similitudes : ils résistent tous deux aux effets du Chaos et ont un besoin comparable et permanent de chercher leur prochain repas. Ils présentent également des traits comportementaux particuliers : les ogres se sentent obligés de tout casser et de tout manger tandis que les halflings ont un besoin compulsif de chiper tout ce qui n'est pas fermement cloué au sol. Cependant, Albrecht a été brûlé sur le bûcher en 1301 CI après avoir hurlé à l'hérésie à propos de supposés hommes-rats. Depuis, ses théories ne sont plus prises au sérieux, du moins pas en société.
+
+Les ogres et les halflings semblent partager un lien qui leur permet de forger des amitiés avec une certaine aisance. Cependant, il existe bel et bien des tensions dans leurs relations : si les ogres semblent avoir une tendance naturelle à se lier d'amitié avec ces gens de petite taille, il est également entendu qu'ils ne trouvent aucune viande plus savoureuse qu'un gigot de halfling cuit à point.
+
+
+## <span id="page-19-0" data-folio="18"></span>**PERSONNAGES OGRES**
+
+La création de Personnages ogres suit les mêmes étapes que celles présentées dans **Warhammer Fantasy le Jeu de Rôle** (**WFJDR** p. 24) avec les ajouts suivants.
+
+## **Races**
+
+Si vous le souhaitez, votre Personnage peut être un ogre. Si vous préférez tirer au sort, lancez 1d100 et consultez le Tableau des races aléatoires. Vous gagnez +20 PX si vous acceptez le premier résultat.
+
+## TABLEAU DES RACES ALÉATOIRES
+
+| Race         |
+|--------------|
+| Humain       |
+| Halfling     |
+| Nain         |
+| Ogre         |
+| Haut elfe    |
+| Elfe sylvain |
+|              |
+
+#### **Classes et C arriè res**
+
+Les ogres suivent les mêmes règles pour la Classe et la Carrière (**WFJDR** p. 30). Si vous souhaitez que votre ogre poursuive une Carrière non listée dans le tableau ci-dessous, n'hésitez pas à en discuter avec votre Meneur de Jeu.
+
+# TABLEAU DES CLASSES ET CARRIÈRES ALÉATOIRES
+
+| Classe     | Carrière/Race                     | Ogre  |
+|------------|-----------------------------------|-------|
+|            | Artisan                           | 01    |
+|            | Mendiant                          | 02-03 |
+| CITADINS   | Milicien                          | 04-09 |
+|            | Ratier                            | 10-11 |
+| COURTISANS | Serviteur                         | 12    |
+|            | Garde                             | 13-19 |
+|            | Gladiateur                        | 20-30 |
+| GUERRIERS  | Mangeur d'hommes                  | 31-37 |
+|            | Soldat                            | 38-46 |
+|            | Spadassin                         | 47-51 |
+|            | Chasseur de primes                | 52-54 |
+| ITINÉRANTS | Colporteur                        | 55-61 |
+|            | Saltimbanque                      | 62-64 |
+| LETTRÉS    | Boucher ogre                      | 65    |
+|            | Débardeur                         | 66-68 |
+| RIVERAINS  | Marin                             | 69    |
+|            | Hors-la-loi                       | 70-78 |
+| ROUBLARDS  | Pilleur de tombes                 | 79-82 |
+|            | Rançonneur                        | 83-87 |
+|            | Bailli                            | 88    |
+|            | Chasseur                          | 89-95 |
+| RURAUX     | Gardien de<br>troupeaux de rhinox | 96-98 |
+|            | Mineur                            | 99-00 |
+
+#### **Les og res au t ravail**
+
+Les paragraphes suivants décrivent brièvement chacune des Carrières qu'un ogre peut avoir dès le départ, afin d'aiguiller les Joueurs et les MJ sur la façon de les inclure dans le jeu.
+
+**Artisan :** les ogres produisent surtout des marchandises grossières et surdimensionnées (généralement destinées au combat), mais il arrive que certains d'entre eux se tournent vers un commerce honnête afin de gagner de l'argent. La plupart des artisans ogres sont employés pour une tâche précise (généralement pour porter de lourdes charges) et ne fabriquent pas entièrement leurs articles. Cependant, la plupart d'entre eux préfèrent intimider ou payer des personnes plus modestes afin qu'elles s'occupent de la fabrication de leurs armes et armures. S'ils s'en chargeaient eux-mêmes, le résultat serait certainement des plus médiocres.
+
+**Bailli :** les ogres font d'excellents baillis et percepteurs, car il est particulièrement difficile de repousser un ogre qui se présente sur le pas de votre porte. De plus, leur vitalité naturelle leur permet de parcourir les routes de l'Empire séparant les communautés éloignées géographiquement. Cependant, le fait que peu d'ogres sachent compter fait de la fraude fiscale un problème particulièrement répandu.
+
+**Chasseur :** sur leur terre natale, les ogres sont réputés pour leurs talents de chasseurs. Ils se battent pour traquer, tuer et manger les plus grosses créatures possible afin de surpasser leurs rivaux. De nombreux ogres n'hésitent pas à voyager à la recherche de la proie la plus gigantesque : plus le repas est copieux, plus le ventre est mis en avant !
+
+**Chasseur de primes :** se voir offrir de l'argent pour la capture, voire le meurtre, d'un autre individu s'avère très tentant pour de nombreux ogres, qui s'illustrent dans le domaine. S'ils ont rarement la subtilité ou la présence d'esprit pour attraper des cibles rusées, ils compensent leur manque d'intelligence par une ténacité et une détermination sans faille.
+
+**Colporteur :** presque tous les ogres deviennent des sortes de vagabonds à un moment donné de leur vie. Leur soif de découvrir ce qui se trouve de l'autre côté de l'horizon les entraîne d'une ville à l'autre, de nation en nation, sans jamais savoir ce qu'ils cherchent, et probablement sans jamais le trouver. En chemin, ils parviennent à se nourrir en louant leurs services.
+
+### OGRES ET MUTATIONS
+
+Bien que résistants aux effets du Chaos, les ogres ne sont pas immunisés contre les mutations. L'ogre typique ne craint pas les mutants et ne les déteste pas non plus, à l'inverse de la majorité des citoyens de l'Empire. Tout au plus, il peut les trouver étranges, ce qui n'est pas si différent de ce que la plupart des gens pensent des ogres eux-mêmes. Les chances qu'un ogre soit victime d'une mutation physique ou mentale, comme expliqué à la page 183 de **WFJDR**, sont les suivantes :
+
+|        | Ogre  |
+|--------|-------|
+| Corps  | 01–10 |
+| Esprit | 11–00 |
+
+
+<span id="page-20-0" data-folio="19"></span>**Débardeur :** on dit qu'un débardeur ogre compense largement le volume de nourriture qu'il consomme par la quantité de marchandises qu'il peut charger sur un navire. Tout marchand astucieux, pour autant qu'il ait prévu un bon surplus de stock pour couvrir les besoins, peut réaliser de belles économies avec une équipe d'ogres volontaires.
+
+**Garde :** les ogres sont souvent employés comme gardes du corps par ceux qui peuvent se permettre de prendre en charge leurs frais exorbitants. Ils excellent dans leurs fonctions, car peu de personnes sont disposées à s'en prendre ouvertement à un ogre, si on leur laisse le choix. Cependant, leur corpulence peut souvent poser problème, car ils sont incapables de pénétrer dans de nombreux établissements fréquentés par leurs employeurs.
+
+**Gladiateur :** le sport sanglant des combats de fosse est originaire des royaumes ogres, situés loin à l'est. Ils y creusent de larges fosses pour représenter leur dieu affamé, la Gueule, puis font des offrandes de chair et organisent des combats spectaculaires. Bien évidemment, les ogres adorent les combats de fosse et y prennent part dès qu'ils le peuvent, qu'importe s'il s'agit de leur carrière de prédilection.
+
+**Hors-la-loi :** les lois de l'Empire sont souvent déroutantes pour les ogres, qui se rabattent généralement sur leur croyance inébranlable selon laquelle la force l'emporte quoi qu'il arrive. Ainsi, beaucoup d'entre eux deviennent des hors-la-loi sans même s'en rendre compte et sont contraints de fuir les villes de l'Empire, comprenant rarement ce qu'ils ont fait de mal.
+
+**Marin :** la soif d'aventure qui entraîne les ogres à travers le Vieux Monde les conduit également en mer, où ils font des marins étonnamment doués (et particulièrement imposants). L'océan semble attirer de nombreux ogres, qui ont entendu des légendes à propos d'une seconde Gueule, un tourbillon gigantesque que beaucoup souhaitent localiser.
+
+**Mendiant :** se prélasser en mourant de faim tout en étant nourri de temps à autre par la charité des passants ? Le concept de mendicité est tellement éloigné des habitudes des ogres qu'il est surprenant de voir combien d'entre eux s'y adonnent. Mais si l'on considère que les rues sont remplies de déchets, d'ordures et d'animaux errants (autrement dit, de « *nourriture gratuite* »), on comprend mieux le point de vue des ogres.
+
+**Milicien :** affectez un ogre à la milice ou à la prison et très peu de délinquants envisageront de tester les limites de la loi ou de s'échapper. Certes, leurs services coûtent un certain prix, mais ils valent autant qu'une escouade tout entière (en supposant qu'ils rentrent dans le corps de garde).
+
+**Mineur :** leur force colossale fait des ogres des mineurs exceptionnels, même s'ils se sont retrouvés coincés plus d'une fois à cause de leur envergure. On raconte que certains repaires souterrains d'orcs et de gobelins ont été creusés en un rien de temps par des mercenaires ogres engagés dans ce seul but.
+
+**Pilleur de tombes :** leur avidité les conduit souvent dans les endroits les plus incongrus. De plus, les scrupules propres aux autres races revêtent peu d'importance aux yeux des ogres, qui sont plus que disposés à déterrer un ou deux cadavres laissés sans surveillance pour de l'argent. Après tout, s'ils ne sont pas payés, ils pourront toujours profiter d'un repas gratuit ! L'attrait de l'or fait briller les yeux des ogres les plus avides, il n'est donc pas surprenant que beaucoup d'entre eux passent vainement d'une tombe à l'autre avec l'espoir infime de tomber sur de l'or (et de s'offrir un bon combat au passage).
+
+## OGRES EXPATRIÉS ET IMPÉRIAUX
+
+La race des ogres présente autant de variété que les humains, ses diverses cultures étant éparpillées dans tout le Vieux Monde. Cependant, elles rayonnent toutes depuis leurs terres ancestrales : les royaumes ogres et les Montagnes des Larmes. Il est tout à fait possible de jouer un ogre des royaumes ogres ou un ogre expatrié de Cathay ou d'Estalie, mais ce supplément se concentre essentiellement sur les ogres impériaux. Ces créatures s'adaptent facilement, les règles peuvent donc être légèrement modifiées pour expliquer la manière dont un ogre a dû se conformer à la culture dans laquelle il se trouve.
+
+**Rançonneur :** nul besoin de préciser que le racket est un trait naturel des ogres. Briser une jambe ou deux pour le bon prix ne leur fait pas peur, ils prennent même plaisir à le faire. Rien ne saurait convaincre une victime d'extorsion de payer plus rapidement qu'un ogre affamé.
+
+**Ratier :** il y a deux choses sur lesquelles on peut toujours compter : les vagues incessantes de rats dans les villes de l'Empire et la faim permanente d'un ogre. Pour certains ogres entreprenants, être payé pour manger autant de rats que possible, c'est la situation rêvée ! Et si la journée est calme, ils pourront toujours se délecter de leur petit compagnon féroce.
+
+**Saltimbanque :** presque tous les saltimbanques ogres sont des colosses ou des lutteurs professionnels, qui impressionnent le public par leurs prouesses physiques. Certains d'entre eux arrivent également à gagner leur vie grâce à leurs « talents » de conteurs. Les ogres sont particulièrement friands d'une bonne histoire (simple, sanglante et bruyante), mais étant donné qu'ils sont presque tous illettrés, les récits sont leur seule manière de relater le passé, à l'exception de quelques pictogrammes rudimentaires.
+
+**Serviteur :** même s'ils sont grossiers et rustres, les ogres font d'excellents domestiques grâce à leur immense force, déchargeant des diligences et tirant des calèches à eux seuls. De nombreux aristocrates trouvent également que les ogres sont des attachés particulièrement en vogue, car leurs carrures menaçantes sont propices à créer des situations intéressantes.
+
+**Soldat :** il semblerait que le but premier des ogres soit de tuer pour de l'argent. Cette activité combine deux de leurs passe-temps favoris, et parfois trois, car la plupart des généraux ne voient pas d'inconvénient à ce qu'ils mangent leurs ennemis : cela évite d'avoir à les enterrer et à s'embarrasser des détails des sépultures, tout en réduisant les coûts liés à la nourriture. De plus, l'attrait des océans en tant que marin, ou les déplacements constants liés à la vie de mercenaire, correspondent à leur envie de voyager.
+
+**Spadassin :** bien que les ogres soient des spadassins nés, ils poussent souvent le vice un peu trop loin et ont tendance à tuer, puis à manger leurs victimes au lieu de se contenter de les frapper. La plupart des ogres ne considèrent même pas cette activité comme une carrière à proprement parler, mais plutôt comme une façon naturelle de faire les choses : « *Tu me payes un repas si je tape quelqu'un ? Ça roule, je m'occupe de qui ?* »
+
+
+## <span id="page-21-0" data-folio="20"></span>**Attributs**
+
+Pour générer les attributs de votre ogre, suivez les mêmes étapes que celles décrites dans **WFJDR** (p. 33) en vous basant sur le Tableau des attributs des ogres suivant.
+
+#### TABLEAU DES ATTRIBUTS DES OGRES
+
+| Attribut               | Ogre              |  |  |  |  |
+|------------------------|-------------------|--|--|--|--|
+| Capacité de Combat     | 2d10 + 20         |  |  |  |  |
+| Capacité de Tir        | 2d10 + 10         |  |  |  |  |
+| Force                  | 2d10 + 35         |  |  |  |  |
+| Endurance              | 2d10 + 35         |  |  |  |  |
+| Initiative             | 2d10              |  |  |  |  |
+| Agilité                | 2d10 + 15         |  |  |  |  |
+| Dextérité              | 2d10 + 10         |  |  |  |  |
+| Intelligence           | 2d10 + 10         |  |  |  |  |
+| Force Mentale          | 2d10 + 20         |  |  |  |  |
+| Sociabilité            | 2d10 + 10         |  |  |  |  |
+| Points de Blessure     | (BF+(2×BE)+BFM)×2 |  |  |  |  |
+| Points de Destin       | 0                 |  |  |  |  |
+| Résilience             | 3                 |  |  |  |  |
+| Points supplémentaires | 1                 |  |  |  |  |
+| Mouvement              | 6                 |  |  |  |  |
+
+## **Compétences et Talents**
+
+Comme pour n'importe quelle autre Race, vous pouvez choisir 3 Compétences avec 5 Augmentations chacune et 3 Compétences avec 3 Augmentations chacune dans la liste des Compétences et Talents des ogres. Vous avez également accès à 6 Talents de Race. Lorsque vous avez le choix entre deux Talents, vous ne pouvez en sélectionner qu'un parmi les deux.
+
+**Note :** comme les autres Races, on suppose que tous les ogres impériaux parlent couramment le Reikspiel.
+
+#### **Compétences et Talents des ogres**
+
+**Compétences :** Athlétisme, Corps à corps (Bagarre, Base), Divertissement (Narration), Intimidation, Langue (Grumbarth), Orientation, Pistage, Résistance, Résistance à l'alcool, Savoir (Ogres), Survie en extérieur
+
+**Talents :** Combat déloyal, Massif, Résistance (Chaos, Poisons ingérés), Très résistant *ou* Très fort, Vice (Nourriture), Vision nocturne
+
+## NOUVEAUX TALENTS
+
+#### **Massif**
+
+**Maxi :** 1
+
+Vous êtes bien plus massif que la plupart des habitants du Vieux Monde. Les règles complètes à propos des différentes Tailles se trouvent à la page 342 de **WFJDR**.
+
+### **Vice (Cible)**
+
+**Maxi :** Bonus de Force Mentale
+
+**Tests :** Force Mentale (Résister à la cible)
+
+Vous êtes consumé par le besoin de vous adonner à un vice particulier et souffrez du Trait Psychologique *Vice*. Chaque fois que vous choisissez ce Talent, vous développez un nouveau vice. Voici quelques exemples : alcool, nourriture, stupéfiants, plaisir.
+
+#### NOUVEAU TRAIT PSYCHOLOGIQUE : VICE
+
+Vous éprouvez le besoin constant de vous adonner à votre Vice, vers lequel vos pensées s'égarent en permanence. Vous devez vous y abandonner totalement et de manière malsaine. Par exemple, si votre Vice est lié à la nourriture, vous ne vous contentez pas de prendre un simple repas, mais vous vous transformez en un véritable goinfre qui se met à manger tout ce qu'il peut jusqu'à ce qu'il soit ballonné et en devienne malade. Chaque fois que vous êtes confronté à la Cible de votre Vice, vous devez vous soumettre à un Test de **Psychologie** (**WFJDR** p. 190). En cas d'échec, vous devez immédiatement vous laisser aller à votre Vice, en renonçant à vos autres actions ou devoirs. Vous ne serez satisfait qu'une fois que vous aurez perdu connaissance et gagnerez alors un État *Exténué*. À la fin de chaque Round, vous pouvez ensuite tenter un autre Test de Psychologie pour mettre fin à cet État. Vous subissez également -20 à tous les Tests de Sociabilité envers les Personnages qui ont été témoins de votre folie furieuse, car ils sont révulsés par votre comportement. Pour chaque jour complet que vous passez sans vous adonner à votre Vice, vous gagnez un cumul de -20 à tous les Tests de Psychologie jusqu'à ce que vous y soyez soumis.
+
+
+## <span id="page-22-0" data-folio="21"></span>**Détails physiques**
+
+Comme pour toutes les Races, vous pouvez soit déterminer les détails suivants de manière aléatoire, soit choisir parmi les éléments disponibles.
+
+## **Âge**
+
+Bien que l'espérance de vie naturelle des ogres soit d'environ 120 ans, très peu d'entre eux meurent de vieillesse. Pour déterminer un âge de départ aléatoire, lancez 5d10 + 15.
+
+## **Couleur des yeux**
+
+Les ogres se sont adaptés à la vie sur des flancs de montagne abrupts et éblouissants ainsi que dans des déserts brûlants, leurs pupilles absorbent donc la lumière avec une dilatation minimale. Cependant, dans les endroits dont le climat est moins rigoureux, les pupilles des ogres sont souvent dilatées et un minuscule cercle de couleur se dessine autour d'elles.
+
+#### TABLEAU DE LA COULEUR DES YEUX
+
+| 2d10  | Couleur      |
+|-------|--------------|
+| 2     | Gris         |
+| 3     | Vert         |
+| 4     | Ambre        |
+| 5–7   | Noisette     |
+| 8–11  | Marron       |
+| 12–14 | Marron foncé |
+| 15–17 | Ocre         |
+| 18    | Noir         |
+| 19    | Mauve        |
+| 20    | Bleu nuit    |
+
+#### **Couleur des cheveux**
+
+Les cheveux des ogres sont épais, sombres et ternes. Les mâles deviennent souvent chauves après avoir dépassé la trentaine et, de manière générale, les cheveux des ogres deviennent gris lorsqu'ils atteignent les 80 ans. La pilosité faciale est souvent prisée par les ogres masculins. Beaucoup d'entre eux se donnent du mal pour entretenir une longue barbe, une moustache ou une barbiche. Nombreux sont ceux qui pensent que l'amour d'un ogre pour sa barbe provient de son désir d'y garder quelques morceaux de nourriture pour plus tard (ce qui est effectivement le cas pour la majorité d'entre eux). Les ogresses, de leur côté, tressent souvent leurs cheveux pour former des couronnes semblables à des ramures ou des cordes élaborées qu'elles utilisent pour attacher leurs biens directement à leur corps.
+
+#### TABLEAU DE LA COULEUR DES CHEVEUX
+
+| 2d10  | Couleur      | 2d10  | Couleur      |
+|-------|--------------|-------|--------------|
+| 2     | Marron       | 12–14 | Marron foncé |
+| 3     | Acajou       | 15–17 | Noir         |
+| 4     | Blond cendré | 18    | Charbon      |
+| 5–7   | Marron clair | 19    | Noir de jais |
+| 8–11  | Lie de vin   | 20    | Bleu nuit    |
+
+### **Taille**
+
+En moyenne, les ogres mâles mesurent plus de 2,75 m et les femelles sont à peine plus petites. Il convient de préciser que culturellement, la taille ne signifie pas grand-chose pour un ogre. C'est le poids qui compte : plus il est lourd, mieux c'est. Pour déterminer une taille de manière aléatoire, lancez 6d10 + 235 cm.
+
+#### ILS NE SONT PAS STUPIDES, ILS VONT JUSTE DROIT AU BUT
+
+Alors qu'un observateur extérieur pourrait croire que les ogres sont limités, la réalité est légèrement différente. Les ogres traitent les pensées complexes et abstraites différemment de la plupart des autres Races. Ils sont généralement analphabètes (comme beaucoup d'autres dans le Vieux Monde) et transmettent leurs légendes et leur histoire à travers des contes. Ils ont peu de patience pour l'art, la poésie, les métaphores et autres figures de style, la musique, la philosophie et bien d'autres activités propres aux minus.
+
+Aucun Personnage ogre ne peut choisir une Compétence ou un Talent qui repose sur l'écriture (ou une autre forme d'art complexe) ou une Compétence de Savoir avancée sans l'accord du MJ. Les Joueurs et les MJ doivent donc se concerter pour trouver des alternatives adaptées aux Carrières des ogres.
+
+Toutefois, il n'est pas impossible pour certains ogres de savoir lire, écrire, compter, chanter, etc. On raconte que le célèbre dramaturge d'Altdorf, Detlef Sierck, aurait versé une larme lorsque Tergarthash Gutrend a interprété à la perfection l'opéra indish *Lakme*. Malheureusement, cette représentation a été légèrement gâchée lorsque l'ogresse a dévoré son partenaire suite à quelques fausses notes.
+
+## **Noms des ogres**
+
+De nombreux ogres impériaux portent des noms propres à l'Empire, qu'ils ont adoptés des noms typiques de l'Empire. N'hésitez pas à suivre les directives pour un nom humain (Reiklander) (**WFJDR** p. 37). Pour les Joueurs qui préfèrent opter pour un nom d'ogre traditionnel, reportez-vous aux deux tableaux suivants.
+
+## **Générer des noms d'ogres**
+
+Traditionnellement, les noms des ogres sont formés à partir d'un certain nombre de racines et de terminaisons communes. La première composante est inspirée de ce qui constitue le premier repas de l'enfant, tandis que la seconde varie selon la saison, le lieu de naissance, les actes notables des parents, etc. Pour générer un nom d'ogre, utilisez les deux tableaux de la page suivante et combinez les deux composantes.
+
+
+#### 2E PARTIE D'UN NOM OGRE
+
+
+## <span id="page-24-0" data-folio="23"></span>**Titres des ogres et noms de clan**
+
+Si certains ogres accordent beaucoup d'importance à leur nom, pour la plupart, il s'agit simplement d'un son qui leur permet de se reconnaître. En revanche, les appellations et les titres obtenus au cours de leur vie sont bien plus importants.
+
+Les ogres adoptent souvent un titre ou se font appeler par le nom de leur tribu (à condition que ce nom puisse effrayer un ennemi et tant qu'ils y occupent une place d'importance). Les titres sont simples et grossiers, souvent autoproclamés pour refléter le passe-temps favori de l'ogre en question. Ainsi, plus d'un ogre se fera appeler « *le désosseur* » ou « *le mangeur d'hommes* ». Les noms de tribus sont un peu plus stables, bien qu'ils aient tendance à changer rapidement et à gagner des particules lorsqu'une tribu en consomme (littéralement) une autre.
+
+**Exemples :** Dents d'Or, Peaux de Fer, Ventres-Tonnerre, Gloutons Sanguinaires, Mordeurs d'Yeux, Défenseurs, Goinfres Costauds.
+
+### **Grands Noms**
+
+Bien que la plupart des titres soient autoproclamés (à l'exception de certains sobriquets désobligeants accordés par un rival), certains actes notables peuvent valoir à un ogre un titre vraiment imposant, connu comme un Grand Nom.
+
+Aucun rituel formel n'est impliqué dans son attribution, mais ce sujet est pris très au sérieux par les ogres. L'idée de revendiquer un Grand Nom sans l'avoir mérité est un véritable sacrilège : porter le nom, c'est avoir accompli l'acte qu'il prône.
+
+Chaque fois qu'un ogre dépense ou gagne un Point de Destin, ou qu'il accomplit un véritable exploit, le MJ peut envisager de lui accorder un Grand Nom. Celui-ci est toujours octroyé par un autre ogre qui a été spectateur de l'acte ou en a entendu parler. En général, la nouvelle se répand rapidement. Il arrive que les mercenaires ogres rentrent chez eux après des années pour découvrir que leur tribu n'a jamais entendu parler de leurs exploits. Cependant, tous sont au courant qu'ils ont gagné un Grand Nom.
+
+#### **Exemples de Grands Noms**
+
+Bien qu'elle ne soit pas exhaustive, la liste ci-dessous détaille quelques Grands Noms connus et les exploits qu'il a fallu accomplir pour gagner le droit de les utiliser. Les MJ et les Joueurs peuvent choisir ensemble un Grand Nom approprié si un acte le justifie. Ces noms sont toujours directs et précis, à l'image des ogres eux-mêmes, et comportent rarement plus d'un mot.
+
+Les Grands Noms n'ont pas d'effet spécifique dans le jeu, mais ils fournissent généralement un bonus de +20 aux Tests d'Intimidation ou de Charme auprès des ogres.
+
+#### **Quêtegueule**
+
+Vous avez voyagé loin à l'est et vu la Gueule de vos propres yeux. Elle vous a laissé une impression indélébile, si bien que vous arborez désormais un regard affamé qui ne disparaîtra jamais.
+
+#### **Démengorgé**
+
+Vous avez en quelque sorte réussi à avaler un ennemi démoniaque avant qu'il ne soit banni dans les Royaumes du Chaos. Un fragment s'agite encore dans vos tripes, mais ses exigences sont faciles à ignorer.
+
+#### **Brisegéant**
+
+Vous avez brisé les os d'un géant encore en vie (et probablement aspiré sa moelle dans la foulée).
+
+#### **Tournegoule**
+
+Par la force, la magie ou la chance, vous avez mis en pièces un fantôme ou un autre esprit, répandant les lambeaux de son essence dans les vents affamés.
+
+#### **Défilamort**
+
+Vous avez survécu à un événement si périlleux et mortel que même la plupart des ogres s'accordent à dire que vous devriez être mort.
+
+#### **Longmarcheur**
+
+Vous avez voyagé loin, même selon les normes des ogres les plus expérimentés dans le domaine.
+
+#### **Tulabête**
+
+Vous avez tué à vous seul une bête d'une importance capitale, peut-être un dragon ou une autre créature terrifiante.
+
+#### **Pourfendeur**
+
+Vous avez réalisé un incroyable tour de force, idéalement à mains nues ou en utilisant uniquement votre masse.
+
+## **Insuffler la vie à votre ogre**
+
+Les ogres étant très différents des autres Races, ils nécessitent un examen plus approfondi des étapes présentées dans **WFJDR** (p. 42-43). Cette section examine en détail les neuf questions qui permettent de donner vie à votre personnage.
+
+#### **D'où venez-vous ?**
+
+La plupart des ogres que l'on trouve dans l'Empire sont nés en dehors de celui-ci. Nombreux sont ceux qui se sont rendus dans « *la plus grande nation humaine du Vieux Monde* » en quête d'argent, d'aventure ou d'un nouveau repas. D'autres ont simplement suivi leur instinct, succombant à l'envie de voyager qui remplissait leur cœur. Cependant, avec l'essor des ogres impériaux, de plus en plus de jeunes ogres n'ont connu que le Reikland, qu'ils considèrent comme leur foyer.
+
+Les ogres impériaux sont nés dans l'Empire, ils ont donc appris ses us et coutumes dès le début de leur vie. Ils portent souvent des noms impériaux, s'habillent de vêtements impériaux surdimensionnés et sont tout simplement... impériaux.
+
+D'autres ogres, comme les voyageurs venus des royaumes ogres, portent quelques vestiges de leur culture d'origine, mais ils s'adaptent rapidement. Ils se font aux coutumes locales, mais ont souvent du mal avec les préoccupations plus ésotériques, comme la moralité, la religion ou encore la philosophie, qu'ils imitent plus qu'ils ne les assimilent.
+
+
+<span id="page-25-0" data-folio="24"></span>### **À quoi ressemble votre famille ?**
+
+Les ogres sont assez stoïques et, bien que leurs préoccupations les plus urgentes concernent généralement leur prochain repas, ils se soucient également de l'éducation de leurs enfants. Certaines pratiques peuvent sembler cruelles aux yeux des étrangers, mais les Montagnes des Larmes offrent un habitat rude dans lequel le plus robuste des ogres doit apprendre à survivre. Cet aspect est quelque peu tempéré par la culture de l'Empire, aussi les parents déconseillent à la plupart des enfants qui y sont nés de dévorer leurs frères et sœurs les plus faibles.
+
+Un ogre peut également avoir grandi dans leurs royaumes. Ceux qui y sont élevés apprennent très vite que la vie est une perpétuelle compétition et que pour obtenir quelque chose, il faut le prendre à quelqu'un d'autre. La taille des familles fluctue énormément, augmentant et diminuant au gré des richesses de ses membres et de son clan. Ce genre d'éducation est considéré comme barbare et serait inenvisageable au sein de l'Empire. Mais dans les terribles Montagnes des Larmes, être élevé à la dure est finalement plutôt logique et a permis d'engendrer un peuple robuste qui se débrouille pour survivre à sa manière.
+
+### **Pourquoi êtes-vous parti de chez vous ?**
+
+Quitter son foyer est dans la nature des ogres. Très peu d'entre eux supportent de rester à seulement quelques kilomètres de leur lieu de naissance (ou n'importe où ailleurs) pour plus de quelques années. Les ogres sont animés d'un intense désir de voyager, ce qui les pousse à parcourir les quatre coins du monde. De plus, les parents humains adoptifs sont souvent obligés de chasser les enfants ogres lorsqu'ils atteignent l'âge de voyager seuls : étant donné qu'ils sont plus grands que n'importe quel humain dès l'âge de dix ans, les choses peuvent parfois se compliquer, sans compter les frais de nourriture.
+
+### **Qui sont vos meilleurs amis ?**
+
+Bien qu'ils ne soient pas connus pour leur capacité à se faire des amis, les ogres ne sont pas asociaux pour autant. Évidemment, il est plus probable qu'un ogre se fasse des ennemis, mais combien d'entre eux survivront pour raconter leur histoire, ça, c'est un autre débat.
+
+Étant donné leur enfance difficile au sein de l'Empire, les ogres ont souvent peu d'amis humains, elfes ou nains. Toutefois, on les croise le plus souvent en compagnie de halflings. Ce lien semble être plus fort et plaisant pour les deux races dans l'Empire que partout ailleurs. Peut-être est-ce l'expérience des préjugés qu'ils ont subis qui unit ces deux peuples, plus que leurs potentielles origines communes.
+
+### **Quel est votre plus grand désir ?**
+
+Il est réducteur de penser que les ogres ne s'intéressent qu'à la nourriture et au voyage (même s'il s'agit probablement de leurs principales préoccupations). Les ogres, comme tout le monde, ont des désirs, il est donc important de réfléchir à ce que votre ogre attend de la vie. S'ils sont matériels, ces désirs devraient être volumineux et flagrants. Les ogres accordent une grande importance aux possessions personnelles, raison pour laquelle ils collectent des objets qui augmenteront leur Statut (par exemple des trophées de chasse) et leur richesse. Ils aiment être en mesure de voir et de sentir l'importance d'un objet de manière assez directe. Si un noble est petit, mince et dénué d'accoutrement, comment un ogre peut-il savoir qu'il s'agit d'un noble ? Leur naïveté les conduit souvent à poursuivre ce qui pourrait être un rêve inaccessible pour toute autre personne : posséder son propre château sur le Reik, devenir le citoyen le plus connu d'Altdorf ou encore manger un morceau de chaque animal du Vieux Monde. Bien sûr, compte tenu de leur nature, ces objectifs sont souvent plus à la portée d'un ogre qu'on ne pourrait le croire.
+
+#### **Quels sont vos meilleurs et vos pires souvenirs ?**
+
+Les ogres s'attardent rarement sur le passé et sont heureusement épargnés par la plupart des traumatismes qui affligent les Races de moindre envergure. Cependant, ils aiment raconter des histoires exagérées et grandiloquentes. Il peut donc être utile de choisir certains souvenirs clés dont votre ogre pourrait parler. Ces souvenirs sont généralement basés sur une action qu'ils ont entreprise et dont ils peuvent se vanter.
+
+### **Quelles sont vos croyances religieuses ?**
+
+Les cultes établis n'accepteraient pas un ogre dans leurs rangs sans une très bonne raison. Après tout, comment être sûr qu'ils ne dévoreront pas les autres fidèles ? De plus, les ogres impériaux sont loin de la Gueule et la plupart d'entre eux n'ont qu'une idée théorique des religions institutionnalisées. Cependant, certains cultes n'hésitent pas à convertir activement les non-croyants, surtout les plus belliqueux. Les ogres étant naturellement attirés par le prosélytisme de la guerre, il n'est pas impossible de croiser de temps à autre un ogre sigmarite pieux ou un ulricain couvert de fourrure. On raconte même que des ogresses nonnes de Shallya parcourent le monde en dévorant des cadavres emportés par la peste afin de combattre le Seigneur des Mouches !
+
+Il n'en demeure pas moins que tous les ogres sans exception ont au fond d'eux une faim insatiable d'en découvrir toujours plus, de voir le monde, de se régaler des visions les plus étranges, de dévorer la terre... Même s'ils tentent d'y résister, ils n'échapperont jamais à l'influence de la Gueule.
+
+#### **Envers qui, ou quoi, êtes-vous loyal ?**
+
+Un ogre est aussi loyal qu'un humain, vous pouvez donc vous reporter aux questions soulevées dans **WFJDR** (p. 43) et y répondre comme pour n'importe quel autre Personnage.
+
+
+#### <span id="page-26-0" data-folio="25"></span>**Pourquoi partir à l'aventure ?**
+
+Le plus souvent : l'envie de voyager, l'avidité, la faim, mais surtout l'envie de voyager. Les ogres ont envie de prendre la route, alors il n'est pas difficile de trouver une bonne justification pour laisser son ancienne vie derrière soi. Peut-être que votre ogre veut aller voir les Montagnes des Larmes ? Ou prendre la mer ? Ou serait-il possible que votre ogresse souhaite simplement s'enrichir ? Quoi qu'il en soit, un Joueur ogre ne devrait pas avoir trop de mal à trouver une bonne raison de partir à l'aventure.
+
+## **AVANCEMENT DES PERSONNAGES OGRES**
+
+Les Personnages ogres progressent au même titre que n'importe quel autre Personnage, exception faite de la règle *« Ils ne sont pas stupides, ils vont seulement droit au but »* p. 21, qui peut restreindre l'accès à certaines Compétences et certains Talents. Malgré cela, de nombreux Joueurs ont parfois du mal à imaginer les ogres gravir les Échelons supérieurs de la plupart des Classes et Carrières. Les exemples ci-dessous indiquent la manière dont les ogres peuvent se départir de leurs humbles débuts.
+
+**Assassin :** s'il y a bien un domaine dans lequel les ogres excellent, c'est le meurtre, et être payé pour le faire rend la chose encore plus agréable. Ils ne sont peut-être pas les plus discrets des assassins, mais ils ont le mérite d'être passionnés par leur mission.
+
+**Capitaine de Navire :** la vie d'un capitaine de navire convient parfaitement à la sensibilité des ogres. Des gros canons, une liberté de mouvement, des gros canons, des abordages musclés, des gros canons, des passages à tabac sur des petites mauviettes (souvent leur propre équipage) et des gros canons. Elle est pas belle la vie ?
+
+**Champion de justice :** de nombreuses villes ont interdit les champions de justice ogres parce qu'ils sont tout simplement trop doués, mais ils sont toujours très demandés par les riches et les imprudents de l'Empire.
+
+**Chef de bande :** les ogres ne peuvent pas s'empêcher d'enfreindre la loi. Et quand ils le font, ils tombent souvent sur d'autres criminels. À partir de là, il ne leur faut pas longtemps pour se frayer un chemin jusqu'au sommet, que ce soit de gré ou de force.
+
+**Duelliste :** même s'ils ne comprennent pas toujours pourquoi ils se battent au nom d'un humain maigrichon, le salaire et la nourriture offrent souvent une excellente contrepartie.
+
+**Éclaireur :** les ogres aiment le grand air et sont des éclaireurs naturels qui adorent se mesurer à la nature et à tout ce qu'ils peuvent croiser sur leur chemin. L'armée impériale de Cathay a depuis longtemps appris à craindre les éclaireurs ogres, des ennemis silencieux et particulièrement agressifs.
+
+**Explorateur :** les ogres aiment voyager aux quatre coins du monde. Lorsqu'ils finissent par rentrer dans leur pays (un jour, peut-être), les grands voyageurs ogres sont admirés pour les histoires étonnantes qu'ils racontent et les trophées impressionnants qu'ils ramènent de leurs voyages.
+
+**Légende de la fosse :** les champions ogres sont des créatures particulièrement dangereuses qu'il est normal et sensé de craindre. Ils considèrent chaque être vivant (ou mort) comme un potentiel morceau de viande à ajouter à leur assiette.
+
+**Maître d'équipage :** aucun ogre n'aime qu'on lui donne des ordres, il n'est donc pas rare pour eux d'essayer de gravir les échelons des organisations dont ils font partie, que ce soit sur terre ou en mer. Cependant, étant donné qu'ils se contentent souvent d'intimider les autres, ils font rarement l'unanimité auprès de leurs subordonnés.
+
+**Maître nocher :** bien qu'ils ne comprennent pas les mouvements des cieux, les ogres semblent être dotés d'un bon sens de l'orientation, ce qui en fait des navigateurs extrêmement doués. Cependant, leur incapacité à dessiner des cartes compréhensibles, à lire des cartes ou même à comprendre à quoi sert une carte fait qu'il est souvent risqué de leur faire confiance dans ce domaine.
+
+**Marchand :** les ogres aiment le commerce en raison de leur attrait pour les objets de valeur et les symboles de richesse. Mais attention, de nombreux marchands ogres ne sont pas dignes de confiance, tant ils sont désireux de maximiser leurs profits.
+
+**Officier :** beaucoup d'ogres aspirent à diriger leur propre régiment, alors gravir les échelons de l'armée d'État ou d'une bande de mercenaires est un objectif pour beaucoup d'entre eux. Une fois en haut de l'échelle, la plupart gouvernent d'une main de fer et deviennent de véritables tyrans.
+
+**Rançonneur :** l'activité idéale pour tout ogre digne de ce nom. Menacez tous ceux qui vous entourent, dites-leur que vous ne les mangerez pas en échange d'un paiement,, et voilà une source de revenus. C'est une tâche ingrate, mais elle plaît aux ogres.
+
+**Répurgateur :** souvent, les ogres n'ont pas besoin de faire quoi que ce soit pour faire parler les minus. Un simple coup d'œil à leur stature suffit à faire hurler le premier venu ! Bien sûr, ils ne sont peut-être pas au fait des subtilités de la théologie ou de la « loi », mais ils sont un atout considérable pour les fanatiques de la chasse aux sorcières.
+
+**Saltimbanque :** peu de gens s'attendent à ce que les ogres soient de bons amuseurs et pour une bonne raison : ils le sont rarement. Malgré cela, plusieurs d'entre eux continuent de s'y essayer, car ils aiment la compétition, cherchant à devenir le meilleur de tous et intimidant quiconque les surpasse dans cet art.
+
+**Sergent :** il n'est pas rare de voir des bandes d'ogres en devenir se disputer le commandement des groupes de mercenaires. Ils sont généralement prêts à tout pour faire leurs preuves, ce qui les rend extrêmement dangereux. Certains empruntent la voie la plus sûre au sein d'une armée établie, mais la plupart sont des mercenaires nomades.
+
+
+<span id="page-27-0" data-folio="26"></span>
+
+## **EXEMPLES DE PERSONNAGES OGRES**
+
+## **Nazzaalta Affabule**
+
+L'histoire de Nazzaalta est assez connue sur les quais d'Ubersreik, non pas en raison de sa banalité, mais parce qu'elle a tendance à la raconter en hurlant à toute heure de la journée. Née à bord d'un navire remontant le Reik depuis Marienburg et jetée sous un pont, Nazzaalta aurait dû connaître une mort certaine. Mais c'était sans compter sur une bande de débardeurs qui ont perçu sa valeur dès son plus jeune âge. Ils l'ont donc prise sous leur aile et l'ont élevée comme l'une des leurs.
+
+Grâce à sa musculature, cette ogresse infatigable est plus que la bienvenue sur les quais, mais c'est surtout sa voix retentissante qui attire l'attention. Avec le temps, même les hauts responsables de la Guilde des débardeurs ont fini par comprendre la véritable utilité d'un ogre à la voix porteuse : il est difficile de dire « non » à quelqu'un qui ne demande qu'à vous dévorer tout entier.
+
+Nazzaalta aime ce qu'elle est devenue. Sur les quais, où elle est bien nourrie, elle se sent chez elle. De plus, les passants ont l'air d'apprécier les histoires à dormir debout qu'elle recueille auprès des marins qui vont et viennent en permanence. Et de temps en temps, les personnes bienveillantes qui lui disent quoi ramasser et où le poser lui ordonnent d'écraser le bras ou de casser les jambes de quelqu'un. Qu'est-ce qu'une ogresse pourrait demander de plus ?
+
+#### **Artur Piedmarteau**
+
+En général, les nains et les ogres ne s'entendent pas très bien. Les nains sont petits et attachent beaucoup d'importance à la tradition et à l'artisanat, tandis que les ogres... Eh bien, les ogres ne se soucient pas de ce genre de choses. Sauf Artur. Artur Piedmarteau s'intéresse vivement à l'histoire des ogres et il aime marteler le métal pour lui donner une forme esthétique. Cependant, tout ce qu'il sait faire, ce sont des pansières marquées de la forme de son pied.
+
+Artur rêve secrètement de renverser les nains de Karak Azgaraz et de dévorer tous ces « *jambons ambulants* », comme il les appelle. Étant donné qu'il ne se montre pas particulièrement discret à ce sujet, les nains savent ce qu'il mijote. Heureusement qu'il fabrique ces pansières pour une armée inexistante, sinon ils feraient de la vie des Altdorfers un véritable enfer.
+
+Pourtant, de nombreux nobles commencent à s'intéresser à ce « savoir-faire » rudimentaire, et quelques clients ont acheté des pansières à Artur pour les accrocher aux murs à l'occasion de grands festins. Ses créations deviennent à la mode parmi les aristocrates les plus éclectiques de la ville. Ce n'est pas la clientèle qu'Artur recherchait, mais l'afflux d'argent attire l'attention des quelques ogres entreprenants de la ville. Peut-être que cette armée n'est pas aussi imaginaire que les gens le pensent.
+
+#### NAZZAALTA AFFABULE - DÉBARDEUR OGRE, ANCIEN PORTEUR
+
+**Carrière :** Débardeur (ancien Porteur) **Expérience dépensée :** 500 points
+
+|       | M | CC CT |    | F  | E  | I  |    | Ag Dex | Int | FM Soc |    | B  |  |
+|-------|---|-------|----|----|----|----|----|--------|-----|--------|----|----|--|
+| Base  | 6 | 36    | 17 | 49 | 43 | 16 | 28 | 26     | 25  | 29     | 19 | 28 |  |
+| Aug   | – | –     | –  | –  | –  | +5 | –  | –      | –   | –      | –  | –  |  |
+| Total | 6 | 36    | 17 | 49 | 43 | 21 | 28 | 26     | 25  | 29     | 19 | 28 |  |
+
+**Compétences :** Athlétisme 38, Corps à corps (Bagarre 39, Base 46), Divertissement (Narration) 29, Escalade 54, Esquive 33, Intimidation 52, Natation 54, Ragot 24, Résistance 51, Résistance à l'alcool 53
+
+**Talents :** Combat déloyal, Infatigable, Massif, Résistance (Poisons ingérés), *Très fort*, Vice (Nourriture), Vision nocturne
+
+**Possessions :** cape, vêtements, dague, flasque de spiritueux, arme simple (gaffe), gants de cuir, bourse, besace
+
+#### ARTUR PIEDMARTEAU - ARTISAN OGRE
+
+**Carrière :** Artisan (ancien Apprenti Artisan)
+
+**Expérience dépensée :** 1 000 points
+
+|       | M | CC CT |    | F       | E  | I |    | Ag Dex | Int | FM Soc |    | B  |  |
+|-------|---|-------|----|---------|----|---|----|--------|-----|--------|----|----|--|
+| Base  | 6 | 29    | 19 | 58      | 51 | 3 | 21 | 26     | 25  | 36     | 19 | 36 |  |
+| Aug   | – | –     | –  | +10 +10 |    | – | –  | +10    | –   | –      | +7 | –  |  |
+| Total | 6 | 29    | 19 | 68      | 61 | 3 | 21 | 36     | 25  | 36     | 26 | 42 |  |
+
+**Compétences :** Athlétisme 26, Calme 41, Corps à corps (Bagarre 34, Base 32), Discrétion (Urbaine) 26, Esquive 26, Évaluation 30, Intimidation 71, Langue (Grumbarth) 28, Métier (Forgeron) 42, Résistance 71, Résistance à l'alcool 66, Savoir (Ogres) 30
+
+**Talents :** Combat déloyal, Maître artisan (Forgeron), Massif, Résistance (Poisons ingérés), *Très fort*, Vice (Nourriture), Vision nocturne
+
+**Possessions :** craie, cape, vêtements, dague, licence de Guilde, chapeau, justaucorps de cuir, repas, bourse, besace, chiffons, outils professionnels (forgeron)
+
+
+## <span id="page-28-0" data-folio="27"></span>**À L'ATTENTION DU MENEUR DE JEU**
+
+Les points suivants sont des conseils pour les Meneurs de Jeu qui souhaitent ajouter des ogres à leurs campagnes de **Warhammer Fantasy le Jeu de Rôle**. Pour commencer, nous pensons que c'est une excellente idée (sinon nous n'aurions pas publié ce supplément). Dans la mesure du possible, essayez de présenter tous les problèmes potentiels liés aux ogres de manière positive !
+
+#### **Ajouter des ogres à une campagne en cours**
+
+Ajouter un ogre à une campagne en cours est plus facile que vous ne le pensez :
+
+Les ogres aiment par-dessus tout voyager, les convaincre de laisser tomber ce qu'ils sont en train de faire pour rejoindre un groupe d'aventuriers intrépides est donc un jeu d'enfant.
+
+Les ogres coûtent cher en entretien, ils sont donc toujours à la recherche de travail et d'argent.
+
+Les ogres sont particulièrement influençables et aiment s'intégrer. S'ils ont la possibilité de se lier d'amitié avec les Personnages, ils sauteront probablement sur l'occasion, surtout si le groupe comprend un halfling !
+
+Cependant, l'ajout d'un ogre n'est pas une décision qui doit être prise à la légère ou sans consulter votre groupe de Joueurs. S'ils ne figurent pas dans le livre de base, c'est pour une bonne raison. La plupart des Joueurs ne s'attendront donc pas à croiser des Personnages ogres dans une partie de **WFJDR**.
+
+## **Les ogres sont-ils surpuissants ?**
+
+Oui, ils le sont, foncièrement et sans vergogne. Les ogres sont bel et bien surpuissants, raison pour laquelle les armées impériales n'hésitent pas à se servir d'eux. Un ogre peut s'attaquer à lui seul à plusieurs humains, gobelins, etc. Mais c'est un juste retour des choses. Après tout, les ogres sont confrontés à toutes sortes de problèmes en raison de leur Statut. Ils dépendent presque entièrement d'autres Personnages pour s'en sortir dans le Vieux Monde : ils ne savent ni lire, ni compter, font de piètres économes et leurs dépenses les plus élémentaires suffiraient à ruiner la plupart des modestes marchands.
+
+Un Personnage ogre est un ajout bienvenu à tout groupe d'aventuriers, mais certains Joueurs peuvent trouver injuste que cette race soit si supérieure au combat. Assurez-vous d'en discuter avec l'ensemble du groupe de jeu. Si l'un des membres est réticent à l'idée d'intégrer un Personnage ogre, vous pouvez toujours utiliser les règles de ce chapitre pour créer des PNJ ogres qui valent le détour. Toutefois, gardez à l'esprit qu'avoir un ogre dans le groupe peut ouvrir de nouvelles possibilités. Par exemple, si les autres Joueurs souhaitent se concentrer sur une Carrière de Lettré ou de Citadin, ils pourront s'y consacrer entièrement : si la violence est requise, l'ogre s'en chargera avec plaisir.
+
+## **De grands ogres et de petites bâtisses**
+
+Les ogres sont grands. À vrai dire, ils sont même énormes. Si l'on considère que la taille moyenne d'un Reiklander est de 1,75 m, la majorité des bâtiments de l'Empire seront trop étroits pour les ogres, sans compter que de nombreuses aventures se déroulent dans des endroits étriqués, comme des égouts ou des tunnels.
+
+Dans la mesure du possible, essayez de tourner la taille d'un ogre en dérision. Nul besoin d'exclure votre Joueur ogre de certaines scènes juste parce qu'il ne peut pas entrer dans une pièce. Au lieu de cela, proposez-lui de se déplacer à quatre pattes ou décrivez la manière dont il se tord le cou et traîne les pieds dans une boutique naine exiguë. Assurez-vous de bien expliquer cette situation au Joueur avant qu'il ne choisisse de créer un Personnage ogre, sinon il pourrait très vite être agacé par son sort dans le Vieux Monde. Il est indispensable de s'assurer que tout le monde est prêt à relever les défis qui pourraient survenir lors d'un voyage en compagnie d'un ogre.
+
+
+## <span id="page-29-0" data-folio="28"></span>DE L'IMPORTANCE DE LA TAILLE
+
+Les règles de Taille sont quelque peu complexes, mais savoir comment les utiliser est crucial pour les Joueurs ogres et les MJ. Les différences telles que le plus grand nombre de blessures que peuvent recevoir les ogres sont abordées précédemment dans la section Création de Personnage. Les principales règles à prendre en compte la taille d'un ogre sont résumées ci-dessous. Vous trouverez plus de détails dans **WFJDR** (p. 342).
+
+#### **Dégâts des Armes**
+
+Les Armes utilisées par les créatures de Taille Grande, comme les ogres, gagnent l'Atout Dévastatrice (**WFJDR** p. 298) contre des créatures de Taille Moyenne, comme les humains, les nains et les elfes. Vous pouvez utiliser soit le nombre indiqué sur le dé, soit le DR pour déterminer les Dégâts causés par une attaque réussie.
+
+Contre les Petites créatures, comme les halflings, les Armes gagnent également l'Atout Percutante (**WFJDR** p. 298), vous devez donc ajouter le nombre indiqué sur le dé des unités lorsque vous calculez les Dégâts. De plus, après application de tous les modificateurs pertinents, les Dégâts de l'arme contre les créatures de Taille Petite sont doublés. Les halflings ont tendance à se lier d'amitié avec les ogres, et ce n'est pas pour rien.
+
+#### **Frappe mortelle**
+
+Si un ogre réussit à frapper une créature de Taille inférieure, il peut choisir d'entrer dans son espace pour effectuer une attaque supplémentaire contre une autre créature. Il peut le faire un nombre de fois égal à son Bonus de Capacité de Combat, mais il ne peut pas attaquer la même créature plus d'une fois. Il n'est pas nécessaire que la cible initiale meure pour déclencher ce coup.
+
+#### **Se défendre contre les ogres**
+
+Les créatures de Taille Moyenne subissent une pénalité de -2 DR aux Tests de Corps à corps si elles veulent se défendre contre les attaques d'un ogre. Ce n'est pas le cas si elles utilisent une autre Compétence, comme Esquive. Les Petites créatures subissent -4 DR.
+
+#### **Peur**
+
+Les ogres hostiles provoquent *Peur* (**WFJDR** p. 190) chez les créatures de Taille Moyenne et *Terreur* (**WFJDR** p. 191) chez les Petites créatures.
+
+#### **Autres informations**
+
+Les ogres n'ont pas besoin de recourir au *Désengagement* (**WFJDR** p. 165) pour s'éloigner des adversaires de Taille inférieure en combat. S'il le souhaite, un ogre peut dépenser 1 Avantage pour attaquer un adversaire de Taille inférieure avec un BF +0 Dégâts en utilisant sa Compétence Corps à corps (Bagarre). Les créatures de Taille Moyenne et Petite reçoivent un bonus de +10 pour toucher les ogres avec les Compétences Corps à corps et Projectiles.
+
+Mises bout à bout, ces règles sur la Taille ont un impact majeur sur les combats, veillez donc à bien les appliquer. La plupart des ogres effectuent plusieurs attaques par tour, ils infligent donc des dégâts considérables au fur et à mesure.
+
+## **Un ogre entre dans un bar...**
+
+Tout comme certains Joueurs peuvent trouver qu'un ogre éclipse leurs propres prouesses au combat s'il fait partie de leur groupe, il arrive parfois que les Joueurs ogres se sentent limités par les autres défis auxquels ils sont confrontés. Les ogres sont généralement perçus avec crainte et méfiance. Étant donné qu'ils sont souvent employés comme mercenaires, gardes du corps ou hommes de main, de nombreux habitants de l'Empire considèrent leur arrivée en ville comme un prélude évident à la violence. Si une situation exige des interactions sociales et une enquête approfondie, un ogre peut avoir du mal à interroger les habitants sans que quelqu'un d'autre brise la glace en premier lieu. Pire encore, si la discrétion est de mise, c'est souvent peine perdue pour les ogres.
+
+Assurez-vous de bien faire comprendre cet aspect aux Joueurs qui envisagent de créer un Personnage ogre. Certains apprécieront peut-être de ce style de jeu, qui consiste à survivre et à prospérer en dépit de la façon dont le monde les perçoit. D'autres trouveront peut-être que la peur qu'ils inspirent à de nombreux PNJ nuit à leur plaisir de jouer. Si tel est le cas, n'hésitez pas à minimiser cet aspect au cours d'une partie de **WFJDR**. Après tout, de nombreux groupes mettent en scène des aventuriers de toutes sortes, lourdement armés et équipés, qui se promènent de maison en maison, traînant derrière eux des montagnes d'acier et de poudre à canon. Vus sous cet angle, les ogres ne sont pas beaucoup plus intimidants.
+
+Bien entendu, les ogres peuvent également tirer profit de leur réputation intimidante. Si un Joueur peut se contenter de s'asseoir dans un coin pour laisser les minus mener la conversation jusqu'à ce qu'un regard insistant ou un accès de violence extrême soit nécessaire, il sera plus que satisfait de jouer un ogre. Pour sa part, l'ogre moyen est de nature stoïque, il a un appétit insatiable et un talent pour trouver une solution sanglante et directe aux plus compliqués des problèmes. Bien que certaines parties de l'Empire puissent sembler peu accueillantes, l'ogre typique saura se montrer à la hauteur.
+
+## **ÉQUIPEMENT DES OGRES**
+
+Comme indiqué à la page 11, la plupart des armes et équipements ordinaires sont disponibles en « taille ogre ». En dehors du fait qu'elles sont plus lourdes, ces armes n'ont pas d'effets supplémentaires, si ce n'est qu'elles peuvent potentiellement acquérir les Atouts Dévastatrice et Percutante en plus d'augmenter les dégâts contre les Petites créatures, comme indiqué dans la section *De l'importance de la taille*, cicontre.
+
+Toutefois, les ogres forgent et utilisent leurs propres armes et armures, notamment leurs immenses massues et leurs impressionnantes pansières. Les règles de ces créations sont détaillées ci-dessous. Attention : il s'agit d'armes réservées aux ogres, les points d'Encombrement n'ont donc pas besoin d'être doublés comme pour les autres Possessions (voir p. 31). Inutile de préciser que ces armes sont pratiquement inutilisables entre les mains des créatures de Taille Moyenne et que la plupart des Petites créatures auront même du mal à les soulever.
+
+
+### ARMES DE CORPS À CORPS DES OGRES
+
+<span id="page-30-0" data-folio="29"></span>| Arme                    | Prix | Enc. | Disponibilité* | Allonge<br>Dégâts |      | Atouts et Défauts        |
+|-------------------------|------|------|----------------|-------------------|------|--------------------------|
+|                         |      |      |                | BASE              |      |                          |
+| Massue ogre             | 1 CO | 2    | Courante       | Moyenne           | BF+4 | Spéciale**               |
+| Poing de fer            | 4 CO | 2    | Limitée        | Courte            | BF+3 | Défensive, Protectrice 1 |
+|                         |      |      |                | DEUX MAINS        |      |                          |
+| (2M) Grande massue ogre | 5 CO | 6    | Courante       | Longue            | BF+6 | Dévastatrice, Spéciale** |
+
+<sup>\*</sup>La disponibilité est indiquée pour l'Empire, où certaines armes sont plus rares que dans les Montagnes des Larmes.
+
+## ARMES À DISTANCE DES OGRES
+
+| Prix                                             | Enc.<br>Disponibilité*<br>Portée |          |                    | Dégâts                                              | Atouts et Défauts      |  |  |  |
+|--------------------------------------------------|----------------------------------|----------|--------------------|-----------------------------------------------------|------------------------|--|--|--|
+|                                                  |                                  |          |                    |                                                     |                        |  |  |  |
+| 8 CO                                             | 5                                | Exotique | 20                 | +10                                                 | Entraves, Recharge 2   |  |  |  |
+| 1 CO                                             | 2                                |          |                    | Entraves                                            |                        |  |  |  |
+|                                                  |                                  |          |                    |                                                     |                        |  |  |  |
+| Grande lance                                     |                                  | BF+4     | Empaleuse          |                                                     |                        |  |  |  |
+|                                                  |                                  |          |                    |                                                     |                        |  |  |  |
+| 14 CO                                            | 8                                | Exotique | 50                 | +10                                                 | Dangereuse, Recharge 5 |  |  |  |
+| (2M) Canon crache-plomb<br>Pistolet ogre<br>9 CO |                                  | Exotique | 20                 |                                                     | Pistolet, Recharge 1   |  |  |  |
+|                                                  | 6/                               | 2<br>3   | Limitée<br>Limitée | ENTRAVES<br>BFx2<br>LANCER<br>BFx3<br>POUDRE NOIRE* | +7<br>+8               |  |  |  |
+
+<sup>\*</sup>La disponibilité est indiquée pour l'Empire, où certaines armes sont plus rares que dans les Montagnes des Larmes.
+
+### MUNITIONS DES OGRES
+
+| Arme                    | Prix  | Enc. | Disponibilité | Portée           | Dégâts | Atouts et Défauts                 |
+|-------------------------|-------|------|---------------|------------------|--------|-----------------------------------|
+|                         |       |      |               | ENTRAVES         |        |                                   |
+| Harpon (6)              | 5/-   | 0    | Exotique      | Comme l'arme     | —      | Empaleuse                         |
+|                         |       |      |               | POUDRE NOIRE     |        |                                   |
+| Balle crache-plomb (12) | 4/-   | 0    | Limitée       | Moitié de l'arme | —      | Explosion 3                       |
+| Boulet crache-plomb (1) | 1 CO* | 0    | Limitée       | Comme l'arme     | +4     | Empaleuse, Percutante, Perforante |
+
+<sup>\*</sup>Fondamentalement, il s'agit d'un boulet de canon. Le prix indiqué pour un boulet crache-plomb comprend 2/- pour la quantité de poudre suffisante pour tirer un seul coup. Le boulet peut souvent être récupéré. En le tirant à nouveau, vous dépensez uniquement le prix de la poudre.
+
+#### ARMURES DES OGRES
+
+| Armure         | Prix  | Enc. | Disponibilité | Pénalité | Emplacements | PA | Atouts et Défauts |  |  |  |
+|----------------|-------|------|---------------|----------|--------------|----|-------------------|--|--|--|
+| PLATE          |       |      |               |          |              |    |                   |  |  |  |
+| Pansière ogre* | 20 CO | 4    | Rare          | –        | Corps        | 3  | Impénétrable      |  |  |  |
+
+<sup>\*</sup>Les pansières des ogres sont particulièrement adaptées à leur anatomie. Même si elles étaient réduites, elles n'offriraient qu'une protection partielle aux races dont les organes vitaux ne se trouvent pas dans leur ventre.
+
+<sup>\*\*</sup>Les massues des ogres sont toujours personnalisées en fonction des préférences de leur utilisateur. Voir la description des armes.
+
+
+## <span id="page-31-0" data-folio="30"></span>**Description des Armes**
+
+Certaines armes ogres ont des règles spéciales en plus de leurs Atouts et de leurs Défauts.
+
+### **Canon crache-plomb**
+
+Ce canon est le summum de l'ingénierie ogre. Chargé par la culasse, extrêmement résistant et déclenché par l'allumage d'une simple mèche, le canon crache-plomb bombarde généralement tout ce que son porteur a sous la main : chaînes, briques, grenailles de plomb, pierres, clous rouillés, etc. Il arrive que ces armes soient chargées de véritables boulets de canon, que les ogres récupèrent généralement sur le champ de bataille après utilisation. Les boulets porte-bonheur sont souvent affublés d'un surnom et sont trimballés partout, à l'image d'un camarade de confiance.
+
+### **Grande lance**
+
+Utilisés par les chasseurs ogres pourchassant les grandes bêtes des Montagnes des Larmes, ces javelots sont massifs, rudimentaires et terriblement efficaces.
+
+### **Lance-harpon**
+
+Utilisé pour chasser des proies, le lance-harpon tire une énorme flèche de la taille d'une lance, attachée à une longue corde. Il n'est pas doté d'un mécanisme permettant de ramener la corde automatiquement, l'ogre doit donc saisir la corde et tirer sa proie à la main. Le lance-harpon peut être utilisé avec les
+
+Clément Gauche - gauche.c@gmail.com
+
+Compétences Projectiles (Arbalète) ou Projectiles (Entraves) sans pénalité. Si la corde est séparée de la flèche, la portée passe à 60 et l'arme ne possède plus l'Atout Immobilisante.
+
+#### **Massues ogres**
+
+Les ogres adorent les massues. Ce sont les armes les plus simples, ce qui convient parfaitement à leur mentalité. D'ailleurs, ils n'hésitent pas à parcourir les champs de bataille, les forêts et les cimetières pour trouver une bonne massue bien solide ainsi que les matériaux nécessaires pour l'adapter à leur goût. Si vous le souhaitez, vous pouvez personnaliser une massue ogre ou une grande massue en lui attribuant l'une des caractéristiques suivantes. Voir **WFJDR** p. 297 pour plus d'informations sur ces Atouts.
+
+**Plaques de métal :** l'arme gagne l'Atout Assommante. **Pointes rouillées :** l'arme gagne l'Atout Perforante. **Lames récupérées :** l'arme gagne l'Atout Taille.
+
+### **Piège à chaînes**
+
+Cet ensemble de mâchoires métalliques à ressort reposant sur une longue chaîne robuste est un outil utilisé par les chasseurs ogres. À l'origine, cette arme était conçue pour être enchaînée à un rocher ou à un arbre, puis laissée en place dans l'espoir d'attraper une proie. Aujourd'hui, la plupart des ogres manquent de patience pour ce genre d'approche et trouvent plus pratique de lancer le piège sur une cible avant de le ramener pour se délecter de la chair fraîche.
+
+#### **Pistolet ogre**
+
+Un pistolet ogre est une version améliorée de son équivalent Impérial qui utilise les mêmes munitions et la même poudre qu'une arme typique à poudre noire (**WFJDR** p. 297). Toutefois, il est suffisamment solide pour servir d'arme simple et ne se brise qu'en cas de Maladresse.
+
+#### **Poing de fer**
+
+Hommage à l'art sacré du combat de fosse, le poing de fer est un énorme gantelet que les ogres utilisent pour écarter les coups et briser des nuques. Le poing de fer est solidement fixé à celui de l'ogre, de sorte qu'il ne pourra pas en être désarmé. La main équipée du poing de fer peut servir à tenir une arme ou à effectuer des actions simples.
+
+## **Description des Armures**
+
+Si certains ogres portent des armures plus conséquentes, c'est autant par effet de mode ou pour montrer leur affiliation que pour se protéger réellement. Seule la pansière a pour vocation la protection.
+
+#### **Pansière**
+
+Qu'elle soit faite de métal, de bois dur, d'os ou de cuir, la pansière d'un ogre a encore plus de valeur que la massue la mieux portée. Elle protège le ventre de l'ogre, où se trouvent la plupart de ses organes vitaux, et sert à la fois de source de protection et de support pour les symboles militaires ou religieux. De nombreuses pansières arborent la représentation de la Gueule, un anneau de dents déchiquetées qui symbolise à la fois le dieu affamé des ogres et leur propre appétit vorace.
+
+
+### UN LOURD FARDEAU
+
+<span id="page-32-0" data-folio="31"></span>Les ogres sont immenses et par extension, leur matériel est bien plus grand que celui des humains. La version ogre de la plupart des possessions vaut deux fois l'Encombrement classique et coûte deux fois plus cher. De plus, les ogres doivent manger et boire au moins deux fois plus qu'un humain en une journée. Cependant, ils ne ressentent aucun effet des drogues et des poisons, à moins qu'on leur administre deux fois la dose standard. En contrepartie, un ogre peut porter deux fois l'Encombrement normal d'un humain : (Bonus de Force + Bonus d'Endurance) × 2.
+
+Un ogre subit une pénalité de -20 à tous les Tests lorsqu'il tente d'utiliser des possessions qui ne sont pas prévues pour sa taille, en plus de trouver certaines choses impossibles à faire. Par exemple, un doigt d'ogre ne peut tout simplement pas presser la détente d'un pistolet à répétition humain.
+
+## **Lanceurs de sorts ogres**
+
+Les ogres ne pratiquent pas la magie de la même manière que les autres Races. Bien qu'ils canalisent les mêmes Vents de Magie qui alimentent tous les sorts, ils le font d'une manière très particulière. Les ogres peuvent uniquement apprendre les Domaines de la Gueule, des Cieux, de la Mort et de la Bête. La Gueule comprend ces aspects de la nature et les accorde à ses adeptes les plus dévoués. La seule exception concerne les Ventres-Feu, qui tirent leurs pouvoirs de la Bouche de Feu, une autre divinité ogre. Les ogres peuvent lancer les sorts d'Arcane qui figurent à la page 242 de **WFJDR**, comme n'importe quel autre Sorcier.
+
+## **MAGIE OGRE**
+
+Bien que de nature arcanique, la magie des ogres est inextricablement liée à leur croyance. Certains ogres, appelés Ventres-Feu, rendent hommage à un grand dieu du feu volcanique connu sous le nom de la Bouche de Feu. À travers de terribles épreuves, ils parviennent à focaliser l'*Aqshy*, le Vent rouge du Feu, dans leurs entrailles. Si vous souhaitez incarner un Ventre-Feu, il vous suffit de modifier la Carrière Sorcier et de choisir le Talent Magie des Arcanes (Feu), moyennant quelques modifications.
+
+La forme la plus courante de magie est de loin celle pratiquée par les bouchers, dévots de la Gueule, la divinité vorace qui anime l'appétit insatiable de chaque ogre. Étant donné leur amour de la chair, l'acte de boucherie revêt une grande importance dans la société ogre, notamment parce qu'il exige une certaine retenue pour préparer correctement la viande au lieu de se contenter de dévorer une carcasse fraîchement abattue.
+
+Cependant, les bouchers ogres ne font pas que préparer les festins. Ce sont également des émissaires de la Gueule, que la plupart des ogres considèrent avec crainte. Lorsqu'ils abattent et préparent de la viande selon un rituel bien précis, ils canalisent une parcelle de l'appétit débordant de la Gueule et par là même, une partie de son pouvoir. Les érudits ayant un intérêt (et un bon estomac) pour l'étude de la magie des ogres ont remarqué qu'elle se distinguait des miracles qui se manifestent parfois autour des dévots de Sigmar, Ulric, Taal et d'autres dieux. Malgré ses prétendues origines divines, les pouvoirs exercés par les bouchers ogres sont certainement dérivés des mêmes Vents de Magie que ceux exploités par les sorciers des Collèges de l'Empire. Ces mêmes spécialistes soulignent le fait que certains bouchers ont des pouvoirs similaires à ceux que l'on trouve dans les Domaines de la Mort, de la Bête et des Cieux. Le rôle que joue la Gueule dans tout cela n'est pas évident pour les érudits, mais il est limpide pour la plupart des ogres : la Gueule est affamée et récompense ceux qui sacrifient des êtres vivants en son nom.
+
+Les sorts des ogres impliquent toujours de la viande : soit il faut découper une tranche spécifique d'un cuissot soigneusement préparé, soit il faut mâcher un morceau de graisse, soit il faut sucer la moelle d'un os. Ce morceau de viande peut être inclus dans le coût de la vie de l'ogre, car la Gueule ne prend qu'une partie de ce qui est consommé. Les ogres qui n'ont pas accès à de telles ressources peuvent tout de même lancer des sorts, mais ils deviennent de plus en plus voraces à mesure que la Gueule tire sa force des entrailles de l'ogre lui-même. La Gueule finira par avoir son repas, d'une manière ou d'une autre.
+
+Attention : ces ingrédients ne sont pas pris en compte dans la réduction du risque d'Incantation Imparfaite (**WFJDR** p. 236). Pour obtenir ces avantages, le lanceur de sorts doit utiliser un morceau de viande plus exotique. Les sorts peuvent faire appel à des ingrédients, comme la bile de troll ou la moelle de rhinox. L'ogre doit les acquérir lui-même ou les acheter pour le coût de 1 pistole par NI du sort en question. Si un lanceur de sorts ogre n'a pas d'ingrédient approprié à portée de main, il perd 1 Blessure pour chaque NI du sort qu'il lance.
+
+Enfin, les ogres peuvent apprendre la Compétence Langue (Magick) si elle est disponible pour leur Carrière. Ils peuvent l'utiliser pour les Tests d'Incantation, comme tout autre lanceur de sorts. Cependant, la magie des ogres est bien plus instinctive qu'intellectuelle (après tout, ils font appel à leurs entrailles même dans ces moments-là). Les lanceurs de sorts ogres utilisent l'Endurance au lieu de l'Intelligence pour leur Compétence Langue (Magick).
+
+
+## <span id="page-33-0" data-folio="32"></span>**Le Domaine de la Gueule**
+
+Parfois appelé Gastromancie ou simplement Magie des Entrailles, le Domaine de la Gueule n'est disponible que pour les ogres (voir la Carrière Boucher ogre p. 37). Cette magie met en avant une faim intense, des festins sanglants et une énergie effrénée. Chaque fois qu'un boucher ogre réussit à lancer un sort du Domaine de la Gueule, l'offrande qu'il consomme peut lui permettre de restaurer sa propre santé. Lancez 1d10. Si le résultat est un 10, ou s'il est égal ou supérieur au NI du sort lancé, sans modification de Focalisation et sans utiliser un Grimoire, le Boucher récupère un nombre de Blessures égal au NI non modifié du sort.
+
+**Composants :** les ogres se servent de restes ensanglantés pour alimenter leur magie. Elles sont généralement issues d'animaux et plus elles sont fraîches, mieux la magie opère. Il peut s'agir de morceaux de viande saignants, de bile provenant de l'estomac de créatures étranges, de la moelle de bêtes imposantes ou de la graisse séchée d'animaux domestiques, comme des cochons ou des vaches. La magie des ogres n'est pas une chose agréable à regarder pour le commun des mortels. Toutefois, pour de nombreux ogres, voir un boucher à l'œuvre est tout à fait appétissant.
+
+#### **Bouf 'crâne**
+
+**NI :** 5
+
+**Portée :** Vous **Cible :** Vous
+
+**Durée :** (Bonus de Force Mentale) Rounds
+
+Vous dévorez une tête entière, y compris la cervelle et tout ce qui s'ensuit. Votre prodigieux intestin distille l'essence cauchemardesque du malheureux crâne et la projette autour de vous en une horrible vague nauséabonde. Vous gagnez le Trait de créature Peur 2 (**WFJDR** p. 341). Ceux qui connaissaient l'ancien propriétaire de la tête dévorée doivent se soumettre à tous les Tests de Calme avec une pénalité de -20 pour résister à la *Peur*.
+
+#### **Broyeur d'os**
+
+**NI :** 5
+
+**Portée :** (Force Mentale) mètres
+
+**Cible :** 1
+
+**Durée :** Instantanée
+
+Vous croquez bruyamment quelques os tout en grommelant une malédiction visant un ennemi proche. *Broyeur d'os* est un Projectile magique avec des Dégâts de +4 qui ignore les Points d'Armure de votre cible, mais pas son Bonus d'Endurance. De plus, si votre attaque inflige une Blessure Critique, ajoutez +20 au lancer sur le Tableau des Blessures Critiques approprié, pour en déterminer la gravité.
+
+### **Festin des Damnés**
+
+**NI :** 9 **Portée :** Vous
+
+**Cible :** ZdE (Bonus de Force Mentale) mètres **Durée :** (Bonus de Force Mentale) Rounds
+
+Vous trempez votre lame favorite dans le sang d'un ennemi fraîchement tombé, ce qui vous donne plus de puissance et éveille la soif de sang chez vos alliés. Toutes les créatures de votre choix dans la Zone d'Effet gagnent le Trait de Créature Vampirique (**WFJDR** p. 343) pour la durée de ce sort. La cible n'a pas besoin de mordre ses adversaires pour bénéficier des avantages de ce Trait, il lui suffit de les blesser au corps à corps. Elle peut également bénéficier de soins provenant d'autres sources. Si une créature souhaite résister à ce sort, elle peut tenter un Test de **Résistance Difficile (-20)** pour en ignorer les effets.
+
+Clément Gauche - gauche.c@gmail.com
+
+
+<span id="page-34-0" data-folio="33"></span>Pendant la durée de ce sort, le sang des ennemis jaillit vers les personnes affectées, coulant le long de leurs lames, sur leurs bras et dans leurs bouches. Les ogres ne sont pas gênés par cet effet (la plupart s'en délectent), mais les autres créatures trouvent généralement cette situation fort déstabilisante. Lorsque le sort prend fin, les non-ogres qui ont blessé au moins un adversaire au corps à corps tandis qu'ils étaient sous l'effet du sort doivent réussir un Test de **Calme Intermédiaire (+0)** ou gagner l'État *Assommé*. De plus, s'ils blessent un adversaire qui possède les Traits de créature Infecté ou Maladie, tout Test effectué pour en éviter les effets négatifs subit une pénalité de -30.
+
+### **Goinfre costaud**
+
+**NI :** 5
+
+**Portée :** (Bonus de Force Mentale) mètres
+
+**Cible :** 1
+
+**Durée :** (Bonus de Force Mentale) Rounds
+
+Vous dévorez le cœur d'une bête puissante, puis projetez sa force et sa puissance sur une créature proche. Pendant la durée du sort, votre cible ajoute +2 à son Bonus de Force pour les Dégâts qu'elle inflige ou pour d'autres Tests de Force appropriés.Cependant, lorsque le sort prend fin, elle se retrouve envahie par une faim intense et doit immédiatement se gaver d'un repas conséquent ou gagner un État *Exténué*.
+
+Si la cible souhaite rejeter votre don, elle peut tenter un Test de **Calme Complexe (-10)** pour en ignorer les effets.
+
+### **Goûtemort**
+
+**NI :** 2
+
+**Portée :** Vous **Cible :** Vous **Durée :** Instantanée
+
+En consommant une partie d'un cadavre, vous apprenez quand et comment la créature est morte. Vous découvrez si la victime a été poignardée, empoisonnée, tuée par la magie, si elle est morte de causes naturelles, etc. Les informations que vous obtenez sont générales. Par exemple, vous pouvez apprendre que la victime a été poignardée à mort avec une épée, mais pas quel type d'épée. Vous n'apprenez rien non plus sur les responsables, si ce n'est la méthode qu'ils ont utilisée. Si la cible a subi une mort « propre » (qui n'implique ni poison ni maladie), vous pouvez consommer le reste du cadavre sans crainte.
+
+#### **La Gueule**
+
+**NI :** 11
+
+**Portée :** (Force Mentale) mètres
+
+**Cible :** ZdE (Bonus de Force Mentale) mètres **Durée :** (Bonus de Force Mentale) Rounds
+
+Vous dévorez la meilleure partie d'une grande bête, ce qui provoque l'apparition d'un fragment de la Gueule elle-même. Le sol se fend en deux, dévoilant un millier de dents grinçantes et affamées. Le gouffre est sans fond, sa faim est infinie, ses dents sont des lames de rasoir et le bruit de ses mâchoires rugissantes ressemble à s'y méprendre au grincement du verre sur la pierre.
+
+Quiconque se trouve dans la zone affectée doit immédiatement effectuer un Test d'**Esquive Intermédiaire (+0)** pour se dégager. En cas de réussite, les cibles subissent +8 Dégâts à une Localisation choisie au hasard, lorsqu'elles s'extraient de la Gueule. Ces Dégâts sont réduits de 1 pour chaque DR obtenu au Test d'Esquive.
+
+Quiconque échoue au Test chute immédiatement dans la Gueule, qui entame le processus méthodique consistant à avaler sa victime vivante. Cette dernière subit immédiatement +10 Dégâts à un emplacement choisi au hasard et gagne 3 États *Empêtré*. Les tentatives de suppression de ces États sont opposées à la Force de 60 de la Gueule. La victime ne peut pas s'échapper tant qu'elle ne s'est pas débarrassée de ses 3 États *Empêtré*. À la fin de chacun de leurs tours, les créatures à l'intérieur de la Gueule subissent à nouveau +10 Dégâts à un emplacement choisi au hasard.
+
+Les dents de la Gueule sont acérées et elles n'abandonnent pas leurs proies facilement. Une fois que le sort prend fin, la Gueule disparaît, mais elle tente d'emporter les parties du corps qui se trouvent encore entre ses crocs. Si une créature se trouve à l'intérieur de la Gueule à ce moment précis, elle subit immédiatement une Blessure Critique à un emplacement choisi au hasard.
+
+#### **Trollboyaux**
+
+**NI :** 7
+
+**Portée :** (Bonus d'Endurance) mètres
+
+**Cible :** 1
+
+**Durée :** (Bonus d'Endurance) Rounds
+
+Vous avalez une minuscule quantité de bile de troll ou une substance similaire, avant d'absorber et de distiller les immenses pouvoirs de régénération de cette créature que vous transmettez à une autre personne. Votre cible gagne le Trait de créature Régénération (**WFJDR** p. 341). Les ogres ne subissent aucun effet supplémentaire pour ce sort, mais les autres Races peuvent être moins chanceuses. Tout Personnage autre qu'un ogre qui récupère des Blessures sous l'effet de ce sort doit se soumettre à un Test de **Résistance Accessible (+20)**. En cas d'échec, la chair qui se forme sur les blessures prend une apparence verdâtre ou d'un bleu tacheté, qui ressemble fortement à la peau d'un troll. Cet effet est particulièrement marqué si le sort est à l'origine de la repousse d'un membre. Il n'implique pas une mutation, mais il est susceptible d'être perçu comme tel par toute personne qui le voit et d'entraîner quelques conséquences désagréables.
+
+
+## <span id="page-35-0" data-folio="34"></span>**Rhinox**
+
+Les rhinox sont de grandes et puissantes créatures qui ont élu domicile dans les sommets enneigés. La chair de ces bêtes têtues et dangereuses enveloppe leur robuste squelette, ce qui en fait un met de choix pour les ogres. Ils ne leur servent pas seulement à se nourrir (comme la plupart des choses que les ogres rencontrent), mais font également office de montures. Leur force prodigieuse leur permet notamment de supporter tous les ogres, sauf les plus grands. Il arrive que les rhinox soient montés au combat par les ogres suffisamment habiles (ou chanceux) pour les apprivoiser.
+
+| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+| 6 | 45 | -  | 55 | 50 | 23 | 30 | -   | 10  | 10 | -   | 32 |
+
+**Traits :** Arme (Cornes +10, Cornes nasales +10), Armure 2 (7), Belliqueux, Bestial, Foulée, Taille (Grande)
+
+**Trop buté pour mourir :** les rhinox ignorent les effets du premier Dégât Critique qu'ils subissent à chaque combat.
+
+**Facultatif :** Dressé (Trait), Frénésie, Parasité, Territorial
+
+## **Plus qu'un tas de muscles**
+
+Outre leurs muscles, leur cuir, leur fourrure épaisse et les vitesses surprenantes qu'ils peuvent atteindre sur de courtes distances, la caractéristique la plus marquante des rhinox est l'ensemble de cornes impressionnantes qui sortent de leur crâne. Grâce à elles, ils sont capables d'encorner les chevaliers en armure, et même l'équipage d'un char à vapeur impérial ne serait pas en mesure de résister à leur forme brutale et acérée. Les cornes sont les atouts maîtres dans les confrontations pour la domination entre les plus grands rhinox d'un troupeau. Malgré leur peau épaisse et leur fourrure dense, ces combats se soldent souvent par la mort d'un des deux adversaires, le perdant faisant office de festin pour célébrer la victoire du nouveau patriarche.
+
+Les différentes tribus d'ogres interagissent avec les rhinox de plusieurs manières. Certaines se contentent de les chasser, généralement en groupe, pour leur chair et leur fourrure. D'autres s'en prennent aux rhinox affaiblis par un duel et profitent de leur vulnérabilité pour les apprivoiser et en faire des montures. Certaines tribus perpétuent des rituels plus anciens au cours desquels de jeunes ogres emmènent les petits des rhinox au sommet de montagnes imposantes. Le but de ce rite est de prouver la valeur du jeune ogre, qui doit affronter le froid de la montagne et revenir sans avoir dévoré son rhinox. Il arrive que certains d'entre eux se régalent de la créature après leur retour, mais d'autres ogres choisissent de garder leur compagnon et renforcent souvent leur lien avec l'animal en grandissant.
+
+Les rhinox sauvages sont extrêmement dangereux pour les voyageurs qui empruntent les Montagnes des Larmes, leur mauvaise vue étant largement compensée par un odorat et une ouïe hors du commun. Plus d'une fois, la disparition d'un convoi a été attribuée à l'attaque d'un ogre alors que celle-ci avait simplement croisé le chemin d'un ou deux rhinox en colère.
+
+Chaque fois qu'un ogre peut apprendre la Compétence Chevaucher (Cheval), il est préférable d'opter pour Chevaucher (Rhinox). Les chevaux ne sont pas des montures adaptées aux ogres, qui les apprécient plutôt dans leur assiette.
+
+*« Les rhinox ? On les sent bien avant de les voir et encore plus longtemps une fois qu'ils sont partis. J'ai entendu dire qu'il y en avait un au zoo d'Altdorf, tout le monde dit que c'est une abomination. Enfin, on ne peut pas leur reprocher de vouloir se faire un peu d'argent. Quoi qu'il en soit, si vous devez vous battre contre eux un jour, faites comme moi : fuyez. À moins d'avoir un ogre sous la main. Il courrait droit vers la confrontation au lieu de fuir. Les rhinox sont stupides, mais ils s'entendent bien avec les ogres. Qui se ressemble s'assemble, comme on dit. Enfin, tout va bien jusqu'à ce que l'un des deux ait faim. Mais dans tous les cas, le problème sera résolu. »*
+
+— Herbert Toadsmugel, sergent mercenaire, Blitztruppen de Baumann
+
+
+<span id="page-36-0" data-folio="35"></span>
+
+## **MANGEUR D'HOMMES**
+
+Ogre
+
+Les mangeurs d'hommes sont les ogres les plus communs de l'Empire. Ces guerriers errants laissent leur tribu derrière eux pour parcourir le Vieux Monde à la recherche de nouveaux ennemis à combattre et de nourriture à manger (les deux vont souvent de pair). Les mangeurs d'hommes tirent leur nom de Golgfag Mange'homme, l'un des mercenaires ogres les plus tristement célèbres de ces dernières années. Ils sont particulièrement appréciés par les commandants qui peuvent se permettre de les nourrir, car les ogres font d'excellentes troupes de choc. Il est toutefois coûteux de satisfaire longtemps un ogre oisif : c'est pourquoi le simple fait de rassembler une force de Mangeurs d'hommes devrait aller de pair avec une accélération du conflit.
+
+Comme tous les ogres, les mangeurs d'hommes ont tendance à adopter les aspects des coutumes locales qui leur plaisent le plus. Leur apparence et leur armement varient donc considérablement. Ils conservent toujours leur massue et leur pansière bien-aimées, mais leur apparence est propre à chaque ogre et varie largement.
+
+*« Pendant trois mois, nous avons tenu cette fichue forteresse contre tout ce que le Duc pouvait nous envoyer : sa milice levée partout sur son domaine, les lanciers tiléens, et même son propre garde du corps. Nous avons tenu bon contre tout le monde. Puis ces maudits ogres sont arrivés. On raconte qu'ils lui ont coûté la moitié de sa fortune. Nous avions déjà du mal à trouver quoi que ce soit à nous mettre sous la dent, mais lorsque les ogres se sont alignés pour attaquer les murs, ils avaient l'air véritablement affamés. Le capitaine s'est rendu ce soir-là. Nous n'étions plus très nombreux et avec le bruit des os qui craquent en provenance de l'extérieur du château, nous n'avions pas d'autre choix. »*
+
+— Sergent Emanuelle Gant, après le siège de Rockschull
+
+Les mangeurs d'hommes passent souvent des années loin de leur foyer dans les Montagnes des Larmes, mais la plupart d'entre eux finissent par revenir pour raconter leurs exploits. Quelques-uns se lancent dans une vie d'errance sans fin, car ils apprécient les nouvelles saveurs et les défis liés à une telle existence. Tous adorent être payés pour accomplir une tâche dont ils s'acquitteraient probablement gratuitement : repousser leurs ennemis tout en dévorant ceux qu'ils attrapent.
+
+#### **Schéma de progression du Mangeur d'hommes**
+
+| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
+|----|----|---|---|---|----|-----|-----|----|-----|
+| h  |    | h | h |   |    |     |     |    |     |
+
+## **Évolution de Carrière**
+
+h **Chair fraîche — Bronze 3**
+
+**Compétences :** Athlétisme, Calme, *Corps à corps (Base)*, Esquive, Intimidation, Langue (Bataille), Pari, Résistance, Résistance à l'alcool, Survie en extérieur
+
+**Talents :** Combat déloyal, Costaud, Infatigable, Menaçant **Possessions :** dague, gros morceau de viande, envie de voyager
+
+#### **Mangeur d'hommes — Argent 1**
+
+**Compétences :** Corps à corps (Bagarre), Corps à corps (Deuxmains), Divertissement (Beuglement), Projectiles (Poudre noire), Ragot, Savoir (Région)
+
+**Talents :** Coup puissant, Rechargement rapide, Savoir-vivre (Minus), Voyageur aguerri
+
+**Possessions :** pansière, vêtements locaux, arme à deux mains ou pistolet ogre
+
+#### **Broyeur d'hommes — Argent 3**
+
+**Compétences :** Chevaucher (Rhinox), Commandement, Corps à corps (au choix), Intuition
+
+**Talents :** Combat instinctif, Dur à Cuire, Effrayant, Tir précis **Possessions :** unité de mercenaires, respect
+
+#### **Capitaine mangeur d'hommes — Argent 5**
+
+**Compétences :** Langue (au choix), Projectiles (au choix) **Talents :** Assaut féroce, Frappe réactive, Maîtrise du combat,
+
+Seigneur de guerre **Possessions :** pansière éprouvée au combat, contrat de mercenaire
+
+
+<span id="page-37-0" data-folio="36"></span>Les gardiens de troupeaux de rhinox sont les rares ogres qui parviennent à penser à leur avenir, tout en se remplissant la panse sur le moment. Lorsqu'ils sont en possession de quelques rhinox, la plupart des ogres estiment qu'ils doivent immédiatement se mettre quelque chose sous la dent. Les gardiens de troupeaux, quant à eux, préfèrent préserver une partie de leurs rhinox au lieu de les dévorer sur place. Leurs tâches comprennent l'élevage et le soin aux animaux, ainsi que la lutte contre les autres ogres s'approchant un peu trop près des enclos ou des pâturages en quête de leur prochain repas. Ils négocient de beaux mâles pour la reproduction et sont toujours à la recherche de nouvelles bêtes à intégrer à leur troupeau.
+
+Dans les Montagnes des Larmes, leurs talents rendent les gardiens de troupeau indispensables, car les bêtes qu'ils élèvent sont utilisées pour le travail et la guerre, en plus de servir de nourriture. Ce poste est extrêmement convoité, car il est accordé uniquement aux ogres se montrant capables de capturer, d'élever et d'entretenir ces bêtes, en plus de maîtriser leur propre appétit.
+
+**Schéma de progression du Gardien de troupeaux de rhinox**
+
+| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
+|----|----|---|---|---|----|-----|-----|----|-----|
+|    | h  | h | h |   |    |     |     |    |     |
+
+## **Évolution de Carrière**
+
+#### h **Voleur de rhinox — Argent 1**
+
+**Compétences :** Athlétisme, Corps à corps (Base), Discrétion (Rurale), Esquive, Perception, Piégeage, *Projectiles (Entraves)*, Résistance, Résistance à l'alcool, Subornation
+
+**Talents :** Bon marcheur (Montagnes), Fuite !, Nomade, Tireur de précision
+
+**Possessions :** sac à dos, arme simple, lasso, veste de cuir
+
+#### **Gardien de troupeaux de rhinox — Argent 3**
+
+**Compétences :** Dressage (Rhinox), Emprise sur les animaux, Pistage, Projectiles (Lancer), Savoir (Rhinox), Soin aux animaux
+
+**Talents :** Cavalier émérite, Cœur vaillant, Costaud, Sans peur (Grandes bêtes)
+
+**Possessions :** harpon ou grande lance de jet, fourrures de rhinox
+
+#### **Dompteur de rhinox — Argent 5**
+
+**Compétences :** Calme, Chevaucher (Rhinox), Intimidation, Survie en extérieur
+
+**Talents :** Acrobaties équestres, Déterminé, Distraire, Voyageur aguerri
+
+**Possessions :** rhinox, pansière avec un crâne de rhinox, fontes de selle
+
+#### **Maître des rhinox — Or 1**
+
+**Compétences :** Commandement, Intuition
+
+**Talents :** Effrayant, Exaltant, Frappe blessante, Noctambule **Possessions :** ferme ou droits de pâturage sur un grand domaine, troupeau de rhinox ou d'autres grandes bêtes
+
+*« Oh, ce sont de belles bêtes. Certes, ils empestent jusqu'aux cieux, leurs poils sont semblables à des ronces, et ne me lancez pas sur leurs déjections. Mais ce sont tout de même de beaux spécimens. Argruk s'est occupée de son dernier rhinox jour et nuit, surtout quand il y avait d'autres ogres dans les parages. Je l'ai vue jeter un type imposant, un de ces mercenaires de Nuln, du haut d'une falaise pour avoir essayé de voler la bête. Pauvre Argruk, c'est la première fois que j'ai vu une ogresse pleurer, elle a fini par dévorer son fidèle compagnon pendant un siège. Elle n'a plus jamais été la même après ça. Depuis, elle arbore son crâne sur sa massue. »*
+
+— Morris Piedmarteau, « Mocheté », cuisinier halfling
+
+Très peu de gardiens de rhinox parviennent jusqu'à l'Empire. Quand c'est le cas, c'est toujours après avoir perdu leur troupeau à cause de la gloutonnerie des tribus qu'ils croisent en cours de route. Certains changent de carrière pour se tourner vers une activité plus recherchée (ils deviennent généralement mercenaires), mais d'autres parviennent à trouver du travail en s'occupant de bêtes moins imposantes. Pourtant, tous se languissent des créatures qu'ils ont autrefois élevées, à la fois par nostalgie de leur foyer et pour le respect que leur conférait leur ancien statut. Ceux qui arrivent à conserver quelques rhinox dans les plaines de l'Empire sont respectés par leurs pairs et très prisés en tant que cavalerie lourde. Par conséquent, ils dorment rarement sur leurs deux oreilles en compagnie d'autres ogres.
+
+
+## <span id="page-38-0" data-folio="37"></span>**BOUCHER OGRE** Ogre
+
+Dans l'histoire des ogres, il fut un temps où le rôle du boucher était tout à fait prosaïque : il concernait seulement la préparation rudimentaire de la viande à la demande du mangeur. Cependant, depuis l'arrivée de la Gueule, cette fonction a pris une dimension inédite au sein de la société ogre. Chez les ogres des Montagnes des Larmes, le statut de boucher se situe quelque part entre celui de prêtre et de mystique. Leur foi est éprouvée dans la préparation de la viande : la pendaison d'une carcasse, la découpe de la chair ou encore le versement du sang sont pour eux ce que la prière et l'encens sont aux shalléens les plus dévots. Même si certains se tournent vers d'autres religions, la Gueule est la seule divinité qui compte vraiment, faisant appel au cœur (ou plutôt aux tripes) de chaque ogre.
+
+**Schéma de progression du boucher ogre**
+
+| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc | étranges rituels des bouchers changent rapidement d'avis. |
+|----|----|---|---|---|----|-----|-----|----|-----|-----------------------------------------------------------|
+| h  |    |   | h |   |    |     |     | h  |     |                                                           |
+
+## **Évolution de Carrière**
+
+h **Faiseur de bouillie — Bronze 3**
+
+**Compétences :** Corps à corps (Base), Escalade, Intimidation, Langue (Magick), *Métier (Boucher)*, Prière, Ragot, Résistance, Résistance à l'alcool, Survie en extérieur
+
+**Talents :** Endurci, Infatigable, Magie mineure, Sixième sens **Possessions :** tablier de boucher, arme simple (couperet ou maillet)
+
+#### **Boucher ogre — Argent 1**
+
+**Compétences :** Art (Boucherie), Focalisation (*Azyr*, *Ghur*  ou *Shyish*), Métier (Cuisine), Projectiles (Lancer), Savoir (La Gueule), Signes secrets (La Gueule)
+
+**Talents :** Harmonisation aethyrique, Magie des Arcanes (Domaine de la Gueule), Sens aiguisé (Goût), Visions sacrées **Possessions :** os d'animaux sculptés (Grimoire), outils professionnels (Boucher)
+
+#### **Sage de la Gueule — Argent 2**
+
+**Compétences :** Divertissement (Discours), Guérison, Intuition, Perception
+
+**Talents :** Coup puissant, Effrayant, Mage de guerre, Seconde vue
+
+**Possessions :** apprenti boucher, sac sanglant contenant 10 ingrédients ésotériques, collection de crânes
+
+#### **Maître massacreur — Argent 4**
+
+**Compétences :** Langue (au choix), Savoir (Magie)
+
+**Talents :** Détection d'artefact, Exaltant, Ferveur ardente,
+
+Perception de la Magie
+
+**Possessions :** grotte ou autre repaire, cultistes loyaux de la Gueule, faim insatiable
+
+*« Écoute, vous les minus, vous avez des bouchers, mais vous connaissez pas nos bouchers. Les vôtres, ils se contentent de découper un morceau de viande et ça s'arrête là. Si tu veux rencontrer un vrai boucher, viens dans les Montagnes et on te préparera un festin que t'es pas prêt d'oublier. Manger de la viande préparée par un vrai boucher, ça change la vie, mon vieux. Ça fait pas disparaître la faim, mais ça montre à quel point la tienne est insignifiante comparée à celle de la Gueule. »*
+
+— Gutrug Quêtegueule, mercenaire, à un camarade humain quelque peu confus
+
+Les bouchers ogres sont choisis dès leur plus jeune âge pour être éveillés aux mystères de la Gueule. Ils gagnent souvent le Grand Nom de Quêtegueule à un moment dans leur vie. Le pouvoir et la faim dévorante de la Gueule coulent dans leurs veines. Grâce à leurs accomplissements, ils rappellent à tous les ogres que le désir de dévorer et de consommer est au cœur de leur nature profonde. Peu d'entre eux quittent les Montagnes des Larmes, mais comme tous les ogres, certains ont envie de voyager. Ils sont très respectés par les autres ogres, qui les considèrent avec un mélange de crainte et d'appréhension. Si la notion de magie ogre est largement perçue comme une plaisanterie par les érudits, ceux qui se familiarisent avec les
 
 
 ## [MCLB 4] Bestiaire
@@ -5892,1527 +8462,617 @@ Furie du Preyton............................... 107
 <span id="page-146-0" data-folio="144"></span>
 
 
-## [ADE II 1] Mercenaires ogres dans le Vieux Monde
+## [MDG 16] Bestiaire
 
-*Pages PDF 8-16*
+*Folio 141+*
 
-## **MERCENAIRES OGRES DANS LE VIEUX MONDE**
+# BESTIAIRE
 
-<span id="page-7-0" data-folio="6"></span>Il n'existe aucun récit historique précis dans l'Empire, faisant état de la première fois où un ogre a été aperçu errant depuis ses terres lointaines de l'est jusque dans le Vieux Monde. Les archives conservées dans les quelques karaks restants des Montagnes du Bord du Monde (et certainement dans les Livres des rancunes des nains) indiquent que les tribus nomades d'ogres ont commencé à attaquer les possessions naines les plus à l'est environ deux mille ans avant la fondation de l'Empire. Au cours des siècles suivants, de nombreux récits ont été consacrés aux ogres errants, à leurs incroyables aptitudes au combat et, surtout, à leur appétit insatiable. Les annales de la genèse de l'Empire indiquent que Sigmar luimême a occasionnellement utilisé, et fréquemment combattu, des ogres au cours de diverses batailles. Les mercenaires ogres ont pris part à la quasi-totalité des combats impériaux majeurs depuis l'époque de Sigmar, se retrouvant souvent des deux côtés des plus grandes batailles, en particulier celles contre les peaux-vertes. Toutes les terres situées à l'ouest des Montagnes du Bord du Monde sans exception ont connu le lourd pas des ogres à un moment donné de leur histoire.
+#### **Petits et grands monstres marins et plusieurs grands capitaines** • •
 
-#### Z'ONT PRIS MON HALFLING !
+Les mers du monde sont peuplées de nombreuses bêtes immondes, du terrible léviathan noir au légendaire kraken. Ces énormes monstres émergent parfois à la surface depuis les profondeurs les plus ténébreuses de l'océan, attirés par les remous dans l'eau provoqués par une bataille navale. Souvent aussi grands que les navires les plus imposants, ces horreurs gigantesques viennent se joindre au carnage dans une orgie de destruction aveugle. Leurs crocs aiguisés comme des rasoirs tranchent et mordent, et leur immense mâchoire broie aisément la chair, le bois et le métal. Les marins qui ont le malheur de tomber par-dessus bord sont condamnés, dévorés en un instant par ces horreurs voraces des fonds marins.
 
-0 Grobide parcourt l'Empire depuis plusieurs années maintenant, et il a plus ou moins appris à vivre parmi les minus. Il ne mange pas ce qui ne lui appartient pas, échange des métaux brillants contre de la nourriture savoureuse et garde toujours un halfling dans les parages en cas de besoin. Malheureusement pour lui, Grobide a récemment rencontré quelques difficultés sur ce dernier point. Pandry Cendreplaine, sa dernière cuisinière en date, a disparu il y a plusieurs nuits et Grobide cherche désespérément à la retrouver. Les habitants de la ville sont tout aussi désespérés, car, dans ses recherches, l'ogre a mis la ville sens dessus dessous. En réalité, Pandry a été enlevée par un autre ogre, Manche la Combine, qui l'a traînée dans une grotte voisine afin qu'elle prépare ses repas. La ville risque bien d'être dévastée par les deux ogres s'ils en viennent aux mains. Et pour couronner le tout, Pandry a perdu toute envie de travailler avec les ogres. Les Personnages parviendront-ils à empêcher cette marmite en ébullition d'exploser ?
+> TRAIT DE CRÉATURE : REDOUTABLE
 
-## **Buffet <sup>à</sup> volonté**
+**Redoutable (Indice) :** cette créature est particulièrement dangereuse, si bien qu'il est presque impossible de réellement prendre le dessus sur elle. Si, au début de son tour, la créature n'a pas autant d'Avantages que son *Indice* de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent. Si la créature est sous l'effet d'un État *Empêtré*, *Inconscient* ou *Surpris*, elle ne gagne pas d'Avantage.
 
-Les ogres sont par nature des bagarreurs nomades qui voyagent sur de vastes étendues et se battent fréquemment, au gré de leur humeur. Les rares érudits impériaux qui se donnent la peine d'étudier le sujet suggèrent qu'il s'agit davantage d'une question de survie qu'autre chose. En effet, l'appétit vorace des tribus d'ogres ne fait qu'épuiser les denrées des régions qu'elles parcourent, ce qui les oblige à se déplacer constamment à la recherche de quelque chose à se mettre sous la dent. Mais ce phénomène n'explique pas pour autant l'intense désir de voyage qui anime de nombreux ogres un jour ou l'autre.
+Si vous utilisez les règles d'Avantage de groupe du supplément **Aux Armes !**, la créature génère un nombre d'Avantages égal à son Indice dans le Trait *Redoutable* pour la réserve d'Avantages des adversaires.
 
-Pour une raison qu'eux-mêmes ignorent, certains ogres demeurent insatisfaits tant qu'ils n'ont pas pu apercevoir (et probablement goûter) ce qui se trouve au-delà du prochain horizon. Si on leur demande pourquoi ils ont ressenti le besoin d'errer si loin de leur patrie, les ogres, peu enclins à l'introspection même dans les meilleurs moments, répondent généralement quelque chose du genre *« j'avais juste envie de me promener »*. Bien des ogres voyageurs déclarent qu'ils retourneront sur leurs terres à l'est « *un jour* », ce qui pourrait ne pas arriver avant plusieurs dizaines d'années.
+# TRAIT DE CRÉATURE : CRÉATURE MARINE
 
-Les ogres finissent souvent par être attirés par la carrière de mercenaire, car la vie de soldat répond admirablement à nombre de leurs besoins et autres penchants. Après tout, ils vivent pour se battre et pour manger (mais pas nécessairement dans cet ordre). La vie d'un mercenaire ogre le conduit de bataille en bataille, et le combat contre de terribles adversaires offre la perspective de grands festins aux survivants. Les ogres trouvent presque miraculeux que tant de minus soient prêts à les payer pour ce qu'ils font plus ou moins gratuitement sur leurs propres terres.
+La créature est chez elle dans l'océan et est inadaptée à la vie sur terre. Le profil de ce type de créature part du principe qu'elle se trouve dans un environnement aquatique et qu'elle se déplace de tout son M dans l'eau. Si elle est sortie de l'eau, son M tombe à 1 et tous les Tests qu'elle effectue subissent –2 DR.
 
-Ceux qui deviennent des bandits ou des pillards, s'en tenant à un mode de vie qui prévaut sur leurs terres, finissent par s'attirer les foudres des autorités des différents pays du Vieux Monde qui les pourchassent dans le seul but de les éliminer. Des bandes de mercenaires ogres se spécialisent même dans la traque (et la consommation) de leurs propres congénères. Cela étant, certains ogres mercenaires n'hésitent pas à se lancer dans des pillages s'ils pensent pouvoir s'en tirer. Bénéficier d'« *un combat contre un repas* » est une tentation à laquelle peu d'entre eux résistent si la mission semble faisable. Cependant, ils sont assez perspicaces quant à la manière dont les autorités locales sont susceptibles de réagir, c'est pourquoi ils planifient leurs activités en conséquence.
+Les créatures possédant le Trait *Créature marine* doivent être immergées pour respirer correctement. Si elles sont sorties de l'eau, elles doivent être régulièrement aspergées d'eau, sinon elles se mettent à suffoquer comme décrit en page 181 de **WFJDR**.
 
+# **Baudroye**
 
-<span id="page-8-0" data-folio="7"></span>Les contrats des mercenaires sont négociés et leur durée est généralement limitée, ce qui permet aux ogres de passer à autre chose s'ils en ressentent le besoin. Les mercenaires itinérants trouveront presque toujours un nouveau combat à mener, alors que les sédentaires n'auront pas l'occasion de se battre aussi souvent. L'une des principales raisons pour lesquelles les ogres sont prêts à travailler pour les peaux-vertes est leur propension à se battre constamment. Mais ils s'en méfient tout de même, car ils ne respectent pas toujours leur part du marché. Dans le langage des ogres, les orcs et les gobelins ne *« savent pas toujours bien servir à table »*.
+Ces poissons hideux ne sont pas des créatures marines, mais les marins de la Mer des Griffes savent qu'ils doivent se méfier d'eux, car ils rôdent dans les fjords de Norsca et les eaux de rivières comme la Salz, la Lynsk et la Sannez. La Baudroye se cache dans la boue et les herbes près des rives d'un cours d'eau en maintenant son corps trapu juste en dessous de la surface.
 
-Dans l'Empire, les mercenaires ogres sont souvent connus sous le nom de Mangeurs d'hommes, d'après un mercenaire tristement célèbre du même nom. Les Mangeurs d'hommes voyagent généralement seuls ou en petits groupes. Il leur est ainsi possible de subvenir à leurs besoins plus facilement, car trouver de la nourriture pour une « poignée de gaillards » s'avère plus simple que pour une grande tribu. De plus, ils ont appris il y a fort longtemps que les minus deviennent terriblement nerveux lorsque trop d'ogres se rassemblent au même endroit. Et qui dit clients craintifs dit pas de travail, ce qui n'arrange pas leurs affaires et mène à des assiettes vides : un vrai désastre pour un ogre digne de ce nom.
+La baudroye utilise l'étrange lueur phosphorescente sur sa tête pour attirer les animaux qui vivent sur les rives. Cet appendice qui oscille doucement a des propriétés hypnotiques ; même les créatures intelligentes peuvent être envoûtées par cet appât lumineux. Grâce à ses puissants ailerons caudaux, elle se propulse ensuite sur sa proie pour l'agripper par morsure, déchirant la chair et avalant le sang. Elle peut survivre hors de l'eau pendant un certain temps et donc lâcher un animal qui s'enfuit, puis retourner dans la rivière par petits bonds. Si quelqu'un a le courage de manger une baudroye, la chair a un goût délicieux.
 
-## **Des assiettes bien remplies**
+**Appât de la baudroye :** les lumières bleues-vertes, ondulant doucement et visibles sur les bords d'une rivière à l'aube et au crépuscule sont parfois confondues avec des lucioles. Si un Personnage réussit un Test de **Savoir (Voies fluviales) Difficile (–20)**, il sait que ces lueurs sont probablement des appâts de baudroye. Ceux qui ratent le Test de Savoir doivent réussir un Test de **Calme Facile (+40)** sous peine d'être envoûtés par le spectacle et incapables d'entreprendre la moindre action à part se déplacer vers la lumière, ce qui en pratique revient à subir l'État *Inconscient*.
 
-Les ogres s'adaptent extrêmement bien à différentes cultures. Ils se font facilement aux us et coutumes de leur pays d'adoption, bien qu'ils comprennent rarement les nuances les plus subtiles, si tant est qu'ils y prêtent attention. L'essentiel de la culture tribale des ogres se résumant à la loi du plus fort, presque tout ce qu'ils apprennent en dehors des Royaumes ogres est nouveau pour eux, ce qui a tendance à les fasciner. Les mercenaires ogres adoptent volontiers les tenues ainsi que le style de combat des troupes aux côtés desquelles ils se rangent. Par exemple, les mercenaires ogres de l'Empire portent parfois un méli-mélo des couleurs des armées des différentes provinces ou cités-États pour lesquelles ils combattent habituellement. Ceux qui connaissent la fortune aiment fourrer des pistolets surdimensionnés dans leur large ceinture, aux côtés du reste de leur attirail.
+| BAUDROYE |       |   |    |    |    |    |            |   |        |   |   |
+|----------|-------|---|----|----|----|----|------------|---|--------|---|---|
+| M        | CC CT |   | F  | E  | I  |    | Ag Dex Int |   | FM Soc |   | B |
+| 4        | 40    | – | 45 | 35 | 30 | 20 | –          | 5 | 40     | – | 3 |
 
-Cette capacité d'adaptation s'avère très utile lorsqu'il s'agit de trouver du travail, quête permanente des ogres. Mais quelle que soit la facilité avec laquelle il apprend à s'intégrer au sein d'autres cultures, un ogre n'en demeure pas moins un ogre. Où qu'ils se trouvent, les mercenaires ogres ont deux préoccupations : d'où va venir leur prochain repas et leur réputation de combattants. Ils ont beau rire de bon cœur lorsque quelqu'un tente de les railler (ou peut-être qu'ils ne comprennent tout simplement pas), les ogres ne sauraient tolérer les insultes concernant leurs prouesses en matière de combat ou de nourriture. Pour un mercenaire ogre, la réputation mène au travail et le travail mène à la viande. Ils considèrent les atteintes à leur réputation comme des insultes mortelles car, si elles restent sans réponse, elles peuvent les amener à manger moins, c'est pourquoi ils seront toujours prompts à recourir à la violence.
+**Talents :** Assaut féroce 2, Charge berserk 3 **Traits :** Affamé, Amphibie, Bestial, Infravision, Perturbant, Redoutable 1, Taille (Très Petite)
 
-Les autres espèces du Vieux Monde ne comprennent pas à quel point l'obsession des ogres pour la nourriture est intense. Elle régit leur vie et détermine leur rythme de sommeil. Alors même qu'un ogre est en train de finir son repas, il pense déjà au prochain et peut devenir anxieux quant aux détails de son acquisition. Les ogres ne naissent pas seulement avec une petite fringale : ils sont littéralement affamés. Ce n'est pas un hasard si le dieu ogre, la Gueule, est un estomac sans fond. Les mercenaires ogres les plus malins apprennent rapidement à minimiser l'expression de leur faim en présence de minus, car ils se rendent bien compte que cette attitude rend tout le monde nerveux. Ils précisent alors qu'ils ont juste *« un petit creux »*. Bien sûr, il leur arrive de vouloir mettre délibérément les minus mal à l'aise, une tactique de négociation que de nombreux ogres utilisent à leur avantage.
+**Traits d'attaque :** Arme (Crocs horribles) +8 **Facultatif :** Nuée, Taille (Petite à Moyenne)
 
+<span id="page-144-0" data-folio="141"></span>
+# **Crabe boxeur**
 
-## <span id="page-9-0" data-folio="8"></span>**UNE INDEMNISATION SAVOUREUSE**
+Un crabe boxeur adulte fait la taille d'un chien. Il est doté d'une carapace portant un marquage qui évoque un crâne et de grands yeux écarlates polypeux. Cette créature fait partie de la faune de Norsca. Les jeunes crabes boxeurs plus petits forment des essaims dangereux, capables d'escalader les cordages qui pendent d'un bateau ou de grimper les uns sur les autres pour former des escaliers vivants leur permettant de surmonter les obstacles. Leur cycle de vie peut aussi se révéler nuisible pour les navires, car leurs petits forment des grappes semblables à celles des coquillages pouvant endommager la coque d'un bateau, tandis que les crabes adultes rôdent sur les plages pour trouver de la chair à manger. Ils ont l'habitude de s'entraîner en se combattant entre eux et tentent souvent de désarmer ou d'empoigner leur adversaire. Ils font un excellent repas.
 
-Ce n'est un secret pour personne : entretenir des mercenaires ogres coûte cher. Ces derniers demandent souvent des salaires élevés et des repas réguliers, ainsi que le droit d'obtenir des « rations de combat » après la bataille. Mais il arrive que certaines de ces « rations » ne soient pas tout à fait mortes lorsque les ogres commencent leur moisson. Les soldats expérimentés savent qu'il vaut mieux achever leurs amis avant que les ogres ne viennent les chercher.
+|   | CRABE BOXEUR |   |    |    |    |    |            |   |    |        |   |  |  |  |  |
+|---|--------------|---|----|----|----|----|------------|---|----|--------|---|--|--|--|--|
+| M | CC CT        |   | F  | E  | I  |    | Ag Dex Int |   |    | FM Soc | B |  |  |  |  |
+| 5 | 45           | – | 35 | 25 | 10 | 35 | 30         | 5 | 35 | –      | 7 |  |  |  |  |
 
-Bien que les ogres comprennent parfaitement la valeur de l'or, très peu d'entre eux s'intéressent à l'argent ou au bronze, à l'exception de ceux qui ont vécu ou travaillé dans les cités-États de l'Empire pendant un certain temps. Les mercenaires ogres sont bien plus enclins à accepter un combat difficile pour deux couronnes d'or plutôt que pour soixante pistoles d'argent. De même, la paye standard des mercenaires ogres expérimentés engagés sur le long terme est d'une couronne d'or par jour, plus les rations régulières, qui comprennent l'équivalent d'au moins un tiers de vache et un tonneau de bière chaque soir. Une vache décente coûte environ deux couronnes, et un fût de bière trois pistoles, ce qui signifie que l'entretien d'un mercenaire ou d'un garde du corps ogre compétent coûtera à son employeur environ une couronne d'or par jour en plus de sa paye. C'est le strict minimum, étant donné que l'ogre moyen peut consommer beaucoup plus s'il en a l'occasion (et il ne se gênera pas pour le faire).
+**Talents :** Désarmer, Maîtrise du combat, Vigilance **Traits :** Amphibie, Armure 2 (4), Bestial, Infravision,
 
-Fort heureusement, les mercenaires ogres attendent rarement une prime pour le « *danger encouru* ». Après tout, c'est exactement ce pour quoi ils se sont engagés. Cependant, comme de nombreuses troupes, ils s'attendent à une contrepartie lorsqu'on leur demande de se battre contre les morts-vivants et les forces démoniaques des Dieux du Chaos. Toutefois, leurs raisons varient légèrement de celles des autres mercenaires : ils ne se soucient pas du fait que ces forces soient effrayantes, mais sont contrariés, car ils ne peuvent pas se repaître de leur chair. En effet, la viande des morts-vivants est avariée et les démons ne laissent rien derrière eux lorsqu'ils sont tués.
+Taille (Petite)
 
-### LE FAUX BARON DU CRIME
+**Traits d'attaque :** Arme (Pince) +6 **Facultatif :** Nuée, Taille (Très Petite)
 
-0 Hans Buttlemur, un commerçant à l'avenir prometteur, a un problème. Après une altercation avec une bande de racketteurs, il a eu l'idée formidable d'engager un garde du corps ogre pour dissuader quiconque de menacer son commerce. Au début, tout s'est déroulé sans encombre, mais les complications se sont rapidement accumulées lorsque Hans a réalisé combien il lui en coûterait de nourrir et satisfaire Morgn'n'tharn. Une chose en entraînant une autre, et avec l'aide et les encouragements de son nouvel employé, Hans a pris le contrôle du gang des extorqueurs, de leurs plus grands rivaux et même d'une large partie du réseau criminel local. L'ogre est ravi de cette situation, car son époque de vache maigre est révolue. Hans, de son côté, est moins confiant. Le marchand et baron du crime, dépassé par les événements, serait reconnaissant si les Personnages pouvaient le sortir de ce pétrin. Morgn'n'tharn, quant à lui, sera plus que satisfait de placer une autre marionnette au sommet de son empire criminel si les Personnages parvenaient à lui présenter un candidat convaincant.
+# **Anguille mâcheprise**
 
-Ce n'est pas parce que les ogres mangent des choses qui feraient vomir un bouc qu'ils apprécient la viande de piètre qualité. Le peu de nourriture qu'ils peuvent tirer d'un tel repas suffit seulement à atténuer les affres de la faim. Les ogres apprécient grandement la « boustifaille de qualité » et acceptent même d'être payés moins s'ils peuvent en obtenir régulièrement. Les mercenaires ogres à qui l'on propose les services d'un cuisinier halfling compétent sont plus que ravis, prêts à se lancer dans des défis invraisemblables avec un grand sourire. S'ils traitent régulièrement avec des mercenaires ogres, les commandants minus finissent par découvrir que ceux-ci obéissent plus facilement à leurs ordres et font de leur mieux pour faire ce qu'on leur demande dès lors qu'ils sont bien nourris.
+Les anguilles mâcheprises sont des créatures serpentines pouvant mesurer jusqu'à un mètre vingt de long. Leur corps arbore une teinte aigue-marine profonde et est doté d'une puissante mâchoire faite pour agripper. Elles se nourrissent en s'accrochant à leurs victimes, en se tordant de manière à faire un nœud avec leur propre corps pour pouvoir produire un effet de levier et en l'utilisant pour déchirer des morceaux de chair de leur proie. Les anguilles mâcheprises adultes sont connues pour avoir la force d'arracher des morceaux d'armure. Elles peuvent aussi sécréter une gelée visqueuse qui les rend impossibles à empoigner. La projection de cette gelée collante peut obstruer le nez (ou les branchies) d'une victime pour la faire suffoquer. Une anguille mère est souvent accompagnée par une nuée de petits de trente centimètres de long.
 
-### ENGAGER UN OGRE
+|   | ANGUILLE MÂCHEPRISE |   |    |    |    |    |            |   |    |        |   |  |  |  |  |
+|---|---------------------|---|----|----|----|----|------------|---|----|--------|---|--|--|--|--|
+| M | CC CT               |   | F  | E  | I  |    | Ag Dex Int |   |    | FM Soc | B |  |  |  |  |
+| 6 | 45                  | – | 40 | 35 | 30 | 35 | –          | 5 | 35 | –      | 3 |  |  |  |  |
 
-Les prix indiqués ne comprennent pas la nourriture, qui représente un supplément de 10/- par jour si elle est achetée chez un boucher réputé. Cependant, les ogres étant prêts à manger tout ce qui a un jour été en vie, les Personnages entreprenants peuvent trouver d'autres moyens de nourrir leurs camarades ogres.
+**Traits :** À sang froid, Bestial, Créature marine,
 
-| Mercenaire     | Tâche rapide | Coût journalier | Coût hebdomadaire | Remarques                                                                            |  |
-|----------------|--------------|-----------------|-------------------|--------------------------------------------------------------------------------------|--|
-| Ouvrier        | 2/–          | 6/–             | 2 CO              | Il est conseillé de s'en tenir aux travaux<br>impliquant des denrées non comestibles |  |
-| Mercenaire     | 6/–          | 1 CO            | 6 CO              | Loyal tant que la nourriture est disponible                                          |  |
-| Garde du corps | 8/–          | 1 CO 6/–        | 8 CO              | Peut détecter la nourriture empoisonnée, mais a<br>tendance à finir le plat          |  |
+Infravision, Taille (Très Petite)
 
+**Traits d'attaque :** Arme (Crocs) +8, Morsure +10 **Facultatif :** Affamé, Nuée, Taille (Petite)
 
-## <span id="page-10-0" data-folio="9"></span>**S'en mettre plein les joues**
+**Visqueuse :** les anguilles mâcheprises peuvent produire une quantité surprenante de gelée visqueuse, que ce soit dans ou hors de l'eau. Si une anguille mâcheprise est *Empoignée* par un adversaire, elle peut effectuer un Test d'Endurance. En cas de succès, elle produit un amas de gelée et bénéficie alors de +4 DR sur les Tests ultérieurs pour se libérer. L'adversaire doit effectuer un Test d'**Athlétisme Intermédiaire (+0)**. En cas d'échec, la gelée lui a recouvert le visage et il doit soit relâcher l'anguille mâcheprise, soit commencer à suffoquer (voir page 181 de **WFJDR**).
 
-Les commandants inexpérimentés trouvent que les mercenaires ogres sont, au mieux, très difficiles à gérer. Ces derniers ont tendance à se quereller, se montrent particulièrement paresseux, aiment s'attirer des ennuis, menacer les autres et déclencher des bagarres, entre autres. Aussi grand et menaçant que puisse être un minus, il lui est pratiquement impossible d'intimider un ogre pour le forcer à faire quelque chose qui ne l'intéresse pas. À moins qu'ils ne viennent de vivre une ou plusieurs batailles sanglantes et qu'ils ne soient (temporairement) en train de se délecter de leurs « rations de combat », les ogres n'hésitent pas à demander des provisions supplémentaires. Pour y remédier, de nombreux commandants engagent un capitaine ogre accompagné de ses troupes : de cette manière, ils ne traitent qu'avec un seul ogre à la fois, en espérant pouvoir préserver leurs propres soldats. Les officiers les plus avisés apprennent également à tourner les « priorités » de leurs mercenaires ogres à leur avantage. Par exemple, les stratèges myrmidiens emploient des ruses qui consistent à suggérer qu'un régiment ennemi pourrait se préparer à attaquer les chariots de ravitaillement. Ainsi, les ogres font presque invariablement tout leur possible pour chercher l'ennemi en question dans le but de l'anéantir.
+# **Stylet**
 
-Compte tenu des difficultés et des grandes dépenses que cela implique, pourquoi donc s'évertuer à engager des mercenaires ogres ? Tout simplement parce que, le moment venu, ils excellent dans leur domaine : annihiler leurs adversaires. Dire que les ogres vivent pour se battre est un euphémisme. Nés d'une culture qui fait des conflits violents et réguliers un mode de vie, les ogres ne sont pas seulement doués pour le combat : ils adorent ça. Les mercenaires ogres les plus expérimentés ont d'ailleurs vu leurs compétences affinées par des combats incessants contre une grande variété d'adversaires, ce qui les a rendus encore plus impitoyables.
+Le stylet est une espèce de poisson volant. Les adultes font environ trente centimètres de longueur et leurs ailerons de « vol » environ quarante-cinq centimètres d'envergure. Le nom de ce poisson vient des épines tranchantes comme des rasoirs saillant des extrémités de ses ailerons. Sa capacité à sauter hors de l'eau jusqu'à une hauteur d'un mètre vingt, souvent en grands bancs, le rend physiquement dangereux, car ses épines sont assez aiguisées pour couper le tissu et la chair. Même s'ils ne représentent généralement une menace que pour les radeaux, les chaloupes et les autres vaisseaux de faible hauteur, des stylets d'une taille inhabituellement imposante peuvent parfois sauter assez haut pour atterrir sur le pont d'un grand bateau.
 
-Les mercenaires ogres sont connus pour leur empressement à se mesurer même aux ennemis les plus redoutables sans la moindre hésitation. Si les ogres sont capables de ressentir la peur (notamment lorsqu'ils sont confrontés à des ennemis surnaturels particulièrement terrifiants), ils la considèrent plus comme une sensation pénible dont ils se débarrassent rapidement que comme un réel obstacle au combat. L'histoire de l'Empire regorge de récits de mercenaires ogres faisant face à des adversités presque insurmontables, chargeant de toute leur rage alors que d'autres troupes auraient certainement battu en retraite. Les érudits suggèrent que ce serait dû à leur incapacité à calculer leurs chances de survie. Quoi qu'il en soit, l'armée impériale les utilise depuis longtemps comme un rempart autour duquel les autres troupes peuvent se
+Même si les stylets préfèrent les eaux chaudes, ils fréquentent la Mer des Griffes pendant l'été. Ils sont comestibles et ont bon goût, et peuvent être pris dans des filets quand ils sautent hors de l'eau. Ils sont attirés par les lumières vives, c'est pourquoi les pêcheurs les attrapent souvent lors des nuits sans lune en prenant des bateaux à faible tirant d'eau et en apportant des lanternes. Ceux qui ne savent pas que les stylets sont appâtés par la lumière risquent de se mettre en danger s'ils sont près d'une source lumineuse, car dans ce cas, un grand banc n'hésite pas à sauter hors de l'eau plusieurs fois.
 
-*Être ou ne pas être un ogre Soit, « les ogres sont bruyants, cupides, vantards, fougueux, colériques et belliqueux », mais très honnêtement, nous avons tous rencontré des humains partageant ces traits de caractère, dont beaucoup sont des nobles, soit dit en passant. Je ne peux pas dire que j'en ai connu beaucoup de mon vivant, mais j'ai toujours eu un faible pour ces créatures. J'ai déjà mentionné Megg Roth, la domestique de ma tante, une merveilleuse ogresse. Bien qu'un peu maladroite, elle racontait les histoires comme personne. Je dois admettre que j'envie un peu les ogres : imaginez être de cette envergure et avoir la liberté de voyager où le vent vous porte. Où iriez-vous ? Et j'ajouterais à cela que certains ogres sont instruits !*
+| STYLET |       |    |    |    |    |    |            |   |    |        |   |  |  |  |
+|--------|-------|----|----|----|----|----|------------|---|----|--------|---|--|--|--|
+| M      | CC CT |    | F  | E  | I  |    | Ag Dex Int |   |    | FM Soc | B |  |  |  |
+| 10     | 32    | 35 | 35 | 36 | 30 | 48 | –          | 4 | 18 | –      | 3 |  |  |  |
 
-Grâce à leur talent naturel pour l'intimidation, les mercenaires ogres font souvent office de garde du corps ou de gros bras pour des groupes criminels. La perspective d'affronter un ennemi de près de deux fois votre taille, qui vous découpera en morceaux avant de vous dévorer, suffit à décourager les plus braves. À l'exception de quelques rares cas, comme les tueurs nains, aucun soldat ne se réjouit d'affronter un ogre au combat. Certains employeurs engagent même des mercenaires ogres pour priver leurs ennemis de cette possibilité. Les mercenaires ogres ont servi dans de nombreuses guerres civiles qui ont opposé les provinces de l'Empire. On peut les trouver en Tilée à tout moment, où ils vont et viennent entre les forces des cités-États aussi rapidement que les anciens contrats expirent et que les nouveaux sont rédigés.
+**Traits :** Bestial, Bond, Créature marine, Taille (Très Petite)
 
-rallier pour affronter les ennemis les plus
+**Traits d'attaque :** À distance (son propre corps) +7 (20), Arme (Ailerons tranchants) +7
 
-menaçants.
+**Facultatif :** Affamé, Nuée, Taille (Minuscule)
 
+**Vers la lumière :** les stylets sont attirés par la lumière. Si quelqu'un tente d'utiliser le feu pour leur faire peur, cela ne fait que les encourager. Ils possèdent le Trait *Bestial*, mais ils ne reculent pas devant le feu et ne subissent pas d'État *Brisé* parce qu'ils sont touchés par des attaques enflammées.
 
-#### CHRONOLOGIE DES ÉVÉNEMENTS MARQUANTS CONCERNANT LES MERCENAIRES OGRES
+<span id="page-145-0" data-folio="142"></span>
+# **Élémentaire de mer**
 
-<span id="page-11-0" data-folio="10"></span>Toutes les dates indiquées correspondent au calendrier impérial, car les ogres n'ont guère besoin de se situer dans le temps, sauf pour savoir quand aura lieu leur prochain repas. Nombre d'entre eux connaissent plus ou moins ces événements et seraient capables de les remettre dans l'ordre, mais ils considèrent l'histoire comme quelque chose qu'il vaut mieux laisser au passé.
+D'après ceux qui étudient les arcanes de la magie, le Vent de Jade de *Ghyran* comporte une certaine ressemblance avec l'eau. Ceux qui possèdent la Seconde vue peuvent le regarder tomber sur la terre comme de la pluie, s'écouler le long des fleuves et des rivières et s'accumuler en mares. Il n'est donc pas très surprenant que les océans du monde contiennent de grandes quantités de *Ghyran*.
 
-#### -1957 CI
+*Ghyran* ne se disperse pas dans les eaux des mers. Le Vent de magie bouge peut-être comme de l'eau, mais sur les grands océans, il se concentre dans certaines zones locales et dérive sous forme de « bancs ». Cette intensité de *Ghyran* peut faire proliférer la vie et se développer de gros tapis d'algues ou des nuées de méduses ondulantes.
 
-Les royaumes nains situés le long des Montagnes du Bord du Monde découvrent, à leur grande surprise, que les ogres qui attaquent leurs terres ne sont intéressés ni par l'or ni par les bijoux. Ils en ont plutôt après la bière, la nourriture et les nains eux-mêmes...
+Là où *Ghyran* est le plus concentré, les eaux qui le portent peuvent s'animer et dessiner la silhouette grossière d'une gigantesque forme humanoïde. Les histoires parlant de ces élémentaires de mer suscitent beaucoup de débats parmi les magisters du Collège de Jade. Certains soutiennent que ces créatures sont les cousines des naïades, car ce sont des esprits de la nature qui se manifestent sous forme d'eau vivante. D'autres supposent que ce sont des élémentaires incarnant directement *Ghyran*. Pour l'heure, aucun rite permettant à un sorcier d'invoquer un élémentaire de mer n'a encore été développé, bien que certains mages affirment en avoir déjà soumis un à leur volonté pendant une courte période de temps.
 
-### C. –300 CI
+Un élémentaire de mer sauvage est une perspective effrayante. Il est peut-être imprégné du Vent de la Vie, mais cela ne veut pas dire que son tempérament est nourricier et doux. C'est une créature tapageuse et violente, exubérante de force et de vitalité au détriment de ceux qui se trouvent sur sa route. L'élémentaire semble adorer détruire, par exemple en broyant des navires ou en invoquant des tourbillons. Il s'abat sur les marins dans une frénésie vorace pour les prendre dans les eaux tumultueuses de son propre corps et les y noyer.
 
-Les tribus humaines des terres qui deviendront par la suite l'Averland apprennent à négocier les services militaires des ogres errants en leur offrant du bétail ainsi que le premier choix de « butins de combat ». Les ogres s'avèrent utiles lors des batailles, mais trop chers pour être entretenus longtemps.
+ÉLÉMENTAIRE DE MER M CC CT F E I Ag Dex Int FM Soc B 12 55 – 59 59 55 55 21 – – – 80
 
-### 1-30 CI
+**Traits :** Créature marine, Fabriqué, Infravision, Instable, Lanceur de Sorts (*Ghyran*), Protection 8, Redoutable 3,
 
-L'Empire nouvellement fondé est mis à l'épreuve par de nombreux et terribles ennemis. L'empereur Sigmar trouve le penchant belliqueux des mercenaires ogres extrêmement utile, ils deviennent donc rapidement un élément indispensable aux forces impériales. Les ogres, de leur côté, trouvent que « *Sigmar, le grand minus, sait recevoir à sa table* », le plus grand éloge jamais fait aux employeurs humains.
+Se cabrer, Taille (Énorme), Terreur 3 **Traits d'attaque :** Arme (Poings) +10 **Sorts :** Bourbier vivant, Tourbillon
 
-#### 475 CI
+**Immersion :** l'élémentaire de mer peut tenter d'immerger ses adversaires en effectuant une Empoignade. S'il inflige un État *Empêtré* à son opposant, il l'engloutit dans les eaux de son propre corps.
 
-Une horde de peaux-vertes se rassemble petit à petit pour envahir la Tilée depuis les Principautés Frontalières. Les Tiléens, désespérés et dépourvus d'armée permanente, rassemblent rapidement autant de mercenaires qu'ils peuvent à travers le Vieux Monde, y compris de nombreux groupes d'ogres. Lors de la légendaire bataille de Pugno, les mercenaires mettent en déroute la horde de peaux-vertes, changeant à jamais la Tilée et sa future doctrine militaire.
+Le personnage immergé suffoque comme détaillé en page 181 de **WFJDR**. Il peut essayer de s'échapper en se libérant de l'État *Empêtré* comme s'il était Empoigné par l'élémentaire de mer, en effectuant des Tests opposés de **Force** pour se dégager. Cependant, l'élémentaire de mer n'a pas besoin de maintenir activement l'Empoignade, il peut agir comme si le personnage immergé n'était pas là et n'est pas considéré comme Engagé.
 
-#### 542 CI
+**Résistant au feu :** les élémentaires de mer ne subissent jamais l'État *En flammes*.
 
-À l'apogée de sa centième victoire dans la fosse, le Puissant Marn le Broyeur a soudain une révélation : il n'est pas obligé de manger son adversaire déchu. Cette idée est rapidement suivie d'une autre tout aussi percutante : des créatures de tous horizons pourraient être introduites dans la fosse, ce qui donnerait lieu à des combats éclectiques et à une grande variété de victuailles. Dans un premier temps, beaucoup pensent que Marn a simplement pris un coup de trop sur la tête, mais ses idées finissent par faire leur chemin, y compris chez les minus, changeant à jamais les combats de gladiateurs.
+**Lanceur de sorts instinctif :** les élémentaires de mer peuvent utiliser leur Caractéristique Force pour le lancement de sorts et la focalisation.
 
-#### 1123-1124 CI
+<span id="page-146-0" data-folio="143"></span>
+# **Gargantuan**
 
-Après des années de combat désespéré contre les skavens, le comte Mandred du Middenland engage des bandes d'ogres pour l'assister dans sa lutte. Ces derniers ont prouvé leur valeur à maintes reprises, en massacrant d'innombrables skavens et en se régalant sans cesse des butins obtenus sur le champ de bataille. Après la bataille finale, le capitaine ogre Nogrud L'Insatiable refuse la nourriture obtenue au combat : « *J'en ai marre de bouffer du rat, les minus* » et opte pour un petit troupeau de bovins et quelques chevaux à la place.
+Le Gargantuan est une bête serpentine d'au moins une centaine de mètres de long. Son corps est musculeux et incroyablement puissant, atteignant jusqu'à dix mètres de diamètre. Selon les elfes d'Ulthuan, il n'existe qu'un seul Gargantuan, qui vit dans les profondeurs depuis l'aube du monde.
 
-#### 1525-1528 CI
+Parfois, des voyageurs jurent avoir aperçu l'énorme serpent nager derrière des bancs de poisson et en prendre des dizaines dans sa gueule pour satisfaire son appétit.
 
-Suite aux déprédations de Gorthor le Cruel, le plus infâme de tous les Seigneurs des bêtes, les provinces d'Ostland et du Hochland ont été pratiquement détruites. Des années après cette défaite, beaucoup des bêtes rassemblées au sein de l'armée de Gorthor errent toujours dans la Forêt des Ombres. Une immense chasse est organisée dans la forêt, et bien que les récompenses promises n'aient fait qu'augmenter, peu de gens sont enclins à se lancer dans cette mission, car la forêt est bien trop effrayante. Un grand groupe de chasseurs ogres finit par relever le défi. Pendant plusieurs années, ils reviennent régulièrement des profondeurs de la forêt avec des centaines de crânes partiellement rongés pour collecter leurs primes.
+Mais ces histoires sont rares. Peut-être parce que, comme le suggèrent les elfes, le Gargantuan est réellement le seul survivant d'une espèce qui proliférait autrefois, avant l'Avènement du Chaos. Mais peut-être que l'explication est plus sinistre et que le Gargantuan est simplement une créature belliqueuse et cruelle qui aime autant broyer un navire et dévorer son équipage qu'avaler un banc de krills. La méthode d'attaque favorite de cette créature consiste à approcher sa proie par en dessous, à enrouler ses anneaux sinueux autour de la victime et à l'écraser pour la tuer. Si la cible se révèle trop récalcitrante, le monstre a recours à une autre forme d'assaut : son vaste corps musclé peut administrer une forte décharge électrique à tout ce qui est pris dans ses anneaux.
 
-#### 1712 CI
+|    | GARGANTUAN                                        |   |    |    |    |    |   |   |    |   |     |  |  |  |  |
+|----|---------------------------------------------------|---|----|----|----|----|---|---|----|---|-----|--|--|--|--|
+| M  | CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc<br>B |   |    |    |    |    |   |   |    |   |     |  |  |  |  |
+| 12 | 60                                                | – | 75 | 75 | 30 | 35 | – | 7 | 55 | – | 208 |  |  |  |  |
 
-La WAAAGH! Gorbad ! est finalement vaincu face aux impénétrables murs d'Altdorf. Bien que la victoire finale soit due à un effort collectif, les archives impériales indiquent que le courage sans égal dont a fait preuve le gladiateur ogre Igdrol Moignondefer en abattant (et en mangeant) à lui seul deux des six wyverns sauvages du chef de guerre a été un facteur déterminant dans la survie de la ville.
+**Traits :** À sang froid, Affamé, Armure 2 (9), Constricteur, Créature marine, Infravision, Redoutable 3, Régénération, Se cabrer, Taille (Monstrueuse)
 
-#### 2006 CI
+**Traits d'attaque :** Arme (Dents aiguisées comme des rasoirs) +11
 
-Dans la grande ville de Remas en Tilée, le brillant Leonardo da Miragliano dirige la reconstruction du Grand Colisée. Il construit des dizaines de dispositifs innovants au sein de cette structure massive inspirés par des conversations avec le légendaire gladiateur ogre, Brognal « le tueur de taureaux ».
+**Broyeur de bateaux :** le Gargantuan peut tenter d'écraser un vaisseau de Taille Grande ou moins. Pour ce faire, il doit passer un Tour à s'enrouler autour du navire par tranche de 10 points de Taille que le vaisseau possède. Une fois le bateau pris dans ses anneaux, le Gargantuan commence à les serrer et effectue un Test opposé étendu de **Force / Endurance** du bateau. Quand le DR est égal aux Blessures du vaisseau, le bateau se brise et n'est plus qu'une masse de débris flottants.
 
-### 2302-2304 CI
+Pendant ce temps, l'équipage du navire peut attaquer le Gargantuan ou essayer de le décrocher du bateau. Les attaques qui lui infligent plus de 7 Blessures peuvent forcer le Gargantuan à lâcher s'il rate ensuite un Test de **Calme Accessible (+20)**. Pour décrocher le Gargantuan, il faut être au moins de Taille (Enorme) et effectuer un Test opposé de **Force** contre la créature. Un résultat de 0 à 4 DR l'empêche de serrer ses anneaux autour du bateau ce Tour-ci et un résultat de 5 DR ou plus le force à relâcher le vaisseau.
 
-Les batailles qui font rage à travers le Vieux Monde pendant la Grande Guerre contre le Chaos sont si intenses que, pour la première fois, des tribus entières d'ogres se tournent vers le mercenariat, traversant les Montagnes du Bord du Monde avec entrain pour rejoindre les deux camps de la lutte. Certaines tribus ne repartiront jamais, établissant de nouveaux foyers dans l'Empire et au-delà.
+**Décharge électrique :** si la créature réussit à Empoigner un adversaire, au début de chacun de ses Tours suivants, elle peut dépenser 1 Avantage pour administrer un choc électrique au personnage Empoigné. La décharge électrique inflige un coup de 10 Dégâts qui ignore les armures en métal non magiques. Si un Personnage subit des Blessures à cause de l'attaque électrique, il doit aussi réussir un Test de **Résistance Complexe (–10)** sous peine de subir un État *Sonné*.
 
-#### 2309 CI
+Mais ces attaques coûtent de l'énergie au Gargantuan. Chaque fois qu'il utilise l'électricité, il doit effectuer un Test de **Résistance Accessible (+20)**. En cas d'échec, il subit un État *Exténué*.
 
-Pendant la Troisième Guerre de Parravon, le graf Haldebrand de la maison Jungfreud engage de nombreux mercenaires ogres de la vallée d'Osséine pour travailler comme son « *infanterie de choc* » contre la cavalerie lourde des envahisseurs bretonniens. Les ogres s'avèrent extrêmement efficaces, repoussant à plusieurs reprises les Bretonniens et aidant finalement le Graf à assiéger Parravon.
+Tant que le Gargantuan est sous l'effet d'un État *Exténué*, ses attaques de décharge électrique n'infligent que des coups de 6 Dégâts qui ignorent les armures en métal non magiques.
 
-#### 2342 CI
+Le Gargantuan peut aussi transmettre des décharges électriques quand il a *Empoigné* un navire. Cela n'inflige pas de Dégâts au vaisseau, mais les membres de l'équipage reçoivent tous un choc et subissent un coup de 6 Dégâts (3 Dégâts seulement si le Gargantuan subit un État *Exténué*).
 
-Le jeune duc Amoux de Parravon, intrigué par les récits de leur force, engage une bande d'ogres afin de s'en servir contre un rival. Alors qu'ils détruisent convenablement les forces ennemies, les mercenaires ogres, suite à un « malentendu », mangent dix-neuf des chevaux de guerre préférés du duc en célébrant leur victoire. Cette histoire se répand dans toute la Bretonnie, où les nobles refusent désormais de travailler avec des ogres. Curieusement, les marchands bretonniens commencent à engager des gardes du corps ogres à peu près à la même époque.
+<span id="page-147-0" data-folio="144"></span>
+# **Kharibde**
 
-#### 2475 CI
+Le kharibde ne fait pas partie de la faune naturelle de la Mer des Griffes. Ces bêtes hantent les profondeurs froides et obscures autour des rives de Naggaroth, loin à l'ouest. Ce sont d'horribles créatures, stupides, mais puissantes. De leur corps trapu et immense jaillit une couronne de cinq tentacules fouettant l'air. Quatre se terminent par une tête rudimentaire, atavique au point d'être quasiment un vestige. À peine plus qu'une bouche dotée d'un goût et d'un odorat basiques, elle est spécialisée dans la tâche de rechercher et dévorer des proies. La cinquième tête, la centrale, est plus large et plus complexe et abrite le minuscule cerveau de la créature. Elle est pourvue d'une longue et sinueuse mâchoire inférieure bordée de centaines de crocs acérés. Le kharibde utilise cette bouche en torsade pour déchirer les grosses proies, faisant ainsi gicler des morceaux de chair et d'organes que les petites têtes dévorent. Ce monstre a un appétit vorace et des enzymes digestifs férocement efficaces capables de dissoudre la chair, le métal et les os en quelques minutes seulement.
 
-Un mercenaire à la retraite convainc un Graissus Dents d'Or, sceptique, que l'or peut servir à autre chose qu'à décorer sa dentition. Une fois que le jeune ogre inspiré s'élève au rang d'Archityran en 2487 CI, l'or est officiellement reconnu comme aussi précieux que la viande rouge dans la plupart des royaumes ogres.
+Les elfes noirs de Naggaroth ont appris diverses techniques leur permettant de diriger un kharibde et sont connus pour en utiliser certains comme bêtes de guerre en les poussant à attaquer. Depuis la destruction de l'arche noire Hachoir d'âmes, de nombreuses attaques de monstres marins visqueux à plusieurs têtes contre les communautés insulaires d'Odner et de Lugern ont été signalées. Maître Stefan Ellendan, professeur de sciences à l'université de Salzenmund, a émis l'hypothèse que plusieurs de ces monstres ont été démembrés pendant la destruction du vaisseau des elfes noirs et que chaque morceau est devenu un adulte distinct à part entière. Cela a entraîné chez les érudits du Nordland une fausse croyance selon laquelle la créature posséderait de puissantes capacités de régénération, et la vérité plus prosaïque, à savoir qu'une paire de reproducteurs s'est échappée du bateau
 
-#### 2499 CI
+**Gigue d'os :** un kharibde bouge dans tous les sens et semble être partout quand il se bat, car ses nombreuses têtes mordent, agrippent et enchevêtrent tour à tour ses adversaires. Si le kharibde gagne 1 point d'Avantage alors qu'il est Engagé pendant un combat, son Indice *Redoutable 2* monte à *Redoutable 4* et y reste tant que le kharibde reste Engagé contre un adversaire.
 
-Des nuées de skavens font irruption depuis les égouts de Nuln. Des héros improbables et plusieurs mercenaires, dont la bande du célèbre capitaine ogre Hrothyogg, protègent la ville d'une ruine totale. Faisant fi des exigences habituelles, Hrothyogg accepte une bonne quantité de poudre noire de Nuln en guise de paiement.
+et a fait des petits, a été totalement ignorée.
 
+Malheureusement, ceux qui vivent près de la mer ne savent pas que la terre ferme n'est pas un refuge contre le kharibde, car même si la créature vit naturellement dans l'océan, elle fait des ravages partout où sa faim la mène. Son corps visqueux, adapté pour résister à l'énorme pression des fonds marins, est incroyablement fort et résistant. Le kharibde n'est certes pas agile hors de l'eau, mais ses pieds palmés peuvent tout de même le propulser vers l'avant à une pointe de vitesse surprenante. La créature est également connue pour les hurlements qu'elle pousse lorsqu'elle est excitée. Ceux qui ont survécu à ses attaques affirment souvent que le plus perturbant chez le kharibde est que ses cris sont étrangement plaintifs, presque comme ceux d'un humain désespéré.
 
-## <span id="page-12-0" data-folio="11"></span>**De couteaux et d'épées**
+|                                                   | KHARIBDE |  |   |    |    |    |    |   |   |    |   |    |  |  |  |
+|---------------------------------------------------|----------|--|---|----|----|----|----|---|---|----|---|----|--|--|--|
+| M<br>CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc |          |  |   |    |    |    |    |   |   |    |   | B  |  |  |  |
+| 6                                                 | 55       |  | – | 65 | 55 | 40 | 15 | – | 5 | 25 | – | 72 |  |  |  |
 
-L'équipement des ogres est généralement aussi démesuré qu'eux. Une épée humaine ressemble davantage à une dague entre leurs mains de géants et ils sont presque incapables de manier une lame taillée pour un halfling. Les mercenaires ogres sont fréquemment très bien armés et beaucoup portent un véritable un arsenal létal. Ils ont tendance à mettre leur équipement à rude épreuve, s'attachant rarement à une pièce en particulier. En raison de leur manque d'intérêt pour l'artisanat, ils ont tendance à négliger l'entretien de leur matériel. Ils utilisent une arme jusqu'à ce qu'elle se brise, puis s'en débarrassent sans y accorder la moindre importance.
+**Traits :** Affamé, Amphibie, Armure 3 (8), Bestial, Constricteur, Furtif, Infravision, Perturbant (Hurlements), Redoutable 2, Régénération, Taille (Énorme), Venin (Complexe)
 
-Les mercenaires ogres de l'Empire les plus sages font une exception pour leurs armes à poudre noire, exception qui s'avère plus pragmatique qu'autre chose, car si elles sont malmenées, les armes à feu sont beaucoup plus susceptibles d'exploser. Sur leurs terres à l'est, ils obligent souvent leurs serviteurs gnoblars (un dérivé local de gobelins des collines) à s'occuper de leur équipement, menaçant de n'en faire qu'une bouchée si l'une de leurs armes venait à être cassée, ce qui finit presque toujours par arriver. Au sein de l'Empire, ils demandent généralement à leur employeur de faire en sorte que quelqu'un s'occupe de cette tâche à leur place. Dans l'armée régulière, cette tâche équivaut à un blâme retors. En effet, les ogres forment volontiers un petit monticule de larmes massives et rouillées aux pieds de leurs armuriers avant de leur ordonner promptement de les rendre *« belles, brillantes et tranchantes »*.
+**Traits d'attaque :** Arme (Crocs et griffes) +10, Attaque
 
-Les massues constituent une autre exception. Les ogres apprécient ce type d'arme, car il s'agit de la plus expéditive : elle peut tuer une cible sans lui faire perdre trop de « jus » et elle est plus facile à obtenir dans une taille qui leur convient. Les mercenaires ogres adaptent souvent leur massue à leur goût, en la renforçant avec des bandes de fer ou d'acier, ou en y ajoutant de longues pointes et de dangereuses lames. De cette manière, la massue devient presque aussi menaçante que l'ogre qui la manie.
+caudale +8, Morsure +9
 
-Les mercenaires ogres s'embarrassent rarement d'armures, leur peau épaisse et dépourvue de sensibilité faisant office de cuir. Même s'ils voulaient porter une armure, il serait quasiment impossible de trouver une cotte de mailles à leur taille, sans parler du forgeron capable de la fabriquer. De plus, la plupart des ogres estiment que passer du temps à entretenir une armure est particulièrement barbant. La seule pièce d'armure que tous les mercenaires ogres s'empressent d'acquérir dès lors qu'ils peuvent se l'offrir est une pansière décente. Le ventre musclé d'un ogre est sa plus grande fierté, car plus la bedaine est large et rebondie, plus le guerrier est accompli. Les mercenaires ogres ne lésinent donc pas sur les moyens si un forgeron est capable de fabriquer une pansière digne de ce nom. Ils n'hésiteront pas non plus à ajouter un supplément s'ils peuvent la faire décorer « *convenablement* ». S'ils privilégient les motifs représentant les dents de la Gueule, des gravures en lien avec leur tribu de l'est, des animaux mythiques (qu'ils ont tués et mangés) ou des symboles relatant leur histoire personnelle sont aussi envisageables. De nombreux ogres demandent également des variations de symboles locaux ou d'héraldique, bien qu'ils aient rarement le souci du détail. Inutile de préciser qu'il serait tout à fait imprudent de s'aventurer à pointer du doigt une quelconque incohérence dans les motifs de la pansière d'un ogre.
+**Traits facultatifs :** Belliqueux, Territorial
 
-## LA LOI DU PLUS FORT
+<span id="page-148-0" data-folio="145"></span>
+# **Wyrm des mers**
 
-I
+La Mer des Griffes est connue pour abriter beaucoup de wyrms des mers. Ce sont de grandes créatures dont la longueur rivalise avec celle des baleines. Ils possèdent un long corps ophidien recouvert d'une couche d'écailles épaisses et muni de tendons étirés et de paquets de muscles robustes. Cependant, les wyrms des mers ne sont pas de véritables serpents de mer, car si nécessaire, ils peuvent sortir de l'eau et se traîner maladroitement sur terre à l'aide de quatre membres courtauds se terminant chacun par des griffes aiguisées comme des rasoirs.
 
-0 Le groupe arrive dans une petite ville, affamé et avec un besoin urgent de se rafraîchir, mais il trouve porte close à toutes les auberges et tavernes. En fouillant un peu, les Personnages découvrent qu'une énorme dispute a éclaté sur la place du village, où des bruits d'indignation se font entendre. Connus pour leur vantardise, deux ogres (Thoggall et Yur'n'gut) se disputent le privilège d'être le plus grand et le plus large. Tout le monde en ville a fermé boutique afin afin d'assister à ce litige. Au centre de la place, deux ogres très grands et corpulents sont mesurés par ce qui est certainement un membre haut placé du conseil municipal, Margretta Tolwasser, qui se tient sur un tabouret, un long ruban à la main. Il semble que la circonférence et la hauteur des ogres soient exactement les mêmes. De frustration, ces derniers se précipitent vers un étal de légumes et commencent à dévorer tout ce qu'ils trouvent. Margretta annonce qu'ils pourront manger jusqu'à ce que la cloche de l'hôtel de ville retentisse. Ensuite, ils seront mesurés à nouveau. Si les Personnages veulent s'assurer le gîte et le couvert pour la nuit, ils doivent intervenir et trouver un moyen pour qu'un des ogres l'emporte sur l'autre. Les ogres, de leur côté, incitent le groupe à les aider à récolter de la nourriture contre une petite récompense : Thoggall leur offre sa protection et Yur'n'gut promet de porter leurs bagages. Malheureusement, les choses prennent une mauvaise tournure au moment où l'un des ogres commence à lorgner sur le cheval de Margretta, Bette.
+Les érudits suggèrent que le lignage des wyrms des mers possède à la fois les caractéristiques des serpents de mer et des dragons car il serait leur ancêtre commun. Ils supposent que les corps écailleux des wyrms des mers grouillaient dans les océans primordiaux du monde et atteignaient des proportions proches de celles des énormes léviathans. Ces descriptions contiennent peut-être une part de vérité, mais dans ce cas, les wyrms des mers sont beaucoup plus petits et bien moins nombreux de nos jours.
 
+Les Asurs de Cothique et de Lothern affirment pratiquer une forme de magie des mers bien plus puissante que celle enseignée à Marienburg. Leurs mages, appelés des Tisseurs de Tempêtes, sont censés avoir conclu des pactes avec les wyrms des mers et ces bêtes accompagneraient les flottes de navires de guerre des hauts elfes.
 
-## **L'art sacré du combat de gladiateurs**
+Pour ceux dont la subsistance dépend de la Mer des Griffes, ces créatures sont une source de terreur. Quand la nourriture vient à manquer, elles peuvent attaquer les communautés côtières et dévorer les habitants. Elles préfèrent certes rester dans l'océan, mais elles sont parfaitement capables de s'aventurer sur terre. Ce sont des combattants féroces et grâce à ses puissantes capacités de régénération, un seul monstre est parfaitement en mesure d'écraser les défenseurs de fortune qui pourraient se dresser entre lui et un village de pêcheurs du Nordland.
 
-<span id="page-13-0" data-folio="12"></span>I
+| WYRM DES MERS                                          |    |   |    |    |    |    |   |    |    |    |    |  |  |  |
+|--------------------------------------------------------|----|---|----|----|----|----|---|----|----|----|----|--|--|--|
+| M<br>CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc<br>B |    |   |    |    |    |    |   |    |    |    |    |  |  |  |
+| 6                                                      | 62 | – | 65 | 60 | 45 | 26 | – | 15 | 38 | 10 | 84 |  |  |  |
 
-Seule une coutume ogre est parvenue au-delà des Montagnes des Larmes : le combat de gladiateurs. Avant la naissance de l'Empire, lorsque les humains sont entrés en contact avec les ogres, ils pratiquaient déjà des sports violents, mais il s'agissait seulement de combats impliquant des animaux ou de l'appâtage des ours. Les ogres avaient alors développé le combat de gladiateurs comme un moyen de décider qui était le plus fort des deux opposants destinés au commandement d'une tribu. Cette activité leur permettait également de vénérer leur divinité des gladiateurs, la Gueule.
+**Traits :** Affamé, Amphibie, Armure 3 (9), Créature marine, Immunité Psychologique, Infravision, Insensible à la douleur, Redoutable 2, Régénération, Taille (Énorme)
 
-Les ogres n'accordent aucune importance à l'entraînement et se bagarrent souvent. Mais pendant de longs siècles, un combat « *digne de ce nom* » impliquait que deux ogres entrent dans la fosse et qu'un seul en ressorte après avoir vaincu (et mangé) son adversaire.
+**Traits d'attaque :** Arme (Mâchoire hérissée de crocs) +11, Attaque caudale +13, Morsure (Mâchoire hérissée de crocs) +11
 
-L'histoire n'indique pas exactement ce que les humains ont pensé lorsqu'ils ont assisté pour la première fois à un combat de fosse entre des mercenaires ogres. En revanche, ce type de combat ritualisé, n'impliquant pas forcément de manger son adversaire, s'est rapidement développé partout où les mercenaires ogres se trouvaient. Les érudits estiment que ces luttes ont permis de réduire les effusions de sang inutiles, car les affrontements entre champions sont rarement mortels et évitent bien souvent des conflits généralisés.
+**Traits facultatifs :** Infecté, Taille (Monstrueuse)
 
-Ceci est quelque peu ironique étant donné les origines extrêmement meurtrières de cette pratique. Regarder les autres se battre reste un divertissement populaire dans tout le Vieux Monde. Les Tiléens, en particulier, prenaient plaisir à assister à des démonstrations d'habileté martiale. À ce jour, ils acclament toujours autant les gladiateurs professionnels.
+**Poison tueur de baleines :** toutes les attaques de mâchoire hérissée de crocs d'un wyrm des mers possèdent le Trait Venin (Complexe).
 
-### LA FOSSE SACRÉE
+# **Syrène bleue**
 
-0 Les ogres entretiennent une relation compliquée avec leur dieu, la Gueule. Bien qu'ils considèrent cet être comme l'incarnation de l'appétit et de la faim, sensations que tous les ogres ne connaissent que trop bien, certains ont remarqué que si manger est une expérience fort agréable, être affamé est tout son contraire. Les ogres sont aussi dévoués à leur culte que n'importe quel autre peuple du Vieux Monde, c'est pourquoi il ne leur viendrait jamais à l'idée de tenter de diffuser leur religion auprès des non-ogres. Pourtant, certains d'entre eux s'y essaient à l'occasion. Mentag l'Englobant fait partie de ces individus : il invite tout le monde à participer à des banquets en l'honneur de « *sa vieille grand-mère* ». Beaucoup y assistent, et la plupart pensent à tort que ces festins ont effectivement lieu en l'honneur de la grand-mère de Mentag. Cependant, une poignée d'entre eux ont commencé à faire des rêves étranges et à creuser des fosses en dehors de la ville dans lesquelles ils jettent des offrandes de viande de plus en plus élaborées. Le culte de Shallya de la ville aimerait que quelqu'un découvre ce qui se trame.
+Les légendes parlent des syrènes bleues dont le chant mène les marins à la mort sur les récifs rocheux. Elles seraient une forme de banshee hantant les mers. Quand une sorcière est noyée, les histoires racontent que son âme reste dans ce monde sous la forme d'une ombre tourmentée. Les essences spirituelles des sorcières se changent très souvent en spectres, car elles craignent les punitions qui les attendent dans le royaume de Morr, ou peut-être qu'elles sont si imprégnées de *Dhar* qu'elles reviennent en tant que fantômes.
 
-L'ampleur des combats de gladiateurs ogres a changé à jamais lorsque le champion Marn le Broyeur a eu une grande révélation en 542 CI. Après un combat particulièrement spectaculaire, il a réalisé qu'il n'était pas obligé de dévorer son adversaire déchu. On suppose qu'il en a tout simplement eu assez du goût des ogres, car, dans la foulée, il a proposé d'introduire d'autres animaux dans la fosse afin que les combats deviennent plus intéressants et offrent une plus grande variété de repas.
+Les autres peuples soupçonnent les Sarls de jeter des utilisateurs de magie mineure dans les flots pour créer volontairement des zones côtières hantées par des syrènes bleues. De l'autre côté du Grand Océan, l'archigrand commodore vampire Luthor Harkon connaît également les rites nécessaires pour créer une syrène bleue et cherche des sorcières pour les noyer et les lier à sa marine de morts.
 
-Cette transformation a pris un certain temps, mais les « *idées saugrenues* » de Marn ont fini par faire leur chemin. Le combat de fosse a finalement évolué pour englober une grande variété de styles, dont beaucoup ne sont pas nécessairement à mort. Malgré tout, les Tiléens continuent de payer le prix fort pour avoir le « privilège » d'assister à un « vrai » combat de mercenaires ogres.
+|   | SYRÈNE BLEUE |   |    |    |    |    |            |    |        |    |    |  |  |  |
+|---|--------------|---|----|----|----|----|------------|----|--------|----|----|--|--|--|
+| M | CC CT        |   | F  | E  | I  |    | Ag Dex Int |    | FM Soc |    | B  |  |  |  |
+| 6 | 30           | – | 30 | 30 | 20 | 30 | 30         | 25 | 20     | 20 | 11 |  |  |  |
 
-## **Un foyer loin de chez soi**
+**Traits :** Amphibie, Corruption (Mineure), Éthéré, Infravision, Instable, Mort-vivant, Rage, Terreur 3 **Traits d'attaque :** Arme (Lame spectrale) +7
 
-Bien qu'il existe des enclaves ogres, celles-ci sont extrêmement rares, notamment en raison de la nature nomade de la plupart des ogres et du fait qu'en grand nombre, ils rendent leurs voisins nerveux (ce qui est souvent justifié). Au sein de l'Empire, les mercenaires ogres se trouvent le plus souvent dans les grandes villes et les cités franches. Ils se rassemblent généralement dans des tavernes assez malfamées qui accueillent uniquement les membres de leur espèce.
+**Chant de la syrène bleue :** au prix d'une action, la syrène bleue peut entonner son chant hypnotique. Les Personnages situés à (Initiative de la syrène) mètres ou moins du monstre doivent réussir un Test de **Calme Complexe (–10)** sous peine d'être envoûtés par la mélodie et incapables d'entreprendre la moindre action à part se déplacer vers la syrène bleue, ce qui en pratique revient à subir l'État *Inconscient*.
 
-#### **Vallée d'Osséine**
+<span id="page-149-0" data-folio="146"></span>
+# **Hydre d'os**
 
-Fondée à l'origine par des ogres ayant survécu à la Grande Guerre contre le Chaos, la vallée d'Osséine pourrait bien être le plus grand territoire des ogres en dehors de leurs royaumes de l'est. Les mercenaires ogres se sont emparés des richesses durement gagnées contre les puissances obscures. On raconte que Magnus le Pieux lui-même n'aurait pas tari d'éloges sur leur bravoure. Par la suite, ils ont préféré s'établir dans le Vieux Monde au lieu de chercher de nouvelles tribus à l'est. La vallée où ils vivent est cachée dans la partie sud des Montagnes Grises, protégée par d'énormes accumulations de neige qui durent presque toute l'année et par une volonté impitoyable de dévorer quiconque ose pénétrer leur territoire sans y avoir été invité.
+En de rares occasions, les cadavres de créatures marines dérivent dans des zones où la magie malveillante de malepierres sous-marines peut les corrompre et les réanimer.
 
-La vallée d'Osséine est ouverte à tous les ogres de passage, pour autant qu'ils laissent derrière eux leurs querelles avec les autres tribus. Des ogres errants solitaires, des bandes de mercenaires et même des tribus entières séjournent occasionnellement dans la vallée, en passant par les Principautés Frontalières ou le long des Montagnes Noires lorsqu'ils viennent de l'est.
+L'hydre d'os est une bête créée de cette façon. Ce n'est pas le squelette d'une véritable hydre (dans la mesure, d'ailleurs, où les créatures du Chaos peuvent être considérées comme de « véritables » bêtes), car elle n'est dotée que de trois têtes. Chacune de ces têtes est énorme. Certains érudits émettent l'hypothèse que l'hydre d'os était autrefois un dragon des mers à plusieurs têtes. Maître Stefan Ellendan de l'université de Salzenmund suggère qu'il s'agit d'une forme de crocodile géant de la Lustrie et que le monstre n'a muté qu'après sa mort.
 
-Les commandants, ou toute autre personne ayant de l'argent à dépenser, qui souhaitent faire parvenir une offre aux habitants de la vallée d'Osséine peuvent s'adresser à Edelard Bénibière (dit « Ed »), le halfling qui gère le Sanglier de Cuivre, une taverne fréquentée par les mercenaires ogres à Nuln.
+L'hydre d'os n'est pas une créature originaire de la Mer des Griffes ; elle hante la zone connue sous le nom de cimetière du Galion loin en haute mer. Mais comme les désolations du Chaos et la terre sinistre de Norsca sont très proches de la Mer des Griffes, des bêtes tout aussi étranges rôdent sous ses vagues.
 
+|   | HYDRE D'OS |    |    |    |    |    |            |   |        |   |     |  |  |  |
+|---|------------|----|----|----|----|----|------------|---|--------|---|-----|--|--|--|
+| M | CC CT      |    | F  | E  | I  |    | Ag Dex Int |   | FM Soc |   | B   |  |  |  |
+| 6 | 40         | 30 | 75 | 75 | 15 | 15 | –          | – | –      | – | 224 |  |  |  |
 
-#### <span id="page-14-0" data-folio="13"></span>**La Taverne des Dents Rouges**
+**Traits :** Armure 2 (9), Corruption (Modérée), Créature marine, Fabriqué, Infravision, Insensible à la douleur, Instable, Mort-vivant, Peur 2, Redoutable 1, Taille (Monstrueuse)
 
-Les villes de l'Empire ne manquent pas de tavernes, mais peu de ces établissements exigus sont en mesure d'accueillir des ogres, et encore moins de les sustenter. La taverne des Dents Rouges a été construite par son propriétaire, Ruggero Oeildacier, dans un style tiléen, avec plusieurs grandes salles ouvertes contenant des boxes massifs, mais relativement peu de tables. Cet ancien mercenaire était jadis un gladiateur prospère. Au cours de ses deux premières carrières, il a combattu aux côtés des ogres et, à quelques occasions mémorables, contre eux. Il sait donc à quel point ils peuvent se montrer généreux lorsqu'il s'agit d'acheter à boire et à manger.
+**Traits d'attaque :** Arme (Mâchoires tenailles) +11, Morsure +10, Souffle (Poison, Difficulté Difficile (–20)) +10
 
-Oeildacier a construit la taverne des Dents Rouges spécifiquement pour répondre aux besoins des nombreux ogres travaillant à Bechafen. Elle est depuis devenue un lieu de prédilection pour les mercenaires ogres, qu'ils soient de passage ou des résidents permanents. La « Rouge », comme l'appellent les locaux, sert de grandes quantités de bière passable et de colossales brochettes de viande *« crue à souhait »* qui recouvrent souvent le comptoir de sang. Les personnes qui cherchent à engager des mercenaires ogres à Bechafen sont redirigées vers les Dents Rouges avec une mise en garde : *« faites attention à vos doigts et priez pour avoir l'estomac solide »*.
+# **Sangsue des abysses**
 
-#### **Mercenaires ogres (tristement) célèbres**
+Les sangsues des abysses sont un autre habitant des fonds marins corrompus par de grandes concentrations de *Dhar*. Ces énormes vers ne sont pas des animaux féroces par nature. Leur bouche est certes tapissée de dents rugueuses, mais les sangsues sont léthargiques et leur corps est mou. Pour qu'elles ingèrent la chair qui compose leur régime alimentaire, la viande doit déjà être dans un état de décomposition relativement avancé.
 
-Que ce soit en raison de leurs compétences, de leurs exploits ou de leur audace, quelques mercenaires ogres ont acquis une grande notoriété. Chaque histoire racontée dans les tavernes du Vieux Monde contribue à renforcer leurs légendes, aussi terribles et valeureuses soient-elles.
+Cependant, quand les sangsues des abysses localisent un cadavre, elles s'enfouissent dans le corps et s'y multiplient. Un cadavre infesté de sangsues des abysses peut se mettre à bouger de nouveau, car les créatures remplacent les tendons et les muscles de leur hôte putréfié par leur propre corps. Et une fois qu'elles ont un hôte, les sangsues deviennent dangereuses, car pour entretenir leur cycle de vie elles doivent envoyer davantage de cadavres dans les profondeurs.
 
-#### **Golgfag Mange'homme**
+Les sangsues des abysses sont les dépouilles animées de dragons des mers qui ont sombré dans les profondeurs, puis ont été infestées par des sangsues des abysses. Le dragon des mers est l'hôte préféré de ces monstres, car il possède assez de chair pour les nourrir pendant des années tout en leur fournissant un corps immense et puissant capable de tuer d'autres créatures que la prochaine génération de sangsues va habiter.
 
-Sans doute le plus célèbre mercenaire ogre actuel, Golgfag a parcouru bien plus que le Vieux Monde, dévorant et annihilant tout ce qui se trouvait sur son passage, des rivages d'Ulthuan aux Montagnes des Larmes. Il doit son surnom à un incident survenu en Tilée, lorsqu'il a rongé jusqu'à l'os son intendant humain après une dispute concernant des rations. Il faut savoir que Golgfag est prêt à manger n'importe quoi, sans aucune préférence. Ses troupes, connues sous le nom de Mangeurs d'hommes, sont réputées être parmi les mercenaires ogres les plus dangereux du Vieux Monde, comme en atteste une longue liste d'actes honorables.
+| SANGSUE DES ABYSSES |       |   |    |    |   |   |            |   |        |   |     |  |  |
+|---------------------|-------|---|----|----|---|---|------------|---|--------|---|-----|--|--|
+| M                   | CC CT |   | F  | E  | I |   | Ag Dex Int |   | FM Soc |   | B   |  |  |
+| 4                   | 33    | – | 80 | 80 | 5 | 5 | –          | – | –      | – | 256 |  |  |
 
-L'infamie et l'insolence de Golgfag ont été confirmées après la bataille du ravin de la Jambe Cassée en 2510 CI. Pendant plusieurs années, il s'est battu aux côtés du maître de guerre orc Gnashrak Sal'chicot, et parfois même contre lui. Après une ultime confrontation, Golgfag et ses Mangeurs d'hommes ont dû lutter pour s'extirper du camp du maître de guerre, mais pas avant que l'ogre n'ait arraché le bras de l'orc.
+**Traits :** À sang froid, Armure 2 (10), Bestial, Corruption (Modérée), Créature marine, Fabriqué, Infravision, Insensible à la douleur, Redoutable 1, Taille (Monstrueuse)
 
-Il s'est empressé de l'apporter au légendaire Ungrim Poing-de-Fer, le Roi Tueur de Karak Kadrin, comme preuve de sa volonté sincère de participer à la lutte contre Sal'chicot. Le roi nain a accepté cette offre et à la fin de la Bataille du ravin de la Jambe Cassée, Golgfag livra un Gnashrak enchaîné à Poing-de-Fer. Cependant, l'excellente récompense offerte pour cet exploit n'a pas empêché Golgfag de piller l'une des chambres fortes de Karak Kadrin avant de se rendre dans l'Empire.
+**Traits d'attaque :** Arme (Mâchoires tenailles) +12, Attaque caudale +11, Morsure +11, Vomissement
 
-Depuis, le Roi Tueur promet une généreuse récompense à quiconque dispose d'informations sur l'endroit où se trouve Golgfag.
+<span id="page-150-0" data-folio="147"></span>
+# **Léviathan-phare et léviathan noir**
 
-La renommée de l'ogre est telle qu'en 2518 CI, le terme « mangeur d'hommes » est devenu synonyme de « *mercenaire ogre* » dans tout le Vieux Monde.
+Il existe plusieurs espèces de léviathans dans les océans du monde. Elles ont toutes en commun d'être des poissons osseux dont la tête et le dos sont protégés par de lourdes écailles. Ce sont toutes des prédateurs voraces.
 
-#### **Capitaine Hrothyogg**
+Le léviathan-phare est de couleur pâle et enveloppé d'une couche de graisse ressemblant à celle d'un phoque. C'est une petite espèce, car les adultes atteignent à peine 45 mètres de longueur. Cette créature est gauche et dotée d'un métabolisme lent, adapté à la vie dans les profondeurs des océans les plus froids. Pendant les hivers glacials, elle est parfois aperçue dans la Mer des Griffes. La bête n'est pas armée pour mener une chasse active et porte un appât lumineux oscillant d'avant en arrière sur un filament devant sa gueule béante s'ouvrant en forme de sourire. Maître Stefan Ellendan, professeur de sciences à l'université de Salzenmund, a émis l'hypothèse que le léviathan-phare soit la véritable forme adulte de la baudroye, mais même si leurs appâts fonctionnent de manière similaire, ces monstres sont deux espèces totalement distinctes.
 
-Seul ogre à avoir battu Golgfag Mange'homme dans un concours du plus gros mangeur, Hrothyogg est l'exact opposé de son rival. Là où Golgfag est bruyant et vantard, Hrothyogg se montre discret et taciturne. Alors que Golgfag est constamment agité, impatient et enragé, Hrothyogg adopte un calme, une froideur et une patience infinis (ce qui est très rare chez un ogre). Le capitaine Hrothyogg a passé de longues années en Tilée, où il a appris le métier de mercenaire du pays qui l'a pratiquement inventé. Réputé pour être maître dans l'art de la « *renégociation stratégique* », il sait exactement quand présenter de modestes demandes pour plus de provisions ou un meilleur paiement, ce qu'il fait généralement juste après que lui et ses Lames ont fait leurs preuves, mais avant que la prochaine vague de combat ne puisse avoir lieu. Ses compétences sont telles que de nombreux commandants humains ont fait confiance à son jugement tactique lors du déploiement de ses troupes au cours d'une bataille. Quelques mercenaires non-ogres ont notamment servi sous ses ordres sans se plaindre.
+Le plus grand des léviathans est le léviathan noir, un énorme poisson des abysses carnivore à la gueule caverneuse remplie de crocs dentelés et aux écailles plus épaisses que la coque d'un croiseur. Le léviathan noir a sa tanière dans les profondeurs de la mer, mais il chasse en surface. Il a pour habitude d'approcher les proies convenables en restant très profondément sous l'eau. Quand il est assez près, il s'élève brutalement de sous les vagues, son immense mâchoire grande ouverte, et engloutit sa victime tout rond. La taille exacte du léviathan noir est un grand sujet de débat parmi les savants. Maître Ellendan affirme avoir mené une recherche sur des rapports signalant des apparitions de ce monstre et suppose que le spécimen moyen fait *« huit cent quarante-cinq mètres du premier croc avant à l'extrémité de la queue »*.
 
+|   | LÉVIATHAN-PHARE |   |    |    |    |    |            |   |    |        |     |  |  |  |
+|---|-----------------|---|----|----|----|----|------------|---|----|--------|-----|--|--|--|
+| M | CC CT           |   | F  | E  | I  |    | Ag Dex Int |   |    | FM Soc | B   |  |  |  |
+| 3 | 40              | – | 65 | 65 | 15 | 10 | –          | 5 | 30 | –      | 168 |  |  |  |
 
-I
+**Traits :** Affamé, Armure 3 (9), Bestiale, Créature marine, Infravision, Perturbant, Redoutable 2, Taille (Monstrueuse)
 
-<span id="page-15-0" data-folio="14"></span>**Isrogdal l'Empressé**
+**Traits d'attaque :** Arme (Crocs gigantesques) +10
 
-L'ogre gladiateur devenu mercenaire est bien connu dans toute la Tilée, ainsi que dans les parties les plus à l'est de l'Empire, à la fois pour la rapidité avec laquelle il commet ses meurtres et pour son empressement à manger ses victimes. À plusieurs reprises, il a commencé à dévorer des morceaux de ses adversaires dans la fosse alors que leur combat n'était pas encore terminé. Isrogdal est actuellement très demandé dans le milieu criminel de l'Empire, car en tant que gros bras intimidant, il n'a pas son pareil. Son « enthousiasme » l'a déjà contraint à déménager plusieurs fois, car plus d'un « client » avec qui il devait simplement discuter s'est retrouvé dans son assiette.
+**Appât du léviathan :** le premier signe de l'attaque imminente d'un léviathan-phare est une lumière jaune chatoyante dérivant lentement sous l'eau. Si un Personnage réussit un Test de **Savoir (Océans) Difficile (–20)**, il a entendu parler de l'appât de cette bête et peut détourner le regard avant que la lueur fasse effet. Ceux qui ratent le Test de Savoir doivent réussir un Test de **Calme Facile (+40)** sous peine de subir l'État *Sonné*.
 
-#### ISROGDAL L'EMPRESSÉ - SPADASSIN OGRE, ANCIEN PUGILISTE (ARGENT 1)
+**Résistant au froid :** toute arme, Sort ou effet infligeant des Dégâts ou des altérations négatives à cause du froid aura probablement un impact réduit sur un léviathanphare. Le monstre peut effectuer un Test de **Résistance Intermédiaire (+0)** pour ignorer tout effet négatif venant du froid et de la glace.
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 6 | 41 | 32 | 58 | 52 | 11 | 32 | 25  | 22  | 33 | 26  | 36 |
+| LÉVIATHAN NOIR |       |   |         |   |    |    |            |   |    |        |     |  |  |
+|----------------|-------|---|---------|---|----|----|------------|---|----|--------|-----|--|--|
+| M              | CC CT |   | F       | E | I  |    | Ag Dex Int |   |    | FM Soc | B   |  |  |
+| 10             | 55    | – | 125 145 |   | 25 | 10 | –          | 5 | 45 | –      | 352 |  |  |
 
-**Compétences :** Athlétisme 45, Calme 37, Corps à corps (Bagarre 54, Base 51), Divertissement (Raillerie) 27, Esquive 42, Intimidation 72, Langue (Reikspiel) 27, Marchandage 27, Pari 32, Ragot 27, Résistance 62, Résistance à l'alcool 57, Savoir (Ogres) 25, Subornation 28 **Talents :** Combat déloyal 2, Combat instinctif, Combattant au contact, Massif (p. 20), Résistance (Poisons ingérés), Très fort, Vice (Nourriture), Vision nocturne
+**Traits :** Affamé, Armure 6 (20), Bestiale, Créature marine, Infravision, Redoutable 5, Taille (Monstrueuse) **Traits d'attaque :** Arme (Crocs gigantesques) +16, Attaque caudale +14, Morsure +14
 
-**Traits :** Arme (Coup-de-poing +9, Massue +9), Armure 2 **Possessions :** pansière, cotte de mailles et chausses, coiffe de mailles, arme simple (massue), coup-de-poing, 2d10 pistoles d'argent
+**Assaut dévastateur :** quand un léviathan noir charge un navire, il cause une collision avec un IC de 50 (voir p. 111).
 
-## **Ugrik l'Égarée**
+**Différence d'échelle :** le léviathan noir possède le Trait *Bestial* et peut être effrayé par le feu. Cependant, les torches vacillantes sont trop petites pour attirer son regard, sans même parler de l'intimider. Pour bénéficier des propriétés terrifiantes du feu, il doit avoir la taille et l'intensité d'un grand feu de joie ; le léviathan noir ne se préoccupera de rien de moins.
 
-Ogresse tout à fait quelconque, Ugrik s'est fait connaître après avoir attaqué une caravane de l'Empire qui s'approchait de son camp dans le sud de l'Ostermark. Le convoi essayait en fait d'engager les ogres pour l'aider à faire face aux invasions de goules qui ravageaient alors le Stirland, mais ces derniers, qui n'avaient pas mangé depuis plusieurs heures, n'étaient pas d'humeur à discuter. Pendant cette escarmouche, Ugrik reçut un boulet de canon sur le côté de la tête, ce qui faillit la tuer, mais heureusement pour elle, les ogres ont la tête dure. Pour plaisanter, les canonniers avaient inscrit sur leurs munitions diverses prières et insultes, une pratique très répandue, bien que peu avisée. Le boulet ayant atteint Ugrik indiquait « Retour à l'envoyeur ». L'ogresse, très affectée par le fait d'avoir frôlé la mort, lut cette demande à haute voix et décida de lui donner une suite favorable. Elle transforma le projectile difforme en une lourde massue et depuis, elle voyage vers Nuln dans l'espoir de « *retrouver les canons* ».
+Pour considérer l'impact psychologique des autres sources de Peur et de Terreur, le MJ doit prendre en compte le fait que, si une source n'est pas quelque chose que le léviathan noir devrait respecter en termes de taille, elle ne va probablement pas le troubler. Même si les démonettes, les zombies et les sorciers à la tête enflammée sont clairement surnaturels, aux yeux du léviathan noir, ils sont surtout de la nourriture pour poisson.
 
-#### UGRIK L'ÉGARÉE - HORS-LA-LOI OGRE (BRONZE 2)
+<span id="page-151-0" data-folio="148"></span>
+# **Triton**
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 6 | 48 | 30 | 53 | 50 | 22 | 33 | 25  | 25  | 33 | 22  | 36 |
+Aucune autre créature au monde ne suscite autant de légendes et de spéculation que Triton. Malgré la fascination qu'il génère aussi bien chez les marins que chez les érudits, les sorciers et les prêtres, l'immense majorité des informations concernant sa nature fait l'objet d'une intense controverse.
 
-**Compétences :** Athlétisme 43, Calme 38, Corps à corps (Base) 53, Esquive 38, Guérison 27, Intimidation 58, Langue (Reikspiel) 28, Orientation 25, Pari 30, Perception 27, Pistage 27, Projectiles (Arc) 35, Résistance 55, Résistance à l'alcool 55, Savoir (Ogres 30, Région 30), Survie en extérieur 30
+Bien qu'il soit rarement aperçu, les rumeurs affirment qu'il parcourt les mers du monde. Sa morphologie ressemble à celle des séduisantes sirènes qui sont parfois vues en train de sillonner les eaux entre les îles de la mer Tiléenne. Audessus de la ceinture, il a la forme physique d'un homme à la carrure puissante et au visage beau, mais féroce. Ses cheveux forment une épaisse crinière et il arbore une grosse barbe broussailleuse. Sous le nombril et à partir des hanches, il est doté d'une queue de poisson. Il est aussi véritablement titanesque : même les immenses géants broyeurs d'os semblent petits à côté du formidable Triton.
 
-**Talents :** Combat déloyal, Combat instinctif, Combattant au contact, Frappe assommante, Massif (p. 20), Nomade, Résistance (Poisons ingérés), Très fort, Vice (Nourriture), Vision nocturne
+Triton maîtrise plusieurs pouvoirs mystiques : il peut contrôler les éléments et dompter les monstres des profondeurs. Ses capacités ont des points communs avec la pratique de la magie des mers et les miracles accomplis par les prêtres de Manann. Mais malgré ces preuves d'intelligence complexe, personne ne l'a jamais vu communiquer avec les marins. Il émet des sons incompréhensibles quand il lance ses sorts, et s'il parle une langue, ni les elfes, ni les sorciers ne la connaissent.
 
-**Traits :** À Distance (Arc +8), Arme (Massue +9), Armure 3 **Possessions :** arme simple (massue à tête de boulet de canon), pansière, arme simple (massue), arc avec 12 flèches, 2d10 sous de cuivre
+Une faction au sein des Maîtres du Savoir de Saphery affirme que Triton vivait dans l'océan avant l'Avènement du Chaos et qu'il a appris à leurs ancêtres comment naviguer et s'orienter. Ces elfes disent qu'il était autrefois plus petit, mais communicatif et coopératif. Quand le Chaos est entré dans le monde, il a altéré Triton, augmentant énormément sa taille et sa force, mais le privant de la capacité ou de la volonté de parler.
 
+Une autre théorie soutient que Triton n'a pas été affecté par le Chaos et que sa réserve vient du fait qu'il est extrêmement offensé par la témérité des marins qui pillent les mers pour en tirer de la nourriture et de l'huile de baleine. Triton semble effectivement avoir de l'affection pour les créatures de l'océan, comme en témoigne l'hostilité qu'il a toujours démontrée envers les elfes noirs qui semblent le courroucer en soumettant les kharibde et les dragons des mers.
 
-## <span id="page-16-0" data-folio="15"></span>VOUS REPRENDREZ BIEN UN MORCEAU ? PERSONNAGES JOUEURS OGRES • •
+Les humains du Vieux Monde croient que Triton a un lien de parenté avec Manann, mais les contes populaires et les testaments apocryphes déclarent tour à tour qu'il s'agit du fils, du frère, de l'avatar, du premier fidèle ou du serviteur divin du dieu marin. Les elfes pensent que la question n'est pas si simple, car les Druchii honorent Mathlann (la divinité elfique dont le domaine et la nature sont très proches de ceux de Manann) aussi sincèrement que les marins de Cothique, et pourtant Triton leur voue une haine meurtrière.
 
+<span id="page-152-0" data-folio="149"></span>
+| TRITON |       |    |    |    |    |    |            |    |        |    |     |  |  |  |
+|--------|-------|----|----|----|----|----|------------|----|--------|----|-----|--|--|--|
+| M      | CC CT |    | F  | E  | I  |    | Ag Dex Int |    | FM Soc |    | B   |  |  |  |
+| 10     | 63    | 45 | 79 | 69 | 53 | 45 | 32         | 39 | 54     | 44 | 192 |  |  |  |
 
-## [ADE II 2] Les ogres
+**Compétences :** Athlétisme 65, Charme 74, Commandement 64, Corps à corps (Armes d'hast) 83, Emprise sur les animaux 74, Focalisation (Magie des mers de Triton) 74, Intuition 68, Langue (Magick) 69, Orientation 88, Perception 78, Résistance 94, Savoir (Elfes 59, Océans 99, Théologie 69)
 
-*Pages PDF 17-39*
+**Talents :** Affinité avec les animaux 4, Assaut féroce, Chanceux 2, Charge berserk 4, Combat instinctif 4, Contorsionniste, Coup puissant 3, Désarmer 3, Diction instinctive 3, Endurci 4, Frappe blessante 3, Frappe précise 3, Frappe réactive, Harmonisation aethyrique 3, Inébranlable 3, Mâchoires d'acier, Mage de guerre, Maîtrise du combat 4, Oreille absolue 2, Perception de la magie, Persévérant, Seconde vue, Sens aiguisé (Ouïe, Vue), Sens de l'orientation, Vigilance 3, Volonté de fer
 
-## **LES OGRES**
+**Traits :** Animosité (Elfes noirs), Armure 2 (8), Béni (Manann), Champion, Créature marine, Endurant, Magique, Protection 9, Redoutable 3, Résistance à la Magie 4, Se cabrer, Taille (Monstrueuse), Terreur 3 **Traits d'attaque :** Arme (Trident de Triton) +16, Attaque caudale +10
 
-Pour la plupart des habitants de l'Empire, les ogres représentent une menace obscure, mais âprement discutée, venant de terres lointaines. Dans le Vieux Monde, les ogres font presque toujours partie de compagnies de mercenaires, au sein desquelles ils sont recrutés pour leur force, leur taille et leur férocité inégalables. Ceux qui y ont déjà eu affaire ne savent que trop bien qu'il faut les aborder avec prudence.
+**Possessions :** couronne de Triton, trident de Triton.
 
-Grand, hargneux et brutal, l'ogre adulte mesure environ 2,75 m et pèse près de 450 kg. Pour faire simple, les ogres sont des montagnes de muscles, dont les os sont particulièrement épais et résistants.
+**Magie des mers de Triton :** Triton est un lanceur de sorts puissant, mais il lance sa magie d'une manière différente de tous les autres êtres du monde. Ses pouvoirs sont un mélange entre les miracles des dieux et la maîtrise de l'Aethyr. Triton connaît les Sorts de magie des mers suivants (voir page 15) : *Bourbier vivant, Mer d'huile, Tourbillon*.
 
-L'aspect le plus impressionnant cette race est certainement leur ventre, et pas seulement selon leurs propres dires. Rien ne fait plus la fierté d'un ogre que la taille de sa bedaine, qu'il ne manquera pas de tâter et de contracter afin de créer un gargouillis assourdissant. L'appétit des ogres étant légendaire, se battre et manger sont sans surprise leurs activités favorites.
+Il peut lancer les Miracles de Manann suivants comme s'ils étaient des Sorts avec un NI de 1 : *Contre-courants, Encalminé, Malédiction de la mer, Vents favorables*. Il peut également lancer le Miracle de Stromfels suivant comme s'il était un Sort avec un NI de 1 : *Lame de fond*. Si Triton génère des DR supplémentaires quand il lance ces Miracles comme des Sorts, il peut utiliser les règles de Surincantation pour les ajuster comme s'ils étaient des Sorts.
 
-Les ogres sont bruyants, goulus, vantards, fougueux, colériques et belliqueux. Mais ce sont également des créatures assez frustes, qui ne comprennent pas toujours les concepts abstraits les plus élémentaires. La musique, l'art, l'imagination et la créativité sont autant de sujets éclairés qui ne signifient absolument rien pour les ogres. Il est donc préférable de leur dire les choses de manière très directe : toute tentative de subtilité ou de métaphore ne fera qu'embrouiller et frustrer les ogres. Toutefois, ils savent apprécier un bon beuglement, en particulier pendant un banquet.
+**Faveur de Manann :** la relation exacte de Triton avec Manann est mystérieuse, mais son existence est indéniable. Au MJ de déterminer la manière dont elle se manifeste, mais Triton ne va probablement pas bien réagir à un vaisseau dont l'Humeur de Manann est négative et peut traiter avec respect un bateau dont l'Humeur de Manann est de 50 ou plus. À l'inverse, si quelqu'un manque de respect à Triton, l'Humeur de Manann peut baisser et si quelqu'un lui fait plaisir, l'Humeur de Manann peut augmenter.
 
-Les ogres sont bien connus pour leur propension à voyager, ce qui fait qu'on peut facilement les trouver aux quatre coins du monde, combattant dans des groupes de mercenaires d'une vingtaine à quelques centaines d'individus, voire plus. Contrairement à la croyance populaire, les ogres s'intègrent plutôt bien dans la plupart des sociétés qu'ils rencontrent, assimilant les coutumes et les traditions locales avec une facilité qui est probablement due à un manque d'imagination.
+**Seigneur des profondeurs :** la Compétence Emprise sur les animaux et le Talent Affinité avec les animaux de Triton ne peuvent être utilisés que sur des créatures marines. Cela dit, les critères qui pourraient normalement empêcher un Personnage d'employer la Compétence Emprise sur les animaux ne s'appliquent pas à Triton, c'est-à-dire que les créatures des mers belliqueuses, territoriales, dressées ou blessées lui témoignent tout de même du respect. Seules les créatures marines dominées par magie ne respectent plus le commandement de Triton.
 
+Les créatures dotées du Trait *Amphibie* et/ou *Aquatique* sont soumises à cette règle lorsqu'elles se trouvent dans l'eau, mais peuvent l'ignorer sur terre.
 
-## <span id="page-17-0" data-folio="16"></span>**Histoire des ogres**
+#### TRIDENT DE TRITON
 
-Il y a plusieurs milliers d'années, les ogres vivaient dans les steppes orientales, de l'autre côté des Montagnes du Bord du Monde. Ce peuple simple passait la plupart de son temps à commercer et à guerroyer. Son territoire était bordé de nations humaines qui voyaient certains avantages à travailler avec les ogres, notamment en raison de leur force prodigieuse. À la naissance de l'Empire, Sigmar les a d'ailleurs considérés comme d'excellents guerriers. Bien que mutuellement bénéfiques, ces relations étaient souvent entachées de suspicion. Certains trouvaient que leurs alliés ogres avaient appris trop de choses et étaient devenus un peu trop puissants grâce à ces arrangements. D'aucuns disent que c'est cette méfiance qui poussa un puissant sorcier à attaquer les ogres, tandis que d'autres pensent que cet acte avait pour seul but de venger les nombreuses personnes que les ogres avaient tuées et dévorées au combat. Quelle que soit la véritable version, un terrible châtiment s'abattit sur les ogres, qui les changea à jamais.
+Une immense arme d'hast à trois pointes faisant plus de cent mètres de long. Triton pourrait utiliser son arme pour empaler les monstres les plus gigantesques ou écraser la coque d'une arche noire.
 
-### LA GLOIRE DANS LES TRIPES
+| Arme              | Groupe       | Enc | Allonge      | Dégâts | Atouts et Défauts                            |
+|-------------------|--------------|-----|--------------|--------|----------------------------------------------|
+| Trident de Triton | Armes d'hast | 250 | Considérable | +BF+6  | Dévastatrice, Empaleuse, Magique, Percutante |
 
-Le ventre d'un ogre est de la plus haute importance que ce soit pour des raisons sociales, spirituelles ou physiques. Contrairement à la plupart des autres humanoïdes, la majorité des organes vitaux des ogres se trouvent dans leurs tripes et sont protégés par une épaisse gangue de muscles imbriqués plutôt que par leur cage thoracique. Ces muscles incroyablement puissants peuvent broyer et mélanger avec une force colossale tout ce que l'ogre ingère, ce qui lui permet de digérer presque tout ce qui entre dans sa gueule béante. Plus le ventre d'un ogre est proéminent, plus il est respecté par ses congénères, son envergure étant synonyme de batailles remportées et de territoires conquis.
+**Naufrageuse :** chaque fois que le trident de Triton inflige des Dégâts à la Coque d'un vaisseau, ce bateau doit effectuer un Test d'**Endurance Complexe (–10)**. En cas d'échec, le navire subit *Voie d'eau 1*. Chaque fois que le trident de Triton inflige des Dégâts Critiques à la Coque d'un bateau, ce vaisseau doit effectuer un Test d'**Endurance Difficile (–20)**. En cas d'échec, le navire subit *Voie d'eau 3*.
 
-Au-dessus des steppes ogres, une étoile maléfique lit un jour son apparition. Chaque nuit, sa lueur maladive gagnait en intensité, jusqu'à ce que des semaines plus tard, son miasme crépitant de lumière verte éclipse les deux lunes. Les ogres, n'étant absolument pas conscients du destin tragique qui les attendait, ne purent que contempler le ciel dans un mélange de désarroi et de fascination. La comète de malepierre finit par frapper, consumant instantanément plus des deux tiers des ogres, avant de s'enfoncer profondément dans la terre et d'envoyer ses ondes de choc dans le monde entier.
+<span id="page-153-0" data-folio="150"></span>
+# **CAPITAINE JAEGO ROTH, CORSAIRE DE SARTOSA**
 
-L'immense cratère laissé est depuis vénéré comme la Gueule, le Dévoreur de toutes choses, la principale divinité des ogres. La dévastation apportée détruisit les terres luxuriantes des ogres, les brûlant et les déformant pour ne laisser qu'un territoire désolé, où la lutte pour la survie poussa les ogres au cannibalisme et pire encore. Aujourd'hui, les royaumes ogres sont un conglomérat de rois tyranniques et cupides où règne la loi du plus fort.
+Le capitaine Jaego Roth est considéré comme le plus grand corsaire de l'époque actuelle. Fils du célèbre cartographe et explorateur Indigio Roth, le jeune Jaego passait sa vie à bord d'un bateau, voyageant avec son père vers des lieux inconnus de tous les autres flibustiers, pourtant grands marins, de Sartosa. Quand Roth père a finalement été forcé de prendre sa retraite après avoir perdu ses deux jambes face à un géant des mers, Jaego est parti forger sa propre légende.
 
-Après l'arrivée de leur dieu, les ogres furent possédés par différents aspects d'une faim insatiable, dont l'une était une appétence indéniable pour les voyages. Désormais, on trouve des ogres dans le monde entier, y compris au sein de l'Empire, où ils vendent leurs impressionnantes compétences au plus offrant avant de s'en aller vers d'autres contrées. Cependant, il arrive que certains s'installent sur des terres étrangères. Les ogres vivant dans l'Empire sont connus sous le nom d'ogres impériaux.
+À bord de son bateau le *Quart de nuit*, Jaego Roth a vogué des mers glacées du nord jusqu'aux rivages brumeux de la Lustrie. En suivant les cartes de son père, il rapportait des trésors tels que peu de gens avaient vu, les ajoutant au butin récolté en s'attaquant à d'autres vaisseaux. Il est devenu si célèbre que rapidement une foule de gens a voulu acheter ses services comme commandant naval, et il a parcouru la mer au sein des flottes de Tilée, de Bretonnie et de l'Empire. Après chaque victoire, Jaego retournait voir sa famille avec ses cales remplies de richesses.
 
-### ARGOT DES OGRES
+Puis, en une nuit, il a tout perdu. Jaego est rentré à Sartosa et a trouvé le Port Rouillé en flammes. Ceux qui racontent cette histoire affirment que cela a été la première et la seule fois que ce grand corsaire a connu la peur. Jaego s'est frayé un chemin à travers l'incendie, tentant désespérément d'atteindre le navire de son père, l'*Illumination*, où vivait sa famille. Mais quand il est enfin parvenu à monter à bord de force, il était trop tard. Dans la chambre de son fils, il n'a trouvé que deux cadavres calcinés.
 
-Les linguistes de l'Université d'Altdorf ont remarqué que l'apparition d'une nouvelle langue vernaculaire entrait souvent en corrélation directe avec la migration des ogres à travers l'Empire. Si les ogres adoptent les expressions populaires des pays qu'ils traversent et les remplacent lors de leur pérégrination suivante, ils sont également les architectes de leur propre argot et de leurs propres tournures idiomatiques. Deux exemples marquants sont le terme « minus », qui désigne les non-ogres, et « *s'en mettre plein les joues* », qui signifie à la fois manger et se battre. Nul ne sait avec certitude si cet argot provient de traductions grossières du Grumbarth, la langue des ogres des Montagnes des Larmes, car peu d'érudits ont survécu assez longtemps pour découvrir tous les secrets de ce dialecte.
+Alors qu'il ressortait en titubant, ayant à peine conscience de la fumée qui lui encrassait les poumons, il a été accueilli par une dernière horreur. Le corps de son père gisait sur le pont. Le vieux marin s'était traîné dans l'air de la nuit avant que la chaleur et la fumée finissent par l'achever. Parmi les innombrables trésors de ses aventures, le cartographe n'avait choisi que trois choses à sauver : un cadran lunaire, un télescope et une carte punaisée sur l'intérieur d'une carapace de tortue.
 
-## **Point de vue**
+Depuis cette nuit, Jaego n'est plus le même. Ceux qui le connaissaient avant disent que c'est comme si une lumière s'était éteinte dans ses yeux, remplacée par quelque chose de froid et de déterminé. Les survivants que son équipage a trouvés ont confusément raconté des histoires étranges sur l'attaque : un navire fantôme avec un équipage de spectres, un énorme kraken poussant un hurlement semblable à du métal que l'on tord, une épave flottante composée d'innombrables navires naufragés. Un nom est cependant revenu parmi tous ces récits embrouillés : Noctilus, le seigneur vampire du mythique *Cimetière du Galion*. La plupart des gens ont tout de suite considéré que ces déclarations n'avaient rien de crédible, mais Jaego s'y est accroché, comme un homme à la mer à un morceau de bois flottant.
 
-#### **Ce que les ogres pensent des humains du Reikland...**
+Le capitaine Roth n'a passé que très peu de temps à récupérer avant d'ordonner au *Quart de nuit* de hisser de nouveau les voiles. Il allait trouver ce vampire. Il allait trouver l'endroit où se cachait la créature. Et il allait le réduire en cendres. À présent, il recherche toutes les informations possibles concernant ce monstre, accumulant des bribes de contes comme un avare avec son or. Les trois reliques que son père a protégé jusque dans la mort sont constamment sur son bureau et Jaego a passé d'innombrables heures à tenter de comprendre leur signification. Le cimetière du Galion était devenu l'obsession de son père, une histoire répétée encore et encore par un homme qui perdait l'esprit avec l'âge. Du moins c'est ce que pensait Jaego à l'époque. Mais si ces artefacts sont un moyen de trouver le *Cimetière du Galion*, jusqu'ici, il n'est pas parvenu à résoudre leur énigme.
 
-*« J'aime bien leurs chapeaux. Et leurs petites chemises tailladées. Leurs armes sont pas terribles, un peu mieux que des cure-dents ! La plupart d'entre eux te regardent bizarrement, t'insultent ou te chassent de leur boutique avec leurs petites lames. Mais si tu en trouves un riche, avec un très grand chapeau, il te paiera bien pour rester là, à jouer les durs ! Ils pensent qu'on est bêtes, mais tu sais quoi ? Je me fiche de ce qu'ils pensent, du moment que je deviens riche ! »*
+Sa quête l'a récemment emmené sur la Mer des Griffes et le long de la côte de l'Empire. Il n'avance pas sur la question de l'emplacement du cimetière même, mais le capitaine n'a rien d'un idiot. Tuer un vampire, surtout quand il est aussi puissant que Noctilus, va nécessiter bien plus de force que ce que son équipage et lui sont capables de déployer. Roth se fait rembourser toutes les faveurs qu'il a jamais gagnées pour obtenir audience auprès de barons, de sorciers et même de comtes électeurs. Il a entendu dire que le temple de Sigmar pourrait détenir les moyens d'accomplir sa vengeance, et il compte plaider sa cause devant le Grand Théogoniste d'Altdorf. Mais ce ne sera pas facile. Altdorf est située au cœur de l'Empire, et pour descendre le Reik, Jaego va devoir traverser Marienburg, où les marchands ont toutes les raisons de haïr le nom de Roth.
 
-— Brutus Torlecou, garde du corps ogre
+### LE QUART DE NUIT **Nom du navire Équipage Voile M (É) Avirons M (É) Man Taille E B Contenance Traits et Améliorations**
 
-#### **Ce que les humains du Reikland pensent des ogres...**
+Le *Quart de nuit* est équipé d'un Grand canon placé à la proue et tourné vers l'avant, et de huit Canons Moyens sur le pont, quatre tournés à bâbord et quatre à tribord.
 
-*« Les ogres ont une mauvaise réputation, ce qui n'est absolument pas mérité ni un tant soit peu justifié. Bien sûr, leur travail est souvent bâclé par rapport à ce dont nous avons l'habitude, mais je défie n'importe quel Reiklander de créer un corset comme le fait un ogre ! Parfois, je me demande si nous méprisons les ogres de la même manière que les nains nous méprisent... Et si c'est le cas, j'ai un peu de peine pour eux, mais je suis également ravie : pensez à tout ce que nous avons accompli malgré le mépris des nains ! »*
+Quart de nuit 50 10 (25) 6 (40) – 55 65 200 1 000 Bélier, Renforcé, Solide
 
-— Ellena Pfinkis, ingénieure du Reikland
+<span id="page-154-0" data-folio="151"></span>
+| JAEGO ROTH - CAPITAINE CORSAIRE (OR 2) |                                                   |    |    |    |    |    |    |    |    |    |    |
+|----------------------------------------|---------------------------------------------------|----|----|----|----|----|----|----|----|----|----|
+| M                                      | CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc<br>B |    |    |    |    |    |    |    |    |    |    |
+| 4                                      | 83                                                | 43 | 45 | 51 | 78 | 67 | 65 | 76 | 74 | 87 | 21 |
 
-#### **Ce que les ogres pensent des nains...**
+**Compétences :** Athlétisme 75, Calme 86, Commandement 102, Corps à corps (Base 87, Escrime 90), Escalade 52, Esquive 73, Guérison 84, Intimidation 63, Intuition 85, Langue (Khazalid 78, Tiléen 93), Marchandage 95, Natation 58, Orientation 98, Perception 92, Projectiles (Poudre noire) 58, Ragot 94, Ramer 67, Résistance 78, Résistance à l'alcool 60, Savoir (Guerre 97, Navigation 103, Politique 78), Survie en extérieur 83, Voile 92
 
-*« Comment on appelle un humain sur lequel on vient de s'asseoir ? Un nain ! Ha ha ! T'as compris ? Parce qu'ils sont tout écrasés et grincheux. Dis ça au petit minus et tu t'en mettras plein les joues pendant plusieurs jours. »*
+**Talents :** Battement, Ergoteur, Exaltant 5, Ferveur ardente, Frappe précise, Frappe réactive, Haine (Mortsvivants), Imperturbable, Lire/Écrire, Loup de mer, Maîtrise du combat 3, Marinier, Menaçant 3, Nageur endurant, Négociateur, Persévérant, Perspicace, Pied marin, Pilote, Présence imposante, Riposte, Savoirvivre (Marins, Nobles, Pirates), Seigneur de guerre, Sens de l'orientation, Suborneur 3, Vigilance, Volonté de fer, Voyageur aguerri
 
-— Nathaniel Striesser, dit « Nat », « comédien » ogre
+**Traits :** À distance (Pistolet) +8 (20), Arme (Crochet) +6, Arme (Rapière) +8, Armure 3 (8)
 
-#### **Ce que les nains pensent des ogres...**
+**Possessions :** cadran lunaire et longue-vue enchantés, carte punaisée sur une carapace de tortue, crochet de main, outils de cartographe, pistolet, plastron, rapière.
 
-*« Ma mère avait l'habitude de dire "plus grand tu es, moins tu fais preuve d'honnêteté". Elle parlait surtout des humains et des elfes, que Valaya la préserve, et dans ces cas-là, elle avait raison. Mais cette théorie ne s'applique pas aux ogres. Je pense qu'ils sont trop stupides pour mentir. Mais ce n'est pas pour autant qu'ils sont dignes de confiance. »*
+Avec sa prothèse, Jaego ne subit pas de pénalité parce qu'il lui manque une main (voir page 308 de **WFJDR** pour plus de détails).
 
-— Ezra Brynsdottir, brise-bouclier naine
+**Héritier du cartographe :** Jaego connaît parfaitement les mers du monde, car il a étudié les cartes toute sa vie. Il bénéfice de +2 DR sur tous les Tests d'Orientation qu'il effectue. S'il est le Capitaine d'un vaisseau, il peut effectuer des Tests d'Orientation et non de Commandement dans le cadre des Tests d'équipage.
 
+#### RELIQUES D'INDIGIO ROTH
 
-<span id="page-18-0" data-folio="17"></span>#### **Ce que les ogres pensent des halflings...**
+Jaego Roth recherche quiconque pourrait lui apporter des réponses au sujet de ces artefacts.
 
-*« Ils sont petits et délicieux si tu dois remplir ton garde-manger vide, mais il vaut mieux s'en servir pour cuisiner... Enfin, c'est eux qui font la cuisine. Ils sont très bavards, mais il y a quelque chose chez eux qui en ferait presque des membres de la famille. Mais c'est pas non plus comme les avortons que tu finis par manger. »*
+**Cadran lunaire de Roth :** un appareil complexe capable, sans que Jaego sache trop comment, de suivre les déplacements de Morrslieb.
 
-— Ballison Grandfestin, dit « le boucher », restaurateur ogre
+**Longue-vue enchantée :** une longue-vue d'Arabie sur laquelle sont gravées des inscriptions délicates. Elle ignore tout ce qui pourrait voiler la vision, que ce soit un brouillard naturel ou une illusion magique.
 
-#### **Ce que les halflings pensent des ogres...**
+**Carte sur une carapace de tortue :** une carte couverte d'une iconographie grotesque, avec un maelstrom tourbillonnant au centre.
 
-*« Brutaux ? Oui. Stupides ? Souvent. Dangereux ? Absolument... Et pourtant, vous ne trouverez pas amitié plus solide, littéralement ! Avez-vous déjà senti la force d'un ogre ? Ils sont certainement plus dignes de confiance que la plupart des Reiklanders, foi de halfling. »*
+<span id="page-155-0" data-folio="152"></span>
+# **LONG DRONG SILVER, CAPITAINE DES PIRATES TUEURS**
 
-— Ferdinand Piedfoin-Piedpaille, studieux halfling
+*« J'te tirerai dessus d'puis les halles de Grimnir, salopard ! »*
 
-#### **Ce que les ogres pensent des hauts elfes...**
+– Long Drong Silver
 
-*« Les minus avec les oreilles pointues, là ? Ils se croient mieux que nous. Ils parlent trop bien, ça me donne mal à la tête. À mon avis, ils ont meilleur goût que nous, c'est déjà ça. »*
+Long Drong Silver, chef des Pirates Tueurs, est l'un des capitaines les plus respectés de Sartosa, même si ce respect se rapproche sans doute davantage de celui accordé à un baril de poudre noire. Aucun autre marin ne se rendrait volontairement là où Long Drong s'aventure, poursuivant les monstres les plus terrifiants de l'océan dans son voyage en mer vers une mort glorieuse.
 
-— Tuzergoo Fracasservelle, vagabond ogre
+Long Drong (appelé ainsi, car pour un nain, il est très grand) était autrefois un marin de Barak Varr. Il n'a jamais recherché une vie d'aventure. Il était capitaine du *Tonneau de bière* et transportait les meilleures cuvées jusqu'aux nains assoiffés partout où il accostait. « *Lentement, mais sûrement* » était sa devise et il avait acquis une réputation de fiabilité. Jusqu'à ce qu'une tempête écrase le *Tonneau* contre les falaises de Sartosa. L'équipage n'a dû sa survie qu'à l'esprit vif de Long Drong et a tout de même été forcé d'abandonner son navire bien-aimé empalé sur les rochers, sa précieuse cargaison de bière teintant les vagues d'or. Pour Long Drong, c'était une honte insupportable. Ses camarades et lui ont prêté le Serment du Tueur et sont partis rencontrer leur destin sinistre à Sartosa.
 
-#### **Ce que les hauts elfes pensent des ogres...**
+Sa première action a été de prendre d'assaut la forteresse du seigneur pirate, le capitaine Sissico. En entendant les histoires qui parlaient de ce tyran cruel, Drong a cru voir en lui sa chance de recevoir une mort glorieuse. Malheureusement, les choses ne se sont pas passées ainsi. Ce qu'il a en réalité reçu, c'est une forteresse où s'installer, le perroquet de Sissico (qu'il a appelé Gelty, car l'animal répète souvent « Pièces d'or »), le navire de Sissico et assez de butin pillé pour acheter quelque chose qu'un nain pourrait être fier de faire voguer sur les flots. La *Belle Fregar* est à présent une merveille d'ingénierie naine, instantanément reconnaissable à sa figure de proue, forgée à l'image d'une jeune fille naine d'une grande beauté. Cette figure sert aussi de bélier.
 
-*« Lorsque l'on a vécu aussi longtemps que moi, vu autant de rivages que moi, goûté autant de cuisines que moi, assisté à autant de guerres que moi, on commence à s'accommoder du monde tel qu'il est vraiment. On commence à s'habituer au fait que le monde change, rapidement, mais toujours avec un courant sous-jacent de cohésion, de stabilité, qui maintient toute une génération dans la lignée de celle qui l'a précédée. Mais les ogres ne fonctionnent pas de cette manière : parmi leurs leurs, ils sont un peuple immuable, jusqu'à ce qu'ils commencent à errer et deviennent une tout autre personne. »*
+Les Pirates Tueurs ont acquis une réputation de guerriers talentueux et ont rejoint les rangs de compagnies de mercenaires allant de la Tilée à l'Empire. Ils sont passés maîtres dans l'art de s'emparer des coffres de paie utilisés pour rémunérer les armées de mercenaires rivales en brisant la ligne de soldats d'élite qui les garde par un barrage frénétique de tirs de pistolet et d'insultes. Et ils sont bien payés pour ce qu'ils font, car Long Drong n'a pas perdu son sens des affaires. Mais en vérité, leur travail de mercenaires leur permet juste de s'approvisionner en rhum et en poudre noire. Leur objectif réel, celui qui envoie la *Belle Fregar* charger aux quatre coins du monde, est de combattre les monstres marins.
 
-— Aesenil Clairciel, explorateur haut elfe
+Long Drong n'a pas encore rencontré de créature qu'il n'est pas parvenu à vaincre. Les flancs de la *Belle Fregar* portent des entailles venant des batailles contre un léviathan, tandis que des lambeaux de cuir écailleux de wyrm des mers battent au vent sous la bannière personnelle de Drong, une cruche et deux pistolets croisés. Ces victoires ont coûté cher : Drong a perdu une main à cause d'une baudroye, une jambe à cause d'un dragon des mers et un œil à cause d'un pari (c'est une longue histoire). Sa destinée fatale ne cesse de lui échapper, même s'il est satisfait de savoir que beaucoup des membres de son équipage ont regagné leur honneur à son service, puis ont été remplacés par d'autres recherchant la mort en mer.
 
-#### **Ce que les ogres pensent des elfes sylvains...**
+Les capitaines pirates de Sartosa qui se joignent parfois à Long Drong pour un verre décrivent quelque chose de sombre qui le dévore petit à petit. Drong continue de boire de la bière, de chanter des chansons de marins et de raconter ses dernières victoires en parlant très fort pour récolter des rugissements d'approbation. Mais au fur et à mesure que la nuit avance, la mélancolie s'empare de lui. Il reste assis à sa table à frotter la courbe de son crochet et à regarder fixement la mer. Drong sait qu'il ne pourra pas poursuivre sa chasse éternellement, à cause du grand âge. Combien de temps lui reste-t-il avant d'être privé d'une mort glorieuse ?
 
-*« Les quoi ? Ah oui, les forêts qui piquent. Oui, je vois : tu te promènes, tu cherches à manger et d'un coup, tu es couvert de flèches. C'est pas des elfes ça, juste des arbres en colère. Mais il faut bien souffrir un peu pour manger, pas vrai ? »*
+#### LONG DRONG SILVER CAPITAINE DES PIRATES TUEURS M CC CT F E I Ag Dex Int FM Soc B 3 72 62 56 69 40 29 32 40 71 52 30
 
-— Varzurga, chasseur ogre
+**Compétences :** Athlétisme 59, Calme 86, Commandement 72, Corps à corps (Bagarre 82, Base 87), Divertissement (Chant 57, Narration 62), Dressage (Perroquet) 55, Escalade 66, Esquive 44, Guérison 55, Intimidation 81, Intuition 70, Langue (Reikspiel 80, Tiléen 70), Marchandage 67, Natation 71, Orientation 75, Perception 65, Projectiles (Poudre noire) 77, Ramer 61, Résistance 79, Résistance à l'alcool 89, Savoir (Guerre 70, Ingénierie 70, Navigation 90), Survie en extérieur 75, Voile 84
 
-#### **Ce que les elfes sylvains pensent des ogres...**
+**Talents :** Assaut féroce, Chanceux 5, Charge berserk, Cœur vaillant, Contrôle de la Frénésie, Coup puissant, Dur à cuire, Endurci, Frénésie, Impitoyable, Inébranlable, Infatigable 2, Lire/Écrire, Loup de mer, Mâchoires d'acier, Maîtrise du combat 3, Maniement de deux armes, Marinier, Nageur endurant, Noctambule, Persévérant, Pied marin, Pilote, Robuste 3, Sans peur (Tout), Tir précis, Tir rapide, Très fort, Très résistant, Tueur, Vision nocturne
 
-*« Peu de créatures ont le pas aussi lourd que les ogres, dont chaque mouvement laisse une nouvelle marque dans la nature. Et pourtant, contrairement aux humains ou aux nains, peu de mes semblables éprouvent de l'animosité à leur égard. Après tout, on ne déteste pas la fourmi qui se repaît du cerf déchu, ni le grondement de son estomac lorsqu'il crie famine. Les ogres sont une force naturelle de ce monde, force qui demande à être contrecarrée par la lame et les flèches, mais jamais par la haine. »*
+**Traits :** À distance (Pistolets) +8 (20), Arme (Crochet) +8, Arme (Épée) +10
 
-— Faraoth Vaguauvent, observateur elfe sylvain
+**Possessions :** bandoulière avec 12 pistolets chargés, cache-œil, crochet, épée, jambe de bois, perroquet (Pièce), poudre et munitions pour 24 tirs, rhum tord-boyaux.
 
-## UN HÉRITAGE COMMUN ?
+Avec ses prothèses, Long Drong ne subit pas de pénalité parce qu'il lui manque des membres (voir page 308 de **WFJDR** pour plus de détails).
 
-De nombreuses théories tarabiscotées sur les origines des halflings et des ogres abondent dans le Vieux Monde en raison de l'étrange similitude et de la curieuse affinité qui lient ces deux races. L'une d'entre elles, proposée par le philosophe impérial Albrecht de Nuln, suggère que les deux espèces partagent un ancêtre commun, et qu'une mutation pourrait être à l'origine de leurs différences physiologiques actuelles. Selon lui, ces éléments permettraient d'expliquer leurs nombreuses similitudes : ils résistent tous deux aux effets du Chaos et ont un besoin comparable et permanent de chercher leur prochain repas. Ils présentent également des traits comportementaux particuliers : les ogres se sentent obligés de tout casser et de tout manger tandis que les halflings ont un besoin compulsif de chiper tout ce qui n'est pas fermement cloué au sol. Cependant, Albrecht a été brûlé sur le bûcher en 1301 CI après avoir hurlé à l'hérésie à propos de supposés hommes-rats. Depuis, ses théories ne sont plus prises au sérieux, du moins pas en société.
+**Rhum tord-boyaux :** un mélange de rhum, de Poudre noire et de copeaux de fer. Considéré comme deux verres et celui qui le boit doit effectuer un Test de Résistan,ce à l'alcool. En cas d'échec, il est pris de maux de ventre et de flatulences. Le Personnage subit alors une pénalité de –20 sur ses Tests de Charme et reçoit le Trait *Perturbant* jusqu'à ce qu'il redevienne sobre.
 
-Les ogres et les halflings semblent partager un lien qui leur permet de forger des amitiés avec une certaine aisance. Cependant, il existe bel et bien des tensions dans leurs relations : si les ogres semblent avoir une tendance naturelle à se lier d'amitié avec ces gens de petite taille, il est également entendu qu'ils ne trouvent aucune viande plus savoureuse qu'un gigot de halfling cuit à point.
+<span id="page-156-0" data-folio="153"></span>
+| LA BELLE FREGAR                   |    |                |     |        |   |        |                    |                                                           |  |  |
+|-----------------------------------|----|----------------|-----|--------|---|--------|--------------------|-----------------------------------------------------------|--|--|
+| Nom du navire Équipage Propulsion |    | à vapeur M (É) | Man | Taille | E | B      | Cont<br>enanc<br>e | Traits et<br>Améliorations                                |  |  |
+| Belle Fregar                      | 30 | 6 (10)         | –   | 45     |   | 85 150 | 700                | Bélier, Propulsion à vapeur, Renforcé,<br>Robuste, Solide |  |  |
 
+La *Belle Fregar* est équipée de huit canons Moyens sur le pont, quatre tournés à bâbord et quatre à tribord. Deux pierriers sont montés à la proue et tournés vers l'avant, et deux sont montés à la poupe et tournés vers l'arrière.
 
-## <span id="page-19-0" data-folio="18"></span>**PERSONNAGES OGRES**
+#### **Flancs de fer**
 
-La création de Personnages ogres suit les mêmes étapes que celles présentées dans **Warhammer Fantasy le Jeu de Rôle** (**WFJDR** p. 24) avec les ajouts suivants.
+La Coque en métal de la Belle Fregar lui donne son Endurance élevée et son Trait Renforcé. De plus, les Éclats résultant d'un Coup Critique peuvent être ignorés. Cependant, si la Belle Fregar subit un Coup Critique sur son Gréement ou ses Avirons, lancez les dés dans le tableau Panne de vapeur à la place.
 
-## **Races**
+#### **Carburant**
 
-Si vous le souhaitez, votre Personnage peut être un ogre. Si vous préférez tirer au sort, lancez 1d100 et consultez le Tableau des races aléatoires. Vous gagnez +20 PX si vous acceptez le premier résultat.
+Le moteur à vapeur à bord de la Belle Fregar est relativement efficace. Pour chaque heure d'utilisation, il consomme 1 Enc de charbon. Le MJ peut décider que le bateau brûle aussi du charbon à un rythme plus rapide s'il est forcé d'effectuer des manœuvres d'esquive ou de rester à sa vitesse maximum malgré de forts courants ou de forts vents de face.
 
-## TABLEAU DES RACES ALÉATOIRES
+Généralement, Drong part avec 200 Enc de charbon dans sa cale.
 
-| Race         |
-|--------------|
-| Humain       |
-| Halfling     |
-| Nain         |
-| Ogre         |
-| Haut elfe    |
-| Elfe sylvain |
-|              |
+Le moteur à vapeur pourrait être alimenté en brûlant du bois. Cette méthode est moins efficace, mais comme le charbon n'est pas toujours disponible, Drong y a parfois recours. Pour chaque heure d'utilisation, le moteur à vapeur consomme 2 Enc de bois.
 
-#### **Classes et C arriè res**
+<span id="page-157-0" data-folio="154"></span>
+# **WULFRIK, CHAMPION DES SARLS**
 
-Les ogres suivent les mêmes règles pour la Classe et la Carrière (**WFJDR** p. 30). Si vous souhaitez que votre ogre poursuive une Carrière non listée dans le tableau ci-dessous, n'hésitez pas à en discuter avec votre Meneur de Jeu.
+Tous les langskips norses éveillent la terreur dans les cœurs de ceux qui vivent le long de la côte, mais il en existe un que même les plus braves ont appris à redouter. Sa voile arbore la roue sans cesse en mouvement des Puissances de la Ruine, barbouillée de sang séché. Des têtes, venant uniquement d'adversaires vaincus en combat singulier, bordent sa proue. Ses avirons brassent les vagues à l'unisson, faisant avancer le vaisseau en rythme au son des chanteurs skalds entonnant un seul nom : Wulfrik.
 
-# TABLEAU DES CLASSES ET CARRIÈRES ALÉATOIRES
+Ce géant par la taille est le champion le plus craint et le plus révéré des Sarls. Il vogue sur la Mer des Griffes et au-delà, pillant et massacrant pour apporter toujours davantage de gloire à son nom, et aux dieux évidemment. Il porte leur marque sur sa chair, ce qui indique à quiconque croise sa route qu'il est une personne digne de l'attention des divinités. Et selon Wulfrik, les divinités ont bien raison.
 
-| Classe     | Carrière/Race                     | Ogre  |
-|------------|-----------------------------------|-------|
-|            | Artisan                           | 01    |
-|            | Mendiant                          | 02-03 |
-| CITADINS   | Milicien                          | 04-09 |
-|            | Ratier                            | 10-11 |
-| COURTISANS | Serviteur                         | 12    |
-|            | Garde                             | 13-19 |
-|            | Gladiateur                        | 20-30 |
-| GUERRIERS  | Mangeur d'hommes                  | 31-37 |
-|            | Soldat                            | 38-46 |
-|            | Spadassin                         | 47-51 |
-|            | Chasseur de primes                | 52-54 |
-| ITINÉRANTS | Colporteur                        | 55-61 |
-|            | Saltimbanque                      | 62-64 |
-| LETTRÉS    | Boucher ogre                      | 65    |
-|            | Débardeur                         | 66-68 |
-| RIVERAINS  | Marin                             | 69    |
-|            | Hors-la-loi                       | 70-78 |
-| ROUBLARDS  | Pilleur de tombes                 | 79-82 |
-|            | Rançonneur                        | 83-87 |
-|            | Bailli                            | 88    |
-|            | Chasseur                          | 89-95 |
-| RURAUX     | Gardien de<br>troupeaux de rhinox | 96-98 |
-|            | Mineur                            | 99-00 |
+Même s'il est encore jeune, Wulfrik a mené ses pillards à d'innombrables victoires le long des côtes du sud, rapportant du butin pour remplir les coffres du roi des Sarls et ne laissant que des survivants au regard hanté et des ruines calcinées derrière lui. De la Bretonnie à Kislev, des têtes de paysans comme de guerriers sont venues rejoindre la décoration de son navire. À chaque nouveau succès, un couplet se rajoute à sa saga. Les récits de ses exploits sont connus dans toute la Norsca à présent, même si personne ne les raconte avec autant d'enthousiasme que Wulfrik lui-même.
 
-#### **Les og res au t ravail**
+L'une des histoires décrit comment ses camarades et lui ont croisé un galion bretonnien encalminé dans la mer déserte. Les dieux ont observé leur champion tandis que Wulfrik faisait progresser son bateau, Kotfotr (la *Griffe du chasseur*), sous la pluie de boulets de canon en hurlant un défi au noble qui commandait le grand vaisseau. Mais le noble a refusé ; il s'est terré dans les entrailles du galion et a laissé son propre équipage mourir. Wulfrik l'a traqué dans ces recoins sombres pendant près d'une heure, et quand il a enfin fini par traîner ce lâche dans la lumière, il a refusé de lui accorder une mort honorable. Au lieu de cela, il l'a attaché à la proue de son langskip pour qu'il serve de sinistre figure de proue. L'homme a hurlé pendant trois jours avant de finir par mourir.
 
-Les paragraphes suivants décrivent brièvement chacune des Carrières qu'un ogre peut avoir dès le départ, afin d'aiguiller les Joueurs et les MJ sur la façon de les inclure dans le jeu.
+Rien ne fait plus plaisir à Wulfrik que vaincre d'autres champions en combat singulier. C'est un sentiment merveilleux, dit-il tandis que l'hydromel coule à flots chaque nuit, de faire mordre la poussière aux combattants les plus talentueux et les plus courageux de votre ennemi et de voir leurs compagnons fléchir quand ils se rendent compte, vraiment compte, qu'ils sont promis à une mort certaine. Ses vantardises et son ascension rapide ont donné à Wulfrik d'innombrables occasions de se livrer à ce passetemps. Chaque fois qu'il jette l'ancre à Kirkjugarður Langskipa, des champions venus de toutes les terres norses, et même de plus loin pour certains, viennent défier ce jeune arriviste. Ceux qui livrent un combat que Wulfrik juge suffisamment correct sont parfois autorisés à rejoindre son équipage. Les autres servent à bord du Kotfotr comme décorations.
 
-**Artisan :** les ogres produisent surtout des marchandises grossières et surdimensionnées (généralement destinées au combat), mais il arrive que certains d'entre eux se tournent vers un commerce honnête afin de gagner de l'argent. La plupart des artisans ogres sont employés pour une tâche précise (généralement pour porter de lourdes charges) et ne fabriquent pas entièrement leurs articles. Cependant, la plupart d'entre eux préfèrent intimider ou payer des personnes plus modestes afin qu'elles s'occupent de la fabrication de leurs armes et armures. S'ils s'en chargeaient eux-mêmes, le résultat serait certainement des plus médiocres.
+Cependant, l'arrogance de Wulfrik grandit en même temps que sa réputation. Selon lui, il ne trouve plus de vrai défi à présent. Tant des plus grands champions des dieux sont déjà tombés sous ses lames qu'il est contraint d'en chercher d'autres plus loin. Il traque les rumeurs parlant de grands guerriers avec presque autant d'avidité que le butin, car il sait que plus sa célébrité augmente, plus son pouvoir sera grand un jour. Wulfrik est ambitieux. Il ne compte pas passer toute sa vie à rechercher vainement la faveur d'un dieu frivole ou d'un autre. Les divinités savent qu'elles ont bien choisi leur champion avec lui, et il leur apportera davantage de gloire encore si elles le laissent obtenir ce qu'il veut.
 
-**Bailli :** les ogres font d'excellents baillis et percepteurs, car il est particulièrement difficile de repousser un ogre qui se présente sur le pas de votre porte. De plus, leur vitalité naturelle leur permet de parcourir les routes de l'Empire séparant les communautés éloignées géographiquement. Cependant, le fait que peu d'ogres sachent compter fait de la fraude fiscale un problème particulièrement répandu.
+Les chefs et les rois des peuples norses deviennent faibles et sont trop occupés à se disputer le pouvoir entre eux. Le temps est venu de mettre en place un nouveau commandant, que tous les hommes considéreront indubitablement comme un champion de valeur. Pour Wulfrik, son plus grand trésor est sa saga. Plus sa légende s'enrichit, plus les guerriers se ralliant à sa bannière sont nombreux et plus les chefs apprennent à craindre son nom. Un jour, Wulfrik prouvera qu'il a davantage de valeur qu'eux tous réunis. Telle est la destinée que les dieux lui ont présentée. Que pouvaient-ils vouloir d'autre pour quelqu'un d'aussi puissant que Wulfrik ?
 
-**Chasseur :** sur leur terre natale, les ogres sont réputés pour leurs talents de chasseurs. Ils se battent pour traquer, tuer et manger les plus grosses créatures possible afin de surpasser leurs rivaux. De nombreux ogres n'hésitent pas à voyager à la recherche de la proie la plus gigantesque : plus le repas est copieux, plus le ventre est mis en avant !
+# KOTFOTR **Nom du navire Équipage Voile M (É) Avirons M (É) Man Taille E B Contenance Traits et Améliorations** Kotfotr 45 6 (5) 8 (35) +1 25 55 80 1 000 Bélier
 
-**Chasseur de primes :** se voir offrir de l'argent pour la capture, voire le meurtre, d'un autre individu s'avère très tentant pour de nombreux ogres, qui s'illustrent dans le domaine. S'ils ont rarement la subtilité ou la présence d'esprit pour attraper des cibles rusées, ils compensent leur manque d'intelligence par une ténacité et une détermination sans faille.
+**Bénédiction des dieux :** toutes les attaques à distance contre le Kotfotr sont considérées comme des Tests Complexes (–10) (sauf si le Test devrait normalement être d'une Difficulté encore supérieure).
 
-**Colporteur :** presque tous les ogres deviennent des sortes de vagabonds à un moment donné de leur vie. Leur soif de découvrir ce qui se trouve de l'autre côté de l'horizon les entraîne d'une ville à l'autre, de nation en nation, sans jamais savoir ce qu'ils cherchent, et probablement sans jamais le trouver. En chemin, ils parviennent à se nourrir en louant leurs services.
+<span id="page-158-0" data-folio="155"></span>
+| WULFRIK - CHAMPION DES SARLS (OR 2) |                                                   |    |    |    |    |    |    |    |    |    |    |
+|-------------------------------------|---------------------------------------------------|----|----|----|----|----|----|----|----|----|----|
+| M                                   | CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc<br>B |    |    |    |    |    |    |    |    |    |    |
+| 4                                   | 83                                                | 34 | 62 | 51 | 48 | 62 | 64 | 39 | 78 | 53 | 28 |
 
-### OGRES ET MUTATIONS
+**Compétences :** Athlétisme 72, Calme 88, Commandement 68, Corps à corps (Base 88, Deux mains 93), Divertissement (Narration) 68, Escalade 82, Esquive 82, Intimidation 92, Intuition 68, Langue (Gospodarin 54, Reikspiel 64), Natation 74, Orientation 78, Perception 63, Pistage 73, Prière 58, Ramer 77, Résistance 81, Résistance à l'alcool 86, Savoir (Guerre 74, Histoire 54, Navigation 84, Religion 49), Survie en extérieur 68, Voile 77
 
-Bien que résistants aux effets du Chaos, les ogres ne sont pas immunisés contre les mutations. L'ogre typique ne craint pas les mutants et ne les déteste pas non plus, à l'inverse de la majorité des citoyens de l'Empire. Tout au plus, il peut les trouver étranges, ce qui n'est pas si différent de ce que la plupart des gens pensent des ogres eux-mêmes. Les chances qu'un ogre soit victime d'une mutation physique ou mentale, comme expliqué à la page 183 de **WFJDR**, sont les suivantes :
+**Talents :** Ambidextre, Assaut féroce, Battement, Bonnes jambes, Chanceux 2, Charge berserk, Combat déloyal 3, Combat instinctif 2, Combattant au contact, Coup puissant, Déterminé, Dur à cuire, Effrayant 2, Endurci, Ergoteur, Guerrier né, Impitoyable, Inébranlable, Loup de mer, Maîtrise du combat 4, Maniement de deux armes, Marinier, Menaçant, Noctambule, Pied marin, Pilote, Porte-bouclier, Présence imposante, Renversement, Robuste 3, Sans peur (Tout), Vigilance, Volonté de fer
 
-|        | Ogre  |
-|--------|-------|
-| Corps  | 01–10 |
-| Esprit | 11–00 |
+**Traits :** Arme (Bouclier) +9, Arme (Épée bâtarde) +12, Armure 4 (9), Champion, Corruption (Mineure) **Possessions :** armure lourde, bouclier, crânes trophées, épée bâtarde.
 
+**Champion élu du Chaos :** pour les autres norses, le succès de Wulfrik indique qu'il a la faveur des dieux. Tous les Tests de Charme, de Commandement ou d'Intimidation effectués par ce personnage pour tenter d'influencer un suivant du Chaos reçoit un +10 supplémentaire.
 
-<span id="page-20-0" data-folio="19"></span>**Débardeur :** on dit qu'un débardeur ogre compense largement le volume de nourriture qu'il consomme par la quantité de marchandises qu'il peut charger sur un navire. Tout marchand astucieux, pour autant qu'il ait prévu un bon surplus de stock pour couvrir les besoins, peut réaliser de belles économies avec une équipe d'ogres volontaires.
+**Chasseur de têtes :** quand Wulfrik inflige une Blessure Critique, il peut décider de lancer les dés dans le tableau Blessures Critiques à la Tête au lieu de celui de la localisation normale.
 
-**Garde :** les ogres sont souvent employés comme gardes du corps par ceux qui peuvent se permettre de prendre en charge leurs frais exorbitants. Ils excellent dans leurs fonctions, car peu de personnes sont disposées à s'en prendre ouvertement à un ogre, si on leur laisse le choix. Cependant, leur corpulence peut souvent poser problème, car ils sont incapables de pénétrer dans de nombreux établissements fréquentés par leurs employeurs.
+**Tueur de champions :** Wulfrik gagne un point d'Avantage quand il affronte un chef ou un champion ennemi en combat singulier.
 
-**Gladiateur :** le sport sanglant des combats de fosse est originaire des royaumes ogres, situés loin à l'est. Ils y creusent de larges fosses pour représenter leur dieu affamé, la Gueule, puis font des offrandes de chair et organisent des combats spectaculaires. Bien évidemment, les ogres adorent les combats de fosse et y prennent part dès qu'ils le peuvent, qu'importe s'il s'agit de leur carrière de prédilection.
+<span id="page-159-0" data-folio="156"></span>
+# **ARCHISEIGNEUR DES MERS VRISK GRATTE-LE-FER**
 
-**Hors-la-loi :** les lois de l'Empire sont souvent déroutantes pour les ogres, qui se rabattent généralement sur leur croyance inébranlable selon laquelle la force l'emporte quoi qu'il arrive. Ainsi, beaucoup d'entre eux deviennent des hors-la-loi sans même s'en rendre compte et sont contraints de fuir les villes de l'Empire, comprenant rarement ce qu'ils ont fait de mal.
+Vrisk Gratte-le-Fer est l'Archiseigneur des mers du clan Skorbut. Il était présent au Grand Rassemblement de 2302 et a audacieusement placé sa patte sur le pilier noir des Commandements et gagné le droit de siéger au conseil des Treize. Son élévation a surpris beaucoup de monde, car le clan Skorbut n'était absolument pas une puissance majeure chez les skavens.
 
-**Marin :** la soif d'aventure qui entraîne les ogres à travers le Vieux Monde les conduit également en mer, où ils font des marins étonnamment doués (et particulièrement imposants). L'océan semble attirer de nombreux ogres, qui ont entendu des légendes à propos d'une seconde Gueule, un tourbillon gigantesque que beaucoup souhaitent localiser.
+Le Grand Rassemblement, et ses conséquences, ont inculqué un but commun aux skavens et Vrisk a rapidement trouvé une niche à occuper. Au vu du fait que la majorité des territoires de son clan était composée des terriers forés dans les falaises sous la ville de Tobaro, il a suggéré que le clan Skorbut reçoive une généreuse provision de malepièces pour concevoir et construire une marine efficace.
 
-**Mendiant :** se prélasser en mourant de faim tout en étant nourri de temps à autre par la charité des passants ? Le concept de mendicité est tellement éloigné des habitudes des ogres qu'il est surprenant de voir combien d'entre eux s'y adonnent. Mais si l'on considère que les rues sont remplies de déchets, d'ordures et d'animaux errants (autrement dit, de « *nourriture gratuite* »), on comprend mieux le point de vue des ogres.
+Après beaucoup de chamailleries, le conseil a accordé une portion de ressources généreuses à Vrisk. L'humble statut du clan Skorbut a probablement contribué à cette décision providentielle : en lui donnant une fortune en malepièces, les autres conseillers se refusaient mutuellement une jolie manne qui aurait pu perturber l'équilibre des puissances. Mieux valait fournir de l'assistance à un petit clan que donner les moyens à un clan majeur de dominer ses rivaux. Quand il a gagné cette rétribution, Vrisk a aussi dû promettre d'acheter de l'armement et des soldats spécialisés aux clans Skryre, Moulder, Eshin et Pestilens. Il est également intéressant de noter que le seigneur gris Kritislik a fortement objecté à la construction d'une marine en affirmant que ce serait une manœuvre trop visible qui laisserait des preuves pouvant être retrouvées par les ennemis des skavens, ce qui signifie que les autres conseillers ont peut-être voté en faveur de cette création simplement pour agacer le seigneur gris.
 
-**Milicien :** affectez un ogre à la milice ou à la prison et très peu de délinquants envisageront de tester les limites de la loi ou de s'échapper. Certes, leurs services coûtent un certain prix, mais ils valent autant qu'une escouade tout entière (en supposant qu'ils rentrent dans le corps de garde).
+Grâce à la générosité (conditionnelle) du conseil, le clan Skorbut a reçu les ressources nécessaires pour forer la tanière de Port de l'Échine dans la Cité souterraine, caché à l'intérieur de cavernes que les tempêtes avaient percées dans la côte de Tobaro. En 2321 CI, d'étranges embarcations de bric et de broc ont été repérées sur la Mer Tiléenne et les nains de Barak Varr ont signalé avoir coulé plusieurs vaisseaux dotés d'un équipage de marins skavens. En moins de deux décennies, Vrisk avait fait beaucoup pour tenir sa promesse auprès du conseil.
 
-**Mineur :** leur force colossale fait des ogres des mineurs exceptionnels, même s'ils se sont retrouvés coincés plus d'une fois à cause de leur envergure. On raconte que certains repaires souterrains d'orcs et de gobelins ont été creusés en un rien de temps par des mercenaires ogres engagés dans ce seul but.
+Le clan Skorbut représente à présent une menace maritime sérieuse. Sa flotte branlante récolte une fortune grâce à la piraterie, dont la majeure partie est dépensée pour capturer de nouveaux prisonniers affectés à actionner les roue d'esclaves propulsant ses navires.
 
-**Pilleur de tombes :** leur avidité les conduit souvent dans les endroits les plus incongrus. De plus, les scrupules propres aux autres races revêtent peu d'importance aux yeux des ogres, qui sont plus que disposés à déterrer un ou deux cadavres laissés sans surveillance pour de l'argent. Après tout, s'ils ne sont pas payés, ils pourront toujours profiter d'un repas gratuit ! L'attrait de l'or fait briller les yeux des ogres les plus avides, il n'est donc pas surprenant que beaucoup d'entre eux passent vainement d'une tombe à l'autre avec l'espoir infime de tomber sur de l'or (et de s'offrir un bon combat au passage).
+Le clan fait également grossir son butin en récupérant des épaves sur la côte de l'île des Sirènes qui sont ramenées à Port de l'Échine. Les skavens ont tendance à éviter d'attaquer les vaisseaux près de la côte, car ils ne veulent pas donner raison au seigneur gris Kritislik. Pour sa part, Vrisk participe activement aux opérations de son clan. À bord d'un bateau de clan, tous les skavens sont suspectés de mutinerie, ce qui n'est pas plus mal, car ils comptent tous effectivement se rebeller tôt ou tard. Les capitaines-griffes de Vrisk luttent pour maintenir l'ordre, c'est pourquoi l'Archiseigneur des mers lui-même juge bon de surveiller la situation depuis la proue du vaisseau amiral du clan Skorbut, les *Crocs de Port de l'Échine*, une masse grouillante hérissée de canons navals à malefoudre.
 
-## OGRES EXPATRIÉS ET IMPÉRIAUX
+Vrisk occupe le huitième siège du conseil des Treize. C'est une position humble et il se livre rarement aux intrigues nécessaires pour gagner davantage de pouvoir. Les rumeurs affirment qu'il dédaigne la compétition rancunière de Skarogne au profit d'une vie sur les vagues de l'océan. De surcroît, s'il ne consacrait pas son énergie à mener son clan en personne, la moitié de son peuple se serait déjà mutinée le soir suivant.
 
-La race des ogres présente autant de variété que les humains, ses diverses cultures étant éparpillées dans tout le Vieux Monde. Cependant, elles rayonnent toutes depuis leurs terres ancestrales : les royaumes ogres et les Montagnes des Larmes. Il est tout à fait possible de jouer un ogre des royaumes ogres ou un ogre expatrié de Cathay ou d'Estalie, mais ce supplément se concentre essentiellement sur les ogres impériaux. Ces créatures s'adaptent facilement, les règles peuvent donc être légèrement modifiées pour expliquer la manière dont un ogre a dû se conformer à la culture dans laquelle il se trouve.
+|   | VRISK GRATTE-LE-FER                               |    |    |    |    |    |    |    |    |    |    |
+|---|---------------------------------------------------|----|----|----|----|----|----|----|----|----|----|
+|   | ARCHISEGNEUR DES MERS DU CLAN SKORBUT             |    |    |    |    |    |    |    |    |    |    |
+| M | CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc<br>B |    |    |    |    |    |    |    |    |    |    |
+| 5 | 74                                                | 70 | 73 | 73 | 78 | 66 | 60 | 85 | 70 | 30 | 28 |
 
-**Rançonneur :** nul besoin de préciser que le racket est un trait naturel des ogres. Briser une jambe ou deux pour le bon prix ne leur fait pas peur, ils prennent même plaisir à le faire. Rien ne saurait convaincre une victime d'extorsion de payer plus rapidement qu'un ogre affamé.
+**Compétences :** Athlétisme 96, Calme 85, Commandement 55, Corps à corps (Armes d'hast 99, Base 94), Escalade 98, Esquive 96, Intimidation 98, Intuition 98, Langue (Reikspiel 90, Tiléen 90), Métier (Charpentier) 80, Natation 98, Orientation 103, Pari 105, Perception 98, Projectiles (Armes à projectiles skavens) 95, Ragot 50, Ramer 98, Résistance 83, Savoir (Guerre 95, Histoire 95, Navigation 105, Politique 105), Survie en extérieur 105, Voile 86
 
-**Ratier :** il y a deux choses sur lesquelles on peut toujours compter : les vagues incessantes de rats dans les villes de l'Empire et la faim permanente d'un ogre. Pour certains ogres entreprenants, être payé pour manger autant de rats que possible, c'est la situation rêvée ! Et si la journée est calme, ils pourront toujours se délecter de leur petit compagnon féroce.
+**Talents :** Ambidextre, Battement, Bonnes jambes, Chanceux 13, Combat instinctif 3, Combattant en espace clos, Coup puissant, Feinte, Frappe blessante, Frappe précise, Fuite !, Grimpeur, Guerrier né, Inébranlable, Infatigable, Maîtrise du combat 3, Maniement de deux armes, Marinier, Menaçant 3, Nageur endurant, Perspicace, Pied marin, Pilote, Rat d'égout, Réflexes foudroyants, Seigneur de guerre, Sens aiguisé (Odorat), Souplesse féline, Tir précis, Tir rapide, Très fort, Très résistant, Vigilance, Vivacité **Traits :** À distance (Pistolet) (10) +7, Arme (Épée) +12, Arme (Hallebarde) +12, Armure 4 (11), Infecté, Vision nocturne
 
-**Saltimbanque :** presque tous les saltimbanques ogres sont des colosses ou des lutteurs professionnels, qui impressionnent le public par leurs prouesses physiques. Certains d'entre eux arrivent également à gagner leur vie grâce à leurs « talents » de conteurs. Les ogres sont particulièrement friands d'une bonne histoire (simple, sanglante et bruyante), mais étant donné qu'ils sont presque tous illettrés, les récits sont leur seule manière de relater le passé, à l'exception de quelques pictogrammes rudimentaires.
+**Possessions :** armure de malepierre complète, bourse contenant 425 grammes de malepierre raffinée, pistolet patte d'oie à malepierre, épée, hallebarde.
 
-**Serviteur :** même s'ils sont grossiers et rustres, les ogres font d'excellents domestiques grâce à leur immense force, déchargeant des diligences et tirant des calèches à eux seuls. De nombreux aristocrates trouvent également que les ogres sont des attachés particulièrement en vogue, car leurs carrures menaçantes sont propices à créer des situations intéressantes.
+<span id="page-160-0" data-folio="157"></span>
+**Alimenté par la malepierre (1 fragment) :** Vrisk a besoin de consommer une certaine quantité de malepierre raffinée chaque semaine pour que son corps fonctionne normalement. S'il passe une semaine sans consommer 1 fragment (28 grammes) de malepierre raffinée, réduisez toutes ses Caractéristiques à pourcentage de 20 et son Talent Chanceux 13 devient Chanceux 3.
 
-**Soldat :** il semblerait que le but premier des ogres soit de tuer pour de l'argent. Cette activité combine deux de leurs passe-temps favoris, et parfois trois, car la plupart des généraux ne voient pas d'inconvénient à ce qu'ils mangent leurs ennemis : cela évite d'avoir à les enterrer et à s'embarrasser des détails des sépultures, tout en réduisant les coûts liés à la nourriture. De plus, l'attrait des océans en tant que marin, ou les déplacements constants liés à la vie de mercenaire, correspondent à leur envie de voyager.
+**Favori du Rat Cornu :** Vrisk a touché le pilier des Commandements et y a survécu. Il possède 3 points de Destin et 3 points de Résilience.
 
-**Spadassin :** bien que les ogres soient des spadassins nés, ils poussent souvent le vice un peu trop loin et ont tendance à tuer, puis à manger leurs victimes au lieu de se contenter de les frapper. La plupart des ogres ne considèrent même pas cette activité comme une carrière à proprement parler, mais plutôt comme une façon naturelle de faire les choses : « *Tu me payes un repas si je tape quelqu'un ? Ça roule, je m'occupe de qui ?* »
+**Armure de malepierre :** de la malepierre réduite en poudre a été utilisée pour forger les plaques d'une armure de malepierre complète. En plus de fournir une protection, cette armure est une Influence corruptrice Mineure (voir page 182 de **WFJDR**) pour quiconque affronte celui qui la porte au corps à corps.
 
+**Pistolet patte d'oie à malepierre :** Vrisk a sur lui une étrange arme à feu à cinq canons, qu'il sort quand il mène un abordage.
 
-## <span id="page-21-0" data-folio="20"></span>**Attributs**
+| Arme                                    | Enc | Portée<br>Dégâts |    | Atouts et Défauts                                                        |  |  |  |  |  |  |  |
+|-----------------------------------------|-----|------------------|----|--------------------------------------------------------------------------|--|--|--|--|--|--|--|
+| ARME À PROJECTILES SKAVEN               |     |                  |    |                                                                          |  |  |  |  |  |  |  |
+| Pistolet<br>patte d'oie à<br>malepierre | 1   | 10               | +7 | Dangereuse,<br>Imprécise,<br>Malepierre,<br>Recharge 5,<br>Tir de zone 5 |  |  |  |  |  |  |  |
 
-Pour générer les attributs de votre ogre, suivez les mêmes étapes que celles décrites dans **WFJDR** (p. 33) en vous basant sur le Tableau des attributs des ogres suivant.
+**Malepierre :** en plus des dégâts normaux, toute attaque de Vrisk infligeant une Blessure Critique cause également une Exposition Mineure à la Corruption (voir page 182 de **WFJDR**).
 
-#### TABLEAU DES ATTRIBUTS DES OGRES
+|  |  | LES CROCS DE PORT DE L'ÉCHINE |
+|--|--|-------------------------------|
+|  |  |                               |
 
-| Attribut               | Ogre              |  |  |  |  |
-|------------------------|-------------------|--|--|--|--|
-| Capacité de Combat     | 2d10 + 20         |  |  |  |  |
-| Capacité de Tir        | 2d10 + 10         |  |  |  |  |
-| Force                  | 2d10 + 35         |  |  |  |  |
-| Endurance              | 2d10 + 35         |  |  |  |  |
-| Initiative             | 2d10              |  |  |  |  |
-| Agilité                | 2d10 + 15         |  |  |  |  |
-| Dextérité              | 2d10 + 10         |  |  |  |  |
-| Intelligence           | 2d10 + 10         |  |  |  |  |
-| Force Mentale          | 2d10 + 20         |  |  |  |  |
-| Sociabilité            | 2d10 + 10         |  |  |  |  |
-| Points de Blessure     | (BF+(2×BE)+BFM)×2 |  |  |  |  |
-| Points de Destin       | 0                 |  |  |  |  |
-| Résilience             | 3                 |  |  |  |  |
-| Points supplémentaires | 1                 |  |  |  |  |
-| Mouvement              | 6                 |  |  |  |  |
+| Nom du navire                | Équipage | Roue à aubes M (É) | Man | Taille | E  | B   | Cont<br>enanc<br>e | Traits et<br>Améliorations |
+|------------------------------|----------|--------------------|-----|--------|----|-----|--------------------|----------------------------|
+| Crocs de Port de<br>l'Échine | 75       | 5 (25)             | –   | 60     | 55 | 200 | 1 000              | –                          |
 
-## **Compétences et Talents**
+Les *Crocs de Port de l'Échine* a 10 canons navals à malefoudre sur son pont, cinq tournés à bâbord et cinq tournés à tribord.
 
-Comme pour n'importe quelle autre Race, vous pouvez choisir 3 Compétences avec 5 Augmentations chacune et 3 Compétences avec 3 Augmentations chacune dans la liste des Compétences et Talents des ogres. Vous avez également accès à 6 Talents de Race. Lorsque vous avez le choix entre deux Talents, vous ne pouvez en sélectionner qu'un parmi les deux.
+**Roue à aubes :** les Tests de Navigation sont effectués en utilisant la compétence Intimidation du capitaine plutôt que Voile ou Ramer. La roue à aubes fonctionne à peu près de la même manière que des avirons, mais elle peut déplacer un navire en marche arrière et pas seulement en marche avant. Si le capitaine d'un bateau doté d'une roue à aubes veut changer de direction de déplacement, il doit effectuer un Test de **Commandement Intermédiaire (+0)** ou un Test d'**Intimidation Intermédiaire (+0)**. En cas de succès, à partir du Round suivant, le navire peut se déplacer en marche arrière.
 
-**Note :** comme les autres Races, on suppose que tous les ogres impériaux parlent couramment le Reikspiel.
+# PIÈCES D'ARTILLERIE
 
-#### **Compétences et Talents des ogres**
+| Arme                      | Prix<br>Enc<br>Disponibilité<br>Portée<br>Dégâts<br>Atouts et Défauts |    |   |     |     |                                                                               |  |  |  |  |
+|---------------------------|-----------------------------------------------------------------------|----|---|-----|-----|-------------------------------------------------------------------------------|--|--|--|--|
+| ARME À PROJECTILES SKAVEN |                                                                       |    |   |     |     |                                                                               |  |  |  |  |
+| Canon naval à malefoudre  | –                                                                     | 80 | – | 200 | +15 | À Poudre noire, Arme d'équipe 4, Dangereuse,<br>Malepierre, Recharge 8, ZAP ! |  |  |  |  |
 
-**Compétences :** Athlétisme, Corps à corps (Bagarre, Base), Divertissement (Narration), Intimidation, Langue (Grumbarth), Orientation, Pistage, Résistance, Résistance à l'alcool, Savoir (Ogres), Survie en extérieur
+**ZAP ! :** ces armes tirent une rafale d'énergie arcanique. Les armes ZAP ! réduisent les PA de 1 et ignorent les PA venant d'une armure en métal.
 
-**Talents :** Combat déloyal, Massif, Résistance (Chaos, Poisons ingérés), Très résistant *ou* Très fort, Vice (Nourriture), Vision nocturne
+<span id="page-161-0" data-folio="158"></span>
+# **INDEX** • •
 
-## NOUVEAUX TALENTS
+| A                                    | F                                      | Léviathan-phare et                    | R                                    |
+|--------------------------------------|----------------------------------------|---------------------------------------|--------------------------------------|
+| Acheter une cargaison 135            | Figure de proue 98                     | léviathan noir 147                    | Ralentisseurs latéraux 98            |
+| Affaler les voiles 107               | Fournitures maritimes,                 | Lissage 99                            | Ratisseur de plages (Carrière) 78    |
+| Ancre 97                             | épaves et débris d'Hornborg 62         | Liste de Chansons de marins 67        | Ravnshafnaz 43                       |
+| Anguille mâcheprise 141              |                                        | Longs voyages très rapides 128        | Relations avec Karaz Ankor 42        |
+| Artilleur de navire (Carrière) 64    | G                                      | Ludolf le Jeune 22                    | Renforcé 97                          |
+| Attaques de Corps à corps            | Gargantuan 143                         |                                       | Repaire du roi des trolls 37         |
+| contre un navire 116                 | Générer les cargaisons disponibles 137 | M                                     | Réparation 117                       |
+| Au Repaire des monstres 31           | Grande Chapelle de Mathann,            | Magie des mers 14                     | Réparations temporaires 116          |
+| Auberge du Repos du berserker 43     | Miragliano 84                          | Mal de mer 125                        | Robuste 97                           |
+| Autel de la Moisson écarlate 36      |                                        | Manannsheim 84                        | Rude épreuve 123                     |
+|                                      | H                                      | Manque de bras 122                    |                                      |
+| B                                    | Halle des Snaegrs 52                   | Marché aux poissons 26                | S                                    |
+| Balistes 100                         | Hydre d'os 146                         | Marin (Carrière) 68                   | Sabord 99                            |
+| Baudroye 140                         |                                        | Miracles de Manann 87                 | Salissures 105                       |
+| Bélier 97                            | I                                      | Miracles de Stromfels 91              | Sangsue des abysses 146              |
+| Blindage 97                          | Indices de Collision 111               | Monolithe de Borkhill 52              | Schunen et Sigisdottir, spécialistes |
+|                                      |                                        | Montagnes des Géants 40               | de la récupération sous-marine 33    |
+|                                      |                                        |                                       |                                      |
+| C                                    | K                                      | Mortiers 100                          | Scorbut 125                          |
+| Cabane de Vargr 54                   | Kazad Ungorhafnaz 45                   |                                       | Skaldor comme mécène 46              |
+| Cabine de luxe 98                    | Kharibde 144                           | N                                     | Skarlati Dreki 53                    |
+| Canons 100                           | Kraka Ravnsvake 40                     | Naufrageur (Carrière) 70              | Solide 97                            |
+| Carrières norses 57                  |                                        | Nautonier (Carrière) 72               | Stromfels et Manann 89               |
+| Cartographie 134                     | L                                      | Navigation maritime 103               | Stylet 141                           |
+| Cathédrale de Manaan, Marienburg. 84 | L'Anguille 10                          | Navires de guerre des nains norses 44 | Syrène bleue 145                     |
+| Chamon Dharek 36                     | L'autel des Navigateurs 62             | Navires et construction navale 92     | Système d'engrenages de grubark 44   |
+| Chansonnier (Carrière) 66            | La Baie des lames 37                   | Navires impériaux 19                  |                                      |
+| Chantier naval d'Hafskael 61         | La Bière du Boyard 30                  | Nid-de-pie 99                         | T                                    |
+| Chantier naval d'Hardrak 43          | La côte des Bjornlings 58              | Nordland 18                           | Taille et Améliorations 97           |
+| Château Neurath 28                   | La côte des Sarls 36                   | Nouveaux Talents 63                   | Température 106                      |
+| Classe Côtier 63                     | La côte des Skaelings 48               |                                       | Temple de Mermedus 54                |
+| Clinfoc 98                           | Le cimetière des Bateaux 25            | O                                     | Tests d'équipage 121                 |
+| Cloche du bateau 21                  | Le culte de Manann 80                  | Officier (Carrière) 74                | Tests de Manœuvre 105                |
+| Clochers 108                         | Le culte de Stromfels 88               | Ostland 29                            | Tir de batterie 123                  |
+| Collège du baron Henryk 14           | Le dock de la Devinette 24             |                                       | Tir de zone (Indice) 102             |
+| Commerce d'opportunité 134           | La Fraternité des marins               | P                                     | Tirs de petites armes                |
+| Coups critiques sur l'équipage 117   | et des pilotes 13                      | Périls de la Mer des Griffes 73       | contre un navire 115                 |
+| Coups critiques sur le navire 117    | Le Grand Phare 10                      | Personnages humains norses 56         | Tomber du gréement 117               |
+| Crabe boxeur 141                     | Le Pays des Trolls 34                  | Personnalités du culte 82             | Tonneau d'eau douce 125              |
+|                                      | Le quai de la quarantaine 30           | Peu maniable 97                       | Tourbillons 113                      |
+| D                                    | Le Repos du pillard 33                 | Phares 108                            | Traits et Améliorations de navire 93 |
+| Distances de voyage 129              | Le Seigneur des mers Aislinn 16        | Pic du Dormeur 28                     | Triton 148                           |
+|                                      | La Gueule du dragon 9                  | Pierriers 100                         |                                      |
+| E                                    | La halle du Roi 61                     | Placement des canons sur le pont 101  | U                                    |
+| Échouage 112                         | La Lanterne de Manann 23               | Possessions de Classe 63              | Une mission pour Khyrathi Bayne 17   |
+| Éclats (Indice) 117                  | La marine de la côte du Nordland 20    | Précipitations 106                    |                                      |
+| Élémentaire de mer 142               | La taverne du Béhémoth 24              | Prêtre marin de Manann 76             | V                                    |
+|                                      |                                        |                                       |                                      |
+| Embarcation de bord 98               | Le Fourre-tout du Marin                | Propulsion à vapeur 99                | Velkominn Allt 53                    |
+| Encalminé 107                        | de Trusten 31                          | Protection de Sjoktraken 45           | Vendre une cargaison 135             |
+| Entraînement d'équipage 134          | Le guet d'Odrall, Ordre                |                                       | Vents 107                            |
+| Entretien 123                        | des Fils de Manann 32                  | Q                                     | Virement de bord 107                 |
+| Entretien du navire 134              | Leopoldschloss 26                      | Quarts 20                             | Visibilité 106                       |
+| Épave de La Giron 32                 | Les arches noires 17                   |                                       | Vitesses maximum 105                 |
+| Événements pendant les               | Les Bjornlings et le Chaos 59          |                                       | Voie d'eau (Indice) 117              |
+| séjours dans un port 130             | Les marches de Couronne 9              |                                       |                                      |
+| Extermination des nuisibles 123      | Les nains norses 41                    |                                       | W                                    |
+|                                      | Les norses et Sartosa 50               |                                       | Wyrm des mers 145                    |
+|                                      | Les Norses et Stromfels 50             |                                       |                                      |
 
-#### **Massif**
+Les Seigneurs des mers impériaux ... 19
 
-**Maxi :** 1
+<span id="page-162-0" data-folio="159"></span>
+|  |  |  |  |  |  |  | 159 |  |  |  |  |  |
+|--|--|--|--|--|--|--|-----|--|--|--|--|--|
 
-Vous êtes bien plus massif que la plupart des habitants du Vieux Monde. Les règles complètes à propos des différentes Tailles se trouvent à la page 342 de **WFJDR**.
-
-### **Vice (Cible)**
-
-**Maxi :** Bonus de Force Mentale
-
-**Tests :** Force Mentale (Résister à la cible)
-
-Vous êtes consumé par le besoin de vous adonner à un vice particulier et souffrez du Trait Psychologique *Vice*. Chaque fois que vous choisissez ce Talent, vous développez un nouveau vice. Voici quelques exemples : alcool, nourriture, stupéfiants, plaisir.
-
-#### NOUVEAU TRAIT PSYCHOLOGIQUE : VICE
-
-Vous éprouvez le besoin constant de vous adonner à votre Vice, vers lequel vos pensées s'égarent en permanence. Vous devez vous y abandonner totalement et de manière malsaine. Par exemple, si votre Vice est lié à la nourriture, vous ne vous contentez pas de prendre un simple repas, mais vous vous transformez en un véritable goinfre qui se met à manger tout ce qu'il peut jusqu'à ce qu'il soit ballonné et en devienne malade. Chaque fois que vous êtes confronté à la Cible de votre Vice, vous devez vous soumettre à un Test de **Psychologie** (**WFJDR** p. 190). En cas d'échec, vous devez immédiatement vous laisser aller à votre Vice, en renonçant à vos autres actions ou devoirs. Vous ne serez satisfait qu'une fois que vous aurez perdu connaissance et gagnerez alors un État *Exténué*. À la fin de chaque Round, vous pouvez ensuite tenter un autre Test de Psychologie pour mettre fin à cet État. Vous subissez également -20 à tous les Tests de Sociabilité envers les Personnages qui ont été témoins de votre folie furieuse, car ils sont révulsés par votre comportement. Pour chaque jour complet que vous passez sans vous adonner à votre Vice, vous gagnez un cumul de -20 à tous les Tests de Psychologie jusqu'à ce que vous y soyez soumis.
-
-
-## <span id="page-22-0" data-folio="21"></span>**Détails physiques**
-
-Comme pour toutes les Races, vous pouvez soit déterminer les détails suivants de manière aléatoire, soit choisir parmi les éléments disponibles.
-
-## **Âge**
-
-Bien que l'espérance de vie naturelle des ogres soit d'environ 120 ans, très peu d'entre eux meurent de vieillesse. Pour déterminer un âge de départ aléatoire, lancez 5d10 + 15.
-
-## **Couleur des yeux**
-
-Les ogres se sont adaptés à la vie sur des flancs de montagne abrupts et éblouissants ainsi que dans des déserts brûlants, leurs pupilles absorbent donc la lumière avec une dilatation minimale. Cependant, dans les endroits dont le climat est moins rigoureux, les pupilles des ogres sont souvent dilatées et un minuscule cercle de couleur se dessine autour d'elles.
-
-#### TABLEAU DE LA COULEUR DES YEUX
-
-| 2d10  | Couleur      |
-|-------|--------------|
-| 2     | Gris         |
-| 3     | Vert         |
-| 4     | Ambre        |
-| 5–7   | Noisette     |
-| 8–11  | Marron       |
-| 12–14 | Marron foncé |
-| 15–17 | Ocre         |
-| 18    | Noir         |
-| 19    | Mauve        |
-| 20    | Bleu nuit    |
-
-#### **Couleur des cheveux**
-
-Les cheveux des ogres sont épais, sombres et ternes. Les mâles deviennent souvent chauves après avoir dépassé la trentaine et, de manière générale, les cheveux des ogres deviennent gris lorsqu'ils atteignent les 80 ans. La pilosité faciale est souvent prisée par les ogres masculins. Beaucoup d'entre eux se donnent du mal pour entretenir une longue barbe, une moustache ou une barbiche. Nombreux sont ceux qui pensent que l'amour d'un ogre pour sa barbe provient de son désir d'y garder quelques morceaux de nourriture pour plus tard (ce qui est effectivement le cas pour la majorité d'entre eux). Les ogresses, de leur côté, tressent souvent leurs cheveux pour former des couronnes semblables à des ramures ou des cordes élaborées qu'elles utilisent pour attacher leurs biens directement à leur corps.
-
-#### TABLEAU DE LA COULEUR DES CHEVEUX
-
-| 2d10  | Couleur      | 2d10  | Couleur      |
-|-------|--------------|-------|--------------|
-| 2     | Marron       | 12–14 | Marron foncé |
-| 3     | Acajou       | 15–17 | Noir         |
-| 4     | Blond cendré | 18    | Charbon      |
-| 5–7   | Marron clair | 19    | Noir de jais |
-| 8–11  | Lie de vin   | 20    | Bleu nuit    |
-
-### **Taille**
-
-En moyenne, les ogres mâles mesurent plus de 2,75 m et les femelles sont à peine plus petites. Il convient de préciser que culturellement, la taille ne signifie pas grand-chose pour un ogre. C'est le poids qui compte : plus il est lourd, mieux c'est. Pour déterminer une taille de manière aléatoire, lancez 6d10 + 235 cm.
-
-#### ILS NE SONT PAS STUPIDES, ILS VONT JUSTE DROIT AU BUT
-
-Alors qu'un observateur extérieur pourrait croire que les ogres sont limités, la réalité est légèrement différente. Les ogres traitent les pensées complexes et abstraites différemment de la plupart des autres Races. Ils sont généralement analphabètes (comme beaucoup d'autres dans le Vieux Monde) et transmettent leurs légendes et leur histoire à travers des contes. Ils ont peu de patience pour l'art, la poésie, les métaphores et autres figures de style, la musique, la philosophie et bien d'autres activités propres aux minus.
-
-Aucun Personnage ogre ne peut choisir une Compétence ou un Talent qui repose sur l'écriture (ou une autre forme d'art complexe) ou une Compétence de Savoir avancée sans l'accord du MJ. Les Joueurs et les MJ doivent donc se concerter pour trouver des alternatives adaptées aux Carrières des ogres.
-
-Toutefois, il n'est pas impossible pour certains ogres de savoir lire, écrire, compter, chanter, etc. On raconte que le célèbre dramaturge d'Altdorf, Detlef Sierck, aurait versé une larme lorsque Tergarthash Gutrend a interprété à la perfection l'opéra indish *Lakme*. Malheureusement, cette représentation a été légèrement gâchée lorsque l'ogresse a dévoré son partenaire suite à quelques fausses notes.
-
-## **Noms des ogres**
-
-De nombreux ogres impériaux portent des noms propres à l'Empire, qu'ils ont adoptés des noms typiques de l'Empire. N'hésitez pas à suivre les directives pour un nom humain (Reiklander) (**WFJDR** p. 37). Pour les Joueurs qui préfèrent opter pour un nom d'ogre traditionnel, reportez-vous aux deux tableaux suivants.
-
-## **Générer des noms d'ogres**
-
-Traditionnellement, les noms des ogres sont formés à partir d'un certain nombre de racines et de terminaisons communes. La première composante est inspirée de ce qui constitue le premier repas de l'enfant, tandis que la seconde varie selon la saison, le lieu de naissance, les actes notables des parents, etc. Pour générer un nom d'ogre, utilisez les deux tableaux de la page suivante et combinez les deux composantes.
-
-
-#### 2E PARTIE D'UN NOM OGRE
-
-
-## <span id="page-24-0" data-folio="23"></span>**Titres des ogres et noms de clan**
-
-Si certains ogres accordent beaucoup d'importance à leur nom, pour la plupart, il s'agit simplement d'un son qui leur permet de se reconnaître. En revanche, les appellations et les titres obtenus au cours de leur vie sont bien plus importants.
-
-Les ogres adoptent souvent un titre ou se font appeler par le nom de leur tribu (à condition que ce nom puisse effrayer un ennemi et tant qu'ils y occupent une place d'importance). Les titres sont simples et grossiers, souvent autoproclamés pour refléter le passe-temps favori de l'ogre en question. Ainsi, plus d'un ogre se fera appeler « *le désosseur* » ou « *le mangeur d'hommes* ». Les noms de tribus sont un peu plus stables, bien qu'ils aient tendance à changer rapidement et à gagner des particules lorsqu'une tribu en consomme (littéralement) une autre.
-
-**Exemples :** Dents d'Or, Peaux de Fer, Ventres-Tonnerre, Gloutons Sanguinaires, Mordeurs d'Yeux, Défenseurs, Goinfres Costauds.
-
-### **Grands Noms**
-
-Bien que la plupart des titres soient autoproclamés (à l'exception de certains sobriquets désobligeants accordés par un rival), certains actes notables peuvent valoir à un ogre un titre vraiment imposant, connu comme un Grand Nom.
-
-Aucun rituel formel n'est impliqué dans son attribution, mais ce sujet est pris très au sérieux par les ogres. L'idée de revendiquer un Grand Nom sans l'avoir mérité est un véritable sacrilège : porter le nom, c'est avoir accompli l'acte qu'il prône.
-
-Chaque fois qu'un ogre dépense ou gagne un Point de Destin, ou qu'il accomplit un véritable exploit, le MJ peut envisager de lui accorder un Grand Nom. Celui-ci est toujours octroyé par un autre ogre qui a été spectateur de l'acte ou en a entendu parler. En général, la nouvelle se répand rapidement. Il arrive que les mercenaires ogres rentrent chez eux après des années pour découvrir que leur tribu n'a jamais entendu parler de leurs exploits. Cependant, tous sont au courant qu'ils ont gagné un Grand Nom.
-
-#### **Exemples de Grands Noms**
-
-Bien qu'elle ne soit pas exhaustive, la liste ci-dessous détaille quelques Grands Noms connus et les exploits qu'il a fallu accomplir pour gagner le droit de les utiliser. Les MJ et les Joueurs peuvent choisir ensemble un Grand Nom approprié si un acte le justifie. Ces noms sont toujours directs et précis, à l'image des ogres eux-mêmes, et comportent rarement plus d'un mot.
-
-Les Grands Noms n'ont pas d'effet spécifique dans le jeu, mais ils fournissent généralement un bonus de +20 aux Tests d'Intimidation ou de Charme auprès des ogres.
-
-#### **Quêtegueule**
-
-Vous avez voyagé loin à l'est et vu la Gueule de vos propres yeux. Elle vous a laissé une impression indélébile, si bien que vous arborez désormais un regard affamé qui ne disparaîtra jamais.
-
-#### **Démengorgé**
-
-Vous avez en quelque sorte réussi à avaler un ennemi démoniaque avant qu'il ne soit banni dans les Royaumes du Chaos. Un fragment s'agite encore dans vos tripes, mais ses exigences sont faciles à ignorer.
-
-#### **Brisegéant**
-
-Vous avez brisé les os d'un géant encore en vie (et probablement aspiré sa moelle dans la foulée).
-
-#### **Tournegoule**
-
-Par la force, la magie ou la chance, vous avez mis en pièces un fantôme ou un autre esprit, répandant les lambeaux de son essence dans les vents affamés.
-
-#### **Défilamort**
-
-Vous avez survécu à un événement si périlleux et mortel que même la plupart des ogres s'accordent à dire que vous devriez être mort.
-
-#### **Longmarcheur**
-
-Vous avez voyagé loin, même selon les normes des ogres les plus expérimentés dans le domaine.
-
-#### **Tulabête**
-
-Vous avez tué à vous seul une bête d'une importance capitale, peut-être un dragon ou une autre créature terrifiante.
-
-#### **Pourfendeur**
-
-Vous avez réalisé un incroyable tour de force, idéalement à mains nues ou en utilisant uniquement votre masse.
-
-## **Insuffler la vie à votre ogre**
-
-Les ogres étant très différents des autres Races, ils nécessitent un examen plus approfondi des étapes présentées dans **WFJDR** (p. 42-43). Cette section examine en détail les neuf questions qui permettent de donner vie à votre personnage.
-
-#### **D'où venez-vous ?**
-
-La plupart des ogres que l'on trouve dans l'Empire sont nés en dehors de celui-ci. Nombreux sont ceux qui se sont rendus dans « *la plus grande nation humaine du Vieux Monde* » en quête d'argent, d'aventure ou d'un nouveau repas. D'autres ont simplement suivi leur instinct, succombant à l'envie de voyager qui remplissait leur cœur. Cependant, avec l'essor des ogres impériaux, de plus en plus de jeunes ogres n'ont connu que le Reikland, qu'ils considèrent comme leur foyer.
-
-Les ogres impériaux sont nés dans l'Empire, ils ont donc appris ses us et coutumes dès le début de leur vie. Ils portent souvent des noms impériaux, s'habillent de vêtements impériaux surdimensionnés et sont tout simplement... impériaux.
-
-D'autres ogres, comme les voyageurs venus des royaumes ogres, portent quelques vestiges de leur culture d'origine, mais ils s'adaptent rapidement. Ils se font aux coutumes locales, mais ont souvent du mal avec les préoccupations plus ésotériques, comme la moralité, la religion ou encore la philosophie, qu'ils imitent plus qu'ils ne les assimilent.
-
-
-<span id="page-25-0" data-folio="24"></span>### **À quoi ressemble votre famille ?**
-
-Les ogres sont assez stoïques et, bien que leurs préoccupations les plus urgentes concernent généralement leur prochain repas, ils se soucient également de l'éducation de leurs enfants. Certaines pratiques peuvent sembler cruelles aux yeux des étrangers, mais les Montagnes des Larmes offrent un habitat rude dans lequel le plus robuste des ogres doit apprendre à survivre. Cet aspect est quelque peu tempéré par la culture de l'Empire, aussi les parents déconseillent à la plupart des enfants qui y sont nés de dévorer leurs frères et sœurs les plus faibles.
-
-Un ogre peut également avoir grandi dans leurs royaumes. Ceux qui y sont élevés apprennent très vite que la vie est une perpétuelle compétition et que pour obtenir quelque chose, il faut le prendre à quelqu'un d'autre. La taille des familles fluctue énormément, augmentant et diminuant au gré des richesses de ses membres et de son clan. Ce genre d'éducation est considéré comme barbare et serait inenvisageable au sein de l'Empire. Mais dans les terribles Montagnes des Larmes, être élevé à la dure est finalement plutôt logique et a permis d'engendrer un peuple robuste qui se débrouille pour survivre à sa manière.
-
-### **Pourquoi êtes-vous parti de chez vous ?**
-
-Quitter son foyer est dans la nature des ogres. Très peu d'entre eux supportent de rester à seulement quelques kilomètres de leur lieu de naissance (ou n'importe où ailleurs) pour plus de quelques années. Les ogres sont animés d'un intense désir de voyager, ce qui les pousse à parcourir les quatre coins du monde. De plus, les parents humains adoptifs sont souvent obligés de chasser les enfants ogres lorsqu'ils atteignent l'âge de voyager seuls : étant donné qu'ils sont plus grands que n'importe quel humain dès l'âge de dix ans, les choses peuvent parfois se compliquer, sans compter les frais de nourriture.
-
-### **Qui sont vos meilleurs amis ?**
-
-Bien qu'ils ne soient pas connus pour leur capacité à se faire des amis, les ogres ne sont pas asociaux pour autant. Évidemment, il est plus probable qu'un ogre se fasse des ennemis, mais combien d'entre eux survivront pour raconter leur histoire, ça, c'est un autre débat.
-
-Étant donné leur enfance difficile au sein de l'Empire, les ogres ont souvent peu d'amis humains, elfes ou nains. Toutefois, on les croise le plus souvent en compagnie de halflings. Ce lien semble être plus fort et plaisant pour les deux races dans l'Empire que partout ailleurs. Peut-être est-ce l'expérience des préjugés qu'ils ont subis qui unit ces deux peuples, plus que leurs potentielles origines communes.
-
-### **Quel est votre plus grand désir ?**
-
-Il est réducteur de penser que les ogres ne s'intéressent qu'à la nourriture et au voyage (même s'il s'agit probablement de leurs principales préoccupations). Les ogres, comme tout le monde, ont des désirs, il est donc important de réfléchir à ce que votre ogre attend de la vie. S'ils sont matériels, ces désirs devraient être volumineux et flagrants. Les ogres accordent une grande importance aux possessions personnelles, raison pour laquelle ils collectent des objets qui augmenteront leur Statut (par exemple des trophées de chasse) et leur richesse. Ils aiment être en mesure de voir et de sentir l'importance d'un objet de manière assez directe. Si un noble est petit, mince et dénué d'accoutrement, comment un ogre peut-il savoir qu'il s'agit d'un noble ? Leur naïveté les conduit souvent à poursuivre ce qui pourrait être un rêve inaccessible pour toute autre personne : posséder son propre château sur le Reik, devenir le citoyen le plus connu d'Altdorf ou encore manger un morceau de chaque animal du Vieux Monde. Bien sûr, compte tenu de leur nature, ces objectifs sont souvent plus à la portée d'un ogre qu'on ne pourrait le croire.
-
-#### **Quels sont vos meilleurs et vos pires souvenirs ?**
-
-Les ogres s'attardent rarement sur le passé et sont heureusement épargnés par la plupart des traumatismes qui affligent les Races de moindre envergure. Cependant, ils aiment raconter des histoires exagérées et grandiloquentes. Il peut donc être utile de choisir certains souvenirs clés dont votre ogre pourrait parler. Ces souvenirs sont généralement basés sur une action qu'ils ont entreprise et dont ils peuvent se vanter.
-
-### **Quelles sont vos croyances religieuses ?**
-
-Les cultes établis n'accepteraient pas un ogre dans leurs rangs sans une très bonne raison. Après tout, comment être sûr qu'ils ne dévoreront pas les autres fidèles ? De plus, les ogres impériaux sont loin de la Gueule et la plupart d'entre eux n'ont qu'une idée théorique des religions institutionnalisées. Cependant, certains cultes n'hésitent pas à convertir activement les non-croyants, surtout les plus belliqueux. Les ogres étant naturellement attirés par le prosélytisme de la guerre, il n'est pas impossible de croiser de temps à autre un ogre sigmarite pieux ou un ulricain couvert de fourrure. On raconte même que des ogresses nonnes de Shallya parcourent le monde en dévorant des cadavres emportés par la peste afin de combattre le Seigneur des Mouches !
-
-Il n'en demeure pas moins que tous les ogres sans exception ont au fond d'eux une faim insatiable d'en découvrir toujours plus, de voir le monde, de se régaler des visions les plus étranges, de dévorer la terre... Même s'ils tentent d'y résister, ils n'échapperont jamais à l'influence de la Gueule.
-
-#### **Envers qui, ou quoi, êtes-vous loyal ?**
-
-Un ogre est aussi loyal qu'un humain, vous pouvez donc vous reporter aux questions soulevées dans **WFJDR** (p. 43) et y répondre comme pour n'importe quel autre Personnage.
-
-
-#### <span id="page-26-0" data-folio="25"></span>**Pourquoi partir à l'aventure ?**
-
-Le plus souvent : l'envie de voyager, l'avidité, la faim, mais surtout l'envie de voyager. Les ogres ont envie de prendre la route, alors il n'est pas difficile de trouver une bonne justification pour laisser son ancienne vie derrière soi. Peut-être que votre ogre veut aller voir les Montagnes des Larmes ? Ou prendre la mer ? Ou serait-il possible que votre ogresse souhaite simplement s'enrichir ? Quoi qu'il en soit, un Joueur ogre ne devrait pas avoir trop de mal à trouver une bonne raison de partir à l'aventure.
-
-## **AVANCEMENT DES PERSONNAGES OGRES**
-
-Les Personnages ogres progressent au même titre que n'importe quel autre Personnage, exception faite de la règle *« Ils ne sont pas stupides, ils vont seulement droit au but »* p. 21, qui peut restreindre l'accès à certaines Compétences et certains Talents. Malgré cela, de nombreux Joueurs ont parfois du mal à imaginer les ogres gravir les Échelons supérieurs de la plupart des Classes et Carrières. Les exemples ci-dessous indiquent la manière dont les ogres peuvent se départir de leurs humbles débuts.
-
-**Assassin :** s'il y a bien un domaine dans lequel les ogres excellent, c'est le meurtre, et être payé pour le faire rend la chose encore plus agréable. Ils ne sont peut-être pas les plus discrets des assassins, mais ils ont le mérite d'être passionnés par leur mission.
-
-**Capitaine de Navire :** la vie d'un capitaine de navire convient parfaitement à la sensibilité des ogres. Des gros canons, une liberté de mouvement, des gros canons, des abordages musclés, des gros canons, des passages à tabac sur des petites mauviettes (souvent leur propre équipage) et des gros canons. Elle est pas belle la vie ?
-
-**Champion de justice :** de nombreuses villes ont interdit les champions de justice ogres parce qu'ils sont tout simplement trop doués, mais ils sont toujours très demandés par les riches et les imprudents de l'Empire.
-
-**Chef de bande :** les ogres ne peuvent pas s'empêcher d'enfreindre la loi. Et quand ils le font, ils tombent souvent sur d'autres criminels. À partir de là, il ne leur faut pas longtemps pour se frayer un chemin jusqu'au sommet, que ce soit de gré ou de force.
-
-**Duelliste :** même s'ils ne comprennent pas toujours pourquoi ils se battent au nom d'un humain maigrichon, le salaire et la nourriture offrent souvent une excellente contrepartie.
-
-**Éclaireur :** les ogres aiment le grand air et sont des éclaireurs naturels qui adorent se mesurer à la nature et à tout ce qu'ils peuvent croiser sur leur chemin. L'armée impériale de Cathay a depuis longtemps appris à craindre les éclaireurs ogres, des ennemis silencieux et particulièrement agressifs.
-
-**Explorateur :** les ogres aiment voyager aux quatre coins du monde. Lorsqu'ils finissent par rentrer dans leur pays (un jour, peut-être), les grands voyageurs ogres sont admirés pour les histoires étonnantes qu'ils racontent et les trophées impressionnants qu'ils ramènent de leurs voyages.
-
-**Légende de la fosse :** les champions ogres sont des créatures particulièrement dangereuses qu'il est normal et sensé de craindre. Ils considèrent chaque être vivant (ou mort) comme un potentiel morceau de viande à ajouter à leur assiette.
-
-**Maître d'équipage :** aucun ogre n'aime qu'on lui donne des ordres, il n'est donc pas rare pour eux d'essayer de gravir les échelons des organisations dont ils font partie, que ce soit sur terre ou en mer. Cependant, étant donné qu'ils se contentent souvent d'intimider les autres, ils font rarement l'unanimité auprès de leurs subordonnés.
-
-**Maître nocher :** bien qu'ils ne comprennent pas les mouvements des cieux, les ogres semblent être dotés d'un bon sens de l'orientation, ce qui en fait des navigateurs extrêmement doués. Cependant, leur incapacité à dessiner des cartes compréhensibles, à lire des cartes ou même à comprendre à quoi sert une carte fait qu'il est souvent risqué de leur faire confiance dans ce domaine.
-
-**Marchand :** les ogres aiment le commerce en raison de leur attrait pour les objets de valeur et les symboles de richesse. Mais attention, de nombreux marchands ogres ne sont pas dignes de confiance, tant ils sont désireux de maximiser leurs profits.
-
-**Officier :** beaucoup d'ogres aspirent à diriger leur propre régiment, alors gravir les échelons de l'armée d'État ou d'une bande de mercenaires est un objectif pour beaucoup d'entre eux. Une fois en haut de l'échelle, la plupart gouvernent d'une main de fer et deviennent de véritables tyrans.
-
-**Rançonneur :** l'activité idéale pour tout ogre digne de ce nom. Menacez tous ceux qui vous entourent, dites-leur que vous ne les mangerez pas en échange d'un paiement,, et voilà une source de revenus. C'est une tâche ingrate, mais elle plaît aux ogres.
-
-**Répurgateur :** souvent, les ogres n'ont pas besoin de faire quoi que ce soit pour faire parler les minus. Un simple coup d'œil à leur stature suffit à faire hurler le premier venu ! Bien sûr, ils ne sont peut-être pas au fait des subtilités de la théologie ou de la « loi », mais ils sont un atout considérable pour les fanatiques de la chasse aux sorcières.
-
-**Saltimbanque :** peu de gens s'attendent à ce que les ogres soient de bons amuseurs et pour une bonne raison : ils le sont rarement. Malgré cela, plusieurs d'entre eux continuent de s'y essayer, car ils aiment la compétition, cherchant à devenir le meilleur de tous et intimidant quiconque les surpasse dans cet art.
-
-**Sergent :** il n'est pas rare de voir des bandes d'ogres en devenir se disputer le commandement des groupes de mercenaires. Ils sont généralement prêts à tout pour faire leurs preuves, ce qui les rend extrêmement dangereux. Certains empruntent la voie la plus sûre au sein d'une armée établie, mais la plupart sont des mercenaires nomades.
-
-
-<span id="page-27-0" data-folio="26"></span>
-
-## **EXEMPLES DE PERSONNAGES OGRES**
-
-## **Nazzaalta Affabule**
-
-L'histoire de Nazzaalta est assez connue sur les quais d'Ubersreik, non pas en raison de sa banalité, mais parce qu'elle a tendance à la raconter en hurlant à toute heure de la journée. Née à bord d'un navire remontant le Reik depuis Marienburg et jetée sous un pont, Nazzaalta aurait dû connaître une mort certaine. Mais c'était sans compter sur une bande de débardeurs qui ont perçu sa valeur dès son plus jeune âge. Ils l'ont donc prise sous leur aile et l'ont élevée comme l'une des leurs.
-
-Grâce à sa musculature, cette ogresse infatigable est plus que la bienvenue sur les quais, mais c'est surtout sa voix retentissante qui attire l'attention. Avec le temps, même les hauts responsables de la Guilde des débardeurs ont fini par comprendre la véritable utilité d'un ogre à la voix porteuse : il est difficile de dire « non » à quelqu'un qui ne demande qu'à vous dévorer tout entier.
-
-Nazzaalta aime ce qu'elle est devenue. Sur les quais, où elle est bien nourrie, elle se sent chez elle. De plus, les passants ont l'air d'apprécier les histoires à dormir debout qu'elle recueille auprès des marins qui vont et viennent en permanence. Et de temps en temps, les personnes bienveillantes qui lui disent quoi ramasser et où le poser lui ordonnent d'écraser le bras ou de casser les jambes de quelqu'un. Qu'est-ce qu'une ogresse pourrait demander de plus ?
-
-#### **Artur Piedmarteau**
-
-En général, les nains et les ogres ne s'entendent pas très bien. Les nains sont petits et attachent beaucoup d'importance à la tradition et à l'artisanat, tandis que les ogres... Eh bien, les ogres ne se soucient pas de ce genre de choses. Sauf Artur. Artur Piedmarteau s'intéresse vivement à l'histoire des ogres et il aime marteler le métal pour lui donner une forme esthétique. Cependant, tout ce qu'il sait faire, ce sont des pansières marquées de la forme de son pied.
-
-Artur rêve secrètement de renverser les nains de Karak Azgaraz et de dévorer tous ces « *jambons ambulants* », comme il les appelle. Étant donné qu'il ne se montre pas particulièrement discret à ce sujet, les nains savent ce qu'il mijote. Heureusement qu'il fabrique ces pansières pour une armée inexistante, sinon ils feraient de la vie des Altdorfers un véritable enfer.
-
-Pourtant, de nombreux nobles commencent à s'intéresser à ce « savoir-faire » rudimentaire, et quelques clients ont acheté des pansières à Artur pour les accrocher aux murs à l'occasion de grands festins. Ses créations deviennent à la mode parmi les aristocrates les plus éclectiques de la ville. Ce n'est pas la clientèle qu'Artur recherchait, mais l'afflux d'argent attire l'attention des quelques ogres entreprenants de la ville. Peut-être que cette armée n'est pas aussi imaginaire que les gens le pensent.
-
-#### NAZZAALTA AFFABULE - DÉBARDEUR OGRE, ANCIEN PORTEUR
-
-**Carrière :** Débardeur (ancien Porteur) **Expérience dépensée :** 500 points
-
-|       | M | CC CT |    | F  | E  | I  |    | Ag Dex | Int | FM Soc |    | B  |  |
-|-------|---|-------|----|----|----|----|----|--------|-----|--------|----|----|--|
-| Base  | 6 | 36    | 17 | 49 | 43 | 16 | 28 | 26     | 25  | 29     | 19 | 28 |  |
-| Aug   | – | –     | –  | –  | –  | +5 | –  | –      | –   | –      | –  | –  |  |
-| Total | 6 | 36    | 17 | 49 | 43 | 21 | 28 | 26     | 25  | 29     | 19 | 28 |  |
-
-**Compétences :** Athlétisme 38, Corps à corps (Bagarre 39, Base 46), Divertissement (Narration) 29, Escalade 54, Esquive 33, Intimidation 52, Natation 54, Ragot 24, Résistance 51, Résistance à l'alcool 53
-
-**Talents :** Combat déloyal, Infatigable, Massif, Résistance (Poisons ingérés), *Très fort*, Vice (Nourriture), Vision nocturne
-
-**Possessions :** cape, vêtements, dague, flasque de spiritueux, arme simple (gaffe), gants de cuir, bourse, besace
-
-#### ARTUR PIEDMARTEAU - ARTISAN OGRE
-
-**Carrière :** Artisan (ancien Apprenti Artisan)
-
-**Expérience dépensée :** 1 000 points
-
-|       | M | CC CT |    | F       | E  | I |    | Ag Dex | Int | FM Soc |    | B  |  |
-|-------|---|-------|----|---------|----|---|----|--------|-----|--------|----|----|--|
-| Base  | 6 | 29    | 19 | 58      | 51 | 3 | 21 | 26     | 25  | 36     | 19 | 36 |  |
-| Aug   | – | –     | –  | +10 +10 |    | – | –  | +10    | –   | –      | +7 | –  |  |
-| Total | 6 | 29    | 19 | 68      | 61 | 3 | 21 | 36     | 25  | 36     | 26 | 42 |  |
-
-**Compétences :** Athlétisme 26, Calme 41, Corps à corps (Bagarre 34, Base 32), Discrétion (Urbaine) 26, Esquive 26, Évaluation 30, Intimidation 71, Langue (Grumbarth) 28, Métier (Forgeron) 42, Résistance 71, Résistance à l'alcool 66, Savoir (Ogres) 30
-
-**Talents :** Combat déloyal, Maître artisan (Forgeron), Massif, Résistance (Poisons ingérés), *Très fort*, Vice (Nourriture), Vision nocturne
-
-**Possessions :** craie, cape, vêtements, dague, licence de Guilde, chapeau, justaucorps de cuir, repas, bourse, besace, chiffons, outils professionnels (forgeron)
-
-
-## <span id="page-28-0" data-folio="27"></span>**À L'ATTENTION DU MENEUR DE JEU**
-
-Les points suivants sont des conseils pour les Meneurs de Jeu qui souhaitent ajouter des ogres à leurs campagnes de **Warhammer Fantasy le Jeu de Rôle**. Pour commencer, nous pensons que c'est une excellente idée (sinon nous n'aurions pas publié ce supplément). Dans la mesure du possible, essayez de présenter tous les problèmes potentiels liés aux ogres de manière positive !
-
-#### **Ajouter des ogres à une campagne en cours**
-
-Ajouter un ogre à une campagne en cours est plus facile que vous ne le pensez :
-
-Les ogres aiment par-dessus tout voyager, les convaincre de laisser tomber ce qu'ils sont en train de faire pour rejoindre un groupe d'aventuriers intrépides est donc un jeu d'enfant.
-
-Les ogres coûtent cher en entretien, ils sont donc toujours à la recherche de travail et d'argent.
-
-Les ogres sont particulièrement influençables et aiment s'intégrer. S'ils ont la possibilité de se lier d'amitié avec les Personnages, ils sauteront probablement sur l'occasion, surtout si le groupe comprend un halfling !
-
-Cependant, l'ajout d'un ogre n'est pas une décision qui doit être prise à la légère ou sans consulter votre groupe de Joueurs. S'ils ne figurent pas dans le livre de base, c'est pour une bonne raison. La plupart des Joueurs ne s'attendront donc pas à croiser des Personnages ogres dans une partie de **WFJDR**.
-
-## **Les ogres sont-ils surpuissants ?**
-
-Oui, ils le sont, foncièrement et sans vergogne. Les ogres sont bel et bien surpuissants, raison pour laquelle les armées impériales n'hésitent pas à se servir d'eux. Un ogre peut s'attaquer à lui seul à plusieurs humains, gobelins, etc. Mais c'est un juste retour des choses. Après tout, les ogres sont confrontés à toutes sortes de problèmes en raison de leur Statut. Ils dépendent presque entièrement d'autres Personnages pour s'en sortir dans le Vieux Monde : ils ne savent ni lire, ni compter, font de piètres économes et leurs dépenses les plus élémentaires suffiraient à ruiner la plupart des modestes marchands.
-
-Un Personnage ogre est un ajout bienvenu à tout groupe d'aventuriers, mais certains Joueurs peuvent trouver injuste que cette race soit si supérieure au combat. Assurez-vous d'en discuter avec l'ensemble du groupe de jeu. Si l'un des membres est réticent à l'idée d'intégrer un Personnage ogre, vous pouvez toujours utiliser les règles de ce chapitre pour créer des PNJ ogres qui valent le détour. Toutefois, gardez à l'esprit qu'avoir un ogre dans le groupe peut ouvrir de nouvelles possibilités. Par exemple, si les autres Joueurs souhaitent se concentrer sur une Carrière de Lettré ou de Citadin, ils pourront s'y consacrer entièrement : si la violence est requise, l'ogre s'en chargera avec plaisir.
-
-## **De grands ogres et de petites bâtisses**
-
-Les ogres sont grands. À vrai dire, ils sont même énormes. Si l'on considère que la taille moyenne d'un Reiklander est de 1,75 m, la majorité des bâtiments de l'Empire seront trop étroits pour les ogres, sans compter que de nombreuses aventures se déroulent dans des endroits étriqués, comme des égouts ou des tunnels.
-
-Dans la mesure du possible, essayez de tourner la taille d'un ogre en dérision. Nul besoin d'exclure votre Joueur ogre de certaines scènes juste parce qu'il ne peut pas entrer dans une pièce. Au lieu de cela, proposez-lui de se déplacer à quatre pattes ou décrivez la manière dont il se tord le cou et traîne les pieds dans une boutique naine exiguë. Assurez-vous de bien expliquer cette situation au Joueur avant qu'il ne choisisse de créer un Personnage ogre, sinon il pourrait très vite être agacé par son sort dans le Vieux Monde. Il est indispensable de s'assurer que tout le monde est prêt à relever les défis qui pourraient survenir lors d'un voyage en compagnie d'un ogre.
-
-
-## <span id="page-29-0" data-folio="28"></span>DE L'IMPORTANCE DE LA TAILLE
-
-Les règles de Taille sont quelque peu complexes, mais savoir comment les utiliser est crucial pour les Joueurs ogres et les MJ. Les différences telles que le plus grand nombre de blessures que peuvent recevoir les ogres sont abordées précédemment dans la section Création de Personnage. Les principales règles à prendre en compte la taille d'un ogre sont résumées ci-dessous. Vous trouverez plus de détails dans **WFJDR** (p. 342).
-
-#### **Dégâts des Armes**
-
-Les Armes utilisées par les créatures de Taille Grande, comme les ogres, gagnent l'Atout Dévastatrice (**WFJDR** p. 298) contre des créatures de Taille Moyenne, comme les humains, les nains et les elfes. Vous pouvez utiliser soit le nombre indiqué sur le dé, soit le DR pour déterminer les Dégâts causés par une attaque réussie.
-
-Contre les Petites créatures, comme les halflings, les Armes gagnent également l'Atout Percutante (**WFJDR** p. 298), vous devez donc ajouter le nombre indiqué sur le dé des unités lorsque vous calculez les Dégâts. De plus, après application de tous les modificateurs pertinents, les Dégâts de l'arme contre les créatures de Taille Petite sont doublés. Les halflings ont tendance à se lier d'amitié avec les ogres, et ce n'est pas pour rien.
-
-#### **Frappe mortelle**
-
-Si un ogre réussit à frapper une créature de Taille inférieure, il peut choisir d'entrer dans son espace pour effectuer une attaque supplémentaire contre une autre créature. Il peut le faire un nombre de fois égal à son Bonus de Capacité de Combat, mais il ne peut pas attaquer la même créature plus d'une fois. Il n'est pas nécessaire que la cible initiale meure pour déclencher ce coup.
-
-#### **Se défendre contre les ogres**
-
-Les créatures de Taille Moyenne subissent une pénalité de -2 DR aux Tests de Corps à corps si elles veulent se défendre contre les attaques d'un ogre. Ce n'est pas le cas si elles utilisent une autre Compétence, comme Esquive. Les Petites créatures subissent -4 DR.
-
-#### **Peur**
-
-Les ogres hostiles provoquent *Peur* (**WFJDR** p. 190) chez les créatures de Taille Moyenne et *Terreur* (**WFJDR** p. 191) chez les Petites créatures.
-
-#### **Autres informations**
-
-Les ogres n'ont pas besoin de recourir au *Désengagement* (**WFJDR** p. 165) pour s'éloigner des adversaires de Taille inférieure en combat. S'il le souhaite, un ogre peut dépenser 1 Avantage pour attaquer un adversaire de Taille inférieure avec un BF +0 Dégâts en utilisant sa Compétence Corps à corps (Bagarre). Les créatures de Taille Moyenne et Petite reçoivent un bonus de +10 pour toucher les ogres avec les Compétences Corps à corps et Projectiles.
-
-Mises bout à bout, ces règles sur la Taille ont un impact majeur sur les combats, veillez donc à bien les appliquer. La plupart des ogres effectuent plusieurs attaques par tour, ils infligent donc des dégâts considérables au fur et à mesure.
-
-## **Un ogre entre dans un bar...**
-
-Tout comme certains Joueurs peuvent trouver qu'un ogre éclipse leurs propres prouesses au combat s'il fait partie de leur groupe, il arrive parfois que les Joueurs ogres se sentent limités par les autres défis auxquels ils sont confrontés. Les ogres sont généralement perçus avec crainte et méfiance. Étant donné qu'ils sont souvent employés comme mercenaires, gardes du corps ou hommes de main, de nombreux habitants de l'Empire considèrent leur arrivée en ville comme un prélude évident à la violence. Si une situation exige des interactions sociales et une enquête approfondie, un ogre peut avoir du mal à interroger les habitants sans que quelqu'un d'autre brise la glace en premier lieu. Pire encore, si la discrétion est de mise, c'est souvent peine perdue pour les ogres.
-
-Assurez-vous de bien faire comprendre cet aspect aux Joueurs qui envisagent de créer un Personnage ogre. Certains apprécieront peut-être de ce style de jeu, qui consiste à survivre et à prospérer en dépit de la façon dont le monde les perçoit. D'autres trouveront peut-être que la peur qu'ils inspirent à de nombreux PNJ nuit à leur plaisir de jouer. Si tel est le cas, n'hésitez pas à minimiser cet aspect au cours d'une partie de **WFJDR**. Après tout, de nombreux groupes mettent en scène des aventuriers de toutes sortes, lourdement armés et équipés, qui se promènent de maison en maison, traînant derrière eux des montagnes d'acier et de poudre à canon. Vus sous cet angle, les ogres ne sont pas beaucoup plus intimidants.
-
-Bien entendu, les ogres peuvent également tirer profit de leur réputation intimidante. Si un Joueur peut se contenter de s'asseoir dans un coin pour laisser les minus mener la conversation jusqu'à ce qu'un regard insistant ou un accès de violence extrême soit nécessaire, il sera plus que satisfait de jouer un ogre. Pour sa part, l'ogre moyen est de nature stoïque, il a un appétit insatiable et un talent pour trouver une solution sanglante et directe aux plus compliqués des problèmes. Bien que certaines parties de l'Empire puissent sembler peu accueillantes, l'ogre typique saura se montrer à la hauteur.
-
-## **ÉQUIPEMENT DES OGRES**
-
-Comme indiqué à la page 11, la plupart des armes et équipements ordinaires sont disponibles en « taille ogre ». En dehors du fait qu'elles sont plus lourdes, ces armes n'ont pas d'effets supplémentaires, si ce n'est qu'elles peuvent potentiellement acquérir les Atouts Dévastatrice et Percutante en plus d'augmenter les dégâts contre les Petites créatures, comme indiqué dans la section *De l'importance de la taille*, cicontre.
-
-Toutefois, les ogres forgent et utilisent leurs propres armes et armures, notamment leurs immenses massues et leurs impressionnantes pansières. Les règles de ces créations sont détaillées ci-dessous. Attention : il s'agit d'armes réservées aux ogres, les points d'Encombrement n'ont donc pas besoin d'être doublés comme pour les autres Possessions (voir p. 31). Inutile de préciser que ces armes sont pratiquement inutilisables entre les mains des créatures de Taille Moyenne et que la plupart des Petites créatures auront même du mal à les soulever.
-
-
-### ARMES DE CORPS À CORPS DES OGRES
-
-<span id="page-30-0" data-folio="29"></span>| Arme                    | Prix | Enc. | Disponibilité* | Allonge<br>Dégâts |      | Atouts et Défauts        |
-|-------------------------|------|------|----------------|-------------------|------|--------------------------|
-|                         |      |      |                | BASE              |      |                          |
-| Massue ogre             | 1 CO | 2    | Courante       | Moyenne           | BF+4 | Spéciale**               |
-| Poing de fer            | 4 CO | 2    | Limitée        | Courte            | BF+3 | Défensive, Protectrice 1 |
-|                         |      |      |                | DEUX MAINS        |      |                          |
-| (2M) Grande massue ogre | 5 CO | 6    | Courante       | Longue            | BF+6 | Dévastatrice, Spéciale** |
-
-<sup>\*</sup>La disponibilité est indiquée pour l'Empire, où certaines armes sont plus rares que dans les Montagnes des Larmes.
-
-## ARMES À DISTANCE DES OGRES
-
-| Prix                                             | Enc.<br>Disponibilité*<br>Portée |          |                    | Dégâts                                              | Atouts et Défauts      |  |  |  |
-|--------------------------------------------------|----------------------------------|----------|--------------------|-----------------------------------------------------|------------------------|--|--|--|
-|                                                  |                                  |          |                    |                                                     |                        |  |  |  |
-| 8 CO                                             | 5                                | Exotique | 20                 | +10                                                 | Entraves, Recharge 2   |  |  |  |
-| 1 CO                                             | 2                                |          |                    | Entraves                                            |                        |  |  |  |
-|                                                  |                                  |          |                    |                                                     |                        |  |  |  |
-| Grande lance                                     |                                  | BF+4     | Empaleuse          |                                                     |                        |  |  |  |
-|                                                  |                                  |          |                    |                                                     |                        |  |  |  |
-| 14 CO                                            | 8                                | Exotique | 50                 | +10                                                 | Dangereuse, Recharge 5 |  |  |  |
-| (2M) Canon crache-plomb<br>Pistolet ogre<br>9 CO |                                  | Exotique | 20                 |                                                     | Pistolet, Recharge 1   |  |  |  |
-|                                                  | 6/                               | 2<br>3   | Limitée<br>Limitée | ENTRAVES<br>BFx2<br>LANCER<br>BFx3<br>POUDRE NOIRE* | +7<br>+8               |  |  |  |
-
-<sup>\*</sup>La disponibilité est indiquée pour l'Empire, où certaines armes sont plus rares que dans les Montagnes des Larmes.
-
-### MUNITIONS DES OGRES
-
-| Arme                    | Prix  | Enc. | Disponibilité | Portée           | Dégâts | Atouts et Défauts                 |
-|-------------------------|-------|------|---------------|------------------|--------|-----------------------------------|
-|                         |       |      |               | ENTRAVES         |        |                                   |
-| Harpon (6)              | 5/-   | 0    | Exotique      | Comme l'arme     | —      | Empaleuse                         |
-|                         |       |      |               | POUDRE NOIRE     |        |                                   |
-| Balle crache-plomb (12) | 4/-   | 0    | Limitée       | Moitié de l'arme | —      | Explosion 3                       |
-| Boulet crache-plomb (1) | 1 CO* | 0    | Limitée       | Comme l'arme     | +4     | Empaleuse, Percutante, Perforante |
-
-<sup>\*</sup>Fondamentalement, il s'agit d'un boulet de canon. Le prix indiqué pour un boulet crache-plomb comprend 2/- pour la quantité de poudre suffisante pour tirer un seul coup. Le boulet peut souvent être récupéré. En le tirant à nouveau, vous dépensez uniquement le prix de la poudre.
-
-#### ARMURES DES OGRES
-
-| Armure         | Prix  | Enc. | Disponibilité | Pénalité | Emplacements | PA | Atouts et Défauts |  |  |  |
-|----------------|-------|------|---------------|----------|--------------|----|-------------------|--|--|--|
-| PLATE          |       |      |               |          |              |    |                   |  |  |  |
-| Pansière ogre* | 20 CO | 4    | Rare          | –        | Corps        | 3  | Impénétrable      |  |  |  |
-
-<sup>\*</sup>Les pansières des ogres sont particulièrement adaptées à leur anatomie. Même si elles étaient réduites, elles n'offriraient qu'une protection partielle aux races dont les organes vitaux ne se trouvent pas dans leur ventre.
-
-<sup>\*\*</sup>Les massues des ogres sont toujours personnalisées en fonction des préférences de leur utilisateur. Voir la description des armes.
-
-
-## <span id="page-31-0" data-folio="30"></span>**Description des Armes**
-
-Certaines armes ogres ont des règles spéciales en plus de leurs Atouts et de leurs Défauts.
-
-### **Canon crache-plomb**
-
-Ce canon est le summum de l'ingénierie ogre. Chargé par la culasse, extrêmement résistant et déclenché par l'allumage d'une simple mèche, le canon crache-plomb bombarde généralement tout ce que son porteur a sous la main : chaînes, briques, grenailles de plomb, pierres, clous rouillés, etc. Il arrive que ces armes soient chargées de véritables boulets de canon, que les ogres récupèrent généralement sur le champ de bataille après utilisation. Les boulets porte-bonheur sont souvent affublés d'un surnom et sont trimballés partout, à l'image d'un camarade de confiance.
-
-### **Grande lance**
-
-Utilisés par les chasseurs ogres pourchassant les grandes bêtes des Montagnes des Larmes, ces javelots sont massifs, rudimentaires et terriblement efficaces.
-
-### **Lance-harpon**
-
-Utilisé pour chasser des proies, le lance-harpon tire une énorme flèche de la taille d'une lance, attachée à une longue corde. Il n'est pas doté d'un mécanisme permettant de ramener la corde automatiquement, l'ogre doit donc saisir la corde et tirer sa proie à la main. Le lance-harpon peut être utilisé avec les
-
-Clément Gauche - gauche.c@gmail.com
-
-Compétences Projectiles (Arbalète) ou Projectiles (Entraves) sans pénalité. Si la corde est séparée de la flèche, la portée passe à 60 et l'arme ne possède plus l'Atout Immobilisante.
-
-#### **Massues ogres**
-
-Les ogres adorent les massues. Ce sont les armes les plus simples, ce qui convient parfaitement à leur mentalité. D'ailleurs, ils n'hésitent pas à parcourir les champs de bataille, les forêts et les cimetières pour trouver une bonne massue bien solide ainsi que les matériaux nécessaires pour l'adapter à leur goût. Si vous le souhaitez, vous pouvez personnaliser une massue ogre ou une grande massue en lui attribuant l'une des caractéristiques suivantes. Voir **WFJDR** p. 297 pour plus d'informations sur ces Atouts.
-
-**Plaques de métal :** l'arme gagne l'Atout Assommante. **Pointes rouillées :** l'arme gagne l'Atout Perforante. **Lames récupérées :** l'arme gagne l'Atout Taille.
-
-### **Piège à chaînes**
-
-Cet ensemble de mâchoires métalliques à ressort reposant sur une longue chaîne robuste est un outil utilisé par les chasseurs ogres. À l'origine, cette arme était conçue pour être enchaînée à un rocher ou à un arbre, puis laissée en place dans l'espoir d'attraper une proie. Aujourd'hui, la plupart des ogres manquent de patience pour ce genre d'approche et trouvent plus pratique de lancer le piège sur une cible avant de le ramener pour se délecter de la chair fraîche.
-
-#### **Pistolet ogre**
-
-Un pistolet ogre est une version améliorée de son équivalent Impérial qui utilise les mêmes munitions et la même poudre qu'une arme typique à poudre noire (**WFJDR** p. 297). Toutefois, il est suffisamment solide pour servir d'arme simple et ne se brise qu'en cas de Maladresse.
-
-#### **Poing de fer**
-
-Hommage à l'art sacré du combat de fosse, le poing de fer est un énorme gantelet que les ogres utilisent pour écarter les coups et briser des nuques. Le poing de fer est solidement fixé à celui de l'ogre, de sorte qu'il ne pourra pas en être désarmé. La main équipée du poing de fer peut servir à tenir une arme ou à effectuer des actions simples.
-
-## **Description des Armures**
-
-Si certains ogres portent des armures plus conséquentes, c'est autant par effet de mode ou pour montrer leur affiliation que pour se protéger réellement. Seule la pansière a pour vocation la protection.
-
-#### **Pansière**
-
-Qu'elle soit faite de métal, de bois dur, d'os ou de cuir, la pansière d'un ogre a encore plus de valeur que la massue la mieux portée. Elle protège le ventre de l'ogre, où se trouvent la plupart de ses organes vitaux, et sert à la fois de source de protection et de support pour les symboles militaires ou religieux. De nombreuses pansières arborent la représentation de la Gueule, un anneau de dents déchiquetées qui symbolise à la fois le dieu affamé des ogres et leur propre appétit vorace.
-
-
-### UN LOURD FARDEAU
-
-<span id="page-32-0" data-folio="31"></span>Les ogres sont immenses et par extension, leur matériel est bien plus grand que celui des humains. La version ogre de la plupart des possessions vaut deux fois l'Encombrement classique et coûte deux fois plus cher. De plus, les ogres doivent manger et boire au moins deux fois plus qu'un humain en une journée. Cependant, ils ne ressentent aucun effet des drogues et des poisons, à moins qu'on leur administre deux fois la dose standard. En contrepartie, un ogre peut porter deux fois l'Encombrement normal d'un humain : (Bonus de Force + Bonus d'Endurance) × 2.
-
-Un ogre subit une pénalité de -20 à tous les Tests lorsqu'il tente d'utiliser des possessions qui ne sont pas prévues pour sa taille, en plus de trouver certaines choses impossibles à faire. Par exemple, un doigt d'ogre ne peut tout simplement pas presser la détente d'un pistolet à répétition humain.
-
-## **Lanceurs de sorts ogres**
-
-Les ogres ne pratiquent pas la magie de la même manière que les autres Races. Bien qu'ils canalisent les mêmes Vents de Magie qui alimentent tous les sorts, ils le font d'une manière très particulière. Les ogres peuvent uniquement apprendre les Domaines de la Gueule, des Cieux, de la Mort et de la Bête. La Gueule comprend ces aspects de la nature et les accorde à ses adeptes les plus dévoués. La seule exception concerne les Ventres-Feu, qui tirent leurs pouvoirs de la Bouche de Feu, une autre divinité ogre. Les ogres peuvent lancer les sorts d'Arcane qui figurent à la page 242 de **WFJDR**, comme n'importe quel autre Sorcier.
-
-## **MAGIE OGRE**
-
-Bien que de nature arcanique, la magie des ogres est inextricablement liée à leur croyance. Certains ogres, appelés Ventres-Feu, rendent hommage à un grand dieu du feu volcanique connu sous le nom de la Bouche de Feu. À travers de terribles épreuves, ils parviennent à focaliser l'*Aqshy*, le Vent rouge du Feu, dans leurs entrailles. Si vous souhaitez incarner un Ventre-Feu, il vous suffit de modifier la Carrière Sorcier et de choisir le Talent Magie des Arcanes (Feu), moyennant quelques modifications.
-
-La forme la plus courante de magie est de loin celle pratiquée par les bouchers, dévots de la Gueule, la divinité vorace qui anime l'appétit insatiable de chaque ogre. Étant donné leur amour de la chair, l'acte de boucherie revêt une grande importance dans la société ogre, notamment parce qu'il exige une certaine retenue pour préparer correctement la viande au lieu de se contenter de dévorer une carcasse fraîchement abattue.
-
-Cependant, les bouchers ogres ne font pas que préparer les festins. Ce sont également des émissaires de la Gueule, que la plupart des ogres considèrent avec crainte. Lorsqu'ils abattent et préparent de la viande selon un rituel bien précis, ils canalisent une parcelle de l'appétit débordant de la Gueule et par là même, une partie de son pouvoir. Les érudits ayant un intérêt (et un bon estomac) pour l'étude de la magie des ogres ont remarqué qu'elle se distinguait des miracles qui se manifestent parfois autour des dévots de Sigmar, Ulric, Taal et d'autres dieux. Malgré ses prétendues origines divines, les pouvoirs exercés par les bouchers ogres sont certainement dérivés des mêmes Vents de Magie que ceux exploités par les sorciers des Collèges de l'Empire. Ces mêmes spécialistes soulignent le fait que certains bouchers ont des pouvoirs similaires à ceux que l'on trouve dans les Domaines de la Mort, de la Bête et des Cieux. Le rôle que joue la Gueule dans tout cela n'est pas évident pour les érudits, mais il est limpide pour la plupart des ogres : la Gueule est affamée et récompense ceux qui sacrifient des êtres vivants en son nom.
-
-Les sorts des ogres impliquent toujours de la viande : soit il faut découper une tranche spécifique d'un cuissot soigneusement préparé, soit il faut mâcher un morceau de graisse, soit il faut sucer la moelle d'un os. Ce morceau de viande peut être inclus dans le coût de la vie de l'ogre, car la Gueule ne prend qu'une partie de ce qui est consommé. Les ogres qui n'ont pas accès à de telles ressources peuvent tout de même lancer des sorts, mais ils deviennent de plus en plus voraces à mesure que la Gueule tire sa force des entrailles de l'ogre lui-même. La Gueule finira par avoir son repas, d'une manière ou d'une autre.
-
-Attention : ces ingrédients ne sont pas pris en compte dans la réduction du risque d'Incantation Imparfaite (**WFJDR** p. 236). Pour obtenir ces avantages, le lanceur de sorts doit utiliser un morceau de viande plus exotique. Les sorts peuvent faire appel à des ingrédients, comme la bile de troll ou la moelle de rhinox. L'ogre doit les acquérir lui-même ou les acheter pour le coût de 1 pistole par NI du sort en question. Si un lanceur de sorts ogre n'a pas d'ingrédient approprié à portée de main, il perd 1 Blessure pour chaque NI du sort qu'il lance.
-
-Enfin, les ogres peuvent apprendre la Compétence Langue (Magick) si elle est disponible pour leur Carrière. Ils peuvent l'utiliser pour les Tests d'Incantation, comme tout autre lanceur de sorts. Cependant, la magie des ogres est bien plus instinctive qu'intellectuelle (après tout, ils font appel à leurs entrailles même dans ces moments-là). Les lanceurs de sorts ogres utilisent l'Endurance au lieu de l'Intelligence pour leur Compétence Langue (Magick).
-
-
-## <span id="page-33-0" data-folio="32"></span>**Le Domaine de la Gueule**
-
-Parfois appelé Gastromancie ou simplement Magie des Entrailles, le Domaine de la Gueule n'est disponible que pour les ogres (voir la Carrière Boucher ogre p. 37). Cette magie met en avant une faim intense, des festins sanglants et une énergie effrénée. Chaque fois qu'un boucher ogre réussit à lancer un sort du Domaine de la Gueule, l'offrande qu'il consomme peut lui permettre de restaurer sa propre santé. Lancez 1d10. Si le résultat est un 10, ou s'il est égal ou supérieur au NI du sort lancé, sans modification de Focalisation et sans utiliser un Grimoire, le Boucher récupère un nombre de Blessures égal au NI non modifié du sort.
-
-**Composants :** les ogres se servent de restes ensanglantés pour alimenter leur magie. Elles sont généralement issues d'animaux et plus elles sont fraîches, mieux la magie opère. Il peut s'agir de morceaux de viande saignants, de bile provenant de l'estomac de créatures étranges, de la moelle de bêtes imposantes ou de la graisse séchée d'animaux domestiques, comme des cochons ou des vaches. La magie des ogres n'est pas une chose agréable à regarder pour le commun des mortels. Toutefois, pour de nombreux ogres, voir un boucher à l'œuvre est tout à fait appétissant.
-
-#### **Bouf 'crâne**
-
-**NI :** 5
-
-**Portée :** Vous **Cible :** Vous
-
-**Durée :** (Bonus de Force Mentale) Rounds
-
-Vous dévorez une tête entière, y compris la cervelle et tout ce qui s'ensuit. Votre prodigieux intestin distille l'essence cauchemardesque du malheureux crâne et la projette autour de vous en une horrible vague nauséabonde. Vous gagnez le Trait de créature Peur 2 (**WFJDR** p. 341). Ceux qui connaissaient l'ancien propriétaire de la tête dévorée doivent se soumettre à tous les Tests de Calme avec une pénalité de -20 pour résister à la *Peur*.
-
-#### **Broyeur d'os**
-
-**NI :** 5
-
-**Portée :** (Force Mentale) mètres
-
-**Cible :** 1
-
-**Durée :** Instantanée
-
-Vous croquez bruyamment quelques os tout en grommelant une malédiction visant un ennemi proche. *Broyeur d'os* est un Projectile magique avec des Dégâts de +4 qui ignore les Points d'Armure de votre cible, mais pas son Bonus d'Endurance. De plus, si votre attaque inflige une Blessure Critique, ajoutez +20 au lancer sur le Tableau des Blessures Critiques approprié, pour en déterminer la gravité.
-
-### **Festin des Damnés**
-
-**NI :** 9 **Portée :** Vous
-
-**Cible :** ZdE (Bonus de Force Mentale) mètres **Durée :** (Bonus de Force Mentale) Rounds
-
-Vous trempez votre lame favorite dans le sang d'un ennemi fraîchement tombé, ce qui vous donne plus de puissance et éveille la soif de sang chez vos alliés. Toutes les créatures de votre choix dans la Zone d'Effet gagnent le Trait de Créature Vampirique (**WFJDR** p. 343) pour la durée de ce sort. La cible n'a pas besoin de mordre ses adversaires pour bénéficier des avantages de ce Trait, il lui suffit de les blesser au corps à corps. Elle peut également bénéficier de soins provenant d'autres sources. Si une créature souhaite résister à ce sort, elle peut tenter un Test de **Résistance Difficile (-20)** pour en ignorer les effets.
-
-Clément Gauche - gauche.c@gmail.com
-
-
-<span id="page-34-0" data-folio="33"></span>Pendant la durée de ce sort, le sang des ennemis jaillit vers les personnes affectées, coulant le long de leurs lames, sur leurs bras et dans leurs bouches. Les ogres ne sont pas gênés par cet effet (la plupart s'en délectent), mais les autres créatures trouvent généralement cette situation fort déstabilisante. Lorsque le sort prend fin, les non-ogres qui ont blessé au moins un adversaire au corps à corps tandis qu'ils étaient sous l'effet du sort doivent réussir un Test de **Calme Intermédiaire (+0)** ou gagner l'État *Assommé*. De plus, s'ils blessent un adversaire qui possède les Traits de créature Infecté ou Maladie, tout Test effectué pour en éviter les effets négatifs subit une pénalité de -30.
-
-### **Goinfre costaud**
-
-**NI :** 5
-
-**Portée :** (Bonus de Force Mentale) mètres
-
-**Cible :** 1
-
-**Durée :** (Bonus de Force Mentale) Rounds
-
-Vous dévorez le cœur d'une bête puissante, puis projetez sa force et sa puissance sur une créature proche. Pendant la durée du sort, votre cible ajoute +2 à son Bonus de Force pour les Dégâts qu'elle inflige ou pour d'autres Tests de Force appropriés.Cependant, lorsque le sort prend fin, elle se retrouve envahie par une faim intense et doit immédiatement se gaver d'un repas conséquent ou gagner un État *Exténué*.
-
-Si la cible souhaite rejeter votre don, elle peut tenter un Test de **Calme Complexe (-10)** pour en ignorer les effets.
-
-### **Goûtemort**
-
-**NI :** 2
-
-**Portée :** Vous **Cible :** Vous **Durée :** Instantanée
-
-En consommant une partie d'un cadavre, vous apprenez quand et comment la créature est morte. Vous découvrez si la victime a été poignardée, empoisonnée, tuée par la magie, si elle est morte de causes naturelles, etc. Les informations que vous obtenez sont générales. Par exemple, vous pouvez apprendre que la victime a été poignardée à mort avec une épée, mais pas quel type d'épée. Vous n'apprenez rien non plus sur les responsables, si ce n'est la méthode qu'ils ont utilisée. Si la cible a subi une mort « propre » (qui n'implique ni poison ni maladie), vous pouvez consommer le reste du cadavre sans crainte.
-
-#### **La Gueule**
-
-**NI :** 11
-
-**Portée :** (Force Mentale) mètres
-
-**Cible :** ZdE (Bonus de Force Mentale) mètres **Durée :** (Bonus de Force Mentale) Rounds
-
-Vous dévorez la meilleure partie d'une grande bête, ce qui provoque l'apparition d'un fragment de la Gueule elle-même. Le sol se fend en deux, dévoilant un millier de dents grinçantes et affamées. Le gouffre est sans fond, sa faim est infinie, ses dents sont des lames de rasoir et le bruit de ses mâchoires rugissantes ressemble à s'y méprendre au grincement du verre sur la pierre.
-
-Quiconque se trouve dans la zone affectée doit immédiatement effectuer un Test d'**Esquive Intermédiaire (+0)** pour se dégager. En cas de réussite, les cibles subissent +8 Dégâts à une Localisation choisie au hasard, lorsqu'elles s'extraient de la Gueule. Ces Dégâts sont réduits de 1 pour chaque DR obtenu au Test d'Esquive.
-
-Quiconque échoue au Test chute immédiatement dans la Gueule, qui entame le processus méthodique consistant à avaler sa victime vivante. Cette dernière subit immédiatement +10 Dégâts à un emplacement choisi au hasard et gagne 3 États *Empêtré*. Les tentatives de suppression de ces États sont opposées à la Force de 60 de la Gueule. La victime ne peut pas s'échapper tant qu'elle ne s'est pas débarrassée de ses 3 États *Empêtré*. À la fin de chacun de leurs tours, les créatures à l'intérieur de la Gueule subissent à nouveau +10 Dégâts à un emplacement choisi au hasard.
-
-Les dents de la Gueule sont acérées et elles n'abandonnent pas leurs proies facilement. Une fois que le sort prend fin, la Gueule disparaît, mais elle tente d'emporter les parties du corps qui se trouvent encore entre ses crocs. Si une créature se trouve à l'intérieur de la Gueule à ce moment précis, elle subit immédiatement une Blessure Critique à un emplacement choisi au hasard.
-
-#### **Trollboyaux**
-
-**NI :** 7
-
-**Portée :** (Bonus d'Endurance) mètres
-
-**Cible :** 1
-
-**Durée :** (Bonus d'Endurance) Rounds
-
-Vous avalez une minuscule quantité de bile de troll ou une substance similaire, avant d'absorber et de distiller les immenses pouvoirs de régénération de cette créature que vous transmettez à une autre personne. Votre cible gagne le Trait de créature Régénération (**WFJDR** p. 341). Les ogres ne subissent aucun effet supplémentaire pour ce sort, mais les autres Races peuvent être moins chanceuses. Tout Personnage autre qu'un ogre qui récupère des Blessures sous l'effet de ce sort doit se soumettre à un Test de **Résistance Accessible (+20)**. En cas d'échec, la chair qui se forme sur les blessures prend une apparence verdâtre ou d'un bleu tacheté, qui ressemble fortement à la peau d'un troll. Cet effet est particulièrement marqué si le sort est à l'origine de la repousse d'un membre. Il n'implique pas une mutation, mais il est susceptible d'être perçu comme tel par toute personne qui le voit et d'entraîner quelques conséquences désagréables.
-
-
-## <span id="page-35-0" data-folio="34"></span>**Rhinox**
-
-Les rhinox sont de grandes et puissantes créatures qui ont élu domicile dans les sommets enneigés. La chair de ces bêtes têtues et dangereuses enveloppe leur robuste squelette, ce qui en fait un met de choix pour les ogres. Ils ne leur servent pas seulement à se nourrir (comme la plupart des choses que les ogres rencontrent), mais font également office de montures. Leur force prodigieuse leur permet notamment de supporter tous les ogres, sauf les plus grands. Il arrive que les rhinox soient montés au combat par les ogres suffisamment habiles (ou chanceux) pour les apprivoiser.
-
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 6 | 45 | -  | 55 | 50 | 23 | 30 | -   | 10  | 10 | -   | 32 |
-
-**Traits :** Arme (Cornes +10, Cornes nasales +10), Armure 2 (7), Belliqueux, Bestial, Foulée, Taille (Grande)
-
-**Trop buté pour mourir :** les rhinox ignorent les effets du premier Dégât Critique qu'ils subissent à chaque combat.
-
-**Facultatif :** Dressé (Trait), Frénésie, Parasité, Territorial
-
-## **Plus qu'un tas de muscles**
-
-Outre leurs muscles, leur cuir, leur fourrure épaisse et les vitesses surprenantes qu'ils peuvent atteindre sur de courtes distances, la caractéristique la plus marquante des rhinox est l'ensemble de cornes impressionnantes qui sortent de leur crâne. Grâce à elles, ils sont capables d'encorner les chevaliers en armure, et même l'équipage d'un char à vapeur impérial ne serait pas en mesure de résister à leur forme brutale et acérée. Les cornes sont les atouts maîtres dans les confrontations pour la domination entre les plus grands rhinox d'un troupeau. Malgré leur peau épaisse et leur fourrure dense, ces combats se soldent souvent par la mort d'un des deux adversaires, le perdant faisant office de festin pour célébrer la victoire du nouveau patriarche.
-
-Les différentes tribus d'ogres interagissent avec les rhinox de plusieurs manières. Certaines se contentent de les chasser, généralement en groupe, pour leur chair et leur fourrure. D'autres s'en prennent aux rhinox affaiblis par un duel et profitent de leur vulnérabilité pour les apprivoiser et en faire des montures. Certaines tribus perpétuent des rituels plus anciens au cours desquels de jeunes ogres emmènent les petits des rhinox au sommet de montagnes imposantes. Le but de ce rite est de prouver la valeur du jeune ogre, qui doit affronter le froid de la montagne et revenir sans avoir dévoré son rhinox. Il arrive que certains d'entre eux se régalent de la créature après leur retour, mais d'autres ogres choisissent de garder leur compagnon et renforcent souvent leur lien avec l'animal en grandissant.
-
-Les rhinox sauvages sont extrêmement dangereux pour les voyageurs qui empruntent les Montagnes des Larmes, leur mauvaise vue étant largement compensée par un odorat et une ouïe hors du commun. Plus d'une fois, la disparition d'un convoi a été attribuée à l'attaque d'un ogre alors que celle-ci avait simplement croisé le chemin d'un ou deux rhinox en colère.
-
-Chaque fois qu'un ogre peut apprendre la Compétence Chevaucher (Cheval), il est préférable d'opter pour Chevaucher (Rhinox). Les chevaux ne sont pas des montures adaptées aux ogres, qui les apprécient plutôt dans leur assiette.
-
-*« Les rhinox ? On les sent bien avant de les voir et encore plus longtemps une fois qu'ils sont partis. J'ai entendu dire qu'il y en avait un au zoo d'Altdorf, tout le monde dit que c'est une abomination. Enfin, on ne peut pas leur reprocher de vouloir se faire un peu d'argent. Quoi qu'il en soit, si vous devez vous battre contre eux un jour, faites comme moi : fuyez. À moins d'avoir un ogre sous la main. Il courrait droit vers la confrontation au lieu de fuir. Les rhinox sont stupides, mais ils s'entendent bien avec les ogres. Qui se ressemble s'assemble, comme on dit. Enfin, tout va bien jusqu'à ce que l'un des deux ait faim. Mais dans tous les cas, le problème sera résolu. »*
-
-— Herbert Toadsmugel, sergent mercenaire, Blitztruppen de Baumann
-
-
-<span id="page-36-0" data-folio="35"></span>
-
-## **MANGEUR D'HOMMES**
-
-Ogre
-
-Les mangeurs d'hommes sont les ogres les plus communs de l'Empire. Ces guerriers errants laissent leur tribu derrière eux pour parcourir le Vieux Monde à la recherche de nouveaux ennemis à combattre et de nourriture à manger (les deux vont souvent de pair). Les mangeurs d'hommes tirent leur nom de Golgfag Mange'homme, l'un des mercenaires ogres les plus tristement célèbres de ces dernières années. Ils sont particulièrement appréciés par les commandants qui peuvent se permettre de les nourrir, car les ogres font d'excellentes troupes de choc. Il est toutefois coûteux de satisfaire longtemps un ogre oisif : c'est pourquoi le simple fait de rassembler une force de Mangeurs d'hommes devrait aller de pair avec une accélération du conflit.
-
-Comme tous les ogres, les mangeurs d'hommes ont tendance à adopter les aspects des coutumes locales qui leur plaisent le plus. Leur apparence et leur armement varient donc considérablement. Ils conservent toujours leur massue et leur pansière bien-aimées, mais leur apparence est propre à chaque ogre et varie largement.
-
-*« Pendant trois mois, nous avons tenu cette fichue forteresse contre tout ce que le Duc pouvait nous envoyer : sa milice levée partout sur son domaine, les lanciers tiléens, et même son propre garde du corps. Nous avons tenu bon contre tout le monde. Puis ces maudits ogres sont arrivés. On raconte qu'ils lui ont coûté la moitié de sa fortune. Nous avions déjà du mal à trouver quoi que ce soit à nous mettre sous la dent, mais lorsque les ogres se sont alignés pour attaquer les murs, ils avaient l'air véritablement affamés. Le capitaine s'est rendu ce soir-là. Nous n'étions plus très nombreux et avec le bruit des os qui craquent en provenance de l'extérieur du château, nous n'avions pas d'autre choix. »*
-
-— Sergent Emanuelle Gant, après le siège de Rockschull
-
-Les mangeurs d'hommes passent souvent des années loin de leur foyer dans les Montagnes des Larmes, mais la plupart d'entre eux finissent par revenir pour raconter leurs exploits. Quelques-uns se lancent dans une vie d'errance sans fin, car ils apprécient les nouvelles saveurs et les défis liés à une telle existence. Tous adorent être payés pour accomplir une tâche dont ils s'acquitteraient probablement gratuitement : repousser leurs ennemis tout en dévorant ceux qu'ils attrapent.
-
-#### **Schéma de progression du Mangeur d'hommes**
-
-| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
-|----|----|---|---|---|----|-----|-----|----|-----|
-| h  |    | h | h |   |    |     |     |    |     |
-
-## **Évolution de Carrière**
-
-h **Chair fraîche — Bronze 3**
-
-**Compétences :** Athlétisme, Calme, *Corps à corps (Base)*, Esquive, Intimidation, Langue (Bataille), Pari, Résistance, Résistance à l'alcool, Survie en extérieur
-
-**Talents :** Combat déloyal, Costaud, Infatigable, Menaçant **Possessions :** dague, gros morceau de viande, envie de voyager
-
-#### **Mangeur d'hommes — Argent 1**
-
-**Compétences :** Corps à corps (Bagarre), Corps à corps (Deuxmains), Divertissement (Beuglement), Projectiles (Poudre noire), Ragot, Savoir (Région)
-
-**Talents :** Coup puissant, Rechargement rapide, Savoir-vivre (Minus), Voyageur aguerri
-
-**Possessions :** pansière, vêtements locaux, arme à deux mains ou pistolet ogre
-
-#### **Broyeur d'hommes — Argent 3**
-
-**Compétences :** Chevaucher (Rhinox), Commandement, Corps à corps (au choix), Intuition
-
-**Talents :** Combat instinctif, Dur à Cuire, Effrayant, Tir précis **Possessions :** unité de mercenaires, respect
-
-#### **Capitaine mangeur d'hommes — Argent 5**
-
-**Compétences :** Langue (au choix), Projectiles (au choix) **Talents :** Assaut féroce, Frappe réactive, Maîtrise du combat,
-
-Seigneur de guerre **Possessions :** pansière éprouvée au combat, contrat de mercenaire
-
-
-<span id="page-37-0" data-folio="36"></span>Les gardiens de troupeaux de rhinox sont les rares ogres qui parviennent à penser à leur avenir, tout en se remplissant la panse sur le moment. Lorsqu'ils sont en possession de quelques rhinox, la plupart des ogres estiment qu'ils doivent immédiatement se mettre quelque chose sous la dent. Les gardiens de troupeaux, quant à eux, préfèrent préserver une partie de leurs rhinox au lieu de les dévorer sur place. Leurs tâches comprennent l'élevage et le soin aux animaux, ainsi que la lutte contre les autres ogres s'approchant un peu trop près des enclos ou des pâturages en quête de leur prochain repas. Ils négocient de beaux mâles pour la reproduction et sont toujours à la recherche de nouvelles bêtes à intégrer à leur troupeau.
-
-Dans les Montagnes des Larmes, leurs talents rendent les gardiens de troupeau indispensables, car les bêtes qu'ils élèvent sont utilisées pour le travail et la guerre, en plus de servir de nourriture. Ce poste est extrêmement convoité, car il est accordé uniquement aux ogres se montrant capables de capturer, d'élever et d'entretenir ces bêtes, en plus de maîtriser leur propre appétit.
-
-**Schéma de progression du Gardien de troupeaux de rhinox**
-
-| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
-|----|----|---|---|---|----|-----|-----|----|-----|
-|    | h  | h | h |   |    |     |     |    |     |
-
-## **Évolution de Carrière**
-
-#### h **Voleur de rhinox — Argent 1**
-
-**Compétences :** Athlétisme, Corps à corps (Base), Discrétion (Rurale), Esquive, Perception, Piégeage, *Projectiles (Entraves)*, Résistance, Résistance à l'alcool, Subornation
-
-**Talents :** Bon marcheur (Montagnes), Fuite !, Nomade, Tireur de précision
-
-**Possessions :** sac à dos, arme simple, lasso, veste de cuir
-
-#### **Gardien de troupeaux de rhinox — Argent 3**
-
-**Compétences :** Dressage (Rhinox), Emprise sur les animaux, Pistage, Projectiles (Lancer), Savoir (Rhinox), Soin aux animaux
-
-**Talents :** Cavalier émérite, Cœur vaillant, Costaud, Sans peur (Grandes bêtes)
-
-**Possessions :** harpon ou grande lance de jet, fourrures de rhinox
-
-#### **Dompteur de rhinox — Argent 5**
-
-**Compétences :** Calme, Chevaucher (Rhinox), Intimidation, Survie en extérieur
-
-**Talents :** Acrobaties équestres, Déterminé, Distraire, Voyageur aguerri
-
-**Possessions :** rhinox, pansière avec un crâne de rhinox, fontes de selle
-
-#### **Maître des rhinox — Or 1**
-
-**Compétences :** Commandement, Intuition
-
-**Talents :** Effrayant, Exaltant, Frappe blessante, Noctambule **Possessions :** ferme ou droits de pâturage sur un grand domaine, troupeau de rhinox ou d'autres grandes bêtes
-
-*« Oh, ce sont de belles bêtes. Certes, ils empestent jusqu'aux cieux, leurs poils sont semblables à des ronces, et ne me lancez pas sur leurs déjections. Mais ce sont tout de même de beaux spécimens. Argruk s'est occupée de son dernier rhinox jour et nuit, surtout quand il y avait d'autres ogres dans les parages. Je l'ai vue jeter un type imposant, un de ces mercenaires de Nuln, du haut d'une falaise pour avoir essayé de voler la bête. Pauvre Argruk, c'est la première fois que j'ai vu une ogresse pleurer, elle a fini par dévorer son fidèle compagnon pendant un siège. Elle n'a plus jamais été la même après ça. Depuis, elle arbore son crâne sur sa massue. »*
-
-— Morris Piedmarteau, « Mocheté », cuisinier halfling
-
-Très peu de gardiens de rhinox parviennent jusqu'à l'Empire. Quand c'est le cas, c'est toujours après avoir perdu leur troupeau à cause de la gloutonnerie des tribus qu'ils croisent en cours de route. Certains changent de carrière pour se tourner vers une activité plus recherchée (ils deviennent généralement mercenaires), mais d'autres parviennent à trouver du travail en s'occupant de bêtes moins imposantes. Pourtant, tous se languissent des créatures qu'ils ont autrefois élevées, à la fois par nostalgie de leur foyer et pour le respect que leur conférait leur ancien statut. Ceux qui arrivent à conserver quelques rhinox dans les plaines de l'Empire sont respectés par leurs pairs et très prisés en tant que cavalerie lourde. Par conséquent, ils dorment rarement sur leurs deux oreilles en compagnie d'autres ogres.
-
-
-## <span id="page-38-0" data-folio="37"></span>**BOUCHER OGRE** Ogre
-
-Dans l'histoire des ogres, il fut un temps où le rôle du boucher était tout à fait prosaïque : il concernait seulement la préparation rudimentaire de la viande à la demande du mangeur. Cependant, depuis l'arrivée de la Gueule, cette fonction a pris une dimension inédite au sein de la société ogre. Chez les ogres des Montagnes des Larmes, le statut de boucher se situe quelque part entre celui de prêtre et de mystique. Leur foi est éprouvée dans la préparation de la viande : la pendaison d'une carcasse, la découpe de la chair ou encore le versement du sang sont pour eux ce que la prière et l'encens sont aux shalléens les plus dévots. Même si certains se tournent vers d'autres religions, la Gueule est la seule divinité qui compte vraiment, faisant appel au cœur (ou plutôt aux tripes) de chaque ogre.
-
-**Schéma de progression du boucher ogre**
-
-| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc | étranges rituels des bouchers changent rapidement d'avis. |
-|----|----|---|---|---|----|-----|-----|----|-----|-----------------------------------------------------------|
-| h  |    |   | h |   |    |     |     | h  |     |                                                           |
-
-## **Évolution de Carrière**
-
-h **Faiseur de bouillie — Bronze 3**
-
-**Compétences :** Corps à corps (Base), Escalade, Intimidation, Langue (Magick), *Métier (Boucher)*, Prière, Ragot, Résistance, Résistance à l'alcool, Survie en extérieur
-
-**Talents :** Endurci, Infatigable, Magie mineure, Sixième sens **Possessions :** tablier de boucher, arme simple (couperet ou maillet)
-
-#### **Boucher ogre — Argent 1**
-
-**Compétences :** Art (Boucherie), Focalisation (*Azyr*, *Ghur*  ou *Shyish*), Métier (Cuisine), Projectiles (Lancer), Savoir (La Gueule), Signes secrets (La Gueule)
-
-**Talents :** Harmonisation aethyrique, Magie des Arcanes (Domaine de la Gueule), Sens aiguisé (Goût), Visions sacrées **Possessions :** os d'animaux sculptés (Grimoire), outils professionnels (Boucher)
-
-#### **Sage de la Gueule — Argent 2**
-
-**Compétences :** Divertissement (Discours), Guérison, Intuition, Perception
-
-**Talents :** Coup puissant, Effrayant, Mage de guerre, Seconde vue
-
-**Possessions :** apprenti boucher, sac sanglant contenant 10 ingrédients ésotériques, collection de crânes
-
-#### **Maître massacreur — Argent 4**
-
-**Compétences :** Langue (au choix), Savoir (Magie)
-
-**Talents :** Détection d'artefact, Exaltant, Ferveur ardente,
-
-Perception de la Magie
-
-**Possessions :** grotte ou autre repaire, cultistes loyaux de la Gueule, faim insatiable
-
-*« Écoute, vous les minus, vous avez des bouchers, mais vous connaissez pas nos bouchers. Les vôtres, ils se contentent de découper un morceau de viande et ça s'arrête là. Si tu veux rencontrer un vrai boucher, viens dans les Montagnes et on te préparera un festin que t'es pas prêt d'oublier. Manger de la viande préparée par un vrai boucher, ça change la vie, mon vieux. Ça fait pas disparaître la faim, mais ça montre à quel point la tienne est insignifiante comparée à celle de la Gueule. »*
-
-— Gutrug Quêtegueule, mercenaire, à un camarade humain quelque peu confus
-
-Les bouchers ogres sont choisis dès leur plus jeune âge pour être éveillés aux mystères de la Gueule. Ils gagnent souvent le Grand Nom de Quêtegueule à un moment dans leur vie. Le pouvoir et la faim dévorante de la Gueule coulent dans leurs veines. Grâce à leurs accomplissements, ils rappellent à tous les ogres que le désir de dévorer et de consommer est au cœur de leur nature profonde. Peu d'entre eux quittent les Montagnes des Larmes, mais comme tous les ogres, certains ont envie de voyager. Ils sont très respectés par les autres ogres, qui les considèrent avec un mélange de crainte et d'appréhension. Si la notion de magie ogre est largement perçue comme une plaisanterie par les érudits, ceux qui se familiarisent avec les
-
-
-## [EDO 11] APPENDICE 2 - Nouvelles regles
-
-*Folio 145+*
-
-# APPENDICE 2 : NOUVELLES RÈGLES
-
-L'annexe 2 couvre les nouvelles règles utilisées dans **L'Ennemi Intérieur** et propose des suggestions pour créer vos propres PNJ.
-
-## **PNJ**
-
-De nombreux Personnages non joueurs (PNJ) sont utilisés dans **L'Ennemi dans l'Ombre**, certains majeurs et d'autres mineurs.
-
-Les PNJ majeurs, importants pour l'intrigue principale, sont des Personnages remarquables ou apparaissent plusieurs fois au cours de la campagne, et bénéficient donc d'une description plus détaillée.
-
-Les PNJ mineurs ne sont pas importants pour l'intrigue principale, et sont ainsi moins fouillés. Ils sont supposés avoir toutes les compétences nécessaires pour remplir leur office, même si elles ne sont pas répertoriées : utilisez simplement la caractéristique non modifiée appropriée.
-
-Si un PNJ possède un Trait ou un Talent qui modifie des caractéristiques (comme le Trait Coriace, qui ajoute **+10 E** et **FM**), la modification est déjà incluse, et le Talent ou le Trait est indiqué en italique.
-
-## **Créez le vôtre**
-
-Un moyen simple de créer un PNJ est d'utiliser les statistiques présentées dans le Bestiaire **WFJDR** (ou de les générer au hasard comme d'habitude) et d'attribuer au personnage certaines Carrières. Pour chaque niveau de Carrière que vous souhaitez que le PNJ atteigne, ajoutez +5 à toutes les Compétences et Caractéristiques disponibles, puis ajoutez au moins 1 Talent pour chaque niveau de Carrière terminé. Une fois cela fait, répertoriez simplement les équipements de la Carrière actuelle ainsi que tous les niveaux de Carrière inférieurs, et vous avez terminé !
-
-**Exemple :** *Pour créer rapidement un Doktor humain, diplômé de l'université, prenez l'humain de base (WFJDR page 311) et passez-le aux niveaux de carrière suivants : Étudiant en médecine (Médecin 1), Médecin (Médecin 2), Doktor (Médecin 3). Pour chaque niveau de carrière saisi, ajoutez +5 à chaque caractéristique et compétence disponibles, puis ajoutez un talent. Voici doktor Langstrasse.*
-
-## **Doktor Langstrasse**
-
-Doktor Helga Langstrasse est une femme petite et trapue aux cheveux noirs bouclés réunis en un chignon serré lorsqu'elle travaille. Sa peau olive déjà abîmée par la variole est d'autant plus marquée sur ses joues. Elle possède un accent distinctif ostlander, qui la fait s'arrêter avant les mots qu'elle veut souligner, et rarement utilise 'le' ou 'un' (elle ne dira pas « l'homme était très grand », mais plutôt « homme était gros »). Les inflexions orientales font penser qu'elle est originaire de Kislev.
-
-| HELGA LANGSTRASSE - DOKTOR HUMAIN (ARGENT 5) |         |    |    |    |    |    |    |    |                   |    |    |
-|----------------------------------------------|---------|----|----|----|----|----|----|----|-------------------|----|----|
-|                                              | M CC CT |    | F  | E  | I  |    |    |    | Ag Dex Int FM Soc |    | B  |
-| 4                                            | 30      | 30 | 30 | 45 | 40 | 30 | 30 | 45 | 45                | 35 | 15 |
-
-**Compétences :** Charme 45, Calme 55, Commandement 40, Conduite d'attelage 40, Divertissement (Narration) 40, Escamotage 40, Guérison 55, Intimidation 35, Langue (Classique) 50, Langue (Guilde) 55, Marchandage 50, Métier (Barbier) 40, Pari 50, Perception 50, Savoir (Anatomie) 55, Savoir (Médecine) 60, Subornation 45, Ragot 50, Recherche 55, Résistance 55, Résistance à l'alcool 55
-
-**Talents :** Chirurgie, Lire/Écrire, Pansements de fortune, Résistance (Maladie)
-
-**Traits :** Arme (Scie à os) +7, Préjugé (Gueux)
-
-**Possessions :** apprenti (Fanna Geshenkle), bandages, livre (Médecine), licence de Guilde, potion de guérison, outils
-
-professionnels (Médecine), salle d'opération
-
-#### **L'argent des PNJ**
-
-La plupart des personnages de l'Empire utilisent des pièces de monnaie. Pour déterminer au hasard ce que possède un PNJ, faites un jet de Gagner de l'argent en utilisant le Statut du Personnage, comme indiqué dans **WFJDR**, page 51. Les PNJ ayant de l'argent indiqué dans leur équipement ignorent cette option.
-
-**Exemple :** *Helga Langstrasse, le Doktor, a un Statut Argent 5, elle possède donc 5d10 pièces d'argent.*
-
-## **Les accents de l'Empire**
-
-Les accents des PNJ de la campagne de **L'Ennemi Intérieur** sont normalement signalés dans leurs descriptions pour vous aider à les interpréter, généralement comme suit « un accent des classes inférieures du Reikland » ou « un indubitable accent d'Altdorf ». Mais qu'est-ce que tout cela signifie lorsque vous jouez le rôle de ces Personnages ?
-
-> En fin de compte, c'est à vous de décider. Un MJ de Londres considérera les accents de l'Empire très différemment d'un MJ de Berlin, ou de New York, Mumbai ou Melbourne, il est donc inutile que nous vous disions : « tous les accents d'Altdorf sont identiques aux accents de Londres », cela pourrait vous sembler absurde, car cela devrait sûrement être un accent berlinois, ou parisien, etc.
-
-Donc, en supposant que vous aimiez imiter différents accents, c'est à vous de décider à quoi ressemble celui d'une personne originaire du Middenland dans vos parties, ou 
-
-<span id="page-144-0" data-folio="145"></span>
-du Stirland, ou du Nordland. Attribuez les accents que vous préférez à chacune des provinces et des grandes villes, et vous êtes prêt à jouer. Si vous cherchez des directives sur la façon de procéder, consultez le tableau ci-après, qui n'est proposé qu'à titre indicatif.
-
-| Accents     | Comment choisir son accent                                 |  |  |  |
-|-------------|------------------------------------------------------------|--|--|--|
-| Villes      |                                                            |  |  |  |
-| Altdorf     | Accent de votre capitale                                   |  |  |  |
-| Talabheim   | Accent d'une capitale voisine ou ville<br>importante       |  |  |  |
-| Middenheim  | Accent d'une ville de province                             |  |  |  |
-| Nuln        | Comme Altdorf, mais avec une forte<br>inflexion montante   |  |  |  |
-| Provinces   |                                                            |  |  |  |
-| Averland    | Tonalités chantantes                                       |  |  |  |
-| Hochland    | Rustique avec des expressions familières                   |  |  |  |
-| Middenland  | Dur et direct                                              |  |  |  |
-| Mootland    | Accent rural prononcé                                      |  |  |  |
-| Nordland    | Agressif et passionné                                      |  |  |  |
-| Ostland     | Utilise des pauses pour souligner des points<br>importants |  |  |  |
-| Ostermark   | Accent théâtral prononcé                                   |  |  |  |
-| Reikland    | Votre accent                                               |  |  |  |
-| Stirland    | Rural et sophistiqué                                       |  |  |  |
-| Sudenland   | Comme au Reikland, mais plus monotone                      |  |  |  |
-| Sylvanie    | Accent vampirique classique                                |  |  |  |
-| Talabecland | Accent de la banlieue de Talabheim                         |  |  |  |
-| Wissenland  | Monotone avec une inflexion montante                       |  |  |  |
-
-## **PORTES ET SERRURES**
-
-Beaucoup de portes verrouillées cachent de sombres secrets dans l'Empire, et les Personnages sont susceptibles d'en fracturer quelques-unes.
-
-## **Serrures**
-
-Comme mentionné à la page 121 du **Livre de Règles**, tous les verrous ont une Difficulté et un DR cible pour être crocheté. Présenté comme D pour Difficulté, avec le modificateur, et DR pour le DR cible. Ainsi, un verrou Accessible (+20) nécessitant 0 DR pour être crocheté est noté comme suit (D +20, DR 0).
-
-## **Portes**
-
-Le fait de briser une porte, une fenêtre ou toute autre chose est résolu en utilisant le Bonus d'Endurance et les Blessures de l'objet, présentés comme **BE** et **B**. Ainsi, un objet avec un Bonus d'Endurance de 4 et 10 Blessures est signalé comme (BE 4, B 10).
-
-Tout Personnage cherchant à enfoncer une porte doit effectuer un Test de Corps à corps (Bagarre) ou un Test de Corps à corps en utilisant une arme appropriée telle qu'une hache ou un marteau. Le DR obtenu est ajouté au Bonus de Force du Personnage, et le total constitue les dégâts infligés à la porte. Si une arme a été utilisée, vous ne pouvez ajouter que la moitié des dégâts de l'arme.
-
-Lorsque vous attaquez des objets inanimés, vous ne causez pas au moins 1 Blessure (comme décrit dans 4 : Appliquer des dégâts dans **WFJDR**, page 159) : certains objets sont tout simplement trop résistants pour être endommagés.
-
-**Exemple :** *Gerhardt poursuit un cultiste, qui fonce vers la cave et claque la porte derrière lui. Gerhardt jure en l'entendant verrouiller la porte en riant. Réalisant que la rapière et la main gauche qu'il porte ne sont pas d'une grande utilité contre une porte solide, il recule de deux pas, se raidit et charge avec son épaule. Pendant qu'il utilise son corps, le joueur de Gerhardt fait un Test de Corps à Corps (Bagarre) contre sa Compétence de 46. Il obtient 63 pour -2 DR. En ajoutant son Bonus de Force de 4, Gerhardt a un total de 2. Malheureusement, c'est inférieur au Bonus d'Endurance de la porte de 4, donc Gehardt rebondit, se blessant plus lui-même que la porte. Jurant à nouveau en se frottant l'épaule, il part à la recherche d'une arme ou d'un outil approprié pour l'enfoncer.* 
-
-#### **Tout regrouper**
-
-Une porte solide avec un Bonus d'Endurance de 6 et 15 Blessures, sécurisée par une serrure bien montée qui est **Complexe (−10)** à crocheter et nécessite **2 DR** à contourner, est abrégée dans **L'Ennemi Intérieur** comme ceci : (D -10, DR 2 ; FT 6, B 15).
-
-## **MALADIE ET INFECTION**
-
-Cette section ajoute une nouvelle maladie et quelques symptômes supplémentaires pour faciliter vos créations personnelles.
-
-## **Litanie de la Pestilence**
-
-#### **La fièvre cérébrale pourpre**
-
-La fièvre cérébrale pourpre est une maladie redoutée. La tête gonfle jusqu'à atteindre une taille impressionnante et s'accompagne de fièvres et de délires. Le visage prend une couleur prune effrayante, les yeux sortent de leurs orbites et la langue gonfle jusqu'à ce que la bouche ne puisse plus la contenir. La mort survient généralement au bout d'une semaine.
-
-**Contraction :** si vous échouez à un Test d'**Endurance Accessible (+20)** lors d'un contact physique avec un individu infecté (à raison de 1 Test par heure d'exposition).
-
-**Incubation :** 1d10 heures.
-
-**Durée :** 1d10 jours.
-
-**Symptômes :** Convulsions, Délire, Fièvre (Grave), Gonflement (Visage et tête), Persistant (Difficile), Toxine.
-
-## **Symptômes**
-
-Ces deux nouveaux symptômes peuvent être ajoutés à n'importe quelle maladie que vous désirez créer.
-
-#### **Délire**
-
-Votre raison bascule, avec des moments de clarté remplacés soudain par des accès de délire, d'hallucinations et de terreur. Faites un Test de **Force Mentale Intermédiaire (+0)** toutes les heures et consultez le tableau suivant.
-
-<span id="page-145-0" data-folio="146"></span>
-| 1d10 | Effet                                                                                                                                                                                                                                                           |
-|------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1-2  | Épisode lucide : vous vivez une période de calme<br>reposant. Tous les États que vous avez précédemment<br>acquis à cause de votre délire sont supprimés.                                                                                                       |
-| 3-5  | Sommeil agité : vous vous tournez et vous retournez,<br>endormi mais pas reposé. Vous gagnez 1 État<br>Inconscient pendant l'heure suivante et 1 État Exténué<br>pendant les 1d10 heures suivantes.                                                             |
-| 6-9  | Confusion<br>: en proie à des visions étranges et<br>déformées, vous gagnez un État Sonné pendant<br>l'heure qui suit.                                                                                                                                          |
-| 10   | Hallucinations : vous êtes en proie à des visions<br>étranges et terrifiantes, et vous devez faire un Test<br>contre Terreur 3 toutes les 10 minutes pendant l'heure<br>suivante. Vous gagnez également +1 à l'État Sonné<br>pendant les 1d10 heures suivantes. |
-
-**Traitement :** certaines sommités médicales traitent le délire comme une fièvre, prescrivant les mêmes soins. Les remèdes coûtent de quelques sous de cuivre à quelques pistoles d'argent, et 10 % sont authentiques. Avec le bon médicament, un Test de **Guérison Intermédiaire (+0)** réussi bannit les hallucinations pendant 1d10 heures.
-
-Il est également courant de calmer les patients délirants avec un tranquillisant, tel que la fleur de lune ou même le lotus noir, pour les soulager jusqu'à ce que la maladie soit passée, les plongeant dans un sommeil agité jusqu'à ce qu'ils récupèrent ou en meurent.
-
-#### **Gonflement**
-
-Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au rouge ou au violacé et devenant presque inutilisable. La partie du corps affectée est normalement l'emplacement d'une plaie ou d'une morsure provoquant cette réaction, ou le point où une maladie ou une infection est entrée en contact avec le corps.
-
-**Traitement :** la plupart des traitements consistent à plonger la partie infectée, ou parfois tout le corps, dans un bain d'eau glacée pour réduire la chaleur qui accompagne les gonflements. Un Test étendu de **Guérison Difficile (-20)** nécessitant +3 DR et réduit le gonflement de 2d10 heures. Chaque Test dure une heure. Le patient se retrouve avec un État *Exténué* +1 pour chaque Test effectué au cours du processus.
-
-Certains médecins saignent plutôt le patient avec une lame ou des sangsues. Un Test étendu de **Guérison** prolongé réussi nécessitant +4 DR et des outils professionnels (médecin) réduit le gonflement de (1d10 + le Bonus d'Endurance du patient) heures. Chaque Test a une Difficulté de base Impossible (-50) et dure une demi-heure.
-
-| Localisation | Effet                                                                                                                                                                                                                                                                                   |
-|--------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Tête         | Les yeux et la langue gonflent, les joues deviennent<br>violettes, la mâchoire s'ouvre involontairement.<br>Manger est impossible, mais les liquides peu épais<br>peuvent être sirotés en petites quantités. Tous les<br>Tests nécessitant la parole sont 3 niveaux plus<br>difficiles. |
-| Bras         | Le bras et la main gonflent, les articulations de<br>l'épaule et du coude ne peuvent plus bouger et la<br>main devient inutile. Pour la durée du gonflement,<br>le bras est considéré comme amputé (WFJDR, page<br>180).                                                                |
-| Corps        | Tout le corps gonfle jusqu'à ce que la victime ne<br>puisse plus porter de vêtements. Tous les Tests<br>impliquant un mouvement deviennent 3 niveaux plus<br>difficiles.                                                                                                                |
-| Jambe        | La jambe gonfle de façon grotesque, devenant aussi<br>grosse que la partie la plus large de la cuisse et sur<br>toute sa longueur. Le pied est presque impossible<br>à discerner. Pour la durée du gonflement, la jambe<br>est considérée comme amputée (WFJDR, page 180).              |
-
-#### OPTIONS : MAIS C'EST IMPOSSIBLE !
-
-La campagne de **L'Ennemi Intérieur** propose des situations particulièrement complexes. Pour tenir compte de cela, il utilise deux niveaux supplémentaires de Difficulté allant au-delà de celles présentées dans **WFJDR** : elles doivent être ajoutées au Tableau de difficulté dans **WFJDR**, page 153. Cela signifie également que -50 est désormais la pénalité maximale lors de la combinaison de Difficultés, comme expliqué sur page 162 du **Livre de Règles**. Si vous utilisez ces règles facultatives, il est recommandé de se servir également des règles d'Échec et de Réussite automatiques à la page 150 de **WFJDR**. Cela garantit qu'un jet de 01-05 remportera toujours un succès avec +0 DR, même si le modificateur du jet devrait réduire les chances de réussite en dessous de 01-05.
-
-| Difficulté         | Modificateur du Test |  |  |  |
-|--------------------|----------------------|--|--|--|
-| Presque Impossible | −40                  |  |  |  |
-| Impossible         | −50                  |  |  |  |
-
-Si vous ne souhaitez pas utiliser ces Difficultés extrêmes, remplacez simplement Presque Impossible (−40) et Impossible (−50) dans ce livre par Très Difficile (−30).
-
-<span id="page-146-0" data-folio="147"></span>
-Cette Difficulté est réduite d'1 niveau pour chaque Blessure subie par le patient avant que le Test ne soit effectué. Ainsi, si un patient subit 5 Blessures, le Test est Intermédiaire (+0).
-
-Quelques guérisseurs utilisent des cataplasmes cicatrisants pour réduire le gonflement, surtout s'il y a une plaie visible sur laquelle ils peuvent être appliqués. Un Test étendu de **Guérison Complexe (-10)** réussi, nécessitant +5 DR et un cataplasme de guérison par Test, réduit le gonflement de (2d10 + le Bonus d'Endurance du patient) heures. Chaque Test dure 10 minutes.
-
-## **NOUVEAUX TRAITS DE CRÉATURES**
-
-Voici la liste de tous les nouveaux Traits et mutations, utilisés dans l'Ennemi dans l'Ombre.
-
-## **Mutations**
-
-## **Chair nécrosée**
-
-Cela a commencé par un picotement. Puis une démangeaison irrésistible. Incapable de vous arrêter, vous avez gratté encore et encore jusqu'à ce que votre chair se corrompe sous vos agressions.
-
-Maintenant, votre épiderme pourrit et se régénère constamment, tombant en longues bandes et révélant des plaques suintantes, sanguinolentes et purulentes à la place de la peau et des cheveux.
-
-Gagnez le Trait Peur 3, et - 20 Sociabilité.
-
-#### **Crétin**
-
-Vous vous souvenez peu de ce qui s'est passé. Une douleur aveuglante. Des larmes. De la Peur. Et pire encore, ce lent écoulement : il n'y avait tout simplement plus de place dans votre tête pour qui vous étiez autrefois. Maintenant, elle n'est pas plus grosse qu'une pomme, et vous ne comprenez pas vraiment ce qu'est une tête. Ou une pomme d'ailleurs.
-
-Perdez 40 Intelligence, jusqu'à un minimum de 10. Gagnez le Trait de créature Stupide.
-
-## **Écailles épineuses**
-
-Vous ressentez des brûlures sous votre chair alors que des cloques se forment puis éclatent, se décollant une à une, comme brûlées par le soleil. Plutôt que de la chair à vif et rougie, votre nouvelle peau se révèle sous forme d'écailles dures, dont la sensibilité et la flexibilité sont considérablement réduites, mais devient beaucoup plus résistante.
-
-Perdez 10 de Dextérité et de Sociabilité. Gagnez +1 PA sur tous les emplacements. Ce PA ne peut pas être utilisé pour la Déviation Critique.
-
-## **Pattes (Chèvre)**
-
-Vos os grincent, provoquant une intense douleur, craquant de manière audible alors qu'ils se tordent et se déplacent, pendant que des poils rêches jaillissent de votre peau.
-
-Au cours des prochains jours, vos orteils s'atrophient lentement et finissent par tomber tandis que des sabots fendus sortent de vos pieds.
-
-Vos jambes ressemblent maintenant aux pattes postérieures d'une chèvre, avec le genou articulé vers l'arrière. Bien que vous puissiez le cacher avec des vêtements suffisamment amples, votre démarche n'est visiblement pas naturelle. Gagnez +1 Mouvement.
-
-#### **Tête bestiale (Chien)**
-
-Vous ressentez une envie irrésistible de tomber à genoux et de hurler. Votre mâchoire est forcée à son extension maximale, vous commencez à vous étouffer de manière incontrôlable alors qu'un museau à l'épaisse fourrure se fraie un chemin à travers votre visage. Votre nez, vos lèvres et vos dents d'humain se détachent, reliques de votre ancienne existence, remplacées par la gueule hurlante d'un chien.
-
-Perdez 20 Sociabilité et 10 Intelligence. Obtenez le Talent Sens aiguisé (Odorat) et le Trait Morsure +5.
-
-#### **Tête pointue**
-
-Un nouvel os se forme sous votre cuir chevelu et jaillit du sommet de votre tête dans des éclaboussures humides de sang, de peau et de cheveux. Votre nouveau crâne pointu, qui a la couleur d'un ongle infecté, est exposé en permanence là où il émerge de votre cuir chevelu déchiré.
-
-Perdez 5 Intelligence et 10 Sociabilité. Gagnez +1 Point d'Armure à la localisation : Tête. Les couvre-chefs ne conviennent que s'ils sont spécialement conçus pour vous, bien que vous portiez avec aisance les chapeaux en forme de cône.
-
-## **Traits de créature**
-
-#### **Absorption**
-
-À la fin du Round, si la créature a un Avantage plus élevé que tous les adversaires engagés, elle absorbe un adversaire de taille égale ou inférieure. Une victime absorbée gagne un nombre d'États *Empêtré* égal au Bonus de Force de la créature et compte comme étant Empoigné. Une victime absorbée perd le Bonus de Force de la créature en Blessures à la fin de chaque tour ; les Points d'Armure, ou le Bonus d'Endurance, ne réduisent pas cette perte. Le même nombre de Blessures est « guéri » par la créature. Si une victime absorbée est tuée, la créature se retire pour digérer le cadavre durant les jours qui suivent. Toute attaque qui touche la créature inflige une quantité égale de Dégâts à la victime absorbée.
-
-## **Amorphe**
-
-La créature est un blob amorphe. Il divise par deux toutes les Blessures subies par des dégâts autres que le feu, le froid ou la magie. Il ignore toutes les Blessures critiques et ne peut être détruit qu'en étant réduit à 0 Blessure par le froid extrême, le feu ou la magie. S'il est réduit à 0 Blessure par d'autres moyens, il tombe en torpeur pendant 1d10 Rounds, puis régénère +1 Blessure. Les créatures amorphes évitent les sources intense de chaleur ou de froid.
-
-## **Contagieux (Type)**
-
-La créature héberge la maladie indiquée, et elle peut la transmettre au toucher. Dans ce cas, la victime doit tester s'il y a Contraction, mais le Test est de 2 niveaux plus difficile que la normale. Si la maladie est contractée, son incubation est changée en « Instantanée ».
-
-<span id="page-147-0" data-folio="148"></span>
-#### **Décérébré**
-
-La créature est stupide, ne vivant qu'en suivant ses bas instincts ou par compulsion magique. Elle n'a pas d'Initiative, d'Intelligence, de Force Mentale ou de Sociabilité et n'a jamais besoin de les Tester. Pour le calcul des Blessures, on utilise son Bonus de Force chaque fois que le Bonus de Force Mentale est requis. Comme elle n'a pas d'Initiative, elle joue toujours en dernier dans n'importe quel tour.
-
-## **Dédoublement**
-
-Si la créature subit une Blessure Critique, ou perd toutes ses Blessures, elle est remplacée par deux horreurs bleues de mauvaise humeur qui se libèrent de la créature d'origine dans un tourbillon d'énergies magiques enivrantes, et ne sont pas blessées.
-
-## **Voleur de chair**
-
-La créature, qui doit avoir le Trait Démoniaque, peut se glisser dans le corps de n'importe quel humain qu'elle tue. De plus, elle peut parfaitement incarner ce Personnage, et elle est capable d'imiter les voix et les manies grâce à une capacité étrange. La préparation de la chair prend 1d10 Rounds, après quoi elle peut être portée ou retirée à volonté, ce qui prend 1 Round. Une fois préparée, la chair ne pourrit que si la créature meurt, mais elle peut être endommagée par des moyens normaux. Si la créature le souhaite, elle peut sortir d'un costume de chair porté d'une manière horrible, conférant le Trait Terreur 1 pour 1 Round, mais détruisant aussi la matière, ce qui signifie qu'il ne peut plus être utilisé. Ceux qui connaissent le Personnage imité peuvent tenter un Test d'**Intuition Presque Impossible (-40)** pour détecter qu'il y a quelque
-
-chose qui ne va pas, bien qu'ils ne sachent pas exactement quoi.
-
-## ANNEAU D'OPSIANON
-
-Gideon porte une bague en or sertie d'une pierre d'obsidienne noire à facettes.
-
-L'anneau aurait été forgé il y a près de trois cents ans, plusieurs décennies avant la fondation des Collèges de Magie. Son créateur, Kurtis Krammovic, souhaitait dissimuler sa nature magique aux personnes qui ne portaient pas les sorciers dans leur cœur en ces temps sombres. La Haute Astromancienne Filonia Perls de l'Ordre bleu l'a acquis en 2498 CI, lors d'une vente aux enchères privée d'artefacts magiques à Marienburg.
-
-La bague lui a été volée par Teugen il y a cinq ans. Gideon a affirmé en avoir besoin pour stabiliser sa forme physique lorsqu'il ne se trouve pas dans une peau volée. De
-
-> plus, l'anneau était nécessaire pour accomplir le rituel qui « sauverait l'âme de Teugen ». Perls, une Sorcière de la cour qui lit l'avenir des nobles importants d'Altdorf, veut la récupérer et offre une récompense de 10 CO pour son retour.
-
-#### RÈGLES
-
-Tout démon portant l'anneau peut ignorer le Trait de créature Instable et ne peut pas être détecté par le Talent Seconde vue. De plus, comme la magie du démon ne peut pas être détectée par Seconde vue avant d'être lancée, ses sorts ne peuvent pas être dissipés par d'autres Personnages.
-
-Les mortels portant l'anneau gagnent à la place tous les effets du sort Aura ordinaire.
-
-Malheureusement, comme l'anneau est maintenant, et depuis de nombreuses années, imprégné des énergies démoniaques de Gideon, il est dangereux. Pour chaque mois pendant lequel il est porté par un mortel, un Test de **Résistance** à une exposition mineure à la Corruption doit être effectué. Cette souillure ne peut être supprimée que par de rares rituels et sorts de du Domaine de la Lumière.
-
-<span id="page-148-0" data-folio="149"></span>
+<span id="page-163-0" data-folio="160"></span>
 
 
 ## [EDOC 7] Chapitre 4 - Montures et vehicules
@@ -8081,6 +9741,275 @@ La lettre qui suit le chiffre indique la qualité du soldat. **a**=soldats corre
 | 96-00 | Vous êtes au courant ? Une bande de puînés et de gaspilleurs déshérités se préparent pour un voyage<br>vers les Principautés frontalières. On dit qu'ils remplissent à ras-bord leurs chariots de marchandises.                                                                                                                                                            | Armement, Vivres,<br>Produits de luxe, Bois,<br>Vin ou Eau-de-vie, Laine |
 
 <span id="page-78-0" data-folio="79"></span>
+
+
+## [EDO 11] APPENDICE 2 - Nouvelles regles
+
+*Folio 145+*
+
+# APPENDICE 2 : NOUVELLES RÈGLES
+
+L'annexe 2 couvre les nouvelles règles utilisées dans **L'Ennemi Intérieur** et propose des suggestions pour créer vos propres PNJ.
+
+## **PNJ**
+
+De nombreux Personnages non joueurs (PNJ) sont utilisés dans **L'Ennemi dans l'Ombre**, certains majeurs et d'autres mineurs.
+
+Les PNJ majeurs, importants pour l'intrigue principale, sont des Personnages remarquables ou apparaissent plusieurs fois au cours de la campagne, et bénéficient donc d'une description plus détaillée.
+
+Les PNJ mineurs ne sont pas importants pour l'intrigue principale, et sont ainsi moins fouillés. Ils sont supposés avoir toutes les compétences nécessaires pour remplir leur office, même si elles ne sont pas répertoriées : utilisez simplement la caractéristique non modifiée appropriée.
+
+Si un PNJ possède un Trait ou un Talent qui modifie des caractéristiques (comme le Trait Coriace, qui ajoute **+10 E** et **FM**), la modification est déjà incluse, et le Talent ou le Trait est indiqué en italique.
+
+## **Créez le vôtre**
+
+Un moyen simple de créer un PNJ est d'utiliser les statistiques présentées dans le Bestiaire **WFJDR** (ou de les générer au hasard comme d'habitude) et d'attribuer au personnage certaines Carrières. Pour chaque niveau de Carrière que vous souhaitez que le PNJ atteigne, ajoutez +5 à toutes les Compétences et Caractéristiques disponibles, puis ajoutez au moins 1 Talent pour chaque niveau de Carrière terminé. Une fois cela fait, répertoriez simplement les équipements de la Carrière actuelle ainsi que tous les niveaux de Carrière inférieurs, et vous avez terminé !
+
+**Exemple :** *Pour créer rapidement un Doktor humain, diplômé de l'université, prenez l'humain de base (WFJDR page 311) et passez-le aux niveaux de carrière suivants : Étudiant en médecine (Médecin 1), Médecin (Médecin 2), Doktor (Médecin 3). Pour chaque niveau de carrière saisi, ajoutez +5 à chaque caractéristique et compétence disponibles, puis ajoutez un talent. Voici doktor Langstrasse.*
+
+## **Doktor Langstrasse**
+
+Doktor Helga Langstrasse est une femme petite et trapue aux cheveux noirs bouclés réunis en un chignon serré lorsqu'elle travaille. Sa peau olive déjà abîmée par la variole est d'autant plus marquée sur ses joues. Elle possède un accent distinctif ostlander, qui la fait s'arrêter avant les mots qu'elle veut souligner, et rarement utilise 'le' ou 'un' (elle ne dira pas « l'homme était très grand », mais plutôt « homme était gros »). Les inflexions orientales font penser qu'elle est originaire de Kislev.
+
+| HELGA LANGSTRASSE - DOKTOR HUMAIN (ARGENT 5) |         |    |    |    |    |    |    |    |                   |    |    |
+|----------------------------------------------|---------|----|----|----|----|----|----|----|-------------------|----|----|
+|                                              | M CC CT |    | F  | E  | I  |    |    |    | Ag Dex Int FM Soc |    | B  |
+| 4                                            | 30      | 30 | 30 | 45 | 40 | 30 | 30 | 45 | 45                | 35 | 15 |
+
+**Compétences :** Charme 45, Calme 55, Commandement 40, Conduite d'attelage 40, Divertissement (Narration) 40, Escamotage 40, Guérison 55, Intimidation 35, Langue (Classique) 50, Langue (Guilde) 55, Marchandage 50, Métier (Barbier) 40, Pari 50, Perception 50, Savoir (Anatomie) 55, Savoir (Médecine) 60, Subornation 45, Ragot 50, Recherche 55, Résistance 55, Résistance à l'alcool 55
+
+**Talents :** Chirurgie, Lire/Écrire, Pansements de fortune, Résistance (Maladie)
+
+**Traits :** Arme (Scie à os) +7, Préjugé (Gueux)
+
+**Possessions :** apprenti (Fanna Geshenkle), bandages, livre (Médecine), licence de Guilde, potion de guérison, outils
+
+professionnels (Médecine), salle d'opération
+
+#### **L'argent des PNJ**
+
+La plupart des personnages de l'Empire utilisent des pièces de monnaie. Pour déterminer au hasard ce que possède un PNJ, faites un jet de Gagner de l'argent en utilisant le Statut du Personnage, comme indiqué dans **WFJDR**, page 51. Les PNJ ayant de l'argent indiqué dans leur équipement ignorent cette option.
+
+**Exemple :** *Helga Langstrasse, le Doktor, a un Statut Argent 5, elle possède donc 5d10 pièces d'argent.*
+
+## **Les accents de l'Empire**
+
+Les accents des PNJ de la campagne de **L'Ennemi Intérieur** sont normalement signalés dans leurs descriptions pour vous aider à les interpréter, généralement comme suit « un accent des classes inférieures du Reikland » ou « un indubitable accent d'Altdorf ». Mais qu'est-ce que tout cela signifie lorsque vous jouez le rôle de ces Personnages ?
+
+> En fin de compte, c'est à vous de décider. Un MJ de Londres considérera les accents de l'Empire très différemment d'un MJ de Berlin, ou de New York, Mumbai ou Melbourne, il est donc inutile que nous vous disions : « tous les accents d'Altdorf sont identiques aux accents de Londres », cela pourrait vous sembler absurde, car cela devrait sûrement être un accent berlinois, ou parisien, etc.
+
+Donc, en supposant que vous aimiez imiter différents accents, c'est à vous de décider à quoi ressemble celui d'une personne originaire du Middenland dans vos parties, ou 
+
+<span id="page-144-0" data-folio="145"></span>
+du Stirland, ou du Nordland. Attribuez les accents que vous préférez à chacune des provinces et des grandes villes, et vous êtes prêt à jouer. Si vous cherchez des directives sur la façon de procéder, consultez le tableau ci-après, qui n'est proposé qu'à titre indicatif.
+
+| Accents     | Comment choisir son accent                                 |  |  |  |
+|-------------|------------------------------------------------------------|--|--|--|
+| Villes      |                                                            |  |  |  |
+| Altdorf     | Accent de votre capitale                                   |  |  |  |
+| Talabheim   | Accent d'une capitale voisine ou ville<br>importante       |  |  |  |
+| Middenheim  | Accent d'une ville de province                             |  |  |  |
+| Nuln        | Comme Altdorf, mais avec une forte<br>inflexion montante   |  |  |  |
+| Provinces   |                                                            |  |  |  |
+| Averland    | Tonalités chantantes                                       |  |  |  |
+| Hochland    | Rustique avec des expressions familières                   |  |  |  |
+| Middenland  | Dur et direct                                              |  |  |  |
+| Mootland    | Accent rural prononcé                                      |  |  |  |
+| Nordland    | Agressif et passionné                                      |  |  |  |
+| Ostland     | Utilise des pauses pour souligner des points<br>importants |  |  |  |
+| Ostermark   | Accent théâtral prononcé                                   |  |  |  |
+| Reikland    | Votre accent                                               |  |  |  |
+| Stirland    | Rural et sophistiqué                                       |  |  |  |
+| Sudenland   | Comme au Reikland, mais plus monotone                      |  |  |  |
+| Sylvanie    | Accent vampirique classique                                |  |  |  |
+| Talabecland | Accent de la banlieue de Talabheim                         |  |  |  |
+| Wissenland  | Monotone avec une inflexion montante                       |  |  |  |
+
+## **PORTES ET SERRURES**
+
+Beaucoup de portes verrouillées cachent de sombres secrets dans l'Empire, et les Personnages sont susceptibles d'en fracturer quelques-unes.
+
+## **Serrures**
+
+Comme mentionné à la page 121 du **Livre de Règles**, tous les verrous ont une Difficulté et un DR cible pour être crocheté. Présenté comme D pour Difficulté, avec le modificateur, et DR pour le DR cible. Ainsi, un verrou Accessible (+20) nécessitant 0 DR pour être crocheté est noté comme suit (D +20, DR 0).
+
+## **Portes**
+
+Le fait de briser une porte, une fenêtre ou toute autre chose est résolu en utilisant le Bonus d'Endurance et les Blessures de l'objet, présentés comme **BE** et **B**. Ainsi, un objet avec un Bonus d'Endurance de 4 et 10 Blessures est signalé comme (BE 4, B 10).
+
+Tout Personnage cherchant à enfoncer une porte doit effectuer un Test de Corps à corps (Bagarre) ou un Test de Corps à corps en utilisant une arme appropriée telle qu'une hache ou un marteau. Le DR obtenu est ajouté au Bonus de Force du Personnage, et le total constitue les dégâts infligés à la porte. Si une arme a été utilisée, vous ne pouvez ajouter que la moitié des dégâts de l'arme.
+
+Lorsque vous attaquez des objets inanimés, vous ne causez pas au moins 1 Blessure (comme décrit dans 4 : Appliquer des dégâts dans **WFJDR**, page 159) : certains objets sont tout simplement trop résistants pour être endommagés.
+
+**Exemple :** *Gerhardt poursuit un cultiste, qui fonce vers la cave et claque la porte derrière lui. Gerhardt jure en l'entendant verrouiller la porte en riant. Réalisant que la rapière et la main gauche qu'il porte ne sont pas d'une grande utilité contre une porte solide, il recule de deux pas, se raidit et charge avec son épaule. Pendant qu'il utilise son corps, le joueur de Gerhardt fait un Test de Corps à Corps (Bagarre) contre sa Compétence de 46. Il obtient 63 pour -2 DR. En ajoutant son Bonus de Force de 4, Gerhardt a un total de 2. Malheureusement, c'est inférieur au Bonus d'Endurance de la porte de 4, donc Gehardt rebondit, se blessant plus lui-même que la porte. Jurant à nouveau en se frottant l'épaule, il part à la recherche d'une arme ou d'un outil approprié pour l'enfoncer.* 
+
+#### **Tout regrouper**
+
+Une porte solide avec un Bonus d'Endurance de 6 et 15 Blessures, sécurisée par une serrure bien montée qui est **Complexe (−10)** à crocheter et nécessite **2 DR** à contourner, est abrégée dans **L'Ennemi Intérieur** comme ceci : (D -10, DR 2 ; FT 6, B 15).
+
+## **MALADIE ET INFECTION**
+
+Cette section ajoute une nouvelle maladie et quelques symptômes supplémentaires pour faciliter vos créations personnelles.
+
+## **Litanie de la Pestilence**
+
+#### **La fièvre cérébrale pourpre**
+
+La fièvre cérébrale pourpre est une maladie redoutée. La tête gonfle jusqu'à atteindre une taille impressionnante et s'accompagne de fièvres et de délires. Le visage prend une couleur prune effrayante, les yeux sortent de leurs orbites et la langue gonfle jusqu'à ce que la bouche ne puisse plus la contenir. La mort survient généralement au bout d'une semaine.
+
+**Contraction :** si vous échouez à un Test d'**Endurance Accessible (+20)** lors d'un contact physique avec un individu infecté (à raison de 1 Test par heure d'exposition).
+
+**Incubation :** 1d10 heures.
+
+**Durée :** 1d10 jours.
+
+**Symptômes :** Convulsions, Délire, Fièvre (Grave), Gonflement (Visage et tête), Persistant (Difficile), Toxine.
+
+## **Symptômes**
+
+Ces deux nouveaux symptômes peuvent être ajoutés à n'importe quelle maladie que vous désirez créer.
+
+#### **Délire**
+
+Votre raison bascule, avec des moments de clarté remplacés soudain par des accès de délire, d'hallucinations et de terreur. Faites un Test de **Force Mentale Intermédiaire (+0)** toutes les heures et consultez le tableau suivant.
+
+<span id="page-145-0" data-folio="146"></span>
+| 1d10 | Effet                                                                                                                                                                                                                                                           |
+|------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1-2  | Épisode lucide : vous vivez une période de calme<br>reposant. Tous les États que vous avez précédemment<br>acquis à cause de votre délire sont supprimés.                                                                                                       |
+| 3-5  | Sommeil agité : vous vous tournez et vous retournez,<br>endormi mais pas reposé. Vous gagnez 1 État<br>Inconscient pendant l'heure suivante et 1 État Exténué<br>pendant les 1d10 heures suivantes.                                                             |
+| 6-9  | Confusion<br>: en proie à des visions étranges et<br>déformées, vous gagnez un État Sonné pendant<br>l'heure qui suit.                                                                                                                                          |
+| 10   | Hallucinations : vous êtes en proie à des visions<br>étranges et terrifiantes, et vous devez faire un Test<br>contre Terreur 3 toutes les 10 minutes pendant l'heure<br>suivante. Vous gagnez également +1 à l'État Sonné<br>pendant les 1d10 heures suivantes. |
+
+**Traitement :** certaines sommités médicales traitent le délire comme une fièvre, prescrivant les mêmes soins. Les remèdes coûtent de quelques sous de cuivre à quelques pistoles d'argent, et 10 % sont authentiques. Avec le bon médicament, un Test de **Guérison Intermédiaire (+0)** réussi bannit les hallucinations pendant 1d10 heures.
+
+Il est également courant de calmer les patients délirants avec un tranquillisant, tel que la fleur de lune ou même le lotus noir, pour les soulager jusqu'à ce que la maladie soit passée, les plongeant dans un sommeil agité jusqu'à ce qu'ils récupèrent ou en meurent.
+
+#### **Gonflement**
+
+Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au rouge ou au violacé et devenant presque inutilisable. La partie du corps affectée est normalement l'emplacement d'une plaie ou d'une morsure provoquant cette réaction, ou le point où une maladie ou une infection est entrée en contact avec le corps.
+
+**Traitement :** la plupart des traitements consistent à plonger la partie infectée, ou parfois tout le corps, dans un bain d'eau glacée pour réduire la chaleur qui accompagne les gonflements. Un Test étendu de **Guérison Difficile (-20)** nécessitant +3 DR et réduit le gonflement de 2d10 heures. Chaque Test dure une heure. Le patient se retrouve avec un État *Exténué* +1 pour chaque Test effectué au cours du processus.
+
+Certains médecins saignent plutôt le patient avec une lame ou des sangsues. Un Test étendu de **Guérison** prolongé réussi nécessitant +4 DR et des outils professionnels (médecin) réduit le gonflement de (1d10 + le Bonus d'Endurance du patient) heures. Chaque Test a une Difficulté de base Impossible (-50) et dure une demi-heure.
+
+| Localisation | Effet                                                                                                                                                                                                                                                                                   |
+|--------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Tête         | Les yeux et la langue gonflent, les joues deviennent<br>violettes, la mâchoire s'ouvre involontairement.<br>Manger est impossible, mais les liquides peu épais<br>peuvent être sirotés en petites quantités. Tous les<br>Tests nécessitant la parole sont 3 niveaux plus<br>difficiles. |
+| Bras         | Le bras et la main gonflent, les articulations de<br>l'épaule et du coude ne peuvent plus bouger et la<br>main devient inutile. Pour la durée du gonflement,<br>le bras est considéré comme amputé (WFJDR, page<br>180).                                                                |
+| Corps        | Tout le corps gonfle jusqu'à ce que la victime ne<br>puisse plus porter de vêtements. Tous les Tests<br>impliquant un mouvement deviennent 3 niveaux plus<br>difficiles.                                                                                                                |
+| Jambe        | La jambe gonfle de façon grotesque, devenant aussi<br>grosse que la partie la plus large de la cuisse et sur<br>toute sa longueur. Le pied est presque impossible<br>à discerner. Pour la durée du gonflement, la jambe<br>est considérée comme amputée (WFJDR, page 180).              |
+
+#### OPTIONS : MAIS C'EST IMPOSSIBLE !
+
+La campagne de **L'Ennemi Intérieur** propose des situations particulièrement complexes. Pour tenir compte de cela, il utilise deux niveaux supplémentaires de Difficulté allant au-delà de celles présentées dans **WFJDR** : elles doivent être ajoutées au Tableau de difficulté dans **WFJDR**, page 153. Cela signifie également que -50 est désormais la pénalité maximale lors de la combinaison de Difficultés, comme expliqué sur page 162 du **Livre de Règles**. Si vous utilisez ces règles facultatives, il est recommandé de se servir également des règles d'Échec et de Réussite automatiques à la page 150 de **WFJDR**. Cela garantit qu'un jet de 01-05 remportera toujours un succès avec +0 DR, même si le modificateur du jet devrait réduire les chances de réussite en dessous de 01-05.
+
+| Difficulté         | Modificateur du Test |  |  |  |
+|--------------------|----------------------|--|--|--|
+| Presque Impossible | −40                  |  |  |  |
+| Impossible         | −50                  |  |  |  |
+
+Si vous ne souhaitez pas utiliser ces Difficultés extrêmes, remplacez simplement Presque Impossible (−40) et Impossible (−50) dans ce livre par Très Difficile (−30).
+
+<span id="page-146-0" data-folio="147"></span>
+Cette Difficulté est réduite d'1 niveau pour chaque Blessure subie par le patient avant que le Test ne soit effectué. Ainsi, si un patient subit 5 Blessures, le Test est Intermédiaire (+0).
+
+Quelques guérisseurs utilisent des cataplasmes cicatrisants pour réduire le gonflement, surtout s'il y a une plaie visible sur laquelle ils peuvent être appliqués. Un Test étendu de **Guérison Complexe (-10)** réussi, nécessitant +5 DR et un cataplasme de guérison par Test, réduit le gonflement de (2d10 + le Bonus d'Endurance du patient) heures. Chaque Test dure 10 minutes.
+
+## **NOUVEAUX TRAITS DE CRÉATURES**
+
+Voici la liste de tous les nouveaux Traits et mutations, utilisés dans l'Ennemi dans l'Ombre.
+
+## **Mutations**
+
+## **Chair nécrosée**
+
+Cela a commencé par un picotement. Puis une démangeaison irrésistible. Incapable de vous arrêter, vous avez gratté encore et encore jusqu'à ce que votre chair se corrompe sous vos agressions.
+
+Maintenant, votre épiderme pourrit et se régénère constamment, tombant en longues bandes et révélant des plaques suintantes, sanguinolentes et purulentes à la place de la peau et des cheveux.
+
+Gagnez le Trait Peur 3, et - 20 Sociabilité.
+
+#### **Crétin**
+
+Vous vous souvenez peu de ce qui s'est passé. Une douleur aveuglante. Des larmes. De la Peur. Et pire encore, ce lent écoulement : il n'y avait tout simplement plus de place dans votre tête pour qui vous étiez autrefois. Maintenant, elle n'est pas plus grosse qu'une pomme, et vous ne comprenez pas vraiment ce qu'est une tête. Ou une pomme d'ailleurs.
+
+Perdez 40 Intelligence, jusqu'à un minimum de 10. Gagnez le Trait de créature Stupide.
+
+## **Écailles épineuses**
+
+Vous ressentez des brûlures sous votre chair alors que des cloques se forment puis éclatent, se décollant une à une, comme brûlées par le soleil. Plutôt que de la chair à vif et rougie, votre nouvelle peau se révèle sous forme d'écailles dures, dont la sensibilité et la flexibilité sont considérablement réduites, mais devient beaucoup plus résistante.
+
+Perdez 10 de Dextérité et de Sociabilité. Gagnez +1 PA sur tous les emplacements. Ce PA ne peut pas être utilisé pour la Déviation Critique.
+
+## **Pattes (Chèvre)**
+
+Vos os grincent, provoquant une intense douleur, craquant de manière audible alors qu'ils se tordent et se déplacent, pendant que des poils rêches jaillissent de votre peau.
+
+Au cours des prochains jours, vos orteils s'atrophient lentement et finissent par tomber tandis que des sabots fendus sortent de vos pieds.
+
+Vos jambes ressemblent maintenant aux pattes postérieures d'une chèvre, avec le genou articulé vers l'arrière. Bien que vous puissiez le cacher avec des vêtements suffisamment amples, votre démarche n'est visiblement pas naturelle. Gagnez +1 Mouvement.
+
+#### **Tête bestiale (Chien)**
+
+Vous ressentez une envie irrésistible de tomber à genoux et de hurler. Votre mâchoire est forcée à son extension maximale, vous commencez à vous étouffer de manière incontrôlable alors qu'un museau à l'épaisse fourrure se fraie un chemin à travers votre visage. Votre nez, vos lèvres et vos dents d'humain se détachent, reliques de votre ancienne existence, remplacées par la gueule hurlante d'un chien.
+
+Perdez 20 Sociabilité et 10 Intelligence. Obtenez le Talent Sens aiguisé (Odorat) et le Trait Morsure +5.
+
+#### **Tête pointue**
+
+Un nouvel os se forme sous votre cuir chevelu et jaillit du sommet de votre tête dans des éclaboussures humides de sang, de peau et de cheveux. Votre nouveau crâne pointu, qui a la couleur d'un ongle infecté, est exposé en permanence là où il émerge de votre cuir chevelu déchiré.
+
+Perdez 5 Intelligence et 10 Sociabilité. Gagnez +1 Point d'Armure à la localisation : Tête. Les couvre-chefs ne conviennent que s'ils sont spécialement conçus pour vous, bien que vous portiez avec aisance les chapeaux en forme de cône.
+
+## **Traits de créature**
+
+#### **Absorption**
+
+À la fin du Round, si la créature a un Avantage plus élevé que tous les adversaires engagés, elle absorbe un adversaire de taille égale ou inférieure. Une victime absorbée gagne un nombre d'États *Empêtré* égal au Bonus de Force de la créature et compte comme étant Empoigné. Une victime absorbée perd le Bonus de Force de la créature en Blessures à la fin de chaque tour ; les Points d'Armure, ou le Bonus d'Endurance, ne réduisent pas cette perte. Le même nombre de Blessures est « guéri » par la créature. Si une victime absorbée est tuée, la créature se retire pour digérer le cadavre durant les jours qui suivent. Toute attaque qui touche la créature inflige une quantité égale de Dégâts à la victime absorbée.
+
+## **Amorphe**
+
+La créature est un blob amorphe. Il divise par deux toutes les Blessures subies par des dégâts autres que le feu, le froid ou la magie. Il ignore toutes les Blessures critiques et ne peut être détruit qu'en étant réduit à 0 Blessure par le froid extrême, le feu ou la magie. S'il est réduit à 0 Blessure par d'autres moyens, il tombe en torpeur pendant 1d10 Rounds, puis régénère +1 Blessure. Les créatures amorphes évitent les sources intense de chaleur ou de froid.
+
+## **Contagieux (Type)**
+
+La créature héberge la maladie indiquée, et elle peut la transmettre au toucher. Dans ce cas, la victime doit tester s'il y a Contraction, mais le Test est de 2 niveaux plus difficile que la normale. Si la maladie est contractée, son incubation est changée en « Instantanée ».
+
+<span id="page-147-0" data-folio="148"></span>
+#### **Décérébré**
+
+La créature est stupide, ne vivant qu'en suivant ses bas instincts ou par compulsion magique. Elle n'a pas d'Initiative, d'Intelligence, de Force Mentale ou de Sociabilité et n'a jamais besoin de les Tester. Pour le calcul des Blessures, on utilise son Bonus de Force chaque fois que le Bonus de Force Mentale est requis. Comme elle n'a pas d'Initiative, elle joue toujours en dernier dans n'importe quel tour.
+
+## **Dédoublement**
+
+Si la créature subit une Blessure Critique, ou perd toutes ses Blessures, elle est remplacée par deux horreurs bleues de mauvaise humeur qui se libèrent de la créature d'origine dans un tourbillon d'énergies magiques enivrantes, et ne sont pas blessées.
+
+## **Voleur de chair**
+
+La créature, qui doit avoir le Trait Démoniaque, peut se glisser dans le corps de n'importe quel humain qu'elle tue. De plus, elle peut parfaitement incarner ce Personnage, et elle est capable d'imiter les voix et les manies grâce à une capacité étrange. La préparation de la chair prend 1d10 Rounds, après quoi elle peut être portée ou retirée à volonté, ce qui prend 1 Round. Une fois préparée, la chair ne pourrit que si la créature meurt, mais elle peut être endommagée par des moyens normaux. Si la créature le souhaite, elle peut sortir d'un costume de chair porté d'une manière horrible, conférant le Trait Terreur 1 pour 1 Round, mais détruisant aussi la matière, ce qui signifie qu'il ne peut plus être utilisé. Ceux qui connaissent le Personnage imité peuvent tenter un Test d'**Intuition Presque Impossible (-40)** pour détecter qu'il y a quelque
+
+chose qui ne va pas, bien qu'ils ne sachent pas exactement quoi.
+
+## ANNEAU D'OPSIANON
+
+Gideon porte une bague en or sertie d'une pierre d'obsidienne noire à facettes.
+
+L'anneau aurait été forgé il y a près de trois cents ans, plusieurs décennies avant la fondation des Collèges de Magie. Son créateur, Kurtis Krammovic, souhaitait dissimuler sa nature magique aux personnes qui ne portaient pas les sorciers dans leur cœur en ces temps sombres. La Haute Astromancienne Filonia Perls de l'Ordre bleu l'a acquis en 2498 CI, lors d'une vente aux enchères privée d'artefacts magiques à Marienburg.
+
+La bague lui a été volée par Teugen il y a cinq ans. Gideon a affirmé en avoir besoin pour stabiliser sa forme physique lorsqu'il ne se trouve pas dans une peau volée. De
+
+> plus, l'anneau était nécessaire pour accomplir le rituel qui « sauverait l'âme de Teugen ». Perls, une Sorcière de la cour qui lit l'avenir des nobles importants d'Altdorf, veut la récupérer et offre une récompense de 10 CO pour son retour.
+
+#### RÈGLES
+
+Tout démon portant l'anneau peut ignorer le Trait de créature Instable et ne peut pas être détecté par le Talent Seconde vue. De plus, comme la magie du démon ne peut pas être détectée par Seconde vue avant d'être lancée, ses sorts ne peuvent pas être dissipés par d'autres Personnages.
+
+Les mortels portant l'anneau gagnent à la place tous les effets du sort Aura ordinaire.
+
+Malheureusement, comme l'anneau est maintenant, et depuis de nombreuses années, imprégné des énergies démoniaques de Gideon, il est dangereux. Pour chaque mois pendant lequel il est porté par un mortel, un Test de **Résistance** à une exposition mineure à la Corruption doit être effectué. Cette souillure ne peut être supprimée que par de rares rituels et sorts de du Domaine de la Lumière.
+
+<span id="page-148-0" data-folio="149"></span>
 
 
 ## [PDT 10] Fiches de PNJ
@@ -9558,1933 +11487,4 @@ Les doppelgängers semblent incapables de se reproduire. Ils ont donc sans doute
 **Description :** la « véritable » apparence d'un doppelgänger est parfaitement hideuse. Ce sont des bipèdes humanoïdes de 1,80 m en moyenne. Ils ont l'air de ne pas avoir de peau : de l'extérieur, on peut voir leurs muscles, leurs artères, et certains de leurs organes.
 
 \*\* Ne s'applique que si sa véritable apparence est révélée
-
-
-## [MDG 16] Bestiaire
-
-*Folio 141+*
-
-# BESTIAIRE
-
-#### **Petits et grands monstres marins et plusieurs grands capitaines** • •
-
-Les mers du monde sont peuplées de nombreuses bêtes immondes, du terrible léviathan noir au légendaire kraken. Ces énormes monstres émergent parfois à la surface depuis les profondeurs les plus ténébreuses de l'océan, attirés par les remous dans l'eau provoqués par une bataille navale. Souvent aussi grands que les navires les plus imposants, ces horreurs gigantesques viennent se joindre au carnage dans une orgie de destruction aveugle. Leurs crocs aiguisés comme des rasoirs tranchent et mordent, et leur immense mâchoire broie aisément la chair, le bois et le métal. Les marins qui ont le malheur de tomber par-dessus bord sont condamnés, dévorés en un instant par ces horreurs voraces des fonds marins.
-
-> TRAIT DE CRÉATURE : REDOUTABLE
-
-**Redoutable (Indice) :** cette créature est particulièrement dangereuse, si bien qu'il est presque impossible de réellement prendre le dessus sur elle. Si, au début de son tour, la créature n'a pas autant d'Avantages que son *Indice* de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent. Si la créature est sous l'effet d'un État *Empêtré*, *Inconscient* ou *Surpris*, elle ne gagne pas d'Avantage.
-
-Si vous utilisez les règles d'Avantage de groupe du supplément **Aux Armes !**, la créature génère un nombre d'Avantages égal à son Indice dans le Trait *Redoutable* pour la réserve d'Avantages des adversaires.
-
-# TRAIT DE CRÉATURE : CRÉATURE MARINE
-
-La créature est chez elle dans l'océan et est inadaptée à la vie sur terre. Le profil de ce type de créature part du principe qu'elle se trouve dans un environnement aquatique et qu'elle se déplace de tout son M dans l'eau. Si elle est sortie de l'eau, son M tombe à 1 et tous les Tests qu'elle effectue subissent –2 DR.
-
-Les créatures possédant le Trait *Créature marine* doivent être immergées pour respirer correctement. Si elles sont sorties de l'eau, elles doivent être régulièrement aspergées d'eau, sinon elles se mettent à suffoquer comme décrit en page 181 de **WFJDR**.
-
-# **Baudroye**
-
-Ces poissons hideux ne sont pas des créatures marines, mais les marins de la Mer des Griffes savent qu'ils doivent se méfier d'eux, car ils rôdent dans les fjords de Norsca et les eaux de rivières comme la Salz, la Lynsk et la Sannez. La Baudroye se cache dans la boue et les herbes près des rives d'un cours d'eau en maintenant son corps trapu juste en dessous de la surface.
-
-La baudroye utilise l'étrange lueur phosphorescente sur sa tête pour attirer les animaux qui vivent sur les rives. Cet appendice qui oscille doucement a des propriétés hypnotiques ; même les créatures intelligentes peuvent être envoûtées par cet appât lumineux. Grâce à ses puissants ailerons caudaux, elle se propulse ensuite sur sa proie pour l'agripper par morsure, déchirant la chair et avalant le sang. Elle peut survivre hors de l'eau pendant un certain temps et donc lâcher un animal qui s'enfuit, puis retourner dans la rivière par petits bonds. Si quelqu'un a le courage de manger une baudroye, la chair a un goût délicieux.
-
-**Appât de la baudroye :** les lumières bleues-vertes, ondulant doucement et visibles sur les bords d'une rivière à l'aube et au crépuscule sont parfois confondues avec des lucioles. Si un Personnage réussit un Test de **Savoir (Voies fluviales) Difficile (–20)**, il sait que ces lueurs sont probablement des appâts de baudroye. Ceux qui ratent le Test de Savoir doivent réussir un Test de **Calme Facile (+40)** sous peine d'être envoûtés par le spectacle et incapables d'entreprendre la moindre action à part se déplacer vers la lumière, ce qui en pratique revient à subir l'État *Inconscient*.
-
-| BAUDROYE |       |   |    |    |    |    |            |   |        |   |   |
-|----------|-------|---|----|----|----|----|------------|---|--------|---|---|
-| M        | CC CT |   | F  | E  | I  |    | Ag Dex Int |   | FM Soc |   | B |
-| 4        | 40    | – | 45 | 35 | 30 | 20 | –          | 5 | 40     | – | 3 |
-
-**Talents :** Assaut féroce 2, Charge berserk 3 **Traits :** Affamé, Amphibie, Bestial, Infravision, Perturbant, Redoutable 1, Taille (Très Petite)
-
-**Traits d'attaque :** Arme (Crocs horribles) +8 **Facultatif :** Nuée, Taille (Petite à Moyenne)
-
-<span id="page-144-0" data-folio="141"></span>
-# **Crabe boxeur**
-
-Un crabe boxeur adulte fait la taille d'un chien. Il est doté d'une carapace portant un marquage qui évoque un crâne et de grands yeux écarlates polypeux. Cette créature fait partie de la faune de Norsca. Les jeunes crabes boxeurs plus petits forment des essaims dangereux, capables d'escalader les cordages qui pendent d'un bateau ou de grimper les uns sur les autres pour former des escaliers vivants leur permettant de surmonter les obstacles. Leur cycle de vie peut aussi se révéler nuisible pour les navires, car leurs petits forment des grappes semblables à celles des coquillages pouvant endommager la coque d'un bateau, tandis que les crabes adultes rôdent sur les plages pour trouver de la chair à manger. Ils ont l'habitude de s'entraîner en se combattant entre eux et tentent souvent de désarmer ou d'empoigner leur adversaire. Ils font un excellent repas.
-
-|   | CRABE BOXEUR |   |    |    |    |    |            |   |    |        |   |  |  |  |  |
-|---|--------------|---|----|----|----|----|------------|---|----|--------|---|--|--|--|--|
-| M | CC CT        |   | F  | E  | I  |    | Ag Dex Int |   |    | FM Soc | B |  |  |  |  |
-| 5 | 45           | – | 35 | 25 | 10 | 35 | 30         | 5 | 35 | –      | 7 |  |  |  |  |
-
-**Talents :** Désarmer, Maîtrise du combat, Vigilance **Traits :** Amphibie, Armure 2 (4), Bestial, Infravision,
-
-Taille (Petite)
-
-**Traits d'attaque :** Arme (Pince) +6 **Facultatif :** Nuée, Taille (Très Petite)
-
-# **Anguille mâcheprise**
-
-Les anguilles mâcheprises sont des créatures serpentines pouvant mesurer jusqu'à un mètre vingt de long. Leur corps arbore une teinte aigue-marine profonde et est doté d'une puissante mâchoire faite pour agripper. Elles se nourrissent en s'accrochant à leurs victimes, en se tordant de manière à faire un nœud avec leur propre corps pour pouvoir produire un effet de levier et en l'utilisant pour déchirer des morceaux de chair de leur proie. Les anguilles mâcheprises adultes sont connues pour avoir la force d'arracher des morceaux d'armure. Elles peuvent aussi sécréter une gelée visqueuse qui les rend impossibles à empoigner. La projection de cette gelée collante peut obstruer le nez (ou les branchies) d'une victime pour la faire suffoquer. Une anguille mère est souvent accompagnée par une nuée de petits de trente centimètres de long.
-
-|   | ANGUILLE MÂCHEPRISE |   |    |    |    |    |            |   |    |        |   |  |  |  |  |
-|---|---------------------|---|----|----|----|----|------------|---|----|--------|---|--|--|--|--|
-| M | CC CT               |   | F  | E  | I  |    | Ag Dex Int |   |    | FM Soc | B |  |  |  |  |
-| 6 | 45                  | – | 40 | 35 | 30 | 35 | –          | 5 | 35 | –      | 3 |  |  |  |  |
-
-**Traits :** À sang froid, Bestial, Créature marine,
-
-Infravision, Taille (Très Petite)
-
-**Traits d'attaque :** Arme (Crocs) +8, Morsure +10 **Facultatif :** Affamé, Nuée, Taille (Petite)
-
-**Visqueuse :** les anguilles mâcheprises peuvent produire une quantité surprenante de gelée visqueuse, que ce soit dans ou hors de l'eau. Si une anguille mâcheprise est *Empoignée* par un adversaire, elle peut effectuer un Test d'Endurance. En cas de succès, elle produit un amas de gelée et bénéficie alors de +4 DR sur les Tests ultérieurs pour se libérer. L'adversaire doit effectuer un Test d'**Athlétisme Intermédiaire (+0)**. En cas d'échec, la gelée lui a recouvert le visage et il doit soit relâcher l'anguille mâcheprise, soit commencer à suffoquer (voir page 181 de **WFJDR**).
-
-# **Stylet**
-
-Le stylet est une espèce de poisson volant. Les adultes font environ trente centimètres de longueur et leurs ailerons de « vol » environ quarante-cinq centimètres d'envergure. Le nom de ce poisson vient des épines tranchantes comme des rasoirs saillant des extrémités de ses ailerons. Sa capacité à sauter hors de l'eau jusqu'à une hauteur d'un mètre vingt, souvent en grands bancs, le rend physiquement dangereux, car ses épines sont assez aiguisées pour couper le tissu et la chair. Même s'ils ne représentent généralement une menace que pour les radeaux, les chaloupes et les autres vaisseaux de faible hauteur, des stylets d'une taille inhabituellement imposante peuvent parfois sauter assez haut pour atterrir sur le pont d'un grand bateau.
-
-Même si les stylets préfèrent les eaux chaudes, ils fréquentent la Mer des Griffes pendant l'été. Ils sont comestibles et ont bon goût, et peuvent être pris dans des filets quand ils sautent hors de l'eau. Ils sont attirés par les lumières vives, c'est pourquoi les pêcheurs les attrapent souvent lors des nuits sans lune en prenant des bateaux à faible tirant d'eau et en apportant des lanternes. Ceux qui ne savent pas que les stylets sont appâtés par la lumière risquent de se mettre en danger s'ils sont près d'une source lumineuse, car dans ce cas, un grand banc n'hésite pas à sauter hors de l'eau plusieurs fois.
-
-| STYLET |       |    |    |    |    |    |            |   |    |        |   |  |  |  |
-|--------|-------|----|----|----|----|----|------------|---|----|--------|---|--|--|--|
-| M      | CC CT |    | F  | E  | I  |    | Ag Dex Int |   |    | FM Soc | B |  |  |  |
-| 10     | 32    | 35 | 35 | 36 | 30 | 48 | –          | 4 | 18 | –      | 3 |  |  |  |
-
-**Traits :** Bestial, Bond, Créature marine, Taille (Très Petite)
-
-**Traits d'attaque :** À distance (son propre corps) +7 (20), Arme (Ailerons tranchants) +7
-
-**Facultatif :** Affamé, Nuée, Taille (Minuscule)
-
-**Vers la lumière :** les stylets sont attirés par la lumière. Si quelqu'un tente d'utiliser le feu pour leur faire peur, cela ne fait que les encourager. Ils possèdent le Trait *Bestial*, mais ils ne reculent pas devant le feu et ne subissent pas d'État *Brisé* parce qu'ils sont touchés par des attaques enflammées.
-
-<span id="page-145-0" data-folio="142"></span>
-# **Élémentaire de mer**
-
-D'après ceux qui étudient les arcanes de la magie, le Vent de Jade de *Ghyran* comporte une certaine ressemblance avec l'eau. Ceux qui possèdent la Seconde vue peuvent le regarder tomber sur la terre comme de la pluie, s'écouler le long des fleuves et des rivières et s'accumuler en mares. Il n'est donc pas très surprenant que les océans du monde contiennent de grandes quantités de *Ghyran*.
-
-*Ghyran* ne se disperse pas dans les eaux des mers. Le Vent de magie bouge peut-être comme de l'eau, mais sur les grands océans, il se concentre dans certaines zones locales et dérive sous forme de « bancs ». Cette intensité de *Ghyran* peut faire proliférer la vie et se développer de gros tapis d'algues ou des nuées de méduses ondulantes.
-
-Là où *Ghyran* est le plus concentré, les eaux qui le portent peuvent s'animer et dessiner la silhouette grossière d'une gigantesque forme humanoïde. Les histoires parlant de ces élémentaires de mer suscitent beaucoup de débats parmi les magisters du Collège de Jade. Certains soutiennent que ces créatures sont les cousines des naïades, car ce sont des esprits de la nature qui se manifestent sous forme d'eau vivante. D'autres supposent que ce sont des élémentaires incarnant directement *Ghyran*. Pour l'heure, aucun rite permettant à un sorcier d'invoquer un élémentaire de mer n'a encore été développé, bien que certains mages affirment en avoir déjà soumis un à leur volonté pendant une courte période de temps.
-
-Un élémentaire de mer sauvage est une perspective effrayante. Il est peut-être imprégné du Vent de la Vie, mais cela ne veut pas dire que son tempérament est nourricier et doux. C'est une créature tapageuse et violente, exubérante de force et de vitalité au détriment de ceux qui se trouvent sur sa route. L'élémentaire semble adorer détruire, par exemple en broyant des navires ou en invoquant des tourbillons. Il s'abat sur les marins dans une frénésie vorace pour les prendre dans les eaux tumultueuses de son propre corps et les y noyer.
-
-ÉLÉMENTAIRE DE MER M CC CT F E I Ag Dex Int FM Soc B 12 55 – 59 59 55 55 21 – – – 80
-
-**Traits :** Créature marine, Fabriqué, Infravision, Instable, Lanceur de Sorts (*Ghyran*), Protection 8, Redoutable 3,
-
-Se cabrer, Taille (Énorme), Terreur 3 **Traits d'attaque :** Arme (Poings) +10 **Sorts :** Bourbier vivant, Tourbillon
-
-**Immersion :** l'élémentaire de mer peut tenter d'immerger ses adversaires en effectuant une Empoignade. S'il inflige un État *Empêtré* à son opposant, il l'engloutit dans les eaux de son propre corps.
-
-Le personnage immergé suffoque comme détaillé en page 181 de **WFJDR**. Il peut essayer de s'échapper en se libérant de l'État *Empêtré* comme s'il était Empoigné par l'élémentaire de mer, en effectuant des Tests opposés de **Force** pour se dégager. Cependant, l'élémentaire de mer n'a pas besoin de maintenir activement l'Empoignade, il peut agir comme si le personnage immergé n'était pas là et n'est pas considéré comme Engagé.
-
-**Résistant au feu :** les élémentaires de mer ne subissent jamais l'État *En flammes*.
-
-**Lanceur de sorts instinctif :** les élémentaires de mer peuvent utiliser leur Caractéristique Force pour le lancement de sorts et la focalisation.
-
-<span id="page-146-0" data-folio="143"></span>
-# **Gargantuan**
-
-Le Gargantuan est une bête serpentine d'au moins une centaine de mètres de long. Son corps est musculeux et incroyablement puissant, atteignant jusqu'à dix mètres de diamètre. Selon les elfes d'Ulthuan, il n'existe qu'un seul Gargantuan, qui vit dans les profondeurs depuis l'aube du monde.
-
-Parfois, des voyageurs jurent avoir aperçu l'énorme serpent nager derrière des bancs de poisson et en prendre des dizaines dans sa gueule pour satisfaire son appétit.
-
-Mais ces histoires sont rares. Peut-être parce que, comme le suggèrent les elfes, le Gargantuan est réellement le seul survivant d'une espèce qui proliférait autrefois, avant l'Avènement du Chaos. Mais peut-être que l'explication est plus sinistre et que le Gargantuan est simplement une créature belliqueuse et cruelle qui aime autant broyer un navire et dévorer son équipage qu'avaler un banc de krills. La méthode d'attaque favorite de cette créature consiste à approcher sa proie par en dessous, à enrouler ses anneaux sinueux autour de la victime et à l'écraser pour la tuer. Si la cible se révèle trop récalcitrante, le monstre a recours à une autre forme d'assaut : son vaste corps musclé peut administrer une forte décharge électrique à tout ce qui est pris dans ses anneaux.
-
-|    | GARGANTUAN                                        |   |    |    |    |    |   |   |    |   |     |  |  |  |  |
-|----|---------------------------------------------------|---|----|----|----|----|---|---|----|---|-----|--|--|--|--|
-| M  | CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc<br>B |   |    |    |    |    |   |   |    |   |     |  |  |  |  |
-| 12 | 60                                                | – | 75 | 75 | 30 | 35 | – | 7 | 55 | – | 208 |  |  |  |  |
-
-**Traits :** À sang froid, Affamé, Armure 2 (9), Constricteur, Créature marine, Infravision, Redoutable 3, Régénération, Se cabrer, Taille (Monstrueuse)
-
-**Traits d'attaque :** Arme (Dents aiguisées comme des rasoirs) +11
-
-**Broyeur de bateaux :** le Gargantuan peut tenter d'écraser un vaisseau de Taille Grande ou moins. Pour ce faire, il doit passer un Tour à s'enrouler autour du navire par tranche de 10 points de Taille que le vaisseau possède. Une fois le bateau pris dans ses anneaux, le Gargantuan commence à les serrer et effectue un Test opposé étendu de **Force / Endurance** du bateau. Quand le DR est égal aux Blessures du vaisseau, le bateau se brise et n'est plus qu'une masse de débris flottants.
-
-Pendant ce temps, l'équipage du navire peut attaquer le Gargantuan ou essayer de le décrocher du bateau. Les attaques qui lui infligent plus de 7 Blessures peuvent forcer le Gargantuan à lâcher s'il rate ensuite un Test de **Calme Accessible (+20)**. Pour décrocher le Gargantuan, il faut être au moins de Taille (Enorme) et effectuer un Test opposé de **Force** contre la créature. Un résultat de 0 à 4 DR l'empêche de serrer ses anneaux autour du bateau ce Tour-ci et un résultat de 5 DR ou plus le force à relâcher le vaisseau.
-
-**Décharge électrique :** si la créature réussit à Empoigner un adversaire, au début de chacun de ses Tours suivants, elle peut dépenser 1 Avantage pour administrer un choc électrique au personnage Empoigné. La décharge électrique inflige un coup de 10 Dégâts qui ignore les armures en métal non magiques. Si un Personnage subit des Blessures à cause de l'attaque électrique, il doit aussi réussir un Test de **Résistance Complexe (–10)** sous peine de subir un État *Sonné*.
-
-Mais ces attaques coûtent de l'énergie au Gargantuan. Chaque fois qu'il utilise l'électricité, il doit effectuer un Test de **Résistance Accessible (+20)**. En cas d'échec, il subit un État *Exténué*.
-
-Tant que le Gargantuan est sous l'effet d'un État *Exténué*, ses attaques de décharge électrique n'infligent que des coups de 6 Dégâts qui ignorent les armures en métal non magiques.
-
-Le Gargantuan peut aussi transmettre des décharges électriques quand il a *Empoigné* un navire. Cela n'inflige pas de Dégâts au vaisseau, mais les membres de l'équipage reçoivent tous un choc et subissent un coup de 6 Dégâts (3 Dégâts seulement si le Gargantuan subit un État *Exténué*).
-
-<span id="page-147-0" data-folio="144"></span>
-# **Kharibde**
-
-Le kharibde ne fait pas partie de la faune naturelle de la Mer des Griffes. Ces bêtes hantent les profondeurs froides et obscures autour des rives de Naggaroth, loin à l'ouest. Ce sont d'horribles créatures, stupides, mais puissantes. De leur corps trapu et immense jaillit une couronne de cinq tentacules fouettant l'air. Quatre se terminent par une tête rudimentaire, atavique au point d'être quasiment un vestige. À peine plus qu'une bouche dotée d'un goût et d'un odorat basiques, elle est spécialisée dans la tâche de rechercher et dévorer des proies. La cinquième tête, la centrale, est plus large et plus complexe et abrite le minuscule cerveau de la créature. Elle est pourvue d'une longue et sinueuse mâchoire inférieure bordée de centaines de crocs acérés. Le kharibde utilise cette bouche en torsade pour déchirer les grosses proies, faisant ainsi gicler des morceaux de chair et d'organes que les petites têtes dévorent. Ce monstre a un appétit vorace et des enzymes digestifs férocement efficaces capables de dissoudre la chair, le métal et les os en quelques minutes seulement.
-
-Les elfes noirs de Naggaroth ont appris diverses techniques leur permettant de diriger un kharibde et sont connus pour en utiliser certains comme bêtes de guerre en les poussant à attaquer. Depuis la destruction de l'arche noire Hachoir d'âmes, de nombreuses attaques de monstres marins visqueux à plusieurs têtes contre les communautés insulaires d'Odner et de Lugern ont été signalées. Maître Stefan Ellendan, professeur de sciences à l'université de Salzenmund, a émis l'hypothèse que plusieurs de ces monstres ont été démembrés pendant la destruction du vaisseau des elfes noirs et que chaque morceau est devenu un adulte distinct à part entière. Cela a entraîné chez les érudits du Nordland une fausse croyance selon laquelle la créature posséderait de puissantes capacités de régénération, et la vérité plus prosaïque, à savoir qu'une paire de reproducteurs s'est échappée du bateau
-
-**Gigue d'os :** un kharibde bouge dans tous les sens et semble être partout quand il se bat, car ses nombreuses têtes mordent, agrippent et enchevêtrent tour à tour ses adversaires. Si le kharibde gagne 1 point d'Avantage alors qu'il est Engagé pendant un combat, son Indice *Redoutable 2* monte à *Redoutable 4* et y reste tant que le kharibde reste Engagé contre un adversaire.
-
-et a fait des petits, a été totalement ignorée.
-
-Malheureusement, ceux qui vivent près de la mer ne savent pas que la terre ferme n'est pas un refuge contre le kharibde, car même si la créature vit naturellement dans l'océan, elle fait des ravages partout où sa faim la mène. Son corps visqueux, adapté pour résister à l'énorme pression des fonds marins, est incroyablement fort et résistant. Le kharibde n'est certes pas agile hors de l'eau, mais ses pieds palmés peuvent tout de même le propulser vers l'avant à une pointe de vitesse surprenante. La créature est également connue pour les hurlements qu'elle pousse lorsqu'elle est excitée. Ceux qui ont survécu à ses attaques affirment souvent que le plus perturbant chez le kharibde est que ses cris sont étrangement plaintifs, presque comme ceux d'un humain désespéré.
-
-|                                                   | KHARIBDE |  |   |    |    |    |    |   |   |    |   |    |  |  |  |
-|---------------------------------------------------|----------|--|---|----|----|----|----|---|---|----|---|----|--|--|--|
-| M<br>CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc |          |  |   |    |    |    |    |   |   |    |   | B  |  |  |  |
-| 6                                                 | 55       |  | – | 65 | 55 | 40 | 15 | – | 5 | 25 | – | 72 |  |  |  |
-
-**Traits :** Affamé, Amphibie, Armure 3 (8), Bestial, Constricteur, Furtif, Infravision, Perturbant (Hurlements), Redoutable 2, Régénération, Taille (Énorme), Venin (Complexe)
-
-**Traits d'attaque :** Arme (Crocs et griffes) +10, Attaque
-
-caudale +8, Morsure +9
-
-**Traits facultatifs :** Belliqueux, Territorial
-
-<span id="page-148-0" data-folio="145"></span>
-# **Wyrm des mers**
-
-La Mer des Griffes est connue pour abriter beaucoup de wyrms des mers. Ce sont de grandes créatures dont la longueur rivalise avec celle des baleines. Ils possèdent un long corps ophidien recouvert d'une couche d'écailles épaisses et muni de tendons étirés et de paquets de muscles robustes. Cependant, les wyrms des mers ne sont pas de véritables serpents de mer, car si nécessaire, ils peuvent sortir de l'eau et se traîner maladroitement sur terre à l'aide de quatre membres courtauds se terminant chacun par des griffes aiguisées comme des rasoirs.
-
-Les érudits suggèrent que le lignage des wyrms des mers possède à la fois les caractéristiques des serpents de mer et des dragons car il serait leur ancêtre commun. Ils supposent que les corps écailleux des wyrms des mers grouillaient dans les océans primordiaux du monde et atteignaient des proportions proches de celles des énormes léviathans. Ces descriptions contiennent peut-être une part de vérité, mais dans ce cas, les wyrms des mers sont beaucoup plus petits et bien moins nombreux de nos jours.
-
-Les Asurs de Cothique et de Lothern affirment pratiquer une forme de magie des mers bien plus puissante que celle enseignée à Marienburg. Leurs mages, appelés des Tisseurs de Tempêtes, sont censés avoir conclu des pactes avec les wyrms des mers et ces bêtes accompagneraient les flottes de navires de guerre des hauts elfes.
-
-Pour ceux dont la subsistance dépend de la Mer des Griffes, ces créatures sont une source de terreur. Quand la nourriture vient à manquer, elles peuvent attaquer les communautés côtières et dévorer les habitants. Elles préfèrent certes rester dans l'océan, mais elles sont parfaitement capables de s'aventurer sur terre. Ce sont des combattants féroces et grâce à ses puissantes capacités de régénération, un seul monstre est parfaitement en mesure d'écraser les défenseurs de fortune qui pourraient se dresser entre lui et un village de pêcheurs du Nordland.
-
-| WYRM DES MERS                                          |    |   |    |    |    |    |   |    |    |    |    |  |  |  |
-|--------------------------------------------------------|----|---|----|----|----|----|---|----|----|----|----|--|--|--|
-| M<br>CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc<br>B |    |   |    |    |    |    |   |    |    |    |    |  |  |  |
-| 6                                                      | 62 | – | 65 | 60 | 45 | 26 | – | 15 | 38 | 10 | 84 |  |  |  |
-
-**Traits :** Affamé, Amphibie, Armure 3 (9), Créature marine, Immunité Psychologique, Infravision, Insensible à la douleur, Redoutable 2, Régénération, Taille (Énorme)
-
-**Traits d'attaque :** Arme (Mâchoire hérissée de crocs) +11, Attaque caudale +13, Morsure (Mâchoire hérissée de crocs) +11
-
-**Traits facultatifs :** Infecté, Taille (Monstrueuse)
-
-**Poison tueur de baleines :** toutes les attaques de mâchoire hérissée de crocs d'un wyrm des mers possèdent le Trait Venin (Complexe).
-
-# **Syrène bleue**
-
-Les légendes parlent des syrènes bleues dont le chant mène les marins à la mort sur les récifs rocheux. Elles seraient une forme de banshee hantant les mers. Quand une sorcière est noyée, les histoires racontent que son âme reste dans ce monde sous la forme d'une ombre tourmentée. Les essences spirituelles des sorcières se changent très souvent en spectres, car elles craignent les punitions qui les attendent dans le royaume de Morr, ou peut-être qu'elles sont si imprégnées de *Dhar* qu'elles reviennent en tant que fantômes.
-
-Les autres peuples soupçonnent les Sarls de jeter des utilisateurs de magie mineure dans les flots pour créer volontairement des zones côtières hantées par des syrènes bleues. De l'autre côté du Grand Océan, l'archigrand commodore vampire Luthor Harkon connaît également les rites nécessaires pour créer une syrène bleue et cherche des sorcières pour les noyer et les lier à sa marine de morts.
-
-|   | SYRÈNE BLEUE |   |    |    |    |    |            |    |        |    |    |  |  |  |
-|---|--------------|---|----|----|----|----|------------|----|--------|----|----|--|--|--|
-| M | CC CT        |   | F  | E  | I  |    | Ag Dex Int |    | FM Soc |    | B  |  |  |  |
-| 6 | 30           | – | 30 | 30 | 20 | 30 | 30         | 25 | 20     | 20 | 11 |  |  |  |
-
-**Traits :** Amphibie, Corruption (Mineure), Éthéré, Infravision, Instable, Mort-vivant, Rage, Terreur 3 **Traits d'attaque :** Arme (Lame spectrale) +7
-
-**Chant de la syrène bleue :** au prix d'une action, la syrène bleue peut entonner son chant hypnotique. Les Personnages situés à (Initiative de la syrène) mètres ou moins du monstre doivent réussir un Test de **Calme Complexe (–10)** sous peine d'être envoûtés par la mélodie et incapables d'entreprendre la moindre action à part se déplacer vers la syrène bleue, ce qui en pratique revient à subir l'État *Inconscient*.
-
-<span id="page-149-0" data-folio="146"></span>
-# **Hydre d'os**
-
-En de rares occasions, les cadavres de créatures marines dérivent dans des zones où la magie malveillante de malepierres sous-marines peut les corrompre et les réanimer.
-
-L'hydre d'os est une bête créée de cette façon. Ce n'est pas le squelette d'une véritable hydre (dans la mesure, d'ailleurs, où les créatures du Chaos peuvent être considérées comme de « véritables » bêtes), car elle n'est dotée que de trois têtes. Chacune de ces têtes est énorme. Certains érudits émettent l'hypothèse que l'hydre d'os était autrefois un dragon des mers à plusieurs têtes. Maître Stefan Ellendan de l'université de Salzenmund suggère qu'il s'agit d'une forme de crocodile géant de la Lustrie et que le monstre n'a muté qu'après sa mort.
-
-L'hydre d'os n'est pas une créature originaire de la Mer des Griffes ; elle hante la zone connue sous le nom de cimetière du Galion loin en haute mer. Mais comme les désolations du Chaos et la terre sinistre de Norsca sont très proches de la Mer des Griffes, des bêtes tout aussi étranges rôdent sous ses vagues.
-
-|   | HYDRE D'OS |    |    |    |    |    |            |   |        |   |     |  |  |  |
-|---|------------|----|----|----|----|----|------------|---|--------|---|-----|--|--|--|
-| M | CC CT      |    | F  | E  | I  |    | Ag Dex Int |   | FM Soc |   | B   |  |  |  |
-| 6 | 40         | 30 | 75 | 75 | 15 | 15 | –          | – | –      | – | 224 |  |  |  |
-
-**Traits :** Armure 2 (9), Corruption (Modérée), Créature marine, Fabriqué, Infravision, Insensible à la douleur, Instable, Mort-vivant, Peur 2, Redoutable 1, Taille (Monstrueuse)
-
-**Traits d'attaque :** Arme (Mâchoires tenailles) +11, Morsure +10, Souffle (Poison, Difficulté Difficile (–20)) +10
-
-# **Sangsue des abysses**
-
-Les sangsues des abysses sont un autre habitant des fonds marins corrompus par de grandes concentrations de *Dhar*. Ces énormes vers ne sont pas des animaux féroces par nature. Leur bouche est certes tapissée de dents rugueuses, mais les sangsues sont léthargiques et leur corps est mou. Pour qu'elles ingèrent la chair qui compose leur régime alimentaire, la viande doit déjà être dans un état de décomposition relativement avancé.
-
-Cependant, quand les sangsues des abysses localisent un cadavre, elles s'enfouissent dans le corps et s'y multiplient. Un cadavre infesté de sangsues des abysses peut se mettre à bouger de nouveau, car les créatures remplacent les tendons et les muscles de leur hôte putréfié par leur propre corps. Et une fois qu'elles ont un hôte, les sangsues deviennent dangereuses, car pour entretenir leur cycle de vie elles doivent envoyer davantage de cadavres dans les profondeurs.
-
-Les sangsues des abysses sont les dépouilles animées de dragons des mers qui ont sombré dans les profondeurs, puis ont été infestées par des sangsues des abysses. Le dragon des mers est l'hôte préféré de ces monstres, car il possède assez de chair pour les nourrir pendant des années tout en leur fournissant un corps immense et puissant capable de tuer d'autres créatures que la prochaine génération de sangsues va habiter.
-
-| SANGSUE DES ABYSSES |       |   |    |    |   |   |            |   |        |   |     |  |  |
-|---------------------|-------|---|----|----|---|---|------------|---|--------|---|-----|--|--|
-| M                   | CC CT |   | F  | E  | I |   | Ag Dex Int |   | FM Soc |   | B   |  |  |
-| 4                   | 33    | – | 80 | 80 | 5 | 5 | –          | – | –      | – | 256 |  |  |
-
-**Traits :** À sang froid, Armure 2 (10), Bestial, Corruption (Modérée), Créature marine, Fabriqué, Infravision, Insensible à la douleur, Redoutable 1, Taille (Monstrueuse)
-
-**Traits d'attaque :** Arme (Mâchoires tenailles) +12, Attaque caudale +11, Morsure +11, Vomissement
-
-<span id="page-150-0" data-folio="147"></span>
-# **Léviathan-phare et léviathan noir**
-
-Il existe plusieurs espèces de léviathans dans les océans du monde. Elles ont toutes en commun d'être des poissons osseux dont la tête et le dos sont protégés par de lourdes écailles. Ce sont toutes des prédateurs voraces.
-
-Le léviathan-phare est de couleur pâle et enveloppé d'une couche de graisse ressemblant à celle d'un phoque. C'est une petite espèce, car les adultes atteignent à peine 45 mètres de longueur. Cette créature est gauche et dotée d'un métabolisme lent, adapté à la vie dans les profondeurs des océans les plus froids. Pendant les hivers glacials, elle est parfois aperçue dans la Mer des Griffes. La bête n'est pas armée pour mener une chasse active et porte un appât lumineux oscillant d'avant en arrière sur un filament devant sa gueule béante s'ouvrant en forme de sourire. Maître Stefan Ellendan, professeur de sciences à l'université de Salzenmund, a émis l'hypothèse que le léviathan-phare soit la véritable forme adulte de la baudroye, mais même si leurs appâts fonctionnent de manière similaire, ces monstres sont deux espèces totalement distinctes.
-
-Le plus grand des léviathans est le léviathan noir, un énorme poisson des abysses carnivore à la gueule caverneuse remplie de crocs dentelés et aux écailles plus épaisses que la coque d'un croiseur. Le léviathan noir a sa tanière dans les profondeurs de la mer, mais il chasse en surface. Il a pour habitude d'approcher les proies convenables en restant très profondément sous l'eau. Quand il est assez près, il s'élève brutalement de sous les vagues, son immense mâchoire grande ouverte, et engloutit sa victime tout rond. La taille exacte du léviathan noir est un grand sujet de débat parmi les savants. Maître Ellendan affirme avoir mené une recherche sur des rapports signalant des apparitions de ce monstre et suppose que le spécimen moyen fait *« huit cent quarante-cinq mètres du premier croc avant à l'extrémité de la queue »*.
-
-|   | LÉVIATHAN-PHARE |   |    |    |    |    |            |   |    |        |     |  |  |  |
-|---|-----------------|---|----|----|----|----|------------|---|----|--------|-----|--|--|--|
-| M | CC CT           |   | F  | E  | I  |    | Ag Dex Int |   |    | FM Soc | B   |  |  |  |
-| 3 | 40              | – | 65 | 65 | 15 | 10 | –          | 5 | 30 | –      | 168 |  |  |  |
-
-**Traits :** Affamé, Armure 3 (9), Bestiale, Créature marine, Infravision, Perturbant, Redoutable 2, Taille (Monstrueuse)
-
-**Traits d'attaque :** Arme (Crocs gigantesques) +10
-
-**Appât du léviathan :** le premier signe de l'attaque imminente d'un léviathan-phare est une lumière jaune chatoyante dérivant lentement sous l'eau. Si un Personnage réussit un Test de **Savoir (Océans) Difficile (–20)**, il a entendu parler de l'appât de cette bête et peut détourner le regard avant que la lueur fasse effet. Ceux qui ratent le Test de Savoir doivent réussir un Test de **Calme Facile (+40)** sous peine de subir l'État *Sonné*.
-
-**Résistant au froid :** toute arme, Sort ou effet infligeant des Dégâts ou des altérations négatives à cause du froid aura probablement un impact réduit sur un léviathanphare. Le monstre peut effectuer un Test de **Résistance Intermédiaire (+0)** pour ignorer tout effet négatif venant du froid et de la glace.
-
-| LÉVIATHAN NOIR |       |   |         |   |    |    |            |   |    |        |     |  |  |
-|----------------|-------|---|---------|---|----|----|------------|---|----|--------|-----|--|--|
-| M              | CC CT |   | F       | E | I  |    | Ag Dex Int |   |    | FM Soc | B   |  |  |
-| 10             | 55    | – | 125 145 |   | 25 | 10 | –          | 5 | 45 | –      | 352 |  |  |
-
-**Traits :** Affamé, Armure 6 (20), Bestiale, Créature marine, Infravision, Redoutable 5, Taille (Monstrueuse) **Traits d'attaque :** Arme (Crocs gigantesques) +16, Attaque caudale +14, Morsure +14
-
-**Assaut dévastateur :** quand un léviathan noir charge un navire, il cause une collision avec un IC de 50 (voir p. 111).
-
-**Différence d'échelle :** le léviathan noir possède le Trait *Bestial* et peut être effrayé par le feu. Cependant, les torches vacillantes sont trop petites pour attirer son regard, sans même parler de l'intimider. Pour bénéficier des propriétés terrifiantes du feu, il doit avoir la taille et l'intensité d'un grand feu de joie ; le léviathan noir ne se préoccupera de rien de moins.
-
-Pour considérer l'impact psychologique des autres sources de Peur et de Terreur, le MJ doit prendre en compte le fait que, si une source n'est pas quelque chose que le léviathan noir devrait respecter en termes de taille, elle ne va probablement pas le troubler. Même si les démonettes, les zombies et les sorciers à la tête enflammée sont clairement surnaturels, aux yeux du léviathan noir, ils sont surtout de la nourriture pour poisson.
-
-<span id="page-151-0" data-folio="148"></span>
-# **Triton**
-
-Aucune autre créature au monde ne suscite autant de légendes et de spéculation que Triton. Malgré la fascination qu'il génère aussi bien chez les marins que chez les érudits, les sorciers et les prêtres, l'immense majorité des informations concernant sa nature fait l'objet d'une intense controverse.
-
-Bien qu'il soit rarement aperçu, les rumeurs affirment qu'il parcourt les mers du monde. Sa morphologie ressemble à celle des séduisantes sirènes qui sont parfois vues en train de sillonner les eaux entre les îles de la mer Tiléenne. Audessus de la ceinture, il a la forme physique d'un homme à la carrure puissante et au visage beau, mais féroce. Ses cheveux forment une épaisse crinière et il arbore une grosse barbe broussailleuse. Sous le nombril et à partir des hanches, il est doté d'une queue de poisson. Il est aussi véritablement titanesque : même les immenses géants broyeurs d'os semblent petits à côté du formidable Triton.
-
-Triton maîtrise plusieurs pouvoirs mystiques : il peut contrôler les éléments et dompter les monstres des profondeurs. Ses capacités ont des points communs avec la pratique de la magie des mers et les miracles accomplis par les prêtres de Manann. Mais malgré ces preuves d'intelligence complexe, personne ne l'a jamais vu communiquer avec les marins. Il émet des sons incompréhensibles quand il lance ses sorts, et s'il parle une langue, ni les elfes, ni les sorciers ne la connaissent.
-
-Une faction au sein des Maîtres du Savoir de Saphery affirme que Triton vivait dans l'océan avant l'Avènement du Chaos et qu'il a appris à leurs ancêtres comment naviguer et s'orienter. Ces elfes disent qu'il était autrefois plus petit, mais communicatif et coopératif. Quand le Chaos est entré dans le monde, il a altéré Triton, augmentant énormément sa taille et sa force, mais le privant de la capacité ou de la volonté de parler.
-
-Une autre théorie soutient que Triton n'a pas été affecté par le Chaos et que sa réserve vient du fait qu'il est extrêmement offensé par la témérité des marins qui pillent les mers pour en tirer de la nourriture et de l'huile de baleine. Triton semble effectivement avoir de l'affection pour les créatures de l'océan, comme en témoigne l'hostilité qu'il a toujours démontrée envers les elfes noirs qui semblent le courroucer en soumettant les kharibde et les dragons des mers.
-
-Les humains du Vieux Monde croient que Triton a un lien de parenté avec Manann, mais les contes populaires et les testaments apocryphes déclarent tour à tour qu'il s'agit du fils, du frère, de l'avatar, du premier fidèle ou du serviteur divin du dieu marin. Les elfes pensent que la question n'est pas si simple, car les Druchii honorent Mathlann (la divinité elfique dont le domaine et la nature sont très proches de ceux de Manann) aussi sincèrement que les marins de Cothique, et pourtant Triton leur voue une haine meurtrière.
-
-<span id="page-152-0" data-folio="149"></span>
-| TRITON |       |    |    |    |    |    |            |    |        |    |     |  |  |  |
-|--------|-------|----|----|----|----|----|------------|----|--------|----|-----|--|--|--|
-| M      | CC CT |    | F  | E  | I  |    | Ag Dex Int |    | FM Soc |    | B   |  |  |  |
-| 10     | 63    | 45 | 79 | 69 | 53 | 45 | 32         | 39 | 54     | 44 | 192 |  |  |  |
-
-**Compétences :** Athlétisme 65, Charme 74, Commandement 64, Corps à corps (Armes d'hast) 83, Emprise sur les animaux 74, Focalisation (Magie des mers de Triton) 74, Intuition 68, Langue (Magick) 69, Orientation 88, Perception 78, Résistance 94, Savoir (Elfes 59, Océans 99, Théologie 69)
-
-**Talents :** Affinité avec les animaux 4, Assaut féroce, Chanceux 2, Charge berserk 4, Combat instinctif 4, Contorsionniste, Coup puissant 3, Désarmer 3, Diction instinctive 3, Endurci 4, Frappe blessante 3, Frappe précise 3, Frappe réactive, Harmonisation aethyrique 3, Inébranlable 3, Mâchoires d'acier, Mage de guerre, Maîtrise du combat 4, Oreille absolue 2, Perception de la magie, Persévérant, Seconde vue, Sens aiguisé (Ouïe, Vue), Sens de l'orientation, Vigilance 3, Volonté de fer
-
-**Traits :** Animosité (Elfes noirs), Armure 2 (8), Béni (Manann), Champion, Créature marine, Endurant, Magique, Protection 9, Redoutable 3, Résistance à la Magie 4, Se cabrer, Taille (Monstrueuse), Terreur 3 **Traits d'attaque :** Arme (Trident de Triton) +16, Attaque caudale +10
-
-**Possessions :** couronne de Triton, trident de Triton.
-
-**Magie des mers de Triton :** Triton est un lanceur de sorts puissant, mais il lance sa magie d'une manière différente de tous les autres êtres du monde. Ses pouvoirs sont un mélange entre les miracles des dieux et la maîtrise de l'Aethyr. Triton connaît les Sorts de magie des mers suivants (voir page 15) : *Bourbier vivant, Mer d'huile, Tourbillon*.
-
-Il peut lancer les Miracles de Manann suivants comme s'ils étaient des Sorts avec un NI de 1 : *Contre-courants, Encalminé, Malédiction de la mer, Vents favorables*. Il peut également lancer le Miracle de Stromfels suivant comme s'il était un Sort avec un NI de 1 : *Lame de fond*. Si Triton génère des DR supplémentaires quand il lance ces Miracles comme des Sorts, il peut utiliser les règles de Surincantation pour les ajuster comme s'ils étaient des Sorts.
-
-**Faveur de Manann :** la relation exacte de Triton avec Manann est mystérieuse, mais son existence est indéniable. Au MJ de déterminer la manière dont elle se manifeste, mais Triton ne va probablement pas bien réagir à un vaisseau dont l'Humeur de Manann est négative et peut traiter avec respect un bateau dont l'Humeur de Manann est de 50 ou plus. À l'inverse, si quelqu'un manque de respect à Triton, l'Humeur de Manann peut baisser et si quelqu'un lui fait plaisir, l'Humeur de Manann peut augmenter.
-
-**Seigneur des profondeurs :** la Compétence Emprise sur les animaux et le Talent Affinité avec les animaux de Triton ne peuvent être utilisés que sur des créatures marines. Cela dit, les critères qui pourraient normalement empêcher un Personnage d'employer la Compétence Emprise sur les animaux ne s'appliquent pas à Triton, c'est-à-dire que les créatures des mers belliqueuses, territoriales, dressées ou blessées lui témoignent tout de même du respect. Seules les créatures marines dominées par magie ne respectent plus le commandement de Triton.
-
-Les créatures dotées du Trait *Amphibie* et/ou *Aquatique* sont soumises à cette règle lorsqu'elles se trouvent dans l'eau, mais peuvent l'ignorer sur terre.
-
-#### TRIDENT DE TRITON
-
-Une immense arme d'hast à trois pointes faisant plus de cent mètres de long. Triton pourrait utiliser son arme pour empaler les monstres les plus gigantesques ou écraser la coque d'une arche noire.
-
-| Arme              | Groupe       | Enc | Allonge      | Dégâts | Atouts et Défauts                            |
-|-------------------|--------------|-----|--------------|--------|----------------------------------------------|
-| Trident de Triton | Armes d'hast | 250 | Considérable | +BF+6  | Dévastatrice, Empaleuse, Magique, Percutante |
-
-**Naufrageuse :** chaque fois que le trident de Triton inflige des Dégâts à la Coque d'un vaisseau, ce bateau doit effectuer un Test d'**Endurance Complexe (–10)**. En cas d'échec, le navire subit *Voie d'eau 1*. Chaque fois que le trident de Triton inflige des Dégâts Critiques à la Coque d'un bateau, ce vaisseau doit effectuer un Test d'**Endurance Difficile (–20)**. En cas d'échec, le navire subit *Voie d'eau 3*.
-
-<span id="page-153-0" data-folio="150"></span>
-# **CAPITAINE JAEGO ROTH, CORSAIRE DE SARTOSA**
-
-Le capitaine Jaego Roth est considéré comme le plus grand corsaire de l'époque actuelle. Fils du célèbre cartographe et explorateur Indigio Roth, le jeune Jaego passait sa vie à bord d'un bateau, voyageant avec son père vers des lieux inconnus de tous les autres flibustiers, pourtant grands marins, de Sartosa. Quand Roth père a finalement été forcé de prendre sa retraite après avoir perdu ses deux jambes face à un géant des mers, Jaego est parti forger sa propre légende.
-
-À bord de son bateau le *Quart de nuit*, Jaego Roth a vogué des mers glacées du nord jusqu'aux rivages brumeux de la Lustrie. En suivant les cartes de son père, il rapportait des trésors tels que peu de gens avaient vu, les ajoutant au butin récolté en s'attaquant à d'autres vaisseaux. Il est devenu si célèbre que rapidement une foule de gens a voulu acheter ses services comme commandant naval, et il a parcouru la mer au sein des flottes de Tilée, de Bretonnie et de l'Empire. Après chaque victoire, Jaego retournait voir sa famille avec ses cales remplies de richesses.
-
-Puis, en une nuit, il a tout perdu. Jaego est rentré à Sartosa et a trouvé le Port Rouillé en flammes. Ceux qui racontent cette histoire affirment que cela a été la première et la seule fois que ce grand corsaire a connu la peur. Jaego s'est frayé un chemin à travers l'incendie, tentant désespérément d'atteindre le navire de son père, l'*Illumination*, où vivait sa famille. Mais quand il est enfin parvenu à monter à bord de force, il était trop tard. Dans la chambre de son fils, il n'a trouvé que deux cadavres calcinés.
-
-Alors qu'il ressortait en titubant, ayant à peine conscience de la fumée qui lui encrassait les poumons, il a été accueilli par une dernière horreur. Le corps de son père gisait sur le pont. Le vieux marin s'était traîné dans l'air de la nuit avant que la chaleur et la fumée finissent par l'achever. Parmi les innombrables trésors de ses aventures, le cartographe n'avait choisi que trois choses à sauver : un cadran lunaire, un télescope et une carte punaisée sur l'intérieur d'une carapace de tortue.
-
-Depuis cette nuit, Jaego n'est plus le même. Ceux qui le connaissaient avant disent que c'est comme si une lumière s'était éteinte dans ses yeux, remplacée par quelque chose de froid et de déterminé. Les survivants que son équipage a trouvés ont confusément raconté des histoires étranges sur l'attaque : un navire fantôme avec un équipage de spectres, un énorme kraken poussant un hurlement semblable à du métal que l'on tord, une épave flottante composée d'innombrables navires naufragés. Un nom est cependant revenu parmi tous ces récits embrouillés : Noctilus, le seigneur vampire du mythique *Cimetière du Galion*. La plupart des gens ont tout de suite considéré que ces déclarations n'avaient rien de crédible, mais Jaego s'y est accroché, comme un homme à la mer à un morceau de bois flottant.
-
-Le capitaine Roth n'a passé que très peu de temps à récupérer avant d'ordonner au *Quart de nuit* de hisser de nouveau les voiles. Il allait trouver ce vampire. Il allait trouver l'endroit où se cachait la créature. Et il allait le réduire en cendres. À présent, il recherche toutes les informations possibles concernant ce monstre, accumulant des bribes de contes comme un avare avec son or. Les trois reliques que son père a protégé jusque dans la mort sont constamment sur son bureau et Jaego a passé d'innombrables heures à tenter de comprendre leur signification. Le cimetière du Galion était devenu l'obsession de son père, une histoire répétée encore et encore par un homme qui perdait l'esprit avec l'âge. Du moins c'est ce que pensait Jaego à l'époque. Mais si ces artefacts sont un moyen de trouver le *Cimetière du Galion*, jusqu'ici, il n'est pas parvenu à résoudre leur énigme.
-
-Sa quête l'a récemment emmené sur la Mer des Griffes et le long de la côte de l'Empire. Il n'avance pas sur la question de l'emplacement du cimetière même, mais le capitaine n'a rien d'un idiot. Tuer un vampire, surtout quand il est aussi puissant que Noctilus, va nécessiter bien plus de force que ce que son équipage et lui sont capables de déployer. Roth se fait rembourser toutes les faveurs qu'il a jamais gagnées pour obtenir audience auprès de barons, de sorciers et même de comtes électeurs. Il a entendu dire que le temple de Sigmar pourrait détenir les moyens d'accomplir sa vengeance, et il compte plaider sa cause devant le Grand Théogoniste d'Altdorf. Mais ce ne sera pas facile. Altdorf est située au cœur de l'Empire, et pour descendre le Reik, Jaego va devoir traverser Marienburg, où les marchands ont toutes les raisons de haïr le nom de Roth.
-
-### LE QUART DE NUIT **Nom du navire Équipage Voile M (É) Avirons M (É) Man Taille E B Contenance Traits et Améliorations**
-
-Le *Quart de nuit* est équipé d'un Grand canon placé à la proue et tourné vers l'avant, et de huit Canons Moyens sur le pont, quatre tournés à bâbord et quatre à tribord.
-
-Quart de nuit 50 10 (25) 6 (40) – 55 65 200 1 000 Bélier, Renforcé, Solide
-
-<span id="page-154-0" data-folio="151"></span>
-| JAEGO ROTH - CAPITAINE CORSAIRE (OR 2) |                                                   |    |    |    |    |    |    |    |    |    |    |
-|----------------------------------------|---------------------------------------------------|----|----|----|----|----|----|----|----|----|----|
-| M                                      | CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc<br>B |    |    |    |    |    |    |    |    |    |    |
-| 4                                      | 83                                                | 43 | 45 | 51 | 78 | 67 | 65 | 76 | 74 | 87 | 21 |
-
-**Compétences :** Athlétisme 75, Calme 86, Commandement 102, Corps à corps (Base 87, Escrime 90), Escalade 52, Esquive 73, Guérison 84, Intimidation 63, Intuition 85, Langue (Khazalid 78, Tiléen 93), Marchandage 95, Natation 58, Orientation 98, Perception 92, Projectiles (Poudre noire) 58, Ragot 94, Ramer 67, Résistance 78, Résistance à l'alcool 60, Savoir (Guerre 97, Navigation 103, Politique 78), Survie en extérieur 83, Voile 92
-
-**Talents :** Battement, Ergoteur, Exaltant 5, Ferveur ardente, Frappe précise, Frappe réactive, Haine (Mortsvivants), Imperturbable, Lire/Écrire, Loup de mer, Maîtrise du combat 3, Marinier, Menaçant 3, Nageur endurant, Négociateur, Persévérant, Perspicace, Pied marin, Pilote, Présence imposante, Riposte, Savoirvivre (Marins, Nobles, Pirates), Seigneur de guerre, Sens de l'orientation, Suborneur 3, Vigilance, Volonté de fer, Voyageur aguerri
-
-**Traits :** À distance (Pistolet) +8 (20), Arme (Crochet) +6, Arme (Rapière) +8, Armure 3 (8)
-
-**Possessions :** cadran lunaire et longue-vue enchantés, carte punaisée sur une carapace de tortue, crochet de main, outils de cartographe, pistolet, plastron, rapière.
-
-Avec sa prothèse, Jaego ne subit pas de pénalité parce qu'il lui manque une main (voir page 308 de **WFJDR** pour plus de détails).
-
-**Héritier du cartographe :** Jaego connaît parfaitement les mers du monde, car il a étudié les cartes toute sa vie. Il bénéfice de +2 DR sur tous les Tests d'Orientation qu'il effectue. S'il est le Capitaine d'un vaisseau, il peut effectuer des Tests d'Orientation et non de Commandement dans le cadre des Tests d'équipage.
-
-#### RELIQUES D'INDIGIO ROTH
-
-Jaego Roth recherche quiconque pourrait lui apporter des réponses au sujet de ces artefacts.
-
-**Cadran lunaire de Roth :** un appareil complexe capable, sans que Jaego sache trop comment, de suivre les déplacements de Morrslieb.
-
-**Longue-vue enchantée :** une longue-vue d'Arabie sur laquelle sont gravées des inscriptions délicates. Elle ignore tout ce qui pourrait voiler la vision, que ce soit un brouillard naturel ou une illusion magique.
-
-**Carte sur une carapace de tortue :** une carte couverte d'une iconographie grotesque, avec un maelstrom tourbillonnant au centre.
-
-<span id="page-155-0" data-folio="152"></span>
-# **LONG DRONG SILVER, CAPITAINE DES PIRATES TUEURS**
-
-*« J'te tirerai dessus d'puis les halles de Grimnir, salopard ! »*
-
-– Long Drong Silver
-
-Long Drong Silver, chef des Pirates Tueurs, est l'un des capitaines les plus respectés de Sartosa, même si ce respect se rapproche sans doute davantage de celui accordé à un baril de poudre noire. Aucun autre marin ne se rendrait volontairement là où Long Drong s'aventure, poursuivant les monstres les plus terrifiants de l'océan dans son voyage en mer vers une mort glorieuse.
-
-Long Drong (appelé ainsi, car pour un nain, il est très grand) était autrefois un marin de Barak Varr. Il n'a jamais recherché une vie d'aventure. Il était capitaine du *Tonneau de bière* et transportait les meilleures cuvées jusqu'aux nains assoiffés partout où il accostait. « *Lentement, mais sûrement* » était sa devise et il avait acquis une réputation de fiabilité. Jusqu'à ce qu'une tempête écrase le *Tonneau* contre les falaises de Sartosa. L'équipage n'a dû sa survie qu'à l'esprit vif de Long Drong et a tout de même été forcé d'abandonner son navire bien-aimé empalé sur les rochers, sa précieuse cargaison de bière teintant les vagues d'or. Pour Long Drong, c'était une honte insupportable. Ses camarades et lui ont prêté le Serment du Tueur et sont partis rencontrer leur destin sinistre à Sartosa.
-
-Sa première action a été de prendre d'assaut la forteresse du seigneur pirate, le capitaine Sissico. En entendant les histoires qui parlaient de ce tyran cruel, Drong a cru voir en lui sa chance de recevoir une mort glorieuse. Malheureusement, les choses ne se sont pas passées ainsi. Ce qu'il a en réalité reçu, c'est une forteresse où s'installer, le perroquet de Sissico (qu'il a appelé Gelty, car l'animal répète souvent « Pièces d'or »), le navire de Sissico et assez de butin pillé pour acheter quelque chose qu'un nain pourrait être fier de faire voguer sur les flots. La *Belle Fregar* est à présent une merveille d'ingénierie naine, instantanément reconnaissable à sa figure de proue, forgée à l'image d'une jeune fille naine d'une grande beauté. Cette figure sert aussi de bélier.
-
-Les Pirates Tueurs ont acquis une réputation de guerriers talentueux et ont rejoint les rangs de compagnies de mercenaires allant de la Tilée à l'Empire. Ils sont passés maîtres dans l'art de s'emparer des coffres de paie utilisés pour rémunérer les armées de mercenaires rivales en brisant la ligne de soldats d'élite qui les garde par un barrage frénétique de tirs de pistolet et d'insultes. Et ils sont bien payés pour ce qu'ils font, car Long Drong n'a pas perdu son sens des affaires. Mais en vérité, leur travail de mercenaires leur permet juste de s'approvisionner en rhum et en poudre noire. Leur objectif réel, celui qui envoie la *Belle Fregar* charger aux quatre coins du monde, est de combattre les monstres marins.
-
-Long Drong n'a pas encore rencontré de créature qu'il n'est pas parvenu à vaincre. Les flancs de la *Belle Fregar* portent des entailles venant des batailles contre un léviathan, tandis que des lambeaux de cuir écailleux de wyrm des mers battent au vent sous la bannière personnelle de Drong, une cruche et deux pistolets croisés. Ces victoires ont coûté cher : Drong a perdu une main à cause d'une baudroye, une jambe à cause d'un dragon des mers et un œil à cause d'un pari (c'est une longue histoire). Sa destinée fatale ne cesse de lui échapper, même s'il est satisfait de savoir que beaucoup des membres de son équipage ont regagné leur honneur à son service, puis ont été remplacés par d'autres recherchant la mort en mer.
-
-Les capitaines pirates de Sartosa qui se joignent parfois à Long Drong pour un verre décrivent quelque chose de sombre qui le dévore petit à petit. Drong continue de boire de la bière, de chanter des chansons de marins et de raconter ses dernières victoires en parlant très fort pour récolter des rugissements d'approbation. Mais au fur et à mesure que la nuit avance, la mélancolie s'empare de lui. Il reste assis à sa table à frotter la courbe de son crochet et à regarder fixement la mer. Drong sait qu'il ne pourra pas poursuivre sa chasse éternellement, à cause du grand âge. Combien de temps lui reste-t-il avant d'être privé d'une mort glorieuse ?
-
-#### LONG DRONG SILVER CAPITAINE DES PIRATES TUEURS M CC CT F E I Ag Dex Int FM Soc B 3 72 62 56 69 40 29 32 40 71 52 30
-
-**Compétences :** Athlétisme 59, Calme 86, Commandement 72, Corps à corps (Bagarre 82, Base 87), Divertissement (Chant 57, Narration 62), Dressage (Perroquet) 55, Escalade 66, Esquive 44, Guérison 55, Intimidation 81, Intuition 70, Langue (Reikspiel 80, Tiléen 70), Marchandage 67, Natation 71, Orientation 75, Perception 65, Projectiles (Poudre noire) 77, Ramer 61, Résistance 79, Résistance à l'alcool 89, Savoir (Guerre 70, Ingénierie 70, Navigation 90), Survie en extérieur 75, Voile 84
-
-**Talents :** Assaut féroce, Chanceux 5, Charge berserk, Cœur vaillant, Contrôle de la Frénésie, Coup puissant, Dur à cuire, Endurci, Frénésie, Impitoyable, Inébranlable, Infatigable 2, Lire/Écrire, Loup de mer, Mâchoires d'acier, Maîtrise du combat 3, Maniement de deux armes, Marinier, Nageur endurant, Noctambule, Persévérant, Pied marin, Pilote, Robuste 3, Sans peur (Tout), Tir précis, Tir rapide, Très fort, Très résistant, Tueur, Vision nocturne
-
-**Traits :** À distance (Pistolets) +8 (20), Arme (Crochet) +8, Arme (Épée) +10
-
-**Possessions :** bandoulière avec 12 pistolets chargés, cache-œil, crochet, épée, jambe de bois, perroquet (Pièce), poudre et munitions pour 24 tirs, rhum tord-boyaux.
-
-Avec ses prothèses, Long Drong ne subit pas de pénalité parce qu'il lui manque des membres (voir page 308 de **WFJDR** pour plus de détails).
-
-**Rhum tord-boyaux :** un mélange de rhum, de Poudre noire et de copeaux de fer. Considéré comme deux verres et celui qui le boit doit effectuer un Test de Résistan,ce à l'alcool. En cas d'échec, il est pris de maux de ventre et de flatulences. Le Personnage subit alors une pénalité de –20 sur ses Tests de Charme et reçoit le Trait *Perturbant* jusqu'à ce qu'il redevienne sobre.
-
-<span id="page-156-0" data-folio="153"></span>
-| LA BELLE FREGAR                   |    |                |     |        |   |        |                    |                                                           |  |  |
-|-----------------------------------|----|----------------|-----|--------|---|--------|--------------------|-----------------------------------------------------------|--|--|
-| Nom du navire Équipage Propulsion |    | à vapeur M (É) | Man | Taille | E | B      | Cont<br>enanc<br>e | Traits et<br>Améliorations                                |  |  |
-| Belle Fregar                      | 30 | 6 (10)         | –   | 45     |   | 85 150 | 700                | Bélier, Propulsion à vapeur, Renforcé,<br>Robuste, Solide |  |  |
-
-La *Belle Fregar* est équipée de huit canons Moyens sur le pont, quatre tournés à bâbord et quatre à tribord. Deux pierriers sont montés à la proue et tournés vers l'avant, et deux sont montés à la poupe et tournés vers l'arrière.
-
-#### **Flancs de fer**
-
-La Coque en métal de la Belle Fregar lui donne son Endurance élevée et son Trait Renforcé. De plus, les Éclats résultant d'un Coup Critique peuvent être ignorés. Cependant, si la Belle Fregar subit un Coup Critique sur son Gréement ou ses Avirons, lancez les dés dans le tableau Panne de vapeur à la place.
-
-#### **Carburant**
-
-Le moteur à vapeur à bord de la Belle Fregar est relativement efficace. Pour chaque heure d'utilisation, il consomme 1 Enc de charbon. Le MJ peut décider que le bateau brûle aussi du charbon à un rythme plus rapide s'il est forcé d'effectuer des manœuvres d'esquive ou de rester à sa vitesse maximum malgré de forts courants ou de forts vents de face.
-
-Généralement, Drong part avec 200 Enc de charbon dans sa cale.
-
-Le moteur à vapeur pourrait être alimenté en brûlant du bois. Cette méthode est moins efficace, mais comme le charbon n'est pas toujours disponible, Drong y a parfois recours. Pour chaque heure d'utilisation, le moteur à vapeur consomme 2 Enc de bois.
-
-<span id="page-157-0" data-folio="154"></span>
-# **WULFRIK, CHAMPION DES SARLS**
-
-Tous les langskips norses éveillent la terreur dans les cœurs de ceux qui vivent le long de la côte, mais il en existe un que même les plus braves ont appris à redouter. Sa voile arbore la roue sans cesse en mouvement des Puissances de la Ruine, barbouillée de sang séché. Des têtes, venant uniquement d'adversaires vaincus en combat singulier, bordent sa proue. Ses avirons brassent les vagues à l'unisson, faisant avancer le vaisseau en rythme au son des chanteurs skalds entonnant un seul nom : Wulfrik.
-
-Ce géant par la taille est le champion le plus craint et le plus révéré des Sarls. Il vogue sur la Mer des Griffes et au-delà, pillant et massacrant pour apporter toujours davantage de gloire à son nom, et aux dieux évidemment. Il porte leur marque sur sa chair, ce qui indique à quiconque croise sa route qu'il est une personne digne de l'attention des divinités. Et selon Wulfrik, les divinités ont bien raison.
-
-Même s'il est encore jeune, Wulfrik a mené ses pillards à d'innombrables victoires le long des côtes du sud, rapportant du butin pour remplir les coffres du roi des Sarls et ne laissant que des survivants au regard hanté et des ruines calcinées derrière lui. De la Bretonnie à Kislev, des têtes de paysans comme de guerriers sont venues rejoindre la décoration de son navire. À chaque nouveau succès, un couplet se rajoute à sa saga. Les récits de ses exploits sont connus dans toute la Norsca à présent, même si personne ne les raconte avec autant d'enthousiasme que Wulfrik lui-même.
-
-L'une des histoires décrit comment ses camarades et lui ont croisé un galion bretonnien encalminé dans la mer déserte. Les dieux ont observé leur champion tandis que Wulfrik faisait progresser son bateau, Kotfotr (la *Griffe du chasseur*), sous la pluie de boulets de canon en hurlant un défi au noble qui commandait le grand vaisseau. Mais le noble a refusé ; il s'est terré dans les entrailles du galion et a laissé son propre équipage mourir. Wulfrik l'a traqué dans ces recoins sombres pendant près d'une heure, et quand il a enfin fini par traîner ce lâche dans la lumière, il a refusé de lui accorder une mort honorable. Au lieu de cela, il l'a attaché à la proue de son langskip pour qu'il serve de sinistre figure de proue. L'homme a hurlé pendant trois jours avant de finir par mourir.
-
-Rien ne fait plus plaisir à Wulfrik que vaincre d'autres champions en combat singulier. C'est un sentiment merveilleux, dit-il tandis que l'hydromel coule à flots chaque nuit, de faire mordre la poussière aux combattants les plus talentueux et les plus courageux de votre ennemi et de voir leurs compagnons fléchir quand ils se rendent compte, vraiment compte, qu'ils sont promis à une mort certaine. Ses vantardises et son ascension rapide ont donné à Wulfrik d'innombrables occasions de se livrer à ce passetemps. Chaque fois qu'il jette l'ancre à Kirkjugarður Langskipa, des champions venus de toutes les terres norses, et même de plus loin pour certains, viennent défier ce jeune arriviste. Ceux qui livrent un combat que Wulfrik juge suffisamment correct sont parfois autorisés à rejoindre son équipage. Les autres servent à bord du Kotfotr comme décorations.
-
-Cependant, l'arrogance de Wulfrik grandit en même temps que sa réputation. Selon lui, il ne trouve plus de vrai défi à présent. Tant des plus grands champions des dieux sont déjà tombés sous ses lames qu'il est contraint d'en chercher d'autres plus loin. Il traque les rumeurs parlant de grands guerriers avec presque autant d'avidité que le butin, car il sait que plus sa célébrité augmente, plus son pouvoir sera grand un jour. Wulfrik est ambitieux. Il ne compte pas passer toute sa vie à rechercher vainement la faveur d'un dieu frivole ou d'un autre. Les divinités savent qu'elles ont bien choisi leur champion avec lui, et il leur apportera davantage de gloire encore si elles le laissent obtenir ce qu'il veut.
-
-Les chefs et les rois des peuples norses deviennent faibles et sont trop occupés à se disputer le pouvoir entre eux. Le temps est venu de mettre en place un nouveau commandant, que tous les hommes considéreront indubitablement comme un champion de valeur. Pour Wulfrik, son plus grand trésor est sa saga. Plus sa légende s'enrichit, plus les guerriers se ralliant à sa bannière sont nombreux et plus les chefs apprennent à craindre son nom. Un jour, Wulfrik prouvera qu'il a davantage de valeur qu'eux tous réunis. Telle est la destinée que les dieux lui ont présentée. Que pouvaient-ils vouloir d'autre pour quelqu'un d'aussi puissant que Wulfrik ?
-
-# KOTFOTR **Nom du navire Équipage Voile M (É) Avirons M (É) Man Taille E B Contenance Traits et Améliorations** Kotfotr 45 6 (5) 8 (35) +1 25 55 80 1 000 Bélier
-
-**Bénédiction des dieux :** toutes les attaques à distance contre le Kotfotr sont considérées comme des Tests Complexes (–10) (sauf si le Test devrait normalement être d'une Difficulté encore supérieure).
-
-<span id="page-158-0" data-folio="155"></span>
-| WULFRIK - CHAMPION DES SARLS (OR 2) |                                                   |    |    |    |    |    |    |    |    |    |    |
-|-------------------------------------|---------------------------------------------------|----|----|----|----|----|----|----|----|----|----|
-| M                                   | CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc<br>B |    |    |    |    |    |    |    |    |    |    |
-| 4                                   | 83                                                | 34 | 62 | 51 | 48 | 62 | 64 | 39 | 78 | 53 | 28 |
-
-**Compétences :** Athlétisme 72, Calme 88, Commandement 68, Corps à corps (Base 88, Deux mains 93), Divertissement (Narration) 68, Escalade 82, Esquive 82, Intimidation 92, Intuition 68, Langue (Gospodarin 54, Reikspiel 64), Natation 74, Orientation 78, Perception 63, Pistage 73, Prière 58, Ramer 77, Résistance 81, Résistance à l'alcool 86, Savoir (Guerre 74, Histoire 54, Navigation 84, Religion 49), Survie en extérieur 68, Voile 77
-
-**Talents :** Ambidextre, Assaut féroce, Battement, Bonnes jambes, Chanceux 2, Charge berserk, Combat déloyal 3, Combat instinctif 2, Combattant au contact, Coup puissant, Déterminé, Dur à cuire, Effrayant 2, Endurci, Ergoteur, Guerrier né, Impitoyable, Inébranlable, Loup de mer, Maîtrise du combat 4, Maniement de deux armes, Marinier, Menaçant, Noctambule, Pied marin, Pilote, Porte-bouclier, Présence imposante, Renversement, Robuste 3, Sans peur (Tout), Vigilance, Volonté de fer
-
-**Traits :** Arme (Bouclier) +9, Arme (Épée bâtarde) +12, Armure 4 (9), Champion, Corruption (Mineure) **Possessions :** armure lourde, bouclier, crânes trophées, épée bâtarde.
-
-**Champion élu du Chaos :** pour les autres norses, le succès de Wulfrik indique qu'il a la faveur des dieux. Tous les Tests de Charme, de Commandement ou d'Intimidation effectués par ce personnage pour tenter d'influencer un suivant du Chaos reçoit un +10 supplémentaire.
-
-**Chasseur de têtes :** quand Wulfrik inflige une Blessure Critique, il peut décider de lancer les dés dans le tableau Blessures Critiques à la Tête au lieu de celui de la localisation normale.
-
-**Tueur de champions :** Wulfrik gagne un point d'Avantage quand il affronte un chef ou un champion ennemi en combat singulier.
-
-<span id="page-159-0" data-folio="156"></span>
-# **ARCHISEIGNEUR DES MERS VRISK GRATTE-LE-FER**
-
-Vrisk Gratte-le-Fer est l'Archiseigneur des mers du clan Skorbut. Il était présent au Grand Rassemblement de 2302 et a audacieusement placé sa patte sur le pilier noir des Commandements et gagné le droit de siéger au conseil des Treize. Son élévation a surpris beaucoup de monde, car le clan Skorbut n'était absolument pas une puissance majeure chez les skavens.
-
-Le Grand Rassemblement, et ses conséquences, ont inculqué un but commun aux skavens et Vrisk a rapidement trouvé une niche à occuper. Au vu du fait que la majorité des territoires de son clan était composée des terriers forés dans les falaises sous la ville de Tobaro, il a suggéré que le clan Skorbut reçoive une généreuse provision de malepièces pour concevoir et construire une marine efficace.
-
-Après beaucoup de chamailleries, le conseil a accordé une portion de ressources généreuses à Vrisk. L'humble statut du clan Skorbut a probablement contribué à cette décision providentielle : en lui donnant une fortune en malepièces, les autres conseillers se refusaient mutuellement une jolie manne qui aurait pu perturber l'équilibre des puissances. Mieux valait fournir de l'assistance à un petit clan que donner les moyens à un clan majeur de dominer ses rivaux. Quand il a gagné cette rétribution, Vrisk a aussi dû promettre d'acheter de l'armement et des soldats spécialisés aux clans Skryre, Moulder, Eshin et Pestilens. Il est également intéressant de noter que le seigneur gris Kritislik a fortement objecté à la construction d'une marine en affirmant que ce serait une manœuvre trop visible qui laisserait des preuves pouvant être retrouvées par les ennemis des skavens, ce qui signifie que les autres conseillers ont peut-être voté en faveur de cette création simplement pour agacer le seigneur gris.
-
-Grâce à la générosité (conditionnelle) du conseil, le clan Skorbut a reçu les ressources nécessaires pour forer la tanière de Port de l'Échine dans la Cité souterraine, caché à l'intérieur de cavernes que les tempêtes avaient percées dans la côte de Tobaro. En 2321 CI, d'étranges embarcations de bric et de broc ont été repérées sur la Mer Tiléenne et les nains de Barak Varr ont signalé avoir coulé plusieurs vaisseaux dotés d'un équipage de marins skavens. En moins de deux décennies, Vrisk avait fait beaucoup pour tenir sa promesse auprès du conseil.
-
-Le clan Skorbut représente à présent une menace maritime sérieuse. Sa flotte branlante récolte une fortune grâce à la piraterie, dont la majeure partie est dépensée pour capturer de nouveaux prisonniers affectés à actionner les roue d'esclaves propulsant ses navires.
-
-Le clan fait également grossir son butin en récupérant des épaves sur la côte de l'île des Sirènes qui sont ramenées à Port de l'Échine. Les skavens ont tendance à éviter d'attaquer les vaisseaux près de la côte, car ils ne veulent pas donner raison au seigneur gris Kritislik. Pour sa part, Vrisk participe activement aux opérations de son clan. À bord d'un bateau de clan, tous les skavens sont suspectés de mutinerie, ce qui n'est pas plus mal, car ils comptent tous effectivement se rebeller tôt ou tard. Les capitaines-griffes de Vrisk luttent pour maintenir l'ordre, c'est pourquoi l'Archiseigneur des mers lui-même juge bon de surveiller la situation depuis la proue du vaisseau amiral du clan Skorbut, les *Crocs de Port de l'Échine*, une masse grouillante hérissée de canons navals à malefoudre.
-
-Vrisk occupe le huitième siège du conseil des Treize. C'est une position humble et il se livre rarement aux intrigues nécessaires pour gagner davantage de pouvoir. Les rumeurs affirment qu'il dédaigne la compétition rancunière de Skarogne au profit d'une vie sur les vagues de l'océan. De surcroît, s'il ne consacrait pas son énergie à mener son clan en personne, la moitié de son peuple se serait déjà mutinée le soir suivant.
-
-|   | VRISK GRATTE-LE-FER                               |    |    |    |    |    |    |    |    |    |    |
-|---|---------------------------------------------------|----|----|----|----|----|----|----|----|----|----|
-|   | ARCHISEGNEUR DES MERS DU CLAN SKORBUT             |    |    |    |    |    |    |    |    |    |    |
-| M | CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc<br>B |    |    |    |    |    |    |    |    |    |    |
-| 5 | 74                                                | 70 | 73 | 73 | 78 | 66 | 60 | 85 | 70 | 30 | 28 |
-
-**Compétences :** Athlétisme 96, Calme 85, Commandement 55, Corps à corps (Armes d'hast 99, Base 94), Escalade 98, Esquive 96, Intimidation 98, Intuition 98, Langue (Reikspiel 90, Tiléen 90), Métier (Charpentier) 80, Natation 98, Orientation 103, Pari 105, Perception 98, Projectiles (Armes à projectiles skavens) 95, Ragot 50, Ramer 98, Résistance 83, Savoir (Guerre 95, Histoire 95, Navigation 105, Politique 105), Survie en extérieur 105, Voile 86
-
-**Talents :** Ambidextre, Battement, Bonnes jambes, Chanceux 13, Combat instinctif 3, Combattant en espace clos, Coup puissant, Feinte, Frappe blessante, Frappe précise, Fuite !, Grimpeur, Guerrier né, Inébranlable, Infatigable, Maîtrise du combat 3, Maniement de deux armes, Marinier, Menaçant 3, Nageur endurant, Perspicace, Pied marin, Pilote, Rat d'égout, Réflexes foudroyants, Seigneur de guerre, Sens aiguisé (Odorat), Souplesse féline, Tir précis, Tir rapide, Très fort, Très résistant, Vigilance, Vivacité **Traits :** À distance (Pistolet) (10) +7, Arme (Épée) +12, Arme (Hallebarde) +12, Armure 4 (11), Infecté, Vision nocturne
-
-**Possessions :** armure de malepierre complète, bourse contenant 425 grammes de malepierre raffinée, pistolet patte d'oie à malepierre, épée, hallebarde.
-
-<span id="page-160-0" data-folio="157"></span>
-**Alimenté par la malepierre (1 fragment) :** Vrisk a besoin de consommer une certaine quantité de malepierre raffinée chaque semaine pour que son corps fonctionne normalement. S'il passe une semaine sans consommer 1 fragment (28 grammes) de malepierre raffinée, réduisez toutes ses Caractéristiques à pourcentage de 20 et son Talent Chanceux 13 devient Chanceux 3.
-
-**Favori du Rat Cornu :** Vrisk a touché le pilier des Commandements et y a survécu. Il possède 3 points de Destin et 3 points de Résilience.
-
-**Armure de malepierre :** de la malepierre réduite en poudre a été utilisée pour forger les plaques d'une armure de malepierre complète. En plus de fournir une protection, cette armure est une Influence corruptrice Mineure (voir page 182 de **WFJDR**) pour quiconque affronte celui qui la porte au corps à corps.
-
-**Pistolet patte d'oie à malepierre :** Vrisk a sur lui une étrange arme à feu à cinq canons, qu'il sort quand il mène un abordage.
-
-| Arme                                    | Enc | Portée<br>Dégâts |    | Atouts et Défauts                                                        |  |  |  |  |  |  |  |
-|-----------------------------------------|-----|------------------|----|--------------------------------------------------------------------------|--|--|--|--|--|--|--|
-| ARME À PROJECTILES SKAVEN               |     |                  |    |                                                                          |  |  |  |  |  |  |  |
-| Pistolet<br>patte d'oie à<br>malepierre | 1   | 10               | +7 | Dangereuse,<br>Imprécise,<br>Malepierre,<br>Recharge 5,<br>Tir de zone 5 |  |  |  |  |  |  |  |
-
-**Malepierre :** en plus des dégâts normaux, toute attaque de Vrisk infligeant une Blessure Critique cause également une Exposition Mineure à la Corruption (voir page 182 de **WFJDR**).
-
-|  |  | LES CROCS DE PORT DE L'ÉCHINE |
-|--|--|-------------------------------|
-|  |  |                               |
-
-| Nom du navire                | Équipage | Roue à aubes M (É) | Man | Taille | E  | B   | Cont<br>enanc<br>e | Traits et<br>Améliorations |
-|------------------------------|----------|--------------------|-----|--------|----|-----|--------------------|----------------------------|
-| Crocs de Port de<br>l'Échine | 75       | 5 (25)             | –   | 60     | 55 | 200 | 1 000              | –                          |
-
-Les *Crocs de Port de l'Échine* a 10 canons navals à malefoudre sur son pont, cinq tournés à bâbord et cinq tournés à tribord.
-
-**Roue à aubes :** les Tests de Navigation sont effectués en utilisant la compétence Intimidation du capitaine plutôt que Voile ou Ramer. La roue à aubes fonctionne à peu près de la même manière que des avirons, mais elle peut déplacer un navire en marche arrière et pas seulement en marche avant. Si le capitaine d'un bateau doté d'une roue à aubes veut changer de direction de déplacement, il doit effectuer un Test de **Commandement Intermédiaire (+0)** ou un Test d'**Intimidation Intermédiaire (+0)**. En cas de succès, à partir du Round suivant, le navire peut se déplacer en marche arrière.
-
-# PIÈCES D'ARTILLERIE
-
-| Arme                      | Prix<br>Enc<br>Disponibilité<br>Portée<br>Dégâts<br>Atouts et Défauts |    |   |     |     |                                                                               |  |  |  |  |
-|---------------------------|-----------------------------------------------------------------------|----|---|-----|-----|-------------------------------------------------------------------------------|--|--|--|--|
-| ARME À PROJECTILES SKAVEN |                                                                       |    |   |     |     |                                                                               |  |  |  |  |
-| Canon naval à malefoudre  | –                                                                     | 80 | – | 200 | +15 | À Poudre noire, Arme d'équipe 4, Dangereuse,<br>Malepierre, Recharge 8, ZAP ! |  |  |  |  |
-
-**ZAP ! :** ces armes tirent une rafale d'énergie arcanique. Les armes ZAP ! réduisent les PA de 1 et ignorent les PA venant d'une armure en métal.
-
-<span id="page-161-0" data-folio="158"></span>
-# **INDEX** • •
-
-| A                                    | F                                      | Léviathan-phare et                    | R                                    |
-|--------------------------------------|----------------------------------------|---------------------------------------|--------------------------------------|
-| Acheter une cargaison 135            | Figure de proue 98                     | léviathan noir 147                    | Ralentisseurs latéraux 98            |
-| Affaler les voiles 107               | Fournitures maritimes,                 | Lissage 99                            | Ratisseur de plages (Carrière) 78    |
-| Ancre 97                             | épaves et débris d'Hornborg 62         | Liste de Chansons de marins 67        | Ravnshafnaz 43                       |
-| Anguille mâcheprise 141              |                                        | Longs voyages très rapides 128        | Relations avec Karaz Ankor 42        |
-| Artilleur de navire (Carrière) 64    | G                                      | Ludolf le Jeune 22                    | Renforcé 97                          |
-| Attaques de Corps à corps            | Gargantuan 143                         |                                       | Repaire du roi des trolls 37         |
-| contre un navire 116                 | Générer les cargaisons disponibles 137 | M                                     | Réparation 117                       |
-| Au Repaire des monstres 31           | Grande Chapelle de Mathann,            | Magie des mers 14                     | Réparations temporaires 116          |
-| Auberge du Repos du berserker 43     | Miragliano 84                          | Mal de mer 125                        | Robuste 97                           |
-| Autel de la Moisson écarlate 36      |                                        | Manannsheim 84                        | Rude épreuve 123                     |
-|                                      | H                                      | Manque de bras 122                    |                                      |
-| B                                    | Halle des Snaegrs 52                   | Marché aux poissons 26                | S                                    |
-| Balistes 100                         | Hydre d'os 146                         | Marin (Carrière) 68                   | Sabord 99                            |
-| Baudroye 140                         |                                        | Miracles de Manann 87                 | Salissures 105                       |
-| Bélier 97                            | I                                      | Miracles de Stromfels 91              | Sangsue des abysses 146              |
-| Blindage 97                          | Indices de Collision 111               | Monolithe de Borkhill 52              | Schunen et Sigisdottir, spécialistes |
-|                                      |                                        | Montagnes des Géants 40               | de la récupération sous-marine 33    |
-|                                      |                                        |                                       |                                      |
-| C                                    | K                                      | Mortiers 100                          | Scorbut 125                          |
-| Cabane de Vargr 54                   | Kazad Ungorhafnaz 45                   |                                       | Skaldor comme mécène 46              |
-| Cabine de luxe 98                    | Kharibde 144                           | N                                     | Skarlati Dreki 53                    |
-| Canons 100                           | Kraka Ravnsvake 40                     | Naufrageur (Carrière) 70              | Solide 97                            |
-| Carrières norses 57                  |                                        | Nautonier (Carrière) 72               | Stromfels et Manann 89               |
-| Cartographie 134                     | L                                      | Navigation maritime 103               | Stylet 141                           |
-| Cathédrale de Manaan, Marienburg. 84 | L'Anguille 10                          | Navires de guerre des nains norses 44 | Syrène bleue 145                     |
-| Chamon Dharek 36                     | L'autel des Navigateurs 62             | Navires et construction navale 92     | Système d'engrenages de grubark 44   |
-| Chansonnier (Carrière) 66            | La Baie des lames 37                   | Navires impériaux 19                  |                                      |
-| Chantier naval d'Hafskael 61         | La Bière du Boyard 30                  | Nid-de-pie 99                         | T                                    |
-| Chantier naval d'Hardrak 43          | La côte des Bjornlings 58              | Nordland 18                           | Taille et Améliorations 97           |
-| Château Neurath 28                   | La côte des Sarls 36                   | Nouveaux Talents 63                   | Température 106                      |
-| Classe Côtier 63                     | La côte des Skaelings 48               |                                       | Temple de Mermedus 54                |
-| Clinfoc 98                           | Le cimetière des Bateaux 25            | O                                     | Tests d'équipage 121                 |
-| Cloche du bateau 21                  | Le culte de Manann 80                  | Officier (Carrière) 74                | Tests de Manœuvre 105                |
-| Clochers 108                         | Le culte de Stromfels 88               | Ostland 29                            | Tir de batterie 123                  |
-| Collège du baron Henryk 14           | Le dock de la Devinette 24             |                                       | Tir de zone (Indice) 102             |
-| Commerce d'opportunité 134           | La Fraternité des marins               | P                                     | Tirs de petites armes                |
-| Coups critiques sur l'équipage 117   | et des pilotes 13                      | Périls de la Mer des Griffes 73       | contre un navire 115                 |
-| Coups critiques sur le navire 117    | Le Grand Phare 10                      | Personnages humains norses 56         | Tomber du gréement 117               |
-| Crabe boxeur 141                     | Le Pays des Trolls 34                  | Personnalités du culte 82             | Tonneau d'eau douce 125              |
-|                                      | Le quai de la quarantaine 30           | Peu maniable 97                       | Tourbillons 113                      |
-| D                                    | Le Repos du pillard 33                 | Phares 108                            | Traits et Améliorations de navire 93 |
-| Distances de voyage 129              | Le Seigneur des mers Aislinn 16        | Pic du Dormeur 28                     | Triton 148                           |
-|                                      | La Gueule du dragon 9                  | Pierriers 100                         |                                      |
-| E                                    | La halle du Roi 61                     | Placement des canons sur le pont 101  | U                                    |
-| Échouage 112                         | La Lanterne de Manann 23               | Possessions de Classe 63              | Une mission pour Khyrathi Bayne 17   |
-| Éclats (Indice) 117                  | La marine de la côte du Nordland 20    | Précipitations 106                    |                                      |
-| Élémentaire de mer 142               | La taverne du Béhémoth 24              | Prêtre marin de Manann 76             | V                                    |
-|                                      |                                        |                                       |                                      |
-| Embarcation de bord 98               | Le Fourre-tout du Marin                | Propulsion à vapeur 99                | Velkominn Allt 53                    |
-| Encalminé 107                        | de Trusten 31                          | Protection de Sjoktraken 45           | Vendre une cargaison 135             |
-| Entraînement d'équipage 134          | Le guet d'Odrall, Ordre                |                                       | Vents 107                            |
-| Entretien 123                        | des Fils de Manann 32                  | Q                                     | Virement de bord 107                 |
-| Entretien du navire 134              | Leopoldschloss 26                      | Quarts 20                             | Visibilité 106                       |
-| Épave de La Giron 32                 | Les arches noires 17                   |                                       | Vitesses maximum 105                 |
-| Événements pendant les               | Les Bjornlings et le Chaos 59          |                                       | Voie d'eau (Indice) 117              |
-| séjours dans un port 130             | Les marches de Couronne 9              |                                       |                                      |
-| Extermination des nuisibles 123      | Les nains norses 41                    |                                       | W                                    |
-|                                      | Les norses et Sartosa 50               |                                       | Wyrm des mers 145                    |
-|                                      | Les Norses et Stromfels 50             |                                       |                                      |
-
-Les Seigneurs des mers impériaux ... 19
-
-<span id="page-162-0" data-folio="159"></span>
-|  |  |  |  |  |  |  | 159 |  |  |  |  |  |
-|--|--|--|--|--|--|--|-----|--|--|--|--|--|
-
-<span id="page-163-0" data-folio="160"></span>
-
-
-## [VDM 13] Creatures magiques
-
-*Pages PDF 177-193*
-
-# • CRÉATURES MAGIQUES •
-
-<span id="page-176-0" data-folio="173"></span>Les Vents de Magie ne servent pas seulement à alimenter des sorts, ils ont une personnalité et une volonté propres qui peuvent se manifester sous des formes terribles. Certains sorciers étudient des sorts et des rituels pour donner vie à des créatures grâce à la magie. On leur donne l'appellation générique de « créatures magiques ». Elles ont un lien avec celles des forces du Chaos (comme les démons) ou de la nature (comme les esprits de la forêt), mais s'en distinguent. S'il existe une multitude de créatures magiques qui peuvent apparaître grâce à une concentration d'énergie magique, on peut toutefois les classer selon trois grandes catégories :
-
-- 0 **Les élémentaires incarnés :** des créatures puissantes et violentes, issues d'une concentration d'énergie magique, qui incarnent les aspects les plus destructeurs d'un vent précis.
-- 0 **Les fabriqués par magie :** de puissantes constructions matérielles à qui l'on accorde un semblant de vie, mais qui ne disposent pas d'une volonté propre.
-- 0 **Les familiers :** de petits serviteurs magiques, à qui un sorcier a alloué une partie de sa propre vitalité, leur donnant un peu d'esprit et d'indépendance.
-
-# **ÉLÉMENTAIRES INCARNÉS**
-
-Quand la magie se concentre fortement dans l'atmosphère ou lorsqu'une Tempête de Magie s'annonce, des sorciers peuvent oser invoquer l'essence la plus pure et la plus destructrice de l'un des vents. Elle prend alors la forme de créatures spirituelles d'une force tumultueuse. Ces élémentaires incarnés sont des avatars à la conscience limitée qui personnifient les particularités d'un seul vent magique. On comprend mal les phénomènes qui leur donnent naissance. Les élémentaires sont la quintessence du vent auquel ils sont rattachés, mais ils ont tendance à n'en montrer que ses aspects les plus destructeurs. De plus, à l'aide des rituels établis pour invoquer les élémentaires, seuls trois d'entre eux ont été correctement documentés : ceux du Feu, de la Mort et de la Bête. Des sorciers de combat des Collèges du Feu, d'Améthyste et d'Ambre, ont invoqué ces monstres gigantesques à l'issue de rites longs et complexes se déroulant dans des lieux sacrés, des appuis arcaniques ou des endroits saturés de magie. De temps en temps, ces élémentaires monstrueux apparaissent de manière inopinée là où la concentration d'un vent précis est abondante. Par exemple, on trouve parfois des élémentaires incarnés de la Bête dans les profondeurs du rocher du Fauschlag.
-
-On pense qu'il existe de nombreuses autres formes d'élémentaires. Des marins ont fait le récit de créatures constituées uniquement d'eau, ce que des érudits de la magie ont supposé être des élémentaires incarnés de la Vie. Les ungols et les hobgobelins qui sillonnent les steppes orientales évoquent des « démons du vent », que certains imaginent être des élémentaires de Lumière. D'autre part, les ifrits qui hanteraient les déserts méridionaux seraient une pâle copie d'élémentaires. Les gospodars, eux, expliquent que leurs dieux se manifestent sous forme d'immenses ours constitués de pierre et de glace. Enfin, les mineurs et les montagnards racontent les mêmes histoires de créatures composées de roche ou de métal vivant. Les sorciers d'Altdorf aimeraient beaucoup savoir si de tels récits se fondent sur une quelconque vérité et si, dans ce cas, ces créatures peuvent être des élémentaires incarnés d'autres vents que *Aqshy*, *Shyish* et *Ghur*.
-
-
-#### <span id="page-177-0" data-folio="174"></span>ÉLÉMENTAIRE INCARNÉ DU FEU
-
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 7 | 55 | –  | 55 | 55 | 55 | 55 | 31  | –   | –  | –   | 80 |
-
-**Traits :** Arme (Énorme épieu) +10, Fabriqué, Foulée, Immunité (tous les feux), Instable, Lanceur de Sorts (Domaine du Feu), Protection 8+, Redoutable 3, Taille (Énorme), Terreur 3
-
-**Compétences :** Corps à corps (Arme d'hast) 70
-
-**Sorts :** Armure aethyrique, Blizzard ardent d'Ygethmor (voir page 134)
-
-**Descendre en cendres :** l'intense chaleur qui émane de l'élémentaire incarné du Feu fait grimacer et fléchir ses ennemis en combat rapproché. Au corps à corps, ils doivent réussir un Test de **Calme Accessible (+20)** ou bien subir –20 à leur Compétence de Corps à corps.
-
-**Don du feu :** l'élémentaire irradie de chaleur et libère des braises brûlantes pendant qu'il se déplace. Au début de chaque Round, lancez 1d10. Sur un 10 et à la discrétion du MJ, un objet inflammable situé dans un rayon de 20 mètres de l'élémentaire reçoit +1 État *En flammes*. Si cet objet est porté par un Personnage, il dispose d'un tour pour s'en débarrasser sans quoi il reçoit lui aussi +1 État *En flammes*.
-
-Les Personnages qui portent de la poudre noire dans un rayon de 20 mètres de l'élémentaire doivent lancer 1d10 au début de chaque tour. Elle s'embrase sur un 10, ce qui peut donner lieu à des explosions imprévues ou à des incidents de tir (**WFRP,** page 160). Lorsque la poudre noire explose, elle est généralement considérée comme une bombe (**WFJDR**, page 295), sauf si elle est transportée en une quantité trop importante qui s'avérera fatale.
-
-**Lanceur de sorts décérébré :** les élémentaires incarnés du Feu peuvent utiliser leur Caractéristique de Force pour lancer des sorts.
-
-# **Élémentaire incarné du Feu**
-
-*Aqshy* est le Vent de Magie le plus destructeur, affamé et insatiable, dévorant tout sans raison apparente. On raconte que les élémentaires incarnés du Feu qui en sont issus possèdent un courroux et une fureur qui n'est égalée que par celle des démons.
-
-Connus dans la tradition magique sous le nom de Calcinés, Faucheurs noirs et Jack des Cendres, ils dominent largement les champs de bataille. De leur apparence maigre mais terrible, comme des braises noires parsemées de cendre, émane une chaleur phénoménale. Peu de personnes peuvent endurer leur colère : une tempête de feu qui transforme les armures en scories fondues et fait exploser l'artillerie, projetant des éclats brûlants de métal dans les airs et dans la peau de ceux qui se trouvent à proximité.
-
-Les élémentaires incarnés du Feu sont si destructeurs et difficiles à contrôler qu'on les invoque rarement. Même dans les pires circonstances, les magisters les plus téméraires de l'Ordre Flamboyant, qui pourtant ne manque pas d'adeptes écervelés, sont réticents à l'idée d'en convoquer un. Malgré leur réputation, ces imposants monstres apprécient l'étrange attachement que leur portent de nombreux paysans vivant sur le versant bretonnien des Montagnes Grises.
-
-Ils dressent des effigies de bois brûlé devant leurs masures pour remercier un mystérieux démoniste qui a un jour convoqué une vingtaine de Faucheurs noirs afin de vaincre une horde d'horribles morts-vivants en furie. Les barons locaux démolissent ces effigies s'ils les trouvent et affirment que ces récits sont des mensonges séditieux. Toutefois, les forteresses noircies et brûlées qui parsèment la région apportent la preuve du contraire.
-
-
-<span id="page-178-0" data-folio="175"></span># **Élémentaire incarné de la Mort**
-
-Ceux qui souhaitent invoquer un élémentaire incarné de la Mort risquent leur propre anéantissement, car en le faisant venir, c'est la Mort elle-même que l'on invite dans ce monde. Cette entité est une vision terrifiante : son énorme corps serpentin se contorsionne et se termine de chaque côté par de maigres têtes de dragons affamés.
-
-Même si ses proportions sont monstrueuses, il ne produit aucun bruit à l'exception d'un léger susurrement, inquiétants murmures sépulcraux qui le suivent dans son sillage. Contrairement aux autres élémentaires incarnés, on ne lui connaît pas d'autre nom. Il est rarement invoqué et ceux qui savent comment faire, les Spirites de l'Ordre d'Améthyste, le respectent bien trop pour se référer à lui autrement que par ce qu'il est.
-
-#### ÉLÉMENTAIRE INCARNÉ DE LA MORT
-
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 6 | 48 | –  | 65 | 65 | 59 | 55 | 10  | –   | –  | –   | 96 |
-
-**Traits :** Arme (Dents et cornes) +10, Constricteur, Fabriqué, Foulée, Instable, Immunité (*Shyish*), Morsure +9, Protection 8+, Redoutable 3, Taille (Énorme), Terreur 3
-
-**Dévoreur de vie :** À chaque fois que l'élémentaire incarné de la Mort tue un adversaire, il en absorbe les Blessures. Il gagne 1d10 Points de Blessure pour chaque tranche de 10 Points de Blessures de la victime, ce qui peut l'amener au-delà de son maximum de base.
-
-**Brouillard d'Améthyste :** Au lieu de faire une attaque normale, l'élémentaire incarné de la Mort peut dégager des vapeurs malodorantes qui empestent la mort. Quiconque se trouve au corps à corps avec lui doit effectuer un Test de **Résistance Difficile (–20)** et en cas d'échec subir un État *Empoisonné* pour chaque DR négatif. Cette attaque est magique et blesse les créatures normalement immunisées au poison.
-
-**Sablier de** *Shyish* **:** Par dépit ou désespoir, l'élémentaire peut briser le sablier utilisé pour l'invoquer, laissant s'échapper des volutes d'énergie de *Shyish*. Cette action remplace une attaque normale et étend le rayon du Brouillard d'Améthyste jusqu'à 30 mètres.
-
-Après avoir résolu le Brouillard d'Améthyste, l'élémentaire incarné subit 6d10 Blessures. Les Dégâts sont réduits par son Bonus d'Endurance, mais ne peuvent pas être évités avec le Trait *Protection*.
-
-**Silencieux :** L'élémentaire incarné de la Mort ne produit aucun bruit et a un bonus de +2 DR à tout Test de Discrétion qu'il effectue.
-
-L'élémentaire incarné de la Mort est lié au royaume mortel par le pouvoir contenu dans une horloge de *Shyish* particulière : un sablier enchanté qui contient de la poudre d'os d'un monarque. Cet artefact fait office de cœur arcanique puissant et lui seul peut contenir le pouvoir harassant de cette entité surnaturelle.
-
-Les spécialistes du Domaine de *Shyish* affirment que ceux qui croisent le regard d'un élémentaire incarné de la Mort y voient leur propre anéantissement – mais en s'en approchant suffisamment, ils sont déjà perdus. Lorsqu'il se dresse, l'élémentaire frappe avec une vitesse que peu devancent et broie ses ennemis en enroulant son corps tortueux autour d'eux ou en les déchiquetant sous ses mâchoires monstrueuses.
-
-
-<span id="page-179-0" data-folio="176"></span># **Élémentaire incarné de la Bête**
-
-Les adeptes de la magie d'Ambre convoquent des élémentaires incarnés de la Bête grâce à des rituels puissants et complexes. Pour en augmenter la puissance, un imposant totem composé de crânes d'animaux et de fourrures à peine fraîchement dépecées est nécessaire, ce qui a amené les sorciers d'Ambre à désigner cette entité titanesque sous le nom de Prédateur sanglant. Ses autres noms sont l'Homme cornu et le Chasseur sans visage.
-
-La silhouette gigantesque de l'élémentaire est un humanoïde aux muscles puissants entrecroisés de nerfs gonflés à bloc. Il a en guise de tête un crâne à dents de sabre, surmonté de bois d'une grande envergure. Ses griffes avant sont des serres d'aigle et il se dresse sur ses pattes arrière, semblables à celles d'un lion.
-
-L'esprit de l'élémentaire, bestial et cruel, renferme ceux d'innombrables prédateurs sauvages et assoiffés de sang. Il chasse tous ceux qui entrent sur son territoire, les blesse grièvement jusqu'à ce que leur lutte cesse avant de se gorger de leur sang et de se repaître de leur chair. Son hurlement provoque la terreur chez ceux qui l'entendent, réveillant en eux la mémoire ancestrale des prédateurs primitifs.
-
-|   |    |    |    | ÉLÉMENTAIRE INCARNÉ DE LA BÊTE |    |    |     |     |    |     |     |
-|---|----|----|----|--------------------------------|----|----|-----|-----|----|-----|-----|
-| M | CC | CT | F  | E                              | I  | Ag | Dex | Int | FM | Soc | B   |
-| 7 | 56 | –  | 75 | 62                             | 45 | 49 | 15  | –   | –  | –   | 104 |
-
-**Traits :** Arme (Griffes) +11, Armure (Peau) 2 (8), Cornes +10, Fabriqué, Foulée, Immunité (*Ghur*), Instable, Protection 8+, Redoutable 3, Taille (Énorme), Terreur 3
-
-**Hurlement de la Grande Bête :** Le hurlement du prédateur sanglant distille la peur chez ceux qui l'entendent. Lors de son tour, il peut dépenser 1 Avantage et hurler sur ses ennemis pour une Attaque gratuite. Toutes les cibles vivantes qui se trouvent dans un rayon en mètres égal à l'Initiative de la créature (45) reçoivent immédiatement 3 États *Assourdi* et doivent réussir un Test de **Calme Complexe (–10)** ou bien recevoir 3 États *Brisé*. Un Personnage qui réussit ce Test une fois n'a plus besoin de l'effectuer durant le reste de la rencontre.
-
-#### TRAIT DE CRÉATURE : REDOUTABLE (INDICE)
-
-Si, au début de son tour, la créature a un nombre d'Avantages inférieur à son indice de Redoutable, elle gagne immédiatement tous les Avantages qui lui manquent.
-
-Si vous utilisez les règles d'Avantage de groupe de **Aux armes !**, la créature génère en Avantage son indice de Redoutable dans la réserve adverse d'Avantage.
-
-#### ESPRITS DE LA NATURE
-
-Le terme *« esprit de la nature »* est employé de façon approximative par les citoyens de l'Empire pour décrire toute créature forestière mystérieuse qu'ils pourraient croiser par hasard. Les sorciers des Collèges et les elfes savent que les esprits de la nature sont distincts des élémentaires et des autres manifestations aethyriques. Chaque arbre, chaque pierre abrite un esprit mineur qui peut s'éveiller si les conditions sont réunies. Les druides et les elfes des bois communient avec ces esprits en sommeil. Même si de nombreux esprits de la nature peuvent sembler incorporels, ce sont des entités vivantes qui peuvent être tuées.
-
-Les esprits de la nature existent depuis plus longtemps que les elfes, et leurs origines restent inconnues, même pour les habitants de Laurelorn. Les esprits de la nature, comme les dryades, les naïades et les farfadets, prospèrent dans des régions où la saturation magique est constante et les puissants hommes-arbres résident dans les forêts, là où elle s'est établie depuis des siècles. Les vénérables esprits de la nature peuvent apparaître sous bien des formes différentes, allant des licornes aux crapauds géants en passant par des grands cerfs, serpents et êtres humanoïdes étranges.
-
-
-# **FABRIQUÉS PAR MAGIE**
-
-<span id="page-180-0" data-folio="177"></span>La principale caractéristique des fabriqués réside dans leur appellation : ils sont *fabriqués*, conçus avec des matériaux bruts. Leur élaboration peut être extrêmement simple ou bien exiger un savoir-faire rigoureux, comme par exemple une marionnette dont les doigts ont été taillés individuellement, habilement reliés ensemble et parfaitement articulés. Certains sorciers aiment exécuter ce travail eux-mêmes, mais la plupart obtiennent des résultats plus impressionnants en engageant un artisan compétent.
-
-Le sorcier lui explique ce qu'il souhaite obtenir et l'artisan ce qui est possible. Avec un peu de chance, cette collaboration trouve un compromis, mais certains sorciers sont assez entêtés. Parfois, les artisans se résignent et font ce qu'on leur demande, même s'il s'agit d'une mauvaise idée, par exemple un homme d'osier composé de bois et de ramures qui provoque la colère d'une petite armée de taalites.
-
-Indépendamment de ce qui les compose, les fabriqués sont souvent forts et endurants : s'ils sont en paille, ils peuvent prendre feu, mais résistent bien plus longtemps que ce que l'on pourrait croire et frappent aussi fort que s'ils étaient en fer forgé.
-
-Il ne s'agit pas simplement d'objets physiques à qui l'on donne vie : ce sont des fabrications magiques et leurs composants ne réagissent pas toujours de façon naturelle après l'enchantement. Nul doute qu'un loup en granite coule si on le pousse hors d'une barge, mais il peut nager jusqu'à la berge de la rivière (ou marcher au fond de l'eau et pister l'embarcation).
-
-Même si les fabriqués ne sont pas intelligents par rapport à des serviteurs et sbires mortels, leur abêtissement procure un sérieux avantage : ils font ce qu'on leur ordonne et *seulement* cela. Cela peut sembler contre-productif, mais des plans ingénieux et minutieux ont été maintes fois chamboulés par des mercenaires qui pensaient avoir de meilleures idées.
-
-De même, là où les mortels sont soudainement sujets à la peur, au doute, aux crises de conscience et de moralité, les fabriqués ne ressentent pas d'émotions. Si l'un d'entre eux reçoit l'ordre de commettre une atrocité, il va à coup sûr s'y conformer et l'exécuter ! Quand il est en feu, il ne se met pas à crier et à se rouler par terre, mais continue de faire ce qui lui a été demandé jusqu'à ce qu'il ne puisse plus. Cependant, cela implique que les ordres et les instructions doivent être très soigneusement pensés et formulés avant d'être émis.
-
-Créer des fabriqués peut être chronophage et onéreux, ce qui est donc rarement entrepris sans but précis. Cela peut être simplement pour se distinguer des autres sorciers ou pour la recherche arcanique, mais cela répond généralement à des fins plus pratiques.
-
-Consultez la page 28 pour plus de détails sur le Rituel *Créer un Fabriqué*.
-
-# **Gardes du corps**
-
-De nombreux fabriqués sont construits pour dissuader ou mettre fin aux attaques contre leur maître lorsqu'il est en déplacement ici ou là. Ces gardes du corps ont généralement une forme humanoïde (quoique souvent grands) qui permet de les déguiser facilement et de réduire les chances d'attirer l'attention ou de provoquer l'effroi lorsque le sorcier se promène.
-
-Il y a de nombreuses raisons de se garder d'aborder d'un sorcier, mais s'il est accompagné d'un grand personnage à la démarche inhabituelle, vêtu d'un long pardessus et d'un chapeau qui masque son visage, il y a de fortes chances pour qu'il soit en compagnie d'un fabriqué et doive donc être laissé tranquille.
-
-# **Gardiens de maison**
-
-*« Je suis désolé, mais Heinz Lang, umbramancien et Gardien Gris, n'est pas à la maison. Si vous souhaitez lui laisser un message, s'il vous plaît, parlez distinctement après les croâs… Croâ ! Croâ ! Croâ ! »*
-
-Les sorciers sont des gens occupés. Comme ils ne sont pas toujours chez eux pour recevoir des visiteurs, que leurs résidences ne sont pas toujours rattachées à leurs ateliers magiques et qu'ils ne peuvent pas être aux deux endroits en même temps, les fabriqués font office de gardiens en leur absence.
-
-Certains sont ingénieux, comme un pliodon de Lustrie qui ne bouge que si quelqu'un commence à faire n'importe quoi avec les grimoires, ou une licorne, haute de deux mètres et demi, qui patrouille les terres du domaine du magister-alchimiste du coin et prend en chasse quiconque la regarde de travers.
-
-Ils peuvent servir de gardiens à d'autres endroits, comme une portion de rivière riche en *Ghyran* qu'un druide ne souhaite pas partager avec ses rivaux, et ne pas être uniquement au service d'un sorcier. Des marchands fortunés et des nobles souhaiteraient peut-être avoir un garde qui ne soit pas tenté par les objets de valeur qu'il protège.
-
-
-<span id="page-181-0" data-folio="178"></span># **Ouvriers**
-
-Pour les sorciers, les caisses de livres sont lourdes et leurs tours doivent être construites dans des endroits où même les nains n'osent pas s'aventurer. Il est rare que les embarcations qui rament toutes seules se mutinent et jettent par-dessus bord les sorciers parce qu'ils portent malheur. Enfin, n'importe lequel d'entre eux doit parfois être porté pour rentrer chez lui après une nuit de discussions animées, souvent à cause de l'alcool.
-
-À tout le moins, les fabriqués sont forts, infatigables et possèdent éventuellement plusieurs paires de mains. Ils n'ont pas besoin d'avoir une forme humanoïde pour travailler avec des outils ou être capables de voyager (dans le cas des embarcations qui rament toutes seules par exemple). Tout est possible : une grue de chantier naval, une machine pour l'extraction des carrières, un moulin qui tourne sans vent… Malheureusement, les fabriqués ouvriers entraînent rapidement la mobilisation des guildes et des agitateurs locaux, il est donc préférable de les garder hors de vue et de ne pas trop en construire.
-
-# **Soldats**
-
-Les sorciers ont reçu de nombreuses demandes pour construire des régiments de fabriqués à des fins militaires, mais elles n'ont pas été suivies d'effets. Les fabriqués exigent beaucoup de directives de la part de leurs créateurs et lorsque la concentration des sorciers est rompue, ils sont désorientés par les revirements spectaculaires sur le champ de bataille. Il y a même eu des cas où dans la mêlée certains se sont retournés contre leurs alliés. De manière générale, les sorciers n'engagent pas de fabriqués dans les combats. Cependant, certains d'entre eux se sentent suffisamment à l'aise pour y commander une bête des marais.
-
-# LES PIERRES DU TERTRE
-
-Le Culte de Morr, par crainte des pilleurs de tombes ou des nécromanciens, a demandé à Wilhelm Stross, un sorcier d'Améthyste, de construire un gardien sépulcral pour protéger un tertre funéraire découvert dans les collines de l'effroi à l'est d'Essen. Stross a visité la région et est tombé par hasard sur plusieurs monolithes anciens et érodés, vestiges d'antiques cercles de pierres. Il les a utilisés pour construire au sommet de la butte un dolmen incliné par le poids des années et constellé de lichen, mais qui est en réalité le gardien sépulcral.
-
-Ce dernier a reçu l'ordre de rester immobile et de ne se redresser dans une forme à moitié humanoïde que si quelqu'un commence à creuser plus d'une trentaine de centimètres dans le tertre ou dans une zone délimitée autour de celui-ci. Si le pilleur s'arrête, le gardien attendra qu'il soit hors de vue de la butte pour reprendre sa position initiale. Il n'attaquera – et si nécessaire ne tuera – que si le pilleur persiste ou s'en prend à lui. Seul Stross ou un prêtre de Morr peuvent lui ordonner de s'arrêter.
-
-
-<span id="page-182-0" data-folio="179"></span># **Bêtes des marais**
-
-L'infâme bête des marais prend traditionnellement vie sous forme de masse marécageuse croupie et vaseuse. Les sorciers pensent qu'il s'agit de l'un des exemples de fabriqués les plus anciens, précédant la formation des Collèges impériaux de bien des siècles. Cependant, elle se différencie des fabriqués ordinaires (si l'on peut les appeler ainsi) en ce sens qu'elle ne subsiste que pendant quelques jours à moins d'être imprégnée d'encore plus de magie. Durant sa courte existence, c'est un être puissant doté de pouvoirs régénératifs.
-
-On raconte qu'elles sont particulièrement répandues dans les marécages d'Albion, où certaines auraient même une forme de vie indépendante. Plusieurs déambulent également dans les couloirs du Collège de Jade où elles font office de gardes et effectuent des tâches ingrates qui demandent de la force brute.
-
-La création d'une bête des marais exige deux matériaux essentiels. Le premier est évidemment une importante quantité de matière végétale humide en décomposition et c'est pour cela que la plupart d'entre elles sont créées loin de la civilisation, dans des marais, marécages et tourbières. Le Collège de Jade a l'avantage de pouvoir envoyer de nombreux apprentis (certains même volontaires) dans la campagne environnante d'Altdorf pour draguer des herbes pourrissantes et désengorger les affluents du Reik obstrués par du limon, et d'en ramener des charrettes pleines dans ses ateliers.
-
-Le second est le soi-disant *« cœur-de-pierre »* d'une bête des marais. Au centre de chacune d'elles se trouve un bloc de pierre qui les maintient magiquement en vie à la suite du rituel. À Albion ce sont des fragments d'une pierre d'ogham gravée avec d'antiques mots magiques, mais il pourrait s'agir de n'importe quelle pierre correctement gravée avec des symboles magiques conçus pour attirer les Vents de Magie.
-
-Enfin, il faut savoir qu'il n'est pas nécessaire qu'une bête des marais provienne à tout prix des marais. Les sorciers de Jade ont réalisé des expériences en forêt et ont créé des fabriqués similaires à partir d'aiguilles et de pommes de pins, de champignons, de mousse et de lichen. Il existe également la légende du fameux cheval putréfié d'Abdecker Gasse à Altdorf. Dans celle-ci, une infâme masse de chair, d'os et de carcasses putrides d'équidés, couronnée par trois têtes chevalines écorchées, devint incontrôlable avant d'être abattue. Les sorciers de Jade qui ont aidé à la détruire soupçonnaient qu'un cœur-de-pierre enchanté pour attirer Dhar était impliqué, mais un tel objet n'a jamais été retrouvé.
-
-#### BÊTE DES MARAIS
-
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 5 | 35 | –  | 50 | 55 | 10 | 15 | 10  | –   | –  | –   | 40 |
-
-**Traits :** Arme +8, Fabriqué, Infravision, Increvable, Infecté, Infravision, Instable, Limicole, Régénération, Stupide, Taille (Grande)
-
-**Facultatif :** Affamé, Frénésie, Parasité, Territorial
-
-
-# **FAMILIERS**
-
-<span id="page-183-0" data-folio="180"></span>Les familiers sont des entités magiques intelligentes créées pour servir un lanceur de sorts. C'est ce qui est généralement admis, mais la nature de la magie (et de ses adeptes) suppose que la réalité est autrement plus nuancée et complexe.
-
-# **Catégories de familiers**
-
-Les lanceurs de sorts qui accomplissent le Rituel *Créer un familier* (voir page 29) peuvent créer des familiers. Il en existe trois catégories distinctes : les familiers de combat, qui servent de garde du corps à leurs créateurs ; les familiers de pouvoir, qui peuvent seconder leurs maîtres dans le lancement de sorts et la compréhension de la magie ; les familiers de sorts, qui sont eux-mêmes des magiciens.
-
-La plupart des sorciers des Collèges fabriquent magiquement leurs familiers, même s'il existe un débat sur ce que cela implique véritablement. Certains invoquent ce qu'ils appellent un « esprit aethyrique » dans un objet physique et lui donnent ainsi vie. Par exemple, il est de bon goût chez les sorciers Dorés d'acheter ou de commander un oiseau mécanique dans lequel ils attirent un esprit aethyrique. D'autres sorciers les façonnent selon leur propre imagination, créant littéralement une forme grâce à la magie. Qu'il s'agisse d'un esprit aethyrique occupant une forme imaginée par le sorcier ou bien d'une entité unique en son genre créée de manière spontanée, les familiers qui en résultent sont l'objet d'intenses discussions et de querelles houleuses. Bien entendu, les répurgateurs les considèrent souvent tous comme des démons.
-
-Les sorciers de village et dissidents préfèrent apprivoiser et dresser un oiseau ou un animal sauvage (rarement plus grand qu'un gros chat), puis l'enchanter, ce qui augmente son intelligence et sa capacité à comprendre. L'animal devient alors dans la foulée une créature magique. À l'heure actuelle, certains sorciers impériaux, en particulier ceux des Ordres de Jade et d'Ambre, continuent de créer des familiers de cette façon, même si cela est perçu comme suranné, voire amateur.
-
-Les familiers des sorciers du Chaos et des démonologues sont presque toujours des démons mineurs, des créatures espiègles, au mieux hargneuses, souvent malveillantes. Elles sont invoquées depuis les Royaumes du Chaos à l'aide de sorts et de rituels puis asservies.
-
-Tous les lanceurs de sorts ne sont pas capables de créer les différentes formes de familiers. Reportez-vous au Tableau des Domaines et familiers pour voir quelle sorte de familier chaque lanceur de sorts peut créer.
-
-### **Quelle taille ont-ils ?**
-
-Les familiers sont généralement considérés comme de petits animaux, en particulier ceux des sorciers de village : chats, chauves-souris, crapauds et rats. Ceux créés par les sorciers impériaux peuvent avoir des formes plus étranges, mais leur taille est limitée. Partez du principe qu'ils sont rarement plus grands qu'un chat domestique replet. Les familiers de combat sont un peu plus grands, approchant la taille d'un halfling.
-
-|                                       | DOMAINES ET FAMILIERS            |                          |
-|---------------------------------------|----------------------------------|--------------------------|
-| Domaine                               | Apparence habituelle du familier | Catégorie de familier    |
-| Un des Domaines de Collège            | Variable, voir page 182          | Combat, pouvoir ou sorts |
-| Domaine de la Sorcellerie             | Animal de compagnie              | Pouvoir                  |
-| Domaine de la Magie naturelle         | Animal de compagnie              | Pouvoir                  |
-| Domaine de la Nécromancie             | Petit fabriqué mort-vivant       | Combat ou pouvoir        |
-| Domaine de la Démonologie ou du Chaos | Entité démoniaque toute petite   | Combat, pouvoir ou sorts |
-
-
-<span id="page-184-0" data-folio="181"></span>### **Peuvent-ils parler ?**
-
-Tous les familiers, même s'ils n'ont pas de bouche, parlent la langue maternelle de leur maître et une langue supplémentaire, s'ils en possèdent la Compétence. Certains discutent vivement avec n'importe qui, d'autres ne s'adressent qu'à leur maître, ou seulement si l'on fait appel à eux – ceci dépend de leur personnalité et chaque familier a la sienne. Certaines ressemblent à celles de leurs maîtres et d'autres diffèrent. Les familiers ont tendance à ne pas parler lorsque des répurgateurs sont dans les environs, mais certains ne peuvent pas s'en empêcher.
-
-#### **Apprécient-ils leurs créateurs ? Leurs créateurs les apprécient-ils ?**
-
-En temps normal, un sorcier et son familier partagent un lien fort et une affection sincère, voire de l'amour. Cependant, ces sentiments peuvent être couverts par des querelles, sarcasmes, jérémiades, disputes, bouderies et critiques ou en règle générale par une autorité disputée. Ceci varie selon les sorciers et leurs familiers, mais peu ressentent le besoin de faire étalage de leurs véritables émotions.
-
-De temps en temps, des familiers en veulent à leur créateur, mais ils sont toujours tenus de les servir. Dans de rares cas, des créateurs et leurs familiers pâtissent de conflits de personnalités affirmées, mais comme une partie de l'essence de leur créateur se retrouve chez le familier, ceci indique généralement que le sorcier n'est pas en paix avec lui-même.
-
-### **Familiers contre fabriqués**
-
-La différence fondamentale entre les fabriqués et les familiers réside dans la capacité de ces derniers à être émus, avoir conscience d'eux-mêmes et faire preuve d'intelligence. Ceci s'avère exact, même pour les familiers qui débutent comme bibelots en métal, comme l'oiseau en bronze d'un magister-alchimiste, ou qui ne semblent pas vivants, comme l'assistant d'un Gardien Gris qui ressemble à une volute de fumée.
-
-#### **Personnalités des familiers**
-
-Plus encore que les sorciers eux-mêmes, les familiers représentent la nature du vent dont ils sont issus. Leurs personnalités ont tendance à être dominées par les émotions associées à ce vent et sont donc plutôt limitées. Si vous souhaitez avoir des idées pour celle de votre familier, consultez le tableau ci-dessous.
-
-| PERSONNALITÉ DU FAMILIER |           |             |              |           |             |                 |            |             |  |  |  |
-|--------------------------|-----------|-------------|--------------|-----------|-------------|-----------------|------------|-------------|--|--|--|
-| d10                      | Aqshy     | Azyr        | Chamon       | Ghur      | Ghyran      | Hysh            | Shyish     | Ulgu        |  |  |  |
-| 1                        | Dynamique | Arrogant    | Ambitieux    | Farouche  | Rustre      | Hautain         | Morbide    | Mystérieux  |  |  |  |
-| 2                        | Narquois  | Rêveur      | Avare        | Timide    | Agreste     | Prévenant       | Morose     | Réservé     |  |  |  |
-| 3                        | Rancunier | Idéaliste   | Épicurien    | Prédateur | Attentionné | Suffisant       | Sardonique | Circonspect |  |  |  |
-| 4                        | Irritable | Sélénophile | Lunatique    | Distant   | Doux        | Pieux           | Sinistre   | Timide      |  |  |  |
-| 5                        | Agité     | Sagace      | Mesquin      | Anxieux   | Appliqué    | Pompeux         | Sombre     | Cynique     |  |  |  |
-| 6                        | Surexcité | Snob        | Protocolaire | Cruel     | Amical      | Coincé          | Distant    | Sournois    |  |  |  |
-| 7                        | Courroucé | Fier        | Assuré       | Craintif  | Bucolique   | Studieux        | Paresseux  | Perfide     |  |  |  |
-| 8                        | Furieux   | Inspiré     | Amusant      | Tactile   | Fiable      | Mégalomane      | Stoïque    | Malin       |  |  |  |
-| 9                        | Fanfaron  | Prétentieux | Généreux     | Vif       | Loquace     | Traditionaliste | Fataliste  | Sarcastique |  |  |  |
-| 10                       | Menaçant  | Gracieux    | Babillard    | Féroce    | Vulgaire    | Spirituel       | Résigné    | Distant     |  |  |  |
-
-
-#### FAMILIER DE COMBAT
-
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B |
-|---|----|----|----|----|----|----|-----|-----|----|-----|---|
-| 4 | 40 | 20 | 35 | 30 | 30 | 35 | 30  | 20  | 20 | 20  | 8 |
-
-<span id="page-185-0" data-folio="182"></span>**Traits :** Arme (Dague +5, Zweihänder +8), Armure 2, Magique, Taille (Petite)
-
-**Compétences :** Athlétisme 45, Calme 30, Corps à corps (Base 50, Deux-mains 50), Escalade 40, Esquive 45, Intimidation 40, Perception 40, Résistance 40
-
-**Talents :** Costaud, Empreint de (Vent au choix) (voir page 186), Guerrier né, Réflexes foudroyants, Sans peur (Taille Grande ou plus petite), Très fort
-
-**Possessions :** Zweihänder, dague
-
-#### FAMILIER DE POUVOIR
-
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B |
-|---|----|----|----|----|----|----|-----|-----|----|-----|---|
-| 4 | 20 | 20 | 20 | 20 | 30 | 30 | 30  | 40  | 35 | 20  | 7 |
-
-**Traits :** Arme (Dague) +4, Magique, Taille (Petite)
-
-**Compétences :** Athlétisme 40, Esquive 40, Intuition 40, Langue (Classique) 50, Savoir (Magie) 50, Corps à corps (Base) 30, Perception 40, Discrétion (Urbaine 40, Rurale 40)
-
-**Talents :** Assistant magique (voir page 186), Détection d'artefact, Empreint de (Vent au choix) (voir page 186), Lire/Écrire, Petit, Perspicace, Seconde vue
-
-#### FAMILIER DE SORTS
-
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B |
-|---|----|----|----|----|----|----|-----|-----|----|-----|---|
-| 4 | 20 | 20 | 20 | 20 | 30 | 30 | 30  | 35  | 35 | 20  | 7 |
-
-**Traits :** Arme (Dague) +4, Magique, Taille (Petite)
-
-**Compétences :** Athlétisme 40, Corps à corps (Base) 30, Esquive 40, Focalisation (Vent au choix) 45, Langue (Classique 50, Magick 50),Perception 40, Recherche 50,Savoir (Magie) 50,
-
-**Talents :** Empreint de (Vent au choix) (voir page 186), Lire/Écrire, Magie mineure, Perspicace, Petit, Seconde vue
-
-**Sorts :** Selon le Niveau de Carrière de son maître, un familier de sorts peut connaître jusqu'à quatre Sorts et le sorcier qui les lui enseigne doit déjà les maîtriser. Le familier peut en apprendre un nouveau à chaque fois que son maître gagne un Niveau de Carrière.
-
-# **Améliorer des familiers**
-
-Les familiers PNJ ne progressent pas nécessairement avec le temps, mais ils sont dotés de pensées distinctes et d'un vécu. Si un sorcier en crée un – contrairement à ceux interprétés par d'autres Joueurs (voir **Jouer un familier** plus loin) –, il peut dépenser son PX pour l'améliorer. Le sorcier peut utiliser ce PX pour augmenter soit ses propres Caractéristiques, Compétences ou Talents, ou bien ceux de son familier, il ne peut pas le dépenser deux fois.
-
-Concernant l'évolution de Carrière des familiers de combat et de sort, consultez la page 188. Les familiers de pouvoir se servent de l'évolution de Carrière des familiers de sorts, mais ne peuvent pas apprendre de Sorts.
-
-# **Apparences des familiers**
-
-Tous les sorciers sont différents, mais les familiers qui apparaissent dans les Collèges de Magie d'Altdorf le sont peut-être même plus encore. Pourtant, chaque Ordre a ses traditions et ses recommandations – certaines sont pragmatiques, d'autres purement esthétiques – pour les créer.
-
-#### **Familiers de** *Hysh*
-
-**Combat :** Une sphère éblouissante d'une trentaine de centimètres de diamètre maximum, hérissée de pointes qui darde de rayons de lumière les ennemis de son maître comme des flèches. Ce familier peut avoir une forme humanoïde, mais il est trop brillant pour que l'on puisse en distinguer les traits.
-
-**Pouvoir :** Une petite lampe ou une bougie qui s'allume toute seule. Son maître peut la porter, mais elle peut rapidement léviter et flotter si nécessaire. Sa flamme vacille lorsqu'elle parle.
-
-**Sort :** Un grand papillon de nuit, aussi lumineux et blanc qu'une pleine lune. En virevoltant, il perd des écailles étincelantes et est attiré par la lumière, mais il n'est pas assez stupide pour se laisser brûler.
-
-### **Familiers de** *Chamon*
-
-**Combat :** Un solide homoncule d'environ soixante à quatre-vingt-dix centimètres, vêtu de pieds en cape d'une épaisse armure de plate en fer. Il porte une épée presque aussi grande que lui.
-
-**Pouvoir :** Une boule ou un cylindre en métal argenté de la taille d'une grosse pomme. Elle semble inanimée, mais peut sauter et rouler à sa guise. Si quelqu'un d'autre que son maître le manipule, elle suinte un acide urticant.
-
-**Sort :** Un homoncule hirsute d'une trentaine de centimètres maximum, aux larges épaules et d'apparence humaine. Il ressemble à l'archétype du forgeron. Il porte un marteau qu'il frappe sur une petite enclume pour lancer un sort.
-
-
-<span id="page-186-0" data-folio="183"></span>### **Familiers de** *Ghyran*
-
-**Combat :** Un animal sauvage agressif, comme un chat, un serpent ou un faucon, extrêmement protecteur envers son maître.
-
-**Pouvoir :** Un arbre ou un arbuste mobile qui ne dépasse pas le genou de son maître, gorgé de fruits ou de glands. Lorsqu'il utilise son pouvoir, l'un des fruits tombe au sol et disparaît, mais il se regarnit sans cesse.
-
-**Sort :** Un hibou d'une espèce indéterminée avec de grandes aigrettes. En le regardant de biais, on pourrait croire qu'il porte des lunettes, ce qui amène à le regarder à nouveau.
-
-# **Familiers d'***Azyr*
-
-**Combat :** Un minuscule nuage gris orageux qui gronde comme une tempête lointaine. Si son maître est menacé, le son s'amplifie et, dans un tourbillon de vent et d'éclairs, il attaque.
-
-**Pouvoir :** Une présence invisible donnant l'impression pesante qu'une tempête se prépare. Son maître peut le voir à tout moment, mais les autres uniquement lorsqu'il fait appel à son pouvoir : un éclair en zigzag qui se déchire à ses côtés. Curieusement, il a l'air de sourire.
-
-**Sort :** Un animal en métal aplati, rappelant une girouette. Cette créature en deux dimensions se déplace comme si elle en avait trois, ce qui provoque une légère migraine pour celui qui la regarde, mais le regard est happé par ses yeux brillants comme des étoiles qui s'éclairent intensément lorsqu'elle lance un sort.
-
-### **Familiers d'***Ulgu*
-
-**Combat :** Un chat, une chauve-souris ou une araignée de grande taille et constitué d'ombre, totalement silencieux même lorsqu'il se bat.
-
-**Pouvoir :** Un épais brouillard en forme de serpent qui tournoie autour de son maître, lequel le porte parfois comme une écharpe vivante et affectueuse.
-
-**Sort :** Une ombre humanoïde, toujours présente, mais qui n'est visible que lorsque de la lumière la révèle. Lorsqu'elle lance un sort, l'entité apparaît momentanément.
-
-#### **Familiers de** *Shyish*
-
-**Combat :** Un corbeau étrangement grand et puissant avec des yeux améthyste. Il se pavane partout comme s'il était chez lui.
-
-**Pouvoir :** Un morceau d'améthyste brut et brillant de la taille d'un poing. Il peut déployer ses ailes violettes pour planer et voler, mais le sorcier peut le porter en pendentif.
-
-**Sort :** Un petit squelette dont les os semblent faits d'améthyste. Il peut s'asseoir sur l'épaule de son maître ou se cacher dans sa poche.
-
-#### **Familiers d'***Aqshy*
-
-**Combat :** Un lézard semblable à un dragon qui rougeoie comme du bois en train de brûler.
-
-**Pouvoir :** Une boule de feu animée dont émane une chaleur agréable, mais qui n'enflamme pas les objets.
-
-**Sort :** Une salamandre écarlate qui chante en croassant puissamment lorsqu'elle lance des sorts.
-
-#### **Familiers de** *Ghur*
-
-**Combat :** Un animal sauvage odorant comme un loup, un ours ou un cerf miniature avec des feuilles dans sa fourrure ou ses bois. Certains animaux ont une signification religieuse, ce qui peut causer des problèmes à leurs maîtres. Par exemple, un sorcier avec un familier en forme de loup peut être perçu comme ayant une inclination ulricanne (pour les fidèles sigmarites) ou comme tournant Ulric en ridicule (pour les ulricans).
-
-**Pouvoir :** Un escargot de la taille d'un poing avec une solide coquille couverte de mousse. Quand le besoin s'en fait sentir, il peut se déplacer aussi rapidement qu'un chat.
-
-**Sort :** Une corneille bruyante qui a un avis sur tout.
-
-
-# **JOUER UN FAMILIER**
-
-<span id="page-187-0" data-folio="184"></span>Les familiers sont créés pour servir les lanceurs de sorts. Ils dépendent d'un sorcier qui leur donne la vie et un but. Cependant, ils ne sont pas totalement dépourvus de personnalité puisqu'ils sont imprégnés de l'essence de leur créateur et portés par le vent dont ils proviennent.
-
-Un Joueur peut vouloir interpréter un familier, mais il sera confronté à des difficultés qui ne doivent pas être prises à la légère.
-
-Si la rencontre d'un Personnage plus classique est improbable, les familiers peuvent servir de Personnages de rechange pratiques, par exemple si l'un d'entre eux est tué ou si un nouveau Joueur rejoint la table et que le groupe d'aventuriers vagabonde en pleine nature ou ne souhaite pas partager son programme chargé.
-
-# **Le créateur**
-
-Avant qu'un Joueur puisse interpréter un familier, un lanceur de sort doit déjà faire partie du groupe et être d'accord pour en créer un. Ce lanceur de sorts doit alors remplir les conditions énoncées plus haut dans ce chapitre.
-
-Tant que ce lanceur de sorts est vivant et fait partie du groupe, le familier peut exister. Si son maître meurt ou quitte le groupe, la force motrice à l'origine de son existence part avec lui et il le suivra ou disparaîtra peu à peu de la réalité.
-
-#### **Le lien entre les lanceurs de sorts et les familiers**
-
-Les familiers ne sont pas obligés d'apprécier leur créateur, mais ils sont tenus de leur obéir. Il est important de s'assurer que le Joueur qui décide d'interpréter un familier soit disposé à avoir un rôle en grande partie servile et que la personne qui joue le lanceur de sort comprenne qu'elle est responsable de son amusement et de son intégration dans le jeu.
-
-Les lanceurs de sorts donnent beaucoup de leur personne lors de la création d'un familier, que cela se traduise en Points de Blessure, de Destin ou de Résilience. Ils leur attachent beaucoup d'importance, même à ceux qui s'avèrent désagréables ou bizarres, et prennent leur défense s'ils sont menacés ou blessés.
-
-# **Le Vent**
-
-Chaque familier est créé à l'aide du vent dont se sert son créateur ; il lui impose le type de magie qu'il peut exercer. Si un lanceur de sorts utilise plus d'un vent (par exemple un sorcier elfe aguerri ou un adepte des arts noirs), il choisit celui avec lequel il crée le familier. Mais même ceux qui manipulent plusieurs vents trouvent qu'il est extrêmement difficile de créer une créature magique.
-
-**Exemple :** *Thyrus Gormann essaye d'invoquer un familier de sorts. Comme Thyrus est un sorcier Flamboyant, son familier aura la Compétence Focalisation (Aqshy) et le Talent Empreint d'Aqshy. Quand ce dernier gagnera un Domaine des Arcanes, il devra choisir le Talent Magie des Arcanes (Feu).*
-
-### **Les difficultés de jouer des familiers**
-
-Les familiers de sorts sont des magiciens nés, mais ils sont petits et faibles. Les familiers de combat, même s'ils sont forts et bien protégés, possèdent peu de compétences audelà de celles du combat au corps à corps et ne peuvent encaisser que quelques coups avant d'être détruits. Étant petits et à peine plus résistants qu'un halfling ordinaire, ils ne sont pas conçus pour subir beaucoup de dégâts, quand bien même il existe des sorts que leurs créateurs peuvent lancer pour les revigorer.
-
-Les familiers sont restreints dans leur choix de Carrière. Les familiers de combat ne peuvent prendre que la Carrière homonyme, de même pour les familiers de sorts. Comme ils atteignent rapidement la totalité des Caractéristiques, Compétences et Talents qu'ils peuvent augmenter, ils sont également limités.
-
-Dans son ensemble, la population n'apprécie pas les familiers et voit peu de différences entre ces créations magiques et les démons. À dire vrai, ils ont raison, peu d'éléments permettent de les distinguer et un familier doté d'un objectif propre suscite la méfiance et la crainte. Les répurgateurs ne sont pas tendres avec eux et détruisent tous ceux qu'ils ne trouvent pas à proximité de leur sorcier créateur.
-
-
-<span id="page-188-0" data-folio="185"></span># **Caractéristiques**
-
-Si jouer un familier a l'air amusant, décidez avec le Joueur interprétant votre sorcier créateur quelle sorte de familier vous aimeriez tous les deux et créez-en un comme vous le feriez pour n'importe quel autre Personnage.
-
-|                       | Familier de<br>combat | Familier de<br>sorts |
-|-----------------------|-----------------------|----------------------|
-| Capacité de<br>Combat | 1d10 + 30             | 2d10 + 10            |
-| Capacité de Tir       | 2d10 + 10             | 2d10 + 10            |
-| Force                 | 1d10 + 30             | 2d10 + 10            |
-| Endurance             | 2d10 + 20             | 2d10 + 10            |
-| Initiative            | 2d10 + 20             | 2d10 + 20            |
-| Agilité               | 2d10 + 20             | 2d10 + 20            |
-| Dextérité             | 2d10 + 20             | 2d10 + 20            |
-| Intelligence          | 2d10 + 10             | 1d10 + 30            |
-| Force Mentale         | 2d10 + 10             | 1d10 + 30            |
-| Sociabilité           | 2d10 + 10             | 2d10 + 10            |
-| Points de Blessure    | (2 x BE) + BFM        | (2 x BE) + BFM       |
-| Points de Destin      | 1                     | 2                    |
-| Résilience            | 2                     | 1                    |
-| Points                |                       |                      |
-| supplémentaires       | *                     | *                    |
-| Mouvement             | 4                     | 4                    |
-
-<sup>\*</sup> Pour créer un familier, un sorcier peut renoncer à 1 Point de Destin ou de Résilience. Pour chaque Point de Destin ou de Résilience supplémentaire dépensé par le sorcier créateur, le familier peut en obtenir autant et les dépenser soit en Points de Destin ou de Résilience.
-
-# **Compétences et Talents**
-
-Vous pouvez sélectionner 3 Compétences qui bénéficient de 5 Augmentations chacune et 3 autres Compétences auxquelles vous pouvez ajouter 3 Augmentations à chacune. Si vous avez le choix entre deux Talents, vous devez opter pour l'un des deux.
-
-#### **Familier de combat**
-
-**Compétences :** Athlétisme, Calme, Corps à corps (Base), Corps à corps (Escrime), Corps à corps (Fléau), Corps à corps (Parade), Corps à corps (Arme à deux mains), Escalade, Esquive, Intimidation, Perception, Résistance
-
-**Talents :** Sans peur (Taille Grande ou plus petite), Réflexes foudroyants *ou* Très fort, Petit, Costaud, Empreint de (Vent au choix), Très résistant ou Guerrier né
-
-#### **Familier de sorts**
-
-**Compétences :** Athlétisme, Corps à corps (Base), Discrétion (Urbaine), Discrétion (Rurale), Esquive, Focalisation (Vent au choix), Intuition, Langue (Classique), Langue (Magick),Perception, Recherche, Savoir (Magie)
-
-**Talents :** Magie mineure, Lire/Écrire, Seconde vue, Perspicace *ou* Imperturbable, Petit, Empreint de (Vent au choix)
-
-# FAMILIERS DE POUVOIR
-
-Un familier de pouvoir a les mêmes Caractéristiques, Compétences et Talents qu'un familier de sorts. Il commence également avec le Talent *Assistant magique* en plus de ses autres Talents. Toutefois, il ne peut pas apprendre les Compétences Focalisation et Langue (Magick), ni les Talents *Magie mineure* et *Magie des Arcanes*.
-
-# **Les familiers et les langues**
-
-On suppose que tous les familiers parlent la langue maternelle de leur sorcier créateur et comprennent également intuitivement le Magick, même s'ils ne le maîtrisent pas. Un familier en saisit la portée et s'il est capable d'entendre distinctement un sorcier lancer un sort, il peut savoir lequel en réussissant un Test de **Savoir (Magie) Facile (+40)**.
-
-# **Familiers, Classe et Statut**
-
-En temps normal, les familiers ne gagnent pas d'argent et le Statut n'a aucune incidence sur leur capacité à interagir socialement puisqu'ils en sont dépourvus.
-
-Si, pour une quelconque raison, vous deviez leur en donner un, ils seraient considérés comme possédant le Statut Bronze 1 lorsqu'ils échangent avec la plupart des gens. Cependant, notez bien qu'en dehors des Collèges, leurs interlocuteurs seront surpris d'apprendre qu'ils sont capables d'interagir socialement.
-
-Au sein de milieux comme les Collèges de Magie, les familiers peuvent acquérir leur propre réputation. Ils sont considérés comme étant de Statut Argent 1 lorsqu'ils font face à des Personnages ayant la Compétence Savoir (Magie).
-
-Les MJ et les Joueurs doivent prendre en compte que, même s'ils acquièrent des compétences comme Charme ou Ragot, la plupart des gens dans le Vieux Monde et audelà les considéreront avec crainte et méfiance. Lorsqu'ils s'entretiennent avec des inconnus, les Tests basés sur la Sociabilité leur sont généralement Difficiles (–20).
-
-En règle générale, les familiers n'accordent pas d'intérêt aux possessions matérielles et il est ainsi difficile de les soudoyer. Si un étranger essayait de les manipuler avec des offres ou des pots-de-vin, la plupart se concerteraient avec leur sorcier créateur.
-
-Les familiers n'ont pas de Classe et ne reçoivent pas les Possessions de départ. Si pour une quelconque raison ils devaient en avoir une, les familiers de combat correspondraient aux Guerriers et les familiers de sorts aux Lettrés.
-
-
-<span id="page-189-0" data-folio="186"></span>### **Nouveau Talent : Empreint de (Vent)**
-
-**Maxi :** 1
-
-**Tests :** Voir ci-dessous.
-
-Vous êtes empreint de l'un des Vents de Magie et les personnes dotées de la Seconde vue peuvent le voir s'accrocher à votre corps. Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie.
-
-De plus, vous disposez d'un effet supplémentaire selon le vent qui vous enveloppe.
-
-*Aqshy* : Vous obtenez le Talent *Frénésie* et pour y entrer vous pouvez utiliser votre Compétence Focalisation (*Aqshy*) à la place de votre Force Mentale.
-
-*Azyr :* Vous pouvez recourir à votre Compétence Focalisation (*Azyr*) plutôt que Perception pour les Tests appropriés.
-
-*Chamon :* Vous pouvez vous servir de votre Compétence Focalisation (*Chamon*) au lieu d'Évaluation pour tous les Tests appropriés.
-
-*Ghur* : Vous pouvez utiliser votre Compétence Focalisation (*Ghur*) à la place d'Emprise sur les animaux et Savoir (Bête) pour les Tests appropriés.
-
-*Ghyran :* Vous pouvez vous servir de votre Compétence Focalisation (*Ghyran*) en lieu et place de Savoir (Animaux, Herbes, Plantes) et Soin aux animaux pour les Tests appropriés.
-
-*Hysh* : Vous pouvez recourir à votre Compétence Focalisation (*Hysh*) à la place de Recherche pour les Tests appropriés.
-
-*Shyish* : Vous pouvez vous servir de votre Compétence Focalisation (*Shyish*) plutôt qu'Intimidation pour tous les Tests appropriés.
-
-*Ulgu* : Vous pouvez utiliser votre Compétence Focalisation (*Ulgu*) au lieu de Discrétion pour les Tests appropriés.
-
-# **Nouveau Talent : Assistant magique**
-
-**Maxi :** 1
-
-Ce Talent est propre aux familiers de pouvoir et aucune autre race n'y a accès.
-
-Le familier peut apporter son soutien au sorcier qui l'a créé lorsque celui-ci effectue un Test de Focalisation, de Savoir (Magie) ou de Langue (Magick). L'assistant peut également participer aux Tests de Recherche, pourvu qu'il s'agisse de découvertes ou d'innovations magiques. Il apporte un Soutien de +20 à ces Tests au lieu du +10 habituel (voir **WFJDR**, page 155).
-
-# **Possessions**
-
-Un familier de combat commence avec une armure de plates complète qui comprend des brassards, des jambières, un heaume et un plastron. Il peut choisir jusqu'à deux armes des groupes Base, Deux-mains, Fléau, Escrime et Parade. Un familier de pouvoir commence avec une dague.
-
-Un familier de sorts commence avec un grimoire et une dague.
-
-Les familiers peuvent agir sur les objets physiques, mais ils éprouvent de la fatigue en les portant. Ils doublent l'Encombrement de tout objet physique, en dehors de leurs Possessions de départ. En revanche, ils peuvent porter des objets magiques sans pénalité.
-
-Les familiers peuvent délaisser un objet en leur possession au profit d'un autre, magique, qui remplit une fonction équivalente. Par exemple, un familier de combat peut échanger son épée contre une autre, magique.
-
-**Exemple :** *Braun Jenken est un familier de combat. Son équipement de départ comprend une zweihänder (3 Points d'Encombrement), une dague et une armure de plates complète qui comprend des brassards, des jambières, un heaume et un plastron (7 Points d'Encombrement tant qu'elle est portée), soit un Encombrement total de 10. Ceci implique que le familier subit naturellement des pénalités puisque son équipement dépasse sa capacité d'Encombrement (qui est de 8, compte tenu de son Talent Costaud). S'il trouvait une autre zweihänder, il ajouterait 6 Points d'Encombrement, atteignant le double de sa limite, mais si l'arme était magique il n'en ajouterait que 3.*
-
-
-<span id="page-190-0" data-folio="187"></span># **Les familiers et les États**
-
-**En flammes :** les familiers subissent l'État *En flammes* tel qu'il est décrit, sauf s'ils possèdent le Talent *Empreint d'Aqshy*. De ce cas, les Dégâts de cet État ne leur infligent rien. Dans le cas d'un feu magique, le familier ignore les Dégâts de l'État *En flammes* causés par des sorts du Domaine du Feu, mais subit ceux engendrés par d'autres sources magiques (par exemple le Sort *Feu rose de Tzeentch*).
-
-*À Terre, Assourdi, Aveuglé, Brisé, Empêtré, Inconscient, Sonné, Surpris* : les familiers subissent ces États normalement.
-
-*Empoisonné, Exténué, Hémorragique :* les familiers ne subissent pas ces États, sauf s'ils proviennent d'un sort, d'un objet magique ou d'une créature dotée du Trait Magique.
-
-# **Les familiers et la maladie**
-
-Les familiers ne peuvent pas être malades ou avoir des plaies infectées, à moins que la source ne soit un sort, un objet magique ou une créature ayant le Trait *Magique*.
-
-# **Avancement des familiers**
-
-Les familiers progressent comme les autres Personnages. Ils doivent augmenter leurs Caractéristiques, Compétences et Talents avant de passer au Niveau suivant de leur Carrière. Référez-vous aux Compétences et Talents de Carrière à la page 36 du **Livre de Règles** de **WFJDR** pour voir quelles Augmentations un Personnage peut prendre avant de commencer sa Carrière. Ils gagnent et dépensent des Points d'Expérience comme les autres Personnages.
-
-Les familiers ne peuvent pas changer de Carrière et ne peuvent poursuivre que celle associée à leur catégorie.
-
-Il n'est pas prévu qu'ils obtiennent des Possessions pour progresser au sein de leur Carrière.
-
-Il faut supposer qu'entre les aventures, les familiers restent à proximité de leur sorcier créateur et sont ainsi impliqués dans les évènements qu'il rencontre. Lorsque leur sorcier créateur entreprend une Activité, les familiers peuvent lui apporter leur Soutien et lui accorder un bonus de +10 à l'instar des autres Personnages. Néanmoins, ils ne peuvent pas eux-mêmes entreprendre d'Activité.
-
-Toutefois, lorsqu'un sorcier créateur entreprend et réussit l'Activité *Améliorer un familier*, ce dernier peut alors choisir entre plusieurs d'entre elles, comme expliqué à la page 34.
-
-Malgré tout, les familiers de combat ne pourront jamais apprendre les Compétences Focalisation ou Langue (Magick), ni les Talents Magie mineure ou Magie des Arcanes.
-
-Les familiers prennent également part aux Évènements qui impactent leur sorcier créateur entre deux aventures. Il ne leur arrive pas d'Évènements propres, à moins qu'ils ne soient inhabituellement indépendants pour des familiers.
-
-# **Les familiers et la Corruption**
-
-Les familiers subissent la Corruption et les Mutations de la même manière que des Personnages humains.
-
-# **Le Trait de créature** *Magique*
-
-Les Personnages familiers ont le Trait de créature *Magique*.
-
-# **Dégâts et soins des familiers**
-
-Les familiers encaissent des Dégâts comme les autres Personnages. Cependant, si le familier n'est pas un humanoïde, le MJ devra adapter leur Localisation à sa forme. Les Coup Critiques s'appliquent aux familiers, mais ils se traduisent par une diminution de leur pouvoir à cause de la perturbation des énergies magiques plutôt qu'à une hémorragie ou des os cassés.
-
-Les familiers sont invoqués de manière à ce qu'ils retrouvent lentement leur forme initiale après avoir subi des Dégâts, ils guérissent ainsi au même rythme que les autres Personnages. Toutefois, les soins non magiques n'ont pas d'effet sur eux, pas plus que la Compétence Guérison et les miracles de guérison ne les aident.
-
-Les sorts qui guérissent les autres Personnages soignent également les familiers, comme le nouveau sort d'Arcane *Secourir un serviteur magique*, employé pour revigorer un familier blessé et présenté à la page 26.
-
-# **L'alimentation des familiers**
-
-Contrairement aux familiers animaux, ceux créés par les Sorciers et ceux d'origine spirituelle ou démoniaque n'ont pas besoin de nourriture ou d'eau.
-
-
-# **FAMILIER DE COMBAT**
-
-<span id="page-191-0" data-folio="188"></span>*Les familiers de combat prennent souvent la forme de petits guerriers armurés, redoutables gardes du corps au service de leur sorcier créateur.*
-
-# **FAMILIER DE SORTS**
-
-*Les familiers de sorts sont souvent des diablotins minuscules, de tout petits golems ou des marionnettes animées, magiquement doués pour les connaissances arcaniques et l'incantation.*
-
-#### SCHÉMA DE PROGRESSION DU FAMILIER DE COMBAT
-
-| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
-|----|----|---|---|---|----|-----|-----|----|-----|
-| h  |    | h |   | h |    |     |     |    |     |
-
-# **Évolution de Carrière**
-
-#### <sup>h</sup> **Nouvellement créé**
-
-**Compétences :** Athlétisme, Calme, Corps à corps (Deux au choix), Escalade, Esquive, Intuition, Langue (Bataille), Perception, Résistance
-
-**Talents :** Ambidextre, Distraire, Frappe réactive, Guerrier né
-
-#### **Familier de combat**
-
-**Compétences :** Corps à corps (Au choix), Chevaucher (Cheval), Discrétion (Rurale ou Urbaine), Intimidation, Savoir (Guerre)
-
-**Talents :** Combat instinctif, Endurci, Riposte, Très fort
-
-#### **Teigne en armure**
-
-**Compétences :** Corps à corps (Au choix), Discrétion (Rurale ou Urbaine), Pari, Savoir (Héraldique) **Talents :** Assaut féroce, Impitoyable, Frénésie,
-
-Maniement de deux armes
-
-#### **Diablotin blindé**
-
-**Compétences :** Commandement, Corps à corps (Au choix)
-
-**Talents :** Coup puissant, Frappe blessante, Frappe assommante, Maîtrise du combat
-
-#### SCHÉMA DE PROGRESSION DU FAMILIER DE SORTS
-
-| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
-|----|----|---|---|---|----|-----|-----|----|-----|
-|    |    |   |   |   |    | h   | h   | h  |     |
-
-# **Évolution de Carrière**
-
-#### <sup>h</sup> **Nouvellement invoqué**
-
-**Compétences :** Calme, Corps à corps (Base), Discrétion (Rurale ou Urbaine), Esquive, Focalisation (Vent au choix), Intuition, Langue (Magick), Perception, Ragot, Savoir (Magie)
-
-**Talents :** Harmonisation aethyrique, Imperturbable, Perception de la magie, Perspicace
-
-#### **Familier de sorts**
-
-**Compétences :** Charme, Corps à corps (Arme d'hast), Chevaucher (Cheval), Langue (Au choix), Recherche, Savoir (Au choix),
-
-**Talents :** Chanceux, Diction instinctive, Magie des Arcanes (Vent au choix), Sixième sens
-
-#### **Diablotin énigmatique**
-
-**Compétences :** Escamotage, Évaluation, Langue (Au choix), Savoir (Au choix)
-
-**Talents :** Détection d'artefact, Flairer les ennuis, Oreille absolue, Studieux,
-
-#### **Sorcelin**
-
-**Compétences :** Langue (au choix), Savoir (au choix) **Talents :** Effrayant, Mains agiles, Mage de guerre, Sorcier !
-
-
-## [VDM 15] Nemesis et aventures magiques
-
-*Pages PDF 212-228*
-
-# NÉMÉSIS ET • AVENTURES MAGIQUES •
-
-<span id="page-211-0" data-folio="208"></span>Les némésis sont des adversaires que les Personnages peuvent affronter encore et encore. Ce ne sont pas de vulgaires ennemis qui servent d'opposants ponctuels à qui l'on inflige un coup fatal à la fin d'une aventure. Ils n'apparaissent pas à toutes les sessions de jeu ou dans tous les arcs narratifs, mais ressurgissent à plusieurs reprises lors d'une campagne avec leurs séides et leurs objectifs. Vaincre une némésis a de grandes chances d'être un élément majeur, voire le point culminant du jeu à long terme. Son efficacité repose sur trois aspects essentiels :
-
-- 0 **Du pouvoir :** la némésis doit être capable de battre les Personnages par la force ou la ruse. Mais ceci n'implique pas forcément de les tuer : avoir toujours un coup d'avance sur eux est suffisant. Il n'est pas nécessaire qu'elle soit le plus puissant des antagonistes, mais elle doit être un obstacle difficile à surmonter. Une partie de son pouvoir peut provenir de sa capacité à diriger ses sbires.
-- 0 **Un plan :** la némésis a soit un but unique (par exemple devenir un prince démon pour Egrimm van Horstmann), soit une lubie permanente (obtenir la connaissance de sorts, comme les Scribes Bleus). Le premier suppose vraisemblablement plusieurs étapes avant de porter ses fruits, mais les deux peuvent donner lieu à des aventures. Elles constituent parfois les fragments d'un mystère plus vaste que les Personnages doivent découvrir et résoudre.
-- 0 **Une obsession :** la némésis n'abandonnera pas. Même quand l'une de ses entreprises est contrecarrée, elle essaiera à nouveau ou élaborera un autre stratagème. Cet entêtement est parfois une faiblesse à exploiter ou un indice sur ses prochains agissements. Si les Personnages deviennent une source d'ennuis récurrents, ils peuvent eux-mêmes finir par l'obséder !
-
-Une bonne némésis est souvent autant détestée par les Personnages qu'appréciée des Joueurs. Tomber nez à nez avec elle doit provoquer un enthousiasme soudain et le désir, non pas simplement de la détruire, mais de déjouer ses manœuvres : *« C'est encore elle ! Cette fois, on va être plus malins ! »* S'ils échouent, ils attendent avec impatience la prochaine rencontre. Beaucoup de groupes peuvent avoir envie d'une joute verbale avec elle, et non simplement de lancer des sorts et d'utiliser leurs armes. Ils ne l'apprécieront que s'ils ont la possibilité de discuter avec elle, d'arriver à la comprendre, même s'ils sont en désaccord. Et sait-on jamais, peut-être qu'alors ils trouveront un terrain d'entente ?
-
-Ce genre de némésis a besoin d'une qualité salutaire. Si elle utilise des méthodes dangereuses pour parvenir à ses fins, elle œuvre par ailleurs pour une cause juste et peut malencontreusement mettre en lumière les mauvais côtés des projets des employeurs des Personnages. Elle n'est pas irrémédiablement mauvaise ou perdue, mais s'avère être une grosse épine dans le pied. Elle doit toujours être une source de frustration ou de danger, mais son histoire ou sa situation peuvent susciter de la compassion de la part des Personnages. Mòna Mimn en est un exemple : elle est véritablement dangereuse, mais son comportement n'est motivé que par son existence vide et solitaire. Si les Personnages arrivent à le déceler, peut-être trouveront-ils une approche nonviolente pour régler leur conflit avec elle.
-
-Bien entendu, certaines némésis n'ont que ce qu'elles méritent. Elles doivent être arrêtées ou bien mourir parce qu'elles sont trop dangereuses et malfaisantes. Discuter avec elles n'est valable qu'en cas de tactique dilatoire ou pour obtenir des informations. Celles-ci sont d'authentiques méchants qui n'apportent que de la destruction, de la douleur et de la souffrance aux innocents. Leurs manigances, si les Personnages s'avèrent incapables de les déjouer, laissent des séquelles néfastes et durables.
-
-Le secret pour ce type de némésis ne réside pas dans l'ampleur de sa cruauté, même si elle est rarement équivoque, mais dans sa capacité à accomplir son œuvre. Elle est compétente, efficace, et sa stratégie est impitoyable. Elle ne commet pas d'erreurs stupides, sauf si elle est intelligemment piégée par des Personnages rusés. Cependant, son efficacité sans pitié implique que vous donniez aux Personnages et aux Joueurs de nombreuses options, sans quoi ils finiront par mourir.
-
-Certaines némésis sont trop puissantes pour les Personnages, particulièrement au début d'une campagne, et le resteront peut-être. Constant Drachenfels et Nagash en sont deux exemples. Toutefois, les Personnages peuvent toujours défier ce genre de némésis en résistant à leurs plus faibles séides. Ces derniers devraient être des ennemis intéressants et dignes de ce nom, faisant de leur maître une figure mystérieuse et puissante tapie dans l'ombre. N'importe quelle intrigue les impliquant repose sur le mystère du commanditaire de ces actions malfaisantes, la recherche de son identité et l'effrayante révélation qui s'ensuit.
-
-
-# **EGRIMM VAN HORSTMANN**
-
-<span id="page-212-0" data-folio="209"></span>**Motivation :** Gagner les faveurs de Tzeentch et obtenir le statut de démon.
-
-**Ambition à court terme :** Recruter davantage de sorciers dans la Cabale.
-
-**Ambition à long terme :** Renverser les institutions magiques du Vieux Monde.
-
-De nombreux répurgateurs et fervents Sigmarites pensent que tous les magisters ne sont qu'à un pas de la corruption : après tout, ils s'efforcent de contrôler ce qui constitue le Chaos et l'emploient pour assouvir leurs caprices. Quand on cherche à les contredire, ils se réfèrent à Egrimm van Horstmann, un apostat qui a montré ce qui arrive quand les sorciers pratiquent leur sorcellerie sans risque de représailles.
-
-La traîtrise de Horstmann a commencé bien longtemps avant qu'il ne rejoigne le Collège Lumineux. Les Hiérophantes ont honte qu'il ait pratiqué son art diabolique sous leur nez et qu'il soit devenu le patriarche de leur Ordre.
-
-**Un talent prodigieux**
-
-En 2504 CI, le jeune Horstmann fit la démonstration de son potentiel au collège et devint un apprenti chantre de maître Alric. En trois années, il monta dans la hiérarchie et manœuvra secrètement pour en prendre le contrôle. Il asservit des démons pour exécuter ses ordres, vola des artefacts dans les chambres fortes sous le collège et pervertit subtilement les rituels de l'ordre. Il pénétra même dans le royaume de Tzeentch où il scella un sombre pacte avec l'un des aspects du dieu. Il négocia la conservation de son âme en échange de quoi il travaillerait pour l'Architecte du Destin. Ses manigances attisèrent un conflit avec le Collège Doré et aboutirent à la mort du patriarche Elrisse. Très vite, Horstmann, doté d'une immense connaissance et d'une humilité manifeste, devint un magister respecté et le patriarche du Collège Lumineux.
-
-De plus en plus méfiant à son sujet, Verspasian Kant s'y opposa finalement, aidé d'un répurgateur et d'autres alliés. Le perfide magister libéra Baudros, un dragon du Chaos, de son emprisonnement magique sous la Pyramide de Lumière et s'enfuit au nord. Toutefois, Tzeentch voulut donner une leçon à van Horstmann : pendant que Baudros l'embrasait dans ses flammes, le dieu lui proposa de vivre en échange de son âme. Le magister y consentit et le dragon l'amena dans une forge où il fut soigné grâce à une armure du Chaos.
-
-À présent, van Horstmann occupe les Tours d'Argent, sa forteresse dans les collines des hurlements au sein des Désolations du Chaos. De là, avec les sorciers les plus puissants de la Cabale, il complote pour amener davantage de sorciers à Tzeentch. En de rares occasions, il sort pour poursuivre ses objectifs ou pour protéger ses manigances de ceux qui cherchent à les saper. Ceci exige qu'il se rende parfois sur le champ de bataille, mais lorsqu'il voyage de manière anonyme, il utilise des enchantements puissants pour dissimuler sa véritable apparence. Van Horstmann est calculateur et incroyablement patient : il préfère travailler lentement et prudemment, et ne prend jamais le chemin le plus direct ou le plus simple pour parvenir à ses fins.
-
-Le sorcier est enfermé dans une armure du Chaos finement ouvragée et gravée de runes inextricables ; un cadeau de Tzeentch pour le maintenir en vie. Lorsqu'il enlève son casque, ses traits défigurés sont anormalement lisses, séquelle des flammes de Baudros.
-
-# LA CABALE
-
-La Cabale de van Horstmann date de l'époque où il siégeait au Collège Lumineux et où il corrompait des sorciers. Depuis, leurs rangs se sont accrus et ils ont infiltré d'autres groupes, y compris des cultes du Chaos. Le professeur Fassbinder de l'Université d'Altdorf pense qu'ils manipulent la Couronne Rouge et la Main Pourpre, même si ces deux cultes sont trop dispersés pour qu'une seule personne ne les contrôle.
-
-La Cabale recrute des sorciers, généralement en leur offrant des connaissances ou des savoirs interdits comme si de rien n'était. À terme, les recrues sont introduites à d'autres personnes en quête de secrets arcaniques. Elles sont petit à petit orientées vers l'adoration de Tzeentch, d'abord par des références voilées puis finalement de manière ouverte. Une fois qu'elles sont jugées suffisamment corrompues, elles doivent prêter allégeance au Modeleur de Voies puis voyager jusqu'aux Tours d'Argent où elles sont marquées de la rune de Tzeentch et où van Horstmann les informe de ses plans. Si les cabalistes trahissent leur nouveau dieu, ils deviennent des engeances du Chaos.
-
-
-<span id="page-213-0" data-folio="210"></span># **Motivations**
-
-Egrimm van Horstmann souhaite s'élever au rang de démon. Après avoir provoqué d'innombrables dégâts parmi les sorciers impériaux, il pense mériter le privilège de devenir un prince démon, mais Tzeentch n'a pas encore exaucé son vœu. En attendant son approbation, Van Horstmann continue de rassembler des informations et de conspirer, dans l'espoir que le dieu porte enfin son regard sur lui.
-
-Van Hortsmann s'évertue à déstabiliser et à corrompre davantage les collèges et toutes les institutions magiques de l'Empire. Son emprise sur l'Ordre Lumineux contrecarrée, il souhaite contrôler les sorciers de tout le pays en se servant de la Cabale pour les manipuler avec de fausses promesses. Par l'intermédiaire de ses cultistes, acolytes et pions ignorants, il espère étendre de plus en plus l'influence du Chaos d'un bout à l'autre du Vieux Monde.
-
-# **Une némésis nommée Egrimm Van Horstmann**
-
-Van Hortsmann est un fin manipulateur, ce qui fait de lui un employeur de l'ombre idéal. Tout Personnage sorcier peut sceller des alliances précieuses avec des membres secrets de la Cabale. Ils se présentent comme d'aimables PNJ désireux de l'aider, voire de s'opposer aux Puissances de la Ruine. Par l'intermédiaire de ses valets, van Horstmann peut se servir du groupe d'aventuriers pour ses propres intérêts : rechercher des artefacts magiques, trouver des sorciers prêts à être corrompus et obtenir des informations sur les Collèges de Magie. À force, le sorcier du groupe sera tenté d'être corrompu. Mais rappelez-vous que rien n'est direct ou évident avec van Horstmann, tout n'est qu'un jeu subtil d'intrigues dans des intrigues.
-
-#### EGRIMM VAN HORSTMANN
-
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 4 | 62 | 31 | 54 | 62 | 68 | 70 | 58  | 77  | 85 | 45  | 25 |
-
-**Compétences :** Athlétisme 85, Calme 105, Charme 55, Chevaucher (Cheval 80, Dragon 90), Commandement 65, Corps à corps (Arme d'hast 72, Base 82), Crochetage 78, Discrétion (Rurale) 80, Divertissement (Interprétation 65, Chant 65), Escamotage 78, Esquive 80, Évaluation 97, Focalisation (*Dhar* 115, *Hysh* 95), Intimidation 64, Intuition 98, Langue (Classique 97, Langue sombre 97, Magick 117), Perception 88, Ragot 60, Recherche 97, Résistance 82, Résistance à l'alcool 72, Savoir (Altdorf 87, Démonologie 97, Guerre 87, Magie 107, Magie noire 97, Néhékhara 87, Tzeentch 99), Soin aux animaux 87, Subornation 60
-
-**Talents :** Affinité avec les animaux, Chanceux 3, Corruption choisie, Coup puissant, Destinée (*Un fil du destin est tissé tout au long de ta vie, ondulant comme un serpent. Comprends ceci ou cours à ta perte.*), Détection d'artefact, Diction instinctive, Doigts de fée, Effrayant, Ferveur ardente, Harmonisation aethyrique, Lire/Écrire, Mage de guerre, Magie des Arcanes (Démonologie, Lumière), Magie du Chaos (Tzeentch), Magie mineure, Mains agiles, Menaçant, Menteur, Obstiné, Perception de la magie, Perspicace, Présence imposante, Réflexes foudroyants, Savant (Tzeentch), Seconde vue, Sixième sens, Tour des souvenirs, Très résistant, Vigilance, Volonté de fer
-
-**Traits :** Arme (Épée runique du Chaos) +11, Armure 6 (12), Corruption (Modérée), Effrayé (Serpents), Perturbant, Protection (9+)
-
-**Possessions :** Armure du Chaos (ne peut pas être enlevée), épée runique du Chaos (+BF +5, Dévastatrice, Incassable, Magique, Perforante, Taille), Cape de charme doré, Grimoire de Magie noire, Crâne de Katam, Talisman de Tzeentch
-
-**Corruption mentale :** Cœur desséché
-
-#### **SORTS**
-
-**Magie mineure :** Alerte, Bruits, Drain, Fléchette, Serrure ouverte, Tendre l'oreille
-
-**Sorts d'Arcane :** Carreau, Enchevêtrement, Envol, Explosion, Perturbant, Protection, Sang corrosif, Téléportation
-
-**Domaine de la Démonologie :** Détection de démon, Manifestation de démon mineur, Octogramme
-
-**Domaine de la Lumière :** Assaut de pierre, Bannissement, Collet d'Abulla, Distorsion temporelle, Filet d'Amyntok, Intention inspirée, Lumière aveuglante, Mains de Karkora, Pensée rapide, Yeux de Volans
-
-**Domaine de Tzeentch :** Aura dorée de Tzeentch, Avantage de Tzeentch, Éclair du changement, Feu bleu de Tzeentch, Feu rose de Tzeentch, Feu spirituel, Flammes vacillantes du capricieux destin, Malédiction de Tzeentch, Parole de Tzeentch, Percevoir l'écheveau, Trahison de Tzeentch, Transformation de Tzeentch, Tempête de feu de Tzeentch
-
-
-<span id="page-214-0" data-folio="211"></span># **Le Crâne de Katam**
-
-Egrimm van Horstmann a volé le Crâne de Katam dans l'une des chambres fortes du Collège Lumineux. Il s'agit d'un crâne humain recouvert de sceaux en argent gravés et orné de pierres précieuses. C'est un vivier de connaissances qui ne s'adressera à un porteur légitime d'une voix mystérieuse et rauque que s'il le souhaite.
-
-Katam était un puissant démonologue qui vivait dans l'ancienne Mourkain, bien avant que cette cité maudite ne soit rasée. Il apprit à communiquer avec les dieux du Chaos et conclut un marché avec Tzeentch : en échange de son âme, il aurait la vie éternelle. Mais, le Grand Imposteur ne précisa pas quelle partie de Katam vivrait pour toujours. À présent, il ne reste plus que son crâne, conscient et passablement mécontent. À sa mort, des sceaux ont été gravés dessus avec le sang corrosif de Baudros, un dragon du Chaos. Ceux-ci sont destinés à réfréner tout propos malveillant de Katam, sans grand succès.
-
-Katam, s'il en a envie, peut apporter un bonus de +2 DR à tous les Tests de Focalisation. Le lanceur de sort doit alors réussir un Test de **Calme Difficile (−20)** ou subir un État *Exténué* et recevoir 1 Point de Corruption pendant que le crâne lui susurre des secrets qui lui font perdre la tête.
-
-Solentan, un célèbre magister de Jade, a découvert un culte de Nurgle à Talabheim. Si les Personnages l'aident à contrecarrer les plans des cultistes, le magister leur offrira du savoir et des informations, et les présentera à la noblesse et à l'armée du Talabecland. Toutefois, si la menace du culte est sérieuse, l'offre de Solentan, membre de la Cabale, ne l'est pas. Neutraliser ce danger est un test qui condamnera les Personnages qui le réussissent à devenir des pions de premier choix pour la Cabale. Ils effectueront alors pour elle des tâches qui paraissent utiles à l'Empire, mais qui en réalité servent les nombreuses intrigues tentaculaires de van Horstmann.
-
-# TROP C'EST TROP
-
-Horstmann a piégé la famille Salzenhaar d'Altdorf, dont les membres sont considérés comme les sorciers qui ont gangrené la cité avec la Pourriture des dieux. Malgré son innocence, la famille est rejetée par les autres nobles et est à présent pauvre et pleine de ressentiment. Ursula Salzenhaar écume de rage et est déterminée à agir. Elle a réuni ceux qui ont une rancœur personnelle envers Horstmann, dont Verspasian Kant, le patriarche de l'Ordre Lumineux. Ils ont décidé de détruire la Cabale et son instigateur une bonne fois pour toutes. Ils disposent de fonds, d'un accès à l'armée et d'un soutien magique ; il ne manque plus à présent que des agents talentueux.
-
-# **La Cape de charme doré**
-
-Selon les légendes transmises par les vitki norses, le serviteur de Tchar le plus imprévisible et indiscret est un démon connu sous le nom du Changelin. On dit que la créature, un métamorphe roué et malveillant, a humilié jusqu'aux dieux du Chaos avec ses canulars et persiflages.
-
-Une légende en particulier raconte qu'un jour il se faufila dans le Palais des Plaisirs, au centre du domaine de Slaanesh. En détournant l'attention de nombreux gardes et sénéchaux, il pénétra dans les quartiers privés du dieu et le surprit assoupi. Pendant que le Sombre Prince dormait, le Changelin lui coupa les cheveux et les tissa en une belle étoffe qu'il présenta respectueusement à son maître, Tzeentch.
-
-Quelle que soit l'authenticité de cette histoire, parmi les nombreux objets magiques qui arrivèrent en possession d'Egrimm à la suite de son pacte avec Tzeentch, se trouvait une cape en soie dorée, imprégnée de puissantes propriétés magiques.
-
-Son porteur obtient les Traits de créature *Perturbant* et *Protection 9+*. Il est l'objet d'une Haine par les adeptes et les démons de Slaanesh, mais respectueux de la cape, ils prennent également grand soin de ne pas l'abîmer. Ils ne porteront donc pas d'attaque à distance contre le porteur de la cape, même avec des *Projectiles magiques*, et s'ils l'attaquent au corps à corps, ils devront toujours retenir leurs coups (**WFJDR**, page 173).
-
-
-# **LES SCRIBES BLEUS DE TZEENTCH**
-
-<span id="page-215-0" data-folio="212"></span>**Motivation :** Retrouver et consigner chaque nouveau sort au fil du temps.
-
-**Ambition à court terme :** Retrouver et consigner chaque nouveau sort au fil du temps.
-
-**Ambition à long terme :** Retrouver et consigner chaque nouveau sort au fil du temps.
-
-Quand les patriarches des Collèges de Magie se réunissent, il y a un sujet dont ils préfèrent discuter à voix basse. Il existe une maladie psychiatrique mystérieuse qui affecte quelques magisters de tous les collèges, spécifiquement ceux qui s'efforcent de créer de nouveaux sorts. Elle revêt toujours la même forme : dans les jours qui précèdent son effondrement, le sorcier se plaint d'une légère lueur bleutée en périphérie de son champ de vision et d'un son semblable à celui d'« une plume crissant sur du papier ». Sa chute survient rapidement après un raté sorcellaire catastrophique. Le sorcier souffre d'un effondrement psychique total et pendant une période de délires il divague à propos d'« Êtres bleus » qui lui dérobent son esprit. Les victimes ne s'en remettent jamais complètement, comme si elles avaient subi un traumatisme irréparable.
-
-Ces magisters malchanceux ont reçu la visite des Scribes Bleus, des serviteurs de Tzeentch, le Grand Architecte, condamnés à franchir la réalité pour y rechercher des fragments de l'esprit morcelé de leur maître.
-
-#### **La destruction de Tzeentch**
-
-Il y eut jadis une guerre entre les Puissances de la Ruine au cours de laquelle les autres dieux précipitèrent Tzeentch du haut des Montagnes Infinies. Le Grand Sorcier éclata en dix mille fragments éparpillés à travers l'espace et le temps qui se logèrent dans les esprits de mortels et devinrent des sorts et des incantations. Ils se multiplièrent et se transformèrent en un embrouillamini éternel du savoir magique. Tzeentch se résolut à récupérer ses fragments et créa pour cela les Scribes Bleus.
-
-Les deux démons ont pour tâche de recueillir tous les sorts qui existent, ce qui demande de leur part plus de sensibilité que la plupart des serviteurs inférieurs commandés par le Modeleur de Voies. Il reste donc attentif à ce qu'ils ne bénéficient pas d'une indépendance trop importante, accordant ainsi à P'tarix le pouvoir de coucher sur papier tous les sorts sans pouvoir les lire et à son compagnon, Xirat'p, la capacité de les lancer et les lire, sans pour autant comprendre ce qui est écrit.
-
-#### **L'importante tâche des Scribes**
-
-Mus par la volonté de leur maître, les Scribes Bleus voyagent entre les royaumes et à travers la réalité à la recherche de sorts modifiés ou inédits. Ils apparaissent au grand jour sur les champs de bataille où des armées se lancent des sorts destructeurs sans compter. Ils foncent à toute allure dans un va-et-vient fulgurant, perchés sur un large disque de Tzeentch aux multiples yeux et entourés de parchemins et de tomes remplis de sorts. Pendant que P'tarix prend en note les nouveaux sorts sur un parchemin, Xirat'p en lit certains au hasard dans les livres et les lance pour semer la confusion chez leurs ennemis et se protéger pendant cette mission.
-
-En dehors des combats, ils se montrent plus fins. Xirat'p et P'tarix ont un don de prescience limité qui leur permet d'anticiper la création d'un enchantement à venir. Avant qu'il ne jette son nouveau sort, le lanceur est assailli par des manifestations de l'Aethyr à peine perceptibles. Il entrevoit en fin de soirée une légère lueur dans un coin de son bureau qui reflète des motifs sur les murs ainsi qu'une brume tourbillonnante multicolore accompagnée d'indistincts murmures inhumains.
-
-À mesure que l'apparition s'intensifie, il n'y a plus d'échappatoire. Les Scribes Bleus pourchassent leur proie jusqu'à ce qu'elle prononce l'incantation ou le sort qu'ils convoitent. Ils apparaissent alors dans le monde matériel et saisissent les mots en plein vol. La victime sent que le concept magique est arraché de son esprit et seule une volonté de fer peut résister à ce supplice.
-
-# **Motivations**
-
-Les Scribes Bleus sont une extension de Tzeentch et ils n'ont donc pas d'autre choix que de se donner du mal pour effectuer la tâche qu'il leur a confiée. Ils sont obligés de voyager sans relâche pour récupérer et consigner chaque nouveau sort au fil du temps. Celle-ci comprend des sorts, des incantations rituelles et des mots de pouvoir prononcés pendant la création d'objets magiques. Les Scribes surgissent le plus souvent au moment de la création d'un sort totalement nouveau, mais un jeune sorcier qui en lance un déjà existant peut également attirer leur attention. Une légère différence d'intonation produit d'infimes changements sur la manière dont un sort fonctionne. En revanche, ils ne s'intéressent pas aux faiseurs de miracles.
-
-Leur but ultime est de rassembler tous les sorts et de faire à nouveau partie de Tzeentch. C'est bien entendu impossible, puisqu'il existe un nombre infini de formulations magiques.
-
-
-| P'TARIX, CELUI QUI ÉCRIT |    |    |    |    |    |    |     |     |    |     |    |
-|--------------------------|----|----|----|----|----|----|-----|-----|----|-----|----|
-| M                        | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
-| 4                        | 35 | 35 | 37 | 35 | 35 | 30 | 40  | 45  | 50 | 10  | 11 |
-
-<span id="page-216-0" data-folio="213"></span>**Talents :** Écrire (sans Lire)
-
-**Traits :** Arme (Plume) +9, Corruption (Modérée), Démoniaque 8+, Immunité Psychologique, Instable, Mutation (un bras supplémentaire, +1 attaque), Perturbant, Peur 1, Siphonnage de sort, Taille (Petite) **Possessions :** une gamme d'encriers, des plumes, du
-
-sable pour sécher l'encre, des parchemins
-
-| XIRAT'P, CELUI QUI LIT |  |  |
-|------------------------|--|--|
-|                        |  |  |
-
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 4 | 33 | 37 | 35 | 38 | 45 | 48 | 57  | 89  | 89 | 13  | 14 |
-
-**Talents :** Lire (sans Écrire)
-
-**Traits :** Arme (Griffes) +6, Corruption (Modérée), Démoniaque 8+, Immunité Psychologique, Incantateur hasardeux, Instable, Perturbant, Peur 1,
-
-Taille (Petite)
-
-**Compétences :** Langue (Magick) 95
-
-
-<span id="page-217-0" data-folio="214"></span># **Les Scribes Bleus en tant qu'adversaires**
-
-Les Scribes Bleus peuvent prendre en chasse le sorcier d'un groupe d'aventuriers ou une personne qu'ils connaissent et qui effectue des expériences sur la magie ou des recherches ésotériques sorcellaires. Comme décrit plus haut, des phénomènes singuliers font office de signes avant-coureurs.
-
-Si les Personnages découvrent la menace qui s'annonce, ils peuvent faire obstacle aux Scribes Bleus et protéger le sorcier. Ceci impliquera une quête pour en apprendre plus sur les Scribes Bleus au travers de récits et sur l'étrange maladie qui affecte les magisters. Ils devront aussi faire face à des experts en démonologie peu recommandables.
-
-Règle optionnelle : le MJ peut décider qu'il y a 2 % de chance que les Scribes Bleus ciblent un Personnage à chaque fois qu'il obtient un Critique lorsqu'il focalise ou lance un sort pour la première fois. P'tarix et Xirat'p peuvent agir immédiatement ou bien prendre leur mal en patience et traquer les Personnages avant d'apparaître lorsque le Personnage lance à nouveau le même sort.
-
-#### NOUVEAU TRAIT : INCANTATEUR HASARDEUX
-
-Xirat'p peut lancer des sorts au hasard. Lorsqu'il est attaqué, lancez un dé une fois par Round sur le tableau qui suit pour connaître le type de sort qu'il lance. Puisque le domaine est déterminé aléatoirement, faites de même pour le sort ou choisissez-le. Il existe davantage de Sorts du Domaine de Tzeentch dans le **Compagnon de L'Ennemi dans l'Ombre** et dans celui de **Mort sur le Rei**k ; ceux du Domaine de Slaanesh se trouvent dans le **Compagnon du Pouvoir derrière le Trône**.
-
-| 1d100  | Domaine                       |  |  |  |  |  |
-|--------|-------------------------------|--|--|--|--|--|
-| 1–5    | Magie mineure                 |  |  |  |  |  |
-| 6–10   | Magie des Arcanes             |  |  |  |  |  |
-| 11–15  | Domaine de la Bête            |  |  |  |  |  |
-| 16–20  | Domaine de la Mort            |  |  |  |  |  |
-| 21–25  | Domaine du Feu                |  |  |  |  |  |
-| 26–30  | Domaine des Cieux             |  |  |  |  |  |
-| 31–35  | Domaine du Métal              |  |  |  |  |  |
-| 36–40  | Domaine de la Vie             |  |  |  |  |  |
-| 41–45  | Domaine de la Lumière         |  |  |  |  |  |
-| 46–50  | Domaine des Ombres            |  |  |  |  |  |
-| 51–55  | Domaine de la Magie naturelle |  |  |  |  |  |
-| 56–60  | Domaine de la Sorcellerie     |  |  |  |  |  |
-| 61–65  | Domaine de la Démonologie     |  |  |  |  |  |
-| 66–70  | Domaine de la Nécromancie     |  |  |  |  |  |
-| 71–79  | Domaine de Slaanesh           |  |  |  |  |  |
-| 80–95  | Domaine de Tzeentch           |  |  |  |  |  |
-| 96–100 | Au choix du MJ                |  |  |  |  |  |
-
-#### NOUVEAU TRAIT : SIPHONNAGE DE SORT
-
-Lorsqu'un ennemi réussit à lancer un sort ou utilise pour cela un objet magique, les Scribes Bleus peuvent lui imposer un Test opposé de Force Mentale. S'ils le réussissent, lancez 1d10 et consultez le tableau suivant :
-
-|  | 1d10 | Effet                                                                                                                                                                      |
-|--|------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  | 1–2  | Aucun effet : L'énergie magique s'évapore dans<br>un éclat spectaculaire inoffensif.                                                                                       |
-|  | 3–7  | Sort siphonné  : Les Scribes Bleus jettent<br>le sort à la place du lanceur. Ceci vient en<br>complément de tout autre sort qu'ils pourraient<br>lancer lors de ce Round.  |
-|  | 8–9  | Sort en miroir : Le lanceur comme les Scribes<br>Bleus incantent le sort. Ils peuvent en lancer un<br>autre lors de ce Round.                                              |
-|  | 10   | Fuite d'énergie  : Les énergies du sort sont<br>gravement perturbées. Le lanceur et les Scribes<br>Bleus se retrouvent au centre d'une Explosion<br>(5) qui fait 6 Dégâts. |
-
-Quand les Scribes Bleus réussissent un Siphonnage de sort (un résultat de 3 à 10 ci-dessus) à l'encontre du lanceur de sort, celui-ci doit réussir en plus un Test de **Calme Très Difficile (−30)**. S'il échoue, il subit un État *Inconscient* pendant 1d10 heures et reçoit 2 Points de Corruption.
-
-# UNE NUIT MÉMORABLE
-
-Cette année, les Illuminations au Carnaval de Middenheim vont être les plus belles que l'on a jamais vues. Plusieurs magisters ont voyagé depuis Altdorf pour montrer à la Grande Guilde des Sorciers de la ville ce à quoi ressemble de la vraie magie. L'astromancienne Schumann et Branoff de l'Ordre Doré collaborent sur de nouveaux sorts spectaculaires inédits dans l'Empire. Certes, il y a eu *quelques* phénomènes étranges pendant les répétitions, mais c'est ça d'innover…
-
-### LE BRAQUAGE
-
-L'umbramancienne Olorea a soif de connaissances. Après des années de recherche, elle a eu vent des Scribes Bleus grâce à une copie dérobée du *Liber Malefic*. À présent, elle compte créer un nouveau rituel pour attirer leur attention et voler autant de livres et de parchemins que possible sur leur disque. Elle a alors besoin de personnes assez naïves pour rassembler les composants du rituel et distraire les Scribes Bleus au moment où ils apparaîtront.
-
-
-# **MÒNA MIMN**
-
-<span id="page-218-0" data-folio="215"></span>**Motivation :** Faire subir aux autres sa souffrance.
-
-**Ambition à court terme :** Réactiver les pierres gardiennes. **Ambition à long terme :** Se servir des pierres gardiennes pour transformer le Vieux Monde en un vaste lac froid.
-
-La solitude est une chose terrible et Mòna Mimn est seule depuis *terriblement* longtemps.
-
-Le destin de beaucoup de clans de fimirs est de s'éteindre lentement, et le dernier des dirach de Mòna est mort depuis des siècles. Aucune apprentie n'est née dans son clan, personne qui puisse égaler la longue vie d'une meargh et à qui transmettre son savoir. Aucune compagnie pendant de longues années mornes ; seule dans les marécages avec pour unique bruit celui du croassement des grenouilles et du crachin sur les flaques pour lui rappeler que la vie et le temps continuent toujours autour d'elle.
-
-Âgée d'un millier d'années, la vieille meargh vit dans sa tour noire qui penche toujours un peu plus. Les huttes et bâtiments de son défunt clan ont depuis longtemps pourri ou sombré dans la tourbière alentour et seuls des monticules de pierres recouverts de mousse lui rappellent sa famille. Elle erre sur ces terres lugubres en quête de champignons vénéneux et de grenouilles à dîner, grognant et maugréant à l'adresse de l'une des bêtes des marais qui l'escorte, mais sans beaucoup réagir. Elle se méfie de la compagnie des démons : ils souhaitent toujours obtenir quelque chose.
-
-Mòna est devenue complètement folle, une folie amère. Autrefois, elle trouvait son bonheur dans sa contrée détrempée, y voyant de la vie et des possibilités, mais à présent l'endroit n'incarne plus qu'un déclin inéluctable. Elle n'est pas tout à fait morte, mais pas tout à fait vivante non plus ; seuls le marais et la morosité subsistent.
-
-Elle en veut beaucoup aux humains, ces créatures qui ont lentement tué son clan au fil des sombres décennies. Ils sont détestables… et pourtant elle souhaite parfois que certains aillent à sa rencontre pour qu'elle puisse pester contre eux, tempêter contre leur cruauté impitoyable. Mais non, elle ne les tuerait pas. Elle crierait et exigerait des réponses, afin qu'elle puisse écouter leurs excuses… afin qu'elle puisse à nouveau entendre le son d'une autre voix.
-
-#### **La découverte des pierres gardiennes**
-
-Au cours d'une longue marche solitaire dans les profondeurs des marais, Mòna a trouvé un curieux ensemble de menhirs usés par le temps, à moitié enterrés et inclinés. Les glyphes décrépits qui y étaient gravés ont réveillé des souvenirs. Elle y est donc retournée avec des bêtes des marais pour les exhumer et les replacer comme ils étaient jadis. En parcourant leur surface de ses mains griffues, elle a senti un pouvoir ancien, mais réduit, et a compris ce qu'ils étaient.
-
-Les elfes les appelaient *« pierres gardiennes »*, un dispositif des Anciens pour canaliser de puissantes énergies magiques. Pour la première fois depuis… elle ne saurait dire quand, Mòna avait trouvé quelque chose qui l'enthousiasme. Quelque chose d'intéressant, quelque chose de *puissant*. Puis elle eut une idée qui devint un dessein et sa raison de vivre.
-
-Mòna pense que les autres méritent de comprendre ce qu'est devenue son existence. Ils devraient, eux aussi, connaître la solitude des marécages. Pour ce faire, elle étend le marais et le force à se développer au-delà de ses limites naturelles pour qu'il engouffre les hameaux alentour, submerge les villes, inonde les cités et couvre l'Empire jusqu'à même briser ses frontières montagneuses ! En ranimant correctement les pierres gardiennes et en dirigeant le flux de magie, elle croit pouvoir le faire ; cela prend du temps, mais elle en a.
-
-### **La lente avancée du Furdienst sur les terres**
-
-Le travail de Mòna a déjà commencé. Même si de nombreux milles marécageux séparent sa tour et les mégalithes des villages de Weidemarkt et de Schattenlas, leurs habitants ont dû mettre des huttes au sec. Les anciens grommellent que la bruine est plus abondante et plus grise, que l'humidité s'infiltre dans leurs os douloureux, ce qui n'est pas naturel selon eux.
-
-Avoir un but a ranimé la vie qui sommeillait en Mòna depuis longtemps. Elle a fabriqué encore plus de pierre des hardes et extrait plusieurs bêtes des marais du bourbier. Silencieusement immergées dans le sol, trois d'entre elles protègent les mégalithes, deux autres sa tour, tandis que la dernière l'accompagne. Elle voyage beaucoup à la recherche de restes de pierres gardiennes, qu'il s'agisse de menhirs tout entiers ou de simples fragments. Ceux-ci sont plus faciles à trouver et elle les enterre le long des frontières de son marais grandissant pour y diriger les énergies magiques des mégalithes. Elle a besoin d'autres pierres gardiennes afin d'accumuler davantage de pouvoir. En trouver une intacte, avec des glyphes lisibles, lui permettrait d'ériger la sienne. Peut-être que ce dont elle a besoin n'est qu'un dessin de ceux-ci ? La bibliothèque d'un sorcier pourrait refermer un tel savoir, mais comment en obtenir l'accès ? Elle ne veut pas commencer à fréquenter des démons, à moins qu'il n'y ait pas d'autre solution. Avec des intermédiaires volontaires et compétents, peut-être ?
-
-
-<span id="page-219-0" data-folio="216"></span># **Rencontrer Mòna**
-
-Les interactions entre Mòna Mimn et les Personnages se concentrent sur la nécessité qu'elle a de comprendre les glyphes des pierres gardiennes et d'en trouver d'autres fragments. Cela peut commencer incidemment par des rumeurs évoquant une étrange silhouette qui erre aux abords du marais et qui disparaît avant que quelqu'un ne s'approche suffisamment pour l'identifier. Cette silhouette peut avoir été aperçue en train de creuser, puisque Mòna sème et recherche des fragments de pierres gardiennes.
-
-Vous pouvez attirer l'attention des Personnages sur une série de cambriolages réalisés dans des bibliothèques magiques ou des collections privées, si vous ne souhaitez pas commencer en pleine nature. Parmi les objets volés, on trouve des traités sur les Vents de Magie, des récits de voyage dans certains endroits reculés (de manière générale les littoraux et les milieux humides), des pages reproduisant d'anciennes et curieuses gravures sur pierre, et même des pierres ouvragées qui en comportent. L'enquête indique que le voleur aurait des capacités surnaturelles, voire démoniaques. Une rencontre avec celui-ci ou le contenu des carnets de voyage donnent des indices pour poursuivre l'enquête.
-
-La piste mène les Personnages à Mòna et à ses bêtes des marais, qui devraient les dissuader d'attaquer si telle est leur intention première. La fimir n'attaquera pas non plus, à moins qu'elle n'ait pas d'autre choix, en revanche elle se lance dans une intense diatribe. L'occasion de crier contre quelqu'un qui l'écoutera est émotionnellement bien plus importante pour elle qu'elle ne l'imagine.
-
-#### **Une étrange dépendance s'installe**
-
-Après s'être calmée, Mòna voit là l'occasion d'employer les Personnages. Après tout, elle souhaite simplement qu'ils recherchent d'anciens textes ou trouvent plus de pierres pour sa collection, et peut-être même, en enterrer quelques-unes à des endroits qui lui sont inaccessibles. Ils peuvent accepter cette tâche ou bien s'élancer dans une course pour l'empêcher de mettre la main sur d'autres livres et artefacts, et exhumer ce qu'elle a enfoui.
-
-Mòna est obstinée, mais les Personnages peuvent devenir sa béquille émotionnelle – vitale pour elle – que ce soit en tant qu'agents ou némésis. Dans le premier cas, elle leur donne des missions intéressantes et fait appel (à contrecœur) à des démons mineurs pour voler quelques couronnes ou les aider dans leurs objectifs personnels. Dans le second cas, elle cherche à se montrer plus maligne qu'eux, mais pas à les tuer. De leur côté, les Personnages peuvent être sa planche de salut : ils pourraient l'aider s'ils comprennent le poids de ses siècles de solitude.
-
-| MÒNA MIMN – MATRICHE FIMIR |    |    |    |    |    |    |     |     |    |     |    |
-|----------------------------|----|----|----|----|----|----|-----|-----|----|-----|----|
-| M                          | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
-| 6                          | 45 | 20 | 50 | 55 | 50 | 35 | 40  | 75  | 70 | 25  | 44 |
-
-**Compétences :** Calme 95, Commandement 40, Corps à corps (Arme d'hast) 55, Divertissement (Narration) 50, Esquive 55, Focalisation (*Dhar*) 90, Intuition 80, Langue (Magick) 100, Perception 80, Savoir (Magie 95, Théologie 85)
-
-**Talents :** Chanceux, Diction instinctive 2, Harmonisation aethyrique, Magie des Arcanes (Magie du marais de Mòna), Magie mineure, Menaçant, Perception de la magie, Seconde vue, Sixième sens
-
-**Traits :** À sang-froid, Arme (Bâton de combat) +9, Armure 1 (6), Limicole, Mauvais œil, Redoutable 1, Taille (Grande), Vision nocturne
-
-**Possessions :** Bâton enchanté, bêtes des marais domestiquées, robes moisies
-
-#### **SORTS**
-
-**Magie mineure :** Bruits, Coup de vent, Feux follets, Pas léger, Repères, Source
-
-**Sorts d'Arcane :** Effrayant, Enchevêtrement, Protection, Souffle
-
-**Magie du marais de Mòna :** Bourbier d'abattement, Brume mystique, De la boue jusqu'au bout !, Empreint de bruine, Tourner en rond, Une piqûre de moustiques
-
-
-<span id="page-220-0" data-folio="217"></span>### **Mauvais œil**
-
-L'œil cyclopéen des magiciens fimirs peut discerner les flux et reflux des Vents de Magie aussi facilement que l'œil humain perçoit la lumière et des ombres. Cette sensibilité accrue aux Vents de Magie leur permet de faire le meilleur usage de tout pouvoir magique disponible.
-
-Le Mauvais œil octroie le Talent *Seconde vue*, et tous les Tests qui l'utilisent à des fins de Pistage, Orientation, Perception et autres bénéficient de +2 DR pour ces Compétences.
-
-De plus, il accorde aux Tests de Langue (Magick) ou de Focalisation un bonus de +1 DR. Un Personnage doté de ce Talent et qui subit une Incantation Imparfaite peut effectuer un Test de **Perception Complexe (−10)**. S'il le réussit, il constate que les énergies magiques se dérèglent. Il peut alors choisir d'arrêter d'incanter, ce qui implique que le Sort échoue, mais que l'Incantation Imparfaite n'a pas lieu.
-
-#### **Magie du marais de Mòna Bourbier d'abattement**
-
-**NI :** 6
-
-**Portée :** (Force Mentale) mètres
-
-**Cible :** 1
-
-**Durée :** Spéciale
-
-Le sol sous les pieds de la cible devient une boue froide et collante. S'en échapper n'est pas facile et plus la cible essaie de se libérer, plus elle se décourage et se désespère. Elle subit +1 État *Empêtré* dont la Force est égale à votre Intelligence. Pour chaque tranche de +2 DR lors de votre Test d'Incantation, vous pouvez ajouter +1 État *Empêtré* à la cible. Le Sort s'achève une fois que tous les États Empêtré ont été retirés. À chaque Round durant lequel la cible reste empêtrée, elle doit réussir un Test de **Calme Accessible (+20)** ou recevoir un État *Exténué*.
-
-### **Brume mystique**
-
-**NI :** 4
-
-**Portée :** (Force Mentale) mètres
-
-**Cible :** ZdE (Bonus de Force Mentale) mètres **Durée :** (Bonus de Force Mentale) Rounds
-
-Brume mystique a le même effet que le Sort du Domaine des *Ombres Miasme mystifiant* (page 112), même si Mòna le trouve plus facile à lancer comme le reflète son NI réduit.
-
-#### **De la boue jusqu'au bout !**
-
-**NI :** 20 **Portée :** Vous
-
-**Cible :** ZdE (Force Mentale) mètres **Durée :** (Bonus de Force Mentale) années
-
-Il s'agit d'un nouveau Sort sur lequel Mòna travaille et qu'elle doit améliorer. Pour le lancer, vous devez vous trouver au bord d'un marais, un pied dans l'eau, l'autre sur la terre ferme. Le marais déborde de ses frontières, sur une distance égale à la Zone d'Effet.
-
-### **Empreint de bruine**
-
-**NI :** 9
-
-**Portée :** Vous
-
-**Cible :** ZdE (Bonus de Force Mentale) milles **Durée :** (Bonus de Force Mentale) heures
-
-Vous implorez les nuages de s'accumuler et de faire tomber une fine pluie pénétrante et gelée. Les fimirs trouvent ce genre d'atmosphère relaxante, mais les autres créatures doivent réussir un Test de **Résistance Facile (+40)** ou recevoir un État *Exténué*. Les Tests effectués pour tirer avec des armes à poudre, lancer des Sorts du Domaine du Feu ou entrer en *Frénésie* subissent un malus de −2 DR tant que le crachin persiste.
-
-#### **Piqûres de moustiques**
-
-**NI :** 5
-
-**Portée :** (Force Mentale) mètres
-
-**Cible :** ZdE (Bonus de Force Mentale) mètres **Durée :** (Bonus de Force Mentale) Rounds
-
-Vous invoquez un important nuage tourbillonnant de moustiques pour harceler vos ennemis de leurs piqûres douloureuses. La nuée s'en prend à toute créature à sang chaud dans la Zone d'Effet qui inflige +2 Dégâts à la fin du Round, considéré comme un Projectile magique. L'essaim reste en jeu pendant la Durée du Sort. Tant qu'elles demeurent dans la Zone d'Effet, toutes les créatures à sang chaud doivent réussir un Test de **Résistance Accessible (+20)** ou recevoir +1 État *Aveuglé* et un autre *Exténué*.
-
-#### **Tourner en rond**
-
-**NI :** 4
-
-**Portée :** (Bonus de Force Mentale) mètres
-
-**Cible :** 1
-
-**Durée :** (Bonus de Force Mentale) heures
-
-Vous maudissez votre cible qui devient confuse et perd tout sens de l'orientation. Pour que ce Sort puisse fonctionner, la cible ne doit pas avoir conscience qu'il a été lancé. Si c'est le cas, pendant la Durée du Sort, la cible subit un malus de −3 DR à tous ses Tests d'Orientation effectués tant qu'elle se trouve dans l'enceinte d'un marais.
-
-
-# **LA VENTE AUX ENCHÈRES**
-
-<span id="page-221-0" data-folio="218"></span>Il y a cent cinquante ans, quatre enfants des rues issus du quartier des quais de Weissenberg ont été identifiés comme possédant des talents magiques exceptionnels. Des magisters de six collèges se sont disputés à leur sujet pour savoir lequel les prendrait comme apprentis. Il a fallu que le Patriarche suprême règle la question et les enfants furent placés en apprentissage au sein des Ordres de la Vie, des Ombres, des Cieux et de la Bête.
-
-Au cours des huit années qui suivirent, leurs débuts prometteurs se concrétisèrent. Les quatre se réunirent et travaillèrent ensemble au nez et à la barbe des collèges. Ils se servirent des secrets des collèges des uns et des autres et furent capables de créer une magie qui mélangeait des vents. Ils consignèrent ces sorts dans un grimoire.
-
-Les collèges accueillirent ces révélations avec effroi puisqu'il est formellement interdit à un sorcier humain d'employer plus d'un Vent de Magie. Bien que ces sorts eussent été créés pour des sorciers utilisant chacun un vent distinct, mais que les consignes dans ce domaine n'étaient pas claires, on les persuada de garder le secret de leurs recherches. Toutefois, des répurgateurs eurent vent de leurs activités. Les quatre sorciers disparurent alors et l'on n'entendit plus jamais parler d'eux.
-
-Les répurgateurs détruisirent tous leurs travaux ainsi que leurs possessions et ordonnèrent que leurs noms soient effacés des archives.
-
-**Une seule page**
-
-La rumeur de la vente d'un sort créé par les Quatre de Weissenberg, comme on les appelle, s'est propagée. Dans une semaine, il sera mis aux enchères dans un lieu tenu secret par un mystérieux receleur, le Marquis bleu. L'homme est peut-être un criminel, mais il a la solide réputation de tenir ses engagements et de protéger l'identité de ses clients, ainsi que la sienne, même lorsque l'on interroge ses laquais.
-
-Missionnés par un collège, les Personnages doivent obtenir ce sort. L'institution espère que le parchemin les conduira aux archives perdues des Quatre de Weissenberg. Les Personnages disposent également d'un avantage : ils ont appris que le sort est passé à un moment donné entre les mains du marchand Otto Berg.
-
-Un répurgateur et sa suite sont en ville pour localiser le sort et son vendeur. Ils sont rejoints par des représentants de chaque collège, eux aussi en ville pour la vente aux enchères. Les magisters disent qu'ils sont ici pour aider le répurgateur, mais en réalité ils désirent eux-mêmes obtenir le sort et le garder.
-
-### **Le marchand et le voleur**
-
-Berg se cache et, pour le retrouver, les Personnages doivent parler à d'autres marchands afin d'obtenir l'adresse de l'auberge dans laquelle il s'est réfugié. Terrifié, il leur annonce qu'il a vendu l'objet à un représentant du Marquis bleu, mais qu'il ne peut vraiment pas leur en dire plus.
-
-Il a acheté le sort à Patsy Piedblé, un voleur halfling. Il est affolé par l'intérêt que suscite ce qu'il pensait n'être qu'un simple sort et se terre, protégé par une bande de contrebandiers qui lui doivent un service. Ils se cachent dans un coin fortifié des égouts, qui exige de la ruse pour le repérer et de la force brute pour y entrer. Les Personnages peuvent ainsi se retrouver au beau milieu d'une bataille entre une bande de contrebandiers, un répurgateur et plusieurs sorciers.
-
-Piedblé a volé le sort à l'exploratrice Ingrid Dirkmann, décédée il y a deux mois et dont les affaires sont sous scellé au poste de garde du coin. L'avocat d'Ingrid les a soudoyés pour qu'ils les gardent précieusement.
-
-#### **La vente aux enchères**
-
-La vente aux enchères a lieu dans les bas quartiers à minuit. L'endroit est organisé de manière à ce que les enchérisseurs ne voient pas leurs concurrents et des coursiers apportent les enchères (de l'argent, des biens et des promesses) au Marquis bleu. Si les Personnages enquêtent sur lui, ils peuvent le trouver uniquement durant la vente.
-
-Et dans ce cas, ils peuvent lui voler le sort.
-
-# PEAU D'ÉCORCE ET D'OS
-
-**NI :** 1 pour *Ghyran* et 3 pour *Ghur* (deux sorciers différents doivent contribuer à ce Sort lors d'un même Round)
-
-**Portée :** le Sort fait effet sur l'un des deux lanceurs. **Cible :** 1
-
-**Durée :** (Bonus de Force Mentale) Rounds (utilisez celui du participant qui a le plus haute)
-
-Cette nouvelle couleur de magie, créée par les Quatre de Weissenberg, permet à deux magisters d'associer leurs pouvoirs et de lancer un sort unique. Bien que ce ne soit pas techniquement illégal, plusieurs factions intéressées, dont le culte de Sigmar, insistent lourdement pour que cela le devienne.
-
-La peau de l'un des lanceurs devient rugueuse et dure, et il reçoit un bonus de +20 en Endurance.
-
-
-# **L'APPRENTIE**
-
-<span id="page-222-0" data-folio="219"></span>Depuis qu'elle est née, tout le monde à Camberheim savait que Hanna était différente. Les habitants disaient qu'elle avait été bénie par Rhya, notamment avec sa capacité à parler aux animaux. Devenue l'apprentie de l'herboriste local, elle développa ses compétences jusqu'à égaler celles de son mentor dès l'âge de neuf ans.
-
-Ses parents savaient que ses talents attireraient l'attention et cherchèrent à les garder secrets. Mais un colporteur cupide devina la vérité et revendit l'information, qui remonta jusqu'à Altdorf. En comprenant ce que cela implique, le Collège de Jade envoie l'un des leurs (ou un groupe d'aventuriers) pour savoir si Hanna est une recrue potentielle. On leur accorde un mandat, leur donnant le droit d'emmener la jeune femme à Altdorf.
-
-#### **En chemin**
-
-À une journée du village, les Personnages découvrent une diligence détruite par le feu. Les dégâts sont récents, mais on trouve peu de choses à l'exception de quelques pointes de flèches. Non loin, une planche de bois de la diligence gravée d'un corbeau indique l'emplacement d'une tombe fraîchement creusée. Cette scène est le résultat d'une attaque de bandits.
-
-### **Boris et les bandits**
-
-À Camberheim, les villageois se montrent très nerveux envers les Personnages et nient connaître Hanna. On les oriente vers l'aîné du village, Ivan, qui est également le tenancier de la taverne, *La Tête de l'Orc*. Cet ancien soldat expérimenté, mais à présent invalide, nie dans un premier temps l'existence de la fille. Si les Personnages le poussent dans ses retranchements, il leur explique qu'on l'a forcé à mentir et qu'il a peur des représailles. Il ajoute que Hanna a été capturée par un groupe de bandits violents dirigés par « Boris le Terrible ».
-
-Ivan a l'intention d'envoyer les Personnages tuer Boris et sa bande. Leur cachette se trouve dans un moulin à vent abandonné d'où ils terrorisent les environs. Le moulin et les bâtiments alentour sont situés sur une petite colline, entourés par une palissade en bois pourri. Les bandits sont enclins à faire la fête chaque soir et sont alors vulnérables. Peu d'entre eux se battront jusqu'à la mort et il est alors aisé de négocier avec eux. Toutefois, Hanna ne se trouve pas au moulin.
-
-Au retour des Personnages, Ivan admet qu'il leur a menti et que Hanna est protégée par le prêtre local de Taal. Les villageois en ont décidé ainsi après qu'un étrange homme qui la recherchait soit arrivé à la taverne un soir. Ce nécromancien voulait faire d'elle son apprentie. Ils laissent entendre que le prêtre se trouve dans un sanctuaire proche.
-
-### **Pas si protégée**
-
-Le sanctuaire est situé au pied d'un affleurement rocheux, dans une petite clairière. Une grande pierre levée taillée grossièrement se trouve au centre de celle-ci. Des offrandes de nourriture et d'autres petits objets se trouvent autour de sa base et une main pourrissante (tombée d'un zombie) non loin de là. Un chemin étroit mène à une petite caverne dans laquelle le prêtre de Taal, Heinrich, est grièvement blessé. Il a été attaqué par un agresseur inconnu qui a emmené Hanna avec lui.
-
-#### **La sombre apprentie**
-
-Pister le nécromancien dans son antre est facile. Il a élu domicile dans une petite chapelle de Morr, située au centre d'un cimetière en bordure d'une vieille ville minière abandonnée. L'herbe a envahi les maisons, qui s'effondrent, et abritent à présent une douzaine de zombies qui errent dans les environs. Le nécromancien est secondé par deux coupe-jarrets qu'il paie grassement et Hanna est retenue prisonnière dans une crypte vide.
-
-#### **De retour au village**
-
-Si Hanna est sauvée, elle demande à rentrer chez elle pour dire au revoir à ceux qu'elle aime. Les villageois sont très attristés et supplient les Personnages de partir sans elle. Si les Personnages sont blessés, Ivan et d'autres personnes peuvent les soigner. Les Personnages pourront alors se rendre compte qu'emmener Hanna aura un impact terrible sur la population locale.
-
-
-# INDEX
-
-| #                                                |            | Brasser une potion                             | 34         | Croissance vitale                                                     | 87         |
-|--------------------------------------------------|------------|------------------------------------------------|------------|-----------------------------------------------------------------------|------------|
-<span id="page-223-0" data-folio="220"></span>| 10 compétences de départ ?                       | 35         | Brume mystique                                 | 217        | Culte de Morr, Le                                                     | 93, 117    |
-| A                                                |            | C                                              |            | Culte de Rhya, Le                                                     | 83         |
-| Accomplir un Rituel                              | 34         | Cabale, La                                     | 209        | Culte de Taal, Le                                                     | 143        |
-| Acolyte dans l'ombre, L'                         | 105        | Cage dorée                                     | 74         | Culte de Verena, Le                                                   | 93, 107    |
-| Aenarion                                         | 8          | Caledor                                        | 8          | D                                                                     |            |
-| Agressivité de la Maresang                       | 26         | Cape de charme doré, La                        | 211        | Dague voleuse de Chance, La                                           | 171        |
-| Ailes grises                                     | 110        | Capuche vengeresse                             | 146        | Danse du désespoir                                                    | 111        |
-| Alchimie et la vraie Magie                       | 37         | Caractéristiques des potions                   | 155        | De la boue jusqu'au bout !                                            | 217        |
-| Alchimie ordinaire, L'<br>Alchimie               | 49<br>49   | Caresse de Laniph<br>Catalogue des potions     | 122<br>161 | Déchireur de Sociabilité, Le<br>Découverte des pierres gardiennes, La | 171<br>215 |
-| Alchimiste ordinaire                             | 37         | Cautériser                                     | 134        | Décrypter une malédiction                                             | 26         |
-| Alimentation des familiers, L'                   | 187        | Cendre et poussière                            | 123        | Défaut                                                                | 75         |
-| Al-kahest                                        | 52         | Cercles d'oghams                               | 195        | Dégâts et soins des familiers                                         | 187        |
-| Allumer le feu                                   | 134        | Cercueil de Jade                               | 86         | Dénouer les nœuds                                                     | 75         |
-| Almanach                                         | 86         | Chair de pierre                                | 86         | Dernières paroles                                                     | 123        |
-| Amarante                                         | 122        | Chambre des travaux, La                        | 200        | Des sites intéressants                                                | 207        |
-| Âme emprisonnée                                  | 122        | Chant revigorant                               | 86         | Désorientation                                                        | 111        |
-| Améliorer des familiers                          | 182        | Chantage                                       | 84         | Destin de Bjuna                                                       | 123        |
-| Améliorer un familier                            | 34         | Chaos, Le                                      | 59         | Destin éclairci                                                       | 99         |
-| Ami débauché, L'                                 | 161        | Charme changeant                               | 110        | Destrier d'Ombre                                                      | 111        |
-| Amplification                                    | 194        | Chemin du vagabond, Le                         | 57         | Destruction de Tzeentch, La                                           | 212        |
-| Anatomie d'un Sort<br>Anciens, Les               | 20<br>7    | Chut !                                         | 110        | Deuxième Signe d'Amul, Le                                             | 99         |
-| Aperçu de la mort                                | 122        | Chute de feuilles<br>Clarté d'esprit           | 87<br>62   | Devin<br>Dévoiler l'inconnu                                           | 40<br>75   |
-| Apothéose verdoyante                             | 86         | Cœurs ardents                                  | 134        | Diplômés du Collège Flamboyant, Les                                   | 129        |
-| Apparence des grimoires, L'                      | 164        | Cognat de l'âtre                               | 134        | Disciples de la mort, Les                                             | 117        |
-| Apparences des familiers                         | 182        | Colérique                                      | 134        | Dissipation                                                           | 23         |
-| Appeler une monture                              | 146        | Collège Céleste, Le                            | 95         | Distorsion temporelle                                                 | 63         |
-| Approches à la préparation de potions, Les       | 154        | Collège d'Améthyste, Le                        | 119        | Domaines magiques multiples                                           | 23         |
-| Arc d'empathie sanglante, L'                     | 170        | Collège de Jade, Le                            | 83         | Don de Vie                                                            | 87         |
-| Arc de T'Essla                                   | 98         | Collège Doré, Le                               | 71         | Du balai, sorcière !                                                  | 48         |
-| Arche de saphir                                  | 98         | Collège Flamboyant, Le                         | 131        | Durée                                                                 | 20         |
-| Argile fertile                                   | 26         | Collège Gris, Le                               | 107        | E                                                                     |            |
-| Arme enchantée                                   | 74         | Collège Lumineux, Le                           | 59         | Eau de la terre                                                       | 87         |
-| Armée et la noblesse, L'                         | 59         | Collet d'Abulla                                | 62         | Écaille d'acier                                                       | 75         |
-| Armée, L'<br>Armure de fer blanc                 | 131<br>74  | Comète de Cassandora<br>Compétences et Talents | 98<br>185  | École impériale d'Artillerie de Nuln, L'                              | 131        |
-| Art de Chamon, L'                                | 69         | Composants                                     | 21         | Écorce                                                                | 88         |
-| Art de la malédiction                            | 28         | Compréhension parfaite                         | 63         | Écrire des parchemins                                                 | 153        |
-| Ashamira Dib                                     | 60         | Concentré de pouvoir                           | 162        | Écrits de Sedelmann, Les                                              | 165        |
-| Assaut de pierre                                 | 62         | Concocter                                      | 161        | Édifice érigé<br>Édifice illuminé                                     | 63<br>63   |
-| Atout Maudit, L'                                 | 170        | Configuration du terrain                       | 87         | Effets de détérioration d'une potion                                  | 157        |
-| Attache, L'                                      | 205        | Confrérie d'Ambre, La                          | 143        | Effets de détérioration d'une potion                                  | 156        |
-| Atténuation                                      | 194        | Connaissances arcaniques dans                  |            | Effets de la Corruption chaotique                                     | 191        |
-| Attraction                                       | 194        | l'actuel Empire, les                           | 15         | Effets de la Corruption nécromantique                                 | 191        |
-| Augure et les Carrières existantes               | 46         | Conséquences                                   | 196        | Effets de la Magie sur le monde, Les                                  | 189        |
-| Augure et les stupéfiants, L'                    | 46         | Consommer des potions                          | 155        | Effondrement de Fabriqué                                              | 26         |
-| Augure                                           | 44         | Constellations ascendantes                     | 93         | Égide d'Aqshy, L'                                                     | 135        |
-| Avantage de la Seconde vue<br>Avantages et Magie | 160<br>21  | Contact doré<br>Contraindre les esprits        | 75<br>123  | Élémentaire incarné de la Bête                                        | 176        |
-|                                                  |            | Contrôler des élémentaires                     | 32         | Élémentaire incarné de la Mort                                        | 31, 175    |
-| B                                                |            | Corne d'Andar                                  | 110        | Élémentaire incarné du Feu                                            | 174        |
-| Balthasar Gelt                                   | 72         | Corps de feu                                   | 135        | Élémentaires mineurs                                                  | 28         |
-| Bannissement<br>Bâton enchanté                   | 62<br>152  | Corrompre une pierre gardienne                 | 28         | Élémentaliste de Cour, L'                                             | 11         |
-| Bedeau                                           | 38         | Corruption arcanique, la                       | 17         | Elspeth von Draken<br>Embrasement                                     | 120<br>135 |
-| Bête indomptée                                   | 146        | Corruption des lignes de force                 |            | Embrasser son destin                                                  | 123        |
-| Bêtes des marais                                 | 179        | et des pierres gardiennes                      | 197        | Empreint de bruine                                                    | 217        |
-| Bibliothécaire instantané de Meissner            | 62         | Corruption                                     | 191, 198   | Enfants sauvages                                                      | 141        |
-| Blizzard ardent d'Ygethmor                       | 134        | Cotte de mailles de bravoure usurpée, La       | 171        | Ennemi prévisible                                                     | 99         |
-| Bosquet d'Ombre                                  | 110        | Courir après son ombre                         | 103        | Entre l'arbre et l'écorce                                             | 145        |
-| Bottes du remords soudain, Les                   | 170        | Couronne de Flammes                            | 135        | Éonirs, Les                                                           | 83, 143    |
-| Bouclier céruléen                                | 98         | Crâne de Katam, Le                             | 211        | Épée ardente de Rhuin, L'                                             | 135        |
-| Bouclier en acier doré                           | 74         | Créateur, Le                                   | 184        | Épée de retenue, L'                                                   | 171        |
-| Bourbier d'abattement                            | 217        | Créer un Fabriqué<br>Créer un familier         | 28<br>29   | Épées sanguines                                                       | 135        |
-| Boussole d'argent de Puchta                      | 74         | Créer une pierre de pouvoir                    | 30         | Escalier en colimaçon                                                 | 88         |
-| Boussole d'argent météorique                     | 53         | Créer une propriété de pierre gardienne        | 30         | Esprits de la nature                                                  | 176        |
-| Braquage, Le                                     | 214        | Creuset de Chamon                              | 75         | Étreinte d'Iyrtu                                                      | 123        |
-| Brassage (catastrophes)<br>Brassage (tests de)   | 161<br>160 | Crevasse                                       | 63         | Êtres du dessous<br>Éveil du bois                                     | 88<br>146  |
-| Brassage                                         | 160        | Cri de guerre du Druide                        | 87         | Exemples de grimoires                                                 | 165        |
-|                                                  |            |                                                |            |                                                                       |            |
-
-
-| F                                                |            | Invoquer un démon                                       | 31        | Motivations                                   | 210, 212   |
-|--------------------------------------------------|------------|---------------------------------------------------------|-----------|-----------------------------------------------|------------|
-<span id="page-224-0" data-folio="221"></span>| Fabriquer des composés simples                   | 50         | Ironie du Destin                                        | 99        | Mur de feu                                    | 137        |
-| Failles du Warp<br>Familier de combat            | 198<br>185 | Isolation                                               | 194       | Murmure de la nature                          | 88         |
-| Familier de sorts                                | 185        | Isoler des éléments de base                             | 50        | Musc de sanglier                              | 162        |
-| Familiers contre fabriqués                       | 181        | J                                                       |           | Mystères des Pierres, Les<br>Mystracine, La   | 204<br>47  |
-| Familiers et la Corruption, Les                  | 187        | Jack des Cendres                                        | 32, 174   |                                               |            |
-| Familiers et la maladie, Les                     | 187        | Jardins de Jade, Les                                    | 81        | N                                             |            |
-| Familiers et les États, Les                      | 187        | Jonctions saturées                                      | 198       | Nains, Les                                    | 69         |
-| Familiers                                        | 180-188    | Jonctions telluriques                                   | 197       | Ne buvez jamais l'eau                         | 201        |
-| Familiers, Classe et Statut                      | 185        | Jumeau maléfique                                        | 111       | Nectar de beauté                              | 162        |
-| Fauche-démon                                     | 64         | L                                                       |           | Nectar de véracité<br>Nectar de vitalité      | 162<br>162 |
-| Fausse idole                                     | 202        | Laboratoire alchimique portatif, Le                     | 50        | Nettoyage impeccable                          | 100        |
-| Faux blafarde, La                                | 120        | Lames d'Azur                                            | 99        | Noblesse, La                                  | 69         |
-| Faux croisées, Les                               | 30         | Lance d'Ambre, La                                       | 147       | Nouveau Talent : Assistant magique            | 186        |
-| Faux de Shyish, La                               | 124        | Langue bestiale                                         | 147       | Nouveau Talent : Empreint de (Vent)           | 186        |
-| Festin de sang, Le                               | 84         | Labyrinthe de Cristal, Le<br>Lente avancée du Furdienst | 124       | Nouveau Trait : Incantateur hasardeux         | 214        |
-| Fibule d'attraction non souhaitée, La            | 171        | sur les terres, La                                      | 215       | Nouveau Trait : Siphonnage de sort            | 214        |
-| Filet d'Amyntok                                  | 64         | Lentille céleste                                        | 99        | Nouvelles Carrières et                        |            |
-| Flamme fascinante                                | 136        | Lunes du chasseur, Les                                  | 147       | pratiques arcaniques                          | 35         |
-| Flamme inextinguible                             | 136        | Lever le voile                                          | 64        | Nouvelles Carrières                           | 35         |
-| Fléau d'attention non sollicitée, Le             | 172        | Lever une malédiction                                   | 33        | Nuit de la Valse noire, La                    | 16         |
-| Focalisation Critique                            | 22         | Libération de la mort                                   | 124       | Nuit des Mille Duels mystiques, La            | 17         |
-| Forêt d'épines                                   | 88         | Lier un esprit à une pierre de pouvoir                  | 33        | O                                             |            |
-| Forge de Chamon                                  | 75         | Lier une bête monstrueuse                               | 33        | Objets maudits                                | 170        |
-| Forge de Henoth, La<br>Forge de Tarnus, La       | 200<br>136 | Lignes de force naturelles et artificielles             | 193       | Obstination du bœuf                           | 148        |
-| Forme bestiale et autres                         |            | Linceul d'Invisibilité                                  | 112       | Obtenir aléatoirement                         |            |
-| sorts de transformation                          | 150        | Liqueur de rêve, La                                     | 46        | les nouvelles Carrières                       | 35         |
-| Forme bestiale                                   | 147        | Livres cachés de Chamon, Les                            | 165       | Ombre errante                                 | 112        |
-| Fournaise flétrissante                           | 136        | Livres de WA, Les                                       | 165       | Ombres étrangleuses                           | 112        |
-| G                                                |            | Lotion capillaire                                       | 162       | Optique, L'                                   | 50         |
-| Gardes du corps                                  | 177        | Lueur éblouissante                                      | 64        | Or des fous, L'                               | 76         |
-| Gardiens de maison                               | 177        | Lueur stellaire                                         | 99        | Orbe de Hysh                                  | 65         |
-| Geyser                                           | 88         | Lumière aveuglante                                      | 65        | Ordre de Jade, L'                             | 117        |
-| Globe doré de Gehenna                            | 76         | Lumière de guérison                                     | 65        | Ouvriers                                      | 178        |
-| Goût du feu                                      | 136        | M                                                       |           | P                                             |            |
-| Graisse de la terre                              | 88         | Magie du marais de Mòna                                 | 217       | Panacea Universalis                           | 162        |
-| Grand Cataclysme, Le                             | 8          | Magister Vigilant                                       | 42        | Parchemins                                    | 153        |
-| Grand Rituel, Le                                 | 9          | Magnétisme magique                                      | 67        | Parent sauvage de Zandox                      | 124        |
-| Grand Vortex, Le                                 | 8, 196     | Magnétisme                                              | 50        | Peau d'écorce et d'os                         | 218        |
-| Grands feux d'U'Zhul                             | 136        | Magnus et Teclis, et la fondation                       |           | Peau du chasseur                              | 148        |
-| Graver une pierre d'ogham                        | 31         | des Collèges de Magie                                   | 12        | Pelage d'hiver                                | 148        |
-| Gregor Martak                                    | 144        | Mains de Karkora                                        | 65        | Pensée rapide                                 | 65         |
-| Griffonnages évocateurs                          | 202        | Maître de la bête<br>Maîtres du savoir de Saphery, Les  | 147<br>59 | Persécution des Sorciers<br>avant Magnus, La  | 10         |
-| Grimoires aléatoires                             | 166        | Maladresse de Focalisation                              | 22        | Persécution, La                               | 10         |
-| Grimoires et Rituels                             | 27         | Malédiction d'Anraheir                                  | 148       | Perte de mémoire                              | 112        |
-| Grimoires                                        | 19, 164    | Malédiction de la rouille                               | 76        | Perturber la Magie                            | 26         |
-| H                                                |            | Malédiction du Destin                                   | 100       | Pierres de Barbaneagra, Les                   | 204        |
-| Hache de fureur incessante, La                   | 172        | Malepierre                                              | 22        | Pierres de pouvoir                            | 167        |
-| Halo purificateur                                | 64         | Manigances mortelles                                    | 7         | Pierres du tertre, Les                        | 178        |
-| Héritiers de la Flamme, Les                      | 129        | Manteau miroitant                                       | 65        | Pierres gardiennes (corruption)               | 28, 197    |
-| Histoire, le savoir et la pratique de la Magie   |            | Marchand et le voleur, Le                               | 218       | Pierres gardiennes                            | 193        |
-| dans l'Empire, L'                                | 6          | Marine impériale, La                                    | 93        | Pince-sorciers, Le                            | 109        |
-| Holzkrugs, Les                                   | 108        | Matérialiser le marais-vivant                           | 33        | Piqûres de moustiques                         | 217        |
-| Hommes-bêtes du dessous, Les                     | 144        | Maudit                                                  | 100       | Pistolet de solitude involontaire, Le         | 172        |
-| Horreurs noires                                  | 111        | Mauvais œil                                             | 217       | Plume de plomb                                | 77         |
-| Hurricanum Céleste, L'                           | 95         | Mécénat d'Ashamira Dib, Le                              | 60        | Poches profondes                              | 113        |
-| I                                                |            | Mécénat d'Elspeth von Draken, Le                        | 120       | Poids des années                              | 124        |
-| Illusion grandiose                               | 111        | Mécénat d'Immanuel-Ferrand                              |           | Poings d'ignominie, Les                       | 172        |
-| Illusion rétroactive de Ribauld                  | 112        | Holswig-Schliestein, Le                                 | 108       | Pont des ombres                               | 113        |
-| Illusion                                         | 111        | Mécénat de Balthasar Gelt, Le                           | 73        | Portail d'Ombre                               | 113        |
-| Immanuel-Ferrand Holswig-Schliestein             | 108        | Mécénat de Gregor Martak, Le                            | 144       | Portails magiques                             | 198        |
-| Importante tâche des Scribes, L'                 | 212        | Mécénat de Raphael Julevno, Le                          | 97        | Possessions                                   | 186        |
-| Imprégner un bâton                               | 31         | Mécénat de Sergov Pfeiffer, Le                          | 132       | Potion d'invisibilité                         | 163        |
-| Incantation Critique<br>Incantations Imparfaites | 20<br>20   | Membre flétri<br>Mémoriser des Sorts                    | 124<br>19 | Potion de divination                          | 163        |
-| Incarnation de Wyssan                            | 147        | Message confondant                                      | 133       | Potion de Focalisation<br>Potion de puissance | 163<br>163 |
-| Influences malveillantes                         | 22         | Métal changeant                                         | 77        | Potion de vol                                 | 163        |
-| Ingrédients                                      | 160        | Méthode essai-erreur                                    | 76        | Potions magiques                              | 154        |
-| Inscription                                      | 76         | Miasme mystifiant                                       | 112       | Poudre alchimique de Leonardo                 | 53         |
-| Intention inspirée                               | 64         | Miroir mystique                                         | 100       | Pour l'amour de la poudre                     |            |
-| Interruptions                                    | 22         | Mistral de la stratosphère                              | 100       | et de la fumée                                | 37         |
-| Invasion, L'                                     | 12         | Mort rapide                                             | 124       | Prédateur sanglant, Le                        | 32, 176    |
-|                                                  |            |                                                         |           |                                               |            |
-
-
-<span id="page-225-0" data-folio="222"></span>| Prédiction prodigieuse                    | 100     | Shyish à découvert                      | 125      | U                               |     |
-|-------------------------------------------|---------|-----------------------------------------|----------|---------------------------------|-----|
-| Premier Signe d'Amul, Le                  | 100     | Silence                                 | 27       | Un petit cou pour la route ?    | 84  |
-| Prémonition                               | 101     | Skavens                                 | 107      | Un vent céleste                 | 91  |
-| Prisme de pouvoir                         | 53      | Soldats                                 | 107, 178 | Un vent mourant                 | 115 |
-| Produits alchimiques                      | 51      | Sombre apprentie, La                    | 219      | Une dispute en boucle           | 191 |
-| Projectiles magiques                      | 20      | Sorciers de village, Les                | 83       | Une lueur d'espoir              | 57  |
-| Projection astrale                        | 101     | Sorts de contact en combat              | 21       | Une némésis nommée              |     |
-| Propriétés des pierres de pouvoir         | 167     | Sorts prémonitoires                     | 46       | Egrimm Van Horstmann            | 210 |
-| Propriétés des pierres gardiennes         | 194     | Stupéfiants (autres)                    | 47       | Une philosophie du commandement | 105 |
-| Protection de Phâ                         | 65      | Substance de l'Ombre                    | 113      | Une vieille tradition           | 43  |
-| Protections de fer météorique             | 77      | Substances caustiques ou corrosives     | 50       | V                               |     |
-| Puits de Tarnus                           | 113     | Suivre le fumet                         | 148      | Vaporisation de musc            | 149 |
-| Purification                              | 137     | Sur liste noire                         | 132      | Varech avarié                   | 27  |
-| Q                                         |         | Sur mesure                              | 145      | Vent Lumineux, Le               | 54  |
-| Quand avez-vous votre                     |         | Surincantation                          | 23       | Vent Céleste, Le                | 90  |
-| père pour la dernière fois ?              | 96      | Symbolisme de l'Ordre Céleste           | 91       | Vent d'Ambre, Le                | 138 |
-| Que soufflent les Quatre Vents !          | 101     | Symbolisme de l'Ordre d'Améthyste       | 115      | Vent Gris, Le                   | 102 |
-| Quelle taille ont-ils ?                   | 180     | Symbolisme de l'Ordre de Jade           | 79       | Vent Doré, Le                   | 66  |
-| R                                         |         | Symbolisme de l'Ordre Doré              | 67       | Vent d'Améthyste, Le            | 114 |
-| Raphael Julevno                           | 96      | Symbolisme de l'Ordre Flamboyant        | 127      | Vent Flamboyant, Le             | 126 |
-| Recrutement des Collèges de Magie, Le     | 15      | Symbolisme de l'Ordre Gris              | 103      | Vent de Jade, Le                | 78  |
-| Redoutable (Trait de créature)            | 176     | Symbolisme de l'Ordre Lumineux          | 55       | Vente aux enchères, La          | 218 |
-| Reflet du passé, Le                       | 206     | T                                       |          | Ver frétillant                  | 149 |
-| Réfraction prismatique de Habermas        | 77      | Tableau d'Augure                        | 45       | Vitesse de Lykos                | 125 |
-| Réfraction                                | 194     | Tableau d'Incantation                   |          | Voie de Paranoth, La            | 89  |
-| Régénération                              | 89      | Imparfaite de grimoire                  | 165      | Voile violet de Shyish          | 125 |
-| Régiment monstrueux de Merciw             | 148     | Tableau de mouvements du vortex         | 21       | Vol de vie                      | 125 |
-|                                           |         | Tableau des Symboles                    | 45       | Vol du Destin                   | 149 |
-| Règles d'Incantation                      | 190-192 | Teclis                                  | 12       | Vortex aléatoires               | 20  |
-| Règles environnementales                  | 192     | Télépathie                              | 125      | Vortex d'âmes                   | 125 |
-| Relevé tellurique                         | 191     | Tempête de flammes                      | 137      | Voués au monde sauvage          | 141 |
-| Rencontrer Mòna                           | 216     | Tempête de magma                        | 137      | Voyage vers l'Est               | 96  |
-| Réparer du métal                          | 77      | Tempête de Shemtek                      | 101      |                                 |     |
-| Repousser les Vents                       | 22      | Test d'Incantation                      | 20       | Y                               |     |
-| Reproduction de Levorg                    | 77      | Test de Focalisation                    | 22       | Yeux de la meute                | 149 |
-| Répurgateurs, Les                         | 59      | Tête enflammée                          | 137      | Yeux de Volans                  | 65  |
-| Restrictions à l'incantation              | 21      | Thaumodivinator, Le                     | 46       |                                 |     |
-| Résumé des phénomènes arcaniques          | 199     | Toile Géomantique, La                   | 197      |                                 |     |
-| Réunir des ingrédients                    | 34      |                                         |          |                                 |     |
-| Révolutionnaires, Les                     | 69      | Tome de pouvoir de Krampi, Le           | 165      |                                 |     |
-| Risque de détérioration d'une potion      | 156     | Tonifiant de lucidité                   | 163      |                                 |     |
-| Rituels                                   | 27      | Tornade de Thorsen                      | 101      |                                 |     |
-| Rivalité fraternelle                      | 43      | Tourner en rond                         | 217      |                                 |     |
-| Robes de sorcier                          | 151     | Tout feu, tout flamme                   | 132      |                                 |     |
-| Rôle et responsabilités                   | 39      | Traces et empreintes de l'Ordre d'Ambre | 139      |                                 |     |
-| Rose améthyste, La                        | 206     | Trait de créature Magique, Le           | 187      |                                 |     |
-| Royaume du Sorcier, Le                    | 7       | Traître de Tarn                         | 113      |                                 |     |
-| S                                         |         | Transe ambrée                           | 148      |                                 |     |
-| Sablier de la Mort, Le                    | 121     | Transformation de Kadon                 | 149      |                                 |     |
-| Sabotage de la forge d'Henoth, Le         | 201     | Transformation en arbre                 | 89       |                                 |     |
-| Sanctifier                                | 125     | Transmutation de Chamon                 | 77       |                                 |     |
-| Sang bouillant                            | 137     | Transmutation fantasmagorique           |          |                                 |     |
-| Sang de la terre                          | 89      | de Colchis                              | 89       |                                 |     |
-| Scribes Bleus en tant qu'adversaires, Les | 214     | Traversée rapide                        | 149      |                                 |     |
-| Seconde vue                               | 19      | Troisième Signe d'Amul, Le              | 101      |                                 |     |
-| Secourir un serviteur magique             | 26      | Trouver des lignes de force telluriques | 89       |                                 |     |
-| Secrets de la vallée, Les                 | 206     | Trouver un client                       | 50       |                                 |     |
-|                                           |         | Tumulte de demain, Le                   | 96       |                                 |     |
-| Sergov Pfeiffer                           | 132     |                                         |          |                                 |     |
-
-Serres d'ambre 148
-
-
-# LICENCE MAGIQUE
-
-<span id="page-226-0" data-folio="223"></span>Selon la loi telle que stipulée dans les Articles de l'Ordonnance impériale sur la Magie, au nom de l'Empereur Karl-Franz I, Protecteur de l'Empire, Rempart de lumière, Empereur et fils d'Empereurs, de la bienveillante gouvernance du Grand Théogoniste Yorri XV et sous la sagesse du Patriarche Suprême Thyrus Gormann, qui parle au nom de tous les Patriarches des Collèges impériaux de Magie, une licence pour pratiquer la magie dans les limites de l'Empire et au-delà, et avec l'autorisation explicite des autorités susmentionnées, est accordée à :
-
-du prestigieux . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . nom du sorcier ici . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ordre du sorcier ici
-
-# pour la période de TROIS ANS et UN JOUR à compter du jour auquel cette licence est cachetée et signée, date à laquelle elle doit être renouvelée.
-
-Le Magister susmentionné est libre de pratiquer, d'étudier, de se documenter et d'expérimenter les forces arcaniques de la magie présentes en ce monde, sous réserve qu'il se conforme rigoureusement aux Articles de l'Ordonnance impériale sur la Magie. Il peut procéder ainsi dans les limites permises par les lois et idéaux du Saint Empire de Sigmar et son Empereur légitimement élu, le Patriarche Suprême des Collèges de Magie, les lois et idéaux de son ordre, le Patriarche de son ordre, les autorités qui peuvent demander à tout Magister de servir dans le cadre de son exercice et les supérieurs au sein de son ordre.
-
-Le Magister susmentionné ne peut ni renverser ni entraver avec une intention malveillante ou en vue d'un bénéfice financier ou politique les décisions de l'Empereur, des Électeurs ou de leurs institutions et agents attitrés.
-
-Le Magister susmentionné doit présenter cette licence à la demande des autorités en charge et être prêt à répondre à toute question concernant ses termes ou ceux des Articles de l'Ordonnance impériale sur la Magie.
-
-Il peut être exigé du Magister susmentionné de rendre de justes services aux autorités impériales face aux manigances, pratiques, créatures et individus anti-impériaux et destructeurs dont les moyens dépassent ceux des autorités civiles. En de telles circonstances, tous les Magisters sont en droit d'attendre l'hébergement, les avantages, la déférence et l'égalité de traitement qui siérait à tout noble du Saint Empire de Sigmar.
-
-Les Magisters sont soumis à toutes les directives des représentants du Culte de Sigmar.
-
-Le Magister susmentionné est autorisé à conclure un contrat de travail auprès de tout individu ou organisation, civile ou religieuse, publique ou privée, nobiliaire ou mercantile, sous réserve qu'il ne contrevienne pas aux termes établis par cette licence ou aux Articles de l'Ordonnance impériale sur la Magie et que son employeur ne soit pas un ennemi du Saint Empire de Sigmar ou de son peuple.
-
-La Magister susmentionné a défense de promouvoir ou d'étudier les Domaines interdits des Pouvoirs démoniaques, pas plus que les pratiques impies de la Nécromancie ou de toute autre forme de sorcellerie utilisant les énergies maléfiques de la Magie noire. Tout Magister surpris en train de contrevenir à cet Article est coupable d'un Acte abominable et est à la fois Hérétique et Traître, et sujet à un châtiment approprié.
-
-La présente licence peut être retirée par toute autorité publique attitrée en produisant des preuves de manigances anti-impériales ou de pratiques illégales de la magie mentionnées plus haut, mais ne se limitent pas à celles-ci. L'abus de cette révocation est sujet à un châtiment au nom de l'Empire, confié à l'Ordre du Marteau d'argent.
-
-La présente licence, une fois publiée, ne peut être amendée. La présente licence ne peut être détenue que par le Magister susmentionné, son supérieur ou une tierce personne attitrée. Sa possession entre les mains d'autres individus est répréhensible par une amende, un châtiment corporel ou la peine de mort.
-
- . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . Signé ce jour
-
-Magister-Secrétaire Wilhelm Van Der Rijn, Tour de Volans
-<!-- sources-empreinte: 8f0483f9e7dfeb832bac1456ce04a00a07cc2507 (129 fichiers, 17 dossiers) corps: 90681c949b8571a110617cb1367bb9c784530741 -->
+<!-- sources-empreinte: 719d7248f610987d3f6e4bac5067ab93f381b043 (130 fichiers, 17 dossiers) corps: 8cd18cfe9639c0e9c6da96bb3b58cf7d3cffb4c7 -->
