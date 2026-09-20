@@ -8,7 +8,7 @@ metadata:
 
 Verbatim utilisateur (2026-09-14, épique #1388, Lot B) : « Il faut un format unifié pour toutes les extractions, donc s'il faut rééxtraire, on rééxtrait »
 
-Verbatim utilisateur (2026-09-20, #1836 → #1739, devant des sujets posés sur des niveaux de heading différents selon le livre) : « Surtout qu'on peut modifier la source dans son format, on ne doit pas se plier au format de chaque livre, mais migrer les livres dans le même format » — puis : « On a un vrai chantier dans l'épique sur les sources, il faut absoluement éviter de le saboter en prenant des décisions contradictoires »
+Verbatim utilisateur (2026-09-20, #1836 → #1739, devant des sujets posés sur des niveaux de heading différents selon le livre) : « Surtout qu'on peut modifier la source dans son format, on ne doit pas se plier au format de chaque livre, mais migrer les livres dans le même format » — puis : « On a un vrai chantier dans l'épique sur les sources, il faut absoluement éviter de le saboter en prenant des décisions contradictoires » — puis : « Mais oui pour ce qui est de la source, le format unique sur tous les livres est super important. Il est interdit de réécrire le texte. On peut réparer le texte s'il est tronqué/mélangé car l'extraction n'est pas parfaite. »
 
 **Why:** les 16 livres FR ont été extraits à des dates et avec des chaînes différentes (en-têtes `*Folio 3+*` vs `*Pages PDF 10-23*`, AU1 sans aucune ancre de folio, tables encodées différemment) ; corriger à la main un livre hors format, c'est entretenir N formats — l'objectif est UN format, celui du pipeline documenté (`docs/ajouter-un-livre-source.md`, Marker paginé + découpeur câblé à `nomAscii`).
 
