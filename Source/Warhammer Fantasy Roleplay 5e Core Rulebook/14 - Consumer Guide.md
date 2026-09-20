@@ -145,6 +145,8 @@ Cleverly crafted for ease of carrying. Reduce Encumbrance Points by 1.
 
 298 299 Expertly crafted with utility in mind. A failed Test using this item receives +1 SL. If the item is a piece of armour, any penalties for wearing it are reduced by one level (for example from −3 SL to −2 SL).
 
+# **Item Flaws**
+
 A Trapping is called a Flawed Trapping if it has more Item Flaws than Qualities. Each Flaw halves the listed price and improves Availability by one step. Many vendors sell Flawed items, but pretend they are anything but. A successful Test with any appropriate Skill — such as *Evaluate*, or *Melee* for weapons, or *Trade* for tools — will spot such underhanded activities.
 
 **Note:** Exotic items do not have their Availability modified by being Flawed — they are always difficult to find, even shoddy examples.
@@ -173,13 +175,12 @@ Even the doughtiest Dwarf cannot carry a limitless number of Trappings. To help 
 
 #### **ENCUMBRANCE EXAMPLES**
 
-| It<br>Flaw                                                       | ENCUMBRANCE EXAMPLES | XI                            |  |
-|------------------------------------------------------------------|----------------------|-------------------------------|--|
-| em<br>s                                                          | Enc                  | Example Trappings             |  |
-| A Trapping is called a Flawed Trapping if it has more Item       | 0                    | Knives, coins, jewellery      |  |
-| Flaws than Qualities. Each Flaw halves the listed price and      | 1                    | Sword, mandolin, sling bag    |  |
-| improves Availability by one step. Many vendors sell Flawed      | 2                    | Bastard sword, tent, backpack |  |
-| items, but pretend they are anything but. A successful Test with | 3                    | Halberd, cask, large sack     |  |
+| Enc | Example Trappings             |
+|-----|-------------------------------|
+| 0   | Knives, coins, jewellery      |
+| 1   | Sword, mandolin, sling bag    |
+| 2   | Bastard sword, tent, backpack |
+| 3   | Halberd, cask, large sack     |
 
 # **Small Items**
 
@@ -206,8 +207,8 @@ Characters who exceed their Encumbrance capacity are slowed and prone to fatigue
 | Enc                | Penalty                                                           |  |  |  |  |
 |--------------------|-------------------------------------------------------------------|--|--|--|--|
 | Up to limit        | No penalties                                                      |  |  |  |  |
-| Up to double limit | –1 Movement (min. 3), –10 Agility, +1<br>Travel Fatigue           |  |  |  |  |
-| Up to triple limit | –2 Movement (min. 2), –20 Agility<br>(min. 10), +2 Travel Fatigue |  |  |  |  |
+| Up to double limit | –1 Movement (min. 3), –10 Agility, +1 Travel Fatigue           |  |  |  |  |
+| Up to triple limit | –2 Movement (min. 2), –20 Agility (min. 10), +2 Travel Fatigue |  |  |  |  |
 | More than 3×       | You are unable to move                                            |  |  |  |  |
 
 #### **Encumbrance and Attributes**
@@ -347,7 +348,7 @@ A weapon's range is its Medium range in yards. **Chapter 5: Rules** presents mod
 
 # **EXAMPLE WEAPON RANGES**
 
-| Weapon              | Point<br>Blank | Short | Med | Long | Extreme |
+| Weapon              | Point Blank | Short | Med | Long | Extreme |
 |---------------------|----------------|-------|-----|------|---------|
 | Bow                 | 4              | 25    | 50  | 100  | 150     |
 | Hochland Long Rifle | 4              | 50    | 100 | 200  | 300     |
@@ -396,7 +397,7 @@ Blunderbusses are the only weapons listed that use the Small Shot or Improvised 
 | Repeater Pistol         | 40 GC  | 1   | Rare         | 20     | +9      | Pistol, Repeater 4, Dangerous, Reload 4                   |  |  |  |
 | (2H)Hochland Long Rifle | 100 GC | 3   | Exotic       | 100    | +10     | Precise, Reload 4                                         |  |  |  |
 | ENTANGLING              |        |     |              |        |         |                                                           |  |  |  |
-| Bolas                   | 10/–   | 0   | Rare         | SB × 3 | +SB     | Inflict (Entangled 35), Inflict (Prone),<br>Undamaging*** |  |  |  |
+| Bolas                   | 10/–   | 0   | Rare         | SB × 3 | +SB     | Inflict (Entangled 35), Inflict (Prone), Undamaging*** |  |  |  |
 | (2H)Lasso**             | 6/–    | 1   | Common       | SB x 2 | –       | Inflict (Entangled 45)                                    |  |  |  |
 | Net                     | 6/–    | 1   | Common       | SB     | –       | Inflict (Entangled 50)                                    |  |  |  |
 | EXPLOSIVES*             |        |     |              |        |         |                                                           |  |  |  |
@@ -574,9 +575,10 @@ The armour has small weakpoints where a blade can slip in if your opponent is su
 
 Armour gets heavier and more expensive the larger the creature it is made for. For each step above Size (Average), a piece of armour gains +1 Encumbrance and doubles in price. Conversely, for each step below Size (Average), subtract –1 Encumbrance and halve the price.
 
-| ARMOUR                          |           |     |              |                  |            |    |                          |  |
-|---------------------------------|-----------|-----|--------------|------------------|------------|----|--------------------------|--|
+#### **ARMOUR**
+
 | Armour                          | Price     | Enc | Availability | Penalty          | Locations  | AP | Qualities and Flaws      |  |
+|---------------------------------|-----------|-----|--------------|------------------|------------|----|--------------------------|--|
 | SHIELDS                         |           |     |              |                  |            |    |                          |  |
 | Buckler                         | 1 GC      | 1   | Common       | –                | –          | 1  | Shield                   |  |
 | Shield                          | 2 GC      | 2   | Common       | –                | –          | 2  | Shield                   |  |
@@ -610,15 +612,13 @@ For those who want fast, simple rules for armour, use the following. Armour is s
 |---------------|-------|---------------|--------------|-----------------------------------|-----------|----|-----------------------------|
 | Light Armour  | 8 GC  | 0             | Common       | –                                 | All       | 1  | –                           |
 | Medium Armour | 44 GC | 4             | Scarce       | –1 SL Stealth                     | All       | 3  | Flexible                    |
-| Heavy Armour  | 88 GC | 10            | Rare         | –2 SL Perception<br>–2 SL Stealth | All       | 5  | Impenetrable,<br>Weakpoints |
+| Heavy Armour  | 88 GC | 10            | Rare         | –2 SL Perception<br>–2 SL Stealth | All       | 5  | Impenetrable, Weakpoints |
 
 # **PACKS AND CONTAINERS**
 
 Trappings can be packed into backpacks, sacks, and pouches, making them easier to carry. The table shows the Encumbrance value for carrying a pack or other container (Enc), and the number of Encumbrance the container can carry (Carries). You only count the Enc value to determine the number of Encumbrance Points carried. Common sense dictates whether items can be carried in containers (so an item like a halberd could not be carried in a backpack).
 
-|  | PACKS AND CONTAINERS |
-|--|----------------------|
-|  |                      |
+#### **PACKS AND CONTAINERS**
 
 | Item            | Cost | Enc | Carries | Availability |  |
 |-----------------|------|-----|---------|--------------|--|
@@ -627,7 +627,7 @@ Trappings can be packed into backpacks, sacks, and pouches, making them easier t
 | Cask            | 3/–  | 2   | 4       | Common       |  |
 | Flask           | 5/–  | 0   | 0       | Common       |  |
 | Jug             | 3/–  | 1   | 1       | Common       |  |
-| Pewter<br>Stein | 7/–  | 0   | 0       | Common       |  |
+| Pewter Stein | 7/–  | 0   | 0       | Common       |  |
 | Pouch           | 4d   | 0   | 1       | Common       |  |
 | Sack            | 1/–  | 2   | 4       | Common       |  |
 | Sack, Large     | 1/6  | 3   | 6       | Common       |  |
@@ -800,15 +800,13 @@ If you have an appropriate guild licence, you can use your special contacts to l
 
 Books in the Empire vary from exquisite masterworks with flowing calligraphy and detailed illustrations to collections of scribbled notes bound together in tattered leather. In larger settlements, official documents, newssheets, and leaflets are typically press-printed, as are many poems, romances, and important academic texts. All prices are loose suggestions only, as contents and quality vary significantly.
 
-|  |  | BOOKS AND DOCUMENTS |  |
-|--|--|---------------------|--|
-|--|--|---------------------|--|
+#### **BOOKS AND DOCUMENTS**
 
 | Item                  | Cost  | Enc | Availability |
 |-----------------------|-------|-----|--------------|
 | Book, Apothecary      | 8 GC  | 1   | Scarce       |
 | Book, Art             | 5 GC  | 1   | Scarce       |
-| Book,<br>Cryptography | 8 GC  | 1   | Exotic       |
+| Book, Cryptography | 8 GC  | 1   | Exotic       |
 | Book, Engineer        | 3 GC  | 1   | Scarce       |
 | Book, Law             | 15 GC | 1   | Rare         |
 | Book, Magic           | 20 GC | 1   | Exotic       |
@@ -832,7 +830,7 @@ Books in the Empire vary from exquisite masterworks with flowing calligraphy and
 
 > **Book, Magic:** Spell grimoires are usually scribed by wizards, and their covers are often secured with locks. Sometimes grimoires are even protected by magical alarms or wards. Carrying a spell grimoire is punishable as heresy unless the owning wizard is licensed by the Colleges of Magic.
 
-> **Book, Medicine:** Medical texts can either be scribed or pressprinted, depending on the authoring physician's prestige. Illuminations are common, and usually include detailed autopsy drawings and procedural diagrams.
+> **Book, Medicine:** Medical texts can either be scribed or press-printed, depending on the authoring physician's prestige. Illuminations are common, and usually include detailed autopsy drawings and procedural diagrams.
 
 > **Book, Religion:** Religious books come in all forms in the Empire. There is an eager market for the most popular texts, most of which are cheaply produced by printing presses.
 
@@ -907,9 +905,10 @@ High-class travel is available and fashionable among the wealthy. It may cost ma
 
 All the costs listed here are per mile travelled, and are loose guides only. Faster coaches and barges generally cost twice as much. Slower examples cost as little as half as much. Increase or decrease speed by +/– 1 for faster or slower examples.
 
-|                 | TRAVEL PRICES |      |                      |
-|-----------------|---------------|------|----------------------|
+#### **TRAVEL PRICES**
+
 | Transport       | Movement      | Cost | Distance             |
+|-----------------|---------------|------|----------------------|
 | Coach (inside)  | 6             | 2d   | per mile             |
 | Coach (outside) | 6             | 1d   | per mile             |
 | Barge (cabin)   | 8             | 5d   | per mile             |
@@ -921,9 +920,10 @@ All the costs listed here are per mile travelled, and are loose guides only. Fas
 
 Recreational drugs, although not illegal in most parts of the Empire, are frequently associated with dubious rituals and cults by the Cult of Sigmar. Attitudes are more liberal in large cities where dens can be found offering spit, weirdroot, or Ranald's delight. Even so, getting involved in repeated use of these substances can be ruinous to health and reputation. Poison is not illegal either, but owning poison is bound to raise questions about its intended use. Prices are given for a single dose or application.
 
-| POISONS              |       |     |              |
-|----------------------|-------|-----|--------------|
+#### **POISONS**
+
 | Item                 | Cost  | Enc | Availability |
+|----------------------|-------|-----|--------------|
 | Adder root           | 5d    | 0   | Scarce       |
 | Black lotus (leaves) | 6/–   | 0   | Exotic       |
 | Black lotus (sap)    | 20 GC | 0   | Exotic       |
@@ -949,9 +949,9 @@ Medicinal herbs can either be purchased or gathered from the wild (see **Locatin
 | Faxtoryll                                         | 15/– | 0   | Rare         |  |
 | Healing Poultice                                  | 12/– | 0   | Common       |  |
 | Nightshade                                        | 3 GC | 0   | Rare         |  |
-| Remedy (Malaise, Nausea,<br>Pox, Wounded)         | 2/–  | 0   | Common       |  |
-| Remedy (Coughs and<br>Sneezes, Fever, Flux)       | 3/–  | 0   | Common       |  |
-| Remedy (Blight, Buboes,<br>Convulsions, Gangrene) | 4/–  | 0   | Common       |  |
+| Remedy (Malaise, Nausea, Pox, Wounded)         | 2/–  | 0   | Common       |  |
+| Remedy (Coughs and Sneezes, Fever, Flux)       | 3/–  | 0   | Common       |  |
+| Remedy (Blight, Buboes, Convulsions, Gangrene) | 4/–  | 0   | Common       |  |
 | Salwort                                           | 12/– | 0   | Common       |  |
 | Vitality Draught                                  | 18/– | 0   | Scarce       |  |
 
@@ -959,11 +959,11 @@ Medicinal herbs can either be purchased or gathered from the wild (see **Locatin
 
 Many remedies on the market will not work as advertised. If a remedy is purchased from a supplier who is not entirely trustworthy, the GM may determine that it is a quack remedy, or even a mild poison. If they wish, they may roll 1d100 on the table below and consult the column according to the quality of product purchased.
 
-| Effect                                                                                                                                                   | Fine<br>Quality | Average<br>Quality | Poor<br>Quality |
+| Effect                                                                                                                                                   | Fine Quality | Average Quality | Poor Quality |
 |----------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|--------------------|-----------------|
-| Mild Poison: The patient<br>must Test for exposure to<br>Galloping Trots.                                                                                | 01–05           | 01–15              | 01–25           |
-| Quack Cure: If the<br>patient fails an Average<br>(+20) Cool Test, they may<br>benefit from a placebo<br>effect, the medicine 'works'<br>for 2d10 hours. | 06–20           | 16–35              | 26–50           |
-| Medicine: The medicine<br>works as described.                                                                                                            | 21–00           | 36–00              | 51–00           |
+| Mild Poison: The patient must Test for exposure to Galloping Trots.                                                                                | 01–05           | 01–15              | 01–25           |
+| Quack Cure: If the patient fails an Average (+20) Cool Test, they may benefit from a placebo effect, the medicine 'works' for 2d10 hours. | 06–20           | 16–35              | 26–50           |
+| Medicine: The medicine works as described.                                                                                                            | 21–00           | 36–00              | 51–00           |
 
 **Digestive Tonic:** Provides +2 SL to recovery Tests from stomach ailments such as *Bloody Flux* or *Galloping Trots* (see **Disease and Infection** on page 179).
 
@@ -981,9 +981,10 @@ Many remedies on the market will not work as advertised. If a remedy is purchase
 
 Whether through disease, warfare, or misfortune, it is a relatively common occurrence in the Empire to lose body parts. For those who do, there are a variety of alternatives on offer. All Prosthetics have an Encumbrance of 0 when worn.
 
-| PROSTHETICS  |      |     |              |  |
-|--------------|------|-----|--------------|--|
+#### **PROSTHETICS**
+
 | Item         | Cost | Enc | Availability |  |
+|--------------|------|-----|--------------|--|
 | Eyepatch     | 6d   | 0   | Common       |  |
 | False Eye    | 1 GC | 0   | Rare         |  |
 | False Leg    | 16/– | 2   | Scarce       |  |
@@ -1011,13 +1012,14 @@ The magic items in this list are those created by the Colleges of Magic. They wi
 
 Using these items with Winds other than the one they are intended to work with has no effect, and may even be dangerous.
 
-| MAGICAL ITEMS               |       |     |              |  |
-|-----------------------------|-------|-----|--------------|--|
+#### **MAGICAL ITEMS**
+
 | Item                        | Cost  | Enc | Availability |  |
+|-----------------------------|-------|-----|--------------|--|
 | Enchanted Staff             | 15 GC | 0   | Exotic       |  |
 | Practical Wizard's Robes    | 3 GC  | 1   | Exotic       |  |
 | Standard Wizard's Robes     | 9 GC  | 2   | Exotic       |  |
-| Elaborate Wizard's<br>Robes | 27 GC | 3   | Exotic       |  |
+| Elaborate Wizard's Robes | 27 GC | 3   | Exotic       |  |
 
 **Enchanted Staff:** Staffs are symbols of power and office to spellcasters, so much so that many of them equip themselves with a mundane staff just to appear serious about their profession. If bearing an Enchanted Staff, reduce the CN of Spells from the associated Lore by 1, to a minimum of 0. An Enchanted Staff acts as an extension of your body for the purposes of touch-range Spells. **Note:** Enchanted Staffs count as non-*Magical* Quarterstaffs.
 

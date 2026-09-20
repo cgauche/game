@@ -47,9 +47,10 @@ Roll on the **Species Table**, and gain an extra point of Fortune if you accept 
 
 **Talents:** choose your Species Talents and write them on your Character Sheet with a summary of their effects (see pages 114–128). If you are awarded a Random Talent, determine it by rolling D100 on the table below. If you roll a Talent you already have, re-roll.
 
-|       | RANDOM TALENTS      |       |                     |
-|-------|---------------------|-------|---------------------|
+#### **RANDOM TALENTS**
+
 | Roll  | Description         | Roll  | Description         |
+|-------|---------------------|-------|---------------------|
 | 01-02 | Acute Sense (Sight) | 51-52 | Orientation         |
 | 03-05 | Ambidextrous        | 53-55 | Perfect Pitch       |
 | 06-07 | Artistic            | 56-57 | Pure Soul           |
@@ -90,7 +91,7 @@ The Career Advancement Tracker tracks your progress through your Career. Each ti
 
 **Characteristics:** Your innate abilities, and the starting score for your Skills. The first digit (the 'tens' value) is your **Characteristic Bonus**, used in many rules. For example, your **Strength Bonus (SB)** is added to the damage you deal with melee attacks. Strength **37** gives an **SB of 3**, while **42** gives an **SB of 4**.
 
-- 0 **Weapon Skill:** aptitude for fighting handto-hand, with or without a weapon.
+- 0 **Weapon Skill:** aptitude for fighting hand-to-hand, with or without a weapon.
 - 0 **Ballistic Skill:** effectiveness with ranged weapons like bows and throwing knives.
 - 0 **Strength:** damage caused in fights, lifting weights, swimming and climbing.
 - 0 **Toughness:** physical hardiness, resisting damage, surviving harsh conditions and poisons.
@@ -111,13 +112,14 @@ The Career Advancement Tracker tracks your progress through your Career. Each ti
 |                                                          | = 20 Silver Shillings<br>= 240 Brass Pennies (D)            | Total           | 4     |          |                   |                    |        |                                                  |       |  |  |  |  |
 |                                                          |                                                             |                 |       |          |                   | WEAPONS            |        |                                                  |       |  |  |  |  |
 | Name                                                     |                                                             |                 | Group | ENC      |                   | Range/Reach        | Damage | Qualities                                        |       |  |  |  |  |
-| Dagger                                                   |                                                             |                 | Basic |          |                   | 0 Very Short +5    |        | -                                                |       |  |  |  |  |
+| Dagger                                                   |                                                             |                 | Basic | 0        |                   | Very Short         | +5     | -                                                |       |  |  |  |  |
 |                                                          | Hand Weapon (Boat Hook)                                     |                 | Basic | 1        |                   | Average            | +7     | Unbalanced                                       |       |  |  |  |  |
 |                                                          |                                                             |                 |       |          |                   |                    |        |                                                  |       |  |  |  |  |
 |                                                          |                                                             |                 |       |          |                   |                    |        |                                                  |       |  |  |  |  |
 |                                                          |                                                             |                 |       |          |                   |                    |        |                                                  |       |  |  |  |  |
-| Name                                                     |                                                             | Locations       |       | ENC      | AP                | ARMOUR<br>Qualties |        |                                                  |       |  |  |  |  |
-| Leather Jack                                             |                                                             | Arms, Body      |       | 1        |                   |                    |        | 1 May be worn under other armour without penalty |       |  |  |  |  |
+|                                                          |                                                             |                 |       |          |                   | ARMOUR             |        |                                                  |       |  |  |  |  |
+| Name                                                     |                                                             | Locations       |       | ENC      | AP                | Qualties           |        |                                                  |       |  |  |  |  |
+| Leather Jack                                             |                                                             | Arms, Body      |       | 1        | 1                 |                    |        | May be worn under other armour without penalty   |       |  |  |  |  |
 |                                                          |                                                             |                 |       |          |                   |                    |        |                                                  |       |  |  |  |  |
 |                                                          |                                                             |                 |       |          |                   |                    |        |                                                  |       |  |  |  |  |
 |                                                          | Hand Weapon (Boat Hook)                                     | TRAPPINGS       |       |          |                   |                    |        |                                                  | NOTES |  |  |  |  |
@@ -167,7 +169,7 @@ Human civilisations have existed in distant lands for thousands of years, but th
 
 #### **On Halflings…**
 
-*'As a youth, I had in my head not to underestimate the Mootlanders. I reckoned great reserves of spirit and resilience lurked beneath the softbellied surface. Now that I've campaigned with them, I can say they're fair foragers and cooks but good for little else. They're as light-fingered as Ranald and fight like snotlings.'*
+*'As a youth, I had in my head not to underestimate the Mootlanders. I reckoned great reserves of spirit and resilience lurked beneath the soft-bellied surface. Now that I've campaigned with them, I can say they're fair foragers and cooks but good for little else. They're as light-fingered as Ranald and fight like snotlings.'*
 
 — Stefan Klopper, Member of Kraust's Free Company
 
@@ -309,9 +311,9 @@ Once you have filled in everything from your Species, proceed to **Class and Car
 
 # <span id="page-29-0"></span>**HALFLINGS**
 
-Halflings are cheerful, sociable, and possessed of enormous appetites in all things. They care more for good food and strong drink than matters of politics or war, and are notorious across the Empire as thieves, poachers, and scoundrels. Halflings regard unattended property as fair game and see little shame in taking advantage of the careless. Most are quick with a joke, quicker with an excuse, and quicker still with someone else's coin. Even so, they are fiercely loyal to their kin, and few are more generous when surrounded by family, friends, and a wellstocked table.
+Halflings are cheerful, sociable, and possessed of enormous appetites in all things. They care more for good food and strong drink than matters of politics or war, and are notorious across the Empire as thieves, poachers, and scoundrels. Halflings regard unattended property as fair game and see little shame in taking advantage of the careless. Most are quick with a joke, quicker with an excuse, and quicker still with someone else's coin. Even so, they are fiercely loyal to their kin, and few are more generous when surrounded by family, friends, and a well-stocked table.
 
-They are short, apple-cheeked and beardless, resembling bigeyed, round-faced (and round-bodied) human children. Their harmless appearance and easy smiles encourage others to underestimate them — a misconception halflings happily cultivate. Many a traveller has discovered, too late, that the friendly halfling offering directions, sharing a pipe, or buying the first round has picked their pockets while doing so.
+They are short, apple-cheeked and beardless, resembling big-eyed, round-faced (and round-bodied) human children. Their harmless appearance and easy smiles encourage others to underestimate them — a misconception halflings happily cultivate. Many a traveller has discovered, too late, that the friendly halfling offering directions, sharing a pipe, or buying the first round has picked their pockets while doing so.
 
 The first records of halflings come from the fertile lands where the Blue Reach meets the Aver, around 200 years before the birth of Sigmar. Most still dwell there today, in an area named The Moot after their fondness for settling matters through garrulous mass assembly. The Elder of the Moot, currently Hisme Stoutheart, is custodian of the Haffenlyver, an ancient embroidered scroll recording the lineages of the great halfling clans. They can be found throughout the Empire, however, and Haffenstadt, a district of Altdorf, is packed with halfling families supporting restaurants, taverns, pipeweed stores, and an astonishing number of street-food hawkers. Halflings in more rural areas tend to make their living by running inns, poaching game, or smuggling illicit cargoes.
 
@@ -615,9 +617,10 @@ Copy the following to your Character Sheet in the appropriate place:
 - 0 Tick the boxes on your Character Sheet next to the 10 Skills listed in the first level of your Career — these are your Career Skills. If the Skills aren't printed on your sheet, it means they are Advanced or Group Skills, which you must write onto the sheet in the box provided
 - 0 Your Career's Status (Brass/Silver/Gold) and Standing (the number after Status)
 
-| RANDOM CLASS AND CAREER TABLE |               |       |       |          |          |          |
-|-------------------------------|---------------|-------|-------|----------|----------|----------|
+#### **RANDOM CLASS AND CAREER TABLE**
+
 | Class                         | Career        | Human | Dwarf | Halfling | High Elf | Wood Elf |
+|-------------------------------|---------------|-------|-------|----------|----------|----------|
 |                               | Bounty Hunter | 51    | 57–60 | 58       | 57–59    | 69–70    |
 
 |           | Bounty Hunter  | 51    | 57–60  | 58     | 57–59  | 69–70  |
@@ -691,9 +694,10 @@ Your starting Skill Advances come from your Species and Career:
 - 0 Assign the Advances listed for your Species (pages 26–35).
 - 0 Assign **8 Advances** among the Career Skills you selected in step 2 (page 36).
 
-| CHARACTERISTIC TABLE |         |         |          |          |          |
-|----------------------|---------|---------|----------|----------|----------|
+#### **CHARACTERISTIC TABLE**
+
 |                      | Human   | Dwarf   | Halfling | Wood Elf | High Elf |
+|----------------------|---------|---------|----------|----------|----------|
 | Weapon Skill         | 2d10+20 | 2d10+30 | 2d10+10  | 2d10+30  | 2d10+30  |
 | Ballistic Skill      | 2d10+20 | 2d10+20 | 2d10+30  | 2d10+30  | 2d10+30  |
 | Strength             | 2d10+20 | 2d10+20 | 2d10+10  | 2d10+20  | 2d10+20  |
@@ -723,13 +727,13 @@ If the Skills aren't printed on your sheet, it means they are Advanced or Group 
 
 | Class     | Trappings                                                         |  |  |  |  |
 |-----------|-------------------------------------------------------------------|--|--|--|--|
-| Academics | Sling Bag containing Writing Kit and 1d10<br>sheets of Parchment  |  |  |  |  |
+| Academics | Sling Bag containing Writing Kit and 1d10 sheets of Parchment  |  |  |  |  |
 | Burghers  | Cloak, Hat, Sling Bag containing Lunch                            |  |  |  |  |
 | Courtiers | Fine Clothing, Tweezers, Ear Pick, and a Comb                     |  |  |  |  |
 | Peasants  | Cloak, Sling Bag containing Rations (1 day)                       |  |  |  |  |
-| Rangers   | Cloak, Backpack containing Tinderbox,<br>Blanket, Rations (1 day) |  |  |  |  |
+| Rangers   | Cloak, Backpack containing Tinderbox, Blanket, Rations (1 day) |  |  |  |  |
 | Riverfolk | Cloak, Sling Bag containing a Flask of Spirits                    |  |  |  |  |
-| Rogues    | Sling Bag containing 2 Candles, 1d10 Matches,<br>a Hood or Mask   |  |  |  |  |
+| Rogues    | Sling Bag containing 2 Candles, 1d10 Matches, a Hood or Mask   |  |  |  |  |
 | Warriors  | Hand Weapon                                                       |  |  |  |  |
 
 # **5. TALENTS, TRAPPINGS, AND FINAL GAME DETAILS**
@@ -746,7 +750,7 @@ You begin the game with an amount of coins decided by your Status:
 
 ### **STARTING WEALTH**
 
-| Status<br>Tier | Wealth                                           |
+| Status Tier | Wealth                                           |
 |----------------|--------------------------------------------------|
 | Brass          | 20 brass pennies plus 2d10 per Standing Level    |
 | Silver         | 10 silver shillings plus 1d10 per Standing Level |

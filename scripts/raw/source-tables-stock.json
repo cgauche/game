@@ -1,5 +1,5 @@
 {
-  "quoi": "Tables du `Source/` que leur FORME rend inadressables (#1384, épique #1388) : une ENTRÉE par SITE, clé `famille :: fichier :: ref :: occurrence` (régime #1711). Compte par famille à la naissance : br-litteral 421, donnee-en-tete 14, banniere-suspecte 121, cle-de-ligne-ambigue 175. CE FICHIER EST UN INVENTAIRE des sites mesurés, PLAFONNÉ en nombre d'entrées : il ne décroît que quand un site disparaît du `Source/`. La DETTE, elle, est le compte « à trier » — les entrées SANS `preuve` — et celle-là décroît vers zéro, sous son propre plafond (`PLAFOND_A_TRIER`, `check-source-tables.test.mjs`) : une entrée reçoit sa `preuve` (« PDF p.N : … ») + sa `date` le jour où sa forme est lue au PDF et jugée conforme au livre, et elle RESTE (le site existe, il est jugé). PLAN de résorption — B2 : AUCUNE migration de `Source/`. Un `<br>` de cellule est un saut de ligne IMPRIMÉ (GFM n'a pas d'autre forme) : la lib l'absorbe pour l'ADRESSAGE (`sansBr`) et le rend en `\\n` pour une cellule (`brEnSaut`), donc il ne bloque plus une adresse. Son SENS, lui, se lit AU PDF, site par site : une CÉSURE typographique se corrige en espace dans `Source/`, une liste d'items imprimée en colonne se garde telle quelle et se solde par une `preuve` sur son entrée (« PDF p.N : … » + `date`). B3 et suivants : une ZONE par train, corrigée à la main au PDF (geste `docs/ajouter-un-livre-source.md` §7) — `18 - Traumatisme`, `10 - Talents`, `61 - Encombrement`, `62 - Les armes`, `85 - Traits`, `08 - Statut`, `14 - _GoBack`, `40 - Les prières`, `46 - Les règles magiques`, `05 - _gjdgxs` du Livre de base ; zones portées par tickets existants : #1707 (table de Talents dupliquée), #1519 (`51 - Magie du Chaos` mal titré), #678 (EDOC `09 - _GoBack.md`, en-têtes orphelins). Le résidu de SCÉNARIO (hors donnée de règle) est porté par #1731. COUVERTURE DITE de `cle-de-ligne-ambigue` : elle nomme les clés partagées ENTRE tables d'une section — le périmètre d'UN geste (restituer les headings imprimés). Les clés dupliquées DANS une même table et les valeurs non-clés répétées rendent aussi `ligne-ambigue` et restent HORS de cette famille : mesuré le 2026-09-14, 145 ici, 220 au grain « clé dupliquée dans la section », 2 289 au prédicat réel de `rowsMatching` (toute valeur de cellule répétée). LIMITE DITE : `banniere-suspecte` est le résidu que la garde du parseur n'absorbe PAS. Il se ventile (mesure du 2026-09-14) en texte NON majuscule 51, bandeau MAJUSCULE sans rangée de donnée 49 (pour l'essentiel des titres de statbloc de PNJ et leurs rubriques : « ISABELLA — PROPHÈTE (BRONZE 4) », « COMPÉTENCES DE BASE »), une seule lettre 11, aucune lettre 1, et bandeau MAJUSCULE devant une table SANS en-têtes 1 (fourchette en `headers[0]`). Chacun se tranche au PDF, un par un, jamais par un élargissement de la garde qui sauterait un en-tête réel.",
+  "quoi": "Tables du `Source/` que leur FORME rend inadressables (#1384, épique #1388) : une ENTRÉE par SITE, clé `famille :: fichier :: ref :: occurrence` (régime #1711). Compte par famille à la naissance : br-litteral 403, donnee-en-tete 14, banniere-suspecte 114, cle-de-ligne-ambigue 148. CE FICHIER EST UN INVENTAIRE des sites mesurés, PLAFONNÉ en nombre d'entrées : il ne décroît que quand un site disparaît du `Source/`. La DETTE, elle, est le compte « à trier » — les entrées SANS `preuve` — et celle-là décroît vers zéro, sous son propre plafond (`PLAFOND_A_TRIER`, `check-source-tables.test.mjs`) : une entrée reçoit sa `preuve` (« PDF p.N : … ») + sa `date` le jour où sa forme est lue au PDF et jugée conforme au livre, et elle RESTE (le site existe, il est jugé). PLAN de résorption — B2 : AUCUNE migration de `Source/`. Un `<br>` de cellule est un saut de ligne IMPRIMÉ (GFM n'a pas d'autre forme) : la lib l'absorbe pour l'ADRESSAGE (`sansBr`) et le rend en `\\n` pour une cellule (`brEnSaut`), donc il ne bloque plus une adresse. Son SENS, lui, se lit AU PDF, site par site : une CÉSURE typographique se corrige en espace dans `Source/`, une liste d'items imprimée en colonne se garde telle quelle et se solde par une `preuve` sur son entrée (« PDF p.N : … » + `date`). B3 et suivants : une ZONE par train, corrigée à la main au PDF (geste `docs/ajouter-un-livre-source.md` §7) — `18 - Traumatisme`, `10 - Talents`, `61 - Encombrement`, `62 - Les armes`, `85 - Traits`, `08 - Statut`, `14 - _GoBack`, `40 - Les prières`, `46 - Les règles magiques`, `05 - _gjdgxs` du Livre de base ; zones portées par tickets existants : #1707 (table de Talents dupliquée), #1519 (`51 - Magie du Chaos` mal titré), #678 (EDOC `09 - _GoBack.md`, en-têtes orphelins). Le résidu de SCÉNARIO (hors donnée de règle) est porté par #1731. COUVERTURE DITE de `cle-de-ligne-ambigue` : elle nomme les clés partagées ENTRE tables d'une section — le périmètre d'UN geste (restituer les headings imprimés). Les clés dupliquées DANS une même table et les valeurs non-clés répétées rendent aussi `ligne-ambigue` et restent HORS de cette famille : mesuré le 2026-09-14, 145 ici, 220 au grain « clé dupliquée dans la section », 2 289 au prédicat réel de `rowsMatching` (toute valeur de cellule répétée). LIMITE DITE : `banniere-suspecte` est le résidu que la garde du parseur n'absorbe PAS. Il se ventile (mesure du 2026-09-14) en texte NON majuscule 51, bandeau MAJUSCULE sans rangée de donnée 49 (pour l'essentiel des titres de statbloc de PNJ et leurs rubriques : « ISABELLA — PROPHÈTE (BRONZE 4) », « COMPÉTENCES DE BASE »), une seule lettre 11, aucune lettre 1, et bandeau MAJUSCULE devant une table SANS en-têtes 1 (fourchette en `headers[0]`). Chacun se tranche au PDF, un par un, jamais par un élargissement de la garde qui sauterait un en-tête réel.",
   "entrees": [
     {
       "famille": "banniere-suspecte",
@@ -203,68 +203,12 @@
     },
     {
       "famille": "banniere-suspecte",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/06 - Class and Careers.md",
-      "ref": "adviser#1 :: adviser advance scheme|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "banniere-suspecte",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/06 - Class and Careers.md",
-      "ref": "governor-gold-4#1 :: |warrior priest advance scheme|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "banniere-suspecte",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/06 - Class and Careers.md",
-      "ref": "spy#1 :: spy advance scheme|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "banniere-suspecte",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "sights-and-sounds-of-the-empire#1 :: ||fellow travellers",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "banniere-suspecte",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/14 - Consumer Guide.md",
-      "ref": "packs-and-containers#1 :: |packs and containers",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "banniere-suspecte",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/14 - Consumer Guide.md",
-      "ref": "tools-and-kits#2 :: ||books and documents|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "banniere-suspecte",
       "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/16 - Appendices.md",
       "ref": "advancement-xp-costs#1 :: |cost of advance (+1)|",
       "occurrence": 1,
       "lot": "#1384 B2",
       "date": "2026-09-20",
       "preuve": "PDF p.364 : la table ADVANCEMENT XP COSTS imprime un en-tête à DEUX niveaux — « Cost of Advance (+1) » couvre les colonnes Characteristic et Skills, au-dessus d'elles."
-    },
-    {
-      "famille": "banniere-suspecte",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: wrap (weapon quality) 305|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
     },
     {
       "famille": "banniere-suspecte",
@@ -2120,7 +2064,8 @@
       "ref": "#1 :: introduction|bounty hunter53|townsman100|",
       "occurrence": 1,
       "lot": "#1384 B2",
-      "date": "2026-09-18"
+      "date": "2026-09-20",
+      "preuve": "PDF p.2 : la table des matières imprime le chiffre de partie (II, IV, V) en grands caractères sur une ligne propre, au-dessus du nom de la partie (CHARACTER BUILDING, SKILLS AND TALENTS, RULES)."
     },
     {
       "famille": "br-litteral",
@@ -2128,7 +2073,8 @@
       "ref": "#1 :: making medicine153|characteristic advances191|miracles of taal227|",
       "occurrence": 1,
       "lot": "#1384 B2",
-      "date": "2026-09-18"
+      "date": "2026-09-20",
+      "preuve": "PDF p.3 : la table des matières imprime le chiffre de partie (VI, VII, IX) en grands caractères sur une ligne propre, au-dessus du nom de la partie (BETWEEN ADVENTURES, RELIGION AND BELIEF, THE GAMEMASTER)."
     },
     {
       "famille": "br-litteral",
@@ -2136,7 +2082,8 @@
       "ref": "#1 :: using the rules265|armour and size306|the restless dead338|",
       "occurrence": 1,
       "lot": "#1384 B2",
-      "date": "2026-09-18"
+      "date": "2026-09-20",
+      "preuve": "PDF p.4 : la table des matières imprime le chiffre de partie (X, XI, XII) en grands caractères sur une ligne propre, au-dessus du nom de la partie (GLORIOUS REIKLAND, CONSUMER GUIDE, BESTIARY)."
     },
     {
       "famille": "br-litteral",
@@ -2144,31 +2091,8 @@
       "ref": "character-sheet-explained#1 :: |wealth|encumbrance||||||corruption & mutation|||||",
       "occurrence": 1,
       "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/05 - Character Building.md",
-      "ref": "class-trappings#1 :: class|trappings||||",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/05 - Character Building.md",
-      "ref": "starting-wealth#1 :: status tier|wealth",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/06 - Class and Careers.md",
-      "ref": "physician-advance-scheme#1 :: ws bs s t i ag dex int wp h h|fel h",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
+      "date": "2026-09-20",
+      "preuve": "PDF p.25 : la fiche de personnage remplie imprime la case Wealth sur trois lignes (1 Gold Crown (GC) / = 20 Silver Shillings / = 240 Brass Pennies (D)) et la case Trappings un objet par ligne."
     },
     {
       "famille": "br-litteral",
@@ -2217,131 +2141,12 @@
     },
     {
       "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/09 - Between Adventures.md",
-      "ref": "advancement-xp-costs#1 :: increase|characteristic advance cost||skill advance cost|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "city-life#1 :: d10|encounter|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "sights-and-sounds-of-the-empire#1 :: d10|encounter",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "sights-and-sounds-of-the-empire#1 :: d10|encounter|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "travelling-by-road#1 :: d10|encounter|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/14 - Consumer Guide.md",
-      "ref": "encumbrance-examples#1 :: it flaw|encumbrance examples|xi|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/14 - Consumer Guide.md",
-      "ref": "example-weapon-ranges#1 :: weapon|point blank|short|med|long|extreme",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/14 - Consumer Guide.md",
-      "ref": "herbs-and-remedies#2 :: item|cost|enc|availability|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/14 - Consumer Guide.md",
-      "ref": "overburdened-examples#1 :: enc|penalty||||",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/14 - Consumer Guide.md",
-      "ref": "packs-and-containers#1 :: item|cost|enc|carries|availability|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/14 - Consumer Guide.md",
-      "ref": "prosthetics-xi-magical-items#1 :: item|cost|enc|availability|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/14 - Consumer Guide.md",
-      "ref": "quack-remedies#1 :: effect|fine quality|average quality|poor quality",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
       "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/14 - Consumer Guide.md",
       "ref": "quick-armour#1 :: armour|price|enc when worn|availability|penalty|locations|ap|qualities and flaws",
       "occurrence": 1,
       "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/14 - Consumer Guide.md",
-      "ref": "ranged-weapons-xi#1 :: weapon|price|enc|availability|range|damage|qualities and flaws|||",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/14 - Consumer Guide.md",
-      "ref": "tools-and-kits#2 :: item|cost|enc|availability",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: fleeing 163|glorious reikland 272|henchmen 317|j|",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
+      "date": "2026-09-20",
+      "preuve": "PDF p.307 : dans QUICK ARMOUR, la cellule Penalty de Heavy Armour imprime deux pénalités sur deux lignes distinctes, « –2 SL Perception » puis « –2 SL Stealth »."
     },
     {
       "famille": "br-litteral",
@@ -4569,227 +4374,12 @@
     },
     {
       "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "sights-and-sounds-of-the-empire#1 :: 0",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "sights-and-sounds-of-the-empire#1 :: 1",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "sights-and-sounds-of-the-empire#1 :: 2",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "sights-and-sounds-of-the-empire#1 :: 3",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "sights-and-sounds-of-the-empire#1 :: 4",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "sights-and-sounds-of-the-empire#1 :: 5",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "sights-and-sounds-of-the-empire#1 :: 6",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "sights-and-sounds-of-the-empire#1 :: 7",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "sights-and-sounds-of-the-empire#1 :: 8",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/12 - The Gamemaster.md",
-      "ref": "sights-and-sounds-of-the-empire#1 :: 9",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: undamaging (weapon flaw) 305",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: undead (trait) 363",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: ungor 345",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: ungrakk - beastlord 355",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: ungrakk's brayherd 354",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: unquiet dead 340",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: unreliable (flaw) 299",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: unshakable (talent) 128",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: unstable (trait) 363",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: unusual learning (endeavour) 201",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: using the heal skill 170",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: using the rules 133",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: using this book 7",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: v",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: vampire 343",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: vampiric (trait) 363",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/17 - Index.md",
-      "ref": "index#1 :: vanhel's call (spell) 259",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-18"
-    },
-    {
-      "famille": "cle-de-ligne-ambigue",
       "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/18 - Character Sheet.md",
       "ref": "#1 :: name",
       "occurrence": 1,
       "lot": "#1384 B2",
-      "date": "2026-09-18"
+      "date": "2026-09-20",
+      "preuve": "PDF p.376-377 : la case « Name » est imprimée sur les deux pages de la fiche de personnage (bloc d'identité p.376 ; blocs Weapons, Armour et Spells and Prayers p.377), et aucun titre imprimé ne les sépare."
     },
     {
       "famille": "cle-de-ligne-ambigue",

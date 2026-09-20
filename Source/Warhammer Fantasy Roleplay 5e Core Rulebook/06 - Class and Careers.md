@@ -85,8 +85,7 @@ This shows the Status of your current Career Level. As long as you have at least
 
 Advisers provide counsel to those they serve. Well-versed in the social conditions of their employer's domain, they are privy to confidential and sensitive information, or possess keen political insights. While many Advisers are born into their positions, others actively seek patronage as a path to wealth and influence, looking for nobles, successful merchants, crime lords, and other powerful individuals to offer service to. In turn, these patrons look for those they can trust to help them prosper.
 
-| ADVISER ADVANCE SCHEME |  |
-|------------------------|--|
+#### **ADVISER ADVANCE SCHEME**
 
 | WS | BS | S | T | I | Ag | Dex | Int | WP | Fel |
 |----|----|---|---|---|----|-----|-----|----|-----|
@@ -340,7 +339,7 @@ Artists of all stripes find themselves travelling abroad in search of patronage 
 
 Haggle, Lore (Heraldry), Melee (Fencing)
 
-**Talents:** Attractive, Carouser, Gregarious, Nimblefingered
+**Talents:** Attractive, Carouser, Gregarious, Nimble-fingered
 
 **Trappings:** Sling Bag containing Trade Tools (Artist)
 
@@ -628,7 +627,7 @@ Whether serving as pistoliers, outriders, demilancers, horse archers, or similar
 
 For speed of movement, scouting, versatility, and sheer élan, Cavalrymen cannot be rivalled. Swift, lightly-armoured cavalry serve in most armies as well as many mercenary companies and
 
-private militias. Bretonnian armies make use of mounted men-atarms, while wood elf glade riders are some of the most feared light cavalry in the Old World.
+private militias. Bretonnian armies make use of mounted men-at-arms, while wood elf glade riders are some of the most feared light cavalry in the Old World.
 
 A Cavalryman may find themselves on the road if a superior orders them to investigate a matter of importance. Alternatively, they may seek leave, buy out their commission, or simply desert. Mercenaries have it easier, often able to leave their regiment by forgoing their wages.
 
@@ -686,7 +685,7 @@ War Leader **Trappings:** Sash
 
 — 'Herr Doktor' Steinmeyer, Charlatan
 
-A Charlatan builds trust with their victims before selling them something too good to be true. It could be a religious relic, a getrich-quick scheme, a medicinal remedy, a claim to a gold mine, or anything the mark wants badly enough to suspend their suspicions. Charlatans use charm and clever sales patter to exploit emotions and psychological weaknesses.
+A Charlatan builds trust with their victims before selling them something too good to be true. It could be a religious relic, a get-rich-quick scheme, a medicinal remedy, a claim to a gold mine, or anything the mark wants badly enough to suspend their suspicions. Charlatans use charm and clever sales patter to exploit emotions and psychological weaknesses.
 
 | WS | BS | S | T | I | Ag | Dex | Int | WP | Fel |
 |----|----|---|---|---|----|-----|-----|----|-----|
@@ -772,7 +771,7 @@ Traveller, Tenacious
 
 **Skills:** Consume Alcohol, Intuition, Lore (Local), Navigation, Ranged (Blackpowder), Ranged (Entangling)
 
-**Talents:** Crack the Whip, Criminal, Gunner, Strongminded
+**Talents:** Crack the Whip, Criminal, Gunner, Strong-minded
 
 **Trappings:** Blunderbuss with 10 Shots, Whip
 
@@ -1268,7 +1267,7 @@ Oil
 
 #### **Honour Guard — Silver 4**
 
-**Skills:** Language (Battle), Lore (Heraldry), Melee (Twohanded), Ride (Horse)
+**Skills:** Language (Battle), Lore (Heraldry), Melee (Two-handed), Ride (Horse)
 
 **Talents:** Etiquette (Any One), Fearless (Intruders),
 
@@ -1412,9 +1411,10 @@ Hunters play an important role in village life, bringing home deer, wildfowl, an
 
 Playing a Hunter lets you thrive where others struggle. Your keen eyes can spot danger long before it arrives, your skill with a bow keeps your companions fed and defended, and your knowledge of the wilderness makes you an invaluable guide far from civilisation.
 
-|    |    |   |   |   |    | HUNTER ADVANCE SCHEME |     |    |     |
-|----|----|---|---|---|----|-----------------------|-----|----|-----|
+#### **HUNTER ADVANCE SCHEME**
+
 | WS | BS | S | T | I | Ag | Dex                   | Int | WP | Fel |
+|----|----|---|---|---|----|-----------------------|-----|----|-----|
 |    |    |   |   | h | h  |                       | h   |    |     |
 
 ## **Career Path**
@@ -1519,9 +1519,10 @@ Life in the towns and cities of the Empire can become dangerous very quickly. Wi
 
 Playing a Knave lets you navigate the Old World's criminal underworld with ease. You are streetwise and fast-talking, and can track down illicit goods or shady contacts a respectable person would never know existed.
 
-| KNAVE ADVANCE SCHEME |    |   |   |   |    |     |     |    |     |
-|----------------------|----|---|---|---|----|-----|-----|----|-----|
+#### **KNAVE ADVANCE SCHEME**
+
 | WS                   | BS | S | T | I | Ag | Dex | Int | WP | Fel |
+|----------------------|----|---|---|---|----|-----|-----|----|-----|
 |                      |    |   |   | h |    |     | h   |    | h   |
 
 ## **Career Path**
@@ -1850,7 +1851,7 @@ Playing a Miner lets you tackle dangers that would stop others in their tracks. 
 
 **Skills:** Charm, Leadership
 
-**Talents:** Argumentative, Embezzle, Read/Write, Strongminded
+**Talents:** Argumentative, Embezzle, Read/Write, Strong-minded
 
 **Trappings:** Crew of Miners, Writing Kit
 
@@ -1884,7 +1885,7 @@ Playing a Mystic lets you peer beyond the veil of the present. Whether reading o
 
 #### **Fortune Teller — Brass 1**
 
-**Skills:** Bribery, Charm, Dodge, Entertain (Fortunetelling), Gossip, *Intuition*, Lore (Astrology), Lore (Theology), Perception, Sleight of Hand
+**Skills:** Bribery, Charm, Dodge, Entertain (Fortune-telling), Gossip, *Intuition*, Lore (Astrology), Lore (Theology), Perception, Sleight of Hand
 
 **Talents:** Holy Visions, Luck, Second Sight, Suave **Trappings:** Cheap Jewellery, Deck of Cards *or* Dice
 
@@ -1892,7 +1893,7 @@ Playing a Mystic lets you peer beyond the veil of the present. Whether reading o
 
 **Skills:** Cool, Entertain (Storytelling), Evaluate, Haggle, Intimidate, Secret Signs (Vagabond)
 
-**Talents:** Detect Artefact, Sixth Sense, Supportive, Wellprepared
+**Talents:** Detect Artefact, Sixth Sense, Supportive, Well-prepared
 
 **Trappings:** Selection of Amulets
 
@@ -1986,9 +1987,10 @@ Those who choose the cloistered life may be as humble as a hermit tending a lone
 
 Playing a Nun lets you bring faith, compassion, and authority wherever you travel. Your devotion earns the trust of ordinary folk, your healing skills make you a welcome companion, and your blessings and holy visions help guide your party through both spiritual and worldly trials.
 
-|    |    |   |   | NUN ADVANCE SCHEME |    |     |     |    |     |
-|----|----|---|---|--------------------|----|-----|-----|----|-----|
+#### **NUN ADVANCE SCHEME**
+
 | WS | BS | S | T | I                  | Ag | Dex | Int | WP | Fel |
+|----|----|---|---|--------------------|----|-----|-----|----|-----|
 |    |    |   |   |                    |    | h   | h   |    | h   |
 
 ## **Career Path**
@@ -2141,7 +2143,7 @@ Always on the move, Pedlars take naturally to the adventuring life in search of 
 
 **Skills:** Language (Any One), Lore (Geography)
 
-**Talents:** Etiquette (Any One), Numismatics, Strongminded, Suave
+**Talents:** Etiquette (Any One), Numismatics, Strong-minded, Suave
 
 **Trappings:** Draught Horse and Wagon, Goods worth at least 3d10 Shillings, 4d10 Shillings
 
@@ -2161,9 +2163,9 @@ Playing a Physician means understanding the body better than almost anyone else.
 
 #### **PHYSICIAN ADVANCE SCHEME**
 
-| WS<br>BS<br>S<br>T<br>I<br>Ag<br>Dex<br>Int<br>WP<br>h<br>h | Fel<br>h |
-|-------------------------------------------------------------|----------|
-|-------------------------------------------------------------|----------|
+| WS | BS | S | T | I | Ag | Dex | Int | WP | Fel |
+|----|----|---|---|---|----|-----|-----|----|-----|
+|    |    |   |   |   |    | h   | h   |    | h   |
 
 ## **Career Path**
 
@@ -2307,7 +2309,7 @@ Playing a Pit Fighter lets you dominate close-quarters combat through toughness,
 
 #### **Pit Fighter — Silver 2**
 
-**Skills:** Haggle, Melee (Basic), Melee (Flail *or* Twohanded), Perception, Perform (Fight), Ranged (Entangling)
+**Skills:** Haggle, Melee (Basic), Melee (Flail *or* Two-handed), Perception, Perform (Fight), Ranged (Entangling)
 
 **Talents:** Combat Reflexes, Dual Wielder, Menacing, Shieldsman
 
@@ -3047,7 +3049,7 @@ Back, Tenacious **Trappings:** Floor Brush
 
 **Skills:** Animal Training (Dog *or* Horse), Charm, Charm Animal, Drive, Gamble, Lore (Local)
 
-**Talents:** Etiquette (Any One), Gregarious, Shadow, Wellprepared
+**Talents:** Etiquette (Any One), Gregarious, Shadow, Well-prepared
 
 **Trappings:** Livery
 
@@ -3141,9 +3143,10 @@ Smuggling is a dangerous trade, and even the best-laid plans can quickly unravel
 
 Playing a Smuggler lets you stay one step ahead of the law. You are resourceful, observant, and cool under pressure, with a knack for finding opportunities and always another trick up your sleeve.
 
-| SMUGGLER ADVANCE SCHEME |    |   |   |   |    |     |     |    |     |
-|-------------------------|----|---|---|---|----|-----|-----|----|-----|
+#### **SMUGGLER ADVANCE SCHEME**
+
 | WS                      | BS | S | T | I | Ag | Dex | Int | WP | Fel |
+|-------------------------|----|---|---|---|----|-----|-----|----|-----|
 |                         |    | h |   | h | h  |     |     |    |     |
 
 ### **Career Path**
@@ -3234,7 +3237,7 @@ Warrior Born
 
 **Skills:** Lore (Heraldry), Ride (Horse)
 
-**Talents:** Inspiring, Public Speaker, Read/Write, Stouthearted
+**Talents:** Inspiring, Public Speaker, Read/Write, Stout-hearted
 
 **Trappings:** Letter of Commission, Light Warhorse, Map, Orders, Quality Uniform, Symbol of Rank, Regiment of Soldiers
 
@@ -3256,8 +3259,7 @@ III
 
 Spies are brave (or foolhardy) individuals who gather information and uncover secrets for those they serve. Noble houses, armies, merchants, guilds, cults, and countless other organisations rely on trusted agents to watch rivals, steal sensitive information, and expose hidden threats. Many spend months or years, cultivating an identity to infiltrate courts, organisations, and communities.
 
-| SPY ADVANCE SCHEME |  |
-|--------------------|--|
+#### **SPY ADVANCE SCHEME**
 
 | WS | BS | S | T | I | Ag | Dex | Int | WP | Fel |
 |----|----|---|---|---|----|-----|-----|----|-----|
@@ -3389,7 +3391,7 @@ Thieves steal all manner of wealth and goods from their fellow citizens. From th
 
 altogether, slipping into homes and businesses to carry off portable valuables. The best spend days or weeks studying their target before striking, infiltrating buildings to learn their layout and planning elaborate heists that can make them legends of the underworld.
 
-Most begin by picking pockets or waylaying victims in ratinfested alleyways. More accomplished Thieves avoid confrontation
+Most begin by picking pockets or waylaying victims in rat-infested alleyways. More accomplished Thieves avoid confrontation
 
 A Thief 's career is a risky one, and sooner or later thir luck runs out. Some flee the authorities after a robbery goes wrong, while others steal something that proves far more valuable — or dangerous than they ever imagined. Adventure often offers the safest place to disappear for a while.
 
@@ -3633,15 +3635,13 @@ III
 
 — Sergeant Theobald Hölz, Imperial Ostlanders
 
-Some cults of the Empire have clerics trained for war. The Warrior Priests of Sigmar are the most common example in the Reikland, and the armies of the Empire are often accompanied by hammerbearing priests leading soldiers in prayer to their warrior god. Other cults, especially those of Myrmidia and Ulric, maintain Warrior Priests of their own, each with their own beliefs about the proper conduct of war.
+Some cults of the Empire have clerics trained for war. The Warrior Priests of Sigmar are the most common example in the Reikland, and the armies of the Empire are often accompanied by hammer-bearing priests leading soldiers in prayer to their warrior god. Other cults, especially those of Myrmidia and Ulric, maintain Warrior Priests of their own, each with their own beliefs about the proper conduct of war.
 
 Warrior Priests tend to the spiritual welfare of armies, keeping morale high and faith unbroken. They begin as Neophytes before rising through the ranks to become Warrior Priests, Priest Sergeants, or even Priest Captains, leading the faithful in both battle and worship. Within the cults of Sigmar, Myrmidia, and Ulric, they can rise through the hierarchy and become important religious figures. Others shun the politics of their cult, roaming the Old World, and may join adventuring parties in pursuit of their god's will. Hunting heretics, spreading faith through martial deeds, or seeking out ancient relics and holy sites are all worthy goals for a Warrior Priest.
 
 Playing a Warrior Priest lets you stand at the forefront of battle, inspiring your companions as you smite enemies. You can invoke divine miracles, rally others when hope falters, and command
 
-|  | WARRIOR PRIEST ADVANCE SCHEME |  |
-|--|-------------------------------|--|
-|  |                               |  |
+#### **WARRIOR PRIEST ADVANCE SCHEME**
 
 | WS | BS | S | T | I | Ag | Dex | Int | WP | Fel |
 |----|----|---|---|---|----|-----|-----|----|-----|
@@ -3761,9 +3761,10 @@ A Witch's life is one of secrecy and constant danger. Some conceal their powers 
 
 Playing a Witch lets you wield magic beyond the strictures of the Colleges. Free from their rules and obligations, you can pursue your own path while concealing your true nature from those who would fear or condemn you. Every spell carries the risk of discovery, making cunning and discretion as important as magical talent.
 
-|    |    |   |   |   |    | WITCH ADVANCE SCHEME |     |    |     |
-|----|----|---|---|---|----|----------------------|-----|----|-----|
+#### **WITCH ADVANCE SCHEME**
+
 | WS | BS | S | T | I | Ag | Dex                  | Int | WP | Fel |
+|----|----|---|---|---|----|----------------------|-----|----|-----|
 |    |    |   |   | h |    |                      | h   | h  |     |
 
 ### **Career Path**

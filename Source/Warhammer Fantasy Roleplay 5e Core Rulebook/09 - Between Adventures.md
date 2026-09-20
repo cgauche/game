@@ -55,7 +55,7 @@ VI **SPENDING XP** The full rules for how to use your Skills can be found in **C
 
 # **ADVANCEMENT XP COSTS**
 
-| Increase | Characteristic<br>Advance Cost |            | Skill<br>Advance Cost |            |
+| Increase | Characteristic Advance Cost |            | Skill Advance Cost |            |
 |----------|--------------------------------|------------|-----------------------|------------|
 |          | Each                           | Cumulative | Each                  | Cumulative |
 | +5       | 125                            | 125        | 50                    | 50         |
@@ -242,7 +242,7 @@ The belongings of a recently deceased neighbour are auctioned, including a dusty
 
 #### **60–67: Oi! You spilled my pint!**
 
-While carousing in a tavern, browsing the markets, attending a cult rite, or any appropriate activity, you run afoul of a hotheaded member of a local guild, criminal enterprise, or other organisation. The GM determines the faction in question and, during the next adventure, you suffer Disadvantage on social Tests with members of that group.
+While carousing in a tavern, browsing the markets, attending a cult rite, or any appropriate activity, you run afoul of a hot-headed member of a local guild, criminal enterprise, or other organisation. The GM determines the faction in question and, during the next adventure, you suffer Disadvantage on social Tests with members of that group.
 
 #### **68–74: Onerous Obligations**
 
@@ -339,7 +339,7 @@ All the money remaining at the end of your 'Between Adventures' phase is lost be
 
 **Example:** *Gerhard and Ulli's courage in the face of a horde of goblins (not to mention some judicious looting) has earned them a haul worth 10 gold crowns each. The ever-prudent Gerhard decides to place his money with the esteemed Fooger's Counting House in Marienburg. The GM rolls 1d10 with a result of 6. Gerhard will earn 6% interest on his deposit (12 silver shillings, see page 296), and the investment will fail if he rolls 6 or less on d100 when he tries to make a withdrawal.*
 
-*Ulli — a gambler at heart — buries his money near a milemarker on the road to Wrecker's Point. He doesn't need to make an Endeavour to get access to his loot, but tragically he rolls 07 when he tries to recover it, and finds nothing but freshly disturbed earth, an empty chest, and a whole heap of regret.*
+*Ulli — a gambler at heart — buries his money near a mile-marker on the road to Wrecker's Point. He doesn't need to make an Endeavour to get access to his loot, but tragically he rolls 07 when he tries to recover it, and finds nothing but freshly disturbed earth, an empty chest, and a whole heap of regret.*
 
 ### **Change Career**
 

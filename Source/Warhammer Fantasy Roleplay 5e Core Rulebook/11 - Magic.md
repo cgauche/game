@@ -356,7 +356,7 @@ VIII
 
 # **Petty Spells**
 
-For the few humans blessed — or cursed, depending upon your point of view — with the spark of magic, it generally manifests around puberty, and almost always before 25 summers have passed. The first indications of impending witchery are often little tricks, knacks, cantrips, or similar, showing the wizard-tobe should probably be trained for everyone else's safety.
+For the few humans blessed — or cursed, depending upon your point of view — with the spark of magic, it generally manifests around puberty, and almost always before 25 summers have passed. The first indications of impending witchery are often little tricks, knacks, cantrips, or similar, showing the wizard-to-be should probably be trained for everyone else's safety.
 
 For elves, this is just a part of growing up, and those with interest in magic are schooled to develop their burgeoning talents. For humans, assuming they avoid being lynched, it likely means years of training as an apprentice to a wizard from one of the Eight Colleges of Magic, after which they should never use the little tricks they learned when young again. But most do.
 

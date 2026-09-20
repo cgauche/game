@@ -1076,7 +1076,7 @@ Moving during combat, along with exactly how much distance you can cover in a Tu
 
 #### **Climbing**
 
-Ascending a well-made ladder, even while holding a onehanded weapon, does not require a Test. You move at half rate up or down ladders or other easily climbed surfaces. If you want to climb more quickly, spend your Action to make an **Average**  **(+2 SL) Climb** Test. You will Climb an extra Movement + SL yards. So, a character with Movement 4 who rolled +2 SL will climb an additional 6 yards (4+2=6).
+Ascending a well-made ladder, even while holding a one-handed weapon, does not require a Test. You move at half rate up or down ladders or other easily climbed surfaces. If you want to climb more quickly, spend your Action to make an **Average**  **(+2 SL) Climb** Test. You will Climb an extra Movement + SL yards. So, a character with Movement 4 who rolled +2 SL will climb an additional 6 yards (4+2=6).
 
 If both hands are free, you can climb other surfaces with suitable handholds with a Climb Test using your Action for the Turn. You ascend or descend at a rate of ½ Movement + SL in yards.
 
@@ -2016,7 +2016,7 @@ The Bloody Flux is a persistent problem in the Empire, and widely viewed to be a
 
 # **Festering Wound**
 
-Infected cuts and abrasions are commonplace, meaning many superstitions exist explaining how best to treat them. Poultices fashioned from wrapped leaves and dung, the skin of toads, and dove feathers are common. Most physicians rubbish such talk, and prefer more scientific curatives, such as mixing the gall of a black ox with three spoonfuls of the patient's urine and half a spoon of sea salt, which is then rubbed into the festering, pusfilled wound. The screams this elicits prove just how effective the remedy is.
+Infected cuts and abrasions are commonplace, meaning many superstitions exist explaining how best to treat them. Poultices fashioned from wrapped leaves and dung, the skin of toads, and dove feathers are common. Most physicians rubbish such talk, and prefer more scientific curatives, such as mixing the gall of a black ox with three spoonfuls of the patient's urine and half a spoon of sea salt, which is then rubbed into the festering, pus-filled wound. The screams this elicits prove just how effective the remedy is.
 
 **Contraction:** If you fail an **Average (+2 SL) Endurance** Test after a combat with a creature with the Infected trait (see **Chapter 12: Bestiary**). You can also develop a Festering Wound from an *Infection* (page 182).
 
@@ -2148,7 +2148,7 @@ The GM may apply modifiers to this Heal Test to reflect the virulence of the dis
 
 #### **Cures and Tonics**
 
-A plethora of cures for all manner of ailments are available for sale, though their efficacy varies wildly. See **Chapter 11: Consumer Guide** for how to purchase medicines. Off-theshelf cures are often unreliable and an Endurance Test is usually required to see if the medicine has an effect; the Difficulty depends on the nature of the cure and the Symptom, as shown in the table below. A success staves off the Symptom for 1 day. On an Astounding Failure (-6 SL), contract *Galloping Trots*.
+A plethora of cures for all manner of ailments are available for sale, though their efficacy varies wildly. See **Chapter 11: Consumer Guide** for how to purchase medicines. Off-the-shelf cures are often unreliable and an Endurance Test is usually required to see if the medicine has an effect; the Difficulty depends on the nature of the cure and the Symptom, as shown in the table below. A success staves off the Symptom for 1 day. On an Astounding Failure (-6 SL), contract *Galloping Trots*.
 
 # **EFFECT OF PRE-PREPARED CURES**
 
@@ -2252,7 +2252,7 @@ You are on fire! This Condition is normally applied only to flammable creatures,
 
 At the end of each Round, you suffer 1d10 Damage, reduced by your Toughness Bonus and the Armour Points on the least protected Hit Location. Each additional *Ablaze* Condition adds +1 Damage, so three *Ablaze* Conditions inflict 1d10 + 2 Damage. If this reduces you to 0 Wounds, you suffer a Critical Wound to the Body.
 
-A successful Athletics Test removes 1 *Ablaze* Condition, and one more for each SL after the first. The GM modifies the Test's Difficulty to reflect the circumstances — for example, smothering flames in sand is much easier than in an oilsoaked kitchen.
+A successful Athletics Test removes 1 *Ablaze* Condition, and one more for each SL after the first. The GM modifies the Test's Difficulty to reflect the circumstances — for example, smothering flames in sand is much easier than in an oil-soaked kitchen.
 
 # **Besmirched**
 
@@ -2371,7 +2371,7 @@ These Corrupting Influences, although relatively trivial, still endanger a weak 
 Moderate Corrupting Influences are a danger to every soul and should be avoided under all circumstances. If you fail the Test, gain 2 Corruption Points. On a Marginal Success (+0 SL), gain 1 Corruption Point. On a Success (1+ SL), you gain no Corruption Points.
 
 - 0 **Exposure** to a creature with the *Corruption (Moderate)* Trait or warpstone
-- 0 **Prolonged Exposure** to refined warpstone or a Chaostainted artefact
+- 0 **Prolonged Exposure** to refined warpstone or a Chaos-tainted artefact
 
 #### **Major Corruption**
 

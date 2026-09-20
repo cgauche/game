@@ -12,7 +12,7 @@ These are the darkest of years, an era that prophets name the End Times. Karaz A
 
 Welcome to **Warhammer Fantasy Roleplay**, a game like no other. Here you will explore a world of glittering wonders, vile darkness, and everything in between. You will encounter feared and respected wizards who master their arts in the high towers of the Colleges of Magic, as well as witches who dabble in magics they barely understand. Priests, virtuous and fanatical in uneven measure, preach the word of the gods and caution against dark powers they fear to name. Proud ranks of soldiers march out to cheers and wage war on orcs, beastmen, and other invaders. They return scarred and diminished, or do not return at all.
 
-Our protagonists are no heroes, assured of victory, gold, and glory. What they would gain, they must win, often against the odds, by strength, wit, and fortune. Coin is hard-earned and quickly spent, and the most lucrative opportunities pit wouldbe adventurers against hidden cults, bloodthirsty mercenaries, or inhuman beasts that dwell in dark forests or deep beneath the earth. Magic provides a powerful advantage, but it bears risks of its own, and there is no pyre so well fed that a witch hunter could not fit one more cur atop it. The gods heed the prayers of their most faithful, but they are jealous and fickle, quick to withdraw their blessing from those they no longer consider worthy.
+Our protagonists are no heroes, assured of victory, gold, and glory. What they would gain, they must win, often against the odds, by strength, wit, and fortune. Coin is hard-earned and quickly spent, and the most lucrative opportunities pit would-be adventurers against hidden cults, bloodthirsty mercenaries, or inhuman beasts that dwell in dark forests or deep beneath the earth. Magic provides a powerful advantage, but it bears risks of its own, and there is no pyre so well fed that a witch hunter could not fit one more cur atop it. The gods heed the prayers of their most faithful, but they are jealous and fickle, quick to withdraw their blessing from those they no longer consider worthy.
 
 This book contains everything you need, aside from a few dice and some paper and pencils. So gather your friends, appoint a gamemaster, and prepare to explore the grim and perilous world of **Warhammer Fantasy Roleplay**.
 
@@ -64,7 +64,7 @@ Familiarise yourself with **Chapter 10: Glorious Reikland**, to get a feel for t
 
 # **The Rules of the Road**
 
-**Chapter 5: Rules** explains how the game actually works. For everything from fighting orcs to picking pockets, smooth-talking nobles to barrelling down cobbled streets in a breakneck chase, you'll find rules here on how to do it. It's important for both players and the Gamemaster to understand these rules in order to facilitate a smooth game.
+**Chapter 5: Rules** explains how the game actually works. For everything from fighting orcs to picking pockets, smooth-talking nobles to barrelling down cobbled streets in a break-neck chase, you'll find rules here on how to do it. It's important for both players and the Gamemaster to understand these rules in order to facilitate a smooth game.
 
 > However, you can get away with reading just two pages (130-131), especially for your first few sessions.
 

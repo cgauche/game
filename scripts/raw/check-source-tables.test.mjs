@@ -174,12 +174,12 @@ test('#1825 le rendu du stock est INDIFFÉRENT à l’ordre du registre (registr
 // PLAFOND de la dette (jamais dans la lib de stock : il vit ICI, cf. `scripts/guards/lib/stock.mjs`).
 // Il ne monte QUE par une édition de cette ligne, sous `CLIQUET:` — il n'est pas le compte du jour,
 // il est la borne que le jour ne doit pas franchir.
-const PLAFOND = 731
+const PLAFOND = 679
 
 // PLAFOND de la DETTE, distinct du précédent : le fichier de stock est un INVENTAIRE des sites
 // mesurés (il ne décroît qu'en corrigeant `Source/`), la dette est ce qui reste À TRIER — les entrées
 // sans `preuve`. Celle-là descend à CHAQUE preuve lue au PDF, et ne monte que sous `CLIQUET:`.
-const PLAFOND_A_TRIER = 724
+const PLAFOND_A_TRIER = 666
 
 test('stock COMMITTÉ : PLAFOND de la DETTE — « à trier » (entrées sans preuve) ne remonte jamais', () => {
   const { aTrier, verifies } = comptesDeTri(readStock(STOCK_PATH))

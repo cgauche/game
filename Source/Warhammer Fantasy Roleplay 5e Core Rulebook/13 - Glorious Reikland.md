@@ -32,7 +32,7 @@ The highlands of the Reikland are broken by peaks, crags, and ridges, many toppe
 
 The forbidding peaks of the Grey Mountains are all but impassable, a near impenetrable border between the Reikland and the Bretonnian duchies. They soar high on the horizon, a constant reminder to Reiklanders of the limits of their land to the west. While there are several dwarf holds here, the Grey Mountains have no true masters and their valleys, plateaus, and slopes harbour all manner of wild creatures, ruins, and mysteries.
 
-Only two reliable passes pierce the frozen heights: the welldefended Axe Bite Pass, guarded by the fortresses of Helmgart and Montfort, and the winding Grey Lady Pass leading from Ubersreik to Parravon. Both passes are guarded by patrols and fortified toll booths. Some impoverished merchants and smugglers take the risk of hiring mountain guides to lead them through lesser passes such as the Crooked Corridor or Durak Way. Many are never seen again.
+Only two reliable passes pierce the frozen heights: the well-defended Axe Bite Pass, guarded by the fortresses of Helmgart and Montfort, and the winding Grey Lady Pass leading from Ubersreik to Parravon. Both passes are guarded by patrols and fortified toll booths. Some impoverished merchants and smugglers take the risk of hiring mountain guides to lead them through lesser passes such as the Crooked Corridor or Durak Way. Many are never seen again.
 
 Countless mines riddle the craggy edges of the Grey Mountains, excavated by order of lords and merchants. Lone watchtowers and stone forts guard these remote settlements against threats from the mountains, many standing amid the rubble of older fortifications that long ago failed in their purpose.
 
@@ -104,7 +104,7 @@ The deepest woods are shadowed and gloomy. Heavy fogs are common, especially alo
 
 # **Bloodpine Woods**
 
-The wood of the bloodpine tree is a deep maroon colour and prized by artisans for crafting exquisite furniture, which commands high prices in Altdorf, Marienburg, and Nuln. The Bloodpine Woods are an outcrop of these trees growing down the southern slopes of the Amber Hills. The lumber is difficult to source due to the Spiderclaw tribe, goblins who ride on swiftmoving giant spiders, led by an ambitious shaman, Raknik Spiderclaw. Many a woodcutter has met a grisly fate as food for the monstrous arachnids and their masters. As bloodpine prices increase, merchants are willing to pay mercenaries and others to protect their supply of valuable timber.
+The wood of the bloodpine tree is a deep maroon colour and prized by artisans for crafting exquisite furniture, which commands high prices in Altdorf, Marienburg, and Nuln. The Bloodpine Woods are an outcrop of these trees growing down the southern slopes of the Amber Hills. The lumber is difficult to source due to the Spiderclaw tribe, goblins who ride on swift-moving giant spiders, led by an ambitious shaman, Raknik Spiderclaw. Many a woodcutter has met a grisly fate as food for the monstrous arachnids and their masters. As bloodpine prices increase, merchants are willing to pay mercenaries and others to protect their supply of valuable timber.
 
 # **THE GROVE OF RHULITHRI**
 
@@ -146,7 +146,7 @@ North of Nuln, the Reik carves a broad valley through the Reikland, with increas
 
 X
 
-Downstream of Altdorf, the channels reconverge to form the deepest stretch of the Reik, broadening until the opposite bank disappears into the mists drifting across the water. Oceangoing vessels sail these waters, including the First Fleet of the Imperial Navy, whose warships travel to and from the deepwater harbour at Altdorf 's Reiksport.
+Downstream of Altdorf, the channels reconverge to form the deepest stretch of the Reik, broadening until the opposite bank disappears into the mists drifting across the water. Ocean-going vessels sail these waters, including the First Fleet of the Imperial Navy, whose warships travel to and from the deepwater harbour at Altdorf 's Reiksport.
 
 The westernmost Reik is replete with rocky islands. Some are crowned with ancient fortresses, now overrun by river pirates, while others have been abandoned entirely, home to little more than a handful of old smugglers' coves.
 
@@ -322,7 +322,7 @@ X
 
 #### **The City of Altdorf**
 
-As the largest city in the Empire, Altdorf is very much a power in its own right. While it is the capital of the Reikland, it tends to look to its own interests over those of the rest of the province. The Council of Altdorf rules the city, an ever-changing, illdefined body of councillors, which meets in the Volkshalle to discuss an ever-changing, ill-defined range of matters. The citizens of Altdorf are proud of the Reikland, although they have a slightly condescending view of Reiklanders elsewhere and resent paying taxes to support their provincial neighbours.
+As the largest city in the Empire, Altdorf is very much a power in its own right. While it is the capital of the Reikland, it tends to look to its own interests over those of the rest of the province. The Council of Altdorf rules the city, an ever-changing, ill-defined body of councillors, which meets in the Volkshalle to discuss an ever-changing, ill-defined range of matters. The citizens of Altdorf are proud of the Reikland, although they have a slightly condescending view of Reiklanders elsewhere and resent paying taxes to support their provincial neighbours.
 
 #### **The Freistadts**
 
@@ -346,7 +346,7 @@ Smaller settlements have informal gatherings for the leading villagers to determ
 
 The Reikland has a powerful military, and the armed forces have influence over the running of the province. The generals of the state armies are invariably nobles whose martial responsibilities considerably increase their political standing, such as General von Dabernick, who commands the Altdorf regiments that are currently occupying the town of Ubersreik.
 
-There are several state armies in the Reikland. The army of Altdorf recruits and billets in the capital, particularly in the military-dominated district of Hammerpfad. It is wellresourced and proud, frequently sent to campaign far from the city. The light buff uniforms and eagle standards of the Reikland State Army are a common sight throughout the province and beyond. Several nobles maintain their own armed forces, such as Graf Ostarperht von Haal's Army of Eilhart and the von Jungfreuds' Ubersreik Regiments.
+There are several state armies in the Reikland. The army of Altdorf recruits and billets in the capital, particularly in the military-dominated district of Hammerpfad. It is well-resourced and proud, frequently sent to campaign far from the city. The light buff uniforms and eagle standards of the Reikland State Army are a common sight throughout the province and beyond. Several nobles maintain their own armed forces, such as Graf Ostarperht von Haal's Army of Eilhart and the von Jungfreuds' Ubersreik Regiments.
 
 The Reikland Fleet of the Imperial Navy is also important, insofar as it protects shipping on the Reik. That said, Sea Lord von Hopfberg's admirals lament their apparent lack of influence in Reikland politics. This is not helped by the fact that the upper echelons of the fleet are riddled with nepotism and snobbery.
 
@@ -364,7 +364,7 @@ A twin-tailed comet streaks through the sky, heralding the birth of Sigmar to Ch
 
 # **-15 IC**
 
-A merchant-train from Karaz-a-Karak is ambushed by orcs, and they capture King Kurgan Ironbeard. Sigmar rescues the king, and in return is named a dawonger, dwarffriend, and given the king's greatest heirloom, the magical warhammer Ghal-Maraz.
+A merchant-train from Karaz-a-Karak is ambushed by orcs, and they capture King Kurgan Ironbeard. Sigmar rescues the king, and in return is named a dawonger, dwarf-friend, and given the king's greatest heirloom, the magical warhammer Ghal-Maraz.
 
 #### **-8 IC**
 
@@ -538,7 +538,7 @@ WAAAGH! Grom! The goblin warboss Grom the Paunch leads an enormous horde of gobl
 
 #### **2429 IC**
 
-Westerland buys its independence from the Empire by bribing Emperor Dieter IV, reforming itself as the Wasteland with Marienburg as its capital. Using anticorruption laws put in place by Magnus the Pious almost a hundred years earlier, the elector counts depose Dieter in the ensuing scandal. He is replaced by Grand Prince Wilhelm of House Holswig-Schliestein of the Reikland, who is named Emperor Wilhelm III, starting the imperial dynasty that rules the Empire to this day.
+Westerland buys its independence from the Empire by bribing Emperor Dieter IV, reforming itself as the Wasteland with Marienburg as its capital. Using anti-corruption laws put in place by Magnus the Pious almost a hundred years earlier, the elector counts depose Dieter in the ensuing scandal. He is replaced by Grand Prince Wilhelm of House Holswig-Schliestein of the Reikland, who is named Emperor Wilhelm III, starting the imperial dynasty that rules the Empire to this day.
 
 The Battle for Grootscher Marsh. Emperor Wilhelm III, under pressure from the elector counts to respond to the Wasteland's secession from the Empire, gathers the State Armies to invade Marienburg. In late autumn, the opposing forces meet at the Grootscher Marsh just outside Siert, and the Empire is routed by the advanced Marienburg navy, well-trained mercenaries and militias, and the magics of the Wasteland's high elven allies. Begrudgingly, Wilhelm verbally recognises the Wasteland's independence, but refuses to ratify it with a treaty. Marienburg accepts this and draws their new border at Siert.
 
@@ -694,7 +694,7 @@ Stimmigen is a busy market town in the Suden Vorbergland, with a bridge over the
 
 The town of Ubersreik stands near Grey Lady Pass, one of only two major passes over the Grey Mountains into Bretonnia. Because of this, the town regularly sees traders and travellers from across the Old World. It has recently seen upheaval as the ruling von Jungfreuds were declared traitor by Emperor Karl Franz, and abandoned the town to seclude themselves at their ancestral seat in the Duchy of Black Rock to the west.
 
-Ubersreik has a long association with the nearby dwarf clans of the Grey Mountains. Unusually, there are members of the city's dwarf population who sit upon the town council. The elder folk designed and built one of Ubersreik's more famous edifices, its spectacular bridge over the River Teufel. Widely regarded as one of the most impressive feats of engineering to be found in the Reikland outside of Altdorf, it connects the trade road which runs from Bögenhafen to Dunkelberg and then on to Nuln. Ubersreik deals in trade of all kinds, but is most wellknown for ore and the skilled metalwork of the dwarfs.
+Ubersreik has a long association with the nearby dwarf clans of the Grey Mountains. Unusually, there are members of the city's dwarf population who sit upon the town council. The elder folk designed and built one of Ubersreik's more famous edifices, its spectacular bridge over the River Teufel. Widely regarded as one of the most impressive feats of engineering to be found in the Reikland outside of Altdorf, it connects the trade road which runs from Bögenhafen to Dunkelberg and then on to Nuln. Ubersreik deals in trade of all kinds, but is most well-known for ore and the skilled metalwork of the dwarfs.
 
 #### **IMPERIAL DWARFS IN THE REIKLAND**
 

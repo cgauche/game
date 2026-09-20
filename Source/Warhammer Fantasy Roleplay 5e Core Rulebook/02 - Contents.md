@@ -16,7 +16,7 @@
 | Opinions28                            | Hedge Witch65   | Basic and Advanced Skills109          |  |
 | Halflings30                           | Herbalist66     | Grouped Skills and Specialisation 110 |  |
 | Opinions30                            | Hunter67        | Talents114                            |  |
-| High Elves32                          | Investigator68  | Tests<br>129                          |  |
+| High Elves32                          | Investigator68  | Tests 129                          |  |
 | Opinions32                            | Knave69         |                                       |  |
 | Wood Elves34                          | Knight70        | V<br>RULES                            |  |
 | Opinions34                            | Lawyer71        | Making a Test132                      |  |
@@ -25,11 +25,11 @@
 | Characteristic Bonuses38              | Miner74         | using the Rules133                    |  |
 | 4. Skills38                           | Mystic75        | Theft and Skullduggery134             |  |
 | 5. Talents, Trappings, and Final Game | Noble76         | Stealth and Surveillance134           |  |
-| Details39                             | Nun<br>77       | Gambling and Cheating135              |  |
+| Details39                             | Nun 77       | Gambling and Cheating135              |  |
 | Wounds40                              | Outlaw78        | Traps136                              |  |
 | Movement (M)40                        | Pedlar79        | Breaking and Entering136              |  |
 | Maximum Encumbrance40                 | Physician80     | Secret Signs138                       |  |
-| Oh Fickle Fate40                      | Pilot<br>81     | Theft and Scams138                    |  |
+| Oh Fickle Fate40                      | Pilot 81     | Theft and Scams138                    |  |
 | 6. Personality and Background41       | Pit Fighter82   | Flattery, Bribery, and Status140      |  |
 | Who are You?41                        | Priest83        | Status and Social Standing140         |  |
 | Choose an Ambition41                  | Protagonist84   | Maintaining Status141                 |  |
@@ -45,9 +45,9 @@
 | Apothecary47                          | Slayer94        | Research150                           |  |
 | Artisan48                             | Smuggler95      | Asking Around150                      |  |
 | Artist49                              | Soldier96       | Investigating150                      |  |
-| Bailiff50                             | Spy<br>97       | Tracking151                           |  |
+| Bailiff50                             | Spy 97       | Tracking151                           |  |
 | Beggar51                              | Stevedore98     | Life Beyond the Walls152              |  |
-| Boatman52                             | Thief<br>99     | Cunning Crafts153                     |  |
+| Boatman52                             | Thief 99     | Cunning Crafts153                     |  |
 
 | Making Medicine153            | Characteristic Advances191             | Miracles of Taal227        |  |
 |-------------------------------|----------------------------------------|----------------------------|--|
@@ -131,8 +131,8 @@
 | The Villages, Hamlets,              | Creature Hit Locations318      |                                      |  |
 | and Holy Places293                  | Creatures and Equipment318     | Daemonette of Slaanesh350            |  |
 | The Ancient Sites                   | The Peoples of the Reikland319 | The Loathsome Ratmen351              |  |
-| and Terrible Ruins295<br>XI         | Human Watchman321              | Clanrat351                           |  |
-| CONSUMER GUIDE                      | Human Merchant321              | Stormvermin352                       |  |
+| and Terrible Ruins295               | Human Watchman321              | Clanrat351                           |  |
+| XI<br>CONSUMER GUIDE                | Human Merchant321              | Stormvermin352                       |  |
 |                                     | Human Thug322                  | Rat Ogre352                          |  |
 | Money296                            | Halfling Thief322              | Creature Templates353                |  |
 | Coin and Status296                  | Gnome323                       | Leader353                            |  |
@@ -158,6 +158,6 @@
 | Weapon Qualities304                 | Troll335                       | Test Difficulty364                   |  |
 | Weapon Flaws305                     | The Orc and Goblin Hordes336   | Resilience and Resolve364            |  |
 | Armour306                           | Goblin336                      | Appendix II                          |  |
-| Armour Qualities306                 | Orc<br>337                     | Appendix III                         |  |
+| Armour Qualities306                 | Orc 337                     | Appendix III                         |  |
 | Armour Flaws306                     | Snotling338                    | Appendix IV                          |  |
 |                                     |                                | Appendix V                           |  |

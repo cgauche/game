@@ -182,11 +182,9 @@
 |                                   | Heat (Exposure) 170                   | Invoke (Talent) 121               | (The) Lore of Witchcraft 255      |  |
 |                                   | Hedge Witch (Career) 65               | Iron Jaw (Talent) 121             | (The) Lorlay 277                  |  |
 |                                   | Heed Not the Witch (Miracle) 226      | Iron Will (Talent) 121            | Losing Momentum 167               |  |
-|                                   | Helmgart 293<br>Helpless Targets 167  | Itching Pox 180<br>Item Flaws 299 | Luck (Talent) 122                 |  |
-
-Helspire .......................................... 295
-
-Item Qualities................................. 298
+|                                   | Helmgart 293                          | Itching Pox 180                   | Luck (Talent) 122                 |  |
+|                                   | Helpless Targets 167                  | Item Flaws 299                    |                                   |  |
+|                                   | Helspire 295                          | Item Qualities 298                |                                   |  |
 
 | M                                   | Miracles of Rhya 225            | Orc 337                               | Psychological Traits 183          |   |
 |-------------------------------------|---------------------------------|---------------------------------------|-----------------------------------|---|
@@ -312,28 +310,6 @@ Item Qualities................................. 298
 | Shadow (Talent) 125                 | Starting Trappings 39               | Terrifying (Spell) 245             | Unarmed Combat 167                     |  |
 | Shadowsteed (Spell) 255             | Starting Wealth 39                  | Territorial (Trait) 362            | Unbalanced (Weapon Flaw) 305           |  |
 
-| Unconscious (Condition) 187      |
-|----------------------------------|
-| Undamaging (Weapon Flaw) 305     |
-| Undead (Trait) 363               |
-| Ungor 345                        |
-| Ungrakk - Beastlord 355          |
-| Ungrakk's Brayherd 354           |
-| Unquiet Dead 340                 |
-| Unreliable (Flaw) 299            |
-| Unshakable (Talent) 128          |
-| Unstable (Trait) 363             |
-| Using the Heal Skill 170         |
-| Using the Rules 133              |
-| Using This Book 7                |
-| Unusual Learning (Endeavour) 201 |
-|                                  |
-| V                                |
-| Vampire 343                      |
-| Vampiric (Trait) 363             |
-| Vanhel's Call (Spell) 259        |
-|                                  |
-
 | Unbreakable (Weapon Quality) 305      | Very Strong (Talent) 128          | Weapon Flaws 305                | Wrap (Weapon Quality) 305     |
 |---------------------------------------|-----------------------------------|---------------------------------|-------------------------------|
 | Unconscious (Condition) 187           | Villager (Career) 101             | Weapon Range 302                | Wrath of the Gods 218         |
@@ -358,20 +334,5 @@ Item Qualities................................. 298
 | Vanquish the Unrighteous (Miracle)227 | Watchman (Career) 104             | Wolf 327                        |                               |
 | Varghulf 344                          | Waterman (Talent) 128             | Wood Elves (as Characters) 34   |                               |
 | Vehicle Movement (Rules) 157          | Waterwalk (Miracle) 223           | Wörlin 294                      |                               |
-|                                       |                                   |                                 |                               |
-
-| Wrap (Weapon Quality) 305     |  |
-|-------------------------------|--|
-| Wrath of the Gods 218         |  |
-| Wrath of the Gods Table 218   |  |
-| Wrecker (Career) 108          |  |
-| Wyssan's Wildform (Spell) 246 |  |
-|                               |  |
-| Y                             |  |
-| You Saw Nothing (Miracle) 225 |  |
-|                               |  |
-| Z                             |  |
-| Zahnstadt 294                 |  |
-| Zombie 340                    |  |
-|                               |  |
-|                               |  |
+| Venom (Trait) 363                     | Weakpoints (Armour Flaw) 306      | Worn Items (and Encumberance) 299 |                               |
+| Very Resilient (Talent) 128           | Wealthy (Talent) 128              | Wounds 40                       |                               |
