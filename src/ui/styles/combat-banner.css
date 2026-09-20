@@ -28,7 +28,8 @@
   max-width: 42vw;
 }
 /* Ligne NUE : aucune boîte, aucun filet — du texte sur le terrain (planche 2026-08-17). Sa
-   lisibilité tient à l'ombre portée (le voile d'une carte reviendrait à la boîte supprimée). */
+   lisibilité tient au halo partagé `.halo-champ` (components.css), que `CombatBanner` pose à côté
+   (le voile d'une carte reviendrait à la boîte supprimée). */
 .cb-ev {
   display: flex;
   gap: 7px;
@@ -40,7 +41,6 @@
   font-size: 13.5px;
   white-space: nowrap;
   text-align: left;
-  text-shadow: 0 1px 2px var(--shadow-ink), 0 0 6px rgba(0, 0, 0, 0.95);
 }
 .cb-ev .cb-ic {
   font-size: 15px;

@@ -90,10 +90,11 @@
      mesurée 123,6px — tuile `--pd-tile` 88 + nom + rembourrages, invariante en largeur) plus l'air.
      Le script de recette REFUSE tout recouvrement de la bande de groupe, de la frise et du fil. */
   --cc-ouverture-top: 152px;
+  /* Encoche d'angle des plaques (patron d'ébauche : la tôle est coupée, jamais arrondie). Au `:root`
+     parce que le bandeau d'OUVERTURE est monté sur la carte, HORS du pont : il en a besoin aussi. */
+  --cc-notch: 4px;
 }
 .combat-console {
-  /* Encoche d'angle des plaques (patron d'ébauche : la tôle est coupée, jamais arrondie). */
-  --cc-notch: 4px;
   /* Le rail des gouttières suit le portrait (dimensionné au `:root`, avec la hauteur de bande). */
   --cc-rail: calc(var(--cc-portrait) * 0.62);
   position: absolute;
@@ -117,7 +118,9 @@
    du LISERÉ, pas de son côté intérieur : `100%` porte sur la boîte de rembourrage, donc SOUS la
    bordure. À cheval (`calc(100% - 10px)`), il descendait dans la bande de la frise d'initiative, qui
    le recouvre (z-index 45 contre 5) et lui décapitait son titre. Sa boîte est un plancher TENU :
-   c'est elle que la frise réserve (`--cc-phase-h`, `hud.css`). */
+   c'est elle que la frise réserve (`--cc-phase-h`, `hud.css`).
+   Sa MATIÈRE est la peau partagée `.skin-bois` (components.css), que le bandeau POSE — la même
+   plaque que le rail d'outils du HUD ; ce module n'en garde que le DELTA : l'encoche d'angle. */
 .cc-phase {
   position: absolute;
   left: 12px;
@@ -128,9 +131,6 @@
   align-items: center;
   gap: 10px;
   padding: 4px 12px;
-  border: 1px solid var(--wm-frame-dark);
-  background: linear-gradient(180deg, var(--atelier-wood-top), var(--cc-brass-lo));
-  box-shadow: inset 0 1px 0 rgba(216, 185, 84, 0.14), 0 6px 20px rgba(0, 0, 0, 0.55);
   clip-path: polygon(
     var(--cc-notch) 0, 100% 0, 100% calc(100% - var(--cc-notch)),
     calc(100% - var(--cc-notch)) 100%, 0 100%, 0 var(--cc-notch)

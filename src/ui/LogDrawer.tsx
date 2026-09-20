@@ -23,7 +23,7 @@ export function LogDrawer({ battle, journal, initialOpen = false, onOpenHistory 
   return (
     <div className={`log-drawer ${open ? 'open' : ''}`}>
       {open && (
-        <div className="ld-panel">
+        <div className="ld-panel halo-champ">
           <div className="mini-title">{battle ? 'Journal de combat' : 'Journal'}</div>
           {onOpenHistory && (
             <button type="button" className="btn small" onClick={onOpenHistory}>

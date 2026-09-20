@@ -113,13 +113,6 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/creator.css': 4,
   'styles/editor.css': 10,
   'styles/gauges.css': 1,
-  // -1 (R-M1, bande de groupe) : `.party-dock` ne s'enroule plus — une seule rangée qui DÉFILE à
-  // tuiles pleines. Baisse ASSAINIE, pas une tolérance.
-  // -1 (#1806 2c) : `.crit-stats` suit sa primitive `RevealBody`.
-  // -3 (#1806 2a) : `.medic-patients` suit son écran (world-meta.css, +1 en regard) ; `.frame-row`
-  // et le repeint `.modal-actions` ≤700 MEURENT — les quatre sites de rangée de tuiles composent
-  // `Row`, et le pied d'une modale qui s'enroule est un comportement de la couche partagée.
-  'styles/hud.css': 1,
   'styles/mass-battle.css': 2,
   'styles/merchant.css': 1,
   // +1 (#492 lot POSSESSIONS B) : `.inv-actionbar` — barre d'actions de la rangée ÉLUE du registre
@@ -834,25 +827,85 @@ describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
     const coarse = mediaBlock(readFileSync(join(UI, 'styles', 'components.css'), 'utf8'), '@media (pointer: coarse)');
     expect(coarse).toMatch(/\.skin-tole\[data-ton\]\s*\{[^}]*min-width:\s*44px/);
     expect(coarse).toMatch(/\.skin-tole\[data-ton\]\s*\{[^}]*min-height:\s*44px/);
-    // … et la garantie n'a de sens que si les commandes la PORTENT : sans cette assertion positive,
-    // « les commandes de vue offrent 44px » se dégraderait en « la peau fait 44px ».
-    // Lu aux LITTÉRAUX de `className` (commentaires blanchis) : CHAQUE pose de la classe de commande
-    // porte la peau, et le fichier en pose au moins une.
-    const COMMANDES: [string, string][] = [
-      ['ViewControls.tsx', 'vc-btn'],
-      ['LogDrawer.tsx', 'ld-btn'],
-      ['GameMenu.tsx', 'gm-btn'],
-      ['ExplorationDock.tsx', 'worldmap-btn'],
-      ['CampaignView.tsx', 'worldmap-btn'],
+  });
+
+  // Une garantie de PEAU n'a de sens que si ses boîtes la PORTENT : sans cette assertion positive,
+  // « les commandes de vue offrent 44px » se dégraderait en « la peau fait 44px », et « une seule
+  // plaque de bois » en « la peau existe ». Lu aux LITTÉRAUX de `className` (commentaires blanchis) :
+  // CHAQUE pose de la classe de boîte porte sa peau, et le fichier en pose au moins une.
+  it('peaux partagées : chaque boîte vissée PORTE sa peau, à chacune de ses poses', () => {
+    const BOITES: [string, string, string][] = [
+      ['skin-tole', 'ViewControls.tsx', 'vc-btn'],
+      ['skin-tole', 'LogDrawer.tsx', 'ld-btn'],
+      ['skin-tole', 'GameMenu.tsx', 'gm-btn'],
+      ['skin-tole', 'ExplorationDock.tsx', 'worldmap-btn'],
+      ['skin-tole', 'CampaignView.tsx', 'worldmap-btn'],
+      ['skin-bois', 'CampaignView.tsx', 'hud-rail'],
+      ['skin-bois', 'CombatConsole.tsx', 'cc-phase'],
     ];
-    for (const [f, classe] of COMMANDES) {
+    for (const [peau, f, classe] of BOITES) {
       const code = readFileSync(join(UI, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
       const poses = [...code.matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\})/g)]
         .map((m) => (m[1] ?? m[2]).split(/\s+/))
         .filter((classes) => classes.includes(classe));
       expect(poses.length, `${f} pose « ${classe} »`).toBeGreaterThan(0);
-      expect(poses.filter((classes) => !classes.includes('skin-tole')), `${f} : « ${classe} » posée SANS la peau`).toEqual([]);
+      expect(poses.filter((classes) => !classes.includes(peau)), `${f} : « ${classe} » posée SANS ${peau}`).toEqual([]);
     }
+  });
+
+  // Une PEAU est PARTAGÉE par DÉFINITION : une matière qu'un seul fichier pose n'est pas une peau,
+  // c'est l'identité de la primitive qui la pose — et elle doit vivre dans le module de celle-ci
+  // (garde §5.2, `src/ui/primitive-owners-guard.test.ts`). Mesure DÉRIVÉE, sans aucune liste : les
+  // peaux sont toutes les `.skin-*` que la couche partagée déclare (une peau neuve entre sous la
+  // garde en naissant), les poseurs tous les `.tsx` de `src/` hors galerie (une vignette MONTRE, elle
+  // ne porte pas).
+  it('toute peau `.skin-*` de la couche partagée est POSÉE par au moins DEUX fichiers `.tsx`', () => {
+    const PEAUX = new Set<string>();
+    for (const f of FEUILLES_PARTAGEES) {
+      for (const { selecteurs } of reglesCss(readFileSync(join(UI, '..', '..', f), 'utf8'))) {
+        for (const sel of selecteurs) for (const m of sel.matchAll(/\.(skin-[\w-]+)/g)) PEAUX.add(m[1]);
+      }
+    }
+    expect(PEAUX.size, 'aucune peau `.skin-*` dans la couche partagée : la mesure serait vide').toBeGreaterThan(0);
+    const corpus = readCorpus(['src'], { exts: ['.tsx'] }).filter(({ rel }) => !rel.includes('/gallery/'));
+    const solitaires: string[] = [];
+    for (const PEAU of PEAUX) {
+      const poseurs = new Set<string>();
+      for (const { rel: chemin, text } of corpus) {
+        for (const m of text.matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\})/g)) {
+          if ((m[1] ?? m[2]).split(/\s+/).includes(PEAU)) poseurs.add(chemin);
+        }
+      }
+      if (poseurs.size < 2) solitaires.push(`.${PEAU} : ${poseurs.size} poseur(s) — ${[...poseurs].join(', ') || 'aucun'}`);
+    }
+    expect(
+      solitaires,
+      `Peau à poseur UNIQUE — une matière qu'un seul fichier porte appartient à SA primitive, pas à la couche partagée :\n${solitaires.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  // Le HALO d'un texte posé sur le monde nu est `.halo-champ` (components.css). Mesure ABSOLUE, sans
+  // liste : aucune feuille hors couche partagée ne déclare une ombre de texte MULTIPLE toute d'encre
+  // (noir ou `--shadow-ink`). Une lueur colorée est une autre matière : elle n'est pas visée.
+  it('halo de lisibilité : la double ombre d’encre ne s’écrit que dans la couche partagée', () => {
+    const ENCRE = /^(?:var\(--shadow-ink\)|#000(?:000)?|black|rgba?\(\s*0\s*,\s*0\s*,\s*0\s*(?:,[^)]*)?\))$/;
+    const copies: string[] = [];
+    let ombresLues = 0;
+    for (const { rel, text } of readCorpus(['src'], { exts: ['.css'] })) {
+      for (const { selecteurs, corps } of reglesCss(text)) {
+        for (const d of declarations(corps)) {
+          if (d.prop !== 'text-shadow') continue;
+          ombresLues++;
+          if (FEUILLES_PARTAGEES.includes(rel)) continue;
+          const ombres = d.valeur.split(/,(?![^(]*\))/).map((o) => o.trim());
+          if (ombres.length < 2) continue;
+          const encres = ombres.map((o) => o.replace(/(?:^|\s)-?[\d.]+(?:px|em|rem)?(?=\s|$)/g, ' ').trim());
+          if (encres.every((c) => ENCRE.test(c))) copies.push(`${rel} :: ${selecteurs.join(', ')}`);
+        }
+      }
+    }
+    expect(ombresLues, 'aucune `text-shadow` lue : la mesure serait vide').toBeGreaterThan(0);
+    expect(copies, `Halo d'encre réécrit hors couche partagée — poser « halo-champ » :\n${copies.join('\n')}`).toEqual([]);
   });
 
   it('≤560, bande DÉPLIÉE : son rang passe devant le fil d’événements, et la règle BAT l’ancrage de repos', () => {

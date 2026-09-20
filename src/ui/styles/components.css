@@ -1339,3 +1339,45 @@ button.chip:hover {
   background-repeat: no-repeat;
   border-top: var(--pont-liseret) solid var(--atelier-brass-hover);
 }
+
+/* ── PEAU « PLAQUE DE BOIS » (`.skin-bois`) ─────────────────────────────────────────────────────
+   La matière d'une PLAQUE posée sur le champ : plat de bois éclairé par le haut, filet sombre,
+   liseré interne d'or et ombre portée sur le terrain. Elle est PARTAGÉE — deux boîtes sur deux
+   écrans (le rail d'outils `.hud-rail` du HUD de combat, le bandeau de phase `.cc-phase` du pont) :
+   elle n'appartient donc à aucune primitive (garde §5.2 de `src/ui/primitive-owners-guard.test.ts`).
+   Chaque porteur garde son DELTA — l'ancrage du rail, l'encoche d'angle du bandeau. */
+.skin-bois {
+  background: linear-gradient(180deg, var(--atelier-wood-top), var(--atelier-wood-bottom));
+  border: 1px solid var(--wm-frame-dark);
+  box-shadow: inset 0 1px 0 rgba(216, 185, 84, 0.14), 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+/* ── HALO DE LISIBILITÉ (`.halo-champ`) ─────────────────────────────────────────────────────────
+   Le texte posé sur un fond qu'il ne MAÎTRISE pas (le monde nu, le remplissage d'une jauge) : la
+   double ombre d'encre qui l'en détache quoi qu'il passe dessous. Elle se mesure en `em` : le halo
+   suit le corps du texte qui le porte, du chiffre de 9px d'une barre de vie au nom de 15px d'un lieu.
+   Cinq poseurs (`PlaquesDeNom` au-dessus d'une entité du plateau, le panneau du tiroir-journal tant
+   que son fond reste transparent, l'inscription du lieu de la barre haute, le fil d'événements de
+   combat, le chiffre en surimpression de `LifeBar`) : un contrat de couche, jamais la propriété
+   d'un module — aucune feuille ne réécrit une double ombre d'encre (garde de
+   `src/ui/ui-ratchets.test.ts`). Un porteur qui REVÈLE un
+   fond opaque éteint le halo depuis son propre module (`.log-drawer:hover .ld-panel`). */
+.halo-champ {
+  text-shadow: 0 0.07em 0.2em var(--shadow-ink), 0 0 0.4em var(--shadow-ink);
+}
+
+/* ── MATIÈRE DU NOM (`.codex-pop-title`, `.codex-pop-sub`) ──────────────────────────────────────
+   Les deux spans du chrome de nom, posés par la primitive `CodexTitre`
+   (`src/ui/compendium/CodexRef.tsx`) : gravure d'or pour le nom de référence, encre sourde pour le
+   nom d'INSTANCE qui le surmonte. UN poseur, `CodexTitre`, monté sur trois zones (le popover du
+   Codex, les plaques de nom du plateau, l'inscription du lieu du HUD) : la matière d'une brique que
+   trois écrans montent ne peut pas vivre dans le module d'écran de l'un d'eux. */
+.codex-pop-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--gold2);
+}
+.codex-pop-sub {
+  font-size: 11px;
+  color: var(--muted);
+}

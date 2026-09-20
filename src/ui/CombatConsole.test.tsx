@@ -842,11 +842,12 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     // … à GAUCHE : une valeur en px depuis le bord, jamais un centrage.
     expect(decl(feed, 'left')).toMatch(/^\d+(\.\d+)?px$/);
     expect(decl(feed, 'align-items')).toBe('flex-start');
-    // Lignes NUES : plus de carte (fond, filet, arrondi, rembourrage) — la lisibilité tient à l'ombre.
+    // Lignes NUES : plus de carte (fond, filet, arrondi, rembourrage) — la lisibilité tient au halo
+    // PARTAGÉ `.halo-champ`, que la ligne POSE.
     const ev = ruleOf(BANNER_BASE, '.cb-ev');
     expect(decl(ev, 'background')).toBe('none');
     expect(parseFloat(decl(ev, 'border')!)).toBe(0);
-    expect(decl(ev, 'text-shadow')).toBeTruthy();
+    expect(readFileSync(join(process.cwd(), 'src', 'ui', 'CombatBanner.tsx'), 'utf8')).toMatch(/className=\{`cb-ev [^`]*\bhalo-champ\b/);
     // Le ton se porte à l'ENCRE (plus de liseré ni de fond à teinter).
     for (const ton of ['.cb-tone-strong', '.cb-tone-grave']) {
       const bloc = ruleOf(BANNER_BASE, ton);

@@ -215,7 +215,6 @@
   --cc-void-steel-lo: #0a0d10; /* case vide côté acier — bas */
   --cc-void-steel-edge: #20262d; /* liseré d'une case vide d'acier */
   --cc-void-steel-ink: #333c45; /* encre éteinte d'une case vide d'acier */
-  --cc-brass-lo: #100b07; /* plaque de laiton — bas (haut = --atelier-wood-top) */
   --cc-brass-cell-hi: #2a2014; /* alvéole de laiton — haut */
   --cc-brass-cell-lo: #120d08; /* alvéole de laiton — bas */
   --cc-void-brass-hi: #141009; /* case VIDE côté laiton — haut (creusé : le vide n'a plus de mot) */

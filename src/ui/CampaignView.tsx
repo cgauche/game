@@ -33,6 +33,8 @@ import { InitiativeStrip } from './InitiativeStrip';
 import { CombatStartSplash } from './CombatStartSplash';
 import { PartyDock } from './PartyDock';
 import { LogDrawer } from './LogDrawer';
+import { Row, Stack } from './Layout';
+import { CodexTitre } from './compendium/CodexRef';
 import { Icon } from './Icon';
 import { GameMenu } from './GameMenu';
 import { ObjectiveBannerMount } from './ObjectiveBanner';
@@ -258,18 +260,19 @@ export function CampaignView() {
             (`ScreenMeta`), les ouvreurs d'écrans à l'extrémité droite du pont d'exploration hors
             combat, sur le rail d'outils en combat. Sauvegarder : exploration seulement (refusée en
             combat) et jamais l'invité (la save vit chez l'hôte). */}
-        <div className="hud-topbar">
+        <Row className="hud-topbar" align="start">
         <GameMenu sceneName={scene?.label} time={gameTime} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} />
         {/* Lieu courant : premier étage de la pile — le nom de la scène se lit sur le HUD, sans ouvrir
-            le menu. Sans nom authoré, aucune plaque (rien à annoncer). */}
+            le menu. Sans nom authoré, aucune plaque (rien à annoncer). La MATIÈRE du nom est celle du
+            chrome de nom (`CodexTitre`), posée sur le halo partagé des textes du monde nu. */}
         {mode === 'exploration' && scene?.label && (
-          <strong data-hud="place" title={scene.label}>{scene.label}</strong>
+          <strong data-hud="place" className="halo-champ" title={scene.label}><CodexTitre title={scene.label} /></strong>
         )}
         {/* Objectif courant (#238) — dernier étage de la pile de contexte : il occupe sa propre ligne
             sous le lieu (CSS `.hud-topbar > .objective-banner`). Masqué en combat (l'écran tactique
             se réserve le HUD) ; nul si la pile d'objectifs est vide. */}
         {mode === 'exploration' && <ObjectiveBannerMount />}
-        </div>
+        </Row>
         {/* PONT D'EXPLORATION (spec § « Zone 11 ») : la bande basse allégée, montée hors combat
             seulement — en combat, le pont est la console (`CombatConsole`). Les conditions
             d'apparition des ouvreurs restent ICI (un rappel absent = pas d'entrée). */}
@@ -314,7 +317,7 @@ export function CampaignView() {
             `state/keybindings`, remappable à l'écran Options). Aux tranches étroites le rail se dissout
             (`display: contents`) et chaque surface reprend son ancrage mobile propre. */}
         {mode === 'battle' && (
-          <div className="hud-rail">
+          <Stack className="hud-rail skin-bois" gap="md" pad="md">
             {vessel && (
               <button
                 type="button"
@@ -327,7 +330,7 @@ export function CampaignView() {
               </button>
             )}
             <LogDrawer battle={battle ? { log: battle.log, combatants: battle.combatants } : null} journal={journal} />
-          </div>
+          </Stack>
         )}
         {mode === 'exploration' && povActive && <PovControls />}
         {dialogue && <DialogueBox />}

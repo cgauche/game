@@ -276,10 +276,11 @@ const ACTION_RECHARGER = 'reload';
 /** Le bandeau de phase, à ses DEUX adresses (arbitrage utilisateur 2026-08-24) : sur le parapet du
  *  pont (pauses de round, interlude de ciblage) ou, à l'OUVERTURE d'un combat, CENTRÉ EN HAUT DE LA
  *  CARTE comme la référence Rogue Trader le pose. Une seule boîte, une seule matière — l'adresse est
- *  un habillage (`centre`), jamais un second composant. */
+ *  un habillage (`centre`), jamais un second composant. La MATIÈRE est la peau partagée
+ *  `.skin-bois` (components.css), celle de la plaque du rail d'outils. */
 export function PhaseBanner({ label, actions, ready, centre }: PhaseBanner & { centre?: boolean }) {
   return (
-    <div className="cc-phase" data-phase={centre ? 'ouverture' : 'pont'}>
+    <div className="cc-phase skin-bois" data-phase={centre ? 'ouverture' : 'pont'}>
       <span className="cc-phase-label">{label}</span>
       {ready && <ReadyRow ready={ready} />}
       {actions.map((a) => (
@@ -1178,7 +1179,7 @@ export function CombatConsole() {
     <div className="combat-console skin-pont" onContextMenu={avalerMenuNatif}>
       {phase && !ouverture && <PhaseBanner {...phase} />}
       {!phase && !controlled && (
-        <div className="cc-phase">
+        <div className="cc-phase skin-bois">
           {siegeDistant !== null ? (
             <SpectatorChip label={net.seatNames[siegeDistant] ?? 'L’hôte'} action={`joue ${active.label}…`} />
           ) : (

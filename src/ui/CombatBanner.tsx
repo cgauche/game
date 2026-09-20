@@ -42,7 +42,7 @@ export function CombatBanner() {
   return (
     <div className="combat-feed" role="status" aria-live="polite" aria-atomic="true">
       {line && (
-        <div key={key} className={`cb-ev cb-now cb-tone-${line.tone}`}>
+        <div key={key} className={`cb-ev cb-now cb-tone-${line.tone} halo-champ`}>
           <span className="cb-ic"><Icon id={line.icon} size={15} /></span>
           <span className="cb-tx">
             <TeamSegments segments={line.segments} />

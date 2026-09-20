@@ -132,7 +132,7 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.charprev` (+ `.charprev-svg`, tailles `.charprev-xs`/`.charprev-sm`/`.charprev-md`/`.charprev-lg`, `.charprev-fill`, ambiances `.charprev-amb-panel`/`.charprev-amb-parchment`/`.charprev-amb-spotlight`) | Cadre d'aperçu « perso en pied » (`CharacterPreview`) | Toute vignette de personnage EN PIED — les tailles/ambiances sont des modificateurs, jamais un `<img>`/SVG dimensionné à la main. |
 | `.activity-pane` (+ `.activity-pane-head`, `.activity-pane-body`, `.activity-pane-desc`, `.activity-pane-blocked`, `.activity-pane-foot`, `.activity-pane-terms`, `.activity-pane-detail`, `.activity-pane-actions`) | Panneau d'Activité/Service : en-tête (icône + titre), corps DÉFILABLE, pied FIXE (pré-jet + coût `<Coins>` + action jamais cachés par le scroll) | Composé par la primitive `ActivityPane` (`src/ui/ActivityPane.tsx`, CLAUDE.md) — tout volet d'Activité (interlude) ou détail de service (hub de ville) la COMPOSE au lieu d'un markup en-tête/corps/pied recodé à la main. |
 | `.sans-webgl` (+ variante `.sans-webgl.compact`) | Message « le monde ne peut pas être affiché » : ce que le joueur voit quand la machine refuse le contexte WebGL 2, le monde volumique étant le seul peintre du jeu (#1176 C5a) | Posé par la primitive `SansWebgl` (`src/gameIso/stage/SansWebgl.tsx`) sur `.panel` — tout hôte de monde (stage de jeu, plan de station) le monte À LA PLACE de son canevas ; `compact` = posé DANS un panneau borné. Jamais un écran nu et muet, jamais un second peintre de secours. |
-| `.plaque-nom` | Boîte du NOM d'un utilisable révélé (Alt maintenu) ou survolé, posée au-dessus de lui dans le SVG du plateau (#1687) : centrage et ombrage de lisibilité sur le monde nu, jamais une cible (`pointer-events: none` de bout en bout) | Posée par la primitive `PlaquesDeNom` (`src/gameIso/stage/PlaquesDeNom.tsx`) autour de `CodexTitre` — le TEXTE reste celui du chrome de nom du Codex, une seule matière de nom à l'écran ; jamais un second peintre de nom, jamais une boîte qui mangerait une bande du champ au-dessus de chaque décor. |
+| `.plaque-nom` | Boîte du NOM d'un utilisable révélé (Alt maintenu) ou survolé, posée au-dessus de lui dans le SVG du plateau (#1687) : centrage, jamais une cible (`pointer-events: none` de bout en bout) — l'ombrage de lisibilité est le halo PARTAGÉ `.halo-champ`, posé à côté | Posée par la primitive `PlaquesDeNom` (`src/gameIso/stage/PlaquesDeNom.tsx`) autour de `CodexTitre` — le TEXTE reste celui du chrome de nom du Codex, une seule matière de nom à l'écran ; jamais un second peintre de nom, jamais une boîte qui mangerait une bande du champ au-dessus de chaque décor. |
 | `.menu-card` (+ `.menu-card-large` carte-CATALOGUE, prop `large` — plafond 760px, 1600px au-delà de 1440px ; `.game-menu-overlay` menu système plein écran, `.game-menu-card`/`.game-menu-sub-wide`/`.menu-sub-head`/`.menu-sub-body`, `.audio-controls`/`.audio-icon` la ligne de réglage audio du sous-écran Options (`AudioControls`), `.menu-card-head`/`.menu-card-title`/`.menu-card-sub`/`.menu-card-meta`, `.menu-btn`, `.menu-toggle`, `.menu-buttons`) | Carte de menu : en-tête + sections de grands boutons pleine largeur (icône + libellé) séparées par un filet titré ; `.game-menu-overlay` = voile plein écran du menu système (pause) en jeu, ses sous-écrans Coopération/Options composant la même carte | Composée par la primitive `MenuCard`/`MenuSection`/`MenuButton`/`MenuToggle` (`src/ui/MenuCard.tsx`, CLAUDE.md) — le menu principal (`MainMenu`), le menu système plein écran en jeu (`GameMenu`) ET le salon coop (`CoopLobby`) la COMPOSENT ; jamais un `.menu-card` recodé ni un `<button className="btn">` de menu à la main. `MenuSubScreen` pose LUI-MÊME son corps défilant `.menu-sub-body` (un sous-écran haut défile au lieu de pousser son contenu hors de la carte) ; ce qui doit rester en tête passe par sa prop `head`, et `backLabel` corrige un « Retour » qui mentirait (le salon coop en SORT). |
 | `.coop-code` · `.coop-code-input` · `.coop-banner` · `label.coop-assign-row` (`coop-panels.css`) | Salon coop : la PLAQUE du code de room (gravure `--font-display`, sélectionnée d'un clic), son CHAMP de saisie (même échelle, majuscules forcées), la POSE du bandeau de liaison (flottant, non bloquant — sa matière est `.chip.tone-danger`) et la LIGNE d'attribution « sujet → siège » | Composées par les primitives de `src/ui/CoopPanels.tsx` (`CoopInvite`, `CoopCodeInput`, `CoopBanner`, `CoopAssignRow`, `SeatList`) — le salon « Jouer en ligne » et le sous-écran Coopération du menu ☰ montent les MÊMES briques. `label.coop-assign-row` renverse l'empilement de `.panel label` par l'ordre seul (poids égal 0-1-1), comme `.radio` ; jamais un `flex-direction: row` recopié ni un `!important` au site. |
 
@@ -302,7 +302,7 @@ module de sa primitive, déclaré au manifeste des primitives (champ `css`) et m
 | `coins.css` | `Coins` | `.coins[data-ton]`, `.coin-gold`, `.coin-silver`, `.coin-copper`, `.coin-sep` |
 | `inspect-panel.css` | `InspectPanel` | `.inspect-panel`, `.insp-head`, `.insp-id`, `.insp-lbl`, `.insp-badges`, `.insp-badge`, `.insp-pv-num` |
 | `equipment-panel.css` | `EquipmentPanel` | `.equip-panel`, `.equip-slots`, `.eq-*`, `.equip-sets`, `.set-*`, `.weap-quals` |
-| `combat-console.css` | `CombatConsole` (organisme) | `.combat-console` (le PONT), `.cc-phase` (+ `[data-phase]`), `.cc-dock`, `.cc-bay*`, `.cc-arsenal*`, `.cc-sets`/`.cc-set*`, `.cc-grid*`, `.cc-cell` (l'alvéole, posée à côté de `.chip`), `.cc-ico`, `.cc-lbl`, `.cc-key`, `.cc-cost`, `.cc-quick`, `.cc-arch*` (le fronton), `.cc-gutter*`, `.cc-socle`, `.cc-conduit*`, `.cc-corner`, `.cc-end` — identité et mise en page INTERNE ; la matière de la bande est la peau `.skin-pont` |
+| `combat-console.css` | `CombatConsole` (organisme) | `.combat-console` (le PONT), `.cc-phase` (+ `[data-phase]`), `.cc-dock`, `.cc-bay*`, `.cc-arsenal*`, `.cc-sets`/`.cc-set*`, `.cc-grid*`, `.cc-cell` (l'alvéole, posée à côté de `.chip`), `.cc-ico`, `.cc-lbl`, `.cc-key`, `.cc-cost`, `.cc-quick`, `.cc-arch*` (le fronton), `.cc-gutter*`, `.cc-socle`, `.cc-conduit*`, `.cc-corner`, `.cc-end` — identité et mise en page INTERNE ; la matière de la bande est la peau `.skin-pont`, celle du bandeau de phase la peau `.skin-bois` |
 | `fx-chip.css` | `FxChip` / `EffectChips` | `.fx-chips` (la rangée), `.fx-chip` (+ tons `.malus`, `.buff`, `.state`, `.more`, compte `<b>`, durée `<em>`), `.fx-chip-label` |
 | `spectator-chip.css` | `SpectatorChip` | `.spectator-chip` — l'ANCRAGE est un état de la primitive (`data-pose='ecran'`), pas une règle recopiée chez chacun de ses trois hôtes |
 | `ready-row.css` | `ReadyRow` | `.ready-row`, `.ready-chip` (+ `.ok`), `.ready-noportrait` |
@@ -327,13 +327,33 @@ porteur n'en garde que son delta — l'ombre (portée sous un pont, `inset` sur 
 `clip-path` des épaules, et le DÉCALAGE de nappe `--pont-pos` du pont léger, qui montre la même
 PROFONDEUR de bois que le pont de combat.
 
+La **peau « plaque de bois »** `.skin-bois` (`components.css`) est la troisième : la matière d'une
+PLAQUE posée sur le champ — plat de bois éclairé par le haut (`--atelier-wood-top` →
+`--atelier-wood-bottom`), filet `--wm-frame-dark`, liséré interne d'or et ombre portée sur le
+terrain. Deux boîtes la posent sur deux écrans : le rail d'outils `.hud-rail` du HUD de combat
+(`CampaignView`) et le bandeau de phase `.cc-phase` du pont (`CombatConsole`, à ses deux adresses).
+Chaque porteur n'en garde que son delta — l'ancrage du rail, l'encoche d'angle du bandeau.
+
+Le **halo de lisibilité** `.halo-champ` (`components.css`) n'est pas une peau mais le même genre de
+contrat : la double ombre d'encre d'un TEXTE posé sur un fond qu'il ne maîtrise pas (le monde nu, le
+remplissage d'une jauge), mesurée en `em` pour suivre le corps du texte. Cinq poseurs — `PlaquesDeNom`
+au-dessus d'une entité du plateau, le panneau du tiroir-journal tant que son fond reste transparent,
+l'inscription du lieu de la barre haute du HUD, le fil d'événements de combat (`CombatBanner`), le
+chiffre en surimpression de `LifeBar`. Aucune feuille ne réécrit une double ombre d'encre (garde de
+`src/ui/ui-ratchets.test.ts`). Un porteur qui RÉVÈLE un fond
+opaque éteint le halo depuis son propre module (`.log-drawer:hover .ld-panel`).
+
 Quatre classes de la famille de JET sont PARTAGÉES et vivent donc en couche d'identité (`components.css`) :
 `.seg` (segments d'`OptionChooser`, dont l'état pressé est `.seg button[aria-pressed='true']` —
 jamais un `.on`), `.prow-act` (zone d'actions d'une rangée, remplie par `RollRow` comme par
 `OptionChooser`), `.modal-log` (paragraphe de contexte d'une modale, posé par 11 écrans) et
 `.rm-options` (pile des zones de réglage du corps d'un jet, posée par 8 modales — jamais par
 `RollShell` lui-même). Le critère est mécanique : au-delà de deux poseurs hors de la primitive, la
-classe est un contrat de couche, pas la propriété d'un module (garde §5.2).
+classe est un contrat de couche, pas la propriété d'un module (garde §5.2). La MATIÈRE DU NOM
+`.codex-pop-title` / `.codex-pop-sub` y vit pour une autre raison : elle n'a qu'UN poseur,
+`CodexTitre` (`src/ui/compendium/CodexRef.tsx`), mais trois zones le montent (le popover du Codex,
+les plaques de nom du plateau, l'inscription du lieu du HUD) — la matière d'une brique que trois
+écrans montent ne peut pas vivre dans le module d'écran de l'un d'eux.
 
 **Préfixe d'une classe de la couche partagée** : une classe partagée ne garde le préfixe `rm-` que si
 TOUS ses poseurs sont des fenêtres de jet ; un seul poseur hors jet et elle se renomme sans préfixe

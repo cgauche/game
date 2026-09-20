@@ -4,8 +4,10 @@
    la largeur des deux fenêtres que l'écran monte. TOUTE l'identité du HUD vit dans le module de la
    primitive qui la POSE (#1806 2a) : portrait-tile.css, state-chips.css, initiative-strip.css,
    party-dock.css, media-select.css, objective-banner.css, log-drawer.css, view-controls.css,
-   dr-bar.css, coins.css — et la matière des commandes de coin est la peau PARTAGÉE
-   `.skin-tole[data-ton]` (components.css). ══ */
+   dr-bar.css, coins.css — et les matières partagées viennent de `components.css` : la peau
+   `.skin-tole[data-ton]` des commandes de coin, la peau `.skin-bois` de la plaque du rail, le halo
+   `.halo-champ` d'un texte posé sur le monde nu. La pile du rail et la rangée de la barre haute sont
+   les primitives de placement `Stack` et `Row` (src/ui/Layout.tsx). ══ */
 
 /* OSSATURE de l'écran : la vue en rangée, et le STAGE qui prend toute la place restante en bornant
    son débordement (le monde rendu y est absolument positionné). */
@@ -24,22 +26,14 @@
    dossier de navire et journal de bataille vissés sur UN seul plan de matière, plus aucun bouton posé
    à nu sur le champ ni dans la barre haute. Les enfants y sont STATIQUES (le rail porte l'ancrage).
    Hors combat, ces commandes vivent sur le pont d'exploration (`.exploration-dock .log-drawer`,
-   exploration-dock.css) : le rail n'est pas monté. */
+   exploration-dock.css) : le rail n'est pas monté.
+   Sa MATIÈRE est la peau partagée `.skin-bois` (components.css), sa pile et ses espacements la
+   primitive `Stack` : ce module n'en porte que l'ANCRAGE. */
 .hud-rail {
   position: absolute;
   top: 16px;
   right: 16px;
   z-index: 46;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 8px;
-  padding: 8px;
-  /* PLAQUE de bois : identité restée au module d'écran. Le même plat habille le volet de la bande
-     (`party-dock.css`) ; la peau partagée qui solde les deux est au stock de #1806. */
-  background: linear-gradient(180deg, var(--atelier-wood-top), var(--atelier-wood-bottom));
-  border: 1px solid var(--wm-frame-dark);
-  box-shadow: inset 0 1px 0 rgba(216, 185, 84, 0.14), 0 6px 20px rgba(0, 0, 0, 0.45);
 }
 /* Le tiroir ne devient statique QUE là où le rail existe (au-dessus de 700px) : sous cette largeur le
    rail se dissout et le tiroir reprend son ancrage propre — une règle non bornée gagnait en
@@ -63,10 +57,10 @@
   z-index: 60;
   /* CONTEXTE D'EMPILEMENT (#1752) : `position: absolute` + `z-index: 60` — les rangs de ses enfants
      (☰ 131 au-dessus du voile 130) se comparent ICI, jamais au rang racine où vivent les modales. */
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 6px;
+  /* La rangée et son enroulement viennent de la primitive `Row` ; la barre RESSERRE sa gouttière
+     d'un pas. La valeur se pose ICI et non en prop `gap` : `data-gap` déclare `--gap`, propriété
+     HÉRITÉE, et le menu ☰ entier vit sous cette barre (#1837). */
+  gap: var(--sp-sm);
   /* Le haut-centre appartient au GROUPE (design 2026-07-31 §2) : la pile s'arrête avant le dock,
      centré et large d'environ 242px pour quatre portraits. `50vw - 160px` = la moitié gauche moins
      la demi-largeur du dock et son air ; le plancher garde la barre utilisable sous 700px, où le
@@ -78,19 +72,16 @@
   pointer-events: auto;
 }
 /* Lieu courant : premier étage de la pile de contexte, désigné par son id de zone, jamais par une
-   classe de plus. Inscription d'or sans fond (`--font-display`, `text-shadow`) : ce n'est PAS la
-   chip `.hud-clock` de `ScreenMeta` (pilule `--panel2` à filet). Identité au stock de #1806. */
+   classe de plus. Sa MATIÈRE est celle du nom (`CodexTitre` → `.codex-pop-title`) posée sur le halo
+   partagé `.halo-champ` (components.css) : une inscription sans fond, et non la chip `.hud-clock` de
+   `ScreenMeta` (pilule `--panel2` à filet). L'écran n'en garde que le CADRAGE — la ligne unique et
+   son ellipse, bornées à la part de barre que le lieu peut prendre. */
 .hud-topbar [data-hud='place'] {
   align-self: center;
   max-width: 40vw;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--gold2);
-  font-family: var(--font-display);
-  font-size: 15px;
-  letter-spacing: 0.02em;
-  text-shadow: 0 1px 3px var(--shadow-ink), 0 0 6px var(--shadow-ink);
 }
 .game-menu {
   position: relative;
@@ -115,7 +106,7 @@
   /* La marge dégage la rangée de portraits du groupe (haut-centre), dont la boîte descend plus bas
      que celle des boutons de la barre. Elle est RELATIVE à la barre : quand celle-ci s'enroule,
      l'objectif suit. */
-  margin-top: 22px;
+  margin-top: calc(3 * var(--sp-md));
   /* La boîte tient toute la ligne, mais la SURFACE CLIQUABLE est la tête seule : le reste de la
      ligne rend la scène (`.hud-topbar > *` accorde `auto` à tous les étages de la pile). */
   pointer-events: none;
@@ -223,5 +214,5 @@
     right: 4px;
     bottom: calc(274px + env(safe-area-inset-bottom, 0px));
   }
-  .hud-topbar [data-hud='place'] { max-width: 52vw; font-size: 14px; }
+  .hud-topbar [data-hud='place'] { max-width: 52vw; }
 }

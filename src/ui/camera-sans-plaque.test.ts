@@ -24,9 +24,9 @@ describe('commandes de vue — hors du jeu, dans l’éditeur', () => {
   it('le rail d’outils est monté EN COMBAT et porte le journal + le dossier de navire, rien d’autre', () => {
     const campaignView = src('./CampaignView.tsx');
     // Le rail est gaté sur le mode bataille : hors combat, la plaque du bas est le pont d'exploration.
-    expect(campaignView).toMatch(/mode === 'battle' && \(\s*\n\s*<div className="hud-rail">/);
-    const rail = campaignView.slice(campaignView.indexOf('className="hud-rail"'));
-    const corps = rail.slice(0, rail.indexOf('</div>'));
+    expect(campaignView).toMatch(/mode === 'battle' && \(\s*\n\s*<Stack\b[^>]*className="hud-rail skin-bois"/s);
+    const rail = campaignView.slice(campaignView.indexOf('className="hud-rail skin-bois"'));
+    const corps = rail.slice(0, rail.indexOf('</Stack>'));
     expect(corps).toContain('<LogDrawer');
     // L'ouvreur du dossier porte la peau « tôle vissée » PARTAGÉE (components.css).
     expect(corps).toMatch(/className="worldmap-btn skin-tole"\s*\n\s*data-ton="laiton"/);

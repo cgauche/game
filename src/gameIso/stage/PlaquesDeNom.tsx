@@ -60,7 +60,7 @@ export function PlaquesDeNom({ halos, dims, liftAt, pions, walkPosAt }: PlaquesD
               height={PLAQUE_H}
               style={{ overflow: 'visible' }}
             >
-              <div className="plaque-nom">
+              <div className="plaque-nom halo-champ">
                 <CodexTitre title={h.label} />
               </div>
             </foreignObject>

@@ -75,7 +75,7 @@ export function LifeBar({ value, max, label, tone, color, format, overlay, stack
           } as CSSProperties}
         />
       </div>
-      {overlay && display != null && <span className="life-bar__value">{display}</span>}
+      {overlay && display != null && <span className="life-bar__value halo-champ">{display}</span>}
     </div>
   );
 }
