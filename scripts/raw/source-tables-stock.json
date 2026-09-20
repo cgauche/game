@@ -1,5 +1,5 @@
 {
-  "quoi": "Tables du `Source/` que leur FORME rend inadressables (#1384, épique #1388) : une ENTRÉE par SITE, clé `famille :: fichier :: ref :: occurrence` (régime #1711). Compte par famille à la naissance : br-litteral 403, donnee-en-tete 14, banniere-suspecte 114, cle-de-ligne-ambigue 148. CE FICHIER EST UN INVENTAIRE des sites mesurés, PLAFONNÉ en nombre d'entrées : il ne décroît que quand un site disparaît du `Source/`. La DETTE, elle, est le compte « à trier » — les entrées SANS `preuve` — et celle-là décroît vers zéro, sous son propre plafond (`PLAFOND_A_TRIER`, `check-source-tables.test.mjs`) : une entrée reçoit sa `preuve` (« PDF p.N : … ») + sa `date` le jour où sa forme est lue au PDF et jugée conforme au livre, et elle RESTE (le site existe, il est jugé). PLAN de résorption — B2 : AUCUNE migration de `Source/`. Un `<br>` de cellule est un saut de ligne IMPRIMÉ (GFM n'a pas d'autre forme) : la lib l'absorbe pour l'ADRESSAGE (`sansBr`) et le rend en `\\n` pour une cellule (`brEnSaut`), donc il ne bloque plus une adresse. Son SENS, lui, se lit AU PDF, site par site : une CÉSURE typographique se corrige en espace dans `Source/`, une liste d'items imprimée en colonne se garde telle quelle et se solde par une `preuve` sur son entrée (« PDF p.N : … » + `date`). B3 et suivants : une ZONE par train, corrigée à la main au PDF (geste `docs/ajouter-un-livre-source.md` §7) — `18 - Traumatisme`, `10 - Talents`, `61 - Encombrement`, `62 - Les armes`, `85 - Traits`, `08 - Statut`, `14 - _GoBack`, `40 - Les prières`, `46 - Les règles magiques`, `05 - _gjdgxs` du Livre de base ; zones portées par tickets existants : #1707 (table de Talents dupliquée), #1519 (`51 - Magie du Chaos` mal titré), #678 (EDOC `09 - _GoBack.md`, en-têtes orphelins). Le résidu de SCÉNARIO (hors donnée de règle) est porté par #1731. COUVERTURE DITE de `cle-de-ligne-ambigue` : elle nomme les clés partagées ENTRE tables d'une section — le périmètre d'UN geste (restituer les headings imprimés). Les clés dupliquées DANS une même table et les valeurs non-clés répétées rendent aussi `ligne-ambigue` et restent HORS de cette famille : mesuré le 2026-09-14, 145 ici, 220 au grain « clé dupliquée dans la section », 2 289 au prédicat réel de `rowsMatching` (toute valeur de cellule répétée). LIMITE DITE : `banniere-suspecte` est le résidu que la garde du parseur n'absorbe PAS. Il se ventile (mesure du 2026-09-14) en texte NON majuscule 51, bandeau MAJUSCULE sans rangée de donnée 49 (pour l'essentiel des titres de statbloc de PNJ et leurs rubriques : « ISABELLA — PROPHÈTE (BRONZE 4) », « COMPÉTENCES DE BASE »), une seule lettre 11, aucune lettre 1, et bandeau MAJUSCULE devant une table SANS en-têtes 1 (fourchette en `headers[0]`). Chacun se tranche au PDF, un par un, jamais par un élargissement de la garde qui sauterait un en-tête réel.",
+  "quoi": "Tables du `Source/` que leur FORME rend inadressables (#1384, épique #1388) : une ENTRÉE par SITE, clé `famille :: fichier :: ref :: occurrence` (régime #1711). Compte par famille à la naissance : br-litteral 403, donnee-en-tete 14, banniere-suspecte 114, cle-de-ligne-ambigue 148, table-avalee-par-titre 36. CE FICHIER EST UN INVENTAIRE des sites mesurés, PLAFONNÉ en nombre d'entrées : il ne décroît que quand un site disparaît du `Source/`. La DETTE, elle, est le compte « à trier » — les entrées SANS `preuve` — et celle-là décroît vers zéro, sous son propre plafond (`PLAFOND_A_TRIER`, `check-source-tables.test.mjs`) : une entrée reçoit sa `preuve` (« PDF p.N : … ») + sa `date` le jour où sa forme est lue au PDF et jugée conforme au livre, et elle RESTE (le site existe, il est jugé). PLAN de résorption — B2 : AUCUNE migration de `Source/`. Un `<br>` de cellule est un saut de ligne IMPRIMÉ (GFM n'a pas d'autre forme) : la lib l'absorbe pour l'ADRESSAGE (`sansBr`) et le rend en `\\n` pour une cellule (`brEnSaut`), donc il ne bloque plus une adresse. Son SENS, lui, se lit AU PDF, site par site : une CÉSURE typographique se corrige en espace dans `Source/`, une liste d'items imprimée en colonne se garde telle quelle et se solde par une `preuve` sur son entrée (« PDF p.N : … » + `date`). B3 et suivants : une ZONE par train, corrigée à la main au PDF (geste `docs/ajouter-un-livre-source.md` §7) — `18 - Traumatisme`, `10 - Talents`, `61 - Encombrement`, `62 - Les armes`, `85 - Traits`, `08 - Statut`, `14 - _GoBack`, `40 - Les prières`, `46 - Les règles magiques`, `05 - _gjdgxs` du Livre de base ; zones portées par tickets existants : #1707 (table de Talents dupliquée), #1519 (`51 - Magie du Chaos` mal titré), #678 (EDOC `09 - _GoBack.md`, en-têtes orphelins). Le résidu de SCÉNARIO (hors donnée de règle) est porté par #1731. COUVERTURE DITE de `cle-de-ligne-ambigue` : elle nomme les clés partagées ENTRE tables d'une section — le périmètre d'UN geste (restituer les headings imprimés). Les clés dupliquées DANS une même table et les valeurs non-clés répétées rendent aussi `ligne-ambigue` et restent HORS de cette famille : mesuré le 2026-09-14, 145 ici, 220 au grain « clé dupliquée dans la section », 2 289 au prédicat réel de `rowsMatching` (toute valeur de cellule répétée). LIMITE DITE : `banniere-suspecte` est le résidu que la garde du parseur n'absorbe PAS. Il se ventile (mesure du 2026-09-14) en texte NON majuscule 51, bandeau MAJUSCULE sans rangée de donnée 49 (pour l'essentiel des titres de statbloc de PNJ et leurs rubriques : « ISABELLA — PROPHÈTE (BRONZE 4) », « COMPÉTENCES DE BASE »), une seule lettre 11, aucune lettre 1, et bandeau MAJUSCULE devant une table SANS en-têtes 1 (fourchette en `headers[0]`). Chacun se tranche au PDF, un par un, jamais par un élargissement de la garde qui sauterait un en-tête réel. COUVERTURE DITE de `table-avalee-par-titre` : elle nomme la ligne de TITRE qui porte une table entière — bandeau, rangée de labels et valeurs à plat. Elle la reconnaît à ce qu'une table EST : une SÉRIE DE VALEURS CHIFFRÉES (`ATOMES_CHIFFRES_DE_TABLE`) dans une ligne longue comme une table (`ATOMES_DE_TABLE`), dont une part déborde des runs gras — le bandeau, lui, peut être gras ou nu. Restent invisibles : une table avalée trop courte, une table SANS chiffres (un index de noms, une rangée de labels seule), et celle dont l'extraction a mis jusqu'aux valeurs dans le run gras. À l'inverse, tout ce qui a la FORME d'une série de valeurs entre ici, y compris des légendes numérotées qui n'ont jamais été une table : elles se tranchent au PDF par la `preuve` de leur entrée, comme tout site, jamais par une liste de titres dans la garde.",
   "entrees": [
     {
       "famille": "banniere-suspecte",
@@ -5445,6 +5445,294 @@
       "occurrence": 1,
       "lot": "#1384 B1",
       "date": "2026-09-14"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/WH - V4 - La Mer de Griffe/03 - La cote du Nordland.md",
+      "ref": "ludolf köhler - seigneur des mers impérial (or 3) m cc ct f e i ag dex int fm soc b 4 59 34 37 40 49 48 54 44 32 51 14",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/WH - V4 - La Mer de Griffe/13 - Navigation maritime.md",
+      "ref": "navigation dans un détroit",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/WH - V4 - La Mer de Griffe/16 - Bestiaire.md",
+      "ref": "kotfotr",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/WH - V4 - La Mer de Griffe/16 - Bestiaire.md",
+      "ref": "long drong silver capitaine des pirates tueurs m cc ct f e i ag dex int fm soc b 3 72 62 56 69 40 29 32 40 71 52 30",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/WH - V4 - Le zoo imperial/01 - TROIS EXPEDITIONS.md",
+      "ref": "grand cerf",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/WH - V4 - Le zoo imperial/09 - Tregara.md",
+      "ref": "trégara",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/16 - CHAPITRE 12 - LE CARNAVAL DU PANDEMONIUM.md",
+      "ref": "index a",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/16 - CHAPITRE 12 - LE CARNAVAL DU PANDEMONIUM.md",
+      "ref": "richesses",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/16 - CHAPITRE 12 - LE CARNAVAL DU PANDEMONIUM.md",
+      "ref": "richesses",
+      "occurrence": 2,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/16 - CHAPITRE 12 - LE CARNAVAL DU PANDEMONIUM.md",
+      "ref": "richesses encombrement armes 2 armure 0 possessions 1",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/06 - Chapitre 6 - La Schaffenfest.md",
+      "ref": "heinz richter - juge humain (or 2) m cc ct f e i ag dex int fm soc b 4 23 25 36 52 60 25 49 62 58 59 18",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/08 - Chapitre 8 - Chasser les ombres.md",
+      "ref": "coupe-jarret (bronze 3)",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/12 - Annexe 3 - Documents et aides de jeux.md",
+      "ref": "document 4 de la page 28 document 8 de la page 82",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/10 - CHAPITRE 8 - LES RIVERAINS.md",
+      "ref": "sofia fischer - alevin humain (bronze 2)",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/15 - CHAPITRE 13 - Bestiaire fluvial.md",
+      "ref": "naïades",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/18 - CHAPITRE 16 - L'Empereur Luitpold.md",
+      "ref": "équipage (20) - batelier humain (argent 2)",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/00 - Index.md",
+      "ref": "appendice i [: l'entraînement](#page-139-0) [et les mentors …………………….140](#page-139-0) progression [……………………………………………140](#page-139-0) le batelier […………………………………………….140](#page-139-0) [le sorcier………………………………………………141](#page-140-0) [le médecin …………………………………………..143](#page-142-0) le rançonneur [……………………………………….144](#page-143-0)",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/03 - CHAPITRE 1 - De Bogenhafen a Altdorf.md",
+      "ref": "mutant à tentacules (bronze 0)",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/09 - CHAPITRE 7 - Chateau von Wittgenstein.md",
+      "ref": "georg hegel - ancien capitaine de la garde",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/09 - CHAPITRE 7 - Chateau von Wittgenstein.md",
+      "ref": "les tentacules (4)",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/09 - CHAPITRE 7 - Chateau von Wittgenstein.md",
+      "ref": "rats géants (4)",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/07 - LE CARNAVAL.md",
+      "ref": "le grand parc jour heure spectacle",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/10 - Fiches de PNJ.md",
+      "ref": "johann schwermutt - officier (or 1)",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/10 - Fiches de PNJ.md",
+      "ref": "karl heinz wasmeier - maître du barreau (or 1)",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "zofia miska - maître sorcier humain (or 1)",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/02 - Si un regard pouvait tuer.md",
+      "ref": "thulgrim",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/07 - _GoBack.md",
+      "ref": "jabberslythe",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/10 - COEUR DE VERRE.md",
+      "ref": "carolus entschlafen - démoniste (bronze 5)",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/22 - Les coupables.md",
+      "ref": "andreas - investigateur de verena, à la retraite",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/22 - Les coupables.md",
+      "ref": "déroulé des opérations",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/22 - Les coupables.md",
+      "ref": "jan - cocher vieillissant",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/04 - Hysh - Domaine de la Lumiere.md",
+      "ref": "marques arcaniques de hysh",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/05 - Chamon - Domaine du Metal.md",
+      "ref": "marques arcaniques de chamon",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/07 - Azyr - Domaine des Cieux.md",
+      "ref": "marques arcaniques d'azyr",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - Nuits agitees & dures journees/05 - _GoBack.md",
+      "ref": "cochers (argent 2)",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
+    },
+    {
+      "famille": "table-avalee-par-titre",
+      "fichier": "Source/Warhammer v4 - Nuits agitees & dures journees/08 - Une nuit a l'Opera.md",
+      "ref": "edwina lowenhertz - sorcière (cuivre 2)",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20"
     }
   ]
 }

@@ -722,7 +722,11 @@ Athletics 60, Dodge 60
 
 With the head of an eagle and body of a lion, demigryphs are powerful creatures with a noble bearing. They roam the forests and grasslands of the Empire, usually far from human habitation, hunting as individuals. Captive demigryphs are deployed by the Empire's doughtiest knightly orders as war mounts. Unlike larger monstrous mounts, which are generally taken when young or bred in captivity, the capture of a full-grown demigryph is a rite of passage among some orders.
 
-### **DEMIGRYPH M WS BS S T I Ag Dex Int WP Fel W** 7 45 – 55 40 30 45 – 15 25 – 30
+#### **DEMIGRYPH**
+
+| M | WS | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |
+|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+| 7 | 45 | –  | 55 | 40 | 30 | 45 | –   | 15  | 25 | –   | 30 |
 
 #### **Attacks**
 

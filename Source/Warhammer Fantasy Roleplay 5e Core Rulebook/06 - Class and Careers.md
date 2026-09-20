@@ -44,7 +44,11 @@ Every Career has an *Advance Scheme* governing its Characteristic Advances. The 
 
 The three marked h are Characteristics you can Advance in the Career's first level. When you enter a Career's second level, the Characteristic also becomes available, and so on. You can Advance any Characteristic at or below your current career level. See page 191 for how to spend XP.
 
-## **SOLDIER ADVANCE SCHEME WS BS S T I Ag Dex Int WP Fel** h h h 2
+#### **SOLDIER ADVANCE SCHEME** 2
+
+| WS | BS | S | T | I | Ag | Dex | Int | WP | Fel |
+|----|----|---|---|---|----|-----|-----|----|-----|
+| h  | h  | h |   |   |    |     |     |    |     |
 
 ## **Career Path**
 
@@ -385,7 +389,11 @@ Bailiffs enjoy a degree of autonomy, granting them ample opportunity to turn the
 
 Playing a Bailiff lets you wield your lord's authority and act in their name. You can intimidate, hold your own in a fight, and move comfortably between legal and illegal methods to get things done.
 
-## **BAILIFF ADVANCE SCHEME WS BS S T I Ag Dex Int WP Fel** h h h
+#### **BAILIFF ADVANCE SCHEME**
+
+| WS | BS | S | T | I | Ag | Dex | Int | WP | Fel |
+|----|----|---|---|---|----|-----|-----|----|-----|
+| h  |    | h |   | h |    |     |     |    |     |
 
 ## **Career Path**
 
@@ -1003,7 +1011,11 @@ Travel is central to an Envoy's life, bringing them into contact with people fro
 
 Playing an Envoy lets you wield the authority of whomever you represent, while your social acumen and eloquence means you can talk your way out of trouble and win others to your side.
 
-## **ENVOY ADVANCE SCHEME WS BS S T I Ag Dex Int WP Fel** h h h
+#### **ENVOY ADVANCE SCHEME**
+
+| WS | BS | S | T | I | Ag | Dex | Int | WP | Fel |
+|----|----|---|---|---|----|-----|-----|----|-----|
+|    |    |   | h |   |    |     | h   |    | h   |
 
 ## **Career Path**
 
@@ -1355,7 +1367,11 @@ The wood elves' knowledge of plants is legendary. In the Grey Mountains, it is s
 
 Playing a Herbalist lets you do far more than heal. Your preparations can strengthen your allies, hinder your enemies, and keep your companions alive far from civilisation. You are also at home in the wilderness, and can use your skills to ingratiate yourself in the farms and villages you encounter on your journeys.
 
-## **HERBALIST ADVANCE SCHEME WS BS S T I Ag Dex Int WP Fel** h h h
+#### **HERBALIST ADVANCE SCHEME**
+
+| WS | BS | S | T | I | Ag | Dex | Int | WP | Fel |
+|----|----|---|---|---|----|-----|-----|----|-----|
+|    |    |   |   |   | h  | h   | h   |    |     |
 
 ## **Career Path**
 
@@ -1819,7 +1835,11 @@ To dwarfs, mining is no common trade. Miners are respected artisans, prized for 
 
 Playing a Miner lets you tackle dangers that would stop others in their tracks. Your strength, toughness, and knowledge of stone make you invaluable underground, while your skills and hardy constitution serve you just as well on the road as they do beneath the mountains.
 
-## **MINER ADVANCE SCHEME WS BS S T I Ag Dex Int WP Fel** h h h
+#### **MINER ADVANCE SCHEME**
+
+| WS | BS | S | T | I | Ag | Dex | Int | WP | Fel |
+|----|----|---|---|---|----|-----|-----|----|-----|
+|    |    | h | h | h |    |     |     |    |     |
 
 ## **Career Path**
 

@@ -84,9 +84,14 @@ All Trappings have an Availability: either *Common*, *Scarce*, *Rare*, or *Exoti
 
 Once you know an item's Availability, check it on the following table to see if it is in stock.
 
-#### **AVAILABILITY Village Town City Common** In stock! In stock! In stock! **Scarce** 30% 60% 90%
+#### **AVAILABILITY**
 
-**Rare** 15% 30% 45% **Exotic** Not in stock Not in stock Not in stock
+|        | Village      | Town         | City         |
+|--------|--------------|--------------|--------------|
+| Common | In stock!    | In stock!    | In stock!    |
+| Scarce | 30%          | 60%          | 90%          |
+| Rare   | 15%          | 30%          | 45%          |
+| Exotic | Not in stock | Not in stock | Not in stock |
 
 If you fail an Availability Test for *Scarce* or *Rare* items, you can either reroll when you arrive at a new settlement or you can try again next week if the settlement is Town-size or larger.
 
@@ -875,11 +880,29 @@ Workshops also include an anvil, furnace, swage block, sledgehammers, and metal 
 
 Animals are used at all levels of society in the Empire. See **Chapter 12: Bestiary** for sample animal profiles. Like **Packs and Containers** (see page 308), all vehicles have an entry for the number of Encumbrance Points they can carry (Carries).
 
-**ANIMALS AND VEHICLES**
+#### **ANIMALS AND VEHICLES**
 
-#### **Item Cost Enc Carries Availability** Cart 20 GC – 25 Common Chicken 5d 1 0 Common Coach 150 GC – 80 Rare Coracle 2 GC 6 10 Scarce Destrier 600 GC – 20 Scarce Dog Collar 1/7 0 – Common Draught Horse 20 GC – 20 Common Homing Pigeon 1/– 1 0 Scarce Hunting Dog 2 GC – 0 Rare Light Warhorse 150 GC – 18 Common Monkey 10 GC 2 1 Rare Mule 10 GC – 14 Common Pony 40 GC – 14 Common Riding Horse 60 GC – 16 Common
-
-River Barge 225 GC – 300 Rare Row Boat 6 GC – 60 Scarce Saddle and Harness 6 GC 4 – Common Wagon 75 GC – 30 Common Worms (6) 1d 0 – Common 
+| Item               | Cost   | Enc | Carries | Availability |
+|--------------------|--------|-----|---------|--------------|
+| Cart               | 20 GC  | –   | 25      | Common       |
+| Chicken            | 5d     | 1   | 0       | Common       |
+| Coach              | 150 GC | –   | 80      | Rare         |
+| Coracle            | 2 GC   | 6   | 10      | Scarce       |
+| Destrier           | 600 GC | –   | 20      | Scarce       |
+| Dog Collar         | 1/7    | 0   | –       | Common       |
+| Draught Horse      | 20 GC  | –   | 20      | Common       |
+| Homing Pigeon      | 1/–    | 1   | 0       | Scarce       |
+| Hunting Dog        | 2 GC   | –   | 0       | Rare         |
+| Light Warhorse     | 150 GC | –   | 18      | Common       |
+| Monkey             | 10 GC  | 2   | 1       | Rare         |
+| Mule               | 10 GC  | –   | 14      | Common       |
+| Pony               | 40 GC  | –   | 14      | Common       |
+| Riding Horse       | 60 GC  | –   | 16      | Common       |
+| River Barge        | 225 GC | –   | 300     | Rare         |
+| Row Boat           | 6 GC   | –   | 60      | Scarce       |
+| Saddle and Harness | 6 GC   | 4   | –       | Common       |
+| Wagon              | 75 GC  | –   | 30      | Common       |
+| Worms (6)          | 1d     | 0   | –       | Common       |
 
 **Cart:** One driver and one draft animal required XI
 

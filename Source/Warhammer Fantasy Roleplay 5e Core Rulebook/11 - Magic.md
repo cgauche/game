@@ -226,9 +226,17 @@ If a Casting Test generates SL beyond those required to cast a spell, you can sp
 - 0 Spells with a Range of 'You' only ever target the spellcaster. Spells with a range of 'Touch' or a duration of 'Instant' or 'Special' may not be extended. Spells with no Area of Effect may not have their area increased.
 - 0 Petty Spells cannot be Overcast.
 
-#### **OVERCAST TABLE SL Targets Damage Range AoE Duration** 1 +1 +1 Damage x 2 - - 2 +2 Damage 3 +3 Damage x 2 x 2 5 +2 +4 Damage 8 +5 Damage x 3 13 +6 Damage x 3
+#### **OVERCAST TABLE**
 
-18+ +3 +7 Damage x 4 x 3
+| SL  | Targets | Damage    | Range | AoE | Duration |
+|-----|---------|-----------|-------|-----|----------|
+| 1   | +1      | +1 Damage | x 2   | -   | -        |
+| 2   | +1      | +2 Damage | x 2   | -   | x 2      |
+| 3   | +1      | +3 Damage | x 2   | x 2 | x 2      |
+| 5   | +2      | +4 Damage | x 3   | x 2 | x 2      |
+| 8   | +2      | +5 Damage | x 3   | x 2 | x 3      |
+| 13  | +2      | +6 Damage | x 3   | x 2 | x 3      |
+| 18+ | +3      | +7 Damage | x 4   | x 3 | x 3      |
 
 #### **TYPES OF MAGIC IN THE OLD WORLD**
 

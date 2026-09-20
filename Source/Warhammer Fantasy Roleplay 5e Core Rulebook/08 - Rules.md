@@ -1226,7 +1226,7 @@ Combat follows these steps until one side flees or is defeated:
 - 2. **Round Begins:** If the rules call for something to happen at the start of the Round, it happens now.
 - 3. **Characters Take Turns:** Each combatant takes a Turn in Combat Initiative order, starting with the highest *Initiative*. Each Character can normally perform a Move and an Action on their Turn (see page 162).
 - 4. **Round Ends:** The Round ends when all combatants have taken a Turn. If the rules call for something to happen at the end of the Round, it happens now.
-- 5. **Repeat Steps 2–5 As Required:** Continue to play through
+- 5. **Repeat Steps 2–5 As Required:** Continue to play through Rounds until the combat is resolved.
 
 # **Combat Initiative Order** V
 
@@ -1242,7 +1242,7 @@ Catching your enemies unawares can give you a decisive advantage. Characters mig
 
 If there is a chance the ambushers will be detected, make an Opposed Stealth/Perception Test, usually between the worst Stealth among the ambushers and the best Perception among their opponents. If the ambushers win, each opponent gains the *Surprised* Condition (page 187). Otherwise, combat begins normally.
 
-# Rounds until the combat is resolved. **ROUNDS OUTSIDE COMBAT**
+# **ROUNDS OUTSIDE COMBAT**
 
 Outside combat, actions do not usually need to be resolved in Rounds. The GM may use them whenever timing matters or to ensure everyone has a chance to act, however, such as during an Extended Test (page 131).
 
@@ -2290,7 +2290,15 @@ You are wrapped in something restricting your movement; it could be ropes, spide
 
 If you have an *Entangled* Condition as a result of being caught up with something that doesn't have a Strength characteristic, refer to the **Strength of Materials** Table to decide the Strength to use in an opposed test.
 
-# **STRENGTH OF MATERIALS Material Strength** Wool 10 Twine 25 Rope 45 Manacles 65 Heavy Iron Chain 105
+#### **STRENGTH OF MATERIALS**
+
+| Material         | Strength |
+|------------------|----------|
+| Wool             | 10       |
+| Twine            | 25       |
+| Rope             | 45       |
+| Manacles         | 65       |
+| Heavy Iron Chain | 105      |
 
 #### **Fatigued**
 

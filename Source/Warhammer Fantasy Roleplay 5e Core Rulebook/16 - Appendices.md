@@ -185,7 +185,15 @@ You are wrapped in something restricting your movement. You may not Move, and al
 
 If you have an *Entangled* Condition as a result of being caught up in some material, refer to the **Strength of Materials** Table to decide the Strength to use in an opposed test.
 
-# **STRENGTH OF MATERIALS Material Strength** Wool 10 Twine 25 Rope 45 Manacles 65 Heavy Iron Chain 105
+#### **STRENGTH OF MATERIALS**
+
+| Material         | Strength |
+|------------------|----------|
+| Wool             | 10       |
+| Twine            | 25       |
+| Rope             | 45       |
+| Manacles         | 65       |
+| Heavy Iron Chain | 105      |
 
 # **Fatigued (page 186)**
 

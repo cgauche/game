@@ -45,7 +45,59 @@ export const FAMILLES = [
   'donnee-en-tete',
   'banniere-suspecte',
   'cle-de-ligne-ambigue',
+  'table-avalee-par-titre',
 ]
+
+/** Nombre d'ATOMES (suites de non-espaces) d'une ligne de titre à partir duquel elle porte une
+ *  TABLE : un bandeau, sa rangée de labels et ses valeurs ne tiennent pas en moins. */
+const ATOMES_DE_TABLE = 10
+/** Nombre d'atomes PORTEURS DE CHIFFRE qu'il faut pour que la série soit des VALEURS et non une
+ *  date, un horaire ou un renvoi de page glissés dans un intitulé. */
+const ATOMES_CHIFFRES_DE_TABLE = 3
+const SPANS_DE_LIGNE = /<\/?span[^>]*>/g
+const TITRE = /^#{1,6}\s+(\S.*)$/
+const RUN_GRAS = /\*\*[^*]*\*\*/g
+const decouper = (s) => s.split(/\s+/).filter(Boolean)
+
+/** Le premier SEGMENT d'un titre : le texte NU qui précède son premier run gras s'il y en a un,
+ *  sinon ce premier run gras, sinon (aucun gras) le titre entier. C'est le BANDEAU tel que la page
+ *  l'imprime, quelle que soit la façon dont l'extraction a réparti l'emphase. */
+function segmentDeTete(corps) {
+  const i = corps.indexOf('**')
+  if (i < 0) return corps
+  const nu = corps.slice(0, i).trim()
+  if (nu) return nu
+  const gras = /\*\*(.+?)\*\*/.exec(corps)
+  return gras ? gras[1] : corps
+}
+
+/**
+ * Un TITRE qui porte une TABLE : l'extraction a effondré le bandeau, la rangée de labels et les
+ * valeurs sur la ligne du heading, et la table n'existe plus (aucune autre famille ne la voit —
+ * elles ne mesurent que des tables). Ce que la classe a de propre, c'est ce qu'une table EST : une
+ * SÉRIE DE VALEURS CHIFFRÉES (`ATOMES_CHIFFRES_DE_TABLE`) dans une ligne longue comme une table
+ * (`ATOMES_DE_TABLE`), dont une part reste HORS des runs gras — l'extraction met le bandeau et les
+ * labels en gras, les valeurs en clair, et un titre dont RIEN ne déborde de son gras est un
+ * intitulé, si long soit-il. Le bandeau peut donc être gras ou nu, la garde ne s'en soucie pas.
+ * COUVERTURE DITE : ce détecteur ne voit pas une table avalée trop courte, ni une table SANS
+ * chiffres (un index de noms, une rangée de labels seule), ni une table dont l'extraction a mis
+ * jusqu'aux valeurs à l'intérieur du run gras. Il nomme en revanche tout ce qui a la FORME d'une
+ * série de valeurs, y compris des légendes numérotées qui n'ont jamais été une table : celles-là se
+ * tranchent au PDF, une par une, par la `preuve` de leur entrée — jamais par une liste de titres.
+ * L'ornement de gouttière collé à un titre (`# **MANTICORE** XII`), le titre courant fusionné
+ * (`#### **PROSTHETICS** XI **MAGICAL ITEMS**`) et l'intitulé qui porte son horaire sont écartés
+ * par CONSTRUCTION : trop courts, ou sans série chiffrée (mobilier de page, #1739).
+ * @param {string} ligne la ligne BRUTE du `.md` @returns {string|null} la RÉF du site, ou `null`
+ */
+export function titreAvalantUneTable(ligne) {
+  const m = TITRE.exec(String(ligne).replace(SPANS_DE_LIGNE, '').trim())
+  if (!m) return null
+  const atomes = decouper(m[1].replace(/\*\*/g, ' '))
+  if (atomes.length < ATOMES_DE_TABLE) return null
+  if (atomes.filter((a) => /\d/.test(a)).length < ATOMES_CHIFFRES_DE_TABLE) return null
+  if (decouper(m[1].replace(RUN_GRAS, ' ')).length === 0) return null
+  return normText(segmentDeTete(m[1]))
+}
 
 /** RÉF d'une table : sa section et ses en-têtes NORMALISÉS — du contenu, jamais une position.
  *  Le `<br>` littéral y compte pour une ESPACE sans aucun traitement local : `normText` compose
@@ -66,7 +118,12 @@ export const cleDeLigne = (row) => normText(row.find((c) => c.trim()) ?? '')
 export function sitesDuChapitre(texte, file) {
   const out = []
   const chapitre = parseChapitre(texte)
+  // Ligne BRUTE du heading (`section.line`) : le run gras y est encore lisible, là où `title` l'a
+  // déjà effacé (`cleanTitle`, `src/data/source/decoupe.ts`).
+  const lignes = texte.replace(/\r\n?/g, '\n').split('\n')
   for (const section of chapitre.sections) {
+    const avalee = section.level > 0 ? titreAvalantUneTable(lignes[section.line - 1] ?? '') : null
+    if (avalee) out.push({ famille: 'table-avalee-par-titre', file, ref: avalee })
     const tables = tablesOf(section)
     for (const { table } of tables) {
       const ref = refDeTable(section.slug, section.occ, table.headers)
@@ -229,7 +286,16 @@ const QUOI = (comptes) =>
   '« ISABELLA — PROPHÈTE (BRONZE 4) », « COMPÉTENCES DE BASE »), une seule lettre 11, aucune ' +
   'lettre 1, et bandeau MAJUSCULE devant une table SANS en-têtes 1 (fourchette en `headers[0]`). ' +
   'Chacun se tranche au PDF, un par un, jamais par un élargissement de la garde qui sauterait un ' +
-  'en-tête réel.'
+  'en-tête réel. ' +
+  'COUVERTURE DITE de `table-avalee-par-titre` : elle nomme la ligne de TITRE qui porte une table ' +
+  'entière — bandeau, rangée de labels et valeurs à plat. Elle la reconnaît à ce qu\'une table EST : ' +
+  'une SÉRIE DE VALEURS CHIFFRÉES (`ATOMES_CHIFFRES_DE_TABLE`) dans une ligne longue comme une ' +
+  'table (`ATOMES_DE_TABLE`), dont une part déborde des runs gras — le bandeau, lui, peut être gras ' +
+  'ou nu. Restent invisibles : une table avalée trop courte, une table SANS chiffres (un index de ' +
+  'noms, une rangée de labels seule), et celle dont l\'extraction a mis jusqu\'aux valeurs dans le ' +
+  'run gras. À l\'inverse, tout ce qui a la FORME d\'une série de valeurs entre ici, y compris des ' +
+  'légendes numérotées qui n\'ont jamais été une table : elles se tranchent au PDF par la `preuve` ' +
+  'de leur entrée, comme tout site, jamais par une liste de titres dans la garde.'
 
 /** Rend le CONTENU du fichier de stock pour des sites mesurés (source unique de sa forme). */
 export const stockDe = (sites, { lot, date, ancien = [] }) =>

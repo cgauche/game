@@ -79,6 +79,80 @@ test('banniere-suspecte : la bannière que le parseur REFUSE est un site ; celle
   assert.deepEqual(familles(sansEnTetes), ['banniere-suspecte'])
 })
 
+// `table-avalee-par-titre` : toutes les lignes ci-dessous sont des FIXTURES — recopiées à la main,
+// jamais lues au disque. Les deux constantes du détecteur (longueur, série chiffrée) sont encadrées
+// par leurs DEUX bornes : la ligne de n−1 ne sort pas, celle de n sort, et rien d'autre ne les
+// sépare.
+const AVALEE = 'table-avalee-par-titre'
+const chapitreDe = (ligne) => ['## Section', '', ligne].join('\n')
+const estAvalee = (ligne) => familles(chapitreDe(ligne)).includes(AVALEE)
+const refsAvalees = (texte) =>
+  sitesDuChapitre(texte, FICHIER).filter((s) => s.famille === AVALEE).map((s) => s.ref)
+
+test('table-avalee-par-titre : la BORNE de longueur — 9 atomes ne portent pas une table, 10 oui', () => {
+  assert.equal(estAvalee('#### GRAND CERF **M CC** 7 45 40 30 32'), false, '9 atomes')
+  assert.equal(estAvalee('#### GRAND CERF **M CC CT** 7 45 40 30 32'), true, '10 atomes')
+})
+
+test('table-avalee-par-titre : la BORNE de la série chiffrée — 2 valeurs ne font pas une table, 3 oui', () => {
+  assert.equal(estAvalee('#### GRAND CERF **M CC CT F E** 7 45 - -'), false, '11 atomes, 2 chiffrés')
+  assert.equal(estAvalee('#### GRAND CERF **M CC CT F E** 7 45 40 -'), true, '11 atomes, 3 chiffrés')
+})
+
+test('table-avalee-par-titre : le bandeau peut être NU devant sa rangée de labels grasse', () => {
+  const nu = '#### GRAND CERF **M CC CT F E I Ag Dex Int FM Soc B** 7 45 - 45 40 30 30 - 20 40 - 32'
+  assert.deepEqual(familles(chapitreDe(nu)), [AVALEE])
+  // La RÉF est le premier SEGMENT : le texte NU l'emporte sur le run gras qui le suit.
+  assert.deepEqual(refsAvalees(chapitreDe(nu)), ['grand cerf'])
+})
+
+test('table-avalee-par-titre : le bandeau peut aussi être GRAS — la RÉF est alors son premier run', () => {
+  const gras = '### **DEMIGRYPH M WS BS S T I Ag Dex Int WP Fel W** 7 45 – 55 50 40 45 – 25 35 20 30'
+  assert.deepEqual(familles(chapitreDe(gras)), [AVALEE])
+  assert.deepEqual(refsAvalees(chapitreDe(gras)), ['demigryph m ws bs s t i ag dex int wp fel w'])
+})
+
+test('table-avalee-par-titre : un titre SANS aucun gras est vu, et sa RÉF est le titre entier', () => {
+  const sansGras = '#### LUDOLF KÖHLER - SEIGNEUR DES MERS IMPÉRIAL (OR 3) M CC CT F E I Ag Dex Int FM Soc B 4 59 34 37 40 49 48 54 44 32 51 14'
+  assert.deepEqual(familles(chapitreDe(sansGras)), [AVALEE])
+  assert.deepEqual(refsAvalees(chapitreDe(sansGras)), [
+    'ludolf köhler - seigneur des mers impérial (or 3) m cc ct f e i ag dex int fm soc b 4 59 34 37 40 49 48 54 44 32 51 14',
+  ])
+})
+
+test('table-avalee-par-titre : la RÉF ne porte aucune position — un paragraphe inséré ne la bouge pas', () => {
+  const avale = ['## Magie', '', '#### **OVERCAST TABLE SL Targets Damage Range AoE Duration** 1 +1 +1 Damage x 2 - - 2 +2 Damage'].join('\n')
+  assert.deepEqual(refsAvalees(avale), ['overcast table sl targets damage range aoe duration'])
+  assert.deepEqual(refsAvalees(avale.replace('####', 'Un paragraphe de plus.\n\n####')), refsAvalees(avale))
+
+  const restitue = [
+    '## Magie', '', '#### **OVERCAST TABLE**', '',
+    '| SL | Targets | Damage |', '| --- | --- | --- |', '| 1 | +1 | +1 Damage |',
+  ].join('\n')
+  assert.deepEqual(familles(restitue), [])
+})
+
+test('table-avalee-par-titre : un titre ENTIÈREMENT gras est un intitulé, si long et chiffré soit-il', () => {
+  // Ce qui distingue une table, c'est que ses VALEURS débordent du bandeau. Rien hors du gras : rien
+  // à recoller. Écarté par CONSTRUCTION, jamais par une liste de titres.
+  assert.equal(estAvalee('#### **Le tournoi de Middenball (Backertag & Bezahltag, de 15h à 20h, Konigstag, de 14h à 19h, Angestag, de 14h à 16h)**'), false)
+  assert.equal(estAvalee('#### **Ennio Mordini (2369 CI à 2411 CI puis 2416 CI à ce jour)**'), false)
+  assert.equal(estAvalee('#### **AVAILABILITY Village Town City Common Scarce Rare Exotic Village Town City**'), false)
+})
+
+test('table-avalee-par-titre : le MOBILIER de page et les intitulés ne sont PAS de la classe (#1739)', () => {
+  // Trop courts, ou sans série chiffrée : aucun n'est nommé par une liste.
+  for (const ligne of [
+    '# **MANTICORE** XII',
+    '#### **PROSTHETICS** XI **MAGICAL ITEMS**',
+    '#### **Toughness Bonus:** 3',
+    '### **Art (Dex)** *basic, grouped*',
+    '# **Purple Pall of** *Shyish*',
+    '#### **SOLDIER ADVANCE SCHEME** 2',
+    "# **La Pièce de Théâtre** *Songe d'une nuit d'épée* **(Wellentag, de 19h à 21h)**",
+  ]) assert.equal(estAvalee(ligne), false, ligne)
+})
+
 test('cle-de-ligne-ambigue : une clé partagée par DEUX tables de la même section est un site, une par clé', () => {
   const texte = [
     '## Traumatisme',
@@ -174,12 +248,12 @@ test('#1825 le rendu du stock est INDIFFÉRENT à l’ordre du registre (registr
 // PLAFOND de la dette (jamais dans la lib de stock : il vit ICI, cf. `scripts/guards/lib/stock.mjs`).
 // Il ne monte QUE par une édition de cette ligne, sous `CLIQUET:` — il n'est pas le compte du jour,
 // il est la borne que le jour ne doit pas franchir.
-const PLAFOND = 679
+const PLAFOND = 715
 
 // PLAFOND de la DETTE, distinct du précédent : le fichier de stock est un INVENTAIRE des sites
 // mesurés (il ne décroît qu'en corrigeant `Source/`), la dette est ce qui reste À TRIER — les entrées
 // sans `preuve`. Celle-là descend à CHAQUE preuve lue au PDF, et ne monte que sous `CLIQUET:`.
-const PLAFOND_A_TRIER = 666
+const PLAFOND_A_TRIER = 702
 
 test('stock COMMITTÉ : PLAFOND de la DETTE — « à trier » (entrées sans preuve) ne remonte jamais', () => {
   const { aTrier, verifies } = comptesDeTri(readStock(STOCK_PATH))
