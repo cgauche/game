@@ -13,12 +13,12 @@ import { readFileSync } from 'node:fs';
 import { listerArbre } from '../../../../scripts/guards/lib/lister.mjs';
 import { conditionSchema } from './mecanique';
 
-/** Nombre de `compare` authorés dans les deux racines, MESURÉ (2026-08-24) : 29 sous `src/data`,
+/** Nombre de `compare` authorés dans les deux racines, MESURÉ (2026-09-20) : 30 sous `src/data`,
  *  0 sous `src/scenes` — le scan couvre quand même les deux, pour que la première Condition
  *  authorée EN SCÈNE entre par ici. Le compte évolue avec la donnée : s'il change, vérifier que les
  *  nouvelles occurrences sont VERTES ci-dessous, puis le recaler — jamais l'assouplir en
  *  `toBeGreaterThan`. */
-const COMPARE_AUTHORES = 29;
+const COMPARE_AUTHORES = 30;
 
 const fichiersJson = (racine: string): string[] =>
   listerArbre(racine, { filtre: (rel) => rel.endsWith('.json') }).map((rel) => `${racine}/${rel}`);

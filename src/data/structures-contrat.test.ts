@@ -1694,7 +1694,9 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     // Côté `tables.json` : 1 `money` (l'AMENDE des gardes locaux — `LDB 09 l.97` nomme l'ennui sans le
     // chiffrer, le montant vit en règle optionnelle `mendier-amende-sous`), 1 `condition` et 1 `wounds`
     // (la rançon des autres mendiants).
-    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2279);
+    // #1678 (2026-09-20) : 2279 → 2280 — le verrou de TYPE d'À Terre (`LDB 18 l.15`) descend en DONNÉE
+    // (`etats.json › lockedUntil`) : c'est un `compare`, et son `op` compte ici.
+    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2280);
     // #684 L4+solde : +2 Conditions sans `op` — le MÊME drapeau de révélation d'Altdorf porté par ses
     // deux axes sur la carte du chapitre 1 : le `when` du LIEU et le `when` de la ROUTE.
     // #717 : +1 Condition sans `op` — le `when` de la CLÔTURE du chapitre 1 (`narratif.cloture`), le

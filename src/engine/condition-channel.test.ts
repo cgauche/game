@@ -84,6 +84,16 @@ describe("op 'condition' → canal onCondition (l'id part avec la ligne)", () =>
     expect(seen).toEqual([{ stateId: COND.extenue, change: 'loss', targetId: 'h' }]);
   });
 
+  // LDB 16 l.76 : la demande de retrait peut excéder les pions portés — ligne et canal suivent le retrait EFFECTIF.
+  it("op 'removeCondition' de valeur 2 sur UN seul pion : la ligne dit 1, et une seule perte sort", () => {
+    const c = hero();
+    addCondition(c, COND.empoisonne, 1);
+    const { lines, seen } = withSpy((emit) => applyOps(c, [{ op: 'removeCondition', id: COND.empoisonne, value: 2 }], { onCondition: emit }));
+    expect(lines).toEqual(['Cobaye retire 1 État Empoisonné.']);
+    expect(seen).toEqual([{ stateId: COND.empoisonne, change: 'loss', targetId: 'h' }]);
+    expect(hasCondition(c, COND.empoisonne)).toBe(false);
+  });
+
   // Un État VERROUILLÉ (LDB 18) ne part pas : l'op ne peut ni l'annoncer au journal ni notifier une
   // perte qui n'a pas eu lieu — le canal suit le RETRAIT EFFECTIF, mesuré aux pions.
   it("op 'removeCondition' sur un État VERROUILLÉ : ni ligne, ni perte", () => {

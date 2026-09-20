@@ -99,19 +99,7 @@ const doc = document(
   { exiges: ['desc', 'source'] },
 );
 
-/** Un verrou de TYPE et sa RAISON vont ENSEMBLE : un verrou muet laisserait la case refuser sans dire
- *  pourquoi, une raison sans verrou ne serait jamais lue. */
-export const schema = doc.schema.superRefine((entrees, ctx) => {
-  for (const e of entrees as { id?: string; lockedUntil?: unknown; lockedReason?: unknown }[]) {
-    if ((e.lockedUntil != null) === (e.lockedReason != null)) continue;
-    ctx.addIssue({
-      code: 'custom',
-      path: [e.lockedUntil != null ? 'lockedReason' : 'lockedUntil'],
-      message: `État « ${String(e.id ?? '?')} » : « lockedUntil » (verrou de TYPE) et « lockedReason » `
-        + '(ce que le joueur lit quand il tient) se déclarent ENSEMBLE — ajouter le champ manquant, ou retirer l’autre.',
-    });
-  }
-});
+export const schema = doc.schema;
 export const meta = doc.meta;
 
 export const exposition = doc.exposition;

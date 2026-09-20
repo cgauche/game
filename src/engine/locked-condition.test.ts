@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import type { Combatant, ConditionUnlock } from './types';
 import type { Condition } from './flowCore';
 import { addCondition, removeCondition, hasCondition, stacks, isConditionLocked, raisonVerrouEtat, releaseConditionLocks, hasSurgeryLockedCondition } from './conditions';
@@ -9,7 +9,8 @@ import { spellOps } from './flowCore';
 import miscastJson from '../data/miscast.json';
 import { gameOpSchema } from '../data/schemas/grammaire/mecanique';
 import { schema as etatsSchema } from '../data/schemas/defs/etats';
-import { findConditionById } from '../data';
+import { etats, findConditionById } from '../data';
+import { resetData, setDataset } from '../data/overrides';
 
 /** Toutes les rangées de Blessure critique, les 8 documents-tables confondus (LDB + Aux Armes) —
  *  la lecture ne nomme aucune famille : un 9ᵉ tableau y entre sans une ligne. */
@@ -284,27 +285,36 @@ describe('verrou de TYPE — une instance NUE de l’État en hérite', () => {
 });
 
 /**
- * PORTES DE PARSE du verrou de TYPE et de son soin : ce que la donnée ne peut pas dire, elle ne peut
- * pas le naître. Un verrou MUET (sans raison) refuserait sans dire pourquoi ; un soin NUL se dit par
- * l'absence du champ (`LDB 17 l.61`).
+ * Le verrou de TYPE (`lockedUntil`) est la DONNÉE du verrou ; `lockedReason` n'en est que le libellé,
+ * chacun authorable SEUL au Codex. Sans libellé, le moteur rend la raison générique (`cond.locked`).
+ * Un soin de Détermination NUL, lui, se dit par l'absence du champ (`LDB 17 l.61`).
  */
-describe('etats.json — verrou de type et soin de Détermination, au parse', () => {
+describe('etats.json — verrou de type sans libellé, et soin de Détermination', () => {
   const etat = (extra: Record<string, unknown>) => ([{
     id: 'x', type: 'etats', label: 'X', desc: 'x', source: { book: 'livre-de-base', page: 1 }, ...extra,
   }]);
-  const pbPleins = { kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 };
-  const messages = (r: ReturnType<typeof etatsSchema.safeParse>) => (r.success ? '' : r.error.issues.map((i) => i.message).join('\n'));
+  const pbPleins = { kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 } as const;
 
-  it('un verrou SANS raison est refusé, en nommant l’État — et l’inverse aussi', () => {
-    const muet = etatsSchema.safeParse(etat({ lockedUntil: pbPleins }));
-    expect(muet.success).toBe(false);
-    expect(messages(muet)).toContain('« x »');
-    expect(messages(muet)).toContain('lockedReason');
-    expect(etatsSchema.safeParse(etat({ lockedReason: 'parce que' })).success, 'une raison sans verrou n’est jamais lue').toBe(false);
+  afterEach(() => resetData());
+
+  it('chaque champ du verrou s’authore SEUL, et un verrou sans libellé rend la raison générique', () => {
+    expect(etatsSchema.safeParse(etat({ lockedUntil: pbPleins })).success).toBe(true);
+    expect(etatsSchema.safeParse(etat({ lockedReason: 'parce que' })).success).toBe(true);
+    setDataset('etats', etats.map((e) => (e.id === 'sonne' ? { ...e, lockedUntil: pbPleins as unknown as Condition } : e)));
+    const c = mk();
+    c.wounds.current = 0;
+    addCondition(c, 'sonne', 1);
+    const inst = c.conditions.find((x) => x.id === 'sonne')!;
+    expect(isConditionLocked(inst, c), 'le verrou de TYPE tient, libellé ou non').toBe(true);
+    expect(raisonVerrouEtat(inst, c)).toBe(t('cond.locked'));
+    // TÉMOIN — l'État qui PORTE son libellé authoré rend celui-là, jamais le générique.
+    const d = mk();
+    d.wounds.current = 0;
+    addCondition(d, 'a-terre', 1);
+    expect(raisonVerrouEtat(d.conditions[0], d)).toBe(findConditionById('a-terre')!.lockedReason);
   });
 
-  it('le COUPLE complet passe ; un soin de Détermination nul ou fractionnaire est refusé', () => {
-    expect(etatsSchema.safeParse(etat({ lockedUntil: pbPleins, lockedReason: 'parce que' })).success).toBe(true);
+  it('un soin de Détermination nul ou fractionnaire est refusé', () => {
     expect(etatsSchema.safeParse(etat({ resolveHeals: 1 })).success).toBe(true);
     expect(etatsSchema.safeParse(etat({ resolveHeals: 0 })).success, '0 n’est pas un soin : l’absence du champ le dit').toBe(false);
     expect(etatsSchema.safeParse(etat({ resolveHeals: 1.5 })).success).toBe(false);
