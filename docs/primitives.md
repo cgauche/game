@@ -27,7 +27,7 @@ manifeste est invisible ici, et rien ne la révèle sauf le hook `new-src-file-g
 mord qu'à la CRÉATION d'un `.tsx` de `src/ui`/`src/gameIso` — un module `.ts`, un fichier antérieur
 au hook, ou une primitive née ailleurs n'y passent jamais.
 
-90 primitives.
+93 primitives.
 
 | Besoin | Primitive | Fichier | CSS possédé | Périmètre | Verrou |
 |---|---|---|---|---|---|
@@ -51,6 +51,7 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | le DÉ comme matière : gemme, chiffre gravé, roulis, matière dorée, scène centrale qui voile son hôte | `DiceRoll` | `src/ui/DiceRoll.tsx` | `src/ui/styles/dice-roll.css` | roulis d’une fenêtre de jet, encrier du créateur, d100 textuel d’une ligne de jet | aucune face de dé redessinée hors de ce module (tone="gold" couvre l’Atelier) |
 | barre de Test ÉTENDU (LDB 154) : DR cumulés vers la cible, cran de seuil, valeur gravée | `DrBar` | `src/ui/DrBar.tsx` | `src/ui/styles/dr-bar.css` | toute épreuve étendue (rituel, poursuite, jeu de taverne) | — |
 | panneau d’ÉQUIPEMENT : emplacements en cellules (localisation × couche) + cartes de set d’armes + récap en main | `EquipmentPanel` | `src/ui/EquipmentPanel.tsx` | `src/ui/styles/equipment-panel.css` | onglet Possessions de la fiche de personnage | aucun mannequin (mort, #492) — le rig grand format vit dans la colonne de la fiche |
+| filet d’un crash de RENDU : capture, journalise, et montre un panneau de reprise en français au lieu de l’écran noir | `SceneErrorBoundary` | `src/ui/SceneErrorBoundary.tsx` | `src/ui/styles/error-boundary.css` | autour du stage (scène iso/POV), autour de tout l’écran de jeu (#225) | seule forme possible est une classe React (`componentDidCatch`) ; l’erreur part à `recordError`, source unique du bandeau DEV |
 | cadre-figurine unique : boîte à hauteur fixe, nom et compte dessous, sceau optionnel ; variante hero = présence plein format, prop zoneBadges donnant un badge par HitLocation ancré anatomiquement (l'appelant fournit la donnée par zone, jamais la position) | `FigTile` | `src/ui/FigTile.tsx` | `src/ui/styles/frames.css` | races, carrières, candidats, colonne aside de la fiche | seule définition des classes fig-tile (src/ui/styles/frames.css) ; AUCUNE ambiance CharacterPreview exposée (la tuile porte SA matière) ; réflexe avant tout cadre dans un cadre |
 | lookup d'une table d100 par fourchette [min,max] | `findTableEntry` | `src/engine/tables.ts` | — | toute table à fourchettes RAW | table-lookup-guard.test.ts |
 | dispatcher UNIQUE d'effet déclenché (donnée) | `fireTriggers` | `src/state/triggeredEffects.ts` | — | Trait/Talent/Atout/État pour un Trigger | triggered-effects.test.ts (dispatcher unique) |
@@ -61,6 +62,7 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | édition d'une liste de GameOp[] | `GameOpEditor` | `src/ui/editor/GameOpEditor.tsx` | — | sorts, effets déclenchés, passifs, consommables, activités ; repris par EffectList et FlowEditor | no-json-fields.test.ts |
 | LE PLATEAU : la surface du monde (caméra responsive) et les animations de ce qui vit dessus | `GameStage3D` | `src/gameIso/stage/GameStage3D.tsx` | `src/gameIso/anim.css` | campagne, arène, plan top-down — halos de décor, chiffres de dégâts, fourmis de gabarit | gameIso/stage/anim-css-branchee.test.ts — les keyframes sont importées par l’hôte du monde |
 | action dont l’indisponibilité porte sa raison au survol, au focus et au tap | `GatedAction` | `src/ui/GatedAction.tsx` | — | toute action refusable de la console et des écrans | aria-disabled et jamais disabled ; raison inline seulement sur opt-in |
+| liste de butin ATTRIBUABLE : une ligne par objet — nom, aura magique, qualités révélées, actions de révélation, attribution par portrait | `GearAssignList` | `src/ui/GearAssignList.tsx` | `src/ui/styles/gear-assign-list.css` | écran de victoire, fenêtre de butin hors combat | Évaluer (LDB 59 l.41) et Détecter (LDB 10 l.336) sont des ACTIONS de l'appelant — la liste ne résout aucun Test |
 | registre-par-defs auto-chargé (dépose un fichier → intégré) | `gen-registry (_registry.generated)` | `scripts/gen-registry.mjs` | — | tout dataset extensible (créatures, tenues, armes, sons, icônes…) | npm run gen && git diff --exit-code |
 | grille de sélection en sections par famille ou classe, role listbox et roving tabindex | `GroupedPickGrid` | `src/ui/GroupedPickGrid.tsx` | — | tout picker groupé | — |
 | corps de fiche héros : en-tête figurine, caractéristiques et dérivées, forces seuillées, chips codex | `HeroSheet` | `src/ui/HeroSheet.tsx` | `src/ui/styles/hero-sheet.css` | résumé du créateur, écran de groupe | réflexe avant toute fiche de personnage recodée |
@@ -99,6 +101,7 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | attaque gratuite déclenchée, kind-agnostique | `resolveFreeAttacks` | `src/state/combatFlow.ts` | — | toute source de Frappe réactive/Assaut féroce/Trait/État | creatureFreeAttacks.test.ts |
 | résolution rendu + dispatch backend | `resolveRender/tokenBodyKind` | `src/gameIso/rig/bodyPlan.ts` | — | tout rendu iso/POV/portrait | eslint.config.js |
 | corps d’une RÉVÉLATION tirée sur table : valeurs du coup, États infligés, chaque effet avec son explication RAW | `RevealBody` | `src/ui/RevealBody.tsx` | `src/ui/styles/reveal-body.css` | Coup Critique, Imparfaite, Mutation — étape d’affichage comme étape de choix de déviation | — |
+| récapitulatif de GAIN : messages d’ambiance, récompenses chiffrées, rubriques titrées, geste de sortie | `RewardRecap` | `src/ui/RewardRecap.tsx` | `src/ui/styles/reward-recap.css` | fin de combat (victoire), fouille hors combat (butin) | un compteur à ZÉRO ne s’affiche jamais nu (#377) — l’appelant ne passe que ce qui est gagné |
 | visage d’un combattant vu de FACE, bordure = identité d’équipe (couleur + forme du trait, R9) | `RigPortrait` | `src/ui/RigPortrait.tsx` | `src/ui/styles/rig-portrait.css` | tuile de portrait, frise d’initiative, bande de groupe, console, fiche | le corps et le cadrage viennent de `tokenBodyKind(…, "top")`, partagés avec le pion de la carte |
 | ligne d’un jet : nom + Difficulté, calcul, dé, DR, chips de modificateurs, états (pré-jet, masqué, sur table) | `RollLine` | `src/ui/RollLine.tsx` | `src/ui/styles/roll-line.css` | toute ligne de jet — rangée de RollShell, panneau de RollPanel, pile de MultiRollList, révélation | roll-display-contract.test.ts |
 | panneau de jet unique : même géométrie avant et après le jet (portrait, ligne, note de conséquence) | `RollPanel` | `src/ui/RollPanel.tsx` | `src/ui/styles/roll-panel.css` | jet mono d’une modale ou d’une étape de cascade ; accent du gagnant d’un Test opposé | — |
@@ -121,4 +124,4 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | en-tête A→B d'une modale de combat/opposition | `VsHeader` | `src/ui/VsHeader.tsx` | `src/ui/styles/vs-header.css` | toute confrontation à 2 camps | — |
 | sceau de cire et plaque d’élu scellée | `WaxSeal/SealedPlaque` | `src/ui/WaxSeal.tsx` | — | tuiles de sélection, plaques d’élu | — |
 | rose des vents : direction + force du vent | `WindRose` | `src/ui/WindRose.tsx` | `src/ui/styles/gauges.css` | voyage en mer, dossier de navire | — |
-<!-- sources-empreinte: 53f096a9c53dc22e9a4bcb3ac6732ddad2876554 (6 fichiers, 0 dossiers) corps: 5aa4af6e8a2e9c11748938abb93314a11d492a27 -->
+<!-- sources-empreinte: 49949ef5af83bcd0dce2c2dfaf987cb79d99241c (6 fichiers, 0 dossiers) corps: 506935ed988200edfd9aaadcbefbf99765f90483 -->

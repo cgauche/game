@@ -1,9 +1,8 @@
 import { useGame } from '../state/store';
 import { ownsLocal } from './ownership';
 import { Modal } from './Modal';
-import { Coins } from './Coins';
 import { GearAssignList } from './GearAssignList';
-import { Icon } from './Icon';
+import { RewardRecap } from './RewardRecap';
 
 /**
  * Fenêtre de BUTIN hors combat (fouille d'un décor, branche de Test, dialogue, trigger) — même
@@ -27,28 +26,23 @@ export function LootModal() {
   const assignable = party.filter((h) => ownsLocal(state, h.id));
   return (
     <Modal title={pl.title} variant="plain" className="loot-modal" onClose={appraising ? undefined : dismiss}>
-      {(pl.messages?.length ?? 0) > 0 && (
-        <div className="loot-messages">
-          {pl.messages!.map((m, i) => <p key={i} className="victory-msg">{m}</p>)}
-        </div>
-      )}
-      {pl.gold && (
-        <div className="victory-rewards">
-          <div className="victory-stat"><span className="vs-ico"><Icon id="resource/gold-purse" size="sm" /></span> <Coins money={pl.gold} /></div>
-        </div>
-      )}
-      {pl.gear.length > 0 && (
-        <div className="victory-section">
-          <h3>Équipement — qui l'emporte&nbsp;?</h3>
-          <GearAssignList
-            gear={pl.gear}
-            assignable={assignable}
-            onAssign={assign}
-            onAppraise={net.mode === 'guest' ? undefined : (i, mode) => appraise('loot', i, mode)}
-          />
-        </div>
-      )}
-      <button className="btn btn-primary victory-continue" onClick={dismiss}>Continuer</button>
+      <RewardRecap
+        messages={pl.messages}
+        gold={pl.gold}
+        sections={pl.gear.length > 0 ? [{
+          id: 'equipement',
+          titre: <>Équipement — qui l'emporte&nbsp;?</>,
+          children: (
+            <GearAssignList
+              gear={pl.gear}
+              assignable={assignable}
+              onAssign={assign}
+              onAppraise={net.mode === 'guest' ? undefined : (i, mode) => appraise('loot', i, mode)}
+            />
+          ),
+        }] : undefined}
+        action={<button className="btn btn-primary reward-continue" onClick={dismiss}>Continuer</button>}
+      />
     </Modal>
   );
 }

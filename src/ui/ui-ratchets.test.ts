@@ -102,7 +102,11 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   // famille JET sont keyées aux modules de leurs primitives, en regard (#1806 2c).
   // -2 (#1806 2d) : `.fx-chips` suit sa primitive (`styles/fx-chip.css`, +1 en regard) ; `.derived`,
   // règle MORTE sans aucun poseur dans le dépôt, est supprimée — le TOTAL baisse de 1.
-  'styles/combat-ui.css': 5,
+  // -2 (#1806 2d γ) : `.victory-rewards` et `.vl-assign` suivent leurs primitives
+  // (`styles/reward-recap.css` et `styles/gear-assign-list.css`, +1 chacune en regard) — TOTAL stable.
+  'styles/combat-ui.css': 3,
+  'styles/gear-assign-list.css': 1,
+  'styles/reward-recap.css': 1,
   'styles/compendium.css': 3,
   // +1 : `.creator-race-lineages` (#393 P2, correction structurelle Race) — rangée de chips de
   // lignée en tête du détail, s'enroule (motif `.bar` non composable ici, boutons de largeur variable).

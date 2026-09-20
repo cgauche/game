@@ -7,6 +7,19 @@
    dr-bar.css, coins.css — et la matière des commandes de coin est la peau PARTAGÉE
    `.skin-tole[data-ton]` (components.css). ══ */
 
+/* OSSATURE de l'écran : la vue en rangée, et le STAGE qui prend toute la place restante en bornant
+   son débordement (le monde rendu y est absolument positionné). */
+.campaign-view {
+  flex-direction: row;
+  position: relative;
+}
+.stage {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+}
+
 /* RAIL D'OUTILS (épure G) : colonne encadrée du bord droit, montée par `CampaignView` EN COMBAT —
    dossier de navire et journal de bataille vissés sur UN seul plan de matière, plus aucun bouton posé
    à nu sur le champ ni dans la barre haute. Les enfants y sont STATIQUES (le rail porte l'ancrage).

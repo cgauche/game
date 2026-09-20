@@ -35,7 +35,7 @@ function CoopShell({
   children: ReactNode;
 }) {
   return (
-    <div className="menu coop-lobby">
+    <div className="menu">
       <MenuCard
         className={`coop-card${wide ? ' wide' : ''}`}
         header={<>

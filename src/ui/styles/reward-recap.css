@@ -1,0 +1,59 @@
+/* ── Récapitulatif de GAIN (`RewardRecap`) ── Messages d'ambiance, récompenses chiffrées, sections
+   titrées, geste de sortie : la matière commune de l'écran de victoire et de la fenêtre de butin.
+   L'ANCRAGE (ferrage, marges) appartient à l'écran hôte (`loot-modal.css`, `combat-ui.css`). */
+.reward-messages {
+  margin: var(--sp-xs) 0 var(--sp-lg);
+  max-width: 520px;
+  text-align: center;
+}
+.reward-msg {
+  color: var(--gold);
+  font-size: 14px;
+  margin: 4px 0;
+  line-height: 1.5;
+}
+.reward-stats {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.reward-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 19px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 18px;
+}
+.reward-stat b {
+  color: var(--gold2);
+}
+.reward-unit {
+  color: var(--muted);
+  font-size: 14px;
+}
+.reward-ico {
+  font-size: 20px;
+}
+.reward-section {
+  margin: 14px 0;
+}
+.reward-section h3 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  color: var(--gold);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 5px;
+  margin: 0 0 10px;
+}
+.reward-continue {
+  display: block;
+  margin: 20px auto 0;
+  font-size: 17px;
+  padding: 11px 40px;
+}

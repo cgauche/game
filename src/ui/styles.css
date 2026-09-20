@@ -48,6 +48,9 @@
 @import './styles/fx-chip.css'; /* pastille d'État / de buff (FxChip, EffectChips) */
 @import './styles/spectator-chip.css'; /* puce de siège spectateur (SpectatorChip) : pose de flux, pose d'écran */
 @import './styles/ready-row.css'; /* rangée de ready-check coop (ReadyRow) */
+@import './styles/gear-assign-list.css'; /* liste de butin attribuable (GearAssignList) : ligne, révélation, attribution */
+@import './styles/reward-recap.css'; /* récapitulatif de gain (RewardRecap) : messages, récompenses chiffrées, rubriques, sortie */
+@import './styles/error-boundary.css'; /* limite d'erreur de rendu (SceneErrorBoundary) : repli de scène, filet de niveau écran */
 
 @import './styles/ornaments.css'; /* textures maison (.tx-parchment/.tx-ink) + cadres/fleurons (Ornaments.tsx) */
 @import './styles/rose.css'; /* rose des forces (mini-radar gravé, #409) — RoseAxes.tsx, coin/médaillon/pleine */
@@ -63,7 +66,8 @@
 @import './styles/band.css'; /* bande titrée (Band, #492 Lot 1c) — extraite du créateur, partagée avec le registre État de la fiche */
 @import './styles/celestial-wheel.css'; /* astrolabe de laiton (CelestialWheel, #393) — matières du cadran, valeurs du svg « 4 — Signe astral » de la planche FINALE */
 @import './styles/creator-presentation.css'; /* mise en scène finale du créateur (PresentationScreen, #393) : registre ⇄ scène ⇄ rubriques, valeurs .fin-col/.fin-stage de la planche */
-@import './styles/combat-ui.css'; /* audio, lobby coop, campagne, limites d'erreur, victoire, butin, beat d'ouverture ; couche partagée `.panel h3` / `.panel label` / `.radio` (#1834) */
+@import './styles/combat-ui.css'; /* lobby coop, boîte de victoire, beat d'ouverture ; couche partagée `.panel h3` / `.panel label` / `.radio` (#1834) */
+@import './styles/loot-modal.css'; /* fenêtre de butin hors combat (LootModal) : gabarit + ancrage du récapitulatif — APRÈS reward-recap.css : le ferrage à gauche de l'hôte prime sur le centrage de la primitive */
 @import './styles/combat-console.css'; /* console de combat (CombatConsole.tsx) : deux travées + grille fixe + conduit d'Avantage + coin de fin de tour */
 @import './styles/panneau-parametre.css'; /* panneau-paramètre borné ANCRÉ (PanneauParametre, spec HUD zone 10) — scope le .rm-loc-grid d'OptionChooser (option-chooser.css) dans le panneau, par la spécificité du descendant */
 @import './styles/sheet.css'; /* fiche de personnage + avancement */

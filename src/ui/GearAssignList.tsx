@@ -24,7 +24,7 @@ export function GearAssignList({ gear, assignable, onAssign, onAppraise }: {
   const today = useGame((s) => Math.floor(s.gameTime / MINUTES_PER_DAY));
   const canDetect = !!bestDetector(party);
   return (
-    <ul className="victory-loot">
+    <ul className="gear-list">
       {gear.map((g, i) => {
         const fx = g.effect;
         const unidentified = fx.identified === false;
@@ -34,29 +34,29 @@ export function GearAssignList({ gear, assignable, onAssign, onAppraise }: {
         // porte ses qualités dans sa def. Masquées tant que non identifié (révélées par Évaluation).
         const quals = giveTrappingQualities(fx);
         return (
-          <li key={`${g.label}-${i}`} className="victory-loot-row">
-            <span className="vl-name">
+          <li key={`${g.label}-${i}`} className="gear-row">
+            <span className="gear-name">
               {g.label}
               {(g.magic || aura) && (
-                <span className="vl-magic" title={unidentified ? (aura ? 'Aura magique sentie — règles non identifiées' : 'Objet magique — qualités à révéler') : 'Objet magique'}> <Icon id="action/cast" size="sm" /></span>
+                <span title={unidentified ? (aura ? 'Aura magique sentie — règles non identifiées' : 'Objet magique — qualités à révéler') : 'Objet magique'}> <Icon id="action/cast" size="sm" /></span>
               )}
               {unidentified
-                ? <span className="vl-unid">{aura ? 'magique, non identifié' : 'non identifié'}</span>
+                ? <span className="gear-unid">{aura ? 'magique, non identifié' : 'non identifié'}</span>
                 : quals.length
                   ? <>{' '}<QualityChips qualities={quals} /></>
                   : null}
             </span>
             {onAppraise && unidentified && (
-              <span className="vl-acts">
+              <span className="gear-acts">
                 {fx.appraiseTriedDay !== today && (
-                  <button className="btn vl-act" onClick={() => onAppraise(i, 'evaluate')} title="Évaluation (Int) : révèle les qualités cachées et estime le prix — un échec verrouille jusqu'à demain">Évaluer</button>
+                  <button className="btn gear-act" onClick={() => onAppraise(i, 'evaluate')} title="Évaluation (Int) : révèle les qualités cachées et estime le prix — un échec verrouille jusqu'à demain">Évaluer</button>
                 )}
                 {canDetect && !fx.detectTried && (
-                  <button className="btn vl-act" onClick={() => onAppraise(i, 'detect')} title="Détection d'artefact (Intuition, au toucher) : sentir l'aura — une seule tentative par objet">Détecter</button>
+                  <button className="btn gear-act" onClick={() => onAppraise(i, 'detect')} title="Détection d'artefact (Intuition, au toucher) : sentir l'aura — une seule tentative par objet">Détecter</button>
                 )}
               </span>
             )}
-            <span className="vl-assign">
+            <span className="gear-assign">
               {/* Attribution par portrait → picker mutualisé (cf. PortraitPicker, partagé avec le
                   choix du lanceur d'un Test et la cible montée) — clic = donner à ce héros. */}
               <PortraitPicker

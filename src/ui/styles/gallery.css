@@ -125,6 +125,13 @@
   width: 1440px;
   height: calc(var(--cc-deck-h) + var(--cc-fronton) + var(--cc-phase-h));
 }
+/* COLONNE de vignette : le flux BLOC qu'un hôte réel (boîte d'écran, corps de modale) offre à une
+   brique qui rend un FRAGMENT à empiler (`RewardRecap`). La piste est une rangée : sans elle, les
+   morceaux du fragment s'y aligneraient côte à côte et la vignette mentirait sur la composition. */
+.gallery-colonne {
+  display: block;
+  width: min(520px, 100%);
+}
 .gallery-swatches {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));

@@ -22,6 +22,10 @@ import { DescRefField } from '../compendium/DescRefField';
 import type { DescRef } from '../../data/source/decoupe';
 import { GatedAction } from '../GatedAction';
 import { ReadyRow } from '../ReadyRow';
+import { GearAssignList } from '../GearAssignList';
+import { RewardRecap } from '../RewardRecap';
+import { SceneErrorBoundary } from '../SceneErrorBoundary';
+import type { LootGear } from '../../state/pendings';
 import { SpectatorChip } from '../SpectatorChip';
 import { RigPortrait } from '../RigPortrait';
 import { FxChip } from '../FxChip';
@@ -650,6 +654,61 @@ function ReadyRowDemo() {
       <ReadyRow ready={{}} />
       <ReadyRow ready={{ 0: true }} />
     </div>
+  );
+}
+
+/** Deux lignes de butin : une lame CATALOGUÉE non identifiée (la révélation est offerte) et un objet
+ *  custom déjà identifié. La Détection d'artefact n'apparaît que si un héros DE LA PARTIE porte le
+ *  Talent (`bestDetector`) : sans partie en cours, la ligne ne montre qu'Évaluer. */
+function GearAssignListDemo() {
+  const heros = herosExemples().slice(0, 3);
+  if (!heros.length) return <p className="hint">Aucun pregen disponible.</p>;
+  const gear: LootGear[] = [
+    { label: 'Lame finement ouvragée', magic: true, effect: { type: 'giveTrapping', trappingId: 'arme-simple', qualities: ['precise'], identified: false } },
+    { label: 'Clé en fer', magic: false, effect: { type: 'giveTrapping', custom: 'Clé en fer' } },
+  ];
+  return <GearAssignList gear={gear} assignable={heros} onAssign={() => {}} onAppraise={() => {}} />;
+}
+
+/** Récapitulatif de gain COMPLET : ambiance, PX, or, une rubrique titrée, le geste de sortie — la
+ *  forme que montrent à l'identique l'écran de victoire et la fenêtre de butin. */
+function RewardRecapDemo() {
+  return (
+    <div className="gallery-colonne">
+      <RewardRecap
+        messages={['La foule scande votre nom — l’arène a trouvé son vainqueur.']}
+        xp={120}
+        gold={{ gold: 5, silver: 12, brass: 8 }}
+        sections={[{
+          id: 'vaincus',
+          titre: 'Ennemis vaincus',
+          children: <Row><span className="chip">Mutant ×3</span><span className="chip">Meneur</span></Row>,
+        }]}
+        action={<button className="btn btn-primary reward-continue">Continuer</button>}
+      />
+    </div>
+  );
+}
+
+/** Limite d'erreur VIVANTE, mais sur GESTE : au repos elle est transparente, le bouton fait lever son
+ *  enfant, et la vraie garde de classe rend le panneau de reprise que le joueur verrait. Le crash part
+ *  au collecteur DEV (`recordError`) comme en partie — c'est pourquoi il n'est PAS joué au montage : un
+ *  spécimen ne remplit pas le bandeau d'erreurs de qui ouvre la galerie. La pose de niveau ÉCRAN
+ *  (`app-error-boundary`, `position: fixed`) recouvrirait la galerie : elle s'observe au banc
+ *  (`src/ui/SceneErrorBoundary.test.tsx`). */
+function SceneErrorBoundaryDemo() {
+  const [casse, setCasse] = useState(false);
+  const Enfant = () => {
+    if (casse) throw new Error('Spécimen de galerie : crash de rendu');
+    return <p className="hint">Rendu normal — la limite ne se voit pas tant que rien ne lève.</p>;
+  };
+  return (
+    <Stack gap="sm">
+      <button className="btn" onClick={() => setCasse(true)}>Provoquer un crash de rendu</button>
+      <SceneErrorBoundary retryLabel="Réessayer" onRetry={() => setCasse(false)}>
+        <Enfant />
+      </SceneErrorBoundary>
+    </Stack>
   );
 }
 
@@ -1405,6 +1464,9 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { id: 'detailframe', label: 'DetailFrame', file: 'src/ui/DetailFrame.tsx', category: 'Atelier du scribe', render: DetailFrameDemo },
   { id: 'herosheet', label: 'HeroSheet', file: 'src/ui/HeroSheet.tsx', category: 'Personnages', render: HeroSheetDemo },
   { id: 'readyrow', label: 'ReadyRow', file: 'src/ui/ReadyRow.tsx', category: 'Écrans & layout', render: ReadyRowDemo },
+  { id: 'gearassignlist', label: 'GearAssignList', file: 'src/ui/GearAssignList.tsx', category: 'Négoce & activités', render: GearAssignListDemo },
+  { id: 'rewardrecap', label: 'RewardRecap', file: 'src/ui/RewardRecap.tsx', category: 'Négoce & activités', render: RewardRecapDemo },
+  { id: 'errorboundary', label: 'SceneErrorBoundary', file: 'src/ui/SceneErrorBoundary.tsx', category: 'Écrans & layout', render: SceneErrorBoundaryDemo },
   { id: 'itemicon', label: 'ItemIcon', file: 'src/ui/ItemIcon.tsx', category: 'Négoce & activités', render: ItemIconDemo },
   { id: 'mediaselect', label: 'MediaSelect', file: 'src/ui/MediaSelect.tsx', category: 'Négoce & activités', render: MediaSelectDemo },
   { id: 'reffield', label: 'RefField', file: 'src/ui/compendium/RefField.tsx', category: 'Éditeur', render: RefFieldDemo },

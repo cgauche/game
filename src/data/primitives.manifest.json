@@ -765,6 +765,44 @@
     "verrou": "le siège attendu vient de `spectatorSeatOfModal` (src/ui/ownership.ts), source unique"
   },
   {
+    "id": "gearAssignList",
+    "type": "primitives.manifest",
+    "label": "GearAssignList",
+    "fichier": "src/ui/GearAssignList.tsx",
+    "css": "src/ui/styles/gear-assign-list.css",
+    "concept": "liste de butin ATTRIBUABLE : une ligne par objet — nom, aura magique, qualités révélées, actions de révélation, attribution par portrait",
+    "perimetre": "écran de victoire, fenêtre de butin hors combat",
+    "verrou": "Évaluer (LDB 59 l.41) et Détecter (LDB 10 l.336) sont des ACTIONS de l'appelant — la liste ne résout aucun Test"
+  },
+  {
+    "id": "rewardRecap",
+    "type": "primitives.manifest",
+    "label": "RewardRecap",
+    "fichier": "src/ui/RewardRecap.tsx",
+    "css": "src/ui/styles/reward-recap.css",
+    "poseurs": [
+      "src/ui/VictoryScreen.tsx",
+      "src/ui/LootModal.tsx"
+    ],
+    "concept": "récapitulatif de GAIN : messages d’ambiance, récompenses chiffrées, rubriques titrées, geste de sortie",
+    "perimetre": "fin de combat (victoire), fouille hors combat (butin)",
+    "verrou": "un compteur à ZÉRO ne s’affiche jamais nu (#377) — l’appelant ne passe que ce qui est gagné"
+  },
+  {
+    "id": "errorBoundary",
+    "type": "primitives.manifest",
+    "label": "SceneErrorBoundary",
+    "fichier": "src/ui/SceneErrorBoundary.tsx",
+    "css": "src/ui/styles/error-boundary.css",
+    "poseurs": [
+      "src/ui/App.tsx",
+      "src/ui/CampaignView.tsx"
+    ],
+    "concept": "filet d’un crash de RENDU : capture, journalise, et montre un panneau de reprise en français au lieu de l’écran noir",
+    "perimetre": "autour du stage (scène iso/POV), autour de tout l’écran de jeu (#225)",
+    "verrou": "seule forme possible est une classe React (`componentDidCatch`) ; l’erreur part à `recordError`, source unique du bandeau DEV"
+  },
+  {
     "id": "logDrawer",
     "type": "primitives.manifest",
     "label": "LogDrawer",

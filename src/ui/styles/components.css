@@ -1003,6 +1003,24 @@ button.chip:hover {
   overflow-y: auto;
   overscroll-behavior: contain;
 }
+/* RÉGLAGES AUDIO (`AudioControls`, corps du sous-écran Options — menu principal comme menu système) :
+   une ligne = gouttière d'icône + curseur qui s'étire. */
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.audio-controls input[type='range'] {
+  flex: 1;
+  padding: 0;
+}
+.audio-controls + .audio-controls {
+  margin-top: 6px;
+}
+.audio-icon {
+  width: 34px;
+  text-align: center;
+}
 
 /* Pile des ZONES DE RÉGLAGE d'une fenêtre de jet (localisation, arme, posture, surincantation) :
    posée par les modales elles-mêmes, jamais par `RollShell` — contrat de couche partagée. */

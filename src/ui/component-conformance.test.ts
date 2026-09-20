@@ -40,9 +40,9 @@ function divClassNames(src: string): string[] {
 // Coquilles CANONIQUES (définissent le voile + l'a11y) et semi-canoniques SANCTIONNÉES (markup propre,
 // squelette maison mais a11y `useModalA11y` câblée). Toute AUTRE surface passe par une primitive.
 const OVERLAY_OWNERS = ['Modal.tsx', 'ScreenShell.tsx'];
-// VictoryScreen/CampaignView (defeat) : splash plein-écran de RÉSULTAT (bouton unique, non fermable
-// par Échap) — pas un dialogue (pas de role="dialog"/useModalA11y), donc hors du périmètre a11y de
-// la primitive. Dette connue distincte, pas couverte par ce ticket de garde (#285).
+// VictoryScreen/CampaignView (défaite) : surface plein-écran de RÉSULTAT (bouton unique, Échap
+// inerte). `VictoryScreen.tsx` câble l'a11y de dialogue à la main (`role="dialog"`, `aria-modal`,
+// `aria-label`, `useModalA11y`) ; c'est le VOILE qui reste bespoke. Dette #285.
 // GameMenu.tsx : menu SYSTÈME plein écran (pause) — voile `.game-menu-overlay` semi-canonique (squelette
 // maison composant la primitive MenuCard, a11y `useModalA11y` câblée) ; langage MenuCard voulu, pas la
 // chrome de Modal/ScreenShell.

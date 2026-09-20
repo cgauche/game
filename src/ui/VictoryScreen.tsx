@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useGame } from '../state/store';
 import { ownsLocal } from './ownership';
 import { harvestProfileFor } from '../engine/harvest';
-import { Coins } from './Coins';
 import { ReadyRow } from './ReadyRow';
 import { GearAssignList } from './GearAssignList';
+import { RewardRecap, type RecapSection } from './RewardRecap';
 import { RuleDivider } from './Ornaments';
 import { Icon } from './Icon';
 import { useModalA11y } from './Modal';
@@ -58,95 +58,83 @@ export function VictoryScreen() {
   const assignable = party.filter((h) => ownsLocal(state, h.id)); // solo : tous (#1262)
 
   const xp = pv?.xp ?? 0;
-  const gold = pv?.gold ?? { gold: 0, silver: 0, brass: 0 };
   const gear = pv?.gear ?? [];
   const defeated = pv?.defeated ?? [];
-  // #377 : un compteur à ZÉRO ne s'affiche jamais nu — masqué, et si le récapitulatif entier tombe à
-  // rien (pas de PX, pas d'or), une ligne narrative sobre le remplace plutôt qu'une rangée vide.
-  const hasXp = xp > 0;
-  const hasGold = (gold.gold ?? 0) > 0 || (gold.silver ?? 0) > 0 || (gold.brass ?? 0) > 0;
-  const hasRewards = hasXp || hasGold;
+
+  // Équipement EN AVANT (#377) : la rubrique « qui l'emporte ? » se joue AVANT le récapitulatif des
+  // vaincus — c'est elle qui donne quelque chose à TOUCHER, jamais reléguée en bas d'écran.
+  const sections: RecapSection[] = [];
+  if (gear.length > 0) {
+    sections.push({
+      id: 'equipement',
+      titre: <><Icon id="resource/gold-purse" size="sm" /> Équipement — qui l'emporte&nbsp;?</>,
+      className: 'victory-section-gear',
+      children: (
+        <GearAssignList
+          gear={gear}
+          assignable={assignable}
+          onAssign={assignGear}
+          onAppraise={net.mode === 'guest' ? undefined : (i, mode) => appraiseGear('victory', i, mode)}
+        />
+      ),
+    });
+  }
+  if (defeated.length > 0) {
+    sections.push({
+      id: 'vaincus',
+      titre: 'Ennemis vaincus',
+      children: (
+        <div className="victory-defeated">
+          {defeated.map((d) => {
+            const canHarvest = !!harvestProfileFor(d.creatureId) && net.mode !== 'guest';
+            const done = (pv?.harvested ?? []).includes(d.creatureId ?? '');
+            return (
+              <Row key={d.label} className="chip">
+                {d.label}{d.count > 1 ? ` ×${d.count}` : ''}
+                {canHarvest && (
+                  <GatedAction
+                    id={`victory-harvest-${d.creatureId}`}
+                    label={done ? '✓ récolté' : <><Icon id="medical/scalpel" size="sm" /> Récolter</>}
+                    ariaLabel={`Récolter ${d.label}`}
+                    enabled={!done}
+                    reason="Ces pièces ont déjà été récoltées."
+                    descOfferte="Récolter les pièces de monstre (Test de Savoir (Bêtes))"
+                    onClick={() => harvest(d.creatureId!)}
+                    primary={false}
+                    btnClassName="btn-ghost"
+                  />
+                )}
+              </Row>
+            );
+          })}
+        </div>
+      ),
+    });
+  }
 
   return (
     <div className="victory-overlay">
       <div ref={boxRef} role="dialog" aria-modal="true" aria-label="Victoire" className="victory-screen">
         <h1 className="victory-title">Victoire</h1>
         <RuleDivider />
-
         {/* #9 : messages de journal de la victoire (ex. annonce de l'arène) affichés ICI. */}
-        {(pv?.messages?.length ?? 0) > 0 && (
-          <div className="victory-messages">
-            {pv!.messages!.map((m, i) => <p key={i} className="victory-msg">{m}</p>)}
-          </div>
-        )}
-
-        {hasRewards ? (
-          <div className="victory-rewards">
-            {hasXp && (
-              <div className="victory-stat"><span className="vs-ico"><Icon id="action/cast" size="sm" /></span> <b>{xp}</b> <span className="vs-unit">PX</span></div>
-            )}
-            {hasGold && (
-              <div className="victory-stat"><span className="vs-ico"><Icon id="resource/gold-purse" size="sm" /></span> <Coins money={gold} /></div>
-            )}
-          </div>
-        ) : (
-          <p className="victory-msg victory-msg-empty">Ni or ni gloire sonnante sur ces adversaires — le groupe repart les mains vides, mais entier.</p>
-        )}
-
-        {/* Équipement EN AVANT (#377) : la section « qui l'emporte ? » se joue AVANT le récapitulatif
-            des vaincus — c'est elle qui donne quelque chose à TOUCHER, jamais reléguée en bas d'écran. */}
-        {gear.length > 0 && (
-          <div className="victory-section victory-section-gear">
-            <h3><Icon id="resource/gold-purse" size="sm" /> Équipement — qui l'emporte&nbsp;?</h3>
-            <GearAssignList
-              gear={gear}
-              assignable={assignable}
-              onAssign={assignGear}
-              onAppraise={net.mode === 'guest' ? undefined : (i, mode) => appraiseGear('victory', i, mode)}
-            />
-          </div>
-        )}
-
-        {defeated.length > 0 && (
-          <div className="victory-section">
-            <h3>Ennemis vaincus</h3>
-            <div className="victory-defeated">
-              {defeated.map((d) => {
-                const canHarvest = !!harvestProfileFor(d.creatureId) && net.mode !== 'guest';
-                const done = (pv?.harvested ?? []).includes(d.creatureId ?? '');
-                return (
-                  <Row key={d.label} className="victory-foe">
-                    {d.label}{d.count > 1 ? ` ×${d.count}` : ''}
-                    {canHarvest && (
-                      <GatedAction
-                        id={`victory-harvest-${d.creatureId}`}
-                        label={done ? '✓ récolté' : <><Icon id="medical/scalpel" size="sm" /> Récolter</>}
-                        ariaLabel={`Récolter ${d.label}`}
-                        enabled={!done}
-                        reason="Ces pièces ont déjà été récoltées."
-                        descOfferte="Récolter les pièces de monstre (Test de Savoir (Bêtes))"
-                        onClick={() => harvest(d.creatureId!)}
-                        primary={false}
-                        btnClassName="btn-ghost victory-harvest"
-                      />
-                    )}
-                  </Row>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {online ? (
-          <>
-            <ReadyRow ready={ready} />
-            <button className="btn btn-primary victory-continue" disabled={!!ready[net.mySeat]} onClick={() => victoryReady(net.mySeat)}>
-              {ready[net.mySeat] ? <><Icon id="ui/wait" size="sm" /> En attente des autres…</> : 'Continuer'}
-            </button>
-          </>
-        ) : (
-          <button className="btn btn-primary victory-continue" onClick={dismiss}>Continuer</button>
-        )}
+        <RewardRecap
+          messages={pv?.messages}
+          xp={xp}
+          gold={pv?.gold}
+          emptyNote="Ni or ni gloire sonnante sur ces adversaires — le groupe repart les mains vides, mais entier."
+          sections={sections}
+          action={online ? (
+            <>
+              <ReadyRow ready={ready} />
+              <button className="btn btn-primary reward-continue" disabled={!!ready[net.mySeat]} onClick={() => victoryReady(net.mySeat)}>
+                {ready[net.mySeat] ? <><Icon id="ui/wait" size="sm" /> En attente des autres…</> : 'Continuer'}
+              </button>
+            </>
+          ) : (
+            <button className="btn btn-primary reward-continue" onClick={dismiss}>Continuer</button>
+          )}
+        />
       </div>
     </div>
   );
