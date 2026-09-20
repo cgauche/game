@@ -231,6 +231,13 @@
   --cc-arch-hi: #2c2013; /* arche de l'acteur — haut */
   --cc-arch-mid: #1a1209; /* arche de l'acteur — milieu */
   --cc-arch-lo: #0e0a06; /* arche de l'acteur — bas */
+  /* GRANDEURS de la nappe de pont, consommées par la peau `.skin-pont` (components.css) et par les
+     réserves qui la relisent (`--xd-deck-h`, exploration-dock.css). Au `:root` parce qu'une peau
+     PARTAGÉE ne peut pas prendre ses grandeurs au module d'un organisme, et qu'un `:root` ne lit pas
+     une variable posée sur une classe. Un porteur qui doit s'en écarter la repose sur SON sélecteur
+     (variable de CONTEXTE : `.combat-console` ≤560). */
+  --pont-band: 300px; /* hauteur de la NAPPE de bois du pont (la fenêtre visible du dégradé) */
+  --pont-liseret: 3px; /* épaisseur du liseré de laiton du parapet */
   --cc-arch-well-hi: #191309; /* gouttière creusée d'une jauge de l'arche — crête */
   --cc-arch-well-lo: #0d0906; /* gouttière creusée d'une jauge de l'arche — fond */
   --cc-end-hi: #3a1410; /* plaque de fin de tour — haut */

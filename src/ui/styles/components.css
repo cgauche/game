@@ -1262,3 +1262,23 @@ button.chip:hover {
   color: var(--gold2);
   clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
 }
+
+/* ── PEAU « NAPPE DE PONT » (`.skin-pont`) ─────────────────────────────────────────────────────
+   La matière d'une BANDE DE BORD À BORD posée au bas du champ : nappe de bois ancrée au bas de sa
+   boîte, taillée à `--pont-band`, et liseré de laiton au parapet. Elle est PARTAGÉE — trois boîtes
+   sur deux écrans (`.combat-console` et son fronton `.cc-arch` en combat, `.exploration-dock` hors
+   combat) : elle n'appartient donc à aucune primitive (#1806 2b, garde §5.2 de
+   `src/ui/primitive-owners-guard.test.ts`). Une bande de plus la POSE au lieu de recopier son
+   dégradé ; la garde de « Zone 11 » (`src/ui/ExplorationDock.test.tsx`) refuse toute seconde
+   définition du dégradé dans la couche des modules.
+   Chaque porteur garde son DELTA : l'ombre (portée sous le pont, `inset` sur l'arche), le
+   `clip-path` des épaules, et le DÉCALAGE de nappe (`--pont-pos`) d'une bande plus courte qui doit
+   montrer la même profondeur de bois que le pont de combat. */
+.skin-pont {
+  background-color: var(--cc-arch-lo);
+  background-image: linear-gradient(180deg, var(--cc-arch-hi), var(--cc-arch-mid) 55%, var(--cc-arch-lo));
+  background-size: 100% var(--pont-band);
+  background-position: var(--pont-pos, bottom);
+  background-repeat: no-repeat;
+  border-top: var(--pont-liseret) solid var(--atelier-brass-hover);
+}

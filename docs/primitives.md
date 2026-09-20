@@ -27,7 +27,7 @@ manifeste est invisible ici, et rien ne la révèle sauf le hook `new-src-file-g
 mord qu'à la CRÉATION d'un `.tsx` de `src/ui`/`src/gameIso` — un module `.ts`, un fichier antérieur
 au hook, ou une primitive née ailleurs n'y passent jamais.
 
-86 primitives.
+87 primitives.
 
 | Besoin | Primitive | Fichier | CSS possédé | Périmètre | Verrou |
 |---|---|---|---|---|---|
@@ -43,6 +43,7 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | aperçu d’un personnage en pied hors combat, rig réel | `CharacterPreview` | `src/ui/CharacterPreview.tsx` | — | roster, créateur, fiche, marchand | — |
 | montant en monnaie impériale (LDB 57), coloré par dénomination et épelé en `title` — miroir JSX de `formatMoney` | `Coins` | `src/ui/Coins.tsx` | `src/ui/styles/coins.css` | tout prix AFFICHÉ : négoce, soins, repos, conseil, bourse d'en-tête | — |
 | fil d’ÉVÉNEMENTS du combat : le beat courant, ligne nue posée sur le terrain, toné par sa gravité | `CombatBanner` | `src/ui/CombatBanner.tsx` | `src/ui/styles/combat-banner.css` | refus du geste tenté, intention télégraphiée de l’IA, dernier résultat du journal | projection de sources existantes — zéro état dédié |
+| LE PONT de combat : deux travées d’alvéoles à compte FIXE autour de l’arche du combattant actif, conduit d’Avantage, coin de fin de tour | `CombatConsole` | `src/ui/CombatConsole.tsx` | `src/ui/styles/combat-console.css` | HUD de combat plein-champ, dimensionné sur la FENÊTRE — la galerie en montre la composition de bureau, les formes étroites s’observent en recette | src/ui/CombatConsole.test.tsx — comptes de cases et budget de hauteur du pont |
 | cérémonie de tirage du créateur : attente, roulant, rendu, gain de PX en direct | `CreatorDice` | `src/ui/creator/CreatorDice.tsx` | — | Race, Carrière, Caractéristiques, Signe astral | — |
 | gabarit d’étape du créateur : bande d’action requise, zone de choix, zone de description | `CreatorStepFrame` | `src/ui/creator/CreatorStepFrame.tsx` | `src/ui/styles/creator-step.css` | toutes les étapes du créateur | src/ui/creator/creator-ossature.test.tsx |
 | galerie du design system in-app (DEV) : chaque primitive montée vivante avec des données réelles | `DesignGallery` | `src/ui/gallery/DesignGallery.tsx` | — | référence de goût des primitives d’UI | — |
@@ -117,4 +118,4 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | en-tête A→B d'une modale de combat/opposition | `VsHeader` | `src/ui/VsHeader.tsx` | `src/ui/styles/vs-header.css` | toute confrontation à 2 camps | — |
 | sceau de cire et plaque d’élu scellée | `WaxSeal/SealedPlaque` | `src/ui/WaxSeal.tsx` | — | tuiles de sélection, plaques d’élu | — |
 | rose des vents : direction + force du vent | `WindRose` | `src/ui/WindRose.tsx` | `src/ui/styles/gauges.css` | voyage en mer, dossier de navire | — |
-<!-- sources-empreinte: 95cfff9c0046da64218f77af347cad5b548dd994 (6 fichiers, 0 dossiers) corps: adaf44cddb557356c9ce6cc6fa7fa8ef030eb321 -->
+<!-- sources-empreinte: 079d6e22b88e8143290ac55531566c75ee5a5218 (6 fichiers, 0 dossiers) corps: 18f6400f2a0763eae3a8598d270709b8b8fb3f7c -->

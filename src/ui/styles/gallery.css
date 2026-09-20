@@ -104,6 +104,27 @@
   min-width: 0;
   max-width: 100%;
 }
+/* CHAMP de vignette : l'ancêtre POSITIONNÉ dont une surface ancrée au bas du terrain a besoin pour
+   se montrer ici (`.combat-console`, `.exploration-dock` : `position: absolute; bottom: 0`). Sans
+   lui, la surface remonterait au premier ancêtre positionné de l'écran et sortirait de sa piste.
+   Une telle surface se dimensionne sur la FENÊTRE (`vh`, tranches `@media`), pas sur sa vignette :
+   la PISTE la montre à la largeur de recette du bureau, et le champ DÉFILE quand la vignette est
+   plus étroite — rien n'est amputé. Placement seul — la matière reste celle du spécimen. */
+.gallery-scene {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+/* La PISTE tient la bande ANCRÉE en pied : sa hauteur est celle que la surface publie au `:root`
+   (hauteur de pont, élévation du fronton au-dessus du liseré, bandeau de phase superposé) — un
+   nombre en l'air se serait décalé à la première recalibration du budget de hauteur. Sa LARGEUR est
+   celle de la recette de bureau : la surface se dimensionne sur la FENÊTRE, la montrer plus étroite
+   ferait mentir la vignette sur la composition. */
+.gallery-scene-track {
+  position: relative;
+  width: 1440px;
+  height: calc(var(--cc-deck-h) + var(--cc-fronton) + var(--cc-phase-h));
+}
 .gallery-swatches {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));

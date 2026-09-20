@@ -96,10 +96,6 @@
   --cc-notch: 4px;
   /* Le rail des gouttières suit le portrait (dimensionné au `:root`, avec la hauteur de bande). */
   --cc-rail: calc(var(--cc-portrait) * 0.62);
-  /* Hauteur de la NAPPE de bois : le dégradé est ancré au BAS et taillé à cette hauteur sur le pont
-     ET sur l'arche. Deux boîtes, un seul plan de matière — à la jonction, la teinte est la même des
-     deux côtés, il n'y a donc aucune couture à voir. */
-  --cc-band: 300px;
   position: absolute;
   left: 0;
   right: 0;
@@ -108,14 +104,9 @@
   flex-direction: column;
   align-items: center;
   z-index: 5;
-  background-color: var(--cc-arch-lo);
-  background-image: linear-gradient(180deg, var(--cc-arch-hi), var(--cc-arch-mid) 55%, var(--cc-arch-lo));
-  background-size: 100% var(--cc-band);
-  background-position: bottom;
-  background-repeat: no-repeat;
-  /* LISERÉ HAUT continu de bord à bord (planche : `[0,873,1920,8]`). Le fronton le franchit : la
-     bordure est peinte avant les enfants, l'arche passe donc par-dessus. */
-  border-top: 3px solid var(--atelier-brass-hover);
+  /* DELTA de la peau `.skin-pont` (components.css) : l'ombre PORTÉE, que le pont projette sur le
+     terrain — l'arche, elle, n'a qu'un filet interne. La nappe, le liseré et leurs grandeurs
+     (`--pont-band`, `--pont-liseret`) viennent de la peau. */
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.55);
 }
 
@@ -716,9 +707,13 @@
 
 /* L'arche est le FRONTON DU PONT (spec §1c-ter), pas un panneau posé devant : elle s'élève de
    `--cc-fronton` au-dessus du liseré et descend jusqu'au bas de la bande. Sa matière est celle du
-   pont, à la même nappe (`--cc-band` ancrée au bas) — de part et d'autre de la jonction, le bois a
-   la même teinte, et aucun filet ne vient la souligner (ni bordure basse, ni bordure de flanc).
-   Seul le liseré HAUT reste : il prolonge celui du pont, épaules coupées comprises (spécimen D). */
+   pont — la MÊME peau (`.skin-pont`, components.css), donc la même nappe ancrée au bas et la même
+   grandeur héritée du pont : de part et d'autre de la jonction, le bois a la même teinte.
+   Aucun filet ne vient la souligner : les trois bordures de flanc et de pied sont remises à zéro
+   UNE À UNE, jamais par un `border: 0` qui effacerait aussi le liseré de la peau.
+   Seul le liseré HAUT reste : il prolonge celui du pont, épaules coupées comprises (spécimen D).
+   Le fronton le FRANCHIT — une bordure est peinte avant les enfants, l'arche passe par-dessus
+   celle du pont. */
 .cc-arch {
   position: relative;
   flex: 0 0 auto;
@@ -731,13 +726,11 @@
   /* Faîte SERRÉ : le fronton garde son élévation (§1c-ter) mais son espace INTERNE au-dessus du
      portrait se comprime — c'est le portrait qui remplit la région, pas le vide. */
   padding: 6px 14px 8px;
-  background-color: var(--cc-arch-lo);
-  background-image: linear-gradient(180deg, var(--cc-arch-hi), var(--cc-arch-mid) 55%, var(--cc-arch-lo));
-  background-size: 100% var(--cc-band);
-  background-position: bottom;
-  background-repeat: no-repeat;
-  border: 0;
-  border-top: 3px solid var(--atelier-brass-hover);
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  /* DELTA de la peau : l'arche ne porte pas d'ombre sur le terrain (elle est DANS la bande), mais
+     le filet de crête qui dit le relief du fronton. */
   box-shadow: inset 0 1px 0 rgba(216, 185, 84, 0.18);
   clip-path: polygon(42px 0, calc(100% - 42px) 0, 100% 34px, 100% 100%, 0 100%, 0 34px);
 }
@@ -1188,8 +1181,10 @@ button.cc-socle svg {
     /* Portrait de la LIGNE compacte : une vignette, pas une région (cf. la règle de base qui l'applique). */
     --cc-portrait: 30px;
   }
+  /* Nappe RACCOURCIE avec le pont : la grandeur de la peau `.skin-pont` est une variable de
+     CONTEXTE, reposée ici pour le pont ET son fronton (qui en hérite). */
   .combat-console {
-    --cc-band: 260px;
+    --pont-band: 260px;
   }
   /* Bandeau de phase compact : pleine largeur JUSTE au-dessus du pont (il ne vole aucune rangée de
      cases, et à cette largeur il ne peut pas chevaucher le parapet sans couvrir le liseré ET le

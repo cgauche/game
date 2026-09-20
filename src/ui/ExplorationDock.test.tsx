@@ -12,6 +12,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import { useGame, type BattleState } from '../state/store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -153,9 +154,13 @@ describe('Zone 11 — UNE bande, jamais des boîtes flottantes (contrat d’asse
     const regle = /\.exploration-dock\s*\{([^}]*)\}/.exec(css);
     expect(regle, '`.exploration-dock` doit porter sa géométrie de bande').not.toBeNull();
     for (const prop of ['left: 0', 'right: 0', 'bottom: 0']) expect(regle![1]).toContain(prop);
-    // Même matière/liseré que le pont de combat : les tokens `--cc-*` du `:root`, jamais un hex.
-    expect(regle![1]).toContain('var(--cc-arch-lo)');
-    expect(regle![1]).toMatch(/border-top:[^;]*var\(--atelier-brass-hover\)/);
+    // Même matière/liseré que le pont de combat : la peau PARTAGÉE, qui prend ses teintes aux
+    // tokens `--cc-*` du `:root`, jamais un hex — et que le pont POSE au lieu de la recopier.
+    const peau = readFileSync(join(process.cwd(), 'src', 'ui', 'styles', 'components.css'), 'utf8');
+    const matiere = /\.skin-pont\s*\{([^}]*)\}/.exec(peau);
+    expect(matiere, 'la peau `.skin-pont` porte la matière des deux ponts').not.toBeNull();
+    expect(matiere![1]).toContain('var(--cc-arch-lo)');
+    expect(matiere![1]).toMatch(/border-top:[^;]*var\(--atelier-brass-hover\)/);
   });
 });
 
@@ -281,7 +286,10 @@ describe('Zone 11 — la RÉSERVE du pont est lisible, et le pont est COMPACT', 
     // Le token est au `:root`, pas sur le sélecteur du pont : sinon aucun consommateur ne peut le lire.
     expect(prop(racine, '--xd-deck-h')).toContain('var(--xd-row)');
     expect(bloc(css, '.exploration-dock')).not.toContain('--xd-deck-h:');
-    const tokens = { '--xd-row': prop(racine, '--xd-row'), '--xd-liseret': prop(racine, '--xd-liseret') };
+    // Le liseré est celui de la PEAU : sa grandeur vit au `:root` de `base.css`, lue ici, jamais recopiée.
+    const liseret = /--pont-liseret:\s*([^;]+);/.exec(styles('base.css'));
+    expect(liseret, '`--pont-liseret` vit au `:root` de base.css').not.toBeNull();
+    const tokens = { '--xd-row': prop(racine, '--xd-row'), '--pont-liseret': liseret![1].trim() };
     const h = px(prop(racine, '--xd-deck-h'), tokens);
     // COMPACT : la rangée (42px) + sa respiration + le liseré, JAMAIS une bande de contenu. La bande
     // avale du sol cliquable sur toute la largeur (hors combat, se déplacer EST cliquer au sol) :
@@ -307,39 +315,74 @@ describe('Zone 11 — la RÉSERVE du pont est lisible, et le pont est COMPACT', 
   });
 });
 
-describe('Zone 11 — MÊME MATIÈRE que le pont de combat, mesurée à profondeur égale', () => {
-  it('même nappe, même liseré, et la même teinte à +3px sous le liseré', () => {
+describe('Zone 11 — MÊME MATIÈRE que le pont de combat : UNE peau, jamais deux copies', () => {
+  // Les trois boîtes de pont (pont de combat, fronton, pont léger) posent la MÊME peau `.skin-pont`
+  // (components.css) : l'identité de matière est vraie par construction. Trois contrats la tiennent :
+  // la nappe n'a qu'UNE définition dans tout `src/ui/styles`, toute boîte de pont POSE la peau, et le
+  // pont léger décale la sienne pour montrer la même PROFONDEUR de bois que le pont de combat.
+  it('la nappe n’a qu’UNE définition dans tout `src/ui/styles` — aucun module ne la recopie', () => {
+    const dir = join(process.cwd(), 'src', 'ui', 'styles');
+    const porteurs: string[] = [];
+    for (const f of listerDossier(dir).filter((n) => n.endsWith('.css'))) {
+      const css = readFileSync(join(dir, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+      // La NAPPE se reconnaît à son dégradé : trois bornes de bois de l'arche. Aucun fichier n'est
+      // exempté par son NOM — on compte les occurrences, et il doit y en avoir EXACTEMENT une : la
+      // peau elle-même. Tout autre porteur (et tout doublon dans la peau) a recopié au lieu de poser.
+      const n = [...css.matchAll(/linear-gradient\(\s*180deg\s*,\s*var\(--cc-arch-hi\)/g)].length;
+      for (let i = 0; i < n; i += 1) porteurs.push(f);
+    }
+    expect(porteurs, `La nappe de pont doit être ÉCRITE UNE FOIS, dans sa peau — poser \`skin-pont\` ailleurs :\n${porteurs.join('\n')}`).toEqual(['components.css']);
+    const peau = blocRacine(styles('components.css'), '.skin-pont');
+    for (const p of ['background-color', 'background-image', 'background-size', 'background-position', 'background-repeat', 'border-top']) {
+      expect(() => prop(peau, p), `la peau déclare ${p}`).not.toThrow();
+    }
+  });
+
+  it('les deux ponts ET le fronton POSENT la peau', () => {
+    // Lu aux LITTÉRAUX de `className` : toute pose d'une boîte de pont porte la peau — c'est ce
+    // contrat-là qui tient l'identité de matière (patron de `.skin-tole`, ui-ratchets).
+    for (const [fichier, classe] of [
+      ['CombatConsole.tsx', 'combat-console'],
+      ['CombatConsole.tsx', 'cc-arch'],
+      ['ExplorationDock.tsx', 'exploration-dock'],
+    ] as const) {
+      const code = readFileSync(join(process.cwd(), 'src', 'ui', fichier), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+      const poses = [...code.matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\})/g)]
+        .map((m) => (m[1] ?? m[2]).split(/\s+/))
+        .filter((classes) => classes.includes(classe));
+      expect(poses.length, `${fichier} pose « ${classe} »`).toBeGreaterThan(0);
+      expect(poses.filter((classes) => !classes.includes('skin-pont')), `${fichier} : « ${classe} » posée SANS la peau`).toEqual([]);
+    }
+    // … et le pont léger la porte jusqu'au DOM rendu.
+    expect(monter().querySelector('.exploration-dock')!.classList.contains('skin-pont')).toBe(true);
+  });
+
+  it('le pont léger DÉCALE sa nappe : la même teinte à +3px sous le liseré', () => {
     const xd = styles('exploration-dock.css');
     const cc = styles('combat-console.css');
     const pontXd = bloc(xd, '.exploration-dock');
-    const pontCc = bloc(cc, '.combat-console');
+    const peau = blocRacine(styles('components.css'), '.skin-pont');
     const pal = palette();
-    // MÊME nappe déclarée : un dégradé recopié à la main pourrait dériver borne par borne.
-    expect(prop(pontXd, 'background-image')).toBe(prop(pontCc, 'background-image'));
-    // MÊME hauteur de nappe : `--cc-band` vit sur la console (hors `:root`), donc le pont léger porte
-    // sa jumelle — cette garde ROUGIT si les deux valeurs divergent.
-    expect(prop(pontXd, '--xd-band')).toBe(prop(pontCc, '--cc-band'));
-    // MÊME épaisseur de liseré (le décalage de nappe la relit).
-    const liseretXd = px(prop(bloc(xd, ':root'), '--xd-liseret'), {});
-    expect(px(prop(pontCc, 'border-top').split(' ')[0], {})).toBe(liseretXd);
 
     const tokens: Record<string, string> = {
       ...Object.fromEntries([...bloc(cc, ':root').matchAll(/(--cc-[a-z-]+):([^;]+)/g)].map((m) => [m[1], m[2].trim()])),
       ...Object.fromEntries([...bloc(xd, ':root').matchAll(/(--xd-[a-z-]+):([^;]+)/g)].map((m) => [m[1], m[2].trim()])),
-      '--xd-band': prop(pontXd, '--xd-band'),
-      '--cc-band': prop(pontCc, '--cc-band'),
+      ...Object.fromEntries([...styles('base.css').matchAll(/(--pont-[a-z-]+):([^;]+)/g)].map((m) => [m[1], m[2].trim()])),
     };
-    const stops = bornes(prop(pontXd, 'background-image'), pal);
-    const bandeCc = px(prop(pontCc, 'background-size').split(' ')[1], tokens);
-    const bandeXd = px(prop(pontXd, 'background-size').split(' ')[1], tokens);
-    // Boîtes DE FOND (le liseré est hors nappe) : hauteur totale déclarée moins le liseré.
-    const fondCc = px(tokens['--cc-deck-h'], tokens) - liseretXd;
-    // Nappe du pont de combat : ancrée EN BAS de sa boîte de fond.
-    expect(prop(pontCc, 'background-position')).toBe('bottom');
-    const teinteCc = (d: number) => teinte(stops, (bandeCc - fondCc + d) / bandeCc);
-    // Nappe du pont léger : le décalage déclaré donne la position du HAUT de la nappe dans la boîte.
-    const haut = px(prop(pontXd, 'background-position').replace(/^0\s+/, ''), tokens);
-    const teinteXd = (d: number) => teinte(stops, (d - haut) / bandeXd);
+    const liseret = px(tokens['--pont-liseret'], tokens);
+    // UNE nappe, UNE hauteur : les deux ponts lisent la même grandeur de la peau.
+    const bande = px(prop(peau, 'background-size').split(' ')[1], tokens);
+    const stops = bornes(prop(peau, 'background-image'), pal);
+    // Boîte DE FOND du pont de combat (le liseré est hors nappe), nappe ancrée EN BAS : le pont de
+    // combat ne pose AUCUN décalage, il prend le défaut de la peau.
+    expect(prop(peau, 'background-position')).toBe('var(--pont-pos, bottom)');
+    const pontCc = bloc(cc, '.combat-console');
+    expect(() => prop(pontCc, '--pont-pos'), 'le pont de combat garde le défaut').toThrow();
+    const fondCc = px(tokens['--cc-deck-h'], tokens) - liseret;
+    const teinteCc = (d: number) => teinte(stops, (bande - fondCc + d) / bande);
+    // Nappe du pont léger : son décalage déclaré donne la position du HAUT de la nappe dans la boîte.
+    const haut = px(prop(pontXd, '--pont-pos').replace(/^0\s+/, ''), tokens);
+    const teinteXd = (d: number) => teinte(stops, (d - haut) / bande);
     expect(teinteXd(3)).toEqual(teinteCc(3));
     // ANCRAGE ABSOLU : l'égalité ci-dessus est vraie par construction (le décalage du pont léger se
     // DÉRIVE de `--cc-deck-h`) — elle resterait verte sur une nappe fausse des deux côtés. La valeur

@@ -873,68 +873,85 @@ describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
   // propriété que le module redéclare et que la peau déclare AUSSI se tranche à la cascade — si le
   // delta PERD, c'est la peau qu'on voit et le module ment (défaut mesuré : `.vc-btn` à 0-1-0
   // perdait `font-size: 20px` contre `.skin-tole[data-ton]` à 0-2-0, glyphes de caméra à 19px).
-  // Mesure STRUCTURELLE, jamais une liste de noms : les classes surveillées sont celles qui ne sont
-  // JAMAIS posées sans la peau — une classe posée aussi SANS elle est une BASE, que la peau repeint
-  // légitimement.
-  it('peau `.skin-tole` : le DELTA d’un module BAT la peau sur toute propriété qu’elle déclare aussi', () => {
-    const PEAU = 'skin-tole';
+  // Mesure STRUCTURELLE, jamais une liste de noms — à DEUX titres : les PEAUX sont toutes les
+  // classes `.skin-*` que la couche partagée définit (une peau neuve entre sous la garde en
+  // naissant), et les classes surveillées sont celles qui ne sont JAMAIS posées sans leur peau —
+  // une classe posée aussi SANS elle est une BASE, que la peau repeint légitimement.
+  it('peaux `.skin-*` : le DELTA d’un module BAT sa peau sur toute propriété qu’elle déclare aussi', () => {
     const lire = (rel: string) => readFileSync(join(UI, '..', '..', rel), 'utf8');
     const base = (rel: string) => rel.slice(rel.lastIndexOf('/') + 1);
     /** Poids de cascade : classes + attributs (ni id ni élément dans ces feuilles). */
     const poids = (sel: string) => (sel.match(/\.[\w-]+|\[[^\]]*\]/g) ?? []).length;
     /** Famille de propriété : une longhand de bordure se fait écraser par la shorthand `border`. */
     const famille = (p: string) => (p.startsWith('border-') && p !== 'border-radius' ? 'border' : p);
-
-    // 1. Les classes posées EXCLUSIVEMENT avec la peau, lues aux valeurs `className` du corpus.
-    const avec = new Set<string>();
-    const sans = new Set<string>();
-    for (const { text } of readCorpus(['src/ui'], { exts: ['.tsx'] })) {
-      for (const m of text.matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\})/g)) {
-        const classes = (m[1] ?? m[2]).replace(/\$\{[^}]*\}/g, ' ').split(/\s+/).filter(Boolean);
-        for (const c of classes) if (c !== PEAU) (classes.includes(PEAU) ? avec : sans).add(c);
-      }
-    }
-    const vissees = [...avec].filter((c) => !sans.has(c));
-    expect(vissees.length, 'aucune classe vissée sur la peau : la mesure serait vide').toBeGreaterThan(0);
-
-    // 2. Ce que la peau déclare, et à quel poids.
-    const peau = new Map<string, number>();
-    for (const f of FEUILLES_PARTAGEES) {
-      for (const { selecteurs, corps } of reglesCss(lire(f))) {
-        for (const sel of selecteurs) {
-          if (!sel.includes(`.${PEAU}`)) continue;
-          for (const d of corps.split(';')) {
-            const prop = famille(d.split(':')[0].trim());
-            if (prop) peau.set(prop, Math.max(peau.get(prop) ?? 0, poids(sel)));
-          }
-        }
-      }
-    }
-    expect(peau.size, 'la peau ne déclare rien ?').toBeGreaterThan(0);
-
-    // 3. Rang d'`@import` : à poids ÉGAL, la feuille la plus tardive gagne.
+    /** Rang d'`@import` : à poids ÉGAL, la feuille la plus tardive gagne. */
     const orchestrateur = readFileSync(join(UI, 'styles.css'), 'utf8');
     const rang = (rel: string) => orchestrateur.indexOf(`/${base(rel)}'`);
     const rangPeau = Math.max(...FEUILLES_PARTAGEES.map(rang));
+    const modules = [...modulesDEcran().map((f) => f.rel), ...modulesDePrimitive()];
+
+    // 0. Les PEAUX de la couche partagée, DÉRIVÉES de ses sélecteurs.
+    const PEAUX = new Set<string>();
+    for (const f of FEUILLES_PARTAGEES) {
+      for (const { selecteurs } of reglesCss(lire(f))) {
+        for (const sel of selecteurs) for (const m of sel.matchAll(/\.(skin-[\w-]+)/g)) PEAUX.add(m[1]);
+      }
+    }
+    expect(PEAUX.size, 'aucune peau `.skin-*` dans la couche partagée : la mesure serait vide').toBeGreaterThan(0);
 
     const perdants: string[] = [];
-    for (const rel of [...modulesDEcran().map((f) => f.rel), ...modulesDePrimitive()]) {
-      for (const { selecteurs, corps } of reglesCss(lire(rel))) {
-        for (const sel of selecteurs) {
-          const dernier = sel.split(/[\s>+~]+/).filter(Boolean).pop() ?? '';
-          if (!vissees.some((c) => dernier.includes(`.${c}`))) continue;
-          for (const d of corps.split(';')) {
-            const [prop, ...reste] = d.split(':');
-            const attendu = peau.get(famille(prop.trim()));
-            if (attendu === undefined) continue;
-            const gagne = poids(sel) > attendu || (poids(sel) === attendu && rang(rel) > rangPeau);
-            if (!gagne) {
-              perdants.push(`${rel} :: ${sel} { ${prop.trim()}: ${reste.join(':').trim()} } — poids ${poids(sel)} contre ${attendu}`);
+    const vues: string[] = [];
+    for (const PEAU of PEAUX) {
+      // 1. Les classes posées EXCLUSIVEMENT avec la peau, lues aux valeurs `className` du corpus.
+      const avec = new Set<string>();
+      const sans = new Set<string>();
+      for (const { text } of readCorpus(['src/ui'], { exts: ['.tsx'] })) {
+        for (const m of text.matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\})/g)) {
+          const classes = (m[1] ?? m[2]).replace(/\$\{[^}]*\}/g, ' ').split(/\s+/).filter(Boolean);
+          for (const c of classes) if (c !== PEAU) (classes.includes(PEAU) ? avec : sans).add(c);
+        }
+      }
+      const vissees = [...avec].filter((c) => !sans.has(c));
+      vues.push(`${PEAU} : ${vissees.length}`);
+
+      // 2. Ce que la peau déclare, et à quel poids.
+      const peau = new Map<string, number>();
+      for (const f of FEUILLES_PARTAGEES) {
+        for (const { selecteurs, corps } of reglesCss(lire(f))) {
+          for (const sel of selecteurs) {
+            if (!sel.includes(`.${PEAU}`)) continue;
+            for (const d of corps.split(';')) {
+              const prop = famille(d.split(':')[0].trim());
+              if (prop) peau.set(prop, Math.max(peau.get(prop) ?? 0, poids(sel)));
+            }
+          }
+        }
+      }
+      // Une peau au CORPS vide ne peut battre aucun delta : la comparaison serait verte par vacuité,
+      // peau par peau (une peau déclarante ne couvre pas la voisine muette).
+      expect(peau.size, `la peau .${PEAU} ne déclare AUCUNE propriété`).toBeGreaterThan(0);
+
+      // 3. Tout delta d'un module sur une classe vissée, comparé au poids de la peau.
+      for (const rel of modules) {
+        for (const { selecteurs, corps } of reglesCss(lire(rel))) {
+          for (const sel of selecteurs) {
+            const dernier = sel.split(/[\s>+~]+/).filter(Boolean).pop() ?? '';
+            if (!vissees.some((c) => dernier.includes(`.${c}`))) continue;
+            for (const d of corps.split(';')) {
+              const [prop, ...reste] = d.split(':');
+              const attendu = peau.get(famille(prop.trim()));
+              if (attendu === undefined) continue;
+              const gagne = poids(sel) > attendu || (poids(sel) === attendu && rang(rel) > rangPeau);
+              if (!gagne) {
+                perdants.push(`${rel} :: ${sel} { ${prop.trim()}: ${reste.join(':').trim()} } — poids ${poids(sel)} contre ${attendu} (peau .${PEAU})`);
+              }
             }
           }
         }
       }
     }
+    // Aucune peau ne doit rester SANS porteur : la mesure serait verte par vacuité.
+    expect(vues.filter((v) => v.endsWith(': 0')), `Peau SANS aucune classe vissée — personne ne la pose :\n${vues.join('\n')}`).toEqual([]);
     expect(
       perdants,
       `DELTA PERDANT contre la peau — c'est la peau qu'on voit, pas ces valeurs. Porter le delta sous`

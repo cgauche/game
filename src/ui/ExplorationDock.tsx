@@ -38,7 +38,7 @@ export type ExplorationDockProps = {
 
 export function ExplorationDock({ onPossessions, onCarnet, onShipDossier, onVoyage, worldMap, hub, rest, journal }: ExplorationDockProps) {
   return (
-    <div className="exploration-dock" data-deck="exploration">
+    <div className="exploration-dock skin-pont" data-deck="exploration">
       <div className="xd-openers" aria-label="Écrans de campagne">
         <button type="button" className="worldmap-btn skin-tole" data-ton="laiton" onClick={onPossessions} title="Possessions du groupe">
           <Icon id="travel/mount" size="lg" />

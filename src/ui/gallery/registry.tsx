@@ -28,6 +28,7 @@ import { InitiativeStrip } from '../InitiativeStrip';
 import { PartyDock } from '../PartyDock';
 import { ObjectiveBanner } from '../ObjectiveBanner';
 import { ViewControls } from '../ViewControls';
+import { ConsoleArch, ConsoleCell, PhaseBanner } from '../CombatConsole';
 import { DrBar } from '../DrBar';
 import { Coins } from '../Coins';
 import { LifeBar } from '../LifeBar';
@@ -1115,6 +1116,90 @@ function PartyDockDemo() {
   return <PartyDock heroes={equipe} onOpen={() => {}} />;
 }
 
+/** CONSOLE DE COMBAT — le pont MONTÉ DE SES PROPRES SOUS-COMPOSANTS (`ConsoleCell`, `PhaseBanner`,
+ *  `ConsoleArch`, tous à props et sans store) avec des données d'exemple : la vignette ne peut donc
+ *  pas diverger du balisage réel. Le composant de tête, lui, ne prend aucune prop et lit le store de
+ *  la partie (`useGame`) : la galerie étant un écran de l'application EN COURS (`App.tsx`),
+ *  l'amorcer d'ici injecterait un combat factice dans la partie du joueur. Ce qui reste en balisage
+ *  de maquette est ce que la console rend EN LIGNE, indissociable du store : la coque, les travées,
+ *  la colonne de sets (chaque vignette dispatche `switch-loadout`), le conduit d'Avantage et le coin
+ *  de fin de tour (dispatch `end-turn`). Le pont se dimensionne sur la FENÊTRE : la piste positionnée
+ *  d'un champ défilant (`.gallery-scene-track`) le montre à la largeur de recette du bureau. */
+function CombatConsoleMock() {
+  const actif = herosExemple();
+  const rien = () => {};
+  return (
+    <div className="gallery-scene"><div className="gallery-scene-track">
+      <div className="combat-console skin-pont">
+        <PhaseBanner label={<><Icon id="ui/wait" size="sm" /> Tour de l’ennemi</>} actions={[]} />
+        <div className="cc-dock" data-forme="complete">
+          <div className="cc-bay cc-bay-left">
+            <div className="cc-bay-body">
+              <div className="cc-arsenal">
+                <span className="cc-bay-head">ÉPÉE ET BOUCLIER</span>
+                <div className="cc-arsenal-body">
+                  <div className="cc-sets" role="group" aria-label="Sets d’armes">
+                    <button type="button" data-set="s1" data-action="switch-loadout" className="chip cc-set on" aria-label="Épée et bouclier">
+                      <i className="cc-set-n">1</i>
+                      <Icon id="item/weapon" size="sm" />
+                      <span className="cc-key">X</span>
+                    </button>
+                    <button type="button" data-set="s2" data-action="switch-loadout" className="chip cc-set" aria-label="Arquebuse">
+                      <i className="cc-set-n">2</i>
+                      <Icon id="item/weapon" size="sm" />
+                      <i className="cc-set-load">VIDE</i>
+                    </button>
+                  </div>
+                  <div className="cc-grid cc-grid-left" aria-label="Arsenal">
+                    <ConsoleCell cell={{ key: 'attack', id: 'attack', family: 'arme', label: 'Attaquer', icon: <Icon id="action/attack" />, run: rien }} />
+                    <ConsoleCell cell={{ key: 'shoot', id: 'shoot', family: 'arme', label: 'Tirer', icon: <Icon id="action/shoot" />, on: true, run: rien }} />
+                    <ConsoleCell cell={{ key: 'charge', id: 'charge', family: 'attaque', label: 'Charger', icon: <Icon id="action/attack" />, gate: 'Déjà engagé au contact' }} />
+                    <ConsoleCell cell={undefined} />
+                  </div>
+                </div>
+              </div>
+              <div className="cc-quick">
+                <span className="cc-bay-head">ACCÈS RAPIDE</span>
+                <div className="cc-grid cc-grid-quick" aria-label="Accès rapide">
+                  <ConsoleCell cell={{ key: 'consume', id: 'consume', family: 'geste', label: 'Potion de soin', icon: <Icon id="action/consume" />, run: rien }} />
+                  <ConsoleCell cell={undefined} />
+                </div>
+              </div>
+            </div>
+          </div>
+          <ConsoleArch
+            active={actif}
+            ring="var(--gold)"
+            move={{ value: 3, max: 4, spend: 1, geste: { key: 'undo-move', id: 'undo-move', family: 'mouvement', label: 'Annuler le déplacement', icon: <Icon id="ui/undo" />, run: rien } }}
+            action={{ value: 1, max: 1 }}
+          />
+          <div className="cc-bay cc-bay-right">
+            <div className="cc-conduit" aria-label="Avantage : 2/6">
+              <span className="cc-conduit-label">AVANTAGE</span>
+              <span className="cc-conduit-rail">
+                {Array.from({ length: 10 }, (_, i) => <i key={i} className={i < 2 ? 'on' : i < 6 ? 'off' : 'out'} />)}
+              </span>
+              <span className="cc-conduit-plate">2/6</span>
+            </div>
+            <div className="cc-grid cc-grid-right" aria-label="Capacités">
+              <ConsoleCell hotkey={1} cell={{ key: 'dodge', id: 'dodge', family: 'defense', label: 'Esquiver', icon: <Icon id="action/defend" />, run: rien }} advantage={2} />
+              <ConsoleCell hotkey={2} cell={{ key: 'cast', id: 'cast', family: 'magie', label: 'Incanter', icon: <Icon id="action/cast" />, adv: 3, run: rien }} advantage={2} />
+              <ConsoleCell hotkey={3} cell={undefined} />
+            </div>
+          </div>
+          <div className="cc-corner">
+            <button type="button" data-cell="end-turn" data-action="end-turn" className="chip cc-cell cc-end" aria-label="Finir le tour">
+              <span className="cc-ico"><Icon id="ui/turn-end" /></span>
+              <span className="cc-lbl">Fin du tour</span>
+              <span className="cc-key">F</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  );
+}
+
 /** Objectif courant : tête seule, puis tête repliable (échéance + compte des précédents). */
 function ObjectiveBannerDemo() {
   return (
@@ -1238,6 +1323,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { id: 'logdrawer', label: 'LogDrawer', file: 'src/ui/LogDrawer.tsx', category: 'Combat', render: LogDrawerDemo },
   { id: 'initiativestrip', label: 'InitiativeStrip', file: 'src/ui/InitiativeStrip.tsx', category: 'Combat', render: InitiativeStripDemo },
   { id: 'partydock', label: 'PartyDock', file: 'src/ui/PartyDock.tsx', category: 'Combat', render: PartyDockDemo },
+  { id: 'combatconsole', label: 'CombatConsole', file: 'src/ui/CombatConsole.tsx', category: 'Combat', note: 'maquette statique montée des sous-composants réels du pont (ConsoleCell, PhaseBanner, ConsoleArch) sur des données d’exemple — le composant de tête n’a aucune prop et lit le store de la partie ; l’amorcer depuis la galerie, qui est un écran de l’application en cours, y injecterait un combat factice. La vignette montre la composition de BUREAU : le pont se dimensionne sur la fenêtre, sa composition compacte (≤560) s’observe en recette (scripts/recette/console-pont-formes.mjs), pas ici', render: CombatConsoleMock },
   { id: 'viewcontrols', label: 'ViewControls', file: 'src/ui/ViewControls.tsx', category: 'Combat', render: ViewControlsDemo },
   { id: 'objectivebanner', label: 'ObjectiveBanner', file: 'src/ui/ObjectiveBanner.tsx', category: 'Écrans & layout', render: ObjectiveBannerDemo },
   { id: 'statechips', label: 'StateChips', file: 'src/ui/StateChips.tsx', category: 'Personnages', render: StateChipsDemo },

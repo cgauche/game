@@ -129,6 +129,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `RevealBody` |  |  |  |  | U |  | U |  | U | U |  |  |  |  |  |  |
 | `TeamSegments` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
 | `CombatBanner` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `CombatConsole` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `LogDrawer` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `InspectPanel` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `EquipmentPanel` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
@@ -159,6 +160,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 - `HeroSheet` (src/ui/HeroSheet.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `DesignGallery` (src/ui/gallery/DesignGallery.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `CombatBanner` (src/ui/CombatBanner.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `CombatConsole` (src/ui/CombatConsole.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `LogDrawer` (src/ui/LogDrawer.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `InspectPanel` (src/ui/InspectPanel.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `EquipmentPanel` (src/ui/EquipmentPanel.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
@@ -191,4 +193,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: f088b5c16635ce11aa650f9c9c41e98986e94713 (1819 fichiers, 2 dossiers) corps: 0269e0edd43141d66b123246ad2f428530cd89cc -->
+<!-- sources-empreinte: c45add59c7462f85c0959eb1d646fea4ad18d3f4 (1819 fichiers, 2 dossiers) corps: 57d9a5442e7c8e628d7b09798871647a6dfbd4ff -->

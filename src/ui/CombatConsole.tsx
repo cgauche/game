@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState, type ReactNode, type Ref } from 'react';
+import { Fragment, useEffect, useRef, useState, type ComponentProps, type ReactNode, type Ref } from 'react';
 import { useGame, activeCombatant, movementRemaining, type BattleState, type ShootingStanceKey } from '../state/store';
 import type { Combatant, Weapon, WeaponLoadout } from '../engine/types';
 import { hasMeaningfulOption } from '../state/turnEconomy';
@@ -116,7 +116,7 @@ type Cell = {
  *  ouverte par le focus que le clic vient de donner au bouton — recouvrait exactement ce que le
  *  joueur a demandé à voir (sonde du juge vision : le pavé de règle sur la bandelette de refus de
  *  Dissiper). Le ciblage dissous, la règle revient. */
-function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef, onGeste2e }: { cell?: Cell; hotkey?: number; advantage?: number; ciblageArme?: boolean;
+export function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef, onGeste2e }: { cell?: Cell; hotkey?: number; advantage?: number; ciblageArme?: boolean;
   /** ANCRE de l'alvéole, quand un panneau-paramètre doit NAÎTRE d'elle (`PanneauParametre`, spec
    *  zone 10) : le panneau se pose sur le rect de CE bouton, il ne flotte pas au centre de l'écran. */
   cellRef?: Ref<HTMLButtonElement>;
@@ -254,7 +254,7 @@ const avalerMenuNatif = (e: { preventDefault: () => void }) => e.preventDefault(
 type PhaseAction = { key: string; label: string; icon: ReactNode; primary: boolean; disabled?: boolean; run: () => void };
 /** `ready` = état du READY-CHECK de la phase (coop) : la bande porte alors la rangée des sièges
  *  REQUIS (`ReadyRow`, même quorum que le dispatcher) au-dessus de son geste. */
-type PhaseBanner = { label: ReactNode; actions: PhaseAction[]; ready?: Record<number, boolean> };
+export type PhaseBanner = { label: ReactNode; actions: PhaseAction[]; ready?: Record<number, boolean> };
 
 /** Proéminence DÉDUITE du RÔLE de la sortie — même doctrine que `RollShell` (rôle → style DANS la
  *  coquille) : l'entrée du registre déclare ce que le joueur FAIT en la prenant (`role`, gaté par le
@@ -277,7 +277,7 @@ const ACTION_RECHARGER = 'reload';
  *  pont (pauses de round, interlude de ciblage) ou, à l'OUVERTURE d'un combat, CENTRÉ EN HAUT DE LA
  *  CARTE comme la référence Rogue Trader le pose. Une seule boîte, une seule matière — l'adresse est
  *  un habillage (`centre`), jamais un second composant. */
-function PhaseBanner({ label, actions, ready, centre }: PhaseBanner & { centre?: boolean }) {
+export function PhaseBanner({ label, actions, ready, centre }: PhaseBanner & { centre?: boolean }) {
   return (
     <div className="cc-phase" data-phase={centre ? 'ouverture' : 'pont'}>
       <span className="cc-phase-label">{label}</span>
@@ -321,7 +321,7 @@ function loadoutUnloaded(c: Combatant, lo: WeaponLoadout): boolean {
  *  Sa PLACE, elle, est RÉSERVÉE dans TOUTE gouttière (`[data-geste]`, hauteur fixe en CSS) : le
  *  socle a les mêmes voisins et le même rang qu'un geste soit offert ou non — la venue du geste ne
  *  pousse plus le compteur (sonde du juge vision : boîte du compteur remontée de 13px). */
-function ArchGutter({ kind, value, max, label, short, unit, spend = 0, geste }: { kind: 'action' | 'move'; value: number; max: number; label: string; short: string; unit?: string; spend?: number; geste?: Cell }) {
+export function ArchGutter({ kind, value, max, label, short, unit, spend = 0, geste }: { kind: 'action' | 'move'; value: number; max: number; label: string; short: string; unit?: string; spend?: number; geste?: Cell }) {
   const spendFrom = Math.max(0, value - spend);
   // Le CHIFFRE et les crans sont à l'écran (socle + rail) : le nom accessible suffit à les nommer pour
   // un lecteur d'écran — aucune infobulle native (proscrite, cf. `ConsoleCell`).
@@ -357,6 +357,63 @@ function ArchGutter({ kind, value, max, label, short, unit, spend = 0, geste }: 
         ) : null}
       </span>
     </span>
+  );
+}
+
+/** ARCHE du pont (spec §1c-bis, planche 2026-08-17) : gouttière MOUVEMENT à GAUCHE, portrait,
+ *  gouttière ACTION à DROITE (socles : valeur courante + libellé dessous), NICHE D'ÉTATS
+ *  (rack de 4 alvéoles réservées) au flanc droit, BARRE DE BLESSURES chiffrée pleine
+ *  largeur sous le corps, NOM gravé au pied. RIEN d'autre — l'Avantage vit au conduit.
+ *  La STRUCTURE est la même pour TOUT acteur actif (héros, PNJ, ennemi) : seule
+ *  l'interactivité des cases est réservée au héros (spec zone 7).
+ *  Composant à PROPS, qui ne lit aucun store : ressources du Tour, états de situation et geste
+ *  d'annulation lui arrivent de la console — c'est ce qui rend l'arche montrable en galerie. */
+export function ConsoleArch({ active, ring, move, action, etats, retraitDEtat }: {
+  active: Combatant;
+  ring: string;
+  /** MOUVEMENT : crans du rail, socle chiffré, crans qui partiront au commit, et l'ENTRÉE DU
+   *  REGISTRE adossée à CETTE ressource (spec §1c : l'annulation du déplacement vit sur la jauge de
+   *  Mouvement — elle ne paraît que quand le gate `deplacement-annulable` passe). */
+  move: { value: number; max: number; spend?: number; geste?: Cell };
+  action: { value: number; max: number; spend?: number };
+  /** États de la SITUATION, qui entrent dans le rack avec les États portés (`actorStateChips`). */
+  etats?: EffectChip[];
+  retraitDEtat?: ComponentProps<typeof StateChips>['action'];
+}) {
+  return (
+    <div className="cc-arch skin-pont">
+      <div className="cc-arch-body">
+        <ArchGutter kind="move" value={move.value} max={move.max} label="Mouvement" short="MOUV." unit={`case${move.max > 1 ? 's' : ''}`} spend={move.spend} geste={move.geste} />
+        {/* Portrait NU (`identity`) : les Blessures se lisent à la barre pleine largeur dessous —
+            la jauge superposée de la tuile en aurait fait la 2ᵉ écriture de la même donnée.
+            Le camp se lit au `kind` du combattant, jamais au contrôle joueur (un allié piloté par
+            un autre client reste un allié). */}
+        <PortraitTile c={active} ring={ring} variant="identity" size="lg" team={active.kind === 'enemy' ? 'enemy' : 'ally'} />
+        <ArchGutter kind="action" value={action.value} max={action.max} label="Action" short="ACTION" spend={action.spend} />
+        {/* NICHE D'ÉTATS : même primitive que la tuile du bandeau (`StateChips reserve`), icône +
+            INDICE chiffré par État, alvéoles vides toujours dessinées. */}
+        <StateChips c={active} max={ARCH_STATE_CELLS} reserve extra={etats} action={retraitDEtat} />
+      </div>
+      {/* BLESSURES : barre pleine largeur de l'arche, valeur NOMMÉE sur la piste. Le MOT est un
+          enfant à part : à 360 la ligne d'arche ne peut pas le porter (texte mesuré 236px pour
+          292px d'arche), la composition compacte le retire — le CHIFFRE (`9 / 9`) et la teinte de la
+          piste restent à l'écran, et le `role="meter"` de la primitive porte la valeur à l'a11y. */}
+      <LifeBar
+        value={active.wounds.current}
+        max={active.wounds.max}
+        color={hpColor(active.wounds.max > 0 ? Math.max(0, Math.min(1, active.wounds.current / active.wounds.max)) : 0)}
+        overlay
+        format={(v, m) => (
+          <>
+            {v} / {m}
+            <i> BLESSURES</i>
+          </>
+        )}
+      />
+      {/* Le NOM du porteur, gravé au pied de l'arche (spécimen D) : la console dit en entier
+          qui agit — la frise ne le dit qu'à la position et à la taille. */}
+      <span className="cc-arch-name">{active.label}</span>
+    </div>
   );
 }
 
@@ -534,7 +591,7 @@ export function CombatConsole() {
     return phase ? (
       <>
         {ouverture && <PhaseBanner {...phase} centre />}
-        <div className="combat-console" onContextMenu={avalerMenuNatif}>{!ouverture && <PhaseBanner {...phase} />}</div>
+        <div className="combat-console skin-pont" onContextMenu={avalerMenuNatif}>{!ouverture && <PhaseBanner {...phase} />}</div>
       </>
     ) : null;
   }
@@ -1118,7 +1175,7 @@ export function CombatConsole() {
     {ouverture && phase && <PhaseBanner {...phase} centre />}
     {/* LE PONT : la bande porteuse, à HAUTEUR FIXE. Le bandeau de phase est son seul enfant HORS
         FLUX (superposé au parapet, `.cc-phase`) — une phase qui va et vient ne déplace aucune case. */}
-    <div className="combat-console" onContextMenu={avalerMenuNatif}>
+    <div className="combat-console skin-pont" onContextMenu={avalerMenuNatif}>
       {phase && !ouverture && <PhaseBanner {...phase} />}
       {!phase && !controlled && (
         <div className="cc-phase">
@@ -1280,47 +1337,16 @@ export function CombatConsole() {
           </div>
         </div>
 
-        {/* Arche (spec §1c-bis, planche 2026-08-17) : gouttière MOUVEMENT à GAUCHE, portrait,
-            gouttière ACTION à DROITE (socles : valeur courante + libellé dessous), NICHE D'ÉTATS
-            (rack de 4 alvéoles réservées) au flanc droit, BARRE DE BLESSURES chiffrée pleine
-            largeur sous le corps, NOM gravé au pied. RIEN d'autre — l'Avantage vit au conduit.
-            La STRUCTURE est la même pour TOUT acteur actif (héros, PNJ, ennemi) : seule
-            l'interactivité des cases est réservée au héros (spec zone 7). */}
-        <div className="cc-arch">
-          <div className="cc-arch-body">
-            {/* Le geste d'ANNULATION est adossé à SA ressource (spec §1c) : il ne paraît que quand le
-                gate du registre (`deplacement-annulable`, MIROIR de la garde de `cancelMove`) passe. */}
-            <ArchGutter kind="move" value={moveLeft} max={moveMax} label="Mouvement" short="MOUV." unit={`case${moveMax > 1 ? 's' : ''}`} spend={previewDelta.move} geste={cellFor('undo-move', 'mouvement')} />
-            {/* Portrait NU (`identity`) : les Blessures se lisent à la barre pleine largeur dessous —
-                la jauge superposée de la tuile en aurait fait la 2ᵉ écriture de la même donnée.
-                Le camp se lit au `kind` du combattant, jamais au contrôle joueur (un allié piloté par
-                un autre client reste un allié). */}
-            <PortraitTile c={active} ring={ring} variant="identity" size="lg" team={active.kind === 'enemy' ? 'enemy' : 'ally'} />
-            <ArchGutter kind="action" value={actAvail} max={actMax} label="Action" short="ACTION" spend={previewDelta.action} />
-            {/* NICHE D'ÉTATS : même primitive que la tuile du bandeau (`StateChips reserve`), icône +
-                INDICE chiffré par État, alvéoles vides toujours dessinées. */}
-            <StateChips c={active} max={ARCH_STATE_CELLS} reserve extra={actorStateChips(active, battle)} action={retraitDEtat} />
-          </div>
-          {/* BLESSURES : barre pleine largeur de l'arche, valeur NOMMÉE sur la piste. Le MOT est un
-              enfant à part : à 360 la ligne d'arche ne peut pas le porter (texte mesuré 236px pour
-              292px d'arche), la composition compacte le retire — le CHIFFRE (`9 / 9`) et la teinte de la
-              piste restent à l'écran, et le `role="meter"` de la primitive porte la valeur à l'a11y. */}
-          <LifeBar
-            value={active.wounds.current}
-            max={active.wounds.max}
-            color={hpColor(active.wounds.max > 0 ? Math.max(0, Math.min(1, active.wounds.current / active.wounds.max)) : 0)}
-            overlay
-            format={(v, m) => (
-              <>
-                {v} / {m}
-                <i> BLESSURES</i>
-              </>
-            )}
-          />
-          {/* Le NOM du porteur, gravé au pied de l'arche (spécimen D) : la console dit en entier
-              qui agit — la frise ne le dit qu'à la position et à la taille. */}
-          <span className="cc-arch-name">{active.label}</span>
-        </div>
+        {/* Le geste d'ANNULATION est adossé à SA ressource (spec §1c) : il ne paraît que quand le
+            gate du registre (`deplacement-annulable`, MIROIR de la garde de `cancelMove`) passe. */}
+        <ConsoleArch
+          active={active}
+          ring={ring}
+          move={{ value: moveLeft, max: moveMax, spend: previewDelta.move, geste: cellFor('undo-move', 'mouvement') }}
+          action={{ value: actAvail, max: actMax, spend: previewDelta.action }}
+          etats={actorStateChips(active, battle)}
+          retraitDEtat={retraitDEtat}
+        />
 
         {/* Travée DROITE : conduit d'Avantage BRANCHÉ sur la grille de capacités. */}
         <div className="cc-bay cc-bay-right">

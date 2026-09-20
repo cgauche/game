@@ -362,6 +362,10 @@ const CC_CSS = readCss('combat-console.css');
 const CHIPS_CSS = readCss('state-chips.css');
 const BASE_CSS = readCss('base.css');
 const CC_BASE = baseSection(CC_CSS);
+/** Couche PARTAGÉE : la MATIÈRE de la bande (nappe, liseré) vit dans la peau `.skin-pont`
+ *  (components.css), posée à côté de `.combat-console` et de `.cc-arch` — une seule définition pour
+ *  le pont de combat, son fronton et le pont d'exploration. */
+const COMPONENTS_BASE = baseSection(readCss('components.css'));
 const CHIPS_BASE = baseSection(CHIPS_CSS);
 const DOCK_BASE = baseSection(readCss('party-dock.css'));
 const STRIP_BASE = baseSection(readCss('initiative-strip.css'));
@@ -713,10 +717,14 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     // terrain (c'est ce que la sonde pixel de recette mesure à l'écran).
     const bande = ruleOf(CC_BASE, '.combat-console');
     for (const cote of ['left', 'right', 'bottom']) expect(parseFloat(decl(bande, cote)!), cote).toBe(0);
-    expect(decl(bande, 'background-image')).toMatch(/linear-gradient/);
-    expect(parseColor(decl(bande, 'background-color')!)[3]).toBe(1);
+    // La MATIÈRE de la bande est la peau `.skin-pont`, que le pont POSE : la nappe et le liseré se
+    // lisent donc là, une seule fois pour les trois boîtes de pont.
+    expect(pont.classList.contains('skin-pont'), 'le pont POSE la peau de bande').toBe(true);
+    const peau = ruleOf(COMPONENTS_BASE, '.skin-pont');
+    expect(decl(peau, 'background-image')).toMatch(/linear-gradient/);
+    expect(parseColor(decl(peau, 'background-color')!)[3]).toBe(1);
     // LISERÉ HAUT continu (planche : `[0,873,1920,8]`) — porté par la bande elle-même, donc entier.
-    expect(decl(bande, 'border-top')).toBeTruthy();
+    expect(decl(peau, 'border-top')).toBeTruthy();
   });
 
   it('P-2 — le bandeau de phase est SUPERPOSÉ : le pont a le même flux avec et sans lui', () => {
@@ -756,17 +764,22 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
   });
 
   it('P-3 — l’arche est le FRONTON du pont : même matière, aucune couture, DANS le pont', () => {
-    const bande = ruleOf(CC_BASE, '.combat-console');
     const arche = ruleOf(CC_BASE, '.cc-arch');
+    const peau = ruleOf(COMPONENTS_BASE, '.skin-pont');
     // Même nappe, ancrée au BAS des deux boîtes : de part et d'autre de la jonction, le bois a la
-    // même teinte — il n'y a donc aucune couture à voir.
+    // même teinte — il n'y a donc aucune couture à voir. Vrai PAR CONSTRUCTION : les deux boîtes
+    // posent la MÊME peau, et aucune des deux ne redéclare la nappe.
     for (const p of ['background-image', 'background-size', 'background-position', 'background-color']) {
-      expect(decl(arche, p), p).toBe(decl(bande, p));
+      expect(decl(arche, p), `${p} redéclarée par l’arche`).toBeNull();
+      expect(decl(ruleOf(CC_BASE, '.combat-console'), p), `${p} redéclarée par le pont`).toBeNull();
+      expect(decl(peau, p), `${p} portée par la peau`).toBeTruthy();
     }
-    expect(decl(bande, 'background-position')).toBe('bottom');
+    expect(decl(peau, 'background-position')).toBe('var(--pont-pos, bottom)');
     // Aucun filet à la jonction : ni bordure basse, ni bordure de flanc (seul le liseré haut reste).
-    expect(decl(arche, 'border')).toBe('0');
-    expect(decl(arche, 'border-top')).toBe(decl(bande, 'border-top'));
+    // Les trois côtés se remettent à zéro UN À UN — un `border: 0` effacerait le liseré de la peau.
+    for (const c of ['border-right', 'border-bottom', 'border-left']) expect(decl(arche, c), c).toBe('0');
+    expect(decl(arche, 'border-top'), 'le liseré de l’arche est celui de la peau').toBeNull();
+    expect(decl(peau, 'border-top')).toMatch(/var\(--pont-liseret\)/);
     // Elle S'ÉLÈVE au-dessus du liseré au lieu d'être posée devant (planche : 811 vs 863).
     expect(decl(arche, 'margin-top')).toBe('calc(-1 * var(--cc-fronton))');
     expect(parseFloat(decl(ruleOf(CC_BASE, ':root'), '--cc-fronton')!)).toBeGreaterThan(0);
@@ -811,7 +824,8 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
     monter(h);
-    expect([...host.querySelector('.cc-dock')!.children].map((el) => el.className.split(' ').pop())).toEqual([
+    // La PEAU de bande n'est pas un nom de région : le fronton la porte à côté de sa classe.
+    expect([...host.querySelector('.cc-dock')!.children].map((el) => el.className.split(' ').filter((c) => c !== 'skin-pont').pop())).toEqual([
       'cc-bay-left', 'cc-arch', 'cc-bay-right', 'cc-corner',
     ]);
   });
@@ -871,7 +885,9 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
   //    Le contrat est ARITHMÉTIQUE, dans les tokens déclarés : une hauteur de pont arbitraire suffit,
   //    seules les RELATIONS entre les deux boîtes sont jugées.
   it('P-7 — le bandeau de phase se pose AU-DESSUS du liseré, et la frise réserve sa hauteur', () => {
-    const liseret = parseFloat(decl(ruleOf(CC_BASE, '.combat-console'), 'border-top')!);
+    // Le liseré est celui de la peau de bande : son épaisseur est un token du `:root` (base.css).
+    const liseret = parseFloat(token('--pont-liseret'));
+    expect(decl(ruleOf(COMPONENTS_BASE, '.skin-pont'), 'border-top')).toMatch(/var\(--pont-liseret\)/);
     expect(liseret).toBeGreaterThan(0);
     const P = parseFloat(decl(ruleOf(CC_BASE, ':root'), '--cc-phase-h')!);
     expect(P, 'hauteur de bandeau non publiée').toBeGreaterThan(0);
@@ -1802,8 +1818,10 @@ describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)'
     // (mesuré 17px de contenu coupé à 900×800, `scripts/recette/console-pont-formes.mjs`).
     expect(norm(decl(racine, '--cc-deck-h')!)).toBe('calc(max(var(--cc-bay-h), var(--cc-arch-h) - var(--cc-fronton)) + 3px)');
     expect(norm(decl(racine, '--cc-arch-h')!)).toBe('calc(var(--cc-portrait) + var(--cc-arch-chrome))');
-    // Ces 3px sont bien le liseré du pont, pas un nombre en l'air.
-    expect(decl(ruleOf(CC_BASE, '.combat-console'), 'border-top')).toMatch(/^3px /);
+    // Ces 3px sont bien le liseré du pont, pas un nombre en l'air : la peau de bande le déclare par
+    // le token `--pont-liseret` (base.css).
+    expect(decl(ruleOf(COMPONENTS_BASE, '.skin-pont'), 'border-top')).toMatch(/^var\(--pont-liseret\) /);
+    expect(token('--pont-liseret')).toBe('3px');
     // Tant que le pont est une LIGNE (≥561), aucune tranche ne rejoue la hauteur de la travée : seul le
     // côté d'alvéole varie, et `--cc-bay-h` en découle.
     for (const q of ['@media (max-width: 900px)', '@media (max-width: 700px)']) {
@@ -1890,11 +1908,12 @@ describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)'
   // brun 0,67px à droite) et quatre bandes de matière plus sombre entre les zones, lues comme des
   // trous de carte. Le contrat : UN SEUL élément peint la bande, les régions ne peignent RIEN.
   it('E-5 — BANDE CONTINUE : un seul élément porte le fond ET le liseré ; aucune région n’en peint', () => {
-    const bande = ruleOf(CC_BASE, '.combat-console');
-    // La bande est opaque, de bord à bord, et porte le liseré haut — une seule fois.
-    expect(decl(bande, 'background-image')).toMatch(/linear-gradient/);
-    expect(parseColor(decl(bande, 'background-color')!)[3]).toBe(1);
-    expect(decl(bande, 'border-top')).toBeTruthy();
+    // La bande est opaque, de bord à bord, et porte le liseré haut — une seule fois, dans la peau
+    // `.skin-pont` que le pont POSE (une seule définition pour les trois boîtes de pont).
+    const peau = ruleOf(COMPONENTS_BASE, '.skin-pont');
+    expect(decl(peau, 'background-image')).toMatch(/linear-gradient/);
+    expect(parseColor(decl(peau, 'background-color')!)[3]).toBe(1);
+    expect(decl(peau, 'border-top')).toBeTruthy();
     // AUCUNE région n'a plus de fond ni de bordure propre : ni les deux travées, ni le coin.
     for (const sel of ['.cc-bay', '.cc-bay-left', '.cc-bay-right', '.cc-corner']) {
       for (const p of ['background', 'background-image', 'background-color', 'border', 'border-top', 'box-shadow']) {
@@ -1907,11 +1926,12 @@ describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)'
     expect(CC_CSS, 'le rouge de la plaque de sortie doit avoir disparu').not.toMatch(/--cc-end-(hi|lo)\b/);
     // SEULE EXCEPTION, et elle est le FRONTON : l'arche s'élève AU-DESSUS du liseré (la figurine
     // dépasse), il lui faut donc sa matière là-haut — la MÊME que la bande, prolongement compris
-    // (contrat P-3). Elle ne peint aucun flanc : `border: 0`.
+    // (contrat P-3). Elle l'obtient en POSANT la même peau, jamais en la recopiant, et ne peint
+    // aucun flanc (trois remises à zéro, qui laissent le liseré de la peau intact).
     const arche = ruleOf(CC_BASE, '.cc-arch');
-    expect(decl(arche, 'background-image')).toBe(decl(bande, 'background-image'));
-    expect(decl(arche, 'border-top')).toBe(decl(bande, 'border-top'));
-    expect(decl(arche, 'border')).toBe('0');
+    for (const p of ['background-image', 'border-top']) expect(decl(arche, p), p).toBeNull();
+    expect(readFileSync(join(process.cwd(), 'src', 'ui', 'CombatConsole.tsx'), 'utf8')).toMatch(/className="cc-arch skin-pont"/);
+    for (const c of ['border-right', 'border-bottom', 'border-left']) expect(decl(arche, c), c).toBe('0');
     // Ce qui distingue une région n'est plus que ses ALVÉOLES : le coin porte les tokens de case, il
     // n'a plus de plaque à lui.
     expect(decl(ruleOf(CC_BASE, '.cc-corner'), '--cc-cell-edge')).toBeTruthy();

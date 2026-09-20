@@ -41,7 +41,8 @@ habité » du juge, #371) ; un centrage/bornage codé à la main par écran (tra
   matière (couleur, bordure, police, rayon, ombre) : `components.css`, `tabs.css`, et le module que
   chaque primitive POSSÈDE — la liste fait foi au manifeste des primitives (champ `css`) : `band.css`,
   `frames.css`, `gauges.css`, `hero-sheet.css`, `ornaments.css`, `plaque-row.css`, `rose.css`,
-  `creator-step.css`, `panneau-parametre.css`, plus les familles JET et HUD cataloguées ci-dessous ;
+  `creator-step.css`, `panneau-parametre.css`, `combat-console.css` (l'ORGANISME « console de
+  combat »), plus les familles JET et HUD cataloguées ci-dessous ;
   (3) **layout** — `layout.css`, ce qui PLACE et n'a aucune matière.
   `layout.css` vient APRÈS `components.css` : sans quoi `.panel { padding: 16px }` écraserait le
   `pad` de toute primitive de placement. Un module d'ÉCRAN (tous les autres) ne déclare QUE du
@@ -297,6 +298,7 @@ module de sa primitive, déclaré au manifeste des primitives (champ `css`) et m
 | `coins.css` | `Coins` | `.coins[data-ton]`, `.coin-gold`, `.coin-silver`, `.coin-copper`, `.coin-sep` |
 | `inspect-panel.css` | `InspectPanel` | `.inspect-panel`, `.insp-head`, `.insp-id`, `.insp-lbl`, `.insp-badges`, `.insp-badge`, `.insp-pv-num` |
 | `equipment-panel.css` | `EquipmentPanel` | `.equip-panel`, `.equip-slots`, `.eq-*`, `.equip-sets`, `.set-*`, `.weap-quals` |
+| `combat-console.css` | `CombatConsole` (organisme) | `.combat-console` (le PONT), `.cc-phase` (+ `[data-phase]`), `.cc-dock`, `.cc-bay*`, `.cc-arsenal*`, `.cc-sets`/`.cc-set*`, `.cc-grid*`, `.cc-cell` (l'alvéole, posée à côté de `.chip`), `.cc-ico`, `.cc-lbl`, `.cc-key`, `.cc-cost`, `.cc-quick`, `.cc-arch*` (le fronton), `.cc-gutter*`, `.cc-socle`, `.cc-conduit*`, `.cc-corner`, `.cc-end` — identité et mise en page INTERNE ; la matière de la bande est la peau `.skin-pont` |
 | `src/gameIso/anim.css` | `GameStage3D` (`anim.css`) | `.iso-stage` (la surface du monde, sans `cursor` au repos), `.glow` (halo d'un décor magique ou d'une arme à feu), `.dmg-float` (chiffre de dégâts qui monte au-dessus de la cible) |
 
 La **peau « tôle vissée »** `.skin-tole` (+ `data-ton="sombre"|"laiton"`, `components.css`) est du
@@ -305,6 +307,15 @@ carré, nappe éclairée par le haut, liseré interne d'or, et sa cible de 44px 
 à côté de N'IMPORTE QUELLE base (`.btn` de la rangée de caméra, bouton nu du menu ☰ et du tiroir
 du journal, `.worldmap-btn` des ouvreurs du pont) : quatre poseurs sur trois bases, donc une PEAU
 partagée et non la variante d'une primitive. Chaque module n'en garde que son delta.
+
+La **peau « nappe de pont »** `.skin-pont` (`components.css`) suit le même patron : la matière d'une
+BANDE DE BORD À BORD posée au bas du champ — nappe de bois ancrée au bas de sa boîte, taillée à
+`--pont-band`, liseré de laiton `--pont-liseret` au parapet (grandeurs au `:root` de `base.css`,
+reposables en CONTEXTE par un porteur). Trois boîtes la posent sur deux écrans : le pont de combat
+`.combat-console` et son fronton `.cc-arch`, le pont d'exploration `.exploration-dock`. Chaque
+porteur n'en garde que son delta — l'ombre (portée sous un pont, `inset` sur le fronton), le
+`clip-path` des épaules, et le DÉCALAGE de nappe `--pont-pos` du pont léger, qui montre la même
+PROFONDEUR de bois que le pont de combat.
 
 Quatre classes de la famille de JET sont PARTAGÉES et vivent donc en couche d'identité (`components.css`) :
 `.seg` (segments d'`OptionChooser`, dont l'état pressé est `.seg button[aria-pressed='true']` —

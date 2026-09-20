@@ -1,10 +1,11 @@
 /* ══════════════════ PONT D'EXPLORATION (ExplorationDock.tsx) ══════════════════
    Le pendant ALLÉGÉ du pont de combat (spec HUD combat § « Zone 11 ») : UNE bande de bord à bord,
-   MÊME matière et MÊME liseré que `.combat-console` (nappe `--cc-arch-*` de base.css, liseré de
-   laiton), à hauteur d'une rangée d'icônes. Aucune boîte flottante : les ouvreurs d'écrans ET le
-   tiroir-journal sont assis SUR le pont, à son extrémité droite ; le reste est du pont nu.
-   Les tokens de matière et l'écart de régions viennent du `:root` (base.css pour les teintes,
-   combat-console.css pour `--cc-bay-gap` et `--cc-deck-h`) — jamais un littéral recopié ici. */
+   MÊME matière et MÊME liseré que `.combat-console` — la peau PARTAGÉE `.skin-pont`
+   (components.css), posée par les deux ponts —, à hauteur d'une rangée d'icônes. Aucune boîte
+   flottante : les ouvreurs d'écrans ET le tiroir-journal sont assis SUR le pont, à son extrémité
+   droite ; le reste est du pont nu.
+   Les grandeurs viennent du `:root` (base.css pour les teintes et `--pont-*`, combat-console.css
+   pour `--cc-bay-gap` et `--cc-deck-h`) — jamais un littéral recopié ici. */
 
 /* GÉOMÉTRIE DU PONT — au `:root` comme `--cc-deck-h` (combat-console.css) et pour la même raison :
    la HAUTEUR du pont est une grandeur que le reste du HUD doit LIRE pour s'ancrer AU-DESSUS de lui
@@ -16,11 +17,8 @@
   /* Côté de la cible tactile de la rangée : patron des commandes vissées (peau `.skin-tole`,
      components.css) — au doigt il passe à 44px (tranche `pointer: coarse` ci-dessous), et la réserve suit. */
   --xd-row: 42px;
-  /* Liseré de laiton du parapet : MÊME épaisseur que sur le pont de combat, et le décalage de nappe
-     ci-dessous la relit (la nappe se pose dans la boîte de fond, liseré exclu). */
-  --xd-liseret: 3px;
-  /* RÉSERVE DU BAS hors combat : rangée + respiration (2 × 2px) + liseré. */
-  --xd-deck-h: calc(var(--xd-row) + 4px + var(--xd-liseret));
+  /* RÉSERVE DU BAS hors combat : rangée + respiration (2 × 2px) + le liseré de la peau. */
+  --xd-deck-h: calc(var(--xd-row) + 4px + var(--pont-liseret));
 }
 @media (pointer: coarse) {
   :root {
@@ -28,14 +26,6 @@
   }
 }
 .exploration-dock {
-  /* NAPPE DE BOIS : celle du pont de combat, à l'identique — même dégradé, même HAUTEUR de nappe
-     (`--cc-band`, portée par le sélecteur `.combat-console` et non par le `:root` — la garde
-     `ExplorationDock.test.tsx` échoue si les deux valeurs divergent) et un DÉCALAGE qui aligne la
-     fenêtre visible sur celle du pont de combat. Comprimer les trois bornes dans la hauteur du pont
-     léger rendait la bande 33 % plus claire que le pont de combat à profondeur égale (mesuré à +3px
-     sous le liseré : combat rgb(33,24,13)) : ce n'était pas la même matière, c'était le même dégradé
-     sur une autre course. */
-  --xd-band: 300px;
   position: absolute;
   left: 0;
   right: 0;
@@ -46,16 +36,15 @@
   align-items: center;
   gap: var(--cc-bay-gap);
   padding: 2px 10px;
-  background-color: var(--cc-arch-lo);
-  background-image: linear-gradient(180deg, var(--cc-arch-hi), var(--cc-arch-mid) 55%, var(--cc-arch-lo));
-  background-size: 100% var(--xd-band);
-  /* Le haut de la nappe tombe où il tombe sur le pont de combat : sa boîte de fond mesure
-     `--cc-deck-h` moins son liseré et sa nappe y est ancrée EN BAS — d'où ce décalage négatif, qui
-     fait correspondre profondeur de nappe et profondeur de pont à toute largeur (`--cc-deck-h` est
-     un `clamp`). */
-  background-position: 0 calc(var(--cc-deck-h) - var(--xd-liseret) - var(--xd-band));
-  background-repeat: no-repeat;
-  border-top: var(--xd-liseret) solid var(--atelier-brass-hover);
+  /* DÉCALAGE DE NAPPE — le seul delta de matière du pont léger sur la peau. Le haut de la nappe
+     tombe où il tombe sur le pont de combat : sa boîte de fond mesure `--cc-deck-h` moins son
+     liseré et sa nappe y est ancrée EN BAS, d'où ce décalage négatif, qui fait correspondre
+     profondeur de nappe et profondeur de pont à toute largeur (`--cc-deck-h` est un `clamp`).
+     Comprimer les trois bornes dans la hauteur du pont léger rend la bande 33 % plus claire que le
+     pont de combat à profondeur égale (mesuré à +3px sous le liseré) : le même dégradé sur une
+     autre course n'est pas la même matière. */
+  --pont-pos: 0 calc(var(--cc-deck-h) - var(--pont-liseret) - var(--pont-band));
+  /* DELTA de la peau : l'ombre PORTÉE sur le terrain, comme le pont de combat. */
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.55);
 }
 /* Rangée d'icônes-écrans : à l'extrémité DROITE du pont, jamais au milieu du champ. Le tiroir-journal
