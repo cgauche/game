@@ -1356,14 +1356,42 @@ button.chip:hover {
    Le texte posé sur un fond qu'il ne MAÎTRISE pas (le monde nu, le remplissage d'une jauge) : la
    double ombre d'encre qui l'en détache quoi qu'il passe dessous. Elle se mesure en `em` : le halo
    suit le corps du texte qui le porte, du chiffre de 9px d'une barre de vie au nom de 15px d'un lieu.
-   Cinq poseurs (`PlaquesDeNom` au-dessus d'une entité du plateau, le panneau du tiroir-journal tant
+   Ses poseurs — `PlaquesDeNom` au-dessus d'une entité du plateau, le panneau du tiroir-journal tant
    que son fond reste transparent, l'inscription du lieu de la barre haute, le fil d'événements de
-   combat, le chiffre en surimpression de `LifeBar`) : un contrat de couche, jamais la propriété
-   d'un module — aucune feuille ne réécrit une double ombre d'encre (garde de
-   `src/ui/ui-ratchets.test.ts`). Un porteur qui REVÈLE un
-   fond opaque éteint le halo depuis son propre module (`.log-drawer:hover .ld-panel`). */
+   combat, le chiffre en surimpression de `LifeBar`, le mot et le sous-titre du beat d'ouverture
+   (`CombatStartSplash`) : un contrat de couche, jamais la propriété d'un module — aucune feuille ne
+   réécrit une double ombre d'encre (garde de `src/ui/ui-ratchets.test.ts`). Un titre posé sur une
+   CARTE (`MenuCard`, `OrnateFrame`) maîtrise son fond : il ne pose PAS le halo. Un porteur qui
+   RÉVÈLE un fond opaque l'éteint depuis son propre module (`.log-drawer:hover .ld-panel`). */
 .halo-champ {
   text-shadow: 0 0.07em 0.2em var(--shadow-ink), 0 0 0.4em var(--shadow-ink);
+}
+
+/* ── GRAND TEXTE D'AFFICHAGE (`.display-title`) ─────────────────────────────────────────────────
+   La matière d'un GRAND TITRE gothique : celui qu'un écran affiche pour s'annoncer, pas pour titrer
+   une rubrique (`.mini-title`). Elle se POSE à côté de la base du markup — six poseurs, six bases :
+   le `h1` du menu principal (`MainMenu`), celui de la bataille de masse (`MassBattleView`), le
+   masthead de l'interlude (`InterludeScreen`), le mot du beat d'ouverture (`CombatStartSplash`,
+   échelle `champ` et ton `menace`), le nom du héros de la présentation du créateur
+   (`CharacterCreator`) et la plaque de code de salon (`CoopPanels`, qui garde son delta de plaque).
+   Deux paramètres d'ÉTAT, jamais une copie : `data-echelle='champ'` porte le corps plein-écran,
+   `data-ton='menace'` la couleur d'alerte. L'OMBRE n'est pas ici : seul le titre posé sur un fond
+   qu'il ne maîtrise pas — le mot du beat, sur le monde nu — pose `.halo-champ` à côté ; les cinq
+   autres sont sur une carte. Aucun module d'écran ne réécrit cette matière (garde de
+   `src/ui/ui-ratchets.test.ts`). */
+.display-title {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 9vw, 52px);
+  margin: 0;
+  color: var(--gold2);
+  letter-spacing: 1px;
+  line-height: 1.05;
+}
+.display-title[data-echelle='champ'] {
+  font-size: clamp(40px, 12vw, 120px);
+}
+.display-title[data-ton='menace'] {
+  color: var(--danger);
 }
 
 /* ── MATIÈRE DU NOM (`.codex-pop-title`, `.codex-pop-sub`) ──────────────────────────────────────

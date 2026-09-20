@@ -630,17 +630,13 @@ h3 {
     0 24px 70px rgba(0, 0, 0, 0.55),
     inset 0 0 0 1px rgba(201, 162, 39, 0.16);
 }
-.title {
-  font-size: clamp(34px, 9vw, 52px);
-  margin: 0;
-  color: var(--gold2);
-  letter-spacing: 1px;
-  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.65);
-  line-height: 1.05;
-}
+/* Ligne discrète sous le grand titre d'une carte — la phrase qui prolonge `.display-title`
+   (components.css), en police de corps. La marge est ÉCRITE sur les quatre côtés : le dépôt ne pose
+   aucun reset de `p`, et la marge basse de l'agent utilisateur traîne sinon sous ses quatre poseurs
+   (`MainMenu`, `MassBattleView`, `InterludeScreen`, `CampaignOpeningScreen`). */
 .subtitle {
   color: var(--muted);
-  margin-top: 6px;
+  margin: 6px 0 0;
 }
 .menu-buttons {
   display: flex;

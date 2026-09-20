@@ -178,8 +178,8 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
     <div className="interlude-shell tx-ink">
       <div className="interlude-column">
         <OrnateFrame tone="gold" className="interlude-masthead">
-          <h1 className="interlude-title">{t('interlude.title')}</h1>
-          <p className="interlude-subtitle">
+          <h1 className="display-title">{t('interlude.title')}</h1>
+          <p className="subtitle">
             {interlude.weeks} semaine{interlude.weeks > 1 ? 's' : ''} de répit avant la prochaine aventure
           </p>
         </OrnateFrame>

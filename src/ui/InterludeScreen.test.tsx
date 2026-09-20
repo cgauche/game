@@ -299,7 +299,7 @@ describe('InterludeScreen — refonte visuelle #257 (coquille dédiée, masthead
     expect(html).toContain('interlude-shell'); // coquille propre à l’interlude
     expect(html).toContain('tx-ink'); // texture d’ambiance chartée
     expect(html).toContain('ornate-frame'); // OrnateFrame du masthead (identité de cérémonie)
-    expect(html).toContain('interlude-title'); // titre gothique (font-display)
+    expect(html).toContain('display-title'); // grand titre gothique, matière PARTAGÉE (components.css)
     expect(html).not.toContain('menu-card'); // découplé de l’écran voisin en refonte
   });
 

@@ -4,21 +4,23 @@
    un `.muted`, le bandeau de liaison un `.chip.tone-danger`. Restent les deux formes qui n'ont
    aucune canonique : la PLAQUE du code de room et son CHAMP de saisie. */
 
-/* PLAQUE du code de room : six caractères gravés, lisibles à distance, sélectionnés d'un clic. */
+/* PLAQUE du code de room : six caractères gravés, lisibles à distance, sélectionnés d'un clic. La
+   MATIÈRE du texte est `.display-title` (components.css), que le `div` pose ; ne reste ici que ce qui
+   fait la PLAQUE — l'espacement gravé des lettres, le fond, le filet et la cible de sélection. Cet
+   espacement bat celui de la primitive par l'ORDRE d'import (`styles.css` : `coop-panels.css` vient
+   après `components.css`, à spécificité égale). */
 .coop-code {
-  font-family: var(--font-display);
-  font-size: 2.4rem;
   letter-spacing: 0.3em;
   text-indent: 0.3em; /* compense le letter-spacing du dernier caractère */
   text-align: center;
-  color: var(--gold2);
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.25em 0.4em;
   user-select: all;
 }
-/* CHAMP du même code, côté invité : la frappe se lit à la même échelle que la plaque en face. */
+/* CHAMP du même code, côté invité : lettres espacées et majuscules forcées, pour que la frappe se
+   relise caractère par caractère contre la plaque en face. */
 .coop-code-input {
   text-transform: uppercase;
   letter-spacing: 0.25em;

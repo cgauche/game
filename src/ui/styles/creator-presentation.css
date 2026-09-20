@@ -96,12 +96,10 @@
   z-index: 1;
 }
 
+/* Le nom du héros POSE `.display-title` (components.css) : ne reste ici que son PLACEMENT dans la
+   colonne de présentation. */
 .presentation-name {
-  font-family: var(--font-display);
-  font-size: 34px;
-  color: var(--gold2);
-  margin: 8px 0 0;
-  letter-spacing: 1px;
+  margin: var(--sp-md) 0 0;
   text-align: center;
 }
 .presentation-sub {
@@ -147,8 +145,5 @@
   .creator-presentation-screen {
     padding: 12px;
     gap: 12px;
-  }
-  .presentation-name {
-    font-size: 27px;
   }
 }

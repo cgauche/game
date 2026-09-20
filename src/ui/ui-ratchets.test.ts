@@ -11,7 +11,10 @@ import {
   mesureCssCouches,
   modulesDEcran,
   modulesDePrimitive,
+  SEUIL_GRAND_TITRE_PX,
+  VIEWPORT_RECETTE,
   sitesEspacementHorsEchelle,
+  sitesGrandTitre,
   sitesIdentiteEcran,
   sitesStyleInline,
   type Fichier as FichierMesure,
@@ -908,6 +911,72 @@ describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
     expect(copies, `Halo d'encre réécrit hors couche partagée — poser « halo-champ » :\n${copies.join('\n')}`).toEqual([]);
   });
 
+  // Le GRAND TEXTE D'AFFICHAGE est `.display-title` (components.css) : un écran la POSE, il ne la
+  // réécrit pas. Mesure ABSOLUE, sans liste ni exemption, et SANS regarder la police — un grand
+  // corps est un grand titre, qu'il hérite sa police ou qu'il la déclare : aucune feuille hors
+  // couche partagée ne porte une taille de texte dont la BORNE HAUTE atteint le seuil. Les titres
+  // d'ÉCRAN (24-26px) sont une autre matière : ils restent sous le seuil, donc hors de la mesure.
+  it('grand titre d’affichage : une taille de texte au-delà du seuil ne s’écrit que dans la couche partagée', () => {
+    const corpus = readCorpus(['src'], { exts: ['.css'] });
+    const sites = sitesGrandTitre(corpus).map((s) => `${s.file} :: ${s.ref}`);
+    expect(
+      sites,
+      `Grand titre réécrit hors couche partagée — poser « display-title » (un site INDÉCIDABLE se`
+        + ` lève aussi : une taille que le texte ne dit pas ne se mesure pas) :\n${sites.join('\n')}`,
+    ).toEqual([]);
+    // NON-VACUITÉ : la couche partagée porte bien une règle que le critère VERRAIT. Le témoin est
+    // son PROPRE texte relu sous un chemin de module — zéro site ne prouverait rien sans lui.
+    const partagee = corpus.find((f) => f.rel === 'src/ui/styles/components.css');
+    expect(partagee, 'la couche partagée est dans le corpus lu').toBeDefined();
+    const temoin = sitesGrandTitre([{ rel: 'src/ui/styles/temoin-hors-couche.css', text: partagee!.text }]);
+    expect(
+      temoin.map((s) => s.ref),
+      `la couche partagée porte au moins un grand titre à ≥${SEUIL_GRAND_TITRE_PX}px`,
+    ).toContainEqual(expect.stringContaining('.display-title ::'));
+  });
+
+  it('la matière du grand titre est POSÉE par au moins DEUX fichiers `.tsx` hors galerie', () => {
+    const poseurs = new Set<string>();
+    for (const { rel: chemin, text } of readCorpus(['src'], { exts: ['.tsx'] })) {
+      if (chemin.includes('/gallery/') || estFichierVitest(chemin)) continue;
+      for (const m of text.matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\})/g)) {
+        if ((m[1] ?? m[2]).split(/\s+/).includes('display-title')) poseurs.add(chemin);
+      }
+    }
+    expect(
+      poseurs.size,
+      `Matière du grand titre à moins de deux poseurs — elle appartiendrait alors à SA primitive, pas à la couche partagée :\n${[...poseurs].sort().join('\n') || 'aucun'}`,
+    ).toBeGreaterThanOrEqual(2);
+  });
+
+  it('le détecteur de grand titre lit le clamp, le rem, le `vw` nu, le `calc`, le raccourci `font` et le token partagé', () => {
+    const module = (corps: string) => [{ rel: 'src/ui/styles/ecran.css', text: `.x { ${corps} }` }];
+    const taille = (v: string) => sitesGrandTitre(module(`font-size: ${v};`));
+    expect(taille('clamp(40px, 12vw, 120px)'), 'la borne HAUTE d’un clamp est le corps réel').toHaveLength(1);
+    expect(taille('2.4rem'), 'un rem se compte à 16px (38,4px)').toHaveLength(1);
+    expect(taille('12vw'), `un vw NU se lit au viewport de recette (${VIEWPORT_RECETTE.largeur}px)`).toHaveLength(1);
+    expect(taille('calc(20px * 3)'), 'le produit d’un calc est évalué').toHaveLength(1);
+    expect(taille('40px'), 'la police HÉRITÉE ne blanchit rien : le corps seul décide').toHaveLength(1);
+    expect(
+      sitesGrandTitre(module("font: 600 40px/1.2 'Grenze Gotisch', serif;")),
+      'le RACCOURCI `font` déclare une taille comme les autres',
+    ).toHaveLength(1);
+    expect(taille('26px'), 'un titre d’ÉCRAN est une autre matière').toEqual([]);
+    expect(taille('inherit'), 'un mot-clé ne déclare aucun grand corps').toEqual([]);
+    expect(
+      taille('var(--taille-sans-declaration)').map((s) => s.ref),
+      'une taille que le texte ne dit pas est LEVÉE, jamais ignorée',
+    ).toEqual(['.x :: font-size :: INDÉCIDABLE (var(--taille-sans-declaration))']);
+    // Un token de la COUCHE PARTAGÉE est décidable : il se résout, et ne lève donc rien.
+    const partage = [{ rel: FEUILLES_PARTAGEES[0], text: ':root { --petit: 10px; --grand: 40px; }' }];
+    expect(sitesGrandTitre([...partage, ...module('font-size: var(--petit);')]), 'token résolu à 10px').toEqual([]);
+    expect(sitesGrandTitre([...partage, ...module('font-size: var(--grand);')]), 'token résolu à 40px').toHaveLength(1);
+    expect(
+      sitesGrandTitre([{ rel: FEUILLES_PARTAGEES[1], text: '.x { font-size: clamp(40px, 12vw, 120px); }' }]),
+      'la MÊME règle est chez elle dans la couche partagée',
+    ).toEqual([]);
+  });
+
   it('≤560, bande DÉPLIÉE : son rang passe devant le fil d’événements, et la règle BAT l’ancrage de repos', () => {
     const hud = readFileSync(join(UI, 'styles', 'hud.css'), 'utf8');
     const rang = (css: string, selecteur: string) => {
@@ -926,15 +995,21 @@ describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
     expect(rang(hud, '.stage > .party-dock'), 'rang de repos').toBeLessThan(rangDeplie);
   });
 
-  // Une PEAU se pose À CÔTÉ d'une classe de module : les deux visent le MÊME élément. Toute
-  // propriété que le module redéclare et que la peau déclare AUSSI se tranche à la cascade — si le
-  // delta PERD, c'est la peau qu'on voit et le module ment (défaut mesuré : `.vc-btn` à 0-1-0
-  // perdait `font-size: 20px` contre `.skin-tole[data-ton]` à 0-2-0, glyphes de caméra à 19px).
-  // Mesure STRUCTURELLE, jamais une liste de noms — à DEUX titres : les PEAUX sont toutes les
-  // classes `.skin-*` que la couche partagée définit (une peau neuve entre sous la garde en
-  // naissant), et les classes surveillées sont celles qui ne sont JAMAIS posées sans leur peau —
-  // une classe posée aussi SANS elle est une BASE, que la peau repeint légitimement.
-  it('peaux `.skin-*` : le DELTA d’un module BAT sa peau sur toute propriété qu’elle déclare aussi', () => {
+  // Une MATIÈRE partagée se pose À CÔTÉ d'une classe de module : les deux visent le MÊME élément.
+  // Toute propriété que le module redéclare et que la matière déclare AUSSI se tranche à la cascade —
+  // si le delta PERD, c'est la matière qu'on voit et le module ment (défaut mesuré : `.vc-btn` à
+  // 0-1-0 perdait `font-size: 20px` contre `.skin-tole[data-ton]` à 0-2-0, glyphes de caméra à 19px).
+  // Mesure STRUCTURELLE, jamais une liste de noms — à DEUX titres : les MATIÈRES sont toutes les
+  // classes `.skin-*` (une peau) et `.display-*` (un grand texte) que la couche partagée définit —
+  // une matière neuve entre sous la garde en NAISSANT, à sa convention de nom ; et les classes
+  // surveillées sont celles qui ne sont JAMAIS posées sans elle — une classe posée aussi SANS elle
+  // est une BASE, que la matière repeint légitimement.
+  // PÉRIMÈTRE, mesuré le 2026-09-20 (#1806) : la convention de nom EST la frontière. La même mesure
+  // portée à TOUTE classe de la couche partagée rend 76 sites, tous sous une BASE substantive —
+  // `.btn`, `.panel`, `.chip`, `.modal`, `.modal-overlay`, `.flush`, `.small` : un delta qui perd
+  // contre SA base est un défaut d'écran, et aucune baseline ne le gèle ici. Chaque base assainie
+  // entre sous la garde en prenant un nom de matière.
+  it('matières `.skin-*`/`.display-*` : le DELTA d’un module BAT la matière sur toute propriété qu’elle déclare aussi', () => {
     const lire = (rel: string) => readFileSync(join(UI, '..', '..', rel), 'utf8');
     const base = (rel: string) => rel.slice(rel.lastIndexOf('/') + 1);
     /** Poids de cascade : classes + attributs (ni id ni élément dans ces feuilles). */
@@ -947,19 +1022,19 @@ describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
     const rangPeau = Math.max(...FEUILLES_PARTAGEES.map(rang));
     const modules = [...modulesDEcran().map((f) => f.rel), ...modulesDePrimitive()];
 
-    // 0. Les PEAUX de la couche partagée, DÉRIVÉES de ses sélecteurs.
+    // 0. Les MATIÈRES de la couche partagée, DÉRIVÉES de ses sélecteurs.
     const PEAUX = new Set<string>();
     for (const f of FEUILLES_PARTAGEES) {
       for (const { selecteurs } of reglesCss(lire(f))) {
-        for (const sel of selecteurs) for (const m of sel.matchAll(/\.(skin-[\w-]+)/g)) PEAUX.add(m[1]);
+        for (const sel of selecteurs) for (const m of sel.matchAll(/\.((?:skin|display)-[\w-]+)/g)) PEAUX.add(m[1]);
       }
     }
-    expect(PEAUX.size, 'aucune peau `.skin-*` dans la couche partagée : la mesure serait vide').toBeGreaterThan(0);
+    expect(PEAUX.size, 'aucune matière `.skin-*`/`.display-*` dans la couche partagée : la mesure serait vide').toBeGreaterThan(1);
 
     const perdants: string[] = [];
     const vues: string[] = [];
     for (const PEAU of PEAUX) {
-      // 1. Les classes posées EXCLUSIVEMENT avec la peau, lues aux valeurs `className` du corpus.
+      // 1. Les classes posées EXCLUSIVEMENT avec la matière, lues aux valeurs `className` du corpus.
       const avec = new Set<string>();
       const sans = new Set<string>();
       for (const { text } of readCorpus(['src/ui'], { exts: ['.tsx'] })) {
@@ -971,12 +1046,13 @@ describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
       const vissees = [...avec].filter((c) => !sans.has(c));
       vues.push(`${PEAU} : ${vissees.length}`);
 
-      // 2. Ce que la peau déclare, et à quel poids.
+      // 2. Ce que la matière déclare, et à quel poids — appariement par TOKEN, là aussi.
       const peau = new Map<string, number>();
+      const porteLaMatiere = new RegExp(`\\.${PEAU}(?![\\w-])`);
       for (const f of FEUILLES_PARTAGEES) {
         for (const { selecteurs, corps } of reglesCss(lire(f))) {
           for (const sel of selecteurs) {
-            if (!sel.includes(`.${PEAU}`)) continue;
+            if (!porteLaMatiere.test(sel)) continue;
             for (const d of corps.split(';')) {
               const prop = famille(d.split(':')[0].trim());
               if (prop) peau.set(prop, Math.max(peau.get(prop) ?? 0, poids(sel)));
@@ -984,35 +1060,37 @@ describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
           }
         }
       }
-      // Une peau au CORPS vide ne peut battre aucun delta : la comparaison serait verte par vacuité,
-      // peau par peau (une peau déclarante ne couvre pas la voisine muette).
-      expect(peau.size, `la peau .${PEAU} ne déclare AUCUNE propriété`).toBeGreaterThan(0);
+      // Une matière au CORPS vide ne peut battre aucun delta : la comparaison serait verte par
+      // vacuité, matière par matière (une matière déclarante ne couvre pas la voisine muette).
+      expect(peau.size, `la matière .${PEAU} ne déclare AUCUNE propriété`).toBeGreaterThan(0);
 
-      // 3. Tout delta d'un module sur une classe vissée, comparé au poids de la peau.
+      // 3. Tout delta d'un module sur une classe vissée, comparé au poids de la matière.
       for (const rel of modules) {
         for (const { selecteurs, corps } of reglesCss(lire(rel))) {
           for (const sel of selecteurs) {
             const dernier = sel.split(/[\s>+~]+/).filter(Boolean).pop() ?? '';
-            if (!vissees.some((c) => dernier.includes(`.${c}`))) continue;
+            // Appariement par TOKEN, jamais par sous-chaîne : `.coop-code-input` n'est pas `.coop-code`,
+            // et le confondre attribuerait à une classe le delta d'une autre.
+            if (!vissees.some((c) => new RegExp(`\\.${c}(?![\\w-])`).test(dernier))) continue;
             for (const d of corps.split(';')) {
               const [prop, ...reste] = d.split(':');
               const attendu = peau.get(famille(prop.trim()));
               if (attendu === undefined) continue;
               const gagne = poids(sel) > attendu || (poids(sel) === attendu && rang(rel) > rangPeau);
               if (!gagne) {
-                perdants.push(`${rel} :: ${sel} { ${prop.trim()}: ${reste.join(':').trim()} } — poids ${poids(sel)} contre ${attendu} (peau .${PEAU})`);
+                perdants.push(`${rel} :: ${sel} { ${prop.trim()}: ${reste.join(':').trim()} } — poids ${poids(sel)} contre ${attendu} (matière .${PEAU})`);
               }
             }
           }
         }
       }
     }
-    // Aucune peau ne doit rester SANS porteur : la mesure serait verte par vacuité.
-    expect(vues.filter((v) => v.endsWith(': 0')), `Peau SANS aucune classe vissée — personne ne la pose :\n${vues.join('\n')}`).toEqual([]);
+    // Aucune matière ne doit rester SANS porteur : la mesure serait verte par vacuité.
+    expect(vues.filter((v) => v.endsWith(': 0')), `Matière SANS aucune classe vissée — personne ne la pose :\n${vues.join('\n')}`).toEqual([]);
     expect(
       perdants,
-      `DELTA PERDANT contre la peau — c'est la peau qu'on voit, pas ces valeurs. Porter le delta sous`
-        + ` son conteneur (poids ≥ celui de la peau) ou le retirer :\n${perdants.join('\n')}`,
+      `DELTA PERDANT contre la matière — c'est la matière qu'on voit, pas ces valeurs. Porter le delta`
+        + ` sous son conteneur (poids ≥ celui de la matière) ou le retirer :\n${perdants.join('\n')}`,
     ).toEqual([]);
   });
 
@@ -1135,7 +1213,7 @@ function scanNumberInputs(files: readonly Fichier[]): Record<string, number> {
 }
 
 // ── (xviii) Breakpoints de LARGEUR hors canon, sur TOUS les modules CSS (#1318 V5) — le volet
-//    responsive du HUD ne regardait que `hud.css`/`combat-ui.css`/`roll-shell.css` ; la règle
+//    responsive du HUD ne regardait que `hud.css`/`combat-start-splash.css`/`roll-shell.css` ; la règle
 //    stricte 4 du CLAUDE.md vaut pour tout `src/ui`. Canon VERS LE BAS : `max-width` ∈ {900,700,560}.
 //    Canon VERS LE HAUT : `min-width` ∈ {561,701,901} (complément exact d'une tranche basse) et 1440
 //    (docs/charte-ui.md § « Politique grand écran (≥1440px) »).

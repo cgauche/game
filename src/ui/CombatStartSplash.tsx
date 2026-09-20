@@ -1,9 +1,9 @@
 import { useGame } from '../state/store';
 import { combatOpening } from '../engine/combat';
 
-/** Le TON n'existe que là où le beat change de couleur : seule l'embuscade est peinte à part. */
-const SPLASH: Record<'ambush' | 'assault' | 'combat', { word: string; sub: string; ton?: 'embuscade' }> = {
-  ambush:  { word: 'EMBUSCADE !', sub: 'Vous êtes pris par surprise', ton: 'embuscade' },
+/** Le TON n'existe que là où le beat change de couleur : seule l'embuscade est peinte en menace. */
+const SPLASH: Record<'ambush' | 'assault' | 'combat', { word: string; sub: string; ton?: 'menace' }> = {
+  ambush:  { word: 'EMBUSCADE !', sub: 'Vous êtes pris par surprise', ton: 'menace' },
   assault: { word: 'ASSAUT !',    sub: "Vous surprenez l'ennemi" },
   combat:  { word: 'COMBAT !',    sub: '' },
 };
@@ -21,10 +21,10 @@ export function CombatStartSplash() {
   if (mode !== 'battle' || !battle || pendingRoundStart?.round !== 1 || cascadeOuverte) return null;
   const s = SPLASH[combatOpening(battle.combatants)];
   return (
-    <div className="combat-splash" data-ton={s.ton} aria-hidden="true">
+    <div className="combat-splash" aria-hidden="true">
       <div className="combat-splash-inner">
-        <div className="combat-splash-word">{s.word}</div>
-        {s.sub && <div className="combat-splash-sub">{s.sub}</div>}
+        <div className="display-title halo-champ" data-echelle="champ" data-ton={s.ton}>{s.word}</div>
+        {s.sub && <div className="combat-splash-sub halo-champ">{s.sub}</div>}
       </div>
     </div>
   );

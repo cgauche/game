@@ -20,7 +20,7 @@ export function MainMenu() {
     <div className="menu tx-ink">
       <MenuCard
         header={<>
-          <h1 className="title">{t('menu.title')}</h1>
+          <h1 className="display-title">{t('menu.title')}</h1>
           <p className="subtitle">{t('menu.subtitle')}</p>
         </>}
         footer={<p className="footnote">{t('menu.footnote')}</p>}

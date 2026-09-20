@@ -226,6 +226,8 @@ son propre cue (Compendium, pickers marchands…) sans reposer le mécanisme de 
 
 | Classe | Rôle | Quand l'utiliser / anti-patron |
 |---|---|---|
+| `.display-title` (+ `data-echelle="champ"`, `data-ton="menace"`) | GRAND titre gothique d'affichage — celui par lequel un écran s'annonce (`clamp(34px, 9vw, 52px)`, `--gold2`) | Se POSE à côté de la base du markup, jamais recopiée : un nouveau grand titre = un `className`, zéro déclaration CSS. `data-echelle="champ"` pour un mot plein écran (`clamp(40px, 12vw, 120px)`), `data-ton="menace"` pour l'alerte (`--danger`). L'OMBRE n'y est pas : seul un titre posé sur un fond qu'il ne MAÎTRISE pas — le monde nu — pose `.halo-champ` à côté ; sur une carte (`MenuCard`, `OrnateFrame`), pas de halo. |
+| `.subtitle` | Ligne discrète sous un grand titre (`--muted`, police de corps) | Toute ligne qui prolonge un `.display-title` sur une carte — menu, bataille de masse, interlude, ouverture de campagne. Une phrase ne se compose pas en gothique lettré. |
 | `.mini-title` | Titre de section en petites capitales dures (11px, `--muted`) | Réflexe par défaut pour titrer une rubrique dans un panel — pas de nouveau style de titre ad hoc. |
 | `.section-label` | Annotation de section alternative (small-caps, plus discrète que `.mini-title`) | Variante ADDITIVE quand `.mini-title`/un `Hn` gothique seraient trop lourds — pas un remplacement systématique. |
 | `.clue-refuted` | Contenu ÉCARTÉ (barré + atténué) mais qui reste LISIBLE — jamais retiré du DOM | Fausse piste d'un indice de carnet (`ClueState.statut === 'réfuté'`, #670) ; tout contenu qu'une règle 7 arbitre à consulter-mais-marqué-caduc. |
@@ -308,6 +310,7 @@ module de sa primitive, déclaré au manifeste des primitives (champ `css`) et m
 | `ready-row.css` | `ReadyRow` | `.ready-row`, `.ready-chip` (+ `.ok`), `.ready-noportrait` |
 | `gear-assign-list.css` | `GearAssignList` | `.gear-list`, `.gear-row`, `.gear-name`, `.gear-unid`, `.gear-acts`, `.gear-act`, `.gear-assign` |
 | `reward-recap.css` | `RewardRecap` | `.reward-messages`, `.reward-msg`, `.reward-stats`, `.reward-stat` (+ son `<b>`), `.reward-unit`, `.reward-ico`, `.reward-section` (+ son `h3`), `.reward-continue` — le GESTE DE SORTIE est un slot : l'hôte pose `.reward-continue` sur son propre bouton, la rubrique à TOUCHER est un ÉTAT de la primitive (prop `enAvant` d'une `RecapSection` → `.reward-section[data-avant]`, posée sur `.panel.gold`) |
+| `combat-start-splash.css` | `CombatStartSplash` (organisme) | `.combat-splash` (la pose plein-champ), `.combat-splash-inner` (ferrage + animation d'entrée-sortie, `@keyframes combat-splash-in`/`-fade`) et `.combat-splash-sub` (la ligne de sous-titre, art propre de cet organisme : un seul écran la porte) — le MOT, lui, pose la matière partagée `.display-title` |
 | `error-boundary.css` | `SceneErrorBoundary` | `.scene-error-boundary` (repli dans le stage) et `.app-error-boundary` (filet plein viewport, #225) — la seconde est demandée par l'appelant, déclarée en `poseurs` au manifeste |
 | `src/gameIso/anim.css` | `GameStage3D` (`anim.css`) | `.iso-stage` (la surface du monde, sans `cursor` au repos), `.glow` (halo d'un décor magique ou d'une arme à feu), `.dmg-float` (chiffre de dégâts qui monte au-dessus de la cible), `.pv-badge` (badge d'aperçu tap-1) |
 
@@ -336,12 +339,31 @@ Chaque porteur n'en garde que son delta — l'ancrage du rail, l'encoche d'angle
 
 Le **halo de lisibilité** `.halo-champ` (`components.css`) n'est pas une peau mais le même genre de
 contrat : la double ombre d'encre d'un TEXTE posé sur un fond qu'il ne maîtrise pas (le monde nu, le
-remplissage d'une jauge), mesurée en `em` pour suivre le corps du texte. Cinq poseurs — `PlaquesDeNom`
+remplissage d'une jauge), mesurée en `em` pour suivre le corps du texte. Ses poseurs — `PlaquesDeNom`
 au-dessus d'une entité du plateau, le panneau du tiroir-journal tant que son fond reste transparent,
 l'inscription du lieu de la barre haute du HUD, le fil d'événements de combat (`CombatBanner`), le
-chiffre en surimpression de `LifeBar`. Aucune feuille ne réécrit une double ombre d'encre (garde de
+chiffre en surimpression de `LifeBar`, le mot et le sous-titre du beat d'ouverture
+(`CombatStartSplash`). Un titre posé sur une CARTE (`MenuCard`, `OrnateFrame`) maîtrise son fond : il
+ne pose PAS le halo. Aucune feuille ne réécrit une double ombre d'encre (garde de
 `src/ui/ui-ratchets.test.ts`). Un porteur qui RÉVÈLE un fond
 opaque éteint le halo depuis son propre module (`.log-drawer:hover .ld-panel`).
+
+Le **grand texte gothique d'affichage** `.display-title` (`components.css`) suit le même contrat : la
+matière d'un titre par lequel un ÉCRAN s'annonce, posée à côté de la base du markup. Six poseurs, six
+bases — le `h1` du menu principal (`MainMenu`), celui de la bataille de masse (`MassBattleView`), le
+masthead de l'interlude (`InterludeScreen`), le mot du beat d'ouverture (`CombatStartSplash`, à
+l'échelle `champ` et au ton `menace` de l'embuscade), le nom du héros de la présentation du créateur
+(`CharacterCreator`) et la plaque de code de salon (`CoopPanels`, qui ne garde que son delta de
+plaque). Deux paramètres d'ÉTAT portent les variantes (`data-echelle`, `data-ton`) : ni l'un ni
+l'autre n'autorise un module d'écran à réécrire la matière. Critère N+1 : un nouveau grand titre = un
+`className`, zéro déclaration CSS. La ligne qui prolonge un grand titre est `.subtitle` ; le beat
+d'ouverture, lui, garde SA ligne (`.combat-splash-sub`, dans le module de l'organisme) parce qu'un
+seul écran la porte. La garde est ABSOLUE et sans liste (`src/ui/ui-ratchets.test.ts`) : hors couche
+partagée, aucune règle ne porte une taille de texte dont la borne haute atteint 30px — le critère ne
+regarde PAS la police (un grand corps est un grand titre, qu'il hérite sa police ou la déclare), lit
+le raccourci `font`, résout `clamp`/`min`/`max`/`calc` et les tokens partagés, compte `1vw = 14,4px`
+au viewport de recette, et LÈVE toute taille qu'il ne peut pas décider. Les titres d'ÉCRAN de 24-26px
+(`.step-head-title`, `.party-acts-title`, `.codex-h1`) sont une autre matière, sous le seuil.
 
 Quatre classes de la famille de JET sont PARTAGÉES et vivent donc en couche d'identité (`components.css`) :
 `.seg` (segments d'`OptionChooser`, dont l'état pressé est `.seg button[aria-pressed='true']` —

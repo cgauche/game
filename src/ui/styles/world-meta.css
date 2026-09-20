@@ -447,16 +447,6 @@
     linear-gradient(180deg, var(--panel2), var(--panel));
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.5);
 }
-.interlude-title {
-  font-family: var(--font-display);
-  font-size: clamp(30px, 6vw, 46px);
-  margin: 0;
-  color: var(--gold2);
-  letter-spacing: 1px;
-  line-height: 1.02;
-  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.6);
-}
-.interlude-subtitle { color: var(--muted); margin: 6px 0 0; font-size: 14px; }
 
 /* Ruban de SYNTHÈSE persistant (sticky, les 3 phases) : médaillons de héros + bourse du groupe.
    Le scrollport est désormais .interlude-shell. */

@@ -33,7 +33,6 @@
     "src/ui/Coins.tsx",
     "src/ui/ColorPalettePickers.tsx",
     "src/ui/CombatBanner.tsx",
-    "src/ui/CombatStartSplash.tsx",
     "src/ui/CoopLobby.tsx",
     "src/ui/CorruptionModal.tsx",
     "src/ui/CouncilModal.tsx",

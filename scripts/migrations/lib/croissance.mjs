@@ -1,7 +1,8 @@
 // CROISSANCE DES DONNÉES — la mécanisation du DoD de #1812 : « +1 entrée → aucun rouge ».
 //
 // Un compte d'entrées gelé dans une migration DÉJÀ JOUÉE est un PÉAGE : chaque dataset app-owned qui
-// grandit légitimement (#1392 `regles.json` 85 → 86, #1800 `primitives.manifest.json` 62 → 66) paie
+// grandit légitimement (#1392 `regles.json` 85 → 86, #1800 puis #1806 `primitives.manifest.json`
+// 62 → 66 → 67) paie
 // un recalage dans un script sans rapport avec son lot. Aucune analyse de TEXTE ne tient cette
 // promesse — un cardinal s'écrit `!== ATTENDU`, `!== CARDINAUX[f]`, `total += d.length` puis
 // `total !== TOTAL`, sur une ligne ou sur trois. Ce module ne lit donc plus le CODE : il fabrique

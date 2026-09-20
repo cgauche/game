@@ -109,6 +109,203 @@ export function sitesEspacementHorsEchelle(fichiers: readonly Fichier[]): Site[]
   return sites;
 }
 
+/** Corps à partir duquel un texte est un GRAND TITRE D'AFFICHAGE, en px. */
+export const SEUIL_GRAND_TITRE_PX = 30;
+
+/** Viewport de RÉFÉRENCE des recettes (docs/recette-navigateur.md) : il donne aux unités de vue une
+ *  borne lisible — 1vw = 14,4px, 1vh = 9px. Sans lui, un `font-size: 12vw` nu ne serait pas mesuré. */
+export const VIEWPORT_RECETTE = { largeur: 1440, hauteur: 900 };
+
+const PX_PAR_UNITE: Record<string, number> = {
+  px: 1,
+  rem: 16,
+  em: 16,
+  vw: VIEWPORT_RECETTE.largeur / 100,
+  vh: VIEWPORT_RECETTE.hauteur / 100,
+  vmin: Math.min(VIEWPORT_RECETTE.largeur, VIEWPORT_RECETTE.hauteur) / 100,
+  vmax: Math.max(VIEWPORT_RECETTE.largeur, VIEWPORT_RECETTE.hauteur) / 100,
+};
+
+/** Borne en px, ou `null` = INDÉCIDABLE (la valeur dépend d'un contexte que le texte ne dit pas). */
+export type Borne = number | null;
+
+/** L'appel de fonction qui couvre TOUTE la valeur (`clamp(…)`), avec ses arguments de niveau 0. */
+function appelDeFonction(v: string): { nom: string; args: string[] } | null {
+  const m = /^([a-z-]+)\(/.exec(v);
+  if (!m || !v.endsWith(')')) return null;
+  let prof = 0;
+  for (let i = m[0].length - 1; i < v.length; i++) {
+    if (v[i] === '(') prof++;
+    else if (v[i] === ')') {
+      prof--;
+      if (prof === 0 && i !== v.length - 1) return null; // `min(1px) + 2px` : pas un appel unique
+    }
+  }
+  return { nom: m[1], args: decoupeNiveau0(v.slice(m[0].length, -1), ',') };
+}
+
+/** Découpe sur un séparateur de NIVEAU 0 (parenthèses respectées). */
+function decoupeNiveau0(src: string, sep: string): string[] {
+  const out: string[] = [];
+  let prof = 0;
+  let courant = '';
+  for (const c of src) {
+    if (c === '(') prof++;
+    else if (c === ')') prof--;
+    if (prof === 0 && (sep === ' ' ? /\s/.test(c) : c === sep)) { out.push(courant); courant = ''; continue; }
+    courant += c;
+  }
+  out.push(courant);
+  return out.map((s) => s.trim()).filter(Boolean);
+}
+
+/** Arithmétique de `calc()`, en px : descente récursive sur `+ - * / ( )`. `null` = non évaluable. */
+function evaluerArithmetique(src: string): Borne {
+  let i = 0;
+  const espaces = () => { while (i < src.length && /\s/.test(src[i])) i++; };
+  const facteur = (): Borne => {
+    espaces();
+    if (src[i] === '(') {
+      i++;
+      const v = somme();
+      espaces();
+      if (src[i] !== ')') return null;
+      i++;
+      return v;
+    }
+    const m = /^(-?\d*\.?\d+)([a-z%]*)/.exec(src.slice(i));
+    if (!m) return null;
+    i += m[0].length;
+    if (!m[2]) return Number(m[1]);
+    const k = PX_PAR_UNITE[m[2]];
+    return k === undefined ? null : Number(m[1]) * k;
+  };
+  const produit = (): Borne => {
+    let g = facteur();
+    for (;;) {
+      espaces();
+      const op = src[i];
+      if (op !== '*' && op !== '/') return g;
+      i++;
+      const d = facteur();
+      if (g === null || d === null || (op === '/' && d === 0)) return null;
+      g = op === '*' ? g * d : g / d;
+    }
+  };
+  const somme = (): Borne => {
+    let g = produit();
+    for (;;) {
+      espaces();
+      const op = src[i];
+      if (op !== '+' && op !== '-') return g;
+      i++;
+      const d = produit();
+      if (g === null || d === null) return null;
+      g = op === '+' ? g + d : g - d;
+    }
+  };
+  const v = somme();
+  espaces();
+  return i === src.length ? v : null;
+}
+
+/** Les TOKENS de longueur déclarés par la couche partagée (`--x: 10px`) : un `var()` qui les nomme
+ *  est DÉCIDABLE. Un même nom peut être reposé en contexte (`@media`) : toutes ses valeurs sont
+ *  gardées, et la borne haute est la plus grande. */
+export function tokensPartages(fichiers: readonly Fichier[]): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  for (const f of fichiers) {
+    if (!FEUILLES_PARTAGEES.includes(f.rel)) continue;
+    for (const { corps } of reglesCss(f.text)) {
+      for (const { prop, valeur } of declarations(corps)) {
+        if (prop.startsWith('--')) out.set(prop, [...(out.get(prop) ?? []), valeur]);
+      }
+    }
+  }
+  return out;
+}
+
+/** Profondeur maximale de résolution d'un `var()` en chaîne — borne un cycle de tokens. */
+const PROFONDEUR_VAR = 4;
+
+/**
+ * BORNE HAUTE d'une taille de texte, en px. `rem`/`em` valent 16px (racine du dépôt) ; `vw`/`vh` se
+ * lisent au `VIEWPORT_RECETTE` ; `clamp(a, b, c)` vaut la borne de `c` ; `min()`/`max()` valent leur
+ * plus GRANDE branche (majorant) ; `calc()` est évalué ; `var(--x)` se résout sur les tokens de la
+ * couche partagée, ou sur son repli. Toute valeur dont le texte ne dit pas la taille (un token
+ * inconnu, `env(…)`, un `calc` non évaluable) rend `null` : elle est LEVÉE par la garde, jamais
+ * ignorée en silence.
+ */
+export function borneHauteEnPx(
+  valeur: string,
+  tokens: ReadonlyMap<string, string[]> = new Map(),
+  profondeur = 0,
+): Borne {
+  const v = valeur.trim();
+  const borne = (x: string) => borneHauteEnPx(x, tokens, profondeur + 1);
+  const majorant = (xs: readonly string[]): Borne => {
+    const bornes = xs.map(borne);
+    return bornes.some((b) => b === null) ? null : Math.max(...(bornes as number[]));
+  };
+  const f = appelDeFonction(v);
+  if (f) {
+    if (profondeur >= PROFONDEUR_VAR) return null;
+    if (f.nom === 'clamp') return f.args.length === 3 ? borne(f.args[2]) : null;
+    if (f.nom === 'min' || f.nom === 'max') return majorant(f.args);
+    if (f.nom === 'calc') return f.args.length === 1 ? evaluerArithmetique(f.args[0]) : null;
+    if (f.nom === 'var') {
+      const valeurs = tokens.get(f.args[0]);
+      if (valeurs?.length) return majorant(valeurs);
+      return f.args.length > 1 ? borne(f.args.slice(1).join(',')) : null;
+    }
+    return null;
+  }
+  const lit = /^(-?\d*\.?\d+)([a-z%]*)$/.exec(v);
+  if (lit) {
+    if (!lit[2]) return Number(lit[1]);
+    const k = PX_PAR_UNITE[lit[2]];
+    return k === undefined ? 0 : Number(lit[1]) * k; // `%`/`pt`… : relatif à un hérité, pas un grand titre
+  }
+  return /^[a-z-]+$/.test(v) ? 0 : null; // mot-clé (`inherit`, `larger`, `medium`) : pas un grand titre
+}
+
+/** La taille déclarée par le RACCOURCI `font` : le premier terme qui porte une LONGUEUR (un poids
+ *  (`600`) ou un mot-clé de style n'en est pas une), amputé de son `/line-height`. */
+export function tailleDuRaccourciFont(valeur: string): string | null {
+  for (const terme of decoupeNiveau0(valeur, ' ')) {
+    const taille = terme.split('/')[0].trim();
+    if (/^(clamp|min|max|calc)\(/.test(taille)) return taille;
+    if (/^-?\d*\.?\d+[a-z]+$/.test(taille) && PX_PAR_UNITE[/[a-z]+$/.exec(taille)![0]] !== undefined) return taille;
+  }
+  return null;
+}
+
+/**
+ * Sites de GRAND TEXTE D'AFFICHAGE hors couche partagée (#1806) : une règle dont la taille de texte
+ * atteint `SEUIL_GRAND_TITRE_PX` réécrit la matière de `.display-title` — elle la POSE, ou elle
+ * n'est pas un grand titre. Le critère ne regarde PAS la police : un grand corps est un grand titre,
+ * qu'il hérite sa police ou qu'il la déclare. Mesure ABSOLUE, sans liste ni seuil négociable.
+ */
+export function sitesGrandTitre(fichiers: readonly Fichier[]): Site[] {
+  const sites: Site[] = [];
+  const tokens = tokensPartages(fichiers);
+  for (const f of fichiers) {
+    if (FEUILLES_PARTAGEES.includes(f.rel)) continue;
+    for (const { selecteurs, corps } of reglesCss(f.text)) {
+      for (const { prop, valeur } of declarations(corps)) {
+        if (prop !== 'font-size' && prop !== 'font') continue;
+        const brut = prop === 'font' ? tailleDuRaccourciFont(valeur) : valeur;
+        if (brut === null) continue; // raccourci sans longueur : il ne déclare aucune taille
+        const px = borneHauteEnPx(brut, tokens);
+        const sel = cleDeRegle(selecteurs);
+        if (px === null) sites.push({ file: f.rel, ref: `${sel} :: ${prop} :: INDÉCIDABLE (${brut})` });
+        else if (px >= SEUIL_GRAND_TITRE_PX) sites.push({ file: f.rel, ref: `${sel} :: ${prop} :: ${px}px` });
+      }
+    }
+  }
+  return sites;
+}
+
 /** Neutralise commentaires bloc et ligne en préservant les positions — un `style={{…}}` cité en
  *  prose n'est pas du markup. */
 const sansCommentaires = (src: string) =>

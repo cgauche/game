@@ -742,6 +742,17 @@
     "verrou": "src/ui/CombatConsole.test.tsx — comptes de cases et budget de hauteur du pont"
   },
   {
+    "id": "combatStartSplash",
+    "type": "primitives.manifest",
+    "label": "CombatStartSplash",
+    "fichier": "src/ui/CombatStartSplash.tsx",
+    "css": "src/ui/styles/combat-start-splash.css",
+    "nature": "organisme",
+    "concept": "beat plein-champ d’OUVERTURE du combat : le mot de la surprise réellement résolue, posé sur le terrain et effacé tout seul",
+    "perimetre": "entrée en combat (round 1), après la clôture de la cascade de Surprise — décoratif, il ne bloque aucun geste",
+    "verrou": "src/ui/CombatStartSplash.test.tsx — le beat attend la cascade d’ouverture et dit le bon mot"
+  },
+  {
     "id": "rigPortrait",
     "type": "primitives.manifest",
     "label": "RigPortrait",

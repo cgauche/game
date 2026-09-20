@@ -68,7 +68,7 @@
 @import './styles/celestial-wheel.css'; /* astrolabe de laiton (CelestialWheel, #393) — matières du cadran, valeurs du svg « 4 — Signe astral » de la planche FINALE */
 @import './styles/creator-presentation.css'; /* mise en scène finale du créateur (PresentationScreen, #393) : registre ⇄ scène ⇄ rubriques, valeurs .fin-col/.fin-stage de la planche */
 @import './styles/coop-lobby.css'; /* salon coop (CoopLobby) : étirement des actions de l'hôte */
-@import './styles/combat-ui.css'; /* beat d'ouverture de combat */
+@import './styles/combat-start-splash.css'; /* beat d'ouverture de combat (CombatStartSplash) : pose plein-champ + animation ; la matière du mot est `.display-title` (components.css) */
 @import './styles/loot-modal.css'; /* fenêtre de butin hors combat (LootModal) : gabarit + ancrage du récapitulatif — APRÈS reward-recap.css : le ferrage à gauche de l'hôte prime sur le centrage de la primitive */
 @import './styles/combat-console.css'; /* console de combat (CombatConsole.tsx) : deux travées + grille fixe + conduit d'Avantage + coin de fin de tour */
 @import './styles/panneau-parametre.css'; /* panneau-paramètre borné ANCRÉ (PanneauParametre, spec HUD zone 10) — scope le .rm-loc-grid d'OptionChooser (option-chooser.css) dans le panneau, par la spécificité du descendant */

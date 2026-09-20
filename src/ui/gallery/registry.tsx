@@ -1202,6 +1202,27 @@ function CombatBannerDemo() {
   );
 }
 
+/** Beat d'ouverture : les trois mots du combat, à l'échelle du CHAMP, le ton `menace` réservé à
+ *  l'embuscade. Les mots sont posés NUS (sans `.combat-splash-inner`) : la pose plein-champ et
+ *  l'animation d'entrée-sortie du composant vivant ne tiennent pas dans une vignette. */
+function CombatStartSplashDemo() {
+  const MOTS: { mot: string; sub: string; ton?: 'menace' }[] = [
+    { mot: 'COMBAT !', sub: '' },
+    { mot: 'EMBUSCADE !', sub: 'Vous êtes pris par surprise', ton: 'menace' },
+    { mot: 'ASSAUT !', sub: "Vous surprenez l'ennemi" },
+  ];
+  return (
+    <Stack gap="lg">
+      {MOTS.map(({ mot, sub, ton }) => (
+        <div key={mot}>
+          <div className="display-title halo-champ" data-echelle="champ" data-ton={ton}>{mot}</div>
+          {sub && <div className="combat-splash-sub halo-champ">{sub}</div>}
+        </div>
+      ))}
+    </Stack>
+  );
+}
+
 /** Visage d'un combattant : trait PLEIN et anneau d'équipe pour un héros, trait en TIRETS pour un
  *  ennemi (R9 — la forme encode l'équipe autant que la couleur), et la taille en variable. */
 function RigPortraitDemo() {
@@ -1484,6 +1505,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { id: 'revealbody', label: 'RevealBody', file: 'src/ui/RevealBody.tsx', category: 'Jets', render: RevealBodyDemo },
   { id: 'teamsegments', label: 'TeamSegments', file: 'src/ui/TeamSegments.tsx', category: 'Texte', render: TeamSegmentsDemo },
   { id: 'combatbanner', label: 'CombatBanner', file: 'src/ui/CombatBanner.tsx', category: 'Combat', note: 'maquette de TONS — le composant vivant projette le beat du combat en cours (store), qu’aucune vignette ne porte', render: CombatBannerDemo },
+  { id: 'combatstartsplash', label: 'CombatStartSplash', file: 'src/ui/CombatStartSplash.tsx', category: 'Combat', note: 'les trois MOTS du beat — le composant vivant se pose en plein champ (position fixed) et s’efface tout seul en 2,7 s : une vignette ne peut montrer ni la pose ni l’animation, qui s’observent à l’entrée en combat', render: CombatStartSplashDemo },
   { id: 'logdrawer', label: 'LogDrawer', file: 'src/ui/LogDrawer.tsx', category: 'Combat', render: LogDrawerDemo },
   { id: 'initiativestrip', label: 'InitiativeStrip', file: 'src/ui/InitiativeStrip.tsx', category: 'Combat', render: InitiativeStripDemo },
   { id: 'partydock', label: 'PartyDock', file: 'src/ui/PartyDock.tsx', category: 'Combat', render: PartyDockDemo },

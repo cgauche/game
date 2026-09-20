@@ -37,7 +37,7 @@ export function CoopInvite({ code, onCopierCode, onCopierLien }: {
 }) {
   return (
     <Stack gap="md">
-      <div className="coop-code">{code}</div>
+      <div className="coop-code display-title">{code}</div>
       <div className="bar">
         <button className="btn small" onClick={onCopierCode}><Icon id="coop/code" size="sm" /> Code</button>
         <button className="btn small" onClick={onCopierLien}><Icon id="coop/invite" size="sm" /> Lien d'invitation</button>

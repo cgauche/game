@@ -33,7 +33,7 @@ export function MassBattleView() {
       <MenuCard
         className="mb-card"
         header={<>
-          <h1 className="title">Bataille de masse</h1>
+          <h1 className="display-title">Bataille de masse</h1>
           <p className="subtitle">
             {mb.phase === 'over'
               ? 'La bataille est terminée.'

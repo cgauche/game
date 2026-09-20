@@ -24,6 +24,9 @@ let host: HTMLDivElement;
 let root: Root;
 const render = () => act(() => { root.render(<CombatStartSplash />); });
 const beat = () => host.querySelector('.combat-splash');
+/** Le MOT porte la matière partagée du grand titre, son échelle et son ton : `data-ton` vit là, pas
+ *  sur la pose plein-champ (#1806). */
+const mot = () => host.querySelector('.combat-splash .display-title');
 
 /** Ouvre le combat de la fixture ; `surprise` rend la rencontre EMBUSQUÉE (le groupe est surpris). */
 function ouvrir(surprise?: 'party') {
@@ -53,8 +56,11 @@ describe('CombatStartSplash — le beat attend la cascade d’ouverture', () => 
     render();
     expect(useGame.getState().pendingCascade, 'aucune cascade d’ouverture').toBeNull();
     expect(beat(), 'le beat est monté').not.toBeNull();
-    expect(beat()!.getAttribute('data-ton')).toBeNull();
-    expect(beat()!.textContent).toContain('COMBAT');
+    expect(mot(), 'le mot pose la matière partagée du grand titre').not.toBeNull();
+    expect(mot()!.classList.contains('halo-champ'), 'le mot flotte sur le monde nu : il pose le halo').toBe(true);
+    expect(mot()!.getAttribute('data-echelle')).toBe('champ');
+    expect(mot()!.getAttribute('data-ton'), 'sans surprise, aucun ton').toBeNull();
+    expect(mot()!.textContent).toContain('COMBAT');
   });
 
   it('embuscade : absent TANT QUE la cascade de Surprise est ouverte, puis monté au ton de l’embuscade', () => {
@@ -72,7 +78,8 @@ describe('CombatStartSplash — le beat attend la cascade d’ouverture', () => 
     expect(s.pendingCascade, 'la cascade est close').toBeNull();
     expect(s.battle!.combatants.some((c) => c.kind === 'hero' && hasCondition(c, COND.surpris)), 'le guetteur aveugle est Surpris').toBe(true);
     expect(beat(), 'le beat se monte à la clôture : son animation part du bon mot').not.toBeNull();
-    expect(beat()!.getAttribute('data-ton')).toBe('embuscade');
-    expect(beat()!.textContent).toContain('EMBUSCADE');
+    expect(mot()!.getAttribute('data-ton'), 'le MOT porte le ton de menace').toBe('menace');
+    expect(mot()!.textContent).toContain('EMBUSCADE');
+    expect(beat()!.getAttribute('data-ton'), 'la pose plein-champ ne porte plus le ton').toBeNull();
   });
 });

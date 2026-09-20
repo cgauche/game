@@ -1,6 +1,6 @@
 /* ── Récapitulatif de GAIN (`RewardRecap`) ── Messages d'ambiance, récompenses chiffrées, sections
    titrées, geste de sortie : la matière commune de l'écran de victoire et de la fenêtre de butin.
-   L'ANCRAGE (ferrage, marges) appartient à l'écran hôte (`loot-modal.css`, `combat-ui.css`). */
+   L'ANCRAGE (ferrage, marges) appartient à l'écran hôte (`loot-modal.css`, `combat-start-splash.css`). */
 .reward-messages {
   margin: var(--sp-xs) 0 var(--sp-lg);
   max-width: 520px;

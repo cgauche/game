@@ -2391,7 +2391,7 @@ export function PresentationScreen({ d }: StepProps): ReactNode {
         <div className="presentation-fig">
           <CharacterPreview hero={hero} view="front" size="fill" />
         </div>
-        <h2 className="presentation-name">{hero.label}</h2>
+        <h2 className="presentation-name display-title">{hero.label}</h2>
         {/* Race · NIVEAU (carrière) · statut MÉTALLISÉ — la planche nomme le niveau de départ
             (« Pamphlétaire (Agitateur) ») là où l'écran ne portait que la carrière, et rend le statut
             en métal (`.st-bronze`) là où il était en texte nu : `MetalStatus` est la primitive. */}

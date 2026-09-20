@@ -1,15 +1,18 @@
-/* Beat d'OUVERTURE de combat — décoratif, ne bloque rien (pointer-events: none). */
+/* Beat d'OUVERTURE de combat (`CombatStartSplash`) — décoratif, ne bloque rien (pointer-events:
+   none). La MATIÈRE du MOT est la classe partagée `.display-title` (components.css), que le markup
+   pose avec `.halo-champ` — le mot flotte sur le monde nu. Vivent ici la POSE plein-champ,
+   l'animation d'entrée-sortie, et la ligne de SOUS-TITRE, qui est l'art propre de cet organisme :
+   un seul écran la porte. */
 .combat-splash { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; pointer-events: none; }
 .combat-splash-inner { text-align: center; animation: combat-splash-in 2.7s ease-out forwards; }
-.combat-splash-word {
+.combat-splash-sub {
   font-family: var(--font-display);
-  font-size: clamp(40px, 12vw, 120px);
-  letter-spacing: 2px; line-height: 1;
-  color: var(--gold2);
-  text-shadow: 0 2px 18px rgba(0,0,0,0.8), 0 0 30px rgba(227,196,90,0.35);
+  font-size: clamp(14px, 3vw, 22px);
+  margin: var(--sp-md) 0 0;
+  color: var(--text);
+  opacity: 0.85;
+  letter-spacing: 1px;
 }
-.combat-splash[data-ton='embuscade'] .combat-splash-word { color: var(--accent2); text-shadow: 0 2px 18px rgba(0,0,0,0.85), 0 0 34px rgba(179,64,46,0.5); }
-.combat-splash-sub { font-family: var(--font-display); font-size: clamp(14px, 3vw, 22px); color: var(--text); opacity: 0.85; margin-top: 8px; letter-spacing: 1px; }
 @keyframes combat-splash-in {
   0%   { opacity: 0; transform: scale(0.82); }
   14%  { opacity: 1; transform: scale(1.04); }
