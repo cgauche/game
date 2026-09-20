@@ -28,6 +28,7 @@ import { mdToText } from './Prose';
 import { CombatConsole } from './CombatConsole';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { baseSection, mediaBlock } from '../../scripts/guards/lib/cssCouches.mjs';
 import { hpColor, ENEMY_TINT } from '../gameIso/teamColors';
 
 beforeAll(() => {
@@ -373,41 +374,10 @@ const BANNER_BASE = baseSection(readCss('combat-banner.css'));
 
 const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
 
-/** Bloc `@media` COMPLET (accolades équilibrées), sans son accolade fermante. */
-function mediaBlock(css: string, query: string): string {
-  const i = css.indexOf(query);
-  expect(i, `tranche ${query} absente`).toBeGreaterThanOrEqual(0);
-  let depth = 0;
-  for (let j = css.indexOf('{', i); j < css.length; j++) {
-    if (css[j] === '{') depth++;
-    else if (css[j] === '}') {
-      depth--;
-      if (depth === 0) return css.slice(i, j);
-    }
-  }
-  return css.slice(i);
-}
-
-/** Section de BASE d'un module : toutes les tranches `@media` retirées. Une règle de base est la
- *  loi à TOUTE largeur — c'est là que se jugent les couleurs (les tranches ne règlent que la
- *  densité). */
-function baseSection(css: string): string {
-  let out = css;
-  for (;;) {
-    const i = out.indexOf('@media');
-    if (i < 0) return out;
-    let depth = 0;
-    let end = out.length;
-    for (let j = out.indexOf('{', i); j < out.length; j++) {
-      if (out[j] === '{') depth++;
-      else if (out[j] === '}') {
-        depth--;
-        if (depth === 0) { end = j + 1; break; }
-      }
-    }
-    out = out.slice(0, i) + out.slice(end);
-  }
-}
+/* `mediaBlock` (corps d'une tranche) et `baseSection` (la feuille privée de ses tranches) : UNE
+   définition partagée, `scripts/guards/lib/cssCouches.mjs` — `src/ui/ui-ratchets.test.ts` lit les
+   mêmes tranches avec les mêmes fonctions. Une règle de BASE est la loi à toute largeur : c'est là
+   que se jugent les couleurs (les tranches ne règlent que la densité). */
 
 /** Déclarations de LA règle au sélecteur exact (normalisé) — une seule, sinon la sonde ment. */
 function ruleOf(css: string, selector: string): string {
@@ -420,6 +390,53 @@ function ruleOf(css: string, selector: string): string {
 function decl(block: string, prop: string): string | null {
   const all = [...block.matchAll(new RegExp(`(?:^|;)\\s*${prop}\\s*:\\s*([^;]+)`, 'gi'))];
   return all.length ? norm(all[all.length - 1][1]) : null;
+}
+
+/**
+ * CENTRAGE d'une boîte hors flux — l'idiome, nommé UNE fois : ancrage à la moitié du parent, puis
+ * recul de sa PROPRE moitié. Les contrats disent « centrée », jamais « left: 50% » : recopié dans
+ * chaque `it`, ce couple de littéraux gèle l'interface sans rien garder de plus
+ * (`docs/charte-ui.md` § « Où se garde un contrat CSS »).
+ */
+function centrage(bloc: string): 'les deux axes' | 'axe X' | 'axe Y' | 'aucun' {
+  const t = (decl(bloc, 'transform') ?? '').replace(/\s+/g, '');
+  const couple = /^translate\(([^,)]+)(?:,([^)]+))?\)$/.exec(t);
+  const tx = /^translateX\(([^)]+)\)$/.exec(t)?.[1] ?? couple?.[1] ?? null;
+  const ty = /^translateY\(([^)]+)\)$/.exec(t)?.[1] ?? couple?.[2] ?? null;
+  const moitie = (v: string | null | undefined) => v?.trim() === '50%';
+  const x = moitie(decl(bloc, 'left')) && tx === '-50%';
+  const y = moitie(decl(bloc, 'top')) && ty === '-50%';
+  return x && y ? 'les deux axes' : x ? 'axe X' : y ? 'axe Y' : 'aucun';
+}
+
+const racine = () => ruleOf(CC_BASE, ':root');
+
+/**
+ * ÉVALUE une longueur CSS déclarée (`px`, `vw`, `vh`, `calc`, `clamp`, `min`, `max`, `var`) à un
+ * viewport donné, en résolvant les `var(--x)` par le `:root` du module. C'est l'instrument des
+ * contrats de GRANDEUR : on juge la LOI déclarée (un rapport, un ordre, un budget), jamais le TEXTE
+ * d'une formule — une formule réécrite sans changer le rendu ne doit rien casser.
+ */
+function evalLen(expr: string, vw: number, vh: number, depth = 0): number {
+  if (depth > 8) throw new Error(`résolution de variables trop profonde : ${expr}`);
+  let e = expr.trim();
+  // 1) variables du module
+  for (let i = 0; i < 8 && e.includes('var('); i++) {
+    e = e.replace(/var\((--[\w-]+)\)/g, (_m, nom: string) => {
+      const v = decl(racine(), nom);
+      if (!v) throw new Error(`variable ${nom} absente du :root de combat-console.css`);
+      return `(${String(evalLen(v, vw, vh, depth + 1))}px)`;
+    });
+  }
+  // 2) fonctions CSS → JS
+  e = e.replace(/\bclamp\(/g, 'CLAMP(').replace(/\bmin\(/g, 'Math.min(').replace(/\bmax\(/g, 'Math.max(').replace(/\bcalc\(/g, '(');
+  // 3) unités
+  e = e.replace(/(-?[\d.]+)vw/g, (_m, n: string) => String((Number(n) * vw) / 100))
+    .replace(/(-?[\d.]+)vh/g, (_m, n: string) => String((Number(n) * vh) / 100))
+    .replace(/(-?[\d.]+)px/g, '$1');
+  if (/[a-zA-Z_$]/.test(e.replace(/CLAMP|Math\.min|Math\.max/g, ''))) throw new Error(`unité/fonction non gérée : ${expr} → ${e}`);
+  const CLAMP = (lo: number, v: number, hi: number) => Math.min(Math.max(v, lo), hi);
+  return Function('CLAMP', 'Math', `"use strict"; return (${e});`)(CLAMP, Math) as number;
 }
 
 function token(name: string): string {
@@ -567,12 +584,18 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
 
   it('A-3 — le glyphe occupe son alvéole et l’indice porte sa propre pastille', () => {
     const svg = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve] .pt-state svg');
-    // Le glyphe laisse le filet de l'alvéole, pas davantage (à −4px il tombait à 11px dans 15).
-    for (const p of ['width', 'height']) expect(decl(svg, p)).toBe('calc(var(--alv) - 2px)');
+    // Le glyphe laisse le filet de l'alvéole, PAS DAVANTAGE (à −4px il tombait à 11px dans 15) : une
+    // RELATION à la taille d'alvéole, évaluée — la valeur du côté ne regarde pas ce test.
+    const alvPx = parseFloat(decl(ruleOf(CHIPS_BASE, '.ptile-states[data-reserve]'), '--alv')!);
+    for (const p of ['width', 'height']) {
+      const g = pxCalc(decl(svg, p)!, { '--alv': alvPx });
+      expect(g, `glyphe ${p} = ${g} dans une alvéole de ${alvPx}`).toBeLessThan(alvPx);
+      expect(alvPx - g, `le glyphe ne laisse que le filet (${alvPx - g}px)`).toBeLessThanOrEqual(alvPx / 5);
+    }
     const n = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve] .pt-n');
     const pastille = parseColor(decl(n, 'background')!);
     expect(pastille[3]).toBe(1);
-    expect(contrast(parseColor(decl(n, 'color')!), pastille)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(parseColor(decl(n, 'color')!), pastille)).toBeGreaterThanOrEqual(4.5); // norme: WCAG 2.x, 4,5:1 pour un TEXTE
     // … et la pastille se DÉTACHE du fond de l'alvéole (sinon elle se lit comme un trait du glyphe).
     const alv = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve] .pt-state, .ptile-states[data-reserve] .pt-void');
     const fondAlv = colorsIn(decl(alv, 'background')!).map((c) => over(c, parseColor(token('--cc-brass-cell-hi'))));
@@ -617,17 +640,18 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
   it('B-8 — la pastille ACTIONNABLE garde le plancher tactile (≥ 40px) que la variante NUE annule', () => {
     const nu = ruleOf(baseSection(BASE_CSS), '.btn.btn-nu');
     expect(parseFloat(decl(nu, 'min-height')!), 'la variante nue ne remet plus le plancher à 0 ?').toBe(0);
-    // L'alvéole reste de 15px À L'ŒIL : c'est sa ZONE DE CONTACT qui porte le calibre.
+    // L'alvéole reste PETITE À L'ŒIL : c'est sa ZONE DE CONTACT qui porte le calibre — relation, pas
+    // une taille d'alvéole épinglée.
     const alv = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve]');
-    expect(parseFloat(decl(alv, '--alv')!)).toBeLessThan(40);
     const coarse = mediaBlock(CHIPS_CSS, '@media (pointer: coarse)');
     const cible = ruleOf(coarse, '.ptile-states[data-reserve] .pt-state.btn::after');
     expect(decl(cible, 'position')).toBe('absolute');
     for (const d of ['width', 'height']) {
-      expect(parseFloat(decl(cible, d)!), `cible tactile ${d}`).toBeGreaterThanOrEqual(40);
+      expect(parseFloat(decl(cible, d)!), `cible tactile ${d}`).toBeGreaterThanOrEqual(40); // norme: cible tactile au doigt (WCAG 2.5.5 / charte 44px)
+      expect(parseFloat(decl(alv, '--alv')!), `l’alvéole dépasse sa propre zone de contact (${d})`).toBeLessThan(parseFloat(decl(cible, d)!));
     }
-    // … centrée sur l'alvéole, qui doit donc être le repère positionné de la zone.
-    expect(decl(cible, 'transform')).toBe('translate(-50%, -50%)');
+    // … CENTRÉE sur l'alvéole, qui doit donc être le repère positionné de la zone.
+    expect(centrage(cible), 'la zone de contact n’est pas centrée sur son alvéole').toBe('les deux axes');
     const boite = ruleOf(CHIPS_BASE, '.ptile-states[data-reserve] .pt-state, .ptile-states[data-reserve] .pt-void');
     expect(decl(boite, 'position')).toBe('relative');
   });
@@ -638,7 +662,9 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
     // La composition compacte redimensionne bien la boîte — par la VARIABLE de portrait, une seule
     // source pour les trois boîtes (tuile, face, dessin), au lieu de trois littéraux `!important`.
     const at560 = mediaBlock(CC_CSS, '@media (max-width: 560px)');
-    expect(parseFloat(decl(ruleOf(at560, ':root'), '--cc-portrait')!)).toBeLessThanOrEqual(40);
+    // La composition compacte RÉTRÉCIT le portrait : relation à la valeur de base.
+    const portraitBase = evalLen(decl(ruleOf(CC_BASE, ':root'), '--cc-portrait')!, 360, 640);
+    expect(evalLen(decl(ruleOf(at560, ':root'), '--cc-portrait')!, 360, 640)).toBeLessThan(portraitBase);
     const boites = ruleOf(CC_BASE, '.cc-arch .ptile, .cc-arch .ptile-face, .cc-arch .rig-portrait');
     expect(decl(boites, 'width')).toBe('var(--cc-portrait) !important');
     const svg = ruleOf(CC_BASE, '.cc-arch .rig-portrait > svg');
@@ -673,8 +699,8 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
     const lbl = ruleOf(at560, '.cc-lbl');
     expect(decl(lbl, 'white-space')).toBe('nowrap');
     expect(decl(lbl, 'text-overflow')).toBe('ellipsis');
-    // Une seule ligne : le moteur pose alors l'ellipse à la frontière d'un glyphe, jamais dedans.
-    expect(decl(lbl, 'max-height')).toBe('1.1em');
+    // Une seule ligne : c'est `nowrap` qui l'impose — le moteur pose alors l'ellipse à la frontière
+    // d'un glyphe, jamais dedans.
     // … et JAMAIS par la casse d'un mot (R-M2), sur aucun libellé de la console.
     expect(CC_CSS).not.toMatch(/overflow-wrap:\s*(anywhere|break-word)/);
     expect(CC_CSS).not.toMatch(/word-break:\s*break-all/);
@@ -780,9 +806,11 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     for (const c of ['border-right', 'border-bottom', 'border-left']) expect(decl(arche, c), c).toBe('0');
     expect(decl(arche, 'border-top'), 'le liseré de l’arche est celui de la peau').toBeNull();
     expect(decl(peau, 'border-top')).toMatch(/var\(--pont-liseret\)/);
-    // Elle S'ÉLÈVE au-dessus du liseré au lieu d'être posée devant (planche : 811 vs 863).
-    expect(decl(arche, 'margin-top')).toBe('calc(-1 * var(--cc-fronton))');
-    expect(parseFloat(decl(ruleOf(CC_BASE, ':root'), '--cc-fronton')!)).toBeGreaterThan(0);
+    // Elle S'ÉLÈVE au-dessus du liseré au lieu d'être posée devant (planche : 811 vs 863) : elle
+    // remonte EXACTEMENT de la hauteur de fronton déclarée — relation évaluée, pas un texte de calc.
+    const fronton = parseFloat(decl(ruleOf(CC_BASE, ':root'), '--cc-fronton')!);
+    expect(fronton).toBeGreaterThan(0);
+    expect(evalLen(decl(arche, 'margin-top')!, 1920, 1080), 'l’arche ne s’élève pas de son fronton').toBe(-fronton);
     // … et structurellement, elle est DANS le pont, jamais une soeur flottante.
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
@@ -812,7 +840,13 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     // La réserve miroir vaut EXACTEMENT le coin + un écart de région — l'identité p = coin + g.
     // La MARGE INTERNE de la bande (arbitrage 2026-08-24 : les régions ne touchent plus le bord de
     // l'écran) s'ajoute des DEUX côtés : c'est la DIFFÉRENCE des deux rembourrages qui centre.
-    expect(norm(decl(dock, 'padding-left')!)).toBe('calc(var(--cc-corner) + var(--cc-bay-gap) + var(--cc-marge))');
+    // L'identité se juge ÉVALUÉE : la différence des deux rembourrages vaut le coin plus l'écart de
+    // région, quelles que soient l'écriture de la formule et la valeur des tokens.
+    const coin = evalLen('var(--cc-corner)', 1920, 1080);
+    const ecart = evalLen('var(--cc-bay-gap)', 1920, 1080);
+    const gauche = evalLen(decl(dock, 'padding-left')!, 1920, 1080);
+    const droite = evalLen(decl(dock, 'padding-right')!, 1920, 1080);
+    expect(gauche - droite, 'la réserve miroir ne vaut plus coin + écart').toBe(coin + ecart);
     expect(norm(decl(dock, 'padding-right')!)).toBe('var(--cc-marge)');
     // … et le coin tire sa largeur du MÊME token : la réserve ne peut pas se désynchroniser de lui.
     expect(decl(ruleOf(CC_BASE, '.cc-end'), 'width')).toBe('var(--cc-corner)');
@@ -869,7 +903,7 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     // réserve du pont — c'est son bord BAS qui est borné, pas seulement sa hauteur.
     const strip = ruleOf(STRIP_BASE, '.initiative-strip');
     expect(decl(strip, 'bottom')).toMatch(/var\(--cc-deck-h\)/);
-    expect(parseFloat(decl(strip, 'top')!)).toBeGreaterThanOrEqual(44);
+    expect(parseFloat(decl(strip, 'top')!)).toBeGreaterThanOrEqual(44); // norme: la frise part SOUS le coin du menu ☰, dont la cible au doigt fait 44px (charte UI règle 4)
     // La PISTE aussi : au-delà elle défile (aucune entrée ne disparaît, rien ne dépasse sur le pont).
     const tiles = ruleOf(STRIP_BASE, '.is-tiles');
     expect(decl(tiles, '--is-avail')).toMatch(/var\(--cc-deck-h\)/);
@@ -966,7 +1000,10 @@ describe('CombatConsole — trois formes, une seule bande', () => {
     // PLANCHER (`min-height`), jamais couperet : une hauteur imposée AMPUTAIT le pont dès que son
     // contenu réel dépassait la réserve (mesuré : nom du héros 9px hors écran, plaque de sortie
     // 7px, travée droite 17px à 900×800). La réserve, elle, est la même dans les trois formes.
-    expect(norm(decl(ruleOf(CC_BASE, '.cc-dock'), 'min-height')!)).toBe('calc(var(--cc-deck-h) - 3px)');
+    // La bande réserve la hauteur du pont MOINS son liseré (que la peau porte) : relation évaluée.
+    const liseret = parseFloat(token('--pont-liseret'));
+    expect(evalLen(decl(ruleOf(CC_BASE, '.cc-dock'), 'min-height')!, 1920, 1080), 'le plancher de bande n’est plus la réserve moins le liseré')
+      .toBe(evalLen('var(--cc-deck-h)', 1920, 1080) - liseret);
     expect(decl(ruleOf(CC_BASE, '.cc-dock'), 'height'), 'une hauteur imposée ampute').toBeNull();
     expect(decl(ruleOf(CC_BASE, '.combat-console'), 'height'), 'une hauteur imposée ampute').toBeNull();
     // AUCUNE règle keyée sur une FORME ne touche à une grandeur de hauteur : c'est ce qui garantit
@@ -990,8 +1027,7 @@ describe('CombatConsole — trois formes, une seule bande', () => {
     const ouv = ruleOf(CC_BASE, ".cc-phase[data-phase='ouverture']");
     expect(decl(ouv, 'top')).toBe('var(--cc-ouverture-top)');
     expect(decl(ouv, 'bottom')).toBe('auto');
-    expect(decl(ouv, 'left')).toBe('50%');
-    expect(decl(ouv, 'transform')).toBe('translateX(-50%)');
+    expect(centrage(ouv), 'le bandeau d’ouverture n’est pas centré en largeur').toBe('axe X');
     expect(parseFloat(decl(ruleOf(CC_BASE, ':root'), '--cc-ouverture-top')!)).toBeGreaterThan(0);
     // Cette position tient jusqu'à 701px inclus (mesuré libre de tout recouvrement à 901, 900, 800
     // et 701). Sous 700 SEULEMENT — là où la frise quitte sa colonne pour une bande haute et où le
@@ -1800,7 +1836,7 @@ describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)'
     // La règle du hors-écran est structurelle : jamais `display: none` (l'arbre a11y le perdrait).
     // La primitive est PARTAGÉE (base.css) : jamais une recopie du clip par module.
     const horsEcran = ruleOf(BASE_CSS, '.hors-ecran');
-    expect(decl(horsEcran, 'clip-path')).toBe('inset(50%)');
+    expect(decl(horsEcran, 'clip-path'), 'la primitive hors-écran doit CLIPPER sa boîte').toMatch(/^inset\(/);
     expect(decl(horsEcran, 'position')).toBe('absolute');
     expect(decl(horsEcran, 'display'), 'hors écran ≠ retiré de l’arbre a11y').toBeNull();
   });
@@ -1817,12 +1853,21 @@ describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)'
     // La réserve de bande vaut la plus HAUTE des régions — la travée, ou l'arche diminuée de ce
     // qu'elle franchit — plus le liseré. Une réserve calée sur la seule travée AMPUTAIT l'arche
     // (mesuré 17px de contenu coupé à 900×800, `scripts/recette/console-pont-formes.mjs`).
-    expect(norm(decl(racine, '--cc-deck-h')!)).toBe('calc(max(var(--cc-bay-h), var(--cc-arch-h) - var(--cc-fronton)) + 3px)');
-    expect(norm(decl(racine, '--cc-arch-h')!)).toBe('calc(var(--cc-portrait) + var(--cc-arch-chrome))');
-    // Ces 3px sont bien le liseré du pont, pas un nombre en l'air : la peau de bande le déclare par
-    // le token `--pont-liseret` (base.css).
+    // Jugé ÉVALUÉ, à deux viewports : la réserve vaut la plus HAUTE des deux régions plus le liseré,
+    // et l'arche vaut son portrait plus son chrome. Une formule RÉÉCRITE sans changer ces lois passe ;
+    // une loi qui change rougit.
+    const liseret = parseFloat(token('--pont-liseret'));
+    for (const [vw, vh] of [[1920, 1080], [900, 800]] as [number, number][]) {
+      const lu = (e: string) => evalLen(e, vw, vh);
+      expect(lu(decl(racine, '--cc-deck-h')!), `réserve de bande à ${vw}×${vh}`)
+        .toBe(Math.max(lu('var(--cc-bay-h)'), lu('var(--cc-arch-h)') - lu('var(--cc-fronton)')) + liseret);
+      expect(lu(decl(racine, '--cc-arch-h')!), `hauteur d’arche à ${vw}×${vh}`)
+        .toBe(lu('var(--cc-portrait)') + lu('var(--cc-arch-chrome)'));
+    }
+    // Ce liseré est bien celui du pont, pas un nombre en l'air : la peau de bande le déclare par le
+    // token `--pont-liseret` (base.css), et c'est CE token que la réserve ci-dessus additionne.
     expect(decl(ruleOf(COMPONENTS_BASE, '.skin-pont'), 'border-top')).toMatch(/^var\(--pont-liseret\) /);
-    expect(token('--pont-liseret')).toBe('3px');
+    expect(liseret, 'le liseré du pont doit être une épaisseur non nulle').toBeGreaterThan(0);
     // Tant que le pont est une LIGNE (≥561), aucune tranche ne rejoue la hauteur de la travée : seul le
     // côté d'alvéole varie, et `--cc-bay-h` en découle.
     for (const q of ['@media (max-width: 900px)', '@media (max-width: 700px)']) {
@@ -1871,7 +1916,7 @@ describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)'
   it('E-4 — vignette de set : mot entier ≥ 8px, trois coins DISJOINTS, set au poing en relief', () => {
     const load = ruleOf(CC_BASE, '.cc-set-load');
     const px = (v: string) => parseFloat(/(\d+(?:\.\d+)?)px/.exec(v)![1]);
-    expect(px(decl(load, 'font')!)).toBeGreaterThanOrEqual(8);
+    expect(px(decl(load, 'font')!)).toBeGreaterThanOrEqual(8); // norme: plancher de lisibilité 8px (charte UI — un mot entier, lisible)
     // Aucune tranche compacte ne le rapetisse (il était descendu à 6px sous 560).
     for (const q of ['@media (max-width: 900px)', '@media (max-width: 700px)', '@media (max-width: 560px)']) {
       expect(mediaBlock(CC_CSS, q)).not.toMatch(/\.cc-set-load\s*\{/);
@@ -1947,33 +1992,7 @@ describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)'
 //    `--cc-bay-h` → `--cc-deck-h`) à viewport simulé : c'est la LOI déclarée qui est jugée, pas un
 //    littéral recopié. La recette re-mesure les mêmes largeurs à l'écran.
 describe('CombatConsole — budget de hauteur du pont (arbitrage user 2026-08-17)', () => {
-  const racine = () => ruleOf(CC_BASE, ':root');
-
-  /** Évalue une longueur CSS déclarée (`px`, `vw`, `vh`, `calc`, `clamp`, `min`, `max`, `var`) à un
-   *  viewport donné. Résolution des `var(--x)` par les déclarations du `:root` du module. */
-  function evalLen(expr: string, vw: number, vh: number, depth = 0): number {
-    if (depth > 8) throw new Error(`résolution de variables trop profonde : ${expr}`);
-    let e = expr.trim();
-    // 1) variables du module
-    for (let i = 0; i < 8 && e.includes('var('); i++) {
-      e = e.replace(/var\((--[\w-]+)\)/g, (_m, nom: string) => {
-        const v = decl(racine(), nom);
-        if (!v) throw new Error(`variable ${nom} absente du :root de combat-console.css`);
-        return `(${String(evalLen(v, vw, vh, depth + 1))}px)`;
-      });
-    }
-    // 2) fonctions CSS → JS
-    e = e.replace(/\bclamp\(/g, 'CLAMP(').replace(/\bmin\(/g, 'Math.min(').replace(/\bmax\(/g, 'Math.max(').replace(/\bcalc\(/g, '(');
-    // 3) unités
-    e = e.replace(/(-?[\d.]+)vw/g, (_m, n: string) => String((Number(n) * vw) / 100))
-      .replace(/(-?[\d.]+)vh/g, (_m, n: string) => String((Number(n) * vh) / 100))
-      .replace(/(-?[\d.]+)px/g, '$1');
-    if (/[a-zA-Z_$]/.test(e.replace(/CLAMP|Math\.min|Math\.max/g, ''))) throw new Error(`unité/fonction non gérée : ${expr} → ${e}`);
-    const CLAMP = (lo: number, v: number, hi: number) => Math.min(Math.max(v, lo), hi);
-    return Function('CLAMP', 'Math', `"use strict"; return (${e});`)(CLAMP, Math) as number;
-  }
-
-  /** Hauteur du pont telle que le CSS la déclare, à un viewport donné. */
+  /** Hauteur du pont telle que le CSS la DÉCLARE, à un viewport donné. */
   const deck = (vw: number, vh: number) => evalLen(decl(racine(), '--cc-deck-h')!, vw, vh);
 
   // 1998×959 = la résolution de la capture de l'arbitrage ; 1280×800 et 1920×1080 = l'étalon et la planche.
@@ -2120,8 +2139,6 @@ describe('CombatConsole — budget de hauteur du pont (arbitrage user 2026-08-17
     const arche = ruleOf(CC_BASE, '.cc-arch');
     const pad = decl(arche, 'padding')!.split(/\s+/).map(parseFloat);
     expect(pad[0], `rembourrage haut de l’arche = ${pad[0]}px`).toBeLessThanOrEqual(8);
-    // … sans toucher à l'élévation du fronton, qui est un contrat d'assemblage (§1c-ter, P-3).
-    expect(decl(arche, 'margin-top')).toBe('calc(-1 * var(--cc-fronton))');
   });
 });
 
@@ -2767,8 +2784,11 @@ describe('CombatConsole — annuler le déplacement, sur la gouttière de Mouvem
     // La cible tactile est posée HORS de toute tranche de pointeur (elle vaut partout).
     const cible = ruleOf(CC_BASE, 'button.cc-socle::before');
     expect(decl(cible, 'position')).toBe('absolute');
+    // Le PLANCHER de la zone de contact, quelle que soit la taille du socle : c'est la norme qui
+    // est gardée, pas l'écriture du `max()`.
+    const plancher = (v: string) => Math.max(...[...v.matchAll(/(-?\d+(?:\.\d+)?)px/g)].map((m) => Number(m[1])), 0);
     for (const cote of ['width', 'height']) {
-      expect(decl(cible, cote), `cible tactile : ${cote} sous 44px`).toBe('max(100%, 44px)');
+      expect(plancher(decl(cible, cote)!), `cible tactile : ${cote} sous le plancher`).toBeGreaterThanOrEqual(44); // norme: cible tactile 44px au doigt (charte UI règle 4)
     }
   });
 });
@@ -3541,8 +3561,7 @@ describe('CombatConsole — le pont d’OUVERTURE est celui du JOUEUR, et n’of
     const regle = ruleOf(CC_BASE, ".cc-phase[data-phase='ouverture']");
     expect(decl(regle, 'top')).toBe('var(--cc-ouverture-top)');
     expect(decl(regle, 'bottom')).toBe('auto');
-    expect(decl(regle, 'left')).toBe('50%');
-    expect(decl(regle, 'transform')).toBe('translateX(-50%)');
+    expect(centrage(regle), 'le bandeau d’ouverture n’est pas centré en largeur').toBe('axe X');
     expect(parseFloat(decl(ruleOf(CC_BASE, ':root'), '--cc-ouverture-top')!)).toBeGreaterThan(0);
     // La console basse : un médaillon, et RIEN d'autre (ni case, ni set, ni fin de tour).
     expect(host.querySelector('.cc-dock')!.getAttribute('data-forme')).toBe('spectatrice');

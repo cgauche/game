@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
 import { Split, Stack } from './Layout';
+import { ramenerEnVue } from './useRamenerEnVue';
 
 /** Breakpoint canon d'empilement — passé aux primitives de placement (`Split stackBelow`,
  *  `Stack rowBelow`) ET lu par la mise en vue du détail : une seule valeur pour les trois. */
@@ -99,7 +100,9 @@ export function MasterDetail({
     requestAnimationFrame(() => {
       if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
       if (!window.matchMedia(`(max-width: ${MASTER_DETAIL_STACK_BREAKPOINT_PX}px)`).matches) return;
-      detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // `block: 'start'` — SEULE politique différente du défaut : empilé, le détail vit SOUS la
+      // liste, et 'nearest' ne bougerait rien tant qu'un de ses pixels affleure le bas du champ.
+      ramenerEnVue(detailRef.current, { block: 'start' });
     });
   }, []);
 

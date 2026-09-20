@@ -6,7 +6,8 @@
  * fois aux valeurs de la planche (`styles/plaque-row.css`) — un écran COMPOSE cette rangée
  * (caractéristiques de l'étape 3, rangées d'allocation : même meuble), il ne la redessine pas.
  */
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
+import { useRamenerEnVue } from './useRamenerEnVue';
 
 export function PlaqueRow({
   prefix,
@@ -70,13 +71,8 @@ export function PlaqueRow({
   // écran à dix rangées (Caractéristiques) fait défiler la cérémonie hors champ sans ce recentrage.
   // `'nearest'` : ne bouge rien si la rangée est déjà visible, jamais un saut agressif en haut de rail.
   const ref = useRef<HTMLButtonElement & HTMLDivElement>(null);
-  const bringIntoView = rolling || attention;
-  useEffect(() => {
-    // `scrollIntoView` est absent en jsdom (galerie/tests de fumée) : optional chaining sur la
-    // MÉTHODE, pas seulement sur `ref.current` (sinon TypeError "is not a function"). Un seul
-    // déclenchement par FRONT MONTANT (`rolling`/`attention` false→true), jamais à chaque render.
-    if (bringIntoView) ref.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
-  }, [bringIntoView]);
+  const bringIntoView = !!(rolling || attention);
+  useRamenerEnVue(ref, bringIntoView);
   const inner = (
     <>
       {prefix != null && <span className="plaque-prefix">{prefix}</span>}

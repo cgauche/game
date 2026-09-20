@@ -3,6 +3,7 @@ import { useGame, type SheetTab } from '../state/store';
 import { bestDetector } from '../state/merchantFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { useModalA11y } from './Modal';
+import { ramenerEnVue } from './useRamenerEnVue';
 import { Tabs } from './Tabs';
 import { isWeaponActive, weaponHands, isOffHandEligible, maxEncumbrance, totalEncumbrance } from '../engine/items';
 import { OptionChooser } from './OptionChooser';
@@ -77,7 +78,7 @@ function etatZoneBadges(hero: Combatant): ZoneBadgeSpec[] {
     label: locationLabel(loc, hero.bodyShape),
     value: crit + trauma,
     tone: crit > 0 ? 'sang' : 'warn',
-    onClick: () => document.getElementById(zoneAnchor(loc))?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }),
+    onClick: () => ramenerEnVue(document.getElementById(zoneAnchor(loc))),
   }));
 }
 

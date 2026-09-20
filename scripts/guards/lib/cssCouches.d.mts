@@ -13,6 +13,10 @@ export function reglesCss(texte: string): RegleCss[];
 /** Découpe une liste de sélecteurs sur ses virgules de NIVEAU 0 (hors `:has()`/`:is()`/`[attr]`). */
 export function decoupeSelecteurs(tete: string): string[];
 export function declarations(corps: string): { prop: string; valeur: string }[];
+/** Corps interne d'une tranche `@media` — lève si la tranche est absente. */
+export function mediaBlock(css: string, requete: string): string;
+/** La feuille privée de toutes ses tranches `@media`. */
+export function baseSection(css: string): string;
 export const PROPRIETES_DE_PLACEMENT: ReadonlySet<string>;
 export const PROPRIETES_A_ECHELLE: ReadonlySet<string>;
 export function estPlacement(prop: string): boolean;

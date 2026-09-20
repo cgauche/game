@@ -74,6 +74,31 @@ habité » du juge, #371) ; un centrage/bornage codé à la main par écran (tra
   dur dans le JSX (cliquet `src/ui/ui-ratchets.test.ts` (viii) — sinon « texte noir sur noir » quand la
   surface change de fond).
 
+### Où se garde un contrat CSS : unité, ou sonde de navigateur (#1806)
+
+Question utilisateur du 2026-09-20, verbatim : « Pourquoi on a des tests unitaires sur le css ? Genre
+si je veux modifier l'interface, ca casse tous les test unitaires c'est ca ? » — non, et la règle qui
+départage est celle-ci. **jsdom ne met rien en page et n'applique aucune tranche `@media`** : un test
+unitaire qui lit du CSS ne peut prouver qu'une PRÉSENCE, jamais un rendu.
+
+- **Un test unitaire de CSS est légitime s'il énonce une CLASSE de défaut sur tout le corpus**, sans
+  citer à la fois un sélecteur d'écran ET une valeur (« aucune feuille hors couche partagée ne
+  réécrit le halo d'encre », « un delta de module bat la matière qu'il repeint »). Dès qu'il cite les
+  deux, il grève l'interface : changer une valeur de design casse un test qui ne gardait rien.
+- **Seule exception : une NORME** — 44px de cible au doigt sous `pointer: coarse`. Une norme n'est pas
+  un choix de design.
+- **Un contrat de RENDU se MESURE au navigateur** : « défile », « ne recouvre pas », « reçoit son
+  clic », « tient sur une ligne », « reste visible à tout défilement ». Sonde =
+  `scripts/recette/*.mjs` ; son DÉTECTEUR est une fonction PURE exportée (`defauts()`), testée à
+  fixtures par un `scripts/recette/*.test.mjs` que la gate `test:recette` joue — un cas ROUGE et un
+  cas VERT par verdict.
+- **Un contrat de STRUCTURE bon marché reste en unité**, reformulé sans valeur d'écran : la règle vit
+  hors de toute tranche, l'ancrage est hors flux, le cartouche est le premier enfant de la piste, la
+  colonne d'États est sœur du portrait (celle-là se lit au DOM monté, pas au texte du CSS).
+- Avant de supprimer une assertion, la question est : **« si je la retire, quel défaut MESURÉ n'est
+  plus gardé par rien ? »** — « aucun » : elle tombe. Sinon elle ne tombe qu'APRÈS que la sonde le
+  mesure.
+
 ## Couche atomique — catalogue
 
 Classes CSS **canoniques** réellement définies dans `src/ui/styles/components.css` / `base.css`

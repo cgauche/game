@@ -20,15 +20,11 @@
 //   · MÉDAILLON CENTRÉ — son centre tombe sur celui du champ (forme spectatrice).
 //
 // Sortie : exit 1 au premier défaut (liste complète imprimée), exit 0 si tout passe.
-import { openApp, evaluate, setViewport, sleep, clickButtonByText } from './lib.mjs';
+import { openApp, evaluate, setViewport, sleep, clickButtonByText, resoudreModales } from './lib.mjs';
 
 /** Largeurs canon de la charte (900 / 700 / 560) plus les deux bureaux. */
 const DEFAULT_WIDTHS = [1600, 1100, 900, 800, 700, 560, 360];
 const HEIGHT = 800;
-// Boutons d'avancement, par ordre de préférence. La mise en place traverse des tours d'IA : une
-// modale de DÉFENSE peut s'ouvrir (l'ennemi frappe un héros) — elle se résout par ses vrais boutons,
-// comme un joueur, sinon la sonde reste bloquée devant.
-const CASCADE_LABELS = ['Tout lancer', 'Commencer', 'Lancer', 'Continuer', 'Appliquer', 'Poursuivre', 'Suivant', 'Valider', 'Terminer', 'Fermer', 'Parade', 'Esquive', 'Encaisser', 'Subir', 'Renoncer'];
 
 function parseArgs(argv) {
   const out = { url: undefined, widths: DEFAULT_WIDTHS, mesures: false, stress: 0 };
@@ -105,18 +101,6 @@ const PROBE = `(() => {
     champ: box(document.querySelector('.stage').getBoundingClientRect()),
   };
 })()`;
-
-async function resoudreModales(session, etape) {
-  for (let i = 0; i < 40; i++) {
-    if (!(await evaluate(session, `!!document.querySelector('.modal-overlay')`))) return;
-    const textes = await evaluate(session, `[...document.querySelectorAll('.modal-overlay button:not(:disabled)')].map((b) => b.textContent.trim()).filter(Boolean).join(' | ')`);
-    const label = CASCADE_LABELS.find((l) => textes.includes(l));
-    if (!label) throw new Error(`[${etape}] fenêtre bloquée, aucun bouton d'avancement connu parmi : ${textes}`);
-    await clickButtonByText(session, label);
-    await sleep(500);
-  }
-  throw new Error(`[${etape}] les fenêtres ne se referment pas après 40 avancements`);
-}
 
 /** Amène le combat jusqu'aux CASES du tour d'un héros (le pont COMPLET). */
 async function jusquAuTourDuJoueur(session) {

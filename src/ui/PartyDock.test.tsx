@@ -123,6 +123,25 @@ describe('PartyDock — micro-rendu (sondes pixel du juge vision, 2026-08-17)', 
     expect(enveloppe).toMatch(/scroll-snap-align:\s*start/);
   });
 
+  // Planche USER 2026-08-17 : la colonne d'États est SŒUR du portrait dans la boîte de la carte — À
+  // CÔTÉ de lui, plus posée dessus. C'est une STRUCTURE (le DOM monté la porte à toute largeur), pas
+  // un texte de règle CSS : la GÉOMÉTRIE qui en découle se mesure au navigateur
+  // (`scripts/recette/hud-clickables.mjs` : chaque portrait reçoit son clic).
+  it('la colonne d’États est SŒUR du portrait, dans la carte de SON héros', () => {
+    g1.conditions = [{ id: 'hemorragique', value: 2 }];
+    g2.conditions = [];
+    const host = monter({ heroes: [g1, g2], onOpen: () => {} });
+    const boites = [...host.querySelectorAll('.ptile-wrap')];
+    expect(boites.length, 'une boîte par héros').toBe(2);
+    for (const boite of boites) {
+      const portrait = boite.querySelector(':scope > .ptile');
+      const etats = boite.querySelector(':scope > .ptile-states');
+      expect(portrait, 'le portrait est un enfant DIRECT de la boîte').not.toBeNull();
+      expect(etats, 'la colonne d’États est un enfant DIRECT de la boîte, comme lui').not.toBeNull();
+      expect(portrait!.contains(etats!), 'la colonne ne vit pas DANS le portrait').toBe(false);
+    }
+  });
+
   // B-2 : `height: 2.6em` réservait DEUX lignes à toute légende, portées ou non.
   it('B-2 — la légende suit son contenu, une ligne au minimum, tuiles alignées par le haut', () => {
     const legende = ruleOf('.pd-track > figure > figcaption');

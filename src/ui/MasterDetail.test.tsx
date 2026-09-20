@@ -14,9 +14,11 @@ beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 });
 
-function mockMatchMedia(matches: boolean) {
+/** `empile` répond à la requête de LARGEUR, `reduit` à `prefers-reduced-motion` — une seule valeur
+ *  pour les deux rendrait un écran empilé automatiquement « animations réduites ». */
+function mockMatchMedia(empile: boolean, reduit = false) {
   window.matchMedia = vi.fn().mockImplementation((query: string) => ({
-    matches,
+    matches: /prefers-reduced-motion/.test(query) ? reduit : empile,
     media: query,
     onchange: null,
     addListener: vi.fn(),
@@ -72,7 +74,23 @@ describe('MasterDetail — scroll vers le détail en mode empilé (#343)', () =>
     act(() => { btn.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     await flushRaf();
     expect(scrollSpy).toHaveBeenCalledTimes(1);
-    expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+    expect(scrollSpy).toHaveBeenCalledWith({ block: 'start', inline: 'nearest', behavior: 'smooth' });
+  });
+
+  it('sous prefers-reduced-motion : même mise en vue, SANS défilement animé', async () => {
+    mockMatchMedia(true, true);
+    Element.prototype.scrollIntoView = scrollSpy;
+    mount(
+      <MasterDetail
+        listLabel="Entrées"
+        list={<button type="button">Entrée A</button>}
+        detail={<div>Détail A</div>}
+      />,
+    );
+    const btn = container.querySelector('button')!;
+    act(() => { btn.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await flushRaf();
+    expect(scrollSpy).toHaveBeenCalledWith({ block: 'start', inline: 'nearest', behavior: 'auto' });
   });
 
   it('mode côte-à-côte (> breakpoint) : le clic ne scrolle pas', async () => {

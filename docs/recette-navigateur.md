@@ -102,12 +102,25 @@ node scripts/recette/hud-clickables.mjs
 node scripts/recette/hud-clickables.mjs --widths 700,560,360
 ```
 
-Vérifie par `elementFromPoint` qu'aucune surface du HUD n'en recouvre une autre, en exploration puis
-en combat, à 1600/1100/900/700/560/360 (options `--widths`, `--url`) : chaque commande de vue
-(`.vc-btn`) et chaque portrait du groupe reçoit SON clic, le fil d'événements ne mord pas sur la
-frise d'initiative, la piste `.is-tiles` défile au lieu de déborder, et la boîte pleine ligne du
-bandeau d'objectif n'avale rien hors de sa tête. Exit ≠ 0 avec la liste des défauts. Les cliquets
-CSS (`src/ui/ui-ratchets.test.ts`) lisent des déclarations ; ce script mesure le rendu.
+Vérifie par `elementFromPoint` et par les boîtes rendues qu'aucune surface du HUD n'en recouvre une
+autre ni ne sort du champ, en exploration puis en combat, à 1600/1100/900/700/560/360 (options
+`--widths`, `--url`) : chaque portrait du groupe et chaque case du pont reçoit SON clic, la piste du
+groupe (`.pd-track`) tient sur UNE ligne, le fil d'événements ne mord pas sur la frise d'initiative,
+la piste `.is-tiles` défile au lieu de déborder, la frise en bande va jusqu'au bord droit (réserve
+≤ 8px), son cartouche de Round et l'acteur AU TRAIT restent dans le champ à tout défilement,
+l'ouvreur d'écran d'un rail dissous garde un ancrage hors flux, et la boîte pleine ligne du bandeau
+d'objectif n'avale rien hors de sa tête. Exit ≠ 0 avec la liste des défauts.
+Le TIROIR DU JOURNAL se juge **ouvert** : la sonde le déplie par clic réel sur sa poignée
+(`.ld-btn`) au premier tour tenu par un héros, puis refuse un panneau qui recouvre la console
+(« recouvre la console de N×Mpx ») — fermé, il ne recouvre rien, et la question n'a pas de sens.
+Chaque situation où la mesure serait verte par VACUITÉ (rail dissous sans ouvreur, bande de groupe
+sans carte ni poignée, tiroir qui ne s'ouvre pas, console sans case) se DIT « sonde aveugle ».
+La caméra n'a plus de plaque sur l'écran de jeu (`src/ui/camera-sans-plaque.test.ts`) : `.vc-btn`
+n'est plus sondée. ANGLE MORT DÉCLARÉ : l'ouvreur de dossier de navire n'est monté qu'en combat
+NAVAL — le scénario `enc-mutants` sondé par défaut ne le porte pas.
+Le DÉTECTEUR (`defauts()`) est PUR et testé à fixtures par `scripts/recette/hud-clickables.test.mjs`
+(gate `test:recette`), un cas rouge et un cas vert par verdict. Règle de partage unité ⁄ sonde :
+`docs/charte-ui.md` § « Où se garde un contrat CSS ».
 
 ### CLI — `scripts/recette/console-pont-formes.mjs`
 
@@ -144,6 +157,9 @@ sinon elle est déclarée aveugle (exit 1). Exit ≠ 0 avec la liste des défaut
 | `emulateReducedMotion` | force `prefers-reduced-motion: reduce` (CDP `Emulation.setEmulatedMedia`) |
 | `setViewport` / `setMobileViewport` | viewport explicite / mobile canon 360×740 (charte-ui.md — testable dès 360px) |
 | `clickButtonByText` | trouve un `<button>`/`[role="button"]` par son TEXTE (`session, texte, {exact?}`), `scrollIntoView`, PUIS lit son rect et clique via un VRAI clic CDP (`Input.dispatchMouseEvent` pressed+released) — SCROLL-AWARE : lire le rect AVANT le scroll fait rater le clic SILENCIEUSEMENT (aucune erreur, aucun effet). `{exact:true}` compare le texte ENTIER (obligatoire dès qu'un libellé en préfixe un autre) ; `{dans}` = sélecteur RACINE où chercher, quand le même libellé vit dans deux zones de l'écran ; si PLUSIEURS boutons matchent, le premier est cliqué et l'ambiguïté est AVERTIE sur `stderr` avec les textes concurrents |
+| `cliquerSelecteur` | CLIC RÉEL d'un contrôle désigné par un SÉLECTEUR (`session, selecteur`) — le pendant de `clickButtonByText` quand le contrôle n'a PAS de texte (bouton à glyphe : tiroir du journal `.ld-btn`, ouvreur d'écran). SCROLL-AWARE, et il REFUSE en le nommant : cible absente, boîte 0×0 (non rendue), contrôle désactivé — jamais un clic silencieux qui n'a rien fait |
+| `clicReel` | la triade CDP `mouseMoved`/`mousePressed`/`mouseReleased` — geste de clic UNIQUE du module : tout helper qui clique passe par là, aucun ne la réécrit |
+| `resoudreModales` + `CASCADE_LABELS` | RÉSOUT toute fenêtre ouverte (`.modal-overlay`) jusqu'à ce qu'il n'y en ait plus — DÉFINITION UNIQUE partagée par les sondes. Deux gestes, dans cet ordre : (1) un bouton d'AVANCEMENT (`CASCADE_LABELS` : Lancer, Appliquer, Continuer… — aucun nom de RÈGLE n'y figure) ; (2) à défaut, la **première option OUVERTE** d'un sélecteur d'options (`OptionChooser` : `.seg`, `.rm-loc-grid`, `.rm-loc-inline`). Une fenêtre de CHOIX (défense, désengagement, résistance) n'offre aucun bouton d'avancement tant que le joueur n'a pas tranché : la recette tranche par la FORME du contrôle, jamais par le nom d'une règle — toute fenêtre de choix passe, y compris celle qu'une règle future ouvrira, et l'option cliquée est IMPRIMÉE (une recette dit ce qu'elle a choisi à la place du joueur). Lève en nommant les boutons offerts si aucun des deux gestes ne s'applique, et lève « l'option « X » ne fait pas avancer la fenêtre » si la fenêtre est identique après deux clics |
 | `realKey` | frappe RÉELLE (`session, touche`, `Input.dispatchKeyEvent` : `rawKeyDown`/`char`/`keyUp`) — traverse les MÊMES handlers que le clavier physique (`keybindings.ts`), contrairement à un `KeyboardEvent` JS synthétique souvent ignoré. UNE forme d'argument pour toute la famille `realKey*` : la TOUCHE `{ key, code?, windowsVirtualKeyCode?, modifiers? }` — pour Échap, `session` puis `{ key: 'Escape' }` ; seul `key` est requis, `code` et le code virtuel se déduisent de lui (`scripts/recette/lib.mjs`). Alias français : `frapperTouche` (même geste, même forme). ⚠ Observé en recette #1752 le 2026-09-17 : `Enter` envoyé sur un `<button>` FOCALISÉ n'a pas activé le bouton (`keydown` reçu, `defaultPrevented:false`, aucun `click`) ; `Space` l'a activé. Une frappe d'activation se mesure donc, elle ne se suppose pas |
 | `realKeyDown` / `realKeyUp` + `ALT` / `MOD_ALT` | geste MAINTENU (`session, ALT` — la même TOUCHE que `realKey`, `ALT` imposant `code`/code virtuel) : l'appui et le relâchement sont deux appels, et ce qui se joue ENTRE les deux porte `{ modifiers: MOD_ALT }` (`survoler`, `clickButtonByText`) — sinon l'événement déclare la touche relâchée. C'est le pilotage d'**Alt maintenu** (`decor.reveler`) : halo + plaque de nom sur chaque utilisable visible, le survolé agrandi ; relâché, le champ redevient muet. ⚠ `__wfrp.screen('editor')` charge la scène-FIXTURE, pas la scène active — pour ouvrir un document précis, `editorOpen(id)` ; et un `querySelector` de pastille reste vrai SOUS la modale d'intro (mesurer la scène, pas le seul DOM) |
 | `typeInField` | SAISIE réelle dans un champ (`session, selecteur, texte, {clear?}`) : focus par VRAI clic CDP, puis `Input.insertText` — l'insertion passe par le pipeline d'édition, donc le `onChange` React s'exécute (mesuré : `ab12cd` frappé dans `.coop-code-input` se lit `AB12CD`, la casse venant du handler React de `CoopCodeInput`). Rend la valeur relue APRÈS la frappe. C'est la sortie du piège « Champ CONTRÔLÉ React » ci-dessous |

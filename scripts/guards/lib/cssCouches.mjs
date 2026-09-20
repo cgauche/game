@@ -158,6 +158,44 @@ export function declarations(corps) {
   return out;
 }
 
+/**
+ * Corps INTERNE de la tranche `@media` dont le prélude est `requete`, accolades appariées.
+ * Source UNIQUE des lectures par tranche (`src/ui/ui-ratchets.test.ts`, `src/ui/CombatConsole.test.tsx`).
+ * Une tranche ABSENTE lève : rendre `''` laissait passer au vert tout contrat qui l'interroge.
+ * @param {string} css @param {string} requete @returns {string}
+ */
+export function mediaBlock(css, requete) {
+  const at = css.indexOf(requete);
+  if (at < 0) throw new Error(`tranche « ${requete} » absente de la feuille lue`);
+  const ouvre = css.indexOf('{', at);
+  let prof = 0;
+  for (let i = ouvre; i < css.length; i++) {
+    if (css[i] === '{') prof++;
+    else if (css[i] === '}' && --prof === 0) return css.slice(ouvre + 1, i);
+  }
+  throw new Error(`tranche « ${requete} » non refermée`);
+}
+
+/**
+ * La feuille PRIVÉE de toutes ses tranches `@media` : ce qui doit valoir à TOUTE largeur est là.
+ * Une règle glissée dans une tranche disparaît de cette vue — c'est ce que les invariants traquent.
+ * @param {string} css @returns {string}
+ */
+export function baseSection(css) {
+  let out = css;
+  for (;;) {
+    const at = out.indexOf('@media');
+    if (at < 0) return out;
+    let prof = 0;
+    let fin = out.length;
+    for (let i = out.indexOf('{', at); i < out.length; i++) {
+      if (out[i] === '{') prof++;
+      else if (out[i] === '}' && --prof === 0) { fin = i + 1; break; }
+    }
+    out = out.slice(0, at) + out.slice(fin);
+  }
+}
+
 /** Propriétés de PLACEMENT, liste FERMÉE (docs/charte-ui.md § « Architecture CSS ») : elles PLACENT,
  *  bornent, ferrent ou retirent une puce — elles ne PEIGNENT pas. Tout le reste est de l'IDENTITÉ et
  *  appartient à une primitive. `cursor` est de l'identité : l'affordance est la matière d'un contrôle. */

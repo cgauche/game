@@ -706,10 +706,107 @@ export async function clickButtonByText(session, texte, { exact = false, dans, m
   if (rect.textes && rect.textes.length > 1) {
     console.warn(`clickButtonByText « ${texte} » : ${rect.textes.length} boutons matchent (${rect.textes.join(' | ')}) — le PREMIER est cliqué. Préciser avec { exact: true } si ce n'est pas celui-là.`);
   }
-  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseMoved', x: rect.x, y: rect.y, modifiers });
-  await session.rpc('Input.dispatchMouseEvent', { type: 'mousePressed', x: rect.x, y: rect.y, button: 'left', clickCount: 1, modifiers });
-  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseReleased', x: rect.x, y: rect.y, button: 'left', clickCount: 1, modifiers });
+  await clicReel(session, rect.x, rect.y, modifiers);
   return rect;
+}
+
+/**
+ * CLIC RÉEL d'un contrôle désigné par un SÉLECTEUR — le pendant de `clickButtonByText` quand le
+ * contrôle n'a pas de texte (un bouton à GLYPHE : tiroir du journal, menu ☰, ouvreur d'écran).
+ * SCROLL-AWARE comme ses frères (rect lu APRÈS `scrollIntoView`), et il REFUSE explicitement : cible
+ * absente, ou désactivée — jamais un clic silencieux qui n'a rien fait.
+ * @returns {Promise<{ x: number, y: number, label: string }>}
+ */
+export async function cliquerSelecteur(session, selecteur, { modifiers = 0 } = {}) {
+  const cible = await evaluate(session, `(() => {
+    const el = document.querySelector(${JSON.stringify(selecteur)});
+    if (!el) return null;
+    el.scrollIntoView({ block: 'center', inline: 'center' });
+    const r = el.getBoundingClientRect();
+    return {
+      x: r.x + r.width / 2, y: r.y + r.height / 2,
+      vide: r.width === 0 || r.height === 0,
+      desactive: !!el.disabled || el.getAttribute('aria-disabled') === 'true',
+      label: (el.getAttribute('title') || el.getAttribute('aria-label') || el.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 60),
+    };
+  })()`);
+  if (!cible) throw new Error(`cliquerSelecteur « ${selecteur} » : aucun élément`);
+  if (cible.vide) throw new Error(`cliquerSelecteur « ${selecteur} » : boîte de taille nulle (non rendu)`);
+  if (cible.desactive) throw new Error(`cliquerSelecteur « ${selecteur} » : contrôle DÉSACTIVÉ (${cible.label})`);
+  await clicReel(session, cible.x, cible.y, modifiers);
+  return cible;
+}
+
+/** Clic RÉEL (CDP) au point donné — le geste de clic UNIQUE de ce module : tout helper qui clique
+ *  passe ici, aucun ne réécrit la triade `mouseMoved`/`mousePressed`/`mouseReleased`. */
+export async function clicReel(session, x, y, modifiers = 0) {
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y, modifiers });
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', clickCount: 1, modifiers });
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', clickCount: 1, modifiers });
+}
+
+/**
+ * Libellés d'AVANCEMENT d'une cascade de fenêtres, par ordre de préférence : ils font AVANCER une
+ * cérémonie déjà décidée (lancer, appliquer, fermer). Aucun libellé de RÈGLE ici (ni « Parade », ni
+ * « Esquive ») : un CHOIX de joueur ne se résout pas par un cas nommé dans une liste de recette, il
+ * se résout par sa forme — cf. `resoudreModales`.
+ */
+export const CASCADE_LABELS = ['Tout lancer', 'Commencer', 'Lancer', 'Continuer', 'Appliquer', 'Poursuivre', 'Suivant', 'Valider', 'Terminer', 'Fermer'];
+
+/**
+ * RÉSOUT toute fenêtre ouverte (`.modal-overlay`) par ses VRAIS boutons, jusqu'à ce qu'il n'y en ait
+ * plus — DÉFINITION UNIQUE, partagée par les sondes de recette.
+ * Deux gestes, dans cet ordre :
+ *  1. un bouton d'AVANCEMENT (`CASCADE_LABELS`) : la cérémonie continue ;
+ *  2. à défaut, la PREMIÈRE option OUVERTE d'un sélecteur d'options (`OptionChooser` : `.seg`,
+ *     `.rm-loc-grid`, `.rm-loc-inline`) — une fenêtre de CHOIX (défense, désengagement, résistance)
+ *     n'a aucun bouton d'avancement tant que le joueur n'a pas tranché. La recette tranche par la
+ *     FORME du contrôle, jamais par le nom d'une règle : toute fenêtre de choix passe, y compris
+ *     celle qu'une règle future ouvrira. L'option cliquée est IMPRIMÉE (une recette dit ce qu'elle
+ *     a choisi à la place du joueur).
+ * Lève, en nommant les boutons offerts, si aucun des deux gestes ne s'applique — et lève aussi si
+ * l'option cliquée NE FAIT RIEN : une fenêtre dont les boutons et l'option offerte sont identiques
+ * après deux clics est un BLOCAGE, pas une lenteur, et la recette le nomme au lieu d'épuiser `max`.
+ */
+export async function resoudreModales(session, etape, { labels = CASCADE_LABELS, max = 40, pauseMs = 600 } = {}) {
+  let precedent = null;
+  let immobile = 0;
+  for (let i = 0; i < max; i++) {
+    const etat = await evaluate(session, `(() => {
+      const modale = document.querySelector('.modal-overlay');
+      if (!modale) return null;
+      const norm = (s) => (s || '').replace(/\\s+/g, ' ').trim();
+      const ouvert = (b) => !b.disabled && b.getAttribute('aria-disabled') !== 'true';
+      const boutons = [...modale.querySelectorAll('button')].filter(ouvert).map((b) => norm(b.textContent)).filter(Boolean);
+      const option = [...modale.querySelectorAll('.seg button, .rm-loc-grid button, .rm-loc-inline button')].filter(ouvert)[0] || null;
+      let point = null;
+      if (option) {
+        option.scrollIntoView({ block: 'center', inline: 'center' });
+        const r = option.getBoundingClientRect();
+        point = { x: r.x + r.width / 2, y: r.y + r.height / 2, texte: norm(option.textContent) };
+      }
+      return { boutons, option: point };
+    })()`);
+    if (!etat) return;
+    const signature = `${etat.boutons.join('|')}##${etat.option ? etat.option.texte : ''}`;
+    immobile = signature === precedent ? immobile + 1 : 0;
+    precedent = signature;
+    if (immobile >= 2 && etat.option) {
+      throw new Error(`[${etape}] l'option « ${etat.option.texte} » ne fait pas avancer la fenêtre `
+        + `(boutons inchangés après ${immobile} clics : ${etat.boutons.join(' | ') || '(aucun)'})`);
+    }
+    const label = labels.find((l) => etat.boutons.some((t) => t.includes(l)));
+    if (label) {
+      await clickButtonByText(session, label, { dans: '.modal-overlay' });
+    } else if (etat.option) {
+      console.log(`[${etape}] fenêtre de CHOIX : première option ouverte — « ${etat.option.texte} »`);
+      await clicReel(session, etat.option.x, etat.option.y);
+    } else {
+      throw new Error(`[${etape}] fenêtre bloquée, ni bouton d'avancement ni option ouverte parmi : ${etat.boutons.join(' | ') || '(aucun bouton)'}`);
+    }
+    await sleep(pauseMs);
+  }
+  throw new Error(`[${etape}] les fenêtres ne se referment pas après ${max} avancements`);
 }
 
 /**
@@ -1062,9 +1159,7 @@ export async function cliquerAction(session, actionId, { racine = '.combat-conso
   if (etat.gate) throw new Error(`cliquerAction « ${actionId} » : case GATÉE — raison affichée : « ${etat.gate} » (geste non forcé)`);
   if (etat.inerte) throw new Error(`cliquerAction « ${actionId} » : case INERTE (action déclarée sans dispatcher au registre) — rien à cliquer`);
   if (etat.disabled) throw new Error(`cliquerAction « ${actionId} » : case DÉSACTIVÉE (${etat.label}) — la situation ne l'offre pas`);
-  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseMoved', x: etat.x, y: etat.y });
-  await session.rpc('Input.dispatchMouseEvent', { type: 'mousePressed', x: etat.x, y: etat.y, button: 'left', clickCount: 1 });
-  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseReleased', x: etat.x, y: etat.y, button: 'left', clickCount: 1 });
+  await clicReel(session, etat.x, etat.y);
   return { actionId, label: etat.label, rect: { x: etat.x, y: etat.y } };
 }
 

@@ -31,6 +31,19 @@ describe('InitiativeStrip', () => {
     expect(html.match(/▼/g)?.length).toBe(1);
   });
 
+  // Le cartouche de Round est la TÊTE de la piste : premier enfant de `.is-tiles`, donc premier dans
+  // l'ordre de défilement — qu'elle défile en colonne ou en bande horizontale. Posé hors de la piste
+  // (ou après les entrées), il cesserait d'être la tête que le collage garde à l'écran. Que le
+  // collage TIENNE se mesure au navigateur (`scripts/recette/hud-clickables.mjs`).
+  it('le cartouche de Round est le PREMIER enfant de la piste', () => {
+    const { h, foe } = fixtures();
+    const html = renderToStaticMarkup(
+      <InitiativeStrip order={['e1', 'h1']} turn={1} round={3} combatants={[h, foe]} over={false}
+        canFirstIds={[]} onActivate={noop} onPromote={noop} hand={HAND} />,
+    );
+    expect(html).toMatch(/<div class="is-tiles"><div class="is-round">Round 3<\/div>/);
+  });
+
   // Spec HUD combat §1c-bis : une entrée de frise = vignette + liseré de camp (+ à la pause son
   // score, sa pointe, sa pastille). Ni Blessures, ni nom imprimé, ni États — ils vivent au bandeau
   // de groupe et à l'arche de la console.

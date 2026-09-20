@@ -20,13 +20,11 @@
 //   4. Échap annule ; re-clic de la case annule ;
 //   5. un clic-ennemi SANS intention reste une attaque normale (non-régression).
 // Sortie : exit 1 au premier défaut (liste complète imprimée), exit 0 si tout passe.
-import { openApp, evaluate, sleep, shot, clickButtonByText, consoleGuard, frapperTouche, cliquerAction } from './lib.mjs';
+import { openApp, evaluate, sleep, shot, clickButtonByText, consoleGuard, frapperTouche, cliquerAction, resoudreModales } from './lib.mjs';
 import { enteteArbre } from '../guards/lib/enteteArbre.mjs';
 
 /** FILIGRANE : l'arbre RÉELLEMENT joué (une recette sans son arbre ne prouve rien). */
 const filigrane = () => enteteArbre(process.cwd());
-
-const CASCADE_LABELS = ['Tout lancer', 'Commencer', 'Lancer', 'Continuer', 'Appliquer', 'Poursuivre', 'Suivant', 'Valider', 'Terminer', 'Fermer'];
 
 function parseArgs(argv) {
   const out = { url: undefined, out: process.cwd() };
@@ -36,21 +34,6 @@ function parseArgs(argv) {
     else throw new Error(`Option inconnue : ${argv[i]}`);
   }
   return out;
-}
-
-/** Résout les modales d'ouverture par leurs VRAIS boutons, comme un joueur. */
-async function resoudreModales(session, quoi) {
-  for (let i = 0; i < 14; i++) {
-    const ouverte = await evaluate(session, `!!document.querySelector('.modal, [role=dialog]')`);
-    if (!ouverte) return;
-    let clique = false;
-    for (const label of CASCADE_LABELS) {
-      try { await clickButtonByText(session, label); clique = true; break; } catch { /* label absent */ }
-    }
-    if (!clique) return;
-    await sleep(500);
-  }
-  console.log(`  (modales « ${quoi} » : borne atteinte)`);
 }
 
 /** Pause de début de Round : la console la porte dans son bandeau de phase — on la franchit au VRAI
@@ -190,7 +173,7 @@ async function main() {
       await cliquerCase(session, pt);
       await sleep(600);
       const s2 = await etat(session);
-      if (s2.pendingRun || await evaluate(session, `!!document.querySelector('.modal, [role=dialog]')`)) { caseCourse = pt; e = s2; break; }
+      if (s2.pendingRun || await evaluate(session, `!!document.querySelector('.modal-overlay')`)) { caseCourse = pt; e = s2; break; }
       if (s2.mouvementUse > 0) throw new Error(`la case (${pt.x},${pt.y}) a DÉPLACÉ le héros : elle n'était pas au-delà de la Marche`);
     }
     console.log(`Sondage de Course : ${essais} case(s) lointaine(s) visible(s) essayée(s) sur ${candidats.length} candidates → ${caseCourse ? `(${caseCourse.x},${caseCourse.y})` : 'aucune'}.`);

@@ -68,16 +68,15 @@
      269,4px de haut à 360×640 (magie) — le tiroir se pose JUSTE au-dessus. Sous cette réserve, il
      passerait SOUS la console (chevauchement mesuré 42×15 à 300px avant la 1re calibration, et
      11 points de sonde sur le bord haut du pont à 268px après le passage en bande).
-     Le tiroir passe au coin BAS-GAUCHE : la colonne de droite porte déjà le fil et la caméra, et
-     la console occupe toute la largeur sous 351px. La rangée de caméra (view-controls.css) se cale
-     AU-DESSUS de cette réserve — contrat croisé asserté par `src/ui/ui-ratchets.test.ts`. */
+     Le tiroir passe au coin BAS-GAUCHE : la colonne de droite porte déjà le fil d'événements, et
+     la console occupe toute la largeur sous 351px. */
   .log-drawer {
     left: 4px;
     right: auto;
     bottom: calc(274px + env(safe-area-inset-bottom, 0px));
   }
   /* Le panneau NAÎT de son déclencheur et sort du flux : sans cela, le tiroir occupait 309px de
-     large même fermé et mordait la rangée de caméra (chevauchement mesuré 30×16). */
+     large même FERMÉ et mordait la colonne voisine (chevauchement mesuré 30×16). */
   .ld-panel {
     position: absolute;
     bottom: 100%;

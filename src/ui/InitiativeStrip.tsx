@@ -4,6 +4,8 @@ import { strikesLast } from '../engine/qualities/dispatch';
 import { baseWithTraits } from '../engine/characteristics';
 import { talentInitiativeBonus } from '../engine/combatFeatures/dispatch';
 import { rule } from '../engine/policy';
+import { useRef } from 'react';
+import { useRamenerEnVue } from './useRamenerEnVue';
 import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
 import { Icon } from './Icon';
@@ -72,6 +74,11 @@ export interface InitiativeStripProps {
 }
 
 export function InitiativeStrip(p: InitiativeStripProps) {
+  // La frise DÉFILE — colonne bornée à l'espace au-dessus du pont, bande horizontale sous 700 : sans
+  // recentrage, l'acteur AU TRAIT peut vivre hors champ et le joueur ne voit pas qui joue.
+  const auTrait = p.over || p.turn < 0 ? null : p.order[p.turn] ?? null;
+  const refAuTrait = useRef<HTMLDivElement>(null);
+  useRamenerEnVue(refAuTrait, auTrait !== null, auTrait);
   return (
     <div className="initiative-strip">
       <div className="is-tiles">
@@ -84,6 +91,7 @@ export function InitiativeStrip(p: InitiativeStripProps) {
           return (
             <div
               key={id}
+              ref={phase === 'current' ? refAuTrait : undefined}
               className="is-cell"
               data-phase={phase}
               aria-current={phase === 'current' ? 'step' : undefined}

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /**
  * #535 : la rangée ACTIVE (`rolling`) se ramène dans le viewport du rail scrollable —
- * `PlaqueRow` pose `scrollIntoView({ block: 'nearest', behavior: 'smooth' })` quand elle bascule
+ * `PlaqueRow` ramène la rangée en vue (`useRamenerEnVue`, 'nearest') quand elle bascule
  * `rolling`, jamais au montage ni quand une autre rangée change d'état. `attention` (DoD #535,
  * première rangée d'allocation NON SOLDÉE) partage le MÊME mécanisme (un seul front montant
  * `rolling || attention` → un seul scroll), posé par l'écran appelant.
@@ -39,7 +39,7 @@ describe('PlaqueRow — scroll vers la rangée roulante (#535)', () => {
     Element.prototype.scrollIntoView = scrollSpy;
     mount(<PlaqueRow content="Force" rolling />);
     expect(scrollSpy).toHaveBeenCalledTimes(1);
-    expect(scrollSpy).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' });
+    expect(scrollSpy).toHaveBeenCalledWith({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
   });
 
   it('rangée montée SANS `rolling` : pas de scroll', () => {
@@ -70,7 +70,7 @@ describe('PlaqueRow — scroll vers la rangée roulante (#535)', () => {
     expect(scrollSpy).not.toHaveBeenCalled();
     act(() => { root.render(<PlaqueRow content="Force" attention />); });
     expect(scrollSpy).toHaveBeenCalledTimes(1);
-    expect(scrollSpy).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' });
+    expect(scrollSpy).toHaveBeenCalledWith({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
   });
 
   it('`rolling` puis `attention` (fronts successifs) : un scroll par front, pas de doublon sur un re-render inchangé', () => {

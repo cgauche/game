@@ -324,6 +324,15 @@
     "verrou": "réflexe avant tout clavier de navigation par flèches recodé"
   },
   {
+    "id": "useRamenerEnVue",
+    "type": "primitives.manifest",
+    "label": "useRamenerEnVue / ramenerEnVue",
+    "fichier": "src/ui/useRamenerEnVue.ts",
+    "concept": "ramener un élément en vue dans son conteneur défilant : 'nearest' par défaut, 'smooth' seulement hors prefers-reduced-motion, appel protégé (scrollIntoView absent en jsdom)",
+    "perimetre": "rangée qui roule, acteur au trait de la frise, détail empilé du master-detail, badge de zone de la fiche",
+    "verrou": "aucun `scrollIntoView` écrit à la main : le geste, ses défauts et la préférence système vivent en UN point"
+  },
+  {
     "id": "useLongPress",
     "type": "primitives.manifest",
     "label": "useLongPress",
@@ -899,7 +908,7 @@
     "css": "src/ui/styles/initiative-strip.css",
     "concept": "frise d'initiative : colonne de bois à cartouche de Round collé, une entrée par combattant, badges de premier coup et de pré-emption en débord",
     "perimetre": "HUD de combat (colonne à gauche ; bande horizontale défilable ≤700)",
-    "verrou": "src/ui/ui-ratchets.test.ts — matrice responsive du HUD"
+    "verrou": "scripts/recette/hud-clickables.mjs — la bande défile, va jusqu'au bord, garde sa tête et son acteur au trait dans le champ"
   },
   {
     "id": "partyDock",
@@ -928,8 +937,8 @@
     "fichier": "src/ui/ViewControls.tsx",
     "css": "src/ui/styles/view-controls.css",
     "concept": "rangée de commandes de CAMÉRA : orientation, affichage, zoom — chacune vissée sur la peau partagée « tôle »",
-    "perimetre": "HUD plein-champ du plateau",
-    "verrou": "src/ui/ui-ratchets.test.ts — cible de 44px sous pointeur grossier"
+    "perimetre": "éditeur de scène et galerie QC — sur l'écran de jeu la caméra se pilote au geste et au clavier, sans plaque",
+    "verrou": "src/ui/camera-sans-plaque.test.ts — montée dans l'éditeur, jamais dans le HUD de jeu"
   },
   {
     "id": "drBar",

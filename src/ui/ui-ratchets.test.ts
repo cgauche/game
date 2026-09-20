@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
-import { FEUILLES_PARTAGEES, declarations, reglesCss } from '../../scripts/guards/lib/cssCouches.mjs';
+import { FEUILLES_PARTAGEES, baseSection, declarations, mediaBlock, reglesCss } from '../../scripts/guards/lib/cssCouches.mjs';
 import { comparerPoids } from '../../scripts/guards/lib/cssConservation.mjs';
 import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import {
@@ -658,48 +658,14 @@ describe('#236 — cliquets d’hygiène UI', () => {
   });
 });
 
-/** Corps d'une tranche `@media` (accolades appariées). Les invariants ci-dessous s'énoncent sur la
- *  PRÉSENCE d'une règle dans SA tranche, et sur les GRANDEURS dont une valeur fausse casse une
- *  atteignabilité (réserve d'une colonne recouvrante) — jamais sur une esthétique en pixels. Le
- *  verdict de rendu, lui, se mesure au navigateur : `scripts/recette/hud-clickables.mjs`. */
-function mediaBlock(css: string, query: string): string {
-  const at = css.indexOf(query);
-  if (at < 0) return '';
-  const open = css.indexOf('{', at);
-  let depth = 0;
-  for (let i = open; i < css.length; i++) {
-    if (css[i] === '{') depth++;
-    else if (css[i] === '}' && --depth === 0) return css.slice(open + 1, i);
-  }
-  return '';
-}
-/** Le module PRIVÉ de toutes ses tranches `@media` : ce qui doit valoir à TOUTE largeur se trouve
- *  ici. Une règle glissée dans une tranche disparaît de cette vue — c'est ce que l'invariant traque. */
-function baseSection(css: string): string {
-  let out = '';
-  for (let i = 0; i < css.length; i++) {
-    if (css.startsWith('@media', i)) {
-      const open = css.indexOf('{', i);
-      let depth = 0;
-      let j = open;
-      for (; j < css.length; j++) {
-        if (css[j] === '{') depth++;
-        else if (css[j] === '}' && --depth === 0) break;
-      }
-      i = j;
-      continue;
-    }
-    out += css[i];
-  }
-  return out;
-}
-/** Valeur en px de la propriété `prop` dans la règle de sélecteur `selector`, ou `null`. */
-function pxOf(css: string, selector: string, prop: string): number | null {
-  const rule = new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`).exec(css);
-  if (!rule) return null;
-  const v = new RegExp(`${prop}:\\s*(-?[\\d.]+)px`).exec(rule[1]);
-  return v ? Number(v[1]) : null;
-}
+/* `mediaBlock` / `baseSection` : UNE définition, partagée (`scripts/guards/lib/cssCouches.mjs`) —
+   `src/ui/CombatConsole.test.tsx` lit les mêmes tranches avec les mêmes fonctions.
+   CE QUI SE JUGE ICI : la PRÉSENCE d'une règle de STRUCTURE dans sa tranche. Un contrat de RENDU
+   (« défile », « ne recouvre pas », « reçoit son clic », « tient sur une ligne ») ne se lit dans
+   AUCUNE déclaration : jsdom ne met rien en page et n'applique aucune tranche. Il se MESURE au
+   navigateur (`scripts/recette/hud-clickables.mjs`, détecteur testé à fixtures par
+   `scripts/recette/hud-clickables.test.mjs`). D'où la règle de `docs/charte-ui.md` : un contrat CSS
+   qui cite À LA FOIS un sélecteur d'écran ET une valeur n'a rien à faire en test unitaire. */
 const occurrences = (s: string, needle: string) => s.split(needle).length - 1;
 
 const TRANCHES_CANON = ['@media (max-width: 900px)', '@media (max-width: 700px)', '@media (max-width: 560px)', '@media (pointer: coarse)'];
@@ -747,86 +713,35 @@ describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
     expect(ecartsResponsive(), 'écart NEUF : une section responsive ordonnée ne pose chaque tranche qu’une fois (360 et 420 sont des largeurs de RECETTE) ; écart SOLDÉ : retirer son entrée du stock').toEqual(ECARTS_RESPONSIVE_STOCK);
   });
 
-  it('≤700 : la frise d’initiative devient une bande horizontale défilable, contrainte et dégagée', () => {
-    // La frise est une PRIMITIVE (#1806 2a) : sa tranche vit dans SON module ; l'ancrage de l'ouvreur
-    // du rail dissous reste à l'ÉCRAN qui monte le rail. Les deux blocs se lisent CONCATÉNÉS.
-    const at700 = mediaBlock(read('initiative-strip.css'), '@media (max-width: 700px)')
-      + mediaBlock(read('hud.css'), '@media (max-width: 700px)');
-    expect(at700).toMatch(/\.is-tiles\s*\{[^}]*flex-direction:\s*row/);
-    expect(at700).toMatch(/\.is-tiles\s*\{[^}]*overflow-x:[ \t\r\n]*auto/);
-    // `overflow-x` ne mord que sur une piste BORNÉE : alignée en `flex-start`, elle prend la largeur
-    // de son contenu, déborde du HUD et ne défile jamais (défaut mesuré : piste 633px dans une bande
-    // de 294px à 360). `stretch` la ramène à la largeur de la bande.
-    expect(at700).toMatch(/\.initiative-strip\s*\{[^}]*align-items:\s*stretch/);
-    // LE HAUT-DROITE EST LIBRE : la plaque de caméra a quitté l'écran de jeu et le rail dégraissé
-    // (journal + dossier de navire) s'ancre EN BAS à cette largeur — la frise va jusqu'au bord, comme
-    // à gauche. Elle réservait 168px pour une colonne de 144px qui n'existe plus.
-    const reserve = pxOf(at700, '.initiative-strip', 'right');
-    expect(reserve, 'la frise ≤700 déclare son bord droit en px').not.toBeNull();
-    expect(reserve!).toBeLessThanOrEqual(8);
-    // Ce qui remplace la réserve : le rail DISSOUT à cette largeur ne porte plus l'ancrage de ses
-    // enfants — son ouvreur d'écran se pose lui-même en bas, sinon il retombe dans le flux du stage.
-    expect(at700).toMatch(/\.hud-rail\s*>\s*\.worldmap-btn\s*\{[^}]*position:\s*absolute/);
-    expect(at700).toMatch(/\.hud-rail\s*>\s*\.worldmap-btn\s*\{[^}]*bottom:\s*\d+px/);
+  it('≤700 : le rail se DISSOUT, et son ouvreur d’écran reprend un ancrage hors flux', () => {
+    // CE QUI RESTE EN UNITÉ : la STRUCTURE. Un rail en `display: contents` ne porte plus l'ancrage de
+    // ses enfants ; sans ancrage propre, l'ouvreur retombe dans le flux du stage. La PLACE exacte
+    // (bord, réserve, recouvrement) se mesure au navigateur — aucune valeur ici.
+    const hud700 = mediaBlock(read('hud.css'), '@media (max-width: 700px)');
+    expect(hud700).toMatch(/\.hud-rail\s*\{[^}]*display:\s*contents/);
+    const ouvreur = /\.hud-rail\s*>\s*\.worldmap-btn\s*\{([^}]*)\}/.exec(hud700);
+    expect(ouvreur, 'l’ouvreur d’écran du rail dissous déclare son propre ancrage ≤700').not.toBeNull();
+    expect(ouvreur![1], 'un ancrage RELATIF suit encore le flux : il faut le sortir').toMatch(/position:\s*(absolute|fixed)/);
+    // Les VERDICTS DE RENDU de cette tranche (la bande défile, elle va jusqu'au bord droit, son
+    // cartouche de Round tient à tout défilement, l'ouvreur reçoit son clic) sont MESURÉS par
+    // `scripts/recette/hud-clickables.mjs` — jsdom n'applique aucune tranche et ne met rien en page.
   });
 
-  it('≤560 : le groupe tient sur une ligne, la console prend la largeur, la sortie de tour reste en bout de rangée d’arche', () => {
-    // La bande de groupe tient sur UNE ligne à TOUTE largeur depuis la passe de matière (spécimen B) :
-    // l'assertion monte donc dans la section de base — une bande qui s'enroulait mangeait 21 % de
-    // l'écran à 1280 (grief vision). La lire dans la tranche ≤560 seulement laisserait le retour à la
-    // ligne revenir au-dessus de 560. Le défilement vit sur la PISTE (`.pd-track`) depuis le repli
-    // de la bande : le cadre porte l'ancrage, la piste porte la rangée.
+  it('la piste du groupe ne s’enroule JAMAIS : la règle vit hors de toute tranche', () => {
+    // À TOUTE largeur, et c'est là l'invariant : glissée dans la tranche ≤560, la règle laisserait le
+    // retour à la ligne revenir au-dessus de 560 (une bande enroulée mangeait 21 % de l'écran à 1280,
+    // grief vision). Le défilement vit sur la PISTE : le cadre porte l'ancrage, la piste la rangée.
+    // Que la rangée tienne EFFECTIVEMENT sur une ligne à l'écran est MESURÉ par
+    // `scripts/recette/hud-clickables.mjs` (verdict « la piste du groupe s'enroule sur N lignes »).
     const hudBase = baseSection(read('party-dock.css'));
     expect(hudBase).toMatch(/\.pd-track\s*\{[^}]*flex-wrap:\s*nowrap/);
     expect(hudBase).toMatch(/\.pd-track\s*\{[^}]*overflow-x:[ \t\r\n]*auto/); // débordement de secours (combat naval)
-    const barAt560 = mediaBlock(read('combat-console.css'), '@media (max-width: 560px)');
-    // Le pont PREND LA LARGEUR (grille, pas une rangée qui déborde) : les deux travées s'empilent sous
-    // la rangée d'arête. Sans `width: 100%`, la grille se rétracte à son contenu et les cases sortent.
-    expect(barAt560).toMatch(/\.cc-dock\s*\{[^}]*display:\s*grid/);
-    expect(barAt560).toMatch(/\.cc-dock\s*\{[^}]*width:\s*100%/);
-    // La SORTIE DE TOUR (le coin) reste EN BOUT DE LA RANGÉE D'ARCHE : le gabarit la nomme, elle ne
-    // retombe pas sous les travées où il faudrait défiler pour l'atteindre.
-    expect(barAt560).toMatch(/\.cc-dock\s*\{[^}]*grid-template-areas:\s*'arch corner'/);
-    expect(barAt560).toMatch(/\.cc-corner\s*\{[^}]*grid-area:\s*corner/);
   });
 
-  it('≤560 : la bande basse réserve la hauteur de la CONSOLE (caméra et tiroir hors de son emprise)', () => {
-    // Tiroir et rangée de caméra sont deux PRIMITIVES distinctes depuis #1806 2a : la garantie est
-    // CROISÉE, les deux tranches se lisent CONCATÉNÉES — jamais « si trouvé ici, sinon là », qui
-    // rendrait l'assertion verte quand l'un des deux modules perd son ancrage.
-    const hudAt560 = mediaBlock(read('log-drawer.css'), '@media (max-width: 560px)')
-      + mediaBlock(read('view-controls.css'), '@media (max-width: 560px)');
-    // La console compacte monte à 265px du bas (4px d'ancrage + 261px mesurés au navigateur,
-    // scénario magie 360×640, passe d'ASSEMBLAGE). Toute surface posée plus bas passe SOUS elle et
-    // cesse de recevoir ses clics. Le tiroir du journal réserve donc cette hauteur ; la rangée de
-    // caméra, elle, est ancrée par le HAUT (bandeau haut, au-dessus du terrain) et doit alors
-    // dégager la COLONNE du tiroir (chevauchement mesuré 30×16 quand elle prenait toute la largeur).
-    const px = (sel: string, prop: string) => {
-      const rule = new RegExp(`\\${sel}\\s*\\{([^}]*)\\}`).exec(hudAt560);
-      const v = rule && new RegExp(`${prop}:\\s*(?:calc\\()?\\s*(\\d+(?:\\.\\d+)?)px`).exec(rule[1]);
-      return v ? Number(v[1]) : null;
-    };
-    const tiroir = px('.log-drawer', 'bottom');
-    expect(tiroir, 'le tiroir du journal ≤560 doit déclarer sa réserve du bas en px').not.toBeNull();
-    expect(tiroir!).toBeGreaterThanOrEqual(265);
-    const cameraBas = px('.view-controls', 'bottom');
-    const cameraHaut = px('.view-controls', 'top');
-    if (cameraBas != null) expect(cameraBas).toBeGreaterThanOrEqual(tiroir! + 44);
-    else {
-      expect(cameraHaut, 'la rangée de caméra ≤560 s’ancre par le haut ou par le bas, jamais ni l’un ni l’autre').not.toBeNull();
-      // Ancrée en haut : elle vit dans le BANDEAU HAUT (groupe replié + frise), au-dessus du
-      // terrain — jamais au milieu du champ (640 − 265 de console − 44 de bouton au doigt).
-      expect(cameraHaut!).toBeLessThanOrEqual(640 - 265 - 44);
-      // … et laisser au tiroir sa colonne de gauche (44px de bouton + son ancrage).
-      const cameraGauche = px('.view-controls', 'left');
-      expect(cameraGauche, 'la rangée de caméra ancrée en haut doit déclarer sa réserve de gauche').not.toBeNull();
-      expect(cameraGauche!).toBeGreaterThanOrEqual(48);
-    }
-  });
-
-  it('pointeur grossier : les commandes de caméra offrent une cible de 44px', () => {
+  it('pointeur grossier : toute boîte vissée offre une cible de 44px', () => {
+    // NORME d'accessibilité — la seule valeur qu'un test unitaire de CSS a le droit d'énoncer.
     // La cible tactile suit la PEAU partagée `.skin-tole` (components.css) : une seule définition
-    // pour les quatre commandes vissées du HUD (caméra, journal, menu ☰, ouvreurs du pont).
+    // pour toutes les commandes vissées (journal, menu ☰, ouvreurs d'écran, plaque de l'éditeur).
     const coarse = mediaBlock(readFileSync(join(UI, 'styles', 'components.css'), 'utf8'), '@media (pointer: coarse)');
     expect(coarse).toMatch(/\.skin-tole\[data-ton\]\s*\{[^}]*min-width:\s*44px/);
     expect(coarse).toMatch(/\.skin-tole\[data-ton\]\s*\{[^}]*min-height:\s*44px/);
@@ -1094,34 +1009,27 @@ describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
     ).toEqual([]);
   });
 
-  it('la colonne d’États est ancrée dans la carte de SON héros, à TOUTE largeur', () => {
-    // L'ancrage se lit hors de toute tranche : glissé dans un `@media`, il cesserait de valoir aux
-    // largeurs qui ne l'atteignent pas et les pastilles reflotteraient entre deux portraits.
-    // Planche USER 2026-08-17 : la colonne est SŒUR du portrait dans `.ptile-wrap` (rangée flex) —
-    // à CÔTÉ de lui, plus posée dessus — et son emprise est UNE colonne d'alvéole, fixe.
-    const base = baseSection(read('party-dock.css'));
-    expect(base).toMatch(/\.party-dock\s+\.ptile-wrap\s*\{[^}]*display:\s*flex/);
-    expect(base).toMatch(/\.party-dock\s+\.ptile-wrap\s*\{[^}]*flex-direction:\s*row/);
-    expect(base).toMatch(/\.party-dock\s+\.ptile-states\s*\{[^}]*display:\s*grid/);
-    // Une colonne d'alvéole FIXE, pas une grille libre : sans ce gabarit, une tuile portant 3 États
-    // s'élargirait et la bande se décalerait d'un héros à l'autre.
-    expect(base).toMatch(/\.party-dock\s+\.ptile-states\s*\{[^}]*grid-template-columns:\s*var\(--alv\)/);
-  });
-
   // `--alv` est une variable de CONTEXTE : `state-chips.css` en pose la valeur de BASE
-  // (`.ptile-states[data-reserve]`, 15px) et ses hôtes la leur (`.party-dock .ptile-states`, 20px ;
-  // la console) — à spécificité ÉGALE (0-2-0). C'est donc l'ORDRE D'IMPORT qui décide, et il se
-  // GARDE : `state-chips.css` importée APRÈS reprendrait la main et ramènerait les alvéoles de la
-  // bande à la taille du rack de liste.
-  it('`--alv` : les poseurs de CONTEXTE s’importent APRÈS la primitive qui pose sa base', () => {
+  // (`.ptile-states[data-reserve]`, 15px) et ses hôtes la leur — à spécificité ÉGALE (0-2-0). C'est
+  // donc l'ORDRE D'IMPORT qui décide, et il se GARDE : `state-chips.css` importée APRÈS reprendrait
+  // la main et ramènerait toutes les alvéoles à la taille du rack de liste.
+  // Mesure DÉRIVÉE, sans liste : les poseurs de contexte sont TOUS les modules qui déclarent `--alv`
+  // hors du module de base — un hôte neuf entre sous la garde en naissant.
+  it('`--alv` : tout poseur de CONTEXTE s’importe APRÈS la primitive qui pose sa base', () => {
+    const BASE = 'state-chips.css';
     const orchestrateur = readFileSync(join(UI, 'styles.css'), 'utf8');
     const rang = (f: string) => {
       const i = orchestrateur.indexOf(`styles/${f}`);
       expect(i, `${f} est importée par \`src/ui/styles.css\``).toBeGreaterThan(-1);
       return i;
     };
-    const socle = rang('state-chips.css');
-    for (const f of ['party-dock.css', 'combat-console.css']) {
+    const pose = (f: string) => reglesCss(readFileSync(join(UI, 'styles', f), 'utf8'))
+      .some((r) => declarations(r.corps).some((d) => d.prop === '--alv'));
+    expect(pose(BASE), `${BASE} pose la valeur de BASE de \`--alv\``).toBe(true);
+    const poseurs = listerDossier(join(UI, 'styles')).filter((f) => f.endsWith('.css') && f !== BASE && pose(f));
+    expect(poseurs.length, 'aucun poseur de CONTEXTE : la mesure serait vide').toBeGreaterThan(0);
+    const socle = rang(BASE);
+    for (const f of poseurs) {
       expect(rang(f), `${f} pose sa valeur de \`--alv\` APRÈS la base`).toBeGreaterThan(socle);
     }
   });
