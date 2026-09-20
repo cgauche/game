@@ -131,6 +131,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `TeamSegments` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
 | `CombatBanner` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `CombatConsole` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `CombatStartSplash` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `RigPortrait` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `FxChip/EffectChips` |  |  |  |  |  |  |  |  |  | U |  |  |  |  |  |  |
 | `SpectatorChip` |  |  |  |  |  |  |  |  | U | U |  |  |  |  |  |  |
@@ -168,6 +169,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 - `DesignGallery` (src/ui/gallery/DesignGallery.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `CombatBanner` (src/ui/CombatBanner.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `CombatConsole` (src/ui/CombatConsole.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `CombatStartSplash` (src/ui/CombatStartSplash.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `GearAssignList` (src/ui/GearAssignList.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `RewardRecap` (src/ui/RewardRecap.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `SceneErrorBoundary` (src/ui/SceneErrorBoundary.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
@@ -203,4 +205,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: ac7dffa655d8bf5f6d261ef992e0bb341435a1eb (1819 fichiers, 2 dossiers) corps: f546385d19a958cbaad8f0d6fd2780ac586ac189 -->
+<!-- sources-empreinte: 2ae74ebed9232ae8baf34201e54cf8d21da62361 (1819 fichiers, 2 dossiers) corps: d4fa6ab25d6968ab268acf0d5b2d664f5c0e3151 -->
