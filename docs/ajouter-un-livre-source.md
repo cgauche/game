@@ -66,6 +66,26 @@ LDB compris ; la garde imprime le compte de dossiers hors format à chaque exéc
 | `00 - Index.md` | liens relatifs tous vivants | `index-mort` |
 | Tables | chaque bloc a sa ligne de séparateur `\|---\|` | `table-sans-separateur` |
 | Numéro de chapitre | un **entier** ≥ 1, zéro-paddé à la largeur du **plus grand numéro du livre**, deux au minimum (`livre-de-base` : `21` ; un livre de 120 chapitres : `007`, `105`) — `largeurDeChapitre` / `graphieDeChapitre` (`src/data/source/decoupe.ts`) rendent cette graphie, et elle est la même pour tous les fichiers d'un dossier | `largeur-de-numero` |
+| GRAIN | un fichier porte **UNE section** du livre et **OUVRE** sur le titre que la LISTE DE DÉCOUPE lui donne (`ouverture`) | livre AVEC liste : rouge nommé, sans stock — livre SANS liste : `sans-decoupe` |
+
+**Le GRAIN, et son régime.** Arbitrage utilisateur du 2026-09-21, verbatim : « Oui : un fichier par
+section majeure ». Le grain d'un livre est sa **LISTE DE DÉCOUPE** (§ 2,
+`scripts/raw/decoupes/<id>.json`) — jamais un seuil deviné, jamais une comparaison du titre au NOM
+du fichier. Cette donnée UNE s'applique par DEUX voies : le **découpeur**, quand le livre est
+(ré-)extrait ; **`recouper-source.mjs`**, quand le `.md` en service porte des réparations de contenu
+qu'un rejeu de la sortie Marker écraserait (§ 7). D'où deux régimes de garde :
+
+- **livre AVEC liste** : `raw:check-source-format` CONFRONTE le dossier à la liste — noms, ligne 1,
+  titre d'ouverture (prédicat unique `scripts/raw/lib/titres.mjs`), index. Tout écart est un **rouge
+  nommé, sans entrée de stock** : le geste tient en une commande.
+- **livre SANS liste** : son grain n'est déclaré nulle part — UNE entrée de stock par dossier
+  (famille `sans-decoupe`), qui sort le jour où sa liste s'écrit.
+
+Le prédicat d'ouverture lit la ligne de titre en TROIS lectures — la ligne entière, les runs GRAS
+joints, le reste hors gras — et compare des **suites de mots** translittérées : le mobilier de
+gouttière (`# **POISONS** V`, `# • **CONSUMER GUIDE** •`) tombe sans jamais rogner un chiffre romain,
+et `APPENDIX III` n'ouvre pas `APPENDIX I`. Ce qu'il ne voit **pas**, et c'est dit : un fichier sans
+aucune ligne de titre n'a d'ouverture à juger que si sa liste lui en déclare une.
 
 **La garde et son stock.** `node scripts/raw/check-source-format.mjs` balaie les **dossiers FR
 suivis** — les livres à `dir` de `src/data/books.json` plus les dossiers antérieurs au pipeline,
@@ -108,9 +128,75 @@ Pour ré-extraire en lot les 13 suppléments existants (hors LDB déjà fait), l
 (`Source/_marker/split/<dir>/`) sans jamais écraser `Source/` — la promotion reste une étape
 manuelle après revue.
 
-## 2. Découpe en chapitres `Source/<Livre>/NN - Titre.md`
+## 2. Découpe en fichiers `Source/<Livre>/NNN - Titre.md`
 
-Deux scripts selon que le livre a ou non une structure `Source/` **préexistante** à réaligner :
+### La LISTE DE DÉCOUPE est de la DONNÉE — `scripts/raw/decoupes/<id du livre>.json`
+
+Un fichier par livre, nommé par son **id stable** (`src/data/books.json`), lu par l'unique
+`_lib.mjs#decoupeDe`. Une entrée par FICHIER à écrire, dans l'ordre du livre :
+
+| clé | sens |
+|---|---|
+| `titre` | le TITRE du fichier (`NNN - <titre>.md`, passé par `nomAscii` à l'écriture) |
+| `ouverture` | le TITRE IMPRIMÉ sur lequel le fichier ouvre — **absent** quand le fichier n'en porte aucun (couverture, feuille de personnage) |
+| `page`, `pageFin` | la PLAGE de pages PDF 1-based du fichier, **lue au livre** — les outils la COPIENT, aucun ne la calcule ; deux voisins **partagent** une page quand la section suivante n'ouvre pas la sienne (`pageFin(i) = page(i+1)`), une page sans texte suit le fichier qui la précède |
+| `chapitre` | le CHAPITRE du livre auquel le fichier appartient, tel que le sommaire l'imprime — **absent** des pièces hors chapitre (couverture, sommaire, crédits, index, feuille de personnage) |
+
+**Où la liste se tire** : du **SOMMAIRE IMPRIMÉ** du livre, pas d'une mesure de polices — ouvertures
+de chapitre et entrées de **premier rang** ; une entrée **en retrait** est une sous-section et
+n'ouvre rien ; une **série de fiches** de même gabarit (les Carrières) reste **entière** dans le
+fichier de la section qui l'introduit. Intégrité : `scripts/raw/decoupes.test.mjs` (le nom du
+fichier est l'id d'un livre couvert, chaque entrée porte exactement son jeu de clés, les plages
+PAVENT le livre — débuts croissants, aucun trou, au plus une page partagée —, les entrées d'un
+chapitre sont contiguës et son titre n'ouvre que sa première, aucune entrée en double, chaque titre
+survit à `nomAscii`).
+
+**Le critère à tenir** : mettre le livre N+1 au grain de ses sections coûte **UN fichier de donnée,
+zéro ligne de code**.
+
+### Mettre un livre DÉJÀ SERVI au grain de ses sections — `recouper-source.mjs`
+
+```bash
+node scripts/raw/recouper-source.mjs <id du livre> [--dry] [--carte <fichier>]
+```
+
+Le FLUX est fait des `.md` **en service** du livre, dans l'ordre — **jamais** la sortie Marker, qui
+ne porte pas les réparations de contenu faites au `.md` (§ 7). Il coupe à la LIGNE de chaque titre
+d'ouverture par la primitive unique `lib/marker-pages.mjs#couperAuxTitres` (recherche **séquentielle**
+— chaque titre après la coupe précédente, ce qui écarte les homonymes d'APRÈS ; un titre introuvable
+est **nommé** et rien n'est écrit), **copie** l'en-tête `*Pages PDF X-Y*` de la plage que la liste
+déclare (`page`, `pageFin` — aucun outil ne la calcule ; deux entrées voisines **partagent** au plus
+une page), régénère `00 - Index.md`, émet la CARTE
+ancien → nouveau (fichier + plage de lignes du flux) et **recale les stocks nominatifs keyés par
+chemin** — chaque `preuve` suit son site avec sa date. Il **REFUSE d'écrire** tant que la
+concaténation des corps n'est pas identique à l'octet avant / après (arbitrage utilisateur du
+2026-09-20 : « Il est interdit de réécrire le texte »). Il est **idempotent** : rejoué sur un livre
+déjà au grain, il n'écrit rien et sort 0.
+
+Deux limites dites. (1) La recherche séquentielle n'écarte pas un homonyme situé **AVANT** la
+section qu'il double : seul un flux PAGINÉ (sortie Marker) porte la fenêtre de page qui le ferait
+tomber — la carte émise est ce qui se relit pour le vérifier. (2) Le recalage ne suit que les
+entrées de stock keyées par **section** (`slug#occ :: …`) ; les autres sont **nommées** et se
+régénèrent par le `--ecrire-stock` de leur propre garde, qui rétablit aussi l'ORDRE canonique du
+fichier de stock.
+
+**Après la re-découpe d'un livre DÉJÀ CITÉ** : une re-coupe déplace le `ch` et le `secOcc` de TOUTE
+adresse `descRef` du livre. L'ordre sain est **grain d'abord, curation d'adresses ensuite** — la
+séquence est celle du § 7 (`reanchor --apply --remap` AVANT de committer, `prose-resolution.test.ts`,
+`scripts/source/reparer-adresses.mjs`), et les gardes le disent bruyamment si elle est sautée.
+
+Les PORTES après la re-découpe, dans le même commit : `npm run -s test:raw`,
+`raw:check-source-format`, `raw:check-source-tables`, `raw:check-source-puces`,
+`raw:check-folio-continuity`, `raw:check-refs`, `raw:check-code-refs`, `raw:coverage`,
+`raw:reconcile`, `raw:check-catalogue-complete` — plus le recalage des références (§ 4,
+`reanchor.mjs`) et des coordonnées citées hors `docs/raw/`.
+
+### Découper un livre NEUF depuis la sortie Marker
+
+Un découpeur coupe une sortie Marker **FRAÎCHE** et ne connaît rien des réparations de contenu
+faites aux `.md` : le rejouer sur un livre EN SERVICE les écraserait. Le geste rejouable sur un livre
+servi est `recouper-source.mjs` (ci-dessus). Selon que le livre a ou non une structure `Source/`
+**préexistante** à réaligner :
 
 - **Livre déjà présent sous `Source/`** (ré-extraction) : `marker-split.mjs "<ancien-dossier>"
   "<marker-paginé.md>" "<dossier-sortie>" [--pdf <chemin.pdf>]` — `--pdf` (par défaut
@@ -127,11 +213,15 @@ Deux scripts selon que le livre a ou non une structure `Source/` **préexistante
   matché, réduit par `nomAscii`) ; si aucun en-tête n'a matché pour ce chapitre, le script **échoue**
   en le nommant (jamais un `Sans titre` écrit sous `Source/`).
 - **Livre neuf, sans structure à réaligner** : écrire un splitter dédié sur le patron de
-  `scripts/raw/split-mdg.mjs` — liste ordonnée `[titre de fichier, clé normalisée du titre]` tirée
-  du **sommaire** du livre, recherche **séquentielle** de chaque en-tête `#…` (gère les titres
-  dupliqués ailleurs dans le texte), page PDF déduite du dernier séparateur `{N}----` rencontré + 1.
-  Sortie : `Source/<Livre>/NN - Titre.md` (garde l'en-tête `*Pages PDF X*` ou `*Pages PDF X-Y*`,
-  séparateurs `{N}----` retirés) + `00 - Index.md` récapitulatif.
+  `scripts/raw/split-wfrp5.mjs` — il lit sa LISTE DE DÉCOUPE (ci-dessus) et coupe à la LIGNE du titre
+  d'ouverture **dans la page déclarée** (`couperAuxTitres`), une page pouvant porter deux sections.
+  Sortie : `Source/<Livre>/NNN - Titre.md` (en-tête `*Pages PDF X*` ou `*Pages PDF X-Y*`, plage
+  **COPIÉE** de la liste ; séparateurs `{N}----` retirés) + `00 - Index.md` récapitulatif. `--dry`
+  n'écrit rien et **rapporte les titres d'ouverture introuvables** dans la sortie Marker — un
+  découpage réel les REFUSE, il ne devine aucune coupe.
+  `scripts/raw/split-mdg.mjs` et `scripts/raw/split-vdm.mjs` sont deux découpeurs du même patron
+  **dont la liste vit encore DANS le code** (`CHAPTERS`) : leur livre n'a pas encore de fichier de
+  découpe, et la garde `raw:check-source-format` le NOMME (famille `sans-decoupe`).
 
 **Pages perdues** — Marker gate PAR MISE EN PAGE : une page saturée de planches ou d'encadrés peut
 sortir **vide** (son seul contenu est un saut de ligne) alors que la couche texte du PDF en porte

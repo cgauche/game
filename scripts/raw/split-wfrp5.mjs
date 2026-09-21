@@ -1,50 +1,51 @@
-// Découpe l'extraction Marker du « Warhammer Fantasy Roleplay 5e Core Rulebook » (Cubicle 7, VO — livre
-// NOUVEAU, sans structure ancienne à aligner ; dépôt `.md` HORS périmètre des règles, comme `Source/Winds
-// of Magic`) en chapitres NN - Titre.md. Frontières = PAGES PDF de début lues dans les signets du PDF (chaque
-// chapitre ouvre sur une page neuve) ; conserve `*Pages PDF X-Y*` en tête, retire les séparateurs `{N}----`
-// et déballe le HTML `<sup>` (lib partagée `lib/marker-pages.mjs`, CONSIGNE de `deballerSup`).
+// Découpe l'extraction Marker d'un livre en fichiers `NNN - Titre.md` sous `Source/`, AU GRAIN DE
+// SES SECTIONS : les frontières sont les LIGNES des titres d'ouverture que sa LISTE DE DÉCOUPE
+// déclare (`scripts/raw/decoupes/<id du livre>.json`), cherchés DANS la page que la liste donne —
+// une page peut porter deux sections. L'en-tête `*Pages PDF X-Y*` est COPIÉ de la liste
+// (`spanDe`), retire les séparateurs `{N}----` et déballe le HTML `<sup>` (lib partagée
+// `lib/marker-pages.mjs`, CONSIGNE de `deballerSup`).
+//
+// Le livre qu'il découpe est celui de `LIVRE` ci-dessous, avec le chemin de son extraction Marker :
+// le seul reste propre à ce découpeur (#1739 : la fusion des quatre découpeurs en un leur fera lire
+// leur livre en argument). Tout le reste est de la DONNÉE — liste de découpe, dossier et titre du
+// livre (`src/data/books.json`).
+//
+// La sortie Marker ne porte PAS les réparations de contenu faites aux `.md` en service : rejouer ce
+// découpeur les ÉCRASE (§ 7 de `docs/ajouter-un-livre-source.md`). Re-couper un livre DÉJÀ servi se
+// fait par `scripts/raw/recouper-source.mjs`, qui prend les `.md` pour flux.
 // Usage : node scripts/raw/split-wfrp5.mjs [--dry]  (`--dry` : aucune écriture, imprime le plan)
 import { writeFileSync, mkdirSync } from 'node:fs'
-import { join } from 'node:path'
-import { mdsDeMarker, mdsDeRestitutions, pagesDeMarker, deballerSup, verifierExtraction, commandeRestitution } from './lib/marker-pages.mjs'
+import { basename, join } from 'node:path'
+import {
+  mdsDeMarker, mdsDeRestitutions, pagesDeMarker, verifierExtraction, commandeRestitution,
+  couperAuxTitres,
+} from './lib/marker-pages.mjs'
+import { deballerSup } from './lib/titres.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
-import { graphieDeChapitre, largeurDeChapitre } from '../../src/data/source/decoupe.ts'
+import { decoupeDe, REGISTRE_LIVRES } from './_lib.mjs'
+import { indexDe, spanDe } from './recouper-source.mjs'
+import { graphieDeChapitre, largeurDeChapitre, ligne1DePlage } from '../../src/data/source/decoupe.ts'
 
 const DRY = process.argv.slice(2).includes('--dry')
 
+/** Id du livre que ce découpeur sert (`src/data/books.json`). */
+const LIVRE = 'core-rulebook-5e'
 // Extraction par TRANCHES de pages (`--page_range a-b`, une sous-arborescence `slices/<a>-<b>/` par
 // tranche) : l'extraction d'un tenant est tuée par le harnais faute de mémoire, et le nom long du
 // PDF officiel dépasse MAX_PATH sous Windows — le PDF est copié en `Source/_marker/wfrp5.pdf`.
+// `Source/_marker/` n'est pas suivi par git, et son chemin est ÉCRIT ICI faute de champ `pdf` au
+// registre des livres : ce découpeur ne se joue que depuis l'arbre PRINCIPAL (#1739, 2026-09-19,
+// bloquant 3 — couture `pdfDe(abbr)` à venir dans son lot).
 const MARKER_DIR = 'Source/_marker/full/wfrp5/slices'
 // PDF de référence des VÉRIFICATIONS (`verifierExtraction` : couche texte pypdf des pages que Marker
 // a rendues vides) et des commandes de restitution imprimées.
 const PDF = 'Source/_marker/wfrp5.pdf'
-// Tout nom ÉCRIT sous `Source/` passe par `nomAscii` (#1699) : un chemin non ASCII ne naît pas ici.
-const OUT = nomAscii('Source/Warhammer Fantasy Roleplay 5e Core Rulebook')
-const BOOK_TITLE = 'Warhammer Fantasy Roleplay 5e Core Rulebook'
 
-// [titre de fichier, page PDF de début (1-based)] — signets du PDF + sommaire (p.2-4) ; la fin d'un
-// chapitre = page précédant le début du suivant, le dernier court jusqu'à la dernière page extraite.
-const CHAPTERS = [
-  ['Cover', 1],
-  ['Contents', 2],
-  ['Credits', 5],
-  ['Introduction', 6],
-  ['Character Building', 22],
-  ['Class and Careers', 43],
-  ['Skills and Talents', 109],
-  ['Rules', 129],
-  ['Between Adventures', 190],
-  ['Religion and Belief', 202],
-  ['Magic', 230],
-  ['The Gamemaster', 261],
-  ['Glorious Reikland', 272],
-  ['Consumer Guide', 296],
-  ['Bestiary', 318],
-  ['Appendices', 364],
-  ['Index', 370],
-  ['Character Sheet', 376],
-]
+const livre = REGISTRE_LIVRES.find((b) => b.id === LIVRE && b.dir)
+if (!livre) { console.error(`LIVRE INCONNU AU REGISTRE : ${LIVRE}`); process.exit(1) }
+// Tout nom ÉCRIT sous `Source/` passe par `nomAscii` (#1699) : un chemin non ASCII ne naît pas ici.
+const OUT = nomAscii(String(livre.dir).split('\\').join('/'))
+const LISTE = decoupeDe(LIVRE)
 
 // Marker paginé → texte PAR PAGE PDF, par la lib partagée `lib/marker-pages.mjs` (parseur UNIQUE,
 // aussi consommé par `marker-split.mjs`).
@@ -75,33 +76,60 @@ if (verif.perdues.length) {
   process.exit(1)
 }
 
-// Vérification : les débuts de chapitre sont croissants et dans l'extraction.
-for (let c = 1; c < CHAPTERS.length; c++) {
-  if (CHAPTERS[c][1] <= CHAPTERS[c - 1][1]) { console.error('CHAPITRES NON CROISSANTS :', CHAPTERS[c][0]); process.exit(1) }
+// Vérification : les pages de la liste sont croissantes (deux entrées peuvent PARTAGER une page) et
+// dans l'extraction.
+for (let c = 1; c < LISTE.length; c++) {
+  if (LISTE[c].page < LISTE[c - 1].page) { console.error('LISTE DE DÉCOUPE NON CROISSANTE :', LISTE[c].titre); process.exit(1) }
 }
-if (CHAPTERS[CHAPTERS.length - 1][1] > lastPage) { console.error(`DERNIER CHAPITRE HORS EXTRACTION (${lastPage} pages)`); process.exit(1) }
+if (LISTE[LISTE.length - 1].page > lastPage) { console.error(`DERNIÈRE ENTRÉE HORS EXTRACTION (${lastPage} pages)`); process.exit(1) }
+
+// FLUX du livre : toutes les pages, dans l'ordre, et les BORNES de lignes de chacune — c'est DANS la
+// page déclarée, et seulement là, que se cherche le titre d'ouverture d'un fichier.
+const lignes = []
+const bornes = new Map()
+for (const pg of [...pageText.keys()].sort((a, b) => a - b)) {
+  const debut = lignes.length
+  for (const l of pageText.get(pg).split('\n')) lignes.push(l)
+  bornes.set(pg, [debut, lignes.length])
+}
+
+const { coupes, introuvables } = couperAuxTitres(lignes, LISTE.map((e) => ({
+  cle: e.titre,
+  ouverture: e.ouverture ?? null,
+  depuis: bornes.get(e.page)?.[0] ?? 0,
+  avant: bornes.get(e.page)?.[1] ?? lignes.length,
+})))
+if (introuvables.length) {
+  console.error(`TITRES D'OUVERTURE INTROUVABLES dans la sortie Marker : ${introuvables.length} / ${LISTE.length}`)
+  for (const i of introuvables) {
+    const e = LISTE.find((x) => x.titre === i.cle)
+    console.error(`  p.${e.page} « ${i.ouverture} » → fichier « ${i.cle} »`)
+  }
+  if (!DRY) process.exit(1)
+  console.error('--dry : le plan ci-dessous OMET ces fichiers ; un découpage réel refuse.')
+}
 
 if (!DRY) mkdirSync(OUT, { recursive: true })
 // LARGEUR du dossier, arrêtée AVANT le premier fichier : tous les préfixes d'un livre la partagent.
-const LARGEUR = largeurDeChapitre(CHAPTERS.length)
-const idxRows = []
-for (let c = 0; c < CHAPTERS.length; c++) {
-  const [title, startPage] = CHAPTERS[c]
-  const endPage = c + 1 < CHAPTERS.length ? CHAPTERS[c + 1][1] - 1 : lastPage
-  const parts = []
-  for (let pg = startPage; pg <= endPage; pg++) if (pageText.has(pg)) parts.push(pageText.get(pg))
-  const brut = parts.join('\n').replace(/\n{3,}/g, '\n\n').trim()
+const LARGEUR = largeurDeChapitre(LISTE.length)
+const plan = []
+const parTitre = new Map(LISTE.map((e) => [e.titre, e]))
+for (let c = 0; c < coupes.length; c++) {
+  const de = coupes[c].ligne
+  const a = c + 1 < coupes.length ? coupes[c + 1].ligne : lignes.length
+  const brut = lignes.slice(de, a).join('\n').replace(/\n{3,}/g, '\n\n').trim()
   const body = deballerSup(brut)
   const sups = (brut.match(/<sup>/g) || []).length
-  const span = endPage > startPage ? `${startPage}-${endPage}` : `${startPage}`
-  const nn = graphieDeChapitre(c + 1, LARGEUR)
-  const nom = nomAscii(`${nn} - ${title}.md`)
-  if (!DRY) writeFileSync(join(OUT, nom), `*Pages PDF ${span}*\n\n${body}\n`)
-  idxRows.push(`- [${nn} - ${title}](<${nom}>) — p.${span}`)
-  const firstHeading = body.split('\n').find((l) => /^#{1,6}\s/.test(l)) || '(aucun en-tête)'
-  console.log(`${nn} - ${title}  (p.${span}, ${body.split('\n').length} lignes, ${Math.round(body.length / 1024)} Ko, ${sups} <sup> déballés) — 1er en-tête : ${firstHeading.slice(0, 80)}`)
+  // PLAGE DE PAGES : COPIÉE de la liste, comme pour le re-coupeur — aucun outil ne la calcule.
+  const entree = parTitre.get(coupes[c].cle)
+  const span = spanDe(entree)
+  const nom = nomAscii(`${graphieDeChapitre(plan.length + 1, LARGEUR)} - ${coupes[c].cle}.md`)
+  if (!DRY) writeFileSync(join(OUT, nom), `${ligne1DePlage(entree.page, entree.pageFin)}\n\n${body}\n`)
+  plan.push({ nom, span })
+  const premier = body.split('\n').find((l) => /^#{1,6}\s/.test(l)) || '(aucun en-tête)'
+  console.log(`${nom}  (p.${span}, ${body.split('\n').length} lignes, ${Math.round(body.length / 1024)} Ko, ${sups} <sup> déballés) — 1er en-tête : ${premier.slice(0, 80)}`)
 }
-if (!DRY) writeFileSync(join(OUT, '00 - Index.md'), `# ${BOOK_TITLE} — Index\n\n${idxRows.join('\n')}\n`)
+if (!DRY) writeFileSync(join(OUT, '00 - Index.md'), indexDe(basename(OUT), plan))
 console.log(DRY
-  ? `\n--dry : ${CHAPTERS.length} chapitres + index PLANIFIÉS pour ${OUT} (${lastPage} pages extraites) — rien écrit`
-  : `\n${CHAPTERS.length} chapitres + index écrits dans ${OUT} (${lastPage} pages extraites)`)
+  ? `\n--dry : ${plan.length} fichier(s) + index PLANIFIÉS pour ${OUT} (${lastPage} pages extraites, ${introuvables.length} titre(s) introuvable(s)) — rien écrit`
+  : `\n${plan.length} fichier(s) + index écrits dans ${OUT} (${lastPage} pages extraites)`)

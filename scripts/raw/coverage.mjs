@@ -21,7 +21,7 @@ import { listerDossier, parUnitesDeCode } from '../guards/lib/lister.mjs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, coeurDe, esc, chapterFile, estHorsRegle, folioSpan, motifHorsRegle, niveauDeSectionDe, pagesDeLAtlas, readText, teneurDe } from './_lib.mjs'
-import { graphieDuFichier, numeroDuFichier, titreDuFichier } from '../../src/data/source/decoupe.ts'
+import { graphieDuFichier, numeroDuFichier, plageDeLigne1, titreDuFichier } from '../../src/data/source/decoupe.ts'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 export const RAWDIR = 'docs/raw'
 // Acceptation DÉCLARÉE à la couture (`pagesDeLAtlas`) : tout sauf les rapports générés — l'épreuve
@@ -54,7 +54,7 @@ const SPLIT_NOTE = /page \d+ partagée avec un chapitre voisin/i
 export function markerSplitStub(text) {
   const reste = text.split('\n')
     .filter((l) => l.trim())
-    .filter((l) => !/^\*Pages PDF /.test(l.trim()))   // en-tête de découpe
+    .filter((l) => plageDeLigne1(l) == null)          // en-tête de découpe
     .filter((l) => !/^#{1,6}\s/.test(l))              // titre (l'ancre Marker elle-même)
     .filter((l) => !SPLIT_NOTE.test(l))               // la note de page partagée
   return reste.length === 0

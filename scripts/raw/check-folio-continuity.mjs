@@ -26,7 +26,7 @@ import { BOOKS, readText } from './_lib.mjs'
 // Cet instrument juge la FORME de tout ce qui est servi, l'index COMPRIS : son stock le nomme sous
 // son numéro d'extraction (`AA 0 folio -2`). D'où `estNomDExtraction` / `numeroDExtraction`, et non
 // le prédicat de CHAPITRE.
-import { estNomDExtraction, numeroDExtraction } from '../../src/data/source/decoupe.ts'
+import { estNomDExtraction, numeroDExtraction, plageDeLigne1 } from '../../src/data/source/decoupe.ts'
 import { writeFileSync } from 'node:fs'
 import { cleDeSite, ecartDuVolet, refusDeCroissance, sitesEnEntrees, survieDeLecheance } from '../guards/lib/stock.mjs'
 import { lireStockJson, parCleDeSite, readStock, texteDeStock } from './stockNominatif.mjs'
@@ -35,7 +35,6 @@ const ICI = dirname(fileURLToPath(import.meta.url))
 export const STOCK_PATH = join(ICI, 'folio-gaps-stock.json')
 export const EMPTY_PERDUES_PATH = join(ICI, 'empty-folios-perdues-stock.json')
 export const EMPTY_BENIGNES_PATH = join(ICI, 'empty-folios-benignes-stock.json')
-const HEADER_RE = /^\*Pages PDF (\d+)(?:-(\d+))?\*/
 const ANCHOR_RE = /id="page-(\d+)-0" data-folio="(-?\d+)"/g
 
 // Retourne les sauts de la séquence de `data-folio` d'un texte (PUR, aucun accès fichier) :
@@ -57,14 +56,14 @@ export function folioGapsInText(text) {
 // N[-M]*` (pages humaines 1-based) se convertit en folios via l'offset K−folio lu sur les ancres du
 // fichier LUI-MÊME. `null` = pas d'en-tête, pas d'ancre, ou offset non unique (rien à conclure).
 export function chapterFolioSpan(text) {
-  const m = HEADER_RE.exec(text.split('\n')[0] || '')
-  if (!m) return null
+  const plage = plageDeLigne1(text.split('\n')[0] || '')
+  if (!plage) return null
   const anchors = [...text.matchAll(new RegExp(ANCHOR_RE))].map((a) => ({ k: Number(a[1]), folio: Number(a[2]) }))
   if (!anchors.length) return null
   const offsets = new Set(anchors.map((a) => a.k - a.folio))
   if (offsets.size !== 1) return null
   const offset = [...offsets][0]
-  const expectedHi = (Number(m[2] ?? m[1]) - 1) - offset
+  const expectedHi = (plage.pageFin - 1) - offset
   return { expectedHi, last: Math.max(...anchors.map((a) => a.folio)) }
 }
 

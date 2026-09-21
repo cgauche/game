@@ -1,5 +1,5 @@
 {
-  "quoi": "Écart de FORME des extractions de `Source/` au format canonique (#1739, épique #1388) : une ENTRÉE par (famille, dossier, détail), clé `famille :: fichier :: ref :: occurrence` (régime #1711). Format DÉFINI par `docs/ajouter-un-livre-source.md` § « Format canonique ». 21 dossier(s) FR balayé(s). Compte par famille à la naissance : ligne1-hors-format 10, sans-folio 9, ancre-seule 14, nom-de-signet 6, html-residuel 14, index-mort 2, table-sans-separateur 3, largeur-de-numero 0. LE GESTE, UN SEUL — REJOUER la chaîne canonique sur le livre : re-découpe depuis la sortie Marker conservée sous `Source/_marker/`, ou ré-extraction quand cette sortie manque. Jamais un remède de chapitre (arbitrage utilisateur 2026-09-14 : « Il faut un format unifié pour toutes les extractions, donc s’il faut rééxtraire, on rééxtrait »). DÉCROISSANCE : un livre repassé par la chaîne sort du stock dans le train qui l’intègre — ses entrées se retirent dans le MÊME commit que le dossier remplacé, et la garde refuse alors toute entrée sans écart mesuré. L’ORDRE de ré-extraction vit sur #1739. LIMITE DITE, et VOULUE — le DÉTAIL est un COMPTE : `ref` porte « ×N », donc tout geste NON CANONIQUE (corriger une occurrence sur N à la main) déplace la clé et ROUGIT cette garde. C’est exactement ce qu’on veut : un geste non canonique se voit. La porte de PLAGE (`croissanceDesStocks`), elle, n’y verrait qu’un −1/+1 net 0 sur la même ligne — c’est la SUITE qui tient ce cas, pas la porte de plage. CE QUE LE `fichier` NOMME — le PREMIER chapitre fautif de la famille dans ce dossier, jamais le dossier nu : un chemin sans `.md` ne tombe sous aucun motif de `scripts/guards/lib/stocksNominatifs.mjs` (`CHEMIN_SOURCE` exige `.md`) et laisserait les 58 entrées hors de vue des deux portes de croissance (mesuré le 2026-09-14 : la garde `stocks-nominatifs` refusait « 0 entrée(s) vue(s) sur 57 déclarée(s) »). COUVERTURE DITE — les familles `ligne1-hors-format`, `sans-folio`, `ancre-seule`, `nom-de-signet` et `largeur-de-numero` ne jugent que les fichiers au motif `NN - X.md`, `00 - Index.md` exclu ; un `.md` hors motif leur est INVISIBLE (mesuré le 2026-09-14 : 0 fichier hors motif sur les 20 dossiers). `html-residuel` et `table-sans-separateur` balaient, eux, TOUS les `.md` du dossier. COUVERTURE DITE — `html-residuel` ne compte PAS les ancres de page : une ancre sans `data-folio` est déjà nommée par `sans-folio`, et la compter deux fois dirait deux réparations là où il n’y en a qu’une.",
+  "quoi": "Écart de FORME des extractions de `Source/` au format canonique (#1739, épique #1388) : une ENTRÉE par (famille, dossier, détail), clé `famille :: fichier :: ref :: occurrence` (régime #1711). Format DÉFINI par `docs/ajouter-un-livre-source.md` § « Format canonique ». 21 dossier(s) FR balayé(s). Compte par famille à la naissance : ligne1-hors-format 10, sans-folio 9, ancre-seule 14, nom-de-signet 6, html-residuel 14, index-mort 2, table-sans-separateur 3, largeur-de-numero 0, sans-decoupe 20. LE GESTE, UN SEUL — REJOUER la chaîne canonique sur le livre : re-découpe depuis la sortie Marker conservée sous `Source/_marker/`, ou ré-extraction quand cette sortie manque. Jamais un remède de chapitre (arbitrage utilisateur 2026-09-14 : « Il faut un format unifié pour toutes les extractions, donc s’il faut rééxtraire, on rééxtrait »). DÉCROISSANCE : un livre repassé par la chaîne sort du stock dans le train qui l’intègre — ses entrées se retirent dans le MÊME commit que le dossier remplacé, et la garde refuse alors toute entrée sans écart mesuré. L’ORDRE de ré-extraction vit sur #1739. LIMITE DITE, et VOULUE — le DÉTAIL est un COMPTE : `ref` porte « ×N », donc tout geste NON CANONIQUE (corriger une occurrence sur N à la main) déplace la clé et ROUGIT cette garde. C’est exactement ce qu’on veut : un geste non canonique se voit. La porte de PLAGE (`croissanceDesStocks`), elle, n’y verrait qu’un −1/+1 net 0 sur la même ligne — c’est la SUITE qui tient ce cas, pas la porte de plage. CE QUE LE `fichier` NOMME — le PREMIER chapitre fautif de la famille dans ce dossier, jamais le dossier nu : un chemin sans `.md` ne tombe sous aucun motif de `scripts/guards/lib/stocksNominatifs.mjs` (`CHEMIN_SOURCE` exige `.md`) et laisserait les 78 entrées hors de vue des deux portes de croissance (mesuré le 2026-09-14 : la garde `stocks-nominatifs` refusait « 0 entrée(s) vue(s) sur 57 déclarée(s) »). COUVERTURE DITE — les familles `ligne1-hors-format`, `sans-folio`, `ancre-seule`, `nom-de-signet` et `largeur-de-numero` ne jugent que les fichiers au motif `NN - X.md`, `00 - Index.md` exclu ; un `.md` hors motif leur est INVISIBLE (mesuré le 2026-09-14 : 0 fichier hors motif sur les 20 dossiers). `html-residuel` et `table-sans-separateur` balaient, eux, TOUS les `.md` du dossier. COUVERTURE DITE — `html-residuel` ne compte PAS les ancres de page : une ancre sans `data-folio` est déjà nommée par `sans-folio`, et la compter deux fois dirait deux réparations là où il n’y en a qu’une.",
   "entrees": [
     {
       "famille": "ligne1-hors-format",
@@ -115,11 +115,11 @@
     },
     {
       "famille": "sans-folio",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/01 - Cover.md",
-      "ref": "18 chapitre(s)",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/001 - Cover.md",
+      "ref": "122 chapitre(s)",
       "occurrence": 1,
       "lot": "#1739 H-0",
-      "date": "2026-09-18"
+      "date": "2026-09-21"
     },
     {
       "famille": "sans-folio",
@@ -464,6 +464,166 @@
       "occurrence": 1,
       "lot": "#1739 H-0",
       "date": "2026-09-14"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Boite d'Initiation WFRP 4e Edition VF/01 - Coffre de Demarrage WFRP 4e Edition VF.md",
+      "ref": "2 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/WH - V4 - Aux Armes/01 - CREDITS.md",
+      "ref": "13 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/WH - V4 - La Mer de Griffe/01 - La Mer des Griffes.md",
+      "ref": "16 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/WH - V4 - Le zoo imperial/01 - TROIS EXPEDITIONS.md",
+      "ref": "14 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/WH4_FR_BI_Livre_Aventure/01 - _GoBack.md",
+      "ref": "6 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/WH4_FR_BI_Livre_Ubersreik/01 - Bienvenue a Ubersreik.md",
+      "ref": "8 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Warhammer - Habitants & Creatures  du Vieux-Monde (Discord) PDF/01 - Avertissement.md",
+      "ref": "84 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/01 - Chapitre 1 - On recherche - aventuriers courageux.md",
+      "ref": "12 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/01 - INTRODUCTION.md",
+      "ref": "16 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/01 - PREFACE - Un peu d'histoire.md",
+      "ref": "11 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/01 - PREFACE - UN PEU D'HISTOIRE.md",
+      "ref": "19 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/01 - Avant-propos.md",
+      "ref": "14 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/01 - La Couronne de l'Empire.md",
+      "ref": "12 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/01 - introduction.md",
+      "ref": "26 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/01 - Contes de sorcellerie.md",
+      "ref": "15 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/01 - LES GRANDES PROVINCES.md",
+      "ref": "8 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/01 - Mercenaires ogres dans le Vieux Monde.md",
+      "ref": "9 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/01 - _GoBack.md",
+      "ref": "85 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/01 - MIDDENHEIM.md",
+      "ref": "10 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
+    },
+    {
+      "famille": "sans-decoupe",
+      "fichier": "Source/Warhammer v4 - Nuits agitees & dures journees/01 - Avant-propos.md",
+      "ref": "16 chapitre(s)",
+      "occurrence": 1,
+      "lot": "#1739 S1",
+      "date": "2026-09-21"
     }
   ]
 }

@@ -16,6 +16,16 @@
 // unifié pour toutes les extractions, donc s'il faut rééxtraire, on rééxtrait » — fiche
 // `.claude/memory/user-doctrine-format-unifie-reextraction-permise.md`.
 //
+// DEUX RÉGIMES, UNE DONNÉE. Le GRAIN d'un livre est sa LISTE DE DÉCOUPE
+// (`scripts/raw/decoupes/<id>.json`), et elle s'applique par DEUX voies : le découpeur, quand le
+// livre est (ré-)extrait ; `scripts/raw/recouper-source.mjs`, quand le `.md` en service porte des
+// réparations de contenu qu'un rejeu de la sortie Marker écraserait (§ 7 de
+// `docs/ajouter-un-livre-source.md`). D'où :
+//  — livre AVEC liste : le dossier se CONFRONTE à la liste (`ecartsAuGrain`) — noms, ligne 1,
+//    ouverture, index. Tout écart est un ROUGE NOMMÉ, sans stock : le geste tient en une commande.
+//  — livre SANS liste : son grain n'est déclaré nulle part. UNE entrée de stock par dossier
+//    (famille `sans-decoupe`), dont l'unité de réparation est le livre mis au grain.
+//
 // STOCK NOMINATIF (`scripts/raw/source-format-stock.json`, régime #1711) : une ENTRÉE par
 // (famille, dossier, détail), clé `famille :: fichier :: ref :: occurrence`
 // (`guards/lib/stock.mjs`, `cleDeSite` — seule définition, #1727). L'unité de RÉPARATION est le
@@ -37,7 +47,10 @@ import { listerDossier, parUnitesDeCode } from '../guards/lib/lister.mjs'
 import { BOOKS, readText } from './_lib.mjs'
 import { ecartDuVolet, sitesEnEntrees, survieDeLecheance } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
-import { graphieDeChapitre, graphieDuFichier, largeurDeChapitre, numeroDuFichier, titreDuFichier } from '../../src/data/source/decoupe.ts'
+import { graphieDeChapitre, graphieDuFichier, largeurDeChapitre, ligne1DePlage, numeroDuFichier, plageDeLigne1, titreDuFichier } from '../../src/data/source/decoupe.ts'
+import { estLigneDeTitre, ouvreSur } from './lib/titres.mjs'
+import { decoupeDe, livresDecoupes, REGISTRE_LIVRES } from './_lib.mjs'
+import { nomAscii } from '../source/nom-ascii.mjs'
 
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'source-format-stock.json')
 
@@ -66,16 +79,10 @@ export const FAMILLES = [
   'index-mort',
   'table-sans-separateur',
   'largeur-de-numero',
+  'sans-decoupe',
 ]
 
 export const INDEX = '00 - Index.md'
-
-/** Ligne 1 CANONIQUE d'un chapitre : la tranche de pages PDF posée par le découpeur. La borne HAUTE
- *  est OPTIONNELLE — un chapitre d'UNE page rend `*Pages PDF 48*` (LDB `06 - Classes.md` l.1), et
- *  c'est la forme que les trois gardes de la même chaîne lisent déjà
- *  (`anchor-fill.mjs:53`, `check-folio-continuity.mjs:32`, `folio-bootstrap.mjs:30`, qui ancrent
- *  `^\*Pages PDF (\d+)(?:-(\d+))?\*` — borne haute en groupe optionnel). */
-export const LIGNE1_CANONIQUE = /^\*Pages PDF \d+(?:-\d+)?\*$/
 
 /** Ancre de page telle que la chaîne canonique la pose (INLINE, préfixe du texte de sa ligne). */
 const ANCRE_PAGE = /<span [^>]*id="page-[^"]*"[^>]*>\s*<\/span>/g
@@ -88,7 +95,7 @@ const ANCRE_SEULE = /^<span [^>]*id="page-[^"]*"[^>]*>\s*<\/span>$/
  */
 export function formeDeLigne1(ligne) {
   const t = ligne.trim()
-  if (LIGNE1_CANONIQUE.test(t)) return null
+  if (plageDeLigne1(t) != null) return null
   if (/^\*Folio -?\d+\+?\*$/.test(t)) return '*Folio N+*'
   if (t.startsWith('#')) return '# Titre'
   if (t === '') return '(ligne vide)'
@@ -150,6 +157,16 @@ export function balisesResiduelles(texte) {
   return out
 }
 
+/**
+ * PREMIÈRE ligne de TITRE d'un chapitre, ou `null` s'il n'en porte aucune — un fichier sans titre
+ * (couverture, planche) n'a pas d'ouverture à juger. La ligne est rendue TELLE QUELLE : c'est le
+ * prédicat d'ouverture (`lib/titres.mjs`) qui la lit, et lui seul.
+ * @param {string} texte @returns {string | null}
+ */
+export function ligneDOuverture(texte) {
+  return texte.split('\n').find((l) => estLigneDeTitre(l)) ?? null
+}
+
 /** Cibles des liens RELATIFS d'un index (`[x](<01 - Y.md>)` ou `[x](01%20-%20Y.md)`). */
 export function liensDIndex(texte) {
   const out = []
@@ -176,7 +193,7 @@ export function liensDIndex(texte) {
  * @param {string} dir @param {{ nom: string, texte: string }[]} fichiers
  * @returns {{ famille: string, file: string, ref: string }[]}
  */
-export function sitesDuDossier(dir, fichiers) {
+export function sitesDuDossier(dir, fichiers, liste = null) {
   const out = []
   const noms = new Set(fichiers.map((f) => f.nom))
   const chapitres = fichiers.filter((f) => numeroDuFichier(f.nom) != null)
@@ -277,6 +294,62 @@ export function sitesDuDossier(dir, fichiers) {
     }
   }
 
+  // (9) SANS DÉCOUPE : le livre n'a pas de LISTE DE DÉCOUPE (`scripts/raw/decoupes/<id>.json`), donc
+  // son GRAIN n'est déclaré nulle part et rien ne peut le confronter. UNE entrée par dossier :
+  // l'unité de réparation est le livre mis au grain, jamais un chapitre.
+  if (liste == null && chapitres.length) {
+    out.push({ famille: 'sans-decoupe', file: chemin(chapitres[0].nom), ref: `${chapitres.length} chapitre(s)` })
+  }
+
+  return out
+}
+
+/**
+ * ÉCART AU GRAIN d'un livre QUI A UNE LISTE : ce que la liste déclare, confronté à ce que le dossier
+ * porte — les NOMS, la LIGNE 1, le titre d'OUVERTURE et l'INDEX. La liste est la DÉCLARATION, le
+ * dossier est le FAIT : tout écart est un ROUGE NOMMÉ, jamais une entrée de stock. Un stock dirait
+ * « toléré » là où le geste tient en une commande (`node scripts/raw/recouper-source.mjs <id>`).
+ * PUR : la liste est DONNÉE.
+ * @param {string} dir @param {{ nom: string, texte: string }[]} fichiers
+ * @param {{ titre: string, ouverture?: string, page: number, pageFin: number }[]} liste
+ * @returns {{ file: string, ref: string }[]}
+ */
+export function ecartsAuGrain(dir, fichiers, liste) {
+  const out = []
+  const chemin = (nom) => `${dir}/${nom}`
+  const parNom = new Map(fichiers.map((f) => [f.nom, f.texte]))
+  const largeur = largeurDeChapitre(Math.max(1, liste.length))
+  const attendus = liste.map((e, i) => nomAscii(`${graphieDeChapitre(i + 1, largeur)} - ${e.titre}.md`))
+
+  const servis = fichiers.filter((f) => numeroDuFichier(f.nom) != null).map((f) => f.nom)
+  const enTrop = servis.filter((n) => !attendus.includes(n))
+  const manquants = attendus.filter((n) => !parNom.has(n))
+  for (const n of manquants) out.push({ file: chemin(n), ref: 'déclaré par la liste de découpe, ABSENT du dossier' })
+  for (const n of enTrop) out.push({ file: chemin(n), ref: 'servi, ABSENT de la liste de découpe' })
+
+  liste.forEach((e, i) => {
+    const nom = attendus[i]
+    const texte = parNom.get(nom)
+    if (texte == null) return
+    const attendue = ligne1DePlage(e.page, e.pageFin)
+    const l1 = (texte.split('\n')[0] ?? '').trim()
+    if (l1 !== attendue) out.push({ file: chemin(nom), ref: `ligne 1 « ${l1.slice(0, 40)} » pour ${attendue}` })
+    if (e.ouverture == null) return
+    const ligne = ligneDOuverture(texte)
+    if (ligne == null || !ouvreSur(ligne, e.ouverture)) {
+      const vue = ligne == null ? null : ligne.replace(/<\/?span[^>]*>/g, '').trim()
+      out.push({ file: chemin(nom), ref: `n'ouvre pas sur « ${e.ouverture} » (${vue == null ? 'aucune ligne de titre' : `l.1 de titre « ${vue.slice(0, 48)} »`})` })
+    }
+  })
+
+  const index = parNom.get(INDEX)
+  if (index == null) out.push({ file: chemin(INDEX), ref: 'index ABSENT d’un livre à liste de découpe' })
+  else {
+    const cibles = liensDIndex(index).filter((c) => c.endsWith('.md'))
+    if (cibles.join('\u0000') !== attendus.join('\u0000')) {
+      out.push({ file: chemin(INDEX), ref: `${cibles.length} lien(s) pour ${attendus.length} fichier(s) déclaré(s), ou hors ordre` })
+    }
+  }
   return out
 }
 
@@ -290,8 +363,29 @@ export function lireDossier(dir) {
     .map((nom) => ({ nom, texte: readText(join(dir, nom)) }))
 }
 
-/** Balaie UN dossier de livre → ses sites d'écart. */
-export const scanDossier = (dir) => sitesDuDossier(cheminDe(dir), lireDossier(dir))
+/**
+ * LISTE DE DÉCOUPE du livre servi par ce dossier, ou `null` s'il n'en a pas — la résolution passe
+ * par le registre (`src/data/books.json` → `id`), jamais par le nom du dossier : aucun livre n'est
+ * nommé dans ce code.
+ * @param {string} dir @returns {object[] | null}
+ */
+export function listeDuDossier(dir, registre = REGISTRE_LIVRES, avecListe = livresDecoupes()) {
+  const p = cheminDe(dir)
+  const livre = registre.find((b) => b.dir && cheminDe(b.dir) === p && avecListe.includes(b.id))
+  return livre ? decoupeDe(livre.id) : null
+}
+
+/** Balaie UN dossier de livre → ses sites d'écart de FORME (les familles à stock). */
+export const scanDossier = (dir) => sitesDuDossier(cheminDe(dir), lireDossier(dir), listeDuDossier(dir))
+
+/** Balaie UN dossier au GRAIN — rien pour un livre sans liste de découpe. */
+export const grainDuDossier = (dir) => {
+  const liste = listeDuDossier(dir)
+  return liste ? ecartsAuGrain(cheminDe(dir), lireDossier(dir), liste) : []
+}
+
+/** Écarts au grain de TOUS les dossiers FR, dans l'ordre du corpus. */
+export const grainAll = (dossiers = dossiersFR()) => dossiers.flatMap((d) => grainDuDossier(d))
 
 /**
  * Les DOSSIERS FR suivis, dans l'ordre POSIX : l'union des livres à `dir` de `books.json` et du
@@ -420,7 +514,7 @@ function main() {
   const stock = readStock(STOCK_PATH)
 
   if (args.includes('--ecrire-stock')) {
-    const lot = '#1739 H-0'
+    const lot = '#1739 S1'
     const date = new Date().toISOString().slice(0, 10)
     writeFileSync(STOCK_PATH, stockDe(sites, { lot, date, dossiers: dossiers.length, ancien: stock }))
     console.log(`stock écrit : ${STOCK_PATH} — ${entreesDe(sites, { lot, date, ancien: stock }).length} entrée(s)`)
@@ -436,6 +530,14 @@ function main() {
     if (parDossier.has(dir)) console.log(`  ${dir} — ${parDossier.get(dir)} écart(s)`)
   }
 
+  // GRAIN : la confrontation à la liste de découpe est ROUGE, jamais stockée — son geste est
+  // `node scripts/raw/recouper-source.mjs <id du livre>`.
+  const grain = grainAll(dossiers)
+  if (grain.length) {
+    console.log(`GRAIN — ${grain.length} écart(s) à la liste de découpe (geste : node scripts/raw/recouper-source.mjs <id>) :`)
+    for (const g of grain) console.log(`  ${g.file} — ${g.ref}`)
+  }
+
   const { neuves, perimees } = ecartDuStock(sites, stock)
   if (neuves.length) {
     console.log('RÉGRESSION — écart(s) hors du stock :')
@@ -445,8 +547,8 @@ function main() {
     console.log('Entrée(s) SOLDÉE(s) (livre ré-extrait) :')
     for (const s of perimees) console.log(`  ${s}`)
   }
-  if (!neuves.length && !perimees.length) {
-    console.log('OK — cliquet aligné, aucune régression.')
+  if (!neuves.length && !perimees.length && !grain.length) {
+    console.log('OK — cliquet aligné, aucune régression, aucun écart au grain.')
     return
   }
   process.exitCode = 1

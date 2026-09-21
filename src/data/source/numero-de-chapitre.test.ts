@@ -15,7 +15,8 @@ import { join } from 'node:path';
 // Ordre TOTAL du listing (#1679 L3b) : la primitive du dépôt, jamais un `readdirSync` nu.
 import { listerDossier } from '../../../scripts/guards/lib/lister.mjs';
 import {
-  fichierDuChapitre, graphieDeChapitre, largeurDeChapitre, parseChapitre, prefixesDeChapitres,
+  fichierDuChapitre, graphieDeChapitre, largeurDeChapitre, ligne1DePlage, parseChapitre,
+  plageDeLigne1, plageEnTexte, prefixesDeChapitres,
 } from './decoupe.ts';
 import { descRefSchema } from '../schemas/grammaire/valeurs';
 // @ts-expect-error - plugin ESM JS (pas de types) — même convention que `vite.config.ts`
@@ -30,7 +31,7 @@ const LARGEUR = largeurDeChapitre(CHAPITRES);
 
 /** Un chapitre au format canonique : ligne 1 `*Pages PDF N*`, ancre de folio INLINE. */
 const texteDe = (n: number) => [
-  `*Pages PDF ${n}*`,
+  ligne1DePlage(n, n),
   '',
   `<span id="page-${n}-0" data-folio="${n}"></span># Chapitre ${n}`,
   '',
@@ -179,5 +180,45 @@ describe('garde `largeur-de-numero` — une largeur par dossier, celle du plus g
     expect(court[0].file).toBe('Source/Livre/99 - A.md');
     expect(largeurs(['07 - A.md', '100 - B.md']).map((s) => s.ref)).toEqual(['1 préfixe(s) hors largeur 3']);
     expect(largeurs(['07 - A.md', '08 - B.md', '100 - C.md']).map((s) => s.ref)).toEqual(['2 préfixe(s) hors largeur 3']);
+  });
+});
+
+/**
+ * La ligne 1 `*Pages PDF X[-Y]*` est UNE définition (#1739, pilotage H-0) : la même fonction l'écrit
+ * pour les quatre découpeurs et la relit pour les quatre gardes. Ce qui se juge ici est donc
+ * l'ALLER-RETOUR — ce qu'on écrit se relit à l'identique —, pas la graphie d'un motif recopié.
+ */
+describe('ligne 1 d’un fichier d’extraction', () => {
+  it('une page unique n’écrit PAS de borne haute, et se relit avec `pageFin` = `page`', () => {
+    expect(ligne1DePlage(48, 48)).toBe('*Pages PDF 48*');
+    expect(plageDeLigne1('*Pages PDF 48*')).toEqual({ page: 48, pageFin: 48 });
+    expect(plageEnTexte(48, 48)).toBe('48');
+  });
+
+  it('une plage écrit ses deux bornes et se relit telle quelle', () => {
+    expect(ligne1DePlage(10, 23)).toBe('*Pages PDF 10-23*');
+    expect(plageDeLigne1('*Pages PDF 10-23*')).toEqual({ page: 10, pageFin: 23 });
+    expect(plageEnTexte(10, 23)).toBe('10-23');
+  });
+
+  it('l’aller-retour tient sur TOUTE plage du livre forgé', () => {
+    for (let p = 1; p <= CHAPITRES; p++) {
+      for (const fin of [p, p + 1, p + 17]) {
+        expect(plageDeLigne1(ligne1DePlage(p, fin))).toEqual({ page: p, pageFin: fin });
+      }
+    }
+  });
+
+  it('ce qui n’est PAS cette ligne ne se lit pas — rien ne suit la plage', () => {
+    for (const ligne of ['', '# Titre', '*Folio 3+*', 'Du texte nu', '*Pages PDF 10-23* et la suite',
+      '*Pages PDF*', '*Pages PDF 10-*', 'a*Pages PDF 10*']) {
+      expect(plageDeLigne1(ligne)).toBeNull();
+    }
+  });
+
+  it('une plage impossible LÈVE en se nommant — aucune ligne 1 fausse n’est écrite', () => {
+    expect(() => plageEnTexte(23, 10)).toThrow(/plageEnTexte/);
+    expect(() => ligne1DePlage(0, 4)).toThrow(/entier ≥ 1/);
+    expect(() => ligne1DePlage(4, undefined as unknown as number)).toThrow(/plageEnTexte/);
   });
 });

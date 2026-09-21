@@ -181,6 +181,31 @@ export function graphieDeChapitre(numero: number, largeur: number): string {
 export const estGraphieDeChapitre = (s: string): boolean =>
   /^\d{2,}$/.test(s) && estNumeroDeChapitre(Number(s));
 
+/* ─── Ligne 1 d'un fichier d'extraction : `*Pages PDF X*` / `*Pages PDF X-Y*` ─────────────────── */
+
+/** Motif de la LIGNE 1. La borne haute est OPTIONNELLE — un fichier d'UNE page rend `*Pages PDF 48*`
+ *  (LDB `06 - Classes.md` l.1). Ancré des DEUX côtés : rien ne suit la plage sur cette ligne. */
+export const LIGNE1_PAGES = /^\*Pages PDF (\d+)(?:-(\d+))?\*$/;
+
+/** PLAGE portée par la ligne 1 d'un fichier d'extraction, ou `null` si ce n'en est pas une. SEULE
+ *  LECTURE du dépôt : tout site qui interroge cette ligne passe par elle (#1739, pilotage H-0). */
+export function plageDeLigne1(ligne: string): { page: number; pageFin: number } | null {
+  const m = LIGNE1_PAGES.exec(String(ligne ?? '').trim());
+  return m ? { page: Number(m[1]), pageFin: Number(m[2] ?? m[1]) } : null;
+}
+
+/** PLAGE en texte, `'X'` ou `'X-Y'` — ce que l'index du livre imprime après `p.`. */
+export function plageEnTexte(page: number, pageFin: number): string {
+  if (!Number.isInteger(page) || !Number.isInteger(pageFin) || page < 1 || pageFin < page) {
+    throw new Error(`plageEnTexte : une plage de pages va d'un entier ≥ 1 à un entier ≥ lui, reçu ${JSON.stringify(page)}…${JSON.stringify(pageFin)}`);
+  }
+  return pageFin > page ? `${page}-${pageFin}` : `${page}`;
+}
+
+/** LIGNE 1 d'un fichier d'extraction. SEULE ÉCRITURE du dépôt : tout découpeur passe par elle. */
+export const ligne1DePlage = (page: number, pageFin: number): string =>
+  `*Pages PDF ${plageEnTexte(page, pageFin)}*`;
+
 export type CodeErreur =
   | 'section-inconnue'
   | 'bornes-hors-limites'

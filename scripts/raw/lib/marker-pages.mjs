@@ -1,5 +1,6 @@
-// Lecture d'une extraction Marker PAGINÉE — source UNIQUE du parseur de pages `{N}----` et du
-// déballage `<sup>` pour les découpeurs de `Source/` (#1739, Lot H du #1388). Deux consommateurs :
+// Lecture d'une extraction Marker PAGINÉE — source UNIQUE du parseur de pages `{N}----` et de la
+// COUPE à la ligne d'un titre pour les découpeurs de `Source/` (#1739, Lot H du #1388). Le texte
+// d'un titre et le prédicat d'ouverture vivent au feuillet PUR `lib/titres.mjs`. Deux consommateurs :
 // `scripts/raw/split-wfrp5.mjs` (livre neuf) et `scripts/raw/marker-split.mjs` (ré-extraction
 // alignée sur une structure ancienne) — le parseur y vivait en deux copies.
 //
@@ -12,6 +13,7 @@ import { join } from 'node:path'
 import { listerDossier } from '../../guards/lib/lister.mjs'
 import { readText } from '../_lib.mjs'
 import { extractPages } from '../anchor-fill.mjs'
+import { estLigneDeTitre, ouvreSur } from './titres.mjs'
 
 /** Séparateur de page de la sortie paginée de Marker : `{N}----` seul sur sa ligne.
  *  Mesuré sur le CRB 5e : 378/378 séparateurs portent 48 tirets — aucun cas à 4. */
@@ -188,57 +190,46 @@ export function verifierExtraction(pages, { pdfPath, restitutions, seuil, extrai
   }
 }
 
-/** `<sup>h</sup>` en TÊTE de ligne (ou après `#+ ` / `- `) devant un titre en gras : icône de rang,
- *  supprimée avec son contenu et l'espace qui suit. Cette position SEULE — ailleurs, `h` est du texte. */
-const SUP_RANG = /^(#{1,6} |- )?<sup>h<\/sup> (?=\*\*)/gm
-
-/** `<sup>0</sup>` : puce d'item (glyphe de police symbole), supprimée avec son contenu et
- *  l'espace qui suit s'il y en a un, à TOUTE position. */
-const SUP_PUCE = /<sup>0<\/sup> ?/g
 
 /**
- * Déballe le HTML `<sup>` d'une extraction Marker — et RIEN d'autre.
+ * COUPE un flux de lignes aux lignes de ses titres d'OUVERTURE, en SÉQUENCE : chaque entrée se
+ * cherche APRÈS la coupe précédente, jamais dans tout le flux. C'est ce qui tient les HOMONYMES
+ * (CRB 5e : `SKILLS` ×52 et `ARMOUR` ×45 sont les étiquettes du gabarit de profil du Bestiaire ;
+ * `POISONS` ouvre DEUX fichiers) — mesuré sur les 120 titres du CRB : dans l'ordre du flux, le
+ * PREMIER homonyme rencontré après la coupe précédente est toujours le bon.
  *
- * CONSIGNE (source de la règle) — Mesure game-01 (session #1388, 2026-09-14) sur le corpus VF
- * suivi : `grep -rhoE "<sup>[^<]*</sup>" Source` = 196 sites, ZÉRO vrai exposant. Classes :
- * (a) lettrines et petites capitales — `<sup>s</sup>'ils`, `<sup>M</sup>'en parlez pas`,
- * `# <sup>L</sup><sup>A</sup> <sup>T</sup>OU<sup>R</sup>` = CONTENU, déballer ;
- * (b) `<sup>à</sup>` dans des titres (24) = contenu, déballer ;
- * (c) `<sup>\*</sup>`/`<sup>\*\*</sup>` (27) — et `<sup>\*\*\*</sup>` (CRB 5e : 2 sites, tables
- * d'armes p.301 et 303) = appels de note, déballer ;
- * (d) `<sup>1</sup>`…`<sup>10</sup>` devant `**Marque de …**` (VDM, ~50) = numéro de rangée d'une
- * table 1d10 aplatie en prose, déballer ;
- * (e) `<sup>h</sup>` (86 : Aux Armes 4 fichiers, Mer des Griffes 2, VDM 10 ; CRB 5e : 36 sur
- * 80 pages) TOUJOURS en tête de ligne devant un titre de carrière en gras
- * (`#### <sup>h</sup> **Hanté – Bronze 1**`, `- <sup>h</sup> **Recruit Brass 5**`) = icône de rang
- * (glyphe de police symbole), SUPPRIMER avec son contenu et l'espace qui suit, uniquement à cette
- * position (début de ligne, ou après `#+ ` ou `- `, suivi de ` **`) ;
- * (f) `<sup>0</sup>` (30 occurrences sur 25 lignes : ZI ch.14 = 20 lignes, EDOC ch.16 = 5 ;
- * `grep -rl '<sup>0</sup>' Source` ne rend que ces deux fichiers) = PUCE d'item. Mesure au PDF
- * (pypdf, `scripts/raw/lib/pdf-extract.py`, 2026-09-14) : le flux texte porte un `0` ISOLÉ dans
- * une police symbole, servant de MARQUEUR d'item — ZI p.125 (index pypdf) : `SECRETS … Vous
- * commencez avec 1d10 pistoles d'argent en plus par secret supplémentaire choisi.\n 0 Grand
- * secret : vous êtes un pacifiste convaincu…` (case à cocher devant chaque Secret des prétirés) ;
- * EDOC p.115 : `Si d'autres halflings le découvraient, Harbull serait rejeté.\n 0 Harbull
- * considère Malmir comme une âme sœur…` (ornement devant chaque paragraphe de PNJ). C'est un
- * GLYPHE, pas du texte — même classe que l'icône de rang (e) : SUPPRIMER avec son contenu et
- * l'espace qui suit, à TOUTE position (aucun vrai exposant zéro dans le corpus, cf. mesure
- * ci-dessus) : `…sans jamais attaquer. <sup>0</sup> Vous appartenez…` laisse UN seul espace,
- * `- <sup>0</sup> **Grand secret :**` donne `- **Grand secret :**` ;
- * (g) `<sup>~</sup>` (1 site, `Source/WH - V4 - Le zoo imperial/01 - TROIS EXPEDITIONS.md:7` :
- * `<sup>~</sup> UN RAPPORT ~ DU SCRIBE`) = CONTENU, déballer : au PDF (ZI p.7) le flux texte lit
- * `– EN QUÊTE DE –` puis `~ UN RAPPORT ~DU SCRIBE`, le tilde est un CARACTÈRE du texte (ornement
- * typographique, dont le second `~` est sorti nu chez Marker).
+ * Une entrée SANS titre (`ouverture` absente) coupe à son `depuis` : un fichier peut n'avoir aucun
+ * titre imprimé (couverture, feuille de personnage). Une entrée dont le titre est INTROUVABLE dans
+ * sa fenêtre est NOMMÉE et n'ouvre aucun fichier — aucune coupe n'est devinée à sa place.
  *
- * Après passage : zéro `<sup>` résiduel. Dépendance ANNONCÉE (pas dans cet arbre) : la gate
- * `raw:check-source-format` (#1739, train H-0) comptera le HTML résiduel de `Source/`.
- * Ce que ce déballage laisse VOLONTAIREMENT : les ancres `<span id="page-K-0"></span>` (substrat de
- * `anchor-fill`/`folio-bootstrap`, qui y posent `data-folio` — NE PAS les retirer) et les `<br>` de
- * cellules (structure de table, lue par la gate `raw:check-source-tables`).
- * @param {string} texte @returns {string}
+ * @param {string[]} lignes flux entier, déjà découpé en lignes
+ * @param {{ cle: string, ouverture?: string | null, depuis?: number, avant?: number }[]} entrees
+ *   `depuis`/`avant` bornent la fenêtre de recherche (bornes de la PAGE déclarée, pour un flux
+ *   paginé) ; absentes, la recherche court jusqu'à la fin du flux.
+ * @returns {{ coupes: { cle: string, ouverture: string | null, ligne: number }[],
+ *   introuvables: { cle: string, ouverture: string, depuis: number, avant: number }[] }}
  */
-export function deballerSup(texte) {
-  return texte.replace(SUP_RANG, (_m, prefixe) => prefixe || '')
-    .replace(SUP_PUCE, '')
-    .replace(/<sup>([^<]*)<\/sup>/g, '$1')
+export function couperAuxTitres(lignes, entrees) {
+  const titres = []
+  for (let i = 0; i < lignes.length; i++) if (estLigneDeTitre(lignes[i])) titres.push(i)
+  const coupes = []
+  const introuvables = []
+  let curseur = 0
+  for (const e of entrees) {
+    const depuis = Math.max(curseur, e.depuis ?? 0)
+    const avant = Math.min(lignes.length, e.avant ?? lignes.length)
+    if (e.ouverture == null) {
+      coupes.push({ cle: e.cle, ouverture: null, ligne: depuis })
+      curseur = depuis
+      continue
+    }
+    const hit = titres.find((i) => i >= depuis && i < avant && ouvreSur(lignes[i], e.ouverture))
+    if (hit == null) {
+      introuvables.push({ cle: e.cle, ouverture: e.ouverture, depuis, avant })
+      continue
+    }
+    coupes.push({ cle: e.cle, ouverture: e.ouverture, ligne: hit })
+    curseur = hit + 1
+  }
+  return { coupes, introuvables }
 }

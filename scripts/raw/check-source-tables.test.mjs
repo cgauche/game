@@ -7,7 +7,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   sitesDuChapitre, scanAllBooks, scanBookDir, refDeTable, cleDeLigne, entreesDe, ecartDuStock,
-  comptesParFamille, verdictDesPreuves, comptesDeTri, FAMILLES, STOCK_PATH,
+  comptesParFamille, verdictDesPreuves, comptesDeTri, preuvesHorsPlage, lireLigne1Du,
+  FAMILLES, STOCK_PATH,
 } from './check-source-tables.mjs'
 import { readStock } from './stockNominatif.mjs'
 import { cleDeSite } from '../guards/lib/stock.mjs'
@@ -355,4 +356,49 @@ test('--ecrire-stock CONSERVE la preuve et l’échéance d’une entrée exista
 test('comptesParFamille nomme TOUTES les familles, même à zéro (une famille muette resterait invisible)', () => {
   assert.deepEqual(Object.keys(comptesParFamille([])), FAMILLES)
   assert.deepEqual(Object.values(comptesParFamille([])), FAMILLES.map(() => 0))
+})
+
+/* ─── CONTRE-ÉPREUVE : la page CITÉE par une preuve contre la PLAGE du fichier keyé ─────────────
+ * Mesure INDÉPENDANTE de la liste de découpe : elle tombe sur un `pageFin` faux DANS la liste comme
+ * sur un re-keyage qui aurait posé la preuve sur le fichier voisin. C'est elle qui a nommé la classe
+ * A du lot S1 (preuve p.168 contre un fichier déclaré 164-167).
+ * ───────────────────────────────────────────────────────────────────────────────────────────── */
+
+const PREUVE_FIXTURE = { famille: 'banniere-suspecte', fichier: 'Source/Livre/07 - Combat.md', ref: 'x#1 :: a|b', occurrence: 1 }
+/** Un lecteur de ligne 1 FORGÉ : la contre-épreuve ne touche pas au disque. */
+const ligne1Forgee = (ligne1) => (fichier) => (fichier === PREUVE_FIXTURE.fichier ? ligne1 : null)
+
+test('preuve HORS PLAGE : une page citée au-delà de la plage du fichier keyé est ROUGE, et NOMMÉE', () => {
+  const stock = [{ ...PREUVE_FIXTURE, preuve: 'PDF p.168 : la table imprime un en-tête à deux niveaux.' }]
+  // MORSURE : la plage s'arrête à 167, la preuve parle de 168.
+  const rouge = preuvesHorsPlage(stock, ligne1Forgee('*Pages PDF 164-167*'))
+  assert.equal(rouge.length, 1)
+  assert.match(rouge[0], /page 168, HORS de la plage 164-167/)
+  assert.match(rouge[0], /07 - Combat\.md/)
+  // La MÊME preuve contre la plage JUSTE ne dit rien.
+  assert.deepEqual(preuvesHorsPlage(stock, ligne1Forgee('*Pages PDF 164-168*')), [])
+  // Les deux BORNES sont dedans, et une plage d'UNE page se lit aussi.
+  assert.deepEqual(preuvesHorsPlage(stock, ligne1Forgee('*Pages PDF 168-200*')), [])
+  assert.deepEqual(preuvesHorsPlage([{ ...PREUVE_FIXTURE, preuve: 'PDF p.48 : lu.' }], ligne1Forgee('*Pages PDF 48*')), [])
+})
+
+test('preuve HORS PLAGE : ce qui ne se juge PAS, et ce qui ne se TAIT pas', () => {
+  // Une entrée sans preuve, ou dont la preuve ne cite aucune page, ne se confronte à rien.
+  assert.deepEqual(preuvesHorsPlage([PREUVE_FIXTURE], ligne1Forgee('*Pages PDF 1-2*')), [])
+  assert.deepEqual(
+    preuvesHorsPlage([{ ...PREUVE_FIXTURE, preuve: 'PDF : la table est imprimée sur deux colonnes.' }], ligne1Forgee('*Pages PDF 1-2*')),
+    [],
+  )
+  // Mais une preuve qui CITE une page et dont le fichier n'a pas de ligne 1 lisible est NOMMÉE.
+  const cite = [{ ...PREUVE_FIXTURE, preuve: 'PDF p.12 : lu.' }]
+  assert.match(preuvesHorsPlage(cite, ligne1Forgee('# **COMBAT**'))[0], /pas de ligne 1 lisible/)
+  // — et un fichier INTROUVABLE l'est aussi : un stock qui pointe dans le vide ne passe pas.
+  assert.match(preuvesHorsPlage(cite, () => null)[0], /est INTROUVABLE/)
+})
+
+// L'ARBRE : toute preuve du stock committé tient à la plage de son fichier. GÉNÉRAL — aucun livre
+// n'est nommé ici, et une preuve de plus sur un livre de plus entre dans la mesure sans rien changer.
+test('stock COMMITTÉ : aucune preuve ne cite une page hors de la plage du fichier qu’elle keye', () => {
+  const hors = preuvesHorsPlage(readStock(STOCK_PATH), lireLigne1Du)
+  assert.deepEqual(hors, [], `preuve(s) hors plage :\n${hors.join('\n')}`)
 })

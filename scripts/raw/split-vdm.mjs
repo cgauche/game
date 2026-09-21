@@ -5,7 +5,7 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { readText } from './_lib.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
-import { graphieDeChapitre, largeurDeChapitre } from '../../src/data/source/decoupe.ts'
+import { graphieDeChapitre, largeurDeChapitre, ligne1DePlage, plageEnTexte } from '../../src/data/source/decoupe.ts'
 
 const SRC = 'Source/_marker/full/les Vents de Magie/les Vents de Magie/les Vents de Magie.md'
 // Tout nom ÉCRIT sous `Source/` passe par `nomAscii` (#1699) : un chemin non ASCII ne naît pas ici.
@@ -64,10 +64,10 @@ for (let c = 0; c < CHAPTERS.length; c++) {
   let endPage = startPage
   for (let i = from; i < to; i++) { const m = lines[i].match(PAGE_RE); if (m) endPage = Number(m[1]) + 1 }
   const body = lines.slice(from, to).filter((l) => !PAGE_RE.test(l)).join('\n').trim()
-  const span = endPage > startPage ? `${startPage}-${endPage}` : `${startPage}`
+  const span = plageEnTexte(startPage, endPage)
   const nn = graphieDeChapitre(c + 1, LARGEUR)
   const nom = nomAscii(`${nn} - ${title}.md`)
-  writeFileSync(join(OUT, nom), `*Pages PDF ${span}*\n\n${body}\n`)
+  writeFileSync(join(OUT, nom), `${ligne1DePlage(startPage, endPage)}\n\n${body}\n`)
   idxRows.push(`- [${nom.replace(/\.md$/, '')}](<${nom}>) — p.${span}`)
   console.log(`${nn} - ${title}  (p.${span}, ${to - from} lignes)`)
 }

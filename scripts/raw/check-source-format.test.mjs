@@ -11,21 +11,24 @@ import { join } from 'node:path'
 import {
   sitesDuDossier, scanDossier, scanAll, dossiersFR, formeDeLigne1, estNomDeSignet, estSeparateur,
   comptesDeTables, balisesResiduelles, liensDIndex, entreesDe, stockDe, ecartDuStock, comptesParFamille,
-  FAMILLES, STOCK_PATH, LIGNE1_CANONIQUE, PREFIXES_FR,
+  ecartsAuGrain,
+  FAMILLES, STOCK_PATH, PREFIXES_FR,
 } from './check-source-format.mjs'
 import { readStock } from './stockNominatif.mjs'
 import { BOOKS } from './_lib.mjs'
+import { ligne1DePlage, titreDuFichier } from '../../src/data/source/decoupe.ts'
 
 const DIR = 'Source/Livre'
 const familles = (fichiers) => sitesDuDossier(DIR, fichiers).map((s) => s.famille).sort()
 
-/** Un chapitre au format CANONIQUE : ligne 1 `*Pages PDF a-b*`, ancre INLINE, table séparée. */
+/** Un chapitre au format CANONIQUE : ligne 1 `*Pages PDF a-b*`, ancre INLINE, table séparée, et il
+ *  OUVRE sur le titre que son NOM déclare (famille `ouverture`). */
 const chapitreCanonique = (nom = '01 - Chapitre.md', folio = 3) => ({
   nom,
   texte: [
-    `*Pages PDF ${folio + 3}-${folio + 5}*`,
+    ligne1DePlage(folio + 3, folio + 5),
     '',
-    `<span id="page-${folio + 2}-0" data-folio="${folio}"></span># **TITRE**`,
+    `<span id="page-${folio + 2}-0" data-folio="${folio}"></span># **${titreDuFichier(nom).toUpperCase()}**`,
     '',
     '| Lancer | Effet |',
     '| --- | --- |',
@@ -39,16 +42,20 @@ const indexVivant = (cibles) => ({
   texte: ['# Index', '', ...cibles.map((c) => `- [x](<${c}>) — folio 3`)].join('\n'),
 })
 
+/** La liste de découpe d'un dossier de fixture : ce qui rend la famille `sans-decoupe` MUETTE — un
+ *  livre dont le grain est DÉCLARÉ se juge par confrontation, jamais par stock. */
+const listePour = (noms) => noms.map((n) => ({ titre: titreDuFichier(n), ouverture: titreDuFichier(n).toUpperCase(), page: 6, pageFin: 8 }))
+
 test('un dossier au FORMAT canonique ne rend AUCUN écart', () => {
   const fichiers = [chapitreCanonique(), indexVivant(['01 - Chapitre.md'])]
-  assert.deepEqual(sitesDuDossier(DIR, fichiers), [])
+  assert.deepEqual(sitesDuDossier(DIR, fichiers, listePour(['01 - Chapitre.md'])), [])
 })
 
 test('ligne1-hors-format : `*Folio N+*` et `# Titre` sont NOMMÉS, la tranche d’UNE page est canonique', () => {
   assert.equal(formeDeLigne1('*Pages PDF 10-23*'), null)
   // Un chapitre d'UNE page rend `*Pages PDF 48*` (LDB `06 - Classes.md` l.1) : canonique aussi.
   assert.equal(formeDeLigne1('*Pages PDF 48*'), null)
-  assert.ok(LIGNE1_CANONIQUE.test('*Pages PDF 48*'))
+  assert.equal(ligne1DePlage(48, 48), '*Pages PDF 48*')
   assert.equal(formeDeLigne1('*Folio 3+*'), '*Folio N+*')
   assert.equal(formeDeLigne1('# CRÉDITS'), '# Titre')
   assert.equal(formeDeLigne1(''), '(ligne vide)')
@@ -114,6 +121,89 @@ test('html-residuel : `<sup>` est compté UNE fois par élément ; `<br>` et les
   assert.deepEqual(sites.filter((s) => s.famille === 'html-residuel').map((s) => s.ref), ['<sup> ×1'])
 })
 
+/* ─── GRAIN (#1739) : le dossier CONFRONTÉ à la liste de découpe du livre ─────────────────────
+ * La liste est la DÉCLARATION, le dossier est le FAIT. Le prédicat d'ouverture vit au feuillet pur
+ * `lib/titres.mjs` et sert AUSSI à la coupe : ce qui se juge ici, c'est la CONFRONTATION.
+ * ───────────────────────────────────────────────────────────────────────────────────────────── */
+
+const chapitreDe = (nom, titre) => ({ nom, texte: `*Pages PDF 6-8*\n\n<span id="page-5-0" data-folio="3"></span>${titre}\n\n| A | B |\n| --- | --- |\n| 1 | 2 |\n` })
+const indexDe = (noms) => ({ nom: '00 - Index.md', texte: `# Index\n\n${noms.map((n) => `- [x](<${n}>) — p.6-8`).join('\n')}\n` })
+/** Les écarts au grain d'un dossier d'UN fichier, sa ligne 1 et son index au format attendu. */
+const grain = (nom, titre, ouverture) =>
+  ecartsAuGrain(DIR, [chapitreDe(nom, titre), indexDe([nom])],
+    [{ titre: nom.replace(/^\d+ - |\.md$/g, ''), ouverture, page: 6, pageFin: 8 }]).map((s) => s.ref)
+
+test('grain : les TROIS lectures d’une ligne de titre ouvrent — entière, gras, reste hors gras', () => {
+  // Le cas CANONIQUE : le titre, en capitales, en gras.
+  assert.deepEqual(grain('01 - Combat.md', '# **COMBAT**', 'COMBAT'), [])
+  // Sans gras (planche en double page du CRB 5e, `# MAKING A TEST`) : la ligne ENTIÈRE.
+  assert.deepEqual(grain('01 - Combat.md', '# Combat', 'COMBAT'), [])
+  // Typographie et niveau de `#` : ni l'un ni l'autre ne décide.
+  assert.deepEqual(grain("01 - Ungrakk's Brayherd.md", '##### **UNGRAKK’S  BRAYHERD**', "UNGRAKK'S BRAYHERD"), [])
+  // MOBILIER de gouttière (onglet au chiffre romain du chapitre) : hors du GRAS.
+  assert.deepEqual(grain('01 - Poisons.md', '# **POISONS** V', 'POISONS'), [])
+  // Ornements de fer des deux côtés du gras (CRB 5e `# • **CONSUMER GUIDE** •`).
+  assert.deepEqual(grain('01 - Consumer Guide.md', '# • **CONSUMER GUIDE** •', 'CONSUMER GUIDE'), [])
+  // Le RESTE hors gras : le mobilier est en gras, le titre ne l'est pas.
+  assert.deepEqual(grain('01 - Consumer Guide.md', '# **XI** CONSUMER GUIDE', 'CONSUMER GUIDE'), [])
+  // `<sup>` déballé avant lecture (icône de rang en tête de titre).
+  assert.deepEqual(grain('01 - Hante.md', '#### <sup>h</sup> **HANTE**', 'HANTE'), [])
+})
+
+test('grain : les MORSURES — un titre voisin n’ouvre rien, le mobilier ne se rogne pas', () => {
+  // `APPENDIX III` n'ouvre pas `APPENDIX I` : c'est une SUITE de mots, jamais un préfixe.
+  assert.deepEqual(grain('01 - Appendix I.md', '# **APPENDIX III** I', 'APPENDIX I'),
+    ["n'ouvre pas sur « APPENDIX I » (l.1 de titre « # **APPENDIX III** I »)"])
+  // `SKILLS AND TALENTS` n'ouvre pas `SKILLS`.
+  assert.deepEqual(grain('01 - Skills.md', '# **SKILLS AND TALENTS**', 'SKILLS'),
+    ["n'ouvre pas sur « SKILLS » (l.1 de titre « # **SKILLS AND TALENTS** »)"])
+  // Un fichier sans AUCUNE ligne de titre, là où la liste en déclare une, est NOMMÉ.
+  assert.deepEqual(
+    ecartsAuGrain(DIR, [{ nom: '01 - Combat.md', texte: '*Pages PDF 6-8*\n\n**UNE ACCROCHE**\n' }, indexDe(['01 - Combat.md'])],
+      [{ titre: 'Combat', ouverture: 'COMBAT', page: 6, pageFin: 8 }]).map((s) => s.ref),
+    ["n'ouvre pas sur « COMBAT » (aucune ligne de titre)"],
+  )
+  // Une entrée SANS `ouverture` (couverture, planche) n'a rien à ouvrir.
+  assert.deepEqual(
+    ecartsAuGrain(DIR, [{ nom: '01 - Cover.md', texte: '*Pages PDF 6-8*\n\n**UNE ACCROCHE**\n' }, indexDe(['01 - Cover.md'])],
+      [{ titre: 'Cover', page: 6, pageFin: 8 }]),
+    [],
+  )
+})
+
+test('grain : la LIGNE 1, les NOMS et l’INDEX se confrontent à la liste — rien ne se calcule', () => {
+  // La plage est COPIÉE de la liste : une ligne 1 qui en diffère est NOMMÉE, avec l'attendu.
+  assert.deepEqual(
+    ecartsAuGrain(DIR, [chapitreDe('01 - Combat.md', '# **COMBAT**'), indexDe(['01 - Combat.md'])],
+      [{ titre: 'Combat', ouverture: 'COMBAT', page: 6, pageFin: 9 }]).map((s) => s.ref),
+    ['ligne 1 « *Pages PDF 6-8* » pour *Pages PDF 6-9*'],
+  )
+  // Un fichier DÉCLARÉ et absent, un fichier SERVI et non déclaré : les deux sens sont rouges.
+  const deux = ecartsAuGrain(DIR, [chapitreDe('01 - Combat.md', '# **COMBAT**'), indexDe(['01 - Combat.md'])],
+    [{ titre: 'Magie', ouverture: 'MAGIE', page: 6, pageFin: 8 }])
+  assert.deepEqual(deux.map((s) => s.ref), [
+    'déclaré par la liste de découpe, ABSENT du dossier',
+    'servi, ABSENT de la liste de découpe',
+    '1 lien(s) pour 1 fichier(s) déclaré(s), ou hors ordre',
+  ])
+  // L'index doit lister les fichiers DÉCLARÉS, dans l'ORDRE de la liste.
+  assert.deepEqual(
+    ecartsAuGrain(DIR, [chapitreDe('01 - Combat.md', '# **COMBAT**'), indexDe([])],
+      [{ titre: 'Combat', ouverture: 'COMBAT', page: 6, pageFin: 8 }]).map((s) => s.ref),
+    ['0 lien(s) pour 1 fichier(s) déclaré(s), ou hors ordre'],
+  )
+})
+
+test('sans-decoupe : un livre SANS liste de découpe rend UNE entrée de dossier, et une seule', () => {
+  const fichiers = [chapitreDe('01 - A.md', '# **A**'), chapitreDe('02 - B.md', '# **B**')]
+  const sites = sitesDuDossier(DIR, fichiers).filter((s) => s.famille === 'sans-decoupe')
+  assert.deepEqual(sites.map((s) => s.ref), ['2 chapitre(s)'])
+  assert.equal(sites[0].file, `${DIR}/01 - A.md`)
+  // Avec une liste, la famille se TAIT : le grain se juge par confrontation, pas par stock.
+  const liste = [{ titre: 'A', ouverture: 'A', page: 6, pageFin: 8 }, { titre: 'B', ouverture: 'B', page: 6, pageFin: 8 }]
+  assert.deepEqual(sitesDuDossier(DIR, fichiers, liste).filter((s) => s.famille === 'sans-decoupe'), [])
+})
+
 test('index-mort : un lien relatif vers un fichier ABSENT est un écart ; un lien externe ne l’est pas', () => {
   assert.deepEqual(liensDIndex('- [x](<01 - X.md>)\n- [y](02%20-%20Y.md)\n- [z](https://x)\n'), [
     '01 - X.md', '02 - Y.md',
@@ -172,7 +262,9 @@ test('DISQUE : un dossier au format ne rend rien ; un dossier « scan/folio », 
     indexVivant(['01 - Chapitre.md']),
   ])
   try {
-    assert.deepEqual(scanDossier(conforme.dir), [])
+    // Un dossier au FORMAT, mais qu'aucune liste de découpe ne déclare : son GRAIN reste inconnu,
+    // et c'est là le seul écart qu'il porte.
+    assert.deepEqual(scanDossier(conforme.dir).map((s) => `${s.famille} ${s.ref}`), ['sans-decoupe 1 chapitre(s)'])
   } finally { rmSync(conforme.racine, { recursive: true, force: true }) }
 
   const casse = dossierJetable('WH - V4 - Scan', [
@@ -183,15 +275,15 @@ test('DISQUE : un dossier au format ne rend rien ; un dossier « scan/folio », 
   try {
     const sites = scanDossier(casse.dir)
     assert.deepEqual(sites.map((s) => s.famille), [
-      'ligne1-hors-format', 'ancre-seule', 'nom-de-signet', 'index-mort',
+      'ligne1-hors-format', 'ancre-seule', 'nom-de-signet', 'index-mort', 'sans-decoupe',
     ])
     assert.deepEqual(sites.map((s) => s.ref), [
-      '*Folio N+* ×2', '2 ancres seules / 2', '1 fichier(s) : 02 - _GoBack.md', '1 lien(s)',
+      '*Folio N+* ×2', '2 ancres seules / 2', '1 fichier(s) : 02 - _GoBack.md', '1 lien(s)', '2 chapitre(s)',
     ])
     // Le `fichier` nomme le PREMIER chapitre fautif de la famille (l'index pour `index-mort`) :
     // sans `.md`, l'entrée serait invisible aux portes de croissance (stocksNominatifs.mjs).
     assert.deepEqual(sites.map((s) => s.file.split('/').pop()), [
-      '01 - Credits.md', '01 - Credits.md', '02 - _GoBack.md', '00 - Index.md',
+      '01 - Credits.md', '01 - Credits.md', '02 - _GoBack.md', '00 - Index.md', '01 - Credits.md',
     ])
     for (const s of sites) {
       assert.ok(!s.file.includes('\\'), `chemin POSIX attendu : ${s.file}`)
@@ -244,8 +336,11 @@ test('stock COMMITTÉ : le rendu EXACT et ORDONNÉ des écarts mesurés sur l’
 // PLAFOND de la dette (jamais dans la lib de stock : il vit ICI, cf. `scripts/guards/lib/stock.mjs`).
 // Il ne monte QUE par une édition de cette ligne, sous `CLIQUET:`.
 // 57 → 58 au train #1820 : +1 `sans-folio` pour le Core Rulebook 5e, enregistré SANS ancre de folio
-// (ses 18 chapitres) — l'entrée sort quand la chaîne canonique lui pose ses folios (#1739).
-const PLAFOND = 58
+// — l'entrée sort quand la chaîne canonique lui pose ses folios (#1739).
+// 58 → 78 au train #1739 (lot S1) : la famille `sans-decoupe` NAÎT — UNE entrée par livre dont le
+// GRAIN n'est déclaré par aucune liste de découpe, 20 livres. Elle décroît d'un par liste écrite ;
+// le livre qui en a une n'entre pas au stock, il se CONFRONTE (`ecartsAuGrain`, rouge nommé).
+const PLAFOND = 78
 
 test('stock COMMITTÉ : PLAFOND de la dette de format — le relever exige de changer CE test', () => {
   const entrees = readStock(STOCK_PATH)
@@ -278,7 +373,7 @@ test('stock TRUQUÉ : une entrée retirée rend son site NEUF, une entrée sans 
 })
 
 test('l’écart est jugé FAMILLE PAR FAMILLE : le stock d’une famille ne solde pas les écarts d’une autre', () => {
-  const sites = sitesDuDossier(DIR, [{ nom: '01 - _GoBack.md', texte: '*Folio 3+*\n\n<span id="page-5-0" data-folio="3"></span>x\n' }])
+  const sites = sitesDuDossier(DIR, [{ nom: '01 - _GoBack.md', texte: '*Folio 3+*\n\n<span id="page-5-0" data-folio="3"></span>x\n' }], listePour(['01 - _GoBack.md']))
   assert.equal(comptesParFamille(sites)['ligne1-hors-format'], 1)
   assert.equal(comptesParFamille(sites)['nom-de-signet'], 1)
   const partiel = entreesDe(sites, { lot: 'x', date: 'y' }).filter((e) => e.famille === 'ligne1-hors-format')
@@ -308,7 +403,7 @@ test('familles() n’est pas AVEUGLE : un dossier tout-défaut les rend TOUTES',
 // règle est `survieDeLecheance` (`scripts/guards/lib/stock.mjs`) ; ce test-ci tient son CÂBLAGE —
 // `entreesDe`, puis `stockDe`, qui est ce que `--ecrire-stock` écrit sur le disque.
 test('--ecrire-stock CONSERVE l’échéance d’une entrée existante, à clé identique', () => {
-  const sites = sitesDuDossier(DIR, [{ nom: '01 - _GoBack.md', texte: '*Folio 3+*\n\n<span id="page-5-0" data-folio="3"></span>x\n' }])
+  const sites = sitesDuDossier(DIR, [{ nom: '01 - _GoBack.md', texte: '*Folio 3+*\n\n<span id="page-5-0" data-folio="3"></span>x\n' }], listePour(['01 - _GoBack.md']))
   const ancien = entreesDe(sites, { lot: '#1739 H-0', date: '2026-09-14' })
   const rendu = entreesDe(sites, { lot: '#9999 Z', date: '2030-01-01', ancien })
   assert.deepEqual(rendu, ancien, 'une régénération ne rajeunit pas une entrée inchangée')

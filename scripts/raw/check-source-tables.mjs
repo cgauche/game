@@ -34,7 +34,7 @@ import { BOOKS, readText } from './_lib.mjs'
 import { estNomDExtraction } from '../../src/data/source/decoupe.ts'
 import { ecartDuVolet, sitesEnEntrees, cleDeSite, survieDeLecheance } from '../guards/lib/stock.mjs'
 import { parCleDeSite, readStock } from './stockNominatif.mjs'
-import { parseChapitre, tablesOf, normText, estCleDePlage } from '../../src/data/source/decoupe.ts'
+import { parseChapitre, tablesOf, normText, estCleDePlage, plageDeLigne1 } from '../../src/data/source/decoupe.ts'
 
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'source-tables-stock.json')
 
@@ -227,6 +227,59 @@ export function verdictDesPreuves(sites, stock) {
   return { vides, perimees }
 }
 
+/** Ligne 1 d'un `.md` du dépôt, ou `null` s'il est introuvable — le seul accès DISQUE de la
+ *  contre-épreuve, isolé pour que son cœur reste pur. */
+export const lireLigne1Du = (fichier) => {
+  try {
+    return readText(fichier).split('\n')[0] ?? ''
+  } catch (err) {
+    if (err.code === 'ENOENT') return null
+    throw err
+  }
+}
+
+/** Page citée par une preuve (`PDF p.364 : …`, `PDF p.2 : …`). Une preuve qui n'en cite aucune ne
+ *  parle pas d'une page et ne se confronte à rien. */
+const PAGE_CITEE = /\bp\.\s*(\d+)/
+
+/**
+ * CONTRE-ÉPREUVE des preuves : une preuve qui cite `p.N` doit keyer un fichier dont la PLAGE
+ * contient N. C'est la seule mesure INDÉPENDANTE de la liste de découpe — elle tombe aussi bien sur
+ * un `pageFin` faux DANS la liste que sur un re-keyage (`recouper-source.mjs#recalerStock`) qui
+ * aurait posé la preuve sur le fichier voisin. La plage se lit par `plageDeLigne1`
+ * (`src/data/source/decoupe.ts`, SEULE définition) : aucun motif `*Pages PDF*` ne vit ici.
+ *
+ * PUR : le lecteur de ligne 1 est INJECTÉ. GÉNÉRAL : aucun livre n'est nommé, toute entrée à preuve
+ * est jugée. Une preuve sans `p.N` n'est pas jugée ; un fichier dont la ligne 1 ne se lit pas ALORS
+ * QUE sa preuve cite une page est un rouge NOMMÉ — jamais un silence.
+ * @param {{ fichier: string, preuve?: string }[]} stock
+ * @param {(fichier: string) => string | null} lireLigne1 ligne 1 du fichier, ou `null` s'il est absent
+ * @returns {string[]} un message par preuve hors plage, nommant fichier, plage et page citée
+ */
+export function preuvesHorsPlage(stock, lireLigne1) {
+  const out = []
+  for (const e of stock) {
+    if (typeof e.preuve !== 'string') continue
+    const m = PAGE_CITEE.exec(e.preuve)
+    if (!m) continue
+    const page = Number(m[1])
+    const ligne1 = lireLigne1(e.fichier)
+    if (ligne1 == null) {
+      out.push(`${cleDeSite(e)} — preuve à la page ${page}, mais le fichier « ${e.fichier} » est INTROUVABLE.`)
+      continue
+    }
+    const plage = plageDeLigne1(ligne1)
+    if (!plage) {
+      out.push(`${cleDeSite(e)} — preuve à la page ${page}, mais « ${e.fichier} » n'a pas de ligne 1 lisible (« ${String(ligne1).trim().slice(0, 40)} »).`)
+      continue
+    }
+    if (page < plage.page || page > plage.pageFin) {
+      out.push(`${cleDeSite(e)} — preuve à la page ${page}, HORS de la plage ${plage.page}-${plage.pageFin} de « ${e.fichier} ».`)
+    }
+  }
+  return out
+}
+
 /** Comptes de la dette : ce qui reste À TRIER (aucune preuve) et ce qui est VÉRIFIÉ (preuve lue au PDF). */
 export const comptesDeTri = (stock) => {
   const verifies = [...stock].filter((e) => typeof e.preuve === 'string' && e.preuve.trim()).length
@@ -333,11 +386,12 @@ function main() {
     console.log('Entrée(s) SOLDÉE(s) (défaut réparé) :')
     for (const s of perimees) console.log(`  ${s}`)
   }
-  if (preuves.vides.length || preuves.perimees.length) {
+  const horsPlage = preuvesHorsPlage(stock, lireLigne1Du)
+  if (preuves.vides.length || preuves.perimees.length || horsPlage.length) {
     console.log('PREUVE(s) en défaut :')
-    for (const s of [...preuves.vides, ...preuves.perimees]) console.log(`  ${s}`)
+    for (const s of [...preuves.vides, ...preuves.perimees, ...horsPlage]) console.log(`  ${s}`)
   }
-  if (!neuves.length && !perimees.length && !preuves.vides.length && !preuves.perimees.length) {
+  if (!neuves.length && !perimees.length && !preuves.vides.length && !preuves.perimees.length && !horsPlage.length) {
     console.log('OK — cliquet aligné, aucune régression.')
     return
   }

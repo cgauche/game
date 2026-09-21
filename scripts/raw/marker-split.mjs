@@ -14,8 +14,9 @@ import { existsSync, writeFileSync, mkdirSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { basename, join } from 'node:path'
 import { readText } from './_lib.mjs'
-import { graphieDuFichier, numeroDuFichier, titreDuFichier } from '../../src/data/source/decoupe.ts'
-import { mdsDeMarker, mdsDeRestitutions, pagesDeMarker, deballerSup, verifierExtraction, commandeRestitution } from './lib/marker-pages.mjs'
+import { graphieDuFichier, ligne1DePlage, numeroDuFichier, titreDuFichier } from '../../src/data/source/decoupe.ts'
+import { mdsDeMarker, mdsDeRestitutions, pagesDeMarker, verifierExtraction, commandeRestitution } from './lib/marker-pages.mjs'
+import { deballerSup } from './lib/titres.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
 
 const argv = process.argv.slice(2)
@@ -122,12 +123,11 @@ const empties = []
 for (let i = 0; i < byOff.length; i++) {
   const c = byOff[i], next = byOff[i + 1]
   let body = deballerSup(concat.slice(c.offset, next ? next.offset : undefined).trim())
-  const span = c.endPage > c.start ? `${c.start}-${c.endPage}` : `${c.start}`
   if (body.replace(/[#*\s]/g, '').length < 80) { // vide réel (artefact ou chapitre même-page absorbé par le voisin)
     empties.push(c.nn)
     body = `# ${titreDuFichier(c.outFile)}\n\n*(Page ${c.start} partagée avec un chapitre voisin — le contenu de cette section figure dans le chapitre adjacent de l'extraction Marker.)*`
   }
-  writeFileSync(join(outDir, nomAscii(c.outFile)), `*Pages PDF ${span}*\n\n${body}\n`)
+  writeFileSync(join(outDir, nomAscii(c.outFile)), `${ligne1DePlage(c.start, Math.max(c.start, c.endPage))}\n\n${body}\n`)
 }
 const miss = chapters.filter((c) => !c.matched).map((c) => c.nn)
 console.log(`${byOff.length} chapitres écrits dans ${outDir}`)

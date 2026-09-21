@@ -8,8 +8,9 @@ import { tmpdir } from 'node:os'
 import { dirname, join, relative } from 'node:path'
 import {
   mdsDeMarker, mdsDeRestitutions, pagesDeMarker, pagesManquantes, pagesVides, pagesPerdues,
-  restituerPages, verifierExtraction, commandeRestitution, deballerSup,
+  restituerPages, verifierExtraction, commandeRestitution, couperAuxTitres,
 } from './marker-pages.mjs'
+import { deballerSup, estLigneDeTitre, lecturesDeTitre, motsDe, ouvreSur } from './titres.mjs'
 
 // Deux tranches contiguës, séparateurs à index ABSOLU 0-based (tranche 2 ouvre à {2}).
 const TRANCHE_A = '{0}--------------------------------------------------\nPage un\n\n{1}----------\nPage deux\n'
@@ -191,6 +192,120 @@ test("verifierExtraction : fusionne les restitutions AVANT de juger — une page
   assert.deepEqual(v.perdues, [])
   assert.deepEqual(v.manquantes, [])
   assert.equal(v.pages.get(2), 'Planche\n')
+})
+
+// ---------- coupe à la ligne d'un titre d'ouverture (#1739) ----------
+// Flux FORGÉ (aucun livre nommé) portant les cinq pièges mesurés au CRB 5e : un homonyme AVANT la
+// section qu'il ouvre et un autre APRÈS, deux ouvertures sur une même page, un titre à MOBILIER de
+// gouttière hors du gras, un titre SANS gras, et un fichier sans titre.
+const FLUX = [
+  'Bandeau',              // 0
+  '',                     // 1
+  '# **ALPHA**',          // 2   page 1
+  'texte',                // 3
+  '## **ARMOUR**',        // 4   homonyme (gabarit de profil), AVANT la section ARMOUR
+  'texte',                // 5
+  '# **BETA** V',         // 6   page 2 — mobilier de gouttière hors du gras
+  'texte',                // 7
+  '# GAMMA',              // 8   page 2 — deuxième ouverture de la page, SANS gras
+  'texte',                // 9
+  '# **ARMOUR**',         // 10  page 3 — la section ARMOUR
+  'texte',                // 11
+  '#### **ARMOUR**',      // 12  homonyme, APRÈS
+  'texte',                // 13
+]
+const BORNES = { 1: [0, 6], 2: [6, 10], 3: [10, 14] }
+const fenetre = (pg) => ({ depuis: BORNES[pg][0], avant: BORNES[pg][1] })
+
+test('estLigneDeTitre : une ligne ATX, ancre de page comprise ; rien d’autre', () => {
+  assert.equal(estLigneDeTitre('# **BETA** V'), true)
+  assert.equal(estLigneDeTitre('# <span id="page-5-0"></span>• **INTRODUCTION** •'), true)
+  assert.equal(estLigneDeTitre('## Titre fermé ##'), true)
+  assert.equal(estLigneDeTitre('**ALPHA**'), false)
+  assert.equal(estLigneDeTitre('texte'), false)
+})
+
+test('lecturesDeTitre : TROIS lectures d’une ligne — entière, gras joint, reste hors gras', () => {
+  assert.deepEqual(lecturesDeTitre('# **BETA** V').map((l) => motsDe(l).join(' ')), ['beta v', 'beta', 'v'])
+  assert.deepEqual(lecturesDeTitre('# GAMMA').map((l) => motsDe(l).join(' ')), ['gamma', '', 'gamma'])
+  assert.deepEqual(lecturesDeTitre('texte'), [])
+})
+
+test('ouvreSur : casse, habillage et typographie absorbés — le mobilier de gouttière, jamais', () => {
+  assert.equal(ouvreSur('# **UNGRAKK’S  BRAYHERD**', "UNGRAKK'S BRAYHERD"), true)
+  assert.equal(ouvreSur('# **ÉTATS**', 'ETATS'), true)
+  assert.equal(ouvreSur('## Titre fermé ##', 'TITRE FERME'), true)
+  // MORSURE : une SUITE de mots, jamais un préfixe — le chiffre romain ne se rogne pas.
+  assert.equal(ouvreSur('# **APPENDIX III** I', 'APPENDIX I'), false)
+  assert.equal(ouvreSur('# **APPENDIX I**', 'APPENDIX I'), true)
+  assert.equal(ouvreSur('# **SKILLS AND TALENTS**', 'SKILLS'), false)
+  // Une ouverture VIDE n'ouvre rien : aucune coupe ne se devine.
+  assert.equal(ouvreSur('# **BETA**', ''), false)
+})
+
+test('couperAuxTitres : l’homonyme d’APRÈS est ignoré — le premier rencontré ouvre la section', () => {
+  const { coupes, introuvables } = couperAuxTitres(FLUX, [
+    { cle: 'Alpha', ouverture: 'ALPHA', ...fenetre(1) },
+    { cle: 'Armour', ouverture: 'ARMOUR', ...fenetre(3) },
+  ])
+  assert.deepEqual(introuvables, [])
+  assert.deepEqual(coupes.map((c) => c.ligne), [2, 10])
+})
+
+// Le MÊME texte de titre ouvre DEUX fichiers (CRB 5e : `POISONS` p.183 et p.313) — c'est le CURSEUR
+// séquentiel, et lui seul, qui donne à la seconde entrée la seconde occurrence.
+test('couperAuxTitres : deux entrées de MÊME titre prennent deux occurrences successives', () => {
+  const { coupes, introuvables } = couperAuxTitres(FLUX, [
+    { cle: 'Armour', ouverture: 'ARMOUR' },
+    { cle: 'Armour bis', ouverture: 'ARMOUR' },
+  ])
+  assert.deepEqual(introuvables, [])
+  assert.deepEqual(coupes.map((c) => c.ligne), [4, 10])
+})
+
+// PORTÉE de la recherche séquentielle, mesurée ici : elle écarte l'homonyme d'APRÈS à elle seule ;
+// celui d'AVANT ne tombe que par la fenêtre de PAGE. Un flux qui n'en porte pas (les `.md` en
+// service, qui n'ont presque aucune ancre de page) doit donc se relire à la carte émise.
+test('couperAuxTitres : sans fenêtre, un homonyme d’AVANT prend la coupe — la page seule l’écarte', () => {
+  const nue = couperAuxTitres(FLUX, [{ cle: 'Alpha', ouverture: 'ALPHA' }, { cle: 'Armour', ouverture: 'ARMOUR' }])
+  assert.deepEqual(nue.coupes.map((c) => c.ligne), [2, 4])
+})
+
+test('couperAuxTitres : deux ouvertures sur la MÊME page, dans leur fenêtre', () => {
+  const { coupes } = couperAuxTitres(FLUX, [
+    { cle: 'Beta', ouverture: 'BETA', ...fenetre(2) },
+    { cle: 'Gamma', ouverture: 'GAMMA', ...fenetre(2) },
+  ])
+  assert.deepEqual(coupes.map((c) => c.ligne), [6, 8])
+})
+
+test('couperAuxTitres : un fichier SANS titre imprimé coupe à son `depuis`', () => {
+  const { coupes } = couperAuxTitres(FLUX, [
+    { cle: 'Couverture', ouverture: null, ...fenetre(1) },
+    { cle: 'Alpha', ouverture: 'ALPHA', ...fenetre(1) },
+  ])
+  assert.deepEqual(coupes, [
+    { cle: 'Couverture', ouverture: null, ligne: 0 },
+    { cle: 'Alpha', ouverture: 'ALPHA', ligne: 2 },
+  ])
+})
+
+test('couperAuxTitres : titre INTROUVABLE dans sa fenêtre → nommé, et aucune coupe devinée', () => {
+  const { coupes, introuvables } = couperAuxTitres(FLUX, [
+    { cle: 'Alpha', ouverture: 'ALPHA' },
+    { cle: 'Delta', ouverture: 'DELTA' },
+    { cle: 'Armour', ouverture: 'ARMOUR' },
+  ])
+  assert.deepEqual(introuvables.map((i) => i.cle), ['Delta'])
+  assert.deepEqual(coupes.map((c) => c.cle), ['Alpha', 'Armour'])
+})
+
+test('couperAuxTitres : un titre présent HORS de sa fenêtre de page reste introuvable', () => {
+  const { coupes, introuvables } = couperAuxTitres(FLUX, [
+    { cle: 'Gamma', ouverture: 'GAMMA', ...fenetre(3) },
+  ])
+  assert.deepEqual(coupes, [])
+  assert.deepEqual(introuvables.map((i) => [i.cle, i.depuis, i.avant]), [['Gamma', 10, 14]])
 })
 
 test('commandeRestitution : page 1-based → `--page_range` 0-based et dossier `restitutions/<k>`', () => {

@@ -203,7 +203,7 @@
     },
     {
       "famille": "banniere-suspecte",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/16 - Appendices.md",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/117 - Appendix II.md",
       "ref": "advancement-xp-costs#1 :: |cost of advance (+1)|",
       "occurrence": 1,
       "lot": "#1384 B2",
@@ -2060,7 +2060,7 @@
     },
     {
       "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/02 - Contents.md",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/002 - Contents.md",
       "ref": "contents#1 :: introduction|bounty hunter53|townsman100|",
       "occurrence": 1,
       "lot": "#1384 B2",
@@ -2069,7 +2069,7 @@
     },
     {
       "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/02 - Contents.md",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/002 - Contents.md",
       "ref": "contents#1 :: making medicine153|characteristic advances191|miracles of taal227|",
       "occurrence": 1,
       "lot": "#1384 B2",
@@ -2078,7 +2078,7 @@
     },
     {
       "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/02 - Contents.md",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/002 - Contents.md",
       "ref": "contents#1 :: using the rules265|armour and size306|the restless dead338|",
       "occurrence": 1,
       "lot": "#1384 B2",
@@ -2087,7 +2087,7 @@
     },
     {
       "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/05 - Character Building.md",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/007 - Character Sheet Explained.md",
       "ref": "character-sheet-explained#1 :: |wealth|encumbrance||||||corruption & mutation|||||",
       "occurrence": 1,
       "lot": "#1384 B2",
@@ -2096,16 +2096,7 @@
     },
     {
       "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "example-difficulties-of-common-investigative-tasks#1 :: difficulty|action",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-20",
-      "preuve": "PDF p.147 : chaque cellule Action imprime trois entrées sur trois lignes distinctes (Gossip / Track / Charm…)."
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/027 - Theft and Skullduggery.md",
       "ref": "example-difficulties-of-common-underhanded-tasks#1 :: difficulty|action",
       "occurrence": 1,
       "lot": "#1384 B2",
@@ -2114,16 +2105,7 @@
     },
     {
       "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
-      "ref": "leaping#1 :: difficulty|action",
-      "occurrence": 1,
-      "lot": "#1384 B2",
-      "date": "2026-09-20",
-      "preuve": "PDF p.156 : chaque cellule Action imprime trois entrées sur trois lignes distinctes (Ride (Horse) / Drive / Athletics…)."
-    },
-    {
-      "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/028 - Flattery, Bribery, and Status.md",
       "ref": "status-and-social-standing#1 :: difficulty|action",
       "occurrence": 1,
       "lot": "#1384 B2",
@@ -2132,7 +2114,16 @@
     },
     {
       "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/029 - Nosing Around.md",
+      "ref": "example-difficulties-of-common-investigative-tasks#1 :: difficulty|action",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20",
+      "preuve": "PDF p.147 : chaque cellule Action imprime trois entrées sur trois lignes distinctes (Gossip / Track / Charm…)."
+    },
+    {
+      "famille": "br-litteral",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/031 - Cunning Crafts.md",
       "ref": "v-selection-of-poisons#1 :: name|source|resistance test|effect",
       "occurrence": 1,
       "lot": "#1384 B2",
@@ -2141,7 +2132,16 @@
     },
     {
       "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/14 - Consumer Guide.md",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/032 - Getting Around.md",
+      "ref": "leaping#1 :: difficulty|action",
+      "occurrence": 1,
+      "lot": "#1384 B2",
+      "date": "2026-09-20",
+      "preuve": "PDF p.156 : chaque cellule Action imprime trois entrées sur trois lignes distinctes (Ride (Horse) / Drive / Athletics…)."
+    },
+    {
+      "famille": "br-litteral",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/087 - Armour.md",
       "ref": "quick-armour#1 :: armour|price|enc when worn|availability|penalty|locations|ap|qualities and flaws",
       "occurrence": 1,
       "lot": "#1384 B2",
@@ -2150,7 +2150,7 @@
     },
     {
       "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/18 - Character Sheet.md",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/122 - Character Sheet.md",
       "ref": "#1 :: apperance class||||||||name species|||||||||",
       "occurrence": 1,
       "lot": "#1384 B2",
@@ -2158,7 +2158,7 @@
     },
     {
       "famille": "br-litteral",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/18 - Character Sheet.md",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/122 - Character Sheet.md",
       "ref": "#1 :: wealth|encumbrance|||||appendix corruption & mutation||",
       "occurrence": 1,
       "lot": "#1384 B2",
@@ -4374,7 +4374,7 @@
     },
     {
       "famille": "cle-de-ligne-ambigue",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/18 - Character Sheet.md",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/122 - Character Sheet.md",
       "ref": "#1 :: name",
       "occurrence": 1,
       "lot": "#1384 B2",
@@ -5335,7 +5335,7 @@
     },
     {
       "famille": "donnee-en-tete",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/08 - Rules.md",
+      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/036 - Attacking.md",
       "ref": "scatter#1 :: 1|2|3",
       "occurrence": 1,
       "lot": "#1384 B2",

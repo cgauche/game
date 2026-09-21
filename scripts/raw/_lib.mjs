@@ -7,11 +7,13 @@
 // INVARIANT #1825 : le code ne nomme AUCUN livre — un livre de plus, c'est de la DONNÉE. Ce qu'on
 // sait du LIVRE vit dans son entrée de `src/data/books.json` (sigle, dossier, langue, cœur, teneur,
 // niveau de section) ; ce qu'on sait de ses CHAPITRES vit dans `scripts/raw/chapitres.json`
-// (hors-règle, catalogues) et ce qu'on sait des DOMAINES d'un cœur dans `scripts/raw/domaines.json` :
-// registres d'OUTILLAGE dont ce fichier est le LECTEUR UNIQUE. Zéro ligne de code pour aucun d'eux.
+// (hors-règle, catalogues), sa LISTE DE DÉCOUPE dans `scripts/raw/decoupes/<id>.json`, et ce qu'on
+// sait des DOMAINES d'un cœur dans `scripts/raw/domaines.json` : registres d'OUTILLAGE dont ce
+// fichier est le LECTEUR UNIQUE. Zéro ligne de code pour aucun d'eux.
 import { readFileSync } from 'node:fs'
 import { listerArbre, listerDossier } from '../guards/lib/lister.mjs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import booksData from '../../src/data/books.json' with { type: 'json' }
 import chapitresData from './chapitres.json' with { type: 'json' }
 import domainesData from './domaines.json' with { type: 'json' }
@@ -165,6 +167,38 @@ export function domainesDe(coeur, registre = REGISTRE_DOMAINES) {
   if (!liste || !liste.length)
     throw new Error(`_lib: aucun domaine déclaré pour le cœur « ${coeur} » dans scripts/raw/domaines.json — cœurs porteurs de domaines : ${dits}`)
   return liste
+}
+
+// La LISTE DE DÉCOUPE d'un livre — UNE entrée par FICHIER de son dossier `Source/`, dans l'ordre du
+// livre — vit dans `scripts/raw/decoupes/<id du livre>.json`, UN fichier par livre keyé par son id
+// STABLE (`books.json`). C'est la donnée du DÉCOUPAGE, là où `chapitres.json` porte ce qu'on sait des
+// chapitres une fois découpés : un livre mis au grain des sections coûte UN fichier de ce dossier et
+// zéro ligne de code (#1739). Ce fichier en est le LECTEUR UNIQUE ; le dossier est INJECTABLE
+// (fixture) pour que les bancs forgent un livre sans en déposer un dans le dépôt.
+const ICI_RAW = dirname(fileURLToPath(import.meta.url))
+export const DECOUPES_DIR = join(ICI_RAW, 'decoupes')
+
+/** Les ids de livre pour lesquels une liste de découpe existe, dans l'ordre POSIX du dossier. */
+export const livresDecoupes = (dir = DECOUPES_DIR) =>
+  listerDossier(dir, { absent: 'vide' }).filter((n) => n.endsWith('.json')).map((n) => n.slice(0, -5))
+
+/**
+ * La liste de découpe d'UN livre, `[{ titre, ouverture?, page }]`, dans l'ORDRE DU FICHIER — celui
+ * des fichiers à écrire. LÈVE en NOMMANT la cause : une liste absente ou vide ferait écrire un livre
+ * à zéro fichier, ou découper à l'aveugle.
+ * @param {string} bookId id STABLE du livre @param {string} [dir]
+ * @returns {{ titre: string, ouverture?: string, page: number }[]}
+ */
+export function decoupeDe(bookId, dir = DECOUPES_DIR) {
+  const dits = livresDecoupes(dir).join(', ') || '(aucun)'
+  const chemin = join(dir, `${bookId}.json`)
+  let brut
+  try { brut = JSON.parse(readText(chemin)) } catch {
+    throw new Error(`_lib: aucune liste de découpe pour le livre « ${bookId} » (${chemin}) — livres découpés : ${dits}`)
+  }
+  if (!Array.isArray(brut.fichiers) || !brut.fichiers.length)
+    throw new Error(`_lib: la liste de découpe de « ${bookId} » (${chemin}) ne porte aucun fichier`)
+  return brut.fichiers
 }
 
 // Échappe une chaîne pour l'insérer littéralement dans une RegExp.

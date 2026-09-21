@@ -351,6 +351,15 @@ export const ECRIT_LU = {
         'PURES (`lignesDesCoeurs`, `lignesDesDomaines`, `blocsDeLAtlas`, `injecter`). Le cas `--check` ' +
         'le LANCE, mais dans un arbre JETABLE de `os.tmpdir()` dont il est le cwd : ce sont ces ' +
         'pages-là qu’il écrit, jamais celles du dépôt',
+      // Le MOTIF, pas un dossier : le re-coupeur sert TOUT livre à liste de découpe
+      // (`scripts/raw/decoupes/<id>.json`), et recale tout stock nominatif keyé par ses fichiers.
+      'Source/**/*.md':
+        '`recouper-source.test.mjs` IMPORTE le re-coupeur des `.md` en service ; ses `writeFileSync` et ' +
+        '`rmSync` vivent dans `main()`, sous sa porte `estMain` (scripts/raw/recouper-source.mjs:318), ' +
+        'et le banc n’appelle que son cœur PUR sur un livre FORGÉ en mémoire',
+      'scripts/raw/*-stock.json':
+        'même porte, même module : le recalage des stocks nominatifs (`recalerStock`) rend un TEXTE, ' +
+        'que le seul `main()` écrit derrière `estMain` (scripts/raw/recouper-source.mjs:318)',
     },
     lit: ['docs/raw/', 'scripts/raw/', 'scripts/guards/lib/', 'Source/', 'src/'],
     raison:

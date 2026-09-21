@@ -61,6 +61,21 @@ export const TITRE_VIDE = 'Sans titre';
 const nomDuPointDeCode = (c) => `U+${c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
 
 /**
+ * TRANSLITTÉRATION seule : NFC, table FERMÉE, retrait des combinants (règles 0 à 6). Elle ne JUGE
+ * rien et ne lève pas — les règles 7 et 8, qui font d'une chaîne un NOM de fichier, restent à
+ * `nomAscii`. Second consommateur : la comparaison de titres d'OUVERTURE
+ * (`scripts/raw/lib/marker-pages.mjs#normaliserTitre`), qui doit amener un titre IMPRIMÉ à la forme
+ * que le NOM de son fichier porte, sans pour autant exiger un nom.
+ * @param {string} texte @returns {string}
+ */
+export function translitterer(texte) {
+  if (typeof texte !== 'string') throw new TypeError(`translitterer : un texte est une chaîne (reçu ${typeof texte})`);
+  let s = texte.normalize('NFC');
+  for (const [re, par] of TABLE) s = s.replace(re, par);
+  return s.normalize('NFD').replace(/\p{M}+/gu, '');
+}
+
+/**
  * Le nom, en ASCII imprimable.
  * @param {string} nom nom de fichier ou de dossier (sans séparateur, de préférence)
  * @returns {string}
@@ -68,9 +83,7 @@ const nomDuPointDeCode = (c) => `U+${c.codePointAt(0).toString(16).toUpperCase()
  */
 export function nomAscii(nom) {
   if (typeof nom !== 'string') throw new TypeError(`nomAscii : un nom est une chaîne (reçu ${typeof nom})`);
-  let s = nom.normalize('NFC');
-  for (const [re, par] of TABLE) s = s.replace(re, par);
-  s = s.normalize('NFD').replace(/\p{M}+/gu, '');
+  let s = translitterer(nom);
   s = s.replace(/ +$/, '').replace(/ +(?=\.[A-Za-z0-9]+$)/, '');
   s = s.replace(/^(\d+) *- *(\.[A-Za-z0-9]+)$/, `$1 - ${TITRE_VIDE}$2`);
 

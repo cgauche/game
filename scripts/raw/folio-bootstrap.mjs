@@ -20,13 +20,12 @@ import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, resolve, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, readText } from './_lib.mjs'
-import { numeroDuFichier, titreDuFichier } from '../../src/data/source/decoupe.ts'
+import { numeroDuFichier, plageDeLigne1, titreDuFichier } from '../../src/data/source/decoupe.ts'
 import { extractPages, runBook } from './anchor-fill.mjs'
 
 const MAX_PROBE = 600            // borne de sondage : au-delà, pypdf renvoie null (page hors PDF)
 const FOLIO_LINE_RE = /^(\d{1,4})$/
 const EDGE_LINES = 4             // profondeur de recherche du folio en tête et en pied de page
-const HEADER_RE = /^\*Pages PDF (\d+)(?:-(\d+))?\*/
 
 // Plage de pages (K, index pypdf 0-based) réellement couverte par les chapitres du livre, lue dans
 // leurs en-têtes `*Pages PDF N[-M]*`. Les pages HORS de cette plage (couverture, gardes, cartes de
@@ -35,10 +34,10 @@ export function corpusRange(dir) {
   let lo = Infinity
   let hi = -Infinity
   for (const file of listerDossier(dir).filter((f) => numeroDuFichier(f) != null)) {
-    const m = HEADER_RE.exec(readText(join(dir, file)).split('\n')[0] || '')
-    if (!m) continue
-    lo = Math.min(lo, Number(m[1]) - 1)
-    hi = Math.max(hi, (m[2] ? Number(m[2]) : Number(m[1])) - 1)
+    const plage = plageDeLigne1(readText(join(dir, file)).split('\n')[0] || '')
+    if (!plage) continue
+    lo = Math.min(lo, plage.page - 1)
+    hi = Math.max(hi, plage.pageFin - 1)
   }
   return lo <= hi ? { lo, hi } : null
 }

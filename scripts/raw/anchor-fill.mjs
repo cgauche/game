@@ -44,13 +44,12 @@ import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { BOOKS, normalize, readText } from './_lib.mjs'
-import { numeroDuFichier } from '../../src/data/source/decoupe.ts'
+import { numeroDuFichier, plageDeLigne1 } from '../../src/data/source/decoupe.ts'
 import { offsetToLine, headAnchor } from './reanchor.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 export const PDF_EXTRACT_SCRIPT = join(HERE, 'lib', 'pdf-extract.py')
 
-const HEADER_RE = /^\*Pages PDF (\d+)(?:-(\d+))?\*/
 const ANCHOR_RE = /id="page-(\d+)-0" data-folio="(-?\d+)"/g
 const FOLIO_ONLY_RE = /data-folio="(-?\d+)"/g
 
@@ -124,11 +123,9 @@ export function resolveBookOffset(dir) {
 
 // ---------- plage de folios attendue d'un chapitre (en-tête *Pages PDF N[-M]*) ----------
 export function chapterFolioRange(firstLine, offset) {
-  const m = HEADER_RE.exec(firstLine)
-  if (!m) return null
-  const pdfLo = Number(m[1])
-  const pdfHi = m[2] ? Number(m[2]) : pdfLo
-  return { folioLo: (pdfLo - 1) - offset, folioHi: (pdfHi - 1) - offset }
+  const plage = plageDeLigne1(firstLine)
+  if (!plage) return null
+  return { folioLo: (plage.page - 1) - offset, folioHi: (plage.pageFin - 1) - offset }
 }
 
 export function existingFolios(text) {

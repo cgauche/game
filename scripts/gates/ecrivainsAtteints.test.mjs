@@ -302,6 +302,11 @@ const ATTENDU = {
     'scripts/raw/reanchor.mjs',
     'scripts/raw/reanchor.test.mjs',
     'scripts/raw/reconcile.test.mjs',
+    // +1 le 2026-09-21 (#1739 S1) : `recouper-source.test.mjs` importe le re-coupeur des `.md` en
+    // service pour éprouver son cœur PUR (`recouper`, `planDe`, `contenuDe`, `indexDe`, `recalerStock`)
+    // sur un livre FORGÉ en mémoire ; ses `writeFileSync`/`rmSync` vivent dans `main()`, sous sa porte
+    // `estMain` (recouper-source.mjs:318) — déclarés en `ecritFerme` de `test:raw` (ECRIT_LU).
+    'scripts/raw/recouper-source.mjs',
     // +1 le 2026-09-14 (#1759) : le test du LECTEUR de stock nominatif vit sous `scripts/raw`,
     // racine de cette gate. Il pose ses fixtures (`mkdtempSync` + `writeFileSync`,
     // puis `rmSync`) sous `os.tmpdir()` — l'arbre n'est jamais écrit, et le module mesuré
